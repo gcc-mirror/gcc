@@ -1,5 +1,5 @@
 /* Machine description patterns for PowerPC running Darwin (Mac OS X).
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -238,7 +238,7 @@ You should have received a copy of the GNU General Public License
   "")
 
 (define_expand "load_macho_picbase"
-  [(set (reg:SI 65)
+  [(set (reg:SI LR_REGNO)
         (unspec [(match_operand 0 "" "")]
                    UNSPEC_LD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
@@ -252,7 +252,7 @@ You should have received a copy of the GNU General Public License
 })
 
 (define_insn "load_macho_picbase_si"
-  [(set (reg:SI 65)
+  [(set (reg:SI LR_REGNO)
 	(unspec:SI [(match_operand:SI 0 "immediate_operand" "s")
 		    (pc)] UNSPEC_LD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
@@ -265,10 +265,11 @@ You should have received a copy of the GNU General Public License
   return "bcl 20,31,%0\\n%0:";
 }
   [(set_attr "type" "branch")
+   (set_attr "cannot_copy" "yes")
    (set_attr "length" "4")])
 
 (define_insn "load_macho_picbase_di"
-  [(set (reg:DI 65)
+  [(set (reg:DI LR_REGNO)
 	(unspec:DI [(match_operand:DI 0 "immediate_operand" "s")
 		    (pc)] UNSPEC_LD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic && TARGET_64BIT"
@@ -281,6 +282,7 @@ You should have received a copy of the GNU General Public License
   return "bcl 20,31,%0\\n%0:";
 }
   [(set_attr "type" "branch")
+   (set_attr "cannot_copy" "yes")
    (set_attr "length" "4")])
 
 (define_expand "macho_correct_pic"
@@ -325,7 +327,7 @@ You should have received a copy of the GNU General Public License
   [(call (mem:SI (match_operand:DI 0 "register_operand" "c,*l,c,*l"))
 	 (match_operand 1 "" "g,g,g,g"))
    (use (match_operand:SI 2 "immediate_operand" "O,O,n,n"))
-   (clobber (reg:SI 65))]
+   (clobber (reg:SI LR_REGNO))]
   "DEFAULT_ABI == ABI_DARWIN && TARGET_64BIT"
 {
   return "b%T0l";
@@ -337,7 +339,7 @@ You should have received a copy of the GNU General Public License
   [(call (mem:SI (match_operand:DI 0 "symbol_ref_operand" "s,s"))
 	 (match_operand 1 "" "g,g"))
    (use (match_operand:SI 2 "immediate_operand" "O,n"))
-   (clobber (reg:SI 65))]
+   (clobber (reg:SI LR_REGNO))]
   "(DEFAULT_ABI == ABI_DARWIN)
    && (INTVAL (operands[2]) & CALL_LONG) == 0"
 {
@@ -355,7 +357,7 @@ You should have received a copy of the GNU General Public License
 	(call (mem:SI (match_operand:DI 1 "register_operand" "c,*l,c,*l"))
 	      (match_operand 2 "" "g,g,g,g")))
    (use (match_operand:SI 3 "immediate_operand" "O,O,n,n"))
-   (clobber (reg:SI 65))]
+   (clobber (reg:SI LR_REGNO))]
   "DEFAULT_ABI == ABI_DARWIN"
 {
   return "b%T1l";
@@ -368,7 +370,7 @@ You should have received a copy of the GNU General Public License
 	(call (mem:SI (match_operand:DI 1 "symbol_ref_operand" "s,s"))
 	      (match_operand 2 "" "g,g")))
    (use (match_operand:SI 3 "immediate_operand" "O,n"))
-   (clobber (reg:SI 65))]
+   (clobber (reg:SI LR_REGNO))]
   "(DEFAULT_ABI == ABI_DARWIN)
    && (INTVAL (operands[3]) & CALL_LONG) == 0"
 {
@@ -382,7 +384,7 @@ You should have received a copy of the GNU General Public License
    (set_attr "length" "4,8")])
 
 (define_expand "reload_macho_picbase"
-  [(set (reg:SI 65)
+  [(set (reg:SI LR_REGNO)
         (unspec [(match_operand 0 "" "")]
                    UNSPEC_RELD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
@@ -396,7 +398,7 @@ You should have received a copy of the GNU General Public License
 })
 
 (define_insn "reload_macho_picbase_si"
-  [(set (reg:SI 65)
+  [(set (reg:SI LR_REGNO)
         (unspec:SI [(match_operand:SI 0 "immediate_operand" "s")
 		    (pc)] UNSPEC_RELD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
@@ -416,10 +418,11 @@ You should have received a copy of the GNU General Public License
     return "bcl 20,31,%0\\n%0:";
 }
   [(set_attr "type" "branch")
+   (set_attr "cannot_copy" "yes")
    (set_attr "length" "4")])
 
 (define_insn "reload_macho_picbase_di"
-  [(set (reg:DI 65)
+  [(set (reg:DI LR_REGNO)
 	(unspec:DI [(match_operand:DI 0 "immediate_operand" "s")
 		    (pc)] UNSPEC_RELD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic && TARGET_64BIT"
@@ -439,6 +442,7 @@ You should have received a copy of the GNU General Public License
     return "bcl 20,31,%0\\n%0:";
 }
   [(set_attr "type" "branch")
+   (set_attr "cannot_copy" "yes")
    (set_attr "length" "4")])
 
 ;; We need to restore the PIC register, at the site of nonlocal label.

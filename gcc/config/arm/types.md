@@ -1,6 +1,6 @@
 ;; Instruction Classification for ARM for GNU compiler.
 
-;; Copyright (C) 1991-2016 Free Software Foundation, Inc.
+;; Copyright (C) 1991-2017 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -51,6 +51,7 @@
 ; alus_shift_imm     as alu_shift_imm, setting condition flags.
 ; alus_shift_reg     as alu_shift_reg, setting condition flags.
 ; bfm                bitfield move operation.
+; bfx                bitfield extract operation.
 ; block              blockage insn, this blocks all functional units.
 ; branch             branch.
 ; call               subroutine call.
@@ -538,6 +539,10 @@
 ; crypto_sha1_slow
 ; crypto_sha256_fast
 ; crypto_sha256_slow
+;
+; The classification below is for coprocessor instructions
+;
+; coproc
 
 (define_attr "type"
  "adc_imm,\
@@ -557,6 +562,7 @@
   alus_shift_imm,\
   alus_shift_reg,\
   bfm,\
+  bfx,\
   block,\
   branch,\
   call,\
@@ -1071,7 +1077,8 @@
   crypto_sha1_fast,\
   crypto_sha1_slow,\
   crypto_sha256_fast,\
-  crypto_sha256_slow"
+  crypto_sha256_slow,\
+  coproc"
    (const_string "untyped"))
 
 ; Is this an (integer side) multiply with a 32-bit (or smaller) result?

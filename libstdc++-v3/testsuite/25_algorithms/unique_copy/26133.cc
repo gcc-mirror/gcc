@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2016 Free Software Foundation, Inc.
+// Copyright (C) 2006-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,6 @@ struct no_assign
 // libstdc++/26133
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::ostringstream oss1, oss2;
 
   no_assign in[4];

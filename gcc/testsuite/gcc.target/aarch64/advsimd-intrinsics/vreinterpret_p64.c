@@ -1,7 +1,8 @@
 /* This file contains tests for the vreinterpret *p64 intrinsics.  */
 
-/* { dg-require-effective-target arm_crypto_ok } */
+/* { dg-require-effective-target arm_crypto_ok { target { arm*-*-* } } } */
 /* { dg-add-options arm_crypto } */
+/* { dg-additional-options "-march=armv8-a+crypto" { target { aarch64*-*-* } } }*/
 
 #include <arm_neon.h>
 #include "arm-neon-ref.h"
@@ -113,6 +114,13 @@ int main (void)
 		    VECT_VAR(vreint_vector_res, T1, W, N));		\
   CHECK(TEST_MSG, T1, W, N, PRIx##W, EXPECTED, "");
 
+#define TEST_VREINTERPRET_TO_POLY(Q, T1, T2, W, N, TS1, TS2, WS, NS, EXPECTED)	\
+  VECT_VAR(vreint_vector_res, T1, W, N) =				\
+    vreinterpret##Q##_##T2##W##_##TS2##WS(VECT_VAR(vreint_vector, TS1, WS, NS)); \
+  vst1##Q##_##T2##W(VECT_VAR(result, T1, W, N),				\
+		    VECT_VAR(vreint_vector_res, T1, W, N));		\
+  CHECK_POLY(TEST_MSG, T1, W, N, PRIx##W, EXPECTED, "");
+
 #define TEST_VREINTERPRET_FP(Q, T1, T2, W, N, TS1, TS2, WS, NS, EXPECTED) \
   VECT_VAR(vreint_vector_res, T1, W, N) =				\
     vreinterpret##Q##_##T2##W##_##TS2##WS(VECT_VAR(vreint_vector, TS1, WS, NS)); \
@@ -121,11 +129,7 @@ int main (void)
   CHECK_FP(TEST_MSG, T1, W, N, PRIx##W, EXPECTED, "");
 
   DECL_VARIABLE_ALL_VARIANTS(vreint_vector);
-  DECL_VARIABLE(vreint_vector, poly, 64, 1);
-  DECL_VARIABLE(vreint_vector, poly, 64, 2);
   DECL_VARIABLE_ALL_VARIANTS(vreint_vector_res);
-  DECL_VARIABLE(vreint_vector_res, poly, 64, 1);
-  DECL_VARIABLE(vreint_vector_res, poly, 64, 2);
 
   clean_results ();
 
@@ -142,38 +146,38 @@ int main (void)
   /* vreinterpret_p64_* tests.  */
 #undef TEST_MSG
 #define TEST_MSG "VREINTERPRET_P64_*"
-  TEST_VREINTERPRET(, poly, p, 64, 1, int, s, 8, 8, vreint_expected_p64_s8);
-  TEST_VREINTERPRET(, poly, p, 64, 1, int, s, 16, 4, vreint_expected_p64_s16);
-  TEST_VREINTERPRET(, poly, p, 64, 1, int, s, 32, 2, vreint_expected_p64_s32);
-  TEST_VREINTERPRET(, poly, p, 64, 1, int, s, 64, 1, vreint_expected_p64_s64);
-  TEST_VREINTERPRET(, poly, p, 64, 1, uint, u, 8, 8, vreint_expected_p64_u8);
-  TEST_VREINTERPRET(, poly, p, 64, 1, uint, u, 16, 4, vreint_expected_p64_u16);
-  TEST_VREINTERPRET(, poly, p, 64, 1, uint, u, 32, 2, vreint_expected_p64_u32);
-  TEST_VREINTERPRET(, poly, p, 64, 1, uint, u, 64, 1, vreint_expected_p64_u64);
-  TEST_VREINTERPRET(, poly, p, 64, 1, poly, p, 8, 8, vreint_expected_p64_p8);
-  TEST_VREINTERPRET(, poly, p, 64, 1, poly, p, 16, 4, vreint_expected_p64_p16);
+  TEST_VREINTERPRET_TO_POLY(, poly, p, 64, 1, int, s, 8, 8, vreint_expected_p64_s8);
+  TEST_VREINTERPRET_TO_POLY(, poly, p, 64, 1, int, s, 16, 4, vreint_expected_p64_s16);
+  TEST_VREINTERPRET_TO_POLY(, poly, p, 64, 1, int, s, 32, 2, vreint_expected_p64_s32);
+  TEST_VREINTERPRET_TO_POLY(, poly, p, 64, 1, int, s, 64, 1, vreint_expected_p64_s64);
+  TEST_VREINTERPRET_TO_POLY(, poly, p, 64, 1, uint, u, 8, 8, vreint_expected_p64_u8);
+  TEST_VREINTERPRET_TO_POLY(, poly, p, 64, 1, uint, u, 16, 4, vreint_expected_p64_u16);
+  TEST_VREINTERPRET_TO_POLY(, poly, p, 64, 1, uint, u, 32, 2, vreint_expected_p64_u32);
+  TEST_VREINTERPRET_TO_POLY(, poly, p, 64, 1, uint, u, 64, 1, vreint_expected_p64_u64);
+  TEST_VREINTERPRET_TO_POLY(, poly, p, 64, 1, poly, p, 8, 8, vreint_expected_p64_p8);
+  TEST_VREINTERPRET_TO_POLY(, poly, p, 64, 1, poly, p, 16, 4, vreint_expected_p64_p16);
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
-  TEST_VREINTERPRET(, poly, p, 64, 1, float, f, 16, 4, vreint_expected_p64_f16);
+  TEST_VREINTERPRET_TO_POLY(, poly, p, 64, 1, float, f, 16, 4, vreint_expected_p64_f16);
 #endif
-  TEST_VREINTERPRET(, poly, p, 64, 1, float, f, 32, 2, vreint_expected_p64_f32);
+  TEST_VREINTERPRET_TO_POLY(, poly, p, 64, 1, float, f, 32, 2, vreint_expected_p64_f32);
 
   /* vreinterpretq_p64_* tests.  */
 #undef TEST_MSG
 #define TEST_MSG "VREINTERPRETQ_P64_*"
-  TEST_VREINTERPRET(q, poly, p, 64, 2, int, s, 8, 16, vreint_expected_q_p64_s8);
-  TEST_VREINTERPRET(q, poly, p, 64, 2, int, s, 16, 8, vreint_expected_q_p64_s16);
-  TEST_VREINTERPRET(q, poly, p, 64, 2, int, s, 32, 4, vreint_expected_q_p64_s32);
-  TEST_VREINTERPRET(q, poly, p, 64, 2, int, s, 64, 2, vreint_expected_q_p64_s64);
-  TEST_VREINTERPRET(q, poly, p, 64, 2, uint, u, 8, 16, vreint_expected_q_p64_u8);
-  TEST_VREINTERPRET(q, poly, p, 64, 2, uint, u, 16, 8, vreint_expected_q_p64_u16);
-  TEST_VREINTERPRET(q, poly, p, 64, 2, uint, u, 32, 4, vreint_expected_q_p64_u32);
-  TEST_VREINTERPRET(q, poly, p, 64, 2, uint, u, 64, 2, vreint_expected_q_p64_u64);
-  TEST_VREINTERPRET(q, poly, p, 64, 2, poly, p, 8, 16, vreint_expected_q_p64_p8);
-  TEST_VREINTERPRET(q, poly, p, 64, 2, poly, p, 16, 8, vreint_expected_q_p64_p16);
+  TEST_VREINTERPRET_TO_POLY(q, poly, p, 64, 2, int, s, 8, 16, vreint_expected_q_p64_s8);
+  TEST_VREINTERPRET_TO_POLY(q, poly, p, 64, 2, int, s, 16, 8, vreint_expected_q_p64_s16);
+  TEST_VREINTERPRET_TO_POLY(q, poly, p, 64, 2, int, s, 32, 4, vreint_expected_q_p64_s32);
+  TEST_VREINTERPRET_TO_POLY(q, poly, p, 64, 2, int, s, 64, 2, vreint_expected_q_p64_s64);
+  TEST_VREINTERPRET_TO_POLY(q, poly, p, 64, 2, uint, u, 8, 16, vreint_expected_q_p64_u8);
+  TEST_VREINTERPRET_TO_POLY(q, poly, p, 64, 2, uint, u, 16, 8, vreint_expected_q_p64_u16);
+  TEST_VREINTERPRET_TO_POLY(q, poly, p, 64, 2, uint, u, 32, 4, vreint_expected_q_p64_u32);
+  TEST_VREINTERPRET_TO_POLY(q, poly, p, 64, 2, uint, u, 64, 2, vreint_expected_q_p64_u64);
+  TEST_VREINTERPRET_TO_POLY(q, poly, p, 64, 2, poly, p, 8, 16, vreint_expected_q_p64_p8);
+  TEST_VREINTERPRET_TO_POLY(q, poly, p, 64, 2, poly, p, 16, 8, vreint_expected_q_p64_p16);
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
-  TEST_VREINTERPRET(q, poly, p, 64, 2, float, f, 16, 8, vreint_expected_q_p64_f16);
+  TEST_VREINTERPRET_TO_POLY(q, poly, p, 64, 2, float, f, 16, 8, vreint_expected_q_p64_f16);
 #endif
-  TEST_VREINTERPRET(q, poly, p, 64, 2, float, f, 32, 4, vreint_expected_q_p64_f32);
+  TEST_VREINTERPRET_TO_POLY(q, poly, p, 64, 2, float, f, 32, 4, vreint_expected_q_p64_f32);
 
   /* vreinterpret_*_p64 tests.  */
 #undef TEST_MSG
@@ -187,8 +191,8 @@ int main (void)
   TEST_VREINTERPRET(, uint, u, 16, 4, poly, p, 64, 1, vreint_expected_u16_p64);
   TEST_VREINTERPRET(, uint, u, 32, 2, poly, p, 64, 1, vreint_expected_u32_p64);
   TEST_VREINTERPRET(, uint, u, 64, 1, poly, p, 64, 1, vreint_expected_u64_p64);
-  TEST_VREINTERPRET(, poly, p, 8, 8, poly, p, 64, 1, vreint_expected_p8_p64);
-  TEST_VREINTERPRET(, poly, p, 16, 4, poly, p, 64, 1, vreint_expected_p16_p64);
+  TEST_VREINTERPRET_TO_POLY(, poly, p, 8, 8, poly, p, 64, 1, vreint_expected_p8_p64);
+  TEST_VREINTERPRET_TO_POLY(, poly, p, 16, 4, poly, p, 64, 1, vreint_expected_p16_p64);
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET_FP(, float, f, 16, 4, poly, p, 64, 1, vreint_expected_f16_p64);
 #endif
@@ -201,8 +205,8 @@ int main (void)
   TEST_VREINTERPRET(q, uint, u, 16, 8, poly, p, 64, 2, vreint_expected_q_u16_p64);
   TEST_VREINTERPRET(q, uint, u, 32, 4, poly, p, 64, 2, vreint_expected_q_u32_p64);
   TEST_VREINTERPRET(q, uint, u, 64, 2, poly, p, 64, 2, vreint_expected_q_u64_p64);
-  TEST_VREINTERPRET(q, poly, p, 8, 16, poly, p, 64, 2, vreint_expected_q_p8_p64);
-  TEST_VREINTERPRET(q, poly, p, 16, 8, poly, p, 64, 2, vreint_expected_q_p16_p64);
+  TEST_VREINTERPRET_TO_POLY(q, poly, p, 8, 16, poly, p, 64, 2, vreint_expected_q_p8_p64);
+  TEST_VREINTERPRET_TO_POLY(q, poly, p, 16, 8, poly, p, 64, 2, vreint_expected_q_p16_p64);
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   TEST_VREINTERPRET_FP(q, float, f, 16, 8, poly, p, 64, 2, vreint_expected_q_f16_p64);
 #endif

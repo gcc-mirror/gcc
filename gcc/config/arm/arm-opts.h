@@ -1,5 +1,5 @@
 /* Definitions for option handling for ARM.
-   Copyright (C) 1991-2016 Free Software Foundation, Inc.
+   Copyright (C) 1991-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -25,17 +25,9 @@
 #ifndef ARM_OPTS_H
 #define ARM_OPTS_H
 
-/* The various ARM cores.  */
-enum processor_type
-{
-#undef ARM_CORE
-#define ARM_CORE(NAME, INTERNAL_IDENT, IDENT, ARCH, FLAGS, COSTS) \
-  INTERNAL_IDENT,
-#include "arm-cores.def"
-#undef ARM_CORE
-  /* Used to indicate that no processor has been specified.  */
-  arm_none
-};
+#include "arm-flags.h"
+#include "arm-isa.h"
+#include "arm-cpu.h"
 
 /* Which __fp16 format to use.
    The enumeration values correspond to the numbering for the

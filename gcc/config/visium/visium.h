@@ -1,5 +1,5 @@
 /* Definitions of target machine for Visium.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
    This file is part of GCC.
@@ -963,10 +963,8 @@ enum reg_class
 
 /* `INITIAL_ELIMINATION_OFFSET (FROM-REG, TO-REG, OFFSET-VAR)'
 
-   This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It
-   specifies the initial difference between the specified pair of
-   registers.  This macro must be defined if `ELIMINABLE_REGS' is
-   defined.  */
+   This macro returns the initial difference between the specified pair
+   of registers.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
   (OFFSET = visium_initial_elimination_offset (FROM, TO))
 

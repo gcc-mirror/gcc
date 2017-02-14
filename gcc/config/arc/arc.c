@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Synopsys DesignWare ARC cpu.
-   Copyright (C) 1994-2016 Free Software Foundation, Inc.
+   Copyright (C) 1994-2017 Free Software Foundation, Inc.
 
    Sources derived from work done by Sankhya Technologies (www.sankhya.com) on
    behalf of Synopsys Inc.
@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "memmodel.h"
 #include "backend.h"
 #include "target.h"
 #include "rtl.h"
@@ -64,7 +65,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 
 /* Which cpu we're compiling for (ARC600, ARC601, ARC700).  */
-static const char *arc_cpu_string = "";
+static char arc_cpu_name[10] = "";
+static const char *arc_cpu_string = arc_cpu_name;
 
 /* ??? Loads can handle any constant, stores can only handle small ones.  */
 /* OTOH, LIMMs cost extra, so their usefulness is limited.  */
@@ -240,6 +242,9 @@ static bool arc_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 						unsigned int,
 						enum by_pieces_operation op,
 						bool);
+
+/* Globally visible information about currently selected cpu.  */
+const arc_cpu_t *arc_selected_cpu;
 
 /* Implements target hook vector_mode_supported_p.  */
 
@@ -668,47 +673,9 @@ make_pass_arc_predicate_delay_insns (gcc::context *ctxt)
 
 /* Called by OVERRIDE_OPTIONS to initialize various things.  */
 
-void
+static void
 arc_init (void)
 {
-  enum attr_tune tune_dflt = TUNE_NONE;
-
-  switch (arc_cpu)
-    {
-    case PROCESSOR_ARC600:
-      arc_cpu_string = "ARC600";
-      tune_dflt = TUNE_ARC600;
-      break;
-
-    case PROCESSOR_ARC601:
-      arc_cpu_string = "ARC601";
-      tune_dflt = TUNE_ARC600;
-      break;
-
-    case PROCESSOR_ARC700:
-      arc_cpu_string = "ARC700";
-      tune_dflt = TUNE_ARC700_4_2_STD;
-      break;
-
-    case PROCESSOR_NPS400:
-      arc_cpu_string = "NPS400";
-      tune_dflt = TUNE_ARC700_4_2_STD;
-      break;
-
-    case PROCESSOR_ARCEM:
-      arc_cpu_string = "EM";
-      break;
-
-    case PROCESSOR_ARCHS:
-      arc_cpu_string = "HS";
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  if (arc_tune == TUNE_NONE)
-    arc_tune = tune_dflt;
   /* Note: arc_multcost is only used in rtx_cost if speed is true.  */
   if (arc_multcost < 0)
     switch (arc_tune)
@@ -739,17 +706,9 @@ arc_init (void)
 	break;
       }
 
-  /* Support mul64 generation only for ARC600.  */
-  if (TARGET_MUL64_SET && (!TARGET_ARC600_FAMILY))
-      error ("-mmul64 not supported for ARC700 or ARCv2");
-
   /* MPY instructions valid only for ARC700 or ARCv2.  */
   if (TARGET_NOMPY_SET && TARGET_ARC600_FAMILY)
       error ("-mno-mpy supported only for ARC700 or ARCv2");
-
-  /* mul/mac instructions only for ARC600.  */
-  if (TARGET_MULMAC_32BY16_SET && (!TARGET_ARC600_FAMILY))
-      error ("-mmul32x16 supported only for ARC600 or ARC601");
 
   if (!TARGET_DPFP && TARGET_DPFP_DISABLE_LRSR)
       error ("-mno-dpfp-lrsr supported only with -mdpfp");
@@ -763,22 +722,10 @@ arc_init (void)
   if (TARGET_SPFP_FAST_SET && TARGET_ARC600_FAMILY)
     error ("-mspfp_fast not available on ARC600 or ARC601");
 
-  /* FPX-3. No FPX extensions on pre-ARC600 cores.  */
-  if ((TARGET_DPFP || TARGET_SPFP)
-      && (!TARGET_ARCOMPACT_FAMILY && !TARGET_EM))
-    error ("FPX extensions not available on pre-ARC600 cores");
-
-  /* FPX-4.  No FPX extensions mixed with FPU extensions for ARC HS
-     cpus.  */
-  if ((TARGET_DPFP || TARGET_SPFP)
-      && TARGET_HARD_FLOAT
-      && TARGET_HS)
+  /* FPX-4.  No FPX extensions mixed with FPU extensions.  */
+  if ((TARGET_DPFP_FAST_SET || TARGET_DPFP_COMPACT_SET || TARGET_SPFP)
+      && TARGET_HARD_FLOAT)
     error ("No FPX/FPU mixing allowed");
-
-  /* Only selected multiplier configurations are available for HS.  */
-  if (TARGET_HS && ((arc_mpy_option > 2 && arc_mpy_option < 7)
-		    || (arc_mpy_option == 1)))
-    error ("This multiplier configuration is not available for HS cores");
 
   /* Warn for unimplemented PIC in pre-ARC700 cores, and disable flag_pic.  */
   if (flag_pic && TARGET_ARC600_FAMILY)
@@ -787,26 +734,6 @@ arc_init (void)
 	       "PIC is not supported for %s. Generating non-PIC code only..",
 	       arc_cpu_string);
       flag_pic = 0;
-    }
-
-  if (TARGET_ATOMIC && !(TARGET_ARC700 || TARGET_HS))
-    error ("-matomic is only supported for ARC700 or ARC HS cores");
-
-  /* ll64 ops only available for HS.  */
-  if (TARGET_LL64 && !TARGET_HS)
-    error ("-mll64 is only supported for ARC HS cores");
-
-  /* FPU support only for V2.  */
-  if (TARGET_HARD_FLOAT)
-    {
-      if (TARGET_EM
-	  && (arc_fpu_build & ~(FPU_SP | FPU_SF | FPU_SC | FPU_SD | FPX_DP)))
-	error ("FPU double precision options are available for ARC HS only");
-      if (TARGET_HS && (arc_fpu_build & FPX_DP))
-	error ("FPU double precision assist "
-	       "options are not available for ARC HS");
-      if (!TARGET_HS && !TARGET_EM)
-	error ("FPU options are available for ARCv2 architecture only");
     }
 
   arc_init_reg_tables ();
@@ -853,10 +780,103 @@ static void
 arc_override_options (void)
 {
   if (arc_cpu == PROCESSOR_NONE)
-    arc_cpu = PROCESSOR_ARC700;
+    arc_cpu = TARGET_CPU_DEFAULT;
+
+  /* Set the default cpu options.  */
+  arc_selected_cpu = &arc_cpu_types[(int) arc_cpu];
+
+  /* Set the architectures.  */
+  switch (arc_selected_cpu->arch_info->arch_id)
+    {
+    case BASE_ARCH_em:
+      arc_cpu_string = "EM";
+      break;
+    case BASE_ARCH_hs:
+      arc_cpu_string = "HS";
+      break;
+    case BASE_ARCH_700:
+      if (arc_selected_cpu->processor == PROCESSOR_nps400)
+	arc_cpu_string = "NPS400";
+      else
+	arc_cpu_string = "ARC700";
+      break;
+    case BASE_ARCH_6xx:
+      arc_cpu_string = "ARC600";
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Set cpu flags accordingly to architecture/selected cpu.  The cpu
+     specific flags are set in arc-common.c.  The architecture forces
+     the default hardware configurations in, regardless what command
+     line options are saying.  The CPU optional hw options can be
+     turned on or off.  */
+#define ARC_OPT(NAME, CODE, MASK, DOC)			\
+  do {							\
+    if ((arc_selected_cpu->flags & CODE)		\
+	&& ((target_flags_explicit & MASK) == 0))	\
+      target_flags |= MASK;				\
+    if (arc_selected_cpu->arch_info->dflags & CODE)	\
+      target_flags |= MASK;				\
+  } while (0);
+#define ARC_OPTX(NAME, CODE, VAR, VAL, DOC)		\
+  do {							\
+    if ((arc_selected_cpu->flags & CODE)		\
+	&& (VAR == DEFAULT_##VAR))			\
+      VAR = VAL;					\
+    if (arc_selected_cpu->arch_info->dflags & CODE)	\
+      VAR = VAL;					\
+  } while (0);
+
+#include "arc-options.def"
+
+#undef ARC_OPTX
+#undef ARC_OPT
+
+  /* Check options against architecture options.  Throw an error if
+     option is not allowed.  */
+#define ARC_OPTX(NAME, CODE, VAR, VAL, DOC)			\
+  do {								\
+    if ((VAR == VAL)						\
+	&& (!(arc_selected_cpu->arch_info->flags & CODE)))	\
+      {								\
+	error ("%s is not available for %s architecture",	\
+	       DOC, arc_selected_cpu->arch_info->name);		\
+      }								\
+  } while (0);
+#define ARC_OPT(NAME, CODE, MASK, DOC)				\
+  do {								\
+    if ((target_flags & MASK)					\
+	&& (!(arc_selected_cpu->arch_info->flags & CODE)))	\
+      error ("%s is not available for %s architecture",		\
+	     DOC, arc_selected_cpu->arch_info->name);		\
+  } while (0);
+
+#include "arc-options.def"
+
+#undef ARC_OPTX
+#undef ARC_OPT
+
+  /* Set Tune option.  */
+  if (arc_tune == TUNE_NONE)
+    arc_tune = (enum attr_tune) arc_selected_cpu->tune;
 
   if (arc_size_opt_level == 3)
     optimize_size = 1;
+
+  /* Compact casesi is not a valid option for ARCv2 family.  */
+  if (TARGET_V2)
+    {
+      if (TARGET_COMPACT_CASESI)
+	{
+	  warning (0, "compact-casesi is not applicable to ARCv2");
+	  TARGET_COMPACT_CASESI = 0;
+	}
+    }
+  else if (optimize_size == 1
+	   && !global_options_set.x_TARGET_COMPACT_CASESI)
+    TARGET_COMPACT_CASESI = 1;
 
   if (flag_pic)
     target_flags |= MASK_NO_SDATA_SET;
@@ -1702,6 +1722,26 @@ gen_compare_reg (rtx comparison, machine_mode omode)
 				gen_rtx_COMPARE (mode,
 						 gen_rtx_REG (CC_FPXmode, 61),
 						 const0_rtx)));
+    }
+  else if (TARGET_FPX_QUARK && (cmode == SFmode))
+    {
+      switch (code)
+	{
+	case NE: case EQ: case GT: case UNLE: case GE: case UNLT:
+	case UNEQ: case LTGT: case ORDERED: case UNORDERED:
+	  break;
+	case LT: case UNGE: case LE: case UNGT:
+	  code = swap_condition (code);
+	  tmp = x;
+	  x = y;
+	  y = tmp;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      emit_insn (gen_cmp_quark (cc_reg,
+				gen_rtx_COMPARE (mode, x, y)));
     }
   else if (TARGET_HARD_FLOAT
 	   && ((cmode == SFmode && TARGET_FP_SP_BASE)
@@ -2726,6 +2766,15 @@ arc_return_slot_offset ()
 
 /* PIC */
 
+/* Helper to generate unspec constant.  */
+
+static rtx
+arc_unspec_offset (rtx loc, int unspec)
+{
+  return gen_rtx_CONST (Pmode, gen_rtx_UNSPEC (Pmode, gen_rtvec (1, loc),
+					       unspec));
+}
+
 /* Emit special PIC prologues and epilogues.  */
 /* If the function has any GOTOFF relocations, then the GOTBASE
    register has to be setup in the prologue
@@ -2751,9 +2800,7 @@ arc_finalize_pic (void)
   gcc_assert (flag_pic != 0);
 
   pat = gen_rtx_SYMBOL_REF (Pmode, "_DYNAMIC");
-  pat = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, pat), ARC_UNSPEC_GOT);
-  pat = gen_rtx_CONST (Pmode, pat);
-
+  pat = arc_unspec_offset (pat, ARC_UNSPEC_GOT);
   pat = gen_rtx_SET (baseptr_rtx, pat);
 
   emit_insn (pat);
@@ -3447,7 +3494,8 @@ arc_print_operand (FILE *file, rtx x, int code)
 	  fprintf (file, "0x%08lx", l);
 	  break;
 	}
-      /* Fall through.  Let output_addr_const deal with it.  */
+      /* FALLTHRU */
+      /* Let output_addr_const deal with it.  */
     default :
       if (flag_pic
 	  || (GET_CODE (x) == CONST
@@ -3555,97 +3603,6 @@ arc_print_operand_address (FILE *file , rtx addr)
 	output_addr_const (file, addr);
       break;
     }
-}
-
-/* Called via walk_stores.  DATA points to a hash table we can use to
-   establish a unique SYMBOL_REF for each counter, which corresponds to
-   a caller-callee pair.
-   X is a store which we want to examine for an UNSPEC_PROF, which
-   would be an address loaded into a register, or directly used in a MEM.
-   If we found an UNSPEC_PROF, if we encounter a new counter the first time,
-   write out a description and a data allocation for a 32 bit counter.
-   Also, fill in the appropriate symbol_ref into each UNSPEC_PROF instance.  */
-
-static void
-write_profile_sections (rtx dest ATTRIBUTE_UNUSED, rtx x, void *data)
-{
-  rtx *srcp, src;
-  htab_t htab = (htab_t) data;
-  rtx *slot;
-
-  if (GET_CODE (x) != SET)
-    return;
-  srcp = &SET_SRC (x);
-  if (MEM_P (*srcp))
-    srcp = &XEXP (*srcp, 0);
-  else if (MEM_P (SET_DEST (x)))
-    srcp = &XEXP (SET_DEST (x), 0);
-  src = *srcp;
-  if (GET_CODE (src) != CONST)
-    return;
-  src = XEXP (src, 0);
-  if (GET_CODE (src) != UNSPEC || XINT (src, 1) != UNSPEC_PROF)
-    return;
-
-  gcc_assert (XVECLEN (src, 0) == 3);
-  if (!htab_elements (htab))
-    {
-      output_asm_insn (".section .__arc_profile_desc, \"a\"\n"
-		       "\t.long %0 + 1\n",
-		       &XVECEXP (src, 0, 0));
-    }
-  slot = (rtx *) htab_find_slot (htab, src, INSERT);
-  if (*slot == HTAB_EMPTY_ENTRY)
-    {
-      static int count_nr;
-      char buf[24];
-      rtx count;
-
-      *slot = src;
-      sprintf (buf, "__prof_count%d", count_nr++);
-      count = gen_rtx_SYMBOL_REF (Pmode, xstrdup (buf));
-      XVECEXP (src, 0, 2) = count;
-      output_asm_insn (".section\t.__arc_profile_desc, \"a\"\n"
-		       "\t.long\t%1\n"
-		       "\t.section\t.__arc_profile_counters, \"aw\"\n"
-		       "\t.type\t%o2, @object\n"
-		       "\t.size\t%o2, 4\n"
-		       "%o2:\t.zero 4",
-		       &XVECEXP (src, 0, 0));
-      *srcp = count;
-    }
-  else
-    *srcp = XVECEXP (*slot, 0, 2);
-}
-
-/* Hash function for UNSPEC_PROF htab.  Use both the caller's name and
-   the callee's name (if known).  */
-
-static hashval_t
-unspec_prof_hash (const void *x)
-{
-  const_rtx u = (const_rtx) x;
-  const_rtx s1 = XVECEXP (u, 0, 1);
-
-  return (htab_hash_string (XSTR (XVECEXP (u, 0, 0), 0))
-	  ^ (s1->code == SYMBOL_REF ? htab_hash_string (XSTR (s1, 0)) : 0));
-}
-
-/* Equality function for UNSPEC_PROF htab.  Two pieces of UNSPEC_PROF rtl
-   shall refer to the same counter if both caller name and callee rtl
-   are identical.  */
-
-static int
-unspec_prof_htab_eq (const void *x, const void *y)
-{
-  const_rtx u0 = (const_rtx) x;
-  const_rtx u1 = (const_rtx) y;
-  const_rtx s01 = XVECEXP (u0, 0, 1);
-  const_rtx s11 = XVECEXP (u1, 0, 1);
-
-  return (!strcmp (XSTR (XVECEXP (u0, 0, 0), 0),
-		   XSTR (XVECEXP (u1, 0, 0), 0))
-	  && rtx_equal_p (s01, s11));
 }
 
 /* Conditional execution support.
@@ -4076,9 +4033,8 @@ arc_ccfsm_post_advance (rtx_insn *insn, struct arc_ccfsm *state)
 	   && GET_CODE (PATTERN (insn)) != ADDR_VEC
 	   && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC
 	   && ((type = get_attr_type (insn)) == TYPE_BRANCH
-	       || (type == TYPE_UNCOND_BRANCH
-		   /* ??? Maybe should also handle TYPE_RETURN here,
-		      but we don't have a testcase for that.  */
+	       || ((type == TYPE_UNCOND_BRANCH
+		    || type == TYPE_RETURN)
 		   && ARC_CCFSM_BRANCH_DELETED_P (state))))
     {
       if (ARC_CCFSM_BRANCH_DELETED_P (state))
@@ -4817,13 +4773,11 @@ static rtx
 arc_emit_call_tls_get_addr (rtx sym, int reloc, rtx eqv)
 {
   rtx r0 = gen_rtx_REG (Pmode, R0_REG);
-  rtx insns;
   rtx call_fusage = NULL_RTX;
 
   start_sequence ();
 
-  rtx x = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, sym), reloc);
-  x = gen_rtx_CONST (Pmode, x);
+  rtx x = arc_unspec_offset (sym, reloc);
   emit_move_insn (r0, x);
   use_reg (&call_fusage, r0);
 
@@ -4834,7 +4788,7 @@ arc_emit_call_tls_get_addr (rtx sym, int reloc, rtx eqv)
   RTL_PURE_CALL_P (call_insn) = 1;
   add_function_usage_to (call_insn, call_fusage);
 
-  insns = get_insns ();
+  rtx_insn *insns = get_insns ();
   end_sequence ();
 
   rtx dest = gen_reg_rtx (Pmode);
@@ -4879,17 +4833,18 @@ arc_legitimize_tls_address (rtx addr, enum tls_model model)
       addr = gen_rtx_CONST (Pmode, addr);
       base = arc_legitimize_tls_address (base, TLS_MODEL_GLOBAL_DYNAMIC);
       return gen_rtx_PLUS (Pmode, force_reg (Pmode, base), addr);
+
     case TLS_MODEL_GLOBAL_DYNAMIC:
       return arc_emit_call_tls_get_addr (addr, UNSPEC_TLS_GD, addr);
+
     case TLS_MODEL_INITIAL_EXEC:
-      addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_TLS_IE);
-      addr = gen_rtx_CONST (Pmode, addr);
+      addr = arc_unspec_offset (addr, UNSPEC_TLS_IE);
       addr = copy_to_mode_reg (Pmode, gen_const_mem (Pmode, addr));
       return gen_rtx_PLUS (Pmode, arc_get_tp (), addr);
+
     case TLS_MODEL_LOCAL_EXEC:
     local_exec:
-      addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_TLS_OFF);
-      addr = gen_rtx_CONST (Pmode, addr);
+      addr = arc_unspec_offset (addr, UNSPEC_TLS_OFF);
       return gen_rtx_PLUS (Pmode, arc_get_tp (), addr);
     default:
       gcc_unreachable ();
@@ -4920,14 +4875,11 @@ arc_legitimize_pic_address (rtx orig, rtx oldx)
       else if (!flag_pic)
 	return orig;
       else if (CONSTANT_POOL_ADDRESS_P (addr) || SYMBOL_REF_LOCAL_P (addr))
-	return gen_rtx_CONST (Pmode,
-			      gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr),
-			      ARC_UNSPEC_GOTOFFPC));
+	return arc_unspec_offset (addr, ARC_UNSPEC_GOTOFFPC);
 
       /* This symbol must be referenced via a load from the Global
 	 Offset Table (@GOTPC).  */
-      pat = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), ARC_UNSPEC_GOT);
-      pat = gen_rtx_CONST (Pmode, pat);
+      pat = arc_unspec_offset (addr, ARC_UNSPEC_GOT);
       pat = gen_const_mem (Pmode, pat);
 
       if (oldx == NULL)
@@ -5390,7 +5342,6 @@ arc_legitimate_constant_p (machine_mode mode, rtx x)
 	  case UNSPEC_TLS_GD:
 	  case UNSPEC_TLS_IE:
 	  case UNSPEC_TLS_OFF:
-	  case UNSPEC_PROF:
 	    return true;
 
 	  default:
@@ -6185,6 +6136,7 @@ check_if_valid_sleep_operand (rtx *operands, int opno)
     case CONST_INT :
 	if( UNSIGNED_INT6 (INTVAL (operands[opno])))
 	    return true;
+    /* FALLTHRU */
     default:
 	fatal_error (input_location,
 		     "operand for sleep instruction must be an unsigned 6 bit compile-time constant");
@@ -6310,47 +6262,6 @@ arc_is_shortcall_p (rtx sym_ref)
 
 }
 
-/* Emit profiling code for calling CALLEE.  Return true if a special
-   call pattern needs to be generated.  */
-
-bool
-arc_profile_call (rtx callee)
-{
-  rtx from = XEXP (DECL_RTL (current_function_decl), 0);
-
-  if (TARGET_UCB_MCOUNT)
-    /* Profiling is done by instrumenting the callee.  */
-    return false;
-
-  if (CONSTANT_P (callee))
-    {
-      rtx count_ptr
-	= gen_rtx_CONST (Pmode,
-			 gen_rtx_UNSPEC (Pmode,
-					 gen_rtvec (3, from, callee,
-						    CONST0_RTX (Pmode)),
-					 UNSPEC_PROF));
-      rtx counter = gen_rtx_MEM (SImode, count_ptr);
-      /* ??? The increment would better be done atomically, but as there is
-	 no proper hardware support, that would be too expensive.  */
-      emit_move_insn (counter,
-		      force_reg (SImode, plus_constant (SImode, counter, 1)));
-      return false;
-    }
-  else
-    {
-      rtx count_list_ptr
-	= gen_rtx_CONST (Pmode,
-			 gen_rtx_UNSPEC (Pmode,
-					 gen_rtvec (3, from, CONST0_RTX (Pmode),
-						    CONST0_RTX (Pmode)),
-					 UNSPEC_PROF));
-      emit_move_insn (gen_rtx_REG (Pmode, 8), count_list_ptr);
-      emit_move_insn (gen_rtx_REG (Pmode, 9), callee);
-      return true;
-    }
-}
-
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */
 
 static bool
@@ -6459,6 +6370,58 @@ arc_invalid_within_doloop (const rtx_insn *insn)
   return NULL;
 }
 
+/* Return true if a load instruction (CONSUMER) uses the same address as a
+   store instruction (PRODUCER).  This function is used to avoid st/ld
+   address hazard in ARC700 cores.  */
+bool
+arc_store_addr_hazard_p (rtx_insn* producer, rtx_insn* consumer)
+{
+  rtx in_set, out_set;
+  rtx out_addr, in_addr;
+
+  if (!producer)
+    return false;
+
+  if (!consumer)
+    return false;
+
+  /* Peel the producer and the consumer for the address.  */
+  out_set = single_set (producer);
+  if (out_set)
+    {
+      out_addr = SET_DEST (out_set);
+      if (!out_addr)
+	return false;
+      if (GET_CODE (out_addr) == ZERO_EXTEND
+	  || GET_CODE (out_addr) == SIGN_EXTEND)
+	out_addr = XEXP (out_addr, 0);
+
+      if (!MEM_P (out_addr))
+	return false;
+
+      in_set = single_set (consumer);
+      if (in_set)
+	{
+	  in_addr = SET_SRC (in_set);
+	  if (!in_addr)
+	    return false;
+	  if (GET_CODE (in_addr) == ZERO_EXTEND
+	      || GET_CODE (in_addr) == SIGN_EXTEND)
+	    in_addr = XEXP (in_addr, 0);
+
+	  if (!MEM_P (in_addr))
+	    return false;
+	  /* Get rid of the MEM and check if the addresses are
+	     equivalent.  */
+	  in_addr = XEXP (in_addr, 0);
+	  out_addr = XEXP (out_addr, 0);
+
+	  return exp_equiv_p (in_addr, out_addr, 0, true);
+	}
+    }
+  return false;
+}
+
 /* The same functionality as arc_hazard.  It is called in machine
    reorg before any other optimization.  Hence, the NOP size is taken
    into account when doing branch shortening.  */
@@ -6475,6 +6438,29 @@ workaround_arc_anomaly (void)
       if (arc_hazard (insn, succ0))
 	{
 	  emit_insn_before (gen_nopv (), succ0);
+	}
+    }
+
+  if (TARGET_ARC700)
+    {
+      rtx_insn *succ1;
+
+      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	{
+	  succ0 = next_real_insn (insn);
+	  if (arc_store_addr_hazard_p (insn, succ0))
+	    {
+	      emit_insn_after (gen_nopv (), insn);
+	      emit_insn_after (gen_nopv (), insn);
+	      continue;
+	    }
+
+	  /* Avoid adding nops if the instruction between the ST and LD is
+	     a call or jump.  */
+	  succ1 = next_real_insn (succ0);
+	  if (succ0 && !JUMP_P (succ0) && !CALL_P (succ0)
+	      && arc_store_addr_hazard_p (insn, succ1))
+	    emit_insn_after (gen_nopv (), insn);
 	}
     }
 }
@@ -6496,25 +6482,6 @@ arc_reorg (void)
 
   cfun->machine->arc_reorg_started = 1;
   arc_reorg_in_progress = 1;
-
-  /* Emit special sections for profiling.  */
-  if (crtl->profile)
-    {
-      section *save_text_section;
-      rtx_insn *insn;
-      int size = get_max_uid () >> 4;
-      htab_t htab = htab_create (size, unspec_prof_hash, unspec_prof_htab_eq,
-				 NULL);
-
-      save_text_section = in_section;
-      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-	if (NONJUMP_INSN_P (insn))
-	  walk_stores (PATTERN (insn), write_profile_sections, htab);
-      if (htab_elements (htab))
-	in_section = 0;
-      switch_to_section (save_text_section);
-      htab_delete (htab);
-    }
 
   /* Link up loop ends with their loop start.  */
   {
@@ -7257,7 +7224,7 @@ arc_register_move_cost (machine_mode,
     return 8;
 
   /* Force an attempt to 'mov Dy,Dx' to spill.  */
-  if (TARGET_ARC700 && TARGET_DPFP
+  if ((TARGET_ARC700 || TARGET_EM) && TARGET_DPFP
       && from_class == DOUBLE_REGS && to_class == DOUBLE_REGS)
     return 100;
 
@@ -7272,7 +7239,7 @@ arc_register_move_cost (machine_mode,
 int
 arc_output_addsi (rtx *operands, bool cond_p, bool output_p)
 {
-  char format[32];
+  char format[35];
 
   int match = operands_match_p (operands[0], operands[1]);
   int match2 = operands_match_p (operands[0], operands[2]);
@@ -7788,7 +7755,7 @@ arc_loop_hazard (rtx_insn *pred, rtx_insn *succ)
     jump = pred;
   else if (GET_CODE (PATTERN (pred)) == SEQUENCE
 	   && JUMP_P (XVECEXP (PATTERN (pred), 0, 0)))
-    jump = as_a <rtx_insn *> XVECEXP (PATTERN (pred), 0, 0);
+    jump = as_a <rtx_insn *> (XVECEXP (PATTERN (pred), 0, 0));
   else
     return false;
 
@@ -9007,10 +8974,7 @@ arc_process_double_reg_moves (rtx *operands)
       rtx srcLow  = simplify_gen_subreg (SImode, src, DFmode,
 					TARGET_BIG_ENDIAN ? 4 : 0);
 
-      emit_insn (gen_rtx_UNSPEC_VOLATILE (Pmode,
-					  gen_rtvec (3, dest, srcHigh, srcLow),
-					  VUNSPEC_ARC_DEXCL_NORES));
-
+      emit_insn (gen_dexcl_2op (dest, srcHigh, srcLow));
     }
   else
     gcc_unreachable ();
@@ -9243,7 +9207,7 @@ arc_scheduling_not_expected (void)
    long.)  */
 
 int
-arc_label_align (rtx label)
+arc_label_align (rtx_insn *label)
 {
   int loop_align = LOOP_ALIGN (LABEL);
 
@@ -9513,8 +9477,8 @@ emit_unlikely_jump (rtx insn)
 {
   int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
 
-  insn = emit_jump_insn (insn);
-  add_int_reg_note (insn, REG_BR_PROB, very_unlikely);
+  rtx_insn *jump = emit_jump_insn (insn);
+  add_int_reg_note (jump, REG_BR_PROB, very_unlikely);
 }
 
 /* Expand code to perform a 8 or 16-bit compare and swap by doing
@@ -9866,15 +9830,6 @@ arc_dwarf_register_span (rtx rtl)
    XVECEXP (p, 0, 1) = gen_rtx_REG (SImode, regno + 1);
 
    return p;
-}
-
-/* We can't inline this in INSN_REFERENCES_ARE_DELAYED because
-   resource.h doesn't include the required header files.  */
-
-bool
-insn_is_tls_gd_dispatch (rtx_insn *insn)
-{
-  return recog_memoized (insn) == CODE_FOR_tls_gd_dispatch;
 }
 
 /* Return true if OP is an acceptable memory operand for ARCompact

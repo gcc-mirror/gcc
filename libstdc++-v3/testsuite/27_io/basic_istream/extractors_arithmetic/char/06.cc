@@ -1,6 +1,6 @@
 // 1999-04-12 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,6 @@
 void test06()
 {
   // default locale, grouping is turned off
-  bool test __attribute__((unused)) = true;
   unsigned int h4;
   char c;
   std::string s("205,199,144");

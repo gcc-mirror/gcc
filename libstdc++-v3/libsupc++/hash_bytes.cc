@@ -1,6 +1,6 @@
 // Definition of _Hash_bytes. -*- C++ -*-
 
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -95,8 +95,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
       case 3:
 	hash ^= static_cast<unsigned char>(buf[2]) << 16;
+	[[gnu::fallthrough]];
       case 2:
 	hash ^= static_cast<unsigned char>(buf[1]) << 8;
+	[[gnu::fallthrough]];
       case 1:
 	hash ^= static_cast<unsigned char>(buf[0]);
 	hash *= m;
@@ -110,6 +112,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   // Implementation of FNV hash for 32-bit size_t.
+  // N.B. This function should work on unsigned char, otherwise it does not
+  // correctly implement the FNV-1a algorithm (see PR59406).
+  // The existing behaviour is retained for backwards compatibility.
   size_t
   _Fnv_hash_bytes(const void* ptr, size_t len, size_t hash)
   {
@@ -155,6 +160,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   // Implementation of FNV hash for 64-bit size_t.
+  // N.B. This function should work on unsigned char, otherwise it does not
+  // correctly implement the FNV-1a algorithm (see PR59406).
+  // The existing behaviour is retained for backwards compatibility.
   size_t
   _Fnv_hash_bytes(const void* ptr, size_t len, size_t hash)
   {

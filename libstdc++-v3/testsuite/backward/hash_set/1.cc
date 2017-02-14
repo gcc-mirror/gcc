@@ -3,7 +3,7 @@
 // 2002-04-28  Paolo Carlini  <pcarlini@unitus.it>
 //             Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
-// Copyright (C) 2002-2016 Free Software Foundation, Inc.
+// Copyright (C) 2002-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   const int werte[] = { 1, 25, 9, 16, -36};
   const int anzahl = sizeof(werte) / sizeof(int);
   __gnu_cxx::hash_set<int> intTable(werte, werte + anzahl);

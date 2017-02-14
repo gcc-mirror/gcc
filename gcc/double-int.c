@@ -1,5 +1,5 @@
 /* Operations with long integers.
-   Copyright (C) 2006-2016 Free Software Foundation, Inc.
+   Copyright (C) 2006-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -65,10 +65,10 @@ static int div_and_round_double (unsigned, int, unsigned HOST_WIDE_INT,
    number.  The value of the word is LOWPART + HIGHPART * BASE.  */
 
 #define LOWPART(x) \
-  ((x) & (((unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)) - 1))
+  ((x) & ((HOST_WIDE_INT_1U << (HOST_BITS_PER_WIDE_INT / 2)) - 1))
 #define HIGHPART(x) \
   ((unsigned HOST_WIDE_INT) (x) >> HOST_BITS_PER_WIDE_INT / 2)
-#define BASE ((unsigned HOST_WIDE_INT) 1 << HOST_BITS_PER_WIDE_INT / 2)
+#define BASE (HOST_WIDE_INT_1U << HOST_BITS_PER_WIDE_INT / 2)
 
 /* Unpack a two-word integer into 4 words.
    LOW and HI are the integer, as two `HOST_WIDE_INT' pieces.
@@ -546,7 +546,7 @@ div_and_round_double (unsigned code, int uns,
       if (quo_neg && (*lrem != 0 || *hrem != 0))   /* ratio < 0 && rem != 0 */
 	{
 	  /* quo = quo - 1;  */
-	  add_double (*lquo, *hquo, (HOST_WIDE_INT) -1, (HOST_WIDE_INT)  -1,
+	  add_double (*lquo, *hquo, HOST_WIDE_INT_M1, HOST_WIDE_INT_M1,
 		      lquo, hquo);
 	}
       else
@@ -557,7 +557,7 @@ div_and_round_double (unsigned code, int uns,
     case CEIL_MOD_EXPR:		/* round toward positive infinity */
       if (!quo_neg && (*lrem != 0 || *hrem != 0))  /* ratio > 0 && rem != 0 */
 	{
-	  add_double (*lquo, *hquo, (HOST_WIDE_INT) 1, (HOST_WIDE_INT) 0,
+	  add_double (*lquo, *hquo, HOST_WIDE_INT_1, HOST_WIDE_INT_0,
 		      lquo, hquo);
 	}
       else
@@ -590,10 +590,10 @@ div_and_round_double (unsigned code, int uns,
 	    if (quo_neg)
 	      /* quo = quo - 1;  */
 	      add_double (*lquo, *hquo,
-			  (HOST_WIDE_INT) -1, (HOST_WIDE_INT) -1, lquo, hquo);
+			  HOST_WIDE_INT_M1, HOST_WIDE_INT_M1, lquo, hquo);
 	    else
 	      /* quo = quo + 1; */
-	      add_double (*lquo, *hquo, (HOST_WIDE_INT) 1, (HOST_WIDE_INT) 0,
+	      add_double (*lquo, *hquo, HOST_WIDE_INT_1, HOST_WIDE_INT_0,
 			  lquo, hquo);
 	  }
 	else
@@ -614,7 +614,7 @@ div_and_round_double (unsigned code, int uns,
 
 
 /* Construct from a buffer of length LEN.  BUFFER will be read according
-   to byte endianess and word endianess.  Only the lower LEN bytes
+   to byte endianness and word endianness.  Only the lower LEN bytes
    of the result are set; the remaining high bytes are cleared.  */
 
 double_int
@@ -1058,9 +1058,9 @@ double_int::set_bit (unsigned bitpos) const
 {
   double_int a = *this;
   if (bitpos < HOST_BITS_PER_WIDE_INT)
-    a.low |= (unsigned HOST_WIDE_INT) 1 << bitpos;
+    a.low |= HOST_WIDE_INT_1U << bitpos;
   else
-    a.high |= (HOST_WIDE_INT) 1 <<  (bitpos - HOST_BITS_PER_WIDE_INT);
+    a.high |= HOST_WIDE_INT_1 <<  (bitpos - HOST_BITS_PER_WIDE_INT);
  
   return a;
 }

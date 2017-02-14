@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Matsushita MN10300 series
-   Copyright (C) 1996-2016 Free Software Foundation, Inc.
+   Copyright (C) 1996-2017 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -516,7 +516,7 @@ struct cum_arg
 /* The return address is saved both in the stack and in MDR.  Using
    the stack location is handiest for what unwinding needs.  */
 #define INCOMING_RETURN_ADDR_RTX \
-  gen_rtx_MEM (VOIDmode, gen_rtx_REG (VOIDmode, STACK_POINTER_REGNUM))
+  gen_rtx_MEM (Pmode, gen_rtx_REG (Pmode, STACK_POINTER_REGNUM))
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 

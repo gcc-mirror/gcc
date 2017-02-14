@@ -1,7 +1,6 @@
-// { dg-do run }
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +28,6 @@ void
 test01()
 {
   //  Basic test from paper.
-  bool test [[gnu::unused]] = true;
   std::wstringstream ss;
   std::wstring original = L"foolish me";
   std::wstring round_trip;
@@ -42,7 +40,6 @@ void
 test02()
 {
   //  Test skipws correctness.
-  bool test [[gnu::unused]] = true;
   std::wstringstream ss;
   ss << std::quoted(L"Hello Goodbye") << L' ' << 1 << L' ' << 2;
   std::wstring song;
@@ -57,7 +54,6 @@ void
 test03()
 {
   //  Test read of unquoted string.
-  bool test [[gnu::unused]] = true;
   std::wstringstream ss;
   ss << L"Alpha Omega";
   std::wstring testit;
@@ -69,7 +65,6 @@ auto
 test04(const std::wstring& message)
 {
   //  Test 'const basic_string&'
-  bool test [[gnu::unused]] = true;
   std::wstringstream ss;
   ss << L"**  Error: " << std::quoted(message) << L"  **";
   return ss.str();

@@ -1,5 +1,5 @@
 /* Utilities for ipa analysis.
-   Copyright (C) 2005-2016 Free Software Foundation, Inc.
+   Copyright (C) 2005-2017 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "splay-tree.h"
 #include "ipa-utils.h"
 #include "symbol-summary.h"
+#include "tree-vrp.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 
@@ -638,6 +639,20 @@ recursive_call_p (tree func, tree dest)
 {
   struct cgraph_node *dest_node = cgraph_node::get_create (dest);
   struct cgraph_node *cnode = cgraph_node::get_create (func);
+  ipa_ref *alias;
+  enum availability avail;
 
-  return dest_node->semantically_equivalent_p (cnode);
+  gcc_assert (!cnode->alias);
+  if (cnode != dest_node->ultimate_alias_target (&avail))
+    return false;
+  if (avail >= AVAIL_AVAILABLE)
+    return true;
+  if (!dest_node->semantically_equivalent_p (cnode))
+    return false;
+  /* If there is only one way to call the fuction or we know all of them
+     are semantically equivalent, we still can consider call recursive.  */
+  FOR_EACH_ALIAS (cnode, alias)
+    if (!dest_node->semantically_equivalent_p (alias->referring))
+      return false;
+  return true;
 }

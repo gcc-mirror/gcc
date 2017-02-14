@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,7 +19,7 @@
 
 // NB: This issue affected only debug-mode.
 
-// { dg-options "-std=gnu++14 -fno-rtti" }
-// { dg-do compile }
+// { dg-options "-fno-rtti" }
+// { dg-do compile { target c++14 } }
 
 #include <experimental/string_view>

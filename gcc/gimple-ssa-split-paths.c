@@ -1,5 +1,5 @@
 /* Support routines for Splitting Paths to loop backedges
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2017 Free Software Foundation, Inc.
    Contributed by Ajit Kumar Agarwal <ajitkum@xilinx.com>.
 
  This file is part of GCC.
@@ -32,6 +32,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tracer.h"
 #include "predict.h"
 #include "params.h"
+#include "gimple-ssa.h"
+#include "tree-phinodes.h"
+#include "ssa-iterators.h"
 
 /* Given LATCH, the latch block in a loop, see if the shape of the
    path reaching LATCH is suitable for being split by duplication.
@@ -198,6 +201,58 @@ is_feasible_trace (basic_block bb)
 		}
 	    }
 	}
+    }
+
+  /* If the joiner has no PHIs with useful uses there is zero chance
+     of CSE/DCE/jump-threading possibilities exposed by duplicating it.  */
+  bool found_useful_phi = false;
+  for (gphi_iterator si = gsi_start_phis (bb); ! gsi_end_p (si);
+       gsi_next (&si))
+    {
+      gphi *phi = si.phi ();
+      use_operand_p use_p;
+      imm_use_iterator iter;
+      FOR_EACH_IMM_USE_FAST (use_p, iter, gimple_phi_result (phi))
+	{
+	  gimple *stmt = USE_STMT (use_p);
+	  if (is_gimple_debug (stmt))
+	    continue;
+	  /* If there's a use in the joiner this might be a CSE/DCE
+	     opportunity.  */
+	  if (gimple_bb (stmt) == bb)
+	    {
+	      found_useful_phi = true;
+	      break;
+	    }
+	  /* If the use is on a loop header PHI and on one path the
+	     value is unchanged this might expose a jump threading
+	     opportunity.  */
+	  if (gimple_code (stmt) == GIMPLE_PHI
+	      && gimple_bb (stmt) == bb->loop_father->header
+	      /* But for memory the PHI alone isn't good enough.  */
+	      && ! virtual_operand_p (gimple_phi_result (stmt)))
+	    {
+	      for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
+		if (gimple_phi_arg_def (phi, i) == gimple_phi_result (stmt))
+		  {
+		    found_useful_phi = true;
+		    break;
+		  }
+	      if (found_useful_phi)
+		break;
+	    }
+	}
+      if (found_useful_phi)
+	break;
+    }
+  if (! found_useful_phi)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Block %d is a join that does not expose CSE/DCE/jump-thread "
+		 "opportunities when duplicated.\n",
+		 bb->index);
+      return false;
     }
 
   /* We may want something here which looks at dataflow and tries

@@ -1,7 +1,7 @@
 /* Routines for restoring various data types from a file stream.  This deals
    with various data types like strings, integers, enums, etc.
 
-   Copyright (C) 2011-2016 Free Software Foundation, Inc.
+   Copyright (C) 2011-2017 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -184,3 +184,34 @@ streamer_read_gcov_count (struct lto_input_block *ib)
   gcc_assert (ret >= 0);
   return ret;
 }
+
+/* Read the physical representation of a wide_int val from
+   input block IB.  */
+
+wide_int
+streamer_read_wide_int (struct lto_input_block *ib)
+{
+  HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
+  int i;
+  int prec = streamer_read_uhwi (ib);
+  int len = streamer_read_uhwi (ib);
+  for (i = 0; i < len; i++)
+    a[i] = streamer_read_hwi (ib);
+  return wide_int::from_array (a, len, prec);
+}
+
+/* Read the physical representation of a widest_int val from
+   input block IB.  */
+
+widest_int
+streamer_read_widest_int (struct lto_input_block *ib)
+{
+  HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
+  int i;
+  int prec ATTRIBUTE_UNUSED = streamer_read_uhwi (ib);
+  int len = streamer_read_uhwi (ib);
+  for (i = 0; i < len; i++)
+    a[i] = streamer_read_hwi (ib);
+  return widest_int::from_array (a, len);
+}
+

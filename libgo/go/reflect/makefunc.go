@@ -1,4 +1,4 @@
-// Copyright 2012 The Go Authors.  All rights reserved.
+// Copyright 2012 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -12,8 +12,8 @@ import (
 
 // makeFuncImpl is the closure value implementing the function
 // returned by MakeFunc.
+// The first three words are layed out like ffi_go_closure.
 type makeFuncImpl struct {
-	// These first three words are layed out like ffi_go_closure.
 	code    uintptr
 	ffi_cif unsafe.Pointer
 	ffi_fun func(unsafe.Pointer, unsafe.Pointer)
@@ -63,7 +63,7 @@ func MakeFunc(typ Type, fn func(args []Value) (results []Value)) Value {
 		method: -1,
 	}
 
-	makeFuncFFI(ftyp, unsafe.Pointer(impl))
+	makeFuncFFI(makeCIF(ftyp), unsafe.Pointer(impl))
 
 	return Value{t, unsafe.Pointer(&impl), flag(Func) | flagIndir}
 }
@@ -102,7 +102,7 @@ func makeMethodValue(op string, v Value) Value {
 		rcvr:   rcvr,
 	}
 
-	makeFuncFFI(ftyp, unsafe.Pointer(fv))
+	makeFuncFFI(makeCIF(ftyp), unsafe.Pointer(fv))
 
 	return Value{ft, unsafe.Pointer(&fv), v.flag&flagRO | flag(Func) | flagIndir}
 }
@@ -128,7 +128,7 @@ func makeValueMethod(v Value) Value {
 		rcvr:   v,
 	}
 
-	makeFuncFFI(ftyp, unsafe.Pointer(impl))
+	makeFuncFFI(makeCIF(ftyp), unsafe.Pointer(impl))
 
 	return Value{t, unsafe.Pointer(&impl), v.flag&flagRO | flag(Func) | flagIndir}
 }

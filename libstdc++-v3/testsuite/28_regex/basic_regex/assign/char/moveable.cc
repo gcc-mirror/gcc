@@ -1,8 +1,8 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-07-07  Stephen M. Webb  <stephen.webb@bregmasoft.com>
 //
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,8 +28,6 @@
 // Tests assign operator of the basic_regex class for moveable rvalues.  
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::regex src_re("aaba");
   const unsigned mark_count = src_re.mark_count();
   const std::regex::flag_type flags = src_re.flags();

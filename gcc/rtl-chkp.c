@@ -1,5 +1,5 @@
 /* RTL manipulation functions exported by Pointer Bounds Checker.
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2017 Free Software Foundation, Inc.
    Contributed by Ilya Enkovich (ilya.enkovich@intel.com)
 
 This file is part of GCC.
@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "expr.h"
 #include "rtl-chkp.h"

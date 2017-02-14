@@ -1,6 +1,6 @@
 # Plugins for offload execution, Makefile.am fragment.
 #
-# Copyright (C) 2014-2016 Free Software Foundation, Inc.
+# Copyright (C) 2014-2017 Free Software Foundation, Inc.
 #
 # Contributed by Mentor Embedded.
 #
@@ -44,7 +44,8 @@ if PLUGIN_HSA
 libgomp_plugin_hsa_version_info = -version-info $(libtool_VERSION)
 toolexeclib_LTLIBRARIES += libgomp-plugin-hsa.la
 libgomp_plugin_hsa_la_SOURCES = plugin/plugin-hsa.c
-libgomp_plugin_hsa_la_CPPFLAGS = $(AM_CPPFLAGS) $(PLUGIN_HSA_CPPFLAGS)
+libgomp_plugin_hsa_la_CPPFLAGS = $(AM_CPPFLAGS) $(PLUGIN_HSA_CPPFLAGS) \
+	-D_GNU_SOURCE
 libgomp_plugin_hsa_la_LDFLAGS = $(libgomp_plugin_hsa_version_info) \
 	$(lt_host_flags)
 libgomp_plugin_hsa_la_LDFLAGS += $(PLUGIN_HSA_LDFLAGS)

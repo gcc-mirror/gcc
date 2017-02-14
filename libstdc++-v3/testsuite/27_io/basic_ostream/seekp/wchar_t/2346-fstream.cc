@@ -1,4 +1,4 @@
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,8 +32,6 @@ const int times = 10;
 
 void write_rewind(std::wiostream& stream)
 {
-  bool test __attribute__((unused)) = true;
-
   for (int j = 0; j < times; j++) 
     {
       std::streampos begin = stream.tellp();
@@ -48,8 +46,6 @@ void write_rewind(std::wiostream& stream)
 
 void check_contents(std::wiostream& stream)
 {
-  bool test __attribute__((unused)) = true;
-
   stream.clear();
   stream.seekg(0, std::wios::beg);
   int i = 0;

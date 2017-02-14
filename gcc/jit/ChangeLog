@@ -1,3 +1,17 @@
+2017-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.c (jit_langhook_type_for_size): Delete.
+	(LANG_HOOKS_TYPE_FOR_SIZE): Don't redefine.
+
+2017-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.c (jit_langhook_type_for_size): Implement, using
+	lto's lto_type_for_size.
+
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2016-05-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/topics/compatibility.rst: Add LIBGCCJIT_ABI_6.
@@ -2311,7 +2325,7 @@
 
 	* Initial creation
 
-Copyright (C) 2013-2016 Free Software Foundation, Inc.
+Copyright (C) 2013-2017 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

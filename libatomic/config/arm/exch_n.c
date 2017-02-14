@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2017 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Atomic Library (libatomic).
@@ -29,7 +29,7 @@
 /* When using STREX to implement sub-word exchange, we can do much better
    than the compiler by using the APSR.GE and APSR.C flags.  */
 
-#if !DONE && HAVE_STREX && !HAVE_STREXBH && N == 2
+#if !DONE && __ARM_FEATURE_SIMD32 && HAVE_STREX && !HAVE_STREXBH && N == 2
 UTYPE
 SIZE(libat_exchange) (UTYPE *mptr, UTYPE newval, int smodel)
 {
@@ -79,7 +79,7 @@ SIZE(libat_exchange) (UTYPE *mptr, UTYPE newval, int smodel)
 #endif /* !HAVE_STREXBH && N == 2 */
 
 
-#if !DONE && HAVE_STREX && !HAVE_STREXBH && N == 1
+#if !DONE && __ARM_FEATURE_SIMD32 && HAVE_STREX && !HAVE_STREXBH && N == 1
 UTYPE
 SIZE(libat_exchange) (UTYPE *mptr, UTYPE newval, int smodel)
 {

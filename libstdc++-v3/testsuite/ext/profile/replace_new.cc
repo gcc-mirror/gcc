@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2006-2016 Free Software Foundation, Inc.
+// Copyright (C) 2006-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,10 +20,11 @@
 // { dg-require-profile-mode "" }
 
 #include <vector>
+#include <testsuite_hooks.h>
 
 using std::vector;
 
-void* operator new(std::size_t size) throw(std::bad_alloc)
+void* operator new(std::size_t size) THROW(std::bad_alloc)
 {
   void* p = std::malloc(size);
   if (!p)

@@ -1,5 +1,5 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -22,8 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "xtensa-config.h"
 
 /* External variables defined in xtensa.c.  */
-
-extern unsigned xtensa_current_frame_size;
 
 /* Macros used in the machine description to select various Xtensa
    configuration options.  */
@@ -477,14 +475,14 @@ enum reg_class
 /* Specify the initial difference between the specified pair of registers.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
   do {									\
-    compute_frame_size (get_frame_size ());				\
+    long frame_size = compute_frame_size (get_frame_size ());		\
     switch (FROM)							\
       {									\
       case FRAME_POINTER_REGNUM:					\
         (OFFSET) = 0;							\
 	break;								\
       case ARG_POINTER_REGNUM:						\
-        (OFFSET) = xtensa_current_frame_size;				\
+        (OFFSET) = frame_size;						\
 	break;								\
       default:								\
 	gcc_unreachable ();						\

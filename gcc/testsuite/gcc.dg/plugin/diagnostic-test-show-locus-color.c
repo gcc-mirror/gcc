@@ -161,7 +161,7 @@ void test_fixit_insert (void)
 /* { dg-begin-multiline-output "" }
     int a[2][2] = { [01;35m[K0, 1[m[K , 2, 3 };
                     [01;35m[K^~~~[m[K
-                    [01;35m[K{[m[K   [01;35m[K}[m[K
+                    [32m[K{[m[K   [32m[K}[m[K
    { dg-end-multiline-output "" } */
 #endif
 }
@@ -175,7 +175,7 @@ void test_fixit_remove (void)
 /* { dg-begin-multiline-output "" }
    int a;[01;35m[K;[m[K
          [01;35m[K^[m[K
-         [01;35m[K-[m[K
+         [31m[K-[m[K
    { dg-end-multiline-output "" } */
 #endif
 }
@@ -189,7 +189,7 @@ void test_fixit_replace (void)
 /* { dg-begin-multiline-output "" }
    [01;35m[Kgtk_widget_showall[m[K (dlg);
    [01;35m[K^~~~~~~~~~~~~~~~~~[m[K
-   [01;35m[Kgtk_widget_show_all[m[K
+   [32m[Kgtk_widget_show_all[m[K
    { dg-end-multiline-output "" } */
 #endif
 }

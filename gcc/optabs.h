@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -224,7 +224,7 @@ extern bool maybe_emit_unop_insn (enum insn_code, rtx, rtx, enum rtx_code);
 extern void emit_unop_insn (enum insn_code, rtx, rtx, enum rtx_code);
 
 /* Emit code to make a call to a constant function or a library call.  */
-extern void emit_libcall_block (rtx, rtx, rtx, rtx);
+extern void emit_libcall_block (rtx_insn *, rtx, rtx, rtx);
 
 /* The various uses that a comparison can have; used by can_compare_p:
    jumps, conditional moves, store flag operations.  */

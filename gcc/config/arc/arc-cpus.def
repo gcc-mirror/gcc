@@ -1,0 +1,76 @@
+/* ARC CPU architectures.
+   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 3, or (at your
+   option) any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* List of various ARC CPU configurations.  If updated, cd to
+   $(builddir)/gcc and run
+
+   $ make arc-cpus
+
+   This will regenerate / update the following source files:
+
+   -  $(srcdir)/config/arc/t-multilib
+   -  $(srcdir)/config/arc/arc-tables.opt
+
+   After that, rebuild everything and check-in the new sources to the
+   repo.  This file defines the accepted values for -mcpu=<CPU>
+   option.
+
+   Before including this file, define a macro:
+
+   ARC_CPU (NAME, ARCH, FLAGS, TUNE)
+
+   where the arguments are the fields of arc_cpu_t:
+
+   NAME	  A given arbitrary name.
+   ARCH	  Base architecture for the given CPU.
+   FLAGS  Specific hardware flags that are enabled by this CPU configuration,
+	  as defined in arc-options.def file, and allowed by arc-arches.def
+	  file.  The specific hardware flags are enumerated without using
+	  spaces between the '|' character and consequtive flags.
+   TUNE	  Tune value for the given configuration, otherwise NONE.  */
+
+ARC_CPU (em,	    em, 0, NONE)
+ARC_CPU (arcem,	    em, FL_MPYOPT_2|FL_CD|FL_BS, NONE)
+ARC_CPU (em4,	    em, FL_CD, NONE)
+ARC_CPU (em4_dmips, em, FL_MPYOPT_2|FL_CD|FL_DIVREM|FL_NORM|FL_SWAP|FL_BS, NONE)
+ARC_CPU (em4_fpus,  em, FL_MPYOPT_2|FL_CD|FL_DIVREM|FL_NORM|FL_SWAP|FL_BS|FL_FPU_FPUS, NONE)
+ARC_CPU (em4_fpuda, em, FL_MPYOPT_2|FL_CD|FL_DIVREM|FL_NORM|FL_SWAP|FL_BS|FL_FPU_FPUDA, NONE)
+ARC_CPU (quarkse_em, em, FL_MPYOPT_3|FL_CD|FL_DIVREM|FL_NORM|FL_SWAP|FL_BS|FL_FPX_QUARK|FL_SPFP|FL_DPFP, NONE)
+
+ARC_CPU (hs,	     hs, 0, NONE)
+ARC_CPU (archs,	     hs, FL_MPYOPT_2|FL_DIVREM|FL_LL64, NONE)
+ARC_CPU (hs34,	     hs, FL_MPYOPT_2, NONE)
+ARC_CPU (hs38,	     hs, FL_MPYOPT_9|FL_DIVREM|FL_LL64, NONE)
+ARC_CPU (hs38_linux, hs, FL_MPYOPT_9|FL_DIVREM|FL_LL64|FL_FPU_FPUD_ALL, NONE)
+
+ARC_CPU (arc600,	  6xx, FL_BS, ARC600)
+ARC_CPU (arc600_norm,	  6xx, FL_BS|FL_NORM, ARC600)
+ARC_CPU (arc600_mul64,	  6xx, FL_BS|FL_NORM|FL_MUL64, ARC600)
+ARC_CPU (arc600_mul32x16, 6xx, FL_BS|FL_NORM|FL_MUL32x16, ARC600)
+ARC_CPU (arc601,	  6xx, 0, ARC600)
+ARC_CPU (arc601_norm,	  6xx, FL_NORM, ARC600)
+ARC_CPU (arc601_mul64,	  6xx, FL_NORM|FL_MUL64, ARC600)
+ARC_CPU (arc601_mul32x16, 6xx, FL_NORM|FL_MUL32x16, ARC600)
+
+ARC_CPU (arc700, 700, 0, ARC700_4_2_STD)
+ARC_CPU (nps400, 700, 0, ARC700_4_2_STD)
+
+/* Local Variables: */
+/* mode: c */
+/* End: */

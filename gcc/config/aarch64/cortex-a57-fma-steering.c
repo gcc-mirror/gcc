@@ -1,5 +1,5 @@
 /* FMA steering optimization pass for Cortex-A57.
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2017 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -28,6 +28,7 @@
 #include "df.h"
 #include "insn-config.h"
 #include "regs.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "recog.h"
 #include "cfganal.h"
@@ -35,7 +36,6 @@
 #include "context.h"
 #include "tree-pass.h"
 #include "regrename.h"
-#include "cortex-a57-fma-steering.h"
 #include "aarch64-protos.h"
 
 /* For better performance, the destination of FMADD/FMSUB instructions should
@@ -923,10 +923,10 @@ func_fma_steering::analyze ()
       FOR_BB_INSNS (bb, insn)
 	{
 	  operand_rr_info *dest_op_info;
-	  struct du_chain *chain;
+	  struct du_chain *chain = NULL;
 	  unsigned dest_regno;
-	  fma_forest *forest;
-	  du_head_p head;
+	  fma_forest *forest = NULL;
+	  du_head_p head = NULL;
 	  int i;
 
 	  if (!is_fmul_fmac_insn (insn, true))
@@ -1068,21 +1068,8 @@ public:
 
 /* Create a new fma steering pass instance.  */
 
-static rtl_opt_pass *
+rtl_opt_pass *
 make_pass_fma_steering (gcc::context *ctxt)
 {
   return new pass_fma_steering (ctxt);
-}
-
-/* Register the FMA steering pass to the pass manager.  */
-
-void
-aarch64_register_fma_steering ()
-{
-  opt_pass *pass_fma_steering = make_pass_fma_steering (g);
-
-  struct register_pass_info fma_steering_info
-    = { pass_fma_steering, "rnreg", 1, PASS_POS_INSERT_AFTER };
-
-  register_pass (&fma_steering_info);
 }

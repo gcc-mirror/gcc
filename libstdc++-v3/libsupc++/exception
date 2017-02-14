@@ -1,6 +1,6 @@
 // Exception Handling support header for -*- C++ -*-
 
-// Copyright (C) 1995-2016 Free Software Foundation, Inc.
+// Copyright (C) 1995-2017 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -35,40 +35,12 @@
 #pragma GCC visibility push(default)
 
 #include <bits/c++config.h>
-#include <bits/atomic_lockfree_defines.h>
+#include <bits/exception.h>
 
 extern "C++" {
 
 namespace std
 {
-  /**
-   * @defgroup exceptions Exceptions
-   * @ingroup diagnostics
-   *
-   * Classes and functions for reporting errors via exception classes.
-   * @{
-   */
-
-  /**
-   *  @brief Base class for all library exceptions.
-   *
-   *  This is the base class for all exceptions thrown by the standard
-   *  library, and by certain language expressions.  You are free to derive
-   *  your own %exception classes, or use a different hierarchy, or to
-   *  throw non-class data (e.g., fundamental types).
-   */
-  class exception
-  {
-  public:
-    exception() _GLIBCXX_USE_NOEXCEPT { }
-    virtual ~exception() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
-
-    /** Returns a C-style character string describing the general cause
-     *  of the current error.  */
-    virtual const char*
-    what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
-  };
-
   /** If an %exception is thrown which is not listed in a function's
    *  %exception specification, one of these may be thrown.  */
   class bad_exception : public exception
@@ -166,7 +138,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #pragma GCC visibility pop
 
-#if (__cplusplus >= 201103L) && (ATOMIC_INT_LOCK_FREE > 1)
+#if (__cplusplus >= 201103L)
 #include <bits/exception_ptr.h>
 #include <bits/nested_exception.h>
 #endif

@@ -1,7 +1,7 @@
 # @configure_input@
 # Makefile for libcpp.  Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 2004-2016 Free Software Foundation, Inc.
+# Copyright (C) 2004-2017 Free Software Foundation, Inc.
 
 #This file is part of libcpp.
 
@@ -256,7 +256,7 @@ po/$(PACKAGE).pot: $(libcpp_a_SOURCES)
 	  --keyword=cpp_errno:3 \
 	  --keyword=SYNTAX_ERROR --keyword=SYNTAX_ERROR2 \
 	  --copyright-holder="Free Software Foundation, Inc." \
-	  --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
+	  --msgid-bugs-address="https://gcc.gnu.org/bugs/" \
 	  --language=c -o po/$(PACKAGE).pot.tmp $^
 	sed 's:$(srcdir)/::g' <po/$(PACKAGE).pot.tmp >po/$(PACKAGE).pot
 	rm po/$(PACKAGE).pot.tmp

@@ -1,0 +1,19 @@
+// Test of bit-fields.
+// { dg-options -std=c++1z }
+
+struct A { long i: 2; } a;
+
+template <class,class> struct same_type;
+template <class T> struct same_type<T,T> {};
+
+void f()
+{
+  auto [ x ] = a;
+
+  same_type<decltype(x),long>{};
+  same_type<decltype(x+x),int>{};
+
+  long &r = x;			// { dg-error "bit" }
+  &x;				// { dg-error "bit" }
+  sizeof(x);			// { dg-error "bit" }
+}

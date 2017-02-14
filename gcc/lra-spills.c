@@ -1,5 +1,5 @@
 /* Change pseudos by memory.
-   Copyright (C) 2010-2016 Free Software Foundation, Inc.
+   Copyright (C) 2010-2017 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "df.h"
 #include "insn-config.h"
 #include "regs.h"
+#include "memmodel.h"
 #include "ira.h"
 #include "recog.h"
 #include "output.h"
@@ -103,6 +104,10 @@ struct slot
   /* Hard reg into which the slot pseudos are spilled.	The value is
      negative for pseudos spilled into memory.	*/
   int hard_regno;
+  /* Maximum alignment required by all users of the slot.  */
+  unsigned int align;
+  /* Maximum size required by all users of the slot.  */
+  HOST_WIDE_INT size;
   /* Memory representing the all stack slot.  It can be different from
      memory representing a pseudo belonging to give stack slot because
      pseudo can be placed in a part of the corresponding stack slot.
@@ -127,51 +132,23 @@ assign_mem_slot (int i)
 {
   rtx x = NULL_RTX;
   machine_mode mode = GET_MODE (regno_reg_rtx[i]);
-  unsigned int inherent_size = PSEUDO_REGNO_BYTES (i);
-  unsigned int inherent_align = GET_MODE_ALIGNMENT (mode);
-  unsigned int max_ref_width = GET_MODE_SIZE (lra_reg_info[i].biggest_mode);
-  unsigned int total_size = MAX (inherent_size, max_ref_width);
-  unsigned int min_align = max_ref_width * BITS_PER_UNIT;
-  int adjust = 0;
+  HOST_WIDE_INT inherent_size = PSEUDO_REGNO_BYTES (i);
+  machine_mode wider_mode
+    = (GET_MODE_SIZE (mode) >= GET_MODE_SIZE (lra_reg_info[i].biggest_mode)
+       ? mode : lra_reg_info[i].biggest_mode);
+  HOST_WIDE_INT total_size = GET_MODE_SIZE (wider_mode);
+  HOST_WIDE_INT adjust = 0;
 
   lra_assert (regno_reg_rtx[i] != NULL_RTX && REG_P (regno_reg_rtx[i])
 	      && lra_reg_info[i].nrefs != 0 && reg_renumber[i] < 0);
 
-  x = slots[pseudo_slots[i].slot_num].mem;
-
-  /* We can use a slot already allocated because it is guaranteed the
-     slot provides both enough inherent space and enough total
-     space.  */
-  if (x)
-    ;
-  /* Each pseudo has an inherent size which comes from its own mode,
-     and a total size which provides room for paradoxical subregs
-     which refer to the pseudo reg in wider modes.  We allocate a new
-     slot, making sure that it has enough inherent space and total
-     space.  */
-  else
+  unsigned int slot_num = pseudo_slots[i].slot_num;
+  x = slots[slot_num].mem;
+  if (!x)
     {
-      rtx stack_slot;
-
-      /* No known place to spill from => no slot to reuse.  */
-      x = assign_stack_local (mode, total_size,
-			      min_align > inherent_align
-			      || total_size > inherent_size ? -1 : 0);
-      stack_slot = x;
-      /* Cancel the big-endian correction done in assign_stack_local.
-	 Get the address of the beginning of the slot.	This is so we
-	 can do a big-endian correction unconditionally below.	*/
-      if (BYTES_BIG_ENDIAN)
-	{
-	  adjust = inherent_size - total_size;
-	  if (adjust)
-	    stack_slot
-	      = adjust_address_nv (x,
-				   mode_for_size (total_size * BITS_PER_UNIT,
-						  MODE_INT, 1),
-				   adjust);
-	}
-      slots[pseudo_slots[i].slot_num].mem = stack_slot;
+      x = assign_stack_local (BLKmode, slots[slot_num].size,
+			      slots[slot_num].align);
+      slots[slot_num].mem = x;
     }
 
   /* On a big endian machine, the "address" of the slot is the address
@@ -334,6 +311,18 @@ add_pseudo_to_slot (int regno, int slot_num)
 {
   struct pseudo_slot *first;
 
+  /* Each pseudo has an inherent size which comes from its own mode,
+     and a total size which provides room for paradoxical subregs.
+     We need to make sure the size and alignment of the slot are
+     sufficient for both.  */
+  machine_mode mode = (GET_MODE_SIZE (PSEUDO_REGNO_MODE (regno))
+		       >= GET_MODE_SIZE (lra_reg_info[regno].biggest_mode)
+		       ? PSEUDO_REGNO_MODE (regno)
+		       : lra_reg_info[regno].biggest_mode);
+  unsigned int align = spill_slot_alignment (mode);
+  slots[slot_num].align = MAX (slots[slot_num].align, align);
+  slots[slot_num].size = MAX (slots[slot_num].size, GET_MODE_SIZE (mode));
+
   if (slots[slot_num].regno < 0)
     {
       /* It is the first pseudo in the slot.  */
@@ -384,6 +373,8 @@ assign_stack_slot_num_and_sort_pseudos (int *pseudo_regnos, int n)
 	{
 	  /* New slot.	*/
 	  slots[j].live_ranges = NULL;
+	  slots[j].size = 0;
+	  slots[j].align = BITS_PER_UNIT;
 	  slots[j].regno = slots[j].hard_regno = -1;
 	  slots[j].mem = NULL_RTX;
 	  slots_num++;
@@ -686,6 +677,45 @@ return_regno_p (unsigned int regno)
   return false;
 }
 
+/* Return true if REGNO is in one of subsequent USE after INSN in the
+   same BB.  */
+static bool
+regno_in_use_p (rtx_insn *insn, unsigned int regno)
+{
+  static lra_insn_recog_data_t id;
+  static struct lra_static_insn_data *static_id;
+  struct lra_insn_reg *reg;
+  int i, arg_regno;
+  basic_block bb = BLOCK_FOR_INSN (insn);
+
+  while ((insn = next_nondebug_insn (insn)) != NULL_RTX)
+    {
+      if (BARRIER_P (insn) || bb != BLOCK_FOR_INSN (insn))
+	return false;
+      if (! INSN_P (insn))
+	continue;
+      if (GET_CODE (PATTERN (insn)) == USE
+	  && REG_P (XEXP (PATTERN (insn), 0))
+	  && regno == REGNO (XEXP (PATTERN (insn), 0)))
+	return true;
+      /* Check that the regno is not modified.  */
+      id = lra_get_insn_recog_data (insn);
+      for (reg = id->regs; reg != NULL; reg = reg->next)
+	if (reg->type != OP_IN && reg->regno == (int) regno)
+	  return false;
+      static_id = id->insn_static_data;
+      for (reg = static_id->hard_regs; reg != NULL; reg = reg->next)
+	if (reg->type != OP_IN && reg->regno == (int) regno)
+	  return false;
+      if (id->arg_hard_regs != NULL)
+	for (i = 0; (arg_regno = id->arg_hard_regs[i]) >= 0; i++)
+	  if ((int) regno == (arg_regno >= FIRST_PSEUDO_REGISTER
+			      ? arg_regno : arg_regno - FIRST_PSEUDO_REGISTER))
+	    return false;
+    }
+  return false;
+}
+
 /* Final change of pseudos got hard registers into the corresponding
    hard registers and removing temporary clobbers.  */
 void
@@ -727,7 +757,8 @@ lra_final_code_change (void)
 	  if (NONJUMP_INSN_P (insn) && GET_CODE (pat) == SET
 	      && REG_P (SET_SRC (pat)) && REG_P (SET_DEST (pat))
 	      && REGNO (SET_SRC (pat)) == REGNO (SET_DEST (pat))
-	      && ! return_regno_p (REGNO (SET_SRC (pat))))
+	      && (! return_regno_p (REGNO (SET_SRC (pat)))
+		  || ! regno_in_use_p (insn, REGNO (SET_SRC (pat)))))
 	    {
 	      lra_invalidate_insn_data (insn);
 	      delete_insn (insn);

@@ -1,5 +1,5 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -96,6 +96,7 @@ a register with any other reload.  */
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "optabs.h"
 #include "regs.h"
@@ -714,25 +715,23 @@ find_valid_class_1 (machine_mode outer ATTRIBUTE_UNUSED,
 
   for (rclass = 1; rclass < N_REG_CLASSES; rclass++)
     {
-      int bad = 0;
-      for (regno = 0; regno < FIRST_PSEUDO_REGISTER && !bad; regno++)
-	{
-	  if (in_hard_reg_set_p (reg_class_contents[rclass], mode, regno)
-	      && !HARD_REGNO_MODE_OK (regno, mode))
-	    bad = 1;
-	}
-      
-      if (bad)
-	continue;
+      unsigned int computed_rclass_size = 0;
+
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+        {
+          if (in_hard_reg_set_p (reg_class_contents[rclass], mode, regno)
+              && (HARD_REGNO_MODE_OK (regno, mode)))
+            computed_rclass_size++;
+        }
 
       cost = register_move_cost (outer, (enum reg_class) rclass, dest_class);
 
-      if ((reg_class_size[rclass] > best_size
+      if ((computed_rclass_size > best_size
 	   && (best_cost < 0 || best_cost >= cost))
 	  || best_cost > cost)
 	{
 	  best_class = (enum reg_class) rclass;
-	  best_size = reg_class_size[rclass];
+	  best_size = computed_rclass_size;
 	  best_cost = register_move_cost (outer, (enum reg_class) rclass,
 					  dest_class);
 	}
@@ -1065,7 +1064,6 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	       || MEM_P (SUBREG_REG (in)))
 	      && ((GET_MODE_PRECISION (inmode)
 		   > GET_MODE_PRECISION (GET_MODE (SUBREG_REG (in))))
-#ifdef LOAD_EXTEND_OP
 		  || (GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
 		      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
 			  <= UNITS_PER_WORD)
@@ -1073,15 +1071,12 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 			  > GET_MODE_PRECISION (GET_MODE (SUBREG_REG (in))))
 		      && INTEGRAL_MODE_P (GET_MODE (SUBREG_REG (in)))
 		      && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (in))) != UNKNOWN)
-#endif
-#if WORD_REGISTER_OPERATIONS
-		  || ((GET_MODE_PRECISION (inmode)
-		       < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (in))))
+		  || (WORD_REGISTER_OPERATIONS
+		      && (GET_MODE_PRECISION (inmode)
+			  < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (in))))
 		      && ((GET_MODE_SIZE (inmode) - 1) / UNITS_PER_WORD ==
 			  ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))) - 1)
-			   / UNITS_PER_WORD)))
-#endif
-		  ))
+			   / UNITS_PER_WORD)))))
 	  || (REG_P (SUBREG_REG (in))
 	      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
 	      /* The case where out is nonzero
@@ -1112,13 +1107,14 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 #endif
       inloc = &SUBREG_REG (in);
       in = *inloc;
-#if ! defined (LOAD_EXTEND_OP)
+
       if (!WORD_REGISTER_OPERATIONS
+	  && LOAD_EXTEND_OP (GET_MODE (in)) == UNKNOWN
 	  && MEM_P (in))
 	/* This is supposed to happen only for paradoxical subregs made by
 	   combine.c.  (SUBREG (MEM)) isn't supposed to occur other ways.  */
 	gcc_assert (GET_MODE_SIZE (GET_MODE (in)) <= GET_MODE_SIZE (inmode));
-#endif
+
       inmode = GET_MODE (in);
     }
 
@@ -1141,7 +1137,8 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 						   SUBREG_BYTE (in),
 						   GET_MODE (in)),
 			      REGNO (SUBREG_REG (in)));
-      else if (GET_CODE (SUBREG_REG (in)) == SYMBOL_REF)
+      else if (CONSTANT_P (SUBREG_REG (in))
+               || GET_CODE (SUBREG_REG (in)) == PLUS)
 	subreg_in_class = find_valid_class_1 (inmode,
 					      GET_MODE (SUBREG_REG (in)),
 					      rclass);
@@ -1175,14 +1172,12 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	       || MEM_P (SUBREG_REG (out)))
 	      && ((GET_MODE_PRECISION (outmode)
 		   > GET_MODE_PRECISION (GET_MODE (SUBREG_REG (out))))
-#if WORD_REGISTER_OPERATIONS
-		  || ((GET_MODE_PRECISION (outmode)
-		       < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (out))))
+		  || (WORD_REGISTER_OPERATIONS
+		      && (GET_MODE_PRECISION (outmode)
+			  < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (out))))
 		      && ((GET_MODE_SIZE (outmode) - 1) / UNITS_PER_WORD ==
 			  ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))) - 1)
-			   / UNITS_PER_WORD)))
-#endif
-		  ))
+			   / UNITS_PER_WORD)))))
 	  || (REG_P (SUBREG_REG (out))
 	      && REGNO (SUBREG_REG (out)) < FIRST_PSEUDO_REGISTER
 	      /* The case of a word mode subreg
@@ -2318,7 +2313,7 @@ operands_match_p (rtx x, rtx y)
       return 0;
 
     case LABEL_REF:
-      return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
+      return label_ref_label (x) == label_ref_label (y);
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);
 
@@ -3139,24 +3134,21 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 		      || ((MEM_P (operand)
 			   || (REG_P (operand)
 			       && REGNO (operand) >= FIRST_PSEUDO_REGISTER))
-#if !WORD_REGISTER_OPERATIONS
-			  && (((GET_MODE_BITSIZE (GET_MODE (operand))
-				< BIGGEST_ALIGNMENT)
-			       && (GET_MODE_SIZE (operand_mode[i])
-				   > GET_MODE_SIZE (GET_MODE (operand))))
+			  && (WORD_REGISTER_OPERATIONS
+			      || ((GET_MODE_BITSIZE (GET_MODE (operand))
+				   < BIGGEST_ALIGNMENT)
+				 && (GET_MODE_SIZE (operand_mode[i])
+				     > GET_MODE_SIZE (GET_MODE (operand))))
 			      || BYTES_BIG_ENDIAN
-#ifdef LOAD_EXTEND_OP
-			      || (GET_MODE_SIZE (operand_mode[i]) <= UNITS_PER_WORD
+			      || ((GET_MODE_SIZE (operand_mode[i])
+				   <= UNITS_PER_WORD)
 				  && (GET_MODE_SIZE (GET_MODE (operand))
 				      <= UNITS_PER_WORD)
 				  && (GET_MODE_SIZE (operand_mode[i])
 				      > GET_MODE_SIZE (GET_MODE (operand)))
 				  && INTEGRAL_MODE_P (GET_MODE (operand))
-				  && LOAD_EXTEND_OP (GET_MODE (operand)) != UNKNOWN)
-#endif
-			      )
-#endif
-			  )
+				  && LOAD_EXTEND_OP (GET_MODE (operand))
+				     != UNKNOWN)))
 		      )
 		    force_reload = 1;
 		}
@@ -3960,7 +3952,7 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 	       there will be no reload needed at all.  */
 	    if (plus == NULL_RTX
 		&& subreg == NULL_RTX
-		&& alternative_allows_const_pool_ref (this_address_reloaded == 0
+		&& alternative_allows_const_pool_ref (this_address_reloaded != 1
 						      ? substed_operand[i]
 						      : NULL,
 						      recog_data.constraints[i],
@@ -4218,17 +4210,17 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 	     this instruction.  */
 	  if (GET_CODE (substitution) == LABEL_REF
 	      && !find_reg_note (insn, REG_LABEL_OPERAND,
-				 LABEL_REF_LABEL (substitution))
+				 label_ref_label (substitution))
 	      /* For a JUMP_P, if it was a branch target it must have
 		 already been recorded as such.  */
 	      && (!JUMP_P (insn)
-		  || !label_is_jump_target_p (LABEL_REF_LABEL (substitution),
+		  || !label_is_jump_target_p (label_ref_label (substitution),
 					      insn)))
 	    {
 	      add_reg_note (insn, REG_LABEL_OPERAND,
-			    LABEL_REF_LABEL (substitution));
-	      if (LABEL_P (LABEL_REF_LABEL (substitution)))
-		++LABEL_NUSES (LABEL_REF_LABEL (substitution));
+			    label_ref_label (substitution));
+	      if (LABEL_P (label_ref_label (substitution)))
+		++LABEL_NUSES (label_ref_label (substitution));
 	    }
 
 	}
@@ -4605,8 +4597,8 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 
 /* Return true if alternative number ALTNUM in constraint-string
    CONSTRAINT is guaranteed to accept a reloaded constant-pool reference.
-   MEM gives the reference if it didn't need any reloads, otherwise it
-   is null.  */
+   MEM gives the reference if its address hasn't been fully reloaded,
+   otherwise it is NULL.  */
 
 static bool
 alternative_allows_const_pool_ref (rtx mem ATTRIBUTE_UNUSED,
@@ -5098,7 +5090,7 @@ find_reloads_address (machine_mode mode, rtx *memrefloc, rtx ad,
 	    loc = &XEXP (*loc, 0);
 	}
 
-      if (double_reg_address_ok
+      if (double_reg_address_ok[mode]
 	  && regno_ok_for_base_p (REGNO (XEXP (ad, 0)), mode, as,
 				  PLUS, CONST_INT))
 	{
@@ -6750,7 +6742,7 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
       if (NONJUMP_INSN_P (p)
 	  /* If we don't want spill regs ...  */
 	  && (! (reload_reg_p != 0
-		 && reload_reg_p != (short *) (HOST_WIDE_INT) 1)
+		 && reload_reg_p != (short *) HOST_WIDE_INT_1)
 	      /* ... then ignore insns introduced by reload; they aren't
 		 useful and can cause results in reload_as_needed to be
 		 different from what they were when calculating the need for
@@ -6883,7 +6875,7 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
      (Now that insns introduced by reload are ignored above,
      this case shouldn't happen, but I'm not positive.)  */
 
-  if (reload_reg_p != 0 && reload_reg_p != (short *) (HOST_WIDE_INT) 1)
+  if (reload_reg_p != 0 && reload_reg_p != (short *) HOST_WIDE_INT_1)
     {
       int i;
       for (i = 0; i < valuenregs; ++i)

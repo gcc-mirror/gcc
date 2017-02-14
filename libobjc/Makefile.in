@@ -1,5 +1,5 @@
 # Makefile for GNU Objective C runtime library.
-# Copyright (C) 1993-2016 Free Software Foundation, Inc.
+# Copyright (C) 1993-2017 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -31,7 +31,7 @@ VPATH = @glibcpp_srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 target_noncanonical = @target_noncanonical@
-gcc_version := $(shell cat $(srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(srcdir)/../gcc/BASE-VER)
 host_subdir = @host_subdir@
 top_srcdir = @top_srcdir@
 multi_basedir = @multi_basedir@
@@ -46,8 +46,6 @@ lt_host_flags = @lt_host_flags@
 extra_ldflags_libobjc = @extra_ldflags_libobjc@
 
 top_builddir = .
-
--include ../boehm-gc/threads.mk
 
 libdir = $(exec_prefix)/lib
 libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)
@@ -95,7 +93,7 @@ LIBTOOL_CLEAN   = $(LIBTOOL) --mode=clean
 OBJC_GCFLAGS=@OBJC_GCFLAGS@
 OBJC_BOEHM_GC=@OBJC_BOEHM_GC@
 OBJC_BOEHM_GC_INCLUDES=@OBJC_BOEHM_GC_INCLUDES@
-OBJC_BOEHM_GC_LIBS=../boehm-gc/libgcjgc_convenience.la $(thread_libs_and_flags)
+OBJC_BOEHM_GC_LIBS=@OBJC_BOEHM_GC_LIBS@
 
 INCLUDES = -I$(srcdir)/$(MULTISRCTOP)../gcc \
   -I$(srcdir)/$(MULTISRCTOP)../gcc/config \

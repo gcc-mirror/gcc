@@ -1,4 +1,4 @@
-// Copyright (C) 2012-2016 Free Software Foundation, Inc.
+// Copyright (C) 2012-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,8 +24,6 @@
 void 
 test1()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<bool> bools;
   bools.push_back(true);
   bools.push_back(false);

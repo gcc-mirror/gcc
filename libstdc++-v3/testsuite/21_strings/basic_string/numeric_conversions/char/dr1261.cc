@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-string-conversions "" }
 
 // 2009-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,6 @@
 // DR 1261. Insufficient overloads for to_string / to_wstring
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   const string one(to_string(-2));

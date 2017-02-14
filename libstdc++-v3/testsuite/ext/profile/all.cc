@@ -1,11 +1,11 @@
-// { dg-options "-std=gnu++11 -O0" }
-// { dg-options "-std=gnu++11 -O0 -D_GLIBCXX_PROFILE_NO_THREADS" { target { ! tls_native } } }
-// { dg-do compile }
+// { dg-options "-O0" }
+// { dg-additional-options "-D_GLIBCXX_PROFILE_NO_THREADS" { target { ! tls_native } } }
+// { dg-do compile { target c++11 } }
 // { dg-require-profile-mode "" }
 
 // -*- C++ -*-
 
-// Copyright (C) 2006-2016 Free Software Foundation, Inc.
+// Copyright (C) 2006-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

@@ -1,6 +1,6 @@
 // 2001-05-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,6 @@ class MyTraits : public std::char_traits<wchar_t>
 public:
   static bool eq(wchar_t c1, wchar_t c2)
   {
-    bool test __attribute__((unused)) = true;
     VERIFY( c1 != L'X' );
     VERIFY( c2 != L'X' );
     return std::char_traits<wchar_t>::eq(c1, c2);
@@ -52,8 +51,6 @@ public:
 // libstdc++/9538
 void test08()
 {
-  bool test __attribute__((unused)) = true;
-
   MyBuf mb;
   mb.sputbackc(L'a');
 }

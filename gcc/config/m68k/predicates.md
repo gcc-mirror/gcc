@@ -1,5 +1,5 @@
 ;; Predicate definitions for Motorola 68000.
-;; Copyright (C) 2005-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2017 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -245,6 +245,18 @@
 		 || reload_completed));
 })
 
+;; Used to detect constants that are valid for addq/subq instructions
+(define_predicate "addq_subq_operand"
+  (match_code "const_int")
+{
+  return ((INTVAL (op) <= 8 && INTVAL (op) > 0)
+	  || (INTVAL (op) >= -8 && INTVAL (op) < 0));
+})
+
+;; Used to detect equality and non-equality operators
+(define_predicate "equality_comparison_operator"
+  (match_code "eq,ne"))
+
 ;; Used to detect when an operand is either a register
 ;; or a constant that is all ones in its lower bits.
 ;; Used by insv pattern to help detect when we're initializing
@@ -267,3 +279,6 @@
 ;; Used to detect (pc) or (label_ref) in some jumping patterns to cut down
 (define_predicate "pc_or_label_operand"
   (match_code "pc,label_ref"))
+
+(define_predicate "swap_peephole_relational_operator"
+  (match_code "gtu,leu,gt,le"))

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized -w" } */
+/* { dg-options "-O2 -fno-code-hoisting -fdump-tree-optimized -w" } */
 
 typedef struct rtx_def *rtx;
 enum rtx_code

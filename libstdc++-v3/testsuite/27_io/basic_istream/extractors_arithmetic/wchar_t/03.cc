@@ -1,4 +1,4 @@
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,19 +22,17 @@
 #include <locale>
 #include <testsuite_hooks.h>
 
-bool test03()
+void test03()
 {
   std::wstringbuf sbuf;
   std::wistream istr(&sbuf);
   std::wostream ostr(&sbuf);
 
-  bool test __attribute__((unused)) = true;
   long l01;
   ostr << L"12220101";
   istr >> l01; // _M_in_end set completely incorrectly here.
   VERIFY( l01 == 12220101 );
   VERIFY( istr.rdstate() == std::ios_base::eofbit );
-  return test;
 }
 
 int main()

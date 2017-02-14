@@ -49,3 +49,9 @@ lost+found
 # ignore ./contrib/gcc_update output
 LAST_UPDATED
 REVISION
+
+# ignore in-tree prerequisites
+/mpfr*
+/mpc*
+/gmp*
+/isl*

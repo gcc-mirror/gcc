@@ -8,11 +8,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <ucontext.h>
 
 #include "runtime.h"
-#include "go-assert.h"
-#include "go-panic.h"
-#include "signal_unix.h"
 
 #ifndef SA_RESTART
   #define SA_RESTART 0
@@ -24,528 +22,270 @@ extern void __splitstack_getcontext(void *context[10]);
 
 extern void __splitstack_setcontext(void *context[10]);
 
+extern void *__splitstack_find_context(void *context[10], size_t *,
+				       void **, void **, void **);
+
 #endif
 
-#define N SigNotify
-#define K SigKill
-#define T SigThrow
-#define P SigPanic
-#define D SigDefault
+// The rest of the signal handler, written in Go.
 
-/* Signal actions.  This collects the sigtab tables for several
-   different targets from the master library.  SIGKILL and SIGSTOP are
-   not listed, as we don't want to set signal handlers for them.  */
+extern void sigtrampgo(uint32, siginfo_t *, void *)
+	__asm__(GOSYM_PREFIX "runtime.sigtrampgo");
 
-SigTab runtime_sigtab[] = {
-#ifdef SIGHUP
-  { SIGHUP,	N + K, NULL },
-#endif
-#ifdef SIGINT
-  { SIGINT, 	N + K, NULL  },
-#endif
-#ifdef SIGQUIT
-  { SIGQUIT, 	N + T, NULL  },
-#endif
-#ifdef SIGILL
-  { SIGILL, 	T, NULL  },
-#endif
-#ifdef SIGTRAP
-  { SIGTRAP, 	T, NULL  },
-#endif
-#ifdef SIGABRT
-  { SIGABRT, 	N + T, NULL  },
-#endif
-#ifdef SIGBUS
-  { SIGBUS, 	P, NULL  },
-#endif
-#ifdef SIGFPE
-  { SIGFPE, 	P, NULL  },
-#endif
-#ifdef SIGUSR1
-  { SIGUSR1, 	N, NULL  },
-#endif
-#ifdef SIGSEGV
-  { SIGSEGV, 	P, NULL  },
-#endif
-#ifdef SIGUSR2
-  { SIGUSR2, 	N, NULL  },
-#endif
-#ifdef SIGPIPE
-  { SIGPIPE, 	N, NULL  },
-#endif
-#ifdef SIGALRM
-  { SIGALRM, 	N, NULL  },
-#endif
-#ifdef SIGTERM
-  { SIGTERM, 	N + K, NULL  },
-#endif
-#ifdef SIGSTKFLT
-  { SIGSTKFLT, 	T, NULL  },
-#endif
-#ifdef SIGCHLD
-  { SIGCHLD, 	N, NULL  },
-#endif
-#ifdef SIGCONT
-  { SIGCONT,	N + D, NULL  },
-#endif
-#ifdef SIGTSTP
-  { SIGTSTP, 	N + D, NULL  },
-#endif
-#ifdef SIGTTIN
-  { SIGTTIN, 	N + D, NULL  },
-#endif
-#ifdef SIGTTOU
-  { SIGTTOU, 	N + D, NULL  },
-#endif
-#ifdef SIGURG
-  { SIGURG, 	N, NULL  },
-#endif
-#ifdef SIGXCPU
-  { SIGXCPU, 	N, NULL  },
-#endif
-#ifdef SIGXFSZ
-  { SIGXFSZ, 	N, NULL  },
-#endif
-#ifdef SIGVTALRM
-  { SIGVTALRM, 	N, NULL  },
-#endif
-#ifdef SIGPROF
-  { SIGPROF, 	N, NULL  },
-#endif
-#ifdef SIGWINCH
-  { SIGWINCH, 	N, NULL  },
-#endif
-#ifdef SIGIO
-  { SIGIO, 	N, NULL  },
-#endif
-#ifdef SIGPWR
-  { SIGPWR, 	N, NULL  },
-#endif
-#ifdef SIGSYS
-  { SIGSYS, 	N, NULL  },
-#endif
-#ifdef SIGEMT
-  { SIGEMT,	T, NULL  },
-#endif
-#ifdef SIGINFO
-  { SIGINFO,	N, NULL  },
-#endif
-#ifdef SIGTHR
-  { SIGTHR,	N, NULL  },
-#endif
-  { -1,		0, NULL  }
+// The Go signal handler, written in C.  This should be running on the
+// alternate signal stack.  This is responsible for setting up the
+// split stack context so that stack guard checks will work as
+// expected.
+
+void sigtramp(int, siginfo_t *, void *)
+	__attribute__ ((no_split_stack));
+
+void sigtramp(int, siginfo_t *, void *)
+	__asm__ (GOSYM_PREFIX "runtime.sigtramp");
+
+#ifndef USING_SPLIT_STACK
+
+// When not using split stacks, there are no stack checks, and there
+// is nothing special for this function to do.
+
+void
+sigtramp(int sig, siginfo_t *info, void *context)
+{
+	sigtrampgo(sig, info, context);
+}
+
+#else // USING_SPLIT_STACK
+
+void
+sigtramp(int sig, siginfo_t *info, void *context)
+{
+	G *gp;
+	void *stack_context[10];
+	void *stack;
+	size_t stack_size;
+	void *next_segment;
+	void *next_sp;
+	void *initial_sp;
+	uintptr sp;
+	stack_t st;
+	uintptr stsp;
+
+	gp = runtime_g();
+
+	if (gp == nil) {
+		// Let the Go code handle this case.
+		// It should only call nosplit functions in this case.
+		sigtrampgo(sig, info, context);
+		return;
+	}
+
+	// If this signal is one for which we will panic, we are not
+	// on the alternate signal stack.  It's OK to call split-stack
+	// functions here.
+	if (sig == SIGBUS || sig == SIGFPE || sig == SIGSEGV) {
+		sigtrampgo(sig, info, context);
+		return;
+	}
+
+	// We are running on the alternate signal stack.
+
+	__splitstack_getcontext(&stack_context[0]);
+
+	stack = __splitstack_find_context(&gp->m->gsignal->stackcontext[0],
+					  &stack_size, &next_segment,
+					  &next_sp, &initial_sp);
+
+	// If some non-Go code called sigaltstack, adjust.
+	sp = (uintptr)(&stack_size);
+	if (sp < (uintptr)(stack) || sp >= (uintptr)(stack) + stack_size) {
+		sigaltstack(nil, &st);
+		if ((st.ss_flags & SS_DISABLE) != 0) {
+			runtime_printf("signal %d received on thread with no signal stack\n", (int32)(sig));
+			runtime_throw("non-Go code disabled sigaltstack");
+		}
+
+		stsp = (uintptr)(st.ss_sp);
+		if (sp < stsp || sp >= stsp + st.ss_size) {
+			runtime_printf("signal %d received but handler not on signal stack\n", (int32)(sig));
+			runtime_throw("non-Go code set up signal handler without SA_ONSTACK flag");
+		}
+
+		// Unfortunately __splitstack_find_context will return NULL
+		// when it is called on a context that has never been used.
+		// There isn't much we can do but assume all is well.
+		if (stack != NULL) {
+			// Here the gc runtime adjusts the gsignal
+			// stack guard to match the values returned by
+			// sigaltstack.  Unfortunately we have no way
+			// to do that.
+			runtime_printf("signal %d received on unknown signal stack\n", (int32)(sig));
+			runtime_throw("non-Go code changed signal stack");
+		}
+	}
+
+	// Set the split stack context so that the stack guards are
+	// checked correctly.
+
+	__splitstack_setcontext(&gp->m->gsignal->stackcontext[0]);
+
+	sigtrampgo(sig, info, context);
+
+	// We are going to return back to the signal trampoline and
+	// then to whatever we were doing before we got the signal.
+	// Restore the split stack context so that stack guards are
+	// checked correctly.
+
+	__splitstack_setcontext(&stack_context[0]);
+}
+
+#endif // USING_SPLIT_STACK
+
+// C function to return the address of the sigtramp function.
+uintptr getSigtramp(void) __asm__ (GOSYM_PREFIX "runtime.getSigtramp");
+
+uintptr
+getSigtramp()
+{
+  return (uintptr)(void*)sigtramp;
+}
+
+// C code to manage the sigaction sa_sigaction field, which is
+// typically a union and so hard for mksysinfo.sh to handle.
+
+uintptr getSigactionHandler(struct sigaction*)
+	__attribute__ ((no_split_stack));
+
+uintptr getSigactionHandler(struct sigaction*)
+	__asm__ (GOSYM_PREFIX "runtime.getSigactionHandler");
+
+uintptr
+getSigactionHandler(struct sigaction* sa)
+{
+	return (uintptr)(sa->sa_sigaction);
+}
+
+void setSigactionHandler(struct sigaction*, uintptr)
+	__attribute__ ((no_split_stack));
+
+void setSigactionHandler(struct sigaction*, uintptr)
+	__asm__ (GOSYM_PREFIX "runtime.setSigactionHandler");
+
+void
+setSigactionHandler(struct sigaction* sa, uintptr handler)
+{
+	sa->sa_sigaction = (void*)(handler);
+}
+
+// C code to fetch values from the siginfo_t and ucontext_t pointers
+// passed to a signal handler.
+
+struct getSiginfoRet {
+	uintptr sigaddr;
+	uintptr sigpc;
 };
-#undef N
-#undef K
-#undef T
-#undef P
-#undef D
 
-/* Handle a signal, for cases where we don't panic.  We can split the
-   stack here.  */
+struct getSiginfoRet getSiginfo(siginfo_t *, void *)
+	__asm__(GOSYM_PREFIX "runtime.getSiginfo");
 
-void
-runtime_sighandler (int sig, Siginfo *info,
-		    void *context __attribute__ ((unused)), G *gp)
+struct getSiginfoRet
+getSiginfo(siginfo_t *info, void *context __attribute__((unused)))
 {
-  M *m;
-  int i;
+	struct getSiginfoRet ret;
+	Location loc[1];
+	int32 n;
 
-  m = runtime_m ();
-
-#ifdef SIGPROF
-  if (sig == SIGPROF)
-    {
-      if (m != NULL && gp != m->g0 && gp != m->gsignal)
-	runtime_sigprof ();
-      return;
-    }
-#endif
-
-  if (m == NULL)
-    {
-      runtime_badsignal (sig);
-      return;
-    }
-
-  for (i = 0; runtime_sigtab[i].sig != -1; ++i)
-    {
-      SigTab *t;
-      bool notify, crash;
-
-      t = &runtime_sigtab[i];
-
-      if (t->sig != sig)
-	continue;
-
-      notify = false;
-#ifdef SA_SIGINFO
-      notify = info != NULL && info->si_code == SI_USER;
-#endif
-      if (notify || (t->flags & SigNotify) != 0)
-	{
-	  if (__go_sigsend (sig))
-	    return;
+	if (info == nil) {
+		ret.sigaddr = 0;
+	} else {
+		ret.sigaddr = (uintptr)(info->si_addr);
 	}
-      if ((t->flags & SigKill) != 0)
-	runtime_exit (2);
-      if ((t->flags & SigThrow) == 0)
-	return;
+	ret.sigpc = 0;
 
-      runtime_startpanic ();
+	// There doesn't seem to be a portable way to get the PC.
+	// Use unportable code to pull it from context, and if that fails
+	// try a stack backtrace across the signal handler.
 
-      {
-	const char *name = NULL;
-
-#ifdef HAVE_STRSIGNAL
-	name = strsignal (sig);
+#ifdef __x86_64__
+ #ifdef __linux__
+	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.gregs[REG_RIP];
+ #endif
+#endif
+#ifdef __i386__
+  #ifdef __linux__
+	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.gregs[REG_EIP];
+  #endif
 #endif
 
-	if (name == NULL)
-	  runtime_printf ("Signal %d\n", sig);
-	else
-	  runtime_printf ("%s\n", name);
-      }
-
-      if (m->lockedg != NULL && m->ncgo > 0 && gp == m->g0)
-	{
-	  runtime_printf("signal arrived during cgo execution\n");
-	  gp = m->lockedg;
+	if (ret.sigpc == 0) {
+		// Skip getSiginfo/sighandler/sigtrampgo/sigtramp/handler.
+		n = runtime_callers(5, &loc[0], 1, false);
+		if (n > 0) {
+			ret.sigpc = loc[0].pc;
+		}
 	}
 
-      runtime_printf ("\n");
+	return ret;
+}
 
-      if (runtime_gotraceback (&crash))
+// Dump registers when crashing in a signal.
+// There is no portable way to write this,
+// so we just have some CPU/OS specific implementations.
+
+void dumpregs(siginfo_t *, void *)
+	__asm__(GOSYM_PREFIX "runtime.dumpregs");
+
+void
+dumpregs(siginfo_t *info __attribute__((unused)), void *context __attribute__((unused)))
+{
+#ifdef __x86_64__
+ #ifdef __linux__
 	{
-	  G *g;
+		mcontext_t *m = &((ucontext_t*)(context))->uc_mcontext;
 
-	  g = runtime_g ();
-	  runtime_traceback ();
-	  runtime_tracebackothers (g);
-
-	  /* The gc library calls runtime_dumpregs here, and provides
-	     a function that prints the registers saved in context in
-	     a readable form.  */
-	}
-
-      if (crash)
-	runtime_crash ();
-
-      runtime_exit (2);
-    }
-
-  __builtin_unreachable ();
-}
-
-/* The start of handling a signal which panics.  */
-
-static void
-sig_panic_leadin (G *gp)
-{
-  int i;
-  sigset_t clear;
-
-  if (!runtime_canpanic (gp))
-    runtime_throw ("unexpected signal during runtime execution");
-
-  /* The signal handler blocked signals; unblock them.  */
-  i = sigfillset (&clear);
-  __go_assert (i == 0);
-  i = pthread_sigmask (SIG_UNBLOCK, &clear, NULL);
-  __go_assert (i == 0);
-}
-
-#ifdef SA_SIGINFO
-
-/* Signal dispatch for signals which panic, on systems which support
-   SA_SIGINFO.  This is called on the thread stack, and as such it is
-   permitted to split the stack.  */
-
-static void
-sig_panic_info_handler (int sig, Siginfo *info, void *context)
-{
-  G *g;
-
-  g = runtime_g ();
-  if (g == NULL || info->si_code == SI_USER)
-    {
-      runtime_sighandler (sig, info, context, g);
-      return;
-    }
-
-  g->sig = sig;
-  g->sigcode0 = info->si_code;
-  g->sigcode1 = (uintptr_t) info->si_addr;
-
-  /* It would be nice to set g->sigpc here as the gc library does, but
-     I don't know how to get it portably.  */
-
-  sig_panic_leadin (g);
-
-  switch (sig)
-    {
-#ifdef SIGBUS
-    case SIGBUS:
-      if ((info->si_code == BUS_ADRERR && (uintptr_t) info->si_addr < 0x1000)
-	  || g->paniconfault)
-	runtime_panicstring ("invalid memory address or "
-			     "nil pointer dereference");
-      runtime_printf ("unexpected fault address %p\n", info->si_addr);
-      runtime_throw ("fault");
+		runtime_printf("rax    %X\n", m->gregs[REG_RAX]);
+		runtime_printf("rbx    %X\n", m->gregs[REG_RBX]);
+		runtime_printf("rcx    %X\n", m->gregs[REG_RCX]);
+		runtime_printf("rdx    %X\n", m->gregs[REG_RDX]);
+		runtime_printf("rdi    %X\n", m->gregs[REG_RDI]);
+		runtime_printf("rsi    %X\n", m->gregs[REG_RSI]);
+		runtime_printf("rbp    %X\n", m->gregs[REG_RBP]);
+		runtime_printf("rsp    %X\n", m->gregs[REG_RSP]);
+		runtime_printf("r8     %X\n", m->gregs[REG_R8]);
+		runtime_printf("r9     %X\n", m->gregs[REG_R9]);
+		runtime_printf("r10    %X\n", m->gregs[REG_R10]);
+		runtime_printf("r11    %X\n", m->gregs[REG_R11]);
+		runtime_printf("r12    %X\n", m->gregs[REG_R12]);
+		runtime_printf("r13    %X\n", m->gregs[REG_R13]);
+		runtime_printf("r14    %X\n", m->gregs[REG_R14]);
+		runtime_printf("r15    %X\n", m->gregs[REG_R15]);
+		runtime_printf("rip    %X\n", m->gregs[REG_RIP]);
+		runtime_printf("rflags %X\n", m->gregs[REG_EFL]);
+		runtime_printf("cs     %X\n", m->gregs[REG_CSGSFS] & 0xffff);
+		runtime_printf("fs     %X\n", (m->gregs[REG_CSGSFS] >> 16) & 0xffff);
+		runtime_printf("gs     %X\n", (m->gregs[REG_CSGSFS] >> 32) & 0xffff);
+	  }
+ #endif
 #endif
 
-#ifdef SIGSEGV
-    case SIGSEGV:
-      if (((info->si_code == 0
-	    || info->si_code == SEGV_MAPERR
-	    || info->si_code == SEGV_ACCERR)
-	   && (uintptr_t) info->si_addr < 0x1000)
-	  || g->paniconfault)
-	runtime_panicstring ("invalid memory address or "
-			     "nil pointer dereference");
-      runtime_printf ("unexpected fault address %p\n", info->si_addr);
-      runtime_throw ("fault");
-#endif
-
-#ifdef SIGFPE
-    case SIGFPE:
-      switch (info->si_code)
+#ifdef __i386__
+ #ifdef __linux__
 	{
-	case FPE_INTDIV:
-	  runtime_panicstring ("integer divide by zero");
-	case FPE_INTOVF:
-	  runtime_panicstring ("integer overflow");
-	}
-      runtime_panicstring ("floating point error");
+		mcontext_t *m = &((ucontext_t*)(context))->uc_mcontext;
+
+		runtime_printf("eax    %X\n", m->gregs[REG_EAX]);
+		runtime_printf("ebx    %X\n", m->gregs[REG_EBX]);
+		runtime_printf("ecx    %X\n", m->gregs[REG_ECX]);
+		runtime_printf("edx    %X\n", m->gregs[REG_EDX]);
+		runtime_printf("edi    %X\n", m->gregs[REG_EDI]);
+		runtime_printf("esi    %X\n", m->gregs[REG_ESI]);
+		runtime_printf("ebp    %X\n", m->gregs[REG_EBP]);
+		runtime_printf("esp    %X\n", m->gregs[REG_ESP]);
+		runtime_printf("eip    %X\n", m->gregs[REG_EIP]);
+		runtime_printf("eflags %X\n", m->gregs[REG_EFL]);
+		runtime_printf("cs     %X\n", m->gregs[REG_CS]);
+		runtime_printf("fs     %X\n", m->gregs[REG_FS]);
+		runtime_printf("gs     %X\n", m->gregs[REG_GS]);
+	  }
+ #endif
 #endif
-    }
-
-  /* All signals with SigPanic should be in cases above, and this
-     handler should only be invoked for those signals.  */
-  __builtin_unreachable ();
-}
-
-#else /* !defined (SA_SIGINFO) */
-
-static void
-sig_panic_handler (int sig)
-{
-  G *g;
-
-  g = runtime_g ();
-  if (g == NULL)
-    {
-      runtime_sighandler (sig, NULL, NULL, g);
-      return;
-    }
-
-  g->sig = sig;
-  g->sigcode0 = 0;
-  g->sigcode1 = 0;
-
-  sig_panic_leadin (g);
-
-  switch (sig)
-    {
-#ifdef SIGBUS
-    case SIGBUS:
-      runtime_panicstring ("invalid memory address or "
-			   "nil pointer dereference");
-#endif
-
-#ifdef SIGSEGV
-    case SIGSEGV:
-      runtime_panicstring ("invalid memory address or "
-			   "nil pointer dereference");
-#endif
-
-#ifdef SIGFPE
-    case SIGFPE:
-      runtime_panicstring ("integer divide by zero or floating point error");
-#endif
-    }
-
-  /* All signals with SigPanic should be in cases above, and this
-     handler should only be invoked for those signals.  */
-  __builtin_unreachable ();
-}
-
-#endif /* !defined (SA_SIGINFO) */
-
-/* A signal handler used for signals which are not going to panic.
-   This is called on the alternate signal stack so it may not split
-   the stack.  */
-
-static void
-sig_tramp_info (int, Siginfo *, void *) __attribute__ ((no_split_stack));
-
-static void
-sig_tramp_info (int sig, Siginfo *info, void *context)
-{
-  G *gp;
-  M *mp;
-#ifdef USING_SPLIT_STACK
-  void *stack_context[10];
-#endif
-
-  /* We are now running on the stack registered via sigaltstack.
-     (Actually there is a small span of time between runtime_siginit
-     and sigaltstack when the program starts.)  */
-  gp = runtime_g ();
-  mp = runtime_m ();
-
-  if (gp != NULL)
-    {
-#ifdef USING_SPLIT_STACK
-      __splitstack_getcontext (&stack_context[0]);
-#endif
-    }
-
-  if (gp != NULL && mp->gsignal != NULL)
-    {
-      /* We are running on the signal stack.  Set the split stack
-	 context so that the stack guards are checked correctly.  */
-#ifdef USING_SPLIT_STACK
-      __splitstack_setcontext (&mp->gsignal->stack_context[0]);
-#endif
-    }
-
-  runtime_sighandler (sig, info, context, gp);
-
-  /* We are going to return back to the signal trampoline and then to
-     whatever we were doing before we got the signal.  Restore the
-     split stack context so that stack guards are checked
-     correctly.  */
-
-  if (gp != NULL)
-    {
-#ifdef USING_SPLIT_STACK
-      __splitstack_setcontext (&stack_context[0]);
-#endif
-    }
-}
-
-#ifndef SA_SIGINFO
-
-static void sig_tramp (int sig) __attribute__ ((no_split_stack));
-
-static void
-sig_tramp (int sig)
-{
-  sig_tramp_info (sig, NULL, NULL);
-}
-
-#endif
-
-void
-runtime_setsig (int32 i, GoSighandler *fn, bool restart)
-{
-  struct sigaction sa;
-  int r;
-  SigTab *t;
-
-  memset (&sa, 0, sizeof sa);
-
-  r = sigfillset (&sa.sa_mask);
-  __go_assert (r == 0);
-
-  t = &runtime_sigtab[i];
-
-  if ((t->flags & SigPanic) == 0)
-    {
-#ifdef SA_SIGINFO
-      sa.sa_flags = SA_ONSTACK | SA_SIGINFO;
-      if (fn == runtime_sighandler)
-	fn = (void *) sig_tramp_info;
-      sa.sa_sigaction = (void *) fn;
-#else
-      sa.sa_flags = SA_ONSTACK;
-      if (fn == runtime_sighandler)
-	fn = (void *) sig_tramp;
-      sa.sa_handler = (void *) fn;
-#endif
-    }
-  else
-    {
-#ifdef SA_SIGINFO
-      sa.sa_flags = SA_SIGINFO;
-      if (fn == runtime_sighandler)
-	fn = (void *) sig_panic_info_handler;
-      sa.sa_sigaction = (void *) fn;
-#else
-      sa.sa_flags = 0;
-      if (fn == runtime_sighandler)
-	fn = (void *) sig_panic_handler;
-      sa.sa_handler = (void *) fn;
-#endif
-    }
-
-  if (restart)
-    sa.sa_flags |= SA_RESTART;
-
-  if (sigaction (t->sig, &sa, NULL) != 0)
-    __go_assert (0);
-}
-
-GoSighandler*
-runtime_getsig (int32 i)
-{
-  struct sigaction sa;
-  int r;
-  SigTab *t;
-
-  memset (&sa, 0, sizeof sa);
-
-  r = sigemptyset (&sa.sa_mask);
-  __go_assert (r == 0);
-
-  t = &runtime_sigtab[i];
-
-  if (sigaction (t->sig, NULL, &sa) != 0)
-    runtime_throw ("sigaction read failure");
-
-  if ((void *) sa.sa_handler == sig_tramp_info)
-    return runtime_sighandler;
-#ifdef SA_SIGINFO
-  if ((void *) sa.sa_handler == sig_panic_info_handler)
-    return runtime_sighandler;
-#else
-  if ((void *) sa.sa_handler == sig_tramp
-      || (void *) sa.sa_handler == sig_panic_handler)
-    return runtime_sighandler;
-#endif
-
-  return (void *) sa.sa_handler;
-}
-
-/* Used by the os package to raise SIGPIPE.  */
-
-void os_sigpipe (void) __asm__ (GOSYM_PREFIX "os.sigpipe");
-
-void
-os_sigpipe (void)
-{
-  struct sigaction sa;
-  int i;
-
-  if (__go_sigsend (SIGPIPE))
-    return;
-
-  memset (&sa, 0, sizeof sa);
-
-  sa.sa_handler = SIG_DFL;
-
-  i = sigemptyset (&sa.sa_mask);
-  __go_assert (i == 0);
-
-  if (sigaction (SIGPIPE, &sa, NULL) != 0)
-    abort ();
-
-  raise (SIGPIPE);
-}
-
-void
-runtime_setprof(bool on)
-{
-	USED(on);
 }

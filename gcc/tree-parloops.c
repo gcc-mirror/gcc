@@ -1,5 +1,5 @@
 /* Loop autoparallelization.
-   Copyright (C) 2006-2016 Free Software Foundation, Inc.
+   Copyright (C) 2006-2017 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr> 
    Zdenek Dvorak <dvorakz@suse.cz> and Razya Ladelsky <razya@il.ibm.com>.
 
@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "tree-hasher.h"
 #include "tree-parloops.h"
+#include "omp-general.h"
 #include "omp-low.h"
 #include "tree-ssa.h"
 #include "params.h"
@@ -1476,6 +1477,7 @@ create_loop_fn (location_t loc)
   DECL_EXTERNAL (decl) = 0;
   DECL_CONTEXT (decl) = NULL_TREE;
   DECL_INITIAL (decl) = make_node (BLOCK);
+  BLOCK_SUPERCONTEXT (DECL_INITIAL (decl)) = decl;
 
   t = build_decl (loc, RESULT_DECL, NULL_TREE, void_type_node);
   DECL_ARTIFICIAL (t) = 1;
@@ -2044,7 +2046,7 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
       tree clause = build_omp_clause (loc, OMP_CLAUSE_NUM_GANGS);
       OMP_CLAUSE_NUM_GANGS_EXPR (clause)
 	= build_int_cst (integer_type_node, n_threads);
-      set_oacc_fn_attrib (cfun->decl, clause, true, NULL);
+      oacc_set_fn_attrib (cfun->decl, clause, true, NULL);
     }
   else
     {
@@ -2351,7 +2353,8 @@ gen_parallel_loop (struct loop *loop,
       /* We assume that the loop usually iterates a lot.  */
       prob = 4 * REG_BR_PROB_BASE / 5;
       loop_version (loop, many_iterations_cond, NULL,
-		    prob, prob, REG_BR_PROB_BASE - prob, true);
+		    prob, REG_BR_PROB_BASE - prob,
+		    prob, REG_BR_PROB_BASE - prob, true);
       update_ssa (TODO_update_ssa);
       free_original_copy_tables ();
     }
@@ -2511,8 +2514,8 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 {
   gphi_iterator gsi;
   loop_vec_info simple_loop_info;
-  loop_vec_info simple_inner_loop_info = NULL;
-  bool allow_double_reduc = true;
+  auto_vec<gphi *, 4> double_reduc_phis;
+  auto_vec<gimple *, 4> double_reduc_stmts;
 
   if (!stmt_vec_info_vec.exists ())
     init_stmt_vec_info_vec ();
@@ -2542,43 +2545,55 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 
       if (double_reduc)
 	{
-	  if (!allow_double_reduc
-	      || loop->inner->inner != NULL)
+	  if (loop->inner->inner != NULL)
 	    continue;
 
-	  if (!simple_inner_loop_info)
-	    {
-	      simple_inner_loop_info = vect_analyze_loop_form (loop->inner);
-	      if (!simple_inner_loop_info)
-		{
-		  allow_double_reduc = false;
-		  continue;
-		}
-	    }
-
-	  use_operand_p use_p;
-	  gimple *inner_stmt;
-	  bool single_use_p = single_imm_use (res, &use_p, &inner_stmt);
-	  gcc_assert (single_use_p);
-	  if (gimple_code (inner_stmt) != GIMPLE_PHI)
-	    continue;
-	  gphi *inner_phi = as_a <gphi *> (inner_stmt);
-	  if (simple_iv (loop->inner, loop->inner, PHI_RESULT (inner_phi),
-			 &iv, true))
-	    continue;
-
-	  gimple *inner_reduc_stmt
-	    = vect_force_simple_reduction (simple_inner_loop_info, inner_phi,
-					   true, &double_reduc, true);
-	  gcc_assert (!double_reduc);
-	  if (inner_reduc_stmt == NULL)
-	    continue;
+	  double_reduc_phis.safe_push (phi);
+	  double_reduc_stmts.safe_push (reduc_stmt);
+	  continue;
 	}
 
       build_new_reduction (reduction_list, reduc_stmt, phi);
     }
   destroy_loop_vec_info (simple_loop_info, true);
-  destroy_loop_vec_info (simple_inner_loop_info, true);
+
+  if (!double_reduc_phis.is_empty ())
+    {
+      simple_loop_info = vect_analyze_loop_form (loop->inner);
+      if (simple_loop_info)
+	{
+	  gphi *phi;
+	  unsigned int i;
+
+	  FOR_EACH_VEC_ELT (double_reduc_phis, i, phi)
+	    {
+	      affine_iv iv;
+	      tree res = PHI_RESULT (phi);
+	      bool double_reduc;
+
+	      use_operand_p use_p;
+	      gimple *inner_stmt;
+	      bool single_use_p = single_imm_use (res, &use_p, &inner_stmt);
+	      gcc_assert (single_use_p);
+	      if (gimple_code (inner_stmt) != GIMPLE_PHI)
+		continue;
+	      gphi *inner_phi = as_a <gphi *> (inner_stmt);
+	      if (simple_iv (loop->inner, loop->inner, PHI_RESULT (inner_phi),
+			     &iv, true))
+		continue;
+
+	      gimple *inner_reduc_stmt
+		= vect_force_simple_reduction (simple_loop_info, inner_phi,
+					       true, &double_reduc, true);
+	      gcc_assert (!double_reduc);
+	      if (inner_reduc_stmt == NULL)
+		continue;
+
+	      build_new_reduction (reduction_list, double_reduc_stmts[i], phi);
+	    }
+	  destroy_loop_vec_info (simple_loop_info, true);
+	}
+    }
 
  gather_done:
   /* Release the claim on gimple_uid.  */
@@ -2989,9 +3004,7 @@ oacc_entry_exit_ok_1 (bitmap in_loop_bbs, vec<basic_block> region_bbs,
 		   && !gimple_vdef (stmt)
 		   && !gimple_vuse (stmt))
 	    continue;
-	  else if (is_gimple_call (stmt)
-		   && gimple_call_internal_p (stmt)
-		   && gimple_call_internal_fn (stmt) == IFN_GOACC_DIM_POS)
+	  else if (gimple_call_internal_p (stmt, IFN_GOACC_DIM_POS))
 	    continue;
 	  else if (gimple_code (stmt) == GIMPLE_RETURN)
 	    continue;
@@ -3200,7 +3213,7 @@ parallelize_loops (bool oacc_kernels_p)
 
   /* Do not parallelize loops in offloaded functions.  */
   if (!oacc_kernels_p
-      && get_oacc_fn_attrib (cfun->decl) != NULL)
+      && oacc_get_fn_attrib (cfun->decl) != NULL)
      return false;
 
   if (cfun->has_nonlocal_label)
@@ -3322,17 +3335,14 @@ parallelize_loops (bool oacc_kernels_p)
 
       changed = true;
       skip_loop = loop->inner;
-      if (dump_file && (dump_flags & TDF_DETAILS))
-      {
-	if (loop->inner)
-	  fprintf (dump_file, "parallelizing outer loop %d\n",loop->header->index);
-	else
-	  fprintf (dump_file, "parallelizing inner loop %d\n",loop->header->index);
-	loop_loc = find_loop_location (loop);
-	if (loop_loc != UNKNOWN_LOCATION)
-	  fprintf (dump_file, "\nloop at %s:%d: ",
-		   LOCATION_FILE (loop_loc), LOCATION_LINE (loop_loc));
-      }
+
+      loop_loc = find_loop_location (loop);
+      if (loop->inner)
+	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loop_loc,
+			 "parallelizing outer loop %d\n", loop->num);
+      else
+	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loop_loc,
+			 "parallelizing inner loop %d\n", loop->num);
 
       gen_parallel_loop (loop, &reduction_list,
 			 n_threads, &niter_desc, oacc_kernels_p);

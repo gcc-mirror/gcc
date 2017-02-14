@@ -1,6 +1,6 @@
 // 1999-01-17 bkoz test functionality of basic_filebuf for char_type == char
 
-// Copyright (C) 1997-2016 Free Software Foundation, Inc.
+// Copyright (C) 1997-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +28,6 @@
 // should be able to use custom char_type, custom traits type
 void test07()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::basic_ostringstream<__gnu_test::pod_ushort> gnu_osstr;
 
   try
@@ -37,8 +36,7 @@ void test07()
     }
   catch(std::exception& obj)
     { 
-      test = false; 
-      VERIFY( test );
+      VERIFY( false );
     }
 }
 

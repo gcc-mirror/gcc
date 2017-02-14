@@ -1,4 +1,4 @@
-/* { dg-do compile { target aarch64*-*-* x86_64-*-* } } */
+/* { dg-do compile { target { { { i?86-*-* x86_64-*-* } && { ! ia32 } } || aarch64*-*-* } } } */
 /* { dg-options "-fdump-rtl-ce1 -O2" } */
 
 int

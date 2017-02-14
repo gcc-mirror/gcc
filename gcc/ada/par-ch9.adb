@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -338,10 +338,10 @@ package body Ch9 is
          Decl_Sloc := Token_Ptr;
 
          if Token = Tok_Pragma then
-            Append (P_Pragma, Items);
+            P_Pragmas_Opt (Items);
 
-         --  Ada 2005 (AI-397): Reserved words NOT and OVERRIDING
-         --  may begin an entry declaration.
+         --  Ada 2005 (AI-397): Reserved words NOT and OVERRIDING may begin an
+         --  entry declaration.
 
          elsif Token = Tok_Entry
            or else Token = Tok_Not
@@ -350,8 +350,9 @@ package body Ch9 is
             Append (P_Entry_Declaration, Items);
 
          elsif Token = Tok_For then
-            --  Representation clause in task declaration. The only rep
-            --  clause which is legal in a protected is an address clause,
+
+            --  Representation clause in task declaration. The only rep clause
+            --  which is legal in a protected declaration is an address clause,
             --  so that is what we try to scan out.
 
             Item_Node := P_Representation_Clause;
@@ -617,8 +618,10 @@ package body Ch9 is
    --  Error recovery: cannot raise Error_Resync
 
    function P_Protected_Definition return Node_Id is
-      Def_Node  : Node_Id;
-      Item_Node : Node_Id;
+      Def_Node   : Node_Id;
+      Item_Node  : Node_Id;
+      Priv_Decls : List_Id;
+      Vis_Decls  : List_Id;
 
    begin
       Def_Node := New_Node (N_Protected_Definition, Token_Ptr);
@@ -631,33 +634,63 @@ package body Ch9 is
 
       --  Loop to scan visible declarations (protected operation declarations)
 
-      Set_Visible_Declarations (Def_Node, New_List);
+      Vis_Decls := New_List;
+      Set_Visible_Declarations (Def_Node, Vis_Decls);
+
+      --  Flag and discard all pragmas which cannot appear in the protected
+      --  definition. Note that certain pragmas are still allowed as long as
+      --  they apply to entries, entry families, or protected subprograms.
+
+      P_Pragmas_Opt (Vis_Decls);
 
       loop
          Item_Node := P_Protected_Operation_Declaration_Opt;
+
+         if Present (Item_Node) then
+            Append (Item_Node, Vis_Decls);
+         end if;
+
+         P_Pragmas_Opt (Vis_Decls);
+
          exit when No (Item_Node);
-         Append (Item_Node, Visible_Declarations (Def_Node));
       end loop;
 
       --  Deal with PRIVATE part (including graceful handling of multiple
       --  PRIVATE parts).
 
       Private_Loop : while Token = Tok_Private loop
-         if No (Private_Declarations (Def_Node)) then
-            Set_Private_Declarations (Def_Node, New_List);
-         else
+         Priv_Decls := Private_Declarations (Def_Node);
+
+         if Present (Priv_Decls) then
             Error_Msg_SC ("duplicate private part");
+         else
+            Priv_Decls := New_List;
+            Set_Private_Declarations (Def_Node, Priv_Decls);
          end if;
 
          Scan; -- past PRIVATE
 
+         --  Flag and discard all pragmas which cannot appear in the protected
+         --  definition. Note that certain pragmas are still allowed as long as
+         --  they apply to entries, entry families, or protected subprograms.
+
+         P_Pragmas_Opt (Priv_Decls);
+
          Declaration_Loop : loop
             if Token = Tok_Identifier then
-               P_Component_Items (Private_Declarations (Def_Node));
+               P_Component_Items (Priv_Decls);
+               P_Pragmas_Opt (Priv_Decls);
+
             else
                Item_Node := P_Protected_Operation_Declaration_Opt;
+
+               if Present (Item_Node) then
+                  Append (Item_Node, Priv_Decls);
+               end if;
+
+               P_Pragmas_Opt (Priv_Decls);
+
                exit Declaration_Loop when No (Item_Node);
-               Append (Item_Node, Private_Declarations (Def_Node));
             end if;
          end loop Declaration_Loop;
       end loop Private_Loop;

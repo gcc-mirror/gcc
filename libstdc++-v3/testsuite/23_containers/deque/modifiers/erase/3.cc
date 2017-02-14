@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,7 +22,6 @@
 
 void erase(size_t num_elm, size_t elm_strt, size_t elm_end)
 {
-  bool test __attribute__((unused)) = true;
   using __gnu_test::copy_tracker;
   using __gnu_test::assignment_operator;
 

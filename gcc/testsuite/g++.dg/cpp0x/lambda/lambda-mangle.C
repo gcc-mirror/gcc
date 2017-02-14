@@ -1,6 +1,6 @@
 // Test lambda mangling
-// { dg-require-weak "" }
 // { dg-do compile { target c++11 } }
+// { dg-require-weak "" }
 // { dg-options "-fno-inline" }
 
 template<typename F> int algo(F fn) { return fn(); }
@@ -50,7 +50,8 @@ struct S {
 template<typename T> struct R {
   static int x;
 };
-template<typename T> int R<T>::x = []{return 1;}();
+// "int i;" makes the op() non-constexpr in C++17.
+template<typename T> int R<T>::x = []{int i; return 1;}();
 template int R<int>::x;
 // Type of lambda in intializer of R<int>::x: N1RIiE1xMUlvE_E
 // Corresponding operator(): _ZNK1RIiE1xMUlvE_clEv

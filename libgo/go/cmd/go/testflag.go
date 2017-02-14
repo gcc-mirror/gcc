@@ -50,6 +50,8 @@ var testFlagDefn = []*testFlagSpec{
 	{name: "memprofilerate", passToTest: true},
 	{name: "blockprofile", passToTest: true},
 	{name: "blockprofilerate", passToTest: true},
+	{name: "mutexprofile", passToTest: true},
+	{name: "mutexprofilefraction", passToTest: true},
 	{name: "outputdir", passToTest: true},
 	{name: "parallel", passToTest: true},
 	{name: "run", passToTest: true},
@@ -149,9 +151,11 @@ func testFlags(args []string) (packageNames, passToTest []string) {
 				testBench = true
 			case "timeout":
 				testTimeout = value
-			case "blockprofile", "cpuprofile", "memprofile", "trace":
+			case "blockprofile", "cpuprofile", "memprofile", "mutexprofile":
 				testProfile = true
 				testNeedBinary = true
+			case "trace":
+				testProfile = true
 			case "coverpkg":
 				testCover = true
 				if value == "" {

@@ -1,6 +1,6 @@
 // 2005-11-25  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,8 +38,6 @@ const unsigned N5 = sizeof(A5) / sizeof(int);
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::deque<int>                deque_type;
   typedef deque_type::iterator        iterator_type;
 
@@ -78,8 +76,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::deque<std::deque<int> >   deque_type;
   typedef deque_type::iterator        iterator_type;
 

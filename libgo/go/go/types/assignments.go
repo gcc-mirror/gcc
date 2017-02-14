@@ -41,7 +41,7 @@ func (check *Checker) assignment(x *operand, T Type, context string) {
 				x.mode = invalid
 				return
 			}
-			target = defaultType(x.typ)
+			target = Default(x.typ)
 		}
 		check.convertUntyped(x, target)
 		if x.mode == invalid {
@@ -116,7 +116,7 @@ func (check *Checker) initVar(lhs *Var, x *operand, context string) Type {
 				lhs.typ = Typ[Invalid]
 				return nil
 			}
-			typ = defaultType(typ)
+			typ = Default(typ)
 		}
 		lhs.typ = typ
 	}
@@ -179,6 +179,14 @@ func (check *Checker) assignVar(lhs ast.Expr, x *operand) Type {
 	case variable, mapindex:
 		// ok
 	default:
+		if sel, ok := z.expr.(*ast.SelectorExpr); ok {
+			var op operand
+			check.expr(&op, sel.X)
+			if op.mode == mapindex {
+				check.errorf(z.pos(), "cannot assign to struct field %s in map", ExprString(z.expr))
+				return nil
+			}
+		}
 		check.errorf(z.pos(), "cannot assign to %s", &z)
 		return nil
 	}

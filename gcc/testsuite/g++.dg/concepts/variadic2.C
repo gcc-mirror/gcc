@@ -4,10 +4,13 @@ template <class T> concept bool Copyable = requires (T t) { T(t); };
 template <class T> concept bool Constructable = requires { T(); };
 template <class T> concept bool Both = Copyable<T> && Constructable<T>;
 
-template <Copyable... Ts> void f(Ts...) { }
-template <Both... Ts> void f(Ts...) { }
+template <Copyable... Ts>
+constexpr int f(Ts...) { return 0; } // #1
+
+template <Both... Ts>
+constexpr int f(Ts...) { return 1; }     // #2
 
 int main()
 {
-  f(42);
+  static_assert(f(42) == 1);
 }

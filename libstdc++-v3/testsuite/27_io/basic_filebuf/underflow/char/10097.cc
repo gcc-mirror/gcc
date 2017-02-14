@@ -3,7 +3,7 @@
 
 // 2001-05-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,9 +30,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-// No asserts, avoid leaking the semaphores if a VERIFY fails.
-#undef _GLIBCXX_ASSERT
-
 #include <testsuite_hooks.h>
 
 class UnderBuf : public std::filebuf
@@ -53,7 +50,7 @@ bool test16()
 {
   using namespace std;
   using namespace __gnu_test;
-  bool test __attribute__((unused)) = true;
+  bool test = true;
 
   const char* name = "tmp_fifo1";
   
@@ -62,7 +59,7 @@ bool test16()
   
   if (0 != mkfifo(name, S_IRWXU))
     {
-      VERIFY( false );
+      test = false;
     }
   
   semaphore s1, s2;
@@ -70,13 +67,13 @@ bool test16()
   if (fval == -1)
     {
       unlink(name);
-      VERIFY( false );
+      test = false;
     }
   else if (fval == 0)
     {
       filebuf fbout;
       fbout.open(name, ios_base::in|ios_base::out);
-      VERIFY( fbout.is_open() );
+      test &= bool( fbout.is_open() );
       fbout.sputn("0123456789", 10);
       fbout.pubsync();
       s1.wait();
@@ -96,8 +93,8 @@ bool test16()
       --n;
       
       UnderBuf::int_type c = fb.pub_underflow();
-      VERIFY( c != UnderBuf::traits_type::eof() );
-      
+      test &= bool( c != UnderBuf::traits_type::eof() );
+
       fb.sbumpc();
     }
 

@@ -1,6 +1,6 @@
 // 1999-07-22 bkoz
 
-// Copyright (C) 1994-2016 Free Software Foundation, Inc.
+// Copyright (C) 1994-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,8 +26,6 @@
 
 void test01(void)
 {
-  bool test __attribute__((unused)) = true;
-
   const char str_lit01[] = "  venice ";
   const std::string str01(" santa barbara ");
   std::string str02(str_lit01);

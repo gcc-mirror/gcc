@@ -1,4 +1,5 @@
 /* { dg-do compile { target { ! { *-*-darwin* hppa*-*-* } } } } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-fpic" } */
 
 #if __PIC__ != 1

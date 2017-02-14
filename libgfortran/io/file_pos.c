@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Andy Vaught and Janne Blomqvist
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -362,6 +362,8 @@ st_endfile (st_parameter_filepos *fpp)
 	  u_flags.sign = SIGN_UNSPECIFIED;
 	  u_flags.status = STATUS_UNKNOWN;
 	  u_flags.convert = GFC_CONVERT_NATIVE;
+	  u_flags.share = SHARE_UNSPECIFIED;
+	  u_flags.cc = CC_UNSPECIFIED;
 
 	  opp.common = fpp->common;
 	  opp.common.flags &= IOPARM_COMMON_MASK;

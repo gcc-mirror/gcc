@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -618,7 +618,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 	op0 = TREE_OPERAND (op0, 0);
 	base
 	  = get_inner_reference (op0, &pbitsize, &pbitpos, &poffset, &pmode,
-				 &punsignedp, &preversep, &pvolatilep, false);
+				 &punsignedp, &preversep, &pvolatilep);
 
 	if (pbitpos % BITS_PER_UNIT != 0)
 	  return false;
@@ -771,7 +771,7 @@ dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
     fprintf (dump_file, "analyze_innermost: ");
 
   base = get_inner_reference (ref, &pbitsize, &pbitpos, &poffset, &pmode,
-			      &punsignedp, &preversep, &pvolatilep, false);
+			      &punsignedp, &preversep, &pvolatilep);
   gcc_assert (base != NULL_TREE);
 
   if (pbitpos % BITS_PER_UNIT != 0)
@@ -1685,6 +1685,7 @@ siv_subscript_p (const_tree chrec_a, const_tree chrec_b)
 	    case POLYNOMIAL_CHREC:
 	      if (CHREC_VARIABLE (chrec_a) != CHREC_VARIABLE (chrec_b))
 		return false;
+	      /* FALLTHRU */
 
 	    default:
 	      return true;
@@ -2117,8 +2118,6 @@ initialize_matrix_A (lambda_matrix A, tree chrec, unsigned index, int mult)
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
-      gcc_assert (TREE_CODE (CHREC_RIGHT (chrec)) == INTEGER_CST);
-
       A[index][0] = mult * int_cst_value (CHREC_RIGHT (chrec));
       return initialize_matrix_A (A, CHREC_LEFT (chrec), index + 1, mult);
 
@@ -2165,7 +2164,9 @@ initialize_matrix_A (lambda_matrix A, tree chrec, unsigned index, int mult)
    constructed as evolutions in dimension DIM.  */
 
 static void
-compute_overlap_steps_for_affine_univar (int niter, int step_a, int step_b,
+compute_overlap_steps_for_affine_univar (HOST_WIDE_INT niter,
+					 HOST_WIDE_INT step_a,
+					 HOST_WIDE_INT step_b,
 					 affine_fn *overlaps_a,
 					 affine_fn *overlaps_b,
 					 tree *last_conflicts, int dim)
@@ -2173,8 +2174,8 @@ compute_overlap_steps_for_affine_univar (int niter, int step_a, int step_b,
   if (((step_a > 0 && step_b > 0)
        || (step_a < 0 && step_b < 0)))
     {
-      int step_overlaps_a, step_overlaps_b;
-      int gcd_steps_a_b, last_conflict, tau2;
+      HOST_WIDE_INT step_overlaps_a, step_overlaps_b;
+      HOST_WIDE_INT gcd_steps_a_b, last_conflict, tau2;
 
       gcd_steps_a_b = gcd (step_a, step_b);
       step_overlaps_a = step_b / gcd_steps_a_b;
@@ -2228,7 +2229,7 @@ compute_overlap_steps_for_affine_1_2 (tree chrec_a, tree chrec_b,
 				      tree *last_conflicts)
 {
   bool xz_p, yz_p, xyz_p;
-  int step_x, step_y, step_z;
+  HOST_WIDE_INT step_x, step_y, step_z;
   HOST_WIDE_INT niter_x, niter_y, niter_z, niter;
   affine_fn overlaps_a_xz, overlaps_b_xz;
   affine_fn overlaps_a_yz, overlaps_b_yz;
@@ -2685,13 +2686,13 @@ analyze_subscript_affine_affine (tree chrec_a,
 
 	      if (niter > 0)
 		{
-		  HOST_WIDE_INT tau2 = MIN (FLOOR_DIV (niter - i0, i1),
-					    FLOOR_DIV (niter - j0, j1));
+		  HOST_WIDE_INT tau2 = MIN (FLOOR_DIV (niter_a - i0, i1),
+					    FLOOR_DIV (niter_b - j0, j1));
 		  HOST_WIDE_INT last_conflict = tau2 - (x1 - i0)/i1;
 
 		  /* If the overlap occurs outside of the bounds of the
 		     loop, there is no dependence.  */
-		  if (x1 >= niter || y1 >= niter)
+		  if (x1 >= niter_a || y1 >= niter_b)
 		    {
 		      *overlaps_a = conflict_fn_no_dependence ();
 		      *overlaps_b = conflict_fn_no_dependence ();
@@ -3193,7 +3194,8 @@ build_classic_dist_vector_1 (struct data_dependence_relation *ddr,
       if (TREE_CODE (access_fn_a) == POLYNOMIAL_CHREC
 	  && TREE_CODE (access_fn_b) == POLYNOMIAL_CHREC)
 	{
-	  int dist, index;
+	  HOST_WIDE_INT dist;
+	  int index;
 	  int var_a = CHREC_VARIABLE (access_fn_a);
 	  int var_b = CHREC_VARIABLE (access_fn_b);
 
@@ -3267,7 +3269,7 @@ add_multivariate_self_dist (struct data_dependence_relation *ddr, tree c_2)
   tree c_1 = CHREC_LEFT (c_2);
   tree c_0 = CHREC_LEFT (c_1);
   lambda_vector dist_v;
-  int v1, v2, cd;
+  HOST_WIDE_INT v1, v2, cd;
 
   /* Polynomials with more than 2 variables are not handled yet.  When
      the evolution steps are parameters, it is not possible to
@@ -3868,7 +3870,8 @@ get_references_in_stmt (gimple *stmt, vec<data_ref_loc, va_heap> *references)
       if (DECL_P (op1)
 	  || (REFERENCE_CLASS_P (op1)
 	      && (base = get_base_address (op1))
-	      && TREE_CODE (base) != SSA_NAME))
+	      && TREE_CODE (base) != SSA_NAME
+	      && !is_gimple_min_invariant (base)))
 	{
 	  ref.ref = op1;
 	  ref.is_read = true;
@@ -3889,6 +3892,7 @@ get_references_in_stmt (gimple *stmt, vec<data_ref_loc, va_heap> *references)
 	    if (gimple_call_lhs (stmt) == NULL_TREE)
 	      break;
 	    ref.is_read = true;
+	    /* FALLTHRU */
 	  case IFN_MASK_STORE:
 	    ptr = build_int_cst (TREE_TYPE (gimple_call_arg (stmt, 1)), 0);
 	    align = tree_to_shwi (gimple_call_arg (stmt, 1));
@@ -3942,8 +3946,7 @@ bool
 loop_nest_has_data_refs (loop_p loop)
 {
   basic_block *bbs = get_loop_body (loop);
-  vec<data_ref_loc> references;
-  references.create (3);
+  auto_vec<data_ref_loc, 3> references;
 
   for (unsigned i = 0; i < loop->num_nodes; i++)
     {
@@ -3957,13 +3960,11 @@ loop_nest_has_data_refs (loop_p loop)
 	  if (references.length ())
 	    {
 	      free (bbs);
-	      references.release ();
 	      return true;
 	    }
 	}
     }
   free (bbs);
-  references.release ();
 
   if (loop->inner)
     {
@@ -4002,7 +4003,7 @@ find_data_references_in_stmt (struct loop *nest, gimple *stmt,
       gcc_assert (dr != NULL);
       datarefs->safe_push (dr);
     }
-  references.release ();
+
   return ret;
 }
 
@@ -4032,7 +4033,6 @@ graphite_find_data_references_in_stmt (loop_p nest, loop_p loop, gimple *stmt,
       datarefs->safe_push (dr);
     }
 
-  references.release ();
   return ret;
 }
 

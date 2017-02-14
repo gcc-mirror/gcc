@@ -2,7 +2,7 @@
    by the C-based front ends.  The structure of gimplified, or
    language-independent, trees is dictated by the grammar described in this
    file.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Lowering of expressions contributed by Sebastian Pop <s.pop@laposte.net>
    Re-written to support lowering of whole function trees, documentation
    and miscellaneous cleanups by Diego Novillo <dnovillo@redhat.com>
@@ -124,6 +124,10 @@ c_genericize (tree fndecl)
       walk_tree (&DECL_SAVED_TREE (fndecl), ubsan_walk_array_refs_r, &pset,
 		 &pset);
     }
+
+  if (warn_duplicated_branches)
+    walk_tree_without_duplicates (&DECL_SAVED_TREE (fndecl),
+				  do_warn_duplicated_branches_r, NULL);
 
   /* Dump the C-specific tree IR.  */
   dump_orig = get_dump_info (TDI_original, &local_dump_flags);

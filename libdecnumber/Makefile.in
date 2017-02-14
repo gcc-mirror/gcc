@@ -1,7 +1,7 @@
 # @configure_input@
 # Makefile for libdecnumber.  Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 2005-2016 Free Software Foundation, Inc.
+# Copyright (C) 2005-2017 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -44,6 +44,7 @@ PICFLAG = @PICFLAG@
 RANLIB = @RANLIB@
 SHELL = @SHELL@
 objext = @OBJEXT@
+NOLTO_FLAGS = @nolto_flags@
 
 datarootdir = @datarootdir@
 datadir = @datadir@
@@ -58,7 +59,8 @@ enable_decimal_float= @enable_decimal_float@
 
 INCLUDES = -I$(srcdir) -I.
 
-ALL_CFLAGS = $(CFLAGS) $(WARN_CFLAGS) $(INCLUDES) $(CPPFLAGS) $(PICFLAG)
+ALL_CFLAGS = $(CFLAGS) $(WARN_CFLAGS) $(NOLTO_FLAGS) $(INCLUDES) $(CPPFLAGS) \
+	     $(PICFLAG)
 
 bid_OBJS = bid2dpd_dpd2bid.$(objext) host-ieee32.$(objext) \
 	host-ieee64.$(objext) host-ieee128.$(objext)

@@ -1,6 +1,6 @@
 // 1999-11-10 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,7 +40,6 @@ callb03(std::ios_base::event,  std::ios_base&, int)
 
 void test01() 
 {
-  bool test __attribute__((unused)) = true;
   std::locale loc("C");
   std::stringbuf 	strbuf01;
   std::ios		ios01(&strbuf01);

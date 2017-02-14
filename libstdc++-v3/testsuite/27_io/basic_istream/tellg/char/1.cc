@@ -1,6 +1,6 @@
 // 2000-06-29 bkoz
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,6 @@ void test01()
   typedef ios::off_type off_type;
   typedef ios::pos_type pos_type;
 
-  bool test __attribute__((unused)) = true;
   const char str_lit01[] = "istream_seeks-1.tst";
 
   // in

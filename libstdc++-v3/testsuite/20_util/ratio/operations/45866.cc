@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 
 // 2010-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,8 +26,6 @@
 // libstdc++/45866
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::ratio<1, 4>::type r_type1;
   typedef std::ratio<3, 2>::type r_type2;
 

@@ -1,8 +1,8 @@
-// { dg-do compile }
-// { dg-options "-Wall" { target *-*-* } }
+// { dg-do compile { target c++11 } }
+// { dg-options "-Wall" }
 // -*- C++ -*-
  
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
  
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -75,6 +75,7 @@ case_labels(bitmask_type b)
     case ~__INT_MAX__:
       break;
     }
-  static_assert( sizeof(std::underlying_type_t<bitmask_type>) == sizeof(int),
+  using underlying_type = std::underlying_type<bitmask_type>::type;
+  static_assert( sizeof(underlying_type) == sizeof(int),
       "underlying type has same range of values as int");
 }

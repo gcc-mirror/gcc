@@ -32,4 +32,4 @@ end Subroutine PADEC
 ! There are 5 legal partitions in this code.  Based on the data
 ! locality heuristic, this loop should not be split.
 
-! { dg-final { scan-tree-dump "distributed: split to" "ldist" } }
+! { dg-final { scan-tree-dump-not "distributed: split to" "ldist" } }

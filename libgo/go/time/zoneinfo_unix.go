@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin,386 darwin,amd64 dragonfly freebsd linux nacl netbsd openbsd solaris
+// +build darwin,386 darwin,amd64 dragonfly freebsd linux,!android nacl netbsd openbsd solaris
 
 // Parse "zoneinfo" time zone file.
 // This is a fairly standard file format used on OS X, Linux, BSD, Sun, and others.
@@ -18,8 +18,12 @@ import (
 )
 
 func initTestingZone() {
-	syscall.Setenv("TZ", "America/Los_Angeles")
-	initLocal()
+	z, err := loadLocation("America/Los_Angeles")
+	if err != nil {
+		panic("cannot load America/Los_Angeles for testing: " + err.Error())
+	}
+	z.name = "Local"
+	localLoc = *z
 }
 
 // Many systems use /usr/share/zoneinfo, Solaris 2 has

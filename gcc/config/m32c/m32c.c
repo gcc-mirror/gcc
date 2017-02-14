@@ -1,5 +1,5 @@
 /* Target Code for R8C/M16C/M32C
-   Copyright (C) 2005-2016 Free Software Foundation, Inc.
+   Copyright (C) 2005-2017 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -26,6 +26,7 @@
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "optabs.h"
 #include "regs.h"
@@ -175,6 +176,7 @@ encode_pattern_1 (rtx x)
       break;
     case MEM:
       *patternp++ = 'm';
+      /* FALLTHRU */
     case CONST:
       encode_pattern_1 (XEXP (x, 0));
       break;
@@ -1632,6 +1634,9 @@ m32c_trampoline_init (rtx m_tramp, tree fndecl, rtx chainval)
 #undef A0
 }
 
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
+
 /* Addressing Modes */
 
 /* The r8c/m32c family supports a wide range of non-orthogonal
@@ -1692,6 +1697,7 @@ m32c_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 	case SP_REGNO:
 	  if (TARGET_A16 && GET_MODE (x) == SImode)
 	    return 0;
+	  /* FALLTHRU */
 	case A0_REGNO:
 	  return 1;
 
@@ -3775,13 +3781,13 @@ m32c_prepare_shift (rtx * operands, int scale, int shift_code)
 	 undefined to skip one of the comparisons.  */
 
       rtx count;
-      rtx label, tempvar;
+      rtx tempvar;
       rtx_insn *insn;
 
       emit_move_insn (operands[0], operands[1]);
 
       count = temp;
-      label = gen_label_rtx ();
+      rtx_code_label *label = gen_label_rtx ();
       LABEL_NUSES (label) ++;
 
       tempvar = gen_reg_rtx (mode);

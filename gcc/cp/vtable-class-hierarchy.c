@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1182,6 +1182,9 @@ vtv_generate_init_routine (void)
       TREE_STATIC (vtv_fndecl) = 1;
       TREE_USED (vtv_fndecl) = 1;
       DECL_PRESERVE_P (vtv_fndecl) = 1;
+      /* We are running too late to generate any meaningful debug information
+         for this routine.  */
+      DECL_IGNORED_P (vtv_fndecl) = 1;
       if (flag_vtable_verify == VTV_PREINIT_PRIORITY && !TARGET_PECOFF)
         DECL_STATIC_CONSTRUCTOR (vtv_fndecl) = 0;
 

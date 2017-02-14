@@ -114,9 +114,11 @@ package body Sem_Case is
       Others_Present : Boolean;
       Case_Node      : Node_Id)
    is
-      Predicate_Error : Boolean;
+      Predicate_Error : Boolean := False;
       --  Flag to prevent cascaded errors when a static predicate is known to
       --  be violated by one choice.
+
+      Num_Choices : constant Nat := Choice_Table'Last;
 
       procedure Check_Against_Predicate
         (Pred    : in out Node_Id;
@@ -129,6 +131,10 @@ package body Sem_Case is
       --  to be examined. Prev_Lo and Prev_Hi are the bounds of the previous
       --  choice that covered a predicate set. Error denotes whether the check
       --  found an illegal intersection.
+
+      procedure Check_Duplicates;
+      --  Check for duplicate choices, and call Dup_Choice if there are any
+      --  such errors. Note that predicates are irrelevant here.
 
       procedure Dup_Choice (Lo, Hi : Uint; C : Node_Id);
       --  Post message "duplication of choice value(s) bla bla at xx". Message
@@ -236,8 +242,7 @@ package body Sem_Case is
             Val : Uint) return Boolean
          is
          begin
-            return
-              Val = Lo or else Val = Hi or else (Lo < Val and then Val < Hi);
+            return Lo <= Val and then Val <= Hi;
          end Inside_Range;
 
          --  Local variables
@@ -276,14 +281,12 @@ package body Sem_Case is
             return;
          end if;
 
-         --  Step 1: Detect duplicate choices
+         --  Step 1: Ignore duplicate choices, other than to set the flag,
+         --  because these were already detected by Check_Duplicates.
 
-         if Inside_Range (Choice_Lo, Choice_Hi, Prev_Lo) then
-            Dup_Choice (Prev_Lo, UI_Min (Prev_Hi, Choice_Hi), LocN);
-            Error := True;
-
-         elsif Inside_Range (Choice_Lo, Choice_Hi, Prev_Hi) then
-            Dup_Choice (UI_Max (Choice_Lo, Prev_Lo), Prev_Hi, LocN);
+         if Inside_Range (Choice_Lo, Choice_Hi, Prev_Lo)
+           or else  Inside_Range (Choice_Lo, Choice_Hi, Prev_Hi)
+         then
             Error := True;
 
          --  Step 2: Detect full coverage
@@ -447,6 +450,56 @@ package body Sem_Case is
          end if;
       end Check_Against_Predicate;
 
+      ----------------------
+      -- Check_Duplicates --
+      ----------------------
+
+      procedure Check_Duplicates is
+         Choice      : Node_Id;
+         Choice_Hi   : Uint;
+         Choice_Lo   : Uint;
+         Prev_Choice : Node_Id;
+         Prev_Hi     : Uint;
+
+      begin
+         Prev_Hi := Expr_Value (Choice_Table (1).Hi);
+
+         for Outer_Index in 2 .. Num_Choices loop
+            Choice_Lo := Expr_Value (Choice_Table (Outer_Index).Lo);
+            Choice_Hi := Expr_Value (Choice_Table (Outer_Index).Hi);
+
+            --  Choices overlap; this is an error
+
+            if Choice_Lo <= Prev_Hi then
+               Choice := Choice_Table (Outer_Index).Node;
+
+               --  Find first previous choice that overlaps
+
+               for Inner_Index in 1 .. Outer_Index - 1 loop
+                  if Choice_Lo <=
+                       Expr_Value (Choice_Table (Inner_Index).Hi)
+                  then
+                     Prev_Choice := Choice_Table (Inner_Index).Node;
+                     exit;
+                  end if;
+               end loop;
+
+               if Sloc (Prev_Choice) <= Sloc (Choice) then
+                  Error_Msg_Sloc := Sloc (Prev_Choice);
+                  Dup_Choice (Choice_Lo, UI_Min (Choice_Hi, Prev_Hi), Choice);
+               else
+                  Error_Msg_Sloc := Sloc (Choice);
+                  Dup_Choice
+                    (Choice_Lo, UI_Min (Choice_Hi, Prev_Hi), Prev_Choice);
+               end if;
+            end if;
+
+            if Choice_Hi > Prev_Hi then
+               Prev_Hi := Choice_Hi;
+            end if;
+         end loop;
+      end Check_Duplicates;
+
       ----------------
       -- Dup_Choice --
       ----------------
@@ -575,9 +628,11 @@ package body Sem_Case is
 
          --  Otherwise the expression is not static, even if the bounds of the
          --  type are, or else there are missing alternatives. If both, the
-         --  additional information may be redundant but harmless.
+         --  additional information may be redundant but harmless. Examine
+         --  whether original node is an entity, because it may have been
+         --  constant-folded to a literal if value is known.
 
-         elsif not Is_Entity_Name (Expr) then
+         elsif not Is_Entity_Name (Original_Node (Expr)) then
             Error_Msg_N
               ("subtype of expression is not static, "
                & "alternatives must cover base type!", Expr);
@@ -709,17 +764,13 @@ package body Sem_Case is
 
       Bounds_Hi     : constant Node_Id := Type_High_Bound (Bounds_Type);
       Bounds_Lo     : constant Node_Id := Type_Low_Bound  (Bounds_Type);
-      Num_Choices   : constant Nat     := Choice_Table'Last;
       Has_Predicate : constant Boolean :=
                         Is_OK_Static_Subtype (Bounds_Type)
                           and then Has_Static_Predicate (Bounds_Type);
 
-      Choice      : Node_Id;
       Choice_Hi   : Uint;
       Choice_Lo   : Uint;
-      Error       : Boolean;
       Pred        : Node_Id;
-      Prev_Choice : Node_Id;
       Prev_Lo     : Uint;
       Prev_Hi     : Uint;
 
@@ -734,8 +785,6 @@ package body Sem_Case is
       then
          return;
       end if;
-
-      Predicate_Error := False;
 
       --  Choice_Table must start at 0 which is an unused location used by the
       --  sorting algorithm. However the first valid position for a discrete
@@ -756,16 +805,22 @@ package body Sem_Case is
 
       Sorting.Sort (Positive (Choice_Table'Last));
 
-      --  The type covered by the list of choices is actually a static subtype
-      --  subject to a static predicate. The predicate defines subsets of legal
-      --  values and requires finer grained analysis.
+      --  First check for duplicates. This involved the choices; predicates, if
+      --  any, are irrelevant.
+
+      Check_Duplicates;
+
+      --  Then check for overlaps
+
+      --  If the subtype has a static predicate, the predicate defines subsets
+      --  of legal values and requires finer-grained analysis.
 
       --  Note that in GNAT the predicate is considered static if the predicate
       --  expression is static, independently of whether the aspect mentions
       --  Static explicitly.
 
       if Has_Predicate then
-         Pred    := First (Static_Discrete_Predicate (Bounds_Type));
+         Pred := First (Static_Discrete_Predicate (Bounds_Type));
 
          --  Make initial value smaller than 'First of type, so that first
          --  range comparison succeeds. This applies both to integer types
@@ -774,28 +829,30 @@ package body Sem_Case is
          Prev_Lo := Expr_Value (Type_Low_Bound (Bounds_Type)) - 1;
          Prev_Hi := Prev_Lo;
 
-         Error   := False;
+         declare
+            Error : Boolean := False;
+         begin
+            for Index in 1 .. Num_Choices loop
+               Check_Against_Predicate
+                 (Pred    => Pred,
+                  Choice  => Choice_Table (Index),
+                  Prev_Lo => Prev_Lo,
+                  Prev_Hi => Prev_Hi,
+                  Error   => Error);
 
-         for Index in 1 .. Num_Choices loop
-            Check_Against_Predicate
-              (Pred    => Pred,
-               Choice  => Choice_Table (Index),
-               Prev_Lo => Prev_Lo,
-               Prev_Hi => Prev_Hi,
-               Error   => Error);
+               --  The analysis detected an illegal intersection between a
+               --  choice and a static predicate set. Do not examine other
+               --  choices unless all errors are requested.
 
-            --  The analysis detected an illegal intersection between a choice
-            --  and a static predicate set. Do not examine other choices unless
-            --  all errors are requested.
+               if Error then
+                  Predicate_Error := True;
 
-            if Error then
-               Predicate_Error := True;
-
-               if not All_Errors_Mode then
-                  return;
+                  if not All_Errors_Mode then
+                     return;
+                  end if;
                end if;
-            end if;
-         end loop;
+            end loop;
+         end;
 
          if Predicate_Error then
             return;
@@ -826,35 +883,11 @@ package body Sem_Case is
             end if;
          end if;
 
-         for Outer_Index in 2 .. Num_Choices loop
-            Choice_Lo := Expr_Value (Choice_Table (Outer_Index).Lo);
-            Choice_Hi := Expr_Value (Choice_Table (Outer_Index).Hi);
+         for Index in 2 .. Num_Choices loop
+            Choice_Lo := Expr_Value (Choice_Table (Index).Lo);
+            Choice_Hi := Expr_Value (Choice_Table (Index).Hi);
 
-            if Choice_Lo <= Prev_Hi then
-               Choice := Choice_Table (Outer_Index).Node;
-
-               --  Find first previous choice that overlaps
-
-               for Inner_Index in 1 .. Outer_Index - 1 loop
-                  if Choice_Lo <=
-                       Expr_Value (Choice_Table (Inner_Index).Hi)
-                  then
-                     Prev_Choice := Choice_Table (Inner_Index).Node;
-                     exit;
-                  end if;
-               end loop;
-
-               if Sloc (Prev_Choice) <= Sloc (Choice) then
-                  Error_Msg_Sloc := Sloc (Prev_Choice);
-                  Dup_Choice
-                    (Choice_Lo, UI_Min (Choice_Hi, Prev_Hi), Choice);
-               else
-                  Error_Msg_Sloc := Sloc (Choice);
-                  Dup_Choice
-                    (Choice_Lo, UI_Min (Choice_Hi, Prev_Hi), Prev_Choice);
-               end if;
-
-            elsif not Others_Present and then Choice_Lo /= Prev_Hi + 1 then
+            if Choice_Lo > Prev_Hi + 1 and then not Others_Present then
                Missing_Choice (Prev_Hi + 1, Choice_Lo - 1);
             end if;
 
@@ -1331,6 +1364,15 @@ package body Sem_Case is
          --  later entry into the choices table so that they can be sorted
          --  later on.
 
+         procedure Handle_Static_Predicate
+           (Typ : Entity_Id;
+            Lo  : Node_Id;
+            Hi  : Node_Id);
+         --  If the type of the alternative has predicates, we must examine
+         --  each subset of the predicate rather than the bounds of the type
+         --  itself. This is relevant when the choice is a subtype mark or a
+         --  subtype indication.
+
          -----------
          -- Check --
          -----------
@@ -1443,6 +1485,56 @@ package body Sem_Case is
             Num_Choices := Num_Choices + 1;
          end Check;
 
+         -----------------------------
+         -- Handle_Static_Predicate --
+         -----------------------------
+
+         procedure Handle_Static_Predicate
+           (Typ : Entity_Id;
+            Lo  : Node_Id;
+            Hi  : Node_Id)
+         is
+            P : Node_Id;
+            C : Node_Id;
+
+         begin
+            --  Loop through entries in predicate list, checking each entry.
+            --  Note that if the list is empty, corresponding to a False
+            --  predicate, then no choices are checked. If the choice comes
+            --  from a subtype indication, the given range may have bounds
+            --  that narrow the predicate choices themselves, so we must
+            --  consider only those entries within the range of the given
+            --  subtype indication..
+
+            P := First (Static_Discrete_Predicate (Typ));
+            while Present (P) loop
+
+               --  Check that part of the predicate choice is included in the
+               --  given bounds.
+
+               if Expr_Value (High_Bound (P)) >= Expr_Value (Lo)
+                 and then Expr_Value (Low_Bound (P)) <= Expr_Value (Hi)
+               then
+                  C := New_Copy (P);
+                  Set_Sloc (C, Sloc (Choice));
+
+                  if Expr_Value (Low_Bound (C)) < Expr_Value (Lo) then
+                     Set_Low_Bound (C, Lo);
+                  end if;
+
+                  if Expr_Value (High_Bound (C)) > Expr_Value (Hi) then
+                     Set_High_Bound (C, Hi);
+                  end if;
+
+                  Check (C, Low_Bound (C), High_Bound (C));
+               end if;
+
+               Next (P);
+            end loop;
+
+            Set_Has_SP_Choice (Alt);
+         end Handle_Static_Predicate;
+
       --  Start of processing for Check_Choices
 
       begin
@@ -1551,29 +1643,12 @@ package body Sem_Case is
                                  & "predicate as case alternative",
                                  Choice, E, Suggest_Static => True);
 
-                           --  Static predicate case
+                           --  Static predicate case. The bounds are those of
+                           --  the given subtype.
 
                            else
-                              declare
-                                 P : Node_Id;
-                                 C : Node_Id;
-
-                              begin
-                                 --  Loop through entries in predicate list,
-                                 --  checking each entry. Note that if the
-                                 --  list is empty, corresponding to a False
-                                 --  predicate, then no choices are checked.
-
-                                 P := First (Static_Discrete_Predicate (E));
-                                 while Present (P) loop
-                                    C := New_Copy (P);
-                                    Set_Sloc (C, Sloc (Choice));
-                                    Check (C, Low_Bound (C), High_Bound (C));
-                                    Next (P);
-                                 end loop;
-                              end;
-
-                              Set_Has_SP_Choice (Alt);
+                              Handle_Static_Predicate (E,
+                                Type_Low_Bound (E), Type_High_Bound (E));
                            end if;
 
                         --  Not predicated subtype case
@@ -1627,7 +1702,15 @@ package body Sem_Case is
                                  end if;
                               end if;
 
-                              Check (Choice, L, H);
+                              --  Check applicable predicate values within the
+                              --  bounds of the given range.
+
+                              if Has_Static_Predicate (E) then
+                                 Handle_Static_Predicate (E, L, H);
+
+                              else
+                                 Check (Choice, L, H);
+                              end if;
                            end if;
                         end;
                      end if;

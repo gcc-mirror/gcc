@@ -1,6 +1,6 @@
 /* Form lists of pseudo register references for autoinc optimization
    for GNU compiler.  This is part of flow optimization.
-   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+   Copyright (C) 1999-2017 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -448,6 +448,13 @@ enum df_chain_flags
   /* Flags that control the building of chains.  */
   DF_DU_CHAIN      =  1, /* Build DU chains.  */
   DF_UD_CHAIN      =  2  /* Build UD chains.  */
+};
+
+enum df_scan_flags
+{
+  /* Flags for the SCAN problem.  */
+  DF_SCAN_EMPTY_ENTRY_EXIT = 1  /* Don't define any registers in the entry
+				   block; don't use any in the exit block.  */
 };
 
 enum df_changeable_flags

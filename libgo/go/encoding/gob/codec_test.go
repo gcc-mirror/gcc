@@ -970,7 +970,7 @@ func TestBadRecursiveType(t *testing.T) {
 	err := NewEncoder(b).Encode(&rec)
 	if err == nil {
 		t.Error("expected error; got none")
-	} else if strings.Index(err.Error(), "recursive") < 0 {
+	} else if !strings.Contains(err.Error(), "recursive") {
 		t.Error("expected recursive type error; got", err)
 	}
 	// Can't test decode easily because we can't encode one, so we can't pass one to a Decoder.
@@ -1253,7 +1253,7 @@ func TestIgnoreInterface(t *testing.T) {
 	if item2.I != item1.I {
 		t.Error("normal int did not decode correctly")
 	}
-	if item2.F != item2.F {
+	if item2.F != item1.F {
 		t.Error("normal float did not decode correctly")
 	}
 }
@@ -1280,7 +1280,7 @@ func TestUnexportedFields(t *testing.T) {
 	if err != nil {
 		t.Fatal("decode error:", err)
 	}
-	if u0.A != u0.A || u0.B != u1.B || u0.D != u1.D {
+	if u0.A != u1.A || u0.B != u1.B || u0.D != u1.D {
 		t.Errorf("u1->u0: expected %v; got %v", u0, u1)
 	}
 	if u1.c != 1234. {

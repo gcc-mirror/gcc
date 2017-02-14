@@ -1,6 +1,6 @@
 // 1999-05-11 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -125,8 +125,6 @@ namespace std
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   // non POD types : resize, capacity, reserve
   std::basic_string< A<B> > str02;
   typedef std::basic_string< A<B> >::size_type size_type_o;

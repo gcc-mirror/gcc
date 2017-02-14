@@ -1,5 +1,5 @@
 /* Read and write coverage files, and associated functionality.
-   Copyright (C) 1990-2016 Free Software Foundation, Inc.
+   Copyright (C) 1990-2017 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "tree-pass.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "cgraph.h"
@@ -142,7 +143,8 @@ static void coverage_obj_finish (vec<constructor_elt, va_gc> *);
 tree
 get_gcov_type (void)
 {
-  machine_mode mode = smallest_mode_for_size (GCOV_TYPE_SIZE, MODE_INT);
+  machine_mode mode
+    = smallest_mode_for_size (LONG_LONG_TYPE_SIZE > 32 ? 64 : 32, MODE_INT);
   return lang_hooks.types.type_for_mode (mode, false);
 }
 
@@ -553,7 +555,8 @@ coverage_compute_lineno_checksum (void)
     = expand_location (DECL_SOURCE_LOCATION (current_function_decl));
   unsigned chksum = xloc.line;
 
-  chksum = coverage_checksum_string (chksum, xloc.file);
+  if (xloc.file)
+    chksum = coverage_checksum_string (chksum, xloc.file);
   chksum = coverage_checksum_string
     (chksum, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)));
 
@@ -580,7 +583,8 @@ coverage_compute_profile_id (struct cgraph_node *n)
       bool use_name_only = (PARAM_VALUE (PARAM_PROFILE_FUNC_INTERNAL_ID) == 0);
 
       chksum = (use_name_only ? 0 : xloc.line);
-      chksum = coverage_checksum_string (chksum, xloc.file);
+      if (xloc.file)
+	chksum = coverage_checksum_string (chksum, xloc.file);
       chksum = coverage_checksum_string
 	(chksum, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (n->decl)));
       if (!use_name_only && first_global_object_name)
@@ -1053,7 +1057,34 @@ build_init_ctor (tree gcov_info_type)
   append_to_statement_list (stmt, &ctor);
 
   /* Generate a constructor to run it.  */
-  cgraph_build_static_cdtor ('I', ctor, DEFAULT_INIT_PRIORITY);
+  int priority = SUPPORTS_INIT_PRIORITY
+    ? MAX_RESERVED_INIT_PRIORITY: DEFAULT_INIT_PRIORITY;
+  cgraph_build_static_cdtor ('I', ctor, priority);
+}
+
+/* Generate the destructor function to call __gcov_exit.  */
+
+static void
+build_gcov_exit_decl (void)
+{
+  tree init_fn = build_function_type_list (void_type_node, void_type_node,
+					   NULL);
+  init_fn = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
+			get_identifier ("__gcov_exit"), init_fn);
+  TREE_PUBLIC (init_fn) = 1;
+  DECL_EXTERNAL (init_fn) = 1;
+  DECL_ASSEMBLER_NAME (init_fn);
+
+  /* Generate a call to __gcov_exit ().  */
+  tree dtor = NULL;
+  tree stmt = build_call_expr (init_fn, 0);
+  append_to_statement_list (stmt, &dtor);
+
+  /* Generate a destructor to run it.  */
+  int priority = SUPPORTS_INIT_PRIORITY
+    ? MAX_RESERVED_INIT_PRIORITY: DEFAULT_INIT_PRIORITY;
+
+  cgraph_build_static_cdtor ('D', dtor, priority);
 }
 
 /* Create the gcov_info types and object.  Generate the constructor
@@ -1111,6 +1142,7 @@ coverage_obj_init (void)
   DECL_NAME (gcov_info_var) = get_identifier (name_buf);
 
   build_init_ctor (gcov_info_type);
+  build_gcov_exit_decl ();
 
   return true;
 }

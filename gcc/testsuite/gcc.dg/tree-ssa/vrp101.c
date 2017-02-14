@@ -10,4 +10,4 @@ int main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "<bb 2>:\[\n\r \]*return 0;" "optimized" } } */
+/* { dg-final { scan-tree-dump "<bb 2> \\\[\[0-9.\]+%\\\]:\[\n\r \]*return 0;" "optimized" } } */

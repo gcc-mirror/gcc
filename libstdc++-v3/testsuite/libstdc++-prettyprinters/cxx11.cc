@@ -1,7 +1,8 @@
-// { dg-do run }
-// { dg-options "-std=gnu++11 -g -O0" }
+// { dg-do run { target c++11 } }
+// { dg-options "-g -O0" }
+// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2011-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -113,15 +114,15 @@ main()
 
   std::unordered_set<int> uos;
   uos.insert(5);
-// { dg-final { note-test uos {std::unordered_set with 1 elements = {[0] = 5}} } }
+// { dg-final { note-test uos {std::unordered_set with 1 element = {[0] = 5}} } }
   std::unordered_set<int> &ruos = uos;
-// { dg-final { note-test ruos {std::unordered_set with 1 elements = {[0] = 5}} } }
+// { dg-final { note-test ruos {std::unordered_set with 1 element = {[0] = 5}} } }
 
   std::unordered_multiset<int> uoms;
   uoms.insert(5);
-// { dg-final { note-test uoms {std::unordered_multiset with 1 elements = {[0] = 5}} } }
+// { dg-final { note-test uoms {std::unordered_multiset with 1 element = {[0] = 5}} } }
   std::unordered_multiset<int> &ruoms = uoms;
-// { dg-final { note-test ruoms {std::unordered_multiset with 1 elements = {[0] = 5}} } }
+// { dg-final { note-test ruoms {std::unordered_multiset with 1 element = {[0] = 5}} } }
 
   std::unique_ptr<datum> uptr (new datum);
   uptr->s = "hi bob";

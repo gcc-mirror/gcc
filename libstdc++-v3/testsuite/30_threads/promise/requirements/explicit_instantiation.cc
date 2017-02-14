@@ -1,10 +1,8 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
-// { dg-require-atomic-builtins "" }
 
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,9 +24,8 @@
 #include <testsuite_tr1.h>
 
 using namespace __gnu_test;
-using std::promise;
-template class promise<int>;
-template class promise<int&>;
-template class promise<void>;
-template class promise<ClassType>;
-template class promise<ClassType&>;
+template class std::promise<int>;
+template class std::promise<int&>;
+template class std::promise<void>;
+template class std::promise<ClassType>;
+template class std::promise<ClassType&>;

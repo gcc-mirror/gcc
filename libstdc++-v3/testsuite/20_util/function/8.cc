@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // 2005-01-15 Douglas Gregor <dgregor@cs.indiana.edu>
 //
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,9 +23,20 @@
 #include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
-using namespace __gnu_test;
+template<typename T>
+  const T&
+  as_const(T& t)
+  { return t; }
 
-bool test __attribute__((unused)) = true;
+// Check that f's target is a reference_wrapper bound to obj.
+template<typename Function, typename T>
+  bool
+  wraps(Function& f, T& obj)
+  {
+    using ref_wrapper_type = std::reference_wrapper<T>;
+    auto* p = f.template target<ref_wrapper_type>();
+    return std::addressof(p->get()) == std::addressof(obj);
+  }
 
 // Put reference_wrappers to member pointers
 void test08()
@@ -33,6 +44,8 @@ void test08()
   using std::function;
   using std::ref;
   using std::cref;
+  using std::reference_wrapper;
+  using __gnu_test::X;
 
   int X::* X_bar = &X::bar;
   int (X::* X_foo)() = &X::foo;
@@ -46,99 +59,92 @@ void test08()
   function<int(X&)> frm(ref(X_bar));
   VERIFY( frm );
   VERIFY( frm(x) == 17 );
-  VERIFY( typeid(int X::*) == frm.target_type() );
-  VERIFY( frm.target<int X::*>() == &X_bar );
+  VERIFY( typeid(ref(X_bar)) == frm.target_type() );
+  VERIFY( wraps(frm, X_bar) );
 
   function<int(X&)> fr(ref(X_foo));
   VERIFY( fr );
   VERIFY( fr(x) == 1 );
-  VERIFY( typeid(int (X::*)()) == fr.target_type() );
-  VERIFY( fr.target<int (X::*)()>() == &X_foo );
+  VERIFY( typeid(ref(X_foo)) == fr.target_type() );
+  VERIFY( wraps(fr, X_foo) );
 
   function<int(const X&)> frc(ref(X_foo_c));
   VERIFY( frc );
   VERIFY( frc(x) == 2 );
-  VERIFY( typeid(int (X::*)() const) == frc.target_type() );
-  VERIFY( frc.target<int (X::*)() const >() == &X_foo_c );
+  VERIFY( typeid(ref(X_foo_c)) == frc.target_type() );
+  VERIFY( wraps(frc, X_foo_c) );
 
   function<int(volatile X&)> frv(ref(X_foo_v));
   VERIFY( frv );
   VERIFY( frv(x) == 3 );
-  VERIFY( typeid(int (X::*)() volatile) == frv.target_type() );
-  VERIFY( *frv.target<int (X::*)() volatile >() == X_foo_v );
-  VERIFY( frv.target<int (X::*)() const volatile>() == 0 );
+  VERIFY( typeid(ref(X_foo_v)) == frv.target_type() );
+  VERIFY( wraps(frv, X_foo_v) );
 
   function<int(const volatile X&)> frcv(ref(X_foo_cv));
   VERIFY( frcv );
   VERIFY( frcv(x) == 4 );
-  VERIFY( typeid(int (X::*)() const volatile) == frcv.target_type() );
-  VERIFY( *frcv.target<int (X::*)() const volatile >() == X_foo_cv );
-  VERIFY( frcv.target<int (X::*)() const>() == 0 );
+  VERIFY( typeid(ref(X_foo_cv)) == frcv.target_type() );
+  VERIFY( wraps(frcv, X_foo_cv) );
 
   function<int(X*)> grm(ref(X_bar));
   VERIFY( grm );
   VERIFY( grm(&x) == 17 );
-  VERIFY( typeid(int X::*) == grm.target_type() );
-  VERIFY( *grm.target<int X::*>() == X_bar );
+  VERIFY( typeid(ref(X_bar)) == grm.target_type() );
+  VERIFY( wraps(grm, X_bar) );
 
   function<int(X*)> gr(ref(X_foo));
   VERIFY( gr );
   VERIFY( gr(&x) == 1 );
-  VERIFY( typeid(int (X::*)()) == gr.target_type() );
-  VERIFY( *gr.target<int (X::*)()>() == X_foo );
+  VERIFY( typeid(ref(X_foo)) == gr.target_type() );
+  VERIFY( wraps(gr, X_foo) );
 
   function<int(const X*)> grc(ref(X_foo_c));
   VERIFY( grc );
   VERIFY( grc(&x) == 2 );
-  VERIFY( typeid(int (X::*)() const) == grc.target_type() );
-  VERIFY( *grc.target<int (X::*)() const >() == X_foo_c );
+  VERIFY( typeid(ref(X_foo_c)) == grc.target_type() );
+  VERIFY( wraps(grc, X_foo_c) );
 
   function<int(volatile X*)> grv(ref(X_foo_v));
   VERIFY( grv );
   VERIFY( grv(&x) == 3 );
-  VERIFY( typeid(int (X::*)() volatile) == grv.target_type() );
-  VERIFY( *grv.target<int (X::*)() volatile >() == X_foo_v );
-  VERIFY( grv.target<int (X::*)() const volatile>() == 0 );
+  VERIFY( typeid(ref(X_foo_v)) == grv.target_type() );
+  VERIFY( wraps(grv, X_foo_v) );
 
   function<int(const volatile X*)> grcv(ref(X_foo_cv));
   VERIFY( grcv );
   VERIFY( grcv(&x) == 4 );
-  VERIFY( typeid(int (X::*)() const volatile) == grcv.target_type() );
-  VERIFY( *grcv.target<int (X::*)() const volatile >() == X_foo_cv );
-  VERIFY( grcv.target<int (X::*)() const>() == 0 );
+  VERIFY( typeid(ref(X_foo_cv)) == grcv.target_type() );
+  VERIFY( wraps(grcv, X_foo_cv) );
 
   function<int(X&)> hrm(cref(X_bar));
   VERIFY( hrm );
   VERIFY( hrm(x) == 17 );
-  VERIFY( typeid(int X::*) == hrm.target_type() );
-  VERIFY( hrm.target<int X::*>() == 0 );
-  VERIFY( hrm.target<int X::* const>() == &X_bar );
+  VERIFY( typeid(cref(X_bar)) == hrm.target_type() );
+  VERIFY( wraps(hrm, as_const(X_bar)) );
 
   function<int(X&)> hr(cref(X_foo));
   VERIFY( hr );
   VERIFY( hr(x) == 1 );
-  VERIFY( typeid(int (X::*)()) == hr.target_type() );
-  VERIFY( hr.target<int (X::* const)()>() == &X_foo );
+  VERIFY( typeid(cref(X_foo)) == hr.target_type() );
+  VERIFY( wraps(hr, as_const(X_foo)) );
 
   function<int(const X&)> hrc(cref(X_foo_c));
   VERIFY( hrc );
   VERIFY( hrc(x) == 2 );
-  VERIFY( typeid(int (X::*)() const) == hrc.target_type() );
-  VERIFY( hrc.target<int (X::* const)() const >() == &X_foo_c );
+  VERIFY( typeid(cref(X_foo_c)) == hrc.target_type() );
+  VERIFY( wraps(hrc, as_const(X_foo_c)) );
 
   function<int(volatile X&)> hrv(cref(X_foo_v));
   VERIFY( hrv );
   VERIFY( hrv(x) == 3 );
-  VERIFY( typeid(int (X::*)() volatile) == hrv.target_type() );
-  VERIFY( hrv.target<int (X::* const)() volatile >() == &X_foo_v );
-  VERIFY( hrv.target<int (X::* const)() const volatile>() == 0 );
+  VERIFY( typeid(cref(X_foo_v)) == hrv.target_type() );
+  VERIFY( wraps(hrv, as_const(X_foo_v)) );
 
   function<int(const volatile X&)> hrcv(cref(X_foo_cv));
   VERIFY( hrcv );
   VERIFY( hrcv(x) == 4 );
-  VERIFY( typeid(int (X::*)() const volatile) == hrcv.target_type() );
-  VERIFY( hrcv.target<int (X::* const)() const volatile >() == &X_foo_cv );
-  VERIFY( hrcv.target<int (X::* const)() const>() == 0 );
+  VERIFY( typeid(cref(X_foo_cv)) == hrcv.target_type() );
+  VERIFY( wraps(hrcv, as_const(X_foo_cv)) );
 }
 
 int main()

@@ -59,7 +59,7 @@ struct has_anon
 
 int test7 (struct has_anon *ptr)
 {
-  return ptr->s.colour; /* { dg-error "'struct has_anon::<anonymous>' has no member named 'colour'; did you mean 'color'?" } */
+  return ptr->s.colour; /* { dg-error "'struct has_anon::<unnamed>' has no member named 'colour'; did you mean 'color'?" } */
 }
 
 int test8 (foo &ref)

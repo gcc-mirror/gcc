@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998-2016 Free Software Foundation, Inc.
+   Copyright (C) 1998-2017 Free Software Foundation, Inc.
    Contributed by Axis Communications.
 
 This file is part of GCC.
@@ -27,7 +27,7 @@ extern void cris_notice_update_cc (rtx, rtx_insn *);
 extern bool cris_reload_address_legitimized (rtx, machine_mode, int, int, int);
 extern int cris_side_effect_mode_ok (enum rtx_code, rtx *, int, int,
                                      int, int, int);
-extern bool cris_cc0_user_requires_cmp (rtx);
+extern bool cris_cc0_user_requires_cmp (rtx_insn *);
 extern rtx cris_return_addr_rtx (int, rtx);
 extern rtx cris_split_movdx (rtx *);
 extern int cris_legitimate_pic_operand (rtx);
@@ -44,7 +44,7 @@ extern bool cris_store_multiple_op_p (rtx);
 extern bool cris_movem_load_rest_p (rtx, int);
 extern void cris_asm_output_symbol_ref (FILE *, rtx);
 extern int cris_cfun_uses_pic_table (void);
-extern void cris_asm_output_case_end (FILE *, int, rtx);
+extern void cris_asm_output_case_end (FILE *, int, rtx_insn *);
 extern rtx cris_gen_movem_load (rtx, rtx, int);
 extern rtx cris_emit_movem_store (rtx, rtx, int, bool);
 extern void cris_expand_pic_call_address (rtx *, rtx *);

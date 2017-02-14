@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2013-11-18  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   __gnu_cxx::hypergeometric_distribution<> u(15, 3, 2);
   VERIFY( u.total_size() == 15 );
   VERIFY( u.successful_size() == 3 );
@@ -39,9 +37,20 @@ test01()
   VERIFY( u.max() == 2 );
 }
 
-int
-main()
+void
+test02()
+{
+  using param_type = __gnu_cxx::hypergeometric_distribution<>::param_type;
+  const param_type p(15, 3, 2);
+  __gnu_cxx::hypergeometric_distribution<> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+  VERIFY( u.min() == 0 );
+  VERIFY( u.max() == 2 );
+}
+
+int main()
 {
   test01();
-  return 0;
+  test02();
 }

@@ -1,5 +1,5 @@
 /* Find near-matches for strings and identifiers.
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -165,6 +165,16 @@ class best_match
 	if (m_best_distance > cutoff)
 	  return NULL;
     }
+
+    /* If the goal string somehow makes it into the candidate list, offering
+       it as a suggestion will be nonsensical e.g.
+         'constexpr' does not name a type; did you mean 'constexpr'?
+       Ultimately such suggestions are due to bugs in constructing the
+       candidate list, but as a band-aid, do not offer suggestions for
+       distance == 0 (where candidate == goal).  */
+    if (m_best_distance == 0)
+      return NULL;
+
     return m_best_candidate;
   }
 

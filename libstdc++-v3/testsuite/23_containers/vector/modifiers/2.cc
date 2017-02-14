@@ -1,6 +1,6 @@
 // 1999-11-09 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,8 +22,6 @@
 #include <vector>
 #include "testsuite_hooks.h"
 
-bool test __attribute__((unused)) = true;
-
 // test the assign() function
 void
 test03()
@@ -33,7 +31,6 @@ test03()
   const int B[] = {K, K, K, K, K};
   const std::size_t N = sizeof(A) / sizeof(int);
   const std::size_t M = sizeof(B) / sizeof(int);
-  bool test __attribute__((unused)) = true;
 
   // assign from pointer range
   std::vector<int> v3;

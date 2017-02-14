@@ -1,6 +1,6 @@
 // 1998-10-01, 1999-06-25 bkoz
 
-// Copyright (C) 1998-2016 Free Software Foundation, Inc.
+// Copyright (C) 1998-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -114,7 +114,6 @@ template<class charT, class traits, class Allocator>
 
 int test01(void)
 {
-  bool test __attribute__((unused)) = true;
   std::string 	str_0("costa rica");
   std::string 	str_1("costa marbella");
   std::string 	str_2("cost");

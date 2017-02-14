@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-pre-stats" } */
+/* { dg-options "-O2 -fdump-tree-optimized" } */
 
 #define REGISTER register
 
@@ -35,7 +35,11 @@ long foo(long data, long v)
 	u = i;
 	return v * t * u;
 }
+
 /* We should not eliminate global register variable when it is the RHS of
-   a single assignment.  */
-/* { dg-final { scan-tree-dump-times "Eliminated: 2" 1 "pre" { target { arm*-*-* i?86-*-* mips*-*-* x86_64-*-* } } } } */
-/* { dg-final { scan-tree-dump-times "Eliminated: 3" 1 "pre" { target { ! { arm*-*-* i?86-*-* mips*-*-* x86_64-*-* } } } } } */
+   a single assignment.  So the number of loads from data_0 has to match
+   that of the number of adds (we hoist data_0 + data_3 above the
+   if (data) and eliminate the useless copy).  */
+
+/* { dg-final { scan-tree-dump-times "= data_0;" 1 "optimized" { target { arm*-*-* i?86-*-* mips*-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-tree-dump-times " \\+ " 1 "optimized" { target { ! { arm*-*-* i?86-*-* mips*-*-* x86_64-*-* } } } } } */

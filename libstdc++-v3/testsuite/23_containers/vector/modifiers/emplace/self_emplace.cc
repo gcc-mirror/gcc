@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2016 Free Software Foundation, Inc.
+// Copyright (C) 2016-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,8 +19,6 @@
 
 #include <vector>
 #include "testsuite_hooks.h"
-
-bool test __attribute__((unused)) = true;
 
 void
 test01()
@@ -133,6 +131,20 @@ test04()
 
   VERIFY( va.size() == 4 );
   VERIFY( va[0]._i == 1 );
+}
+
+void
+test05()
+{
+  // LWG DR 2164
+  std::vector<int> v;
+  v.reserve(4);
+  v = { 1, 2, 3 };
+  v.emplace(v.begin(), v.back());
+  VERIFY( v[0] == 3 );
+  VERIFY( v[1] == 1 );
+  VERIFY( v[2] == 2 );
+  VERIFY( v[3] == 3 );
 }
 
 int main()

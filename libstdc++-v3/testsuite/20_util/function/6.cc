@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // 2005-01-15 Douglas Gregor <dgregor@cs.indiana.edu>
 //
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,9 +22,20 @@
 #include <functional>
 #include <testsuite_hooks.h>
 
-using namespace __gnu_test;
+template<typename T>
+  const T&
+  as_const(T& t)
+  { return t; }
 
-bool test __attribute__((unused)) = true;
+// Check that f's target is a reference_wrapper bound to obj.
+template<typename Function, typename T>
+  bool
+  wraps(Function& f, T& obj)
+  {
+    using ref_wrapper_type = std::reference_wrapper<T>;
+    auto* p = f.template target<ref_wrapper_type>();
+    return std::addressof(p->get()) == std::addressof(obj);
+  }
 
 struct secret {};
 
@@ -54,25 +65,24 @@ void test06()
   function<int()> f(ref(x));
   VERIFY( f );
   VERIFY( f() == 17 );
-  VERIFY( f.target_type() == typeid(noncopyable_function_object_type) );
-  VERIFY( f.target<noncopyable_function_object_type>() == &x );
+  VERIFY( f.target_type() == typeid(std::ref(x)) ); // LWG 2781
+  VERIFY( wraps(f, x) );
 
   function<int()> g = f;
   VERIFY( g );
   VERIFY( g() == 17 );
-  VERIFY( g.target_type() == typeid(noncopyable_function_object_type) );
-  VERIFY( g.target<noncopyable_function_object_type>() == &x );
+  VERIFY( g.target_type() == f.target_type() );
+  VERIFY( wraps(g, x) );
 
   function<int()> h = cref(x);
   VERIFY( h );
   VERIFY( h() == 42 );
-  VERIFY( h.target_type() == typeid(noncopyable_function_object_type) );
-  VERIFY( h.target<const noncopyable_function_object_type>() == &x );
-  VERIFY( h.target<const noncopyable_function_object_type>() == &x );
+  VERIFY( h.target_type() == typeid(std::cref(x)) );
+  VERIFY( wraps(h, as_const(x)) );
 
   const function<int()>& hc = h;
-  VERIFY( h.target<noncopyable_function_object_type>() == 0 );
-  VERIFY( hc.target<noncopyable_function_object_type>() == &x );
+  VERIFY( hc.target_type() == h.target_type() );
+  VERIFY( wraps(hc, as_const(x)) );
 }
 
 int main()

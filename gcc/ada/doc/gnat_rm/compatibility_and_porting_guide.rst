@@ -22,7 +22,7 @@ For example, if we write
 .. code-block:: ada
 
      type F1 is delta 1.0 range -128.0 .. +128.0;
-  
+
 then the implementation is allowed to choose -128.0 .. +127.0 if it
 likes, but is not required to do so.
 
@@ -45,7 +45,7 @@ representation. Let's take another example:
 .. code-block:: ada
 
       type F2 is delta 2.0**(-15) range -1.0 .. +1.0;
-  
+
 Looking at this declaration, it seems casually as though
 it should fit in 16 bits, but again that extra positive value
 +1.0 has the scaled integer equivalent of 2**15 which is one too
@@ -54,7 +54,7 @@ big for signed 16 bits. The implementation can treat this as:
 .. code-block:: ada
 
      type F2 is delta 2.0**(-15) range -1.0 .. +1.0-(2.0**(-15));
-  
+
 and the Ada language design team felt that this was too annoying
 to require. We don't need to debate this decision at this point,
 since it is well established (the rule about narrowing the ranges
@@ -77,14 +77,14 @@ approach: to narrow all the time, e.g. to treat
 .. code-block:: ada
 
      type F3 is delta 1.0 range -10.0 .. +23.0;
-  
+
 as though it had been written:
 
 
 .. code-block:: ada
 
       type F3 is delta 1.0 range -9.0 .. +22.0;
-  
+
 But although technically allowed, such a behavior would be hostile and silly,
 and no real compiler would do this. All real compilers will fall into one of
 the categories (a), (b) or (c) above.
@@ -101,14 +101,14 @@ E.g., for `F2` above, we will write:
      My_Last  : constant := +1.0 - My_Small;
 
      type F2 is delta My_Small range My_First .. My_Last;
-  
+
 and then add
 
 .. code-block:: ada
 
      for F2'Small use my_Small;
      for F2'Size  use 16;
-  
+
 In practice all compilers will do the same thing here and will give you
 what you want, so the above declarations are fully portable. If you really
 want to play language lawyer and guard against ludicrous behavior by the
@@ -118,7 +118,7 @@ compiler you could add
 
      Test1 : constant := 1 / Boolean'Pos (F2'First = My_First);
      Test2 : constant := 1 / Boolean'Pos (F2'Last  = My_Last);
-  
+
 One or other or both are allowed to be illegal if the compiler is
 behaving in a silly manner, but at least the silly compiler will not
 get away with silently messing with your (very clear) intentions.
@@ -176,7 +176,7 @@ Ada 95 and later versions of the standard:
   .. code-block:: ada
 
        for Char in Character range 'A' .. 'Z' loop ... end loop;
-    
+
 * *New reserved words*
 
   The identifiers `abstract`, `aliased`, `protected`,
@@ -368,7 +368,7 @@ for a complete description please see the
 
   Rule changes in this area have led to some incompatibilities; for example,
   constrained subtypes of some access types are not permitted in Ada 2005.
- 
+
 * *Aggregates for limited types.*
 
   The allowance of aggregates for limited types in Ada 2005 raises the
@@ -517,7 +517,7 @@ Compatibility with Other Ada Systems
 ====================================
 
 If programs avoid the use of implementation dependent and
-implementation defined features, as documented in the 
+implementation defined features, as documented in the
 :title:`Ada Reference Manual`, there should be a high degree of portability between
 GNAT and other Ada systems.  The following are specific items which
 have proved troublesome in moving Ada 95 programs from GNAT to other Ada 95
@@ -618,7 +618,7 @@ the cases most likely to arise in existing Ada 83 code.
 
        type X is access all String;
        for X'Size use Standard'Address_Size;
-    
+
   which will cause the type X to be represented using a single pointer.
   When using this representation, the bounds are right behind the array.
   This representation is slightly less efficient, and does not allow quite
@@ -658,4 +658,3 @@ applicable to GNAT.
   that contains the additional definitions, and a special pragma,
   Extend_System allows this package to be treated transparently as an
   extension of package System.
-

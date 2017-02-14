@@ -1,6 +1,6 @@
 // <tuple> -*- C++ -*-
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,6 +38,7 @@
 #include <utility>
 #include <array>
 #include <bits/uses_allocator.h>
+#include <bits/invoke.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -845,20 +846,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      template<typename... _UElements, typename = typename
+      template<typename... _UElements>
+	typename
 	       enable_if<sizeof...(_UElements)
-			 == sizeof...(_Elements)>::type>
-        tuple&
+			 == sizeof...(_Elements), tuple&>::type
         operator=(const tuple<_UElements...>& __in)
         {
 	  static_cast<_Inherited&>(*this) = __in;
 	  return *this;
 	}
 
-      template<typename... _UElements, typename = typename
+      template<typename... _UElements>
+	typename
 	       enable_if<sizeof...(_UElements)
-			 == sizeof...(_Elements)>::type>
-        tuple&
+			 == sizeof...(_Elements), tuple&>::type
         operator=(tuple<_UElements...>&& __in)
         {
 	  static_cast<_Inherited&>(*this) = std::move(__in);
@@ -950,7 +951,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         enable_if<_TMC::template
                     _MoveConstructibleTuple<_U1, _U2>()
                   && _TMC::template
-                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>()
+	          && !is_same<typename decay<_U1>::type,
+			      allocator_arg_t>::value,
 	bool>::type = true>
         constexpr tuple(_U1&& __a1, _U2&& __a2)
 	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
@@ -959,7 +962,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         enable_if<_TMC::template
                     _MoveConstructibleTuple<_U1, _U2>()
                   && !_TMC::template
-                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>(),
+                    _ImplicitlyMoveConvertibleTuple<_U1, _U2>()
+	          && !is_same<typename decay<_U1>::type,
+			      allocator_arg_t>::value,
 	bool>::type = false>
         explicit constexpr tuple(_U1&& __a1, _U2&& __a2)
 	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
@@ -1243,6 +1248,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 
+  /// class tuple_size
+  template<typename... _Elements>
+    struct tuple_size<tuple<_Elements...>>
+    : public integral_constant<std::size_t, sizeof...(_Elements)> { };
+
+#if __cplusplus > 201402L
+  template <typename _Tp>
+    constexpr size_t tuple_size_v = tuple_size<_Tp>::value;
+#endif
+
   /**
    * Recursive case for tuple_element: strip off the first element in
    * the tuple and retrieve the (i-1)th element of the remaining tuple.
@@ -1260,10 +1275,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Head type;
     };
 
-  /// class tuple_size
-  template<typename... _Elements>
-    struct tuple_size<tuple<_Elements...>>
-    : public integral_constant<std::size_t, sizeof...(_Elements)> { };
+  /**
+   * Error case for tuple_element: invalid index.
+   */
+  template<size_t __i>
+    struct tuple_element<__i, tuple<>>
+    {
+      static_assert(__i < tuple_size<tuple<>>::value,
+	  "tuple index is in range");
+    };
 
   template<std::size_t __i, typename _Head, typename... _Tail>
     constexpr _Head&
@@ -1426,17 +1446,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     forward_as_tuple(_Elements&&... __args) noexcept
     { return tuple<_Elements&&...>(std::forward<_Elements>(__args)...); }
 
-  template<typename... _Tps>
-    struct __is_tuple_like_impl<tuple<_Tps...>> : true_type
-    { };
-
-  // Internal type trait that allows us to sfinae-protect tuple_cat.
-  template<typename _Tp>
-    struct __is_tuple_like
-    : public __is_tuple_like_impl<typename std::remove_cv
-            <typename std::remove_reference<_Tp>::type>::type>::type
-    { };
-
   template<size_t, typename, typename, size_t>
     struct __make_tuple_impl;
 
@@ -1581,6 +1590,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
+#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+  template<typename... _Elements>
+    typename enable_if<!__and_<__is_swappable<_Elements>...>::value>::type
+    swap(tuple<_Elements...>&, tuple<_Elements...>&) = delete;
+#endif
+
   // A class (and instance) which can be used in 'tie' when an element
   // of a tuple is not required
   struct _Swallow_assign
@@ -1619,6 +1634,44 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : first(std::forward<_Args1>(std::get<_Indexes1>(__tuple1))...),
         second(std::forward<_Args2>(std::get<_Indexes2>(__tuple2))...)
       { }
+
+#if __cplusplus > 201402L
+# define __cpp_lib_apply 201603
+
+  template <typename _Fn, typename _Tuple, size_t... _Idx>
+    constexpr decltype(auto)
+    __apply_impl(_Fn&& __f, _Tuple&& __t, index_sequence<_Idx...>)
+    {
+      return std::__invoke(std::forward<_Fn>(__f),
+			   std::get<_Idx>(std::forward<_Tuple>(__t))...);
+    }
+
+  template <typename _Fn, typename _Tuple>
+    constexpr decltype(auto)
+    apply(_Fn&& __f, _Tuple&& __t)
+    {
+      using _Indices = make_index_sequence<tuple_size_v<decay_t<_Tuple>>>;
+      return std::__apply_impl(std::forward<_Fn>(__f),
+			       std::forward<_Tuple>(__t),
+			       _Indices{});
+    }
+
+#define __cpp_lib_make_from_tuple  201606
+
+  template <typename _Tp, typename _Tuple, size_t... _Idx>
+    constexpr _Tp
+    __make_from_tuple_impl(_Tuple&& __t, index_sequence<_Idx...>)
+    { return _Tp(std::get<_Idx>(std::forward<_Tuple>(__t))...); }
+
+  template <typename _Tp, typename _Tuple>
+    constexpr _Tp
+    make_from_tuple(_Tuple&& __t)
+    {
+      return __make_from_tuple_impl<_Tp>(
+        std::forward<_Tuple>(__t),
+	make_index_sequence<tuple_size_v<decay_t<_Tuple>>>{});
+    }
+#endif // C++17
 
   /// @}
 

@@ -8,7 +8,7 @@ contains
     !$omp target data map(a) map(to: m, n)
     do i=1,n
       t = 0.0d0
-      !$omp target
+      !$omp target map(t)
         !$omp parallel do reduction(+:t)
           do j=1,m
             t = t + a(j,i) * a(j,i)

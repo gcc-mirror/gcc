@@ -1,5 +1,5 @@
 ;; GCC machine description for Tensilica's Xtensa architecture.
-;; Copyright (C) 2001-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2001-2017 Free Software Foundation, Inc.
 ;; Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 ;; This file is part of GCC.
@@ -1663,7 +1663,7 @@
 (define_insn "return"
   [(return)
    (use (reg:SI A0_REG))]
-  "(TARGET_WINDOWED_ABI || !xtensa_current_frame_size) && reload_completed"
+  "xtensa_use_return_instruction_p ()"
 {
   return TARGET_WINDOWED_ABI ?
       (TARGET_DENSITY ? "retw.n" : "retw") :

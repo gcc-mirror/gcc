@@ -60,7 +60,9 @@
 #include <stdint.h>
 #include <typeinfo>
 
+#ifndef DEBUG_EXCEPTIONS
 #define DEBUG_EXCEPTIONS 0
+#endif
 
 struct pending_exception_info
 {

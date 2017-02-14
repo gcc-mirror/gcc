@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 
 // 2008-07-03 Chris Fairles <chris.fairles@gmail.com>
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,8 +31,6 @@ typedef std::ratio<INTMAX_MAX, 2> max_over_two;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::ratio_add<one_over_max, one_over_max>::type r1;
 
   VERIFY( r1.num == two_over_max::num);
@@ -48,9 +46,7 @@ test01()
 
 void
 test02()
-{  
-  bool test __attribute__((unused)) = true;
-  
+{
   std::ratio_subtract<one_over_max, one_over_max>::type r1;
 
   VERIFY( r1.num == 0);

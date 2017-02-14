@@ -50,9 +50,7 @@ func newFileFD(f *os.File) (net *netFD, err error) {
 	name := comp[2]
 	switch file := comp[n-1]; file {
 	case "ctl", "clone":
-		syscall.ForkLock.RLock()
 		fd, err := syscall.Dup(int(f.Fd()), -1)
-		syscall.ForkLock.RUnlock()
 		if err != nil {
 			return nil, os.NewSyscallError("dup", err)
 		}
@@ -60,7 +58,7 @@ func newFileFD(f *os.File) (net *netFD, err error) {
 
 		dir := netdir + "/" + comp[n-2]
 		ctl = os.NewFile(uintptr(fd), dir+"/"+file)
-		ctl.Seek(0, 0)
+		ctl.Seek(0, io.SeekStart)
 		var buf [16]byte
 		n, err := ctl.Read(buf[:])
 		if err != nil {
@@ -83,7 +81,7 @@ func newFileFD(f *os.File) (net *netFD, err error) {
 	if err != nil {
 		return nil, err
 	}
-	return newFD(comp[1], name, ctl, nil, laddr, nil)
+	return newFD(comp[1], name, nil, ctl, nil, laddr, nil)
 }
 
 func fileConn(f *os.File) (Conn, error) {

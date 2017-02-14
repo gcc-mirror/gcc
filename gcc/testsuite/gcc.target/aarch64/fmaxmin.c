@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -ftree-vectorize -fno-inline -save-temps" } */
+/* { dg-options "-O2 -ftree-vectorize -fno-inline -fno-vect-cost-model -save-temps" } */
 
 
 extern void abort (void);

@@ -1,6 +1,6 @@
 // 2010-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,7 +17,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 //
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-string-conversions "" }
 
 #include <ext/vstring.h>
@@ -25,7 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using __gnu_cxx::__vstring;
 
   VERIFY( (__vstring("abc") + __vstring("def")

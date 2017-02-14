@@ -7,7 +7,6 @@
 package syscall
 
 import (
-	"runtime"
 	"unsafe"
 )
 
@@ -23,20 +22,21 @@ type SysProcIDMap struct {
 }
 
 type SysProcAttr struct {
-	Chroot      string         // Chroot.
-	Credential  *Credential    // Credential.
-	Ptrace      bool           // Enable tracing.
-	Setsid      bool           // Create session.
-	Setpgid     bool           // Set process group ID to Pgid, or, if Pgid == 0, to new pid.
-	Setctty     bool           // Set controlling terminal to fd Ctty (only meaningful if Setsid is set)
-	Noctty      bool           // Detach fd 0 from controlling terminal
-	Ctty        int            // Controlling TTY fd
-	Foreground  bool           // Place child's process group in foreground. (Implies Setpgid. Uses Ctty as fd of controlling TTY)
-	Pgid        int            // Child's process group ID if Setpgid.
-	Pdeathsig   Signal         // Signal that the process will get when its parent dies (Linux only)
-	Cloneflags  uintptr        // Flags for clone calls (Linux only)
-	UidMappings []SysProcIDMap // User ID mappings for user namespaces.
-	GidMappings []SysProcIDMap // Group ID mappings for user namespaces.
+	Chroot       string         // Chroot.
+	Credential   *Credential    // Credential.
+	Ptrace       bool           // Enable tracing.
+	Setsid       bool           // Create session.
+	Setpgid      bool           // Set process group ID to Pgid, or, if Pgid == 0, to new pid.
+	Setctty      bool           // Set controlling terminal to fd Ctty (only meaningful if Setsid is set)
+	Noctty       bool           // Detach fd 0 from controlling terminal
+	Ctty         int            // Controlling TTY fd
+	Foreground   bool           // Place child's process group in foreground. (Implies Setpgid. Uses Ctty as fd of controlling TTY)
+	Pgid         int            // Child's process group ID if Setpgid.
+	Pdeathsig    Signal         // Signal that the process will get when its parent dies (Linux only)
+	Cloneflags   uintptr        // Flags for clone calls (Linux only)
+	Unshareflags uintptr        // Flags for unshare calls (Linux only)
+	UidMappings  []SysProcIDMap // User ID mappings for user namespaces.
+	GidMappings  []SysProcIDMap // Group ID mappings for user namespaces.
 	// GidMappingsEnableSetgroups enabling setgroups syscall.
 	// If false, then setgroups syscall will be disabled for the child process.
 	// This parameter is no-op if GidMappings == nil. Otherwise for unprivileged
@@ -48,11 +48,14 @@ type SysProcAttr struct {
 func runtime_BeforeFork()
 func runtime_AfterFork()
 
+// Implemented in clone_linux.c
+func rawClone(flags _C_ulong, child_stack *byte, ptid *Pid_t, ctid *Pid_t, regs unsafe.Pointer) _C_long
+
 // Fork, dup fd onto 0..len(fd), and exec(argv0, argvv, envv) in child.
 // If a dup or exec fails, write the errno error to pipe.
 // (Pipe is close-on-exec so if exec succeeds, it will be closed.)
 // In the child, this function must not acquire any locks, because
-// they might have been locked at the time of the fork.  This means
+// they might have been locked at the time of the fork. This means
 // no rescheduling, no malloc calls, and no new stack segments.
 // For the same reason compiler does not race instrument it.
 // The calls to RawSyscall are okay because they are assembly
@@ -63,6 +66,7 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	// declarations require heap allocation (e.g., err1).
 	var (
 		r1     uintptr
+		r2     _C_long
 		err1   Errno
 		err2   Errno
 		nextfd int
@@ -97,20 +101,16 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	// About to call fork.
 	// No more allocation or calls of non-assembly functions.
 	runtime_BeforeFork()
-	if runtime.GOARCH == "s390x" || runtime.GOARCH == "s390" {
-		r1, _, err1 = RawSyscall6(SYS_CLONE, 0, uintptr(SIGCHLD)|sys.Cloneflags, 0, 0, 0, 0)
-	} else {
-		r1, _, err1 = RawSyscall6(SYS_CLONE, uintptr(SIGCHLD)|sys.Cloneflags, 0, 0, 0, 0, 0)
-	}
-	if err1 != 0 {
+	r2 = rawClone(_C_ulong(uintptr(SIGCHLD)|sys.Cloneflags), nil, nil, nil, unsafe.Pointer(nil))
+	if r2 < 0 {
 		runtime_AfterFork()
-		return 0, err1
+		return 0, GetErrno()
 	}
 
-	if r1 != 0 {
+	if r2 != 0 {
 		// parent; return PID
 		runtime_AfterFork()
-		pid = int(r1)
+		pid = int(r2)
 
 		if sys.UidMappings != nil || sys.GidMappings != nil {
 			Close(p[0])
@@ -192,21 +192,35 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 		}
 	}
 
+	// Unshare
+	if sys.Unshareflags != 0 {
+		_, _, err1 = RawSyscall(SYS_UNSHARE, sys.Unshareflags, 0, 0)
+		if err1 != 0 {
+			goto childerror
+		}
+	}
+
 	// User and groups
 	if cred := sys.Credential; cred != nil {
 		ngroups := len(cred.Groups)
+		var groups unsafe.Pointer
 		if ngroups > 0 {
-			groups := unsafe.Pointer(&cred.Groups[0])
+			groups = unsafe.Pointer(&cred.Groups[0])
+		}
+		// Don't call setgroups in case of user namespace, gid mappings
+		// and disabled setgroups, because otherwise unprivileged user namespace
+		// will fail with any non-empty SysProcAttr.Credential.
+		if !(sys.GidMappings != nil && !sys.GidMappingsEnableSetgroups && ngroups == 0) {
 			err1 = raw_setgroups(ngroups, groups)
 			if err1 != 0 {
 				goto childerror
 			}
 		}
-		_, _, err1 = RawSyscall(SYS_SETGID, uintptr(cred.Gid), 0, 0)
+		_, _, err1 = RawSyscall(sys_SETGID, uintptr(cred.Gid), 0, 0)
 		if err1 != 0 {
 			goto childerror
 		}
-		_, _, err1 = RawSyscall(SYS_SETUID, uintptr(cred.Uid), 0, 0)
+		_, _, err1 = RawSyscall(sys_SETUID, uintptr(cred.Uid), 0, 0)
 		if err1 != 0 {
 			goto childerror
 		}
@@ -253,6 +267,9 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	}
 	for i = 0; i < len(fd); i++ {
 		if fd[i] >= 0 && fd[i] < int(i) {
+			if nextfd == pipe { // don't stomp on pipe
+				nextfd++
+			}
 			err1 = raw_dup2(fd[i], nextfd)
 			if err1 != 0 {
 				goto childerror
@@ -260,9 +277,6 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 			raw_fcntl(nextfd, F_SETFD, FD_CLOEXEC)
 			fd[i] = nextfd
 			nextfd++
-			if nextfd == pipe { // don't stomp on pipe
-				nextfd++
-			}
 		}
 	}
 

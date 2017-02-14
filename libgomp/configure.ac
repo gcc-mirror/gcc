@@ -181,6 +181,9 @@ case "$host" in
     ;;
   nvptx*-*-*)
     # NVPTX does not support Pthreads, has its own code replacement.
+    libgomp_use_pthreads=no
+    # NVPTX is an accelerator-only target
+    libgomp_offloaded_only=yes
     ;;
   *)
     # Check to see if -pthread or -lpthread is needed.  Prefer the former.
@@ -201,6 +204,16 @@ case "$host" in
        [],
        [AC_MSG_ERROR([Pthreads are required to build libgomp])])])
 esac
+
+if test x$libgomp_use_pthreads != xno; then
+  AC_DEFINE(LIBGOMP_USE_PTHREADS, 1,
+            [Define to 1 if libgomp should use POSIX threads.])
+fi
+
+if test x$libgomp_offloaded_only = xyes; then
+  AC_DEFINE(LIBGOMP_OFFLOADED_ONLY, 1,
+            [Define to 1 if building libgomp for an accelerator-only target.])
+fi
 
 m4_include([plugin/configfrag.ac])
 
@@ -365,6 +378,9 @@ AC_SUBST(OMP_NEST_LOCK_25_ALIGN)
 AC_SUBST(OMP_LOCK_25_KIND)
 AC_SUBST(OMP_NEST_LOCK_25_KIND)
 CFLAGS="$save_CFLAGS"
+
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
 
 AC_CONFIG_FILES(omp.h omp_lib.h omp_lib.f90 libgomp_f.h)
 AC_CONFIG_FILES(Makefile testsuite/Makefile libgomp.spec)

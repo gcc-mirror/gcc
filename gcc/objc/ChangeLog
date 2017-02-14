@@ -1,3 +1,22 @@
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2016-11-14  Prasad Ghangal  <prasad.ghangal@gmail.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* config-lang.in (gtfiles): Add c/c-parser.h.
+
+2016-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* objc-act.c (continue_class): Remove break after return.
+	(objc_maybe_printable_name): Likewise.
+
+2016-08-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* objc-encoding.c (encode_type): Add FALLTHRU.
+
 2016-06-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* objc-act.c (objc_build_component_ref): Update call
@@ -1646,7 +1665,7 @@
 	to gcc_alloc_xxx calls in hash_init and hash_class_name_enter to
 	get it to compile in the current trunk.
 
-	2006-01-27 Fariborz Jahanian <fjahanian@apple.com>
+	2006-01-27 Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4345837
 	* objc/objc-act.c (hash_class_name_enter): New.
@@ -1685,7 +1704,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2006-03-10  Fariborz Jahanian <fjahanian@apple.com>
+	2006-03-10  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4407151
 	* objc/objc-act.c (objc_is_class_name): template parameter is not
@@ -1697,12 +1716,12 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2005-11-08  Fariborz Jahanian <fjahanian@apple.com>
+	2005-11-08  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4330422
 	* objc/objc-act.c (objc_non_volatilized_type): New
 
-	2005-10-07  Fariborz Jahanian <fjahanian@apple.com>
+	2005-10-07  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4204796
 	* objc-act.c (objc_build_volatilized_type): Build 'volatilzed'
@@ -1716,7 +1735,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2006-03-27 Fariborz Jahanian <fjahanian@apple.com>
+	2006-03-27 Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4133425
 	* objc-act.c (objc_diagnose_private_ivar): New.
@@ -1736,7 +1755,7 @@
 2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
 
 	merge from FSF apple 'trunk' branch.
-	2006 Fariborz Jahanian <fjahanian@apple.com>
+	2006 Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radars 4436866, 4505126, 4506903, 4517826
 	* objc-act.c (CALL_EXPR_OBJC_PROPERTY_GETTER): New.
@@ -1787,7 +1806,7 @@
 
 	merge from FSF apple 'trunk' branch.
 
-	2006-04-26 Fariborz Jahanian <fjahanian@apple.com>
+	2006-04-26 Fariborz Jahanian  <fjahanian@apple.com>
 	Radar 3803157 (method attributes)
 	* objc/objc-act.h (METHOD_TYPE_ATTRIBUTES): New macro.
 	* objc/objc-act.c (objc_decl_method_attributes): New.
@@ -1845,7 +1864,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2006-04-12 Fariborz Jahanian <fjahanian@apple.com>
+	2006-04-12 Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4507230
 	* objc-act.c (objc_type_valid_for_messaging): New routine to check
@@ -1857,20 +1876,20 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2005-10-17  Fariborz Jahanian <fjahanian@apple.com>
+	2005-10-17  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4290840
 	* objc-act.c (objc_start_method_definition): Check for
 	error_mark_node for the selector name and make a quick exit.
 
-2010-10-04  Andi Kleen <ak@linux.intel.com>
+2010-10-04  Andi Kleen  <ak@linux.intel.com>
 
 	* Make-lang.in (cc1obj-dummy, cc1obj): Add + to build rule.
 
 2010-09-30  Iain Sandoe  <iains@gcc.gnu.org>
 
 	merge from FSF 'apple/trunk' branch.
-	2006-01-30  Fariborz Jahanian <fjahanian@apple.com>
+	2006-01-30  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4386773
 	* objc/objc-act.c (objc_set_method_opt): New function.
@@ -1888,7 +1907,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2005-10-04  Fariborz Jahanian <fjahanian@apple.com>
+	2005-10-04  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4278236
 	* objc-act.c (objc_declare_class): Pick the right
@@ -1898,7 +1917,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2005-10-04  Fariborz Jahanian <fjahanian@apple.com>
+	2005-10-04  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4281748
 	* objc-act.c (objc_check_global_decl): New
@@ -1929,7 +1948,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2005-08-23  Stuart Hastings <stuart@apple.com>
+	2005-08-23  Stuart Hastings  <stuart@apple.com>
 	            Ziemowit Laski  <zlaski@apple.com>
 
 	Radar 4209854
@@ -1996,7 +2015,7 @@
 	Merge from 'apple/trunk' branch on FSF servers.  I modified the
 	changes to be used only when compiling for the NeXT runtime.
 
-	2005-10-10  Fariborz Jahanian <fjahanian@apple.com>
+	2005-10-10  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4301047
 
@@ -2013,7 +2032,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2005-12-15  Fariborz Jahanian <fjahanian@apple.com>
+	2005-12-15  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4229905
 	* objc-act.c (objc_have_common_types): New function.
@@ -2051,13 +2070,13 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2006-03-09 Fariborz Jahanian <fjahanian@apple.com>
+	2006-03-09 Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4457381
 	* objc/objc-act.c (objc_finish_message_expr): Look for message in
 	@class's protocol list.
 
-	2006-02-07  Fariborz Jahanian <fjahanian@apple.com>
+	2006-02-07  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4219590
 	* objc/objc-act.c (objc_start_method_definition): Initialize
@@ -2246,19 +2265,19 @@
 	really_start_method, get_super_receiver, handle_class_ref): Set
 	DECL_READ_P in addition to TREE_USED.
 
-2010-04-07  Iain Sandoe <iains@gcc.gnu.org>
+2010-04-07  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR objc/35996
 	* objc-act.c (objc_init): Warn that -fobjc-gc is ignored for
 	-fgnu-runtime and set flag_objc_gc to zero.
 
-2010-04-07  Iain Sandoe <iains@gcc.gnu.org>
+2010-04-07  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR objc++/23716
 	* objc-act.c (build_module_initializer_routine): Make the argument
 	to objc_start_function NULL_TREE when compiling ObjC++.
 
-2010-02-18  Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>
+2010-02-18  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 	    Mike Stump  <mikestump@comcast.net>
 
 	PR objc/43061
@@ -2471,7 +2490,7 @@
 	* objc-act.c (get_super_receiver): Update calls to
 	build_modify_expr to pass new argument.
 
-2009-04-21  Taras Glek <tglek@mozilla.com>
+2009-04-21  Taras Glek  <tglek@mozilla.com>
 
 	* objc-act.c: Update GTY annotations to new syntax
 	* objc-act.h: Likewise
@@ -2776,13 +2795,14 @@
 	PR objc/27240
 	* objc-act.c (objc_is_public): Return early on invalid type.
 
-2006-03-02 Fariborz Jahanian <fjahanian@apple.com>
+2006-03-02 Fariborz Jahanian  <fjahanian@apple.com>
 
 	* objc-act.c (init_module_descriptor): Remove file name from
 	module descriptor.
 	(gen_type_name_0): Fix ICE when issuing warning.
 
-2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+2006-02-20  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+
 	* Make-lang.in (OBJC): Remove
 	(OBJECTIVE-C): Remove
 	(objective-c): Remove
@@ -3675,7 +3695,7 @@
 	Move to c-objc-common.h.
 
 
-Copyright (C) 2004-2016 Free Software Foundation, Inc.
+Copyright (C) 2004-2017 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,8 +23,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const int& x = std::max({1, 3, 2});
   const int& y = std::max({4, 3, 2});
   const int& z = std::max({3, 2, 4});

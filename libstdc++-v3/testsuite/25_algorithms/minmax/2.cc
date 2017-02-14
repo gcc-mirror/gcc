@@ -1,8 +1,8 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2008-09-16  Chris Fairles  <chris.fairles@gmail.com>
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,8 +25,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::pair<int, int> z = std::minmax({1, 2, 3});
   std::pair<int, int> w = std::minmax({4, 3, 5, 4});
   std::pair<int, int> y = std::minmax({4, 5, 3, 7, 3});

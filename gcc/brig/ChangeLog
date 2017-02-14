@@ -1,0 +1,65 @@
+2016-02-01  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* brigfrontend/brig-code-entry-handler.cc: fix address
+	expressions which refer only to offset 0, but nothing else.
+	* brigfrontend/brig-lane-inst-handler.cc: fix
+	activelanepermute_b64 HSAIL instruction.
+	* brigfrontend/brig-to-generic.cc: remove useless c_str()
+	call. Add missing va_end (). Fix PR79250.
+
+2017-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* brigfrontend/brig-code-entry-handler.cc
+	(brig_code_entry_handler::get_tree_cst_for_hsa_operand): For %lu
+	cast size_t arguments to unsigned long.
+
+2017-01-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* config-lang.in: Removed stale target-libbrig reference.
+
+2017-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-01-24  Pekka Jääskeläinen  <pekka@parmance.com>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* Make-lang.in: New file.
+	* brig-builtins.h: Likewise.
+	* brig-c.h: Likewise.
+	* brig-lang.c: Likewise.
+	* brigspec.c: Likewise.
+	* config-lang.in: Likewise.
+	* lang-specs.h: Likewise.
+	* lang.opt: Likewise.
+	* brigfrontend/brig-arg-block-handler.cc: Likewise.
+	* brigfrontend/brig-atomic-inst-handler.cc: Likewise.
+	* brigfrontend/brig-basic-inst-handler.cc: Likewise.
+	* brigfrontend/brig-branch-inst-handler.cc: Likewise.
+	* brigfrontend/brig-cmp-inst-handler.cc: Likewise.
+	* brigfrontend/brig-code-entry-handler.cc: Likewise.
+	* brigfrontend/brig-code-entry-handler.h: Likewise.
+	* brigfrontend/brig-comment-handler.cc: Likewise.
+	* brigfrontend/brig-control-handler.cc: Likewise.
+	* brigfrontend/brig-copy-move-inst-handler.cc: Likewise.
+	* brigfrontend/brig-cvt-inst-handler.cc: Likewise.
+	* brigfrontend/brig-fbarrier-handler.cc: Likewise.
+	* brigfrontend/brig-function-handler.cc: Likewise.
+	* brigfrontend/brig-function.cc: Likewise.
+	* brigfrontend/brig-function.h: Likewise.
+	* brigfrontend/brig-inst-mod-handler.cc: Likewise.
+	* brigfrontend/brig-label-handler.cc: Likewise.
+	* brigfrontend/brig-lane-inst-handler.cc: Likewise.
+	* brigfrontend/brig-machine.c: Likewise.
+	* brigfrontend/brig-machine.h: Likewise.
+	* brigfrontend/brig-mem-inst-handler.cc: Likewise.
+	* brigfrontend/brig-module-handler.cc: Likewise.
+	* brigfrontend/brig-queue-inst-handler.cc: Likewise.
+	* brigfrontend/brig-seg-inst-handler.cc: Likewise.
+	* brigfrontend/brig-signal-inst-handler.cc: Likewise.
+	* brigfrontend/brig-to-generic.cc: Likewise.
+	* brigfrontend/brig-to-generic.h: Likewise.
+	* brigfrontend/brig-util.cc: Likewise.
+	* brigfrontend/brig-util.h: Likewise.
+	* brigfrontend/brig-variable-handler.cc: Likewise.
+	* brigfrontend/phsa.h: Likewise.

@@ -1,8 +1,8 @@
-// { dg-options "-std=gnu++11" }
 // Use smaller statistics when running on simulators, so it takes less time.
-// { dg-options "-std=gnu++11 -DSAMPLES=30000" { target simulator } }
+// { dg-options "-DSAMPLES=30000" { target simulator } }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,6 @@
 void
 test_bit_flip_set()
 {
-  bool test __attribute__((unused)) = true;
   const unsigned long N = SAMPLES;
   const unsigned long k = N/100;
   const unsigned int len = 67;

@@ -1,6 +1,6 @@
 // 2000-01-15  Anders Widell  <awl@hem.passagen.se>
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,15 +22,12 @@
 #include <bitset>
 #include <testsuite_hooks.h>
 
-bool
+void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::bitset<66>  b;
   b <<= 400;
   VERIFY( b.count() == 0 );
-  return test;
 }
 
 int

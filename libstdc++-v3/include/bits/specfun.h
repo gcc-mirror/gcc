@@ -1,6 +1,6 @@
 // Mathematical Special Functions for -*- C++ -*-
 
-// Copyright (C) 2006-2016 Free Software Foundation, Inc.
+// Copyright (C) 2006-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,7 +38,7 @@
 
 #define __cpp_lib_math_special_functions 201603L
 
-#if __STDCPP_WANT_MATH_SPEC_FUNCS__ == 0
+#if __cplusplus <= 201403L && __STDCPP_WANT_MATH_SPEC_FUNCS__ == 0
 # error include <cmath> and define __STDCPP_WANT_MATH_SPEC_FUNCS__
 #endif
 

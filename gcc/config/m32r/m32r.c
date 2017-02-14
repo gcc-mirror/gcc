@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Renesas M32R cpu.
-   Copyright (C) 1996-2016 Free Software Foundation, Inc.
+   Copyright (C) 1996-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -25,6 +25,7 @@
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "insn-config.h"
@@ -118,6 +119,9 @@ static const struct attribute_spec m32r_attribute_table[] =
 #define TARGET_ATTRIBUTE_TABLE m32r_attribute_table
 #undef  TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P
 #define TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P m32r_attribute_identifier
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P m32r_legitimate_address_p
@@ -1786,7 +1790,7 @@ m32r_expand_epilogue (void)
 
   if (total_size == 0)
     {
-      rtx insn = get_last_insn ();
+      rtx_insn *insn = get_last_insn ();
 
       /* If the last insn was a BARRIER, we don't have to write any code
 	 because a jump (aka return) was put there.  */
@@ -2274,7 +2278,8 @@ m32r_print_operand (FILE * file, rtx x, int code)
 	  break;
 	}
 
-      /* Fall through.  Let output_addr_const deal with it.  */
+      /* FALLTHRU */
+      /* Let output_addr_const deal with it.  */
 
     default :
       output_addr_const (file, x);

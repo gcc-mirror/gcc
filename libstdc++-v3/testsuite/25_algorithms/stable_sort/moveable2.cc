@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,8 +47,6 @@ bool order(const rvalstruct& lhs, const rvalstruct& rhs)
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   rvalstruct s1[N];
   std::copy(A, A + N, s1);
   Container con(s1, s1 + N);

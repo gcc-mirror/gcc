@@ -613,6 +613,7 @@ EGREP
 GREP
 CPP
 WERROR
+nolto_flags
 WARN_PEDANTIC
 WARN_CFLAGS
 AUTOHEADER
@@ -3272,6 +3273,12 @@ test -n "$AUTOHEADER" || AUTOHEADER="$MISSING autoheader"
 # See config/warnings.m4 for details.
 
 
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 WARN_CFLAGS=
 save_CFLAGS="$CFLAGS"
 for real_option in -W -Wall -Wwrite-strings -Wstrict-prototypes \
@@ -3318,6 +3325,18 @@ $as_echo "$ac_res" >&6; }
 fi
   done
 CFLAGS="$save_CFLAGS"
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 WARN_PEDANTIC=
 # Do the check with the no- prefix removed from the warning options
@@ -3356,10 +3375,80 @@ if test $acx_cv_prog_cc_pedantic__Wlong_long = yes; then :
 fi
 
 fi
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+nolto_flags=
+save_CFLAGS="$CFLAGS"
+for real_option in -fno-lto; do
+  # Do the check with the no- prefix removed since gcc silently
+  # accepts any -Wno-* option on purpose
+  case $real_option in
+    -Wno-*) option=-W`expr x$real_option : 'x-Wno-\(.*\)'` ;;
+    *) option=$real_option ;;
+  esac
+  as_acx_Woption=`$as_echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $CC supports $option" >&5
+$as_echo_n "checking whether $CC supports $option... " >&6; }
+if { as_var=$as_acx_Woption; eval "test \"\${$as_var+set}\" = set"; }; then :
+  $as_echo_n "(cached) " >&6
+else
+  CFLAGS="$option"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$as_acx_Woption=yes"
+else
+  eval "$as_acx_Woption=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+eval ac_res=\$$as_acx_Woption
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  if test `eval 'as_val=${'$as_acx_Woption'};$as_echo "$as_val"'` = yes; then :
+  nolto_flags="$nolto_flags${nolto_flags:+ }$real_option"
+fi
+  done
+CFLAGS="$save_CFLAGS"
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 
 
 # Only enable with --enable-werror-always until existing warnings are
 # corrected.
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 WERROR=
 # Check whether --enable-werror-always was given.
 if test "${enable_werror_always+set}" = set; then :
@@ -3371,6 +3460,12 @@ fi
 if test $enable_werror_always = yes; then :
   WERROR="$WERROR${WERROR:+ }-Werror"
 fi
+
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 

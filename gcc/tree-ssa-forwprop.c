@@ -1,5 +1,5 @@
 /* Forward propagation of expressions for single use variables.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "tree-cfgcleanup.h"
 #include "cfganal.h"
+#include "optabs-tree.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized
@@ -1458,6 +1459,7 @@ defcodefor_name (tree name, enum tree_code *code, tree *arg1, tree *arg2)
   code1 = TREE_CODE (name);
   arg11 = name;
   arg21 = NULL_TREE;
+  arg31 = NULL_TREE;
   grhs_class = get_gimple_rhs_class (code1);
 
   if (code1 == SSA_NAME)
@@ -1470,20 +1472,18 @@ defcodefor_name (tree name, enum tree_code *code, tree *arg1, tree *arg2)
 	  code1 = gimple_assign_rhs_code (def);
 	  arg11 = gimple_assign_rhs1 (def);
           arg21 = gimple_assign_rhs2 (def);
-          arg31 = gimple_assign_rhs2 (def);
+          arg31 = gimple_assign_rhs3 (def);
 	}
     }
-  else if (grhs_class == GIMPLE_TERNARY_RHS
-	   || GIMPLE_BINARY_RHS
-	   || GIMPLE_UNARY_RHS
-	   || GIMPLE_SINGLE_RHS)
-    extract_ops_from_tree (name, &code1, &arg11, &arg21, &arg31);
+  else if (grhs_class != GIMPLE_SINGLE_RHS)
+    code1 = ERROR_MARK;
 
   *code = code1;
   *arg1 = arg11;
   if (arg2)
     *arg2 = arg21;
-  /* Ignore arg3 currently. */
+  if (arg31)
+    *code = ERROR_MARK;
 }
 
 
@@ -1954,7 +1954,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   gimple *def_stmt;
   tree op, op2, orig, type, elem_type;
   unsigned elem_size, nelts, i;
-  enum tree_code code;
+  enum tree_code code, conv_code;
   constructor_elt *elt;
   unsigned char *sel;
   bool maybe_ident;
@@ -1971,6 +1971,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 
   sel = XALLOCAVEC (unsigned char, nelts);
   orig = NULL;
+  conv_code = ERROR_MARK;
   maybe_ident = true;
   FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (op), i, elt)
     {
@@ -1985,6 +1986,26 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       if (!def_stmt)
 	return false;
       code = gimple_assign_rhs_code (def_stmt);
+      if (code == FLOAT_EXPR
+	  || code == FIX_TRUNC_EXPR)
+	{
+	  op1 = gimple_assign_rhs1 (def_stmt);
+	  if (conv_code == ERROR_MARK)
+	    {
+	      if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (elt->value)))
+		  != GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op1))))
+		return false;
+	      conv_code = code;
+	    }
+	  else if (conv_code != code)
+	    return false;
+	  if (TREE_CODE (op1) != SSA_NAME)
+	    return false;
+	  def_stmt = SSA_NAME_DEF_STMT (op1);
+	  if (! is_gimple_assign (def_stmt))
+	    return false;
+	  code = gimple_assign_rhs_code (def_stmt);
+	}
       if (code != BIT_FIELD_REF)
 	return false;
       op1 = gimple_assign_rhs1 (def_stmt);
@@ -1998,7 +2019,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	{
 	  if (TREE_CODE (ref) != SSA_NAME)
 	    return false;
-	  if (!useless_type_conversion_p (type, TREE_TYPE (ref)))
+	  if (! VECTOR_TYPE_P (TREE_TYPE (ref))
+	      || ! useless_type_conversion_p (TREE_TYPE (op1),
+					      TREE_TYPE (TREE_TYPE (ref))))
 	    return false;
 	  orig = ref;
 	}
@@ -2010,8 +2033,26 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   if (i < nelts)
     return false;
 
+  if (! VECTOR_TYPE_P (TREE_TYPE (orig))
+      || (TYPE_VECTOR_SUBPARTS (type)
+	  != TYPE_VECTOR_SUBPARTS (TREE_TYPE (orig))))
+    return false;
+
+  tree tem;
+  if (conv_code != ERROR_MARK
+      && (! supportable_convert_operation (conv_code, type, TREE_TYPE (orig),
+					   &tem, &conv_code)
+	  || conv_code == CALL_EXPR))
+    return false;
+
   if (maybe_ident)
-    gimple_assign_set_rhs_from_tree (gsi, orig);
+    {
+      if (conv_code == ERROR_MARK)
+	gimple_assign_set_rhs_from_tree (gsi, orig);
+      else
+	gimple_assign_set_rhs_with_ops (gsi, conv_code, orig,
+					NULL_TREE, NULL_TREE);
+    }
   else
     {
       tree mask_type, *mask_elts;
@@ -2029,7 +2070,18 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       for (i = 0; i < nelts; i++)
 	mask_elts[i] = build_int_cst (TREE_TYPE (mask_type), sel[i]);
       op2 = build_vector (mask_type, mask_elts);
-      gimple_assign_set_rhs_with_ops (gsi, VEC_PERM_EXPR, orig, orig, op2);
+      if (conv_code == ERROR_MARK)
+	gimple_assign_set_rhs_with_ops (gsi, VEC_PERM_EXPR, orig, orig, op2);
+      else
+	{
+	  gimple *perm
+	    = gimple_build_assign (make_ssa_name (TREE_TYPE (orig)),
+				   VEC_PERM_EXPR, orig, orig, op2);
+	  orig = gimple_assign_lhs (perm);
+	  gsi_insert_before (gsi, perm, GSI_SAME_STMT);
+	  gimple_assign_set_rhs_with_ops (gsi, conv_code, orig,
+					  NULL_TREE, NULL_TREE);
+	}
     }
   update_stmt (gsi_stmt (*gsi));
   return true;
@@ -2099,13 +2151,43 @@ pass_forwprop::execute (function *fun)
   lattice.create (num_ssa_names);
   lattice.quick_grow_cleared (num_ssa_names);
   int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (fun));
-  int postorder_num = inverted_post_order_compute (postorder);
+  int postorder_num = pre_and_rev_post_order_compute_fn (cfun, NULL,
+							 postorder, false);
   auto_vec<gimple *, 4> to_fixup;
   to_purge = BITMAP_ALLOC (NULL);
   for (int i = 0; i < postorder_num; ++i)
     {
       gimple_stmt_iterator gsi;
       basic_block bb = BASIC_BLOCK_FOR_FN (fun, postorder[i]);
+
+      /* Propagate into PHIs and record degenerate ones in the lattice.  */
+      for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
+	   gsi_next (&si))
+	{
+	  gphi *phi = si.phi ();
+	  tree res = gimple_phi_result (phi);
+	  if (virtual_operand_p (res))
+	    continue;
+
+	  use_operand_p use_p;
+	  ssa_op_iter it;
+	  tree first = NULL_TREE;
+	  bool all_same = true;
+	  FOR_EACH_PHI_ARG (use_p, phi, it, SSA_OP_USE)
+	    {
+	      tree use = USE_FROM_PTR (use_p);
+	      tree tem = fwprop_ssa_val (use);
+	      if (! first)
+		first = tem;
+	      else if (! operand_equal_p (first, tem, 0))
+		all_same = false;
+	      if (tem != use
+		  && may_propagate_copy (use, tem))
+		propagate_value (use_p, tem);
+	    }
+	  if (all_same)
+	    fwprop_set_lattice_val (res, first);
+	}
 
       /* Apply forward propagation to all stmts in the basic-block.
 	 Note we update GSI within the loop as necessary.  */

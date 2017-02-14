@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2013-07-20  Tim Shen <timshen91@gmail.com>
 //
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::basic_regex<char> re(" ");
   const char s[] = "Quick brown fox.";
   int cnt = 0;

@@ -1,5 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-pre-stats" } */
+
+extern void spoil (void);
+
 int foo(int **a,int argc)
 {
   int b;
@@ -11,7 +14,8 @@ int foo(int **a,int argc)
     }
   else
     {
-
+      /* Spoil *a and *(*a) to avoid hoisting it before the "if (...)".  */
+      spoil ();
     }
   /* Should be able to eliminate one of the *(*a)'s along the if path
      by pushing it into the else path. We will also eliminate

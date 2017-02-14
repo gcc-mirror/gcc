@@ -1,7 +1,7 @@
 /* Miscellaneous utilities for tree streaming.  Things that are used
    in both input and output are here.
 
-   Copyright (C) 2011-2016 Free Software Foundation, Inc.
+   Copyright (C) 2011-2017 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -248,6 +248,32 @@ streamer_tree_cache_lookup (struct streamer_tree_cache_d *cache, tree t,
 }
 
 
+/* Verify that NODE is in CACHE.  */
+
+static void
+verify_common_node_recorded (struct streamer_tree_cache_d *cache, tree node)
+{
+  /* Restrict this to flag_checking only because in general violating it is
+     harmless plus we never know what happens on all targets/frontend/flag(!)
+     combinations.  */
+  if (!flag_checking)
+    return;
+
+  if (cache->node_map)
+    gcc_assert (streamer_tree_cache_lookup (cache, node, NULL));
+  else
+    {
+      bool found = false;
+      gcc_assert (cache->nodes.exists ());
+      /* Linear search...  */
+      for (unsigned i = 0; !found && i < cache->nodes.length (); ++i)
+	if (cache->nodes[i] == node)
+	  found = true;
+      gcc_assert (found);
+    }
+}
+
+
 /* Record NODE in CACHE.  */
 
 static void
@@ -277,12 +303,32 @@ record_common_node (struct streamer_tree_cache_d *cache, tree node)
      in the cache as hash value.  */
   streamer_tree_cache_append (cache, node, cache->nodes.length ());
 
-  if (POINTER_TYPE_P (node)
-      || TREE_CODE (node) == COMPLEX_TYPE
-      || TREE_CODE (node) == ARRAY_TYPE)
-    record_common_node (cache, TREE_TYPE (node));
-  else if (TREE_CODE (node) == RECORD_TYPE)
+  switch (TREE_CODE (node))
     {
+    case ERROR_MARK:
+    case FIELD_DECL:
+    case FIXED_POINT_TYPE:
+    case IDENTIFIER_NODE:
+    case INTEGER_CST:
+    case INTEGER_TYPE:
+    case POINTER_BOUNDS_TYPE:
+    case REAL_TYPE:
+    case TREE_LIST:
+    case VOID_CST:
+    case VOID_TYPE:
+      /* No recursive trees.  */
+      break;
+    case ARRAY_TYPE:
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+      record_common_node (cache, TREE_TYPE (node));
+      break;
+    case COMPLEX_TYPE:
+      /* Verify that a complex type's component type (node_type) has been
+	 handled already (and we thus don't need to recurse here).  */
+      verify_common_node_recorded (cache, TREE_TYPE (node));
+      break;
+    case RECORD_TYPE:
       /* The FIELD_DECLs of structures should be shared, so that every
 	 COMPONENT_REF uses the same tree node when referencing a field.
 	 Pointer equality between FIELD_DECLs is used by the alias
@@ -291,6 +337,10 @@ record_common_node (struct streamer_tree_cache_d *cache, tree node)
 	 nonoverlapping_component_refs_of_decl_p).  */
       for (tree f = TYPE_FIELDS (node); f; f = TREE_CHAIN (f))
 	record_common_node (cache, f);
+      break;
+    default:
+      /* Unexpected tree code.  */
+      gcc_unreachable ();
     }
 }
 

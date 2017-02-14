@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,8 +28,6 @@ using namespace __gnu_test;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const char s[] = "abc";
   const std::regex re("(\\d+)|(\\w+)");
 
@@ -55,8 +53,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::match_results<const char*> m;
   const char s[] = "a";
   VERIFY(regex_search_debug(s, m, std::regex("a")));

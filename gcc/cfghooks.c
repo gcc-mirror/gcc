@@ -1,5 +1,5 @@
 /* Hooks for cfg representation specific functions.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -1030,11 +1030,17 @@ force_nonfallthru (edge e)
 
       if (current_loops != NULL)
 	{
+	  basic_block pred = single_pred (ret);
+	  basic_block succ = single_succ (ret);
 	  struct loop *loop
-	    = find_common_loop (single_pred (ret)->loop_father,
-				single_succ (ret)->loop_father);
+	    = find_common_loop (pred->loop_father, succ->loop_father);
 	  rescan_loop_exit (e, false, true);
 	  add_bb_to_loop (ret, loop);
+
+	  /* If we split the latch edge of loop adjust the latch block.  */
+	  if (loop->latch == pred
+	      && loop->header == succ)
+	    loop->latch = ret;
 	}
     }
 

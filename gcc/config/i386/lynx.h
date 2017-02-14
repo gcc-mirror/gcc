@@ -1,5 +1,5 @@
 /* Definitions for LynxOS on i386.
-   Copyright (C) 1993-2016 Free Software Foundation, Inc.
+   Copyright (C) 1993-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -85,5 +85,3 @@ along with GCC; see the file COPYING3.  If not see
    TLS is detected by configure.  We undefine it here.  */
 
 #undef HAVE_AS_TLS
-
-#define IX86_MAYBE_NO_LIBGCC_TFMODE

@@ -1,5 +1,5 @@
 @c -*-texinfo-*-
-@c Copyright (C) 2001-2016 Free Software Foundation, Inc.
+@c Copyright (C) 2001-2017 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -285,7 +285,7 @@ is needed.  Note that this may require creation of a new basic block.
 Exception handling edges represent possible control transfers from a
 trapping instruction to an exception handler.  The definition of
 ``trapping'' varies.  In C++, only function calls can throw, but for
-Java and Ada, exceptions like division by zero or segmentation fault are
+Ada exceptions like division by zero or segmentation fault are
 defined and thus each instruction possibly throwing this kind of
 exception needs to be handled as control flow instruction.  Exception
 edges have the @code{EDGE_ABNORMAL} and @code{EDGE_EH} flags set.
@@ -594,8 +594,7 @@ can just use @code{NEXT_INSN} and @code{PREV_INSN} instead.  @xref{Insns}.
 Usually a code manipulating pass simplifies the instruction stream and
 the flow of control, possibly eliminating some edges.  This may for
 example happen when a conditional jump is replaced with an
-unconditional jump, but also when simplifying possibly trapping
-instruction to non-trapping while compiling Java.  Updating of edges
+unconditional jump.  Updating of edges
 is not transparent and each optimization pass is required to do so
 manually.  However only few cases occur in practice.  The pass may
 call @code{purge_dead_edges} on a given basic block to remove

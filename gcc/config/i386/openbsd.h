@@ -1,5 +1,5 @@
 /* Configuration for an OpenBSD i386 target.
-   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+   Copyright (C) 1999-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -99,5 +99,3 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_QUAD
 
 #define TARGET_HAVE_NAMED_SECTIONS false
-
-#define IX86_MAYBE_NO_LIBGCC_TFMODE

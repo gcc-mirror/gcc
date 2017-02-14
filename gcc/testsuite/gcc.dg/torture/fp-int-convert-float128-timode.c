@@ -9,10 +9,11 @@
 #include "fp-int-convert.h"
 
 #define FLOAT128_MANT_DIG 113
+#define FLOAT128_MAX_EXP 16384
 
 int
 main (void)
 {
-  TEST_I_F(TItype, UTItype, __float128, FLOAT128_MANT_DIG);
+  TEST_I_F(TItype, UTItype, __float128, FLOAT128_MANT_DIG, FLOAT128_MAX_EXP);
   exit (0);
 }

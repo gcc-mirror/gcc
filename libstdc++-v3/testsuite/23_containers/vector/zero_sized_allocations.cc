@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,7 +22,7 @@
 
 unsigned int zero_sized_news = 0;
 
-void *operator new(size_t size) throw (std::bad_alloc)
+void *operator new(std::size_t size) THROW (std::bad_alloc)
 {
   /* malloc(0) is unpredictable; avoid it.  */
   if (size == 0)
@@ -45,11 +45,17 @@ void operator delete(void *ptr) throw()
     std::free(ptr);
 }
 
+#if __cpp_sized_deallocation
+void operator delete(void *ptr, std::size_t) throw()
+{
+  if (ptr != 0)
+    std::free(ptr);
+}
+#endif
+
 // http://gcc.gnu.org/ml/libstdc++/2007-09/msg00006.html
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<std::vector<int> > *v;
   VERIFY( zero_sized_news == 0 );
 
@@ -57,7 +63,7 @@ void test01()
   VERIFY( zero_sized_news == 0 );
 
   v->resize(10);
-  delete(v);
+  delete v;
   VERIFY( zero_sized_news == 0 );
 }
 

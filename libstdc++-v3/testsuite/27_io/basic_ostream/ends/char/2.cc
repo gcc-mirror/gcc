@@ -1,6 +1,6 @@
 // 1999-07-22 bkoz
 
-// Copyright (C) 1994-2016 Free Software Foundation, Inc.
+// Copyright (C) 1994-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,6 @@ void test02()
   using namespace std;
   typedef ostringstream::int_type int_type;
 
-  bool test __attribute__((unused)) = true;
   ostringstream osst_01;
   const string str_00("herbie_hancock");
   int_type len1 = str_00.size();

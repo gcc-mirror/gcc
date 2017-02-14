@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 
 // 2008-07-03 Chris Fairles <chris.fairles@gmail.com>
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::ratio<1,3> r0;
   std::ratio<2,6> r1;  
   std::ratio<2,-6> r2;

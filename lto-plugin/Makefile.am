@@ -3,7 +3,7 @@
 ACLOCAL_AMFLAGS = -I .. -I ../config
 AUTOMAKE_OPTIONS = no-dependencies
 
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 target_noncanonical := @target_noncanonical@
 libexecsubdir := $(libexecdir)/gcc/$(real_target_noncanonical)/$(gcc_version)$(accel_dir_suffix)
 

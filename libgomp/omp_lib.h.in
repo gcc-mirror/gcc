@@ -1,4 +1,4 @@
-!  Copyright (C) 2005-2016 Free Software Foundation, Inc.
+!  Copyright (C) 2005-2017 Free Software Foundation, Inc.
 !  Contributed by Jakub Jelinek <jakub@redhat.com>.
 
 !  This file is part of the GNU Offloading and Multi Processing Library
@@ -58,7 +58,7 @@
       parameter (omp_lock_hint_contended = 2)
       parameter (omp_lock_hint_nonspeculative = 4)
       parameter (omp_lock_hint_speculative = 8)
-      parameter (openmp_version = 201307)
+      parameter (openmp_version = 201511)
 
       external omp_init_lock, omp_init_nest_lock
       external omp_init_lock_with_hint

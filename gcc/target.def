@@ -1,5 +1,5 @@
 /* Target hook definitions.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -431,6 +431,22 @@ is non-NULL, it is the @code{VAR_DECL} or @code{FUNCTION_DECL} with which\n\
 this section is associated.",
  void, (const char *name, unsigned int flags, tree decl),
  default_no_named_section)
+
+/* Tell assembler what section attributes to assign this elf section
+   declaration, using their numerical value.  */
+DEFHOOK
+(elf_flags_numeric,
+ "This hook can be used to encode ELF section flags for which no letter\n\
+code has been defined in the assembler.  It is called by\n\
+@code{default_asm_named_section} whenever the section flags need to be\n\
+emitted in the assembler output.  If the hook returns true, then the\n\
+numerical value for ELF section flags should be calculated from\n\
+@var{flags} and saved in @var{*num}; the value is printed out instead of the\n\
+normal sequence of letter codes.  If the hook is not defined, or if it\n\
+returns false, then @var{num} is ignored and the traditional letter sequence\n\
+is emitted.",
+ bool, (unsigned int flags, unsigned int *num),
+ hook_bool_uint_uintp_false)
 
 /* Return preferred text (sub)section for function DECL.
    Main purpose of this function is to separate cold, normal and hot
@@ -932,18 +948,20 @@ HOOK_VECTOR (TARGET_SCHED, sched)
 DEFHOOK
 (adjust_cost,
  "This function corrects the value of @var{cost} based on the\n\
-relationship between @var{insn} and @var{dep_insn} through the\n\
-dependence @var{link}.  It should return the new value.  The default\n\
-is to make no adjustment to @var{cost}.  This can be used for example\n\
-to specify to the scheduler using the traditional pipeline description\n\
-that an output- or anti-dependence does not incur the same cost as a\n\
-data-dependence.  If the scheduler using the automaton based pipeline\n\
+relationship between @var{insn} and @var{dep_insn} through a\n\
+dependence of type dep_type, and strength @var{dw}.  It should return the new\n\
+value.  The default is to make no adjustment to @var{cost}.  This can be\n\
+used for example to specify to the scheduler using the traditional pipeline\n\
+description that an output- or anti-dependence does not incur the same cost\n\
+as a data-dependence.  If the scheduler using the automaton based pipeline\n\
 description, the cost of anti-dependence is zero and the cost of\n\
 output-dependence is maximum of one and the difference of latency\n\
 times of the first and the second insns.  If these values are not\n\
 acceptable, you could use the hook to modify them too.  See also\n\
 @pxref{Processor pipeline description}.",
- int, (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost), NULL)
+ int, (rtx_insn *insn, int dep_type1, rtx_insn *dep_insn, int cost,
+       unsigned int dw),
+ NULL)
 
 /* Adjust the priority of an insn as you see fit.  Returns the new priority.  */
 DEFHOOK
@@ -1346,15 +1364,6 @@ closer to one another---i.e., closer than the dependence distance;  however,\n\
 not in cases of ``costly dependences'', which this hooks allows to define.",
  bool, (struct _dep *_dep, int cost, int distance), NULL)
 
-DEFHOOK_UNDOC
-(adjust_cost_2,
- "Given the current cost, @var{cost}, of an insn, @var{insn}, calculate and\
- return a new cost based on its relationship to @var{dep_insn} through the\
- dependence of weakness @var{dw}.  The default is to make no adjustment.",
- int, (rtx_insn *insn, int dep_type1, rtx_insn *dep_insn, int cost,
-       unsigned int dw),
- NULL)
-
 /* The following member value is a pointer to a function called
    by the insn scheduler. This hook is called to notify the backend
    that new instructions were emitted.  */
@@ -1470,6 +1479,15 @@ DEFHOOK_UNDOC
 (get_insn_checked_ds,
  "Return speculation types that are checked for instruction @var{insn}",
  unsigned int, (rtx_insn *insn), NULL)
+
+DEFHOOK
+(can_speculate_insn,
+ "Some instructions should never be speculated by the schedulers, usually\n\
+ because the instruction is too expensive to get this wrong.  Often such\n\
+ instructions have long latency, and often they are not fully modeled in the\n\
+ pipeline descriptions.  This hook should return @code{false} if @var{insn}\n\
+ should not be speculated.",
+ bool, (rtx_insn *insn), hook_bool_rtx_insn_true)
 
 DEFHOOK_UNDOC
 (skip_rtx_p,
@@ -1639,6 +1657,18 @@ int, (struct cgraph_node *), NULL)
 
 HOOK_VECTOR_END (simd_clone)
 
+/* Functions relating to OpenMP SIMT vectorization transform.  */
+#undef HOOK_PREFIX
+#define HOOK_PREFIX "TARGET_SIMT_"
+HOOK_VECTOR (TARGET_SIMT, simt)
+
+DEFHOOK
+(vf,
+"Return number of threads in SIMT thread group on the target.",
+int, (void), NULL)
+
+HOOK_VECTOR_END (simt)
+
 /* Functions relating to openacc.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_GOACC_"
@@ -1780,10 +1810,10 @@ misalignment value (@var{misalign}).",
  default_builtin_vectorization_cost)
 
 /* Return true if vector alignment is reachable (by peeling N
-   iterations) for the given type.  */
+   iterations) for the given scalar type.  */
 DEFHOOK
 (vector_alignment_reachable,
- "Return true if vector alignment is reachable (by peeling N iterations) for the given type.",
+ "Return true if vector alignment is reachable (by peeling N iterations) for the given scalar type @var{type}.  @var{is_packed} is false if the scalar access using @var{type} is known to be naturally aligned.",
  bool, (const_tree type, bool is_packed),
  default_builtin_vector_alignment_reachable)
 
@@ -2618,7 +2648,7 @@ DEFHOOK
  insns are saved in @var{gen_seq}.  They will be emitted when all the\n\
  compares in the the conditional comparision are generated without error.\n\
  @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.",
- rtx, (rtx *prep_seq, rtx *gen_seq, int code, tree op0, tree op1),
+ rtx, (rtx_insn **prep_seq, rtx_insn **gen_seq, int code, tree op0, tree op1),
  NULL)
 
 DEFHOOK
@@ -2635,7 +2665,7 @@ DEFHOOK
  be appropriate for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.\n\
  @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.\n\
  @var{bit_code} is @code{AND} or @code{IOR}, which is the op on the compares.",
- rtx, (rtx *prep_seq, rtx *gen_seq, rtx prev, int cmp_code, tree op0, tree op1, int bit_code),
+ rtx, (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev, int cmp_code, tree op0, tree op1, int bit_code),
  NULL)
 
 /* Return a new value for loop unroll size.  */
@@ -3241,6 +3271,20 @@ The result is the value to be used with @code{DW_AT_address_class}.",
  int, (addr_space_t as),
  default_addr_space_debug)
 
+/* Function to emit custom diagnostic if an address space is used.  */
+DEFHOOK
+(diagnose_usage,
+ "Define this hook if the availability of an address space depends on\n\
+command line options and some diagnostics should be printed when the\n\
+address space is used.  This hook is called during parsing and allows\n\
+to emit a better diagnostic compared to the case where the address space\n\
+was not registered with @code{c_register_addr_space}.  @var{as} is\n\
+the address space as registered with @code{c_register_addr_space}.\n\
+@var{loc} is the location of the address space qualifier token.\n\
+The default implementation does nothing.",
+ void, (addr_space_t as, location_t loc),
+ default_addr_space_diagnose_usage)
+
 HOOK_VECTOR_END (addr_space)
 
 #undef HOOK_PREFIX
@@ -3325,6 +3369,26 @@ hook returns true for all of @code{SFmode}, @code{DFmode}, \n\
 @code{XFmode} and @code{TFmode}, if such modes exist.",
  bool, (machine_mode mode),
  default_libgcc_floating_mode_supported_p)
+
+DEFHOOK
+(floatn_mode,
+ "Define this to return the machine mode to use for the type \n\
+@code{_Float@var{n}}, if @var{extended} is false, or the type \n\
+@code{_Float@var{n}x}, if @var{extended} is true.  If such a type \n\
+is not supported, return @code{VOIDmode}.  The default version of this \n\
+hook returns @code{SFmode} for @code{_Float32}, @code{DFmode} for \n\
+@code{_Float64} and @code{_Float32x} and @code{TFmode} for \n\
+@code{_Float128}, if those modes exist and satisfy the requirements for \n\
+those types and pass @code{TARGET_SCALAR_MODE_SUPPORTED_P} and \n\
+@code{TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P}; for @code{_Float64x}, it \n\
+returns the first of @code{XFmode} and @code{TFmode} that exists and \n\
+satisfies the same requirements; for other types, it returns \n\
+@code{VOIDmode}.  The hook is only called for values of @var{n} and \n\
+@var{extended} that are valid according to ISO/IEC TS 18661-3:2015; that \n\
+is, @var{n} is one of 32, 64, 128, or, if @var{extended} is false, 16 or \n\
+greater than 128 and a multiple of 32.",
+ machine_mode, (int n, bool extended),
+ default_floatn_mode)
 
 /* Compute cost of moving data from a register of class FROM to one of
    TO, using MODE.  */
@@ -3571,6 +3635,30 @@ should probably only be given to addresses with different numbers of\n\
 registers on machines with lots of registers.",
  int, (rtx address, machine_mode mode, addr_space_t as, bool speed),
  default_address_cost)
+
+/* Give a cost, in RTX Costs units, for an edge.  Like BRANCH_COST, but with
+   well defined units.  */
+DEFHOOK
+(max_noce_ifcvt_seq_cost,
+ "This hook returns a value in the same units as @code{TARGET_RTX_COSTS},\n\
+giving the maximum acceptable cost for a sequence generated by the RTL\n\
+if-conversion pass when conditional execution is not available.\n\
+The RTL if-conversion pass attempts to convert conditional operations\n\
+that would require a branch to a series of unconditional operations and\n\
+@code{mov@var{mode}cc} insns.  This hook returns the maximum cost of the\n\
+unconditional instructions and the @code{mov@var{mode}cc} insns.\n\
+RTL if-conversion is cancelled if the cost of the converted sequence\n\
+is greater than the value returned by this hook.\n\
+\n\
+@code{e} is the edge between the basic block containing the conditional\n\
+branch to the basic block which would be executed if the condition\n\
+were true.\n\
+\n\
+The default implementation of this hook uses the\n\
+@code{max-rtl-if-conversion-[un]predictable} parameters if they are set,\n\
+and uses a multiple of @code{BRANCH_COST} otherwise.",
+unsigned int, (edge e),
+default_max_noce_ifcvt_seq_cost)
 
 /* Permit speculative instructions in delay slots during delayed-branch 
    scheduling.  */
@@ -3953,6 +4041,15 @@ The default version of this hook invokes a function called\n\
 normally defined in @file{libgcc2.c}.",
  tree, (void),
  default_external_stack_protect_fail)
+
+/* This target hook allows the operating system to disable the default stack
+   protector runtime support.  */
+DEFHOOK
+(stack_protect_runtime_enabled_p,
+ "Returns true if the target wants GCC's default stack protect runtime support,\
+ otherwise return false.  The default implementation always returns true.",
+ bool, (void),
+ hook_bool_void_true)
 
 DEFHOOK
 (can_use_doloop_p,
@@ -4723,6 +4820,25 @@ be returned; otherwise @var{addr} should be returned unchanged.\n\
 If this hook is not defined, @var{addr} will be used for function calls.",
  rtx, (rtx addr), NULL)
 
+DEFHOOKPOD
+(custom_function_descriptors,
+ "This hook should be defined to a power of 2 if the target will benefit\n\
+from the use of custom descriptors for nested functions instead of the\n\
+standard trampolines.  Such descriptors are created at run time on the\n\
+stack and made up of data only, but they are non-standard so the generated\n\
+code must be prepared to deal with them.  This hook should be defined to 0\n\
+if the target uses function descriptors for its standard calling sequence,\n\
+like for example HP-PA or IA-64.  Using descriptors for nested functions\n\
+eliminates the need for trampolines that reside on the stack and require\n\
+it to be made executable.\n\
+\n\
+The value of the macro is used to parameterize the run-time identification\n\
+scheme implemented to distinguish descriptors from function addresses: it\n\
+gives the number of bytes by which their address is misaligned compared\n\
+with function addresses.  The value of 1 will generally work, unless it is\n\
+already reserved by the target for another purpose, like for example on ARM.",\
+ int, -1)
+
 /* Return the number of bytes of its own arguments that a function
    pops on returning, or 0 if the function pops no arguments and the
    caller must therefore pop them all after the function returns.  */
@@ -4878,8 +4994,8 @@ DEFHOOK
 (lra_p,
  "A target hook which returns true if we use LRA instead of reload pass.\
   \
-  The default version of this target hook returns always false, but new\
-  ports should use LRA.",
+  The default version of this target hook returns true.  New ports\
+  should use LRA, and existing ports are encouraged to convert.",
  bool, (void),
  default_lra_p)
 
@@ -4937,6 +5053,18 @@ DEFHOOK
  reg_class_t, (reg_class_t, machine_mode),
  NULL)
 
+/* Determine an additional allocno class.  */
+DEFHOOK
+(additional_allocno_class_p,
+ "This hook should return @code{true} if given class of registers should\
+  be an allocno class in any way.  Usually RA uses only one register\
+  class from all classes containing the same register set.  In some\
+  complicated cases, you need to have two or more such classes as\
+  allocno ones for RA correct work.  Not defining this hook is\
+  equivalent to returning @code{false} for all inputs.",
+ bool, (reg_class_t),
+ hook_bool_reg_class_t_false)
+
 DEFHOOK
 (cstore_mode,
  "This hook defines the machine mode to use for the boolean result of\
@@ -4946,6 +5074,16 @@ DEFHOOK
   patterns.",
   machine_mode, (enum insn_code icode),
   default_cstore_mode)
+
+/* This target hook allows the backend to compute the register pressure
+   classes to use.  */
+DEFHOOK
+(compute_pressure_classes,
+ "A target hook which lets a backend compute the set of pressure classes to\
+  be used by those optimization passes which take register pressure into\
+  account, as opposed to letting IRA compute them.  It returns the number of\
+  register classes stored in the array @var{pressure_classes}.",
+ int, (enum reg_class *pressure_classes), NULL)
 
 /* True if a structure, union or array with MODE containing FIELD should
    be accessed using BLKmode.  */
@@ -4962,6 +5100,15 @@ retain the field's mode.\n\
 Normally, this is not needed.",
  bool, (const_tree field, machine_mode mode),
  default_member_type_forces_blk)
+
+/* See tree-ssa-math-opts.c:divmod_candidate_p for conditions
+   that gate the divod transform.  */
+DEFHOOK
+(expand_divmod_libfunc,
+ "Define this hook for enabling divmod transform if the port does not have\n\
+hardware divmod insn but defines target-specific divmod libfuncs.", 
+ void, (rtx libfunc, machine_mode mode, rtx op0, rtx op1, rtx *quot, rtx *rem),
+ NULL)
 
 /* Return the class for a secondary reload, and fill in extra information.  */
 DEFHOOK
@@ -5238,7 +5385,7 @@ five otherwise.  This is best for most machines.",
  unsigned int, (void),
  default_case_values_threshold)
 
-/* Retutn true if a function must have and use a frame pointer.  */
+/* Return true if a function must have and use a frame pointer.  */
 DEFHOOK
 (frame_pointer_required,
  "This target hook should return @code{true} if a function must have and use\n\
@@ -5255,7 +5402,7 @@ pointer.\n\
 In certain cases, the compiler does not know how to produce valid code\n\
 without a frame pointer.  The compiler recognizes those cases and\n\
 automatically gives the function a frame pointer regardless of what\n\
-@code{TARGET_FRAME_POINTER_REQUIRED} returns.  You don't need to worry about\n\
+@code{targetm.frame_pointer_required} returns.  You don't need to worry about\n\
 them.\n\
 \n\
 In a function that does not require a frame pointer, the frame pointer\n\
@@ -5270,11 +5417,10 @@ Default return value is @code{false}.",
    from-reg with register number to-reg.  */
 DEFHOOK
 (can_eliminate,
- "This target hook should returns @code{true} if the compiler is allowed to\n\
+ "This target hook should return @code{true} if the compiler is allowed to\n\
 try to replace register number @var{from_reg} with register number\n\
-@var{to_reg}.  This target hook need only be defined if @code{ELIMINABLE_REGS}\n\
-is defined, and will usually be @code{true}, since most of the cases\n\
-preventing register elimination are things that the compiler already\n\
+@var{to_reg}.  This target hook will usually be @code{true}, since most of the\n\
+cases preventing register elimination are things that the compiler already\n\
 knows about.\n\
 \n\
 Default return value is @code{true}.",
@@ -5290,7 +5436,7 @@ DEFHOOK
 @code{fixed_regs}, @code{call_used_regs}, @code{global_regs},\n\
 @code{reg_names}, and @code{reg_class_contents}, to take into account\n\
 any dependence of these register sets on target flags.  The first three\n\
-of these are of type @code{char []} (interpreted as Boolean vectors).\n\
+of these are of type @code{char []} (interpreted as boolean vectors).\n\
 @code{global_regs} is a @code{const char *[]}, and\n\
 @code{reg_class_contents} is a @code{HARD_REG_SET}.  Before the macro is\n\
 called, @code{fixed_regs}, @code{call_used_regs},\n\
@@ -5329,6 +5475,27 @@ DEFHOOK_UNDOC
  or VOIDmode if non-standard suffixes are unsupported.",
  machine_mode, (char c),
  default_mode_for_suffix)
+
+DEFHOOK
+(excess_precision,
+ "Return a value, with the same meaning as the C99 macro\
+ @code{FLT_EVAL_METHOD} that describes which excess precision should be\
+ applied.  @var{type} is either @code{EXCESS_PRECISION_TYPE_IMPLICIT},\
+ @code{EXCESS_PRECISION_TYPE_FAST}, or\
+ @code{EXCESS_PRECISION_TYPE_STANDARD}.  For\
+ @code{EXCESS_PRECISION_TYPE_IMPLICIT}, the target should return which\
+ precision and range operations will be implictly evaluated in regardless\
+ of the excess precision explicitly added.  For\
+ @code{EXCESS_PRECISION_TYPE_STANDARD} and\
+ @code{EXCESS_PRECISION_TYPE_FAST}, the target should return the\
+ explicit excess precision that should be added depending on the\
+ value set for @option{-fexcess-precision=@r{[}standard@r{|}fast@r{]}}.\
+ Note that unpredictable explicit excess precision does not make sense,\
+ so a target should never return @code{FLT_EVAL_METHOD_UNPREDICTABLE}\
+ when @var{type} is @code{EXCESS_PRECISION_TYPE_STANDARD} or\
+ @code{EXCESS_PRECISION_TYPE_FAST}.",
+ enum flt_eval_method, (enum excess_precision_type type),
+ default_excess_precision)
 
 HOOK_VECTOR_END (c)
 
@@ -5742,6 +5909,63 @@ DEFHOOK
  bool, (tree),
  hook_bool_tree_true)
 
+#undef HOOK_PREFIX
+#define HOOK_PREFIX "TARGET_SHRINK_WRAP_"
+HOOK_VECTOR (TARGET_SHRINK_WRAP_HOOKS, shrink_wrap)
+
+DEFHOOK
+(get_separate_components,
+ "This hook should return an @code{sbitmap} with the bits set for those\n\
+components that can be separately shrink-wrapped in the current function.\n\
+Return @code{NULL} if the current function should not get any separate\n\
+shrink-wrapping.\n\
+Don't define this hook if it would always return @code{NULL}.\n\
+If it is defined, the other hooks in this group have to be defined as well.",
+ sbitmap, (void),
+ NULL)
+
+DEFHOOK
+(components_for_bb,
+ "This hook should return an @code{sbitmap} with the bits set for those\n\
+components where either the prologue component has to be executed before\n\
+the @code{basic_block}, or the epilogue component after it, or both.",
+ sbitmap, (basic_block),
+ NULL)
+
+DEFHOOK
+(disqualify_components,
+ "This hook should clear the bits in the @var{components} bitmap for those\n\
+components in @var{edge_components} that the target cannot handle on edge\n\
+@var{e}, where @var{is_prologue} says if this is for a prologue or an\n\
+epilogue instead.",
+ void, (sbitmap components, edge e, sbitmap edge_components, bool is_prologue),
+ NULL)
+
+DEFHOOK
+(emit_prologue_components,
+ "Emit prologue insns for the components indicated by the parameter.",
+ void, (sbitmap),
+ NULL)
+
+DEFHOOK
+(emit_epilogue_components,
+ "Emit epilogue insns for the components indicated by the parameter.",
+ void, (sbitmap),
+ NULL)
+
+DEFHOOK
+(set_handled_components,
+ "Mark the components in the parameter as handled, so that the\n\
+@code{prologue} and @code{epilogue} named patterns know to ignore those\n\
+components.  The target code should not hang on to the @code{sbitmap}, it\n\
+will be deleted after this call.",
+ void, (sbitmap),
+ NULL)
+
+HOOK_VECTOR_END (shrink_wrap)
+#undef HOOK_PREFIX
+#define HOOK_PREFIX "TARGET_"
+
 /* Determine the type of unwind info to emit for debugging.  */
 DEFHOOK
 (debug_unwind_info,
@@ -5783,6 +6007,24 @@ You need not to implement this hook if it would never change the\n\
 comparison code or operands.",
  void, (int *code, rtx *op0, rtx *op1, bool op0_preserve_value),
  default_canonicalize_comparison)
+
+DEFHOOK
+(min_arithmetic_precision,
+ "On some RISC architectures with 64-bit registers, the processor also\n\
+maintains 32-bit condition codes that make it possible to do real 32-bit\n\
+arithmetic, although the operations are performed on the full registers.\n\
+\n\
+On such architectures, defining this hook to 32 tells the compiler to try\n\
+using 32-bit arithmetical operations setting the condition codes instead\n\
+of doing full 64-bit arithmetic.\n\
+\n\
+More generally, define this hook on RISC architectures if you want the\n\
+compiler to try using arithmetical operations setting the condition codes\n\
+with a precision lower than the word precision.\n\
+\n\
+You need not define this hook if @code{WORD_REGISTER_OPERATIONS} is not\n\
+defined to 1.",
+ unsigned int, (void), default_min_arithmetic_precision)
 
 DEFHOOKPOD
 (atomic_test_and_set_trueval,
@@ -5909,13 +6151,6 @@ DEFHOOKPOD
  bool, false)
 
 DEFHOOKPOD
-(force_at_comp_dir,
- "True if the @code{DW_AT_comp_dir} attribute should be emitted for each \
- compilation unit.  This attribute is required for the darwin linker \
- to emit debug information.",
- bool, false)
-
-DEFHOOKPOD
 (delay_sched2, "True if sched2 is not to be run at its normal place.\n\
 This usually means it will be run as part of machine-specific reorg.",
 bool, false)
@@ -5987,6 +6222,12 @@ HOOK_VECTOR_END (mode_switching)
   DEFHOOKPOD (code_for_##NAME, "*", enum insn_code, CODE_FOR_nothing)
 #include "target-insns.def"
 #undef DEF_TARGET_INSN
+
+DEFHOOK
+(run_target_selftests,
+ "If selftests are enabled, run any selftests for this target.",
+ void, (void),
+ NULL)
 
 /* Close the 'struct gcc_target' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)

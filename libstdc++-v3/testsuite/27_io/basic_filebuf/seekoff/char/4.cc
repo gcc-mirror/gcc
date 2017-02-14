@@ -1,6 +1,6 @@
 // { dg-require-fileio "" }
 
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   typedef filebuf::pos_type pos_type;
   const char name[] = "tmp_seekoff-4.tst";

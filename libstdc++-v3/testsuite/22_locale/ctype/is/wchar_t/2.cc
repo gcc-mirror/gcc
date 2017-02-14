@@ -1,7 +1,7 @@
 // { dg-do run { xfail { ! { *-*-linux* *-*-gnu* } } } }
 // { dg-require-namedlocale "de_DE.ISO8859-15" }
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,8 +33,6 @@ void test02()
   using namespace std;
   typedef ctype_base::mask 	mask;
   typedef vector<mask> 		vector_type;
-
-  bool test __attribute__((unused)) = true;
 
   //  const int max = numeric_limits<char>::max();
   const int max = 255;

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Renesas H8/300 version
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -56,8 +56,8 @@ extern void split_adds_subs (machine_mode, rtx[]);
 extern int h8300_eightbit_constant_address_p (rtx);
 extern int h8300_tiny_constant_address_p (rtx);
 extern int byte_accesses_mergeable_p (rtx, rtx);
-extern int same_cmp_preceding_p (rtx);
-extern int same_cmp_following_p (rtx);
+extern int same_cmp_preceding_p (rtx_insn *);
+extern int same_cmp_following_p (rtx_insn *);
 
 /* Used in builtins.c */
 extern rtx h8300_return_addr_rtx (int, rtx);

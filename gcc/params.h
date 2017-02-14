@@ -1,5 +1,5 @@
 /* params.h - Run-time parameters.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
 This file is part of GCC.
@@ -244,5 +244,7 @@ extern void init_param_values (int *params);
   PARAM_VALUE (PARAM_ASAN_USE_AFTER_RETURN)
 #define ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD \
   PARAM_VALUE (PARAM_ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD)
+#define ASAN_PARAM_USE_AFTER_SCOPE_DIRECT_EMISSION_THRESHOLD \
+  ((unsigned) PARAM_VALUE (PARAM_USE_AFTER_SCOPE_DIRECT_EMISSION_THRESHOLD))
 
 #endif /* ! GCC_PARAMS_H */

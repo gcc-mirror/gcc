@@ -160,7 +160,7 @@ For example on x86-linux::
 
   .. image:: rtlibrary-structure.png
 
-.. only:: not (html or latex) 
+.. only:: not (html or latex)
 
    ::
 
@@ -562,7 +562,7 @@ and::
 
    Ada.Command_Line.Argument (1) -> "'*.txt'"
 
-   
+
 .. _Mixed-Language_Programming_on_Windows:
 
 Mixed-Language Programming on Windows
@@ -1944,7 +1944,7 @@ cookbook-style sequence of steps to follow:
      $ gprbuild -p mylib.gpr
 
 2. Produce a .def file for the symbols you need to interface with, either by
-   hand or automatically with possibly some manual adjustments 
+   hand or automatically with possibly some manual adjustments
    (see :ref:`Creating Definition File Automatically <Create_Def_File_Automatically>`):
 
   ::

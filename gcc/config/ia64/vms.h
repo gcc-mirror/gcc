@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler. IA64-VMS version.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Douglas B Rupp (rupp@gnat.com).
 
 This file is part of GCC.
@@ -154,6 +154,3 @@ STATIC func_ptr __CTOR_LIST__[1]                                             \
 /* Default values for _CRTL_VER and _VMS_VER.  */
 #define VMS_DEFAULT_CRTL_VER 80300000
 #define VMS_DEFAULT_VMS_VER 80300000
-
-#define IA64_NO_LIBGCC_XFMODE
-#define IA64_NO_LIBGCC_TFMODE

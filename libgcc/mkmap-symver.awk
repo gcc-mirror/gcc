@@ -1,5 +1,5 @@
 # Generate an ELF symbol version map a-la Solaris and GNU ld.
-#	Copyright (C) 2007-2016 Free Software Foundation, Inc.
+#	Copyright (C) 2007-2017 Free Software Foundation, Inc.
 #	Contributed by Richard Henderson <rth@cygnus.com>
 #
 # This file is part of GCC.
@@ -47,7 +47,11 @@ state == "nm" && ($1 == "U" || $2 == "U") {
 
 state == "nm" && NF == 3 {
   split ($3, s, "@")
-  def[s[1]] = 1;
+  if (skip_underscore && substr(s[1], 1, 1) == "_")
+      symname = substr(s[1], 2);
+  else
+      symname = s[1];
+  def[symname] = 1;
   sawsymbol = 1;
   next;
 }

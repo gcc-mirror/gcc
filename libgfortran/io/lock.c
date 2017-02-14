@@ -1,5 +1,5 @@
 /* Thread/recursion locking
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org> and Andy Vaught
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -25,7 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "io.h"
 #include <string.h>
-#include <stdlib.h>
 
 /* library_start()-- Called with a library call is entered.  */
 

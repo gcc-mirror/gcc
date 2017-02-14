@@ -1,5 +1,5 @@
 /* Operations on HOST_WIDE_INT.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -41,20 +41,20 @@ floor_log2 (unsigned HOST_WIDE_INT x)
     return -1;
 
   if (HOST_BITS_PER_WIDE_INT > 64)
-    if (x >= (unsigned HOST_WIDE_INT) 1 << (t + 64))
+    if (x >= HOST_WIDE_INT_1U << (t + 64))
       t += 64;
   if (HOST_BITS_PER_WIDE_INT > 32)
-    if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 32))
+    if (x >= HOST_WIDE_INT_1U << (t + 32))
       t += 32;
-  if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 16))
+  if (x >= HOST_WIDE_INT_1U << (t + 16))
     t += 16;
-  if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 8))
+  if (x >= HOST_WIDE_INT_1U << (t + 8))
     t += 8;
-  if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 4))
+  if (x >= HOST_WIDE_INT_1U << (t + 4))
     t += 4;
-  if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 2))
+  if (x >= HOST_WIDE_INT_1U << (t + 2))
     t += 2;
-  if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 1))
+  if (x >= HOST_WIDE_INT_1U << (t + 1))
     t += 1;
 
   return t;
@@ -74,7 +74,7 @@ ceil_log2 (unsigned HOST_WIDE_INT x)
 int
 exact_log2 (unsigned HOST_WIDE_INT x)
 {
-  if (x != (x & -x))
+  if (!pow2p_hwi (x))
     return -1;
   return floor_log2 (x);
 }
@@ -85,7 +85,7 @@ exact_log2 (unsigned HOST_WIDE_INT x)
 int
 ctz_hwi (unsigned HOST_WIDE_INT x)
 {
-  return x ? floor_log2 (x & -x) : HOST_BITS_PER_WIDE_INT;
+  return x ? floor_log2 (least_bit_hwi (x)) : HOST_BITS_PER_WIDE_INT;
 }
 
 /* Similarly for most significant bits.  */
@@ -102,7 +102,7 @@ clz_hwi (unsigned HOST_WIDE_INT x)
 int
 ffs_hwi (unsigned HOST_WIDE_INT x)
 {
-  return 1 + floor_log2 (x & -x);
+  return 1 + floor_log2 (least_bit_hwi (x));
 }
 
 /* Return the number of set bits in X.  */

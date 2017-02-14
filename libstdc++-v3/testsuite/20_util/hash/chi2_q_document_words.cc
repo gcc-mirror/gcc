@@ -1,9 +1,8 @@
 // On some simulators, the workload is simply too large with values big
 // enough for the test to pass the quality test, so just skip it altogether.
-// { dg-do run { target { ! simulator } } }
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target { c++11 && { ! simulator } } } }
 
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +25,6 @@
 void
 test_document_words()
 {
-  bool test __attribute__((unused)) = true;
   const std::string f_name = "thirty_years_among_the_dead_preproc.txt";
   std::ifstream in(f_name);
   VERIFY( in.is_open() );

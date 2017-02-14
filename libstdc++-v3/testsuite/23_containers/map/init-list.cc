@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,17 +16,15 @@
 // <http://www.gnu.org/licenses/>.
 //
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <map>
 #include <testsuite_hooks.h>
 
 using namespace std;
 
-int test01()
+void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   map<int,double> m({ { 1, 1.0 }, { 2, 2.0 }, { 42, 237.0 } });
   VERIFY(m.size() == 3);
   VERIFY(m[1] == 1.0);
@@ -44,7 +42,6 @@ int test01()
   VERIFY(m[6] == 66.0);
   VERIFY(m[7] == 77.0);
   VERIFY(m[8] == 88.0);
-  return test;
 }
 
 int main()

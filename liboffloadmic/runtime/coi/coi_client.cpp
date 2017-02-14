@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2016 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -456,7 +456,7 @@ bool init(void)
     EngineGetInfo =
         (COIRESULT (*)(COIENGINE, uint32_t, COI_ENGINE_INFO*))
             DL_sym(lib_handle, "COIEngineGetInfo", COI_VERSION1);
-    if (COIEngineGetInfo == 0) {
+    if (EngineGetInfo == 0) {
         OFFLOAD_DEBUG_TRACE(2, "Failed to find %s in COI library\n",
                             "COIEngineGetInfo");
         fini();

@@ -3,8 +3,7 @@
    (Implements POSIX draft P1003.2/D11.2, except for some of the
    internationalization features.)
 
-   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2005, 2010, 2013 Free Software Foundation, Inc.
+   Copyright (C) 1993-2017 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -2493,6 +2492,7 @@ PREFIX(regex_compile) (const char *ARG_PREFIX(pattern),
           if ((syntax & RE_BK_PLUS_QM)
               || (syntax & RE_LIMITED_OPS))
             goto normal_char;
+	  /* Fall through.  */
         handle_plus:
         case '*':
           /* If there is no previous pattern... */
@@ -6697,6 +6697,7 @@ byte_re_match_2_internal (struct re_pattern_buffer *bufp,
                 {
                   case jump_n:
 		    is_a_jump_n = true;
+		    /* Fall through.  */
                   case pop_failure_jump:
 		  case maybe_pop_jump:
 		  case jump:
@@ -7125,7 +7126,7 @@ byte_re_match_2_internal (struct re_pattern_buffer *bufp,
               DEBUG_PRINT1 ("  Match => jump.\n");
 	      goto unconditional_jump;
 	    }
-        /* Note fall through.  */
+        /* Fall through.  */
 
 
 	/* The end of a simple repeat has a pop_failure_jump back to
@@ -7150,7 +7151,7 @@ byte_re_match_2_internal (struct re_pattern_buffer *bufp,
                                dummy_low_reg, dummy_high_reg,
                                reg_dummy, reg_dummy, reg_info_dummy);
           }
-	  /* Note fall through.  */
+	  /* Fall through.  */
 
 	unconditional_jump:
 #ifdef _LIBC
@@ -7453,6 +7454,7 @@ byte_re_match_2_internal (struct re_pattern_buffer *bufp,
                 {
                 case jump_n:
                   is_a_jump_n = true;
+		  /* Fall through.  */
                 case maybe_pop_jump:
                 case pop_failure_jump:
                 case jump:
@@ -7718,6 +7720,7 @@ PREFIX(common_op_match_null_string_p) (UCHAR_T **p, UCHAR_T *end,
 
     case set_number_at:
       p1 += 2 * OFFSET_ADDRESS_SIZE;
+      return false;
 
     default:
       /* All other opcodes mean we cannot match the empty string.  */

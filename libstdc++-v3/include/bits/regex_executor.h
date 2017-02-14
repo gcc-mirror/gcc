@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -107,6 +107,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       void
       _M_rep_once_more(_Match_mode __match_mode, _StateIdT);
+
+      void
+      _M_handle_repeat(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_subexpr_begin(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_subexpr_end(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_line_begin_assertion(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_line_end_assertion(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_word_boundary(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_subexpr_lookahead(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_match(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_backref(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_accept(_Match_mode, _StateIdT);
+
+      void
+      _M_handle_alternative(_Match_mode, _StateIdT);
 
       void
       _M_dfs(_Match_mode __match_mode, _StateIdT __start);

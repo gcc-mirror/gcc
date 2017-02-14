@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2013-10-18  Tim Shen <timshen91@gmail.com>
 //
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const wchar_t * s = L"\u4f60\u597d\u002c\u0020\u4e16\u002b\u754c";
 
   wregex re(s);

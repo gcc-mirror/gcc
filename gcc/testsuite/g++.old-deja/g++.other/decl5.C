@@ -19,7 +19,7 @@ struct A {
   struct Z;
   expand me;          // { dg-error "'expand' does not name a type" }
   void foo(struct A::e);
-  void foo(struct A::z);  // { dg-error "does not name a type" }
+  void foo(struct A::z);  // { dg-error "incomplete" }
 };
 
 struct Q;

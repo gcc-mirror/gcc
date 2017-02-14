@@ -11,7 +11,7 @@ module mymod
      module procedure foo_1
      module procedure foo_2
      module procedure foo_3
-     module procedure foo_1_OK  ! { dg-error "Ambiguous interfaces" }
+     module procedure foo_1_OK
      module procedure foo_2_OK
      function foo_chr (chr) ! { dg-error "cannot be assumed character length" }
        character(*) :: foo_chr
@@ -37,12 +37,12 @@ contains
     integer :: foo_1
     foo_0 = 1
   end function foo_0
-  function foo_1 (a) ! { dg-error "must be INTENT" }
+  function foo_1 (a) ! { dg-error "Ambiguous interfaces" }
     integer :: foo_1
-    integer :: a
+    integer, intent(in) :: a
     foo_1 = 1
   end function foo_1
-  function foo_1_OK (a)
+  function foo_1_OK (a) ! { dg-error "Ambiguous interfaces" }
     integer :: foo_1_OK
     integer, intent (in) :: a
     foo_1_OK = 1
@@ -65,3 +65,4 @@ contains
     foo_3 = a + 3 * b - c
   end function foo_3
 end module mymod
+

@@ -1,7 +1,8 @@
-// { dg-do run }
-// { dg-options "-g -O0 -std=gnu++11" }
+// { dg-do run { target c++11 } }
+// { dg-options "-g -O0" }
+// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2011-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -166,11 +167,11 @@ holder<std::knuth_b> knuth_b_holder;
 
 ustring *ustring_ptr;
 holder<ustring> ustring_holder;
-// { dg-final { whatis-test ustring_holder "holder<std::basic_string<unsigned char, std::char_traits<unsigned char>, std::allocator<unsigned char> > >" } }
+// { dg-final { whatis-test ustring_holder "holder<std::basic_string<unsigned char> >" } }
 
 std::basic_string<signed char> *sstring_ptr;
 holder< std::basic_string<signed char> > sstring_holder;
-// { dg-final { whatis-test sstring_holder "holder<std::basic_string<signed char, std::char_traits<signed char>, std::allocator<signed char> > >" } }
+// { dg-final { whatis-test sstring_holder "holder<std::basic_string<signed char> >" } }
 
 std::vector<std::deque<std::unique_ptr<char>>> *seq1_ptr;
 holder< std::vector<std::deque<std::unique_ptr<char>>> > seq1_holder;

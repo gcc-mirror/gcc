@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++17" }
 // { dg-do run }
 
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,29 +26,29 @@ using std::any;
 void test01()
 {
   any x;
-  VERIFY( x.empty() );
+  VERIFY( !x.has_value() );
 
   any y(x);
-  VERIFY( x.empty() );
-  VERIFY( y.empty() );
+  VERIFY( !x.has_value() );
+  VERIFY( !y.has_value() );
 
   any z(std::move(y));
-  VERIFY( y.empty() );
-  VERIFY( z.empty() );
+  VERIFY( !y.has_value() );
+  VERIFY( !z.has_value() );
 }
 
 void test02()
 {
   any x(1);
-  VERIFY( !x.empty() );
+  VERIFY( x.has_value() );
 
   any y(x);
-  VERIFY( !x.empty() );
-  VERIFY( !y.empty() );
+  VERIFY( x.has_value() );
+  VERIFY( y.has_value() );
 
   any z(std::move(y));
-  VERIFY( y.empty() );
-  VERIFY( !z.empty() );
+  VERIFY( !y.has_value() );
+  VERIFY( z.has_value() );
 }
 
 int main()

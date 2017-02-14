@@ -1,6 +1,6 @@
 /* Definitions of target support for Altera Nios II systems
    running GNU/Linux with ELF format.
-   Copyright (C) 2012-2016 Free Software Foundation, Inc.
+   Copyright (C) 2012-2017 Free Software Foundation, Inc.
    Contributed by Mentor Graphics, Inc.
 
    This file is part of GCC.
@@ -44,3 +44,7 @@
    Nios II Processor Reference Handbook.  */
 #define TARGET_LINUX_ABI 1
 
+/* For Linux, we have access to kernel support for atomic operations,
+   add initialization for __sync_* builtins.  */
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS nios2_init_libfuncs

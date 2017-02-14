@@ -1,6 +1,6 @@
 // 1999-06-09 bkoz
 
-// Copyright (C) 1994-2016 Free Software Foundation, Inc.
+// Copyright (C) 1994-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,9 +22,8 @@
 #include <string>
 #include <testsuite_hooks.h>
 
-bool test01(void)
+void test01(void)
 {
-  bool test __attribute__((unused)) = true;
   typedef std::wstring::size_type csize_type;
   typedef std::wstring::const_reference cref;
   typedef std::wstring::reference ref;
@@ -83,7 +82,6 @@ bool test01(void)
   VERIFY( csz01 == csz02 );
   csz01 = str01.find(L'/');
   VERIFY( csz01 == npos );
-  return test;
 }
 
 int main()

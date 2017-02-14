@@ -1,5 +1,5 @@
 /* Generic routines for manipulating PHIs
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -207,7 +207,7 @@ make_phi_node (tree var, int len)
 
 /* We no longer need PHI, release it so that it may be reused.  */
 
-void
+static void
 release_phi_node (gimple *phi)
 {
   size_t bucket;

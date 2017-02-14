@@ -106,7 +106,7 @@ int
 foo8 ()
 {
   char base[100];
-  memcpy ((void *)base, (const void *)pg0, 105);
+  memcpy ((void *)base, (const void *)pg0, 105);   /* { dg-warning "writing 105 bytes into a region of size 100" } */
   return (int)(base[32]);
 }
 

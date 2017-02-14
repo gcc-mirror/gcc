@@ -1,5 +1,5 @@
 /* Alias analysis for GNU C
-   Copyright (C) 1997-2016 Free Software Foundation, Inc.
+   Copyright (C) 1997-2017 Free Software Foundation, Inc.
    Contributed by John Carr (jfc@mit.edu).
 
 This file is part of GCC.
@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "gimple-ssa.h"
 #include "emit-rtl.h"
@@ -310,7 +311,7 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
   /* If this is a reference based on a partitioned decl replace the
      base with a MEM_REF of the pointer representative we
      created during stack slot partitioning.  */
-  if (TREE_CODE (base) == VAR_DECL
+  if (VAR_P (base)
       && ! is_global_var (base)
       && cfun->gimple_df->decls_to_pointers != NULL)
     {
@@ -870,7 +871,7 @@ get_alias_set (tree t)
       /* If we've already determined the alias set for a decl, just return
 	 it.  This is necessary for C++ anonymous unions, whose component
 	 variables don't look like union members (boo!).  */
-      if (TREE_CODE (t) == VAR_DECL
+      if (VAR_P (t)
 	  && DECL_RTL_SET_P (t) && MEM_P (DECL_RTL (t)))
 	return MEM_ALIAS_SET (DECL_RTL (t));
 
@@ -1398,7 +1399,7 @@ find_base_value (rtx src)
       if (GET_CODE (src) != PLUS && GET_CODE (src) != MINUS)
 	break;
 
-      /* ... fall through ...  */
+      /* fall through */
 
     case PLUS:
     case MINUS:
@@ -1707,13 +1708,7 @@ canon_rtx (rtx x)
       rtx x1 = canon_rtx (XEXP (x, 1));
 
       if (x0 != XEXP (x, 0) || x1 != XEXP (x, 1))
-	{
-	  if (CONST_INT_P (x0))
-	    return plus_constant (GET_MODE (x), x1, INTVAL (x0));
-	  else if (CONST_INT_P (x1))
-	    return plus_constant (GET_MODE (x), x0, INTVAL (x1));
-	  return gen_rtx_PLUS (GET_MODE (x), x0, x1);
-	}
+	return simplify_gen_binary (PLUS, GET_MODE (x), x0, x1);
     }
 
   /* This gives us much better alias analysis when called from
@@ -1766,7 +1761,7 @@ rtx_equal_for_memref_p (const_rtx x, const_rtx y)
       return REGNO (x) == REGNO (y);
 
     case LABEL_REF:
-      return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
+      return label_ref_label (x) == label_ref_label (y);
 
     case SYMBOL_REF:
       return compare_base_symbol_refs (x, y) == 1;
@@ -2087,7 +2082,7 @@ compare_base_symbol_refs (const_rtx x_base, const_rtx y_base)
         return -1;
       /* Anchors contains static VAR_DECLs and CONST_DECLs.  We are safe
 	 to ignore CONST_DECLs because they are readonly.  */
-      if (TREE_CODE (x_decl) != VAR_DECL
+      if (!VAR_P (x_decl)
 	  || (!TREE_STATIC (x_decl) && !TREE_PUBLIC (x_decl)))
 	return 0;
 
@@ -2534,7 +2529,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
     {
       HOST_WIDE_INT sc = INTVAL (XEXP (x, 1));
       unsigned HOST_WIDE_INT uc = sc;
-      if (sc < 0 && -uc == (uc & -uc))
+      if (sc < 0 && pow2_or_zerop (-uc))
 	{
 	  if (xsize > 0)
 	    xsize = -xsize;
@@ -2549,7 +2544,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
     {
       HOST_WIDE_INT sc = INTVAL (XEXP (y, 1));
       unsigned HOST_WIDE_INT uc = sc;
-      if (sc < 0 && -uc == (uc & -uc))
+      if (sc < 0 && pow2_or_zerop (-uc))
 	{
 	  if (ysize > 0)
 	    ysize = -ysize;
@@ -2754,6 +2749,21 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
       || TREE_CODE (expry) == CONST_DECL)
     return 1;
 
+  /* If one decl is known to be a function or label in a function and
+     the other is some kind of data, they can't overlap.  */
+  if ((TREE_CODE (exprx) == FUNCTION_DECL
+       || TREE_CODE (exprx) == LABEL_DECL)
+      != (TREE_CODE (expry) == FUNCTION_DECL
+	  || TREE_CODE (expry) == LABEL_DECL))
+    return 1;
+
+  /* If either of the decls doesn't have DECL_RTL set (e.g. marked as
+     living in multiple places), we can't tell anything.  Exception
+     are FUNCTION_DECLs for which we can create DECL_RTL on demand.  */
+  if ((!DECL_RTL_SET_P (exprx) && TREE_CODE (exprx) != FUNCTION_DECL)
+      || (!DECL_RTL_SET_P (expry) && TREE_CODE (expry) != FUNCTION_DECL))
+    return 0;
+
   rtlx = DECL_RTL (exprx);
   rtly = DECL_RTL (expry);
 
@@ -2796,7 +2806,7 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
 
   /* Offset based disambiguation not appropriate for loop invariant */
   if (loop_invariant)
-    return 0;              
+    return 0;
 
   /* Offset based disambiguation is OK even if we do not know that the
      declarations are necessarily different

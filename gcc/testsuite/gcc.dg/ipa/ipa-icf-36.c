@@ -29,8 +29,8 @@ int t(int tt)
   }
 }
 /* { dg-final { scan-ipa-dump "Equal symbols: 6" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Semantic equality hit:b->a" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Semantic equality hit:d->c" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Semantic equality hit:f->e" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Semantic equality hit:h->g" "icf"  } } */
-/* { dg-final { scan-ipa-dump "Semantic equality hit:k->i" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:a->b" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:c->d" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:e->f" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:g->h" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:i->k" "icf"  } } */

@@ -1,5 +1,5 @@
 /* Interprocedural analyses.
-   Copyright (C) 2005-2016 Free Software Foundation, Inc.
+   Copyright (C) 2005-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -99,13 +99,14 @@ ipa_func_spec_opts_forbid_analysis_p (struct cgraph_node *node)
    to INFO.  */
 
 static int
-ipa_get_param_decl_index_1 (vec<ipa_param_descriptor> descriptors, tree ptree)
+ipa_get_param_decl_index_1 (vec<ipa_param_descriptor, va_gc> *descriptors,
+			    tree ptree)
 {
   int i, count;
 
-  count = descriptors.length ();
+  count = vec_safe_length (descriptors);
   for (i = 0; i < count; i++)
-    if (descriptors[i].decl == ptree)
+    if ((*descriptors)[i].decl_or_type == ptree)
       return i;
 
   return -1;
@@ -125,7 +126,7 @@ ipa_get_param_decl_index (struct ipa_node_params *info, tree ptree)
 
 static void
 ipa_populate_param_decls (struct cgraph_node *node,
-			  vec<ipa_param_descriptor> &descriptors)
+			  vec<ipa_param_descriptor, va_gc> &descriptors)
 {
   tree fndecl;
   tree fnargs;
@@ -138,7 +139,7 @@ ipa_populate_param_decls (struct cgraph_node *node,
   param_num = 0;
   for (parm = fnargs; parm; parm = DECL_CHAIN (parm))
     {
-      descriptors[param_num].decl = parm;
+      descriptors[param_num].decl_or_type = parm;
       descriptors[param_num].move_cost = estimate_move_cost (TREE_TYPE (parm),
 							     true);
       param_num++;
@@ -168,23 +169,28 @@ void
 ipa_dump_param (FILE *file, struct ipa_node_params *info, int i)
 {
   fprintf (file, "param #%i", i);
-  if (info->descriptors[i].decl)
+  if ((*info->descriptors)[i].decl_or_type)
     {
       fprintf (file, " ");
-      print_generic_expr (file, info->descriptors[i].decl, 0);
+      print_generic_expr (file, (*info->descriptors)[i].decl_or_type, 0);
     }
 }
 
-/* Initialize the ipa_node_params structure associated with NODE 
-   to hold PARAM_COUNT parameters.  */
+/* If necessary, allocate vector of parameter descriptors in info of NODE.
+   Return true if they were allocated, false if not.  */
 
-void
+static bool
 ipa_alloc_node_params (struct cgraph_node *node, int param_count)
 {
   struct ipa_node_params *info = IPA_NODE_REF (node);
 
-  if (!info->descriptors.exists () && param_count)
-    info->descriptors.safe_grow_cleared (param_count);
+  if (!info->descriptors && param_count)
+    {
+      vec_safe_grow_cleared (info->descriptors, param_count);
+      return true;
+    }
+  else
+    return false;
 }
 
 /* Initialize the ipa_node_params structure associated with NODE by counting
@@ -196,11 +202,9 @@ ipa_initialize_node_params (struct cgraph_node *node)
 {
   struct ipa_node_params *info = IPA_NODE_REF (node);
 
-  if (!info->descriptors.exists ())
-    {
-      ipa_alloc_node_params (node, count_formal_params (node->decl));
-      ipa_populate_param_decls (node, info->descriptors);
-    }
+  if (!info->descriptors
+      && ipa_alloc_node_params (node, count_formal_params (node->decl)))
+    ipa_populate_param_decls (node, *info->descriptors);
 }
 
 /* Print the jump functions associated with call graph edge CS to file F.  */
@@ -294,14 +298,27 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	  ctx->dump (dump_file);
 	}
 
-      if (jump_func->alignment.known)
+      if (jump_func->bits.known)
 	{
-	  fprintf (f, "         Alignment: %u, misalignment: %u\n",
-		   jump_func->alignment.align,
-		   jump_func->alignment.misalign);
+	  fprintf (f, "         value: "); print_hex (jump_func->bits.value, f);
+	  fprintf (f, ", mask: "); print_hex (jump_func->bits.mask, f);
+	  fprintf (f, "\n");
 	}
       else
-	fprintf (f, "         Unknown alignment\n");
+	fprintf (f, "         Unknown bits\n");
+
+      if (jump_func->vr_known)
+	{
+	  fprintf (f, "         VR  ");
+	  fprintf (f, "%s[",
+		   (jump_func->m_vr.type == VR_ANTI_RANGE) ? "~" : "");
+	  print_decs (jump_func->m_vr.min, f);
+	  fprintf (f, ", ");
+	  print_decs (jump_func->m_vr.max, f);
+	  fprintf (f, "]\n");
+	}
+      else
+	fprintf (f, "         Unknown VR\n");
     }
 }
 
@@ -380,7 +397,8 @@ static void
 ipa_set_jf_unknown (struct ipa_jump_func *jfunc)
 {
   jfunc->type = IPA_JF_UNKNOWN;
-  jfunc->alignment.known = false;
+  jfunc->bits.known = false;
+  jfunc->vr_known = false;
 }
 
 /* Set JFUNC to be a copy of another jmp (to be used by jump function
@@ -432,6 +450,18 @@ ipa_set_jf_simple_pass_through (struct ipa_jump_func *jfunc, int formal_id,
   jfunc->value.pass_through.agg_preserved = agg_preserved;
 }
 
+/* Set JFUNC to be an unary pass through jump function.  */
+
+static void
+ipa_set_jf_unary_pass_through (struct ipa_jump_func *jfunc, int formal_id,
+			       enum tree_code operation)
+{
+  jfunc->type = IPA_JF_PASS_THROUGH;
+  jfunc->value.pass_through.operand = NULL_TREE;
+  jfunc->value.pass_through.formal_id = formal_id;
+  jfunc->value.pass_through.operation = operation;
+  jfunc->value.pass_through.agg_preserved = false;
+}
 /* Set JFUNC to be an arithmetic pass through jump function.  */
 
 static void
@@ -841,7 +871,7 @@ parm_preserved_before_stmt_p (struct ipa_func_body_info *fbi, int index,
 
 static int
 load_from_unmodified_param (struct ipa_func_body_info *fbi,
-			    vec<ipa_param_descriptor> descriptors,
+			    vec<ipa_param_descriptor, va_gc> *descriptors,
 			    gimple *stmt)
 {
   int index;
@@ -952,7 +982,7 @@ parm_ref_data_pass_through_p (struct ipa_func_body_info *fbi, int index,
 
 bool
 ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
-			vec<ipa_param_descriptor> descriptors,
+			vec<ipa_param_descriptor, va_gc> *descriptors,
 			gimple *stmt, tree op, int *index_p,
 			HOST_WIDE_INT *offset_p, HOST_WIDE_INT *size_p,
 			bool *by_ref_p, bool *guaranteed_unmodified)
@@ -1115,23 +1145,36 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
 
   if (index >= 0)
     {
-      tree op2 = gimple_assign_rhs2 (stmt);
-
-      if (op2)
+      switch (gimple_assign_rhs_class (stmt))
 	{
-	  if (!is_gimple_ip_invariant (op2)
-	      || (TREE_CODE_CLASS (gimple_expr_code (stmt)) != tcc_comparison
-		  && !useless_type_conversion_p (TREE_TYPE (name),
-						 TREE_TYPE (op1))))
-	    return;
+	case GIMPLE_BINARY_RHS:
+	  {
+	    tree op2 = gimple_assign_rhs2 (stmt);
+	    if (!is_gimple_ip_invariant (op2)
+		|| ((TREE_CODE_CLASS (gimple_assign_rhs_code (stmt))
+		     != tcc_comparison)
+		    && !useless_type_conversion_p (TREE_TYPE (name),
+						   TREE_TYPE (op1))))
+	      return;
 
-	  ipa_set_jf_arith_pass_through (jfunc, index, op2,
-					 gimple_assign_rhs_code (stmt));
-	}
-      else if (gimple_assign_single_p (stmt))
-	{
-	  bool agg_p = parm_ref_data_pass_through_p (fbi, index, call, tc_ssa);
-	  ipa_set_jf_simple_pass_through (jfunc, index, agg_p);
+	    ipa_set_jf_arith_pass_through (jfunc, index, op2,
+					   gimple_assign_rhs_code (stmt));
+	    break;
+	  }
+	case GIMPLE_SINGLE_RHS:
+	  {
+	    bool agg_p = parm_ref_data_pass_through_p (fbi, index, call,
+						       tc_ssa);
+	    ipa_set_jf_simple_pass_through (jfunc, index, agg_p);
+	    break;
+	  }
+	case GIMPLE_UNARY_RHS:
+	  if (is_gimple_assign (stmt)
+	      && gimple_assign_rhs_class (stmt) == GIMPLE_UNARY_RHS
+	      && ! CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt)))
+	    ipa_set_jf_unary_pass_through (jfunc, index,
+					   gimple_assign_rhs_code (stmt));
+	default:;
 	}
       return;
     }
@@ -1581,7 +1624,10 @@ determine_locally_known_aggregate_parts (gcall *call, tree arg,
     }
 }
 
-static tree
+/* Return the Ith param type of callee associated with call graph
+   edge E.  */
+
+tree
 ipa_get_callee_param_type (struct cgraph_edge *e, int i)
 {
   int n;
@@ -1654,28 +1700,91 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	    useful_context = true;
 	}
 
-      if (POINTER_TYPE_P (TREE_TYPE(arg)))
+      if (POINTER_TYPE_P (TREE_TYPE (arg)))
 	{
-	  unsigned HOST_WIDE_INT hwi_bitpos;
-	  unsigned align;
+	  bool addr_nonzero = false;
+	  bool strict_overflow = false;
 
-	  get_pointer_alignment_1 (arg, &align, &hwi_bitpos);
-	  if (align > BITS_PER_UNIT
-	      && align % BITS_PER_UNIT == 0
-	      && hwi_bitpos % BITS_PER_UNIT == 0)
+	  if (TREE_CODE (arg) == SSA_NAME
+	      && param_type
+	      && get_ptr_nonnull (arg))
+	    addr_nonzero = true;
+	  else if (tree_single_nonzero_warnv_p (arg, &strict_overflow))
+	    addr_nonzero = true;
+
+	  if (addr_nonzero)
 	    {
-	      jfunc->alignment.known = true;
-	      jfunc->alignment.align = align / BITS_PER_UNIT;
-	      jfunc->alignment.misalign = hwi_bitpos / BITS_PER_UNIT;
+	      jfunc->vr_known = true;
+	      jfunc->m_vr.type = VR_ANTI_RANGE;
+	      jfunc->m_vr.min = build_int_cst (TREE_TYPE (arg), 0);
+	      jfunc->m_vr.max = build_int_cst (TREE_TYPE (arg), 0);
+	      jfunc->m_vr.equiv = NULL;
 	    }
 	  else
-	    gcc_assert (!jfunc->alignment.known);
+	    gcc_assert (!jfunc->vr_known);
 	}
       else
-	gcc_assert (!jfunc->alignment.known);
+	{
+	  wide_int min, max;
+	  value_range_type type;
+	  if (TREE_CODE (arg) == SSA_NAME
+	      && param_type
+	      && (type = get_range_info (arg, &min, &max))
+	      && (type == VR_RANGE || type == VR_ANTI_RANGE))
+	    {
+	      value_range vr;
+
+	      vr.type = type;
+	      vr.min = wide_int_to_tree (TREE_TYPE (arg), min);
+	      vr.max = wide_int_to_tree (TREE_TYPE (arg), max);
+	      vr.equiv = NULL;
+	      extract_range_from_unary_expr (&jfunc->m_vr,
+					     NOP_EXPR,
+					     param_type,
+					     &vr, TREE_TYPE (arg));
+	      if (jfunc->m_vr.type == VR_RANGE
+		  || jfunc->m_vr.type == VR_ANTI_RANGE)
+		jfunc->vr_known = true;
+	      else
+		jfunc->vr_known = false;
+	    }
+	  else
+	    gcc_assert (!jfunc->vr_known);
+	}
+
+      if (INTEGRAL_TYPE_P (TREE_TYPE (arg))
+	  && (TREE_CODE (arg) == SSA_NAME || TREE_CODE (arg) == INTEGER_CST))
+	{
+	  jfunc->bits.known = true;
+	  
+	  if (TREE_CODE (arg) == SSA_NAME)
+	    {
+	      jfunc->bits.value = 0;
+	      jfunc->bits.mask = widest_int::from (get_nonzero_bits (arg),
+						   TYPE_SIGN (TREE_TYPE (arg)));
+	    }
+	  else
+	    {
+	      jfunc->bits.value = wi::to_widest (arg);
+	      jfunc->bits.mask = 0;
+	    }
+	}
+      else if (POINTER_TYPE_P (TREE_TYPE (arg)))
+	{
+	  unsigned HOST_WIDE_INT bitpos;
+	  unsigned align;
+
+	  jfunc->bits.known = true;
+	  get_pointer_alignment_1 (arg, &align, &bitpos);
+	  jfunc->bits.mask = wi::mask<widest_int>(TYPE_PRECISION (TREE_TYPE (arg)), false)
+			     .and_not (align / BITS_PER_UNIT - 1);
+	  jfunc->bits.value = bitpos / BITS_PER_UNIT;
+	}
+      else
+	gcc_assert (!jfunc->bits.known);
 
       if (is_gimple_ip_invariant (arg)
-	  || (TREE_CODE (arg) == VAR_DECL
+	  || (VAR_P (arg)
 	      && is_global_var (arg)
 	      && TREE_READONLY (arg)))
 	ipa_set_jf_constant (jfunc, arg, cs);
@@ -2438,6 +2547,12 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	      dst->value.ancestor.agg_preserved &=
 		src->value.pass_through.agg_preserved;
 	    }
+	  else if (src->type == IPA_JF_PASS_THROUGH
+		   && TREE_CODE_CLASS (src->value.pass_through.operation) == tcc_unary)
+	    {
+	      dst->value.ancestor.formal_id = src->value.pass_through.formal_id;
+	      dst->value.ancestor.agg_preserved = false;
+	    }
 	  else if (src->type == IPA_JF_ANCESTOR)
 	    {
 	      dst->value.ancestor.formal_id = src->value.ancestor.formal_id;
@@ -2503,6 +2618,8 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 			  && ipa_get_jf_pass_through_agg_preserved (src);
 			ipa_set_jf_simple_pass_through (dst, formal_id, agg_p);
 		      }
+		    else if (TREE_CODE_CLASS (operation) == tcc_unary)
+		      ipa_set_jf_unary_pass_through (dst, formal_id, operation);
 		    else
 		      {
 			tree operand = ipa_get_jf_pass_through_operand (src);
@@ -2807,7 +2924,7 @@ ipa_find_agg_cst_from_init (tree scalar, HOST_WIDE_INT offset, bool by_ref)
       scalar = TREE_OPERAND (scalar, 0);
     }
 
-  if (TREE_CODE (scalar) != VAR_DECL
+  if (!VAR_P (scalar)
       || !is_global_var (scalar)
       || !TREE_READONLY (scalar)
       || !DECL_INITIAL (scalar)
@@ -3455,33 +3572,12 @@ ipa_free_all_edge_args (void)
   vec_free (ipa_edge_args_vector);
 }
 
-/* Frees all dynamically allocated structures that the param info points
-   to.  */
-
-ipa_node_params::~ipa_node_params ()
-{
-  descriptors.release ();
-  free (lattices);
-  /* Lattice values and their sources are deallocated with their alocation
-     pool.  */
-  known_csts.release ();
-  known_contexts.release ();
-
-  lattices = NULL;
-  ipcp_orig_node = NULL;
-  analysis_done = 0;
-  node_enqueued = 0;
-  do_clone_for_all_contexts = 0;
-  is_all_contexts_clone = 0;
-  node_dead = 0;
-}
-
 /* Free all ipa_node_params structures.  */
 
 void
 ipa_free_all_node_params (void)
 {
-  delete ipa_node_params_sum;
+  ipa_node_params_sum->release ();
   ipa_node_params_sum = NULL;
 }
 
@@ -3652,9 +3748,11 @@ ipa_node_params_t::duplicate(cgraph_node *src, cgraph_node *dst,
 {
   ipa_agg_replacement_value *old_av, *new_av;
 
-  new_info->descriptors = old_info->descriptors.copy ();
+  new_info->descriptors = vec_safe_copy (old_info->descriptors);
   new_info->lattices = NULL;
   new_info->ipcp_orig_node = old_info->ipcp_orig_node;
+  new_info->known_csts = old_info->known_csts.copy ();
+  new_info->known_contexts = old_info->known_contexts.copy ();
 
   new_info->analysis_done = old_info->analysis_done;
   new_info->node_enqueued = old_info->node_enqueued;
@@ -3679,16 +3777,31 @@ ipa_node_params_t::duplicate(cgraph_node *src, cgraph_node *dst,
 
   ipcp_transformation_summary *src_trans = ipcp_get_transformation_summary (src);
 
-  if (src_trans && vec_safe_length (src_trans->alignments) > 0)
+  if (src_trans)
     {
       ipcp_grow_transformations_if_necessary ();
       src_trans = ipcp_get_transformation_summary (src);
-      const vec<ipa_alignment, va_gc> *src_alignments = src_trans->alignments;
-      vec<ipa_alignment, va_gc> *&dst_alignments
-	= ipcp_get_transformation_summary (dst)->alignments;
-      vec_safe_reserve_exact (dst_alignments, src_alignments->length ());
-      for (unsigned i = 0; i < src_alignments->length (); ++i)
-	dst_alignments->quick_push ((*src_alignments)[i]);
+      const vec<ipa_vr, va_gc> *src_vr = src_trans->m_vr;
+      vec<ipa_vr, va_gc> *&dst_vr
+	= ipcp_get_transformation_summary (dst)->m_vr;
+      if (vec_safe_length (src_trans->m_vr) > 0)
+	{
+	  vec_safe_reserve_exact (dst_vr, src_vr->length ());
+	  for (unsigned i = 0; i < src_vr->length (); ++i)
+	    dst_vr->quick_push ((*src_vr)[i]);
+	}
+    }
+
+  if (src_trans && vec_safe_length (src_trans->bits) > 0)
+    {
+      ipcp_grow_transformations_if_necessary ();
+      src_trans = ipcp_get_transformation_summary (src);
+      const vec<ipa_bits, va_gc> *src_bits = src_trans->bits;
+      vec<ipa_bits, va_gc> *&dst_bits
+	= ipcp_get_transformation_summary (dst)->bits;
+      vec_safe_reserve_exact (dst_bits, src_bits->length ());
+      for (unsigned i = 0; i < src_bits->length (); ++i)
+	dst_bits->quick_push ((*src_bits)[i]);
     }
 }
 
@@ -3910,7 +4023,7 @@ ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec adjustments)
 	      if (is_gimple_reg_type (ptype))
 		{
 		  unsigned malign = GET_MODE_ALIGNMENT (TYPE_MODE (ptype));
-		  if (TYPE_ALIGN (ptype) < malign)
+		  if (TYPE_ALIGN (ptype) != malign)
 		    ptype = build_aligned_type (ptype, malign);
 		}
 	    }
@@ -4128,7 +4241,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 			   * BITS_PER_UNIT);
 	      misalign = misalign & (align - 1);
 	      if (misalign != 0)
-		align = (misalign & -misalign);
+		align = least_bit_hwi (misalign);
 	      if (align < TYPE_ALIGN (type))
 		type = build_aligned_type (type, align);
 	      base = force_gimple_operand_gsi (&gsi, base,
@@ -4188,7 +4301,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 	      ddecl = make_node (DEBUG_EXPR_DECL);
 	      DECL_ARTIFICIAL (ddecl) = 1;
 	      TREE_TYPE (ddecl) = TREE_TYPE (origin);
-	      DECL_MODE (ddecl) = DECL_MODE (origin);
+	      SET_DECL_MODE (ddecl, DECL_MODE (origin));
 
 	      vec_safe_push (*debug_args, origin);
 	      vec_safe_push (*debug_args, ddecl);
@@ -4571,6 +4684,9 @@ ipa_write_jump_function (struct output_block *ob,
 	  bp_pack_value (&bp, jump_func->value.pass_through.agg_preserved, 1);
 	  streamer_write_bitpack (&bp);
 	}
+      else if (TREE_CODE_CLASS (jump_func->value.pass_through.operation)
+	       == tcc_unary)
+	streamer_write_uhwi (ob, jump_func->value.pass_through.formal_id);
       else
 	{
 	  stream_write_tree (ob, jump_func->value.pass_through.operand, true);
@@ -4602,12 +4718,21 @@ ipa_write_jump_function (struct output_block *ob,
     }
 
   bp = bitpack_create (ob->main_stream);
-  bp_pack_value (&bp, jump_func->alignment.known, 1);
+  bp_pack_value (&bp, jump_func->bits.known, 1);
   streamer_write_bitpack (&bp);
-  if (jump_func->alignment.known)
+  if (jump_func->bits.known)
     {
-      streamer_write_uhwi (ob, jump_func->alignment.align);
-      streamer_write_uhwi (ob, jump_func->alignment.misalign);
+      streamer_write_widest_int (ob, jump_func->bits.value);
+      streamer_write_widest_int (ob, jump_func->bits.mask);
+    }
+  bp_pack_value (&bp, jump_func->vr_known, 1);
+  streamer_write_bitpack (&bp);
+  if (jump_func->vr_known)
+    {
+      streamer_write_enum (ob->main_stream, value_rang_type,
+			   VR_LAST, jump_func->m_vr.type);
+      stream_write_tree (ob, jump_func->m_vr.min, true);
+      stream_write_tree (ob, jump_func->m_vr.max, true);
     }
 }
 
@@ -4640,6 +4765,11 @@ ipa_read_jump_function (struct lto_input_block *ib,
 	  struct bitpack_d bp = streamer_read_bitpack (ib);
 	  bool agg_preserved = bp_unpack_value (&bp, 1);
 	  ipa_set_jf_simple_pass_through (jump_func, formal_id, agg_preserved);
+	}
+      else if (TREE_CODE_CLASS (operation) == tcc_unary)
+	{
+	  int formal_id =  streamer_read_uhwi (ib);
+	  ipa_set_jf_unary_pass_through (jump_func, formal_id, operation);
 	}
       else
 	{
@@ -4676,15 +4806,29 @@ ipa_read_jump_function (struct lto_input_block *ib,
     }
 
   struct bitpack_d bp = streamer_read_bitpack (ib);
-  bool alignment_known = bp_unpack_value (&bp, 1);
-  if (alignment_known)
+  bool bits_known = bp_unpack_value (&bp, 1);
+  if (bits_known)
     {
-      jump_func->alignment.known = true;
-      jump_func->alignment.align = streamer_read_uhwi (ib);
-      jump_func->alignment.misalign = streamer_read_uhwi (ib);
+      jump_func->bits.known = true;
+      jump_func->bits.value = streamer_read_widest_int (ib);
+      jump_func->bits.mask = streamer_read_widest_int (ib);
     }
   else
-    jump_func->alignment.known = false;
+    jump_func->bits.known = false;
+
+  struct bitpack_d vr_bp = streamer_read_bitpack (ib);
+  bool vr_known = bp_unpack_value (&vr_bp, 1);
+  if (vr_known)
+    {
+      jump_func->vr_known = true;
+      jump_func->m_vr.type = streamer_read_enum (ib,
+						 value_range_type,
+						 VR_LAST);
+      jump_func->m_vr.min = stream_read_tree (ib, data_in);
+      jump_func->m_vr.max = stream_read_tree (ib, data_in);
+    }
+  else
+    jump_func->vr_known = false;
 }
 
 /* Stream out parts of cgraph_indirect_call_info corresponding to CS that are
@@ -4778,7 +4922,10 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
     bp_pack_value (&bp, ipa_is_param_used (info, j), 1);
   streamer_write_bitpack (&bp);
   for (j = 0; j < ipa_get_param_count (info); j++)
-    streamer_write_hwi (ob, ipa_get_controlled_uses (info, j));
+    {
+      streamer_write_hwi (ob, ipa_get_controlled_uses (info, j));
+      stream_write_tree (ob, ipa_get_type (info, j), true);
+    }
   for (e = node->callees; e; e = e->next_callee)
     {
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
@@ -4824,8 +4971,8 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
   ipa_alloc_node_params (node, streamer_read_uhwi (ib));
 
   for (k = 0; k < ipa_get_param_count (info); k++)
-    info->descriptors[k].move_cost = streamer_read_uhwi (ib);
-    
+    (*info->descriptors)[k].move_cost = streamer_read_uhwi (ib);
+
   bp = streamer_read_bitpack (ib);
   if (ipa_get_param_count (info) != 0)
     info->analysis_done = true;
@@ -4833,7 +4980,10 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
   for (k = 0; k < ipa_get_param_count (info); k++)
     ipa_set_param_used (info, k, bp_unpack_value (&bp, 1));
   for (k = 0; k < ipa_get_param_count (info); k++)
-    ipa_set_controlled_uses (info, k, streamer_read_hwi (ib));
+    {
+      ipa_set_controlled_uses (info, k, streamer_read_hwi (ib));
+      (*info->descriptors)[k].decl_or_type = stream_read_tree (ib, data_in);
+    }
   for (e = node->callees; e; e = e->next_callee)
     {
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
@@ -5027,24 +5177,44 @@ write_ipcp_transformation_info (output_block *ob, cgraph_node *node)
     }
 
   ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
-  if (ts && vec_safe_length (ts->alignments) > 0)
+  if (ts && vec_safe_length (ts->m_vr) > 0)
     {
-      count = ts->alignments->length ();
-
+      count = ts->m_vr->length ();
       streamer_write_uhwi (ob, count);
       for (unsigned i = 0; i < count; ++i)
 	{
-	  ipa_alignment *parm_al = &(*ts->alignments)[i];
-
 	  struct bitpack_d bp;
+	  ipa_vr *parm_vr = &(*ts->m_vr)[i];
 	  bp = bitpack_create (ob->main_stream);
-	  bp_pack_value (&bp, parm_al->known, 1);
+	  bp_pack_value (&bp, parm_vr->known, 1);
 	  streamer_write_bitpack (&bp);
-	  if (parm_al->known)
+	  if (parm_vr->known)
 	    {
-	      streamer_write_uhwi (ob, parm_al->align);
-	      streamer_write_hwi_in_range (ob->main_stream, 0, parm_al->align,
-					   parm_al->misalign);
+	      streamer_write_enum (ob->main_stream, value_rang_type,
+				   VR_LAST, parm_vr->type);
+	      streamer_write_wide_int (ob, parm_vr->min);
+	      streamer_write_wide_int (ob, parm_vr->max);
+	    }
+	}
+    }
+  else
+    streamer_write_uhwi (ob, 0);
+
+  if (ts && vec_safe_length (ts->bits) > 0)
+    {
+      count = ts->bits->length ();
+      streamer_write_uhwi (ob, count);
+
+      for (unsigned i = 0; i < count; ++i)
+	{
+	  const ipa_bits& bits_jfunc = (*ts->bits)[i];
+	  struct bitpack_d bp = bitpack_create (ob->main_stream);
+	  bp_pack_value (&bp, bits_jfunc.known, 1);
+	  streamer_write_bitpack (&bp);
+	  if (bits_jfunc.known)
+	    {
+	      streamer_write_widest_int (ob, bits_jfunc.value);
+	      streamer_write_widest_int (ob, bits_jfunc.mask);
 	    }
 	}
     }
@@ -5077,28 +5247,47 @@ read_ipcp_transformation_info (lto_input_block *ib, cgraph_node *node,
       aggvals = av;
     }
   ipa_set_node_agg_value_chain (node, aggvals);
-
+  
   count = streamer_read_uhwi (ib);
   if (count > 0)
     {
       ipcp_grow_transformations_if_necessary ();
 
       ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
-      vec_safe_grow_cleared (ts->alignments, count);
+      vec_safe_grow_cleared (ts->m_vr, count);
+      for (i = 0; i < count; i++)
+	{
+	  ipa_vr *parm_vr;
+	  parm_vr = &(*ts->m_vr)[i];
+	  struct bitpack_d bp;
+	  bp = streamer_read_bitpack (ib);
+	  parm_vr->known = bp_unpack_value (&bp, 1);
+	  if (parm_vr->known)
+	    {
+	      parm_vr->type = streamer_read_enum (ib, value_range_type,
+						  VR_LAST);
+	      parm_vr->min = streamer_read_wide_int (ib);
+	      parm_vr->max = streamer_read_wide_int (ib);
+	    }
+	}
+    }
+  count = streamer_read_uhwi (ib);
+  if (count > 0)
+    {
+      ipcp_grow_transformations_if_necessary ();
+
+      ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+      vec_safe_grow_cleared (ts->bits, count);
 
       for (i = 0; i < count; i++)
 	{
-	  ipa_alignment *parm_al;
-	  parm_al = &(*ts->alignments)[i];
-	  struct bitpack_d bp;
-	  bp = streamer_read_bitpack (ib);
-	  parm_al->known = bp_unpack_value (&bp, 1);
-	  if (parm_al->known)
+	  ipa_bits& bits_jfunc = (*ts->bits)[i];
+	  struct bitpack_d bp = streamer_read_bitpack (ib);
+	  bits_jfunc.known = bp_unpack_value (&bp, 1);
+	  if (bits_jfunc.known)
 	    {
-	      parm_al->align = streamer_read_uhwi (ib);
-	      parm_al->misalign
-		= streamer_read_hwi_in_range (ib, "ipa-prop misalign",
-					      0, parm_al->align);
+	      bits_jfunc.value = streamer_read_widest_int (ib);
+	      bits_jfunc.mask = streamer_read_widest_int (ib);
 	    }
 	}
     }
@@ -5243,7 +5432,7 @@ class ipcp_modif_dom_walker : public dom_walker
 {
 public:
   ipcp_modif_dom_walker (struct ipa_func_body_info *fbi,
-			 vec<ipa_param_descriptor> descs,
+			 vec<ipa_param_descriptor, va_gc> *descs,
 			 struct ipa_agg_replacement_value *av,
 			 bool *sc, bool *cc)
     : dom_walker (CDI_DOMINATORS), m_fbi (fbi), m_descriptors (descs),
@@ -5253,7 +5442,7 @@ public:
 
 private:
   struct ipa_func_body_info *m_fbi;
-  vec<ipa_param_descriptor> m_descriptors;
+  vec<ipa_param_descriptor, va_gc> *m_descriptors;
   struct ipa_agg_replacement_value *m_aggval;
   bool *m_something_changed, *m_cfg_changed;
 };
@@ -5352,20 +5541,111 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
   return NULL;
 }
 
-/* Update alignment of formal parameters as described in
+/* Update bits info of formal parameters as described in
    ipcp_transformation_summary.  */
 
 static void
-ipcp_update_alignments (struct cgraph_node *node)
+ipcp_update_bits (struct cgraph_node *node)
+{
+  tree parm = DECL_ARGUMENTS (node->decl);
+  tree next_parm = parm;
+  ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
+
+  if (!ts || vec_safe_length (ts->bits) == 0)
+    return;
+
+  vec<ipa_bits, va_gc> &bits = *ts->bits;
+  unsigned count = bits.length ();
+
+  for (unsigned i = 0; i < count; ++i, parm = next_parm)
+    {
+      if (node->clone.combined_args_to_skip
+	  && bitmap_bit_p (node->clone.combined_args_to_skip, i))
+	continue;
+
+      gcc_checking_assert (parm);
+      next_parm = DECL_CHAIN (parm);
+
+      if (!bits[i].known
+	  || !(INTEGRAL_TYPE_P (TREE_TYPE (parm)) || POINTER_TYPE_P (TREE_TYPE (parm)))
+	  || !is_gimple_reg (parm))
+	continue;       
+
+      tree ddef = ssa_default_def (DECL_STRUCT_FUNCTION (node->decl), parm);
+      if (!ddef)
+	continue;
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Adjusting mask for param %u to ", i); 
+	  print_hex (bits[i].mask, dump_file);
+	  fprintf (dump_file, "\n");
+	}
+
+      if (INTEGRAL_TYPE_P (TREE_TYPE (ddef)))
+	{
+	  unsigned prec = TYPE_PRECISION (TREE_TYPE (ddef));
+	  signop sgn = TYPE_SIGN (TREE_TYPE (ddef));
+
+	  wide_int nonzero_bits = wide_int::from (bits[i].mask, prec, UNSIGNED)
+				  | wide_int::from (bits[i].value, prec, sgn);
+	  set_nonzero_bits (ddef, nonzero_bits);
+	}
+      else
+	{
+	  unsigned tem = bits[i].mask.to_uhwi ();
+	  unsigned HOST_WIDE_INT bitpos = bits[i].value.to_uhwi (); 
+	  unsigned align = tem & -tem;
+	  unsigned misalign = bitpos & (align - 1);
+
+	  if (align > 1)
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "Adjusting align: %u, misalign: %u\n", align, misalign); 
+
+	      unsigned old_align, old_misalign;
+	      struct ptr_info_def *pi = get_ptr_info (ddef);
+	      bool old_known = get_ptr_info_alignment (pi, &old_align, &old_misalign);
+
+	      if (old_known
+		  && old_align > align)
+		{
+		  if (dump_file)
+		    {
+		      fprintf (dump_file, "But alignment was already %u.\n", old_align);
+		      if ((old_misalign & (align - 1)) != misalign)
+			fprintf (dump_file, "old_misalign (%u) and misalign (%u) mismatch\n",
+				 old_misalign, misalign);
+		    }
+		  continue;
+		}
+
+	      if (old_known
+		  && ((misalign & (old_align - 1)) != old_misalign)
+		  && dump_file)
+		fprintf (dump_file, "old_misalign (%u) and misalign (%u) mismatch\n",
+			 old_misalign, misalign);
+
+	      set_ptr_info_alignment (pi, align, misalign); 
+	    }
+	}
+    }
+}
+
+/* Update value range of formal parameters as described in
+   ipcp_transformation_summary.  */
+
+static void
+ipcp_update_vr (struct cgraph_node *node)
 {
   tree fndecl = node->decl;
   tree parm = DECL_ARGUMENTS (fndecl);
   tree next_parm = parm;
   ipcp_transformation_summary *ts = ipcp_get_transformation_summary (node);
-  if (!ts || vec_safe_length (ts->alignments) == 0)
+  if (!ts || vec_safe_length (ts->m_vr) == 0)
     return;
-  const vec<ipa_alignment, va_gc> &alignments = *ts->alignments;
-  unsigned count = alignments.length ();
+  const vec<ipa_vr, va_gc> &vr = *ts->m_vr;
+  unsigned count = vr.length ();
 
   for (unsigned i = 0; i < count; ++i, parm = next_parm)
     {
@@ -5374,33 +5654,44 @@ ipcp_update_alignments (struct cgraph_node *node)
 	continue;
       gcc_checking_assert (parm);
       next_parm = DECL_CHAIN (parm);
-
-      if (!alignments[i].known || !is_gimple_reg (parm))
-	continue;
       tree ddef = ssa_default_def (DECL_STRUCT_FUNCTION (node->decl), parm);
-      if (!ddef)
+
+      if (!ddef || !is_gimple_reg (parm))
 	continue;
 
-      if (dump_file)
-	fprintf (dump_file, "  Adjusting alignment of param %u to %u, "
-		 "misalignment to %u\n", i, alignments[i].align,
-		 alignments[i].misalign);
-
-      struct ptr_info_def *pi = get_ptr_info (ddef);
-      gcc_checking_assert (pi);
-      unsigned old_align;
-      unsigned old_misalign;
-      bool old_known = get_ptr_info_alignment (pi, &old_align, &old_misalign);
-
-      if (old_known
-	  && old_align >= alignments[i].align)
+      if (vr[i].known
+	  && (vr[i].type == VR_RANGE || vr[i].type == VR_ANTI_RANGE))
 	{
-	  if (dump_file)
-	    fprintf (dump_file, "    But the alignment was already %u.\n",
-		     old_align);
-	  continue;
+	  tree type = TREE_TYPE (ddef);
+	  unsigned prec = TYPE_PRECISION (type);
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (ddef)))
+	    {
+	      if (dump_file)
+		{
+		  fprintf (dump_file, "Setting value range of param %u ", i);
+		  fprintf (dump_file, "%s[",
+			   (vr[i].type == VR_ANTI_RANGE) ? "~" : "");
+		  print_decs (vr[i].min, dump_file);
+		  fprintf (dump_file, ", ");
+		  print_decs (vr[i].max, dump_file);
+		  fprintf (dump_file, "]\n");
+		}
+	      set_range_info (ddef, vr[i].type,
+			      wide_int_storage::from (vr[i].min, prec,
+						      TYPE_SIGN (type)),
+			      wide_int_storage::from (vr[i].max, prec,
+						      TYPE_SIGN (type)));
+	    }
+	  else if (POINTER_TYPE_P (TREE_TYPE (ddef))
+		   && vr[i].type == VR_ANTI_RANGE
+		   && wi::eq_p (vr[i].min, 0)
+		   && wi::eq_p (vr[i].max, 0))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "Setting nonnull for %u\n", i);
+	      set_ptr_nonnull (ddef);
+	    }
 	}
-      set_ptr_info_alignment (pi, alignments[i].align, alignments[i].misalign);
     }
 }
 
@@ -5409,7 +5700,7 @@ ipcp_update_alignments (struct cgraph_node *node)
 unsigned int
 ipcp_transform_function (struct cgraph_node *node)
 {
-  vec<ipa_param_descriptor> descriptors = vNULL;
+  vec<ipa_param_descriptor, va_gc> *descriptors = NULL;
   struct ipa_func_body_info fbi;
   struct ipa_agg_replacement_value *aggval;
   int param_count;
@@ -5422,7 +5713,8 @@ ipcp_transform_function (struct cgraph_node *node)
     fprintf (dump_file, "Modification phase of node %s/%i\n",
 	     node->name (), node->order);
 
-  ipcp_update_alignments (node);
+  ipcp_update_bits (node);
+  ipcp_update_vr (node);
   aggval = ipa_get_agg_replacements_for_node (node);
   if (!aggval)
       return 0;
@@ -5440,8 +5732,8 @@ ipcp_transform_function (struct cgraph_node *node)
   fbi.param_count = param_count;
   fbi.aa_walked = 0;
 
-  descriptors.safe_grow_cleared (param_count);
-  ipa_populate_param_decls (node, descriptors);
+  vec_safe_grow_cleared (descriptors, param_count);
+  ipa_populate_param_decls (node, *descriptors);
   calculate_dominance_info (CDI_DOMINATORS);
   ipcp_modif_dom_walker (&fbi, descriptors, aggval, &something_changed,
 			 &cfg_changed).walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
@@ -5453,8 +5745,10 @@ ipcp_transform_function (struct cgraph_node *node)
   fbi.bb_infos.release ();
   free_dominance_info (CDI_DOMINATORS);
   (*ipcp_transformations)[node->uid].agg_values = NULL;
-  (*ipcp_transformations)[node->uid].alignments = NULL;
-  descriptors.release ();
+  (*ipcp_transformations)[node->uid].bits = NULL;
+  (*ipcp_transformations)[node->uid].m_vr = NULL;
+
+  vec_free (descriptors);
 
   if (!something_changed)
     return 0;

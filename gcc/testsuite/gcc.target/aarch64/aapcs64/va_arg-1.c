@@ -19,6 +19,8 @@ signed short ss = 0xcba9;
 signed int ss_promoted = 0xffffcba9;
 float fp = 65432.12345f;
 double fp_promoted = (double)65432.12345f;
+__fp16 fp16 = 2.0f;
+__fp16 fp16_promoted = (double)2.0f;
 
 #define HAS_DATA_INIT_FUNC
 void init_data ()
@@ -46,9 +48,13 @@ void init_data ()
   ANON         (    long double   , 98765432123456789.987654321L,      Q2,      12)
   ANON         (             vf2_t, vf2   ,                            D3,      13)
   ANON         (             vi4_t, vi4   ,                            Q4,      14)
+  /* 7.2: For unprototyped (i.e. pre- ANSI or K&R C) and variadic functions,
+     in addition to the normal conversions and promotions, arguments of
+     type __fp16 are converted to type double.  */
+  ANON_PROMOTED(            __fp16, fp16  ,     double, fp16_promoted, D5,      15)
 #ifndef __AAPCS64_BIG_ENDIAN__
-  LAST_ANON    (         int      , 0xeeee,                            STACK+32,15)
+  LAST_ANON    (         int      , 0xeeee,                            STACK+32,16)
 #else
-  LAST_ANON    (         int      , 0xeeee,                            STACK+36,15)
+  LAST_ANON    (         int      , 0xeeee,                            STACK+36,16)
 #endif
 #endif

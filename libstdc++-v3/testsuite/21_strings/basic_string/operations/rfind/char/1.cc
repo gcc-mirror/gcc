@@ -1,6 +1,6 @@
 // 2000-06-22 -=dbv=-  (shamelessy copied from bkoz' find.cc)
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,9 +21,8 @@
 #include <testsuite_hooks.h>
 
 // 21.3.6.2 basic_string rfind
-bool test01(void)
+void test01(void)
 {
-  bool test __attribute__((unused)) = true;
   typedef std::string::size_type csize_type;
   typedef std::string::const_reference cref;
   typedef std::string::reference ref;
@@ -82,7 +81,6 @@ bool test01(void)
   VERIFY( csz01 == csz02 );
   csz01 = str01.rfind('/');
   VERIFY( csz01 == npos );
-  return test;
 }
 
 int main()

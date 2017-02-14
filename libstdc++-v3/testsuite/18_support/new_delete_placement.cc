@@ -1,6 +1,6 @@
 // 2002-07-24 Benjamin Kosnik
 
-// Copyright (C) 2002-2016 Free Software Foundation, Inc.
+// Copyright (C) 2002-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,11 +25,11 @@
 // libstdc++/7286
 void test01()
 {
-  void* pc = new char;
-  void* pa = new char[10];
+  char c = 'c';
+  void* p = &c;
   void* tmp = 0;
-  operator delete(pc, tmp);
-  operator delete[](pa, tmp);
+  operator delete(p, tmp);
+  operator delete[](p, tmp);
 }
 
 int main()

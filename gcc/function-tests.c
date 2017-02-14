@@ -1,5 +1,5 @@
 /* Unit tests for function-handling.
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -78,6 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "selftest.h"
+#include "print-rtl.h"
 
 #if CHECKING_P
 
@@ -249,6 +250,7 @@ build_trivial_generic_function ()
   tsi_link_after (&stmt_iter, return_stmt, TSI_CONTINUE_LINKING);
 
   DECL_INITIAL (fndecl) = block;
+  BLOCK_SUPERCONTEXT (block) = fndecl;
 
   /* how to add to function? the following appears to be how to
      set the body of a fndecl: */
@@ -296,6 +298,7 @@ build_cfg (tree fndecl)
   push_cfun (fun);
   lower_cf_pass->execute (fun);
   pop_cfun ();
+  delete lower_cf_pass;
 
   /* We can now convert to CFG form; for our trivial test function this
      gives us:
@@ -310,6 +313,7 @@ build_cfg (tree fndecl)
   push_cfun (fun);
   build_cfg_pass->execute (fun);
   pop_cfun ();
+  delete build_cfg_pass;
 }
 
 /* Convert a gimple+CFG function to SSA form.  */
@@ -325,6 +329,7 @@ convert_to_ssa (tree fndecl)
   push_cfun (fun);
   build_ssa_pass->execute (fun);
   pop_cfun ();
+  delete build_ssa_pass;
 }
 
 /* Assuming we have a simple 3-block CFG like this:
@@ -416,7 +421,7 @@ verify_three_block_gimple_cfg (function *fun)
 
 /* As above, but additionally verify the RTL insns are sane.  */
 
-static void
+void
 verify_three_block_rtl_cfg (function *fun)
 {
   verify_three_block_cfg (fun);
@@ -430,14 +435,14 @@ verify_three_block_rtl_cfg (function *fun)
 
   basic_block exit = EXIT_BLOCK_PTR_FOR_FN (fun);
   ASSERT_TRUE (exit != NULL);
-  ASSERT_EQ (BB_RTL, entry->flags & BB_RTL);
+  ASSERT_EQ (BB_RTL, exit->flags & BB_RTL);
   ASSERT_EQ (NULL, BB_HEAD (exit));
 
   /* The "real" basic block should be flagged as RTL, and have one
      or more insns.  */
   basic_block bb2 = get_real_block (fun);
   ASSERT_TRUE (bb2 != NULL);
-  ASSERT_EQ (BB_RTL, entry->flags & BB_RTL);
+  ASSERT_EQ (BB_RTL, bb2->flags & BB_RTL);
   ASSERT_TRUE (BB_HEAD (bb2) != NULL);
 }
 
@@ -594,6 +599,7 @@ test_expansion_to_rtl ()
   init_function_start (fndecl);
   expand_pass->execute (fun);
   pop_cfun ();
+  delete expand_pass;
 
   /* On x86_64, I get this:
        (note 3 1 2 2 [bb 2] NOTE_INSN_BASIC_BLOCK)
@@ -638,6 +644,27 @@ test_expansion_to_rtl ()
 
   /* ...etc; any further checks are likely to over-specify things
      and run us into target dependencies.  */
+
+  /* Verify that print_rtl_function is sane.  */
+  named_temp_file tmp_out (".rtl");
+  FILE *outfile = fopen (tmp_out.get_filename (), "w");
+  print_rtx_function (outfile, fun, true);
+  fclose (outfile);
+
+  char *dump = read_file (SELFTEST_LOCATION, tmp_out.get_filename ());
+  ASSERT_STR_CONTAINS (dump, "(function \"test_fn\"\n");
+  ASSERT_STR_CONTAINS (dump, "  (insn-chain\n");
+  ASSERT_STR_CONTAINS (dump, "    (block 2\n");
+  ASSERT_STR_CONTAINS (dump, "      (edge-from entry (flags \"FALLTHRU\"))\n");
+  ASSERT_STR_CONTAINS (dump, "      (cinsn "); /* ...etc.  */
+  ASSERT_STR_CONTAINS (dump, "      (edge-to exit (flags \"FALLTHRU\"))\n");
+  ASSERT_STR_CONTAINS (dump, "    ) ;; block 2\n");
+  ASSERT_STR_CONTAINS (dump, "  ) ;; insn-chain\n");
+  ASSERT_STR_CONTAINS (dump, "  (crtl\n");
+  ASSERT_STR_CONTAINS (dump, "  ) ;; crtl\n");
+  ASSERT_STR_CONTAINS (dump, ") ;; function \"test_fn\"\n");
+
+  free (dump);
 }
 
 /* Run all of the selftests within this file.  */

@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2017 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is free software; you can redistribute it and/or modify it
@@ -19,6 +19,9 @@
    a copy of the GCC Runtime Library Exception along with this program;
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
+
+/* Always include AArch64 unwinder header file.  */
+#include "config/aarch64/aarch64-unwind.h"
 
 #ifndef inhibit_libc
 

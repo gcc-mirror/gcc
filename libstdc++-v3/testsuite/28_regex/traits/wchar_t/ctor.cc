@@ -1,9 +1,8 @@
-// { dg-do link }
-// { dg-options "-std=gnu++11" }
+// { dg-do link { target c++11 } }
 
 // 2007-03-12  Stephen M. Webb  <stephen.webb@bregmasoft.com>
 //
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,7 +22,6 @@
 // [28.7] class template regex_traits
 
 #include <regex>
-#include <testsuite_hooks.h>
 
 // Tests default constructor of the regex_traits class.  There is only the
 // default constructor.

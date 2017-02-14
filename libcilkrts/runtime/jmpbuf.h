@@ -107,6 +107,18 @@
  */
 #define SP(SF) JMPBUF_SP((SF)->ctx)
 
+/**
+ * @brief Some architecture-dependent stack adjustment.
+ */
+#if defined(__sparcv9)
+    // Subtract sparc v9 stack bias so the actual stack starts at the
+    // allocated area.
+#   define CILK_ADJUST_SP(SP) ((SP) - 2047)
+#   define CILK_UNADJUST_SP(SP) ((SP) + 2047)
+#else
+#   define CILK_ADJUST_SP(SP) (SP)
+#   define CILK_UNADJUST_SP(SP) (SP)
+#endif
 
 __CILKRTS_BEGIN_EXTERN_C
 
@@ -120,7 +132,7 @@ __CILKRTS_BEGIN_EXTERN_C
  */
 inline char *__cilkrts_get_sp(__cilkrts_stack_frame *sf)
 {
-    return (char *)SP(sf);
+    return (char *)CILK_UNADJUST_SP(SP(sf));
 }
 
 /**

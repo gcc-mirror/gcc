@@ -1,4 +1,4 @@
-@c Copyright (C) 2003-2016 Free Software Foundation, Inc.
+@c Copyright (C) 2003-2017 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -429,6 +429,13 @@ This is an optimization option.  It should be shown as such in
 @option{--help} output, and any associated variable named using
 @code{Var} should be saved and restored when the optimization level is
 changed with @code{optimize} attributes.
+
+@item PerFunction
+This is an option that can be overridden on a per-function basis.
+@code{Optimization} implies @code{PerFunction}, but options that do not
+affect executable code generation may use this flag instead, so that the
+option is not taken into account in ways that might affect executable
+code generation.
 
 @item Undocumented
 The option is deliberately missing documentation and should not

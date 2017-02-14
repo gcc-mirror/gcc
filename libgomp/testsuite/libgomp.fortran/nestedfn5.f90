@@ -52,7 +52,7 @@ contains
 !$omp end parallel
     b = 10
 !$omp target data map (tofrom: a, d(2:3,4:4), q) map (from: l)
-!$omp target map (tofrom: b, d(2:3,4:4))
+!$omp target map (tofrom: b, d(2:3,4:4)) map (alloc: a, l)
     l = .false.
     if (a /= 22 .or. any (q /= 5)) l = .true.
     if (lbound (q, 1) /= 19 .or. ubound (q, 1) /= 27) l = .true.
@@ -71,7 +71,7 @@ contains
     q = 14
     d = 15
 !$omp target update to (a, q, d(2:3,4:4))
-!$omp target map (tofrom: b, d(2:3,4:4))
+!$omp target map (tofrom: b, d(2:3,4:4)) map (alloc: a, l)
     if (a /= 12 .or. b /= 13 .or. any (q /= 14)) l = .true.
     l = l .or. any (d(2:3,4:4) /= 15)
 !$omp end target
@@ -85,7 +85,8 @@ contains
     if (l) call abort
 !$omp target teams distribute parallel do simd if (.not.l) device(a) &
 !$omp & num_teams(b) dist_schedule(static, c) num_threads (h) &
-!$omp & reduction (+: m) safelen (n) schedule(static, o)
+!$omp & reduction (+: m) safelen (n) schedule(static, o) &
+!$omp & defaultmap(tofrom: scalar)
     do p = 1, 64
       m = m + 1
     end do

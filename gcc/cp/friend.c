@@ -1,5 +1,5 @@
 /* Help friends in C++.
-   Copyright (C) 1997-2016 Free Software Foundation, Inc.
+   Copyright (C) 1997-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,6 +24,46 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Friend data structures are described in cp-tree.h.  */
 
+
+/* The GLOBAL_FRIEND scope (functions, classes, or templates) is
+   regarded as a friend of every class.  This is only used by libcc1,
+   to enable GDB's code snippets to access private members without
+   disabling access control in general, which could cause different
+   template overload resolution results when accessibility matters
+   (e.g. tests for an accessible member).  */
+
+static tree global_friend;
+
+/* Set the GLOBAL_FRIEND for this compilation session.  It might be
+   set multiple times, but always to the same scope.  */
+
+void
+set_global_friend (tree scope)
+{
+  gcc_checking_assert (scope != NULL_TREE);
+  gcc_assert (!global_friend || global_friend == scope);
+  global_friend = scope;
+}
+
+/* Return TRUE if SCOPE is the global friend.  */
+
+bool
+is_global_friend (tree scope)
+{
+  gcc_checking_assert (scope != NULL_TREE);
+
+  if (global_friend == scope)
+    return true;
+
+  if (!global_friend)
+    return false;
+
+  if (is_specialization_of_friend (global_friend, scope))
+    return true;
+
+  return false;
+}
+
 /* Returns nonzero if SUPPLICANT is a friend of TYPE.  */
 
 int
@@ -35,6 +75,9 @@ is_friend (tree type, tree supplicant)
 
   if (supplicant == NULL_TREE || type == NULL_TREE)
     return 0;
+
+  if (is_global_friend (supplicant))
+    return 1;
 
   declp = DECL_P (supplicant);
 

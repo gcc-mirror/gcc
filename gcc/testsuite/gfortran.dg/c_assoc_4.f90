@@ -9,6 +9,6 @@ PROGRAM test
 
   TYPE (C_PTR) :: x, y
 
-  PRINT *, C_ASSOCIATED([x,y])  ! { dg-error "'C_PTR_1' argument of 'c_associated' intrinsic at .1. must be a scalar" }
+  PRINT *, C_ASSOCIATED([x,y])  ! { dg-error "'c_ptr_1' argument of 'c_associated' intrinsic at .1. must be a scalar" }
 
 END PROGRAM test

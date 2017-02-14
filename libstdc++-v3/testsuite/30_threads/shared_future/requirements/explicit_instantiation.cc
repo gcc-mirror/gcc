@@ -1,10 +1,8 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
-// { dg-require-atomic-builtins "" }
 
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,9 +24,8 @@
 #include <testsuite_tr1.h>
 
 using namespace __gnu_test;
-using std::shared_future;
-template class shared_future<int>;
-template class shared_future<int&>;
-template class shared_future<void>;
-template class shared_future<ClassType>;
-template class shared_future<ClassType&>;
+template class std::shared_future<int>;
+template class std::shared_future<int&>;
+template class std::shared_future<void>;
+template class std::shared_future<ClassType>;
+template class std::shared_future<ClassType&>;

@@ -1,4 +1,4 @@
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,7 +17,7 @@
 
 // 20.7.11 Function template bind
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <functional>
 #include <testsuite_hooks.h>
@@ -28,8 +28,6 @@ int inc(int& i) { return ++i; }
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   int counter = 0;
   std::bind(&inc, _1)(counter);
   VERIFY(counter == 1 );
@@ -47,8 +45,6 @@ struct Inc
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   int counter = 0;
   std::bind(Inc(), _1)(counter);
   VERIFY(counter == 1 );

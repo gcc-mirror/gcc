@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2015, AdaCore                     --
+--                     Copyright (C) 2000-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -358,10 +358,14 @@ package body GNAT.Expect is
          Expect_Internal (Descriptors, N, Timeout_Tmp, Full_Buffer);
 
          case N is
-            when Expect_Internal_Error | Expect_Process_Died =>
+            when Expect_Internal_Error
+               | Expect_Process_Died
+            =>
                raise Process_Died;
 
-            when Expect_Timeout | Expect_Full_Buffer =>
+            when Expect_Full_Buffer
+               | Expect_Timeout
+            =>
                Result := N;
                return;
 
@@ -514,10 +518,14 @@ package body GNAT.Expect is
          Expect_Internal (Descriptors, N, Timeout, Full_Buffer);
 
          case N is
-            when Expect_Internal_Error | Expect_Process_Died =>
+            when Expect_Internal_Error
+               | Expect_Process_Died
+            =>
                raise Process_Died;
 
-            when Expect_Timeout | Expect_Full_Buffer =>
+            when Expect_Full_Buffer
+               | Expect_Timeout
+            =>
                Result := N;
                return;
 
@@ -576,10 +584,14 @@ package body GNAT.Expect is
          Expect_Internal (Descriptors, N, Timeout, Full_Buffer);
 
          case N is
-            when Expect_Internal_Error | Expect_Process_Died =>
+            when Expect_Internal_Error
+               | Expect_Process_Died
+            =>
                raise Process_Died;
 
-            when Expect_Timeout | Expect_Full_Buffer =>
+            when Expect_Full_Buffer
+               | Expect_Timeout
+            =>
                Result := N;
                return;
 
@@ -698,7 +710,6 @@ package body GNAT.Expect is
                            --  If there is no limit to the buffer size
 
                            if Descriptors (D).Buffer_Size = 0 then
-
                               declare
                                  Tmp : String_Access := Descriptors (D).Buffer;
 
@@ -728,7 +739,7 @@ package body GNAT.Expect is
                               --  Add what we read to the buffer
 
                               if Descriptors (D).Buffer_Index + N >
-                                Descriptors (D).Buffer_Size
+                                   Descriptors (D).Buffer_Size
                               then
                                  --  If the user wants to know when we have
                                  --  read more than the buffer can contain.

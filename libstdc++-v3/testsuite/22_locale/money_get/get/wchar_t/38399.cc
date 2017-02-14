@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,7 +32,6 @@ protected:
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   locale loc(locale(), new my_moneypunct());
   wstringstream ss(L"123.455");

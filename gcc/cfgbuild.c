@@ -1,5 +1,5 @@
 /* Control flow graph building code for GNU compiler.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "rtl.h"
 #include "cfghooks.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
@@ -204,7 +205,8 @@ make_edges (basic_block min, basic_block max, int update_p)
   /* Heavy use of computed goto in machine-generated code can lead to
      nearly fully-connected CFGs.  In that case we spend a significant
      amount of time searching the edge lists for duplicates.  */
-  if (forced_labels || cfun->cfg->max_jumptable_ents > 100)
+  if (!vec_safe_is_empty (forced_labels)
+      || cfun->cfg->max_jumptable_ents > 100)
     edge_cache = sbitmap_alloc (last_basic_block_for_fn (cfun));
 
   /* By nature of the way these get numbered, ENTRY_BLOCK_PTR->next_bb block
@@ -273,15 +275,17 @@ make_edges (basic_block min, basic_block max, int update_p)
 		  && GET_CODE (SET_SRC (tmp)) == IF_THEN_ELSE
 		  && GET_CODE (XEXP (SET_SRC (tmp), 2)) == LABEL_REF)
 		make_label_edge (edge_cache, bb,
-				 LABEL_REF_LABEL (XEXP (SET_SRC (tmp), 2)), 0);
+				 label_ref_label (XEXP (SET_SRC (tmp), 2)), 0);
 	    }
 
 	  /* If this is a computed jump, then mark it as reaching
 	     everything on the forced_labels list.  */
 	  else if (computed_jump_p (insn))
 	    {
-	      for (rtx_insn_list *x = forced_labels; x; x = x->next ())
-		make_label_edge (edge_cache, bb, x->insn (), EDGE_ABNORMAL);
+	      rtx_insn *insn;
+	      unsigned int i;
+	      FOR_EACH_VEC_SAFE_ELT (forced_labels, i, insn)
+		make_label_edge (edge_cache, bb, insn, EDGE_ABNORMAL);
 	    }
 
 	  /* Returns create an exit out.  */
@@ -411,7 +415,7 @@ purge_dead_tablejump_edges (basic_block bb, rtx_jump_table_data *table)
        && SET_DEST (tmp) == pc_rtx
        && GET_CODE (SET_SRC (tmp)) == IF_THEN_ELSE
        && GET_CODE (XEXP (SET_SRC (tmp), 2)) == LABEL_REF)
-    mark_tablejump_edge (LABEL_REF_LABEL (XEXP (SET_SRC (tmp), 2)));
+    mark_tablejump_edge (label_ref_label (XEXP (SET_SRC (tmp), 2)));
 
   for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
     {

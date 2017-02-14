@@ -2,7 +2,7 @@
 
 // 2005-2-18  Matt Austern  <austern@apple.com>
 //
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,8 +28,6 @@
 #include <utility>
 #include <tr1/unordered_map>
 #include "testsuite_hooks.h"
-
-bool test __attribute__((unused)) = true;
 
 void test01()
 {

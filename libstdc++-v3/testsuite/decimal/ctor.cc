@@ -1,4 +1,4 @@
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,6 @@ using namespace std::decimal;
 void
 ctor_32 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal32 a;
   float b __attribute__((mode(SD))) = 0.e-101DF;
 
@@ -43,7 +42,6 @@ ctor_32 (void)
 void
 ctor_64 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal64 a;
   float b __attribute__((mode(DD))) = 0.e-398DD;
 
@@ -53,7 +51,6 @@ ctor_64 (void)
 void
 ctor_128 (void)
 {
-  bool test __attribute__((unused)) = true;
   decimal128 a;
   float b __attribute__((mode(TD))) = 0.e-6176DL;
 

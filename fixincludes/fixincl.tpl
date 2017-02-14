@@ -1,7 +1,7 @@
 [= AutoGen5 Template -*- Mode: C -*-
 x=fixincl.x =]
 [=
- (if (version-compare >= autogen-version "5.18")
+ (if (version-compare >= autogen-version "5.18.1")
      (dne "-D" " * " "/* ")
      (dne " * " "/* ") ) =]
  */

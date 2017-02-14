@@ -1,6 +1,6 @@
 // 2003-04-01 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,6 @@ active_buffer(std::ios& stream)
 // libstdc++/2832
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   std::stringbuf sbuf;
   std::streambuf* pbasebuf0 = &sbuf;
 

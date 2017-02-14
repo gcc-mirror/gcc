@@ -1,5 +1,5 @@
 /* Check that we can use the save instruction to save varargs.  */
-/* { dg-options "(-mips16) isa_rev>=1 -mabi=32" } */
+/* { dg-options "(-mips16) isa_rev>=1 -mabi=32 (REQUIRES_STDLIB)" } */
 
 #include <stdarg.h>
 

@@ -1,5 +1,5 @@
 ;; Cavium ThunderX pipeline description
-;; Copyright (C) 2014-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2017 Free Software Foundation, Inc.
 ;;
 ;; Written by Andrew Pinski  <apinski@cavium.com>
 
@@ -39,7 +39,7 @@
 
 (define_insn_reservation "thunderx_shift" 1
   (and (eq_attr "tune" "thunderx")
-       (eq_attr "type" "bfm,extend,rotate_imm,shift_imm,shift_reg,rbit,rev"))
+       (eq_attr "type" "bfm,bfx,extend,rotate_imm,shift_imm,shift_reg,rbit,rev"))
   "thunderx_pipe0 | thunderx_pipe1")
 
 

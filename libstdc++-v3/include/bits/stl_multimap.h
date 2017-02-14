@@ -1,6 +1,6 @@
 // Multimap implementation -*- C++ -*-
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -64,6 +64,9 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
+
+  template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
+    class map;
 
   /**
    *  @brief A standard container made up of (key,value) pairs, which can be
@@ -151,17 +154,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Rep_type::reverse_iterator       reverse_iterator;
       typedef typename _Rep_type::const_reverse_iterator const_reverse_iterator;
 
+#if __cplusplus > 201402L
+      using node_type = typename _Rep_type::node_type;
+#endif
+
       // [23.3.2] construct/copy/destroy
       // (get_allocator() is also listed in this section)
 
       /**
        *  @brief  Default constructor creates no elements.
        */
-      multimap()
-#if __cplusplus >= 201103L
-      noexcept(is_nothrow_default_constructible<allocator_type>::value)
+#if __cplusplus < 201103L
+      multimap() : _M_t() { }
+#else
+      multimap() = default;
 #endif
-      : _M_t() { }
 
       /**
        *  @brief  Creates a %multimap with no elements.
@@ -175,25 +182,23 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  %Multimap copy constructor.
-       *  @param  __x  A %multimap of identical element and allocator types.
        *
-       *  The newly-created %multimap uses a copy of the allocation object
-       *  used by @a __x.
+       *  Whether the allocator is copied depends on the allocator traits.
        */
+#if __cplusplus < 201103L
       multimap(const multimap& __x)
       : _M_t(__x._M_t) { }
+#else
+      multimap(const multimap&) = default;
 
-#if __cplusplus >= 201103L
       /**
        *  @brief  %Multimap move constructor.
-       *  @param   __x  A %multimap of identical element and allocator types.
        *
-       *  The newly-created %multimap contains the exact contents of @a __x.
-       *  The contents of @a __x are a valid, but unspecified %multimap.
+       *  The newly-created %multimap contains the exact contents of the
+       *  moved instance. The moved instance is a valid, but unspecified
+       *  %multimap.
        */
-      multimap(multimap&& __x)
-      noexcept(is_nothrow_copy_constructible<_Compare>::value)
-      : _M_t(std::move(__x._M_t)) { }
+      multimap(multimap&&) = default;
 
       /**
        *  @brief  Builds a %multimap from an initializer_list.
@@ -271,30 +276,31 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	: _M_t(__comp, _Pair_alloc_type(__a))
         { _M_t._M_insert_equal(__first, __last); }
 
-      // FIXME There is no dtor declared, but we should have something generated
-      // by Doxygen.  I don't know what tags to add to this paragraph to make
-      // that happen:
+#if __cplusplus >= 201103L
       /**
        *  The dtor only erases the elements, and note that if the elements
        *  themselves are pointers, the pointed-to memory is not touched in any
-       *  way.  Managing the pointer is the user's responsibility.
+       *  way. Managing the pointer is the user's responsibility.
        */
+      ~multimap() = default;
+#endif
 
       /**
        *  @brief  %Multimap assignment operator.
-       *  @param  __x  A %multimap of identical element and allocator types.
        *
-       *  All the elements of @a __x are copied, but unlike the copy
-       *  constructor, the allocator object is not copied.
+       *  Whether the allocator is copied depends on the allocator traits.
        */
+#if __cplusplus < 201103L
       multimap&
       operator=(const multimap& __x)
       {
 	_M_t = __x._M_t;
 	return *this;
       }
+#else
+      multimap&
+      operator=(const multimap&) = default;
 
-#if __cplusplus >= 201103L
       /// Move assignment operator.
       multimap&
       operator=(multimap&&) = default;
@@ -308,7 +314,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  Note that the assignment completely changes the %multimap and
        *  that the resulting %multimap's size is the same as the number
-       *  of elements assigned.  Old data may be lost.
+       *  of elements assigned.
        */
       multimap&
       operator=(initializer_list<value_type> __l)
@@ -594,6 +600,60 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { this->insert(__l.begin(), __l.end()); }
 #endif
 
+#if __cplusplus > 201402L
+      /// Extract a node.
+      node_type
+      extract(const_iterator __pos)
+      {
+	__glibcxx_assert(__pos != end());
+	return _M_t.extract(__pos);
+      }
+
+      /// Extract a node.
+      node_type
+      extract(const key_type& __x)
+      { return _M_t.extract(__x); }
+
+      /// Re-insert an extracted node.
+      iterator
+      insert(node_type&& __nh)
+      { return _M_t._M_reinsert_node_equal(std::move(__nh)); }
+
+      /// Re-insert an extracted node.
+      iterator
+      insert(const_iterator __hint, node_type&& __nh)
+      { return _M_t._M_reinsert_node_hint_equal(__hint, std::move(__nh)); }
+
+      template<typename, typename>
+	friend class _Rb_tree_merge_helper;
+
+      template<typename _C2>
+	void
+	merge(multimap<_Key, _Tp, _C2, _Alloc>& __source)
+	{
+	  using _Merge_helper = _Rb_tree_merge_helper<multimap, _C2>;
+	  _M_t._M_merge_equal(_Merge_helper::_S_get_tree(__source));
+	}
+
+      template<typename _C2>
+	void
+	merge(multimap<_Key, _Tp, _C2, _Alloc>&& __source)
+	{ merge(__source); }
+
+      template<typename _C2>
+	void
+	merge(map<_Key, _Tp, _C2, _Alloc>& __source)
+	{
+	  using _Merge_helper = _Rb_tree_merge_helper<multimap, _C2>;
+	  _M_t._M_merge_equal(_Merge_helper::_S_get_tree(__source));
+	}
+
+      template<typename _C2>
+	void
+	merge(map<_Key, _Tp, _C2, _Alloc>&& __source)
+	{ merge(__source); }
+#endif // C++17
+
 #if __cplusplus >= 201103L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 130. Associative erase should return an iterator.
@@ -609,6 +669,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  and that if the element is itself a pointer, the pointed-to memory is
        *  not touched in any way.  Managing the pointer is the user's
        *  responsibility.
+       *
+       * @{
        */
       iterator
       erase(const_iterator __position)
@@ -619,6 +681,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       iterator
       erase(iterator __position)
       { return _M_t.erase(__position); }
+      // @}
 #else
       /**
        *  @brief Erases an element from a %multimap.
@@ -701,6 +764,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  should be quite fast.)
        *  Note that the global std::swap() function is specialized such that
        *  std::swap(m1,m2) will feed to this function.
+       *
+       *  Whether the allocators are swapped depends on the allocator traits.
        */
       void
       swap(multimap& __x)
@@ -822,8 +887,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Kt>
 	auto
 	lower_bound(const _Kt& __x)
-	-> decltype(_M_t._M_lower_bound_tr(__x))
-	{ return _M_t._M_lower_bound_tr(__x); }
+	-> decltype(iterator(_M_t._M_lower_bound_tr(__x)))
+	{ return iterator(_M_t._M_lower_bound_tr(__x)); }
 #endif
       //@}
 
@@ -847,8 +912,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Kt>
 	auto
 	lower_bound(const _Kt& __x) const
-	-> decltype(_M_t._M_lower_bound_tr(__x))
-	{ return _M_t._M_lower_bound_tr(__x); }
+	-> decltype(const_iterator(_M_t._M_lower_bound_tr(__x)))
+	{ return const_iterator(_M_t._M_lower_bound_tr(__x)); }
 #endif
       //@}
 
@@ -867,8 +932,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Kt>
 	auto
 	upper_bound(const _Kt& __x)
-	-> decltype(_M_t._M_upper_bound_tr(__x))
-	{ return _M_t._M_upper_bound_tr(__x); }
+	-> decltype(iterator(_M_t._M_upper_bound_tr(__x)))
+	{ return iterator(_M_t._M_upper_bound_tr(__x)); }
 #endif
       //@}
 
@@ -887,8 +952,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Kt>
 	auto
 	upper_bound(const _Kt& __x) const
-	-> decltype(_M_t._M_upper_bound_tr(__x))
-	{ return _M_t._M_upper_bound_tr(__x); }
+	-> decltype(const_iterator(_M_t._M_upper_bound_tr(__x)))
+	{ return const_iterator(_M_t._M_upper_bound_tr(__x)); }
 #endif
       //@}
 
@@ -914,8 +979,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Kt>
 	auto
 	equal_range(const _Kt& __x)
-	-> decltype(_M_t._M_equal_range_tr(__x))
-	{ return _M_t._M_equal_range_tr(__x); }
+	-> decltype(pair<iterator, iterator>(_M_t._M_equal_range_tr(__x)))
+	{ return pair<iterator, iterator>(_M_t._M_equal_range_tr(__x)); }
 #endif
       //@}
 
@@ -941,8 +1006,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Kt>
 	auto
 	equal_range(const _Kt& __x) const
-	-> decltype(_M_t._M_equal_range_tr(__x))
-	{ return _M_t._M_equal_range_tr(__x); }
+	-> decltype(pair<const_iterator, const_iterator>(
+	      _M_t._M_equal_range_tr(__x)))
+	{
+	  return pair<const_iterator, const_iterator>(
+	      _M_t._M_equal_range_tr(__x));
+	}
 #endif
       //@}
 
@@ -1027,6 +1096,30 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     { __x.swap(__y); }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
+
+#if __cplusplus > 201402L
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  // Allow std::multimap access to internals of compatible maps.
+  template<typename _Key, typename _Val, typename _Cmp1, typename _Alloc,
+	   typename _Cmp2>
+    struct
+    _Rb_tree_merge_helper<_GLIBCXX_STD_C::multimap<_Key, _Val, _Cmp1, _Alloc>,
+			  _Cmp2>
+    {
+    private:
+      friend class _GLIBCXX_STD_C::multimap<_Key, _Val, _Cmp1, _Alloc>;
+
+      static auto&
+      _S_get_tree(_GLIBCXX_STD_C::map<_Key, _Val, _Cmp2, _Alloc>& __map)
+      { return __map._M_t; }
+
+      static auto&
+      _S_get_tree(_GLIBCXX_STD_C::multimap<_Key, _Val, _Cmp2, _Alloc>& __map)
+      { return __map._M_t; }
+    };
+_GLIBCXX_END_NAMESPACE_VERSION
+#endif // C++17
+
 } // namespace std
 
 #endif /* _STL_MULTIMAP_H */

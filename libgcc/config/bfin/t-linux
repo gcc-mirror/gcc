@@ -1,1 +1,2 @@
-SHLIB_MAPFILES = $(srcdir)/config/bfin/libgcc-glibc.ver
+SHLIB_MAPFILES += $(srcdir)/config/bfin/libgcc-glibc.ver
+SHLIB_MKMAP_OPTS = -v skip_underscore=1

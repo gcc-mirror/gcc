@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2017 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Write float code factoring to this file by Jerry DeLisle   
    F2003 I/O support contributed by Jerry DeLisle
@@ -174,6 +174,13 @@ build_float_string (st_parameter_dt *dtp, const fnode *f, char *buffer,
     {
     case FMT_F:
       nbefore = ndigits - precision;
+      if ((w > 0) && (nbefore > (int) size))
+        {
+	  *len = w;
+	  star_fill (result, w);
+	  result[w] = '\0';
+	  return;
+	}
       /* Make sure the decimal point is a '.'; depending on the
 	 locale, this might not be the case otherwise.  */
       digits[nbefore] = '.';

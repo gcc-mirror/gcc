@@ -1,0 +1,56 @@
+/* ARC ARCH architectures.
+   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 3, or (at your
+   option) any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* List of all known ARC base architectures.  These defines are used
+   to check if command line given options are valid for a specific
+   architecture, and to set default architecture options, if needed.
+
+   Before including this file, define a macro:
+
+   ARC_ARCH (NAME, ARCH, DEV_HW_FACILITIES, DEF_HW_FACILITIES)
+
+   where the arguments are the fields of arc_arch_t:
+
+   NAME			Architecture given name;
+
+   ARCH			Architecture class as in enum base_architecture;
+
+   DEV_HW_FACILITIES	All allowed architecture hardware facilities.
+			These facilities are represented as compiler
+			options, defined in arc_options.def file.
+
+   DEF_HW_FACILITIES	Default flags for this architecture.  It is a
+			subset of DEV_HW_FACILITIES.  */
+
+ARC_ARCH ("arcem", em, FL_MPYOPT_1_6 | FL_DIVREM | FL_CD | FL_NORM	\
+	  | FL_BS | FL_SWAP | FL_FPUS | FL_SPFP | FL_DPFP		\
+	  | FL_SIMD | FL_FPUDA | FL_QUARK, 0)
+ARC_ARCH ("archs", hs, FL_MPYOPT_7_9 | FL_DIVREM | FL_NORM | FL_CD	\
+	  | FL_ATOMIC | FL_LL64 | FL_BS | FL_SWAP			\
+	  | FL_FPUS | FL_FPUD,						\
+	  FL_CD | FL_ATOMIC | FL_BS | FL_NORM | FL_SWAP)
+ARC_ARCH ("arc6xx", 6xx, FL_BS | FL_NORM | FL_SWAP | FL_MUL64 | FL_MUL32x16 \
+	  | FL_SPFP | FL_ARGONAUT | FL_DPFP, 0)
+ARC_ARCH ("arc700", 700, FL_ATOMIC | FL_BS | FL_NORM | FL_SWAP | FL_EA \
+	  | FL_SIMD | FL_SPFP | FL_ARGONAUT | FL_DPFP,		       \
+	  FL_BS | FL_NORM | FL_SWAP)
+
+/* Local Variables: */
+/* mode: c */
+/* End: */

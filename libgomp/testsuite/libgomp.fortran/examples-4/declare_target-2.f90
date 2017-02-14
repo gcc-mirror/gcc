@@ -3,7 +3,7 @@
 program e_53_2
   !$omp declare target (fib)
   integer :: x, fib
-  !$omp target
+  !$omp target map(from: x)
     x = fib (25)
   !$omp end target
   if (x /= fib (25)) call abort

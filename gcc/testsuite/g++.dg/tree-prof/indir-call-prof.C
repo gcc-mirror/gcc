@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-profile" } */
+/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-profile -fdump-ipa-afdo" } */
 
 struct A {
   A () {}
@@ -24,14 +24,20 @@ main (void)
   
   A* p;
 
-  p = (A *)wrap ((void *)&a);
-  p->AA ();
+  int i;
 
-  p = (B *)wrap ((void *)&b);
-  p->AA ();
+  for (i = 0; i < 1000000; i++)
+    {
+      p = (A *)wrap ((void *)&a);
+      p->AA ();
+
+      p = (B *)wrap ((void *)&b);
+      p->AA ();
+    }
   
   return 0;
 }
 
-/* { dg-final-use { scan-ipa-dump "Indirect call -> direct call.* AA transformation on insn" "profile" } } */
-/* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized" } } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump "Indirect call -> direct call.* AA transformation on insn" "profile" } } */
+/* { dg-final-use-autofdo { scan-ipa-dump "Indirect call -> direct call.* AA transformation on insn" "afdo" } } */
+/* { dg-final-use-not-autofdo { scan-tree-dump-not "Invalid sum" "optimized" } } */

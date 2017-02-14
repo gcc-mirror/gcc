@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2014-11-13  Daniel Kruegler <daniel.kruegler@gmail.com>
 //
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,8 +28,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef char                          value_type;
   typedef std::basic_string<value_type> string_type;
   typedef std::sub_match<value_type*>   sub_match_type;
@@ -37,19 +35,19 @@ int main()
   value_type test_data2[] = {'a', 'b', 'c'};
   const string_type test_data3("abc");
 
-	sub_match_type sm;
-	sm.first = std::begin(test_data2);
-	sm.second  = std::end(test_data2);
-	sm.matched = true;
+  sub_match_type sm;
+  sm.first = std::begin(test_data2);
+  sm.second  = std::end(test_data2);
+  sm.matched = true;
 
-	VERIFY( test_data1 != sm );
-	VERIFY( sm != test_data1 );
-	VERIFY( sm < test_data1 );
-	VERIFY( !(test_data1 < sm) );
-	VERIFY( test_data1 > sm );
+  VERIFY( test_data1 != sm );
+  VERIFY( sm != test_data1 );
+  VERIFY( sm < test_data1 );
+  VERIFY( !(test_data1 < sm) );
+  VERIFY( test_data1 > sm );
 
-	VERIFY( test_data3 == sm );
-	VERIFY( sm == test_data3 );
-	VERIFY( !(sm < test_data3) );
-	VERIFY( !(test_data3 < sm) );
+  VERIFY( test_data3 == sm );
+  VERIFY( sm == test_data3 );
+  VERIFY( !(sm < test_data3) );
+  VERIFY( !(test_data3 < sm) );
 }

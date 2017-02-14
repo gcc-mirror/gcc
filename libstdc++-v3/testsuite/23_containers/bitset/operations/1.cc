@@ -1,6 +1,6 @@
 // 2000-01-15  Anders Widell  <awl@hem.passagen.se>
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,8 +56,9 @@ shift_arrays(size_t shift_step, size_t size) {
 
 template <size_t size>
   bool
-  do_test() {
-    bool test __attribute__((unused)) = true;
+  do_test()
+  {
+    bool test = true;
 
     std::bitset<size> shifted;
     std::bitset<size> correct;
@@ -86,10 +87,8 @@ template <size_t size>
     return test;
   }
 
-bool
+void
 test01() {
-  bool test __attribute__((unused)) = true;
-
   VERIFY( do_test<32>() );
   VERIFY( do_test<48>() );
   VERIFY( do_test<64>() );
@@ -97,7 +96,6 @@ test01() {
   VERIFY( do_test<511>() );
   VERIFY( do_test<513>() );
   VERIFY( do_test<997>() );
-  return test;
 }
 
 int

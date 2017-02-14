@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,6 +120,15 @@ package body Ada.Sequential_IO is
    begin
       return FIO.End_Of_File (AP (File));
    end End_Of_File;
+
+   -----------
+   -- Flush --
+   -----------
+
+   procedure Flush (File : File_Type) is
+   begin
+      FIO.Flush (AP (File));
+   end Flush;
 
    ----------
    -- Form --

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for MMIX.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
 This file is part of GCC.
@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "regs.h"
@@ -259,6 +260,9 @@ static void mmix_conditional_register_usage (void);
 #define TARGET_PREFERRED_RELOAD_CLASS mmix_preferred_reload_class
 #undef TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
 #define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS mmix_preferred_output_reload_class
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	mmix_legitimate_address_p

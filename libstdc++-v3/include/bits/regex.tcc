@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -496,12 +496,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     regex_iterator<_Bi_iter, _Ch_type, _Rx_traits>::
     operator==(const regex_iterator& __rhs) const
     {
-      return (_M_match.empty() && __rhs._M_match.empty())
-	|| (_M_begin == __rhs._M_begin
-	    && _M_end == __rhs._M_end
-	    && _M_pregex == __rhs._M_pregex
-	    && _M_flags == __rhs._M_flags
-	    && _M_match[0] == __rhs._M_match[0]);
+      if (_M_pregex == nullptr && __rhs._M_pregex == nullptr)
+	return true;
+      return _M_pregex == __rhs._M_pregex
+	  && _M_begin == __rhs._M_begin
+	  && _M_end == __rhs._M_end
+	  && _M_flags == __rhs._M_flags
+	  && _M_match[0] == __rhs._M_match[0];
     }
 
   template<typename _Bi_iter,
@@ -525,7 +526,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    {
 	      if (__start == _M_end)
 		{
-		  _M_match = value_type();
+		  _M_pregex = nullptr;
 		  return *this;
 		}
 	      else
@@ -558,7 +559,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      _M_match._M_begin = _M_begin;
 	    }
 	  else
-	    _M_match = value_type();
+	    _M_pregex = nullptr;
 	}
       return *this;
     }

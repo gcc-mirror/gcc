@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2011-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,6 @@ template<typename T>
 // libstdc++/48476
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<int> p(new int()), q, r;
   
   std::tuple<std::shared_ptr<int>&, int>  t0(p, 23), t1(q, 0);

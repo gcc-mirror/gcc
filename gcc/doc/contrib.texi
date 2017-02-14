@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2016 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -85,8 +85,8 @@ Janne Blomqvist for contributions to GNU Fortran.
 Segher Boessenkool for various fixes.
 
 @item
-Hans-J. Boehm for his @uref{http://www.hpl.hp.com/@/personal/@/Hans_Boehm/@/gc/,,
-garbage collector}, IA-64 libffi port, and other Java work.
+Hans-J. Boehm for his garbage collector, IA-64 libffi port, and other
+Java work.
 
 @item
 Neil Booth for work on cpplib, lang hooks, debug hooks and other
@@ -141,6 +141,9 @@ to 2013.
 Craig Burley for leadership of the G77 Fortran effort.
 
 @item
+Tobias Burnus for contributions to GNU Fortran.
+
+@item
 Stephan Buys for contributing Doxygen notes for libstdc++.
 
 @item
@@ -170,6 +173,10 @@ Denis Chertykov for contributing and maintaining the AVR port, the first GCC por
 for an 8-bit architecture.
 
 @item
+Kito Cheng for his work on the RISC-V port, including bringing up the test
+suite and maintenance.
+
+@item
 Scott Christley for his Objective-C contributions.
 
 @item
@@ -197,6 +204,9 @@ well as other miscellaneous build process and documentation clean-ups.
 Ralf Corsepius for SH testing and minor bug fixing.
 
 @item
+Fran@,{c}ois-Xavier Coudert for contributions to GNU Fortran.
+
+@item
 Stan Cox for care and feeding of the x86 port and lots of behind
 the scenes hacking.
 
@@ -211,6 +221,9 @@ Paul Dale for his work to add uClinux platform support to the
 m68k backend.
 
 @item
+Palmer Dabbelt for his work maintaining the RISC-V port.
+
+@item
 Dario Dariol contributed the four varieties of sample programs
 that print a copy of their source.
 
@@ -222,6 +235,9 @@ Bud Davis for work on the G77 and GNU Fortran compilers.
 
 @item
 Mo DeJong for GCJ and libgcj bug fixes.
+
+@item
+Jerry DeLisle for contributions to GNU Fortran.
 
 @item
 DJ Delorie for the DJGPP port, build and libiberty maintenance,
@@ -616,9 +632,7 @@ Michael Matz for his work on dominance tree discovery, the x86-64 port,
 link-time optimization framework and general optimization improvements.
 
 @item
-All of the Mauve project
-@uref{http://sourceware.org/cgi-bin/cvsweb.cgi/~checkout~/mauve/THANKS?rev=1.2&cvsroot=mauve&only_with_tag=HEAD,,contributors},
-for Java test code.
+All of the Mauve project contributors for Java test code.
 
 @item
 Bryce McKinlay for numerous GCJ and libgcj fixes and improvements.
@@ -972,6 +986,9 @@ Holger Teutsch provided the support for the Clipper CPU@.
 Gary Thomas for his ongoing work to make the PPC work for GNU/Linux.
 
 @item
+Paul Thomas for contributions to GNU Fortran.
+
+@item
 Philipp Thomas for random bug fixes throughout the compiler
 
 @item
@@ -1023,6 +1040,9 @@ associated configure steps.
 Todd Vierling for contributions for NetBSD ports.
 
 @item
+Andrew Waterman for contributing the RISC-V port, as well as maintaining it.
+
+@item
 Jonathan Wakely for contributing libstdc++ Doxygen notes and XHTML
 guidance.
 
@@ -1048,6 +1068,9 @@ value range propagation and other work, WE32k port.
 
 @item
 Ulrich Weigand for work on the s390 port.
+
+@item
+Janus Weil for contributions to GNU Fortran.
 
 @item
 Zack Weinberg for major work on cpplib and various other bug fixes.

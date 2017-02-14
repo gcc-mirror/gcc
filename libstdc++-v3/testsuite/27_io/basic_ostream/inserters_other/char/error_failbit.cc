@@ -1,4 +1,4 @@
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,6 @@ using namespace std;
 
 void test5()
 {
-  bool test __attribute__((unused)) = true;
   __gnu_test::fail_streambuf bob;
   ostream stream(&bob);
   stringbuf sbuf("Foo, bar, qux", ios_base::in);
@@ -39,7 +38,6 @@ void test5()
 
 void test7()
 {
-  bool test __attribute__((unused)) = true;
   ostringstream stream;
   __gnu_test::fail_streambuf bib;
 

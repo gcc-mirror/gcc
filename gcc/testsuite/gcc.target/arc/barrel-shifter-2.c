@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "" { ! { barrelshifter } } } */
 int i;
 
 int f (void)

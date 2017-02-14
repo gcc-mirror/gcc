@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,8 +26,6 @@ static const std::intmax_t M = INTMAX_MAX;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
- 
   // No overflow with same denominator
   VERIFY( (std::ratio_less<std::ratio<M - 2, M>,
            std::ratio<M - 1, M>>::value == 1) );

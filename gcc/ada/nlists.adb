@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,6 +40,10 @@ with Sinfo;  use Sinfo;
 with Table;
 
 package body Nlists is
+   Locked : Boolean := False;
+   --  Compiling with assertions enabled, list contents modifications are
+   --  permitted only when this switch is set to False; compiling without
+   --  assertions this lock has no effect.
 
    use Atree_Private_Part;
    --  Get access to Nodes table
@@ -90,6 +94,7 @@ package body Nlists is
       Table_Low_Bound      => First_Node_Id,
       Table_Initial        => Alloc.Orig_Nodes_Initial,
       Table_Increment      => Alloc.Orig_Nodes_Increment,
+      Release_Threshold    => Alloc.Orig_Nodes_Release_Threshold,
       Table_Name           => "Next_Node");
 
    package Prev_Node is new Table.Table (
@@ -202,7 +207,6 @@ package body Nlists is
    -----------------
 
    procedure Append_List (List : List_Id; To : List_Id) is
-
       procedure Append_List_Debug;
       pragma Inline (Append_List_Debug);
       --  Output debug information if Debug_Flag_N set
@@ -267,6 +271,28 @@ package body Nlists is
    begin
       Append_List (List, To);
    end Append_List_To;
+
+   ----------------
+   -- Append_New --
+   ----------------
+
+   procedure Append_New (Node : Node_Or_Entity_Id; To : in out List_Id) is
+   begin
+      if No (To) then
+         To := New_List;
+      end if;
+
+      Append (Node, To);
+   end Append_New;
+
+   -------------------
+   -- Append_New_To --
+   -------------------
+
+   procedure Append_New_To (To : in out List_Id; Node : Node_Or_Entity_Id) is
+   begin
+      Append_New (Node, To);
+   end Append_New_To;
 
    ---------------
    -- Append_To --
@@ -705,6 +731,16 @@ package body Nlists is
       Next_Node.Release;
    end Lock;
 
+   ----------------
+   -- Lock_Lists --
+   ----------------
+
+   procedure Lock_Lists is
+   begin
+      pragma Assert (not Locked);
+      Locked := True;
+   end Lock_Lists;
+
    -------------------
    -- New_Copy_List --
    -------------------
@@ -1136,6 +1172,28 @@ package body Nlists is
       Prepend_List (List, To);
    end Prepend_List_To;
 
+   -----------------
+   -- Prepend_New --
+   -----------------
+
+   procedure Prepend_New (Node : Node_Or_Entity_Id; To : in out List_Id) is
+   begin
+      if No (To) then
+         To := New_List;
+      end if;
+
+      Prepend (Node, To);
+   end Prepend_New;
+
+   --------------------
+   -- Prepend_New_To --
+   --------------------
+
+   procedure Prepend_New_To (To : in out List_Id; Node : Node_Or_Entity_Id) is
+   begin
+      Prepend_New (Node, To);
+   end Prepend_New_To;
+
    ----------------
    -- Prepend_To --
    ----------------
@@ -1359,6 +1417,7 @@ package body Nlists is
 
    procedure Set_First (List : List_Id; To : Node_Or_Entity_Id) is
    begin
+      pragma Assert (not Locked);
       Lists.Table (List).First := To;
    end Set_First;
 
@@ -1368,6 +1427,7 @@ package body Nlists is
 
    procedure Set_Last (List : List_Id; To : Node_Or_Entity_Id) is
    begin
+      pragma Assert (not Locked);
       Lists.Table (List).Last := To;
    end Set_Last;
 
@@ -1377,6 +1437,7 @@ package body Nlists is
 
    procedure Set_List_Link (Node : Node_Or_Entity_Id; To : List_Id) is
    begin
+      pragma Assert (not Locked);
       Nodes.Table (Node).Link := Union_Id (To);
    end Set_List_Link;
 
@@ -1386,6 +1447,7 @@ package body Nlists is
 
    procedure Set_Next (Node : Node_Or_Entity_Id; To : Node_Or_Entity_Id) is
    begin
+      pragma Assert (not Locked);
       Next_Node.Table (Node) := To;
    end Set_Next;
 
@@ -1395,6 +1457,7 @@ package body Nlists is
 
    procedure Set_Parent (List : List_Id; Node : Node_Or_Entity_Id) is
    begin
+      pragma Assert (not Locked);
       pragma Assert (List <= Lists.Last);
       Lists.Table (List).Parent := Node;
    end Set_Parent;
@@ -1405,6 +1468,7 @@ package body Nlists is
 
    procedure Set_Prev (Node : Node_Or_Entity_Id; To : Node_Or_Entity_Id) is
    begin
+      pragma Assert (not Locked);
       Prev_Node.Table (Node) := To;
    end Set_Prev;
 
@@ -1414,6 +1478,7 @@ package body Nlists is
 
    procedure Tree_Read is
    begin
+      pragma Assert (not Locked);
       Lists.Tree_Read;
       Next_Node.Tree_Read;
       Prev_Node.Tree_Read;
@@ -1440,5 +1505,15 @@ package body Nlists is
       Prev_Node.Locked := False;
       Next_Node.Locked := False;
    end Unlock;
+
+   ------------------
+   -- Unlock_Lists --
+   ------------------
+
+   procedure Unlock_Lists is
+   begin
+      pragma Assert (Locked);
+      Locked := False;
+   end Unlock_Lists;
 
 end Nlists;

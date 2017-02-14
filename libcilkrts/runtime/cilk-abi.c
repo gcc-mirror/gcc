@@ -709,7 +709,6 @@ __cilkrts_watch_stack(__cilk_tbb_unwatch_thunk *u,
     return 0;   /* Success! */
 }
 
-
 // This function must be called only within a continuation, within the stack
 // frame of the continuation itself.
 CILK_API_INT __cilkrts_synched(void)

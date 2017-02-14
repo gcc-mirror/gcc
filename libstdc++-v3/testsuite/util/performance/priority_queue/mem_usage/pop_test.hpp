@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -42,6 +42,7 @@
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <performance/io/xml_formatter.hpp>
 #include <common_type/priority_queue/string_form.hpp>
+#include <cassert>
 
 namespace __gnu_pbds
 {

@@ -1,5 +1,5 @@
 ;; e500 SPE description
-;; Copyright (C) 2002-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2002-2017 Free Software Foundation, Inc.
 ;; Contributed by Aldy Hernandez (aldy@quesejoda.com)
 
 ;; This file is part of GCC.
@@ -2314,6 +2314,18 @@
     }
 })
 
+(define_insn "*frob_<SPE64:mode>_ti_8"
+  [(set (match_operand:SPE64 0 "nonimmediate_operand" "=r")
+        (subreg:SPE64 (match_operand:TI 1 "input_operand" "r") 8))]
+  "(TARGET_E500_DOUBLE && <SPE64:MODE>mode == DFmode)
+   || (TARGET_SPE && <SPE64:MODE>mode != DFmode)"
+{
+  if (WORDS_BIG_ENDIAN)
+    return "evmergelo %0,%Y1,%Z1";
+  else
+    return "evmergelo %0,%Z1,%Y1";
+})
+
 (define_insn "*frob_tf_ti"
   [(set (match_operand:TF 0 "gpc_reg_operand" "=r")
         (subreg:TF (match_operand:TI 1 "gpc_reg_operand" "r") 0))]
@@ -2547,19 +2559,19 @@
 ;; ??? Could use evstwwe for memory stores in some cases, depending on
 ;; the offset.
 (define_insn "*mov_si<mode>_e500_subreg0_2_be"
-  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
+  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "=r,m")
 	(subreg:SI (match_operand:SPE64TF 1 "register_operand" "+r,&r") 0))]
   "WORDS_BIG_ENDIAN
    && ((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
        || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))"
   "@
-   evmergehi %0,%0,%1
+   evmergelohi %0,%1,%1
    evmergelohi %1,%1,%1\;stw%U0%X0 %1,%0"
   [(set_attr "length" "4,8")])
 
 (define_insn "*mov_si<mode>_e500_subreg0_2_le"
-  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
-	(subreg:SI (match_operand:SPE64TF 1 "register_operand" "+r,r") 0))]
+  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "=r,m")
+	(subreg:SI (match_operand:SPE64TF 1 "register_operand" "r,r") 0))]
   "!WORDS_BIG_ENDIAN
    && ((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
        || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))"
@@ -2618,7 +2630,7 @@
   [(set_attr "length" "8")])
 
 (define_insn "*mov_si<mode>_e500_subreg4_2_be"
-  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
+  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "=r,m")
 	(subreg:SI (match_operand:SPE64TF 1 "register_operand" "r,r") 4))]
   "WORDS_BIG_ENDIAN
    && ((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
@@ -2628,13 +2640,13 @@
    stw%U0%X0 %1,%0")
 
 (define_insn "*mov_si<mode>_e500_subreg4_2_le"
-  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
+  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "=r,m")
 	(subreg:SI (match_operand:SPE64TF 1 "register_operand" "+r,&r") 4))]
   "!WORDS_BIG_ENDIAN
    && ((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
        || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))"
   "@
-   evmergehi %0,%0,%1
+   evmergelohi %0,%1,%1
    evmergelohi %1,%1,%1\;stw%U0%X0 %1,%0"
   [(set_attr "length" "4,8")])
 
@@ -2656,16 +2668,16 @@
    lwz%U1%X1 %L0,%1")
 
 (define_insn "*mov_sitf_e500_subreg8_2_be"
-  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
+  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "=r,m")
 	(subreg:SI (match_operand:TF 1 "register_operand" "+r,&r") 8))]
   "WORDS_BIG_ENDIAN && TARGET_E500_DOUBLE"
   "@
-   evmergehi %0,%0,%L1
+   evmergelohi %0,%L1,%L1
    evmergelohi %L1,%L1,%L1\;stw%U0%X0 %L1,%0"
   [(set_attr "length" "4,8")])
 
 (define_insn "*mov_sitf_e500_subreg8_2_le"
-  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
+  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "=r,m")
 	(subreg:SI (match_operand:TF 1 "register_operand" "r,r") 8))]
   "!WORDS_BIG_ENDIAN && TARGET_E500_DOUBLE"
   "@
@@ -2690,7 +2702,7 @@
   [(set_attr "length" "4,12")])
 
 (define_insn "*mov_sitf_e500_subreg12_2_be"
-  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
+  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "=r,m")
 	(subreg:SI (match_operand:TF 1 "register_operand" "r,r") 12))]
   "WORDS_BIG_ENDIAN && TARGET_E500_DOUBLE"
   "@
@@ -2698,11 +2710,11 @@
    stw%U0%X0 %L1,%0")
 
 (define_insn "*mov_sitf_e500_subreg12_2_le"
-  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
+  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "=r,m")
 	(subreg:SI (match_operand:TF 1 "register_operand" "+r,&r") 12))]
   "!WORDS_BIG_ENDIAN && TARGET_E500_DOUBLE"
   "@
-   evmergehi %0,%0,%L1
+   evmergelohi %0,%L1,%L1
    evmergelohi %L1,%L1,%L1\;stw%U0%X0 %L1,%0"
   [(set_attr "length" "4,8")])
 
@@ -3464,7 +3476,7 @@
 ;; Out-of-line prologues and epilogues.
 (define_insn "*save_gpregs_spe"
   [(match_parallel 0 "any_parallel_operand"
-		   [(clobber (reg:P 65))
+		   [(clobber (reg:P LR_REGNO))
 		    (use (match_operand:P 1 "symbol_ref_operand" "s"))
 		    (use (reg:P 11))
 		    (set (match_operand:V2SI 2 "memory_operand" "=m")
@@ -3476,7 +3488,7 @@
 
 (define_insn "*restore_gpregs_spe"
  [(match_parallel 0 "any_parallel_operand"
-		  [(clobber (reg:P 65))
+		  [(clobber (reg:P LR_REGNO))
 		   (use (match_operand:P 1 "symbol_ref_operand" "s"))
 		   (use (reg:P 11))
 		   (set (match_operand:V2SI 2 "gpc_reg_operand" "=r")
@@ -3489,7 +3501,7 @@
 (define_insn "*return_and_restore_gpregs_spe"
  [(match_parallel 0 "any_parallel_operand"
 		  [(return)
-		   (clobber (reg:P 65))
+		   (clobber (reg:P LR_REGNO))
 		   (use (match_operand:P 1 "symbol_ref_operand" "s"))
 		   (use (reg:P 11))
 		   (set (match_operand:V2SI 2 "gpc_reg_operand" "=r")

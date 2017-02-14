@@ -1,8 +1,8 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2007-10-14  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,8 +32,6 @@ const int N = sizeof(A) / sizeof(int);
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   for (int i = 0; i <= N; ++i)
     {
       VERIFY( std::is_sorted(A, A + i) );

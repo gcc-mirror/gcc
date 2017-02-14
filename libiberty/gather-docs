@@ -1,8 +1,7 @@
 #!/usr/bin/perl
 # -*- perl -*-
 
-#   Copyright (C) 2001, 2009, 2011
-#   Free Software Foundation
+#   Copyright (C) 2001-2017 Free Software Foundation, Inc.
 #
 # This file is part of the libiberty library.
 # Libiberty is free software; you can redistribute it and/or

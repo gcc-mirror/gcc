@@ -90,22 +90,28 @@ namespace NullPointerArithmetic {
 constexpr int i = 0;
 constexpr const int* a[] = { 0, &i };
 
-// Well-defined core constant expressoons involving null pointers.
+// Well-defined core constant expressions involving null pointers.
 constexpr __PTRDIFF_TYPE__ d00 = a [0] - a [0];
 constexpr __PTRDIFF_TYPE__ d11 = a [1] - a [1];
 
-// Undefined core constant expressoons involving null pointers.
+// Undefined core constant expressions involving null pointers.
 // constexpr __PTRDIFF_TYPE__ d01 = a [0] - a [1];
 // constexpr __PTRDIFF_TYPE__ d10 = a [1] - a [0];
 
-constexpr bool nullptr_sub_0 (int i, int j) { return 1 + a [i != 0] - a [j]; }
+// Valid when i == j.
+constexpr bool
+nullptr_sub_0 (bool i, bool j) { return 1 + a [!i] - a [!j]; }
 
-constexpr bool nullptr_sub_1 (int i, int j) { return 1 + a [i == 0] - a [j]; }
+// Valid when i != j.
+constexpr bool
+nullptr_sub_1 (bool i, bool j) { return 1 + a [i] - a [!j]; }
 
-template <int I>
+// Selected when I == 0.
+template <bool I>
 constexpr int f (int (*)[nullptr_sub_0 (I, 0)] = 0) { return 0; }
 
-template <int I>
+// Selected when I != 0.
+template <bool I>
 constexpr int f (int (*)[nullptr_sub_1 (I, 0)] = 0) { return 1; }
 
 constexpr int n0 = f<0>();

@@ -1,4 +1,4 @@
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,8 +46,6 @@ wstring prepare(wstring::size_type len, unsigned nchunks, wchar_t delim)
 
 void check(wistream& stream, const wstring& str, unsigned nchunks, wchar_t delim)
 {
-  bool test __attribute__((unused)) = true;
-
   wstring chunk;
   wstring::size_type index = 0, index_new = 0;
   unsigned n = 0;

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the DEC Alpha.
-   Copyright (C) 1992-2016 Free Software Foundation, Inc.
+   Copyright (C) 1992-2017 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "memmodel.h"
 #include "gimple.h"
 #include "df.h"
 #include "tm_p.h"
@@ -373,18 +374,6 @@ alpha_option_override (void)
       64, 64, 16*1024 }
   };
 
-  opt_pass *pass_handle_trap_shadows = make_pass_handle_trap_shadows (g);
-  struct register_pass_info handle_trap_shadows_info
-    = { pass_handle_trap_shadows, "eh_ranges",
-	1, PASS_POS_INSERT_AFTER
-      };
-
-  opt_pass *pass_align_insns = make_pass_align_insns (g);
-  struct register_pass_info align_insns_info
-    = { pass_align_insns, "shorten",
-	1, PASS_POS_INSERT_BEFORE
-      };
-
   int const ct_size = ARRAY_SIZE (cpu_table);
   int line_size = 0, l1_size = 0, l2_size = 0;
   int i;
@@ -609,9 +598,6 @@ alpha_option_override (void)
     target_flags |= MASK_LONG_DOUBLE_128;
 #endif
 
-  /* This needs to be done at start up.  It's convenient to do it here.  */
-  register_pass (&handle_trap_shadows_info);
-  register_pass (&align_insns_info);
 }
 
 /* Implement targetm.override_options_after_change.  */
@@ -1031,7 +1017,8 @@ alpha_legitimize_address_1 (rtx x, rtx scratch, machine_mode mode)
       && GET_MODE_SIZE (mode) <= UNITS_PER_WORD
       && symbolic_operand (x, Pmode))
     {
-      rtx r0, r16, eqv, tga, tp, insn, dest, seq;
+      rtx r0, r16, eqv, tga, tp, dest, seq;
+      rtx_insn *insn;
 
       switch (tls_symbolic_operand_type (x))
 	{
@@ -1039,66 +1026,70 @@ alpha_legitimize_address_1 (rtx x, rtx scratch, machine_mode mode)
 	  break;
 
 	case TLS_MODEL_GLOBAL_DYNAMIC:
-	  start_sequence ();
+	  {
+	    start_sequence ();
 
-	  r0 = gen_rtx_REG (Pmode, 0);
-	  r16 = gen_rtx_REG (Pmode, 16);
-	  tga = get_tls_get_addr ();
-	  dest = gen_reg_rtx (Pmode);
-	  seq = GEN_INT (alpha_next_sequence_number++);
+	    r0 = gen_rtx_REG (Pmode, 0);
+	    r16 = gen_rtx_REG (Pmode, 16);
+	    tga = get_tls_get_addr ();
+	    dest = gen_reg_rtx (Pmode);
+	    seq = GEN_INT (alpha_next_sequence_number++);
 
-	  emit_insn (gen_movdi_er_tlsgd (r16, pic_offset_table_rtx, x, seq));
-	  insn = gen_call_value_osf_tlsgd (r0, tga, seq);
-	  insn = emit_call_insn (insn);
-	  RTL_CONST_CALL_P (insn) = 1;
-	  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), r16);
+	    emit_insn (gen_movdi_er_tlsgd (r16, pic_offset_table_rtx, x, seq));
+	    rtx val = gen_call_value_osf_tlsgd (r0, tga, seq);
+	    insn = emit_call_insn (val);
+	    RTL_CONST_CALL_P (insn) = 1;
+	    use_reg (&CALL_INSN_FUNCTION_USAGE (insn), r16);
 
-          insn = get_insns ();
-	  end_sequence ();
+	    insn = get_insns ();
+	    end_sequence ();
 
-	  emit_libcall_block (insn, dest, r0, x);
-	  return dest;
+	    emit_libcall_block (insn, dest, r0, x);
+	    return dest;
+	  }
 
 	case TLS_MODEL_LOCAL_DYNAMIC:
-	  start_sequence ();
+	  {
+	    start_sequence ();
 
-	  r0 = gen_rtx_REG (Pmode, 0);
-	  r16 = gen_rtx_REG (Pmode, 16);
-	  tga = get_tls_get_addr ();
-	  scratch = gen_reg_rtx (Pmode);
-	  seq = GEN_INT (alpha_next_sequence_number++);
+	    r0 = gen_rtx_REG (Pmode, 0);
+	    r16 = gen_rtx_REG (Pmode, 16);
+	    tga = get_tls_get_addr ();
+	    scratch = gen_reg_rtx (Pmode);
+	    seq = GEN_INT (alpha_next_sequence_number++);
 
-	  emit_insn (gen_movdi_er_tlsldm (r16, pic_offset_table_rtx, seq));
-	  insn = gen_call_value_osf_tlsldm (r0, tga, seq);
-	  insn = emit_call_insn (insn);
-	  RTL_CONST_CALL_P (insn) = 1;
-	  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), r16);
+	    emit_insn (gen_movdi_er_tlsldm (r16, pic_offset_table_rtx, seq));
+	    rtx val = gen_call_value_osf_tlsldm (r0, tga, seq);
+	    insn = emit_call_insn (val);
+	    RTL_CONST_CALL_P (insn) = 1;
+	    use_reg (&CALL_INSN_FUNCTION_USAGE (insn), r16);
 
-          insn = get_insns ();
-	  end_sequence ();
+	    insn = get_insns ();
+	    end_sequence ();
 
-	  eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
-				UNSPEC_TLSLDM_CALL);
-	  emit_libcall_block (insn, scratch, r0, eqv);
+	    eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
+				  UNSPEC_TLSLDM_CALL);
+	    emit_libcall_block (insn, scratch, r0, eqv);
 
-	  eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, x), UNSPEC_DTPREL);
-	  eqv = gen_rtx_CONST (Pmode, eqv);
+	    eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, x), UNSPEC_DTPREL);
+	    eqv = gen_rtx_CONST (Pmode, eqv);
 
-	  if (alpha_tls_size == 64)
-	    {
-	      dest = gen_reg_rtx (Pmode);
-	      emit_insn (gen_rtx_SET (dest, eqv));
-	      emit_insn (gen_adddi3 (dest, dest, scratch));
-	      return dest;
-	    }
-	  if (alpha_tls_size == 32)
-	    {
-	      insn = gen_rtx_HIGH (Pmode, eqv);
-	      insn = gen_rtx_PLUS (Pmode, scratch, insn);
-	      scratch = gen_reg_rtx (Pmode);
-	      emit_insn (gen_rtx_SET (scratch, insn));
-	    }
-	  return gen_rtx_LO_SUM (Pmode, scratch, eqv);
+	    if (alpha_tls_size == 64)
+	      {
+		dest = gen_reg_rtx (Pmode);
+		emit_insn (gen_rtx_SET (dest, eqv));
+		emit_insn (gen_adddi3 (dest, dest, scratch));
+		return dest;
+	      }
+	    if (alpha_tls_size == 32)
+	      {
+		rtx temp = gen_rtx_HIGH (Pmode, eqv);
+		temp = gen_rtx_PLUS (Pmode, scratch, temp);
+		scratch = gen_reg_rtx (Pmode);
+		emit_insn (gen_rtx_SET (scratch, temp));
+	      }
+	    return gen_rtx_LO_SUM (Pmode, scratch, eqv);
+	  }
 
 	case TLS_MODEL_INITIAL_EXEC:
 	  eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, x), UNSPEC_TPREL);
@@ -1120,10 +1111,10 @@ alpha_legitimize_address_1 (rtx x, rtx scratch, machine_mode mode)
 	  emit_insn (gen_get_thread_pointerdi (tp));
 	  if (alpha_tls_size == 32)
 	    {
-	      insn = gen_rtx_HIGH (Pmode, eqv);
-	      insn = gen_rtx_PLUS (Pmode, tp, insn);
+	      rtx temp = gen_rtx_HIGH (Pmode, eqv);
+	      temp = gen_rtx_PLUS (Pmode, tp, temp);
 	      tp = gen_reg_rtx (Pmode);
-	      emit_insn (gen_rtx_SET (tp, insn));
+	      emit_insn (gen_rtx_SET (tp, temp));
 	    }
 	  return gen_rtx_LO_SUM (Pmode, tp, eqv);
 
@@ -3073,7 +3064,7 @@ static void
 alpha_emit_xfloating_libcall (rtx func, rtx target, rtx operands[],
 			      int noperands, rtx equiv)
 {
-  rtx usage = NULL_RTX, tmp, reg;
+  rtx usage = NULL_RTX, reg;
   int regno = 16, i;
 
   start_sequence ();
@@ -3123,9 +3114,9 @@ alpha_emit_xfloating_libcall (rtx func, rtx target, rtx operands[],
       gcc_unreachable ();
     }
 
-  tmp = gen_rtx_MEM (QImode, func);
-  tmp = emit_call_insn (gen_call_value (reg, tmp, const0_rtx,
-					const0_rtx, const0_rtx));
+  rtx mem = gen_rtx_MEM (QImode, func);
+  rtx_insn *tmp = emit_call_insn (gen_call_value (reg, mem, const0_rtx,
+						  const0_rtx, const0_rtx));
   CALL_INSN_FUNCTION_USAGE (tmp) = usage;
   RTL_CONST_CALL_P (tmp) = 1;
 
@@ -4329,11 +4320,9 @@ static void
 emit_unlikely_jump (rtx cond, rtx label)
 {
   int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
-  rtx x;
-
-  x = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, label, pc_rtx);
-  x = emit_jump_insn (gen_rtx_SET (pc_rtx, x));
-  add_int_reg_note (x, REG_BR_PROB, very_unlikely);
+  rtx x = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, label, pc_rtx);
+  rtx_insn *insn = emit_jump_insn (gen_rtx_SET (pc_rtx, x));
+  add_int_reg_note (insn, REG_BR_PROB, very_unlikely);
 }
 
 /* A subroutine of the atomic operation splitters.  Emit a load-locked
@@ -4758,14 +4747,15 @@ alpha_split_atomic_exchange_12 (rtx operands[])
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
 static int
-alpha_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
+alpha_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
+		   unsigned int)
 {
   enum attr_type dep_insn_type;
 
   /* If the dependence is an anti-dependence, there is no cost.  For an
      output dependence, there is sometimes a cost, but it doesn't seem
      worth handling those few cases.  */
-  if (REG_NOTE_KIND (link) != 0)
+  if (dep_type != 0)
     return cost;
 
   /* If we can't recognize the insns, we can't really do anything.  */
@@ -5753,8 +5743,29 @@ static bool
 alpha_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
 			 machine_mode mode,
 			 const_tree type ATTRIBUTE_UNUSED,
-			 bool named ATTRIBUTE_UNUSED)
+			 bool named)
 {
+  /* Pass float and _Complex float variable arguments by reference.
+     This avoids 64-bit store from a FP register to a pretend args save area
+     and subsequent 32-bit load from the saved location to a FP register.
+
+     Note that 32-bit loads and stores to/from a FP register on alpha reorder
+     bits to form a canonical 64-bit value in the FP register.  This fact
+     invalidates compiler assumption that 32-bit FP value lives in the lower
+     32-bits of the passed 64-bit FP value, so loading the 32-bit value from
+     the stored 64-bit location using 32-bit FP load is invalid on alpha.
+
+     This introduces sort of ABI incompatibility, but until _Float32 was
+     introduced, C-family languages promoted 32-bit float variable arg to
+     a 64-bit double, and it was not allowed to pass float as a varible
+     argument.  Passing _Complex float as a variable argument never
+     worked on alpha.  Thus, we have no backward compatibility issues
+     to worry about, and passing unpromoted _Float32 and _Complex float
+     as a variable argument will actually work in the future.  */
+
+  if (mode == SFmode || mode == SCmode)
+    return !named;
+
   return mode == TFmode || mode == TCmode;
 }
 
@@ -10037,6 +10048,9 @@ alpha_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE alpha_mangle_type
 #endif
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P alpha_legitimate_address_p

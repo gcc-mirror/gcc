@@ -1,4 +1,4 @@
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,6 @@
 void test1()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   FILE* file = fopen("tmp_10063-1", "w");
   putc('0', file);

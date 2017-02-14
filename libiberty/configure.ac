@@ -160,7 +160,8 @@ AC_SYS_LARGEFILE
 AC_PROG_CPP_WERROR
 
 ACX_PROG_CC_WARNING_OPTS([-W -Wall -Wwrite-strings -Wc++-compat \
-			  -Wstrict-prototypes], [ac_libiberty_warn_cflags])
+			  -Wstrict-prototypes \
+			  -Wshadow=local], [ac_libiberty_warn_cflags])
 ACX_PROG_CC_WARNING_ALMOST_PEDANTIC([], [ac_libiberty_warn_cflags])
 
 AC_PROG_CC_C_O

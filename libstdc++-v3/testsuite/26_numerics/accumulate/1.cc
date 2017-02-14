@@ -1,4 +1,4 @@
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,8 +26,6 @@ const int NA = sizeof(A) / sizeof(int);
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   int res = std::accumulate(A, A + NA, 11);
   VERIFY( res == 66 );
 }
@@ -38,8 +36,6 @@ const int NB = sizeof(B) / sizeof(bool);
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   int res = std::accumulate(B, B + NB, 100);
   VERIFY( res == 106 );
 }

@@ -4,7 +4,10 @@
 struct Mutex
 {
   bool locked;
-  ~Mutex () throw(int)
+  ~Mutex ()
+#if __cplusplus <= 201402L
+  throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+#endif
   {
     if (locked)
       throw 0;

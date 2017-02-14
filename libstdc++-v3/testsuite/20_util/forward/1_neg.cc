@@ -1,9 +1,8 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 // 2007-07-10  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,8 +26,9 @@ template<class T, class A1, class A2>
   std::shared_ptr<T>
   factory(A1&& a1, A2&& a2)
   {
-    return std::shared_ptr<T>(new T(std::forward<A1>(a1),
-				    std::forward<A2>(a2))); // { dg-error "rvalue" }
+    return std::shared_ptr<T>(
+	new T(std::forward<A1>(a1), // { dg-error "rvalue" }
+              std::forward<A2>(a2)));
   }
 
 struct A

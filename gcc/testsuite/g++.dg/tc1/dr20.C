@@ -2,7 +2,7 @@
 // Origin: Giovanni Bajo <giovannibajo at gcc dot gnu dot org>
 // DR20: Some clarifications needed for 12.8 para 15 
 
-extern "C" void printf(const char*, ...);
+extern "C" int printf(const char*, ...);
 extern "C" void abort(void);
 
 int count = 0;

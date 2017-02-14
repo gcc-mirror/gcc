@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -ffinite-math-only -fdump-tree-phiopt1" } */
+/* { dg-options "-O1 -ffinite-math-only -fno-signed-zeros -fdump-tree-phiopt1" } */
 
 float repl1 (float varx)
 {

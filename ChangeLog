@@ -1,3 +1,215 @@
+2017-02-13  Richard Biener  <rguenther@suse.de>
+
+	* configure: Re-generate.
+
+2017-02-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS: Adjust bug reporting URL.
+
+2017-02-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS (Write After Approval): Remove redundant entry
+	for Andrew Burgess.
+
+2017-02-03  John David Anglin  <danglin@gcc.gnu.org>
+
+        * configure.ac: Add gcc/function-tests.o to compare_exclusions for
+	32-bit hppa*-*-hpux*.
+        * configure: Regenerate.
+
+2017-01-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* configure.ac: Moved the white list of enabling BRIG FE to
+	libhsail-rt/configure.tgt.
+	* configure: Regenerated.
+	* MAINTAINERS: Updated maintainers for BRIG FE and libhsail-rt.
+
+2017-01-24  Pekka Jääskeläinen  <pekka@parmance.com>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* Makefile.def (target_modules): Added libhsail-rt.
+	(languages): Added language brig.
+	* Makefile.in: Regenerated.
+	* configure.ac (TOPLEVEL_CONFIGURE_ARGUMENTS): Added
+	tgarget-libhsail-rt.  Make brig unsupported on untested architectures.
+	* configure: Regenerated.
+
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* configure: Regenerated.
+
+2017-01-04  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
+2016-12-29  Ben Elliston  <bje@gnu.org>
+
+	* config.sub: Import latest version.
+
+2016-12-26  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2016-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Don't bootstrap libmpx unless --with-build-config
+	includes bootstrap-mpx.
+	* configure: Regenerated.
+
+2016-12-19  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2016-12-01  Ma Jiang  <ma.jiang@zte.com.cn>
+
+	* configure: Regenerate.
+
+2016-12-01  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Don't use pkg-config to check for bdw-gc.
+	* configure: Regenerate.
+
+2016-11-30  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.def: Remove reference to boehm-gc target module.
+  	* configure.ac: Include pkg.m4, check for --with-target-bdw-gc
+	options and for the bdw-gc pkg-config module.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
+2016-11-28  Nathan Sidwell  <nathan@acm.org>
+
+	* MAINTAINERS (nvptx): Remove self.
+
+2016-11-25  Ben Elliston  <bje@gnu.org>
+
+	* config.guess: Import latest version.
+	* config.sub: Likewise.
+
+2016-11-18  Toma Tabacu  <toma.tabacu@imgtec.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.def: Remove references to GCJ.
+	* Makefile.tpl: Likewise.
+	* Makefile.in: Regenerate.
+
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* config-ml.in: Remove references to GCJ.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+
+2016-11-01  Josh Conner  <joshconner@google.com>
+
+	* MAINTAINERS (Write After Approval): Update email address,
+
+2016-10-27  Carl Love  <cel@us.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Fix my entry in the Write After
+	Approval list to make it alphabetical.
+
+2016-10-27  Carl Love  <cel@us.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2016-10-27  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* MAINTAINERS (Reviewers): Add myself.
+	(Write After Approval): Add myself.
+
+2016-10-21  Hartmut Penner  <hepenner@us.ibm.com>
+	    Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* MAINTAINERS: Update email address.
+
+2016-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	* MAINTAINERS: Update email address.
+
+2016-10-10  Andreas Tobler <andreast@gcc.gnu.org>
+
+	* configure.ac: Add aarch64-*-freebsd*.
+	* configure: Regenerate.
+
+2016-10-05  Steve Ellcey  <sellcey@caviumnetworks.com>
+
+	* MAINTAINERS: Update email address after it got reverted.
+
+2016-10-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (target_libraries): Readd target-boehm-gc.
+	Restore --enable-objc-gc handling.
+	* configure: Regenerate.
+
+2015-10-03  Jeff Law  <law@redhat.com>
+
+	* MAINTAINERS: Move several inactive maintainers to the
+	write-after-approval section.
+
+2016-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Add target-libffi to target_libraries.
+	Readd libgcj target disablings, modified to only target-libffi.
+	Readd target addition of go to unsupported languages.
+	* configure: Regenerated.
+
+2016-09-30  Steve Ellcey  <sellcey@caviumnetworks.com>
+
+	* MAINTAINERS: Update email address.
+
+2016-09-30  Andrew Haley  <aph@redhat.com>
+
+	* MAINTAINERS: Remove Per Bothner, Andrew Haley, and Tom Tromey from
+	write-after approval.  Remove Tom Tromey and Bryce McKinlay from
+	libgcj.
+
+2016-09-30  Andrew Haley  <aph@redhat.com>
+
+	* MAINTAINERS: Move Per Bothner, Andrew Haley, and Tom Tromey to
+	write-after approval after GCJ deletion.
+
+2016-09-30  Andrew Haley  <aph@redhat.com>
+
+	* Makefile.def: Remove libjava.
+	* Makefile.tpl: Likewise.
+	* Makefile.in: Regenerate.
+	* configure.ac: Likewise.
+	* configure: Likewise.
+	* gcc/java: Remove.
+	* libjava: Likewise.
+
+2016-09-28  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* MAINTAINERS (Reviewers): Add myself.
+
+2016-09-26  Anton Kolesov  <Anton.Kolesov@synopsys.com>
+
+	* configure.ac: Disable "sim" directory for arc*-*-*.
+	* configure: Regenerated.
+
+2016-09-23  Tamar Christina <tamar.christina@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2016-09-12  Maciej W. Rozycki  <macro@imgtec.com>
+
+	* configure.ac: Check for the minimum in-tree MPFR version
+	handled.
+	* configure: Regenerate.
+
+2016-07-20  Yan-Ting Lin  <currygt52@gmail.com>
+
+	* configure.ac (nds32*-*-*): Remove entry to enable gdb.
+	* configure: Regenerated.
+
+2016-07-19  Fritz Reese  <fritzoreese@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2016-06-23  Andi Kleen  <ak@linux.intel.com>
 
 	* Makefile.def: Add autoprofiledbootstrap.
@@ -28,7 +240,7 @@
 
 2016-06-03  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
-	* MAINTAINERS (Write After Approval): Add myself. 
+	* MAINTAINERS (Write After Approval): Add myself.
 
 2016-05-28  Alan Modra  <amodra@gmail.com>
 

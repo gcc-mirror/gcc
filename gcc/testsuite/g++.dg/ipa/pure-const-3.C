@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized"  } */
+/* { dg-options "-O2 -fno-ipa-vrp -fdump-tree-optimized"  } */
 int *ptr;
 static int barvar;
 static int b(int a);

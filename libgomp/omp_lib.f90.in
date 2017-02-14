@@ -1,4 +1,4 @@
-!  Copyright (C) 2005-2016 Free Software Foundation, Inc.
+!  Copyright (C) 2005-2017 Free Software Foundation, Inc.
 !  Contributed by Jakub Jelinek <jakub@redhat.com>.
 
 !  This file is part of the GNU Offloading and Multi Processing Library
@@ -59,7 +59,7 @@
       module omp_lib
         use omp_lib_kinds
         implicit none
-        integer, parameter :: openmp_version = 201307
+        integer, parameter :: openmp_version = 201511
 
         interface
           subroutine omp_init_lock (svar)

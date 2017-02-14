@@ -1,6 +1,7 @@
 // PR c++/71147 - [6 Regression] Flexible array member wrongly rejected
 //   in template
 // { dg-do compile }
+// { dg-options "-Wpedantic -Wno-error=pedantic" }
 
 template <typename>
 struct container
@@ -11,7 +12,7 @@ struct container
 
   struct incomplete {
     int x;
-    elem array[];
+    elem array[];  // { dg-warning "forbids flexible array member" }
   };
 };
 
@@ -26,7 +27,7 @@ struct D: container<T>
 {
   struct S {
     int x;
-    typename container<T>::elem array[];
+    typename container<T>::elem array[];  // { dg-warning "forbids flexible array member" }
   };
 };
 

@@ -1,7 +1,6 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,26 +23,24 @@
 
 using std::unique_ptr;
 
-// { dg-prune-output "static assertion failed" }
-
 void
 test01()
 {
-  unique_ptr<long, void(*)(long*)> p1; // { dg-error "here" }
+  unique_ptr<long, void(*)(long*)> p1; // { dg-error "no matching" }
 
-  unique_ptr<short, void(*)(short*)> p2(nullptr); // { dg-error "here" }
+  unique_ptr<short, void(*)(short*)> p2(nullptr); // { dg-error "no matching" }
 
-  unique_ptr<int, void(*)(int*)> p3(new int); // { dg-error "here" }
+  unique_ptr<int, void(*)(int*)> p3(new int); // { dg-error "no matching" }
 }
 
 void
 test02()
 {
-  unique_ptr<long[], void(*)(long*)> p1; // { dg-error "here" }
+  unique_ptr<long[], void(*)(long*)> p1; // { dg-error "no matching" }
 
-  unique_ptr<short[], void(*)(short*)> p2(nullptr); // { dg-error "here" }
+  unique_ptr<short[], void(*)(short*)> p2(nullptr); // { dg-error "no matching" }
 
-  unique_ptr<int[], void(*)(int*)> p3(new int[1]); // { dg-error "here" }
+  unique_ptr<int[], void(*)(int*)> p3(new int[1]); // { dg-error "no matching" }
 }
 
 

@@ -1,5 +1,6 @@
+// { dg-do run { target c++11 } }
 // { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__" }
-// Copyright (C) 2015 Free Software Foundation, Inc.
+// Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +30,6 @@ test01()
   double j1 = std::cyl_bessel_j(1.0, 0.0);
   double i1 = std::cyl_bessel_i(1.0, 0.0);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(j0 == 1.0);
   VERIFY(i0 == 1.0);
   VERIFY(j1 == 0.0);

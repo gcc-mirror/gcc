@@ -2,7 +2,7 @@
 
 // 2005-02-17  Matt Austern  <austern@apple.com>
 //
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,10 +27,10 @@ using namespace std::tr1;
 using std::equal_to;
 using std::allocator;
 
-template class unordered_multiset<int>;
-template class unordered_multiset<float, hash<float>, equal_to<float>,
+template class std::tr1::unordered_multiset<int>;
+template class std::tr1::unordered_multiset<float, hash<float>, equal_to<float>,
 				  allocator<float> >;
-template class unordered_multiset<int, hash<int>, equal_to<int>,
+template class std::tr1::unordered_multiset<int, hash<int>, equal_to<int>,
 				  allocator<char> >;
-template class __unordered_multiset<float, hash<float>, equal_to<float>,
+template class std::tr1::__unordered_multiset<float, hash<float>, equal_to<float>,
 				    allocator<float>, true>;

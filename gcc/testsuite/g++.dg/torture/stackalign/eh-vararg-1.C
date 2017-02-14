@@ -28,7 +28,10 @@ struct A : virtual public Base
 struct B {};
 
 void
-foo (const char *fmt, ...) throw (B,A)
+foo (const char *fmt, ...)
+#if __cplusplus <= 201402L
+throw (B,A)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+#endif
 {
   va_list arg;
   char *p;

@@ -14,7 +14,7 @@ fn_1 (int flag)
   int x = 4, y = 5;
   if (flag) /* { dg-warning "3: this 'if' clause does not guard..." } */
     x = 3;
-    y = 2; /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'if'" } */
+    y = 2; /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
   return x * y;
 }
 
@@ -22,7 +22,7 @@ int
 fn_2 (int flag, int x, int y)
 {
   if (flag) /* { dg-warning "3: this 'if' clause does not guard..." } */
-    x++; y++; /* { dg-message "10: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'if'" } */
+    x++; y++; /* { dg-message "10: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
 
   return x * y;
 }
@@ -35,7 +35,7 @@ fn_3 (int flag)
     x = 3;
   else /* { dg-warning "3: this 'else' clause does not guard..." } */
     x = 2;
-    y = 2; /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'else'" } */
+    y = 2; /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'else'" } */
   return x * y;
 }
 
@@ -45,7 +45,7 @@ fn_4 (double *a, double *b, double *c)
   int i = 0;
   while (i < 10) /* { dg-warning "3: this 'while' clause does not guard..." } */
     a[i] = b[i] * c[i];
-    i++; /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'while'" } */
+    i++; /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'while'" } */
 }
 
 void
@@ -54,7 +54,7 @@ fn_5 (double *a, double *b, double *sum, double *prod)
   int i = 0;
   for (i = 0; i < 10; i++) /* { dg-warning "3: this 'for' clause does not guard..." } */
     sum[i] = a[i] * b[i];
-    prod[i] = a[i] * b[i]; /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'for'" } */
+    prod[i] = a[i] * b[i]; /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'for'" } */
 }
 
 /* Based on CVE-2014-1266 aka "goto fail" */
@@ -67,7 +67,7 @@ int fn_6 (int a, int b, int c)
 		goto fail;
 	if ((err = foo (b)) != 0) /* { dg-message "2: this 'if' clause does not guard..." } */
 		goto fail;
-		goto fail; /* { dg-message "3: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'if'" } */
+		goto fail; /* { dg-message "3: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
 	if ((err = foo (c)) != 0)
 		goto fail;
 	/* ... */
@@ -81,7 +81,7 @@ int fn_7 (int p, int q, int r, int s, int t)
   if (bar (p, q))
     {
       if (p) /* { dg-message "7: this 'if' clause does not guard..." } */
-        q++; r++; /* { dg-message "14: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'if'" } */
+        q++; r++; /* { dg-message "14: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
       t++;
     }
   return p + q + r + s + t;
@@ -97,7 +97,7 @@ void fn_9 (int flag)
 {
   if (flag) /* { dg-warning "3: this 'if' clause does not guard..." } */
     foo (0);
-    foo (1); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'if'" } */
+    foo (1); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
 }
 
 void fn_10 (int flag)
@@ -108,7 +108,7 @@ void fn_10 (int flag)
         foo (0);
         foo (1);
       }
-    foo (2); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'if'" } */
+    foo (2); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
   foo (3);
 }
 
@@ -118,7 +118,7 @@ void fn_11 (void)
     if (flagB)
       if (flagC) /* { dg-message "7: this 'if' clause does not guard..." } */
         foo (0);
-        bar (1, 2); /* { dg-message "9: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'if'" } */
+        bar (1, 2); /* { dg-message "9: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
 }
 
 void fn_12 (void)
@@ -127,7 +127,7 @@ void fn_12 (void)
     if (flagB) /* { dg-message "5: this 'if' clause does not guard..." } */
       if (flagC)
         foo (0);
-      bar (1, 2); /* { dg-message "7: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'if'" } */
+      bar (1, 2); /* { dg-message "7: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
 }
 
 void fn_13 (void)
@@ -136,7 +136,7 @@ void fn_13 (void)
     if (flagB)
       if (flagC)
         foo (0);
-    bar (1, 2); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'if'" } */
+    bar (1, 2); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
 }
 
 #define FOR_EACH(VAR, START, STOP) \
@@ -147,7 +147,7 @@ void fn_14 (void)
   int i;
   FOR_EACH (i, 0, 10) /* { dg-message "in expansion of macro .FOR_EACH." } */
     foo (i);
-    bar (i, i); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'for'" } */
+    bar (i, i); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'for'" } */
 }
 #undef FOR_EACH
 
@@ -157,7 +157,7 @@ void fn_15 (void)
   int i;
   FOR_EACH (i, 0, 10) /* { dg-message "in expansion of macro .FOR_EACH." } */
     foo (i);
-    bar (i, i); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'for'" } */
+    bar (i, i); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'for'" } */
 }
 #undef FOR_EACH
 
@@ -168,7 +168,7 @@ void fn_16_spaces (void)
     while (flagA)
       if (flagB) /* { dg-message "7: this 'if' clause does not guard..." } */
         foo (0);
-        foo (1); /* { dg-message "9: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'if'" } */
+        foo (1); /* { dg-message "9: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
 }
 
 void fn_16_tabs (void)
@@ -178,7 +178,7 @@ void fn_16_tabs (void)
     while (flagA)
       if (flagB) /* { dg-message "7: this 'if' clause does not guard..." } */
 	foo (0);
-	foo (1);/* { dg-message "2: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'if'" } */
+	foo (1);/* { dg-message "2: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
 }
 
 void fn_17_spaces (void)
@@ -188,7 +188,7 @@ void fn_17_spaces (void)
     while (flagA)
       if (flagB)
         foo (0);
-    foo (1);/* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'for'" } */
+    foo (1);/* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'for'" } */
 }
 
 void fn_17_tabs (void)
@@ -198,7 +198,7 @@ void fn_17_tabs (void)
     while (flagA)
       if (flagB)
 	foo (0);
-    foo (1);/* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'for'" } */
+    foo (1);/* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'for'" } */
 }
 
 void fn_18_spaces (void)
@@ -208,7 +208,7 @@ void fn_18_spaces (void)
     while (flagA) /* { dg-message "5: this 'while' clause does not guard..." } */
       if (flagB)
         foo (0);
-      foo (1);/* { dg-message "7: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'while'" } */
+      foo (1);/* { dg-message "7: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'while'" } */
 }
 
 void fn_18_tabs (void)
@@ -218,7 +218,7 @@ void fn_18_tabs (void)
     while (flagA) /* { dg-message "5: this 'while' clause does not guard..." } */
       if (flagB)
 	foo (0);
-      foo (1);/* { dg-message "7: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'while'" } */
+      foo (1);/* { dg-message "7: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'while'" } */
 }
 
 /* This shouldn't lead to a warning.  */
@@ -704,37 +704,37 @@ fn_37 (void)
 #define FOR_EACH(VAR, START, STOP) for (VAR = START; VAR < STOP; VAR++) /* { dg-warning "this 'for' clause" } */
 
   while (flagA); /* { dg-warning "3: this 'while' clause" } */
-    foo (0); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'while'" } */
+    foo (0); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'while'" } */
 
   if (flagA)
     ;
   else if (flagB); /* { dg-warning "8: this 'if' clause" } */
-    foo (0); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'if'" } */
+    foo (0); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
   while (flagA) /* { dg-warning "3: this 'while' clause" } */
     /* blah */;
-    foo (0); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'while'" } */
+    foo (0); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'while'" } */
 
   if (flagA)
     ;
   else if (flagB) /* { dg-warning "8: this 'if' clause" } */
     foo (1);
-    foo (2); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'if'" } */
+    foo (2); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
 
   if (flagA)
     foo (1);
   else if (flagB) /* { dg-warning "8: this 'if' clause" } */
     foo (2);
-    foo (3); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'if'" } */
+    foo (3); /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
 
   if (flagB) /* { dg-warning "3: this 'if' clause" } */
     /* blah */;
-    { /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'if'" } */
+    { /* { dg-message "5: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
       foo (0);
     }
 
   if (flagB) /* { dg-warning "3: this 'if' clause" } */
     /* blah */;
-   { /* { dg-message "4: ...this statement, but the latter is misleadingly indented as if it is guarded by the 'if'" } */
+   { /* { dg-message "4: ...this statement, but the latter is misleadingly indented as if it were guarded by the 'if'" } */
      foo (0);
    }
 

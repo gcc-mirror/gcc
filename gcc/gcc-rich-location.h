@@ -1,5 +1,5 @@
 /* Declarations relating to class gcc_rich_location
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,11 +30,6 @@ class gcc_rich_location : public rich_location
   /* Constructing from a location.  */
   gcc_rich_location (source_location loc) :
     rich_location (line_table, loc) {}
-
-  /* Constructing from a source_range.  */
-  gcc_rich_location (source_range src_range) :
-    rich_location (src_range) {}
-
 
   /* Methods for adding ranges via gcc entities.  */
   void

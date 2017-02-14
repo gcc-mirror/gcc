@@ -280,13 +280,17 @@ package body Sinput is
             Wide_Character_Encoding_Method := WCEM_UTF8;
             Upper_Half_Encoding := True;
 
-         when UTF16_LE | UTF16_BE =>
+         when UTF16_BE
+            | UTF16_LE
+         =>
             Set_Standard_Error;
             Write_Line ("UTF-16 encoding format not recognized");
             Set_Standard_Output;
             raise Unrecoverable_Error;
 
-         when UTF32_LE | UTF32_BE =>
+         when UTF32_BE
+            | UTF32_LE
+         =>
             Set_Standard_Error;
             Write_Line ("UTF-32 encoding format not recognized");
             Set_Standard_Output;

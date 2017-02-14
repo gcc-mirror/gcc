@@ -1,6 +1,6 @@
 /* Routines for emitting trees to a file stream.
 
-   Copyright (C) 2011-2016 Free Software Foundation, Inc.
+   Copyright (C) 2011-2017 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -214,7 +214,7 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       bp_pack_value (bp, expr->decl_common.off_align, 8);
     }
 
-  if (TREE_CODE (expr) == VAR_DECL)
+  if (VAR_P (expr))
     {
       bp_pack_value (bp, DECL_HAS_DEBUG_EXPR_P (expr), 1);
       bp_pack_value (bp, DECL_NONLOCAL_FRAME (expr), 1);
@@ -222,11 +222,10 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
 
   if (TREE_CODE (expr) == RESULT_DECL
       || TREE_CODE (expr) == PARM_DECL
-      || TREE_CODE (expr) == VAR_DECL)
+      || VAR_P (expr))
     {
       bp_pack_value (bp, DECL_BY_REFERENCE (expr), 1);
-      if (TREE_CODE (expr) == VAR_DECL
-	  || TREE_CODE (expr) == PARM_DECL)
+      if (VAR_P (expr) || TREE_CODE (expr) == PARM_DECL)
 	bp_pack_value (bp, DECL_HAS_VALUE_EXPR_P (expr), 1);
     }
 }
@@ -256,7 +255,7 @@ pack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, DECL_VISIBILITY (expr),  2);
   bp_pack_value (bp, DECL_VISIBILITY_SPECIFIED (expr),  1);
 
-  if (TREE_CODE (expr) == VAR_DECL)
+  if (VAR_P (expr))
     {
       bp_pack_value (bp, DECL_HARD_REGISTER (expr), 1);
       /* DECL_IN_TEXT_SECTION is set during final asm output only. */
@@ -278,10 +277,6 @@ pack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
 static void
 pack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 {
-  /* For normal/md builtins we only write the class and code, so they
-     should never be handled here.  */
-  gcc_assert (!streamer_handle_as_builtin_p (expr));
-
   bp_pack_enum (bp, built_in_class, BUILT_IN_LAST,
 		DECL_BUILT_IN_CLASS (expr));
   bp_pack_value (bp, DECL_STATIC_CONSTRUCTOR (expr), 1);
@@ -487,41 +482,6 @@ streamer_write_tree_bitfields (struct output_block *ob, tree expr)
 }
 
 
-/* Write the code and class of builtin EXPR to output block OB.  IX is
-   the index into the streamer cache where EXPR is stored.*/
-
-void
-streamer_write_builtin (struct output_block *ob, tree expr)
-{
-  gcc_assert (streamer_handle_as_builtin_p (expr));
-
-  if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_MD
-      && !targetm.builtin_decl)
-    sorry ("tree bytecode streams do not support machine specific builtin "
-	   "functions on this target");
-
-  streamer_write_record_start (ob, LTO_builtin_decl);
-  streamer_write_enum (ob->main_stream, built_in_class, BUILT_IN_LAST,
-		       DECL_BUILT_IN_CLASS (expr));
-  streamer_write_uhwi (ob, DECL_FUNCTION_CODE (expr));
-
-  if (DECL_ASSEMBLER_NAME_SET_P (expr))
-    {
-      /* When the assembler name of a builtin gets a user name,
-	 the new name is always prefixed with '*' by
-	 set_builtin_user_assembler_name.  So, to prevent the
-	 reader side from adding a second '*', we omit it here.  */
-      const char *str = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (expr));
-      if (strlen (str) > 1 && str[0] == '*')
-	streamer_write_string (ob, ob->main_stream, &str[1], true);
-      else
-	streamer_write_string (ob, ob->main_stream, NULL, true);
-    }
-  else
-    streamer_write_string (ob, ob->main_stream, NULL, true);
-}
-
-
 /* Emit the chain of tree nodes starting at T.  OB is the output block
    to write to.  REF_P is true if chain elements should be emitted
    as references.  */
@@ -628,12 +588,11 @@ write_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
      for early inlining so drop it on the floor instead of ICEing in
      dwarf2out.c.  */
 
-  if ((TREE_CODE (expr) == VAR_DECL
-       || TREE_CODE (expr) == PARM_DECL)
+  if ((VAR_P (expr) || TREE_CODE (expr) == PARM_DECL)
       && DECL_HAS_VALUE_EXPR_P (expr))
     stream_write_tree (ob, DECL_VALUE_EXPR (expr), ref_p);
 
-  if (TREE_CODE (expr) == VAR_DECL)
+  if (VAR_P (expr))
     stream_write_tree (ob, DECL_DEBUG_EXPR (expr), ref_p);
 }
 
@@ -807,14 +766,17 @@ write_ts_block_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
 
   /* Stream BLOCK_ABSTRACT_ORIGIN for the limited cases we can handle - those
      that represent inlined function scopes.
-     For the rest them on the floor instead of ICEing in dwarf2out.c.  */
+     For the rest them on the floor instead of ICEing in dwarf2out.c, but
+     keep the notion of whether the block is an inlined block by refering
+     to itself for the sake of tree_nonartificial_location.  */
   if (inlined_function_outer_scope_p (expr))
     {
       tree ultimate_origin = block_ultimate_origin (expr);
       stream_write_tree (ob, ultimate_origin, ref_p);
     }
   else
-    stream_write_tree (ob, NULL_TREE, ref_p);
+    stream_write_tree (ob, (BLOCK_ABSTRACT_ORIGIN (expr)
+			    ? expr : NULL_TREE), ref_p);
   /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
      for early inlined BLOCKs so drop it on the floor instead of ICEing in
      dwarf2out.c.  */

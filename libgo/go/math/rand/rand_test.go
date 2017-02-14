@@ -5,13 +5,16 @@
 package rand
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"internal/testenv"
+	"io"
 	"math"
 	"os"
 	"runtime"
 	"testing"
+	"testing/iotest"
 )
 
 const (
@@ -325,13 +328,26 @@ func TestExpTables(t *testing.T) {
 	}
 }
 
+func hasSlowFloatingPoint() bool {
+	switch runtime.GOARCH {
+	case "arm":
+		return os.Getenv("GOARM") == "5"
+	case "mips", "mipsle", "mips64", "mips64le":
+		// Be conservative and assume that all mips boards
+		// have emulated floating point.
+		// TODO: detect what it actually has.
+		return true
+	}
+	return false
+}
+
 func TestFloat32(t *testing.T) {
 	// For issue 6721, the problem came after 7533753 calls, so check 10e6.
 	num := int(10e6)
 	// But do the full amount only on builders (not locally).
 	// But ARM5 floating point emulation is slow (Issue 10749), so
 	// do less for that builder:
-	if testing.Short() && (testenv.Builder() == "" || runtime.GOARCH == "arm" && os.Getenv("GOARM") == "5") {
+	if testing.Short() && (testenv.Builder() == "" || hasSlowFloatingPoint()) {
 		num /= 100 // 1.72 seconds instead of 172 seconds
 	}
 
@@ -373,7 +389,7 @@ func testReadUniformity(t *testing.T, n int, seed int64) {
 	checkSampleDistribution(t, samples, expected)
 }
 
-func TestRead(t *testing.T) {
+func TestReadUniformity(t *testing.T) {
 	testBufferSizes := []int{
 		2, 4, 7, 64, 1024, 1 << 16, 1 << 20,
 	}
@@ -394,7 +410,42 @@ func TestReadEmpty(t *testing.T) {
 	if n != 0 {
 		t.Errorf("Read into empty buffer returned unexpected n of %d", n)
 	}
+}
 
+func TestReadByOneByte(t *testing.T) {
+	r := New(NewSource(1))
+	b1 := make([]byte, 100)
+	_, err := io.ReadFull(iotest.OneByteReader(r), b1)
+	if err != nil {
+		t.Errorf("read by one byte: %v", err)
+	}
+	r = New(NewSource(1))
+	b2 := make([]byte, 100)
+	_, err = r.Read(b2)
+	if err != nil {
+		t.Errorf("read: %v", err)
+	}
+	if !bytes.Equal(b1, b2) {
+		t.Errorf("read by one byte vs single read:\n%x\n%x", b1, b2)
+	}
+}
+
+func TestReadSeedReset(t *testing.T) {
+	r := New(NewSource(42))
+	b1 := make([]byte, 128)
+	_, err := r.Read(b1)
+	if err != nil {
+		t.Errorf("read: %v", err)
+	}
+	r.Seed(42)
+	b2 := make([]byte, 128)
+	_, err = r.Read(b2)
+	if err != nil {
+		t.Errorf("read: %v", err)
+	}
+	if !bytes.Equal(b1, b2) {
+		t.Errorf("mismatch after re-seed:\n%x\n%x", b1, b2)
+	}
 }
 
 // Benchmarks

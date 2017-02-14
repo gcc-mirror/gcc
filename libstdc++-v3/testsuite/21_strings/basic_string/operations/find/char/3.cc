@@ -1,6 +1,6 @@
 // 2003-05-04  Paolo Carlini  <pcarlini@unitus.it>
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,9 +22,8 @@
 #include <string>
 #include <testsuite_hooks.h>
 
-bool test03(void)
+void test03(void)
 {
-  bool test __attribute__((unused)) = true;
   typedef std::string::size_type csize_type;
   csize_type npos = std::string::npos;
   csize_type csz01;
@@ -82,7 +81,6 @@ bool test03(void)
   VERIFY( csz01 == 0 );
   csz01 = str04.find_first_not_of('S');
   VERIFY( csz01 == npos );
-  return test;
 }
 
 int main()

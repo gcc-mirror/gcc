@@ -1,5 +1,5 @@
 /* GCC core type declarations.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -174,6 +174,13 @@ enum offload_abi {
   OFFLOAD_ABI_ILP32
 };
 
+/* Types of profile update methods.  */
+enum profile_update {
+  PROFILE_UPDATE_SINGLE,
+  PROFILE_UPDATE_ATOMIC,
+  PROFILE_UPDATE_PREFER_ATOMIC
+};
+
 /* Types of unwind/exception handling info that can be generated.  */
 
 enum unwind_info_type
@@ -325,32 +332,22 @@ enum symbol_visibility
   VISIBILITY_INTERNAL
 };
 
-/* Suppose that higher bits are target dependent. */
-#define MEMMODEL_MASK ((1<<16)-1)
+/* enums used by the targetm.excess_precision hook.  */
 
-/* Legacy sync operations set this upper flag in the memory model.  This allows
-   targets that need to do something stronger for sync operations to
-   differentiate with their target patterns and issue a more appropriate insn
-   sequence.  See bugzilla 65697 for background.  */
-#define MEMMODEL_SYNC (1<<15)
-
-/* Memory model without SYNC bit for targets/operations that do not care.  */
-#define MEMMODEL_BASE_MASK (MEMMODEL_SYNC-1)
-
-/* Memory model types for the __atomic* builtins. 
-   This must match the order in libstdc++-v3/include/bits/atomic_base.h.  */
-enum memmodel
+enum flt_eval_method
 {
-  MEMMODEL_RELAXED = 0,
-  MEMMODEL_CONSUME = 1,
-  MEMMODEL_ACQUIRE = 2,
-  MEMMODEL_RELEASE = 3,
-  MEMMODEL_ACQ_REL = 4,
-  MEMMODEL_SEQ_CST = 5,
-  MEMMODEL_LAST = 6,
-  MEMMODEL_SYNC_ACQUIRE = MEMMODEL_ACQUIRE | MEMMODEL_SYNC,
-  MEMMODEL_SYNC_RELEASE = MEMMODEL_RELEASE | MEMMODEL_SYNC,
-  MEMMODEL_SYNC_SEQ_CST = MEMMODEL_SEQ_CST | MEMMODEL_SYNC
+  FLT_EVAL_METHOD_UNPREDICTABLE = -1,
+  FLT_EVAL_METHOD_PROMOTE_TO_FLOAT = 0,
+  FLT_EVAL_METHOD_PROMOTE_TO_DOUBLE = 1,
+  FLT_EVAL_METHOD_PROMOTE_TO_LONG_DOUBLE = 2,
+  FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16 = 16
+};
+
+enum excess_precision_type
+{
+  EXCESS_PRECISION_TYPE_IMPLICIT,
+  EXCESS_PRECISION_TYPE_STANDARD,
+  EXCESS_PRECISION_TYPE_FAST
 };
 
 /* Support for user-provided GGC and PCH markers.  The first parameter
@@ -359,31 +356,6 @@ typedef void (*gt_pointer_operator) (void *, void *);
 
 #if !defined (HAVE_UCHAR)
 typedef unsigned char uchar;
-#endif
-
-/* C++11 adds the ability to add "override" after an implementation of a
-   virtual function in a subclass, to:
-     (A) document that this is an override of a virtual function
-     (B) allow the compiler to issue a warning if it isn't (e.g. a mismatch
-         of the type signature).
-
-   Similarly, it allows us to add a "final" to indicate that no subclass
-   may subsequently override the vfunc.
-
-   Provide OVERRIDE and FINAL as macros, allowing us to get these benefits
-   when compiling with C++11 support, but without requiring C++11.
-
-   For gcc, use "-std=c++11" to enable C++11 support; gcc 6 onwards enables
-   this by default (actually GNU++14).  */
-
-#if __cplusplus >= 201103
-/* C++11 claims to be available: use it: */
-#define OVERRIDE override
-#define FINAL final
-#else
-/* No C++11 support; leave the macros empty: */
-#define OVERRIDE
-#define FINAL
 #endif
 
 /* Most host source files will require the following headers.  */

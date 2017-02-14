@@ -2,7 +2,7 @@
 // Adpated from libstdc++/5464 submitted by jjessel@amadeus.net
 // Jean-Francois JESSEL (Amadeus SAS Development) 
 //
-// Copyright (C) 2002-2016 Free Software Foundation, Inc.
+// Copyright (C) 2002-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,8 +20,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* *-*-cygwin *-*-rtems* *-*-darwin* } }
-// { dg-options "-pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* } }
-// { dg-options "-pthreads" { target *-*-solaris* } }
+// { dg-options "-pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* } }
 
 #include <vector>
 #include <list>

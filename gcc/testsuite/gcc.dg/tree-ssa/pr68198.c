@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-thread1-details" } */
+/* { dg-options "-O2 -fdump-tree-thread1-details -fdisable-tree-ethread" } */
 
 extern void abort (void);
 

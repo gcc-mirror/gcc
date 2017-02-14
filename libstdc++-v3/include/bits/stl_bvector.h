@@ -1,6 +1,6 @@
 // vector<bool> specialization -*- C++ -*-
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -500,6 +500,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    _Bit_alloc_traits::deallocate(_M_impl,
 					  _M_impl._M_end_of_storage - __n,
 					  __n);
+	    _M_impl._M_start = _M_impl._M_finish = _Bit_iterator();
+	    _M_impl._M_end_of_storage = _Bit_pointer();
 	  }
       }
 
@@ -1054,9 +1056,18 @@ template<typename _Alloc>
 
 #if __cplusplus >= 201103L
     template<typename... _Args>
+#if __cplusplus > 201402L
+      reference
+#else
       void
+#endif
       emplace_back(_Args&&... __args)
-      { push_back(bool(__args...)); }
+      {
+	push_back(bool(__args...));
+#if __cplusplus > 201402L
+	return back();
+#endif
+      }
 
     template<typename... _Args>
       iterator

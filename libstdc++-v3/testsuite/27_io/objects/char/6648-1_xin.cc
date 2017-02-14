@@ -1,6 +1,6 @@
 // 2000-08-02 bkoz
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,7 +23,6 @@
 // Interactive tests: each one (run alone) must terminate upon a single '\n'.
 void test08()
 {
-  bool test __attribute__((unused)) = true;
   char buff[2048];
   std::cout << "Enter name: ";
   std::cin.getline(buff, 2048);

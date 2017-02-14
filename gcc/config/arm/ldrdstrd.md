@@ -1,6 +1,6 @@
 ;; ARM ldrd/strd peephole optimizations.
 ;;
-;; Copyright (C) 2013-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2017 Free Software Foundation, Inc.
 ;;
 ;; Written by Greta Yorsh <greta.yorsh@arm.com>
 
@@ -29,9 +29,7 @@
         (match_operand:SI 2 "memory_operand" ""))
    (set (match_operand:SI 1 "arm_general_register_operand" "")
         (match_operand:SI 3 "memory_operand" ""))]
-  "TARGET_LDRD
-     && current_tune->prefer_ldrd_strd
-     && !optimize_function_for_size_p (cfun)"
+  "TARGET_LDRD"
   [(const_int 0)]
 {
   if (!gen_operands_ldrd_strd (operands, true, false, false))
@@ -63,9 +61,7 @@
 	(match_operand:SI 0 "arm_general_register_operand" ""))
    (set (match_operand:SI 3 "memory_operand" "")
 	(match_operand:SI 1 "arm_general_register_operand" ""))]
-  "TARGET_LDRD
-     && current_tune->prefer_ldrd_strd
-     && !optimize_function_for_size_p (cfun)"
+  "TARGET_LDRD"
   [(const_int 0)]
 {
   if (!gen_operands_ldrd_strd (operands, false, false, false))
@@ -102,9 +98,7 @@
         (match_operand:SI 5 "const_int_operand" ""))
    (set (match_operand:SI 3 "memory_operand" "")
         (match_dup 1))]
- "TARGET_LDRD
-  && current_tune->prefer_ldrd_strd
-  && !optimize_function_for_size_p (cfun)"
+  "TARGET_LDRD"
   [(const_int 0)]
 {
   if (!gen_operands_ldrd_strd (operands, false, true, false))
@@ -147,10 +141,8 @@
         (match_dup 0))
    (set (match_operand:SI 3 "memory_operand" "")
         (match_dup 1))]
- "TARGET_LDRD
-  && current_tune->prefer_ldrd_strd
-  && !optimize_function_for_size_p (cfun)"
-   [(const_int 0)]
+  "TARGET_LDRD"
+  [(const_int 0)]
 {
   if (!gen_operands_ldrd_strd (operands, false, true, false))
      FAIL;
@@ -197,8 +189,6 @@
 			   [(match_operand 6 "arm_general_register_operand" "")
 			    (match_operand 7 "arm_general_register_operand" "") ]))]
   "TARGET_LDRD && TARGET_ARM
-   && current_tune->prefer_ldrd_strd
-   && !optimize_function_for_size_p (cfun)
    && (  ((rtx_equal_p(operands[0], operands[6])) && (rtx_equal_p(operands[1], operands[7])))
         ||((rtx_equal_p(operands[0], operands[7])) && (rtx_equal_p(operands[1], operands[6]))))
    && (peep2_reg_dead_p (3, operands[0]) || rtx_equal_p (operands[0], operands[4]))
@@ -231,8 +221,6 @@
 				(match_operand 7 "arm_general_register_operand" "") ]))
        (clobber (reg:CC CC_REGNUM))])]
   "TARGET_LDRD && TARGET_ARM
-   && current_tune->prefer_ldrd_strd
-   && !optimize_function_for_size_p (cfun)
    && (  ((rtx_equal_p(operands[0], operands[6])) && (rtx_equal_p(operands[1], operands[7])))
        ||((rtx_equal_p(operands[0], operands[7])) && (rtx_equal_p(operands[1], operands[6]))))
    && (peep2_reg_dead_p (3, operands[0]) || rtx_equal_p (operands[0], operands[4]))

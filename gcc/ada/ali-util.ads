@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,7 @@
 ------------------------------------------------------------------------------
 
 --  This child unit provides utility data structures and procedures used
---  for manipulation of ALI data by the gnatbind and gnatmake.
+--  for manipulation of ALI data by gnatbind and gnatmake.
 
 package ALI.Util is
 

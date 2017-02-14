@@ -21,7 +21,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   deque<long> data(200);

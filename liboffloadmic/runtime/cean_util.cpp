@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2016 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -395,4 +395,27 @@ void __arr_desc_dump(
         generate_mem_ranges(spaces, adp, deref, &print_range, print_values);
     }
 }
+
+void noncont_struct_dump(
+    const char *spaces,
+    const char *name,
+    struct NonContigDesc *desc_p)
+{
+   OFFLOAD_TRACE(2, "%s%s NonCont Struct expression %p\n",
+                 spaces, name, desc_p->base);
+   if (desc_p) {
+       OFFLOAD_TRACE(2, "%s%s    base=%p\n", spaces, name, desc_p->base);
+       for (int i = 0; i < desc_p->interval_cnt; i++) {
+           OFFLOAD_TRACE(2,"%s    dimension %d: lower=%lld, size=%lld\n",
+               spaces, i, desc_p->interval[i].lower, desc_p->interval[i].size);
+       }
+   }
+}
+
+int64_t get_noncont_struct_size(struct NonContigDesc *desc_p)
+{
+    int index = desc_p->interval_cnt - 1;
+    return(desc_p->interval[index].lower + desc_p->interval[index].size);
+}
+
 #endif // OFFLOAD_DEBUG

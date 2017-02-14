@@ -251,27 +251,6 @@ func ReadDirent(fd int, buf []byte) (n int, err error) {
 	return Getdents(fd, buf)
 }
 
-func ParseDirent(buf []byte, max int, names []string) (consumed int, count int, newnames []string) {
-	origlen := len(buf)
-	count = 0
-	for max != 0 && len(buf) > 0 {
-		dirent := (*Dirent)(unsafe.Pointer(&buf[0]))
-		buf = buf[dirent.Reclen:]
-		if dirent.Ino == 0 { // File absent in directory.
-			continue
-		}
-		bytes := (*[10000]byte)(unsafe.Pointer(&dirent.Name[0]))
-		var name = string(bytes[0:clen(bytes[:])])
-		if name == "." || name == ".." { // Useless names
-			continue
-		}
-		max--
-		count++
-		names = append(names, name)
-	}
-	return origlen - len(buf), count, names
-}
-
 //sys	Getxattr(path string, attr string, dest []byte) (sz int, err error)
 //getxattr(path *byte, attr *byte, buf *byte, count Size_t) Ssize_t
 

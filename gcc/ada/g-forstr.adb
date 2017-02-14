@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2014, Free Software Foundation, Inc.           --
+--          Copyright (C) 2014-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -698,8 +698,9 @@ package body GNAT.Formatted_String is
             S := Strings.Fixed.Index_Non_Blank (Buffer);
             E := Buffer'Last;
 
-         when Decimal_Scientific_Float | Decimal_Scientific_Float_Up =>
-
+         when Decimal_Scientific_Float
+            | Decimal_Scientific_Float_Up
+         =>
             Put (Buffer, Var, Aft, Exp => 3);
             S := Strings.Fixed.Index_Non_Blank (Buffer);
             E := Buffer'Last;
@@ -709,8 +710,9 @@ package body GNAT.Formatted_String is
                  Characters.Handling.To_Lower (Buffer (S .. E));
             end if;
 
-         when Shortest_Decimal_Float | Shortest_Decimal_Float_Up =>
-
+         when Shortest_Decimal_Float
+            | Shortest_Decimal_Float_Up
+         =>
             --  Without exponent
 
             Put (Buffer, Var, Aft, Exp => 0);
@@ -907,10 +909,10 @@ package body GNAT.Formatted_String is
                                   N'First));
       begin
          case F.Base is
-            when None   =>
+            when None =>
                null;
 
-            when C_Style   =>
+            when C_Style =>
                case F.Kind is
                   when Unsigned_Octal =>
                      N (P) := 'O';
@@ -933,7 +935,7 @@ package body GNAT.Formatted_String is
                      null;
                end case;
 
-            when Ada_Style   =>
+            when Ada_Style =>
                case F.Kind is
                   when Unsigned_Octal =>
                      if F.Left_Justify then
@@ -945,8 +947,9 @@ package body GNAT.Formatted_String is
                      N (N'First .. N'First + 1) := "8#";
                      N (N'Last) := '#';
 
-                  when Unsigned_Hexadecimal_Int    |
-                       Unsigned_Hexadecimal_Int_Up =>
+                  when Unsigned_Hexadecimal_Int
+                     | Unsigned_Hexadecimal_Int_Up
+                  =>
                      if F.Left_Justify then
                         N (N'First + 3 .. N'Last) := N (N'First .. N'Last - 3);
                      else

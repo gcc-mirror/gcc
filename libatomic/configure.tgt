@@ -1,5 +1,5 @@
 # -*- shell-script -*-
-#  Copyright (C) 2012-2016 Free Software Foundation, Inc.
+#  Copyright (C) 2012-2017 Free Software Foundation, Inc.
 #  Contributed by Richard Henderson <rth@redhat.com>.
 #
 #  This file is part of the GNU Atomic Library (libatomic).
@@ -37,6 +37,7 @@ case "${target_cpu}" in
 	ARCH=alpha
 	;;
   rs6000 | powerpc*)	ARCH=powerpc ;;
+  riscv*)		ARCH=riscv ;;
   sh*)			ARCH=sh ;;
 
   arm*)

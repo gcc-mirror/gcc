@@ -400,39 +400,6 @@ func TestPrintGC(t *testing.T) {
 	close(done)
 }
 
-/*
-
-// The implicit y, ok := x.(error) for the case error
-// in testTypeSwitch used to not initialize the result y
-// before passing &y to assertE2I2GC.
-// Catch this by making assertE2I2 call runtime.GC,
-// which will force a stack scan and failure if there are
-// bad pointers, and then fill the stack with bad pointers
-// and run the type switch.
-func TestAssertE2I2Liveness(t *testing.T) {
-	// Note that this flag is defined in export_test.go
-	// and is not available to ordinary imports of runtime.
-	*runtime.TestingAssertE2I2GC = true
-	defer func() {
-		*runtime.TestingAssertE2I2GC = false
-	}()
-
-	poisonStack()
-	testTypeSwitch(io.EOF)
-	poisonStack()
-	testAssert(io.EOF)
-	poisonStack()
-	testAssertVar(io.EOF)
-}
-
-func poisonStack() uintptr {
-	var x [1000]uintptr
-	for i := range x {
-		x[i] = 0xff
-	}
-	return x[123]
-}
-
 func testTypeSwitch(x interface{}) error {
 	switch y := x.(type) {
 	case nil:
@@ -458,22 +425,31 @@ func testAssertVar(x interface{}) error {
 	return nil
 }
 
-func TestAssertE2T2Liveness(t *testing.T) {
-	*runtime.TestingAssertE2T2GC = true
-	defer func() {
-		*runtime.TestingAssertE2T2GC = false
-	}()
-
-	poisonStack()
-	testIfaceEqual(io.EOF)
-}
-
 var a bool
 
 //go:noinline
 func testIfaceEqual(x interface{}) {
 	if x == "abc" {
 		a = true
+	}
+}
+
+/*
+
+func TestPageAccounting(t *testing.T) {
+	// Grow the heap in small increments. This used to drop the
+	// pages-in-use count below zero because of a rounding
+	// mismatch (golang.org/issue/15022).
+	const blockSize = 64 << 10
+	blocks := make([]*[blockSize]byte, (64<<20)/blockSize)
+	for i := range blocks {
+		blocks[i] = new([blockSize]byte)
+	}
+
+	// Check that the running page count matches reality.
+	pagesInUse, counted := runtime.CountPagesInUse()
+	if pagesInUse != counted {
+		t.Fatalf("mheap_.pagesInUse is %d, but direct count is %d", pagesInUse, counted)
 	}
 }
 

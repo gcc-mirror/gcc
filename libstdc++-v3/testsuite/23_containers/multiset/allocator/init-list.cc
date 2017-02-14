@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 //
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <set>
 #include <testsuite_hooks.h>
@@ -24,8 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using namespace __gnu_test;
 
   typedef tracker_allocator<int> alloc_type;

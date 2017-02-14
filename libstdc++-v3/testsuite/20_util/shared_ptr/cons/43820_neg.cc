@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11 -Wno-deprecated" }
-// { dg-do compile }
+// { dg-options "-Wno-deprecated" }
+// { dg-do compile { target c++11 } }
 
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,8 +32,6 @@ void test01()
 {
   X* px = 0;
   std::shared_ptr<X> p1(px);   // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 889 }
-
   std::shared_ptr<X> p9(ap());  // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 307 }
+  // { dg-error "incomplete" "" { target *-*-* } 0 }
 }

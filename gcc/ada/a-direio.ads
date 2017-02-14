@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -93,6 +93,8 @@ package Ada.Direct_IO is
    function Form (File : File_Type) return String;
 
    function Is_Open (File : File_Type) return Boolean;
+
+   procedure Flush (File : File_Type);
 
    ---------------------------------
    -- Input and Output Operations --

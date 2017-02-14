@@ -1,7 +1,7 @@
 /* This file contains routines to construct OpenACC and OpenMP constructs,
    called from parsing in the C and C++ front ends.
 
-   Copyright (C) 2005-2016 Free Software Foundation, Inc.
+   Copyright (C) 2005-2017 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>,
 		  Diego Novillo <dnovillo@redhat.com>.
 
@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-common.h"
 #include "gimple-expr.h"
 #include "c-pragma.h"
-#include "omp-low.h"
+#include "omp-general.h"
 #include "gomp-constants.h"
 
 
@@ -45,7 +45,7 @@ c_finish_oacc_wait (location_t loc, tree parms, tree clauses)
   vec_alloc (args, nparms + 2);
   stmt = builtin_decl_explicit (BUILT_IN_GOACC_WAIT);
 
-  if (find_omp_clause (clauses, OMP_CLAUSE_ASYNC))
+  if (omp_find_clause (clauses, OMP_CLAUSE_ASYNC))
     t = OMP_CLAUSE_ASYNC_EXPR (clauses);
   else
     t = build_int_cst (integer_type_node, GOMP_ASYNC_SYNC);
@@ -199,6 +199,11 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
       error_at (loc, "invalid expression type for %<#pragma omp atomic%>");
       return error_mark_node;
     }
+  if (TYPE_ATOMIC (type))
+    {
+      error_at (loc, "%<_Atomic%> expression in %<#pragma omp atomic%>");
+      return error_mark_node;
+    }
 
   if (opcode == RDIV_EXPR)
     opcode = TRUNC_DIV_EXPR;
@@ -207,7 +212,7 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 
   /* Take and save the address of the lhs.  From then on we'll reference it
      via indirection.  */
-  addr = build_unary_op (loc, ADDR_EXPR, lhs, 0);
+  addr = build_unary_op (loc, ADDR_EXPR, lhs, false);
   if (addr == error_mark_node)
     return error_mark_node;
   if (!test)
@@ -298,14 +303,14 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 			     loc, x, NULL_TREE);
       if (rhs1 && rhs1 != lhs)
 	{
-	  tree rhs1addr = build_unary_op (loc, ADDR_EXPR, rhs1, 0);
+	  tree rhs1addr = build_unary_op (loc, ADDR_EXPR, rhs1, false);
 	  if (rhs1addr == error_mark_node)
 	    return error_mark_node;
 	  x = omit_one_operand_loc (loc, type, x, rhs1addr);
 	}
       if (lhs1 && lhs1 != lhs)
 	{
-	  tree lhs1addr = build_unary_op (loc, ADDR_EXPR, lhs1, 0);
+	  tree lhs1addr = build_unary_op (loc, ADDR_EXPR, lhs1, false);
 	  if (lhs1addr == error_mark_node)
 	    return error_mark_node;
 	  if (code == OMP_ATOMIC_CAPTURE_OLD)
@@ -320,7 +325,7 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
     }
   else if (rhs1 && rhs1 != lhs)
     {
-      tree rhs1addr = build_unary_op (loc, ADDR_EXPR, rhs1, 0);
+      tree rhs1addr = build_unary_op (loc, ADDR_EXPR, rhs1, false);
       if (rhs1addr == error_mark_node)
 	return error_mark_node;
       x = omit_one_operand_loc (loc, type, x, rhs1addr);
@@ -479,6 +484,14 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	{
 	  error_at (elocus, "invalid type for iteration variable %qE", decl);
 	  fail = true;
+	}
+      else if (TYPE_ATOMIC (TREE_TYPE (decl)))
+	{
+	  error_at (elocus, "%<_Atomic%> iteration variable %qE", decl);
+	  fail = true;
+	  /* _Atomic iterator confuses stuff too much, so we risk ICE
+	     trying to diagnose it further.  */
+	  continue;
 	}
 
       /* In the case of "for (int i = 0...)", init will be a decl.  It should

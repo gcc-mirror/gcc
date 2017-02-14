@@ -21,7 +21,5 @@ subroutine  eval(foo1,foo2,foo3,foo4,x,n,nnd)
   end do
 end subroutine eval
 
-! We should have hoisted the division
-! { dg-final { scan-tree-dump "in all uses of countm1\[^\n\]* / " "pre" } }
 ! There should be only one load from n left
 ! { dg-final { scan-tree-dump-times "\\*n_" 1 "fre1" } }

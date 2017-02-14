@@ -432,7 +432,9 @@ COMMON_SYSDEP void __cilkrts_idle(void)
 #elif defined(__MIC__)
     _mm_delay_32(1024);
 #elif defined(__linux__) || \
-      defined(__APPLE__)
+      defined(__APPLE__) || \
+      defined(__CYGWIN__)
+      
     usleep(10000);
 #else
 # error "Unsupported architecture"
@@ -452,6 +454,7 @@ COMMON_SYSDEP void __cilkrts_yield(void)
 {
 #if defined(__ANDROID__)  || \
     defined(__APPLE__)    || \
+    defined(__CYGWIN__)   || \
     defined(__FreeBSD__)  || \
     defined(__VXWORKS__)  || \
     (defined(__sun__) && defined(__svr4__))

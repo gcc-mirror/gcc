@@ -50,8 +50,6 @@ package body GNAT.Sockets is
 
    package C renames Interfaces.C;
 
-   use type C.int;
-
    ENOERROR : constant := 0;
 
    Netdb_Buffer_Size : constant := SOSC.Need_Netdb_Buffer * 1024;
@@ -82,7 +80,7 @@ package body GNAT.Sockets is
                 (Non_Blocking_IO => SOSC.FIONBIO,
                  N_Bytes_To_Read => SOSC.FIONREAD);
 
-   Options : constant array (Option_Name) of C.int :=
+   Options : constant array (Specific_Option_Name) of C.int :=
                (Keep_Alive          => SOSC.SO_KEEPALIVE,
                 Reuse_Address       => SOSC.SO_REUSEADDR,
                 Broadcast           => SOSC.SO_BROADCAST,
@@ -98,7 +96,8 @@ package body GNAT.Sockets is
                 Multicast_Loop      => SOSC.IP_MULTICAST_LOOP,
                 Receive_Packet_Info => SOSC.IP_PKTINFO,
                 Send_Timeout        => SOSC.SO_SNDTIMEO,
-                Receive_Timeout     => SOSC.SO_RCVTIMEO);
+                Receive_Timeout     => SOSC.SO_RCVTIMEO,
+                Busy_Polling        => SOSC.SO_BUSY_POLL);
    --  ??? Note: for OpenSolaris, Receive_Packet_Info should be IP_RECVPKTINFO,
    --  but for Linux compatibility this constant is the same as IP_PKTINFO.
 
@@ -1140,9 +1139,10 @@ package body GNAT.Sockets is
    -----------------------
 
    function Get_Socket_Option
-     (Socket : Socket_Type;
-      Level  : Level_Type := Socket_Level;
-      Name   : Option_Name) return Option_Type
+     (Socket  : Socket_Type;
+      Level   : Level_Type := Socket_Level;
+      Name    : Option_Name;
+      Optname : Interfaces.C.int := -1) return Option_Type
    is
       use SOSC;
       use type C.unsigned_char;
@@ -1155,29 +1155,44 @@ package body GNAT.Sockets is
       Add : System.Address;
       Res : C.int;
       Opt : Option_Type (Name);
+      Onm : Interfaces.C.int;
 
    begin
+      if Name in Specific_Option_Name then
+         Onm := Options (Name);
+
+      elsif Optname = -1 then
+         raise Socket_Error with "optname must be specified";
+
+      else
+         Onm := Optname;
+      end if;
+
       case Name is
-         when Multicast_Loop      |
-              Multicast_TTL       |
-              Receive_Packet_Info =>
+         when Multicast_Loop
+            | Multicast_TTL
+            | Receive_Packet_Info
+         =>
             Len := V1'Size / 8;
             Add := V1'Address;
 
-         when Keep_Alive      |
-              Reuse_Address   |
-              Broadcast       |
-              No_Delay        |
-              Send_Buffer     |
-              Receive_Buffer  |
-              Multicast_If    |
-              Error           =>
+         when Broadcast
+            | Busy_Polling
+            | Error
+            | Generic_Option
+            | Keep_Alive
+            | Multicast_If
+            | No_Delay
+            | Receive_Buffer
+            | Reuse_Address
+            | Send_Buffer
+         =>
             Len := V4'Size / 8;
             Add := V4'Address;
 
-         when Send_Timeout    |
-              Receive_Timeout =>
-
+         when Receive_Timeout
+            | Send_Timeout
+         =>
             --  The standard argument for SO_RCVTIMEO and SO_SNDTIMEO is a
             --  struct timeval, but on Windows it is a milliseconds count in
             --  a DWORD.
@@ -1191,19 +1206,19 @@ package body GNAT.Sockets is
                Add := VT'Address;
             end if;
 
-         when Linger          |
-              Add_Membership  |
-              Drop_Membership =>
+         when Add_Membership
+            | Drop_Membership
+            | Linger
+         =>
             Len := V8'Size / 8;
             Add := V8'Address;
-
       end case;
 
       Res :=
         C_Getsockopt
           (C.int (Socket),
            Levels (Level),
-           Options (Name),
+           Onm,
            Add, Len'Access);
 
       if Res = Failure then
@@ -1211,41 +1226,52 @@ package body GNAT.Sockets is
       end if;
 
       case Name is
-         when Keep_Alive      |
-              Reuse_Address   |
-              Broadcast       |
-              No_Delay        =>
+         when Generic_Option =>
+            Opt.Optname := Onm;
+            Opt.Optval  := V4;
+
+         when Broadcast
+            | Keep_Alive
+            | No_Delay
+            | Reuse_Address
+         =>
             Opt.Enabled := (V4 /= 0);
 
-         when Linger          =>
+         when Busy_Polling =>
+            Opt.Microseconds := Natural (V4);
+
+         when Linger =>
             Opt.Enabled := (V8 (V8'First) /= 0);
             Opt.Seconds := Natural (V8 (V8'Last));
 
-         when Send_Buffer     |
-              Receive_Buffer  =>
+         when Receive_Buffer
+            | Send_Buffer
+         =>
             Opt.Size := Natural (V4);
 
-         when Error           =>
+         when Error =>
             Opt.Error := Resolve_Error (Integer (V4));
 
-         when Add_Membership  |
-              Drop_Membership =>
+         when Add_Membership
+            | Drop_Membership
+         =>
             To_Inet_Addr (To_In_Addr (V8 (V8'First)), Opt.Multicast_Address);
             To_Inet_Addr (To_In_Addr (V8 (V8'Last)), Opt.Local_Interface);
 
-         when Multicast_If    =>
+         when Multicast_If =>
             To_Inet_Addr (To_In_Addr (V4), Opt.Outgoing_If);
 
-         when Multicast_TTL   =>
+         when Multicast_TTL =>
             Opt.Time_To_Live := Integer (V1);
 
-         when Multicast_Loop      |
-              Receive_Packet_Info =>
+         when Multicast_Loop
+            | Receive_Packet_Info
+         =>
             Opt.Enabled := (V1 /= 0);
 
-         when Send_Timeout    |
-              Receive_Timeout =>
-
+         when Receive_Timeout
+            | Send_Timeout
+         =>
             if Target_OS = Windows then
 
                --  Timeout is in milliseconds, actual value is 500 ms +
@@ -2267,60 +2293,75 @@ package body GNAT.Sockets is
       Len : C.int;
       Add : System.Address := Null_Address;
       Res : C.int;
+      Onm : C.int;
 
    begin
       case Option.Name is
-         when Keep_Alive      |
-              Reuse_Address   |
-              Broadcast       |
-              No_Delay        =>
+         when Generic_Option =>
+            V4  := Option.Optval;
+            Len := V4'Size / 8;
+            Add := V4'Address;
+
+         when Broadcast
+            | Keep_Alive
+            | No_Delay
+            | Reuse_Address
+         =>
             V4  := C.int (Boolean'Pos (Option.Enabled));
             Len := V4'Size / 8;
             Add := V4'Address;
 
-         when Linger          =>
+         when Busy_Polling =>
+            V4  := C.int (Option.Microseconds);
+            Len := V4'Size / 8;
+            Add := V4'Address;
+
+         when Linger =>
             V8 (V8'First) := C.int (Boolean'Pos (Option.Enabled));
             V8 (V8'Last)  := C.int (Option.Seconds);
             Len := V8'Size / 8;
             Add := V8'Address;
 
-         when Send_Buffer     |
-              Receive_Buffer  =>
+         when Receive_Buffer
+            | Send_Buffer
+         =>
             V4  := C.int (Option.Size);
             Len := V4'Size / 8;
             Add := V4'Address;
 
-         when Error           =>
+         when Error =>
             V4  := C.int (Boolean'Pos (True));
             Len := V4'Size / 8;
             Add := V4'Address;
 
-         when Add_Membership  |
-              Drop_Membership =>
+         when Add_Membership
+            | Drop_Membership
+         =>
             V8 (V8'First) := To_Int (To_In_Addr (Option.Multicast_Address));
             V8 (V8'Last)  := To_Int (To_In_Addr (Option.Local_Interface));
             Len := V8'Size / 8;
             Add := V8'Address;
 
-         when Multicast_If    =>
+         when Multicast_If =>
             V4  := To_Int (To_In_Addr (Option.Outgoing_If));
             Len := V4'Size / 8;
             Add := V4'Address;
 
-         when Multicast_TTL   =>
+         when Multicast_TTL =>
             V1  := C.unsigned_char (Option.Time_To_Live);
             Len := V1'Size / 8;
             Add := V1'Address;
 
-         when Multicast_Loop      |
-              Receive_Packet_Info =>
+         when Multicast_Loop
+            | Receive_Packet_Info
+         =>
             V1  := C.unsigned_char (Boolean'Pos (Option.Enabled));
             Len := V1'Size / 8;
             Add := V1'Address;
 
-         when Send_Timeout    |
-              Receive_Timeout =>
-
+         when Receive_Timeout
+            | Send_Timeout
+         =>
             if Target_OS = Windows then
 
                --  On Windows, the timeout is a DWORD in milliseconds, and
@@ -2344,13 +2385,22 @@ package body GNAT.Sockets is
                Len := VT'Size / 8;
                Add := VT'Address;
             end if;
-
       end case;
+
+      if Option.Name in Specific_Option_Name then
+         Onm := Options (Option.Name);
+
+      elsif Option.Optname = -1 then
+         raise Socket_Error with "optname must be specified";
+
+      else
+         Onm := Option.Optname;
+      end if;
 
       Res := C_Setsockopt
         (C.int (Socket),
          Levels (Level),
-         Options (Option.Name),
+         Onm,
          Add, Len);
 
       if Res = Failure then

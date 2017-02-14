@@ -427,7 +427,7 @@ Syntax::
                         Refined_Post         |
                         Statement_Assertions
 
-  POLICY_IDENTIFIER ::= Check | Disable | Ignore
+  POLICY_IDENTIFIER ::= Check | Disable | Ignore | Suppressible
 
 
 This is a standard Ada 2012 pragma that is available as an
@@ -450,6 +450,8 @@ If the policy is `IGNORE`, then assertions are ignored, i.e.
 the corresponding pragma or aspect is deactivated.
 This pragma overrides the effect of the *-gnata* switch on the
 command line.
+If the policy is `SUPPRESSIBLE`, then assertions are enabled by default,
+however, if the *-gnatp* switch is specified all assertions are ignored.
 
 The implementation defined policy `DISABLE` is like
 `IGNORE` except that it completely disables semantic
@@ -2381,7 +2383,7 @@ Syntax:
   pragma Implementation_Defined (local_NAME);
 
 
-This pragma marks a previously declared entioty as implementation-defined.
+This pragma marks a previously declared entity as implementation-defined.
 For an overloaded entity, applies to the most recent homonym.
 
 
@@ -3561,6 +3563,19 @@ Syntax::
 This pragma is provided for compatibility with OpenVMS VAX Systems.  It has
 no effect in GNAT, other than being syntax checked.
 
+Pragma Max_Queue_Length
+=======================
+
+Syntax::
+
+   pragma Max_Entry_Queue (static_integer_EXPRESSION);
+
+
+This pragma is used to specify the maximum callers per entry queue for
+individual protected entries and entry families. It accepts a single
+positive integer as a parameter and must appear after the declaration
+of an entry.
+
 Pragma No_Body
 ==============
 
@@ -4530,6 +4545,43 @@ aspects, but is prepared to ignore the pragmas. The assertion
 policy that controls this pragma is `Post'Class`, not
 `Post_Class`.
 
+Pragma Rename_Pragma
+============================
+.. index:: Pragmas, synonyms
+
+Syntax:
+
+
+::
+
+  pragma Rename_Pragma (
+           [New_Name =>] IDENTIFIER,
+           [Renamed  =>] pragma_IDENTIFIER);
+
+This pragma provides a mechanism for supplying new names for existing
+pragmas. The `New_Name` identifier can subsequently be used as a synonym for
+the Renamed pragma. For example, suppose you have code that was originally
+developed on a compiler that supports Inline_Only as an implementation defined
+pragma. And suppose the semantics of pragma Inline_Only are identical to (or at
+least very similar to) the GNAT implementation defined pragma
+Inline_Always. You could globally replace Inline_Only with Inline_Always.
+
+However, to avoid that source modification, you could instead add a
+configuration pragma:
+
+.. code-block:: ada
+
+  pragma Rename_Pragma (
+           New_Name => Inline_Only,
+           Renamed  => Inline_Always);
+
+
+Then GNAT will treat "pragma Inline_Only ..." as if you had written
+"pragma Inline_Always ...".
+
+Pragma Inline_Only will not necessarily mean the same thing as the other Ada
+compiler; it's up to you to make sure the semantics are close enough.
+
 Pragma Pre
 ==========
 .. index:: Pre
@@ -4936,6 +4988,9 @@ is defined in the following sections.
 
   The ``Simple_Barriers`` restriction has been replaced by
   ``Pure_Barriers``.
+
+  The ``Max_Protected_Entries``, ``Max_Entry_Queue_Length``, and
+  ``No_Relative_Delay`` restrictions have been removed.
 
 * Pragma Profile (Restricted)
 
@@ -5470,6 +5525,41 @@ run with various special switches as follows:
   comprehensive messages identifying possible problems based on this
   information.
 
+.. _Pragma-Secondary_Stack_Size:
+
+Pragma Secondary_Stack_Size
+===========================
+
+Syntax:
+
+.. code-block:: ada
+
+  pragma Secondary_Stack_Size (integer_EXPRESSION);
+
+This pragma appears within the task definition of a single task declaration 
+or a task type declaration (like pragma `Storage_Size`) and applies to all 
+task objects of that type. The argument specifies the size of the secondary 
+stack to be used by these task objects, and must be of an integer type. The
+secondary stack is used to handle functions that return a variable-sized 
+result, for example a function returning an unconstrained String.
+
+Note this pragma only applies to targets using fixed secondary stacks, like
+VxWorks 653 and bare board targets, where a fixed block for the 
+secondary stack is allocated from the primary stack of the task. By default,
+these targets assign a percentage of the primary stack for the secondary stack,
+as defined by `System.Parameter.Sec_Stack_Percentage`. With this pragma, 
+an `integer_EXPRESSION` of bytes is assigned from the primary stack instead.
+
+For most targets, the pragma does not apply as the secondary stack grows on 
+demand: allocated as a chain of blocks in the heap. The default size of these 
+blocks can be modified via the `-D` binder option as described in 
+:title:`GNAT User's Guide`.
+
+Note that no check is made to see if the secondary stack can fit inside the 
+primary stack.
+
+Note the pragma cannot appear when the restriction `No_Secondary_Stack`
+is in effect.
 
 Pragma Share_Generic
 ====================
@@ -6853,7 +6943,7 @@ variables whose name contains one of the substrings
 `DISCARD, DUMMY, IGNORE, JUNK, UNUSED` in any casing. Such names
 are typically to be used in cases where such warnings are expected.
 Thus it is never necessary to use `pragma Unmodified` for such
-variables, though it is harmless to do so. 
+variables, though it is harmless to do so.
 
 Pragma Validity_Checks
 ======================

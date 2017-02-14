@@ -18,8 +18,10 @@
 #include "sanitizer_common/sanitizer_internal_defs.h"
 #include "sanitizer_common/sanitizer_linux.h"
 #include "sanitizer_common/sanitizer_platform_limits_posix.h"
+#include "sanitizer_common/sanitizer_tls_get_addr.h"
 #include "lsan.h"
 #include "lsan_allocator.h"
+#include "lsan_common.h"
 #include "lsan_thread.h"
 
 using namespace __lsan;
@@ -102,6 +104,14 @@ INTERCEPTOR(int, posix_memalign, void **memptr, uptr alignment, uptr size) {
   return 0;
 }
 
+INTERCEPTOR(void *, __libc_memalign, uptr alignment, uptr size) {
+  ENSURE_LSAN_INITED;
+  GET_STACK_TRACE_MALLOC;
+  void *res = Allocate(stack, size, alignment, kAlwaysClearMemory);
+  DTLS_on_libc_memalign(res, size);
+  return res;
+}
+
 INTERCEPTOR(void*, valloc, uptr size) {
   ENSURE_LSAN_INITED;
   GET_STACK_TRACE_MALLOC;
@@ -172,11 +182,6 @@ void operator delete[](void *ptr, std::nothrow_t const &) {
   OPERATOR_DELETE_BODY;
 }
 
-// We need this to intercept the __libc_memalign calls that are used to
-// allocate dynamic TLS space in ld-linux.so.
-INTERCEPTOR(void *, __libc_memalign, uptr align, uptr s)
-    ALIAS(WRAPPER_NAME(memalign));
-
 ///// Thread initialization and finalization. /////
 
 static unsigned g_thread_finalize_key;
@@ -235,7 +240,15 @@ INTERCEPTOR(int, pthread_create, void *th, void *attr,
   p.callback = callback;
   p.param = param;
   atomic_store(&p.tid, 0, memory_order_relaxed);
-  int res = REAL(pthread_create)(th, attr, __lsan_thread_start_func, &p);
+  int res;
+  {
+    // Ignore all allocations made by pthread_create: thread stack/TLS may be
+    // stored by pthread for future reuse even after thread destruction, and
+    // the linked list it's stored in doesn't even hold valid pointers to the
+    // objects, the latter are calculated by obscure pointer arithmetic.
+    ScopedInterceptorDisabler disabler;
+    res = REAL(pthread_create)(th, attr, __lsan_thread_start_func, &p);
+  }
   if (res == 0) {
     int tid = ThreadCreate(GetCurrentThread(), *(uptr *)th, detached);
     CHECK_NE(tid, 0);

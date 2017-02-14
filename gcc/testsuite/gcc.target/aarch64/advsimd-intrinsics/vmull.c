@@ -59,13 +59,13 @@ void exec_vmull (void)
   TEST_VMULL(uint, u, 32, 64, 2);
   TEST_VMULL(poly, p, 8, 16, 8);
 
-  CHECK(TEST_MSG, int, 16, 8, PRIx64, expected, "");
+  CHECK(TEST_MSG, int, 16, 8, PRIx16, expected, "");
   CHECK(TEST_MSG, int, 32, 4, PRIx32, expected, "");
-  CHECK(TEST_MSG, int, 64, 2, PRIx32, expected, "");
-  CHECK(TEST_MSG, uint, 16, 8, PRIx64, expected, "");
+  CHECK(TEST_MSG, int, 64, 2, PRIx64, expected, "");
+  CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected, "");
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected, "");
-  CHECK(TEST_MSG, uint, 64, 2, PRIx32, expected, "");
-  CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected, "");
+  CHECK(TEST_MSG, uint, 64, 2, PRIx64, expected, "");
+  CHECK_POLY(TEST_MSG, poly, 16, 8, PRIx16, expected, "");
 }
 
 int main (void)

@@ -1,6 +1,6 @@
 // 2004-10-10  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +20,7 @@
 // 20.4.1.1 allocator members
 
 #include <ext/pool_allocator.h>
+#include <testsuite_hooks.h>
 
 struct small
 {
@@ -32,7 +33,7 @@ struct big
 };
 
 void*
-operator new(size_t n) throw(std::bad_alloc)
+operator new(size_t n) THROW(std::bad_alloc)
 {
   static bool first = true;
   if (!first)

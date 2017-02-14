@@ -1,6 +1,6 @@
 // 20010518 gdr
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,7 +20,7 @@
 
 #include <valarray>
 
-// dg-do compile
+// { dg-do compile }
 
 template<typename P>
   void copy(P, std::size_t) { }

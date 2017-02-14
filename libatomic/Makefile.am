@@ -1,4 +1,4 @@
-##  Copyright (C) 2012-2016 Free Software Foundation, Inc.
+##  Copyright (C) 2012-2017 Free Software Foundation, Inc.
 ##  Contributed by Richard Henderson <rth@redhat.com>.
 ##
 ##  This file is part of the GNU Atomic Library (libatomic).
@@ -26,7 +26,7 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 SUBDIRS = testsuite
 
 ## May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 config_path= @config_path@
 search_path = $(addprefix $(top_srcdir)/config/, $(config_path)) \

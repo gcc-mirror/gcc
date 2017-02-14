@@ -1,6 +1,6 @@
 // 2009-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,8 +23,6 @@
 // DR 396. what are characters zero and one.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::bitset<4> z1(std::string("bbab"), 0, std::string::npos, 'a', 'b');
   VERIFY( z1.to_string('a', 'b') == "bbab" );
 

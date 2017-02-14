@@ -1,6 +1,6 @@
 // 2002-05-10 ghazi
 
-// Copyright (C) 2002-2016 Free Software Foundation, Inc.
+// Copyright (C) 2002-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,8 +41,6 @@ class gnu_ctype: public std::ctype<char_type> { };
 // Sanity check scan_is() and scan_not().
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const char_type *const ca = "aaaaa";
   const char_type *const cz = "zzzzz";
   const char_type *const cA = "AAAAA";

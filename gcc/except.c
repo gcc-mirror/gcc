@@ -1,5 +1,5 @@
 /* Implements exception handling.
-   Copyright (C) 1989-2016 Free Software Foundation, Inc.
+   Copyright (C) 1989-2017 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GCC.
@@ -118,6 +118,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cfghooks.h"
 #include "tree-pass.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "expmed.h"
@@ -215,10 +216,8 @@ static int add_call_site (rtx, int, int);
 
 static void push_uleb128 (vec<uchar, va_gc> **, unsigned int);
 static void push_sleb128 (vec<uchar, va_gc> **, int);
-#ifndef HAVE_AS_LEB128
 static int dw2_size_of_call_site_table (int);
 static int sjlj_size_of_call_site_table (void);
-#endif
 static void dw2_output_call_site_table (int, int);
 static void sjlj_output_call_site_table (void);
 
@@ -634,12 +633,10 @@ eh_region
 eh_region_outermost (struct function *ifun, eh_region region_a,
 		     eh_region region_b)
 {
-  sbitmap b_outer;
-
   gcc_assert (ifun->eh->region_array);
   gcc_assert (ifun->eh->region_tree);
 
-  b_outer = sbitmap_alloc (ifun->eh->region_array->length ());
+  auto_sbitmap b_outer (ifun->eh->region_array->length ());
   bitmap_clear (b_outer);
 
   do
@@ -657,7 +654,6 @@ eh_region_outermost (struct function *ifun, eh_region region_a,
     }
   while (region_a);
 
-  sbitmap_free (b_outer);
   return region_a;
 }
 
@@ -911,7 +907,7 @@ assign_filter_values (void)
    first instruction of some existing BB and return the newly
    produced block.  */
 static basic_block
-emit_to_new_bb_before (rtx_insn *seq, rtx insn)
+emit_to_new_bb_before (rtx_insn *seq, rtx_insn *insn)
 {
   rtx_insn *last;
   basic_block bb;
@@ -1281,8 +1277,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
      label on the nonlocal_goto_label list.  Since we're modeling these
      CFG edges more exactly, we can use the forced_labels list instead.  */
   LABEL_PRESERVE_P (dispatch_label) = 1;
-  forced_labels
-    = gen_rtx_INSN_LIST (VOIDmode, dispatch_label, forced_labels);
+  vec_safe_push<rtx_insn *> (forced_labels, dispatch_label);
 #endif
 
   /* Load up exc_ptr and filter values from the function context.  */
@@ -2699,7 +2694,6 @@ push_sleb128 (vec<uchar, va_gc> **data_area, int value)
 }
 
 
-#ifndef HAVE_AS_LEB128
 static int
 dw2_size_of_call_site_table (int section)
 {
@@ -2734,7 +2728,6 @@ sjlj_size_of_call_site_table (void)
 
   return size;
 }
-#endif
 
 static void
 dw2_output_call_site_table (int cs_format, int section)
@@ -2902,7 +2895,7 @@ output_ttype (tree type, int tt_format, int tt_format_size)
       if (TREE_CODE (type) == ADDR_EXPR)
 	{
 	  type = TREE_OPERAND (type, 0);
-	  if (TREE_CODE (type) == VAR_DECL)
+	  if (VAR_P (type))
 	    is_public = TREE_PUBLIC (type);
 	}
       else
@@ -2924,13 +2917,10 @@ static void
 output_one_function_exception_table (int section)
 {
   int tt_format, cs_format, lp_format, i;
-#ifdef HAVE_AS_LEB128
   char ttype_label[32];
   char cs_after_size_label[32];
   char cs_end_label[32];
-#else
   int call_site_len;
-#endif
   int have_tt_data;
   int tt_format_size = 0;
 
@@ -2945,11 +2935,11 @@ output_one_function_exception_table (int section)
   else
     {
       tt_format = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/1);
-#ifdef HAVE_AS_LEB128
-      ASM_GENERATE_INTERNAL_LABEL (ttype_label,
-				   section ? "LLSDATTC" : "LLSDATT",
-				   current_function_funcdef_no);
-#endif
+      if (HAVE_AS_LEB128)
+	ASM_GENERATE_INTERNAL_LABEL (ttype_label,
+				     section ? "LLSDATTC" : "LLSDATT",
+				     current_function_funcdef_no);
+
       tt_format_size = size_of_encoded_value (tt_format);
 
       assemble_align (tt_format_size * BITS_PER_UNIT);
@@ -2975,86 +2965,93 @@ output_one_function_exception_table (int section)
   dw2_asm_output_data (1, tt_format, "@TType format (%s)",
 		       eh_data_format_name (tt_format));
 
-#ifndef HAVE_AS_LEB128
-  if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
-    call_site_len = sjlj_size_of_call_site_table ();
-  else
-    call_site_len = dw2_size_of_call_site_table (section);
-#endif
+  if (!HAVE_AS_LEB128)
+    {
+      if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
+	call_site_len = sjlj_size_of_call_site_table ();
+      else
+	call_site_len = dw2_size_of_call_site_table (section);
+    }
 
   /* A pc-relative 4-byte displacement to the @TType data.  */
   if (have_tt_data)
     {
-#ifdef HAVE_AS_LEB128
-      char ttype_after_disp_label[32];
-      ASM_GENERATE_INTERNAL_LABEL (ttype_after_disp_label,
-				   section ? "LLSDATTDC" : "LLSDATTD",
-				   current_function_funcdef_no);
-      dw2_asm_output_delta_uleb128 (ttype_label, ttype_after_disp_label,
-				    "@TType base offset");
-      ASM_OUTPUT_LABEL (asm_out_file, ttype_after_disp_label);
-#else
-      /* Ug.  Alignment queers things.  */
-      unsigned int before_disp, after_disp, last_disp, disp;
-
-      before_disp = 1 + 1;
-      after_disp = (1 + size_of_uleb128 (call_site_len)
-		    + call_site_len
-		    + vec_safe_length (crtl->eh.action_record_data)
-		    + (vec_safe_length (cfun->eh->ttype_data)
-		       * tt_format_size));
-
-      disp = after_disp;
-      do
+      if (HAVE_AS_LEB128)
 	{
-	  unsigned int disp_size, pad;
-
-	  last_disp = disp;
-	  disp_size = size_of_uleb128 (disp);
-	  pad = before_disp + disp_size + after_disp;
-	  if (pad % tt_format_size)
-	    pad = tt_format_size - (pad % tt_format_size);
-	  else
-	    pad = 0;
-	  disp = after_disp + pad;
+	  char ttype_after_disp_label[32];
+	  ASM_GENERATE_INTERNAL_LABEL (ttype_after_disp_label,
+				       section ? "LLSDATTDC" : "LLSDATTD",
+				       current_function_funcdef_no);
+	  dw2_asm_output_delta_uleb128 (ttype_label, ttype_after_disp_label,
+					"@TType base offset");
+	  ASM_OUTPUT_LABEL (asm_out_file, ttype_after_disp_label);
 	}
-      while (disp != last_disp);
+      else
+	{
+	  /* Ug.  Alignment queers things.  */
+	  unsigned int before_disp, after_disp, last_disp, disp;
 
-      dw2_asm_output_data_uleb128 (disp, "@TType base offset");
-#endif
-    }
+	  before_disp = 1 + 1;
+	  after_disp = (1 + size_of_uleb128 (call_site_len)
+			+ call_site_len
+			+ vec_safe_length (crtl->eh.action_record_data)
+			+ (vec_safe_length (cfun->eh->ttype_data)
+			   * tt_format_size));
+
+	  disp = after_disp;
+	  do
+	    {
+	      unsigned int disp_size, pad;
+
+	      last_disp = disp;
+	      disp_size = size_of_uleb128 (disp);
+	      pad = before_disp + disp_size + after_disp;
+	      if (pad % tt_format_size)
+		pad = tt_format_size - (pad % tt_format_size);
+	      else
+		pad = 0;
+	      disp = after_disp + pad;
+	    }
+	  while (disp != last_disp);
+
+	  dw2_asm_output_data_uleb128 (disp, "@TType base offset");
+	}
+	}
 
   /* Indicate the format of the call-site offsets.  */
-#ifdef HAVE_AS_LEB128
-  cs_format = DW_EH_PE_uleb128;
-#else
-  cs_format = DW_EH_PE_udata4;
-#endif
+  if (HAVE_AS_LEB128)
+    cs_format = DW_EH_PE_uleb128;
+  else
+    cs_format = DW_EH_PE_udata4;
+
   dw2_asm_output_data (1, cs_format, "call-site format (%s)",
 		       eh_data_format_name (cs_format));
 
-#ifdef HAVE_AS_LEB128
-  ASM_GENERATE_INTERNAL_LABEL (cs_after_size_label,
-			       section ? "LLSDACSBC" : "LLSDACSB",
-			       current_function_funcdef_no);
-  ASM_GENERATE_INTERNAL_LABEL (cs_end_label,
-			       section ? "LLSDACSEC" : "LLSDACSE",
-			       current_function_funcdef_no);
-  dw2_asm_output_delta_uleb128 (cs_end_label, cs_after_size_label,
-				"Call-site table length");
-  ASM_OUTPUT_LABEL (asm_out_file, cs_after_size_label);
-  if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
-    sjlj_output_call_site_table ();
+  if (HAVE_AS_LEB128)
+    {
+      ASM_GENERATE_INTERNAL_LABEL (cs_after_size_label,
+				   section ? "LLSDACSBC" : "LLSDACSB",
+				   current_function_funcdef_no);
+      ASM_GENERATE_INTERNAL_LABEL (cs_end_label,
+				   section ? "LLSDACSEC" : "LLSDACSE",
+				   current_function_funcdef_no);
+      dw2_asm_output_delta_uleb128 (cs_end_label, cs_after_size_label,
+				    "Call-site table length");
+      ASM_OUTPUT_LABEL (asm_out_file, cs_after_size_label);
+      if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
+	sjlj_output_call_site_table ();
+      else
+	dw2_output_call_site_table (cs_format, section);
+      ASM_OUTPUT_LABEL (asm_out_file, cs_end_label);
+    }
   else
-    dw2_output_call_site_table (cs_format, section);
-  ASM_OUTPUT_LABEL (asm_out_file, cs_end_label);
-#else
-  dw2_asm_output_data_uleb128 (call_site_len, "Call-site table length");
-  if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
-    sjlj_output_call_site_table ();
-  else
-    dw2_output_call_site_table (cs_format, section);
-#endif
+    {
+      dw2_asm_output_data_uleb128 (call_site_len, "Call-site table length");
+      if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
+	sjlj_output_call_site_table ();
+      else
+	dw2_output_call_site_table (cs_format, section);
+    }
 
   /* ??? Decode and interpret the data for flag_debug_asm.  */
   {
@@ -3073,10 +3070,8 @@ output_one_function_exception_table (int section)
       output_ttype (type, tt_format, tt_format_size);
     }
 
-#ifdef HAVE_AS_LEB128
-  if (have_tt_data)
-      ASM_OUTPUT_LABEL (asm_out_file, ttype_label);
-#endif
+  if (HAVE_AS_LEB128 && have_tt_data)
+    ASM_OUTPUT_LABEL (asm_out_file, ttype_label);
 
   /* ??? Decode and interpret the data for flag_debug_asm.  */
   if (targetm.arm_eabi_unwinder)

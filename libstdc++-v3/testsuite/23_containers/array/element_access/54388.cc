@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 //
-// Copyright (C) 2012-2016 Free Software Foundation, Inc.
+// Copyright (C) 2012-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,6 @@ struct A
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::array<A, 1> a;
   const A& aa = a.at(0);
   VERIFY(aa.valid);

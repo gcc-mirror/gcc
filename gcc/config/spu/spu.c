@@ -1,4 +1,4 @@
-/* Copyright (C) 2006-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2017 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -25,6 +25,7 @@
 #include "cfghooks.h"
 #include "cfgloop.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "expmed.h"
@@ -2086,7 +2087,6 @@ static void
 spu_emit_branch_hint (rtx_insn *before, rtx_insn *branch, rtx target,
 		      int distance, sbitmap blocks)
 {
-  rtx branch_label = 0;
   rtx_insn *hint;
   rtx_insn *insn;
   rtx_jump_table_data *table;
@@ -2103,14 +2103,14 @@ spu_emit_branch_hint (rtx_insn *before, rtx_insn *branch, rtx target,
   if (NOTE_INSN_BASIC_BLOCK_P (before))
     before = NEXT_INSN (before);
 
-  branch_label = gen_label_rtx ();
+  rtx_code_label *branch_label = gen_label_rtx ();
   LABEL_NUSES (branch_label)++;
   LABEL_PRESERVE_P (branch_label) = 1;
   insn = emit_label_before (branch_label, branch);
-  branch_label = gen_rtx_LABEL_REF (VOIDmode, branch_label);
+  rtx branch_label_ref = gen_rtx_LABEL_REF (VOIDmode, branch_label);
   bitmap_set_bit (blocks, BLOCK_FOR_INSN (branch)->index);
 
-  hint = emit_insn_before (gen_hbr (branch_label, target), before);
+  hint = emit_insn_before (gen_hbr (branch_label_ref, target), before);
   recog_memoized (hint);
   INSN_LOCATION (hint) = INSN_LOCATION (branch);
   HINTED_P (branch) = 1;
@@ -2893,6 +2893,7 @@ spu_sched_reorder (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
 	  case TYPE_LOAD:
 	  case TYPE_STORE:
 	    pipe_ls = i;
+	    /* FALLTHRU */
 	  case TYPE_LNOP:
 	  case TYPE_SHUF:
 	  case TYPE_BR:
@@ -2983,7 +2984,8 @@ spu_sched_reorder (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
 
 /* INSN is dependent on DEP_INSN. */
 static int
-spu_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
+spu_sched_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn,
+		       int cost, unsigned int)
 {
   rtx set;
 
@@ -3044,7 +3046,7 @@ spu_sched_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
      scheduler makes every insn in a block anti-dependent on the final
      jump_insn.  We adjust here so higher cost insns will get scheduled
      earlier. */
-  if (JUMP_P (insn) && REG_NOTE_KIND (link) == REG_DEP_ANTI)
+  if (JUMP_P (insn) && dep_type == REG_DEP_ANTI)
     return insn_cost (dep_insn) - 3;
 
   return cost;
@@ -3530,8 +3532,9 @@ spu_legitimate_address_p (machine_mode mode,
 
     case SUBREG:
       x = XEXP (x, 0);
-      if (REG_P (x))
+      if (!REG_P (x))
 	return 0;
+      /* FALLTHRU */
 
     case REG:
       return INT_REG_OK_FOR_BASE_P (x, reg_ok_strict);
@@ -7151,6 +7154,9 @@ static const struct attribute_spec spu_attribute_table[] =
 };
 
 /*  TARGET overrides.  */
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 #undef TARGET_ADDR_SPACE_POINTER_MODE
 #define TARGET_ADDR_SPACE_POINTER_MODE spu_addr_space_pointer_mode

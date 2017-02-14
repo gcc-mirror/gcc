@@ -1,5 +1,5 @@
 /* Header file for SSA iterators.
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -607,6 +607,10 @@ op_iter_init (ssa_op_iter *ptr, gimple *stmt, int flags)
 	  case GIMPLE_ASM:
 	    ptr->numops = gimple_asm_noutputs (as_a <gasm *> (stmt));
 	    break;
+	  case GIMPLE_TRANSACTION:
+	    ptr->numops = 0;
+	    flags &= ~SSA_OP_DEF;
+	    break;
 	  default:
 	    ptr->numops = 0;
 	    flags &= ~(SSA_OP_DEF | SSA_OP_VDEF);
@@ -695,6 +699,15 @@ single_ssa_use_operand (gimple *stmt, int flags)
   return NULL_USE_OPERAND_P;
 }
 
+/* Return the single virtual use operand in STMT if present.  Otherwise
+   return NULL.  */
+static inline use_operand_p
+ssa_vuse_operand (gimple *stmt)
+{
+  if (! gimple_vuse (stmt))
+    return NULL_USE_OPERAND_P;
+  return USE_OP_PTR (gimple_use_ops (stmt));
+}
 
 
 /* If there is a single operand in STMT matching FLAGS, return it.  Otherwise

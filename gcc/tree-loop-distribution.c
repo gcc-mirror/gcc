@@ -1,5 +1,5 @@
 /* Loop distribution.
-   Copyright (C) 2006-2016 Free Software Foundation, Inc.
+   Copyright (C) 2006-2017 Free Software Foundation, Inc.
    Contributed by Georges-Andre Silber <Georges-Andre.Silber@ensmp.fr>
    and Sebastian Pop <sebastian.pop@amd.com>.
 
@@ -466,7 +466,7 @@ build_rdg (vec<loop_p> loop_nest, control_dependences *cd)
 
 
 enum partition_kind {
-    PKIND_NORMAL, PKIND_MEMSET, PKIND_MEMCPY
+    PKIND_NORMAL, PKIND_MEMSET, PKIND_MEMCPY, PKIND_MEMMOVE
 };
 
 struct partition
@@ -750,11 +750,39 @@ const_with_all_bytes_same (tree val)
   int i, len;
 
   if (integer_zerop (val)
-      || real_zerop (val)
       || (TREE_CODE (val) == CONSTRUCTOR
           && !TREE_CLOBBER_P (val)
           && CONSTRUCTOR_NELTS (val) == 0))
     return 0;
+
+  if (real_zerop (val))
+    {
+      /* Only return 0 for +0.0, not for -0.0, which doesn't have
+	 an all bytes same memory representation.  Don't transform
+	 -0.0 stores into +0.0 even for !HONOR_SIGNED_ZEROS.  */
+      switch (TREE_CODE (val))
+	{
+	case REAL_CST:
+	  if (!real_isneg (TREE_REAL_CST_PTR (val)))
+	    return 0;
+	  break;
+	case COMPLEX_CST:
+	  if (!const_with_all_bytes_same (TREE_REALPART (val))
+	      && !const_with_all_bytes_same (TREE_IMAGPART (val)))
+	    return 0;
+	  break;
+	case VECTOR_CST:
+	  unsigned int j;
+	  for (j = 0; j < VECTOR_CST_NELTS (val); ++j)
+	    if (const_with_all_bytes_same (VECTOR_CST_ELT (val, j)))
+	      break;
+	  if (j == VECTOR_CST_NELTS (val))
+	    return 0;
+	  break;
+	default:
+	  break;
+	}
+    }
 
   if (CHAR_BIT != 8 || BITS_PER_UNIT != 8)
     return -1;
@@ -847,10 +875,11 @@ generate_memcpy_builtin (struct loop *loop, partition *partition)
 				       false, GSI_CONTINUE_LINKING);
   dest = build_addr_arg_loc (loc, partition->main_dr, nb_bytes);
   src = build_addr_arg_loc (loc, partition->secondary_dr, nb_bytes);
-  if (ptr_derefs_may_alias_p (dest, src))
-    kind = BUILT_IN_MEMMOVE;
-  else
+  if (partition->kind == PKIND_MEMCPY
+      || ! ptr_derefs_may_alias_p (dest, src))
     kind = BUILT_IN_MEMCPY;
+  else
+    kind = BUILT_IN_MEMMOVE;
 
   dest = force_gimple_operand_gsi (&gsi, dest, true, NULL_TREE,
 				   false, GSI_CONTINUE_LINKING);
@@ -888,13 +917,15 @@ destroy_loop (struct loop *loop)
   cancel_loop_tree (loop);
   rescan_loop_exit (exit, false, true);
 
-  for (i = 0; i < nbbs; i++)
+  i = nbbs;
+  do
     {
       /* We have made sure to not leave any dangling uses of SSA
          names defined in the loop.  With the exception of virtuals.
 	 Make sure we replace all uses of virtual defs that will remain
 	 outside of the loop with the bare symbol as delete_basic_block
 	 will release them.  */
+      --i;
       for (gphi_iterator gsi = gsi_start_phis (bbs[i]); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
@@ -912,6 +943,8 @@ destroy_loop (struct loop *loop)
 	}
       delete_basic_block (bbs[i]);
     }
+  while (i != 0);
+
   free (bbs);
 
   set_immediate_dominator (CDI_DOMINATORS, dest,
@@ -938,6 +971,7 @@ generate_code_for_partition (struct loop *loop,
       break;
 
     case PKIND_MEMCPY:
+    case PKIND_MEMMOVE:
       generate_memcpy_builtin (loop, partition);
       break;
 
@@ -1134,10 +1168,12 @@ classify_partition (loop_p loop, struct graph *rdg, partition *partition)
 		  return;
 		}
 	    }
+	  partition->kind = PKIND_MEMMOVE;
 	}
+      else
+	partition->kind = PKIND_MEMCPY;
       free_dependence_relation (ddr);
       loops.release ();
-      partition->kind = PKIND_MEMCPY;
       partition->main_dr = single_store;
       partition->secondary_dr = single_load;
       partition->niter = nb_iter;
@@ -1376,9 +1412,11 @@ pg_add_dependence_edges (struct graph *rdg, vec<loop_p> loops, int dir,
 	else
 	  this_dir = 0;
 	free_dependence_relation (ddr);
-	if (dir == 0)
+	if (this_dir == 2)
+	  return 2;
+	else if (dir == 0)
 	  dir = this_dir;
-	else if (dir != this_dir)
+	else if (this_dir != 0 && dir != this_dir)
 	  return 2;
 	/* Shuffle "back" dr1.  */
 	dr1 = saved_dr1;
@@ -1510,8 +1548,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
       for (int j = i + 1;
 	   partitions.iterate (j, &partition); ++j)
 	{
-	  if (!partition_builtin_p (partition)
-	      && similar_memory_accesses (rdg, into, partition))
+	  if (similar_memory_accesses (rdg, into, partition))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{

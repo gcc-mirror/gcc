@@ -125,6 +125,9 @@ else
   multilib_arg=
 fi
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 AC_CONFIG_FILES([Makefile libmpx.spec])
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES(AC_FOREACH([DIR], [mpxrt mpxwrap], [DIR/Makefile ]),

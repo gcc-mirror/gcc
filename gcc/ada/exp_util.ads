@@ -247,6 +247,39 @@ package Exp_Util is
    --  inlining of the abort undefer routine. Note that this routine does
    --  not install a call to Abort_Defer.
 
+   procedure Build_Class_Wide_Expression
+     (Prag        : Node_Id;
+      Subp        : Entity_Id;
+      Par_Subp    : Entity_Id;
+      Adjust_Sloc : Boolean);
+   --  Build the expression for an inherited class-wide condition. Prag is
+   --  the pragma constructed from the corresponding aspect of the parent
+   --  subprogram, and Subp is the overriding operation, and Par_Subp is
+   --  the overridden operation that has the condition. Adjust_Sloc is True
+   --  when the sloc of nodes traversed should be adjusted for the inherited
+   --  pragma. The routine is also called to check whether an inherited
+   --  operation that is not overridden but has inherited conditions needs
+   --  a wrapper, because the inherited condition includes calls to other
+   --  primitives that have been overridden. In that case the first argument
+   --  is the expression of the original class-wide aspect. In SPARK_Mode, such
+   --  operation which are just inherited but have modified pre/postconditions
+   --  are illegal.
+
+   function Build_DIC_Call
+     (Loc    : Source_Ptr;
+      Obj_Id : Entity_Id;
+      Typ    : Entity_Id) return Node_Id;
+   --  Build a call to the DIC procedure of type Typ with Obj_Id as the actual
+   --  parameter.
+
+   procedure Build_DIC_Procedure_Body (Typ : Entity_Id);
+   --  Create the body of the procedure which verifies the assertion expression
+   --  of pragma Default_Initial_Condition at run time.
+
+   procedure Build_DIC_Procedure_Declaration (Typ : Entity_Id);
+   --  Create the declaration of the procedure which verifies the assertion
+   --  expression of pragma Default_Initial_Condition at run time.
+
    procedure Build_Procedure_Form (N : Node_Id);
    --  Create a procedure declaration which emulates the behavior of a function
    --  that returns an array type, for C-compatible generation.
@@ -1054,6 +1087,21 @@ package Exp_Util is
    --  that may be bit aligned (see Possible_Bit_Aligned_Component). The result
    --  is conservative, in that a result of False is decisive. A result of True
    --  means that such a component may or may not be present.
+
+   procedure Update_Primitives_Mapping
+     (Inher_Id : Entity_Id;
+      Subp_Id  : Entity_Id);
+   --  Map primitive operations of the parent type to the corresponding
+   --  operations of the descendant. Note that the descendant type may not be
+   --  frozen yet, so we cannot use the dispatch table directly. This is called
+   --  when elaborating a contract for a subprogram, and when freezing a type
+   --  extension to verify legality rules on inherited conditions.
+
+   procedure Update_Primitives_Mapping_Of_Types
+     (Par_Typ   : Entity_Id;
+      Deriv_Typ : Entity_Id);
+   --  Map the primitive operations of parent type Par_Typ to the corresponding
+   --  primitives of derived type Deriv_Typ.
 
    function Within_Case_Or_If_Expression (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N is within a case or an if expression

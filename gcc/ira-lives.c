@@ -1,5 +1,5 @@
 /* IRA processing allocno lives to build allocno live ranges.
-   Copyright (C) 2006-2016 Free Software Foundation, Inc.
+   Copyright (C) 2006-2017 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "predict.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "regs.h"
@@ -1409,12 +1410,11 @@ remove_some_program_points_and_update_live_ranges (void)
   ira_object_t obj;
   ira_object_iterator oi;
   live_range_t r, prev_r, next_r;
-  sbitmap born_or_dead, born, dead;
   sbitmap_iterator sbi;
   bool born_p, dead_p, prev_born_p, prev_dead_p;
   
-  born = sbitmap_alloc (ira_max_point);
-  dead = sbitmap_alloc (ira_max_point);
+  auto_sbitmap born (ira_max_point);
+  auto_sbitmap dead (ira_max_point);
   bitmap_clear (born);
   bitmap_clear (dead);
   FOR_EACH_OBJECT (obj, oi)
@@ -1425,7 +1425,7 @@ remove_some_program_points_and_update_live_ranges (void)
 	bitmap_set_bit (dead, r->finish);
       }
 
-  born_or_dead = sbitmap_alloc (ira_max_point);
+  auto_sbitmap born_or_dead (ira_max_point);
   bitmap_ior (born_or_dead, born, dead);
   map = (int *) ira_allocate (sizeof (int) * ira_max_point);
   n = -1;
@@ -1442,9 +1442,7 @@ remove_some_program_points_and_update_live_ranges (void)
       prev_born_p = born_p;
       prev_dead_p = dead_p;
     }
-  sbitmap_free (born_or_dead);
-  sbitmap_free (born);
-  sbitmap_free (dead);
+
   n++;
   if (internal_flag_ira_verbose > 1 && ira_dump_file != NULL)
     fprintf (ira_dump_file, "Compressing live ranges: from %d to %d - %d%%\n",

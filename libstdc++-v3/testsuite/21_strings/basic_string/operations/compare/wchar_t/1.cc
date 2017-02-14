@@ -1,6 +1,6 @@
 // 980930 bkoz work with libstdc++v3
 
-// Copyright (C) 1998-2016 Free Software Foundation, Inc.
+// Copyright (C) 1998-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,7 +40,6 @@ test_value(int result, want_value expected);
 int
 test_value(int result, want_value expected)
 {
-  bool test __attribute__((unused)) = true;
   bool pass = false;
 
   switch (expected) {

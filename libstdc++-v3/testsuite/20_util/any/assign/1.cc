@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++17" }
 // { dg-do run }
 
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,12 +28,12 @@ void test01()
   any x;
   any y;
   y = x;
-  VERIFY( x.empty() );
-  VERIFY( y.empty() );
+  VERIFY( !x.has_value() );
+  VERIFY( !y.has_value() );
 
   y = std::move(x);
-  VERIFY( x.empty() );
-  VERIFY( y.empty() );
+  VERIFY( !x.has_value() );
+  VERIFY( !y.has_value() );
 }
 
 void test02()
@@ -41,16 +41,16 @@ void test02()
   any x(1);
   any y;
   y = x;
-  VERIFY( !x.empty() );
-  VERIFY( !y.empty() );
+  VERIFY( x.has_value() );
+  VERIFY( y.has_value() );
 
   x = std::move(y);
-  VERIFY( !x.empty() );
-  VERIFY( y.empty() );
+  VERIFY( x.has_value() );
+  VERIFY( !y.has_value() );
 
   x = y;
-  VERIFY( x.empty() );
-  VERIFY( y.empty() );
+  VERIFY( !x.has_value() );
+  VERIFY( !y.has_value() );
 }
 
 int main()

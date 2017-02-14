@@ -12,6 +12,11 @@ import (
 // Getpagesize returns the underlying system's memory page size.
 func Getpagesize() int { return syscall.Getpagesize() }
 
+// File represents an open file descriptor.
+type File struct {
+	*file // os specific
+}
+
 // A FileInfo describes a file and is returned by Stat and Lstat.
 type FileInfo interface {
 	Name() string       // base name of the file
@@ -25,7 +30,7 @@ type FileInfo interface {
 // A FileMode represents a file's mode and permission bits.
 // The bits have the same definition on all systems, so that
 // information about files can be moved from one system
-// to another portably.  Not all bits apply to all systems.
+// to another portably. Not all bits apply to all systems.
 // The only required bit is ModeDir for directories.
 type FileMode uint32
 

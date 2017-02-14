@@ -1,6 +1,6 @@
 
 /* { dg-do compile } */
-/* { dg-options "-O3" } */
+/* { dg-options "-O3 -fno-vect-cost-model" } */
 
 #define N 16
 

@@ -1,4 +1,4 @@
-// Copyright 2010 The Go Authors.  All rights reserved.
+// Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,6 +10,7 @@ import (
 	"compress/gzip"
 	"crypto/rand"
 	"fmt"
+	"go/ast"
 	"io"
 	"io/ioutil"
 	"net/http/internal"
@@ -505,6 +506,32 @@ some body`,
 
 		"Body here\n",
 	},
+
+	{
+		"HTTP/1.1 200 OK\r\n" +
+			"Content-Encoding: gzip\r\n" +
+			"Content-Length: 23\r\n" +
+			"Connection: keep-alive\r\n" +
+			"Keep-Alive: timeout=7200\r\n\r\n" +
+			"\x1f\x8b\b\x00\x00\x00\x00\x00\x00\x00s\xf3\xf7\a\x00\xab'\xd4\x1a\x03\x00\x00\x00",
+		Response{
+			Status:     "200 OK",
+			StatusCode: 200,
+			Proto:      "HTTP/1.1",
+			ProtoMajor: 1,
+			ProtoMinor: 1,
+			Request:    dummyReq("GET"),
+			Header: Header{
+				"Content-Length":   {"23"},
+				"Content-Encoding": {"gzip"},
+				"Connection":       {"keep-alive"},
+				"Keep-Alive":       {"timeout=7200"},
+			},
+			Close:         false,
+			ContentLength: 23,
+		},
+		"\x1f\x8b\b\x00\x00\x00\x00\x00\x00\x00s\xf3\xf7\a\x00\xab'\xd4\x1a\x03\x00\x00\x00",
+	},
 }
 
 // tests successful calls to ReadResponse, and inspects the returned Response.
@@ -562,6 +589,7 @@ var readResponseCloseInMiddleTests = []struct {
 // reading only part of its contents advances the read to the end of
 // the request, right up until the next request.
 func TestReadResponseCloseInMiddle(t *testing.T) {
+	t.Parallel()
 	for _, test := range readResponseCloseInMiddleTests {
 		fatalf := func(format string, args ...interface{}) {
 			args = append([]interface{}{test.chunked, test.compressed}, args...)
@@ -656,10 +684,14 @@ func diff(t *testing.T, prefix string, have, want interface{}) {
 		t.Errorf("%s: type mismatch %v want %v", prefix, hv.Type(), wv.Type())
 	}
 	for i := 0; i < hv.NumField(); i++ {
+		name := hv.Type().Field(i).Name
+		if !ast.IsExported(name) {
+			continue
+		}
 		hf := hv.Field(i).Interface()
 		wf := wv.Field(i).Interface()
 		if !reflect.DeepEqual(hf, wf) {
-			t.Errorf("%s: %s = %v want %v", prefix, hv.Type().Field(i).Name, hf, wf)
+			t.Errorf("%s: %s = %v want %v", prefix, name, hf, wf)
 		}
 	}
 }
@@ -761,6 +793,7 @@ func TestReadResponseErrors(t *testing.T) {
 	type testCase struct {
 		name    string // optional, defaults to in
 		in      string
+		header  Header
 		wantErr interface{} // nil, err value, or string substring
 	}
 
@@ -786,11 +819,22 @@ func TestReadResponseErrors(t *testing.T) {
 		}
 	}
 
+	contentLength := func(status, body string, wantErr interface{}, header Header) testCase {
+		return testCase{
+			name:    fmt.Sprintf("status %q %q", status, body),
+			in:      fmt.Sprintf("HTTP/1.1 %s\r\n%s", status, body),
+			wantErr: wantErr,
+			header:  header,
+		}
+	}
+
+	errMultiCL := "message cannot contain multiple Content-Length headers"
+
 	tests := []testCase{
-		{"", "", io.ErrUnexpectedEOF},
-		{"", "HTTP/1.1 301 Moved Permanently\r\nFoo: bar", io.ErrUnexpectedEOF},
-		{"", "HTTP/1.1", "malformed HTTP response"},
-		{"", "HTTP/2.0", "malformed HTTP response"},
+		{"", "", nil, io.ErrUnexpectedEOF},
+		{"", "HTTP/1.1 301 Moved Permanently\r\nFoo: bar", nil, io.ErrUnexpectedEOF},
+		{"", "HTTP/1.1", nil, "malformed HTTP response"},
+		{"", "HTTP/2.0", nil, "malformed HTTP response"},
 		status("20X Unknown", true),
 		status("abcd Unknown", true),
 		status("二百/两百 OK", true),
@@ -815,7 +859,21 @@ func TestReadResponseErrors(t *testing.T) {
 		version("HTTP/A.B", true),
 		version("HTTP/1", true),
 		version("http/1.1", true),
+
+		contentLength("200 OK", "Content-Length: 10\r\nContent-Length: 7\r\n\r\nGopher hey\r\n", errMultiCL, nil),
+		contentLength("200 OK", "Content-Length: 7\r\nContent-Length: 7\r\n\r\nGophers\r\n", nil, Header{"Content-Length": {"7"}}),
+		contentLength("201 OK", "Content-Length: 0\r\nContent-Length: 7\r\n\r\nGophers\r\n", errMultiCL, nil),
+		contentLength("300 OK", "Content-Length: 0\r\nContent-Length: 0 \r\n\r\nGophers\r\n", nil, Header{"Content-Length": {"0"}}),
+		contentLength("200 OK", "Content-Length:\r\nContent-Length:\r\n\r\nGophers\r\n", nil, nil),
+		contentLength("206 OK", "Content-Length:\r\nContent-Length: 0 \r\nConnection: close\r\n\r\nGophers\r\n", errMultiCL, nil),
+
+		// multiple content-length headers for 204 and 304 should still be checked
+		contentLength("204 OK", "Content-Length: 7\r\nContent-Length: 8\r\n\r\n", errMultiCL, nil),
+		contentLength("204 OK", "Content-Length: 3\r\nContent-Length: 3\r\n\r\n", nil, nil),
+		contentLength("304 OK", "Content-Length: 880\r\nContent-Length: 1\r\n\r\n", errMultiCL, nil),
+		contentLength("304 OK", "Content-Length: 961\r\nContent-Length: 961\r\n\r\n", nil, nil),
 	}
+
 	for i, tt := range tests {
 		br := bufio.NewReader(strings.NewReader(tt.in))
 		_, rerr := ReadResponse(br, nil)

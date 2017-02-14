@@ -1,5 +1,5 @@
 /* Declarations for printing trees in human readable form
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -38,7 +38,8 @@ extern void debug_raw (vec<tree, va_gc> &ref);
 extern void debug_raw (vec<tree, va_gc> *ptr);
 #ifdef BUFSIZ
 extern void dump_addr (FILE*, const char *, const void *);
-extern void print_node (FILE *, const char *, tree, int);
+extern void print_node (FILE *, const char *, tree, int,
+			bool brief_for_visited = true);
 extern void print_node_brief (FILE *, const char *, const_tree, int);
 extern void indent_to (FILE *, int);
 #endif

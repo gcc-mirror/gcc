@@ -11,21 +11,21 @@ import (
 	"syscall"
 )
 
-func sameFile(fs1, fs2 *fileStat) bool {
-	return fs1.sys.Dev == fs2.sys.Dev && fs1.sys.Ino == fs2.sys.Ino
+// fixLongPath is a noop on non-Windows platforms.
+func fixLongPath(path string) string {
+	return path
 }
 
 func rename(oldname, newname string) error {
+	fi, err := Lstat(newname)
+	if err == nil && fi.IsDir() {
+		return &LinkError{"rename", oldname, newname, syscall.EEXIST}
+	}
 	e := syscall.Rename(oldname, newname)
 	if e != nil {
 		return &LinkError{"rename", oldname, newname, e}
 	}
 	return nil
-}
-
-// File represents an open file descriptor.
-type File struct {
-	*file
 }
 
 // file is the real representation of *File.
@@ -78,8 +78,8 @@ func epipecheck(file *File, e error) {
 const DevNull = "/dev/null"
 
 // OpenFile is the generalized open call; most users will use Open
-// or Create instead.  It opens the named file with specified flag
-// (O_RDONLY etc.) and perm, (0666 etc.) if applicable.  If successful,
+// or Create instead. It opens the named file with specified flag
+// (O_RDONLY etc.) and perm, (0666 etc.) if applicable. If successful,
 // methods on the returned File can be used for I/O.
 // If there is an error, it will be of type *PathError.
 func OpenFile(name string, flag int, perm FileMode) (*File, error) {
@@ -114,7 +114,7 @@ func OpenFile(name string, flag int, perm FileMode) (*File, error) {
 	}
 
 	// There's a race here with fork/exec, which we are
-	// content to live with.  See ../syscall/exec_unix.go.
+	// content to live with. See ../syscall/exec_unix.go.
 	if !supportsCloseOnExec {
 		syscall.CloseOnExec(r)
 	}
@@ -132,7 +132,7 @@ func (f *File) Close() error {
 }
 
 func (file *file) close() error {
-	if file == nil || file.fd < 0 {
+	if file == nil || file.fd == badFd {
 		return syscall.EINVAL
 	}
 	var err error
@@ -156,69 +156,6 @@ func (file *file) close() error {
 	// no need for a finalizer anymore
 	runtime.SetFinalizer(file, nil)
 	return err
-}
-
-// Stat returns the FileInfo structure describing file.
-// If there is an error, it will be of type *PathError.
-func (f *File) Stat() (FileInfo, error) {
-	if f == nil {
-		return nil, ErrInvalid
-	}
-	var fs fileStat
-	err := syscall.Fstat(f.fd, &fs.sys)
-	if err != nil {
-		return nil, &PathError{"stat", f.name, err}
-	}
-	fillFileStatFromSys(&fs, f.name)
-	return &fs, nil
-}
-
-// Stat returns a FileInfo describing the named file.
-// If there is an error, it will be of type *PathError.
-func Stat(name string) (FileInfo, error) {
-	var fs fileStat
-	err := syscall.Stat(name, &fs.sys)
-	if err != nil {
-		return nil, &PathError{"stat", name, err}
-	}
-	fillFileStatFromSys(&fs, name)
-	return &fs, nil
-}
-
-// Lstat returns a FileInfo describing the named file.
-// If the file is a symbolic link, the returned FileInfo
-// describes the symbolic link.  Lstat makes no attempt to follow the link.
-// If there is an error, it will be of type *PathError.
-func Lstat(name string) (FileInfo, error) {
-	var fs fileStat
-	err := syscall.Lstat(name, &fs.sys)
-	if err != nil {
-		return nil, &PathError{"lstat", name, err}
-	}
-	fillFileStatFromSys(&fs, name)
-	return &fs, nil
-}
-
-func (f *File) readdir(n int) (fi []FileInfo, err error) {
-	dirname := f.name
-	if dirname == "" {
-		dirname = "."
-	}
-	names, err := f.Readdirnames(n)
-	fi = make([]FileInfo, 0, len(names))
-	for _, filename := range names {
-		fip, lerr := lstat(dirname + "/" + filename)
-		if IsNotExist(lerr) {
-			// File disappeared between readdir + stat.
-			// Just treat it as if it didn't exist.
-			continue
-		}
-		if lerr != nil {
-			return fi, lerr
-		}
-		fi = append(fi, fip)
-	}
-	return fi, err
 }
 
 // Darwin and FreeBSD can't read or write 2GB+ at a time,
@@ -322,7 +259,7 @@ func Remove(name string) error {
 
 	// Both failed: figure out which error to return.
 	// OS X and Linux differ on whether unlink(dir)
-	// returns EISDIR, so can't use that.  However,
+	// returns EISDIR, so can't use that. However,
 	// both agree that rmdir(file) returns ENOTDIR,
 	// so we can use that to decide which error is real.
 	// Rmdir might also return ENOTDIR if given a bad
@@ -333,24 +270,6 @@ func Remove(name string) error {
 		e = e1
 	}
 	return &PathError{"remove", name, e}
-}
-
-// basename removes trailing slashes and the leading directory name from path name
-func basename(name string) string {
-	i := len(name) - 1
-	// Remove trailing slashes
-	for ; i > 0 && name[i] == '/'; i-- {
-		name = name[:i]
-	}
-	// Remove leading directory name
-	for i--; i >= 0; i-- {
-		if name[i] == '/' {
-			name = name[i+1:]
-			break
-		}
-	}
-
-	return name
 }
 
 // TempDir returns the default directory to use for temporary files.

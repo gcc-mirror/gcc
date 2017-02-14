@@ -1,4 +1,4 @@
-// Copyright 2011 The Go Authors.  All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -8,6 +8,7 @@ package net
 
 import (
 	"fmt"
+	"internal/testenv"
 	"os"
 	"runtime"
 	"syscall"
@@ -157,7 +158,7 @@ var dualStackTCPListenerTests = []struct {
 	network2, address2 string // second listener
 	xerr               error  // expected error value, nil or other
 }{
-	// Test cases and expected results for the attemping 2nd listen on the same port
+	// Test cases and expected results for the attempting 2nd listen on the same port
 	// 1st listen                2nd listen                 darwin  freebsd  linux  openbsd
 	// ------------------------------------------------------------------------------------
 	// "tcp"  ""                 "tcp"  ""                    -        -       -       -
@@ -216,9 +217,12 @@ var dualStackTCPListenerTests = []struct {
 // TestDualStackTCPListener tests both single and double listen
 // to a test listener with various address families, different
 // listening address and same port.
+//
+// On DragonFly BSD, we expect the kernel version of node under test
+// to be greater than or equal to 4.4.
 func TestDualStackTCPListener(t *testing.T) {
 	switch runtime.GOOS {
-	case "dragonfly", "nacl", "plan9": // re-enable on dragonfly once the new IP control block management has landed
+	case "nacl", "plan9":
 		t.Skipf("not supported on %s", runtime.GOOS)
 	}
 	if !supportsIPv4 || !supportsIPv6 {
@@ -301,11 +305,14 @@ var dualStackUDPListenerTests = []struct {
 }
 
 // TestDualStackUDPListener tests both single and double listen
-// to a test listener with various address families, differnet
+// to a test listener with various address families, different
 // listening address and same port.
+//
+// On DragonFly BSD, we expect the kernel version of node under test
+// to be greater than or equal to 4.4.
 func TestDualStackUDPListener(t *testing.T) {
 	switch runtime.GOOS {
-	case "dragonfly", "nacl", "plan9": // re-enable on dragonfly once the new IP control block management has landed
+	case "nacl", "plan9":
 		t.Skipf("not supported on %s", runtime.GOOS)
 	}
 	if !supportsIPv4 || !supportsIPv6 {
@@ -477,12 +484,11 @@ func checkDualStackAddrFamily(fd *netFD) error {
 }
 
 func TestWildWildcardListener(t *testing.T) {
+	testenv.MustHaveExternalNetwork(t)
+
 	switch runtime.GOOS {
 	case "plan9":
 		t.Skipf("not supported on %s", runtime.GOOS)
-	}
-	if testing.Short() || !*testExternal {
-		t.Skip("avoid external network")
 	}
 
 	defer func() {
@@ -521,11 +527,16 @@ var ipv4MulticastListenerTests = []struct {
 // test listener with same address family, same group address and same
 // port.
 func TestIPv4MulticastListener(t *testing.T) {
+	testenv.MustHaveExternalNetwork(t)
+
 	switch runtime.GOOS {
 	case "android", "nacl", "plan9":
 		t.Skipf("not supported on %s", runtime.GOOS)
 	case "solaris":
 		t.Skipf("not supported on solaris, see golang.org/issue/7399")
+	}
+	if !supportsIPv4 {
+		t.Skip("IPv4 is not supported")
 	}
 
 	closer := func(cs []*UDPConn) {
@@ -542,7 +553,7 @@ func TestIPv4MulticastListener(t *testing.T) {
 		// routing stuff for finding out an appropriate
 		// nexthop containing both network and link layer
 		// adjacencies.
-		if ifi == nil && (testing.Short() || !*testExternal) {
+		if ifi == nil || !*testIPv4 {
 			continue
 		}
 		for _, tt := range ipv4MulticastListenerTests {
@@ -591,6 +602,8 @@ var ipv6MulticastListenerTests = []struct {
 // test listener with same address family, same group address and same
 // port.
 func TestIPv6MulticastListener(t *testing.T) {
+	testenv.MustHaveExternalNetwork(t)
+
 	switch runtime.GOOS {
 	case "plan9":
 		t.Skipf("not supported on %s", runtime.GOOS)
@@ -598,7 +611,7 @@ func TestIPv6MulticastListener(t *testing.T) {
 		t.Skipf("not supported on solaris, see issue 7399")
 	}
 	if !supportsIPv6 {
-		t.Skip("ipv6 is not supported")
+		t.Skip("IPv6 is not supported")
 	}
 	if os.Getuid() != 0 {
 		t.Skip("must be root")
@@ -618,7 +631,7 @@ func TestIPv6MulticastListener(t *testing.T) {
 		// routing stuff for finding out an appropriate
 		// nexthop containing both network and link layer
 		// adjacencies.
-		if ifi == nil && (testing.Short() || !*testExternal || !*testIPv6) {
+		if ifi == nil && !*testIPv6 {
 			continue
 		}
 		for _, tt := range ipv6MulticastListenerTests {

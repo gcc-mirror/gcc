@@ -1,5 +1,5 @@
 // { dg-lto-do link }
-/* { dg-lto-options "-O2  -w" } */
+/* { dg-lto-options { { -O2 -w } { -w } } } */
 // { dg-extra-ld-options "-r -nostdlib" }
 extern "C" char *strcpy(char *, const char *);
 char InitXPCOMGlue_lastSlash;

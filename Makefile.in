@@ -153,7 +153,6 @@ BUILD_EXPORTS = \
 	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX_FOR_BUILD)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_BUILD)"; export CXXFLAGS; \
-	GCJ="$(GCJ_FOR_BUILD)"; export GCJ; \
 	GFORTRAN="$(GFORTRAN_FOR_BUILD)"; export GFORTRAN; \
 	GOC="$(GOC_FOR_BUILD)"; export GOC; \
 	GOCFLAGS="$(GOCFLAGS_FOR_BUILD)"; export GOCFLAGS; \
@@ -191,7 +190,6 @@ HOST_EXPORTS = \
 	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	GCJ="$(GCJ)"; export GCJ; \
 	GFORTRAN="$(GFORTRAN)"; export GFORTRAN; \
 	GOC="$(GOC)"; export GOC; \
 	AR="$(AR)"; export AR; \
@@ -279,7 +277,6 @@ BASE_TARGET_EXPORTS = \
 	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CPPFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
-	GCJ="$(GCJ_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GCJ; \
 	GFORTRAN="$(GFORTRAN_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GFORTRAN; \
 	GOC="$(GOC_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GOC; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
@@ -322,8 +319,6 @@ HOST_ISLVER = @islver@
 HOST_LIBELFLIBS = @libelflibs@
 HOST_LIBELFINC = @libelfinc@
 
-EXTRA_CONFIGARGS_LIBJAVA = @EXTRA_CONFIGARGS_LIBJAVA@
-
 # ----------------------------------------------
 # Programs producing files for the BUILD machine
 # ----------------------------------------------
@@ -347,7 +342,6 @@ CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
 CXXFLAGS_FOR_BUILD = @CXXFLAGS_FOR_BUILD@
 CXX_FOR_BUILD = @CXX_FOR_BUILD@
 DLLTOOL_FOR_BUILD = @DLLTOOL_FOR_BUILD@
-GCJ_FOR_BUILD = @GCJ_FOR_BUILD@
 GFORTRAN_FOR_BUILD = @GFORTRAN_FOR_BUILD@
 GOC_FOR_BUILD = @GOC_FOR_BUILD@
 LDFLAGS_FOR_BUILD = @LDFLAGS_FOR_BUILD@
@@ -557,7 +551,6 @@ CC_FOR_TARGET=$(STAGE_CC_WRAPPER) @CC_FOR_TARGET@
 GCC_FOR_TARGET=$(STAGE_CC_WRAPPER) @GCC_FOR_TARGET@
 CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) @CXX_FOR_TARGET@
 RAW_CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) @RAW_CXX_FOR_TARGET@
-GCJ_FOR_TARGET=$(STAGE_CC_WRAPPER) @GCJ_FOR_TARGET@
 GFORTRAN_FOR_TARGET=$(STAGE_CC_WRAPPER) @GFORTRAN_FOR_TARGET@
 GOC_FOR_TARGET=$(STAGE_CC_WRAPPER) @GOC_FOR_TARGET@
 DLLTOOL_FOR_TARGET=@DLLTOOL_FOR_TARGET@
@@ -780,7 +773,6 @@ BASE_FLAGS_TO_PASS = \
 	"CXXFLAGS_FOR_TARGET=$(CXXFLAGS_FOR_TARGET)" \
 	"DLLTOOL_FOR_TARGET=$(DLLTOOL_FOR_TARGET)" \
 	"FLAGS_FOR_TARGET=$(FLAGS_FOR_TARGET)" \
-	"GCJ_FOR_TARGET=$(GCJ_FOR_TARGET)" \
 	"GFORTRAN_FOR_TARGET=$(GFORTRAN_FOR_TARGET)" \
 	"GOC_FOR_TARGET=$(GOC_FOR_TARGET)" \
 	"GOCFLAGS_FOR_TARGET=$(GOCFLAGS_FOR_TARGET)" \
@@ -841,7 +833,6 @@ EXTRA_HOST_FLAGS = \
 	'CC=$(CC)' \
 	'CXX=$(CXX)' \
 	'DLLTOOL=$(DLLTOOL)' \
-	'GCJ=$(GCJ)' \
 	'GFORTRAN=$(GFORTRAN)' \
 	'GOC=$(GOC)' \
 	'LD=$(LD)' \
@@ -897,7 +888,6 @@ EXTRA_TARGET_FLAGS = \
 	 $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
 	'CXXFLAGS=$$(CXXFLAGS_FOR_TARGET)' \
 	'DLLTOOL=$$(DLLTOOL_FOR_TARGET)' \
-	'GCJ=$$(GCJ_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
 	'GFORTRAN=$$(GFORTRAN_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
 	'GOC=$$(GOC_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
 	'GOCFLAGS=$$(GOCFLAGS_FOR_TARGET)' \
@@ -1003,13 +993,12 @@ configure-target:  \
     maybe-configure-target-libgfortran \
     maybe-configure-target-libobjc \
     maybe-configure-target-libgo \
+    maybe-configure-target-libhsail-rt \
     maybe-configure-target-libtermcap \
     maybe-configure-target-winsup \
     maybe-configure-target-libgloss \
     maybe-configure-target-libffi \
-    maybe-configure-target-libjava \
     maybe-configure-target-zlib \
-    maybe-configure-target-boehm-gc \
     maybe-configure-target-rda \
     maybe-configure-target-libada \
     maybe-configure-target-libgomp \
@@ -1170,13 +1159,12 @@ all-target: maybe-all-target-libquadmath
 all-target: maybe-all-target-libgfortran
 all-target: maybe-all-target-libobjc
 all-target: maybe-all-target-libgo
+all-target: maybe-all-target-libhsail-rt
 all-target: maybe-all-target-libtermcap
 all-target: maybe-all-target-winsup
 all-target: maybe-all-target-libgloss
 all-target: maybe-all-target-libffi
-all-target: maybe-all-target-libjava
 all-target: maybe-all-target-zlib
-all-target: maybe-all-target-boehm-gc
 all-target: maybe-all-target-rda
 all-target: maybe-all-target-libada
 @if target-libgomp-no-bootstrap
@@ -1264,13 +1252,12 @@ info-target: maybe-info-target-libquadmath
 info-target: maybe-info-target-libgfortran
 info-target: maybe-info-target-libobjc
 info-target: maybe-info-target-libgo
+info-target: maybe-info-target-libhsail-rt
 info-target: maybe-info-target-libtermcap
 info-target: maybe-info-target-winsup
 info-target: maybe-info-target-libgloss
 info-target: maybe-info-target-libffi
-info-target: maybe-info-target-libjava
 info-target: maybe-info-target-zlib
-info-target: maybe-info-target-boehm-gc
 info-target: maybe-info-target-rda
 info-target: maybe-info-target-libada
 info-target: maybe-info-target-libgomp
@@ -1351,13 +1338,12 @@ dvi-target: maybe-dvi-target-libquadmath
 dvi-target: maybe-dvi-target-libgfortran
 dvi-target: maybe-dvi-target-libobjc
 dvi-target: maybe-dvi-target-libgo
+dvi-target: maybe-dvi-target-libhsail-rt
 dvi-target: maybe-dvi-target-libtermcap
 dvi-target: maybe-dvi-target-winsup
 dvi-target: maybe-dvi-target-libgloss
 dvi-target: maybe-dvi-target-libffi
-dvi-target: maybe-dvi-target-libjava
 dvi-target: maybe-dvi-target-zlib
-dvi-target: maybe-dvi-target-boehm-gc
 dvi-target: maybe-dvi-target-rda
 dvi-target: maybe-dvi-target-libada
 dvi-target: maybe-dvi-target-libgomp
@@ -1438,13 +1424,12 @@ pdf-target: maybe-pdf-target-libquadmath
 pdf-target: maybe-pdf-target-libgfortran
 pdf-target: maybe-pdf-target-libobjc
 pdf-target: maybe-pdf-target-libgo
+pdf-target: maybe-pdf-target-libhsail-rt
 pdf-target: maybe-pdf-target-libtermcap
 pdf-target: maybe-pdf-target-winsup
 pdf-target: maybe-pdf-target-libgloss
 pdf-target: maybe-pdf-target-libffi
-pdf-target: maybe-pdf-target-libjava
 pdf-target: maybe-pdf-target-zlib
-pdf-target: maybe-pdf-target-boehm-gc
 pdf-target: maybe-pdf-target-rda
 pdf-target: maybe-pdf-target-libada
 pdf-target: maybe-pdf-target-libgomp
@@ -1525,13 +1510,12 @@ html-target: maybe-html-target-libquadmath
 html-target: maybe-html-target-libgfortran
 html-target: maybe-html-target-libobjc
 html-target: maybe-html-target-libgo
+html-target: maybe-html-target-libhsail-rt
 html-target: maybe-html-target-libtermcap
 html-target: maybe-html-target-winsup
 html-target: maybe-html-target-libgloss
 html-target: maybe-html-target-libffi
-html-target: maybe-html-target-libjava
 html-target: maybe-html-target-zlib
-html-target: maybe-html-target-boehm-gc
 html-target: maybe-html-target-rda
 html-target: maybe-html-target-libada
 html-target: maybe-html-target-libgomp
@@ -1612,13 +1596,12 @@ TAGS-target: maybe-TAGS-target-libquadmath
 TAGS-target: maybe-TAGS-target-libgfortran
 TAGS-target: maybe-TAGS-target-libobjc
 TAGS-target: maybe-TAGS-target-libgo
+TAGS-target: maybe-TAGS-target-libhsail-rt
 TAGS-target: maybe-TAGS-target-libtermcap
 TAGS-target: maybe-TAGS-target-winsup
 TAGS-target: maybe-TAGS-target-libgloss
 TAGS-target: maybe-TAGS-target-libffi
-TAGS-target: maybe-TAGS-target-libjava
 TAGS-target: maybe-TAGS-target-zlib
-TAGS-target: maybe-TAGS-target-boehm-gc
 TAGS-target: maybe-TAGS-target-rda
 TAGS-target: maybe-TAGS-target-libada
 TAGS-target: maybe-TAGS-target-libgomp
@@ -1699,13 +1682,12 @@ install-info-target: maybe-install-info-target-libquadmath
 install-info-target: maybe-install-info-target-libgfortran
 install-info-target: maybe-install-info-target-libobjc
 install-info-target: maybe-install-info-target-libgo
+install-info-target: maybe-install-info-target-libhsail-rt
 install-info-target: maybe-install-info-target-libtermcap
 install-info-target: maybe-install-info-target-winsup
 install-info-target: maybe-install-info-target-libgloss
 install-info-target: maybe-install-info-target-libffi
-install-info-target: maybe-install-info-target-libjava
 install-info-target: maybe-install-info-target-zlib
-install-info-target: maybe-install-info-target-boehm-gc
 install-info-target: maybe-install-info-target-rda
 install-info-target: maybe-install-info-target-libada
 install-info-target: maybe-install-info-target-libgomp
@@ -1786,13 +1768,12 @@ install-pdf-target: maybe-install-pdf-target-libquadmath
 install-pdf-target: maybe-install-pdf-target-libgfortran
 install-pdf-target: maybe-install-pdf-target-libobjc
 install-pdf-target: maybe-install-pdf-target-libgo
+install-pdf-target: maybe-install-pdf-target-libhsail-rt
 install-pdf-target: maybe-install-pdf-target-libtermcap
 install-pdf-target: maybe-install-pdf-target-winsup
 install-pdf-target: maybe-install-pdf-target-libgloss
 install-pdf-target: maybe-install-pdf-target-libffi
-install-pdf-target: maybe-install-pdf-target-libjava
 install-pdf-target: maybe-install-pdf-target-zlib
-install-pdf-target: maybe-install-pdf-target-boehm-gc
 install-pdf-target: maybe-install-pdf-target-rda
 install-pdf-target: maybe-install-pdf-target-libada
 install-pdf-target: maybe-install-pdf-target-libgomp
@@ -1873,13 +1854,12 @@ install-html-target: maybe-install-html-target-libquadmath
 install-html-target: maybe-install-html-target-libgfortran
 install-html-target: maybe-install-html-target-libobjc
 install-html-target: maybe-install-html-target-libgo
+install-html-target: maybe-install-html-target-libhsail-rt
 install-html-target: maybe-install-html-target-libtermcap
 install-html-target: maybe-install-html-target-winsup
 install-html-target: maybe-install-html-target-libgloss
 install-html-target: maybe-install-html-target-libffi
-install-html-target: maybe-install-html-target-libjava
 install-html-target: maybe-install-html-target-zlib
-install-html-target: maybe-install-html-target-boehm-gc
 install-html-target: maybe-install-html-target-rda
 install-html-target: maybe-install-html-target-libada
 install-html-target: maybe-install-html-target-libgomp
@@ -1960,13 +1940,12 @@ installcheck-target: maybe-installcheck-target-libquadmath
 installcheck-target: maybe-installcheck-target-libgfortran
 installcheck-target: maybe-installcheck-target-libobjc
 installcheck-target: maybe-installcheck-target-libgo
+installcheck-target: maybe-installcheck-target-libhsail-rt
 installcheck-target: maybe-installcheck-target-libtermcap
 installcheck-target: maybe-installcheck-target-winsup
 installcheck-target: maybe-installcheck-target-libgloss
 installcheck-target: maybe-installcheck-target-libffi
-installcheck-target: maybe-installcheck-target-libjava
 installcheck-target: maybe-installcheck-target-zlib
-installcheck-target: maybe-installcheck-target-boehm-gc
 installcheck-target: maybe-installcheck-target-rda
 installcheck-target: maybe-installcheck-target-libada
 installcheck-target: maybe-installcheck-target-libgomp
@@ -2047,13 +2026,12 @@ mostlyclean-target: maybe-mostlyclean-target-libquadmath
 mostlyclean-target: maybe-mostlyclean-target-libgfortran
 mostlyclean-target: maybe-mostlyclean-target-libobjc
 mostlyclean-target: maybe-mostlyclean-target-libgo
+mostlyclean-target: maybe-mostlyclean-target-libhsail-rt
 mostlyclean-target: maybe-mostlyclean-target-libtermcap
 mostlyclean-target: maybe-mostlyclean-target-winsup
 mostlyclean-target: maybe-mostlyclean-target-libgloss
 mostlyclean-target: maybe-mostlyclean-target-libffi
-mostlyclean-target: maybe-mostlyclean-target-libjava
 mostlyclean-target: maybe-mostlyclean-target-zlib
-mostlyclean-target: maybe-mostlyclean-target-boehm-gc
 mostlyclean-target: maybe-mostlyclean-target-rda
 mostlyclean-target: maybe-mostlyclean-target-libada
 mostlyclean-target: maybe-mostlyclean-target-libgomp
@@ -2134,13 +2112,12 @@ clean-target: maybe-clean-target-libquadmath
 clean-target: maybe-clean-target-libgfortran
 clean-target: maybe-clean-target-libobjc
 clean-target: maybe-clean-target-libgo
+clean-target: maybe-clean-target-libhsail-rt
 clean-target: maybe-clean-target-libtermcap
 clean-target: maybe-clean-target-winsup
 clean-target: maybe-clean-target-libgloss
 clean-target: maybe-clean-target-libffi
-clean-target: maybe-clean-target-libjava
 clean-target: maybe-clean-target-zlib
-clean-target: maybe-clean-target-boehm-gc
 clean-target: maybe-clean-target-rda
 clean-target: maybe-clean-target-libada
 clean-target: maybe-clean-target-libgomp
@@ -2221,13 +2198,12 @@ distclean-target: maybe-distclean-target-libquadmath
 distclean-target: maybe-distclean-target-libgfortran
 distclean-target: maybe-distclean-target-libobjc
 distclean-target: maybe-distclean-target-libgo
+distclean-target: maybe-distclean-target-libhsail-rt
 distclean-target: maybe-distclean-target-libtermcap
 distclean-target: maybe-distclean-target-winsup
 distclean-target: maybe-distclean-target-libgloss
 distclean-target: maybe-distclean-target-libffi
-distclean-target: maybe-distclean-target-libjava
 distclean-target: maybe-distclean-target-zlib
-distclean-target: maybe-distclean-target-boehm-gc
 distclean-target: maybe-distclean-target-rda
 distclean-target: maybe-distclean-target-libada
 distclean-target: maybe-distclean-target-libgomp
@@ -2308,13 +2284,12 @@ maintainer-clean-target: maybe-maintainer-clean-target-libquadmath
 maintainer-clean-target: maybe-maintainer-clean-target-libgfortran
 maintainer-clean-target: maybe-maintainer-clean-target-libobjc
 maintainer-clean-target: maybe-maintainer-clean-target-libgo
+maintainer-clean-target: maybe-maintainer-clean-target-libhsail-rt
 maintainer-clean-target: maybe-maintainer-clean-target-libtermcap
 maintainer-clean-target: maybe-maintainer-clean-target-winsup
 maintainer-clean-target: maybe-maintainer-clean-target-libgloss
 maintainer-clean-target: maybe-maintainer-clean-target-libffi
-maintainer-clean-target: maybe-maintainer-clean-target-libjava
 maintainer-clean-target: maybe-maintainer-clean-target-zlib
-maintainer-clean-target: maybe-maintainer-clean-target-boehm-gc
 maintainer-clean-target: maybe-maintainer-clean-target-rda
 maintainer-clean-target: maybe-maintainer-clean-target-libada
 maintainer-clean-target: maybe-maintainer-clean-target-libgomp
@@ -2451,13 +2426,12 @@ check-target:  \
     maybe-check-target-libgfortran \
     maybe-check-target-libobjc \
     maybe-check-target-libgo \
+    maybe-check-target-libhsail-rt \
     maybe-check-target-libtermcap \
     maybe-check-target-winsup \
     maybe-check-target-libgloss \
     maybe-check-target-libffi \
-    maybe-check-target-libjava \
     maybe-check-target-zlib \
-    maybe-check-target-boehm-gc \
     maybe-check-target-rda \
     maybe-check-target-libada \
     maybe-check-target-libgomp \
@@ -2634,13 +2608,12 @@ install-target:  \
     maybe-install-target-libgfortran \
     maybe-install-target-libobjc \
     maybe-install-target-libgo \
+    maybe-install-target-libhsail-rt \
     maybe-install-target-libtermcap \
     maybe-install-target-winsup \
     maybe-install-target-libgloss \
     maybe-install-target-libffi \
-    maybe-install-target-libjava \
     maybe-install-target-zlib \
-    maybe-install-target-boehm-gc \
     maybe-install-target-rda \
     maybe-install-target-libada \
     maybe-install-target-libgomp \
@@ -2741,13 +2714,12 @@ install-strip-target:  \
     maybe-install-strip-target-libgfortran \
     maybe-install-strip-target-libobjc \
     maybe-install-strip-target-libgo \
+    maybe-install-strip-target-libhsail-rt \
     maybe-install-strip-target-libtermcap \
     maybe-install-strip-target-winsup \
     maybe-install-strip-target-libgloss \
     maybe-install-strip-target-libffi \
-    maybe-install-strip-target-libjava \
     maybe-install-strip-target-zlib \
-    maybe-install-strip-target-boehm-gc \
     maybe-install-strip-target-rda \
     maybe-install-strip-target-libada \
     maybe-install-strip-target-libgomp \
@@ -46142,6 +46114,464 @@ maintainer-clean-target-libgo:
 
 
 
+.PHONY: configure-target-libhsail-rt maybe-configure-target-libhsail-rt
+maybe-configure-target-libhsail-rt:
+@if gcc-bootstrap
+configure-target-libhsail-rt: stage_current
+@endif gcc-bootstrap
+@if target-libhsail-rt
+maybe-configure-target-libhsail-rt: configure-target-libhsail-rt
+configure-target-libhsail-rt: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	echo "Checking multilib configuration for libhsail-rt..."; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libhsail-rt; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libhsail-rt/multilib.tmp 2> /dev/null; \
+	if test -r $(TARGET_SUBDIR)/libhsail-rt/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libhsail-rt/multilib.tmp $(TARGET_SUBDIR)/libhsail-rt/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libhsail-rt/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libhsail-rt/Makefile; \
+	    mv $(TARGET_SUBDIR)/libhsail-rt/multilib.tmp $(TARGET_SUBDIR)/libhsail-rt/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libhsail-rt/multilib.tmp $(TARGET_SUBDIR)/libhsail-rt/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libhsail-rt/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libhsail-rt; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	echo Configuring in $(TARGET_SUBDIR)/libhsail-rt; \
+	cd "$(TARGET_SUBDIR)/libhsail-rt" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libhsail-rt/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libhsail-rt; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias}  \
+	  || exit 1
+@endif target-libhsail-rt
+
+
+
+
+
+.PHONY: all-target-libhsail-rt maybe-all-target-libhsail-rt
+maybe-all-target-libhsail-rt:
+@if gcc-bootstrap
+all-target-libhsail-rt: stage_current
+@endif gcc-bootstrap
+@if target-libhsail-rt
+TARGET-target-libhsail-rt=all
+maybe-all-target-libhsail-rt: all-target-libhsail-rt
+all-target-libhsail-rt: configure-target-libhsail-rt
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	(cd $(TARGET_SUBDIR)/libhsail-rt && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
+		$(TARGET-target-libhsail-rt))
+@endif target-libhsail-rt
+
+
+
+
+
+.PHONY: check-target-libhsail-rt maybe-check-target-libhsail-rt
+maybe-check-target-libhsail-rt:
+@if target-libhsail-rt
+maybe-check-target-libhsail-rt: check-target-libhsail-rt
+
+check-target-libhsail-rt:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libhsail-rt && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
+
+@endif target-libhsail-rt
+
+.PHONY: install-target-libhsail-rt maybe-install-target-libhsail-rt
+maybe-install-target-libhsail-rt:
+@if target-libhsail-rt
+maybe-install-target-libhsail-rt: install-target-libhsail-rt
+
+install-target-libhsail-rt: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libhsail-rt && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-libhsail-rt
+
+.PHONY: install-strip-target-libhsail-rt maybe-install-strip-target-libhsail-rt
+maybe-install-strip-target-libhsail-rt:
+@if target-libhsail-rt
+maybe-install-strip-target-libhsail-rt: install-strip-target-libhsail-rt
+
+install-strip-target-libhsail-rt: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libhsail-rt && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-libhsail-rt
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-target-libhsail-rt info-target-libhsail-rt
+maybe-info-target-libhsail-rt:
+@if target-libhsail-rt
+maybe-info-target-libhsail-rt: info-target-libhsail-rt
+
+info-target-libhsail-rt: \
+    configure-target-libhsail-rt 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing info in $(TARGET_SUBDIR)/libhsail-rt"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libhsail-rt && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           info) \
+	  || exit 1
+
+@endif target-libhsail-rt
+
+.PHONY: maybe-dvi-target-libhsail-rt dvi-target-libhsail-rt
+maybe-dvi-target-libhsail-rt:
+@if target-libhsail-rt
+maybe-dvi-target-libhsail-rt: dvi-target-libhsail-rt
+
+dvi-target-libhsail-rt: \
+    configure-target-libhsail-rt 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing dvi in $(TARGET_SUBDIR)/libhsail-rt"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libhsail-rt && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           dvi) \
+	  || exit 1
+
+@endif target-libhsail-rt
+
+.PHONY: maybe-pdf-target-libhsail-rt pdf-target-libhsail-rt
+maybe-pdf-target-libhsail-rt:
+@if target-libhsail-rt
+maybe-pdf-target-libhsail-rt: pdf-target-libhsail-rt
+
+pdf-target-libhsail-rt: \
+    configure-target-libhsail-rt 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing pdf in $(TARGET_SUBDIR)/libhsail-rt"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libhsail-rt && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           pdf) \
+	  || exit 1
+
+@endif target-libhsail-rt
+
+.PHONY: maybe-html-target-libhsail-rt html-target-libhsail-rt
+maybe-html-target-libhsail-rt:
+@if target-libhsail-rt
+maybe-html-target-libhsail-rt: html-target-libhsail-rt
+
+html-target-libhsail-rt: \
+    configure-target-libhsail-rt 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing html in $(TARGET_SUBDIR)/libhsail-rt"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libhsail-rt && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           html) \
+	  || exit 1
+
+@endif target-libhsail-rt
+
+.PHONY: maybe-TAGS-target-libhsail-rt TAGS-target-libhsail-rt
+maybe-TAGS-target-libhsail-rt:
+@if target-libhsail-rt
+maybe-TAGS-target-libhsail-rt: TAGS-target-libhsail-rt
+
+TAGS-target-libhsail-rt: \
+    configure-target-libhsail-rt 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/libhsail-rt"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libhsail-rt && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           TAGS) \
+	  || exit 1
+
+@endif target-libhsail-rt
+
+.PHONY: maybe-install-info-target-libhsail-rt install-info-target-libhsail-rt
+maybe-install-info-target-libhsail-rt:
+@if target-libhsail-rt
+maybe-install-info-target-libhsail-rt: install-info-target-libhsail-rt
+
+install-info-target-libhsail-rt: \
+    configure-target-libhsail-rt \
+    info-target-libhsail-rt 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-info in $(TARGET_SUBDIR)/libhsail-rt"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libhsail-rt && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-info) \
+	  || exit 1
+
+@endif target-libhsail-rt
+
+.PHONY: maybe-install-pdf-target-libhsail-rt install-pdf-target-libhsail-rt
+maybe-install-pdf-target-libhsail-rt:
+@if target-libhsail-rt
+maybe-install-pdf-target-libhsail-rt: install-pdf-target-libhsail-rt
+
+install-pdf-target-libhsail-rt: \
+    configure-target-libhsail-rt \
+    pdf-target-libhsail-rt 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libhsail-rt"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libhsail-rt && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-libhsail-rt
+
+.PHONY: maybe-install-html-target-libhsail-rt install-html-target-libhsail-rt
+maybe-install-html-target-libhsail-rt:
+@if target-libhsail-rt
+maybe-install-html-target-libhsail-rt: install-html-target-libhsail-rt
+
+install-html-target-libhsail-rt: \
+    configure-target-libhsail-rt \
+    html-target-libhsail-rt 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-html in $(TARGET_SUBDIR)/libhsail-rt"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libhsail-rt && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-html) \
+	  || exit 1
+
+@endif target-libhsail-rt
+
+.PHONY: maybe-installcheck-target-libhsail-rt installcheck-target-libhsail-rt
+maybe-installcheck-target-libhsail-rt:
+@if target-libhsail-rt
+maybe-installcheck-target-libhsail-rt: installcheck-target-libhsail-rt
+
+installcheck-target-libhsail-rt: \
+    configure-target-libhsail-rt 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/libhsail-rt"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libhsail-rt && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           installcheck) \
+	  || exit 1
+
+@endif target-libhsail-rt
+
+.PHONY: maybe-mostlyclean-target-libhsail-rt mostlyclean-target-libhsail-rt
+maybe-mostlyclean-target-libhsail-rt:
+@if target-libhsail-rt
+maybe-mostlyclean-target-libhsail-rt: mostlyclean-target-libhsail-rt
+
+mostlyclean-target-libhsail-rt: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libhsail-rt"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libhsail-rt && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           mostlyclean) \
+	  || exit 1
+
+@endif target-libhsail-rt
+
+.PHONY: maybe-clean-target-libhsail-rt clean-target-libhsail-rt
+maybe-clean-target-libhsail-rt:
+@if target-libhsail-rt
+maybe-clean-target-libhsail-rt: clean-target-libhsail-rt
+
+clean-target-libhsail-rt: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing clean in $(TARGET_SUBDIR)/libhsail-rt"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libhsail-rt && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           clean) \
+	  || exit 1
+
+@endif target-libhsail-rt
+
+.PHONY: maybe-distclean-target-libhsail-rt distclean-target-libhsail-rt
+maybe-distclean-target-libhsail-rt:
+@if target-libhsail-rt
+maybe-distclean-target-libhsail-rt: distclean-target-libhsail-rt
+
+distclean-target-libhsail-rt: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing distclean in $(TARGET_SUBDIR)/libhsail-rt"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libhsail-rt && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           distclean) \
+	  || exit 1
+
+@endif target-libhsail-rt
+
+.PHONY: maybe-maintainer-clean-target-libhsail-rt maintainer-clean-target-libhsail-rt
+maybe-maintainer-clean-target-libhsail-rt:
+@if target-libhsail-rt
+maybe-maintainer-clean-target-libhsail-rt: maintainer-clean-target-libhsail-rt
+
+maintainer-clean-target-libhsail-rt: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libhsail-rt"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libhsail-rt && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           maintainer-clean) \
+	  || exit 1
+
+@endif target-libhsail-rt
+
+
+
+
+
 .PHONY: configure-target-libtermcap maybe-configure-target-libtermcap
 maybe-configure-target-libtermcap:
 @if gcc-bootstrap
@@ -47894,464 +48324,6 @@ maintainer-clean-target-libffi:
 
 
 
-.PHONY: configure-target-libjava maybe-configure-target-libjava
-maybe-configure-target-libjava:
-@if gcc-bootstrap
-configure-target-libjava: stage_current
-@endif gcc-bootstrap
-@if target-libjava
-maybe-configure-target-libjava: configure-target-libjava
-configure-target-libjava: 
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	echo "Checking multilib configuration for libjava..."; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libjava; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libjava/multilib.tmp 2> /dev/null; \
-	if test -r $(TARGET_SUBDIR)/libjava/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/libjava/multilib.tmp $(TARGET_SUBDIR)/libjava/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/libjava/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/libjava/Makefile; \
-	    mv $(TARGET_SUBDIR)/libjava/multilib.tmp $(TARGET_SUBDIR)/libjava/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/libjava/multilib.tmp $(TARGET_SUBDIR)/libjava/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/libjava/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libjava; \
-	$(RAW_CXX_TARGET_EXPORTS)  \
-	echo Configuring in $(TARGET_SUBDIR)/libjava; \
-	cd "$(TARGET_SUBDIR)/libjava" || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/libjava/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libjava; \
-	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) \
-	  $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $(EXTRA_CONFIGARGS_LIBJAVA) \
-	  || exit 1
-@endif target-libjava
-
-
-
-
-
-.PHONY: all-target-libjava maybe-all-target-libjava
-maybe-all-target-libjava:
-@if gcc-bootstrap
-all-target-libjava: stage_current
-@endif gcc-bootstrap
-@if target-libjava
-TARGET-target-libjava=all
-maybe-all-target-libjava: all-target-libjava
-all-target-libjava: configure-target-libjava
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(RAW_CXX_TARGET_EXPORTS)  \
-	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'   \
-		$(TARGET-target-libjava))
-@endif target-libjava
-
-
-
-
-
-.PHONY: check-target-libjava maybe-check-target-libjava
-maybe-check-target-libjava:
-@if target-libjava
-maybe-check-target-libjava: check-target-libjava
-
-check-target-libjava:
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(RAW_CXX_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'   check)
-
-@endif target-libjava
-
-.PHONY: install-target-libjava maybe-install-target-libjava
-maybe-install-target-libjava:
-@if target-libjava
-maybe-install-target-libjava: install-target-libjava
-
-install-target-libjava: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(RAW_CXX_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
-
-@endif target-libjava
-
-.PHONY: install-strip-target-libjava maybe-install-strip-target-libjava
-maybe-install-strip-target-libjava:
-@if target-libjava
-maybe-install-strip-target-libjava: install-strip-target-libjava
-
-install-strip-target-libjava: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(RAW_CXX_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
-
-@endif target-libjava
-
-# Other targets (info, dvi, pdf, etc.)
-
-.PHONY: maybe-info-target-libjava info-target-libjava
-maybe-info-target-libjava:
-@if target-libjava
-maybe-info-target-libjava: info-target-libjava
-
-info-target-libjava: \
-    configure-target-libjava 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libjava/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(RAW_CXX_TARGET_EXPORTS) \
-	echo "Doing info in $(TARGET_SUBDIR)/libjava"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           info) \
-	  || exit 1
-
-@endif target-libjava
-
-.PHONY: maybe-dvi-target-libjava dvi-target-libjava
-maybe-dvi-target-libjava:
-@if target-libjava
-maybe-dvi-target-libjava: dvi-target-libjava
-
-dvi-target-libjava: \
-    configure-target-libjava 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libjava/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(RAW_CXX_TARGET_EXPORTS) \
-	echo "Doing dvi in $(TARGET_SUBDIR)/libjava"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           dvi) \
-	  || exit 1
-
-@endif target-libjava
-
-.PHONY: maybe-pdf-target-libjava pdf-target-libjava
-maybe-pdf-target-libjava:
-@if target-libjava
-maybe-pdf-target-libjava: pdf-target-libjava
-
-pdf-target-libjava: \
-    configure-target-libjava 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libjava/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(RAW_CXX_TARGET_EXPORTS) \
-	echo "Doing pdf in $(TARGET_SUBDIR)/libjava"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           pdf) \
-	  || exit 1
-
-@endif target-libjava
-
-.PHONY: maybe-html-target-libjava html-target-libjava
-maybe-html-target-libjava:
-@if target-libjava
-maybe-html-target-libjava: html-target-libjava
-
-html-target-libjava: \
-    configure-target-libjava 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libjava/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(RAW_CXX_TARGET_EXPORTS) \
-	echo "Doing html in $(TARGET_SUBDIR)/libjava"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           html) \
-	  || exit 1
-
-@endif target-libjava
-
-.PHONY: maybe-TAGS-target-libjava TAGS-target-libjava
-maybe-TAGS-target-libjava:
-@if target-libjava
-maybe-TAGS-target-libjava: TAGS-target-libjava
-
-TAGS-target-libjava: \
-    configure-target-libjava 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libjava/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(RAW_CXX_TARGET_EXPORTS) \
-	echo "Doing TAGS in $(TARGET_SUBDIR)/libjava"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           TAGS) \
-	  || exit 1
-
-@endif target-libjava
-
-.PHONY: maybe-install-info-target-libjava install-info-target-libjava
-maybe-install-info-target-libjava:
-@if target-libjava
-maybe-install-info-target-libjava: install-info-target-libjava
-
-install-info-target-libjava: \
-    configure-target-libjava \
-    info-target-libjava 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libjava/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(RAW_CXX_TARGET_EXPORTS) \
-	echo "Doing install-info in $(TARGET_SUBDIR)/libjava"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-info) \
-	  || exit 1
-
-@endif target-libjava
-
-.PHONY: maybe-install-pdf-target-libjava install-pdf-target-libjava
-maybe-install-pdf-target-libjava:
-@if target-libjava
-maybe-install-pdf-target-libjava: install-pdf-target-libjava
-
-install-pdf-target-libjava: \
-    configure-target-libjava \
-    pdf-target-libjava 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libjava/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(RAW_CXX_TARGET_EXPORTS) \
-	echo "Doing install-pdf in $(TARGET_SUBDIR)/libjava"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-pdf) \
-	  || exit 1
-
-@endif target-libjava
-
-.PHONY: maybe-install-html-target-libjava install-html-target-libjava
-maybe-install-html-target-libjava:
-@if target-libjava
-maybe-install-html-target-libjava: install-html-target-libjava
-
-install-html-target-libjava: \
-    configure-target-libjava \
-    html-target-libjava 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libjava/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(RAW_CXX_TARGET_EXPORTS) \
-	echo "Doing install-html in $(TARGET_SUBDIR)/libjava"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-html) \
-	  || exit 1
-
-@endif target-libjava
-
-.PHONY: maybe-installcheck-target-libjava installcheck-target-libjava
-maybe-installcheck-target-libjava:
-@if target-libjava
-maybe-installcheck-target-libjava: installcheck-target-libjava
-
-installcheck-target-libjava: \
-    configure-target-libjava 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libjava/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(RAW_CXX_TARGET_EXPORTS) \
-	echo "Doing installcheck in $(TARGET_SUBDIR)/libjava"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           installcheck) \
-	  || exit 1
-
-@endif target-libjava
-
-.PHONY: maybe-mostlyclean-target-libjava mostlyclean-target-libjava
-maybe-mostlyclean-target-libjava:
-@if target-libjava
-maybe-mostlyclean-target-libjava: mostlyclean-target-libjava
-
-mostlyclean-target-libjava: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libjava/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(RAW_CXX_TARGET_EXPORTS) \
-	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libjava"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           mostlyclean) \
-	  || exit 1
-
-@endif target-libjava
-
-.PHONY: maybe-clean-target-libjava clean-target-libjava
-maybe-clean-target-libjava:
-@if target-libjava
-maybe-clean-target-libjava: clean-target-libjava
-
-clean-target-libjava: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libjava/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(RAW_CXX_TARGET_EXPORTS) \
-	echo "Doing clean in $(TARGET_SUBDIR)/libjava"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           clean) \
-	  || exit 1
-
-@endif target-libjava
-
-.PHONY: maybe-distclean-target-libjava distclean-target-libjava
-maybe-distclean-target-libjava:
-@if target-libjava
-maybe-distclean-target-libjava: distclean-target-libjava
-
-distclean-target-libjava: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libjava/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(RAW_CXX_TARGET_EXPORTS) \
-	echo "Doing distclean in $(TARGET_SUBDIR)/libjava"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           distclean) \
-	  || exit 1
-
-@endif target-libjava
-
-.PHONY: maybe-maintainer-clean-target-libjava maintainer-clean-target-libjava
-maybe-maintainer-clean-target-libjava:
-@if target-libjava
-maybe-maintainer-clean-target-libjava: maintainer-clean-target-libjava
-
-maintainer-clean-target-libjava: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libjava/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(RAW_CXX_TARGET_EXPORTS) \
-	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libjava"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           maintainer-clean) \
-	  || exit 1
-
-@endif target-libjava
-
-
-
-
-
 .PHONY: configure-target-zlib maybe-configure-target-zlib
 maybe-configure-target-zlib:
 @if gcc-bootstrap
@@ -48805,464 +48777,6 @@ maintainer-clean-target-zlib:
 	  || exit 1
 
 @endif target-zlib
-
-
-
-
-
-.PHONY: configure-target-boehm-gc maybe-configure-target-boehm-gc
-maybe-configure-target-boehm-gc:
-@if gcc-bootstrap
-configure-target-boehm-gc: stage_current
-@endif gcc-bootstrap
-@if target-boehm-gc
-maybe-configure-target-boehm-gc: configure-target-boehm-gc
-configure-target-boehm-gc: 
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	echo "Checking multilib configuration for boehm-gc..."; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/boehm-gc; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/boehm-gc/multilib.tmp 2> /dev/null; \
-	if test -r $(TARGET_SUBDIR)/boehm-gc/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/boehm-gc/multilib.tmp $(TARGET_SUBDIR)/boehm-gc/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/boehm-gc/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/boehm-gc/Makefile; \
-	    mv $(TARGET_SUBDIR)/boehm-gc/multilib.tmp $(TARGET_SUBDIR)/boehm-gc/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/boehm-gc/multilib.tmp $(TARGET_SUBDIR)/boehm-gc/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/boehm-gc/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/boehm-gc; \
-	$(NORMAL_TARGET_EXPORTS)  \
-	echo Configuring in $(TARGET_SUBDIR)/boehm-gc; \
-	cd "$(TARGET_SUBDIR)/boehm-gc" || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/boehm-gc/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=boehm-gc; \
-	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) \
-	  $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias}  \
-	  || exit 1
-@endif target-boehm-gc
-
-
-
-
-
-.PHONY: all-target-boehm-gc maybe-all-target-boehm-gc
-maybe-all-target-boehm-gc:
-@if gcc-bootstrap
-all-target-boehm-gc: stage_current
-@endif gcc-bootstrap
-@if target-boehm-gc
-TARGET-target-boehm-gc=all
-maybe-all-target-boehm-gc: all-target-boehm-gc
-all-target-boehm-gc: configure-target-boehm-gc
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS)  \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
-		$(TARGET-target-boehm-gc))
-@endif target-boehm-gc
-
-
-
-
-
-.PHONY: check-target-boehm-gc maybe-check-target-boehm-gc
-maybe-check-target-boehm-gc:
-@if target-boehm-gc
-maybe-check-target-boehm-gc: check-target-boehm-gc
-
-check-target-boehm-gc:
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
-
-@endif target-boehm-gc
-
-.PHONY: install-target-boehm-gc maybe-install-target-boehm-gc
-maybe-install-target-boehm-gc:
-@if target-boehm-gc
-maybe-install-target-boehm-gc: install-target-boehm-gc
-
-install-target-boehm-gc: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
-
-@endif target-boehm-gc
-
-.PHONY: install-strip-target-boehm-gc maybe-install-strip-target-boehm-gc
-maybe-install-strip-target-boehm-gc:
-@if target-boehm-gc
-maybe-install-strip-target-boehm-gc: install-strip-target-boehm-gc
-
-install-strip-target-boehm-gc: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
-
-@endif target-boehm-gc
-
-# Other targets (info, dvi, pdf, etc.)
-
-.PHONY: maybe-info-target-boehm-gc info-target-boehm-gc
-maybe-info-target-boehm-gc:
-@if target-boehm-gc
-maybe-info-target-boehm-gc: info-target-boehm-gc
-
-info-target-boehm-gc: \
-    configure-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing info in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           info) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-dvi-target-boehm-gc dvi-target-boehm-gc
-maybe-dvi-target-boehm-gc:
-@if target-boehm-gc
-maybe-dvi-target-boehm-gc: dvi-target-boehm-gc
-
-dvi-target-boehm-gc: \
-    configure-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing dvi in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           dvi) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-pdf-target-boehm-gc pdf-target-boehm-gc
-maybe-pdf-target-boehm-gc:
-@if target-boehm-gc
-maybe-pdf-target-boehm-gc: pdf-target-boehm-gc
-
-pdf-target-boehm-gc: \
-    configure-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing pdf in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           pdf) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-html-target-boehm-gc html-target-boehm-gc
-maybe-html-target-boehm-gc:
-@if target-boehm-gc
-maybe-html-target-boehm-gc: html-target-boehm-gc
-
-html-target-boehm-gc: \
-    configure-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing html in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           html) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-TAGS-target-boehm-gc TAGS-target-boehm-gc
-maybe-TAGS-target-boehm-gc:
-@if target-boehm-gc
-maybe-TAGS-target-boehm-gc: TAGS-target-boehm-gc
-
-TAGS-target-boehm-gc: \
-    configure-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing TAGS in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           TAGS) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-install-info-target-boehm-gc install-info-target-boehm-gc
-maybe-install-info-target-boehm-gc:
-@if target-boehm-gc
-maybe-install-info-target-boehm-gc: install-info-target-boehm-gc
-
-install-info-target-boehm-gc: \
-    configure-target-boehm-gc \
-    info-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-info in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-info) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-install-pdf-target-boehm-gc install-pdf-target-boehm-gc
-maybe-install-pdf-target-boehm-gc:
-@if target-boehm-gc
-maybe-install-pdf-target-boehm-gc: install-pdf-target-boehm-gc
-
-install-pdf-target-boehm-gc: \
-    configure-target-boehm-gc \
-    pdf-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-pdf in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-pdf) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-install-html-target-boehm-gc install-html-target-boehm-gc
-maybe-install-html-target-boehm-gc:
-@if target-boehm-gc
-maybe-install-html-target-boehm-gc: install-html-target-boehm-gc
-
-install-html-target-boehm-gc: \
-    configure-target-boehm-gc \
-    html-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-html in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-html) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-installcheck-target-boehm-gc installcheck-target-boehm-gc
-maybe-installcheck-target-boehm-gc:
-@if target-boehm-gc
-maybe-installcheck-target-boehm-gc: installcheck-target-boehm-gc
-
-installcheck-target-boehm-gc: \
-    configure-target-boehm-gc 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing installcheck in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           installcheck) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-mostlyclean-target-boehm-gc mostlyclean-target-boehm-gc
-maybe-mostlyclean-target-boehm-gc:
-@if target-boehm-gc
-maybe-mostlyclean-target-boehm-gc: mostlyclean-target-boehm-gc
-
-mostlyclean-target-boehm-gc: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing mostlyclean in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           mostlyclean) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-clean-target-boehm-gc clean-target-boehm-gc
-maybe-clean-target-boehm-gc:
-@if target-boehm-gc
-maybe-clean-target-boehm-gc: clean-target-boehm-gc
-
-clean-target-boehm-gc: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing clean in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           clean) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-distclean-target-boehm-gc distclean-target-boehm-gc
-maybe-distclean-target-boehm-gc:
-@if target-boehm-gc
-maybe-distclean-target-boehm-gc: distclean-target-boehm-gc
-
-distclean-target-boehm-gc: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing distclean in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           distclean) \
-	  || exit 1
-
-@endif target-boehm-gc
-
-.PHONY: maybe-maintainer-clean-target-boehm-gc maintainer-clean-target-boehm-gc
-maybe-maintainer-clean-target-boehm-gc:
-@if target-boehm-gc
-maybe-maintainer-clean-target-boehm-gc: maintainer-clean-target-boehm-gc
-
-maintainer-clean-target-boehm-gc: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/boehm-gc"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           maintainer-clean) \
-	  || exit 1
-
-@endif target-boehm-gc
 
 
 
@@ -52312,14 +51826,6 @@ check-gcc-fortran:
 	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-fortran);
 check-fortran: check-gcc-fortran check-target-libquadmath check-target-libgfortran
 
-.PHONY: check-gcc-java check-java
-check-gcc-java:
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-java);
-check-java: check-gcc-java check-target-libjava
-
 .PHONY: check-gcc-ada check-ada
 check-gcc-ada:
 	r=`${PWD_COMMAND}`; export r; \
@@ -52351,6 +51857,14 @@ check-gcc-go:
 	$(HOST_EXPORTS) \
 	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-go);
 check-go: check-gcc-go check-target-libgo
+
+.PHONY: check-gcc-brig check-brig
+check-gcc-brig:
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-brig);
+check-brig: check-gcc-brig check-target-libhsail-rt
 
 
 # The gcc part of install-no-fixedincludes, which relies on an intimate
@@ -55229,13 +54743,12 @@ configure-target-libquadmath: stage_last
 configure-target-libgfortran: stage_last
 configure-target-libobjc: stage_last
 configure-target-libgo: stage_last
+configure-target-libhsail-rt: stage_last
 configure-target-libtermcap: stage_last
 configure-target-winsup: stage_last
 configure-target-libgloss: stage_last
 configure-target-libffi: stage_last
-configure-target-libjava: stage_last
 configure-target-zlib: stage_last
-configure-target-boehm-gc: stage_last
 configure-target-rda: stage_last
 configure-target-libada: stage_last
 configure-stage1-target-libgomp: maybe-all-stage1-gcc
@@ -55265,13 +54778,12 @@ configure-target-libquadmath: maybe-all-gcc
 configure-target-libgfortran: maybe-all-gcc
 configure-target-libobjc: maybe-all-gcc
 configure-target-libgo: maybe-all-gcc
+configure-target-libhsail-rt: maybe-all-gcc
 configure-target-libtermcap: maybe-all-gcc
 configure-target-winsup: maybe-all-gcc
 configure-target-libgloss: maybe-all-gcc
 configure-target-libffi: maybe-all-gcc
-configure-target-libjava: maybe-all-gcc
 configure-target-zlib: maybe-all-gcc
-configure-target-boehm-gc: maybe-all-gcc
 configure-target-rda: maybe-all-gcc
 configure-target-libada: maybe-all-gcc
 configure-target-libgomp: maybe-all-gcc
@@ -56286,7 +55798,6 @@ all-flex: maybe-all-m4
 all-flex: maybe-all-build-texinfo
 all-m4: maybe-all-intl
 all-m4: maybe-all-build-texinfo
-configure-target-boehm-gc: maybe-all-target-libstdc++-v3
 configure-target-fastjar: maybe-configure-target-zlib
 all-target-fastjar: maybe-all-target-zlib
 configure-target-libgo: maybe-configure-target-libffi
@@ -56294,15 +55805,6 @@ configure-target-libgo: maybe-all-target-libstdc++-v3
 all-target-libgo: maybe-all-target-libbacktrace
 all-target-libgo: maybe-all-target-libffi
 all-target-libgo: maybe-all-target-libatomic
-configure-target-libjava: maybe-configure-target-zlib
-configure-target-libjava: maybe-configure-target-boehm-gc
-configure-target-libjava: maybe-configure-target-libffi
-all-target-libjava: maybe-all-fastjar
-all-target-libjava: maybe-all-target-zlib
-all-target-libjava: maybe-all-target-boehm-gc
-all-target-libjava: maybe-all-target-libffi
-configure-target-libobjc: maybe-configure-target-boehm-gc
-all-target-libobjc: maybe-all-target-boehm-gc
 configure-target-libstdc++-v3: maybe-configure-target-libgomp
 
 configure-stage1-target-libstdc++-v3: maybe-configure-stage1-target-libgomp
@@ -56356,7 +55858,6 @@ install-target-libcilkrts: maybe-install-target-libstdc++-v3
 install-target-libcilkrts: maybe-install-target-libgcc
 install-target-liboffloadmic: maybe-install-target-libstdc++-v3
 install-target-liboffloadmic: maybe-install-target-libgcc
-install-target-libjava: maybe-install-target-libgcc
 install-target-libitm: maybe-install-target-libgcc
 install-target-libobjc: maybe-install-target-libgcc
 install-target-libstdc++-v3: maybe-install-target-libgcc
@@ -56430,13 +55931,12 @@ configure-target-libquadmath: maybe-all-target-libgcc
 configure-target-libgfortran: maybe-all-target-libgcc
 configure-target-libobjc: maybe-all-target-libgcc
 configure-target-libgo: maybe-all-target-libgcc
+configure-target-libhsail-rt: maybe-all-target-libgcc
 configure-target-libtermcap: maybe-all-target-libgcc
 configure-target-winsup: maybe-all-target-libgcc
 configure-target-libgloss: maybe-all-target-libgcc
 configure-target-libffi: maybe-all-target-libgcc
-configure-target-libjava: maybe-all-target-libgcc
 configure-target-zlib: maybe-all-target-libgcc
-configure-target-boehm-gc: maybe-all-target-libgcc
 configure-target-rda: maybe-all-target-libgcc
 configure-target-libada: maybe-all-target-libgcc
 configure-target-libgomp: maybe-all-target-libgcc
@@ -56473,6 +55973,8 @@ configure-target-libobjc: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libgo: maybe-all-target-newlib maybe-all-target-libgloss
 
+configure-target-libhsail-rt: maybe-all-target-newlib maybe-all-target-libgloss
+
 configure-target-libtermcap: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-winsup: maybe-all-target-newlib maybe-all-target-libgloss
@@ -56481,12 +55983,7 @@ configure-target-winsup: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libffi: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libffi: maybe-all-target-libstdc++-v3
 
-configure-target-libjava: maybe-all-target-newlib maybe-all-target-libgloss
-configure-target-libjava: maybe-all-target-libstdc++-v3
-
 configure-target-zlib: maybe-all-target-newlib maybe-all-target-libgloss
-
-configure-target-boehm-gc: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-rda: maybe-all-target-newlib maybe-all-target-libgloss
 

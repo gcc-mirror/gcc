@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
 // Copyright (C) 2013-2014 Free Software Foundation, Inc.
 //
@@ -25,8 +25,6 @@
 int
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   std::experimental::string_view empty;
 
   VERIFY( empty.size() == 0 );

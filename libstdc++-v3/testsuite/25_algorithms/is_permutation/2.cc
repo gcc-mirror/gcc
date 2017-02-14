@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,8 +35,6 @@ const int arr0[] = { 11, 22, 33, 44, 55 };
 void
 do_test(int arr1[5], bool np = true, unsigned N = 5)
 {
-  bool test __attribute__((unused)) = true;
-
   do
     VERIFY( std::is_permutation(arr1, arr1 + 5, arr0, arr0 + N) == np );
   while (std::next_permutation(arr1, arr1 + 5));
@@ -46,8 +44,6 @@ template<typename Predicate>
   void
   do_test(int arr1[5], Predicate pred, bool np = true, unsigned N = 5)
   {
-    bool test __attribute__((unused)) = true;
-
     do
       VERIFY( std::is_permutation(arr1, arr1 + 5, arr0, arr0 + N, pred) == np );
     while (std::next_permutation(arr1, arr1 + 5));

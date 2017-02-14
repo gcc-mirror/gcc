@@ -1,5 +1,5 @@
 /* Scalar evolution detector.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -36,6 +36,8 @@ extern void gather_stats_on_scev_database (void);
 extern void final_value_replacement_loop (struct loop *);
 extern unsigned int scev_const_prop (void);
 extern bool expression_expensive_p (tree);
+extern bool simple_iv_with_niters (struct loop *, struct loop *, tree,
+				   struct affine_iv *, tree *, bool);
 extern bool simple_iv (struct loop *, struct loop *, tree, struct affine_iv *,
 		       bool);
 extern bool iv_can_overflow_p (struct loop *, tree, tree, tree);

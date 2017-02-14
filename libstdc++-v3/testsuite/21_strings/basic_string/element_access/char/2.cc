@@ -1,6 +1,6 @@
 // 1999-06-08 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,9 +26,8 @@
 // Do a quick sanity check on known problems with element access and
 // ref-counted strings. These should all pass, regardless of the
 // underlying string implementation, of course.
-bool test01(void)
+void test01(void)
 {
-  bool test __attribute__((unused)) = true;
   typedef std::string::size_type csize_type;
   typedef std::string::iterator siterator;
   typedef std::string::reverse_iterator sriterator;
@@ -100,7 +99,6 @@ bool test01(void)
   VERIFY( str03[0] == 'x' );
 
   // need to also test for const begin/const end
-  return test;
 }
 
 int main()

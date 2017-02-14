@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-string-conversions "" }
 
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2011-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,8 +25,6 @@
 // libstdc++/47773
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef __gnu_cxx::__vstring vstring_t;
   typedef std::unordered_map<vstring_t, int> map_t;
 

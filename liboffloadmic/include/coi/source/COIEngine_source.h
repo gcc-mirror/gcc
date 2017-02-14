@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015 Intel Corporation.
+ * Copyright 2010-2016 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -48,10 +48,10 @@
 * @file source\COIEngine_source.h
 */
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
-#include <wchar.h>
-#include "../common/COITypes_common.h"
-#include "../common/COIResult_common.h"
-#include "../common/COIEngine_common.h"
+    #include <wchar.h>
+    #include "../common/COITypes_common.h"
+    #include "../common/COIResult_common.h"
+    #include "../common/COIEngine_common.h"
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
 #ifdef __cplusplus
@@ -85,8 +85,8 @@ typedef struct COI_ENGINE_INFO
     /// The version string identifying the driver.
     coi_wchar_t  DriverVersion[COI_MAX_DRIVER_VERSION_STR_LEN];
 
-    /// The ISA supported by the engine.
-    COI_ISA_TYPE ISA;
+    /// The DeviceType supported by the engine.
+    COI_DEVICE_TYPE ISA;
 
     /// The number of cores on the engine.
     uint32_t     NumCores;
@@ -134,9 +134,9 @@ typedef struct COI_ENGINE_INFO
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
-/// Returns information related to a specified engine. Note that if Intel(R)
-/// Coprocessor Offload Infrastructure (Intel(R) COI) is unable to query
-/// a value it will be returned as zero but the call will still succeed.
+/// Returns information related to a specified engine. Note that if the runtime
+/// is unable to query a value it will be returned as zero but the call will
+/// still succeed.
 ///
 ///
 /// @param  in_EngineHandle
@@ -165,26 +165,19 @@ typedef struct COI_ENGINE_INFO
 COIACCESSAPI
 COIRESULT
 COIEngineGetInfo(
-            COIENGINE           in_EngineHandle,
-            uint32_t            in_EngineInfoSize,
-            COI_ENGINE_INFO*    out_pEngineInfo);
+    COIENGINE           in_EngineHandle,
+    uint32_t            in_EngineInfoSize,
+    COI_ENGINE_INFO    *out_pEngineInfo);
 
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
-/// Returns the number of engines in the system that match the provided ISA.
+/// Returns the number of engines in the system that match the provided device type.
 ///
-/// Note that while it is possible to enumerate different types of Intel(R)
-/// Xeon Phi(TM) coprocessors on a single host this is not currently
-/// supported. Intel(R) Coprocessor Offload Infrastructure (Intel(R) COI)
-/// makes an assumption that all Intel(R) Xeon Phi(TM) coprocessors found
-/// in the system are the same architecture as the first coprocessor device.
+/// The number of available coprocessor devices (i.e. cards connected via PCIe)
+/// is detected by the COI runtime.
 ///
-/// Also, note that this function returns the number of engines that Intel(R)
-/// Coprocessor Offload Infrastructure (Intel(R) COI) is able to detect. Not
-/// all of them may be online.
-///
-/// @param  in_ISA
+/// @param  in_DeviceType
 ///         [in] Specifies the ISA type of the engine requested.
 ///
 /// @param  out_pNumEngines
@@ -193,38 +186,40 @@ COIEngineGetInfo(
 ///
 /// @return COI_SUCCESS if the function completed without error.
 ///
-/// @return COI_DOES_NOT_EXIST if the in_ISA parameter is not valid.
+/// @return COI_DOES_NOT_EXIST if the in_DeviceType parameter is not valid.
 ///
 /// @return COI_INVALID_POINTER if the out_pNumEngines parameter is NULL.
+///
+/// @return COI_OUT_OF_RANGE if number of selected devices is greater than 8.
 ///
 COIACCESSAPI
 COIRESULT
 COIEngineGetCount(
-            COI_ISA_TYPE    in_ISA,
-            uint32_t*       out_pNumEngines);
+    COI_DEVICE_TYPE in_DeviceType,
+    uint32_t       *out_pNumEngines);
 
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
 /// Returns the handle of a user specified engine.
 ///
-/// @param  in_ISA
+/// @param  in_DeviceType
 ///         [in] Specifies the ISA type of the engine requested.
 ///
 /// @param  in_EngineIndex
 ///         [in] A unsigned integer which specifies the zero-based position of
 ///         the engine in a collection of engines. The makeup of this
-///         collection is defined by the in_ISA parameter.
+///         collection is defined by the in_DeviceType parameter.
 ///
 /// @param  out_pEngineHandle
-///         [out] The address of an COIENGINE handle.
+///         [out] The address of a COIENGINE handle.
 ///
 /// @return COI_SUCCESS if the function completed without error.
 ///
-/// @return COI_DOES_NOT_EXIST if the in_ISA parameter is not valid.
+/// @return COI_DOES_NOT_EXIST if the in_DeviceType parameter is not valid.
 ///
 /// @return COI_OUT_OF_RANGE if in_EngineIndex is greater than or equal to
-///         the number of engines that match the in_ISA parameter.
+///         the number of engines that match the in_DeviceType parameter.
 ///
 /// @return COI_INVALID_POINTER if the out_pEngineHandle parameter is NULL.
 ///
@@ -237,9 +232,37 @@ COIEngineGetCount(
 COIACCESSAPI
 COIRESULT
 COIEngineGetHandle(
-            COI_ISA_TYPE    in_ISA,
-            uint32_t        in_EngineIndex,
-            COIENGINE*      out_pEngineHandle);
+    COI_DEVICE_TYPE in_DeviceType,
+    uint32_t        in_EngineIndex,
+    COIENGINE      *out_pEngineHandle);
+
+///////////////////////////////////////////////////////////////////////////////
+///
+/// Returns the hostname for a specified COIEngine.
+///
+/// @param  in_EngineHandle
+///         [in] The connected COI Engine Handle passed in by the user that is
+///         used to request the hostname of the device connected by this COIEngine.
+///
+/// @param  out_Hostname
+///         [out] The hostname of the device connected by this COIEngine.
+///         COI will write at most 4096 bytes and the user must make sure that the size
+///         of the memory pointed by this argument is large enough.
+///
+/// @return COI_SUCCESS if the hostname was retrieved without error.
+///
+/// @return COI_ERROR if the function was unable to retrieve the hostname and/or
+///         the retrieved out_Hostname is NULL.
+///
+/// @return COI_INVALID_HANDLE if the in_EngineHandle is invalid.
+///
+/// @return COI_INVALID_POINTER if the out_Hostname is NULL.
+///
+COIACCESSAPI
+COIRESULT
+COIEngineGetHostname(
+    COIENGINE in_EngineHandle,
+    char     *out_Hostname);
 
 #ifdef __cplusplus
 } /* extern "C" */

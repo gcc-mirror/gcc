@@ -1,7 +1,7 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gfortran.info
-@set copyrights-gfortran 1999-2016
+@set copyrights-gfortran 1999-2017
 
 @include gcc-common.texi
 
@@ -536,7 +536,8 @@ The current status of the support is can be found in the
 and @ref{TS 18508 status} sections of the documentation.
 
 Additionally, the GNU Fortran compilers supports the OpenMP specification
-(version 4.0, @url{http://openmp.org/@/wp/@/openmp-specifications/}).
+(version 4.0 and most of the features of the 4.5 version,
+@url{http://openmp.org/@/wp/@/openmp-specifications/}).
 There also is initial support for the OpenACC specification (targeting
 version 2.0, @uref{http://www.openacc.org/}).
 Note that this is an experimental feature, incomplete, and subject to
@@ -1437,7 +1438,8 @@ purely for backward compatibility with legacy compilers.  By default,
 extensions, but to warn about the use of the latter.  Specifying
 either @option{-std=f95}, @option{-std=f2003} or @option{-std=f2008}
 disables both types of extensions, and @option{-std=legacy} allows both
-without warning.
+without warning.  The special compile flag @option{-fdec} enables additional
+compatibility extensions along with those enabled by @option{-std=legacy}.
 
 @menu
 * Old-style kind specifications::
@@ -1461,6 +1463,17 @@ without warning.
 * Read/Write after EOF marker::
 * STRUCTURE and RECORD::
 * UNION and MAP::
+* Type variants for integer intrinsics::
+* AUTOMATIC and STATIC attributes::
+* Extended math intrinsics::
+* Form feed as whitespace::
+* TYPE as an alias for PRINT::
+* %LOC as an rvalue::
+* .XOR. operator::
+* Bitwise logical operators::
+* Extended I/O specifiers::
+* Legacy PARAMETER statements::
+* Default exponents::
 @end menu
 
 @node Old-style kind specifications
@@ -1987,7 +2000,7 @@ and environment variables that influence run-time behavior.
 
 GNU Fortran strives to be compatible to the 
 @uref{http://openmp.org/wp/openmp-specifications/,
-OpenMP Application Program Interface v4.0}.
+OpenMP Application Program Interface v4.5}.
 
 To enable the processing of the OpenMP directive @code{!$omp} in
 free-form source code; the @code{c$omp}, @code{*$omp} and @code{!$omp}
@@ -2126,9 +2139,10 @@ be disabled using -std=legacy.
 @cindex @code{RECORD}
 
 Record structures are a pre-Fortran-90 vendor extension to create
-user-defined aggregate data types.  GNU Fortran does not support
-record structures, only Fortran 90's ``derived types'', which have
-a different syntax.
+user-defined aggregate data types.  Support for record structures in GNU
+Fortran can be enabled with the @option{-fdec-structure} compile flag.
+If you have a choice, you should instead use Fortran 90's ``derived types'',
+which have a different syntax.
 
 In many cases, record structures can easily be converted to derived types.
 To convert, replace @code{STRUCTURE /}@var{structure-name}@code{/}
@@ -2367,6 +2381,348 @@ a.h  ===             '.C'
 a.l  ===               '.D'
 @end example
 
+@node Type variants for integer intrinsics
+@subsection Type variants for integer intrinsics
+@cindex intrinsics, integer
+
+Similar to the D/C prefixes to real functions to specify the input/output
+types, GNU Fortran offers B/I/J/K prefixes to integer functions for
+compatibility with DEC programs. The types implied by each are:
+
+@example
+@code{B} - @code{INTEGER(kind=1)}
+@code{I} - @code{INTEGER(kind=2)}
+@code{J} - @code{INTEGER(kind=4)}
+@code{K} - @code{INTEGER(kind=8)}
+@end example
+
+GNU Fortran supports these with the flag @option{-fdec-intrinsic-ints}.
+Intrinsics for which prefixed versions are available and in what form are noted
+in @ref{Intrinsic Procedures}. The complete list of supported intrinsics is
+here:
+
+@multitable @columnfractions .2 .2 .2 .2 .2
+
+@headitem Intrinsic @tab B @tab I @tab J @tab K
+
+@item @code{@ref{ABS}}
+  @tab @code{BABS} @tab @code{IIABS} @tab @code{JIABS} @tab @code{KIABS}
+@item @code{@ref{BTEST}}
+  @tab @code{BBTEST} @tab @code{BITEST} @tab @code{BJTEST} @tab @code{BKTEST}
+@item @code{@ref{IAND}}
+  @tab @code{BIAND} @tab @code{IIAND} @tab @code{JIAND} @tab @code{KIAND}
+@item @code{@ref{IBCLR}}
+  @tab @code{BBCLR} @tab @code{IIBCLR} @tab @code{JIBCLR} @tab @code{KIBCLR}
+@item @code{@ref{IBITS}}
+  @tab @code{BBITS} @tab @code{IIBITS} @tab @code{JIBITS} @tab @code{KIBITS}
+@item @code{@ref{IBSET}}
+  @tab @code{BBSET} @tab @code{IIBSET} @tab @code{JIBSET} @tab @code{KIBSET}
+@item @code{@ref{IEOR}}
+  @tab @code{BIEOR} @tab @code{IIEOR} @tab @code{JIEOR} @tab @code{KIEOR}
+@item @code{@ref{IOR}}
+  @tab @code{BIOR} @tab @code{IIOR} @tab @code{JIOR} @tab @code{KIOR}
+@item @code{@ref{ISHFT}}
+  @tab @code{BSHFT} @tab @code{IISHFT} @tab @code{JISHFT} @tab @code{KISHFT}
+@item @code{@ref{ISHFTC}}
+  @tab @code{BSHFTC} @tab @code{IISHFTC} @tab @code{JISHFTC} @tab @code{KISHFTC}
+@item @code{@ref{MOD}}
+  @tab @code{BMOD} @tab @code{IMOD} @tab @code{JMOD} @tab @code{KMOD}
+@item @code{@ref{NOT}}
+  @tab @code{BNOT} @tab @code{INOT} @tab @code{JNOT} @tab @code{KNOT}
+@item @code{@ref{REAL}}
+  @tab @code{--} @tab @code{FLOATI} @tab @code{FLOATJ} @tab @code{FLOATK}
+@end multitable
+
+@node AUTOMATIC and STATIC attributes
+@subsection @code{AUTOMATIC} and @code{STATIC} attributes
+@cindex variable attributes
+@cindex @code{AUTOMATIC}
+@cindex @code{STATIC}
+
+With @option{-fdec-static} GNU Fortran supports the DEC extended attributes
+@code{STATIC} and @code{AUTOMATIC} to provide explicit specification of entity
+storage.  These follow the syntax of the Fortran standard @code{SAVE} attribute.
+
+@code{STATIC} is exactly equivalent to @code{SAVE}, and specifies that
+an entity should be allocated in static memory.  As an example, @code{STATIC}
+local variables will retain their values across multiple calls to a function.
+
+Entities marked @code{AUTOMATIC} will be stack automatic whenever possible.
+@code{AUTOMATIC} is the default for local variables smaller than
+@option{-fmax-stack-var-size}, unless @option{-fno-automatic} is given.  This
+attribute overrides @option{-fno-automatic}, @option{-fmax-stack-var-size}, and
+blanket @code{SAVE} statements.
+
+
+Examples:
+
+@example
+subroutine f
+  integer, automatic :: i  ! automatic variable
+  integer x, y             ! static variables
+  save
+  ...
+endsubroutine
+@end example
+@example
+subroutine f
+  integer a, b, c, x, y, z
+  static :: x
+  save y
+  automatic z, c
+  ! a, b, c, and z are automatic
+  ! x and y are static
+endsubroutine
+@end example
+@example
+! Compiled with -fno-automatic
+subroutine f
+  integer a, b, c, d
+  automatic :: a
+  ! a is automatic; b, c, and d are static
+endsubroutine
+@end example
+
+@node Extended math intrinsics
+@subsection Extended math intrinsics
+@cindex intrinsics, math
+@cindex intrinsics, trigonometric functions
+
+GNU Fortran supports an extended list of mathematical intrinsics with the
+compile flag @option{-fdec-math} for compatability with legacy code.
+These intrinsics are described fully in @ref{Intrinsic Procedures} where it is
+noted that they are extensions and should be avoided whenever possible.
+
+Specifically, @option{-fdec-math} enables the @ref{COTAN} intrinsic, and
+trigonometric intrinsics which accept or produce values in degrees instead of
+radians.  Here is a summary of the new intrinsics:
+
+@multitable @columnfractions .5 .5
+@headitem Radians @tab Degrees
+@item @code{@ref{ACOS}}   @tab @code{@ref{ACOSD}}*
+@item @code{@ref{ASIN}}   @tab @code{@ref{ASIND}}*
+@item @code{@ref{ATAN}}   @tab @code{@ref{ATAND}}*
+@item @code{@ref{ATAN2}}  @tab @code{@ref{ATAN2D}}*
+@item @code{@ref{COS}}    @tab @code{@ref{COSD}}*
+@item @code{@ref{COTAN}}* @tab @code{@ref{COTAND}}*
+@item @code{@ref{SIN}}    @tab @code{@ref{SIND}}*
+@item @code{@ref{TAN}}    @tab @code{@ref{TAND}}*
+@end multitable
+
+* Enabled with @option{-fdec-math}.
+
+For advanced users, it may be important to know the implementation of these
+functions. They are simply wrappers around the standard radian functions, which
+have more accurate builtin versions. These functions convert their arguments
+(or results) to degrees (or radians) by taking the value modulus 360 (or 2*pi)
+and then multiplying it by a constant radian-to-degree (or degree-to-radian)
+factor, as appropriate. The factor is computed at compile-time as 180/pi (or
+pi/180).
+
+@node Form feed as whitespace
+@subsection Form feed as whitespace
+@cindex form feed whitespace
+
+Historically, legacy compilers allowed insertion of form feed characters ('\f',
+ASCII 0xC) at the beginning of lines for formatted output to line printers,
+though the Fortran standard does not mention this. GNU Fortran supports the
+interpretation of form feed characters in source as whitespace for
+compatibility.
+
+@node TYPE as an alias for PRINT
+@subsection TYPE as an alias for PRINT
+@cindex type alias print
+For compatibility, GNU Fortran will interpret @code{TYPE} statements as
+@code{PRINT} statements with the flag @option{-fdec}.  With this flag asserted,
+the following two examples are equivalent:
+
+@smallexample
+TYPE *, 'hello world'
+@end smallexample
+
+@smallexample
+PRINT *, 'hello world'
+@end smallexample
+
+@node %LOC as an rvalue
+@subsection %LOC as an rvalue
+@cindex LOC
+Normally @code{%LOC} is allowed only in parameter lists.  However the intrinsic
+function @code{LOC} does the same thing, and is usable as the right-hand-side of
+assignments. For compatibility, GNU Fortran supports the use of @code{%LOC} as
+an alias for the builtin @code{LOC} with @option{-std=legacy}.  With this
+feature enabled the following two examples are equivalent:
+
+@smallexample
+integer :: i, l
+l = %loc(i)
+call sub(l)
+@end smallexample
+
+@smallexample
+integer :: i
+call sub(%loc(i))
+@end smallexample
+
+@node .XOR. operator
+@subsection .XOR. operator
+@cindex operators, xor
+
+GNU Fortran supports @code{.XOR.} as a logical operator with @code{-std=legacy}
+for compatibility with legacy code. @code{.XOR.} is equivalent to
+@code{.NEQV.}. That is, the output is true if and only if the inputs differ.
+
+@node Bitwise logical operators
+@subsection Bitwise logical operators
+@cindex logical, bitwise
+
+With @option{-fdec}, GNU Fortran relaxes the type constraints on
+logical operators to allow integer operands, and performs the corresponding
+bitwise operation instead.  This flag is for compatibility only, and should be
+avoided in new code.  Consider:
+
+@smallexample
+  INTEGER :: i, j
+  i = z'33'
+  j = z'cc'
+  print *, i .AND. j
+@end smallexample
+
+In this example, compiled with @option{-fdec}, GNU Fortran will
+replace the @code{.AND.} operation with a call to the intrinsic
+@code{@ref{IAND}} function, yielding the bitwise-and of @code{i} and @code{j}.
+
+Note that this conversion will occur if at least one operand is of integral
+type.  As a result, a logical operand will be converted to an integer when the
+other operand is an integer in a logical operation.  In this case,
+@code{.TRUE.} is converted to @code{1} and @code{.FALSE.} to @code{0}.
+
+Here is the mapping of logical operator to bitwise intrinsic used with
+@option{-fdec}:
+
+@multitable @columnfractions .25 .25 .5
+@headitem Operator @tab Intrinsic @tab Bitwise operation
+@item @code{.NOT.} @tab @code{@ref{NOT}} @tab complement
+@item @code{.AND.} @tab @code{@ref{IAND}} @tab intersection
+@item @code{.OR.} @tab @code{@ref{IOR}} @tab union
+@item @code{.NEQV.} @tab @code{@ref{IEOR}} @tab exclusive or
+@item @code{.EQV.} @tab @code{@ref{NOT}(@ref{IEOR})} @tab complement of exclusive or
+@end multitable
+
+@node Extended I/O specifiers
+@subsection Extended I/O specifiers
+@cindex @code{CARRIAGECONTROL}
+@cindex @code{READONLY}
+@cindex @code{SHARE}
+@cindex @code{SHARED}
+@cindex @code{NOSHARED}
+@cindex I/O specifiers
+
+GNU Fortran supports the additional legacy I/O specifiers
+@code{CARRIAGECONTROL}, @code{READONLY}, and @code{SHARE} with the
+compile flag @option{-fdec}, for compatibility.
+
+@table @code
+@item CARRIAGECONTROL
+The @code{CARRIAGECONTROL} specifier allows a user to control line
+termination settings between output records for an I/O unit. The specifier has
+no meaning for readonly files. When @code{CARRAIGECONTROL} is specified upon
+opening a unit for formatted writing, the exact @code{CARRIAGECONTROL} setting
+determines what characters to write between output records. The syntax is:
+
+@smallexample
+OPEN(..., CARRIAGECONTROL=cc)
+@end smallexample
+
+Where @emph{cc} is a character expression that evaluates to one of the
+following values:
+
+@multitable @columnfractions .2 .8
+@item @code{'LIST'} @tab One line feed between records (default)
+@item @code{'FORTRAN'} @tab Legacy interpretation of the first character (see below)
+@item @code{'NONE'} @tab No separator between records
+@end multitable
+
+With @code{CARRIAGECONTROL='FORTRAN'}, when a record is written, the first
+character of the input record is not written, and instead determines the output
+record separator as follows:
+
+@multitable @columnfractions .3 .3 .4
+@headitem Leading character @tab Meaning @tab Output separating character(s)
+@item @code{'+'} @tab Overprinting @tab Carriage return only
+@item @code{'-'} @tab New line @tab Line feed and carriage return
+@item @code{'0'} @tab Skip line @tab Two line feeds and carriage return
+@item @code{'1'} @tab New page @tab Form feed and carriage return
+@item @code{'$'} @tab Prompting @tab Line feed (no carriage return)
+@item @code{CHAR(0)} @tab Overprinting (no advance) @tab None
+@end multitable
+
+@item READONLY
+The @code{READONLY} specifier may be given upon opening a unit, and is
+equivalent to specifying @code{ACTION='READ'}, except that the file may not be
+deleted on close (i.e. @code{CLOSE} with @code{STATUS="DELETE"}). The syntax
+is:
+
+@smallexample
+@code{OPEN(..., READONLY)}
+@end smallexample
+
+@item SHARE
+The @code{SHARE} specifier allows system-level locking on a unit upon opening
+it for controlled access from multiple processes/threads. The @code{SHARE}
+specifier has several forms:
+
+@smallexample
+OPEN(..., SHARE=sh)
+OPEN(..., SHARED)
+OPEN(..., NOSHARED)
+@end smallexample
+
+Where @emph{sh} in the first form is a character expression that evaluates to
+a value as seen in the table below. The latter two forms are aliases
+for particular values of @emph{sh}:
+
+@multitable @columnfractions .3 .3 .4
+@headitem Explicit form @tab Short form @tab Meaning
+@item @code{SHARE='DENYRW'} @tab @code{NOSHARED} @tab Exclusive (write) lock
+@item @code{SHARE='DENYNONE'} @tab @code{SHARED} @tab Shared (read) lock
+@end multitable
+
+In general only one process may hold an exclusive (write) lock for a given file
+at a time, whereas many processes may hold shared (read) locks for the same
+file.
+
+The behavior of locking may vary with your operating system. On POSIX systems,
+locking is implemented with @code{fcntl}. Consult your corresponding operating
+system's manual pages for further details. Locking via @code{SHARE=} is not
+supported on other systems.
+
+@end table
+
+@node Legacy PARAMETER statements
+@subsection Legacy PARAMETER statements
+@cindex PARAMETER
+
+For compatibility, GNU Fortran supports legacy PARAMETER statements without
+parentheses with @option{-std=legacy}.  A warning is emitted if used with
+@option{-std=gnu}, and an error is acknowledged with a real Fortran standard
+flag (@option{-std=f95}, etc...).  These statements take the following form:
+
+@smallexample
+implicit real (E)
+parameter e = 2.718282
+real c
+parameter c = 3.0e8
+@end smallexample
+
+@node Default exponents
+@subsection Default exponents
+@cindex exponent
+
+For compatibility, GNU Fortran supports a default exponent of zero in real
+constants with @option{-fdec}.  For example, @code{9e} would be
+interpreted as @code{9e0}, rather than an error.
+
 
 @node Extensions not implemented in GNU Fortran
 @section Extensions not implemented in GNU Fortran
@@ -2390,10 +2746,8 @@ code that uses them running with the GNU Fortran compiler.
 * ENCODE and DECODE statements::
 * Variable FORMAT expressions::
 @c * Q edit descriptor::
-@c * AUTOMATIC statement::
 @c * TYPE and ACCEPT I/O Statements::
-@c * .XOR. operator::
-@c * CARRIAGECONTROL, DEFAULTFILE, DISPOSE and RECORDTYPE I/O specifiers::
+@c * DEFAULTFILE, DISPOSE and RECORDTYPE I/O specifiers::
 @c * Omitted arguments in procedure call::
 * Alternate complex function syntax::
 * Volatile COMMON blocks::
@@ -3517,6 +3871,8 @@ of such a type
 @menu
 * caf_token_t::
 * caf_register_t::
+* caf_deregister_t::
+* caf_reference_t::
 @end menu
 
 @node caf_token_t
@@ -3538,10 +3894,146 @@ typedef enum caf_register_t {
   CAF_REGTYPE_LOCK_ALLOC,
   CAF_REGTYPE_CRITICAL,
   CAF_REGTYPE_EVENT_STATIC,
-  CAF_REGTYPE_EVENT_ALLOC
+  CAF_REGTYPE_EVENT_ALLOC,
+  CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY,
+  CAF_REGTYPE_COARRAY_ALLOC_ALLOCATE_ONLY
 }
 caf_register_t;
 @end verbatim
+
+The values @code{CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY} and
+@code{CAF_REGTYPE_COARRAY_ALLOC_ALLOCATE_ONLY} are for allocatable components
+in derived type coarrays only.  The first one sets up the token without
+allocating memory for allocatable component.  The latter one only allocates the
+memory for an allocatable component in a derived type coarray.  The token
+needs to be setup previously by the REGISTER_ONLY.  This allows to have
+allocatable components un-allocated on some images.  The status whether an
+allocatable component is allocated on a remote image can be queried by
+@code{_caf_is_present} which used internally by the @code{ALLOCATED}
+intrinsic.
+
+@node caf_deregister_t
+@subsection @code{caf_deregister_t}
+
+@verbatim
+typedef enum caf_deregister_t {
+  CAF_DEREGTYPE_COARRAY_DEREGISTER,
+  CAF_DEREGTYPE_COARRAY_DEALLOCATE_ONLY
+}
+caf_deregister_t;
+@end verbatim
+
+Allows to specifiy the type of deregistration of a coarray object.  The
+@code{CAF_DEREGTYPE_COARRAY_DEALLOCATE_ONLY} flag is only allowed for
+allocatable components in derived type coarrays.
+
+@node caf_reference_t
+@subsection @code{caf_reference_t}
+
+The structure used for implementing arbitrary reference chains.
+A @code{CAF_REFERENCE_T} allows to specify a component reference or any kind
+of array reference of any rank supported by gfortran.  For array references all
+kinds as known by the compiler/Fortran standard are supported indicated by
+a @code{MODE}.
+
+@verbatim
+typedef enum caf_ref_type_t {
+  /* Reference a component of a derived type, either regular one or an
+     allocatable or pointer type.  For regular ones idx in caf_reference_t is
+     set to -1.  */
+  CAF_REF_COMPONENT,
+  /* Reference an allocatable array.  */
+  CAF_REF_ARRAY,
+  /* Reference a non-allocatable/non-pointer array.  I.e., the coarray object
+     has no array descriptor associated and the addressing is done
+     completely using the ref.  */
+  CAF_REF_STATIC_ARRAY
+} caf_ref_type_t;
+@end verbatim
+
+@verbatim
+typedef enum caf_array_ref_t {
+  /* No array ref.  This terminates the array ref.  */
+  CAF_ARR_REF_NONE = 0,
+  /* Reference array elements given by a vector.  Only for this mode
+     caf_reference_t.u.a.dim[i].v is valid.  */
+  CAF_ARR_REF_VECTOR,
+  /* A full array ref (:).  */
+  CAF_ARR_REF_FULL,
+  /* Reference a range on elements given by start, end and stride.  */
+  CAF_ARR_REF_RANGE,
+  /* Only a single item is referenced given in the start member.  */
+  CAF_ARR_REF_SINGLE,
+  /* An array ref of the kind (i:), where i is an arbitrary valid index in the
+     array.  The index i is given in the start member.  */
+  CAF_ARR_REF_OPEN_END,
+  /* An array ref of the kind (:i), where the lower bound of the array ref
+     is given by the remote side.  The index i is given in the end member.  */
+  CAF_ARR_REF_OPEN_START
+} caf_array_ref_t;
+@end verbatim
+
+@verbatim
+/* References to remote components of a derived type.  */
+typedef struct caf_reference_t {
+  /* A pointer to the next ref or NULL.  */
+  struct caf_reference_t *next;
+  /* The type of the reference.  */
+  /* caf_ref_type_t, replaced by int to allow specification in fortran FE.  */
+  int type;
+  /* The size of an item referenced in bytes.  I.e. in an array ref this is
+     the factor to advance the array pointer with to get to the next item.
+     For component refs this gives just the size of the element referenced.  */
+  size_t item_size;
+  union {
+    struct {
+      /* The offset (in bytes) of the component in the derived type.
+         Unused for allocatable or pointer components.  */
+      ptrdiff_t offset;
+      /* The offset (in bytes) to the caf_token associated with this
+         component.  NULL, when not allocatable/pointer ref.  */
+      ptrdiff_t caf_token_offset;
+    } c;
+    struct {
+      /* The mode of the array ref.  See CAF_ARR_REF_*.  */
+      /* caf_array_ref_t, replaced by unsigend char to allow specification in
+         fortran FE.  */
+     unsigned char mode[GFC_MAX_DIMENSIONS];
+      /* The type of a static array.  Unset for array's with descriptors.  */
+      int static_array_type;
+      /* Subscript refs (s) or vector refs (v).  */
+      union {
+        struct {
+          /* The start and end boundary of the ref and the stride.  */
+          index_type start, end, stride;
+        } s;
+        struct {
+          /* nvec entries of kind giving the elements to reference.  */
+          void *vector;
+          /* The number of entries in vector.  */
+          size_t nvec;
+          /* The integer kind used for the elements in vector.  */
+          int kind;
+        } v;
+      } dim[GFC_MAX_DIMENSIONS];
+    } a;
+  } u;
+} caf_reference_t;
+@end verbatim
+
+The references make up a single linked list of reference operations.  The
+@code{NEXT} member links to the next reference or NULL to indicate the end of
+the chain.  Component and array refs can be arbitrarly mixed as long as they
+comply to the Fortran standard.
+
+@emph{NOTES}
+The member @code{STATIC_ARRAY_TYPE} is used only when the @code{TYPE} is
+@code{CAF_REF_STATIC_ARRAY}.  The member gives the type of the data referenced.
+Because no array descriptor is available for a descriptor-less array and
+type conversion still needs to take place the type is transported here.
+
+At the moment @code{CAF_ARR_REF_VECTOR} is not implemented in the front end for
+descriptor-less arrays.  The library caf_single has untested support for it.
 
 
 @node Function ABI Documentation
@@ -3554,9 +4046,13 @@ caf_register_t;
 * _gfortran_caf_num_images:: Querying the maximal number of images
 * _gfortran_caf_register:: Registering coarrays
 * _gfortran_caf_deregister:: Deregistering coarrays
+* _gfortran_caf_is_present:: Query whether an allocatable or pointer component in a derived type coarray is allocated
 * _gfortran_caf_send:: Sending data from a local image to a remote image
 * _gfortran_caf_get:: Getting data from a remote image
 * _gfortran_caf_sendget:: Sending data between remote images
+* _gfortran_caf_send_by_ref:: Sending data from a local image to a remote image using enhanced references
+* _gfortran_caf_get_by_ref:: Getting data from a remote image using enhanced references
+* _gfortran_caf_sendget_by_ref:: Sending data between remote images using enhanced references
 * _gfortran_caf_lock:: Locking a lock variable
 * _gfortran_caf_unlock:: Unlocking a lock variable
 * _gfortran_caf_event_post:: Post an event
@@ -3588,7 +4084,7 @@ caf_register_t;
 This function is called at startup of the program before the Fortran main
 program, if the latter has been compiled with @option{-fcoarray=lib}.
 It takes as arguments the command-line arguments of the program.  It is
-permitted to pass to @code{NULL} pointers as argument; if non-@code{NULL},
+permitted to pass two @code{NULL} pointers as argument; if non-@code{NULL},
 the library is permitted to modify the arguments.
 
 @item @emph{Syntax}:
@@ -3605,7 +4101,7 @@ command-line arguments or @code{NULL}.
 @item @emph{NOTES}
 The function is modelled after the initialization function of the Message
 Passing Interface (MPI) specification.  Due to the way coarray registration
-works, it might not be the first call to the libaray.  If the main program is
+works, it might not be the first call to the library.  If the main program is
 not written in Fortran and only a library uses coarrays, it can happen that
 this function is never called.  Therefore, it is recommended that the library
 does not rely on the passed arguments and whether the call has been done.
@@ -3648,7 +4144,7 @@ This function returns the current image number, which is a positive number.
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{distance} @tab As specified for the @code{this_image} intrinsic
-in TS18508. Shall be a nonnegative number.
+in TS18508.  Shall be a non-negative number.
 @end multitable
 
 @item @emph{NOTES}
@@ -3682,35 +4178,48 @@ Shall be positive.
 
 @item @emph{NOTES}
 This function follows TS18508. If the num_image intrinsic has no arguments,
-the the compiler passes @code{distance=0} and @code{failed=-1} to the function.
+then the compiler passes @code{distance=0} and @code{failed=-1} to the function.
 @end table
 
 
 @node _gfortran_caf_register
 @subsection @code{_gfortran_caf_register} --- Registering coarrays
-@cindex Coarray, _gfortran_caf_deregister
+@cindex Coarray, _gfortran_caf_register
 
 @table @asis
 @item @emph{Description}:
-Allocates memory for a coarray and creates a token to identify the coarray. The
-function is called for both coarrays with @code{SAVE} attribute and using an
-explicit @code{ALLOCATE} statement. If an error occurs and @var{STAT} is a
+Registers memory for a coarray and creates a token to identify the coarray.  The
+routine is called for both coarrays with @code{SAVE} attribute and using an
+explicit @code{ALLOCATE} statement.  If an error occurs and @var{STAT} is a
 @code{NULL} pointer, the function shall abort with printing an error message
 and starting the error termination.  If no error occurs and @var{STAT} is
-present, it shall be set to zero. Otherwise, it shall be set to a positive
+present, it shall be set to zero.  Otherwise, it shall be set to a positive
 value and, if not-@code{NULL}, @var{ERRMSG} shall be set to a string describing
-the failure. The function shall return a pointer to the requested memory
-for the local image as a call to @code{malloc} would do.
+the failure.  The routine shall register the memory provided in the
+@code{DATA}-component of the array descriptor @var{DESC}, when that component
+is non-@code{NULL}, else it shall allocate sufficient memory and provide a
+pointer to it in the @code{DATA}-component of @var{DESC}.  The array descriptor
+has rank zero, when a scalar object is to be registered and the array
+descriptor may be invalid after the call to @code{_gfortran_caf_register}.
+When an array is to be allocated the descriptor persists.
 
 For @code{CAF_REGTYPE_COARRAY_STATIC} and @code{CAF_REGTYPE_COARRAY_ALLOC},
 the passed size is the byte size requested.  For @code{CAF_REGTYPE_LOCK_STATIC},
 @code{CAF_REGTYPE_LOCK_ALLOC} and @code{CAF_REGTYPE_CRITICAL} it is the array
 size or one for a scalar.
 
+When @code{CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY} is used, then only a token
+for an allocatable or pointer component is created.  The @code{SIZE} parameter
+is not used then.  On the contrary when
+@code{CAF_REGTYPE_COARRAY_ALLOC_ALLOCATE_ONLY} is specified, then the
+@var{token} needs to be registered by a previous call with regtype
+@code{CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY} and either the memory specified
+in the @var{desc}'s data-ptr is registered or allocate when the data-ptr is
+NULL.
 
 @item @emph{Syntax}:
-@code{void *caf_register (size_t size, caf_register_t type, caf_token_t *token,
-int *stat, char *errmsg, int errmsg_len)}
+@code{void caf_register (size_t size, caf_register_t type, caf_token_t *token,
+gfc_descriptor_t *desc, int *stat, char *errmsg, int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3718,6 +4227,7 @@ int *stat, char *errmsg, int errmsg_len)}
 allocated; for lock types and event types, the number of elements.
 @item @var{type} @tab one of the caf_register_t types.
 @item @var{token} @tab intent(out) An opaque pointer identifying the coarray.
+@item @var{desc} @tab intent(inout) The (pseudo) array descriptor.
 @item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
 may be NULL
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
@@ -3733,12 +4243,12 @@ GCC does such that also nonallocatable coarrays the memory is allocated and no
 static memory is used.  The token permits to identify the coarray; to the
 processor, the token is a nonaliasing pointer. The library can, for instance,
 store the base address of the coarray in the token, some handle or a more
-complicated struct.
+complicated struct.  The library may also store the array descriptor
+@var{DESC} when its rank is non-zero.
 
-For normal coarrays, the returned pointer is used for accesses on the local
-image. For lock types, the value shall only used for checking the allocation
+For lock types, the value shall only used for checking the allocation
 status. Note that for critical blocks, the locking is only required on one
-image; in the locking statement, the processor shall always pass always an
+image; in the locking statement, the processor shall always pass an
 image index of one for critical-block lock variables
 (@code{CAF_REGTYPE_CRITICAL}). For lock types and critical-block variables,
 the initial value shall be unlocked (or, respecitively, not in critical
@@ -3753,16 +4263,23 @@ be no event, e.g. zero.
 
 @table @asis
 @item @emph{Description}:
-Called to free the memory of a coarray; the processor calls this function for
-automatic and explicit deallocation.  In case of an error, this function shall
-fail with an error message, unless the @var{STAT} variable is not null.
+Called to free or deregister the memory of a coarray; the processor calls this
+function for automatic and explicit deallocation.  In case of an error, this
+function shall fail with an error message, unless the @var{STAT} variable is
+not null.  The library is only expected to free memory it allocated itself
+during a call to @code{_gfortran_caf_register}.
 
 @item @emph{Syntax}:
-@code{void caf_deregister (const caf_token_t *token, int *stat, char *errmsg,
-int errmsg_len)}
+@code{void caf_deregister (caf_token_t *token, caf_deregister_t type,
+int *stat, char *errmsg, int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
+@item @var{token} @tab the token to free.
+@item @var{type} @tab the type of action to take for the coarray.  A
+@code{CAF_DEREGTYPE_COARRAY_DEALLOCATE_ONLY} is allowed only for allocatable or
+pointer components of derived type coarrays.  The action only deallocates the
+local memory without deleting the token.
 @item @var{stat} @tab intent(out) Stores the STAT=; may be NULL
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set
 to an error message; may be NULL
@@ -3776,46 +4293,75 @@ and via destructors.
 @end table
 
 
+@node _gfortran_caf_is_present
+@subsection @code{_gfortran_caf_is_present} --- Query whether an allocatable or pointer component in a derived type coarray is allocated
+@cindex Coarray, _gfortran_caf_is_present
+
+@table @asis
+@item @emph{Description}:
+Used to query the coarray library whether an allocatable component in a derived
+type coarray is allocated on a remote image.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_is_present (caf_token_t token, int image_index,
+gfc_reference_t *ref)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab An opaque pointer identifying the coarray.
+@item @var{image_index} @tab The ID of the remote image; must be a positive
+number.
+@item @var{ref} @tab A chain of references to address the allocatable or
+pointer component in the derived type coarray.  The object reference needs to be
+a scalar or a full array reference, respectively.
+@end multitable
+
+@end table
+
 @node _gfortran_caf_send
 @subsection @code{_gfortran_caf_send} --- Sending data from a local image to a remote image
 @cindex Coarray, _gfortran_caf_send
 
 @table @asis
 @item @emph{Description}:
-Called to send a scalar, an array section or whole array from a local
+Called to send a scalar, an array section or a whole array from a local
 to a remote image identified by the image_index.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_send (caf_token_t token, size_t offset,
 int image_index, gfc_descriptor_t *dest, caf_vector_t *dst_vector,
-gfc_descriptor_t *src, int dst_kind, int src_kind, bool may_require_tmp)}
+gfc_descriptor_t *src, int dst_kind, int src_kind, bool may_require_tmp,
+int *stat)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{offset} @tab By which amount of bytes the actual data is shifted
-compared to the base address of the coarray.
-@item @var{image_index} @tab The ID of the remote image; must be a positive
-number.
-@item @var{dest} @tab intent(in) Array descriptor for the remote image for the
-bounds and the size. The base_addr shall not be accessed.
-@item @var{dst_vector} @tab intent(int)  If not NULL, it contains the vector
+@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+shifted compared to the base address of the coarray.
+@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
+positive number.
+@item @var{dest} @tab intent(in)  Array descriptor for the remote image for the
+bounds and the size.  The @code{base_addr} shall not be accessed.
+@item @var{dst_vector} @tab intent(in)  If not NULL, it contains the vector
 subscript of the destination array; the values are relative to the dimension
 triplet of the dest argument.
-@item @var{src} @tab intent(in) Array descriptor of the local array to be
+@item @var{src} @tab intent(in)  Array descriptor of the local array to be
 transferred to the remote image
-@item @var{dst_kind} @tab Kind of the destination argument
-@item @var{src_kind} @tab Kind of the source argument
-@item @var{may_require_tmp} @tab The variable is false it is known at compile
-time that the @var{dest} and @var{src} either cannot overlap or overlap (fully
-or partially) such that walking @var{src} and @var{dest} in element wise
-element order (honoring the stride value) will not lead to wrong results.
-Otherwise, the value is true.
+@item @var{dst_kind} @tab intent(in)  Kind of the destination argument
+@item @var{src_kind} @tab intent(in)  Kind of the source argument
+@item @var{may_require_tmp} @tab intent(in)  The variable is @code{false} when
+it is known at compile time that the @var{dest} and @var{src} either cannot
+overlap or overlap (fully or partially) such that walking @var{src} and
+@var{dest} in element wise element order (honoring the stride value) will not
+lead to wrong results.  Otherwise, the value is @code{true}.
+@item @var{stat} @tab intent(out) when non-NULL give the result of the
+operation, i.e., zero on success and non-zero on error.  When NULL and an error
+occurs, then an error message is printed and the program is terminated.
 @end multitable
 
 @item @emph{NOTES}
-It is permitted to have image_id equal the current image; the memory of the
-send-to and the send-from might (partially) overlap in that case. The
+It is permitted to have @var{image_index} equal the current image; the memory
+of the send-to and the send-from might (partially) overlap in that case.  The
 implementation has to take care that it handles this case, e.g. using
 @code{memmove} which handles (partially) overlapping memory. If
 @var{may_require_tmp} is true, the library might additionally create a
@@ -3835,40 +4381,44 @@ and different character kinds.
 
 @table @asis
 @item @emph{Description}:
-Called to get an array section or whole array from a a remote,
+Called to get an array section or a whole array from a remote,
 image identified by the image_index.
 
 @item @emph{Syntax}:
-@code{void _gfortran_caf_get_desc (caf_token_t token, size_t offset,
+@code{void _gfortran_caf_get (caf_token_t token, size_t offset,
 int image_index, gfc_descriptor_t *src, caf_vector_t *src_vector,
-gfc_descriptor_t *dest, int src_kind, int dst_kind, bool may_require_tmp)}
+gfc_descriptor_t *dest, int src_kind, int dst_kind, bool may_require_tmp,
+int *stat)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{offset} @tab By which amount of bytes the actual data is shifted
-compared to the base address of the coarray.
-@item @var{image_index} @tab The ID of the remote image; must be a positive
-number.
-@item @var{dest} @tab intent(in) Array descriptor of the local array to be
-transferred to the remote image
+@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+shifted compared to the base address of the coarray.
+@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
+positive number.
+@item @var{dest} @tab intent(out) Array descriptor of the local array to store
+the data retrieved from the remote image
 @item @var{src} @tab intent(in) Array descriptor for the remote image for the
-bounds and the size. The base_addr shall not be accessed.
-@item @var{src_vector} @tab intent(int)  If not NULL, it contains the vector
-subscript of the destination array; the values are relative to the dimension
-triplet of the dest argument.
-@item @var{dst_kind} @tab Kind of the destination argument
-@item @var{src_kind} @tab Kind of the source argument
-@item @var{may_require_tmp} @tab The variable is false it is known at compile
-time that the @var{dest} and @var{src} either cannot overlap or overlap (fully
-or partially) such that walking @var{src} and @var{dest} in element wise
-element order (honoring the stride value) will not lead to wrong results.
-Otherwise, the value is true.
+bounds and the size.  The @code{base_addr} shall not be accessed.
+@item @var{src_vector} @tab intent(in)  If not NULL, it contains the vector
+subscript of the source array; the values are relative to the dimension
+triplet of the @var{src} argument.
+@item @var{dst_kind} @tab intent(in)  Kind of the destination argument
+@item @var{src_kind} @tab intent(in)  Kind of the source argument
+@item @var{may_require_tmp} @tab intent(in)  The variable is @code{false} when
+it is known at compile time that the @var{dest} and @var{src} either cannot
+overlap or overlap (fully or partially) such that walking @var{src} and
+@var{dest} in element wise element order (honoring the stride value) will not
+lead to wrong results.  Otherwise, the value is @code{true}.
+@item @var{stat} @tab intent(out) When non-NULL give the result of the
+operation, i.e., zero on success and non-zero on error.  When NULL and an error
+occurs, then an error message is printed and the program is terminated.
 @end multitable
 
 @item @emph{NOTES}
-It is permitted to have image_id equal the current image; the memory of the
-send-to and the send-from might (partially) overlap in that case. The
+It is permitted to have @var{image_index} equal the current image; the memory of
+the send-to and the send-from might (partially) overlap in that case.  The
 implementation has to take care that it handles this case, e.g. using
 @code{memmove} which handles (partially) overlapping memory. If
 @var{may_require_tmp} is true, the library might additionally create a
@@ -3887,53 +4437,59 @@ padding and different character kinds.
 
 @table @asis
 @item @emph{Description}:
-Called to send a scalar, an array section or whole array from a remote image
-identified by the src_image_index to a remote image identified by the
-dst_image_index.
+Called to send a scalar, an array section or a whole array from a remote image
+identified by the @var{src_image_index} to a remote image identified by the
+@var{dst_image_index}.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_sendget (caf_token_t dst_token, size_t dst_offset,
 int dst_image_index, gfc_descriptor_t *dest, caf_vector_t *dst_vector,
 caf_token_t src_token, size_t src_offset, int src_image_index,
 gfc_descriptor_t *src, caf_vector_t *src_vector, int dst_kind, int src_kind,
-bool may_require_tmp)}
+bool may_require_tmp, int *stat)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{dst_token} @tab intent(in)  An opaque pointer identifying the
 destination coarray.
-@item @var{dst_offset} @tab  By which amount of bytes the actual data is
-shifted compared to the base address of the destination coarray.
-@item @var{dst_image_index} @tab The ID of the destination remote image; must
-be a positive number.
+@item @var{dst_offset} @tab intent(in)  By which amount of bytes the actual data
+is shifted compared to the base address of the destination coarray.
+@item @var{dst_image_index} @tab intent(in)  The ID of the destination remote
+image; must be a positive number.
 @item @var{dest} @tab intent(in) Array descriptor for the destination
-remote image for the bounds and the size. The base_addr shall not be accessed.
+remote image for the bounds and the size.  The @code{base_addr} shall not be
+accessed.
 @item @var{dst_vector} @tab intent(int)  If not NULL, it contains the vector
 subscript of the destination array; the values are relative to the dimension
-triplet of the dest argument.
-@item @var{src_token} @tab An opaque pointer identifying the source coarray.
-@item @var{src_offset} @tab By which amount of bytes the actual data is shifted
-compared to the base address of the source coarray.
-@item @var{src_image_index} @tab The ID of the source remote image; must be a
-positive number.
+triplet of the @var{dest} argument.
+@item @var{src_token} @tab intent(in)  An opaque pointer identifying the source
+coarray.
+@item @var{src_offset} @tab intent(in)  By which amount of bytes the actual data
+is shifted compared to the base address of the source coarray.
+@item @var{src_image_index} @tab intent(in)  The ID of the source remote image;
+must be a positive number.
 @item @var{src} @tab intent(in) Array descriptor of the local array to be
 transferred to the remote image.
 @item @var{src_vector} @tab intent(in) Array descriptor of the local array to
 be transferred to the remote image
-@item @var{dst_kind} @tab Kind of the destination argument
-@item @var{src_kind} @tab Kind of the source argument
-@item @var{may_require_tmp} @tab The variable is false it is known at compile
-time that the @var{dest} and @var{src} either cannot overlap or overlap (fully
-or partially) such that walking @var{src} and @var{dest} in element wise
-element order (honoring the stride value) will not lead to wrong results.
-Otherwise, the value is true.
+@item @var{dst_kind} @tab intent(in)  Kind of the destination argument
+@item @var{src_kind} @tab intent(in)  Kind of the source argument
+@item @var{may_require_tmp} @tab intent(in)  The variable is @code{false} when
+it is known at compile time that the @var{dest} and @var{src} either cannot
+overlap or overlap (fully or partially) such that walking @var{src} and
+@var{dest} in element wise element order (honoring the stride value) will not
+lead to wrong results.  Otherwise, the value is @code{true}.
+@item @var{stat} @tab intent(out) when non-NULL give the result of the
+operation, i.e., zero on success and non-zero on error.  When NULL and an error
+occurs, then an error message is printed and the program is terminated.
 @end multitable
 
 @item @emph{NOTES}
-It is permitted to have image_ids equal; the memory of the send-to and the
-send-from might (partially) overlap in that case. The implementation has to
-take care that it handles this case, e.g. using @code{memmove} which handles
-(partially) overlapping memory. If @var{may_require_tmp} is true, the library
+It is permitted to have the same image index for both @var{src_image_index} and
+@var{dst_image_index}; the memory of the send-to and the send-from might
+(partially) overlap in that case.  The implementation has to take care that it
+handles this case, e.g. using @code{memmove} which handles (partially)
+overlapping memory.  If @var{may_require_tmp} is true, the library
 might additionally create a temporary variable, unless additional checks show
 that this is not required (e.g. because walking backward is possible or because
 both arrays are contiguous and @code{memmove} takes care of overlap issues).
@@ -3941,6 +4497,188 @@ both arrays are contiguous and @code{memmove} takes care of overlap issues).
 Note that the assignment of a scalar to an array is permitted. In addition,
 the library has to handle numeric-type conversion and for strings, padding and
 different character kinds.
+@end table
+
+@node _gfortran_caf_send_by_ref
+@subsection @code{_gfortran_caf_send_by_ref} --- Sending data from a local image to a remote image with enhanced referencing options
+@cindex Coarray, _gfortran_caf_send_by_ref
+
+@table @asis
+@item @emph{Description}:
+Called to send a scalar, an array section or a whole array from a local to a
+remote image identified by the @var{image_index}.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_send_by_ref (caf_token_t token, int image_index,
+gfc_descriptor_t *src, caf_reference_t *refs, int dst_kind, int src_kind,
+bool may_require_tmp, bool dst_reallocatable, int *stat)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
+positive number.
+@item @var{src} @tab intent(in) Array descriptor of the local array to be
+transferred to the remote image
+@item @var{refs} @tab intent(in) The references on the remote array to store
+the data given by src.  Guaranteed to have at least one entry.
+@item @var{dst_kind} @tab intent(in)  Kind of the destination argument
+@item @var{src_kind} @tab intent(in)  Kind of the source argument
+@item @var{may_require_tmp} @tab intent(in)  The variable is @code{false} when
+it is known at compile time that the @var{dest} and @var{src} either cannot
+overlap or overlap (fully or partially) such that walking @var{src} and
+@var{dest} in element wise element order (honoring the stride value) will not
+lead to wrong results.  Otherwise, the value is @code{true}.
+@item @var{dst_reallocatable} @tab intent(in)  Set when the destination is of
+allocatable or pointer type and the refs will allow reallocation, i.e., the ref
+is a full array or component ref.
+@item @var{stat} @tab intent(out) When non-@code{NULL} give the result of the
+operation, i.e., zero on success and non-zero on error.  When @code{NULL} and
+an error occurs, then an error message is printed and the program is terminated.
+@end multitable
+
+@item @emph{NOTES}
+It is permitted to have @var{image_index} equal the current image; the memory of
+the send-to and the send-from might (partially) overlap in that case.  The
+implementation has to take care that it handles this case, e.g. using
+@code{memmove} which handles (partially) overlapping memory.  If
+@var{may_require_tmp} is true, the library might additionally create a
+temporary variable, unless additional checks show that this is not required
+(e.g. because walking backward is possible or because both arrays are
+contiguous and @code{memmove} takes care of overlap issues).
+
+Note that the assignment of a scalar to an array is permitted.  In addition,
+the library has to handle numeric-type conversion and for strings, padding
+and different character kinds.
+
+Because of the more complicated references possible some operations may be
+unsupported by certain libraries.  The library is expected to issue a precise
+error message why the operation is not permitted.
+@end table
+
+
+@node _gfortran_caf_get_by_ref
+@subsection @code{_gfortran_caf_get_by_ref} --- Getting data from a remote image using enhanced references
+@cindex Coarray, _gfortran_caf_get_by_ref
+
+@table @asis
+@item @emph{Description}:
+Called to get a scalar, an array section or a whole array from a remote image
+identified by the @var{image_index}.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_get_by_ref (caf_token_t token, int image_index,
+caf_reference_t *refs, gfc_descriptor_t *dst, int dst_kind, int src_kind,
+bool may_require_tmp, bool dst_reallocatable, int *stat)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
+positive number.
+@item @var{refs} @tab intent(in) The references to apply to the remote structure
+to get the data.
+@item @var{dst} @tab intent(in) Array descriptor of the local array to store
+the data transferred from the remote image.  May be reallocated where needed
+and when @var{DST_REALLOCATABLE} allows it.
+@item @var{dst_kind} @tab intent(in)  Kind of the destination argument
+@item @var{src_kind} @tab intent(in)  Kind of the source argument
+@item @var{may_require_tmp} @tab intent(in)  The variable is @code{false} when
+it is known at compile time that the @var{dest} and @var{src} either cannot
+overlap or overlap (fully or partially) such that walking @var{src} and
+@var{dest} in element wise element order (honoring the stride value) will not
+lead to wrong results.  Otherwise, the value is @code{true}.
+@item @var{dst_reallocatable} @tab intent(in)  Set when @var{DST} is of
+allocatable or pointer type and its refs allow reallocation, i.e., the full
+array or a component is referenced.
+@item @var{stat} @tab intent(out) When non-@code{NULL} give the result of the
+operation, i.e., zero on success and non-zero on error.  When @code{NULL} and an
+error occurs, then an error message is printed and the program is terminated.
+@end multitable
+
+@item @emph{NOTES}
+It is permitted to have @code{image_index} equal the current image; the memory
+of the send-to and the send-from might (partially) overlap in that case.  The
+implementation has to take care that it handles this case, e.g. using
+@code{memmove} which handles (partially) overlapping memory.  If
+@var{may_require_tmp} is true, the library might additionally create a
+temporary variable, unless additional checks show that this is not required
+(e.g. because walking backward is possible or because both arrays are
+contiguous and @code{memmove} takes care of overlap issues).
+
+Note that the library has to handle numeric-type conversion and for strings,
+padding and different character kinds.
+
+Because of the more complicated references possible some operations may be
+unsupported by certain libraries.  The library is expected to issue a precise
+error message why the operation is not permitted.
+@end table
+
+
+@node _gfortran_caf_sendget_by_ref
+@subsection @code{_gfortran_caf_sendget_by_ref} --- Sending data between remote images using enhanced references on both sides
+@cindex Coarray, _gfortran_caf_sendget_by_ref
+
+@table @asis
+@item @emph{Description}:
+Called to send a scalar, an array section or a whole array from a remote image
+identified by the @var{src_image_index} to a remote image identified by the
+@var{dst_image_index}.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_sendget_by_ref (caf_token_t dst_token,
+int dst_image_index, caf_reference_t *dst_refs,
+caf_token_t src_token, int src_image_index, caf_reference_t *src_refs,
+int dst_kind, int src_kind, bool may_require_tmp, int *dst_stat, int *src_stat)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{dst_token} @tab intent(in)  An opaque pointer identifying the
+destination coarray.
+@item @var{dst_image_index} @tab intent(in)  The ID of the destination remote
+image; must be a positive number.
+@item @var{dst_refs} @tab intent(in) The references on the remote array to store
+the data given by the source.  Guaranteed to have at least one entry.
+@item @var{src_token} @tab intent(in)  An opaque pointer identifying the source
+coarray.
+@item @var{src_image_index} @tab intent(in)  The ID of the source remote image;
+must be a positive number.
+@item @var{src_refs} @tab intent(in) The references to apply to the remote
+structure to get the data.
+@item @var{dst_kind} @tab intent(in)  Kind of the destination argument
+@item @var{src_kind} @tab intent(in)  Kind of the source argument
+@item @var{may_require_tmp} @tab intent(in)  The variable is @code{false} when
+it is known at compile time that the @var{dest} and @var{src} either cannot
+overlap or overlap (fully or partially) such that walking @var{src} and
+@var{dest} in element wise element order (honoring the stride value) will not
+lead to wrong results.  Otherwise, the value is @code{true}.
+@item @var{dst_stat} @tab intent(out) when non-@code{NULL} give the result of
+the send-operation, i.e., zero on success and non-zero on error.  When
+@code{NULL} and an error occurs, then an error message is printed and the
+program is terminated.
+@item @var{src_stat} @tab intent(out) When non-@code{NULL} give the result of
+the get-operation, i.e., zero on success and non-zero on error.  When
+@code{NULL} and an error occurs, then an error message is printed and the
+program is terminated.
+@end multitable
+
+@item @emph{NOTES}
+It is permitted to have the same image index for both @var{src_image_index} and
+@var{dst_image_index}; the memory of the send-to and the send-from might
+(partially) overlap in that case.  The implementation has to take care that it
+handles this case, e.g. using @code{memmove} which handles (partially)
+overlapping memory.  If @var{may_require_tmp} is true, the library
+might additionally create a temporary variable, unless additional checks show
+that this is not required (e.g. because walking backward is possible or because
+both arrays are contiguous and @code{memmove} takes care of overlap issues).
+
+Note that the assignment of a scalar to an array is permitted.  In addition,
+the library has to handle numeric-type conversion and for strings, padding and
+different character kinds.
+
+Because of the more complicated references possible some operations may be
+unsupported by certain libraries.  The library is expected to issue a precise
+error message why the operation is not permitted.
 @end table
 
 
@@ -3951,11 +4689,11 @@ different character kinds.
 @table @asis
 @item @emph{Description}:
 Acquire a lock on the given image on a scalar locking variable or for the
-given array element for an array-valued variable. If the @var{aquired_lock}
-is @code{NULL}, the function return after having obtained the lock. If it is
-nonnull, the result is is assigned the value true (one) when the lock could be
-obtained and false (zero) otherwise.  Locking a lock variable which has already
-been locked by the same image is an error.
+given array element for an array-valued variable.  If the @var{aquired_lock}
+is @code{NULL}, the function returns after having obtained the lock.  If it is
+non-@code{NULL}, then @var{acquired_lock} is assigned the value true (one) when
+the lock could be obtained and false (zero) otherwise.  Locking a lock variable
+which has already been locked by the same image is an error.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_lock (caf_token_t token, size_t index, int image_index,
@@ -3963,17 +4701,17 @@ int *aquired_lock, int *stat, char *errmsg, int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
-@item @var{index} @tab Array index; first array index is 0. For scalars, it is
-always 0.
-@item @var{image_index} @tab The ID of the remote image; must be a positive
-number.
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{index} @tab intent(in)  Array index; first array index is 0.  For
+scalars, it is always 0.
+@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
+positive number.
 @item @var{aquired_lock} @tab intent(out) If not NULL, it returns whether lock
-could be obtained
-@item @var{stat} @tab intent(out) Stores the STAT=; may be NULL
+could be obtained.
+@item @var{stat} @tab intent(out) Stores the STAT=; may be NULL.
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
-an error message; may be NULL
-@item @var{errmsg_len} @tab the buffer size of errmsg.
+an error message; may be NULL.
+@item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
 @item @emph{NOTES}
@@ -3998,16 +4736,16 @@ int *stat, char *errmsg, int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
-@item @var{index} @tab Array index; first array index is 0. For scalars, it is
-always 0.
-@item @var{image_index} @tab The ID of the remote image; must be a positive
-number.
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{index} @tab intent(in)  Array index; first array index is 0.  For
+scalars, it is always 0.
+@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
+positive number.
 @item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
-may be NULL
+may be NULL.
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
-an error message; may be NULL
-@item @var{errmsg_len} @tab the buffer size of errmsg.
+an error message; may be NULL.
+@item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
 @item @emph{NOTES}
@@ -4030,22 +4768,22 @@ int image_index, int *stat, char *errmsg, int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
-@item @var{index} @tab Array index; first array index is 0. For scalars, it is
-always 0.
-@item @var{image_index} @tab The ID of the remote image; must be a positive
-number; zero indicates the current image when accessed noncoindexed.
-@item @var{stat} @tab intent(out) Stores the STAT=; may be NULL
-@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
-an error message; may be NULL
-@item @var{errmsg_len} @tab the buffer size of errmsg.
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{index} @tab intent(in)  Array index; first array index is 0.  For
+scalars, it is always 0.
+@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
+positive number; zero indicates the current image, when accessed noncoindexed.
+@item @var{stat} @tab intent(out)  Stores the STAT=; may be NULL.
+@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+an error message; may be NULL.
+@item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
 @item @emph{NOTES}
 This acts like an atomic add of one to the remote image's event variable.
 The statement is an image-control statement but does not imply sync memory.
 Still, all preceeding push communications of this image to the specified
-remote image has to be completed before @code{event_wait} on the remote
+remote image have to be completed before @code{event_wait} on the remote
 image returns.
 @end table
 
@@ -4067,15 +4805,15 @@ int until_count, int *stat, char *errmsg, int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
-@item @var{index} @tab Array index; first array index is 0. For scalars, it is
-always 0.
-@item @var{until_count} @tab The number of events which have to be available
-before the function returns.
-@item @var{stat} @tab intent(out) Stores the STAT=; may be NULL
-@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
-an error message; may be NULL
-@item @var{errmsg_len} @tab the buffer size of errmsg.
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{index} @tab intent(in)  Array index; first array index is 0.  For
+scalars, it is always 0.
+@item @var{until_count} @tab intent(in)  The number of events which have to be
+available before the function returns.
+@item @var{stat} @tab intent(out)  Stores the STAT=; may be NULL.
+@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+an error message; may be NULL.
+@item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
 @item @emph{NOTES}
@@ -4085,12 +4823,13 @@ or equal the requested number of counts. Before the function returns, the
 event variable has to be decremented by the requested @var{until_count} value.
 A possible implementation would be a busy loop for a certain number of spins
 (possibly depending on the number of threads relative to the number of available
-cores) followed by other waiting strategy such as a sleeping wait (possibly with
-an increasing number of sleep time) or, if possible, a futex wait.
+cores) followed by another waiting strategy such as a sleeping wait (possibly
+with an increasing number of sleep time) or, if possible, a futex wait.
 
 The statement is an image-control statement but does not imply sync memory.
-Still, all preceeding push communications to this image of images having
-issued a @code{event_push} have to be completed before this function returns.
+Still, all preceeding push communications of this image to the specified
+remote image have to be completed before @code{event_wait} on the remote
+image returns.
 @end table
 
 
@@ -4101,7 +4840,7 @@ issued a @code{event_push} have to be completed before this function returns.
 
 @table @asis
 @item @emph{Description}:
-Return the event count of the specified event count.
+Return the event count of the specified event variable.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_event_query (caf_token_t token, size_t index,
@@ -4109,22 +4848,24 @@ int image_index, int *count, int *stat)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
-@item @var{index} @tab Array index; first array index is 0. For scalars, it is
-always 0.
-@item @var{image_index} @tab The ID of the remote image; must be a positive
-number; zero indicates the current image when accessed noncoindexed.
-@item @var{count} @tab intent(out) The number of events currently posted to
-the event variable
-@item @var{stat} @tab intent(out) Stores the STAT=; may be NULL
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{index} @tab intent(in)  Array index; first array index is 0.  For
+scalars, it is always 0.
+@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
+positive number; zero indicates the current image when accessed noncoindexed.
+@item @var{count} @tab intent(out)  The number of events currently posted to
+the event variable.
+@item @var{stat} @tab intent(out)  Stores the STAT=; may be NULL.
 @end multitable
 
 @item @emph{NOTES}
-The typical use is to check the local even variable to only call
+The typical use is to check the local event variable to only call
 @code{event_wait} when the data is available. However, a coindexed variable
 is permitted; there is no ordering or synchronization implied.  It acts like
 an atomic fetch of the value of the event variable.
 @end table
+
+
 
 @node _gfortran_caf_sync_all
 @subsection @code{_gfortran_caf_sync_all} --- All-image barrier
@@ -4142,10 +4883,10 @@ previous segment have completed.
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
-@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
-an error message; may be NULL
-@item @var{errmsg_len} @tab the buffer size of errmsg.
+@item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
+@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+an error message; may be NULL.
+@item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 @end table
 
@@ -4161,8 +4902,8 @@ Synchronization between the specified images; the program only continues on a
 given image after this function has been called on all images specified for
 that image. Note that one image can wait for all other images in the current
 team (e.g. via @code{sync images(*)}) while those only wait for that specific
-image.  Additionally, @code{sync images} it ensures that all pending data
-transfers of previous segment have completed.
+image.  Additionally, @code{sync images} ensures that all pending data
+transfers of previous segments have completed.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_sync_images (int count, int images[], int *stat,
@@ -4170,15 +4911,15 @@ char *errmsg, int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{count} @tab the number of images which are provided in the next
-argument.  For a zero-sized array, the value is zero.  For @code{sync
-images (*)}, the value is @math{-1}.
-@item @var{images} @tab intent(in) an array with the images provided by the
-user. If @var{count} is zero, a NULL pointer is passed.
-@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
-@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
-an error message; may be NULL
-@item @var{errmsg_len} @tab the buffer size of errmsg.
+@item @var{count} @tab intent(in)  The number of images which are provided in
+the next argument.  For a zero-sized array, the value is zero.  For
+@code{sync images (*)}, the value is @math{-1}.
+@item @var{images} @tab intent(in)  An array with the images provided by the
+user.  If @var{count} is zero, a NULL pointer is passed.
+@item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
+@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+an error message; may be NULL.
+@item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 @end table
 
@@ -4198,10 +4939,10 @@ all pending memory operations of this image have been completed.
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
-@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
-an error message; may be NULL
-@item @var{errmsg_len} @tab the buffer size of errmsg.
+@item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
+@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+an error message; may be NULL.
+@item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
 @item @emph{NOTE} A simple implementation could be
@@ -4225,7 +4966,7 @@ function should terminate the program with the specified exit code.
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{error} @tab the exit status to be used.
+@item @var{error} @tab intent(in)  The exit status to be used.
 @end multitable
 @end table
 
@@ -4245,8 +4986,8 @@ function should terminate the program with a nonzero-exit code.
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{string} @tab the error message (not zero terminated)
-@item @var{len} @tab the length of the string
+@item @var{string} @tab intent(in)  the error message (not zero terminated)
+@item @var{len} @tab intent(in)  the length of the string
 @end multitable
 @end table
 
@@ -4266,16 +5007,16 @@ int image_index, void *value, int *stat, int type, int kind)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
-@item @var{offset} @tab By which amount of bytes the actual data is shifted
-compared to the base address of the coarray.
-@item @var{image_index} @tab The ID of the remote image; must be a positive
-number; zero indicates the current image when used noncoindexed.
-@item @var{value} @tab intent(in) the value to be assigned, passed by reference.
-@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
-@item @var{type} @tab the data type, i.e. @code{BT_INTEGER} (1) or
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+shifted compared to the base address of the coarray.
+@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
+positive number; zero indicates the current image when used noncoindexed.
+@item @var{value} @tab intent(in)  the value to be assigned, passed by reference
+@item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
+@item @var{type} @tab intent(in)  The data type, i.e. @code{BT_INTEGER} (1) or
 @code{BT_LOGICAL} (2).
-@item @var{kind} @tab The kind value (only 4; always @code{int})
+@item @var{kind} @tab intent(in)  The kind value (only 4; always @code{int})
 @end multitable
 @end table
 
@@ -4294,14 +5035,13 @@ Reference atomically a value of a kind-4 integer or logical variable.
 int image_index, void *value, int *stat, int type, int kind)}
 
 @item @emph{Arguments}:
-@item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
-@item @var{offset} @tab By which amount of bytes the actual data is shifted
-compared to the base address of the coarray.
-@item @var{image_index} @tab The ID of the remote image; must be a positive
-number; zero indicates the current image when used noncoindexed.
-@item @var{value} @tab intent(out) The variable assigned the atomically
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+shifted compared to the base address of the coarray.
+@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
+positive number; zero indicates the current image when used noncoindexed.
+@item @var{value} @tab intent(out)  The variable assigned the atomically
 referenced variable.
 @item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
 @item @var{type} @tab the data type, i.e. @code{BT_INTEGER} (1) or
@@ -4329,21 +5069,21 @@ int type, int kind)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
-@item @var{offset} @tab By which amount of bytes the actual data is shifted
-compared to the base address of the coarray.
-@item @var{image_index} @tab The ID of the remote image; must be a positive
-number; zero indicates the current image when used noncoindexed.
-@item @var{old} @tab intent(out) the value which the atomic variable had
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+shifted compared to the base address of the coarray.
+@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
+positive number; zero indicates the current image when used noncoindexed.
+@item @var{old} @tab intent(out)  The value which the atomic variable had
 just before the cas operation.
-@item @var{compare} @tab intent(in) The value used for comparision.
-@item @var{new_val} @tab intent(in) The new value for the atomic variable,
+@item @var{compare} @tab intent(in)  The value used for comparision.
+@item @var{new_val} @tab intent(in)  The new value for the atomic variable,
 assigned to the atomic variable, if @code{compare} equals the value of the
 atomic variable.
-@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
-@item @var{type} @tab the data type, i.e. @code{BT_INTEGER} (1) or
+@item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
+@item @var{type} @tab intent(in)  the data type, i.e. @code{BT_INTEGER} (1) or
 @code{BT_LOGICAL} (2).
-@item @var{kind} @tab The kind value (only 4; always @code{int})
+@item @var{kind} @tab intent(in)  The kind value (only 4; always @code{int})
 @end multitable
 @end table
 
@@ -4358,7 +5098,7 @@ atomic variable.
 Apply an operation atomically to an atomic integer or logical variable.
 After the operation, @var{old} contains the value just before the operation,
 which, respectively, adds (GFC_CAF_ATOMIC_ADD) atomically the @code{value} to
-the atomic integer variable or does a bitwise AND, OR or exclusive OR of the
+the atomic integer variable or does a bitwise AND, OR or exclusive OR
 between the atomic variable and @var{value}; the result is then stored in the
 atomic variable.
 
@@ -4368,23 +5108,23 @@ int image_index, void *value, void *old, int *stat, int type, int kind)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{op} @tab the operation to be performed; possible values
+@item @var{op} @tab intent(in)  the operation to be performed; possible values
 @code{GFC_CAF_ATOMIC_ADD} (1), @code{GFC_CAF_ATOMIC_AND} (2),
 @code{GFC_CAF_ATOMIC_OR} (3), @code{GFC_CAF_ATOMIC_XOR} (4).
-@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
-@item @var{offset} @tab By which amount of bytes the actual data is shifted
-compared to the base address of the coarray.
-@item @var{image_index} @tab The ID of the remote image; must be a positive
-number; zero indicates the current image when used noncoindexed.
-@item @var{old} @tab intent(out) the value which the atomic variable had
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{offset} @tab intent(in)  By which amount of bytes the actual data is
+shifted compared to the base address of the coarray.
+@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
+positive number; zero indicates the current image when used noncoindexed.
+@item @var{old} @tab intent(out)  The value which the atomic variable had
 just before the atomic operation.
-@item @var{val} @tab intent(in) The new value for the atomic variable,
+@item @var{val} @tab intent(in)  The new value for the atomic variable,
 assigned to the atomic variable, if @code{compare} equals the value of the
 atomic variable.
-@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
-@item @var{type} @tab the data type, i.e. @code{BT_INTEGER} (1) or
-@code{BT_LOGICAL} (2).
-@item @var{kind} @tab The kind value (only 4; always @code{int})
+@item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
+@item @var{type} @tab intent(in)  the data type, i.e. @code{BT_INTEGER} (1) or
+@code{BT_LOGICAL} (2)
+@item @var{kind} @tab intent(in)  the kind value (only 4; always @code{int})
 @end multitable
 @end table
 
@@ -4406,14 +5146,14 @@ int source_image, int *stat, char *errmsg, int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{a} @tab intent(inout) And array descriptor with the data to be
-breoadcasted (on @var{source_image}) or to be received (other images).
-@item @var{source_image} @tab The ID of the image from which the data should
-be taken.
-@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
-@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
-an error message; may be NULL
-@item @var{errmsg_len} @tab the buffer size of errmsg.
+@item @var{a} @tab intent(inout)  An array descriptor with the data to be
+broadcasted (on @var{source_image}) or to be received (other images).
+@item @var{source_image} @tab intent(in)  The ID of the image from which the
+data should be broadcasted.
+@item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
+@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+an error message; may be NULL.
+@item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg.
 @end multitable
 @end table
 
@@ -4425,7 +5165,7 @@ an error message; may be NULL
 
 @table @asis
 @item @emph{Description}:
-Calculates the for the each array element of the variable @var{a} the maximum
+Calculates for each array element of the variable @var{a} the maximum
 value for that element in the current team; if @var{result_image} has the
 value 0, the result shall be stored on all images, otherwise, only on the
 specified image. This function operates on numeric values and character
@@ -4437,20 +5177,21 @@ int *stat, char *errmsg, int a_len, int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{a} @tab intent(inout) And array descriptor with the data to be
-breoadcasted (on @var{source_image}) or to be received (other images).
-@item @var{result_image} @tab The ID of the image to which the reduced
-value should be copied to; if zero, it has to be copied to all images.
-@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
-@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
-an error message; may be NULL
-@item @var{a_len} @tab The string length of argument @var{a}.
-@item @var{errmsg_len} @tab the buffer size of errmsg.
+@item @var{a} @tab intent(inout)  An array descriptor for the data to be
+processed.  On the destination image(s) the result overwrites the old content.
+@item @var{result_image} @tab intent(in)  The ID of the image to which the
+reduced value should be copied to; if zero, it has to be copied to all images.
+@item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
+@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+an error message; may be NULL.
+@item @var{a_len} @tab intent(in)  the string length of argument @var{a}
+@item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
 @item @emph{NOTES}
-If @var{result_image} is nonzero, the value on all images except of the
-specified one become undefined; hence, the library may make use of this.
+If @var{result_image} is nonzero, the data in the array descriptor @var{a} on
+all images except of the specified one become undefined; hence, the library may
+make use of this.
 @end table
 
 
@@ -4461,7 +5202,7 @@ specified one become undefined; hence, the library may make use of this.
 
 @table @asis
 @item @emph{Description}:
-Calculates the for the each array element of the variable @var{a} the minimum
+Calculates for each array element of the variable @var{a} the minimum
 value for that element in the current team; if @var{result_image} has the
 value 0, the result shall be stored on all images, otherwise, only on the
 specified image. This function operates on numeric values and character
@@ -4473,20 +5214,21 @@ int *stat, char *errmsg, int a_len, int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{a} @tab intent(inout) And array descriptor with the data to be
-breoadcasted (on @var{source_image}) or to be received (other images).
-@item @var{result_image} @tab The ID of the image to which the reduced
-value should be copied to; if zero, it has to be copied to all images.
-@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
-@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
-an error message; may be NULL
-@item @var{a_len} @tab The string length of argument @var{a}.
-@item @var{errmsg_len} @tab the buffer size of errmsg.
+@item @var{a} @tab intent(inout)  An array descriptor for the data to be
+processed.  On the destination image(s) the result overwrites the old content.
+@item @var{result_image} @tab intent(in)  The ID of the image to which the
+reduced value should be copied to; if zero, it has to be copied to all images.
+@item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
+@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+an error message; may be NULL.
+@item @var{a_len} @tab intent(in)  the string length of argument @var{a}
+@item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
 @item @emph{NOTES}
-If @var{result_image} is nonzero, the value on all images except of the
-specified one become undefined; hence, the library may make use of this.
+If @var{result_image} is nonzero, the data in the array descriptor @var{a} on
+all images except of the specified one become undefined; hence, the library may
+make use of this.
 @end table
 
 
@@ -4497,10 +5239,10 @@ specified one become undefined; hence, the library may make use of this.
 
 @table @asis
 @item @emph{Description}:
-Calculates the for the each array element of the variable @var{a} the sum
-value for that element in the current team; if @var{result_image} has the
+Calculates for each array element of the variable @var{a} the sum of all
+values for that element in the current team; if @var{result_image} has the
 value 0, the result shall be stored on all images, otherwise, only on the
-specified image. This function operates on numeric values.
+specified image.  This function operates on numeric values only.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_co_sum (gfc_descriptor_t *a, int result_image,
@@ -4508,19 +5250,20 @@ int *stat, char *errmsg, int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{a} @tab intent(inout) And array descriptor with the data to be
-breoadcasted (on @var{source_image}) or to be received (other images).
-@item @var{result_image} @tab The ID of the image to which the reduced
-value should be copied to; if zero, it has to be copied to all images.
-@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
-@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
-an error message; may be NULL
-@item @var{errmsg_len} @tab the buffer size of errmsg.
+@item @var{a} @tab intent(inout)  An array descriptor with the data to be
+processed.  On the destination image(s) the result overwrites the old content.
+@item @var{result_image} @tab intent(in)  The ID of the image to which the
+reduced value should be copied to; if zero, it has to be copied to all images.
+@item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
+@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+an error message; may be NULL.
+@item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
 @item @emph{NOTES}
-If @var{result_image} is nonzero, the value on all images except of the
-specified one become undefined; hence, the library may make use of this.
+If @var{result_image} is nonzero, the data in the array descriptor @var{a} on
+all images except of the specified one become undefined; hence, the library may
+make use of this.
 @end table
 
 
@@ -4531,16 +5274,16 @@ specified one become undefined; hence, the library may make use of this.
 
 @table @asis
 @item @emph{Description}:
-Calculates the for the each array element of the variable @var{a} the reduction
+Calculates for each array element of the variable @var{a} the reduction
 value for that element in the current team; if @var{result_image} has the
 value 0, the result shall be stored on all images, otherwise, only on the
-specified image. The @var{opr} is a pure function doing a mathematically
+specified image.  The @var{opr} is a pure function doing a mathematically
 commutative and associative operation.
 
 The @var{opr_flags} denote the following; the values are bitwise ored.
 @code{GFC_CAF_BYREF} (1) if the result should be returned
-by value; @code{GFC_CAF_HIDDENLEN} (2) whether the result and argument
-string lengths shall be specified as hidden argument;
+by reference; @code{GFC_CAF_HIDDENLEN} (2) whether the result and argument
+string lengths shall be specified as hidden arguments;
 @code{GFC_CAF_ARG_VALUE} (4) whether the arguments shall be passed by value,
 @code{GFC_CAF_ARG_DESC} (8) whether the arguments shall be passed by descriptor.
 
@@ -4552,27 +5295,29 @@ int *stat, char *errmsg, int a_len, int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{opr} @tab Function pointer to the reduction function.
-@item @var{opr_flags} @tab Flags regarding the reduction function
-@item @var{a} @tab intent(inout) And array descriptor with the data to be
-breoadcasted (on @var{source_image}) or to be received (other images).
-@item @var{result_image} @tab The ID of the image to which the reduced
-value should be copied to; if zero, it has to be copied to all images.
-@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
-@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
-an error message; may be NULL
-@item @var{a_len} @tab The string length of argument @var{a}.
-@item @var{errmsg_len} @tab the buffer size of errmsg.
+@item @var{a} @tab intent(inout)  An array descriptor with the data to be
+processed.  On the destination image(s) the result overwrites the old content.
+@item @var{opr} @tab intent(in)  Function pointer to the reduction function
+@item @var{opr_flags} @tab intent(in)  Flags regarding the reduction function
+@item @var{result_image} @tab intent(in)  The ID of the image to which the
+reduced value should be copied to; if zero, it has to be copied to all images.
+@item @var{stat} @tab intent(out)  Stores the status STAT= and may be NULL.
+@item @var{errmsg} @tab intent(out)  When an error occurs, this will be set to
+an error message; may be NULL.
+@item @var{a_len} @tab intent(in)  the string length of argument @var{a}
+@item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
 @item @emph{NOTES}
-If @var{result_image} is nonzero, the value on all images except of the
-specified one become undefined; hence, the library may make use of this.
+If @var{result_image} is nonzero, the data in the array descriptor @var{a} on
+all images except of the specified one become undefined; hence, the library may
+make use of this.
+
 For character arguments, the result is passed as first argument, followed
 by the result string length, next come the two string arguments, followed
-by the two hidden arguments. With C binding, there are no hidden arguments
-and by-reference passing and either only a single character is passed or
-an array descriptor.
+by the two hidden string length arguments.  With C binding, there are no hidden
+arguments and by-reference passing and either only a single character is passed
+or an array descriptor.
 @end table
 
 

@@ -1338,6 +1338,32 @@ fix = {
 };
 
 /*
+ *  macOS 10.12 <AvailabilityInternal.h> uses __attribute__((availability))
+ *  unconditionally.
+ */
+fix = {
+    hackname  = darwin_availabilityinternal;
+    mach      = "*-*-darwin*";
+    files     = AvailabilityInternal.h;
+    select    = "#define[ \t]+(__API_[ADU]\\([^)]*\\)).*";
+    c_fix     = format;
+    c_fix_arg = <<- _EOFix_
+	#if defined(__has_attribute)
+	  #if __has_attribute(availability)
+	%0
+	  #else
+	    #define %1
+	  #endif
+	#else
+	    #define %1
+	#endif
+	_EOFix_;
+
+    test_text = "#define __API_A(x) __attribute__((availability(__API_AVAILABLE_PLATFORM_##x)))\n"
+		"#define __API_D(msg,x) __attribute__((availability(__API_DEPRECATED_PLATFORM_##x,message=msg)))";
+};
+
+/*
  *  For the AAB_darwin7_9_long_double_funcs fix to be useful,
  *  you have to not use "" includes.
  */
@@ -1392,6 +1418,77 @@ fix = {
   c_fix_arg = "((__GNUC__ >= 4) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))";
   test_text = "#if defined(__GNUC__) && (__GNUC__ >= 3) && "
   	      "(__GNUC_MINOR__ >= 1)\n";
+};
+
+/*
+ *  Before Mac OS X 10.8 <i386/setjmp.h> doesn't mark longjump noreturn.
+ */
+fix = {
+    hackname  = darwin_longjmp_noreturn;
+    mach      = "*-*-darwin*";
+    files     = "i386/setjmp.h";
+    bypass    = "__dead2";
+    select    = "(.*longjmp\\(.*jmp_buf.*[^)]+\\));";
+    c_fix     = format;
+    c_fix_arg = "%1 __attribute__ ((__noreturn__));";
+
+    test_text = "void siglongjmp(sigjmp_buf, int);";
+};
+
+/*
+ *  Mac OS X 10.11 <os/trace.h> uses attribute on function definition.
+ */
+fix = {
+  hackname  = darwin_os_trace_1;
+  mach      = "*-*-darwin*";
+  files     = os/trace.h;
+  select    = "^(_os_trace_verify_printf.*) (__attribute__.*)";
+  c_fix     = format;
+  c_fix_arg = "%1";
+  test_text = "_os_trace_verify_printf(const char *msg, ...) __attribute__((format(printf, 1, 2)))";
+};
+
+/*
+ *  Mac OS X 10.1[012] <os/trace.h> os_trace_payload_t typedef uses Blocks
+ *  extension without guard.
+ */
+fix = {
+  hackname  = darwin_os_trace_2;
+  mach      = "*-*-darwin*";
+  files     = os/trace.h;
+  select    = "typedef.*\\^os_trace_payload_t.*";
+  c_fix     = format;
+  c_fix_arg = "#if __BLOCKS__\n%0\n#endif";
+  test_text = "typedef void (^os_trace_payload_t)(xpc_object_t xdict);";
+};
+
+/*
+ *  In Mac OS X 10.1[012] <os/trace.h>, need to guard users of
+ *  os_trace_payload_t typedef, too.
+ */
+fix = {
+  hackname  = darwin_os_trace_3;
+  mach      = "*-*-darwin*";
+  files     = os/trace.h;
+  select    = <<- _EOSelect_
+	__(API|OSX)_.*
+	OS_EXPORT.*
+	.*
+	_os_trace.*os_trace_payload_t payload);
+	_EOSelect_;
+  c_fix     = format;
+  c_fix_arg = "#if __BLOCKS__\n%0\n#endif";
+  test_text = <<- _EOText_
+	__API_AVAILABLE(macosx(10.10), ios(8.0), watchos(2.0), tvos(8.0))
+	OS_EXPORT OS_NOTHROW OS_NOT_TAIL_CALLED
+	void
+	_os_trace_with_buffer(void *dso, const char *message, uint8_t type, const void *buffer, size_t buffer_size, os_trace_payload_t payload);
+
+	__OSX_AVAILABLE_STARTING(__MAC_10_12, __IPHONE_10_0)
+	OS_EXPORT OS_NOTHROW
+	void
+	_os_trace_internal(void *dso, uint8_t type, const char *format, const uint8_t *buf, size_t buf_size, os_trace_payload_t payload);
+	_EOText_;
 };
 
 /*
@@ -2178,6 +2275,24 @@ fix = {
 };
 
 /*
+ *  The HP-UX stddef.h is replaced by gcc's. It doesn't include sys/stdsyms.h.
+ *  As a result, we need to include sys/stdsyms.h in alloca.h.
+ */
+fix = {
+    hackname  = hppa_hpux11_alloca;
+    mach      = "hppa*-*-hpux11*";
+    files     = alloca.h;
+    select    = "#ifndef _STDDEF_INCLUDED";
+    c_fix     = format;
+    c_fix_arg = "#ifndef _SYS_STDSYMS_INCLUDED\n"
+		"#  include <sys/stdsyms.h>\n"
+		"#endif /* _SYS_STDSYMS_INCLUDED */\n\n"
+		"%0";
+
+    test_text = "#ifndef _STDDEF_INCLUDED";
+};
+
+/*
  *  Make sure hpux defines abs in header.
  */
 fix = {
@@ -2237,9 +2352,9 @@ fix = {
  */
 fix = {
     hackname  = hpux11_fabsf;
+    mach      = "*-hp-hpux11*";
     files     = math.h;
     select    = "^[ \t]*#[ \t]*define[ \t]+fabsf\\(.*";
-    bypass    = "__cplusplus";
 
     c_fix     = format;
     c_fix_arg = "#ifndef __cplusplus\n%0\n#endif";
@@ -2623,7 +2738,21 @@ fix = {
     c-fix-arg = "#  define	UINT_%164_MAX	__UINT64_MAX__";
     test-text = "#  define       UINT_FAST64_MAX        ULLONG_MAX\n"
 		"#  define       UINT_LEAST64_MAX        ULLONG_MAX\n";
-	_EOFix_;
+};
+
+/*
+ *  Add noreturn attribute to longjmp declarations in hpux <setjmp.h>
+ */
+fix = {
+    hackname = hpux_longjmp;
+    mach     = "*-hp-hpux*";
+    files    = setjmp.h;
+    select   = "^[ \t]*extern[ \t]+void[ \t]+.*longjmp[ \t]*\(__\\(\\(.*int\\)\\)|\\(.*int\\)|\\(\\)\)";
+
+    c_fix     = format;
+    c_fix_arg = "%0 __attribute__ ((__noreturn__))";
+
+    test_text = 'extern void	longjmp __((jmp_buf, int));';
 };
 
 /*
@@ -3482,6 +3611,43 @@ fix = {
 };
 
 /*
+ *  Solaris <iso/stdio_iso.h> should deprecate gets before C11.
+ */
+fix = {
+    hackname  = solaris_gets_c11;
+    mach      = "*-*-solaris2*";
+    files     = "iso/stdio_iso.h";
+    select    = "(extern char[ \t]*\\*gets\\(char \\*\\));";
+
+    c_fix     = format;
+    c_fix_arg = "#if __STDC_VERSION__ < 201112L && __cplusplus < 201402L\n"
+    		"%1 __attribute__((__deprecated__));\n"
+		"#endif";
+
+    test_text = "extern char	*gets(char *);";
+};
+
+/*
+ *  Solaris <iso/stdio_iso.h> shouldn't declare gets for C++14.
+ */
+fix = {
+    hackname  = solaris_gets_cxx14;
+    mach      = "*-*-solaris2*";
+    files     = "iso/stdio_iso.h";
+    select    = <<- _EOSelect_
+(#if __STDC_VERSION__ < 201112L)
+(extern char	\*gets\(char \*\) __ATTR_DEPRECATED;)
+_EOSelect_;
+    c_fix     = format;
+    c_fix_arg = "%1 && __cplusplus < 201402L\n%2";
+
+    test_text = <<- _EOText_
+#if __STDC_VERSION__ < 201112L
+extern char	*gets(char *) __ATTR_DEPRECATED;
+_EOText_;
+};
+
+/*
  * Sun Solaris 2 has a version of sys/int_const.h that defines
  * UINT8_C and UINT16_C to unsigned constants.
  */
@@ -3757,6 +3923,23 @@ _EOText_;
 };
 
 /*
+ * Some versions of Solaris 10+ <math.h> #undef libstdc++-internal macros.
+ */
+fix = {
+    hackname  = solaris_math_12;
+    files     = math.h;
+    mach      = '*-*-solaris2*';
+    select    = '#undef.*_GLIBCXX_USE_C99_MATH';
+    sed       = "/#undef[ \t]*_GLIBCXX_USE_C99_MATH/d";
+    test_text = << _EOText_
+#if __cplusplus >= 201103L
+#undef  _GLIBCXX_USE_C99_MATH
+#undef  _GLIBCXX_USE_C99_MATH_TR1
+#endif
+_EOText_;
+};
+
+/*
  * Sun Solaris defines PTHREAD_ONCE_INIT as an array containing a
  * structure.  As such, it need two levels of brackets, but only
  * contains one.  Wrap the macro definition in an extra layer.
@@ -3854,6 +4037,21 @@ fix = {
 };
 
 /*
+ *  Solaris <stdio.h> shouldn't use std::gets for C++14.
+ */
+fix = {
+    hackname  = solaris_std_gets_cxx14;
+    mach      = "*-*-solaris2*";
+    files     = "stdio.h";
+    select    = "using std::gets;";
+
+    c_fix     = format;
+    c_fix_arg = "#if __cplusplus < 201402L\n%0\n#endif";
+
+    test_text = "using std::gets;";
+};
+
+/*
  * Sun Solaris 8 has what appears to be some gross workaround for
  * some old version of their c++ compiler.  G++ doesn't want it
  * either, but doesn't want to be tied to SunPRO version numbers.
@@ -3869,6 +4067,21 @@ fix = {
     sed      = 's/defined(__cplusplus) && (__cplusplus < 54321L)/0/';
 
     test_text = "#if\tdefined(__cplusplus) && (__cplusplus < 54321L)";
+};
+
+/*
+ *  Solaris <stdlib.h> shouldn't use _Noreturn, breaks with C++.
+ */
+fix = {
+    hackname  = solaris_stdlib_noreturn;
+    mach      = "*-*-solaris2*";
+    files     = "iso/stdlib_c99.h";
+    select    = "(extern) _Noreturn (void quick_exit\\(int\\));";
+
+    c_fix     = format;
+    c_fix_arg = "%1 %2 __attribute__((__noreturn__));";
+
+    test_text = "extern _Noreturn void quick_exit(int);";
 };
 
 /*

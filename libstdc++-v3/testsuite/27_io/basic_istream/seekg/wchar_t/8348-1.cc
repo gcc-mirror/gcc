@@ -1,4 +1,4 @@
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,6 @@
 void test06(void)
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   wstring num1(L"555");
 
   // seekg
@@ -35,10 +34,10 @@ void test06(void)
     wistream::pos_type pos1 = iss.tellg();
     int asNum = 0;
     iss >> asNum;
-    VERIFY( test = iss.eof() );
-    VERIFY( test = !iss.fail() );
+    VERIFY( iss.eof() );
+    VERIFY( !iss.fail() );
     iss.seekg(pos1);
-    VERIFY( test = !iss.fail() );
+    VERIFY( !iss.fail() );
   }
 }
 

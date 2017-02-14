@@ -3,7 +3,7 @@
 
 // 2004-01-11  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,6 @@
 // libstdc++/13582
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   locale loc_en(locale(ISO_8859(1,en_US)));

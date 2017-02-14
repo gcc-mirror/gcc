@@ -1,5 +1,5 @@
 /* Callgraph based analysis of static variables.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -508,6 +508,8 @@ special_builtin_state (enum pure_const_state_e *state, bool *looping,
 	case BUILT_IN_FRAME_ADDRESS:
 	case BUILT_IN_APPLY:
 	case BUILT_IN_APPLY_ARGS:
+	case BUILT_IN_ASAN_BEFORE_DYNAMIC_INIT:
+	case BUILT_IN_ASAN_AFTER_DYNAMIC_INIT:
 	  *looping = false;
 	  *state = IPA_CONST;
 	  return true;
@@ -1193,7 +1195,8 @@ static bool
 cdtor_p (cgraph_node *n, void *)
 {
   if (DECL_STATIC_CONSTRUCTOR (n->decl) || DECL_STATIC_DESTRUCTOR (n->decl))
-    return !TREE_READONLY (n->decl) && !DECL_PURE_P (n->decl);
+    return ((!TREE_READONLY (n->decl) && !DECL_PURE_P (n->decl))
+	    || DECL_LOOPING_CONST_OR_PURE_P (n->decl));
   return false;
 }
 

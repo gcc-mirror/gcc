@@ -13,7 +13,10 @@ struct X {
   {
     throw 1;
   }
-  void* operator new ( std::size_t n ) throw ( std::bad_alloc )
+  void* operator new ( std::size_t n )
+#if __cplusplus <= 201402L
+  throw ( std::bad_alloc )			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+#endif
   {
     new_flag = true;
     return ::operator new( n );

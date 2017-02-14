@@ -1,7 +1,6 @@
-// { dg-options "-std=gnu++14" }
-// { dg-do compile }
+// { dg-do compile { target c++14 } }
 
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,5 +25,5 @@ void test01()
   using std::experimental::any_cast;
 
   const any y(1);
-  any_cast<int&>(y); // { dg-error "qualifiers" "" { target { *-*-* } } 368 }
+  any_cast<int&>(y); // { dg-error "qualifiers" "" { target { *-*-* } } 359 }
 }

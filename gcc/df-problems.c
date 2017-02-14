@@ -1,5 +1,5 @@
 /* Standard problems for dataflow support routines.
-   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+   Copyright (C) 1999-2017 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "cfganal.h"

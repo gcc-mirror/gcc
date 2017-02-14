@@ -8,51 +8,31 @@ package os
 
 import (
 	"io"
-	"syscall"
 )
 
-const (
-	blockSize = 4096
-)
-
-func (f *File) readdirnames(n int) (names []string, err error) {
-	// If this file has no dirinfo, create one.
-	if f.dirinfo == nil {
-		f.dirinfo = new(dirInfo)
-		// The buffer must be at least a block long.
-		f.dirinfo.buf = make([]byte, blockSize)
+func (f *File) readdir(n int) (fi []FileInfo, err error) {
+	dirname := f.name
+	if dirname == "" {
+		dirname = "."
 	}
-	d := f.dirinfo
-
-	size := n
-	if size <= 0 {
-		size = 100
-		n = -1
-	}
-
-	names = make([]string, 0, size) // Empty with room to grow.
-	for n != 0 {
-		// Refill the buffer if necessary
-		if d.bufp >= d.nbuf {
-			d.bufp = 0
-			var errno error
-			d.nbuf, errno = fixCount(syscall.ReadDirent(f.fd, d.buf))
-			if errno != nil {
-				return names, NewSyscallError("readdirent", errno)
-			}
-			if d.nbuf <= 0 {
-				break // EOF
-			}
+	names, err := f.Readdirnames(n)
+	fi = make([]FileInfo, 0, len(names))
+	for _, filename := range names {
+		fip, lerr := lstat(dirname + "/" + filename)
+		if IsNotExist(lerr) {
+			// File disappeared between readdir + stat.
+			// Just treat it as if it didn't exist.
+			continue
 		}
-
-		// Drain the buffer
-		var nb, nc int
-		nb, nc, names = syscall.ParseDirent(d.buf[d.bufp:d.nbuf], n, names)
-		d.bufp += nb
-		n -= nc
+		if lerr != nil {
+			return fi, lerr
+		}
+		fi = append(fi, fip)
 	}
-	if n >= 0 && len(names) == 0 {
-		return names, io.EOF
+	if len(fi) == 0 && err == nil && n > 0 {
+		// Per File.Readdir, the slice must be non-empty or err
+		// must be non-nil if n > 0.
+		err = io.EOF
 	}
-	return names, nil
+	return fi, err
 }

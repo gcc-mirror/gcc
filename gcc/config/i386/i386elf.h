@@ -1,5 +1,5 @@
 /* Target definitions for GCC for Intel 80386 using ELF
-   Copyright (C) 1988-2016 Free Software Foundation, Inc.
+   Copyright (C) 1988-2017 Free Software Foundation, Inc.
 
    Derived from sysv4.h written by Ron Guilmette (rfg@netcom.com).
 
@@ -101,5 +101,3 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
-
-#define IX86_MAYBE_NO_LIBGCC_TFMODE

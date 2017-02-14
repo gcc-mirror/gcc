@@ -1,5 +1,5 @@
 // { dg-do compile { target c++11 } }
-
+// { dg-options -fno-new-ttp-matching }
 template<class T> class A { /* ... */ };
 template<class T, class U = T> class B { /* ... */ };
 template<class... Types> class C { /* ... */ };

@@ -1,8 +1,8 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2011-01-13  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2011-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,8 +37,6 @@ const int arr0[] = { 11, 22, 33, 44, 55 };
 void
 do_test(int arr1[5], bool np = true)
 {
-  bool test __attribute__((unused)) = true;
-
   do
     VERIFY( std::is_permutation(arr1, arr1 + 5, arr0) == np );
   while (std::next_permutation(arr1, arr1 + 5));
@@ -48,8 +46,6 @@ template<typename Predicate>
   void
   do_test(int arr1[5], Predicate pred, bool np = true)
   {
-    bool test __attribute__((unused)) = true;
-
     do
       VERIFY( std::is_permutation(arr1, arr1 + 5, arr0, pred) == np );
     while (std::next_permutation(arr1, arr1 + 5));

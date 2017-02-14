@@ -1,6 +1,6 @@
 // 2000-01-10 bkoz
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,6 @@ active_buffer(std::ios& stream)
 // libstdc++/2832
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   const char* strlit01 = "fuck war";
   const std::string str00;
   const std::string str01(strlit01);

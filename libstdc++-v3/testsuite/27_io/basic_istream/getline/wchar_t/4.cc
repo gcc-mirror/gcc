@@ -1,4 +1,4 @@
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,7 +55,6 @@ const wchar_t Inbuf::buf[] = L"1234567890abcdefghij";
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   typedef char_traits<wchar_t>   traits_type;
 

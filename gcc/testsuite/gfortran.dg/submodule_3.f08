@@ -21,7 +21,7 @@
 !
   SUBMODULE (foo_interface) foo_interface_son ! { dg-error "SUBMODULE declaration" }
 !
-  contains
+  contains ! { dg-error "CONTAINS statement without FUNCTION or SUBROUTINE" }
 
      module function array1 (this) result(that) ! { dg-error "MODULE prefix" }
      end function ! { dg-error "Expecting END PROGRAM" }
@@ -33,5 +33,5 @@
 
   end SUBMODULE foo_interface_son ! { dg-error "Expecting END PROGRAM" }
 
-end ! { dg-error "CONTAINS statement without FUNCTION or SUBROUTINE" }
+end
 

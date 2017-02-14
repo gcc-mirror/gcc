@@ -2,6 +2,7 @@
 // constructors was a deliberate choice.
 
 // { dg-do compile { target c++11 } }
+// { dg-options -fno-new-inheriting-ctors }
 
 struct A { A(int); };
 struct B: public A

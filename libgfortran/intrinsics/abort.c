@@ -1,5 +1,5 @@
 /* Implementation of the ABORT intrinsic.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -23,7 +23,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
-#include <stdlib.h>
 
 void PREFIX(abort) (void);
 export_proto_np(PREFIX(abort));

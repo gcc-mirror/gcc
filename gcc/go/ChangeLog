@@ -1,3 +1,169 @@
+2017-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79256
+	PR middle-end/79278
+	* go-backend.c (go_field_alignment): Adjust.
+
+2017-01-11  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.cc (conditional_expression): Add Bfunction parameter.
+
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* gccgo.texi: Bump @copyrights-go year.
+
+2016-12-16  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.cc (Gcc_backend::expression_statement): Add Bfunction*
+	parameter.
+	(Gcc_backend::init_statement): Likewise.
+	(Gcc_backend::assignment_statement): Likewise.
+	(Gcc_backend::if_statement): Likewise.
+
+2016-12-06  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.cc (Gcc_backend::var_expression): Add Varexpr_context
+	parameter.
+
+2016-11-22  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.cc (char_needs_encoding): Remove.
+	(needs_encoding, fetch_utf8_char, encode_id): Remove.
+	(Gcc_backend::global_variable): Add asm_name parameter.  Don't
+	compute asm_name here.
+	(Gcc_backend::implicit_variable): Likewise.
+	(Gcc_backend::implicit_variable_reference): Likewise.
+	(Gcc_backend::immutable_struct): Likewise.
+	(Gcc_backend::immutable_struct_reference): Likewise.
+	* Make-lang.in (GO_OBJS): Add go/go-encode-id.o.
+
+2016-11-22  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Add builtin function
+	__builtin_frame_address.
+
+2016-10-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* go-lang.c (go_langhook_type_for_mode): Remove redundant cast
+	from result of GET_MODE_CLASS.  Minor formatting fixes.
+
+2016-10-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* go-backend.c: Include memmodel.h.
+
+2016-10-10  Than McIntosh  <thanm@google.com>
+
+	* go-gcc.h: New file.
+	* go-c.h (struct go_create_gogo_args): Add backend and linemap
+	fields.
+	* go-lang.c: Include "go-gcc.h".
+	(go_langhook_init): Set linemap and backend fields of args.
+	* go-gcc.cc: Include "go-gcc.h".
+	* go-linemap.cc: Include "go-gcc.h".
+
+2016-10-10  Than McIntosh  <thanm@google.com>
+
+	* go-linemap.cc (Gcc_linemap::location_line): New method.
+
+2016-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config-lang.in (lang_requires_boot_languages): Delete.
+
+2016-10-06  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc (Gcc_backend::stack_allocation_expression): Clear the
+	returned memory.
+
+2016-09-27  Than McIntosh  <thanm@google.com>
+
+	* go-linemap.cc (Gcc_linemap::to_string): New method.
+
+2016-09-23  Than McIntosh  <thanm@google.com>
+
+	* go-gcc-diagnostics.cc: New file.
+	* go-location.h (Location): Remove operator source_location.  Add
+	operator==.
+	* go-system.h: #include <sstream>.
+	* Make-lang.in (GO_OBJS): Add go/go-diagnostics.o and
+	go/go-gcc-diagnostics.o.
+	(CFLAGS-go/go-gcc-diagnostics.o): New variable.
+
+2016-09-23  Chris Manghane  <cmang@google.com>
+
+	PR go/77701
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Fix calls to integer_type
+	to pass arguments in the correct order.
+
+2016-09-22  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Declare
+	__builtin_frame_address.
+
+2016-09-11  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Add builtin versions of
+	ctz, ctzll, bswap32, bswap64.
+
+2016-09-10  Ian Lance Taylor  <iant@golang.org>
+
+	* go-backend.c (go_trampoline_info): Remove.
+	* go-c.h (go_trampoline_info): Don't declare.
+
+2016-09-09  Than McIntosh  <thanm@google.com>
+
+	* go-sha1.cc: New file.
+	* Make-lang.in (GO_OBJS): Add go/go-sha1.o.
+	(CFLAGS-go/go-sha1.o): New variable.
+
+2016-08-29  Ian Lance Taylor  <iant@google.com>
+
+	* lang.opt (fgo-c-header, fgo-compiling-runtime): New options.
+	* go-c.h (struct go_create_gogo_args): Define.
+	(go_create_gogo): Change declaration to take struct pointer.
+	* go-lang.c (go_c_header): New static variable.
+	(go_langhook_init): Update call to go_create_gogo.
+	* gccgo.texi (Invoking gccgo): Document -fgo-c-header and
+	-fgo-compiling-runtime.
+
+2016-08-09  Ian Lance Taylor  <iant@google.com>
+
+	* gccgo.texi (Invoking gccgo): Document -fgo-optimize-allocs and
+	-fgo-debug-escae.
+	(Compiler Directives): New chapter.
+	(Function Names): Describe using //go:linkname.  Suggest using
+	-fgo-pkgpath rather than -fgo-prefix.
+
+2016-08-08  Ian Lance Taylor  <iant@google.com>
+
+	PR go/72814
+	* go-gcc.cc (Gcc_backend::function_type): If the return type is
+	zero bytes, treat the function as returning void.
+	(return_statement): If the return type is zero bytes, don't
+	actually return any values.
+
+2016-08-05  Ian Lance Taylor  <iant@google.com>
+
+	PR go/72812
+	* go-gcc.cc (char_needs_encoding): New static function.
+	(needs_encoding, fetch_utf8_char): New static functions.
+	(encode_id): New static function.
+	(Gcc_backend::global_variable): Set asm name if the name is not
+	simple ASCII.
+	(Gcc_backend::implicit_variable): Likewise.
+	(Gcc_backend::implicit_variable_reference): Likewise.
+	(Gcc_backend::immutable_struct): Likewise.
+	(Gcc_backend::immutable_struct_reference): Likewise.
+	(Gcc_backend::function): Likewise.
+
+2016-08-02  Chris Manghane  <cmang@google.com>
+
+	* lang.opt: Add -fgo-debug-escape option.
+	* go-c.h (go_create_gogo): Add debug_escape_level parameter.
+	* go-lang.c (go_langhook_init): Pass go_debug_escape_level to
+	go_create_gogo.
+
 2016-05-06  Chris Manghane  <cmang@google.com>
 
 	* Make-lang.in (GO_OBJS): Add go/escape.o (based on an entirely
@@ -1190,7 +1356,7 @@
 
 	Go frontend added to gcc repository.
 
-Copyright (C) 2010-2016 Free Software Foundation, Inc.
+Copyright (C) 2010-2017 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

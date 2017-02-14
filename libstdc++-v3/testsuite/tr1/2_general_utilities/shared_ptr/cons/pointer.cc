@@ -1,4 +1,4 @@
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,8 +31,6 @@ struct B : A { };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = 0;
   std::tr1::shared_ptr<A> p(a);
   VERIFY( p.get() == 0 );
@@ -44,8 +42,6 @@ test01()
 int
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   A * const a = new A;
   std::tr1::shared_ptr<A> p(a);
   VERIFY( p.get() == a );
@@ -58,8 +54,6 @@ test02()
 int
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   B * const b = new B;
   std::tr1::shared_ptr<A> p(b);
   VERIFY( p.get() == b );

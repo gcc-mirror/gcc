@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2016 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2017 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -326,6 +326,11 @@ for (i = 0; i < n_opts; i++) {
 			alias_data = "NULL, NULL, OPT_SPECIAL_ignore"
 		else
 			alias_data = "NULL, NULL, N_OPTS"
+		if (flag_set_p("Enum.*", flags[i])) {
+			if (!flag_set_p("RejectNegative", flags[i]) \
+			    && opts[i] ~ "^[Wfm]")
+				print "#error Enum allowing negative form"
+		}
 	} else {
 		alias_opt = nth_arg(0, alias_arg)
 		alias_posarg = nth_arg(1, alias_arg)

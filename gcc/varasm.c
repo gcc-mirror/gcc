@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "predict.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "regs.h"
@@ -170,8 +171,7 @@ static GTY(()) section *unnamed_sections;
 
 /* Return a nonzero value if DECL has a section attribute.  */
 #define IN_NAMED_SECTION(DECL) \
-  ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
-   && DECL_SECTION_NAME (DECL) != NULL)
+  (VAR_OR_FUNCTION_DECL_P (DECL) && DECL_SECTION_NAME (DECL) != NULL)
 
 struct section_hasher : ggc_ptr_hash<section>
 {
@@ -589,6 +589,7 @@ default_function_section (tree decl, enum node_frequency freq,
            these ELF section.  */
         if (!in_lto_p || !flag_profile_values)
           return get_named_text_section (decl, ".text.hot", NULL);
+	/* FALLTHRU */
       default:
 	return NULL;
     }
@@ -1187,7 +1188,7 @@ get_block_for_decl (tree decl)
 {
   section *sect;
 
-  if (TREE_CODE (decl) == VAR_DECL)
+  if (VAR_P (decl))
     {
       /* The object must be defined in this translation unit.  */
       if (DECL_EXTERNAL (decl))
@@ -1208,7 +1209,7 @@ get_block_for_decl (tree decl)
 
   /* Find out which section should contain DECL.  We cannot put it into
      an object block if it requires a standalone definition.  */
-  if (TREE_CODE (decl) == VAR_DECL)
+  if (VAR_P (decl))
       align_variable (decl, 0);
   sect = get_variable_section (decl, true);
   if (SECTION_STYLE (sect) == SECTION_NOSWITCH)
@@ -1237,7 +1238,7 @@ use_blocks_for_decl_p (tree decl)
   struct symtab_node *snode;
 
   /* Only data DECLs can be placed into object blocks.  */
-  if (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != CONST_DECL)
+  if (!VAR_P (decl) && TREE_CODE (decl) != CONST_DECL)
     return false;
 
   /* Detect decls created by dw2_force_const_mem.  Such decls are
@@ -1249,7 +1250,7 @@ use_blocks_for_decl_p (tree decl)
 
   /* If this decl is an alias, then we don't want to emit a
      definition.  */
-  if (TREE_CODE (decl) == VAR_DECL
+  if (VAR_P (decl)
       && (snode = symtab_node::get (decl)) != NULL
       && snode->alias)
     return false;
@@ -1303,7 +1304,7 @@ make_decl_rtl (tree decl)
 	      && TREE_CODE (decl) != RESULT_DECL);
 
   /* A weak alias has TREE_PUBLIC set but not the other bits.  */
-  gcc_assert (TREE_CODE (decl) != VAR_DECL
+  gcc_assert (!VAR_P (decl)
 	      || TREE_STATIC (decl)
 	      || TREE_PUBLIC (decl)
 	      || DECL_EXTERNAL (decl)
@@ -1347,7 +1348,7 @@ make_decl_rtl (tree decl)
 
   /* If this variable belongs to the global constant pool, retrieve the
      pre-computed RTL or recompute it in LTO mode.  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_IN_CONSTANT_POOL (decl))
+  if (VAR_P (decl) && DECL_IN_CONSTANT_POOL (decl))
     {
       SET_DECL_RTL (decl, output_constant_def (DECL_INITIAL (decl), 1));
       return;
@@ -1456,7 +1457,7 @@ make_decl_rtl (tree decl)
      visibility pass is doing the same work.  But notice_global_symbol
      is called early and it needs to make DECL_RTL to get the name.
      we take care of recomputing the DECL_RTL after visibility is changed.  */
-  if (TREE_CODE (decl) == VAR_DECL
+  if (VAR_P (decl)
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
       && DECL_SECTION_NAME (decl) != NULL
       && DECL_INITIAL (decl) == NULL_TREE
@@ -1464,7 +1465,7 @@ make_decl_rtl (tree decl)
     DECL_COMMON (decl) = 0;
 
   /* Variables can't be both common and weak.  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_WEAK (decl))
+  if (VAR_P (decl) && DECL_WEAK (decl))
     DECL_COMMON (decl) = 0;
 
   if (use_object_blocks_p () && use_blocks_for_decl_p (decl))
@@ -1555,7 +1556,9 @@ assemble_addr_to_section (rtx symbol, section *sec)
 section *
 get_cdtor_priority_section (int priority, bool constructor_p)
 {
-  char buf[16];
+  /* Buffer conservatively large enough for the full range of a 32-bit
+     int plus the text below.  */
+  char buf[18];
 
   /* ??? This only works reliably with the GNU linker.  */
   sprintf (buf, "%s.%.5u",
@@ -1636,9 +1639,9 @@ notice_global_symbol (tree decl)
       || !TREE_PUBLIC (decl)
       || DECL_EXTERNAL (decl)
       || !DECL_NAME (decl)
-      || (TREE_CODE (decl) == VAR_DECL && DECL_HARD_REGISTER (decl))
+      || (VAR_P (decl) && DECL_HARD_REGISTER (decl))
       || (TREE_CODE (decl) != FUNCTION_DECL
-	  && (TREE_CODE (decl) != VAR_DECL
+	  && (!VAR_P (decl)
 	      || (DECL_COMMON (decl)
 		  && (DECL_INITIAL (decl) == 0
 		      || DECL_INITIAL (decl) == error_mark_node)))))
@@ -1789,8 +1792,15 @@ assemble_start_function (tree decl, const char *fnname)
       && optimize_function_for_speed_p (cfun))
     {
 #ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
-      ASM_OUTPUT_MAX_SKIP_ALIGN (asm_out_file,
-				 align_functions_log, align_functions - 1);
+      int align_log = align_functions_log;
+#endif
+      int max_skip = align_functions - 1;
+      if (flag_limit_function_alignment && crtl->max_insn_address > 0
+	  && max_skip >= crtl->max_insn_address)
+	max_skip = crtl->max_insn_address - 1;
+
+#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
+      ASM_OUTPUT_MAX_SKIP_ALIGN (asm_out_file, align_log, max_skip);
 #else
       ASM_OUTPUT_ALIGN (asm_out_file, align_functions_log);
 #endif
@@ -2108,7 +2118,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   bool asan_protected = false;
 
   /* This function is supposed to handle VARIABLES.  Ensure we have one.  */
-  gcc_assert (TREE_CODE (decl) == VAR_DECL);
+  gcc_assert (VAR_P (decl));
 
   /* Emulated TLS had better not get this far.  */
   gcc_checking_assert (targetm.have_tls || !DECL_THREAD_LOCAL_P (decl));
@@ -2484,7 +2494,7 @@ mark_decl_referenced (tree decl)
 	  && !node->definition)
 	node->mark_force_output ();
     }
-  else if (TREE_CODE (decl) == VAR_DECL)
+  else if (VAR_P (decl))
     {
       varpool_node *node = varpool_node::get_create (decl);
       /* C++ frontend use mark_decl_references to force COMDAT variables
@@ -2544,7 +2554,7 @@ assemble_name (FILE *file, const char *name)
 rtx
 assemble_static_space (unsigned HOST_WIDE_INT size)
 {
-  char name[12];
+  char name[17];
   const char *namestring;
   rtx x;
 
@@ -2631,7 +2641,7 @@ assemble_trampoline_template (void)
 static inline unsigned
 min_align (unsigned int a, unsigned int b)
 {
-  return (a | b) & -(a | b);
+  return least_bit_hwi (a | b);
 }
 
 /* Return the assembler directive for creating a given kind of integer
@@ -2980,7 +2990,7 @@ const_hash_1 (const tree exp)
 
 	  case LABEL_REF:
 	    hi = (value.offset
-		  + CODE_LABEL_NUMBER (LABEL_REF_LABEL (value.base)) * 13);
+		  + CODE_LABEL_NUMBER (label_ref_label (value.base)) * 13);
 	    break;
 
 	  default:
@@ -3169,8 +3179,8 @@ compare_constant (const tree t1, const tree t2)
 	    break;
 
 	  case LABEL_REF:
-	    ret = (CODE_LABEL_NUMBER (LABEL_REF_LABEL (value1.base))
-	           == CODE_LABEL_NUMBER (LABEL_REF_LABEL (value2.base)));
+	    ret = (CODE_LABEL_NUMBER (label_ref_label (value1.base))
+		   == CODE_LABEL_NUMBER (label_ref_label (value2.base)));
 	    break;
 
 	  default:
@@ -3269,8 +3279,7 @@ build_constant_desc (tree exp)
   if (use_object_blocks_p ())
     {
       int align = (TREE_CODE (decl) == CONST_DECL
-		   || (TREE_CODE (decl) == VAR_DECL
-		       && DECL_IN_CONSTANT_POOL (decl))
+		   || (VAR_P (decl) && DECL_IN_CONSTANT_POOL (decl))
 		   ? DECL_ALIGN (decl)
 		   : symtab_node::get (decl)->definition_alignment ());
       section *sect = get_constant_section (exp, align);
@@ -3286,6 +3295,10 @@ build_constant_desc (tree exp)
   rtl = gen_const_mem (TYPE_MODE (TREE_TYPE (exp)), symbol);
   set_mem_attributes (rtl, exp, 1);
   set_mem_alias_set (rtl, 0);
+
+  /* Putting EXP into the literal pool might have imposed a different
+     alignment which should be visible in the RTX as well.  */
+  set_mem_align (rtl, DECL_ALIGN (decl));
 
   /* We cannot share RTX'es in pool entries.
      Mark this piece of RTL as required for unsharing.  */
@@ -3427,8 +3440,7 @@ output_constant_def_contents (rtx symbol)
   else
     {
       int align = (TREE_CODE (decl) == CONST_DECL
-		   || (TREE_CODE (decl) == VAR_DECL
-		       && DECL_IN_CONSTANT_POOL (decl))
+		   || (VAR_P (decl) && DECL_IN_CONSTANT_POOL (decl))
 		   ? DECL_ALIGN (decl)
 		   : symtab_node::get (decl)->definition_alignment ());
       switch_to_section (get_constant_section (exp, align));
@@ -3610,7 +3622,7 @@ const_rtx_hash_1 (const_rtx x)
       break;
 
     case LABEL_REF:
-      h = h * 251 + CODE_LABEL_NUMBER (LABEL_REF_LABEL (x));
+      h = h * 251 + CODE_LABEL_NUMBER (label_ref_label (x));
       break;
 
     case UNSPEC:
@@ -3800,12 +3812,14 @@ get_pool_mode (const_rtx addr)
   return SYMBOL_REF_CONSTANT (addr)->mode;
 }
 
-/* Return the size of the constant pool.  */
+/* Return TRUE if and only if the constant pool has no entries.  Note
+   that even entries we might end up choosing not to emit are counted
+   here, so there is the potential for missed optimizations.  */
 
-int
-get_pool_size (void)
+bool
+constant_pool_empty_p (void)
 {
-  return crtl->varasm.pool->offset;
+  return crtl->varasm.pool->first == NULL;
 }
 
 /* Worker function for output_constant_pool_1.  Emit assembly for X
@@ -3892,11 +3906,13 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc,
       /* FALLTHRU  */
 
     case LABEL_REF:
-      tmp = LABEL_REF_LABEL (tmp);
-      gcc_assert (!as_a<rtx_insn *> (tmp)->deleted ());
-      gcc_assert (!NOTE_P (tmp)
-		  || NOTE_KIND (tmp) != NOTE_INSN_DELETED);
-      break;
+      {
+	rtx_insn *insn = label_ref_label (tmp);
+	gcc_assert (!insn->deleted ());
+	gcc_assert (!NOTE_P (insn)
+		    || NOTE_KIND (insn) != NOTE_INSN_DELETED);
+	break;
+      }
 
     default:
       break;
@@ -3930,6 +3946,29 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc,
  done:
 #endif
   return;
+}
+
+/* Recompute the offsets of entries in POOL, and the overall size of
+   POOL.  Do this after calling mark_constant_pool to ensure that we
+   are computing the offset values for the pool which we will actually
+   emit.  */
+
+static void
+recompute_pool_offsets (struct rtx_constant_pool *pool)
+{
+  struct constant_descriptor_rtx *desc;
+  pool->offset = 0;
+
+  for (desc = pool->first; desc ; desc = desc->next)
+    if (desc->mark)
+      {
+	  /* Recalculate offset.  */
+	unsigned int align = desc->align;
+	pool->offset += (align / BITS_PER_UNIT) - 1;
+	pool->offset &= ~ ((align / BITS_PER_UNIT) - 1);
+	desc->offset = pool->offset;
+	pool->offset += GET_MODE_SIZE (desc->mode);
+      }
 }
 
 /* Mark all constants that are referenced by SYMBOL_REFs in X.
@@ -4049,6 +4088,11 @@ output_constant_pool (const char *fnname ATTRIBUTE_UNUSED,
      discard the instructions which refer to the constant.  In such a
      case we do not need to output the constant.  */
   mark_constant_pool ();
+
+  /* Having marked the constant pool entries we'll actually emit, we
+     now need to rebuild the offset information, which may have become
+     stale.  */
+  recompute_pool_offsets (pool);
 
 #ifdef ASM_OUTPUT_POOL_PROLOGUE
   ASM_OUTPUT_POOL_PROLOGUE (asm_out_file, fnname, fndecl, pool->offset);
@@ -4172,7 +4216,7 @@ output_addressed_constants (tree exp)
     case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
       output_addressed_constants (TREE_OPERAND (exp, 1));
-      /* Fall through.  */
+      gcc_fallthrough ();
 
     CASE_CONVERT:
     case VIEW_CONVERT_EXPR:
@@ -5616,7 +5660,7 @@ do_assemble_alias (tree decl, tree target)
 
   /* Emulated TLS had better not get this var.  */
   gcc_assert (!(!targetm.have_tls
-		&& TREE_CODE (decl) == VAR_DECL
+		&& VAR_P (decl)
 		&& DECL_THREAD_LOCAL_P (decl)));
 
   if (TREE_ASM_WRITTEN (decl))
@@ -6019,12 +6063,11 @@ void
 make_decl_one_only (tree decl, tree comdat_group)
 {
   struct symtab_node *symbol;
-  gcc_assert (TREE_CODE (decl) == VAR_DECL
-	      || TREE_CODE (decl) == FUNCTION_DECL);
+  gcc_assert (VAR_OR_FUNCTION_DECL_P (decl));
 
   TREE_PUBLIC (decl) = 1;
 
-  if (TREE_CODE (decl) == VAR_DECL)
+  if (VAR_P (decl))
     symbol = varpool_node::get_create (decl);
   else
     symbol = cgraph_node::get_create (decl);
@@ -6036,7 +6079,7 @@ make_decl_one_only (tree decl, tree comdat_group)
 #endif
       symbol->set_comdat_group (comdat_group);
     }
-  else if (TREE_CODE (decl) == VAR_DECL
+  else if (VAR_P (decl)
            && (DECL_INITIAL (decl) == 0
 	       || (!in_lto_p && DECL_INITIAL (decl) == error_mark_node)))
     DECL_COMMON (decl) = 1;
@@ -6187,7 +6230,7 @@ default_section_type_flags (tree decl, const char *name, int reloc)
   if (strcmp (name, ".vtable_map_vars") == 0)
     flags |= SECTION_LINKONCE;
 
-  if (decl && TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL_P (decl))
+  if (decl && VAR_P (decl) && DECL_THREAD_LOCAL_P (decl))
     flags |= SECTION_TLS | SECTION_WRITE;
 
   if (strcmp (name, ".bss") == 0
@@ -6255,6 +6298,7 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
 			       tree decl)
 {
   char flagchars[11], *f = flagchars;
+  unsigned int numeric_value = 0;
 
   /* If we have already declared this section, we can use an
      abbreviated form to switch back to it -- unless this section is
@@ -6267,31 +6311,38 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
       return;
     }
 
-  if (!(flags & SECTION_DEBUG))
-    *f++ = 'a';
+  /* If we have a machine specific flag, then use the numeric value to pass
+     this on to GAS.  */
+  if (targetm.asm_out.elf_flags_numeric (flags, &numeric_value))
+      snprintf (f, sizeof (flagchars), "0x%08x", numeric_value);
+  else
+    {
+      if (!(flags & SECTION_DEBUG))
+	*f++ = 'a';
 #if defined (HAVE_GAS_SECTION_EXCLUDE) && HAVE_GAS_SECTION_EXCLUDE == 1
-  if (flags & SECTION_EXCLUDE)
-    *f++ = 'e';
+      if (flags & SECTION_EXCLUDE)
+	*f++ = 'e';
 #endif
-  if (flags & SECTION_WRITE)
-    *f++ = 'w';
-  if (flags & SECTION_CODE)
-    *f++ = 'x';
-  if (flags & SECTION_SMALL)
-    *f++ = 's';
-  if (flags & SECTION_MERGE)
-    *f++ = 'M';
-  if (flags & SECTION_STRINGS)
-    *f++ = 'S';
-  if (flags & SECTION_TLS)
-    *f++ = TLS_SECTION_ASM_FLAG;
-  if (HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
-    *f++ = 'G';
+      if (flags & SECTION_WRITE)
+	*f++ = 'w';
+      if (flags & SECTION_CODE)
+	*f++ = 'x';
+      if (flags & SECTION_SMALL)
+	*f++ = 's';
+      if (flags & SECTION_MERGE)
+	*f++ = 'M';
+      if (flags & SECTION_STRINGS)
+	*f++ = 'S';
+      if (flags & SECTION_TLS)
+	*f++ = TLS_SECTION_ASM_FLAG;
+      if (HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
+	*f++ = 'G';
 #ifdef MACH_DEP_SECTION_ASM_FLAG
-  if (flags & SECTION_MACH_DEP)
-    *f++ = MACH_DEP_SECTION_ASM_FLAG;
+      if (flags & SECTION_MACH_DEP)
+	*f++ = MACH_DEP_SECTION_ASM_FLAG;
 #endif
-  *f = '\0';
+      *f = '\0';
+    }
 
   fprintf (asm_out_file, "\t.section\t%s,\"%s\"", name, flagchars);
 
@@ -6401,7 +6452,7 @@ categorize_decl_for_section (const_tree decl, int reloc)
       else
 	return SECCAT_RODATA_MERGE_STR;
     }
-  else if (TREE_CODE (decl) == VAR_DECL)
+  else if (VAR_P (decl))
     {
       if (bss_initializer_p (decl))
 	ret = SECCAT_BSS;
@@ -6445,7 +6496,7 @@ categorize_decl_for_section (const_tree decl, int reloc)
     ret = SECCAT_RODATA;
 
   /* There are no read-only thread-local sections.  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL_P (decl))
+  if (VAR_P (decl) && DECL_THREAD_LOCAL_P (decl))
     {
       /* Note that this would be *just* SECCAT_BSS, except that there's
 	 no concept of a read-only thread-local-data section.  */
@@ -6721,7 +6772,7 @@ default_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
     flags |= SYMBOL_FLAG_FUNCTION;
   if (targetm.binds_local_p (decl))
     flags |= SYMBOL_FLAG_LOCAL;
-  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL_P (decl))
+  if (VAR_P (decl) && DECL_THREAD_LOCAL_P (decl))
     flags |= DECL_TLS_MODEL (decl) << SYMBOL_FLAG_TLS_SHIFT;
   else if (targetm.in_small_data_p (decl))
     flags |= SYMBOL_FLAG_SMALL;
@@ -6792,6 +6843,16 @@ default_use_anchors_for_symbol_p (const_rtx symbol)
 	 sections that should be marked as small in the section directive.  */
       if (targetm.in_small_data_p (decl))
 	return false;
+
+      /* Don't use section anchors for decls that won't fit inside a single
+	 anchor range to reduce the amount of instructions required to refer
+	 to the entire declaration.  */
+      if (DECL_SIZE_UNIT (decl) == NULL_TREE
+	  || !tree_fits_uhwi_p (DECL_SIZE_UNIT (decl))
+	  || (tree_to_uhwi (DECL_SIZE_UNIT (decl))
+	      >= (unsigned HOST_WIDE_INT) targetm.max_anchor_offset))
+	return false;
+
     }
   return true;
 }
@@ -6840,8 +6901,8 @@ default_binds_local_p_3 (const_tree exp, bool shlib, bool weak_dominate,
      FIXME: We can resolve the weakref case more curefuly by looking at the
      weakref alias.  */
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (exp))
-	   || (TREE_CODE (exp) == FUNCTION_DECL
-	       && lookup_attribute ("ifunc", DECL_ATTRIBUTES (exp))))
+      || (TREE_CODE (exp) == FUNCTION_DECL
+	  && lookup_attribute ("ifunc", DECL_ATTRIBUTES (exp))))
     return false;
 
   /* Static variables are always local.  */
@@ -7497,7 +7558,7 @@ elf_record_gcc_switches (print_switch_type type, const char * name)
     {
     case SWITCH_TYPE_PASSED:
       ASM_OUTPUT_ASCII (asm_out_file, name, strlen (name));
-      ASM_OUTPUT_SKIP (asm_out_file, (unsigned HOST_WIDE_INT) 1);
+      ASM_OUTPUT_SKIP (asm_out_file, HOST_WIDE_INT_1U);
       break;
 
     case SWITCH_TYPE_DESCRIPTIVE:
@@ -7608,7 +7669,7 @@ make_debug_expr_from_rtl (const_rtx exp)
     TREE_TYPE (ddecl) = type;
   else
     TREE_TYPE (ddecl) = lang_hooks.types.type_for_mode (mode, 1);
-  DECL_MODE (ddecl) = mode;
+  SET_DECL_MODE (ddecl, mode);
   dval = gen_rtx_DEBUG_EXPR (mode);
   DEBUG_EXPR_TREE_DECL (dval) = ddecl;
   SET_DECL_RTL (ddecl, dval);

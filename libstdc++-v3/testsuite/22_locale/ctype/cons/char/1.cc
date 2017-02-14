@@ -1,6 +1,6 @@
 // 2000-02-16 bkoz
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,7 +42,6 @@ public:
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true; 
 
   comma_ctype obj;
   const ctype_base::mask* tmp = obj.get_classic_table();

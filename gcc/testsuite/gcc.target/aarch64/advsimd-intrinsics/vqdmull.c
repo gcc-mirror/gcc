@@ -63,8 +63,8 @@ void FNNAME (INSN_NAME) (void)
   TEST_VQDMULL(int, s, 16, 32, 4, expected_cumulative_sat, "");
   TEST_VQDMULL(int, s, 32, 64, 2, expected_cumulative_sat, "");
 
-  CHECK (TEST_MSG, int, 32, 4, PRIx16, expected, "");
-  CHECK (TEST_MSG, int, 64, 2, PRIx32, expected, "");
+  CHECK (TEST_MSG, int, 32, 4, PRIx32, expected, "");
+  CHECK (TEST_MSG, int, 64, 2, PRIx64, expected, "");
 
   VDUP(vector, , int, s, 16, 4, 0x8000);
   VDUP(vector2, , int, s, 16, 4, 0x8000);
@@ -75,8 +75,8 @@ void FNNAME (INSN_NAME) (void)
   TEST_VQDMULL(int, s, 16, 32, 4, expected_cumulative_sat2, TEST_MSG2);
   TEST_VQDMULL(int, s, 32, 64, 2, expected_cumulative_sat2, TEST_MSG2);
 
-  CHECK (TEST_MSG, int, 32, 4, PRIx16, expected2, TEST_MSG2);
-  CHECK (TEST_MSG, int, 64, 2, PRIx32, expected2, TEST_MSG2);
+  CHECK (TEST_MSG, int, 32, 4, PRIx32, expected2, TEST_MSG2);
+  CHECK (TEST_MSG, int, 64, 2, PRIx64, expected2, TEST_MSG2);
 }
 
 int main (void)

@@ -1,5 +1,5 @@
 /* Rematerialize pseudos values.
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2017 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "df.h"
 #include "insn-config.h"
 #include "regs.h"
+#include "memmodel.h"
 #include "ira.h"
 #include "recog.h"
 #include "lra.h"
@@ -163,92 +164,6 @@ static inline remat_bb_data_t
 get_remat_bb_data_by_index (int index)
 {
   return &remat_bb_data[index];
-}
-
-
-
-/* Recursive hash function for RTL X.  */
-static hashval_t
-rtx_hash (rtx x)
-{
-  int i, j;
-  enum rtx_code code;
-  const char *fmt;
-  hashval_t val = 0;
-
-  if (x == 0)
-    return val;
-
-  code = GET_CODE (x);
-  val += (int) code + 4095;
-
-  /* Some RTL can be compared nonrecursively.  */
-  switch (code)
-    {
-    case REG:
-      return val + REGNO (x);
-
-    case LABEL_REF:
-      return iterative_hash_object (XEXP (x, 0), val);
-
-    case SYMBOL_REF:
-      return iterative_hash_object (XSTR (x, 0), val);
-
-    case SCRATCH:
-    case CONST_DOUBLE:
-    case CONST_INT:
-    case CONST_VECTOR:
-      return val;
-
-    default:
-      break;
-    }
-
-  /* Hash the elements.  */
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      switch (fmt[i])
-	{
-	case 'w':
-	  val += XWINT (x, i);
-	  break;
-
-	case 'n':
-	case 'i':
-	  val += XINT (x, i);
-	  break;
-
-	case 'V':
-	case 'E':
-	  val += XVECLEN (x, i);
-
-	  for (j = 0; j < XVECLEN (x, i); j++)
-	    val += rtx_hash (XVECEXP (x, i, j));
-	  break;
-
-	case 'e':
-	  val += rtx_hash (XEXP (x, i));
-	  break;
-
-	case 'S':
-	case 's':
-	  val += htab_hash_string (XSTR (x, i));
-	  break;
-
-	case 'u':
-	case '0':
-	case 't':
-	  break;
-
-	  /* It is believed that rtx's at this level will never
-	     contain anything but integers and other rtx's, except for
-	     within LABEL_REFs and SYMBOL_REFs.  */
-	default:
-	  abort ();
-	}
-    }
-  return val;
 }
 
 
@@ -455,6 +370,22 @@ operand_to_remat (rtx_insn *insn)
 		    < (reg->regno
 		       + hard_regno_nregs[reg->regno][reg->biggest_mode])))
 	      return -1;
+      }
+  /* Check hard coded insn registers.  */
+  for (struct lra_insn_reg *reg = static_id->hard_regs;
+       reg != NULL;
+       reg = reg->next)
+    if (reg->type == OP_INOUT)
+      return -1;
+    else if (reg->type == OP_IN)
+      {
+	/* Check that there is no output hard reg as the input
+	   one.  */
+	  for (struct lra_insn_reg *reg2 = static_id->hard_regs;
+	       reg2 != NULL;
+	       reg2 = reg2->next)
+	    if (reg2->type == OP_OUT && reg->regno == reg2->regno)
+		return -1;
       }
   /* Find the rematerialization operand.  */
   int nop = static_id->n_operands;
@@ -1116,6 +1047,7 @@ update_scratch_ops (rtx_insn *remat_insn)
 static bool
 do_remat (void)
 {
+  unsigned regno;
   rtx_insn *insn;
   basic_block bb;
   bitmap_head avail_cands;
@@ -1123,12 +1055,21 @@ do_remat (void)
   bool changed_p = false;
   /* Living hard regs and hard registers of living pseudos.  */
   HARD_REG_SET live_hard_regs;
+  bitmap_iterator bi;
 
   bitmap_initialize (&avail_cands, &reg_obstack);
   bitmap_initialize (&active_cands, &reg_obstack);
   FOR_EACH_BB_FN (bb, cfun)
     {
-      REG_SET_TO_HARD_REG_SET (live_hard_regs, df_get_live_out (bb));
+      CLEAR_HARD_REG_SET (live_hard_regs);
+      EXECUTE_IF_SET_IN_BITMAP (df_get_live_in (bb), 0, regno, bi)
+	{
+	  int hard_regno = regno < FIRST_PSEUDO_REGISTER
+			   ? regno
+			   : reg_renumber[regno];
+	  if (hard_regno >= 0)
+	    SET_HARD_REG_BIT (live_hard_regs, hard_regno);
+	}
       bitmap_and (&avail_cands, &get_remat_bb_data (bb)->avin_cands,
 		  &get_remat_bb_data (bb)->livein_cands);
       /* Activating insns are always in the same block as their corresponding

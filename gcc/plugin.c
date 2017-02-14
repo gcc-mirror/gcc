@@ -1,5 +1,5 @@
 /* Support for GCC plugin mechanism.
-   Copyright (C) 2009-2016 Free Software Foundation, Inc.
+   Copyright (C) 2009-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -330,7 +330,15 @@ static void
 register_plugin_info (const char* name, struct plugin_info *info)
 {
   void **slot = htab_find_slot (plugin_name_args_tab, name, NO_INSERT);
-  struct plugin_name_args *plugin = (struct plugin_name_args *) *slot;
+  struct plugin_name_args *plugin;
+
+  if (slot == NULL)
+    {
+      error ("unable to register info for plugin '%s' - plugin name not found",
+	     name);
+      return;
+    }
+  plugin = (struct plugin_name_args *) *slot;
   plugin->version = info->version;
   plugin->help = info->help;
 }

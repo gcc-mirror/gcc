@@ -1,6 +1,6 @@
 // 981208 bkoz test functionality of basic_stringbuf for char_type == char
 
-// Copyright (C) 1997-2016 Free Software Foundation, Inc.
+// Copyright (C) 1997-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,6 @@ std::stringbuf strb_01(str_01);
 // test overloaded virtual functions
 void test04() 
 {
-  bool test __attribute__((unused)) = true;
   std::string 		str_tmp;
   typedef std::stringbuf::int_type int_type;
   typedef std::stringbuf::pos_type pos_type;

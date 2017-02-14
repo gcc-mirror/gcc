@@ -1,5 +1,5 @@
 /* Core data structures for the 'tree' type.
-   Copyright (C) 1989-2016 Free Software Foundation, Inc.
+   Copyright (C) 1989-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -89,6 +89,9 @@ struct die_struct;
 
 /* Nonzero if this call is into the transaction runtime library.  */
 #define ECF_TM_BUILTIN		  (1 << 13)
+
+/* Nonzero if this is an indirect call by descriptor.  */
+#define ECF_BY_DESCRIPTOR	  (1 << 14)
 
 /* Call argument flags.  */
 /* Nonzero if the argument is not dereferenced recursively, thus only
@@ -435,6 +438,10 @@ enum omp_clause_code {
   /* Internally used only clause, holding SIMD uid.  */
   OMP_CLAUSE__SIMDUID_,
 
+  /* Internally used only clause, flag whether this is SIMT simd
+     loop or not.  */
+  OMP_CLAUSE__SIMT_,
+
   /* Internally used only clause, holding _Cilk_for # of iterations
      on OMP_PARALLEL.  */
   OMP_CLAUSE__CILK_FOR_COUNT_,
@@ -553,14 +560,51 @@ enum tree_index {
   TI_BOOLEAN_FALSE,
   TI_BOOLEAN_TRUE,
 
+  TI_FLOAT_TYPE,
+  TI_DOUBLE_TYPE,
+  TI_LONG_DOUBLE_TYPE,
+
+  /* The _FloatN and _FloatNx types must be consecutive, and in the
+     same sequence as the corresponding complex types, which must also
+     be consecutive; _FloatN must come before _FloatNx; the order must
+     also be the same as in the floatn_nx_types array and the RID_*
+     values in c-common.h.  This is so that iterations over these
+     types work as intended.  */
+  TI_FLOAT16_TYPE,
+  TI_FLOATN_TYPE_FIRST = TI_FLOAT16_TYPE,
+  TI_FLOATN_NX_TYPE_FIRST = TI_FLOAT16_TYPE,
+  TI_FLOAT32_TYPE,
+  TI_FLOAT64_TYPE,
+  TI_FLOAT128_TYPE,
+  TI_FLOATN_TYPE_LAST = TI_FLOAT128_TYPE,
+#define NUM_FLOATN_TYPES (TI_FLOATN_TYPE_LAST - TI_FLOATN_TYPE_FIRST + 1)
+  TI_FLOAT32X_TYPE,
+  TI_FLOATNX_TYPE_FIRST = TI_FLOAT32X_TYPE,
+  TI_FLOAT64X_TYPE,
+  TI_FLOAT128X_TYPE,
+  TI_FLOATNX_TYPE_LAST = TI_FLOAT128X_TYPE,
+  TI_FLOATN_NX_TYPE_LAST = TI_FLOAT128X_TYPE,
+#define NUM_FLOATNX_TYPES (TI_FLOATNX_TYPE_LAST - TI_FLOATNX_TYPE_FIRST + 1)
+#define NUM_FLOATN_NX_TYPES (TI_FLOATN_NX_TYPE_LAST		\
+			     - TI_FLOATN_NX_TYPE_FIRST		\
+			     + 1)
+
+  /* Put the complex types after their component types, so that in (sequential)
+     tree streaming we can assert that their component types have already been
+     handled (see tree-streamer.c:record_common_node).  */
   TI_COMPLEX_INTEGER_TYPE,
   TI_COMPLEX_FLOAT_TYPE,
   TI_COMPLEX_DOUBLE_TYPE,
   TI_COMPLEX_LONG_DOUBLE_TYPE,
 
-  TI_FLOAT_TYPE,
-  TI_DOUBLE_TYPE,
-  TI_LONG_DOUBLE_TYPE,
+  TI_COMPLEX_FLOAT16_TYPE,
+  TI_COMPLEX_FLOATN_NX_TYPE_FIRST = TI_COMPLEX_FLOAT16_TYPE,
+  TI_COMPLEX_FLOAT32_TYPE,
+  TI_COMPLEX_FLOAT64_TYPE,
+  TI_COMPLEX_FLOAT128_TYPE,
+  TI_COMPLEX_FLOAT32X_TYPE,
+  TI_COMPLEX_FLOAT64X_TYPE,
+  TI_COMPLEX_FLOAT128X_TYPE,
 
   TI_FLOAT_PTR_TYPE,
   TI_DOUBLE_PTR_TYPE,
@@ -578,6 +622,7 @@ enum tree_index {
   TI_VA_LIST_FPR_COUNTER_FIELD,
   TI_BOOLEAN_TYPE,
   TI_FILEPTR_TYPE,
+  TI_CONST_TM_PTR_TYPE,
   TI_POINTER_SIZED_TYPE,
 
   TI_POINTER_BOUNDS_TYPE,
@@ -769,7 +814,9 @@ enum operand_equal_flag {
   /* Internal within operand_equal_p:  */
   OEP_NO_HASH_CHECK = 16,
   /* Internal within inchash::add_expr:  */
-  OEP_HASH_CHECK = 32
+  OEP_HASH_CHECK = 32,
+  /* Makes operand_equal_p handle more expressions:  */
+  OEP_LEXICOGRAPHIC = 64
 };
 
 /* Enum and arrays used for tree allocation stats.
@@ -1043,6 +1090,12 @@ struct GTY(()) tree_base {
        TRANSACTION_EXPR_RELAXED in
 	   TRANSACTION_EXPR
 
+       FALLTHROUGH_LABEL_P in
+	   LABEL_DECL
+
+       SSA_NAME_IS_VIRTUAL_OPERAND in
+	   SSA_NAME
+
    private_flag:
 
        TREE_PRIVATE in
@@ -1154,9 +1207,6 @@ struct GTY(()) tree_base {
            CALL_EXPR
            FUNCTION_DECL
 
-       TYPE_ALIGN_OK in
-           all types
-
        TREE_THIS_NOTRAP in
           INDIRECT_REF, MEM_REF, TARGET_MEM_REF, ARRAY_REF, ARRAY_RANGE_REF
 
@@ -1216,6 +1266,12 @@ struct GTY(()) tree_base {
 
        REF_REVERSE_STORAGE_ORDER in
            BIT_FIELD_REF, MEM_REF
+
+       FUNC_ADDR_BY_DESCRIPTOR in
+           ADDR_EXPR
+
+       CALL_EXPR_BY_DESCRIPTOR in
+           CALL_EXPR
 */
 
 struct GTY(()) tree_typed {
@@ -1447,6 +1503,7 @@ struct GTY(()) tree_type_common {
   unsigned lang_flag_4 : 1;
   unsigned lang_flag_5 : 1;
   unsigned lang_flag_6 : 1;
+  unsigned lang_flag_7 : 1;
 
   /* TYPE_ALIGN in log2; this has to be large enough to hold values
      of the maximum of BIGGEST_ALIGNMENT and MAX_OFILE_ALIGNMENT,
@@ -1454,7 +1511,7 @@ struct GTY(()) tree_type_common {
      so we need to store the value 32 (not 31, as we need the zero
      as well), hence six bits.  */
   unsigned align : 6;
-  unsigned spare : 26;
+  unsigned spare : 25;
   alias_set_type alias_set;
   tree pointer_to;
   tree reference_to;
@@ -1739,7 +1796,7 @@ struct GTY(()) tree_statement_list
 /* Optimization options used by a function.  */
 
 struct GTY(()) tree_optimization_option {
-  struct tree_common common;
+  struct tree_base base;
 
   /* The optimization options used by the user.  */
   struct cl_optimization *opts;
@@ -1760,7 +1817,7 @@ struct GTY(()) target_globals;
 /* Target options used by a function.  */
 
 struct GTY(()) tree_target_option {
-  struct tree_common common;
+  struct tree_base base;
 
   /* Target globals for the corresponding target option.  */
   struct target_globals *globals;
@@ -1961,6 +2018,16 @@ struct GTY(()) builtin_info_type {
   unsigned declared_p : 1;
 };
 
+/* Information about a _FloatN or _FloatNx type that may be
+   supported.  */
+struct floatn_type_info {
+  /* The number N in the type name.  */
+  int n;
+  /* Whether it is an extended type _FloatNx (true) or an interchange
+     type (false).  */
+  bool extended;
+};
+
 
 /*---------------------------------------------------------------------------
                                 Global variables
@@ -2024,5 +2091,8 @@ extern GTY(()) tree current_function_decl;
 
 /* Nonzero means a FUNC_BEGIN label was emitted.  */
 extern GTY(()) const char * current_function_func_begin_label;
+
+/* Information about the _FloatN and _FloatNx types.  */
+extern const floatn_type_info floatn_nx_types[NUM_FLOATN_NX_TYPES];
 
 #endif  // GCC_TREE_CORE_H

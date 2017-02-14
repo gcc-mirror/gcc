@@ -16,7 +16,7 @@ typedef union
 {
   struct
     {
-      unsigned int	offset:18;
+      signed int	offset:18;
       unsigned int	ignore:4;
       unsigned int	s1:8;
       int		:2;

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *         Copyright (C) 2004-2015, Free Software Foundation, Inc.          *
+ *         Copyright (C) 2004-2016, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -29,7 +29,7 @@
  *                                                                          *
  ****************************************************************************/
 
-#if defined(VTHREADS) || defined(__PikeOS__)
+#if defined(VTHREADS) || defined(__PikeOS__) || defined(__DJGPP__)
 
 /* Sockets not supported on these platforms.  */
 #undef HAVE_SOCKETS
@@ -201,6 +201,7 @@
 #include <netinet/tcp.h>
 #include <sys/ioctl.h>
 #include <netdb.h>
+#include <unistd.h>
 #endif
 
 #ifdef __ANDROID__

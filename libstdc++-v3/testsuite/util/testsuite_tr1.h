@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing utilities for the tr1 testsuite.
 //
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,6 +23,7 @@
 #define _GLIBCXX_TESTSUITE_TR1_H
 
 #include <ext/type_traits.h>
+#include <testsuite_hooks.h>
 
 namespace __gnu_test
 {
@@ -42,17 +43,6 @@ namespace __gnu_test
 	      && Category<const Type>::type::value == value
 	      && Category<volatile Type>::type::value == value
 	      && Category<const volatile Type>::type::value == value);
-    }
-
-  template<template<typename> class Property, typename Type>
-#if __cplusplus >= 201103L
-    constexpr
-#endif
-    bool
-    test_property(typename Property<Type>::value_type value)
-    {
-      return (Property<Type>::value == value
-	      && Property<Type>::type::value == value);
     }
 
   // For testing tr1/type_traits/extent, which has a second template
@@ -77,6 +67,14 @@ namespace __gnu_test
     {
       return (Property<Type1, Types...>::value == value
 	      && Property<Type1, Types...>::type::value == value);
+    }
+#else
+  template<template<typename> class Property, typename Type>
+    bool
+    test_property(typename Property<Type>::value_type value)
+    {
+      return (Property<Type>::value == value
+	      && Property<Type>::type::value == value);
     }
 #endif
 
@@ -146,25 +144,25 @@ namespace __gnu_test
 
   struct ThrowExplicitClass
   {
-    ThrowExplicitClass(double&) throw(int);
-    explicit ThrowExplicitClass(int&) throw(int);
-    ThrowExplicitClass(double&, int&, double&) throw(int);
+    ThrowExplicitClass(double&) THROW(int);
+    explicit ThrowExplicitClass(int&) THROW(int);
+    ThrowExplicitClass(double&, int&, double&) THROW(int);
   };
 
   struct ThrowDefaultClass
   {
-    ThrowDefaultClass() throw(int);
+    ThrowDefaultClass() THROW(int);
   };
 
   struct ThrowCopyConsClass
   {
-    ThrowCopyConsClass(const ThrowCopyConsClass&) throw(int);
+    ThrowCopyConsClass(const ThrowCopyConsClass&) THROW(int);
   };
 
 #if __cplusplus >= 201103L
   struct ThrowMoveConsClass
   {
-    ThrowMoveConsClass(ThrowMoveConsClass&&) throw(int);
+    ThrowMoveConsClass(ThrowMoveConsClass&&) THROW(int);
   };
 
   struct NoexceptExplicitClass
@@ -558,7 +556,7 @@ namespace __gnu_test
 
     struct TD2
     {
-      ~TD2() throw(int);
+      ~TD2() THROW(int);
     };
 
     struct Aggr

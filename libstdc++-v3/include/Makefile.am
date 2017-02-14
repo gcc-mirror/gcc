@@ -1,6 +1,6 @@
 ## Makefile for the include subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001-2016 Free Software Foundation, Inc.
+## Copyright (C) 2001-2017 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -53,6 +53,7 @@ std_headers = \
 	${std_srcdir}/memory \
 	${std_srcdir}/mutex \
 	${std_srcdir}/numeric \
+	${std_srcdir}/optional \
 	${std_srcdir}/ostream \
 	${std_srcdir}/queue \
 	${std_srcdir}/random \
@@ -66,6 +67,7 @@ std_headers = \
 	${std_srcdir}/stdexcept \
 	${std_srcdir}/streambuf \
 	${std_srcdir}/string \
+	${std_srcdir}/string_view \
 	${std_srcdir}/system_error \
 	${std_srcdir}/thread \
 	${std_srcdir}/tuple \
@@ -75,6 +77,7 @@ std_headers = \
 	${std_srcdir}/unordered_set \
 	${std_srcdir}/utility \
 	${std_srcdir}/valarray \
+	${std_srcdir}/variant \
 	${std_srcdir}/vector
 
 bits_srcdir = ${glibcxx_srcdir}/include/bits
@@ -110,6 +113,7 @@ bits_headers = \
 	${bits_srcdir}/hashtable.h \
 	${bits_srcdir}/hashtable_policy.h \
 	${bits_srcdir}/indirect_array.h \
+	${bits_srcdir}/invoke.h \
 	${bits_srcdir}/ios_base.h \
 	${bits_srcdir}/istream.tcc \
 	${bits_srcdir}/list.tcc \
@@ -125,7 +129,7 @@ bits_headers = \
 	${bits_srcdir}/specfun.h \
 	${bits_srcdir}/memoryfwd.h \
 	${bits_srcdir}/move.h \
-	${bits_srcdir}/std_mutex.h \
+	${bits_srcdir}/node_handle.h \
 	${bits_srcdir}/ostream.tcc \
 	${bits_srcdir}/ostream_insert.h \
 	${bits_srcdir}/parse_numbers.h \
@@ -136,6 +140,7 @@ bits_headers = \
 	${bits_srcdir}/random.h \
 	${bits_srcdir}/random.tcc \
 	${bits_srcdir}/range_access.h \
+	${bits_srcdir}/refwrap.h \
 	${bits_srcdir}/regex.h \
 	${bits_srcdir}/regex.tcc \
 	${bits_srcdir}/regex_constants.h \
@@ -148,13 +153,14 @@ bits_headers = \
 	${bits_srcdir}/regex_compiler.tcc \
 	${bits_srcdir}/regex_executor.h \
 	${bits_srcdir}/regex_executor.tcc \
-	${bits_srcdir}/stream_iterator.h \
-	${bits_srcdir}/streambuf_iterator.h \
 	${bits_srcdir}/shared_ptr.h \
 	${bits_srcdir}/shared_ptr_atomic.h \
 	${bits_srcdir}/shared_ptr_base.h \
 	${bits_srcdir}/slice_array.h \
 	${bits_srcdir}/sstream.tcc \
+	${bits_srcdir}/std_abs.h \
+	${bits_srcdir}/std_function.h \
+	${bits_srcdir}/std_mutex.h \
 	${bits_srcdir}/stl_algo.h \
 	${bits_srcdir}/stl_algobase.h \
 	${bits_srcdir}/stl_bvector.h \
@@ -180,8 +186,11 @@ bits_headers = \
 	${bits_srcdir}/stl_tree.h \
 	${bits_srcdir}/stl_uninitialized.h \
 	${bits_srcdir}/stl_vector.h \
+	${bits_srcdir}/stream_iterator.h \
+	${bits_srcdir}/streambuf_iterator.h \
 	${bits_srcdir}/streambuf.tcc \
 	${bits_srcdir}/stringfwd.h \
+	${bits_srcdir}/string_view.tcc \
 	${bits_srcdir}/uniform_int_dist.h \
 	${bits_srcdir}/unique_ptr.h \
 	${bits_srcdir}/unordered_map.h \
@@ -200,6 +209,8 @@ bits_sup_srcdir = ${glibcxx_srcdir}/libsupc++
 bits_sup_headers = \
 	${bits_sup_srcdir}/atomic_lockfree_defines.h \
 	${bits_sup_srcdir}/cxxabi_forced.h \
+	${bits_sup_srcdir}/cxxabi_init_exception.h \
+	${bits_sup_srcdir}/exception.h \
 	${bits_sup_srcdir}/exception_defines.h \
 	${bits_sup_srcdir}/exception_ptr.h \
 	${bits_sup_srcdir}/hash_bytes.h \
@@ -683,6 +694,7 @@ experimental_bits_srcdir = ${glibcxx_srcdir}/include/experimental/bits
 experimental_bits_builddir = ./experimental/bits
 experimental_bits_headers = \
 	${experimental_bits_srcdir}/erase_if.h \
+	${experimental_bits_srcdir}/lfts_config.h \
 	${experimental_bits_srcdir}/shared_ptr.h \
 	${experimental_bits_srcdir}/string_view.tcc \
 	${experimental_bits_filesystem_headers}
@@ -1226,6 +1238,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 			      stamp-cxx11-abi \
 			      stamp-allocator-new
 	@date=`cat ${toplevel_srcdir}/gcc/DATESTAMP` ;\
+	release=`sed 's/^\([0-9]*\).*$$/\1/' ${toplevel_srcdir}/gcc/BASE-VER` ;\
 	ns_version=`cat stamp-namespace-version` ;\
 	visibility=`cat stamp-visibility` ;\
 	externtemplate=`cat stamp-extern-template` ;\
@@ -1237,6 +1250,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
 	&& ldbl_compat='s,^#undef _GLIBCXX_LONG_DOUBLE_COMPAT$$,#define _GLIBCXX_LONG_DOUBLE_COMPAT 1,' ;\
 	sed -e "s,define __GLIBCXX__,define __GLIBCXX__ $$date," \
+	-e "s,define _GLIBCXX_RELEASE,define _GLIBCXX_RELEASE $$release," \
 	-e "s,define _GLIBCXX_INLINE_VERSION, define _GLIBCXX_INLINE_VERSION $$ns_version," \
 	-e "s,define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY, define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY $$visibility," \
 	-e "s,define _GLIBCXX_EXTERN_TEMPLATE$$, define _GLIBCXX_EXTERN_TEMPLATE $$externtemplate," \

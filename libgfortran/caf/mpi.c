@@ -1,5 +1,5 @@
 /* MPI implementation of GNU Fortran Coarray Library
-   Copyright (C) 2011-2016 Free Software Foundation, Inc.
+   Copyright (C) 2011-2017 Free Software Foundation, Inc.
    Contributed by Tobias Burnus <burnus@net-b.de>
 
 This file is part of the GNU Fortran Coarray Runtime Library (libcaf).
@@ -131,7 +131,8 @@ _gfortran_caf_num_images (int distance __attribute__ ((unused)),
 
 void *
 _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
-			int *stat, char *errmsg, int errmsg_len)
+			int *stat, char *errmsg, int errmsg_len,
+			int num_alloc_comps __attribute__ ((unused)))
 {
   void *local;
   int err;

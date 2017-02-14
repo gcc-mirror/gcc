@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2015, AdaCore                     --
+--                     Copyright (C) 2002-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -886,7 +886,8 @@ package body GNAT.Perfect_Hash_Generators is
             Length_2  := 0;
 
          when Function_Table_1
-           |  Function_Table_2 =>
+            | Function_Table_2
+         =>
             Item_Size := Type_Size (NV);
             Length_1  := T1_Len;
             Length_2  := T2_Len;
@@ -1675,6 +1676,7 @@ package body GNAT.Perfect_Hash_Generators is
       case Opt is
          when CPU_Time =>
             Put (File, Type_Img (256));
+
          when Memory_Space =>
             Put (File, "Natural");
       end case;
@@ -1693,6 +1695,7 @@ package body GNAT.Perfect_Hash_Generators is
       case Opt is
          when CPU_Time =>
             Put (File, "C");
+
          when Memory_Space =>
             Put (File, "Character'Pos");
       end case;
@@ -2591,7 +2594,6 @@ package body GNAT.Perfect_Hash_Generators is
 
          when Graph_Table =>
             return Get_Graph (J);
-
       end case;
    end Value;
 

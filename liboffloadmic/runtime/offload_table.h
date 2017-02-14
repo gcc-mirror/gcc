@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2016 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -36,6 +36,9 @@
 #define OFFLOAD_TABLE_H_INCLUDED
 
 #include "offload_util.h"
+
+#define OFFLOAD_VERSION_16   1600
+#define OFFLOAD_VERSION_17   1700
 
 // Template representing double linked list of tables
 template <typename T> class TableList {
@@ -135,6 +138,15 @@ private:
     int64_t m_max_name_len;
 };
 
+#define VAR_ALLOC_TYPE  uint64_t
+#define OPENMP_IMPLICIT   1    // Compiler promoted openmp declare var
+                               // due to implicit use without openmp declare 
+#define OPENMP_LINK       2    // Openmp link clause in openmp declare
+
+#define IS_OPENMP_IMPLICIT(var_alloc_type)         (var_alloc_type & 1)
+#define IS_OPENMP_LINK(var_alloc_type)             (var_alloc_type & 2)
+#define IS_OPENMP_IMPLICIT_OR_LINK(var_alloc_type) (var_alloc_type & 3)
+
 // Table entry for static variables
 struct VarTable {
     //! Variable table entry
@@ -152,12 +164,8 @@ struct VarTable {
         void*       addr; //!< Address of the variable
 
 #if HOST_LIBRARY
+        VAR_ALLOC_TYPE  var_alloc_type;
         uint64_t    size;
-
-#ifdef TARGET_WINNT
-		// padding to make entry size a power of 2
-        uint64_t    padding;
-#endif // TARGET_WINNT
 #endif
     };
 
@@ -239,6 +247,9 @@ DLL_LOCAL extern VarList  __offload_vars;
 #pragma section(OFFLOAD_VAR_TABLE_SECTION_START, read, write)
 #pragma section(OFFLOAD_VAR_TABLE_SECTION_END, read, write)
 
+
+// Set library version
+extern "C" void __offload_set_version(int v);
 
 // register/unregister given tables
 extern "C" void __offload_register_tables(

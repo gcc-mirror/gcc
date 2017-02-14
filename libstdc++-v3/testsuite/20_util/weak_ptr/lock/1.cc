@@ -1,6 +1,6 @@
 // 2006-09-24  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2006-2016 Free Software Foundation, Inc.
+// Copyright (C) 2006-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,8 +22,7 @@
 #include <memory>
 #include <testsuite_tr1.h>
 
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 int main()
 {

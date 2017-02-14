@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Xilinx MicroBlaze.
-   Copyright (C) 2009-2016 Free Software Foundation, Inc.
+   Copyright (C) 2009-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -57,6 +57,7 @@ extern bool microblaze_tls_referenced_p (rtx);
 extern int symbol_mentioned_p (rtx);
 extern int label_mentioned_p (rtx);
 extern bool microblaze_cannot_force_const_mem (machine_mode, rtx);
+extern void microblaze_eh_return (rtx op0);
 #endif  /* RTX_CODE */
 
 /* Declare functions in microblaze-c.c.  */

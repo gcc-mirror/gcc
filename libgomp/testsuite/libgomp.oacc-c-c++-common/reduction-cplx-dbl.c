@@ -1,5 +1,7 @@
 
+#if !defined(__hppa__) || !defined(__hpux__)
 #include <complex.h>
+#endif
 
 /* Double float has 53 bits of fraction. */
 #define FRAC (1.0 / (1LL << 48))
@@ -22,7 +24,7 @@ vector (Type ary[N], Type sum, Type prod)
 {
   Type tsum = 0, tprod = 1;
 
-#pragma acc parallel vector_length(32) copyin(ary[0:N]) copy (tsum, tprod)
+#pragma acc parallel vector_length(32) copyin(ary[0:N])
   {
 #pragma acc loop vector reduction(+:tsum) reduction (*:tprod)
     for (int ix = 0; ix < N; ix++)
@@ -46,7 +48,7 @@ worker (Type ary[N], Type sum, Type prod)
 {
   Type tsum = 0, tprod = 1;
 
-#pragma acc parallel num_workers(32) copyin(ary[0:N]) copy (tsum, tprod)
+#pragma acc parallel num_workers(32) copyin(ary[0:N])
   {
 #pragma acc loop worker reduction(+:tsum) reduction (*:tprod)
     for (int ix = 0; ix < N; ix++)
@@ -70,7 +72,7 @@ gang (Type ary[N], Type sum, Type prod)
 {
   Type tsum = 0, tprod = 1;
 
-#pragma acc parallel num_gangs (32) copyin(ary[0:N]) copy (tsum, tprod)
+#pragma acc parallel num_gangs (32) copyin(ary[0:N])
   {
 #pragma acc loop gang reduction(+:tsum) reduction (*:tprod)
     for (int ix = 0; ix < N; ix++)

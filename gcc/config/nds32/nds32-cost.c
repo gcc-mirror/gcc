@@ -1,5 +1,5 @@
 /* Subroutines used for calculate rtx costs of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2016 Free Software Foundation, Inc.
+   Copyright (C) 2012-2017 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -27,6 +27,7 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "optabs.h"		/* For GEN_FCN.  */
 #include "recog.h"

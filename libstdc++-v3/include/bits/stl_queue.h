@@ -1,6 +1,6 @@
 // Queue implementation -*- C++ -*-
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -124,14 +124,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef          _Sequence                            container_type;
 
     protected:
-      /**
-       *  'c' is the underlying container.  Maintainers wondering why
-       *  this isn't uglified as per style guidelines should note that
-       *  this name is specified in the standard, [23.2.3.1].  (Why?
-       *  Presumably for the same reason that it's protected instead
+      /*  Maintainers wondering why this isn't uglified as per style
+       *  guidelines should note that this name is specified in the standard,
+       *  C++98 [23.2.3.1].
+       *  (Why? Presumably for the same reason that it's protected instead
        *  of private: to allow derivation.  But none of the other
        *  containers allow for derivation.  Odd.)
        */
+       ///  @c c is the underlying container.
       _Sequence c;
 
     public:
@@ -143,12 +143,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       queue(const _Sequence& __c = _Sequence())
       : c(__c) { }
 #else
+      template<typename _Seq = _Sequence, typename _Requires = typename
+	       enable_if<is_default_constructible<_Seq>::value>::type>
+	queue()
+	: c() { }
+
       explicit
       queue(const _Sequence& __c)
       : c(__c) { }
 
       explicit
-      queue(_Sequence&& __c = _Sequence())
+      queue(_Sequence&& __c)
       : c(std::move(__c)) { }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
@@ -247,10 +252,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       push(value_type&& __x)
       { c.push_back(std::move(__x)); }
 
+#if __cplusplus > 201402L
+      template<typename... _Args>
+	decltype(auto)
+	emplace(_Args&&... __args)
+	{ return c.emplace_back(std::forward<_Args>(__args)...); }
+#else
       template<typename... _Args>
         void
         emplace(_Args&&... __args)
 	{ c.emplace_back(std::forward<_Args>(__args)...); }
+#endif
 #endif
 
       /**
@@ -447,43 +459,47 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : c(__s), comp(__x)
       { std::make_heap(c.begin(), c.end(), comp); }
 #else
+      template<typename _Seq = _Sequence, typename _Requires = typename
+	       enable_if<__and_<is_default_constructible<_Compare>,
+                                is_default_constructible<_Seq>>::value>::type>
+	priority_queue()
+	: c(), comp() { }
+
       explicit
-      priority_queue(const _Compare& __x,
-		     const _Sequence& __s)
+      priority_queue(const _Compare& __x, const _Sequence& __s)
       : c(__s), comp(__x)
       { std::make_heap(c.begin(), c.end(), comp); }
 
       explicit
-      priority_queue(const _Compare& __x = _Compare(),
-		     _Sequence&& __s = _Sequence())
+      priority_queue(const _Compare& __x, _Sequence&& __s = _Sequence())
       : c(std::move(__s)), comp(__x)
       { std::make_heap(c.begin(), c.end(), comp); }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
 	explicit
 	priority_queue(const _Alloc& __a)
-	: c(__a) { }
+	: c(__a), comp() { }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
 	priority_queue(const _Compare& __x, const _Alloc& __a)
-	: c(__x, __a) { }
+	: c(__a), comp(__x) { }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
 	priority_queue(const _Compare& __x, const _Sequence& __c,
 		       const _Alloc& __a)
-	: c(__x, __c, __a) { }
+	: c(__c, __a), comp(__x) { }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
 	priority_queue(const _Compare& __x, _Sequence&& __c, const _Alloc& __a)
-	: c(__x, std::move(__c), __a) { }
+	: c(std::move(__c), __a), comp(__x) { }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
 	priority_queue(const priority_queue& __q, const _Alloc& __a)
-	: c(__q.c, __a) { }
+	: c(__q.c, __a), comp(__q.comp) { }
 
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
 	priority_queue(priority_queue&& __q, const _Alloc& __a)
-	: c(std::move(__q.c), __a) { }
+	: c(std::move(__q.c), __a), comp(std::move(__q.comp)) { }
 #endif
 
       /**

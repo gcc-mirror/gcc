@@ -25,8 +25,8 @@ f4 (int x, int y)
   return (x & ~0xff) | (y & 0xff);
 }
 
-long
-f5 (long x, long y)
+long long
+f5 (long long x, long long y)
 {
   return (x & ~0xffffffffull) | (y & 0xffffffff);
 }

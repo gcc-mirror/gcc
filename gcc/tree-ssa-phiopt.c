@@ -1,5 +1,5 @@
 /* Optimization of PHI nodes by converting them into straightline code.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -49,7 +49,8 @@ along with GCC; see the file COPYING3.  If not see
 static unsigned int tree_ssa_phiopt_worker (bool, bool);
 static bool conditional_replacement (basic_block, basic_block,
 				     edge, edge, gphi *, tree, tree);
-static gphi *factor_out_conditional_conversion (edge, edge, gphi *, tree, tree);
+static gphi *factor_out_conditional_conversion (edge, edge, gphi *, tree, tree,
+						gimple *);
 static int value_replacement (basic_block, basic_block,
 			      edge, edge, gimple *, tree, tree);
 static bool minmax_replacement (basic_block, basic_block,
@@ -233,7 +234,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
 	  continue;
 	}
       else if (do_hoist_loads
-		 && EDGE_SUCC (bb1, 0)->dest == EDGE_SUCC (bb2, 0)->dest)
+	       && EDGE_SUCC (bb1, 0)->dest == EDGE_SUCC (bb2, 0)->dest)
 	{
 	  basic_block bb3 = EDGE_SUCC (bb1, 0)->dest;
 
@@ -313,7 +314,8 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
 	  gcc_assert (arg0 != NULL_TREE && arg1 != NULL_TREE);
 
 	  gphi *newphi = factor_out_conditional_conversion (e1, e2, phi,
-							    arg0, arg1);
+							    arg0, arg1,
+							    cond_stmt);
 	  if (newphi != NULL)
 	    {
 	      phi = newphi;
@@ -402,11 +404,12 @@ replace_phi_edge_with_variable (basic_block cond_block,
 
 /* PR66726: Factor conversion out of COND_EXPR.  If the arguments of the PHI
    stmt are CONVERT_STMT, factor out the conversion and perform the conversion
-   to the result of PHI stmt.  Return the newly-created PHI, if any.  */
+   to the result of PHI stmt.  COND_STMT is the controlling predicate.
+   Return the newly-created PHI, if any.  */
 
 static gphi *
 factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
-				   tree arg0, tree arg1)
+				   tree arg0, tree arg1, gimple *cond_stmt)
 {
   gimple *arg0_def_stmt = NULL, *arg1_def_stmt = NULL, *new_stmt;
   tree new_arg0 = NULL_TREE, new_arg1 = NULL_TREE;
@@ -472,7 +475,31 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
 	  && int_fits_type_p (arg1, TREE_TYPE (new_arg0)))
 	{
 	  if (gimple_assign_cast_p (arg0_def_stmt))
-	    new_arg1 = fold_convert (TREE_TYPE (new_arg0), arg1);
+	    {
+	      /* For the INTEGER_CST case, we are just moving the
+		 conversion from one place to another, which can often
+		 hurt as the conversion moves further away from the
+		 statement that computes the value.  So, perform this
+		 only if new_arg0 is an operand of COND_STMT, or
+		 if arg0_def_stmt is the only non-debug stmt in
+		 its basic block, because then it is possible this
+		 could enable further optimizations (minmax replacement
+		 etc.).  See PR71016.  */
+	      if (new_arg0 != gimple_cond_lhs (cond_stmt)
+		  && new_arg0 != gimple_cond_rhs (cond_stmt)
+		  && gimple_bb (arg0_def_stmt) == e0->src)
+		{
+		  gsi = gsi_for_stmt (arg0_def_stmt);
+		  gsi_prev_nondebug (&gsi);
+		  if (!gsi_end_p (gsi))
+		    return NULL;
+		  gsi = gsi_for_stmt (arg0_def_stmt);
+		  gsi_next_nondebug (&gsi);
+		  if (!gsi_end_p (gsi))
+		    return NULL;
+		}
+	      new_arg1 = fold_convert (TREE_TYPE (new_arg0), arg1);
+	    }
 	  else
 	    return NULL;
 	}
@@ -524,7 +551,7 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
   /* Create the conversion stmt and insert it.  */
   if (convert_code == VIEW_CONVERT_EXPR)
     temp = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (result), temp);
-  new_stmt = gimple_build_assign (result,  convert_code, temp);
+  new_stmt = gimple_build_assign (result, convert_code, temp);
   gsi = gsi_after_labels (gimple_bb (phi));
   gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
 
@@ -812,7 +839,7 @@ neutral_element_p (tree_code code, tree arg, bool right)
 /* Returns true if ARG is an absorbing element for operation CODE.  */
 
 static bool
-absorbing_element_p (tree_code code, tree arg)
+absorbing_element_p (tree_code code, tree arg, bool right, tree rval)
 {
   switch (code)
     {
@@ -822,6 +849,25 @@ absorbing_element_p (tree_code code, tree arg)
     case MULT_EXPR:
     case BIT_AND_EXPR:
       return integer_zerop (arg);
+
+    case LSHIFT_EXPR:
+    case RSHIFT_EXPR:
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
+      return !right && integer_zerop (arg);
+
+    case TRUNC_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+    case TRUNC_MOD_EXPR:
+    case CEIL_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
+    case ROUND_MOD_EXPR:
+      return (!right
+	      && integer_zerop (arg)
+	      && tree_single_nonzero_warnv_p (rval, NULL));
 
     default:
       return false;
@@ -994,9 +1040,11 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	      && operand_equal_for_phi_arg_p (rhs1, cond_lhs)
 	      && neutral_element_p (code_def, cond_rhs, false))
 	  || (operand_equal_for_phi_arg_p (arg1, cond_rhs)
-	      && (operand_equal_for_phi_arg_p (rhs2, cond_lhs)
-		  || operand_equal_for_phi_arg_p (rhs1, cond_lhs))
-	      && absorbing_element_p (code_def, cond_rhs))))
+	      && ((operand_equal_for_phi_arg_p (rhs2, cond_lhs)
+		   && absorbing_element_p (code_def, cond_rhs, true, rhs2))
+		  || (operand_equal_for_phi_arg_p (rhs1, cond_lhs)
+		      && absorbing_element_p (code_def,
+					      cond_rhs, false, rhs2))))))
     {
       gsi = gsi_for_stmt (cond);
       if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
@@ -1054,7 +1102,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
   type = TREE_TYPE (PHI_RESULT (phi));
 
   /* The optimization may be unsafe due to NaNs.  */
-  if (HONOR_NANS (type))
+  if (HONOR_NANS (type) || HONOR_SIGNED_ZEROS (type))
     return false;
 
   cond = as_a <gcond *> (last_stmt (cond_bb));
@@ -1452,6 +1500,14 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
     negate = true;
   else
     negate = false;
+
+  /* If the code negates only iff positive then make sure to not
+     introduce undefined behavior when negating or computing the absolute.
+     ???  We could use range info if present to check for arg1 == INT_MIN.  */
+  if (negate
+      && (ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg1))
+	  && ! TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1))))
+    return false;
 
   result = duplicate_ssa_name (result, NULL);
 

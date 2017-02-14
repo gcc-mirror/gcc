@@ -1,6 +1,6 @@
 // 2001-06-05 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,8 +36,6 @@ void test03()
 
   stringbuf_type strbuf01;
   istream_type iss(&strbuf01);
-
-  bool test __attribute__((unused)) = true;
 
   try 
     { 

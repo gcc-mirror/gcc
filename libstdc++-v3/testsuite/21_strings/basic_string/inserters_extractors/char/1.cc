@@ -1,6 +1,6 @@
 // 1999-07-01 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,9 +30,8 @@
 #include <iostream>
 #include <testsuite_hooks.h>
 
-bool test01(void)
+void test01(void)
 {
-  bool test __attribute__((unused)) = true;
   typedef std::string::size_type csize_type;
   typedef std::string::const_reference cref;
   typedef std::string::reference ref;
@@ -154,7 +153,6 @@ bool test01(void)
   
   std::string hello_world;
   std::cout << hello_world;
-  return test;
 }
 
 int main()

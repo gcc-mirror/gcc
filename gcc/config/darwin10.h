@@ -1,5 +1,5 @@
 /* Target definitions for Darwin (Mac OS X) systems.
-   Copyright (C) 2009-2016 Free Software Foundation, Inc.
+   Copyright (C) 2009-2017 Free Software Foundation, Inc.
    Contributed by Jack Howarth <howarth@bromo.med.uc.edu>.
 
 This file is part of GCC.
@@ -32,3 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef DEF_MIN_OSX_VERSION
 #define DEF_MIN_OSX_VERSION "10.6"
+
+#ifndef LD64_VERSION
+#undef DEF_LD64
+#define DEF_LD64 "97.7"
+#endif

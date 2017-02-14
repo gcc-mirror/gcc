@@ -1,5 +1,5 @@
 /* Simple bitmaps.
-   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+   Copyright (C) 1999-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -231,8 +231,11 @@ extern sbitmap *sbitmap_vector_alloc (unsigned int, unsigned int);
 extern sbitmap sbitmap_resize (sbitmap, unsigned int, int);
 extern void bitmap_copy (sbitmap, const_sbitmap);
 extern int bitmap_equal_p (const_sbitmap, const_sbitmap);
+extern unsigned int bitmap_count_bits (const_sbitmap);
 extern bool bitmap_empty_p (const_sbitmap);
 extern void bitmap_clear (sbitmap);
+extern void bitmap_clear_range (sbitmap, unsigned, unsigned);
+extern void bitmap_set_range (sbitmap, unsigned, unsigned);
 extern void bitmap_ones (sbitmap);
 extern void bitmap_vector_clear (sbitmap *, unsigned int);
 extern void bitmap_vector_ones (sbitmap *, unsigned int);
@@ -256,4 +259,29 @@ extern int bitmap_last_set_bit (const_sbitmap);
 
 extern void debug_bitmap (const_sbitmap);
 extern sbitmap sbitmap_realloc (sbitmap, unsigned int);
+
+/* a class that ties the lifetime of a sbitmap to its scope.  */
+class auto_sbitmap
+{
+public:
+  explicit auto_sbitmap (unsigned int size) :
+    m_bitmap (sbitmap_alloc (size)) {}
+  ~auto_sbitmap () { sbitmap_free (m_bitmap); }
+
+  /* Allow calling sbitmap functions on our bitmap.  */
+  operator sbitmap () { return m_bitmap; }
+
+private:
+  /* Prevent making a copy that refers to our sbitmap.  */
+  auto_sbitmap (const auto_sbitmap &);
+  auto_sbitmap &operator = (const auto_sbitmap &);
+#if __cplusplus >= 201103L
+  auto_sbitmap (auto_sbitmap &&);
+  auto_sbitmap &operator = (auto_sbitmap &&);
+#endif
+
+  /* The bitmap we are managing.  */
+  sbitmap m_bitmap;
+};
+
 #endif /* ! GCC_SBITMAP_H */

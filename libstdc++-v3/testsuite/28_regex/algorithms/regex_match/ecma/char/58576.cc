@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2013-10-01  Tim Shen <timshen91@gmail.com>
 //
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   string domain_name = "valid.hostname.org";
   /**
    * based on http://stackoverflow.com/questions/1418423/the-hostname-regex

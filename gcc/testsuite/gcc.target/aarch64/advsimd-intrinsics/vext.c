@@ -16,6 +16,10 @@ VECT_VAR_DECL(expected,uint,64,1) [] = { 0xfffffffffffffff0 };
 VECT_VAR_DECL(expected,poly,8,8) [] = { 0xf6, 0xf7, 0x55, 0x55,
 					0x55, 0x55, 0x55, 0x55 };
 VECT_VAR_DECL(expected,poly,16,4) [] = { 0xfff2, 0xfff3, 0x66, 0x66 };
+#if defined (FP16_SUPPORTED)
+VECT_VAR_DECL (expected, hfloat, 16, 4) [] = { 0xcb00, 0xca80,
+					       0x4b4d, 0x4b4d };
+#endif
 VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0xc1700000, 0x42066666 };
 VECT_VAR_DECL(expected,int,8,16) [] = { 0xfe, 0xff, 0x11, 0x11,
 					0x11, 0x11, 0x11, 0x11,
@@ -39,6 +43,12 @@ VECT_VAR_DECL(expected,poly,8,16) [] = { 0xfc, 0xfd, 0xfe, 0xff,
 					 0x55, 0x55, 0x55, 0x55 };
 VECT_VAR_DECL(expected,poly,16,8) [] = { 0xfff6, 0xfff7, 0x66, 0x66,
 					 0x66, 0x66, 0x66, 0x66 };
+#if defined (FP16_SUPPORTED)
+VECT_VAR_DECL (expected, hfloat, 16, 8) [] = { 0xc880, 0x4b4d,
+					       0x4b4d, 0x4b4d,
+					       0x4b4d, 0x4b4d,
+					       0x4b4d, 0x4b4d };
+#endif
 VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0xc1500000, 0x4204cccd,
 					   0x4204cccd, 0x4204cccd };
 
@@ -60,6 +70,10 @@ void exec_vext (void)
   clean_results ();
 
   TEST_MACRO_ALL_VARIANTS_2_5(VLOAD, vector1, buffer);
+#ifdef FP16_SUPPORTED
+  VLOAD(vector1, buffer, , float, f, 16, 4);
+  VLOAD(vector1, buffer, q, float, f, 16, 8);
+#endif
   VLOAD(vector1, buffer, , float, f, 32, 2);
   VLOAD(vector1, buffer, q, float, f, 32, 4);
 
@@ -74,6 +88,9 @@ void exec_vext (void)
   VDUP(vector2, , uint, u, 64, 1, 0x88);
   VDUP(vector2, , poly, p, 8, 8, 0x55);
   VDUP(vector2, , poly, p, 16, 4, 0x66);
+#if defined (FP16_SUPPORTED)
+  VDUP (vector2, , float, f, 16, 4, 14.6f);   /* 14.6f is 0x4b4d.  */
+#endif
   VDUP(vector2, , float, f, 32, 2, 33.6f);
 
   VDUP(vector2, q, int, s, 8, 16, 0x11);
@@ -86,6 +103,9 @@ void exec_vext (void)
   VDUP(vector2, q, uint, u, 64, 2, 0x88);
   VDUP(vector2, q, poly, p, 8, 16, 0x55);
   VDUP(vector2, q, poly, p, 16, 8, 0x66);
+#if defined (FP16_SUPPORTED)
+  VDUP (vector2, q, float, f, 16, 8, 14.6f);
+#endif
   VDUP(vector2, q, float, f, 32, 4, 33.2f);
 
   /* Choose arbitrary extract offsets.  */
@@ -99,6 +119,9 @@ void exec_vext (void)
   TEST_VEXT(, uint, u, 64, 1, 0);
   TEST_VEXT(, poly, p, 8, 8, 6);
   TEST_VEXT(, poly, p, 16, 4, 2);
+#if defined (FP16_SUPPORTED)
+  TEST_VEXT(, float, f, 16, 4, 2);
+#endif
   TEST_VEXT(, float, f, 32, 2, 1);
 
   TEST_VEXT(q, int, s, 8, 16, 14);
@@ -111,9 +134,16 @@ void exec_vext (void)
   TEST_VEXT(q, uint, u, 64, 2, 1);
   TEST_VEXT(q, poly, p, 8, 16, 12);
   TEST_VEXT(q, poly, p, 16, 8, 6);
+#if defined (FP16_SUPPORTED)
+  TEST_VEXT(q, float, f, 16, 8, 7);
+#endif
   TEST_VEXT(q, float, f, 32, 4, 3);
 
+#if defined (FP16_SUPPORTED)
+  CHECK_RESULTS (TEST_MSG, "");
+#else
   CHECK_RESULTS_NO_FP16 (TEST_MSG, "");
+#endif
 }
 
 int main (void)

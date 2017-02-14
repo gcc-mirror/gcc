@@ -1,3 +1,7 @@
+# Set this as a minimum (unless overriden by arch t-files) since it's a
+# reasonable lowest common denominator that works for all our archs.
+HOST_LIBGCC2_CFLAGS += -mmacosx-version-min=10.5
+
 crt3.o: $(srcdir)/config/darwin-crt3.c
 	$(crt_compile) $(DARWIN_EXTRA_CRT_BUILD_CFLAGS) -c $<
 

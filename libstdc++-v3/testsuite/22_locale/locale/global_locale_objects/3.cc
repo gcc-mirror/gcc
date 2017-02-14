@@ -1,6 +1,6 @@
 // 2000-09-13 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,7 +42,6 @@ typedef surf facet_type;
 void test03()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   string name;
   locale global_orig;
@@ -73,13 +72,15 @@ void test03()
     VERIFY( loc04 == global_orig );
   }
 
-  // 2: Not destroyed when out of scope, deliberately leaked.
+  // 2: Not destroyed when out of scope, deliberately "leaked".
+  const facet_type* ptr = 0;
   {
     {
       {
 	VERIFY( counter == 0 );
 	{
-	  locale loc01(locale::classic(), new facet_type(1));
+          ptr = new facet_type(1);
+	  locale loc01(locale::classic(), ptr);
 	  VERIFY( counter == 1 );
 	  global_orig = locale::global(loc01);
 	  name = loc01.name();
@@ -100,6 +101,9 @@ void test03()
     VERIFY( loc04 == global_orig );
   }
   VERIFY( counter == 1 );
+
+  // Clean up.
+  delete ptr;
 
   // Restore global settings.
   locale::global(global_orig);

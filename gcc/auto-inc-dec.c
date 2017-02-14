@@ -1,5 +1,5 @@
 /* Discovery of auto-inc and auto-dec instructions.
-   Copyright (C) 2006-2016 Free Software Foundation, Inc.
+   Copyright (C) 2006-2017 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "df.h"
 #include "insn-config.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "recog.h"
 #include "cfgrtl.h"
@@ -658,25 +659,21 @@ try_merge (void)
       if (dump_file)
 	fprintf (dump_file, "trying SIMPLE_PRE_INC\n");
       return attempt_change (gen_rtx_PRE_INC (reg_mode, inc_reg), inc_reg);
-      break;
 
     case SIMPLE_POST_INC:    /* size++  */
       if (dump_file)
 	fprintf (dump_file, "trying SIMPLE_POST_INC\n");
       return attempt_change (gen_rtx_POST_INC (reg_mode, inc_reg), inc_reg);
-      break;
 
     case SIMPLE_PRE_DEC:     /* --size  */
       if (dump_file)
 	fprintf (dump_file, "trying SIMPLE_PRE_DEC\n");
       return attempt_change (gen_rtx_PRE_DEC (reg_mode, inc_reg), inc_reg);
-      break;
 
     case SIMPLE_POST_DEC:    /* size--  */
       if (dump_file)
 	fprintf (dump_file, "trying SIMPLE_POST_DEC\n");
       return attempt_change (gen_rtx_POST_DEC (reg_mode, inc_reg), inc_reg);
-      break;
 
     case DISP_PRE:           /* ++con   */
       if (dump_file)
@@ -687,7 +684,6 @@ try_merge (void)
 							       inc_reg,
 							       inc_insn.reg1)),
 			     inc_reg);
-      break;
 
     case DISP_POST:          /* con++   */
       if (dump_file)
@@ -698,7 +694,6 @@ try_merge (void)
 								inc_reg,
 								inc_insn.reg1)),
 			     inc_reg);
-      break;
 
     case REG_PRE:            /* ++reg   */
       if (dump_file)
@@ -709,7 +704,6 @@ try_merge (void)
 							       inc_reg,
 							       inc_insn.reg1)),
 			     inc_reg);
-      break;
 
     case REG_POST:            /* reg++   */
       if (dump_file)
@@ -720,7 +714,6 @@ try_merge (void)
 								inc_reg,
 								inc_insn.reg1)),
 			     inc_reg);
-      break;
     }
 }
 

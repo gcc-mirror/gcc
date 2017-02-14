@@ -1,6 +1,6 @@
 // Position types -*- C++ -*-
 
-// Copyright (C) 1997-2016 Free Software Foundation, Inc.
+// Copyright (C) 1997-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,7 +41,7 @@
 
 // XXX If <stdint.h> is really needed, make sure to define the macros
 // before including it, in order not to break <tr1/cstdint> (and <cstdint>
-// in C++0x).  Reconsider all this as soon as possible...
+// in C++11).  Reconsider all this as soon as possible...
 #if (defined(_GLIBCXX_HAVE_INT64_T) && !defined(_GLIBCXX_HAVE_INT64_T_LONG) \
      && !defined(_GLIBCXX_HAVE_INT64_T_LONG_LONG))
 

@@ -3,7 +3,7 @@
 // { dg-require-fork "" }
 // { dg-require-mkfifo "" }
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,15 +29,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-// No asserts, avoid leaking the semaphores if a VERIFY fails.
-#undef _GLIBCXX_ASSERT
-
 #include <testsuite_hooks.h>
 
 // libstdc++/13171
 bool test01()
 {
-  bool test __attribute__((unused)) = true;
+  bool test = true;
   using namespace std;
   using namespace __gnu_test;
 
@@ -66,11 +63,11 @@ bool test01()
   fb.pubimbue(loc_fr);
   fb.open(name, ios_base::in);
   s1.wait();
-  VERIFY( fb.is_open() );
+  test &= bool( fb.is_open() );
   fb.pubimbue(loc_en);
   filebuf::int_type c = fb.sgetc();
   fb.close();
-  VERIFY( c == 'S' );
+  test &= bool( c == 'S' );
   s2.signal();
 
   return test;

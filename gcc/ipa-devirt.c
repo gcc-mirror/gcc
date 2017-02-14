@@ -1,6 +1,6 @@
 /* Basic IPA utilities for type inheritance graph construction and
    devirtualization.
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2017 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -122,6 +122,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "gimple-fold.h"
 #include "symbol-summary.h"
+#include "tree-vrp.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "demangle.h"
@@ -876,9 +877,9 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 	  if (TREE_CODE (ref1->referred->decl)
 	      != TREE_CODE (ref2->referred->decl))
 	    {
-	      if (TREE_CODE (ref1->referred->decl) == VAR_DECL)
+	      if (VAR_P (ref1->referred->decl))
 		end1 = true;
-	      else if (TREE_CODE (ref2->referred->decl) == VAR_DECL)
+	      else if (VAR_P (ref2->referred->decl))
 		end2 = true;
 	    }
 	}
@@ -1627,7 +1628,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 		      if (DECL_VIRTUAL_P (f1) != DECL_VIRTUAL_P (f2))
 			{
 			  warn_odr (t1, t2, f1, f2, warn, warned,
-				    G_("s definition that differs by virtual "
+				    G_("a definition that differs by virtual "
 				       "keyword in another translation unit"));
 			  return false;
 			}
@@ -2136,8 +2137,7 @@ get_odr_type (tree type, bool insert)
       /* Be sure we did not recorded any derived types; these may need
 	 renumbering too.  */
       gcc_assert (val->derived_types.length() == 0);
-      if (odr_types_ptr)
-	val->id = odr_types.length ();
+      val->id = odr_types.length ();
       vec_safe_push (odr_types_ptr, val);
     }
   return val;
@@ -2342,7 +2342,7 @@ referenced_from_vtable_p (struct cgraph_node *node)
     if ((ref->use == IPA_REF_ALIAS
 	 && referenced_from_vtable_p (dyn_cast<cgraph_node *> (ref->referring)))
 	|| (ref->use == IPA_REF_ADDR
-	    && TREE_CODE (ref->referring->decl) == VAR_DECL
+	    && VAR_P (ref->referring->decl)
 	    && DECL_VIRTUAL_P (ref->referring->decl)))
       {
 	found = true;

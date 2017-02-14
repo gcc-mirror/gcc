@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GCC
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "predict.h"
 #include "alloc-pool.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "optabs.h"
 #include "regs.h"
@@ -136,7 +137,7 @@ force_label_rtx (tree label)
 
   gcc_assert (function);
 
-  forced_labels = gen_rtx_INSN_LIST (VOIDmode, ref, forced_labels);
+  vec_safe_push (forced_labels, ref);
   return ref;
 }
 
@@ -190,7 +191,7 @@ expand_label (tree label)
     }
 
   if (FORCED_LABEL (label))
-    forced_labels = gen_rtx_INSN_LIST (VOIDmode, label_r, forced_labels);
+    vec_safe_push<rtx_insn *> (forced_labels, label_r);
 
   if (DECL_NONLOCAL (label) || FORCED_LABEL (label))
     maybe_set_first_label_num (label_r);
@@ -458,7 +459,7 @@ decl_overlaps_hard_reg_set_p (tree *declp, int *walk_subtrees ATTRIBUTE_UNUSED,
   tree decl = *declp;
   const HARD_REG_SET *const regs = (const HARD_REG_SET *) data;
 
-  if (TREE_CODE (decl) == VAR_DECL)
+  if (VAR_P (decl))
     {
       if (DECL_HARD_REGISTER (decl)
 	  && REG_P (DECL_RTL (decl))

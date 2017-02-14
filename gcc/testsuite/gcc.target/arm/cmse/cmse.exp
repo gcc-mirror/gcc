@@ -1,0 +1,72 @@
+#   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite for ARMv8-M Security Extensions using the `dg.exp' driver.
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# Exit immediately if the target does not support -mcmse.
+if ![check_effective_target_arm_cmse_ok] then {
+    return
+}
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
+}
+
+# Initialize `dg'.
+dg-init
+
+set saved-dg-do-what-default ${dg-do-what-default}
+set dg-do-what-default "assemble"
+
+set saved-lto_torture_options ${LTO_TORTURE_OPTIONS}
+set LTO_TORTURE_OPTIONS ""
+
+# These are for both baseline and mainline.
+gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] \
+	"" $DEFAULT_CFLAGS
+
+if {[check_effective_target_arm_arch_v8m_base_ok]} then {
+    # Baseline only
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/baseline/*.c]] \
+	    "" $DEFAULT_CFLAGS
+}
+
+if {[check_effective_target_arm_arch_v8m_main_ok]} then {
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/*.c]] \
+	    "" $DEFAULT_CFLAGS
+    # Mainline -mfloat-abi=soft
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/soft/*.c]] \
+	    "-mfloat-abi=soft" $DEFAULT_CFLAGS
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/softfp/*.c]] \
+	    "" $DEFAULT_CFLAGS
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/softfp-sp/*.c]] \
+	    "" $DEFAULT_CFLAGS
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/hard/*.c]] \
+	    "" $DEFAULT_CFLAGS
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/mainline/hard-sp/*.c]] \
+	    "" $DEFAULT_CFLAGS
+}
+
+set LTO_TORTURE_OPTIONS ${saved-lto_torture_options}
+set dg-do-what-default ${saved-dg-do-what-default}
+
+# All done.
+dg-finish

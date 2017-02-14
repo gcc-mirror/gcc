@@ -1,6 +1,6 @@
 /* Routines for emitting GIMPLE to a file stream.
 
-   Copyright (C) 2011-2016 Free Software Foundation, Inc.
+   Copyright (C) 2011-2017 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -145,7 +145,7 @@ output_gimple_stmt (struct output_block *ob, gimple *stmt)
 		basep = &TREE_OPERAND (*basep, 0);
 	      while (handled_component_p (*basep))
 		basep = &TREE_OPERAND (*basep, 0);
-	      if (TREE_CODE (*basep) == VAR_DECL
+	      if (VAR_P (*basep)
 		  && !auto_var_in_fn_p (*basep, current_function_decl)
 		  && !DECL_REGISTER (*basep))
 		{

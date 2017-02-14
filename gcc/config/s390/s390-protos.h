@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
    Contributed by Hartmut Penner (hpenner@de.ibm.com)
 
@@ -73,7 +73,7 @@ extern int s390_const_ok_for_constraint_p (HOST_WIDE_INT, int, const char *);
 extern int s390_const_double_ok_for_constraint_p (rtx, int, const char *);
 extern int s390_single_part (rtx, machine_mode, machine_mode, int);
 extern unsigned HOST_WIDE_INT s390_extract_part (rtx, machine_mode, int);
-extern bool s390_contiguous_bitmask_p (unsigned HOST_WIDE_INT, int, int *, int *);
+extern bool s390_contiguous_bitmask_p (unsigned HOST_WIDE_INT, bool, int, int *, int *);
 extern bool s390_contiguous_bitmask_vector_p (rtx, int *, int *);
 extern bool s390_bytemask_vector_p (rtx, unsigned *);
 extern bool s390_split_ok_p (rtx, rtx, machine_mode, int);
@@ -119,6 +119,7 @@ extern void s390_expand_atomic (machine_mode, enum rtx_code,
 extern void s390_expand_tbegin (rtx, rtx, rtx, bool);
 extern void s390_expand_vec_compare (rtx, enum rtx_code, rtx, rtx);
 extern void s390_expand_vec_compare_cc (rtx, enum rtx_code, rtx, rtx, bool);
+extern enum rtx_code s390_reverse_condition (machine_mode, enum rtx_code);
 extern void s390_expand_vcond (rtx, rtx, rtx, enum rtx_code, rtx, rtx);
 extern void s390_expand_vec_init (rtx, rtx);
 extern rtx s390_return_addr_rtx (int, rtx);
@@ -133,7 +134,7 @@ extern void s390_split_access_reg (rtx, rtx *, rtx *);
 extern void print_operand_address (FILE *, rtx);
 extern void print_operand (FILE *, rtx, int);
 extern void s390_output_pool_entry (rtx, machine_mode, unsigned int);
-extern int s390_label_align (rtx);
+extern int s390_label_align (rtx_insn *);
 extern int s390_agen_dep_p (rtx_insn *, rtx_insn *);
 extern rtx_insn *s390_load_got (void);
 extern rtx s390_get_thread_pointer (void);

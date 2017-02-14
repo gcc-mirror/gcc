@@ -1,5 +1,5 @@
 `/* Implementation of the MAXLOC intrinsic
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -23,10 +23,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include "libgfortran.h"
-#include <stdlib.h>
-#include <assert.h>
-#include <limits.h>'
+#include "libgfortran.h"'
 
 include(iparm.m4)dnl
 include(iforeach.m4)dnl

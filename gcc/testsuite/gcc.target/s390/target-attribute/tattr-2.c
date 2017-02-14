@@ -2,7 +2,7 @@
 
 /* { dg-do compile */
 /* { dg-require-effective-target target_attribute } */
-/* { dg-options "-O3 -march=zEC12 -mno-htm" } */
+/* { dg-options "-O3 -march=zEC12 -mno-htm -fno-ipa-icf" } */
 
 #pragma GCC target("htm")
 void p1(void)
@@ -20,7 +20,7 @@ void p0(void)
 #ifdef __HTM__
 #error __HTM__ is defined
 #endif
-  __builtin_tend ();
+  __builtin_tend (); /* { dg-error "is not supported without -mhtm" } */
 }
 #pragma GCC reset_options
 

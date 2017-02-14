@@ -57,7 +57,17 @@
 #define X8     320
 #define X9     328
 
-#define STACK  336
+#define H0	336
+#define H1	338
+#define H2	340
+#define H3	342
+#define H4	344
+#define H5	346
+#define H6	348
+#define H7	350
+
+
+#define STACK  352
 
 /* The type of test.  'myfunc' in abitest.S needs to know which kind of
    test it is running to decide what to do at the runtime.  Keep the

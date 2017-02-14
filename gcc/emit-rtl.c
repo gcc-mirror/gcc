@@ -1,5 +1,5 @@
 /* Emit RTL for the GCC expander.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "memmodel.h"
 #include "backend.h"
 #include "target.h"
 #include "rtl.h"
@@ -1056,29 +1057,38 @@ gen_reg_rtx (machine_mode mode)
   /* Do not call gen_reg_rtx with uninitialized crtl.  */
   gcc_assert (crtl->emit.regno_pointer_align_length);
 
-  /* Make sure regno_pointer_align, and regno_reg_rtx are large
-     enough to have an element for this pseudo reg number.  */
-
-  if (reg_rtx_no == crtl->emit.regno_pointer_align_length)
-    {
-      int old_size = crtl->emit.regno_pointer_align_length;
-      char *tmp;
-      rtx *new1;
-
-      tmp = XRESIZEVEC (char, crtl->emit.regno_pointer_align, old_size * 2);
-      memset (tmp + old_size, 0, old_size);
-      crtl->emit.regno_pointer_align = (unsigned char *) tmp;
-
-      new1 = GGC_RESIZEVEC (rtx, regno_reg_rtx, old_size * 2);
-      memset (new1 + old_size, 0, old_size * sizeof (rtx));
-      regno_reg_rtx = new1;
-
-      crtl->emit.regno_pointer_align_length = old_size * 2;
-    }
+  crtl->emit.ensure_regno_capacity ();
+  gcc_assert (reg_rtx_no < crtl->emit.regno_pointer_align_length);
 
   val = gen_raw_REG (mode, reg_rtx_no);
   regno_reg_rtx[reg_rtx_no++] = val;
   return val;
+}
+
+/* Make sure m_regno_pointer_align, and regno_reg_rtx are large
+   enough to have elements in the range 0 <= idx <= reg_rtx_no.  */
+
+void
+emit_status::ensure_regno_capacity ()
+{
+  int old_size = regno_pointer_align_length;
+
+  if (reg_rtx_no < old_size)
+    return;
+
+  int new_size = old_size * 2;
+  while (reg_rtx_no >= new_size)
+    new_size *= 2;
+
+  char *tmp = XRESIZEVEC (char, regno_pointer_align, new_size);
+  memset (tmp + old_size, 0, new_size - old_size);
+  regno_pointer_align = (unsigned char *) tmp;
+
+  rtx *new1 = GGC_RESIZEVEC (rtx, regno_reg_rtx, new_size);
+  memset (new1 + old_size, 0, (new_size - old_size) * sizeof (rtx));
+  regno_reg_rtx = new1;
+
+  crtl->emit.regno_pointer_align_length = new_size;
 }
 
 /* Return TRUE if REG is a PARM_DECL, FALSE otherwise.  */
@@ -1156,7 +1166,11 @@ set_reg_attrs_from_value (rtx reg, rtx x)
     {
 #if defined(POINTERS_EXTEND_UNSIGNED)
       if (((GET_CODE (x) == SIGN_EXTEND && POINTERS_EXTEND_UNSIGNED)
-	   || (GET_CODE (x) != SIGN_EXTEND && ! POINTERS_EXTEND_UNSIGNED))
+	   || (GET_CODE (x) == ZERO_EXTEND && ! POINTERS_EXTEND_UNSIGNED)
+	   || (paradoxical_subreg_p (x)
+	       && ! (SUBREG_PROMOTED_VAR_P (x)
+		     && SUBREG_CHECK_PROMOTED_SIGN (x,
+						    POINTERS_EXTEND_UNSIGNED))))
 	  && !targetm.have_ptr_extend ())
 	can_be_reg_pointer = false;
 #endif
@@ -1360,6 +1374,19 @@ maybe_set_first_label_num (rtx_code_label *x)
   if (CODE_LABEL_NUMBER (x) < first_label_num)
     first_label_num = CODE_LABEL_NUMBER (x);
 }
+
+/* For use by the RTL function loader, when mingling with normal
+   functions.
+   Ensure that label_num is greater than the label num of X, to avoid
+   duplicate labels in the generated assembler.  */
+
+void
+maybe_set_max_label_num (rtx_code_label *x)
+{
+  if (CODE_LABEL_NUMBER (x) >= label_num)
+    label_num = CODE_LABEL_NUMBER (x) + 1;
+}
+
 
 /* Return a value representing some low-order bits of X, where the number
    of low-order bits is given by MODE.  Note that no conversion is done
@@ -1473,44 +1500,41 @@ gen_highpart_mode (machine_mode outermode, machine_mode innermode, rtx exp)
 			      subreg_highpart_offset (outermode, innermode));
 }
 
-/* Return the SUBREG_BYTE for an OUTERMODE lowpart of an INNERMODE value.  */
+/* Return the SUBREG_BYTE for a lowpart subreg whose outer mode has
+   OUTER_BYTES bytes and whose inner mode has INNER_BYTES bytes.  */
 
 unsigned int
-subreg_lowpart_offset (machine_mode outermode, machine_mode innermode)
+subreg_size_lowpart_offset (unsigned int outer_bytes, unsigned int inner_bytes)
 {
-  unsigned int offset = 0;
-  int difference = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode));
+  if (outer_bytes > inner_bytes)
+    /* Paradoxical subregs always have a SUBREG_BYTE of 0.  */
+    return 0;
 
-  if (difference > 0)
-    {
-      if (WORDS_BIG_ENDIAN)
-	offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
-      if (BYTES_BIG_ENDIAN)
-	offset += difference % UNITS_PER_WORD;
-    }
-
-  return offset;
+  if (BYTES_BIG_ENDIAN && WORDS_BIG_ENDIAN)
+    return inner_bytes - outer_bytes;
+  else if (!BYTES_BIG_ENDIAN && !WORDS_BIG_ENDIAN)
+    return 0;
+  else
+    return subreg_size_offset_from_lsb (outer_bytes, inner_bytes, 0);
 }
 
-/* Return offset in bytes to get OUTERMODE high part
-   of the value in mode INNERMODE stored in memory in target format.  */
+/* Return the SUBREG_BYTE for a highpart subreg whose outer mode has
+   OUTER_BYTES bytes and whose inner mode has INNER_BYTES bytes.  */
+
 unsigned int
-subreg_highpart_offset (machine_mode outermode, machine_mode innermode)
+subreg_size_highpart_offset (unsigned int outer_bytes,
+			     unsigned int inner_bytes)
 {
-  unsigned int offset = 0;
-  int difference = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode));
+  gcc_assert (inner_bytes >= outer_bytes);
 
-  gcc_assert (GET_MODE_SIZE (innermode) >= GET_MODE_SIZE (outermode));
-
-  if (difference > 0)
-    {
-      if (! WORDS_BIG_ENDIAN)
-	offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
-      if (! BYTES_BIG_ENDIAN)
-	offset += difference % UNITS_PER_WORD;
-    }
-
-  return offset;
+  if (BYTES_BIG_ENDIAN && WORDS_BIG_ENDIAN)
+    return 0;
+  else if (!BYTES_BIG_ENDIAN && !WORDS_BIG_ENDIAN)
+    return inner_bytes - outer_bytes;
+  else
+    return subreg_size_offset_from_lsb (outer_bytes, inner_bytes,
+					(inner_bytes - outer_bytes)
+					* BITS_PER_UNIT);
 }
 
 /* Return 1 iff X, assumed to be a SUBREG,
@@ -1813,9 +1837,9 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	 able to simply always use TYPE_ALIGN?  */
     }
 
-  /* We can set the alignment from the type if we are making an object,
-     this is an INDIRECT_REF, or if TYPE_ALIGN_OK.  */
-  if (objectp || TREE_CODE (t) == INDIRECT_REF || TYPE_ALIGN_OK (type))
+  /* We can set the alignment from the type if we are making an object or if
+     this is an INDIRECT_REF.  */
+  if (objectp || TREE_CODE (t) == INDIRECT_REF)
     attrs.align = MAX (attrs.align, TYPE_ALIGN (type));
 
   /* If the size is known, we can set that.  */
@@ -1960,7 +1984,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
       get_object_alignment_1 (t, &obj_align, &obj_bitpos);
       obj_bitpos = (obj_bitpos - bitpos) & (obj_align - 1);
       if (obj_bitpos != 0)
-	obj_align = (obj_bitpos & -obj_bitpos);
+	obj_align = least_bit_hwi (obj_bitpos);
       attrs.align = MAX (attrs.align, obj_align);
     }
 
@@ -2294,7 +2318,7 @@ adjust_address_1 (rtx memref, machine_mode mode, HOST_WIDE_INT offset,
      if zero.  */
   if (offset != 0)
     {
-      max_align = (offset & -offset) * BITS_PER_UNIT;
+      max_align = least_bit_hwi (offset) * BITS_PER_UNIT;
       attrs.align = MIN (attrs.align, max_align);
     }
 
@@ -2622,8 +2646,10 @@ unshare_all_rtl_1 (rtx_insn *insn)
      This special care is necessary when the stack slot MEM does not
      actually appear in the insn chain.  If it does appear, its address
      is unshared from all else at that point.  */
-  stack_slot_list = safe_as_a <rtx_expr_list *> (
-		      copy_rtx_if_shared (stack_slot_list));
+  unsigned int i;
+  rtx temp;
+  FOR_EACH_VEC_SAFE_ELT (stack_slot_list, i, temp)
+    (*stack_slot_list)[i] = copy_rtx_if_shared (temp);
 }
 
 /* Go through all the RTL insn bodies and copy any invalid shared
@@ -2652,7 +2678,10 @@ unshare_all_rtl_again (rtx_insn *insn)
   for (decl = DECL_ARGUMENTS (cfun->decl); decl; decl = DECL_CHAIN (decl))
     set_used_flags (DECL_RTL (decl));
 
-  reset_used_flags (stack_slot_list);
+  rtx temp;
+  unsigned int i;
+  FOR_EACH_VEC_SAFE_ELT (stack_slot_list, i, temp)
+    reset_used_flags (temp);
 
   unshare_all_rtl_1 (insn);
 }
@@ -2661,6 +2690,14 @@ unsigned int
 unshare_all_rtl (void)
 {
   unshare_all_rtl_1 (get_insns ());
+
+  for (tree decl = DECL_ARGUMENTS (cfun->decl); decl; decl = DECL_CHAIN (decl))
+    {
+      if (DECL_RTL_SET_P (decl))
+	SET_DECL_RTL (decl, copy_rtx_if_shared (DECL_RTL (decl)));
+      DECL_INCOMING_RTL (decl) = copy_rtx_if_shared (DECL_INCOMING_RTL (decl));
+    }
+
   return 0;
 }
 
@@ -2703,8 +2740,9 @@ verify_rtx_sharing (rtx orig, rtx insn)
       /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
-      if (REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
-	  && ORIGINAL_REGNO (XEXP (x, 0)) == REGNO (XEXP (x, 0)))
+      if (REG_P (XEXP (x, 0))
+	  && HARD_REGISTER_NUM_P (REGNO (XEXP (x, 0)))
+	  && HARD_REGISTER_NUM_P (ORIGINAL_REGNO (XEXP (x, 0))))
 	return;
       break;
 
@@ -2819,10 +2857,10 @@ static void
 verify_insn_sharing (rtx insn)
 {
   gcc_assert (INSN_P (insn));
-  reset_used_flags (PATTERN (insn));
-  reset_used_flags (REG_NOTES (insn));
+  verify_rtx_sharing (PATTERN (insn), insn);
+  verify_rtx_sharing (REG_NOTES (insn), insn);
   if (CALL_P (insn))
-    reset_used_flags (CALL_INSN_FUNCTION_USAGE (insn));
+    verify_rtx_sharing (CALL_INSN_FUNCTION_USAGE (insn), insn);
 }
 
 /* Go through all the RTL insn bodies and check that there is no unexpected
@@ -2955,8 +2993,9 @@ repeat:
       /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
-      if (REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
-	  && ORIGINAL_REGNO (XEXP (x, 0)) == REGNO (XEXP (x, 0)))
+      if (REG_P (XEXP (x, 0))
+	  && HARD_REGISTER_NUM_P (REGNO (XEXP (x, 0)))
+	  && HARD_REGISTER_NUM_P (ORIGINAL_REGNO (XEXP (x, 0))))
 	return;
       break;
 
@@ -3292,9 +3331,8 @@ previous_insn (rtx_insn *insn)
    look inside SEQUENCEs.  */
 
 rtx_insn *
-next_nonnote_insn (rtx uncast_insn)
+next_nonnote_insn (rtx_insn *insn)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
   while (insn)
     {
       insn = NEXT_INSN (insn);
@@ -3328,10 +3366,8 @@ next_nonnote_insn_bb (rtx_insn *insn)
    not look inside SEQUENCEs.  */
 
 rtx_insn *
-prev_nonnote_insn (rtx uncast_insn)
+prev_nonnote_insn (rtx_insn *insn)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
-
   while (insn)
     {
       insn = PREV_INSN (insn);
@@ -3347,9 +3383,8 @@ prev_nonnote_insn (rtx uncast_insn)
    not look inside SEQUENCEs.  */
 
 rtx_insn *
-prev_nonnote_insn_bb (rtx uncast_insn)
+prev_nonnote_insn_bb (rtx_insn *insn)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
 
   while (insn)
     {
@@ -3367,10 +3402,8 @@ prev_nonnote_insn_bb (rtx uncast_insn)
    routine does not look inside SEQUENCEs.  */
 
 rtx_insn *
-next_nondebug_insn (rtx uncast_insn)
+next_nondebug_insn (rtx_insn *insn)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
-
   while (insn)
     {
       insn = NEXT_INSN (insn);
@@ -3385,10 +3418,8 @@ next_nondebug_insn (rtx uncast_insn)
    This routine does not look inside SEQUENCEs.  */
 
 rtx_insn *
-prev_nondebug_insn (rtx uncast_insn)
+prev_nondebug_insn (rtx_insn *insn)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
-
   while (insn)
     {
       insn = PREV_INSN (insn);
@@ -3403,10 +3434,8 @@ prev_nondebug_insn (rtx uncast_insn)
    This routine does not look inside SEQUENCEs.  */
 
 rtx_insn *
-next_nonnote_nondebug_insn (rtx uncast_insn)
+next_nonnote_nondebug_insn (rtx_insn *insn)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
-
   while (insn)
     {
       insn = NEXT_INSN (insn);
@@ -3421,10 +3450,8 @@ next_nonnote_nondebug_insn (rtx uncast_insn)
    This routine does not look inside SEQUENCEs.  */
 
 rtx_insn *
-prev_nonnote_nondebug_insn (rtx uncast_insn)
+prev_nonnote_nondebug_insn (rtx_insn *insn)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
-
   while (insn)
     {
       insn = PREV_INSN (insn);
@@ -3459,10 +3486,8 @@ next_real_insn (rtx uncast_insn)
    SEQUENCEs.  */
 
 rtx_insn *
-prev_real_insn (rtx uncast_insn)
+prev_real_insn (rtx_insn *insn)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
-
   while (insn)
     {
       insn = PREV_INSN (insn);
@@ -3494,7 +3519,7 @@ last_call_insn (void)
    standalone USE and CLOBBER insn.  */
 
 int
-active_insn_p (const_rtx insn)
+active_insn_p (const rtx_insn *insn)
 {
   return (CALL_P (insn) || JUMP_P (insn)
 	  || JUMP_TABLE_DATA_P (insn) /* FIXME */
@@ -3505,10 +3530,8 @@ active_insn_p (const_rtx insn)
 }
 
 rtx_insn *
-next_active_insn (rtx uncast_insn)
+next_active_insn (rtx_insn *insn)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
-
   while (insn)
     {
       insn = NEXT_INSN (insn);
@@ -3524,10 +3547,8 @@ next_active_insn (rtx uncast_insn)
    standalone USE and CLOBBER insn.  */
 
 rtx_insn *
-prev_active_insn (rtx uncast_insn)
+prev_active_insn (rtx_insn *insn)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
-
   while (insn)
     {
       insn = PREV_INSN (insn);
@@ -3548,10 +3569,8 @@ prev_active_insn (rtx uncast_insn)
    Return 0 if we can't find the insn.  */
 
 rtx_insn *
-next_cc0_user (rtx uncast_insn)
+next_cc0_user (rtx_insn *insn)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
-
   rtx note = find_reg_note (insn, REG_CC_USER, NULL_RTX);
 
   if (note)
@@ -3610,8 +3629,8 @@ mark_label_nuses (rtx x)
   const char *fmt;
 
   code = GET_CODE (x);
-  if (code == LABEL_REF && LABEL_P (LABEL_REF_LABEL (x)))
-    LABEL_NUSES (LABEL_REF_LABEL (x))++;
+  if (code == LABEL_REF && LABEL_P (label_ref_label (x)))
+    LABEL_NUSES (label_ref_label (x))++;
 
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -3637,8 +3656,7 @@ mark_label_nuses (rtx x)
 rtx_insn *
 try_split (rtx pat, rtx_insn *trial, int last)
 {
-  rtx_insn *before = PREV_INSN (trial);
-  rtx_insn *after = NEXT_INSN (trial);
+  rtx_insn *before, *after;
   rtx note;
   rtx_insn *seq, *tem;
   int probability;
@@ -3811,6 +3829,9 @@ try_split (rtx pat, rtx_insn *trial, int last)
 	  insn = PREV_INSN (insn);
 	}
     }
+
+  before = PREV_INSN (trial);
+  after = NEXT_INSN (trial);
 
   tem = emit_insn_after_setloc (seq, trial, INSN_LOCATION (trial));
 
@@ -4822,7 +4843,7 @@ emit_pattern_before (rtx pattern, rtx uncast_before, bool skip_debug_insns,
 				       insnp, make_raw);
   else
     return emit_pattern_before_noloc (pattern, before,
-                                      insnp ? before : NULL_RTX,
+				      insnp ? before : NULL_RTX,
                                       NULL, make_raw);
 }
 
@@ -5526,8 +5547,9 @@ copy_insn_1 (rtx orig)
       /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
-      if (REG_P (XEXP (orig, 0)) && REGNO (XEXP (orig, 0)) < FIRST_PSEUDO_REGISTER
-	  && ORIGINAL_REGNO (XEXP (orig, 0)) == REGNO (XEXP (orig, 0)))
+      if (REG_P (XEXP (orig, 0))
+	  && HARD_REGISTER_NUM_P (REGNO (XEXP (orig, 0)))
+	  && HARD_REGISTER_NUM_P (ORIGINAL_REGNO (XEXP (orig, 0))))
 	return orig;
       break;
 
@@ -5556,10 +5578,6 @@ copy_insn_1 (rtx orig)
      not be copied.  That is the sensible default behavior, and forces
      us to explicitly document why we are *not* copying a flag.  */
   copy = shallow_copy_rtx (orig);
-
-  /* We do not copy the USED flag, which is used as a mark bit during
-     walks over the RTL.  */
-  RTX_FLAG (copy, used) = 0;
 
   /* We do not copy JUMP, CALL, or FRAME_RELATED for INSNs.  */
   if (INSN_P (orig))
@@ -5677,7 +5695,8 @@ init_emit (void)
   crtl->emit.regno_pointer_align
     = XCNEWVEC (unsigned char, crtl->emit.regno_pointer_align_length);
 
-  regno_reg_rtx = ggc_vec_alloc<rtx> (crtl->emit.regno_pointer_align_length);
+  regno_reg_rtx
+    = ggc_cleared_vec_alloc<rtx> (crtl->emit.regno_pointer_align_length);
 
   /* Put copies of all the hard registers into regno_reg_rtx.  */
   memcpy (regno_reg_rtx,
@@ -5706,10 +5725,13 @@ init_emit (void)
   REGNO_POINTER_ALIGN (HARD_FRAME_POINTER_REGNUM) = STACK_BOUNDARY;
   REGNO_POINTER_ALIGN (ARG_POINTER_REGNUM) = STACK_BOUNDARY;
 
+  /* ??? These are problematic (for example, 3 out of 4 are wrong on
+     32-bit SPARC and cannot be all fixed because of the ABI).  */
   REGNO_POINTER_ALIGN (VIRTUAL_INCOMING_ARGS_REGNUM) = STACK_BOUNDARY;
   REGNO_POINTER_ALIGN (VIRTUAL_STACK_VARS_REGNUM) = STACK_BOUNDARY;
   REGNO_POINTER_ALIGN (VIRTUAL_STACK_DYNAMIC_REGNUM) = STACK_BOUNDARY;
   REGNO_POINTER_ALIGN (VIRTUAL_OUTGOING_ARGS_REGNUM) = STACK_BOUNDARY;
+
   REGNO_POINTER_ALIGN (VIRTUAL_CFA_REGNUM) = BITS_PER_WORD;
 #endif
 
@@ -6178,17 +6200,19 @@ emit_copy_of_insn_after (rtx_insn *insn, rtx_insn *after)
      which may be duplicated by the basic block reordering code.  */
   RTX_FRAME_RELATED_P (new_rtx) = RTX_FRAME_RELATED_P (insn);
 
+  /* Locate the end of existing REG_NOTES in NEW_RTX.  */
+  rtx *ptail = &REG_NOTES (new_rtx);
+  while (*ptail != NULL_RTX)
+    ptail = &XEXP (*ptail, 1);
+
   /* Copy all REG_NOTES except REG_LABEL_OPERAND since mark_jump_label
      will make them.  REG_LABEL_TARGETs are created there too, but are
      supposed to be sticky, so we copy them.  */
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) != REG_LABEL_OPERAND)
       {
-	if (GET_CODE (link) == EXPR_LIST)
-	  add_reg_note (new_rtx, REG_NOTE_KIND (link),
-			copy_insn_1 (XEXP (link, 0)));
-	else
-	  add_shallow_copy_of_reg_note (new_rtx, link);
+	*ptail = duplicate_reg_note (link);
+	ptail = &XEXP (*ptail, 1);
       }
 
   INSN_CODE (new_rtx) = INSN_CODE (insn);
@@ -6295,5 +6319,17 @@ need_atomic_barrier_p (enum memmodel model, bool pre)
       gcc_unreachable ();
     }
 }
+
+/* Initialize fields of rtl_data related to stack alignment.  */
+
+void
+rtl_data::init_stack_alignment ()
+{
+  stack_alignment_needed = STACK_BOUNDARY;
+  max_used_stack_slot_alignment = STACK_BOUNDARY;
+  stack_alignment_estimated = 0;
+  preferred_stack_boundary = STACK_BOUNDARY;
+}
+
 
 #include "gt-emit-rtl.h"

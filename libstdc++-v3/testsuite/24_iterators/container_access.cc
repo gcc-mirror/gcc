@@ -1,7 +1,7 @@
 // { dg-do run }
 // { dg-options "-std=gnu++17" }
 
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,8 +24,6 @@
 #include <vector>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 void
 test01()
 {
@@ -47,7 +45,7 @@ test02()
   static_assert(!e);
 }
 
-int
+void
 test03()
 {
   std::initializer_list<int> il{1,2,3};
@@ -67,7 +65,7 @@ test03()
 
 }
 
-int
+void
 test04()
 {
   std::vector<int> v{1,2,3};

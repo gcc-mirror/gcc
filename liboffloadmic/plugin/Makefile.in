@@ -17,7 +17,7 @@
 
 # Plugin for offload execution on Intel MIC devices.
 #
-# Copyright (C) 2014 Free Software Foundation, Inc.
+# Copyright (C) 2014-2017 Free Software Foundation, Inc.
 #
 # Contributed by Ilya Verbin <ilya.verbin@intel.com> and
 # Andrey Turetskiy <andrey.turetskiy@intel.com>.
@@ -88,7 +88,8 @@ DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(srcdir)/../../mkinstalldirs $(srcdir)/../../depcomp \
 	$(am__plugin_include_HEADERS_DIST)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../../config/acx.m4 \
+	$(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../config/lead-dot.m4 \
 	$(top_srcdir)/../../config/multi.m4 \
 	$(top_srcdir)/../../config/override.m4 \
@@ -263,6 +264,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+get_gcc_base_ver = @get_gcc_base_ver@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -312,7 +314,7 @@ liboffload_src_dir = $(top_srcdir)/../runtime
 liboffload_dir = $(top_builddir)/..
 
 # May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../../gcc/BASE-VER)
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/include
 # Search for main_target_image.h in these directories
 target_prefix_dir = $(libdir)/gcc/$(accel_target)/$(gcc_version)$(MULTISUBDIR)
@@ -326,7 +328,7 @@ target_install_dir = $(accel_search_dir)/lib/gcc/$(accel_target)/$(gcc_version)$
 @PLUGIN_HOST_FALSE@plugin_include_HEADERS = main_target_image.h
 @PLUGIN_HOST_FALSE@AM_CPPFLAGS = $(CPPFLAGS) -DLINUX -DCOI_LIBRARY_VERSION=2 -DOFFLOAD_DEBUG=1 -DSEP_SUPPORT -DTIMING_SUPPORT -DHOST_LIBRARY=0 -I$(coi_inc_dir) -I$(liboffload_src_dir) -I$(libgomp_dir)
 @PLUGIN_HOST_FALSE@AM_CXXFLAGS = $(CXXFLAGS)
-@PLUGIN_HOST_FALSE@AM_LDFLAGS = -L$(liboffload_dir)/.libs -L$(libgomp_dir)/.libs -loffloadmic_target -lcoi_device -lmyo-service -lgomp -rdynamic
+@PLUGIN_HOST_FALSE@AM_LDFLAGS = -L$(liboffload_dir)/.libs -L$(libgomp_dir)/.libs -loffloadmic_target -lcoi_device -lgomp -rdynamic
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,13 +15,14 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
+// COW strings don't support C++11 allocators:
+// { dg-require-effective-target cxx11-abi }
 
 #include <string>
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 
-#if _GLIBCXX_USE_CXX11_ABI
 using C = char;
 const C c = 'a';
 using traits = std::char_traits<C>;
@@ -30,7 +31,6 @@ using __gnu_test::uneq_allocator;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef uneq_allocator<C> alloc_type;
   typedef std::basic_string<C, traits, alloc_type> test_type;
   test_type v1(alloc_type(1));
@@ -42,7 +42,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   typedef uneq_allocator<C> alloc_type;
   typedef std::basic_string<C, traits, alloc_type> test_type;
   test_type v1(alloc_type(1));
@@ -58,9 +57,3 @@ int main()
   test02();
   return 0;
 }
-#else
-int main()
-{
-  // COW strings don't support C++11 allocators
-}
-#endif

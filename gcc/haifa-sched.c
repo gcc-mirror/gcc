@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992-2016 Free Software Foundation, Inc.
+   Copyright (C) 1992-2017 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -130,6 +130,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "cfghooks.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "regs.h"
@@ -401,13 +402,13 @@ const struct common_sched_info_def haifa_common_sched_info =
   };
 
 /* Mapping from instruction UID to its Logical UID.  */
-vec<int> sched_luids = vNULL;
+vec<int> sched_luids;
 
 /* Next LUID to assign to an instruction.  */
 int sched_max_luid = 1;
 
 /* Haifa Instruction Data.  */
-vec<haifa_insn_data_def> h_i_d = vNULL;
+vec<haifa_insn_data_def> h_i_d;
 
 void (* sched_init_only_bb) (basic_block, basic_block);
 
@@ -932,9 +933,10 @@ static bitmap region_ref_regs;
 /* Effective number of available registers of a given class (see comment
    in sched_pressure_start_bb).  */
 static int sched_class_regs_num[N_REG_CLASSES];
-/* Number of call_used_regs.  This is a helper for calculating of
+/* Number of call_saved_regs and fixed_regs.  Helpers for calculating of
    sched_class_regs_num.  */
-static int call_used_regs_num[N_REG_CLASSES];
+static int call_saved_regs_num[N_REG_CLASSES];
+static int fixed_regs_num[N_REG_CLASSES];
 
 /* Initiate register pressure relative info for scheduling the current
    region.  Currently it is only clearing register mentioned in the
@@ -1483,28 +1485,9 @@ dep_cost_1 (dep_t link, dw_t dw)
 	}
 
 
-      if (targetm.sched.adjust_cost_2)
-	cost = targetm.sched.adjust_cost_2 (used, (int) dep_type, insn, cost,
-					    dw);
-      else if (targetm.sched.adjust_cost != NULL)
-	{
-	  /* This variable is used for backward compatibility with the
-	     targets.  */
-	  rtx_insn_list *dep_cost_rtx_link =
-	    alloc_INSN_LIST (NULL_RTX, NULL);
-
-	  /* Make it self-cycled, so that if some tries to walk over this
-	     incomplete list he/she will be caught in an endless loop.  */
-	  XEXP (dep_cost_rtx_link, 1) = dep_cost_rtx_link;
-
-	  /* Targets use only REG_NOTE_KIND of the link.  */
-	  PUT_REG_NOTE_KIND (dep_cost_rtx_link, DEP_TYPE (link));
-
-	  cost = targetm.sched.adjust_cost (used, dep_cost_rtx_link,
-					    insn, cost);
-
-	  free_INSN_LIST_node (dep_cost_rtx_link);
-	}
+      if (targetm.sched.adjust_cost)
+	cost = targetm.sched.adjust_cost (used, (int) dep_type, insn, cost,
+					  dw);
 
       if (cost < 0)
 	cost = 0;
@@ -3915,17 +3898,19 @@ sched_pressure_start_bb (basic_block bb)
      * If the basic block executes much more often than the prologue/epilogue
      (e.g., inside a hot loop), then cost of spill in the prologue is close to
      nil, so the effective number of available registers is
-     (ira_class_hard_regs_num[cl] - 0).
+     (ira_class_hard_regs_num[cl] - fixed_regs_num[cl] - 0).
      * If the basic block executes as often as the prologue/epilogue,
      then spill in the block is as costly as in the prologue, so the effective
      number of available registers is
-     (ira_class_hard_regs_num[cl] - call_used_regs_num[cl]).
+     (ira_class_hard_regs_num[cl] - fixed_regs_num[cl]
+      - call_saved_regs_num[cl]).
      Note that all-else-equal, we prefer to spill in the prologue, since that
      allows "extra" registers for other basic blocks of the function.
      * If the basic block is on the cold path of the function and executes
      rarely, then we should always prefer to spill in the block, rather than
      in the prologue/epilogue.  The effective number of available register is
-     (ira_class_hard_regs_num[cl] - call_used_regs_num[cl]).  */
+     (ira_class_hard_regs_num[cl] - fixed_regs_num[cl]
+      - call_saved_regs_num[cl]).  */
   {
     int i;
     int entry_freq = ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency;
@@ -3942,9 +3927,10 @@ sched_pressure_start_bb (basic_block bb)
     for (i = 0; i < ira_pressure_classes_num; ++i)
       {
 	enum reg_class cl = ira_pressure_classes[i];
-	sched_class_regs_num[cl] = ira_class_hard_regs_num[cl];
+	sched_class_regs_num[cl] = ira_class_hard_regs_num[cl]
+				   - fixed_regs_num[cl];
 	sched_class_regs_num[cl]
-	  -= (call_used_regs_num[cl] * entry_freq) / bb_freq;
+	  -= (call_saved_regs_num[cl] * entry_freq) / bb_freq;
       }
   }
 
@@ -6509,7 +6495,7 @@ dump_insn_stream (rtx_insn *head, rtx_insn *tail)
 
       if (sched_verbose >= 4)
 	{
-	  if (NOTE_P (insn) || recog_memoized (insn) < 0)
+	  if (NOTE_P (insn) || LABEL_P (insn) || recog_memoized (insn) < 0)
 	    fprintf (sched_dump, "nothing");
 	  else
 	    print_reservation (sched_dump, insn);
@@ -7256,17 +7242,20 @@ alloc_global_sched_pressure_data (void)
 	  region_ref_regs = BITMAP_ALLOC (NULL);
 	}
 
-      /* Calculate number of CALL_USED_REGS in register classes that
-	 we calculate register pressure for.  */
+      /* Calculate number of CALL_SAVED_REGS and FIXED_REGS in register classes
+	 that we calculate register pressure for.  */
       for (int c = 0; c < ira_pressure_classes_num; ++c)
 	{
 	  enum reg_class cl = ira_pressure_classes[c];
 
-	  call_used_regs_num[cl] = 0;
+	  call_saved_regs_num[cl] = 0;
+	  fixed_regs_num[cl] = 0;
 
 	  for (int i = 0; i < ira_class_hard_regs_num[cl]; ++i)
-	    if (call_used_regs[ira_class_hard_regs[cl][i]])
-	      ++call_used_regs_num[cl];
+	    if (!call_used_regs[ira_class_hard_regs[cl][i]])
+	      ++call_saved_regs_num[cl];
+	    else if (fixed_regs[ira_class_hard_regs[cl][i]])
+	      ++fixed_regs_num[cl];
 	}
     }
 }
@@ -7416,20 +7405,16 @@ haifa_sched_init (void)
   /* Initialize luids, dependency caches, target and h_i_d for the
      whole function.  */
   {
-    bb_vec_t bbs;
-    bbs.create (n_basic_blocks_for_fn (cfun));
-    basic_block bb;
-
     sched_init_bbs ();
 
+    auto_vec<basic_block> bbs (n_basic_blocks_for_fn (cfun));
+    basic_block bb;
     FOR_EACH_BB_FN (bb, cfun)
       bbs.quick_push (bb);
     sched_init_luids (bbs);
     sched_deps_init (true);
     sched_extend_target ();
     haifa_init_h_i_d (bbs);
-
-    bbs.release ();
   }
 
   sched_init_only_bb = haifa_init_only_bb;
@@ -7995,8 +7980,7 @@ add_to_speculative_block (rtx_insn *insn)
   ds_t ts;
   sd_iterator_def sd_it;
   dep_t dep;
-  rtx_insn_list *twins = NULL;
-  rtx_vec_t priorities_roots;
+  auto_vec<rtx_insn *, 10> twins;
 
   ts = TODO_SPEC (insn);
   gcc_assert (!(ts & ~BE_IN_SPEC));
@@ -8029,7 +8013,7 @@ add_to_speculative_block (rtx_insn *insn)
 	sd_iterator_next (&sd_it);
     }
 
-  priorities_roots.create (0);
+  auto_vec<rtx_insn *> priorities_roots;
   clear_priorities (insn, &priorities_roots);
 
   while (1)
@@ -8065,7 +8049,7 @@ add_to_speculative_block (rtx_insn *insn)
         fprintf (spec_info->dump, ";;\t\tGenerated twin insn : %d/rec%d\n",
                  INSN_UID (twin), rec->index);
 
-      twins = alloc_INSN_LIST (twin, twins);
+      twins.safe_push (twin);
 
       /* Add dependences between TWIN and all appropriate
 	 instructions from REC.  */
@@ -8104,27 +8088,17 @@ add_to_speculative_block (rtx_insn *insn)
 
   /* We couldn't have added the dependencies between INSN and TWINS earlier
      because that would make TWINS appear in the INSN_BACK_DEPS (INSN).  */
-  while (twins)
+  unsigned int i;
+  rtx_insn *twin;
+  FOR_EACH_VEC_ELT_REVERSE (twins, i, twin)
     {
-      rtx_insn *twin;
-      rtx_insn_list *next_node;
+      dep_def _new_dep, *new_dep = &_new_dep;
 
-      twin = twins->insn ();
-
-      {
-	dep_def _new_dep, *new_dep = &_new_dep;
-
-	init_dep (new_dep, insn, twin, REG_DEP_OUTPUT);
-	sd_add_dep (new_dep, false);
-      }
-
-      next_node = twins->next ();
-      free_INSN_LIST_node (twins);
-      twins = next_node;
+      init_dep (new_dep, insn, twin, REG_DEP_OUTPUT);
+      sd_add_dep (new_dep, false);
     }
 
   calc_priorities (priorities_roots);
-  priorities_roots.release ();
 }
 
 /* Extends and fills with zeros (only the new part) array pointed to by P.  */
@@ -8620,11 +8594,10 @@ create_check_block_twin (rtx_insn *insn, bool mutate_p)
     /* Fix priorities.  If MUTATE_P is nonzero, this is not necessary,
        because it'll be done later in add_to_speculative_block.  */
     {
-      rtx_vec_t priorities_roots = rtx_vec_t ();
+      auto_vec<rtx_insn *> priorities_roots;
 
       clear_priorities (twin, &priorities_roots);
       calc_priorities (priorities_roots);
-      priorities_roots.release ();
     }
 }
 
@@ -8635,9 +8608,8 @@ static void
 fix_recovery_deps (basic_block rec)
 {
   rtx_insn *note, *insn, *jump;
-  rtx_insn_list *ready_list = 0;
+  auto_vec<rtx_insn *, 10> ready_list;
   bitmap_head in_ready;
-  rtx_insn_list *link;
 
   bitmap_initialize (&in_ready, 0);
 
@@ -8663,7 +8635,7 @@ fix_recovery_deps (basic_block rec)
 	      sd_delete_dep (sd_it);
 
 	      if (bitmap_set_bit (&in_ready, INSN_LUID (consumer)))
-		ready_list = alloc_INSN_LIST (consumer, ready_list);
+		ready_list.safe_push (consumer);
 	    }
 	  else
 	    {
@@ -8680,9 +8652,10 @@ fix_recovery_deps (basic_block rec)
   bitmap_clear (&in_ready);
 
   /* Try to add instructions to the ready or queue list.  */
-  for (link = ready_list; link; link = link->next ())
-    try_ready (link->insn ());
-  free_INSN_LIST_list (&ready_list);
+  unsigned int i;
+  rtx_insn *temp;
+  FOR_EACH_VEC_ELT_REVERSE (ready_list, i, temp)
+    try_ready (temp);
 
   /* Fixing jump's dependences.  */
   insn = BB_HEAD (rec);

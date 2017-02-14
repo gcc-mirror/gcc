@@ -1,6 +1,6 @@
 // 1999-06-04 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,6 @@
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
   const char* with_nulls = "This contains \0 a zero byte.";
 
   // These are tests to see how basic_string handles data with NUL

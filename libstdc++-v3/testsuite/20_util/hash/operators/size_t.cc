@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // 2007-08-20  <benjamin@redhat.com>
 //
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,8 +26,6 @@ template<typename T>
   void
   do_test()
   {
-    bool test __attribute__((unused)) = true;
-
     typedef T 				value_type;
     typedef std::hash<value_type> 	hash_type;
     using std::size_t;

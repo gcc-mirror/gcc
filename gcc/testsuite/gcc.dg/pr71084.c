@@ -2,6 +2,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 
+__extension__ typedef __INTPTR_TYPE__ intptr_t;
+
 void babl_format (void);
 void gimp_drawable_get_format (void);
 int _setjmp (void);
@@ -32,7 +34,7 @@ void fn1 ()
 	gimp_drawable_get_format();
       }
   for (; run_height;)
-    for (; run_i < (long)fn1; ++run_i)
+    for (; run_i < (long)(intptr_t)fn1; ++run_i)
       for (; width;)
         ;
 }

@@ -7,7 +7,7 @@
 // the template
 
 namespace N {
-  template <class T> class foo;	// { dg-error "" } referenced below
+  template <class T> class foo;
 }
 
 using namespace N;

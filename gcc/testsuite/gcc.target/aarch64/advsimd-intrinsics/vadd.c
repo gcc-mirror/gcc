@@ -43,6 +43,14 @@ VECT_VAR_DECL(expected,uint,64,2) [] = { 0xfffffffffffffff3,
 VECT_VAR_DECL(expected_float32,hfloat,32,2) [] = { 0x40d9999a, 0x40d9999a };
 VECT_VAR_DECL(expected_float32,hfloat,32,4) [] = { 0x41100000, 0x41100000,
 						   0x41100000, 0x41100000 };
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+VECT_VAR_DECL(expected_float16, hfloat, 16, 4) [] = { 0x46cd, 0x46cd,
+						      0x46cd, 0x46cd };
+VECT_VAR_DECL(expected_float16, hfloat, 16, 8) [] = { 0x4880, 0x4880,
+						      0x4880, 0x4880,
+						      0x4880, 0x4880,
+						      0x4880, 0x4880 };
+#endif
 
 void exec_vadd_f32(void)
 {
@@ -66,4 +74,27 @@ void exec_vadd_f32(void)
 
   CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected_float32, "");
   CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected_float32, "");
+
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+  DECL_VARIABLE(vector, float, 16, 4);
+  DECL_VARIABLE(vector, float, 16, 8);
+
+  DECL_VARIABLE(vector2, float, 16, 4);
+  DECL_VARIABLE(vector2, float, 16, 8);
+
+  DECL_VARIABLE(vector_res, float, 16, 4);
+  DECL_VARIABLE(vector_res, float, 16, 8);
+
+  VDUP(vector, , float, f, 16, 4, 2.3f);
+  VDUP(vector, q, float, f, 16, 8, 3.4f);
+
+  VDUP(vector2, , float, f, 16, 4, 4.5f);
+  VDUP(vector2, q, float, f, 16, 8, 5.6f);
+
+  TEST_BINARY_OP(INSN_NAME, , float, f, 16, 4);
+  TEST_BINARY_OP(INSN_NAME, q, float, f, 16, 8);
+
+  CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected_float16, "");
+  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected_float16, "");
+#endif
 }

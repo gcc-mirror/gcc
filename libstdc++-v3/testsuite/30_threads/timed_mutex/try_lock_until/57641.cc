@@ -1,10 +1,9 @@
 // { dg-do run { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* *-*-cygwin *-*-rtems* *-*-darwin* powerpc-ibm-aix* } }
-// { dg-options " -std=gnu++11 -pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* powerpc-ibm-aix* } }
-// { dg-options " -std=gnu++11 -pthreads" { target *-*-solaris* } }
-// { dg-options " -std=gnu++11 " { target *-*-cygwin *-*-rtems* *-*-darwin* } }
+// { dg-options "-pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* powerpc-ibm-aix* } }
+// { dg-require-effective-target c++11 }
 // { dg-require-cstdint "" }
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -57,7 +56,6 @@ void f()
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
   std::lock_guard<std::timed_mutex> l(mx);
   auto start = C::system_clock::now();
   std::thread t(f);

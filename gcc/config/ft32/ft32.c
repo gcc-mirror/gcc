@@ -1,5 +1,5 @@
 /* Target Code for ft32
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2017 Free Software Foundation, Inc.
    Contributed by FTDI <support@ftdi.com>
 
    This file is part of GCC.
@@ -26,6 +26,7 @@
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "regs.h"
 #include "emit-rtl.h"
@@ -35,6 +36,7 @@
 #include "calls.h"
 #include "expr.h"
 #include "builtins.h"
+#include "print-tree.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -893,6 +895,48 @@ ft32_addr_space_legitimate_address_p (enum machine_mode mode, rtx x,
   return 0;
 yes:
   return 1;
+}
+
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO  ft32_elf_encode_section_info
+
+void
+ft32_elf_encode_section_info (tree decl, rtx rtl, int first)
+{
+  enum tree_code code;
+  rtx symbol;
+
+  /* Careful not to prod global register variables.  */
+  if (!MEM_P (rtl))
+    return;
+  symbol = XEXP (rtl, 0);
+  if (GET_CODE (symbol) != SYMBOL_REF)
+    return;
+
+  default_encode_section_info (decl, rtl, first);
+
+  code = TREE_CODE (decl);
+  switch (TREE_CODE_CLASS (code))
+    {
+    case tcc_declaration:
+      {
+	tree type = TREE_TYPE (decl);
+	int is_flash = (type && TYPE_P (type)
+			&& !ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (type)));
+	if ((code == VAR_DECL) && !is_flash)
+	  SYMBOL_REF_FLAGS (symbol) |= 0x1000;
+      }
+      break;
+
+    case tcc_constant:
+    case tcc_exceptional:
+      if (code == STRING_CST)
+	SYMBOL_REF_FLAGS (symbol) |= 0x1000;
+      break;
+
+    default:
+      break;
+    }
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

@@ -1,7 +1,8 @@
 /* This file contains tests for the vreinterpret *p128 intrinsics.  */
 
-/* { dg-require-effective-target arm_crypto_ok } */
+/* { dg-require-effective-target arm_crypto_ok { target { arm*-*-* } } } */
 /* { dg-add-options arm_crypto } */
+/* { dg-additional-options "-march=armv8-a+crypto" { target { aarch64*-*-* } } }*/
 
 #include <arm_neon.h>
 #include "arm-neon-ref.h"
@@ -78,9 +79,7 @@ VECT_VAR_DECL(vreint_expected_q_f16_p128,hfloat,16,8) [] = { 0xfff0, 0xffff,
 int main (void)
 {
   DECL_VARIABLE_128BITS_VARIANTS(vreint_vector);
-  DECL_VARIABLE(vreint_vector, poly, 64, 2);
   DECL_VARIABLE_128BITS_VARIANTS(vreint_vector_res);
-  DECL_VARIABLE(vreint_vector_res, poly, 64, 2);
 
   clean_results ();
 
@@ -105,7 +104,7 @@ int main (void)
     vreinterpret##Q##_##T2##W##_##TS2##WS(VECT_VAR(vreint_vector, TS1, WS, NS))); \
   vst1##Q##_##T2##64(VECT_VAR(result, poly, 64, 2),			\
                      VECT_VAR(vreint_vector_res, poly, 64, 2));		\
-  CHECK(TEST_MSG, T1, 64, 2, PRIx##64, EXPECTED, "");
+  CHECK_POLY(TEST_MSG, T1, 64, 2, PRIx##64, EXPECTED, "");
 
   TEST_VREINTERPRET128(q, poly, p, 128, 1, int, s, 8, 16, vreint_expected_q_p128_s8);
   TEST_VREINTERPRET128(q, poly, p, 128, 1, int, s, 16, 8, vreint_expected_q_p128_s16);

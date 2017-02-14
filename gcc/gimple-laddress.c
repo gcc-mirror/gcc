@@ -1,5 +1,5 @@
 /* Lower and optimize address expressions.
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2017 Free Software Foundation, Inc.
    Contributed by Marek Polacek <polacek@redhat.com>
 
 This file is part of GCC.
@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symtab.h"
 #include "tree.h"
 #include "stringpool.h"
+#include "tree-vrp.h"
 #include "tree-ssanames.h"
 #include "fold-const.h"
 #include "gimple-expr.h"
@@ -105,7 +106,7 @@ pass_laddress::execute (function *fun)
 	  int volatilep = 0, reversep, unsignedp = 0;
 	  base = get_inner_reference (TREE_OPERAND (expr, 0), &bitsize,
 				      &bitpos, &offset, &mode, &unsignedp,
-				      &reversep, &volatilep, false);
+				      &reversep, &volatilep);
 	  gcc_assert (base != NULL_TREE && (bitpos % BITS_PER_UNIT) == 0);
 	  if (offset != NULL_TREE)
 	    {

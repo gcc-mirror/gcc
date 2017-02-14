@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.  Selective scheduler and pipeliner.
-   Copyright (C) 2006-2016 Free Software Foundation, Inc.
+   Copyright (C) 2006-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "rtl.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "cfgrtl.h"
 #include "cfganal.h"
@@ -45,12 +46,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "sel-sched-dump.h"
 
 /* A vector holding bb info for whole scheduling pass.  */
-vec<sel_global_bb_info_def>
-    sel_global_bb_info = vNULL;
+vec<sel_global_bb_info_def> sel_global_bb_info;
 
 /* A vector holding bb info.  */
-vec<sel_region_bb_info_def>
-    sel_region_bb_info = vNULL;
+vec<sel_region_bb_info_def> sel_region_bb_info;
 
 /* A pool for allocating all lists.  */
 object_allocator<_list_node> sched_lists_pool ("sel-sched-lists");
@@ -66,7 +65,7 @@ struct loop *current_loop_nest;
 
 /* LOOP_NESTS is a vector containing the corresponding loop nest for
    each region.  */
-static vec<loop_p> loop_nests = vNULL;
+static vec<loop_p> loop_nests;
 
 /* Saves blocks already in loop regions, indexed by bb->index.  */
 static sbitmap bbs_in_loop_rgns = NULL;
@@ -4163,7 +4162,7 @@ finish_region_bb_info (void)
 
 
 /* Data for each insn in current region.  */
-vec<sel_insn_data_def> s_i_d = vNULL;
+vec<sel_insn_data_def> s_i_d;
 
 /* Extend data structures for insns from current region.  */
 static void
@@ -4499,8 +4498,7 @@ get_av_level (insn_t insn)
 
 /* The basic block that already has been processed by the sched_data_update (),
    but hasn't been in sel_add_bb () yet.  */
-static vec<basic_block>
-    last_added_blocks = vNULL;
+static vec<basic_block> last_added_blocks;
 
 /* A pool for allocating successor infos.  */
 static struct
@@ -5764,6 +5762,11 @@ create_copy_of_insn_rtx (rtx insn_rtx)
   res = create_insn_rtx_from_pattern (copy_rtx (PATTERN (insn_rtx)),
                                       NULL_RTX);
 
+  /* Locate the end of existing REG_NOTES in NEW_RTX.  */
+  rtx *ptail = &REG_NOTES (res);
+  while (*ptail != NULL_RTX)
+    ptail = &XEXP (*ptail, 1);
+
   /* Copy all REG_NOTES except REG_EQUAL/REG_EQUIV and REG_LABEL_OPERAND
      since mark_jump_label will make them.  REG_LABEL_TARGETs are created
      there too, but are supposed to be sticky, so we copy them.  */
@@ -5772,11 +5775,8 @@ create_copy_of_insn_rtx (rtx insn_rtx)
 	&& REG_NOTE_KIND (link) != REG_EQUAL
 	&& REG_NOTE_KIND (link) != REG_EQUIV)
       {
-	if (GET_CODE (link) == EXPR_LIST)
-	  add_reg_note (res, REG_NOTE_KIND (link),
-			copy_insn_1 (XEXP (link, 0)));
-	else
-	  add_reg_note (res, REG_NOTE_KIND (link), XEXP (link, 0));
+	*ptail = duplicate_reg_note (link);
+	ptail = &XEXP (*ptail, 1);
       }
 
   return res;

@@ -2,7 +2,7 @@
 
 extern "C" {
 void __assert_fail ();
-unsigned long strlen (const char *);
+__SIZE_TYPE__ strlen (const char *);
 }
 class A
 {

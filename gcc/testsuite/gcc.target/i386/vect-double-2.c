@@ -31,4 +31,4 @@ sse2_test (void)
     }
 }
 
-/* { dg-final { scan-tree-dump-not "vectorized 1 loops" "vect" } } */
+/* { dg-final { scan-tree-dump-times "Vectorized loops: 1" 1 "vect" } } */

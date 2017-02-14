@@ -1,6 +1,6 @@
 /* Half-float conversion routines.
 
-   Copyright (C) 2008-2016 Free Software Foundation, Inc.
+   Copyright (C) 2008-2017 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
    This file is free software; you can redistribute it and/or modify it
@@ -22,40 +22,83 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-static inline unsigned short
-__gnu_f2h_internal(unsigned int a, int ieee)
+struct format
 {
-  unsigned short sign = (a >> 16) & 0x8000;
-  int aexp = (a >> 23) & 0xff;
-  unsigned int mantissa = a & 0x007fffff;
-  unsigned int mask;
-  unsigned int increment;
+  /* Number of bits.  */
+  unsigned long long size;
+  /* Exponent bias.  */
+  unsigned long long bias;
+  /* Exponent width in bits.  */
+  unsigned long long exponent;
+  /* Significand precision in explicitly stored bits.  */
+  unsigned long long significand;
+};
 
-  if (aexp == 0xff)
+static const struct format
+binary32 =
+{
+  32,   /* size.  */
+  127,  /* bias.  */
+  8,    /* exponent.  */
+  23    /* significand.  */
+};
+
+static const struct format
+binary64 =
+{
+  64,    /* size.  */
+  1023,  /* bias.  */
+  11,    /* exponent.  */
+  52     /* significand.  */
+};
+
+static inline unsigned short
+__gnu_float2h_internal (const struct format* fmt,
+			unsigned long long a, int ieee)
+{
+  unsigned long long point = 1ULL << fmt->significand;
+  unsigned short sign = (a >> (fmt->size - 16)) & 0x8000;
+  int aexp;
+  unsigned long long mantissa;
+  unsigned long long mask;
+  unsigned long long increment;
+
+  /* Get the exponent and mantissa encodings.  */
+  mantissa = a & (point - 1);
+
+  mask = (1 << fmt->exponent) - 1;
+  aexp = (a >> fmt->significand) & mask;
+
+  /* Infinity, NaN and alternative format special case.  */
+  if (((unsigned int) aexp) == mask)
     {
       if (!ieee)
 	return sign;
       if (mantissa == 0)
 	return sign | 0x7c00;	/* Infinity.  */
       /* Remaining cases are NaNs.  Convert SNaN to QNaN.  */
-      return sign | 0x7e00 | (mantissa >> 13);
+      return sign | 0x7e00 | (mantissa >> (fmt->significand - 10));
     }
 
+  /* Zero.  */
   if (aexp == 0 && mantissa == 0)
     return sign;
 
-  aexp -= 127;
+  /* Construct the exponent and mantissa.  */
+  aexp -= fmt->bias;
 
-  /* Decimal point between bits 22 and 23.  */
-  mantissa |= 0x00800000;
+  /* Decimal point is immediately after the significand.  */
+  mantissa |= point;
+
   if (aexp < -14)
     {
-      mask = 0x00ffffff;
+      mask = point | (point - 1);
+      /* Minimum exponent for half-precision is 2^-24.  */
       if (aexp >= -25)
 	mask >>= 25 + aexp;
     }
   else
-    mask = 0x00001fff;
+    mask = (point - 1) >> 10;
 
   /* Round.  */
   if (mantissa & mask)
@@ -64,8 +107,8 @@ __gnu_f2h_internal(unsigned int a, int ieee)
       if ((mantissa & mask) == increment)
 	increment = mantissa & (increment << 1);
       mantissa += increment;
-      if (mantissa >= 0x01000000)
-       	{
+      if (mantissa >= (point << 1))
+	{
 	  mantissa >>= 1;
 	  aexp++;
 	}
@@ -91,9 +134,35 @@ __gnu_f2h_internal(unsigned int a, int ieee)
       aexp = -14;
     }
 
-  /* We leave the leading 1 in the mantissa, and subtract one
-     from the exponent bias to compensate.  */
-  return sign | (((aexp + 14) << 10) + (mantissa >> 13));
+  /* Encode the final 16-bit floating-point value.
+
+     This is formed of the sign bit, the bias-adjusted exponent, and the
+     calculated mantissa, with the following caveats:
+
+     1.  The mantissa calculated after rounding could have a leading 1.
+	 To compensate for this, subtract one from the exponent bias (15)
+	 before adding it to the calculated exponent.
+     2.  When we were calculating rounding, we left the mantissa with the
+	 number of bits of the source operand, it needs reduced to ten
+	 bits (+1 for the afforementioned leading 1) by shifting right by
+	 the number of bits in the source mantissa - 10.
+     3.  To ensure the leading 1 in the mantissa is applied to the exponent
+	 we need to add the mantissa rather than apply an arithmetic "or"
+	 to it.  */
+
+  return sign | (((aexp + 14) << 10) + (mantissa >> (fmt->significand - 10)));
+}
+
+static inline unsigned short
+__gnu_f2h_internal (unsigned int a, int ieee)
+{
+  return __gnu_float2h_internal (&binary32, (unsigned long long) a, ieee);
+}
+
+static inline unsigned short
+__gnu_d2h_internal (unsigned long long a, int ieee)
+{
+  return __gnu_float2h_internal (&binary64, a, ieee);
 }
 
 unsigned int
@@ -143,4 +212,16 @@ unsigned int
 __gnu_h2f_alternative(unsigned short a)
 {
   return __gnu_h2f_internal(a, 0);
+}
+
+unsigned short
+__gnu_d2h_ieee (unsigned long long a)
+{
+  return __gnu_d2h_internal (a, 1);
+}
+
+unsigned short
+__gnu_d2h_alternative (unsigned long long x)
+{
+  return __gnu_d2h_internal (x, 0);
 }

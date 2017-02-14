@@ -30,10 +30,20 @@ VECT_VAR_DECL(expected,uint,32,4) [] = { 0xffffffd0, 0xffffffd1,
 					 0xffffffd2, 0xffffffd3 };
 VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0x42407ae1, 0x423c7ae1,
 					   0x42387ae1, 0x42347ae1 };
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+VECT_VAR_DECL(expected, hfloat, 16, 4) [] = { 0x4e13, 0x4dd3,
+					      0x4d93, 0x4d53 };
+VECT_VAR_DECL(expected, hfloat, 16, 8) [] = { 0x5204, 0x51e4, 0x51c4, 0x51a4,
+					      0x5184, 0x5164, 0x5144, 0x5124 };
+#endif
 
 /* Additional expected results for float32 variants with specially
    chosen input values.  */
 VECT_VAR_DECL(expected_float32,hfloat,32,4) [] = { 0x0, 0x0, 0x0, 0x0 };
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+VECT_VAR_DECL(expected_float16, hfloat, 16, 8) [] = { 0x0, 0x0, 0x0, 0x0,
+						      0x0, 0x0, 0x0, 0x0 };
+#endif
 
 #define TEST_MSG "VABD/VABDQ"
 void exec_vabd (void)
@@ -65,6 +75,17 @@ void exec_vabd (void)
   DECL_VABD_VAR(vector2);
   DECL_VABD_VAR(vector_res);
 
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+  DECL_VARIABLE(vector1, float, 16, 4);
+  DECL_VARIABLE(vector1, float, 16, 8);
+
+  DECL_VARIABLE(vector2, float, 16, 4);
+  DECL_VARIABLE(vector2, float, 16, 8);
+
+  DECL_VARIABLE(vector_res, float, 16, 4);
+  DECL_VARIABLE(vector_res, float, 16, 8);
+#endif
+
   clean_results ();
 
   /* Initialize input "vector1" from "buffer".  */
@@ -82,6 +103,12 @@ void exec_vabd (void)
   VLOAD(vector1, buffer, q, uint, u, 16, 8);
   VLOAD(vector1, buffer, q, uint, u, 32, 4);
   VLOAD(vector1, buffer, q, float, f, 32, 4);
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+  VLOAD(vector1, buffer, , float, f, 16, 4);
+  VLOAD(vector1, buffer, , float, f, 16, 4);
+  VLOAD(vector1, buffer, q, float, f, 16, 8);
+  VLOAD(vector1, buffer, q, float, f, 16, 8);
+#endif
 
   /* Choose init value arbitrarily.  */
   VDUP(vector2, , int, s, 8, 8, 1);
@@ -98,6 +125,10 @@ void exec_vabd (void)
   VDUP(vector2, q, uint, u, 16, 8, 12);
   VDUP(vector2, q, uint, u, 32, 4, 32);
   VDUP(vector2, q, float, f, 32, 4, 32.12f);
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+  VDUP(vector2, , float, f, 16, 4, 8.3f);
+  VDUP(vector2, q, float, f, 16, 8, 32.12f);
+#endif
 
   /* Execute the tests.  */
   TEST_VABD(, int, s, 8, 8);
@@ -115,6 +146,11 @@ void exec_vabd (void)
   TEST_VABD(q, uint, u, 32, 4);
   TEST_VABD(q, float, f, 32, 4);
 
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+  TEST_VABD(, float, f, 16, 4);
+  TEST_VABD(q, float, f, 16, 8);
+#endif
+
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, "");
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected, "");
   CHECK(TEST_MSG, int, 32, 2, PRIx32, expected, "");
@@ -129,7 +165,10 @@ void exec_vabd (void)
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected, "");
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected, "");
   CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected, "");
-
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+  CHECK_FP(TEST_MSG, float, 16, 4, PRIx16, expected, "");
+  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected, "");
+#endif
 
   /* Extra FP tests with special values (-0.0, ....) */
   VDUP(vector1, q, float, f, 32, 4, -0.0f);
@@ -137,11 +176,27 @@ void exec_vabd (void)
   TEST_VABD(q, float, f, 32, 4);
   CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected_float32, " FP special (-0.0)");
 
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+  VDUP(vector1, q, float, f, 16, 8, -0.0f);
+  VDUP(vector2, q, float, f, 16, 8, 0.0);
+  TEST_VABD(q, float, f, 16, 8);
+  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected_float16,
+	   " FP special (-0.0)");
+#endif
+
   /* Extra FP tests with special values (-0.0, ....) */
   VDUP(vector1, q, float, f, 32, 4, 0.0f);
   VDUP(vector2, q, float, f, 32, 4, -0.0);
   TEST_VABD(q, float, f, 32, 4);
   CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected_float32, " FP special (-0.0)");
+
+#if defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+  VDUP(vector1, q, float, f, 16, 8, 0.0f);
+  VDUP(vector2, q, float, f, 16, 8, -0.0);
+  TEST_VABD(q, float, f, 16, 8);
+  CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected_float16,
+	   " FP special (-0.0)");
+#endif
 }
 
 int main (void)

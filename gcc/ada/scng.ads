@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,8 +78,10 @@ package Scng is
    --  either a keyword or an identifier. See also package Casing.
 
    procedure Set_Special_Character (C : Character);
-   --  Indicate that one of the following character '#', '$', '?', '@', '`',
+   --  Indicate that one of the following character '#', '$', '?',  '`',
    --  '\', '^', '_' or '~', when found is a Special token.
+   --  AI12-0125-03 : target name (ES) is not in this list because '@' is
+   --  handled as a special token as abbreviation of LHS of assignment.
 
    procedure Reset_Special_Characters;
    --  Indicate that there is no characters that are Special tokens., which

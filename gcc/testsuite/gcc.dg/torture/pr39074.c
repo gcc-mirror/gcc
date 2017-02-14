@@ -30,4 +30,4 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump "y.._. = { i }" "alias" } } */
-/* { dg-final { scan-tree-dump "y.._., points-to vars: { D..... }" "alias" } } */
+/* { dg-final { scan-tree-dump "y.._., points-to NULL, points-to vars: { D..... }" "alias" } } */

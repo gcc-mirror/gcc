@@ -1,7 +1,6 @@
 #
 # Makefile
-#   Copyright (C) 1999, 2002, 2006
-#   Free Software Foundation
+#   Copyright (C) 1999-2017 Free Software Foundation, Inc.
 #
 # This file is part of the libiberty library.
 # Libiberty is free software; you can redistribute it and/or
@@ -45,8 +44,8 @@ all:
 # CHECK is set to "really_check" or the empty string by configure.
 check: @CHECK@
 
-really-check: check-cplus-dem check-d-demangle check-pexecute check-expandargv \
-		check-strtol
+really-check: check-cplus-dem check-d-demangle check-rust-demangle \
+		check-pexecute check-expandargv check-strtol
 
 # Run some tests of the demangler.
 check-cplus-dem: test-demangle $(srcdir)/demangle-expected
@@ -54,6 +53,9 @@ check-cplus-dem: test-demangle $(srcdir)/demangle-expected
 
 check-d-demangle: test-demangle $(srcdir)/d-demangle-expected
 	./test-demangle < $(srcdir)/d-demangle-expected
+
+check-rust-demangle: test-demangle $(srcdir)/rust-demangle-expected
+	./test-demangle < $(srcdir)/rust-demangle-expected
 
 # Check the pexecute code.
 check-pexecute: test-pexecute

@@ -1,4 +1,4 @@
-;; Copyright (C) 2006-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2017 Free Software Foundation, Inc.
 
 ;; This file is free software; you can redistribute it and/or modify it under
 ;; the terms of the GNU General Public License as published by the Free
@@ -848,7 +848,7 @@
         (unsigned_float:DF (match_operand:SI 1 "register_operand"   "r")))]
   ""
   "{
-    rtx value, insns;
+    rtx value;
     rtx c0 = spu_const_from_ints (V16QImode, 0x02031011, 0x12138080, 
                                              0x06071415, 0x16178080);
     rtx r0 = gen_reg_rtx (V16QImode);
@@ -860,7 +860,7 @@
          emit_library_call_value (convert_optab_libfunc (ufloat_optab,
                                                          DFmode, SImode),
                    NULL_RTX, LCT_NORMAL, DFmode, 1, operands[1], SImode);
-       insns = get_insns ();
+       rtx_insn *insns = get_insns ();
        end_sequence ();
        emit_libcall_block (insns, operands[0], value,
                            gen_rtx_UNSIGNED_FLOAT (DFmode, operands[1]));
@@ -939,7 +939,7 @@
         (unsigned_float:DF (match_operand:DI 1 "register_operand"   "r")))]
   ""
   "{
-    rtx value, insns;
+    rtx value;
     rtx c0 = spu_const_from_ints (V16QImode, 0x02031011, 0x12138080, 
                                              0x06071415, 0x16178080);
     rtx c1 = spu_const_from_ints (V4SImode, 1023+63, 1023+31, 0, 0);
@@ -953,7 +953,7 @@
          emit_library_call_value (convert_optab_libfunc (ufloat_optab,
                                                          DFmode, DImode),
                    NULL_RTX, LCT_NORMAL, DFmode, 1, operands[1], DImode);
-      insns = get_insns ();
+      rtx_insn *insns = get_insns ();
       end_sequence ();
       emit_libcall_block (insns, operands[0], value,
                           gen_rtx_UNSIGNED_FLOAT (DFmode, operands[1]));

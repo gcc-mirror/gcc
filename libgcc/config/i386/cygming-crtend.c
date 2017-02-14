@@ -1,5 +1,5 @@
 /* crtend object for windows32 targets.
-   Copyright (C) 2007-2016 Free Software Foundation, Inc.
+   Copyright (C) 2007-2017 Free Software Foundation, Inc.
 
    Contributed by Danny Smith <dannysmith@users.sourceforge.net>
 
@@ -51,14 +51,6 @@ static EH_FRAME_SECTION_CONST int __FRAME_END__[]
   __attribute__ ((used,  section(__LIBGCC_EH_FRAME_SECTION_NAME__),
 		  aligned(4)))
   = { 0 };
-#endif
-
-#if TARGET_USE_JCR_SECTION
-/* Null terminate the .jcr section array.  */
-static void *__JCR_END__[1] 
-   __attribute__ ((used, section(__LIBGCC_JCR_SECTION_NAME__),
-		   aligned(sizeof(void *))))
-   = { 0 };
 #endif
 
 extern void __gcc_register_frame (void); 

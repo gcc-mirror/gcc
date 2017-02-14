@@ -1,6 +1,6 @@
 // 1999-04-12 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,9 +42,7 @@ std::istream is_04(&isbuf_04);
 std::stringstream ss_01(str_01);
  
 // minimal sanity check
-bool test01() {
-
-  bool test __attribute__((unused)) = true;
+void test01() {
 
   // Integral Types:
   bool 			b1  = false;
@@ -99,9 +97,9 @@ bool test01() {
   VERIFY( f1 == 1.5 );
 
   is_04 >> std::hex >> i1;
-  std::printf ("%d %d %d\n", i1, i1 == 0x123, test);
+  std::printf ("%d %d\n", i1, i1 == 0x123);
   VERIFY( i1 == 0x123 );
-  std::printf ("%d %d %d\n", i1, i1 == 0x123, test);
+  std::printf ("%d %d\n", i1, i1 == 0x123);
 
   // test void pointers
   int i = 55;
@@ -112,7 +110,6 @@ bool test01() {
   ss_01 >> pi;
   std::printf ("%p %p\n", pi, po);
   VERIFY( po == pi );
-  return test;
 }
 
 int main()

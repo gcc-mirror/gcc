@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <map>
 #include <testsuite_hooks.h>
@@ -33,7 +33,6 @@ using __gnu_test::propagating_allocator;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef propagating_allocator<std::pair<const T, U>, false> alloc_type;
   typedef std::multimap<T, U, Cmp, alloc_type> test_type;
   test_type v1(alloc_type(1));
@@ -47,7 +46,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   typedef propagating_allocator<std::pair<const T, U>, true> alloc_type;
   typedef std::multimap<T, U, Cmp, alloc_type> test_type;
   test_type v1(alloc_type(1));
@@ -63,8 +61,6 @@ void test02()
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
-
   using namespace __gnu_test;
 
   typedef propagating_allocator<std::pair<const int, int>, false,

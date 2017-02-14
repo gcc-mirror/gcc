@@ -1,7 +1,8 @@
-// { dg-options "-std=gnu++11 -lstdc++fs" }
+// { dg-options "-lstdc++fs" }
+// { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
 
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +30,6 @@ namespace fs = std::experimental::filesystem;
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
-
   fs::path dot(".");
   fs::path cwd = fs::current_path();
   std::error_code ec;
@@ -41,8 +40,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = false;
-
   auto oldwd = fs::current_path();
   auto tmpdir = fs::temp_directory_path();
   current_path(tmpdir);

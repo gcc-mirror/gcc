@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -354,7 +354,12 @@ procedure XOSCons is
            Integer (Parse_Int (Line (Index1 .. Index2 - 1), CNU).Abs_Value);
 
          case Info.Kind is
-            when CND | CNU | CNS | C | SUB =>
+            when C
+               | CND
+               | CNS
+               | CNU
+               | SUB
+            =>
                Index1 := Index2 + 1;
                Find_Colon (Index2);
 

@@ -29,9 +29,11 @@ foo (int path)
 int
 main (int argc, char *argv[])
 {
+  int i;
   buf_hot =  "hello";
   buf_cold = "world";
-  foo (argc);
+  for (i = 0; i < 1000000; i++)
+    foo (argc);
   return 0;
 }
 

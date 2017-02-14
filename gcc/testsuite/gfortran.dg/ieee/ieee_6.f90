@@ -9,7 +9,7 @@
   implicit none
 
   type(ieee_status_type) :: s1, s2
-  logical :: flags(5), halt(5)
+  logical :: flags(5), halt(5), haltworks
   type(ieee_round_type) :: mode
   real :: x
 
@@ -18,6 +18,7 @@
   call ieee_set_flag(ieee_all, .false.)
   call ieee_set_rounding_mode(ieee_down)
   call ieee_set_halting_mode(ieee_all, .false.)
+  haltworks = ieee_support_halting(ieee_overflow)
 
   call ieee_get_status(s1)
   call ieee_set_status(s1)
@@ -46,7 +47,7 @@
   call ieee_get_rounding_mode(mode)
   if (mode /= ieee_to_zero) call abort
   call ieee_get_halting_mode(ieee_all, halt)
-  if ((.not. halt(1)) .or. any(halt(2:))) call abort
+  if ((haltworks .and. .not. halt(1)) .or. any(halt(2:))) call abort
 
   call ieee_set_status(s2)
 
@@ -58,7 +59,7 @@
   call ieee_get_rounding_mode(mode)
   if (mode /= ieee_to_zero) call abort
   call ieee_get_halting_mode(ieee_all, halt)
-  if ((.not. halt(1)) .or. any(halt(2:))) call abort
+  if ((haltworks .and. .not. halt(1)) .or. any(halt(2:))) call abort
 
   call ieee_set_status(s1)
 
@@ -79,6 +80,6 @@
   call ieee_get_rounding_mode(mode)
   if (mode /= ieee_to_zero) call abort
   call ieee_get_halting_mode(ieee_all, halt)
-  if ((.not. halt(1)) .or. any(halt(2:))) call abort
+  if ((haltworks .and. .not. halt(1)) .or. any(halt(2:))) call abort
 
 end

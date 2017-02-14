@@ -1,7 +1,7 @@
 AM_CPPFLAGS = -I $(top_srcdir) -I $(top_srcdir)/include
 
 # May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DPIC -DCAN_SANITIZE_UB=1
 AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long-long  -fPIC -fno-builtin -fno-exceptions -fno-rtti -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros

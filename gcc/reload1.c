@@ -1,5 +1,5 @@
 /* Reload pseudo regs into hard regs for insns that require hard regs.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "predict.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "optabs.h"
 #include "regs.h"
@@ -286,15 +287,7 @@ static const struct elim_table_1
   const int to;
 } reg_eliminate_1[] =
 
-/* If a set of eliminable registers was specified, define the table from it.
-   Otherwise, default to the normal case of the frame pointer being
-   replaced by the stack pointer.  */
-
-#ifdef ELIMINABLE_REGS
   ELIMINABLE_REGS;
-#else
-  {{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}};
-#endif
 
 #define NUM_ELIMINABLE_REGS ARRAY_SIZE (reg_eliminate_1)
 
@@ -455,11 +448,10 @@ init_reload (void)
       /* This way, we make sure that reg+reg is an offsettable address.  */
       tem = plus_constant (Pmode, tem, 4);
 
-      if (memory_address_p (QImode, tem))
-	{
-	  double_reg_address_ok = 1;
-	  break;
-	}
+      for (int mode = 0; mode < MAX_MACHINE_MODE; mode++)
+	if (!double_reg_address_ok[mode]
+	    && memory_address_p ((enum machine_mode)mode, tem))
+	  double_reg_address_ok[mode] = 1;
     }
 
   /* Initialize obstack for our rtl allocation.  */
@@ -1280,11 +1272,9 @@ reload (rtx_insn *first, int global)
   /* We've possibly turned single trapping insn into multiple ones.  */
   if (cfun->can_throw_non_call_exceptions)
     {
-      sbitmap blocks;
-      blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
+      auto_sbitmap blocks (last_basic_block_for_fn (cfun));
       bitmap_ones (blocks);
       find_many_sub_basic_blocks (blocks);
-      sbitmap_free (blocks);
     }
 
   if (inserted)
@@ -2328,9 +2318,9 @@ set_label_offsets (rtx x, rtx_insn *insn, int initial_p)
       if (LABEL_REF_NONLOCAL_P (x))
 	return;
 
-      x = LABEL_REF_LABEL (x);
+      x = label_ref_label (x);
 
-      /* ... fall through ...  */
+      /* fall through */
 
     case CODE_LABEL:
       /* If we know nothing about this label, set the desired offsets.  Note
@@ -2377,7 +2367,7 @@ set_label_offsets (rtx x, rtx_insn *insn, int initial_p)
     case JUMP_INSN:
       set_label_offsets (PATTERN (insn), insn, initial_p);
 
-      /* ... fall through ...  */
+      /* fall through */
 
     case INSN:
     case CALL_INSN:
@@ -2430,13 +2420,13 @@ set_label_offsets (rtx x, rtx_insn *insn, int initial_p)
 	case IF_THEN_ELSE:
 	  tem = XEXP (SET_SRC (x), 1);
 	  if (GET_CODE (tem) == LABEL_REF)
-	    set_label_offsets (LABEL_REF_LABEL (tem), insn, initial_p);
+	    set_label_offsets (label_ref_label (tem), insn, initial_p);
 	  else if (GET_CODE (tem) != PC && GET_CODE (tem) != RETURN)
 	    break;
 
 	  tem = XEXP (SET_SRC (x), 2);
 	  if (GET_CODE (tem) == LABEL_REF)
-	    set_label_offsets (LABEL_REF_LABEL (tem), insn, initial_p);
+	    set_label_offsets (label_ref_label (tem), insn, initial_p);
 	  else if (GET_CODE (tem) != PC && GET_CODE (tem) != RETURN)
 	    break;
 	  return;
@@ -2692,7 +2682,7 @@ eliminate_regs_1 (rtx x, machine_mode mem_mode, rtx insn,
 			       ep->previous_offset * INTVAL (XEXP (x, 1)));
 	    }
 
-      /* ... fall through ...  */
+      /* fall through */
 
     case CALL:
     case COMPARE:
@@ -2739,7 +2729,7 @@ eliminate_regs_1 (rtx x, machine_mode mem_mode, rtx insn,
 	    }
 	}
 
-      /* ... fall through ...  */
+      /* fall through */
 
     case INSN_LIST:
     case INT_LIST:
@@ -2828,18 +2818,16 @@ eliminate_regs_1 (rtx x, machine_mode mem_mode, rtx insn,
 
 	  if (MEM_P (new_rtx)
 	      && ((x_size < new_size
-#if WORD_REGISTER_OPERATIONS
-		   /* On these machines, combine can create rtl of the form
+		   /* On RISC machines, combine can create rtl of the form
 		      (set (subreg:m1 (reg:m2 R) 0) ...)
 		      where m1 < m2, and expects something interesting to
 		      happen to the entire word.  Moreover, it will use the
 		      (reg:m2 R) later, expecting all bits to be preserved.
 		      So if the number of words is the same, preserve the
 		      subreg so that push_reload can see it.  */
-		   && ! ((x_size - 1) / UNITS_PER_WORD
-			 == (new_size -1 ) / UNITS_PER_WORD)
-#endif
-		   )
+		   && !(WORD_REGISTER_OPERATIONS
+			&& (x_size - 1) / UNITS_PER_WORD
+			   == (new_size -1 ) / UNITS_PER_WORD))
 		  || x_size == new_size)
 	      )
 	    return adjust_address_nv (new_rtx, GET_MODE (x), SUBREG_BYTE (x));
@@ -3032,6 +3020,7 @@ elimination_effects (rtx x, machine_mode mem_mode)
 	break;
 
       /* Fall through to generic unary operation case.  */
+      gcc_fallthrough ();
     case STRICT_LOW_PART:
     case NEG:          case NOT:
     case SIGN_EXTEND:  case ZERO_EXTEND:
@@ -3825,26 +3814,17 @@ static bool
 verify_initial_elim_offsets (void)
 {
   HOST_WIDE_INT t;
+  struct elim_table *ep;
 
   if (!num_eliminable)
     return true;
 
-#ifdef ELIMINABLE_REGS
-  {
-   struct elim_table *ep;
-
-   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
-     {
-       INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, t);
-       if (t != ep->initial_offset)
-	 return false;
-     }
-  }
-#else
-  INITIAL_FRAME_POINTER_OFFSET (t);
-  if (t != reg_eliminate[0].initial_offset)
-    return false;
-#endif
+  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+    {
+      INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, t);
+      if (t != ep->initial_offset)
+	return false;
+    }
 
   return true;
 }
@@ -3856,16 +3836,11 @@ set_initial_elim_offsets (void)
 {
   struct elim_table *ep = reg_eliminate;
 
-#ifdef ELIMINABLE_REGS
   for (; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     {
       INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, ep->initial_offset);
       ep->previous_offset = ep->offset = ep->initial_offset;
     }
-#else
-  INITIAL_FRAME_POINTER_OFFSET (ep->initial_offset);
-  ep->previous_offset = ep->offset = ep->initial_offset;
-#endif
 
   num_not_at_initial_offset = 0;
 }
@@ -3890,9 +3865,10 @@ set_initial_label_offsets (void)
 {
   memset (offsets_known_at, 0, num_labels);
 
-  for (rtx_insn_list *x = forced_labels; x; x = x->next ())
-    if (x->insn ())
-      set_label_offsets (x->insn (), NULL, 1);
+  unsigned int i;
+  rtx_insn *insn;
+  FOR_EACH_VEC_SAFE_ELT (forced_labels, i, insn)
+    set_label_offsets (insn, NULL, 1);
 
   for (rtx_insn_list *x = nonlocal_goto_handler_labels; x; x = x->next ())
     if (x->insn ())
@@ -3936,9 +3912,7 @@ update_eliminables (HARD_REG_SET *pset)
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     if ((ep->from == HARD_FRAME_POINTER_REGNUM
          && targetm.frame_pointer_required ())
-#ifdef ELIMINABLE_REGS
 	|| ! targetm.can_eliminate (ep->from, ep->to)
-#endif
 	)
       ep->can_eliminate = 0;
 
@@ -4059,16 +4033,13 @@ static void
 init_elim_table (void)
 {
   struct elim_table *ep;
-#ifdef ELIMINABLE_REGS
   const struct elim_table_1 *ep1;
-#endif
 
   if (!reg_eliminate)
     reg_eliminate = XCNEWVEC (struct elim_table, NUM_ELIMINABLE_REGS);
 
   num_eliminable = 0;
 
-#ifdef ELIMINABLE_REGS
   for (ep = reg_eliminate, ep1 = reg_eliminate_1;
        ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++, ep1++)
     {
@@ -4081,12 +4052,6 @@ init_elim_table (void)
 		 && (! SUPPORTS_STACK_ALIGNMENT
 		     || ! stack_realign_fp)));
     }
-#else
-  reg_eliminate[0].from = reg_eliminate_1[0].from;
-  reg_eliminate[0].to = reg_eliminate_1[0].to;
-  reg_eliminate[0].can_eliminate = reg_eliminate[0].can_eliminate_previous
-    = ! frame_pointer_needed;
-#endif
 
   /* Count the number of eliminable registers and build the FROM and TO
      REG rtx's.  Note that code in gen_rtx_REG will cause, e.g.,
@@ -5501,7 +5466,7 @@ reload_reg_reaches_end_p (unsigned int regno, int reloadnum)
 
       opnum = reload_n_operands;
 
-      /* ... fall through ...  */
+      /* fall through */
 
     case RELOAD_FOR_OUTPUT:
     case RELOAD_FOR_OUTPUT_ADDRESS:
@@ -8735,7 +8700,6 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 #endif
   else if (REG_P (out) && UNARY_P (in))
     {
-      rtx insn;
       rtx op1;
       rtx out_moded;
       rtx_insn *set;
@@ -8760,13 +8724,13 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 
       gen_reload (out_moded, op1, opnum, type);
 
-      insn = gen_rtx_SET (out, gen_rtx_fmt_e (GET_CODE (in), GET_MODE (in),
-					      out_moded));
-      insn = emit_insn_if_valid_for_reload (insn);
+      rtx temp = gen_rtx_SET (out, gen_rtx_fmt_e (GET_CODE (in), GET_MODE (in),
+						  out_moded));
+      rtx_insn *insn = emit_insn_if_valid_for_reload (temp);
       if (insn)
 	{
 	  set_unique_reg_note (insn, REG_EQUIV, in);
-	  return as_a <rtx_insn *> (insn);
+	  return insn;
 	}
 
       fatal_insn ("failure trying to reload:", set);

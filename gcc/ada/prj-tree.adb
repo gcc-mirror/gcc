@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1743,8 +1743,8 @@ package body Prj.Tree is
                --  comment zone with the node of the preceding line (either
                --  a Previous_Line or a Previous_End node), if any.
 
-               if Comments.Last > 0 and then
-                 not Comments.Table (1).Follows_Empty_Line
+               if Comments.Last > 0
+                 and then not Comments.Table (1).Follows_Empty_Line
                then
                   if Present (Previous_Line_Node) then
                      Add_Comments

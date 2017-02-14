@@ -3,7 +3,7 @@
 
 // 2000-08-22 Benjamin Kosnik <bkoz@cygnus.com>
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -62,7 +62,6 @@ void test01()
   typedef char_traits<int_type>			int_traits;
   typedef char_traits<ext_type>			ext_traits;
 
-  bool test __attribute__((unused)) = true;
   const ext_type* 	e_lit = "black pearl jasmine tea";
   int 			size = strlen(e_lit);
 

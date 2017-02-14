@@ -1,7 +1,7 @@
 /* Language-independent diagnostic subroutines for the GNU Compiler
    Collection that are only for use in the compilers proper and not
    the driver or other programs.
-   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+   Copyright (C) 1999-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -102,7 +102,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
                                  source_location where)
 {
   const struct line_map *map;
-  vec<loc_map_pair> loc_vec = vNULL;
+  auto_vec<loc_map_pair> loc_vec;
   unsigned ix;
   loc_map_pair loc, *iter;
 
@@ -219,8 +219,6 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
                                 "in expansion of macro %qs",
                                 linemap_map_get_macro_name (iter->map));
       }
-
-  loc_vec.release ();
 }
 
 /*  This is a diagnostic finalizer implementation that is aware of
@@ -268,7 +266,7 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 
     case 'D':
       t = va_arg (*text->args_ptr, tree);
-      if (TREE_CODE (t) == VAR_DECL && DECL_HAS_DEBUG_EXPR_P (t))
+      if (VAR_P (t) && DECL_HAS_DEBUG_EXPR_P (t))
 	t = DECL_DEBUG_EXPR (t);
       break;
 

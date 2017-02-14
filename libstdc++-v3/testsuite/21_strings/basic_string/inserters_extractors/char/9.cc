@@ -1,6 +1,6 @@
 // 1999-07-01 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,7 +31,6 @@
 // libstdc++/2830
 void test09()
 {
-  bool test __attribute__((unused)) = true;
   std::string blanks( 3, '\0');
   std::string foo = "peace";
   foo += blanks;

@@ -1,6 +1,6 @@
 // 1999-06-04 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,6 @@
 
 void test01(void)
 {
-  bool test __attribute__((unused)) = true;
   typedef std::wstring::size_type csize_type;
   typedef std::wstring::iterator citerator;
   csize_type npos = std::wstring::npos;

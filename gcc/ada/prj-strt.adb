@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1556,7 +1556,9 @@ package body Prj.Strt is
                end if;
             end if;
 
-         when Tok_External | Tok_External_As_List  =>
+         when Tok_External
+            | Tok_External_As_List
+         =>
             External_Reference
               (In_Tree         => In_Tree,
                Flags           => Flags,

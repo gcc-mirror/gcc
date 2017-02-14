@@ -1,8 +1,8 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,8 +26,6 @@
 template<typename _USet>
   void test()
   {
-    bool test __attribute__((unused)) = true;
-
     for (float lf = 1.0; lf < 101.0; lf *= 10.0)
       for (int size = 1; size <= 6561; size *= 3)
 	{

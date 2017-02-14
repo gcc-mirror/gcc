@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2015, AdaCore                     --
+--                     Copyright (C) 2001-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -140,9 +140,9 @@ package body GNAT.Directory_Operations.Iteration is
         (Directory      : String;
          File_Pattern   : String;
          Suffix_Pattern : String);
-      --  Read entries in Directory and call user's callback if the entry
-      --  match File_Pattern and Suffix_Pattern is empty otherwise it will go
-      --  down one more directory level by calling Next_Level routine above.
+      --  Read entries in Directory and call user's callback if the entry match
+      --  File_Pattern and Suffix_Pattern is empty; otherwise go down one more
+      --  directory level by calling Next_Level routine below.
 
       procedure Next_Level
         (Current_Path : String;

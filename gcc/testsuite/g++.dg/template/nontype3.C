@@ -16,7 +16,7 @@ template <int *PI>
 void dep6(bar<PI+1> *); // { dg-error "" "integral or enumeration" }
 
 template <int I>
-void dep7(bar<I+1> *);
+void dep7(bar<I+1> *);		// { dg-error "" }
 
 template <int *PI>
 void dep8(foo< *PI > *); // { dg-error "" "integral or enumeration" }
@@ -31,8 +31,8 @@ template <int PI[1]>
 void dep10(foo< PI[0] > *); // { dg-error "" "integral or enumeration" }
 
 template <int I>
-void dep11(foo< *&I > *); // { dg-error "" "constant-expression" }
+void dep11(foo< *&I > *); // { dg-error "" "constant expression" }
 
 template <int I>
-void dep12(foo< (&I)[4] > *); // { dg-error "" "constant-expression" }
+void dep12(foo< (&I)[4] > *); // { dg-error "" "constant expression" }
 

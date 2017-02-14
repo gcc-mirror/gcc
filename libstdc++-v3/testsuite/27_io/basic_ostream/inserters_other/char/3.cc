@@ -1,7 +1,7 @@
 // 1999-08-16 bkoz
 // 1999-11-01 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,15 +28,12 @@
 void test04()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   istringstream istr("inside betty carter");
   ostringstream ostr;
   ostr << istr.rdbuf() << endl;
 
   if (ostr.rdstate() & ios_base::eofbit) 
-    test = false;
-
-  VERIFY( test );
+    VERIFY( false );
 }
 
 int 

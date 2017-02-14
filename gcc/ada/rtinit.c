@@ -169,14 +169,14 @@ __gnat_runtime_initialize(int install_handler)
      char *codepage = getenv ("GNAT_CODE_PAGE");
 
      /* Default code page is UTF-8.  */
-     CurrentCodePage = CP_UTF8;
+     __gnat_current_codepage = CP_UTF8;
 
      if (codepage != NULL)
        {
 	 if (strcmp (codepage, "CP_ACP") == 0)
-	   CurrentCodePage = CP_ACP;
+	   __gnat_current_codepage = CP_ACP;
 	 else if (strcmp (codepage, "CP_UTF8") == 0)
-	   CurrentCodePage = CP_UTF8;
+	   __gnat_current_codepage = CP_UTF8;
        }
    }
 
@@ -185,29 +185,29 @@ __gnat_runtime_initialize(int install_handler)
      char *ccsencoding = getenv ("GNAT_CCS_ENCODING");
 
      /* Default CCS Encoding.  */
-     CurrentCCSEncoding = _O_TEXT;
+     __gnat_current_ccs_encoding = _O_TEXT;
      __gnat_wide_text_translation_required = 0;
 
      if (ccsencoding != NULL)
        {
 	 if (strcmp (ccsencoding, "U16TEXT") == 0)
            {
-             CurrentCCSEncoding = _O_U16TEXT;
+             __gnat_current_ccs_encoding = _O_U16TEXT;
              __gnat_wide_text_translation_required = 1;
            }
 	 else if (strcmp (ccsencoding, "TEXT") == 0)
            {
-             CurrentCCSEncoding = _O_TEXT;
+             __gnat_current_ccs_encoding = _O_TEXT;
              __gnat_wide_text_translation_required = 0;
            }
 	 else if (strcmp (ccsencoding, "WTEXT") == 0)
            {
-             CurrentCCSEncoding = _O_WTEXT;
+             __gnat_current_ccs_encoding = _O_WTEXT;
              __gnat_wide_text_translation_required = 1;
            }
 	 else if (strcmp (ccsencoding, "U8TEXT") == 0)
            {
-             CurrentCCSEncoding = _O_U8TEXT;
+             __gnat_current_ccs_encoding = _O_U8TEXT;
              __gnat_wide_text_translation_required = 1;
            }
        }

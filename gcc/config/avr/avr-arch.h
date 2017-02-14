@@ -1,6 +1,6 @@
 /* Definitions of types that are used to store AVR architecture and
    device information.
-   Copyright (C) 2012-2016 Free Software Foundation, Inc.
+   Copyright (C) 2012-2017 Free Software Foundation, Inc.
    Contributed by Georg-Johann Lay (avr@gjlay.de)
 
 This file is part of GCC.
@@ -120,8 +120,8 @@ typedef struct
   /* Start of text section. */
   int text_section_start;
 
-  /* Number of 64k segments in the flash.  */
-  int n_flash;
+  /* Flash size in bytes.  */
+  int flash_size;
 } avr_mcu_t;
 
 /* AVR device specific features.
@@ -157,7 +157,9 @@ enum avr_device_specific_features
   AVR_ISA_NONE,
   AVR_ISA_RMW     = 0x1, /* device has RMW instructions. */
   AVR_SHORT_SP    = 0x2, /* Stack Pointer has 8 bits width. */
-  AVR_ERRATA_SKIP = 0x4  /* device has a core erratum. */
+  AVR_ERRATA_SKIP = 0x4, /* device has a core erratum. */
+  AVR_ISA_LDS     = 0x8  /* whether LDS / STS is valid for all data in static
+                            storage.  Only useful for reduced Tiny.  */
 };
 
 /* Map architecture to its texinfo string.  */

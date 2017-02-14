@@ -1,6 +1,6 @@
 // Debugging deque implementation -*- C++ -*-
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -386,19 +386,33 @@ namespace __debug
       { emplace_back(std::move(__x)); }
 
       template<typename... _Args>
+#if __cplusplus > 201402L
+	reference
+#else
 	void
+#endif
 	emplace_front(_Args&&... __args)
 	{
 	  _Base::emplace_front(std::forward<_Args>(__args)...);
 	  this->_M_invalidate_all();
+#if __cplusplus > 201402L
+	  return front();
+#endif
 	}
 
       template<typename... _Args>
+#if __cplusplus > 201402L
+	reference
+#else
 	void
+#endif
 	emplace_back(_Args&&... __args)
 	{
 	  _Base::emplace_back(std::forward<_Args>(__args)...);
 	  this->_M_invalidate_all();
+#if __cplusplus > 201402L
+	  return back();
+#endif
 	}
 
       template<typename... _Args>

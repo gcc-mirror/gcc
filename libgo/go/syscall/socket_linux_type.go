@@ -4,6 +4,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build linux
+// +build !ppc64
+// +build !ppc64le
+
 package syscall
 
 // Type needed if not on ppc64le or ppc64

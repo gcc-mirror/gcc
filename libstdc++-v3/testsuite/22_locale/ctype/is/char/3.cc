@@ -1,4 +1,4 @@
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,6 @@ typedef char char_type;
 // Per Liboriussen <liborius@stofanet.dk>
 void test03()
 {
-  bool test __attribute__((unused)) = true;
   std::ctype_base::mask maskdata[256];
   for (int i = 0; i < 256; ++i)
     maskdata[i] = std::ctype_base::alpha;

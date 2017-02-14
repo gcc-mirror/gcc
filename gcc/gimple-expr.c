@@ -1,6 +1,6 @@
 /* Gimple decl, type, and expression support functions.
 
-   Copyright (C) 2007-2016 Free Software Foundation, Inc.
+   Copyright (C) 2007-2017 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "demangle.h"
 #include "hash-set.h"
 #include "rtl.h"
+#include "tree-pass.h"
 
 /* ----- Type related -----  */
 
@@ -323,7 +324,7 @@ bool
 gimple_has_body_p (tree fndecl)
 {
   struct function *fn = DECL_STRUCT_FUNCTION (fndecl);
-  return (gimple_body (fndecl) || (fn && fn->cfg));
+  return (gimple_body (fndecl) || (fn && fn->cfg && !(fn->curr_properties & PROP_rtl)));
 }
 
 /* Return a printable name for symbol DECL.  */
@@ -888,7 +889,7 @@ mark_addressable (tree x)
   if (TREE_CODE (x) == MEM_REF
       && TREE_CODE (TREE_OPERAND (x, 0)) == ADDR_EXPR)
     x = TREE_OPERAND (TREE_OPERAND (x, 0), 0);
-  if (TREE_CODE (x) != VAR_DECL
+  if (!VAR_P (x)
       && TREE_CODE (x) != PARM_DECL
       && TREE_CODE (x) != RESULT_DECL)
     return;

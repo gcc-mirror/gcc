@@ -1,5 +1,5 @@
 /* Prototypes of target machine for GNU compiler.  MIPS version.
-   Copyright (C) 1989-2016 Free Software Foundation, Inc.
+   Copyright (C) 1989-2017 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64-bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -271,6 +271,8 @@ extern void mips_declare_object (FILE *, const char *, const char *,
 				 const char *, ...) ATTRIBUTE_PRINTF_4;
 extern void mips_declare_object_name (FILE *, const char *, tree);
 extern void mips_finish_declare_object (FILE *, tree, int, int);
+extern void mips_set_text_contents_type (FILE *, const char *,
+					 unsigned long, bool);
 
 extern bool mips_small_data_pattern_p (rtx);
 extern rtx mips_rewrite_small_data (rtx);

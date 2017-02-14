@@ -1,5 +1,5 @@
 /* Find the correct compiler.
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "libiberty.h"
 #include "xregex.h"
 #include "findcomp.hh"
+#include "system.h"
 
 class scanner
 {
@@ -68,7 +69,7 @@ search_dir (const regex_t &regexp, const std::string &dir, std::string *result)
     {
       if (regexec (&regexp, filename, 0, NULL, 0) == 0)
 	{
-	  *result = filename;
+	  *result = dir + DIR_SEPARATOR + filename;
 	  return true;
 	}
     }

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for HPPA.
-   Copyright (C) 1992-2016 Free Software Foundation, Inc.
+   Copyright (C) 1992-2017 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
 This file is part of GCC.
@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "memmodel.h"
 #include "backend.h"
 #include "target.h"
 #include "rtl.h"
@@ -117,7 +118,7 @@ static bool pa_function_value_regno_p (const unsigned int);
 static void pa_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void update_total_code_bytes (unsigned int);
 static void pa_output_function_epilogue (FILE *, HOST_WIDE_INT);
-static int pa_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
+static int pa_adjust_cost (rtx_insn *, int, rtx_insn *, int, unsigned int);
 static int pa_adjust_priority (rtx_insn *, int);
 static int pa_issue_rate (void);
 static int pa_reloc_rw_mask (void);
@@ -194,6 +195,8 @@ static bool pa_cannot_force_const_mem (machine_mode, rtx);
 static bool pa_legitimate_constant_p (machine_mode, rtx);
 static unsigned int pa_section_type_flags (tree, const char *, int);
 static bool pa_legitimate_address_p (machine_mode, rtx, bool);
+static bool pa_callee_copies (cumulative_args_t, machine_mode,
+			      const_tree, bool);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -342,7 +345,7 @@ static size_t n_deferred_plabels = 0;
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE pa_pass_by_reference
 #undef TARGET_CALLEE_COPIES
-#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
+#define TARGET_CALLEE_COPIES pa_callee_copies
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES pa_arg_partial_bytes
 #undef TARGET_FUNCTION_ARG
@@ -396,6 +399,9 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_SECTION_TYPE_FLAGS pa_section_type_flags
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P pa_legitimate_address_p
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1929,16 +1935,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 		  type = strip_array_types (type);
 
 		  if (POINTER_TYPE_P (type))
-		    {
-		      int align;
-
-		      type = TREE_TYPE (type);
-		      /* Using TYPE_ALIGN_OK is rather conservative as
-			 only the ada frontend actually sets it.  */
-		      align = (TYPE_ALIGN_OK (type) ? TYPE_ALIGN (type)
-			       : BITS_PER_UNIT);
-		      mark_reg_pointer (operand0, align);
-		    }
+		    mark_reg_pointer (operand0, BITS_PER_UNIT);
 		}
 	    }
 
@@ -4541,63 +4538,78 @@ hppa_profile_hook (int label_no)
      lcla2 and load_offset_label_address insn patterns.  */
   rtx reg = gen_reg_rtx (SImode);
   rtx_code_label *label_rtx = gen_label_rtx ();
-  rtx begin_label_rtx;
+  rtx mcount = gen_rtx_MEM (Pmode, gen_rtx_SYMBOL_REF (Pmode, "_mcount"));
+  int reg_parm_stack_space = REG_PARM_STACK_SPACE (NULL_TREE);
+  rtx arg_bytes, begin_label_rtx;
   rtx_insn *call_insn;
   char begin_label_name[16];
+  bool use_mcount_pcrel_call;
+
+  /* If we can reach _mcount with a pc-relative call, we can optimize
+     loading the address of the current function.  This requires linker
+     long branch stub support.  */
+  if (!TARGET_PORTABLE_RUNTIME
+      && !TARGET_LONG_CALLS
+      && (TARGET_SOM || flag_function_sections))
+    use_mcount_pcrel_call = TRUE;
+  else
+    use_mcount_pcrel_call = FALSE;
 
   ASM_GENERATE_INTERNAL_LABEL (begin_label_name, FUNC_BEGIN_PROLOG_LABEL,
 			       label_no);
   begin_label_rtx = gen_rtx_SYMBOL_REF (SImode, ggc_strdup (begin_label_name));
 
-  if (TARGET_64BIT)
-    emit_move_insn (arg_pointer_rtx,
-		    gen_rtx_PLUS (word_mode, virtual_outgoing_args_rtx,
-				  GEN_INT (64)));
-
   emit_move_insn (gen_rtx_REG (word_mode, 26), gen_rtx_REG (word_mode, 2));
 
-  /* The address of the function is loaded into %r25 with an instruction-
-     relative sequence that avoids the use of relocations.  The sequence
-     is split so that the load_offset_label_address instruction can
-     occupy the delay slot of the call to _mcount.  */
-  if (TARGET_PA_20)
-    emit_insn (gen_lcla2 (reg, label_rtx));
+  if (!use_mcount_pcrel_call)
+    {
+      /* The address of the function is loaded into %r25 with an instruction-
+	 relative sequence that avoids the use of relocations.  The sequence
+	 is split so that the load_offset_label_address instruction can
+	 occupy the delay slot of the call to _mcount.  */
+      if (TARGET_PA_20)
+	emit_insn (gen_lcla2 (reg, label_rtx));
+      else
+	emit_insn (gen_lcla1 (reg, label_rtx));
+
+      emit_insn (gen_load_offset_label_address (gen_rtx_REG (SImode, 25), 
+						reg,
+						begin_label_rtx,
+						label_rtx));
+    }
+
+  if (!NO_DEFERRED_PROFILE_COUNTERS)
+    {
+      rtx count_label_rtx, addr, r24;
+      char count_label_name[16];
+
+      funcdef_nos.safe_push (label_no);
+      ASM_GENERATE_INTERNAL_LABEL (count_label_name, "LP", label_no);
+      count_label_rtx = gen_rtx_SYMBOL_REF (Pmode,
+					    ggc_strdup (count_label_name));
+
+      addr = force_reg (Pmode, count_label_rtx);
+      r24 = gen_rtx_REG (Pmode, 24);
+      emit_move_insn (r24, addr);
+
+      arg_bytes = GEN_INT (TARGET_64BIT ? 24 : 12);
+      if (use_mcount_pcrel_call)
+	call_insn = emit_call_insn (gen_call_mcount (mcount, arg_bytes,
+						     begin_label_rtx));
+      else
+	call_insn = emit_call_insn (gen_call (mcount, arg_bytes));
+
+      use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), r24);
+    }
   else
-    emit_insn (gen_lcla1 (reg, label_rtx));
-
-  emit_insn (gen_load_offset_label_address (gen_rtx_REG (SImode, 25), 
-					    reg, begin_label_rtx, label_rtx));
-
-#if !NO_DEFERRED_PROFILE_COUNTERS
-  {
-    rtx count_label_rtx, addr, r24;
-    char count_label_name[16];
-
-    funcdef_nos.safe_push (label_no);
-    ASM_GENERATE_INTERNAL_LABEL (count_label_name, "LP", label_no);
-    count_label_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (count_label_name));
-
-    addr = force_reg (Pmode, count_label_rtx);
-    r24 = gen_rtx_REG (Pmode, 24);
-    emit_move_insn (r24, addr);
-
-    call_insn =
-      emit_call_insn (gen_call (gen_rtx_MEM (Pmode, 
-					     gen_rtx_SYMBOL_REF (Pmode, 
-								 "_mcount")),
-				GEN_INT (TARGET_64BIT ? 24 : 12)));
-
-    use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), r24);
-  }
-#else
-
-  call_insn =
-    emit_call_insn (gen_call (gen_rtx_MEM (Pmode, 
-					   gen_rtx_SYMBOL_REF (Pmode, 
-							       "_mcount")),
-			      GEN_INT (TARGET_64BIT ? 16 : 8)));
-
-#endif
+    {
+      arg_bytes = GEN_INT (TARGET_64BIT ? 16 : 8);
+      if (use_mcount_pcrel_call)
+	call_insn = emit_call_insn (gen_call_mcount (mcount, arg_bytes,
+						     begin_label_rtx));
+      else
+	call_insn = emit_call_insn (gen_call (mcount, arg_bytes));
+    }
 
   use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), gen_rtx_REG (SImode, 25));
   use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), gen_rtx_REG (SImode, 26));
@@ -4605,6 +4617,10 @@ hppa_profile_hook (int label_no)
   /* Indicate the _mcount call cannot throw, nor will it execute a
      non-local goto.  */
   make_reg_eh_region_note_nothrow_nononlocal (call_insn);
+
+  /* Allocate space for fixed arguments.  */
+  if (reg_parm_stack_space > crtl->outgoing_args_size)
+    crtl->outgoing_args_size = reg_parm_stack_space;
 }
 
 /* Fetch the return address for the frame COUNT steps up from
@@ -4749,13 +4765,14 @@ pa_emit_bcond_fp (rtx operands[])
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
 static int
-pa_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
+pa_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
+		unsigned int)
 {
   enum attr_type attr_type;
 
   /* Don't adjust costs for a pa8000 chip, also do not adjust any
      true dependencies as they are described with bypasses now.  */
-  if (pa_cpu >= PROCESSOR_8000 || REG_NOTE_KIND (link) == 0)
+  if (pa_cpu >= PROCESSOR_8000 || dep_type == 0)
     return cost;
 
   if (! recog_memoized (insn))
@@ -4763,7 +4780,7 @@ pa_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 
   attr_type = get_attr_type (insn);
 
-  switch (REG_NOTE_KIND (link))
+  switch (dep_type)
     {
     case REG_DEP_ANTI:
       /* Anti dependency; DEP_INSN reads a register that INSN writes some
@@ -6431,7 +6448,7 @@ branch_to_delay_slot_p (rtx_insn *insn)
   if (dbr_sequence_length ())
     return FALSE;
 
-  jump_insn = next_active_insn (JUMP_LABEL (insn));
+  jump_insn = next_active_insn (JUMP_LABEL_AS_INSN (insn));
   while (insn)
     {
       insn = next_active_insn (insn);
@@ -6465,7 +6482,7 @@ branch_needs_nop_p (rtx_insn *insn)
   if (dbr_sequence_length ())
     return FALSE;
 
-  jump_insn = next_active_insn (JUMP_LABEL (insn));
+  jump_insn = next_active_insn (JUMP_LABEL_AS_INSN (insn));
   while (insn)
     {
       insn = next_active_insn (insn);
@@ -6488,7 +6505,7 @@ branch_needs_nop_p (rtx_insn *insn)
 static bool
 use_skip_p (rtx_insn *insn)
 {
-  rtx_insn *jump_insn = next_active_insn (JUMP_LABEL (insn));
+  rtx_insn *jump_insn = next_active_insn (JUMP_LABEL_AS_INSN (insn));
 
   while (insn)
     {
@@ -8330,7 +8347,7 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
   static unsigned int current_thunk_number;
   int val_14 = VAL_14_BITS_P (delta);
   unsigned int old_last_address = last_address, nbytes = 0;
-  char label[16];
+  char label[17];
   rtx xoperands[4];
 
   xoperands[0] = XEXP (DECL_RTL (function), 0);
@@ -10703,6 +10720,21 @@ pa_maybe_emit_compare_and_swap_exchange_loop (rtx target, rtx mem, rtx val)
     }
 
   return NULL_RTX;
+}
+
+/* Implement TARGET_CALLEE_COPIES.  The callee is responsible for copying
+   arguments passed by hidden reference in the 32-bit HP runtime.  Users
+   can override this behavior for better compatibility with openmp at the
+   risk of library incompatibilities.  Arguments are always passed by value
+   in the 64-bit HP runtime.  */
+
+static bool
+pa_callee_copies (cumulative_args_t cum ATTRIBUTE_UNUSED,
+		  machine_mode mode ATTRIBUTE_UNUSED,
+		  const_tree type ATTRIBUTE_UNUSED,
+		  bool named ATTRIBUTE_UNUSED)
+{
+  return !TARGET_CALLER_COPIES;
 }
 
 #include "gt-pa.h"

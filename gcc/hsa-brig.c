@@ -1,5 +1,5 @@
 /* Producing binary form of HSA BRIG from our internal representation.
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2017 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz> and
    Martin Liska <mliska@suse.cz>.
 
@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "target.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "is-a.h"
 #include "vec.h"
@@ -43,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "print-tree.h"
 #include "symbol-summary.h"
-#include "hsa.h"
+#include "hsa-common.h"
 #include "gomp-constants.h"
 
 /* Convert VAL to little endian form, if necessary.  */
@@ -160,19 +161,21 @@ public:
   /* The size of the header of the section without any padding.  */
   unsigned header_byte_delta;
 
+  void init (const char *name);
+  void release ();
+  void output ();
+  unsigned add (const void *data, unsigned len, void **output = NULL);
+  void round_size_up (int factor);
+  void *get_ptr_by_offset (unsigned int offset);
+
+private:
+  void allocate_new_chunk ();
+
   /* Buffers of binary data, each containing BRIG_CHUNK_MAX_SIZE bytes.  */
   vec <struct hsa_brig_data_chunk> chunks;
 
   /* More convenient access to the last chunk from the vector above.  */
   struct hsa_brig_data_chunk *cur_chunk;
-
-  void allocate_new_chunk ();
-  void init (const char *name);
-  void release ();
-  void output ();
-  unsigned add (const void *data, unsigned len);
-  void round_size_up (int factor);
-  void *get_ptr_by_offset (unsigned int offset);
 };
 
 static struct hsa_brig_section brig_data, brig_code, brig_operand;
@@ -270,10 +273,11 @@ hsa_brig_section::output ()
 }
 
 /* Add to the stream LEN bytes of opaque binary DATA.  Return the offset at
-   which it was stored.  */
+   which it was stored.  If OUTPUT is not NULL, store into it the pointer to
+   the place where DATA was actually stored.  */
 
 unsigned
-hsa_brig_section::add (const void *data, unsigned len)
+hsa_brig_section::add (const void *data, unsigned len, void **output)
 {
   unsigned offset = total_size;
 
@@ -281,7 +285,10 @@ hsa_brig_section::add (const void *data, unsigned len)
   if (cur_chunk->size > (BRIG_CHUNK_MAX_SIZE - len))
     allocate_new_chunk ();
 
-  memcpy (cur_chunk->data + cur_chunk->size, data, len);
+  char *dst = cur_chunk->data + cur_chunk->size;
+  memcpy (dst, data, len);
+  if (output)
+    *output = dst;
   cur_chunk->size += len;
   total_size += len;
 
@@ -564,6 +571,7 @@ enqueue_op (hsa_op_base *op)
   return ret;
 }
 
+static void emit_immediate_operand (hsa_op_immed *imm);
 
 /* Emit directive describing a symbol if it has not been emitted already.
    Return the offset of the directive.  */
@@ -602,7 +610,14 @@ emit_directive_variable (struct hsa_symbol *symbol)
     }
 
   dirvar.name = lendian32 (name_offset);
-  dirvar.init = 0;
+
+  if (symbol->m_decl && TREE_CODE (symbol->m_decl) == CONST_DECL)
+    {
+      hsa_op_immed *tmp = new hsa_op_immed (DECL_INITIAL (symbol->m_decl));
+      dirvar.init = lendian32 (enqueue_op (tmp));
+    }
+  else
+    dirvar.init = 0;
   dirvar.type = lendian16 (symbol->m_type);
   dirvar.segment = symbol->m_segment;
   dirvar.align = symbol->m_align;
@@ -625,8 +640,12 @@ emit_directive_variable (struct hsa_symbol *symbol)
   return symbol->m_directive_offset;
 }
 
-/* Emit directives describing either a function declaration or
-   definition F.  */
+/* Emit directives describing either a function declaration or definition F and
+   return the produced BrigDirectiveExecutable structure.  The function does
+   not take into account any instructions when calculating nextModuleEntry
+   field of the produced BrigDirectiveExecutable structure so when emitting
+   actual definitions, this field needs to be updated after all of the function
+   is actually added to the code section.  */
 
 static BrigDirectiveExecutable *
 emit_function_directives (hsa_function_representation *f, bool is_declaration)
@@ -634,7 +653,7 @@ emit_function_directives (hsa_function_representation *f, bool is_declaration)
   struct BrigDirectiveExecutable fndir;
   unsigned name_offset, inarg_off, scoped_off, next_toplev_off;
   int count = 0;
-  BrigDirectiveExecutable *ptr_to_fndir;
+  void *ptr_to_fndir;
   hsa_symbol *sym;
 
   if (!f->m_declaration_p)
@@ -692,17 +711,7 @@ emit_function_directives (hsa_function_representation *f, bool is_declaration)
       *slot = int_fn;
     }
 
-  brig_code.add (&fndir, sizeof (fndir));
-  /* terrible hack: we need to set instCount after we emit all
-     insns, but we need to emit directive in order, and we emit directives
-     during insn emitting.  So we need to emit the FUNCTION directive
-     early, then the insns, and then we need to set instCount, so remember
-     a pointer to it, in some horrible way.  cur_chunk.data+size points
-     directly to after fndir here.  */
-  ptr_to_fndir
-      = (BrigDirectiveExecutable *)(brig_code.cur_chunk->data
-				    + brig_code.cur_chunk->size
-				    - sizeof (fndir));
+  brig_code.add (&fndir, sizeof (fndir), &ptr_to_fndir);
 
   if (f->m_output_arg)
     emit_directive_variable (f->m_output_arg);
@@ -723,7 +732,7 @@ emit_function_directives (hsa_function_representation *f, bool is_declaration)
 	}
     }
 
-  return ptr_to_fndir;
+  return (BrigDirectiveExecutable *) ptr_to_fndir;
 }
 
 /* Emit a label directive for the given HBB.  We assume it is about to start on
@@ -985,7 +994,7 @@ hsa_op_immed::emit_to_buffer (unsigned *brig_repr_size)
 	}
       else if (TREE_CODE (m_tree_value) == CONSTRUCTOR)
 	{
-	  unsigned len = vec_safe_length (CONSTRUCTOR_ELTS (m_tree_value));
+	  unsigned len = CONSTRUCTOR_NELTS (m_tree_value);
 	  for (unsigned i = 0; i < len; i++)
 	    {
 	      tree v = CONSTRUCTOR_ELT (m_tree_value, i)->value;
@@ -1236,20 +1245,20 @@ emit_insn_operands (hsa_insn_basic *insn)
     operand_offsets;
 
   unsigned l = insn->operand_count ();
-  operand_offsets.safe_grow (l);
-
-  for (unsigned i = 0; i < l; i++)
-    operand_offsets[i] = lendian32 (enqueue_op (insn->get_op (i)));
 
   /* We have N operands so use 4 * N for the byte_count.  */
   uint32_t byte_count = lendian32 (4 * l);
-
   unsigned offset = brig_data.add (&byte_count, sizeof (byte_count));
-  brig_data.add (operand_offsets.address (),
-		 l * sizeof (BrigOperandOffset32_t));
+  if (l > 0)
+    {
+      operand_offsets.safe_grow (l);
+      for (unsigned i = 0; i < l; i++)
+	operand_offsets[i] = lendian32 (enqueue_op (insn->get_op (i)));
 
+      brig_data.add (operand_offsets.address (),
+		     l * sizeof (BrigOperandOffset32_t));
+    }
   brig_data.round_size_up (4);
-
   return offset;
 }
 
@@ -1333,10 +1342,6 @@ emit_signal_insn (hsa_insn_signal *mem)
 {
   struct BrigInstSignal repr;
 
-  /* This is necessary because of the erroneous typedef of
-     BrigMemoryModifier8_t which introduces padding which may then contain
-     random stuff (which we do not want so that we can test things don't
-     change).  */
   memset (&repr, 0, sizeof (repr));
   repr.base.base.byteCount = lendian16 (sizeof (repr));
   repr.base.base.kind = lendian16 (BRIG_KIND_INST_SIGNAL);
@@ -1344,9 +1349,9 @@ emit_signal_insn (hsa_insn_signal *mem)
   repr.base.type = lendian16 (mem->m_type);
   repr.base.operands = lendian32 (emit_insn_operands (mem));
 
-  repr.memoryOrder = mem->m_memoryorder;
-  repr.signalOperation = mem->m_atomicop;
-  repr.signalType = BRIG_TYPE_SIG64;
+  repr.memoryOrder = mem->m_memory_order;
+  repr.signalOperation = mem->m_signalop;
+  repr.signalType = hsa_machine_large_p () ? BRIG_TYPE_SIG64 : BRIG_TYPE_SIG32;
 
   brig_code.add (&repr, sizeof (repr));
   brig_insn_count++;
@@ -1367,10 +1372,6 @@ emit_atomic_insn (hsa_insn_atomic *mem)
   else
     addr = as_a <hsa_op_address *> (mem->get_op (1));
 
-  /* This is necessary because of the erroneous typedef of
-     BrigMemoryModifier8_t which introduces padding which may then contain
-     random stuff (which we do not want so that we can test things don't
-     change).  */
   memset (&repr, 0, sizeof (repr));
   repr.base.base.byteCount = lendian16 (sizeof (repr));
   repr.base.base.kind = lendian16 (BRIG_KIND_INST_ATOMIC);
@@ -1447,10 +1448,6 @@ emit_alloca_insn (hsa_insn_alloca *alloca)
   struct BrigInstMem repr;
   gcc_checking_assert (alloca->operand_count () == 2);
 
-  /* This is necessary because of the erroneous typedef of
-     BrigMemoryModifier8_t which introduces padding which may then contain
-     random stuff (which we do not want so that we can test things don't
-     change).  */
   memset (&repr, 0, sizeof (repr));
   repr.base.base.byteCount = lendian16 (sizeof (repr));
   repr.base.base.kind = lendian16 (BRIG_KIND_INST_MEM);
@@ -1496,11 +1493,29 @@ emit_cmp_insn (hsa_insn_cmp *cmp)
   brig_insn_count++;
 }
 
-/* Emit an HSA branching instruction and all necessary directives, schedule
-   necessary operands for writing.  */
+/* Emit an HSA generic branching/sycnronization instruction.  */
 
 static void
-emit_branch_insn (hsa_insn_br *br)
+emit_generic_branch_insn (hsa_insn_br *br)
+{
+  struct BrigInstBr repr;
+  repr.base.base.byteCount = lendian16 (sizeof (repr));
+  repr.base.base.kind = lendian16 (BRIG_KIND_INST_BR);
+  repr.base.opcode = lendian16 (br->m_opcode);
+  repr.width = br->m_width;
+  repr.base.type = lendian16 (br->m_type);
+  repr.base.operands = lendian32 (emit_insn_operands (br));
+  memset (&repr.reserved, 0, sizeof (repr.reserved));
+
+  brig_code.add (&repr, sizeof (repr));
+  brig_insn_count++;
+}
+
+/* Emit an HSA conditional branching instruction and all necessary directives,
+   schedule necessary operands for writing.  */
+
+static void
+emit_cond_branch_insn (hsa_insn_cbr *br)
 {
   struct BrigInstBr repr;
 
@@ -1513,7 +1528,7 @@ emit_branch_insn (hsa_insn_br *br)
   repr.base.base.byteCount = lendian16 (sizeof (repr));
   repr.base.base.kind = lendian16 (BRIG_KIND_INST_BR);
   repr.base.opcode = lendian16 (br->m_opcode);
-  repr.width = BRIG_WIDTH_1;
+  repr.width = br->m_width;
   /* For Conditional jumps the type is always B1.  */
   repr.base.type = lendian16 (BRIG_TYPE_B1);
 
@@ -1729,8 +1744,8 @@ emit_queue_insn (hsa_insn_queue *insn)
   repr.base.base.kind = lendian16 (BRIG_KIND_INST_QUEUE);
   repr.base.opcode = lendian16 (insn->m_opcode);
   repr.base.type = lendian16 (insn->m_type);
-  repr.segment = BRIG_SEGMENT_GLOBAL;
-  repr.memoryOrder = BRIG_MEMORY_ORDER_SC_RELEASE;
+  repr.segment = insn->m_segment;
+  repr.memoryOrder = insn->m_memory_order;
   repr.base.operands = lendian32 (emit_insn_operands (insn));
   brig_data.round_size_up (4);
   brig_code.add (&repr, sizeof (repr));
@@ -1885,8 +1900,8 @@ emit_insn (hsa_insn_basic *insn)
     emit_segment_insn (seg);
   else if (hsa_insn_cmp *cmp = dyn_cast <hsa_insn_cmp *> (insn))
     emit_cmp_insn (cmp);
-  else if (hsa_insn_br *br = dyn_cast <hsa_insn_br *> (insn))
-    emit_branch_insn (br);
+  else if (hsa_insn_cbr *br = dyn_cast <hsa_insn_cbr *> (insn))
+    emit_cond_branch_insn (br);
   else if (hsa_insn_sbr *sbr = dyn_cast <hsa_insn_sbr *> (insn))
     {
       if (switch_instructions == NULL)
@@ -1895,6 +1910,8 @@ emit_insn (hsa_insn_basic *insn)
       switch_instructions->safe_push (sbr);
       emit_switch_insn (sbr);
     }
+  else if (hsa_insn_br *br = dyn_cast <hsa_insn_br *> (insn))
+    emit_generic_branch_insn (br);
   else if (hsa_insn_arg_block *block = dyn_cast <hsa_insn_arg_block *> (insn))
     emit_arg_block_insn (block);
   else if (hsa_insn_call *call = dyn_cast <hsa_insn_call *> (insn))
@@ -2005,7 +2022,7 @@ hsa_brig_emit_function (void)
       prev_bb = bb;
     }
   perhaps_emit_branch (prev_bb, NULL);
-  ptr_to_fndir->nextModuleEntry = brig_code.total_size;
+  ptr_to_fndir->nextModuleEntry = lendian32 (brig_code.total_size);
 
   /* Fill up label references for all sbr instructions.  */
   if (switch_instructions)
@@ -2224,11 +2241,6 @@ hsa_output_kernels (tree *host_func_table, tree *kernels)
       tree gridified_kernel_p_tree = build_int_cstu (boolean_type_node,
 						     gridified_kernel_p);
       unsigned count = 0;
-
-      kernel_dependencies_vector_type
-	= build_array_type (build_pointer_type (char_type_node),
-			    build_index_type (size_int (0)));
-
       vec<constructor_elt, va_gc> *kernel_dependencies_vec = NULL;
       if (hsa_decl_kernel_dependencies)
 	{
@@ -2278,6 +2290,7 @@ hsa_output_kernels (tree *host_func_table, tree *kernels)
       if (count > 0)
 	{
 	  ASM_GENERATE_INTERNAL_LABEL (tmp_name, "__hsa_dependencies_list", i);
+	  gcc_checking_assert (kernel_dependencies_vector_type);
 	  tree dependencies_list = build_decl (UNKNOWN_LOCATION, VAR_DECL,
 					       get_identifier (tmp_name),
 					       kernel_dependencies_vector_type);

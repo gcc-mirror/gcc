@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2011-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,8 +44,6 @@ struct Element
 
 void test01()
 {
-  bool test __attribute((unused)) = false;
-
   typedef std::scoped_allocator_adaptor<Element::allocator_type> alloc1_type;
 
   typedef std::vector<Element, alloc1_type> EltVec;
@@ -59,8 +57,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute((unused)) = false;
-
   typedef std::scoped_allocator_adaptor<Element::allocator_type> inner_alloc_type;
 
   typedef std::vector<Element, inner_alloc_type> EltVec;

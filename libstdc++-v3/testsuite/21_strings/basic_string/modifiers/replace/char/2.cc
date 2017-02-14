@@ -1,6 +1,6 @@
 // 1999-06-10 bkoz
 
-// Copyright (C) 1994-2016 Free Software Foundation, Inc.
+// Copyright (C) 1994-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,7 +25,6 @@
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
   const char* strlit = "../the long pier/Hanalei Bay/Kauai/Hawaii";
   std::string aux = strlit;
   aux.replace(aux.begin()+5, aux.begin()+20,

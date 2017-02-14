@@ -1,5 +1,5 @@
 /* LRA (local register allocator) driver and LRA utilities.
-   Copyright (C) 2010-2016 Free Software Foundation, Inc.
+   Copyright (C) 2010-2017 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -109,6 +109,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "tree.h"
 #include "predict.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "optabs.h"
 #include "regs.h"
@@ -1286,7 +1287,7 @@ initialize_lra_reg_info_element (int i)
   lra_reg_info[i].live_ranges = NULL;
   lra_reg_info[i].nrefs = lra_reg_info[i].freq = 0;
   lra_reg_info[i].last_reload = 0;
-  lra_reg_info[i].restore_regno = -1;
+  lra_reg_info[i].restore_rtx = NULL_RTX;
   lra_reg_info[i].val = get_new_reg_value ();
   lra_reg_info[i].offset = 0;
   lra_reg_info[i].copies = NULL;
@@ -1617,6 +1618,92 @@ lra_get_insn_regs (int uid)
 
   data = get_insn_recog_data_by_uid (uid);
   return data->regs;
+}
+
+
+
+/* Recursive hash function for RTL X.  */
+hashval_t
+lra_rtx_hash (rtx x)
+{
+  int i, j;
+  enum rtx_code code;
+  const char *fmt;
+  hashval_t val = 0;
+
+  if (x == 0)
+    return val;
+
+  code = GET_CODE (x);
+  val += (int) code + 4095;
+
+  /* Some RTL can be compared nonrecursively.  */
+  switch (code)
+    {
+    case REG:
+      return val + REGNO (x);
+
+    case LABEL_REF:
+      return iterative_hash_object (XEXP (x, 0), val);
+
+    case SYMBOL_REF:
+      return iterative_hash_object (XSTR (x, 0), val);
+
+    case SCRATCH:
+    case CONST_DOUBLE:
+    case CONST_INT:
+    case CONST_VECTOR:
+      return val;
+
+    default:
+      break;
+    }
+
+  /* Hash the elements.  */
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      switch (fmt[i])
+	{
+	case 'w':
+	  val += XWINT (x, i);
+	  break;
+
+	case 'n':
+	case 'i':
+	  val += XINT (x, i);
+	  break;
+
+	case 'V':
+	case 'E':
+	  val += XVECLEN (x, i);
+
+	  for (j = 0; j < XVECLEN (x, i); j++)
+	    val += lra_rtx_hash (XVECEXP (x, i, j));
+	  break;
+
+	case 'e':
+	  val += lra_rtx_hash (XEXP (x, i));
+	  break;
+
+	case 'S':
+	case 's':
+	  val += htab_hash_string (XSTR (x, i));
+	  break;
+
+	case 'u':
+	case '0':
+	case 't':
+	  break;
+
+	  /* It is believed that rtx's at this level will never
+	     contain anything but integers and other rtx's, except for
+	     within LABEL_REFs and SYMBOL_REFs.  */
+	default:
+	  abort ();
+	}
+    }
+  return val;
 }
 
 
@@ -2208,7 +2295,7 @@ void
 lra (FILE *f)
 {
   int i;
-  bool live_p, scratch_p, inserted_p;
+  bool live_p, inserted_p;
 
   lra_dump_file = f;
 
@@ -2245,7 +2332,6 @@ lra (FILE *f)
   lra_constraint_new_regno_start = lra_new_regno_start = max_reg_num ();
   lra_bad_spill_regno_start = INT_MAX;
   remove_scratches ();
-  scratch_p = lra_constraint_new_regno_start != max_reg_num ();
 
   /* A function that has a non-local label that can reach the exit
      block via non-exceptional paths must save all call-saved
@@ -2285,11 +2371,12 @@ lra (FILE *f)
       for (;;)
 	{
 	  /* We should try to assign hard registers to scratches even
-	     if there were no RTL transformations in
-	     lra_constraints.  */
+	     if there were no RTL transformations in lra_constraints.
+	     Also we should check IRA assignments on the first
+	     iteration as they can be wrong because of early clobbers
+	     operands which are ignored in IRA.  */
 	  if (! lra_constraints (lra_constraint_iter == 0)
-	      && (lra_constraint_iter > 1
-		  || (! scratch_p && ! caller_save_needed)))
+	      && lra_constraint_iter > 1)
 	    break;
 	  /* Constraint transformations may result in that eliminable
 	     hard regs become uneliminable and pseudos which use them
@@ -2413,11 +2500,9 @@ lra (FILE *f)
   /* We've possibly turned single trapping insn into multiple ones.  */
   if (cfun->can_throw_non_call_exceptions)
     {
-      sbitmap blocks;
-      blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
+      auto_sbitmap blocks (last_basic_block_for_fn (cfun));
       bitmap_ones (blocks);
       find_many_sub_basic_blocks (blocks);
-      sbitmap_free (blocks);
     }
 
   if (inserted_p)

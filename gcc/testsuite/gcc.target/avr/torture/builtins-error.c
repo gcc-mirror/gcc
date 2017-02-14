@@ -1,4 +1,5 @@
 /* { dg-do assemble } */
+/* { dg-options "-ffat-lto-objects" } */
 
 char insert (long a)
 {

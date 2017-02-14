@@ -1,6 +1,6 @@
 // 2005-09-29  Chris Jefferson  <chris@bubblescope.net>
 //
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,6 @@ using std::pair;
 // libstdc++/23978
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   pair<int, int> p(1, 2);
   int x = 0;
   int y = 0;

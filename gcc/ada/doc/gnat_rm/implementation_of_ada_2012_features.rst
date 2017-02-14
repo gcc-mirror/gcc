@@ -114,48 +114,48 @@ Supported Aspect                    Source
 ================================== ===========
   `Ada_2005`                           -- GNAT
   `Ada_2012`                           -- GNAT
-  `Address`     
-  `Alignment`     
-  `Atomic`     
-  `Atomic_Components`     
-  `Bit_Order`     
-  `Component_Size`     
+  `Address`
+  `Alignment`
+  `Atomic`
+  `Atomic_Components`
+  `Bit_Order`
+  `Component_Size`
   `Contract_Cases`                     -- GNAT
-  `Discard_Names`     
-  `External_Tag`     
+  `Discard_Names`
+  `External_Tag`
   `Favor_Top_Level`                    -- GNAT
-  `Inline`     
+  `Inline`
   `Inline_Always`                      -- GNAT
   `Invariant`                          -- GNAT
-  `Machine_Radix`     
-  `No_Return`     
+  `Machine_Radix`
+  `No_Return`
   `Object_Size`                        -- GNAT
-  `Pack`     
+  `Pack`
   `Persistent_BSS`                     -- GNAT
-  `Post`     
-  `Pre`     
-  `Predicate`     
-  `Preelaborable_Initialization`     
+  `Post`
+  `Pre`
+  `Predicate`
+  `Preelaborable_Initialization`
   `Pure_Function`                      -- GNAT
   `Remote_Access_Type`                 -- GNAT
   `Shared`                             -- GNAT
-  `Size`     
-  `Storage_Pool`     
-  `Storage_Size`     
-  `Stream_Size`     
-  `Suppress`     
+  `Size`
+  `Storage_Pool`
+  `Storage_Size`
+  `Stream_Size`
+  `Suppress`
   `Suppress_Debug_Info`                -- GNAT
   `Test_Case`                          -- GNAT
   `Thread_Local_Storage`               -- GNAT
-  `Type_Invariant`     
-  `Unchecked_Union`     
+  `Type_Invariant`
+  `Unchecked_Union`
   `Universal_Aliasing`                 -- GNAT
   `Unmodified`                         -- GNAT
   `Unreferenced`                       -- GNAT
   `Unreferenced_Objects`               -- GNAT
-  `Unsuppress`     
+  `Unsuppress`
   `Value_Size`                         -- GNAT
-  `Volatile`     
+  `Volatile`
   `Volatile_Components`
   `Warnings`                           -- GNAT
 ================================== ===========
@@ -436,7 +436,7 @@ Supported Aspect                    Source
   ::
 
         (if expr then expr {elsif expr then expr} [else expr])
-    
+
   The parentheses can be omitted in contexts where parentheses are present
   anyway, such as subprogram arguments and pragma arguments. If the **else**
   clause is omitted, **else** *True* is assumed;
@@ -500,7 +500,7 @@ Supported Aspect                    Source
   .. code-block:: ada
 
       X := (case Y is when 1 => 2, when 2 => 3, when others => 31)
-    
+
   RM References:  4.05.07 (0)   4.05.08 (0)   4.09 (12)   4.09 (33)
 
 .. index:: AI-0104 (Ada 2012 feature)

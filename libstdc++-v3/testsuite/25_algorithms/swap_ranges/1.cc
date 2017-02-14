@@ -1,4 +1,4 @@
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,6 @@ typedef test_container<int, forward_iterator_wrapper> Container;
 void
 test1()
 {
-  bool test __attribute__((unused)) = true;
   int array1[]={1, 2};
   int array2[]={3, 4};
   Container con1(array1, array1 + 2);
@@ -43,7 +42,6 @@ test1()
 void
 test2()
 {
-  bool test __attribute__((unused)) = true;
   int array1[] = {1};
   int array2[] = {1};
   Container con1(array1, array1);

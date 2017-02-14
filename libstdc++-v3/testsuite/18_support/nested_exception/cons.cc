@@ -1,7 +1,6 @@
-// { dg-options "-std=gnu++11" }
-// { dg-require-atomic-builtins "" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,8 +22,6 @@
 
 void test01() 
 {
-  bool test __attribute__((unused)) = true;
-
   std::nested_exception e;
 
   VERIFY( e.nested_ptr() == 0 );
@@ -32,8 +29,6 @@ void test01()
 
 void test02() 
 {
-  bool test __attribute__((unused)) = true;
-
   try
   {
     throw 42;

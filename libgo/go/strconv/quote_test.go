@@ -89,6 +89,34 @@ func TestQuoteToGraphic(t *testing.T) {
 	}
 }
 
+func BenchmarkQuote(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Quote("\a\b\f\r\n\t\v\a\b\f\r\n\t\v\a\b\f\r\n\t\v")
+	}
+}
+
+func BenchmarkQuoteRune(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		QuoteRune('\a')
+	}
+}
+
+var benchQuoteBuf []byte
+
+func BenchmarkAppendQuote(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		benchQuoteBuf = AppendQuote(benchQuoteBuf[:0], "\a\b\f\r\n\t\v\a\b\f\r\n\t\v\a\b\f\r\n\t\v")
+	}
+}
+
+var benchQuoteRuneBuf []byte
+
+func BenchmarkAppendQuoteRune(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		benchQuoteRuneBuf = AppendQuoteRune(benchQuoteRuneBuf[:0], '\a')
+	}
+}
+
 type quoteRuneTest struct {
 	in      rune
 	out     string
@@ -246,6 +274,7 @@ var unquotetests = []unQuoteTest{
 	{"`\n`", "\n"},
 	{"`	`", `	`},
 	{"` `", ` `},
+	{"`a\rb`", "ab"},
 }
 
 var misquoted = []string{
@@ -278,7 +307,7 @@ var misquoted = []string{
 
 func TestUnquote(t *testing.T) {
 	for _, tt := range unquotetests {
-		if out, err := Unquote(tt.in); err != nil && out != tt.out {
+		if out, err := Unquote(tt.in); err != nil || out != tt.out {
 			t.Errorf("Unquote(%#q) = %q, %v want %q, nil", tt.in, out, err, tt.out)
 		}
 	}

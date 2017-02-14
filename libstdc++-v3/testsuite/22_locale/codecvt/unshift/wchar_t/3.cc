@@ -2,7 +2,7 @@
 
 // 2003-02-06  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,7 +49,6 @@ void test03()
   typedef char					ext_type;
   typedef char_traits<char>			ext_traits;
 
-  bool test __attribute__((unused)) = true;
   const int_type 	i_lit[] = {
     0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc,
     0xd, 0xe, 0xf, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,

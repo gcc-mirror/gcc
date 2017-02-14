@@ -1,5 +1,5 @@
 /* Discover if the stack pointer is modified in a function.
-   Copyright (C) 2007-2016 Free Software Foundation, Inc.
+   Copyright (C) 2007-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "rtl.h"
 #include "df.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "tree-pass.h"
 

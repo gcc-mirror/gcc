@@ -1,5 +1,5 @@
 /* Chains of recurrences.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -59,7 +59,7 @@ enum ev_direction scev_direction (const_tree);
 extern tree chrec_fold_plus (tree, tree, tree);
 extern tree chrec_fold_minus (tree, tree, tree);
 extern tree chrec_fold_multiply (tree, tree, tree);
-extern tree chrec_convert (tree, tree, gimple *, bool = true);
+extern tree chrec_convert (tree, tree, gimple *, bool = true, tree = NULL);
 extern tree chrec_convert_rhs (tree, tree, gimple *);
 extern tree chrec_convert_aggressive (tree, tree, bool *);
 
@@ -75,7 +75,7 @@ extern tree reset_evolution_in_loop (unsigned, tree, tree);
 extern tree chrec_merge (tree, tree);
 extern void for_each_scev_op (tree *, bool (*) (tree *, void *), void *);
 extern bool convert_affine_scev (struct loop *, tree, tree *, tree *, gimple *,
-				 bool);
+				 bool, tree = NULL);
 
 /* Observers.  */
 extern bool eq_evolutions_p (const_tree, const_tree);

@@ -1,6 +1,6 @@
 /* Insert USEs in instructions that require mode switching.
    This should probably be merged into mode-switching.c .
-   Copyright (C) 2011-2016 Free Software Foundation, Inc.
+   Copyright (C) 2011-2017 Free Software Foundation, Inc.
    Contributed by Embecosm on behalf of Adapteva, Inc.
 
 This file is part of GCC.
@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "rtl.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "emit-rtl.h"
 #include "tree-pass.h"

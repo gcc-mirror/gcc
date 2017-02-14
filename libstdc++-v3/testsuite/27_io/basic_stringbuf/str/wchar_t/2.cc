@@ -1,6 +1,6 @@
 // 981208 bkoz test functionality of basic_stringbuf for char_type == wchar_t
 
-// Copyright (C) 1997-2016 Free Software Foundation, Inc.
+// Copyright (C) 1997-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,8 +25,6 @@
 // which didn't notice the grow.
 void test07()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wstringbuf strb_01;
   strb_01.sputc(L's');
   strb_01.pubseekoff(0, std::ios_base::beg);

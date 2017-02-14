@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,8 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11" }
-// { dg-options "-std=gnu++11 -DSIMULATOR_TEST" { target simulator } }
+// { dg-options "-DSIMULATOR_TEST" { target simulator } }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 
 // 25.4.2 [lib.alg.nth.element]
@@ -37,8 +37,6 @@ struct testNthElement
   template<typename Container, typename RandomGen>
   void operator()(Container con, RandomGen& rg)
   {
-    bool test __attribute__((unused)) = true;
-
     const int size = con.end() - con.begin();
     auto dist = std::uniform_int_distribution<>(0, size);
     const int element = dist(rg);

@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: m68k version -*- C++ -*-
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,6 +48,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
 #elif defined(__rtems__)
+  // This code is only provided for reference.  RTEMS uses now the atomic
+  // builtins and libatomic.  See configure.host.
+  //
   // TAS/JBNE is unsafe on systems with strict priority-based scheduling.
   // Disable interrupts, which we can do only from supervisor mode.
   _Atomic_word

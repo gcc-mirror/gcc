@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,8 +38,6 @@ public:
 // libstdc++/34595
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-  
   int t[10] = {0,};
   Counting_output_iterator cnt;
   std::size_t res = std::copy(t+0, t+5, cnt).current_counter();

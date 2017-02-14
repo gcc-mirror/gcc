@@ -1,4 +1,4 @@
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,6 @@
 void test02()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   typedef time_put<wchar_t> tp_type;
   

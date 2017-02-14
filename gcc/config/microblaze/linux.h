@@ -1,5 +1,5 @@
 /* Definitions for MicroBlaze running Linux.
-   Copyright (C) 2009-2016 Free Software Foundation, Inc.
+   Copyright (C) 2009-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -29,6 +29,7 @@
 #define TLS_NEEDS_GOT 1
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
+#define UCLIBC_DYNAMIC_LINKER "/lib/ld-uClibc.so.0"
 
 #if TARGET_BIG_ENDIAN_DEFAULT == 0 /* LE */
 #define MUSL_DYNAMIC_LINKER_E "%{mbig-endian:;:el}"

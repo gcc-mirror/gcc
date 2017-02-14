@@ -1,6 +1,6 @@
 // 2005-07-22  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,8 +45,6 @@ string prepare(string::size_type len, unsigned nchunks)
 
 void check(istream& stream, const string& str, unsigned nchunks)
 {
-  bool test __attribute__((unused)) = true;
-
   char* chunk = new char[str.size()];
   memset(chunk, 'X', str.size());
 

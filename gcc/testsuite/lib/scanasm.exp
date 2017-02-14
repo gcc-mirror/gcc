@@ -1,4 +1,4 @@
-# Copyright (C) 2000-2016 Free Software Foundation, Inc.
+# Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -103,6 +103,7 @@ proc hidden-scan-for { symbol } {
     set objformat [gcc_target_object_format]
 
     switch $objformat {
+        coff     { return "$symbol\[,\d\]*hidden" }
         elf      { return "hidden\[ \t_\]*$symbol" }
         mach-o   { return "private_extern\[ \t_\]*_?$symbol" }
         default  { return "" }

@@ -341,12 +341,13 @@ func RuneLen(r rune) int {
 // EncodeRune writes into p (which must be large enough) the UTF-8 encoding of the rune.
 // It returns the number of bytes written.
 func EncodeRune(p []byte, r rune) int {
-	// Negative values are erroneous.  Making it unsigned addresses the problem.
+	// Negative values are erroneous. Making it unsigned addresses the problem.
 	switch i := uint32(r); {
 	case i <= rune1Max:
 		p[0] = byte(r)
 		return 1
 	case i <= rune2Max:
+		_ = p[1] // eliminate bounds checks
 		p[0] = t2 | byte(r>>6)
 		p[1] = tx | byte(r)&maskx
 		return 2
@@ -354,11 +355,13 @@ func EncodeRune(p []byte, r rune) int {
 		r = RuneError
 		fallthrough
 	case i <= rune3Max:
+		_ = p[2] // eliminate bounds checks
 		p[0] = t3 | byte(r>>12)
 		p[1] = tx | byte(r>>6)&maskx
 		p[2] = tx | byte(r)&maskx
 		return 3
 	default:
+		_ = p[3] // eliminate bounds checks
 		p[0] = t4 | byte(r>>18)
 		p[1] = tx | byte(r>>12)&maskx
 		p[2] = tx | byte(r>>6)&maskx
@@ -367,7 +370,7 @@ func EncodeRune(p []byte, r rune) int {
 	}
 }
 
-// RuneCount returns the number of runes in p.  Erroneous and short
+// RuneCount returns the number of runes in p. Erroneous and short
 // encodings are treated as single runes of width 1 byte.
 func RuneCount(p []byte) int {
 	np := len(p)
@@ -441,7 +444,7 @@ func RuneCountInString(s string) (n int) {
 }
 
 // RuneStart reports whether the byte could be the first byte of an encoded,
-// possibly invalid rune.  Second and subsequent bytes always have the top two
+// possibly invalid rune. Second and subsequent bytes always have the top two
 // bits set to 10.
 func RuneStart(b byte) bool { return b&0xC0 != 0x80 }
 
@@ -513,12 +516,10 @@ func ValidString(s string) bool {
 // Code points that are out of range or a surrogate half are illegal.
 func ValidRune(r rune) bool {
 	switch {
-	case r < 0:
-		return false
-	case surrogateMin <= r && r <= surrogateMax:
-		return false
-	case r > MaxRune:
-		return false
+	case 0 <= r && r < surrogateMin:
+		return true
+	case surrogateMax < r && r <= MaxRune:
+		return true
 	}
-	return true
+	return false
 }

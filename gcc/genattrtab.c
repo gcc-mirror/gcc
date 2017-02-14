@@ -1,5 +1,5 @@
 /* Generate code from machine description to compute values of attributes.
-   Copyright (C) 1991-2016 Free Software Foundation, Inc.
+   Copyright (C) 1991-2017 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -386,6 +386,7 @@ attr_rtx_1 (enum rtx_code code, va_list p)
   unsigned int hashcode;
   struct attr_hash *h;
   struct obstack *old_obstack = rtl_obstack;
+  int permanent_p = 1;
 
   /* For each of several cases, search the hash table for an existing entry.
      Use that entry if one is found; otherwise create a new RTL and add it
@@ -395,13 +396,8 @@ attr_rtx_1 (enum rtx_code code, va_list p)
     {
       rtx arg0 = va_arg (p, rtx);
 
-      /* A permanent object cannot point to impermanent ones.  */
       if (! ATTR_PERMANENT_P (arg0))
-	{
-	  rt_val = rtx_alloc (code);
-	  XEXP (rt_val, 0) = arg0;
-	  return rt_val;
-	}
+	permanent_p = 0;
 
       hashcode = ((HOST_WIDE_INT) code + RTL_HASH (arg0));
       for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
@@ -425,14 +421,8 @@ attr_rtx_1 (enum rtx_code code, va_list p)
       rtx arg0 = va_arg (p, rtx);
       rtx arg1 = va_arg (p, rtx);
 
-      /* A permanent object cannot point to impermanent ones.  */
       if (! ATTR_PERMANENT_P (arg0) || ! ATTR_PERMANENT_P (arg1))
-	{
-	  rt_val = rtx_alloc (code);
-	  XEXP (rt_val, 0) = arg0;
-	  XEXP (rt_val, 1) = arg1;
-	  return rt_val;
-	}
+	permanent_p = 0;
 
       hashcode = ((HOST_WIDE_INT) code + RTL_HASH (arg0) + RTL_HASH (arg1));
       for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
@@ -440,7 +430,10 @@ attr_rtx_1 (enum rtx_code code, va_list p)
 	    && GET_CODE (h->u.rtl) == code
 	    && XEXP (h->u.rtl, 0) == arg0
 	    && XEXP (h->u.rtl, 1) == arg1)
-	  return h->u.rtl;
+	  {
+	    ATTR_CURR_SIMPLIFIED_P (h->u.rtl) = 0;
+	    return h->u.rtl;
+	  }
 
       if (h == 0)
 	{
@@ -481,6 +474,9 @@ attr_rtx_1 (enum rtx_code code, va_list p)
       char *arg0 = va_arg (p, char *);
       char *arg1 = va_arg (p, char *);
 
+      arg0 = DEF_ATTR_STRING (arg0);
+      arg1 = DEF_ATTR_STRING (arg1);
+
       hashcode = ((HOST_WIDE_INT) code + RTL_HASH (arg0) + RTL_HASH (arg1));
       for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
 	if (h->hashcode == hashcode
@@ -495,6 +491,29 @@ attr_rtx_1 (enum rtx_code code, va_list p)
 	  rt_val = rtx_alloc (code);
 	  XSTR (rt_val, 0) = arg0;
 	  XSTR (rt_val, 1) = arg1;
+	}
+    }
+  else if (GET_RTX_LENGTH (code) == 2
+	   && GET_RTX_FORMAT (code)[0] == 'i'
+	   && GET_RTX_FORMAT (code)[1] == 'i')
+    {
+      int  arg0 = va_arg (p, int);
+      int  arg1 = va_arg (p, int);
+
+      hashcode = ((HOST_WIDE_INT) code + RTL_HASH (arg0) + RTL_HASH (arg1));
+      for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
+	if (h->hashcode == hashcode
+	    && GET_CODE (h->u.rtl) == code
+	    && XINT (h->u.rtl, 0) == arg0
+	    && XINT (h->u.rtl, 1) == arg1)
+	  return h->u.rtl;
+
+      if (h == 0)
+	{
+	  rtl_obstack = hash_obstack;
+	  rt_val = rtx_alloc (code);
+	  XINT (rt_val, 0) = arg0;
+	  XINT (rt_val, 1) = arg1;
 	}
     }
   else if (code == CONST_INT)
@@ -552,7 +571,7 @@ attr_rtx_1 (enum rtx_code code, va_list p)
 
   rtl_obstack = old_obstack;
   attr_hash_add_rtx (hashcode, rt_val);
-  ATTR_PERMANENT_P (rt_val) = 1;
+  ATTR_PERMANENT_P (rt_val) = permanent_p;
   return rt_val;
 }
 
@@ -592,7 +611,7 @@ attr_printf (unsigned int len, const char *fmt, ...)
 static rtx
 attr_eq (const char *name, const char *value)
 {
-  return attr_rtx (EQ_ATTR, DEF_ATTR_STRING (name), DEF_ATTR_STRING (value));
+  return attr_rtx (EQ_ATTR, name, value);
 }
 
 static const char *
@@ -630,7 +649,7 @@ attr_string (const char *str, int len)
   memcpy (new_str, str, len);
   new_str[len] = '\0';
   attr_hash_add_string (hashcode, new_str);
-  copy_md_ptr_loc (new_str, str);
+  rtx_reader_ptr->copy_md_ptr_loc (new_str, str);
 
   return new_str;			/* Return the new string.  */
 }
@@ -644,89 +663,6 @@ attr_equal_p (rtx x, rtx y)
 {
   return (x == y || (! (ATTR_PERMANENT_P (x) && ATTR_PERMANENT_P (y))
 		     && rtx_equal_p (x, y)));
-}
-
-/* Copy an attribute value expression,
-   descending to all depths, but not copying any
-   permanent hashed subexpressions.  */
-
-static rtx
-attr_copy_rtx (rtx orig)
-{
-  rtx copy;
-  int i, j;
-  RTX_CODE code;
-  const char *format_ptr;
-
-  /* No need to copy a permanent object.  */
-  if (ATTR_PERMANENT_P (orig))
-    return orig;
-
-  code = GET_CODE (orig);
-
-  switch (code)
-    {
-    case REG:
-    CASE_CONST_ANY:
-    case SYMBOL_REF:
-    case MATCH_TEST:
-    case CODE_LABEL:
-    case PC:
-    case CC0:
-      return orig;
-
-    default:
-      break;
-    }
-
-  copy = rtx_alloc (code);
-  PUT_MODE (copy, GET_MODE (orig));
-  ATTR_IND_SIMPLIFIED_P (copy) = ATTR_IND_SIMPLIFIED_P (orig);
-  ATTR_CURR_SIMPLIFIED_P (copy) = ATTR_CURR_SIMPLIFIED_P (orig);
-  ATTR_PERMANENT_P (copy) = ATTR_PERMANENT_P (orig);
-
-  format_ptr = GET_RTX_FORMAT (GET_CODE (copy));
-
-  for (i = 0; i < GET_RTX_LENGTH (GET_CODE (copy)); i++)
-    {
-      switch (*format_ptr++)
-	{
-	case 'e':
-	  XEXP (copy, i) = XEXP (orig, i);
-	  if (XEXP (orig, i) != NULL)
-	    XEXP (copy, i) = attr_copy_rtx (XEXP (orig, i));
-	  break;
-
-	case 'E':
-	case 'V':
-	  XVEC (copy, i) = XVEC (orig, i);
-	  if (XVEC (orig, i) != NULL)
-	    {
-	      XVEC (copy, i) = rtvec_alloc (XVECLEN (orig, i));
-	      for (j = 0; j < XVECLEN (copy, i); j++)
-		XVECEXP (copy, i, j) = attr_copy_rtx (XVECEXP (orig, i, j));
-	    }
-	  break;
-
-	case 'n':
-	case 'i':
-	  XINT (copy, i) = XINT (orig, i);
-	  break;
-
-	case 'w':
-	  XWINT (copy, i) = XWINT (orig, i);
-	  break;
-
-	case 's':
-	case 'S':
-	  XSTR (copy, i) = XSTR (orig, i);
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-    }
-  return copy;
 }
 
 /* Given a test expression EXP for attribute ATTR, ensure it is validly
@@ -888,6 +824,7 @@ check_attr_test (file_location loc, rtx exp, attr_desc *attr)
 	  ATTR_IND_SIMPLIFIED_P (exp) = 1;
 	  break;
 	}
+      /* FALLTHRU */
     default:
       fatal_at (loc, "invalid operator `%s' in definition of attribute"
 		" `%s'", GET_RTX_NAME (GET_CODE (exp)), attr->name);
@@ -1218,6 +1155,7 @@ make_canonical (file_location loc, struct attr_desc *attr, rtx exp)
 
       exp = newexp;
       /* Fall through to COND case since this is now a COND.  */
+      gcc_fallthrough ();
 
     case COND:
       {
@@ -1234,7 +1172,7 @@ make_canonical (file_location loc, struct attr_desc *attr, rtx exp)
 	    XVECEXP (exp, 0, i) = copy_boolean (XVECEXP (exp, 0, i));
 	    XVECEXP (exp, 0, i + 1)
 	      = make_canonical (loc, attr, XVECEXP (exp, 0, i + 1));
-	    if (! rtx_equal_p (XVECEXP (exp, 0, i + 1), defval))
+	    if (! attr_equal_p (XVECEXP (exp, 0, i + 1), defval))
 	      allsame = 0;
 	  }
 	if (allsame)
@@ -1255,6 +1193,8 @@ copy_boolean (rtx exp)
   if (GET_CODE (exp) == AND || GET_CODE (exp) == IOR)
     return attr_rtx (GET_CODE (exp), copy_boolean (XEXP (exp, 0)),
 		     copy_boolean (XEXP (exp, 1)));
+  else if (GET_CODE (exp) == NOT)
+    return attr_rtx (NOT, copy_boolean (XEXP (exp, 0)));
   if (GET_CODE (exp) == MATCH_OPERAND)
     {
       XSTR (exp, 1) = DEF_ATTR_STRING (XSTR (exp, 1));
@@ -1296,7 +1236,7 @@ get_attr_value (file_location loc, rtx value, struct attr_desc *attr,
     }
 
   for (av = attr->first_value; av; av = av->next)
-    if (rtx_equal_p (value, av->value)
+    if (attr_equal_p (value, av->value)
 	&& (num_alt == 0 || av->first_insn == NULL
 	    || insn_alternatives[av->first_insn->def->insn_code]))
       return av;
@@ -2337,9 +2277,7 @@ simplify_test_exp_in_temp (rtx exp, int insn_code, int insn_index)
   rtl_obstack = temp_obstack;
   x = simplify_test_exp (exp, insn_code, insn_index);
   rtl_obstack = old;
-  if (x == exp || rtl_obstack == temp_obstack)
-    return x;
-  return attr_copy_rtx (x);
+  return x;
 }
 
 /* Returns true if S1 is a subset of S2.  */
@@ -2395,28 +2333,27 @@ attr_alt_subset_of_compl_p (rtx s1, rtx s2)
 static rtx
 attr_alt_intersection (rtx s1, rtx s2)
 {
-  rtx result = rtx_alloc (EQ_ATTR_ALT);
+  int result;
 
   switch ((XINT (s1, 1) << 1) | XINT (s2, 1))
     {
     case (0 << 1) | 0:
-      XINT (result, 0) = XINT (s1, 0) & XINT (s2, 0);
+      result = XINT (s1, 0) & XINT (s2, 0);
       break;
     case (0 << 1) | 1:
-      XINT (result, 0) = XINT (s1, 0) & ~XINT (s2, 0);
+      result = XINT (s1, 0) & ~XINT (s2, 0);
       break;
     case (1 << 1) | 0:
-      XINT (result, 0) = XINT (s2, 0) & ~XINT (s1, 0);
+      result = XINT (s2, 0) & ~XINT (s1, 0);
       break;
     case (1 << 1) | 1:
-      XINT (result, 0) = XINT (s1, 0) | XINT (s2, 0);
+      result = XINT (s1, 0) | XINT (s2, 0);
       break;
     default:
       gcc_unreachable ();
     }
-  XINT (result, 1) = XINT (s1, 1) & XINT (s2, 1);
 
-  return result;
+  return attr_rtx (EQ_ATTR_ALT, result, XINT (s1, 1) & XINT (s2, 1));
 }
 
 /* Return EQ_ATTR_ALT expression representing union of S1 and S2.  */
@@ -2424,28 +2361,27 @@ attr_alt_intersection (rtx s1, rtx s2)
 static rtx
 attr_alt_union (rtx s1, rtx s2)
 {
-  rtx result = rtx_alloc (EQ_ATTR_ALT);
+  int result;
 
   switch ((XINT (s1, 1) << 1) | XINT (s2, 1))
     {
     case (0 << 1) | 0:
-      XINT (result, 0) = XINT (s1, 0) | XINT (s2, 0);
+      result = XINT (s1, 0) | XINT (s2, 0);
       break;
     case (0 << 1) | 1:
-      XINT (result, 0) = XINT (s2, 0) & ~XINT (s1, 0);
+      result = XINT (s2, 0) & ~XINT (s1, 0);
       break;
     case (1 << 1) | 0:
-      XINT (result, 0) = XINT (s1, 0) & ~XINT (s2, 0);
+      result = XINT (s1, 0) & ~XINT (s2, 0);
       break;
     case (1 << 1) | 1:
-      XINT (result, 0) = XINT (s1, 0) & XINT (s2, 0);
+      result = XINT (s1, 0) & XINT (s2, 0);
       break;
     default:
       gcc_unreachable ();
     }
 
-  XINT (result, 1) = XINT (s1, 1) | XINT (s2, 1);
-  return result;
+  return attr_rtx (EQ_ATTR_ALT, result, XINT (s1, 1) | XINT (s2, 1));
 }
 
 /* Return EQ_ATTR_ALT expression representing complement of S.  */
@@ -2453,12 +2389,7 @@ attr_alt_union (rtx s1, rtx s2)
 static rtx
 attr_alt_complement (rtx s)
 {
-  rtx result = rtx_alloc (EQ_ATTR_ALT);
-
-  XINT (result, 0) = XINT (s, 0);
-  XINT (result, 1) = 1 - XINT (s, 1);
-
-  return result;
+  return attr_rtx (EQ_ATTR_ALT, XINT (s, 0), 1 - XINT (s, 1));
 }
 
 /* Return EQ_ATTR_ALT expression representing set containing elements set
@@ -2467,12 +2398,7 @@ attr_alt_complement (rtx s)
 static rtx
 mk_attr_alt (uint64_t e)
 {
-  rtx result = rtx_alloc (EQ_ATTR_ALT);
-
-  XINT (result, 0) = e;
-  XINT (result, 1) = 0;
-
-  return result;
+  return attr_rtx (EQ_ATTR_ALT, (int)e, 0);
 }
 
 /* Given an expression, see if it can be simplified for a particular insn
@@ -3043,7 +2969,6 @@ optimize_attrs (int num_insn_codes)
 	      && attr_rtx_cost (newexp) < 26
 	     )
 	    {
-	      newexp = attr_copy_rtx (newexp);
 	      remove_insn_ent (av, ie);
 	      av = get_attr_value (ie->def->loc, newexp, attr,
 				   ie->def->insn_code);
@@ -3155,7 +3080,7 @@ gen_attr (md_rtx_info *info)
   if (GET_CODE (def) == DEFINE_ENUM_ATTR)
     {
       attr->enum_name = XSTR (def, 1);
-      et = lookup_enum_type (XSTR (def, 1));
+      et = rtx_reader_ptr->lookup_enum_type (XSTR (def, 1));
       if (!et || !et->md_p)
 	error_at (info->loc, "No define_enum called `%s' defined",
 		  attr->name);
@@ -3458,6 +3383,7 @@ write_test_expr (FILE *outf, rtx exp, unsigned int attrs_cached, int flags,
     case GE: case GT:
     case LE: case LT:
       comparison_operator = FLG_BITWISE;
+      /* FALLTHRU */
 
     case PLUS:   case MINUS:  case MULT:     case DIV:      case MOD:
     case AND:    case IOR:    case XOR:
@@ -3613,6 +3539,7 @@ write_test_expr (FILE *outf, rtx exp, unsigned int attrs_cached, int flags,
 	}
 
       /* Otherwise, fall through to normal unary operator.  */
+      gcc_fallthrough ();
 
     /* Unary operators.  */
     case ABS:  case NEG:
@@ -3764,14 +3691,14 @@ write_test_expr (FILE *outf, rtx exp, unsigned int attrs_cached, int flags,
       break;
 
     case MATCH_TEST:
-      fprint_c_condition (outf, XSTR (exp, 0));
+      rtx_reader_ptr->fprint_c_condition (outf, XSTR (exp, 0));
       if (flags & FLG_BITWISE)
 	fprintf (outf, " != 0");
       break;
 
     /* A random C expression.  */
     case SYMBOL_REF:
-      fprint_c_condition (outf, XSTR (exp, 0));
+      rtx_reader_ptr->fprint_c_condition (outf, XSTR (exp, 0));
       break;
 
     /* The address of the branch target.  */
@@ -4279,6 +4206,8 @@ write_attr_case (FILE *outf, struct attr_desc *attr, struct attr_value *av,
       fprintf (outf, "    && asm_noperands (PATTERN (insn)) < 0)\n");
       write_indent (outf, indent + 2);
       fprintf (outf, "  fatal_insn_not_found (insn);\n");
+      write_indent (outf, indent + 2);
+      fprintf (outf, "/* FALLTHRU */\n");
     }
 
   if (write_case_lines)
@@ -4359,7 +4288,7 @@ write_attr_value (FILE *outf, struct attr_desc *attr, rtx value)
       break;
 
     case SYMBOL_REF:
-      fprint_c_condition (outf, XSTR (value, 0));
+      rtx_reader_ptr->fprint_c_condition (outf, XSTR (value, 0));
       break;
 
     case ATTR:
@@ -4653,7 +4582,7 @@ make_internal_attr (const char *name, rtx value, int special)
   attr->is_numeric = 1;
   attr->is_const = 0;
   attr->is_special = (special & ATTR_SPECIAL) != 0;
-  attr->default_val = get_attr_value (file_location ("<internal>", 0),
+  attr->default_val = get_attr_value (file_location ("<internal>", 0, 0),
 				      value, attr, -2);
 }
 
@@ -4998,7 +4927,7 @@ make_automaton_attrs (void)
 	{
 	  int j;
 	  char *name;
-	  rtx test = attr_rtx (EQ_ATTR, tune_attr->name, XSTR (val->value, 0));
+	  rtx test = attr_eq (tune_attr->name, XSTR (val->value, 0));
 
 	  if (val == tune_attr->default_val)
 	    continue;
@@ -5153,6 +5082,7 @@ write_header (FILE *outf)
   fprintf (outf, "#include \"stor-layout.h\"\n");
   fprintf (outf, "#include \"calls.h\"\n");
   fprintf (outf, "#include \"insn-attr.h\"\n");
+  fprintf (outf, "#include \"memmodel.h\"\n");
   fprintf (outf, "#include \"tm_p.h\"\n");
   fprintf (outf, "#include \"insn-config.h\"\n");
   fprintf (outf, "#include \"recog.h\"\n");
@@ -5275,7 +5205,7 @@ main (int argc, const char **argv)
       md_rtx_info info;
       info.def = rtx_alloc (DEFINE_ASM_ATTRIBUTES);
       XVEC (info.def, 0) = rtvec_alloc (0);
-      info.loc = file_location ("<internal>", 0);
+      info.loc = file_location ("<internal>", 0, 0);
       info.index = -1;
       gen_insn (&info);
     }

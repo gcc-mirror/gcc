@@ -1,5 +1,5 @@
 /* Lower vector operations to scalar operations.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -356,8 +356,8 @@ expand_vector_comparison (gimple_stmt_iterator *gsi, tree type, tree op0,
                           tree op1, enum tree_code code)
 {
   tree t;
-  if (!expand_vec_cmp_expr_p (TREE_TYPE (op0), type)
-      && !expand_vec_cond_expr_p (type, TREE_TYPE (op0)))
+  if (!expand_vec_cmp_expr_p (TREE_TYPE (op0), type, code)
+      && !expand_vec_cond_expr_p (type, TREE_TYPE (op0), code))
     t = expand_vector_piecewise (gsi, do_compare, type,
 				 TREE_TYPE (TREE_TYPE (op0)), op0, op1, code);
   else
@@ -474,7 +474,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	  unsigned HOST_WIDE_INT mh;
 	  unsigned HOST_WIDE_INT d = TREE_INT_CST_LOW (cst) & mask;
 
-	  if (d >= ((unsigned HOST_WIDE_INT) 1 << (prec - 1)))
+	  if (d >= (HOST_WIDE_INT_1U << (prec - 1)))
 	    /* FIXME: Can transform this into op0 >= op1 ? 1 : 0.  */
 	    return NULL_TREE;
 
@@ -494,7 +494,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	      || (!has_vector_shift && pre_shift != -1))
 	    {
 	      if (has_vector_shift)
-		pre_shift = floor_log2 (d & -d);
+		pre_shift = ctz_or_zero (d);
 	      else if (pre_shift == -1)
 		{
 		  unsigned int j;
@@ -558,7 +558,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	  /* n rem d = n rem -d */
 	  if (code == TRUNC_MOD_EXPR && d < 0)
 	    d = abs_d;
-	  else if (abs_d == (unsigned HOST_WIDE_INT) 1 << (prec - 1))
+	  else if (abs_d == HOST_WIDE_INT_1U << (prec - 1))
 	    {
 	      /* This case is not handled correctly below.  */
 	      mode = -2;
@@ -572,10 +572,10 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 
 	  choose_multiplier (abs_d, prec, prec - 1, &ml,
 			     &post_shift, &dummy_int);
-	  if (ml >= (unsigned HOST_WIDE_INT) 1 << (prec - 1))
+	  if (ml >= HOST_WIDE_INT_1U << (prec - 1))
 	    {
 	      this_mode = 4 + (d < 0);
-	      ml |= (~(unsigned HOST_WIDE_INT) 0) << (prec - 1);
+	      ml |= HOST_WIDE_INT_M1U << (prec - 1);
 	    }
 	  else
 	    this_mode = 2 + (d < 0);
@@ -630,7 +630,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 		}
 	    }
 	  if (addend == NULL_TREE
-	      && expand_vec_cond_expr_p (type, type))
+	      && expand_vec_cond_expr_p (type, type, LT_EXPR))
 	    {
 	      tree zero, cst, cond, mask_type;
 	      gimple *stmt;
@@ -640,7 +640,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	      cond = build2 (LT_EXPR, mask_type, op0, zero);
 	      for (i = 0; i < nunits; i++)
 		vec[i] = build_int_cst (TREE_TYPE (type),
-					((unsigned HOST_WIDE_INT) 1
+					(HOST_WIDE_INT_1U
 					 << shifts[i]) - 1);
 	      cst = build_vector (type, vec);
 	      addend = make_ssa_name (type);
@@ -678,7 +678,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	  tree mask;
 	  for (i = 0; i < nunits; i++)
 	    vec[i] = build_int_cst (TREE_TYPE (type),
-				    ((unsigned HOST_WIDE_INT) 1
+				    (HOST_WIDE_INT_1U
 				     << shifts[i]) - 1);
 	  mask = build_vector (type, vec);
 	  op = optab_for_tree_code (BIT_AND_EXPR, type, optab_default);
@@ -878,7 +878,7 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
       comp_inner_type = TREE_TYPE (TREE_TYPE (a1));
     }
 
-  if (expand_vec_cond_expr_p (type, TREE_TYPE (a1)))
+  if (expand_vec_cond_expr_p (type, TREE_TYPE (a1), TREE_CODE (a)))
     return;
 
   /* TODO: try and find a smaller vector type.  */

@@ -27,6 +27,6 @@ func_18 ( int t )
     }
 }
 
-/* There should be a single if left.  */
+/* There should be no if left.  */
 
-/* { dg-final { scan-tree-dump-times "if" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "if" 0 "vrp1" } } */

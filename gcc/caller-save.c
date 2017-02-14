@@ -1,5 +1,5 @@
 /* Save and restore call-clobbered registers which are live across a call.
-   Copyright (C) 1989-2016 Free Software Foundation, Inc.
+   Copyright (C) 1989-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "predict.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "regs.h"

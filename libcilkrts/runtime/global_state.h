@@ -215,7 +215,6 @@ struct global_state_t { /* COMMON_PORTABLE */
     /// Global fiber pool
     cilk_fiber_pool fiber_pool;
 
-
     /**
      * @brief Track whether the runtime has failed to allocate a
      * stack.

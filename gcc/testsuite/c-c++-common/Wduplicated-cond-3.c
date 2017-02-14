@@ -187,7 +187,7 @@ int
 fn10 (void)
 {
   if (foo ())
-    return 1732984;
+    return 17329;
   else if (foo ())
     return 18409;
   return 0;

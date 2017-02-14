@@ -1,5 +1,5 @@
 /* Implementation of the DATE_AND_TIME intrinsic.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Steven Bosscher.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -26,7 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 #include <string.h>
 #include <assert.h>
-#include <stdlib.h>
 
 #include "time_1.h"
 
@@ -456,11 +455,11 @@ idate_i8 (gfc_array_i8 *__values)
       1. Seconds after the minute, range 0-59 or 0-61 to allow for leap seconds
       2. Minutes after the hour, range 0-59
       3. Hours past midnight, range 0-23
-      4. Day of month, range 0-31
+      4. Day of month, range 1-31
       5. Number of months since January, range 0-11
       6. Years since 1900
       7. Number of days since Sunday, range 0-6
-      8. Days since January 1
+      8. Days since January 1, range 0-365
       9. Daylight savings indicator: positive if daylight savings is in effect,
          zero if not, and negative if the information isn't available.  */
 
@@ -548,11 +547,11 @@ gmtime_i8 (GFC_INTEGER_8 * t, gfc_array_i8 * tarray)
       1. Seconds after the minute, range 0-59 or 0-61 to allow for leap seconds
       2. Minutes after the hour, range 0-59
       3. Hours past midnight, range 0-23
-      4. Day of month, range 0-31
+      4. Day of month, range 1-31
       5. Number of months since January, range 0-11
       6. Years since 1900
       7. Number of days since Sunday, range 0-6
-      8. Days since January 1
+      8. Days since January 1, range 0-365
       9. Daylight savings indicator: positive if daylight savings is in effect,
          zero if not, and negative if the information isn't available.  */
 

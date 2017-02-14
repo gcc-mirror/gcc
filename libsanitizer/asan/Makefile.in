@@ -112,9 +112,10 @@ libasan_la_DEPENDENCIES =  \
 	$(top_builddir)/lsan/libsanitizer_lsan.la $(am__append_2) \
 	$(am__append_3) $(am__DEPENDENCIES_1)
 am__objects_1 = asan_activation.lo asan_allocator.lo asan_debugging.lo \
-	asan_fake_stack.lo asan_flags.lo asan_globals.lo \
-	asan_interceptors.lo asan_linux.lo asan_mac.lo \
-	asan_malloc_linux.lo asan_malloc_mac.lo asan_malloc_win.lo \
+	asan_descriptions.lo asan_errors.lo asan_fake_stack.lo \
+	asan_flags.lo asan_globals.lo asan_interceptors.lo \
+	asan_linux.lo asan_mac.lo asan_malloc_linux.lo \
+	asan_malloc_mac.lo asan_malloc_win.lo asan_memory_profile.lo \
 	asan_new_delete.lo asan_poisoning.lo asan_posix.lo \
 	asan_report.lo asan_rtl.lo asan_stack.lo asan_stats.lo \
 	asan_suppressions.lo asan_thread.lo asan_win.lo \
@@ -173,7 +174,7 @@ CYGPATH_W = @CYGPATH_W@
 DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS \
 	-D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS \
 	-DASAN_HAS_EXCEPTIONS=1 -DASAN_NEEDS_SEGV=1 \
-	-DCAN_SANITIZE_UB=0 @OBSTACK_DEFS@ $(am__append_1)
+	-DCAN_SANITIZE_UB=0 $(am__append_1)
 DEPDIR = @DEPDIR@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
@@ -207,7 +208,6 @@ NM = @NM@
 NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
-OBSTACK_DEFS = @OBSTACK_DEFS@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -220,6 +220,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
 RPC_DEFS = @RPC_DEFS@
+SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS = @SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -253,6 +254,7 @@ dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
+get_gcc_base_ver = @get_gcc_base_ver@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -296,7 +298,7 @@ top_srcdir = @top_srcdir@
 AM_CPPFLAGS = -I $(top_srcdir)/include -I $(top_srcdir)
 
 # May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
 	-Wno-long-long -fPIC -fno-builtin -fno-exceptions -fno-rtti \
 	-fomit-frame-pointer -funwind-tables -fvisibility=hidden \
@@ -309,6 +311,8 @@ asan_files = \
 	asan_activation.cc \
 	asan_allocator.cc \
 	asan_debugging.cc \
+	asan_descriptions.cc \
+	asan_errors.cc \
 	asan_fake_stack.cc \
 	asan_flags.cc \
 	asan_globals.cc \
@@ -318,6 +322,7 @@ asan_files = \
 	asan_malloc_linux.cc \
 	asan_malloc_mac.cc \
 	asan_malloc_win.cc \
+	asan_memory_profile.cc \
 	asan_new_delete.cc \
 	asan_poisoning.cc \
 	asan_posix.cc \
@@ -455,6 +460,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_activation.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_allocator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_debugging.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_descriptions.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_errors.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_fake_stack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_flags.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_globals.Plo@am__quote@
@@ -464,6 +471,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_malloc_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_malloc_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_malloc_win.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_memory_profile.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_new_delete.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_poisoning.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_posix.Plo@am__quote@

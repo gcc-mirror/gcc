@@ -1,5 +1,5 @@
 # GCC target-specific configuration file.
-# Copyright (C) 1997-2016 Free Software Foundation, Inc.
+# Copyright (C) 1997-2017 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -300,7 +300,7 @@ m32c*-*-*)
         ;;
 aarch64*-*-*)
 	cpu_type=aarch64
-	extra_headers="arm_neon.h arm_acle.h"
+	extra_headers="arm_fp16.h arm_neon.h arm_acle.h"
 	c_target_objs="aarch64-c.o"
 	cxx_target_objs="aarch64-c.o"
 	extra_objs="aarch64-builtins.o aarch-common.o cortex-a57-fma-steering.o"
@@ -316,11 +316,14 @@ am33_2.0-*-linux*)
 	;;
 arc*-*-*)
 	cpu_type=arc
+	c_target_objs="arc-c.o"
+	cxx_target_objs="arc-c.o"
+	extra_options="${extra_options} arc/arc-tables.opt"
 	;;
 arm*-*-*)
 	cpu_type=arm
 	extra_objs="arm-builtins.o aarch-common.o"
-	extra_headers="mmintrin.h arm_neon.h arm_acle.h"
+	extra_headers="mmintrin.h arm_neon.h arm_acle.h arm_fp16.h arm_cmse.h"
 	target_type_format_char='%'
 	c_target_objs="arm-c.o"
 	cxx_target_objs="arm-c.o"
@@ -371,8 +374,9 @@ i[34567]86-*-*)
 		       xsavesintrin.h avx512dqintrin.h avx512bwintrin.h
 		       avx512vlintrin.h avx512vlbwintrin.h avx512vldqintrin.h
 		       avx512ifmaintrin.h avx512ifmavlintrin.h avx512vbmiintrin.h
-		       avx512vbmivlintrin.h clwbintrin.h pcommitintrin.h
-		       mwaitxintrin.h clzerointrin.h pkuintrin.h"
+		       avx512vbmivlintrin.h avx5124fmapsintrin.h avx5124vnniwintrin.h
+		       avx512vpopcntdqintrin.h clwbintrin.h mwaitxintrin.h
+		       clzerointrin.h pkuintrin.h sgxintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -393,8 +397,9 @@ x86_64-*-*)
 		       xsavesintrin.h avx512dqintrin.h avx512bwintrin.h
 		       avx512vlintrin.h avx512vlbwintrin.h avx512vldqintrin.h
 		       avx512ifmaintrin.h avx512ifmavlintrin.h avx512vbmiintrin.h
-		       avx512vbmivlintrin.h clwbintrin.h pcommitintrin.h
-		       mwaitxintrin.h clzerointrin.h pkuintrin.h"
+		       avx512vbmivlintrin.h avx5124fmapsintrin.h avx5124vnniwintrin.h
+		       avx512vpopcntdqintrin.h clwbintrin.h mwaitxintrin.h
+		       clzerointrin.h pkuintrin.h sgxintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
@@ -445,6 +450,10 @@ powerpc*-*-*)
 		;;
 	esac
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
+	;;
+riscv*)
+	cpu_type=riscv
+	extra_objs="riscv-builtins.o riscv-c.o"
 	;;
 rs6000*-*-*)
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
@@ -566,7 +575,7 @@ x86_64-*-*)
 	tm_file="vxworks-dummy.h ${tm_file}"
 	;;
 arm*-*-*)
-	tm_p_file="${tm_p_file} arm/aarch-common-protos.h"
+	tm_p_file="arm/arm-flags.h arm/arm-isa.h ${tm_p_file} arm/aarch-common-protos.h"
 	tm_file="vxworks-dummy.h ${tm_file}"
 	;;
 mips*-*-* | sh*-*-* | sparc*-*-*)
@@ -703,6 +712,9 @@ case ${target} in
   esac
   use_gcc_stdint=wrap
   ;;
+*-*-fuchsia*)
+  native_system_header_dir=/include
+  ;;
 *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu)
   extra_options="$extra_options gnu-user.opt"
   gas=yes
@@ -765,6 +777,7 @@ case ${target} in
   tmake_file="t-slibgcc"
   gas=yes
   gnu_ld=yes
+  use_gcc_stdint=wrap
 
   # NetBSD 2.0 and later get POSIX threads enabled by default.
   # Allow them to be explicitly enabled on any other version.
@@ -827,6 +840,9 @@ case ${target} in
 *-*-uclinux*)
   extra_options="$extra_options gnu-user.opt"
   use_gcc_stdint=wrap
+  case ${enable_threads} in
+    "" | yes | posix) thread_file='posix' ;;
+  esac
   tm_defines="$tm_defines DEFAULT_LIBC=LIBC_UCLIBC SINGLE_LIBC"
   ;;
 *-*-rdos*)
@@ -901,7 +917,7 @@ case ${target} in
 esac
 
 case ${target} in
-aarch64*-*-elf | aarch64*-*-rtems*)
+aarch64*-*-elf | aarch64*-*-fuchsia* | aarch64*-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h"
 	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-elf-raw.h"
 	tmake_file="${tmake_file} aarch64/t-aarch64"
@@ -909,6 +925,9 @@ aarch64*-*-elf | aarch64*-*-rtems*)
 	aarch64-*-elf*)
 		use_gcc_stdint=wrap
 		;;
+        aarch64-*-fuchsia*)
+                tm_file="${tm_file} fuchsia.h"
+                ;;
 	aarch64-*-rtems*)
 	  	tm_file="${tm_file} rtems.h aarch64/rtems.h"
 		;;
@@ -934,6 +953,11 @@ aarch64*-*-elf | aarch64*-*-rtems*)
 		esac
 	done
 	TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^,//'`
+	;;
+aarch64*-*-freebsd*)
+	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file}"
+	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-freebsd.h"
+	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-freebsd"
 	;;
 aarch64*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h"
@@ -965,37 +989,39 @@ aarch64*-*-linux*)
 	;;
 alpha*-*-linux*)
 	tm_file="elfos.h ${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h glibc-stdint.h"
-	tmake_file="${tmake_file} alpha/t-linux"
+	tmake_file="${tmake_file} alpha/t-linux alpha/t-alpha"
 	extra_options="${extra_options} alpha/elf.opt"
 	;;
 alpha*-*-freebsd*)
 	tm_file="elfos.h ${tm_file} ${fbsd_tm_file} alpha/elf.h alpha/freebsd.h"
+	tmake_file="${tmake_file} alpha/t-alpha"
 	extra_options="${extra_options} alpha/elf.opt"
 	;;
 alpha*-*-netbsd*)
 	tm_file="elfos.h ${tm_file} netbsd.h alpha/elf.h netbsd-elf.h alpha/netbsd.h"
+	tmake_file="${tmake_file} alpha/t-alpha"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt \
 		       alpha/elf.opt"
 	;;
 alpha*-*-openbsd*)
 	tm_defines="${tm_defines} OBSD_HAS_DECLARE_FUNCTION_NAME OBSD_HAS_DECLARE_FUNCTION_SIZE OBSD_HAS_DECLARE_OBJECT"
 	tm_file="elfos.h alpha/alpha.h alpha/elf.h openbsd.h openbsd-stdint.h alpha/openbsd.h openbsd-libpthread.h"
+	tmake_file="${tmake_file} alpha/t-alpha"
 	extra_options="${extra_options} openbsd.opt alpha/elf.opt"
 	# default x-alpha is only appropriate for dec-osf.
 	;;
 alpha*-dec-*vms*)
 	tm_file="${tm_file} vms/vms.h alpha/vms.h"
-	tmake_file="${tmake_file} alpha/t-vms"
+	tmake_file="${tmake_file} alpha/t-vms alpha/t-alpha"
 	;;
 arc*-*-elf*)
 	extra_headers="arc-simd.h"
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
-	tmake_file="arc/t-arc-newlib arc/t-arc"
-	case x"${with_cpu}" in
-	  xarc600|xarc601|xarc700)
-		target_cpu_default="TARGET_CPU_$with_cpu"
-		;;
-	esac
+	tm_file="arc/arc-arch.h dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tmake_file="arc/t-multilib arc/t-arc"
+	extra_gcc_objs="driver-arc.o"
+	if test "x$with_cpu" != x; then
+		tm_defines="${tm_defines} TARGET_CPU_BUILD=PROCESSOR_$with_cpu"
+	fi
 	if test x${with_endian} = x; then
 		case ${target} in
 		arc*be-*-* | arc*eb-*-*)	with_endian=big ;;
@@ -1012,15 +1038,14 @@ arc*-*-elf*)
 	;;
 arc*-*-linux-uclibc*)
 	extra_headers="arc-simd.h"
-	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file}"
-	tmake_file="${tmake_file} arc/t-arc-uClibc arc/t-arc"
+	tm_file="arc/arc-arch.h dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file}"
+	tmake_file="${tmake_file} arc/t-uClibc arc/t-arc"
 	tm_defines="${tm_defines} TARGET_SDATA_DEFAULT=0"
 	tm_defines="${tm_defines} TARGET_MMEDIUM_CALLS_DEFAULT=1"
-	case x"${with_cpu}" in
-	  xarc600|xarc601|xarc700)
-		target_cpu_default="TARGET_CPU_$with_cpu"
-		;;
-	esac
+	extra_gcc_objs="driver-arc.o"
+	if test "x$with_cpu" != x; then
+		tm_defines="${tm_defines} TARGET_CPU_BUILD=PROCESSOR_$with_cpu"
+	fi
 	if test x${with_endian} = x; then
 		case ${target} in
 		arc*be-*-* | arc*eb-*-*)	with_endian=big ;;
@@ -1039,6 +1064,7 @@ arm-wrs-vxworks)
 	tm_file="elfos.h arm/elf.h arm/aout.h ${tm_file} vx-common.h vxworks.h arm/vxworks.h"
 	extra_options="${extra_options} arm/vxworks.opt"
 	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks"
+	target_cpu_cname="arm6"
 	;;
 arm*-*-freebsd*)                # ARM FreeBSD EABI
 	tm_file="dbxelf.h elfos.h ${fbsd_tm_file} arm/elf.h"
@@ -1051,10 +1077,14 @@ arm*-*-freebsd*)                # ARM FreeBSD EABI
 	tm_file="${tm_file} arm/bpabi.h arm/freebsd.h arm/aout.h arm/arm.h"
 	case $target in
 	armv6*-*-freebsd*)
+	    target_cpu_cname="arm1176jzfs"
 	    tm_defines="${tm_defines} TARGET_FREEBSD_ARMv6=1"
             if test $fbsd_major -ge 11; then
                tm_defines="${tm_defines} TARGET_FREEBSD_ARM_HARD_FLOAT=1"
             fi
+	    ;;
+	*)
+	    target_cpu_cname="arm9"
 	    ;;
 	esac
 	with_tls=${with_tls:-gnu}
@@ -1063,6 +1093,7 @@ arm*-*-netbsdelf*)
 	tm_file="dbxelf.h elfos.h netbsd.h netbsd-elf.h arm/elf.h arm/aout.h ${tm_file} arm/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	tmake_file="${tmake_file} arm/t-arm"
+	target_cpu_cname="arm6"
 	;;
 arm*-*-linux-*)			# ARM GNU/Linux with ELF
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
@@ -1074,6 +1105,7 @@ arm*-*-linux-*)			# ARM GNU/Linux with ELF
 	esac
 	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi"
 	tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h arm/aout.h vxworks-dummy.h arm/arm.h"
+	target_cpu_cname="arm10tdmi"
 	# Define multilib configuration for arm-linux-androideabi.
 	case ${target} in
 	*-androideabi)
@@ -1088,6 +1120,7 @@ arm*-*-uclinux*eabi*)		# ARM ucLinux
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/linux-gas.h arm/uclinux-elf.h glibc-stdint.h"
 	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf arm/t-bpabi"
 	tm_file="$tm_file arm/bpabi.h arm/uclinux-eabi.h arm/aout.h vxworks-dummy.h arm/arm.h"
+	target_cpu_cname="arm7tdmi"
 	# The EABI requires the use of __cxa_atexit.
 	default_use_cxa_atexit=yes
 	;;
@@ -1096,8 +1129,9 @@ arm*-*-phoenix*)
 	tm_file="${tm_file} newlib-stdint.h phoenix.h"
 	tm_file="${tm_file} arm/aout.h arm/arm.h"
 	tmake_file="${tmake_file} arm/t-arm arm/t-bpabi arm/t-phoenix"
+	target_cpu_cname="arm7tdmi"
 	;;
-arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
+arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems* | arm*-*-fuchsia*)
 	case ${target} in
 	arm*eb-*-eabi*)
 	  tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
@@ -1105,11 +1139,17 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	default_use_cxa_atexit=yes
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/bpabi.h"
 	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf"
+	target_cpu_cname="arm7tdmi"
 	case ${target} in
 	arm*-*-eabi*)
 	  tm_file="$tm_file newlib-stdint.h"
 	  tmake_file="${tmake_file} arm/t-bpabi"
 	  use_gcc_stdint=wrap
+	  ;;
+	arm*-*-fuchsia*)
+	  tm_file="${tm_file} fuchsia.h arm/fuchsia-elf.h glibc-stdint.h"
+	  tmake_file="${tmake_file} arm/t-bpabi"
+	  target_cpu_cname="genericv7a"
 	  ;;
 	arm*-*-rtems*)
 	  tm_file="${tm_file} rtems.h arm/rtems.h newlib-stdint.h"
@@ -1120,6 +1160,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	  # We do not include t-bpabi for Symbian OS because the system
 	  # provides its own implementation of the BPABI functions.
 	  tmake_file="${tmake_file} arm/t-symbian"
+	  target_cpu_cname="arm10tdmi"
 	  ;;
 	esac
 	tm_file="${tm_file} arm/aout.h vxworks-dummy.h arm/arm.h"
@@ -1410,7 +1451,7 @@ x86_64-*-elf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h"
 	;;
 x86_64-*-rtems*)
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h i386/rtems-64.h"
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h i386/rtemself.h"
 	;;
 i[34567]86-*-rdos*)
     tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/i386elf.h i386/rdos.h"
@@ -1434,11 +1475,11 @@ x86_64-*-freebsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h ${fbsd_tm_file} i386/x86-64.h i386/freebsd.h i386/freebsd64.h"
 	;;
 i[34567]86-*-netbsdelf*)
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/netbsd-elf.h"
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-stdint.h netbsd-elf.h i386/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
 x86_64-*-netbsd*)
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/x86-64.h i386/netbsd64.h"
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-stdint.h netbsd-elf.h i386/x86-64.h i386/netbsd64.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
 i[34567]86-*-openbsd*)
@@ -1465,7 +1506,7 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-gnu* | i[34567]8
 		extra_options="${extra_options} linux-android.opt"
 		# Assume modern glibc if not targeting Android nor uclibc.
 		case ${target} in
-		*-*-*android*|*-*-*uclibc*)
+		*-*-*android*|*-*-*uclibc*|*-*-*musl*)
 		  ;;
 		*)
 		  default_gnu_indirect_function=yes
@@ -1531,7 +1572,7 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu)
 		extra_options="${extra_options} linux-android.opt"
 		# Assume modern glibc if not targeting Android nor uclibc.
 		case ${target} in
-		*-*-*android*|*-*-*uclibc*)
+		*-*-*android*|*-*-*uclibc*|*-*-*musl*)
 		  ;;
 		*)
 		  default_gnu_indirect_function=yes
@@ -1752,6 +1793,10 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 		*mingw32msv* | *mingw*)
 			;;
 	esac
+	;;
+x86_64-*-fuchsia*)
+	tmake_file="${tmake_file} i386/t-x86_64-elf"
+	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h newlib-stdint.h i386/i386elf.h i386/x86-64.h fuchsia.h"
 	;;
 ia64*-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h ia64/sysv4.h ia64/elf.h"
@@ -1975,6 +2020,34 @@ microblaze*-*-elf)
 	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
 	tmake_file="${tmake_file} microblaze/t-microblaze"
         ;;
+riscv*-*-linux*)
+	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} riscv/linux.h"
+	case "x${enable_multilib}" in
+	xno) ;;
+	xyes) tmake_file="${tmake_file} riscv/t-linux-multilib" ;;
+	*) echo "Unknown value for enable_multilib"; exit 1
+	esac
+	tmake_file="${tmake_file} riscv/t-riscv riscv/t-linux"
+	gnu_ld=yes
+	gas=yes
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+	;;
+riscv*-*-elf*)
+	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h"
+	case "x${enable_multilib}" in
+	xno) ;;
+	xyes) tmake_file="${tmake_file} riscv/t-elf-multilib" ;;
+	*) echo "Unknown value for enable_multilib"; exit 1
+	esac
+	tmake_file="${tmake_file} riscv/t-riscv"
+	gnu_ld=yes
+	gas=yes
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_ABICALLS"
 	tm_file="elfos.h ${tm_file} mips/elf.h netbsd.h netbsd-elf.h mips/netbsd.h"
@@ -1985,6 +2058,8 @@ mips*-img-linux*)
 	extra_options="${extra_options} linux-android.opt"
 	tmake_file="${tmake_file} mips/t-img-linux"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=37 MIPS_ABI_DEFAULT=ABI_32"
+	with_arch_32="mips32r6"
+	with_arch_64="mips64r6"
 	gnu_ld=yes
 	gas=yes
 	;;
@@ -1993,6 +2068,8 @@ mips*-mti-linux*)
 	extra_options="${extra_options} linux-android.opt"
 	tmake_file="${tmake_file} mips/t-mti-linux"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_32"
+	with_arch_32="mips32r2"
+	with_arch_64="mips64r2"
 	gnu_ld=yes
 	gas=yes
 	;;
@@ -2047,11 +2124,15 @@ mips*-mti-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/n32-elf.h mips/sde.h mips/mti-elf.h"
 	tmake_file="mips/t-mti-elf"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_32"
+	with_arch_32="mips32r2"
+	with_arch_64="mips64r2"
 	;;
 mips*-img-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/n32-elf.h mips/sde.h mips/mti-elf.h"
 	tmake_file="mips/t-img-elf"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=37 MIPS_ABI_DEFAULT=ABI_32"
+	with_arch_32="mips32r6"
+	with_arch_64="mips64r6"
 	;;
 mips*-sde-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/n32-elf.h mips/sde.h"
@@ -2414,6 +2495,14 @@ powerpc*-*-linux*)
 	if test x${enable_secureplt} = xyes; then
 		tm_file="rs6000/secureplt.h ${tm_file}"
 	fi
+	# Assume modern glibc if not targeting Android nor uclibc.
+	case ${target} in
+	    *-*-*android*|*-*-*uclibc*|*-*-*musl*)
+		    ;;
+	    *)
+		default_gnu_indirect_function=yes
+		    ;;
+	esac
 	;;
 powerpc-wrs-vxworks|powerpc-wrs-vxworksae|powerpc-wrs-vxworksmils)
 	tm_file="${tm_file} elfos.h freebsd-spec.h rs6000/sysv4.h"
@@ -2765,7 +2854,7 @@ sparc*-*-solaris2*)
 	tm_file="sparc/biarch64.h ${tm_file} ${sol2_tm_file} sparc/tso.h"
 	case ${target} in
 	    sparc64-*-* | sparcv9-*-*)
-		tm_file="sparc/default-64.h ${tm_file}"
+		tm_file="sparc/default64.h ${tm_file}"
 		;;
 	    *)
 		test x$with_cpu != x || with_cpu=v9
@@ -2788,7 +2877,7 @@ sparc64-*-rtems*)
 	tmake_file="${tmake_file} sparc/t-sparc sparc/t-rtems-64"
 	;;
 sparc64-*-linux*)
-	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h sparc/default-64.h sparc/linux64.h sparc/tso.h"
+	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h sparc/default64.h sparc/linux64.h sparc/tso.h"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	tmake_file="${tmake_file} sparc/t-sparc sparc/t-linux64"
 	;;
@@ -3017,6 +3106,12 @@ case ${target} in
     else
       arch=i386
     fi
+    cpu=generic
+    arch_without_sse2=yes
+    arch_without_64bit=yes
+    ;;
+  i386-*-netbsd*)
+    arch=i486
     cpu=generic
     arch_without_sse2=yes
     arch_without_64bit=yes
@@ -3595,51 +3690,40 @@ case "${target}" in
 		done
 		;;
 
-	arc*-*-*) # was:	arc*-*-linux-uclibc)
+	arc*-*-*)
 		supported_defaults="cpu"
-		case $with_cpu in
-		  arc600|arc601|arc700)
-			;;
-		  *) echo "Unknown cpu type"
-			exit 1
-			;;
-		esac
+
+		if [ x"$with_cpu" = x ] \
+		    || grep "^ARC_CPU ($with_cpu," \
+		       ${srcdir}/config/arc/arc-cpus.def \
+		       > /dev/null; then
+		 # Ok
+		 true
+		else
+		 echo "Unknown cpu used in --with-cpu=$with_cpu" 1>&2
+		 exit 1
+		fi
 		;;
 
 	arm*-*-*)
 		supported_defaults="arch cpu float tune fpu abi mode tls"
-		for which in cpu tune; do
-			# See if it matches any of the entries in arm-cores.def
+		for which in cpu tune arch; do
+			# See if it matches a supported value
 			eval "val=\$with_$which"
-			if [ x"$val" = x ] \
-			    || grep "^ARM_CORE(\"$val\"," \
-				    ${srcdir}/config/arm/arm-cores.def \
-				    > /dev/null; then
-			  # Ok
-			  new_val=`grep "^ARM_CORE(\"$val\"," \
-				${srcdir}/config/arm/arm-cores.def | \
-				sed -e 's/^[^,]*,[ 	]*//' | \
-				sed -e 's/,.*$//'`
-			  eval "target_${which}_cname=$new_val"
-			echo "For $val real value is $new_val"
-			  true
-			else
-			  echo "Unknown CPU used in --with-$which=$val" 1>&2
-			  exit 1
+			if [ x"$val" != x ]; then
+			  cpu=`awk -f ${srcdir}/config/arm/parsecpu.awk \
+				-v cmd="chk$which $val" \
+				${srcdir}/config/arm/arm-cpus.in`
+			  if [ "$cpu" = "error" ]; then
+			    echo "Unknown target in --with-$which=$val" 1>&2
+			    exit 1
+			  else
+			    new_val=$cpu
+			    eval "target_${which}_cname=$new_val"
+			    echo "For $val real value is $new_val"
+			  fi
 			fi
 		done
-
-		# See if it matches any of the entries in arm-arches.def
-		if [ x"$with_arch" = x ] \
-		    || grep "^ARM_ARCH(\"$with_arch\"," \
-			    ${srcdir}/config/arm/arm-arches.def \
-			    > /dev/null; then
-		  # OK
-		  true
-		else
-		  echo "Unknown arch used in --with-arch=$with_arch" 1>&2
-		  exit 1
-		fi
 
 		case "$with_float" in
 		"" \
@@ -3652,16 +3736,16 @@ case "${target}" in
 			;;
 		esac
 
-		# see if it matches any of the entries in arm-fpus.def
-		if [ x"$with_fpu" = x ] \
-		    || grep "^ARM_FPU(\"$with_fpu\"," \
-			    ${srcdir}/config/arm/arm-fpus.def \
-			    > /dev/null; then
-		  # OK
-		  true
-		else
-		  echo "Unknown fpu used in --with-fpu=$with_fpu" 1>&2
-		  exit 1
+		# see if --with-fpu matches any of the supported FPUs
+		if [ x"$with_fpu" != x ] ; then
+		  fpu=`awk -f ${srcdir}/config/arm/parsecpu.awk \
+			-v cmd="chkfpu $with_fpu" \
+			${srcdir}/config/arm/arm-cpus.in`
+		  if [ "$fpu" = "error"]
+		  then
+		    echo "Unknown target in --with-$which=$val" 1>&2
+		    exit 1
+		  fi
 		fi
 
 		case "$with_abi" in
@@ -3721,6 +3805,16 @@ case "${target}" in
 				# pragmatic.
 				tmake_profile_file="arm/t-aprofile"
 				;;
+			rmprofile)
+				# Note that arm/t-rmprofile is a
+				# stand-alone make file fragment to be
+				# used only with itself.  We do not
+				# specifically use the
+				# TM_MULTILIB_OPTION framework because
+				# this shorthand is more
+				# pragmatic.
+				tmake_profile_file="arm/t-rmprofile"
+				;;
 			default)
 				;;
 			*)
@@ -3730,9 +3824,10 @@ case "${target}" in
 			esac
 
 			if test "x${tmake_profile_file}" != x ; then
-				# arm/t-aprofile is only designed to work
-				# without any with-cpu, with-arch, with-mode,
-				# with-fpu or with-float options.
+				# arm/t-aprofile and arm/t-rmprofile are only
+				# designed to work without any with-cpu,
+				# with-arch, with-mode, with-fpu or with-float
+				# options.
 				if test "x$with_arch" != x \
 				    || test "x$with_cpu" != x \
 				    || test "x$with_float" != x \
@@ -3876,8 +3971,72 @@ case "${target}" in
 		done
 		;;
 
+	riscv*-*-*)
+		supported_defaults="abi arch tune"
+
+		case "${target}" in
+		riscv32*) xlen=32 ;;
+		riscv64*) xlen=64 ;;
+		*) echo "Unsupported RISC-V target ${target}" 1>&2; exit 1 ;;
+		esac
+
+		# Infer arch from --with-arch, --target, and --with-abi.
+		case "${with_arch}" in
+		rv32i* | rv32g* | rv64i* | rv64g*)
+			# OK.
+			;;
+		"")
+			# Infer XLEN, but otherwise assume GC.
+			case "${with_abi}" in
+			ilp32 | ilp32f | ilp32d) with_arch="rv32gc" ;;
+			lp64 | lp64f | lp64d) with_arch="rv64gc" ;;
+			*) with_arch="rv${xlen}gc" ;;
+			esac
+			;;
+		*)
+			echo "--with-arch=${with_arch} is not supported.  The argument must begin with rv32i, rv32g, rv64i, or rv64g." 1>&2
+			exit 1
+			;;
+		esac
+
+		# Make sure --with-abi is valid.  If it was not specified,
+		# pick a default based on the ISA, preferring soft-float
+		# unless the D extension is present.
+		case "${with_abi}" in
+		ilp32 | ilp32f | ilp32d | lp64 | lp64f | lp64d)
+			;;
+		"")
+			case "${with_arch}" in
+			rv32*d* | rv32g*) with_abi=ilp32d ;;
+			rv32*) with_abi=ilp32 ;;
+			rv64*d* | rv64g*) with_abi=lp64d ;;
+			rv64*) with_abi=lp64 ;;
+			esac
+			;;
+		*)
+			echo "--with-abi=${with_abi} is not supported" 1>&2
+			exit 1
+			;;
+		esac
+
+		# Make sure ABI and ISA are compatible.
+		case "${with_abi},${with_arch}" in
+		ilp32,rv32* \
+		| ilp32f,rv32*f* | ilp32f,rv32g* \
+		| ilp32d,rv32*d* | ilp32d,rv32g* \
+		| lp64,rv64* \
+		| lp64f,rv64*f* | lp64f,rv64g* \
+		| lp64d,rv64*d* | lp64d,rv64g*)
+			;;
+		*)
+			echo "--with-abi=${with_abi} is not supported for ISA ${with_arch}" 1>&2
+			exit 1
+			;;
+		esac
+		;;
+
 	mips*-*-*)
-		supported_defaults="abi arch arch_32 arch_64 float fpu nan fp_32 odd_spreg_32 tune tune_32 tune_64 divide llsc mips-plt synci"
+		supported_defaults="abi arch arch_32 arch_64 float fpu nan fp_32 odd_spreg_32 tune tune_32 tune_64 divide llsc mips-plt synci lxc1-sxc1 madd4"
 
 		case ${with_float} in
 		"" | soft | hard)
@@ -4000,6 +4159,36 @@ case "${target}" in
 			exit 1
 			;;
 		esac
+
+		case ${with_lxc1_sxc1} in
+		yes)
+			with_lxc1_sxc1=lxc1-sxc1
+			;;
+		no)
+			with_lxc1_sxc1=no-lxc1-sxc1
+			;;
+		"")
+			;;
+		*)
+			echo "Unknown lxc1-sxc1 type used in --with-lxc1-sxc1" 1>&2
+			exit 1
+			;;
+		esac
+
+		case ${with_madd4} in
+		yes)
+			with_madd4=madd4
+			;;
+		no)
+			with_madd4=no-madd4
+			;;
+		"")
+			;;
+		*)
+			echo "Unknown madd4 type used in --with-madd4" 1>&2
+			exit 1
+			;;
+		esac
 		;;
 
 	nds32*-*-*)
@@ -4106,16 +4295,6 @@ case "${target}" in
 			(at="/opt/$with_advance_toolchain"
 			 echo "/* Use Advance Toolchain $at */"
 			 echo
-			 echo "#ifndef USE_AT_INCLUDE_FILES"
-			 echo "#define USE_AT_INCLUDE_FILES 1"
-			 echo "#endif"
-			 echo
-			 echo "#if USE_AT_INCLUDE_FILES"
-			 echo "#undef  INCLUDE_EXTRA_SPEC"
-			 echo "#define INCLUDE_EXTRA_SPEC" \
-			      "\"-isystem $at/include\""
-			 echo "#endif"
-			 echo
 			 echo "#undef  LINK_OS_EXTRA_SPEC32"
 			 echo "#define LINK_OS_EXTRA_SPEC32" \
 			      "\"%(link_os_new_dtags)" \
@@ -4154,7 +4333,7 @@ case "${target}" in
 		for which in arch tune; do
 			eval "val=\$with_$which"
 			case ${val} in
-			"" | native | g5 | g6 | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13)
+			"" | native | g5 | g6 | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | arch3 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11)
 				# OK
 				;;
 			*)
@@ -4295,7 +4474,7 @@ case ${target} in
 	arm*-*-*)
 		if test x$target_cpu_cname = x
 		then
-			target_cpu_default2=TARGET_CPU_generic
+			target_cpu_default2=TARGET_CPU_arm6
 		else
 			target_cpu_default2=TARGET_CPU_$target_cpu_cname
 		fi
@@ -4443,7 +4622,7 @@ case ${target} in
 esac
 
 t=
-all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls"
+all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4"
 for option in $all_defaults
 do
 	eval "val=\$with_"`echo $option | sed s/-/_/g`

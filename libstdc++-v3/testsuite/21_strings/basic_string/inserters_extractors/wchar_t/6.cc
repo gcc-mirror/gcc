@@ -1,6 +1,6 @@
 // 1999-07-01 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,8 +32,6 @@
 // http://gcc.gnu.org/ml/libstdc++/1999-q4/msg00049.html
 void test06(void)
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::wstring::size_type size_type;
   std::wstring str01(L"@silent");
   size_type i01 = str01.size();

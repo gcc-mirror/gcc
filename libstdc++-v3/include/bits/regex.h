@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -762,17 +762,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename _FwdIter>
 	basic_regex(_FwdIter __first, _FwdIter __last, locale_type __loc,
 		    flag_type __f)
-	: _M_flags(__f), _M_loc(std::move(__loc)),
+	: _M_flags((__f & (ECMAScript | basic | extended | awk | grep | egrep))
+		   ? __f : (__f | ECMAScript)),
+	_M_loc(std::move(__loc)),
 	_M_automaton(__detail::__compile_nfa<_FwdIter, _Rx_traits>(
 	  std::move(__first), std::move(__last), _M_loc, _M_flags))
 	{ }
 
       template<typename _Bp, typename _Ap, typename _Cp, typename _Rp,
 	__detail::_RegexExecutorPolicy, bool>
-	friend bool
-	__detail::__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
-				    const basic_regex<_Cp, _Rp>&,
-				    regex_constants::match_flag_type);
+	friend bool __detail::
+#if _GLIBCXX_INLINE_VERSION
+        __7:: // Required due to PR c++/59256
+#endif
+	__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
+                          const basic_regex<_Cp, _Rp>&,
+                          regex_constants::match_flag_type);
 
       template<typename, typename, typename, bool>
 	friend class __detail::_Executor;
@@ -1860,10 +1865,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       template<typename _Bp, typename _Ap, typename _Cp, typename _Rp,
 	__detail::_RegexExecutorPolicy, bool>
-	friend bool
-	__detail::__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
-				    const basic_regex<_Cp, _Rp>&,
-				    regex_constants::match_flag_type);
+	friend bool __detail::
+#if _GLIBCXX_INLINE_VERSION
+        __7:: // Required due to PR c++/59256
+#endif
+	__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
+                          const basic_regex<_Cp, _Rp>&,
+                          regex_constants::match_flag_type);
 
       void
       _M_resize(unsigned int __size)
@@ -2448,7 +2456,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * one-past-the-end of a range.
        */
       regex_iterator()
-      : _M_match()
+      : _M_pregex()
       { }
 
       /**

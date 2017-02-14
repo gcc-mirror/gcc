@@ -1789,20 +1789,27 @@ static full_frame* check_for_work(__cilkrts_worker *w)
         if (NULL == ff) {
             // Punish the worker for failing to steal.
             // No quantum for you!
-            if (w->l->steal_failure_count > 30000) {
-                // Punish more if the worker has been doing unsuccessful steals
-                // for a long time. After return from the idle state, it will
-                // be given a grace period to react quickly.
+            unsigned int max_fails = w->g->max_steal_failures << 1;
+            if (w->l->has_stolen == 0 &&
+                w->l->steal_failure_count % max_fails == max_fails - 1) {
+                // Idle briefly if the worker has never stolen anything for
+                // the given grace period
                 __cilkrts_idle();
-                w->l->steal_failure_count -= 300;
             } else {
                 __cilkrts_yield();
             }
             w->l->steal_failure_count++;
+            if (w->l->steal_failure_count > (max_fails << 8)) {
+                // Reset the flag after certain amount of failures
+                // - This will reduce cpu time in top-level synched regions
+                // - max_fails can be controlled by user (CILK_STEAL_FAILURES)
+                w->l->has_stolen = 0;
+            }
         } else {
             // Reset steal_failure_count since there is obviously still work to
             // be done.
             w->l->steal_failure_count = 0;
+            w->l->has_stolen = 1;
         }
     }
     return ff;
@@ -2912,6 +2919,7 @@ __cilkrts_worker *make_worker(global_state_t *g,
     w->l->stats = NULL;
 #endif    
     w->l->steal_failure_count = 0;
+    w->l->has_stolen = 0;
 
     w->l->work_stolen = 0;
 

@@ -1,6 +1,6 @@
 // 2003-05-01  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,8 +24,6 @@
 
 void test02() 
 {
-  bool test __attribute__((unused)) = true;
-  
   // 27.3 - Standard iostream objects p 2
   // The objects are not destroyed during program execution.
   void* p1 = &std::wcout;

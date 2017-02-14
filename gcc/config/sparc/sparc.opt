@@ -1,6 +1,6 @@
 ; Options for the SPARC port of the compiler
 ;
-; Copyright (C) 2005-2016 Free Software Foundation, Inc.
+; Copyright (C) 2005-2017 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -57,6 +57,10 @@ msoft-quad-float
 Target Report RejectNegative InverseMask(HARD_QUAD)
 Do not use hardware quad fp instructions.
 
+mlra
+Target Report Mask(LRA)
+Enable Local Register Allocation.
+
 mv8plus
 Target Report Mask(V8PLUS)
 Compile for V8+ ABI.
@@ -88,6 +92,10 @@ Use UltraSPARC Fused Multiply-Add extensions.
 mpopc
 Target Report Mask(POPC)
 Use UltraSPARC Population-Count instruction.
+
+msubxc
+Target Report Mask(SUBXC)
+Use UltraSPARC Subtract-Extended-with-Carry instruction.
 
 mptr64
 Target Report RejectNegative Mask(PTR64)

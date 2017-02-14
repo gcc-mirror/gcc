@@ -2,7 +2,7 @@
 
 // 2007-03-12  Stephen M. Webb  <stephen.webb@bregmasoft.com>
 //
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,6 @@
 // Tests default constructor of the match_result class.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::tr1::match_results<char*> test_type;
 
   // default constructor

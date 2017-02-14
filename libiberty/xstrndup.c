@@ -1,5 +1,5 @@
 /* Implement the xstrndup function.
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005-2017 Free Software Foundation, Inc.
    Written by Kaveh R. Ghazi <ghazi@caip.rutgers.edu>.
 
 This file is part of the libiberty library.
@@ -48,10 +48,7 @@ char *
 xstrndup (const char *s, size_t n)
 {
   char *result;
-  size_t len = strlen (s);
-
-  if (n < len)
-    len = n;
+  size_t len = strnlen (s, n);
 
   result = XNEWVEC (char, len + 1);
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,7 +22,6 @@
 void test01()
 {
   using __gnu_debug::bitset;
-  bool test __attribute__((unused)) = true;
 
   bitset<4>  b0, b1;
   b0.set(1);

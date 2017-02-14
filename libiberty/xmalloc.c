@@ -1,6 +1,5 @@
 /* memory allocation routines with error checking.
-   Copyright 1989, 1990, 1991, 1992, 1993, 1994, 2015
-   Free Software Foundation, Inc.
+   Copyright (C) 1989-2017 Free Software Foundation, Inc.
    
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or

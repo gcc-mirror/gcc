@@ -30,13 +30,11 @@ func TestNegativeZero(t *testing.T) {
 		t.Error("length wrong")
 	}
 
-	/* gccgo fails this test; this is not required by the spec.
 	for k := range m {
 		if math.Copysign(1.0, k) > 0 {
 			t.Error("wrong sign")
 		}
 	}
-	*/
 
 	m = make(map[float64]bool, 0)
 	m[math.Copysign(0.0, -1.0)] = true
@@ -46,13 +44,11 @@ func TestNegativeZero(t *testing.T) {
 		t.Error("length wrong")
 	}
 
-	/* gccgo fails this test; this is not required by the spec.
 	for k := range m {
 		if math.Copysign(1.0, k) < 0 {
 			t.Error("wrong sign")
 		}
 	}
-	*/
 }
 
 // nan is a good test because nan != nan, and nan has
@@ -93,7 +89,6 @@ func TestAlias(t *testing.T) {
 }
 
 func TestGrowWithNaN(t *testing.T) {
-	t.Skip("fails with gccgo")
 	m := make(map[float64]int, 4)
 	nan := math.NaN()
 	m[nan] = 1
@@ -115,7 +110,6 @@ func TestGrowWithNaN(t *testing.T) {
 			s |= v
 		}
 	}
-	t.Log("cnt:", cnt, "s:", s)
 	if cnt != 3 {
 		t.Error("NaN keys lost during grow")
 	}
@@ -130,7 +124,6 @@ type FloatInt struct {
 }
 
 func TestGrowWithNegativeZero(t *testing.T) {
-	t.Skip("fails with gccgo")
 	negzero := math.Copysign(0.0, -1.0)
 	m := make(map[FloatInt]int, 4)
 	m[FloatInt{0.0, 0}] = 1
@@ -242,6 +235,7 @@ func TestIterGrowWithGC(t *testing.T) {
 }
 
 func testConcurrentReadsAfterGrowth(t *testing.T, useReflect bool) {
+	t.Parallel()
 	if runtime.GOMAXPROCS(-1) == 1 {
 		if runtime.GOARCH == "s390" {
 			// Test uses too much address space on 31-bit S390.
@@ -329,6 +323,22 @@ func TestBigItems(t *testing.T) {
 	}
 }
 
+func TestMapHugeZero(t *testing.T) {
+	type T [4000]byte
+	m := map[int]T{}
+	x := m[0]
+	if x != (T{}) {
+		t.Errorf("map value not zero")
+	}
+	y, ok := m[0]
+	if ok {
+		t.Errorf("map value should be missing")
+	}
+	if y != (T{}) {
+		t.Errorf("map value not zero")
+	}
+}
+
 type empty struct {
 }
 
@@ -391,7 +401,7 @@ func TestMapNanGrowIterator(t *testing.T) {
 	nan := math.NaN()
 	const nBuckets = 16
 	// To fill nBuckets buckets takes LOAD * nBuckets keys.
-	nKeys := int(nBuckets * /* *runtime.HashLoad */ 6.5)
+	nKeys := int(nBuckets * *runtime.HashLoad)
 
 	// Get map to full point with nan keys.
 	for i := 0; i < nKeys; i++ {
@@ -423,10 +433,6 @@ func TestMapNanGrowIterator(t *testing.T) {
 }
 
 func TestMapIterOrder(t *testing.T) {
-	if runtime.Compiler == "gccgo" {
-		t.Skip("skipping for gccgo")
-	}
-
 	for _, n := range [...]int{3, 7, 9, 15} {
 		for i := 0; i < 1000; i++ {
 			// Make m be {0: true, 1: true, ..., n-1: true}.
@@ -462,9 +468,6 @@ func TestMapIterOrder(t *testing.T) {
 func TestMapSparseIterOrder(t *testing.T) {
 	// Run several rounds to increase the probability
 	// of failure. One is not enough.
-	if runtime.Compiler == "gccgo" {
-		t.Skip("skipping for gccgo")
-	}
 NextRound:
 	for round := 0; round < 10; round++ {
 		m := make(map[int]bool)
@@ -498,9 +501,6 @@ NextRound:
 }
 
 func TestMapStringBytesLookup(t *testing.T) {
-	if runtime.Compiler == "gccgo" {
-		t.Skip("skipping for gccgo")
-	}
 	// Use large string keys to avoid small-allocation coalescing,
 	// which can cause AllocsPerRun to report lower counts than it should.
 	m := map[string]int{
@@ -515,6 +515,8 @@ func TestMapStringBytesLookup(t *testing.T) {
 	if x := m[string(buf)]; x != 2 {
 		t.Errorf(`m[string([]byte("2"))] = %d, want 2`, x)
 	}
+
+	t.Skip("does not work on gccgo without better escape analysis")
 
 	var x int
 	n := testing.AllocsPerRun(100, func() {

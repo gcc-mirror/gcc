@@ -198,7 +198,6 @@ NM = @NM@
 NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
-OBSTACK_DEFS = @OBSTACK_DEFS@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -211,6 +210,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
 RPC_DEFS = @RPC_DEFS@
+SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS = @SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -244,6 +244,7 @@ dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
+get_gcc_base_ver = @get_gcc_base_ver@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -290,7 +291,7 @@ nodist_saninclude_HEADERS = $(am__append_1)
 @SANITIZER_SUPPORTED_TRUE@SUBDIRS = sanitizer_common $(am__append_2) \
 @SANITIZER_SUPPORTED_TRUE@	$(am__append_3) lsan asan ubsan \
 @SANITIZER_SUPPORTED_TRUE@	$(am__append_4)
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

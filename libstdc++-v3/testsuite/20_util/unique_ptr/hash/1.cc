@@ -1,8 +1,8 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,11 +21,32 @@
 
 #include <memory>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
+
+// User-defined pointer type that throws if a null pointer is dereferenced.
+template<typename T>
+struct Pointer : __gnu_test::PointerBase<Pointer<T>, T>
+{
+};
+
+template<typename T>
+struct PointerDeleter : std::default_delete<T>
+{
+  typedef Pointer<T> pointer;
+  void operator()(pointer) const;
+};
+
+template<class T>
+auto f(int) -> decltype(std::hash<std::unique_ptr<T,
+			PointerDeleter<T>>>(), std::true_type());
+
+template<class T>
+auto f(...) -> decltype(std::false_type());
+
+static_assert(!decltype(f<Pointer<int>>(0))::value, "");
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   struct T { };
 
   std::unique_ptr<T>                                 u0(new T);

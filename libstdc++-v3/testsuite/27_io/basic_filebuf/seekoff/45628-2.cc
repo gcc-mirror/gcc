@@ -1,4 +1,4 @@
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,8 +45,6 @@ class my_filebuf
 // libstdc++/45628
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using __gnu_test::pod_uchar;
   std::locale loc(std::locale::classic(),
 	     new std::codecvt<my_filebuf::traits_type::char_type, char,

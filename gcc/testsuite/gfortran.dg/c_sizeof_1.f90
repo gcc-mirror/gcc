@@ -22,9 +22,6 @@ if (i /= 4) call abort()
 i = c_sizeof(str2(1))
 if (i /= 1) call abort()
 
-i = c_sizeof(str2(1:3))
-if (i /= 3) call abort()
-
 write(*,*) c_sizeof(cptr), c_sizeof(iptr), c_sizeof(C_NULL_PTR)
 
 ! Using GNU's SIZEOF

@@ -990,7 +990,7 @@ package body Sem_Warn is
                --  Similarly, the generic formals of a generic subprogram are
                --  not accessible.
 
-               when N_Generic_Subprogram_Declaration  =>
+               when N_Generic_Subprogram_Declaration =>
                   if Is_List_Member (Prev)
                     and then List_Containing (Prev) =
                                Generic_Formal_Declarations (P)
@@ -1014,12 +1014,13 @@ package body Sem_Warn is
 
                --  If we reach any other body, definitely not referenceable
 
-               when N_Package_Body    |
-                    N_Task_Body       |
-                    N_Entry_Body      |
-                    N_Protected_Body  |
-                    N_Block_Statement |
-                    N_Subunit         =>
+               when N_Block_Statement
+                  | N_Entry_Body
+                  | N_Package_Body
+                  | N_Protected_Body
+                  | N_Subunit
+                  | N_Task_Body
+               =>
                   return False;
 
                --  For all other cases, keep looking up tree
@@ -1702,20 +1703,21 @@ package body Sem_Warn is
       -----------------------------
 
       function Is_OK_Fully_Initialized return Boolean is
+         Prag : Node_Id;
+
       begin
          if Is_Access_Type (Typ) and then Is_Dereferenced (N) then
             return False;
 
-         --  If a type has Default_Initial_Condition set, or it inherits it,
-         --  DIC might be specified with a boolean value, meaning that the type
-         --  is considered to be fully default initialized (SPARK RM 3.1 and
-         --  SPARK RM 7.3.3). To avoid generating spurious warnings in this
-         --  case, consider all types with DIC as fully initialized.
+         --  A type subject to pragma Default_Initial_Condition is fully
+         --  default initialized when the pragma appears with a non-null
+         --  argument (SPARK RM 3.1 and SPARK RM 7.3.3).
 
-         elsif Has_Default_Init_Cond (Typ)
-           or else Has_Inherited_Default_Init_Cond (Typ)
-         then
-            return True;
+         elsif Has_DIC (Typ) then
+            Prag := Get_Pragma (Typ, Pragma_Default_Initial_Condition);
+            pragma Assert (Present (Prag));
+
+            return Is_Verifiable_DIC_Pragma (Prag);
 
          else
             return Is_Fully_Initialized_Type (Typ);
@@ -1791,7 +1793,9 @@ package body Sem_Warn is
 
          --  For identifier or expanded name, examine the entity involved
 
-         when N_Identifier | N_Expanded_Name =>
+         when N_Expanded_Name
+            | N_Identifier
+         =>
             declare
                E : constant Entity_Id := Entity (N);
 
@@ -1876,7 +1880,7 @@ package body Sem_Warn is
                         Nod := Parent (N);
                         while Present (Nod) loop
                            if Nkind (Nod) = N_Pragma
-                             and then Nam_In (Pragma_Name (Nod),
+                             and then Nam_In (Pragma_Name_Unmapped (Nod),
                                               Name_Postcondition,
                                               Name_Refined_Post,
                                               Name_Contract_Cases)
@@ -1887,7 +1891,8 @@ package body Sem_Warn is
                               P := Parent (Nod);
 
                               if Nkind (P) = N_Pragma
-                                and then Pragma_Name (P) = Name_Test_Case
+                                and then Pragma_Name (P) =
+                                  Name_Test_Case
                                 and then Nod = Test_Case_Arg (P, Name_Ensures)
                               then
                                  return True;
@@ -2050,8 +2055,9 @@ package body Sem_Warn is
 
          --  Indexed component or slice
 
-         when N_Indexed_Component | N_Slice =>
-
+         when N_Indexed_Component
+            | N_Slice
+         =>
             --  If prefix does not involve dereferencing an access type, then
             --  we know we are OK if the component type is fully initialized,
             --  since the component will have been set as part of the default
@@ -2122,9 +2128,10 @@ package body Sem_Warn is
          --  For type conversions, qualifications, or expressions with actions,
          --  examine the expression.
 
-         when N_Type_Conversion         |
-              N_Qualified_Expression    |
-              N_Expression_With_Actions =>
+         when N_Expression_With_Actions
+            | N_Qualified_Expression
+            | N_Type_Conversion
+         =>
             Check_Unset_Reference (Expression (N));
 
          --  For explicit dereference, always check prefix, which will generate
@@ -2137,7 +2144,6 @@ package body Sem_Warn is
 
          when others =>
             null;
-
       end case;
    end Check_Unset_Reference;
 
@@ -3397,8 +3403,8 @@ package body Sem_Warn is
             --  node, since assert pragmas get rewritten at analysis time.
 
             elsif Nkind (Original_Node (P)) = N_Pragma
-              and then Nam_In (Pragma_Name (Original_Node (P)), Name_Assert,
-                                                                Name_Check)
+              and then Nam_In (Pragma_Name_Unmapped (Original_Node (P)),
+                               Name_Assert, Name_Check)
             then
                return;
             end if;
@@ -4139,11 +4145,11 @@ package body Sem_Warn is
                   end if;
                end if;
 
-            when E_In_Parameter     |
-                 E_In_Out_Parameter =>
-
-               --  Do not emit message for formals of a renaming, because
-               --  they are never referenced explicitly.
+            when E_In_Out_Parameter
+               | E_In_Parameter
+            =>
+               --  Do not emit message for formals of a renaming, because they
+               --  are never referenced explicitly.
 
                if Nkind (Original_Node (Unit_Declaration_Node (Scope (E)))) /=
                                           N_Subprogram_Renaming_Declaration
@@ -4174,8 +4180,9 @@ package body Sem_Warn is
             when E_Discriminant =>
                Error_Msg_N ("?u?discriminant & is not referenced!", E);
 
-            when E_Named_Integer |
-                 E_Named_Real    =>
+            when E_Named_Integer
+               | E_Named_Real
+            =>
                Error_Msg_N -- CODEFIX
                  ("?u?named number & is not referenced!", E);
 
@@ -4316,7 +4323,12 @@ package body Sem_Warn is
                   begin
                      --  Don't give this for OUT and IN OUT formals, since
                      --  clearly caller may reference the assigned value. Also
-                     --  never give such warnings for internal variables.
+                     --  never give such warnings for internal variables. In
+                     --  either case, word the warning in a conditional way,
+                     --  because in the case of a component of a controlled
+                     --  type, the assigned value might be referenced in the
+                     --  Finalize operation, so we can't make a definitive
+                     --  statement that it's never referenced.
 
                      if Ekind (Ent) = E_Variable
                        and then not Is_Internal_Name (Chars (Ent))
@@ -4324,17 +4336,17 @@ package body Sem_Warn is
                         --  Give appropriate message, distinguishing between
                         --  assignment statements and out parameters.
 
-                        if Nkind_In (Parent (LA), N_Procedure_Call_Statement,
-                                                  N_Parameter_Association)
+                        if Nkind_In (Parent (LA), N_Parameter_Association,
+                                                  N_Procedure_Call_Statement)
                         then
                            Error_Msg_NE
-                             ("?m?& modified by call, but value never "
+                             ("?m?& modified by call, but value might not be "
                               & "referenced", LA, Ent);
 
                         else
                            Error_Msg_NE -- CODEFIX
-                             ("?m?useless assignment to&, value never "
-                              & "referenced!", LA, Ent);
+                             ("?m?possibly useless assignment to&, value "
+                              & "might not be referenced!", LA, Ent);
                         end if;
                      end if;
                   end;

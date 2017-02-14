@@ -1,5 +1,5 @@
 # Process this file with autoreconf to produce a configure script.
-#  Copyright (C) 2012-2016 Free Software Foundation, Inc.
+#  Copyright (C) 2012-2017 Free Software Foundation, Inc.
 #
 #  This file is part of the GNU Atomic Library (libatomic).
 #
@@ -253,6 +253,9 @@ AM_CONDITIONAL(ARCH_I386,
 	       [test "$ARCH" = x86 && test x$libat_cv_wordsize = x4])
 AM_CONDITIONAL(ARCH_X86_64,
 	       [test "$ARCH" = x86 && test x$libat_cv_wordsize = x8])
+
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
 
 if test ${multilib} = yes; then
   multilib_arg="--enable-multilib"

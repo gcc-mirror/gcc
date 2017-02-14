@@ -1,6 +1,6 @@
 // 2005-12-20  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,6 @@ template<typename _Tp>
 void
 swap2()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   typedef _Tp list_type;

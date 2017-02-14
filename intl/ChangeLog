@@ -1,3 +1,7 @@
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure: Regenerate.
+
 2015-08-06  Yaakov Selkowitz  <yselkowi@redhat.com>
 
 	* configure: Reflects renaming of configure.in to configure.ac

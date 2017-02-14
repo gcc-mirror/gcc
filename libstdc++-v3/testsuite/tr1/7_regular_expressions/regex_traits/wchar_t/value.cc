@@ -2,7 +2,7 @@
 
 // 2008-08-11  Stephen M. Webb  <stephen.webb@bregmasoft.com>
 //
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,6 @@
 // Tests the value() function of the regex_traits<char> class.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::tr1::regex_traits<char> t;
   VERIFY( t.value('7', 8)  == 7 );
   VERIFY( t.value('7', 10) == 7 );

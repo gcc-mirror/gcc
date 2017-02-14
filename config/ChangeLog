@@ -1,3 +1,60 @@
+2017-02-13  Richard Biener  <rguenther@suse.de>
+
+	* isl.m4: Remove support for ISL 0.14.
+
+2017-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78478
+	* ax_check_define.m4: New file.
+
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* acx.m4 (GCC_BASE_VER): New m4 function.
+	(ACX_TOOL_DIRS): Require GCC_BASE_VER, for
+	--with-gcc-major-version-only use just major number from BASE-VER.
+
+2017-01-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR go/78978
+	* hwcaps.m4 (GCC_CHECK_ASSEMBLER_HWCAP): New macro.
+
+2017-01-04  Alan Modra  <amodra@gmail.com>
+
+	* picflag.m4: Remove stray \xA0 in comment.
+
+2016-12-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* hwcaps.m4: New file.
+
+2016-12-08  Alan Modra  <amodra@gmail.com>
+
+	* elf.m4: Revert 2016-06-21 change.
+	* picflag.m4: Likewise.  Revert 2016-04-30 change too.
+	* override.m4 (AC_PROG_LEX): Import 2016-01-18 binutils fix
+	for PR binutils/19481.
+
+2016-12-02  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	* bootstrap-asan.mk: Replace LSAN_OPTIONS=detect_leaks=0 with
+	ASAN_OPTIONS=detect_leaks=0:use_odr_indicator=1.
+
+2016-12-01  Ma Jiang  <ma.jiang@zte.com.cn>
+
+	* acx.m4: Change "tail +16c" to "tail -c +17".
+
+2016-12-01  Matthias Klose  <doko@ubuntu.com>
+
+	* pkg.m4: Remove.
+
+2016-11-30  Matthias Klose  <doko@ubuntu.com>
+
+	* pkg.m4: New file.
+
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	multi.m4: Don't set GCJ.
+
 2016-06-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* elf.m4: Remove interix support.

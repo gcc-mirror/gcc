@@ -1,5 +1,5 @@
 /* Infrastructure to dump our HSAIL IL
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2017 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz> and
    Martin Liska <mliska@suse.cz>.
 
@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "print-tree.h"
 #include "symbol-summary.h"
-#include "hsa.h"
+#include "hsa-common.h"
 
 /* Return textual name of TYPE.  */
 
@@ -621,6 +621,88 @@ hsa_m_atomicop_name (enum BrigAtomicOperation op)
     }
 }
 
+/* Return textual name for atomic operation.  */
+
+static const char *
+hsa_width_specifier_name (BrigWidth8_t width)
+{
+  switch (width)
+    {
+    case BRIG_WIDTH_NONE:
+      return "none";
+    case BRIG_WIDTH_1:
+      return "1";
+    case BRIG_WIDTH_2:
+      return "2";
+    case BRIG_WIDTH_4:
+      return "4";
+    case BRIG_WIDTH_8:
+      return "8";
+    case BRIG_WIDTH_16:
+      return "16";
+    case BRIG_WIDTH_32:
+      return "32";
+    case BRIG_WIDTH_64:
+      return "64";
+    case BRIG_WIDTH_128:
+      return "128";
+    case BRIG_WIDTH_256:
+      return "256";
+    case BRIG_WIDTH_512:
+      return "512";
+    case BRIG_WIDTH_1024:
+      return "1024";
+    case BRIG_WIDTH_2048:
+      return "2048";
+    case BRIG_WIDTH_4096:
+      return "4096";
+    case BRIG_WIDTH_8192:
+      return "8192";
+    case BRIG_WIDTH_16384:
+      return "16384";
+    case BRIG_WIDTH_32768:
+      return "32768";
+    case BRIG_WIDTH_65536:
+      return "65536";
+    case BRIG_WIDTH_131072:
+      return "131072";
+    case BRIG_WIDTH_262144:
+      return "262144";
+    case BRIG_WIDTH_524288:
+      return "524288";
+    case BRIG_WIDTH_1048576:
+      return "1048576";
+    case BRIG_WIDTH_2097152:
+      return "2097152";
+    case BRIG_WIDTH_4194304:
+      return "4194304";
+    case BRIG_WIDTH_8388608:
+      return "8388608";
+    case BRIG_WIDTH_16777216:
+      return "16777216";
+    case BRIG_WIDTH_33554432:
+      return "33554432";
+    case BRIG_WIDTH_67108864:
+      return "67108864";
+    case BRIG_WIDTH_134217728:
+      return "134217728";
+    case BRIG_WIDTH_268435456:
+      return "268435456";
+    case BRIG_WIDTH_536870912:
+      return "536870912";
+    case BRIG_WIDTH_1073741824:
+      return "1073741824";
+    case BRIG_WIDTH_2147483648:
+      return "2147483648";
+    case BRIG_WIDTH_WAVESIZE:
+      return "wavesize";
+    case BRIG_WIDTH_ALL:
+      return "all";
+    default:
+      return "UNKNOWN_WIDTH";
+    }
+}
+
 /* Dump textual representation of HSA IL register REG to file F.  */
 
 static void
@@ -793,9 +875,9 @@ dump_hsa_insn_1 (FILE *f, hsa_insn_basic *insn, int *indent)
       hsa_insn_signal *mem = as_a <hsa_insn_signal *> (insn);
 
       fprintf (f, "%s", hsa_opcode_name (mem->m_opcode));
-      fprintf (f, "_%s", hsa_m_atomicop_name (mem->m_atomicop));
-      if (mem->m_memoryorder != BRIG_MEMORY_ORDER_NONE)
-	fprintf (f, "_%s", hsa_memsem_name (mem->m_memoryorder));
+      fprintf (f, "_%s", hsa_m_atomicop_name (mem->m_signalop));
+      if (mem->m_memory_order != BRIG_MEMORY_ORDER_NONE)
+	fprintf (f, "_%s", hsa_memsem_name (mem->m_memory_order));
       fprintf (f, "_%s ", hsa_type_name (mem->m_type));
 
       dump_hsa_operands (f, mem);
@@ -884,9 +966,9 @@ dump_hsa_insn_1 (FILE *f, hsa_insn_basic *insn, int *indent)
       fprintf (f, ", ");
       dump_hsa_operand (f, cmp->get_op (2));
     }
-  else if (is_a <hsa_insn_br *> (insn))
+  else if (is_a <hsa_insn_cbr *> (insn))
     {
-      hsa_insn_br *br = as_a <hsa_insn_br *> (insn);
+      hsa_insn_cbr *br = as_a <hsa_insn_cbr *> (insn);
       basic_block target = NULL;
       edge_iterator ei;
       edge e;
@@ -920,6 +1002,12 @@ dump_hsa_insn_1 (FILE *f, hsa_insn_basic *insn, int *indent)
 	  if (i != sbr->m_jump_table.length () - 1)
 	    fprintf (f, ", ");
 	}
+    }
+  else if (is_a <hsa_insn_br *> (insn))
+    {
+      hsa_insn_br *br = as_a <hsa_insn_br *> (insn);
+      fprintf (f, "%s_width(%s) ", hsa_opcode_name (br->m_opcode),
+	       hsa_width_specifier_name (br->m_width));
     }
   else if (is_a <hsa_insn_arg_block *> (insn))
     {
@@ -1017,6 +1105,15 @@ dump_hsa_insn_1 (FILE *f, hsa_insn_basic *insn, int *indent)
 	       hsa_type_name (insn->m_type));
 
       dump_hsa_operands (f, insn);
+    }
+  else if (hsa_insn_queue *qi = dyn_cast <hsa_insn_queue *> (insn))
+    {
+      fprintf (f, "%s_%s_%s_%s ", hsa_opcode_name (qi->m_opcode),
+	       hsa_seg_name (qi->m_segment),
+	       hsa_memsem_name (qi->m_memory_order),
+	       hsa_type_name (qi->m_type));
+
+      dump_hsa_operands (f, qi);
     }
   else
     {
@@ -1130,10 +1227,10 @@ dump_hsa_cfun (FILE *f)
     }
 
   FOR_ALL_BB_FN (bb, cfun)
-  {
-    hsa_bb *hbb = (struct hsa_bb *) bb->aux;
-    dump_hsa_bb (f, hbb);
-  }
+    {
+      hsa_bb *hbb = (struct hsa_bb *) bb->aux;
+      dump_hsa_bb (f, hbb);
+    }
 }
 
 /* Dump textual representation of HSA IL instruction INSN to stderr.  */

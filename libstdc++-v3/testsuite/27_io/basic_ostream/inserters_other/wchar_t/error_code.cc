@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-swprintf "" }
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,6 @@
 void test()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   wchar_t buf[64];
   error_code e1;
@@ -42,14 +41,14 @@ void test()
     s1 = ostr.str();
 
     if (ostr.rdstate() & ios_base::eofbit) 
-      test = false;
+      VERIFY( false );
   }
-  VERIFY( test );
+
   VERIFY( find(s1.begin(), s1.end(), L':') != s1.end() );
 
   swprintf(buf, 64, L"%i", e1.value());
   s = buf;
-  VERIFY( s1.find(s) != string::npos);
+  VERIFY( s1.find(s) != string::npos );
 
   {
     wostringstream ostr;
@@ -57,14 +56,14 @@ void test()
     s2 = ostr.str();
 
     if (ostr.rdstate() & ios_base::eofbit) 
-      test = false;
+      VERIFY( false );
   }
-  VERIFY( test );
+
   VERIFY( find(s2.begin(), s2.end(), L':') != s2.end() );
 
   swprintf(buf, 64, L"%i", e2.value());
   s = buf;
-  VERIFY( s2.find(s) != string::npos);
+  VERIFY( s2.find(s) != string::npos );
 }
 
 int 

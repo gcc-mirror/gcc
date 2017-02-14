@@ -1,5 +1,5 @@
 /* Definitions for Intel IA-64 running FreeBSD using the ELF format
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
    Contributed by David E. O'Brien <obrien@FreeBSD.org> and BSDi.
 
 This file is part of GCC.
@@ -50,5 +50,3 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_ELF		1
 
 #define JMP_BUF_SIZE  76
-
-#define IA64_NO_LIBGCC_TFMODE

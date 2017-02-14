@@ -1,6 +1,6 @@
 ## Makefile for the testsuite subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001-2016 Free Software Foundation, Inc.
+## Copyright (C) 2001-2017 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -117,7 +117,7 @@ $(check_DEJAGNU_normal_targets): check-DEJAGNUnormal%: normal%/site.exp
 check-DEJAGNU $(check_DEJAGNU_normal_targets): check-DEJAGNU%: site.exp
 	$(if $*,@)AR="$(AR)"; export AR; \
 	RANLIB="$(RANLIB)"; export RANLIB; \
-	if [ -z "$*" ] && [ "$(filter -j, $(MFLAGS))" = "-j" ]; then \
+	if [ -z "$*" ] && [ -n "$(filter -j%, $(MFLAGS))" ]; then \
 	  rm -rf normal-parallel || true; \
 	  mkdir normal-parallel; \
 	  $(MAKE) $(AM_MAKEFLAGS) $(check_DEJAGNU_normal_targets); \

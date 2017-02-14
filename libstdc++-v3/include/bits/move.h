@@ -1,6 +1,6 @@
-// Move, forward and identity for C++0x + swap -*- C++ -*-
+// Move, forward and identity for C++11 + swap -*- C++ -*-
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,12 +43,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @ingroup utilities
    */
   template<typename _Tp>
-    inline _Tp*
+    inline _GLIBCXX_CONSTEXPR _Tp*
     __addressof(_Tp& __r) _GLIBCXX_NOEXCEPT
-    {
-      return reinterpret_cast<_Tp*>
-	(&const_cast<char&>(reinterpret_cast<const volatile char&>(__r)));
-    }
+    { return __builtin_addressof(__r); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
@@ -123,6 +120,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // declval, from type_traits.
 
+#if __cplusplus > 201402L
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2296. std::addressof should be constexpr
+# define __cpp_lib_addressof_constexpr 201603
+#endif
   /**
    *  @brief Returns the actual address of the object or function
    *         referenced by r, even in the presence of an overloaded
@@ -131,9 +133,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @return   The actual address.
   */
   template<typename _Tp>
-    inline _Tp*
+    inline _GLIBCXX17_CONSTEXPR _Tp*
     addressof(_Tp& __r) noexcept
     { return std::__addressof(__r); }
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2598. addressof works on temporaries
+  template<typename _Tp>
+    const _Tp* addressof(const _Tp&&) = delete;
 
   // C++11 version of std::exchange for internal use.
   template <typename _Tp, typename _Up = _Tp>
@@ -174,7 +181,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     inline
 #if __cplusplus >= 201103L
-    typename enable_if<__and_<is_move_constructible<_Tp>,
+    typename enable_if<__and_<__not_<__is_tuple_like<_Tp>>,
+			      is_move_constructible<_Tp>,
 			      is_move_assignable<_Tp>>::value>::type
     swap(_Tp& __a, _Tp& __b)
     noexcept(__and_<is_nothrow_move_constructible<_Tp>,

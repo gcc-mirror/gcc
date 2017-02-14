@@ -79,7 +79,7 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
-libsanitizer_common_la_LIBADD =
+am__DEPENDENCIES_1 =
 am__objects_1 = sanitizer_allocator.lo sanitizer_common.lo \
 	sanitizer_common_libcdep.lo sanitizer_coverage_libcdep.lo \
 	sanitizer_coverage_mapping_libcdep.lo \
@@ -87,8 +87,8 @@ am__objects_1 = sanitizer_allocator.lo sanitizer_common.lo \
 	sanitizer_deadlock_detector2.lo sanitizer_flags.lo \
 	sanitizer_flag_parser.lo sanitizer_libc.lo \
 	sanitizer_libignore.lo sanitizer_linux.lo \
-	sanitizer_linux_libcdep.lo sanitizer_mac.lo \
-	sanitizer_persistent_allocator.lo \
+	sanitizer_linux_libcdep.lo sanitizer_linux_s390.lo \
+	sanitizer_mac.lo sanitizer_persistent_allocator.lo \
 	sanitizer_platform_limits_linux.lo \
 	sanitizer_platform_limits_posix.lo sanitizer_posix.lo \
 	sanitizer_posix_libcdep.lo sanitizer_printf.lo \
@@ -102,15 +102,20 @@ am__objects_1 = sanitizer_allocator.lo sanitizer_common.lo \
 	sanitizer_symbolizer_libbacktrace.lo \
 	sanitizer_symbolizer_libcdep.lo \
 	sanitizer_symbolizer_posix_libcdep.lo \
-	sanitizer_symbolizer_win.lo sanitizer_thread_registry.lo \
-	sanitizer_tls_get_addr.lo sanitizer_unwind_linux_libcdep.lo \
-	sanitizer_win.lo
+	sanitizer_symbolizer_win.lo sanitizer_termination.lo \
+	sanitizer_thread_registry.lo sanitizer_tls_get_addr.lo \
+	sanitizer_unwind_linux_libcdep.lo sanitizer_win.lo
 am_libsanitizer_common_la_OBJECTS = $(am__objects_1)
 libsanitizer_common_la_OBJECTS = $(am_libsanitizer_common_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+CPPASCOMPILE = $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS)
+LTCPPASCOMPILE = $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=compile $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS)
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
@@ -120,7 +125,17 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(libsanitizer_common_la_SOURCES)
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
+SOURCES = $(libsanitizer_common_la_SOURCES) \
+	$(EXTRA_libsanitizer_common_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -186,7 +201,6 @@ NM = @NM@
 NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
-OBSTACK_DEFS = @OBSTACK_DEFS@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -199,6 +213,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
 RPC_DEFS = @RPC_DEFS@
+SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS = @SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -232,6 +247,7 @@ dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
+get_gcc_base_ver = @get_gcc_base_ver@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -275,7 +291,7 @@ top_srcdir = @top_srcdir@
 AM_CPPFLAGS = -I $(top_srcdir)/include -isystem $(top_srcdir)/include/system
 
 # May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
 	-Wno-long-long -fPIC -fno-builtin -fno-exceptions -fno-rtti \
 	-fomit-frame-pointer -funwind-tables -fvisibility=hidden \
@@ -297,6 +313,7 @@ sanitizer_common_files = \
 	sanitizer_libignore.cc \
 	sanitizer_linux.cc \
 	sanitizer_linux_libcdep.cc \
+	sanitizer_linux_s390.cc \
 	sanitizer_mac.cc \
 	sanitizer_persistent_allocator.cc \
 	sanitizer_platform_limits_linux.cc \
@@ -320,12 +337,16 @@ sanitizer_common_files = \
 	sanitizer_symbolizer_libcdep.cc \
 	sanitizer_symbolizer_posix_libcdep.cc \
 	sanitizer_symbolizer_win.cc \
+	sanitizer_termination.cc \
 	sanitizer_thread_registry.cc \
 	sanitizer_tls_get_addr.cc \
 	sanitizer_unwind_linux_libcdep.cc \
 	sanitizer_win.cc
 
 libsanitizer_common_la_SOURCES = $(sanitizer_common_files) 
+EXTRA_libsanitizer_common_la_SOURCES = sanitizer_linux_mips64.S sanitizer_linux_x86_64.S
+libsanitizer_common_la_LIBADD = $(SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS)
+libsanitizer_common_la_DEPENDENCIES = $(SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -369,7 +390,7 @@ MAKEOVERRIDES =
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .cc .lo .o .obj
+.SUFFIXES: .S .cc .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -431,6 +452,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_libignore.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_linux_libcdep.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_linux_mips64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_linux_s390.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_linux_x86_64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_persistent_allocator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_linux.Plo@am__quote@
@@ -454,10 +478,32 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_posix_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_win.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_termination.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_thread_registry.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_tls_get_addr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_unwind_linux_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_win.Plo@am__quote@
+
+.S.o:
+@am__fastdepCCAS_TRUE@	$(CPPASCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCCAS_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	DEPDIR=$(DEPDIR) $(CCASDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCCAS_FALSE@	$(CPPASCOMPILE) -c -o $@ $<
+
+.S.obj:
+@am__fastdepCCAS_TRUE@	$(CPPASCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCCAS_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	DEPDIR=$(DEPDIR) $(CCASDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCCAS_FALSE@	$(CPPASCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+.S.lo:
+@am__fastdepCCAS_TRUE@	$(LTCPPASCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCCAS_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	DEPDIR=$(DEPDIR) $(CCASDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCCAS_FALSE@	$(LTCPPASCOMPILE) -c -o $@ $<
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

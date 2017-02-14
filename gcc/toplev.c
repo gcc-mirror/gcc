@@ -1,5 +1,5 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "alloc-pool.h"
 #include "timevar.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "optabs-libfuncs.h"
 #include "insn-config.h"
@@ -71,11 +72,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "dwarf2out.h"
 #include "ipa-reference.h"
 #include "symbol-summary.h"
+#include "tree-vrp.h"
 #include "ipa-prop.h"
 #include "gcse.h"
 #include "tree-chkp.h"
-#include "omp-low.h"
-#include "hsa.h"
+#include "omp-offload.h"
+#include "hsa-common.h"
+#include "edit-context.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -88,6 +91,10 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #include "selftest.h"
+
+#ifdef HAVE_isl
+#include <isl/version.h>
+#endif
 
 static void general_init (const char *, bool);
 static void do_compile ();
@@ -147,11 +154,6 @@ HOST_WIDE_INT random_seed;
    At present, the rtx may be either a REG or a SYMBOL_REF, although
    the support provided depends on the backend.  */
 rtx stack_limit_rtx;
-
-/* True if the user has tagged the function with the 'section'
-   attribute.  */
-
-bool user_defined_section_attribute = false;
 
 struct target_flag_state default_target_flag_state;
 #if SWITCHABLE_TARGET
@@ -348,7 +350,7 @@ wrapup_global_declaration_1 (tree decl)
       && DECL_DEFER_OUTPUT (decl) != 0)
     DECL_DEFER_OUTPUT (decl) = 0;
 
-  if (TREE_CODE (decl) == VAR_DECL && DECL_SIZE (decl) == 0)
+  if (VAR_P (decl) && DECL_SIZE (decl) == 0)
     lang_hooks.finish_incomplete_decl (decl);
 }
 
@@ -359,7 +361,7 @@ bool
 wrapup_global_declaration_2 (tree decl)
 {
   if (TREE_ASM_WRITTEN (decl) || DECL_EXTERNAL (decl)
-      || (TREE_CODE (decl) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (decl)))
+      || (VAR_P (decl) && DECL_HAS_VALUE_EXPR_P (decl)))
     return false;
 
   /* Don't write out static consts, unless we still need them.
@@ -387,7 +389,7 @@ wrapup_global_declaration_2 (tree decl)
      to force a constant to be written if and only if it is
      defined in a main file, as opposed to an include file.  */
 
-  if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
+  if (VAR_P (decl) && TREE_STATIC (decl))
     {
       varpool_node *node;
       bool needed = true;
@@ -561,14 +563,14 @@ compile_file (void)
 #if defined ASM_OUTPUT_ALIGNED_DECL_COMMON
       ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, NULL_TREE,
 				      "__gnu_lto_v1",
-				      (unsigned HOST_WIDE_INT) 1, 8);
+				      HOST_WIDE_INT_1U, 8);
 #elif defined ASM_OUTPUT_ALIGNED_COMMON
       ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, "__gnu_lto_v1",
-				 (unsigned HOST_WIDE_INT) 1, 8);
+				 HOST_WIDE_INT_1U, 8);
 #else
       ASM_OUTPUT_COMMON (asm_out_file, "__gnu_lto_v1",
-			 (unsigned HOST_WIDE_INT) 1,
-			 (unsigned HOST_WIDE_INT) 1);
+			 HOST_WIDE_INT_1U,
+			 HOST_WIDE_INT_1U);
 #endif
     }
 
@@ -578,14 +580,14 @@ compile_file (void)
     {
 #if defined ASM_OUTPUT_ALIGNED_DECL_COMMON
       ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, NULL_TREE, "__gnu_lto_slim",
-				      (unsigned HOST_WIDE_INT) 1, 8);
+				      HOST_WIDE_INT_1U, 8);
 #elif defined ASM_OUTPUT_ALIGNED_COMMON
       ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, "__gnu_lto_slim",
-				 (unsigned HOST_WIDE_INT) 1, 8);
+				 HOST_WIDE_INT_1U, 8);
 #else
       ASM_OUTPUT_COMMON (asm_out_file, "__gnu_lto_slim",
-			 (unsigned HOST_WIDE_INT) 1,
-			 (unsigned HOST_WIDE_INT) 1);
+			 HOST_WIDE_INT_1U,
+			 HOST_WIDE_INT_1U);
 #endif
     }
 
@@ -680,10 +682,8 @@ print_version (FILE *file, const char *indent, bool show_global_state)
 	   GCC_GMP_STRINGIFY_VERSION, MPFR_VERSION_STRING, MPC_VERSION_STRING,
 #ifndef HAVE_isl
 	   "none"
-#elif HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
-	   "0.15"
 #else
-	   "0.14 or 0.13"
+	   isl_version ()
 #endif
 	   );
   if (strcmp (GCC_GMP_STRINGIFY_VERSION, gmp_version))
@@ -731,7 +731,7 @@ print_to_asm_out_file (print_switch_type type, const char * text)
     case SWITCH_TYPE_DESCRIPTIVE:
       if (ASM_COMMENT_START[0] == 0)
 	prepend_sep = false;
-      /* Drop through.  */
+      /* FALLTHRU */
     case SWITCH_TYPE_PASSED:
     case SWITCH_TYPE_ENABLED:
       if (prepend_sep)
@@ -761,7 +761,7 @@ print_to_stderr (print_switch_type type, const char * text)
     case SWITCH_TYPE_PASSED:
     case SWITCH_TYPE_ENABLED:
       fputc (' ', stderr);
-      /* Drop through.  */
+      /* FALLTHRU */
 
     case SWITCH_TYPE_DESCRIPTIVE:
       fputs (text, stderr);
@@ -1219,7 +1219,13 @@ process_options (void)
   no_backend = lang_hooks.post_options (&main_input_filename);
 
   /* Some machines may reject certain combinations of options.  */
+  location_t saved_location = input_location;
+  input_location = UNKNOWN_LOCATION;
   targetm.target_option.override ();
+  input_location = saved_location;
+
+  if (flag_diagnostics_generate_patch)
+      global_dc->edit_context_ptr = new edit_context ();
 
   /* Avoid any informative notes in the second run of -fcompare-debug.  */
   if (flag_compare_debug) 
@@ -1254,10 +1260,9 @@ process_options (void)
       || flag_loop_nest_optimize
       || flag_graphite_identity
       || flag_loop_parallelize_all)
-    sorry ("Graphite loop optimizations cannot be used (isl is not available)"
-	   "(-fgraphite, -fgraphite-identity, -floop-block, "
-	   "-floop-interchange, -floop-strip-mine, -floop-parallelize-all, "
-	   "-floop-unroll-and-jam, and -ftree-loop-linear)");
+    sorry ("Graphite loop optimizations cannot be used (isl is not available) "
+	   "(-fgraphite, -fgraphite-identity, -floop-nest-optimize, "
+	   "-floop-parallelize-all)");
 #endif
 
   if (flag_check_pointer_bounds)
@@ -1676,41 +1681,17 @@ backend_init (void)
   init_regs ();
 }
 
-/* Initialize excess precision settings.  */
+/* Initialize excess precision settings.
+
+   We have no need to modify anything here, just keep track of what the
+   user requested.  We'll figure out any appropriate relaxations
+   later.  */
+
 static void
 init_excess_precision (void)
 {
-  /* Adjust excess precision handling based on the target options.  If
-     the front end cannot handle it, flag_excess_precision_cmdline
-     will already have been set accordingly in the post_options
-     hook.  */
   gcc_assert (flag_excess_precision_cmdline != EXCESS_PRECISION_DEFAULT);
   flag_excess_precision = flag_excess_precision_cmdline;
-  if (flag_unsafe_math_optimizations)
-    flag_excess_precision = EXCESS_PRECISION_FAST;
-  if (flag_excess_precision == EXCESS_PRECISION_STANDARD)
-    {
-      int flt_eval_method = TARGET_FLT_EVAL_METHOD;
-      switch (flt_eval_method)
-	{
-	case -1:
-	case 0:
-	  /* Either the target acts unpredictably (-1) or has all the
-	     operations required not to have excess precision (0).  */
-	  flag_excess_precision = EXCESS_PRECISION_FAST;
-	  break;
-	case 1:
-	case 2:
-	  /* In these cases, predictable excess precision makes
-	     sense.  */
-	  break;
-	default:
-	  /* Any other implementation-defined FLT_EVAL_METHOD values
-	     require the compiler to handle the associated excess
-	     precision rules in excess_precision_type.  */
-	  gcc_unreachable ();
-	}
-    }
 }
 
 /* Initialize things that are both lang-dependent and target-dependent.
@@ -1894,6 +1875,7 @@ finalize (bool no_backend)
   if (flag_gen_aux_info)
     {
       fclose (aux_info_file);
+      aux_info_file = NULL;
       if (seen_error ())
 	unlink (aux_info_file_name);
     }
@@ -1908,10 +1890,14 @@ finalize (bool no_backend)
 	fatal_error (input_location, "error writing to %s: %m", asm_file_name);
       if (fclose (asm_out_file) != 0)
 	fatal_error (input_location, "error closing %s: %m", asm_file_name);
+      asm_out_file = NULL;
     }
 
   if (stack_usage_file)
-    fclose (stack_usage_file);
+    {
+      fclose (stack_usage_file);
+      stack_usage_file = NULL;
+    }
 
   if (!no_backend)
     {
@@ -2142,10 +2128,19 @@ toplev::main (int argc, char **argv)
      emit some diagnostics here.  */
   invoke_plugin_callbacks (PLUGIN_FINISH, NULL);
 
+  if (flag_diagnostics_generate_patch)
+    {
+      gcc_assert (global_dc->edit_context_ptr);
+
+      pretty_printer (pp);
+      pp_show_color (&pp) = pp_show_color (global_dc->printer);
+      global_dc->edit_context_ptr->print_diff (&pp, true);
+      pp_flush (&pp);
+    }
+
   diagnostic_finish (global_dc);
 
   finalize_plugins ();
-  location_adhoc_data_fini (line_table);
 
   after_memory_report = true;
 

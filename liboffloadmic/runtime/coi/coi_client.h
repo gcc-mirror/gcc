@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2016 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -34,6 +34,7 @@
 #define COI_CLIENT_H_INCLUDED
 
 #include <common/COIPerf_common.h>
+#include <common/COIMacros_common.h>
 #include <source/COIEngine_source.h>
 #include <source/COIProcess_source.h>
 #include <source/COIPipeline_source.h>

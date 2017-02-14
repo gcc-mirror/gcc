@@ -1,5 +1,5 @@
 ;; Machine description for Tilera TILEPro chip for GCC.
-;; Copyright (C) 2011-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2017 Free Software Foundation, Inc.
 ;; Contributed by Walter Lee (walt@tilera.com)
 ;;
 ;; This file is part of GCC.
@@ -1577,6 +1577,12 @@
   ""
   "nop"
   [(set_attr "type" "Y01")])
+
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 0))]
+  ""
+  "raise; moveli zero, 6"
+  [(set_attr "type" "cannot_bundle")])
 
 
 ;;

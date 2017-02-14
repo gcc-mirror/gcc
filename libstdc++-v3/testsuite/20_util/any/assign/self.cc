@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,13 +36,13 @@ test01()
 
   any a;
   a = a;
-  VERIFY( a.empty() );
+  VERIFY( !a.has_value() );
 
   a = A{};
   a = a;
-  VERIFY( !a.empty() );
+  VERIFY( a.has_value() );
 
-  a.clear();
+  a.reset();
   VERIFY( live_objects.empty() );
 }
 
@@ -57,13 +57,13 @@ test02()
 
   X x;
   std::swap(x, x); // results in "self-move-assignment" of X::a
-  VERIFY( x.a.empty() );
+  VERIFY( !x.a.has_value() );
 
   x.a = A{};
   std::swap(x, x); // results in "self-move-assignment" of X::a
-  VERIFY( !x.a.empty() );
+  VERIFY( x.a.has_value() );
 
-  x.a.clear();
+  x.a.reset();
   VERIFY( live_objects.empty() );
 }
 
@@ -74,13 +74,13 @@ test03()
 
   any a;
   a.swap(a);
-  VERIFY( a.empty() );
+  VERIFY( !a.has_value() );
 
   a = A{};
   a.swap(a);
-  VERIFY( !a.empty() );
+  VERIFY( a.has_value() );
 
-  a.clear();
+  a.reset();
   VERIFY( live_objects.empty() );
 }
 

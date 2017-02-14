@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -68,7 +68,6 @@ struct reset_count_struct
 int test01()
 {
   reset_count_struct __attribute__((unused)) reset;
-  bool test __attribute__((unused)) = true;
 
   std::shared_ptr<A> a1;
   std::shared_ptr<A> a2(std::move(a1));
@@ -86,7 +85,6 @@ int
 test02()
 {
   reset_count_struct __attribute__((unused)) reset;
-  bool test __attribute__((unused)) = true;
 
   std::shared_ptr<A> a1(new A);
   std::shared_ptr<A> a2(std::move(a1));
@@ -102,7 +100,6 @@ int
 test03()
 {
   reset_count_struct __attribute__((unused)) reset;
-  bool test __attribute__((unused)) = true;
 
   std::shared_ptr<B> b(new B);
   std::shared_ptr<A> a(std::move(b));
@@ -120,7 +117,6 @@ int
 test04()
 {
   reset_count_struct __attribute__((unused)) reset;
-  bool test __attribute__((unused)) = true;
 
   std::shared_ptr<B> b(new B, D());
   std::shared_ptr<A> a(std::move(b));
@@ -142,7 +138,6 @@ int
 test05()
 {
   reset_count_struct __attribute__((unused)) reset;
-  bool test __attribute__((unused)) = true;
 
   std::shared_ptr<A> a(std::move(std::shared_ptr<A>(new A)));
   VERIFY( a.use_count() == 1 );

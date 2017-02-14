@@ -1,5 +1,7 @@
-// { dg-options "-std=gnu++11 -fno-rtti" }
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// { dg-options "-fno-rtti" }
+// { dg-do run { target c++11 } }
+
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,8 +34,6 @@ struct B {
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<A> spA = std::make_shared<A>();
 
   VERIFY( spA.get() != 0 );
@@ -41,8 +41,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<B> spB = std::make_shared<B>(99);
 
   VERIFY( spB->i == 99 );

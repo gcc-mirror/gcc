@@ -1,6 +1,6 @@
 /* Routines for reading trees from a file stream.
 
-   Copyright (C) 2011-2016 Free Software Foundation, Inc.
+   Copyright (C) 2011-2017 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -220,7 +220,7 @@ unpack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
 static void
 unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
 {
-  DECL_MODE (expr) = bp_unpack_machine_mode (bp);
+  SET_DECL_MODE (expr, bp_unpack_machine_mode (bp));
   DECL_NONLOCAL (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_VIRTUAL_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_IGNORED_P (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -251,7 +251,7 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       expr->decl_common.off_align = bp_unpack_value (bp, 8);
     }
 
-  if (TREE_CODE (expr) == VAR_DECL)
+  if (VAR_P (expr))
     {
       DECL_HAS_DEBUG_EXPR_P (expr) = (unsigned) bp_unpack_value (bp, 1);
       DECL_NONLOCAL_FRAME (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -259,11 +259,10 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
 
   if (TREE_CODE (expr) == RESULT_DECL
       || TREE_CODE (expr) == PARM_DECL
-      || TREE_CODE (expr) == VAR_DECL)
+      || VAR_P (expr))
     {
       DECL_BY_REFERENCE (expr) = (unsigned) bp_unpack_value (bp, 1);
-      if (TREE_CODE (expr) == VAR_DECL
-	  || TREE_CODE (expr) == PARM_DECL)
+      if (VAR_P (expr) || TREE_CODE (expr) == PARM_DECL)
 	DECL_HAS_VALUE_EXPR_P (expr) = (unsigned) bp_unpack_value (bp, 1);
     }
 }
@@ -293,7 +292,7 @@ unpack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
   DECL_VISIBILITY (expr) = (enum symbol_visibility) bp_unpack_value (bp,  2);
   DECL_VISIBILITY_SPECIFIED (expr) = (unsigned) bp_unpack_value (bp,  1);
 
-  if (TREE_CODE (expr) == VAR_DECL)
+  if (VAR_P (expr))
     {
       DECL_HARD_REGISTER (expr) = (unsigned) bp_unpack_value (bp, 1);
       DECL_IN_CONSTANT_POOL (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -712,12 +711,11 @@ lto_input_ts_decl_common_tree_pointers (struct lto_input_block *ib,
      for early inlining so drop it on the floor instead of ICEing in
      dwarf2out.c.  */
 
-  if ((TREE_CODE (expr) == VAR_DECL
-       || TREE_CODE (expr) == PARM_DECL)
+  if ((VAR_P (expr) || TREE_CODE (expr) == PARM_DECL)
       && DECL_HAS_VALUE_EXPR_P (expr))
     SET_DECL_VALUE_EXPR (expr, stream_read_tree (ib, data_in));
 
-  if (TREE_CODE (expr) == VAR_DECL)
+  if (VAR_P (expr))
     {
       tree dexpr = stream_read_tree (ib, data_in);
       if (dexpr)
@@ -1110,65 +1108,6 @@ streamer_get_pickled_tree (struct lto_input_block *ib, struct data_in *data_in)
   result = streamer_tree_cache_get_tree (data_in->reader_cache, ix);
   gcc_assert (result
               && TREE_CODE (result) == lto_tag_to_tree_code (expected_tag));
-
-  return result;
-}
-
-
-/* Read a code and class from input block IB and return the
-   corresponding builtin.  DATA_IN is as in stream_read_tree.  */
-
-tree
-streamer_get_builtin_tree (struct lto_input_block *ib, struct data_in *data_in)
-{
-  enum built_in_class fclass;
-  enum built_in_function fcode;
-  const char *asmname;
-  tree result;
-
-  fclass = streamer_read_enum (ib, built_in_class, BUILT_IN_LAST);
-  gcc_assert (fclass == BUILT_IN_NORMAL || fclass == BUILT_IN_MD);
-
-  fcode = (enum built_in_function) streamer_read_uhwi (ib);
-
-  if (fclass == BUILT_IN_NORMAL)
-    {
-      if (fcode >= END_BUILTINS)
-	fatal_error (input_location,
-		     "machine independent builtin code out of range");
-      result = builtin_decl_explicit (fcode);
-      if (!result)
-	{
-	  if (fcode > BEGIN_CHKP_BUILTINS && fcode < END_CHKP_BUILTINS)
-	    {
-	      fcode = (enum built_in_function)
-		      (fcode - BEGIN_CHKP_BUILTINS - 1);
-	      result = builtin_decl_explicit (fcode);
-	      result = chkp_maybe_clone_builtin_fndecl (result);
-	    }
-	  else if (fcode > BEGIN_SANITIZER_BUILTINS
-		   && fcode < END_SANITIZER_BUILTINS)
-	    {
-	      initialize_sanitizer_builtins ();
-	      result = builtin_decl_explicit (fcode);
-	    }
-	}
-      gcc_assert (result);
-    }
-  else if (fclass == BUILT_IN_MD)
-    {
-      result = targetm.builtin_decl (fcode, true);
-      if (!result || result == error_mark_node)
-	fatal_error (input_location, "target specific builtin not available");
-    }
-  else
-    gcc_unreachable ();
-
-  asmname = streamer_read_string (data_in, ib);
-  if (asmname)
-    set_builtin_user_assembler_name (result, asmname);
-
-  streamer_tree_cache_append (data_in->reader_cache, result, 0);
 
   return result;
 }

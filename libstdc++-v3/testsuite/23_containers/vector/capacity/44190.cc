@@ -1,4 +1,4 @@
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,8 +23,6 @@
 // libstdc++/44190
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<int> v;
   v.resize(10);
   VERIFY( v.size() <= v.capacity() );

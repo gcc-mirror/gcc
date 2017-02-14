@@ -5,6 +5,7 @@
 package big
 
 import (
+	"bytes"
 	"fmt"
 	"math"
 	"strconv"
@@ -290,6 +291,11 @@ func TestFloat64Text(t *testing.T) {
 		// Issue 2625.
 		{383260575764816448, 'f', 0, "383260575764816448"},
 		{383260575764816448, 'g', -1, "3.8326057576481645e+17"},
+
+		// Issue 15918.
+		{1, 'f', -10, "1"},
+		{1, 'f', -11, "1"},
+		{1, 'f', -12, "1"},
 	} {
 		// The test cases are from the strconv package which tests float64 values.
 		// When formatting values with prec = -1 (shortest representation),
@@ -657,6 +663,57 @@ func BenchmarkParseFloatLargeExp(b *testing.B) {
 			if err != nil {
 				b.Fatalf("%s: %v", s, err)
 			}
+		}
+	}
+}
+
+func TestFloatScan(t *testing.T) {
+	var floatScanTests = []struct {
+		input     string
+		format    string
+		output    string
+		remaining int
+		wantErr   bool
+	}{
+		0: {"10.0", "%f", "10", 0, false},
+		1: {"23.98+2.0", "%v", "23.98", 4, false},
+		2: {"-1+1", "%v", "-1", 2, false},
+		3: {" 00000", "%v", "0", 0, false},
+		4: {"-123456p-78", "%b", "-4.084816388e-19", 0, false},
+		5: {"+123", "%b", "123", 0, false},
+		6: {"-1.234e+56", "%e", "-1.234e+56", 0, false},
+		7: {"-1.234E-56", "%E", "-1.234e-56", 0, false},
+		8: {"-1.234e+567", "%g", "-1.234e+567", 0, false},
+		9: {"+1234567891011.234", "%G", "1.234567891e+12", 0, false},
+
+		// Scan doesn't handle ±Inf.
+		10: {"Inf", "%v", "", 3, true},
+		11: {"-Inf", "%v", "", 3, true},
+		12: {"-Inf", "%v", "", 3, true},
+	}
+
+	var buf bytes.Buffer
+	for i, test := range floatScanTests {
+		x := new(Float)
+		buf.Reset()
+		buf.WriteString(test.input)
+		_, err := fmt.Fscanf(&buf, test.format, x)
+		if test.wantErr {
+			if err == nil {
+				t.Errorf("#%d want non-nil err", i)
+			}
+			continue
+		}
+
+		if err != nil {
+			t.Errorf("#%d error: %s", i, err)
+		}
+
+		if x.String() != test.output {
+			t.Errorf("#%d got %s; want %s", i, x.String(), test.output)
+		}
+		if buf.Len() != test.remaining {
+			t.Errorf("#%d got %d bytes remaining; want %d", i, buf.Len(), test.remaining)
 		}
 	}
 }

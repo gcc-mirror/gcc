@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2014-04-15  Ulrich Drepper  <drepper@gmail.com>
 //
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   __gnu_cxx::uniform_on_sphere_distribution<3> u, v;
 
   VERIFY( u == v );

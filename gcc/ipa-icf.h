@@ -1,5 +1,5 @@
 /* Interprocedural semantic function equality pass
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2017 Free Software Foundation, Inc.
 
    Contributed by Jan Hubicka <hubicka@ucw.cz> and Martin Liska <mliska@suse.cz>
 
@@ -151,10 +151,8 @@ public:
   sem_item (sem_item_type _type, bitmap_obstack *stack);
 
   /* Semantic item constructor for a node of _TYPE, where STACK is used
-     for bitmap memory allocation. The item is based on symtab node _NODE
-     with computed _HASH.  */
-  sem_item (sem_item_type _type, symtab_node *_node, hashval_t _hash,
-	    bitmap_obstack *stack);
+     for bitmap memory allocation.  The item is based on symtab node _NODE.  */
+  sem_item (sem_item_type _type, symtab_node *_node, bitmap_obstack *stack);
 
   virtual ~sem_item ();
 
@@ -274,6 +272,9 @@ protected:
   /* Hash of item.  */
   hashval_t m_hash;
 
+  /* Indicated whether a hash value has been set or not.  */
+  bool m_hash_set;
+
 private:
   /* Initialize internal data structures. Bitmap STACK is used for
      bitmap memory allocation process.  */
@@ -286,9 +287,9 @@ public:
   /* Semantic function constructor that uses STACK as bitmap memory stack.  */
   sem_function (bitmap_obstack *stack);
 
-  /*  Constructor based on callgraph node _NODE with computed hash _HASH.
+  /*  Constructor based on callgraph node _NODE.
       Bitmap STACK is used for memory allocation.  */
-  sem_function (cgraph_node *_node, hashval_t _hash, bitmap_obstack *stack);
+  sem_function (cgraph_node *_node, bitmap_obstack *stack);
 
   ~sem_function ();
 
@@ -394,10 +395,10 @@ public:
   /* Semantic variable constructor that uses STACK as bitmap memory stack.  */
   sem_variable (bitmap_obstack *stack);
 
-  /*  Constructor based on callgraph node _NODE with computed hash _HASH.
+  /*  Constructor based on callgraph node _NODE.
       Bitmap STACK is used for memory allocation.  */
 
-  sem_variable (varpool_node *_node, hashval_t _hash, bitmap_obstack *stack);
+  sem_variable (varpool_node *_node, bitmap_obstack *stack);
 
   inline virtual void init_wpa (void) {}
 
@@ -441,7 +442,7 @@ struct congruence_class_group
 };
 
 /* Congruence class set structure.  */
-struct congruence_class_group_hash : nofree_ptr_hash <congruence_class_group>
+struct congruence_class_hash : nofree_ptr_hash <congruence_class_group>
 {
   static inline hashval_t hash (const congruence_class_group *item)
   {
@@ -608,8 +609,8 @@ private:
   /* A set containing all items removed by hooks.  */
   hash_set <symtab_node *> m_removed_items_set;
 
-  /* Hashtable of congruence classes */
-  hash_table <congruence_class_group_hash> m_classes;
+  /* Hashtable of congruence classes.  */
+  hash_table <congruence_class_hash> m_classes;
 
   /* Count of congruence classes.  */
   unsigned int m_classes_count;

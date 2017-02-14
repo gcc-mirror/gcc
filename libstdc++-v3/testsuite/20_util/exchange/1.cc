@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,8 +41,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   struct DefaultConstructible
   {
     DefaultConstructible(int i = 0) : value(i) { }
@@ -63,8 +61,6 @@ double f(double) { return 0; }
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   int (*fp)(int);
   std::exchange(fp, &f);
   VERIFY( fp != nullptr );

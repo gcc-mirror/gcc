@@ -1,6 +1,6 @@
 // 2000-12-19 bkoz
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,8 +28,8 @@
 // Radar 6467884: 10.X systems are not robust when paging space is exceeded
 // { dg-skip-if "" { *-*-darwin* && lp64 } { "*" } { "" } } 
 
-// The library still throws the original definition of std::ios::failure
-// { dg-options "-D_GLIBCXX_USE_CXX11_ABI=0" }
+// The library throws the new definition of std::ios::failure
+// { dg-options "-D_GLIBCXX_USE_CXX11_ABI=1" }
 
 #include <sstream>
 #include <iostream>
@@ -39,7 +39,7 @@
 // libstdc++/3129
 void test02()
 {
-  bool test __attribute__((unused)) = true;
+  bool test = true;
   int max = std::numeric_limits<int>::max() - 1;
   std::stringbuf        strbuf;
   std::ios              ios(&strbuf);
@@ -64,8 +64,7 @@ void test02()
     }
   catch(...)
     {
-      test = false;
-      VERIFY( test );
+      VERIFY( false );
     }
   VERIFY( v == 0 );
 
@@ -73,7 +72,7 @@ void test02()
   
   // max is different code path from max-1
   v = &test;
-  try 
+  try
     {
       v = ios.pword(std::numeric_limits<int>::max());
     }
@@ -84,8 +83,7 @@ void test02()
     }
   catch(...)
     {
-      test = false;
-      VERIFY( test );
+      VERIFY( false );
     }
   VERIFY( v == &test );
 
@@ -104,8 +102,7 @@ void test02()
     }
   catch(...)
     {
-      test = false;
-      VERIFY( test );
+      VERIFY( false );
     }
   VERIFY( l == 0 );
 
@@ -124,11 +121,9 @@ void test02()
     }
   catch(...)
     {
-      test = false;
-      VERIFY( test );
+      VERIFY( false );
     }
   VERIFY( l == 1 );
-
 }
 
 int main(void)

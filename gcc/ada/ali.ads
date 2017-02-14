@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -522,11 +522,6 @@ package ALI is
    Stack_Check_Switch_Set : Boolean := False;
    --  Set to True if at least one ALI file contains '-fstack-check' in its
    --  argument list.
-
-   Static_Elaboration_Model_Used : Boolean := False;
-   --  Set to False by Initialize_ALI. Set to True if any ALI file for a
-   --  non-internal unit compiled with the static elaboration model is
-   --  encountered.
 
    Task_Dispatching_Policy_Specified : Character := ' ';
    --  Set to blank by Initialize_ALI. Set to the appropriate task dispatching

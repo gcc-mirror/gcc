@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // 2008-07-22  Edward Smith-Rowland  <3dw4rd@verizon.net>
 //
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,7 +25,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   map<int, int> m0;
@@ -48,7 +47,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   map<int, int> m0;

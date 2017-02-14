@@ -15,6 +15,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 am__make_dryrun = \
   { \
@@ -101,20 +102,22 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
+am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
+	"$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-am__objects_1 = tsan_clock.lo tsan_fd.lo tsan_flags.lo \
-	tsan_ignoreset.lo tsan_interceptors.lo tsan_interface_ann.lo \
+am__objects_1 = tsan_clock.lo tsan_debugging.lo tsan_fd.lo \
+	tsan_flags.lo tsan_ignoreset.lo tsan_interceptors.lo \
+	tsan_interceptors_mac.lo tsan_interface_ann.lo \
 	tsan_interface_atomic.lo tsan_interface.lo \
 	tsan_interface_java.lo tsan_libdispatch_mac.lo \
 	tsan_malloc_mac.lo tsan_md5.lo tsan_mman.lo tsan_mutex.lo \
 	tsan_mutexset.lo tsan_new_delete.lo tsan_platform_linux.lo \
 	tsan_platform_mac.lo tsan_platform_posix.lo \
 	tsan_platform_windows.lo tsan_report.lo tsan_rtl.lo \
-	tsan_rtl_mutex.lo tsan_rtl_report.lo tsan_rtl_thread.lo \
-	tsan_stack_trace.lo tsan_stat.lo tsan_suppressions.lo \
-	tsan_symbolize.lo tsan_sync.lo
+	tsan_rtl_mutex.lo tsan_rtl_proc.lo tsan_rtl_report.lo \
+	tsan_rtl_thread.lo tsan_stack_trace.lo tsan_stat.lo \
+	tsan_suppressions.lo tsan_symbolize.lo tsan_sync.lo
 am_libtsan_la_OBJECTS = $(am__objects_1)
 libtsan_la_OBJECTS = $(am_libtsan_la_OBJECTS)
 libtsan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
@@ -153,6 +156,7 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+HEADERS = $(nodist_toolexeclib_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 ACLOCAL = @ACLOCAL@
@@ -179,7 +183,7 @@ CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
-DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DCAN_SANITIZE_UB=0 @OBSTACK_DEFS@
+DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DCAN_SANITIZE_UB=0
 DEPDIR = @DEPDIR@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
@@ -213,7 +217,6 @@ NM = @NM@
 NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
-OBSTACK_DEFS = @OBSTACK_DEFS@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -226,6 +229,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
 RPC_DEFS = @RPC_DEFS@
+SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS = @SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -259,6 +263,7 @@ dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
+get_gcc_base_ver = @get_gcc_base_ver@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -302,7 +307,7 @@ top_srcdir = @top_srcdir@
 AM_CPPFLAGS = -I $(top_srcdir) -I $(top_srcdir)/include
 
 # May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
 	-Wno-long-long -fPIC -fno-builtin -fno-exceptions -fno-rtti \
 	-fomit-frame-pointer -funwind-tables -fvisibility=hidden \
@@ -310,12 +315,15 @@ AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
 	-std=gnu++11
 ACLOCAL_AMFLAGS = -I m4
 toolexeclib_LTLIBRARIES = libtsan.la
+nodist_toolexeclib_HEADERS = libtsan_preinit.o
 tsan_files = \
 	tsan_clock.cc \
+	tsan_debugging.cc \
 	tsan_fd.cc \
 	tsan_flags.cc \
 	tsan_ignoreset.cc \
 	tsan_interceptors.cc \
+	tsan_interceptors_mac.cc \
 	tsan_interface_ann.cc \
 	tsan_interface_atomic.cc \
 	tsan_interface.cc \
@@ -334,6 +342,7 @@ tsan_files = \
 	tsan_report.cc \
 	tsan_rtl.cc \
 	tsan_rtl_mutex.cc \
+	tsan_rtl_proc.cc \
 	tsan_rtl_report.cc \
 	tsan_rtl_thread.cc \
 	tsan_stack_trace.cc \
@@ -343,7 +352,7 @@ tsan_files = \
 	tsan_sync.cc 
 
 libtsan_la_SOURCES = $(tsan_files)
-EXTRA_libtsan_la_SOURCES = tsan_rtl_amd64.S tsan_rtl_aarch64.S
+EXTRA_libtsan_la_SOURCES = tsan_rtl_amd64.S tsan_rtl_aarch64.S tsan_rtl_mips64.S tsan_rtl_ppc64.S
 libtsan_la_LIBADD =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
 	$(top_builddir)/interception/libinterception.la \
@@ -470,10 +479,12 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_clock.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_debugging.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_fd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_flags.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_ignoreset.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interceptors.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interceptors_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface_ann.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface_atomic.Plo@am__quote@
@@ -493,7 +504,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_aarch64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_amd64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_mips64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_mutex.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_ppc64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_proc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_report.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_thread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_stack_trace.Plo@am__quote@
@@ -549,6 +563,27 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+install-nodist_toolexeclibHEADERS: $(nodist_toolexeclib_HEADERS)
+	@$(NORMAL_INSTALL)
+	@list='$(nodist_toolexeclib_HEADERS)'; test -n "$(toolexeclibdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(toolexeclibdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(toolexeclibdir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(toolexeclibdir)" || exit $$?; \
+	done
+
+uninstall-nodist_toolexeclibHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(nodist_toolexeclib_HEADERS)'; test -n "$(toolexeclibdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(toolexeclibdir)'; $(am__uninstall_files_from_dir)
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -603,9 +638,9 @@ distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(toolexeclibdir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -667,7 +702,8 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-toolexeclibLTLIBRARIES
+install-exec-am: install-nodist_toolexeclibHEADERS \
+	install-toolexeclibLTLIBRARIES
 
 install-html: install-html-am
 
@@ -707,7 +743,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-toolexeclibLTLIBRARIES
+uninstall-am: uninstall-nodist_toolexeclibHEADERS \
+	uninstall-toolexeclibLTLIBRARIES
 
 .MAKE: install-am install-strip
 
@@ -718,13 +755,18 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 	install-am install-data install-data-am install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
 	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip install-toolexeclibLTLIBRARIES installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-toolexeclibLTLIBRARIES
+	install-nodist_toolexeclibHEADERS install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip \
+	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
+	uninstall-am uninstall-nodist_toolexeclibHEADERS \
+	uninstall-toolexeclibLTLIBRARIES
 
+
+libtsan_preinit.o: tsan_preinit.o
+	cp $< $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

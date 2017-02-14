@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,9 +20,6 @@
 // 23.2.3.n forward_list xxx [lib.forward_list.xxx]
 
 #include <forward_list>
-#include <testsuite_hooks.h>
-
-bool test __attribute__((unused)) = true;
 
 // This test verifies the following:
 //   Move construction with allocator

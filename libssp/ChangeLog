@@ -1,3 +1,20 @@
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* configure.ac: Add GCC_BASE_VER.
+	* Makefile.am (gcc_version): Use @get_gcc_base_ver@ instead of cat to
+	get version from BASE-VER file.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
+2017-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure: Regenerate.
+
 2015-04-25  Daniel Starke  <daniel.f.starke@freenet.de>
 
 	PR target/65867

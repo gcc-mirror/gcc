@@ -1,8 +1,8 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-08-11  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,8 +27,6 @@
 // Used to cause many Valgrind errors: LWG 526-type situation.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::forward_list<int> fl1;
   
   fl1.push_front(1);

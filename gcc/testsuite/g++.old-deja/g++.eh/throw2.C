@@ -4,7 +4,10 @@
 
 #define ANY int // a class with a public constructor
 
-void athrow(const ANY & e) throw(ANY)
+void athrow(const ANY & e)
+#if __cplusplus <= 201402L
+throw(ANY)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+#endif
 {
    throw e; // { dg-bogus "" } discarding const
 }

@@ -1,7 +1,7 @@
 // { dg-require-namedlocale "" }
 // { dg-require-namedlocale "en_US.ISO8859-1" }
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,7 +45,7 @@ void deallocate(void* p)
     std::free(p);
 }
 
-void* operator new(std::size_t n) throw (std::bad_alloc)
+void* operator new(std::size_t n) THROW (std::bad_alloc)
 {
   void* ret = allocate(n);
   if (!ret)
@@ -53,7 +53,7 @@ void* operator new(std::size_t n) throw (std::bad_alloc)
   return ret;
 }
 
-void* operator new[](std::size_t n) throw (std::bad_alloc)
+void* operator new[](std::size_t n) THROW (std::bad_alloc)
 {
   void* ret = allocate(n);
   if (!ret)
@@ -94,8 +94,6 @@ void operator delete[](void* p, const std::nothrow_t&) throw()
 // libstdc++/12352
 void test01(int iters)
 {
-  bool test __attribute__((unused)) = true;
-
   for (int j = 0; j < iters; ++j)
     {
       for (int i = 0; i < 100; ++i)

@@ -1,7 +1,6 @@
-// { dg-do run }
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,8 +26,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   std::wostringstream ssx;
   ssx << L"[" << std::left << std::setfill(L'x') << std::setw(20) << LR"("AB \"CD\" EF")" << L"]";
   VERIFY( ssx.str() == LR"(["AB \"CD\" EF"xxxxxx])" );

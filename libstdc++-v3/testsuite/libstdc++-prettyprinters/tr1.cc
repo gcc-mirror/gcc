@@ -1,7 +1,7 @@
 // { dg-do run }
 // { dg-options "-g" }
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -71,11 +71,11 @@ main()
 
   std::tr1::unordered_set<int> uos;
   uos.insert(5);
-// { dg-final { note-test uos {std::tr1::unordered_set with 1 elements = {[0] = 5}} } }
+// { dg-final { note-test uos {std::tr1::unordered_set with 1 element = {[0] = 5}} } }
 
   std::tr1::unordered_multiset<int> uoms;
   uoms.insert(5);
-// { dg-final { note-test uoms {std::tr1::unordered_multiset with 1 elements = {[0] = 5}} } }
+// { dg-final { note-test uoms {std::tr1::unordered_multiset with 1 element = {[0] = 5}} } }
 
   placeholder(""); // Mark SPOT
   use(eum);

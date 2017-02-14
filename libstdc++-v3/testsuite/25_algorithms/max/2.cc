@@ -1,6 +1,6 @@
 // 2000-03-29 sss/bkoz
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,6 @@ const T A<T>::a = T(3);
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   VERIFY( 3 == std::max(A<int>::a, 2) );
   VERIFY( 4 == std::max(A<int>::a, 4) );
 

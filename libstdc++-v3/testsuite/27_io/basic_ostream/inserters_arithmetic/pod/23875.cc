@@ -1,6 +1,6 @@
 // 2005-09-15  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,7 +23,6 @@
 #include <testsuite_hooks.h>
 #include <testsuite_character.h>
 
-bool test __attribute__((unused)) = true;
 using __gnu_test::pod_ushort;
 
 namespace std

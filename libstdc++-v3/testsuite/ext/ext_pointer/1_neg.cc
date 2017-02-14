@@ -2,7 +2,7 @@
 
 // Test for Container using non-standard pointer types.
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,8 +45,6 @@ typedef _Pointer_adapter<_Relative_pointer_impl<const A> > const_A_pointer;
 
 
 void test01(void) {
-  bool test __attribute__((unused)) = true;
-
   A a;
   B b;
 

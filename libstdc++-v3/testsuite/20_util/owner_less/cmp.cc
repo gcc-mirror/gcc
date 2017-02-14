@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,8 +32,6 @@ struct B { A a[2]; };
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   // test empty shared_ptrs compare equivalent
   std::owner_less<std::shared_ptr<A>> less;
   std::owner_less<std::weak_ptr<A>> wless;
@@ -51,8 +49,6 @@ test01()
 int
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::owner_less<std::shared_ptr<A>> less;
   std::owner_less<std::weak_ptr<A>> wless;
 
@@ -84,8 +80,6 @@ test02()
 int
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   std::owner_less<std::shared_ptr<A>> less;
   std::owner_less<std::weak_ptr<A>> wless;
 
@@ -108,8 +102,6 @@ test03()
 int
 test04()
 {
-  bool test __attribute__((unused)) = true;
-
   std::owner_less<std::shared_ptr<A>> less;
 
   std::shared_ptr<A> a[3];

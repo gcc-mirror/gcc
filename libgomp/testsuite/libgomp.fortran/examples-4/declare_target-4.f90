@@ -16,7 +16,7 @@ real function accum (k) result (tmp)
   use e_53_4_mod
   integer :: i, k
   tmp = 0.0e0
-  !$omp target
+  !$omp target map(tmp)
     !$omp parallel do reduction(+:tmp)
     do i = 1, N
       tmp = tmp + Pfun (k, i)

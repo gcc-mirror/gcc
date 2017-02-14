@@ -1,5 +1,5 @@
 /*  -*- Mode: Asm -*-  */
-/* Copyright (C) 1998-2016 Free Software Foundation, Inc.
+/* Copyright (C) 1998-2017 Free Software Foundation, Inc.
    Contributed by Denis Chertykov <chertykov@gmail.com>
 
 This file is free software; you can redistribute it and/or modify it
@@ -958,7 +958,6 @@ DEFUN __muldi3
     wmov    A4, C4
     wmov    A6, C6
 
-    clr     __zero_reg__
     pop     r16
     pop     r17
     pop     r28
@@ -3114,20 +3113,22 @@ ENDF __bswapdi2
  **********************************/
 
 #if defined (L_ashrdi3)
+
+#define SS __zero_reg__
+
 ;; Arithmetic shift right
 ;; r25:r18 = ashr64 (r25:r18, r17:r16)
 DEFUN __ashrdi3
-    bst     r25, 7
-    bld     __zero_reg__, 0
+    sbrc    r25, 7
+    com     SS
     ;; FALLTHRU
 ENDF  __ashrdi3
 
 ;; Logic shift right
 ;; r25:r18 = lshr64 (r25:r18, r17:r16)
 DEFUN __lshrdi3
-    lsr     __zero_reg__
-    sbc     __tmp_reg__, __tmp_reg__
-    push    r16
+    ;; Signs are in SS (zero_reg)
+    mov     __tmp_reg__, r16
 0:  cpi     r16, 8
     brlo 2f
     subi    r16, 8
@@ -3138,9 +3139,9 @@ DEFUN __lshrdi3
     mov     r22, r23
     mov     r23, r24
     mov     r24, r25
-    mov     r25, __tmp_reg__
+    mov     r25, SS
     rjmp 0b
-1:  asr     __tmp_reg__
+1:  asr     SS
     ror     r25
     ror     r24
     ror     r23
@@ -3151,16 +3152,21 @@ DEFUN __lshrdi3
     ror     r18
 2:  dec     r16
     brpl 1b
-    pop     r16
+    clr     __zero_reg__
+    mov     r16, __tmp_reg__
     ret
 ENDF __lshrdi3
+
+#undef SS
+
 #endif /* defined (L_ashrdi3) */
 
 #if defined (L_ashldi3)
 ;; Shift left
 ;; r25:r18 = ashl64 (r25:r18, r17:r16)
+;; This function does not clobber T.
 DEFUN __ashldi3
-    push    r16
+    mov     __tmp_reg__, r16
 0:  cpi     r16, 8
     brlo 2f
     mov     r25, r24
@@ -3183,13 +3189,13 @@ DEFUN __ashldi3
     rol     r25
 2:  dec     r16
     brpl 1b
-    pop     r16
+    mov     r16, __tmp_reg__
     ret
 ENDF __ashldi3
 #endif /* defined (L_ashldi3) */
 
 #if defined (L_rotldi3)
-;; Shift left
+;; Rotate left
 ;; r25:r18 = rotl64 (r25:r18, r17:r16)
 DEFUN __rotldi3
     push    r16

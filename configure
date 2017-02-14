@@ -583,7 +583,6 @@ AS_FOR_TARGET
 AR_FOR_TARGET
 GOC_FOR_TARGET
 GFORTRAN_FOR_TARGET
-GCJ_FOR_TARGET
 GCC_FOR_TARGET
 CXX_FOR_TARGET
 CC_FOR_TARGET
@@ -616,7 +615,6 @@ LD_FOR_BUILD
 LDFLAGS_FOR_BUILD
 GOC_FOR_BUILD
 GFORTRAN_FOR_BUILD
-GCJ_FOR_BUILD
 DLLTOOL_FOR_BUILD
 CXX_FOR_BUILD
 CXXFLAGS_FOR_BUILD
@@ -643,6 +641,7 @@ CXXFLAGS_FOR_TARGET
 CFLAGS_FOR_TARGET
 DEBUG_PREFIX_CFLAGS_FOR_TARGET
 SYSROOT_CFLAGS_FOR_TARGET
+get_gcc_base_ver
 extra_host_zlib_configure_flags
 extra_host_libiberty_configure_flags
 stage1_languages
@@ -650,7 +649,6 @@ extra_linker_plugin_flags
 extra_linker_plugin_configure_flags
 islinc
 isllibs
-islver
 poststage1_ldflags
 poststage1_libs
 stage1_ldflags
@@ -674,7 +672,6 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
-EXTRA_CONFIGARGS_LIBJAVA
 extra_liboffloadmic_configure_flags
 target_subdir
 host_subdir
@@ -761,7 +758,6 @@ enable_libada
 enable_libssp
 enable_libstdcxx
 enable_liboffloadmic
-enable_static_libjava
 enable_bootstrap
 with_mpc
 with_mpc_include
@@ -787,6 +783,10 @@ enable_linker_plugin_configure_flags
 enable_linker_plugin_flags
 enable_stage1_languages
 enable_objc_gc
+with_target_bdw_gc
+with_target_bdw_gc_include
+with_target_bdw_gc_lib
+with_gcc_major_version_only
 with_build_sysroot
 with_debug_prefix_map
 with_build_config
@@ -828,7 +828,6 @@ READELF
 CC_FOR_TARGET
 CXX_FOR_TARGET
 GCC_FOR_TARGET
-GCJ_FOR_TARGET
 GFORTRAN_FOR_TARGET
 GOC_FOR_TARGET
 AR_FOR_TARGET
@@ -1489,8 +1488,6 @@ Optional Features:
   --disable-libstdcxx     do not build libstdc++-v3 directory
   --enable-liboffloadmic=ARG
                           build liboffloadmic [ARG={no,host,target}]
-  --enable-static-libjava[=ARG]
-                          build static libjava [default=no]
   --enable-bootstrap      enable bootstrapping [yes if native build]
   --disable-isl-version-check
                           disable check for isl version
@@ -1556,6 +1553,18 @@ Optional Packages:
                           --with-isl-lib=PATH/lib
   --with-isl-include=PATH Specify directory for installed isl include files
   --with-isl-lib=PATH     Specify the directory for the installed isl library
+  --with-target-bdw-gc=PATHLIST
+                          specify prefix directory for installed bdw-gc
+                          package. Equivalent to
+                          --with-target-bdw-gc-include=PATH/include plus
+                          --with-target-bdw-gc-lib=PATH/lib
+  --with-target-bdw-gc-include=PATHLIST
+                          specify directories for installed bdw-gc include
+                          files
+  --with-target-bdw-gc-lib=PATHLIST
+                          specify directories for installed bdw-gc library
+  --with-gcc-major-version-only
+                          use only GCC major number in filesystem paths
   --with-build-sysroot=SYSROOT
                           use sysroot as the system root during the build
   --with-debug-prefix-map='A=B C=D ...'
@@ -1600,8 +1609,6 @@ Some influential environment variables:
               CXX for the target
   GCC_FOR_TARGET
               GCC for the target
-  GCJ_FOR_TARGET
-              GCJ for the target
   GFORTRAN_FOR_TARGET
               GFORTRAN for the target
   GOC_FOR_TARGET
@@ -2736,11 +2743,6 @@ host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktr
 # If --enable-gold is used, "gold" may replace "ld".
 host_tools="texinfo flex bison binutils gas ld fixincludes gcc cgen sid sim gdb gprof etc expect dejagnu m4 utils guile fastjar gnattools libcc1 gotools"
 
-# libgcj represents the runtime libraries only used by gcj.
-libgcj="target-libffi \
-	target-zlib \
-	target-libjava"
-
 # these libraries are built for the target environment, and are built after
 # the host libraries and the host tools (which may be a cross compiler)
 # Note that libiberty is not a target library.
@@ -2751,6 +2753,7 @@ target_libraries="target-libgcc \
 		target-libgomp \
 		target-libcilkrts \
 		target-liboffloadmic \
+		target-libhsail-rt \
 		target-libatomic \
 		target-libitm \
 		target-libstdc++-v3 \
@@ -2760,8 +2763,7 @@ target_libraries="target-libgcc \
 		target-libssp \
 		target-libquadmath \
 		target-libgfortran \
-		target-boehm-gc \
-		${libgcj} \
+		target-libffi \
 		target-libobjc \
 		target-libada \
 		target-libgo"
@@ -3148,43 +3150,6 @@ fi
 
 
 
-# Save it here so that, even in case of --enable-libgcj, if the Java
-# front-end isn't enabled, we still get libgcj disabled.
-libgcj_saved=$libgcj
-case $enable_libgcj in
-yes)
-  # If we reset it here, it won't get added to noconfigdirs in the
-  # target-specific build rules, so it will be forcibly enabled
-  # (unless the Java language itself isn't enabled).
-  libgcj=
-  ;;
-no)
-  # Make sure we get it printed in the list of not supported target libs.
-  # Don't disable libffi, though, other languages use it.
-  noconfigdirs="$noconfigdirs `echo ${libgcj} | sed -e 's/target-libffi//'`"
-  # Clear libgcj_saved so that even if java is enabled libffi won't be
-  # built.
-  libgcj_saved=
-  ;;
-esac
-
-# Check whether --enable-static-libjava was given.
-if test "${enable_static_libjava+set}" = set; then :
-  enableval=$enable_static_libjava; ENABLE_STATIC_LIBJAVA=$enableval
-else
-  ENABLE_STATIC_LIBJAVA=no
-fi
-
-enable_static_libjava=
-if test "${ENABLE_STATIC_LIBJAVA}" = "yes" ; then
-  enable_static_libjava=yes
-fi
-
-if test x$enable_static_libjava != xyes ; then
-  EXTRA_CONFIGARGS_LIBJAVA=--disable-static
-fi
-
-
 # Enable libgomp by default on hosted POSIX systems, and a few others.
 if test x$enable_libgomp = x ; then
     case "${target}" in
@@ -3338,6 +3303,26 @@ $as_echo "yes" >&6; }
     fi
 fi
 
+# Disable libhsail-rt on unsupported systems.
+if test -d ${srcdir}/libhsail-rt; then
+    if test x$enable_libhsail_rt = x; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libhsail-rt support" >&5
+$as_echo_n "checking for libhsail-rt support... " >&6; }
+        if (srcdir=${srcdir}/libhsail-rt; \
+                . ${srcdir}/configure.tgt; \
+                test -n "$UNSUPPORTED")
+        then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+            unsupported_languages="$unsupported_languages brig"
+            # This implicitly disables also target-libhsail-rt as it won't
+            # get added to the build without BRIG FE.
+        else
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+        fi
+    fi
+fi
 
 
 # Disable libquadmath for some systems.
@@ -3402,60 +3387,7 @@ case "${target}" in
     ;;
 esac
 
-# Disable Java if libffi is not supported.
-case "${target}" in
-  aarch64-*-*)
-    ;;
-  alpha*-*-*)
-    ;;
-  arm*-*-*)
-    ;;
-  cris-*-*)
-    ;;
-  frv-*-*)
-    ;;
-  hppa*-*-linux*)
-    ;;
-  hppa*-*-hpux*)
-    ;;
-  i?86-*-*)
-    ;;
-  ia64*-*-*)
-    ;;
-  m32r*-*-*)
-    ;;
-  m68k-*-*)
-    ;;
-  mips*-*-rtems*)
-    ;;
-  mips*-*-linux*)
-    ;;
-  powerpc*-*-linux*)
-    ;;
-  powerpc-*-darwin*)
-    ;;
-  powerpc-*-aix* | rs6000-*-aix*)
-    ;;
-  powerpc-*-freebsd*)
-    ;;
-  powerpc64-*-freebsd*)
-    ;;
-  powerpc*-*-rtems*)
-    ;;
-  s390-*-* | s390x-*-*)
-    ;;
-  sh-*-* | sh[34]*-*-*)
-    ;;
-  sparc*-*-*)
-    ;;
-  x86_64-*-*)
-    ;;
-  *-*-*)
-    unsupported_languages="$unsupported_languages java"
-    ;;
-esac
-
-# Disable Java, libgcj or related libraries for some systems.
+# Disable libffi for some systems.
 case "${target}" in
   powerpc-*-darwin*)
     ;;
@@ -3464,93 +3396,84 @@ case "${target}" in
   x86_64-*-darwin[912]*)
     ;;
   *-*-darwin*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   *-*-netware*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   *-*-phoenix*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   *-*-rtems*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   *-*-tpf*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   *-*-uclinux*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   *-*-vxworks*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  aarch64*-*-freebsd*)
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   alpha*-*-*vms*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   arm*-*-freebsd*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   arm-wince-pe)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   arm*-*-symbianelf*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  bfin-*-*)
-    noconfigdirs="$noconfigdirs target-boehm-gc"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   cris-*-* | crisv32-*-*)
-    unsupported_languages="$unsupported_languages java"
     case "${target}" in
       *-*-linux*)
 	;;
       *) # See PR46792 regarding target-libffi.
-	noconfigdirs="$noconfigdirs target-libffi target-boehm-gc";;
+	noconfigdirs="$noconfigdirs target-libffi";;
     esac
     ;;
-  hppa*64*-*-linux*)
-    # In this case, it's because the hppa64-linux target is for
-    # the kernel only at this point and has no libc, and thus no
-    # headers, crt*.o, etc., all of which are needed by these.
-    unsupported_languages="$unsupported_languages java"
-    ;;
   hppa*64*-*-hpux*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   hppa*-hp-hpux11*)
     ;;
   hppa*-*-hpux*)
-    # According to Alexandre Oliva <aoliva@redhat.com>, libjava won't
-    # build on HP-UX 10.20.
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   ia64*-*-*vms*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   i[3456789]86-w64-mingw*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   i[3456789]86-*-mingw*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   x86_64-*-mingw*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   mmix-*-*)
-    noconfigdirs="$noconfigdirs target-libffi target-boehm-gc"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   powerpc-*-aix*)
     # copied from rs6000-*-* entry
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   rs6000-*-aix*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   ft32-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   *-*-lynxos*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libffi"
     ;;
 esac
 
@@ -3762,6 +3685,9 @@ case "${target}" in
   sh*-*-pe|mips*-*-pe|*arm-wince-pe)
     noconfigdirs="$noconfigdirs tcl tk itcl libgui sim"
     ;;
+  arc*-*-*)
+    noconfigdirs="$noconfigdirs sim"
+    ;;
   arm-*-pe*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
@@ -3936,9 +3862,6 @@ case "${target}" in
   mips*-*-*)
     noconfigdirs="$noconfigdirs gprof"
     ;;
-  nds32*-*-*)
-    noconfigdirs="$noconfigdirs gdb"
-    ;;
   nvptx*-*-*)
     noconfigdirs="$noconfigdirs target-libssp target-libstdc++-v3 target-libobjc"
     ;;
@@ -4041,7 +3964,6 @@ if test "${build}" != "${host}" ; then
   AS_FOR_BUILD=${AS_FOR_BUILD-as}
   CC_FOR_BUILD=${CC_FOR_BUILD-gcc}
   CXX_FOR_BUILD=${CXX_FOR_BUILD-g++}
-  GCJ_FOR_BUILD=${GCJ_FOR_BUILD-gcj}
   GFORTRAN_FOR_BUILD=${GFORTRAN_FOR_BUILD-gfortran}
   GOC_FOR_BUILD=${GOC_FOR_BUILD-gccgo}
   DLLTOOL_FOR_BUILD=${DLLTOOL_FOR_BUILD-dlltool}
@@ -4055,7 +3977,6 @@ else
   AS_FOR_BUILD="\$(AS)"
   CC_FOR_BUILD="\$(CC)"
   CXX_FOR_BUILD="\$(CXX)"
-  GCJ_FOR_BUILD="\$(GCJ)"
   GFORTRAN_FOR_BUILD="\$(GFORTRAN)"
   GOC_FOR_BUILD="\$(GOC)"
   DLLTOOL_FOR_BUILD="\$(DLLTOOL)"
@@ -5376,7 +5297,7 @@ if test "${gcc_cv_prog_cmp_skip+set}" = set; then :
 else
    echo abfoo >t1
   echo cdfoo >t2
-  gcc_cv_prog_cmp_skip='tail +16c $$f1 > tmp-foo1; tail +16c $$f2 > tmp-foo2; cmp tmp-foo1 tmp-foo2'
+  gcc_cv_prog_cmp_skip='tail -c +17 $$f1 > tmp-foo1; tail -c +17 $$f2 > tmp-foo2; cmp tmp-foo1 tmp-foo2'
   if cmp t1 t2 2 2 > /dev/null 2>&1; then
     if cmp t1 t2 1 1 > /dev/null 2>&1; then
       :
@@ -5569,6 +5490,10 @@ if test "x$with_mpfr_lib" != x; then
   gmplibs="-L$with_mpfr_lib $gmplibs"
 fi
 if test "x$with_mpfr$with_mpfr_include$with_mpfr_lib" = x && test -d ${srcdir}/mpfr; then
+  # MPFR v3.1.0 moved the sources into a src sub-directory.
+  if ! test -d ${srcdir}/mpfr/src; then
+    as_fn_error "Building GCC with MPFR in the source tree is only handled for MPFR 3.1.0+." "$LINENO" 5
+  fi
   gmplibs='-L$$r/$(HOST_SUBDIR)/mpfr/src/'"$lt_cv_objdir $gmplibs"
   gmpinc='-I$$r/$(HOST_SUBDIR)/mpfr/src -I$$s/mpfr/src '"$gmpinc"
   extra_mpc_mpfr_configure_flags='--with-mpfr-include=$$s/mpfr/src --with-mpfr-lib=$$r/$(HOST_SUBDIR)/mpfr/src/'"$lt_cv_objdir"
@@ -6013,15 +5938,15 @@ $as_echo "$as_me: WARNING: using in-tree isl, disabling version check" >&2;}
     LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs} ${gmplibs}"
     LIBS="${_isl_saved_LIBS} -lisl -lgmp"
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for isl 0.16, 0.15, or deprecated 0.14" >&5
-$as_echo_n "checking for isl 0.16, 0.15, or deprecated 0.14... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for isl 0.15 or later" >&5
+$as_echo_n "checking for isl 0.15 or later... " >&6; }
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <isl/ctx.h>
+#include <isl/schedule.h>
 int
 main ()
 {
-isl_ctx_get_max_operations (isl_ctx_alloc ());
+isl_options_set_schedule_serialize_sccs (NULL, 0);
   ;
   return 0;
 }
@@ -6037,36 +5962,8 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$gcc_cv_isl" >&6; }
 
     if test "${gcc_cv_isl}" = no ; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: recommended isl version is 0.16 or 0.15, the minimum required isl version 0.14 is deprecated" >&5
-$as_echo "recommended isl version is 0.16 or 0.15, the minimum required isl version 0.14 is deprecated" >&6; }
-    fi
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for isl 0.16 or 0.15" >&5
-$as_echo_n "checking for isl 0.16 or 0.15... " >&6; }
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <isl/schedule.h>
-int
-main ()
-{
-isl_options_set_schedule_serialize_sccs (NULL, 0);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_has_isl_options_set_schedule_serialize_sccs=yes
-else
-  ac_has_isl_options_set_schedule_serialize_sccs=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_isl_options_set_schedule_serialize_sccs" >&5
-$as_echo "$ac_has_isl_options_set_schedule_serialize_sccs" >&6; }
-
-    if test x"$ac_has_isl_options_set_schedule_serialize_sccs" = x"yes"; then
-      islver="0.15"
-
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: required isl version is 0.15 or later" >&5
+$as_echo "required isl version is 0.15 or later" >&6; }
     fi
 
     CFLAGS=$_isl_saved_CFLAGS
@@ -6132,7 +6029,7 @@ target_elf=no
 case $target in
   *-darwin* | *-aix* | *-cygwin* | *-mingw* | *-aout* | *-*coff* | \
   *-msdosdjgpp* | *-vms* | *-wince* | *-*-pe* | \
-  alpha*-dec-osf* | hppa[12]*-*-hpux* | \
+  alpha*-dec-osf* | *-interix* | hppa[12]*-*-hpux* | \
   nvptx-*-none)
     target_elf=no
     ;;
@@ -6503,25 +6400,44 @@ done
 # Check for Boehm's garbage collector
 # Check whether --enable-objc-gc was given.
 if test "${enable_objc_gc+set}" = set; then :
-  enableval=$enable_objc_gc; case ,${enable_languages},:${enable_objc_gc}:${noconfigdirs} in
-  *,objc,*:*:yes:*target-boehm-gc*)
-    as_fn_error "Boehm's garbage collector was requested yet not supported in this configuration" "$LINENO" 5
-    ;;
-esac
+  enableval=$enable_objc_gc;
 fi
 
 
-# Make sure we only build Boehm's garbage collector if required.
-case ,${enable_languages},:${enable_objc_gc} in
-  *,objc,*:yes)
-    # Keep target-boehm-gc if requested for Objective-C.
-    ;;
-  *)
-    # Otherwise remove target-boehm-gc depending on target-libjava.
-    if echo " ${noconfigdirs} " | grep "target-libjava" >/dev/null 2>&1; then
-      noconfigdirs="$noconfigdirs target-boehm-gc"
+# Check whether --with-target-bdw-gc was given.
+if test "${with_target_bdw_gc+set}" = set; then :
+  withval=$with_target_bdw_gc;
+fi
+
+
+# Check whether --with-target-bdw-gc-include was given.
+if test "${with_target_bdw_gc_include+set}" = set; then :
+  withval=$with_target_bdw_gc_include;
+fi
+
+
+# Check whether --with-target-bdw-gc-lib was given.
+if test "${with_target_bdw_gc_lib+set}" = set; then :
+  withval=$with_target_bdw_gc_lib;
+fi
+
+
+case ,${enable_languages},:${enable_objc_gc} in *,objc,*:yes|*,objc,*:auto)
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for bdw garbage collector" >&5
+$as_echo_n "checking for bdw garbage collector... " >&6; }
+  if test "x$with_target_bdw_gc$with_target_bdw_gc_include$with_target_bdw_gc_lib" = x; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: using bdw-gc in default locations" >&5
+$as_echo "using bdw-gc in default locations" >&6; }
+  else
+        if test "x$with_target_bdw_gc_include" = x && test "x$with_target_bdw_gc_lib" != x; then
+      as_fn_error "found --with-target-bdw-gc-lib but --with-target-bdw-gc-include missing" "$LINENO" 5
+    elif test "x$with_target_bdw_gc_include" != x && test "x$with_target_bdw_gc_lib" = x; then
+      as_fn_error "found --with-target-bdw-gc-include but --with-target-bdw-gc-lib missing" "$LINENO" 5
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: using paths configured with --with-target-bdw-gc options" >&5
+$as_echo "using paths configured with --with-target-bdw-gc options" >&6; }
     fi
-    ;;
+  fi
 esac
 
 # Disable libcilkrts, libitm, libsanitizer, libvtv, liboffloadmic if we're not building C++
@@ -6607,15 +6523,6 @@ for i in ${target_configdirs_all} ; do
     target_configdirs="${target_configdirs} $i"
   fi
 done
-
-# Exclude target-zlib if target-libjava isn't built.
-case ${target_configdirs} in
-*target-libjava*)
-  ;;
-*)
-  target_configdirs="`echo ${target_configdirs} | sed -e 's/target-zlib//'`"
-  ;;
-esac
 
 # libiberty-linker-plugin is special: it doesn't have its own source directory,
 # so we have to add it after the preceding checks.
@@ -6708,6 +6615,20 @@ if test "${PATH_SEPARATOR+set}" != set; then
 fi
 
 
+  get_gcc_base_ver="cat"
+
+# Check whether --with-gcc-major-version-only was given.
+if test "${with_gcc_major_version_only+set}" = set; then :
+  withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+      fi
+
+fi
+
+
+
+
+
 
 if test "x$exec_prefix" = xNONE; then
         if test "x$prefix" = xNONE; then
@@ -6723,7 +6644,11 @@ fi
 # case, if there is no compiler in the tree nobody should use
 # AS_FOR_TARGET and LD_FOR_TARGET.
 if test x$host = x$build && test -f $srcdir/gcc/BASE-VER; then
-    gcc_version=`cat $srcdir/gcc/BASE-VER`
+    if test x$with_gcc_major_version_only = xyes ; then
+                gcc_version=`sed -e 's/^\([0-9]*\).*$/\1/' $srcdir/gcc/BASE-VER`
+            else
+        gcc_version=`cat $srcdir/gcc/BASE-VER`
+    fi
     gcc_cv_tool_dirs="$gcc_cv_tool_prefix/libexec/gcc/$target_noncanonical/$gcc_version$PATH_SEPARATOR"
     gcc_cv_tool_dirs="$gcc_cv_tool_dirs$gcc_cv_tool_prefix/libexec/gcc/$target_noncanonical$PATH_SEPARATOR"
     gcc_cv_tool_dirs="$gcc_cv_tool_dirs/usr/lib/gcc/$target_noncanonical/$gcc_version$PATH_SEPARATOR"
@@ -7146,9 +7071,14 @@ if echo " ${target_configdirs} " | grep " libvtv " > /dev/null 2>&1 &&
   bootstrap_target_libs=${bootstrap_target_libs}target-libvtv,
 fi
 
-# If we are building libmpx, bootstrap it.
+# If we are building libmpx and $BUILD_CONFIG contains bootstrap-mpx,
+# bootstrap it.
 if echo " ${target_configdirs} " | grep " libmpx " > /dev/null 2>&1; then
-  bootstrap_target_libs=${bootstrap_target_libs}target-libmpx,
+  case "$BUILD_CONFIG" in
+    *bootstrap-mpx* )
+      bootstrap_target_libs=${bootstrap_target_libs}target-libmpx,
+      ;;
+  esac
 fi
 
 # Determine whether gdb needs tk/tcl or not.
@@ -7685,7 +7615,6 @@ done
 
 
 # Build tools.
-
 
 
 
@@ -10430,167 +10359,6 @@ if test -z "$ac_cv_prog_GCC_FOR_TARGET" ; then
   GCC_FOR_TARGET="${CC_FOR_TARGET}"
 else
   GCC_FOR_TARGET="$ac_cv_prog_GCC_FOR_TARGET"
-fi
-
-
-
-if test -n "$GCJ_FOR_TARGET"; then
-  ac_cv_prog_GCJ_FOR_TARGET=$GCJ_FOR_TARGET
-elif test -n "$ac_cv_prog_GCJ_FOR_TARGET"; then
-  GCJ_FOR_TARGET=$ac_cv_prog_GCJ_FOR_TARGET
-fi
-
-if test -n "$ac_cv_prog_GCJ_FOR_TARGET"; then
-  for ncn_progname in gcj; do
-    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
-set dummy ${ncn_progname}; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if test "${ac_cv_prog_GCJ_FOR_TARGET+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$GCJ_FOR_TARGET"; then
-  ac_cv_prog_GCJ_FOR_TARGET="$GCJ_FOR_TARGET" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_GCJ_FOR_TARGET="${ncn_progname}"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-GCJ_FOR_TARGET=$ac_cv_prog_GCJ_FOR_TARGET
-if test -n "$GCJ_FOR_TARGET"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GCJ_FOR_TARGET" >&5
-$as_echo "$GCJ_FOR_TARGET" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  done
-fi
-
-if test -z "$ac_cv_prog_GCJ_FOR_TARGET" && test -n "$with_build_time_tools"; then
-  for ncn_progname in gcj; do
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${ncn_progname} in $with_build_time_tools" >&5
-$as_echo_n "checking for ${ncn_progname} in $with_build_time_tools... " >&6; }
-    if test -x $with_build_time_tools/${ncn_progname}; then
-      ac_cv_prog_GCJ_FOR_TARGET=$with_build_time_tools/${ncn_progname}
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-      break
-    else
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-    fi
-  done
-fi
-
-if test -z "$ac_cv_prog_GCJ_FOR_TARGET"; then
-  for ncn_progname in gcj; do
-    if test -n "$ncn_target_tool_prefix"; then
-      # Extract the first word of "${ncn_target_tool_prefix}${ncn_progname}", so it can be a program name with args.
-set dummy ${ncn_target_tool_prefix}${ncn_progname}; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if test "${ac_cv_prog_GCJ_FOR_TARGET+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$GCJ_FOR_TARGET"; then
-  ac_cv_prog_GCJ_FOR_TARGET="$GCJ_FOR_TARGET" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_GCJ_FOR_TARGET="${ncn_target_tool_prefix}${ncn_progname}"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-GCJ_FOR_TARGET=$ac_cv_prog_GCJ_FOR_TARGET
-if test -n "$GCJ_FOR_TARGET"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GCJ_FOR_TARGET" >&5
-$as_echo "$GCJ_FOR_TARGET" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-    fi
-    if test -z "$ac_cv_prog_GCJ_FOR_TARGET" && test $build = $target ; then
-      # Extract the first word of "${ncn_progname}", so it can be a program name with args.
-set dummy ${ncn_progname}; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if test "${ac_cv_prog_GCJ_FOR_TARGET+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$GCJ_FOR_TARGET"; then
-  ac_cv_prog_GCJ_FOR_TARGET="$GCJ_FOR_TARGET" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_GCJ_FOR_TARGET="${ncn_progname}"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-GCJ_FOR_TARGET=$ac_cv_prog_GCJ_FOR_TARGET
-if test -n "$GCJ_FOR_TARGET"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GCJ_FOR_TARGET" >&5
-$as_echo "$GCJ_FOR_TARGET" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-    fi
-    test -n "$ac_cv_prog_GCJ_FOR_TARGET" && break
-  done
-fi
-
-if test -z "$ac_cv_prog_GCJ_FOR_TARGET" ; then
-  set dummy gcj
-  if test $build = $target ; then
-    GCJ_FOR_TARGET="$2"
-  else
-    GCJ_FOR_TARGET="${ncn_target_tool_prefix}$2"
-  fi
-else
-  GCJ_FOR_TARGET="$ac_cv_prog_GCJ_FOR_TARGET"
 fi
 
 
@@ -14223,51 +13991,6 @@ $as_echo "pre-installed" >&6; }
   fi
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target gcj" >&5
-$as_echo_n "checking where to find the target gcj... " >&6; }
-if test "x${build}" != "x${host}" ; then
-  if expr "x$GCJ_FOR_TARGET" : "x/" > /dev/null; then
-    # We already found the complete path
-    ac_dir=`dirname $GCJ_FOR_TARGET`
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
-$as_echo "pre-installed in $ac_dir" >&6; }
-  else
-    # Canadian cross, just use what we found
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
-$as_echo "pre-installed" >&6; }
-  fi
-else
-  ok=yes
-  case " ${configdirs} " in
-    *" gcc "*) ;;
-    *) ok=no ;;
-  esac
-  case ,${enable_languages}, in
-    *,java,*) ;;
-    *) ok=no ;;
-  esac
-  if test $ok = yes; then
-    # An in-tree tool is available and we can use it
-    GCJ_FOR_TARGET='$$r/$(HOST_SUBDIR)/gcc/gcj -B$$r/$(HOST_SUBDIR)/gcc/'
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: just compiled" >&5
-$as_echo "just compiled" >&6; }
-  elif expr "x$GCJ_FOR_TARGET" : "x/" > /dev/null; then
-    # We already found the complete path
-    ac_dir=`dirname $GCJ_FOR_TARGET`
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
-$as_echo "pre-installed in $ac_dir" >&6; }
-  elif test "x$target" = "x$host"; then
-    # We can use an host tool
-    GCJ_FOR_TARGET='$(GCJ)'
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
-$as_echo "host tool" >&6; }
-  else
-    # We need a cross tool
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
-$as_echo "pre-installed" >&6; }
-  fi
-fi
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target gfortran" >&5
 $as_echo_n "checking where to find the target gfortran... " >&6; }
 if test "x${build}" != "x${host}" ; then
@@ -14917,7 +14640,7 @@ fi
 compare_exclusions="gcc/cc*-checksum\$(objext) | gcc/ada/*tools/*"
 case "$target" in
   hppa*64*-*-hpux*) ;;
-  hppa*-*-hpux*) compare_exclusions="gcc/cc*-checksum\$(objext) | */libgcc/lib2funcs* | gcc/ada/*tools/*" ;;
+  hppa*-*-hpux*) compare_exclusions="gcc/cc*-checksum\$(objext) | */libgcc/lib2funcs* | gcc/ada/*tools/* | gcc/function-tests.o" ;;
   powerpc*-ibm-aix*) compare_exclusions="gcc/cc*-checksum\$(objext) | gcc/ada/*tools/* | *libgomp*\$(objext)" ;;
 esac
 

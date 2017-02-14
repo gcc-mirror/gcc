@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2016 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -921,6 +921,8 @@ sign-extend the result to 64 bits.  On such machines, set
 Do not define this macro if it would never modify @var{m}.
 @end defmac
 
+@hook TARGET_C_EXCESS_PRECISION
+
 @hook TARGET_PROMOTE_FUNCTION_MODE
 
 @defmac PARM_BOUNDARY
@@ -988,13 +990,15 @@ structure and union fields only, unless the field alignment has been set
 by the @code{__attribute__ ((aligned (@var{n})))} construct.
 @end defmac
 
-@defmac ADJUST_FIELD_ALIGN (@var{field}, @var{computed})
-An expression for the alignment of a structure field @var{field} if the
-alignment computed in the usual way (including applying of
-@code{BIGGEST_ALIGNMENT} and @code{BIGGEST_FIELD_ALIGNMENT} to the
+@defmac ADJUST_FIELD_ALIGN (@var{field}, @var{type}, @var{computed})
+An expression for the alignment of a structure field @var{field} of
+type @var{type} if the alignment computed in the usual way (including
+applying of @code{BIGGEST_ALIGNMENT} and @code{BIGGEST_FIELD_ALIGNMENT} to the
 alignment) is @var{computed}.  It overrides alignment only if the
 field alignment has not been set by the
-@code{__attribute__ ((aligned (@var{n})))} construct.
+@code{__attribute__ ((aligned (@var{n})))} construct.  Note that @var{field}
+may be @code{NULL_TREE} in case we just query for the minimum alignment
+of a field of type @var{type} in structure context.
 @end defmac
 
 @defmac MAX_STACK_ALIGNMENT
@@ -1398,13 +1402,6 @@ causes function names in libgcc to be changed to use a @code{__gnu_}
 prefix for their name rather than the default @code{__}.  A port which
 uses this macro should also arrange to use @file{t-gnu-prefix} in
 the libgcc @file{config.host}.
-@end defmac
-
-@defmac TARGET_FLT_EVAL_METHOD
-A C expression for the value for @code{FLT_EVAL_METHOD} in @file{float.h},
-assuming, if applicable, that the floating-point control word is in its
-default state.  If you do not define this macro the value of
-@code{FLT_EVAL_METHOD} will be zero.
 @end defmac
 
 @defmac WIDEST_HARDWARE_FP_SIZE
@@ -2507,7 +2504,11 @@ value that the middle-end intended.
 
 @hook TARGET_SPILL_CLASS
 
+@hook TARGET_ADDITIONAL_ALLOCNO_CLASS_P
+
 @hook TARGET_CSTORE_MODE
+
+@hook TARGET_COMPUTE_PRESSURE_CLASSES
 
 @node Stack and Calling
 @section Stack Layout and Calling Conventions
@@ -2530,6 +2531,7 @@ This describes the stack layout and calling conventions.
 * Function Entry::
 * Profiling::
 * Tail Calls::
+* Shrink-wrapping separate components::
 * Stack Smashing Protection::
 * Miscellaneous Register Hooks::
 @end menu
@@ -3177,25 +3179,9 @@ This is about eliminating the frame pointer and arg pointer.
 
 @hook TARGET_FRAME_POINTER_REQUIRED
 
-@findex get_frame_size
-@defmac INITIAL_FRAME_POINTER_OFFSET (@var{depth-var})
-A C statement to store in the variable @var{depth-var} the difference
-between the frame pointer and the stack pointer values immediately after
-the function prologue.  The value would be computed from information
-such as the result of @code{get_frame_size ()} and the tables of
-registers @code{regs_ever_live} and @code{call_used_regs}.
-
-If @code{ELIMINABLE_REGS} is defined, this macro will be not be used and
-need not be defined.  Otherwise, it must be defined even if
-@code{TARGET_FRAME_POINTER_REQUIRED} always returns true; in that
-case, you may set @var{depth-var} to anything.
-@end defmac
-
 @defmac ELIMINABLE_REGS
-If defined, this macro specifies a table of register pairs used to
-eliminate unneeded registers that point into the stack frame.  If it is not
-defined, the only elimination attempted by the compiler is to replace
-references to the frame pointer with references to the stack pointer.
+This macro specifies a table of register pairs used to eliminate
+unneeded registers that point into the stack frame.
 
 The definition of this macro is a list of structure initializations, each
 of which specifies an original and replacement register.
@@ -3221,10 +3207,10 @@ specified first since that is the preferred elimination.
 @hook TARGET_CAN_ELIMINATE
 
 @defmac INITIAL_ELIMINATION_OFFSET (@var{from-reg}, @var{to-reg}, @var{offset-var})
-This macro is similar to @code{INITIAL_FRAME_POINTER_OFFSET}.  It
-specifies the initial difference between the specified pair of
-registers.  This macro must be defined if @code{ELIMINABLE_REGS} is
-defined.
+This macro returns the initial difference between the specified pair
+of registers.  The value would be computed from information
+such as the result of @code{get_frame_size ()} and the tables of
+registers @code{df_regs_ever_live_p} and @code{call_used_regs}.
 @end defmac
 
 @node Stack Arguments
@@ -3527,6 +3513,8 @@ stack.
 
 @hook TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P
 
+@hook TARGET_FLOATN_MODE
+
 @hook TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
 
 @node Scalar Return
@@ -3789,6 +3777,43 @@ the function prologue.  Normally, the profiling code comes after.
 
 @hook TARGET_WARN_FUNC_RETURN
 
+@node Shrink-wrapping separate components
+@subsection Shrink-wrapping separate components
+@cindex shrink-wrapping separate components
+
+The prologue may perform a variety of target dependent tasks such as
+saving callee-saved registers, saving the return address, aligning the
+stack, creating a stack frame, initializing the PIC register, setting
+up the static chain, etc.
+
+On some targets some of these tasks may be independent of others and
+thus may be shrink-wrapped separately.  These independent tasks are
+referred to as components and are handled generically by the target
+independent parts of GCC.
+
+Using the following hooks those prologue or epilogue components can be
+shrink-wrapped separately, so that the initialization (and possibly
+teardown) those components do is not done as frequently on execution
+paths where this would unnecessary.
+
+What exactly those components are is up to the target code; the generic
+code treats them abstractly, as a bit in an @code{sbitmap}.  These
+@code{sbitmap}s are allocated by the @code{shrink_wrap.get_separate_components}
+and @code{shrink_wrap.components_for_bb} hooks, and deallocated by the
+generic code.
+
+@hook TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS
+
+@hook TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB
+
+@hook TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS
+
+@hook TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS
+
+@hook TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS
+
+@hook TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS
+
 @node Stack Smashing Protection
 @subsection Stack smashing protection
 @cindex stack smashing protection
@@ -3796,6 +3821,8 @@ the function prologue.  Normally, the profiling code comes after.
 @hook TARGET_STACK_PROTECT_GUARD
 
 @hook TARGET_STACK_PROTECT_FAIL
+
+@hook TARGET_STACK_PROTECT_RUNTIME_ENABLED_P
 
 @hook TARGET_SUPPORTS_SPLIT_STACK
 
@@ -3946,6 +3973,8 @@ is used for aligning trampolines.
 @hook TARGET_TRAMPOLINE_INIT
 
 @hook TARGET_TRAMPOLINE_ADJUST_ADDRESS
+
+@hook TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 
 Implementing trampolines is difficult on many machines because they have
 separate instruction and data caches.  Writing into a stack location
@@ -4263,6 +4292,8 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_SIMD_CLONE_USABLE
 
+@hook TARGET_SIMT_VF
+
 @hook TARGET_GOACC_VALIDATE_DIMS
 
 @hook TARGET_GOACC_DIM_LIMIT
@@ -4455,8 +4486,8 @@ the case of the add on the SPARC discussed above, we have the pattern
 
 @smallexample
 (define_insn ""
-  [(set (reg:CC_NOOV 0)
-        (compare:CC_NOOV
+  [(set (reg:CCNZ 0)
+        (compare:CCNZ
           (plus:SI (match_operand:SI 0 "register_operand" "%r")
                    (match_operand:SI 1 "arith_operand" "rI"))
           (const_int 0)))]
@@ -4465,7 +4496,7 @@ the case of the add on the SPARC discussed above, we have the pattern
 @end smallexample
 
 @noindent
-together with a @code{SELECT_CC_MODE} that returns @code{CC_NOOVmode}
+together with a @code{SELECT_CC_MODE} that returns @code{CCNZmode}
 for comparisons whose argument is a @code{plus}:
 
 @smallexample
@@ -4475,7 +4506,7 @@ for comparisons whose argument is a @code{plus}:
       ? CCFPEmode : CCFPmode)                            \
    : ((GET_CODE (X) == PLUS || GET_CODE (X) == MINUS     \
        || GET_CODE (X) == NEG || GET_CODE (x) == ASHIFT) \
-      ? CC_NOOVmode : CCmode))
+      ? CCNZmode : CCmode))
 @end smallexample
 
 Another reason to use modes is to retain information on which operands
@@ -4622,7 +4653,8 @@ other fields in the same word of the structure, but to different bytes.
 Define this macro to be the value 1 if memory accesses described by the
 @var{mode} and @var{alignment} parameters have a cost many times greater
 than aligned accesses, for example if they are emulated in a trap
-handler.
+handler.  This macro is invoked only for unaligned accesses, i.e. when
+@code{@var{alignment} < GET_MODE_ALIGNMENT (@var{mode})}.
 
 When this macro is nonzero, the compiler will act as if
 @code{STRICT_ALIGNMENT} were nonzero when generating code for block
@@ -4762,6 +4794,8 @@ Define this macro if a non-short-circuit operation produced by
 
 @hook TARGET_ADDRESS_COST
 
+@hook TARGET_MAX_NOCE_IFCVT_SEQ_COST
+
 @hook TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P
 
 @node Scheduling
@@ -4850,6 +4884,8 @@ them: try the first ones in this list first.
 
 @hook TARGET_SCHED_SET_SCHED_FLAGS
 
+@hook TARGET_SCHED_CAN_SPECULATE_INSN
+
 @hook TARGET_SCHED_SMS_RES_MII
 
 @hook TARGET_SCHED_DISPATCH
@@ -4861,6 +4897,8 @@ them: try the first ones in this list first.
 @hook TARGET_SCHED_REASSOCIATION_WIDTH
 
 @hook TARGET_SCHED_FUSION_PRIORITY
+
+@hook TARGET_EXPAND_DIVMOD_LIBFUNC
 
 @node Sections
 @section Dividing the Output into Sections (Texts, Data, @dots{})
@@ -5228,6 +5266,8 @@ of the filename using this macro.
 @end defmac
 
 @hook TARGET_ASM_NAMED_SECTION
+
+@hook TARGET_ASM_ELF_FLAGS_NUMERIC
 
 @hook TARGET_ASM_FUNCTION_SECTION
 
@@ -7052,8 +7092,6 @@ tables, and hence is desirable if it works.
 
 @hook TARGET_WANT_DEBUG_PUB_SECTIONS
 
-@hook TARGET_FORCE_AT_COMP_DIR
-
 @hook TARGET_DELAY_SCHED2
 
 @hook TARGET_DELAY_VARTRACK
@@ -7071,10 +7109,11 @@ between the two given labels in system defined units, e.g. instruction
 slots on IA64 VMS, using an integer of the given size.
 @end defmac
 
-@defmac ASM_OUTPUT_DWARF_OFFSET (@var{stream}, @var{size}, @var{label}, @var{section})
+@defmac ASM_OUTPUT_DWARF_OFFSET (@var{stream}, @var{size}, @var{label}, @var{offset}, @var{section})
 A C statement to issue assembly directives that create a
-section-relative reference to the given @var{label}, using an integer of the
-given @var{size}.  The label is known to be defined in the given @var{section}.
+section-relative reference to the given @var{label} plus @var{offset}, using
+an integer of the given @var{size}.  The label is known to be defined in the
+given @var{section}.
 @end defmac
 
 @defmac ASM_OUTPUT_DWARF_PCREL (@var{stream}, @var{size}, @var{label})
@@ -7486,6 +7525,8 @@ c_register_addr_space ("__ea", ADDR_SPACE_EA);
 
 @hook TARGET_ADDR_SPACE_DEBUG
 
+@hook TARGET_ADDR_SPACE_DIAGNOSE_USAGE
+
 @node Misc
 @section Miscellaneous Parameters
 @cindex parameters, miscellaneous
@@ -7541,6 +7582,8 @@ Define this macro to 1 if operations between registers with integral mode
 smaller than a word are always performed on the entire register.
 Most RISC machines have this property and most CISC machines do not.
 @end defmac
+
+@hook TARGET_MIN_ARITHMETIC_PRECISION
 
 @defmac LOAD_EXTEND_OP (@var{mem_mode})
 Define this macro to be a C expression indicating when insns that read
@@ -8191,12 +8234,6 @@ and scanf formatter settings.
 
 @hook TARGET_CONVERT_TO_TYPE
 
-@defmac TARGET_USE_JCR_SECTION
-This macro determines whether to use the JCR section to register Java
-classes. By default, TARGET_USE_JCR_SECTION is defined to 1 if both
-SUPPORTS_WEAK and TARGET_HAVE_NAMED_SECTIONS are true, else 0.
-@end defmac
-
 @defmac OBJC_JBLEN
 This macro determines the size of the objective C jump buffer for the
 NeXT runtime. By default, OBJC_JBLEN is defined to an innocuous value.
@@ -8278,3 +8315,5 @@ All and all it does not take long to convert ports that the
 maintainer is familiar with.
 
 @end defmac
+
+@hook TARGET_RUN_TARGET_SELFTESTS

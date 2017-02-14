@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2015, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2016, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -434,12 +434,15 @@ package body System.Tasking.Initialization is
    begin
       if not T.Aborting and then T /= Self_ID then
          case T.Common.State is
-            when Unactivated | Terminated =>
+            when Terminated
+               | Unactivated
+            =>
                pragma Assert (False);
                null;
 
-            when Activating | Runnable =>
-
+            when Activating
+               | Runnable
+            =>
                --  This is needed to cancel an asynchronous protected entry
                --  call during a requeue with abort.
 
@@ -449,15 +452,18 @@ package body System.Tasking.Initialization is
             when Interrupt_Server_Blocked_On_Event_Flag =>
                null;
 
-            when Delay_Sleep                              |
-                 Async_Select_Sleep                       |
-                 Interrupt_Server_Idle_Sleep              |
-                 Interrupt_Server_Blocked_Interrupt_Sleep |
-                 Timer_Server_Sleep                       |
-                 AST_Server_Sleep                         =>
+            when AST_Server_Sleep
+               | Async_Select_Sleep
+               | Delay_Sleep
+               | Interrupt_Server_Blocked_Interrupt_Sleep
+               | Interrupt_Server_Idle_Sleep
+               | Timer_Server_Sleep
+            =>
                Wakeup (T, T.Common.State);
 
-            when Acceptor_Sleep | Acceptor_Delay_Sleep =>
+            when Acceptor_Delay_Sleep
+               | Acceptor_Sleep
+            =>
                T.Open_Accepts := null;
                Wakeup (T, T.Common.State);
 
@@ -466,10 +472,11 @@ package body System.Tasking.Initialization is
                  (T.ATC_Nesting_Level).Cancellation_Attempted := True;
                Wakeup (T, T.Common.State);
 
-            when Activator_Sleep         |
-                 Master_Completion_Sleep |
-                 Master_Phase_2_Sleep    |
-                 Asynchronous_Hold       =>
+            when Activator_Sleep
+               | Asynchronous_Hold
+               | Master_Completion_Sleep
+               | Master_Phase_2_Sleep
+            =>
                null;
          end case;
       end if;

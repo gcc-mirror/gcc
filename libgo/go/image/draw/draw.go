@@ -1,4 +1,4 @@
-// Copyright 2009 The Go Authors.  All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -116,7 +116,12 @@ func DrawMask(dst Image, r image.Rectangle, src image.Image, sp image.Point, mas
 			if mask == nil {
 				switch src0 := src.(type) {
 				case *image.Uniform:
-					drawFillOver(dst0, r, src0)
+					sr, sg, sb, sa := src0.RGBA()
+					if sa == 0xffff {
+						drawFillSrc(dst0, r, sr, sg, sb, sa)
+					} else {
+						drawFillOver(dst0, r, sr, sg, sb, sa)
+					}
 					return
 				case *image.RGBA:
 					drawCopyOver(dst0, r, src0, sp)
@@ -150,7 +155,8 @@ func DrawMask(dst Image, r image.Rectangle, src image.Image, sp image.Point, mas
 			if mask == nil {
 				switch src0 := src.(type) {
 				case *image.Uniform:
-					drawFillSrc(dst0, r, src0)
+					sr, sg, sb, sa := src0.RGBA()
+					drawFillSrc(dst0, r, sr, sg, sb, sa)
 					return
 				case *image.RGBA:
 					drawCopySrc(dst0, r, src0, sp)
@@ -232,8 +238,7 @@ func DrawMask(dst Image, r image.Rectangle, src image.Image, sp image.Point, mas
 	}
 }
 
-func drawFillOver(dst *image.RGBA, r image.Rectangle, src *image.Uniform) {
-	sr, sg, sb, sa := src.RGBA()
+func drawFillOver(dst *image.RGBA, r image.Rectangle, sr, sg, sb, sa uint32) {
 	// The 0x101 is here for the same reason as in drawRGBA.
 	a := (m - sa) * 0x101
 	i0 := dst.PixOffset(r.Min.X, r.Min.Y)
@@ -255,8 +260,7 @@ func drawFillOver(dst *image.RGBA, r image.Rectangle, src *image.Uniform) {
 	}
 }
 
-func drawFillSrc(dst *image.RGBA, r image.Rectangle, src *image.Uniform) {
-	sr, sg, sb, sa := src.RGBA()
+func drawFillSrc(dst *image.RGBA, r image.Rectangle, sr, sg, sb, sa uint32) {
 	sr8 := uint8(sr >> 8)
 	sg8 := uint8(sg >> 8)
 	sb8 := uint8(sb >> 8)
@@ -634,10 +638,10 @@ func drawPaletted(dst Image, r image.Rectangle, src image.Image, sp image.Point,
 				if !floydSteinberg {
 					continue
 				}
-				er -= int32(palette[bestIndex][0])
-				eg -= int32(palette[bestIndex][1])
-				eb -= int32(palette[bestIndex][2])
-				ea -= int32(palette[bestIndex][3])
+				er -= palette[bestIndex][0]
+				eg -= palette[bestIndex][1]
+				eb -= palette[bestIndex][2]
+				ea -= palette[bestIndex][3]
 
 			} else {
 				out.R = uint16(er)

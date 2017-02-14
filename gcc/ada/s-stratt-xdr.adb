@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1996-2013, Free Software Foundation, Inc.          --
+--         Copyright (C) 1996-2016, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GARLIC is free software;  you can redistribute it and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,11 @@
 --  This file is an alternate version of s-stratt.adb based on the XDR
 --  standard. It is especially useful for exchanging streams between two
 --  different systems with different basic type representations and endianness.
+
+pragma Warnings (Off, "*not allowed in compiler unit");
+--  This body is used only when rebuilding the runtime library, not when
+--  building the compiler, so it's OK to depend on features that would
+--  otherwise break bootstrap (e.g. IF-expressions).
 
 with Ada.IO_Exceptions;
 with Ada.Streams;              use Ada.Streams;

@@ -1,6 +1,6 @@
 // 2008-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,8 +25,6 @@ template<typename T>
   void
   do_test()
   {
-    bool test __attribute__((unused)) = true;
-
     const T r = 1.0;
     const T i = -1.0;
     const T v = 0.0;

@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2008-11-18  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2006-2016 Free Software Foundation, Inc.
+// Copyright (C) 2006-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,7 +20,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 26.4.5 Engines and egine adaptors with predefined parameters [rand.predef]
+// 26.4.5 Engines and engine adaptors with predefined parameters [rand.predef]
 // 26.4.5 [10]
 
 #include <random>
@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::default_random_engine a;
   a.discard(9999);
 
@@ -38,7 +36,7 @@ test01()
   std::minstd_rand0 b;
   b.discard(9999);
 
-  assert( a() == b() );
+  VERIFY( a() == b() );
 }
 
 int main()

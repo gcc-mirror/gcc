@@ -1,6 +1,6 @@
 // { dg-require-namedlocale "ja_JP.eucJP" }
 
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,6 @@ void test01()
 {
 #ifdef _GLIBCXX_USE_WCHAR_T
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   locale locf(locale("C"), "ja_JP.eucJP", locale::monetary);
 

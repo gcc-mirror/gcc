@@ -123,6 +123,11 @@ exitok=`
 exec < ${TESTDIR}/LIST
 while read f
 do
+  if [ -n "$MSYSTEM" -o -n "$DJGPP" ]
+  then
+    # On MinGW and DJGPP convert line endings to avoid false positives
+    mv $f $f.dos; tr -d '\r' < $f.dos > $f; rm $f.dos
+  fi
   if [ ! -f ${TESTBASE}/$f ]
   then
     echo "Newly fixed header:  $f" >&2

@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2017 Free Software Foundation, Inc.
    Contributed by Janne Blomqvist
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -38,7 +38,7 @@ typedef enum
   FMT_LPAREN, FMT_RPAREN, FMT_X, FMT_S, FMT_SS, FMT_SP, FMT_STRING,
   FMT_BADSTRING, FMT_P, FMT_I, FMT_B, FMT_BN, FMT_BZ, FMT_O, FMT_Z, FMT_F,
   FMT_E, FMT_EN, FMT_ES, FMT_G, FMT_L, FMT_A, FMT_D, FMT_H, FMT_END, FMT_DC,
-  FMT_DP, FMT_STAR, FMT_RC, FMT_RD, FMT_RN, FMT_RP, FMT_RU, FMT_RZ
+  FMT_DP, FMT_STAR, FMT_RC, FMT_RD, FMT_RN, FMT_RP, FMT_RU, FMT_RZ, FMT_DT
 }
 format_token;
 
@@ -73,6 +73,14 @@ struct fnode
       int w, m;
     }
     integer;
+
+    struct
+    {
+      char *string;
+      int string_len;
+      gfc_array_i4 *vlist;
+    }
+    udf;  /* User Defined Format.  */
 
     int w;
     int k;

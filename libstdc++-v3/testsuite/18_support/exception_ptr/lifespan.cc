@@ -1,9 +1,8 @@
-// { dg-options "-std=gnu++11" }
-// { dg-require-atomic-builtins "" }
+// { dg-do run { target c++11 } }
 
 // 2008-05-25  Sebastian Redl  <sebastian.redl@getdesigned.at>
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,7 +38,6 @@ public:
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   may_destruct = false;
@@ -56,7 +54,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   may_destruct = false;
@@ -71,7 +68,6 @@ void test02()
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   may_destruct = false;
@@ -89,7 +85,6 @@ void test03()
 
 void test04()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   may_destruct = false;
@@ -119,7 +114,6 @@ void test05_helper()
 
 void test05()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   may_destruct = false;
@@ -145,7 +139,6 @@ void test06_helper()
 
 void test06()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   may_destruct = false;
@@ -165,7 +158,6 @@ std::exception_ptr gep;
 
 void test99()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   may_destruct = false;

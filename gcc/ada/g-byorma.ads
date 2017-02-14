@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2006-2013, AdaCore                     --
+--                     Copyright (C) 2006-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@
 --  This package provides a procedure for reading and interpreting the BOM
 --  (byte order mark) used to publish the encoding method for a string (for
 --  example, a UTF-8 encoded file in windows will start with the appropriate
---  BOM sequence to signal UTF-8 encoding.
+--  BOM sequence to signal UTF-8 encoding).
 
 --  There are two cases
 

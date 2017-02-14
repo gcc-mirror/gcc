@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-string-conversions "" }
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::__sso_string a,b;
   a.push_back('1');
   b = std::move(a);
@@ -43,8 +41,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::__rc_string a,b;
   a.push_back('1');
   b = std::move(a);

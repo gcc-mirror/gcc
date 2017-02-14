@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2014, AdaCore                     --
+--                     Copyright (C) 2000-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,33 +32,23 @@
 pragma Compiler_Unit_Warning;
 
 with GNAT.Heap_Sort_G;
-with System;        use System;
-with System.Memory; use System.Memory;
 
-with Ada.Unchecked_Conversion;
+with Ada.Unchecked_Deallocation;
 
 package body GNAT.Dynamic_Tables is
 
-   Min : constant Integer := Integer (Table_Low_Bound);
-   --  Subscript of the minimum entry in the currently allocated table
+   Empty : constant Table_Ptr :=
+             Empty_Table_Array_Ptr_To_Table_Ptr (Empty_Table_Array'Access);
 
    -----------------------
    -- Local Subprograms --
    -----------------------
 
-   procedure Reallocate (T : in out Instance);
-   --  Reallocate the existing table according to the current value stored
-   --  in Max. Works correctly to do an initial allocation if the table
-   --  is currently null.
-
-   pragma Warnings (Off);
-   --  These unchecked conversions are in fact safe, since they never
-   --  generate improperly aliased pointer values.
-
-   function To_Address is new Ada.Unchecked_Conversion (Table_Ptr, Address);
-   function To_Pointer is new Ada.Unchecked_Conversion (Address, Table_Ptr);
-
-   pragma Warnings (On);
+   procedure Grow (T : in out Instance; New_Last : Table_Count_Type);
+   --  This is called when we are about to set the value of Last to a value
+   --  that is larger than Last_Allocated. This reallocates the table to the
+   --  larger size, as indicated by New_Last. At the time this is called,
+   --  T.P.Last is still the old value.
 
    --------------
    -- Allocate --
@@ -66,11 +56,9 @@ package body GNAT.Dynamic_Tables is
 
    procedure Allocate (T : in out Instance; Num : Integer := 1) is
    begin
-      T.P.Last_Val := T.P.Last_Val + Num;
+      --  Note that Num can be negative
 
-      if T.P.Last_Val > T.P.Max then
-         Reallocate (T);
-      end if;
+      Set_Last (T, T.P.Last + Table_Index_Type'Base (Num));
    end Allocate;
 
    ------------
@@ -79,7 +67,7 @@ package body GNAT.Dynamic_Tables is
 
    procedure Append (T : in out Instance; New_Val : Table_Component_Type) is
    begin
-      Set_Item (T, Table_Index_Type (T.P.Last_Val + 1), New_Val);
+      Set_Item (T, T.P.Last + 1, New_Val);
    end Append;
 
    ----------------
@@ -99,8 +87,17 @@ package body GNAT.Dynamic_Tables is
 
    procedure Decrement_Last (T : in out Instance) is
    begin
-      T.P.Last_Val := T.P.Last_Val - 1;
+      Allocate (T, -1);
    end Decrement_Last;
+
+   -----------
+   -- First --
+   -----------
+
+   function First return Table_Index_Type is
+   begin
+      return Table_Low_Bound;
+   end First;
 
    --------------
    -- For_Each --
@@ -109,7 +106,7 @@ package body GNAT.Dynamic_Tables is
    procedure For_Each (Table : Instance) is
       Quit : Boolean := False;
    begin
-      for Index in Table_Low_Bound .. Table_Index_Type (Table.P.Last_Val) loop
+      for Index in Table_Low_Bound .. Table.P.Last loop
          Action (Index, Table.Table (Index), Quit);
          exit when Quit;
       end loop;
@@ -120,11 +117,111 @@ package body GNAT.Dynamic_Tables is
    ----------
 
    procedure Free (T : in out Instance) is
+      subtype Alloc_Type is Table_Type (First .. T.P.Last_Allocated);
+      type Alloc_Ptr is access all Alloc_Type;
+
+      procedure Free is new Ada.Unchecked_Deallocation (Alloc_Type, Alloc_Ptr);
+      function To_Alloc_Ptr is
+        new Ada.Unchecked_Conversion (Table_Ptr, Alloc_Ptr);
+
+      Temp : Alloc_Ptr := To_Alloc_Ptr (T.Table);
+
    begin
-      Free (To_Address (T.Table));
-      T.Table := null;
-      T.P.Length := 0;
+      if T.Table = Empty then
+         pragma Assert (T.P.Last_Allocated = First - 1);
+         pragma Assert (T.P.Last = First - 1);
+         null;
+      else
+         Free (Temp);
+         T.Table := Empty;
+         T.P.Last_Allocated := First - 1;
+         T.P.Last := First - 1;
+      end if;
    end Free;
+
+   ----------
+   -- Grow --
+   ----------
+
+   procedure Grow (T : in out Instance; New_Last : Table_Count_Type) is
+
+      --  Note: Type Alloc_Ptr below needs to be declared locally so we know
+      --  the bounds. That means that the collection is local, so is finalized
+      --  when leaving Grow. That's why this package doesn't support controlled
+      --  types; the table elements would be finalized prematurely. An Ada
+      --  implementation would also be within its rights to reclaim the
+      --  storage. Fortunately, GNAT doesn't do that.
+
+      pragma Assert (not T.Locked);
+      pragma Assert (New_Last > T.P.Last_Allocated);
+
+      subtype Table_Length_Type is Table_Index_Type'Base
+        range 0 .. Table_Index_Type'Base'Last;
+
+      Old_Last_Allocated   : constant Table_Count_Type  := T.P.Last_Allocated;
+      Old_Allocated_Length : constant Table_Length_Type :=
+                               Old_Last_Allocated - First + 1;
+
+      New_Length : constant Table_Length_Type := New_Last - First + 1;
+      New_Allocated_Length : Table_Length_Type;
+
+   begin
+      if T.Table = Empty then
+         New_Allocated_Length := Table_Length_Type (Table_Initial);
+      else
+         New_Allocated_Length :=
+           Table_Length_Type
+             (Long_Long_Integer (Old_Allocated_Length) *
+               (100 + Long_Long_Integer (Table_Increment)) / 100);
+      end if;
+
+      --  Make sure it really did grow
+
+      if New_Allocated_Length <= Old_Allocated_Length then
+         New_Allocated_Length := Old_Allocated_Length + 10;
+      end if;
+
+      if New_Allocated_Length <= New_Length then
+         New_Allocated_Length := New_Length + 10;
+      end if;
+
+      pragma Assert (New_Allocated_Length > Old_Allocated_Length);
+      pragma Assert (New_Allocated_Length > New_Length);
+
+      T.P.Last_Allocated := First + New_Allocated_Length - 1;
+
+      declare
+         subtype Old_Alloc_Type is Table_Type (First .. Old_Last_Allocated);
+         type Old_Alloc_Ptr is access all Old_Alloc_Type;
+
+         procedure Free is
+           new Ada.Unchecked_Deallocation (Old_Alloc_Type, Old_Alloc_Ptr);
+         function To_Old_Alloc_Ptr is
+           new Ada.Unchecked_Conversion (Table_Ptr, Old_Alloc_Ptr);
+
+         subtype Alloc_Type is
+           Table_Type (First .. First + New_Allocated_Length - 1);
+         type Alloc_Ptr is access all Alloc_Type;
+
+         function To_Table_Ptr is
+           new Ada.Unchecked_Conversion (Alloc_Ptr, Table_Ptr);
+
+         Old_Table : Old_Alloc_Ptr := To_Old_Alloc_Ptr (T.Table);
+         New_Table : constant Alloc_Ptr := new Alloc_Type;
+
+      begin
+         if T.Table /= Empty then
+            New_Table (First .. T.P.Last) := Old_Table (First .. T.P.Last);
+            Free (Old_Table);
+         end if;
+
+         T.Table := To_Table_Ptr (New_Table);
+      end;
+
+      pragma Assert (New_Last <= T.P.Last_Allocated);
+      pragma Assert (T.Table /= null);
+      pragma Assert (T.Table /= Empty);
+   end Grow;
 
    --------------------
    -- Increment_Last --
@@ -132,11 +229,7 @@ package body GNAT.Dynamic_Tables is
 
    procedure Increment_Last (T : in out Instance) is
    begin
-      T.P.Last_Val := T.P.Last_Val + 1;
-
-      if T.P.Last_Val > T.P.Max then
-         Reallocate (T);
-      end if;
+      Allocate (T, 1);
    end Increment_Last;
 
    ----------
@@ -144,100 +237,57 @@ package body GNAT.Dynamic_Tables is
    ----------
 
    procedure Init (T : in out Instance) is
-      Old_Length : constant Integer := T.P.Length;
-
    begin
-      T.P.Last_Val := Min - 1;
-      T.P.Max      := Min + Table_Initial - 1;
-      T.P.Length   := T.P.Max - Min + 1;
-
-      --  If table is same size as before (happens when table is never
-      --  expanded which is a common case), then simply reuse it. Note
-      --  that this also means that an explicit Init call right after
-      --  the implicit one in the package body is harmless.
-
-      if Old_Length = T.P.Length then
-         return;
-
-      --  Otherwise we can use Reallocate to get a table of the right size.
-      --  Note that Reallocate works fine to allocate a table of the right
-      --  initial size when it is first allocated.
-
-      else
-         Reallocate (T);
-      end if;
+      Free (T);
    end Init;
 
    ----------
    -- Last --
    ----------
 
-   function Last (T : Instance) return Table_Index_Type is
+   function Last (T : Instance) return Table_Count_Type is
    begin
-      return Table_Index_Type (T.P.Last_Val);
+      return T.P.Last;
    end Last;
-
-   ----------------
-   -- Reallocate --
-   ----------------
-
-   procedure Reallocate (T : in out Instance) is
-      New_Length : Integer;
-      New_Size   : size_t;
-
-   begin
-      if T.P.Max < T.P.Last_Val then
-
-         --  Now increment table length until it is sufficiently large. Use
-         --  the increment value or 10, which ever is larger (the reason
-         --  for the use of 10 here is to ensure that the table does really
-         --  increase in size (which would not be the case for a table of
-         --  length 10 increased by 3% for instance). Do the intermediate
-         --  calculation in Long_Long_Integer to avoid overflow.
-
-         while T.P.Max < T.P.Last_Val loop
-            New_Length :=
-              Integer
-                (Long_Long_Integer (T.P.Length) *
-                  (100 + Long_Long_Integer (Table_Increment)) / 100);
-
-            if New_Length > T.P.Length then
-               T.P.Length := New_Length;
-            else
-               T.P.Length := T.P.Length + 10;
-            end if;
-
-            T.P.Max := Min + T.P.Length - 1;
-         end loop;
-      end if;
-
-      New_Size :=
-        size_t ((T.P.Max - Min + 1) *
-                (Table_Type'Component_Size / Storage_Unit));
-
-      if T.Table = null then
-         T.Table := To_Pointer (Alloc (New_Size));
-
-      elsif New_Size > 0 then
-         T.Table :=
-           To_Pointer (Realloc (Ptr  => To_Address (T.Table),
-                                Size => New_Size));
-      end if;
-
-      if T.P.Length /= 0 and then T.Table = null then
-         raise Storage_Error;
-      end if;
-   end Reallocate;
 
    -------------
    -- Release --
    -------------
 
    procedure Release (T : in out Instance) is
+      pragma Assert (not T.Locked);
+      Old_Last_Allocated : constant Table_Count_Type := T.P.Last_Allocated;
    begin
-      T.P.Length := T.P.Last_Val - Integer (Table_Low_Bound) + 1;
-      T.P.Max    := T.P.Last_Val;
-      Reallocate (T);
+      if T.P.Last /= T.P.Last_Allocated then
+         pragma Assert (T.P.Last < T.P.Last_Allocated);
+         pragma Assert (T.Table /= Empty);
+
+         declare
+            subtype Old_Alloc_Type is Table_Type (First .. Old_Last_Allocated);
+            type Old_Alloc_Ptr is access all Old_Alloc_Type;
+
+            procedure Free is
+              new Ada.Unchecked_Deallocation (Old_Alloc_Type, Old_Alloc_Ptr);
+            function To_Old_Alloc_Ptr is
+              new Ada.Unchecked_Conversion (Table_Ptr, Old_Alloc_Ptr);
+
+            subtype Alloc_Type is
+              Table_Type (First .. First + T.P.Last - 1);
+            type Alloc_Ptr is access all Alloc_Type;
+
+            function To_Table_Ptr is
+              new Ada.Unchecked_Conversion (Alloc_Ptr, Table_Ptr);
+
+            Old_Table : Old_Alloc_Ptr := To_Old_Alloc_Ptr (T.Table);
+            New_Table : constant Alloc_Ptr := new Alloc_Type'(Old_Table.all);
+         begin
+            T.P.Last_Allocated := T.P.Last;
+            Free (Old_Table);
+            T.Table := To_Table_Ptr (New_Table);
+         end;
+      end if;
+
+      pragma Assert (T.P.Last = T.P.Last_Allocated);
    end Release;
 
    --------------
@@ -245,60 +295,18 @@ package body GNAT.Dynamic_Tables is
    --------------
 
    procedure Set_Item
-      (T     : in out Instance;
-       Index : Table_Index_Type;
-       Item  : Table_Component_Type)
+     (T     : in out Instance;
+      Index : Valid_Table_Index_Type;
+      Item  : Table_Component_Type)
    is
-      --  If Item is a value within the current allocation, and we are going to
-      --  reallocate, then we must preserve an intermediate copy here before
-      --  calling Increment_Last. Otherwise, if Table_Component_Type is passed
-      --  by reference, we are going to end up copying from storage that might
-      --  have been deallocated from Increment_Last calling Reallocate.
-
-      subtype Allocated_Table_T is
-        Table_Type (T.Table'First .. Table_Index_Type (T.P.Max + 1));
-      --  A constrained table subtype one element larger than the currently
-      --  allocated table.
-
-      Allocated_Table_Address : constant System.Address :=
-                                  T.Table.all'Address;
-      --  Used for address clause below (we can't use non-static expression
-      --  Table.all'Address directly in the clause because some older versions
-      --  of the compiler do not allow it).
-
-      Allocated_Table : Allocated_Table_T;
-      pragma Import (Ada, Allocated_Table);
-      pragma Suppress (Range_Check, On => Allocated_Table);
-      for Allocated_Table'Address use Allocated_Table_Address;
-      --  Allocated_Table represents the currently allocated array, plus one
-      --  element (the supplementary element is used to have a convenient way
-      --  to the address just past the end of the current allocation). Range
-      --  checks are suppressed because this unit uses direct calls to
-      --  System.Memory for allocation, and this can yield misaligned storage
-      --  (and we cannot rely on the bootstrap compiler supporting specifically
-      --  disabling alignment checks, so we need to suppress all range checks).
-      --  It is safe to suppress this check here because we know that a
-      --  (possibly misaligned) object of that type does actually exist at that
-      --  address.
-      --  ??? We should really improve the allocation circuitry here to
-      --  guarantee proper alignment.
-
-      Need_Realloc : constant Boolean := Integer (Index) > T.P.Max;
-      --  True if this operation requires storage reallocation (which may
-      --  involve moving table contents around).
-
+      Item_Copy : constant Table_Component_Type := Item;
    begin
-      --  If we're going to reallocate, check whether Item references an
-      --  element of the currently allocated table.
+      --  If Set_Last is going to reallocate the table, we make a copy of Item,
+      --  in case the call was "Set_Item (T, X, T.Table (Y));", and Item is
+      --  passed by reference. Without the copy, we would deallocate the array
+      --  containing Item, leaving a dangling pointer.
 
-      if Need_Realloc
-        and then Allocated_Table'Address <= Item'Address
-        and then Item'Address <
-                   Allocated_Table (Table_Index_Type (T.P.Max + 1))'Address
-      then
-         --  If so, save a copy on the stack because Increment_Last will
-         --  reallocate storage and might deallocate the current table.
-
+      if Index > T.P.Last_Allocated then
          declare
             Item_Copy : constant Table_Component_Type := Item;
          begin
@@ -306,34 +314,28 @@ package body GNAT.Dynamic_Tables is
             T.Table (Index) := Item_Copy;
          end;
 
-      else
-         --  Here we know that either we won't reallocate (case of Index < Max)
-         --  or that Item is not in the currently allocated table.
-
-         if Integer (Index) > T.P.Last_Val then
-            Set_Last (T, Index);
-         end if;
-
-         T.Table (Index) := Item;
+         return;
       end if;
+
+      if Index > T.P.Last then
+         Set_Last (T, Index);
+      end if;
+
+      T.Table (Index) := Item_Copy;
    end Set_Item;
 
    --------------
    -- Set_Last --
    --------------
 
-   procedure Set_Last (T : in out Instance; New_Val : Table_Index_Type) is
+   procedure Set_Last (T : in out Instance; New_Val : Table_Count_Type) is
+      pragma Assert (not T.Locked);
    begin
-      if Integer (New_Val) < T.P.Last_Val then
-         T.P.Last_Val := Integer (New_Val);
-
-      else
-         T.P.Last_Val := Integer (New_Val);
-
-         if T.P.Last_Val > T.P.Max then
-            Reallocate (T);
-         end if;
+      if New_Val > T.P.Last_Allocated then
+         Grow (T, New_Val);
       end if;
+
+      T.P.Last := New_Val;
    end Set_Last;
 
    ----------------
@@ -341,13 +343,12 @@ package body GNAT.Dynamic_Tables is
    ----------------
 
    procedure Sort_Table (Table : in out Instance) is
-
       Temp : Table_Component_Type;
       --  A temporary position to simulate index 0
 
       --  Local subprograms
 
-      function Index_Of (Idx : Natural) return Table_Index_Type;
+      function Index_Of (Idx : Natural) return Table_Index_Type'Base;
       --  Return index of Idx'th element of table
 
       function Lower_Than (Op1, Op2 : Natural) return Boolean;
@@ -362,11 +363,11 @@ package body GNAT.Dynamic_Tables is
       -- Index_Of --
       --------------
 
-      function Index_Of (Idx : Natural) return Table_Index_Type is
+      function Index_Of (Idx : Natural) return Table_Index_Type'Base is
          J : constant Integer'Base :=
-               Table_Index_Type'Pos (First) + Idx - 1;
+               Table_Index_Type'Base'Pos (First) + Idx - 1;
       begin
-         return Table_Index_Type'Val (J);
+         return Table_Index_Type'Base'Val (J);
       end Index_Of;
 
       ----------
@@ -401,8 +402,7 @@ package body GNAT.Dynamic_Tables is
 
          else
             return
-              Lt (Table.Table (Index_Of (Op1)),
-                   Table.Table (Index_Of (Op2)));
+              Lt (Table.Table (Index_Of (Op1)), Table.Table (Index_Of (Op2)));
          end if;
       end Lower_Than;
 

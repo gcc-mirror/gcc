@@ -1,5 +1,5 @@
 /* SSA name expresssons routines
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -62,10 +62,9 @@ struct GTY ((variable_size)) range_info_def {
 #define num_ssa_names (vec_safe_length (cfun->gimple_df->ssa_names))
 #define ssa_name(i) ((*cfun->gimple_df->ssa_names)[(i)])
 
-
-/* Type of value ranges.  See value_range_d In tree-vrp.c for a
-   description of these types.  */
-enum value_range_type { VR_UNDEFINED, VR_RANGE, VR_ANTI_RANGE, VR_VARYING };
+#define FOR_EACH_SSA_NAME(I, VAR, FN)					\
+  for (I = 1; SSANAMES (FN)->iterate (I, &VAR); ++I)			\
+    if (VAR)
 
 /* Sets the value range to SSA.  */
 extern void set_range_info (tree, enum value_range_type, const wide_int_ref &,
@@ -79,7 +78,8 @@ extern bool ssa_name_has_boolean_range (tree);
 extern void init_ssanames (struct function *, int);
 extern void fini_ssanames (struct function *);
 extern void ssanames_print_statistics (void);
-extern tree make_ssa_name_fn (struct function *, tree, gimple *);
+extern tree make_ssa_name_fn (struct function *, tree, gimple *,
+			      unsigned int version = 0);
 extern void release_ssa_name_fn (struct function *, tree);
 extern bool get_ptr_info_alignment (struct ptr_info_def *, unsigned int *,
 				    unsigned int *);
@@ -89,6 +89,8 @@ extern void set_ptr_info_alignment (struct ptr_info_def *, unsigned int,
 extern void adjust_ptr_info_misalignment (struct ptr_info_def *,
 					  unsigned int);
 extern struct ptr_info_def *get_ptr_info (tree);
+extern void set_ptr_nonnull (tree);
+extern bool get_ptr_nonnull (const_tree);
 
 extern tree copy_ssa_name_fn (struct function *, tree, gimple *);
 extern void duplicate_ssa_name_ptr_info (tree, struct ptr_info_def *);

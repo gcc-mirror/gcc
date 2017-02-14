@@ -1,5 +1,5 @@
 /* RTL dead store elimination.
-   Copyright (C) 2005-2016 Free Software Foundation, Inc.
+   Copyright (C) 2005-2017 Free Software Foundation, Inc.
 
    Contributed by Richard Sandiford <rsandifor@codesourcery.com>
    and Kenneth Zadeck <zadeck@naturalbridge.com>
@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "predict.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "gimple-ssa.h"
 #include "expmed.h"
@@ -288,7 +289,7 @@ struct store_info
 static unsigned HOST_WIDE_INT
 lowpart_bitmask (int n)
 {
-  unsigned HOST_WIDE_INT mask = ~(unsigned HOST_WIDE_INT) 0;
+  unsigned HOST_WIDE_INT mask = HOST_WIDE_INT_M1U;
   return mask >> (HOST_BITS_PER_WIDE_INT - n);
 }
 
@@ -911,7 +912,7 @@ can_escape (tree expr)
   base = get_base_address (expr);
   if (DECL_P (base)
       && !may_be_aliased (base)
-      && !(TREE_CODE (base) == VAR_DECL
+      && !(VAR_P (base)
 	   && !DECL_EXTERNAL (base)
 	   && !TREE_STATIC (base)
 	   && local_variable_can_escape (base)))
@@ -1201,7 +1202,7 @@ set_position_unneeded (store_info *s_info, int pos)
     }
   else
     s_info->positions_needed.small_bitmask
-      &= ~(((unsigned HOST_WIDE_INT) 1) << pos);
+      &= ~(HOST_WIDE_INT_1U << pos);
 }
 
 /* Mark the whole store S_INFO as unneeded.  */
@@ -1217,7 +1218,7 @@ set_all_positions_unneeded (store_info *s_info)
       s_info->positions_needed.large.count = end;
     }
   else
-    s_info->positions_needed.small_bitmask = (unsigned HOST_WIDE_INT) 0;
+    s_info->positions_needed.small_bitmask = HOST_WIDE_INT_0U;
 }
 
 /* Return TRUE if any bytes from S_INFO store are needed.  */
@@ -1229,8 +1230,7 @@ any_positions_needed_p (store_info *s_info)
     return (s_info->positions_needed.large.count
 	    < s_info->end - s_info->begin);
   else
-    return (s_info->positions_needed.small_bitmask
-	    != (unsigned HOST_WIDE_INT) 0);
+    return (s_info->positions_needed.small_bitmask != HOST_WIDE_INT_0U);
 }
 
 /* Return TRUE if all bytes START through START+WIDTH-1 from S_INFO
@@ -1744,7 +1744,7 @@ get_stored_val (store_info *store_info, machine_mode read_mode,
 	{
 	  unsigned HOST_WIDE_INT c
 	    = INTVAL (store_info->rhs)
-	      & (((HOST_WIDE_INT) 1 << BITS_PER_UNIT) - 1);
+	      & ((HOST_WIDE_INT_1 << BITS_PER_UNIT) - 1);
 	  int shift = BITS_PER_UNIT;
 	  while (shift < HOST_BITS_PER_WIDE_INT)
 	    {
@@ -3000,11 +3000,11 @@ static void
 dse_step3 ()
 {
   basic_block bb;
-  sbitmap unreachable_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
   sbitmap_iterator sbi;
   bitmap all_ones = NULL;
   unsigned int i;
 
+  auto_sbitmap unreachable_blocks (last_basic_block_for_fn (cfun));
   bitmap_ones (unreachable_blocks);
 
   FOR_ALL_BB_FN (bb, cfun)
@@ -3059,7 +3059,6 @@ dse_step3 ()
 
   if (all_ones)
     BITMAP_FREE (all_ones);
-  sbitmap_free (unreachable_blocks);
 }
 
 
@@ -3299,12 +3298,19 @@ dse_step5 (void)
 		  bitmap_clear (v);
 		}
 	      else if (insn_info->read_rec
-                       || insn_info->non_frame_wild_read)
+		       || insn_info->non_frame_wild_read
+		       || insn_info->frame_read)
 		{
-		  if (dump_file && !insn_info->non_frame_wild_read)
-		    fprintf (dump_file, "regular read\n");
-                  else if (dump_file && (dump_flags & TDF_DETAILS))
-		    fprintf (dump_file, "non-frame wild read\n");
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      if (!insn_info->non_frame_wild_read
+			  && !insn_info->frame_read)
+			fprintf (dump_file, "regular read\n");
+		      if (insn_info->non_frame_wild_read)
+			fprintf (dump_file, "non-frame wild read\n");
+		      if (insn_info->frame_read)
+			fprintf (dump_file, "frame read\n");
+		    }
 		  scan_reads (insn_info, v, NULL);
 		}
 	    }

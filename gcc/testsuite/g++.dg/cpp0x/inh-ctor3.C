@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-options -fno-new-inheriting-ctors }
 
 struct B1 {
   B1(int);

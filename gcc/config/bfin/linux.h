@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,6 +37,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define LINK_GCC_C_SEQUENCE_SPEC \
   "%{static:--start-group} %{mfast-fp:-lbffastfp} %G %L %{static:--end-group} \
    %{!static:%{mfast-fp:-lbffastfp} %G}"
+
+#undef CPP_SPEC
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 
 #undef LINK_SPEC
 #define LINK_SPEC "\

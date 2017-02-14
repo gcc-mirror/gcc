@@ -1,5 +1,6 @@
 // PR c++/32565
 // { dg-do compile { target c++11 } }
+// { dg-options -fno-new-ttp-matching }
 
 template<typename...> struct A1;
 template<template<int, int...> class T> struct A1<T<0, 1> > {};

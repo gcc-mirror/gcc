@@ -30,9 +30,8 @@
 #endif
 
 
-/* Define to 1 if you want more run-time sanity checks. This one gets a grab
-   bag of miscellaneous but relatively cheap checks. Define to 2 if you want
-   also extra run-time checking that might affect code generation. */
+/* Define to 0/1 if you want more run-time sanity checks. This one gets a grab
+   bag of miscellaneous but relatively cheap checks. */
 #ifndef USED_FOR_TARGET
 #undef CHECKING_P
 #endif
@@ -106,6 +105,13 @@
 /* Define if you want more run-time sanity checks for dataflow. */
 #ifndef USED_FOR_TARGET
 #undef ENABLE_DF_CHECKING
+#endif
+
+
+/* Define to 0/1 if you want extra run-time checking that might affect code
+   generation. */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_EXTRA_CHECKING
 #endif
 
 
@@ -555,6 +561,13 @@
 /* Define if your assembler supports mffgpr and mftgpr. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_MFPGPR
+#endif
+
+
+/* Define if your Mac OS X assembler supports the -mmacos-version-min option.
+   */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_MMACOSX_VERSION_MIN_OPTION
 #endif
 
 
@@ -1410,12 +1423,6 @@
 #endif
 
 
-/* Define if isl_options_set_schedule_serialize_sccs exists. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
-#endif
-
-
 /* Define to 1 if you have the `kill' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_KILL
@@ -1535,6 +1542,18 @@
 /* Define 0/1 if your linker supports -pie option with copy reloc. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_PIE_COPYRELOC
+#endif
+
+
+/* Define if your PowerPC linker has .gnu.attributes long double support. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_PPC_GNU_ATTR_LONG_DOUBLE
+#endif
+
+
+/* Define if your linker supports --push-state/--pop-state */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_PUSHPOPSTATE_SUPPORT
 #endif
 
 
@@ -1925,6 +1944,18 @@
 /* Define if int64_t uses long as underlying type. */
 #ifndef USED_FOR_TARGET
 #undef INT64_T_IS_LONG
+#endif
+
+
+/* Define to 1 if ld64 supports '-export_dynamic'. */
+#ifndef USED_FOR_TARGET
+#undef LD64_HAS_EXPORT_DYNAMIC
+#endif
+
+
+/* Define to ld64 version. */
+#ifndef USED_FOR_TARGET
+#undef LD64_VERSION
 #endif
 
 

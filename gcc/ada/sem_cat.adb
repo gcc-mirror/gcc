@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -486,7 +486,6 @@ package body Sem_Cat is
 
                when others =>
                   null;
-
             end case;
          end if;
 
@@ -746,13 +745,17 @@ package body Sem_Cat is
 
             if Nkind (PN) = N_Pragma then
                case Get_Pragma_Id (PN) is
-                  when Pragma_All_Calls_Remote   |
-                    Pragma_Preelaborate          |
-                    Pragma_Pure                  |
-                    Pragma_Remote_Call_Interface |
-                    Pragma_Remote_Types          |
-                    Pragma_Shared_Passive        => Analyze (PN);
-                  when others                    => null;
+                  when Pragma_All_Calls_Remote
+                     | Pragma_Preelaborate
+                     | Pragma_Pure
+                     | Pragma_Remote_Call_Interface
+                     | Pragma_Remote_Types
+                     | Pragma_Shared_Passive
+                  =>
+                     Analyze (PN);
+
+                  when others =>
+                     null;
                end case;
             end if;
 
@@ -774,8 +777,13 @@ package body Sem_Cat is
       Specification : Node_Id := Empty;
 
    begin
-      Set_Is_Pure
-        (E, Is_Pure (Scop) and then Is_Library_Level_Entity (E));
+      --  Do not modify the purity of an internally generated entity if it has
+      --  been explicitly marked as pure for optimization purposes.
+
+      if not Has_Pragma_Pure_Function (E) then
+         Set_Is_Pure
+           (E, Is_Pure (Scop) and then Is_Library_Level_Entity (E));
+      end if;
 
       if not Is_Remote_Call_Interface (E) then
          if Ekind (E) in Subprogram_Kind then
@@ -1007,17 +1015,23 @@ package body Sem_Cat is
          Item := First (Context_Items (P));
          while Present (Item) loop
             if Nkind (Item) = N_With_Clause
-              and then not (Implicit_With (Item)
-                             or else Limited_Present (Item)
+              and then
+                not (Implicit_With (Item)
+                      or else Limited_Present (Item)
 
-                             --  Skip if error already posted on the WITH
-                             --  clause (in which case the Name attribute
-                             --  may be invalid). In particular, this fixes
-                             --  the problem of hanging in the presence of a
-                             --  WITH clause on a child that is an illegal
-                             --  generic instantiation.
+                      --  Skip if error already posted on the WITH clause (in
+                      --  which case the Name attribute may be invalid). In
+                      --  particular, this fixes the problem of hanging in the
+                      --  presence of a WITH clause on a child that is an
+                      --  illegal generic instantiation.
 
-                             or else Error_Posted (Item))
+                      or else Error_Posted (Item))
+              and then
+                not (Try_Semantics
+
+                      --  Skip processing malformed trees
+
+                      and then Nkind (Name (Item)) not in N_Has_Entity)
             then
                Entity_Of_Withed := Entity (Name (Item));
                Check_Categorization_Dependencies
@@ -2089,30 +2103,37 @@ package body Sem_Cat is
 
       begin
          case K is
-            when N_Op | N_Membership_Test =>
-               return True;
-
             when N_Aggregate
                | N_Component_Association
-               | N_Index_Or_Discriminant_Constraint =>
+               | N_Index_Or_Discriminant_Constraint
+               | N_Membership_Test
+               | N_Op
+            =>
                return True;
 
             when N_Attribute_Reference =>
-               return Attribute_Name (Parent (N)) /= Name_Address
-                 and then Attribute_Name (Parent (N)) /= Name_Access
-                 and then Attribute_Name (Parent (N)) /= Name_Unchecked_Access
-                 and then
-                   Attribute_Name (Parent (N)) /= Name_Unrestricted_Access;
+               declare
+                  Attr : constant Name_Id := Attribute_Name (Parent (N));
+
+               begin
+                  return     Attr /= Name_Address
+                    and then Attr /= Name_Access
+                    and then Attr /= Name_Unchecked_Access
+                    and then Attr /= Name_Unrestricted_Access;
+               end;
 
             when N_Indexed_Component =>
-               return (N /= Prefix (Parent (N))
-                 or else Is_Primary (Parent (N)));
+               return N /= Prefix (Parent (N)) or else Is_Primary (Parent (N));
 
-            when N_Qualified_Expression | N_Type_Conversion =>
+            when N_Qualified_Expression
+               | N_Type_Conversion
+            =>
                return Is_Primary (Parent (N));
 
-            when N_Assignment_Statement | N_Object_Declaration =>
-               return (N = Expression (Parent (N)));
+            when N_Assignment_Statement
+               | N_Object_Declaration
+            =>
+               return N = Expression (Parent (N));
 
             when N_Selected_Component =>
                return Is_Primary (Parent (N));
@@ -2156,11 +2177,14 @@ package body Sem_Cat is
       --  Error if the name is a primary in an expression. The parent must not
       --  be an operator, or a selected component or an indexed component that
       --  is itself a primary. Entities that are actuals do not need to be
-      --  checked, because the call itself will be diagnosed.
+      --  checked, because the call itself will be diagnosed. Entities in a
+      --  generic unit or within a preanalyzed expression are not checked:
+      --  only their use in executable code matters.
 
       if Is_Primary (N)
         and then (not Inside_A_Generic
                    or else Present (Enclosing_Generic_Body (N)))
+        and then not In_Spec_Expression
       then
          if Ekind (Entity (N)) = E_Variable
            or else Ekind (Entity (N)) in Formal_Object_Kind

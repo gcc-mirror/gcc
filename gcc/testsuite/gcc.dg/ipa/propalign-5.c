@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-ipa-cp"  } */
+/* { dg-skip-if "No alignment restrictions" { { ! natural_alignment_32 } && { ! natural_alignment_64 } } } */
+
 int n;
 
 static void
@@ -18,4 +20,4 @@ main()
   test (&bb);
   return 0;
 }
-/* { dg-final { scan-ipa-dump "Alignment 2"  "cp"  } } */
+/* { dg-final { scan-ipa-dump "align: 2"  "cp"  } } */

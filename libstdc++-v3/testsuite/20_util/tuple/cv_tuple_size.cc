@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2011-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,7 +25,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   VERIFY( tuple_size<const tuple<> >::value == 0 );
@@ -43,3 +42,13 @@ int main()
   test01();
   return 0;
 }
+
+// LWG DR 2770. tuple_size<const T> specialization is not SFINAE compatible
+template<typename T, typename = void>
+struct has_value : std::false_type { };
+
+template<typename T>
+struct has_value<T, std::__void_t<decltype(T::value)>> : std::true_type { };
+
+static_assert( !has_value<std::tuple_size<int>>::value, "" );
+static_assert( !has_value<std::tuple_size<const int>>::value, "" );

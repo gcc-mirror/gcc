@@ -2,6 +2,7 @@
 /* { dg-require-alias "" } */
 /* { dg-require-visibility "" } */
 /* { dg-require-effective-target tls_runtime } */
+/* { dg-add-options tls } */
 /* Test that encode_section_info handles the change from externally
    defined to locally defined (via hidden).   Extracted from glibc.  */
 

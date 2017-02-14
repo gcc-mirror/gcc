@@ -46,4 +46,4 @@ int test4 (struct foo2 *x)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Folding" 2 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "if" 2 "vrp1" } } */

@@ -1,6 +1,6 @@
 // 1999-10-14 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,9 +34,6 @@ void test01()
   typedef basic_string<pod_ushort> 	string_type;
   typedef basic_stringbuf<pod_ushort> 	stringbuf_type;
   typedef basic_istream<pod_ushort> 	istream_type;
-
-  bool test __attribute__((unused)) = true;
-
 
   const string_type str01;
   stringbuf_type strbuf01;

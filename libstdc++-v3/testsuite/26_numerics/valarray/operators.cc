@@ -1,7 +1,7 @@
 // { dg-do run }
 // 2003-02-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,7 +23,6 @@
 
 void test01() // check unary operators
 {
-  bool test __attribute__((unused)) = true;
   std::valarray<int> u(1);
   u[0]=1;
 
@@ -35,7 +34,6 @@ void test01() // check unary operators
 
 void test02() // check binary operators
 {
-  bool test __attribute__((unused)) = true;
   std::valarray<int> u(1), v(1);
   u[0]=1;
   v[0]=3;

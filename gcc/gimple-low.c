@@ -1,6 +1,6 @@
 /* GIMPLE lowering pass.  Converts High GIMPLE into Low GIMPLE.
 
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -416,6 +416,26 @@ lower_gimple_bind (gimple_stmt_iterator *gsi, struct lower_data *data)
     }
 
   record_vars (gimple_bind_vars (stmt));
+
+  /* Scrap DECL_CHAIN up to BLOCK_VARS to ease GC after we no longer
+     need gimple_bind_vars.  */
+  tree next;
+  /* BLOCK_VARS and gimple_bind_vars share a common sub-chain.  Find
+     it by marking all BLOCK_VARS.  */
+  if (gimple_bind_block (stmt))
+    for (tree t = BLOCK_VARS (gimple_bind_block (stmt)); t; t = DECL_CHAIN (t))
+      TREE_VISITED (t) = 1;
+  for (tree var = gimple_bind_vars (stmt);
+       var && ! TREE_VISITED (var); var = next)
+    {
+      next = DECL_CHAIN (var);
+      DECL_CHAIN (var) = NULL_TREE;
+    }
+  /* Unmark BLOCK_VARS.  */
+  if (gimple_bind_block (stmt))
+    for (tree t = BLOCK_VARS (gimple_bind_block (stmt)); t; t = DECL_CHAIN (t))
+      TREE_VISITED (t) = 0;
+
   lower_sequence (gimple_bind_body_ptr (stmt), data);
 
   if (new_block)
@@ -610,7 +630,7 @@ gimple_stmt_may_fallthru (gimple *stmt)
 
     case GIMPLE_CALL:
       /* Functions that do not return do not fall through.  */
-      return (gimple_call_flags (stmt) & ECF_NORETURN) == 0;
+      return !gimple_call_noreturn_p (stmt);
 
     default:
       return true;
@@ -868,7 +888,7 @@ record_vars_into (tree vars, tree fn)
 
       /* BIND_EXPRs contains also function/type/constant declarations
          we don't need to care about.  */
-      if (TREE_CODE (var) != VAR_DECL)
+      if (!VAR_P (var))
 	continue;
 
       /* Nothing to do in this case.  */

@@ -1,6 +1,6 @@
 // 2004-09-23 Chris Jefferson <chris@bubblescope.net>
 
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,8 +23,6 @@
 #include <testsuite_hooks.h>
 
 using namespace std::tr1;
-
-bool test __attribute__((unused)) = true;
 
 #define TEST1(x) VERIFY( x == x && !(x != x) && x <= x && !(x < x) )
 

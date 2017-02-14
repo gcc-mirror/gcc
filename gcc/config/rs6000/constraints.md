@@ -1,5 +1,5 @@
 ;; Constraint definitions for RS6000
-;; Copyright (C) 2006-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2017 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -159,6 +159,18 @@
   "Memory operand suitable for TOC fusion memory references"
   (match_operand 0 "toc_fusion_mem_wrapped"))
 
+(define_register_constraint "wH" "rs6000_constraints[RS6000_CONSTRAINT_wH]"
+  "Altivec register to hold 32-bit integers or NO_REGS.")
+
+(define_register_constraint "wI" "rs6000_constraints[RS6000_CONSTRAINT_wI]"
+  "FPR register to hold 32-bit integers or NO_REGS.")
+
+(define_register_constraint "wJ" "rs6000_constraints[RS6000_CONSTRAINT_wJ]"
+  "FPR register to hold 8/16-bit integers or NO_REGS.")
+
+(define_register_constraint "wK" "rs6000_constraints[RS6000_CONSTRAINT_wK]"
+  "Altivec register to hold 8/16-bit integers or NO_REGS.")
+
 (define_constraint "wL"
   "Int constant that is the element number mfvsrld accesses in a vector."
   (and (match_code "const_int")
@@ -185,10 +197,14 @@
   "Vector constant that can be loaded with XXSPLTIB & sign extension."
   (match_test "xxspltib_constant_split (op, mode)"))
 
-;; ISA 3.0 D-form instruction that has the bottom 2 bits 0 (LXSD or STXSD).
+;; ISA 3.0 DS-form instruction that has the bottom 2 bits 0 and no update form.
+;; Used by LXSD/STXSD/LXSSP/STXSSP.  In contrast to "Y", the multiple-of-four
+;; offset is enforced for 32-bit too.
 (define_memory_constraint "wY"
   "Offsettable memory operand, with bottom 2 bits 0"
-  (match_operand 0 "offsettable_mem_14bit_operand"))
+  (and (match_code "mem")
+       (not (match_test "update_address_mem (op, mode)"))
+       (match_test "mem_operand_ds_form (op, mode)")))
 
 ;; Altivec style load/store that ignores the bottom bits of the address
 (define_memory_constraint "wZ"

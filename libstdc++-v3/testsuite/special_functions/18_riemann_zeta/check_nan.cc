@@ -1,8 +1,9 @@
+// { dg-do run { target c++11 } }
 // { dg-require-c-std "" }
 // { dg-add-options ieee }
 // { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__" }
 
-// Copyright (C) 2016 Free Software Foundation, Inc.
+// Copyright (C) 2016-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,7 +38,6 @@ test01()
   long double d = std::riemann_zeta(xl);
   long double e = std::riemann_zetal(xl);
 
-  bool test [[gnu::unused]] = true;
   VERIFY(std::isnan(a));
   VERIFY(std::isnan(b));
   VERIFY(std::isnan(c));

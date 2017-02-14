@@ -1,4 +1,4 @@
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,8 +44,6 @@ class my_filebuf
 // libstdc++/45628
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   my_filebuf q;
   q.open(name_01, std::ios_base::in | std::ios_base::out 
 	 | std::ios_base::trunc); 

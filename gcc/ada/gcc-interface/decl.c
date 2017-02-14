@@ -388,7 +388,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
      must be specified unless it was specified by the programmer.  Exceptions
      are for access-to-protected-subprogram types and all access subtypes, as
      another GNAT type is used to lay out the GCC type for them.  */
-  gcc_assert (!Unknown_Esize (gnat_entity)
+  gcc_assert (!is_type
+	      || Known_Esize (gnat_entity)
 	      || Has_Size_Clause (gnat_entity)
 	      || (!IN (kind, Numeric_Kind)
 		  && !IN (kind, Enumeration_Kind)
@@ -644,7 +645,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  }
 
 	/* Get the type after elaborating the renamed object.  */
-	if (Convention (gnat_entity) == Convention_C
+	if (Has_Foreign_Convention (gnat_entity)
 	    && Is_Descendant_Of_Address (gnat_type))
 	  gnu_type = ptr_type_node;
 	else
@@ -671,6 +672,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				   VAR_DECL, gnu_entity_name, gnu_type);
 	    SET_DECL_VALUE_EXPR (gnu_decl, value);
 	    DECL_HAS_VALUE_EXPR_P (gnu_decl) = 1;
+	    TREE_STATIC (gnu_decl) = global_bindings_p ();
 	    gnat_pushdecl (gnu_decl, gnat_entity);
 	    break;
 	  }
@@ -1339,7 +1341,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		      = TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (gnu_alloc_type)));
 
 		    if (TREE_CODE (gnu_expr) == CONSTRUCTOR
-			&& vec_safe_length (CONSTRUCTOR_ELTS (gnu_expr)) == 1)
+			&& CONSTRUCTOR_NELTS (gnu_expr) == 1)
 		      gnu_expr = NULL_TREE;
 		    else
 		      gnu_expr
@@ -1836,7 +1838,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  && esize == CHAR_TYPE_SIZE
 	  && flag_signed_char)
 	gnu_type = make_signed_type (CHAR_TYPE_SIZE);
-      else if (Is_Unsigned_Type (Etype (gnat_entity))
+      else if (Is_Unsigned_Type (Underlying_Type (Etype (gnat_entity)))
 	       || (Esize (Etype (gnat_entity)) != Esize (gnat_entity)
 		   && Is_Unsigned_Type (gnat_entity))
 	       || Has_Biased_Representation (gnat_entity))
@@ -1858,8 +1860,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       TYPE_BIASED_REPRESENTATION_P (gnu_type)
 	= Has_Biased_Representation (gnat_entity);
 
-      /* Set TYPE_STRING_FLAG for Character and Wide_Character subtypes.  */
-      TYPE_STRING_FLAG (gnu_type) = TYPE_STRING_FLAG (TREE_TYPE (gnu_type));
+      /* Do the same processing for Character subtypes as for types.  */
+      if (TYPE_STRING_FLAG (TREE_TYPE (gnu_type)))
+	{
+	  TYPE_NAME (gnu_type) = gnu_entity_name;
+	  TYPE_STRING_FLAG (gnu_type) = 1;
+	  TYPE_ARTIFICIAL (gnu_type) = artificial_p;
+	  finish_character_type (gnu_type);
+	}
 
       /* Inherit our alias set from what we're a subtype of.  Subtypes
 	 are not different types and a pointer can designate any instance
@@ -3928,8 +3936,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  }
 
 	/* If expansion is disabled, the equivalent type of a concurrent type
-	   is absent, so build a dummy pointer type.  */
+	   is absent, so we use the void pointer type.  */
 	else if (type_annotate_only && No (gnat_desig_equiv))
+	  gnu_type = ptr_type_node;
+
+	/* If the ultimately designated type is an incomplete type with no full
+	   view, we use the void pointer type in LTO mode to avoid emitting a
+	   dummy type in the GIMPLE IR.  We cannot do that in regular mode as
+	   the name of the dummy type in used by GDB for a global lookup.  */
+	else if (Ekind (gnat_desig_rep) == E_Incomplete_Type
+		 && No (Full_View (gnat_desig_rep))
+		 && flag_generate_lto)
 	  gnu_type = ptr_type_node;
 
 	/* Finally, handle the default case where we can just elaborate our
@@ -4017,7 +4034,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
     case E_Access_Protected_Subprogram_Type:
     case E_Anonymous_Access_Protected_Subprogram_Type:
       /* If we are just annotating types and have no equivalent record type,
-	 just return ptr_void_type.  */
+	 just use the void pointer type.  */
       if (type_annotate_only && gnat_equiv_type == gnat_entity)
 	gnu_type = ptr_type_node;
 
@@ -4336,8 +4353,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		: Empty;
 
 	/* If this is an incomplete type with no full view, it must be a Taft
-	   Amendment type, in which case we return a dummy type.  Otherwise,
-	   just get the type from its Etype.  */
+	   Amendment type or an incomplete type coming from a limited context,
+	   in which cases we return a dummy type.  Otherwise, we just get the
+	   type from its Etype.  */
 	if (No (full_view))
 	  {
 	    if (kind == E_Incomplete_Type)
@@ -4718,14 +4736,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      && AGGREGATE_TYPE_P (gnu_type)
 	      && TYPE_BY_REFERENCE_P (gnu_type))
 	    SET_TYPE_MODE (gnu_type, BLKmode);
-
-	  if (Treat_As_Volatile (gnat_entity))
-	    {
-	      const int quals
-		= TYPE_QUAL_VOLATILE
-		  | (Is_Atomic_Or_VFA (gnat_entity) ? TYPE_QUAL_ATOMIC : 0);
-	      gnu_type = change_qualified_type (gnu_type, quals);
-	    }
 	}
 
       /* If this is a derived type, relate its alias set to that of its parent
@@ -4804,6 +4814,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  relate_alias_sets (gnu_type, gnat_to_gnu_type (gnat_parent_type),
 			     Is_Composite_Type (gnat_entity)
 			     ? ALIAS_SET_COPY : ALIAS_SET_SUPERSET);
+	}
+
+      if (Treat_As_Volatile (gnat_entity))
+	{
+	  const int quals
+	    = TYPE_QUAL_VOLATILE
+	      | (Is_Atomic_Or_VFA (gnat_entity) ? TYPE_QUAL_ATOMIC : 0);
+	  gnu_type = change_qualified_type (gnu_type, quals);
 	}
 
       if (!gnu_decl)
@@ -5376,12 +5394,9 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
     }
 
   /* If this is a read-only parameter, make a variant of the type that is
-     read-only.  ??? However, if this is an unconstrained array, that type
-     can be very complex, so skip it for now.  Likewise for any other
-     self-referential type.  */
-  if (ro_param
-      && TREE_CODE (gnu_param_type) != UNCONSTRAINED_ARRAY_TYPE
-      && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_param_type)))
+     read-only.  ??? However, if this is a self-referential type, the type
+     can be very complex, so skip it for now.  */
+  if (ro_param && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_param_type)))
     gnu_param_type = change_qualified_type (gnu_param_type, TYPE_QUAL_CONST);
 
   /* For foreign conventions, pass arrays as pointers to the element type.
@@ -5389,12 +5404,6 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
   if (foreign && TREE_CODE (gnu_param_type) == UNCONSTRAINED_ARRAY_TYPE)
     gnu_param_type
       = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_param_type))));
-
-  /* For GCC builtins, pass Address integer types as (void *)  */
-  if (Convention (gnat_subprog) == Convention_Intrinsic
-      && Present (Interface_Name (gnat_subprog))
-      && Is_Descendant_Of_Address (gnat_param_type))
-    gnu_param_type = ptr_type_node;
 
   /* Arrays are passed as pointers to element type for foreign conventions.  */
   if (foreign && mech != By_Copy && TREE_CODE (gnu_param_type) == ARRAY_TYPE)
@@ -5770,7 +5779,9 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 
   else
     {
-      if (Convention (gnat_subprog) == Convention_C
+      /* For foreign convention subprograms, return System.Address as void *
+	 or equivalent.  Note that this comprises GCC builtins.  */
+      if (Has_Foreign_Convention (gnat_subprog)
 	  && Is_Descendant_Of_Address (gnat_return_type))
 	gnu_return_type = ptr_type_node;
       else
@@ -5935,7 +5946,9 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	{
 	  Entity_Id gnat_param_type = Etype (gnat_param);
 
-	  if (Convention (gnat_subprog) == Convention_C
+	  /* For foreign convention subprograms, pass System.Address as void *
+	     or equivalent.  Note that this comprises GCC builtins.  */
+	  if (Has_Foreign_Convention (gnat_subprog)
 	      && Is_Descendant_Of_Address (gnat_param_type))
 	    gnu_param_type = ptr_type_node;
 	  else
@@ -6244,6 +6257,10 @@ gnu_ext_name_for_subprog (Entity_Id gnat_subprog, tree gnu_entity_name)
 static tree
 change_qualified_type (tree type, int type_quals)
 {
+  /* Qualifiers must be put on the associated array type.  */
+  if (TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
+    return type;
+
   return build_qualified_type (type, TYPE_QUALS (type) | type_quals);
 }
 
@@ -6322,6 +6339,15 @@ array_type_has_nonaliased_component (tree gnu_type, Entity_Id gnat_type)
 static bool
 compile_time_known_address_p (Node_Id gnat_address)
 {
+  /* Handle reference to a constant.  */
+  if (Is_Entity_Name (gnat_address)
+      && Ekind (Entity (gnat_address)) == E_Constant)
+    {
+      gnat_address = Constant_Value (Entity (gnat_address));
+      if (No (gnat_address))
+	return false;
+    }
+
   /* Catch System'To_Address.  */
   if (Nkind (gnat_address) == N_Unchecked_Type_Conversion)
     gnat_address = Expression (gnat_address);
@@ -6812,7 +6838,7 @@ elaborate_reference (tree ref, Entity_Id gnat_entity, bool definition,
 /* Given a GNU tree and a GNAT list of choices, generate an expression to test
    the value passed against the list of choices.  */
 
-tree
+static tree
 choices_to_gnu (tree operand, Node_Id choices)
 {
   Node_Id choice;
@@ -6831,9 +6857,10 @@ choices_to_gnu (tree operand, Node_Id choices)
 	  this_test
 	    = build_binary_op (TRUTH_ANDIF_EXPR, boolean_type_node,
 			       build_binary_op (GE_EXPR, boolean_type_node,
-						operand, low),
+						operand, low, true),
 			       build_binary_op (LE_EXPR, boolean_type_node,
-						operand, high));
+						operand, high, true),
+			       true);
 
 	  break;
 
@@ -6845,9 +6872,10 @@ choices_to_gnu (tree operand, Node_Id choices)
 	  this_test
 	    = build_binary_op (TRUTH_ANDIF_EXPR, boolean_type_node,
 			       build_binary_op (GE_EXPR, boolean_type_node,
-						operand, low),
+						operand, low, true),
 			       build_binary_op (LE_EXPR, boolean_type_node,
-						operand, high));
+						operand, high, true),
+			       true);
 	  break;
 
 	case N_Identifier:
@@ -6866,9 +6894,10 @@ choices_to_gnu (tree operand, Node_Id choices)
 	      this_test
 		= build_binary_op (TRUTH_ANDIF_EXPR, boolean_type_node,
 				   build_binary_op (GE_EXPR, boolean_type_node,
-						    operand, low),
+						    operand, low, true),
 				   build_binary_op (LE_EXPR, boolean_type_node,
-						    operand, high));
+						    operand, high, true),
+				   true);
 	      break;
 	    }
 
@@ -6878,7 +6907,7 @@ choices_to_gnu (tree operand, Node_Id choices)
 	case N_Integer_Literal:
 	  single = gnat_to_gnu (choice);
 	  this_test = build_binary_op (EQ_EXPR, boolean_type_node, operand,
-				       single);
+				       single, true);
 	  break;
 
 	case N_Others_Choice:
@@ -6889,8 +6918,11 @@ choices_to_gnu (tree operand, Node_Id choices)
 	  gcc_unreachable ();
 	}
 
-      result = build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node, result,
-				this_test);
+      if (result == boolean_false_node)
+	result = this_test;
+      else
+	result = build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node, result,
+				  this_test, true);
     }
 
   return result;
@@ -7996,6 +8028,14 @@ annotate_value (tree gnu_size)
   switch (TREE_CODE (gnu_size))
     {
     case INTEGER_CST:
+      /* For negative values, build NEGATE_EXPR of the opposite.  Such values
+	 can appear for discriminants in expressions for variants.  */
+      if (tree_int_cst_sgn (gnu_size) < 0)
+	{
+	  tree t = wide_int_to_tree (sizetype, wi::neg (gnu_size));
+	  return annotate_value (build1 (NEGATE_EXPR, sizetype, t));
+	}
+
       return TREE_OVERFLOW (gnu_size) ? No_Uint : UI_From_gnu (gnu_size);
 
     case COMPONENT_REF:
@@ -8868,10 +8908,6 @@ intrin_return_compatible_p (intrin_binding_t * inb)
   if (VOID_TYPE_P (ada_return_type)
       && !VOID_TYPE_P (btin_return_type))
     return true;
-
-  /* If return type is Address (integer type), map it to void *.  */
-  if (Is_Descendant_Of_Address (Etype (inb->gnat_entity)))
-    ada_return_type = ptr_type_node;
 
   /* Check return types compatibility otherwise.  Note that this
      handles void/void as well.  */

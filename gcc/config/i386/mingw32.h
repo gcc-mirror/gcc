@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for
    hosting on Windows32, using GNU tools and the Windows32 API Library.
-   Copyright (C) 1997-2016 Free Software Foundation, Inc.
+   Copyright (C) 1997-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -239,9 +239,6 @@ do {						         \
 #undef TARGET_N_FORMAT_TYPES
 #define TARGET_N_FORMAT_TYPES 3
 
-/* Let defaults.h definition of TARGET_USE_JCR_SECTION apply. */
-#undef TARGET_USE_JCR_SECTION
-
 #define HAVE_ENABLE_EXECUTE_STACK
 #undef  CHECK_EXECUTE_STACK_ENABLED
 #define CHECK_EXECUTE_STACK_ENABLED flag_setstackexecutable
@@ -255,5 +252,3 @@ do {						         \
 #endif
 #define LIBGCC_SONAME "libgcc_s" LIBGCC_EH_EXTN "-1.dll"
 
-/* We should find a way to not have to update this manually.  */
-#define LIBGCJ_SONAME "libgcj" /*LIBGCC_EH_EXTN*/ "-16.dll"

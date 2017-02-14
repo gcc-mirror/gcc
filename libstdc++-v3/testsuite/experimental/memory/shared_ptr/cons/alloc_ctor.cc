@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,7 +42,6 @@ long D::delete_count = 0;
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
   tracker_allocator_counter::reset();
 
   std::experimental::shared_ptr<A[5]> p1(new A[5], deletefunc, tracker_allocator<A[5]>());

@@ -1,4 +1,4 @@
-# Copyright (C) 2013-2016 Free Software Foundation, Inc.
+# Copyright (C) 2013-2017 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,9 +27,26 @@ load_lib gcc-dg.exp
 # Initialize `dg'.
 dg-init
 
+set saved-dg-do-what-default ${dg-do-what-default}
+set dg-do-what-default "assemble"
+
+set saved-lto_torture_options ${LTO_TORTURE_OPTIONS}
+
+# Add -ffat-lto-objects option to all LTO options such that we can do assembly
+# scans.
+proc add_fat_objects { list } {
+    set res {}
+    foreach el $list {set res [lappend res [concat $el " -ffat-lto-objects"]]}
+    return $res
+};
+set LTO_TORTURE_OPTIONS [add_fat_objects ${LTO_TORTURE_OPTIONS}]
+
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]] \
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]] \
 	"" ""
 
+# Restore globals
+set dg-do-what-default ${saved-dg-do-what-default}
+set LTO_TORTURE_OPTIONS ${saved-lto_torture_options}
 # All done.
 dg-finish

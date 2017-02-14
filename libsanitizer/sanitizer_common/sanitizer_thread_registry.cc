@@ -129,7 +129,7 @@ u32 ThreadRegistry::CreateThread(uptr user_id, bool detached, u32 parent_tid,
     tctx = context_factory_(tid);
     threads_[tid] = tctx;
   } else {
-#ifndef SANITIZER_GO
+#if !SANITIZER_GO
     Report("%s: Thread limit (%u threads) exceeded. Dying.\n",
            SanitizerToolName, max_threads_);
 #else
@@ -275,6 +275,8 @@ void ThreadRegistry::StartThread(u32 tid, uptr os_id, void *arg) {
 }
 
 void ThreadRegistry::QuarantinePush(ThreadContextBase *tctx) {
+  if (tctx->tid == 0)
+    return;  // Don't reuse the main thread.  It's a special snowflake.
   dead_threads_.push_back(tctx);
   if (dead_threads_.size() <= thread_quarantine_size_)
     return;

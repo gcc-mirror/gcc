@@ -1,6 +1,6 @@
 // 1999-09-20 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,8 +27,6 @@
 // 27.4.3.2 fpos requirements/invariants
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::mbstate_t state_type;
 
   std::streamoff off01;

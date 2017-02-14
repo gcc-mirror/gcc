@@ -1,6 +1,6 @@
 // 2001-04-02  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,7 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   char c = 'a';
   const char cc = 'b';
   char* c1 = &c;

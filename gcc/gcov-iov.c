@@ -1,6 +1,6 @@
 /* Generate gcov version string from version.c. See gcov-io.h for
    description of how the version string is generated.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
 
 This file is part of GCC.
@@ -58,9 +58,9 @@ main (int argc, char **argv)
       || strcmp (argv[2], "prerelease") == 0)
     phase = '*';
 
-  v[0] = (major < 10 ? '0' : 'A' - 10) + major;
-  v[1] = (minor / 10) + '0';
-  v[2] = (minor % 10) + '0';
+  v[0] = (major / 10) + 'A';
+  v[1] = (major % 10) + '0';
+  v[2] = minor + '0';
   v[3] = phase;
 
   for (ix = 0; ix != 4; ix++)

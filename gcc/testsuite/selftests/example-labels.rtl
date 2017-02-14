@@ -1,0 +1,8 @@
+(function "example_labels"
+  (insn-chain
+    (block 6
+      (clabel 100 30 (nil))
+      (clabel 200 40 ("some_label_name"))
+    ) ;; block 6
+  ) ;; insn-chain
+) ;; function

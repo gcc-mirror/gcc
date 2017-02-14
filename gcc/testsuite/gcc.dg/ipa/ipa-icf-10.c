@@ -29,5 +29,5 @@ int main(int argc, char **argv)
   return 0;
 }
 
-/* { dg-final { scan-ipa-dump "Semantic equality hit:funkce->ferda" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:ferda->funkce" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 1" "icf"  } } */

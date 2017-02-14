@@ -15,5 +15,5 @@ foo (int a)
     }
 }
 
-/* { dg-final { scan-tree-dump "Folding predicate a_. > 2 to 1" "vrp1" } } */
-/* { dg-final { scan-tree-dump "Folding predicate a_. <= 5 to 1" "vrp1" } } */
+/* Both ifs should be optimized.  */
+/* { dg-final { scan-tree-dump-times "if \\\(" 0 "vrp1" } } */

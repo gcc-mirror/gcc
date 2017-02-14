@@ -1,6 +1,6 @@
 ## Makefile for the C++11 sources of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997-2016 Free Software Foundation, Inc.
+## Copyright (C) 1997-2017 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -109,9 +109,9 @@ libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS)
 # pass -mlong-double-64.
 if GLIBCXX_LDBL_COMPAT
 compatibility-ldbl.lo: compatibility-ldbl.cc
-	$(LTCXXCOMPILE) -mlong-double-64 -c $<
+	$(LTCXXCOMPILE) $(LONG_DOUBLE_COMPAT_FLAGS) -c $<
 compatibility-ldbl.o: compatibility-ldbl.cc
-	$(CXXCOMPILE) -mlong-double-64 -c $<
+	$(CXXCOMPILE) $(LONG_DOUBLE_COMPAT_FLAGS) -c $<
 endif
 
 # Use special rules for C++11 files/objects.

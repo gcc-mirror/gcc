@@ -1,6 +1,6 @@
 // 2003-02-06  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,7 +44,6 @@ void test05()
   typedef codecvt<wchar_t, char, mbstate_t> 	w_codecvt;
   typedef char					ext_type;
 
-  bool test __attribute__((unused)) = true;
   const ext_type 	e_lit[] = { '\0', '\0', 'f', '\0' };
   int 			size = sizeof(e_lit);
 

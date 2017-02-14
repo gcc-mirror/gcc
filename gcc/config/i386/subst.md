@@ -1,5 +1,5 @@
 ;; GCC machine description for AVX512F instructions
-;; Copyright (C) 2013-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2017 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -161,6 +161,7 @@
 (define_subst_attr "round_saeonly_mask_op4" "round_saeonly" "" "<round_saeonly_mask_operand4>")
 (define_subst_attr "round_saeonly_mask_scalar_merge_op4" "round_saeonly" "" "<round_saeonly_mask_scalar_merge_operand4>")
 (define_subst_attr "round_saeonly_sd_mask_op5" "round_saeonly" "" "<round_saeonly_sd_mask_operand5>")
+(define_subst_attr "round_saeonly_mask_arg3" "round_saeonly" "" ", operands[<mask_expand_op3>]")
 (define_subst_attr "round_saeonly_constraint" "round_saeonly" "vm" "v")
 (define_subst_attr "round_saeonly_constraint2" "round_saeonly" "m" "v")
 (define_subst_attr "round_saeonly_nimm_predicate" "round_saeonly" "vector_operand" "register_operand")

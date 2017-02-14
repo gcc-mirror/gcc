@@ -1,6 +1,6 @@
 // 2003-10-14  Paolo Carlini  <pcarlini@unitus.it>
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,7 +38,6 @@ const int B3[] = {9, 9, 8, 8, 8, 8, 7, 6, 6, 1, 1, 1, 1, 1};
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   list<int>::iterator pos;
@@ -54,7 +53,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   list<int>::iterator pos;
@@ -70,7 +68,6 @@ void test02()
 
 void test03()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   list<int>::iterator pos;

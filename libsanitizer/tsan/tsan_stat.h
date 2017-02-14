@@ -171,6 +171,7 @@ enum StatType {
   StatMtxFired,
   StatMtxRacy,
   StatMtxFD,
+  StatMtxGlobalProc,
 
   // This must be the last.
   StatCnt

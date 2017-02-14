@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -426,13 +426,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       pair<bool, _CharT> __last_char; // Optional<_CharT>
       __last_char.first = false;
       if (!(_M_flags & regex_constants::ECMAScript))
-	if (_M_try_char())
-	  {
-	    __matcher._M_add_char(_M_value[0]);
-	    __last_char.first = true;
-	    __last_char.second = _M_value[0];
-	  }
+	{
+	  if (_M_try_char())
+	    {
+	      __last_char.first = true;
+	      __last_char.second = _M_value[0];
+	    }
+	  else if (_M_match_token(_ScannerT::_S_token_bracket_dash))
+	    {
+	      __last_char.first = true;
+	      __last_char.second = '-';
+	    }
+	}
       while (_M_expression_term(__last_char, __matcher));
+      if (__last_char.first)
+	__matcher._M_add_char(__last_char.second);
       __matcher._M_ready();
       _M_stack.push(_StateSeqT(
 		      *_M_nfa,
@@ -449,19 +457,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (_M_match_token(_ScannerT::_S_token_bracket_end))
 	return false;
 
+      const auto __push_char = [&](_CharT __ch)
+      {
+	if (__last_char.first)
+	  __matcher._M_add_char(__last_char.second);
+	else
+	  __last_char.first = true;
+	__last_char.second = __ch;
+      };
+      const auto __flush = [&]
+      {
+	if (__last_char.first)
+	  {
+	    __matcher._M_add_char(__last_char.second);
+	    __last_char.first = false;
+	  }
+      };
+
       if (_M_match_token(_ScannerT::_S_token_collsymbol))
 	{
 	  auto __symbol = __matcher._M_add_collate_element(_M_value);
 	  if (__symbol.size() == 1)
-	    {
-	      __last_char.first = true;
-	      __last_char.second = __symbol[0];
-	    }
+	    __push_char(__symbol[0]);
+	  else
+	    __flush();
 	}
       else if (_M_match_token(_ScannerT::_S_token_equiv_class_name))
-	__matcher._M_add_equivalence_class(_M_value);
+	{
+	  __flush();
+	  __matcher._M_add_equivalence_class(_M_value);
+	}
       else if (_M_match_token(_ScannerT::_S_token_char_class_name))
-	__matcher._M_add_character_class(_M_value, false);
+	{
+	  __flush();
+	  __matcher._M_add_character_class(_M_value, false);
+	}
+      else if (_M_try_char())
+	__push_char(_M_value[0]);
       // POSIX doesn't allow '-' as a start-range char (say [a-z--0]),
       // except when the '-' is the first or last character in the bracket
       // expression ([--0]). ECMAScript treats all '-' after a range as a
@@ -472,55 +504,55 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Clang (3.5) always uses ECMAScript style even in its POSIX syntax.
       //
       // It turns out that no one reads BNFs ;)
-      else if (_M_try_char())
+      else if (_M_match_token(_ScannerT::_S_token_bracket_dash))
 	{
 	  if (!__last_char.first)
 	    {
-	      __matcher._M_add_char(_M_value[0]);
-	      if (_M_value[0] == '-'
-		  && !(_M_flags & regex_constants::ECMAScript))
+	      if (!(_M_flags & regex_constants::ECMAScript))
 		{
 		  if (_M_match_token(_ScannerT::_S_token_bracket_end))
-		    return false;
+		    {
+		      __push_char('-');
+		      return false;
+		    }
 		  __throw_regex_error(
 		    regex_constants::error_range,
 		    "Unexpected dash in bracket expression. For POSIX syntax, "
 		    "a dash is not treated literally only when it is at "
 		    "beginning or end.");
 		}
-	      __last_char.first = true;
-	      __last_char.second = _M_value[0];
+	      __push_char('-');
 	    }
 	  else
 	    {
-	      if (_M_value[0] == '-')
+	      if (_M_try_char())
 		{
-		  if (_M_try_char())
-		    {
-		      __matcher._M_make_range(__last_char.second , _M_value[0]);
-		      __last_char.first = false;
-		    }
-		  else
-		    {
-		      if (_M_scanner._M_get_token()
-			  != _ScannerT::_S_token_bracket_end)
-			__throw_regex_error(
-			  regex_constants::error_range,
-			  "Unexpected end of bracket expression.");
-		      __matcher._M_add_char(_M_value[0]);
-		    }
+		  __matcher._M_make_range(__last_char.second, _M_value[0]);
+		  __last_char.first = false;
+		}
+	      else if (_M_match_token(_ScannerT::_S_token_bracket_dash))
+		{
+		  __matcher._M_make_range(__last_char.second, '-');
+		  __last_char.first = false;
 		}
 	      else
 		{
-		  __matcher._M_add_char(_M_value[0]);
-		  __last_char.second = _M_value[0];
+		  if (_M_scanner._M_get_token()
+		      != _ScannerT::_S_token_bracket_end)
+		    __throw_regex_error(
+		      regex_constants::error_range,
+		      "Character is expected after a dash.");
+		  __push_char('-');
 		}
 	    }
 	}
       else if (_M_match_token(_ScannerT::_S_token_quoted_class))
-	__matcher._M_add_character_class(_M_value,
-					 _M_ctype.is(_CtypeT::upper,
-						     _M_value[0]));
+	{
+	  __flush();
+	  __matcher._M_add_character_class(_M_value,
+					   _M_ctype.is(_CtypeT::upper,
+						       _M_value[0]));
+	}
       else
 	__throw_regex_error(regex_constants::error_brack,
 			    "Unexpected character in bracket expression.");
@@ -580,37 +612,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _BracketMatcher<_TraitsT, __icase, __collate>::
     _M_apply(_CharT __ch, false_type) const
     {
-      bool __ret = std::binary_search(_M_char_set.begin(), _M_char_set.end(),
-				      _M_translator._M_translate(__ch));
-      if (!__ret)
-	{
-	  auto __s = _M_translator._M_transform(__ch);
-	  for (auto& __it : _M_range_set)
-	    if (__it.first <= __s && __s <= __it.second)
-	      {
-		__ret = true;
-		break;
-	      }
-	  if (_M_traits.isctype(__ch, _M_class_set))
-	    __ret = true;
-	  else if (std::find(_M_equiv_set.begin(), _M_equiv_set.end(),
-			     _M_traits.transform_primary(&__ch, &__ch+1))
-		   != _M_equiv_set.end())
-	    __ret = true;
-	  else
-	    {
-	      for (auto& __it : _M_neg_class_set)
-		if (!_M_traits.isctype(__ch, __it))
-		  {
-		    __ret = true;
-		    break;
-		  }
-	    }
-	}
-      if (_M_is_non_matching)
-	return !__ret;
-      else
-	return __ret;
+      return [this, __ch]
+      {
+	if (std::binary_search(_M_char_set.begin(), _M_char_set.end(),
+			       _M_translator._M_translate(__ch)))
+	  return true;
+	auto __s = _M_translator._M_transform(__ch);
+	for (auto& __it : _M_range_set)
+	  if (_M_translator._M_match_range(__it.first, __it.second, __s))
+	    return true;
+	if (_M_traits.isctype(__ch, _M_class_set))
+	  return true;
+	if (std::find(_M_equiv_set.begin(), _M_equiv_set.end(),
+		      _M_traits.transform_primary(&__ch, &__ch+1))
+	    != _M_equiv_set.end())
+	  return true;
+	for (auto& __it : _M_neg_class_set)
+	  if (!_M_traits.isctype(__ch, __it))
+	    return true;
+	return false;
+      }() ^ _M_is_non_matching;
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Synopsys DesignWare ARC cpu.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -52,7 +52,6 @@ extern enum arc_function_type arc_compute_function_type (struct function *);
 #endif /* TREE_CODE */
 
 
-extern void arc_init (void);
 extern unsigned int arc_compute_frame_size (int);
 extern bool arc_ccfsm_branch_deleted_p (void);
 extern void arc_ccfsm_record_branch_deleted (void);
@@ -71,7 +70,6 @@ extern bool arc_raw_symbolic_reference_mentioned_p (rtx, bool);
 extern bool arc_legitimate_pic_operand_p (rtx);
 extern bool arc_is_longcall_p (rtx);
 extern bool arc_is_shortcall_p (rtx);
-extern bool arc_profile_call (rtx callee);
 extern bool valid_brcc_with_delay_p (rtx *);
 extern bool small_data_pattern (rtx , machine_mode);
 extern rtx arc_rewrite_small_data (rtx);
@@ -109,7 +107,7 @@ extern rtx arc_regno_use_in (unsigned int, rtx);
 extern int arc_attr_type (rtx_insn *);
 extern bool arc_scheduling_not_expected (void);
 extern bool arc_sets_cc_p (rtx_insn *insn);
-extern int arc_label_align (rtx label);
+extern int arc_label_align (rtx_insn *label);
 extern bool arc_need_delay (rtx_insn *insn);
 extern bool arc_text_label (rtx_insn *insn);
 
@@ -122,4 +120,5 @@ extern int regno_clobbered_p (unsigned int, rtx_insn *, machine_mode, int);
 extern int arc_return_slot_offset (void);
 extern bool arc_legitimize_reload_address (rtx *, machine_mode, int, int);
 extern void arc_secondary_reload_conv (rtx, rtx, rtx, bool);
-extern bool insn_is_tls_gd_dispatch (rtx_insn *);
+extern void arc_cpu_cpp_builtins (cpp_reader *);
+extern bool arc_store_addr_hazard_p (rtx_insn *, rtx_insn *);

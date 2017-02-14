@@ -1,5 +1,5 @@
 /* Basic data types for Objective C.
-   Copyright (C) 1998-2016 Free Software Foundation, Inc.
+   Copyright (C) 1998-2017 Free Software Foundation, Inc.
    Contributed by Ovidiu Predescu.
 
 This file is part of GCC.
@@ -36,7 +36,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc/runtime.h"
 #include "objc-private/module-abi-8.h"
 
-#include <gc.h>
+#include <gc/gc.h>
 #include <limits.h>
 
 /* gc_typed.h uses the following but doesn't declare them */
@@ -44,7 +44,7 @@ typedef GC_word word;
 typedef GC_signed_word signed_word;
 #define BITS_PER_WORD (CHAR_BIT * sizeof (word))
 
-#include <gc_typed.h>
+#include <gc/gc_typed.h>
 
 /* The following functions set up in `mask` the corresponding pointers.
    The offset is incremented with the size of the type.  */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fwrapv -O1 -ftree-vrp -fdump-tree-vrp1" } */
+/* { dg-options "-fwrapv -O1 -ftree-vrp -fdisable-tree-evrp -fdump-tree-vrp1" } */
 
 #include <limits.h>
 extern void abort ();

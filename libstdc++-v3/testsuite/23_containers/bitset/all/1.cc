@@ -1,6 +1,6 @@
 // 2007-11-23  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,8 +25,6 @@
 // DR 693. std::bitset::all() missing.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::bitset<0> z1;
   VERIFY( z1.all() );
   z1.set();

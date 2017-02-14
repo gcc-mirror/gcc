@@ -10,6 +10,7 @@
 // http://link.springer.com/article/10.1007%2Fs13389-014-0090-x
 // https://eprint.iacr.org/2013/816.pdf
 
+// +build ignore
 // +build amd64
 
 package elliptic
@@ -66,7 +67,7 @@ func p256NegCond(val []uint64, cond int)
 // if cond == 0 res <- b; else res <- a
 func p256MovCond(res, a, b []uint64, cond int)
 
-// Endianess swap
+// Endianness swap
 func p256BigToLittle(res []uint64, in []byte)
 func p256LittleToBig(res []byte, in []uint64)
 
@@ -93,10 +94,14 @@ func p256PointAddAsm(res, in1, in2 []uint64)
 func p256PointDoubleAsm(res, in []uint64)
 
 func (curve p256Curve) Inverse(k *big.Int) *big.Int {
+	if k.Sign() < 0 {
+		// This should never happen.
+		k = new(big.Int).Neg(k)
+	}
+
 	if k.Cmp(p256.N) >= 0 {
 		// This should never happen.
-		reducedK := new(big.Int).Mod(k, p256.N)
-		k = reducedK
+		k = new(big.Int).Mod(k, p256.N)
 	}
 
 	// table will store precomputed powers of x. The four words at index

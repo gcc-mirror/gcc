@@ -15,7 +15,7 @@
 //	memstats  runtime.Memstats
 //
 // The package is sometimes only imported for the side effect of
-// registering its HTTP handler and the above variables.  To use it
+// registering its HTTP handler and the above variables. To use it
 // this way, link this package into your program:
 //	import _ "expvar"
 //
@@ -38,12 +38,19 @@ import (
 
 // Var is an abstract type for all exported variables.
 type Var interface {
+	// String returns a valid JSON value for the variable.
+	// Types with String methods that do not return valid JSON
+	// (such as time.Time) must not be used as a Var.
 	String() string
 }
 
 // Int is a 64-bit integer variable that satisfies the Var interface.
 type Int struct {
 	i int64
+}
+
+func (v *Int) Value() int64 {
+	return atomic.LoadInt64(&v.i)
 }
 
 func (v *Int) String() string {
@@ -61,6 +68,10 @@ func (v *Int) Set(value int64) {
 // Float is a 64-bit float variable that satisfies the Var interface.
 type Float struct {
 	f uint64
+}
+
+func (v *Float) Value() float64 {
+	return math.Float64frombits(atomic.LoadUint64(&v.f))
 }
 
 func (v *Float) String() string {
@@ -216,10 +227,20 @@ type String struct {
 	s  string
 }
 
-func (v *String) String() string {
+func (v *String) Value() string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	return strconv.Quote(v.s)
+	return v.s
+}
+
+// String implements the Val interface. To get the unquoted string
+// use Value.
+func (v *String) String() string {
+	v.mu.RLock()
+	s := v.s
+	v.mu.RUnlock()
+	b, _ := json.Marshal(s)
+	return string(b)
 }
 
 func (v *String) Set(value string) {
@@ -231,6 +252,10 @@ func (v *String) Set(value string) {
 // Func implements Var by calling the function
 // and formatting the returned value using JSON.
 type Func func() interface{}
+
+func (f Func) Value() interface{} {
+	return f()
+}
 
 func (f Func) String() string {
 	v, _ := json.Marshal(f())
@@ -258,7 +283,8 @@ func Publish(name string, v Var) {
 	sort.Strings(varKeys)
 }
 
-// Get retrieves a named exported variable.
+// Get retrieves a named exported variable. It returns nil if the name has
+// not been registered.
 func Get(name string) Var {
 	mutex.RLock()
 	defer mutex.RUnlock()
@@ -314,6 +340,13 @@ func expvarHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "%q: %s", kv.Key, kv.Value)
 	})
 	fmt.Fprintf(w, "\n}\n")
+}
+
+// Handler returns the expvar HTTP Handler.
+//
+// This is only needed to install the handler in a non-standard location.
+func Handler() http.Handler {
+	return http.HandlerFunc(expvarHandler)
 }
 
 func cmdline() interface{} {

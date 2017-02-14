@@ -63,7 +63,9 @@ func (p *Process) signal(sig Signal) error {
 		return errors.New("os: process already finished")
 	}
 	if sig == Kill {
-		return terminateProcess(p.Pid, 1)
+		err := terminateProcess(p.Pid, 1)
+		runtime.KeepAlive(p)
+		return err
 	}
 	// TODO(rsc): Handle Interrupt too?
 	return syscall.Errno(syscall.EWINDOWS)
@@ -104,7 +106,7 @@ func init() {
 	defer syscall.LocalFree(syscall.Handle(uintptr(unsafe.Pointer(argv))))
 	Args = make([]string, argc)
 	for i, v := range (*argv)[:argc] {
-		Args[i] = string(syscall.UTF16ToString((*v)[:]))
+		Args[i] = syscall.UTF16ToString((*v)[:])
 	}
 }
 

@@ -1,6 +1,6 @@
 // Custom pointer adapter and sample storage policies
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -449,9 +449,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       inline _Pointer_adapter 
       operator++(int)
       {
-        _Pointer_adapter tmp(*this);
+        _Pointer_adapter __tmp(*this);
         _Storage_policy::set(_Storage_policy::get() + 1);
-        return tmp;
+        return __tmp;
       }
   
       inline _Pointer_adapter& 
@@ -464,9 +464,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       inline _Pointer_adapter
       operator--(int) 
       {
-        _Pointer_adapter tmp(*this);
+        _Pointer_adapter __tmp(*this);
         _Storage_policy::set(_Storage_policy::get() - 1);
-        return tmp;
+        return __tmp;
       }
   
     }; // class _Pointer_adapter

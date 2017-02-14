@@ -1,5 +1,5 @@
 # Makefile fragment for building LIBGCC for the TI MSP430 processor.
-# Copyright (C) 2011-2016 Free Software Foundation, Inc.
+# Copyright (C) 2011-2017 Free Software Foundation, Inc.
 # Contributed by Red Hat.
 #
 # This file is part of GCC.
@@ -30,7 +30,6 @@ LIB2ADD = \
 	$(srcdir)/config/msp430/lib2mul.c \
 	$(srcdir)/config/msp430/lib2shift.c \
 	$(srcdir)/config/msp430/epilogue.S \
-	$(srcdir)/config/msp430/mpy.c \
 	$(srcdir)/config/msp430/slli.S \
 	$(srcdir)/config/msp430/srai.S \
 	$(srcdir)/config/msp430/srli.S \
@@ -42,6 +41,9 @@ LIB2ADD = \
 	$(srcdir)/config/msp430/cmpd.c
 
 HOST_LIBGCC2_CFLAGS += -Os -ffunction-sections -fdata-sections -mhwmult=none
+
+mpy.o: $(srcdir)/config/msp430/mpy.c
+	$(gcc_compile) $< -c
 
 lib2_mul_none.o: $(srcdir)/config/msp430/lib2mul.c
 	$(gcc_compile) $< -c -DMUL_NONE
@@ -58,17 +60,17 @@ lib2hw_mul_32.o: $(srcdir)/config/msp430/lib2hw_mul.S
 lib2hw_mul_f5.o: $(srcdir)/config/msp430/lib2hw_mul.S
 	$(gcc_compile) $< -c -DMUL_F5
 
-libmul_none.a: lib2_mul_none.o
-	$(AR_CREATE_FOR_TARGET) $@ $^
+libmul_none.a: lib2_mul_none.o mpy.o
+	$(AR_CREATE_FOR_TARGET) $@ $(filter %.o,$^)
 
 libmul_16.a: lib2hw_mul_16.o lib2_mul_16bit.o
-	$(AR_CREATE_FOR_TARGET) $@ $^
+	$(AR_CREATE_FOR_TARGET) $@ $(filter %.o,$^)
 
 libmul_32.a: lib2hw_mul_32.o
-	$(AR_CREATE_FOR_TARGET) $@ $^
+	$(AR_CREATE_FOR_TARGET) $@ $(filter %.o,$^)
 
 libmul_f5.a: lib2hw_mul_f5.o
-	$(AR_CREATE_FOR_TARGET) $@ $^
+	$(AR_CREATE_FOR_TARGET) $@ $(filter %.o,$^)
 
 # Local Variables:
 # mode: Makefile

@@ -511,7 +511,6 @@ multi-do:
 				ADAFLAGS="$(ADAFLAGS) $${flags}" \
 				prefix="$(prefix)" \
 				exec_prefix="$(exec_prefix)" \
-				GCJFLAGS="$(GCJFLAGS) $${flags}" \
 				GOCFLAGS="$(GOCFLAGS) $${flags}" \
 				CXXFLAGS="$(CXXFLAGS) $${flags}" \
 				LIBCFLAGS="$(LIBCFLAGS) $${flags}" \
@@ -746,13 +745,12 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
         break
       fi
     done
-    ml_config_env='CC="${CC_}$flags" CXX="${CXX_}$flags" F77="${F77_}$flags" GCJ="${GCJ_}$flags" GFORTRAN="${GFORTRAN_}$flags" GOC="${GOC_}$flags"'
+    ml_config_env='CC="${CC_}$flags" CXX="${CXX_}$flags" F77="${F77_}$flags" GFORTRAN="${GFORTRAN_}$flags" GOC="${GOC_}$flags"'
 
     if [ "${with_target_subdir}" = "." ]; then
 	CC_=$CC' '
 	CXX_=$CXX' '
 	F77_=$F77' '
-	GCJ_=$GCJ' '
 	GFORTRAN_=$GFORTRAN' '
 	GOC_=$GOC' '
     else
@@ -792,18 +790,6 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 	    F77_="${F77_}"`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
 	  *)
 	    F77_="${F77_}${arg} " ;;
-	  esac
-	done
-
-	GCJ_=
-	for arg in ${GCJ}; do
-	  case $arg in
-	  -[BIL]"${ML_POPDIR}"/*)
-	    GCJ_="${GCJ_}"`echo "X${arg}" | sed -n "s/X\\(-[BIL]${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X-[BIL]${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
-	  "${ML_POPDIR}"/*)
-	    GCJ_="${GCJ_}"`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
-	  *)
-	    GCJ_="${GCJ_}${arg} " ;;
 	  esac
 	done
 

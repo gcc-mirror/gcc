@@ -1,6 +1,6 @@
 /* This file is part of the Intel(R) Cilk(TM) Plus support
    This file contains the CilkPlus Intrinsics
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2017 Free Software Foundation, Inc.
    Contributed by Balaji V. Iyer <balaji.v.iyer@intel.com>,
    Intel Corporation
 
@@ -312,8 +312,9 @@ create_cilk_helper_decl (struct wrapper_data *wd)
     gcc_unreachable (); 
   
   clean_symbol_name (name);
-  tree fndecl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, 
-			    get_identifier (name), wd->fntype);
+
+  tree fndecl = build_decl (DECL_SOURCE_LOCATION (current_function_decl),
+			    FUNCTION_DECL, get_identifier (name), wd->fntype);
 
   TREE_PUBLIC (fndecl) = 0;
   TREE_STATIC (fndecl) = 1;
@@ -1096,6 +1097,7 @@ extract_free_variables (tree t, struct wrapper_data *wd,
     case RESULT_DECL:
       if (wd->type != CILK_BLOCK_SPAWN)
 	TREE_ADDRESSABLE (t) = 1;
+      /* FALLTHRU */
     case VAR_DECL:
     case PARM_DECL:
       if (!is_global_var (t))

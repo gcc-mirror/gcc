@@ -4,23 +4,23 @@ GNAT Reference Manual
 *GNAT, The GNU Ada Development Environment*
 
 .. only:: PRO
-   
+
    *GNAT Pro Edition*
-   
+
    | Version |version|
    | Date: |today|
 
 .. only:: GPL
-   
+
    *GNAT GPL Edition*
-   
+
    | Version |version|
    | Date: |today|
 
 .. only:: FSF
-   
+
    .. raw:: texinfo
-      
+
       @include gcc-common.texi
       GCC version @value{version-GCC}@*
 

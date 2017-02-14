@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2016 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -381,7 +381,7 @@ compiler on an i386 machine:
 
 @sp 1
 
-@multitable @columnfractions .25 .75
+@multitable @columnfractions .60 .40
 @item Objective-C type
 @tab Compiler encoding
 @item
@@ -404,7 +404,7 @@ struct @{
 @smallexample
 int a __attribute__ ((vector_size (16)));
 @end smallexample
-@tab @code{![16,16i]} (alignment would depend on the machine)
+@tab @code{![16,16i]} (alignment depends on the machine)
 @end multitable
 
 @sp 1

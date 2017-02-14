@@ -1,5 +1,5 @@
 ;;- Instruction patterns for the System z vector facility
-;;  Copyright (C) 2015-2016 Free Software Foundation, Inc.
+;;  Copyright (C) 2015-2017 Free Software Foundation, Inc.
 ;;  Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
 
 ;; This file is part of GCC.
@@ -38,7 +38,8 @@
 (define_mode_iterator VIT_HW    [V16QI V8HI V4SI V2DI V1TI TI])
 (define_mode_iterator VI_HW     [V16QI V8HI V4SI V2DI])
 (define_mode_iterator VI_HW_QHS [V16QI V8HI V4SI])
-(define_mode_iterator VI_HW_HS  [V8HI V4SI])
+(define_mode_iterator VI_HW_HSD [V8HI  V4SI V2DI])
+(define_mode_iterator VI_HW_HS  [V8HI  V4SI])
 (define_mode_iterator VI_HW_QH  [V16QI V8HI])
 
 ; All integer vector modes supported in a vector register + TImode
@@ -114,6 +115,13 @@
 			    (V1DF "V2SF") (V2DF "V4SF")
 			    (V1TF "V1DF")])
 
+; Vector with half the element size AND half the number of elements.
+(define_mode_attr vec_halfhalf
+  [(V2HI "V2QI") (V4HI "V4QI") (V8HI "V8QI")
+   (V2SI "V2HI") (V4SI "V4HI")
+   (V2DI "V2SI")
+   (V2DF "V2SF")])
+
 ; The comparisons not setting CC iterate over the rtx code.
 (define_code_iterator VFCMP_HW_OP [eq gt ge])
 (define_code_attr asm_fcmp_op [(eq "e") (gt "h") (ge "he")])
@@ -136,6 +144,7 @@
 (include "vx-builtins.md")
 
 ; Full HW vector size moves
+; vgmb, vgmh, vgmf, vgmg, vrepib, vrepih, vrepif, vrepig
 (define_insn "mov<mode>"
   [(set (match_operand:V_128 0 "nonimmediate_operand" "=v,v,R,  v,  v,  v,  v,  v,v,d")
 	(match_operand:V_128 1 "general_operand"      " v,R,v,j00,jm1,jyy,jxx,jKK,d,v"))]
@@ -321,6 +330,7 @@
 ; FIXME: A target memory operand seems to be useful otherwise we end
 ; up with vl vlvgg vst.  Shouldn't the middle-end be able to handle
 ; that itself?
+; vlvgb, vlvgh, vlvgf, vlvgg, vleb, vleh, vlef, vleg, vleib, vleih, vleif, vleig
 (define_insn "*vec_set<mode>"
   [(set (match_operand:V                    0 "register_operand"  "=v,v,v")
 	(unspec:V [(match_operand:<non_vec> 1 "general_operand"    "d,R,K")
@@ -336,6 +346,7 @@
    vlei<bhfgq>\t%v0,%1,%2"
   [(set_attr "op_type" "VRS,VRX,VRI")])
 
+; vlvgb, vlvgh, vlvgf, vlvgg
 (define_insn "*vec_set<mode>_plus"
   [(set (match_operand:V                      0 "register_operand" "=v")
 	(unspec:V [(match_operand:<non_vec>   1 "general_operand"   "d")
@@ -358,6 +369,7 @@
 			  UNSPEC_VEC_EXTRACT))]
   "TARGET_VX")
 
+; vlgvb, vlgvh, vlgvf, vlgvg, vsteb, vsteh, vstef, vsteg
 (define_insn "*vec_extract<mode>"
   [(set (match_operand:<non_vec> 0 "nonimmediate_operand"          "=d,R")
 	(unspec:<non_vec> [(match_operand:V  1 "register_operand"   "v,v")
@@ -371,6 +383,7 @@
    vste<bhfgq>\t%v1,%0,%2"
   [(set_attr "op_type" "VRS,VRX")])
 
+; vlgvb, vlgvh, vlgvf, vlgvg
 (define_insn "*vec_extract<mode>_plus"
   [(set (match_operand:<non_vec>                      0 "nonimmediate_operand" "=d")
 	(unspec:<non_vec> [(match_operand:V           1 "register_operand"      "v")
@@ -391,6 +404,7 @@
 })
 
 ; Replicate from vector element
+; vrepb, vreph, vrepf, vrepg
 (define_insn "*vec_splat<mode>"
   [(set (match_operand:V_HW   0 "register_operand" "=v")
 	(vec_duplicate:V_HW
@@ -402,6 +416,7 @@
   "vrep<bhfgq>\t%v0,%v1,%2"
   [(set_attr "op_type" "VRI")])
 
+; vlrepb, vlreph, vlrepf, vlrepg, vrepib, vrepih, vrepif, vrepig, vrepb, vreph, vrepf, vrepg
 (define_insn "*vec_splats<mode>"
   [(set (match_operand:V_HW                          0 "register_operand" "=v,v,v,v")
 	(vec_duplicate:V_HW (match_operand:<non_vec> 1 "general_operand"  " R,K,v,d")))]
@@ -684,6 +699,7 @@
 })
 
 ; Count leading zeros
+; vclzb, vclzh, vclzf, vclzg
 (define_insn "clz<mode>2"
   [(set (match_operand:V        0 "register_operand" "=v")
 	(clz:V (match_operand:V 1 "register_operand"  "v")))]
@@ -692,6 +708,7 @@
   [(set_attr "op_type" "VRR")])
 
 ; Count trailing zeros
+; vctzb, vctzh, vctzf, vctzg
 (define_insn "ctz<mode>2"
   [(set (match_operand:V        0 "register_operand" "=v")
 	(ctz:V (match_operand:V 1 "register_operand"  "v")))]
@@ -1101,7 +1118,7 @@
 		      UNSPEC_VEC_VFENECC))]
   "TARGET_VX"
 {
-  unsigned HOST_WIDE_INT flags = INTVAL (operands[3]);
+  unsigned HOST_WIDE_INT flags = UINTVAL (operands[3]);
 
   gcc_assert (!(flags & ~(VSTRING_FLAG_ZS | VSTRING_FLAG_CS)));
   flags &= ~VSTRING_FLAG_CS;
@@ -1223,6 +1240,185 @@
   "vsel\t%v0,%2,%1,%3"
   [(set_attr "op_type" "VRR")])
 
+; vec_pack_trunc
+
+; vpkh, vpkf, vpkg
+(define_insn "vec_pack_trunc_<mode>"
+  [(set (match_operand:<vec_half> 0 "register_operand" "=v")
+	(vec_concat:<vec_half>
+	 (truncate:<vec_halfhalf>
+	  (match_operand:VI_HW_HSD 1 "register_operand" "v"))
+	 (truncate:<vec_halfhalf>
+	  (match_operand:VI_HW_HSD 2 "register_operand" "v"))))]
+  "TARGET_VX"
+  "vpk<bhfgq>\t%0,%1,%2"
+  [(set_attr "op_type" "VRR")])
+
+; vpksh, vpksf, vpksg
+(define_insn "vec_pack_ssat_<mode>"
+  [(set (match_operand:<vec_half> 0 "register_operand" "=v")
+	(vec_concat:<vec_half>
+	 (ss_truncate:<vec_halfhalf>
+	  (match_operand:VI_HW_HSD 1 "register_operand" "v"))
+	 (ss_truncate:<vec_halfhalf>
+	  (match_operand:VI_HW_HSD 2 "register_operand" "v"))))]
+  "TARGET_VX"
+  "vpks<bhfgq>\t%0,%1,%2"
+  [(set_attr "op_type" "VRR")])
+
+; vpklsh, vpklsf, vpklsg
+(define_insn "vec_pack_usat_<mode>"
+  [(set (match_operand:<vec_half> 0 "register_operand" "=v")
+	(vec_concat:<vec_half>
+	 (us_truncate:<vec_halfhalf>
+	  (match_operand:VI_HW_HSD 1 "register_operand" "v"))
+	 (us_truncate:<vec_halfhalf>
+	  (match_operand:VI_HW_HSD 2 "register_operand" "v"))))]
+  "TARGET_VX"
+  "vpkls<bhfgq>\t%0,%1,%2"
+  [(set_attr "op_type" "VRR")])
+
+;; vector unpack v16qi
+
+; signed
+
+(define_insn "vec_unpacks_hi_v16qi"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
+	(sign_extend:V8HI
+	 (vec_select:V8QI
+	  (match_operand:V16QI 1 "register_operand" "v")
+	  (parallel [(const_int 0)(const_int 1)(const_int 2)(const_int 3)
+		     (const_int 4)(const_int 5)(const_int 6)(const_int 7)]))))]
+  "TARGET_VX"
+  "vuphb\t%0,%1"
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "vec_unpacks_low_v16qi"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
+	(sign_extend:V8HI
+	 (vec_select:V8QI
+	  (match_operand:V16QI 1 "register_operand" "v")
+	  (parallel [(const_int 8) (const_int 9) (const_int 10)(const_int 11)
+		     (const_int 12)(const_int 13)(const_int 14)(const_int 15)]))))]
+  "TARGET_VX"
+  "vuplb\t%0,%1"
+  [(set_attr "op_type" "VRR")])
+
+; unsigned
+
+(define_insn "vec_unpacku_hi_v16qi"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
+	(zero_extend:V8HI
+	 (vec_select:V8QI
+	  (match_operand:V16QI 1 "register_operand" "v")
+	  (parallel [(const_int 0)(const_int 1)(const_int 2)(const_int 3)
+		     (const_int 4)(const_int 5)(const_int 6)(const_int 7)]))))]
+  "TARGET_VX"
+  "vuplhb\t%0,%1"
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "vec_unpacku_low_v16qi"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
+	(zero_extend:V8HI
+	 (vec_select:V8QI
+	  (match_operand:V16QI 1 "register_operand" "v")
+	  (parallel [(const_int 8) (const_int 9) (const_int 10)(const_int 11)
+		     (const_int 12)(const_int 13)(const_int 14)(const_int 15)]))))]
+  "TARGET_VX"
+  "vupllb\t%0,%1"
+  [(set_attr "op_type" "VRR")])
+
+;; vector unpack v8hi
+
+; signed
+
+(define_insn "vec_unpacks_hi_v8hi"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+	(sign_extend:V4SI
+	 (vec_select:V4HI
+	  (match_operand:V8HI 1 "register_operand" "v")
+	  (parallel [(const_int 0)(const_int 1)(const_int 2)(const_int 3)]))))]
+  "TARGET_VX"
+  "vuphh\t%0,%1"
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "vec_unpacks_lo_v8hi"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+	(sign_extend:V4SI
+	 (vec_select:V4HI
+	  (match_operand:V8HI 1 "register_operand" "v")
+	  (parallel [(const_int 4)(const_int 5)(const_int 6)(const_int 7)]))))]
+  "TARGET_VX"
+  "vuplhw\t%0,%1"
+  [(set_attr "op_type" "VRR")])
+
+; unsigned
+
+(define_insn "vec_unpacku_hi_v8hi"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+	(zero_extend:V4SI
+	 (vec_select:V4HI
+	  (match_operand:V8HI 1 "register_operand" "v")
+	  (parallel [(const_int 0)(const_int 1)(const_int 2)(const_int 3)]))))]
+  "TARGET_VX"
+  "vuplhh\t%0,%1"
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "vec_unpacku_lo_v8hi"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+	(zero_extend:V4SI
+	 (vec_select:V4HI
+	  (match_operand:V8HI 1 "register_operand" "v")
+	  (parallel [(const_int 4)(const_int 5)(const_int 6)(const_int 7)]))))]
+  "TARGET_VX"
+  "vupllh\t%0,%1"
+  [(set_attr "op_type" "VRR")])
+
+;; vector unpack v4si
+
+; signed
+
+(define_insn "vec_unpacks_hi_v4si"
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
+	(sign_extend:V2DI
+	 (vec_select:V2SI
+	  (match_operand:V4SI 1 "register_operand" "v")
+	  (parallel [(const_int 0)(const_int 1)]))))]
+  "TARGET_VX"
+  "vuphf\t%0,%1"
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "vec_unpacks_lo_v4si"
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
+	(sign_extend:V2DI
+	 (vec_select:V2SI
+	  (match_operand:V4SI 1 "register_operand" "v")
+	  (parallel [(const_int 2)(const_int 3)]))))]
+  "TARGET_VX"
+  "vuplf\t%0,%1"
+  [(set_attr "op_type" "VRR")])
+
+; unsigned
+
+(define_insn "vec_unpacku_hi_v4si"
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
+	(zero_extend:V2DI
+	 (vec_select:V2SI
+	  (match_operand:V4SI 1 "register_operand" "v")
+	  (parallel [(const_int 0)(const_int 1)]))))]
+  "TARGET_VX"
+  "vuplhf\t%0,%1"
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "vec_unpacku_lo_v4si"
+  [(set (match_operand:V2DI 0 "register_operand" "=v")
+	(zero_extend:V2DI
+	 (vec_select:V2SI
+	  (match_operand:V4SI 1 "register_operand" "v")
+	  (parallel [(const_int 2)(const_int 3)]))))]
+  "TARGET_VX"
+  "vupllf\t%0,%1"
+  [(set_attr "op_type" "VRR")])
 
 
 ; reduc_smin
@@ -1233,15 +1429,8 @@
 ; vec_shl vrep + vsl
 ; vec_shr
 
-; vec_pack_trunc
-; vec_pack_ssat
-; vec_pack_usat
-; vec_pack_sfix_trunc
+; vec_pack_sfix_trunc: convert + pack ?
 ; vec_pack_ufix_trunc
-; vec_unpacks_hi
-; vec_unpacks_low
-; vec_unpacku_hi
-; vec_unpacku_low
 ; vec_unpacks_float_hi
 ; vec_unpacks_float_lo
 ; vec_unpacku_float_hi

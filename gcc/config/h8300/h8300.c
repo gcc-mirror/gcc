@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Renesas H8/300.
-   Copyright (C) 1992-2016 Free Software Foundation, Inc.
+   Copyright (C) 1992-2017 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "optabs.h"
@@ -1740,10 +1741,12 @@ h8300_print_operand (FILE *file, rtx x, int code)
 		      break;
 		    }
 
-		  /* Fall through.  We should not get here if we are
-		     processing bit operations on H8/300 or H8/300H
-		     because 'U' constraint does not allow bit
-		     operations on the tiny area on these machines.  */
+		  /* FALLTHRU */
+
+		  /* We should not get here if we are processing bit
+		     operations on H8/300 or H8/300H because 'U'
+		     constraint does not allow bit operations on the
+		     tiny area on these machines.  */
 
 		case 'X':
 		case 'T':
@@ -5730,7 +5733,7 @@ byte_accesses_mergeable_p (rtx addr1, rtx addr2)
    before I3.  I3 is assumed to be a comparison insn.  */
 
 int
-same_cmp_preceding_p (rtx i3)
+same_cmp_preceding_p (rtx_insn *i3)
 {
   rtx_insn *i1, *i2;
 
@@ -5750,7 +5753,7 @@ same_cmp_preceding_p (rtx i3)
    after I1.  I1 is assumed to be a comparison insn.  */
 
 int
-same_cmp_following_p (rtx i1)
+same_cmp_following_p (rtx_insn *i1)
 {
   rtx_insn *i2, *i3;
 
@@ -6096,6 +6099,9 @@ h8300_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 
 #undef TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK h8300_hard_regno_scratch_ok
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	h8300_legitimate_address_p

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -763,10 +763,10 @@ package body Ch12 is
          --  Ada 2005 (AI-345): Task, Protected or Synchronized interface or
          --  (AI-443): Synchronized formal derived type declaration.
 
-         when Tok_Protected    |
-              Tok_Synchronized |
-              Tok_Task         =>
-
+         when Tok_Protected
+            | Tok_Synchronized
+            | Tok_Task
+         =>
             declare
                Saved_Token : constant Token_Type := Token;
 
@@ -812,7 +812,6 @@ package body Ch12 is
             Error_Msg_BC ("expecting generic type definition here");
             Resync_Past_Semicolon;
             return Error;
-
       end case;
    end P_Formal_Type_Definition;
 

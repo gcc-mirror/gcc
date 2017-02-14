@@ -91,4 +91,4 @@ linit ()
 	}
     }
 }
-/* { dg-final { scan-tree-dump-times "Duplicating join block" 2 "split-paths" } } */
+/* { dg-final { scan-tree-dump-times "Duplicating join block" 0 "split-paths" } } */

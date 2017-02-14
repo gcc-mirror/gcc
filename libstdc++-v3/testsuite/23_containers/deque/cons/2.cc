@@ -1,6 +1,6 @@
 // 2001-12-27 pme
 //
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,8 +34,6 @@ using __gnu_test::object_counter;
 using __gnu_test::destructor;
 
 typedef std::deque<object_counter>   gdeque;
-
-bool test __attribute__((unused)) = true;
 
 // 23.2.1     required types
 //

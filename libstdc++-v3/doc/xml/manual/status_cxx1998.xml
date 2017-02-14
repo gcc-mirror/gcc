@@ -1087,19 +1087,14 @@ particular release.
       <emphasis>[18.6.1]/8</emphasis> (exception),
       <emphasis>[18.6.2.1]/5</emphasis> (bad_exception):  The <code>what()</code>
       member function of class <code>std::exception</code>, and these other
-      classes publicly derived from it, simply returns the name of the
-      class.  But they are the <emphasis>mangled</emphasis> names; you will need to call
-      <code>c++filt</code> and pass the names as command-line parameters to
-      demangle them, or call a
-      <link linkend="manual.ext.demangle">runtime demangler function</link>.
-      (The classes in <code>&lt;stdexcept&gt;</code> have constructors which
-      require an argument to use later for <code>what()</code> calls, so the
-      problem of <code>what()</code>'s value does not arise in most
-      user-defined exceptions.)
+      classes publicly derived from it, returns the name of the
+      class, e.g. <literal>"std::bad_alloc"</literal>.
    </para>
    <para><emphasis>[18.5.1]/7</emphasis> The return value of
-      <code>std::type_info::name()</code> is the mangled type name (see the
-      previous entry for more).
+      <code>std::type_info::name()</code> is the mangled type name.
+      You will need to call <code>c++filt</code> and pass the names as
+      command-line parameters to demangle them, or call a
+      <link linkend="manual.ext.demangle">runtime demangler function</link>.
    </para>
    <para><emphasis>[20.1.5]/5</emphasis> <emphasis>"Implementors are encouraged to
       supply libraries that can accept allocators that encapsulate more
@@ -1114,6 +1109,7 @@ particular release.
    </para>
    <para><emphasis>[21.1.3.1]/3,4</emphasis>,
       <emphasis>[21.1.3.2]/2</emphasis>,
+      <emphasis>[21.3]/6 basic_string::iterator, basic_string::const_iterator</emphasis>,
       <emphasis>[23.*]'s foo::iterator</emphasis>,
       <emphasis>[27.*]'s foo::*_type</emphasis>,
       <emphasis>others...</emphasis>

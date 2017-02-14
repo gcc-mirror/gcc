@@ -17,7 +17,7 @@ contains
 
   integer function fib_wrapper (n)
     integer :: x
-    !$omp target map(to: n) if(n > THRESHOLD)
+    !$omp target map(to: n) map(from: x) if(n > THRESHOLD)
       x = fib (n)
     !$omp end target
     fib_wrapper = x

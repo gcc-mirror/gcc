@@ -1,5 +1,5 @@
 /* Header for array handling functions
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -17,9 +17,6 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
-
-/* Generate code to free an array.  */
-tree gfc_array_deallocate (tree, tree, tree, tree, tree, gfc_expr*);
 
 /* Generate code to initialize and allocate an array.  Statements are added to
    se, which should contain an expression for the array descriptor.  */
@@ -41,8 +38,6 @@ void gfc_trans_auto_array_allocation (tree, gfc_symbol *, gfc_wrapped_block *);
 void gfc_trans_dummy_array_bias (gfc_symbol *, tree, gfc_wrapped_block *);
 /* Generate entry and exit code for g77 calling convention arrays.  */
 void gfc_trans_g77_array (gfc_symbol *, gfc_wrapped_block *);
-/* Generate code to deallocate an array, if it is allocated.  */
-tree gfc_trans_dealloc_allocated (tree, bool, gfc_expr *);
 
 tree gfc_full_array_size (stmtblock_t *, tree, int);
 
@@ -52,13 +47,15 @@ tree gfc_copy_allocatable_data (tree dest, tree src, tree type, int rank);
 
 tree gfc_duplicate_allocatable_nocopy (tree, tree, tree, int);
 
-tree gfc_nullify_alloc_comp (gfc_symbol *, tree, int);
+bool gfc_caf_is_dealloc_only (int);
 
-tree gfc_deallocate_alloc_comp (gfc_symbol *, tree, int);
+tree gfc_nullify_alloc_comp (gfc_symbol *, tree, int, int cm = 0);
+
+tree gfc_deallocate_alloc_comp (gfc_symbol *, tree, int, int cm = 0);
 tree gfc_deallocate_alloc_comp_no_caf (gfc_symbol *, tree, int);
 tree gfc_reassign_alloc_comp_caf (gfc_symbol *, tree, tree);
 
-tree gfc_copy_alloc_comp (gfc_symbol *, tree, tree, int);
+tree gfc_copy_alloc_comp (gfc_symbol *, tree, tree, int, int);
 
 tree gfc_copy_only_alloc_comp (gfc_symbol *, tree, tree, int);
 

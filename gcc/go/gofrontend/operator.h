@@ -63,4 +63,10 @@ enum Operator
   OPERATOR_RSQUARE	// ]
 };
 
+// Whether a variable expression appears in lvalue (assignment) context.
+enum Varexpr_context {
+  VE_rvalue,
+  VE_lvalue
+};
+
 #endif // !defined(GO_OPERATOR_H)

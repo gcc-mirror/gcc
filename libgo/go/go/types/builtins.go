@@ -366,7 +366,7 @@ func (check *Checker) builtin(x *operand, call *ast.CallExpr, id builtinId) (_ b
 			} else {
 				// an untyped non-constant argument may appear if
 				// it contains a (yet untyped non-constant) shift
-				// epression: convert it to complex128 which will
+				// expression: convert it to complex128 which will
 				// result in an error (shift of complex value)
 				check.convertUntyped(x, Typ[Complex128])
 				// x should be invalid now, but be conservative and check
@@ -434,7 +434,7 @@ func (check *Checker) builtin(x *operand, call *ast.CallExpr, id builtinId) (_ b
 			return
 		}
 		if nargs < min || min+1 < nargs {
-			check.errorf(call.Pos(), "%s expects %d or %d arguments; found %d", call, min, min+1, nargs)
+			check.errorf(call.Pos(), "%v expects %d or %d arguments; found %d", call, min, min+1, nargs)
 			return
 		}
 		var sizes []int64 // constant integer arguments, if any
@@ -595,7 +595,7 @@ func (check *Checker) builtin(x *operand, call *ast.CallExpr, id builtinId) (_ b
 			return
 		}
 		if !constant.BoolVal(x.val) {
-			check.errorf(call.Pos(), "%s failed", call)
+			check.errorf(call.Pos(), "%v failed", call)
 			// compile-time assertion failure - safe to continue
 		}
 		// result is constant - no need to record signature
@@ -632,7 +632,7 @@ func (check *Checker) builtin(x *operand, call *ast.CallExpr, id builtinId) (_ b
 func makeSig(res Type, args ...Type) *Signature {
 	list := make([]*Var, len(args))
 	for i, param := range args {
-		list[i] = NewVar(token.NoPos, nil, "", defaultType(param))
+		list[i] = NewVar(token.NoPos, nil, "", Default(param))
 	}
 	params := NewTuple(list...)
 	var result *Tuple

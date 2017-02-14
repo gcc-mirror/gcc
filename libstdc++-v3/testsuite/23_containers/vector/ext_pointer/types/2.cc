@@ -1,6 +1,6 @@
 // Test for Container using non-standard pointer types.
 
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2011-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // This is a copy of vector/types/1.cc with altered allocator.
 // The operator+()s in this test initially failed the test -

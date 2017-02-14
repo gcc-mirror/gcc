@@ -1,4 +1,4 @@
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,8 +31,6 @@ const int NB = sizeof(B1) / sizeof(bool);
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   int res = std::inner_product(A1, A1 + NA, A2, 31);
   VERIFY( res == 983 );
 }
@@ -40,8 +38,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   int res = std::inner_product(B1, B1 + NB, B2, 100);
   VERIFY( res == 102 );
 }

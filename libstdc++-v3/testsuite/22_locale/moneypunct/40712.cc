@@ -2,7 +2,7 @@
 
 // 2009-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,6 @@
 // libstdc++/40712
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   locale loc(locale("C"), ISO_8859(1,en_US), locale::monetary);

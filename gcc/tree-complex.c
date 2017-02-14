@@ -1,5 +1,5 @@
 /* Lower complex number operations to scalar operations.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1336,6 +1336,7 @@ expand_complex_division (gimple_stmt_iterator *gsi, tree inner_type,
       rr = gimplify_build2 (gsi, code, inner_type, ai, bi);
       ri = gimplify_build2 (gsi, code, inner_type, ar, bi);
       ri = gimplify_build1 (gsi, NEGATE_EXPR, inner_type, ri);
+      break;
 
     case PAIR (ONLY_REAL, VARYING):
     case PAIR (ONLY_IMAG, VARYING):

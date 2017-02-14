@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // 2005-01-15 Douglas Gregor <dgregor@cs.indiana.edu>
 //
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,9 +23,20 @@
 #include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
-using namespace __gnu_test;
+template<typename T>
+  const T&
+  as_const(T& t)
+  { return t; }
 
-bool test __attribute__((unused)) = true;
+// Check that f's target is a reference_wrapper bound to obj.
+template<typename Function, typename T>
+  bool
+  wraps(Function& f, T& obj)
+  {
+    using ref_wrapper_type = std::reference_wrapper<T>;
+    auto* p = f.template target<ref_wrapper_type>();
+    return std::addressof(p->get()) == std::addressof(obj);
+  }
 
 // Put reference_wrappers to function pointers into function<> wrappers
 void test07()
@@ -33,8 +44,9 @@ void test07()
   using std::function;
   using std::ref;
   using std::cref;
+  using std::reference_wrapper;
 
-  int (*fptr)(float) = truncate_float;
+  int (*fptr)(float) = __gnu_test::truncate_float;
 
   function<int(float)> f1(ref(fptr));
   VERIFY( f1 );
@@ -49,11 +61,11 @@ void test07()
 
   // target_type and target() functions
   const function<int(float)>& f1c = f1;
-  VERIFY( typeid(int(*)(float)) == f1.target_type() );
-  VERIFY( f1.target<int(*)(float)>() != 0 );
-  VERIFY( f1.target<int(*)(float)>() == &fptr );
-  VERIFY( f1c.target<int(*)(float)>() != 0 );
-  VERIFY( f1c.target<int(*)(float)>() == &fptr );
+  using ref_wrapper_type = reference_wrapper<int(*)(float)>;
+  VERIFY( typeid(ref_wrapper_type) == f1.target_type() );
+  VERIFY( f1.target<ref_wrapper_type>() != nullptr );
+  VERIFY( wraps(f1, fptr) );
+  VERIFY( wraps(f1c, fptr) );
 
   function<int(float)> f2(cref(fptr));
   VERIFY( f2 );
@@ -68,11 +80,11 @@ void test07()
 
   // target_type and target() functions
   const function<int(float)>& f2c = f2;
-  VERIFY( typeid(int(*)(float)) == f2.target_type() );
-  VERIFY( f2.target<int(*)(float)>() == 0 );
-  VERIFY( f2.target<int(* const)(float)>() == &fptr );
-  VERIFY( f2c.target<int(*)(float)>() != 0 );
-  VERIFY( f2c.target<int(*)(float)>() == &fptr );
+  using cref_wrapper_type = reference_wrapper<int(* const)(float)>;
+  VERIFY( typeid(cref_wrapper_type) == f2.target_type() );
+  VERIFY( wraps(f2, as_const(fptr)) );
+  VERIFY( f2c.target_type() == f2.target_type() );
+  VERIFY( wraps(f2c, as_const(fptr)) );
 }
 
 int main()

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,7 @@ with Exp_Ch11;  use Exp_Ch11;
 with Exp_Ch12;  use Exp_Ch12;
 with Exp_Ch13;  use Exp_Ch13;
 with Exp_Prag;  use Exp_Prag;
+with Ghost;     use Ghost;
 with Opt;       use Opt;
 with Rtsfind;   use Rtsfind;
 with Sem;       use Sem;
@@ -76,7 +77,13 @@ package body Expander is
    -- Expand --
    ------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Expand (N : Node_Id) is
+      Mode : Ghost_Mode_Type;
+
    begin
       --  If we were analyzing a default expression (or other spec expression)
       --  the Full_Analysis flag must be off. If we are in expansion mode then
@@ -87,6 +94,11 @@ package body Expander is
         (not (Full_Analysis and then In_Spec_Expression)
           and then (Full_Analysis or else not Expander_Active)
           and then not (Inside_A_Generic and then Expander_Active));
+
+      --  Establish the Ghost mode of the context to ensure that any generated
+      --  nodes during expansion are marked as Ghost.
+
+      Set_Ghost_Mode (N, Mode);
 
       --  The GNATprove_Mode flag indicates that a light expansion for formal
       --  verification should be used. This expansion is never done inside
@@ -105,7 +117,7 @@ package body Expander is
          --  needed, and in general cannot be done correctly, in this mode, so
          --  we are all done.
 
-         return;
+         goto Leave;
 
       --  There are three reasons for the Expander_Active flag to be false
 
@@ -140,7 +152,7 @@ package body Expander is
             Pop_Scope;
          end if;
 
-         return;
+         goto Leave;
 
       else
          begin
@@ -151,7 +163,6 @@ package body Expander is
             --  corresponding expand routines.
 
             case Nkind (N) is
-
                when N_Abort_Statement =>
                   Expand_N_Abort_Statement (N);
 
@@ -203,6 +214,9 @@ package body Expander is
 
                when N_Delay_Until_Statement =>
                   Expand_N_Delay_Until_Statement (N);
+
+               when N_Delta_Aggregate =>
+                  Expand_N_Delta_Aggregate (N);
 
                when N_Entry_Body =>
                   Expand_N_Entry_Body (N);
@@ -478,12 +492,11 @@ package body Expander is
 
                when others =>
                   null;
-
             end case;
 
          exception
             when RE_Not_Available =>
-               return;
+               goto Leave;
          end;
 
          --  Set result as analyzed and then do a possible transient wrap. The
@@ -496,21 +509,27 @@ package body Expander is
 
          if Scope_Is_Transient and then N = Node_To_Be_Wrapped then
             case Nkind (N) is
-               when N_Statement_Other_Than_Procedure_Call |
-                    N_Procedure_Call_Statement            =>
+               when N_Procedure_Call_Statement
+                  | N_Statement_Other_Than_Procedure_Call
+               =>
                   Wrap_Transient_Statement (N);
 
-               when N_Object_Declaration          |
-                    N_Object_Renaming_Declaration |
-                    N_Subtype_Declaration         =>
+               when N_Object_Declaration
+                  | N_Object_Renaming_Declaration
+                  | N_Subtype_Declaration
+               =>
                   Wrap_Transient_Declaration (N);
 
-               when others => Wrap_Transient_Expression (N);
+               when others =>
+                  Wrap_Transient_Expression (N);
             end case;
          end if;
 
          Debug_A_Exit ("expanding  ", N, "  (done)");
       end if;
+
+   <<Leave>>
+      Restore_Ghost_Mode (Mode);
    end Expand;
 
    ---------------------------

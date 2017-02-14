@@ -1,5 +1,5 @@
 /* Header file for gimplification.
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -99,7 +99,7 @@ is_gimple_sizepos (tree expr)
      but that will cause problems if this type is from outside the function.
      It's OK to have that here.  */
   return (expr == NULL_TREE
-	  || TREE_CONSTANT (expr)
+	  || TREE_CODE (expr) == INTEGER_CST
 	  || TREE_CODE (expr) == VAR_DECL
 	  || CONTAINS_PLACEHOLDER_P (expr));
 }                                        

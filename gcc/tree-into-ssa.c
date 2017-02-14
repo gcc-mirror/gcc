@@ -1,5 +1,5 @@
 /* Rewrite a program in Normal form into SSA.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -37,6 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "domwalk.h"
+#include "statistics.h"
+#include "asan.h"
 
 #define PERCENT(x,y) ((float)(x) * 100.0 / (float)(y))
 
@@ -1228,7 +1230,7 @@ rewrite_debug_stmt_uses (gimple *stmt)
 		  def_temp = gimple_build_debug_source_bind (def, var, NULL);
 		  DECL_ARTIFICIAL (def) = 1;
 		  TREE_TYPE (def) = TREE_TYPE (var);
-		  DECL_MODE (def) = DECL_MODE (var);
+		  SET_DECL_MODE (def, DECL_MODE (var));
 		  gsi =
 		 gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 		  gsi_insert_before (&gsi, def_temp, GSI_SAME_STMT);
@@ -1338,8 +1340,7 @@ rewrite_stmt (gimple_stmt_iterator *si)
 	  {
 	    /* If we rewrite a DECL into SSA form then drop its
 	       clobber stmts and replace uses with a new default def.  */
-	    gcc_checking_assert (TREE_CODE (var) == VAR_DECL
-				 && !gimple_vdef (stmt));
+	    gcc_checking_assert (VAR_P (var) && !gimple_vdef (stmt));
 	    gsi_replace (si, gimple_build_nop (), true);
 	    register_new_def (get_or_create_ssa_default_def (cfun, var), var);
 	    break;
@@ -1378,12 +1379,20 @@ rewrite_add_phi_arguments (basic_block bb)
       for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
-	  tree currdef, res;
+	  tree currdef, res, argvar;
 	  location_t loc;
 
 	  phi = gsi.phi ();
 	  res = gimple_phi_result (phi);
-	  currdef = get_reaching_def (SSA_NAME_VAR (res));
+	  /* If we have pre-existing PHI (via the GIMPLE FE) its args may
+	     be different vars than existing vars and they may be constants
+	     as well.  Note the following supports partial SSA for PHI args.  */
+	  argvar = gimple_phi_arg_def (phi, e->dest_idx);
+	  if (argvar && ! DECL_P (argvar))
+	    continue;
+	  if (!argvar)
+	    argvar = SSA_NAME_VAR (res);
+	  currdef = get_reaching_def (argvar);
 	  /* Virtual operand PHI args do not need a location.  */
 	  if (virtual_operand_p (res))
 	    loc = UNKNOWN_LOCATION;
@@ -1799,6 +1808,26 @@ maybe_replace_use_in_debug_stmt (use_operand_p use_p)
 }
 
 
+/* If DEF has x_5 = ASAN_POISON () as its current def, add
+   ASAN_POISON_USE (x_5) stmt before GSI to denote the stmt writes into
+   a poisoned (out of scope) variable.  */
+
+static void
+maybe_add_asan_poison_write (tree def, gimple_stmt_iterator *gsi)
+{
+  tree cdef = get_current_def (def);
+  if (cdef != NULL
+      && TREE_CODE (cdef) == SSA_NAME
+      && gimple_call_internal_p (SSA_NAME_DEF_STMT (cdef), IFN_ASAN_POISON))
+    {
+      gcall *call
+	= gimple_build_call_internal (IFN_ASAN_POISON_USE, 1, cdef);
+      gimple_set_location (call, gimple_location (gsi_stmt (*gsi)));
+      gsi_insert_before (gsi, call, GSI_SAME_STMT);
+    }
+}
+
+
 /* If the operand pointed to by DEF_P is an SSA name in NEW_SSA_NAMES
    or OLD_SSA_NAMES, or if it is a symbol marked for renaming,
    register it as the current definition for the names replaced by
@@ -1820,7 +1849,7 @@ maybe_register_def (def_operand_p def_p, gimple *stmt,
 	{
 	  if (gimple_clobber_p (stmt) && is_gimple_reg (sym))
 	    {
-	      gcc_checking_assert (TREE_CODE (sym) == VAR_DECL);
+	      gcc_checking_assert (VAR_P (sym));
 	      /* Replace clobber stmts with a default def. This new use of a
 		 default definition may make it look like SSA_NAMEs have
 		 conflicting lifetimes, so we need special code to let them
@@ -1829,7 +1858,11 @@ maybe_register_def (def_operand_p def_p, gimple *stmt,
 	      def = get_or_create_ssa_default_def (cfun, sym);
 	    }
 	  else
-	    def = make_ssa_name (def, stmt);
+	    {
+	      if (asan_sanitize_use_after_scope ())
+		maybe_add_asan_poison_write (def, &gsi);
+	      def = make_ssa_name (def, stmt);
+	    }
 	  SET_DEF (def_p, def);
 
 	  tree tracked_var = target_for_debug_bind (sym);
@@ -2340,7 +2373,6 @@ pass_build_ssa::execute (function *fun)
 {
   bitmap_head *dfs;
   basic_block bb;
-  unsigned i;
 
   /* Initialize operand data structures.  */
   init_ssa_operands (fun);
@@ -2384,15 +2416,16 @@ pass_build_ssa::execute (function *fun)
   /* Try to get rid of all gimplifier generated temporaries by making
      its SSA names anonymous.  This way we can garbage collect them
      all after removing unused locals which we do in our TODO.  */
-  for (i = 1; i < num_ssa_names; ++i)
+  unsigned i;
+  tree name;
+
+  FOR_EACH_SSA_NAME (i, name, cfun)
     {
-      tree decl, name = ssa_name (i);
-      if (!name
-	  || SSA_NAME_IS_DEFAULT_DEF (name))
+      if (SSA_NAME_IS_DEFAULT_DEF (name))
 	continue;
-      decl = SSA_NAME_VAR (name);
+      tree decl = SSA_NAME_VAR (name);
       if (decl
-	  && TREE_CODE (decl) == VAR_DECL
+	  && VAR_P (decl)
 	  && !VAR_DECL_IS_VIRTUAL_OPERAND (decl)
 	  && DECL_IGNORED_P (decl))
 	SET_SSA_NAME_VAR_OR_IDENTIFIER (name, DECL_NAME (decl));
@@ -2596,6 +2629,11 @@ prepare_use_sites_for (tree name, bool insert_phi_p)
   use_operand_p use_p;
   imm_use_iterator iter;
 
+  /* If we rename virtual operands do not update them.  */
+  if (virtual_operand_p (name)
+      && cfun->gimple_df->rename_vops)
+    return;
+
   FOR_EACH_IMM_USE_FAST (use_p, iter, name)
     {
       gimple *stmt = USE_STMT (use_p);
@@ -2630,6 +2668,11 @@ prepare_def_site_for (tree name, bool insert_phi_p)
   gcc_checking_assert (names_to_release == NULL
 		       || !bitmap_bit_p (names_to_release,
 					 SSA_NAME_VERSION (name)));
+
+  /* If we rename virtual operands do not update them.  */
+  if (virtual_operand_p (name)
+      && cfun->gimple_df->rename_vops)
+    return;
 
   stmt = SSA_NAME_DEF_STMT (name);
   bb = gimple_bb (stmt);
@@ -3238,6 +3281,8 @@ update_ssa (unsigned update_flags)
      OLD_SSA_NAMES.  */
   if (bitmap_first_set_bit (new_ssa_names) >= 0)
     {
+      statistics_counter_event (cfun, "Incremental SSA update", 1);
+
       prepare_names_to_update (insert_phi_p);
 
       /* If all the names in NEW_SSA_NAMES had been marked for
@@ -3251,6 +3296,8 @@ update_ssa (unsigned update_flags)
   /* Next, determine the block at which to start the renaming process.  */
   if (cfun->gimple_df->ssa_renaming_needed)
     {
+      statistics_counter_event (cfun, "Symbol to SSA rewrite", 1);
+
       /* If we rename bare symbols initialize the mapping to
          auxiliar info we need to keep track of.  */
       var_infos = new hash_table<var_info_hasher> (47);
@@ -3268,12 +3315,12 @@ update_ssa (unsigned update_flags)
 	 placement heuristics.  */
       prepare_block_for_update (start_bb, insert_phi_p);
 
+      tree name;
+
       if (flag_checking)
-	for (i = 1; i < num_ssa_names; ++i)
+	FOR_EACH_SSA_NAME (i, name, cfun)
 	  {
-	    tree name = ssa_name (i);
-	    if (!name
-		|| virtual_operand_p (name))
+	    if (virtual_operand_p (name))
 	      continue;
 
 	    /* For all but virtual operands, which do not have SSA names
@@ -3322,12 +3369,11 @@ update_ssa (unsigned update_flags)
 	     will grow while we are traversing it (but it will not
 	     gain any new members).  Copy OLD_SSA_NAMES to a temporary
 	     for traversal.  */
-	  sbitmap tmp = sbitmap_alloc (SBITMAP_SIZE (old_ssa_names));
+	  auto_sbitmap tmp (SBITMAP_SIZE (old_ssa_names));
 	  bitmap_copy (tmp, old_ssa_names);
 	  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, sbi)
 	    insert_updated_phi_nodes_for (ssa_name (i), dfs, blocks_to_update,
 	                                  update_flags);
-	  sbitmap_free (tmp);
 	}
 
       symbols_to_rename.qsort (insert_updated_phi_nodes_compare_uids);

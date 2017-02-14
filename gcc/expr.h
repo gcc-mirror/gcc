@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -145,9 +145,6 @@ extern rtx emit_group_move_into_temps (rtx);
 extern void emit_group_store (rtx, rtx, tree, int);
 
 extern rtx maybe_emit_group_store (rtx, tree);
-
-/* Copy BLKmode object from a set of registers.  */
-extern void copy_blkmode_from_reg (rtx, rtx, tree);
 
 /* Mark REG as holding a parameter for the next CALL_INSN.
    Mode is TYPE_MODE of the non-promoted parameter, or VOIDmode.  */

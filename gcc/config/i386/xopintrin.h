@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -36,7 +36,7 @@
 #define __DISABLE_XOP__
 #endif /* __XOP__ */
 
-/* Integer multiply/add intructions. */
+/* Integer multiply/add instructions. */
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maccs_epi16(__m128i __A, __m128i __B, __m128i __C)
 {

@@ -1,4 +1,4 @@
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,6 @@ const char name_02[] = "filebuf_members-1.txt";
 // Test member functions.
 void test_01() 
 {
-  bool test __attribute__((unused)) = true;
   const char* name_03 = "filebuf_members-3"; // empty file, need to create
 
   std::filebuf fb_01; // in 

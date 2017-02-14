@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 //
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <set>
 #include <unordered_map>
@@ -24,10 +24,8 @@
 
 using namespace std;
 
-int test01()
+void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef unordered_multimap<int,double> Container;
   typedef Container::const_iterator iterator;
   typedef pair<iterator,iterator> itpair;
@@ -55,8 +53,6 @@ int test01()
   VERIFY(m.count(5) == 2);
   VERIFY(m.count(42) == 1);
   VERIFY(m.count(7) == 2);
-
-  return test;
 }
 
 int main()

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2015, AdaCore                     --
+--                     Copyright (C) 2000-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -112,8 +112,10 @@ package body System.Exception_Traces is
       case Kind is
          when Every_Raise =>
             Exception_Trace := Every_Raise;
+
          when Unhandled_Raise =>
             Exception_Trace := Unhandled_Raise;
+
          when Unhandled_Raise_In_Main =>
             Exception_Trace := Unhandled_Raise_In_Main;
       end case;

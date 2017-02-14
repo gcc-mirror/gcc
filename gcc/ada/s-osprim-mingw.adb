@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -329,7 +329,6 @@ package body System.OS_Primitives is
    -----------------
 
    procedure Timed_Delay (Time : Duration; Mode : Integer) is
-
       function Mode_Clock return Duration;
       pragma Inline (Mode_Clock);
       --  Return the current clock value using either the monotonic clock or
@@ -342,10 +341,8 @@ package body System.OS_Primitives is
       function Mode_Clock return Duration is
       begin
          case Mode is
-            when Absolute_RT =>
-               return Monotonic_Clock;
-            when others =>
-               return Clock;
+            when Absolute_RT => return Monotonic_Clock;
+            when others      => return Clock;
          end case;
       end Mode_Clock;
 

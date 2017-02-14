@@ -1,7 +1,7 @@
+// { dg-do run { target c++11 } }
 // { dg-require-iconv "ISO-8859-1" }
-// { dg-options "-std=gnu++11" }
 
-// Copyright (C) 2006-2016 Free Software Foundation, Inc.
+// Copyright (C) 2006-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,8 +53,6 @@ void test01()
   typedef char						ext_type;
   typedef __gnu_cxx::encoding_state	       		state_type;
   typedef codecvt<int_type, ext_type, state_type>	unicode_codecvt;
-
-  bool test __attribute__((unused)) = true;
 
   // unicode_codecvt
   locale loc01(locale::classic());

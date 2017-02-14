@@ -1,4 +1,4 @@
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -132,8 +132,6 @@ namespace std
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::locale loc(std::locale::classic(),
 		  new std::codecvt<char, char, MyState>);
   std::basic_filebuf<char, MyCharTraits> fb;

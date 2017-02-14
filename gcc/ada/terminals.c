@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2008-2015, AdaCore                     *
+ *                     Copyright (C) 2008-2016, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -32,7 +32,7 @@
 /* First all usupported platforms. Add stubs for exported routines. */
 
 #if defined (VMS) || defined (__vxworks) || defined (__Lynx__) \
-  || defined (__ANDROID__) || defined (__PikeOS__)
+  || defined (__ANDROID__) || defined (__PikeOS__) || defined(__DJGPP__)
 
 #define ATTRIBUTE_UNUSED __attribute__((unused))
 
@@ -289,34 +289,27 @@ is_gui_app (char *exe)
     {
     case IMAGE_SUBSYSTEM_UNKNOWN:
         return 1;
-        break;
 
     case IMAGE_SUBSYSTEM_NATIVE:
         return 1;
-        break;
 
     case IMAGE_SUBSYSTEM_WINDOWS_GUI:
         return 1;
-        break;
 
     case IMAGE_SUBSYSTEM_WINDOWS_CUI:
         return 0;
-        break;
 
     case IMAGE_SUBSYSTEM_OS2_CUI:
         return 0;
-        break;
 
     case IMAGE_SUBSYSTEM_POSIX_CUI:
         return 0;
-        break;
 
     default:
         /* Unknown, return GUI app to be preservative: if yes, it will be
            correctly launched, if no, it will be launched, and a console will
            be also displayed, which is not a big deal */
         return 1;
-        break;
     }
 
 }
@@ -1417,7 +1410,8 @@ __gnat_setup_child_communication
 
 #ifdef TIOCSCTTY
   /* make the tty the controlling terminal */
-  status = ioctl (desc->slave_fd, TIOCSCTTY, 0);
+  if ((status = ioctl (desc->slave_fd, TIOCSCTTY, 0)) == -1)
+    return -1;
 #endif
 
   /* adjust tty settings */
@@ -1431,8 +1425,10 @@ __gnat_setup_child_communication
   if (desc->slave_fd > 2) close (desc->slave_fd);
 
   /* adjust process group settings */
-  status = setpgid (pid, pid);
-  status = tcsetpgrp (0, pid);
+  /* ignore failures of the following two commands as the context might not
+   * allow making those changes. */
+  setpgid (pid, pid);
+  tcsetpgrp (0, pid);
 
   /* launch the program */
   execvp (new_argv[0], new_argv);
@@ -1569,9 +1565,9 @@ pty_desc *
 __gnat_new_tty (void)
 {
   int status;
-  pty_desc* desc;
-  status = allocate_pty_desc (&desc);
-  child_setup_tty (desc->master_fd);
+  pty_desc* desc = NULL;
+  if ((status = allocate_pty_desc (&desc)))
+    child_setup_tty (desc->master_fd);
   return desc;
 }
 

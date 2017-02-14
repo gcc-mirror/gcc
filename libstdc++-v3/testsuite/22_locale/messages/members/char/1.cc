@@ -2,7 +2,7 @@
 
 // 2001-07-17 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,6 @@ void test01()
   typedef std::messages<char>::catalog catalog;
   typedef std::messages<char>::string_type string_type;
 
-  bool test __attribute__((unused)) = true;
   // This is defined through CXXFLAGS in scripts/testsuite_flags[.in].
   const char* dir = LOCALEDIR;
 

@@ -13,6 +13,7 @@ package exec
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io"
 	"os"
@@ -102,13 +103,15 @@ type Cmd struct {
 	// available after a call to Wait or Run.
 	ProcessState *os.ProcessState
 
-	lookPathErr     error // LookPath error, if any.
-	finished        bool  // when Wait was called
+	ctx             context.Context // nil means none
+	lookPathErr     error           // LookPath error, if any.
+	finished        bool            // when Wait was called
 	childFiles      []*os.File
 	closeAfterStart []io.Closer
 	closeAfterWait  []io.Closer
 	goroutine       []func() error
 	errch           chan error // one send per goroutine
+	waitDone        chan struct{}
 }
 
 // Command returns the Cmd struct to execute the named program with
@@ -117,12 +120,13 @@ type Cmd struct {
 // It sets only the Path and Args in the returned structure.
 //
 // If name contains no path separators, Command uses LookPath to
-// resolve the path to a complete name if possible. Otherwise it uses
-// name directly.
+// resolve name to a complete path if possible. Otherwise it uses name
+// directly as Path.
 //
 // The returned Cmd's Args field is constructed from the command name
 // followed by the elements of arg, so arg should not include the
-// command name itself. For example, Command("echo", "hello")
+// command name itself. For example, Command("echo", "hello").
+// Args[0] is always name, not the possibly resolved Path.
 func Command(name string, arg ...string) *Cmd {
 	cmd := &Cmd{
 		Path: name,
@@ -135,6 +139,20 @@ func Command(name string, arg ...string) *Cmd {
 			cmd.Path = lp
 		}
 	}
+	return cmd
+}
+
+// CommandContext is like Command but includes a context.
+//
+// The provided context is used to kill the process (by calling
+// os.Process.Kill) if the context becomes done before the command
+// completes on its own.
+func CommandContext(ctx context.Context, name string, arg ...string) *Cmd {
+	if ctx == nil {
+		panic("nil Context")
+	}
+	cmd := Command(name, arg...)
+	cmd.ctx = ctx
 	return cmd
 }
 
@@ -310,6 +328,15 @@ func (c *Cmd) Start() error {
 	if c.Process != nil {
 		return errors.New("exec: already started")
 	}
+	if c.ctx != nil {
+		select {
+		case <-c.ctx.Done():
+			c.closeDescriptors(c.closeAfterStart)
+			c.closeDescriptors(c.closeAfterWait)
+			return c.ctx.Err()
+		default:
+		}
+	}
 
 	type F func(*Cmd) (*os.File, error)
 	for _, setupFd := range []F{(*Cmd).stdin, (*Cmd).stdout, (*Cmd).stderr} {
@@ -343,6 +370,17 @@ func (c *Cmd) Start() error {
 		go func(fn func() error) {
 			c.errch <- fn()
 		}(fn)
+	}
+
+	if c.ctx != nil {
+		c.waitDone = make(chan struct{})
+		go func() {
+			select {
+			case <-c.ctx.Done():
+				c.Process.Kill()
+			case <-c.waitDone:
+			}
+		}()
 	}
 
 	return nil
@@ -393,7 +431,11 @@ func (c *Cmd) Wait() error {
 		return errors.New("exec: Wait was already called")
 	}
 	c.finished = true
+
 	state, err := c.Process.Wait()
+	if c.waitDone != nil {
+		close(c.waitDone)
+	}
 	c.ProcessState = state
 
 	var copyError error
@@ -474,15 +516,16 @@ func (c *Cmd) StdinPipe() (io.WriteCloser, error) {
 	c.Stdin = pr
 	c.closeAfterStart = append(c.closeAfterStart, pr)
 	wc := &closeOnce{File: pw}
-	c.closeAfterWait = append(c.closeAfterWait, wc)
+	c.closeAfterWait = append(c.closeAfterWait, closerFunc(wc.safeClose))
 	return wc, nil
 }
 
 type closeOnce struct {
 	*os.File
 
-	once sync.Once
-	err  error
+	writers sync.RWMutex // coordinate safeClose and Write
+	once    sync.Once
+	err     error
 }
 
 func (c *closeOnce) Close() error {
@@ -492,6 +535,55 @@ func (c *closeOnce) Close() error {
 
 func (c *closeOnce) close() {
 	c.err = c.File.Close()
+}
+
+type closerFunc func() error
+
+func (f closerFunc) Close() error { return f() }
+
+// safeClose closes c being careful not to race with any calls to c.Write.
+// See golang.org/issue/9307 and TestEchoFileRace in exec_test.go.
+// In theory other calls could also be excluded (by writing appropriate
+// wrappers like c.Write's implementation below), but since c is most
+// commonly used as a WriteCloser, Write is the main one to worry about.
+// See also #7970, for which this is a partial fix for this specific instance.
+// The idea is that we return a WriteCloser, and so the caller can be
+// relied upon not to call Write and Close simultaneously, but it's less
+// obvious that cmd.Wait calls Close and that the caller must not call
+// Write and cmd.Wait simultaneously. In fact that seems too onerous.
+// So we change the use of Close in cmd.Wait to use safeClose, which will
+// synchronize with any Write.
+//
+// It's important that we know this won't block forever waiting for the
+// operations being excluded. At the point where this is called,
+// the invoked command has exited and the parent copy of the read side
+// of the pipe has also been closed, so there should really be no read side
+// of the pipe left. Any active writes should return very shortly with an EPIPE,
+// making it reasonable to wait for them.
+// Technically it is possible that the child forked a sub-process or otherwise
+// handed off the read side of the pipe before exiting and the current holder
+// is not reading from the pipe, and the pipe is full, in which case the close here
+// might block waiting for the write to complete. That's probably OK.
+// It's a small enough problem to be outweighed by eliminating the race here.
+func (c *closeOnce) safeClose() error {
+	c.writers.Lock()
+	err := c.Close()
+	c.writers.Unlock()
+	return err
+}
+
+func (c *closeOnce) Write(b []byte) (int, error) {
+	c.writers.RLock()
+	n, err := c.File.Write(b)
+	c.writers.RUnlock()
+	return n, err
+}
+
+func (c *closeOnce) WriteString(s string) (int, error) {
+	c.writers.RLock()
+	n, err := c.File.WriteString(s)
+	c.writers.RUnlock()
+	return n, err
 }
 
 // StdoutPipe returns a pipe that will be connected to the command's

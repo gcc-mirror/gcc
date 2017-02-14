@@ -1,4 +1,4 @@
-// Copyright (C) 2016 Free Software Foundation, Inc.
+// Copyright (C) 2016-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 //
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <limits>
 #include <unordered_set>
@@ -24,8 +24,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::__detail::_Prime_rehash_policy policy;
 
   for (std::size_t i = 1;;)

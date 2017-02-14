@@ -1,5 +1,5 @@
 # -*- shell-script -*-
-#   Copyright (C) 2012 Free Software Foundation, Inc.
+#   Copyright (C) 2012-2017 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,17 +20,26 @@
 
 # Filter out unsupported systems.
 TSAN_TARGET_DEPENDENT_OBJECTS=
+SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS=
 case "${target}" in
   x86_64-*-linux* | i?86-*-linux*)
 	if test x$ac_cv_sizeof_void_p = x8; then
 		TSAN_SUPPORTED=yes
 		LSAN_SUPPORTED=yes
 		TSAN_TARGET_DEPENDENT_OBJECTS=tsan_rtl_amd64.lo
+		SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS=sanitizer_linux_x86_64.lo
 	fi
 	;;
   powerpc*-*-linux*)
+	if test x$ac_cv_sizeof_void_p = x8; then
+		TSAN_SUPPORTED=yes
+		LSAN_SUPPORTED=yes
+		TSAN_TARGET_DEPENDENT_OBJECTS=tsan_rtl_ppc64.lo
+	fi
 	;;
   sparc*-*-linux*)
+	;;
+  s390*-*-linux*)
 	;;
   arm*-*-linux*)
 	;;

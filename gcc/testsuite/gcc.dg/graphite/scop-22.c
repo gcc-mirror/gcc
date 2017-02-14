@@ -1,3 +1,4 @@
+/* { dg-require-effective-target size32plus } */
 double u[1782225];
 
 void foo(int N, int *res)

@@ -1,6 +1,6 @@
 // 2004-01-30  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,8 +42,6 @@ wstring data(long len)
 
 void test01(int iter)
 {
-  bool test __attribute__((unused)) = true;
-
   for (long i = 0, j = 1; i < iter; ++i, j *= 3)
     {
       wistringstream isstr(data(j));

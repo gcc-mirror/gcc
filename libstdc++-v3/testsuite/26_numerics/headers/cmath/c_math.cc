@@ -1,7 +1,7 @@
 // 1999-06-05
 // Gabriel Dos Reis <dosreis@cmla.ens-cachan.fr>
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,7 @@ test01()
 int
 test02()
 {
-	std::sin(static_cast<float>(0));
+  std::sin(static_cast<float>(0));
   return 0;
 }
 
@@ -51,7 +51,6 @@ test03()
 int
 test04()
 {
-  bool test __attribute__((unused)) = true;
   float x[2] = {1, 2};
   float y = 3.4;
   std::modf(y, &x[0]);

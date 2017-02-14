@@ -203,10 +203,14 @@ package body Set_Targ is
 
    begin
       case T is
-         when S_Short_Float | S_Float =>
+         when S_Float
+            | S_Short_Float
+         =>
             return "float";
+
          when S_Long_Float =>
             return "double";
+
          when S_Long_Long_Float =>
             if Long_Double_Index >= 0
               and then FPT_Mode_Table (Long_Double_Index).DIGS <= Max_HW_Digs
@@ -302,8 +306,8 @@ package body Set_Targ is
             Write_Str ("pragma Float_Representation (");
 
             case Float_Rep is
-               when IEEE_Binary => Write_Str ("IEEE");
                when AAMP        => Write_Str ("AAMP");
+               when IEEE_Binary => Write_Str ("IEEE");
             end case;
 
             Write_Line (", " & T (1 .. Last) & ");");
@@ -525,10 +529,8 @@ package body Set_Targ is
             AddC (' ');
 
             case E.FLOAT_REP is
-               when IEEE_Binary =>
-                  AddC ('I');
-               when AAMP        =>
-                  AddC ('A');
+               when AAMP        => AddC ('A');
+               when IEEE_Binary => AddC ('I');
             end case;
 
             AddC (' ');
@@ -781,8 +783,10 @@ package body Set_Targ is
             case Buffer (N) is
                when 'I'    =>
                   E.FLOAT_REP := IEEE_Binary;
+
                when 'A'    =>
                   E.FLOAT_REP := AAMP;
+
                when others =>
                   FailN ("bad float rep field for");
             end case;

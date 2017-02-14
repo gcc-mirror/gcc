@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -59,6 +59,7 @@ CC_MODE (CC_DGEU);
 CC_MODE (CC_DGTU);
 CC_MODE (CC_C);
 CC_MODE (CC_N);
+CC_MODE (CC_V);
 
 /* Vector modes.  */
 VECTOR_MODES (INT, 4);        /*            V4QI V2HI */

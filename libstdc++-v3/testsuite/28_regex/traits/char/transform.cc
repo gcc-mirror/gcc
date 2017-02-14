@@ -1,10 +1,9 @@
-// { dg-do run }
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2010-02-17  Stephen M. Webb <stephen.webb@bregmasoft.ca>
 //
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,13 +31,12 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef char CharT;
   typedef std::regex_traits<CharT> traits;
 
-	traits t;
-	traits::string_type G = "abc";
-	traits::string_type H = "def";
+  traits t;
+  traits::string_type G = "abc";
+  traits::string_type H = "def";
 
   VERIFY( G < H );
   VERIFY( t.transform(G.begin(), G.end()) < t.transform(H.begin(), H.end()) );
@@ -46,6 +44,6 @@ test01()
 
 int main()
 {
-	test01();
-	return 0;
+  test01();
+  return 0;
 }

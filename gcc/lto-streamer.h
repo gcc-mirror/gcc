@@ -1,7 +1,7 @@
 /* Data structures and declarations used for reading and writing
    GIMPLE to a file stream.
 
-   Copyright (C) 2009-2016 Free Software Foundation, Inc.
+   Copyright (C) 2009-2017 Free Software Foundation, Inc.
    Contributed by Doug Kwan <dougkwan@google.com>
 
 This file is part of GCC.
@@ -161,9 +161,6 @@ enum LTO_tags
 
   /* EH region holding the previous statement.  */
   LTO_eh_region,
-
-  /* An MD or NORMAL builtin.  Only the code and class are streamed out.  */
-  LTO_builtin_decl,
 
   /* Shared INTEGER_CST node.  */
   LTO_integer_cst,

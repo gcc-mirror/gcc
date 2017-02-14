@@ -68,13 +68,19 @@ func (check *Checker) usage(scope *Scope) {
 }
 
 // stmtContext is a bitset describing which
-// control-flow statements are permissible.
+// control-flow statements are permissible,
+// and provides additional context information
+// for better error messages.
 type stmtContext uint
 
 const (
+	// permissible control-flow statements
 	breakOk stmtContext = 1 << iota
 	continueOk
 	fallthroughOk
+
+	// additional context information
+	finalSwitchCase
 )
 
 func (check *Checker) simpleStmt(s ast.Stmt) {
@@ -83,9 +89,19 @@ func (check *Checker) simpleStmt(s ast.Stmt) {
 	}
 }
 
+func trimTrailingEmptyStmts(list []ast.Stmt) []ast.Stmt {
+	for i := len(list); i > 0; i-- {
+		if _, ok := list[i-1].(*ast.EmptyStmt); !ok {
+			return list[:i]
+		}
+	}
+	return nil
+}
+
 func (check *Checker) stmtList(ctxt stmtContext, list []ast.Stmt) {
 	ok := ctxt&fallthroughOk != 0
 	inner := ctxt &^ fallthroughOk
+	list = trimTrailingEmptyStmts(list) // trailing empty statements are "invisible" to fallthrough analysis
 	for i, s := range list {
 		inner := inner
 		if ok && i+1 == len(list) {
@@ -113,7 +129,7 @@ func (check *Checker) multipleDefaults(list []ast.Stmt) {
 		}
 		if d != nil {
 			if first != nil {
-				check.errorf(d.Pos(), "multiple defaults (first at %s)", first.Pos())
+				check.errorf(d.Pos(), "multiple defaults (first at %s)", check.fset.Position(first.Pos()))
 			} else {
 				first = d
 			}
@@ -282,7 +298,7 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 		}(check.scope)
 	}
 
-	inner := ctxt &^ fallthroughOk
+	inner := ctxt &^ (fallthroughOk | finalSwitchCase)
 	switch s := s.(type) {
 	case *ast.BadStmt, *ast.EmptyStmt:
 		// ignore
@@ -346,7 +362,17 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 			check.invalidAST(s.TokPos, "unknown inc/dec operation %s", s.Tok)
 			return
 		}
+
 		var x operand
+		check.expr(&x, s.X)
+		if x.mode == invalid {
+			return
+		}
+		if !isNumeric(x.typ) {
+			check.invalidOp(s.X.Pos(), "%s%s (non-numeric type %s)", s.X, s.Tok, x.typ)
+			return
+		}
+
 		Y := &ast.BasicLit{ValuePos: s.X.Pos(), Kind: token.INT, Value: "1"} // use x's position
 		check.binary(&x, nil, s.X, Y, op)
 		if x.mode == invalid {
@@ -434,7 +460,11 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 			}
 		case token.FALLTHROUGH:
 			if ctxt&fallthroughOk == 0 {
-				check.error(s.Pos(), "fallthrough statement out of place")
+				msg := "fallthrough statement out of place"
+				if ctxt&finalSwitchCase != 0 {
+					msg = "cannot fallthrough final case in switch"
+				}
+				check.error(s.Pos(), msg)
 			}
 		default:
 			check.invalidAST(s.Pos(), "branch statement: %s", s.Tok)
@@ -503,6 +533,8 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 			inner := inner
 			if i+1 < len(s.Body.List) {
 				inner |= fallthroughOk
+			} else {
+				inner |= finalSwitchCase
 			}
 			check.stmtList(inner, clause.Body)
 			check.closeScope()
@@ -596,9 +628,9 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 					T = x.typ
 				}
 				obj := NewVar(lhs.Pos(), check.pkg, lhs.Name, T)
-				scopePos := clause.End()
-				if len(clause.Body) > 0 {
-					scopePos = clause.Body[0].Pos()
+				scopePos := clause.Pos() + token.Pos(len("default")) // for default clause (len(List) == 0)
+				if n := len(clause.List); n > 0 {
+					scopePos = clause.List[n-1].End()
 				}
 				check.declare(check.scope, nil, obj, scopePos)
 				check.recordImplicit(clause, obj)
@@ -790,12 +822,12 @@ func (check *Checker) stmt(ctxt stmtContext, s ast.Stmt) {
 
 			// declare variables
 			if len(vars) > 0 {
+				scopePos := s.X.End()
 				for _, obj := range vars {
 					// spec: "The scope of a constant or variable identifier declared inside
 					// a function begins at the end of the ConstSpec or VarSpec (ShortVarDecl
 					// for short variable declarations) and ends at the end of the innermost
 					// containing block."
-					scopePos := s.End()
 					check.declare(check.scope, nil /* recordDef already called */, obj, scopePos)
 				}
 			} else {

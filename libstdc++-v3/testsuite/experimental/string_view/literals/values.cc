@@ -1,7 +1,6 @@
-// { dg-do run }
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,8 +42,36 @@ test01()
   VERIFY( u32planet == std::experimental::u32string_view(U"Saturn") );
 }
 
+void
+test02()
+{
+  using namespace std::experimental::literals::string_view_literals;
+
+  std::experimental::string_view planet_cratered = "Mercury\0cratered"sv;
+#ifdef _GLIBCXX_USE_WCHAR_T
+  std::experimental::wstring_view wplanet_cratered = L"Venus\0cratered"sv;
+#endif
+  std::experimental::string_view u8planet_cratered = u8"Mars\0cratered"sv;
+  std::experimental::u16string_view u16planet_cratered = u"Jupiter\0cratered"sv;
+  std::experimental::u32string_view u32planet_cratered = U"Saturn\0cratered"sv;
+
+  VERIFY( planet_cratered ==
+	  std::experimental::string_view("Mercury\0cratered", 16) );
+#ifdef _GLIBCXX_USE_WCHAR_T
+  VERIFY( wplanet_cratered ==
+	  std::experimental::wstring_view(L"Venus\0cratered", 14) );
+#endif
+  VERIFY( u8planet_cratered ==
+	  std::experimental::string_view(u8"Mars\0cratered", 13) );
+  VERIFY( u16planet_cratered ==
+	  std::experimental::u16string_view(u"Jupiter\0cratered", 16) );
+  VERIFY( u32planet_cratered ==
+	  std::experimental::u32string_view(U"Saturn\0cratered", 15) );
+}
+
 int
 main()
 {
   test01();
+  test02();
 }

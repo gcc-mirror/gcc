@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2008-11-24  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::gamma_distribution<> u(1.5, 3.0);
   VERIFY( u.alpha() == 1.5 );
   VERIFY( u.beta() == 3.0 );
@@ -39,8 +37,20 @@ test01()
   VERIFY( u.max() == std::numeric_limits<result_type>::max() );
 }
 
+void
+test02()
+{
+  using param_type = std::gamma_distribution<>::param_type;
+  const param_type p(1.5, 3.0);
+  std::gamma_distribution<> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+  typedef std::gamma_distribution<>::result_type result_type;
+  VERIFY( u.max() == std::numeric_limits<result_type>::max() );
+}
+
 int main()
 {
   test01();
-  return 0;
+  test02();
 }

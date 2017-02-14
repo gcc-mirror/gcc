@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2008-12-03  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::vector<double> x = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0};
   std::vector<double> wt = {0.5, 1.0, 2.5, 1.5, 0.5};
   std::piecewise_constant_distribution<> u(x.begin(), x.end(), wt.begin());

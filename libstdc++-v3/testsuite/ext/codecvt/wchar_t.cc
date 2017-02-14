@@ -3,7 +3,7 @@
 
 // 2000-08-23 Benjamin Kosnik <bkoz@cygnus.com>
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,7 +39,6 @@ void test01()
   typedef char_traits<int_type>			int_traits;
   typedef char_traits<ext_type>			ext_traits;
 
-  bool test __attribute__((unused)) = true;
   int 			size = 23;
   char  e_lit_base[96] __attribute__((aligned(__alignof__(ext_type)))) =
   {

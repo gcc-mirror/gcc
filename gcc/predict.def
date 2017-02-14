@@ -1,5 +1,5 @@
 /* Definitions for the branch prediction routines in the GNU compiler.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -117,6 +117,12 @@ DEF_PREDICTOR (PRED_TREE_FPOPCODE, "fp_opcode (on trees)", HITRATE (90), 0)
 
 /* Branch guarding call is probably taken.  */
 DEF_PREDICTOR (PRED_CALL, "call", HITRATE (67), 0)
+
+/* PRED_CALL is not very reliable predictor and it turns out to be even
+   less reliable for indirect calls and polymorphic calls.  For spec2k6
+   the predictio nis slightly in the direction of taking the call.  */
+DEF_PREDICTOR (PRED_INDIR_CALL, "indirect call", HITRATE (86), 0)
+DEF_PREDICTOR (PRED_POLYMORPHIC_CALL, "polymorphic call", HITRATE (59), 0)
 
 /* Recursive calls are usually not taken or the function will recurse
    indefinitely.  */

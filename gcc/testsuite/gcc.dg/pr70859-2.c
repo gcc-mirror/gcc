@@ -1,6 +1,9 @@
 /* PR c/70859 */
 /* { dg-do compile } */
 
+#ifdef _AIX
+#define _ISOC99_SOURCE
+#endif
 #include <stdint.h>
 #define MAX __SIZE_MAX__
 #define MAX2 SIZE_MAX

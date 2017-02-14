@@ -23,7 +23,7 @@ const A<float> &g3()
 A<float> &g4()
 {
    float f[] = {1.1f, 2.3f};
-   return f; // { dg-error "invalid initialization" }
+   return f; // { dg-error "cannot bind non-const lvalue ref" }
 }
 
 struct B

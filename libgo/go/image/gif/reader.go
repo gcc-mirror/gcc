@@ -63,6 +63,22 @@ const (
 	eApplication    = 0xFF // Application
 )
 
+func readFull(r io.Reader, b []byte) error {
+	_, err := io.ReadFull(r, b)
+	if err == io.EOF {
+		err = io.ErrUnexpectedEOF
+	}
+	return err
+}
+
+func readByte(r io.ByteReader) (byte, error) {
+	b, err := r.ReadByte()
+	if err == io.EOF {
+		err = io.ErrUnexpectedEOF
+	}
+	return b, err
+}
+
 // decoder is the type used to decode a GIF file.
 type decoder struct {
 	r reader
@@ -96,7 +112,7 @@ type decoder struct {
 // blockReader parses the block structure of GIF image data, which
 // comprises (n, (n bytes)) blocks, with 1 <= n <= 255.  It is the
 // reader given to the LZW decoder, which is thus immune to the
-// blocking.  After the LZW decoder completes, there will be a 0-byte
+// blocking. After the LZW decoder completes, there will be a 0-byte
 // block remaining (0, ()), which is consumed when checking that the
 // blockReader is exhausted.
 type blockReader struct {
@@ -124,7 +140,7 @@ func (b *blockReader) Read(p []byte) (int, error) {
 			return 0, b.err
 		}
 		b.slice = b.tmp[:blockLen]
-		if _, b.err = io.ReadFull(b.r, b.slice); b.err != nil {
+		if b.err = readFull(b.r, b.slice); b.err != nil {
 			return 0, b.err
 		}
 	}
@@ -151,9 +167,9 @@ func (d *decoder) decode(r io.Reader, configOnly bool) error {
 	}
 
 	for {
-		c, err := d.r.ReadByte()
+		c, err := readByte(d.r)
 		if err != nil {
-			return err
+			return fmt.Errorf("gif: reading frames: %v", err)
 		}
 		switch c {
 		case sExtension:
@@ -178,16 +194,29 @@ func (d *decoder) decode(r io.Reader, configOnly bool) error {
 				}
 				m.Palette = d.globalColorTable
 			}
-			if d.hasTransparentIndex && int(d.transparentIndex) < len(m.Palette) {
+			if d.hasTransparentIndex {
 				if !useLocalColorTable {
 					// Clone the global color table.
 					m.Palette = append(color.Palette(nil), d.globalColorTable...)
 				}
-				m.Palette[d.transparentIndex] = color.RGBA{}
+				if ti := int(d.transparentIndex); ti < len(m.Palette) {
+					m.Palette[ti] = color.RGBA{}
+				} else {
+					// The transparentIndex is out of range, which is an error
+					// according to the spec, but Firefox and Google Chrome
+					// seem OK with this, so we enlarge the palette with
+					// transparent colors. See golang.org/issue/15059.
+					p := make(color.Palette, ti+1)
+					copy(p, m.Palette)
+					for i := len(m.Palette); i < len(p); i++ {
+						p[i] = color.RGBA{}
+					}
+					m.Palette = p
+				}
 			}
-			litWidth, err := d.r.ReadByte()
+			litWidth, err := readByte(d.r)
 			if err != nil {
-				return err
+				return fmt.Errorf("gif: reading image data: %v", err)
 			}
 			if litWidth < 2 || litWidth > 8 {
 				return fmt.Errorf("gif: pixel size in decode out of range: %d", litWidth)
@@ -196,9 +225,9 @@ func (d *decoder) decode(r io.Reader, configOnly bool) error {
 			br := &blockReader{r: d.r}
 			lzwr := lzw.NewReader(br, lzw.LSB, int(litWidth))
 			defer lzwr.Close()
-			if _, err = io.ReadFull(lzwr, m.Pix); err != nil {
+			if err = readFull(lzwr, m.Pix); err != nil {
 				if err != io.ErrUnexpectedEOF {
-					return err
+					return fmt.Errorf("gif: reading image data: %v", err)
 				}
 				return errNotEnough
 			}
@@ -210,18 +239,18 @@ func (d *decoder) decode(r io.Reader, configOnly bool) error {
 			// for an image". In practice, though, giflib (a widely used C
 			// library) does not enforce this, so we also accept lzwr returning
 			// io.ErrUnexpectedEOF (meaning that the encoded stream hit io.EOF
-			// before the LZW decoder saw an explict end code), provided that
+			// before the LZW decoder saw an explicit end code), provided that
 			// the io.ReadFull call above successfully read len(m.Pix) bytes.
 			// See https://golang.org/issue/9856 for an example GIF.
 			if n, err := lzwr.Read(d.tmp[:1]); n != 0 || (err != io.EOF && err != io.ErrUnexpectedEOF) {
 				if err != nil {
-					return err
+					return fmt.Errorf("gif: reading image data: %v", err)
 				}
 				return errTooMuch
 			}
 			if n, err := br.Read(d.tmp[:1]); n != 0 || err != io.EOF {
 				if err != nil {
-					return err
+					return fmt.Errorf("gif: reading image data: %v", err)
 				}
 				return errTooMuch
 			}
@@ -251,7 +280,7 @@ func (d *decoder) decode(r io.Reader, configOnly bool) error {
 
 		case sTrailer:
 			if len(d.image) == 0 {
-				return io.ErrUnexpectedEOF
+				return fmt.Errorf("gif: missing image data")
 			}
 			return nil
 
@@ -262,13 +291,13 @@ func (d *decoder) decode(r io.Reader, configOnly bool) error {
 }
 
 func (d *decoder) readHeaderAndScreenDescriptor() error {
-	_, err := io.ReadFull(d.r, d.tmp[:13])
+	err := readFull(d.r, d.tmp[:13])
 	if err != nil {
-		return err
+		return fmt.Errorf("gif: reading header: %v", err)
 	}
 	d.vers = string(d.tmp[:6])
 	if d.vers != "GIF87a" && d.vers != "GIF89a" {
-		return fmt.Errorf("gif: can't recognize format %s", d.vers)
+		return fmt.Errorf("gif: can't recognize format %q", d.vers)
 	}
 	d.width = int(d.tmp[6]) + int(d.tmp[7])<<8
 	d.height = int(d.tmp[8]) + int(d.tmp[9])<<8
@@ -285,9 +314,9 @@ func (d *decoder) readHeaderAndScreenDescriptor() error {
 
 func (d *decoder) readColorTable(fields byte) (color.Palette, error) {
 	n := 1 << (1 + uint(fields&fColorTableBitsMask))
-	_, err := io.ReadFull(d.r, d.tmp[:3*n])
+	err := readFull(d.r, d.tmp[:3*n])
 	if err != nil {
-		return nil, fmt.Errorf("gif: short read on color table: %s", err)
+		return nil, fmt.Errorf("gif: reading color table: %s", err)
 	}
 	j, p := 0, make(color.Palette, n)
 	for i := range p {
@@ -298,9 +327,9 @@ func (d *decoder) readColorTable(fields byte) (color.Palette, error) {
 }
 
 func (d *decoder) readExtension() error {
-	extension, err := d.r.ReadByte()
+	extension, err := readByte(d.r)
 	if err != nil {
-		return err
+		return fmt.Errorf("gif: reading extension: %v", err)
 	}
 	size := 0
 	switch extension {
@@ -311,9 +340,9 @@ func (d *decoder) readExtension() error {
 	case eComment:
 		// nothing to do but read the data.
 	case eApplication:
-		b, err := d.r.ReadByte()
+		b, err := readByte(d.r)
 		if err != nil {
-			return err
+			return fmt.Errorf("gif: reading extension: %v", err)
 		}
 		// The spec requires size be 11, but Adobe sometimes uses 10.
 		size = int(b)
@@ -321,8 +350,8 @@ func (d *decoder) readExtension() error {
 		return fmt.Errorf("gif: unknown extension 0x%.2x", extension)
 	}
 	if size > 0 {
-		if _, err := io.ReadFull(d.r, d.tmp[:size]); err != nil {
-			return err
+		if err := readFull(d.r, d.tmp[:size]); err != nil {
+			return fmt.Errorf("gif: reading extension: %v", err)
 		}
 	}
 
@@ -330,8 +359,11 @@ func (d *decoder) readExtension() error {
 	// this extension defines a loop count.
 	if extension == eApplication && string(d.tmp[:size]) == "NETSCAPE2.0" {
 		n, err := d.readBlock()
-		if n == 0 || err != nil {
-			return err
+		if err != nil {
+			return fmt.Errorf("gif: reading extension: %v", err)
+		}
+		if n == 0 {
+			return nil
 		}
 		if n == 3 && d.tmp[0] == 1 {
 			d.loopCount = int(d.tmp[1]) | int(d.tmp[2])<<8
@@ -339,15 +371,21 @@ func (d *decoder) readExtension() error {
 	}
 	for {
 		n, err := d.readBlock()
-		if n == 0 || err != nil {
-			return err
+		if err != nil {
+			return fmt.Errorf("gif: reading extension: %v", err)
+		}
+		if n == 0 {
+			return nil
 		}
 	}
 }
 
 func (d *decoder) readGraphicControl() error {
-	if _, err := io.ReadFull(d.r, d.tmp[:6]); err != nil {
+	if err := readFull(d.r, d.tmp[:6]); err != nil {
 		return fmt.Errorf("gif: can't read graphic control: %s", err)
+	}
+	if d.tmp[0] != 4 {
+		return fmt.Errorf("gif: invalid graphic control extension block size: %d", d.tmp[0])
 	}
 	flags := d.tmp[1]
 	d.disposalMethod = (flags & gcDisposalMethodMask) >> 2
@@ -356,11 +394,14 @@ func (d *decoder) readGraphicControl() error {
 		d.transparentIndex = d.tmp[4]
 		d.hasTransparentIndex = true
 	}
+	if d.tmp[5] != 0 {
+		return fmt.Errorf("gif: invalid graphic control extension block terminator: %d", d.tmp[5])
+	}
 	return nil
 }
 
 func (d *decoder) newImageFromDescriptor() (*image.Paletted, error) {
-	if _, err := io.ReadFull(d.r, d.tmp[:9]); err != nil {
+	if err := readFull(d.r, d.tmp[:9]); err != nil {
 		return nil, fmt.Errorf("gif: can't read image descriptor: %s", err)
 	}
 	left := int(d.tmp[0]) + int(d.tmp[1])<<8
@@ -380,11 +421,14 @@ func (d *decoder) newImageFromDescriptor() (*image.Paletted, error) {
 }
 
 func (d *decoder) readBlock() (int, error) {
-	n, err := d.r.ReadByte()
+	n, err := readByte(d.r)
 	if n == 0 || err != nil {
 		return 0, err
 	}
-	return io.ReadFull(d.r, d.tmp[:n])
+	if err := readFull(d.r, d.tmp[:n]); err != nil {
+		return 0, err
+	}
+	return int(n), nil
 }
 
 // interlaceScan defines the ordering for a pass of the interlace algorithm.

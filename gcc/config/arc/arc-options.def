@@ -1,0 +1,111 @@
+/* ARC options.
+   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 3, or (at your
+   option) any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* List of all known ARC hardware modifier options (i.e., compiler
+   options that are selecting a hardware facility).  There can be two
+   types options: simple switches (e.g. code-density option can be
+   on/off), or can accept multiple values (e.g., fpu options).
+
+   For any valid HW option, define a macro:
+
+   ARC_OPT (NAME, CODE, MASK, DOC)
+
+   where:
+   NAME	  Name (identifier) of a particular hardware modifier option,
+	  as in enum cpu_flags.
+
+   CODE	  64-bit mask used to encode NAME.
+
+   MASK	  Corresponding GCC's MASK_<option> macro.
+
+   DOC	  A string used when emitting compiler errors or warnings.
+
+   For a multi-value option, define a macro for a valid value:
+
+   ARC_OPTX (NAME, CODE, VAR, VAL, DOC)
+
+   where:
+   NAME	  Name (identifier) of a particular hardware modifier
+	  configuration.
+
+   CODE	  64-bit mask used to encode NAME.  It will be encoded in the
+	  same variable like options given via ARC_OPT.
+
+   VAR	  Corresponding GCC's option variable.
+
+   VAL	  Value to be set in VAR.
+
+   DOC	  A string used when emitting compiler errors or warnings.
+
+   All multi-value options are defined using ARC_OPTX and ARC_OPT.
+   ARC_OPT contains a mask with all valid values for the given
+   option.  */
+
+ARC_OPT (FL_CD,	      (1ULL << 0), MASK_CODE_DENSITY,	   "code density")
+ARC_OPT (FL_DIVREM,   (1ULL << 1), MASK_DIVREM,		   "div/rem")
+ARC_OPT (FL_NORM,     (1ULL << 2), MASK_NORM_SET,	   "norm")
+
+ARC_OPT (FL_ATOMIC,   (1ULL << 4), MASK_ATOMIC,		   "atomic")
+ARC_OPT (FL_LL64,     (1ULL << 5), MASK_LL64,		   "double load/store")
+ARC_OPT (FL_BS,	      (1ULL << 6), MASK_BARREL_SHIFTER,	   "barrel shifter")
+ARC_OPT (FL_SWAP,     (1ULL << 7), MASK_SWAP_SET,	   "swap")
+ARC_OPT (FL_MUL64,    (1ULL << 8), MASK_MUL64_SET,	   "mul64")
+ARC_OPT (FL_MUL32x16, (1ULL << 9), MASK_MULMAC_32BY16_SET, "mul32x16")
+
+ARC_OPT (FL_EA,	      (1ULL << 11), MASK_EA_SET,	   "extended arithmetics")
+ARC_OPT (FL_SPFP,     (1ULL << 12), MASK_SPFP_COMPACT_SET, "single precission FPX")
+ARC_OPT (FL_DPFP,     (1ULL << 13), MASK_DPFP_COMPACT_SET, "double precission FPX")
+ARC_OPT (FL_ARGONAUT, (1ULL << 14), MASK_ARGONAUT_SET,	   "argonaut")
+ARC_OPT (FL_SIMD,     (1ULL << 15), MASK_SIMD_SET,	   "simd")
+
+ARC_OPTX (FL_MPYOPT_1, (1ULL << 17), arc_mpy_option, 1, "mpy option w")
+ARC_OPTX (FL_MPYOPT_2, (1ULL << 18), arc_mpy_option, 2, "mpy option wlh1")
+ARC_OPTX (FL_MPYOPT_3, (1ULL << 19), arc_mpy_option, 3, "mpy option wlh2")
+ARC_OPTX (FL_MPYOPT_4, (1ULL << 20), arc_mpy_option, 4, "mpy option wlh3")
+ARC_OPTX (FL_MPYOPT_5, (1ULL << 21), arc_mpy_option, 5, "mpy option wlh4")
+ARC_OPTX (FL_MPYOPT_6, (1ULL << 22), arc_mpy_option, 6, "mpy option wlh5")
+ARC_OPTX (FL_MPYOPT_7, (1ULL << 23), arc_mpy_option, 7, "mpy option plus_dmpy")
+ARC_OPTX (FL_MPYOPT_8, (1ULL << 24), arc_mpy_option, 8, "mpy option plus_macd")
+ARC_OPTX (FL_MPYOPT_9, (1ULL << 25), arc_mpy_option, 9, "mpy option plus_qmacw")
+
+ARC_OPT (FL_MPYOPT_7_9, (0x01c2ULL << 17), 0, "mpy option")
+ARC_OPT (FL_MPYOPT_1_6, (0x003fULL << 17), 0, "mpy option")
+
+ARC_OPTX (FL_FPU_FPUS,	    (1ULL << 26), arc_fpu_build, FPU_FPUS,	"mfpu=fpus")
+ARC_OPTX (FL_FPU_FPUS_DIV,  (1ULL << 27), arc_fpu_build, FPU_FPUS_DIV,	"mfpu=fpus_div")
+ARC_OPTX (FL_FPU_FPUS_FMA,  (1ULL << 28), arc_fpu_build, FPU_FPUS_FMA,	"mfpu=fpus_fma")
+ARC_OPTX (FL_FPU_FPUS_ALL,  (1ULL << 29), arc_fpu_build, FPU_FPUS_ALL,	"mfpu=fpus_all")
+ARC_OPTX (FL_FPU_FPUDA,	    (1ULL << 30), arc_fpu_build, FPU_FPUDA,	"mfpu=fpuda")
+ARC_OPTX (FL_FPU_FPUDA_DIV, (1ULL << 31), arc_fpu_build, FPU_FPUDA_DIV, "mfpu=fpuda_div")
+ARC_OPTX (FL_FPU_FPUDA_FMA, (1ULL << 32), arc_fpu_build, FPU_FPUDA_FMA, "mfpu=fpuda_fma")
+ARC_OPTX (FL_FPU_FPUDA_ALL, (1ULL << 33), arc_fpu_build, FPU_FPUDA_ALL, "mfpu=fpuda_all")
+ARC_OPTX (FL_FPU_FPUD,	    (1ULL << 34), arc_fpu_build, FPU_FPUD,	"mfpu=fpud")
+ARC_OPTX (FL_FPU_FPUD_DIV,  (1ULL << 35), arc_fpu_build, FPU_FPUD_DIV,	"mfpu=fpud_div")
+ARC_OPTX (FL_FPU_FPUD_FMA,  (1ULL << 36), arc_fpu_build, FPU_FPUD_FMA,	"mfpu=fpud_fma")
+ARC_OPTX (FL_FPU_FPUD_ALL,  (1ULL << 37), arc_fpu_build, FPU_FPUD_ALL,	"mfpu=fpud_all")
+ARC_OPTX (FL_FPX_QUARK,	    (1ULL << 38), arc_fpu_build, FPX_QK,	"quarkse fp")
+
+ARC_OPT (FL_FPUS,  (0xFULL << 26), 0, "single precission floating point")
+ARC_OPT (FL_FPUDA, (0xFFULL << 26), 0, "double precission fp assist")
+ARC_OPT (FL_FPUD,  (0xF0FULL << 26), 0, "double precission floating point")
+ARC_OPT (FL_QUARK, (1ULL << 38), 0, "Quark SE fp extension")
+
+/* Local Variables: */
+/* mode: c */
+/* End: */

@@ -1,6 +1,6 @@
 // 2000-03-23 bkoz
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,6 @@ void test01()
   using namespace std;
   typedef std::stringbuf::pos_type        pos_type;
   typedef std::stringbuf::off_type        off_type;
-  bool test __attribute__((unused)) = true;
 
   // tellp
   ostringstream ost;

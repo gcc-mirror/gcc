@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -383,6 +383,14 @@ package body Scn is
       Token_Chars : constant String := Token_Type'Image (Token);
 
    begin
+      --  AI12-0125 : '@' denotes the target_name, i.e. serves as an
+      --  abbreviation for the LHS of an assignment.
+
+      if Token = Tok_At_Sign then
+         Token_Node := New_Node (N_Target_Name, Token_Ptr);
+         return;
+      end if;
+
       --  We have in Token_Chars the image of the Token name, i.e. Tok_xxx.
       --  This code extracts the xxx and makes an identifier out of it.
 

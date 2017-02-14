@@ -1,5 +1,5 @@
 /* ANSI and traditional C compatability macros
-   Copyright (C) 1991-2015 Free Software Foundation, Inc.
+   Copyright (C) 1991-2017 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
 This program is free software; you can redistribute it and/or modify
@@ -313,13 +313,39 @@ So instead we use the macro below and test it against specific values.  */
 #define ENUM_BITFIELD(TYPE) unsigned int
 #endif
 
-    /* This is used to mark a class or virtual function as final.  */
-#if __cplusplus >= 201103L
-#define GCC_FINAL final
+/* C++11 adds the ability to add "override" after an implementation of a
+   virtual function in a subclass, to:
+     (A) document that this is an override of a virtual function
+     (B) allow the compiler to issue a warning if it isn't (e.g. a mismatch
+         of the type signature).
+
+   Similarly, it allows us to add a "final" to indicate that no subclass
+   may subsequently override the vfunc.
+
+   Provide OVERRIDE and FINAL as macros, allowing us to get these benefits
+   when compiling with C++11 support, but without requiring C++11.
+
+   For gcc, use "-std=c++11" to enable C++11 support; gcc 6 onwards enables
+   this by default (actually GNU++14).  */
+
+#if __cplusplus >= 201103
+/* C++11 claims to be available: use it.  final/override were only
+   implemented in 4.7, though.  */
+# if GCC_VERSION < 4007
+#  define OVERRIDE
+#  define FINAL
+# else
+#  define OVERRIDE override
+#  define FINAL final
+# endif
 #elif GCC_VERSION >= 4007
-#define GCC_FINAL __final
+/* G++ 4.7 supports __final in C++98.  */
+# define OVERRIDE
+# define FINAL __final
 #else
-#define GCC_FINAL
+/* No C++11 support; leave the macros empty: */
+# define OVERRIDE
+# define FINAL
 #endif
 
 #ifdef __cplusplus

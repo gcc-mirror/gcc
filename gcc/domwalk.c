@@ -1,5 +1,5 @@
 /* Generic dominator tree walker
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -243,7 +243,7 @@ dom_walker::walk (basic_block bb)
   if (m_dom_direction == CDI_DOMINATORS)
     {
       postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
-      postorder_num = inverted_post_order_compute (postorder);
+      postorder_num = pre_and_rev_post_order_compute (NULL, postorder, true);
       bb_postorder = XNEWVEC (int, last_basic_block_for_fn (cfun));
       for (int i = 0; i < postorder_num; ++i)
 	bb_postorder[postorder[i]] = i;

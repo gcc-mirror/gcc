@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2015, Free Software Foundation, Inc.        --
+--           Copyright (C) 2000-2016, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -351,6 +351,7 @@ package body Impunit is
     ("i-java  ", F),  -- Interfaces.Java
     ("i-javjni", F),  -- Interfaces.Java.JNI
     ("i-pacdec", F),  -- Interfaces.Packed_Decimal
+    ("i-vxinco", F),  -- Interfaces.VxWorks.Int_Connection
     ("i-vxwoio", F),  -- Interfaces.VxWorks.IO
     ("i-vxwork", F),  -- Interfaces.VxWorks
 

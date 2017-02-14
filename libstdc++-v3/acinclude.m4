@@ -169,38 +169,6 @@ AC_DEFUN([GLIBCXX_CHECK_COMPILER_FEATURES], [
 
 
 dnl
-dnl Check if the assembler used supports disabling generation of hardware
-dnl capabilities.  This is only supported by Sun as at the moment.
-dnl
-dnl Defines:
-dnl  HWCAP_FLAGS='-Wa,-nH' if possible.
-dnl
-AC_DEFUN([GLIBCXX_CHECK_ASSEMBLER_HWCAP], [
-  test -z "$HWCAP_FLAGS" && HWCAP_FLAGS=''
-
-  # Restrict the test to Solaris, other assemblers (e.g. AIX as) have -nH
-  # with a different meaning.
-  case ${target_os} in
-    solaris2*)
-      ac_save_CFLAGS="$CFLAGS"
-      CFLAGS="$CFLAGS -Wa,-nH"
-
-      AC_MSG_CHECKING([for as that supports -Wa,-nH])
-      AC_TRY_COMPILE([], [return 0;], [ac_hwcap_flags=yes],[ac_hwcap_flags=no])
-      if test "$ac_hwcap_flags" = "yes"; then
-	HWCAP_FLAGS="-Wa,-nH $HWCAP_FLAGS"
-      fi
-      AC_MSG_RESULT($ac_hwcap_flags)
-
-      CFLAGS="$ac_save_CFLAGS"
-      ;;
-  esac
-
-  AC_SUBST(HWCAP_FLAGS)
-])
-
-
-dnl
 dnl If GNU ld is in use, check to see if tricky linker opts can be used.  If
 dnl the native linker is in use, all variables will be defined to something
 dnl safe (like an empty string).
@@ -632,10 +600,10 @@ dnl  baseline_dir
 dnl  baseline_subdir_switch
 dnl
 AC_DEFUN([GLIBCXX_CONFIGURE_TESTSUITE], [
-  if $GLIBCXX_IS_NATIVE ; then
-    # Do checks for resource limit functions.
-    GLIBCXX_CHECK_SETRLIMIT
+  # Do checks for resource limit functions.
+  GLIBCXX_CHECK_SETRLIMIT
 
+  if $GLIBCXX_IS_NATIVE ; then
     # Look for setenv, so that extended locale tests can be performed.
     GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_3(setenv)
   fi
@@ -1922,12 +1890,14 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 		  lgamma(0.0);
 		  lgammaf(0.0f);
 		  lgammal(0.0l);
+		  #ifndef __APPLE__ /* see below */
 		  llrint(0.0);
 		  llrintf(0.0f);
 		  llrintl(0.0l);
 		  llround(0.0);
 		  llroundf(0.0f);
 		  llroundl(0.0l);
+		  #endif
 		  log1p(0.0);
 		  log1pf(0.0f);
 		  log1pl(0.0l);
@@ -1986,6 +1956,29 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
     AC_DEFINE(_GLIBCXX_USE_C99_MATH_TR1, 1,
 	      [Define if C99 functions or macros in <math.h> should be imported
 	      in <tr1/cmath> in namespace std::tr1.])
+
+    case "${target_os}" in
+      darwin*)
+        AC_MSG_CHECKING([for ISO C99 rounding functions in <math.h>])
+        AC_CACHE_VAL(glibcxx_cv_c99_math_llround, [
+          AC_TRY_COMPILE([#include <math.h>],
+		 [llrint(0.0);
+		  llrintf(0.0f);
+		  llrintl(0.0l);
+		  llround(0.0);
+		  llroundf(0.0f);
+		  llroundl(0.0l);
+		 ],
+		 [glibcxx_cv_c99_math_llround=yes],
+		 [glibcxx_cv_c99_math_llround=no])
+          ])
+	AC_MSG_RESULT($glibcxx_cv_c99_math_llround)
+        ;;
+    esac
+    if test x"$glibcxx_cv_c99_math_llround" = x"no"; then
+      AC_DEFINE(_GLIBCXX_NO_C99_ROUNDING_FUNCS, 1,
+		[Define if C99 llrint and llround functions are missing from <math.h>.])
+    fi
   fi
 
   # Check for the existence of <inttypes.h> functions (NB: doesn't make
@@ -2153,6 +2146,10 @@ AC_DEFUN([GLIBCXX_CHECK_STDIO_PROTO], [
 
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
+  # Use C++11 because a conforming <stdio.h> won't define gets for C++14,
+  # and we don't need a declaration for C++14 anyway.
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=gnu++11"
 
   AC_MSG_CHECKING([for gets declaration])
   AC_CACHE_VAL(glibcxx_cv_gets, [
@@ -2168,15 +2165,17 @@ AC_DEFUN([GLIBCXX_CHECK_STDIO_PROTO], [
       )])
 
   if test $glibcxx_cv_gets = yes; then
-    AC_DEFINE(HAVE_GETS, 1, [Define if gets is available in <stdio.h>.])
+    AC_DEFINE(HAVE_GETS, 1, [Define if gets is available in <stdio.h> before C++14.])
   fi
   AC_MSG_RESULT($glibcxx_cv_gets)
 
+  CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
 ])
 
 dnl
-dnl Check whether required C++11 overloads are present in <math.h>.
+dnl Check whether required C++11 overloads for floating point and integral
+dnl types are present in <math.h>.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
 
@@ -2187,10 +2186,10 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
 
   case "$host" in
     *-*-solaris2.*)
-      # Solaris 12 introduced the C++11 <math.h> overloads.  A backport to
-      # a Solaris 11.3 SRU is likely, maybe even a Solaris 10 patch.
-      AC_MSG_CHECKING([for C++11 <math.h> overloads])
-      AC_CACHE_VAL(glibcxx_cv_math11_overload, [
+      # Solaris 12 Build 86, Solaris 11.3 SRU 3.6, and Solaris 10 Patch
+      # 11996[67]-02 introduced the C++11 <math.h> floating point overloads.
+      AC_MSG_CHECKING([for C++11 <math.h> floating point overloads])
+      AC_CACHE_VAL(glibcxx_cv_math11_fp_overload, [
 	AC_COMPILE_IFELSE([AC_LANG_SOURCE(
 	  [#include <math.h>
 	   #undef isfinite
@@ -2199,21 +2198,73 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
 	     { return __builtin_isfinite(__x); }
 	   }
 	])],
-	[glibcxx_cv_math11_overload=no],
-	[glibcxx_cv_math11_overload=yes]
+	[glibcxx_cv_math11_fp_overload=no],
+	[glibcxx_cv_math11_fp_overload=yes]
       )])
 
       # autoheader cannot handle indented templates.
-      AH_VERBATIM([__CORRECT_ISO_CPP11_MATH_H_PROTO],
-        [/* Define if all C++11 overloads are available in <math.h>.  */
+      AH_VERBATIM([__CORRECT_ISO_CPP11_MATH_H_PROTO_FP],
+        [/* Define if all C++11 floating point overloads are available in <math.h>.  */
 #if __cplusplus >= 201103L
-#undef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#undef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
 #endif])
 
-      if test $glibcxx_cv_math11_overload = yes; then
-        AC_DEFINE(__CORRECT_ISO_CPP11_MATH_H_PROTO)
+      if test $glibcxx_cv_math11_fp_overload = yes; then
+        AC_DEFINE(__CORRECT_ISO_CPP11_MATH_H_PROTO_FP)
       fi
-      AC_MSG_RESULT([$glibcxx_cv_math11_overload])
+      AC_MSG_RESULT([$glibcxx_cv_math11_fp_overload])
+
+      # Solaris 12 Build 90, Solaris 11.3 SRU 5.6, and Solaris 10 Patch
+      # 11996[67]-02 introduced the C++11 <math.h> integral type overloads.
+      AC_MSG_CHECKING([for C++11 <math.h> integral type overloads])
+      AC_CACHE_VAL(glibcxx_cv_math11_int_overload, [
+	AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+	  [#include <math.h>
+	   namespace std {
+	     template<typename _Tp>
+	       struct __is_integer;
+	     template<>
+	       struct __is_integer<int>
+	       {
+	         enum { __value = 1 };
+	       };
+	   }
+	   namespace __gnu_cxx {
+	     template<bool, typename>
+	       struct __enable_if;
+	     template<typename _Tp>
+	       struct __enable_if<true, _Tp>
+	       { typedef _Tp __type; };
+	   }
+	   namespace std {
+	     template<typename _Tp>
+	       constexpr typename __gnu_cxx::__enable_if
+	       		 <__is_integer<_Tp>::__value, double>::__type
+	       log2(_Tp __x)
+	       { return __builtin_log2(__x); }
+	   }
+	   int
+	   main (void)
+	   {
+	     int i = 1000;
+	     return std::log2(i);
+	   }
+	])],
+	[glibcxx_cv_math11_int_overload=no],
+	[glibcxx_cv_math11_int_overload=yes]
+      )])
+
+      # autoheader cannot handle indented templates.
+      AH_VERBATIM([__CORRECT_ISO_CPP11_MATH_H_PROTO_INT],
+        [/* Define if all C++11 integral type overloads are available in <math.h>.  */
+#if __cplusplus >= 201103L
+#undef __CORRECT_ISO_CPP11_MATH_H_PROTO_INT
+#endif])
+
+      if test $glibcxx_cv_math11_int_overload = yes; then
+        AC_DEFINE(__CORRECT_ISO_CPP11_MATH_H_PROTO_INT)
+      fi
+      AC_MSG_RESULT([$glibcxx_cv_math11_int_overload])
       ;;
     *)
       # If <math.h> defines the obsolete isinf(double) and isnan(double)
@@ -3489,10 +3540,12 @@ EOF
   CXXFLAGS="$old_CXXFLAGS"
   AC_LANG_RESTORE
 
-  # Set atomicity_dir to builtins if all but the long long test above passes.
-  if test "$glibcxx_cv_atomic_bool" = yes \
+  # Set atomicity_dir to builtins if all but the long long test above passes,
+  # or if the builtins were already chosen (e.g. by configure.host).
+  if { test "$glibcxx_cv_atomic_bool" = yes \
      && test "$glibcxx_cv_atomic_short" = yes \
-     && test "$glibcxx_cv_atomic_int" = yes; then
+     && test "$glibcxx_cv_atomic_int" = yes; } \
+     || test "$atomicity_dir" = "cpu/generic/atomicity_builtins"; then
     AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS, 1,
     [Define if the compiler supports C++11 atomics.])
     atomicity_dir=cpu/generic/atomicity_builtins
@@ -3696,7 +3749,7 @@ changequote([,])dnl
 fi
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:22:0
+libtool_VERSION=6:23:0
 
 # Everything parsed; figure out what files and settings to use.
 case $enable_symvers in
@@ -4283,6 +4336,7 @@ dnl
   AC_CACHE_VAL(glibcxx_cv_realpath, [dnl
     GCC_TRY_COMPILE_OR_LINK(
       [
+       #include <limits.h>
        #include <stdlib.h>
        #include <unistd.h>
       ],
@@ -4406,8 +4460,12 @@ AC_DEFUN([GLIBCXX_CHECK_SIZE_T_MANGLING], [
                        [glibcxx_cv_size_t_mangling=y], [
           AC_TRY_COMPILE([],
                          [extern __SIZE_TYPE__ x; extern unsigned short x;],
-                         [glibcxx_cv_size_t_mangling=t],
-                         [glibcxx_cv_size_t_mangling=x])
+                         [glibcxx_cv_size_t_mangling=t], [
+            AC_TRY_COMPILE([],
+                           [extern __SIZE_TYPE__ x; extern __int20 unsigned x;],
+                           [glibcxx_cv_size_t_mangling=u6uint20],
+                           [glibcxx_cv_size_t_mangling=x])
+          ])
         ])
       ])
     ])
@@ -4417,6 +4475,43 @@ AC_DEFUN([GLIBCXX_CHECK_SIZE_T_MANGLING], [
   fi
   AC_DEFINE_UNQUOTED(_GLIBCXX_MANGLE_SIZE_T, [$glibcxx_cv_size_t_mangling],
     [Define to the letter to which size_t is mangled.])
+])
+
+dnl
+dnl Determine whether std::exception_ptr symbols should be exported with
+dnl the symbol versions from GCC 4.6.0 or GCC 7.1.0, depending on which
+dnl release first added support for std::exception_ptr. Originally it was
+dnl only supported for targets with always-lock-free atomics for int, but
+dnl since GCC 7.1 it is supported for all targets.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_EXCEPTION_PTR_SYMVER], [
+  if test $enable_symvers != no; then
+    AC_MSG_CHECKING([for first version to support std::exception_ptr])
+    case ${target} in
+      aarch64-*-* | alpha-*-* | hppa*-*-* | i?86-*-* | x86_64-*-* | \
+      m68k-*-* | powerpc*-*-* | s390*-*-* | *-*-solaris* )
+        ac_exception_ptr_since_gcc46=yes
+        ;;
+      *)
+        # If the value of this macro changes then we will need to hardcode
+        # yes/no here for additional targets based on the original value.
+        AC_TRY_COMPILE([], [
+          #if __GCC_ATOMIC_INT_LOCK_FREE <= 1
+          # error atomic int not always lock free
+          #endif
+          ],
+          [ac_exception_ptr_since_gcc46=yes],
+          [ac_exception_ptr_since_gcc46=no])
+        ;;
+    esac
+    if test x"$ac_exception_ptr_since_gcc46" = x"yes" ; then
+      AC_DEFINE(HAVE_EXCEPTION_PTR_SINCE_GCC46, 1,
+        [Define to 1 if GCC 4.6 supported std::exception_ptr for the target])
+      AC_MSG_RESULT([4.6.0])
+    else
+      AC_MSG_RESULT([7.1.0])
+    fi
+  fi
 ])
 
 # Macros from the top-level gcc directory.

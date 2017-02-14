@@ -1,9 +1,8 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++14" }
+// { dg-do compile { target c++14 } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

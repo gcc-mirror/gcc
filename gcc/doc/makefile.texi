@@ -1,4 +1,4 @@
-@c Copyright (C) 2001-2016 Free Software Foundation, Inc.
+@c Copyright (C) 2001-2017 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -138,8 +138,7 @@ regardless of how it itself was compiled.
 @item profiledbootstrap
 Builds a compiler with profiling feedback information.  In this case,
 the second and third stages are named @samp{profile} and @samp{feedback},
-respectively.  For more information, see
-@ref{Building,,Building with profile feedback,gccinstall,Installing GCC}.
+respectively.  For more information, see the installation instructions.
 
 @item restrap
 Restart a bootstrap, so that everything that was not built with

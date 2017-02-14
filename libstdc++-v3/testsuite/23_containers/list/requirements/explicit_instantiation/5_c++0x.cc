@@ -1,6 +1,5 @@
-// { dg-options "-std=gnu++11" }
 
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2011-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,7 +21,7 @@
 #include <list>
 #include <testsuite_allocator.h>
 
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 // libstdc++/50118
 template class std::list<int, __gnu_test::ExplicitConsAlloc<int>>;

@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,8 +28,6 @@
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   std::unordered_multimap<int, int> a,b;
   a.insert(std::make_pair(2,0));
   b.insert(std::make_pair(1,0));

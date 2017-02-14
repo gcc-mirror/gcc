@@ -1,5 +1,5 @@
 /* Mode switching cleanup pass for the EPIPHANY cpu.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Contributed by Embecosm on behalf of Adapteva, Inc.
 
 This file is part of GCC.
@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "rtl.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "emit-rtl.h"

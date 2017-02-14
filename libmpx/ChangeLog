@@ -1,3 +1,61 @@
+2017-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* mpxrt/mpxrt-utils.h (__mpxrt_stop): New prototype.
+
+2017-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* mpxrt/Makefile.am (gcc_version): Use @get_gcc_base_ver@ instead
+	of cat to get version from BASE-VER file.
+	* mpxwrap/Makefile.am (gcc_version): Likewise.
+	* mpxrt/Makefile.in: Regenerated.
+	* mpxwrap/Makefile.in: Regenerated.
+
+2017-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* aclocal.m4: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* mpxrt/Makefile.in: Regenerated.
+	* mpxwrap/Makefile.in: Regenerated.
+
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* configure.ac: Add GCC_BASE_VER.
+	* Makefile.am (gcc_version): Use @get_gcc_base_ver@ instead of cat to
+	get version from BASE-VER file.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
+2016-12-27  H.J. Lu  <hongjiu.lu@intel.com>
+	    Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* mpxwrap/libtool-version: New version.
+	* mpxwrap/mpx_wrappers.c (__mpx_wrapper_realloc): Make it
+	static with external alias.
+	(__mpx_wrapper_bzero): Ditto.
+	(mpx_wrapper_memcpy): Ditto.
+	(__mpx_wrapper_mempcpy): Ditto.
+
+2016-12-26  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* mpxrt/libtool-version: New version.
+	* mpxrt/mpxrt-utils.c (set_mpx_rt_stop_handler): New function.
+	(print_help): Add help for CHKP_RT_STOP_HANDLER environment
+	variable.
+	(__mpxrt_init_env_vars): Add initialization of stop_handler.
+	(__mpxrt_stop_handler): New function.
+	(__mpxrt_stop): Ditto.
+	* mpxrt/mpxrt-utils.h (mpx_rt_stop_mode_handler_t): New enum.
+	* mpxrt/mpxrt.c (handler): Replace exit(255) with __mpxrt_stop
+	function call.
+
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure: Regenerate.
+
 2016-06-10  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* mpxwrap/mpx_wrappers.c (move_bounds): Fix overflow bug.

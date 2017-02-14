@@ -1,6 +1,6 @@
 /* Definitions of floating-point conversion from compiler
    internal format to MPFR.
-   Copyright (C) 2010-2016 Free Software Foundation, Inc.
+   Copyright (C) 2010-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -32,5 +32,10 @@ extern void real_from_mpfr (REAL_VALUE_TYPE *, mpfr_srcptr,
 			    const real_format *, mp_rnd_t);
 extern void mpfr_from_real (mpfr_ptr, const REAL_VALUE_TYPE *, mp_rnd_t);
 
-#endif /* ! GCC_REALGMP_H */
+#if (GCC_VERSION >= 3000)
+  /* For compatibility with mpfr 2.4 and earlier, we want to only use
+     GMP_RND*.  */
+  #pragma GCC poison MPFR_RNDN MPFR_RNDZ MPFR_RNDU MPFR_RNDD
+#endif
 
+#endif /* ! GCC_REALGMP_H */

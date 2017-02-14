@@ -2,7 +2,7 @@
 
 // 1999-08-23 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,9 +43,8 @@ struct B
 };
 
 
-bool test01()
+void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::numeric_limits< A<B> > obj;
 
   VERIFY( !obj.is_specialized );
@@ -78,7 +77,6 @@ bool test01()
   VERIFY( !obj.traps );
   VERIFY( !obj.tinyness_before );
   VERIFY( obj.round_style == std::round_toward_zero );
-  return test;
 }
 
 // test linkage of the generic bits

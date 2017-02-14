@@ -1,4 +1,4 @@
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,8 +46,6 @@ private:
 
 void test10()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wstringbuf sbuf(L"Bad Moon Rising", std::wios::in);
   Outbuf buf;
   std::wostream stream(&buf);

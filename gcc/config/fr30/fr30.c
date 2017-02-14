@@ -1,5 +1,5 @@
 /* FR30 specific functions.
-   Copyright (C) 1998-2016 Free Software Foundation, Inc.
+   Copyright (C) 1998-2017 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
    This file is part of GCC.
@@ -28,6 +28,7 @@
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "stor-layout.h"
 #include "varasm.h"
@@ -178,6 +179,9 @@ static int fr30_num_arg_regs (machine_mode, const_tree);
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE fr30_can_eliminate
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 #undef TARGET_ASM_TRAMPOLINE_TEMPLATE
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE fr30_asm_trampoline_template
@@ -684,7 +688,8 @@ fr30_print_operand (FILE *file, rtx x, int code)
 	  break;
 	}
 
-      /* Fall through.  Let output_addr_const deal with it.  */
+      /* FALLTHRU */
+      /* Let output_addr_const deal with it.  */
     default:
       output_addr_const (file, x);
       break;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015 Intel Corporation.
+ * Copyright 2010-2016 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -158,17 +158,17 @@ extern "C" {
 COIACCESSAPI
 COIRESULT
 COIProcessCreateFromFile(
-            COIENGINE           in_Engine,
-    const   char*               in_pBinaryName,
-            int                 in_Argc,
-    const   char**              in_ppArgv,
-            uint8_t             in_DupEnv,
-    const   char**              in_ppAdditionalEnv,
-            uint8_t             in_ProxyActive,
-    const   char*               in_Reserved,
-            uint64_t            in_InitialBufferSpace,
-    const   char*               in_LibrarySearchPath,
-            COIPROCESS*         out_pProcess);
+    COIENGINE           in_Engine,
+    const   char               *in_pBinaryName,
+    int                 in_Argc,
+    const   char              **in_ppArgv,
+    uint8_t             in_DupEnv,
+    const   char              **in_ppAdditionalEnv,
+    uint8_t             in_ProxyActive,
+    const   char               *in_Reserved,
+    uint64_t            in_InitialBufferSpace,
+    const   char               *in_LibrarySearchPath,
+    COIPROCESS         *out_pProcess);
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
@@ -327,21 +327,21 @@ COIProcessCreateFromFile(
 COIACCESSAPI
 COIRESULT
 COIProcessCreateFromMemory(
-            COIENGINE           in_Engine,
-    const   char*               in_pBinaryName,
-    const   void*               in_pBinaryBuffer,
-            uint64_t            in_BinaryBufferLength,
-            int                 in_Argc,
-    const   char**              in_ppArgv,
-            uint8_t             in_DupEnv,
-    const   char**              in_ppAdditionalEnv,
-            uint8_t             in_ProxyActive,
-    const   char*               in_Reserved,
-            uint64_t            in_InitialBufferSpace,
-    const   char*               in_LibrarySearchPath,
-    const   char*               in_FileOfOrigin,
-            uint64_t            in_FileOfOriginOffset,
-            COIPROCESS*         out_pProcess);
+    COIENGINE           in_Engine,
+    const   char               *in_pBinaryName,
+    const   void               *in_pBinaryBuffer,
+    uint64_t            in_BinaryBufferLength,
+    int                 in_Argc,
+    const   char              **in_ppArgv,
+    uint8_t             in_DupEnv,
+    const   char              **in_ppAdditionalEnv,
+    uint8_t             in_ProxyActive,
+    const   char               *in_Reserved,
+    uint64_t            in_InitialBufferSpace,
+    const   char               *in_LibrarySearchPath,
+    const   char               *in_FileOfOrigin,
+    uint64_t            in_FileOfOriginOffset,
+    COIPROCESS         *out_pProcess);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -403,11 +403,11 @@ COIProcessCreateFromMemory(
 COIACCESSAPI
 COIRESULT
 COIProcessDestroy(
-            COIPROCESS              in_Process,
-            int32_t                 in_WaitForMainTimeout,
-            uint8_t                 in_ForceDestroy,
-            int8_t*                 out_pProcessReturn,
-            uint32_t*               out_pTerminationCode);
+    COIPROCESS              in_Process,
+    int32_t                 in_WaitForMainTimeout,
+    uint8_t                 in_ForceDestroy,
+    int8_t                 *out_pProcessReturn,
+    uint32_t               *out_pTerminationCode);
 
 
 #define COI_MAX_FUNCTION_NAME_LENGTH 256
@@ -473,10 +473,10 @@ COIProcessDestroy(
 COIACCESSAPI
 COIRESULT
 COIProcessGetFunctionHandles(
-            COIPROCESS          in_Process,
-            uint32_t            in_NumFunctions,
-    const   char**              in_ppFunctionNameArray,
-            COIFUNCTION*        out_pFunctionHandleArray);
+    COIPROCESS          in_Process,
+    uint32_t            in_NumFunctions,
+    const   char              **in_ppFunctionNameArray,
+    COIFUNCTION        *out_pFunctionHandleArray);
 
 #if COI_LIBRARY_VERSION >= 2
 /// @name COIProcessLoadLibrary* flags, named after the corresponding
@@ -607,29 +607,29 @@ COIProcessGetFunctionHandles(
 COIACCESSAPI
 COIRESULT
 COIProcessLoadLibraryFromMemory(
-            COIPROCESS          in_Process,
-    const   void*               in_pLibraryBuffer,
-            uint64_t            in_LibraryBufferLength,
-    const   char*               in_pLibraryName,
-    const   char*               in_LibrarySearchPath,
-    const   char*               in_FileOfOrigin,
-            uint64_t            in_FileOfOriginOffset,
-            uint32_t            in_Flags,
-            COILIBRARY*         out_pLibrary);
+    COIPROCESS          in_Process,
+    const   void               *in_pLibraryBuffer,
+    uint64_t            in_LibraryBufferLength,
+    const   char               *in_pLibraryName,
+    const   char               *in_LibrarySearchPath,
+    const   char               *in_FileOfOrigin,
+    uint64_t            in_FileOfOriginOffset,
+    uint32_t            in_Flags,
+    COILIBRARY         *out_pLibrary);
 __asm__(".symver COIProcessLoadLibraryFromMemory,"
         "COIProcessLoadLibraryFromMemory@COI_2.0");
 #else
 
 COIRESULT
 COIProcessLoadLibraryFromMemory(
-COIPROCESS          in_Process,
-    const   void*               in_pLibraryBuffer,
-            uint64_t            in_LibraryBufferLength,
-    const   char*               in_pLibraryName,
-    const   char*               in_LibrarySearchPath,
-    const   char*               in_FileOfOrigin,
-            uint64_t            in_FileOfOriginOffset,
-            COILIBRARY*         out_pLibrary);
+    COIPROCESS          in_Process,
+    const   void               *in_pLibraryBuffer,
+    uint64_t            in_LibraryBufferLength,
+    const   char               *in_pLibraryName,
+    const   char               *in_LibrarySearchPath,
+    const   char               *in_FileOfOrigin,
+    uint64_t            in_FileOfOriginOffset,
+    COILIBRARY         *out_pLibrary);
 __asm__(".symver COIProcessLoadLibraryFromMemory,"
         "COIProcessLoadLibraryFromMemory@COI_1.0");
 #endif
@@ -689,23 +689,23 @@ __asm__(".symver COIProcessLoadLibraryFromMemory,"
 COIACCESSAPI
 COIRESULT
 COIProcessLoadLibraryFromFile(
-            COIPROCESS          in_Process,
-    const   char*               in_pFileName,
-    const   char*               in_pLibraryName,
-    const   char*               in_LibrarySearchPath,
-            uint32_t            in_Flags,
-            COILIBRARY*         out_pLibrary);
+    COIPROCESS          in_Process,
+    const   char               *in_pFileName,
+    const   char               *in_pLibraryName,
+    const   char               *in_LibrarySearchPath,
+    uint32_t            in_Flags,
+    COILIBRARY         *out_pLibrary);
 __asm__(".symver COIProcessLoadLibraryFromFile,"
         "COIProcessLoadLibraryFromFile@COI_2.0");
 #else
 
 COIRESULT
 COIProcessLoadLibraryFromFile(
-            COIPROCESS          in_Process,
-    const   char*               in_pFileName,
-    const   char*               in_pLibraryName,
-    const   char*               in_LibrarySearchPath,
-            COILIBRARY*         out_pLibrary);
+    COIPROCESS          in_Process,
+    const   char               *in_pFileName,
+    const   char               *in_pLibraryName,
+    const   char               *in_LibrarySearchPath,
+    COILIBRARY         *out_pLibrary);
 __asm__(".symver COIProcessLoadLibraryFromFile,"
         "COIProcessLoadLibraryFromFile@COI_1.0");
 #endif
@@ -728,8 +728,8 @@ __asm__(".symver COIProcessLoadLibraryFromFile,"
 COIACCESSAPI
 COIRESULT
 COIProcessUnloadLibrary(
-            COIPROCESS          in_Process,
-            COILIBRARY          in_Library);
+    COIPROCESS          in_Process,
+    COILIBRARY          in_Library);
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -792,11 +792,11 @@ COIProcessUnloadLibrary(
 COIACCESSAPI
 COIRESULT
 COIProcessRegisterLibraries(
-            uint32_t            in_NumLibraries,
-    const   void**              in_ppLibraryArray,
-    const   uint64_t*           in_pLibrarySizeArray,
-    const   char**              in_ppFileOfOriginArray,
-    const   uint64_t*           in_pFileOfOriginOffSetArray);
+    uint32_t            in_NumLibraries,
+    const   void              **in_ppLibraryArray,
+    const   uint64_t           *in_pLibrarySizeArray,
+    const   char              **in_ppFileOfOriginArray,
+    const   uint64_t           *in_pFileOfOriginOffSetArray);
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -873,10 +873,10 @@ typedef enum COI_NOTIFICATIONS
 ///         they can interpret it as they choose.
 ///
 typedef void (*COI_NOTIFICATION_CALLBACK)(
-            COI_NOTIFICATIONS   in_Type,
-            COIPROCESS          in_Process,
-            COIEVENT            in_Event,
-    const   void*               in_UserData);
+    COI_NOTIFICATIONS   in_Type,
+    COIPROCESS          in_Process,
+    COIEVENT            in_Event,
+    const   void               *in_UserData);
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -911,9 +911,9 @@ typedef void (*COI_NOTIFICATION_CALLBACK)(
 ///
 COIACCESSAPI
 COIRESULT COIRegisterNotificationCallback(
-            COIPROCESS                  in_Process,
-            COI_NOTIFICATION_CALLBACK   in_Callback,
-            const   void*               in_UserData);
+    COIPROCESS                  in_Process,
+    COI_NOTIFICATION_CALLBACK   in_Callback,
+    const   void               *in_UserData);
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -938,8 +938,8 @@ COIRESULT COIRegisterNotificationCallback(
 ///
 COIACCESSAPI
 COIRESULT COIUnregisterNotificationCallback(
-            COIPROCESS                  in_Process,
-            COI_NOTIFICATION_CALLBACK   in_Callback);
+    COIPROCESS                  in_Process,
+    COI_NOTIFICATION_CALLBACK   in_Callback);
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -964,7 +964,7 @@ COIRESULT COIUnregisterNotificationCallback(
 ///
 COIACCESSAPI
 void COINotificationCallbackSetContext(
-    const   void*                       in_UserData);
+    const   void                       *in_UserData);
 
 
 /// @name COIProcessSetCacheSize flags.
@@ -1139,9 +1139,9 @@ COIRESULT COIProcessSetCacheSize(
     const   uint32_t            in_HugeFlags,
     const   uint64_t            in_SmallPagePoolSize,
     const   uint32_t            in_SmallFlags,
-            uint32_t            in_NumDependencies,
-    const   COIEVENT*           in_pDependencies,
-            COIEVENT*           out_pCompletion);
+    uint32_t            in_NumDependencies,
+    const   COIEVENT           *in_pDependencies,
+    COIEVENT           *out_pCompletion);
 
 
 //////////////////////////////////////////////////////////////////////////////

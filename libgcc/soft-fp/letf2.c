@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Return 0 iff a == b, 1 iff a > b, 2 iff a ? b, -1 iff a < b
-   Copyright (C) 1997-2015 Free Software Foundation, Inc.
+   Copyright (C) 1997-2016 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com) and
 		  Jakub Jelinek (jj@ultra.linux.cz).

@@ -1,6 +1,6 @@
 // 2004-09-30  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,7 +25,6 @@
 // libstdc++/10975
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
   typedef streambuf::pos_type pos_type;
   typedef streambuf::off_type off_type;

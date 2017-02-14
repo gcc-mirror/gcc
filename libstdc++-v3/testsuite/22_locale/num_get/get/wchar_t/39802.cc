@@ -1,4 +1,4 @@
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,8 +27,6 @@ void test01()
 {
   using namespace std;
   typedef istreambuf_iterator<wchar_t> iterator_type;
-  
-  bool test __attribute__((unused)) = true;
 
   wstringstream ss;
   const num_get<wchar_t>& ng = use_facet<num_get<wchar_t> >(ss.getloc()); 

@@ -1,6 +1,6 @@
 // 2007-02-04  Edward Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -69,7 +69,6 @@ template<typename Tp>
   void
   test001()
   {
-    bool test [[gnu::unused]] = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -123,7 +122,6 @@ template<typename Tp>
   void
   test002()
   {
-    bool test [[gnu::unused]] = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -177,7 +175,6 @@ template<typename Tp>
   void
   test003()
   {
-    bool test [[gnu::unused]] = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -231,7 +228,6 @@ template<typename Tp>
   void
   test004()
   {
-    bool test [[gnu::unused]] = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -285,7 +281,6 @@ template<typename Tp>
   void
   test005()
   {
-    bool test [[gnu::unused]] = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -339,7 +334,6 @@ template<typename Tp>
   void
   test006()
   {
-    bool test [[gnu::unused]] = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -394,7 +388,6 @@ template<typename Tp>
   void
   test007()
   {
-    bool test [[gnu::unused]] = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -448,7 +441,6 @@ template<typename Tp>
   void
   test008()
   {
-    bool test [[gnu::unused]] = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -502,7 +494,6 @@ template<typename Tp>
   void
   test009()
   {
-    bool test [[gnu::unused]] = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -556,7 +547,6 @@ template<typename Tp>
   void
   test010()
   {
-    bool test [[gnu::unused]] = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -610,7 +600,6 @@ template<typename Tp>
   void
   test011()
   {
-    bool test [[gnu::unused]] = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -664,7 +653,6 @@ template<typename Tp>
   void
   test012()
   {
-    bool test [[gnu::unused]] = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -718,7 +706,6 @@ template<typename Tp>
   void
   test013()
   {
-    bool test [[gnu::unused]] = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);
@@ -772,7 +759,6 @@ template<typename Tp>
   void
   test014()
   {
-    bool test [[gnu::unused]] = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);

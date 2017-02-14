@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,11 +29,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Alloc; use Alloc;
-with Atree; use Atree;
-with Opt;   use Opt;
-with Sinfo; use Sinfo;
-with Table;
+with Atree;         use Atree;
+with Opt;           use Opt;
+with Sinfo;         use Sinfo;
+with System.HTable; use System.HTable;
 
 package body SCIL_LL is
 
@@ -41,32 +40,42 @@ package body SCIL_LL is
    --  Copy the SCIL field from Source to Target (it is used as the argument
    --  for a call to Set_Reporting_Proc in package atree).
 
-   function SCIL_Nodes_Table_Size return Pos;
-   --  Used to initialize the table of SCIL nodes because we do not want
-   --  to consume memory for this table if it is not required.
+   type Header_Num is range 1 .. 4096;
 
-   ----------------------------
-   --  SCIL_Nodes_Table_Size --
-   ----------------------------
+   function Hash (N : Node_Id) return Header_Num;
+   --  Hash function for Node_Ids
 
-   function SCIL_Nodes_Table_Size return Pos is
-   begin
-      if Generate_SCIL then
-         return Alloc.Orig_Nodes_Initial;
-      else
-         return 1;
-      end if;
-   end SCIL_Nodes_Table_Size;
+   --------------------------
+   -- Internal Hash Tables --
+   --------------------------
 
-   package SCIL_Nodes is new Table.Table (
-      Table_Component_Type => Node_Id,
-      Table_Index_Type     => Node_Id'Base,
-      Table_Low_Bound      => First_Node_Id,
-      Table_Initial        => SCIL_Nodes_Table_Size,
-      Table_Increment      => Alloc.Orig_Nodes_Increment,
-      Table_Name           => "SCIL_Nodes");
-   --  This table records the value of attribute SCIL_Node of all the
-   --  tree nodes.
+   package Contract_Only_Body_Flag is new Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => Boolean,
+      No_Element => False,
+      Key        => Node_Id,
+      Hash       => Hash,
+      Equal      => "=");
+   --  This table records the value of flag Is_Contract_Only_Flag of tree nodes
+
+   package Contract_Only_Body_Nodes is new Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => Node_Id,
+      No_Element => Empty,
+      Key        => Node_Id,
+      Hash       => Hash,
+      Equal      => "=");
+   --  This table records the value of attribute Contract_Only_Body of tree
+   --  nodes.
+
+   package SCIL_Nodes is new Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => Node_Id,
+      No_Element => Empty,
+      Key        => Node_Id,
+      Hash       => Hash,
+      Equal      => "=");
+   --  This table records the value of attribute SCIL_Node of tree nodes
 
    --------------------
    -- Copy_SCIL_Node --
@@ -77,15 +86,20 @@ package body SCIL_LL is
       Set_SCIL_Node (Target, Get_SCIL_Node (Source));
    end Copy_SCIL_Node;
 
-   ----------------
-   -- Initialize --
-   ----------------
+   ----------------------------
+   -- Get_Contract_Only_Body --
+   ----------------------------
 
-   procedure Initialize is
+   function Get_Contract_Only_Body (N : Node_Id) return Node_Id is
    begin
-      SCIL_Nodes.Init;
-      Set_Reporting_Proc (Copy_SCIL_Node'Access);
-   end Initialize;
+      if CodePeer_Mode
+        and then Present (N)
+      then
+         return Contract_Only_Body_Nodes.Get (N);
+      else
+         return Empty;
+      end if;
+   end Get_Contract_Only_Body;
 
    -------------------
    -- Get_SCIL_Node --
@@ -96,11 +110,63 @@ package body SCIL_LL is
       if Generate_SCIL
         and then Present (N)
       then
-         return SCIL_Nodes.Table (N);
+         return SCIL_Nodes.Get (N);
       else
          return Empty;
       end if;
    end Get_SCIL_Node;
+
+   ----------
+   -- Hash --
+   ----------
+
+   function Hash (N : Node_Id) return Header_Num is
+   begin
+      return Header_Num (1 + N mod Node_Id (Header_Num'Last));
+   end Hash;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize is
+   begin
+      SCIL_Nodes.Reset;
+      Contract_Only_Body_Nodes.Reset;
+      Contract_Only_Body_Flag.Reset;
+      Set_Reporting_Proc (Copy_SCIL_Node'Access);
+   end Initialize;
+
+   ---------------------------
+   -- Is_Contract_Only_Body --
+   ---------------------------
+
+   function Is_Contract_Only_Body (E : Entity_Id) return Boolean is
+   begin
+      return Contract_Only_Body_Flag.Get (E);
+   end Is_Contract_Only_Body;
+
+   ----------------------------
+   -- Set_Contract_Only_Body --
+   ----------------------------
+
+   procedure Set_Contract_Only_Body (N : Node_Id; Value : Node_Id) is
+   begin
+      pragma Assert (CodePeer_Mode
+        and then Present (N)
+        and then Is_Contract_Only_Body (Value));
+
+      Contract_Only_Body_Nodes.Set (N, Value);
+   end Set_Contract_Only_Body;
+
+   -------------------------------
+   -- Set_Is_Contract_Only_Body --
+   -------------------------------
+
+   procedure Set_Is_Contract_Only_Body (E : Entity_Id) is
+   begin
+      Contract_Only_Body_Flag.Set (E, True);
+   end Set_Is_Contract_Only_Body;
 
    -------------------
    -- Set_SCIL_Node --
@@ -133,11 +199,7 @@ package body SCIL_LL is
          end case;
       end if;
 
-      if Atree.Last_Node_Id > SCIL_Nodes.Last then
-         SCIL_Nodes.Set_Last (Atree.Last_Node_Id);
-      end if;
-
-      SCIL_Nodes.Set_Item (N, Value);
+      SCIL_Nodes.Set (N, Value);
    end Set_SCIL_Node;
 
 end SCIL_LL;

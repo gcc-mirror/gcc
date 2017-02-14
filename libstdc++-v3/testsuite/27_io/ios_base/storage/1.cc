@@ -1,6 +1,6 @@
 // 2000-12-19 bkoz
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,8 +26,6 @@
 // http://gcc.gnu.org/ml/gcc-bugs/2000-12/msg00413.html
 void test01() 
 {
-  bool test __attribute__((unused)) = true;
-  
   using namespace std;
 
   ios::xalloc();

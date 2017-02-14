@@ -24,5 +24,5 @@ int main(int argc, char **argv)
   return f0(argc) * f1(argc);
 }
 
-/* { dg-final { scan-ipa-dump "Semantic equality hit:f1->f0" "icf"  } } */
+/* { dg-final { scan-ipa-dump "Semantic equality hit:f0->f1" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 1" "icf"  } } */

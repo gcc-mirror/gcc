@@ -1,6 +1,6 @@
 // 1999-07-26 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,6 @@ void test02()
 {
   typedef std::ios::traits_type ctraits_type;
 
-  bool test __attribute__((unused)) = true;
   std::string str_01;
   const std::string str_02("or coltrane playing tunji with jimmy garrison");
   const std::string str_03("coltrane");

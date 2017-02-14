@@ -1,6 +1,6 @@
 // { dg-require-namedlocale "is_IS.UTF-8" }
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,8 +33,6 @@ protected:
 // libstdc++/13007
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-  
   Buf1 buf;
   std::locale loc(std::locale("is_IS.UTF-8"));
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,7 +25,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   
   const wchar_t str[] =
     L"Is this the real life?\n"

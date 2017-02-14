@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1" } */
+/* { dg-options "-O2 -fdump-tree-vrp1-details" } */
 
 int foo(int i)
 {
@@ -8,4 +8,4 @@ int foo(int i)
   return 1;
 }
 
-/* { dg-final { scan-tree-dump "Folding predicate i_.* == 1 to 0" "vrp1" } } */
+/* { dg-final { scan-tree-dump "Removing dead stmt \[^\r\n\]* = i_.* == 1" "vrp1" } } */

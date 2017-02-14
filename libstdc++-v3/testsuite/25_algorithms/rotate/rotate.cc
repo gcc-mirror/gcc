@@ -1,4 +1,4 @@
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,8 +21,6 @@
 #include <testsuite_hooks.h>
 #include <list>
 
-bool test __attribute__((unused)) = true;
-
 int A[] = {1, 2, 3, 4, 5, 6, 7};
 int B[] = {2, 3, 4, 5, 6, 7, 1};
 int C[] = {1, 2, 3, 4, 5, 6, 7};
@@ -31,7 +29,7 @@ const int N = sizeof(A) / sizeof(int);
 
 /* need a test for a forward iterator -- can't think of one that makes sense */
 
-/* biderectional iterator */
+/* bidirectional iterator */
 void
 test02()
 {

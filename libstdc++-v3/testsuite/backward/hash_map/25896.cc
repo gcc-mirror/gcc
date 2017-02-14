@@ -1,6 +1,6 @@
 // { dg-options "-Wno-deprecated" }
 
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,8 +56,6 @@ namespace __gnu_cxx
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef __gnu_cxx::hash_map<std::string, int> Map;
   typedef Map::iterator       iterator;
   typedef Map::const_iterator const_iterator;

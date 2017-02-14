@@ -1,6 +1,6 @@
 // 1999-10-11 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,17 +36,15 @@ public:
   testbuf(): std::wstreambuf() 
   { }
 
-  bool
+  void
   check_pointers()
-  { 
-    bool test __attribute__((unused)) = true;
+  {
     VERIFY( !this->eback() );
     VERIFY( !this->gptr() );
     VERIFY( !this->egptr() );
     VERIFY( !this->pbase() );
     VERIFY( !this->pptr() );
     VERIFY( !this->epptr() );
-    return test;
   }
 
   int_type 
@@ -85,7 +83,6 @@ void test01()
   typedef testbuf::traits_type traits_type;
   typedef testbuf::int_type int_type;
 
-  bool test __attribute__((unused)) = true;
   testbuf buf01;
 
   // sputn/xsputn

@@ -1,5 +1,5 @@
 /* Conditional compare related functions
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "ssa.h"
 #include "expmed.h"
@@ -121,7 +122,7 @@ ccmp_candidate_p (gimple *g)
    GEN_SEQ returns all compare insns.  */
 static rtx
 expand_ccmp_next (gimple *g, tree_code code, rtx prev,
-		  rtx *prep_seq, rtx *gen_seq)
+		  rtx_insn **prep_seq, rtx_insn **gen_seq)
 {
   rtx_code rcode;
   int unsignedp = TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (g)));
@@ -148,10 +149,8 @@ expand_ccmp_next (gimple *g, tree_code code, rtx prev,
    PREP_SEQ returns all insns to prepare opearand.
    GEN_SEQ returns all compare insns.  */
 static rtx
-expand_ccmp_expr_1 (gimple *g, rtx *prep_seq, rtx *gen_seq)
+expand_ccmp_expr_1 (gimple *g, rtx_insn **prep_seq, rtx_insn **gen_seq)
 {
-  rtx prep_seq_1, gen_seq_1;
-  rtx prep_seq_2, gen_seq_2;
   tree exp = gimple_assign_rhs_to_tree (g);
   tree_code code = TREE_CODE (exp);
   gimple *gs0 = get_gimple_for_ssa_name (TREE_OPERAND (exp, 0));
@@ -179,6 +178,7 @@ expand_ccmp_expr_1 (gimple *g, rtx *prep_seq, rtx *gen_seq)
 	  rcode0 = get_rtx_code (code0, unsignedp0);
 	  rcode1 = get_rtx_code (code1, unsignedp1);
 
+	  rtx_insn *prep_seq_1, *gen_seq_1;
 	  tmp = targetm.gen_ccmp_first (&prep_seq_1, &gen_seq_1, rcode0,
 					gimple_assign_rhs1 (gs0),
 					gimple_assign_rhs2 (gs0));
@@ -186,14 +186,15 @@ expand_ccmp_expr_1 (gimple *g, rtx *prep_seq, rtx *gen_seq)
 	  if (tmp != NULL)
 	    {
 	      ret = expand_ccmp_next (gs1, code, tmp, &prep_seq_1, &gen_seq_1);
-	      cost1 = seq_cost (safe_as_a <rtx_insn *> (prep_seq_1), speed_p);
-	      cost1 += seq_cost (safe_as_a <rtx_insn *> (gen_seq_1), speed_p);
+	      cost1 = seq_cost (prep_seq_1, speed_p);
+	      cost1 += seq_cost (gen_seq_1, speed_p);
 	    }
 
 	  /* FIXME: Temporary workaround for PR69619.
 	     Avoid exponential compile time due to expanding gs0 and gs1 twice.
 	     If gs0 and gs1 are complex, the cost will be high, so avoid
 	     reevaluation if above an arbitrary threshold.  */
+	  rtx_insn *prep_seq_2, *gen_seq_2;
 	  if (tmp == NULL || cost1 < COSTS_N_INSNS (25))
 	    tmp2 = targetm.gen_ccmp_first (&prep_seq_2, &gen_seq_2, rcode1,
 					   gimple_assign_rhs1 (gs1),
@@ -206,8 +207,8 @@ expand_ccmp_expr_1 (gimple *g, rtx *prep_seq, rtx *gen_seq)
 	    {
 	      ret2 = expand_ccmp_next (gs0, code, tmp2, &prep_seq_2,
 				       &gen_seq_2);
-	      cost2 = seq_cost (safe_as_a <rtx_insn *> (prep_seq_2), speed_p);
-	      cost2 += seq_cost (safe_as_a <rtx_insn *> (gen_seq_2), speed_p);
+	      cost2 = seq_cost (prep_seq_2, speed_p);
+	      cost2 += seq_cost (gen_seq_2, speed_p);
 	    }
 
 	  if (cost2 < cost1)
@@ -261,14 +262,13 @@ expand_ccmp_expr (gimple *g)
 {
   rtx_insn *last;
   rtx tmp;
-  rtx prep_seq, gen_seq;
-
-  prep_seq = gen_seq = NULL_RTX;
 
   if (!ccmp_candidate_p (g))
     return NULL_RTX;
 
   last = get_last_insn ();
+
+  rtx_insn *prep_seq = NULL, *gen_seq = NULL;
   tmp = expand_ccmp_expr_1 (g, &prep_seq, &gen_seq);
 
   if (tmp)

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2016 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -50,10 +50,10 @@ static void __offload_fini_library(void);
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 
 #include <algorithm>
 #include <bitset>
+#include <iostream>
 
 #if defined(HOST_WINNT)
 #define PATH_SEPARATOR ";"
@@ -158,11 +158,6 @@ static const char *htrace_envname = "H_TRACE";
 static const char *offload_report_envname = "OFFLOAD_REPORT";
 static const char *timer_envname = "H_TIME";
 
-// location of offload_main executable
-// To be used if the main application has no offload and is not built
-// with -offload but dynamic library linked in has offload pragma
-char*        mic_device_main = 0;
-
 // DMA channel count used by COI and set via
 // OFFLOAD_DMA_CHANNEL_COUNT environment variable
 uint32_t mic_dma_channel_count;
@@ -190,9 +185,15 @@ static const char* vardesc_type_as_string[] = {
     "cean_var",
     "cean_var_ptr",
     "c_data_ptr_array",
+    "c_extended_type",
     "c_func_ptr_array",
     "c_void_ptr_array",
-    "c_string_ptr_array"
+    "c_string_ptr_array",
+    "c_data_ptr_ptr",
+    "c_func_ptr_ptr",
+    "c_void_ptr_ptr",
+    "c_string_ptr_ptr",
+    "c_cean_var_ptr_ptr",
 };
 
 Engine*         mic_engines = 0;
@@ -214,8 +215,12 @@ uint64_t mic_4k_buffer_size = 0;
 uint64_t mic_2m_buffer_size = 0;
 
 
-// MIC_LD_LIBRARY_PATH
-char* mic_library_path = 0;
+// LD_LIBRARY_PATH for KNC
+char* knc_library_path = 0;
+
+// LD_LIBRARY_PATH for KNL
+char* knl_library_path = 0;
+
 
 // MIC_PROXY_IO
 bool mic_proxy_io = true;
@@ -247,6 +252,11 @@ static const char *offload_init_envname = "OFFLOAD_INIT";
 static bool __offload_active_wait = true;
 static const char *offload_active_wait_envname = "OFFLOAD_ACTIVE_WAIT";
 
+// wait even for asynchronous offload
+// true for now still the performance issue with COI is not fixed
+static bool __offload_always_wait = true;
+static const char *offload_always_wait_envname = "OFFLOAD_ALWAYS_WAIT";
+
 // OMP_DEFAULT_DEVICE
 int __omp_device_num = 0;
 static const char *omp_device_num_envname = "OMP_DEFAULT_DEVICE";
@@ -265,9 +275,17 @@ static bool            __target_libs;
 static TargetImageList __target_libs_list;
 static mutex_t         __target_libs_lock;
 static mutex_t         stack_alloc_lock;
+static mutex_t         lock_complete;
+
+// Set of OffloadDescriptors of asynchronous offloads that are not destroyed
+std::map<void *, bool> offload_descr_map;
 
 // Target executable
 TargetImage*           __target_exe;
+// is true if last loaded image is dll
+bool __current_image_is_dll = false;
+// is true if myo library is loaded when dll is loaded
+bool __myo_init_in_so = false;
 
 // Print readable offload flags
 static void trace_offload_flags(
@@ -300,7 +318,7 @@ static void trace_varDesc_flags(
     varDescFlags offload_flags
 )
 {
-    // SIzed big enough for all flag names
+    // Sized big enough for all flag names
     char fbuffer[256];
     bool first = true;
     if (!OFFLOAD_DO_TRACE && (console_enabled >= 1)) {
@@ -368,6 +386,25 @@ static void trace_varDesc_flags(
             sprintf(fbuffer+strlen(fbuffer),
                 first ? "always_delete" : ",always_delete");
             first = false;
+        }
+        if (offload_flags.is_non_cont_struct) {
+            sprintf(fbuffer+strlen(fbuffer),
+                first ? "is_non_cont_struct" : ",is_non_cont_struct");
+            first = false;
+        }
+        if (offload_flags.pin) {
+            sprintf(fbuffer+strlen(fbuffer),
+                first ? "pin" : ",pin");
+            first = false;
+        }
+        if (offload_flags.is_device_ptr) {
+            sprintf(fbuffer+strlen(fbuffer),
+                first ? "is_device_ptr" : ",is_device_ptr");
+            first = false;
+        }
+        if (offload_flags.use_device_ptr) {
+            sprintf(fbuffer+strlen(fbuffer),
+                first ? "use_device_ptr" : ",use_device_ptr");
         }
         OFFLOAD_DEBUG_TRACE_1(1,
             GET_OFFLOAD_NUMBER(timer_data), c_offload_init_func,
@@ -499,7 +536,7 @@ bool OffloadDescriptor::alloc_ptr_data(
         length = alloc_disp ? length : size + disp;
         res = COI::BufferCreate(
             length,
-            COI_BUFFER_NORMAL,
+            COI_BUFFER_OPENCL,
             buffer_flags,
             0,
             1,
@@ -585,7 +622,7 @@ bool OffloadDescriptor::alloc_ptr_data(
                 // instead of COIBufferCopy.
 
                 COI::BufferCreateFromMemory(length,
-                                        COI_BUFFER_NORMAL,
+                                        COI_BUFFER_OPENCL,
                                         0,
                                         base,
                                         1,
@@ -598,9 +635,10 @@ bool OffloadDescriptor::alloc_ptr_data(
                 OFFLOAD_DEBUG_TRACE_1(3,
                           GET_OFFLOAD_NUMBER(get_timer_data()),
                           c_offload_create_buf_mic,
-                          "Creating buffer from sink memory: size %lld, offset %d, "
-                          "flags =0x%x\n", buffer_size,
-                          ptr_data->mic_offset, buffer_flags);
+                          "Creating buffer from sink memory: "
+                          "addr %p, size %lld, offset %d, flags 0x%x\n",
+                          base, buffer_size, ptr_data->mic_offset,
+                          buffer_flags);
                 res = COI::BufferCreateFromMemory(ptr_data->cpu_addr.length(),
                                                   COI_BUFFER_NORMAL,
                                                   COI_SINK_MEMORY,
@@ -771,6 +809,44 @@ bool OffloadDescriptor::find_ptr_data(
     return true;
 }
 
+void OffloadDescriptor::find_device_ptr(
+    int64_t* &device_ptr,
+    void *host_ptr
+)
+{
+    PtrData* ptr_data;
+    char *base = reinterpret_cast<char *>(host_ptr);
+    
+    OFFLOAD_TRACE(3, "Looking for association for data: addr %p\n", base);
+
+    // find existing association in pointer table
+    ptr_data = m_device.find_ptr_data(base);
+
+//    MIC address should have been assigned.
+//    For now assume does not exist and get the addr
+//    if ((ptr_data == 0) || ptr_data->mic_addr) {
+
+    if (ptr_data == 0) {
+       OFFLOAD_TRACE(3, "Association does not exist\n");
+       LIBOFFLOAD_ERROR(c_no_ptr_data, base);
+       exit(1);
+    }
+    if (!ptr_data->mic_addr) {
+       COIRESULT res = COI::BufferGetSinkAddress(ptr_data->mic_buf,
+                                                 &ptr_data->mic_addr);
+       if (res != COI_SUCCESS) {
+           if (m_status != 0)
+               m_status->result = translate_coi_error(res);
+           report_coi_error(c_buf_get_address, res);
+       }
+    }
+
+    device_ptr = (int64_t *) ptr_data->mic_addr;
+
+    OFFLOAD_TRACE(3, "Found association: host_ptr %p, device_ptr = %p\n",
+                  ptr_data->cpu_addr.start(), device_ptr);
+}
+
 bool OffloadDescriptor::init_static_ptr_data(PtrData *ptr_data)
 {
     OffloadTimer timer(get_timer_data(), c_offload_host_alloc_buffers);
@@ -781,7 +857,7 @@ bool OffloadDescriptor::init_static_ptr_data(PtrData *ptr_data)
 
         COIRESULT res = COI::BufferCreateFromMemory(
             ptr_data->cpu_addr.length(),
-            COI_BUFFER_NORMAL,
+            COI_BUFFER_OPENCL,
             0,
             const_cast<void*>(ptr_data->cpu_addr.start()),
             1, &m_device.get_process(),
@@ -867,14 +943,33 @@ bool OffloadDescriptor::nullify_target_stack(
     return true;
 }
 
+static void print_persistList_item(
+    const char *msg,
+   PersistData *cur_el
+)
+{
+    OFFLOAD_TRACE(4, "%s\n", msg);
+    OFFLOAD_TRACE(4, "    stack_cpu_addr = %p\n", cur_el->stack_cpu_addr);
+    OFFLOAD_TRACE(4, "    routine_id     = %d\n", cur_el->routine_id);
+    OFFLOAD_TRACE(4, "    thread_id      = %lld\n", cur_el->thread_id);
+    OFFLOAD_TRACE(4, "    stack_ptr_data = %p\n", cur_el->stack_ptr_data);
+    OFFLOAD_TRACE(4, "        MIC buffer = %p\n", cur_el->stack_ptr_data->mic_buf);
+    OFFLOAD_TRACE(4, "        MIC addr   = %p\n", cur_el->stack_ptr_data->mic_addr);
+    OFFLOAD_TRACE(4, "    cpu_stack_addr = %p\n", cur_el->cpu_stack_addr);
+}
+
+static mutex_t stack_memory_manager_lock;
+
 bool OffloadDescriptor::offload_stack_memory_manager(
     const void * stack_begin,
     int  routine_id,
     int  buf_size,
     int  align,
+    bool thread_specific_function_locals,
     bool *is_new)
 {
-    mutex_locker_t locker(stack_alloc_lock);
+    //mutex_locker_t locker(stack_alloc_lock);
+    stack_memory_manager_lock.lock();
 
     PersistData * new_el;
     PersistDataList::iterator it_begin = m_device.m_persist_list.begin();
@@ -882,45 +977,57 @@ bool OffloadDescriptor::offload_stack_memory_manager(
     int erase = 0;
     uint64_t cur_thread_id = m_device.get_thread_id();
 
+    OFFLOAD_TRACE(3, "offload_stack_memory_manager("
+        "stack_begin=%p, routine_id=%d, buf_size=%d,"
+        "align=%d, thread_specific_function_locals=%d, bool=%p)\n",
+        stack_begin, routine_id, buf_size,
+        align, thread_specific_function_locals, is_new);
+    OFFLOAD_TRACE(3, "cur_thread_id=%lld\n", cur_thread_id);
     *is_new = false;
 
     for (PersistDataList::iterator it = m_device.m_persist_list.begin();
         it != m_device.m_persist_list.end(); it++) {
         PersistData cur_el = *it;
 
+        print_persistList_item("Current element in persist list:", &cur_el);
         if (stack_begin > it->stack_cpu_addr) {
-            // this stack data must be destroyed
             if (cur_thread_id == cur_el.thread_id) {
+                // this stack data must be destroyed
                 m_destroy_stack.push_front(cur_el.stack_ptr_data);
                 it_end = it;
                 erase++;
+                OFFLOAD_TRACE(3, "Current element below TOS: so delete\n");
             }
         }
         else if (stack_begin == it->stack_cpu_addr) {
             if (routine_id != it-> routine_id) {
                 // this stack data must be destroyed
+                // because the current function is a dynamic sibling
                 m_destroy_stack.push_front(cur_el.stack_ptr_data);
                 it_end = it;
                 erase++;
+                OFFLOAD_TRACE(3, "Current element is sibling: so delete\n");
                 break;
             }
-            else {
+            else if (!thread_specific_function_locals ||
+                cur_thread_id == cur_el.thread_id) {
                 // stack data is reused
                 m_stack_ptr_data = it->stack_ptr_data;
                 if (erase > 0) {
                     // all obsolete stack sections must be erased from the list
                     m_device.m_persist_list.erase(it_begin, ++it_end);
-
                     m_in_datalen +=
                         erase * sizeof(new_el->stack_ptr_data->mic_addr);
                 }
                 OFFLOAD_TRACE(3, "Reuse of stack buffer with addr %p\n",
                                  m_stack_ptr_data->mic_addr);
+                stack_memory_manager_lock.unlock();
                 return true;
             }
         }
         else if (stack_begin < it->stack_cpu_addr &&
                  cur_thread_id == cur_el.thread_id) {
+                OFFLOAD_TRACE(3, "Current element is above TOS\n");
             break;
         }
     }
@@ -955,6 +1062,7 @@ bool OffloadDescriptor::offload_stack_memory_manager(
         else if (m_is_mandatory) {
             report_coi_error(c_buf_create, res);
         }
+        stack_memory_manager_lock.unlock();
         return false;
     }
     // make buffer valid on the device.
@@ -970,6 +1078,7 @@ bool OffloadDescriptor::offload_stack_memory_manager(
         else if (m_is_mandatory) {
             report_coi_error(c_buf_set_state, res);
         }
+        stack_memory_manager_lock.unlock();
         return false;
     }
     res = COI::BufferSetState(new_el->stack_ptr_data->mic_buf,
@@ -984,10 +1093,12 @@ bool OffloadDescriptor::offload_stack_memory_manager(
         else if (m_is_mandatory) {
             report_coi_error(c_buf_set_state, res);
         }
+        stack_memory_manager_lock.unlock();
         return false;
     }
     // persistence algorithm requires target stack initialy to be nullified
     if (!nullify_target_stack(new_el->stack_ptr_data->mic_buf, buf_size)) {
+        stack_memory_manager_lock.unlock();
         return false;
     }
 
@@ -998,7 +1109,174 @@ bool OffloadDescriptor::offload_stack_memory_manager(
     m_device.m_persist_list.push_front(*new_el);
     init_mic_address(new_el->stack_ptr_data);
     *is_new = true;
+    
+    stack_memory_manager_lock.unlock();
     return true;
+}
+
+// Search through persistent stack buffers
+// for the top-of-stack buffer for this thread
+char* OffloadDescriptor::get_this_threads_cpu_stack_addr(
+    const void * stack_begin,
+    int  routine_id,
+    bool thread_specific_function_locals
+)
+{
+    uint64_t cur_thread_id = m_device.get_thread_id();
+    char* matched = 0;
+    
+    OFFLOAD_TRACE(3, "get_this_threads_cpu_stack_addr("
+        "stack_begin=%p, routine_id=%d, thread_specific_function_locals=%d)\n",
+        stack_begin, routine_id, thread_specific_function_locals);
+    OFFLOAD_TRACE(3, "cur_thread_id=%lld\n", cur_thread_id);
+    
+    stack_memory_manager_lock.lock();
+    for (PersistDataList::iterator it = m_device.m_persist_list.begin();
+         it != m_device.m_persist_list.end(); it++)
+    {
+        PersistData cur_el = *it;
+        print_persistList_item("Current element in persist list:", &cur_el);
+        if (stack_begin == cur_el.stack_cpu_addr)
+        {
+            // For OpenMP shared function locals matching is done without
+            // regard to thread id. But, we return the last match, which 
+            // corresponds to the outer stack.
+            if (!thread_specific_function_locals)
+            {
+                matched = cur_el.cpu_stack_addr;
+                continue;
+            }
+            // For non-OpenMP shared function-local variables
+            // the thread-id must match
+            if (cur_thread_id == cur_el.thread_id)
+            {
+                matched = cur_el.cpu_stack_addr;
+                break;
+            }
+        }
+    }
+    stack_memory_manager_lock.unlock();
+    if (matched != 0)
+    {
+        OFFLOAD_TRACE(3, "get_this_threads_cpu_stack_addr() => %p\n", matched);
+        return matched;
+    }
+
+    OFFLOAD_TRACE(1,
+        "Could not find persistent data; expect Read/Write failure\n");
+    return 0;
+}
+
+// Search through persistent stack buffers
+// for the top-of-stack MIC buffer for this thread
+PtrData* OffloadDescriptor::get_this_threads_mic_stack_addr(
+    const void * stack_begin,
+    int  routine_id,
+    bool thread_specific_function_locals
+)
+{
+    uint64_t cur_thread_id = m_device.get_thread_id();
+    PtrData* matched = 0;
+    
+    OFFLOAD_TRACE(3, "get_this_threads_mic_stack_addr("
+        "stack_begin=%p, routine_id=%d, thread_specific_function_locals=%d)\n",
+        stack_begin, routine_id, thread_specific_function_locals);
+    OFFLOAD_TRACE(3, "cur_thread_id=%lld\n", cur_thread_id);
+    
+    stack_memory_manager_lock.lock();
+    for (PersistDataList::iterator it = m_device.m_persist_list.begin();
+         it != m_device.m_persist_list.end(); it++)
+    {
+        PersistData cur_el = *it;
+        print_persistList_item("Current element in persist list:", &cur_el);
+        if (stack_begin == cur_el.stack_cpu_addr)
+        {
+            // For OpenMP shared function locals matching is done without
+            // regard to thread id. But, we return the last match, which 
+            // corresponds to the outer stack.
+            if (!thread_specific_function_locals)
+            {
+                matched = cur_el.stack_ptr_data;
+                continue;
+            }
+            // For non-OpenMP shared function-local variables
+            // the thread-id must match
+            if (cur_thread_id == cur_el.thread_id)
+            {
+                matched = cur_el.stack_ptr_data;
+                break;
+            }
+        }
+    }
+    stack_memory_manager_lock.unlock();
+    if (matched != 0)
+    {
+        OFFLOAD_TRACE(3, "get_this_threads_mic_stack_addr() => %p\n", matched);
+        return matched;
+    }
+
+    OFFLOAD_TRACE(1,
+        "Could not find persistent data; expect Read/Write failure\n");
+    return 0;
+}
+
+void OffloadDescriptor::setup_use_device_ptr(int i)
+{
+    PtrData *ptr_data;
+    ArrDesc *dvp;
+    void *base;
+    if (m_vars_extra[i].type_src == c_dv_ptr) {
+        dvp = *static_cast<ArrDesc**>(m_vars[i].ptr);
+        base = reinterpret_cast<void*>(dvp->Base);
+    }
+    else {
+        base = *static_cast<void**>(m_vars[i].ptr);
+    }
+    if (m_vars[i].direction.in) {
+        int64_t *device_ptr;
+        bool    is_new = true;
+
+        find_device_ptr(device_ptr, base);
+
+        // Create a entry in targetptr table using device_ptr
+        // as lookup for later recover the host pointer
+        ptr_data = m_device.insert_targetptr_data(device_ptr,
+            0, is_new);
+
+        // Actually the base is a host pointer and cpu_addr is
+        // device pointer.  This is special case where the 2
+        // address usage is reversed to enable using existing
+        // PtrData structure instead of adding new fields.
+        ptr_data->mic_addr  = (uint64_t) base;
+
+        ptr_data->alloc_ptr_data_lock.unlock();
+
+        // Replace host pointer with device pointer
+        if (m_vars_extra[i].type_src == c_dv_ptr) {
+            dvp->Base = reinterpret_cast<dv_size>(device_ptr);
+        }
+        else {
+            *static_cast<void**>(m_vars[i].ptr) = device_ptr;
+        }
+    }
+    else if (m_vars[i].direction.out) {
+        // For use_device_ptr and out find associated host ptr
+        // and assign to host ptr
+        ptr_data = m_device.find_targetptr_data(base);
+        if (!ptr_data) {
+            LIBOFFLOAD_ERROR(c_no_ptr_data, base);
+            exit(1);
+        }
+        if (m_vars_extra[i].type_src == c_dv_ptr) {
+            dvp->Base = ptr_data->mic_addr;
+        }
+        else {
+            *static_cast<void**>(m_vars[i].ptr) =
+                reinterpret_cast<void*>(ptr_data->mic_addr);
+        }
+        m_device.remove_targetptr_data(
+            ptr_data->cpu_addr.start());
+    }
 }
 
 bool OffloadDescriptor::setup_descriptors(
@@ -1010,9 +1288,13 @@ bool OffloadDescriptor::setup_descriptors(
 )
 {
     COIRESULT res;
+    // To enable caching the CPU stack base address for stack variables
+    char* this_threads_cpu_stack_addr = 0;
+    // To properly deal with non-OpenMP threading and function-local variables
+    // For OpenMP threading we support all function-locals in shared mode only
+    bool thread_specific_function_locals = !omp_in_parallel();
 
     OffloadTimer timer(get_timer_data(), c_offload_host_setup_buffers);
-
     // make a copy of variable descriptors
     m_vars_total = vars_total;
     if (vars_total > 0) {
@@ -1036,7 +1318,6 @@ bool OffloadDescriptor::setup_descriptors(
         if (m_out_deps == NULL)
           LIBOFFLOAD_ERROR(c_malloc);
     }
-
     // copyin/copyout data length
     m_in_datalen = 0;
     m_out_datalen = 0;
@@ -1050,27 +1331,54 @@ bool OffloadDescriptor::setup_descriptors(
         int64_t alloc_size = 0;
         bool    src_is_for_mic = (m_vars[i].direction.out ||
                                   m_vars[i].into == NULL);
-
+        bool    src_is_for_host = (m_vars[i].direction.in ||
+                                  m_vars[i].into == NULL);
         const char *var_sname = "";
         if (vars2 != NULL && i < vars_total) {
             if (vars2[i].sname != NULL) {
                 var_sname = vars2[i].sname;
             }
         }
+
+        // instead of m_vars[i].type.src we will use m_vars_extra[i].type_src
+        if (m_vars[i].type.src == c_extended_type) {
+            VarDescExtendedType *etype =
+                reinterpret_cast<VarDescExtendedType*>(m_vars[i].ptr);
+            m_vars_extra[i].type_src = etype->extended_type;
+            m_vars[i].ptr            = etype->ptr;
+        }
+        else {
+            m_vars_extra[i].type_src = m_vars[i].type.src;
+        }
+        // instead of m_vars[i].type.dst we will use m_vars_extra[i].type_dst
+        if (m_vars[i].type.dst == c_extended_type) {
+            VarDescExtendedType *etype =
+                reinterpret_cast<VarDescExtendedType*>(m_vars[i].into);
+            if (etype) {
+                m_vars_extra[i].type_dst = etype->extended_type;
+                m_vars[i].into           = etype->ptr;
+            }
+            else {
+                m_vars_extra[i].type_dst = m_vars_extra[i].type_src;
+            }
+        }
+        else {
+            m_vars_extra[i].type_dst = m_vars[i].type.dst;
+        }
         OFFLOAD_TRACE(2, "   VarDesc %d, var=%s, %s, %s\n",
             i, var_sname,
             vardesc_direction_as_string[m_vars[i].direction.bits],
-            vardesc_type_as_string[m_vars[i].type.src]);
+            vardesc_type_as_string[m_vars_extra[i].type_src]);
         if (vars2 != NULL && i < vars_total && vars2[i].dname != NULL) {
             OFFLOAD_TRACE(2, "              into=%s, %s\n", vars2[i].dname,
-                vardesc_type_as_string[m_vars[i].type.dst]);
+                vardesc_type_as_string[m_vars_extra[i].type_dst]);
         }
         OFFLOAD_TRACE(2,
             "              type_src=%d, type_dstn=%d, direction=%d, "
             "alloc_if=%d, free_if=%d, align=%d, mic_offset=%d, flags=0x%x, "
             "offset=%lld, size=%lld, count/disp=%lld, ptr=%p, into=%p\n",
-            m_vars[i].type.src,
-            m_vars[i].type.dst,
+            m_vars_extra[i].type_src,
+            m_vars_extra[i].type_dst,
             m_vars[i].direction.bits,
             m_vars[i].alloc_if,
             m_vars[i].free_if,
@@ -1111,6 +1419,7 @@ bool OffloadDescriptor::setup_descriptors(
         }
 
         m_vars_extra[i].alloc = m_vars[i].alloc;
+        m_vars_extra[i].auto_data = 0;
         m_vars_extra[i].cpu_disp = 0;
         m_vars_extra[i].cpu_offset = 0;
         m_vars_extra[i].src_data = 0;
@@ -1122,8 +1431,15 @@ bool OffloadDescriptor::setup_descriptors(
         if (i < vars_total) {
             m_vars_extra[i].is_arr_ptr_el = 0;
         }
+        if (TYPE_IS_PTR_TO_PTR(m_vars_extra[i].type_src) ||
+            TYPE_IS_PTR_TO_PTR(m_vars_extra[i].type_dst) ||
+            m_vars[i].flags.is_pointer) {
+            m_vars_extra[i].pointer_offset = m_vars[i].offset;
+            m_vars[i].offset = 0;
+            m_in_datalen += sizeof(m_vars[i].offset);
+        }
 
-        switch (m_vars[i].type.src) {
+        switch (m_vars_extra[i].type_src) {
             case c_data_ptr_array:
                 {
                     const Arr_Desc *ap;
@@ -1227,12 +1543,23 @@ bool OffloadDescriptor::setup_descriptors(
 
             case c_data:
             case c_void_ptr:
+            case c_void_ptr_ptr:
             case c_cean_var:
                 // In all uses later
                 // VarDesc.size will have the length of the data to be
                 // transferred
                 // VarDesc.disp will have an offset from base
-                if (m_vars[i].type.src == c_cean_var) {
+
+                if (m_vars[i].flags.is_non_cont_struct && src_is_for_host) {
+                    NonContigDesc *desc =
+                        static_cast<NonContigDesc*>(m_vars[i].ptr);
+                    noncont_struct_dump("    ", "DATA", desc);
+                    m_vars_extra[i].noncont_desc = desc;
+                    m_vars[i].ptr = reinterpret_cast<void*>(desc->base);
+                    m_vars[i].size = get_noncont_struct_size(desc);
+                    m_vars[i].disp = 0;                                                                 
+                }                                                              
+                else if (m_vars_extra[i].type_src == c_cean_var) {
                     // array descriptor
                     const Arr_Desc *ap =
                         static_cast<const Arr_Desc*>(m_vars[i].ptr);
@@ -1267,7 +1594,6 @@ bool OffloadDescriptor::setup_descriptors(
 
                     if (m_vars[i].flags.is_static) {
                         PtrData *ptr_data;
-
                         // find data associated with variable
                         if (!find_ptr_data(ptr_data,
                                            m_vars[i].ptr,
@@ -1293,68 +1619,90 @@ bool OffloadDescriptor::setup_descriptors(
                         m_vars_extra[i].src_data = ptr_data;
                     }
 
-                    if (m_is_openmp) {
-                        if (m_vars[i].flags.is_static) {
-                            // Static data is transferred either by omp target
-                            // update construct which passes zeros for
-                            // alloc_if and free_if or by always modifier.
-                            if (!m_vars[i].flags.always_copy &&
-                                (m_vars[i].alloc_if || m_vars[i].free_if)) {
-                                m_vars[i].direction.bits = c_parameter_nocopy;
-                            }
-                        }
-                        else {
-                            AutoData *auto_data;
-                            if (m_vars[i].alloc_if) {
-                                auto_data = m_device.insert_auto_data(
-                                    m_vars[i].ptr, m_vars[i].size);
-                                auto_data->add_reference();
-                            }
-                            else {
-                                // TODO: what should be done if var is not in
-                                // the table?
-                                auto_data = m_device.find_auto_data(
-                                    m_vars[i].ptr);
-                            }
-
-                            // For automatic variables data is transferred:
-                            // - if always modifier is used OR
-                            // - if alloc_if == 0 && free_if == 0 OR
-                            // - if reference count is 1
-                            if (!m_vars[i].flags.always_copy &&
-                                (m_vars[i].alloc_if || m_vars[i].free_if) &&
-                                auto_data != 0 &&
-                                auto_data->get_reference() != 1) {
-                                m_vars[i].direction.bits = c_parameter_nocopy;
-                            }
-
-                            // save data for later use
-                            m_vars_extra[i].auto_data = auto_data;
-                        }
-                    }
-
                     if (m_vars[i].direction.in &&
-                        !m_vars[i].flags.is_static) {
+                        !m_vars[i].flags.is_static &&
+                        !m_vars[i].flags.is_stack_buf) {
                         m_in_datalen += m_vars[i].size;
 
                         // for non-static target destination defined as CEAN
                         // expression we pass to target its size and dist
                         if (m_vars[i].into == NULL &&
-                            m_vars[i].type.src == c_cean_var) {
+                            m_vars_extra[i].type_src == c_cean_var) {
                             m_in_datalen += 2 * sizeof(uint64_t);
                         }
                         m_need_runfunction = true;
                     }
                     if (m_vars[i].direction.out &&
-                        !m_vars[i].flags.is_static) {
+                        !m_vars[i].flags.is_static &&
+                        !m_vars[i].flags.is_stack_buf) {
                         m_out_datalen += m_vars[i].size;
                         m_need_runfunction = true;
+                    }
+                }
+                if (m_is_openmp && src_is_for_host &&
+                    !m_vars[i].flags.is_device_ptr) {
+                    if (m_vars[i].flags.is_static) {
+                        PtrData *ptr_data = m_vars_extra[i].src_data;
+                        // Static data is transferred either by omp target
+                        // update construct which passes zeros for
+                        // alloc_if and free_if or by always modifier.
+                        // Implicit openmp reference is transfered also
+                        // if its reference count is equal to 1
+                        if (ptr_data && 
+                            IS_OPENMP_IMPLICIT_OR_LINK(ptr_data->var_alloc_type)) {
+                            if (m_vars[i].alloc_if) {
+                                ptr_data->add_reference();
+                            }
+
+                            if (!m_vars[i].flags.always_copy &&
+                                (m_vars[i].alloc_if || m_vars[i].free_if) &&
+                                ptr_data->get_reference() != 1) {
+                                m_vars[i].direction.bits = c_parameter_nocopy;
+                            }
+                        }
+                        else if (
+                            !m_vars[i].flags.always_copy &&
+                            (m_vars[i].alloc_if || m_vars[i].free_if)) {
+                                m_vars[i].direction.bits = c_parameter_nocopy;
+                        }
+                    }
+                    else {
+                        AutoData *auto_data;
+                        if (m_vars[i].alloc_if) {
+                            auto_data = m_device.insert_auto_data(
+                                m_vars[i].ptr, m_vars[i].size);
+                            auto_data->add_reference();
+                        }
+                        else {
+                            // TODO: what should be done if var is not in
+                            // the table?
+                            auto_data = m_device.find_auto_data(
+                                m_vars[i].ptr);
+                        }
+
+                        // For automatic variables data is transferred:
+                        // - if always modifier is used OR
+                        // - if alloc_if == 0 && free_if == 0 OR
+                        // - if reference count is 1
+                        if (!m_vars[i].flags.always_copy &&
+                            (m_vars[i].alloc_if || m_vars[i].free_if) &&
+                            auto_data != 0 &&
+                            auto_data->get_reference() != 1) {
+                                m_vars[i].direction.bits = c_parameter_nocopy;
+                        }
+
+                        // save data for later use
+                        m_vars_extra[i].auto_data = auto_data;
                     }
                 }
                 break;
 
             case c_dv:
-                if (m_vars[i].direction.bits ||
+                if (m_vars[i].flags.use_device_ptr) {
+                    setup_use_device_ptr(i);
+                    break;
+                }
+                else if (m_vars[i].direction.bits ||
                     m_vars[i].alloc_if ||
                     m_vars[i].free_if) {
                     ArrDesc *dvp = static_cast<ArrDesc*>(m_vars[i].ptr);
@@ -1369,6 +1717,7 @@ bool OffloadDescriptor::setup_descriptors(
                 break;
 
             case c_string_ptr:
+            case c_string_ptr_ptr:
                 if ((m_vars[i].direction.bits ||
                      m_vars[i].alloc_if ||
                      m_vars[i].free_if) &&
@@ -1380,6 +1729,7 @@ bool OffloadDescriptor::setup_descriptors(
                 /* fallthru */
 
             case c_data_ptr:
+            case c_data_ptr_ptr:
                 if (m_vars[i].flags.is_stack_buf &&
                     !m_vars[i].direction.bits &&
                     m_vars[i].alloc_if) {
@@ -1388,7 +1738,8 @@ bool OffloadDescriptor::setup_descriptors(
 
                     if (!offload_stack_memory_manager(
                             stack_addr, entry_id,
-                            m_vars[i].count, m_vars[i].align, &is_new)) {
+                            m_vars[i].count, m_vars[i].align,
+                            thread_specific_function_locals, &is_new)) {
                         return false;
                     }
                     if (is_new) {
@@ -1396,10 +1747,19 @@ bool OffloadDescriptor::setup_descriptors(
                             m_stack_ptr_data->mic_buf);
                         m_device.m_persist_list.front().cpu_stack_addr =
                             static_cast<char*>(m_vars[i].ptr);
+                        PersistData *new_el = &m_device.m_persist_list.front();
+                        print_persistList_item(
+                            "New element in persist list:",
+                            new_el);
                     }
                     else {
                         m_vars[i].flags.sink_addr = 1;
                         m_in_datalen += sizeof(m_stack_ptr_data->mic_addr);
+                        if (thread_specific_function_locals) {
+                            m_stack_ptr_data = get_this_threads_mic_stack_addr(
+                                stack_addr, entry_id,
+                                thread_specific_function_locals);
+                        }
                     }
                     m_vars[i].size = m_destroy_stack.size();
                     m_vars_extra[i].src_data = m_stack_ptr_data;
@@ -1414,8 +1774,18 @@ bool OffloadDescriptor::setup_descriptors(
                 /* fallthru */
 
             case c_cean_var_ptr:
-            case c_dv_ptr:
-                if (m_vars[i].type.src == c_cean_var_ptr) {
+            case c_cean_var_ptr_ptr:
+            case c_dv_ptr:   
+                if (m_vars[i].flags.is_non_cont_struct && src_is_for_host) {
+                     NonContigDesc *desc =
+                        static_cast<NonContigDesc*>(m_vars[i].ptr);
+                    noncont_struct_dump("    ", "PTR", desc);
+                    m_vars_extra[i].noncont_desc = desc;
+                    m_vars[i].ptr = reinterpret_cast<void*>(desc->base);
+                    m_vars[i].disp = 0;
+                }
+                else if (m_vars_extra[i].type_src == c_cean_var_ptr ||
+                         m_vars_extra[i].type_src == c_cean_var_ptr_ptr) {
                     // array descriptor
                     const Arr_Desc *ap =
                         static_cast<const Arr_Desc*>(m_vars[i].ptr);
@@ -1437,7 +1807,7 @@ bool OffloadDescriptor::setup_descriptors(
                     // array descriptor to the target side.
                     m_vars[i].ptr = reinterpret_cast<void*>(ap->base);
                 }
-                else if (m_vars[i].type.src == c_dv_ptr) {
+                else if (m_vars_extra[i].type_src == c_dv_ptr) {
                     // need to send DV to the device unless it is 'nocopy'
                     if (m_vars[i].direction.bits ||
                         m_vars[i].alloc_if ||
@@ -1447,13 +1817,28 @@ bool OffloadDescriptor::setup_descriptors(
                         // debug dump
                         __dv_desc_dump("IN/OUT", dvp);
 
-                        m_vars[i].direction.bits = c_parameter_in;
+                        // for use_device_ptr don't need to change
+                        // OUT direction to IN direction
+                        if (!m_vars[i].flags.use_device_ptr) {
+                            m_vars[i].direction.bits = c_parameter_in;
+                        }
                     }
 
                     // no displacement
                     m_vars[i].disp = 0;
                 }
                 else {
+                    // For "use_device_ptr" if direction is "in" then need to  
+                    // find the associated device pointer and replace the host 
+                    // pointer with device pointer.  Also save the host pointer
+                    // to restore when "out" is encountered. 
+                    // For "out" find the host pointer associated with the
+                    // device pointer and restore the host pointer
+                    if (m_vars[i].flags.use_device_ptr && src_is_for_host) {
+                          setup_use_device_ptr(i);
+                          break;
+                    }
+
                     // c_data_ptr or c_string_ptr
                     m_vars[i].size *= m_vars[i].count;
                     m_vars[i].disp = 0;
@@ -1483,7 +1868,6 @@ bool OffloadDescriptor::setup_descriptors(
                             // by var_desc with number 0.
                             // Its ptr_data is stored at m_stack_ptr_data
                             ptr_data = m_stack_ptr_data;
-                            m_vars[i].flags.sink_addr = 1;
                         }
                         else if (m_vars[i].alloc_if) {
                             if (m_vars[i].flags.preallocated) {
@@ -1525,6 +1909,7 @@ bool OffloadDescriptor::setup_descriptors(
                                      !m_vars[i].flags.preallocated) {
                                 // will send buffer address to device
                                 m_vars[i].flags.sink_addr = 1;
+                                m_in_datalen += sizeof(ptr_data->mic_addr);
                             }
 
                             if (!m_vars[i].flags.pin &&
@@ -1565,22 +1950,11 @@ bool OffloadDescriptor::setup_descriptors(
 
                             if (ptr_data != 0) {
                                 m_vars[i].flags.sink_addr = 1;
+                                m_in_datalen += sizeof(ptr_data->mic_addr);
                             }
                         }
 
                         if (ptr_data != 0) {
-                            if (m_is_openmp) {
-                                // data is transferred only if
-                                // alloc_if == 0 && free_if == 0
-                                // or reference count is 1
-                                if (!m_vars[i].flags.always_copy &&
-                                    ((m_vars[i].alloc_if ||
-                                      m_vars[i].free_if) &&
-                                     ptr_data->get_reference() != 1)) {
-                                    m_vars[i].direction.bits =
-                                        c_parameter_nocopy;
-                                }
-                            }
 
                             if (ptr_data->alloc_disp != 0) {
                                 m_vars[i].flags.alloc_disp = 1;
@@ -1627,12 +2001,67 @@ bool OffloadDescriptor::setup_descriptors(
                         }
                     }
 
+                    if (m_is_openmp) {
+                        if (m_vars[i].flags.use_device_ptr) {
+                            setup_use_device_ptr(i);
+                        }
+                        // for TO transfer of stack buffer's variable
+                        if (src_is_for_host && m_vars[i].flags.is_stack_buf) {
+                            AutoData *auto_data;
+                            char *base = *static_cast<char**>(m_vars[i].ptr);
+                            if (m_vars[i].alloc_if) {
+                                auto_data =m_device.insert_auto_data(
+                                   base + m_vars[i].disp,
+                                    m_vars[i].size);
+                                auto_data->add_reference();                          
+                            }
+                            else {
+                                auto_data = m_device.find_auto_data(
+                                    base + m_vars[i].disp);
+                            }                           
+                            // save data for later use
+                            m_vars_extra[i].auto_data = auto_data;
+                            
+                            // For automatic variables
+                            // data is transferred:
+                            // - if always modifier is used OR
+                            // - if alloc_if == 0 && free_if == 0 OR
+                            // - if reference count is 1
+                            if (!m_vars[i].flags.always_copy &&
+                                (m_vars[i].alloc_if ||
+                                m_vars[i].free_if) &&
+                                auto_data != 0 &&
+                                auto_data->get_reference() != 1) {
+                                    m_vars[i].direction.bits =
+                                        c_parameter_nocopy;
+                            }
+                        }
+                        // for FROM transfer of global pointer variable
+                        // FROM transfer of stack buffer's variable
+                        // is treated at INTO branch
+                        else if (src_is_for_mic && 
+                            !m_vars[i].flags.is_stack_buf) {
+                                // data is transferred only if
+                                // alloc_if == 0 && free_if == 0
+                                // or reference count is 1
+                                if (!m_vars[i].flags.always_copy &&
+                                    (m_vars[i].alloc_if ||
+                                    m_vars[i].free_if) &&
+                                    ptr_data &&
+                                    ptr_data->get_reference() != 1)
+                                {
+                                    m_vars[i].direction.bits =
+                                        c_parameter_nocopy;
+                                }
+                        }
+                    }
                     // save pointer data
                     m_vars_extra[i].src_data = ptr_data;
                 }
                 break;
 
             case c_func_ptr:
+            case c_func_ptr_ptr:
                 if (m_vars[i].direction.in) {
                     m_in_datalen += __offload_funcs.max_name_length();
                 }
@@ -1647,16 +2076,22 @@ bool OffloadDescriptor::setup_descriptors(
             case c_dv_data_slice:
             case c_dv_ptr_data_slice:
                 ArrDesc *dvp;
-                if (VAR_TYPE_IS_DV_DATA_SLICE(m_vars[i].type.src)) {
+                if (m_vars[i].flags.is_non_cont_struct) {
+                    NonContigDesc *desc =
+                        static_cast<NonContigDesc*>(m_vars[i].ptr);
+                    noncont_struct_dump("    ", "DV-DATA", desc);
+                    dvp = reinterpret_cast<ArrDesc*>(desc->base);
+                }               
+                else if (VAR_TYPE_IS_DV_DATA_SLICE(m_vars_extra[i].type_src)) {
                     const Arr_Desc *ap;
                     ap = static_cast<const Arr_Desc*>(m_vars[i].ptr);
 
-                    dvp = (m_vars[i].type.src == c_dv_data_slice) ?
+                    dvp = (m_vars_extra[i].type_src == c_dv_data_slice) ?
                           reinterpret_cast<ArrDesc*>(ap->base) :
                           *reinterpret_cast<ArrDesc**>(ap->base);
                 }
                 else {
-                    dvp = (m_vars[i].type.src == c_dv_data) ?
+                    dvp = (m_vars_extra[i].type_src == c_dv_data) ?
                           static_cast<ArrDesc*>(m_vars[i].ptr) :
                           *static_cast<ArrDesc**>(m_vars[i].ptr);
                 }
@@ -1673,7 +2108,7 @@ bool OffloadDescriptor::setup_descriptors(
                     m_vars[i].free_if) {
                     const Arr_Desc *ap;
 
-                    if (VAR_TYPE_IS_DV_DATA_SLICE(m_vars[i].type.src)) {
+                    if (VAR_TYPE_IS_DV_DATA_SLICE(m_vars_extra[i].type_src)) {
                         ap = static_cast<const Arr_Desc*>(m_vars[i].ptr);
 
                         // debug dump
@@ -1686,7 +2121,7 @@ bool OffloadDescriptor::setup_descriptors(
                     }
 
                     // size and displacement
-                    if (VAR_TYPE_IS_DV_DATA_SLICE(m_vars[i].type.src)) {
+                    if (VAR_TYPE_IS_DV_DATA_SLICE(m_vars_extra[i].type_src)) {
                         // offset and length are derived from the
                         // array descriptor
                         __arr_data_offset_and_length(ap,
@@ -1864,16 +2299,22 @@ bool OffloadDescriptor::setup_descriptors(
                 break;
 
             default:
-                LIBOFFLOAD_ERROR(c_unknown_var_type, m_vars[i].type.src);
+                LIBOFFLOAD_ERROR(c_unknown_var_type, m_vars_extra[i].type_src);
                 LIBOFFLOAD_ABORT;
         }
-        if (m_vars[i].type.src == c_data_ptr_array) {
+        if (m_vars_extra[i].type_src == c_data_ptr_array) {
             continue;
         }
 
         if (src_is_for_mic && m_vars[i].flags.is_stack_buf) {
-            m_vars[i].offset = static_cast<char*>(m_vars[i].ptr) -
-                m_device.m_persist_list.front().cpu_stack_addr;
+            if (this_threads_cpu_stack_addr == 0) {
+                this_threads_cpu_stack_addr =
+                    get_this_threads_cpu_stack_addr(
+                        stack_addr, entry_id, thread_specific_function_locals);
+            }
+            m_vars[i].offset = static_cast<char*>
+                                   (m_vars[i].ptr) -
+                                    this_threads_cpu_stack_addr;
         }
         // if source is used at CPU save its offset and disp
         if (m_vars[i].into == NULL || m_vars[i].direction.in) {
@@ -1888,15 +2329,25 @@ bool OffloadDescriptor::setup_descriptors(
 
         int64_t into_disp =0, into_offset = 0;
 
-        switch (m_vars[i].type.dst) {
+        switch (m_vars_extra[i].type_dst) {
             case c_data_ptr_array:
                 break;
             case c_data:
             case c_void_ptr:
+            case c_void_ptr_ptr:
             case c_cean_var: {
                 int64_t size = m_vars[i].size;
 
-                if (m_vars[i].type.dst == c_cean_var) {
+                if (m_vars[i].flags.is_non_cont_struct && src_is_for_mic) {
+                    NonContigDesc *desc =
+                        static_cast<NonContigDesc*>(m_vars[i].into);
+                    noncont_struct_dump("", "INTO DATA", desc);
+                    m_vars_extra[i].noncont_desc = desc;
+                    m_vars[i].into = reinterpret_cast<void*>(desc->base);
+                    size = get_noncont_struct_size(desc);
+                    into_disp = 0;
+                }
+                else if (m_vars_extra[i].type_dst == c_cean_var) {
                     // array descriptor
                     const Arr_Desc *ap =
                         static_cast<const Arr_Desc*>(m_vars[i].into);
@@ -1921,7 +2372,8 @@ bool OffloadDescriptor::setup_descriptors(
                     m_vars[i].into = reinterpret_cast<void*>(ap->base);
                 }
 
-                int64_t size_src = m_vars_extra[i].read_rng_src ?
+                int64_t size_src = m_vars_extra[i].read_rng_src &&
+                                   !m_vars[i].flags.is_non_cont_struct ?
                     cean_get_transf_size(m_vars_extra[i].read_rng_src) :
                     m_vars[i].size;
                 int64_t size_dst = m_vars_extra[i].read_rng_dst ?
@@ -1964,10 +2416,49 @@ bool OffloadDescriptor::setup_descriptors(
 
                     // for non-static target destination defined as CEAN
                     // expression we pass to target its size and dist
-                    if (m_vars[i].type.dst == c_cean_var) {
+                    if (m_vars_extra[i].type_dst == c_cean_var) {
                         m_in_datalen += 2 * sizeof(uint64_t);
                     }
                     m_need_runfunction = true;
+                }
+
+                if (m_is_openmp && src_is_for_mic) {
+                    if (m_vars[i].flags.is_static_dstn) {
+                        // Static data is transferred either by omp target
+                        // update construct which passes zeros for
+                        // alloc_if and free_if or by always modifier.
+                        if (!m_vars[i].flags.always_copy &&
+                            (m_vars[i].alloc_if || m_vars[i].free_if)) {
+                                m_vars[i].direction.bits = c_parameter_nocopy;
+                        }
+                    }
+                    else {
+                        AutoData *auto_data;
+                        if (m_vars[i].alloc_if) {
+                            auto_data = m_device.insert_auto_data(
+                                m_vars[i].into, size_dst);
+                            auto_data->add_reference();
+                        }
+                        else {
+                            // TODO: what should be done if var is not in
+                            // the table?
+                            auto_data = m_device.find_auto_data(
+                                m_vars[i].into);
+                        }
+
+                        // For automatic variables data is transferred:
+                        // - if always modifier is used OR
+                        // - if alloc_if == 0 && free_if == 0 OR
+                        // - if reference count is 1
+                        if (!m_vars[i].flags.always_copy &&
+                            (m_vars[i].alloc_if || m_vars[i].free_if) &&
+                            (auto_data == 0 ||
+                            auto_data->get_reference() != 1)) {
+                                m_vars[i].direction.bits = c_parameter_nocopy;
+                        }
+                        // save data for later use
+                        m_vars_extra[i].auto_data = auto_data;
+                    }
                 }
                 break;
             }
@@ -1989,11 +2480,15 @@ bool OffloadDescriptor::setup_descriptors(
 
             case c_string_ptr:
             case c_data_ptr:
+            case c_string_ptr_ptr:
+            case c_data_ptr_ptr:
             case c_cean_var_ptr:
+            case c_cean_var_ptr_ptr:
             case c_dv_ptr: {
                 int64_t size = m_vars[i].size;
 
-                if (m_vars[i].type.dst == c_cean_var_ptr) {
+                if (m_vars_extra[i].type_dst == c_cean_var_ptr ||
+                    m_vars_extra[i].type_dst == c_cean_var_ptr_ptr) {
                     // array descriptor
                     const Arr_Desc *ap =
                         static_cast<const Arr_Desc*>(m_vars[i].into);
@@ -2016,7 +2511,7 @@ bool OffloadDescriptor::setup_descriptors(
                     }
                     m_vars[i].into = reinterpret_cast<char**>(ap->base);
                 }
-                else if (m_vars[i].type.dst == c_dv_ptr) {
+                else if (m_vars_extra[i].type_dst == c_dv_ptr) {
                     // need to send DV to the device unless it is 'nocopy'
                     if (m_vars[i].direction.bits ||
                         m_vars[i].alloc_if ||
@@ -2030,7 +2525,8 @@ bool OffloadDescriptor::setup_descriptors(
                     }
                 }
 
-                int64_t size_src = m_vars_extra[i].read_rng_src ?
+                int64_t size_src = m_vars_extra[i].read_rng_src &&
+                                   !m_vars[i].flags.is_non_cont_struct ?
                     cean_get_transf_size(m_vars_extra[i].read_rng_src) :
                     m_vars[i].size;
                 int64_t size_dst = m_vars_extra[i].read_rng_dst ?
@@ -2057,7 +2553,6 @@ bool OffloadDescriptor::setup_descriptors(
                             // by var_desc with number 0.
                             // Its ptr_data is stored at m_stack_ptr_data
                             ptr_data = m_stack_ptr_data;
-                            m_vars[i].flags.sink_addr = 1;
                         }
                         else if (m_vars[i].alloc_if) {
                             if (m_vars[i].flags.preallocated) {
@@ -2152,6 +2647,39 @@ bool OffloadDescriptor::setup_descriptors(
                             (char*) ptr_data->cpu_addr.start() :
                             0;
                     }
+
+                    if (m_is_openmp) {
+                        // for FROM transfer of stack buffer's variable
+                        if (src_is_for_mic && m_vars[i].flags.is_stack_buf) {
+                            AutoData *auto_data;                    
+                            char *base = *static_cast<char**>(m_vars[i].into);
+                            if (m_vars[i].alloc_if) {
+                                auto_data =m_device.insert_auto_data(
+                                    base + into_disp,
+                                    size);
+                                auto_data->add_reference();
+                            }
+                            else {
+                                auto_data = m_device.find_auto_data(
+                                    base + into_disp);
+                            }
+                            // save data for later use
+                            m_vars_extra[i].auto_data = auto_data;
+                            // For automatic variables
+                            // data is transferred:
+                            // - if always modifier is used OR
+                            // - if alloc_if == 0 && free_if == 0 OR
+                            // - if reference count is 1
+                            if (!m_vars[i].flags.always_copy &&
+                                (m_vars[i].alloc_if ||
+                                m_vars[i].free_if) &&
+                                auto_data != 0 &&
+                                auto_data->get_reference() != 1) {
+                                    m_vars[i].direction.bits =
+                                        c_parameter_nocopy;
+                            }
+                        }
+                    }
                     // save pointer data
                     m_vars_extra[i].dst_data = ptr_data;
                 }
@@ -2159,6 +2687,7 @@ bool OffloadDescriptor::setup_descriptors(
             }
 
             case c_func_ptr:
+            case c_func_ptr_ptr:
                 break;
 
             case c_dv_data:
@@ -2174,18 +2703,18 @@ bool OffloadDescriptor::setup_descriptors(
                     int64_t disp;
                     int64_t size;
 
-                    if (VAR_TYPE_IS_DV_DATA_SLICE(m_vars[i].type.dst)) {
+                    if (VAR_TYPE_IS_DV_DATA_SLICE(m_vars_extra[i].type_dst)) {
                         ap = static_cast<const Arr_Desc*>(m_vars[i].into);
 
                         // debug dump
                         ARRAY_DESC_DUMP("    ", "INTO", ap, 0, src_is_for_mic);
 
-                        dvp = (m_vars[i].type.dst == c_dv_data_slice) ?
+                        dvp = (m_vars_extra[i].type_dst == c_dv_data_slice) ?
                               reinterpret_cast<ArrDesc*>(ap->base) :
                               *reinterpret_cast<ArrDesc**>(ap->base);
                     }
                     else {
-                        dvp = (m_vars[i].type.dst == c_dv_data) ?
+                        dvp = (m_vars_extra[i].type_dst == c_dv_data) ?
                               static_cast<ArrDesc*>(m_vars[i].into) :
                               *static_cast<ArrDesc**>(m_vars[i].into);
                     }
@@ -2195,7 +2724,7 @@ bool OffloadDescriptor::setup_descriptors(
                             init_read_ranges_dv(dvp);
                     }
                     // size and displacement
-                    if (VAR_TYPE_IS_DV_DATA_SLICE(m_vars[i].type.dst)) {
+                    if (VAR_TYPE_IS_DV_DATA_SLICE(m_vars_extra[i].type_dst)) {
                         // offset and length are derived from the array
                         // descriptor
                         __arr_data_offset_and_length(ap, into_disp, size);
@@ -2227,7 +2756,9 @@ bool OffloadDescriptor::setup_descriptors(
                     }
 
                     int64_t size_src =
-                        m_vars_extra[i].read_rng_src ?
+                        m_vars_extra[i].read_rng_src &&
+                        (!m_vars[i].flags.is_non_cont_struct ||
+                         src_is_for_mic)  ?
                         cean_get_transf_size(m_vars_extra[i].read_rng_src) :
                         m_vars[i].size;
                     int64_t size_dst =
@@ -2338,7 +2869,7 @@ bool OffloadDescriptor::setup_descriptors(
                 break;
 
             default:
-                LIBOFFLOAD_ERROR(c_unknown_var_type, m_vars[i].type.src);
+                LIBOFFLOAD_ERROR(c_unknown_var_type, m_vars_extra[i].type_src);
                 LIBOFFLOAD_ABORT;
         }
         // if into is used at CPU save its offset and disp
@@ -2348,8 +2879,15 @@ bool OffloadDescriptor::setup_descriptors(
         }
         else {
             if (m_vars[i].flags.is_stack_buf) {
-                into_offset = static_cast<char*>(m_vars[i].into) -
-                    m_device.m_persist_list.front().cpu_stack_addr;
+                if (this_threads_cpu_stack_addr == 0) {
+                    this_threads_cpu_stack_addr =
+                        get_this_threads_cpu_stack_addr(
+                            stack_addr, entry_id,
+                            thread_specific_function_locals);
+                }
+                into_offset = static_cast<char*>
+                                  (m_vars[i].into) -
+                                   this_threads_cpu_stack_addr;
             }
             m_vars[i].offset = into_offset;
             m_vars[i].disp   = into_disp;
@@ -2405,7 +2943,7 @@ bool OffloadDescriptor::setup_misc_data(const char *name)
 
                 // send/receive data using buffer
                 COIRESULT res = COI::BufferCreate(data_len,
-                                                  COI_BUFFER_NORMAL,
+                                                  COI_BUFFER_OPENCL,
                                                   0, 0,
                                                   1, &m_device.get_process(),
                                                   &m_inout_buf);
@@ -2423,8 +2961,8 @@ bool OffloadDescriptor::setup_misc_data(const char *name)
         }
 
         // initialize function descriptor
-        m_func_desc = (FunctionDescriptor*) calloc(1, m_func_desc_size
-						      + misc_data_size);
+        m_func_desc = (FunctionDescriptor*) malloc(m_func_desc_size +
+                                                   misc_data_size);
         if (m_func_desc == NULL)
           LIBOFFLOAD_ERROR(c_malloc);
         m_func_desc->console_enabled = console_enabled;
@@ -2454,50 +2992,57 @@ void OffloadDescriptor::setup_omp_async_info()
     int i;
 
     for (i = m_vars_total - 1; i >=0; i--) {
-                switch (m_vars[i].type.dst) {
-                    case c_data:
-                    case c_void_ptr:
-                    case c_cean_var:
-                        if (m_vars[i].direction.out &&
-                            m_vars[i].flags.is_static_dstn) {
-                            event_type = c_last_read;
-                        }
-                        else if (last_in < 0 && m_vars[i].direction.in &&
-                            m_vars[i].flags.is_static_dstn) {
-                            last_in = i;
-                        }
-                        break;
-                    case c_string_ptr:
-                    case c_data_ptr:
-                    case c_cean_var_ptr:
-                    case c_dv_ptr:
-                    case c_dv_data:
-                    case c_dv_ptr_data:
-                    case c_dv_data_slice:
-                    case c_dv_ptr_data_slice:
-                    
-                        if (m_vars[i].direction.out) {                        
-                            event_type = c_last_read;
-                        }
-                        else if (last_in < 0 && m_vars[i].direction.in) {
-                            last_in = i;
-                        }
-                        break;
-                    default:
-                        break;
+        bool src_is_target = (m_vars[i].direction.out || !m_vars[i].into);
+        int var_type = src_is_target ? m_vars_extra[i].type_src :
+                                       m_vars_extra[i].type_dst;
+        bool target_is_static = src_is_target ? m_vars[i].flags.is_static :
+                                                m_vars[i].flags.is_static_dstn;
+        switch (var_type) {
+            case c_data:
+            case c_void_ptr:
+            case c_cean_var:
+                if (m_vars[i].direction.out && target_is_static) {
+                    event_type = c_last_read;
                 }
-             if (event_type == c_last_read) {
-                 break;
-             }
+                else if (last_in < 0 && m_vars[i].direction.in &&
+                    target_is_static) {
+                    last_in = i;
+                }
+                break;
+            case c_string_ptr:
+            case c_data_ptr:
+            case c_string_ptr_ptr:
+            case c_data_ptr_ptr:
+            case c_cean_var_ptr:
+            case c_cean_var_ptr_ptr:
+            case c_dv_ptr:
+            case c_dv_data:
+            case c_dv_ptr_data:
+            case c_dv_data_slice:
+            case c_dv_ptr_data_slice:
+
+                if (m_vars[i].direction.out) {                        
+                    event_type = c_last_read;
+                }
+                else if (last_in < 0 && m_vars[i].direction.in) {
+                    last_in = i;
+                }
+                break;
+            default:
+                break;
         }
-        
         if (event_type == c_last_read) {
-            m_vars_extra[i].omp_last_event_type = c_last_read;
+            break;
         }
-        else if (event_type == c_last_write) {
-            m_vars_extra[last_in].omp_last_event_type = c_last_write;        
-        }
-        m_omp_async_last_event_type = event_type;
+    }
+        
+    if (event_type == c_last_read) {
+        m_vars_extra[i].omp_last_event_type = c_last_read;
+    }
+    else if (event_type == c_last_write) {
+        m_vars_extra[last_in].omp_last_event_type = c_last_write;        
+    }
+    m_omp_async_last_event_type = event_type;
     OFFLOAD_TRACE(2, "setup_omp_async_info: event_type=%d\n",
                   m_omp_async_last_event_type);
 }
@@ -2511,18 +3056,122 @@ extern "C" {
     {
 	task_completion_callback ((void *) info);
     }
+
+    // Callback function for asynchronous offloads
+    void offload_complete_task(
+        COIEVENT e,
+        const COIRESULT r,
+        const void *info
+    )
+    {
+        Stream            *stream;
+        OffloadDescriptor *task = const_cast<OffloadDescriptor*>(
+            reinterpret_cast<const OffloadDescriptor*>(info));
+        uint32_t         events_remained;
+
+        lock_complete.lock();
+        if (!offload_descr_map[task]) {
+            lock_complete.unlock();
+            return;
+        }
+
+#ifndef TARGET_WINNT
+        events_remained = __sync_sub_and_fetch(&task->m_event_count, 1);
+#else // TARGET_WINNT
+        events_remained = _InterlockedDecrement(&task->m_event_count);
+#endif // TARGET_WINNT
+       // Waiting for the last event
+       if (events_remained != 0) {
+           lock_complete.unlock();
+           return;
+       }
+
+        // Callback could be called when execution at host is completed.
+        // Do nothing as engine data is destructed
+        if (!task->get_device().get_ready()) {
+            lock_complete.unlock();
+            return;
+        }
+
+        void *           signal = task->get_signal();
+        _Offload_stream  stream_handle = task->get_stream();
+
+        OFFLOAD_TRACE(2, "Call function offload_complete_task(%p)\n", info);
+
+        // Completed offload has a signal
+        if (task->m_has_signal) {
+            if (!offload_descr_map[task]) {
+                lock_complete.unlock();
+                return;
+            }
+            task->get_device().complete_signaled_ofld(signal);
+            // Asynchronous offload can have both signal and stream. Need to
+            // clean stream if any.
+            stream_handle = task->get_stream();
+            if (stream_handle != -1) {
+                stream = Stream::find_stream(stream_handle, false);
+                if (stream && stream->get_last_offload() == task) {
+                    stream->set_last_offload(NULL);
+                }
+            }
+            offload_descr_map[task] = false;
+            lock_complete.unlock();
+
+            if (task->offload_finish(0)) { //arg is 0 for is_traceback
+                task->cleanup();
+            }
+            delete task;
+        }
+        // Asynchronous by stream
+        else {
+            if (stream_handle != 0) {
+                stream = Stream::find_stream(stream_handle, false);
+
+                // the stream was not created or was destroyed
+                if (!stream) {
+                    LIBOFFLOAD_ERROR(c_offload_no_stream,
+                        task->get_device().get_logical_index());
+                    LIBOFFLOAD_ABORT;
+                }
+                if (!offload_descr_map[task]) {
+                    lock_complete.unlock();
+                    return;
+                }
+                if (task == stream->get_last_offload()) {
+                    stream->set_last_offload(NULL);
+                }
+                // if the offload has both signal and stream we will complete
+                // it as it has the signal. So we don't need to mark signal
+                // as completed.
+                offload_descr_map[task] = false;
+                lock_complete.unlock();
+                if (task->offload_finish(0)) { //arg is 0 for is_traceback
+                    task->cleanup();
+                }
+                delete task;
+            }
+        }
+    }
 }
 
 void OffloadDescriptor::register_omp_event_call_back(
     const COIEVENT *event,
     const void *info)
 {
-    OFFLOAD_TRACE(2, "register_omp_event_call_back(event=%p, info=%p)\n",
+    register_event_call_back(&offload_proxy_task_completed_ooo, event, info);
+}
+
+void OffloadDescriptor::register_event_call_back(
+    void (*func)(COIEVENT, const COIRESULT, const void*),
+    const COIEVENT *event,
+    const void *info)
+{
+    OFFLOAD_TRACE(2, "register_event_call_back(event=%p, info=%p)\n",
                   event, info);
     if (COI::EventRegisterCallback) {
         COI::EventRegisterCallback(
                  *event,
-                 &offload_proxy_task_completed_ooo,
+                 func,
                  info, 0);
         OFFLOAD_TRACE(2,
             "COI::EventRegisterCallback found; callback registered\n");
@@ -2538,7 +3187,11 @@ bool OffloadDescriptor::wait_dependencies(
     OffloadTimer timer(get_timer_data(), c_offload_host_wait_deps);
     bool ret = true;
     OffloadDescriptor *task;
+    void *    signal;
+
     if (num_waits == 0) {
+        // Prepare in dependencies for stream
+        get_stream_in_dependencies(m_num_in_dependencies,m_p_in_dependencies);
         return true;
     }
 
@@ -2547,6 +3200,7 @@ bool OffloadDescriptor::wait_dependencies(
         Stream * stream;
         // some specific stream of the device
         if (handle != 0) {
+            lock_complete.lock();
             stream = Stream::find_stream(handle, false);
 
             // the stream was not created or was destroyed
@@ -2558,14 +3212,24 @@ bool OffloadDescriptor::wait_dependencies(
 
             // offload was completed by previous offload_wait pragma
             // or wait clause
-            if (task == 0) {
+            if (!offload_descr_map[task]) {
+                lock_complete.unlock();
                 return true;
             }
+            stream->set_last_offload(NULL);
+            if (task->m_has_signal) {
+                signal = task->get_signal();
+                if (m_device.find_signal(signal, false) == task) {
+                    m_device.complete_signaled_ofld(signal);
+                }
+            }
+            offload_descr_map[task] = false;
+            lock_complete.unlock();
+
             if (!task->offload_finish(0)) { //arg is 0 for is_traceback
                 ret = false;
             }
             task->cleanup();
-            stream->set_last_offload(NULL);
             delete task;
         }
         // all streams of the device or over all devices
@@ -2574,23 +3238,33 @@ bool OffloadDescriptor::wait_dependencies(
             for (StreamMap::iterator it = stream_map.begin();
                 it != stream_map.end(); it++) {
                 Stream * stream = it->second;
-
                 if (!m_wait_all_devices &&
                     stream->get_device() != m_device.get_logical_index()) {
                     continue;
                 }
+                lock_complete.lock();
+
                 // get associated async task
                 OffloadDescriptor *task = stream->get_last_offload();
-
                 // offload was completed by offload_wait pragma or wait clause
-                if (task == 0) {
+                if (!offload_descr_map[task]) {
+                   lock_complete.unlock();
                     continue;
                 }
+                if (task->m_has_signal) {
+                    signal = task->get_signal();
+                    if (task->get_device().find_signal(signal, false) ==
+                        task) {
+                        task->get_device().complete_signaled_ofld(signal);
+                    }
+                }
+                stream->set_last_offload(NULL);
+                offload_descr_map[task] = false;
+                lock_complete.unlock();
                 if (!task->offload_finish(0)) { //arg is 0 for is_traceback
                     ret = false;
                 }
                 task->cleanup();
-                stream->set_last_offload(NULL);
                 delete task;
             }
             // no uncompleted streams
@@ -2598,34 +3272,113 @@ bool OffloadDescriptor::wait_dependencies(
         }
     }
     else {
-        // if handle is equal to no_stream it's wait for signals
-        for (int i = 0; i < num_waits; i++) {
-            _Offload_stream stream_handle;
-            Stream *stream;
-            task = m_device.find_signal(waits[i], true);
-            if (task == 0) {
-                LIBOFFLOAD_ERROR(c_offload1, m_device.get_logical_index(),
-                    waits[i]);
-                LIBOFFLOAD_ABORT;
-            }
-            else if (task == SIGNAL_IS_REMOVED) {
-                continue;
-            }
-            if (!task->offload_finish(0)) { //arg is 0 for is_traceback
-                ret = false;
-            }
-            task->cleanup();
-            // if the offload both has signal and is last offload of its
-            // stream, we must wipe out the "last_offload" reference as
-            // the offload already is finished.
-            stream_handle = task->m_stream;
-            if (stream_handle != -1) {
+
+        // If offload is asynchronous we will not really wait for signals.
+        // We will collect all waited events into m_p_in_dependencies vector
+        // to be used in future calls to COI::Copy... API.
+
+        if (!__offload_always_wait && (m_has_signal || (get_stream() > 0))) {
+            uint64_t        num_in_dep = 0,
+                            num_in_dep_prev = 0;
+            COIEVENT        *p_in_dep = NULL;
+            _Offload_stream stream_handle = get_stream();
+            Stream          *stream;
+            bool            stream_need_connection = stream_handle > 0;
+
+            if (stream_need_connection) {
                 stream = Stream::find_stream(stream_handle, false);
-                if (stream && stream->get_last_offload() == task) {
-                    stream->set_last_offload(NULL);
+                // check previous offload with the stream_handle
+                // to be noncompleted
+                if (!stream) {
+                    stream_need_connection = false;
                 }
             }
-            delete task;
+            for (int i = 0; i < num_waits; i++) {
+                task = m_device.find_signal(waits[i], false);
+                if (task == 0) {
+                    LIBOFFLOAD_ERROR(c_offload1, m_device.get_logical_index(),
+                        waits[i]);
+                    LIBOFFLOAD_ABORT;
+                }
+                else if (task == SIGNAL_HAS_COMPLETED) {
+                    continue;
+                }
+                if (stream_need_connection &&
+                    stream->get_last_offload() == task) {
+                    stream_need_connection = false;
+                }
+                if (!task->m_num_in_dependencies) {
+                    continue;
+                }
+                num_in_dep += task->m_num_in_dependencies;
+                p_in_dep = (COIEVENT*)realloc(p_in_dep,
+                                              sizeof(COIEVENT) * num_in_dep);
+		if (p_in_dep == NULL)
+		    LIBOFFLOAD_ERROR(c_malloc);
+                memcpy(p_in_dep + num_in_dep_prev, task->m_p_in_dependencies,
+                       task->m_num_in_dependencies * sizeof(COIEVENT));
+                num_in_dep_prev = num_in_dep;
+            }
+            if (stream_need_connection) {
+                task = stream->get_last_offload();
+                if (task) {
+                    num_in_dep += task->m_num_in_dependencies;
+                    p_in_dep = (COIEVENT*)realloc(p_in_dep,
+                                              sizeof(COIEVENT) * num_in_dep);
+		    if (p_in_dep == NULL)
+			LIBOFFLOAD_ERROR(c_malloc);
+                    memcpy(p_in_dep + num_in_dep_prev,
+                           task->m_p_in_dependencies,
+                           task->m_num_in_dependencies * sizeof(COIEVENT));
+                    num_in_dep_prev = num_in_dep;
+                }
+            }
+            m_num_in_dependencies = num_in_dep ? num_in_dep :
+                                                 m_num_in_dependencies;
+            m_p_in_dependencies = num_in_dep ? p_in_dep : m_p_in_dependencies;
+        }
+        // wait and do offload_finish for serial offload
+        else {
+            for (int i = 0; i < num_waits; i++) {
+                _Offload_stream stream_handle;
+                Stream *stream;
+
+                lock_complete.lock();
+                task = m_device.find_signal(waits[i], false);
+                if (task == 0) {
+                    LIBOFFLOAD_ERROR(c_offload1, m_device.get_logical_index(),
+                        waits[i]);
+                    LIBOFFLOAD_ABORT;
+                }
+                else if (!offload_descr_map[task]) {
+                    lock_complete.unlock();
+                    continue;
+                }
+                // Need to mark signal as completed to prevent run condition
+                // with the call to "offload_complete_task" for the same
+                // signal.
+                m_device.complete_signaled_ofld(waits[i]);
+
+                // Asynchronous offload can have both signal and stream.
+                // Need to clean stream if any.
+
+                stream_handle = task->m_stream;
+                if (stream_handle != -1) {
+                    stream = Stream::find_stream(stream_handle, false);
+                    if (stream && stream->get_last_offload() == task) {
+                        stream->set_last_offload(NULL);
+                    }
+                }
+                offload_descr_map[task] = false;
+                lock_complete.unlock();
+
+                if (!task->offload_finish(0)) { //arg is 0 for is_traceback
+                    ret = false;
+                }
+                task->cleanup();
+
+                delete task;
+            }
         }
     }
     return ret;
@@ -2649,7 +3402,7 @@ bool OffloadDescriptor::offload_wrap(
     bool is_traceback = offload_flags.bits.fortran_traceback;
 
     // define kind of wait if any;
-    // there can be one off the following kind:
+    // there can be one of the following kind:
     // 1. c_offload_wait_signal for "offload_wait wait(signal)"
     // 2. c_offload_wait_stream for "offload_wait stream(stream)"
     // 3. c_offload_wait_all_streams for "offload_wait stream(0)"
@@ -2661,7 +3414,7 @@ bool OffloadDescriptor::offload_wrap(
     char buf[35];
     const char *stream_str;
 
-    if (m_stream == no_stream || num_waits >= 0) {
+    if (m_stream == no_stream || num_waits ==-1) {
         stream_str = "none";
     }
     else if (m_stream == 0) {
@@ -2672,7 +3425,7 @@ bool OffloadDescriptor::offload_wrap(
         stream_str = buf;
     }
 
-    if (signal == 0) {
+    if (m_has_signal) {
         OFFLOAD_DEBUG_TRACE_1(1,
                       GET_OFFLOAD_NUMBER(get_timer_data()),
                       c_offload_init_func,
@@ -2718,8 +3471,8 @@ bool OffloadDescriptor::offload_wrap(
                       c_offload_init_func,
                       "Offload function %s, is_empty=%d, #varDescs=%d, "
                       "signal=%p, stream=%s, #waits=%d%c",
-                      name, is_empty, vars_total, *signal, stream_str, num_waits,
-                      num_waits == 0 ? '\n' : ' ');
+                      name, is_empty, vars_total, signal, stream_str,
+                      num_waits, num_waits == 0 ? '\n' : ' ');
         // Breaks the norm of using OFFLOAD_DEBUG_TRACE to print the waits
         // since the number of waits is not fixed.
         if (!OFFLOAD_DO_TRACE && (console_enabled >= 1)) {
@@ -2771,7 +3524,8 @@ bool OffloadDescriptor::offload_wrap(
 
     m_initial_need_runfunction = m_need_runfunction = !is_empty;
 
-    // wait for dependencies to finish
+    // wait for dependencies to finish or set
+    // m_num_in_dependencies and m_p_in_dependencies for asynchronous offload
     if (!wait_dependencies(waits, num_waits, m_stream)) {
         cleanup();
         return false;
@@ -2818,12 +3572,15 @@ bool OffloadDescriptor::offload_wrap(
         cleanup();
         return false;
     }
+
     if (offload_flags.bits.omp_async) {
         return true;
     }
+
     // if there is a signal or stream save descriptor for the later use.
     // num_waits == -1 is for offload_wait and there is nothing to save
     if (num_waits != -1 && (signal != 0 || m_stream != no_stream)) {
+
         if (signal != 0) {
             m_device.add_signal(*signal, this);
         }
@@ -2838,9 +3595,18 @@ bool OffloadDescriptor::offload_wrap(
                 LIBOFFLOAD_ABORT;
             }
         }
-        // if there is a clause with alloc_if(1) and preallocated need to call
-        // offload_finish after runfunction
-        if (!m_preallocated_alloc) {
+        // Register callback function "offload_complete_task" for all out
+        // events or for all in events if there are no out transfers
+       if (!m_preallocated_alloc) {
+            m_event_count = m_out_deps_total ?
+                            m_out_deps_total : m_in_deps_total;
+            COIEVENT *event_list = m_out_deps_total ? m_out_deps : m_in_deps;
+
+            for (int i = 0; i < m_event_count; i++) {
+                register_event_call_back(&offload_complete_task,
+                                         &event_list[i], this);
+            }
+            offload_descr_map[this] = true;
             return true;
         }
     }
@@ -2891,7 +3657,8 @@ bool OffloadDescriptor::offload_finish(
     COIRESULT res;
 
     // wait for compute dependencies to become signaled
-    if (m_in_deps_total > 0) {
+    if (m_in_deps_total > 0 &&
+        (m_out_deps_total <= 0 || m_preallocated_alloc)) {
         OffloadTimer timer(get_timer_data(), c_offload_host_wait_compute);
 
         if (__offload_active_wait) {
@@ -2916,27 +3683,29 @@ bool OffloadDescriptor::offload_finish(
                 }
                 return false;
             }
-
             if (is_traceback && !m_traceback_called) {
                 OFFLOAD_TRACE(3,
                   "Calling Fortran library to continue traceback from MIC\n");
                 FORTRAN_TRACE_BACK(OFFLOAD_ERROR);
-                m_traceback_called = true;
+                exit(1);
             }
-
             report_coi_error(c_event_wait, res);
         }
     }
 
-    // scatter copyout data received from target
-    if (!scatter_copyout_data()) {
-        return false;
-    }
-
-    if (m_out_with_preallocated &&
-        !receive_pointer_data(m_out_deps_total > 0, false, NULL)) {
-        cleanup();
-        return false;
+    // need to do scatter copyout data received from target after
+    // completing in dependencies to get preallocated buffers.
+    // If there are no preallocated buffers we will scatter_copyout_data
+    // after completing out dependencies. In this case we dont need wait
+    // in dependencies as they are already in DAG.
+    if (m_out_with_preallocated) {
+        if (!scatter_copyout_data()) {
+            return false;
+        }
+        if (!receive_pointer_data(m_out_deps_total > 0, false, NULL)) {
+                cleanup();
+                return false;
+        }
     }
 
     // wait for receive dependencies to become signaled
@@ -2955,14 +3724,29 @@ bool OffloadDescriptor::offload_finish(
         }
 
         if (res != COI_SUCCESS) {
-            if (m_status != 0) {
+            if (m_status != 0 && !m_traceback_called) {
                 m_status->result = translate_coi_error(res);
+                if (is_traceback) {
+                    OFFLOAD_TRACE(3,
+                    "Calling Fortran library to continue traceback from MIC\n");
+                    FORTRAN_TRACE_BACK(m_status->result);
+                    m_traceback_called = true;
+                }
                 return false;
+            }
+            if (is_traceback && !m_traceback_called) {
+                OFFLOAD_TRACE(3,
+                  "Calling Fortran library to continue traceback from MIC\n");
+                FORTRAN_TRACE_BACK(OFFLOAD_ERROR);
+                exit(1);
             }
             report_coi_error(c_event_wait, res);
         }
     }
 
+    if (!m_out_with_preallocated && !scatter_copyout_data()) {
+        return false;
+    }
     // destroy buffers
     {
         OffloadTimer timer(get_timer_data(), c_offload_host_destroy_buffers);
@@ -3000,12 +3784,12 @@ bool OffloadDescriptor::is_signaled()
     COIRESULT res;
 
     // check compute and receive dependencies
-    if (m_in_deps_total > 0) {
-        res = COI::EventWait(m_in_deps_total, m_in_deps, 0, 1, 0, 0);
-        signaled = signaled && (res == COI_SUCCESS);
-    }
     if (m_out_deps_total > 0) {
         res = COI::EventWait(m_out_deps_total, m_out_deps, 0, 1, 0, 0);
+        signaled = signaled && (res == COI_SUCCESS);
+    }
+    else if (m_in_deps_total > 0) {
+        res = COI::EventWait(m_in_deps_total, m_in_deps, 0, 1, 0, 0);
         signaled = signaled && (res == COI_SUCCESS);
     }
 
@@ -3046,6 +3830,8 @@ bool OffloadDescriptor::send_noncontiguous_pointer_data(
     COIEVENT *in_deps
     )
 {
+    NonContigDesc *desc;
+    int noncont_num;
     int64_t offset_src, offset_dst;
     int64_t length_src, length_dst;
     int64_t length_src_cur, length_dst_cur;
@@ -3054,24 +3840,15 @@ bool OffloadDescriptor::send_noncontiguous_pointer_data(
     bool dst_is_empty = true;
     bool src_is_empty = true;
 
-    data_sent = 0;
-
-    // Set length_src and length_dst
-    length_src = (m_vars_extra[i].read_rng_src) ?
-        m_vars_extra[i].read_rng_src->range_size : m_vars[i].size;
-    length_dst = !m_vars[i].into ? length_src :
-                     (m_vars_extra[i].read_rng_dst) ?
-                     m_vars_extra[i].read_rng_dst->range_size : m_vars[i].size;
-    send_size = (length_src < length_dst) ? length_src : length_dst;
-
     // If BufferWriteMultiD is defined we can set values of required arguments
     // and transfer noncontiguous data via call to the COI routine.
-    if (__offload_use_coi_noncontiguous_transfer && COI::BufferWriteMultiD) {
+    if (!m_vars[i].flags.is_non_cont_struct &&
+        __offload_use_coi_noncontiguous_transfer && COI::BufferWriteMultiD) {
         struct Arr_Desc* arr_desc_dst;
         struct Arr_Desc* arr_desc_src;
         int64_t size_src, size_dst;
         char *base = offload_get_src_base(static_cast<char*>(m_vars[i].ptr),
-            m_vars[i].type.src);
+            m_vars_extra[i].type_src);
         COIBUFFER dst_buf = m_vars[i].into ?
             m_vars_extra[i].dst_data->mic_buf :
             m_vars_extra[i].src_data->mic_buf;
@@ -3112,20 +3889,20 @@ bool OffloadDescriptor::send_noncontiguous_pointer_data(
                     m_vars_extra[i].dst_data->alloc_disp :
                     m_vars_extra[i].src_data->alloc_disp;
 
-        arr_desc_src->base = reinterpret_cast<int64_t>(base);
         arr_desc_dst->base = 0;
+        arr_desc_src->base = reinterpret_cast<int64_t>(base);
 
         res = COI::BufferWriteMultiD(
-            dst_buf,              // in_DestBuffer,
-            m_device.get_process(),      // DestProcess,
+            dst_buf,                // in_DestBuffer,
+            NULL,                   // DestProcess,
             m_vars[i].offset + m_vars[i].mic_offset -
-            alloc_disp,           // Offset
-            (void*)arr_desc_dst,         // descriptor of DestArray
-            (void*)arr_desc_src,         // descriptor of SrcArray
-            COI_COPY_UNSPECIFIED, // Type
-            in_deps_amount,       // Number of in Dependencies
-            in_deps,              // array of in Dependencies
-            event);               // out Dependency
+            alloc_disp,             // Offset
+            (void*)arr_desc_dst,    // descriptor of DestArray
+            (void*)arr_desc_src,    // descriptor of SrcArray
+            COI_COPY_UNSPECIFIED,   // Type
+            m_num_in_dependencies,  // Number of in Dependencies
+            m_p_in_dependencies,    // array of in Dependencies
+            event);                 // out Dependency
         if (res != COI_SUCCESS) {
             if (m_status != 0) {
                 m_status->result = translate_coi_error(res);
@@ -3136,13 +3913,32 @@ bool OffloadDescriptor::send_noncontiguous_pointer_data(
         return(true);
     }
 
-    // if event is defined we must multiplate it for all contiguous intervals
+    data_sent = 0;   
+    if (m_vars[i].flags.is_non_cont_struct) {
+        desc = m_vars_extra[i].noncont_desc;
+        noncont_num = 0;
+    }
+    else {
+        // Set length_src and length_dst
+        length_src = (m_vars_extra[i].read_rng_src) ?
+            m_vars_extra[i].read_rng_src->range_size : m_vars[i].size;
+        length_dst = !m_vars[i].into ? length_src :
+            (m_vars_extra[i].read_rng_dst) ?
+            m_vars_extra[i].read_rng_dst->range_size :
+        m_vars[i].size;
+        send_size = (length_src < length_dst) ? length_src : length_dst;
+    }
+
+    // if event is defined we must multiplate it for all contiguous ranges
     // that will be Copied/Write.
     // Take in account that we already have 1 event.
     if (event) {
-        m_in_deps_allocated += (length_src / send_size) *
+        uint32_t range_num = m_vars[i].flags.is_non_cont_struct ?
+                                desc->interval_cnt :
+                                (length_src / send_size) *
                                 ((m_vars_extra[i].read_rng_src) ?
-                                m_vars_extra[i].read_rng_src->range_max_number : 1) ;
+                                m_vars_extra[i].read_rng_src->range_max_number : 1) ;        
+        m_in_deps_allocated += range_num ;
         m_in_deps    =
             (COIEVENT*)realloc(m_in_deps, sizeof(COIEVENT) * m_in_deps_allocated);
         m_in_deps_total--; 
@@ -3151,63 +3947,73 @@ bool OffloadDescriptor::send_noncontiguous_pointer_data(
     // consequently get contiguous ranges,
     // define corresponded destination offset and send data
     do {
-        if (src_is_empty) {
-            if (m_vars_extra[i].read_rng_src) {
-                if (!get_next_range(m_vars_extra[i].read_rng_src,
-                         &offset_src)) {
-                    // source ranges are over - nothing to send
-                    break;
-                }
-            }
-            else if (data_sent == 0) {
-                offset_src = m_vars_extra[i].cpu_disp;
-            }
-            else {
+        if (m_vars[i].flags.is_non_cont_struct) {  
+            // ranges are over
+            if (noncont_num >= desc->interval_cnt) {
                 break;
             }
-            length_src_cur = length_src;
+            offset_src = offset_dst = desc->interval[noncont_num].lower;        
+            send_size = desc->interval[noncont_num].size;
+            noncont_num++;
         }
         else {
-            // if source is contiguous or its contiguous range is greater
-            // than destination one
-            offset_src += send_size;
-        }
-        length_src_cur -= send_size;
-        src_is_empty = length_src_cur == 0;
-
-        if (dst_is_empty) {
-            if (m_vars[i].into) {
-                if (m_vars_extra[i].read_rng_dst) {
-                    if (!get_next_range(m_vars_extra[i].read_rng_dst,
-                             &offset_dst)) {
-                        // destination ranges are over
-                        LIBOFFLOAD_ERROR(c_destination_is_over);
-                        return false;
+            if (src_is_empty) {
+                if (m_vars_extra[i].read_rng_src) {
+                    if (!get_next_range(m_vars_extra[i].read_rng_src,
+                        &offset_src)) {
+                        // source ranges are over - nothing to send
+                        break;
                     }
                 }
-                // into is contiguous.
-                else {
-                    offset_dst = m_vars[i].disp;
+                else if (data_sent == 0) {
+                    offset_src = m_vars_extra[i].cpu_disp;
                 }
-                length_dst_cur = length_dst;
+                else {
+                    break;
+                }
+                length_src_cur = length_src;
             }
-            // same as source
             else {
-                offset_dst = offset_src;
-                length_dst_cur = length_src;
+                // if source is contiguous or its contiguous range is greater
+                // than destination one
+                offset_src += send_size;
             }
+            length_src_cur -= send_size;
+            src_is_empty = length_src_cur == 0;
+
+            if (dst_is_empty) {
+                if (m_vars[i].into) {
+                    if (m_vars_extra[i].read_rng_dst) {
+                        if (!get_next_range(m_vars_extra[i].read_rng_dst,
+                            &offset_dst)) {
+                            // destination ranges are over
+                            LIBOFFLOAD_ERROR(c_destination_is_over);
+                            return false;
+                        }
+                    }
+                    // into is contiguous.
+                    else {
+                        offset_dst = m_vars[i].disp;
+                    }
+                    length_dst_cur = length_dst;
+                }
+                // same as source
+                else {
+                    offset_dst = offset_src;
+                    length_dst_cur = length_src;
+                }
+            }
+            else {
+                // if destination is contiguous or its contiguous range is greater
+                // than source one
+                offset_dst += send_size;
+            }
+            length_dst_cur -= send_size;
+            dst_is_empty = length_dst_cur == 0;
         }
-        else {
-            // if destination is contiguous or its contiguous range is greater
-            // than source one
-            offset_dst += send_size;
-        }
-        length_dst_cur -= send_size;
-        dst_is_empty = length_dst_cur == 0;
-        
         if (event) {
             event =  &m_in_deps[m_in_deps_total++];
-        }
+        }        
         if (src_data != 0 && src_data->cpu_buf != 0) {
             res = COI::BufferCopy(
                 dst_data->mic_buf,
@@ -3217,7 +4023,8 @@ bool OffloadDescriptor::send_noncontiguous_pointer_data(
                 m_vars_extra[i].cpu_offset + offset_src,
                 send_size,
                 COI_COPY_UNSPECIFIED,
-                in_deps_amount, in_deps,
+                m_num_in_dependencies,
+                m_p_in_dependencies,
                 event);
             if (res != COI_SUCCESS) {
                 if (m_status != 0) {
@@ -3229,7 +4036,7 @@ bool OffloadDescriptor::send_noncontiguous_pointer_data(
         }
         else {
             char *base = offload_get_src_base(m_vars[i].ptr,
-                m_vars[i].type.src);
+                m_vars_extra[i].type_src);
 
             res = COI::BufferWrite(
                 dst_data->mic_buf,
@@ -3238,7 +4045,8 @@ bool OffloadDescriptor::send_noncontiguous_pointer_data(
                 base + offset_src,
                 send_size,
                 COI_COPY_UNSPECIFIED,
-                in_deps_amount, in_deps,
+                m_num_in_dependencies,
+                m_p_in_dependencies,
                 event);
             if (res != COI_SUCCESS) {
                 if (m_status != 0) {
@@ -3280,17 +4088,21 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
         for (int i = 0; i < m_vars_total; i++) {
             if (m_vars[i].direction.in &&
                 m_vars[i].size >= __offload_use_async_buffer_write) {
-                switch (m_vars[i].type.dst) {
+                switch (m_vars_extra[i].type_dst) {
                     case c_data:
                     case c_void_ptr:
+                    case c_void_ptr_ptr:
                     case c_cean_var:
                         if (m_vars[i].flags.is_static_dstn) {
                             big_size_count++;
                         }
                         break;
                     case c_string_ptr:
+                    case c_string_ptr_ptr:
                     case c_data_ptr:
+                    case c_data_ptr_ptr:
                     case c_cean_var_ptr:
+                    case c_cean_var_ptr_ptr:
                     case c_dv_ptr:
                     case c_dv_data:
                     case c_dv_ptr_data:
@@ -3308,37 +4120,27 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
         }
     }
 
-    if (m_stream != no_stream && m_vars_total != 0) {
-       get_stream_in_dependencies(in_deps_amount, in_deps);
-    }
-
     // Initiate send for pointer data
     for (int i = 0; i < m_vars_total; i++) {
         uint64_t sent_data = m_vars[i].size;
-        uint32_t in_deps_amount_save;
-        COIEVENT *in_deps_save;
-                
-        if (m_vars_extra[i].omp_last_event_type == c_last_write) {
-            in_deps_amount_save = in_deps_amount;
-            in_deps_save = in_deps;
-            in_deps_amount = m_in_deps_total;
-            if (in_deps_amount > 0) {
-               in_deps = (COIEVENT*) malloc(sizeof(COIEVENT) * in_deps_amount);
-               if (in_deps == NULL)
-                   LIBOFFLOAD_ERROR(c_malloc);
-               memcpy(in_deps, m_in_deps,in_deps_amount * sizeof(COIEVENT));
-            }                
+
+        if (m_vars_extra[i].omp_last_event_type == c_last_write &&
+            m_in_deps_total > 0) {
+            m_num_in_dependencies = m_in_deps_total;
+            m_p_in_dependencies = m_in_deps;
         }
-        switch (m_vars[i].type.dst) {
+        switch (m_vars_extra[i].type_dst) {
             case c_data_ptr_array:
                 break;
             case c_data:
             case c_void_ptr:
+            case c_void_ptr_ptr:
             case c_cean_var:
                 if (m_vars[i].direction.in &&
                     m_vars[i].flags.is_static_dstn) {
                     COIEVENT *event =
-                        (is_async ||
+                        (m_stream != no_stream ||
+                         is_async ||
                          (should_use_async_buffer_write &&
                           m_vars[i].size >= __offload_use_async_buffer_write)) ?
                         &m_in_deps[m_in_deps_total++] : 0;
@@ -3346,16 +4148,17 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                                             m_vars_extra[i].dst_data :
                                             m_vars_extra[i].src_data;
                     PtrData* src_data =
-                        VAR_TYPE_IS_PTR(m_vars[i].type.src) ||
-                        VAR_TYPE_IS_SCALAR(m_vars[i].type.src) &&
+                        VAR_TYPE_IS_PTR(m_vars_extra[i].type_src) ||
+                        VAR_TYPE_IS_SCALAR(m_vars_extra[i].type_src) &&
                         m_vars[i].flags.is_static ?
                            m_vars_extra[i].src_data : 0;
 
-                    if (m_vars[i].flags.is_noncont_src ||
+                    if (m_vars[i].flags.is_non_cont_struct ||
+                        m_vars[i].flags.is_noncont_src ||
                         m_vars[i].flags.is_noncont_dst) {
                         if (!send_noncontiguous_pointer_data(
                                 i, src_data, dst_data, event, sent_data,
-                                in_deps_amount, in_deps)) {
+                                m_num_in_dependencies, m_p_in_dependencies)) {
                             return false;
                         }
                     }
@@ -3369,7 +4172,8 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                             m_vars_extra[i].cpu_disp,
                             m_vars[i].size,
                             COI_COPY_UNSPECIFIED,
-                            in_deps_amount, in_deps,
+                            m_num_in_dependencies,
+                            m_p_in_dependencies,
                             event);
                         if (res != COI_SUCCESS) {
                             if (m_status != 0) {
@@ -3381,7 +4185,7 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                     }
                     else {
                         char *base = offload_get_src_base(m_vars[i].ptr,
-                                                          m_vars[i].type.src);
+                                         m_vars_extra[i].type_src);
                         res = COI::BufferWrite(
                             dst_data->mic_buf,
                             m_vars[i].mic_offset +
@@ -3389,7 +4193,8 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                             base + m_vars_extra[i].cpu_disp,
                             m_vars[i].size,
                             COI_COPY_UNSPECIFIED,
-                            in_deps_amount, in_deps,
+                            m_num_in_dependencies,
+                            m_p_in_dependencies,
                             event);
                         if (res != COI_SUCCESS) {
                             if (m_status != 0) {
@@ -3403,13 +4208,21 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                 }
                 break;
 
-            case c_string_ptr:
             case c_data_ptr:
+               //  If use_device_ptr no data needs to be sent
+               if (m_vars[i].flags.use_device_ptr) {
+                   break;
+               }
+            case c_string_ptr:
+            case c_string_ptr_ptr:
+            case c_data_ptr_ptr:
             case c_cean_var_ptr:
+            case c_cean_var_ptr_ptr:
             case c_dv_ptr:
                 if (m_vars[i].direction.in && m_vars[i].size > 0) {
                     COIEVENT *event =
-                        (is_async ||
+                        (m_stream != no_stream ||
+                         is_async ||
                          (should_use_async_buffer_write &&
                           m_vars[i].size >= __offload_use_async_buffer_write)) ?
                         &m_in_deps[m_in_deps_total++] : 0;
@@ -3417,12 +4230,13 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                                             m_vars_extra[i].dst_data :
                                             m_vars_extra[i].src_data;
                     PtrData* src_data =
-                        VAR_TYPE_IS_PTR(m_vars[i].type.src) ||
-                        VAR_TYPE_IS_SCALAR(m_vars[i].type.src) &&
+                        VAR_TYPE_IS_PTR(m_vars_extra[i].type_src) ||
+                        VAR_TYPE_IS_SCALAR(m_vars_extra[i].type_src) &&
                         m_vars[i].flags.is_static ?
                             m_vars_extra[i].src_data : 0;
 
-                    if (m_vars[i].flags.is_noncont_src ||
+                    if (m_vars[i].flags.is_non_cont_struct ||
+                        m_vars[i].flags.is_noncont_src ||
                         m_vars[i].flags.is_noncont_dst) {
                         send_noncontiguous_pointer_data(
                             i, src_data, dst_data, event, sent_data,
@@ -3438,7 +4252,8 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                             m_vars_extra[i].cpu_disp,
                             m_vars[i].size,
                             COI_COPY_UNSPECIFIED,
-                            in_deps_amount, in_deps,
+                            m_num_in_dependencies,
+                            m_p_in_dependencies,
                             event);
                         if (res != COI_SUCCESS) {
                             if (m_status != 0) {
@@ -3450,7 +4265,7 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                     }
                     else {
                         char *base = offload_get_src_base(m_vars[i].ptr,
-                                                          m_vars[i].type.src);
+                                         m_vars_extra[i].type_src);
                         res = COI::BufferWrite(
                             dst_data->mic_buf,
                             m_vars[i].mic_offset +
@@ -3458,7 +4273,8 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                             base + m_vars_extra[i].cpu_disp,
                             m_vars[i].size,
                             COI_COPY_UNSPECIFIED,
-                            in_deps_amount, in_deps,
+                            m_num_in_dependencies,
+                            m_p_in_dependencies,
                             event);
                         if (res != COI_SUCCESS) {
                             if (m_status != 0) {
@@ -3483,12 +4299,14 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                     PtrData* src_data = m_vars_extra[i].src_data;
 
                     COIEVENT *event =
-                        (is_async ||
+                        (m_stream != no_stream ||
+                         is_async ||
                          (should_use_async_buffer_write &&
                           m_vars[i].size >= __offload_use_async_buffer_write)) ?
                         &m_in_deps[m_in_deps_total++] : 0;
 
-                    if (m_vars[i].flags.is_noncont_src ||
+                    if (m_vars[i].flags.is_non_cont_struct ||
+                        m_vars[i].flags.is_noncont_src ||
                         m_vars[i].flags.is_noncont_dst) {
                         send_noncontiguous_pointer_data(
                             i, src_data, ptr_data, event, sent_data,
@@ -3504,7 +4322,8 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                             m_vars_extra[i].cpu_disp,
                             m_vars[i].size,
                             COI_COPY_UNSPECIFIED,
-                            in_deps_amount, in_deps,
+                            m_num_in_dependencies,
+                            m_p_in_dependencies,
                             event);
                         if (res != COI_SUCCESS) {
                             if (m_status != 0) {
@@ -3516,7 +4335,7 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                     }
                     else {
                         char *base = offload_get_src_base(m_vars[i].ptr,
-                                                          m_vars[i].type.src);
+                                         m_vars_extra[i].type_src);
                         res = COI::BufferWrite(
                             ptr_data->mic_buf,
                             ptr_data->mic_offset +
@@ -3524,7 +4343,8 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                             base + m_vars_extra[i].cpu_disp,
                             m_vars[i].size,
                             COI_COPY_UNSPECIFIED,
-                            in_deps_amount, in_deps,
+                            m_num_in_dependencies,
+                            m_p_in_dependencies,
                             event);
                         if (res != COI_SUCCESS) {
                             if (m_status != 0) {
@@ -3546,18 +4366,20 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                                         m_vars_extra[i].dst_data :
                                         m_vars_extra[i].src_data;
                     PtrData* src_data =
-                        (VAR_TYPE_IS_PTR(m_vars[i].type.src) ||
-                        VAR_TYPE_IS_DV_DATA(m_vars[i].type.src) ||
-                        VAR_TYPE_IS_DV_DATA_SLICE(m_vars[i].type.src) ||
-                        VAR_TYPE_IS_SCALAR(m_vars[i].type.src) &&
+                        (VAR_TYPE_IS_PTR(m_vars_extra[i].type_src) ||
+                        VAR_TYPE_IS_DV_DATA(m_vars_extra[i].type_src) ||
+                        VAR_TYPE_IS_DV_DATA_SLICE(m_vars_extra[i].type_src) ||
+                        VAR_TYPE_IS_SCALAR(m_vars_extra[i].type_src) &&
                         m_vars[i].flags.is_static) ?
                             m_vars_extra[i].src_data : 0;
                     COIEVENT *event =
-                        (is_async ||
+                        (m_stream != no_stream ||
+                         is_async ||
                          (should_use_async_buffer_write &&
                           m_vars[i].size >= __offload_use_async_buffer_write)) ?
                         &m_in_deps[m_in_deps_total++] : 0;
-                    if (m_vars[i].flags.is_noncont_src ||
+                    if (m_vars[i].flags.is_non_cont_struct ||
+                        m_vars[i].flags.is_noncont_src ||
                         m_vars[i].flags.is_noncont_dst) {
                         send_noncontiguous_pointer_data(
                             i, src_data, dst_data, event, sent_data,
@@ -3574,7 +4396,8 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                             m_vars_extra[i].cpu_disp,
                             m_vars[i].size,
                             COI_COPY_UNSPECIFIED,
-                            in_deps_amount, in_deps,
+                            m_num_in_dependencies,
+                            m_p_in_dependencies,
                             event);
                         if (res != COI_SUCCESS) {
                             if (m_status != 0) {
@@ -3586,7 +4409,7 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                     }
                     else {
                         char *base = offload_get_src_base(m_vars[i].ptr,
-                                                          m_vars[i].type.src);
+                                         m_vars_extra[i].type_src);
                         res = COI::BufferWrite(
                             dst_data->mic_buf,
                             dst_data->mic_offset +
@@ -3594,7 +4417,8 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                             base + m_vars_extra[i].cpu_disp,
                             m_vars[i].size,
                             COI_COPY_UNSPECIFIED,
-                            in_deps_amount, in_deps,
+                            m_num_in_dependencies,
+                            m_p_in_dependencies,
                             event);
                         if (res != COI_SUCCESS) {
                             if (m_status != 0) {
@@ -3613,8 +4437,6 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
                 break;
         }
         if (m_vars_extra[i].omp_last_event_type == c_last_write) {
-            in_deps_amount = in_deps_amount_save;
-            in_deps = in_deps_save;
             register_omp_event_call_back(&m_in_deps[m_in_deps_total - 1], info);                
         }
         // alloc field isn't used at target.
@@ -3623,6 +4445,12 @@ bool OffloadDescriptor::send_pointer_data(bool is_async, void* info)
             m_vars[i].ptr_arr_offset = m_vars_extra[i].ptr_arr_offset;
         }
     }
+    // list of out events created while send_pointer_data now became input
+    // dependencies for runfunction (or Read transfers from target if
+    // runfunction is absent)
+    m_num_in_dependencies = m_in_deps_total ? m_in_deps_total :
+                            m_num_in_dependencies;
+    m_p_in_dependencies = m_in_deps_total ? m_in_deps : m_p_in_dependencies;
 
     if (m_status) {
         m_status->data_sent += ptr_sent;
@@ -3684,25 +4512,32 @@ bool OffloadDescriptor::gather_copyin_data()
                 m_in.send_data(&ptr_data->alloc_disp,
                                sizeof(ptr_data->alloc_disp));
             }
-
+            if (TYPE_IS_PTR_TO_PTR(m_vars_extra[i].type_src) ||
+                TYPE_IS_PTR_TO_PTR(m_vars_extra[i].type_dst) ||
+                (m_vars_extra[i].type_src == c_data_ptr_array &&
+                 m_vars[i].flags.is_pointer)) {
+                m_in.send_data(&m_vars_extra[i].pointer_offset,
+                               sizeof(m_vars_extra[i].pointer_offset));
+            }
             // send sink address to the target
             if (m_vars[i].flags.sink_addr) {
                 m_in.send_data(&ptr_data->mic_addr,
                                sizeof(ptr_data->mic_addr));
             }
 
-            switch (m_vars[i].type.dst) {
+            switch (m_vars_extra[i].type_dst) {
                 case c_data_ptr_array:
                     break;
                 case c_data:
                 case c_void_ptr:
+                case c_void_ptr_ptr:
                 case c_cean_var:
                     if (m_vars[i].direction.in &&
                         !m_vars[i].flags.is_static_dstn) {
 
                         char *ptr = offload_get_src_base(m_vars[i].ptr,
-                                                         m_vars[i].type.src);
-                        if (m_vars[i].type.dst == c_cean_var) {
+                                        m_vars_extra[i].type_src);
+                        if (m_vars_extra[i].type_dst == c_cean_var) {
                             // offset and length are derived from the array
                             // descriptor
                             int64_t size = m_vars[i].size;
@@ -3746,6 +4581,7 @@ bool OffloadDescriptor::gather_copyin_data()
                     }
                     break;
                 case c_func_ptr:
+                case c_func_ptr_ptr:
                     if (m_vars[i].direction.in) {
                         m_in.send_func_ptr(*((const void**) m_vars[i].ptr));
                     }
@@ -3808,19 +4644,13 @@ bool OffloadDescriptor::compute(void *info)
         // dispatch task
         COIRESULT res;
         COIEVENT event;
-        uint32_t in_deps_amount = m_in_deps_total;
-        COIEVENT *in_deps = m_in_deps_total > 0 ? m_in_deps : 0;
-
-        if (0 == m_in_deps_total && m_stream != no_stream) {
-            get_stream_in_dependencies(in_deps_amount, in_deps);
-        }
 
         res = m_device.compute(m_stream,
                                m_compute_buffers,
                                misc, misc_len,
                                ret, ret_len,
-                               in_deps_amount,
-                               in_deps,
+                               m_num_in_dependencies,
+                               m_p_in_dependencies,
                                &event);
 
         if (res != COI_SUCCESS) {
@@ -3835,8 +4665,9 @@ bool OffloadDescriptor::compute(void *info)
             register_omp_event_call_back(&event, info);
         }
 
-        m_in_deps_total = 1;
+        m_in_deps_total = m_num_in_dependencies = 1;
         m_in_deps[0] = event;
+        m_p_in_dependencies = m_in_deps;
     }
 
     return true;
@@ -3853,7 +4684,9 @@ bool OffloadDescriptor::receive_noncontiguous_pointer_data(
     uint32_t in_deps_amount,
     COIEVENT *in_deps
 )
-{
+{   
+    NonContigDesc *desc;
+    int noncont_num;
     int64_t offset_src, offset_dst;
     int64_t length_src, length_dst;
     int64_t length_src_cur, length_dst_cur;
@@ -3866,16 +4699,8 @@ bool OffloadDescriptor::receive_noncontiguous_pointer_data(
                      m_vars[i].into ?
                      static_cast<char*>(m_vars[i].into) :
                      static_cast<char*>(m_vars[i].ptr),
-                     m_vars[i].type.dst);
+                     m_vars_extra[i].type_dst);
     received_data = 0;
-
-    // Set length_src and length_dst
-    length_src = (m_vars_extra[i].read_rng_src) ?
-        m_vars_extra[i].read_rng_src->range_size : m_vars[i].size;
-    length_dst = !m_vars[i].into ? length_src :
-                     (m_vars_extra[i].read_rng_dst) ?
-                     m_vars_extra[i].read_rng_dst->range_size : m_vars[i].size;
-    receive_size = (length_src < length_dst) ? length_src : length_dst;
 
     // If BufferReadMultiD is defined we can set values of required arguments
     // and transfer noncontiguous data via call to the COI routine.
@@ -3921,11 +4746,11 @@ bool OffloadDescriptor::receive_noncontiguous_pointer_data(
                 m_vars_extra[i].src_data->mic_buf,      // SourceBuffer
                 m_vars[i].offset + m_vars[i].mic_offset -
                 m_vars_extra[i].src_data->alloc_disp,         // Offset
-                (void*)arr_desc_dst,                 // descriptor of DestArray
-                (void*)arr_desc_src,                 // descriptor of SrcArray
+                (void*)arr_desc_dst,          // descriptor of DestArray
+                (void*)arr_desc_src,          // descriptor of SrcArray
                 COI_COPY_UNSPECIFIED,         // Type
-                in_deps_amount,               // Number of in Dependencies
-                in_deps,                      // array of in Dependencies
+                m_num_in_dependencies,        // Number of in Dependencies
+                m_p_in_dependencies,          // array of in Dependencies
                 event);                       // out Dependency
             if (res != COI_SUCCESS) {
                 if (m_status != 0) {
@@ -3936,76 +4761,103 @@ bool OffloadDescriptor::receive_noncontiguous_pointer_data(
             }
             return(true);
     }
+    if (m_vars[i].flags.is_non_cont_struct) {
+        desc = m_vars_extra[i].noncont_desc;
+        noncont_num = 0;
+    }
+    else {    
+        // Set length_src and length_dst
+        length_src = (m_vars_extra[i].read_rng_src) ?
+            m_vars_extra[i].read_rng_src->range_size : m_vars[i].size;
+        length_dst = !m_vars[i].into ? length_src :
+                     (m_vars_extra[i].read_rng_dst) ?
+                     m_vars_extra[i].read_rng_dst->range_size : m_vars[i].size;
+        receive_size = (length_src < length_dst) ? length_src : length_dst;
+    }
+
     // if event is defined we must multiplate for all contiguous intervals
     // that will be Copied/Read.
     // Take in account that we already have 1 event.
     if (event) {
-        m_out_deps_allocated += (length_src / receive_size) *
+        uint32_t range_num = m_vars[i].flags.is_non_cont_struct ?
+                                desc->interval_cnt :
+                                (length_src / receive_size) *
                                 ((m_vars_extra[i].read_rng_src) ?
                                 m_vars_extra[i].read_rng_src->range_max_number : 1) ;
+        m_out_deps_allocated += range_num;
         m_out_deps    =
             (COIEVENT*)realloc(m_out_deps, sizeof(COIEVENT) * m_out_deps_allocated);
         m_out_deps_total--; 
     }
- 
+     
     // consequently get contiguous ranges,
     // define corresponded destination offset and receive data
     do {
-        // get sorce offset
-        if (src_is_empty) {
-            if (m_vars_extra[i].read_rng_src) {
-                if (!get_next_range(m_vars_extra[i].read_rng_src,
-                         &offset_src)) {
-                    // source ranges are over - nothing to send
-                    break;
-                }
-            }
-            else if (received_data == 0) {
-                offset_src = m_vars[i].disp;
-            }
-            else {
+        if (m_vars[i].flags.is_non_cont_struct) {  
+            // ranges are over
+            if (noncont_num >= desc->interval_cnt) {
                 break;
             }
-            length_src_cur = length_src;
+            offset_src = offset_dst = desc->interval[noncont_num].lower;        
+            receive_size = desc->interval[noncont_num].size;
+            noncont_num++;
         }
-        else {
-            // if source is contiguous or its contiguous range is greater
-            // than destination one
-            offset_src += receive_size;
-        }
-        length_src_cur -= receive_size;
-        src_is_empty = length_src_cur == 0;
-
-        // get destination offset
-        if (dst_is_empty) {
-            if (m_vars[i].into) {
-                if (m_vars_extra[i].read_rng_dst) {
-                    if (!get_next_range(m_vars_extra[i].read_rng_dst,
-                             &offset_dst)) {
-                        // destination ranges are over
-                        LIBOFFLOAD_ERROR(c_destination_is_over);
-                        return false;
+        else { // get source offset
+            if (src_is_empty) {
+                if (m_vars_extra[i].read_rng_src) {
+                    if (!get_next_range(m_vars_extra[i].read_rng_src,
+                        &offset_src)) {
+                            // source ranges are over - nothing to send
+                            break;
                     }
                 }
-                // destination is contiguous.
-                else {
-                    offset_dst = m_vars_extra[i].cpu_disp;
+                else if (received_data == 0) {
+                    offset_src = m_vars[i].disp;
                 }
-                length_dst_cur = length_dst;
+                else {
+                    break;
+                }
+                length_src_cur = length_src;
             }
-            // same as source
             else {
-                offset_dst = offset_src;
-                length_dst_cur = length_src;
+                // if source is contiguous or its contiguous range is greater
+                // than destination one
+                offset_src += receive_size;
             }
+            length_src_cur -= receive_size;
+            src_is_empty = length_src_cur == 0;
+
+            // get destination offset
+            if (dst_is_empty) {
+                if (m_vars[i].into) {
+                    if (m_vars_extra[i].read_rng_dst) {
+                        if (!get_next_range(m_vars_extra[i].read_rng_dst,
+                            &offset_dst)) {
+                                // destination ranges are over
+                                LIBOFFLOAD_ERROR(c_destination_is_over);
+                                return false;
+                        }
+                    }
+                    // destination is contiguous.
+                    else {
+                        offset_dst = m_vars_extra[i].cpu_disp;
+                    }
+                    length_dst_cur = length_dst;
+                }
+                // same as source
+                else {
+                    offset_dst = offset_src;
+                    length_dst_cur = length_src;
+                }
+            }
+            else {
+                // if destination is contiguous or its contiguous range is greater
+                // than source one
+                offset_dst += receive_size;
+            }
+            length_dst_cur -= receive_size;
+            dst_is_empty = length_dst_cur == 0;
         }
-        else {
-            // if destination is contiguous or its contiguous range is greater
-            // than source one
-            offset_dst += receive_size;
-        }
-        length_dst_cur -= receive_size;
-        dst_is_empty = length_dst_cur == 0;
         if (event) {
             event =  &m_out_deps[m_out_deps_total++];
         }
@@ -4018,8 +4870,8 @@ bool OffloadDescriptor::receive_noncontiguous_pointer_data(
                 m_vars[i].mic_offset,
                 receive_size,
                 COI_COPY_UNSPECIFIED,
-                in_deps_amount,
-                in_deps,
+                m_num_in_dependencies,
+                m_p_in_dependencies,
                 event);
             if (res != COI_SUCCESS) {
                 if (m_status != 0) {
@@ -4037,8 +4889,8 @@ bool OffloadDescriptor::receive_noncontiguous_pointer_data(
                 base + offset_dst,
                 receive_size,
                 COI_COPY_UNSPECIFIED,
-                in_deps_amount,
-                in_deps,
+                m_num_in_dependencies,
+                m_p_in_dependencies,
                 event);
             if (res != COI_SUCCESS) {
                 if (m_status != 0) {
@@ -4084,9 +4936,10 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
                 if (first_run == m_vars[i].flags.preallocated) {
                     continue;
                 }
-                switch (m_vars[i].type.src) {
+                switch (m_vars_extra[i].type_src) {
                     case c_data:
                     case c_void_ptr:
+                    case c_void_ptr_ptr:
                     case c_cean_var:
                         if (m_vars[i].flags.is_static) {
                             big_size_count++;
@@ -4094,7 +4947,10 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
                         break;
                     case c_string_ptr:
                     case c_data_ptr:
+                    case c_string_ptr_ptr:
+                    case c_data_ptr_ptr:
                     case c_cean_var_ptr:
+                    case c_cean_var_ptr_ptr:
                     case c_dv_data:
                     case c_dv_ptr_data:
                     case c_dv_data_slice:
@@ -4114,32 +4970,16 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
     uint32_t in_deps_amount = m_in_deps_total;
     COIEVENT *in_deps = m_in_deps_total > 0 ? m_in_deps : 0;
 
-    if (0 == m_in_deps_total  &&
-        m_stream != no_stream &&
-        m_vars_total != 0) {
-        get_stream_in_dependencies(in_deps_amount, in_deps);
-    }
-
     for (int i = 0; i < m_vars_total; i++) {
         uint64_t received_data = m_vars[i].size;
-        uint32_t in_deps_amount_save;
-        COIEVENT *in_deps_save; 
-              
-         if (m_vars_extra[i].omp_last_event_type == c_last_read) {
-            in_deps_amount_save = in_deps_amount;
-            in_deps_save = in_deps;
-            
-            in_deps_amount += m_out_deps_total;
-            if (in_deps_amount > 0) {
-               in_deps = (COIEVENT*) malloc(sizeof(COIEVENT) * in_deps_amount);
-               if (in_deps == NULL)
-                   LIBOFFLOAD_ERROR(c_malloc);
-               memcpy(in_deps, in_deps_save,
-                      in_deps_amount_save * sizeof(COIEVENT));
-               memcpy(in_deps + in_deps_amount_save * sizeof(COIEVENT),
-                      m_out_deps,
-                      m_out_deps_total * sizeof(COIEVENT));                      
-            }                
+
+         // Nothing to receive if use_device_ptr
+         if (m_vars[i].flags.use_device_ptr )
+            continue;
+         if (m_vars_extra[i].omp_last_event_type == c_last_read &&
+             m_out_deps_total > 0) {
+             m_num_in_dependencies = m_out_deps_total;
+             m_p_in_dependencies   = m_out_deps;
         }   
         // At first run don't receive by preallocated target pointer as the
         //pointer value will be ready later after call to scatter_copyout_data
@@ -4151,16 +4991,18 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
             }
             continue;
         }
-        switch (m_vars[i].type.src) {
+        switch (m_vars_extra[i].type_src) {
             case c_data_ptr_array:
                 break;
             case c_data:
             case c_void_ptr:
+            case c_void_ptr_ptr:
             case c_cean_var:
                 if (m_vars[i].direction.out &&
                     m_vars[i].flags.is_static) {
                     COIEVENT *event =
-                        (is_async ||
+                        (m_stream != no_stream ||
+                         is_async ||
                          m_in_deps_total > 0 ||
                          (should_use_async_buffer_read &&
                           m_vars[i].size >= __offload_use_async_buffer_read)) ?
@@ -4169,12 +5011,12 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
                     COIBUFFER dst_buf = NULL; // buffer at host
                     char *base;
 
-                    if (VAR_TYPE_IS_PTR(m_vars[i].type.dst)) {
+                    if (VAR_TYPE_IS_PTR(m_vars_extra[i].type_dst)) {
                         ptr_data = m_vars[i].into ?
                                    m_vars_extra[i].dst_data :
                                    m_vars_extra[i].src_data;
                     }
-                    else if (VAR_TYPE_IS_SCALAR(m_vars[i].type.dst)) {
+                    else if (VAR_TYPE_IS_SCALAR(m_vars_extra[i].type_dst)) {
                         if (m_vars[i].flags.is_static_dstn) {
                             ptr_data = m_vars[i].into ?
                                        m_vars_extra[i].dst_data :
@@ -4187,14 +5029,15 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
                             m_vars[i].into ?
                             static_cast<char*>(m_vars[i].into) :
                             static_cast<char*>(m_vars[i].ptr),
-                            m_vars[i].type.dst);
+                            m_vars_extra[i].type_dst);
                     }
 
-                    if (m_vars[i].flags.is_noncont_src ||
+                    if (m_vars[i].flags.is_non_cont_struct ||
+                        m_vars[i].flags.is_noncont_src ||
                         m_vars[i].flags.is_noncont_dst) {
                         receive_noncontiguous_pointer_data(
                             i, dst_buf, event, received_data,
-                            in_deps_amount, in_deps);
+                            m_num_in_dependencies, m_p_in_dependencies);
                     }
                     else if (dst_buf != 0) {
                         res = COI::BufferCopy(
@@ -4205,8 +5048,8 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
                             m_vars[i].offset + m_vars[i].disp,
                             m_vars[i].size,
                             COI_COPY_UNSPECIFIED,
-                            in_deps_amount,
-                            in_deps,
+                            m_num_in_dependencies,
+                            m_p_in_dependencies,
                             event);
                         if (res != COI_SUCCESS) {
                             if (m_status != 0) {
@@ -4224,8 +5067,8 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
                             m_vars_extra[i].cpu_disp,
                             m_vars[i].size,
                             COI_COPY_UNSPECIFIED,
-                            in_deps_amount,
-                            in_deps,
+                            m_num_in_dependencies,
+                            m_p_in_dependencies,
                             event);
                         if (res != COI_SUCCESS) {
                             if (m_status != 0) {
@@ -4241,7 +5084,10 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
 
             case c_string_ptr:
             case c_data_ptr:
+            case c_string_ptr_ptr:
+            case c_data_ptr_ptr:
             case c_cean_var_ptr:
+            case c_cean_var_ptr_ptr:
             case c_dv_data:
             case c_dv_ptr_data:
             case c_dv_data_slice:
@@ -4250,7 +5096,8 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
                 COIBUFFER dst_buf = NULL; // buffer on host
                 if (m_vars[i].direction.out && m_vars[i].size > 0) {
                     COIEVENT *event =
-                        (is_async ||
+                        (m_stream != no_stream ||
+                         is_async ||
                          m_in_deps_total > 0 ||
                          (should_use_async_buffer_read &&
                           m_vars[i].size >= __offload_use_async_buffer_read)) ?
@@ -4259,7 +5106,7 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
                     uint64_t dst_offset = 0;
                     char *base = static_cast<char*>(m_vars[i].ptr);
 
-                    if (VAR_TYPE_IS_PTR(m_vars[i].type.dst)) {
+                    if (VAR_TYPE_IS_PTR(m_vars_extra[i].type_dst)) {
                         PtrData *ptr_data = m_vars[i].into ?
                                             m_vars_extra[i].dst_data :
                                             m_vars_extra[i].src_data;
@@ -4272,7 +5119,7 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
                         dst_offset = m_vars_extra[i].cpu_offset +
                                      m_vars_extra[i].cpu_disp;
                     }
-                    else if (VAR_TYPE_IS_SCALAR(m_vars[i].type.dst)) {
+                    else if (VAR_TYPE_IS_SCALAR(m_vars_extra[i].type_dst)) {
                         if (m_vars[i].flags.is_static_dstn) {
                             dst_buf = m_vars[i].into ?
                                         m_vars_extra[i].dst_data->cpu_buf :
@@ -4283,13 +5130,13 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
                                 m_vars[i].into ?
                                 static_cast<char*>(m_vars[i].into) :
                                 static_cast<char*>(m_vars[i].ptr),
-                                m_vars[i].type.dst);
+                                m_vars_extra[i].type_dst);
                         }
                         dst_offset = m_vars_extra[i].cpu_offset +
                                      m_vars_extra[i].cpu_disp;
                     }
-                    else if (VAR_TYPE_IS_DV_DATA(m_vars[i].type.dst) ||
-                             VAR_TYPE_IS_DV_DATA_SLICE(m_vars[i].type.dst)) {
+                    else if (VAR_TYPE_IS_DV_DATA(m_vars_extra[i].type_dst) ||
+                             VAR_TYPE_IS_DV_DATA_SLICE(m_vars_extra[i].type_dst)) {
                         PtrData *ptr_data = m_vars[i].into != 0 ?
                                             m_vars_extra[i].dst_data :
                                             m_vars_extra[i].src_data;
@@ -4299,19 +5146,19 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
                                 m_vars[i].into ?
                                 static_cast<char*>(m_vars[i].into) :
                                 static_cast<char*>(m_vars[i].ptr),
-                                m_vars[i].type.dst);
+                                m_vars_extra[i].type_dst);
 
                         }
                         dst_offset = m_vars_extra[i].cpu_offset +
                                      m_vars_extra[i].cpu_disp;
                     }
 
-                    if (m_vars[i].flags.is_noncont_src ||
+                    if (m_vars[i].flags.is_non_cont_struct ||
+                        m_vars[i].flags.is_noncont_src ||
                         m_vars[i].flags.is_noncont_dst) {
                         receive_noncontiguous_pointer_data(
                             i, dst_buf, event, received_data,
-                            in_deps_amount,
-                            in_deps);
+                            m_num_in_dependencies, m_p_in_dependencies);
                     }
                     else if (dst_buf != 0) {
                         res = COI::BufferCopy(
@@ -4322,8 +5169,8 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
                                 m_vars[i].mic_offset,
                             m_vars[i].size,
                             COI_COPY_UNSPECIFIED,
-                            in_deps_amount,
-                            in_deps,
+                            m_num_in_dependencies,
+                            m_p_in_dependencies,
                             event);
                         if (res != COI_SUCCESS) {
                             if (m_status != 0) {
@@ -4341,8 +5188,8 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
                             base + dst_offset,
                             m_vars[i].size,
                             COI_COPY_UNSPECIFIED,
-                            in_deps_amount,
-                            in_deps,
+                            m_num_in_dependencies,
+                            m_p_in_dependencies,
                             event);
                         if (res != COI_SUCCESS) {
                             if (m_status != 0) {
@@ -4362,12 +5209,10 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
         }
 
         if (m_vars_extra[i].omp_last_event_type == c_last_read) {
-            in_deps_amount = in_deps_amount_save;
-            in_deps = in_deps_save;
             register_omp_event_call_back(&m_out_deps[m_out_deps_total - 1], info);                
         }
         // destroy buffers for obsolete stacks
-        if (m_destroy_stack.size() != 0) {
+        if (m_destroy_stack.size() != 0) {       
             for (PtrDataList::iterator it = m_destroy_stack.begin();
                 it != m_destroy_stack.end(); it++) {
                 PtrData *ptr_data = *it;
@@ -4379,26 +5224,34 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
         }
         if (m_vars[i].free_if) {
             // remove association for automatic variables
-            if (m_is_openmp && !m_vars[i].flags.is_static &&
-                (m_vars[i].type.src == c_data ||
-                 m_vars[i].type.src == c_void_ptr ||
-                 m_vars[i].type.src == c_cean_var)) {
-                AutoData *auto_data = m_vars_extra[i].auto_data;
-                if (auto_data != 0) {
+            if (m_is_openmp) {
+                if (m_vars_extra[i].auto_data) {
+                    AutoData *auto_data = m_vars_extra[i].auto_data;
                     if (m_vars[i].flags.always_delete) {
                         auto_data->nullify_reference();
                     }
-                    else if(auto_data->remove_reference() == 0) {
-                        m_device.remove_auto_data(auto_data->cpu_addr.start());
+                    else if (auto_data->remove_reference() == 0) {
+                       m_device.remove_auto_data(auto_data->cpu_addr.start());
                     }
+                    continue;
                 }
+                else {
+                    PtrData *ptr_data = m_vars_extra[i].src_data;
+                    if (ptr_data && 
+                        IS_OPENMP_IMPLICIT_OR_LINK(ptr_data->var_alloc_type)) {
+                        if (ptr_data->get_reference() > 0) {
+                            ptr_data->remove_reference();
+                        }
+                        continue;
+                    }
+               }
             }
 
             // destroy buffers
             if (m_vars[i].direction.out || m_vars[i].into == NULL) {
-                if (!VAR_TYPE_IS_PTR(m_vars[i].type.src) &&
-                    !VAR_TYPE_IS_DV_DATA_SLICE(m_vars[i].type.src) &&
-                    !VAR_TYPE_IS_DV_DATA(m_vars[i].type.src)) {
+                if (!VAR_TYPE_IS_PTR(m_vars_extra[i].type_src) &&
+                    !VAR_TYPE_IS_DV_DATA_SLICE(m_vars_extra[i].type_src) &&
+                    !VAR_TYPE_IS_DV_DATA(m_vars_extra[i].type_src)) {
                     continue;
                 }
 
@@ -4423,10 +5276,11 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
                     }
                 }
             }
-            else if (VAR_TYPE_IS_PTR(m_vars[i].type.dst) ||
-                     VAR_TYPE_IS_DV_DATA_SLICE(m_vars[i].type.dst) ||
-                     VAR_TYPE_IS_DV_DATA(m_vars[i].type.dst)) {
+            else if (VAR_TYPE_IS_PTR(m_vars_extra[i].type_dst) ||
+                     VAR_TYPE_IS_DV_DATA_SLICE(m_vars_extra[i].type_dst) ||
+                     VAR_TYPE_IS_DV_DATA(m_vars_extra[i].type_dst)) {
                 PtrData *ptr_data = m_vars_extra[i].dst_data;
+
                 if (ptr_data->remove_reference() == 0) {
                     // destroy buffers
                     if (ptr_data->cpu_buf != 0) {
@@ -4453,6 +5307,10 @@ bool OffloadDescriptor::receive_pointer_data(bool is_async,
     if (m_status) {
         m_status->data_received += ptr_received;
     }
+
+    m_num_in_dependencies = m_out_deps_total ? m_out_deps_total :
+                                               m_num_in_dependencies;
+    m_p_in_dependencies = m_out_deps_total ? m_out_deps : m_p_in_dependencies;
 
     OFFLOAD_TIMER_HOST_RDATA(get_timer_data(), ptr_received);
     OFFLOAD_DEBUG_TRACE_1(1, GET_OFFLOAD_NUMBER(get_timer_data()),
@@ -4506,7 +5364,7 @@ bool OffloadDescriptor::scatter_copyout_data()
             bool src_is_for_mic = (m_vars[i].direction.out ||
                                    m_vars[i].into == NULL);
 
-            if (m_vars[i].type.src != c_data_ptr_array &&
+            if (m_vars_extra[i].type_src != c_data_ptr_array &&
                 m_vars[i].flags.preallocated && m_vars[i].alloc_if) {
                 PtrData *ptr_data;
                 void *ptr_value;
@@ -4557,11 +5415,12 @@ bool OffloadDescriptor::scatter_copyout_data()
                                    (char*) ptr_data->cpu_addr.start();
             }
 
-            switch (m_vars[i].type.src) {
+            switch (m_vars_extra[i].type_src) {
                 case c_data_ptr_array:
                     break;
                 case c_data:
                 case c_void_ptr:
+                case c_void_ptr_ptr:
                 case c_cean_var:
                     if (m_vars[i].direction.out &&
                         !m_vars[i].flags.is_static) {
@@ -4569,7 +5428,7 @@ bool OffloadDescriptor::scatter_copyout_data()
                         if (m_vars[i].into) {
                             char *ptr = offload_get_src_base(
                                 static_cast<char*>(m_vars[i].into),
-                                m_vars[i].type.dst);
+                                m_vars_extra[i].type_dst);
                             m_out.receive_data(ptr + m_vars_extra[i].cpu_disp,
                                                m_vars[i].size);
                         }
@@ -4583,6 +5442,7 @@ bool OffloadDescriptor::scatter_copyout_data()
                     break;
 
                 case c_func_ptr:
+                case c_func_ptr_ptr:
                     if (m_vars[i].direction.out) {
                         m_out.receive_func_ptr((const void**) m_vars[i].ptr);
                     }
@@ -4672,9 +5532,7 @@ bool OffloadDescriptor::gen_var_descs_for_pointer_array(int i)
     // of the var_desc's array
     get_arr_desc_numbers(ap, sizeof(void *), ptr.offset, ptr.size,
         pointers_number, ptr.ranges);
-    ptr.base = (m_vars[i].flags.is_pointer) ?
-               *(reinterpret_cast<char**>(ap->base)) :
-               reinterpret_cast<char*>(ap->base);
+    ptr.base = reinterpret_cast<char*>(ap->base);
 
     // 2. prepare memory for new var_descs
     m_vars_total += pointers_number;
@@ -4966,6 +5824,7 @@ bool OffloadDescriptor::gen_var_descs_for_pointer_array(int i)
         m_vars[new_index + k].align = align.val;
         m_vars[new_index + k].mic_offset = 0;
         m_vars[new_index + k].flags.bits = m_vars[i].flags.bits;
+        m_vars[new_index + k].flags.is_pointer = 0;
         m_vars[new_index + k].offset = 0;
         m_vars[new_index + k].size = m_vars[i].size;
         m_vars[new_index + k].flags.targetptr = m_vars[i].flags.targetptr;
@@ -5023,8 +5882,10 @@ bool OffloadDescriptor::gen_var_descs_for_pointer_array(int i)
             m_vars[new_index + k].alloc = NULL;
         }
 
-        m_vars[new_index + k].type.src = type_src;
-        m_vars[new_index + k].type.dst = type_dst;
+        m_vars[new_index + k].type.src =
+            m_vars_extra[new_index + k].type_src = type_src;
+        m_vars[new_index + k].type.dst =
+            m_vars_extra[new_index + k].type_dst = type_dst;
 
         m_vars_extra[new_index + k].alloc = m_vars[new_index + k].alloc;
         m_vars_extra[new_index + k].is_arr_ptr_el = 1;
@@ -5040,7 +5901,7 @@ bool OffloadDescriptor::gen_var_descs_for_pointer_array(int i)
 
 // Gets in dependencies of the previous offload via the stream "m_stream".
 // Out argument in_deps_amount - address of amount of the dependencies
-// Out argument in_deps - array of dependencies.
+// Out argument in_deps - address of array of dependencies.
 // Description of the dependencies scheme for streams :
 // ----------------------------------------------------
 // Every offload forms DAG consisted of 3 nodes:
@@ -5096,9 +5957,14 @@ static void __offload_fini_library(void)
             mic_proxy_fs_root = 0;
         }
 
-        if (mic_library_path != 0) {
-            free(mic_library_path);
-            mic_library_path = 0;
+        if (knc_library_path != 0) {
+            free(knc_library_path);
+            knc_library_path = 0;
+        }
+
+        if (knl_library_path != 0) {
+            free(knl_library_path);
+            knl_library_path = 0;
         }
 
         // destroy thread key
@@ -5113,11 +5979,170 @@ static void __offload_fini_library(void)
     OFFLOAD_DEBUG_TRACE(2, "Cleanup offload library ... done\n");
 }
 
+typedef std::pair<int, micLcpuMask*> deviceLcpu;
+typedef std::list<deviceLcpu> deviceLcpuList;
+
+static int process_offload_devices(
+    const char *env_var,
+    uint32_t num_devices,
+    deviceLcpuList &device_cpu_list
+)
+{
+    // Value is composed of comma separated physical device index
+    // optionally qualified by logical CPU subset, e.g. 0[60,70-80]
+    char *buf = strdup(env_var);
+    if (buf == NULL)
+        LIBOFFLOAD_ERROR(c_malloc);
+    char *str = buf;
+    bool device_set_finished = false;
+    int num_devices_specified = 0;
+    do {
+        char *dev_ptr = str;
+        int dev_len = strcspn(str, "[,");
+        micLcpuMask* cpu_mask = 0;
+        if (str[dev_len] == '[') {
+            // CPU subset specified
+            cpu_mask = new micLcpuMask;
+            cpu_mask->reset();
+            char *cpu_ptr = str + dev_len + 1;
+            do {
+                int64_t cnum;
+                bool cpu_set_finished = false;
+                int cpu_len = strcspn(cpu_ptr, ",-]");
+                if (cpu_ptr[cpu_len] == ',' || cpu_ptr[cpu_len] == ']') {
+                    // A single CPU specified
+                    cpu_set_finished = cpu_ptr[cpu_len] == ']';
+                    cpu_ptr[cpu_len] = '\0';
+                    // Convert cpu string to an int
+                    if (!__offload_parse_int_string(cpu_ptr, cnum)) {
+                        LIBOFFLOAD_ERROR(c_mic_init7);
+                        delete cpu_mask;
+                        free(buf);
+                        return 0;
+                    } else {
+                        OFFLOAD_DEBUG_TRACE(3,
+                            "Single CPU %d selected\n", cnum);
+                        cpu_mask->set(cnum);
+                    }
+                    cpu_ptr = cpu_ptr + cpu_len + 1;
+                    if (cpu_set_finished) {
+                        break;
+                    }
+                } else if (cpu_ptr[cpu_len] == '-') {
+                    int64_t range_start, range_end;
+                    // A range of CPUs specified
+                    cpu_ptr[cpu_len] = '\0';
+                    // Convert cpu string to an int
+                    if (!__offload_parse_int_string(cpu_ptr, range_start)) {
+                        LIBOFFLOAD_ERROR(c_mic_init8);
+                        delete cpu_mask;
+                        free(buf);
+                        return 0;
+                    } else {
+                        OFFLOAD_DEBUG_TRACE(3,
+                            "Start of CPU range specified as %d\n",
+                            range_start);
+                        cpu_ptr = cpu_ptr + cpu_len + 1;
+                        cpu_len = strcspn(cpu_ptr, ",]");
+                        if (cpu_ptr[cpu_len] == ',' ||
+                            cpu_ptr[cpu_len] == ']') {
+                            cpu_set_finished = cpu_ptr[cpu_len] == ']';
+                            cpu_ptr[cpu_len] = '\0';
+                            // Convert cpu string to an int
+                            if (!__offload_parse_int_string(
+                                cpu_ptr, range_end)) {
+                                LIBOFFLOAD_ERROR(c_mic_init9);
+                                delete cpu_mask;
+                                free(buf);
+                                return 0;
+                            } else {
+                                OFFLOAD_DEBUG_TRACE(3,
+                                    "End of CPU range specified as %d\n",
+                                    range_end);
+                                if (range_end < range_start) {
+                                    LIBOFFLOAD_ERROR(c_mic_init10);
+                                    delete cpu_mask;
+                                    free(buf);
+                                    return 0;
+                                } else {
+                                    for (int i=range_start; i<=range_end; i++)
+                                    {
+                                        OFFLOAD_DEBUG_TRACE(3,
+                                          "CPU %d selected as part of range\n",
+                                          i);
+                                        cpu_mask->set(i);
+                                    }
+                                    cpu_ptr = cpu_ptr + cpu_len + 1;
+                                    if (cpu_set_finished) {
+                                        break;
+                                    }
+                                }
+                            }
+                        } else {
+                            LIBOFFLOAD_ERROR(c_mic_init10);
+                            delete cpu_mask;
+                            free(buf);
+                            return 0;
+                        }
+                    }
+                } else {
+                    // Error: expected , or - or ]
+                    LIBOFFLOAD_ERROR(c_mic_init11);
+                    delete cpu_mask;
+                    free(buf);
+                    return 0;
+                }
+            } while (true);
+            // Point to next device specification
+            str = cpu_ptr;
+            if (*str == '\0') {
+                device_set_finished = true;
+            } else {
+                // Skip the comma after a device specification
+                str++;
+            }
+        } else if (str[dev_len] == ',') {
+            // CPU subset not specified
+            // Point to next device specification
+            str = str + dev_len + 1;
+        } else {
+            // No more device specifications
+            device_set_finished = true;
+        }
+        dev_ptr[dev_len] = '\0';
+        // Convert device string to an int
+        int64_t num;
+        if (!__offload_parse_int_string(dev_ptr, num)) {
+            LIBOFFLOAD_ERROR(c_mic_init5);
+            delete cpu_mask;
+            free(buf);
+            return 0;
+        }
+        if (num < 0 || num >= num_devices) {
+            LIBOFFLOAD_ERROR(c_mic_init6, num);
+            delete cpu_mask;
+            free(buf);
+            return 0;
+        }
+	    OFFLOAD_DEBUG_TRACE(3, "Offloadable MIC = %d\n", num);
+        // Save the specified physical device and cpu mask
+        device_cpu_list.push_back(make_pair(num, cpu_mask));
+        num_devices_specified++;
+
+        if (device_set_finished) {
+            break;
+        }
+    } while (true);
+
+    free(buf);
+    return num_devices_specified;
+}
+
 static void __offload_init_library_once(void)
 {
     COIRESULT res;
     uint32_t num_devices;
-    std::bitset<MIC_ENGINES_MAX> devices;
+    deviceLcpuList device_cpu_list;
     prefix = report_get_message_str(c_report_host);
 
     // initialize trace
@@ -5128,15 +6153,20 @@ static void __offload_init_library_once(void)
             console_enabled = new_val & 0x0f;
         }
     }
-
+    
+	OFFLOAD_DEBUG_TRACE(2, "---- Start of environment variable processing\n");
     env_var = getenv(offload_report_envname);
     if (env_var != 0 && *env_var != '\0') {
+	    OFFLOAD_DEBUG_TRACE(2, "---- %s=%s\n",
+            offload_report_envname, env_var);
         int64_t env_val;
         if (__offload_parse_int_string(env_var, env_val)) {
             if (env_val == OFFLOAD_REPORT_1 ||
                 env_val == OFFLOAD_REPORT_2 ||
                 env_val == OFFLOAD_REPORT_3) {
                 offload_report_level = env_val;
+	            OFFLOAD_DEBUG_TRACE(2, "Offload report level set to %d\n",
+                    offload_report_level);
             }
             else {
                 LIBOFFLOAD_ERROR(c_invalid_env_report_value,
@@ -5151,13 +6181,48 @@ static void __offload_init_library_once(void)
     else if (!offload_report_level) {
         env_var = getenv(timer_envname);
         if (env_var != 0 && *env_var != '\0') {
+	        OFFLOAD_DEBUG_TRACE(2, "---- %s=%s\n", timer_envname, env_var);
             timer_enabled = atoi(env_var);
+	        OFFLOAD_DEBUG_TRACE(2, "Timer enable flag set to %d\n",
+                timer_enabled);
         }
     }
 
     // initialize COI
     if (!COI::init()) {
         return;
+    }
+
+    // Process OFFLOAD_NODES, specification of physical MICs available
+    env_var = getenv("OFFLOAD_NODES");
+    if (env_var != 0 && *env_var != '\0') {
+	    OFFLOAD_DEBUG_TRACE(2, "---- OFFLOAD_NODES=%s\n", env_var);
+		// Pass env var on to COI
+        char * new_env_var =
+                   (char*) malloc(sizeof("COI_OFFLOAD_NODES=") +
+                                  strlen(env_var) + 1);
+        if (new_env_var == NULL)
+            LIBOFFLOAD_ERROR(c_malloc);
+        sprintf(new_env_var, "COI_OFFLOAD_NODES=%s", env_var);
+        putenv(new_env_var);
+	    OFFLOAD_DEBUG_TRACE(2, "Setting COI_OFFLOAD_NODES = %s \n", getenv("COI_OFFLOAD_NODES"));
+
+        // value is composed of comma separated physical device indexes
+        char *buf = strdup(env_var);
+        if (buf == NULL)
+            LIBOFFLOAD_ERROR(c_malloc);
+        char *str, *ptr;
+		int num_mics = 0;
+        for (str = strtok_r(buf, ",", &ptr); str != 0;
+            str = strtok_r(0, ",", &ptr)) {
+            // count this MIC
+            num_mics++;
+        }
+	    OFFLOAD_DEBUG_TRACE(2, "Number of offloadable MICs = %d\n", num_mics);
+        free(buf);
+    }
+    else {
+	    OFFLOAD_DEBUG_TRACE(2, "OFFLOAD_NODES is not set\n");
     }
 
     // get number of devices installed in the system
@@ -5170,76 +6235,99 @@ static void __offload_init_library_once(void)
         num_devices = MIC_ENGINES_MAX;
     }
 
-    // fill in the list of devices that can be used for offloading
+    // Determine devices & cpus that can be used for offloading
     env_var = getenv("OFFLOAD_DEVICES");
-    if (env_var != 0) {
+    if (env_var != 0 && *env_var != '\0') {
+	    OFFLOAD_DEBUG_TRACE(2, "---- OFFLOAD_DEVICES=%s\n", env_var);
         if (strcasecmp(env_var, "none") != 0) {
-            // value is composed of comma separated physical device indexes
-            char *buf = strdup(env_var);
-	    if (buf == NULL)
-	      LIBOFFLOAD_ERROR(c_malloc);
-            char *str, *ptr;
-            for (str = strtok_r(buf, ",", &ptr); str != 0;
-                 str = strtok_r(0, ",", &ptr)) {
-                // convert string to an int
-                int64_t num;
-                if (!__offload_parse_int_string(str, num)) {
-                    LIBOFFLOAD_ERROR(c_mic_init5);
-
-                    // fallback to using all installed devices
-                    devices.reset();
-                    for (int i = 0; i < num_devices; i++) {
-                        devices.set(i);
-                    }
-                    break;
-                }
-                if (num < 0 || num >= num_devices) {
-                    LIBOFFLOAD_ERROR(c_mic_init6, num);
-                    continue;
-                }
-                devices.set(num);
+            mic_engines_total =
+                process_offload_devices(
+                    env_var, num_devices, device_cpu_list);
+            if (mic_engines_total > 0) {
+                OFFLOAD_DEBUG_TRACE(2, "Valid value, %d device(s) specified\n",
+                       mic_engines_total);
             }
-            free(buf);
+            else {
+                OFFLOAD_DEBUG_TRACE(2, "Invalid value, will not offload\n");
+                return;
+            }
+        }
+        else {
+            // No need to continue since no offload devices
+            return;
         }
     }
     else {
-        // use all available devices
+	    OFFLOAD_DEBUG_TRACE(2, "OFFLOAD_DEVICES is not set\n");
+    }
+    if (mic_engines_total == 0) {
+        // Fallback to using all available devices and all CPUs on each
+        OFFLOAD_DEBUG_TRACE(2, "Fallback to all devices\n");
+        device_cpu_list.clear();
+        mic_engines_total = 0;
         for (int i = 0; i < num_devices; i++) {
             COIENGINE engine;
             res = COI::EngineGetHandle(COI_ISA_MIC, i, &engine);
             if (res == COI_SUCCESS) {
-                devices.set(i);
+                device_cpu_list.push_back(make_pair(i, (micLcpuMask*)0));
+                OFFLOAD_DEBUG_TRACE(2, "Device %d is available\n", i);
+                mic_engines_total++;
             }
         }
     }
-
-    mic_engines_total = devices.count();
-
+   
     // no need to continue if there are no devices to offload to
     if (mic_engines_total <= 0) {
         return;
     }
 
-    // initialize indexes for available devices
+    // Initialize indexes for available devices
     mic_engines = new Engine[mic_engines_total];
-    for (int p_idx = 0, l_idx = 0; p_idx < num_devices; p_idx++) {
-        if (devices[p_idx]) {
-            mic_engines[l_idx].set_indexes(l_idx, p_idx);
-            l_idx++;
+    std::list<deviceLcpu>::iterator deviceIterator;
+    int l_idx = 0;
+    for (deviceIterator = device_cpu_list.begin();
+         deviceIterator != device_cpu_list.end();
+         deviceIterator++)
+    {
+        deviceLcpu device_mask_pair = *deviceIterator;
+        int device_num = device_mask_pair.first;
+        micLcpuMask *device_mask = device_mask_pair.second;
+        
+        mic_engines[l_idx].set_indexes(l_idx, device_num);
+        mic_engines[l_idx].set_cpu_mask(device_mask);
+        OFFLOAD_DEBUG_TRACE(2,
+            "Logical MIC%d => Physical MIC%d\n", l_idx, device_num);
+        if (device_mask != NULL) {
+            std::string cpu_string =
+                device_mask->to_string<
+                    char,
+                    std::string::traits_type,
+                    std::string::allocator_type>();
+            OFFLOAD_DEBUG_TRACE(2, "    CPUs: %s\n", cpu_string.data());
         }
+        else {
+            OFFLOAD_DEBUG_TRACE(2, "    CPUs: all\n");
+        }
+        l_idx++;
     }
-
+    
     // Get DMA channel count to pass it to COI
     env_var = getenv("OFFLOAD_DMA_CHANNEL_COUNT");
-    if (env_var != 0) {
+    if (env_var != 0 && *env_var != '\0') {
+	    OFFLOAD_DEBUG_TRACE(2, "---- OFFLOAD_DMA_CHANNEL_COUNT=%s\n", env_var);
         int64_t new_val;
         if (__offload_parse_int_string(env_var, new_val)) {
             mic_dma_channel_count = new_val;
+	        OFFLOAD_DEBUG_TRACE(2, "Using %d DMA channels\n",
+                mic_dma_channel_count);
         }
         else {
             LIBOFFLOAD_ERROR(c_invalid_env_var_value,
                              "OFFLOAD_DMA_CHANNEL_COUNT");
         }
+    }
+    else {
+	    OFFLOAD_DEBUG_TRACE(2, "OFFLOAD_DMA_CHANNEL_COUNT is not set\n");
     }
 
     // Set COI_HOST_THREAD_AFFINITY if OFFLOAD_HOST_THREAD_AFFINITY is set.
@@ -5247,119 +6335,155 @@ static void __offload_init_library_once(void)
     // Note: putenv requires its argument can't be freed or modified.
     // So no free after call to putenv or elsewhere.
     env_var = getenv("OFFLOAD_HOST_THREAD_AFFINITY");
-    if (env_var != 0) {
+    if (env_var != 0 && *env_var != '\0') {
+	    OFFLOAD_DEBUG_TRACE(2, "---- OFFLOAD_HOST_THREAD_AFFINITY=%s\n", env_var);
         char * new_env_var =
                    (char*) malloc(sizeof("COI_HOST_THREAD_AFFINITY=") +
-                                  strlen(env_var));
-	if (new_env_var == NULL)
-	  LIBOFFLOAD_ERROR(c_malloc);
+                                  strlen(env_var) + 1);
+        if (new_env_var == NULL)
+            LIBOFFLOAD_ERROR(c_malloc);
         sprintf(new_env_var, "COI_HOST_THREAD_AFFINITY=%s", env_var);
         putenv(new_env_var);
+	    OFFLOAD_DEBUG_TRACE(2, "Setting COI_HOST_THREAD_AFFINITY = %s \n",
+   	                                         getenv("COI_HOST_THREAD_AFFINITY"));
+    }
+    else {
+	    OFFLOAD_DEBUG_TRACE(2, "OFFLOAD_HOST_THREAD_AFFINITY is not set\n");
     }
 
-    // library search path for device binaries
+    // library search path for KNC device binaries
     env_var = getenv("MIC_LD_LIBRARY_PATH");
     if (env_var != 0) {
-        mic_library_path = strdup(env_var);
-	if (mic_library_path == NULL)
-	  LIBOFFLOAD_ERROR(c_malloc);
+        OFFLOAD_DEBUG_TRACE(2, "---- MIC_LD_LIBRARY_PATH=%s\n", env_var);
+        knc_library_path = strdup(env_var);
+        if (knc_library_path == NULL)
+            LIBOFFLOAD_ERROR(c_malloc);
+        OFFLOAD_DEBUG_TRACE(2, "KNC library path set to %s\n", knc_library_path);
+    }
+    else {
+        OFFLOAD_DEBUG_TRACE(2, "MIC_LD_LIBRARY_PATH is not set\n");
     }
 
-
-    // find target executable to be used if main application is not an
-    // offload build application.
-    const char *base_name = "offload_main";
-    if (mic_library_path != 0) {
-        char *buf = strdup(mic_library_path);
-	if (buf == NULL)
-	  LIBOFFLOAD_ERROR(c_malloc);
-        char *try_name = (char*) alloca(strlen(mic_library_path) +
-                strlen(base_name) + 2);
-        char *dir, *ptr;
-
-        for (dir = strtok_r(buf, PATH_SEPARATOR, &ptr); dir != 0;
-             dir = strtok_r(0, PATH_SEPARATOR, &ptr)) {
-            // compose a full path
-            sprintf(try_name, "%s/%s", dir, base_name);
-
-            // check if such file exists
-            struct stat st;
-            if (stat(try_name, &st) == 0 && S_ISREG(st.st_mode)) {
-                mic_device_main = strdup(try_name);
-		if (mic_device_main == NULL)
-		  LIBOFFLOAD_ERROR(c_malloc);
-                break;
-            }
-        }
-
-        free(buf);
+    // library search path for KNL device binaries
+    env_var = getenv("LD_LIBRARY_PATH");
+    if (env_var != 0) {
+        OFFLOAD_DEBUG_TRACE(2, "---- LD_LIBRARY_PATH=%s\n", env_var);
+        knl_library_path = strdup(env_var);
+        if (knl_library_path == NULL)
+            LIBOFFLOAD_ERROR(c_malloc);
+        OFFLOAD_DEBUG_TRACE(2, "KNL library path set to %s\n", knl_library_path);
+    }
+    else {
+        OFFLOAD_DEBUG_TRACE(2, "LD_LIBRARY_PATH is not set\n");
     }
 
     // memory size reserved for COI buffers
     env_var = getenv("MIC_BUFFERSIZE");
-    if (env_var != 0) {
+    if (env_var != 0 && *env_var != '\0') {
+        OFFLOAD_DEBUG_TRACE(2, "---- MIC_BUFFERSIZE=%s\n", env_var);
         uint64_t new_size;
         if (__offload_parse_size_string(env_var, new_size)) {
             mic_buffer_size = new_size;
+	        OFFLOAD_DEBUG_TRACE(2,
+                "Reserved memory for COI buffers set to %lld bytes\n",
+                mic_buffer_size);
         }
         else {
             LIBOFFLOAD_ERROR(c_invalid_env_var_value, "MIC_BUFFERSIZE");
         }
     }
+    else {
+	    OFFLOAD_DEBUG_TRACE(2, "MIC_BUFFERSIZE is not set\n");
+    }
 
     // memory size reserved for 4K pages for COI buffers
     env_var = getenv("MIC_4K_BUFFER_RESERVE_SIZE");
-    if (env_var != 0) {
+    if (env_var != 0 && *env_var != '\0') {
+        OFFLOAD_DEBUG_TRACE(2, "---- MIC_4K_BUFFER_RESERVE_SIZE=%s\n", env_var);
         uint64_t new_size;
         if (__offload_parse_size_string(env_var, new_size)) {
             mic_4k_buffer_size = new_size;
+	        OFFLOAD_DEBUG_TRACE(2,
+                "Reserved memory for 4K COI buffers set to %lld bytes\n",
+                mic_4k_buffer_size);
         }
         else {
             LIBOFFLOAD_ERROR(c_invalid_env_var_value, "MIC_4K_BUFFER_RESERVE_SIZE");
         }
     }
+    else {
+        OFFLOAD_DEBUG_TRACE(2, "MIC_4K_BUFFER_RESERVE_SIZE is not set\n");
+    }
 
     // memory size reserved for 2M pages for COI buffers
     env_var = getenv("MIC_2M_BUFFER_RESERVE_SIZE");
-    if (env_var != 0) {
+    if (env_var != 0 && *env_var != '\0') {
+	    OFFLOAD_DEBUG_TRACE(2, "---- MIC_2M_BUFFER_RESERVE_SIZE=%s\n", env_var);
         uint64_t new_size;
         if (__offload_parse_size_string(env_var, new_size)) {
             mic_2m_buffer_size = new_size;
+            OFFLOAD_DEBUG_TRACE(2,
+                "Reserved memory for 2M COI buffers set to %lld bytes\n",
+                mic_2m_buffer_size);
         }
         else {
-            LIBOFFLOAD_ERROR(c_invalid_env_var_value, "MIC_2M_BUFFER_RESERVE_SIZE");
+            LIBOFFLOAD_ERROR(c_invalid_env_var_value,
+                "MIC_2M_BUFFER_RESERVE_SIZE");
         }
+    }
+    else {
+	    OFFLOAD_DEBUG_TRACE(2, "MIC_2M_BUFFER_RESERVE_SIZE is not set\n");
     }
 
     // determine stacksize for the pipeline on the device
     env_var = getenv("MIC_STACKSIZE");
     if (env_var != 0 && *env_var != '\0') {
+	    OFFLOAD_DEBUG_TRACE(2, "---- MIC_STACKSIZE=%s\n", env_var);
         uint64_t new_size;
         if (__offload_parse_size_string(env_var, new_size) &&
             (new_size >= 16384) && ((new_size & 4095) == 0)) {
             mic_stack_size = new_size;
+            OFFLOAD_DEBUG_TRACE(2, "MIC stack size set to %lld bytes\n",
+                mic_stack_size);
         }
         else {
             LIBOFFLOAD_ERROR(c_mic_init3);
         }
     }
+    else {
+        OFFLOAD_DEBUG_TRACE(2, "MIC_STACKSIZE is not set\n");
+    }
 
     // proxy I/O
     env_var = getenv("MIC_PROXY_IO");
     if (env_var != 0 && *env_var != '\0') {
+        OFFLOAD_DEBUG_TRACE(2, "---- MIC_PROXY_IO=%s\n", env_var);
         int64_t new_val;
         if (__offload_parse_int_string(env_var, new_val)) {
             mic_proxy_io = new_val;
+            OFFLOAD_DEBUG_TRACE(2, "MIC proxy i/o set to %s\n",
+                mic_proxy_io);
         }
         else {
             LIBOFFLOAD_ERROR(c_invalid_env_var_int_value, "MIC_PROXY_IO");
         }
     }
+    else {
+        OFFLOAD_DEBUG_TRACE(2, "MIC_PROXY_IO is not set\n");
+    }
+
+    
     env_var = getenv("MIC_PROXY_FS_ROOT");
     if (env_var != 0 && *env_var != '\0') {
+	    OFFLOAD_DEBUG_TRACE(2, "---- MIC_PROXY_FS_ROOT=%s\n", env_var);
         mic_proxy_fs_root = strdup(env_var);
-	if (mic_proxy_fs_root == NULL)
-	  LIBOFFLOAD_ERROR(c_malloc);
+        if (mic_proxy_fs_root == NULL)
+            LIBOFFLOAD_ERROR(c_malloc);
+	OFFLOAD_DEBUG_TRACE(2, "MIC proxy fs root set to %s\n",
+            mic_proxy_fs_root);
+    }
+    else {
+	OFFLOAD_DEBUG_TRACE(2, "MIC_PROXY_FS_ROOT is not set\n");
     }
 
     // Prepare environment for the target process using the following
@@ -5372,6 +6496,7 @@ static void __offload_init_library_once(void)
     //   environment is duplicated.
     env_var = getenv("MIC_ENV_PREFIX");
     if (env_var != 0 && *env_var != '\0') {
+	OFFLOAD_DEBUG_TRACE(2, "---- MIC_ENV_PREFIX=%s\n", env_var);
         mic_env_vars.set_prefix(env_var);
 
         int len = strlen(env_var);
@@ -5383,6 +6508,9 @@ static void __offload_init_library_once(void)
             }
         }
     }
+    else {
+	    OFFLOAD_DEBUG_TRACE(2, "MIC_ENV_PREFIX is not set\n");
+    }
 
     // create key for thread data
     if (thread_key_create(&mic_thread_key, Engine::destroy_thread_data)) {
@@ -5392,103 +6520,198 @@ static void __offload_init_library_once(void)
 
     // cpu frequency
     cpu_frequency = COI::PerfGetCycleFrequency();
-
+    
     env_var = getenv(mic_use_2mb_buffers_envname);
     if (env_var != 0 && *env_var != '\0') {
+	    OFFLOAD_DEBUG_TRACE(2, "---- %s=%s\n",
+            mic_use_2mb_buffers_envname, env_var);
         uint64_t new_size;
         if (__offload_parse_size_string(env_var, new_size)) {
             __offload_use_2mb_buffers = new_size;
+	        OFFLOAD_DEBUG_TRACE(2,
+                "Threshold for use of 2M buffers set to %lld\n",
+                __offload_use_2mb_buffers);
         }
         else {
             LIBOFFLOAD_ERROR(c_invalid_env_var_value,
                              mic_use_2mb_buffers_envname);
         }
     }
-
+    else {
+	    OFFLOAD_DEBUG_TRACE(2, "%s is not set\n", mic_use_2mb_buffers_envname);
+    }
+    
     env_var = getenv(mic_use_async_buffer_write_envname);
     if (env_var != 0 && *env_var != '\0') {
+	    OFFLOAD_DEBUG_TRACE(2, "---- %s=%s\n",
+            mic_use_async_buffer_write_envname, env_var);
         uint64_t new_size;
         if (__offload_parse_size_string(env_var, new_size)) {
             __offload_use_async_buffer_write = new_size;
+	        OFFLOAD_DEBUG_TRACE(2,
+                "Threshold for async buffer write set to %lld\n",
+                __offload_use_async_buffer_write);
         }
     }
-
+    else {
+	    OFFLOAD_DEBUG_TRACE(2, "%s is not set\n",
+            mic_use_async_buffer_write_envname);
+    }
+    
     env_var = getenv(mic_use_async_buffer_read_envname);
     if (env_var != 0 && *env_var != '\0') {
+	    OFFLOAD_DEBUG_TRACE(2, "---- %s=%s\n",
+            mic_use_async_buffer_read_envname, env_var);
         uint64_t new_size;
         if (__offload_parse_size_string(env_var, new_size)) {
             __offload_use_async_buffer_read = new_size;
+	        OFFLOAD_DEBUG_TRACE(2,
+                "Threshold for async buffer read set to %lld\n",
+                __offload_use_async_buffer_read);
         }
+    }
+    else {
+	    OFFLOAD_DEBUG_TRACE(2, "%s is not set\n",
+            mic_use_async_buffer_read_envname);
     }
 
     // mic initialization type
     env_var = getenv(offload_init_envname);
     if (env_var != 0 && *env_var != '\0') {
+	    OFFLOAD_DEBUG_TRACE(2, "---- %s=%s\n",
+            offload_init_envname, env_var);
         if (strcmp(env_var, "on_offload") == 0) {
             __offload_init_type = c_init_on_offload;
+	        OFFLOAD_DEBUG_TRACE(2,
+                "A MIC device will be initialized "
+                "on first offload to that device\n");
         }
         else if (strcmp(env_var, "on_offload_all") == 0) {
             __offload_init_type = c_init_on_offload_all;
+	        OFFLOAD_DEBUG_TRACE(2,
+                "All MIC devices will be initialized "
+                "on first offload to any device\n");
         }
         else if (strcmp(env_var, "on_start") == 0) {
             __offload_init_type = c_init_on_start;
+	        OFFLOAD_DEBUG_TRACE(2,
+                "All MIC devices will be initialized "
+                "at program start\n");
         }
         else {
             LIBOFFLOAD_ERROR(c_invalid_env_var_value, offload_init_envname);
         }
     }
+    else {
+	    OFFLOAD_DEBUG_TRACE(2, "%s is not set\n", offload_init_envname);
+    }
 
     // active wait
     env_var = getenv(offload_active_wait_envname);
     if (env_var != 0 && *env_var != '\0') {
+	    OFFLOAD_DEBUG_TRACE(2, "---- %s=%s\n",
+            offload_active_wait_envname, env_var);
         int64_t new_val;
         if (__offload_parse_int_string(env_var, new_val)) {
             __offload_active_wait = new_val;
+	        OFFLOAD_DEBUG_TRACE(2,
+                "Flag to poll on event completion is set to %d\n",
+                __offload_active_wait);
         }
         else {
             LIBOFFLOAD_ERROR(c_invalid_env_var_int_value,
                              offload_active_wait_envname);
         }
     }
+    else {
+	    OFFLOAD_DEBUG_TRACE(2, "%s is not set\n", offload_active_wait_envname);
+    }
+
+    // always wait
+    env_var = getenv(offload_always_wait_envname);
+    if (env_var != 0 && *env_var != '\0') {
+	    OFFLOAD_DEBUG_TRACE(2, "---- %s=%s\n",
+            offload_always_wait_envname, env_var);
+        int64_t new_val;
+        if (__offload_parse_int_string(env_var, new_val)) {
+            __offload_always_wait = new_val;
+	        OFFLOAD_DEBUG_TRACE(2,
+                "Flag to poll on event completion is set to %d\n",
+                __offload_active_wait);
+        }
+        else {
+            LIBOFFLOAD_ERROR(c_invalid_env_var_int_value,
+                             offload_always_wait_envname);
+        }
+    }
+    else {
+	    OFFLOAD_DEBUG_TRACE(2, "%s is not set\n", offload_always_wait_envname);
+    }
 
     // omp device num
     env_var = getenv(omp_device_num_envname);
     if (env_var != 0 && *env_var != '\0') {
+	    OFFLOAD_DEBUG_TRACE(2, "---- %s=%s\n",
+            omp_device_num_envname, env_var);
         int64_t new_val;
         if (__offload_parse_int_string(env_var, new_val) && new_val >= 0) {
             __omp_device_num = new_val;
+	        OFFLOAD_DEBUG_TRACE(2, "OpenMP default device number is set to %d\n",
+                __omp_device_num);
         }
         else {
             LIBOFFLOAD_ERROR(c_omp_invalid_device_num_env,
                              omp_device_num_envname);
         }
     }
+    else {
+	    OFFLOAD_DEBUG_TRACE(2, "%s is not set\n", omp_device_num_envname);
+    }
 
     // parallel copy of offload_transfer
     env_var = getenv(parallel_copy_envname);
     if (env_var != 0 && *env_var != '\0') {
+	    OFFLOAD_DEBUG_TRACE(2, "---- %s=%s\n",
+            parallel_copy_envname, env_var);
         int64_t new_val;
         if (__offload_parse_int_string(env_var, new_val) && new_val >= 0) {
             __offload_parallel_copy = new_val;
+	        OFFLOAD_DEBUG_TRACE(2,
+                "Flag for using async buffer copy is set to %d\n",
+                __offload_parallel_copy);
         }
         else {
             LIBOFFLOAD_ERROR(c_invalid_env_var_value,
                              parallel_copy_envname);
         }
     }
+    else {
+	    OFFLOAD_DEBUG_TRACE(2, "%s is not set\n", parallel_copy_envname);
+    }
 
     // use COI interface for noncontiguous arrays transfer
     env_var = getenv(use_coi_noncontiguous_transfer_envname);
     if (env_var != 0 && *env_var != '\0') {
+	    OFFLOAD_DEBUG_TRACE(2, "---- %s=%s\n",
+            use_coi_noncontiguous_transfer_envname, env_var);
         uint64_t new_size;
         if (__offload_parse_size_string(env_var, new_size)) {
             __offload_use_coi_noncontiguous_transfer = new_size;
+	        OFFLOAD_DEBUG_TRACE(2,
+                "Flag for using new COI noncontiguous API is set to %d\n",
+                __offload_use_coi_noncontiguous_transfer);
         }
         else {
             LIBOFFLOAD_ERROR(c_invalid_env_var_value,
                              use_coi_noncontiguous_transfer_envname);
         }
     }
+    else {
+	    OFFLOAD_DEBUG_TRACE(2, "%s is not set\n",
+            use_coi_noncontiguous_transfer_envname);
+    }
+
+    OFFLOAD_DEBUG_TRACE(2, "---- End of environment variable processing\n");
 
     // init ORSL
     ORSL::init();
@@ -5542,17 +6765,17 @@ extern "C" bool __offload_target_image_is_executable(const void *target_image)
 extern "C" bool __offload_register_image(const void *target_image)
 {
     const struct Image *image = static_cast<const struct Image*>(target_image);
-
-    // decode image
-    const char *name = image->data;
     const void *data = image->data + strlen(image->data) + 1;
     uint64_t    size = image->size;
-    char *origin     = (char *) malloc(strlen(image->data) + 1);
     uint64_t    offset = 0;
-    const char *host_name = image->data;
+
+    // decode image
+    const char *fat_name = image->data;
+    char *mic_name   = (char *) malloc(strlen(image->data) + 1);
+    char *host_name  = (char *) malloc(strlen(image->data));
     int        i;
 
-    if (origin == NULL)
+    if ((mic_name == NULL) || (host_name == NULL))
         LIBOFFLOAD_ERROR(c_malloc);
 
     // The origin name is the name of the file on the host
@@ -5560,24 +6783,42 @@ extern "C" bool __offload_register_image(const void *target_image)
     // use the host file name of the fat binary.
     // Driver prepends the host file name ending with "?"
     // to the image->data name so need to extract the string
+    // name format:  <mic_name>?<origin>
+
+    // Get <mic_name>
     i = 0;
-    while (*host_name != '\0'  && *host_name != '?') {
-       origin[i] = *host_name;
-       host_name++;
+    while ((*fat_name != '\0') && (*fat_name != '?')) {
+       mic_name[i] = *fat_name;
+       fat_name++;
        i++;
     }
-    origin[i] = '\0';
-    // Implies the host name does not exist which really should
-    // not occur. Allow this since only consumer is Vtune.
-    if ((i == 0) || (*host_name != '?')) {
-       free(origin);
-       origin = 0;
+
+    // Remove the host file name by inserting end of string marker
+    mic_name[i]  = '\0';
+   
+    // Get <host_name>
+    if (*fat_name == '?') {
+       // The string following "?" is the name of the host file name.
+       fat_name++;
+       i = 0;
+       while (*fat_name != '\0') {
+          host_name[i] = *fat_name;
+          fat_name++;
+          i++;
+       }
+       host_name[i] = '\0';
+    }
+    else {
+    // Windows current does not have host name 
+       free(host_name);
+       host_name = 0;
     }
 
     // our actions depend on the image type
     const Elf64_Ehdr *hdr = static_cast<const Elf64_Ehdr*>(data);
     switch (hdr->e_type) {
         case ET_EXEC:
+            __current_image_is_dll = false;
             // Each offload application is supposed to have only one target
             // image representing target executable.
             // No thread synchronization is required here as the initialization
@@ -5586,7 +6827,7 @@ extern "C" bool __offload_register_image(const void *target_image)
                 LIBOFFLOAD_ERROR(c_multiple_target_exes);
                 exit(1);
             }
-            __target_exe = new TargetImage(name, data, size, origin, offset);
+            __target_exe = new TargetImage(mic_name, data, size, host_name, offset);
 
             // Registration code for execs is always called from the context
             // of main and thus we can safely call any function here,
@@ -5604,25 +6845,26 @@ extern "C" bool __offload_register_image(const void *target_image)
 
         case ET_DYN:
         {
-		char *fullname = origin;
-                // We add the library to a list of pending libraries
-                __target_libs_lock.lock();
-                __target_libs = true;
-                __target_libs_list.push_back(
-                    TargetImage(name, data, size, fullname, offset));
-                __target_libs_lock.unlock();
-                // If __target_exe is set, then main has started running
-                // If not main, then we can't do anything useful here
-                // because this registration code is called from DllMain
-                // context (on windows).
-                if (__target_exe != 0) {
-                    // There is no need to delay loading the library
-                    if (!__offload_init_library()) {
-                        // Couldn't validate library as a fat offload library
-                        LIBOFFLOAD_ERROR(c_unknown_binary_type);
-                        exit(1);
-                    }
+            char * fullname = NULL;
+            __current_image_is_dll = true;
+            // We add the library to a list of pending libraries
+            __target_libs_lock.lock();
+            __target_libs = true;
+            __target_libs_list.push_back(
+            TargetImage(mic_name, data, size, fullname, offset));
+            __target_libs_lock.unlock();
+            // If __target_exe is set, then main has started running
+            // If not main, then we can't do anything useful here
+            // because this registration code is called from DllMain
+            // context (on windows).
+            if (__target_exe != 0) {
+                // There is no need to delay loading the library
+                if (!__offload_init_library()) {
+                    // Couldn't validate library as a fat offload library
+                    LIBOFFLOAD_ERROR(c_unknown_binary_type);
+                    exit(1);
                 }
+            }
             return true;
         }
 
@@ -5632,6 +6874,11 @@ extern "C" bool __offload_register_image(const void *target_image)
             exit(1);
     }
 }
+
+// When dlopen is used dlclose may happen after the COI process
+// is destroyed.  In which case images cannot be unloaded and should
+// be skipped.  So track if coi has been unloaded.
+static bool coi_may_have_been_unloaded = false;
 
 extern "C" void __offload_unregister_image(const void *target_image)
 {
@@ -5657,13 +6904,19 @@ extern "C" void __offload_unregister_image(const void *target_image)
             Offload_Timer_Print();
         }
 
+        coi_may_have_been_unloaded = true;
+
+        // Do not unload the MYO library if it loaded in dll.
+        if (!__myo_init_in_so)
+        {
 #ifdef MYO_SUPPORT
-        __offload_myoFini();
+            __offload_myoFini();
 #endif // MYO_SUPPORT
 
-        __offload_fini_library();
+            __offload_fini_library();
+       }
     }
-    else if (hdr->e_type == ET_DYN) {
+    else if ((hdr->e_type == ET_DYN) && !coi_may_have_been_unloaded) {
         for (int i = 0; i < mic_engines_total; i++) {
            mic_engines[i].unload_library(data, name);
         }
@@ -5721,7 +6974,7 @@ int _Offload_signaled(int index, void *signal)
         LIBOFFLOAD_ABORT;
     }
     // if signal is removed by wait completing
-    else if (task == SIGNAL_IS_REMOVED) {
+    else if (task == SIGNAL_HAS_COMPLETED) {
         return (true);
     }
     return task->is_signaled();
@@ -5812,8 +7065,10 @@ int _Offload_stream_destroy(
     _Offload_stream handle    // stream to destroy
     )
 {
-    __offload_init_library();
-
+    if (Stream::get_streams_count() == 0) {
+        LIBOFFLOAD_ERROR(c_offload_streams_are_absent);
+        LIBOFFLOAD_ABORT;
+    }
     // check target value
     if (device < 0) {
         LIBOFFLOAD_ERROR(c_offload_signaled1, device);
@@ -5826,18 +7081,46 @@ int _Offload_stream_destroy(
     return(true);
 }
 
-int _Offload_stream_completed(int device, _Offload_stream handler)
+int _Offload_stream_delete(
+    _Offload_stream handle    // stream to destroy
+    )
 {
-    __offload_init_library();
+    int device;    // MIC device number
+    Stream * stream;
 
-    // check index value
-    if (device < 0) {
-        LIBOFFLOAD_ERROR(c_offload_signaled1, device);
+    if (Stream::get_streams_count() == 0) {
+        LIBOFFLOAD_ERROR(c_offload_streams_are_absent);
         LIBOFFLOAD_ABORT;
     }
 
-    device %= mic_engines_total;
+    stream = Stream::find_stream(handle, false);
+    // the stream was not created or was destroyed
+    if (!stream) {
+        LIBOFFLOAD_ERROR(c_offload_no_stream, device);
+        LIBOFFLOAD_ABORT;
+    }
 
+    device = stream->get_device();
+
+    mic_engines[device].stream_destroy(handle);
+
+    return(true);
+}
+
+int _Offload_stream_completed(int device, _Offload_stream handler)
+{
+    if (Stream::get_streams_count() == 0) {
+        LIBOFFLOAD_ERROR(c_offload_streams_are_absent);
+        LIBOFFLOAD_ABORT;
+    }
+    // check device index value
+    if (device < -1) {
+        LIBOFFLOAD_ERROR(c_offload_signaled1, device);
+        LIBOFFLOAD_ABORT;
+    }
+    else if (device > -1) {
+        device %= mic_engines_total;
+    }
     // get stream
     Stream * stream;
 
@@ -5850,6 +7133,11 @@ int _Offload_stream_completed(int device, _Offload_stream handler)
             LIBOFFLOAD_ABORT;
         }
 
+        if (device != stream->get_device()) {
+            LIBOFFLOAD_ERROR(c_offload_device_doesnt_match_to_stream,
+                             stream->get_device());
+            LIBOFFLOAD_ABORT;
+        }
         // find associated async task
         OffloadDescriptor *task = stream->get_last_offload();
 
@@ -5865,12 +7153,15 @@ int _Offload_stream_completed(int device, _Offload_stream handler)
         for (StreamMap::iterator it = stream_map.begin();
             it != stream_map.end(); it++) {
             Stream * stream = it->second;
+            if (device != -1 && device != stream->get_device()) {
+                continue;
+            }
             // find associated async task
             OffloadDescriptor *task = stream->get_last_offload();
 
             // offload was completed by offload_wait pragma or wait clause
             if (task == 0) {
-                return(true);
+                continue;
             }
             // if even one stream is not completed result is false
             if (!task->is_signaled()) {
@@ -5880,6 +7171,72 @@ int _Offload_stream_completed(int device, _Offload_stream handler)
         // no uncompleted streams
         return true;
     }
+}
+
+int _Offload_stream_is_empty(_Offload_stream handle)
+{
+    int device;
+
+    if (Stream::get_streams_count() == 0) {
+        LIBOFFLOAD_ERROR(c_offload_streams_are_absent);
+        LIBOFFLOAD_ABORT;
+    }
+    if (handle != 0) {
+        Stream * stream =  Stream::find_stream(handle, false);
+
+        // the stream was not created or was destroyed
+        if (!stream) {
+            LIBOFFLOAD_ERROR(c_offload_no_stream, device);
+            LIBOFFLOAD_ABORT;
+        }
+        device = stream->get_device();
+    }
+    else {
+        device = -1;
+    }
+    // Use 0 for device index as _Offload_stream_completed
+    // ignores this value while defining streams completion
+    return _Offload_stream_completed(device, handle);
+}
+
+int _Offload_device_streams_completed(int device)
+{
+    if (Stream::get_streams_count() == 0) {
+        LIBOFFLOAD_ERROR(c_offload_streams_are_absent);
+        LIBOFFLOAD_ABORT;
+    }
+    // check index value
+    if (device < -1) {
+        LIBOFFLOAD_ERROR(c_offload_signaled1, device);
+        LIBOFFLOAD_ABORT;
+    }
+    else if (device > -1) {
+        device %= mic_engines_total;
+    }
+
+    StreamMap stream_map = Stream::all_streams;
+    for (StreamMap::iterator it = stream_map.begin();
+        it != stream_map.end(); it++)
+    {
+        Stream * stream = it->second;
+
+        if (device != -1 && device != stream->get_device()) {
+            continue;
+        }
+        // find associated async task
+        OffloadDescriptor *task = stream->get_last_offload();
+
+        // offload was completed by offload_wait pragma or wait clause
+        if (task == 0) {
+            continue;
+        }
+        // if even one stream is not completed result is false
+        if (!task->is_signaled()) {
+            return false;
+        }
+    }
+    // no uncompleted streams
+    return true;
 }
 
 // IDB support

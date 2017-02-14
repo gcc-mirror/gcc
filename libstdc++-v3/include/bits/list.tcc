@@ -1,6 +1,6 @@
 // List implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -380,26 +380,36 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // 300. list::merge() specification incomplete
       if (this != std::__addressof(__x))
 	{
-	  _M_check_equal_allocators(__x); 
+	  _M_check_equal_allocators(__x);
 
 	  iterator __first1 = begin();
 	  iterator __last1 = end();
 	  iterator __first2 = __x.begin();
 	  iterator __last2 = __x.end();
-	  while (__first1 != __last1 && __first2 != __last2)
-	    if (*__first2 < *__first1)
-	      {
-		iterator __next = __first2;
-		_M_transfer(__first1, __first2, ++__next);
-		__first2 = __next;
-	      }
-	    else
-	      ++__first1;
-	  if (__first2 != __last2)
-	    _M_transfer(__last1, __first2, __last2);
+	  const size_t __orig_size = __x.size();
+	  __try {
+	    while (__first1 != __last1 && __first2 != __last2)
+	      if (*__first2 < *__first1)
+		{
+		  iterator __next = __first2;
+		  _M_transfer(__first1, __first2, ++__next);
+		  __first2 = __next;
+		}
+	      else
+		++__first1;
+	    if (__first2 != __last2)
+	      _M_transfer(__last1, __first2, __last2);
 
-	  this->_M_inc_size(__x._M_get_size());
-	  __x._M_set_size(0);
+	    this->_M_inc_size(__x._M_get_size());
+	    __x._M_set_size(0);
+	  }
+	  __catch(...)
+	    {
+	      size_t __dist = std::distance(__first2, __last2);
+	      this->_M_inc_size(__orig_size - __dist);
+	      __x._M_set_size(__dist);
+	      __throw_exception_again;
+	    }
 	}
     }
 
@@ -423,20 +433,31 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    iterator __last1 = end();
 	    iterator __first2 = __x.begin();
 	    iterator __last2 = __x.end();
-	    while (__first1 != __last1 && __first2 != __last2)
-	      if (__comp(*__first2, *__first1))
-		{
-		  iterator __next = __first2;
-		  _M_transfer(__first1, __first2, ++__next);
-		  __first2 = __next;
-		}
-	      else
-		++__first1;
-	    if (__first2 != __last2)
-	      _M_transfer(__last1, __first2, __last2);
+	    const size_t __orig_size = __x.size();
+	    __try
+	      {
+		while (__first1 != __last1 && __first2 != __last2)
+		  if (__comp(*__first2, *__first1))
+		    {
+		      iterator __next = __first2;
+		      _M_transfer(__first1, __first2, ++__next);
+		      __first2 = __next;
+		    }
+		  else
+		    ++__first1;
+		if (__first2 != __last2)
+		  _M_transfer(__last1, __first2, __last2);
 
-	    this->_M_inc_size(__x._M_get_size());
-	    __x._M_set_size(0);
+		this->_M_inc_size(__x._M_get_size());
+		__x._M_set_size(0);
+	      }
+	    __catch(...)
+	      {
+		size_t __dist = std::distance(__first2, __last2);
+		this->_M_inc_size(__orig_size - __dist);
+		__x._M_set_size(__dist);
+		__throw_exception_again;
+	      }
 	  }
       }
 
@@ -453,27 +474,36 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         list __tmp[64];
         list * __fill = __tmp;
         list * __counter;
-
-        do
+	__try
 	  {
-	    __carry.splice(__carry.begin(), *this, begin());
-
-	    for(__counter = __tmp;
-		__counter != __fill && !__counter->empty();
-		++__counter)
+	    do
 	      {
-		__counter->merge(__carry);
-		__carry.swap(*__counter);
-	      }
-	    __carry.swap(*__counter);
-	    if (__counter == __fill)
-	      ++__fill;
-	  }
-	while ( !empty() );
+		__carry.splice(__carry.begin(), *this, begin());
 
-        for (__counter = __tmp + 1; __counter != __fill; ++__counter)
-          __counter->merge(*(__counter - 1));
-        swap( *(__fill - 1) );
+		for(__counter = __tmp;
+		    __counter != __fill && !__counter->empty();
+		    ++__counter)
+		  {
+		    __counter->merge(__carry);
+		    __carry.swap(*__counter);
+		  }
+		__carry.swap(*__counter);
+		if (__counter == __fill)
+		  ++__fill;
+	      }
+	    while ( !empty() );
+
+	    for (__counter = __tmp + 1; __counter != __fill; ++__counter)
+	      __counter->merge(*(__counter - 1));
+	    swap( *(__fill - 1) );
+	  }
+	__catch(...)
+	  {
+	    this->splice(this->end(), __carry);
+	    for (int i = 0; i < sizeof(__tmp)/sizeof(__tmp[0]); ++i)
+	      this->splice(this->end(), __tmp[i]);
+	    __throw_exception_again;
+	  }
       }
     }
 
@@ -530,27 +560,36 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    list __tmp[64];
 	    list * __fill = __tmp;
 	    list * __counter;
-
-	    do
+	    __try
 	      {
-		__carry.splice(__carry.begin(), *this, begin());
-
-		for(__counter = __tmp;
-		    __counter != __fill && !__counter->empty();
-		    ++__counter)
+		do
 		  {
-		    __counter->merge(__carry, __comp);
-		    __carry.swap(*__counter);
-		  }
-		__carry.swap(*__counter);
-		if (__counter == __fill)
-		  ++__fill;
-	      }
-	    while ( !empty() );
+		    __carry.splice(__carry.begin(), *this, begin());
 
-	    for (__counter = __tmp + 1; __counter != __fill; ++__counter)
-	      __counter->merge(*(__counter - 1), __comp);
-	    swap(*(__fill - 1));
+		    for(__counter = __tmp;
+			__counter != __fill && !__counter->empty();
+			++__counter)
+		      {
+			__counter->merge(__carry, __comp);
+			__carry.swap(*__counter);
+		      }
+		    __carry.swap(*__counter);
+		    if (__counter == __fill)
+		      ++__fill;
+		  }
+		while ( !empty() );
+
+		for (__counter = __tmp + 1; __counter != __fill; ++__counter)
+		  __counter->merge(*(__counter - 1), __comp);
+		swap(*(__fill - 1));
+	      }
+	    __catch(...)
+	      {
+		this->splice(this->end(), __carry);
+		for (int i = 0; i < sizeof(__tmp)/sizeof(__tmp[0]); ++i)
+		  this->splice(this->end(), __tmp[i]);
+		__throw_exception_again;
+	      }
 	  }
       }
 

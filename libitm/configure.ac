@@ -1,5 +1,5 @@
 # Process this file with autoreconf to produce a configure script.
-#   Copyright (C) 2011-2016 Free Software Foundation, Inc.
+#   Copyright (C) 2011-2017 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -215,7 +215,7 @@ LIBITM_CHECK_ATTRIBUTE_DLLEXPORT
 LIBITM_CHECK_ATTRIBUTE_ALIAS
 
 # Check linker hardware capability support.
-LIBITM_CHECK_LINKER_HWCAP
+GCC_CHECK_LINKER_HWCAP
 # If defaulting to -mavx, don't clear hwcaps.
 AC_CHECK_DECL([__AVX__], [HWCAP_LDFLAGS=''])
 
@@ -285,6 +285,9 @@ AM_CONDITIONAL([ARCH_ARM], [test "$ARCH" = arm])
 AM_CONDITIONAL([ARCH_X86], [test "$ARCH" = x86])
 AM_CONDITIONAL([ARCH_X86_AVX], [test "$libitm_cv_as_avx" = yes])
 AM_CONDITIONAL([ARCH_FUTEX], [test $enable_linux_futex = yes])
+
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
 
 AC_CONFIG_FILES(Makefile testsuite/Makefile libitm.spec)
 AC_OUTPUT

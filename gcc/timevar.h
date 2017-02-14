@@ -1,5 +1,5 @@
 /* Timing variables for measuring compiler performance.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -131,9 +131,11 @@ class timer
   void pop_internal ();
   static void print_row (FILE *fp,
 			 const timevar_time_def *total,
-			 const timevar_def *tv);
+			 const char *name, const timevar_time_def &elapsed);
+  static bool all_zero (const timevar_time_def &elapsed);
 
  private:
+  typedef hash_map<timevar_def *, timevar_time_def> child_map_t;
 
   /* Private type: a timing variable.  */
   struct timevar_def
@@ -155,6 +157,8 @@ class timer
     /* Nonzero if this timing variable was ever started or pushed onto
        the timing stack.  */
     unsigned used : 1;
+
+    child_map_t *children;
   };
 
   /* Private type: an element on the timing stack
@@ -224,6 +228,14 @@ class auto_timevar
   auto_timevar (timer *t, timevar_id_t tv)
     : m_timer (t),
       m_tv (tv)
+  {
+    if (m_timer)
+      m_timer->push (m_tv);
+  }
+
+  explicit auto_timevar (timevar_id_t tv)
+    : m_timer (g_timer)
+    , m_tv (tv)
   {
     if (m_timer)
       m_timer->push (m_tv);

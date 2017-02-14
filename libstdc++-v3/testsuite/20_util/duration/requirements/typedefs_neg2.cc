@@ -1,9 +1,8 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 // { dg-require-cstdint "" }
 // 2008-07-31 Chris Fairles <chris.fairles@gmail.com>
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,5 +31,5 @@ void test01()
   test_type d;			// { dg-error "required from here" }
 }
 
-// { dg-error "must be a specialization of ratio" "" { target *-*-* } 247 }
+// { dg-error "must be a specialization of ratio" "" { target *-*-* } 309 }
 // { dg-prune-output "not a member" }

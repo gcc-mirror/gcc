@@ -1,5 +1,5 @@
 /* Supporting functions for resolving DATA statement.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Lifang Zeng <zlf605@hotmail.com>
 
 This file is part of GCC.
@@ -483,7 +483,10 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 
   if (ref || last_ts->type == BT_CHARACTER)
     {
-      if (lvalue->ts.u.cl->length == NULL && !(ref && ref->u.ss.length != NULL))
+      /* An initializer has to be constant.  */
+      if (rvalue->expr_type != EXPR_CONSTANT
+	  || (lvalue->ts.u.cl->length == NULL
+	      && !(ref && ref->u.ss.length != NULL)))
 	return false;
       expr = create_character_initializer (init, last_ts, ref, rvalue);
     }

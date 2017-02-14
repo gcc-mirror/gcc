@@ -1,5 +1,5 @@
 /* RTL-level loop invariant motion.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cfghooks.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "regs.h"
@@ -597,13 +598,17 @@ find_exits (struct loop *loop, basic_block *body,
 
 	  FOR_EACH_EDGE (e, ei, body[i]->succs)
 	    {
-	      if (flow_bb_inside_loop_p (loop, e->dest))
-		continue;
-
-	      bitmap_set_bit (may_exit, i);
-	      bitmap_set_bit (has_exit, i);
-	      outermost_exit = find_common_loop (outermost_exit,
-						 e->dest->loop_father);
+	      if (! flow_bb_inside_loop_p (loop, e->dest))
+		{
+		  bitmap_set_bit (may_exit, i);
+		  bitmap_set_bit (has_exit, i);
+		  outermost_exit = find_common_loop (outermost_exit,
+						     e->dest->loop_father);
+		}
+	      /* If we enter a subloop that might never terminate treat
+	         it like a possible exit.  */
+	      if (flow_loop_nested_p (loop, e->dest->loop_father))
+		bitmap_set_bit (may_exit, i);
 	    }
 	  continue;
 	}
@@ -777,7 +782,7 @@ canonicalize_address_mult (rtx x)
 	{
 	  HOST_WIDE_INT shift = INTVAL (XEXP (sub, 1));
 	  PUT_CODE (sub, MULT);
-	  XEXP (sub, 1) = gen_int_mode ((HOST_WIDE_INT) 1 << shift,
+	  XEXP (sub, 1) = gen_int_mode (HOST_WIDE_INT_1 << shift,
 					GET_MODE (sub));
 	  iter.skip_subrtxes ();
 	}

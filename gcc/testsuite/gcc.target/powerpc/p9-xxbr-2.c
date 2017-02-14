@@ -1,0 +1,36 @@
+/* { dg-do compile { target { powerpc64*-*-* && lp64 } } } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
+/* { dg-require-effective-target powerpc_p9vector_ok } */
+/* { dg-options "-mcpu=power9 -O2" } */
+
+#include <altivec.h>
+
+/* Verify P9 vec_revb builtin generates the XXBR{Q,D,W,H} instructions.  This
+   test only tests the vector types that need a 64-bit environment.  */
+
+vector long
+rev_long (vector long a)
+{
+  return vec_revb (a);		/* XXBRD.  */
+}
+
+vector unsigned long
+rev_ulong (vector unsigned long a)
+{
+  return vec_revb (a);		/* XXBRD.  */
+}
+
+vector __int128_t
+rev_int128 (vector __int128_t a)
+{
+  return vec_revb (a);		/* XXBRQ.  */
+}
+
+vector __uint128_t
+rev_uint128 (vector __uint128_t a)
+{
+  return vec_revb (a);		/* XXBRQ.  */
+}
+
+/* { dg-final { scan-assembler-times "xxbrd" 2 } } */
+/* { dg-final { scan-assembler-times "xxbrq" 2 } } */

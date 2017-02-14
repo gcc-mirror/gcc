@@ -1,5 +1,5 @@
 /* TILE atomics.
-   Copyright (C) 2011-2016 Free Software Foundation, Inc.
+   Copyright (C) 2011-2017 Free Software Foundation, Inc.
    Contributed by Walter Lee (walt@tilera.com)
 
    This file is free software; you can redistribute it and/or modify it
@@ -33,11 +33,11 @@
 static inline void
 pre_atomic_barrier (int model)
 {
-  switch ((enum memmodel) model)
+  switch (model)
     {
-    case MEMMODEL_RELEASE:
-    case MEMMODEL_ACQ_REL:
-    case MEMMODEL_SEQ_CST:
+    case __ATOMIC_RELEASE:
+    case __ATOMIC_ACQ_REL:
+    case __ATOMIC_SEQ_CST:
       __atomic_thread_fence (model);
       break;
     default:
@@ -49,11 +49,11 @@ pre_atomic_barrier (int model)
 static inline void
 post_atomic_barrier (int model)
 {
-  switch ((enum memmodel) model)
+  switch (model)
     {
-    case MEMMODEL_ACQUIRE:
-    case MEMMODEL_ACQ_REL:
-    case MEMMODEL_SEQ_CST:
+    case __ATOMIC_ACQUIRE:
+    case __ATOMIC_ACQ_REL:
+    case __ATOMIC_SEQ_CST:
       __atomic_thread_fence (model);
       break;
     default:

@@ -1,6 +1,6 @@
 // List iterator invalidation tests
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,8 +25,7 @@
 void test03()
 {
   using std::advance;
-  
-  bool test __attribute__((unused)) = true;
+
   typedef __gnu_debug::list<int> list_type;
 
   list_type v(20, 42);

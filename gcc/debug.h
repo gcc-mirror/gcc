@@ -1,5 +1,5 @@
 /* Debug hooks for GCC.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -31,7 +31,7 @@ struct gcc_debug_hooks
   void (* finish) (const char *main_filename);
 
   /* Run cleanups necessary after early debug generation.  */
-  void (* early_finish) (void);
+  void (* early_finish) (const char *main_filename);
 
   /* Called from cgraph_optimize before starting to assemble
      functions/variables/toplevel asms.  */

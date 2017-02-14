@@ -1,5 +1,7 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mARC700 --save-temps -mno-mpy" } */
+/* { dg-skip-if "ARC700 always has mpy option on" { arc700 } } */
+/* { dg-skip-if "ARC600 doesn't have mpy instruction" { arc6xx } } */
+/* { dg-options "-O2 --save-temps -mmpy-option=0" } */
 
 #include <stdlib.h>
 

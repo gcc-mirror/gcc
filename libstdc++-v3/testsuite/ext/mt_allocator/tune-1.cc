@@ -1,6 +1,6 @@
 // 2004-08-25 Benjamin Kosnik <bkoz@redhat.com>
 //
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,8 +32,6 @@
 // __common_pool_policy
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using __gnu_cxx::__pool;
   using __gnu_cxx::__common_pool_policy;
 

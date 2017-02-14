@@ -1,5 +1,5 @@
 /* Vector API for GNU compiler.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
    Re-implemented in C++ by Diego Novillo <dnovillo@google.com>
 
@@ -410,10 +410,15 @@ struct GTY((user)) vec
 /* Type to provide NULL values for vec<T, A, L>.  This is used to
    provide nil initializers for vec instances.  Since vec must be
    a POD, we cannot have proper ctor/dtor for it.  To initialize
-   a vec instance, you can assign it the value vNULL.  */
+   a vec instance, you can assign it the value vNULL.  This isn't
+   needed for file-scope and function-local static vectors, which
+   are zero-initialized by default.  */
 struct vnull
 {
   template <typename T, typename A, typename L>
+#if __cpp_constexpr >= 200704
+  constexpr
+#endif
   operator vec<T, A, L> () { return vec<T, A, L>(); }
 };
 extern vnull vNULL;
@@ -1087,8 +1092,10 @@ inline void
 vec<T, A, vl_embed>::quick_grow_cleared (unsigned len)
 {
   unsigned oldlen = length ();
+  size_t sz = sizeof (T) * (len - oldlen);
   quick_grow (len);
-  memset (&(address ()[oldlen]), 0, sizeof (T) * (len - oldlen));
+  if (sz != 0)
+    memset (&(address ()[oldlen]), 0, sz);
 }
 
 
@@ -1600,8 +1607,10 @@ inline void
 vec<T, va_heap, vl_ptr>::safe_grow_cleared (unsigned len MEM_STAT_DECL)
 {
   unsigned oldlen = length ();
+  size_t sz = sizeof (T) * (len - oldlen);
   safe_grow (len PASS_MEM_STAT);
-  memset (&(address ()[oldlen]), 0, sizeof (T) * (len - oldlen));
+  if (sz != 0)
+    memset (&(address ()[oldlen]), 0, sz);
 }
 
 

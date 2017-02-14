@@ -1,5 +1,5 @@
 /* Basic IPA optimizations and utilities.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -32,9 +32,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "ipa-utils.h"
 #include "symbol-summary.h"
+#include "tree-vrp.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "dbgcnt.h"
+#include "debug.h"
 
 
 /* Return true when NODE has ADDR reference.  */
@@ -127,7 +129,7 @@ process_references (symtab_node *snode,
 		  /* We use variable constructors during late compilation for
 		     constant folding.  Keep references alive so partitioning
 		     knows about potential references.  */
-		  || (TREE_CODE (node->decl) == VAR_DECL
+		  || (VAR_P (node->decl)
 		      && flag_wpa
 		      && ctor_for_folding (node->decl)
 		         != error_mark_node))))
@@ -621,6 +623,12 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	  if (file)
 	    fprintf (file, " %s/%i", vnode->name (), vnode->order);
           vnext = next_variable (vnode);
+	  /* Signal removal to the debug machinery.  */
+	  if (! flag_wpa)
+	    {
+	      vnode->definition = false;
+	      (*debug_hooks->late_global_decl) (vnode->decl);
+	    }
 	  vnode->remove ();
 	  changed = true;
 	}
@@ -935,6 +943,7 @@ cgraph_build_static_cdtor_1 (char which, tree body, int priority, bool final)
   DECL_UNINLINABLE (decl) = 1;
 
   DECL_INITIAL (decl) = make_node (BLOCK);
+  BLOCK_SUPERCONTEXT (DECL_INITIAL (decl)) = decl;
   TREE_USED (DECL_INITIAL (decl)) = 1;
 
   DECL_SOURCE_LOCATION (decl) = input_location;
@@ -989,11 +998,6 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
   cgraph_build_static_cdtor_1 (which, body, priority, false);
 }
 
-/* A vector of FUNCTION_DECLs declared as static constructors.  */
-static vec<tree> static_ctors;
-/* A vector of FUNCTION_DECLs declared as static destructors.  */
-static vec<tree> static_dtors;
-
 /* When target does not have ctors and dtors, we call all constructor
    and destructor by special initialization/destruction function
    recognized by collect2.
@@ -1002,12 +1006,12 @@ static vec<tree> static_dtors;
    destructors and turn them into normal functions.  */
 
 static void
-record_cdtor_fn (struct cgraph_node *node)
+record_cdtor_fn (struct cgraph_node *node, vec<tree> *ctors, vec<tree> *dtors)
 {
   if (DECL_STATIC_CONSTRUCTOR (node->decl))
-    static_ctors.safe_push (node->decl);
+    ctors->safe_push (node->decl);
   if (DECL_STATIC_DESTRUCTOR (node->decl))
-    static_dtors.safe_push (node->decl);
+    dtors->safe_push (node->decl);
   node = cgraph_node::get (node->decl);
   DECL_DISREGARD_INLINE_LIMITS (node->decl) = 1;
 }
@@ -1018,7 +1022,7 @@ record_cdtor_fn (struct cgraph_node *node)
    they are destructors.  */
 
 static void
-build_cdtor (bool ctor_p, vec<tree> cdtors)
+build_cdtor (bool ctor_p, const vec<tree> &cdtors)
 {
   size_t i,j;
   size_t len = cdtors.length ();
@@ -1135,20 +1139,20 @@ compare_dtor (const void *p1, const void *p2)
    functions have magic names which are detected by collect2.  */
 
 static void
-build_cdtor_fns (void)
+build_cdtor_fns (vec<tree> *ctors, vec<tree> *dtors)
 {
-  if (!static_ctors.is_empty ())
+  if (!ctors->is_empty ())
     {
       gcc_assert (!targetm.have_ctors_dtors || in_lto_p);
-      static_ctors.qsort (compare_ctor);
-      build_cdtor (/*ctor_p=*/true, static_ctors);
+      ctors->qsort (compare_ctor);
+      build_cdtor (/*ctor_p=*/true, *ctors);
     }
 
-  if (!static_dtors.is_empty ())
+  if (!dtors->is_empty ())
     {
       gcc_assert (!targetm.have_ctors_dtors || in_lto_p);
-      static_dtors.qsort (compare_dtor);
-      build_cdtor (/*ctor_p=*/false, static_dtors);
+      dtors->qsort (compare_dtor);
+      build_cdtor (/*ctor_p=*/false, *dtors);
     }
 }
 
@@ -1161,14 +1165,16 @@ build_cdtor_fns (void)
 static unsigned int
 ipa_cdtor_merge (void)
 {
+  /* A vector of FUNCTION_DECLs declared as static constructors.  */
+  auto_vec<tree, 20> ctors;
+  /* A vector of FUNCTION_DECLs declared as static destructors.  */
+  auto_vec<tree, 20> dtors;
   struct cgraph_node *node;
   FOR_EACH_DEFINED_FUNCTION (node)
     if (DECL_STATIC_CONSTRUCTOR (node->decl)
 	|| DECL_STATIC_DESTRUCTOR (node->decl))
-       record_cdtor_fn (node);
-  build_cdtor_fns ();
-  static_ctors.release ();
-  static_dtors.release ();
+       record_cdtor_fn (node, &ctors, &dtors);
+  build_cdtor_fns (&ctors, &dtors);
   return 0;
 }
 
@@ -1444,4 +1450,45 @@ ipa_opt_pass_d *
 make_pass_ipa_single_use (gcc::context *ctxt)
 {
   return new pass_ipa_single_use (ctxt);
+}
+
+/* Materialize all clones.  */
+
+namespace {
+
+const pass_data pass_data_materialize_all_clones =
+{
+  SIMPLE_IPA_PASS, /* type */
+  "materialize-all-clones", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_IPA_OPT, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_materialize_all_clones : public simple_ipa_opt_pass
+{
+public:
+  pass_materialize_all_clones (gcc::context *ctxt)
+    : simple_ipa_opt_pass (pass_data_materialize_all_clones, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual unsigned int execute (function *)
+    {
+      symtab->materialize_all_clones ();
+      return 0;
+    }
+
+}; // class pass_materialize_all_clones
+
+} // anon namespace
+
+simple_ipa_opt_pass *
+make_pass_materialize_all_clones (gcc::context *ctxt)
+{
+  return new pass_materialize_all_clones (ctxt);
 }

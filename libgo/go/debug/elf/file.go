@@ -1,4 +1,4 @@
-// Copyright 2009 The Go Authors.  All rights reserved.
+// Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -269,7 +269,7 @@ func NewFile(r io.ReaderAt) (*File, error) {
 	switch f.Class {
 	case ELFCLASS32:
 		hdr := new(Header32)
-		sr.Seek(0, os.SEEK_SET)
+		sr.Seek(0, io.SeekStart)
 		if err := binary.Read(sr, f.ByteOrder, hdr); err != nil {
 			return nil, err
 		}
@@ -288,13 +288,13 @@ func NewFile(r io.ReaderAt) (*File, error) {
 		shstrndx = int(hdr.Shstrndx)
 	case ELFCLASS64:
 		hdr := new(Header64)
-		sr.Seek(0, os.SEEK_SET)
+		sr.Seek(0, io.SeekStart)
 		if err := binary.Read(sr, f.ByteOrder, hdr); err != nil {
 			return nil, err
 		}
 		f.Type = Type(hdr.Type)
 		f.Machine = Machine(hdr.Machine)
-		f.Entry = uint64(hdr.Entry)
+		f.Entry = hdr.Entry
 		if v := Version(hdr.Version); v != f.Version {
 			return nil, &FormatError{0, "mismatched ELF version", v}
 		}
@@ -315,7 +315,7 @@ func NewFile(r io.ReaderAt) (*File, error) {
 	f.Progs = make([]*Prog, phnum)
 	for i := 0; i < phnum; i++ {
 		off := phoff + int64(i)*int64(phentsize)
-		sr.Seek(off, os.SEEK_SET)
+		sr.Seek(off, io.SeekStart)
 		p := new(Prog)
 		switch f.Class {
 		case ELFCLASS32:
@@ -341,12 +341,12 @@ func NewFile(r io.ReaderAt) (*File, error) {
 			p.ProgHeader = ProgHeader{
 				Type:   ProgType(ph.Type),
 				Flags:  ProgFlag(ph.Flags),
-				Off:    uint64(ph.Off),
-				Vaddr:  uint64(ph.Vaddr),
-				Paddr:  uint64(ph.Paddr),
-				Filesz: uint64(ph.Filesz),
-				Memsz:  uint64(ph.Memsz),
-				Align:  uint64(ph.Align),
+				Off:    ph.Off,
+				Vaddr:  ph.Vaddr,
+				Paddr:  ph.Paddr,
+				Filesz: ph.Filesz,
+				Memsz:  ph.Memsz,
+				Align:  ph.Align,
 			}
 		}
 		p.sr = io.NewSectionReader(r, int64(p.Off), int64(p.Filesz))
@@ -359,7 +359,7 @@ func NewFile(r io.ReaderAt) (*File, error) {
 	names := make([]uint32, shnum)
 	for i := 0; i < shnum; i++ {
 		off := shoff + int64(i)*int64(shentsize)
-		sr.Seek(off, os.SEEK_SET)
+		sr.Seek(off, io.SeekStart)
 		s := new(Section)
 		switch f.Class {
 		case ELFCLASS32:
@@ -374,8 +374,8 @@ func NewFile(r io.ReaderAt) (*File, error) {
 				Addr:      uint64(sh.Addr),
 				Offset:    uint64(sh.Off),
 				FileSize:  uint64(sh.Size),
-				Link:      uint32(sh.Link),
-				Info:      uint32(sh.Info),
+				Link:      sh.Link,
+				Info:      sh.Info,
 				Addralign: uint64(sh.Addralign),
 				Entsize:   uint64(sh.Entsize),
 			}
@@ -388,13 +388,13 @@ func NewFile(r io.ReaderAt) (*File, error) {
 			s.SectionHeader = SectionHeader{
 				Type:      SectionType(sh.Type),
 				Flags:     SectionFlag(sh.Flags),
-				Offset:    uint64(sh.Off),
-				FileSize:  uint64(sh.Size),
-				Addr:      uint64(sh.Addr),
-				Link:      uint32(sh.Link),
-				Info:      uint32(sh.Info),
-				Addralign: uint64(sh.Addralign),
-				Entsize:   uint64(sh.Entsize),
+				Offset:    sh.Off,
+				FileSize:  sh.Size,
+				Addr:      sh.Addr,
+				Link:      sh.Link,
+				Info:      sh.Info,
+				Addralign: sh.Addralign,
+				Entsize:   sh.Entsize,
 			}
 		}
 		s.sr = io.NewSectionReader(r, int64(s.Offset), int64(s.FileSize))
@@ -579,7 +579,7 @@ func (f *File) Section(name string) *Section {
 }
 
 // applyRelocations applies relocations to dst. rels is a relocations section
-// in RELA format.
+// in REL or RELA format.
 func (f *File) applyRelocations(dst []byte, rels []byte) error {
 	switch {
 	case f.Class == ELFCLASS64 && f.Machine == EM_X86_64:
@@ -594,10 +594,14 @@ func (f *File) applyRelocations(dst []byte, rels []byte) error {
 		return f.applyRelocationsPPC(dst, rels)
 	case f.Class == ELFCLASS64 && f.Machine == EM_PPC64:
 		return f.applyRelocationsPPC64(dst, rels)
+	case f.Class == ELFCLASS32 && f.Machine == EM_MIPS:
+		return f.applyRelocationsMIPS(dst, rels)
 	case f.Class == ELFCLASS64 && f.Machine == EM_MIPS:
 		return f.applyRelocationsMIPS64(dst, rels)
 	case f.Class == ELFCLASS64 && f.Machine == EM_S390:
-		return f.applyRelocationsS390x(dst, rels)
+		return f.applyRelocationss390x(dst, rels)
+	case f.Class == ELFCLASS64 && f.Machine == EM_SPARCV9:
+		return f.applyRelocationsSPARC64(dst, rels)
 	default:
 		return errors.New("applyRelocations: not implemented")
 	}
@@ -861,6 +865,44 @@ func (f *File) applyRelocationsPPC64(dst []byte, rels []byte) error {
 	return nil
 }
 
+func (f *File) applyRelocationsMIPS(dst []byte, rels []byte) error {
+	// 8 is the size of Rel32.
+	if len(rels)%8 != 0 {
+		return errors.New("length of relocation section is not a multiple of 8")
+	}
+
+	symbols, _, err := f.getSymbols(SHT_SYMTAB)
+	if err != nil {
+		return err
+	}
+
+	b := bytes.NewReader(rels)
+	var rel Rel32
+
+	for b.Len() > 0 {
+		binary.Read(b, f.ByteOrder, &rel)
+		symNo := rel.Info >> 8
+		t := R_MIPS(rel.Info & 0xff)
+
+		if symNo == 0 || symNo > uint32(len(symbols)) {
+			continue
+		}
+		sym := &symbols[symNo-1]
+
+		switch t {
+		case R_MIPS_32:
+			if rel.Off+4 >= uint32(len(dst)) {
+				continue
+			}
+			val := f.ByteOrder.Uint32(dst[rel.Off : rel.Off+4])
+			val += uint32(sym.Value)
+			f.ByteOrder.PutUint32(dst[rel.Off:rel.Off+4], val)
+		}
+	}
+
+	return nil
+}
+
 func (f *File) applyRelocationsMIPS64(dst []byte, rels []byte) error {
 	// 24 is the size of Rela64.
 	if len(rels)%24 != 0 {
@@ -913,7 +955,7 @@ func (f *File) applyRelocationsMIPS64(dst []byte, rels []byte) error {
 	return nil
 }
 
-func (f *File) applyRelocationsS390x(dst []byte, rels []byte) error {
+func (f *File) applyRelocationss390x(dst []byte, rels []byte) error {
 	// 24 is the size of Rela64.
 	if len(rels)%24 != 0 {
 		return errors.New("length of relocation section is not a multiple of 24")
@@ -924,7 +966,7 @@ func (f *File) applyRelocationsS390x(dst []byte, rels []byte) error {
 		return err
 	}
 
-	b := bytes.NewBuffer(rels)
+	b := bytes.NewReader(rels)
 	var rela Rela64
 
 	for b.Len() > 0 {
@@ -936,18 +978,71 @@ func (f *File) applyRelocationsS390x(dst []byte, rels []byte) error {
 			continue
 		}
 		sym := &symbols[symNo-1]
+		switch SymType(sym.Info & 0xf) {
+		case STT_SECTION, STT_NOTYPE:
+			break
+		default:
+			continue
+		}
 
 		switch t {
 		case R_390_64:
 			if rela.Off+8 >= uint64(len(dst)) || rela.Addend < 0 {
 				continue
 			}
-			f.ByteOrder.PutUint64(dst[rela.Off:rela.Off+8], uint64(rela.Addend)+uint64(sym.Value))
+			val := sym.Value + uint64(rela.Addend)
+			f.ByteOrder.PutUint64(dst[rela.Off:rela.Off+8], val)
 		case R_390_32:
 			if rela.Off+4 >= uint64(len(dst)) || rela.Addend < 0 {
 				continue
 			}
-			f.ByteOrder.PutUint32(dst[rela.Off:rela.Off+4], uint32(rela.Addend)+uint32(sym.Value))
+			val := uint32(sym.Value) + uint32(rela.Addend)
+			f.ByteOrder.PutUint32(dst[rela.Off:rela.Off+4], val)
+		}
+	}
+
+	return nil
+}
+
+func (f *File) applyRelocationsSPARC64(dst []byte, rels []byte) error {
+	// 24 is the size of Rela64.
+	if len(rels)%24 != 0 {
+		return errors.New("length of relocation section is not a multiple of 24")
+	}
+
+	symbols, _, err := f.getSymbols(SHT_SYMTAB)
+	if err != nil {
+		return err
+	}
+
+	b := bytes.NewReader(rels)
+	var rela Rela64
+
+	for b.Len() > 0 {
+		binary.Read(b, f.ByteOrder, &rela)
+		symNo := rela.Info >> 32
+		t := R_SPARC(rela.Info & 0xff)
+
+		if symNo == 0 || symNo > uint64(len(symbols)) {
+			continue
+		}
+		sym := &symbols[symNo-1]
+		if SymType(sym.Info&0xf) != STT_SECTION {
+			// We don't handle non-section relocations for now.
+			continue
+		}
+
+		switch t {
+		case R_SPARC_64, R_SPARC_UA64:
+			if rela.Off+8 >= uint64(len(dst)) || rela.Addend < 0 {
+				continue
+			}
+			f.ByteOrder.PutUint64(dst[rela.Off:rela.Off+8], uint64(rela.Addend))
+		case R_SPARC_32, R_SPARC_UA32:
+			if rela.Off+4 >= uint64(len(dst)) || rela.Addend < 0 {
+				continue
+			}
+			f.ByteOrder.PutUint32(dst[rela.Off:rela.Off+4], uint32(rela.Addend))
 		}
 	}
 

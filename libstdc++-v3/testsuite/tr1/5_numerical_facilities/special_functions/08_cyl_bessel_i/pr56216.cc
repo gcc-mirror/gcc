@@ -1,6 +1,6 @@
 // 2013-02-08  Edward Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,8 +25,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   double j0 = std::tr1::cyl_bessel_j(0.0, 0.0);
   double i0 = std::tr1::cyl_bessel_i(0.0, 0.0);
   double j1 = std::tr1::cyl_bessel_j(1.0, 0.0);

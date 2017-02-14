@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  VAX version.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -226,7 +226,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-#define REGNO_REG_CLASS(REGNO) ALL_REGS
+#define REGNO_REG_CLASS(REGNO) ((void)(REGNO), ALL_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
 
@@ -333,22 +333,22 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
     }								\
   while (0)
 
+/* This macro specifies a table of register pairs used to eliminate
+   unneeded registers that point into the stack frame.  */
+#define ELIMINABLE_REGS {{FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
+
+/* On the VAX, FRAME_POINTER_REQUIRED is always 1, so the definition of this
+   macro doesn't matter for register eliminations, but it should still
+   give realistic data for rtx_addr_can_trap_p.  */
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
+  ((OFFSET) = get_frame_size ())
+
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.
    No definition is equivalent to always zero.  */
 
 #define EXIT_IGNORE_STACK 1
-
-/* Store in the variable DEPTH the initial difference between the
-   frame pointer reg contents and the stack pointer reg contents,
-   as of the start of the function body.  This depends on the layout
-   of the fixed parts of the stack frame and on how registers are saved.
-
-   On the VAX, FRAME_POINTER_REQUIRED is always 1, so the definition of this
-   macro doesn't matter.  But it must be defined.  */
-
-#define INITIAL_FRAME_POINTER_OFFSET(DEPTH) (DEPTH) = 0;
 
 /* Length in units of the trampoline for entering a nested function.  */
 

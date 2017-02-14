@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988-2016 Free Software Foundation, Inc.
+   Copyright (C) 1988-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "predict.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "optabs.h"
 #include "emit-rtl.h"
@@ -461,12 +462,14 @@ do_jump (tree exp, rtx_code_label *if_false_label,
           || TREE_CODE (TREE_OPERAND (exp, 0)) == ARRAY_REF
           || TREE_CODE (TREE_OPERAND (exp, 0)) == ARRAY_RANGE_REF)
         goto normal;
+      /* FALLTHRU */
     case CONVERT_EXPR:
       /* If we are narrowing the operand, we have to do the compare in the
          narrower mode.  */
       if ((TYPE_PRECISION (TREE_TYPE (exp))
            < TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (exp, 0)))))
         goto normal;
+      /* FALLTHRU */
     case NON_LVALUE_EXPR:
     case ABS_EXPR:
     case NEGATE_EXPR:
@@ -575,7 +578,7 @@ do_jump (tree exp, rtx_code_label *if_false_label,
 					  TREE_INT_CST_LOW (shift)))
 		{
 		  unsigned HOST_WIDE_INT mask
-		    = (unsigned HOST_WIDE_INT) 1 << TREE_INT_CST_LOW (shift);
+		    = HOST_WIDE_INT_1U << TREE_INT_CST_LOW (shift);
 		  do_jump (build2 (BIT_AND_EXPR, argtype, arg,
 				   build_int_cstu (argtype, mask)),
 			   clr_label, set_label, setclr_prob);
@@ -610,6 +613,7 @@ do_jump (tree exp, rtx_code_label *if_false_label,
 	goto normal;
 
       /* Boolean comparisons can be compiled as TRUTH_AND_EXPR.  */
+      /* FALLTHRU */
 
     case TRUTH_AND_EXPR:
       /* High branch cost, expand as the bitwise AND of the conditions.
@@ -699,6 +703,7 @@ do_jump_by_parts_greater_rtx (machine_mode mode, int unsignedp, rtx op0,
       if_false_label = drop_through_label;
       drop_through_if_true = false;
       drop_through_if_false = true;
+      prob = inv (prob);
     }
 
   /* Compare a word at a time, high order first.  */

@@ -2,7 +2,7 @@
 
 // 2013-06-12  Edward Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,8 +27,11 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   double x, Ai, Bi, Aip, Bip;
   x = 1.0;
+#if __cplusplus <= 201402L
   std::tr1::__detail::__airy(x, Ai, Bi, Aip, Bip);
+#else
+  std::__detail::__airy(x, Ai, Bi, Aip, Bip);
+#endif
 }

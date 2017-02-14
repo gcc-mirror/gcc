@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expmed.h"
 #include "dojump.h"
 #include "explow.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "stmt.h"
 #include "expr.h"
@@ -138,7 +139,8 @@ struct m68k_address {
   int scale;
 };
 
-static int m68k_sched_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
+static int m68k_sched_adjust_cost (rtx_insn *, int, rtx_insn *, int,
+				   unsigned int);
 static int m68k_sched_issue_rate (void);
 static int m68k_sched_variable_issue (FILE *, int, rtx_insn *, int);
 static void m68k_sched_md_init_global (FILE *, int, int);
@@ -181,6 +183,8 @@ static rtx m68k_function_arg (cumulative_args_t, machine_mode,
 static bool m68k_cannot_force_const_mem (machine_mode mode, rtx x);
 static bool m68k_output_addr_const_extra (FILE *, rtx);
 static void m68k_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
+static enum flt_eval_method
+m68k_excess_precision (enum excess_precision_type);
 
 /* Initialize the GCC target structure.  */
 
@@ -288,6 +292,9 @@ static void m68k_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
 #define TARGET_ASM_OUTPUT_DWARF_DTPREL m68k_output_dwarf_dtprel
 #endif
 
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
+
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	m68k_legitimate_address_p
 
@@ -317,6 +324,9 @@ static void m68k_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
 
 #undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
 #define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA m68k_output_addr_const_extra
+
+#undef TARGET_C_EXCESS_PRECISION
+#define TARGET_C_EXCESS_PRECISION m68k_excess_precision
 
 /* The value stored by TAS.  */
 #undef TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
@@ -633,10 +643,12 @@ m68k_option_override (void)
     }
 #endif
 
-  if (stack_limit_rtx != NULL_RTX && !TARGET_68020)
+  if ((opt_fstack_limit_symbol_arg != NULL || opt_fstack_limit_register_no >= 0)
+      && !TARGET_68020)
     {
       warning (0, "-fstack-limit- options are not supported on this cpu");
-      stack_limit_rtx = NULL_RTX;
+      opt_fstack_limit_symbol_arg = NULL;
+      opt_fstack_limit_register_no = -1;
     }
 
   SUBTARGET_OVERRIDE_OPTIONS;
@@ -1198,6 +1210,7 @@ m68k_expand_epilogue (bool sibcall_p)
 	     stack-based restore.  */
 	  emit_move_insn (gen_rtx_REG (Pmode, A1_REG),
 			  GEN_INT (-(current_frame.offset + fsize)));
+	  emit_insn (gen_blockage ());
 	  emit_insn (gen_addsi3 (stack_pointer_rtx,
 				 gen_rtx_REG (Pmode, A1_REG),
 				 frame_pointer_rtx));
@@ -1299,6 +1312,7 @@ m68k_expand_epilogue (bool sibcall_p)
 			 current_frame.fpu_mask, false, false);
     }
 
+  emit_insn (gen_blockage ());
   if (frame_pointer_needed)
     emit_insn (gen_unlink (frame_pointer_rtx));
   else if (fsize_with_regs)
@@ -4543,6 +4557,7 @@ m68k_get_reloc_decoration (enum m68k_reloc reloc)
 		}
 	    }
 	}
+      gcc_unreachable ();
 
     case RELOC_TLSGD:
       return "@TLSGD";
@@ -5917,8 +5932,8 @@ static state_t sched_adjust_cost_state;
 /* Implement adjust_cost scheduler hook.
    Return adjusted COST of dependency LINK between DEF_INSN and INSN.  */
 static int
-m68k_sched_adjust_cost (rtx_insn *insn, rtx link ATTRIBUTE_UNUSED,
-			rtx_insn *def_insn, int cost)
+m68k_sched_adjust_cost (rtx_insn *insn, int, rtx_insn *def_insn, int cost,
+			unsigned int)
 {
   int delay;
 
@@ -6522,6 +6537,38 @@ m68k_epilogue_uses (int regno ATTRIBUTE_UNUSED)
   return (reload_completed
 	  && (m68k_get_function_kind (current_function_decl)
 	      == m68k_fk_interrupt_handler));
+}
+
+
+/* Implement TARGET_C_EXCESS_PRECISION.
+
+   Set the value of FLT_EVAL_METHOD in float.h.  When using 68040 fp
+   instructions, we get proper intermediate rounding, otherwise we
+   get extended precision results.  */
+
+static enum flt_eval_method
+m68k_excess_precision (enum excess_precision_type type)
+{
+  switch (type)
+    {
+      case EXCESS_PRECISION_TYPE_FAST:
+	/* The fastest type to promote to will always be the native type,
+	   whether that occurs with implicit excess precision or
+	   otherwise.  */
+	return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
+      case EXCESS_PRECISION_TYPE_STANDARD:
+      case EXCESS_PRECISION_TYPE_IMPLICIT:
+	/* Otherwise, the excess precision we want when we are
+	   in a standards compliant mode, and the implicit precision we
+	   provide can be identical.  */
+	if (TARGET_68040 || ! TARGET_68881)
+	  return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
+
+	return FLT_EVAL_METHOD_PROMOTE_TO_LONG_DOUBLE;
+      default:
+	gcc_unreachable ();
+    }
+  return FLT_EVAL_METHOD_UNPREDICTABLE;
 }
 
 #include "gt-m68k.h"

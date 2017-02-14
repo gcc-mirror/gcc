@@ -1,5 +1,5 @@
 /* Loop manipulation header.
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,7 +34,7 @@ enum
 					   a complete peeling.  */
 extern edge mfb_kj_edge;
 
-extern bool remove_path (edge);
+extern bool remove_path (edge, bool * = NULL, bitmap = NULL);
 extern void place_new_loop (struct function *, struct loop *);
 extern void add_loop (struct loop *, struct loop *);
 extern void scale_loop_frequencies (struct loop *, int, int);
@@ -58,6 +58,7 @@ basic_block create_preheader (struct loop *, int);
 extern void create_preheaders (int);
 extern void force_single_succ_latches (void);
 struct loop * loop_version (struct loop *, void *,
-			    basic_block *, unsigned, unsigned, unsigned, bool);
+			    basic_block *, unsigned, unsigned,
+			    unsigned, unsigned, bool);
 
 #endif /* GCC_CFGLOOPMANIP_H */

@@ -1,6 +1,6 @@
 ; Options for the Motorola 68000 port of the compiler.
 
-; Copyright (C) 2005-2016 Free Software Foundation, Inc.
+; Copyright (C) 2005-2017 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -141,6 +141,10 @@ Generate code which uses hardware floating point instructions.
 mid-shared-library
 Target Report Mask(ID_SHARED_LIBRARY)
 Enable ID based shared library.
+
+mlong-jump-table-offsets
+Target Report RejectNegative Mask(LONG_JUMP_TABLE_OFFSETS)
+Use 32-bit offsets in jump tables rather than 16-bit offsets.
 
 mnobitfield
 Target RejectNegative InverseMask(BITFIELD)

@@ -1,5 +1,5 @@
 /* Copy propagation and SSA_NAME replacement support routines.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -503,14 +503,13 @@ static bool
 fini_copy_prop (void)
 {
   unsigned i;
+  tree var;
 
   /* Set the final copy-of value for each variable by traversing the
      copy-of chains.  */
-  for (i = 1; i < num_ssa_names; i++)
+  FOR_EACH_SSA_NAME (i, var, cfun)
     {
-      tree var = ssa_name (i);
-      if (!var
-	  || !copy_of[i].value
+      if (!copy_of[i].value
 	  || copy_of[i].value == var)
 	continue;
 
@@ -551,7 +550,7 @@ fini_copy_prop (void)
 	}
     }
 
-  bool changed = substitute_and_fold (get_value, NULL, true);
+  bool changed = substitute_and_fold (get_value, NULL);
   if (changed)
     {
       free_numbers_of_iterations_estimates (cfun);

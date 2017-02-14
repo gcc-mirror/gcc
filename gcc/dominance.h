@@ -1,5 +1,5 @@
 /* Calculate (post)dominators header file.
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -36,8 +36,13 @@ enum dom_state
 };
 
 extern void calculate_dominance_info (enum cdi_direction);
+extern void calculate_dominance_info_for_region (enum cdi_direction,
+						 vec<basic_block>);
 extern void free_dominance_info (function *, enum cdi_direction);
 extern void free_dominance_info (enum cdi_direction);
+extern void free_dominance_info_for_region (function *,
+					    enum cdi_direction,
+					    vec<basic_block>);
 extern basic_block get_immediate_dominator (enum cdi_direction, basic_block);
 extern void set_immediate_dominator (enum cdi_direction, basic_block,
 				     basic_block);

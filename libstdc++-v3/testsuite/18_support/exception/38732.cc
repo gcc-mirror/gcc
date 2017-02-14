@@ -1,4 +1,4 @@
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -61,7 +61,6 @@ extern "C" __cxa_eh_globals *__cxa_get_globals () throw();
 // PR libstdc++/38732
 void test01 ()
 {
-  bool test __attribute__((unused)) = true;
   try {
     throw 0;
   } catch(...) {

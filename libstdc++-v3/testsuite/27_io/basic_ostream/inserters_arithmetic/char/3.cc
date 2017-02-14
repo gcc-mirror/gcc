@@ -1,7 +1,7 @@
 // 1999-11-15 Kevin Ediger  <kediger@licor.com>
 // test the floating point inserters (facet num_put)
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,11 +23,10 @@
 #include <testsuite_hooks.h>
 
 template<typename T>
-bool
+void
 test03_check(T n)
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   stringbuf strbuf;
   ostream o(&strbuf);
@@ -44,8 +43,6 @@ test03_check(T n)
 
   o << oct << n << ' ' << hex << n;
   VERIFY ( strbuf.str() == expect );
-
-  return test;
 }
 
 void

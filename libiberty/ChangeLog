@@ -1,3 +1,191 @@
+2017-01-18  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR PR c++/70182
+	* cp-demangle.c (d_unqualified_name): Handle "on" for
+	operator names.
+	* testsuite/demangle-expected: Add tests.
+
+2017-01-18  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR c++/77489
+	* cp-demangle.c (d_discriminator): Handle discriminator >= 10.
+	* testsuite/demangle-expected: Add tests for discriminator.
+
+2017-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-01-04  Alan Modra  <amodra@gmail.com>
+
+	* Makefile.in (configure_deps): Update.
+	* configure: Regenerate.
+
+2016-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/78761
+	* cp-demangle.c (cplus_demangle_type): Demangle Dc as decltype(auto).
+	* testsuite/demangle-expected: Add test for decltype(auto).
+
+2016-12-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/78252
+	* cp-demangle.c (struct d_print_info): Add is_lambda_arg field.
+	(d_print_init): Initialize it.
+	(d_print_comp_inner) <DEMANGLE_COMPONENT_TEMPLATE_PARAM>: Check
+	is_lambda_arg for auto.
+	<DEMANGLE_COMPONENT_REFERENCE,
+	DEMANGLE_COMPONENT_RVALUE_REFERENCE>: Skip smashing check when
+	is_lambda_arg.
+	<DEMANGLE_COMPONENT_LAMBDA>: Increment is_lambda_arg around arg
+	printing.
+	* testsuite/demangle-expected: Add lambda auto mangling cases. 
+
+2016-12-06  DJ Delorie  <dj@redhat.com>
+
+	* argv.c (expandargv): Check for directories passed as @-files.
+
+2016-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/78498
+	* strndup.c (strlen): Delete decl.
+	(strnlen): Add decl.
+	(strndup): Call strnlen rather than strlen.
+	* xstrndup.c (xstrndup): Likewise.
+
+2016-11-29  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (d_print_comp_inner): Fix parameter indentation.
+
+2016-11-03  David Tolnay <dtolnay@gmail.com>
+	    Mark Wielaard  <mark@klomp.org>
+
+	* Makefile.in (CFILES): Add rust-demangle.c.
+	(REQUIRED_OFILES): Add rust-demangle.o.
+	* cplus-dem.c (libiberty_demanglers): Add rust_demangling case.
+	(cplus_demangle): Handle RUST_DEMANGLING.
+	(rust_demangle): New function.
+	* rust-demangle.c: New file.
+	* testsuite/Makefile.in (really-check): Add check-rust-demangle.
+	(check-rust-demangle): New rule.
+	* testsuite/rust-demangle-expected: New file.
+
+2016-11-15  Mark Wielaard  <mark@klomp.org>
+
+	* cp-demangle.c (d_expression_1): Make sure third expression
+	exists for ?: and fold expressions.
+	* testsuite/demangle-expected: Add examples of strings that could
+	crash the demangler because of missing expression.
+
+2016-11-14  Mark Wielaard  <mark@klomp.org>
+
+	* cplus-dem.c (demangle_signature): After 'H', template function,
+	no success and don't advance position if end of string reached.
+	(demangle_template): After 'z', template name, return zero on
+	premature end of string.
+	(gnu_special): Guard strchr against searching for zero characters.
+	(do_type): If member, only advance mangled string when 'F' found.
+	* testsuite/demangle-expected: Add examples of strings that could
+	crash the demangler by reading past end of input.
+
+2016-11-06  Mark Wielaard  <mark@klomp.org>
+
+	* configure.ac (ac_libiberty_warn_cflags): Add -Wshadow=local.
+	* configure: Regenerated.
+
+2016-11-07  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (is_fnqual_component_type): New.
+	(d_encoding, d_print_comp_inner, d_print_mod_list): Use it.
+	(FNQUAL_COMPONENT_CASE): New.
+	(d_make_comp, has_return_type, d_print_comp_inner)
+	(d_print_function_type): Use it.
+	(next_is_type_qual): New.
+	(d_cv_qualifiers, d_print_mod): Handle noexcept and throw-spec.
+
+2016-11-02  Mark Wielaard  <mjw@redhat.com>
+
+	* cplus-dem.c (demangle_signature): Move fall through comment.
+	(demangle_fund_type): Add fall through comment between 'G' and 'I'.
+	* hashtab.c (iterative_hash): Add fall through comments.
+	* regex.c (regex_compile): Add Fall through comment after '+'/'?'.
+	(byte_re_match_2_internal): Add Fall through comment after jump_n.
+	Change "Note fall through" to "Fall through".
+	(common_op_match_null_string_p): Return false after set_number_at
+	instead of fall through.
+
+2016-11-01  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (d_ctor_dtor_name): Handle inheriting constructor.
+
+2016-10-31  Mark Wielaard  <mjw@redhat.com>
+
+	* cplus-dem.c (ada_demangle): Initialize demangled to NULL and
+	XDELETEVEC demangled when unknown.
+
+2016-09-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* pex-win32.c (argv_to_cmdline): Quote zero-length parameters.
+	* testsuite/test-pexecute.c (main): Insert check for zero-length parameters.
+
+2016-09-10  Mark Wielaard  <mjw@redhat.com>
+
+	* cp-demangle.c (d_substitution): Change struct demangle_component
+	variable name from c to dc.
+
+2016-08-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* cp-demangle.c (d_print_mod): Add FALLTHRU.
+
+2016-08-04  Marcel Böhme  <boehme.marcel@gmail.com>
+
+	PR c++/71696
+	* cplus-dem.c: Prevent infinite recursion when there is a cycle
+	in the referencing of remembered mangled types.
+	(work_stuff): New stack to keep track of the remembered mangled
+	types that are currently being processed.
+	(push_processed_type): New method to push currently processed
+	remembered type onto the stack.
+	(pop_processed_type): New method to pop currently processed
+	remembered type from the stack.
+	(work_stuff_copy_to_from): Copy values of new variables.
+	(delete_non_B_K_work_stuff): Free stack memory.
+	(demangle_args): Push/Pop currently processed remembered type.
+	(do_type): Do not demangle a cyclic reference and push/pop
+	referenced remembered type.
+
+2016-07-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* make-relative-prefix.c (make_relative_prefix_1): Fall back to
+	malloc if alloca argument is greater than MAX_ALLOCA_SIZE.
+
+2016-07-15  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (cplus_demangle_operators): Add f[lrLR].
+	(d_expression_1): Handle them.
+	(d_maybe_print_fold_expression): New.
+	(d_print_comp_inner): Use it.
+	(d_index_template_argument): Handle negative index.
+
+	* cp-demangle.c (cplus_demangle_operators): Add sP and sZ.
+	(d_print_comp_inner): Handle them.
+	(d_template_args_1): Split out from d_template_args.
+	(d_args_length): New.
+
+2016-07-13  Marcel Böhme  <boehme.marcel@gmail.com>
+
+	PR c++/70926
+	* cplus-dem.c: Handle large values and overflow when demangling
+	length variables.
+	(demangle_template_value_parm): Read only until end of mangled string.
+	(do_hpacc_template_literal): Likewise.
+	(do_type): Handle overflow when demangling array indices.
+
+2016-06-12  Brooks Moses  <bmoses@google.com>
+
+	* cp-demangle.c (cplus_demangle_print_callback): Avoid zero-length
+	  VLAs.
+
 2016-05-31  Alan Modra  <amodra@gmail.com>
 
 	* xmemdup.c (xmemdup): Use xmalloc rather than xcalloc.

@@ -1,6 +1,6 @@
 // 2000-08-17 Benjamin Kosnik <bkoz@cygnus.com>
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,7 +31,6 @@ void test01()
   typedef codecvt_base::result			result;
   typedef codecvt<char, char, mbstate_t> 	c_codecvt;
 
-  bool test __attribute__((unused)) = true;
   int 			size = 25;
   char* 		c_arr = new char[size];
   char*                 c_ref = new char[size];

@@ -1,4 +1,4 @@
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,8 +25,6 @@ using std::tr1::get_deleter;
 // libstdc++/24595
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::tr1::shared_ptr<int> sp;
   VERIFY( !get_deleter<void(*)(int*)>(sp) );
 }

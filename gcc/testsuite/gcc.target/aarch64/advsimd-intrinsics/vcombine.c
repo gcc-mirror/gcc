@@ -93,8 +93,8 @@ void exec_vcombine (void)
   CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected, "");
   CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected, "");
   CHECK(TEST_MSG, uint, 64, 2, PRIx64, expected, "");
-  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected, "");
-  CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected, "");
+  CHECK_POLY(TEST_MSG, poly, 8, 16, PRIx8, expected, "");
+  CHECK_POLY(TEST_MSG, poly, 16, 8, PRIx16, expected, "");
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
   CHECK_FP(TEST_MSG, float, 16, 8, PRIx16, expected, "");
 #endif

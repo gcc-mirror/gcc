@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,16 +16,14 @@
 // <http://www.gnu.org/licenses/>.
 //
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-string-conversions "" }
 
 #include <ext/vstring.h>
 #include <testsuite_hooks.h>
 
-int test01(void)
+void test01(void)
 {
-  bool test = true;
-
   __gnu_cxx::__vstring s1 = { 'a', 'b', 'c' };
   VERIFY(s1 == "abc");
 
@@ -59,8 +57,6 @@ int test01(void)
   i2 = i1+6;
   s1.replace(i1, i2, { 'y', 'z' });
   VERIFY(s1 == "mnyzo");
-
-  return test;
 }
 
 int main()

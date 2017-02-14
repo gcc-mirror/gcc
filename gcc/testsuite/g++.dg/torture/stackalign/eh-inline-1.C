@@ -22,7 +22,10 @@ struct B {};
 
 static void
 inline __attribute__((always_inline))
-foo (void) throw (B,A)
+foo (void)
+#if __cplusplus <= 201402L
+throw (B,A)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+#endif
 {
   aligned i;
 

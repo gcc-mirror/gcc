@@ -1,5 +1,5 @@
 /* Pipeline hazard description translator.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
    Written by Vladimir Makarov <vmakarov@redhat.com>
 
@@ -9651,6 +9651,7 @@ main (int argc, const char **argv)
 		"#include \"stor-layout.h\"\n"
 		"#include \"calls.h\"\n"
 		"#include \"rtl.h\"\n"
+		"#include \"memmodel.h\"\n"
 		"#include \"tm_p.h\"\n"
 		"#include \"insn-config.h\"\n"
 		"#include \"recog.h\"\n"

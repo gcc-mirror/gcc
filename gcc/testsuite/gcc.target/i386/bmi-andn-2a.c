@@ -3,4 +3,4 @@
 
 #include "bmi-andn-2.c"
 
-/* { dg-final { scan-assembler-times "bmi_andn_si" 1 } } */
+/* { dg-final { scan-assembler-times "andnsi" 1 } } */

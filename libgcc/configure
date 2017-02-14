@@ -555,9 +555,13 @@ ac_unique_file="static-object.mk"
 ac_includes_default='/* none */'
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+md_unwind_header
+unwind_header
+enable_execute_stack
 asm_hidden_op
 extra_parts
 cpu_type
+get_gcc_base_ver
 thread_header
 tm_defines
 tm_file
@@ -673,6 +677,7 @@ with_system_libunwind
 enable_explicit_exception_frame_registration
 with_glibc_version
 enable_tls
+with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1327,6 +1332,8 @@ Optional Packages:
   --with-system-libunwind use installed libunwind
   --with-glibc-version=M.N
                           assume GCC used with glibc version M.N or later
+  --with-gcc-major-version-only
+                          use only GCC major number in filesystem paths
 
 Some influential environment variables:
   CC          C compiler command
@@ -2306,7 +2313,7 @@ case "${host}" in
 	  # If we are using a compiler supporting mdynamic-no-pic
 	  # and the option has been tested as safe to add, then cancel
 	  # it here, since the code generated is incompatible with shared
-	  # libs.
+	  # libs.
 	  *-mdynamic-no-pic*) PICFLAG='-fno-common -mno-dynamic-no-pic' ;;
 	  *) PICFLAG=-fno-common ;;
 	esac
@@ -2355,7 +2362,8 @@ case "${host}" in
 	PICFLAG=-fpic
 	;;
     # FIXME: Simplify to sh*-*-netbsd*?
-    sh-*-netbsdelf* | shl*-*-netbsdelf*)
+    sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
+      sh64-*-netbsd* | sh64l*-*-netbsd*)
 	PICFLAG=-fpic
 	;;
     # Default to -fPIC unless specified otherwise.
@@ -5080,19 +5088,29 @@ esac
 
 
 
+# Determine what GCC version number to use in filesystem paths.
+
+  get_gcc_base_ver="cat"
+
+# Check whether --with-gcc-major-version-only was given.
+if test "${with_gcc_major_version_only+set}" = set; then :
+  withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+      fi
+
+fi
+
+
+
+
 # Substitute configuration variables
 
 
 
-ac_config_links="$ac_config_links enable-execute-stack.c:$enable_execute_stack"
 
-ac_config_links="$ac_config_links unwind.h:$unwind_header"
 
-ac_config_links="$ac_config_links md-unwind-support.h:config/$md_unwind_header"
 
-ac_config_links="$ac_config_links sfp-machine.h:config/$sfp_machine_header"
 
-ac_config_links="$ac_config_links gthr-default.h:$thread_header"
 
 
 # We need multilib support.
@@ -5632,7 +5650,6 @@ cat >>$CONFIG_STATUS <<_ACEOF || ac_write_fail=1
 # Files that config.status was made for.
 config_files="$ac_config_files"
 config_headers="$ac_config_headers"
-config_links="$ac_config_links"
 config_commands="$ac_config_commands"
 
 _ACEOF
@@ -5661,9 +5678,6 @@ $config_files
 
 Configuration headers:
 $config_headers
-
-Configuration links:
-$config_links
 
 Configuration commands:
 $config_commands
@@ -5804,11 +5818,6 @@ for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
     "auto-target.h") CONFIG_HEADERS="$CONFIG_HEADERS auto-target.h:config.in" ;;
-    "enable-execute-stack.c") CONFIG_LINKS="$CONFIG_LINKS enable-execute-stack.c:$enable_execute_stack" ;;
-    "unwind.h") CONFIG_LINKS="$CONFIG_LINKS unwind.h:$unwind_header" ;;
-    "md-unwind-support.h") CONFIG_LINKS="$CONFIG_LINKS md-unwind-support.h:config/$md_unwind_header" ;;
-    "sfp-machine.h") CONFIG_LINKS="$CONFIG_LINKS sfp-machine.h:config/$sfp_machine_header" ;;
-    "gthr-default.h") CONFIG_LINKS="$CONFIG_LINKS gthr-default.h:$thread_header" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "default") CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
 
@@ -5824,7 +5833,6 @@ done
 if $ac_need_defaults; then
   test "${CONFIG_FILES+set}" = set || CONFIG_FILES=$config_files
   test "${CONFIG_HEADERS+set}" = set || CONFIG_HEADERS=$config_headers
-  test "${CONFIG_LINKS+set}" = set || CONFIG_LINKS=$config_links
   test "${CONFIG_COMMANDS+set}" = set || CONFIG_COMMANDS=$config_commands
 fi
 
@@ -6112,7 +6120,7 @@ cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
 fi # test -n "$CONFIG_HEADERS"
 
 
-eval set X "  :F $CONFIG_FILES  :H $CONFIG_HEADERS  :L $CONFIG_LINKS  :C $CONFIG_COMMANDS"
+eval set X "  :F $CONFIG_FILES  :H $CONFIG_HEADERS    :C $CONFIG_COMMANDS"
 shift
 for ac_tag
 do
@@ -6348,38 +6356,7 @@ $as_echo "$as_me: $ac_file is unchanged" >&6;}
       || as_fn_error "could not create -" "$LINENO" 5
   fi
  ;;
-  :L)
-  #
-  # CONFIG_LINK
-  #
 
-  if test "$ac_source" = "$ac_file" && test "$srcdir" = '.'; then
-    :
-  else
-    # Prefer the file from the source tree if names are identical.
-    if test "$ac_source" = "$ac_file" || test ! -r "$ac_source"; then
-      ac_source=$srcdir/$ac_source
-    fi
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: linking $ac_source to $ac_file" >&5
-$as_echo "$as_me: linking $ac_source to $ac_file" >&6;}
-
-    if test ! -r "$ac_source"; then
-      as_fn_error "$ac_source: file not found" "$LINENO" 5
-    fi
-    rm -f "$ac_file"
-
-    # Try a relative symlink, then a hard link, then a copy.
-    case $srcdir in
-    [\\/$]* | ?:[\\/]* ) ac_rel_source=$ac_source ;;
-	*) ac_rel_source=$ac_top_build_prefix$ac_source ;;
-    esac
-    ln -s "$ac_rel_source" "$ac_file" 2>/dev/null ||
-      ln "$ac_source" "$ac_file" 2>/dev/null ||
-      cp -p "$ac_source" "$ac_file" ||
-      as_fn_error "cannot link or copy $ac_source to $ac_file" "$LINENO" 5
-  fi
- ;;
   :C)  { $as_echo "$as_me:${as_lineno-$LINENO}: executing $ac_file commands" >&5
 $as_echo "$as_me: executing $ac_file commands" >&6;}
  ;;

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-all" } */
+/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-all -fno-vect-cost-model" } */
 
 #define N 32
 

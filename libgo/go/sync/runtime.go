@@ -1,4 +1,4 @@
-// Copyright 2012 The Go Authors.  All rights reserved.
+// Copyright 2012 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -13,30 +13,42 @@ import "unsafe"
 // library and should not be used directly.
 func runtime_Semacquire(s *uint32)
 
+// SemacquireMutex is like Semacquire, but for profiling contended Mutexes.
+func runtime_SemacquireMutex(*uint32)
+
 // Semrelease atomically increments *s and notifies a waiting goroutine
 // if one is blocked in Semacquire.
 // It is intended as a simple wakeup primitive for use by the synchronization
 // library and should not be used directly.
 func runtime_Semrelease(s *uint32)
 
-// Approximation of syncSema in runtime/sema.go.
-type syncSema struct {
-	lock uintptr
-	head unsafe.Pointer
-	tail unsafe.Pointer
+// Approximation of notifyList in runtime/sema.go. Size and alignment must
+// agree.
+type notifyList struct {
+	wait   uint32
+	notify uint32
+	lock   uintptr
+	head   unsafe.Pointer
+	tail   unsafe.Pointer
 }
 
-// Syncsemacquire waits for a pairing Syncsemrelease on the same semaphore s.
-func runtime_Syncsemacquire(s *syncSema)
+// See runtime/sema.go for documentation.
+func runtime_notifyListAdd(l *notifyList) uint32
 
-// Syncsemrelease waits for n pairing Syncsemacquire on the same semaphore s.
-func runtime_Syncsemrelease(s *syncSema, n uint32)
+// See runtime/sema.go for documentation.
+func runtime_notifyListWait(l *notifyList, t uint32)
 
-// Ensure that sync and runtime agree on size of syncSema.
-func runtime_Syncsemcheck(size uintptr)
+// See runtime/sema.go for documentation.
+func runtime_notifyListNotifyAll(l *notifyList)
+
+// See runtime/sema.go for documentation.
+func runtime_notifyListNotifyOne(l *notifyList)
+
+// Ensure that sync and runtime agree on size of notifyList.
+func runtime_notifyListCheck(size uintptr)
 func init() {
-	var s syncSema
-	runtime_Syncsemcheck(unsafe.Sizeof(s))
+	var n notifyList
+	runtime_notifyListCheck(unsafe.Sizeof(n))
 }
 
 // Active spinning runtime support.

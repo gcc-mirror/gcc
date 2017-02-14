@@ -579,7 +579,6 @@ global_state_t* cilkg_init_global_state()
     g->stack_size = cilkos_validate_stack_size(g->stack_size);
     g->failure_to_allocate_stack = 0;
 
-
     return g;
 }
 

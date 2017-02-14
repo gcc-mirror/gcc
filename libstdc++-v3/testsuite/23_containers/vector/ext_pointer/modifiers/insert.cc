@@ -1,6 +1,6 @@
 // Test for Container using non-standard pointer types.
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,8 +25,6 @@
 
 void test01() 
 { 
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::_ExtPtr_allocator<int> alloc;
   std::vector<int, __gnu_cxx::_ExtPtr_allocator<int> > iv(alloc);
   VERIFY( iv.get_allocator() == alloc );

@@ -18,7 +18,6 @@ int gt (unsigned long a, unsigned long b)
 }
 
 /* { dg-final { scan-assembler "xor\t%" } } */
-/* { dg-final { scan-assembler "subcc\t%" } } */
 /* { dg-final { scan-assembler-times "addxc\t%" 3 } } */
-/* { dg-final { scan-assembler-times "cmp\t%" 2 } } */
+/* { dg-final { scan-assembler-times "cmp\t%" 3 } } */
 /* { dg-final { scan-assembler-not "sra\t%" } } */

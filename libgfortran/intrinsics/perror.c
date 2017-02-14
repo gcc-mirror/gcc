@@ -1,5 +1,5 @@
 /* Implementation of the PERROR intrinsic.
-   Copyright (C) 2005-2016 Free Software Foundation, Inc.
+   Copyright (C) 2005-2017 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert <coudert@clipper.ens.fr>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -26,8 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 #include <errno.h>
-#include <string.h>
-#include <stdlib.h>
 
 /* SUBROUTINE PERROR(STRING)
    CHARACTER(len=*), INTENT(IN) :: STRING   */

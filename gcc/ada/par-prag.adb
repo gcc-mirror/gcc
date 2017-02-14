@@ -43,7 +43,7 @@ with System.WCh_Con; use System.WCh_Con;
 separate (Par)
 
 function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
-   Prag_Name   : constant Name_Id    := Pragma_Name (Pragma_Node);
+   Prag_Name   : constant Name_Id    := Pragma_Name_Unmapped (Pragma_Node);
    Prag_Id     : constant Pragma_Id  := Get_Pragma_Id (Prag_Name);
    Pragma_Sloc : constant Source_Ptr := Sloc (Pragma_Node);
    Arg_Count   : Nat;
@@ -257,7 +257,9 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
                   Restriction_Warnings (No_Obsolescent_Features) :=
                     Prag_Id = Pragma_Restriction_Warnings;
 
-               when Name_SPARK | Name_SPARK_05 =>
+               when Name_SPARK
+                  | Name_SPARK_05
+               =>
                   Set_Restriction (SPARK_05, Pragma_Node);
                   Restriction_Warnings (SPARK_05) :=
                     Prag_Id = Pragma_Restriction_Warnings;
@@ -359,7 +361,9 @@ begin
       --  Ada version syntax. However, it is only the zero argument form that
       --  must be processed at parse time.
 
-      when Pragma_Ada_05 | Pragma_Ada_2005 =>
+      when Pragma_Ada_05
+         | Pragma_Ada_2005
+      =>
          if Arg_Count = 0 and not Latest_Ada_Only then
             Ada_Version := Ada_2005;
             Ada_Version_Explicit := Ada_2005;
@@ -375,7 +379,9 @@ begin
       --  Ada version syntax. However, it is only the zero argument form that
       --  must be processed at parse time.
 
-      when Pragma_Ada_12 | Pragma_Ada_2012 =>
+      when Pragma_Ada_12
+         | Pragma_Ada_2012
+      =>
          if Arg_Count = 0 then
             Ada_Version := Ada_2012;
             Ada_Version_Explicit := Ada_2012;
@@ -389,7 +395,9 @@ begin
       --  This pragma must be processed at parse time, since the resulting
       --  status may be tested during the parsing of the program.
 
-      when Pragma_Compiler_Unit | Pragma_Compiler_Unit_Warning =>
+      when Pragma_Compiler_Unit
+         | Pragma_Compiler_Unit_Warning
+      =>
          Check_Arg_Count (0);
 
          --  Only recognized in main unit
@@ -578,7 +586,9 @@ begin
       --  source file names set well before the semantic analysis starts,
       --  since we load the spec and with'ed packages before analysis.
 
-      when Pragma_Source_File_Name | Pragma_Source_File_Name_Project =>
+      when Pragma_Source_File_Name
+         | Pragma_Source_File_Name_Project
+      =>
          Source_File_Name : declare
             Unam  : Unit_Name_Type;
             Expr1 : Node_Id;
@@ -1285,217 +1295,221 @@ begin
       --  For all other pragmas, checking and processing is handled
       --  entirely in Sem_Prag, and no further checking is done by Par.
 
-      when Pragma_Abort_Defer                    |
-           Pragma_Abstract_State                 |
-           Pragma_Async_Readers                  |
-           Pragma_Async_Writers                  |
-           Pragma_Assertion_Policy               |
-           Pragma_Assume                         |
-           Pragma_Assume_No_Invalid_Values       |
-           Pragma_All_Calls_Remote               |
-           Pragma_Allow_Integer_Address          |
-           Pragma_Annotate                       |
-           Pragma_Assert                         |
-           Pragma_Assert_And_Cut                 |
-           Pragma_Asynchronous                   |
-           Pragma_Atomic                         |
-           Pragma_Atomic_Components              |
-           Pragma_Attach_Handler                 |
-           Pragma_Attribute_Definition           |
-           Pragma_Check                          |
-           Pragma_Check_Float_Overflow           |
-           Pragma_Check_Name                     |
-           Pragma_Check_Policy                   |
-           Pragma_Compile_Time_Error             |
-           Pragma_Compile_Time_Warning           |
-           Pragma_Constant_After_Elaboration     |
-           Pragma_Contract_Cases                 |
-           Pragma_Convention_Identifier          |
-           Pragma_CPP_Class                      |
-           Pragma_CPP_Constructor                |
-           Pragma_CPP_Virtual                    |
-           Pragma_CPP_Vtable                     |
-           Pragma_CPU                            |
-           Pragma_C_Pass_By_Copy                 |
-           Pragma_Comment                        |
-           Pragma_Common_Object                  |
-           Pragma_Complete_Representation        |
-           Pragma_Complex_Representation         |
-           Pragma_Component_Alignment            |
-           Pragma_Controlled                     |
-           Pragma_Convention                     |
-           Pragma_Debug_Policy                   |
-           Pragma_Depends                        |
-           Pragma_Detect_Blocking                |
-           Pragma_Default_Initial_Condition      |
-           Pragma_Default_Scalar_Storage_Order   |
-           Pragma_Default_Storage_Pool           |
-           Pragma_Disable_Atomic_Synchronization |
-           Pragma_Discard_Names                  |
-           Pragma_Dispatching_Domain             |
-           Pragma_Effective_Reads                |
-           Pragma_Effective_Writes               |
-           Pragma_Eliminate                      |
-           Pragma_Elaborate                      |
-           Pragma_Elaborate_All                  |
-           Pragma_Elaborate_Body                 |
-           Pragma_Elaboration_Checks             |
-           Pragma_Enable_Atomic_Synchronization  |
-           Pragma_Export                         |
-           Pragma_Export_Function                |
-           Pragma_Export_Object                  |
-           Pragma_Export_Procedure               |
-           Pragma_Export_Value                   |
-           Pragma_Export_Valued_Procedure        |
-           Pragma_Extend_System                  |
-           Pragma_Extensions_Visible             |
-           Pragma_External                       |
-           Pragma_External_Name_Casing           |
-           Pragma_Favor_Top_Level                |
-           Pragma_Fast_Math                      |
-           Pragma_Finalize_Storage_Only          |
-           Pragma_Ghost                          |
-           Pragma_Global                         |
-           Pragma_Ident                          |
-           Pragma_Implementation_Defined         |
-           Pragma_Implemented                    |
-           Pragma_Implicit_Packing               |
-           Pragma_Import                         |
-           Pragma_Import_Function                |
-           Pragma_Import_Object                  |
-           Pragma_Import_Procedure               |
-           Pragma_Import_Valued_Procedure        |
-           Pragma_Independent                    |
-           Pragma_Independent_Components         |
-           Pragma_Initial_Condition              |
-           Pragma_Initialize_Scalars             |
-           Pragma_Initializes                    |
-           Pragma_Inline                         |
-           Pragma_Inline_Always                  |
-           Pragma_Inline_Generic                 |
-           Pragma_Inspection_Point               |
-           Pragma_Interface                      |
-           Pragma_Interface_Name                 |
-           Pragma_Interrupt_Handler              |
-           Pragma_Interrupt_State                |
-           Pragma_Interrupt_Priority             |
-           Pragma_Invariant                      |
-           Pragma_Keep_Names                     |
-           Pragma_License                        |
-           Pragma_Link_With                      |
-           Pragma_Linker_Alias                   |
-           Pragma_Linker_Constructor             |
-           Pragma_Linker_Destructor              |
-           Pragma_Linker_Options                 |
-           Pragma_Linker_Section                 |
-           Pragma_Lock_Free                      |
-           Pragma_Locking_Policy                 |
-           Pragma_Loop_Invariant                 |
-           Pragma_Loop_Optimize                  |
-           Pragma_Loop_Variant                   |
-           Pragma_Machine_Attribute              |
-           Pragma_Main                           |
-           Pragma_Main_Storage                   |
-           Pragma_Memory_Size                    |
-           Pragma_No_Body                        |
-           Pragma_No_Elaboration_Code_All        |
-           Pragma_No_Inline                      |
-           Pragma_No_Return                      |
-           Pragma_No_Run_Time                    |
-           Pragma_No_Strict_Aliasing             |
-           Pragma_No_Tagged_Streams              |
-           Pragma_Normalize_Scalars              |
-           Pragma_Obsolescent                    |
-           Pragma_Ordered                        |
-           Pragma_Optimize                       |
-           Pragma_Optimize_Alignment             |
-           Pragma_Overflow_Mode                  |
-           Pragma_Overriding_Renamings           |
-           Pragma_Pack                           |
-           Pragma_Part_Of                        |
-           Pragma_Partition_Elaboration_Policy   |
-           Pragma_Passive                        |
-           Pragma_Preelaborable_Initialization   |
-           Pragma_Polling                        |
-           Pragma_Prefix_Exception_Messages      |
-           Pragma_Persistent_BSS                 |
-           Pragma_Post                           |
-           Pragma_Postcondition                  |
-           Pragma_Post_Class                     |
-           Pragma_Pre                            |
-           Pragma_Precondition                   |
-           Pragma_Predicate                      |
-           Pragma_Predicate_Failure              |
-           Pragma_Preelaborate                   |
-           Pragma_Pre_Class                      |
-           Pragma_Priority                       |
-           Pragma_Priority_Specific_Dispatching  |
-           Pragma_Profile                        |
-           Pragma_Profile_Warnings               |
-           Pragma_Propagate_Exceptions           |
-           Pragma_Provide_Shift_Operators        |
-           Pragma_Psect_Object                   |
-           Pragma_Pure                           |
-           Pragma_Pure_Function                  |
-           Pragma_Queuing_Policy                 |
-           Pragma_Refined_Depends                |
-           Pragma_Refined_Global                 |
-           Pragma_Refined_Post                   |
-           Pragma_Refined_State                  |
-           Pragma_Relative_Deadline              |
-           Pragma_Remote_Access_Type             |
-           Pragma_Remote_Call_Interface          |
-           Pragma_Remote_Types                   |
-           Pragma_Restricted_Run_Time            |
-           Pragma_Rational                       |
-           Pragma_Ravenscar                      |
-           Pragma_Reviewable                     |
-           Pragma_Share_Generic                  |
-           Pragma_Shared                         |
-           Pragma_Shared_Passive                 |
-           Pragma_Short_Circuit_And_Or           |
-           Pragma_Short_Descriptors              |
-           Pragma_Simple_Storage_Pool_Type       |
-           Pragma_SPARK_Mode                     |
-           Pragma_Storage_Size                   |
-           Pragma_Storage_Unit                   |
-           Pragma_Static_Elaboration_Desired     |
-           Pragma_Stream_Convert                 |
-           Pragma_Subtitle                       |
-           Pragma_Suppress                       |
-           Pragma_Suppress_Debug_Info            |
-           Pragma_Suppress_Exception_Locations   |
-           Pragma_Suppress_Initialization        |
-           Pragma_System_Name                    |
-           Pragma_Task_Dispatching_Policy        |
-           Pragma_Task_Info                      |
-           Pragma_Task_Name                      |
-           Pragma_Task_Storage                   |
-           Pragma_Test_Case                      |
-           Pragma_Thread_Local_Storage           |
-           Pragma_Time_Slice                     |
-           Pragma_Title                          |
-           Pragma_Type_Invariant                 |
-           Pragma_Type_Invariant_Class           |
-           Pragma_Unchecked_Union                |
-           Pragma_Unevaluated_Use_Of_Old         |
-           Pragma_Unimplemented_Unit             |
-           Pragma_Universal_Aliasing             |
-           Pragma_Universal_Data                 |
-           Pragma_Unmodified                     |
-           Pragma_Unreferenced                   |
-           Pragma_Unreferenced_Objects           |
-           Pragma_Unreserve_All_Interrupts       |
-           Pragma_Unsuppress                     |
-           Pragma_Unused                         |
-           Pragma_Use_VADS_Size                  |
-           Pragma_Volatile                       |
-           Pragma_Volatile_Components            |
-           Pragma_Volatile_Full_Access           |
-           Pragma_Volatile_Function              |
-           Pragma_Warning_As_Error               |
-           Pragma_Weak_External                  |
-           Pragma_Validity_Checks                =>
+      when Pragma_Abort_Defer
+         | Pragma_Abstract_State
+         | Pragma_Async_Readers
+         | Pragma_Async_Writers
+         | Pragma_Assertion_Policy
+         | Pragma_Assume
+         | Pragma_Assume_No_Invalid_Values
+         | Pragma_All_Calls_Remote
+         | Pragma_Allow_Integer_Address
+         | Pragma_Annotate
+         | Pragma_Assert
+         | Pragma_Assert_And_Cut
+         | Pragma_Asynchronous
+         | Pragma_Atomic
+         | Pragma_Atomic_Components
+         | Pragma_Attach_Handler
+         | Pragma_Attribute_Definition
+         | Pragma_Check
+         | Pragma_Check_Float_Overflow
+         | Pragma_Check_Name
+         | Pragma_Check_Policy
+         | Pragma_Compile_Time_Error
+         | Pragma_Compile_Time_Warning
+         | Pragma_Constant_After_Elaboration
+         | Pragma_Contract_Cases
+         | Pragma_Convention_Identifier
+         | Pragma_CPP_Class
+         | Pragma_CPP_Constructor
+         | Pragma_CPP_Virtual
+         | Pragma_CPP_Vtable
+         | Pragma_CPU
+         | Pragma_C_Pass_By_Copy
+         | Pragma_Comment
+         | Pragma_Common_Object
+         | Pragma_Complete_Representation
+         | Pragma_Complex_Representation
+         | Pragma_Component_Alignment
+         | Pragma_Controlled
+         | Pragma_Convention
+         | Pragma_Debug_Policy
+         | Pragma_Depends
+         | Pragma_Detect_Blocking
+         | Pragma_Default_Initial_Condition
+         | Pragma_Default_Scalar_Storage_Order
+         | Pragma_Default_Storage_Pool
+         | Pragma_Disable_Atomic_Synchronization
+         | Pragma_Discard_Names
+         | Pragma_Dispatching_Domain
+         | Pragma_Effective_Reads
+         | Pragma_Effective_Writes
+         | Pragma_Eliminate
+         | Pragma_Elaborate
+         | Pragma_Elaborate_All
+         | Pragma_Elaborate_Body
+         | Pragma_Elaboration_Checks
+         | Pragma_Enable_Atomic_Synchronization
+         | Pragma_Export
+         | Pragma_Export_Function
+         | Pragma_Export_Object
+         | Pragma_Export_Procedure
+         | Pragma_Export_Value
+         | Pragma_Export_Valued_Procedure
+         | Pragma_Extend_System
+         | Pragma_Extensions_Visible
+         | Pragma_External
+         | Pragma_External_Name_Casing
+         | Pragma_Favor_Top_Level
+         | Pragma_Fast_Math
+         | Pragma_Finalize_Storage_Only
+         | Pragma_Ghost
+         | Pragma_Global
+         | Pragma_Ident
+         | Pragma_Implementation_Defined
+         | Pragma_Implemented
+         | Pragma_Implicit_Packing
+         | Pragma_Import
+         | Pragma_Import_Function
+         | Pragma_Import_Object
+         | Pragma_Import_Procedure
+         | Pragma_Import_Valued_Procedure
+         | Pragma_Independent
+         | Pragma_Independent_Components
+         | Pragma_Initial_Condition
+         | Pragma_Initialize_Scalars
+         | Pragma_Initializes
+         | Pragma_Inline
+         | Pragma_Inline_Always
+         | Pragma_Inline_Generic
+         | Pragma_Inspection_Point
+         | Pragma_Interface
+         | Pragma_Interface_Name
+         | Pragma_Interrupt_Handler
+         | Pragma_Interrupt_State
+         | Pragma_Interrupt_Priority
+         | Pragma_Invariant
+         | Pragma_Keep_Names
+         | Pragma_License
+         | Pragma_Link_With
+         | Pragma_Linker_Alias
+         | Pragma_Linker_Constructor
+         | Pragma_Linker_Destructor
+         | Pragma_Linker_Options
+         | Pragma_Linker_Section
+         | Pragma_Lock_Free
+         | Pragma_Locking_Policy
+         | Pragma_Loop_Invariant
+         | Pragma_Loop_Optimize
+         | Pragma_Loop_Variant
+         | Pragma_Machine_Attribute
+         | Pragma_Main
+         | Pragma_Main_Storage
+         | Pragma_Max_Queue_Length
+         | Pragma_Memory_Size
+         | Pragma_No_Body
+         | Pragma_No_Elaboration_Code_All
+         | Pragma_No_Inline
+         | Pragma_No_Return
+         | Pragma_No_Run_Time
+         | Pragma_No_Strict_Aliasing
+         | Pragma_No_Tagged_Streams
+         | Pragma_Normalize_Scalars
+         | Pragma_Obsolescent
+         | Pragma_Ordered
+         | Pragma_Optimize
+         | Pragma_Optimize_Alignment
+         | Pragma_Overflow_Mode
+         | Pragma_Overriding_Renamings
+         | Pragma_Pack
+         | Pragma_Part_Of
+         | Pragma_Partition_Elaboration_Policy
+         | Pragma_Passive
+         | Pragma_Preelaborable_Initialization
+         | Pragma_Polling
+         | Pragma_Prefix_Exception_Messages
+         | Pragma_Persistent_BSS
+         | Pragma_Post
+         | Pragma_Postcondition
+         | Pragma_Post_Class
+         | Pragma_Pre
+         | Pragma_Precondition
+         | Pragma_Predicate
+         | Pragma_Predicate_Failure
+         | Pragma_Preelaborate
+         | Pragma_Pre_Class
+         | Pragma_Priority
+         | Pragma_Priority_Specific_Dispatching
+         | Pragma_Profile
+         | Pragma_Profile_Warnings
+         | Pragma_Propagate_Exceptions
+         | Pragma_Provide_Shift_Operators
+         | Pragma_Psect_Object
+         | Pragma_Pure
+         | Pragma_Pure_Function
+         | Pragma_Queuing_Policy
+         | Pragma_Refined_Depends
+         | Pragma_Refined_Global
+         | Pragma_Refined_Post
+         | Pragma_Refined_State
+         | Pragma_Relative_Deadline
+         | Pragma_Remote_Access_Type
+         | Pragma_Remote_Call_Interface
+         | Pragma_Remote_Types
+         | Pragma_Restricted_Run_Time
+         | Pragma_Rational
+         | Pragma_Ravenscar
+         | Pragma_Rename_Pragma
+         | Pragma_Reviewable
+         | Pragma_Secondary_Stack_Size
+         | Pragma_Share_Generic
+         | Pragma_Shared
+         | Pragma_Shared_Passive
+         | Pragma_Short_Circuit_And_Or
+         | Pragma_Short_Descriptors
+         | Pragma_Simple_Storage_Pool_Type
+         | Pragma_SPARK_Mode
+         | Pragma_Storage_Size
+         | Pragma_Storage_Unit
+         | Pragma_Static_Elaboration_Desired
+         | Pragma_Stream_Convert
+         | Pragma_Subtitle
+         | Pragma_Suppress
+         | Pragma_Suppress_Debug_Info
+         | Pragma_Suppress_Exception_Locations
+         | Pragma_Suppress_Initialization
+         | Pragma_System_Name
+         | Pragma_Task_Dispatching_Policy
+         | Pragma_Task_Info
+         | Pragma_Task_Name
+         | Pragma_Task_Storage
+         | Pragma_Test_Case
+         | Pragma_Thread_Local_Storage
+         | Pragma_Time_Slice
+         | Pragma_Title
+         | Pragma_Type_Invariant
+         | Pragma_Type_Invariant_Class
+         | Pragma_Unchecked_Union
+         | Pragma_Unevaluated_Use_Of_Old
+         | Pragma_Unimplemented_Unit
+         | Pragma_Universal_Aliasing
+         | Pragma_Universal_Data
+         | Pragma_Unmodified
+         | Pragma_Unreferenced
+         | Pragma_Unreferenced_Objects
+         | Pragma_Unreserve_All_Interrupts
+         | Pragma_Unsuppress
+         | Pragma_Unused
+         | Pragma_Use_VADS_Size
+         | Pragma_Volatile
+         | Pragma_Volatile_Components
+         | Pragma_Volatile_Full_Access
+         | Pragma_Volatile_Function
+         | Pragma_Warning_As_Error
+         | Pragma_Weak_External
+         | Pragma_Validity_Checks
+      =>
          null;
 
       --------------------

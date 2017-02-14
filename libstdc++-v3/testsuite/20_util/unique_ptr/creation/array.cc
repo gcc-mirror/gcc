@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,8 +32,6 @@ struct A
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::unique_ptr<A[]> a = std::make_unique<A[]>(3);
   VERIFY( a != nullptr );
   VERIFY( a[0].b && a[1].b && a[2].b );

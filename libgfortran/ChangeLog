@@ -1,104 +1,53 @@
-2016-06-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2017-01-31  Steven G. Kargl  <kargl@gcc.gnu.org>
 
-	PR libgfortran/48852
-	* io/write.c: Cleaned up whitespace.
-	(write_d, write_e, write_f, write_es, write_en): Use new helper function
-	write_float_0. (write_float_0): New helper function.
-	(get_precision, select_buffer, select_string, write_float_string): New
-	helper functions used in remaining float writing functions. Helper function
-	write_float_string now contains code for writing to kind=4 character
-	internal units.
-	(write_real): Modified to establish working buffers at this level and to
-	use new helper functions.
-	(write_real_g0): Likewise modified.
-	(write_complex): Likewise modified. Gets both float strings before
-	output so that final lengths can be determined which allows right
-	justifying the complex number with no intervening spaces.
-	* io/write_float.def (build_float_string): Renamed from previosly
-	output_float, modified to use buffers passed in from higher functions,
-	builds a null terminated string of the floating point value. Character
-	kind=4 code eliminated.
-	(write_infnan): Likewise modified to use incoming buffers and eliminate
-	kind=4 related code.
-	(OUTPUT_FLOAT_FMT_G): Deleted, functionality moved into FORMAT_FLOAT.
-	(FORMAT_FLOAT): Renamed macro from WRITE_FLOAT. Use build_float_string.
-	(get_float_string): Renamed from write_float, uses FORMAT_FLOAT macro.
-	Buffer allocation removed, now at higher level.
+	PR fortran/79305
+	* c99_protos.h: Spell HAVE_EXPL correctly.
+	* intrinsics/c99_functions.c: Ditto.
 
-2016-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2017-01-19  Uros Bizjak  <ubizjak@gmail.com>
 
-	PR libgfortran/71123
-	* io/list_read (eat_spaces): Eat '\r' as part of spaces.
+	PR target/78478
+	* acinclude.m4: Include ../config/ax_check_define.m4
+	* configure.ac: Check if _SOFT_FLOAT is defined.
+	* configure.host (i?86 | x86_64): Use fpu-generic when
+	have_soft_float is set.
+	* configure: Regenerate.
 
-2016-04-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2017-01-19  Jakub Jelinek  <jakub@redhat.com>
 
-	PR libgfortran/70684
-	* io/list_read (check_buffers): Add '\r' to check for end of line.
+	PR target/79127
+	* acinclude.m4 (LIBGFOR_CHECK_AVX512F): Ensure the test clobbers
+	some zmm16+ registers to verify they are handled by unwind info
+	properly if needed.
+	* configure: Regenerated.
 
-2016-03-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
-	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
-	PR libgfortran/70235
-	* io/write_float.def: Fix PF format for negative values of the scale
-	factor.
+	PR other/79046
+	* configure.ac: Add GCC_BASE_VER.
+	* Makefile.am (gcc_version): Use @get_gcc_base_ver@ instead of cat to
+	get version from BASE-VER file.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
 
-2016-03-28  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+2017-01-13  Andre Vehreschild  <vehre@gcc.gnu.org>
 
-	* caf/libcaf.h: caf_stop_numeric and caf_stop_str prototype.
-	* caf/single.c: _gfortran_caf_stop_numeric and
-	_gfortran_caf_stop_str implementation.
+	PR fortran/70696
+	* caf/single.c (_gfortran_caf_register): Allocate enough memory for
+	the event counter.
 
-2016-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2017-01-07  Andre Vehreschild  <vehre@gcc.gnu.org>
 
-	PR libgfortran/69456
-	* io/list_read.c (read_real): If digit is missing from exponent issue
-	an error. (parse_real): Likewise and adjusted error message to clarify
-	it is part of a complex number.
-	(nml_read_obj): Bump item count and add comment that this is used to
-	identify which item in a namelist read has a problem.
+	PR fortran/78781
+	PR fortran/78935
+	* caf/single.c (send_by_ref): Fix addressing of non-allocatable scalar
+	destination components.
 
-2016-02-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
-
-	PR libgfortran/69651
-	* io/list_read.c (push_char4): Fix the pointer usage for xrealloc.
-
-2016-02-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
-
-	PR libgfortran/69651
-	* io/list_read.c: Entire file trailing spaces removed.
-	(CASE_SEPARATORS): Remove '!'.
-	(is_separator): Add namelist mode as condition with '!'.
-	(push_char): Remove un-needed memset. (push_char4): Likewise and remove
-	'new' pointer. (eat_separator): Remove un-needed use of notify_std.
-	(read_logical): If '!' bang encountered when not in namelist mode got
-	bad_logical to give an error. (read_integer): Likewise reject '!'.
-	(read_character): Remove condition testing c = '!' which is now inside
-	the is_separator macro. (parse_real): Reject '!' unless in namelist mode.
-	(read_complex): Reject '!' unless in namelist mode. (read_real): Likewise
-	reject '!'. 
-
-2016-02-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
-
-	PR libgfortran/69668
-	* io/list_read.c (read_character): Remove code related to DELIM_NONE.
-
-2016-01-23  John David Anglin  <danglin@gcc.gnu.org>
-
-	PR libfortran/68744
-	* runtime/backtrace.c: Include gthr.h.
-	(show_backtrace): Use __gthread_active_p() to determine whether threads
-	are active.  Return if lbstate is NULL.
-
-2016-01-15  Jakub Jelinek  <jakub@redhat.com>
-
-	* intrinsics/execute_command_line.c (set_cmdstat): Use "%s", msg
-	instead of msg to avoid -Wformat-security warning.
-
-2016-01-04  Jakub Jelinek  <jakub@redhat.com>
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
 
-Copyright (C) 2016 Free Software Foundation, Inc.
+Copyright (C) 2017 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

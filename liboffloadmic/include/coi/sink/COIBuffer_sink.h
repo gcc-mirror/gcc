@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015 Intel Corporation.
+ * Copyright 2010-2016 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -48,8 +48,8 @@
 * @file sink\COIBuffer_sink.h
 */
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
-#include "../common/COITypes_common.h"
-#include "../common/COIResult_common.h"
+    #include "../common/COITypes_common.h"
+    #include "../common/COIResult_common.h"
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
 #ifdef __cplusplus
@@ -85,7 +85,7 @@ extern "C" {
 ///
 COIRESULT
 COIBufferAddRef(
-            void*           in_pBuffer);
+    void           *in_pBuffer);
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -121,7 +121,7 @@ COIBufferAddRef(
 ///
 COIRESULT
 COIBufferReleaseRef(
-            void*           in_pBuffer);
+    void           *in_pBuffer);
 
 
 #ifdef __cplusplus

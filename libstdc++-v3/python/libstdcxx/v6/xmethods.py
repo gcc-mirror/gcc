@@ -1,6 +1,6 @@
 # Xmethods for libstdc++.
 
-# Copyright (C) 2014-2016 Free Software Foundation, Inc.
+# Copyright (C) 2014-2017 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -148,7 +148,7 @@ class ArrayMethodsMatcher(gdb.xmethod.XMethodMatcher):
         self.methods = [self._method_dict[m] for m in self._method_dict]
 
     def match(self, class_type, method_name):
-        if not re.match('^std::array<.*>$', class_type.tag):
+        if not re.match('^std::(__\d+::)?array<.*>$', class_type.tag):
             return None
         method = self._method_dict.get(method_name)
         if method is None or not method.enabled:
@@ -165,7 +165,7 @@ class ArrayMethodsMatcher(gdb.xmethod.XMethodMatcher):
 class DequeWorkerBase(gdb.xmethod.XMethodWorker):
     def __init__(self, val_type):
         self._val_type = val_type
-        self._bufsize = (512 / val_type.sizeof) or 1
+        self._bufsize = 512 // val_type.sizeof or 1
 
     def size(self, obj):
         first_node = obj['_M_impl']['_M_start']['_M_node']
@@ -174,10 +174,10 @@ class DequeWorkerBase(gdb.xmethod.XMethodWorker):
         first = obj['_M_impl']['_M_finish']['_M_first']
         return (last_node - first_node) * self._bufsize + (cur - first)
 
-    def index(self, obj, index):
+    def index(self, obj, idx):
         first_node = obj['_M_impl']['_M_start']['_M_node']
-        index_node = first_node + index / self._bufsize
-        return index_node[0][index % self._bufsize]
+        index_node = first_node + int(idx) // self._bufsize
+        return index_node[0][idx % self._bufsize]
 
 class DequeEmptyWorker(DequeWorkerBase):
     def get_arg_types(self):
@@ -265,7 +265,7 @@ class DequeMethodsMatcher(gdb.xmethod.XMethodMatcher):
         self.methods = [self._method_dict[m] for m in self._method_dict]
 
     def match(self, class_type, method_name):
-        if not re.match('^std::deque<.*>$', class_type.tag):
+        if not re.match('^std::(__\d+::)?deque<.*>$', class_type.tag):
             return None
         method = self._method_dict.get(method_name)
         if method is None or not method.enabled:
@@ -309,7 +309,7 @@ class ForwardListMethodsMatcher(gdb.xmethod.XMethodMatcher):
         self.methods = [self._method_dict[m] for m in self._method_dict]
 
     def match(self, class_type, method_name):
-        if not re.match('^std::forward_list<.*>$', class_type.tag):
+        if not re.match('^std::(__\d+::)?forward_list<.*>$', class_type.tag):
             return None
         method = self._method_dict.get(method_name)
         if method is None or not method.enabled:
@@ -327,6 +327,15 @@ class ListWorkerBase(gdb.xmethod.XMethodWorker):
 
     def get_arg_types(self):
         return None
+
+    def get_value_from_node(self, node):
+        node = node.dereference()
+        if node.type.fields()[1].name == '_M_data':
+            # C++03 implementation, node contains the value as a member
+            return node['_M_data']
+        # C++11 implementation, node stores value in __aligned_membuf
+        addr = node['_M_storage'].address
+        return addr.cast(self._val_type.pointer()).dereference()
 
 class ListEmptyWorker(ListWorkerBase):
     def get_result_type(self, obj):
@@ -358,7 +367,7 @@ class ListFrontWorker(ListWorkerBase):
 
     def __call__(self, obj):
         node = obj['_M_impl']['_M_node']['_M_next'].cast(self._node_type)
-        return node['_M_data']
+        return self.get_value_from_node(node)
 
 class ListBackWorker(ListWorkerBase):
     def get_result_type(self, obj):
@@ -366,7 +375,7 @@ class ListBackWorker(ListWorkerBase):
 
     def __call__(self, obj):
         prev_node = obj['_M_impl']['_M_node']['_M_prev'].cast(self._node_type)
-        return prev_node['_M_data']
+        return self.get_value_from_node(prev_node)
 
 class ListMethodsMatcher(gdb.xmethod.XMethodMatcher):
     def __init__(self):
@@ -381,7 +390,7 @@ class ListMethodsMatcher(gdb.xmethod.XMethodMatcher):
         self.methods = [self._method_dict[m] for m in self._method_dict]
 
     def match(self, class_type, method_name):
-        if not re.match('^std::list<.*>$', class_type.tag):
+        if not re.match('^std::(__\d+::)?(__cxx11::)?list<.*>$', class_type.tag):
             return None
         method = self._method_dict.get(method_name)
         if method is None or not method.enabled:
@@ -410,7 +419,7 @@ class VectorWorkerBase(gdb.xmethod.XMethodWorker):
         if self._val_type.code == gdb.TYPE_CODE_BOOL:
             start = obj['_M_impl']['_M_start']['_M_p']
             bit_size = start.dereference().type.sizeof * 8
-            valp = start + index / bit_size
+            valp = start + index // bit_size
             offset = index % bit_size
             return (valp.dereference() & (1 << offset)) > 0
         else:
@@ -496,7 +505,7 @@ class VectorMethodsMatcher(gdb.xmethod.XMethodMatcher):
         self.methods = [self._method_dict[m] for m in self._method_dict]
 
     def match(self, class_type, method_name):
-        if not re.match('^std::vector<.*>$', class_type.tag):
+        if not re.match('^std::(__\d+::)?vector<.*>$', class_type.tag):
             return None
         method = self._method_dict.get(method_name)
         if method is None or not method.enabled:
@@ -545,7 +554,7 @@ class AssociativeContainerMethodsMatcher(gdb.xmethod.XMethodMatcher):
         self.methods = [self._method_dict[m] for m in self._method_dict]
 
     def match(self, class_type, method_name):
-        if not re.match('^std::%s<.*>$' % self._name, class_type.tag):
+        if not re.match('^std::(__\d+::)?%s<.*>$' % self._name, class_type.tag):
             return None
         method = self._method_dict.get(method_name)
         if method is None or not method.enabled:
@@ -556,8 +565,14 @@ class AssociativeContainerMethodsMatcher(gdb.xmethod.XMethodMatcher):
 # Xmethods for std::unique_ptr
 
 class UniquePtrGetWorker(gdb.xmethod.XMethodWorker):
+    "Implements std::unique_ptr<T>::get() and std::unique_ptr<T>::operator->()"
+
     def __init__(self, elem_type):
-        self._elem_type = elem_type
+        self._is_array = elem_type.code == gdb.TYPE_CODE_ARRAY
+        if self._is_array:
+            self._elem_type = elem_type.target()
+        else:
+            self._elem_type = elem_type
 
     def get_arg_types(self):
         return None
@@ -565,18 +580,52 @@ class UniquePtrGetWorker(gdb.xmethod.XMethodWorker):
     def get_result_type(self, obj):
         return self._elem_type.pointer()
 
+    def _supports(self, method_name):
+        "operator-> is not supported for unique_ptr<T[]>"
+        return method_name == 'get' or not self._is_array
+
     def __call__(self, obj):
-        return obj['_M_t']['_M_head_impl']
+        impl_type = obj.dereference().type.fields()[0].type.tag
+        if re.match('^std::(__\d+::)?__uniq_ptr_impl<.*>$', impl_type): # New implementation
+            return obj['_M_t']['_M_t']['_M_head_impl']
+        elif re.match('^std::(__\d+::)?tuple<.*>$', impl_type):
+            return obj['_M_t']['_M_head_impl']
+        return None
 
 class UniquePtrDerefWorker(UniquePtrGetWorker):
+    "Implements std::unique_ptr<T>::operator*()"
+
     def __init__(self, elem_type):
         UniquePtrGetWorker.__init__(self, elem_type)
 
     def get_result_type(self, obj):
         return self._elem_type
 
+    def _supports(self, method_name):
+        "operator* is not supported for unique_ptr<T[]>"
+        return not self._is_array
+
     def __call__(self, obj):
         return UniquePtrGetWorker.__call__(self, obj).dereference()
+
+class UniquePtrSubscriptWorker(UniquePtrGetWorker):
+    "Implements std::unique_ptr<T>::operator[](size_t)"
+
+    def __init__(self, elem_type):
+        UniquePtrGetWorker.__init__(self, elem_type)
+
+    def get_arg_types(self):
+        return get_std_size_type()
+
+    def get_result_type(self, obj, index):
+        return self._elem_type
+
+    def _supports(self, method_name):
+        "operator[] is only supported for unique_ptr<T[]>"
+        return self._is_array
+
+    def __call__(self, obj, index):
+        return UniquePtrGetWorker.__call__(self, obj)[index]
 
 class UniquePtrMethodsMatcher(gdb.xmethod.XMethodMatcher):
     def __init__(self):
@@ -586,16 +635,138 @@ class UniquePtrMethodsMatcher(gdb.xmethod.XMethodMatcher):
             'get': LibStdCxxXMethod('get', UniquePtrGetWorker),
             'operator->': LibStdCxxXMethod('operator->', UniquePtrGetWorker),
             'operator*': LibStdCxxXMethod('operator*', UniquePtrDerefWorker),
+            'operator[]': LibStdCxxXMethod('operator[]', UniquePtrSubscriptWorker),
         }
         self.methods = [self._method_dict[m] for m in self._method_dict]
 
     def match(self, class_type, method_name):
-        if not re.match('^std::unique_ptr<.*>$', class_type.tag):
+        if not re.match('^std::(__\d+::)?unique_ptr<.*>$', class_type.tag):
             return None
         method = self._method_dict.get(method_name)
         if method is None or not method.enabled:
             return None
-        return method.worker_class(class_type.template_argument(0))
+        worker = method.worker_class(class_type.template_argument(0))
+        if worker._supports(method_name):
+            return worker
+        return None
+
+# Xmethods for std::shared_ptr
+
+class SharedPtrGetWorker(gdb.xmethod.XMethodWorker):
+    "Implements std::shared_ptr<T>::get() and std::shared_ptr<T>::operator->()"
+
+    def __init__(self, elem_type):
+        self._is_array = elem_type.code == gdb.TYPE_CODE_ARRAY
+        if self._is_array:
+            self._elem_type = elem_type.target()
+        else:
+            self._elem_type = elem_type
+
+    def get_arg_types(self):
+        return None
+
+    def get_result_type(self, obj):
+        return self._elem_type.pointer()
+
+    def _supports(self, method_name):
+        "operator-> is not supported for shared_ptr<T[]>"
+        return method_name == 'get' or not self._is_array
+
+    def __call__(self, obj):
+        return obj['_M_ptr']
+
+class SharedPtrDerefWorker(SharedPtrGetWorker):
+    "Implements std::shared_ptr<T>::operator*()"
+
+    def __init__(self, elem_type):
+        SharedPtrGetWorker.__init__(self, elem_type)
+
+    def get_result_type(self, obj):
+        return self._elem_type
+
+    def _supports(self, method_name):
+        "operator* is not supported for shared_ptr<T[]>"
+        return not self._is_array
+
+    def __call__(self, obj):
+        return SharedPtrGetWorker.__call__(self, obj).dereference()
+
+class SharedPtrSubscriptWorker(SharedPtrGetWorker):
+    "Implements std::shared_ptr<T>::operator[](size_t)"
+
+    def __init__(self, elem_type):
+        SharedPtrGetWorker.__init__(self, elem_type)
+
+    def get_arg_types(self):
+        return get_std_size_type()
+
+    def get_result_type(self, obj, index):
+        return self._elem_type
+
+    def _supports(self, method_name):
+        "operator[] is only supported for shared_ptr<T[]>"
+        return self._is_array
+
+    def __call__(self, obj, index):
+        # Check bounds if _elem_type is an array of known bound
+        m = re.match('.*\[(\d+)]$', str(self._elem_type))
+        if m and index >= int(m.group(1)):
+            raise IndexError('shared_ptr<%s> index "%d" should not be >= %d.' %
+                             (self._elem_type, int(index), int(m.group(1))))
+        return SharedPtrGetWorker.__call__(self, obj)[index]
+
+class SharedPtrUseCountWorker(gdb.xmethod.XMethodWorker):
+    "Implements std::shared_ptr<T>::use_count()"
+
+    def __init__(self, elem_type):
+        SharedPtrUseCountWorker.__init__(self, elem_type)
+
+    def get_arg_types(self):
+        return None
+
+    def get_result_type(self, obj):
+        return gdb.lookup_type('long')
+
+    def __call__(self, obj):
+        refcounts = ['_M_refcount']['_M_pi']
+        return refcounts['_M_use_count'] if refcounts else 0
+
+class SharedPtrUniqueWorker(SharedPtrUseCountWorker):
+    "Implements std::shared_ptr<T>::unique()"
+
+    def __init__(self, elem_type):
+        SharedPtrUseCountWorker.__init__(self, elem_type)
+
+    def get_result_type(self, obj):
+        return gdb.lookup_type('bool')
+
+    def __call__(self, obj):
+        return SharedPtrUseCountWorker.__call__(self, obj) == 1
+
+class SharedPtrMethodsMatcher(gdb.xmethod.XMethodMatcher):
+    def __init__(self):
+        gdb.xmethod.XMethodMatcher.__init__(self,
+                                            matcher_name_prefix + 'shared_ptr')
+        self._method_dict = {
+            'get': LibStdCxxXMethod('get', SharedPtrGetWorker),
+            'operator->': LibStdCxxXMethod('operator->', SharedPtrGetWorker),
+            'operator*': LibStdCxxXMethod('operator*', SharedPtrDerefWorker),
+            'operator[]': LibStdCxxXMethod('operator[]', SharedPtrSubscriptWorker),
+            'use_count': LibStdCxxXMethod('use_count', SharedPtrUseCountWorker),
+            'unique': LibStdCxxXMethod('unique', SharedPtrUniqueWorker),
+        }
+        self.methods = [self._method_dict[m] for m in self._method_dict]
+
+    def match(self, class_type, method_name):
+        if not re.match('^std::(__\d+::)?shared_ptr<.*>$', class_type.tag):
+            return None
+        method = self._method_dict.get(method_name)
+        if method is None or not method.enabled:
+            return None
+        worker = method.worker_class(class_type.template_argument(0))
+        if worker._supports(method_name):
+            return worker
+        return None
 
 def register_libstdcxx_xmethods(locus):
     gdb.xmethod.register_xmethod_matcher(locus, ArrayMethodsMatcher())
@@ -620,3 +791,4 @@ def register_libstdcxx_xmethods(locus):
     gdb.xmethod.register_xmethod_matcher(
         locus, AssociativeContainerMethodsMatcher('unordered_multimap'))
     gdb.xmethod.register_xmethod_matcher(locus, UniquePtrMethodsMatcher())
+    gdb.xmethod.register_xmethod_matcher(locus, SharedPtrMethodsMatcher())

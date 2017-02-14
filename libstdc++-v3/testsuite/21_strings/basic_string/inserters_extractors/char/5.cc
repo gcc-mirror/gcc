@@ -1,6 +1,6 @@
 // 1999-07-01 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,7 @@
 // mode == out
 void test05(std::size_t size)
 {
-  bool test __attribute__((unused)) = true;
+  bool test = true;
   const char filename[] = "inserters_extractors-1.txt";
   const char fillc = 'f';
   std::ofstream ofs(filename);

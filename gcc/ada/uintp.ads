@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -252,12 +252,12 @@ package Uintp is
    --  Converts Char_Code value to universal integer form
 
    function UI_To_Int (Input : Uint) return Int;
-   --  Converts universal integer value to Int. Fatal error if value is not in
-   --  appropriate range.
+   --  Converts universal integer value to Int. Constraint_Error if value is
+   --  not in appropriate range.
 
    function UI_To_CC (Input : Uint) return Char_Code;
-   --  Converts universal integer value to Char_Code. Fatal error if value is
-   --  not in Char_Code range.
+   --  Converts universal integer value to Char_Code. Constraint_Error if value
+   --  is not in Char_Code range.
 
    function Num_Bits (Input : Uint) return Nat;
    --  Approximate number of binary bits in given universal integer. This

@@ -1,5 +1,5 @@
 /* Natural loop analysis code for GNU compiler.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "predict.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "cfgloop.h"
 #include "explow.h"
@@ -241,11 +242,10 @@ expected_loop_iterations_unbounded (const struct loop *loop,
   if (read_profile_p)
     *read_profile_p = false;
 
-  /* Average loop rolls about 3 times. If we have no profile at all, it is
-     best we can do.  */
+  /* If we have no profile at all, use AVG_LOOP_NITER.  */
   if (profile_status_for_fn (cfun) == PROFILE_ABSENT)
-    expected = 3;
-  else if (loop->latch->count || loop->header->count)
+    expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
+  else if (loop->latch && (loop->latch->count || loop->header->count))
     {
       gcov_type count_in, count_latch;
 
@@ -275,16 +275,16 @@ expected_loop_iterations_unbounded (const struct loop *loop,
       freq_latch = 0;
 
       FOR_EACH_EDGE (e, ei, loop->header->preds)
-	if (e->src == loop->latch)
-	  freq_latch = EDGE_FREQUENCY (e);
+	if (flow_bb_inside_loop_p (loop, e->src))
+	  freq_latch += EDGE_FREQUENCY (e);
 	else
 	  freq_in += EDGE_FREQUENCY (e);
 
       if (freq_in == 0)
 	{
-	  /* If we have no profile at all, expect 3 iterations.  */
+	  /* If we have no profile at all, use AVG_LOOP_NITER iterations.  */
 	  if (!freq_latch)
-	    expected = 3;
+	    expected = PARAM_VALUE (PARAM_AVG_LOOP_NITER);
 	  else
 	    expected = freq_latch * 2;
 	}

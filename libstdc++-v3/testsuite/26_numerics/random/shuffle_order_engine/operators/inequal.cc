@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2010-03-16  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,8 +28,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shuffle_order_engine
     <
       std::linear_congruential_engine<uint_fast32_t,16807UL, 0UL, 2147483647UL>,

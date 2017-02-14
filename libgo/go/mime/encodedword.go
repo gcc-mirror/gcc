@@ -16,7 +16,7 @@ import (
 	"unicode/utf8"
 )
 
-// A WordEncoder is a RFC 2047 encoded-word encoder.
+// A WordEncoder is an RFC 2047 encoded-word encoder.
 type WordEncoder byte
 
 const (
@@ -71,7 +71,7 @@ const (
 	maxEncodedWordLen = 75
 	// maxContentLen is how much content can be encoded, ignoring the header and
 	// 2-byte footer.
-	maxContentLen = maxEncodedWordLen - len("=?UTF-8?") - len("?=")
+	maxContentLen = maxEncodedWordLen - len("=?UTF-8?q?") - len("?=")
 )
 
 var maxBase64Len = base64.StdEncoding.DecodedLen(maxContentLen)
@@ -89,7 +89,7 @@ func (e WordEncoder) bEncode(buf *bytes.Buffer, charset, s string) {
 
 	var currentLen, last, runeLen int
 	for i := 0; i < len(s); i += runeLen {
-		// Multi-byte characters must not be split accross encoded-words.
+		// Multi-byte characters must not be split across encoded-words.
 		// See RFC 2047, section 5.3.
 		_, runeLen = utf8.DecodeRuneInString(s[i:])
 
@@ -119,7 +119,7 @@ func (e WordEncoder) qEncode(buf *bytes.Buffer, charset, s string) {
 	var currentLen, runeLen int
 	for i := 0; i < len(s); i += runeLen {
 		b := s[i]
-		// Multi-byte characters must not be split accross encoded-words.
+		// Multi-byte characters must not be split across encoded-words.
 		// See RFC 2047, section 5.3.
 		var encLen int
 		if b >= ' ' && b <= '~' && b != '=' && b != '?' && b != '_' {

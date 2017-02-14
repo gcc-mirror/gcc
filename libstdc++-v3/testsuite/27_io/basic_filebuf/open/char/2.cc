@@ -1,4 +1,4 @@
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,7 +37,6 @@ const char name_01[] = "filebuf_virtuals-1.txt"; // file with data in it
 
 void test_03()
 {
-  bool test __attribute__((unused)) = true;
   int first_fd = ::open(name_01, O_RDONLY);
   VERIFY( first_fd != -1 );
   FILE* first_file = ::fdopen(first_fd, "r");

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Matsushita MN10300 series
-   Copyright (C) 1996-2016 Free Software Foundation, Inc.
+   Copyright (C) 1996-2017 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -28,6 +28,7 @@
 #include "cfghooks.h"
 #include "cfgloop.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "optabs.h"
 #include "regs.h"
@@ -1859,6 +1860,7 @@ rtx
 mn10300_legitimize_pic_address (rtx orig, rtx reg)
 {
   rtx x;
+  rtx_insn *insn;
 
   if (GET_CODE (orig) == LABEL_REF
       || (GET_CODE (orig) == SYMBOL_REF
@@ -1872,7 +1874,7 @@ mn10300_legitimize_pic_address (rtx orig, rtx reg)
       x = gen_rtx_CONST (SImode, x);
       emit_move_insn (reg, x);
 
-      x = emit_insn (gen_addsi3 (reg, reg, pic_offset_table_rtx));
+      insn = emit_insn (gen_addsi3 (reg, reg, pic_offset_table_rtx));
     }
   else if (GET_CODE (orig) == SYMBOL_REF)
     {
@@ -1884,12 +1886,12 @@ mn10300_legitimize_pic_address (rtx orig, rtx reg)
       x = gen_rtx_PLUS (SImode, pic_offset_table_rtx, x);
       x = gen_const_mem (SImode, x);
 
-      x = emit_move_insn (reg, x);
+      insn = emit_move_insn (reg, x);
     }
   else
     return orig;
 
-  set_unique_reg_note (x, REG_EQUAL, orig);
+  set_unique_reg_note (insn, REG_EQUAL, orig);
   return reg;
 }
 
@@ -2693,7 +2695,6 @@ cc_flags_for_code (enum rtx_code code)
     case LT:	/* N */
     case GE:	/* ~N */
       return CC_FLAG_N;
-      break;
 
     case GT:    /* ~(Z|(N^V)) */
     case LE:    /* Z|(N^V) */
@@ -2758,7 +2759,8 @@ set_is_store_p (rtx set)
    COST is the current cycle cost for DEP.  */
 
 static int
-mn10300_adjust_sched_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
+mn10300_adjust_sched_cost (rtx_insn *insn, int dep_type, rtx_insn *dep,
+			   int cost, unsigned int)
 {
   rtx insn_set;
   rtx dep_set;
@@ -2807,7 +2809,7 @@ mn10300_adjust_sched_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
     return cost;
 
   /* If a data dependence already exists then the cost is correct.  */
-  if (REG_NOTE_KIND (link) == 0)
+  if (dep_type == 0)
     return cost;
 
   /* Check that the instruction about to scheduled is an FPU instruction.  */
@@ -3162,7 +3164,7 @@ mn10300_bundle_liw (void)
    Insert a SETLB insn just before LABEL.  */
 
 static void
-mn10300_insert_setlb_lcc (rtx label, rtx branch)
+mn10300_insert_setlb_lcc (rtx_insn *label, rtx_insn *branch)
 {
   rtx lcc, comparison, cmp_reg;
 
@@ -3377,6 +3379,9 @@ mn10300_reorg (void)
 
 #undef  TARGET_CASE_VALUES_THRESHOLD
 #define TARGET_CASE_VALUES_THRESHOLD mn10300_case_values_threshold
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 #undef  TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	mn10300_legitimate_address_p

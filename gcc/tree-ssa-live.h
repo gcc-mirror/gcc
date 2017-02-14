@@ -1,5 +1,5 @@
 /* Routines for liveness in SSA trees.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod  <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -80,7 +80,6 @@ extern void remove_unused_locals (void);
 extern void dump_var_map (FILE *, var_map);
 extern void debug (_var_map &ref);
 extern void debug (_var_map *ptr);
-extern void register_ssa_partition_check (tree ssa_var);
 
 
 /* Return number of partitions in MAP.  */
@@ -171,18 +170,6 @@ static inline int
 num_basevars (var_map map)
 {
   return map->num_basevars;
-}
-
-
-
-/* This routine registers a partition for SSA_VAR with MAP.  Any unregistered
-   partitions may be filtered out by a view later.  */
-
-static inline void
-register_ssa_partition (var_map map ATTRIBUTE_UNUSED, tree ssa_var)
-{
-  if (flag_checking)
-    register_ssa_partition_check (ssa_var);
 }
 
 

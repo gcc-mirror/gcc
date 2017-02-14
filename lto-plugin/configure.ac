@@ -45,6 +45,9 @@ fi
 AC_SUBST(accel_dir_suffix)
 AC_SUBST(real_target_noncanonical)
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 AM_PROG_LIBTOOL
 ACX_LT_HOST_FLAGS
 AC_SUBST(target_noncanonical)

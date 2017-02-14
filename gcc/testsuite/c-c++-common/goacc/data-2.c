@@ -10,12 +10,14 @@ foo (void)
 #pragma acc exit data delete (a) if (0)
 #pragma acc exit data copyout (b) if (a)
 #pragma acc exit data delete (b)
-#pragma acc enter /* { dg-error "expected 'data' in" } */
-#pragma acc exit /* { dg-error "expected 'data' in" } */
+#pragma acc enter /* { dg-error "expected 'data' after" } */
+#pragma acc exit /* { dg-error "expected 'data' after" } */
 #pragma acc enter data /* { dg-error "has no data movement clause" } */
-#pragma acc exit data /* { dg-error "has no data movement clause" } */
-#pragma acc enter Data /* { dg-error "invalid pragma before" } */
-#pragma acc exit copyout (b) /* { dg-error "invalid pragma before" } */
+#pragma acc exit data /* { dg-error "no data movement clause" } */
+#pragma acc enter Data /* { dg-error "expected 'data' after" } */
+#pragma acc exit copyout (b) /* { dg-error "expected 'data' after" } */
+#pragma acc enter for /* { dg-error "expected 'data' after" } */
+#pragma acc enter data2 /* { dg-error "expected 'data' after" } */
 }
 
 /* { dg-error "has no data movement clause" "" { target *-*-* } 8 } */

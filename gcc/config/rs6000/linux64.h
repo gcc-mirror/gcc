@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for 64 bit PowerPC linux.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -292,12 +292,12 @@ extern int dot_symbols;
 
 /* PowerPC64 Linux word-aligns FP doubles when -malign-power is given.  */
 #undef  ADJUST_FIELD_ALIGN
-#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
-  (rs6000_special_adjust_field_align_p ((FIELD), (COMPUTED))		\
+#define ADJUST_FIELD_ALIGN(FIELD, TYPE, COMPUTED) \
+  (rs6000_special_adjust_field_align_p ((TYPE), (COMPUTED))		\
    ? 128								\
    : (TARGET_64BIT							\
       && TARGET_ALIGN_NATURAL == 0					\
-      && TYPE_MODE (strip_array_types (TREE_TYPE (FIELD))) == DFmode)	\
+      && TYPE_MODE (strip_array_types (TYPE)) == DFmode)		\
    ? MIN ((COMPUTED), 32)						\
    : (COMPUTED))
 
@@ -634,3 +634,9 @@ extern int dot_symbols;
   || (TARGET_GLIBC_MAJOR == 2 && TARGET_GLIBC_MINOR >= 19)
 #define RS6000_GLIBC_ATOMIC_FENV 1
 #endif
+
+/* The IEEE 128-bit emulator is only built on Linux systems.  Flag that we
+   should enable the type handling for KFmode on VSX systems even if we are not
+   enabling the __float128 keyword.  */
+#undef	TARGET_FLOAT128_ENABLE_TYPE
+#define TARGET_FLOAT128_ENABLE_TYPE 1

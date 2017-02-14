@@ -1,6 +1,6 @@
 // 2006-07-15  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2006-2016 Free Software Foundation, Inc.
+// Copyright (C) 2006-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,6 @@
 // libstdc++/28277
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::valarray<int> v1(1, MAX_SIZE);
 
   const std::valarray<int> v2 = v1.shift(1);

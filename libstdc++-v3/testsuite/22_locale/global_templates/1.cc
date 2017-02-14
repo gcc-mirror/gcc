@@ -1,6 +1,6 @@
 // 2000-09-11 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,8 +31,6 @@ class gnu_codecvt: public ccodecvt { };
 void test01()
 {
   using namespace std;
-
-  bool test __attribute__((unused)) = true;
 
   // construct a locale object with the C facet
   const locale& 	cloc = locale::classic();

@@ -1,5 +1,5 @@
 /* Header for Fortran 95 types backend support.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -30,8 +30,8 @@ extern GTY(()) tree ppvoid_type_node;
 extern GTY(()) tree pvoid_type_node;
 extern GTY(()) tree prvoid_type_node;
 extern GTY(()) tree pchar_type_node;
-extern GTY(()) tree float128_type_node;
-extern GTY(()) tree complex_float128_type_node;
+extern GTY(()) tree gfc_float128_type_node;
+extern GTY(()) tree gfc_complex_float128_type_node;
 
 /* This is the type used to hold the lengths of character variables.
    It must be the same as the corresponding definition in gfortran.h.  */
@@ -70,7 +70,7 @@ tree gfc_get_character_type_len (int, tree);
 tree gfc_get_character_type_len_for_eltype (tree, tree);
 
 tree gfc_sym_type (gfc_symbol *);
-tree gfc_typenode_for_spec (gfc_typespec *);
+tree gfc_typenode_for_spec (gfc_typespec *, int c = 0);
 int gfc_copy_dt_decls_ifequal (gfc_symbol *, gfc_symbol *, bool);
 
 tree gfc_get_function_type (gfc_symbol *);
@@ -102,5 +102,6 @@ tree gfc_get_dtype (tree);
 
 tree gfc_get_ppc_type (gfc_component *);
 tree gfc_get_caf_vector_type (int dim);
+tree gfc_get_caf_reference_type ();
 
 #endif

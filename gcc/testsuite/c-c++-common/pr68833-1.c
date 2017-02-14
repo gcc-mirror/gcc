@@ -1,6 +1,7 @@
 /* PR c/68833 */
 /* { dg-do compile } */
 /* { dg-options "-Werror=larger-than-65536 -Werror=format -Werror=missing-noreturn" } */
+/* { dg-require-effective-target int32plus } */
 
 int a[131072];	/* { dg-error "size of 'a' is \[1-9]\[0-9]* bytes" } */
 int b[1024];	/* { dg-bogus "size of 'b' is \[1-9]\[0-9]* bytes" } */

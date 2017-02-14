@@ -1,5 +1,5 @@
 /* Functions dealing with attribute handling, used by most front ends.
-   Copyright (C) 1992-2016 Free Software Foundation, Inc.
+   Copyright (C) 1992-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -553,7 +553,7 @@ decl_attributes (tree *node, tree attributes, int flags)
 
       /* Layout the decl in case anything changed.  */
       if (spec->type_required && DECL_P (*node)
-	  && (TREE_CODE (*node) == VAR_DECL
+	  && (VAR_P (*node)
 	      || TREE_CODE (*node) == PARM_DECL
 	      || TREE_CODE (*node) == RESULT_DECL))
 	relayout_decl (*node);

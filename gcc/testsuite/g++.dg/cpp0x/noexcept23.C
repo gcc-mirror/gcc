@@ -10,5 +10,10 @@ void a(A) noexcept {}
 
 void f()
 {
-  static_assert(!noexcept(a(A{})), "");
+#if __cplusplus <= 201402L
+  const bool val = false;
+#else
+  const bool val = true;
+#endif
+  static_assert(noexcept(a(A{})) == val, "");
 }

@@ -1,5 +1,5 @@
 /* Declarations for C++ name lookup routines.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -107,7 +107,7 @@ enum scope_kind {
   sk_try,	     /* A try-block.  */
   sk_catch,	     /* A catch-block.  */
   sk_for,	     /* The scope of the variable declared in a
-			for-init-statement.  */
+			init-statement.  */
   sk_cond,	     /* The scope of the variable declared in the condition
 			of an if or switch statement.  */
   sk_function_parms, /* The scope containing function parameters.  */

@@ -1,5 +1,5 @@
 /* Generate insn-target-def.h, an automatically-generated part of targetm.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -191,7 +191,7 @@ def_target_insn (const char *name, const char *prototype)
 	      printf ("target_have_%s (void)\n", name);
 	      printf ("{\n");
 	      printf ("  return ");
-	      print_c_condition (test);
+	      rtx_reader_ptr->print_c_condition (test);
 	      printf (";\n");
 	      printf ("}\n");
 	    }

@@ -1,3 +1,386 @@
+2017-02-09  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* Makefile.in (po/$(PACKAGE).pot): Adjust bug reporting URL.
+
+2017-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/77949
+	* line-map.c (linemap_position_for_column): When calling
+	linemap_start_line, detect if a new linemap was created with
+	0 column bits, and bail out early if this is the case.
+	(linemap_position_for_loc_and_offset): Replace overzealous
+	linemap_assert_fails with a simple conditional; use correct
+	bit count.
+
+2017-01-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/72803
+	* line-map.c (linemap_line_start): When determining if the highest
+	column given out so far will fit into a proposed change to the
+	current map, use the effective number of column bits, rather than
+	the total number of column + range bits.
+
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2016-12-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/78680
+	PR preprocessor/78811
+	* lex.c (_cpp_lex_direct): Only determine the end-location of
+	the token and build a range for non-reserved start locations.
+	Do not do it for EOF tokens.
+
+2016-12-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/78680
+	* lex.c (_cpp_lex_direct): Ensure line notes are processed before
+	computing the end-point of the token.
+
+2016-11-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* include/cpplib.h (struct cpp_options): Add new member
+	warn_expansion_to_defined.
+	(CPP_W_EXPANSION_TO_DEFINED): New enum member.
+	* expr.c (parse_defined): Warn for all uses of "defined"
+	in macros, and tie warning to CPP_W_EXPANSION_TO_DEFINED.
+	Make it a pedwarning instead of a warning.
+	* system.h (HAVE_DESIGNATED_INITIALIZERS): Do not use
+	"defined" in macros.
+
+2016-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* charset.c (cpp_interpret_string_1): Skip locations from
+	loc_reader when advancing 'p' when handling raw strings.
+
+2016-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/72823
+	* configure.ac (ENABLE_ASSERT_CHECKING): Define if gcc configure
+	would define that macro.
+	* configure: Regenerated.
+	* config.in: Regenerated.
+
+2016-11-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lex.c (search_line_fast): New implementation for AArch64.
+
+2016-10-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* files.c (destroy_cpp_file): Free file->path.
+
+2016-10-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (line_maps::~line_maps): New dtor.
+	(location_adhoc_data_fini): Delete decl.
+	* line-map.c (line_maps::~line_maps): New dtor.
+	(location_adhoc_data_fini): Delete.
+
+2016-10-21  Andris Pavenis  <andris.pavenis@iki.fi>
+
+	PR preprocessor/71681
+	* files.c (remap_filename): Fix handling -remap in subdirectories.
+
+2016-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (struct cpp_options): Add
+	cpp_warn_implicit_fallthrough.
+	* init.c (cpp_create_reader): Initialize it to 0.
+	* lex.c (fallthrough_comment_p): Handle different
+	cpp_warn_implicit_fallthrough levels.  Whitespace fixes.
+
+2016-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* lex.c (fallthrough_comment_p): Accept Else, fallthrough.
+
+	* lex.c (fallthrough_comment_p): Extend to handle more common FALLTHRU
+	comment styles.
+
+	* lex.c (fallthrough_comment_p): Fix off-by-one size comparison
+	errors, cleanup.
+	(_cpp_lex_direct): Allow arbitrary comments in between
+	fallthrough_comment_p comment and following token.
+
+2016-10-04  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/77847
+	* lex.c (search_line_fast): Add a FALLTHROUGH comment to correct
+	compiler error in the version of this function that is
+	conditionally compiled when GCC_VERSION >= 4005 and both
+	__ALTIVEC__ and __BIG_ENDIAN__ symbols are defined.
+
+2016-09-26  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/7652
+	* include/cpplib.h (PREV_FALLTHROUGH): Define.
+	* internal.h (CPP_FALLTHRU): Define.
+	* lex.c (fallthrough_comment_p): New function.
+	(_cpp_lex_direct): Set PREV_FALLTHROUGH on tokens succeeding a falls
+	through comment.
+
+2016-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/77672
+	* charset.c (cpp_interpret_string_1): Add a source_range for the
+	NUL-terminator, using the location of the trailing quote of the
+	final string.
+
+2016-09-21  Jason Merrill  <jason@redhat.com>
+
+	* line-map.c (linemap_location_from_macro_definition_p): New.
+	* line-map.h: Declare it.
+
+2016-09-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (class rich_location): Note that newlines
+	aren't supported in fix-it text.
+	* line-map.c (rich_location::add_fixit_insert_before): Reject
+	attempts to add fix-its containing newlines.
+	(rich_location::add_fixit_replace): Likewise.
+
+2016-09-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (class rich_location): Add description of
+	fix-it hints to leading comment.
+	(rich_location::add_fixit_insert): Rename both overloaded methods
+	to..
+	(rich_location::add_fixit_insert_before): ...this, updating their
+	comments.
+	(rich_location::add_fixit_insert_after): Two new overloaded
+	methods.
+	(rich_location::stop_supporting_fixits): New method.
+	* line-map.c (rich_location::add_fixit_insert): Rename both
+	overloaded methods to..
+	(rich_location::add_fixit_insert_before): ...this, updating their
+	comments.
+	(rich_location::add_fixit_insert_after): Two new methods.
+	(rich_location::reject_impossible_fixit): Split out
+	failure-handling into...
+	(rich_location::stop_supporting_fixits): New method.
+
+2016-09-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (rich_location::seen_impossible_fixit_p): New
+	accessor.
+
+2016-08-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (class fixit_remove): Remove stray decl.
+	(fixit_hint::affects_line_p): Make const.
+	(fixit_insert::affects_line_p): Likewise.
+	(fixit_replace::affects_line_p): Likewise.
+	* line-map.c (fixit_insert::affects_line_p): Likewise.
+	(fixit_replace::affects_line_p): Likewise.
+
+2016-08-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (class semi_embedded_vec): New class.
+	(semi_embedded_vec<T, NUM_EMBEDDED>::semi_embedded_vec): New ctor.
+	(semi_embedded_vec<T, NUM_EMBEDDED>::~semi_embedded_vec): New
+	dtor.
+	(semi_embedded_vec<T, NUM_EMBEDDED>::operator[]): New methods.
+	(semi_embedded_vec<T, NUM_EMBEDDED>::push): New method.
+	(semi_embedded_vec<T, NUM_EMBEDDED>::truncate): New method.
+	(rich_location::get_num_locations): Reimplement in terms of
+	m_ranges.
+	(rich_location::get_range): Make non-inline.
+	(rich_location::get_num_fixit_hints): Reimplement in terms of
+	m_fixit_hints.
+	(rich_location::add_fixit): New function.
+	(rich_location::MAX_RANGES): Rename to...
+	(rich_location::STATICALLY_ALLOCATED_RANGES): ...this.
+	(rich_location::MAX_FIXIT_HINTS): Rename to...
+	(rich_location::STATICALLY_ALLOCATED_RANGES): ...this, and make
+	private.
+	(rich_location::m_num_ranges): Eliminate in favor of...
+	(rich_location::m_ranges): ...this, converting from a fixed-size
+	array to a semi_embedded_vec.
+	(rich_location::m_num_fixit_hints): Eliminate in favor of...
+	(rich_location::m_fixit_hints): ...this, converting from a
+	fixed-size array to a semi_embedded_vec.
+	* line-map.c (rich_location::rich_location): Update for above
+	changes.
+	(rich_location::~rich_location): Likewise.
+	(rich_location::get_loc): Likewise.
+	(rich_location::get_range): New methods.
+	(rich_location::add_range): Update for above changes.
+	(rich_location::set_range): Likewise.
+	(rich_location::add_fixit_insert): Likewise.
+	(rich_location::add_fixit_replace): Likewise.
+	(rich_location::get_last_fixit_hint): Likewise.
+	(rich_location::reject_impossible_fixit): Likewise.
+	(rich_location::add_fixit): New method.
+
+2016-08-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (rich_location::add_fixit_insert): Add
+	comments.  Add overload omitting the source_location param.
+	(rich_location::add_fixit_remove): Add comments.  Add overloads
+	omitting the range, and accepting a source_location.
+	(rich_location::add_fixit_replace): Likewise.
+	* line-map.c (rich_location::add_fixit_insert): Add comments.  Add
+	overload omitting the source_location param.
+	(rich_location::add_fixit_remove): Add comments.  Add overloads
+	omitting the range, and accepting a source_location.
+	(rich_location::add_fixit_replace): Likewise.
+
+2016-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (get_pure_location): New decl.
+	* line-map.c (get_pure_location): Move here, from gcc/input.c, adding
+	a line_maps * param.
+	(rich_location::add_fixit_insert): Call get_pure_location on "where".
+	(rich_location::add_fixit_replace): Call get_pure_location on the
+	end-points.
+
+2016-08-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (rich_location): Eliminate unimplemented
+	constructor based on source_range.
+	(rich_location::get_last_fixit_hint): New method.
+	(rich_location::reject_impossible_fixit): New method.
+	(rich_location): Add fields m_line_table and
+	m_seen_impossible_fixit.
+	(fixit_hint::maybe_append_replace): New pure virtual function.
+	(fixit_insert::maybe_append_replace): New function.
+	(fixit_replace::maybe_append_replace): New function.
+	* line-map.c (rich_location::rich_location): Initialize
+	m_line_table and m_seen_impossible_fixit.
+	(rich_location::add_fixit_insert): Call
+	reject_impossible_fixit and bail out if true.
+	(column_before_p): New function.
+	(rich_location::add_fixit_replace): Call reject_impossible_fixit
+	and bail out if true.  Attempt to consolidate with neighboring
+	fixits.
+	(rich_location::get_last_fixit_hint): New method.
+	(rich_location::reject_impossible_fixit): New method.
+	(fixit_insert::maybe_append_replace): New method.
+	(fixit_replace::maybe_append_replace): New method.
+
+2016-08-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (source_range::from_locations): New method.
+
+2016-08-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (fixit_hint::kind): Delete REPLACE.
+	(class fixit_remove): Delete.
+	* line-map.c (rich_location::add_fixit_remove): Reimplement
+	by calling add_fixit_replace with an empty string.
+	(fixit_remove::fixit_remove): Delete.
+	(fixit_remove::affects_line_p): Delete.
+
+2016-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/32187
+	* include/cpplib.h (CPP_N_FLOATN, CPP_N_FLOATNX)
+	(CPP_N_WIDTH_FLOATN_NX, CPP_FLOATN_SHIFT, CPP_FLOATN_MAX): New
+	macros.
+	* expr.c (interpret_float_suffix): Handle fN, fNx, FN and FNx
+	suffixes.
+
+2016-08-19  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* expr.c (eval_token): Append "evaluates to 0" to Wundef diagnostic.
+
+2016-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* directives.c (directive_names): New array.
+	(_cpp_handle_directive): Offer spelling suggestions for misspelled
+	directives.
+	* errors.c (cpp_diagnostic_at_richloc): New function.
+	(cpp_error_at_richloc): New function.
+	* include/cpplib.h (struct cpp_callbacks): Add field
+	"get_suggestion".
+	(cpp_error_at_richloc): New decl.
+
+2016-08-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* pch.c (write_macdef): Add CPP_FALLTHRU.
+
+2016-08-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/7652
+	* lex.c (search_line_fast): Add FALLTHRU.
+	(_cpp_lex_direct): Likewise.
+	(cpp_token_val_index): Adjust fall through comment.
+	* macro.c (parse_params): Add FALLTHRU.
+	* pch.c (count_defs): Adjust fall through comment.
+	(write_defs): Likewise.
+
+2016-08-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/72823
+	* charset.c (_cpp_valid_ucn): Replace overzealous assert with one
+	that allows for char_range to be non-NULL when loc_reader is NULL.
+
+2016-08-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* charset.c (cpp_substring_ranges::cpp_substring_ranges): New
+	constructor.
+	(cpp_substring_ranges::~cpp_substring_ranges): New destructor.
+	(cpp_substring_ranges::add_range): New method.
+	(cpp_substring_ranges::add_n_ranges): New method.
+	(_cpp_valid_ucn): Add "char_range" and "loc_reader" params; if
+	they are non-NULL, read position information from *loc_reader
+	and update char_range->m_finish accordingly.
+	(convert_ucn): Add "char_range", "loc_reader", and "ranges"
+	params.  If loc_reader is non-NULL, read location information from
+	it, and update *ranges accordingly, using char_range.
+	Conditionalize the conversion into tbuf on tbuf being non-NULL.
+	(convert_hex): Likewise, conditionalizing the call to
+	emit_numeric_escape on tbuf.
+	(convert_oct): Likewise.
+	(convert_escape): Add params "loc_reader" and "ranges".  If
+	loc_reader is non-NULL, read location information from it, and
+	update *ranges accordingly.  Conditionalize the conversion into
+	tbuf on tbuf being non-NULL.
+	(cpp_interpret_string): Rename to...
+	(cpp_interpret_string_1): ...this, adding params "loc_readers" and
+	"out".  Use "to" to conditionalize the initialization and usage of
+	"tbuf", such as running the converter.  If "loc_readers" is
+	non-NULL, use the instances within it, reading location
+	information from them, and passing them to convert_escape; likewise
+	write to "out" if loc_readers is non-NULL.  Check for leading
+	quote and issue an error if it is not present.  Update boundary
+	check from "== limit" to ">= limit" to protect against erroneous
+	location values to calls that are not parsing string literals.
+	(cpp_interpret_string): Reimplement in terms to
+	cpp_interpret_string_1.
+	(noop_error_cb): New function.
+	(cpp_interpret_string_ranges): New function.
+	(cpp_string_location_reader::cpp_string_location_reader): New
+	constructor.
+	(cpp_string_location_reader::get_next): New method.
+	* include/cpplib.h (class cpp_string_location_reader): New class.
+	(class cpp_substring_ranges): New class.
+	(cpp_interpret_string_ranges): New prototype.
+	* internal.h (_cpp_valid_ucn): Add params "char_range" and
+	"loc_reader".
+	* lex.c (forms_identifier_p): Pass NULL for new params to
+	_cpp_valid_ucn.
+
+2016-08-01  Andreas Schwab  <schwab@suse.de>
+
+	* include/cpplib.h: Fix comment typo.
+
+2016-07-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (source_location): Fix line numbers in
+	comment.
+
+2016-07-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES):
+	Move here from line-map.c.
+	(LINE_MAP_MAX_LOCATION_WITH_COLS): Likewise.
+	* line-map.c (LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES): Move from
+	here to line-map.h.
+	(LINE_MAP_MAX_LOCATION_WITH_COLS): Likewise.
+
 2016-06-22  David Malcolm  <dmalcolm@redhat.com>
 
 	* directives.c (do_include_common): Pass on "location" to
@@ -4629,7 +5012,7 @@
 	* include/symtab.h: Moved from gcc/hashtable.h.  Change header
 	guard name.
 
-Copyright (C) 2004-2016 Free Software Foundation, Inc.
+Copyright (C) 2004-2017 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

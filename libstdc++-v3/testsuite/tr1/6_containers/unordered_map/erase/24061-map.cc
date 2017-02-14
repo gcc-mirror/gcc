@@ -1,6 +1,6 @@
 // 2005-10-08  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,8 +26,6 @@
 // libstdc++/24061
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::tr1::unordered_map<std::string, int> Map;
   typedef Map::iterator       iterator;
   typedef Map::const_iterator const_iterator;

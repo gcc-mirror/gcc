@@ -1,5 +1,5 @@
 C { dg-do compile }
-C { dg-additional-options "-fvect-cost-model=dynamic" }
+C { dg-additional-options "-fvect-cost-model=dynamic -fno-ipa-icf" }
       subroutine test2(x,y)
       real x(4),y(4)
       beta=3.141593

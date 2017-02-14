@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -294,7 +294,6 @@ package body GNAT.Array_Split is
             exit when K > Count_Sep;
 
             case Mode is
-
                when Single =>
 
                   --  In this mode just set start to character next to the
@@ -313,7 +312,6 @@ package body GNAT.Array_Split is
                      exit when K > Count_Sep
                        or else S.D.Indexes (K) > S.D.Indexes (K - 1) + 1;
                   end loop;
-
             end case;
          end loop;
 

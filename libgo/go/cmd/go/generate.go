@@ -1,4 +1,4 @@
-// Copyright 2011 The Go Authors.  All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -14,10 +14,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strconv"
 	"strings"
-	"unicode"
 )
 
 var cmdGenerate = &Command{
@@ -27,7 +25,7 @@ var cmdGenerate = &Command{
 	Long: `
 Generate runs commands described by directives within existing
 files. Those commands can run any process but the intent is to
-create or update Go source files, for instance by running yacc.
+create or update Go source files.
 
 Go generate is never run automatically by go build, go get, go test,
 and so on. It must be run explicitly.
@@ -90,10 +88,10 @@ string xxx represents the command identified by the arguments. This
 can be used to create aliases or to handle multiword generators.
 For example,
 
-	//go:generate -command yacc go tool yacc
+	//go:generate -command foo go tool foo
 
-specifies that the command "yacc" represents the generator
-"go tool yacc".
+specifies that the command "foo" represents the generator
+"go tool foo".
 
 Generate processes packages in the order given on the command line,
 one at a time. If the command line lists .go files, they are treated
@@ -138,6 +136,8 @@ func init() {
 }
 
 func runGenerate(cmd *Command, args []string) {
+	ignoreImports = true
+
 	if generateRunFlag != "" {
 		var err error
 		generateRunRE, err = regexp.Compile(generateRunFlag)
@@ -277,8 +277,8 @@ func isGoGenerate(buf []byte) bool {
 // single go:generate command.
 func (g *Generator) setEnv() {
 	g.env = []string{
-		"GOARCH=" + runtime.GOARCH,
-		"GOOS=" + runtime.GOOS,
+		"GOARCH=" + buildContext.GOARCH,
+		"GOOS=" + buildContext.GOOS,
 		"GOFILE=" + g.file,
 		"GOLINE=" + strconv.Itoa(g.lineNum),
 		"GOPACKAGE=" + g.pkg,
@@ -369,17 +369,6 @@ func (g *Generator) expandVar(word string) string {
 		}
 	}
 	return os.Getenv(word)
-}
-
-// identLength returns the length of the identifier beginning the string.
-func (g *Generator) identLength(word string) int {
-	for i, r := range word {
-		if r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r) {
-			continue
-		}
-		return i
-	}
-	return len(word)
 }
 
 // setShorthand installs a new shorthand as defined by a -command directive.

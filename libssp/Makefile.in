@@ -235,6 +235,7 @@ dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
+get_gcc_base_ver = @get_gcc_base_ver@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -278,7 +279,7 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 MAINT_CHARSET = latin1
 
 # May be used by various substitution variables.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @LIBSSP_USE_SYMVER_FALSE@version_arg = 
 @LIBSSP_USE_SYMVER_GNU_TRUE@@LIBSSP_USE_SYMVER_TRUE@version_arg = -Wl,--version-script=$(srcdir)/ssp.map
 @LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@version_arg = -Wl,-M,ssp.map-sun

@@ -1,8 +1,8 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,7 +38,6 @@ template<std::size_t Nb, typename CharT>
 // DR 1325.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   const char s1[4] = { '0', '1', '0', '1' };

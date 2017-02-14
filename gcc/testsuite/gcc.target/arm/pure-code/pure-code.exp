@@ -1,0 +1,58 @@
+#   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite for ARM's -mpure-code option, using the `dg.exp' driver.
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
+}
+
+# The -mpure-code option is only available for M-profile targets that support
+# thumb2.
+if {[check_effective_target_arm_thumb2_ok]
+    && [check_effective_target_arm_cortex_m]} then {
+# Initialize `dg'.
+dg-init
+
+set saved-dg-do-what-default ${dg-do-what-default}
+set dg-do-what-default "assemble"
+
+set saved-lto_torture_options ${LTO_TORTURE_OPTIONS}
+
+# Add -ffat-lto-objects option to all LTO options such that we can do assembly
+# scans.
+proc add_fat_objects { list } {
+    set res {}
+    foreach el $list {set res [lappend res [concat $el " -ffat-lto-objects"]]}
+    return $res
+};
+set LTO_TORTURE_OPTIONS [add_fat_objects ${LTO_TORTURE_OPTIONS}]
+
+gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] \
+	"" $DEFAULT_CFLAGS
+
+# Restore global values
+set dg-do-what-default ${saved-dg-do-what-default}
+set LTO_TORTURE_OPTIONS ${saved-lto_torture_options}
+
+# All done.
+dg-finish
+}

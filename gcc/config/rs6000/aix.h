@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -39,6 +39,41 @@
 /* 32-bit and 64-bit AIX stack boundary is 128.  */
 #undef  STACK_BOUNDARY
 #define STACK_BOUNDARY 128
+
+/* Offset within stack frame to start allocating local variables at.
+   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
+   first local allocated.  Otherwise, it is the offset to the BEGINNING
+   of the first local allocated.
+
+   On the RS/6000, the frame pointer is the same as the stack pointer,
+   except for dynamic allocations.  So we start after the fixed area and
+   outgoing parameter area.
+
+   If the function uses dynamic stack space (CALLS_ALLOCA is set), that
+   space needs to be aligned to STACK_BOUNDARY, i.e. the sum of the
+   sizes of the fixed area and the parameter area must be a multiple of
+   STACK_BOUNDARY.  */
+
+#undef STARTING_FRAME_OFFSET
+#define STARTING_FRAME_OFFSET						\
+  (FRAME_GROWS_DOWNWARD							\
+   ? 0									\
+   : (cfun->calls_alloca						\
+      ? RS6000_ALIGN (crtl->outgoing_args_size + RS6000_SAVE_AREA, 16)	\
+      : (RS6000_ALIGN (crtl->outgoing_args_size, 16) + RS6000_SAVE_AREA)))
+
+/* Offset from the stack pointer register to an item dynamically
+   allocated on the stack, e.g., by `alloca'.
+
+   The default value for this macro is `STACK_POINTER_OFFSET' plus the
+   length of the outgoing arguments.  The default is correct for most
+   machines.  See `function.c' for details.
+
+   This value must be a multiple of STACK_BOUNDARY (hard coded in
+   `emit-rtl.c').  */
+#undef STACK_DYNAMIC_OFFSET
+#define STACK_DYNAMIC_OFFSET(FUNDECL)					\
+   RS6000_ALIGN (crtl->outgoing_args_size + STACK_POINTER_OFFSET, 16)
 
 #undef  TARGET_IEEEQUAD
 #define TARGET_IEEEQUAD 0
@@ -183,9 +218,9 @@
 
 /* This now supports a natural alignment mode.  */
 /* AIX word-aligns FP doubles but doubleword-aligns 64-bit ints.  */
-#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
+#define ADJUST_FIELD_ALIGN(FIELD, TYPE, COMPUTED) \
   ((TARGET_ALIGN_NATURAL == 0						\
-    && TYPE_MODE (strip_array_types (TREE_TYPE (FIELD))) == DFmode)	\
+    && TYPE_MODE (strip_array_types (TYPE)) == DFmode)			\
    ? MIN ((COMPUTED), 32)						\
    : (COMPUTED))
 

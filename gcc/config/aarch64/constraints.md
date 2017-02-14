@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2017 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -68,6 +68,16 @@
  "A constant that can be used with a 64-bit MOV immediate operation."
  (and (match_code "const_int")
       (match_test "aarch64_move_imm (ival, DImode)")))
+
+(define_constraint "UsO"
+ "A constant that can be used with a 32-bit and operation."
+ (and (match_code "const_int")
+      (match_test "aarch64_and_bitmask_imm (ival, SImode)")))
+
+(define_constraint "UsP"
+ "A constant that can be used with a 64-bit and operation."
+ (and (match_code "const_int")
+      (match_test "aarch64_and_bitmask_imm (ival, DImode)")))
 
 (define_constraint "S"
   "A constraint that matches an absolute symbolic address."

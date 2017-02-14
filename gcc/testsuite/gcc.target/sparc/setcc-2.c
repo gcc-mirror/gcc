@@ -32,8 +32,7 @@ int gt (unsigned int a, unsigned int b)
 }
 
 /* { dg-final { scan-assembler-times "xor\t%" 2 } } */
-/* { dg-final { scan-assembler-times "subcc\t%" 2 } } */
 /* { dg-final { scan-assembler-times "addx\t%" 3 } } */
 /* { dg-final { scan-assembler-times "subx\t%" 3 } } */
-/* { dg-final { scan-assembler-times "cmp\t%" 4 } } */
+/* { dg-final { scan-assembler-times "cmp\t%" 6 } } */
 /* { dg-final { scan-assembler-not "sra\t%" { target lp64 } } } */

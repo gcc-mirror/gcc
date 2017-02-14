@@ -157,6 +157,7 @@ target_modules = { module= libquadmath; };
 target_modules = { module= libgfortran; };
 target_modules = { module= libobjc; };
 target_modules = { module= libgo; };
+target_modules = { module= libhsail-rt; };
 target_modules = { module= libtermcap; no_check=true;
                    missing=mostlyclean;
                    missing=clean;
@@ -165,10 +166,7 @@ target_modules = { module= libtermcap; no_check=true;
 target_modules = { module= winsup; };
 target_modules = { module= libgloss; no_check=true; };
 target_modules = { module= libffi; no_install=true; };
-target_modules = { module= libjava; raw_cxx=true;
-                   extra_configure_flags="$(EXTRA_CONFIGARGS_LIBJAVA)"; };
 target_modules = { module= zlib; };
-target_modules = { module= boehm-gc; };
 target_modules = { module= rda; };
 target_modules = { module= libada; };
 target_modules = { module= libgomp; bootstrap= true; lib_path=.libs; };
@@ -282,7 +280,6 @@ flags_to_pass = { flag= CPPFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= CXXFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= DLLTOOL_FOR_TARGET ; };
 flags_to_pass = { flag= FLAGS_FOR_TARGET ; };
-flags_to_pass = { flag= GCJ_FOR_TARGET ; };
 flags_to_pass = { flag= GFORTRAN_FOR_TARGET ; };
 flags_to_pass = { flag= GOC_FOR_TARGET ; };
 flags_to_pass = { flag= GOCFLAGS_FOR_TARGET ; };
@@ -534,7 +531,6 @@ dependencies = { module=all-m4; on=all-build-texinfo; };
 // Target modules.  These can also have dependencies on the language
 // environment (e.g. on libstdc++).  By default target modules depend
 // on libgcc and newlib/libgloss.
-lang_env_dependencies = { module=libjava; cxx=true; };
 lang_env_dependencies = { module=libitm; cxx=true; };
 lang_env_dependencies = { module=libffi; cxx=true; };
 lang_env_dependencies = { module=libcilkrts; cxx=true; };
@@ -547,7 +543,6 @@ lang_env_dependencies = { module=libgcc; no_gcc=true; no_c=true; };
 // a dependency on libgcc for native targets to configure.
 lang_env_dependencies = { module=libiberty; no_c=true; };
 
-dependencies = { module=configure-target-boehm-gc; on=all-target-libstdc++-v3; };
 dependencies = { module=configure-target-fastjar; on=configure-target-zlib; };
 dependencies = { module=all-target-fastjar; on=all-target-zlib; };
 dependencies = { module=configure-target-libgo; on=configure-target-libffi; };
@@ -555,15 +550,6 @@ dependencies = { module=configure-target-libgo; on=all-target-libstdc++-v3; };
 dependencies = { module=all-target-libgo; on=all-target-libbacktrace; };
 dependencies = { module=all-target-libgo; on=all-target-libffi; };
 dependencies = { module=all-target-libgo; on=all-target-libatomic; };
-dependencies = { module=configure-target-libjava; on=configure-target-zlib; };
-dependencies = { module=configure-target-libjava; on=configure-target-boehm-gc; };
-dependencies = { module=configure-target-libjava; on=configure-target-libffi; };
-dependencies = { module=all-target-libjava; on=all-fastjar; };
-dependencies = { module=all-target-libjava; on=all-target-zlib; };
-dependencies = { module=all-target-libjava; on=all-target-boehm-gc; };
-dependencies = { module=all-target-libjava; on=all-target-libffi; };
-dependencies = { module=configure-target-libobjc; on=configure-target-boehm-gc; };
-dependencies = { module=all-target-libobjc; on=all-target-boehm-gc; };
 dependencies = { module=configure-target-libstdc++-v3; on=configure-target-libgomp; };
 dependencies = { module=configure-target-liboffloadmic; on=configure-target-libgomp; };
 dependencies = { module=configure-target-libsanitizer; on=all-target-libstdc++-v3; };
@@ -585,7 +571,6 @@ dependencies = { module=install-target-libcilkrts; on=install-target-libstdc++-v
 dependencies = { module=install-target-libcilkrts; on=install-target-libgcc; };
 dependencies = { module=install-target-liboffloadmic; on=install-target-libstdc++-v3; };
 dependencies = { module=install-target-liboffloadmic; on=install-target-libgcc; };
-dependencies = { module=install-target-libjava; on=install-target-libgcc; };
 dependencies = { module=install-target-libitm; on=install-target-libgcc; };
 dependencies = { module=install-target-libobjc; on=install-target-libgcc; };
 dependencies = { module=install-target-libstdc++-v3; on=install-target-libgcc; };
@@ -610,8 +595,6 @@ languages = { language=c++;	gcc-check-target=check-c++;
 languages = { language=fortran;	gcc-check-target=check-fortran;
 				lib-check-target=check-target-libquadmath;
 				lib-check-target=check-target-libgfortran; };
-languages = { language=java;	gcc-check-target=check-java;
-				lib-check-target=check-target-libjava; };
 languages = { language=ada;	gcc-check-target=check-ada;
 				lib-check-target=check-target-libada; };
 languages = { language=objc;	gcc-check-target=check-objc;
@@ -619,6 +602,8 @@ languages = { language=objc;	gcc-check-target=check-objc;
 languages = { language=obj-c++;	gcc-check-target=check-obj-c++; };
 languages = { language=go;	gcc-check-target=check-go;
 				lib-check-target=check-target-libgo; };
+languages = { language=brig;	gcc-check-target=check-brig;
+				lib-check-target=check-target-libhsail-rt; };
 
 // Toplevel bootstrap
 bootstrap_stage = { id=1 ; };

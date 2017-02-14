@@ -1,4 +1,4 @@
-@c Copyright (C) 2013-2016 Free Software Foundation, Inc.
+@c Copyright (C) 2013-2017 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -58,6 +58,9 @@ Loop optimization passes. Enabled by @option{-loop}.
 
 @item OPTGROUP_INLINE
 Inlining passes. Enabled by @option{-inline}.
+
+@item OPTGROUP_OPENMP
+OpenMP passes. Enabled by @option{-openmp}.
 
 @item OPTGROUP_VEC
 Vectorization passes. Enabled by @option{-vec}.

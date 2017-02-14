@@ -1,6 +1,6 @@
 # config-lang.in -- Top level configure fragment for gcc Go frontend.
 
-# Copyright (C) 2009-2016 Free Software Foundation, Inc.
+# Copyright (C) 2009-2017 Free Software Foundation, Inc.
 
 # This file is part of GCC.
 
@@ -30,10 +30,6 @@ compilers="go1\$(exeext)"
 
 target_libs="target-libgo target-libffi target-libbacktrace"
 lang_dirs="gotools"
-
-# The Go frontend is written in C++, so we need to build the C++
-# compiler during stage 1.
-lang_requires_boot_languages=c++
 
 gtfiles="\$(srcdir)/go/go-lang.c \$(srcdir)/go/go-c.h"
 

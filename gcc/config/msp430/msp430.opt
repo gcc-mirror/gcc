@@ -12,7 +12,7 @@ Specify the MCU to build for.
 
 mwarn-mcu
 Target Report Var(msp430_warn_mcu) Init(1)
-Warn if an MCU name is unrecognised or conflicts with other options (default: on).
+Warn if an MCU name is unrecognized or conflicts with other options (default: on).
 
 mcpu=
 Target Report Joined RejectNegative Var(target_cpu)

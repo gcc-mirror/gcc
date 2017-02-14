@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,8 +26,6 @@
 // libstdc++/86: map & set iterator comparisons are not type-safe
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::set<unsigned int> setByIndex;
   std::set<std::string> setByName;
   

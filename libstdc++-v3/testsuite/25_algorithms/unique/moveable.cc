@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,8 +36,6 @@ typedef test_container<rvalstruct, forward_iterator_wrapper> Container;
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   int intarray1[] = {1, 4, 4, 6, 1, 2, 2, 3, 1, 6, 6, 6, 5, 7, 5, 4, 4};
   int intarray2[] = {1, 1, 1, 2, 2, 1, 1, 7, 6, 6, 7, 8, 8, 8, 8, 9, 9};
 
@@ -69,8 +67,6 @@ bool are_equal(const rvalstruct& rhs, const rvalstruct& lhs)
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   int intarray1[] = {1, 4, 4, 6, 1, 2, 2, 3, 1, 6, 6, 6, 5, 7, 5, 4, 4};
   int intarray2[] = {1, 1, 1, 2, 2, 1, 1, 7, 6, 6, 7, 8, 8, 8, 8, 9, 9};
 

@@ -1,5 +1,5 @@
 /* Branch prediction routines for the GNU compiler.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfghooks.h"
 #include "tree-pass.h"
 #include "ssa.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "cgraph.h"
 #include "coverage.h"
@@ -785,20 +786,40 @@ dump_prediction (FILE *file, enum br_predictor predictor, int probability,
 }
 
 /* We can not predict the probabilities of outgoing edges of bb.  Set them
-   evenly and hope for the best.  */
+   evenly and hope for the best.  If UNLIKELY_EDGES is not null, distribute
+   even probability for all edges not mentioned in the set.  These edges
+   are given PROB_VERY_UNLIKELY probability.  */
+
 static void
-set_even_probabilities (basic_block bb)
+set_even_probabilities (basic_block bb,
+			hash_set<edge> *unlikely_edges = NULL)
 {
-  int nedges = 0;
-  edge e;
+  unsigned nedges = 0;
+  edge e = NULL;
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
       nedges ++;
+
+  /* Make the distribution even if all edges are unlikely.  */
+  unsigned unlikely_count = unlikely_edges ? unlikely_edges->elements () : 0;
+  if (unlikely_count == nedges)
+    {
+      unlikely_edges = NULL;
+      unlikely_count = 0;
+    }
+
+  unsigned c = nedges - unlikely_count;
+
   FOR_EACH_EDGE (e, ei, bb->succs)
     if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
-      e->probability = (REG_BR_PROB_BASE + nedges / 2) / nedges;
+      {
+	if (unlikely_edges != NULL && unlikely_edges->contains (e))
+	  e->probability = PROB_VERY_UNLIKELY;
+	else
+	  e->probability = (REG_BR_PROB_BASE + c / 2) / c;
+      }
     else
       e->probability = 0;
 }
@@ -1068,18 +1089,51 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
 
   /* When there is no successor or only one choice, prediction is easy.
 
-     We are lazy for now and predict only basic blocks with two outgoing
-     edges.  It is possible to predict generic case too, but we have to
-     ignore first match heuristics and do more involved combining.  Implement
-     this later.  */
+     When we have a basic block with more than 2 successors, the situation
+     is more complicated as DS theory cannot be used literally.
+     More precisely, let's assume we predicted edge e1 with probability p1,
+     thus: m1({b1}) = p1.  As we're going to combine more than 2 edges, we
+     need to find probability of e.g. m1({b2}), which we don't know.
+     The only approximation is to equally distribute 1-p1 to all edges
+     different from b1.
+
+     According to numbers we've got from SPEC2006 benchark, there's only
+     one interesting reliable predictor (noreturn call), which can be
+     handled with a bit easier approach.  */
   if (nedges != 2)
     {
+      hash_set<edge> unlikely_edges (4);
+
+      /* Identify all edges that have a probability close to very unlikely.
+	 Doing the approach for very unlikely doesn't worth for doing as
+	 there's no such probability in SPEC2006 benchmark.  */
+      edge_prediction **preds = bb_predictions->get (bb);
+      if (preds)
+	for (pred = *preds; pred; pred = pred->ep_next)
+	  if (pred->ep_probability <= PROB_VERY_UNLIKELY)
+	    unlikely_edges.add (pred->ep_edge);
+
       if (!bb->count && !dry_run)
-	set_even_probabilities (bb);
+	set_even_probabilities (bb, &unlikely_edges);
       clear_bb_predictions (bb);
       if (dump_file)
-	fprintf (dump_file, "%i edges in bb %i predicted to even probabilities\n",
-		 nedges, bb->index);
+	{
+	  fprintf (dump_file, "Predictions for bb %i\n", bb->index);
+	  if (unlikely_edges.elements () == 0)
+	    fprintf (dump_file,
+		     "%i edges in bb %i predicted to even probabilities\n",
+		     nedges, bb->index);
+	  else
+	    {
+	      fprintf (dump_file,
+		       "%i edges in bb %i predicted with some unlikely edges\n",
+		       nedges, bb->index);
+	      FOR_EACH_EDGE (e, ei, bb->succs)
+		if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
+		  dump_prediction (dump_file, PRED_COMBINED, e->probability,
+		   bb, REASON_NONE, e);
+	    }
+	}
       return;
     }
 
@@ -1971,9 +2025,7 @@ predict_loops (void)
 		   && gimple_expr_code (call_stmt) == NOP_EXPR
 		   && TREE_CODE (gimple_assign_rhs1 (call_stmt)) == SSA_NAME)
 		 call_stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (call_stmt));
-	       if (gimple_code (call_stmt) == GIMPLE_CALL
-		   && gimple_call_internal_p (call_stmt)
-		   && gimple_call_internal_fn (call_stmt) == IFN_BUILTIN_EXPECT
+	       if (gimple_call_internal_p (call_stmt, IFN_BUILTIN_EXPECT)
 		   && TREE_CODE (gimple_call_arg (call_stmt, 2)) == INTEGER_CST
 		   && tree_fits_uhwi_p (gimple_call_arg (call_stmt, 2))
 		   && tree_to_uhwi (gimple_call_arg (call_stmt, 2))
@@ -2460,6 +2512,21 @@ tree_predict_by_opcode (basic_block bb)
       }
 }
 
+/* Returns TRUE if the STMT is exit(0) like statement. */
+
+static bool
+is_exit_with_zero_arg (const gimple *stmt)
+{
+  /* This is not exit, _exit or _Exit. */
+  if (!gimple_call_builtin_p (stmt, BUILT_IN_EXIT)
+      && !gimple_call_builtin_p (stmt, BUILT_IN__EXIT)
+      && !gimple_call_builtin_p (stmt, BUILT_IN__EXIT2))
+    return false;
+
+  /* Argument is an interger zero. */
+  return integer_zerop (gimple_call_arg (stmt, 0));
+}
+
 /* Try to guess whether the value of return means error code.  */
 
 static enum br_predictor
@@ -2586,8 +2653,9 @@ tree_bb_level_predictions (void)
 
 	  if (is_gimple_call (stmt))
 	    {
-	      if ((gimple_call_flags (stmt) & ECF_NORETURN)
-	          && has_return_edges)
+	      if (gimple_call_noreturn_p (stmt)
+		  && has_return_edges
+		  && !is_exit_with_zero_arg (stmt))
 		predict_paths_leading_to (bb, PRED_NORETURN,
 					  NOT_TAKEN);
 	      decl = gimple_call_fndecl (stmt);
@@ -2718,7 +2786,12 @@ tree_estimate_probability_bb (basic_block bb)
 		     something exceptional.  */
 		  && gimple_has_side_effects (stmt))
 		{
-		  predict_edge_def (e, PRED_CALL, NOT_TAKEN);
+		  if (gimple_call_fndecl (stmt))
+		    predict_edge_def (e, PRED_CALL, NOT_TAKEN);
+		  else if (virtual_method_call_p (gimple_call_fn (stmt)))
+		    predict_edge_def (e, PRED_POLYMORPHIC_CALL, NOT_TAKEN);
+		  else
+		    predict_edge_def (e, PRED_INDIR_CALL, TAKEN);
 		  break;
 		}
 	    }
@@ -3149,8 +3222,7 @@ handle_missing_profiles (void)
 {
   struct cgraph_node *node;
   int unlikely_count_fraction = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
-  vec<struct cgraph_node *> worklist;
-  worklist.create (64);
+  auto_vec<struct cgraph_node *, 64> worklist;
 
   /* See if 0 count function has non-0 count callers.  In this case we
      lost some profile.  Drop its function profile to PROFILE_GUESSED.  */
@@ -3207,7 +3279,6 @@ handle_missing_profiles (void)
             }
         }
     }
-  worklist.release ();
 }
 
 /* Convert counts measured by profile driven feedback to frequencies.
@@ -3673,7 +3744,7 @@ force_edge_cold (edge e, bool impossible)
   int prob_scale = REG_BR_PROB_BASE;
 
   /* If edge is already improbably or cold, just return.  */
-  if (e->probability <= impossible ? PROB_VERY_UNLIKELY : 0
+  if (e->probability <= (impossible ? PROB_VERY_UNLIKELY : 0)
       && (!impossible || !e->count))
     return;
   FOR_EACH_EDGE (e2, ei, e->src->succs)

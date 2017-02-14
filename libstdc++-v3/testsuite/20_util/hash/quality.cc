@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11" }
-// { dg-options "-DNTESTS=1 -DNSTRINGS=100 -DSTRSIZE=21 -std=gnu++11" { target simulator } }
+// { dg-options "-DNTESTS=1 -DNSTRINGS=100 -DSTRSIZE=21" { target simulator } }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,7 +59,6 @@ random_strings(unsigned int n, unsigned int len)
 double
 score_from_varying_position(string s, unsigned int index)
 {
-  bool test __attribute__((unused)) = true;
   unsigned int bits_in_hash_code = sizeof(size_t) * 8;
 
   // We'll iterate through all 256 vals for s[index], leaving the rest
@@ -146,7 +145,6 @@ quality_test(unsigned int num_strings, unsigned int string_size)
 void
 quality_test()
 {
-  bool test __attribute__((unused)) = true;
   srand(137);
   double sum_of_scores = 0;
   for (unsigned int i = 0; i < num_quality_tests; i++)

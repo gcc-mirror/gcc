@@ -1,5 +1,5 @@
 /* Integrated Register Allocator (IRA) intercommunication header file.
-   Copyright (C) 2006-2016 Free Software Foundation, Inc.
+   Copyright (C) 2006-2017 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -782,7 +782,7 @@ struct target_ira_int {
 
   /* Initialized once.  It is a maximal possible size of the allocated
      struct costs.  */
-  int x_max_struct_costs_size;
+  size_t x_max_struct_costs_size;
 
   /* Allocated and initialized once, and used to initialize cost values
      for each insn.  */

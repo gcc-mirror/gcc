@@ -52,16 +52,18 @@ func writeMultiple(s fmt.State, text string, count int) {
 	}
 }
 
-// Format is a support routine for fmt.Formatter. It accepts
-// the formats 'b' (binary), 'o' (octal), 'd' (decimal), 'x'
-// (lowercase hexadecimal), and 'X' (uppercase hexadecimal).
+var _ fmt.Formatter = intOne // *Int must implement fmt.Formatter
+
+// Format implements fmt.Formatter. It accepts the formats
+// 'b' (binary), 'o' (octal), 'd' (decimal), 'x' (lowercase
+// hexadecimal), and 'X' (uppercase hexadecimal).
 // Also supported are the full suite of package fmt's format
-// verbs for integral types, including '+', '-', and ' '
-// for sign control, '#' for leading zero in octal and for
-// hexadecimal, a leading "0x" or "0X" for "%#x" and "%#X"
-// respectively, specification of minimum digits precision,
-// output field width, space or zero padding, and left or
-// right justification.
+// flags for integral types, including '+' and ' ' for sign
+// control, '#' for leading zero in octal and for hexadecimal,
+// a leading "0x" or "0X" for "%#x" and "%#X" respectively,
+// specification of minimum digits precision, output field
+// width, space or zero padding, and '-' for left or right
+// justification.
 //
 func (x *Int) Format(s fmt.State, ch rune) {
 	// determine base
@@ -222,6 +224,8 @@ func (r byteReader) ReadByte() (byte, error) {
 func (r byteReader) UnreadByte() error {
 	return r.UnreadRune()
 }
+
+var _ fmt.Scanner = intOne // *Int must implement fmt.Scanner
 
 // Scan is a support routine for fmt.Scanner; it sets z to the value of
 // the scanned number. It accepts the formats 'b' (binary), 'o' (octal),

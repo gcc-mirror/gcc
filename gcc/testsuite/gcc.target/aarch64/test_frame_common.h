@@ -2,7 +2,7 @@ extern void abort ();
 
 #define CVT(v) ((unsigned char)(v))
 
-static void __attribute__((noinline))
+static void __attribute__((noinline, noclone))
 check_args_8 (int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7,
 	      int a8)
 {
@@ -18,7 +18,7 @@ check_args_8 (int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7,
     abort ();
 }
 
-static void __attribute__((noinline))
+static void __attribute__((noinline, noclone))
 check_args_24 (int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7,
 	       int a8, int a9, int a10)
 {
@@ -36,7 +36,7 @@ check_args_24 (int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7,
     abort ();
 }
 
-void __attribute__ ((noinline))
+void __attribute__ ((noinline, noclone))
 initialize_array (unsigned char *a, int len)
 {
   int i;

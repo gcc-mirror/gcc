@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -155,7 +155,7 @@ package body Ch10 is
          Item := P_Pragma;
 
          if Item = Error
-           or else Pragma_Name (Item) /= Name_Source_Reference
+           or else Pragma_Name_Unmapped (Item) /= Name_Source_Reference
          then
             Restore_Scan_State (Scan_State);
 
@@ -184,12 +184,14 @@ package body Ch10 is
          Save_Scan_State (Scan_State);
          Item := P_Pragma;
 
-         if Item /= Error and then Pragma_Name (Item) = Name_No_Body then
+         if Item /= Error and then Pragma_Name_Unmapped (Item) = Name_No_Body
+         then
             No_Body := True;
          end if;
 
          if Item = Error
-           or else not Is_Configuration_Pragma_Name (Pragma_Name (Item))
+           or else
+             not Is_Configuration_Pragma_Name (Pragma_Name_Unmapped (Item))
          then
             Restore_Scan_State (Scan_State);
             exit;

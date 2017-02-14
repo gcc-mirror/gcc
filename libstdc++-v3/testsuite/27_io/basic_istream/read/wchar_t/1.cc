@@ -1,4 +1,4 @@
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,7 +25,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   const std::wstring str_02(L"soul eyes: john coltrane quartet");
 
   std::wstringbuf isbuf_03(str_02, std::ios_base::in);

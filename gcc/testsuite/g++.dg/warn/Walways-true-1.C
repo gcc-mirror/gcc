@@ -12,19 +12,19 @@ void
 bar (int a)
 {
  lab:
-  if (foo)	// { dg-warning "always evaluate as" "correct warning" }
+  if (foo)	// { dg-warning "always evaluate as|never be NULL" "correct warning" }
     foo (0);
   if (foo (1))
     ;
-  if (&i)	// { dg-warning "always evaluate as" "correct warning" }
+  if (&i)	// { dg-warning "always evaluate as|never be NULL" "correct warning" }
     foo (2);
   if (i)
     foo (3);
-  if (&a)	// { dg-warning "always evaluate as" "correct warning" }
+  if (&a)	// { dg-warning "always evaluate as|never be NULL" "correct warning" }
     foo (4);
   if (a)
     foo (5);
-  if (&&lab)	// { dg-warning "always evaluate as" "correct warning" }
+  if (&&lab)	// { dg-warning "always evaluate as|never be NULL" "correct warning" }
     foo (6);
   if (foo == 0)	// { dg-warning "never be NULL" "correct warning" }
     foo (7);

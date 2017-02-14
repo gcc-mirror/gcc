@@ -1,6 +1,6 @@
 # Rules common to all arm targets
 #
-# Copyright (C) 2004-2016 Free Software Foundation, Inc.
+# Copyright (C) 2004-2017 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -18,8 +18,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-TM_H += $(srcdir)/config/arm/arm-cores.def
-OPTIONS_H_EXTRA += $(srcdir)/config/arm/arm-cores.def
+TM_H += $(srcdir)/config/arm/arm-cpu.h
 
 # All md files - except for arm.md.
 # This list should be kept in alphabetical order and updated whenever an md
@@ -67,17 +66,35 @@ MD_INCLUDES=	$(srcdir)/config/arm/arm1020e.md \
 s-config s-conditions s-flags s-codes s-constants s-emit s-recog s-preds \
 	s-opinit s-extract s-peep s-attr s-attrtab s-output: $(MD_INCLUDES)
 
-$(srcdir)/config/arm/arm-tune.md: $(srcdir)/config/arm/gentune.sh \
-	$(srcdir)/config/arm/arm-cores.def
-	$(SHELL) $(srcdir)/config/arm/gentune.sh \
-		$(srcdir)/config/arm/arm-cores.def > \
-		$(srcdir)/config/arm/arm-tune.md
+$(srcdir)/config/arm/arm-tune.md: $(srcdir)/config/arm/parsecpu.awk \
+	$(srcdir)/config/arm/arm-cpus.in
+	$(AWK) -f $(srcdir)/config/arm/parsecpu.awk -v cmd=md \
+		$(srcdir)/config/arm/arm-cpus.in > arm-tune.new
+	mv arm-tune.new $(srcdir)/config/arm/arm-tune.md
 
-$(srcdir)/config/arm/arm-tables.opt: $(srcdir)/config/arm/genopt.sh \
-  $(srcdir)/config/arm/arm-cores.def $(srcdir)/config/arm/arm-arches.def \
-  $(srcdir)/config/arm/arm-fpus.def
-	$(SHELL) $(srcdir)/config/arm/genopt.sh $(srcdir)/config/arm > \
+$(srcdir)/config/arm/arm-tables.opt: $(srcdir)/config/arm/parsecpu.awk \
+  $(srcdir)/config/arm/arm-cpus.in
+	$(AWK) -f $(srcdir)/config/arm/parsecpu.awk -v cmd=opt \
+		$(srcdir)/config/arm/arm-cpus.in > \
 		$(srcdir)/config/arm/arm-tables.opt
+
+$(srcdir)/config/arm/arm-cpu.h: $(srcdir)/config/arm/parsecpu.awk \
+  $(srcdir)/config/arm/arm-cpus.in
+	$(AWK) -f $(srcdir)/config/arm/parsecpu.awk -v cmd=headers \
+		$(srcdir)/config/arm/arm-cpus.in > arm-cpu.new
+	mv arm-cpu.new $(srcdir)/config/arm/arm-cpu.h
+
+$(srcdir)/config/arm/arm-cpu-data.h: $(srcdir)/config/arm/parsecpu.awk \
+  $(srcdir)/config/arm/arm-cpus.in
+	$(AWK) -f $(srcdir)/config/arm/parsecpu.awk -v cmd=data \
+		$(srcdir)/config/arm/arm-cpus.in > arm-cpu-data.new
+	mv arm-cpu-data.new $(srcdir)/config/arm/arm-cpu-data.h
+
+$(srcdir)/config/arm/arm-cpu-cdata.h: $(srcdir)/config/arm/parsecpu.awk \
+  $(srcdir)/config/arm/arm-cpus.in
+	$(AWK) -f $(srcdir)/config/arm/parsecpu.awk -v cmd=common-data \
+		$(srcdir)/config/arm/arm-cpus.in > arm-cpu-cdata.new
+	mv arm-cpu-cdata.new $(srcdir)/config/arm/arm-cpu-cdata.h
 
 aarch-common.o: $(srcdir)/config/arm/aarch-common.c $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TM_P_H) $(RTL_H) $(TREE_H) output.h $(C_COMMON_H)
@@ -92,10 +109,10 @@ arm.o: $(srcdir)/config/arm/arm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(GGC_H) except.h $(C_PRAGMA_H) $(TM_P_H) \
   $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
   intl.h libfuncs.h $(PARAMS_H) $(OPTS_H) sched-int.h \
-  $(srcdir)/config/arm/arm-cores.def \
-  $(srcdir)/config/arm/arm-arches.def $(srcdir)/config/arm/arm-fpus.def \
+  $(srcdir)/config/arm/arm-cpu-data.h \
   $(srcdir)/config/arm/arm-protos.h \
-  $(srcdir)/config/arm/arm_neon_builtins.def
+  $(srcdir)/config/arm/arm_neon_builtins.def \
+  $(srcdir)/config/arm/arm_vfp_builtins.def
 
 arm-builtins.o: $(srcdir)/config/arm/arm-builtins.c $(CONFIG_H) \
   $(SYSTEM_H) coretypes.h $(TM_H) \
@@ -103,6 +120,7 @@ arm-builtins.o: $(srcdir)/config/arm/arm-builtins.c $(CONFIG_H) \
   $(DIAGNOSTIC_CORE_H) $(OPTABS_H) \
   $(srcdir)/config/arm/arm-protos.h \
   $(srcdir)/config/arm/arm_neon_builtins.def \
+  $(srcdir)/config/arm/arm_vfp_builtins.def \
   $(srcdir)/config/arm/arm-simd-builtin-types.def
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/arm/arm-builtins.c
@@ -111,3 +129,5 @@ arm-c.o: $(srcdir)/config/arm/arm-c.c $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TREE_H) output.h $(C_COMMON_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/arm/arm-c.c
+
+arm-common.o: $(srcdir)/config/arm/arm-cpu-cdata.h

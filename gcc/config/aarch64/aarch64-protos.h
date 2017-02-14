@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2016 Free Software Foundation, Inc.
+   Copyright (C) 2009-2017 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -151,11 +151,17 @@ struct cpu_regmove_cost
 /* Cost for vector insn classes.  */
 struct cpu_vector_cost
 {
-  const int scalar_stmt_cost;		 /* Cost of any scalar operation,
+  const int scalar_int_stmt_cost;	 /* Cost of any int scalar operation,
+					    excluding load and store.  */
+  const int scalar_fp_stmt_cost;	 /* Cost of any fp scalar operation,
 					    excluding load and store.  */
   const int scalar_load_cost;		 /* Cost of scalar load.  */
   const int scalar_store_cost;		 /* Cost of scalar store.  */
-  const int vec_stmt_cost;		 /* Cost of any vector operation,
+  const int vec_int_stmt_cost;		 /* Cost of any int vector operation,
+					    excluding load, store, permute,
+					    vector-to-scalar and
+					    scalar-to-vector operation.  */
+  const int vec_fp_stmt_cost;		 /* Cost of any fp vector operation,
 					    excluding load, store, permute,
 					    vector-to-scalar and
 					    scalar-to-vector operation.  */
@@ -248,7 +254,6 @@ enum aarch64_fusion_pairs_index
 #include "aarch64-fusion-pairs.def"
   AARCH64_FUSE_index_END
 };
-#undef AARCH64_FUSION_PAIR
 
 #define AARCH64_FUSION_PAIR(x, name) \
   AARCH64_FUSE_##name = (1u << AARCH64_FUSE_##name##_index),
@@ -259,7 +264,6 @@ enum aarch64_fusion_pairs
 #include "aarch64-fusion-pairs.def"
   AARCH64_FUSE_ALL = (1u << AARCH64_FUSE_index_END) - 1
 };
-#undef AARCH64_FUSION_PAIR
 
 #define AARCH64_EXTRA_TUNING_OPTION(x, name) \
   AARCH64_EXTRA_TUNE_##name##_index,
@@ -269,7 +273,6 @@ enum aarch64_extra_tuning_flags_index
 #include "aarch64-tuning-flags.def"
   AARCH64_EXTRA_TUNE_index_END
 };
-#undef AARCH64_EXTRA_TUNING_OPTION
 
 
 #define AARCH64_EXTRA_TUNING_OPTION(x, name) \
@@ -281,7 +284,6 @@ enum aarch64_extra_tuning_flags
 #include "aarch64-tuning-flags.def"
   AARCH64_EXTRA_TUNE_ALL = (1u << AARCH64_EXTRA_TUNE_index_END) - 1
 };
-#undef AARCH64_EXTRA_TUNING_OPTION
 
 /* Enum describing the various ways that the
    aarch64_parse_{arch,tune,cpu,extension} functions can fail.
@@ -300,6 +302,9 @@ extern struct tune_params aarch64_tune_params;
 HOST_WIDE_INT aarch64_initial_elimination_offset (unsigned, unsigned);
 int aarch64_get_condition_code (rtx);
 bool aarch64_bitmask_imm (HOST_WIDE_INT val, machine_mode);
+unsigned HOST_WIDE_INT aarch64_and_split_imm1 (HOST_WIDE_INT val_in);
+unsigned HOST_WIDE_INT aarch64_and_split_imm2 (HOST_WIDE_INT val_in);
+bool aarch64_and_bitmask_imm (unsigned HOST_WIDE_INT val_in, machine_mode mode);
 int aarch64_branch_cost (bool, bool);
 enum aarch64_symbol_type aarch64_classify_symbolic_expression (rtx);
 bool aarch64_const_vec_all_same_int_p (rtx, HOST_WIDE_INT);
@@ -341,6 +346,7 @@ bool aarch64_simd_scalar_immediate_valid_for_move (rtx, machine_mode);
 bool aarch64_simd_shift_imm_p (rtx, machine_mode, bool);
 bool aarch64_simd_valid_immediate (rtx, machine_mode, bool,
 				   struct simd_immediate_info *);
+bool aarch64_split_dimode_const_store (rtx, rtx);
 bool aarch64_symbolic_address_p (rtx);
 bool aarch64_uimm12_shift (HOST_WIDE_INT);
 bool aarch64_use_return_insn_p (void);
@@ -358,11 +364,11 @@ int aarch64_hard_regno_mode_ok (unsigned, machine_mode);
 int aarch64_hard_regno_nregs (unsigned, machine_mode);
 int aarch64_uxt_size (int, HOST_WIDE_INT);
 int aarch64_vec_fpconst_pow_of_2 (rtx);
-rtx aarch64_final_eh_return_addr (void);
+rtx aarch64_eh_return_handler_rtx (void);
 rtx aarch64_mask_from_zextract_ops (rtx, rtx);
 const char *aarch64_output_move_struct (rtx *operands);
 rtx aarch64_return_addr (int, rtx);
-rtx aarch64_simd_gen_const_vector_dup (machine_mode, int);
+rtx aarch64_simd_gen_const_vector_dup (machine_mode, HOST_WIDE_INT);
 bool aarch64_simd_mem_operand_p (rtx);
 rtx aarch64_simd_vect_par_cnst_half (machine_mode, bool);
 rtx aarch64_tls_get_addr (void);
@@ -386,6 +392,7 @@ void aarch64_emit_call_insn (rtx);
 void aarch64_register_pragmas (void);
 void aarch64_relayout_simd_types (void);
 void aarch64_reset_previous_fndecl (void);
+bool aarch64_return_address_signing_enabled (void);
 void aarch64_save_restore_target_globals (tree);
 
 /* Initialize builtins for SIMD intrinsics.  */
@@ -453,7 +460,6 @@ int aarch64_ccmp_mode_to_code (enum machine_mode mode);
 bool extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset);
 bool aarch64_operands_ok_for_ldpstp (rtx *, bool, enum machine_mode);
 bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, enum machine_mode);
-extern bool aarch64_nopcrelative_literal_loads;
 
 extern void aarch64_asm_output_pool_epilogue (FILE *, const char *,
 					      tree, HOST_WIDE_INT);
@@ -466,5 +472,7 @@ enum aarch64_parse_opt_result aarch64_parse_extension (const char *,
 						       unsigned long *);
 std::string aarch64_get_extension_string_for_isa_flags (unsigned long,
 							unsigned long);
+
+rtl_opt_pass *make_pass_fma_steering (gcc::context *ctxt);
 
 #endif /* GCC_AARCH64_PROTOS_H */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-ifcvt-stats" { target *-*-* } } */
+/* { dg-options "-O2 -ftree-vectorize -fdump-tree-ifcvt-stats-blocks-details" { target *-*-* } } */
 
 void foo (int a[], int b[])
 {
@@ -14,3 +14,11 @@ void foo (int a[], int b[])
 }
 
 /* { dg-final { scan-tree-dump-times "Applying if-conversion" 1 "ifcvt" } } */
+
+/* We insert into code
+   if (LOOP_VECTORIZED (...))
+   which is folded by vectorizer.  Both outgoing edges must have probability
+   100% so the resulting profile match after folding.  */
+/* { dg-final { scan-tree-dump-times "Invalid sum of outgoing probabilities 200.0" 1 "ifcvt" } } */
+/* Sum is wrong here, but not enough for error to be reported.  */
+/* { dg-final { scan-tree-dump-times "Invalid sum of incoming frequencies" 0 "ifcvt" } } */

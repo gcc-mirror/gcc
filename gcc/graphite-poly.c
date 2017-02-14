@@ -1,5 +1,5 @@
 /* Graphite polyhedral representation.
-   Copyright (C) 2009-2016 Free Software Foundation, Inc.
+   Copyright (C) 2009-2017 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com> and
    Tobias Grosser <grosser@fim.uni-passau.de>.
 
@@ -136,13 +136,7 @@ new_poly_bb (scop_p scop, gimple_poly_bb_p black_box)
   poly_bb_p pbb = XNEW (struct poly_bb);
 
   pbb->domain = NULL;
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
   pbb->iterators = NULL;
-#else
-  pbb->schedule = NULL;
-  pbb->transformed = NULL;
-  pbb->saved = NULL;
-#endif
   PBB_SCOP (pbb) = scop;
   pbb_set_black_box (pbb, black_box);
   PBB_DRS (pbb).create (3);
@@ -161,17 +155,8 @@ free_poly_bb (poly_bb_p pbb)
 
   isl_set_free (pbb->domain);
   pbb->domain = NULL;
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
   isl_set_free (pbb->iterators);
   pbb->iterators = NULL;
-#else
-  isl_map_free (pbb->schedule);
-  pbb->schedule = NULL;
-  isl_map_free (pbb->transformed);
-  pbb->transformed = NULL;
-  isl_map_free (pbb->saved);
-  pbb->saved = NULL;
-#endif
 
   if (PBB_DRS (pbb).exists ())
     FOR_EACH_VEC_ELT (PBB_DRS (pbb), i, pdr)
@@ -273,12 +258,8 @@ new_scop (edge entry, edge exit)
   sese_info_p region = new_sese_info (entry, exit);
   scop_p s = XNEW (struct scop);
 
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
   s->original_schedule = NULL;
   s->transformed_schedule = NULL;
-#else
-  s->schedule = NULL;
-#endif
   s->param_context = NULL;
   scop_set_region (s, region);
   s->pbbs.create (3);
@@ -308,14 +289,10 @@ free_scop (scop_p scop)
   scop->param_context = NULL;
   isl_union_map_free (scop->dependence);
   scop->dependence = NULL;
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
   isl_schedule_free (scop->original_schedule);
   scop->original_schedule = NULL;
   isl_schedule_free (scop->transformed_schedule);
   scop->transformed_schedule = NULL;
-#else
-
-#endif
   XDELETE (scop);
 }
 
@@ -543,9 +520,7 @@ void
 print_isl_set (FILE *f, __isl_keep isl_set *set)
 {
   isl_printer *p = isl_printer_to_file (the_isl_ctx, f);
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
   p = isl_printer_set_yaml_style (p, ISL_YAML_STYLE_BLOCK);
-#endif
   p = isl_printer_print_set (p, set);
   p = isl_printer_print_str (p, "\n");
   isl_printer_free (p);
@@ -561,9 +536,7 @@ void
 print_isl_map (FILE *f, __isl_keep isl_map *map)
 {
   isl_printer *p = isl_printer_to_file (the_isl_ctx, f);
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
   p = isl_printer_set_yaml_style (p, ISL_YAML_STYLE_BLOCK);
-#endif
   p = isl_printer_print_map (p, map);
   p = isl_printer_print_str (p, "\n");
   isl_printer_free (p);
@@ -579,9 +552,7 @@ void
 print_isl_union_map (FILE *f, __isl_keep isl_union_map *map)
 {
   isl_printer *p = isl_printer_to_file (the_isl_ctx, f);
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
   p = isl_printer_set_yaml_style (p, ISL_YAML_STYLE_BLOCK);
-#endif
   p = isl_printer_print_union_map (p, map);
   p = isl_printer_print_str (p, "\n");
   isl_printer_free (p);
@@ -627,9 +598,7 @@ void
 print_isl_schedule (FILE *f, __isl_keep isl_schedule *s)
 {
   isl_printer *p = isl_printer_to_file (the_isl_ctx, f);
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
   p = isl_printer_set_yaml_style (p, ISL_YAML_STYLE_BLOCK);
-#endif
   p = isl_printer_print_schedule (p, s);
   p = isl_printer_print_str (p, "\n");
   isl_printer_free (p);

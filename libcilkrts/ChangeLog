@@ -1,3 +1,30 @@
+2017-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* aclocal.m4: Regenerated.
+	* Makefile.in: Regenerated.
+
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/79046
+	* configure.ac: Add GCC_BASE_VER.
+	* Makefile.am (gcc_version): Use @get_gcc_base_ver@ instead of cat to
+	get version from BASE-VER file.
+	* aclocal.m4: Include ../config/acx.m4.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
+2016-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/68945
+	Merge from upstream, version 2.0.4467.0.
+	Fix typo in git URL.
+	* aclocal.m4, configure, Makefile.in: Regenerate.
+
+2016-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure: Regenerate.
+
 2016-05-10  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Move AC_USE_SYSTEM_EXTENSIONS behind AM_ENABLE_MULTILIB.

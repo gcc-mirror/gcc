@@ -17,7 +17,8 @@ Basics
 A stream of gobs is self-describing.  Each data item in the stream is preceded by
 a specification of its type, expressed in terms of a small set of predefined
 types.  Pointers are not transmitted, but the things they point to are
-transmitted; that is, the values are flattened.  Recursive types work fine, but
+transmitted; that is, the values are flattened. Nil pointers are not permitted,
+as they have no value. Recursive types work fine, but
 recursive values (data with cycles) are problematic.  This may change.
 
 To use gobs, create an Encoder and present it with a series of data items as
@@ -253,6 +254,12 @@ In summary, a gob stream looks like
 
 where * signifies zero or more repetitions and the type id of a value must
 be predefined or be defined before the value in the stream.
+
+Compatibility: Any future changes to the package will endeavor to maintain
+compatibility with streams encoded using previous versions.  That is, any released
+version of this package should be able to decode data written with any previously
+released version, subject to issues such as security fixes. See the Go compatibility
+document for background: https://golang.org/doc/go1compat
 
 See "Gobs of data" for a design discussion of the gob wire format:
 https://blog.golang.org/gobs-of-data

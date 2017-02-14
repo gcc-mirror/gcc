@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -115,8 +115,6 @@ template<class charT, class traits, class Allocator>
 int
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   std::experimental::wstring_view 	str_0(L"costa rica");
   std::experimental::wstring_view 	str_1(L"costa marbella");
   std::experimental::wstring_view 	str_2(L"cost");

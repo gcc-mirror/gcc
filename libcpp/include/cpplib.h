@@ -1,5 +1,5 @@
 /* Definitions for CPP library.
-   Copyright (C) 1995-2016 Free Software Foundation, Inc.
+   Copyright (C) 1995-2017 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
 This program is free software; you can redistribute it and/or modify it
@@ -185,7 +185,8 @@ struct GTY(()) cpp_string {
 #define STRINGIFY_ARG	(1 << 2) /* If macro argument to be stringified.  */
 #define PASTE_LEFT	(1 << 3) /* If on LHS of a ## operator.  */
 #define NAMED_OP	(1 << 4) /* C++ named operators.  */
-#define NO_EXPAND	(1 << 5) /* Do not macro-expand this token.  */
+#define PREV_FALLTHROUGH (1 << 5) /* On a token preceeded by FALLTHROUGH
+				     comment.  */
 #define BOL		(1 << 6) /* Token at beginning of line.  */
 #define PURE_ZERO	(1 << 7) /* Single 0 digit, used by the C++ frontend,
 				    set in c-lex.c.  */
@@ -193,6 +194,7 @@ struct GTY(()) cpp_string {
 #define SP_PREV_WHITE	(1 << 9) /* If whitespace before a ##
 				    operator, or before this token
 				    after a # operator.  */
+#define NO_EXPAND	(1 << 10) /* Do not macro-expand this token.  */
 
 /* Specify which field, if any, of the cpp_token union is used.  */
 
@@ -393,6 +395,9 @@ struct cpp_options
      explicitly undefined.  */
   unsigned char warn_builtin_macro_redefined;
 
+  /* Different -Wimplicit-fallthrough= levels.  */
+  unsigned char cpp_warn_implicit_fallthrough;
+
   /* Nonzero means we should look for header.gcc files that remap file
      names.  */
   unsigned char remap;
@@ -409,6 +414,10 @@ struct cpp_options
 
   /* Nonzero means warn if undefined identifiers are evaluated in an #if.  */
   unsigned char warn_undef;
+
+  /* Nonzero means warn if "defined" is encountered in a place other than
+     an #if.  */
+  unsigned char warn_expansion_to_defined;
 
   /* Nonzero means warn of unused macros from the main file.  */
   unsigned char warn_unused_macros;
@@ -597,6 +606,9 @@ struct cpp_callbacks
 
   /* Callback to parse SOURCE_DATE_EPOCH from environment.  */
   time_t (*get_source_date_epoch) (cpp_reader *);
+
+  /* Callback for providing suggestions for misspelled directives.  */
+  const char *(*get_suggestion) (cpp_reader *, const char *, const char *const *);
 };
 
 #ifdef VMS
@@ -743,6 +755,51 @@ struct GTY(()) cpp_hashnode {
   union _cpp_hashnode_value GTY ((desc ("CPP_HASHNODE_VALUE_IDX (%1)"))) value;
 };
 
+/* A class for iterating through the source locations within a
+   string token (before escapes are interpreted, and before
+   concatenation).  */
+
+class cpp_string_location_reader {
+ public:
+  cpp_string_location_reader (source_location src_loc,
+			      line_maps *line_table);
+
+  source_range get_next ();
+
+ private:
+  source_location m_loc;
+  int m_offset_per_column;
+  line_maps *m_line_table;
+};
+
+/* A class for storing the source ranges of all of the characters within
+   a string literal, after escapes are interpreted, and after
+   concatenation.
+
+   This is not GTY-marked, as instances are intended to be temporary.  */
+
+class cpp_substring_ranges
+{
+ public:
+  cpp_substring_ranges ();
+  ~cpp_substring_ranges ();
+
+  int get_num_ranges () const { return m_num_ranges; }
+  source_range get_range (int idx) const
+  {
+    linemap_assert (idx < m_num_ranges);
+    return m_ranges[idx];
+  }
+
+  void add_range (source_range range);
+  void add_n_ranges (int num, cpp_string_location_reader &loc_reader);
+
+ private:
+  source_range *m_ranges;
+  int m_num_ranges;
+  int m_alloc_ranges;
+};
+
 /* Call this first to get a handle to pass to other functions.
 
    If you want cpplib to manage its own hashtable, pass in a NULL
@@ -829,6 +886,12 @@ extern cppchar_t cpp_interpret_charconst (cpp_reader *, const cpp_token *,
 extern bool cpp_interpret_string (cpp_reader *,
 				  const cpp_string *, size_t,
 				  cpp_string *, enum cpp_ttype);
+extern const char *cpp_interpret_string_ranges (cpp_reader *pfile,
+						const cpp_string *from,
+						cpp_string_location_reader *,
+						size_t count,
+						cpp_substring_ranges *out,
+						enum cpp_ttype type);
 extern bool cpp_interpret_string_notranslate (cpp_reader *,
 					      const cpp_string *, size_t,
 					      cpp_string *, enum cpp_ttype);
@@ -880,7 +943,7 @@ struct cpp_num
 #define CPP_N_FLOATING	0x0002
 
 #define CPP_N_WIDTH	0x00F0
-#define CPP_N_SMALL	0x0010	/* int, float, shrot _Fract/Accum  */
+#define CPP_N_SMALL	0x0010	/* int, float, short _Fract/Accum  */
 #define CPP_N_MEDIUM	0x0020	/* long, double, long _Fract/_Accum.  */
 #define CPP_N_LARGE	0x0040	/* long long, long double,
 				   long long _Fract/Accum.  */
@@ -902,8 +965,15 @@ struct cpp_num
 
 #define CPP_N_FRACT	0x100000 /* Fract types.  */
 #define CPP_N_ACCUM	0x200000 /* Accum types.  */
+#define CPP_N_FLOATN	0x400000 /* _FloatN types.  */
+#define CPP_N_FLOATNX	0x800000 /* _FloatNx types.  */
 
 #define CPP_N_USERDEF	0x1000000 /* C++0x user-defined literal.  */
+
+#define CPP_N_WIDTH_FLOATN_NX	0xF0000000 /* _FloatN / _FloatNx value
+					      of N, divided by 16.  */
+#define CPP_FLOATN_SHIFT	24
+#define CPP_FLOATN_MAX	0xF0
 
 /* Classify a CPP_NUMBER token.  The return value is a combination of
    the flags from the above sets.  */
@@ -974,7 +1044,8 @@ enum {
   CPP_W_DATE_TIME,
   CPP_W_PEDANTIC,
   CPP_W_C90_C99_COMPAT,
-  CPP_W_CXX11_COMPAT
+  CPP_W_CXX11_COMPAT,
+  CPP_W_EXPANSION_TO_DEFINED
 };
 
 /* Output a diagnostic of some kind.  */
@@ -1013,6 +1084,11 @@ extern bool cpp_warning_with_line_syshdr (cpp_reader *, int, source_location,
 
 extern bool cpp_error_at (cpp_reader * pfile, int level,
 			  source_location src_loc, const char *msgid, ...)
+  ATTRIBUTE_PRINTF_4;
+
+extern bool cpp_error_at_richloc (cpp_reader * pfile, int level,
+				  rich_location *richloc, const char *msgid,
+				  ...)
   ATTRIBUTE_PRINTF_4;
 
 /* In lex.c */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -152,6 +152,7 @@ package SCOs is
    --      o        object declaration
    --      r        renaming declaration
    --      i        generic instantiation
+   --      d        any other kind of declaration
    --      A        ACCEPT statement (from ACCEPT to end of parameter profile)
    --      C        CASE statement (from CASE to end of expression)
    --      E        EXIT statement
@@ -497,6 +498,11 @@ package SCOs is
    --  Used to index values in this table. Values start at 1 and are assigned
    --  sequentially as entries are constructed.
 
+   Missing_Dep_Num : constant Nat := 0;
+   --  Represents a dependency number for a dependency that is ignored. SCO
+   --  information consumers use this to strip units that must be kept out of
+   --  the coverage analysis.
+
    type SCO_Unit_Table_Entry is record
       File_Name : String_Ptr;
       --  Pointer to file name in ALI file
@@ -505,7 +511,9 @@ package SCOs is
       --  Index for the source file
 
       Dep_Num : Nat;
-      --  Dependency number in ALI file
+      --  Dependency number in ALI file. This is a positive number when the
+      --  dependency is actually available in the context, it is
+      --  Missing_Dep_Num otherwise.
 
       From : Nat;
       --  Starting index in SCO_Table of SCO information for this unit

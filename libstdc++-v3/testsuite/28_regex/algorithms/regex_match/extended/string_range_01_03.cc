@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2010-06-16  Stephen M. Webb <stephen.webb@bregmasoft.ca>
 //
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,25 +33,23 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
+  std::regex  re("a{1,3}", std::regex::extended);
+  std::string target("aa");
+  std::smatch m;
 
-	std::regex  re("a{1,3}", std::regex::extended);
-	std::string target("aa");
-	std::smatch m;
+  VERIFY( regex_match_debug(target, m, re) );
 
-	VERIFY( regex_match_debug(target, m, re) );
-
-	VERIFY( m.size()  == re.mark_count()+1 );
-	VERIFY( m.empty() == false );
-	VERIFY( m.prefix().first == target.begin() );
-	VERIFY( m.prefix().second == target.begin() );
-	VERIFY( m.prefix().matched == false );
-	VERIFY( m.suffix().first == target.end() );
-	VERIFY( m.suffix().second == target.end() );
-	VERIFY( m.suffix().matched == false );
-	VERIFY( m[0].first == target.begin() );
-	VERIFY( m[0].second == target.end() );
-	VERIFY( m[0].matched == true );
+  VERIFY( m.size()  == re.mark_count()+1 );
+  VERIFY( m.empty() == false );
+  VERIFY( m.prefix().first == target.begin() );
+  VERIFY( m.prefix().second == target.begin() );
+  VERIFY( m.prefix().matched == false );
+  VERIFY( m.suffix().first == target.end() );
+  VERIFY( m.suffix().second == target.end() );
+  VERIFY( m.suffix().matched == false );
+  VERIFY( m[0].first == target.begin() );
+  VERIFY( m[0].second == target.end() );
+  VERIFY( m[0].matched == true );
 }
 
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -329,7 +329,6 @@ package body Ada.Strings.Wide_Wide_Fixed is
          Target := Source;
 
       elsif Slength > Tlength then
-
          case Drop is
             when Left =>
                Target := Source (Slast - Tlength + 1 .. Slast);

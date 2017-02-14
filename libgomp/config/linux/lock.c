@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2017 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -32,98 +32,8 @@
 #include <sys/syscall.h>
 #include "wait.h"
 
-
-/* The internal gomp_mutex_t and the external non-recursive omp_lock_t
-   have the same form.  Re-use it.  */
-
-void
-gomp_init_lock_30 (omp_lock_t *lock)
-{
-  gomp_mutex_init (lock);
-}
-
-void
-gomp_destroy_lock_30 (omp_lock_t *lock)
-{
-  gomp_mutex_destroy (lock);
-}
-
-void
-gomp_set_lock_30 (omp_lock_t *lock)
-{
-  gomp_mutex_lock (lock);
-}
-
-void
-gomp_unset_lock_30 (omp_lock_t *lock)
-{
-  gomp_mutex_unlock (lock);
-}
-
-int
-gomp_test_lock_30 (omp_lock_t *lock)
-{
-  int oldval = 0;
-
-  return __atomic_compare_exchange_n (lock, &oldval, 1, false,
-				      MEMMODEL_ACQUIRE, MEMMODEL_RELAXED);
-}
-
-void
-gomp_init_nest_lock_30 (omp_nest_lock_t *lock)
-{
-  memset (lock, '\0', sizeof (*lock));
-}
-
-void
-gomp_destroy_nest_lock_30 (omp_nest_lock_t *lock)
-{
-}
-
-void
-gomp_set_nest_lock_30 (omp_nest_lock_t *lock)
-{
-  void *me = gomp_icv (true);
-
-  if (lock->owner != me)
-    {
-      gomp_mutex_lock (&lock->lock);
-      lock->owner = me;
-    }
-
-  lock->count++;
-}
-
-void
-gomp_unset_nest_lock_30 (omp_nest_lock_t *lock)
-{
-  if (--lock->count == 0)
-    {
-      lock->owner = NULL;
-      gomp_mutex_unlock (&lock->lock);
-    }
-}
-
-int
-gomp_test_nest_lock_30 (omp_nest_lock_t *lock)
-{
-  void *me = gomp_icv (true);
-  int oldval;
-
-  if (lock->owner == me)
-    return ++lock->count;
-
-  oldval = 0;
-  if (__atomic_compare_exchange_n (&lock->lock, &oldval, 1, false,
-				   MEMMODEL_ACQUIRE, MEMMODEL_RELAXED))
-    {
-      lock->owner = me;
-      lock->count = 1;
-      return 1;
-    }
-
-  return 0;
-}
+/* Reuse the generic implementation in terms of gomp_mutex_t.  */
+#include "../../lock.c"
 
 #ifdef LIBGOMP_GNU_SYMBOL_VERSIONING
 /* gomp_mutex_* can be safely locked in one thread and

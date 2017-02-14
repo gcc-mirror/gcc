@@ -49,6 +49,24 @@ enum Keyword
   KEYWORD_VAR
 };
 
+// Pragmas built from magic comments and recorded for functions.
+// These are used as bits in a bitmask.
+// The set of values is intended to be the same as the gc compiler.
+
+enum GoPragma
+{
+  GOPRAGMA_NOINTERFACE = 1 << 0,	// Method not in type descriptor.
+  GOPRAGMA_NOESCAPE = 1 << 1,		// Args do not escape.
+  GOPRAGMA_NORACE = 1 << 2,		// No race detector.
+  GOPRAGMA_NOSPLIT = 1 << 3,		// Do not split stack.
+  GOPRAGMA_NOINLINE = 1 << 4,		// Do not inline.
+  GOPRAGMA_SYSTEMSTACK = 1 << 5,	// Must run on system stack.
+  GOPRAGMA_NOWRITEBARRIER = 1 << 6,	// No write barriers.
+  GOPRAGMA_NOWRITEBARRIERREC = 1 << 7,	// No write barriers here or callees.
+  GOPRAGMA_CGOUNSAFEARGS = 1 << 8,	// Pointer to arg is pointer to all.
+  GOPRAGMA_UINTPTRESCAPES = 1 << 9	// uintptr(p) escapes.
+};
+
 // A token returned from the lexer.
 
 class Token
@@ -348,13 +366,39 @@ class Lex
   extern_name() const
   { return this->extern_; }
 
-  // Return whether we have seen a //go:nointerface comment, clearing
-  // the flag.
-  bool
-  get_and_clear_nointerface()
+  // Return the current set of pragmas, and clear them.
+  unsigned int
+  get_and_clear_pragmas()
   {
-    bool ret = this->saw_nointerface_;
-    this->saw_nointerface_ = false;
+    unsigned int ret = this->pragmas_;
+    this->pragmas_ = 0;
+    return ret;
+  }
+
+  struct Linkname
+  {
+    std::string ext_name;	// External name.
+    bool is_exported;		// Whether the internal name is exported.
+    Location loc;		// Location of go:linkname directive.
+
+    Linkname()
+      : ext_name(), is_exported(false), loc()
+    { }
+
+    Linkname(const std::string& ext_name_a, bool is_exported_a, Location loc_a)
+      : ext_name(ext_name_a), is_exported(is_exported_a), loc(loc_a)
+    { }
+  };
+
+  typedef std::map<std::string, Linkname> Linknames;
+
+  // Return the linknames seen so far, or NULL if none, and clear the
+  // set.  These are from go:linkname compiler directives.
+  Linknames*
+  get_and_clear_linknames()
+  {
+    Linknames* ret = this->linknames_;
+    this->linknames_ = NULL;
     return ret;
   }
 
@@ -409,6 +453,9 @@ class Lex
   static unsigned char
   octal_value(char c)
   { return c - '0'; }
+
+  static unsigned
+  hex_val(char c);
 
   Token
   make_invalid_token()
@@ -492,11 +539,13 @@ class Lex
   size_t lineno_;
   // Whether to add a semicolon if we see a newline now.
   bool add_semi_at_eol_;
-  // Whether we just saw a magic go:nointerface comment.
-  bool saw_nointerface_;
+  // Pragmas for the next function, from magic comments.
+  unsigned int pragmas_;
   // The external name to use for a function declaration, from a magic
   // //extern comment.
   std::string extern_;
+  // The list of //go:linkname comments, if any.
+  Linknames* linknames_;
 };
 
 #endif // !defined(GO_LEX_H)

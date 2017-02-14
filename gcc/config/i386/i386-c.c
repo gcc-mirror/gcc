@@ -1,5 +1,5 @@
 /* Subroutines used for macro/preprocessor support on the ia-32.
-   Copyright (C) 2008-2016 Free Software Foundation, Inc.
+   Copyright (C) 2008-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,19 +22,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "target.h"
 #include "c-family/c-common.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "c-family/c-pragma.h"
 
 static bool ix86_pragma_target_parse (tree, tree);
 static void ix86_target_macros_internal
-  (HOST_WIDE_INT, enum processor_type, enum processor_type, enum fpmath_unit,
+  (HOST_WIDE_INT, HOST_WIDE_INT, enum processor_type, enum processor_type, enum fpmath_unit,
    void (*def_or_undef) (cpp_reader *, const char *));
 
-
 /* Internal function to either define or undef the appropriate system
    macros.  */
 static void
 ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
+			     HOST_WIDE_INT isa_flag2,
 			     enum processor_type arch,
 			     enum processor_type tune,
 			     enum fpmath_unit fpmath,
@@ -375,6 +376,14 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__AVX512VBMI__");
   if (isa_flag & OPTION_MASK_ISA_AVX512IFMA)
     def_or_undef (parse_in, "__AVX512IFMA__");
+  if (isa_flag2 & OPTION_MASK_ISA_AVX5124VNNIW)
+    def_or_undef (parse_in, "__AVX5124VNNIW__");
+  if (isa_flag2 & OPTION_MASK_ISA_SGX)
+    def_or_undef (parse_in, "__SGX__");
+  if (isa_flag2 & OPTION_MASK_ISA_AVX5124FMAPS)
+    def_or_undef (parse_in, "__AVX5124FMAPS__");
+  if (isa_flag2 & OPTION_MASK_ISA_AVX512VPOPCNTDQ)
+    def_or_undef (parse_in, "__AVX512VPOPCNTDQ__");
   if (isa_flag & OPTION_MASK_ISA_FMA)
     def_or_undef (parse_in, "__FMA__");
   if (isa_flag & OPTION_MASK_ISA_RTM)
@@ -433,8 +442,6 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__XSAVES__");
   if (isa_flag & OPTION_MASK_ISA_MPX)
     def_or_undef (parse_in, "__MPX__");
-  if (isa_flag & OPTION_MASK_ISA_PCOMMIT)
-    def_or_undef (parse_in, "__PCOMMIT__");
   if (isa_flag & OPTION_MASK_ISA_CLWB)
     def_or_undef (parse_in, "__CLWB__");
   if (isa_flag & OPTION_MASK_ISA_MWAITX)
@@ -463,6 +470,9 @@ ix86_pragma_target_parse (tree args, tree pop_target)
   HOST_WIDE_INT prev_isa;
   HOST_WIDE_INT cur_isa;
   HOST_WIDE_INT diff_isa;
+  HOST_WIDE_INT prev_isa2;
+  HOST_WIDE_INT cur_isa2;
+  HOST_WIDE_INT diff_isa2;
   enum processor_type prev_arch;
   enum processor_type prev_tune;
   enum processor_type cur_arch;
@@ -495,6 +505,9 @@ ix86_pragma_target_parse (tree args, tree pop_target)
   prev_isa  = prev_opt->x_ix86_isa_flags;
   cur_isa   = cur_opt->x_ix86_isa_flags;
   diff_isa  = (prev_isa ^ cur_isa);
+  prev_isa2  = prev_opt->x_ix86_isa_flags2;
+  cur_isa2   = cur_opt->x_ix86_isa_flags2;
+  diff_isa2  = (prev_isa2 ^ cur_isa2);
   prev_arch = (enum processor_type) prev_opt->arch;
   prev_tune = (enum processor_type) prev_opt->tune;
   cur_arch  = (enum processor_type) cur_opt->arch;
@@ -510,6 +523,7 @@ ix86_pragma_target_parse (tree args, tree pop_target)
 
   /* Undef all of the macros for that are no longer current.  */
   ix86_target_macros_internal (prev_isa & diff_isa,
+			       prev_isa2 & diff_isa2,
 			       prev_arch,
 			       prev_tune,
 			       (enum fpmath_unit) prev_opt->x_ix86_fpmath,
@@ -524,6 +538,7 @@ ix86_pragma_target_parse (tree args, tree pop_target)
 
   /* Define all of the macros for new options that were just turned on.  */
   ix86_target_macros_internal (cur_isa & diff_isa,
+			       cur_isa2 & diff_isa2,
 			       cur_arch,
 			       cur_tune,
 			       (enum fpmath_unit) cur_opt->x_ix86_fpmath,
@@ -584,6 +599,7 @@ ix86_target_macros (void)
   cpp_define (parse_in, "__GCC_ASM_FLAG_OUTPUTS__");
 
   ix86_target_macros_internal (ix86_isa_flags,
+			       ix86_isa_flags2,
 			       ix86_arch,
 			       ix86_tune,
 			       ix86_fpmath,

@@ -1,6 +1,6 @@
 // 2004-03-02  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,13 +30,12 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   typedef istreambuf_iterator<char>::difference_type Distance;
 
   bool found = false;
   // The C++ standard didn't originally have "long long", however that
-  // type will be in the C++0x standard and testing for it allows
+  // type is in the C++11 standard and testing for it allows
   // ilp32 targets to pass this test when `Distance' is 64 bits.
   if (typeid(Distance) == typeid(long long int))
     found = true;

@@ -4,7 +4,7 @@
 
 package template
 
-// Tests for mulitple-template parsing and execution.
+// Tests for multiple-template parsing and execution.
 
 import (
 	"bytes"
@@ -347,5 +347,41 @@ func TestParse(t *testing.T) {
 	}
 	if _, err := t1.Parse(`{{define "test"}}foo{{end}}`); err != nil {
 		t.Fatalf("parsing test: %s", err)
+	}
+}
+
+func TestEmptyTemplate(t *testing.T) {
+	cases := []struct {
+		defn []string
+		in   string
+		want string
+	}{
+		{[]string{""}, "once", ""},
+		{[]string{"", ""}, "twice", ""},
+		{[]string{"{{.}}", "{{.}}"}, "twice", "twice"},
+		{[]string{"{{/* a comment */}}", "{{/* a comment */}}"}, "comment", ""},
+		{[]string{"{{.}}", ""}, "twice", ""},
+	}
+
+	for _, c := range cases {
+		root := New("root")
+
+		var (
+			m   *Template
+			err error
+		)
+		for _, d := range c.defn {
+			m, err = root.New(c.in).Parse(d)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		buf := &bytes.Buffer{}
+		if err := m.Execute(buf, c.in); err != nil {
+			t.Fatal(err)
+		}
+		if buf.String() != c.want {
+			t.Errorf("expected string %q: got %q", c.want, buf.String())
+		}
 	}
 }

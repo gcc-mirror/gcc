@@ -1,4 +1,4 @@
-// Copyright 2012 The Go Authors.  All rights reserved.
+// Copyright 2012 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -36,3 +36,6 @@ func httpsOrHTTP(importPath string, security securityMode) (string, io.ReadClose
 func parseMetaGoImports(r io.Reader) ([]metaImport, error) {
 	panic("unreachable")
 }
+
+func queryEscape(s string) string { panic("unreachable") }
+func openBrowser(url string) bool { panic("unreachable") }

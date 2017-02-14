@@ -23,7 +23,20 @@ type Source interface {
 	Seed(seed int64)
 }
 
+// A Source64 is a Source that can also generate
+// uniformly-distributed pseudo-random uint64 values in
+// the range [0, 1<<64) directly.
+// If a Rand r's underlying Source s implements Source64,
+// then r.Uint64 returns the result of one call to s.Uint64
+// instead of making two calls to s.Int63.
+type Source64 interface {
+	Source
+	Uint64() uint64
+}
+
 // NewSource returns a new pseudo-random Source seeded with the given value.
+// Unlike the default Source used by top-level functions, this source is not
+// safe for concurrent use by multiple goroutines.
 func NewSource(seed int64) Source {
 	var rng rngSource
 	rng.Seed(seed)
@@ -33,20 +46,50 @@ func NewSource(seed int64) Source {
 // A Rand is a source of random numbers.
 type Rand struct {
 	src Source
+	s64 Source64 // non-nil if src is source64
+
+	// readVal contains remainder of 63-bit integer used for bytes
+	// generation during most recent Read call.
+	// It is saved so next Read call can start where the previous
+	// one finished.
+	readVal int64
+	// readPos indicates the number of low-order bytes of readVal
+	// that are still valid.
+	readPos int8
 }
 
 // New returns a new Rand that uses random values from src
 // to generate other random values.
-func New(src Source) *Rand { return &Rand{src} }
+func New(src Source) *Rand {
+	s64, _ := src.(Source64)
+	return &Rand{src: src, s64: s64}
+}
 
 // Seed uses the provided seed value to initialize the generator to a deterministic state.
-func (r *Rand) Seed(seed int64) { r.src.Seed(seed) }
+// Seed should not be called concurrently with any other Rand method.
+func (r *Rand) Seed(seed int64) {
+	if lk, ok := r.src.(*lockedSource); ok {
+		lk.seedPos(seed, &r.readPos)
+		return
+	}
+
+	r.src.Seed(seed)
+	r.readPos = 0
+}
 
 // Int63 returns a non-negative pseudo-random 63-bit integer as an int64.
 func (r *Rand) Int63() int64 { return r.src.Int63() }
 
 // Uint32 returns a pseudo-random 32-bit value as a uint32.
 func (r *Rand) Uint32() uint32 { return uint32(r.Int63() >> 31) }
+
+// Uint64 returns a pseudo-random 64-bit value as a uint64.
+func (r *Rand) Uint64() uint64 {
+	if r.s64 != nil {
+		return r.s64.Uint64()
+	}
+	return uint64(r.Int63())>>31 | uint64(r.Int63())<<32
+}
 
 // Int31 returns a non-negative pseudo-random 31-bit integer as an int32.
 func (r *Rand) Int31() int32 { return int32(r.Int63() >> 32) }
@@ -160,26 +203,42 @@ func (r *Rand) Perm(n int) []int {
 
 // Read generates len(p) random bytes and writes them into p. It
 // always returns len(p) and a nil error.
+// Read should not be called concurrently with any other Rand method.
 func (r *Rand) Read(p []byte) (n int, err error) {
-	for i := 0; i < len(p); i += 7 {
-		val := r.src.Int63()
-		for j := 0; i+j < len(p) && j < 7; j++ {
-			p[i+j] = byte(val)
-			val >>= 8
-		}
+	if lk, ok := r.src.(*lockedSource); ok {
+		return lk.read(p, &r.readVal, &r.readPos)
 	}
-	return len(p), nil
+	return read(p, r.Int63, &r.readVal, &r.readPos)
+}
+
+func read(p []byte, int63 func() int64, readVal *int64, readPos *int8) (n int, err error) {
+	pos := *readPos
+	val := *readVal
+	for n = 0; n < len(p); n++ {
+		if pos == 0 {
+			val = int63()
+			pos = 7
+		}
+		p[n] = byte(val)
+		val >>= 8
+		pos--
+	}
+	*readPos = pos
+	*readVal = val
+	return
 }
 
 /*
  * Top-level convenience functions
  */
 
-var globalRand = New(&lockedSource{src: NewSource(1)})
+var globalRand = New(&lockedSource{src: NewSource(1).(Source64)})
 
 // Seed uses the provided seed value to initialize the default Source to a
 // deterministic state. If Seed is not called, the generator behaves as
-// if seeded by Seed(1).
+// if seeded by Seed(1). Seed values that have the same remainder when
+// divided by 2^31-1 generate the same pseudo-random sequence.
+// Seed, unlike the Rand.Seed method, is safe for concurrent use.
 func Seed(seed int64) { globalRand.Seed(seed) }
 
 // Int63 returns a non-negative pseudo-random 63-bit integer as an int64
@@ -189,6 +248,10 @@ func Int63() int64 { return globalRand.Int63() }
 // Uint32 returns a pseudo-random 32-bit value as a uint32
 // from the default Source.
 func Uint32() uint32 { return globalRand.Uint32() }
+
+// Uint64 returns a pseudo-random 64-bit value as a uint64
+// from the default Source.
+func Uint64() uint64 { return globalRand.Uint64() }
 
 // Int31 returns a non-negative pseudo-random 31-bit integer as an int32
 // from the default Source.
@@ -226,6 +289,7 @@ func Perm(n int) []int { return globalRand.Perm(n) }
 
 // Read generates len(p) random bytes from the default Source and
 // writes them into p. It always returns len(p) and a nil error.
+// Read, unlike the Rand.Read method, is safe for concurrent use.
 func Read(p []byte) (n int, err error) { return globalRand.Read(p) }
 
 // NormFloat64 returns a normally distributed float64 in the range
@@ -251,7 +315,7 @@ func ExpFloat64() float64 { return globalRand.ExpFloat64() }
 
 type lockedSource struct {
 	lk  sync.Mutex
-	src Source
+	src Source64
 }
 
 func (r *lockedSource) Int63() (n int64) {
@@ -261,8 +325,31 @@ func (r *lockedSource) Int63() (n int64) {
 	return
 }
 
+func (r *lockedSource) Uint64() (n uint64) {
+	r.lk.Lock()
+	n = r.src.Uint64()
+	r.lk.Unlock()
+	return
+}
+
 func (r *lockedSource) Seed(seed int64) {
 	r.lk.Lock()
 	r.src.Seed(seed)
 	r.lk.Unlock()
+}
+
+// seedPos implements Seed for a lockedSource without a race condiiton.
+func (r *lockedSource) seedPos(seed int64, readPos *int8) {
+	r.lk.Lock()
+	r.src.Seed(seed)
+	*readPos = 0
+	r.lk.Unlock()
+}
+
+// read implements Read for a lockedSource without a race condition.
+func (r *lockedSource) read(p []byte, readVal *int64, readPos *int8) (n int, err error) {
+	r.lk.Lock()
+	n, err = read(p, r.src.Int63, readVal, readPos)
+	r.lk.Unlock()
+	return
 }

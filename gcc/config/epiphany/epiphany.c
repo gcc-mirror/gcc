@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the EPIPHANY cpu.
-   Copyright (C) 1994-2016 Free Software Foundation, Inc.
+   Copyright (C) 1994-2017 Free Software Foundation, Inc.
    Contributed by Embecosm on behalf of Adapteva, Inc.
 
 This file is part of GCC.
@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "optabs.h"
@@ -101,6 +102,8 @@ static rtx_insn *frame_insn (rtx);
 
 #define TARGET_SCHED_ISSUE_RATE epiphany_issue_rate
 #define TARGET_SCHED_ADJUST_COST epiphany_adjust_cost
+
+#define TARGET_LRA_P hook_bool_void_false
 
 #define TARGET_LEGITIMATE_ADDRESS_P epiphany_legitimate_address_p
 
@@ -1351,7 +1354,8 @@ epiphany_print_operand (FILE *file, rtx x, int code)
 	  fprintf (file, "%s0x%08lx", IMMEDIATE_PREFIX, l);
 	  break;
 	}
-      /* Fall through.  Let output_addr_const deal with it.  */
+      /* FALLTHRU */
+      /* Let output_addr_const deal with it.  */
     case CONST_INT:
       fprintf(file,"%s",IMMEDIATE_PREFIX);
       if (code == 'C' || code == 'X')
@@ -1983,9 +1987,10 @@ epiphany_issue_rate (void)
    the same cost as a data-dependence.  The return value should be
    the new value for COST.  */
 static int
-epiphany_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
+epiphany_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn,
+		      int cost, unsigned int)
 {
-  if (REG_NOTE_KIND (link) == 0)
+  if (dep_type == 0)
     {
       rtx dep_set;
 
@@ -2850,12 +2855,12 @@ epiphany_special_round_type_align (tree type, unsigned computed,
    arrays-at-the-end-of-structs work, like for struct gcov_fn_info in
    libgcov.c .  */
 unsigned
-epiphany_adjust_field_align (tree field, unsigned computed)
+epiphany_adjust_field_align (tree type, unsigned computed)
 {
   if (computed == 32
-      && TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE)
+      && TREE_CODE (type) == ARRAY_TYPE)
     {
-      tree elmsz = TYPE_SIZE (TREE_TYPE (TREE_TYPE (field)));
+      tree elmsz = TYPE_SIZE (TREE_TYPE (type));
 
       if (!tree_fits_uhwi_p (elmsz) || tree_to_uhwi (elmsz) >= 32)
 	return 64;

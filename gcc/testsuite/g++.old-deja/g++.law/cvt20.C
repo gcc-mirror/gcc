@@ -16,5 +16,5 @@ void f(const char *& x) // { dg-message "argument" }
 
 int main()
 {
-  f ("foo"); // { dg-error "invalid initialization" }
+  f ("foo"); // { dg-error "cannot bind non-const lvalue reference" }
 }

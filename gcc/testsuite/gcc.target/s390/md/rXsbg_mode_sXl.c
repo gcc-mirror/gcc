@@ -7,8 +7,8 @@
    always wins, even if the condition is false.  If this test is run on hardware
    older than z10 with a buggy dejagnu release, the execution part will fail.
 
-    { dg-do assemble { target { ! z10_instructions } } }
-    { dg-do run { target { z10_instructions } } }
+    { dg-do assemble }
+    { dg-do run { target { s390_useable_hw } } }
 
    Skip test if -O0, -march=z900, -march=z9-109 or -march=z9-ec is present on
    the command line:
@@ -39,28 +39,28 @@ rosbg_si_sll (unsigned int a, unsigned int b)
 {
   return a | (b << 1);
 }
-/* { dg-final { scan-assembler-times "rosbg\t%r.,%r.,64-32,63-1,1" 1 } } */
+/* { dg-final { scan-assembler-times "rosbg\t%r.,%r.,32,63-1,1" 1 } } */
 
 __attribute__ ((noinline)) unsigned int
 rosbg_si_srl (unsigned int a, unsigned int b)
 {
   return a | (b >> 2);
 }
-/* { dg-final { scan-assembler-times "rosbg\t%r.,%r.,64-32\\+2,63,64-2" 1 } } */
+/* { dg-final { scan-assembler-times "rosbg\t%r.,%r.,32\\+2,63,64-2" 1 } } */
 
 __attribute__ ((noinline)) unsigned int
 rxsbg_si_sll (unsigned int a, unsigned int b)
 {
   return a ^ (b << 1);
 }
-/* { dg-final { scan-assembler-times "rxsbg\t%r.,%r.,64-32,63-1,1" 1 } } */
+/* { dg-final { scan-assembler-times "rxsbg\t%r.,%r.,32,63-1,1" 1 } } */
 
 __attribute__ ((noinline)) unsigned int
 rxsbg_si_srl (unsigned int a, unsigned int b)
 {
   return a ^ (b >> 2);
 }
-/* { dg-final { scan-assembler-times "rxsbg\t%r.,%r.,64-32\\+2,63,64-2" 1 } } */
+/* { dg-final { scan-assembler-times "rxsbg\t%r.,%r.,32\\+2,63,64-2" 1 } } */
 
 __attribute__ ((noinline)) unsigned long long
 di_sll (unsigned long long x)
@@ -79,28 +79,28 @@ rosbg_di_sll (unsigned long long a, unsigned long long b)
 {
   return a | (b << 1);
 }
-/* { dg-final { scan-assembler-times "rosbg\t%r.,%r.,64-64,63-1,1" 1 } } */
+/* { dg-final { scan-assembler-times "rosbg\t%r.,%r.,0,63-1,1" 1 } } */
 
 __attribute__ ((noinline)) unsigned long long
 rosbg_di_srl (unsigned long long a, unsigned long long b)
 {
   return a | (b >> 2);
 }
-/* { dg-final { scan-assembler-times "rosbg\t%r.,%r.,64-64\\+2,63,64-2" 1 } } */
+/* { dg-final { scan-assembler-times "rosbg\t%r.,%r.,2,63,64-2" 1 } } */
 
 __attribute__ ((noinline)) unsigned long long
 rxsbg_di_sll (unsigned long long a, unsigned long long b)
 {
   return a ^ (b << 1);
 }
-/* { dg-final { scan-assembler-times "rxsbg\t%r.,%r.,64-64,63-1,1" 1 } } */
+/* { dg-final { scan-assembler-times "rxsbg\t%r.,%r.,0,63-1,1" 1 } } */
 
 __attribute__ ((noinline)) unsigned long long
 rxsbg_di_srl (unsigned long long a, unsigned long long b)
 {
   return a ^ (b >> 2);
 }
-/* { dg-final { scan-assembler-times "rxsbg\t%r.,%r.,64-64\\+2,63,64-2" 1 } } */
+/* { dg-final { scan-assembler-times "rxsbg\t%r.,%r.,2,63,64-2" 1 } } */
 
 int
 main (void)

@@ -48,6 +48,6 @@ int baz (int n)
 
 /* There should be no division/modulo in the final dump (division and modulo
    by 64 are done using bit operations).  */
-/* { dg-final { scan-tree-dump-times "/" 0 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "%" 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " / " 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " % " 0 "optimized" } } */
 

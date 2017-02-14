@@ -1,5 +1,5 @@
 /* IRA conflict builder.
-   Copyright (C) 2006-2016 Free Software Foundation, Inc.
+   Copyright (C) 2006-2017 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "predict.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "regs.h"
@@ -786,8 +787,12 @@ ira_build_conflicts (void)
 		   if (outer_regno < 0
 		       || !in_hard_reg_set_p (reg_class_contents[aclass],
 					      outer_mode, outer_regno))
-		     SET_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (obj),
-				       inner_regno);
+		     {
+		       SET_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
+					 inner_regno);
+		       SET_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (obj),
+					 inner_regno);
+		     }
 		}
 	    }
 

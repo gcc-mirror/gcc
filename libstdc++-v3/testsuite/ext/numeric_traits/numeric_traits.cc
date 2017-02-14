@@ -2,7 +2,7 @@
 // { dg-options "-pedantic" }
 // -*- C++ -*-
 
-// Copyright (C) 2006-2016 Free Software Foundation, Inc.
+// Copyright (C) 2006-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,7 +21,6 @@
 
 #include <ext/numeric_traits.h>
 
-using __gnu_cxx::__numeric_traits;
-template struct __numeric_traits<short>;
-template struct __numeric_traits<unsigned short>;
-template struct __numeric_traits<double>;
+template struct __gnu_cxx::__numeric_traits<short>;
+template struct __gnu_cxx::__numeric_traits<unsigned short>;
+template struct __gnu_cxx::__numeric_traits<double>;

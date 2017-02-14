@@ -1,6 +1,6 @@
 // 2005-01-26  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,8 +27,6 @@ struct big { char array[256]; };
 // __per_type_pool_policy
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef big value_type;
 
   using __gnu_cxx::__pool;

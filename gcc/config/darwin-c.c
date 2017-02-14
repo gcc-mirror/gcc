@@ -1,5 +1,5 @@
 /* Darwin support needed only by C/C++ frontends.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "c-family/c-target.h"
 #include "c-family/c-target-def.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "cgraph.h"
 #include "incpath.h"

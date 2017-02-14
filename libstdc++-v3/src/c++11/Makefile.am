@@ -1,6 +1,6 @@
 ## Makefile for the C++03 sources of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997-2016 Free Software Foundation, Inc.
+## Copyright (C) 1997-2017 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -82,9 +82,12 @@ extra_string_inst_sources = \
 	cow-fstream-inst.cc \
 	cow-sstream-inst.cc \
 	cow-string-inst.cc \
+	cow-string-io-inst.cc \
 	cow-wstring-inst.cc \
+	cow-wstring-io-inst.cc \
 	cxx11-locale-inst.cc \
-	cxx11-wlocale-inst.cc
+	cxx11-wlocale-inst.cc \
+	sso_string.cc
 else
 extra_string_inst_sources =
 endif
@@ -103,8 +106,10 @@ inst_sources = \
 	sstream-inst.cc \
 	streambuf-inst.cc \
 	string-inst.cc \
+	string-io-inst.cc \
 	wlocale-inst.cc \
-	wstring-inst.cc
+	wstring-inst.cc \
+	wstring-io-inst.cc
 else
 # XTEMPLATE_FLAGS =
 inst_sources =

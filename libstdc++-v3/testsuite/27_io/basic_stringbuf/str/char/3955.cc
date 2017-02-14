@@ -1,6 +1,6 @@
 // 981208 bkoz test functionality of basic_stringbuf for char_type == char
 
-// Copyright (C) 1997-2016 Free Software Foundation, Inc.
+// Copyright (C) 1997-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,8 +23,6 @@
 // libstdc++/3955 -- ios_base::app overwrites from the beginning
 void test05()
 {
-  bool test __attribute__((unused)) = true;
-
   std::ostringstream os ("foo");
   os << "bar";
 

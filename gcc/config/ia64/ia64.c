@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+   Copyright (C) 1999-2017 Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
 		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "memmodel.h"
 #include "cfghooks.h"
 #include "df.h"
 #include "tm_p.h"
@@ -240,7 +241,7 @@ static void ia64_print_operand_address (FILE *, machine_mode, rtx);
 static bool ia64_print_operand_punct_valid_p (unsigned char code);
 
 static int ia64_issue_rate (void);
-static int ia64_adjust_cost_2 (rtx_insn *, int, rtx_insn *, int, dw_t);
+static int ia64_adjust_cost (rtx_insn *, int, rtx_insn *, int, dw_t);
 static void ia64_sched_init (FILE *, int, int);
 static void ia64_sched_init_global (FILE *, int, int);
 static void ia64_sched_finish_global (FILE *, int);
@@ -310,7 +311,6 @@ static rtx ia64_struct_value_rtx (tree, int);
 static tree ia64_gimplify_va_arg (tree, tree, gimple_seq *, gimple_seq *);
 static bool ia64_scalar_mode_supported_p (machine_mode mode);
 static bool ia64_vector_mode_supported_p (machine_mode mode);
-static bool ia64_libgcc_floating_mode_supported_p (machine_mode mode);
 static bool ia64_legitimate_constant_p (machine_mode, rtx);
 static bool ia64_legitimate_address_p (machine_mode, rtx, bool);
 static bool ia64_cannot_force_const_mem (machine_mode, rtx);
@@ -419,8 +419,8 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P  ia64_in_small_data_p
 
-#undef TARGET_SCHED_ADJUST_COST_2
-#define TARGET_SCHED_ADJUST_COST_2 ia64_adjust_cost_2
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST ia64_adjust_cost
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE ia64_issue_rate
 #undef TARGET_SCHED_VARIABLE_ISSUE
@@ -594,14 +594,13 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P ia64_vector_mode_supported_p
 
-#undef TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P
-#define TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P \
-  ia64_libgcc_floating_mode_supported_p
-
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P ia64_legitimate_constant_p
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P ia64_legitimate_address_p
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM ia64_cannot_force_const_mem
@@ -649,6 +648,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P
 #define TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P ia64_attribute_takes_identifier_p
+
+#undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
+#define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 0
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1801,7 +1803,7 @@ ia64_expand_compare (rtx *expr, rtx *op0, rtx *op1)
       };
       int magic;
       enum rtx_code ncode;
-      rtx ret, insns;
+      rtx ret;
       
       gcc_assert (cmptf_libfunc && GET_MODE (*op1) == TFmode);
       switch (code)
@@ -1840,7 +1842,7 @@ ia64_expand_compare (rtx *expr, rtx *op0, rtx *op1)
       emit_insn (gen_rtx_SET (cmp, gen_rtx_fmt_ee (ncode, BImode,
 						   ret, const0_rtx)));
 
-      insns = get_insns ();
+      rtx_insn *insns = get_insns ();
       end_sequence ();
 
       emit_libcall_block (insns, cmp, cmp,
@@ -5546,7 +5548,7 @@ ia64_print_operand (FILE * file, rtx x, int code)
     case POST_DEC:
     case POST_MODIFY:
       x = XEXP (x, 0);
-      /* ... fall through ...  */
+      /* fall through */
 
     case REG:
       fputs (reg_names [REGNO (x)], file);
@@ -7136,7 +7138,7 @@ static char mem_ops_in_group[4];
 static int current_cycle;
 
 static rtx ia64_single_set (rtx_insn *);
-static void ia64_emit_insn_before (rtx, rtx);
+static void ia64_emit_insn_before (rtx, rtx_insn *);
 
 /* Map a bundle number to its pseudo-op.  */
 
@@ -7190,8 +7192,8 @@ ia64_single_set (rtx_insn *insn)
    Return the new cost of a dependency of type DEP_TYPE or INSN on DEP_INSN.
    COST is the current cost, DW is dependency weakness.  */
 static int
-ia64_adjust_cost_2 (rtx_insn *insn, int dep_type1, rtx_insn *dep_insn,
-		    int cost, dw_t dw)
+ia64_adjust_cost (rtx_insn *insn, int dep_type1, rtx_insn *dep_insn,
+		  int cost, dw_t dw)
 {
   enum reg_note dep_type = (enum reg_note) dep_type1;
   enum attr_itanium_class dep_class;
@@ -7236,7 +7238,7 @@ ia64_adjust_cost_2 (rtx_insn *insn, int dep_type1, rtx_insn *dep_insn,
    ??? When cycle display notes are implemented, update this.  */
 
 static void
-ia64_emit_insn_before (rtx insn, rtx before)
+ia64_emit_insn_before (rtx insn, rtx_insn *before)
 {
   emit_insn_before (insn, before);
 }
@@ -10350,9 +10352,15 @@ ia64_init_builtins (void)
   (*lang_hooks.types.register_builtin_type) (fpreg_type, "__fpreg");
 
   /* The __float80 type.  */
-  float80_type = make_node (REAL_TYPE);
-  TYPE_PRECISION (float80_type) = 80;
-  layout_type (float80_type);
+  if (float64x_type_node != NULL_TREE
+      && TYPE_MODE (float64x_type_node) == XFmode)
+    float80_type = float64x_type_node;
+  else
+    {
+      float80_type = make_node (REAL_TYPE);
+      TYPE_PRECISION (float80_type) = 80;
+      layout_type (float80_type);
+    }
   (*lang_hooks.types.register_builtin_type) (float80_type, "__float80");
 
   /* The __float128 type.  */
@@ -10362,14 +10370,12 @@ ia64_init_builtins (void)
       tree const_string_type
 	= build_pointer_type (build_qualified_type
 			      (char_type_node, TYPE_QUAL_CONST));
-      tree float128_type = make_node (REAL_TYPE);
 
-      TYPE_PRECISION (float128_type) = 128;
-      layout_type (float128_type);
-      (*lang_hooks.types.register_builtin_type) (float128_type, "__float128");
+      (*lang_hooks.types.register_builtin_type) (float128_type_node,
+						 "__float128");
 
       /* TFmode support builtins.  */
-      ftype = build_function_type_list (float128_type, NULL_TREE);
+      ftype = build_function_type_list (float128_type_node, NULL_TREE);
       decl = add_builtin_function ("__builtin_infq", ftype,
 				   IA64_BUILTIN_INFQ, BUILT_IN_MD,
 				   NULL, NULL_TREE);
@@ -10380,7 +10386,7 @@ ia64_init_builtins (void)
 				   NULL, NULL_TREE);
       ia64_builtins[IA64_BUILTIN_HUGE_VALQ] = decl;
 
-      ftype = build_function_type_list (float128_type,
+      ftype = build_function_type_list (float128_type_node,
 					const_string_type,
 					NULL_TREE);
       decl = add_builtin_function ("__builtin_nanq", ftype,
@@ -10395,8 +10401,8 @@ ia64_init_builtins (void)
       TREE_READONLY (decl) = 1;
       ia64_builtins[IA64_BUILTIN_NANSQ] = decl;
 
-      ftype = build_function_type_list (float128_type,
-					float128_type,
+      ftype = build_function_type_list (float128_type_node,
+					float128_type_node,
 					NULL_TREE);
       decl = add_builtin_function ("__builtin_fabsq", ftype,
 				   IA64_BUILTIN_FABSQ, BUILT_IN_MD,
@@ -10404,9 +10410,9 @@ ia64_init_builtins (void)
       TREE_READONLY (decl) = 1;
       ia64_builtins[IA64_BUILTIN_FABSQ] = decl;
 
-      ftype = build_function_type_list (float128_type,
-					float128_type,
-					float128_type,
+      ftype = build_function_type_list (float128_type_node,
+					float128_type_node,
+					float128_type_node,
 					NULL_TREE);
       decl = add_builtin_function ("__builtin_copysignq", ftype,
 				   IA64_BUILTIN_COPYSIGNQ, BUILT_IN_MD,
@@ -10994,36 +11000,6 @@ ia64_vector_mode_supported_p (machine_mode mode)
 
     case V2SFmode:
       return true;
-
-    default:
-      return false;
-    }
-}
-
-/* Implement TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P.  */
-
-static bool
-ia64_libgcc_floating_mode_supported_p (machine_mode mode)
-{
-  switch (mode)
-    {
-    case SFmode:
-    case DFmode:
-      return true;
-
-    case XFmode:
-#ifdef IA64_NO_LIBGCC_XFMODE
-      return false;
-#else
-      return true;
-#endif
-
-    case TFmode:
-#ifdef IA64_NO_LIBGCC_TFMODE
-      return false;
-#else
-      return true;
-#endif
 
     default:
       return false;

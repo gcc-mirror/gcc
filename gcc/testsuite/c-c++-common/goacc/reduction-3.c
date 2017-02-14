@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fdump-tree-gimple" } */
 /* double reductions.  */
 
 #define n 1000
@@ -47,3 +48,7 @@ main(void)
 
   return 0;
 }
+
+/* Check that default copy maps are generated for loop reductions.  */
+/* { dg-final { scan-tree-dump-times "map\\(tofrom:result \\\[len: \[0-9\]+\\\]\\)" 4 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "map\\(tofrom:lresult \\\[len: \[0-9\]+\\\]\\)" 2 "gimple" } } */

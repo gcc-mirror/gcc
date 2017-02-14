@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,7 +69,6 @@ package body Ada.Text_IO.Editing is
 
       loop
          case Picture (Picture_Index) is
-
             when '(' =>
                Int_IO.Get
                  (Picture (Picture_Index + 1 .. Picture'Last), Count, Last);
@@ -107,7 +106,6 @@ package body Ada.Text_IO.Editing is
                Result (Result_Index) := Picture (Picture_Index);
                Picture_Index := Picture_Index + 1;
                Result_Index := Result_Index + 1;
-
          end case;
 
          exit when Picture_Index > Picture'Last;
@@ -219,7 +217,6 @@ package body Ada.Text_IO.Editing is
          exit when Answer (Last) = '9';
 
          case Answer (Last) is
-
             when '_' =>
                Answer (Last) := Separator_Character;
 
@@ -228,7 +225,6 @@ package body Ada.Text_IO.Editing is
 
             when others =>
                null;
-
          end case;
 
          exit when Last = Answer'Last;
@@ -248,7 +244,6 @@ package body Ada.Text_IO.Editing is
          end if;
 
          case Answer (J) is
-
             when '_' =>
                Answer (J) := Separator_Character;
 
@@ -260,7 +255,6 @@ package body Ada.Text_IO.Editing is
 
             when others =>
                null;
-
          end case;
       end loop;
 
@@ -442,7 +436,6 @@ package body Ada.Text_IO.Editing is
 
          for J in reverse Pic.Start_Float .. Position loop
             case Answer (J) is
-
                when '*' =>
                   Answer (J) := Fill_Character;
 
@@ -472,9 +465,7 @@ package body Ada.Text_IO.Editing is
                   end if;
 
                when '_' =>
-
                   case Pic.Floater is
-
                      when '*' =>
                         Answer (J) := Fill_Character;
 
@@ -492,12 +483,10 @@ package body Ada.Text_IO.Editing is
 
                      when others =>
                         null;
-
                   end case;
 
                when others =>
                   null;
-
             end case;
          end loop;
 
@@ -528,13 +517,11 @@ package body Ada.Text_IO.Editing is
 
                when others =>
                   raise Picture_Error;
-
             end case;
 
          else --  positive
 
             case Answer (Sign_Position) is
-
                when '-' =>
                   Answer (Sign_Position) := ' ';
 
@@ -547,7 +534,6 @@ package body Ada.Text_IO.Editing is
 
                when others =>
                   raise Picture_Error;
-
             end case;
          end if;
       end if;
@@ -580,7 +566,6 @@ package body Ada.Text_IO.Editing is
 
                elsif Answer (J) = '_' then
                   Answer (J) := Separator_Character;
-
                end if;
 
                Last := J + 1;
@@ -668,7 +653,6 @@ package body Ada.Text_IO.Editing is
                Currency_Pos := Currency_Pos + 1;
 
                case Pic.Floater is
-
                   when '*' =>
                      Answer (J) := Fill_Character;
 
@@ -685,12 +669,10 @@ package body Ada.Text_IO.Editing is
 
                   when others =>
                      null;
-
                end case;
 
             when others =>
                exit;
-
          end case;
       end loop;
 
@@ -855,7 +837,6 @@ package body Ada.Text_IO.Editing is
    begin
       for J in Str'Range loop
          case Str (J) is
-
             when ' ' =>
                null; --  ignore
 
@@ -1094,7 +1075,6 @@ package body Ada.Text_IO.Editing is
             end if;
 
             case Look is
-
                when '_' | '0' | '/' =>
                   Pic.End_Float := Index;
                   Skip;
@@ -1181,7 +1161,6 @@ package body Ada.Text_IO.Editing is
                         end if;
 
                         case Look is
-
                            when '-' =>
                               Pic.Max_Trailing_Digits :=
                                 Pic.Max_Trailing_Digits + 1;
@@ -1197,7 +1176,6 @@ package body Ada.Text_IO.Editing is
 
                            when others =>
                               return;
-
                         end case;
                      end loop;
 
@@ -1264,7 +1242,6 @@ package body Ada.Text_IO.Editing is
                         end if;
 
                         case Look is
-
                            when '+' =>
                               Pic.Max_Trailing_Digits :=
                                 Pic.Max_Trailing_Digits + 1;
@@ -1280,7 +1257,6 @@ package body Ada.Text_IO.Editing is
 
                            when others =>
                               return;
-
                         end case;
                      end loop;
 
@@ -1292,7 +1268,6 @@ package body Ada.Text_IO.Editing is
 
                when others =>
                   return;
-
             end case;
          end loop;
       end Floating_Plus;
@@ -1308,14 +1283,15 @@ package body Ada.Text_IO.Editing is
          end if;
 
          case Pic.Picture.Expanded (Index) is
-
-            when '_' | '0' | '/' => return True;
+            when '_' | '0' | '/' =>
+               return True;
 
             when 'B' | 'b' =>
                Pic.Picture.Expanded (Index) := 'b'; --  canonical
                return True;
 
-            when others => return False;
+            when others =>
+               return False;
          end case;
       end Is_Insert;
 
@@ -1362,7 +1338,6 @@ package body Ada.Text_IO.Editing is
             end if;
 
             case Look is
-
                when '_' | '0' | '/' =>
                   Pic.End_Float := Index;
                   Skip;
@@ -1438,7 +1413,6 @@ package body Ada.Text_IO.Editing is
 
                when others =>
                   return;
-
             end case;
          end loop;
       end Leading_Dollar;
@@ -1499,7 +1473,6 @@ package body Ada.Text_IO.Editing is
             end if;
 
             case Look is
-
                when '_' | '0' | '/' =>
                   Pic.End_Float := Index;
                   Inserts := True;
@@ -1605,7 +1578,6 @@ package body Ada.Text_IO.Editing is
          Debug_Start ("Number");
 
          loop
-
             case Look is
                when '_' | '0' | '/' =>
                   Skip;
@@ -1628,7 +1600,6 @@ package body Ada.Text_IO.Editing is
 
                when others =>
                   return;
-
             end case;
 
             if At_End then
@@ -1650,7 +1621,6 @@ package body Ada.Text_IO.Editing is
 
          while not At_End loop
             case Look is
-
                when '_' | '0' | '/' =>
                   Skip;
 
@@ -1725,8 +1695,8 @@ package body Ada.Text_IO.Editing is
             end if;
 
             case Look is
-
-               when '_' | '0' | '/' => Skip;
+               when '_' | '0' | '/' =>
+                  Skip;
 
                when 'B' | 'b'  =>
                   Pic.Picture.Expanded (Index) := 'b';
@@ -1837,7 +1807,6 @@ package body Ada.Text_IO.Editing is
             end if;
 
             case Look is
-
                when '_' | '0' | '/' =>
                   Skip;
 
@@ -1856,7 +1825,6 @@ package body Ada.Text_IO.Editing is
                      end if;
 
                      case Look is
-
                         when '_' | '0' | '/' =>
                            Skip;
 
@@ -1872,14 +1840,12 @@ package body Ada.Text_IO.Editing is
 
                         when others =>
                            return;
-
                      end case;
                   end loop;
 
                when others =>
                   Number_Fraction;
                   return;
-
             end case;
          end loop;
       end Number_Fraction_Or_Pound;
@@ -1898,7 +1864,6 @@ package body Ada.Text_IO.Editing is
             end if;
 
             case Look is
-
                when '_' | '0' | '/' =>
                   Skip;
 
@@ -1918,7 +1883,6 @@ package body Ada.Text_IO.Editing is
                      end if;
 
                      case Look is
-
                         when '_' | '0' | '/' =>
                            Skip;
 
@@ -1941,7 +1905,6 @@ package body Ada.Text_IO.Editing is
                when others =>
                   Number_Fraction;
                   return;
-
             end case;
          end loop;
       end Number_Fraction_Or_Star_Fill;
@@ -1960,7 +1923,6 @@ package body Ada.Text_IO.Editing is
             end if;
 
             case Look is
-
                when '_' | '0' | '/' =>
                   Skip;
 
@@ -1981,7 +1943,6 @@ package body Ada.Text_IO.Editing is
                      end if;
 
                      case Look is
-
                         when '_' | '0' | '/' =>
                            Skip;
 
@@ -2022,7 +1983,6 @@ package body Ada.Text_IO.Editing is
          end if;
 
          case Look is
-
             when '+' | '-' =>
                Pic.Sign_Position := Index;
                Skip;
@@ -2071,7 +2031,6 @@ package body Ada.Text_IO.Editing is
 
             when others =>
                return;
-
          end case;
       end Optional_RHS_Sign;
 
@@ -2094,7 +2053,6 @@ package body Ada.Text_IO.Editing is
             end if;
 
             case Look is
-
                when '_' | '0' | '/' =>
                   Skip;
 
@@ -2125,7 +2083,6 @@ package body Ada.Text_IO.Editing is
 
                when others =>
                   return;
-
             end case;
          end loop;
       end Picture;
@@ -2153,7 +2110,6 @@ package body Ada.Text_IO.Editing is
 
          loop
             case Look is
-
                when '_' | '0' | '/' =>
                   Pic.End_Float := Index;
                   Skip;
@@ -2197,7 +2153,6 @@ package body Ada.Text_IO.Editing is
 
                when others =>
                   raise Picture_Error;
-
             end case;
          end loop;
       end Picture_Bracket;
@@ -2225,7 +2180,6 @@ package body Ada.Text_IO.Editing is
 
          loop
             case Look is
-
                when '_' | '0' | '/' =>
                   Pic.End_Float := Index;
                   Skip;
@@ -2283,7 +2237,6 @@ package body Ada.Text_IO.Editing is
 
                when others =>
                   return;
-
             end case;
          end loop;
       end Picture_Minus;
@@ -2310,7 +2263,6 @@ package body Ada.Text_IO.Editing is
 
          loop
             case Look is
-
                when '_' | '0' | '/' =>
                   Pic.End_Float := Index;
                   Skip;
@@ -2377,7 +2329,6 @@ package body Ada.Text_IO.Editing is
 
                when others =>
                   return;
-
             end case;
          end loop;
       end Picture_Plus;
@@ -2395,7 +2346,6 @@ package body Ada.Text_IO.Editing is
          end loop;
 
          case Look is
-
             when '$' | '#' =>
                Picture;
                Optional_RHS_Sign;
@@ -2427,7 +2377,6 @@ package body Ada.Text_IO.Editing is
 
             when others =>
                raise Picture_Error;
-
          end case;
 
          --  Blank when zero either if the PIC does not contain a '9' or if
@@ -2444,7 +2393,6 @@ package body Ada.Text_IO.Editing is
          if not At_End then
             Set_State (Reject);
          end if;
-
       end Picture_String;
 
       ---------------
@@ -2509,7 +2457,6 @@ package body Ada.Text_IO.Editing is
             end if;
 
             case Look is
-
                when '_' | '0' | '/' =>
                   Pic.End_Float := Index;
                   Skip;
@@ -2546,7 +2493,8 @@ package body Ada.Text_IO.Editing is
                   Set_State (Okay);
                   return;
 
-               when others => raise Picture_Error;
+               when others =>
+                  raise Picture_Error;
             end case;
          end loop;
       end Star_Suppression;
@@ -2601,13 +2549,15 @@ package body Ada.Text_IO.Editing is
             end if;
 
             case Look is
-               when '_' | '0' | '/' => Skip;
+               when '_' | '0' | '/' =>
+                  Skip;
 
                when 'B' | 'b'  =>
                   Pic.Picture.Expanded (Index) := 'b';
                   Skip;
 
-               when others => return;
+               when others =>
+                  return;
             end case;
          end loop;
       end Trailing_Currency;

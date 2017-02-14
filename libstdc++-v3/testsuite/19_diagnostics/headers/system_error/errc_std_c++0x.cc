@@ -1,7 +1,6 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -83,7 +82,9 @@ void test01()
   TEST_ERRC(no_message_available);
 #endif
 
+#ifdef _GLIBCXX_HAVE_ENOMSG
   TEST_ERRC(no_message);
+#endif
   TEST_ERRC(no_protocol_option);
   TEST_ERRC(no_space_on_device);
 

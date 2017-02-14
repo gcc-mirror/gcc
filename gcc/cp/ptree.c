@@ -1,5 +1,5 @@
 /* Prints out trees in human readable form.
-   Copyright (C) 1992-2016 Free Software Foundation, Inc.
+   Copyright (C) 1992-2017 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -50,6 +50,7 @@ cxx_print_decl (FILE *file, tree node, int indent)
     }
   else if (TREE_CODE (node) == TEMPLATE_DECL)
     {
+      print_node (file, "parms", DECL_TEMPLATE_PARMS (node), indent + 4);
       indent_to (file, indent + 3);
       fprintf (file, " full-name \"%s\"",
 	       decl_as_string (node, TFF_TEMPLATE_HEADER));
@@ -73,9 +74,12 @@ cxx_print_type (FILE *file, tree node, int indent)
 {
   switch (TREE_CODE (node))
     {
+    case BOUND_TEMPLATE_TEMPLATE_PARM:
+      print_node (file, "args", TYPE_TI_ARGS (node), indent + 4);
+      gcc_fallthrough ();
+
     case TEMPLATE_TYPE_PARM:
     case TEMPLATE_TEMPLATE_PARM:
-    case BOUND_TEMPLATE_TEMPLATE_PARM:
       indent_to (file, indent + 3);
       fprintf (file, "index %d level %d orig_level %d",
 	       TEMPLATE_TYPE_IDX (node), TEMPLATE_TYPE_LEVEL (node),
@@ -236,6 +240,7 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       print_node (file, "chain", TREE_CHAIN (node), indent+4);
       break;
     case TEMPLATE_PARM_INDEX:
+      print_node (file, "decl", TEMPLATE_PARM_DECL (node), indent+4);
       indent_to (file, indent + 3);
       fprintf (file, "index %d level %d orig_level %d",
 	       TEMPLATE_PARM_IDX (node), TEMPLATE_PARM_LEVEL (node),
@@ -260,7 +265,6 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 		      indent+4);
         print_node (file, "associated_constr",
                           cinfo->associated_constr, indent+4);
-        print_node_brief (file, "assumptions", cinfo->assumptions, indent+4);
         break;
       }
     case ARGUMENT_PACK_SELECT:

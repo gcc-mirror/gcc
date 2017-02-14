@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -39,6 +39,7 @@ extern int num_insns_constant (rtx, machine_mode);
 extern int num_insns_constant_wide (HOST_WIDE_INT);
 extern int small_data_operand (rtx, machine_mode);
 extern bool mem_operand_gpr (rtx, machine_mode);
+extern bool mem_operand_ds_form (rtx, machine_mode);
 extern bool toc_relative_expr_p (const_rtx, bool);
 extern bool invalid_e500_subreg (rtx, machine_mode);
 extern void validate_condition_mode (enum rtx_code, machine_mode);
@@ -56,12 +57,13 @@ extern const char *rs6000_output_move_128bit (rtx *);
 extern bool rs6000_move_128bit_ok_p (rtx []);
 extern bool rs6000_split_128bit_ok_p (rtx []);
 extern void rs6000_expand_float128_convert (rtx, rtx, bool);
-extern void convert_float128_to_int (rtx *, enum rtx_code);
-extern void convert_int_to_float128 (rtx *, enum rtx_code);
 extern void rs6000_expand_vector_init (rtx, rtx);
 extern void paired_expand_vector_init (rtx, rtx);
 extern void rs6000_expand_vector_set (rtx, rtx, int);
-extern void rs6000_expand_vector_extract (rtx, rtx, int);
+extern void rs6000_expand_vector_extract (rtx, rtx, rtx);
+extern void rs6000_split_vec_extract_var (rtx, rtx, rtx, rtx, rtx);
+extern rtx rs6000_adjust_vec_address (rtx, rtx, rtx, rtx, machine_mode);
+extern void rs6000_split_v4si_init (rtx []);
 extern bool altivec_expand_vec_perm_const (rtx op[4]);
 extern void altivec_expand_vec_perm_le (rtx op[4]);
 extern bool rs6000_expand_vec_perm_const (rtx op[4]);
@@ -73,6 +75,8 @@ extern void rs6000_expand_interleave (rtx, rtx, rtx, bool);
 extern void rs6000_scale_v2df (rtx, rtx, int);
 extern int expand_block_clear (rtx[]);
 extern int expand_block_move (rtx[]);
+extern bool expand_block_compare (rtx[]);
+extern bool expand_strn_compare (rtx[], int);
 extern const char * rs6000_output_load_multiple (rtx[]);
 extern bool rs6000_is_valid_mask (rtx, int *, int *, machine_mode);
 extern bool rs6000_is_valid_and_mask (rtx, machine_mode);
@@ -147,6 +151,7 @@ extern void rs6000_fatal_bad_address (rtx);
 extern rtx create_TOC_reference (rtx, rtx);
 extern void rs6000_split_multireg_move (rtx, rtx);
 extern void rs6000_emit_le_vsx_move (rtx, rtx, machine_mode);
+extern bool valid_sf_si_move (rtx, rtx, machine_mode);
 extern void rs6000_emit_move (rtx, rtx, machine_mode);
 extern rtx rs6000_secondary_memory_needed_rtx (machine_mode);
 extern machine_mode rs6000_secondary_memory_needed_mode (machine_mode);
@@ -182,8 +187,13 @@ extern rtx rs6000_libcall_value (machine_mode);
 extern rtx rs6000_va_arg (tree, tree);
 extern int function_ok_for_sibcall (tree);
 extern int rs6000_reg_parm_stack_space (tree, bool);
+extern void rs6000_asm_weaken_decl (FILE *, tree, const char *, const char *);
 extern void rs6000_xcoff_declare_function_name (FILE *, const char *, tree);
 extern void rs6000_xcoff_declare_object_name (FILE *, const char *, tree);
+extern void rs6000_xcoff_asm_output_aligned_decl_common (FILE *, tree,
+							 const char *,
+							 unsigned HOST_WIDE_INT,
+							 unsigned HOST_WIDE_INT);
 extern void rs6000_elf_declare_function_name (FILE *, const char *, tree);
 extern bool rs6000_elf_in_small_data_p (const_tree);
 #ifdef ARGS_SIZE_RTX
@@ -215,6 +225,7 @@ extern void rs6000_sibcall_aix (rtx, rtx, rtx, rtx);
 extern void rs6000_aix_asm_output_dwarf_table_ref (char *);
 extern void get_ppc476_thunk_name (char name[32]);
 extern bool rs6000_overloaded_builtin_p (enum rs6000_builtins);
+extern const char *rs6000_overloaded_builtin_name (enum rs6000_builtins);
 extern HOST_WIDE_INT rs6000_builtin_mask_calculate (void);
 extern void rs6000_asm_output_dwarf_pcrel (FILE *file, int size,
 					   const char *label);
@@ -247,4 +258,11 @@ extern unsigned char rs6000_class_max_nregs[][LIM_REG_CLASSES];
 extern unsigned char rs6000_hard_regno_nregs[][FIRST_PSEUDO_REGISTER];
 
 extern bool rs6000_linux_float_exceptions_rounding_supported_p (void);
+
+/* Pass management.  */
+namespace gcc { class context; }
+class rtl_opt_pass;
+
+extern rtl_opt_pass *make_pass_analyze_swaps (gcc::context *);
+
 #endif  /* rs6000-protos.h */

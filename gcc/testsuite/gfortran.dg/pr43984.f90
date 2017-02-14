@@ -50,6 +50,6 @@ end subroutine
 
 end
 
-! There should be three loads from iyz.data, not four.
+! There should be two loads from iyz.data, not four.
 
-! { dg-final { scan-tree-dump-times "= iyz.data" 3 "pre" } }
+! { dg-final { scan-tree-dump-times "= iyz.data" 2 "pre" } }

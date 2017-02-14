@@ -1,6 +1,6 @@
 # Plugins for offload execution, configure.ac fragment.  -*- mode: autoconf -*-
 #
-# Copyright (C) 2014-2016 Free Software Foundation, Inc.
+# Copyright (C) 2014-2017 Free Software Foundation, Inc.
 #
 # Contributed by Mentor Embedded.
 #
@@ -36,6 +36,9 @@ if test x"$plugin_support" = xyes; then
 elif test "x${enable_offload_targets-no}" != xno; then
   AC_MSG_ERROR([Can't support offloading without support for plugins])
 fi
+AC_CHECK_HEADERS_ONCE(unistd.h)
+AC_CHECK_FUNCS_ONCE(secure_getenv __secure_getenv getuid geteuid getgid getegid)
+
 
 # Look for the CUDA driver package.
 CUDA_DRIVER_INCLUDE=
@@ -55,10 +58,12 @@ AC_ARG_WITH(cuda-driver-include,
 AC_ARG_WITH(cuda-driver-lib,
 	[AS_HELP_STRING([--with-cuda-driver-lib=PATH],
 		[specify directory for the installed CUDA driver library])])
-if test "x$with_cuda_driver" != x; then
-  CUDA_DRIVER_INCLUDE=$with_cuda_driver/include
-  CUDA_DRIVER_LIB=$with_cuda_driver/lib
-fi
+case "x$with_cuda_driver" in
+  x | xno) ;;
+  *) CUDA_DRIVER_INCLUDE=$with_cuda_driver/include
+     CUDA_DRIVER_LIB=$with_cuda_driver/lib
+     ;;
+esac
 if test "x$with_cuda_driver_include" != x; then
   CUDA_DRIVER_INCLUDE=$with_cuda_driver_include
 fi
@@ -76,6 +81,7 @@ PLUGIN_NVPTX=0
 PLUGIN_NVPTX_CPPFLAGS=
 PLUGIN_NVPTX_LDFLAGS=
 PLUGIN_NVPTX_LIBS=
+PLUGIN_NVPTX_DYNAMIC=0
 AC_SUBST(PLUGIN_NVPTX)
 AC_SUBST(PLUGIN_NVPTX_CPPFLAGS)
 AC_SUBST(PLUGIN_NVPTX_LDFLAGS)
@@ -118,19 +124,6 @@ if test "x$HSA_RUNTIME_LIB" != x; then
   HSA_RUNTIME_LDFLAGS=-L$HSA_RUNTIME_LIB
 fi
 
-HSA_KMT_LIB=
-AC_SUBST(HSA_KMT_LIB)
-HSA_KMT_LDFLAGS=
-AC_ARG_WITH(hsa-kmt-lib,
-	[AS_HELP_STRING([--with-hsa-kmt-lib=PATH],
-		[specify directory for installed HSA KMT library.])])
-if test "x$with_hsa_kmt_lib" != x; then
-  HSA_KMT_LIB=$with_hsa_kmt_lib
-fi
-if test "x$HSA_KMT_LIB" != x; then
-  HSA_KMT_LDFLAGS=-L$HSA_KMT_LIB
-fi
-
 PLUGIN_HSA=0
 PLUGIN_HSA_CPPFLAGS=
 PLUGIN_HSA_LDFLAGS=
@@ -139,8 +132,6 @@ AC_SUBST(PLUGIN_HSA)
 AC_SUBST(PLUGIN_HSA_CPPFLAGS)
 AC_SUBST(PLUGIN_HSA_LDFLAGS)
 AC_SUBST(PLUGIN_HSA_LIBS)
-
-
 
 # Get offload targets and path to install tree of offloading compiler.
 offload_additional_options=
@@ -179,9 +170,17 @@ if test x"$enable_offload_targets" != x; then
 	LIBS=$PLUGIN_NVPTX_save_LIBS
 	case $PLUGIN_NVPTX in
 	  nvptx*)
-	    PLUGIN_NVPTX=0
-	    AC_MSG_ERROR([CUDA driver package required for nvptx support])
-	    ;;
+	    if test "x$CUDA_DRIVER_INCLUDE" = x \
+	       && test "x$CUDA_DRIVER_LIB" = x; then
+	      PLUGIN_NVPTX=1
+	      PLUGIN_NVPTX_CPPFLAGS='-I$(srcdir)/plugin/cuda'
+	      PLUGIN_NVPTX_LIBS='-ldl'
+	      PLUGIN_NVPTX_DYNAMIC=1
+	    else
+	      PLUGIN_NVPTX=0
+	      AC_MSG_ERROR([CUDA driver package required for nvptx support])
+	    fi
+	  ;;
 	esac
 	;;
       hsa*)
@@ -195,8 +194,8 @@ if test x"$enable_offload_targets" != x; then
 	        tgt_name=hsa
 	        PLUGIN_HSA=$tgt
 	        PLUGIN_HSA_CPPFLAGS=$HSA_RUNTIME_CPPFLAGS
-	        PLUGIN_HSA_LDFLAGS="$HSA_RUNTIME_LDFLAGS $HSA_KMT_LDFLAGS"
-	        PLUGIN_HSA_LIBS="-lhsa-runtime64 -lhsakmt"
+	        PLUGIN_HSA_LDFLAGS="$HSA_RUNTIME_LDFLAGS"
+	        PLUGIN_HSA_LIBS="-ldl"
 
 	        PLUGIN_HSA_save_CPPFLAGS=$CPPFLAGS
 	        CPPFLAGS="$PLUGIN_HSA_CPPFLAGS $CPPFLAGS"
@@ -205,11 +204,7 @@ if test x"$enable_offload_targets" != x; then
 	        PLUGIN_HSA_save_LIBS=$LIBS
 	        LIBS="$PLUGIN_HSA_LIBS $LIBS"
 
-	        AC_LINK_IFELSE(
-	          [AC_LANG_PROGRAM(
-	            [#include "hsa.h"],
-	              [hsa_status_t status = hsa_init ()])],
-	          [PLUGIN_HSA=1])
+	        PLUGIN_HSA=1
 	        CPPFLAGS=$PLUGIN_HSA_save_CPPFLAGS
 	        LDFLAGS=$PLUGIN_HSA_save_LDFLAGS
 	        LIBS=$PLUGIN_HSA_save_LIBS
@@ -257,6 +252,15 @@ AC_DEFINE_UNQUOTED(OFFLOAD_TARGETS, "$offload_targets",
 AM_CONDITIONAL([PLUGIN_NVPTX], [test $PLUGIN_NVPTX = 1])
 AC_DEFINE_UNQUOTED([PLUGIN_NVPTX], [$PLUGIN_NVPTX],
   [Define to 1 if the NVIDIA plugin is built, 0 if not.])
+AC_DEFINE_UNQUOTED([PLUGIN_NVPTX_DYNAMIC], [$PLUGIN_NVPTX_DYNAMIC],
+  [Define to 1 if the NVIDIA plugin should dlopen libcuda.so.1, 0 if it should be linked against it.])
 AM_CONDITIONAL([PLUGIN_HSA], [test $PLUGIN_HSA = 1])
 AC_DEFINE_UNQUOTED([PLUGIN_HSA], [$PLUGIN_HSA],
   [Define to 1 if the HSA plugin is built, 0 if not.])
+
+if test "$HSA_RUNTIME_LIB" != ""; then
+  HSA_RUNTIME_LIB="$HSA_RUNTIME_LIB/"
+fi
+
+AC_DEFINE_UNQUOTED([HSA_RUNTIME_LIB], ["$HSA_RUNTIME_LIB"],
+  [Define path to HSA runtime.])

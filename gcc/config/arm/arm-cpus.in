@@ -1,0 +1,1182 @@
+# CPU, FPU and architecture specifications for ARM.
+#
+# Copyright (C) 2011-2017 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 3, or (at your option) any later
+# version.
+#
+# GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file describes all the various CPUs, FPUs and architectures supported
+# by the compiler.  It is pre-processed by parsecpu.awk for a number of
+# purposes.
+#
+# The general form is a sequence of begin..end blocks with the following
+# syntax:
+# begin <object-type> <name>
+#  attribute-statement*
+# end <object-type> <name>
+#
+# where object type is one of "cpu" "arch" "fpu".  Each object type has
+# a specific set of permitted attributes, some of which are optional; further
+# details can be found below.
+#
+# Some objects cross-reference other objects by name.  Objects are permitted
+# in any order and it is not necessary to place a cross-referenced object
+# earlier in the file.
+#
+# The object names for cpu, arch and fpu objects are used for the public option
+# names in the final compiler.  The order within each group is preserved and
+# forms the order for the list within the compiler.
+
+# Architecture entries
+# format:
+# begin arch <name>
+#   tune for <cpu>
+#   [tune flags <list>]
+#   base <name>
+#   isa <isa-flags-list>
+# end arch <name>
+#
+
+begin arch armv2
+ tune for arm2
+ tune flags CO_PROC NO_MODE32
+ base 2
+ isa ARMv2 bit_mode26
+end arch armv2
+
+begin arch armv2a
+ tune for arm2
+ tune flags CO_PROC NO_MODE32
+ base 2
+ isa ARMv2 bit_mode26
+end arch armv2a
+
+begin arch armv3
+ tune for arm6
+ tune flags CO_PROC
+ base 3
+ isa ARMv3 bit_mode26
+end arch armv3
+
+begin arch armv3m
+ tune for arm7m
+ tune flags CO_PROC
+ base 3M
+ isa ARMv3m bit_mode26
+end arch armv3m
+
+begin arch armv4
+ tune for arm7tdmi
+ tune flags CO_PROC
+ base 4
+ isa ARMv4 bit_mode26
+end arch armv4
+
+# Strictly, bit_mode26 is a permitted option for v4t, but there are no
+# implementations that support it, so we will leave it out for now.
+begin arch armv4t
+ tune for arm7tdmi
+ tune flags CO_PROC
+ base 4T
+ isa ARMv4t
+end arch armv4t
+
+begin arch armv5
+ tune for arm10tdmi
+ tune flags CO_PROC
+ base 5
+ isa ARMv5
+end arch armv5
+
+begin arch armv5t
+ tune for arm10tdmi
+ tune flags CO_PROC
+ base 5T
+ isa ARMv5t
+end arch armv5t
+
+begin arch armv5e
+ tune for arm1026ej-s
+ tune flags CO_PROC
+ base 5E
+ isa ARMv5e
+end arch armv5e
+
+begin arch armv5te
+ tune for arm1026ej-s
+ tune flags CO_PROC
+ base 5TE
+ isa ARMv5te
+end arch armv5te
+
+begin arch armv5tej
+ tune for arm1026ej-s
+ tune flags CO_PROC
+ base 5TEJ
+ isa ARMv5tej
+end arch armv5tej
+
+begin arch armv6
+ tune for arm1136j-s
+ tune flags CO_PROC
+ base 6
+ isa ARMv6
+end arch armv6
+
+begin arch armv6j
+ tune for arm1136j-s
+ tune flags CO_PROC
+ base 6J
+ isa ARMv6j
+end arch armv6j
+
+begin arch armv6k
+ tune for mpcore
+ tune flags CO_PROC
+ base 6K
+ isa ARMv6k
+end arch armv6k
+
+begin arch armv6z
+ tune for arm1176jz-s
+ tune flags CO_PROC
+ base 6Z
+ isa ARMv6z
+end arch armv6z
+
+begin arch armv6kz
+ tune for arm1176jz-s
+ tune flags CO_PROC
+ base 6KZ
+ isa ARMv6kz
+end arch armv6kz
+
+begin arch armv6zk
+ tune for arm1176jz-s
+ tune flags CO_PROC
+ base 6KZ
+ isa ARMv6kz
+end arch armv6zk
+
+begin arch armv6t2
+ tune for arm1156t2-s
+ tune flags CO_PROC
+ base 6T2
+ isa ARMv6t2
+end arch armv6t2
+
+begin arch armv6-m
+ tune for cortex-m1
+ base 6M
+ isa ARMv6m
+end arch armv6-m
+
+begin arch armv6s-m
+ tune for cortex-m1
+ base 6M
+ isa ARMv6m
+end arch armv6s-m
+
+begin arch armv7
+ tune for cortex-a8
+ tune flags CO_PROC
+ base 7
+ isa ARMv7
+end arch armv7
+
+begin arch armv7-a
+ tune for cortex-a8
+ tune flags CO_PROC
+ base 7A
+ isa ARMv7a
+end arch armv7-a
+
+begin arch armv7ve
+ tune for cortex-a8
+ tune flags CO_PROC
+ base 7A
+ isa ARMv7ve
+end arch armv7ve
+
+begin arch armv7-r
+ tune for cortex-r4
+ tune flags CO_PROC
+ base 7R
+ isa ARMv7r
+end arch armv7-r
+
+begin arch armv7-m
+ tune for cortex-m3
+ tune flags CO_PROC
+ base 7M
+ isa ARMv7m
+end arch armv7-m
+
+begin arch armv7e-m
+ tune for cortex-m4
+ tune flags CO_PROC
+ base 7EM
+ isa ARMv7em
+end arch armv7e-m
+
+begin arch armv8-a
+ tune for cortex-a53
+ tune flags CO_PROC
+ base 8A
+ isa ARMv8a
+end arch armv8-a
+
+begin arch armv8-a+crc
+ tune for cortex-a53
+ tune flags CO_PROC
+ base 8A
+ isa ARMv8a bit_crc32
+end arch armv8-a+crc
+
+begin arch armv8.1-a
+ tune for cortex-a53
+ tune flags CO_PROC
+ base 8A
+ isa ARMv8_1a
+end arch armv8.1-a
+
+begin arch armv8.2-a
+ tune for cortex-a53
+ tune flags CO_PROC
+ base 8A
+ isa ARMv8_2a
+end arch armv8.2-a
+
+begin arch armv8.2-a+fp16
+ tune for cortex-a53
+ tune flags CO_PROC
+ base 8A
+ isa ARMv8_2a bit_fp16
+end arch armv8.2-a+fp16
+
+begin arch armv8-m.base
+ tune for cortex-m23
+ base 8M_BASE
+ isa ARMv8m_base
+end arch armv8-m.base
+
+begin arch armv8-m.main
+ tune for cortex-m7
+ tune flags CO_PROC
+ base 8M_MAIN
+ isa ARMv8m_main
+end arch armv8-m.main
+
+begin arch armv8-m.main+dsp
+ tune for cortex-m33
+ tune flags CO_PROC
+ base 8M_MAIN
+ isa ARMv8m_main bit_ARMv7em
+end arch armv8-m.main+dsp
+
+begin arch iwmmxt
+ tune for iwmmxt
+ tune flags LDSCHED STRONG XSCALE
+ base 5TE
+ isa ARMv5te bit_xscale bit_iwmmxt
+end arch iwmmxt
+
+begin arch iwmmxt2
+ tune for iwmmxt2
+ tune flags LDSCHED STRONG XSCALE
+ base 5TE
+ isa ARMv5te bit_xscale bit_iwmmxt bit_iwmmxt2
+end arch iwmmxt2
+
+# CPU entries
+# format:
+# begin cpu <name>
+#   [cname <c-compatible-name>]
+#   [tune for <cpu-name>]
+#   [tune flags <list>]
+#   architecture <name>
+#   [fpu <name>]
+#   [isa <additional-isa-flags-list>]
+#   [costs <name>]
+# end cpu <name>
+#
+# If omitted, cname is formed from transforming the cpuname to convert
+# non-valid punctuation characters to '_'.
+# If specified, tune for specifies a CPU target to use for tuning this core.
+# isa flags are appended to those defined by the architecture.
+
+
+# V2/V2A Architecture Processors
+begin cpu arm2
+ tune flags CO_PROC NO_MODE32
+ architecture armv2
+ costs slowmul
+end cpu arm2
+
+begin cpu arm250
+ tune flags CO_PROC NO_MODE32
+ architecture armv2
+ costs slowmul
+end cpu arm250
+
+begin cpu arm3
+ tune flags CO_PROC NO_MODE32
+ architecture armv2
+ costs slowmul
+end cpu arm3
+
+
+# V3 Architecture Processors
+begin cpu arm6
+ tune flags CO_PROC
+ architecture armv3
+ costs slowmul
+end cpu arm6
+
+begin cpu arm60
+ tune flags CO_PROC
+ architecture armv3
+ costs slowmul
+end cpu arm60
+
+begin cpu arm600
+ tune flags CO_PROC WBUF
+ architecture armv3
+ costs slowmul
+end cpu arm600
+
+begin cpu arm610
+ tune flags WBUF
+ architecture armv3
+ costs slowmul
+end cpu arm610
+
+begin cpu arm620
+ tune flags CO_PROC WBUF
+ architecture armv3
+ costs slowmul
+end cpu arm620
+
+begin cpu arm7
+ tune flags CO_PROC
+ architecture armv3
+ costs slowmul
+end cpu arm7
+
+begin cpu arm7d
+ tune flags CO_PROC
+ architecture armv3
+ costs slowmul
+end cpu arm7d
+
+begin cpu arm7di
+ tune flags CO_PROC
+ architecture armv3
+ costs slowmul
+end cpu arm7di
+
+begin cpu arm70
+ tune flags CO_PROC
+ architecture armv3
+ costs slowmul
+end cpu arm70
+
+begin cpu arm700
+ tune flags CO_PROC WBUF
+ architecture armv3
+ costs slowmul
+end cpu arm700
+
+begin cpu arm700i
+ tune flags CO_PROC WBUF
+ architecture armv3
+ costs slowmul
+end cpu arm700i
+
+begin cpu arm710
+ tune flags WBUF
+ architecture armv3
+ costs slowmul
+end cpu arm710
+
+begin cpu arm720
+ tune flags WBUF
+ architecture armv3
+ costs slowmul
+end cpu arm720
+
+begin cpu arm710c
+ tune flags WBUF
+ architecture armv3
+ costs slowmul
+end cpu arm710c
+
+begin cpu arm7100
+ tune flags WBUF
+ architecture armv3
+ costs slowmul
+end cpu arm7100
+
+begin cpu arm7500
+ tune flags WBUF
+ architecture armv3
+ costs slowmul
+end cpu arm7500
+
+# Doesn't have an external co-proc, but does have embedded FPA
+# (the FPA part is no-longer supported).
+begin cpu arm7500fe
+ tune flags CO_PROC WBUF
+ architecture armv3
+ costs slowmul
+end cpu arm7500fe
+
+
+# V3M Architecture Processors
+# arm7m doesn't exist on its own, but only with "D", (and "I"), but
+# those don't alter the code, so arm7m is sometimes used.
+begin cpu arm7m
+ tune flags CO_PROC
+ architecture armv3m
+ costs fastmul
+end cpu arm7m
+
+begin cpu arm7dm
+ tune flags CO_PROC
+ architecture armv3m
+ costs fastmul
+end cpu arm7dm
+
+begin cpu arm7dmi
+ tune flags CO_PROC
+ architecture armv3m
+ costs fastmul
+end cpu arm7dmi
+
+
+# V4 Architecture Processors
+begin cpu arm8
+ tune flags LDSCHED
+ architecture armv4
+ costs fastmul
+end cpu arm8
+
+begin cpu arm810
+ tune flags LDSCHED
+ architecture armv4
+ costs fastmul
+end cpu arm810
+
+begin cpu strongarm
+ tune flags LDSCHED STRONG
+ architecture armv4
+ costs strongarm
+end cpu strongarm
+
+begin cpu strongarm110
+ tune flags LDSCHED STRONG
+ architecture armv4
+ costs strongarm
+end cpu strongarm110
+
+begin cpu strongarm1100
+ tune flags LDSCHED STRONG
+ architecture armv4
+ costs strongarm
+end cpu strongarm1100
+
+begin cpu strongarm1110
+ tune flags LDSCHED STRONG
+ architecture armv4
+ costs strongarm
+end cpu strongarm1110
+
+begin cpu fa526
+ tune flags LDSCHED
+ architecture armv4
+ costs fastmul
+end cpu fa526
+
+begin cpu fa626
+ tune flags LDSCHED
+ architecture armv4
+ costs fastmul
+end cpu fa626
+
+
+# V4T Architecture Processors
+begin cpu arm7tdmi
+ tune flags CO_PROC
+ architecture armv4t
+ costs fastmul
+end cpu arm7tdmi
+
+begin cpu arm7tdmi-s
+ cname arm7tdmis
+ tune flags CO_PROC
+ architecture armv4t
+ costs fastmul
+end cpu arm7tdmi-s
+
+begin cpu arm710t
+ tune flags WBUF
+ architecture armv4t
+ costs fastmul
+end cpu arm710t
+
+begin cpu arm720t
+ tune flags WBUF
+ architecture armv4t
+ costs fastmul
+end cpu arm720t
+
+begin cpu arm740t
+ tune flags WBUF
+ architecture armv4t
+ costs fastmul
+end cpu arm740t
+
+begin cpu arm9
+ tune flags LDSCHED
+ architecture armv4t
+ costs fastmul
+end cpu arm9
+
+begin cpu arm9tdmi
+ tune flags LDSCHED
+ architecture armv4t
+ costs fastmul
+end cpu arm9tdmi
+
+begin cpu arm920
+ tune flags LDSCHED
+ architecture armv4t
+ costs fastmul
+end cpu arm920
+
+begin cpu arm920t
+ tune flags LDSCHED
+ architecture armv4t
+ costs fastmul
+end cpu arm920t
+
+begin cpu arm922t
+ tune flags LDSCHED
+ architecture armv4t
+ costs fastmul
+end cpu arm922t
+
+begin cpu arm940t
+ tune flags LDSCHED
+ architecture armv4t
+ costs fastmul
+end cpu arm940t
+
+begin cpu ep9312
+ tune flags LDSCHED
+ architecture armv4t
+ costs fastmul
+end cpu ep9312
+
+
+# V5T Architecture Processors
+begin cpu arm10tdmi
+ tune flags LDSCHED
+ architecture armv5t
+ costs fastmul
+end cpu arm10tdmi
+
+begin cpu arm1020t
+ tune flags LDSCHED
+ architecture armv5t
+ costs fastmul
+end cpu arm1020t
+
+
+# V5TE Architecture Processors
+begin cpu arm9e
+ tune flags LDSCHED
+ architecture armv5te
+ costs 9e
+end cpu arm9e
+
+begin cpu arm946e-s
+ cname arm946es
+ tune flags LDSCHED
+ architecture armv5te
+ costs 9e
+end cpu arm946e-s
+
+begin cpu arm966e-s
+ cname arm966es
+ tune flags LDSCHED
+ architecture armv5te
+ costs 9e
+end cpu arm966e-s
+
+begin cpu arm968e-s
+ cname arm968es
+ tune flags LDSCHED
+ architecture armv5te
+ costs 9e
+end cpu arm968e-s
+
+begin cpu arm10e
+ tune flags LDSCHED
+ architecture armv5te
+ costs fastmul
+end cpu arm10e
+
+begin cpu arm1020e
+ tune flags LDSCHED
+ architecture armv5te
+ costs fastmul
+end cpu arm1020e
+
+begin cpu arm1022e
+ tune flags LDSCHED
+ architecture armv5te
+ costs fastmul
+end cpu arm1022e
+
+begin cpu xscale
+ tune flags LDSCHED XSCALE
+ architecture armv5te
+ isa bit_xscale
+ costs xscale
+end cpu xscale
+
+begin cpu iwmmxt
+ tune flags LDSCHED XSCALE
+ architecture iwmmxt
+ costs xscale
+end cpu iwmmxt
+
+begin cpu iwmmxt2
+ tune flags LDSCHED XSCALE
+ architecture iwmmxt2
+ costs xscale
+end cpu iwmmxt2
+
+begin cpu fa606te
+ tune flags LDSCHED
+ architecture armv5te
+ costs 9e
+end cpu fa606te
+
+begin cpu fa626te
+ tune flags LDSCHED
+ architecture armv5te
+ costs 9e
+end cpu fa626te
+
+begin cpu fmp626
+ tune flags LDSCHED
+ architecture armv5te
+ costs 9e
+end cpu fmp626
+
+begin cpu fa726te
+ tune flags LDSCHED
+ architecture armv5te
+ costs fa726te
+end cpu fa726te
+
+
+# V5TEJ Architecture Processors
+begin cpu arm926ej-s
+ cname arm926ejs
+ tune flags LDSCHED
+ architecture armv5tej
+ costs 9e
+end cpu arm926ej-s
+
+begin cpu arm1026ej-s
+ cname arm1026ejs
+ tune flags LDSCHED
+ architecture armv5tej
+ costs 9e
+end cpu arm1026ej-s
+
+
+# V6 Architecture Processors
+begin cpu arm1136j-s
+ cname arm1136js
+ tune flags LDSCHED
+ architecture armv6j
+ costs 9e
+end cpu arm1136j-s
+
+begin cpu arm1136jf-s
+ cname arm1136jfs
+ tune flags LDSCHED
+ architecture armv6j
+ fpu vfpv2
+ costs 9e
+end cpu arm1136jf-s
+
+begin cpu arm1176jz-s
+ cname arm1176jzs
+ tune flags LDSCHED
+ architecture armv6kz
+ costs 9e
+end cpu arm1176jz-s
+
+begin cpu arm1176jzf-s
+ cname arm1176jzfs
+ tune flags LDSCHED
+ architecture armv6kz
+ fpu vfpv2
+ costs 9e
+end cpu arm1176jzf-s
+
+begin cpu mpcorenovfp
+ tune flags LDSCHED
+ architecture armv6k
+ costs 9e
+end cpu mpcorenovfp
+
+begin cpu mpcore
+ tune flags LDSCHED
+ architecture armv6k
+ fpu vfpv2
+ costs 9e
+end cpu mpcore
+
+begin cpu arm1156t2-s
+ cname arm1156t2s
+ tune flags LDSCHED
+ architecture armv6t2
+ costs v6t2
+end cpu arm1156t2-s
+
+begin cpu arm1156t2f-s
+ cname arm1156t2fs
+ tune flags LDSCHED
+ architecture armv6t2
+ fpu vfpv2
+ costs v6t2
+end cpu arm1156t2f-s
+
+
+# V6M Architecture Processors
+begin cpu cortex-m1
+ cname cortexm1
+ tune flags LDSCHED
+ architecture armv6-m
+ costs v6m
+end cpu cortex-m1
+
+begin cpu cortex-m0
+ cname cortexm0
+ tune flags LDSCHED
+ architecture armv6-m
+ costs v6m
+end cpu cortex-m0
+
+begin cpu cortex-m0plus
+ cname cortexm0plus
+ tune flags LDSCHED
+ architecture armv6-m
+ costs v6m
+end cpu cortex-m0plus
+
+
+# V6M Architecture Processors for small-multiply implementations.
+begin cpu cortex-m1.small-multiply
+ cname cortexm1smallmultiply
+ tune for cortex-m1
+ tune flags LDSCHED SMALLMUL
+ architecture armv6-m
+ costs v6m
+end cpu cortex-m1.small-multiply
+
+begin cpu cortex-m0.small-multiply
+ cname cortexm0smallmultiply
+ tune for cortex-m0
+ tune flags LDSCHED SMALLMUL
+ architecture armv6-m
+ costs v6m
+end cpu cortex-m0.small-multiply
+
+begin cpu cortex-m0plus.small-multiply
+ cname cortexm0plussmallmultiply
+ tune for cortexm0-plus
+ tune flags LDSCHED SMALLMUL
+ architecture armv6-m
+ costs v6m
+end cpu cortex-m0plus.small-multiply
+
+
+# V7 Architecture Processors
+begin cpu generic-armv7-a
+ cname genericv7a
+ tune flags LDSCHED
+ architecture armv7-a
+ costs cortex
+end cpu generic-armv7-a
+
+begin cpu cortex-a5
+ cname cortexa5
+ tune flags LDSCHED
+ architecture armv7-a
+ costs cortex_a5
+end cpu cortex-a5
+
+begin cpu cortex-a7
+ cname cortexa7
+ tune flags LDSCHED
+ architecture armv7ve
+ costs cortex_a7
+end cpu cortex-a7
+
+begin cpu cortex-a8
+ cname cortexa8
+ tune flags LDSCHED
+ architecture armv7-a
+ costs cortex_a8
+end cpu cortex-a8
+
+begin cpu cortex-a9
+ cname cortexa9
+ tune flags LDSCHED
+ architecture armv7-a
+ costs cortex_a9
+end cpu cortex-a9
+
+begin cpu cortex-a12
+ cname cortexa12
+ tune for cortex-a17
+ tune flags LDSCHED
+ architecture armv7ve
+ costs cortex_a12
+end cpu cortex-a12
+
+begin cpu cortex-a15
+ cname cortexa15
+ tune flags LDSCHED
+ architecture armv7ve
+ costs cortex_a15
+end cpu cortex-a15
+
+begin cpu cortex-a17
+ cname cortexa17
+ tune flags LDSCHED
+ architecture armv7ve
+ costs cortex_a12
+end cpu cortex-a17
+
+begin cpu cortex-r4
+ cname cortexr4
+ tune flags LDSCHED
+ architecture armv7-r
+ costs cortex
+end cpu cortex-r4
+
+begin cpu cortex-r4f
+ cname cortexr4f
+ tune flags LDSCHED
+ architecture armv7-r
+ costs cortex
+end cpu cortex-r4f
+
+begin cpu cortex-r5
+ cname cortexr5
+ tune flags LDSCHED
+ architecture armv7-r
+ isa bit_adiv
+ costs cortex
+end cpu cortex-r5
+
+begin cpu cortex-r7
+ cname cortexr7
+ tune flags LDSCHED
+ architecture armv7-r
+ isa bit_adiv
+ costs cortex
+end cpu cortex-r7
+
+begin cpu cortex-r8
+ cname cortexr8
+ tune for cortex-r7
+ tune flags LDSCHED
+ architecture armv7-r
+ isa bit_adiv
+ costs cortex
+end cpu cortex-r8
+
+begin cpu cortex-m7
+ cname cortexm7
+ tune flags LDSCHED
+ architecture armv7e-m
+ isa quirk_no_volatile_ce
+ costs cortex_m7
+end cpu cortex-m7
+
+begin cpu cortex-m4
+ cname cortexm4
+ tune flags LDSCHED
+ architecture armv7e-m
+ costs v7m
+end cpu cortex-m4
+
+begin cpu cortex-m3
+ cname cortexm3
+ tune flags LDSCHED
+ architecture armv7-m
+ isa quirk_cm3_ldrd
+ costs v7m
+end cpu cortex-m3
+
+begin cpu marvell-pj4
+ tune flags LDSCHED
+ architecture armv7-a
+ costs marvell_pj4
+end cpu marvell-pj4
+
+
+# V7 big.LITTLE implementations
+begin cpu cortex-a15.cortex-a7
+ cname cortexa15cortexa7
+ tune for cortex-a7
+ tune flags LDSCHED
+ architecture armv7ve
+ costs cortex_a15
+end cpu cortex-a15.cortex-a7
+
+begin cpu cortex-a17.cortex-a7
+ cname cortexa17cortexa7
+ tune for cortex-a7
+ tune flags LDSCHED
+ architecture armv7ve
+ costs cortex_a12
+end cpu cortex-a17.cortex-a7
+
+
+# V8 A-profile Architecture Processors
+begin cpu cortex-a32
+ cname cortexa32
+ tune for cortex-a53
+ tune flags LDSCHED
+ architecture armv8-a+crc
+ costs cortex_a35
+end cpu cortex-a32
+
+begin cpu cortex-a35
+ cname cortexa35
+ tune for cortex-a53
+ tune flags LDSCHED
+ architecture armv8-a+crc
+ costs cortex_a35
+end cpu cortex-a35
+
+begin cpu cortex-a53
+ cname cortexa53
+ tune flags LDSCHED
+ architecture armv8-a+crc
+ costs cortex_a53
+end cpu cortex-a53
+
+begin cpu cortex-a57
+ cname cortexa57
+ tune flags LDSCHED
+ architecture armv8-a+crc
+ costs cortex_a57
+end cpu cortex-a57
+
+begin cpu cortex-a72
+ cname cortexa72
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv8-a+crc
+ costs cortex_a57
+end cpu cortex-a72
+
+begin cpu cortex-a73
+ cname cortexa73
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv8-a+crc
+ costs cortex_a73
+end cpu cortex-a73
+
+begin cpu exynos-m1
+ cname exynosm1
+ tune flags LDSCHED
+ architecture armv8-a+crc
+ costs exynosm1
+end cpu exynos-m1
+
+begin cpu falkor
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv8-a+crc
+ costs qdf24xx
+end cpu falkor
+
+begin cpu qdf24xx
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv8-a+crc
+ costs qdf24xx
+end cpu qdf24xx
+
+begin cpu xgene1
+ tune flags LDSCHED
+ architecture armv8-a
+ costs xgene1
+end cpu xgene1
+
+
+# V8 A-profile big.LITTLE implementations
+begin cpu cortex-a57.cortex-a53
+ cname cortexa57cortexa53
+ tune for cortex-a53
+ tune flags LDSCHED
+ architecture armv8-a+crc
+ costs cortex_a57
+end cpu cortex-a57.cortex-a53
+
+begin cpu cortex-a72.cortex-a53
+ cname cortexa72cortexa53
+ tune for cortex-a53
+ tune flags LDSCHED
+ architecture armv8-a+crc
+ costs cortex_a57
+end cpu cortex-a72.cortex-a53
+
+begin cpu cortex-a73.cortex-a35
+ cname cortexa73cortexa35
+ tune for cortex-a53
+ tune flags LDSCHED
+ architecture armv8-a+crc
+ costs cortex_a73
+end cpu cortex-a73.cortex-a35
+
+begin cpu cortex-a73.cortex-a53
+ cname cortexa73cortexa53
+ tune for cortex-a53
+ tune flags LDSCHED
+ architecture armv8-a+crc
+ costs cortex_a73
+end cpu cortex-a73.cortex-a53
+
+
+# V8 M-profile implementations.
+begin cpu cortex-m23
+ cname cortexm23
+ tune flags LDSCHED
+ architecture armv8-m.base
+ costs v6m
+end cpu cortex-m23
+
+begin cpu cortex-m33
+ cname cortexm33
+ tune flags LDSCHED
+ architecture armv8-m.main+dsp
+ costs v7m
+end cpu cortex-m33
+
+# FPU entries
+# format:
+# begin fpu <name>
+#   isa <isa-flags-list>
+# end fpu <name>
+
+begin fpu vfp
+ isa VFPv2 FP_DBL
+end fpu vfp
+
+begin fpu vfpv2
+ isa VFPv2 FP_DBL
+end fpu vfpv2
+
+begin fpu vfpv3
+ isa VFPv3 FP_D32
+end fpu vfpv3
+
+begin fpu vfpv3-fp16
+ isa VFPv3 FP_D32 bit_fp16conv
+end fpu vfpv3-fp16
+
+begin fpu vfpv3-d16
+ isa VFPv3 FP_DBL
+end fpu vfpv3-d16
+
+begin fpu vfpv3-d16-fp16
+ isa VFPv3 FP_DBL bit_fp16conv
+end fpu vfpv3-d16-fp16
+
+begin fpu vfpv3xd
+ isa VFPv3
+end fpu vfpv3xd
+
+begin fpu vfpv3xd-fp16
+ isa VFPv3 bit_fp16conv
+end fpu vfpv3xd-fp16
+
+begin fpu neon
+ isa VFPv3 NEON
+end fpu neon
+
+begin fpu neon-vfpv3
+ isa VFPv3 NEON
+end fpu neon-vfpv3
+
+begin fpu neon-fp16
+ isa VFPv3 NEON bit_fp16conv
+end fpu neon-fp16
+
+begin fpu vfpv4
+ isa VFPv4 FP_D32
+end fpu vfpv4
+
+begin fpu neon-vfpv4
+ isa VFPv4 NEON
+end fpu neon-vfpv4
+
+begin fpu vfpv4-d16
+ isa VFPv4 FP_DBL
+end fpu vfpv4-d16
+
+begin fpu fpv4-sp-d16
+ isa VFPv4
+end fpu fpv4-sp-d16
+
+begin fpu fpv5-sp-d16
+ isa FPv5
+end fpu fpv5-sp-d16
+
+begin fpu fpv5-d16
+ isa FPv5 FP_DBL
+end fpu fpv5-d16
+
+begin fpu fp-armv8
+ isa FP_ARMv8 FP_D32
+end fpu fp-armv8
+
+begin fpu neon-fp-armv8
+ isa FP_ARMv8 NEON
+end fpu neon-fp-armv8
+
+begin fpu crypto-neon-fp-armv8
+ isa FP_ARMv8 CRYPTO
+end fpu crypto-neon-fp-armv8
+
+# Compatibility aliases.
+begin fpu vfp3
+ isa VFPv3 FP_D32
+end fpu vfp3

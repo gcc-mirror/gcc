@@ -23,7 +23,7 @@ main ()
 
   __cpuid_count (7, 0, eax, ebx, ecx, edx);
 
-  if ((ebx & bit_ADX) == bit_ADX)
+  if (ebx & bit_ADX)
     {
       do_test ();
 #ifdef DEBUG

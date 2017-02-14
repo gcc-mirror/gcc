@@ -1,5 +1,5 @@
 /* Character scanner.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1414,10 +1414,9 @@ restart:
 
       if (c != '&')
 	{
-	  if (in_string)
+	  if (in_string && gfc_current_locus.nextc)
 	    {
-	      if (gfc_current_locus.nextc)
-	        gfc_current_locus.nextc--;
+	      gfc_current_locus.nextc--;
 	      if (warn_ampersand && in_string == INSTRING_WARN)
 		gfc_warning (OPT_Wampersand, 
 			     "Missing %<&%> in continued character "

@@ -31,41 +31,50 @@
 // The standard C memcmp function, used for struct comparisons.
 DEF_GO_RUNTIME(MEMCMP, "__go_memcmp", P3(POINTER, POINTER, UINTPTR), R1(INT))
 
-// Range over a string, returning the next index.
-DEF_GO_RUNTIME(STRINGITER, "runtime.stringiter", P2(STRING, INT), R1(INT))
+// Decode a non-ASCII rune from a string.
+DEF_GO_RUNTIME(DECODERUNE, "runtime.decoderune", P2(STRING, INT),
+	       R2(RUNE, INT))
 
-// Range over a string, returning the next index and character.
-DEF_GO_RUNTIME(STRINGITER2, "runtime.stringiter2", P2(STRING, INT),
-	       R2(INT, RUNE))
+// Concatenate strings.
+DEF_GO_RUNTIME(CONCATSTRINGS, "runtime.concatstrings", P2(POINTER, SLICE),
+	       R1(STRING))
+DEF_GO_RUNTIME(CONCATSTRING2, "runtime.concatstring2",
+	       P2(POINTER, ARRAY2STRING), R1(STRING))
+DEF_GO_RUNTIME(CONCATSTRING3, "runtime.concatstring3",
+	       P2(POINTER, ARRAY3STRING), R1(STRING))
+DEF_GO_RUNTIME(CONCATSTRING4, "runtime.concatstring4",
+	       P2(POINTER, ARRAY4STRING), R1(STRING))
+DEF_GO_RUNTIME(CONCATSTRING5, "runtime.concatstring5",
+	       P2(POINTER, ARRAY5STRING), R1(STRING))
 
-// Concatenate two strings.
-DEF_GO_RUNTIME(STRING_PLUS, "__go_string_plus", P2(STRING, STRING), R1(STRING))
+// Compare two strings for equality.
+DEF_GO_RUNTIME(EQSTRING, "runtime.eqstring", P2(STRING, STRING), R1(BOOL))
 
 // Compare two strings.
-DEF_GO_RUNTIME(STRCMP, "__go_strcmp", P2(STRING, STRING), R1(INT))
+DEF_GO_RUNTIME(CMPSTRING, "runtime.cmpstring", P2(STRING, STRING), R1(INT))
 
 // Take a slice of a string.
 DEF_GO_RUNTIME(STRING_SLICE, "__go_string_slice", P3(STRING, INT, INT),
 	       R1(STRING))
 
 // Convert an integer to a string.
-DEF_GO_RUNTIME(INT_TO_STRING, "__go_int_to_string", P1(INT), R1(STRING))
+DEF_GO_RUNTIME(INTSTRING, "runtime.intstring", P2(POINTER, INT64), R1(STRING))
 
-// Convert a byte array to a string.
-DEF_GO_RUNTIME(BYTE_ARRAY_TO_STRING, "__go_byte_array_to_string",
-	       P2(POINTER, INT), R1(STRING))
+// Convert a []byte to a string.
+DEF_GO_RUNTIME(SLICEBYTETOSTRING, "runtime.slicebytetostring",
+	       P2(POINTER, SLICE), R1(STRING))
 
-// Convert an int array to a string.
-DEF_GO_RUNTIME(INT_ARRAY_TO_STRING, "__go_int_array_to_string",
-	       P2(POINTER, INT), R1(STRING))
+// Convert a []rune to a string.
+DEF_GO_RUNTIME(SLICERUNETOSTRING, "runtime.slicerunetostring",
+	       P2(POINTER, SLICE), R1(STRING))
 
-// Convert a string to a byte slice.
-DEF_GO_RUNTIME(STRING_TO_BYTE_ARRAY, "__go_string_to_byte_array",
-	       P1(STRING), R1(SLICE))
+// Convert a string to a []byte.
+DEF_GO_RUNTIME(STRINGTOSLICEBYTE, "runtime.stringtoslicebyte",
+	       P2(POINTER, STRING), R1(SLICE))
 
-// Convert a string to an int slice.
-DEF_GO_RUNTIME(STRING_TO_INT_ARRAY, "__go_string_to_int_array",
-	       P1(STRING), R1(SLICE))
+// Convert a string to a []rune.
+DEF_GO_RUNTIME(STRINGTOSLICERUNE, "runtime.stringtoslicerune",
+	       P2(POINTER, STRING), R1(SLICE))
 
 
 // Complex division.
@@ -75,75 +84,63 @@ DEF_GO_RUNTIME(COMPLEX128_DIV, "__go_complex128_div",
 	       P2(COMPLEX128, COMPLEX128), R1(COMPLEX128))
 
 // Make a slice.
-DEF_GO_RUNTIME(MAKESLICE1, "__go_make_slice1", P2(TYPE, UINTPTR), R1(SLICE))
-DEF_GO_RUNTIME(MAKESLICE2, "__go_make_slice2", P3(TYPE, UINTPTR, UINTPTR),
+DEF_GO_RUNTIME(MAKESLICE, "runtime.makeslice", P3(TYPE, INT, INT),
 	       R1(SLICE))
-DEF_GO_RUNTIME(MAKESLICE1BIG, "__go_make_slice1_big", P2(TYPE, UINT64),
-	       R1(SLICE))
-DEF_GO_RUNTIME(MAKESLICE2BIG, "__go_make_slice2_big", P3(TYPE, UINT64, UINT64),
+
+DEF_GO_RUNTIME(MAKESLICE64, "runtime.makeslice64", P3(TYPE, INT64, INT64),
 	       R1(SLICE))
 
 
 // Make a map.
-DEF_GO_RUNTIME(MAKEMAP, "__go_new_map", P2(MAPDESCRIPTOR, UINTPTR), R1(MAP))
-DEF_GO_RUNTIME(MAKEMAPBIG, "__go_new_map_big", P2(MAPDESCRIPTOR, UINT64),
+DEF_GO_RUNTIME(MAKEMAP, "runtime.makemap", P4(TYPE, INT64, POINTER, POINTER),
 	       R1(MAP))
 
 // Build a map from a composite literal.
 DEF_GO_RUNTIME(CONSTRUCT_MAP, "__go_construct_map",
-	       P6(POINTER, UINTPTR, UINTPTR, UINTPTR, UINTPTR, POINTER),
+	       P5(POINTER, UINTPTR, UINTPTR, UINTPTR, POINTER),
 	       R1(MAP))
 
-// Get the length of a map (the number of entries).
-DEF_GO_RUNTIME(MAP_LEN, "__go_map_len", P1(MAP), R1(INT))
-
 // Look up a key in a map.
-DEF_GO_RUNTIME(MAP_INDEX, "__go_map_index", P3(MAP, POINTER, BOOL),
+DEF_GO_RUNTIME(MAPACCESS1, "runtime.mapaccess1", P3(TYPE, MAP, POINTER),
 	       R1(POINTER))
 
-// Look up a key in a map returning whether it is present.
-DEF_GO_RUNTIME(MAPACCESS2, "runtime.mapaccess2",
-	       P4(TYPE, MAP, POINTER, POINTER), R1(BOOL))
+// Look up a key in a map when the value is large.
+DEF_GO_RUNTIME(MAPACCESS1_FAT, "runtime.mapaccess1_fat",
+	       P4(TYPE, MAP, POINTER, POINTER), R1(POINTER))
 
-// Tuple assignment to a map element.
-DEF_GO_RUNTIME(MAPASSIGN2, "runtime.mapassign2",
-	       P4(MAP, POINTER, POINTER, BOOL), R0())
+// Look up a key in a map returning the value and whether it is
+// present.
+DEF_GO_RUNTIME(MAPACCESS2, "runtime.mapaccess2", P3(TYPE, MAP, POINTER),
+	       R2(POINTER, BOOL))
+
+// Look up a key in a map, returning the value and whether it is
+// present, when the value is large.
+DEF_GO_RUNTIME(MAPACCESS2_FAT, "runtime.mapaccess2_fat",
+	       P4(TYPE, MAP, POINTER, POINTER), R2(POINTER, BOOL))
+
+// Assignment to a key in a map.
+DEF_GO_RUNTIME(MAPASSIGN, "runtime.mapassign", P3(TYPE, MAP, POINTER),
+	       R1(POINTER))
 
 // Delete a key from a map.
-DEF_GO_RUNTIME(MAPDELETE, "runtime.mapdelete", P2(MAP, POINTER), R0())
+DEF_GO_RUNTIME(MAPDELETE, "runtime.mapdelete", P3(TYPE, MAP, POINTER), R0())
 
 // Begin a range over a map.
-DEF_GO_RUNTIME(MAPITERINIT, "runtime.mapiterinit", P2(MAP, MAPITER), R0())
-
-// Range over a map, returning the next key.
-DEF_GO_RUNTIME(MAPITER1, "runtime.mapiter1", P2(MAPITER, POINTER), R0())
-
-// Range over a map, returning the next key and value.
-DEF_GO_RUNTIME(MAPITER2, "runtime.mapiter2", P3(MAPITER, POINTER, POINTER),
+DEF_GO_RUNTIME(MAPITERINIT, "runtime.mapiterinit", P3(TYPE, MAP, POINTER),
 	       R0())
 
 // Range over a map, moving to the next map entry.
-DEF_GO_RUNTIME(MAPITERNEXT, "runtime.mapiternext", P1(MAPITER), R0())
+DEF_GO_RUNTIME(MAPITERNEXT, "runtime.mapiternext", P1(POINTER), R0())
 
 
 // Make a channel.
-DEF_GO_RUNTIME(MAKECHAN, "__go_new_channel", P2(TYPE, UINTPTR), R1(CHAN))
-DEF_GO_RUNTIME(MAKECHANBIG, "__go_new_channel_big", P2(TYPE, UINT64), R1(CHAN))
+DEF_GO_RUNTIME(MAKECHAN, "runtime.makechan", P2(TYPE, INT64), R1(CHAN))
 
-// Get the length of a channel (the number of unread values).
-DEF_GO_RUNTIME(CHAN_LEN, "__go_chan_len", P1(CHAN), R1(INT))
-
-// Get the capacity of a channel (the size of the buffer).
-DEF_GO_RUNTIME(CHAN_CAP, "__go_chan_cap", P1(CHAN), R1(INT))
-
-// Send a small value on a channel.
-DEF_GO_RUNTIME(SEND_SMALL, "__go_send_small", P3(TYPE, CHAN, UINT64), R0())
-
-// Send a big value on a channel.
-DEF_GO_RUNTIME(SEND_BIG, "__go_send_big", P3(TYPE, CHAN, POINTER), R0())
+// Send a value on a channel.
+DEF_GO_RUNTIME(CHANSEND, "runtime.chansend1", P3(TYPE, CHAN, POINTER), R0())
 
 // Receive a value from a channel.
-DEF_GO_RUNTIME(RECEIVE, "__go_receive", P3(TYPE, CHAN, POINTER), R0())
+DEF_GO_RUNTIME(CHANRECV1, "runtime.chanrecv1", P3(TYPE, CHAN, POINTER), R0())
 
 // Receive a value from a channel returning whether it is closed.
 DEF_GO_RUNTIME(CHANRECV2, "runtime.chanrecv2", P3(TYPE, CHAN, POINTER),
@@ -151,7 +148,7 @@ DEF_GO_RUNTIME(CHANRECV2, "runtime.chanrecv2", P3(TYPE, CHAN, POINTER),
 
 
 // Start building a select statement.
-DEF_GO_RUNTIME(NEWSELECT, "runtime.newselect", P1(INT32), R1(POINTER))
+DEF_GO_RUNTIME(NEWSELECT, "runtime.newselect", P3(POINTER, INT64, INT32), R0())
 
 // Add a default clause to a select statement.
 DEF_GO_RUNTIME(SELECTDEFAULT, "runtime.selectdefault",
@@ -176,44 +173,50 @@ DEF_GO_RUNTIME(SELECTGO, "runtime.selectgo", P1(POINTER), R1(INT32))
 
 
 // Panic.
-DEF_GO_RUNTIME(PANIC, "__go_panic", P1(EFACE), R0())
+DEF_GO_RUNTIME(GOPANIC, "runtime.gopanic", P1(EFACE), R0())
 
 // Recover.
-DEF_GO_RUNTIME(RECOVER, "__go_recover", P0(), R1(EFACE))
+DEF_GO_RUNTIME(GORECOVER, "runtime.gorecover", P0(), R1(EFACE))
 
 // Recover when called directly from defer.
-DEF_GO_RUNTIME(DEFERRED_RECOVER, "__go_deferred_recover", P0(), R1(EFACE))
+DEF_GO_RUNTIME(DEFERREDRECOVER, "runtime.deferredrecover", P0(), R1(EFACE))
 
 // Decide whether this function can call recover.
-DEF_GO_RUNTIME(CAN_RECOVER, "__go_can_recover", P1(POINTER), R1(BOOL))
-
-// Get the return address of the function.
-DEF_GO_RUNTIME(RETURN_ADDRESS, "__go_return_address", P1(INT), R1(POINTER))
+DEF_GO_RUNTIME(CANRECOVER, "runtime.canrecover", P1(POINTER), R1(BOOL))
 
 // Set the return address for defer in a defer thunk.
-DEF_GO_RUNTIME(SET_DEFER_RETADDR, "__go_set_defer_retaddr", P1(POINTER),
+DEF_GO_RUNTIME(SETDEFERRETADDR, "runtime.setdeferretaddr", P1(POINTER),
 	       R1(BOOL))
 
 // Check for a deferred function in an exception handler.
-DEF_GO_RUNTIME(CHECK_DEFER, "__go_check_defer", P1(BOOLPTR), R0())
+DEF_GO_RUNTIME(CHECKDEFER, "runtime.checkdefer", P1(BOOLPTR), R0())
 
 // Run deferred functions.
-DEF_GO_RUNTIME(UNDEFER, "__go_undefer", P1(BOOLPTR), R0())
+DEF_GO_RUNTIME(DEFERRETURN, "runtime.deferreturn", P1(BOOLPTR), R0())
 
 // Panic with a runtime error.
 DEF_GO_RUNTIME(RUNTIME_ERROR, "__go_runtime_error", P1(INT32), R0())
 
 
 // Close.
-DEF_GO_RUNTIME(CLOSE, "__go_builtin_close", P1(CHAN), R0())
+DEF_GO_RUNTIME(CLOSE, "runtime.closechan", P1(CHAN), R0())
 
 
 // Copy.
-DEF_GO_RUNTIME(COPY, "__go_copy", P3(POINTER, POINTER, UINTPTR), R0())
+DEF_GO_RUNTIME(SLICECOPY, "runtime.slicecopy", P3(SLICE, SLICE, UINTPTR),
+	       R1(INT))
 
-// Append.
-DEF_GO_RUNTIME(APPEND, "__go_append", P4(SLICE, POINTER, UINTPTR, UINTPTR),
-	       R1(SLICE))
+// Copy from string.
+DEF_GO_RUNTIME(SLICESTRINGCOPY, "runtime.slicestringcopy", P2(SLICE, STRING),
+	       R1(INT))
+
+// Copy of value containing pointers.
+DEF_GO_RUNTIME(TYPEDSLICECOPY, "runtime.typedslicecopy",
+	       P3(TYPE, SLICE, SLICE), R1(INT))
+
+
+// Grow a slice for append.
+DEF_GO_RUNTIME(GROWSLICE, "runtime.growslice", P3(TYPE, SLICE, INT), R1(SLICE))
 
 
 // Register roots (global variables) for the garbage collector.
@@ -227,7 +230,8 @@ DEF_GO_RUNTIME(NEW, "__go_new", P2(TYPE, UINTPTR), R1(POINTER))
 DEF_GO_RUNTIME(GO, "__go_go", P2(FUNC_PTR, POINTER), R0())
 
 // Defer a function.
-DEF_GO_RUNTIME(DEFER, "__go_defer", P3(BOOLPTR, FUNC_PTR, POINTER), R0())
+DEF_GO_RUNTIME(DEFERPROC, "runtime.deferproc", P3(BOOLPTR, FUNC_PTR, POINTER),
+	       R0())
 
 
 // Convert an empty interface to an empty interface, returning ok.
@@ -260,22 +264,27 @@ DEF_GO_RUNTIME(IFACEE2T2, "runtime.ifaceE2T2", P3(TYPE, EFACE, POINTER),
 DEF_GO_RUNTIME(IFACEI2T2, "runtime.ifaceI2T2", P3(TYPE, IFACE, POINTER),
 	       R1(BOOL))
 
-// A type assertion from one interface type to another.  This is
-// used for a type assertion.
-DEF_GO_RUNTIME(ASSERT_INTERFACE, "__go_assert_interface", P2(TYPE, TYPE), R1(POINTER))
+// Return the interface method table for the second type converted to
+// the first type which is a (possibly empty) interface type.  Panics
+// if the second type is nil (indicating a nil interface value) or if
+// the conversion is not possible.  Used for type assertions.  This is
+// like REQUIREITAB, but for type assertions.
+DEF_GO_RUNTIME(ASSERTITAB, "runtime.assertitab", P2(TYPE, TYPE), R1(POINTER))
 
-// Convert one interface type to another.  This is used for an
-// assignment.
-DEF_GO_RUNTIME(CONVERT_INTERFACE, "__go_convert_interface", P2(TYPE, TYPE),
+// Return the interface method table for the second type converted to
+// the first type, which is a non-empty interface type.  Return nil if
+// the second type is nil, indicating a nil interface value.  Panics
+// if the conversion is not possible.  Used for assignments.  This is
+// like ASSERTITAB, but for assignments.
+DEF_GO_RUNTIME(REQUIREITAB, "runtime.requireitab", P2(TYPE, TYPE),
 	       R1(POINTER))
 
 // Check whether an interface type may be converted to a
 // non-interface type.
-DEF_GO_RUNTIME(CHECK_INTERFACE_TYPE, "__go_check_interface_type",
-	       P3(TYPE, TYPE, TYPE), R0())
+DEF_GO_RUNTIME(ASSERTI2T, "runtime.assertI2T", P3(TYPE, TYPE, TYPE), R0())
 
-// Return whether we can convert an interface type to a type.
-DEF_GO_RUNTIME(IFACEI2TP, "runtime.ifaceI2Tp", P2(TYPE, TYPE), R1(BOOL))
+// Return whether we can convert a type to an interface type.
+DEF_GO_RUNTIME(IFACET2IP, "runtime.ifaceT2Ip", P2(TYPE, TYPE), R1(BOOL))
 
 // Get the type descriptor of an empty interface.
 DEF_GO_RUNTIME(EFACETYPE, "runtime.efacetype", P1(EFACE), R1(TYPE))
@@ -288,63 +297,65 @@ DEF_GO_RUNTIME(IFACETYPE, "runtime.ifacetype", P1(IFACE), R1(TYPE))
 DEF_GO_RUNTIME(IFACETYPEEQ, "runtime.ifacetypeeq", P2(TYPE, TYPE), R1(BOOL))
 
 // Compare two empty interface values.
-DEF_GO_RUNTIME(EMPTY_INTERFACE_COMPARE, "__go_empty_interface_compare",
-	       P2(EFACE, EFACE), R1(INT))
+DEF_GO_RUNTIME(EFACEEQ, "runtime.efaceeq", P2(EFACE, EFACE), R1(BOOL))
 
 // Compare an empty interface value to a non-interface value.
-DEF_GO_RUNTIME(EMPTY_INTERFACE_VALUE_COMPARE,
-	       "__go_empty_interface_value_compare",
-	       P3(EFACE, TYPE, POINTER), R1(INT))
+DEF_GO_RUNTIME(EFACEVALEQ, "runtime.efacevaleq", P3(EFACE, TYPE, POINTER),
+	       R1(BOOL))
 
 // Compare two non-empty interface values.
-DEF_GO_RUNTIME(INTERFACE_COMPARE, "__go_interface_compare",
-	       P2(IFACE, IFACE), R1(INT))
+DEF_GO_RUNTIME(IFACEEQ, "runtime.ifaceeq", P2(IFACE, IFACE), R1(BOOL))
 
 // Compare a non-empty interface value to a non-interface value.
-DEF_GO_RUNTIME(INTERFACE_VALUE_COMPARE, "__go_interface_value_compare",
-	       P3(IFACE, TYPE, POINTER), R1(INT))
+DEF_GO_RUNTIME(IFACEVALEQ, "runtime.ifacevaleq", P3(IFACE, TYPE, POINTER),
+	       R1(BOOL))
 
 // Compare a non-empty interface value to an interface value.
-DEF_GO_RUNTIME(INTERFACE_EMPTY_COMPARE, "__go_interface_empty_compare",
-	       P2(IFACE, EFACE), R1(INT))
+DEF_GO_RUNTIME(IFACEEFACEEQ, "runtime.ifaceefaceeq", P2(IFACE, EFACE),
+	       R1(BOOL))
 
+
+// Lock the printer (for print/println).
+DEF_GO_RUNTIME(PRINTLOCK, "runtime.printlock", P0(), R0())
+
+// Unlock the printer (for print/println).
+DEF_GO_RUNTIME(PRINTUNLOCK, "runtime.printunlock", P0(), R0())
 
 // Print a string (for print/println).
-DEF_GO_RUNTIME(PRINT_STRING, "__go_print_string", P1(STRING), R0())
+DEF_GO_RUNTIME(PRINTSTRING, "runtime.printstring", P1(STRING), R0())
 
 // Print a uint64 (for print/println).
-DEF_GO_RUNTIME(PRINT_UINT64, "__go_print_uint64", P1(UINT64), R0())
+DEF_GO_RUNTIME(PRINTUINT, "runtime.printuint", P1(UINT64), R0())
 
 // Print a int64 (for print/println).
-DEF_GO_RUNTIME(PRINT_INT64, "__go_print_int64", P1(INT64), R0())
+DEF_GO_RUNTIME(PRINTINT, "runtime.printint", P1(INT64), R0())
 
 // Print a float64 (for print/println).
-DEF_GO_RUNTIME(PRINT_DOUBLE, "__go_print_double", P1(FLOAT64), R0())
+DEF_GO_RUNTIME(PRINTFLOAT, "runtime.printfloat", P1(FLOAT64), R0())
 
 // Print a complex128 (for print/println).
-DEF_GO_RUNTIME(PRINT_COMPLEX, "__go_print_complex", P1(COMPLEX128), R0())
+DEF_GO_RUNTIME(PRINTCOMPLEX, "runtime.printcomplex", P1(COMPLEX128), R0())
 
 // Print a bool (for print/println).
-DEF_GO_RUNTIME(PRINT_BOOL, "__go_print_bool", P1(BOOL), R0())
+DEF_GO_RUNTIME(PRINTBOOL, "runtime.printbool", P1(BOOL), R0())
 
 // Print a pointer/map/channel/function (for print/println).
-DEF_GO_RUNTIME(PRINT_POINTER, "__go_print_pointer", P1(POINTER), R0())
+DEF_GO_RUNTIME(PRINTPOINTER, "runtime.printpointer", P1(POINTER), R0())
 
 // Print an empty interface (for print/println).
-DEF_GO_RUNTIME(PRINT_EMPTY_INTERFACE, "__go_print_empty_interface",
-	       P1(EFACE), R0())
+DEF_GO_RUNTIME(PRINTEFACE, "runtime.printeface", P1(EFACE), R0())
 
 // Print a non-empty interface (for print/println).
-DEF_GO_RUNTIME(PRINT_INTERFACE, "__go_print_interface", P1(IFACE), R0())
+DEF_GO_RUNTIME(PRINTIFACE, "runtime.printiface", P1(IFACE), R0())
 
 // Print a slice (for print/println).
-DEF_GO_RUNTIME(PRINT_SLICE, "__go_print_slice", P1(SLICE), R0())
+DEF_GO_RUNTIME(PRINTSLICE, "runtime.printslice", P1(SLICE), R0())
 
 // Print a space (for println).
-DEF_GO_RUNTIME(PRINT_SPACE, "__go_print_space", P0(), R0())
+DEF_GO_RUNTIME(PRINTSP, "runtime.printsp", P0(), R0())
 
 // Print a newline (for println).
-DEF_GO_RUNTIME(PRINT_NL, "__go_print_nl", P0(), R0())
+DEF_GO_RUNTIME(PRINTNL, "runtime.printnl", P0(), R0())
 
 
 // Used for field tracking for data analysis.

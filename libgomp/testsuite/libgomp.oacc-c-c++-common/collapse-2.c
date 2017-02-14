@@ -8,7 +8,7 @@ main (void)
   int i, j, k, l = 0, f = 0, x = 0;
   int m1 = 4, m2 = -5, m3 = 17;
 
-#pragma acc parallel copy(l)
+#pragma acc parallel
   #pragma acc loop seq collapse(3) reduction(+:l)
     for (i = -2; i < m1; i++)
       for (j = m2; j < -2; j++)

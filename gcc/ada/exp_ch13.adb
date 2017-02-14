@@ -32,7 +32,6 @@ with Exp_Imgv; use Exp_Imgv;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
-with Ghost;    use Ghost;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -114,7 +113,7 @@ package body Exp_Ch13 is
                   and then Present (Expression (Decl))
                   and then Nkind (Expression (Decl)) /= N_Null
                   and then
-                   not Comes_From_Source (Original_Node (Expression (Decl)))
+                    not Comes_From_Source (Original_Node (Expression (Decl)))
                then
                   if Present (Base_Init_Proc (Typ))
                     and then
@@ -123,8 +122,8 @@ package body Exp_Ch13 is
                      null;
 
                   elsif Init_Or_Norm_Scalars
-                    and then
-                      (Is_Scalar_Type (Typ) or else Is_String_Type (Typ))
+                    and then (Is_Scalar_Type (Typ)
+                               or else Is_String_Type (Typ))
                   then
                      null;
 
@@ -161,8 +160,7 @@ package body Exp_Ch13 is
             --  integer literal (this simplifies things in Gigi).
 
             if Nkind (Exp) /= N_Integer_Literal then
-               Rewrite
-                 (Exp, Make_Integer_Literal (Loc, Expr_Value (Exp)));
+               Rewrite (Exp, Make_Integer_Literal (Loc, Expr_Value (Exp)));
             end if;
 
             --  A complex case arises if the alignment clause applies to an
@@ -176,9 +174,10 @@ package body Exp_Ch13 is
               and then not Is_Entity_Name (Renamed_Object (Ent))
             then
                declare
-                  Loc      : constant Source_Ptr := Sloc (N);
-                  Decl     : constant Node_Id    := Parent (Ent);
-                  Temp     : constant Entity_Id  := Make_Temporary (Loc, 'T');
+                  Decl : constant Node_Id    := Parent (Ent);
+                  Loc  : constant Source_Ptr := Sloc (N);
+                  Temp : constant Entity_Id  := Make_Temporary (Loc, 'T');
+
                   New_Decl : Node_Id;
 
                begin
@@ -227,7 +226,7 @@ package body Exp_Ch13 is
                begin
                   Assign :=
                     Make_Assignment_Statement (Loc,
-                      Name =>
+                      Name       =>
                         New_Occurrence_Of (Storage_Size_Variable (Ent), Loc),
                       Expression =>
                         Convert_To (RTE (RE_Size_Type), Expression (N)));
@@ -267,9 +266,9 @@ package body Exp_Ch13 is
                   Insert_Action (N,
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => V,
-                      Object_Definition  =>
+                      Object_Definition   =>
                         New_Occurrence_Of (RTE (RE_Storage_Offset), Loc),
-                      Expression =>
+                      Expression          =>
                         Convert_To (RTE (RE_Storage_Offset), Expression (N))));
 
                   Set_Storage_Size_Variable (Ent, Entity_Id (V));
@@ -280,7 +279,6 @@ package body Exp_Ch13 is
 
          when others =>
             null;
-
       end case;
    end Expand_N_Attribute_Definition_Clause;
 
@@ -345,10 +343,8 @@ package body Exp_Ch13 is
             Insert_Action (N,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Temp_Id,
-                Object_Definition =>
-                  New_Occurrence_Of (Expr_Typ, Loc),
-                Expression =>
-                  Relocate_Node (Expr)));
+                Object_Definition   => New_Occurrence_Of (Expr_Typ, Loc),
+                Expression          => Relocate_Node (Expr)));
 
             New_Expr := New_Occurrence_Of (Temp_Id, Loc);
             Set_Etype (New_Expr, Expr_Typ);
@@ -371,8 +367,6 @@ package body Exp_Ch13 is
    procedure Expand_N_Freeze_Entity (N : Node_Id) is
       E : constant Entity_Id := Entity (N);
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
-
       Decl           : Node_Id;
       Delete         : Boolean := False;
       E_Scope        : Entity_Id;
@@ -380,10 +374,6 @@ package body Exp_Ch13 is
       In_Outer_Scope : Boolean;
 
    begin
-      --  Ensure that all freezing activities are properly flagged as Ghost
-
-      Set_Ghost_Mode_From_Entity (E);
-
       --  If there are delayed aspect specifications, we insert them just
       --  before the freeze node. They are already analyzed so we don't need
       --  to reanalyze them (they were analyzed before the type was frozen),
@@ -451,14 +441,12 @@ package body Exp_Ch13 is
          --  statement, insert them back into the tree now.
 
          Explode_Initialization_Compound_Statement (E);
-         Ghost_Mode := Save_Ghost_Mode;
          return;
 
       --  Only other items requiring any front end action are types and
       --  subprograms.
 
       elsif not Is_Type (E) and then not Is_Subprogram (E) then
-         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -470,7 +458,6 @@ package body Exp_Ch13 is
 
       if No (E_Scope) then
          Check_Error_Detected;
-         Ghost_Mode := Save_Ghost_Mode;
          return;
       end if;
 
@@ -688,7 +675,6 @@ package body Exp_Ch13 is
       --  whether we are inside a (possibly nested) call to this procedure.
 
       Inside_Freezing_Actions := Inside_Freezing_Actions - 1;
-      Ghost_Mode := Save_Ghost_Mode;
    end Expand_N_Freeze_Entity;
 
    -------------------------------------------

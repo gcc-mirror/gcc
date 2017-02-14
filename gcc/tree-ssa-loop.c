@@ -1,5 +1,5 @@
 /* Loop optimizations over tree-ssa.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple.h"
 #include "tree-pass.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "fold-const.h"
 #include "gimple-iterator.h"
@@ -35,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
-#include "omp-low.h"
+#include "omp-general.h"
 #include "diagnostic-core.h"
 
 
@@ -151,7 +152,7 @@ gate_oacc_kernels (function *fn)
   if (!flag_openacc)
     return false;
 
-  tree oacc_function_attr = get_oacc_fn_attrib (fn->decl);
+  tree oacc_function_attr = oacc_get_fn_attrib (fn->decl);
   if (oacc_function_attr == NULL_TREE)
     return false;
   if (!oacc_fn_attrib_kernels_p (oacc_function_attr))

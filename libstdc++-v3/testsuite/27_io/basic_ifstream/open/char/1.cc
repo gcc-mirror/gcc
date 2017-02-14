@@ -1,4 +1,4 @@
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,6 @@ const char name_01[] = "ifstream_members-1.tst";
 // http://gcc.gnu.org/ml/libstdc++/2000-06/msg00136.html
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::ifstream ifs1;
   ifs1.close();
   

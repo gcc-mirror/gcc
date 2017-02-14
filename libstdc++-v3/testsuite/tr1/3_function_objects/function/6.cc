@@ -1,6 +1,6 @@
 // 2005-01-15 Douglas Gregor <dgregor@cs.indiana.edu>
 //
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,8 +23,6 @@
 #include <testsuite_tr1.h>
 
 using namespace __gnu_test;
-
-bool test __attribute__((unused)) = true;
 
 struct secret {};
 

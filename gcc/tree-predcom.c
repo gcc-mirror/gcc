@@ -1,5 +1,5 @@
 /* Predictive commoning.
-   Copyright (C) 2005-2016 Free Software Foundation, Inc.
+   Copyright (C) 2005-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -213,6 +213,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "params.h"
 #include "tree-affine.h"
+#include "builtins.h"
 
 /* The maximum number of iterations between the considered memory
    references.  */
@@ -1364,11 +1365,16 @@ replace_ref_with (gimple *stmt, tree new_tree, bool set, bool in_lhs)
 /* Returns a memory reference to DR in the ITER-th iteration of
    the loop it was analyzed in.  Append init stmts to STMTS.  */
 
-static tree 
+static tree
 ref_at_iteration (data_reference_p dr, int iter, gimple_seq *stmts)
 {
   tree off = DR_OFFSET (dr);
   tree coff = DR_INIT (dr);
+  tree ref = DR_REF (dr);
+  enum tree_code ref_code = ERROR_MARK;
+  tree ref_type = NULL_TREE;
+  tree ref_op1 = NULL_TREE;
+  tree ref_op2 = NULL_TREE;
   if (iter == 0)
     ;
   else if (TREE_CODE (DR_STEP (dr)) == INTEGER_CST)
@@ -1377,27 +1383,50 @@ ref_at_iteration (data_reference_p dr, int iter, gimple_seq *stmts)
   else
     off = size_binop (PLUS_EXPR, off,
 		      size_binop (MULT_EXPR, DR_STEP (dr), ssize_int (iter)));
+  /* While data-ref analysis punts on bit offsets it still handles
+     bitfield accesses at byte boundaries.  Cope with that.  Note that
+     if the bitfield object also starts at a byte-boundary we can simply
+     replicate the COMPONENT_REF, but we have to subtract the component's
+     byte-offset from the MEM_REF address first.
+     Otherwise we simply build a BIT_FIELD_REF knowing that the bits
+     start at offset zero.  */
+  if (TREE_CODE (ref) == COMPONENT_REF
+      && DECL_BIT_FIELD (TREE_OPERAND (ref, 1)))
+    {
+      unsigned HOST_WIDE_INT boff;
+      tree field = TREE_OPERAND (ref, 1);
+      tree offset = component_ref_field_offset (ref);
+      ref_type = TREE_TYPE (ref);
+      boff = tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field));
+      /* This can occur in Ada.  See the comment in get_bit_range.  */
+      if (boff % BITS_PER_UNIT != 0
+	  || !tree_fits_uhwi_p (offset))
+	{
+	  ref_code = BIT_FIELD_REF;
+	  ref_op1 = DECL_SIZE (field);
+	  ref_op2 = bitsize_zero_node;
+	}
+      else
+	{
+	  boff >>= LOG2_BITS_PER_UNIT;
+	  boff += tree_to_uhwi (offset);
+	  coff = size_binop (MINUS_EXPR, coff, ssize_int (boff));
+	  ref_code = COMPONENT_REF;
+	  ref_op1 = field;
+	  ref_op2 = TREE_OPERAND (ref, 2);
+	  ref = TREE_OPERAND (ref, 0);
+	}
+    }
   tree addr = fold_build_pointer_plus (DR_BASE_ADDRESS (dr), off);
   addr = force_gimple_operand_1 (unshare_expr (addr), stmts,
 				 is_gimple_mem_ref_addr, NULL_TREE);
-  tree alias_ptr = fold_convert (reference_alias_ptr_type (DR_REF (dr)), coff);
-  /* While data-ref analysis punts on bit offsets it still handles
-     bitfield accesses at byte boundaries.  Cope with that.  Note that
-     we cannot simply re-apply the outer COMPONENT_REF because the
-     byte-granular portion of it is already applied via DR_INIT and
-     DR_OFFSET, so simply build a BIT_FIELD_REF knowing that the bits
-     start at offset zero.  */
-  if (TREE_CODE (DR_REF (dr)) == COMPONENT_REF
-      && DECL_BIT_FIELD (TREE_OPERAND (DR_REF (dr), 1)))
-    {
-      tree field = TREE_OPERAND (DR_REF (dr), 1);
-      return build3 (BIT_FIELD_REF, TREE_TYPE (DR_REF (dr)),
-		     build2 (MEM_REF, DECL_BIT_FIELD_TYPE (field),
-			     addr, alias_ptr),
-		     DECL_SIZE (field), bitsize_zero_node);
-    }
-  else
-    return fold_build2 (MEM_REF, TREE_TYPE (DR_REF (dr)), addr, alias_ptr);
+  tree alias_ptr = fold_convert (reference_alias_ptr_type (ref), coff);
+  tree type = build_aligned_type (TREE_TYPE (ref),
+				  get_object_alignment (ref));
+  ref = build2 (MEM_REF, type, addr, alias_ptr);
+  if (ref_type)
+    ref = build3 (ref_code, ref_type, ref, ref_op1, ref_op2);
+  return ref;
 }
 
 /* Get the initialization expression for the INDEX-th temporary variable
@@ -2135,10 +2164,11 @@ remove_name_from_operation (gimple *stmt, tree op)
 }
 
 /* Reassociates the expression in that NAME1 and NAME2 are used so that they
-   are combined in a single statement, and returns this statement.  */
+   are combined in a single statement, and returns this statement.  Note the
+   statement is inserted before INSERT_BEFORE if it's not NULL.  */
 
 static gimple *
-reassociate_to_the_same_stmt (tree name1, tree name2)
+reassociate_to_the_same_stmt (tree name1, tree name2, gimple *insert_before)
 {
   gimple *stmt1, *stmt2, *root1, *root2, *s1, *s2;
   gassign *new_stmt, *tmp_stmt;
@@ -2195,6 +2225,12 @@ reassociate_to_the_same_stmt (tree name1, tree name2)
   var = create_tmp_reg (type, "predreastmp");
   new_name = make_ssa_name (var);
   new_stmt = gimple_build_assign (new_name, code, name1, name2);
+  if (insert_before && stmt_dominates_stmt_p (insert_before, s1))
+    bsi = gsi_for_stmt (insert_before);
+  else
+    bsi = gsi_for_stmt (s1);
+
+  gsi_insert_before (&bsi, new_stmt, GSI_SAME_STMT);
 
   var = create_tmp_reg (type, "predreastmp");
   tmp_name = make_ssa_name (var);
@@ -2211,7 +2247,6 @@ reassociate_to_the_same_stmt (tree name1, tree name2)
   s1 = gsi_stmt (bsi);
   update_stmt (s1);
 
-  gsi_insert_before (&bsi, new_stmt, GSI_SAME_STMT);
   gsi_insert_before (&bsi, tmp_stmt, GSI_SAME_STMT);
 
   return new_stmt;
@@ -2220,10 +2255,11 @@ reassociate_to_the_same_stmt (tree name1, tree name2)
 /* Returns the statement that combines references R1 and R2.  In case R1
    and R2 are not used in the same statement, but they are used with an
    associative and commutative operation in the same expression, reassociate
-   the expression so that they are used in the same statement.  */
+   the expression so that they are used in the same statement.  The combined
+   statement is inserted before INSERT_BEFORE if it's not NULL.  */
 
 static gimple *
-stmt_combining_refs (dref r1, dref r2)
+stmt_combining_refs (dref r1, dref r2, gimple *insert_before)
 {
   gimple *stmt1, *stmt2;
   tree name1 = name_for_ref (r1);
@@ -2234,7 +2270,7 @@ stmt_combining_refs (dref r1, dref r2)
   if (stmt1 == stmt2)
     return stmt1;
 
-  return reassociate_to_the_same_stmt (name1, name2);
+  return reassociate_to_the_same_stmt (name1, name2, insert_before);
 }
 
 /* Tries to combine chains CH1 and CH2 together.  If this succeeds, the
@@ -2280,14 +2316,42 @@ combine_chains (chain_p ch1, chain_p ch2)
   new_chain->rslt_type = rslt_type;
   new_chain->length = ch1->length;
 
-  for (i = 0; (ch1->refs.iterate (i, &r1)
-	       && ch2->refs.iterate (i, &r2)); i++)
+  gimple *insert = NULL;
+  auto_vec<dref> tmp_refs;
+  gcc_assert (ch1->refs.length () == ch2->refs.length ());
+  /* Process in reverse order so dominance point is ready when it comes
+     to the root ref.  */
+  for (i = ch1->refs.length (); i > 0; i--)
     {
+      r1 = ch1->refs[i - 1];
+      r2 = ch2->refs[i - 1];
       nw = XCNEW (struct dref_d);
-      nw->stmt = stmt_combining_refs (r1, r2);
       nw->distance = r1->distance;
+      nw->stmt = stmt_combining_refs (r1, r2, i == 1 ? insert : NULL);
 
-      new_chain->refs.safe_push (nw);
+      /* Record dominance point where root combined stmt should be inserted
+	 for chains with 0 length.  Though all root refs dominate following
+	 refs, it's possible the combined stmt doesn't.  See PR70754.  */
+      if (ch1->length == 0
+	  && (insert == NULL || stmt_dominates_stmt_p (nw->stmt, insert)))
+	insert = nw->stmt;
+
+      tmp_refs.safe_push (nw);
+    }
+
+  /* Restore the order for new chain's refs.  */
+  for (i = tmp_refs.length (); i > 0; i--)
+    new_chain->refs.safe_push (tmp_refs[i - 1]);
+
+  ch1->combined = true;
+  ch2->combined = true;
+
+  /* For chains with 0 length, has_max_use_after must be true since root
+     combined stmt must dominates others.  */
+  if (new_chain->length == 0)
+    {
+      new_chain->has_max_use_after = true;
+      return new_chain;
     }
 
   new_chain->has_max_use_after = false;
@@ -2302,8 +2366,6 @@ combine_chains (chain_p ch1, chain_p ch2)
 	}
     }
 
-  ch1->combined = true;
-  ch2->combined = true;
   return new_chain;
 }
 
@@ -2435,6 +2497,15 @@ tree_predictive_commoning_loop (struct loop *loop)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Processing loop %d\n",  loop->num);
+
+  /* Nothing for predicitive commoning if loop only iterates 1 time.  */
+  if (get_max_loop_iterations_int (loop) == 0)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Loop iterates only 1 time, nothing to do.\n");
+
+      return false;
+    }
 
   /* Find the data references and split them into components according to their
      dependence relations.  */

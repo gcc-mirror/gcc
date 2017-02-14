@@ -90,9 +90,9 @@ void vqabs_extra()
   TEST_UNARY_SAT_OP(INSN_NAME, q, int, s, 32, 4, expected_cumulative_sat_min_neg, MSG);
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_min_neg, MSG);
-  CHECK(TEST_MSG, int, 16, 4, PRIx8, expected_min_neg, MSG);
-  CHECK(TEST_MSG, int, 32, 2, PRIx8, expected_min_neg, MSG);
+  CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_min_neg, MSG);
+  CHECK(TEST_MSG, int, 32, 2, PRIx32, expected_min_neg, MSG);
   CHECK(TEST_MSG, int, 8, 16, PRIx8, expected_min_neg, MSG);
-  CHECK(TEST_MSG, int, 16, 8, PRIx8, expected_min_neg, MSG);
-  CHECK(TEST_MSG, int, 32, 4, PRIx8, expected_min_neg, MSG);
+  CHECK(TEST_MSG, int, 16, 8, PRIx16, expected_min_neg, MSG);
+  CHECK(TEST_MSG, int, 32, 4, PRIx32, expected_min_neg, MSG);
 }

@@ -1,6 +1,6 @@
 // 1999-06-04 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,8 +25,6 @@
 // http://gcc.gnu.org/ml/libstdc++/2002-06/msg00025.html
 void test04()
 {
-  bool test __attribute__((unused)) = true;
-
   std::string str01("portofino");
 
   std::string::reverse_iterator i1 = str01.rbegin();

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,6 @@
 
 with Alloc;
 with Table;
-with Hostparm; use Hostparm;
 with System;   use System;
 with Types;    use Types;
 
@@ -149,9 +148,9 @@ package Namet is
 --  and the Boolean field is initialized to False, when a new Name table entry
 --  is created.
 
-   type Bounded_String (Max_Length : Natural := 4 * Max_Line_Length) is limited
-   --  The default here is intended to be an infinite value that ensures that
-   --  we never overflow the buffer (names this long are too absurd to worry).
+   type Bounded_String (Max_Length : Natural := 2**12) is limited
+   --  It's unlikely to have names longer than this. But we don't want to make
+   --  it too big, because we declare these on the stack in recursive routines.
    record
       Length : Natural := 0;
       Chars  : String (1 .. Max_Length);
@@ -310,6 +309,21 @@ package Namet is
       V9  : Name_Id;
       V10 : Name_Id;
       V11 : Name_Id) return Boolean;
+
+   function Nam_In
+     (T   : Name_Id;
+      V1  : Name_Id;
+      V2  : Name_Id;
+      V3  : Name_Id;
+      V4  : Name_Id;
+      V5  : Name_Id;
+      V6  : Name_Id;
+      V7  : Name_Id;
+      V8  : Name_Id;
+      V9  : Name_Id;
+      V10 : Name_Id;
+      V11 : Name_Id;
+      V12 : Name_Id) return Boolean;
 
    pragma Inline (Nam_In);
    --  Inline all above functions

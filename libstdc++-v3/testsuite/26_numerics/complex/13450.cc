@@ -1,6 +1,6 @@
 // { dg-do run { xfail broken_cplxf_arg } }
 
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,6 @@ template<typename T>
   void test01_do(T a, T b)
   {
     using namespace std;
-    bool test __attribute__((unused)) = true;
     typedef complex<T> cplx;
 
     T eps = numeric_limits<T>::epsilon() * 100;

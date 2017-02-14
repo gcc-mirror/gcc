@@ -4,7 +4,10 @@
 typedef int IntArray[10];
 IntArray i;
 
-void test_array() throw (IntArray)
+void test_array()
+#if __cplusplus <= 201402L
+throw (IntArray)	// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+#endif
 {
   throw i;
 }

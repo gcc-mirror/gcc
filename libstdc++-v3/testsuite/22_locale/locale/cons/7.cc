@@ -2,7 +2,7 @@
 
 // 2001-01-19 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,6 @@ void
 test02()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   const string name_c("C");
   const string name_no("*");
   string str;

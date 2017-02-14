@@ -4,6 +4,8 @@
 
 // Package path implements utility routines for manipulating slash-separated
 // paths.
+//
+// To manipulate operating system paths, use the path/filepath package.
 package path
 
 import (
@@ -48,7 +50,7 @@ func (b *lazybuf) string() string {
 }
 
 // Clean returns the shortest path name equivalent to path
-// by purely lexical processing.  It applies the following rules
+// by purely lexical processing. It applies the following rules
 // iteratively until no further processing can be done:
 //
 //	1. Replace multiple slashes with a single slash.
@@ -65,7 +67,7 @@ func (b *lazybuf) string() string {
 //
 // See also Rob Pike, ``Lexical File Names in Plan 9 or
 // Getting Dot-Dot Right,''
-// http://plan9.bell-labs.com/sys/doc/lexnames.html
+// https://9p.io/sys/doc/lexnames.html
 func Clean(path string) string {
 	if path == "" {
 		return "."

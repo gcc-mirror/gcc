@@ -10,6 +10,7 @@ import (
 	"flag"
 	"fmt"
 	"internal/testenv"
+	"io"
 	"io/ioutil"
 	"net"
 	"os"
@@ -124,15 +125,6 @@ func TestFcntlFlock(t *testing.T) {
 // "-test.run=^TestPassFD$" and an environment variable used to signal
 // that the test should become the child process instead.
 func TestPassFD(t *testing.T) {
-	switch runtime.GOOS {
-	case "dragonfly":
-		// TODO(jsing): Figure out why sendmsg is returning EINVAL.
-		t.Skip("skipping test on dragonfly")
-	case "solaris":
-		// TODO(aram): Figure out why ReadMsgUnix is returning empty message.
-		t.Skip("skipping test on solaris, see issue 7402")
-	}
-
 	testenv.MustHaveExec(t)
 
 	if os.Getenv("GO_WANT_HELPER_PROCESS") == "1" {
@@ -244,7 +236,7 @@ func passFDChild() {
 	}
 
 	f.Write([]byte("Hello from child process!\n"))
-	f.Seek(0, 0)
+	f.Seek(0, io.SeekStart)
 
 	rights := syscall.UnixRights(int(f.Fd()))
 	dummyByte := []byte("x")
@@ -344,7 +336,7 @@ func TestRlimit(t *testing.T) {
 }
 
 func TestSeekFailure(t *testing.T) {
-	_, err := syscall.Seek(-1, 0, 0)
+	_, err := syscall.Seek(-1, 0, io.SeekStart)
 	if err == nil {
 		t.Fatalf("Seek(-1, 0, 0) did not fail")
 	}

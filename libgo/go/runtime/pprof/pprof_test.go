@@ -1,4 +1,4 @@
-// Copyright 2011 The Go Authors.  All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -8,8 +8,12 @@ package pprof_test
 
 import (
 	"bytes"
+	"compress/gzip"
 	"fmt"
+	"internal/pprof/profile"
 	"internal/testenv"
+	"io"
+	"io/ioutil"
 	"math/big"
 	"os"
 	"os/exec"
@@ -20,7 +24,6 @@ import (
 	"sync"
 	"testing"
 	"time"
-	"unsafe"
 )
 
 func cpuHogger(f func(), dur time.Duration) {
@@ -86,37 +89,18 @@ func TestCPUProfileMultithreaded(t *testing.T) {
 	})
 }
 
-func parseProfile(t *testing.T, bytes []byte, f func(uintptr, []uintptr)) {
-	// Convert []byte to []uintptr.
-	l := len(bytes) / int(unsafe.Sizeof(uintptr(0)))
-	val := *(*[]uintptr)(unsafe.Pointer(&bytes))
-	val = val[:l]
-
-	// 5 for the header, 3 for the trailer.
-	if l < 5+3 {
-		t.Logf("profile too short: %#x", val)
-		if badOS[runtime.GOOS] {
-			t.Skipf("ignoring failure on %s; see golang.org/issue/13841", runtime.GOOS)
-			return
+func parseProfile(t *testing.T, valBytes []byte, f func(uintptr, []uintptr)) {
+	p, err := profile.Parse(bytes.NewReader(valBytes))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, sample := range p.Sample {
+		count := uintptr(sample.Value[0])
+		stk := make([]uintptr, len(sample.Location))
+		for i := range sample.Location {
+			stk[i] = uintptr(sample.Location[i].Address)
 		}
-		t.FailNow()
-	}
-
-	hd, val, tl := val[:5], val[5:l-3], val[l-3:]
-	if hd[0] != 0 || hd[1] != 3 || hd[2] != 0 || hd[3] != 1e6/100 || hd[4] != 0 {
-		t.Fatalf("unexpected header %#x", hd)
-	}
-
-	if tl[0] != 0 || tl[1] != 1 || tl[2] != 0 {
-		t.Fatalf("malformed end-of-data marker %#x", tl)
-	}
-
-	for len(val) > 0 {
-		if len(val) < 2 || val[0] < 1 || val[1] < 1 || uintptr(len(val)) < 2+val[1] {
-			t.Fatalf("malformed profile.  leftover: %#x", val)
-		}
-		f(val[0], val[2:2+val[1]])
-		val = val[2+val[1]:]
+		f(count, stk)
 	}
 }
 
@@ -221,7 +205,11 @@ func profileOk(t *testing.T, need []string, prof bytes.Buffer, duration time.Dur
 	}
 
 	// Check that we got a reasonable number of samples.
-	if ideal := uintptr(duration * 100 / time.Second); samples == 0 || samples < ideal/4 {
+	// We used to always require at least ideal/4 samples,
+	// but that is too hard to guarantee on a loaded system.
+	// Now we accept 10 or more samples, which we take to be
+	// enough to show that at least some profiling is occurring.
+	if ideal := uintptr(duration * 100 / time.Second); samples == 0 || (samples < ideal/4 && samples < 10) {
 		t.Logf("too few samples; got %d, want at least %d, ideally %d", samples, ideal/4, ideal)
 		ok = false
 	}
@@ -363,8 +351,49 @@ func TestMathBigDivide(t *testing.T) {
 	})
 }
 
+func slurpString(r io.Reader) string {
+	slurp, _ := ioutil.ReadAll(r)
+	return string(slurp)
+}
+
+func getLinuxKernelConfig() string {
+	if f, err := os.Open("/proc/config"); err == nil {
+		defer f.Close()
+		return slurpString(f)
+	}
+	if f, err := os.Open("/proc/config.gz"); err == nil {
+		defer f.Close()
+		r, err := gzip.NewReader(f)
+		if err != nil {
+			return ""
+		}
+		return slurpString(r)
+	}
+	if f, err := os.Open("/boot/config"); err == nil {
+		defer f.Close()
+		return slurpString(f)
+	}
+	uname, _ := exec.Command("uname", "-r").Output()
+	if len(uname) > 0 {
+		if f, err := os.Open("/boot/config-" + strings.TrimSpace(string(uname))); err == nil {
+			defer f.Close()
+			return slurpString(f)
+		}
+	}
+	return ""
+}
+
+func haveLinuxHiresTimers() bool {
+	config := getLinuxKernelConfig()
+	return strings.Contains(config, "CONFIG_HIGH_RES_TIMERS=y")
+}
+
 func TestStackBarrierProfiling(t *testing.T) {
-	if (runtime.GOOS == "linux" && runtime.GOARCH == "arm") || runtime.GOOS == "openbsd" || runtime.GOOS == "solaris" || runtime.GOOS == "dragonfly" || runtime.GOOS == "freebsd" {
+	if (runtime.GOOS == "linux" && runtime.GOARCH == "arm") ||
+		runtime.GOOS == "openbsd" ||
+		runtime.GOOS == "solaris" ||
+		runtime.GOOS == "dragonfly" ||
+		runtime.GOOS == "freebsd" {
 		// This test currently triggers a large number of
 		// usleep(100)s. These kernels/arches have poor
 		// resolution timers, so this gives up a whole
@@ -375,6 +404,12 @@ func TestStackBarrierProfiling(t *testing.T) {
 		// profiling signals and fails.
 		t.Skipf("low resolution timers inhibit profiling signals (golang.org/issue/13405)")
 		return
+	}
+
+	if runtime.GOOS == "linux" && strings.HasPrefix(runtime.GOARCH, "mips") {
+		if !haveLinuxHiresTimers() {
+			t.Skipf("low resolution timers inhibit profiling signals (golang.org/issue/13405, golang.org/issue/17936)")
+		}
 	}
 
 	if !strings.Contains(os.Getenv("GODEBUG"), "gcstackbarrierall=1") {
@@ -389,7 +424,7 @@ func TestStackBarrierProfiling(t *testing.T) {
 			args = append(args, "-test.short")
 		}
 		cmd := exec.Command(os.Args[0], args...)
-		cmd.Env = append([]string{"GODEBUG=gcstackbarrierall=1", "GOGC=1"}, os.Environ()...)
+		cmd.Env = append([]string{"GODEBUG=gcstackbarrierall=1", "GOGC=1", "GOTRACEBACK=system"}, os.Environ()...)
 		if out, err := cmd.CombinedOutput(); err != nil {
 			t.Fatalf("subprocess failed with %v:\n%s", err, out)
 		}
@@ -495,6 +530,10 @@ func TestBlockProfile(t *testing.T) {
 		t.Fatalf("Bad profile header:\n%v", prof)
 	}
 
+	if strings.HasSuffix(prof, "#\t0x0\n\n") {
+		t.Errorf("Useless 0 suffix:\n%v", prof)
+	}
+
 	for _, test := range tests {
 		if !regexp.MustCompile(strings.Replace(test.re, "\t", "\t+", -1)).MatchString(prof) {
 			t.Fatalf("Bad %v entry, expect:\n%v\ngot:\n%v", test.name, test.re, prof)
@@ -532,15 +571,20 @@ func blockChanClose() {
 }
 
 func blockSelectRecvAsync() {
+	const numTries = 3
 	c := make(chan bool, 1)
 	c2 := make(chan bool, 1)
 	go func() {
-		time.Sleep(blockDelay)
-		c <- true
+		for i := 0; i < numTries; i++ {
+			time.Sleep(blockDelay)
+			c <- true
+		}
 	}()
-	select {
-	case <-c:
-	case <-c2:
+	for i := 0; i < numTries; i++ {
+		select {
+		case <-c:
+		case <-c2:
+		}
 	}
 }
 
@@ -579,4 +623,136 @@ func blockCond() {
 	}()
 	c.Wait()
 	mu.Unlock()
+}
+
+func TestMutexProfile(t *testing.T) {
+	old := runtime.SetMutexProfileFraction(1)
+	defer runtime.SetMutexProfileFraction(old)
+	if old != 0 {
+		t.Fatalf("need MutexProfileRate 0, got %d", old)
+	}
+
+	blockMutex()
+
+	var w bytes.Buffer
+	Lookup("mutex").WriteTo(&w, 1)
+	prof := w.String()
+
+	if !strings.HasPrefix(prof, "--- mutex:\ncycles/second=") {
+		t.Errorf("Bad profile header:\n%v", prof)
+	}
+	prof = strings.Trim(prof, "\n")
+	lines := strings.Split(prof, "\n")
+	// gccgo adds an extra line in the stack trace, not sure why.
+	if len(lines) < 6 {
+		t.Errorf("expected 6 lines, got %d %q\n%s", len(lines), prof, prof)
+	}
+	if len(lines) < 6 {
+		return
+	}
+	// checking that the line is like "35258904 1 @ 0x48288d 0x47cd28 0x458931"
+	r2 := `^\d+ 1 @(?: 0x[[:xdigit:]]+)+`
+	//r2 := "^[0-9]+ 1 @ 0x[0-9a-f x]+$"
+	if ok, err := regexp.MatchString(r2, lines[3]); err != nil || !ok {
+		t.Errorf("%q didn't match %q", lines[3], r2)
+	}
+	r3 := "^#.*pprof_test.\\$nested.*$"
+	match := false
+	for _, i := range []int{5, 6} {
+		if ok, _ := regexp.MatchString(r3, lines[i]); ok {
+			match = true
+			break
+		}
+	}
+	if !match {
+		t.Errorf("neither %q nor %q matched %q", lines[5], lines[6], r3)
+	}
+}
+
+func func1(c chan int) { <-c }
+func func2(c chan int) { <-c }
+func func3(c chan int) { <-c }
+func func4(c chan int) { <-c }
+
+func TestGoroutineCounts(t *testing.T) {
+	if runtime.Compiler == "gccgo" {
+		t.Skip("goroutine stacks not supported on gccgo")
+	}
+	if runtime.GOOS == "openbsd" {
+		testenv.SkipFlaky(t, 15156)
+	}
+	c := make(chan int)
+	for i := 0; i < 100; i++ {
+		if i%10 == 0 {
+			go func1(c)
+			continue
+		}
+		if i%2 == 0 {
+			go func2(c)
+			continue
+		}
+		go func3(c)
+	}
+	time.Sleep(10 * time.Millisecond) // let goroutines block on channel
+
+	var w bytes.Buffer
+	goroutineProf := Lookup("goroutine")
+
+	// Check debug profile
+	goroutineProf.WriteTo(&w, 1)
+	prof := w.String()
+
+	if !containsInOrder(prof, "\n50 @ ", "\n40 @", "\n10 @", "\n1 @") {
+		t.Errorf("expected sorted goroutine counts:\n%s", prof)
+	}
+
+	// Check proto profile
+	w.Reset()
+	goroutineProf.WriteTo(&w, 0)
+	p, err := profile.Parse(&w)
+	if err != nil {
+		t.Errorf("error parsing protobuf profile: %v", err)
+	}
+	if err := p.CheckValid(); err != nil {
+		t.Errorf("protobuf profile is invalid: %v", err)
+	}
+	if !containsCounts(p, []int64{50, 40, 10, 1}) {
+		t.Errorf("expected count profile to contain goroutines with counts %v, got %v",
+			[]int64{50, 40, 10, 1}, p)
+	}
+
+	close(c)
+
+	time.Sleep(10 * time.Millisecond) // let goroutines exit
+}
+
+func containsInOrder(s string, all ...string) bool {
+	for _, t := range all {
+		i := strings.Index(s, t)
+		if i < 0 {
+			return false
+		}
+		s = s[i+len(t):]
+	}
+	return true
+}
+
+func containsCounts(prof *profile.Profile, counts []int64) bool {
+	m := make(map[int64]int)
+	for _, c := range counts {
+		m[c]++
+	}
+	for _, s := range prof.Sample {
+		// The count is the single value in the sample
+		if len(s.Value) != 1 {
+			return false
+		}
+		m[s.Value[0]]--
+	}
+	for _, n := range m {
+		if n > 0 {
+			return false
+		}
+	}
+	return true
 }

@@ -15,14 +15,23 @@ import (
 	"text/template/parse"
 )
 
+// maxExecDepth specifies the maximum stack depth of templates within
+// templates. This limit is only practically reached by accidentally
+// recursive template invocations. This limit allows us to return
+// an error instead of triggering a stack overflow.
+// For gccgo we make this 1000 rather than 100000 to avoid stack overflow
+// on non-split-stack systems.
+const maxExecDepth = 1000
+
 // state represents the state of an execution. It's not part of the
 // template so that multiple executions of the same template
 // can execute in parallel.
 type state struct {
-	tmpl *Template
-	wr   io.Writer
-	node parse.Node // current node, for errors
-	vars []variable // push-down stack of variable values.
+	tmpl  *Template
+	wr    io.Writer
+	node  parse.Node // current node, for errors
+	vars  []variable // push-down stack of variable values.
+	depth int        // the height of the stack of executing templates.
 }
 
 // variable holds the dynamic value of a variable such as $, $x etc.
@@ -164,16 +173,26 @@ func (t *Template) ExecuteTemplate(wr io.Writer, name string, data interface{}) 
 // execution stops, but partial results may already have been written to
 // the output writer.
 // A template may be executed safely in parallel.
-func (t *Template) Execute(wr io.Writer, data interface{}) (err error) {
+//
+// If data is a reflect.Value, the template applies to the concrete
+// value that the reflect.Value holds, as in fmt.Print.
+func (t *Template) Execute(wr io.Writer, data interface{}) error {
+	return t.execute(wr, data)
+}
+
+func (t *Template) execute(wr io.Writer, data interface{}) (err error) {
 	defer errRecover(&err)
-	value := reflect.ValueOf(data)
+	value, ok := data.(reflect.Value)
+	if !ok {
+		value = reflect.ValueOf(data)
+	}
 	state := &state{
 		tmpl: t,
 		wr:   wr,
 		vars: []variable{{"$", value}},
 	}
 	if t.Tree == nil || t.Root == nil {
-		state.errorf("%q is an incomplete or empty template%s", t.Name(), t.DefinedTemplates())
+		state.errorf("%q is an incomplete or empty template", t.Name())
 	}
 	state.walk(value, t.Root)
 	return
@@ -359,9 +378,13 @@ func (s *state) walkTemplate(dot reflect.Value, t *parse.TemplateNode) {
 	if tmpl == nil {
 		s.errorf("template %q not defined", t.Name)
 	}
+	if s.depth == maxExecDepth {
+		s.errorf("exceeded maximum template depth (%v)", maxExecDepth)
+	}
 	// Variables declared by the pipeline persist.
 	dot = s.evalPipeline(dot, t.Pipe)
 	newState := *s
+	newState.depth++
 	newState.tmpl = tmpl
 	// No dynamic scoping: template invocations inherit no variables.
 	newState.vars = []variable{{"$", dot}}
@@ -436,7 +459,7 @@ func (s *state) evalCommand(dot reflect.Value, cmd *parse.CommandNode, final ref
 
 // idealConstant is called to return the value of a number in a context where
 // we don't know the type. In that case, the syntax of the number tells us
-// its type, and we use Go rules to resolve.  Note there is no such thing as
+// its type, and we use Go rules to resolve. Note there is no such thing as
 // a uint ideal constant in this situation - the value must be of int type.
 func (s *state) idealConstant(constant *parse.NumberNode) reflect.Value {
 	// These are ideal constants but we don't know the type
@@ -446,7 +469,7 @@ func (s *state) idealConstant(constant *parse.NumberNode) reflect.Value {
 	switch {
 	case constant.IsComplex:
 		return reflect.ValueOf(constant.Complex128) // incontrovertible.
-	case constant.IsFloat && !isHexConstant(constant.Text) && strings.IndexAny(constant.Text, ".eE") >= 0:
+	case constant.IsFloat && !isHexConstant(constant.Text) && strings.ContainsAny(constant.Text, ".eE"):
 		return reflect.ValueOf(constant.Float64)
 	case constant.IsInt:
 		n := int(constant.Int64)
@@ -520,6 +543,9 @@ func (s *state) evalFunction(dot reflect.Value, node *parse.IdentifierNode, cmd 
 // value of the pipeline, if any.
 func (s *state) evalField(dot reflect.Value, fieldName string, node parse.Node, args []parse.Node, final, receiver reflect.Value) reflect.Value {
 	if !receiver.IsValid() {
+		if s.tmpl.option.missingKey == mapError { // Treat invalid value as missing map key.
+			s.errorf("nil data; no entry for key %q", fieldName)
+		}
 		return zero
 	}
 	typ := receiver.Type()
@@ -534,14 +560,14 @@ func (s *state) evalField(dot reflect.Value, fieldName string, node parse.Node, 
 		return s.evalCall(dot, method, node, fieldName, args, final)
 	}
 	hasArgs := len(args) > 1 || final.IsValid()
-	// It's not a method; must be a field of a struct or an element of a map. The receiver must not be nil.
-	if isNil {
-		s.errorf("nil pointer evaluating %s.%s", typ, fieldName)
-	}
+	// It's not a method; must be a field of a struct or an element of a map.
 	switch receiver.Kind() {
 	case reflect.Struct:
 		tField, ok := receiver.Type().FieldByName(fieldName)
 		if ok {
+			if isNil {
+				s.errorf("nil pointer evaluating %s.%s", typ, fieldName)
+			}
 			field := receiver.FieldByIndex(tField.Index)
 			if tField.PkgPath != "" { // field is unexported
 				s.errorf("%s is an unexported field of struct type %s", fieldName, typ)
@@ -552,8 +578,10 @@ func (s *state) evalField(dot reflect.Value, fieldName string, node parse.Node, 
 			}
 			return field
 		}
-		s.errorf("%s is not a field of struct type %s", fieldName, typ)
 	case reflect.Map:
+		if isNil {
+			s.errorf("nil pointer evaluating %s.%s", typ, fieldName)
+		}
 		// If it's a map, attempt to use the field name as a key.
 		nameVal := reflect.ValueOf(fieldName)
 		if nameVal.Type().AssignableTo(receiver.Type().Key()) {
@@ -579,12 +607,13 @@ func (s *state) evalField(dot reflect.Value, fieldName string, node parse.Node, 
 }
 
 var (
-	errorType       = reflect.TypeOf((*error)(nil)).Elem()
-	fmtStringerType = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
+	errorType        = reflect.TypeOf((*error)(nil)).Elem()
+	fmtStringerType  = reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
+	reflectValueType = reflect.TypeOf((*reflect.Value)(nil)).Elem()
 )
 
 // evalCall executes a function or method call. If it's a method, fun already has the receiver bound, so
-// it looks just like a function call.  The arg list, if non-nil, includes (in the manner of the shell), arg[0]
+// it looks just like a function call. The arg list, if non-nil, includes (in the manner of the shell), arg[0]
 // as the function itself.
 func (s *state) evalCall(dot, fun reflect.Value, node parse.Node, name string, args []parse.Node, final reflect.Value) reflect.Value {
 	if args != nil {
@@ -644,7 +673,11 @@ func (s *state) evalCall(dot, fun reflect.Value, node parse.Node, name string, a
 		s.at(node)
 		s.errorf("error calling %s: %s", name, result[1].Interface().(error))
 	}
-	return result[0]
+	v := result[0]
+	if v.Type() == reflectValueType {
+		v = v.Interface().(reflect.Value)
+	}
+	return v
 }
 
 // canBeNil reports whether an untyped nil can be assigned to the type. See reflect.Zero.
@@ -652,6 +685,8 @@ func canBeNil(typ reflect.Type) bool {
 	switch typ.Kind() {
 	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
 		return true
+	case reflect.Struct:
+		return typ == reflectValueType
 	}
 	return false
 }
@@ -664,6 +699,9 @@ func (s *state) validateType(value reflect.Value, typ reflect.Type) reflect.Valu
 			return reflect.Zero(typ)
 		}
 		s.errorf("invalid value; expected %s", typ)
+	}
+	if typ == reflectValueType && value.Type() != typ {
+		return reflect.ValueOf(value)
 	}
 	if typ != nil && !value.Type().AssignableTo(typ) {
 		if value.Kind() == reflect.Interface && !value.IsNil() {
@@ -725,6 +763,10 @@ func (s *state) evalArg(dot reflect.Value, typ reflect.Type, n parse.Node) refle
 	case reflect.Interface:
 		if typ.NumMethod() == 0 {
 			return s.evalEmptyInterface(dot, n)
+		}
+	case reflect.Struct:
+		if typ == reflectValueType {
+			return reflect.ValueOf(s.evalEmptyInterface(dot, n))
 		}
 	case reflect.String:
 		return s.evalString(typ, n)
@@ -835,6 +877,20 @@ func indirect(v reflect.Value) (rv reflect.Value, isNil bool) {
 		}
 	}
 	return v, false
+}
+
+// indirectInterface returns the concrete value in an interface value,
+// or else the zero reflect.Value.
+// That is, if v represents the interface value x, the result is the same as reflect.ValueOf(x):
+// the fact that x was an interface value is forgotten.
+func indirectInterface(v reflect.Value) reflect.Value {
+	if v.Kind() != reflect.Interface {
+		return v
+	}
+	if v.IsNil() {
+		return reflect.Value{}
+	}
+	return v.Elem()
 }
 
 // printValue writes the textual representation of the value to the output of

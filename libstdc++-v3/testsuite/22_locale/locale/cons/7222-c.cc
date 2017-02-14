@@ -1,6 +1,6 @@
 // 2000-09-13 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,8 +27,6 @@
 // libstdc++/7222
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::locale loc_c1("C");
   std::locale loc_c2("C");
   VERIFY( loc_c1 == loc_c2 );

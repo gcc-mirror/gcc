@@ -10,6 +10,7 @@ package exec_test
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"internal/testenv"
 	"io"
@@ -28,18 +29,26 @@ import (
 	"time"
 )
 
-func helperCommand(t *testing.T, s ...string) *exec.Cmd {
+func helperCommandContext(t *testing.T, ctx context.Context, s ...string) (cmd *exec.Cmd) {
 	testenv.MustHaveExec(t)
 
 	cs := []string{"-test.run=TestHelperProcess", "--"}
 	cs = append(cs, s...)
-	cmd := exec.Command(os.Args[0], cs...)
+	if ctx != nil {
+		cmd = exec.CommandContext(ctx, os.Args[0], cs...)
+	} else {
+		cmd = exec.Command(os.Args[0], cs...)
+	}
 	cmd.Env = []string{"GO_WANT_HELPER_PROCESS=1"}
 	path := os.Getenv("LD_LIBRARY_PATH")
 	if path != "" {
 		cmd.Env = append(cmd.Env, "LD_LIBRARY_PATH="+path)
 	}
 	return cmd
+}
+
+func helperCommand(t *testing.T, s ...string) *exec.Cmd {
+	return helperCommandContext(t, nil, s...)
 }
 
 func TestEcho(t *testing.T) {
@@ -94,6 +103,26 @@ func TestCatStdin(t *testing.T) {
 	if s != input {
 		t.Errorf("cat: want %q, got %q", input, s)
 	}
+}
+
+func TestEchoFileRace(t *testing.T) {
+	cmd := helperCommand(t, "echo")
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		t.Fatalf("StdinPipe: %v", err)
+	}
+	if err := cmd.Start(); err != nil {
+		t.Fatalf("Start: %v", err)
+	}
+	wrote := make(chan bool)
+	go func() {
+		defer close(wrote)
+		fmt.Fprint(stdin, "echo\n")
+	}()
+	if err := cmd.Wait(); err != nil {
+		t.Fatalf("Wait: %v", err)
+	}
+	<-wrote
 }
 
 func TestCatGoodAndBadFile(t *testing.T) {
@@ -221,6 +250,42 @@ func TestStdinClose(t *testing.T) {
 	check("Wait", cmd.Wait())
 }
 
+// Issue 17647.
+// It used to be the case that TestStdinClose, above, would fail when
+// run under the race detector. This test is a variant of TestStdinClose
+// that also used to fail when run under the race detector.
+// This test is run by cmd/dist under the race detector to verify that
+// the race detector no longer reports any problems.
+func TestStdinCloseRace(t *testing.T) {
+	cmd := helperCommand(t, "stdinClose")
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		t.Fatalf("StdinPipe: %v", err)
+	}
+	if err := cmd.Start(); err != nil {
+		t.Fatalf("Start: %v", err)
+	}
+	go func() {
+		if err := cmd.Process.Kill(); err != nil {
+			t.Errorf("Kill: %v", err)
+		}
+	}()
+	go func() {
+		// Send the wrong string, so that the child fails even
+		// if the other goroutine doesn't manage to kill it first.
+		// This test is to check that the race detector does not
+		// falsely report an error, so it doesn't matter how the
+		// child process fails.
+		io.Copy(stdin, strings.NewReader("unexpected string"))
+		if err := stdin.Close(); err != nil {
+			t.Errorf("stdin.Close: %v", err)
+		}
+	}()
+	if err := cmd.Wait(); err == nil {
+		t.Fatalf("Wait: succeeded unexpectedly")
+	}
+}
+
 // Issue 5071
 func TestPipeLookPathLeak(t *testing.T) {
 	fd0, lsof0 := numOpenFDS(t)
@@ -345,7 +410,7 @@ func TestExtraFilesFDShuffle(t *testing.T) {
 	//
 	// We want to test that FDs in the child do not get overwritten
 	// by one another as this shuffle occurs. The original implementation
-	// was buggy in that in some data dependent cases it would ovewrite
+	// was buggy in that in some data dependent cases it would overwrite
 	// stderr in the child with one of the ExtraFile members.
 	// Testing for this case is difficult because it relies on using
 	// the same FD values as that case. In particular, an FD of 3
@@ -407,7 +472,7 @@ func TestExtraFilesFDShuffle(t *testing.T) {
 		buf := make([]byte, 512)
 		n, err := stderr.Read(buf)
 		if err != nil {
-			t.Fatalf("Read: %s", err)
+			t.Errorf("Read: %s", err)
 			ch <- err.Error()
 		} else {
 			ch <- string(buf[:n])
@@ -483,7 +548,7 @@ func TestExtraFiles(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Write: %v", err)
 	}
-	_, err = tf.Seek(0, os.SEEK_SET)
+	_, err = tf.Seek(0, io.SeekStart)
 	if err != nil {
 		t.Fatalf("Seek: %v", err)
 	}
@@ -663,10 +728,6 @@ func TestHelperProcess(*testing.T) {
 			// the cloned file descriptors that result from opening
 			// /dev/urandom.
 			// https://golang.org/issue/3955
-		case "plan9":
-			// TODO(0intro): Determine why Plan 9 is leaking
-			// file descriptors.
-			// https://golang.org/issue/7118
 		case "solaris":
 			// TODO(aram): This fails on Solaris because libc opens
 			// its own files, as it sees fit. Darwin does the same,
@@ -701,7 +762,7 @@ func TestHelperProcess(*testing.T) {
 		}
 		// Referring to fd3 here ensures that it is not
 		// garbage collected, and therefore closed, while
-		// executing the wantfd loop above.  It doesn't matter
+		// executing the wantfd loop above. It doesn't matter
 		// what we do with fd3 as long as we refer to it;
 		// closing it is the easy choice.
 		fd3.Close()
@@ -837,5 +898,113 @@ func TestOutputStderrCapture(t *testing.T) {
 	want := "some stderr text\n"
 	if got != want {
 		t.Errorf("ExitError.Stderr = %q; want %q", got, want)
+	}
+}
+
+func TestContext(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	c := helperCommandContext(t, ctx, "pipetest")
+	stdin, err := c.StdinPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	stdout, err := c.StdoutPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := c.Start(); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := stdin.Write([]byte("O:hi\n")); err != nil {
+		t.Fatal(err)
+	}
+	buf := make([]byte, 5)
+	n, err := io.ReadFull(stdout, buf)
+	if n != len(buf) || err != nil || string(buf) != "O:hi\n" {
+		t.Fatalf("ReadFull = %d, %v, %q", n, err, buf[:n])
+	}
+	waitErr := make(chan error, 1)
+	go func() {
+		waitErr <- c.Wait()
+	}()
+	cancel()
+	select {
+	case err := <-waitErr:
+		if err == nil {
+			t.Fatal("expected Wait failure")
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("timeout waiting for child process death")
+	}
+}
+
+func TestContextCancel(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	c := helperCommandContext(t, ctx, "cat")
+
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	c.Stdin = r
+
+	stdout, err := c.StdoutPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	readDone := make(chan struct{})
+	go func() {
+		defer close(readDone)
+		var a [1024]byte
+		for {
+			n, err := stdout.Read(a[:])
+			if err != nil {
+				if err != io.EOF {
+					t.Errorf("unexpected read error: %v", err)
+				}
+				return
+			}
+			t.Logf("%s", a[:n])
+		}
+	}()
+
+	if err := c.Start(); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := r.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := io.WriteString(w, "echo"); err != nil {
+		t.Fatal(err)
+	}
+
+	cancel()
+
+	// Calling cancel should have killed the process, so writes
+	// should now fail.  Give the process a little while to die.
+	start := time.Now()
+	for {
+		if _, err := io.WriteString(w, "echo"); err != nil {
+			break
+		}
+		if time.Since(start) > time.Second {
+			t.Fatal("canceling context did not stop program")
+		}
+		time.Sleep(time.Millisecond)
+	}
+
+	if err := w.Close(); err != nil {
+		t.Errorf("error closing write end of pipe: %v", err)
+	}
+	<-readDone
+
+	if err := c.Wait(); err == nil {
+		t.Error("program unexpectedly exited successfully")
+	} else {
+		t.Logf("exit status: %v", err)
 	}
 }

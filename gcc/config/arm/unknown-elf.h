@@ -1,5 +1,5 @@
 /* Definitions for non-Linux based ARM systems using ELF
-   Copyright (C) 1998-2016 Free Software Foundation, Inc.
+   Copyright (C) 1998-2017 Free Software Foundation, Inc.
    Contributed by Catherine Moore <clm@cygnus.com>
 
    This file is part of GCC.
@@ -87,10 +87,6 @@
 	       NAME, SIZE ? (int) SIZE : 1);				\
     }									\
   while (0)
-
-#ifndef SUBTARGET_CPU_DEFAULT
-#define SUBTARGET_CPU_DEFAULT 		TARGET_CPU_arm7tdmi
-#endif
 
 /* The libgcc udivmod functions may throw exceptions.  If newlib is
    configured to support long longs in I/O, then printf will depend on

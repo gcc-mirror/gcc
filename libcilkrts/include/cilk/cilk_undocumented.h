@@ -106,9 +106,6 @@ size_t __cilkrts_get_stack_size(void);
 CILK_EXPORT __CILKRTS_NOTHROW
 void __cilkrts_dump_stats(void);
 
-CILK_EXPORT __CILKRTS_NOTHROW
-int __cilkrts_irml_version(void);
-
 struct __cilk_tbb_unwatch_thunk;
 struct __cilk_tbb_stack_op_thunk;
 

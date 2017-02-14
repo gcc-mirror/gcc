@@ -112,13 +112,24 @@
 extern "C" {
 #endif
 
-#if defined (__MINGW32__) || defined (__CYGWIN__)
+#if defined (__DJGPP__)
+
+/* For isalpha-like tests in the compiler, we're expected to resort to
+   safe-ctype.h/ISALPHA.  This isn't available for the runtime library
+   build, so we fallback on ctype.h/isalpha there.  */
+
+#ifdef IN_RTS
+#include <ctype.h>
+#define ISALPHA isalpha
+#endif
+
+#elif defined (__MINGW32__) || defined (__CYGWIN__)
 
 #include "mingw32.h"
 
 /* Current code page and CCS encoding to use, set in initialize.c.  */
-UINT CurrentCodePage;
-UINT CurrentCCSEncoding;
+UINT __gnat_current_codepage;
+UINT __gnat_current_ccs_encoding;
 
 #include <sys/utime.h>
 
@@ -165,15 +176,21 @@ UINT CurrentCCSEncoding;
 #include <sys/wait.h>
 #endif
 
-#if defined (_WIN32)
-
+#if defined (__DJGPP__)
 #include <process.h>
 #include <signal.h>
 #include <dir.h>
+#include <utime.h>
+#undef DIR_SEPARATOR
+#define DIR_SEPARATOR '\\'
+
+#elif defined (_WIN32)
+
 #include <windows.h>
 #include <accctrl.h>
 #include <aclapi.h>
 #include <tlhelp32.h>
+#include <signal.h>
 #undef DIR_SEPARATOR
 #define DIR_SEPARATOR '\\'
 
@@ -554,7 +571,7 @@ __gnat_get_file_names_case_sensitive (void)
 	{
 	  /* By default, we suppose filesystems aren't case sensitive on
 	     Windows and Darwin (but they are on arm-darwin).  */
-#if defined (WINNT) \
+#if defined (WINNT) || defined (__DJGPP__) \
   || (defined (__APPLE__) && !(defined (__arm__) || defined (__arm64__)))
 	  file_names_case_sensitive_cache = 0;
 #else
@@ -570,7 +587,7 @@ __gnat_get_file_names_case_sensitive (void)
 int
 __gnat_get_env_vars_case_sensitive (void)
 {
-#if defined (WINNT)
+#if defined (WINNT) || defined (__DJGPP__)
  return 0;
 #else
  return 1;
@@ -1640,7 +1657,7 @@ __gnat_is_absolute_path (char *name, int length)
 #else
   return (length != 0) &&
      (*name == '/' || *name == DIR_SEPARATOR
-#if defined (WINNT)
+#if defined (WINNT) || defined(__DJGPP__)
       || (length > 1 && ISALPHA (name[0]) && name[1] == ':')
 #endif
 	  );
@@ -1924,7 +1941,7 @@ __gnat_is_read_accessible_file (char *name)
 #elif defined (__vxworks)
    int fd;
 
-   if (fd = open (name, O_RDONLY, 0) < 0)
+   if ((fd = open (name, O_RDONLY, 0)) < 0)
      return 0;
    close (fd);
    return 1;
@@ -1997,7 +2014,7 @@ __gnat_is_write_accessible_file (char *name)
 #elif defined (__vxworks)
    int fd;
 
-   if (fd = open (name, O_WRONLY, 0) < 0)
+   if ((fd = open (name, O_WRONLY, 0)) < 0)
      return 0;
    close (fd);
    return 1;
@@ -2228,7 +2245,7 @@ __gnat_portable_spawn (char *args[] ATTRIBUTE_UNUSED)
 #if defined (__vxworks) || defined(__PikeOS__)
   return -1;
 
-#elif defined (_WIN32)
+#elif defined (__DJGPP__) || defined (_WIN32)
   /* args[0] must be quotes as it could contain a full pathname with spaces */
   char *args_0 = args[0];
   args[0] = (char *)xmalloc (strlen (args_0) + 3);
@@ -2600,6 +2617,12 @@ __gnat_portable_no_block_spawn (char *args[] ATTRIBUTE_UNUSED)
   /* Not supported.  */
   return -1;
 
+#elif defined(__DJGPP__)
+  if (spawnvp (P_WAIT, args[0], args) != 0)
+    return -1;
+  else
+    return 0;
+
 #elif defined (_WIN32)
 
   HANDLE h = NULL;
@@ -2643,6 +2666,9 @@ __gnat_portable_wait (int *process_status)
 
   pid = win32_wait (&status);
 
+#elif defined (__DJGPP__)
+  /* Child process has already ended in case of DJGPP.
+     No need to do anything. Just return success. */
 #else
 
   pid = waitpid (-1, &status, 0);
@@ -3370,14 +3396,16 @@ void __gnat_killprocesstree (int pid, int sig_num)
     {
       if ((d->d_type & DT_DIR) == DT_DIR)
         {
-          char statfile[64] = { 0 };
+          char statfile[64];
           int _pid, _ppid;
 
           /* read /proc/<PID>/stat */
 
-          strncpy (statfile, "/proc/", sizeof(statfile));
-          strncat (statfile, d->d_name, sizeof(statfile));
-          strncat (statfile, "/stat", sizeof(statfile));
+          if (strlen (d->d_name) >= sizeof (statfile) - strlen ("/proc//stat"))
+            continue;
+          strcpy (statfile, "/proc/");
+          strcat (statfile, d->d_name);
+          strcat (statfile, "/stat");
 
           FILE *fd = fopen (statfile, "r");
 

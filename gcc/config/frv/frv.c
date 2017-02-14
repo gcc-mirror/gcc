@@ -1,4 +1,4 @@
-/* Copyright (C) 1997-2016 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2017 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "optabs.h"
@@ -490,6 +491,9 @@ static bool frv_class_likely_spilled_p 		(reg_class_t);
 
 #undef  TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD frv_secondary_reload
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P frv_legitimate_address_p
@@ -2076,9 +2080,8 @@ frv_can_eliminate (const int from, const int to)
           : true);
 }
 
-/* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It specifies the
-   initial difference between the specified pair of registers.  This macro must
-   be defined if `ELIMINABLE_REGS' is defined.  */
+/* This function returns the initial difference between the specified
+   pair of registers.  */
 
 /* See frv_stack_info for more details on the frv stack frame.  */
 
@@ -2685,7 +2688,7 @@ comparison_string (enum rtx_code code, rtx op0)
   bool is_nz_p = GET_MODE (op0) == CC_NZmode;
   switch (code)
     {
-    default:  output_operand_lossage ("bad condition code");
+    default:  output_operand_lossage ("bad condition code"); return "";
     case EQ:  return "eq";
     case NE:  return "ne";
     case LT:  return is_nz_p ? "n" : "lt";
@@ -6479,7 +6482,8 @@ int
 frv_adjust_field_align (tree field, int computed)
 {
   /* Make sure that the bitfield is not wider than the type.  */
-  if (DECL_BIT_FIELD (field)
+  if (field
+      && DECL_BIT_FIELD (field)
       && !DECL_ARTIFICIAL (field))
     {
       tree parent = DECL_CONTEXT (field);
@@ -7591,7 +7595,7 @@ static void
 frv_reorder_packet (void)
 {
   unsigned int cursor[NUM_GROUPS];
-  rtx insns[ARRAY_SIZE (frv_unit_groups)];
+  rtx_insn *insns[ARRAY_SIZE (frv_unit_groups)];
   unsigned int unit, to, from;
   enum frv_insn_group group;
   struct frv_packet_group *packet_group;
@@ -7794,8 +7798,8 @@ frv_optimize_membar_local (basic_block bb, struct frv_io *next_io,
 			   rtx_insn **last_membar)
 {
   HARD_REG_SET used_regs;
-  rtx next_membar, set;
-  rtx_insn *insn;
+  rtx set;
+  rtx_insn *insn, *next_membar;
   bool next_is_end_p;
 
   /* NEXT_IO is the next I/O operation to be performed after the current

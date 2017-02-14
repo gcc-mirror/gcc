@@ -1,6 +1,6 @@
 /* This file is part of the Intel(R) Cilk(TM) Plus support
    This file contains the CilkPlus Intrinsics
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2017 Free Software Foundation, Inc.
    Contributed by Balaji V. Iyer <balaji.v.iyer@intel.com>,
    Intel Corporation
 
@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expmed.h"
 #include "optabs-query.h"
 #include "insn-config.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "recog.h"
 #include "fold-const.h"

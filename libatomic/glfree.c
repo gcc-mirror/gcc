@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2017 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Atomic Library (libatomic).
@@ -24,26 +24,41 @@
 
 #include "libatomic_i.h"
 
-
+/* Accesses with a power-of-two size are not lock-free if we don't have an
+   integer type of this size or if they are not naturally aligned.  They
+   are lock-free if such a naturally aligned access is always lock-free
+   according to the compiler, which requires that both atomic loads and CAS
+   are available.
+   In all other cases, we fall through to LARGER (see below).  */
 #define EXACT(N)						\
   do {								\
     if (!C2(HAVE_INT,N)) break;					\
     if ((uintptr_t)ptr & (N - 1)) break;			\
     if (__atomic_always_lock_free(N, 0)) return true;		\
-    if (C2(MAYBE_HAVE_ATOMIC_CAS_,N)) return true;		\
+    if (!C2(MAYBE_HAVE_ATOMIC_CAS_,N)) break;			\
+    if (C2(FAST_ATOMIC_LDST_,N)) return true;			\
   } while (0)
 
 
+/* We next check to see if an access of a larger size is lock-free.  We use
+   a similar check as in EXACT, except that we also check that the alignment
+   of the access is so that the data to be accessed is completely covered
+   by the larger access.  */
 #define LARGER(N)						\
   do {								\
     uintptr_t r = (uintptr_t)ptr & (N - 1);			\
     if (!C2(HAVE_INT,N)) break;					\
-    if (!C2(HAVE_ATOMIC_LDST_,N)) break;			\
+    if (!C2(FAST_ATOMIC_LDST_,N)) break;			\
     if (!C2(MAYBE_HAVE_ATOMIC_CAS_,N)) break;			\
     if (r + n <= N) return true;				\
   } while (0)
 
 
+/* Note that this can return that a size/alignment is not lock-free even if
+   all the operations that we use to implement the respective accesses provide
+   lock-free forward progress as specified in C++14:  Users likely expect
+   "lock-free" to also mean "fast", which is why we do not return true if, for
+   example, we implement loads with this size/alignment using a CAS.  */
 bool
 libat_is_lock_free (size_t n, void *ptr)
 {

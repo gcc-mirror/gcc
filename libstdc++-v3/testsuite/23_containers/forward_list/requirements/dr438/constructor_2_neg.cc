@@ -1,8 +1,6 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
-// { dg-error "no matching" "" { target *-*-* } 28 }
+// { dg-do compile { target c++11 } }
 
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,5 +23,5 @@
 void f()
 {
   typedef std::forward_list<std::forward_list<std::pair<char, char> > > test_type;
-  test_type l('a', 'b');
+  test_type l('a', 'b'); // { dg-error "no matching" }
 }

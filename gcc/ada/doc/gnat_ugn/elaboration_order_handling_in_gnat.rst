@@ -1661,8 +1661,8 @@ and
 ::
 
     Init_Constants spec
-    Init_Constants body
     Constants spec
+    Init_Constants body
     Calc spec
     Main body
 
@@ -1703,7 +1703,7 @@ compilers can choose different orders.
 However, GNAT does attempt to diagnose the common situation where there
 are uninitialized variables in the visible part of a package spec, and the
 corresponding package body has an elaboration block that directly or
-indirectly initialized one or more of these variables. This is the situation
+indirectly initializes one or more of these variables. This is the situation
 in which a pragma Elaborate_Body is usually desirable, and GNAT will generate
 a warning that suggests this addition if it detects this situation.
 

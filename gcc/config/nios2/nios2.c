@@ -1,5 +1,5 @@
 /* Target machine subroutines for Altera Nios II.
-   Copyright (C) 2012-2016 Free Software Foundation, Inc.
+   Copyright (C) 2012-2017 Free Software Foundation, Inc.
    Contributed by Jonah Graham (jgraham@altera.com), 
    Will Reece (wreece@altera.com), and Jeff DaSilva (jdasilva@altera.com).
    Contributed by Mentor Graphics, Inc.
@@ -28,6 +28,7 @@
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "optabs.h"
 #include "regs.h"
@@ -1492,6 +1493,7 @@ nios2_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
           *total = COSTS_N_INSNS (1);
           return true;
 	}
+      return false;
 
       default:
         return false;
@@ -2332,7 +2334,8 @@ nios2_emit_move_sequence (rtx *operands, machine_mode mode)
 	    from = nios2_legitimize_constant_address (from);
 	  if (CONSTANT_P (from))
 	    {
-	      emit_insn (gen_rtx_SET (to, gen_rtx_HIGH (Pmode, from)));
+	      emit_insn (gen_rtx_SET (to,
+				      gen_rtx_HIGH (Pmode, copy_rtx (from))));
 	      emit_insn (gen_rtx_SET (to, gen_rtx_LO_SUM (Pmode, to, from)));
 	      set_unique_reg_note (get_last_insn (), REG_EQUAL,
 				   copy_rtx (operands[1]));
@@ -3602,12 +3605,10 @@ nios2_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 }
 
 /* Implement TARGET_INIT_LIBFUNCS.  */
-static void
+static void ATTRIBUTE_UNUSED
 nios2_init_libfuncs (void)
 {
-  /* For Linux, we have access to kernel support for atomic operations.  */
-  if (TARGET_LINUX_ABI)
-    init_sync_libfuncs (UNITS_PER_WORD);
+  init_sync_libfuncs (UNITS_PER_WORD);
 }
 
 
@@ -3817,7 +3818,7 @@ nios2_valid_target_attribute_rec (tree args)
 		}
 	      else
 		{
-		  error ("%<custom-%s=%> is not recognised as FPU instruction",
+		  error ("%<custom-%s=%> is not recognized as FPU instruction",
 			 argstr + 7);
 		  return false;
 		}		
@@ -4984,9 +4985,6 @@ nios2_adjust_reg_alloc_order (void)
 #undef TARGET_BUILTIN_DECL
 #define TARGET_BUILTIN_DECL nios2_builtin_decl
 
-#undef TARGET_INIT_LIBFUNCS
-#define TARGET_INIT_LIBFUNCS nios2_init_libfuncs
-
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL hook_bool_tree_tree_true
 
@@ -5037,6 +5035,9 @@ nios2_adjust_reg_alloc_order (void)
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P nios2_legitimate_address_p
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 #undef TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS nios2_preferred_reload_class

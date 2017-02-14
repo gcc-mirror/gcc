@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 // { dg-require-atomic-builtins "" }
 
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -86,8 +86,6 @@ void clear()
 void
 test01()
 {
-  bool test __attribute((unused)) = false;
-
   memory_resource* r = new_delete_resource();
   VERIFY(get_default_resource() == r);
   void *p = get_default_resource()->allocate(5);
@@ -109,8 +107,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute((unused)) = false;
-
   clear();
   {
     CountedResource cr;
@@ -126,8 +122,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute((unused)) = false;
-
   clear();
   CountedResource cr;
   polymorphic_allocator<A> pa(&cr);
@@ -144,8 +138,6 @@ test03()
 void
 test04()
 {
-  bool test __attribute((unused)) = false;
-
   polymorphic_allocator<A> pa1(get_default_resource());
   polymorphic_allocator<A> pa2(get_default_resource());
   VERIFY(pa1 == pa2);

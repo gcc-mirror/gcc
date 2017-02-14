@@ -13,4 +13,4 @@ int foo(void)
 	return c;
 }
 
-/* { dg-final { scan-assembler-times "\tlarl\t%r3,.L3" 1 } } */
+/* { dg-final { scan-assembler-times "\tlarl\t%r3,.L\[0-9\]" 1 } } */

@@ -1,5 +1,5 @@
 /* Generate code from machine description to recognize rtl as insns.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -463,6 +463,38 @@ constraints_supported_in_insn_p (rtx insn)
 	   || GET_CODE (insn) == DEFINE_PEEPHOLE2);
 }
 
+/* Return the name of the predicate matched by MATCH_RTX.  */
+
+static const char *
+predicate_name (rtx match_rtx)
+{
+  if (GET_CODE (match_rtx) == MATCH_SCRATCH)
+    return "scratch_operand";
+  else
+    return XSTR (match_rtx, 1);
+}
+
+/* Return true if OPERAND is a MATCH_OPERAND using a special predicate
+   function.  */
+
+static bool
+special_predicate_operand_p (rtx operand)
+{
+  if (GET_CODE (operand) == MATCH_OPERAND)
+    {
+      const char *pred_name = predicate_name (operand);
+      if (pred_name[0] != 0)
+	{
+	  const struct pred_data *pred;
+
+	  pred = lookup_predicate (pred_name);
+	  return pred != NULL && pred->special;
+	}
+    }
+
+  return false;
+}
+
 /* Check for various errors in PATTERN, which is part of INFO.
    SET is nonnull for a destination, and is the complete set pattern.
    SET_CODE is '=' for normal sets, and '+' within a context that
@@ -651,10 +683,9 @@ validate_pattern (rtx pattern, md_rtx_info *info, rtx set, int set_code)
 	dmode = GET_MODE (dest);
 	smode = GET_MODE (src);
 
-	/* The mode of an ADDRESS_OPERAND is the mode of the memory
-	   reference, not the mode of the address.  */
-	if (GET_CODE (src) == MATCH_OPERAND
-	    && ! strcmp (XSTR (src, 1), "address_operand"))
+	/* Mode checking is not performed for special predicates.  */
+	if (special_predicate_operand_p (src)
+	    || special_predicate_operand_p (dest))
 	  ;
 
         /* The operands of a SET must have the same mode unless one
@@ -701,9 +732,9 @@ validate_pattern (rtx pattern, md_rtx_info *info, rtx set, int set_code)
       return;
 
     case LABEL_REF:
-      if (GET_MODE (LABEL_REF_LABEL (pattern)) != VOIDmode)
+      if (GET_MODE (XEXP (pattern, 0)) != VOIDmode)
 	error_at (info->loc, "operand to label_ref %smode not VOIDmode",
-		  GET_MODE_NAME (GET_MODE (LABEL_REF_LABEL (pattern))));
+		  GET_MODE_NAME (GET_MODE (XEXP (pattern, 0))));
       break;
 
     default:
@@ -3788,17 +3819,6 @@ operator < (const pattern_pos &e1, const pattern_pos &e2)
   return diff < 0;
 }
 
-/* Return the name of the predicate matched by MATCH_RTX.  */
-
-static const char *
-predicate_name (rtx match_rtx)
-{
-  if (GET_CODE (match_rtx) == MATCH_SCRATCH)
-    return "scratch_operand";
-  else
-    return XSTR (match_rtx, 1);
-}
-
 /* Add new decisions to S that check whether the rtx at position POS
    matches PATTERN.  Return the state that is reached in that case.
    TOP_PATTERN is the overall pattern, as passed to match_pattern_1.  */
@@ -4161,6 +4181,7 @@ write_header (void)
 #include \"backend.h\"\n\
 #include \"predict.h\"\n\
 #include \"rtl.h\"\n\
+#include \"memmodel.h\"\n\
 #include \"tm_p.h\"\n\
 #include \"emit-rtl.h\"\n\
 #include \"insn-config.h\"\n\
@@ -4638,7 +4659,7 @@ print_test (output_state *os, const rtx_test &test, bool is_param,
       gcc_assert (!is_param && value == 1);
       if (invert_p)
 	printf ("!");
-      print_c_condition (test.u.string);
+      rtx_reader_ptr->print_c_condition (test.u.string);
       break;
 
     case rtx_test::ACCEPT:
@@ -5078,11 +5099,6 @@ print_pattern (output_state *os, pattern_routine *routine)
 static void
 print_subroutine (output_state *os, state *s, int proc_id)
 {
-  /* For now, the top-level "recog" takes a plain "rtx", and performs a
-     checked cast to "rtx_insn *" for use throughout the rest of the
-     function and the code it calls.  */
-  const char *insn_param
-    = proc_id > 0 ? "rtx_insn *insn" : "rtx uncast_insn";
   printf ("\n");
   switch (os->type)
     {
@@ -5095,8 +5111,8 @@ print_subroutine (output_state *os, state *s, int proc_id)
       else
 	printf ("int\nrecog");
       printf (" (rtx x1 ATTRIBUTE_UNUSED,\n"
-	      "\t%s ATTRIBUTE_UNUSED,\n"
-	      "\tint *pnum_clobbers ATTRIBUTE_UNUSED)\n", insn_param);
+	      "\trtx_insn *insn ATTRIBUTE_UNUSED,\n"
+	      "\tint *pnum_clobbers ATTRIBUTE_UNUSED)\n");
       break;
 
     case SPLIT:
@@ -5121,11 +5137,6 @@ print_subroutine (output_state *os, state *s, int proc_id)
   if (proc_id == 0)
     {
       printf ("  recog_data.insn = NULL;\n");
-      if (os->type == RECOG)
-	{
-	  printf ("  rtx_insn *insn ATTRIBUTE_UNUSED;\n");
-	  printf ("  insn = safe_as_a <rtx_insn *> (uncast_insn);\n");
-	}
     }
   print_state (os, s, 2, true);
   printf ("}\n");

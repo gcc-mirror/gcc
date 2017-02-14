@@ -132,9 +132,13 @@ func TestParseBigInt(t *testing.T) {
 			if ret.String() != test.base10 {
 				t.Errorf("#%d: bad result from %x, got %s want %s", i, test.in, ret.String(), test.base10)
 			}
-			fw := newForkableWriter()
-			marshalBigInt(fw, ret)
-			result := fw.Bytes()
+			e, err := makeBigInt(ret)
+			if err != nil {
+				t.Errorf("%d: err=%q", i, err)
+				continue
+			}
+			result := make([]byte, e.Len())
+			e.Encode(result)
 			if !bytes.Equal(result, test.in) {
 				t.Errorf("#%d: got %x from marshaling %s, want %x", i, result, ret, test.in)
 			}
@@ -364,7 +368,7 @@ var tagAndLengthData = []tagAndLengthTest{
 	{[]byte{0xa0, 0x01}, true, tagAndLength{2, 0, 1, true}},
 	{[]byte{0x02, 0x00}, true, tagAndLength{0, 2, 0, false}},
 	{[]byte{0xfe, 0x00}, true, tagAndLength{3, 30, 0, true}},
-	{[]byte{0x1f, 0x01, 0x00}, true, tagAndLength{0, 1, 0, false}},
+	{[]byte{0x1f, 0x1f, 0x00}, true, tagAndLength{0, 31, 0, false}},
 	{[]byte{0x1f, 0x81, 0x00, 0x00}, true, tagAndLength{0, 128, 0, false}},
 	{[]byte{0x1f, 0x81, 0x80, 0x01, 0x00}, true, tagAndLength{0, 0x4001, 0, false}},
 	{[]byte{0x00, 0x81, 0x80}, true, tagAndLength{0, 0, 128, false}},
@@ -382,6 +386,8 @@ var tagAndLengthData = []tagAndLengthTest{
 	{[]byte{0xa0, 0x81, 0x7f}, false, tagAndLength{}},
 	// Tag numbers which would overflow int32 are rejected. (The value below is 2^31.)
 	{[]byte{0x1f, 0x88, 0x80, 0x80, 0x80, 0x00, 0x00}, false, tagAndLength{}},
+	// Long tag number form may not be used for tags that fit in short form.
+	{[]byte{0x1f, 0x1e, 0x00}, false, tagAndLength{}},
 }
 
 func TestParseTagAndLength(t *testing.T) {
@@ -961,11 +967,40 @@ func TestUnmarshalInvalidUTF8(t *testing.T) {
 func TestMarshalNilValue(t *testing.T) {
 	nilValueTestData := []interface{}{
 		nil,
-		struct{ v interface{} }{},
+		struct{ V interface{} }{},
 	}
 	for i, test := range nilValueTestData {
 		if _, err := Marshal(test); err == nil {
 			t.Fatalf("#%d: successfully marshaled nil value", i)
 		}
+	}
+}
+
+type unexported struct {
+	X int
+	y int
+}
+
+type exported struct {
+	X int
+	Y int
+}
+
+func TestUnexportedStructField(t *testing.T) {
+	want := StructuralError{"struct contains unexported fields"}
+
+	_, err := Marshal(unexported{X: 5, y: 1})
+	if err != want {
+		t.Errorf("got %v, want %v", err, want)
+	}
+
+	bs, err := Marshal(exported{X: 5, Y: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var u unexported
+	_, err = Unmarshal(bs, &u)
+	if err != want {
+		t.Errorf("got %v, want %v", err, want)
 	}
 }

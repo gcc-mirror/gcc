@@ -1,4 +1,4 @@
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,7 +21,6 @@
 // libstdc++/42261
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   const wstring s(wstring::size_type(6), wstring::size_type(L'f'));

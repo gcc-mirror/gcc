@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2016 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -30,11 +30,15 @@
 
 #if HOST_LIBRARY
 #include "offload_table.h"
+#ifdef MYO_SUPPORT
 #include "offload_myo_host.h"
+#endif // MYO_SUPPORT
 #else
 #include "offload_target.h"
+#ifdef MYO_SUPPORT
 #include "offload_myo_target.h"
-#endif
+#endif // MYO_SUPPORT
+#endif // HOST_LIBRARY
 
 #ifdef TARGET_WINNT
 #define ALLOCATE(name) __declspec(allocate(name))

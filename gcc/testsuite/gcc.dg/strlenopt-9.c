@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fdump-tree-strlen -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fno-code-hoisting -fdump-tree-strlen -fdump-tree-optimized" } */
 
 #include "strlenopt.h"
 
@@ -98,10 +98,10 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "strlen \\(" 3 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "strlen \\(" 5 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "memcpy \\(" 6 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "strcpy \\(" 1 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "strcat \\(" 0 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "strchr \\(" 3 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "strchr \\(" 0 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "stpcpy \\(" 0 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "return 4;" 1 "optimized" } } */

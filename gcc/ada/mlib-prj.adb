@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2015, AdaCore                     --
+--                     Copyright (C) 2001-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1898,7 +1898,9 @@ package body MLib.Prj is
          --  Call procedure to build the library, depending on the build mode
 
          case The_Build_Mode is
-            when Dynamic | Relocatable =>
+            when Dynamic
+               | Relocatable
+            =>
                Build_Dynamic_Library
                  (Ofiles        => Object_Files.all,
                   Options       => Options.all,

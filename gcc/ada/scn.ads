@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,8 +44,8 @@ package Scn is
    --  source index for reading the configuration pragma file.
 
    function Determine_Token_Casing return Casing_Type;
-   --  Determines the casing style of the current token, which is
-   --  either a keyword or an identifier. See also package Casing.
+   --  Determines the casing style of the current token, which is either a
+   --  keyword or an identifier. See also package Casing.
 
    procedure Post_Scan;
    --  Create nodes for tokens: Char_Literal, Identifier, Real_Literal,

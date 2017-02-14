@@ -1,6 +1,6 @@
 // 1999-08-16 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +28,6 @@
 void
 test05()
 {
-  bool test __attribute__((unused)) = true;
   std::string str05, str10;
 
   typedef std::ostream::pos_type	pos_type;

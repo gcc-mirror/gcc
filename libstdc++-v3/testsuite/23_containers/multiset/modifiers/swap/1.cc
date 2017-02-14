@@ -1,4 +1,4 @@
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,7 +36,6 @@ namespace std
 // Should use multiset specialization for swap.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::multiset<T> A;
   std::multiset<T> B;
   swap_calls = 0;
@@ -47,7 +46,6 @@ void test01()
 // Should use multiset specialization for swap.
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
   multiset<T> A;
   multiset<T> B;

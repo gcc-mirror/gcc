@@ -1,6 +1,6 @@
 // Guarded Allocation -*- C++ -*-
 
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -85,10 +85,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       value_type* get() { return _S_raw_ptr(_M_ptr); }
 
     private:
-      value_type* _S_raw_ptr(value_type* __ptr) { return __ptr; }
+      static value_type* _S_raw_ptr(value_type* __ptr) { return __ptr; }
 
       template<typename _Ptr>
-	auto _S_raw_ptr(_Ptr __ptr) -> decltype(_S_raw_ptr(__ptr.operator->()))
+	static auto
+	_S_raw_ptr(_Ptr __ptr) -> decltype(_S_raw_ptr(__ptr.operator->()))
 	{ return _S_raw_ptr(__ptr.operator->()); }
 
       _Alloc* _M_alloc;

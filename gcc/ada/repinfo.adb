@@ -643,7 +643,6 @@ package body Repinfo is
                   when Discrim_Val =>
                      Write_Char ('#');
                      UI_Write (Node.Op1);
-
                end case;
             end;
          end if;
@@ -711,7 +710,9 @@ package body Repinfo is
          when E_Subprogram_Type =>
             Write_Str ("type ");
 
-         when E_Entry | E_Entry_Family =>
+         when E_Entry
+            | E_Entry_Family
+         =>
             Write_Str ("entry ");
 
          when others =>
@@ -727,31 +728,43 @@ package body Repinfo is
       Write_Str ("  convention : ");
 
       case Convention (Ent) is
-         when Convention_Ada                   =>
+         when Convention_Ada =>
             Write_Line ("Ada");
-         when Convention_Ada_Pass_By_Copy      =>
+
+         when Convention_Ada_Pass_By_Copy =>
             Write_Line ("Ada_Pass_By_Copy");
+
          when Convention_Ada_Pass_By_Reference =>
             Write_Line ("Ada_Pass_By_Reference");
-         when Convention_Intrinsic             =>
+
+         when Convention_Intrinsic =>
             Write_Line ("Intrinsic");
-         when Convention_Entry                 =>
+
+         when Convention_Entry =>
             Write_Line ("Entry");
-         when Convention_Protected             =>
+
+         when Convention_Protected =>
             Write_Line ("Protected");
-         when Convention_Assembler             =>
+
+         when Convention_Assembler =>
             Write_Line ("Assembler");
-         when Convention_C                     =>
+
+         when Convention_C =>
             Write_Line ("C");
-         when Convention_COBOL                 =>
+
+         when Convention_COBOL =>
             Write_Line ("COBOL");
-         when Convention_CPP                   =>
+
+         when Convention_CPP =>
             Write_Line ("C++");
-         when Convention_Fortran               =>
+
+         when Convention_Fortran =>
             Write_Line ("Fortran");
-         when Convention_Stdcall               =>
+
+         when Convention_Stdcall =>
             Write_Line ("Stdcall");
-         when Convention_Stubbed               =>
+
+         when Convention_Stubbed =>
             Write_Line ("Stubbed");
       end case;
 
@@ -1435,7 +1448,6 @@ package body Repinfo is
                         pragma Assert (Sub in D'Range);
                         return D (Sub);
                      end;
-
                end case;
             end;
          end if;

@@ -1,4 +1,4 @@
-@c Copyright (C) 2000-2016 Free Software Foundation, Inc.
+@c Copyright (C) 2000-2017 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -261,14 +261,8 @@ works with the Apple/NeXT Objective-C runtime library.
 There is no formal written standard for Objective-C or Objective-C++@.
 The authoritative manual on traditional Objective-C (1.0) is
 ``Object-Oriented Programming and the Objective-C Language'':
-@itemize
-@item
 @uref{http://www.gnustep.org/@/resources/@/documentation/@/ObjectivCBook.pdf}
-is the original NeXTstep document;
-@item
-@uref{http://objc.toodarkpark.net}
-is the same document in another format.
-@end itemize
+is the original NeXTstep document.
 
 The Objective-C exception and synchronization syntax (that is, the
 keywords @code{@@try}, @code{@@throw}, @code{@@catch},
@@ -296,7 +290,7 @@ GCC has currently no support for non-fragile instance variables.
 The authoritative manual on Objective-C 2.0 is available from Apple:
 @itemize
 @item
-@uref{https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/Introduction/Introduction.html}
+@uref{https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/Introduction/Introduction.html}
 @end itemize
 
 For more information concerning the history of Objective-C that is
@@ -305,7 +299,15 @@ available online, see @uref{http://gcc.gnu.org/readings.html}
 @section Go Language
 
 As of the GCC 4.7.1 release, GCC supports the Go 1 language standard,
-described at @uref{http://golang.org/doc/go1.html}.
+described at @uref{https://golang.org/doc/go1}.
+
+@section HSA Intermediate Language (HSAIL)
+
+GCC can compile the binary representation (BRIG) of the HSAIL text format as
+described in HSA Programmer's Reference Manual version 1.0.1. This
+capability is typically utilized to implement the HSA runtime API's HSAIL 
+finalization extension for a gcc supported processor. HSA standards are
+freely available at @uref{http://www.hsafoundation.com/standards/}.
 
 @section References for Other Languages
 
@@ -315,6 +317,3 @@ conformance and compatibility of the Ada compiler.
 
 @xref{Standards,,Standards, gfortran, The GNU Fortran Compiler}, for details
 of standards supported by GNU Fortran.
-
-@xref{Compatibility,,Compatibility with the Java Platform, gcj, GNU gcj},
-for details of compatibility between @command{gcj} and the Java Platform.

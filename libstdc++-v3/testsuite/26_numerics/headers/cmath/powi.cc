@@ -1,6 +1,6 @@
 // 2005-02-13  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,6 @@ template<typename T>
   void test01_do()
   {
     using namespace std;
-    bool test __attribute__((unused)) = true;
     
     VERIFY( pow(T(1.0), 0) == T(1.0) );
     VERIFY( pow(T(2.0), 0) == T(1.0) );

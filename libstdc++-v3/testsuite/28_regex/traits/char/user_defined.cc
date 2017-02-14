@@ -1,10 +1,9 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do run }
+// { dg-do run { target c++11 } }
 
 //
 // 2014-01-07  Tim Shen <timshen91@gmail.com>
 //
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,6 +30,9 @@
 
 using namespace std;
 
+bool called_transform = false;
+bool called_nocase = false;
+
 template<typename CharT>
   class MyRegexTraits
   : public regex_traits<CharT>
@@ -41,16 +43,73 @@ template<typename CharT>
     {
       return c+1;
     }
+
+    CharT
+    translate_nocase(CharT c) const
+    {
+      called_nocase = true;
+      return regex_traits<CharT>::translate_nocase(c);
+    }
+
+    template<typename FwdIt>
+      basic_string<CharT>
+      transform(FwdIt begin, FwdIt end) const
+      {
+	called_transform = true;
+	return regex_traits<CharT>::transform(begin, end);
+      }
   };
 
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
+  {
+    basic_regex<char, MyRegexTraits<char>> re(".");
+    VERIFY(!regex_match("\n", re));
+    VERIFY(!regex_match("\r", re));
+  }
+  {
+    VERIFY(!called_transform);
+    basic_regex<char, MyRegexTraits<char>> re("[a]", regex::collate);
+    VERIFY(regex_match("a", re));
+    VERIFY(called_transform);
+    called_transform = false;
+  }
+  {
+    VERIFY(!called_nocase);
+    basic_regex<char, MyRegexTraits<char>> re("[a]", regex::icase);
+    VERIFY(regex_match("A", re));
+    VERIFY(called_nocase);
+    called_nocase = false;
+  }
+  {
+    basic_regex<char, MyRegexTraits<char>> re("[T-f]", regex::icase);
+    VERIFY(regex_match("A", re));
+    VERIFY(regex_match("F", re));
+    VERIFY(regex_match("a", re));
+    VERIFY(regex_match("f", re));
 
-  basic_regex<char, MyRegexTraits<char>> re(".");
-  VERIFY(!regex_match("\n", re));
-  VERIFY(!regex_match("\r", re));
+    VERIFY(!regex_match("G", re));
+    VERIFY(!regex_match("S", re));
+    VERIFY(!regex_match("g", re));
+    VERIFY(!regex_match("s", re));
+
+    VERIFY(regex_match("T", re));
+    VERIFY(regex_match("Z", re));
+    VERIFY(regex_match("t", re));
+    VERIFY(regex_match("z", re));
+  }
+  // icase doesn't participate with the presence of collate and user-defined traits.
+  {
+    basic_regex<char, MyRegexTraits<char>> re("[T-f]", regex::icase | regex::collate);
+    VERIFY(!regex_match("A", re));
+    VERIFY(!regex_match("S", re));
+    VERIFY(regex_match("T", re));
+    VERIFY(regex_match("Z", re));
+    VERIFY(regex_match("a", re));
+    VERIFY(regex_match("f", re));
+    VERIFY(!regex_match("g", re));
+  }
 }
 
 int main()

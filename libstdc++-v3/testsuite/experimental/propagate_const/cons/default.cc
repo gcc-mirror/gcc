@@ -1,7 +1,6 @@
-// { dg-options "-std=gnu++14" }
-// { dg-do run }
+// { dg-do run { target c++14 } }
 
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,6 +26,7 @@ int main()
 {
   constexpr propagate_const<int*> test1{};
   static_assert(!test1.get(), "");
-  propagate_const<int*> test2;
-  VERIFY(!test2.get());
+  propagate_const<int*> test2; // wrapped pointer is not initialized
+  propagate_const<int*> test3{};
+  VERIFY(!test3.get());
 }

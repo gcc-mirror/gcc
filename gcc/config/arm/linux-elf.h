@@ -1,5 +1,5 @@
 /* Definitions for ARM running Linux-based GNU systems using ELF
-   Copyright (C) 1993-2016 Free Software Foundation, Inc.
+   Copyright (C) 1993-2017 Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org>
 
    This file is part of GCC.
@@ -44,8 +44,6 @@
 
 #undef  TARGET_DEFAULT
 #define TARGET_DEFAULT (TARGET_ENDIAN_DEFAULT)
-
-#define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm6
 
 #define SUBTARGET_EXTRA_LINK_SPEC " -m " TARGET_LINKER_EMULATION " -p"
 

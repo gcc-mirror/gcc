@@ -1,4 +1,4 @@
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,8 +42,6 @@ test1()
 void 
 test2()
 {
-  bool test __attribute__((unused)) = true;
-
   int array[] = { 0, 2, 4, 1, 3, 5 };
   container con(array, array + 6);
   inplace_merge(con.begin(), con.it(3), con.end());
@@ -65,8 +63,6 @@ struct S
 void 
 test3()
 {
-  bool test __attribute__((unused)) = true;
-
   S s[8];
   s[0].a = 0;
   s[1].a = 1;

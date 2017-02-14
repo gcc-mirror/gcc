@@ -1,6 +1,6 @@
 // 2001-02-26 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,6 @@
 // libstdc++/1972
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   std::string s("lack of sunlight, no water error");
 
   // 1
@@ -42,7 +41,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   std::string s("lack of sunlight error");
   std::domain_error x(s);
   

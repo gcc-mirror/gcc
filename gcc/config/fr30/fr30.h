@@ -1,7 +1,7 @@
 /*{{{  Comment.  */ 
 
 /* Definitions of FR30 target. 
-   Copyright (C) 1998-2016 Free Software Foundation, Inc.
+   Copyright (C) 1998-2017 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
 This file is part of GCC.
@@ -460,9 +460,8 @@ enum reg_class
   {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}	\
 }
 
-/* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It specifies the
-   initial difference between the specified pair of registers.  This macro must
-   be defined if `ELIMINABLE_REGS' is defined.  */
+/* This macro returns the initial difference between the specified pair
+   of registers.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
      (OFFSET) = fr30_compute_frame_size (FROM, TO)
 

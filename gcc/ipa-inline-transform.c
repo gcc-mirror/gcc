@@ -1,5 +1,5 @@
 /* Callgraph transformations to handle inlining
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-cfg.h"
 #include "symbol-summary.h"
+#include "tree-vrp.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "tree-inline.h"
@@ -208,6 +209,9 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	  duplicate = false;
 	  e->callee->externally_visible = false;
           update_noncloned_frequencies (e->callee, e->frequency);
+
+	  dump_callgraph_transformation (e->callee, inlining_into,
+					 "inlining to");
 	}
       else
 	{
@@ -319,10 +323,14 @@ inline_call (struct cgraph_edge *e, bool update_original,
     to = to->global.inlined_to;
   if (to->thunk.thunk_p)
     {
+      struct cgraph_node *target = to->callees->callee;
       if (in_lto_p)
 	to->get_untransformed_body ();
       to->expand_thunk (false, true);
-      e = to->callees;
+      /* When thunk is instrumented we may have multiple callees.  */
+      for (e = to->callees; e && e->callee != target; e = e->next_callee)
+	;
+      gcc_assert (e);
     }
 
 
@@ -332,6 +340,8 @@ inline_call (struct cgraph_edge *e, bool update_original,
   if (DECL_FUNCTION_PERSONALITY (callee->decl))
     DECL_FUNCTION_PERSONALITY (to->decl)
       = DECL_FUNCTION_PERSONALITY (callee->decl);
+
+  bool reload_optimization_node = false;
   if (!opt_for_fn (callee->decl, flag_strict_aliasing)
       && opt_for_fn (to->decl, flag_strict_aliasing))
     {
@@ -344,6 +354,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
 		 to->name (), to->order);
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
 	 = build_optimization_node (&opts);
+      reload_optimization_node = true;
     }
 
   inline_summary *caller_info = inline_summaries->get (to);
@@ -404,8 +415,13 @@ inline_call (struct cgraph_edge *e, bool update_original,
 		     callee->name (), callee->order, to->name (), to->order);
 	  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
 	     = build_optimization_node (&opts);
+	  reload_optimization_node = true;
 	}
     }
+
+  /* Reload global optimization flags.  */
+  if (reload_optimization_node && DECL_STRUCT_FUNCTION (to->decl) == cfun)
+    set_cfun (cfun, true);
 
   /* If aliases are involved, redirect edge to the actual destination and
      possibly remove the aliases.  */

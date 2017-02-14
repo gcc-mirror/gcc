@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2016 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -63,6 +63,9 @@ void __liboffload_error_support(error_types input_tag, ...)
         case c_malloc:
             write_message(stderr, msg_c_malloc, args);
             break;
+        case c_unknown_mic_device_type:
+            write_message(stderr, msg_c_unknown_mic_device_type, args);
+            break;
         case c_offload_malloc:
             write_message(stderr, msg_c_offload_malloc, args);
             break;
@@ -70,7 +73,7 @@ void __liboffload_error_support(error_types input_tag, ...)
             write_message(stderr, msg_c_offload1, args);
             break;
         case c_unknown_var_type:
-            write_message(stderr, c_unknown_var_type, args);
+            write_message(stderr, msg_c_unknown_var_type, args);
             break;
         case c_invalid_env_var_value:
             write_message(stderr, msg_c_invalid_env_var_value, args);
@@ -128,6 +131,21 @@ void __liboffload_error_support(error_types input_tag, ...)
             break;
         case c_mic_init6:
             write_message(stderr, msg_c_mic_init6, args);
+            break;
+        case c_mic_init7:
+            write_message(stderr, msg_c_mic_init7, args);
+            break;
+        case c_mic_init8:
+            write_message(stderr, msg_c_mic_init8, args);
+            break;
+        case c_mic_init9:
+            write_message(stderr, msg_c_mic_init9, args);
+            break;
+        case c_mic_init10:
+            write_message(stderr, msg_c_mic_init10, args);
+            break;
+        case c_mic_init11:
+            write_message(stderr, msg_c_mic_init11, args);
             break;
         case c_no_static_var_data:
             write_message(stderr, msg_c_no_static_var_data, args);
@@ -270,11 +288,17 @@ void __liboffload_error_support(error_types input_tag, ...)
         case c_cannot_set_affinity:
             write_message(stderr, msg_c_cannot_set_affinity, args);
             break;
+        case c_mixed_versions:
+            write_message(stderr, msg_c_mixed_versions, args);
+            break;
         case c_in_with_preallocated:
             write_message(stderr, msg_c_in_with_preallocated, args);
             break;
         case c_report_no_host_exe:
             write_message(stderr, msg_c_report_no_host_exe, args);
+            break;
+        case c_report_no_target_exe:
+            write_message(stderr, msg_c_report_no_target_exe, args);
             break;
         case c_report_path_buff_overflow:
             write_message(stderr, msg_c_report_path_buff_overflow, args);
@@ -282,8 +306,15 @@ void __liboffload_error_support(error_types input_tag, ...)
         case c_create_pipeline_for_stream:
             write_message(stderr, msg_c_create_pipeline_for_stream, args);
             break;
+        case c_offload_streams_are_absent:
+            write_message(stderr, msg_c_offload_streams_are_absent, args);
+            break;
         case c_offload_no_stream:
             write_message(stderr, msg_c_offload_no_stream, args);
+            break;
+         case c_offload_device_doesnt_match_to_stream:
+            write_message(stderr,
+                          msg_c_offload_device_doesnt_match_to_stream, args);
             break;
         case c_get_engine_info:
             write_message(stderr, msg_c_get_engine_info, args);
@@ -296,6 +327,15 @@ void __liboffload_error_support(error_types input_tag, ...)
             break;
         case c_unload_library:
             write_message(stderr, msg_c_unload_library, args);
+            break;
+        case c_target_myo_library:
+            write_message(stderr, msg_c_target_myo_library, args);
+            break;
+        case c_myo_dl_sym:
+            write_message(stderr, msg_c_myo_dl_sym, args);
+            break;
+        case c_bad_myo_free:
+            write_message(stderr, msg_c_bad_myo_free, args);
             break;
     }
     va_end(args);
@@ -422,6 +462,7 @@ char const * report_get_message_str(error_types input_tag)
             LIBOFFLOAD_ERROR(c_report_unknown_trace_node);
             abort();
     }
+    return 0;
 }
 
 char const * report_get_host_stage_str(int i)
@@ -483,6 +524,7 @@ char const * report_get_host_stage_str(int i)
             LIBOFFLOAD_ERROR(c_report_unknown_timer_node);
             abort();
     }
+    return 0;
 }
 
 char const * report_get_target_stage_str(int i)
@@ -515,4 +557,5 @@ char const * report_get_target_stage_str(int i)
             LIBOFFLOAD_ERROR(c_report_unknown_timer_node);
             abort();
     }
+    return 0;
 }

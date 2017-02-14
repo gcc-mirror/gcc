@@ -1,6 +1,6 @@
 // 2003-06-25 Paolo Carlini <pcarlini@unitus.it>
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   filebuf fb_out, fb_in_out;

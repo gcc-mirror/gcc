@@ -1,6 +1,6 @@
 // 2003-06-30 peturr02@ru.is
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,6 @@
 void test01()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   typedef num_put<wchar_t> npw_t;
 

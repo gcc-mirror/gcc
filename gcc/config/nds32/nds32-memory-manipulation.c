@@ -1,6 +1,6 @@
 /* Auxiliary functions for expand movmem, setmem, cmpmem, load_multiple
    and store_multiple pattern of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2016 Free Software Foundation, Inc.
+   Copyright (C) 2012-2017 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -27,6 +27,7 @@
 #include "backend.h"
 #include "target.h"
 #include "rtl.h"
+#include "memmodel.h"
 #include "emit-rtl.h"
 #include "explow.h"
 

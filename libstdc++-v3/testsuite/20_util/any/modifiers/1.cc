@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++17" }
 // { dg-do run }
 
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,14 +28,14 @@ void test01()
   any x(1);
   any y;
   x.swap(y);
-  VERIFY( x.empty() );
-  VERIFY( !y.empty() );
+  VERIFY( !x.has_value() );
+  VERIFY( y.has_value() );
   x.swap(y);
-  VERIFY( !x.empty() );
-  VERIFY( y.empty() );
+  VERIFY( x.has_value() );
+  VERIFY( !y.has_value() );
 
-  x.clear();
-  VERIFY( x.empty() );
+  x.reset();
+  VERIFY( !x.has_value() );
 }
 
 int main()

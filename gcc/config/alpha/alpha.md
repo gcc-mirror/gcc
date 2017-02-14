@@ -1,5 +1,5 @@
 ;; Machine description for DEC Alpha for GNU C compiler
-;; Copyright (C) 1992-2016 Free Software Foundation, Inc.
+;; Copyright (C) 1992-2017 Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 ;;
 ;; This file is part of GCC.
@@ -5142,7 +5142,7 @@
   "TARGET_ABI_OSF"
 {
   if (flag_reorder_blocks_and_partition)
-    operands[0] = alpha_gp_save_rtx ();
+    operands[0] = copy_rtx (alpha_gp_save_rtx ());
   else
     operands[0] = const0_rtx;
 })

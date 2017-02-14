@@ -597,10 +597,13 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
+ac_header_list=
+ac_func_list=
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+get_gcc_base_ver
 OMP_NEST_LOCK_25_KIND
 OMP_LOCK_25_KIND
 OMP_NEST_LOCK_25_ALIGN
@@ -637,7 +640,6 @@ PLUGIN_HSA_LIBS
 PLUGIN_HSA_LDFLAGS
 PLUGIN_HSA_CPPFLAGS
 PLUGIN_HSA
-HSA_KMT_LIB
 HSA_RUNTIME_LIB
 HSA_RUNTIME_INCLUDE
 PLUGIN_NVPTX_LIBS
@@ -794,10 +796,10 @@ with_cuda_driver_lib
 with_hsa_runtime
 with_hsa_runtime_include
 with_hsa_runtime_lib
-with_hsa_kmt_lib
 enable_linux_futex
 enable_tls
 enable_symvers
+with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1476,7 +1478,8 @@ Optional Packages:
   --with-hsa-runtime-lib=PATH
                           specify directory for the installed HSA run-time
                           library
-  --with-hsa-kmt-lib=PATH specify directory for installed HSA KMT library.
+  --with-gcc-major-version-only
+                          use only GCC major number in filesystem paths
 
 Some influential environment variables:
   CC          C compiler command
@@ -2518,6 +2521,13 @@ $as_echo "$as_me: creating cache $cache_file" >&6;}
   >$cache_file
 fi
 
+as_fn_append ac_header_list " unistd.h"
+as_fn_append ac_func_list " secure_getenv"
+as_fn_append ac_func_list " __secure_getenv"
+as_fn_append ac_func_list " getuid"
+as_fn_append ac_func_list " geteuid"
+as_fn_append ac_func_list " getgid"
+as_fn_append ac_func_list " getegid"
 # Check that the precious variables saved in the cache have kept the same
 # value.
 ac_cache_corrupted=false
@@ -11145,7 +11155,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11148 "configure"
+#line 11158 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11251,7 +11261,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11254 "configure"
+#line 11264 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15067,6 +15077,9 @@ case "$host" in
     ;;
   nvptx*-*-*)
     # NVPTX does not support Pthreads, has its own code replacement.
+    libgomp_use_pthreads=no
+    # NVPTX is an accelerator-only target
+    libgomp_offloaded_only=yes
     ;;
   *)
     # Check to see if -pthread or -lpthread is needed.  Prefer the former.
@@ -15112,9 +15125,21 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 esac
 
+if test x$libgomp_use_pthreads != xno; then
+
+$as_echo "#define LIBGOMP_USE_PTHREADS 1" >>confdefs.h
+
+fi
+
+if test x$libgomp_offloaded_only = xyes; then
+
+$as_echo "#define LIBGOMP_OFFLOADED_ONLY 1" >>confdefs.h
+
+fi
+
 # Plugins for offload execution, configure.ac fragment.  -*- mode: autoconf -*-
 #
-# Copyright (C) 2014-2016 Free Software Foundation, Inc.
+# Copyright (C) 2014-2017 Free Software Foundation, Inc.
 #
 # Contributed by Mentor Embedded.
 #
@@ -15198,6 +15223,57 @@ elif test "x${enable_offload_targets-no}" != xno; then
   as_fn_error "Can't support offloading without support for plugins" "$LINENO" 5
 fi
 
+
+
+  for ac_header in $ac_header_list
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default
+"
+eval as_val=\$$as_ac_Header
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+
+
+
+
+
+
+  for ac_func in $ac_func_list
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Look for the CUDA driver package.
 CUDA_DRIVER_INCLUDE=
 CUDA_DRIVER_LIB=
@@ -15223,10 +15299,12 @@ if test "${with_cuda_driver_lib+set}" = set; then :
   withval=$with_cuda_driver_lib;
 fi
 
-if test "x$with_cuda_driver" != x; then
-  CUDA_DRIVER_INCLUDE=$with_cuda_driver/include
-  CUDA_DRIVER_LIB=$with_cuda_driver/lib
-fi
+case "x$with_cuda_driver" in
+  x | xno) ;;
+  *) CUDA_DRIVER_INCLUDE=$with_cuda_driver/include
+     CUDA_DRIVER_LIB=$with_cuda_driver/lib
+     ;;
+esac
 if test "x$with_cuda_driver_include" != x; then
   CUDA_DRIVER_INCLUDE=$with_cuda_driver_include
 fi
@@ -15244,6 +15322,7 @@ PLUGIN_NVPTX=0
 PLUGIN_NVPTX_CPPFLAGS=
 PLUGIN_NVPTX_LDFLAGS=
 PLUGIN_NVPTX_LIBS=
+PLUGIN_NVPTX_DYNAMIC=0
 
 
 
@@ -15293,28 +15372,10 @@ if test "x$HSA_RUNTIME_LIB" != x; then
   HSA_RUNTIME_LDFLAGS=-L$HSA_RUNTIME_LIB
 fi
 
-HSA_KMT_LIB=
-
-HSA_KMT_LDFLAGS=
-
-# Check whether --with-hsa-kmt-lib was given.
-if test "${with_hsa_kmt_lib+set}" = set; then :
-  withval=$with_hsa_kmt_lib;
-fi
-
-if test "x$with_hsa_kmt_lib" != x; then
-  HSA_KMT_LIB=$with_hsa_kmt_lib
-fi
-if test "x$HSA_KMT_LIB" != x; then
-  HSA_KMT_LDFLAGS=-L$HSA_KMT_LIB
-fi
-
 PLUGIN_HSA=0
 PLUGIN_HSA_CPPFLAGS=
 PLUGIN_HSA_LDFLAGS=
 PLUGIN_HSA_LIBS=
-
-
 
 
 
@@ -15368,9 +15429,17 @@ rm -f core conftest.err conftest.$ac_objext \
 	LIBS=$PLUGIN_NVPTX_save_LIBS
 	case $PLUGIN_NVPTX in
 	  nvptx*)
-	    PLUGIN_NVPTX=0
-	    as_fn_error "CUDA driver package required for nvptx support" "$LINENO" 5
-	    ;;
+	    if test "x$CUDA_DRIVER_INCLUDE" = x \
+	       && test "x$CUDA_DRIVER_LIB" = x; then
+	      PLUGIN_NVPTX=1
+	      PLUGIN_NVPTX_CPPFLAGS='-I$(srcdir)/plugin/cuda'
+	      PLUGIN_NVPTX_LIBS='-ldl'
+	      PLUGIN_NVPTX_DYNAMIC=1
+	    else
+	      PLUGIN_NVPTX=0
+	      as_fn_error "CUDA driver package required for nvptx support" "$LINENO" 5
+	    fi
+	  ;;
 	esac
 	;;
       hsa*)
@@ -15384,8 +15453,8 @@ rm -f core conftest.err conftest.$ac_objext \
 	        tgt_name=hsa
 	        PLUGIN_HSA=$tgt
 	        PLUGIN_HSA_CPPFLAGS=$HSA_RUNTIME_CPPFLAGS
-	        PLUGIN_HSA_LDFLAGS="$HSA_RUNTIME_LDFLAGS $HSA_KMT_LDFLAGS"
-	        PLUGIN_HSA_LIBS="-lhsa-runtime64 -lhsakmt"
+	        PLUGIN_HSA_LDFLAGS="$HSA_RUNTIME_LDFLAGS"
+	        PLUGIN_HSA_LIBS="-ldl"
 
 	        PLUGIN_HSA_save_CPPFLAGS=$CPPFLAGS
 	        CPPFLAGS="$PLUGIN_HSA_CPPFLAGS $CPPFLAGS"
@@ -15394,22 +15463,7 @@ rm -f core conftest.err conftest.$ac_objext \
 	        PLUGIN_HSA_save_LIBS=$LIBS
 	        LIBS="$PLUGIN_HSA_LIBS $LIBS"
 
-	        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include "hsa.h"
-int
-main ()
-{
-hsa_status_t status = hsa_init ()
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  PLUGIN_HSA=1
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
+	        PLUGIN_HSA=1
 	        CPPFLAGS=$PLUGIN_HSA_save_CPPFLAGS
 	        LDFLAGS=$PLUGIN_HSA_save_LDFLAGS
 	        LIBS=$PLUGIN_HSA_save_LIBS
@@ -15470,6 +15524,11 @@ cat >>confdefs.h <<_ACEOF
 #define PLUGIN_NVPTX $PLUGIN_NVPTX
 _ACEOF
 
+
+cat >>confdefs.h <<_ACEOF
+#define PLUGIN_NVPTX_DYNAMIC $PLUGIN_NVPTX_DYNAMIC
+_ACEOF
+
  if test $PLUGIN_HSA = 1; then
   PLUGIN_HSA_TRUE=
   PLUGIN_HSA_FALSE='#'
@@ -15481,6 +15540,16 @@ fi
 
 cat >>confdefs.h <<_ACEOF
 #define PLUGIN_HSA $PLUGIN_HSA
+_ACEOF
+
+
+if test "$HSA_RUNTIME_LIB" != ""; then
+  HSA_RUNTIME_LIB="$HSA_RUNTIME_LIB/"
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define HSA_RUNTIME_LIB "$HSA_RUNTIME_LIB"
 _ACEOF
 
 
@@ -16747,6 +16816,21 @@ fi
 
 CFLAGS="$save_CFLAGS"
 
+# Determine what GCC version number to use in filesystem paths.
+
+  get_gcc_base_ver="cat"
+
+# Check whether --with-gcc-major-version-only was given.
+if test "${with_gcc_major_version_only+set}" = set; then :
+  withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+      fi
+
+fi
+
+
+
+
 ac_config_files="$ac_config_files omp.h omp_lib.h omp_lib.f90 libgomp_f.h"
 
 ac_config_files="$ac_config_files Makefile testsuite/Makefile libgomp.spec"
@@ -17500,7 +17584,6 @@ CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
 CC="$CC"
 CXX="$CXX"
 GFORTRAN="$GFORTRAN"
-GCJ="$GCJ"
 AMDEP_TRUE="$AMDEP_TRUE" ac_aux_dir="$ac_aux_dir"
 
 

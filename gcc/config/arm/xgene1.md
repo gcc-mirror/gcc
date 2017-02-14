@@ -1,5 +1,5 @@
 ;; Machine description for AppliedMicro xgene1 core.
-;; Copyright (C) 2012-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
 ;; Contributed by Theobroma Systems Design und Consulting GmbH.
 ;;
 ;; This file is part of GCC.
@@ -164,7 +164,7 @@
 
 (define_insn_reservation "xgene1_bfm" 2
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "bfm"))
+       (eq_attr "type" "bfm,bfx"))
   "xgene1_decode1op,xgene1_fsu")
 
 (define_insn_reservation "xgene1_f_rint" 5

@@ -1,5 +1,5 @@
 ;; Predicate definitions for S/390 and zSeries.
-;; Copyright (C) 2005-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2017 Free Software Foundation, Inc.
 ;; Contributed by Hartmut Penner (hpenner@de.ibm.com) and
 ;;                Ulrich Weigand (uweigand@de.ibm.com).
 ;;
@@ -147,8 +147,8 @@
       if (GET_CODE (XEXP (op, 1)) != CONST_INT
           || (INTVAL (XEXP (op, 1)) & 1) != 0)
         return false;
-      if (INTVAL (XEXP (op, 1)) >= (HOST_WIDE_INT)1 << 31
-	  || INTVAL (XEXP (op, 1)) < -((HOST_WIDE_INT)1 << 31))
+      if (INTVAL (XEXP (op, 1)) >= HOST_WIDE_INT_1 << 31
+	  || INTVAL (XEXP (op, 1)) < -(HOST_WIDE_INT_1 << 31))
         return false;
       op = XEXP (op, 0);
     }
@@ -176,10 +176,20 @@
   return false;
 })
 
+; Predicate that always allows wraparound of the one-bit range.
 (define_predicate "contiguous_bitmask_operand"
   (match_code "const_int")
 {
-  return s390_contiguous_bitmask_p (INTVAL (op), GET_MODE_BITSIZE (mode), NULL, NULL);
+  return s390_contiguous_bitmask_p (INTVAL (op), true,
+                                    GET_MODE_BITSIZE (mode), NULL, NULL);
+})
+
+; Same without wraparound.
+(define_predicate "contiguous_bitmask_nowrap_operand"
+  (match_code "const_int")
+{
+  return s390_contiguous_bitmask_p
+    (INTVAL (op), false, GET_MODE_BITSIZE (mode), NULL, NULL);
 })
 
 ;; Return true if OP is ligitimate for any LOC instruction.

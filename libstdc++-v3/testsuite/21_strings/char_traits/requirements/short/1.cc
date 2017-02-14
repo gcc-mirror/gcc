@@ -1,7 +1,7 @@
 // 1999-06-03 bkoz
 // 2003-07-22 Matt Austern
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,6 @@
 void test02(void)
 {
   typedef short char_type;
-  bool test __attribute__((unused)) = true;
  
   // 21.1.1 character traits requirements
 
@@ -75,10 +74,11 @@ void test02(void)
 
   const char_type str_lit1[] = {'m', 'o', 'n', 't', 'a', 'r', 'a', ' ', 'a', 'n', 'd', ' ', 'o', 'c', 'e', 'a', 'n', ' ', 'b', 'e', 'a', 'c', 'h', 0};
 
-  int len = sizeof(str_lit1)/sizeof(char_type) + sizeof(array1)/sizeof(char_type) - 1;
+  const int array2_len = sizeof(str_lit1)/sizeof(char_type) + sizeof(array1)/sizeof(char_type) - 1;
   // two terminating chars
   char_type array3[] = {'b', 'o', 'r', 'a', 'c', 'a', 'y', ',', ' ', 'p', 'h', 'i', 'l', 'i', 'p', 'p', 'i', 'n', 'e', 's', 0};
-  char_type array2[len];
+  char_type array2[array2_len];
+  int len = std::min<int>(array2_len, sizeof(array3)/sizeof(char_type));
   std::char_traits<char_type>::copy(array2, array3, len);
 
   VERIFY( str_lit1[0] == 'm' );
@@ -139,13 +139,12 @@ void test02(void)
   VERIFY( pc4 == 0 );
 
   // char_type* X::assign(char_type* s, size_t n, char_type c)
-  len = sizeof(array2) / sizeof(char_type);
-  std::memset(array2, 0xaf, len * sizeof(char_type));
+  std::memset(array2, 0xaf, array2_len * sizeof(char_type));
   VERIFY( array2[0] != 0x15a8 );
 
-  pc1 = std::char_traits<char_type>::assign (array2, len, 0x15a8);
+  pc1 = std::char_traits<char_type>::assign (array2, array2_len, 0x15a8);
   VERIFY( pc1 == array2 );
-  for (int i = 0; i < len; ++i)
+  for (int i = 0; i < array2_len; ++i)
     VERIFY( array2[i] == 0x15a8 );
 
   // char_type* X::copy(char_type* s, const char_type* p, size_t n)

@@ -2,7 +2,7 @@
 
 // 2003-09-08  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,6 @@ void test01()
   typedef wfilebuf::pos_type pos_type;
   typedef wfilebuf::int_type int_type;
 
-  bool test __attribute__((unused)) = true;
   const char name[] = "tmp_seekoff-1.tst";
   const int_type eof = wfilebuf::traits_type::eof();
 

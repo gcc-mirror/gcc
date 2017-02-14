@@ -1,4 +1,4 @@
-;; Copyright (C) 2012-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -120,7 +120,7 @@
 			      (eq_attr "type" "leave"))
 			 "znver1-double,znver1-ieu, znver1-store")
 
-;; Integer Instructions or General intructions
+;; Integer Instructions or General instructions
 ;; Multiplications
 ;; Reg operands
 (define_insn_reservation "znver1_imul" 3
@@ -228,18 +228,18 @@
 				   (eq_attr "memory" "store")))
 				   "znver1-direct,znver1-ieu,znver1-store")
 
-(define_insn_reservation "znver1_load_imov_double_load" 6
+(define_insn_reservation "znver1_load_imov_double_load" 5
 			 (and (eq_attr "cpu" "znver1")
 			      (and (eq_attr "znver1_decode" "double")
 				   (and (eq_attr "type" "imovx")
 					(eq_attr "memory" "load"))))
-			 "znver1-double,znver1-load,znver1-ieu")
+			 "znver1-double,znver1-load")
 
-(define_insn_reservation "znver1_load_imov_direct_load" 5
+(define_insn_reservation "znver1_load_imov_direct_load" 4
 			 (and (eq_attr "cpu" "znver1")
 			      (and (eq_attr "type" "imov,imovx")
 				   (eq_attr "memory" "load")))
-			 "znver1-direct,znver1-load,znver1-ieu")
+			 "znver1-direct,znver1-load")
 
 ;; INTEGER/GENERAL instructions
 ;; register/imm operands only: ALU, ICMP, NEG, NOT, ROTATE, ISHIFT, TEST

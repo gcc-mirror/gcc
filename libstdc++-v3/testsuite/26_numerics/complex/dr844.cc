@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // 2008-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,6 @@
 // and also PR57974.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using __gnu_test::check_ret_type;
 
   typedef std::complex<float>       cmplx_f_type;

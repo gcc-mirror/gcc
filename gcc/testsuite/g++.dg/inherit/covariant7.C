@@ -42,8 +42,8 @@ struct c6 : c0, c3, c4
 // { dg-final { scan-tree-dump "28    .*c6::f2" "class" { target ilp32 } } }
 // { dg-final { scan-tree-dump "56    .*c6::f2" "class" { target lp64 } } }
 // once in c1-in-c3-in-c4-in-c6 - lost primary
-// { dg-final { scan-tree-dump "80    .*0u" "class" { target ilp32 } } }
-// { dg-final { scan-tree-dump "160   .*0u" "class" { target lp64 } } }
+// { dg-final { scan-tree-dump "80    .*0" "class" { target ilp32 } } }
+// { dg-final { scan-tree-dump "160   .*0" "class" { target lp64 } } }
 // once in c3-in-c4-in-c6 - c3 vcall offset
 // { dg-final { scan-tree-dump "84    .*c6::_ZTv0_n16_NV2c62f2Ev" "class" { target ilp32 } } }
 // { dg-final { scan-tree-dump "168   .*c6::_ZTv0_n32_NV2c62f2Ev" "class" { target lp64 } } }

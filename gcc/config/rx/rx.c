@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Renesas RX processors.
-   Copyright (C) 2008-2016 Free Software Foundation, Inc.
+   Copyright (C) 2008-2017 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -31,6 +31,7 @@
 #include "tree.h"
 #include "cfghooks.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "regs.h"
 #include "emit-rtl.h"

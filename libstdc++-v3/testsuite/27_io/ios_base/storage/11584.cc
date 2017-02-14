@@ -1,6 +1,8 @@
+// { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
+
 // 2004-01-25 jlquinn@gcc.gnu.org
 
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,7 +42,6 @@ void operator delete[] (void *p) throw() { operator delete(p); }
 
 int main ()
 {
-  bool test __attribute__((unused)) = true;
   const int i = std::ios::xalloc();
   VERIFY( i >= 0 );
 

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
-   Copyright (C) 1998-2016 Free Software Foundation, Inc.
+   Copyright (C) 1998-2017 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
 This file is part of GCC.
@@ -73,6 +73,8 @@ enum
 #define AVR_HAVE_RAMPZ (avr_arch->have_elpm             \
                         || avr_arch->have_rampd)
 #define AVR_HAVE_EIJMP_EICALL (avr_arch->have_eijmp_eicall)
+
+#define AVR_TINY_PM_OFFSET (0x4000)
 
 /* Handling of 8-bit SP versus 16-bit SP is as follows:
 
@@ -358,7 +360,12 @@ typedef struct avr_args
       }                                                                 \
   } while (0)
 
-#define BRANCH_COST(speed_p, predictable_p) avr_branch_cost
+/* We increase branch costs after reload in order to keep basic-block
+   reordering from introducing out-of-line jumps and to prefer fall-through
+   edges instead.  The default branch costs are 0, mainly because otherwise
+   do_store_flag might come up with bloated code.  */
+#define BRANCH_COST(speed_p, predictable_p)     \
+  (avr_branch_cost + (reload_completed ? 4 : 0))
 
 #define SLOW_BYTE_ACCESS 0
 

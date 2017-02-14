@@ -451,14 +451,14 @@ void exec_vldX_lane (void)
     CHECK(test_name, uint, 8, 8, PRIx8, EXPECTED, comment);		\
     CHECK(test_name, uint, 16, 4, PRIx16, EXPECTED, comment);		\
     CHECK(test_name, uint, 32, 2, PRIx32, EXPECTED, comment);		\
-    CHECK(test_name, poly, 8, 8, PRIx8, EXPECTED, comment);		\
-    CHECK(test_name, poly, 16, 4, PRIx16, EXPECTED, comment);		\
+    CHECK_POLY(test_name, poly, 8, 8, PRIx8, EXPECTED, comment);	\
+    CHECK_POLY(test_name, poly, 16, 4, PRIx16, EXPECTED, comment);	\
     CHECK_FP(test_name, float, 32, 2, PRIx32, EXPECTED, comment);	\
     CHECK(test_name, int, 16, 8, PRIx16, EXPECTED, comment);		\
     CHECK(test_name, int, 32, 4, PRIx32, EXPECTED, comment);		\
     CHECK(test_name, uint, 16, 8, PRIx16, EXPECTED, comment);		\
     CHECK(test_name, uint, 32, 4, PRIx32, EXPECTED, comment);		\
-    CHECK(test_name, poly, 16, 8, PRIx16, EXPECTED, comment);		\
+    CHECK_POLY(test_name, poly, 16, 8, PRIx16, EXPECTED, comment);	\
     CHECK_FP(test_name, float, 32, 4, PRIx32, EXPECTED, comment)
 
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)

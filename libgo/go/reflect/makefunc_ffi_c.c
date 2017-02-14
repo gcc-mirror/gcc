@@ -4,11 +4,10 @@
 
 #include "runtime.h"
 #include "go-type.h"
-#include "go-panic.h"
 
 #ifdef USE_LIBFFI
 
-#include "go-ffi.h"
+#include "ffi.h"
 
 #if FFI_GO_CLOSURES
 #define USE_LIBFFI_CLOSURES
@@ -18,7 +17,7 @@
 
 /* Declare C functions with the names used to call from Go.  */
 
-void makeFuncFFI(const struct __go_func_type *ftyp, void *impl)
+void makeFuncFFI(void *cif, void *impl)
   __asm__ (GOSYM_PREFIX "reflect.makeFuncFFI");
 
 #ifdef USE_LIBFFI_CLOSURES
@@ -27,8 +26,14 @@ void makeFuncFFI(const struct __go_func_type *ftyp, void *impl)
    function ffiCall with the pointer to the arguments, the results area,
    and the closure structure.  */
 
-void FFICallbackGo(void *result, void **args, ffi_go_closure *closure)
+extern void FFICallbackGo(void *result, void **args, ffi_go_closure *closure)
   __asm__ (GOSYM_PREFIX "reflect.FFICallbackGo");
+
+extern void makefuncfficanrecover(Slice)
+  __asm__ (GOSYM_PREFIX "runtime.makefuncfficanrecover");
+
+extern void makefuncreturning(void)
+  __asm__ (GOSYM_PREFIX "runtime.makefuncreturning");
 
 static void ffi_callback (ffi_cif *, void *, void **, void *)
   __asm__ ("reflect.ffi_callback");
@@ -59,31 +64,33 @@ ffi_callback (ffi_cif* cif __attribute__ ((unused)), void *results,
 	break;
     }
   if (i < n)
-    __go_makefunc_ffi_can_recover (locs + i, n - i);
+    {
+      Slice s;
+
+      s.__values = (void *) &locs[i];
+      s.__count = n - i;
+      s.__capacity = n - i;
+      makefuncfficanrecover (s);
+    }
 
   FFICallbackGo(results, args, closure);
 
   if (i < n)
-    __go_makefunc_returning ();
+    makefuncreturning ();
 }
 
 /* Allocate an FFI closure and arrange to call ffi_callback.  */
 
 void
-makeFuncFFI(const struct __go_func_type *ftyp, void *impl)
+makeFuncFFI(void *cif, void *impl)
 {
-  ffi_cif *cif;
-
-  cif = (ffi_cif *) __go_alloc (sizeof (ffi_cif));
-  __go_func_to_cif (ftyp, 0, 0, cif);
-
-  ffi_prep_go_closure(impl, cif, ffi_callback);
+  ffi_prep_go_closure(impl, (ffi_cif*)cif, ffi_callback);
 }
 
 #else /* !defined(USE_LIBFFI_CLOSURES) */
 
 void
-makeFuncFFI(const struct __go_func_type *ftyp __attribute__ ((unused)),
+makeFuncFFI(void *cif __attribute__ ((unused)),
 	    void *impl __attribute__ ((unused)))
 {
   runtime_panicstring ("libgo built without FFI does not support "

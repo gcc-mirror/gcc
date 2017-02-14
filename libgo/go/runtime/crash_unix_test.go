@@ -19,6 +19,10 @@ import (
 	"testing"
 )
 
+// sigquit is the signal to send to kill a hanging testdata program.
+// Send SIGQUIT to get a stack trace.
+var sigquit = syscall.SIGQUIT
+
 func TestCrashDumpsAllThreads(t *testing.T) {
 	switch runtime.GOOS {
 	case "darwin", "dragonfly", "freebsd", "linux", "netbsd", "openbsd", "solaris":
@@ -33,6 +37,8 @@ func TestCrashDumpsAllThreads(t *testing.T) {
 
 	checkStaleRuntime(t)
 
+	t.Parallel()
+
 	dir, err := ioutil.TempDir("", "go-build")
 	if err != nil {
 		t.Fatalf("failed to create temp directory: %v", err)
@@ -43,7 +49,7 @@ func TestCrashDumpsAllThreads(t *testing.T) {
 		t.Fatalf("failed to create Go file: %v", err)
 	}
 
-	cmd := exec.Command("go", "build", "-o", "a.exe")
+	cmd := exec.Command(testenv.GoToolPath(t), "build", "-o", "a.exe")
 	cmd.Dir = dir
 	out, err := testEnv(cmd).CombinedOutput()
 	if err != nil {
@@ -149,10 +155,6 @@ func loop(i int, c chan bool) {
 
 func TestSignalExitStatus(t *testing.T) {
 	testenv.MustHaveGoBuild(t)
-	switch runtime.GOOS {
-	case "netbsd", "solaris":
-		t.Skipf("skipping on %s; see https://golang.org/issue/14063", runtime.GOOS)
-	}
 	exe, err := buildTestProg(t, "testprog")
 	if err != nil {
 		t.Fatal(err)

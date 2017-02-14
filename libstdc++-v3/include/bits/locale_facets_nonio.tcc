@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -659,30 +659,38 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 		  // Abbreviated weekday name [tm_wday]
 		  const char_type*  __days1[7];
 		  __tp._M_days_abbreviated(__days1);
-		  __beg = _M_extract_name(__beg, __end, __tm->tm_wday, __days1,
+		  __beg = _M_extract_name(__beg, __end, __mem, __days1,
 					  7, __io, __tmperr);
+		  if (!__tmperr)
+		    __tm->tm_wday = __mem;
 		  break;
 		case 'A':
 		  // Weekday name [tm_wday].
 		  const char_type*  __days2[7];
 		  __tp._M_days(__days2);
-		  __beg = _M_extract_name(__beg, __end, __tm->tm_wday, __days2,
+		  __beg = _M_extract_name(__beg, __end, __mem, __days2,
 					  7, __io, __tmperr);
+		  if (!__tmperr)
+		    __tm->tm_wday = __mem;
 		  break;
 		case 'h':
 		case 'b':
 		  // Abbreviated month name [tm_mon]
 		  const char_type*  __months1[12];
 		  __tp._M_months_abbreviated(__months1);
-		  __beg = _M_extract_name(__beg, __end, __tm->tm_mon, 
+		  __beg = _M_extract_name(__beg, __end, __mem,
 					  __months1, 12, __io, __tmperr);
+		  if (!__tmperr)
+		    __tm->tm_mon = __mem;
 		  break;
 		case 'B':
 		  // Month name [tm_mon].
 		  const char_type*  __months2[12];
 		  __tp._M_months(__months2);
-		  __beg = _M_extract_name(__beg, __end, __tm->tm_mon, 
+		  __beg = _M_extract_name(__beg, __end, __mem,
 					  __months2, 12, __io, __tmperr);
+		  if (!__tmperr)
+		    __tm->tm_mon = __mem;
 		  break;
 		case 'c':
 		  // Default time and date representation.
@@ -693,18 +701,22 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 		  break;
 		case 'd':
 		  // Day [01, 31]. [tm_mday]
-		  __beg = _M_extract_num(__beg, __end, __tm->tm_mday, 1, 31, 2,
+		  __beg = _M_extract_num(__beg, __end, __mem, 1, 31, 2,
 					 __io, __tmperr);
+		  if (!__tmperr)
+		    __tm->tm_mday = __mem;
 		  break;
 		case 'e':
 		  // Day [1, 31], with single digits preceded by
 		  // space. [tm_mday]
 		  if (__ctype.is(ctype_base::space, *__beg))
-		    __beg = _M_extract_num(++__beg, __end, __tm->tm_mday, 1, 9,
+		    __beg = _M_extract_num(++__beg, __end, __mem, 1, 9,
 					   1, __io, __tmperr);
 		  else
-		    __beg = _M_extract_num(__beg, __end, __tm->tm_mday, 10, 31,
+		    __beg = _M_extract_num(__beg, __end, __mem, 10, 31,
 					   2, __io, __tmperr);
+		  if (!__tmperr)
+		    __tm->tm_mday = __mem;
 		  break;
 		case 'D':
 		  // Equivalent to %m/%d/%y.[tm_mon, tm_mday, tm_year]
@@ -715,13 +727,17 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 		  break;
 		case 'H':
 		  // Hour [00, 23]. [tm_hour]
-		  __beg = _M_extract_num(__beg, __end, __tm->tm_hour, 0, 23, 2,
+		  __beg = _M_extract_num(__beg, __end, __mem, 0, 23, 2,
 					 __io, __tmperr);
+		  if (!__tmperr)
+		    __tm->tm_hour = __mem;
 		  break;
 		case 'I':
 		  // Hour [01, 12]. [tm_hour]
-		  __beg = _M_extract_num(__beg, __end, __tm->tm_hour, 1, 12, 2,
+		  __beg = _M_extract_num(__beg, __end, __mem, 1, 12, 2,
 					 __io, __tmperr);
+		  if (!__tmperr)
+		    __tm->tm_hour = __mem;
 		  break;
 		case 'm':
 		  // Month [01, 12]. [tm_mon]
@@ -732,8 +748,10 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 		  break;
 		case 'M':
 		  // Minute [00, 59]. [tm_min]
-		  __beg = _M_extract_num(__beg, __end, __tm->tm_min, 0, 59, 2,
+		  __beg = _M_extract_num(__beg, __end, __mem, 0, 59, 2,
 					 __io, __tmperr);
+		  if (!__tmperr)
+		    __tm->tm_min = __mem;
 		  break;
 		case 'n':
 		  if (__ctype.narrow(*__beg, 0) == '\n')
@@ -752,11 +770,13 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 		  // Seconds. [tm_sec]
 		  // [00, 60] in C99 (one leap-second), [00, 61] in C89.
 #if _GLIBCXX_USE_C99
-		  __beg = _M_extract_num(__beg, __end, __tm->tm_sec, 0, 60, 2,
+		  __beg = _M_extract_num(__beg, __end, __mem, 0, 60, 2,
 #else
-		  __beg = _M_extract_num(__beg, __end, __tm->tm_sec, 0, 61, 2,
+		  __beg = _M_extract_num(__beg, __end, __mem, 0, 61, 2,
 #endif
 					 __io, __tmperr);
+		  if (!__tmperr)
+		  __tm->tm_sec = __mem;
 		  break;
 		case 't':
 		  if (__ctype.narrow(*__beg, 0) == '\t')

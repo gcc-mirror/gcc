@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2008-11-24  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::poisson_distribution<> u(5.0);
   VERIFY( u.mean() == 5.0 );
   VERIFY( u.min() == 0 );
@@ -38,8 +36,20 @@ test01()
   VERIFY( u.max() == std::numeric_limits<result_type>::max() );
 }
 
+void
+test02()
+{
+  using param_type = std::poisson_distribution<>::param_type;
+  const param_type p(5.0);
+  std::poisson_distribution<> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+  typedef std::poisson_distribution<>::result_type result_type;
+  VERIFY( u.max() == std::numeric_limits<result_type>::max() );
+}
+
 int main()
 {
   test01();
-  return 0;
+  test02();
 }

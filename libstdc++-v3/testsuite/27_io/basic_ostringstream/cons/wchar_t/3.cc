@@ -1,4 +1,4 @@
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,14 +24,12 @@
 void
 test03()
 {
-  bool test __attribute__((unused)) = false;
-
   // Empty string sanity check.
   std::wstring str01;
   std::wstring::iterator __i_start = str01.begin();
   std::wstring::iterator __i_end = str01.end();
   std::wstring::size_type len = str01.size();
-  test = __i_start == __i_end;
+  VERIFY( __i_start == __i_end );
   VERIFY( len == 0 );
 
   // Full string sanity check.

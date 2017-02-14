@@ -12,7 +12,7 @@ int main ()
   int ondev = 0;
   int t = 0,  h = 0;
 
-#pragma acc parallel vector_length(32) copy(t) copy(ondev)
+#pragma acc parallel vector_length(32) copy(ondev)
   {
 #pragma acc loop vector reduction (+:t)
     for (unsigned ix = 0; ix < N; ix++)

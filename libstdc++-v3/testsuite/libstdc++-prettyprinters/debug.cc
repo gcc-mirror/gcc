@@ -1,7 +1,8 @@
 // { dg-do run }
 // { dg-options "-g -O0 -std=gnu++98" }
+// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2011-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,6 +28,7 @@
 #include <list>
 #include <map>
 #include <set>
+#include <vector>
 #include <ext/slist>
 
 int
@@ -65,7 +67,7 @@ main()
 
   std::map<std::string, int> mp;
   mp["zardoz"] = 23;
-// { dg-final { note-test mp {std::__debug::map with 1 elements = {["zardoz"] = 23}} } }
+// { dg-final { note-test mp {std::__debug::map with 1 element = {["zardoz"] = 23}} } }
 
   std::map<std::string, int>::iterator mpiter = mp.begin();
 // { dg-final { note-test mpiter {{first = "zardoz", second = 23}} } }
@@ -89,6 +91,20 @@ main()
   sll.push_front(23);
   sll.push_front(47);
 // { dg-final { note-test sll {__gnu_cxx::slist = {[0] = 47, [1] = 23}} } }
+
+  std::vector<int> v;
+  v.push_back(1);
+  v.push_back(2);
+  std::vector<int>::iterator viter0;
+// { dg-final { note-test viter0 {invalid iterator} } }
+  std::vector<int>::iterator viter1 = v.begin();
+  std::vector<int>::iterator viter2 = viter1 + 1;
+  v.erase(viter1);
+// { dg-final { note-test v {std::__debug::vector of length 1, capacity 2 = {2}} } }
+// { dg-final { note-test viter1 {invalid iterator} } }
+// { dg-final { note-test viter2 {invalid iterator} } }
+  std::vector<int>::iterator viter3 = v.begin();
+// { dg-final { note-test viter3 {2} } }
 
   __gnu_cxx::slist<int>::iterator slliter = sll.begin();
 // { dg-final { note-test slliter {47} } }

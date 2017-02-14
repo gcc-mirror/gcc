@@ -1,5 +1,5 @@
 `/* Implementation of the CSHIFT intrinsic
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Feng Wang <wf_cs@yahoo.com>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -24,8 +24,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
-#include <stdlib.h>
-#include <assert.h>
 #include <string.h>'
 
 include(iparm.m4)dnl

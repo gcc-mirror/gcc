@@ -24,9 +24,9 @@ var (
 )
 
 var (
-	testDNSFlood = flag.Bool("dnsflood", false, "whether to test DNS query flooding")
+	testTCPBig = flag.Bool("tcpbig", false, "whether to test massive size of data per read or write call on TCP connection")
 
-	testExternal = flag.Bool("external", true, "allow use of external networks during long test")
+	testDNSFlood = flag.Bool("dnsflood", false, "whether to test DNS query flooding")
 
 	// If external IPv4 connectivity exists, we can try dialing
 	// non-node/interface local scope IPv4 addresses.

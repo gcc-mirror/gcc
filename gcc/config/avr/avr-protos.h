@@ -1,6 +1,6 @@
 /* Prototypes for exported functions defined in avr.c
    
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
    This file is part of GCC.
@@ -37,6 +37,7 @@ extern void avr_asm_output_aligned_decl_common (FILE*, tree, const char*, unsign
 extern void avr_asm_asm_output_aligned_bss (FILE *, tree, const char *, unsigned HOST_WIDE_INT, int, void (*) (FILE *, tree, const char *, unsigned HOST_WIDE_INT, int));
 extern void asm_output_external (FILE *file, tree decl, char *name);
 extern int avr_progmem_p (tree decl, tree attributes);
+extern bool avr_addr_space_supported_p (addr_space_t, location_t loc = UNKNOWN_LOCATION);
 
 #ifdef RTX_CODE /* inside TREE_CODE */
 extern void avr_init_cumulative_args (CUMULATIVE_ARGS*, tree, rtx, tree);
@@ -57,6 +58,7 @@ extern const char *avr_out_compare64 (rtx_insn *, rtx*, int*);
 extern const char *ret_cond_branch (rtx x, int len, int reverse);
 extern const char *avr_out_movpsi (rtx_insn *, rtx*, int*);
 extern const char *avr_out_sign_extend (rtx_insn *, rtx*, int*);
+extern const char *avr_out_insert_notbit (rtx_insn *, rtx*, rtx, int*);
 
 extern const char *ashlqi3_out (rtx_insn *insn, rtx operands[], int *len);
 extern const char *ashlhi3_out (rtx_insn *insn, rtx operands[], int *len);
@@ -127,6 +129,7 @@ extern bool avr_mem_memx_p (rtx);
 extern bool avr_load_libgcc_p (rtx);
 extern bool avr_xload_libgcc_p (machine_mode);
 extern rtx avr_eval_addr_attrib (rtx x);
+extern bool avr_casei_sequence_check_operands (rtx *xop);
 
 static inline unsigned
 regmask (machine_mode mode, unsigned regno)
@@ -151,6 +154,12 @@ extern void asm_output_float (FILE *file, REAL_VALUE_TYPE n);
 #endif
 
 extern bool avr_have_dimode;
+
+namespace gcc { class context; }
+class rtl_opt_pass;
+
+extern rtl_opt_pass *make_avr_pass_recompute_notes (gcc::context *);
+extern rtl_opt_pass *make_avr_pass_casesi (gcc::context *);
 
 /* From avr-log.c */
 

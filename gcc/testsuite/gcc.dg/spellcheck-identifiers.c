@@ -121,7 +121,7 @@ test_6 (enum foo f)
     }
 }
 
-/* Verify that we offer names of builtins as suggestions.  */
+int snprintf (char *, __SIZE_TYPE__, const char *, ...);
 
 void
 test_7 (int i, int j)

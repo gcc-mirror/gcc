@@ -1,4 +1,4 @@
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,7 +43,6 @@ const char name_02[] = "filebuf_virtuals-2.txt"; // empty file, need to create
 
 void test_02()
 {
-  bool test __attribute__((unused)) = true;
   int close_num = 0;
 
   // read (ext)

@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "ipa-utils.h"
 #include "symbol-summary.h"
+#include "tree-vrp.h"
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "cfgloop.h"
@@ -262,6 +263,9 @@ symbol_table::initialize (void)
 {
   if (!dump_file)
     dump_file = dump_begin (TDI_cgraph, NULL);
+
+  if (!ipa_clones_dump_file)
+    ipa_clones_dump_file = dump_begin (TDI_clones, NULL);
 }
 
 /* Allocate new callgraph node and insert it into basic data structures.  */
@@ -1267,7 +1271,6 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
   cgraph_edge *e = this;
 
   tree decl = gimple_call_fndecl (e->call_stmt);
-  tree lhs = gimple_call_lhs (e->call_stmt);
   gcall *new_stmt;
   gimple_stmt_iterator gsi;
   bool skip_bounds = false;
@@ -1522,6 +1525,7 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
     gimple_call_set_fntype (new_stmt, TREE_TYPE (e->callee->decl));
 
   /* If the call becomes noreturn, remove the LHS if possible.  */
+  tree lhs = gimple_call_lhs (new_stmt);
   if (lhs
       && gimple_call_noreturn_p (new_stmt)
       && (VOID_TYPE_P (TREE_TYPE (gimple_call_fntype (new_stmt)))
@@ -1814,6 +1818,12 @@ cgraph_node::remove (void)
   cgraph_node *n;
   int uid = this->uid;
 
+  if (symtab->ipa_clones_dump_file && symtab->cloned_nodes.contains (this))
+    fprintf (symtab->ipa_clones_dump_file,
+	     "Callgraph removal;%s;%d;%s;%d;%d\n", asm_name (), order,
+	     DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl),
+	     DECL_SOURCE_COLUMN (decl));
+
   symtab->call_cgraph_removal_hooks (this);
   remove_callers ();
   remove_callees ();
@@ -1955,14 +1965,17 @@ cgraph_node::rtl_info (tree decl)
   cgraph_node *node = get (decl);
   if (!node)
     return NULL;
-  node = node->ultimate_alias_target ();
-  if (node->decl != current_function_decl
-      && !TREE_ASM_WRITTEN (node->decl))
+  enum availability avail;
+  node = node->ultimate_alias_target (&avail);
+  if (decl != current_function_decl
+      && (avail < AVAIL_AVAILABLE
+	  || (node->decl != current_function_decl
+	      && !TREE_ASM_WRITTEN (node->decl))))
     return NULL;
-  /* Allocate if it doesnt exist.  */
-  if (node->ultimate_alias_target ()->rtl == NULL)
-    node->ultimate_alias_target ()->rtl = ggc_cleared_alloc<cgraph_rtl_info> ();
-  return node->ultimate_alias_target ()->rtl;
+  /* Allocate if it doesn't exist.  */
+  if (node->rtl == NULL)
+    node->rtl = ggc_cleared_alloc<cgraph_rtl_info> ();
+  return node->rtl;
 }
 
 /* Return a string describing the failure REASON.  */
@@ -2053,6 +2066,28 @@ cgraph_node::dump (FILE *f)
     fprintf (f, "  Profile id: %i\n",
 	     profile_id);
   fprintf (f, "  First run: %i\n", tp_first_run);
+  cgraph_function_version_info *vi = function_version ();
+  if (vi != NULL)
+    {
+      fprintf (f, "  Version info: ");
+      if (vi->prev != NULL)
+	{
+	  fprintf (f, "prev: ");
+	  fprintf (f, "%s/%i ", vi->prev->this_node->asm_name (),
+		   vi->prev->this_node->order);
+	}
+      if (vi->next != NULL)
+	{
+	  fprintf (f, "next: ");
+	  fprintf (f, "%s/%i ", vi->next->this_node->asm_name (),
+		   vi->next->this_node->order);
+	}
+      if (vi->dispatcher_resolver != NULL_TREE)
+	fprintf (f, "dispatcher: %s",
+		 lang_hooks.decl_printable_name (vi->dispatcher_resolver, 2));
+
+      fprintf (f, "\n");
+    }
   fprintf (f, "  Function flags:");
   if (count)
     fprintf (f, " executed %" PRId64"x",
@@ -3136,8 +3171,9 @@ cgraph_node::verify_node (void)
 	  && !e->speculative
 	  /* Optimized out calls are redirected to __builtin_unreachable.  */
 	  && (e->frequency
-	      || e->callee->decl
-		 != builtin_decl_implicit (BUILT_IN_UNREACHABLE))
+	      || ! e->callee->decl
+	      || DECL_BUILT_IN_CLASS (e->callee->decl) != BUILT_IN_NORMAL
+	      || DECL_FUNCTION_CODE (e->callee->decl) != BUILT_IN_UNREACHABLE)
 	  && (e->frequency
 	      != compute_call_stmt_bb_frequency (e->caller->decl,
 						 gimple_bb (e->call_stmt))))

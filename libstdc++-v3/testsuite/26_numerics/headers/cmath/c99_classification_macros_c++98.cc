@@ -1,6 +1,6 @@
 // 2001-04-06 gdr
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++98" }
-// { dg-do compile { xfail uclibc } }
+// { dg-do compile }
 // { dg-excess-errors "" { target uclibc } }
 
 #include <cmath>
@@ -51,8 +51,6 @@ void isunordered() { }
 template <typename _Tp>
   void test_c99_classify()
   {
-    bool test __attribute__((unused)) = true;
-
     typedef _Tp fp_type;
     fp_type f1 = 1.0;
     fp_type f2 = 3.0;

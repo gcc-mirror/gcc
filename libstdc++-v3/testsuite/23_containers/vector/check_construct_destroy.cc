@@ -1,6 +1,6 @@
 // 2004-07-26  Matt Austern  <austern@apple.com>
 //
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,14 +44,17 @@ int main()
   }
   ok = check_construct_destroy("Construct from range", 10, 10) && ok;
 
+  // For C++11 and later the allocator is used to construct/destroy an
+  // additional temporary object during insertion.
+  const int extra = __cplusplus >= 201102L ? 1 : 0;
   {
     Container c(arr10, arr10 + 10);
     c.reserve(100);
     tracker_allocator_counter::reset();
     c.insert(c.begin(), arr10[0]);
-    ok = check_construct_destroy("Insert element", 2, 1) && ok;
+    ok = check_construct_destroy("Insert element", 1+extra, 0+extra) && ok;
   }
-  ok = check_construct_destroy("Insert element", 2, 12) && ok;
+  ok = check_construct_destroy("Insert element", 1+extra, 11+extra) && ok;
 
   {
     Container c(arr10, arr10 + 10);

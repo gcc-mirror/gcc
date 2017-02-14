@@ -1,5 +1,5 @@
 /* Functions to support general ended bitmaps.
-   Copyright (C) 1997-2016 Free Software Foundation, Inc.
+   Copyright (C) 1997-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -66,6 +66,7 @@ bitmap_elem_to_freelist (bitmap head, bitmap_element *elt)
   bitmap_obstack *bit_obstack = head->obstack;
 
   elt->next = NULL;
+  elt->indx = -1;
   if (bit_obstack)
     {
       elt->prev = bit_obstack->elements;

@@ -1,6 +1,6 @@
 // List implementation -*- C++ -*-
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -643,7 +643,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @param  __x  A %list of identical element and allocator types.
        *
        *  The newly-created %list uses a copy of the allocation object used
-       *  by @a __x.
+       *  by @a __x (unless the allocator traits dictate a different object).
        */
       list(const list& __x)
       : _Base(_Node_alloc_traits::
@@ -718,6 +718,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	}
 #endif
 
+#if __cplusplus >= 201103L
       /**
        *  No explicit dtor needed as the _Base dtor takes care of
        *  things.  The _Base dtor only erases the elements, and note
@@ -725,13 +726,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  memory is not touched in any way.  Managing the pointer is
        *  the user's responsibility.
        */
+      ~list() = default;
+#endif
 
       /**
        *  @brief  %List assignment operator.
        *  @param  __x  A %list of identical element and allocator types.
        *
-       *  All the elements of @a __x are copied, but unlike the copy
-       *  constructor, the allocator object is not copied.
+       *  All the elements of @a __x are copied.
+       *
+       *  Whether the allocator is copied depends on the allocator traits.
        */
       list&
       operator=(const list& __x);
@@ -742,7 +746,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @param  __x  A %list of identical element and allocator types.
        *
        *  The contents of @a __x are moved into this %list (without copying).
-       *  @a __x is a valid, but unspecified %list
+       *
+       *  Afterwards @a __x is a valid, but unspecified %list
+       *
+       *  Whether the allocator is moved depends on the allocator traits.
        */
       list&
       operator=(list&& __x)
@@ -778,7 +785,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  This function fills a %list with @a __n copies of the given
        *  value.  Note that the assignment completely changes the %list
        *  and that the resulting %list's size is the same as the number
-       *  of elements assigned.  Old data may be lost.
+       *  of elements assigned.
        */
       void
       assign(size_type __n, const value_type& __val)
@@ -794,7 +801,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *
        *  Note that the assignment completely changes the %list and
        *  that the resulting %list's size is the same as the number of
-       *  elements assigned.  Old data may be lost.
+       *  elements assigned.
        */
 #if __cplusplus >= 201103L
       template<typename _InputIterator,
@@ -823,7 +830,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       void
       assign(initializer_list<value_type> __l)
-      { this->assign(__l.begin(), __l.end()); }
+      { this->_M_assign_dispatch(__l.begin(), __l.end(), __false_type()); }
 #endif
 
       /// Get a copy of the memory allocation object.
@@ -1062,9 +1069,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { this->_M_insert(begin(), std::move(__x)); }
 
       template<typename... _Args>
-        void
+#if __cplusplus > 201402L
+        reference
+#else
+	void
+#endif
         emplace_front(_Args&&... __args)
-        { this->_M_insert(begin(), std::forward<_Args>(__args)...); }
+        {
+	  this->_M_insert(begin(), std::forward<_Args>(__args)...);
+#if __cplusplus > 201402L
+	  return front();
+#endif
+	}
 #endif
 
       /**
@@ -1103,9 +1119,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { this->_M_insert(end(), std::move(__x)); }
 
       template<typename... _Args>
-        void
+#if __cplusplus > 201402L
+        reference
+#else
+	void
+#endif
         emplace_back(_Args&&... __args)
-        { this->_M_insert(end(), std::forward<_Args>(__args)...); }
+        {
+	  this->_M_insert(end(), std::forward<_Args>(__args)...);
+#if __cplusplus > 201402L
+        return back();
+#endif
+	}
 #endif
 
       /**
@@ -1348,6 +1373,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  time.  Note that the global std::swap() function is
        *  specialized such that std::swap(l1,l2) will feed to this
        *  function.
+       *
+       *  Whether the allocators are swapped depends on the allocator traits.
        */
       void
       swap(list& __x) _GLIBCXX_NOEXCEPT

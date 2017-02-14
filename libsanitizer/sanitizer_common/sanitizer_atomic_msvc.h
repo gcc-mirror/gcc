@@ -31,6 +31,10 @@ extern "C" long _InterlockedExchange(    // NOLINT
 extern "C" long _InterlockedExchangeAdd(  // NOLINT
     long volatile * Addend, long Value);  // NOLINT
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" char _InterlockedCompareExchange8(  // NOLINT
+    char volatile *Destination,                // NOLINT
+    char Exchange, char Comparand);            // NOLINT
+#pragma intrinsic(_InterlockedCompareExchange8)
 extern "C" short _InterlockedCompareExchange16(  // NOLINT
     short volatile *Destination,                 // NOLINT
     short Exchange, short Comparand);            // NOLINT
@@ -169,8 +173,6 @@ INLINE u32 atomic_exchange(volatile atomic_uint32_t *a,
   return (u32)_InterlockedExchange((volatile long*)&a->val_dont_use, v);
 }
 
-#ifndef _WIN64
-
 INLINE bool atomic_compare_exchange_strong(volatile atomic_uint8_t *a,
                                            u8 *cmp,
                                            u8 xchgv,
@@ -178,6 +180,10 @@ INLINE bool atomic_compare_exchange_strong(volatile atomic_uint8_t *a,
   (void)mo;
   DCHECK(!((uptr)a % sizeof(*a)));
   u8 cmpv = *cmp;
+#ifdef _WIN64
+  u8 prev = (u8)_InterlockedCompareExchange8(
+      (volatile char*)&a->val_dont_use, (char)xchgv, (char)cmpv);
+#else
   u8 prev;
   __asm {
     mov al, cmpv
@@ -186,13 +192,12 @@ INLINE bool atomic_compare_exchange_strong(volatile atomic_uint8_t *a,
     lock cmpxchg [ecx], dl
     mov prev, al
   }
+#endif
   if (prev == cmpv)
     return true;
   *cmp = prev;
   return false;
 }
-
-#endif
 
 INLINE bool atomic_compare_exchange_strong(volatile atomic_uintptr_t *a,
                                            uptr *cmp,

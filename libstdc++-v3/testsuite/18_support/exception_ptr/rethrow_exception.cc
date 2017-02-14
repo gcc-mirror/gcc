@@ -1,9 +1,8 @@
-// { dg-options "-std=gnu++11" }
-// { dg-require-atomic-builtins "" }
+// { dg-do run { target c++11 } }
 
 // 2008-05-25  Sebastian Redl  <sebastian.redl@getdesigned.at>
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,7 +39,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
   try {

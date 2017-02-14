@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2016 Free Software Foundation, Inc.
+@c Copyright (C) 2002-2017 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -28,8 +28,8 @@ subdirectories that contain parts of GCC and its runtime libraries:
 
 @table @file
 @item boehm-gc
-The Boehm conservative garbage collector, used as part of the Java
-runtime library.
+The Boehm conservative garbage collector, optionally used as part of
+the ObjC runtime library when configured with @option{--enable-objc-gc}.
 
 @item config
 Autoconf macros and Makefile fragments used throughout the tree.
@@ -76,7 +76,7 @@ The C preprocessor library.
 The Decimal Float support library.
 
 @item libffi
-The @code{libffi} library, used as part of the Java runtime library.
+The @code{libffi} library, used as part of the Go runtime library.
 
 @item libgcc
 The GCC runtime library.
@@ -100,9 +100,6 @@ about this library.
 @item libitm
 The runtime support library for transactional memory.
 
-@item libjava
-The Java runtime library.
-
 @item libobjc
 The Objective-C and Objective-C++ runtime library.
 
@@ -122,9 +119,8 @@ Plugin used by the linker if link-time optimizations are enabled.
 Scripts used by the @code{gccadmin} account on @code{gcc.gnu.org}.
 
 @item zlib
-The @code{zlib} compression library, used by the Java front end, as
-part of the Java runtime library, and for compressing and uncompressing
-GCC's intermediate language in LTO object files.
+The @code{zlib} compression library, used for compressing and
+uncompressing GCC's intermediate language in LTO object files.
 @end table
 
 The build system in the top level directory, including how recursion
@@ -629,8 +625,8 @@ for some purposes such as arguments to @option{--enable-languages}.
 If defined, this variable lists (space-separated) language front ends
 other than C that this front end requires to be enabled (with the
 names given being their @code{language} settings).  For example, the
-Java front end depends on the C++ front end, so sets
-@samp{lang_requires=c++}.
+Obj-C++ front end depends on the C++ and ObjC front ends, so sets
+@samp{lang_requires="objc c++"}.
 @item subdir_requires
 If defined, this variable lists (space-separated) front end directories
 other than C that this front end requires to be present.  For example,
@@ -862,12 +858,13 @@ here; FIXME: document the others.
 * Test Directives:: Directives used within DejaGnu tests.
 * Ada Tests::       The Ada language testsuites.
 * C Tests::         The C language testsuites.
-* libgcj Tests::    The Java library testsuites.
 * LTO Testing::     Support for testing link-time optimizations.
 * gcov Testing::    Support for testing gcov.
 * profopt Testing:: Support for testing profile-directed optimizations.
 * compat Testing::  Support for testing binary compatibility.
 * Torture Tests::   Support for torture testing using multiple options.
+* GIMPLE Tests::    Support for testing GIMPLE passes.
+* RTL Tests::       Support for testing RTL passes.
 @end menu
 
 @node Test Idioms
@@ -1321,6 +1318,25 @@ Target supports array and structure sizes that are 32 bits or longer.
 
 @item 4byte_wchar_t
 Target has @code{wchar_t} that is at least 4 bytes.
+
+@item float@var{n}
+Target has the @code{_Float@var{n}} type.
+
+@item float@var{n}x
+Target has the @code{_Float@var{n}x} type.
+
+@item float@var{n}_runtime
+Target has the @code{_Float@var{n}} type, including runtime support
+for any options added with @code{dg-add-options}.
+
+@item float@var{n}x_runtime
+Target has the @code{_Float@var{n}x} type, including runtime support
+for any options added with @code{dg-add-options}.
+
+@item floatn_nx_runtime
+Target has runtime support for any options added with
+@code{dg-add-options} for any @code{_Float@var{n}} or
+@code{_Float@var{n}x} type.
 @end table
 
 @subsubsection Fortran-specific attributes
@@ -1341,6 +1357,10 @@ Target supports Fortran @code{real} kinds larger than @code{real(8)}.
 @table @code
 @item vect_condition
 Target supports vector conditional operations.
+
+@item vect_cond_mixed
+Target supports vector conditional operations where comparison operands
+have different type from the value operands.
 
 @item vect_double
 Target supports hardware vectors of @code{double}.
@@ -1575,6 +1595,13 @@ options, including @code{-mfp16-format=ieee} if necessary to obtain the
 Test system supports executing Neon half-precision float instructions.
 (Implies previous.)
 
+@item arm_fp16_alternative_ok
+ARM target supports the ARM FP16 alternative format.  Some multilibs
+may be incompatible with the options needed.
+
+@item arm_fp16_none_ok
+ARM target supports specifying none as the ARM FP16 format.
+
 @item arm_thumb1_ok
 ARM target generates Thumb-1 code for @code{-mthumb}.
 
@@ -1599,6 +1626,7 @@ ARM target supports @code{-mfpu=neon-fp-armv8 -mfloat-abi=softfp}.
 Some multilibs may be incompatible with these options.
 
 @item arm_v8_1a_neon_ok
+@anchor{arm_v8_1a_neon_ok}
 ARM target supports options to generate ARMv8.1 Adv.SIMD instructions.
 Some multilibs may be incompatible with these options.
 
@@ -1610,10 +1638,67 @@ arm_v8_1a_neon_ok.
 @item arm_acq_rel
 ARM target supports acquire-release instructions.
 
+@item arm_v8_2a_fp16_scalar_ok
+@anchor{arm_v8_2a_fp16_scalar_ok}
+ARM target supports options to generate instructions for ARMv8.2 and
+scalar instructions from the FP16 extension.  Some multilibs may be
+incompatible with these options.
+
+@item arm_v8_2a_fp16_scalar_hw
+ARM target supports executing instructions for ARMv8.2 and scalar
+instructions from the FP16 extension.  Some multilibs may be
+incompatible with these options.  Implies arm_v8_2a_fp16_neon_ok.
+
+@item arm_v8_2a_fp16_neon_ok
+@anchor{arm_v8_2a_fp16_neon_ok}
+ARM target supports options to generate instructions from ARMv8.2 with
+the FP16 extension.  Some multilibs may be incompatible with these
+options.  Implies arm_v8_2a_fp16_scalar_ok.
+
+@item arm_v8_2a_fp16_neon_hw
+ARM target supports executing instructions from ARMv8.2 with the FP16
+extension.  Some multilibs may be incompatible with these options.
+Implies arm_v8_2a_fp16_neon_ok and arm_v8_2a_fp16_scalar_hw.
+
 @item arm_prefer_ldrd_strd
 ARM target prefers @code{LDRD} and @code{STRD} instructions over
 @code{LDM} and @code{STM} instructions.
 
+@item arm_thumb1_movt_ok
+ARM target generates Thumb-1 code for @code{-mthumb} with @code{MOVW}
+and @code{MOVT} instructions available.
+
+@item arm_thumb1_cbz_ok
+ARM target generates Thumb-1 code for @code{-mthumb} with
+@code{CBZ} and @code{CBNZ} instructions available.
+
+@item arm_divmod_simode
+ARM target for which divmod transform is disabled, if it supports hardware
+div instruction.
+
+@item arm_cmse_ok
+ARM target supports ARMv8-M Security Extensions, enabled by the @code{-mcmse}
+option.
+
+@item arm_coproc1_ok
+@anchor{arm_coproc1_ok}
+ARM target supports the following coprocessor instructions: @code{CDP},
+@code{LDC}, @code{STC}, @code{MCR} and @code{MRC}.
+
+@item arm_coproc2_ok
+@anchor{arm_coproc2_ok}
+ARM target supports all the coprocessor instructions also listed as supported
+in @ref{arm_coproc1_ok} in addition to the following: @code{CDP2}, @code{LDC2},
+@code{LDC2l}, @code{STC2}, @code{STC2l}, @code{MCR2} and @code{MRC2}.
+
+@item arm_coproc3_ok
+@anchor{arm_coproc3_ok}
+ARM target supports all the coprocessor instructions also listed as supported
+in @ref{arm_coproc2_ok} in addition the following: @code{MCRR} and @code{MRRC}.
+
+@item arm_coproc4_ok
+ARM target supports all the coprocessor instructions also listed as supported
+in @ref{arm_coproc3_ok} in addition the following: @code{MCRR2} and @code{MRRC2}.
 @end table
 
 @subsubsection AArch64-specific attributes
@@ -1702,6 +1787,10 @@ PowerPC target supports @code{-mhtm}
 @item powerpc_p8vector_ok
 PowerPC target supports @code{-mpower8-vector}
 
+@item powerpc_popcntb_ok
+PowerPC target supports the @code{popcntb} instruction, indicating
+that this target supports @code{-mcpu=power5}.
+
 @item powerpc_ppu_ok
 PowerPC target supports @code{-mcpu=cell}.
 
@@ -1787,6 +1876,13 @@ Target requires a command line argument to enable a SIMD instruction set.
 
 @item pie_copyreloc
 The x86-64 target linker supports PIE with copy reloc.
+
+@item divmod
+Target supporting hardware divmod insn or divmod libcall.
+
+@item divmod_simode
+Target supporting hardware divmod insn or divmod libcall for SImode.
+
 @end table
 
 @subsubsection Environment attributes
@@ -2116,12 +2212,35 @@ the @ref{arm_neon_fp16_ok,,arm_neon_fp16_ok effective target keyword}.
 arm vfp3 floating point support; see
 the @ref{arm_vfp3_ok,,arm_vfp3_ok effective target keyword}.
 
+@item arm_v8_1a_neon
+Add options for ARMv8.1 with Adv.SIMD support, if this is supported
+by the target; see the @ref{arm_v8_1a_neon_ok,,arm_v8_1a_neon_ok}
+effective target keyword.
+
+@item arm_v8_2a_fp16_scalar
+Add options for ARMv8.2 with scalar FP16 support, if this is
+supported by the target; see the
+@ref{arm_v8_2a_fp16_scalar_ok,,arm_v8_2a_fp16_scalar_ok} effective
+target keyword.
+
+@item arm_v8_2a_fp16_neon
+Add options for ARMv8.2 with Adv.SIMD FP16 support, if this is
+supported by the target; see the
+@ref{arm_v8_2a_fp16_neon_ok,,arm_v8_2a_fp16_neon_ok} effective target
+keyword.
+
 @item bind_pic_locally
 Add the target-specific flags needed to enable functions to bind
 locally when using pic/PIC passes in the testsuite.
 
 @item c99_runtime
 Add the target-specific flags needed to access the C99 runtime.
+
+@item float@var{n}
+Add the target-specific flags needed to use the @code{_Float@var{n}} type.
+
+@item float@var{n}x
+Add the target-specific flags needed to use the @code{_Float@var{n}x} type.
 
 @item ieee
 Add the target-specific flags needed to enable full IEEE
@@ -2395,10 +2514,6 @@ The tests are organized by directory, each directory corresponding to
 a chapter of the Ada Reference Manual.  So for example, @file{c9} corresponds
 to chapter 9, which deals with tasking features of the language.
 
-There is also an extra chapter called @file{gcc} containing a template for
-creating new executable tests, although this is deprecated in favor of
-the @file{gnat.dg} testsuite.
-
 The tests are run using two @command{sh} scripts: @file{run_acats} and
 @file{run_all.sh}.  To run the tests using a simulator or a cross
 target, see the small
@@ -2508,29 +2623,6 @@ Test the testsuite itself using @file{gcc.test-framework/test-framework.exp}.
 
 FIXME: merge in @file{testsuite/README.gcc} and discuss the format of
 test cases and magic comments more.
-
-@node libgcj Tests
-@section The Java library testsuites.
-
-Runtime tests are executed via @samp{make check} in the
-@file{@var{target}/libjava/testsuite} directory in the build
-tree.  Additional runtime tests can be checked into this testsuite.
-
-Regression testing of the core packages in libgcj is also covered by the
-Mauve testsuite.  The @uref{http://sourceware.org/mauve/,,Mauve Project}
-develops tests for the Java Class Libraries.  These tests are run as part
-of libgcj testing by placing the Mauve tree within the libjava testsuite
-sources at @file{libjava/testsuite/libjava.mauve/mauve}, or by specifying
-the location of that tree when invoking @samp{make}, as in
-@samp{make MAUVEDIR=~/mauve check}.
-
-To detect regressions, a mechanism in @file{mauve.exp} compares the
-failures for a test run against the list of expected failures in
-@file{libjava/testsuite/libjava.mauve/xfails} from the source hierarchy.
-Update this file when adding new failing tests to Mauve, or when fixing
-bugs in libgcj that had caused Mauve test failures.
-
-We encourage developers to contribute test cases to Mauve.
 
 @node LTO Testing
 @section Support for testing link-time optimizations
@@ -2841,3 +2933,94 @@ set ADDITIONAL_TORTURE_OPTIONS  [list \
   @{ -O2 -ftree-loop-linear @} \
   @{ -O2 -fpeel-loops @} ]
 @end smallexample
+
+@node GIMPLE Tests
+@section Support for testing GIMPLE passes
+
+As of gcc 7, C functions can be tagged with @code{__GIMPLE} to indicate
+that the function body will be GIMPLE, rather than C.  The compiler requires
+the option @option{-fgimple} to enable this functionality.  For example:
+
+@smallexample
+/* @{ dg-do compile @} */
+/* @{ dg-options "-O -fgimple" @} */
+
+void __GIMPLE (startwith ("dse2")) foo ()
+@{
+  int a;
+
+bb_2:
+  if (a > 4)
+    goto bb_3;
+  else
+    goto bb_4;
+
+bb_3:
+  a_2 = 10;
+  goto bb_5;
+
+bb_4:
+  a_3 = 20;
+
+bb_5:
+  a_1 = __PHI (bb_3: a_2, bb_4: a_3);
+  a_4 = a_1 + 4;
+
+  return;
+@}
+@end smallexample
+
+The @code{startwith} argument indicates at which pass to begin.
+
+Use the dump modifier @code{-gimple} (e.g. @option{-fdump-tree-all-gimple})
+to make tree dumps more closely follow the format accepted by the GIMPLE
+parser.
+
+Example DejaGnu tests of GIMPLE can be seen in the source tree at
+@file{gcc/testsuite/gcc.dg/gimplefe-*.c}.
+
+The @code{__GIMPLE} parser is integrated with the C tokenizer and
+preprocessor, so it should be possible to use macros to build out
+test coverage.
+
+@node RTL Tests
+@section Support for testing RTL passes
+
+As of gcc 7, C functions can be tagged with @code{__RTL} to indicate that the
+function body will be RTL, rather than C.  For example:
+
+@smallexample
+double __RTL (startwith ("ira")) test (struct foo *f, const struct bar *b)
+@{
+  (function "test"
+     [...snip; various directives go in here...]
+  ) ;; function "test"
+@}
+@end smallexample
+
+The @code{startwith} argument indicates at which pass to begin.
+
+The parser expects the RTL body to be in the format emitted by this
+dumping function:
+
+@smallexample
+DEBUG_FUNCTION void
+print_rtx_function (FILE *outfile, function *fn, bool compact);
+@end smallexample
+
+when "compact" is true.  So you can capture RTL in the correct format
+from the debugger using:
+
+@smallexample
+(gdb) print_rtx_function (stderr, cfun, true);
+@end smallexample
+
+and copy and paste the output into the body of the C function.
+
+Example DejaGnu tests of RTL can be seen in the source tree under
+@file{gcc/testsuite/gcc.dg/rtl}.
+
+The @code{__RTL} parser is not integrated with the C tokenizer or
+preprocessor, and works simply by reading the relevant lines within
+the braces.  In particular, the RTL body must be on separate lines from
+the enclosing braces, and the preprocessor is not usable within it.

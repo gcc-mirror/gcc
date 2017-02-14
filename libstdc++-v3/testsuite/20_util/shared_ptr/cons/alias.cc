@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,7 +44,7 @@ void deletefunc(A* p) { delete p; }
 
 int test01()
 {
-  bool test __attribute__((unused)) = true;
+  bool test = true;
 
   std::shared_ptr<A> a;
   std::shared_ptr<bool> b1(a, &test);
@@ -62,8 +62,6 @@ int test01()
 int
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<A> a(new A);
   std::shared_ptr<int> i1(a, &a->i);
   VERIFY( i1.use_count() == 2 );
@@ -78,8 +76,6 @@ test02()
 int
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<B> b(new B);
   std::shared_ptr<A> a1(b, b.get());
   std::shared_ptr<A> a2(b, &b->a);

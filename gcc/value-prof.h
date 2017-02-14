@@ -1,5 +1,5 @@
 /* Definitions for transformations based on profile information for values.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,8 +28,6 @@ enum hist_type
   HIST_TYPE_POW2,	/* Histogram of power of 2 values.  */
   HIST_TYPE_SINGLE_VALUE, /* Tries to identify the value that is (almost)
 			   always constant.  */
-  HIST_TYPE_CONST_DELTA, /* Tries to identify the (almost) always constant
-			   difference between two evaluations of a value.  */
   HIST_TYPE_INDIR_CALL,   /* Tries to identify the function that is (almost)
 			    called in indirect call */
   HIST_TYPE_AVERAGE,	/* Compute average value (sum of all values).  */
@@ -98,17 +96,14 @@ bool check_ic_target (gcall *, struct cgraph_node *);
 
 
 /* In tree-profile.c.  */
-extern void gimple_init_edge_profiler (void);
+extern void gimple_init_gcov_profiler (void);
 extern void gimple_gen_edge_profiler (int, edge);
 extern void gimple_gen_interval_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_pow2_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_one_value_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_ic_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_ic_func_profiler (void);
-extern void gimple_gen_time_profiler (unsigned, unsigned,
-                                      gimple_stmt_iterator &);
-extern void gimple_gen_const_delta_profiler (histogram_value,
-					     unsigned, unsigned);
+extern void gimple_gen_time_profiler (unsigned, unsigned);
 extern void gimple_gen_average_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_ior_profiler (histogram_value, unsigned, unsigned);
 extern void stream_out_histogram_value (struct output_block *, histogram_value);

@@ -1,0 +1,82 @@
+@c Copyright (C) 1999-2017 Free Software Foundation, Inc.
+@c This is part of the CPP and GCC manuals.
+@c For copying conditions, see the file gcc.texi.
+
+@c ---------------------------------------------------------------------
+@c Options affecting preprocessor warnings
+@c ---------------------------------------------------------------------
+
+@c If this file is included with the flag ``cppmanual'' set, it is
+@c formatted for inclusion in the CPP manual; otherwise the main GCC manual.
+
+@item -Wcomment
+@itemx -Wcomments
+@opindex Wcomment
+@opindex Wcomments
+Warn whenever a comment-start sequence @samp{/*} appears in a @samp{/*}
+comment, or whenever a backslash-newline appears in a @samp{//} comment.
+This warning is enabled by @option{-Wall}.
+
+@item -Wtrigraphs
+@opindex Wtrigraphs
+@anchor{Wtrigraphs}
+Warn if any trigraphs are encountered that might change the meaning of
+the program.  Trigraphs within comments are not warned about,
+except those that would form escaped newlines.
+
+This option is implied by @option{-Wall}.  If @option{-Wall} is not
+given, this option is still enabled unless trigraphs are enabled.  To
+get trigraph conversion without warnings, but get the other
+@option{-Wall} warnings, use @samp{-trigraphs -Wall -Wno-trigraphs}.
+
+@item -Wundef
+@opindex Wundef
+@opindex Wno-undef
+Warn if an undefined identifier is evaluated in an @code{#if} directive.
+Such identifiers are replaced with zero.
+
+@item -Wexpansion-to-defined
+@opindex Wexpansion-to-defined
+Warn whenever @samp{defined} is encountered in the expansion of a macro
+(including the case where the macro is expanded by an @samp{#if} directive).
+Such usage is not portable.
+This warning is also enabled by @option{-Wpedantic} and @option{-Wextra}.
+
+@item -Wunused-macros
+@opindex Wunused-macros
+Warn about macros defined in the main file that are unused.  A macro
+is @dfn{used} if it is expanded or tested for existence at least once.
+The preprocessor also warns if the macro has not been used at the
+time it is redefined or undefined.
+
+Built-in macros, macros defined on the command line, and macros
+defined in include files are not warned about.
+
+@emph{Note:} If a macro is actually used, but only used in skipped
+conditional blocks, then the preprocessor reports it as unused.  To avoid the
+warning in such a case, you might improve the scope of the macro's
+definition by, for example, moving it into the first skipped block.
+Alternatively, you could provide a dummy use with something like:
+
+@smallexample
+#if defined the_macro_causing_the_warning
+#endif
+@end smallexample
+
+@item -Wno-endif-labels
+@opindex Wno-endif-labels
+@opindex Wendif-labels
+Do not warn whenever an @code{#else} or an @code{#endif} are followed by text.
+This sometimes happens in older programs with code of the form
+
+@smallexample
+#if FOO
+@dots{}
+#else FOO
+@dots{}
+#endif FOO
+@end smallexample
+
+@noindent
+The second and third @code{FOO} should be in comments.
+This warning is on by default.

@@ -1,4 +1,4 @@
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,15 +25,12 @@
 void test04()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
   wistringstream istr(L"inside betty carter");
   wostringstream ostr;
   ostr << istr.rdbuf() << endl;
 
   if (ostr.rdstate() & ios_base::eofbit) 
-    test = false;
-
-  VERIFY( test );
+    VERIFY( false );
 }
 
 int 

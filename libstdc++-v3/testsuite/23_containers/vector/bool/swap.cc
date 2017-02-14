@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2012-2016 Free Software Foundation, Inc.
+// Copyright (C) 2012-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,8 +36,6 @@ template<class Cont>
   void
   my_compare(const Cont& c1, const Cont& c2)
   {
-    bool test __attribute__((unused)) = true;
-
     VERIFY( c1.size() == c2.size() );
 
     for (std::size_t i = 0; i < c1.size(); ++i)

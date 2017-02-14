@@ -1,0 +1,101 @@
+# Copyright (C) 2008-2017 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# This folder contains compile tests that set dg-options to
+# some -mmcu=<MCU> which might collide with the MCU set by the
+# target board.  This in turn will fail the test case due to
+# "error: specified option '-mmcu' more than once".
+#
+# Hence we filter out -mmcu= from cflags and --tool_opts before
+# running the tests in this folder.
+
+# Exit immediately if this isn't an AVR target.
+if ![istarget avr-*-*] then {
+  return
+}
+
+# Return the saved values of the variable_list
+proc save_variables { variable_list } {
+    set saved_variable { }
+
+    foreach variable $variable_list {
+	upvar 1 $variable  var
+
+	set save($variable) $var
+	lappend saved_variable $save($variable)
+    }
+    return $saved_variable
+}
+
+# Restore the values of the variable_list
+proc restore_variables { variable_list saved_variable } {
+    foreach variable $variable_list value $saved_variable {
+	upvar 1 $variable  var
+	set var $value
+    }
+}
+
+# Filter out -mmcu= options
+proc filter_out_mmcu { options } {
+    set reduced {}
+    
+    foreach option [ split $options ] {
+	if { ![ regexp "\-mmcu=.*" $option ] } {
+	    lappend reduced $option
+	}
+    }
+
+    return [ join $reduced " " ]
+}
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
+}
+
+# If no --tool_opts were specified, use empty ones.
+if ![info exists TOOL_OPTIONS] then {
+    set TOOL_OPTIONS ""
+}
+
+# Initialize `dg'.
+dg-init
+
+# Save
+set variablelist [ list TOOL_OPTIONS board_info([target_info name],cflags) ]
+set saved_value [ save_variables $variablelist ]
+
+# Filter-out -mmcu=
+set TOOL_OPTIONS [ filter_out_mmcu $TOOL_OPTIONS ]
+set board_info([ target_info name ],cflags) [ filter_out_mmcu $board_info([ target_info name ],cflags) ] 
+
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.{\[cCS\],cpp}]] \
+    "" $DEFAULT_CFLAGS
+
+# Restore
+restore_variables $variablelist $saved_value
+
+set dg_runtest_extra_prunes ""
+
+# All done.
+dg-finish

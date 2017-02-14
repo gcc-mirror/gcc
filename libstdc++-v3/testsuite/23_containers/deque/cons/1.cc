@@ -1,6 +1,6 @@
 // 2001-12-27 pme
 //
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,8 +26,6 @@
 #include <testsuite_hooks.h>
 
 typedef std::deque<__gnu_test::object_counter>   gdeque;
-
-bool test __attribute__((unused)) = true;
 
 // see http://gcc.gnu.org/ml/libstdc++/2001-11/msg00139.html
 void

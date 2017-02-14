@@ -1,6 +1,6 @@
 // <system_error> -*- C++ -*-
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -60,6 +60,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_error_condition_enum<errc>
     : public true_type { };
 
+#if __cplusplus > 201402L
+  template <typename _Tp>
+    constexpr bool is_error_code_enum_v = is_error_code_enum<_Tp>::value;
+  template <typename _Tp>
+    constexpr bool is_error_condition_enum_v =
+      is_error_condition_enum<_Tp>::value;
+#endif // C++17
   inline namespace _V2 {
 
   /// error_category

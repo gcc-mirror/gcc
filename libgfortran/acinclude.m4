@@ -1,6 +1,7 @@
 m4_include(../config/acx.m4)
 m4_include(../config/no-executables.m4)
 m4_include(../config/math.m4)
+m4_include(../config/ax_check_define.m4)
 
 dnl Check that we have a working GNU Fortran compiler
 AC_DEFUN([LIBGFOR_WORKING_GFORTRAN], [
@@ -391,5 +392,63 @@ AC_DEFUN([LIBGFOR_CHECK_STRERROR_R], [
 		  [char s[128]; strerror_r(5, s);],
 		  AC_DEFINE(HAVE_STRERROR_R_2ARGS, 1,
 		  [Define if strerror_r takes two arguments and is available in <string.h>.]),)
+  CFLAGS="$ac_save_CFLAGS"
+])
+
+dnl Check for AVX
+
+AC_DEFUN([LIBGFOR_CHECK_AVX], [
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="-O2 -mavx"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+  void _mm256_zeroall (void)
+        {
+           __builtin_ia32_vzeroall ();
+        }]], [[]])],
+	AC_DEFINE(HAVE_AVX, 1,
+	[Define if AVX instructions can be compiled.]),
+	[])
+  CFLAGS="$ac_save_CFLAGS"
+])
+
+dnl Check for AVX2
+
+AC_DEFUN([LIBGFOR_CHECK_AVX2], [
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="-O2 -mavx2"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+  typedef long long __v4di __attribute__ ((__vector_size__ (32)));
+	__v4di
+	mm256_is32_andnotsi256  (__v4di __X, __v4di __Y)
+        {
+	   return __builtin_ia32_andnotsi256 (__X, __Y);
+        }]], [[]])],
+	AC_DEFINE(HAVE_AVX2, 1,
+	[Define if AVX2 instructions can be compiled.]),
+	[])
+  CFLAGS="$ac_save_CFLAGS"
+])
+
+dnl Check for AVX512f
+
+AC_DEFUN([LIBGFOR_CHECK_AVX512F], [
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="-O2 -mavx512f"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+	typedef double __m512d __attribute__ ((__vector_size__ (64)));
+	__m512d _mm512_add (__m512d a)
+	{
+	  __m512d b = __builtin_ia32_addpd512_mask (a, a, a, 1, 4);
+	  /* For -m64/-mx32 also verify that code will work even if
+	     the target uses call saved zmm16+ and needs to emit
+	     unwind info for them (e.g. on mingw).  See PR79127.  */
+#ifdef __x86_64__
+	  asm volatile ("" : : : "zmm16", "zmm17", "zmm18", "zmm19");
+#endif
+	  return b;
+        }]], [[]])],
+	AC_DEFINE(HAVE_AVX512F, 1,
+	[Define if AVX512f instructions can be compiled.]),
+	[])
   CFLAGS="$ac_save_CFLAGS"
 ])

@@ -1,9 +1,10 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-string-conversions "" }
+// { dg-xfail-run-if "broken long double IO" { newlib_broken_long_double_io  }  "*" "" }
 
 // 2008-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +31,7 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
+  bool test = false;
   using namespace std;
 
   try

@@ -1,5 +1,5 @@
 /* Declarations for rtx-reader support for gen* routines.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -125,9 +125,9 @@ struct optab_pattern
 };
 
 extern rtx add_implicit_parallel (rtvec);
-extern bool init_rtx_reader_args_cb (int, const char **,
-				     bool (*)(const char *));
-extern bool init_rtx_reader_args (int, const char **);
+extern rtx_reader *init_rtx_reader_args_cb (int, const char **,
+					    bool (*)(const char *));
+extern rtx_reader *init_rtx_reader_args (int, const char **);
 extern bool read_md_rtx (md_rtx_info *);
 extern unsigned int get_num_insn_codes ();
 

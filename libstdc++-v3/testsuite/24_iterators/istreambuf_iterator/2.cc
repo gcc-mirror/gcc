@@ -1,6 +1,6 @@
 // 1999-06-28 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,12 +23,11 @@
 #include <iterator>
 #include <testsuite_hooks.h>
 
-bool test02(void)
+void test02(void)
 {
 
   typedef std::istreambuf_iterator<char> cistreambuf_iter;
   typedef cistreambuf_iter::streambuf_type cstreambuf_type;
-  bool test __attribute__((unused)) = true;
   const char slit01[] = "playa hermosa, liberia, guanacaste";
   std::string str01(slit01);
   std::istringstream istrs00(str01);
@@ -106,7 +105,6 @@ bool test02(void)
       c = *++istrb_it28;
       VERIFY( c == slit01[++i] );
     }
-  return test;
 }
 
 int main()

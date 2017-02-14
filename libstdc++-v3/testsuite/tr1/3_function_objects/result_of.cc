@@ -1,6 +1,6 @@
 // 2005-01-26 Douglas Gregor <doug.gregor -at- gmail.com>
 //
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,8 +40,6 @@ struct int_result_type_and_float_result_of
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   using std::tr1::result_of;
   using std::tr1::is_same;
   using namespace __gnu_test;

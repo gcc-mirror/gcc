@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2016 Free Software Foundation, Inc.
+// Copyright (C) 2006-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,8 +22,6 @@
 // libstdc++/27867
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::valarray<int> v1(100, 1);
   std::valarray<int> v2(100, 1);
   std::valarray<bool> v3(true, 1);

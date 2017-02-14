@@ -1,5 +1,5 @@
 /* Common subexpression elimination for GNU compiler.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cfghooks.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "regs.h"
@@ -41,10 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "dbgcnt.h"
 #include "rtl-iter.h"
-
-#ifndef LOAD_EXTEND_OP
-#define LOAD_EXTEND_OP(M) UNKNOWN
-#endif
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
@@ -2364,7 +2361,7 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
       /* We don't hash on the address of the CODE_LABEL to avoid bootstrap
 	 differences and differences between each stage's debugging dumps.  */
 	 hash += (((unsigned int) LABEL_REF << 7)
-		  + CODE_LABEL_NUMBER (LABEL_REF_LABEL (x)));
+		  + CODE_LABEL_NUMBER (label_ref_label (x)));
       return hash;
 
     case SYMBOL_REF:
@@ -2617,7 +2614,7 @@ exp_equiv_p (const_rtx x, const_rtx y, int validate, bool for_gcse)
       return x == y;
 
     case LABEL_REF:
-      return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
+      return label_ref_label (x) == label_ref_label (y);
 
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);
@@ -3054,7 +3051,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 	 with floating-point operands.  */
       if (reverse_code)
 	{
-	  enum rtx_code reversed = reversed_comparison_code (x, NULL_RTX);
+	  enum rtx_code reversed = reversed_comparison_code (x, NULL);
 	  if (reversed == UNKNOWN)
 	    break;
 	  else
@@ -3506,7 +3503,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 		: lookup_as_function (folded_arg0, MINUS);
 
 	      if (y != 0 && GET_CODE (XEXP (y, 1)) == LABEL_REF
-		  && LABEL_REF_LABEL (XEXP (y, 1)) == LABEL_REF_LABEL (const_arg1))
+		  && label_ref_label (XEXP (y, 1)) == label_ref_label (const_arg1))
 		return XEXP (y, 0);
 
 	      /* Now try for a CONST of a MINUS like the above.  */
@@ -3514,7 +3511,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 			: lookup_as_function (folded_arg0, CONST))) != 0
 		  && GET_CODE (XEXP (y, 0)) == MINUS
 		  && GET_CODE (XEXP (XEXP (y, 0), 1)) == LABEL_REF
-		  && LABEL_REF_LABEL (XEXP (XEXP (y, 0), 1)) == LABEL_REF_LABEL (const_arg1))
+		  && label_ref_label (XEXP (XEXP (y, 0), 1)) == label_ref_label (const_arg1))
 		return XEXP (XEXP (y, 0), 0);
 	    }
 
@@ -3526,7 +3523,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 		: lookup_as_function (folded_arg1, MINUS);
 
 	      if (y != 0 && GET_CODE (XEXP (y, 1)) == LABEL_REF
-		  && LABEL_REF_LABEL (XEXP (y, 1)) == LABEL_REF_LABEL (const_arg0))
+		  && label_ref_label (XEXP (y, 1)) == label_ref_label (const_arg0))
 		return XEXP (y, 0);
 
 	      /* Now try for a CONST of a MINUS like the above.  */
@@ -3534,7 +3531,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 			: lookup_as_function (folded_arg1, CONST))) != 0
 		  && GET_CODE (XEXP (y, 0)) == MINUS
 		  && GET_CODE (XEXP (XEXP (y, 0), 1)) == LABEL_REF
-		  && LABEL_REF_LABEL (XEXP (XEXP (y, 0), 1)) == LABEL_REF_LABEL (const_arg0))
+		  && label_ref_label (XEXP (XEXP (y, 0), 1)) == label_ref_label (const_arg0))
 		return XEXP (XEXP (y, 0), 0);
 	    }
 
@@ -3558,7 +3555,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 		 instead we test for the problematic value in a more direct
 		 manner and hope the Sun compilers get it correct.  */
 	      && INTVAL (const_arg1) !=
-	        ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1))
+	        (HOST_WIDE_INT_1 << (HOST_BITS_PER_WIDE_INT - 1))
 	      && REG_P (folded_arg1))
 	    {
 	      rtx new_const = GEN_INT (-INTVAL (const_arg1));
@@ -3643,13 +3640,13 @@ fold_rtx (rtx x, rtx_insn *insn)
 
 	      if (code == PLUS && const_arg1 == inner_const
 		  && ((HAVE_PRE_INCREMENT
-			  && exact_log2 (INTVAL (const_arg1)) >= 0)
+			  && pow2p_hwi (INTVAL (const_arg1)))
 		      || (HAVE_POST_INCREMENT
-			  && exact_log2 (INTVAL (const_arg1)) >= 0)
+			  && pow2p_hwi (INTVAL (const_arg1)))
 		      || (HAVE_PRE_DECREMENT
-			  && exact_log2 (- INTVAL (const_arg1)) >= 0)
+			  && pow2p_hwi (- INTVAL (const_arg1)))
 		      || (HAVE_POST_DECREMENT
-			  && exact_log2 (- INTVAL (const_arg1)) >= 0)))
+			  && pow2p_hwi (- INTVAL (const_arg1)))))
 		break;
 
 	      /* ??? Vector mode shifts by scalar
@@ -4565,9 +4562,9 @@ cse_insn (rtx_insn *insn)
 	  else
 	    shift = INTVAL (pos);
 	  if (INTVAL (width) == HOST_BITS_PER_WIDE_INT)
-	    mask = ~(HOST_WIDE_INT) 0;
+	    mask = HOST_WIDE_INT_M1;
 	  else
-	    mask = ((HOST_WIDE_INT) 1 << INTVAL (width)) - 1;
+	    mask = (HOST_WIDE_INT_1 << INTVAL (width)) - 1;
 	  val = (val >> shift) & mask;
 	  src_eqv = GEN_INT (val);
 	}
@@ -4665,7 +4662,7 @@ cse_insn (rtx_insn *insn)
 	      && INTVAL (width) < HOST_BITS_PER_WIDE_INT
 	      && (INTVAL (src) & ((HOST_WIDE_INT) (-1) << INTVAL (width))))
 	    src_folded
-	      = GEN_INT (INTVAL (src) & (((HOST_WIDE_INT) 1
+	      = GEN_INT (INTVAL (src) & ((HOST_WIDE_INT_1
 					  << INTVAL (width)) - 1));
 	}
 #endif
@@ -4918,11 +4915,10 @@ cse_insn (rtx_insn *insn)
 	 also have such operations, but this is only likely to be
 	 beneficial on these machines.  */
 
+      rtx_code extend_op;
       if (flag_expensive_optimizations && src_related == 0
-	  && (GET_MODE_SIZE (mode) < UNITS_PER_WORD)
-	  && GET_MODE_CLASS (mode) == MODE_INT
 	  && MEM_P (src) && ! do_not_record
-	  && LOAD_EXTEND_OP (mode) != UNKNOWN)
+	  && (extend_op = load_extend_op (mode)) != UNKNOWN)
 	{
 	  struct rtx_def memory_extend_buf;
 	  rtx memory_extend_rtx = &memory_extend_buf;
@@ -4931,7 +4927,7 @@ cse_insn (rtx_insn *insn)
 	  /* Set what we are trying to extend and the operation it might
 	     have been extended with.  */
 	  memset (memory_extend_rtx, 0, sizeof (*memory_extend_rtx));
-	  PUT_CODE (memory_extend_rtx, LOAD_EXTEND_OP (mode));
+	  PUT_CODE (memory_extend_rtx, extend_op);
 	  XEXP (memory_extend_rtx, 0) = src;
 
 	  for (tmode = GET_MODE_WIDER_MODE (mode);
@@ -5233,9 +5229,9 @@ cse_insn (rtx_insn *insn)
 		  else
 		    shift = INTVAL (pos);
 		  if (INTVAL (width) == HOST_BITS_PER_WIDE_INT)
-		    mask = ~(HOST_WIDE_INT) 0;
+		    mask = HOST_WIDE_INT_M1;
 		  else
-		    mask = ((HOST_WIDE_INT) 1 << INTVAL (width)) - 1;
+		    mask = (HOST_WIDE_INT_1 << INTVAL (width)) - 1;
 		  val &= ~(mask << shift);
 		  val |= (INTVAL (trial) & mask) << shift;
 		  val = trunc_int_for_mode (val, GET_MODE (dest_reg));
@@ -5898,15 +5894,7 @@ cse_insn (rtx_insn *insn)
 	    || GET_MODE (dest) == BLKmode
 	    /* If we didn't put a REG_EQUAL value or a source into the hash
 	       table, there is no point is recording DEST.  */
-	    || sets[i].src_elt == 0
-	    /* If DEST is a paradoxical SUBREG and SRC is a ZERO_EXTEND
-	       or SIGN_EXTEND, don't record DEST since it can cause
-	       some tracking to be wrong.
-
-	       ??? Think about this more later.  */
-	    || (paradoxical_subreg_p (dest)
-		&& (GET_CODE (sets[i].src) == SIGN_EXTEND
-		    || GET_CODE (sets[i].src) == ZERO_EXTEND)))
+	    || sets[i].src_elt == 0)
 	  continue;
 
 	/* STRICT_LOW_PART isn't part of the value BEING set,
@@ -5924,6 +5912,11 @@ cse_insn (rtx_insn *insn)
 	      rehash_using_reg (dest);
 	      sets[i].dest_hash = HASH (dest, GET_MODE (dest));
 	    }
+
+	/* If DEST is a paradoxical SUBREG, don't record DEST since the bits
+	   outside the mode of GET_MODE (SUBREG_REG (dest)) are undefined.  */
+	if (paradoxical_subreg_p (dest))
+	  continue;
 
 	elt = insert (dest, sets[i].src_elt,
 		      sets[i].dest_hash, GET_MODE (dest));
@@ -6499,10 +6492,10 @@ check_for_label_ref (rtx_insn *insn)
       if (GET_CODE (x) == LABEL_REF
 	  && !LABEL_REF_NONLOCAL_P (x)
 	  && (!JUMP_P (insn)
-	      || !label_is_jump_target_p (LABEL_REF_LABEL (x), insn))
-	  && LABEL_P (LABEL_REF_LABEL (x))
-	  && INSN_UID (LABEL_REF_LABEL (x)) != 0
-	  && !find_reg_note (insn, REG_LABEL_OPERAND, LABEL_REF_LABEL (x)))
+	      || !label_is_jump_target_p (label_ref_label (x), insn))
+	  && LABEL_P (label_ref_label (x))
+	  && INSN_UID (label_ref_label (x)) != 0
+	  && !find_reg_note (insn, REG_LABEL_OPERAND, label_ref_label (x)))
 	return true;
     }
   return false;

@@ -1,6 +1,6 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -782,6 +782,9 @@ friend_accessible_p (tree scope, tree decl, tree type, tree otype)
   if (!scope)
     return 0;
 
+  if (is_global_friend (scope))
+    return 1;
+
   /* Is SCOPE itself a suitable P?  */
   if (TYPE_P (scope) && protected_accessible_p (decl, scope, type, otype))
     return 1;
@@ -947,6 +950,7 @@ accessible_p (tree type, tree decl, bool consider_local_p)
      in default arguments for template parameters), and access
      checking should be performed in the outermost parameter list.  */
   if (processing_template_decl
+      && !expanding_concept ()
       && (!processing_template_parmlist || processing_template_decl > 1))
     return 1;
 
@@ -1398,13 +1402,7 @@ lookup_field_fuzzy_info::fuzzy_lookup_fnfields (tree type)
 void
 lookup_field_fuzzy_info::fuzzy_lookup_field (tree type)
 {
-  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
-      || TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM
-      || TREE_CODE (type) == TYPENAME_TYPE)
-    /* The TYPE_FIELDS of a TEMPLATE_TYPE_PARM and
-       BOUND_TEMPLATE_TEMPLATE_PARM are not fields at all;
-       instead TYPE_FIELDS is the TEMPLATE_PARM_INDEX.
-       The TYPE_FIELDS of TYPENAME_TYPE is its TYPENAME_TYPE_FULLNAME.  */
+  if (!CLASS_TYPE_P (type))
     return;
 
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
@@ -1669,7 +1667,7 @@ lookup_fnfields_1 (tree type, tree name)
 	  if (CLASSTYPE_LAZY_MOVE_CTOR (type))
 	    lazily_declare_fn (sfk_move_constructor, type);
 	}
-      else if (name == ansi_assopname (NOP_EXPR))
+      else if (name == cp_assignment_operator_id (NOP_EXPR))
 	{
 	  if (CLASSTYPE_LAZY_COPY_ASSIGN (type))
 	    lazily_declare_fn (sfk_copy_assignment, type);

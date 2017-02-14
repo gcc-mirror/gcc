@@ -1,5 +1,5 @@
 /* Data and functions related to line maps and input files.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,6 +23,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "diagnostic-core.h"
 #include "selftest.h"
+#include "cpplib.h"
+
+#ifndef HAVE_ICONV
+#define HAVE_ICONV 0
+#endif
 
 /* This is a cache used by get_next_line to store the content of a
    file to be searched for file lines.  */
@@ -58,6 +63,10 @@ struct fcache
      array.  */
   unsigned use_count;
 
+  /* The file_path is the key for identifying a particular file in
+     the cache.
+     For libcpp-using code, the underlying buffer for this field is
+     owned by the corresponding _cpp_file within the cpp_reader.  */
   const char *file_path;
 
   FILE *fp;
@@ -90,6 +99,11 @@ struct fcache
      before the line map has seen the end of the file.  */
   size_t total_lines;
 
+  /* Could this file be missing a trailing newline on its final line?
+     Initially true (to cope with empty files), set to true/false
+     as each line is read.  */
+  bool missing_trailing_newline;
+
   /* This is a record of the beginning and end of the lines we've seen
      while reading the file.  This is useful to avoid walking the data
      from the beginning when we are asked to read a line that is
@@ -108,6 +122,13 @@ struct fcache
 location_t input_location = UNKNOWN_LOCATION;
 
 struct line_maps *line_table;
+
+/* A stashed copy of "line_table" for use by selftest::line_table_test.
+   This needs to be a global so that it can be a GC root, and thus
+   prevent the stashed copy from being garbage-collected if the GC runs
+   during a line_table_test.  */
+
+struct line_maps *saved_line_table;
 
 static fcache *fcache_tab;
 static const size_t fcache_tab_size = 16;
@@ -244,6 +265,33 @@ lookup_file_in_cache_tab (const char *file_path)
   return r;
 }
 
+/* Purge any mention of FILENAME from the cache of files used for
+   printing source code.  For use in selftests when working
+   with tempfiles.  */
+
+void
+diagnostics_file_cache_forcibly_evict_file (const char *file_path)
+{
+  gcc_assert (file_path);
+
+  fcache *r = lookup_file_in_cache_tab (file_path);
+  if (!r)
+    /* Not found.  */
+    return;
+
+  r->file_path = NULL;
+  if (r->fp)
+    fclose (r->fp);
+  r->fp = NULL;
+  r->nb_read = 0;
+  r->line_start_idx = 0;
+  r->line_num = 0;
+  r->line_record.truncate (0);
+  r->use_count = 0;
+  r->total_lines = 0;
+  r->missing_trailing_newline = true;
+}
+
 /* Return the file cache that has been less used, recently, or the
    first empty one.  If HIGHEST_USE_COUNT is non-null,
    *HIGHEST_USE_COUNT is set to the highest use count of the entries
@@ -310,6 +358,7 @@ add_file_to_cache_tab (const char *file_path)
      add_file_to_cache_tab is called.  */
   r->use_count = ++highest_use_count;
   r->total_lines = total_lines_num (file_path);
+  r->missing_trailing_newline = true;
 
   return r;
 }
@@ -334,7 +383,7 @@ lookup_or_add_file_to_cache_tab (const char *file_path)
 fcache::fcache ()
 : use_count (0), file_path (NULL), fp (NULL), data (0),
   size (0), nb_read (0), line_start_idx (0), line_num (0),
-  total_lines (0)
+  total_lines (0), missing_trailing_newline (true)
 {
   line_record.create (0);
 }
@@ -387,7 +436,7 @@ maybe_grow (fcache *c)
     return;
 
   size_t size = c->size == 0 ? fcache_buffer_size : c->size * 2;
-  c->data = XRESIZEVEC (char, c->data, size + 1);
+  c->data = XRESIZEVEC (char, c->data, size);
   c->size = size;
 }
 
@@ -427,14 +476,13 @@ maybe_read_data (fcache *c)
 
 /* Read a new line from file FP, using C as a cache for the data
    coming from the file.  Upon successful completion, *LINE is set to
-   the beginning of the line found.  Space for that line has been
-   allocated in the cache thus *LINE has the same life time as C.
+   the beginning of the line found.  *LINE points directly in the
+   line cache and is only valid until the next call of get_next_line.
    *LINE_LEN is set to the length of the line.  Note that the line
    does not contain any terminal delimiter.  This function returns
    true if some data was read or process from the cache, false
-   otherwise.  Note that subsequent calls to get_next_line return the
-   next lines of the file and might overwrite the content of
-   *LINE.  */
+   otherwise.  Note that subsequent calls to get_next_line might
+   make the content of *LINE invalid.  */
 
 static bool
 get_next_line (fcache *c, char **line, ssize_t *line_len)
@@ -469,19 +517,27 @@ get_next_line (fcache *c, char **line, ssize_t *line_len)
 	    }
 	}
       if (line_end == NULL)
-	/* We've loadded all the file into the cache and still no
-	   '\n'.  Let's say the line ends up at one byte passed the
-	   end of the file.  This is to stay consistent with the case
-	   of when the line ends up with a '\n' and line_end points to
-	   that terminal '\n'.  That consistency is useful below in
-	   the len calculation.  */
-	line_end = c->data + c->nb_read ;
+	{
+	  /* We've loadded all the file into the cache and still no
+	     '\n'.  Let's say the line ends up at one byte passed the
+	     end of the file.  This is to stay consistent with the case
+	     of when the line ends up with a '\n' and line_end points to
+	     that terminal '\n'.  That consistency is useful below in
+	     the len calculation.  */
+	  line_end = c->data + c->nb_read ;
+	  c->missing_trailing_newline = true;
+	}
+      else
+	c->missing_trailing_newline = false;
     }
   else
-    next_line_start = line_end + 1;
+    {
+      next_line_start = line_end + 1;
+      c->missing_trailing_newline = false;
+    }
 
   if (ferror (c->fp))
-    return -1;
+    return false;
 
   /* At this point, we've found the end of the of line.  It either
      points to the '\n' or to one byte after the last byte of the
@@ -544,36 +600,6 @@ get_next_line (fcache *c, char **line, ssize_t *line_len)
   return true;
 }
 
-/* Reads the next line from FILE into *LINE.  If *LINE is too small
-   (or NULL) it is allocated (or extended) to have enough space to
-   containe the line.  *LINE_LENGTH must contain the size of the
-   initial*LINE buffer.  It's then updated by this function to the
-   actual length of the returned line.  Note that the returned line
-   can contain several zero bytes.  Also note that the returned string
-   is allocated in static storage that is going to be re-used by
-   subsequent invocations of read_line.  */
-
-static bool
-read_next_line (fcache *cache, char ** line, ssize_t *line_len)
-{
-  char *l = NULL;
-  ssize_t len = 0;
-
-  if (!get_next_line (cache, &l, &len))
-    return false;
-
-  if (*line == NULL)
-    *line = XNEWVEC (char, len);
-  else
-    if (*line_len < len)
-	*line = XRESIZEVEC (char, *line, len);
-
-  memcpy (*line, l, len);
-  *line_len = len;
-
-  return true;
-}
-
 /* Consume the next bytes coming from the cache (or from its
    underlying file if there are remaining unread bytes in the file)
    until we reach the next end-of-line (or end-of-file).  There is no
@@ -590,15 +616,15 @@ goto_next_line (fcache *cache)
 }
 
 /* Read an arbitrary line number LINE_NUM from the file cached in C.
-   The line is copied into *LINE.  *LINE_LEN must have been set to the
-   length of *LINE.  If *LINE is too small (or NULL) it's extended (or
-   allocated) and *LINE_LEN is adjusted accordingly.  *LINE ends up
-   with a terminal zero byte and can contain additional zero bytes.
+   If the line was read successfully, *LINE points to the beginning
+   of the line in the file cache and *LINE_LEN is the length of the
+   line.  *LINE is not nul-terminated, but may contain zero bytes.
+   *LINE is only valid until the next call of read_line_num.
    This function returns bool if a line was read.  */
 
 static bool
 read_line_num (fcache *c, size_t line_num,
-	       char ** line, ssize_t *line_len)
+	       char **line, ssize_t *line_len)
 {
   gcc_assert (line_num > 0);
 
@@ -650,14 +676,9 @@ read_line_num (fcache *c, size_t line_num,
 
 	  if (i && i->line_num == line_num)
 	    {
-	      /* We have the start/end of the line.  Let's just copy
-		 it again and we are done.  */
-	      ssize_t len = i->end_pos - i->start_pos + 1;
-	      if (*line_len < len)
-		*line = XRESIZEVEC (char, *line, len);
-	      memmove (*line, c->data + i->start_pos, len);
-	      (*line)[len - 1] = '\0';
-	      *line_len = --len;
+	      /* We have the start/end of the line.  */
+	      *line = c->data + i->start_pos;
+	      *line_len = i->end_pos - i->start_pos;
 	      return true;
 	    }
 
@@ -682,21 +703,22 @@ read_line_num (fcache *c, size_t line_num,
 
   /* The line we want is the next one.  Let's read and copy it back to
      the caller.  */
-  return read_next_line (c, line, line_len);
+  return get_next_line (c, line, line_len);
 }
 
-/* Return the physical source line that corresponds to FILE_PATH/LINE in a
-   buffer that is statically allocated.  The newline is replaced by
-   the null character.  Note that the line can contain several null
-   characters, so LINE_LEN, if non-null, points to the actual length
-   of the line.  */
+/* Return the physical source line that corresponds to FILE_PATH/LINE.
+   The line is not nul-terminated.  The returned pointer is only
+   valid until the next call of location_get_source_line.
+   Note that the line can contain several null characters,
+   so LINE_LEN, if non-null, points to the actual length of the line.
+   If the function fails, NULL is returned.  */
 
 const char *
 location_get_source_line (const char *file_path, int line,
 			  int *line_len)
 {
-  static char *buffer;
-  static ssize_t len;
+  char *buffer = NULL;
+  ssize_t len;
 
   if (line == 0)
     return NULL;
@@ -711,6 +733,20 @@ location_get_source_line (const char *file_path, int line,
     *line_len = len;
 
   return read ? buffer : NULL;
+}
+
+/* Determine if FILE_PATH missing a trailing newline on its final line.
+   Only valid to call once all of the file has been loaded, by
+   requesting a line number beyond the end of the file.  */
+
+bool
+location_missing_trailing_newline (const char *file_path)
+{
+  fcache *c = lookup_or_add_file_to_cache_tab (file_path);
+  if (c == NULL)
+    return false;
+
+  return c->missing_trailing_newline;
 }
 
 /* Test if the location originates from the spelling location of a
@@ -798,6 +834,34 @@ expansion_point_location (source_location location)
 {
   return linemap_resolve_location (line_table, location,
 				   LRK_MACRO_EXPANSION_POINT, NULL);
+}
+
+/* Construct a location with caret at CARET, ranging from START to
+   finish e.g.
+
+                 11111111112
+        12345678901234567890
+     522
+     523   return foo + bar;
+                  ~~~~^~~~~
+     524
+
+   The location's caret is at the "+", line 523 column 15, but starts
+   earlier, at the "f" of "foo" at column 11.  The finish is at the "r"
+   of "bar" at column 19.  */
+
+location_t
+make_location (location_t caret, location_t start, location_t finish)
+{
+  location_t pure_loc = get_pure_location (caret);
+  source_range src_range;
+  src_range.m_start = get_start (start);
+  src_range.m_finish = get_finish (finish);
+  location_t combined_loc = COMBINE_LOCATION_DATA (line_table,
+						   pure_loc,
+						   src_range,
+						   NULL);
+  return combined_loc;
 }
 
 #define ONE_K 1024
@@ -1138,11 +1202,381 @@ dump_location_info (FILE *stream)
 				MAX_SOURCE_LOCATION + 1, UINT_MAX);
 }
 
+/* string_concat's constructor.  */
+
+string_concat::string_concat (int num, location_t *locs)
+  : m_num (num)
+{
+  m_locs = ggc_vec_alloc <location_t> (num);
+  for (int i = 0; i < num; i++)
+    m_locs[i] = locs[i];
+}
+
+/* string_concat_db's constructor.  */
+
+string_concat_db::string_concat_db ()
+{
+  m_table = hash_map <location_hash, string_concat *>::create_ggc (64);
+}
+
+/* Record that a string concatenation occurred, covering NUM
+   string literal tokens.  LOCS is an array of size NUM, containing the
+   locations of the tokens.  A copy of LOCS is taken.  */
+
+void
+string_concat_db::record_string_concatenation (int num, location_t *locs)
+{
+  gcc_assert (num > 1);
+  gcc_assert (locs);
+
+  location_t key_loc = get_key_loc (locs[0]);
+
+  string_concat *concat
+    = new (ggc_alloc <string_concat> ()) string_concat (num, locs);
+  m_table->put (key_loc, concat);
+}
+
+/* Determine if LOC was the location of the the initial token of a
+   concatenation of string literal tokens.
+   If so, *OUT_NUM is written to with the number of tokens, and
+   *OUT_LOCS with the location of an array of locations of the
+   tokens, and return true.  *OUT_LOCS is a borrowed pointer to
+   storage owned by the string_concat_db.
+   Otherwise, return false.  */
+
+bool
+string_concat_db::get_string_concatenation (location_t loc,
+					    int *out_num,
+					    location_t **out_locs)
+{
+  gcc_assert (out_num);
+  gcc_assert (out_locs);
+
+  location_t key_loc = get_key_loc (loc);
+
+  string_concat **concat = m_table->get (key_loc);
+  if (!concat)
+    return false;
+
+  *out_num = (*concat)->m_num;
+  *out_locs =(*concat)->m_locs;
+  return true;
+}
+
+/* Internal function.  Canonicalize LOC into a form suitable for
+   use as a key within the database, stripping away macro expansion,
+   ad-hoc information, and range information, using the location of
+   the start of LOC within an ordinary linemap.  */
+
+location_t
+string_concat_db::get_key_loc (location_t loc)
+{
+  loc = linemap_resolve_location (line_table, loc, LRK_SPELLING_LOCATION,
+				  NULL);
+
+  loc = get_range_from_loc (line_table, loc).m_start;
+
+  return loc;
+}
+
+/* Helper class for use within get_substring_ranges_for_loc.
+   An vec of cpp_string with responsibility for releasing all of the
+   str->text for each str in the vector.  */
+
+class auto_cpp_string_vec :  public auto_vec <cpp_string>
+{
+ public:
+  auto_cpp_string_vec (int alloc)
+    : auto_vec <cpp_string> (alloc) {}
+
+  ~auto_cpp_string_vec ()
+  {
+    /* Clean up the copies within this vec.  */
+    int i;
+    cpp_string *str;
+    FOR_EACH_VEC_ELT (*this, i, str)
+      free (const_cast <unsigned char *> (str->text));
+  }
+};
+
+/* Attempt to populate RANGES with source location information on the
+   individual characters within the string literal found at STRLOC.
+   If CONCATS is non-NULL, then any string literals that the token at
+   STRLOC  was concatenated with are also added to RANGES.
+
+   Return NULL if successful, or an error message if any errors occurred (in
+   which case RANGES may be only partially populated and should not
+   be used).
+
+   This is implemented by re-parsing the relevant source line(s).  */
+
+static const char *
+get_substring_ranges_for_loc (cpp_reader *pfile,
+			      string_concat_db *concats,
+			      location_t strloc,
+			      enum cpp_ttype type,
+			      cpp_substring_ranges &ranges)
+{
+  gcc_assert (pfile);
+
+  if (strloc == UNKNOWN_LOCATION)
+    return "unknown location";
+
+  /* Reparsing the strings requires accurate location information.
+     If -ftrack-macro-expansion has been overridden from its default
+     of 2, then we might have a location of a macro expansion point,
+     rather than the location of the literal itself.
+     Avoid this by requiring that we have full macro expansion tracking
+     for substring locations to be available.  */
+  if (cpp_get_options (pfile)->track_macro_expansion != 2)
+    return "track_macro_expansion != 2";
+
+  /* If #line or # 44 "file"-style directives are present, then there's
+     no guarantee that the line numbers we have can be used to locate
+     the strings.  For example, we might have a .i file with # directives
+     pointing back to lines within a .c file, but the .c file might
+     have been edited since the .i file was created.
+     In such a case, the safest course is to disable on-demand substring
+     locations.  */
+  if (line_table->seen_line_directive)
+    return "seen line directive";
+
+  /* If string concatenation has occurred at STRLOC, get the locations
+     of all of the literal tokens making up the compound string.
+     Otherwise, just use STRLOC.  */
+  int num_locs = 1;
+  location_t *strlocs = &strloc;
+  if (concats)
+    concats->get_string_concatenation (strloc, &num_locs, &strlocs);
+
+  auto_cpp_string_vec strs (num_locs);
+  auto_vec <cpp_string_location_reader> loc_readers (num_locs);
+  for (int i = 0; i < num_locs; i++)
+    {
+      /* Get range of strloc.  We will use it to locate the start and finish
+	 of the literal token within the line.  */
+      source_range src_range = get_range_from_loc (line_table, strlocs[i]);
+
+      if (src_range.m_start >= LINEMAPS_MACRO_LOWEST_LOCATION (line_table))
+	/* If the string is within a macro expansion, we can't get at the
+	   end location.  */
+	return "macro expansion";
+
+      if (src_range.m_start >= LINE_MAP_MAX_LOCATION_WITH_COLS)
+	/* If so, we can't reliably determine where the token started within
+	   its line.  */
+	return "range starts after LINE_MAP_MAX_LOCATION_WITH_COLS";
+
+      if (src_range.m_finish >= LINE_MAP_MAX_LOCATION_WITH_COLS)
+	/* If so, we can't reliably determine where the token finished within
+	   its line.  */
+	return "range ends after LINE_MAP_MAX_LOCATION_WITH_COLS";
+
+      expanded_location start
+	= expand_location_to_spelling_point (src_range.m_start);
+      expanded_location finish
+	= expand_location_to_spelling_point (src_range.m_finish);
+      if (start.file != finish.file)
+	return "range endpoints are in different files";
+      if (start.line != finish.line)
+	return "range endpoints are on different lines";
+      if (start.column > finish.column)
+	return "range endpoints are reversed";
+
+      int line_width;
+      const char *line = location_get_source_line (start.file, start.line,
+						   &line_width);
+      if (line == NULL)
+	return "unable to read source line";
+
+      /* Determine the location of the literal (including quotes
+	 and leading prefix chars, such as the 'u' in a u""
+	 token).  */
+      const char *literal = line + start.column - 1;
+      int literal_length = finish.column - start.column + 1;
+
+      /* Ensure that we don't crash if we got the wrong location.  */
+      if (line_width < (start.column - 1 + literal_length))
+	return "line is not wide enough";
+
+      cpp_string from;
+      from.len = literal_length;
+      /* Make a copy of the literal, to avoid having to rely on
+	 the lifetime of the copy of the line within the cache.
+	 This will be released by the auto_cpp_string_vec dtor.  */
+      from.text = XDUPVEC (unsigned char, literal, literal_length);
+      strs.safe_push (from);
+
+      /* For very long lines, a new linemap could have started
+	 halfway through the token.
+	 Ensure that the loc_reader uses the linemap of the
+	 *end* of the token for its start location.  */
+      const line_map_ordinary *final_ord_map;
+      linemap_resolve_location (line_table, src_range.m_finish,
+				LRK_MACRO_EXPANSION_POINT, &final_ord_map);
+      location_t start_loc
+	= linemap_position_for_line_and_column (line_table, final_ord_map,
+						start.line, start.column);
+
+      cpp_string_location_reader loc_reader (start_loc, line_table);
+      loc_readers.safe_push (loc_reader);
+    }
+
+  /* Rerun cpp_interpret_string, or rather, a modified version of it.  */
+  const char *err = cpp_interpret_string_ranges (pfile, strs.address (),
+						 loc_readers.address (),
+						 num_locs, &ranges, type);
+  if (err)
+    return err;
+
+  /* Success: "ranges" should now contain information on the string.  */
+  return NULL;
+}
+
+/* Attempt to populate *OUT_LOC with source location information on the
+   given characters within the string literal found at STRLOC.
+   CARET_IDX, START_IDX, and END_IDX refer to offsets within the execution
+   character set.
+
+   For example, given CARET_IDX = 4, START_IDX = 3, END_IDX  = 7
+   and string literal "012345\n789"
+   *OUT_LOC is written to with:
+     "012345\n789"
+         ~^~~~~
+
+   If CONCATS is non-NULL, then any string literals that the token at
+   STRLOC was concatenated with are also considered.
+
+   This is implemented by re-parsing the relevant source line(s).
+
+   Return NULL if successful, or an error message if any errors occurred.
+   Error messages are intended for GCC developers (to help debugging) rather
+   than for end-users.  */
+
+const char *
+get_source_location_for_substring (cpp_reader *pfile,
+				   string_concat_db *concats,
+				   location_t strloc,
+				   enum cpp_ttype type,
+				   int caret_idx, int start_idx, int end_idx,
+				   source_location *out_loc)
+{
+  gcc_checking_assert (caret_idx >= 0);
+  gcc_checking_assert (start_idx >= 0);
+  gcc_checking_assert (end_idx >= 0);
+  gcc_assert (out_loc);
+
+  cpp_substring_ranges ranges;
+  const char *err
+    = get_substring_ranges_for_loc (pfile, concats, strloc, type, ranges);
+  if (err)
+    return err;
+
+  if (caret_idx >= ranges.get_num_ranges ())
+    return "caret_idx out of range";
+  if (start_idx >= ranges.get_num_ranges ())
+    return "start_idx out of range";
+  if (end_idx >= ranges.get_num_ranges ())
+    return "end_idx out of range";
+
+  *out_loc = make_location (ranges.get_range (caret_idx).m_start,
+			    ranges.get_range (start_idx).m_start,
+			    ranges.get_range (end_idx).m_finish);
+  return NULL;
+}
+
 #if CHECKING_P
 
 namespace selftest {
 
 /* Selftests of location handling.  */
+
+/* Attempt to populate *OUT_RANGE with source location information on the
+   given character within the string literal found at STRLOC.
+   CHAR_IDX refers to an offset within the execution character set.
+   If CONCATS is non-NULL, then any string literals that the token at
+   STRLOC was concatenated with are also considered.
+
+   This is implemented by re-parsing the relevant source line(s).
+
+   Return NULL if successful, or an error message if any errors occurred.
+   Error messages are intended for GCC developers (to help debugging) rather
+   than for end-users.  */
+
+static const char *
+get_source_range_for_char (cpp_reader *pfile,
+			   string_concat_db *concats,
+			   location_t strloc,
+			   enum cpp_ttype type,
+			   int char_idx,
+			   source_range *out_range)
+{
+  gcc_checking_assert (char_idx >= 0);
+  gcc_assert (out_range);
+
+  cpp_substring_ranges ranges;
+  const char *err
+    = get_substring_ranges_for_loc (pfile, concats, strloc, type, ranges);
+  if (err)
+    return err;
+
+  if (char_idx >= ranges.get_num_ranges ())
+    return "char_idx out of range";
+
+  *out_range = ranges.get_range (char_idx);
+  return NULL;
+}
+
+/* As get_source_range_for_char, but write to *OUT the number
+   of ranges that are available.  */
+
+static const char *
+get_num_source_ranges_for_substring (cpp_reader *pfile,
+				     string_concat_db *concats,
+				     location_t strloc,
+				     enum cpp_ttype type,
+				     int *out)
+{
+  gcc_assert (out);
+
+  cpp_substring_ranges ranges;
+  const char *err
+    = get_substring_ranges_for_loc (pfile, concats, strloc, type, ranges);
+
+  if (err)
+    return err;
+
+  *out = ranges.get_num_ranges ();
+  return NULL;
+}
+
+/* Selftests of location handling.  */
+
+/* Helper function for verifying location data: when location_t
+   values are > LINE_MAP_MAX_LOCATION_WITH_COLS, they are treated
+   as having column 0.  */
+
+static bool
+should_have_column_data_p (location_t loc)
+{
+  if (IS_ADHOC_LOC (loc))
+    loc = get_location_from_adhoc_loc (line_table, loc);
+  if (loc > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return false;
+  return true;
+}
+
+/* Selftest for should_have_column_data_p.  */
+
+static void
+test_should_have_column_data_p ()
+{
+  ASSERT_TRUE (should_have_column_data_p (RESERVED_LOCATION_COUNT));
+  ASSERT_TRUE
+    (should_have_column_data_p (LINE_MAP_MAX_LOCATION_WITH_COLS));
+  ASSERT_FALSE
+    (should_have_column_data_p (LINE_MAP_MAX_LOCATION_WITH_COLS + 1));
+}
 
 /* Verify the result of LOCATION_FILE/LOCATION_LINE/LOCATION_COLUMN
    on LOC.  */
@@ -1153,14 +1587,95 @@ assert_loceq (const char *exp_filename, int exp_linenum, int exp_colnum,
 {
   ASSERT_STREQ (exp_filename, LOCATION_FILE (loc));
   ASSERT_EQ (exp_linenum, LOCATION_LINE (loc));
-  ASSERT_EQ (exp_colnum, LOCATION_COLUMN (loc));
+  /* If location_t values are sufficiently high, then column numbers
+     will be unavailable and LOCATION_COLUMN (loc) will be 0.
+     When close to the threshold, column numbers *may* be present: if
+     the final linemap before the threshold contains a line that straddles
+     the threshold, locations in that line have column information.  */
+  if (should_have_column_data_p (loc))
+    ASSERT_EQ (exp_colnum, LOCATION_COLUMN (loc));
+}
+
+/* Various selftests involve constructing a line table and one or more
+   line maps within it.
+
+   For maximum test coverage we want to run these tests with a variety
+   of situations:
+   - line_table->default_range_bits: some frontends use a non-zero value
+   and others use zero
+   - the fallback modes within line-map.c: there are various threshold
+   values for source_location/location_t beyond line-map.c changes
+   behavior (disabling of the range-packing optimization, disabling
+   of column-tracking).  We can exercise these by starting the line_table
+   at interesting values at or near these thresholds.
+
+   The following struct describes a particular case within our test
+   matrix.  */
+
+struct line_table_case
+{
+  line_table_case (int default_range_bits, int base_location)
+  : m_default_range_bits (default_range_bits),
+    m_base_location (base_location)
+  {}
+
+  int m_default_range_bits;
+  int m_base_location;
+};
+
+/* Constructor.  Store the old value of line_table, and create a new
+   one, using sane defaults.  */
+
+line_table_test::line_table_test ()
+{
+  gcc_assert (saved_line_table == NULL);
+  saved_line_table = line_table;
+  line_table = ggc_alloc<line_maps> ();
+  linemap_init (line_table, BUILTINS_LOCATION);
+  gcc_assert (saved_line_table->reallocator);
+  line_table->reallocator = saved_line_table->reallocator;
+  gcc_assert (saved_line_table->round_alloc_size);
+  line_table->round_alloc_size = saved_line_table->round_alloc_size;
+  line_table->default_range_bits = 0;
+}
+
+/* Constructor.  Store the old value of line_table, and create a new
+   one, using the sitation described in CASE_.  */
+
+line_table_test::line_table_test (const line_table_case &case_)
+{
+  gcc_assert (saved_line_table == NULL);
+  saved_line_table = line_table;
+  line_table = ggc_alloc<line_maps> ();
+  linemap_init (line_table, BUILTINS_LOCATION);
+  gcc_assert (saved_line_table->reallocator);
+  line_table->reallocator = saved_line_table->reallocator;
+  gcc_assert (saved_line_table->round_alloc_size);
+  line_table->round_alloc_size = saved_line_table->round_alloc_size;
+  line_table->default_range_bits = case_.m_default_range_bits;
+  if (case_.m_base_location)
+    {
+      line_table->highest_location = case_.m_base_location;
+      line_table->highest_line = case_.m_base_location;
+    }
+}
+
+/* Destructor.  Restore the old value of line_table.  */
+
+line_table_test::~line_table_test ()
+{
+  gcc_assert (saved_line_table != NULL);
+  line_table = saved_line_table;
+  saved_line_table = NULL;
 }
 
 /* Verify basic operation of ordinary linemaps.  */
 
 static void
-test_accessing_ordinary_linemaps ()
+test_accessing_ordinary_linemaps (const line_table_case &case_)
 {
+  line_table_test ltt (case_);
+
   /* Build a simple linemap describing some locations. */
   linemap_add (line_table, LC_ENTER, false, "foo.c", 0);
 
@@ -1176,6 +1691,33 @@ test_accessing_ordinary_linemaps ()
   linemap_line_start (line_table, 3, 2000);
   location_t loc_e = linemap_position_for_column (line_table, 700);
 
+  /* Transitioning back to a short line.  */
+  linemap_line_start (line_table, 4, 0);
+  location_t loc_back_to_short = linemap_position_for_column (line_table, 100);
+
+  if (should_have_column_data_p (loc_back_to_short))
+    {
+      /* Verify that we switched to short lines in the linemap.  */
+      line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
+      ASSERT_EQ (7, map->m_column_and_range_bits - map->m_range_bits);
+    }
+
+  /* Example of a line that will eventually be seen to be longer
+     than LINE_MAP_MAX_COLUMN_NUMBER; the initially seen width is
+     below that.  */
+  linemap_line_start (line_table, 5, 2000);
+
+  location_t loc_start_of_very_long_line
+    = linemap_position_for_column (line_table, 2000);
+  location_t loc_too_wide
+    = linemap_position_for_column (line_table, 4097);
+  location_t loc_too_wide_2
+    = linemap_position_for_column (line_table, 4098);
+
+  /* ...and back to a sane line length.  */
+  linemap_line_start (line_table, 6, 100);
+  location_t loc_sane_again = linemap_position_for_column (line_table, 10);
+
   linemap_add (line_table, LC_LEAVE, false, NULL, 0);
 
   /* Multiple files.  */
@@ -1190,9 +1732,30 @@ test_accessing_ordinary_linemaps ()
   assert_loceq ("foo.c", 2, 1, loc_c);
   assert_loceq ("foo.c", 2, 17, loc_d);
   assert_loceq ("foo.c", 3, 700, loc_e);
+  assert_loceq ("foo.c", 4, 100, loc_back_to_short);
+
+  /* In the very wide line, the initial location should be fully tracked.  */
+  assert_loceq ("foo.c", 5, 2000, loc_start_of_very_long_line);
+  /* ...but once we exceed LINE_MAP_MAX_COLUMN_NUMBER column-tracking should
+     be disabled.  */
+  assert_loceq ("foo.c", 5, 0, loc_too_wide);
+  assert_loceq ("foo.c", 5, 0, loc_too_wide_2);
+  /*...and column-tracking should be re-enabled for subsequent lines.  */
+  assert_loceq ("foo.c", 6, 10, loc_sane_again);
+
   assert_loceq ("bar.c", 1, 150, loc_f);
 
   ASSERT_FALSE (is_location_from_builtin_token (loc_a));
+  ASSERT_TRUE (pure_location_p (line_table, loc_a));
+
+  /* Verify using make_location to build a range, and extracting data
+     back from it.  */
+  location_t range_c_b_d = make_location (loc_c, loc_b, loc_d);
+  ASSERT_FALSE (pure_location_p (line_table, range_c_b_d));
+  ASSERT_EQ (loc_c, get_location_from_adhoc_loc (line_table, range_c_b_d));
+  source_range src_range = get_range_from_loc (line_table, range_c_b_d);
+  ASSERT_EQ (loc_b, src_range.m_start);
+  ASSERT_EQ (loc_d, src_range.m_finish);
 }
 
 /* Verify various properties of UNKNOWN_LOCATION.  */
@@ -1214,39 +1777,1707 @@ test_builtins ()
   ASSERT_PRED1 (is_location_from_builtin_token, BUILTINS_LOCATION);
 }
 
+/* Regression test for make_location.
+   Ensure that we use pure locations for the start/finish of the range,
+   rather than storing a packed or ad-hoc range as the start/finish.  */
+
+static void
+test_make_location_nonpure_range_endpoints (const line_table_case &case_)
+{
+  /* Issue seen with testsuite/c-c++-common/Wlogical-not-parentheses-2.c
+     with C++ frontend.
+     ....................0000000001111111111222.
+     ....................1234567890123456789012.  */
+  const char *content = "     r += !aaa == bbb;\n";
+  temp_source_file tmp (SELFTEST_LOCATION, ".C", content);
+  line_table_test ltt (case_);
+  linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 1);
+
+  const location_t c11 = linemap_position_for_column (line_table, 11);
+  const location_t c12 = linemap_position_for_column (line_table, 12);
+  const location_t c13 = linemap_position_for_column (line_table, 13);
+  const location_t c14 = linemap_position_for_column (line_table, 14);
+  const location_t c21 = linemap_position_for_column (line_table, 21);
+
+  if (c21 > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  /* Use column 13 for the caret location, arbitrarily, to verify that we
+     handle start != caret.  */
+  const location_t aaa = make_location (c13, c12, c14);
+  ASSERT_EQ (c13, get_pure_location (aaa));
+  ASSERT_EQ (c12, get_start (aaa));
+  ASSERT_FALSE (IS_ADHOC_LOC (get_start (aaa)));
+  ASSERT_EQ (c14, get_finish (aaa));
+  ASSERT_FALSE (IS_ADHOC_LOC (get_finish (aaa)));
+
+  /* Make a location using a location with a range as the start-point.  */
+  const location_t not_aaa = make_location (c11, aaa, c14);
+  ASSERT_EQ (c11, get_pure_location (not_aaa));
+  /* It should use the start location of the range, not store the range
+     itself.  */
+  ASSERT_EQ (c12, get_start (not_aaa));
+  ASSERT_FALSE (IS_ADHOC_LOC (get_start (not_aaa)));
+  ASSERT_EQ (c14, get_finish (not_aaa));
+  ASSERT_FALSE (IS_ADHOC_LOC (get_finish (not_aaa)));
+
+  /* Similarly, make a location with a range as the end-point.  */
+  const location_t aaa_eq_bbb = make_location (c12, c12, c21);
+  ASSERT_EQ (c12, get_pure_location (aaa_eq_bbb));
+  ASSERT_EQ (c12, get_start (aaa_eq_bbb));
+  ASSERT_FALSE (IS_ADHOC_LOC (get_start (aaa_eq_bbb)));
+  ASSERT_EQ (c21, get_finish (aaa_eq_bbb));
+  ASSERT_FALSE (IS_ADHOC_LOC (get_finish (aaa_eq_bbb)));
+  const location_t not_aaa_eq_bbb = make_location (c11, c12, aaa_eq_bbb);
+  /* It should use the finish location of the range, not store the range
+     itself.  */
+  ASSERT_EQ (c11, get_pure_location (not_aaa_eq_bbb));
+  ASSERT_EQ (c12, get_start (not_aaa_eq_bbb));
+  ASSERT_FALSE (IS_ADHOC_LOC (get_start (not_aaa_eq_bbb)));
+  ASSERT_EQ (c21, get_finish (not_aaa_eq_bbb));
+  ASSERT_FALSE (IS_ADHOC_LOC (get_finish (not_aaa_eq_bbb)));
+}
+
 /* Verify reading of input files (e.g. for caret-based diagnostics).  */
 
 static void
 test_reading_source_line ()
 {
   /* Create a tempfile and write some text to it.  */
-  char *filename = make_temp_file (".txt");
-  ASSERT_NE (filename, NULL);
-  FILE *out = fopen (filename, "w");
-  if (!out)
-    ::selftest::fail_formatted (SELFTEST_LOCATION,
-				"unable to open tempfile: %s", filename);
-  fprintf (out,
-	   "01234567890123456789\n"
-	   "This is the test text\n"
-	   "This is the 3rd line\n");
-  fclose (out);
+  temp_source_file tmp (SELFTEST_LOCATION, ".txt",
+			"01234567890123456789\n"
+			"This is the test text\n"
+			"This is the 3rd line");
 
   /* Read back a specific line from the tempfile.  */
   int line_size;
-  const char *source_line = location_get_source_line (filename, 2, &line_size);
+  const char *source_line = location_get_source_line (tmp.get_filename (),
+						      3, &line_size);
+  ASSERT_TRUE (source_line != NULL);
+  ASSERT_EQ (20, line_size);
+  ASSERT_TRUE (!strncmp ("This is the 3rd line",
+			 source_line, line_size));
+
+  source_line = location_get_source_line (tmp.get_filename (),
+					  2, &line_size);
   ASSERT_TRUE (source_line != NULL);
   ASSERT_EQ (21, line_size);
-  if (!strncmp ("This is the test text",
-		source_line, line_size))
-    ::selftest::pass (SELFTEST_LOCATION,
-		      "source_line matched expected value");
-  else
-    ::selftest::fail (SELFTEST_LOCATION,
-		      "source_line did not match expected value");
+  ASSERT_TRUE (!strncmp ("This is the test text",
+			 source_line, line_size));
 
-  unlink (filename);
-  free (filename);
+  source_line = location_get_source_line (tmp.get_filename (),
+					  4, &line_size);
+  ASSERT_TRUE (source_line == NULL);
+}
+
+/* Tests of lexing.  */
+
+/* Verify that token TOK from PARSER has cpp_token_as_text
+   equal to EXPECTED_TEXT.  */
+
+#define ASSERT_TOKEN_AS_TEXT_EQ(PARSER, TOK, EXPECTED_TEXT)		\
+  SELFTEST_BEGIN_STMT							\
+    unsigned char *actual_txt = cpp_token_as_text ((PARSER), (TOK));	\
+    ASSERT_STREQ ((EXPECTED_TEXT), (const char *)actual_txt);		\
+  SELFTEST_END_STMT
+
+/* Verify that TOK's src_loc is within EXP_FILENAME at EXP_LINENUM,
+   and ranges from EXP_START_COL to EXP_FINISH_COL.
+   Use LOC as the effective location of the selftest.  */
+
+static void
+assert_token_loc_eq (const location &loc,
+		     const cpp_token *tok,
+		     const char *exp_filename, int exp_linenum,
+		     int exp_start_col, int exp_finish_col)
+{
+  location_t tok_loc = tok->src_loc;
+  ASSERT_STREQ_AT (loc, exp_filename, LOCATION_FILE (tok_loc));
+  ASSERT_EQ_AT (loc, exp_linenum, LOCATION_LINE (tok_loc));
+
+  /* If location_t values are sufficiently high, then column numbers
+     will be unavailable.  */
+  if (!should_have_column_data_p (tok_loc))
+    return;
+
+  ASSERT_EQ_AT (loc, exp_start_col, LOCATION_COLUMN (tok_loc));
+  source_range tok_range = get_range_from_loc (line_table, tok_loc);
+  ASSERT_EQ_AT (loc, exp_start_col, LOCATION_COLUMN (tok_range.m_start));
+  ASSERT_EQ_AT (loc, exp_finish_col, LOCATION_COLUMN (tok_range.m_finish));
+}
+
+/* Use assert_token_loc_eq to verify the TOK->src_loc, using
+   SELFTEST_LOCATION as the effective location of the selftest.  */
+
+#define ASSERT_TOKEN_LOC_EQ(TOK, EXP_FILENAME, EXP_LINENUM, \
+			    EXP_START_COL, EXP_FINISH_COL) \
+  assert_token_loc_eq (SELFTEST_LOCATION, (TOK), (EXP_FILENAME), \
+		       (EXP_LINENUM), (EXP_START_COL), (EXP_FINISH_COL))
+
+/* Test of lexing a file using libcpp, verifying tokens and their
+   location information.  */
+
+static void
+test_lexer (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.  */
+  const char *content =
+    /*00000000011111111112222222222333333.3333444444444.455555555556
+      12345678901234567890123456789012345.6789012345678.901234567890.  */
+    ("test_name /* c-style comment */\n"
+     "                                  \"test literal\"\n"
+     " // test c++-style comment\n"
+     "   42\n");
+  temp_source_file tmp (SELFTEST_LOCATION, ".txt", content);
+
+  line_table_test ltt (case_);
+
+  cpp_reader *parser = cpp_create_reader (CLK_GNUC89, NULL, line_table);
+
+  const char *fname = cpp_read_main_file (parser, tmp.get_filename ());
+  ASSERT_NE (fname, NULL);
+
+  /* Verify that we get the expected tokens back, with the correct
+     location information.  */
+
+  location_t loc;
+  const cpp_token *tok;
+  tok = cpp_get_token_with_location (parser, &loc);
+  ASSERT_NE (tok, NULL);
+  ASSERT_EQ (tok->type, CPP_NAME);
+  ASSERT_TOKEN_AS_TEXT_EQ (parser, tok, "test_name");
+  ASSERT_TOKEN_LOC_EQ (tok, tmp.get_filename (), 1, 1, 9);
+
+  tok = cpp_get_token_with_location (parser, &loc);
+  ASSERT_NE (tok, NULL);
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (parser, tok, "\"test literal\"");
+  ASSERT_TOKEN_LOC_EQ (tok, tmp.get_filename (), 2, 35, 48);
+
+  tok = cpp_get_token_with_location (parser, &loc);
+  ASSERT_NE (tok, NULL);
+  ASSERT_EQ (tok->type, CPP_NUMBER);
+  ASSERT_TOKEN_AS_TEXT_EQ (parser, tok, "42");
+  ASSERT_TOKEN_LOC_EQ (tok, tmp.get_filename (), 4, 4, 5);
+
+  tok = cpp_get_token_with_location (parser, &loc);
+  ASSERT_NE (tok, NULL);
+  ASSERT_EQ (tok->type, CPP_EOF);
+
+  cpp_finish (parser, NULL);
+  cpp_destroy (parser);
+}
+
+/* Forward decls.  */
+
+struct lexer_test;
+class lexer_test_options;
+
+/* A class for specifying options of a lexer_test.
+   The "apply" vfunc is called during the lexer_test constructor.  */
+
+class lexer_test_options
+{
+ public:
+  virtual void apply (lexer_test &) = 0;
+};
+
+/* Wrapper around an cpp_reader *, which calls cpp_finish and cpp_destroy
+   in its dtor.
+
+   This is needed by struct lexer_test to ensure that the cleanup of the
+   cpp_reader happens *after* the cleanup of the temp_source_file.  */
+
+class cpp_reader_ptr
+{
+ public:
+  cpp_reader_ptr (cpp_reader *ptr) : m_ptr (ptr) {}
+
+  ~cpp_reader_ptr ()
+  {
+    cpp_finish (m_ptr, NULL);
+    cpp_destroy (m_ptr);
+  }
+
+  operator cpp_reader * () const { return m_ptr; }
+
+ private:
+  cpp_reader *m_ptr;
+};
+
+/* A struct for writing lexer tests.  */
+
+struct lexer_test
+{
+  lexer_test (const line_table_case &case_, const char *content,
+	      lexer_test_options *options);
+  ~lexer_test ();
+
+  const cpp_token *get_token ();
+
+  /* The ordering of these fields matters.
+     The line_table_test must be first, since the cpp_reader_ptr
+     uses it.
+     The cpp_reader must be cleaned up *after* the temp_source_file
+     since the filenames in input.c's input cache are owned by the
+     cpp_reader; in particular, when ~temp_source_file evicts the
+     filename the filenames must still be alive.  */
+  line_table_test m_ltt;
+  cpp_reader_ptr m_parser;
+  temp_source_file m_tempfile;
+  string_concat_db m_concats;
+  bool m_implicitly_expect_EOF;
+};
+
+/* Use an EBCDIC encoding for the execution charset, specifically
+   IBM1047-encoded (aka "EBCDIC 1047", or "Code page 1047").
+
+   This exercises iconv integration within libcpp.
+   Not every build of iconv supports the given charset,
+   so we need to flag this error and handle it gracefully.  */
+
+class ebcdic_execution_charset : public lexer_test_options
+{
+ public:
+  ebcdic_execution_charset () : m_num_iconv_errors (0)
+    {
+      gcc_assert (s_singleton == NULL);
+      s_singleton = this;
+    }
+  ~ebcdic_execution_charset ()
+    {
+      gcc_assert (s_singleton == this);
+      s_singleton = NULL;
+    }
+
+  void apply (lexer_test &test) FINAL OVERRIDE
+  {
+    cpp_options *cpp_opts = cpp_get_options (test.m_parser);
+    cpp_opts->narrow_charset = "IBM1047";
+
+    cpp_callbacks *callbacks = cpp_get_callbacks (test.m_parser);
+    callbacks->error = on_error;
+  }
+
+  static bool on_error (cpp_reader *pfile ATTRIBUTE_UNUSED,
+			int level ATTRIBUTE_UNUSED,
+			int reason ATTRIBUTE_UNUSED,
+			rich_location *richloc ATTRIBUTE_UNUSED,
+			const char *msgid, va_list *ap ATTRIBUTE_UNUSED)
+    ATTRIBUTE_FPTR_PRINTF(5,0)
+  {
+    gcc_assert (s_singleton);
+    /* Avoid exgettext from picking this up, it is translated in libcpp.  */
+    const char *msg = "conversion from %s to %s not supported by iconv";
+#ifdef ENABLE_NLS
+    msg = dgettext ("cpplib", msg);
+#endif
+    /* Detect and record errors emitted by libcpp/charset.c:init_iconv_desc
+       when the local iconv build doesn't support the conversion.  */
+    if (strcmp (msgid, msg) == 0)
+      {
+	s_singleton->m_num_iconv_errors++;
+	return true;
+      }
+
+    /* Otherwise, we have an unexpected error.  */
+    abort ();
+  }
+
+  bool iconv_errors_occurred_p () const { return m_num_iconv_errors > 0; }
+
+ private:
+  static ebcdic_execution_charset *s_singleton;
+  int m_num_iconv_errors;
+};
+
+ebcdic_execution_charset *ebcdic_execution_charset::s_singleton;
+
+/* A lexer_test_options subclass that records a list of error
+   messages emitted by the lexer.  */
+
+class lexer_error_sink : public lexer_test_options
+{
+ public:
+  lexer_error_sink ()
+  {
+    gcc_assert (s_singleton == NULL);
+    s_singleton = this;
+  }
+  ~lexer_error_sink ()
+  {
+    gcc_assert (s_singleton == this);
+    s_singleton = NULL;
+
+    int i;
+    char *str;
+    FOR_EACH_VEC_ELT (m_errors, i, str)
+      free (str);
+  }
+
+  void apply (lexer_test &test) FINAL OVERRIDE
+  {
+    cpp_callbacks *callbacks = cpp_get_callbacks (test.m_parser);
+    callbacks->error = on_error;
+  }
+
+  static bool on_error (cpp_reader *pfile ATTRIBUTE_UNUSED,
+			int level ATTRIBUTE_UNUSED,
+			int reason ATTRIBUTE_UNUSED,
+			rich_location *richloc ATTRIBUTE_UNUSED,
+			const char *msgid, va_list *ap)
+    ATTRIBUTE_FPTR_PRINTF(5,0)
+  {
+    char *msg = xvasprintf (msgid, *ap);
+    s_singleton->m_errors.safe_push (msg);
+    return true;
+  }
+
+  auto_vec<char *> m_errors;
+
+ private:
+  static lexer_error_sink *s_singleton;
+};
+
+lexer_error_sink *lexer_error_sink::s_singleton;
+
+/* Constructor.  Override line_table with a new instance based on CASE_,
+   and write CONTENT to a tempfile.  Create a cpp_reader, and use it to
+   start parsing the tempfile.  */
+
+lexer_test::lexer_test (const line_table_case &case_, const char *content,
+			lexer_test_options *options)
+: m_ltt (case_),
+  m_parser (cpp_create_reader (CLK_GNUC99, NULL, line_table)),
+  /* Create a tempfile and write the text to it.  */
+  m_tempfile (SELFTEST_LOCATION, ".c", content),
+  m_concats (),
+  m_implicitly_expect_EOF (true)
+{
+  if (options)
+    options->apply (*this);
+
+  cpp_init_iconv (m_parser);
+
+  /* Parse the file.  */
+  const char *fname = cpp_read_main_file (m_parser,
+					  m_tempfile.get_filename ());
+  ASSERT_NE (fname, NULL);
+}
+
+/* Destructor.  By default, verify that the next token in m_parser is EOF.  */
+
+lexer_test::~lexer_test ()
+{
+  location_t loc;
+  const cpp_token *tok;
+
+  if (m_implicitly_expect_EOF)
+    {
+      tok = cpp_get_token_with_location (m_parser, &loc);
+      ASSERT_NE (tok, NULL);
+      ASSERT_EQ (tok->type, CPP_EOF);
+    }
+}
+
+/* Get the next token from m_parser.  */
+
+const cpp_token *
+lexer_test::get_token ()
+{
+  location_t loc;
+  const cpp_token *tok;
+
+  tok = cpp_get_token_with_location (m_parser, &loc);
+  ASSERT_NE (tok, NULL);
+  return tok;
+}
+
+/* Verify that locations within string literals are correctly handled.  */
+
+/* Verify get_source_range_for_substring for token(s) at STRLOC,
+   using the string concatenation database for TEST.
+
+   Assert that the character at index IDX is on EXPECTED_LINE,
+   and that it begins at column EXPECTED_START_COL and ends at
+   EXPECTED_FINISH_COL (unless the locations are beyond
+   LINE_MAP_MAX_LOCATION_WITH_COLS, in which case don't check their
+   columns).  */
+
+static void
+assert_char_at_range (const location &loc,
+		      lexer_test& test,
+		      location_t strloc, enum cpp_ttype type, int idx,
+		      int expected_line, int expected_start_col,
+		      int expected_finish_col)
+{
+  cpp_reader *pfile = test.m_parser;
+  string_concat_db *concats = &test.m_concats;
+
+  source_range actual_range = source_range();
+  const char *err
+    = get_source_range_for_char (pfile, concats, strloc, type, idx,
+				 &actual_range);
+  if (should_have_column_data_p (strloc))
+    ASSERT_EQ_AT (loc, NULL, err);
+  else
+    {
+      ASSERT_STREQ_AT (loc,
+		       "range starts after LINE_MAP_MAX_LOCATION_WITH_COLS",
+		       err);
+      return;
+    }
+
+  int actual_start_line = LOCATION_LINE (actual_range.m_start);
+  ASSERT_EQ_AT (loc, expected_line, actual_start_line);
+  int actual_finish_line = LOCATION_LINE (actual_range.m_finish);
+  ASSERT_EQ_AT (loc, expected_line, actual_finish_line);
+
+  if (should_have_column_data_p (actual_range.m_start))
+    {
+      int actual_start_col = LOCATION_COLUMN (actual_range.m_start);
+      ASSERT_EQ_AT (loc, expected_start_col, actual_start_col);
+    }
+  if (should_have_column_data_p (actual_range.m_finish))
+    {
+      int actual_finish_col = LOCATION_COLUMN (actual_range.m_finish);
+      ASSERT_EQ_AT (loc, expected_finish_col, actual_finish_col);
+    }
+}
+
+/* Macro for calling assert_char_at_range, supplying SELFTEST_LOCATION for
+   the effective location of any errors.  */
+
+#define ASSERT_CHAR_AT_RANGE(LEXER_TEST, STRLOC, TYPE, IDX, EXPECTED_LINE, \
+			     EXPECTED_START_COL, EXPECTED_FINISH_COL)	\
+  assert_char_at_range (SELFTEST_LOCATION, (LEXER_TEST), (STRLOC), (TYPE), \
+			(IDX), (EXPECTED_LINE), (EXPECTED_START_COL), \
+			(EXPECTED_FINISH_COL))
+
+/* Verify get_num_source_ranges_for_substring for token(s) at STRLOC,
+   using the string concatenation database for TEST.
+
+   Assert that the token(s) at STRLOC contain EXPECTED_NUM_RANGES.  */
+
+static void
+assert_num_substring_ranges (const location &loc,
+			     lexer_test& test,
+			     location_t strloc,
+			     enum cpp_ttype type,
+			     int expected_num_ranges)
+{
+  cpp_reader *pfile = test.m_parser;
+  string_concat_db *concats = &test.m_concats;
+
+  int actual_num_ranges = -1;
+  const char *err
+    = get_num_source_ranges_for_substring (pfile, concats, strloc, type,
+					   &actual_num_ranges);
+  if (should_have_column_data_p (strloc))
+    ASSERT_EQ_AT (loc, NULL, err);
+  else
+    {
+      ASSERT_STREQ_AT (loc,
+		       "range starts after LINE_MAP_MAX_LOCATION_WITH_COLS",
+		       err);
+      return;
+    }
+  ASSERT_EQ_AT (loc, expected_num_ranges, actual_num_ranges);
+}
+
+/* Macro for calling assert_num_substring_ranges, supplying
+   SELFTEST_LOCATION for the effective location of any errors.  */
+
+#define ASSERT_NUM_SUBSTRING_RANGES(LEXER_TEST, STRLOC, TYPE, \
+				    EXPECTED_NUM_RANGES)		\
+  assert_num_substring_ranges (SELFTEST_LOCATION, (LEXER_TEST), (STRLOC), \
+			       (TYPE), (EXPECTED_NUM_RANGES))
+
+
+/* Verify that get_num_source_ranges_for_substring for token(s) at STRLOC
+   returns an error (using the string concatenation database for TEST).  */
+
+static void
+assert_has_no_substring_ranges (const location &loc,
+				lexer_test& test,
+				location_t strloc,
+				enum cpp_ttype type,
+				const char *expected_err)
+{
+  cpp_reader *pfile = test.m_parser;
+  string_concat_db *concats = &test.m_concats;
+  cpp_substring_ranges ranges;
+  const char *actual_err
+    = get_substring_ranges_for_loc (pfile, concats, strloc,
+				    type, ranges);
+  if (should_have_column_data_p (strloc))
+    ASSERT_STREQ_AT (loc, expected_err, actual_err);
+  else
+    ASSERT_STREQ_AT (loc,
+		     "range starts after LINE_MAP_MAX_LOCATION_WITH_COLS",
+		     actual_err);
+}
+
+#define ASSERT_HAS_NO_SUBSTRING_RANGES(LEXER_TEST, STRLOC, TYPE, ERR)    \
+    assert_has_no_substring_ranges (SELFTEST_LOCATION, (LEXER_TEST), \
+				    (STRLOC), (TYPE), (ERR))
+
+/* Lex a simple string literal.  Verify the substring location data, before
+   and after running cpp_interpret_string on it.  */
+
+static void
+test_lexer_string_locations_simple (const line_table_case &case_)
+{
+  /* Digits 0-9 (with 0 at column 10), the simple way.
+     ....................000000000.11111111112.2222222223333333333
+     ....................123456789.01234567890.1234567890123456789
+     We add a trailing comment to ensure that we correctly locate
+     the end of the string literal token.  */
+  const char *content = "        \"0123456789\" /* not a string */\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"0123456789\"");
+  ASSERT_TOKEN_LOC_EQ (tok, test.m_tempfile.get_filename (), 1, 9, 20);
+
+  /* At this point in lexing, the quote characters are treated as part of
+     the string (they are stripped off by cpp_interpret_string).  */
+
+  ASSERT_EQ (tok->val.str.len, 12);
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("0123456789", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Verify ranges of individual characters.  This no longer includes the
+     opening quote, but does include the closing quote.  */
+  for (int i = 0; i <= 10; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1,
+			  10 + i, 10 + i);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 11);
+}
+
+/* As test_lexer_string_locations_simple, but use an EBCDIC execution
+   encoding.  */
+
+static void
+test_lexer_string_locations_ebcdic (const line_table_case &case_)
+{
+  /* EBCDIC support requires iconv.  */
+  if (!HAVE_ICONV)
+    return;
+
+  /* Digits 0-9 (with 0 at column 10), the simple way.
+     ....................000000000.11111111112.2222222223333333333
+     ....................123456789.01234567890.1234567890123456789
+     We add a trailing comment to ensure that we correctly locate
+     the end of the string literal token.  */
+  const char *content = "        \"0123456789\" /* not a string */\n";
+  ebcdic_execution_charset use_ebcdic;
+  lexer_test test (case_, content, &use_ebcdic);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"0123456789\"");
+  ASSERT_TOKEN_LOC_EQ (tok, test.m_tempfile.get_filename (), 1, 9, 20);
+
+  /* At this point in lexing, the quote characters are treated as part of
+     the string (they are stripped off by cpp_interpret_string).  */
+
+  ASSERT_EQ (tok->val.str.len, 12);
+
+  /* The remainder of the test requires an iconv implementation that
+     can convert from UTF-8 to the EBCDIC encoding requested above.  */
+  if (use_ebcdic.iconv_errors_occurred_p ())
+    return;
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  /* We should now have EBCDIC-encoded text, specifically
+     IBM1047-encoded (aka "EBCDIC 1047", or "Code page 1047").
+     The digits 0-9 are encoded as 240-249 i.e. 0xf0-0xf9.  */
+  ASSERT_STREQ ("\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9",
+		(const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Verify that we don't attempt to record substring location information
+     for such cases.  */
+  ASSERT_HAS_NO_SUBSTRING_RANGES
+    (test, tok->src_loc, type,
+     "execution character set != source character set");
+}
+
+/* Lex a string literal containing a hex-escaped character.
+   Verify the substring location data, before and after running
+   cpp_interpret_string on it.  */
+
+static void
+test_lexer_string_locations_hex (const line_table_case &case_)
+{
+  /* Digits 0-9, expressing digit 5 in ASCII as "\x35"
+     and with a space in place of digit 6, to terminate the escaped
+     hex code.
+     ....................000000000.111111.11112222.
+     ....................123456789.012345.67890123.  */
+  const char *content = "        \"01234\\x35 789\"\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"01234\\x35 789\"");
+  ASSERT_TOKEN_LOC_EQ (tok, test.m_tempfile.get_filename (), 1, 9, 23);
+
+  /* At this point in lexing, the quote characters are treated as part of
+     the string (they are stripped off by cpp_interpret_string).  */
+  ASSERT_EQ (tok->val.str.len, 15);
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("012345 789", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Verify ranges of individual characters.  This no longer includes the
+     opening quote, but does include the closing quote.  */
+  for (int i = 0; i <= 4; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, 5, 1, 15, 18);
+  for (int i = 6; i <= 10; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 13 + i, 13 + i);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 11);
+}
+
+/* Lex a string literal containing an octal-escaped character.
+   Verify the substring location data after running cpp_interpret_string
+   on it.  */
+
+static void
+test_lexer_string_locations_oct (const line_table_case &case_)
+{
+  /* Digits 0-9, expressing digit 5 in ASCII as "\065"
+     and with a space in place of digit 6, to terminate the escaped
+     octal code.
+     ....................000000000.111111.11112222.2222223333333333444
+     ....................123456789.012345.67890123.4567890123456789012  */
+  const char *content = "        \"01234\\065 789\" /* not a string */\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"01234\\065 789\"");
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("012345 789", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Verify ranges of individual characters.  This no longer includes the
+     opening quote, but does include the closing quote.  */
+  for (int i = 0; i < 5; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, 5, 1, 15, 18);
+  for (int i = 6; i <= 10; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 13 + i, 13 + i);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 11);
+}
+
+/* Test of string literal containing letter escapes.  */
+
+static void
+test_lexer_string_locations_letter_escape_1 (const line_table_case &case_)
+{
+  /* The string "\tfoo\\\nbar" i.e. tab, "foo", backslash, newline, bar.
+     .....................000000000.1.11111.1.1.11222.22222223333333
+     .....................123456789.0.12345.6.7.89012.34567890123456.  */
+  const char *content = ("        \"\\tfoo\\\\\\nbar\" /* non-str */\n");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected tokens back.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"\\tfoo\\\\\\nbar\"");
+
+  /* Verify ranges of individual characters. */
+  /* "\t".  */
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			0, 1, 10, 11);
+  /* "foo". */
+  for (int i = 1; i <= 3; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			  i, 1, 11 + i, 11 + i);
+  /* "\\" and "\n".  */
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			4, 1, 15, 16);
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			5, 1, 17, 18);
+
+  /* "bar" and closing quote for nul-terminator.  */
+  for (int i = 6; i <= 9; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			  i, 1, 13 + i, 13 + i);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 10);
+}
+
+/* Another test of a string literal containing a letter escape.
+   Based on string seen in
+     printf ("%-%\n");
+   in gcc.dg/format/c90-printf-1.c.  */
+
+static void
+test_lexer_string_locations_letter_escape_2 (const line_table_case &case_)
+{
+  /* .....................000000000.1111.11.1111.22222222223.
+     .....................123456789.0123.45.6789.01234567890.  */
+  const char *content = ("        \"%-%\\n\" /* non-str */\n");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected tokens back.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"%-%\\n\"");
+
+  /* Verify ranges of individual characters. */
+  /* "%-%".  */
+  for (int i = 0; i < 3; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			  i, 1, 10 + i, 10 + i);
+  /* "\n".  */
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			3, 1, 13, 14);
+
+  /* Closing quote for nul-terminator.  */
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			4, 1, 15, 15);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 5);
+}
+
+/* Lex a string literal containing UCN 4 characters.
+   Verify the substring location data after running cpp_interpret_string
+   on it.  */
+
+static void
+test_lexer_string_locations_ucn4 (const line_table_case &case_)
+{
+  /* Digits 0-9, expressing digits 5 and 6 as Roman numerals expressed
+     as UCN 4.
+     ....................000000000.111111.111122.222222223.33333333344444
+     ....................123456789.012345.678901.234567890.12345678901234  */
+  const char *content = "        \"01234\\u2174\\u2175789\" /* non-str */\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"01234\\u2174\\u2175789\"");
+
+  /* Verify that cpp_interpret_string works.
+     The string should be encoded in the execution character
+     set.  Assuming that that is UTF-8, we should have the following:
+     -----------  ----  -----  -------  ----------------
+     Byte offset  Byte  Octal  Unicode  Source Column(s)
+     -----------  ----  -----  -------  ----------------
+     0            0x30         '0'      10
+     1            0x31         '1'      11
+     2            0x32         '2'      12
+     3            0x33         '3'      13
+     4            0x34         '4'      14
+     5            0xE2  \342   U+2174   15-20
+     6            0x85  \205    (cont)  15-20
+     7            0xB4  \264    (cont)  15-20
+     8            0xE2  \342   U+2175   21-26
+     9            0x85  \205    (cont)  21-26
+     10           0xB5  \265    (cont)  21-26
+     11           0x37         '7'      27
+     12           0x38         '8'      28
+     13           0x39         '9'      29
+     14           0x00                  30 (closing quote)
+     -----------  ----  -----  -------  ---------------.  */
+
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("01234\342\205\264\342\205\265789",
+		(const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Verify ranges of individual characters.  This no longer includes the
+     opening quote, but does include the closing quote.
+     '01234'.  */
+  for (int i = 0; i <= 4; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
+  /* U+2174.  */
+  for (int i = 5; i <= 7; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 15, 20);
+  /* U+2175.  */
+  for (int i = 8; i <= 10; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 21, 26);
+  /* '789' and nul terminator  */
+  for (int i = 11; i <= 14; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 16 + i, 16 + i);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 15);
+}
+
+/* Lex a string literal containing UCN 8 characters.
+   Verify the substring location data after running cpp_interpret_string
+   on it.  */
+
+static void
+test_lexer_string_locations_ucn8 (const line_table_case &case_)
+{
+  /* Digits 0-9, expressing digits 5 and 6 as Roman numerals as UCN 8.
+     ....................000000000.111111.1111222222.2222333333333.344444
+     ....................123456789.012345.6789012345.6789012345678.901234  */
+  const char *content = "        \"01234\\U00002174\\U00002175789\" /* */\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok,
+			   "\"01234\\U00002174\\U00002175789\"");
+
+  /* Verify that cpp_interpret_string works.
+     The UTF-8 encoding of the string is identical to that from
+     the ucn4 testcase above; the only difference is the column
+     locations.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("01234\342\205\264\342\205\265789",
+		(const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Verify ranges of individual characters.  This no longer includes the
+     opening quote, but does include the closing quote.
+     '01234'.  */
+  for (int i = 0; i <= 4; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
+  /* U+2174.  */
+  for (int i = 5; i <= 7; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 15, 24);
+  /* U+2175.  */
+  for (int i = 8; i <= 10; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 25, 34);
+  /* '789' at columns 35-37  */
+  for (int i = 11; i <= 13; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 24 + i, 24 + i);
+  /* Closing quote/nul-terminator at column 38.  */
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, 14, 1, 38, 38);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 15);
+}
+
+/* Fetch a big-endian 32-bit value and convert to host endianness.  */
+
+static uint32_t
+uint32_from_big_endian (const uint32_t *ptr_be_value)
+{
+  const unsigned char *buf = (const unsigned char *)ptr_be_value;
+  return (((uint32_t) buf[0] << 24)
+	  | ((uint32_t) buf[1] << 16)
+	  | ((uint32_t) buf[2] << 8)
+	  | (uint32_t) buf[3]);
+}
+
+/* Lex a wide string literal and verify that attempts to read substring
+   location data from it fail gracefully.  */
+
+static void
+test_lexer_string_locations_wide_string (const line_table_case &case_)
+{
+  /* Digits 0-9.
+     ....................000000000.11111111112.22222222233333
+     ....................123456789.01234567890.12345678901234  */
+  const char *content = "       L\"0123456789\" /* non-str */\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_WSTRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "L\"0123456789\"");
+
+  /* Verify that cpp_interpret_string works, using CPP_WSTRING.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_WSTRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  /* The cpp_reader defaults to big-endian with
+     CHAR_BIT * sizeof (int) for the wchar_precision, so dst_string should
+     now be encoded as UTF-32BE.  */
+  const uint32_t *be32_chars = (const uint32_t *)dst_string.text;
+  ASSERT_EQ ('0', uint32_from_big_endian (&be32_chars[0]));
+  ASSERT_EQ ('5', uint32_from_big_endian (&be32_chars[5]));
+  ASSERT_EQ ('9', uint32_from_big_endian (&be32_chars[9]));
+  ASSERT_EQ (0, uint32_from_big_endian (&be32_chars[10]));
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* We don't yet support generating substring location information
+     for L"" strings.  */
+  ASSERT_HAS_NO_SUBSTRING_RANGES
+    (test, tok->src_loc, type,
+     "execution character set != source character set");
+}
+
+/* Fetch a big-endian 16-bit value and convert to host endianness.  */
+
+static uint16_t
+uint16_from_big_endian (const uint16_t *ptr_be_value)
+{
+  const unsigned char *buf = (const unsigned char *)ptr_be_value;
+  return ((uint16_t) buf[0] << 8) | (uint16_t) buf[1];
+}
+
+/* Lex a u"" string literal and verify that attempts to read substring
+   location data from it fail gracefully.  */
+
+static void
+test_lexer_string_locations_string16 (const line_table_case &case_)
+{
+  /* Digits 0-9.
+     ....................000000000.11111111112.22222222233333
+     ....................123456789.01234567890.12345678901234  */
+  const char *content = "       u\"0123456789\" /* non-str */\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING16);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "u\"0123456789\"");
+
+  /* Verify that cpp_interpret_string works, using CPP_STRING16.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING16;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+
+  /* The cpp_reader defaults to big-endian, so dst_string should
+     now be encoded as UTF-16BE.  */
+  const uint16_t *be16_chars = (const uint16_t *)dst_string.text;
+  ASSERT_EQ ('0', uint16_from_big_endian (&be16_chars[0]));
+  ASSERT_EQ ('5', uint16_from_big_endian (&be16_chars[5]));
+  ASSERT_EQ ('9', uint16_from_big_endian (&be16_chars[9]));
+  ASSERT_EQ (0, uint16_from_big_endian (&be16_chars[10]));
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* We don't yet support generating substring location information
+     for L"" strings.  */
+  ASSERT_HAS_NO_SUBSTRING_RANGES
+    (test, tok->src_loc, type,
+     "execution character set != source character set");
+}
+
+/* Lex a U"" string literal and verify that attempts to read substring
+   location data from it fail gracefully.  */
+
+static void
+test_lexer_string_locations_string32 (const line_table_case &case_)
+{
+  /* Digits 0-9.
+     ....................000000000.11111111112.22222222233333
+     ....................123456789.01234567890.12345678901234  */
+  const char *content = "       U\"0123456789\" /* non-str */\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING32);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "U\"0123456789\"");
+
+  /* Verify that cpp_interpret_string works, using CPP_STRING32.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING32;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+
+  /* The cpp_reader defaults to big-endian, so dst_string should
+     now be encoded as UTF-32BE.  */
+  const uint32_t *be32_chars = (const uint32_t *)dst_string.text;
+  ASSERT_EQ ('0', uint32_from_big_endian (&be32_chars[0]));
+  ASSERT_EQ ('5', uint32_from_big_endian (&be32_chars[5]));
+  ASSERT_EQ ('9', uint32_from_big_endian (&be32_chars[9]));
+  ASSERT_EQ (0, uint32_from_big_endian (&be32_chars[10]));
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* We don't yet support generating substring location information
+     for L"" strings.  */
+  ASSERT_HAS_NO_SUBSTRING_RANGES
+    (test, tok->src_loc, type,
+     "execution character set != source character set");
+}
+
+/* Lex a u8-string literal.
+   Verify the substring location data after running cpp_interpret_string
+   on it.  */
+
+static void
+test_lexer_string_locations_u8 (const line_table_case &case_)
+{
+  /* Digits 0-9.
+     ....................000000000.11111111112.22222222233333
+     ....................123456789.01234567890.12345678901234  */
+  const char *content = "      u8\"0123456789\" /* non-str */\n";
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_UTF8STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "u8\"0123456789\"");
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("0123456789", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Verify ranges of individual characters.  This no longer includes the
+     opening quote, but does include the closing quote.  */
+  for (int i = 0; i <= 10; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
+}
+
+/* Lex a string literal containing UTF-8 source characters.
+   Verify the substring location data after running cpp_interpret_string
+   on it.  */
+
+static void
+test_lexer_string_locations_utf8_source (const line_table_case &case_)
+{
+ /* This string literal is written out to the source file as UTF-8,
+    and is of the form "before mojibake after", where "mojibake"
+    is written as the following four unicode code points:
+       U+6587 CJK UNIFIED IDEOGRAPH-6587
+       U+5B57 CJK UNIFIED IDEOGRAPH-5B57
+       U+5316 CJK UNIFIED IDEOGRAPH-5316
+       U+3051 HIRAGANA LETTER KE.
+     Each of these is 3 bytes wide when encoded in UTF-8, whereas the
+     "before" and "after" are 1 byte per unicode character.
+
+     The numbering shown are "columns", which are *byte* numbers within
+     the line, rather than unicode character numbers.
+
+     .................... 000000000.1111111.
+     .................... 123456789.0123456.  */
+  const char *content = ("        \"before "
+			 /* U+6587 CJK UNIFIED IDEOGRAPH-6587
+			      UTF-8: 0xE6 0x96 0x87
+			      C octal escaped UTF-8: \346\226\207
+			    "column" numbers: 17-19.  */
+			 "\346\226\207"
+
+			 /* U+5B57 CJK UNIFIED IDEOGRAPH-5B57
+			      UTF-8: 0xE5 0xAD 0x97
+			      C octal escaped UTF-8: \345\255\227
+			    "column" numbers: 20-22.  */
+			 "\345\255\227"
+
+			 /* U+5316 CJK UNIFIED IDEOGRAPH-5316
+			      UTF-8: 0xE5 0x8C 0x96
+			      C octal escaped UTF-8: \345\214\226
+			    "column" numbers: 23-25.  */
+			 "\345\214\226"
+
+			 /* U+3051 HIRAGANA LETTER KE
+			      UTF-8: 0xE3 0x81 0x91
+			      C octal escaped UTF-8: \343\201\221
+			    "column" numbers: 26-28.  */
+			 "\343\201\221"
+
+			 /* column numbers 29 onwards
+			  2333333.33334444444444
+			  9012345.67890123456789. */
+			 " after\" /* non-str */\n");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back, with the correct
+     location information.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ
+    (test.m_parser, tok,
+     "\"before \346\226\207\345\255\227\345\214\226\343\201\221 after\"");
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ
+    ("before \346\226\207\345\255\227\345\214\226\343\201\221 after",
+     (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Verify ranges of individual characters.  This no longer includes the
+     opening quote, but does include the closing quote.
+     Assuming that both source and execution encodings are UTF-8, we have
+     a run of 25 octets in each, plus the NUL terminator.  */
+  for (int i = 0; i < 25; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, i, 1, 10 + i, 10 + i);
+  /* NUL-terminator should use the closing quote at column 35.  */
+  ASSERT_CHAR_AT_RANGE (test, tok->src_loc, type, 25, 1, 35, 35);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, type, 26);
+}
+
+/* Test of string literal concatenation.  */
+
+static void
+test_lexer_string_locations_concatenation_1 (const line_table_case &case_)
+{
+  /* Digits 0-9.
+     .....................000000000.111111.11112222222222
+     .....................123456789.012345.67890123456789.  */
+  const char *content = ("        \"01234\" /* non-str */\n"
+			 "        \"56789\" /* non-str */\n");
+  lexer_test test (case_, content, NULL);
+
+  location_t input_locs[2];
+
+  /* Verify that we get the expected tokens back.  */
+  auto_vec <cpp_string> input_strings;
+  const cpp_token *tok_a = test.get_token ();
+  ASSERT_EQ (tok_a->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok_a, "\"01234\"");
+  input_strings.safe_push (tok_a->val.str);
+  input_locs[0] = tok_a->src_loc;
+
+  const cpp_token *tok_b = test.get_token ();
+  ASSERT_EQ (tok_b->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok_b, "\"56789\"");
+  input_strings.safe_push (tok_b->val.str);
+  input_locs[1] = tok_b->src_loc;
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser,
+				      input_strings.address (), 2,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("0123456789", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Simulate c-lex.c's lex_string in order to record concatenation.  */
+  test.m_concats.record_string_concatenation (2, input_locs);
+
+  location_t initial_loc = input_locs[0];
+
+  /* "01234" on line 1.  */
+  for (int i = 0; i <= 4; i++)
+    ASSERT_CHAR_AT_RANGE (test, initial_loc, type, i, 1, 10 + i, 10 + i);
+  /* "56789" in line 2, plus its closing quote for the nul terminator.  */
+  for (int i = 5; i <= 10; i++)
+    ASSERT_CHAR_AT_RANGE (test, initial_loc, type, i, 2, 5 + i, 5 + i);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, initial_loc, type, 11);
+}
+
+/* Another test of string literal concatenation.  */
+
+static void
+test_lexer_string_locations_concatenation_2 (const line_table_case &case_)
+{
+  /* Digits 0-9.
+     .....................000000000.111.11111112222222
+     .....................123456789.012.34567890123456.  */
+  const char *content = ("        \"01\" /* non-str */\n"
+			 "        \"23\" /* non-str */\n"
+			 "        \"45\" /* non-str */\n"
+			 "        \"67\" /* non-str */\n"
+			 "        \"89\" /* non-str */\n");
+  lexer_test test (case_, content, NULL);
+
+  auto_vec <cpp_string> input_strings;
+  location_t input_locs[5];
+
+  /* Verify that we get the expected tokens back.  */
+  for (int i = 0; i < 5; i++)
+    {
+      const cpp_token *tok = test.get_token ();
+      ASSERT_EQ (tok->type, CPP_STRING);
+      input_strings.safe_push (tok->val.str);
+      input_locs[i] = tok->src_loc;
+    }
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser,
+				      input_strings.address (), 5,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("0123456789", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Simulate c-lex.c's lex_string in order to record concatenation.  */
+  test.m_concats.record_string_concatenation (5, input_locs);
+
+  location_t initial_loc = input_locs[0];
+
+  /* Within ASSERT_CHAR_AT_RANGE (actually assert_char_at_range), we can
+     detect if the initial loc is after LINE_MAP_MAX_LOCATION_WITH_COLS
+     and expect get_source_range_for_substring to fail.
+     However, for a string concatenation test, we can have a case
+     where the initial string is fully before LINE_MAP_MAX_LOCATION_WITH_COLS,
+     but subsequent strings can be after it.
+     Attempting to detect this within assert_char_at_range
+     would overcomplicate the logic for the common test cases, so
+     we detect it here.  */
+  if (should_have_column_data_p (input_locs[0])
+      && !should_have_column_data_p (input_locs[4]))
+    {
+      /* Verify that get_source_range_for_substring gracefully rejects
+	 this case.  */
+      source_range actual_range;
+      const char *err
+	= get_source_range_for_char (test.m_parser, &test.m_concats,
+				     initial_loc, type, 0, &actual_range);
+      ASSERT_STREQ ("range starts after LINE_MAP_MAX_LOCATION_WITH_COLS", err);
+      return;
+    }
+
+  for (int i = 0; i < 5; i++)
+    for (int j = 0; j < 2; j++)
+      ASSERT_CHAR_AT_RANGE (test, initial_loc, type, (i * 2) + j,
+			    i + 1, 10 + j, 10 + j);
+
+  /* NUL-terminator should use the final closing quote at line 5 column 12.  */
+  ASSERT_CHAR_AT_RANGE (test, initial_loc, type, 10, 5, 12, 12);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, initial_loc, type, 11);
+}
+
+/* Another test of string literal concatenation, this time combined with
+   various kinds of escaped characters.  */
+
+static void
+test_lexer_string_locations_concatenation_3 (const line_table_case &case_)
+{
+  /* Digits 0-9, expressing digit 5 in ASCII as hex "\x35"
+     digit 6 in ASCII as octal "\066", concatenating multiple strings.  */
+  const char *content
+    /* .000000000.111111.111.1.2222.222.2.2233.333.3333.34444444444555
+       .123456789.012345.678.9.0123.456.7.8901.234.5678.90123456789012. */
+    = ("        \"01234\"  \"\\x35\"  \"\\066\"  \"789\" /* non-str */\n");
+  lexer_test test (case_, content, NULL);
+
+  auto_vec <cpp_string> input_strings;
+  location_t input_locs[4];
+
+  /* Verify that we get the expected tokens back.  */
+  for (int i = 0; i < 4; i++)
+    {
+      const cpp_token *tok = test.get_token ();
+      ASSERT_EQ (tok->type, CPP_STRING);
+      input_strings.safe_push (tok->val.str);
+      input_locs[i] = tok->src_loc;
+    }
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser,
+				      input_strings.address (), 4,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("0123456789", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  /* Simulate c-lex.c's lex_string in order to record concatenation.  */
+  test.m_concats.record_string_concatenation (4, input_locs);
+
+  location_t initial_loc = input_locs[0];
+
+  for (int i = 0; i <= 4; i++)
+    ASSERT_CHAR_AT_RANGE (test, initial_loc, type, i, 1, 10 + i, 10 + i);
+  ASSERT_CHAR_AT_RANGE (test, initial_loc, type, 5, 1, 19, 22);
+  ASSERT_CHAR_AT_RANGE (test, initial_loc, type, 6, 1, 27, 30);
+  for (int i = 7; i <= 9; i++)
+    ASSERT_CHAR_AT_RANGE (test, initial_loc, type, i, 1, 28 + i, 28 + i);
+
+  /* NUL-terminator should use the location of the final closing quote.  */
+  ASSERT_CHAR_AT_RANGE (test, initial_loc, type, 10, 1, 38, 38);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, initial_loc, type, 11);
+}
+
+/* Test of string literal in a macro.  */
+
+static void
+test_lexer_string_locations_macro (const line_table_case &case_)
+{
+  /* Digits 0-9.
+     .....................0000000001111111111.22222222223.
+     .....................1234567890123456789.01234567890.  */
+  const char *content = ("#define MACRO     \"0123456789\" /* non-str */\n"
+			 "  MACRO");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected tokens back.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_PADDING);
+
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"0123456789\"");
+
+  /* Verify ranges of individual characters.  We ought to
+     see columns within the macro definition.  */
+  for (int i = 0; i <= 10; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			  i, 1, 20 + i, 20 + i);
+
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 11);
+
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_PADDING);
+}
+
+/* Test of stringification of a macro argument.  */
+
+static void
+test_lexer_string_locations_stringified_macro_argument
+  (const line_table_case &case_)
+{
+  /* .....................000000000111111111122222222223.
+     .....................123456789012345678901234567890.  */
+  const char *content = ("#define MACRO(X) #X /* non-str */\n"
+			 "MACRO(foo)\n");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_PADDING);
+
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "\"foo\"");
+
+  /* We don't support getting the location of a stringified macro
+     argument.  Verify that it fails gracefully.  */
+  ASSERT_HAS_NO_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING,
+				  "cpp_interpret_string_1 failed");
+
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_PADDING);
+
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_PADDING);
+}
+
+/* Ensure that we are fail gracefully if something attempts to pass
+   in a location that isn't a string literal token.  Seen on this code:
+
+     const char a[] = " %d ";
+     __builtin_printf (a, 0.5);
+                       ^
+
+   when c-format.c erroneously used the indicated one-character
+   location as the format string location, leading to a read past the
+   end of a string buffer in cpp_interpret_string_1.  */
+
+static void
+test_lexer_string_locations_non_string (const line_table_case &case_)
+{
+  /* .....................000000000111111111122222222223.
+     .....................123456789012345678901234567890.  */
+  const char *content = ("         a\n");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_NAME);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "a");
+
+  /* At this point, libcpp is attempting to interpret the name as a
+     string literal, despite it not starting with a quote.  We don't detect
+     that, but we should at least fail gracefully.  */
+  ASSERT_HAS_NO_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING,
+				  "cpp_interpret_string_1 failed");
+}
+
+/* Ensure that we can read substring information for a token which
+   starts in one linemap and ends in another .  Adapted from
+   gcc.dg/cpp/pr69985.c.  */
+
+static void
+test_lexer_string_locations_long_line (const line_table_case &case_)
+{
+  /* .....................000000.000111111111
+     .....................123456.789012346789.  */
+  const char *content = ("/* A very long line, so that we start a new line map.  */\n"
+			 "     \"0123456789012345678901234567890123456789"
+			 "0123456789012345678901234567890123456789"
+			 "0123456789012345678901234567890123456789"
+			 "0123456789\"\n");
+
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+
+  if (!should_have_column_data_p (line_table->highest_location))
+    return;
+
+  /* Verify ranges of individual characters.  */
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 131);
+  for (int i = 0; i < 131; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			  i, 2, 7 + i, 7 + i);
+}
+
+/* Test of locations within a raw string that doesn't contain a newline.  */
+
+static void
+test_lexer_string_locations_raw_string_one_line (const line_table_case &case_)
+{
+  /* .....................00.0000000111111111122.
+     .....................12.3456789012345678901.  */
+  const char *content = ("R\"foo(0123456789)foo\"\n");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("0123456789", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  if (!should_have_column_data_p (line_table->highest_location))
+    return;
+
+  /* 0-9, plus the nil terminator.  */
+  ASSERT_NUM_SUBSTRING_RANGES (test, tok->src_loc, CPP_STRING, 11);
+  for (int i = 0; i < 11; i++)
+    ASSERT_CHAR_AT_RANGE (test, tok->src_loc, CPP_STRING,
+			  i, 1, 7 + i, 7 + i);
+}
+
+/* Test of locations within a raw string that contains a newline.  */
+
+static void
+test_lexer_string_locations_raw_string_multiline (const line_table_case &case_)
+{
+  /* .....................00.0000.
+     .....................12.3456.  */
+  const char *content = ("R\"foo(\n"
+  /* .....................00000.
+     .....................12345.  */
+			 "hello\n"
+			 "world\n"
+  /* .....................00000.
+     .....................12345.  */
+			 ")foo\"\n");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected token back.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_STRING);
+
+  /* Verify that cpp_interpret_string works.  */
+  cpp_string dst_string;
+  const enum cpp_ttype type = CPP_STRING;
+  bool result = cpp_interpret_string (test.m_parser, &tok->val.str, 1,
+				      &dst_string, type);
+  ASSERT_TRUE (result);
+  ASSERT_STREQ ("\nhello\nworld\n", (const char *)dst_string.text);
+  free (const_cast <unsigned char *> (dst_string.text));
+
+  if (!should_have_column_data_p (line_table->highest_location))
+    return;
+
+  /* Currently we don't support locations within raw strings that
+     contain newlines.  */
+  ASSERT_HAS_NO_SUBSTRING_RANGES (test, tok->src_loc, tok->type,
+				  "range endpoints are on different lines");
+}
+
+/* Test of parsing an unterminated raw string.  */
+
+static void
+test_lexer_string_locations_raw_string_unterminated (const line_table_case &case_)
+{
+  const char *content = "R\"ouch()ouCh\" /* etc */";
+
+  lexer_error_sink errors;
+  lexer_test test (case_, content, &errors);
+  test.m_implicitly_expect_EOF = false;
+
+  /* Attempt to parse the raw string.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_EOF);
+
+  ASSERT_EQ (1, errors.m_errors.length ());
+  /* We expect the message "unterminated raw string"
+     in the "cpplib" translation domain.
+     It's not clear that dgettext is available on all supported hosts,
+     so this assertion is commented-out for now.
+       ASSERT_STREQ (dgettext ("cpplib", "unterminated raw string"),
+                     errors.m_errors[0]);
+  */
+}
+
+/* Test of lexing char constants.  */
+
+static void
+test_lexer_char_constants (const line_table_case &case_)
+{
+  /* Various char constants.
+     .....................0000000001111111111.22222222223.
+     .....................1234567890123456789.01234567890.  */
+  const char *content = ("         'a'\n"
+			 "        u'a'\n"
+			 "        U'a'\n"
+			 "        L'a'\n"
+			 "         'abc'\n");
+  lexer_test test (case_, content, NULL);
+
+  /* Verify that we get the expected tokens back.  */
+  /* 'a'.  */
+  const cpp_token *tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_CHAR);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "'a'");
+
+  unsigned int chars_seen;
+  int unsignedp;
+  cppchar_t cc = cpp_interpret_charconst (test.m_parser, tok,
+					  &chars_seen, &unsignedp);
+  ASSERT_EQ (cc, 'a');
+  ASSERT_EQ (chars_seen, 1);
+
+  /* u'a'.  */
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_CHAR16);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "u'a'");
+
+  /* U'a'.  */
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_CHAR32);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "U'a'");
+
+  /* L'a'.  */
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_WCHAR);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "L'a'");
+
+  /* 'abc' (c-char-sequence).  */
+  tok = test.get_token ();
+  ASSERT_EQ (tok->type, CPP_CHAR);
+  ASSERT_TOKEN_AS_TEXT_EQ (test.m_parser, tok, "'abc'");
+}
+/* A table of interesting location_t values, giving one axis of our test
+   matrix.  */
+
+static const location_t boundary_locations[] = {
+  /* Zero means "don't override the default values for a new line_table".  */
+  0,
+
+  /* An arbitrary non-zero value that isn't close to one of
+     the boundary values below.  */
+  0x10000,
+
+  /* Values near LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES.  */
+  LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES - 0x100,
+  LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES - 1,
+  LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES,
+  LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES + 1,
+  LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES + 0x100,
+
+  /* Values near LINE_MAP_MAX_LOCATION_WITH_COLS.  */
+  LINE_MAP_MAX_LOCATION_WITH_COLS - 0x100,
+  LINE_MAP_MAX_LOCATION_WITH_COLS - 1,
+  LINE_MAP_MAX_LOCATION_WITH_COLS,
+  LINE_MAP_MAX_LOCATION_WITH_COLS + 1,
+  LINE_MAP_MAX_LOCATION_WITH_COLS + 0x100,
+};
+
+/* Run TESTCASE multiple times, once for each case in our test matrix.  */
+
+void
+for_each_line_table_case (void (*testcase) (const line_table_case &))
+{
+  /* As noted above in the description of struct line_table_case,
+     we want to explore a test matrix of interesting line_table
+     situations, running various selftests for each case within the
+     matrix.  */
+
+  /* Run all tests with:
+     (a) line_table->default_range_bits == 0, and
+     (b) line_table->default_range_bits == 5.  */
+  int num_cases_tested = 0;
+  for (int default_range_bits = 0; default_range_bits <= 5;
+       default_range_bits += 5)
+    {
+      /* ...and use each of the "interesting" location values as
+	 the starting location within line_table.  */
+      const int num_boundary_locations
+	= sizeof (boundary_locations) / sizeof (boundary_locations[0]);
+      for (int loc_idx = 0; loc_idx < num_boundary_locations; loc_idx++)
+	{
+	  line_table_case c (default_range_bits, boundary_locations[loc_idx]);
+
+	  testcase (c);
+
+	  num_cases_tested++;
+	}
+    }
+
+  /* Verify that we fully covered the test matrix.  */
+  ASSERT_EQ (num_cases_tested, 2 * 12);
 }
 
 /* Run all of the selftests within this file.  */
@@ -1254,9 +3485,38 @@ test_reading_source_line ()
 void
 input_c_tests ()
 {
-  test_accessing_ordinary_linemaps ();
+  test_should_have_column_data_p ();
   test_unknown_location ();
   test_builtins ();
+  for_each_line_table_case (test_make_location_nonpure_range_endpoints);
+
+  for_each_line_table_case (test_accessing_ordinary_linemaps);
+  for_each_line_table_case (test_lexer);
+  for_each_line_table_case (test_lexer_string_locations_simple);
+  for_each_line_table_case (test_lexer_string_locations_ebcdic);
+  for_each_line_table_case (test_lexer_string_locations_hex);
+  for_each_line_table_case (test_lexer_string_locations_oct);
+  for_each_line_table_case (test_lexer_string_locations_letter_escape_1);
+  for_each_line_table_case (test_lexer_string_locations_letter_escape_2);
+  for_each_line_table_case (test_lexer_string_locations_ucn4);
+  for_each_line_table_case (test_lexer_string_locations_ucn8);
+  for_each_line_table_case (test_lexer_string_locations_wide_string);
+  for_each_line_table_case (test_lexer_string_locations_string16);
+  for_each_line_table_case (test_lexer_string_locations_string32);
+  for_each_line_table_case (test_lexer_string_locations_u8);
+  for_each_line_table_case (test_lexer_string_locations_utf8_source);
+  for_each_line_table_case (test_lexer_string_locations_concatenation_1);
+  for_each_line_table_case (test_lexer_string_locations_concatenation_2);
+  for_each_line_table_case (test_lexer_string_locations_concatenation_3);
+  for_each_line_table_case (test_lexer_string_locations_macro);
+  for_each_line_table_case (test_lexer_string_locations_stringified_macro_argument);
+  for_each_line_table_case (test_lexer_string_locations_non_string);
+  for_each_line_table_case (test_lexer_string_locations_long_line);
+  for_each_line_table_case (test_lexer_string_locations_raw_string_one_line);
+  for_each_line_table_case (test_lexer_string_locations_raw_string_multiline);
+  for_each_line_table_case (test_lexer_string_locations_raw_string_unterminated);
+  for_each_line_table_case (test_lexer_char_constants);
+
   test_reading_source_line ();
 }
 

@@ -15,24 +15,6 @@ import (
 	"unsafe"
 )
 
-/*
-#cgo solaris CFLAGS: -D_POSIX_PTHREAD_SEMANTICS
-#include <unistd.h>
-#include <sys/types.h>
-#include <pwd.h>
-#include <stdlib.h>
-
-static int mygetpwuid_r(int uid, struct passwd *pwd,
-	char *buf, size_t buflen, struct passwd **result) {
-	return getpwuid_r(uid, pwd, buf, buflen, result);
-}
-
-static int mygetpwnam_r(const char *name, struct passwd *pwd,
-	char *buf, size_t buflen, struct passwd **result) {
-	return getpwnam_r(name, pwd, buf, buflen, result);
-}
-*/
-
 // bytePtrToString takes a NUL-terminated array of bytes and convert
 // it to a Go string.
 func bytePtrToString(p *byte) string {
@@ -45,58 +27,77 @@ func bytePtrToString(p *byte) string {
 }
 
 func current() (*User, error) {
-	return lookupUnix(syscall.Getuid(), "", false)
+	return lookupUnixUid(syscall.Getuid())
 }
 
-func lookup(username string) (*User, error) {
-	return lookupUnix(-1, username, true)
+func lookupUser(username string) (*User, error) {
+	var pwd syscall.Passwd
+	var result *syscall.Passwd
+	p := syscall.StringBytePtr(username)
+
+	buf := alloc(userBuffer)
+	defer buf.free()
+
+	err := retryWithBuffer(buf, func() syscall.Errno {
+		syscall.Entersyscall()
+		rv := libc_getpwnam_r(p,
+			&pwd,
+			buf.ptr,
+			buf.size,
+			&result)
+		syscall.Exitsyscall()
+		if rv != 0 {
+			return syscall.GetErrno()
+		}
+		return 0
+	})
+	if err != nil {
+		return nil, fmt.Errorf("user: lookup username %s: %v", username, err)
+	}
+	if result == nil {
+		return nil, UnknownUserError(username)
+	}
+	return buildUser(&pwd), err
 }
 
-func lookupId(uid string) (*User, error) {
+func lookupUserId(uid string) (*User, error) {
 	i, e := strconv.Atoi(uid)
 	if e != nil {
 		return nil, e
 	}
-	return lookupUnix(i, "", false)
+	return lookupUnixUid(i)
 }
 
-func lookupUnix(uid int, username string, lookupByName bool) (*User, error) {
+func lookupUnixUid(uid int) (*User, error) {
 	var pwd syscall.Passwd
 	var result *syscall.Passwd
 
-	// FIXME: Should let buf grow if necessary.
-	const bufSize = 1024
-	buf := make([]byte, bufSize)
-	if lookupByName {
-		nameC := syscall.StringBytePtr(username)
-		syscall.Entersyscall()
-		rv := libc_getpwnam_r(nameC,
-			&pwd,
-			&buf[0],
-			bufSize,
-			&result)
-		syscall.Exitsyscall()
-		if rv != 0 {
-			return nil, fmt.Errorf("user: lookup username %s: %s", username, syscall.GetErrno())
-		}
-		if result == nil {
-			return nil, UnknownUserError(username)
-		}
-	} else {
+	buf := alloc(userBuffer)
+	defer buf.free()
+
+	err := retryWithBuffer(buf, func() syscall.Errno {
 		syscall.Entersyscall()
 		rv := libc_getpwuid_r(syscall.Uid_t(uid),
 			&pwd,
-			&buf[0],
-			bufSize,
+			buf.ptr,
+			buf.size,
 			&result)
 		syscall.Exitsyscall()
 		if rv != 0 {
-			return nil, fmt.Errorf("user: lookup userid %d: %s", uid, syscall.GetErrno())
+			return syscall.GetErrno()
 		}
-		if result == nil {
-			return nil, UnknownUserIdError(uid)
-		}
+		return 0
+	})
+	if err != nil {
+		return nil, fmt.Errorf("user: lookup userid %d: %v", uid, err)
 	}
+	if result == nil {
+		return nil, UnknownUserIdError(uid)
+	}
+	return buildUser(&pwd), nil
+}
+
+func buildUser(pwd *syscall.Passwd) *User {
 	u := &User{
 		Uid:      strconv.Itoa(int(pwd.Pw_uid)),
 		Gid:      strconv.Itoa(int(pwd.Pw_gid)),
@@ -104,12 +105,162 @@ func lookupUnix(uid int, username string, lookupByName bool) (*User, error) {
 		Name:     bytePtrToString((*byte)(unsafe.Pointer(pwd.Pw_gecos))),
 		HomeDir:  bytePtrToString((*byte)(unsafe.Pointer(pwd.Pw_dir))),
 	}
-	// The pw_gecos field isn't quite standardized.  Some docs
+	// The pw_gecos field isn't quite standardized. Some docs
 	// say: "It is expected to be a comma separated list of
 	// personal data where the first item is the full name of the
 	// user."
 	if i := strings.Index(u.Name, ","); i >= 0 {
 		u.Name = u.Name[:i]
 	}
-	return u, nil
+	return u
+}
+
+func currentGroup() (*Group, error) {
+	return lookupUnixGid(syscall.Getgid())
+}
+
+func lookupGroup(groupname string) (*Group, error) {
+	var grp syscall.Group
+	var result *syscall.Group
+
+	buf := alloc(groupBuffer)
+	defer buf.free()
+	p := syscall.StringBytePtr(groupname)
+
+	err := retryWithBuffer(buf, func() syscall.Errno {
+		syscall.Entersyscall()
+		rv := libc_getgrnam_r(p,
+			&grp,
+			buf.ptr,
+			buf.size,
+			&result)
+		syscall.Exitsyscall()
+		if rv != 0 {
+			return syscall.GetErrno()
+		}
+		return 0
+	})
+	if err != nil {
+		return nil, fmt.Errorf("user: lookup groupname %s: %v", groupname, err)
+	}
+	if result == nil {
+		return nil, UnknownGroupError(groupname)
+	}
+	return buildGroup(&grp), nil
+}
+
+func lookupGroupId(gid string) (*Group, error) {
+	i, e := strconv.Atoi(gid)
+	if e != nil {
+		return nil, e
+	}
+	return lookupUnixGid(i)
+}
+
+func lookupUnixGid(gid int) (*Group, error) {
+	var grp syscall.Group
+	var result *syscall.Group
+
+	buf := alloc(groupBuffer)
+	defer buf.free()
+
+	err := retryWithBuffer(buf, func() syscall.Errno {
+		syscall.Entersyscall()
+		rv := libc_getgrgid_r(syscall.Gid_t(gid),
+			&grp,
+			buf.ptr,
+			buf.size,
+			&result)
+		syscall.Exitsyscall()
+		if rv != 0 {
+			return syscall.GetErrno()
+		}
+		return 0
+	})
+	if err != nil {
+		return nil, fmt.Errorf("user: lookup groupid %d: %v", gid, err)
+	}
+	if result == nil {
+		return nil, UnknownGroupIdError(strconv.Itoa(gid))
+	}
+	return buildGroup(&grp), nil
+}
+
+func buildGroup(grp *syscall.Group) *Group {
+	g := &Group{
+		Gid:  strconv.Itoa(int(grp.Gr_gid)),
+		Name: bytePtrToString((*byte)(unsafe.Pointer(grp.Gr_name))),
+	}
+	return g
+}
+
+type bufferKind int
+
+const (
+	userBuffer  = bufferKind(syscall.SC_GETPW_R_SIZE_MAX)
+	groupBuffer = bufferKind(syscall.SC_GETGR_R_SIZE_MAX)
+)
+
+func (k bufferKind) initialSize() syscall.Size_t {
+	sz, _ := syscall.Sysconf(int(k))
+	if sz == -1 {
+		// DragonFly and FreeBSD do not have _SC_GETPW_R_SIZE_MAX.
+		// Additionally, not all Linux systems have it, either. For
+		// example, the musl libc returns -1.
+		return 1024
+	}
+	if !isSizeReasonable(int64(sz)) {
+		// Truncate.  If this truly isn't enough, retryWithBuffer will error on the first run.
+		return maxBufferSize
+	}
+	return syscall.Size_t(sz)
+}
+
+type memBuffer struct {
+	ptr  *byte
+	size syscall.Size_t
+}
+
+func alloc(kind bufferKind) *memBuffer {
+	sz := kind.initialSize()
+	b := make([]byte, sz)
+	return &memBuffer{
+		ptr:  &b[0],
+		size: sz,
+	}
+}
+
+func (mb *memBuffer) resize(newSize syscall.Size_t) {
+	b := make([]byte, newSize)
+	mb.ptr = &b[0]
+	mb.size = newSize
+}
+
+func (mb *memBuffer) free() {
+	mb.ptr = nil
+}
+
+// retryWithBuffer repeatedly calls f(), increasing the size of the
+// buffer each time, until f succeeds, fails with a non-ERANGE error,
+// or the buffer exceeds a reasonable limit.
+func retryWithBuffer(buf *memBuffer, f func() syscall.Errno) error {
+	for {
+		errno := f()
+		if errno == 0 {
+			return nil
+		} else if errno != syscall.ERANGE {
+			return errno
+		}
+		newSize := buf.size * 2
+		if !isSizeReasonable(int64(newSize)) {
+			return fmt.Errorf("internal buffer exceeds %d bytes", maxBufferSize)
+		}
+		buf.resize(newSize)
+	}
+}
+
+const maxBufferSize = 1 << 20
+
+func isSizeReasonable(sz int64) bool {
+	return sz > 0 && sz <= maxBufferSize
 }

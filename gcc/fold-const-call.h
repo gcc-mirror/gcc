@@ -1,5 +1,5 @@
 /* Fold calls to built-in and internal functions with constant arguments.
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,5 +24,6 @@ tree fold_const_call (combined_fn, tree, tree);
 tree fold_const_call (combined_fn, tree, tree, tree);
 tree fold_const_call (combined_fn, tree, tree, tree, tree);
 tree fold_fma (location_t, tree, tree, tree, tree);
+tree build_cmp_result (tree type, int res);
 
 #endif

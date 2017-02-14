@@ -1,3 +1,10 @@
+2017-01-13  Ian Lance Taylor  <iant@golang.org>
+
+	Updates for Go 1.8rc1.
+	* Makefile.am (go_cmd_go_files): Add bug.go.
+	(s-zdefaultcc): Write defaultPkgConfig.
+	* Makefile.in: Rebuild.
+
 2016-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Update copyrights.

@@ -1,5 +1,5 @@
 /* Wrapper for ar/ranlib/nm to pass the LTO plugin.
-   Copyright (C) 2011-2016 Free Software Foundation, Inc.
+   Copyright (C) 2011-2017 Free Software Foundation, Inc.
    Contributed by Andi Kleen.
 
 This file is part of GCC.
@@ -162,7 +162,7 @@ main (int ac, char **av)
 
 	  len = strlen (arg);
 	  if (len > 0)
-		  len--;
+	    len--;
 	  end = arg + len;
 
 	  /* Always add a dir separator for the prefix list.  */

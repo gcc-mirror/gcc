@@ -1,7 +1,8 @@
 // { dg-options "-fwhole-program" }
 // { dg-additional-options "-static-libstdc++" { target *-*-mingw* } }
+// { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
 
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2011-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,8 +57,6 @@ void operator delete(void* p)
 // libstdc++/50594
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   {
     std::string s = "Hello World, this is not a small string.";
   }

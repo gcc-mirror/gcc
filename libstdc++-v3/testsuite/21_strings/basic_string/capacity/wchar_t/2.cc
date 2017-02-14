@@ -1,6 +1,6 @@
 // 1999-05-11 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,8 +26,6 @@
 // http://gcc.gnu.org/ml/libstdc++/2001-11/msg00150.html
 void test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wstring str01 = L"twelve chars";
   // str01 becomes shared
   std::wstring str02 = str01;

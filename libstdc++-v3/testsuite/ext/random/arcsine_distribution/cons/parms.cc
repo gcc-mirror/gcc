@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2012-10-12  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2012-2016 Free Software Foundation, Inc.
+// Copyright (C) 2012-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   __gnu_cxx::arcsine_distribution<> u(-1.5, 3.0);
   VERIFY( u.a() == -1.5 );
   VERIFY( u.b() == 3.0 );
@@ -35,9 +33,20 @@ test01()
   VERIFY( u.max() == 3.0 );
 }
 
-int
-main()
+void
+test02()
+{
+  using param_type = __gnu_cxx::arcsine_distribution<>::param_type;
+  const param_type p(-1.5, 3.0);
+  __gnu_cxx::arcsine_distribution<> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+  VERIFY( u.min() == -1.5 );
+  VERIFY( u.max() == 3.0 );
+}
+
+int main()
 {
   test01();
-  return 0;
+  test02();
 }

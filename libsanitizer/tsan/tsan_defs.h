@@ -27,27 +27,18 @@
 #endif
 
 #ifndef TSAN_CONTAINS_UBSAN
-# define TSAN_CONTAINS_UBSAN (CAN_SANITIZE_UB && !defined(SANITIZER_GO))
+# if CAN_SANITIZE_UB && !SANITIZER_GO
+#  define TSAN_CONTAINS_UBSAN 1
+# else
+#  define TSAN_CONTAINS_UBSAN 0
+# endif
 #endif
 
 namespace __tsan {
 
-#ifdef SANITIZER_GO
-const bool kGoMode = true;
-const bool kCppMode = false;
-const char *const kTsanOptionsEnv = "GORACE";
-// Go linker does not support weak symbols.
-#define CPP_WEAK
-#else
-const bool kGoMode = false;
-const bool kCppMode = true;
-const char *const kTsanOptionsEnv = "TSAN_OPTIONS";
-#define CPP_WEAK WEAK
-#endif
-
 const int kTidBits = 13;
 const unsigned kMaxTid = 1 << kTidBits;
-#ifndef SANITIZER_GO
+#if !SANITIZER_GO
 const unsigned kMaxTidInClock = kMaxTid * 2;  // This includes msb 'freed' bit.
 #else
 const unsigned kMaxTidInClock = kMaxTid;  // Go does not track freed memory.
@@ -146,6 +137,7 @@ struct MD5Hash {
 
 MD5Hash md5_hash(const void *data, uptr size);
 
+struct Processor;
 struct ThreadState;
 class ThreadContext;
 struct Context;

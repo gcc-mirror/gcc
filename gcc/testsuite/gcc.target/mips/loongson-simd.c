@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
    because inclusion of some system headers e.g. stdint.h will fail due to not
    finding stubs-o32_hard.h.  */
 /* { dg-require-effective-target mips_nanlegacy } */
-/* { dg-options "isa=loongson -mhard-float -mno-micromips -mno-mips16 -flax-vector-conversions" } */
+/* { dg-options "isa=loongson -mhard-float -mno-micromips -mno-mips16 -flax-vector-conversions (REQUIRES_STDLIB)" } */
 
 #include "loongson.h"
 #include <stdio.h>

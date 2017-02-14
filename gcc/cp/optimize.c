@@ -1,5 +1,5 @@
 /* Perform optimizations on tree structure.
-   Copyright (C) 1998-2016 Free Software Foundation, Inc.
+   Copyright (C) 1998-2017 Free Software Foundation, Inc.
    Written by Mark Michell (mark@codesourcery.com).
 
 This file is part of GCC.
@@ -166,7 +166,8 @@ cdtor_comdat_group (tree complete, tree base)
       {
 	gcc_assert (!diff_seen
 		    && idx > 0
-		    && (p[idx - 1] == 'C' || p[idx - 1] == 'D')
+		    && (p[idx - 1] == 'C' || p[idx - 1] == 'D'
+			|| p[idx - 1] == 'I')
 		    && p[idx] == '1'
 		    && q[idx] == '2');
 	grp_name[idx] = '5';
@@ -259,6 +260,11 @@ maybe_thunk_body (tree fn, bool force)
      (for non-vague linkage ctors) or the COMDAT group (otherwise).  */
 
   populate_clone_array (fn, fns);
+
+  /* Don't use thunks if the base clone omits inherited parameters.  */
+  if (ctor_omit_inherited_parms (fns[0]))
+    return 0;
+
   DECL_ABSTRACT_P (fn) = false;
   if (!DECL_WEAK (fn))
     {
@@ -490,7 +496,7 @@ maybe_clone_body (tree fn)
 	parm = DECL_CHAIN (parm);
       if (DECL_HAS_VTT_PARM_P (clone))
 	clone_parm = DECL_CHAIN (clone_parm);
-      for (; parm;
+      for (; parm && clone_parm;
 	   parm = DECL_CHAIN (parm), clone_parm = DECL_CHAIN (clone_parm))
 	/* Update this parameter.  */
 	update_cloned_parm (parm, clone_parm, first);
@@ -615,8 +621,21 @@ maybe_clone_body (tree fn)
                  function.  */
               else
                 {
-                  decl_map->put (parm, clone_parm);
-                  clone_parm = DECL_CHAIN (clone_parm);
+		  tree replacement;
+		  if (clone_parm)
+		    {
+		      replacement = clone_parm;
+		      clone_parm = DECL_CHAIN (clone_parm);
+		    }
+		  else
+		    {
+		      /* Inheriting ctors can omit parameters from the base
+			 clone.  Replace them with null lvalues.  */
+		      tree reftype = build_reference_type (TREE_TYPE (parm));
+		      replacement = fold_convert (reftype, null_pointer_node);
+		      replacement = convert_from_reference (replacement);
+		    }
+                  decl_map->put (parm, replacement);
                 }
             }
 

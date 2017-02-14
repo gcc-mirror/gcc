@@ -1,4 +1,4 @@
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,6 @@ namespace std {
 void test08()
 {
   // manufactured locale, grouping is turned on
-  bool test __attribute__((unused)) = true;
   unsigned int h4 = 0, h3 = 0, h2 = 0;
   const std::wstring s1(L"1,22 205,19 22,123,22");
 

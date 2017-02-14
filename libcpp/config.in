@@ -14,6 +14,9 @@
 /* Define to 1 if using `alloca.c'. */
 #undef C_ALLOCA
 
+/* Define if you want assertions enabled. This is a cheap check. */
+#undef ENABLE_ASSERT_CHECKING
+
 /* Define to enable system headers canonicalization. */
 #undef ENABLE_CANONICAL_SYSTEM_HEADERS
 

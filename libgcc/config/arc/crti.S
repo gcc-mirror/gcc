@@ -1,6 +1,6 @@
 /* .fini/.init stack frame setup for the Synopsys DesignWare ARC CPU.
 
-   Copyright (C) 1994-2016 Free Software Foundation, Inc.
+   Copyright (C) 1994-2017 Free Software Foundation, Inc.
    Contributor: Joern Rennecke <joern.rennecke@embecosm.com>
 		on behalf of Synopsys Inc.
 
@@ -31,11 +31,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	.section .init
 	.global _init
 	.word 0
+	.type	_init,@function
 _init:
 	push_s	blink
 
 	.section .fini
 	.global _fini
 	.word 0
+	.type	_fini,@function
 _fini:
 	push_s	blink

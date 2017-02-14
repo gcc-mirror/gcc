@@ -1,6 +1,6 @@
 // 2003-05-01  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,7 +21,6 @@
 
 void test09()
 {
-  bool test __attribute__((unused)) = true;
   std::wcout << L"Enter favorite beach: ";
   std::wcin.ignore(2048, '\n');
 }

@@ -1,4 +1,4 @@
-// Copyright 2011 The Go Authors.  All rights reserved.
+// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -66,7 +66,7 @@ func tool(toolName string) string {
 		} else {
 			fmt.Fprintf(os.Stderr, "go tool: no such tool %q\n", toolName)
 		}
-		setExitStatus(3)
+		setExitStatus(2)
 		exit()
 	}
 	return toolPath

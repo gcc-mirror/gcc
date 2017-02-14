@@ -359,6 +359,13 @@ Aspect Lock_Free
 
 This boolean aspect is equivalent to :ref:`pragma Lock_Free<Pragma-Lock_Free>`.
 
+Aspect Max_Queue_Length
+=======================
+
+.. index:: Max_Queue_Length
+
+This aspect is equivalent to :ref:`pragma Max_Queue_Length<Pragma-Max_Queue_Length>`.
+
 Aspect No_Elaboration_Code_All
 ==============================
 .. index:: No_Elaboration_Code_All
@@ -446,6 +453,14 @@ Aspect Remote_Access_Type
 .. index:: Remote_Access_Type
 
 This aspect is equivalent to :ref:`pragma Remote_Access_Type<Pragma-Remote_Access_Type>`.
+
+Aspect Secondary_Stack_Size
+===========================
+
+.. index:: Secondary_Stack_Size
+
+This aspect is equivalent to :ref:`pragma Secondary_Stack_Size<Pragma-Secondary_Stack_Size>`.
+
 
 Aspect Scalar_Storage_Order
 ===========================

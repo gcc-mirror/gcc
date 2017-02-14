@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2015, AdaCore                     --
+--                     Copyright (C) 1998-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -220,103 +220,130 @@ package body GNAT.Spitbol.Patterns is
       --  Successor element, to be matched after this one
 
       case Pcode is
+         when PC_Arb_Y
+            | PC_Assign
+            | PC_Bal
+            | PC_BreakX_X
+            | PC_Cancel
+            | PC_EOP
+            | PC_Fail
+            | PC_Fence
+            | PC_Fence_X
+            | PC_Fence_Y
+            | PC_Null
+            | PC_R_Enter
+            | PC_R_Remove
+            | PC_R_Restore
+            | PC_Rest
+            | PC_Succeed
+            | PC_Unanchored
+         =>
+            null;
 
-         when PC_Arb_Y      |
-              PC_Assign     |
-              PC_Bal        |
-              PC_BreakX_X   |
-              PC_Cancel     |
-              PC_EOP        |
-              PC_Fail       |
-              PC_Fence      |
-              PC_Fence_X    |
-              PC_Fence_Y    |
-              PC_Null       |
-              PC_R_Enter    |
-              PC_R_Remove   |
-              PC_R_Restore  |
-              PC_Rest       |
-              PC_Succeed    |
-              PC_Unanchored => null;
+         when PC_Alt
+            | PC_Arb_X
+            | PC_Arbno_S
+            | PC_Arbno_X
+         =>
+            Alt : PE_Ptr;
 
-         when PC_Alt        |
-              PC_Arb_X      |
-              PC_Arbno_S    |
-              PC_Arbno_X    => Alt  : PE_Ptr;
+         when PC_Rpat =>
+            PP : Pattern_Ptr;
 
-         when PC_Rpat       => PP   : Pattern_Ptr;
+         when PC_Pred_Func =>
+            BF : Boolean_Func;
 
-         when PC_Pred_Func  => BF   : Boolean_Func;
+         when PC_Assign_Imm
+            | PC_Assign_OnM
+            | PC_Any_VP
+            | PC_Break_VP
+            | PC_BreakX_VP
+            | PC_NotAny_VP
+            | PC_NSpan_VP
+            | PC_Span_VP
+            | PC_String_VP
+         =>
+            VP : VString_Ptr;
 
-         when PC_Assign_Imm |
-              PC_Assign_OnM |
-              PC_Any_VP     |
-              PC_Break_VP   |
-              PC_BreakX_VP  |
-              PC_NotAny_VP  |
-              PC_NSpan_VP   |
-              PC_Span_VP    |
-              PC_String_VP  => VP   : VString_Ptr;
+         when PC_Write_Imm
+            | PC_Write_OnM
+         =>
+            FP : File_Ptr;
 
-         when PC_Write_Imm  |
-              PC_Write_OnM  => FP   : File_Ptr;
+         when PC_String =>
+            Str : String_Ptr;
 
-         when PC_String     => Str  : String_Ptr;
+         when PC_String_2 =>
+            Str2 : String (1 .. 2);
 
-         when PC_String_2   => Str2 : String (1 .. 2);
+         when PC_String_3 =>
+            Str3 : String (1 .. 3);
 
-         when PC_String_3   => Str3 : String (1 .. 3);
+         when PC_String_4 =>
+            Str4 : String (1 .. 4);
 
-         when PC_String_4   => Str4 : String (1 .. 4);
+         when PC_String_5 =>
+            Str5 : String (1 .. 5);
 
-         when PC_String_5   => Str5 : String (1 .. 5);
+         when PC_String_6 =>
+            Str6 : String (1 .. 6);
 
-         when PC_String_6   => Str6 : String (1 .. 6);
+         when PC_Setcur =>
+            Var : Natural_Ptr;
 
-         when PC_Setcur     => Var  : Natural_Ptr;
+         when PC_Any_CH
+            | PC_Break_CH
+            | PC_BreakX_CH
+            | PC_Char
+            | PC_NotAny_CH
+            | PC_NSpan_CH
+            | PC_Span_CH
+         =>
+            Char : Character;
 
-         when PC_Any_CH     |
-              PC_Break_CH   |
-              PC_BreakX_CH  |
-              PC_Char       |
-              PC_NotAny_CH  |
-              PC_NSpan_CH   |
-              PC_Span_CH    => Char : Character;
+         when PC_Any_CS
+            | PC_Break_CS
+            | PC_BreakX_CS
+            | PC_NotAny_CS
+            | PC_NSpan_CS
+            | PC_Span_CS
+         =>
+            CS : Character_Set;
 
-         when PC_Any_CS     |
-              PC_Break_CS   |
-              PC_BreakX_CS  |
-              PC_NotAny_CS  |
-              PC_NSpan_CS   |
-              PC_Span_CS    => CS   : Character_Set;
+         when PC_Arbno_Y
+            | PC_Len_Nat
+            | PC_Pos_Nat
+            | PC_RPos_Nat
+            | PC_RTab_Nat
+            | PC_Tab_Nat
+         =>
+            Nat : Natural;
 
-         when PC_Arbno_Y    |
-              PC_Len_Nat    |
-              PC_Pos_Nat    |
-              PC_RPos_Nat   |
-              PC_RTab_Nat   |
-              PC_Tab_Nat    => Nat  : Natural;
+         when PC_Pos_NF
+            | PC_Len_NF
+            | PC_RPos_NF
+            | PC_RTab_NF
+            | PC_Tab_NF
+         =>
+            NF : Natural_Func;
 
-         when PC_Pos_NF     |
-              PC_Len_NF     |
-              PC_RPos_NF    |
-              PC_RTab_NF    |
-              PC_Tab_NF     => NF   : Natural_Func;
+         when PC_Pos_NP
+            | PC_Len_NP
+            | PC_RPos_NP
+            | PC_RTab_NP
+            | PC_Tab_NP
+         =>
+            NP : Natural_Ptr;
 
-         when PC_Pos_NP     |
-              PC_Len_NP     |
-              PC_RPos_NP    |
-              PC_RTab_NP    |
-              PC_Tab_NP     => NP   : Natural_Ptr;
-
-         when PC_Any_VF     |
-              PC_Break_VF   |
-              PC_BreakX_VF  |
-              PC_NotAny_VF  |
-              PC_NSpan_VF   |
-              PC_Span_VF    |
-              PC_String_VF  => VF   : VString_Func;
-
+         when PC_Any_VF
+            | PC_Break_VF
+            | PC_BreakX_VF
+            | PC_NotAny_VF
+            | PC_NSpan_VF
+            | PC_Span_VF
+            | PC_String_VF
+         =>
+            VF : VString_Func;
       end case;
    end record;
 
@@ -2163,11 +2190,11 @@ package body GNAT.Spitbol.Patterns is
          Set_Col (24 + 2 * Count (Cols) + Address_Image_Length);
 
          case E.Pcode is
-
-            when PC_Alt     |
-                 PC_Arb_X   |
-                 PC_Arbno_S |
-                 PC_Arbno_X =>
+            when PC_Alt
+               | PC_Arb_X
+               | PC_Arbno_S
+               | PC_Arbno_X
+            =>
                Write_Node_Id (E.Alt);
 
             when PC_Rpat =>
@@ -2176,19 +2203,21 @@ package body GNAT.Spitbol.Patterns is
             when PC_Pred_Func =>
                Put (Str_BF (E.BF));
 
-            when PC_Assign_Imm |
-                 PC_Assign_OnM |
-                 PC_Any_VP     |
-                 PC_Break_VP   |
-                 PC_BreakX_VP  |
-                 PC_NotAny_VP  |
-                 PC_NSpan_VP   |
-                 PC_Span_VP    |
-                 PC_String_VP  =>
+            when PC_Assign_Imm
+               | PC_Assign_OnM
+               | PC_Any_VP
+               | PC_Break_VP
+               | PC_BreakX_VP
+               | PC_NotAny_VP
+               | PC_NSpan_VP
+               | PC_Span_VP
+               | PC_String_VP
+            =>
                Put (Str_VP (E.VP));
 
-            when PC_Write_Imm  |
-                 PC_Write_OnM =>
+            when PC_Write_Imm
+               | PC_Write_OnM
+            =>
                Put (Str_FP (E.FP));
 
             when PC_String =>
@@ -2212,56 +2241,62 @@ package body GNAT.Spitbol.Patterns is
             when PC_Setcur =>
                Put (Str_NP (E.Var));
 
-            when PC_Any_CH      |
-                 PC_Break_CH    |
-                 PC_BreakX_CH   |
-                 PC_Char        |
-                 PC_NotAny_CH   |
-                 PC_NSpan_CH    |
-                 PC_Span_CH     =>
+            when PC_Any_CH
+               | PC_Break_CH
+               | PC_BreakX_CH
+               | PC_Char
+               | PC_NotAny_CH
+               | PC_NSpan_CH
+               | PC_Span_CH
+            =>
                Put (''' & E.Char & ''');
 
-            when PC_Any_CS      |
-                 PC_Break_CS    |
-                 PC_BreakX_CS   |
-                 PC_NotAny_CS   |
-                 PC_NSpan_CS    |
-                 PC_Span_CS     =>
+            when PC_Any_CS
+               | PC_Break_CS
+               | PC_BreakX_CS
+               | PC_NotAny_CS
+               | PC_NSpan_CS
+               | PC_Span_CS
+            =>
                Put ('"' & To_Sequence (E.CS) & '"');
 
-            when PC_Arbno_Y     |
-                 PC_Len_Nat     |
-                 PC_Pos_Nat     |
-                 PC_RPos_Nat    |
-                 PC_RTab_Nat    |
-                 PC_Tab_Nat     =>
+            when PC_Arbno_Y
+               | PC_Len_Nat
+               | PC_Pos_Nat
+               | PC_RPos_Nat
+               | PC_RTab_Nat
+               | PC_Tab_Nat
+            =>
                Put (S (E.Nat));
 
-            when PC_Pos_NF      |
-                 PC_Len_NF      |
-                 PC_RPos_NF     |
-                 PC_RTab_NF     |
-                 PC_Tab_NF      =>
+            when PC_Pos_NF
+               | PC_Len_NF
+               | PC_RPos_NF
+               | PC_RTab_NF
+               | PC_Tab_NF
+            =>
                Put (Str_NF (E.NF));
 
-            when PC_Pos_NP      |
-                 PC_Len_NP      |
-                 PC_RPos_NP     |
-                 PC_RTab_NP     |
-                 PC_Tab_NP      =>
+            when PC_Pos_NP
+               | PC_Len_NP
+               | PC_RPos_NP
+               | PC_RTab_NP
+               | PC_Tab_NP
+            =>
                Put (Str_NP (E.NP));
 
-            when PC_Any_VF      |
-                 PC_Break_VF    |
-                 PC_BreakX_VF   |
-                 PC_NotAny_VF   |
-                 PC_NSpan_VF    |
-                 PC_Span_VF     |
-                 PC_String_VF   =>
+            when PC_Any_VF
+               | PC_Break_VF
+               | PC_BreakX_VF
+               | PC_NotAny_VF
+               | PC_NSpan_VF
+               | PC_Span_VF
+               | PC_String_VF
+            =>
                Put (Str_VF (E.VF));
 
-            when others => null;
-
+            when others =>
+               null;
          end case;
 
          New_Line;
@@ -2409,7 +2444,6 @@ package body GNAT.Spitbol.Patterns is
 
       begin
          case E.Pcode is
-
             when PC_Cancel =>
                Append (Result, "Cancel");
 
@@ -2668,17 +2702,17 @@ package body GNAT.Spitbol.Patterns is
 
             --  Other pattern codes should not appear as leading elements
 
-            when PC_Arb_Y      |
-                 PC_Arbno_Y    |
-                 PC_Assign     |
-                 PC_BreakX_X   |
-                 PC_EOP        |
-                 PC_Fence_Y    |
-                 PC_R_Remove   |
-                 PC_R_Restore  |
-                 PC_Unanchored =>
+            when PC_Arb_Y
+               | PC_Arbno_Y
+               | PC_Assign
+               | PC_BreakX_X
+               | PC_EOP
+               | PC_Fence_Y
+               | PC_R_Remove
+               | PC_R_Restore
+               | PC_Unanchored
+            =>
                Append (Result, "???");
-
          end case;
 
          E := ER;
@@ -3450,7 +3484,6 @@ package body GNAT.Spitbol.Patterns is
 
          when others =>
             return new PE'(PC_String, 1, EOP, new String'(Str));
-
       end case;
    end S_To_PE;
 
@@ -3998,7 +4031,7 @@ package body GNAT.Spitbol.Patterns is
 
          --  Arb (extension)
 
-         when PC_Arb_Y  =>
+         when PC_Arb_Y =>
             if Cursor < Length then
                Cursor := Cursor + 1;
                Push (Node);
@@ -4916,7 +4949,6 @@ package body GNAT.Spitbol.Patterns is
             Pop_Region;
             Assign_OnM := True;
             goto Succeed;
-
       end case;
 
       --  We are NOT allowed to fall though this case statement, since every
@@ -5315,8 +5347,7 @@ package body GNAT.Spitbol.Patterns is
          --  Alternation
 
          when PC_Alt =>
-            Dout
-              (Img (Node) & "setting up alternative " & Img (Node.Alt));
+            Dout (Img (Node) & "setting up alternative " & Img (Node.Alt));
             Push (Node.Alt);
             Node := Node.Pthen;
             goto Match;
@@ -6437,7 +6468,6 @@ package body GNAT.Spitbol.Patterns is
             Pop_Region;
             Assign_OnM := True;
             goto Succeed;
-
       end case;
 
       --  We are NOT allowed to fall though this case statement, since every

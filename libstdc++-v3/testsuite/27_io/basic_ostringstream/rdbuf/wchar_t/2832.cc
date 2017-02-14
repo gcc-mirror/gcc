@@ -1,4 +1,4 @@
-// Copyright (C) 2004-2016 Free Software Foundation, Inc.
+// Copyright (C) 2004-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,7 +31,6 @@ active_buffer(std::wios& stream)
 // libstdc++/2832
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   const wchar_t* strlit01 = L"fuck war";
   const std::wstring str00;
   const std::wstring str01(strlit01);

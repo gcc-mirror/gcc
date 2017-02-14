@@ -50,11 +50,11 @@ with System.Tasking.Queuing;
 with System.Tasking.Rendezvous;
 with System.OS_Primitives;
 with System.Secondary_Stack;
-with System.Storage_Elements;
 with System.Restrictions;
 with System.Standard_Library;
 with System.Traces.Tasking;
 with System.Stack_Usage;
+with System.Storage_Elements;
 
 with System.Soft_Links;
 --  These are procedure pointers to non-tasking routines that use task
@@ -472,20 +472,21 @@ package body System.Tasking.Stages is
    --  called to create a new task.
 
    procedure Create_Task
-     (Priority          : Integer;
-      Size              : System.Parameters.Size_Type;
-      Task_Info         : System.Task_Info.Task_Info_Type;
-      CPU               : Integer;
-      Relative_Deadline : Ada.Real_Time.Time_Span;
-      Domain            : Dispatching_Domain_Access;
-      Num_Entries       : Task_Entry_Index;
-      Master            : Master_Level;
-      State             : Task_Procedure_Access;
-      Discriminants     : System.Address;
-      Elaborated        : Access_Boolean;
-      Chain             : in out Activation_Chain;
-      Task_Image        : String;
-      Created_Task      : out Task_Id)
+     (Priority             : Integer;
+      Size                 : System.Parameters.Size_Type;
+      Secondary_Stack_Size : System.Parameters.Size_Type;
+      Task_Info            : System.Task_Info.Task_Info_Type;
+      CPU                  : Integer;
+      Relative_Deadline    : Ada.Real_Time.Time_Span;
+      Domain               : Dispatching_Domain_Access;
+      Num_Entries          : Task_Entry_Index;
+      Master               : Master_Level;
+      State                : Task_Procedure_Access;
+      Discriminants        : System.Address;
+      Elaborated           : Access_Boolean;
+      Chain                : in out Activation_Chain;
+      Task_Image           : String;
+      Created_Task         : out Task_Id)
    is
       T, P          : Task_Id;
       Self_ID       : constant Task_Id := STPO.Self;
@@ -611,7 +612,8 @@ package body System.Tasking.Stages is
       end if;
 
       Initialize_ATCB (Self_ID, State, Discriminants, P, Elaborated,
-        Base_Priority, Base_CPU, Domain, Task_Info, Size, T, Success);
+        Base_Priority, Base_CPU, Domain, Task_Info, Size,
+        Secondary_Stack_Size, T, Success);
 
       if not Success then
          Free (T);
@@ -1037,12 +1039,43 @@ package body System.Tasking.Stages is
       Use_Alternate_Stack : constant Boolean := Alternate_Stack_Size /= 0;
       --  Whether to use above alternate signal stack for stack overflows
 
-      Secondary_Stack_Size :
-        constant SSE.Storage_Offset :=
-          Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size *
-            SSE.Storage_Offset (Parameters.Sec_Stack_Percentage) / 100;
+      function Secondary_Stack_Size return Storage_Elements.Storage_Offset;
+      --  Returns the size of the secondary stack for the task. For fixed
+      --  secondary stacks, the function will return the ATCB field
+      --  Secondary_Stack_Size if it is not set to Unspecified_Size,
+      --  otherwise a percentage of the stack is reserved using the
+      --  System.Parameters.Sec_Stack_Percentage property.
 
-      Secondary_Stack : aliased SSE.Storage_Array (1 .. Secondary_Stack_Size);
+      --  Dynamic secondary stacks are allocated in System.Soft_Links.
+      --  Create_TSD and thus the function returns 0 to suppress the
+      --  creation of the fixed secondary stack in the primary stack.
+
+      --------------------------
+      -- Secondary_Stack_Size --
+      --------------------------
+
+      function Secondary_Stack_Size return Storage_Elements.Storage_Offset is
+         use System.Storage_Elements;
+         use System.Secondary_Stack;
+
+      begin
+         if Parameters.Sec_Stack_Dynamic then
+            return 0;
+
+         elsif Self_ID.Common.Secondary_Stack_Size = Unspecified_Size then
+            return (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size
+                    * SSE.Storage_Offset (Sec_Stack_Percentage) / 100);
+         else
+            --  Use the size specified by aspect Secondary_Stack_Size padded
+            --  by the amount of space used by the stack data structure.
+
+            return Storage_Offset (Self_ID.Common.Secondary_Stack_Size) +
+                     Storage_Offset (SST.Minimum_Secondary_Stack_Size);
+         end if;
+      end Secondary_Stack_Size;
+
+      Secondary_Stack : aliased Storage_Elements.Storage_Array
+                          (1 .. Secondary_Stack_Size);
       for Secondary_Stack'Alignment use Standard'Maximum_Alignment;
       --  Actual area allocated for secondary stack. Note that it is critical
       --  that this have maximum alignment, since any kind of data can be

@@ -1,5 +1,5 @@
 /* RTL utility routines.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -318,10 +318,6 @@ copy_rtx (rtx orig)
      us to explicitly document why we are *not* copying a flag.  */
   copy = shallow_copy_rtx (orig);
 
-  /* We do not copy the USED flag, which is used as a mark bit during
-     walks over the RTL.  */
-  RTX_FLAG (copy, used) = 0;
-
   format_ptr = GET_RTX_FORMAT (GET_CODE (copy));
 
   for (i = 0; i < GET_RTX_LENGTH (GET_CODE (copy)); i++)
@@ -367,7 +363,29 @@ shallow_copy_rtx_stat (const_rtx orig MEM_STAT_DECL)
 {
   const unsigned int size = rtx_size (orig);
   rtx const copy = ggc_alloc_rtx_def_stat (size PASS_MEM_STAT);
-  return (rtx) memcpy (copy, orig, size);
+  memcpy (copy, orig, size);
+  switch (GET_CODE (orig))
+    {
+      /* RTX codes copy_rtx_if_shared_1 considers are shareable,
+	 the used flag is often used for other purposes.  */
+    case REG:
+    case DEBUG_EXPR:
+    case VALUE:
+    CASE_CONST_ANY:
+    case SYMBOL_REF:
+    case CODE_LABEL:
+    case PC:
+    case CC0:
+    case RETURN:
+    case SIMPLE_RETURN:
+    case SCRATCH:
+      break;
+    default:
+      /* For all other RTXes clear the used flag on the copy.  */
+      RTX_FLAG (copy, used) = 0;
+      break;
+    }
+  return copy;
 }
 
 /* Nonzero when we are generating CONCATs.  */
@@ -424,7 +442,7 @@ rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
       return (REGNO (x) == REGNO (y));
 
     case LABEL_REF:
-      return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
+      return label_ref_label (x) == label_ref_label (y);
 
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);
@@ -561,7 +579,7 @@ rtx_equal_p (const_rtx x, const_rtx y)
       return (REGNO (x) == REGNO (y));
 
     case LABEL_REF:
-      return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
+      return label_ref_label (x) == label_ref_label (y);
 
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);

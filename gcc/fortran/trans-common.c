@@ -1,5 +1,5 @@
 /* Common block and equivalence list handling
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Contributed by Canqun Yang <canqun@nudt.edu.cn>
 
 This file is part of GCC.
@@ -342,7 +342,7 @@ static tree
 build_equiv_decl (tree union_type, bool is_init, bool is_saved)
 {
   tree decl;
-  char name[15];
+  char name[18];
   static int serial = 0;
 
   if (is_init)
@@ -408,7 +408,7 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
 	{
 	  DECL_SIZE (decl) = TYPE_SIZE (union_type);
 	  DECL_SIZE_UNIT (decl) = size;
-	  DECL_MODE (decl) = TYPE_MODE (union_type);
+	  SET_DECL_MODE (decl, TYPE_MODE (union_type));
 	  TREE_TYPE (decl) = union_type;
 	  layout_decl (decl, 0);
 	}
@@ -457,7 +457,11 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
       if (com->threadprivate)
 	set_decl_tls_model (decl, decl_default_tls_model (decl));
 
-      if (com->omp_declare_target)
+      if (com->omp_declare_target_link)
+	DECL_ATTRIBUTES (decl)
+	  = tree_cons (get_identifier ("omp declare target link"),
+		       NULL_TREE, DECL_ATTRIBUTES (decl));
+      else if (com->omp_declare_target)
 	DECL_ATTRIBUTES (decl)
 	  = tree_cons (get_identifier ("omp declare target"),
 		       NULL_TREE, DECL_ATTRIBUTES (decl));
@@ -532,10 +536,15 @@ get_init_field (segment_info *head, tree union_type, tree *field_init,
   memset (chk, '\0', (size_t)length);
   for (s = head; s; s = s->next)
     if (s->sym->value)
-      gfc_merge_initializers (s->sym->ts, s->sym->value,
+      {
+	locus *loc = NULL;
+	if (s->sym->ns->equiv && s->sym->ns->equiv->eq)
+	  loc = &s->sym->ns->equiv->eq->expr->where;
+	gfc_merge_initializers (s->sym->ts, s->sym->value, loc,
 			      &data[s->offset],
 			      &chk[s->offset],
 			     (size_t)s->length);
+      }
   
   for (i = 0; i < length; i++)
     CONSTRUCTOR_APPEND_ELT (v, NULL, build_int_cst (type, data[i]));
@@ -800,13 +809,21 @@ element_number (gfc_array_ref *ar)
       if (ar->dimen_type[i] != DIMEN_ELEMENT)
         gfc_internal_error ("element_number(): Bad dimension type");
 
-      mpz_sub (n, *get_mpz (ar->start[i]), *get_mpz (as->lower[i]));
+      if (as && as->lower[i])
+	mpz_sub (n, *get_mpz (ar->start[i]), *get_mpz (as->lower[i]));
+      else
+	mpz_sub_ui (n, *get_mpz (ar->start[i]), 1);
  
       mpz_mul (n, n, multiplier);
       mpz_add (offset, offset, n);
  
-      mpz_sub (extent, *get_mpz (as->upper[i]), *get_mpz (as->lower[i]));
-      mpz_add_ui (extent, extent, 1);
+      if (as && as->upper[i] && as->lower[i])
+	{
+	  mpz_sub (extent, *get_mpz (as->upper[i]), *get_mpz (as->lower[i]));
+	  mpz_add_ui (extent, extent, 1);
+	}
+      else
+	mpz_set_ui (extent, 0);
  
       if (mpz_sgn (extent) < 0)
         mpz_set_ui (extent, 0);
@@ -1136,13 +1153,13 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
 	      if (warn_align_commons)
 		{
 		  if (strcmp (common->name, BLANK_COMMON_NAME))
-		    gfc_warning (0,
+		    gfc_warning (OPT_Walign_commons,
 				 "Padding of %d bytes required before %qs in "
 				 "COMMON %qs at %L; reorder elements or use "
 				 "-fno-align-commons", (int)offset,
 				 s->sym->name, common->name, &common->where);
 		  else
-		    gfc_warning (0,
+		    gfc_warning (OPT_Walign_commons,
 				 "Padding of %d bytes required before %qs in "
 				 "COMMON at %L; reorder elements or use "
 				 "-fno-align-commons", (int)offset,
@@ -1229,8 +1246,12 @@ finish_equivalences (gfc_namespace *ns)
 	  {
 	    c = gfc_get_common_head ();
 	    /* We've lost the real location, so use the location of the
-	       enclosing procedure.  */
-	    c->where = ns->proc_name->declared_at;
+	       enclosing procedure.  If we're in a BLOCK DATA block, then
+	       use the location in the sym_root.  */
+	    if (ns->proc_name)
+	      c->where = ns->proc_name->declared_at;
+	    else if (ns->is_block_data)
+	      c->where = ns->sym_root->n.sym->declared_at;
 	    strcpy (c->name, z->module);
 	  }
 	else

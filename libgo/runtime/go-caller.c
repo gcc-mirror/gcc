@@ -1,4 +1,4 @@
-/* go-caller.c -- runtime.Caller and runtime.FuncForPC for Go.
+/* go-caller.c -- look up function/file/line/entry info
 
    Copyright 2009 The Go Authors. All rights reserved.
    Use of this source code is governed by a BSD-style
@@ -25,6 +25,7 @@ struct caller
   String fn;
   String file;
   intgo line;
+  intgo index;
 };
 
 /* Collect file/line information for a PC value.  If this is called
@@ -44,6 +45,12 @@ callback (void *data, uintptr_t pc __attribute__ ((unused)),
   c->fn = runtime_gostringnocopy ((const byte *) function);
   c->file = runtime_gostringnocopy ((const byte *) filename);
   c->line = lineno;
+
+  if (c->index == 0)
+    return 1;
+
+  if (c->index > 0)
+    --c->index;
 
   return 0;
 }
@@ -69,6 +76,10 @@ static void *back_state;
 
 static Lock back_state_lock;
 
+/* The program arguments.  */
+
+extern Slice runtime_get_args(void);
+
 /* Fetch back_state, creating it if necessary.  */
 
 struct backtrace_state *
@@ -77,15 +88,19 @@ __go_get_backtrace_state ()
   runtime_lock (&back_state_lock);
   if (back_state == NULL)
     {
+      Slice args;
       const char *filename;
       struct stat s;
 
-      filename = (const char *) runtime_progname ();
+      args = runtime_get_args();
+      filename = NULL;
+      if (args.__count > 0)
+	filename = (const char*)((String*)args.__values)[0].str;
 
       /* If there is no '/' in FILENAME, it was found on PATH, and
 	 might not be the same as the file with the same name in the
 	 current directory.  */
-      if (__builtin_strchr (filename, '/') == NULL)
+      if (filename != NULL && __builtin_strchr (filename, '/') == NULL)
 	filename = NULL;
 
       /* If the file is small, then it's not the real executable.
@@ -102,14 +117,17 @@ __go_get_backtrace_state ()
   return back_state;
 }
 
-/* Return function/file/line information for PC.  */
+/* Return function/file/line information for PC.  The index parameter
+   is the entry on the stack of inlined functions; -1 means the last
+   one.  */
 
 _Bool
-__go_file_line (uintptr pc, String *fn, String *file, intgo *line)
+__go_file_line (uintptr pc, int index, String *fn, String *file, intgo *line)
 {
   struct caller c;
 
   runtime_memclr (&c, sizeof c);
+  c.index = index;
   backtrace_pcinfo (__go_get_backtrace_state (), pc, callback,
 		    error_callback, &c);
   *fn = c.fn;
@@ -153,8 +171,6 @@ struct caller_ret
 
 struct caller_ret Caller (int n) __asm__ (GOSYM_PREFIX "runtime.Caller");
 
-Func *FuncForPC (uintptr_t) __asm__ (GOSYM_PREFIX "runtime.FuncForPC");
-
 /* Implement runtime.Caller.  */
 
 struct caller_ret
@@ -175,73 +191,40 @@ Caller (int skip)
   return ret;
 }
 
-/* Implement runtime.FuncForPC.  */
+/* Look up the function name, file name, and line number for a PC.  */
 
-Func *
-FuncForPC (uintptr_t pc)
+struct funcfileline_return
 {
-  Func *ret;
-  String fn;
-  String file;
-  intgo line;
-  uintptr_t val;
-
-  if (!__go_file_line (pc, &fn, &file, &line))
-    return NULL;
-
-  ret = (Func *) runtime_malloc (sizeof (*ret));
-  ret->name = fn;
-
-  if (__go_symbol_value (pc, &val))
-    ret->entry = val;
-  else
-    ret->entry = 0;
-
-  return ret;
-}
-
-/* Look up the file and line information for a PC within a
-   function.  */
-
-struct funcline_go_return
-{
+  String retfn;
   String retfile;
   intgo retline;
 };
 
-struct funcline_go_return
-runtime_funcline_go (Func *f, uintptr targetpc)
-  __asm__ (GOSYM_PREFIX "runtime.funcline_go");
+struct funcfileline_return
+runtime_funcfileline (uintptr targetpc, int32 index)
+  __asm__ (GOSYM_PREFIX "runtime.funcfileline");
 
-struct funcline_go_return
-runtime_funcline_go (Func *f __attribute__((unused)), uintptr targetpc)
+struct funcfileline_return
+runtime_funcfileline (uintptr targetpc, int32 index)
 {
-  struct funcline_go_return ret;
-  String fn;
+  struct funcfileline_return ret;
 
-  if (!__go_file_line (targetpc, &fn, &ret.retfile,  &ret.retline))
+  if (!__go_file_line (targetpc, index, &ret.retfn, &ret.retfile,
+		       &ret.retline))
     runtime_memclr (&ret, sizeof ret);
   return ret;
 }
 
-/* Return the name of a function.  */
-String runtime_funcname_go (Func *f)
-  __asm__ (GOSYM_PREFIX "runtime.funcname_go");
-
-String
-runtime_funcname_go (Func *f)
-{
-  if (f == NULL)
-    return runtime_gostringnocopy ((const byte *) "");
-  return f->name;
-}
-
 /* Return the entry point of a function.  */
-uintptr runtime_funcentry_go(Func *f)
-  __asm__ (GOSYM_PREFIX "runtime.funcentry_go");
+uintptr runtime_funcentry(uintptr)
+  __asm__ (GOSYM_PREFIX "runtime.funcentry");
 
 uintptr
-runtime_funcentry_go (Func *f)
+runtime_funcentry (uintptr pc)
 {
-  return f->entry;
+  uintptr val;
+
+  if (!__go_symbol_value (pc, &val))
+    return 0;
+  return val;
 }

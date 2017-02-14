@@ -12,5 +12,5 @@ template <int &> struct S { };
 
 // Expect the diagnostic to reference the ABI version specified via
 // -fabi-version=3 and the ABI version specified via -Wabi=2.
-void foo (S<N>) { }   // { dg-warning "the mangled name of .void foo\\(S<N>\\). changed between -fabi-version=3 \\(_Z3foo1SILZ1NEE\\) and -fabi-version=2 \\(_Z3foo1SIL_Z1NEE\\)" }
+void foo (S<N>) { }   // { dg-warning "the mangled name of .void foo\\(S<N>\\). changed between -fabi-version=2 \\(_Z3foo1SILZ1NEE\\) and -fabi-version=3 \\(_Z3foo1SIL_Z1NEE\\)" }
 

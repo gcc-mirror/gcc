@@ -73,9 +73,12 @@
  *
  * A value of 0 means no debugging.
  * Higher values generate more debugging output.
+ *
  */
-#define FIBER_DEBUG 0
 
+#ifndef FIBER_DEBUG
+#define FIBER_DEBUG 0
+#endif
 /**
  * @brief Flag for validating reference counts.
  * 

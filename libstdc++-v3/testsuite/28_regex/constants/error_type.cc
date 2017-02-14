@@ -1,9 +1,8 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 //
 // 2009-06-17  Stephen M. Webb  <stephen.webb@xandros.com>
 //
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,28 +22,25 @@
 // 28.5.3 
 
 #include <regex>
-#include <testsuite_hooks.h>
 
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
+  std::regex_constants::error_type err __attribute__((unused));
 
-	std::regex_constants::error_type err __attribute__((unused));
-
-	err = std::regex_constants::error_collate;
-	err = std::regex_constants::error_ctype;
-	err = std::regex_constants::error_escape;
-	err = std::regex_constants::error_backref;
-	err = std::regex_constants::error_brack;
-	err = std::regex_constants::error_paren;
-	err = std::regex_constants::error_brace;
-	err = std::regex_constants::error_badbrace;
-	err = std::regex_constants::error_range;
-	err = std::regex_constants::error_space;
-	err = std::regex_constants::error_badrepeat;
-	err = std::regex_constants::error_complexity;
-	err = std::regex_constants::error_stack;
+  err = std::regex_constants::error_collate;
+  err = std::regex_constants::error_ctype;
+  err = std::regex_constants::error_escape;
+  err = std::regex_constants::error_backref;
+  err = std::regex_constants::error_brack;
+  err = std::regex_constants::error_paren;
+  err = std::regex_constants::error_brace;
+  err = std::regex_constants::error_badbrace;
+  err = std::regex_constants::error_range;
+  err = std::regex_constants::error_space;
+  err = std::regex_constants::error_badrepeat;
+  err = std::regex_constants::error_complexity;
+  err = std::regex_constants::error_stack;
 }
 
 int main()

@@ -1,5 +1,5 @@
 ;; Constraint definitions for SPARC.
-;; Copyright (C) 2008-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2008-2017 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -128,11 +128,11 @@
  (and (match_code "const_double")
       (match_test "fp_high_losum_p (op)")))
 
-;; Not needed in 64-bit mode
-(define_memory_constraint "T"
+;; We need a special memory constraint because of the alignment requirement
+(define_special_memory_constraint "T"
  "Memory reference whose address is aligned to 8-byte boundary"
- (and (match_test "TARGET_ARCH32")
-      (match_code "mem")
+ (and (match_code "mem")
+      (match_test "TARGET_ARCH32")
       (match_test "memory_ok_for_ldd (op)")))
 
 ;; This awkward register constraint is necessary because it is not
@@ -166,24 +166,25 @@
 ;; example, we have a non-offsetable MEM.  Reload will notice this
 ;; case and reload the address into a single hard register.
 ;;
-;; The real downfall of this awkward register constraint is that it does
-;; not evaluate to a true register class like a bonafide use of
-;; define_register_constraint would.  This currently means that we cannot
-;; use LRA on Sparc, since the constraint processing of LRA really depends
+;; The real downfall of this awkward register constraint is that it
+;; does not evaluate to a true register class like a bonafide use of
+;; define_register_constraint would.  This means that we cannot use
+;; it with LRA, since the constraint processing of LRA really depends
 ;; upon whether an extra constraint is for registers or not.  It uses
 ;; reg_class_for_constraint, and checks it against NO_REGS.
 (define_constraint "U"
  "Pseudo-register or hard even-numbered integer register"
- (and (match_test "TARGET_ARCH32")
-      (match_code "reg")
+ (and (match_code "reg")
       (ior (match_test "REGNO (op) < FIRST_PSEUDO_REGISTER")
 	   (not (match_test "reload_in_progress && reg_renumber [REGNO (op)] < 0")))
+      (match_test "TARGET_ARCH32")
       (match_test "register_ok_for_ldd (op)")))
 
-;; Equivalent to 'T' but available in 64-bit mode
+;; Equivalent to 'T' but in 64-bit mode without alignment requirement
 (define_memory_constraint "W"
  "Memory reference for 'e' constraint floating-point register"
  (and (match_code "mem")
+      (match_test "TARGET_ARCH64")
       (match_test "memory_ok_for_ldd (op)")))
 
 (define_memory_constraint "w"

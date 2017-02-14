@@ -1,6 +1,6 @@
 // 981027 ncm work with libstdc++v3
 
-// Copyright (C) 1997-2016 Free Software Foundation, Inc.
+// Copyright (C) 1997-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,7 +46,6 @@ MyNP::do_falsename() const
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   const char lit[] = "1 0\n"
                      "true false\n"
                      ":  true:\n"

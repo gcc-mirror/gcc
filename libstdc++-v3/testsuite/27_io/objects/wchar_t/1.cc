@@ -1,6 +1,6 @@
 // 2003-05-01 Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -77,8 +77,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   wchar_t array2[20];
   typedef std::wios::traits_type wtraits_type;
   wtraits_type::int_type wi = 15;

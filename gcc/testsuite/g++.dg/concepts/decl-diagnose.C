@@ -16,6 +16,7 @@ struct X
   template<typename T>
   static concept bool f6() { return true; } // { dg-error "a concept cannot be a member function" }
   static concept bool x; // { dg-error "declared 'concept'" }
+			 // { dg-error "uninitialized const" "" { target *-*-* } .-1 }
   concept int x2; // { dg-error "declared 'concept'" }
   concept ~X(); // { dg-error "a destructor cannot be 'concept'" }
   concept X(); // { dg-error "a constructor cannot be 'concept'" }

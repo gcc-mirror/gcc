@@ -278,3 +278,141 @@ make_raw_shell_str( char* pz_d, tCC* pz_s, size_t smax )
 }
 
 #endif
+
+#if defined(__MINGW32__)
+void
+fix_path_separators (char* p)
+{
+    while (p != NULL)
+      {
+        p = strchr (p, '\\');
+        if (p != NULL)
+          {
+            *p = '/';
+            ++p;
+          }
+      }
+}
+
+/* Count number of needle character ocurrences in str */
+static int
+count_occurrences_of_char (char* str, char needle)
+{
+  int cnt = 0;
+
+  while (str)
+    {
+       str = strchr (str, needle);
+       if (str)
+         {
+           ++str;
+           ++cnt;
+         }
+    }
+
+  return cnt;
+}
+
+/* On Mingw32, system function will just start cmd by default.
+   Call system function, but prepend ${CONFIG_SHELL} or ${SHELL} -c to the command,
+   replace newlines with '$'\n'', enclose command with double quotes
+   and escape special characters which were originally enclosed in single quotes.
+ */
+int
+system_with_shell (char* s)
+{
+  static const char z_shell_start_args[] = " -c \"";
+  static const char z_shell_end_args[] = "\"";
+  static const char z_shell_newline[] = "'$'\\n''";
+
+  /* Use configured shell if present */
+  char *env_shell = getenv ("CONFIG_SHELL");
+  int newline_cnt = count_occurrences_of_char (s, '\n');
+  int escapes_cnt  = count_occurrences_of_char( s, '\\')
+                      + count_occurrences_of_char (s, '"')
+                      + count_occurrences_of_char (s, '`');
+  char *long_cmd;
+  char *cmd_endp;
+  int sys_result;
+  char *s_scan;
+  int in_quotes;
+
+  if (env_shell == NULL)
+    env_shell = getenv ("SHELL");
+
+  /* If neither CONFIGURED_SHELL nor SHELL is set, just call standard system function */
+  if (env_shell == NULL)
+    return system (s);
+
+  /* Allocate enough memory to fit newly created command string */
+  long_cmd = XNEWVEC (char, strlen (env_shell)
+                      + strlen (z_shell_start_args)
+                      + strlen (s)
+                      + newline_cnt * (strlen (z_shell_newline) - 1)
+                      + escapes_cnt
+                      + strlen (z_shell_end_args)
+                      + 1);
+
+  /* Start with ${SHELL} */
+  strcpy (long_cmd, env_shell);
+  cmd_endp = long_cmd + strlen (long_cmd);
+
+  /* Opening quote */
+  strcpy (cmd_endp, z_shell_start_args);
+  cmd_endp += strlen (z_shell_start_args);
+
+  /* Replace newlines and escape special chars */
+  in_quotes = 0;
+  for (s_scan = s; *s_scan; ++s_scan)
+    {
+      switch (*s_scan)
+        {
+          case '\n':
+            if (in_quotes)
+              {
+                /* Replace newline inside quotes with '$'\n'' */
+                strcpy (cmd_endp, z_shell_newline);
+                cmd_endp += strlen (z_shell_newline);
+              }
+            else
+              {
+                /* Replace newlines outside quotes with ; and merge subsequent newlines */
+                *(cmd_endp++) = ';';
+                *(cmd_endp++) = ' ';
+                while (*(s_scan + 1) == '\n' || *(s_scan + 1) == ' ' || *(s_scan + 1) == '\t')
+                  ++s_scan;
+              }
+            break;
+          case '\'':
+            /* Escape single quote and toggle in_quotes flag */
+            in_quotes = !in_quotes;
+            *(cmd_endp++) = *s_scan;
+            break;
+          case '\\':
+          case '`':
+            /* Escape backslash and backtick inside quotes */
+            if (in_quotes)
+               *(cmd_endp++) = '\\';
+            *(cmd_endp++) = *s_scan;
+            break;
+          case '"':
+            /* Escape double quotes always */
+            *(cmd_endp++) = '\\';
+            *(cmd_endp++) = *s_scan;
+            break;
+          default:
+            *(cmd_endp++) = *s_scan;
+        }
+    }
+
+  /* Closing quote */
+  strcpy (cmd_endp, z_shell_end_args);
+
+  sys_result = system (long_cmd);
+
+  free (long_cmd);
+
+  return sys_result;
+}
+
+#endif /* defined(__MINGW32__) */

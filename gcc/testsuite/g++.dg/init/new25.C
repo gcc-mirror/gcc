@@ -5,7 +5,11 @@ class C
 {
 public:
   void* operator new(std::size_t = 32) throw (std::bad_alloc); // { dg-error "first parameter" }
+							       // { dg-error "dynamic exception specification" "" { target c++1z } .-1 }
+							       // { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } .-2 }
   void* operator new[](std::size_t = 32) throw (std::bad_alloc); // { dg-error "first parameter" }
+								 // { dg-error "dynamic exception specification" "" { target c++1z } .-1 }
+								 // { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } .-2 }
   void* operator new(std::size_t = 32, const std::nothrow_t&) throw(); // { dg-error "first parameter" }
   void* operator new[](std::size_t = 32, const std::nothrow_t&) throw(); // { dg-error "first parameter" }
 };

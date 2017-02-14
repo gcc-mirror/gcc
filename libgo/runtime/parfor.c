@@ -5,12 +5,13 @@
 // Parallel for algorithm.
 
 #include "runtime.h"
+#include "malloc.h"
 #include "arch.h"
 
 struct ParForThread
 {
 	// the thread's iteration space [32lsb, 32msb)
-	uint64 pos;
+	uint64 pos __attribute__((aligned(8)));
 	// stats
 	uint64 nsteal;
 	uint64 nstealcnt;
@@ -27,7 +28,7 @@ runtime_parforalloc(uint32 nthrmax)
 
 	// The ParFor object is followed by CacheLineSize padding
 	// and then nthrmax ParForThread.
-	desc = (ParFor*)runtime_malloc(sizeof(ParFor) + CacheLineSize + nthrmax * sizeof(ParForThread));
+	desc = (ParFor*)runtime_mallocgc(sizeof(ParFor) + CacheLineSize + nthrmax * sizeof(ParForThread), 0, FlagNoInvokeGC);
 	desc->thr = (ParForThread*)((byte*)(desc+1) + CacheLineSize);
 	desc->nthrmax = nthrmax;
 	return desc;
@@ -125,7 +126,7 @@ runtime_parfordo(ParFor *desc)
 				goto exit;
 			}
 			// Choose a random victim for stealing.
-			victim = runtime_fastrand1() % (desc->nthr-1);
+			victim = runtime_fastrand() % (desc->nthr-1);
 			if(victim >= tid)
 				victim++;
 			victimpos = &desc->thr[victim].pos;

@@ -604,6 +604,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+get_gcc_base_ver
 link_cilkrts
 XLDFLAGS
 XCFLAGS
@@ -749,6 +750,7 @@ with_pic
 enable_fast_install
 with_gnu_ld
 enable_libtool_lock
+with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1404,6 +1406,8 @@ Optional Packages:
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
+  --with-gcc-major-version-only
+                          use only GCC major number in filesystem paths
 
 Some influential environment variables:
   CC          C compiler command
@@ -5676,6 +5680,50 @@ _ACEOF
 fi
 
 
+# Check for dl functions
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for dladdr in -ldl" >&5
+$as_echo_n "checking for dladdr in -ldl... " >&6; }
+if test "${ac_cv_lib_dl_dladdr+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-ldl  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char dladdr ();
+int
+main ()
+{
+return dladdr ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_dl_dladdr=yes
+else
+  ac_cv_lib_dl_dladdr=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_dl_dladdr" >&5
+$as_echo "$ac_cv_lib_dl_dladdr" >&6; }
+if test "x$ac_cv_lib_dl_dladdr" = x""yes; then :
+
+$as_echo "#define HAVE_DLADDR 1" >>confdefs.h
+
+fi
+
+
 # Check whether the target supports protected visibility.
 save_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -Werror"
@@ -5766,16 +5814,16 @@ esac
 # contains information on what's needed
 case "${target}" in
 
-  x86_64-*-*)
-    config_dir="x86"
-    ;;
-
-  i?86-*-*)
+  i?86-*-* | x86_64-*-*)
     config_dir="x86"
     ;;
 
   arm-*-*)
     config_dir="arm"
+    ;;
+
+  sparc*-*-*)
+    config_dir="sparc"
     ;;
 
   *)
@@ -11893,7 +11941,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11896 "configure"
+#line 11944 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11999,7 +12047,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12002 "configure"
+#line 12050 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15358,6 +15406,20 @@ else
 fi
 
 
+# Determine what GCC version number to use in filesystem paths.
+
+  get_gcc_base_ver="cat"
+
+# Check whether --with-gcc-major-version-only was given.
+if test "${with_gcc_major_version_only+set}" = set; then :
+  withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*\$\$/\1/'"
+      fi
+
+fi
+
+
+
 
 # Must be last
 cat >confcache <<\_ACEOF
@@ -16105,7 +16167,6 @@ CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
 CC="$CC"
 CXX="$CXX"
 GFORTRAN="$GFORTRAN"
-GCJ="$GCJ"
 AMDEP_TRUE="$AMDEP_TRUE" ac_aux_dir="$ac_aux_dir"
 
 

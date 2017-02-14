@@ -43,8 +43,8 @@ p9_minus_1 (void)
   return ret;
 }
 
-/* { dg-final { scan-assembler     "xxspltib" } } */
-/* { dg-final { scan-assembler-not "mtvsrd"   } } */
-/* { dg-final { scan-assembler-not "lfd"      } } */
-/* { dg-final { scan-assembler-not "ld"       } } */
-/* { dg-final { scan-assembler-not "lxsd"     } } */
+/* { dg-final { scan-assembler     "\[ \t\]xxspltib" } } */
+/* { dg-final { scan-assembler-not "\[ \t\]mtvsrd"   } } */
+/* { dg-final { scan-assembler-not "\[ \t\]lfd"  } } */
+/* { dg-final { scan-assembler-not "\[ \t\]ld"   } } */
+/* { dg-final { scan-assembler-not "\[ \t\]lxsd" } } */

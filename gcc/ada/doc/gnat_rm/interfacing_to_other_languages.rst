@@ -15,9 +15,9 @@ Interfacing to C
 
 Interfacing to C with GNAT can use one of two approaches:
 
-* 
+*
   The types in the package `Interfaces.C` may be used.
-* 
+*
   Standard Ada types may be used directly.  This may be less portable to
   other compilers, but will work on all GNAT compilers, which guarantee
   correspondence between the C and Ada types.
@@ -44,7 +44,7 @@ Ada Type                 C Type
 Additionally, there are the following general correspondences between Ada
 and C types:
 
-* 
+*
   Ada enumeration types map to C enumeration types directly if pragma
   `Convention C` is specified, which causes them to have int
   length.  Without pragma `Convention C`, Ada enumeration types map to
@@ -53,17 +53,17 @@ and C types:
   This is the only case in which pragma `Convention C` affects the
   representation of an Ada type.
 
-* 
+*
   Ada access types map to C pointers, except for the case of pointers to
   unconstrained types in Ada, which have no direct C equivalent.
 
-* 
+*
   Ada arrays map directly to C arrays.
 
-* 
+*
   Ada records map directly to C structures.
 
-* 
+*
   Packed Ada records map to C structures where all members are bit fields
   of the length corresponding to the ``type'Size`` value in Ada.
 
@@ -116,7 +116,7 @@ It is also possible to import a C++ exception using the following syntax:
   pragma Import (Cpp,
     [Entity =>] LOCAL_NAME,
     [External_Name =>] static_string_EXPRESSION);
-  
+
 
 The `External_Name` is the name of the C++ RTTI symbol. You can then
 cover a specific C++ exception in an exception handler.
@@ -162,4 +162,3 @@ case in which it is possible to import foreign units of this type,
 provided that the data items passed are restricted to simple scalar
 values or simple record types without variants, or simple array
 types with fixed bounds.
-

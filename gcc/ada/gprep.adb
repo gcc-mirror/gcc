@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -253,7 +253,15 @@ package body GPrep is
 
             Scanner.Initialize_Scanner (Deffile);
 
-            Prep.Parse_Def_File;
+            --  Parse the definition file without "replace in comments"
+
+            declare
+               Replace : constant Boolean := Opt.Replace_In_Comments;
+            begin
+               Opt.Replace_In_Comments := False;
+               Prep.Parse_Def_File;
+               Opt.Replace_In_Comments := Replace;
+            end;
          end;
       end if;
 
@@ -729,7 +737,6 @@ package body GPrep is
             Switch := GNAT.Command_Line.Getopt ("D: a b c C r s T u v");
 
             case Switch is
-
                when ASCII.NUL =>
                   exit;
 

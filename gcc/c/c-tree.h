@@ -1,5 +1,5 @@
 /* Definitions for C parsing and type checking.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -230,6 +230,7 @@ enum c_typespec_keyword {
   cts_dfloat32,
   cts_dfloat64,
   cts_dfloat128,
+  cts_floatn_nx,
   cts_fract,
   cts_accum,
   cts_auto_type
@@ -266,6 +267,8 @@ enum c_declspec_word {
   cdw_saturating,
   cdw_alignas,
   cdw_address_space,
+  cdw_gimple,
+  cdw_rtl,
   cdw_number_of_elements /* This one must always be the last
 			    enumerator.  */
 };
@@ -289,12 +292,17 @@ struct c_declspecs {
      NULL; attributes (possibly from multiple lists) will be passed
      separately.  */
   tree attrs;
+  /* The pass to start compiling a __GIMPLE or __RTL function with.  */
+  char *gimple_or_rtl_pass;
   /* The base-2 log of the greatest alignment required by an _Alignas
      specifier, in bytes, or -1 if no such specifiers with nonzero
      alignment.  */
   int align_log;
   /* For the __intN declspec, this stores the index into the int_n_* arrays.  */
   int int_n_idx;
+  /* For the _FloatN and _FloatNx declspec, this stores the index into
+     the floatn_nx_types array.  */
+  int floatn_nx_idx;
   /* The storage class specifier, or csc_none if none.  */
   enum c_storage_class storage_class;
   /* Any type specifier keyword used such as "int", not reflecting
@@ -358,6 +366,10 @@ struct c_declspecs {
   /* Whether any alignment specifier (even with zero alignment) was
      specified.  */
   BOOL_BITFIELD alignas_p : 1;
+  /* Whether any __GIMPLE specifier was specified.  */
+  BOOL_BITFIELD gimple_p : 1;
+  /* Whether any __RTL specifier was specified.  */
+  BOOL_BITFIELD rtl_p : 1;
   /* The address space that the declaration belongs to.  */
   addr_space_t address_space;
 };
@@ -633,12 +645,13 @@ extern tree c_cast_expr (location_t, struct c_type_name *, tree);
 extern tree build_c_cast (location_t, tree, tree);
 extern void store_init_value (location_t, tree, tree, tree);
 extern void maybe_warn_string_init (location_t, tree, struct c_expr);
-extern void start_init (tree, tree, int);
+extern void start_init (tree, tree, int, rich_location *);
 extern void finish_init (void);
 extern void really_start_incremental_init (tree);
 extern void finish_implicit_inits (location_t, struct obstack *);
 extern void push_init_level (location_t, int, struct obstack *);
-extern struct c_expr pop_init_level (location_t, int, struct obstack *);
+extern struct c_expr pop_init_level (location_t, int, struct obstack *,
+				     location_t);
 extern void set_init_index (location_t, tree, tree, struct obstack *);
 extern void set_init_label (location_t, tree, location_t, struct obstack *);
 extern void process_init_element (location_t, struct c_expr, bool,
@@ -678,6 +691,7 @@ extern tree c_finish_transaction (location_t, tree, int);
 extern bool c_tree_equal (tree, tree);
 extern tree c_build_function_call_vec (location_t, vec<location_t>, tree,
 				       vec<tree, va_gc> *, vec<tree, va_gc> *);
+extern tree c_omp_clause_copy_ctor (tree, tree, tree);
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */

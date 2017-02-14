@@ -1,5 +1,5 @@
 /* Various declarations for language-independent diagnostics subroutines.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2017 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -62,6 +62,8 @@ typedef void (*diagnostic_start_span_fn) (diagnostic_context *,
 
 typedef diagnostic_starter_fn diagnostic_finalizer_fn;
 
+class edit_context;
+
 /* This data structure bundles altogether any information relevant to
    the context of a diagnostic message.  */
 struct diagnostic_context
@@ -109,7 +111,7 @@ struct diagnostic_context
   int caret_max_width;
 
   /* Character used for caret diagnostics.  */
-  char caret_chars[rich_location::MAX_RANGES];
+  char caret_chars[rich_location::STATICALLY_ALLOCATED_RANGES];
 
   /* True if we should print the command line option which controls
      each diagnostic, if known.  */
@@ -141,7 +143,7 @@ struct diagnostic_context
   bool dc_warn_system_headers;
 
   /* Maximum number of errors to report.  */
-  unsigned int max_errors;
+  int max_errors;
 
   /* This function is called before any message is printed out.  It is
      responsible for preparing message prefix and such.  For example, it
@@ -209,6 +211,10 @@ struct diagnostic_context
   /* If true, print fixits in machine-parseable form after the
      rest of the diagnostic.  */
   bool parseable_fixits_p;
+
+  /* If non-NULL, an edit_context to which fix-it hints should be
+     applied, for generating patches.  */
+  edit_context *edit_context_ptr;
 };
 
 static inline void
@@ -284,7 +290,9 @@ extern void diagnostic_initialize (diagnostic_context *, int);
 extern void diagnostic_color_init (diagnostic_context *, int value = -1);
 extern void diagnostic_finish (diagnostic_context *);
 extern void diagnostic_report_current_module (diagnostic_context *, location_t);
-extern void diagnostic_show_locus (diagnostic_context *, const diagnostic_info *);
+extern void diagnostic_show_locus (diagnostic_context *,
+				   rich_location *richloc,
+				   diagnostic_t diagnostic_kind);
 
 /* Force diagnostics controlled by OPTIDX to be kind KIND.  */
 extern diagnostic_t diagnostic_classify_diagnostic (diagnostic_context *,
@@ -312,6 +320,7 @@ void default_diagnostic_start_span_fn (diagnostic_context *,
 void default_diagnostic_finalizer (diagnostic_context *, diagnostic_info *);
 void diagnostic_set_caret_max_width (diagnostic_context *context, int value);
 void diagnostic_action_after_output (diagnostic_context *, diagnostic_t);
+void diagnostic_check_max_errors (diagnostic_context *, bool flush = false);
 
 void diagnostic_file_cache_fini (void);
 

@@ -14,8 +14,6 @@
 #include "malloc.h"
 #include "mgc0.h"
 #include "go-type.h"
-#include "go-defer.h"
-#include "go-panic.h"
 
 #define hash __hash
 #define KindNoPointers GO_NO_POINTERS
@@ -265,15 +263,15 @@ dumpgoroutine(G *gp)
 	dumpint((uintptr)0);
 	dumpint(gp->goid);
 	dumpint(gp->gopc);
-	dumpint(gp->status);
+	dumpint(gp->atomicstatus);
 	dumpbool(gp->issystem);
 	dumpbool(gp->isbackground);
 	dumpint(gp->waitsince);
-	dumpcstr((const int8 *)gp->waitreason);
+	dumpstr(gp->waitreason);
 	dumpint((uintptr)0);
 	dumpint((uintptr)gp->m);
-	dumpint((uintptr)gp->defer);
-	dumpint((uintptr)gp->panic);
+	dumpint((uintptr)gp->_defer);
+	dumpint((uintptr)gp->_panic);
 
 	// dump stack
 	// child.args.n = -1;
@@ -285,24 +283,24 @@ dumpgoroutine(G *gp)
 	// runtime_gentraceback(pc, sp, lr, gp, 0, nil, 0x7fffffff, dumpframe, &child, false);
 
 	// dump defer & panic records
-	for(d = gp->defer; d != nil; d = d->__next) {
+	for(d = gp->_defer; d != nil; d = d->link) {
 		dumpint(TagDefer);
 		dumpint((uintptr)d);
 		dumpint((uintptr)gp);
-		dumpint((uintptr)d->__arg);
-		dumpint((uintptr)d->__frame);
-		dumpint((uintptr)d->__pfn);
+		dumpint((uintptr)d->arg);
+		dumpint((uintptr)d->frame);
+		dumpint((uintptr)d->pfn);
 		dumpint((uintptr)0);
-		dumpint((uintptr)d->__next);
+		dumpint((uintptr)d->link);
 	}
-	for (p = gp->panic; p != nil; p = p->__next) {
+	for (p = gp->_panic; p != nil; p = p->link) {
 		dumpint(TagPanic);
 		dumpint((uintptr)p);
 		dumpint((uintptr)gp);
-		dumpint((uintptr)p->__arg.__type_descriptor);
-		dumpint((uintptr)p->__arg.__object);
+		dumpint((uintptr)p->arg._type);
+		dumpint((uintptr)p->arg.data);
 		dumpint((uintptr)0);
-		dumpint((uintptr)p->__next);
+		dumpint((uintptr)p->link);
 	}
 }
 
@@ -313,17 +311,17 @@ dumpgs(void)
 	uint32 i;
 
 	// goroutines & stacks
-	for(i = 0; i < runtime_allglen; i++) {
-		gp = runtime_allg[i];
-		switch(gp->status){
+	for(i = 0; i < runtime_getallglen(); i++) {
+		gp = runtime_getallg(i);
+		switch(gp->atomicstatus){
 		default:
-			runtime_printf("unexpected G.status %d\n", gp->status);
+			runtime_printf("unexpected G.status %d\n", gp->atomicstatus);
 			runtime_throw("mark - bad status");
-		case Gdead:
+		case _Gdead:
 			break;
-		case Grunnable:
-		case Gsyscall:
-		case Gwaiting:
+		case _Grunnable:
+		case _Gsyscall:
+		case _Gwaiting:
 			dumpgoroutine(gp);
 			break;
 		}
@@ -463,7 +461,7 @@ dumpparams(void)
 	else
 		dumpbool(true); // big-endian ptrs
 	dumpint(PtrSize);
-	dumpint(runtime_Hchansize);
+	dumpint(hchanSize);
 	dumpint((uintptr)runtime_mheap.arena_start);
 	dumpint((uintptr)runtime_mheap.arena_used);
 	dumpint(0);
@@ -476,7 +474,7 @@ dumpms(void)
 {
 	M *mp;
 
-	for(mp = runtime_allm; mp != nil; mp = mp->alllink) {
+	for(mp = runtime_getallm(); mp != nil; mp = mp->alllink) {
 		dumpint(TagOSThread);
 		dumpint((uintptr)mp);
 		dumpint(mp->id);
@@ -490,33 +488,33 @@ dumpmemstats(void)
 	int32 i;
 
 	dumpint(TagMemStats);
-	dumpint(mstats.alloc);
-	dumpint(mstats.total_alloc);
-	dumpint(mstats.sys);
-	dumpint(mstats.nlookup);
-	dumpint(mstats.nmalloc);
-	dumpint(mstats.nfree);
-	dumpint(mstats.heap_alloc);
-	dumpint(mstats.heap_sys);
-	dumpint(mstats.heap_idle);
-	dumpint(mstats.heap_inuse);
-	dumpint(mstats.heap_released);
-	dumpint(mstats.heap_objects);
-	dumpint(mstats.stacks_inuse);
-	dumpint(mstats.stacks_sys);
-	dumpint(mstats.mspan_inuse);
-	dumpint(mstats.mspan_sys);
-	dumpint(mstats.mcache_inuse);
-	dumpint(mstats.mcache_sys);
-	dumpint(mstats.buckhash_sys);
-	dumpint(mstats.gc_sys);
-	dumpint(mstats.other_sys);
-	dumpint(mstats.next_gc);
-	dumpint(mstats.last_gc);
-	dumpint(mstats.pause_total_ns);
+	dumpint(mstats()->alloc);
+	dumpint(mstats()->total_alloc);
+	dumpint(mstats()->sys);
+	dumpint(mstats()->nlookup);
+	dumpint(mstats()->nmalloc);
+	dumpint(mstats()->nfree);
+	dumpint(mstats()->heap_alloc);
+	dumpint(mstats()->heap_sys);
+	dumpint(mstats()->heap_idle);
+	dumpint(mstats()->heap_inuse);
+	dumpint(mstats()->heap_released);
+	dumpint(mstats()->heap_objects);
+	dumpint(mstats()->stacks_inuse);
+	dumpint(mstats()->stacks_sys);
+	dumpint(mstats()->mspan_inuse);
+	dumpint(mstats()->mspan_sys);
+	dumpint(mstats()->mcache_inuse);
+	dumpint(mstats()->mcache_sys);
+	dumpint(mstats()->buckhash_sys);
+	dumpint(mstats()->gc_sys);
+	dumpint(mstats()->other_sys);
+	dumpint(mstats()->next_gc);
+	dumpint(mstats()->last_gc);
+	dumpint(mstats()->pause_total_ns);
 	for(i = 0; i < 256; i++)
-		dumpint(mstats.pause_ns[i]);
-	dumpint(mstats.numgc);
+		dumpint(mstats()->pause_ns[i]);
+	dumpint(mstats()->numgc);
 }
 
 static void
@@ -546,6 +544,8 @@ dumpmemprof_callback(Bucket *b, uintptr nstk, Location *stk, uintptr size, uintp
 	dumpint(frees);
 }
 
+static FuncVal dumpmemprof_callbackv = {(void(*)(void))dumpmemprof_callback};
+
 static void
 dumpmemprof(void)
 {
@@ -555,7 +555,7 @@ dumpmemprof(void)
 	SpecialProfile *spp;
 	byte *p;
 
-	runtime_iterate_memprof(dumpmemprof_callback);
+	runtime_iterate_memprof(&dumpmemprof_callbackv);
 
 	allspans = runtime_mheap.allspans;
 	for(spanidx=0; spanidx<runtime_mheap.nspan; spanidx++) {
@@ -602,7 +602,7 @@ mdump(G *gp)
 	flush();
 
 	gp->param = nil;
-	gp->status = Grunning;
+	gp->atomicstatus = _Grunning;
 	runtime_gogo(gp);
 }
 
@@ -616,11 +616,10 @@ runtime_debug_WriteHeapDump(uintptr fd)
 	G *g;
 
 	// Stop the world.
-	runtime_semacquire(&runtime_worldsema, false);
+	runtime_acquireWorldsema();
 	m = runtime_m();
-	m->gcing = 1;
-	m->locks++;
-	runtime_stoptheworld();
+	m->preemptoff = runtime_gostringnocopy((const byte*)"write heap dump");
+	runtime_stopTheWorldWithSema();
 
 	// Update stats so we can dump them.
 	// As a side effect, flushes all the MCaches so the MSpan.freelist
@@ -632,18 +631,17 @@ runtime_debug_WriteHeapDump(uintptr fd)
 
 	// Call dump routine on M stack.
 	g = runtime_g();
-	g->status = Gwaiting;
-	g->waitreason = "dumping heap";
+	g->atomicstatus = _Gwaiting;
+	g->waitreason = runtime_gostringnocopy((const byte*)"dumping heap");
 	runtime_mcall(mdump);
 
 	// Reset dump file.
 	dumpfd = 0;
 
 	// Start up the world again.
-	m->gcing = 0;
-	runtime_semrelease(&runtime_worldsema);
-	runtime_starttheworld();
-	m->locks--;
+	runtime_startTheWorldWithSema();
+	runtime_releaseWorldsema();
+	m->preemptoff = runtime_gostringnocopy(nil);
 }
 
 // Runs the specified gc program.  Calls the callback for every
@@ -763,14 +761,16 @@ dumpefacetypes(void *obj __attribute__ ((unused)), uintptr size, const Type *typ
 		//playgcprog(0, (uintptr*)type->gc + 1, dumpeface_callback, obj);
 		break;
 	case TypeInfo_Array:
-		for(i = 0; i <= size - type->__size; i += type->__size)
+		for(i = 0; i <= size - type->__size; i += type->__size) {
 			//playgcprog(i, (uintptr*)type->gc + 1, dumpeface_callback, obj);
+		}
 		break;
 	case TypeInfo_Chan:
 		if(type->__size == 0) // channels may have zero-sized objects in them
 			break;
-		for(i = runtime_Hchansize; i <= size - type->__size; i += type->__size)
+		for(i = hchanSize; i <= size - type->__size; i += type->__size) {
 			//playgcprog(i, (uintptr*)type->gc + 1, dumpeface_callback, obj);
+		}
 		break;
 	}
 }

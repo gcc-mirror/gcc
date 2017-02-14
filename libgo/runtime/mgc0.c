@@ -7,7 +7,7 @@
 // GC is:
 // - mark&sweep
 // - mostly precise (with the exception of some C-allocated objects, assembly frames/arguments, etc)
-// - parallel (up to MaxGcproc threads)
+// - parallel (up to _MaxGcproc threads)
 // - partially concurrent (mark is stop-the-world, while sweep is concurrent)
 // - non-moving/non-compacting
 // - full (non-partial)
@@ -56,22 +56,16 @@
 #include "arch.h"
 #include "malloc.h"
 #include "mgc0.h"
-#include "chan.h"
 #include "go-type.h"
 
 // Map gccgo field names to gc field names.
 // Slice aka __go_open_array.
 #define array __values
 #define cap __capacity
-// Iface aka __go_interface
-#define tab __methods
 // Hmap aka __go_map
 typedef struct __go_map Hmap;
 // Type aka __go_type_descriptor
 #define string __reflection
-#define KindPtr GO_PTR
-#define KindNoPointers GO_NO_POINTERS
-#define kindMask GO_CODE_MASK
 // PtrType aka __go_ptr_type
 #define elem __element_type
 
@@ -130,6 +124,7 @@ clearpools(void)
 {
 	P *p, **pp;
 	MCache *c;
+	Defer *d, *dlink;
 
 	// clear sync.Pool's
 	if(poolcleanup != nil) {
@@ -144,25 +139,18 @@ clearpools(void)
 			c->tiny = nil;
 			c->tinysize = 0;
 		}
-		// clear defer pools
-		p->deferpool = nil;
 	}
-}
 
-// Holding worldsema grants an M the right to try to stop the world.
-// The procedure is:
-//
-//	runtime_semacquire(&runtime_worldsema);
-//	m->gcing = 1;
-//	runtime_stoptheworld();
-//
-//	... do stuff ...
-//
-//	m->gcing = 0;
-//	runtime_semrelease(&runtime_worldsema);
-//	runtime_starttheworld();
-//
-uint32 runtime_worldsema = 1;
+	// Clear central defer pools.
+	// Leave per-P pools alone, they have strictly bounded size.
+	runtime_lock(&runtime_sched->deferlock);
+	for(d = runtime_sched->deferpool; d != nil; d = dlink) {
+		dlink = d->link;
+		d->link = nil;
+	}
+	runtime_sched->deferpool = nil;
+	runtime_unlock(&runtime_sched->deferlock);
+}
 
 typedef struct Workbuf Workbuf;
 struct Workbuf
@@ -216,7 +204,7 @@ static void	addstackroots(G *gp, Workbuf **wbufp);
 
 static struct {
 	uint64	full;  // lock-free list of full blocks
-	uint64	empty; // lock-free list of empty blocks
+	uint64	wempty; // lock-free list of empty blocks
 	byte	pad0[CacheLineSize]; // prevents false-sharing between full/empty and nproc/nwait
 	uint32	nproc;
 	int64	tstart;
@@ -321,7 +309,7 @@ markonly(const void *obj)
 	x = k;
 	x -= (uintptr)runtime_mheap.arena_start>>PageShift;
 	s = runtime_mheap.spans[x];
-	if(s == nil || k < s->start || (const byte*)obj >= s->limit || s->state != MSpanInUse)
+	if(s == nil || k < s->start || (uintptr)obj >= s->limit || s->state != MSpanInUse)
 		return false;
 	p = (byte*)((uintptr)s->start<<PageShift);
 	if(s->sizeclass == 0) {
@@ -401,7 +389,7 @@ struct BufferList
 	uint32 busy;
 	byte pad[CacheLineSize];
 };
-static BufferList bufferList[MaxGcproc];
+static BufferList bufferList[_MaxGcproc];
 
 static void enqueue(Obj obj, Workbuf **_wbuf, Obj **_wp, uintptr *_nobj);
 
@@ -517,7 +505,7 @@ flushptrbuf(Scanbuf *sbuf)
 		x = k;
 		x -= (uintptr)arena_start>>PageShift;
 		s = runtime_mheap.spans[x];
-		if(s == nil || k < s->start || obj >= s->limit || s->state != MSpanInUse)
+		if(s == nil || k < s->start || (uintptr)obj >= s->limit || s->state != MSpanInUse)
 			continue;
 		p = (byte*)((uintptr)s->start<<PageShift);
 		if(s->sizeclass == 0) {
@@ -651,8 +639,8 @@ static uintptr defaultProg[2] = {PtrSize, GC_DEFAULT_PTR};
 static uintptr chanProg[2] = {0, GC_CHAN};
 
 // Local variables of a program fragment or loop
-typedef struct Frame Frame;
-struct Frame {
+typedef struct GCFrame GCFrame;
+struct GCFrame {
 	uintptr count, elemsize, b;
 	const uintptr *loop_or_ret;
 };
@@ -731,7 +719,7 @@ scanblock(Workbuf *wbuf, bool keepworking)
 	const Type *t, *et;
 	Slice *sliceptr;
 	String *stringptr;
-	Frame *stack_ptr, stack_top, stack[GC_STACK_CAPACITY+4];
+	GCFrame *stack_ptr, stack_top, stack[GC_STACK_CAPACITY+4];
 	BufferList *scanbuffers;
 	Scanbuf sbuf;
 	Eface *eface;
@@ -926,12 +914,12 @@ scanblock(Workbuf *wbuf, bool keepworking)
 			eface = (Eface*)(stack_top.b + pc[1]);
 			pc += 2;
 			if(Debug > 2)
-				runtime_printf("gc_eface @%p: %p %p\n", stack_top.b+pc[1], eface->__type_descriptor, eface->__object);
-			if(eface->__type_descriptor == nil)
+				runtime_printf("gc_eface @%p: %p %p\n", stack_top.b+pc[1], eface->_type, eface->data);
+			if(eface->_type == nil)
 				continue;
 
 			// eface->type
-			t = eface->__type_descriptor;
+			t = eface->_type;
 			if((const byte*)t >= arena_start && (const byte*)t < arena_used) {
 				union { const Type *tc; Type *tr; } u;
 				u.tc = t;
@@ -940,23 +928,23 @@ scanblock(Workbuf *wbuf, bool keepworking)
 					flushptrbuf(&sbuf);
 			}
 
-			// eface->__object
-			if((byte*)eface->__object >= arena_start && (byte*)eface->__object < arena_used) {
+			// eface->data
+			if((byte*)eface->data >= arena_start && (byte*)eface->data < arena_used) {
 				if(__go_is_pointer_type(t)) {
-					if((t->__code & KindNoPointers))
+					if((t->__code & kindNoPointers))
 						continue;
 
-					obj = eface->__object;
-					if((t->__code & kindMask) == KindPtr) {
+					obj = eface->data;
+					if((t->__code & kindMask) == kindPtr) {
 						// Only use type information if it is a pointer-containing type.
 						// This matches the GC programs written by cmd/gc/reflect.c's
 						// dgcsym1 in case TPTR32/case TPTR64. See rationale there.
 						et = ((const PtrType*)t)->elem;
-						if(!(et->__code & KindNoPointers))
+						if(!(et->__code & kindNoPointers))
 							objti = (uintptr)((const PtrType*)t)->elem->__gc;
 					}
 				} else {
-					obj = eface->__object;
+					obj = eface->data;
 					objti = (uintptr)t->__gc;
 				}
 			}
@@ -966,7 +954,7 @@ scanblock(Workbuf *wbuf, bool keepworking)
 			iface = (Iface*)(stack_top.b + pc[1]);
 			pc += 2;
 			if(Debug > 2)
-				runtime_printf("gc_iface @%p: %p/%p %p\n", stack_top.b+pc[1], iface->__methods[0], nil, iface->__object);
+				runtime_printf("gc_iface @%p: %p/%p %p\n", stack_top.b+pc[1], *(Type**)iface->tab, nil, iface->data);
 			if(iface->tab == nil)
 				continue;
 			
@@ -978,23 +966,23 @@ scanblock(Workbuf *wbuf, bool keepworking)
 			}
 
 			// iface->data
-			if((byte*)iface->__object >= arena_start && (byte*)iface->__object < arena_used) {
-				t = (const Type*)iface->tab[0];
+			if((byte*)iface->data >= arena_start && (byte*)iface->data < arena_used) {
+				t = *(Type**)iface->tab;
 				if(__go_is_pointer_type(t)) {
-					if((t->__code & KindNoPointers))
+					if((t->__code & kindNoPointers))
 						continue;
 
-					obj = iface->__object;
-					if((t->__code & kindMask) == KindPtr) {
+					obj = iface->data;
+					if((t->__code & kindMask) == kindPtr) {
 						// Only use type information if it is a pointer-containing type.
 						// This matches the GC programs written by cmd/gc/reflect.c's
 						// dgcsym1 in case TPTR32/case TPTR64. See rationale there.
 						et = ((const PtrType*)t)->elem;
-						if(!(et->__code & KindNoPointers))
+						if(!(et->__code & kindNoPointers))
 							objti = (uintptr)((const PtrType*)t)->elem->__gc;
 					}
 				} else {
-					obj = iface->__object;
+					obj = iface->data;
 					objti = (uintptr)t->__gc;
 				}
 			}
@@ -1057,7 +1045,7 @@ scanblock(Workbuf *wbuf, bool keepworking)
 
 			// Stack push.
 			*stack_ptr-- = stack_top;
-			stack_top = (Frame){count, elemsize, i, pc};
+			stack_top = (GCFrame){count, elemsize, i, pc};
 			continue;
 
 		case GC_ARRAY_NEXT:
@@ -1074,7 +1062,7 @@ scanblock(Workbuf *wbuf, bool keepworking)
 		case GC_CALL:
 			// Stack push.
 			*stack_ptr-- = stack_top;
-			stack_top = (Frame){1, 0, stack_top.b + pc[1], pc+3 /*return address*/};
+			stack_top = (GCFrame){1, 0, stack_top.b + pc[1], pc+3 /*return address*/};
 			pc = (const uintptr*)((const byte*)pc + *(const int32*)(pc+2));  // target of the CALL instruction
 			continue;
 
@@ -1101,7 +1089,7 @@ scanblock(Workbuf *wbuf, bool keepworking)
 			}
 			if(markonly(chan)) {
 				chantype = (ChanType*)pc[2];
-				if(!(chantype->elem->__code & KindNoPointers)) {
+				if(!(chantype->elem->__code & kindNoPointers)) {
 					// Start chanProg.
 					chan_ret = pc+3;
 					pc = chanProg+1;
@@ -1114,16 +1102,14 @@ scanblock(Workbuf *wbuf, bool keepworking)
 		case GC_CHAN:
 			// There are no heap pointers in struct Hchan,
 			// so we can ignore the leading sizeof(Hchan) bytes.
-			if(!(chantype->elem->__code & KindNoPointers)) {
-				// Channel's buffer follows Hchan immediately in memory.
-				// Size of buffer (cap(c)) is second int in the chan struct.
-				chancap = ((uintgo*)chan)[1];
-				if(chancap > 0) {
+			if(!(chantype->elem->__code & kindNoPointers)) {
+				chancap = chan->dataqsiz;
+				if(chancap > 0 && markonly(chan->buf)) {
 					// TODO(atom): split into two chunks so that only the
 					// in-use part of the circular buffer is scanned.
 					// (Channel routines zero the unused part, so the current
 					// code does not lead to leaks, it's just a little inefficient.)
-					*sbuf.obj.pos++ = (Obj){(byte*)chan+runtime_Hchansize, chancap*chantype->elem->__size,
+					*sbuf.obj.pos++ = (Obj){chan->buf, chancap*chantype->elem->__size,
 						(uintptr)chantype->elem->__gc | PRECISE | LOOP};
 					if(sbuf.obj.pos == sbuf.obj.end)
 						flushobjbuf(&sbuf);
@@ -1293,14 +1279,8 @@ markroot(ParFor *desc, uint32 i)
 		// For gccgo we use this for all the other global roots.
 		enqueue1(&wbuf, (Obj){(byte*)&runtime_m0, sizeof runtime_m0, 0});
 		enqueue1(&wbuf, (Obj){(byte*)&runtime_g0, sizeof runtime_g0, 0});
-		enqueue1(&wbuf, (Obj){(byte*)&runtime_allg, sizeof runtime_allg, 0});
-		enqueue1(&wbuf, (Obj){(byte*)&runtime_allm, sizeof runtime_allm, 0});
 		enqueue1(&wbuf, (Obj){(byte*)&runtime_allp, sizeof runtime_allp, 0});
 		enqueue1(&wbuf, (Obj){(byte*)&work, sizeof work, 0});
-		runtime_proc_scan(&wbuf, enqueue1);
-		runtime_MProf_Mark(&wbuf, enqueue1);
-		runtime_time_scan(&wbuf, enqueue1);
-		runtime_netpoll_scan(&wbuf, enqueue1);
 		break;
 
 	case RootFinalizers:
@@ -1352,12 +1332,12 @@ markroot(ParFor *desc, uint32 i)
 
 	default:
 		// the rest is scanning goroutine stacks
-		if(i - RootCount >= runtime_allglen)
+		if(i - RootCount >= runtime_getallglen())
 			runtime_throw("markroot: bad index");
-		gp = runtime_allg[i - RootCount];
+		gp = runtime_getallg(i - RootCount);
 		// remember when we've first observed the G blocked
 		// needed only to output in traceback
-		if((gp->status == Gwaiting || gp->status == Gsyscall) && gp->waitsince == 0)
+		if((gp->atomicstatus == _Gwaiting || gp->atomicstatus == _Gsyscall) && gp->waitsince == 0)
 			gp->waitsince = work.tstart;
 		addstackroots(gp, &wbuf);
 		break;
@@ -1377,13 +1357,13 @@ getempty(Workbuf *b)
 {
 	if(b != nil)
 		runtime_lfstackpush(&work.full, &b->node);
-	b = (Workbuf*)runtime_lfstackpop(&work.empty);
+	b = (Workbuf*)runtime_lfstackpop(&work.wempty);
 	if(b == nil) {
 		// Need to allocate.
 		runtime_lock(&work);
 		if(work.nchunk < sizeof *b) {
 			work.nchunk = 1<<20;
-			work.chunk = runtime_SysAlloc(work.nchunk, &mstats.gc_sys);
+			work.chunk = runtime_SysAlloc(work.nchunk, &mstats()->gc_sys);
 			if(work.chunk == nil)
 				runtime_throw("runtime: cannot allocate memory");
 		}
@@ -1402,7 +1382,7 @@ putempty(Workbuf *b)
 	if(CollectStats)
 		runtime_xadd64(&gcstats.putempty, 1);
 
-	runtime_lfstackpush(&work.empty, &b->node);
+	runtime_lfstackpush(&work.wempty, &b->node);
 }
 
 // Get a full work buffer off the work.full list, or return nil.
@@ -1416,7 +1396,7 @@ getfull(Workbuf *b)
 		runtime_xadd64(&gcstats.getfull, 1);
 
 	if(b != nil)
-		runtime_lfstackpush(&work.empty, &b->node);
+		runtime_lfstackpush(&work.wempty, &b->node);
 	b = (Workbuf*)runtime_lfstackpop(&work.full);
 	if(b != nil || work.nproc == 1)
 		return b;
@@ -1472,17 +1452,17 @@ handoff(Workbuf *b)
 static void
 addstackroots(G *gp, Workbuf **wbufp)
 {
-	switch(gp->status){
+	switch(gp->atomicstatus){
 	default:
-		runtime_printf("unexpected G.status %d (goroutine %p %D)\n", gp->status, gp, gp->goid);
+		runtime_printf("unexpected G.status %d (goroutine %p %D)\n", gp->atomicstatus, gp, gp->goid);
 		runtime_throw("mark - bad status");
-	case Gdead:
+	case _Gdead:
 		return;
-	case Grunning:
+	case _Grunning:
 		runtime_throw("mark - world not stopped");
-	case Grunnable:
-	case Gsyscall:
-	case Gwaiting:
+	case _Grunnable:
+	case _Gsyscall:
+	case _Gwaiting:
 		break;
 	}
 
@@ -1512,12 +1492,12 @@ addstackroots(G *gp, Workbuf **wbufp)
 		// the system call instead, since that won't change underfoot.
 		if(gp->gcstack != nil) {
 			sp = gp->gcstack;
-			spsize = gp->gcstack_size;
-			next_segment = gp->gcnext_segment;
-			next_sp = gp->gcnext_sp;
-			initial_sp = gp->gcinitial_sp;
+			spsize = gp->gcstacksize;
+			next_segment = gp->gcnextsegment;
+			next_sp = gp->gcnextsp;
+			initial_sp = gp->gcinitialsp;
 		} else {
-			sp = __splitstack_find_context(&gp->stack_context[0],
+			sp = __splitstack_find_context(&gp->stackcontext[0],
 						       &spsize, &next_segment,
 						       &next_sp, &initial_sp);
 		}
@@ -1543,11 +1523,11 @@ addstackroots(G *gp, Workbuf **wbufp)
 	} else {
 		// Scanning another goroutine's stack.
 		// The goroutine is usually asleep (the world is stopped).
-		bottom = (byte*)gp->gcnext_sp;
+		bottom = (byte*)gp->gcnextsp;
 		if(bottom == nil)
 			return;
 	}
-	top = (byte*)gp->gcinitial_sp + gp->gcstack_size;
+	top = (byte*)gp->gcinitialsp + gp->gcstacksize;
 	if(top > bottom)
 		enqueue1(wbufp, (Obj){bottom, top - bottom, 0});
 	else
@@ -1564,7 +1544,7 @@ runtime_queuefinalizer(void *p, FuncVal *fn, const FuncType *ft, const PtrType *
 	runtime_lock(&finlock);
 	if(finq == nil || finq->cnt == finq->cap) {
 		if(finc == nil) {
-			finc = runtime_persistentalloc(FinBlockSize, 0, &mstats.gc_sys);
+			finc = runtime_persistentalloc(FinBlockSize, 0, &mstats()->gc_sys);
 			finc->cap = (FinBlockSize - sizeof(FinBlock)) / sizeof(Finalizer) + 1;
 			finc->alllink = allfin;
 			allfin = finc;
@@ -1761,7 +1741,7 @@ runtime_MSpan_Sweep(MSpan *s)
 				runtime_MHeap_Free(&runtime_mheap, s, 1);
 			c->local_nlargefree++;
 			c->local_largefree += size;
-			runtime_xadd64(&mstats.next_gc, -(uint64)(size * (gcpercent + 100)/100));
+			runtime_xadd64(&mstats()->next_gc, -(uint64)(size * (gcpercent + 100)/100));
 			res = true;
 		} else {
 			// Free small object.
@@ -1803,7 +1783,7 @@ runtime_MSpan_Sweep(MSpan *s)
 	if(nfree > 0) {
 		c->local_nsmallfree[cl] += nfree;
 		c->local_cachealloc -= nfree * size;
-		runtime_xadd64(&mstats.next_gc, -(uint64)(nfree * size * (gcpercent + 100)/100));
+		runtime_xadd64(&mstats()->next_gc, -(uint64)(nfree * size * (gcpercent + 100)/100));
 		res = runtime_MCentral_FreeSpan(&runtime_mheap.central[cl], s, nfree, head.next, end);
 		//MCentral_FreeSpan updates sweepgen
 	}
@@ -2016,11 +1996,12 @@ runtime_updatememstats(GCStats *stats)
 	uint32 i;
 	uint64 stacks_inuse, smallfree;
 	uint64 *src, *dst;
+	MStats *pmstats;
 
 	if(stats)
 		runtime_memclr((byte*)stats, sizeof(*stats));
 	stacks_inuse = 0;
-	for(mp=runtime_allm; mp; mp=mp->alllink) {
+	for(mp=runtime_getallm(); mp; mp=mp->alllink) {
 		//stacks_inuse += mp->stackinuse*FixedStack;
 		if(stats) {
 			src = (uint64*)&mp->gcstats;
@@ -2030,11 +2011,12 @@ runtime_updatememstats(GCStats *stats)
 			runtime_memclr((byte*)&mp->gcstats, sizeof(mp->gcstats));
 		}
 	}
-	mstats.stacks_inuse = stacks_inuse;
-	mstats.mcache_inuse = runtime_mheap.cachealloc.inuse;
-	mstats.mspan_inuse = runtime_mheap.spanalloc.inuse;
-	mstats.sys = mstats.heap_sys + mstats.stacks_sys + mstats.mspan_sys +
-		mstats.mcache_sys + mstats.buckhash_sys + mstats.gc_sys + mstats.other_sys;
+	pmstats = mstats();
+	pmstats->stacks_inuse = stacks_inuse;
+	pmstats->mcache_inuse = runtime_mheap.cachealloc.inuse;
+	pmstats->mspan_inuse = runtime_mheap.spanalloc.inuse;
+	pmstats->sys = pmstats->heap_sys + pmstats->stacks_sys + pmstats->mspan_sys +
+		pmstats->mcache_sys + pmstats->buckhash_sys + pmstats->gc_sys + pmstats->other_sys;
 	
 	// Calculate memory allocator stats.
 	// During program execution we only count number of frees and amount of freed memory.
@@ -2043,13 +2025,13 @@ runtime_updatememstats(GCStats *stats)
 	// Total number of mallocs is calculated as number of frees plus number of alive objects.
 	// Similarly, total amount of allocated memory is calculated as amount of freed memory
 	// plus amount of alive heap memory.
-	mstats.alloc = 0;
-	mstats.total_alloc = 0;
-	mstats.nmalloc = 0;
-	mstats.nfree = 0;
-	for(i = 0; i < nelem(mstats.by_size); i++) {
-		mstats.by_size[i].nmalloc = 0;
-		mstats.by_size[i].nfree = 0;
+	pmstats->alloc = 0;
+	pmstats->total_alloc = 0;
+	pmstats->nmalloc = 0;
+	pmstats->nfree = 0;
+	for(i = 0; i < nelem(pmstats->by_size); i++) {
+		pmstats->by_size[i].nmalloc = 0;
+		pmstats->by_size[i].nfree = 0;
 	}
 
 	// Flush MCache's to MCentral.
@@ -2064,30 +2046,30 @@ runtime_updatememstats(GCStats *stats)
 		if(s->state != MSpanInUse)
 			continue;
 		if(s->sizeclass == 0) {
-			mstats.nmalloc++;
-			mstats.alloc += s->elemsize;
+			pmstats->nmalloc++;
+			pmstats->alloc += s->elemsize;
 		} else {
-			mstats.nmalloc += s->ref;
-			mstats.by_size[s->sizeclass].nmalloc += s->ref;
-			mstats.alloc += s->ref*s->elemsize;
+			pmstats->nmalloc += s->ref;
+			pmstats->by_size[s->sizeclass].nmalloc += s->ref;
+			pmstats->alloc += s->ref*s->elemsize;
 		}
 	}
 
 	// Aggregate by size class.
 	smallfree = 0;
-	mstats.nfree = runtime_mheap.nlargefree;
-	for(i = 0; i < nelem(mstats.by_size); i++) {
-		mstats.nfree += runtime_mheap.nsmallfree[i];
-		mstats.by_size[i].nfree = runtime_mheap.nsmallfree[i];
-		mstats.by_size[i].nmalloc += runtime_mheap.nsmallfree[i];
+	pmstats->nfree = runtime_mheap.nlargefree;
+	for(i = 0; i < nelem(pmstats->by_size); i++) {
+		pmstats->nfree += runtime_mheap.nsmallfree[i];
+		pmstats->by_size[i].nfree = runtime_mheap.nsmallfree[i];
+		pmstats->by_size[i].nmalloc += runtime_mheap.nsmallfree[i];
 		smallfree += runtime_mheap.nsmallfree[i] * runtime_class_to_size[i];
 	}
-	mstats.nmalloc += mstats.nfree;
+	pmstats->nmalloc += pmstats->nfree;
 
 	// Calculate derived stats.
-	mstats.total_alloc = mstats.alloc + runtime_mheap.largefree + smallfree;
-	mstats.heap_alloc = mstats.alloc;
-	mstats.heap_objects = mstats.nmalloc - mstats.nfree;
+	pmstats->total_alloc = pmstats->alloc + runtime_mheap.largefree + smallfree;
+	pmstats->heap_alloc = pmstats->alloc;
+	pmstats->heap_objects = pmstats->nmalloc - pmstats->nfree;
 }
 
 // Structure of arguments passed to function gc().
@@ -2125,11 +2107,12 @@ runtime_gc(int32 force)
 	G *g;
 	struct gc_args a;
 	int32 i;
+	MStats *pmstats;
 
 	// The atomic operations are not atomic if the uint64s
 	// are not aligned on uint64 boundaries. This has been
 	// a problem in the past.
-	if((((uintptr)&work.empty) & 7) != 0)
+	if((((uintptr)&work.wempty) & 7) != 0)
 		runtime_throw("runtime: gc work buffer is misaligned");
 	if((((uintptr)&work.full) & 7) != 0)
 		runtime_throw("runtime: gc work buffer is misaligned");
@@ -2147,7 +2130,8 @@ runtime_gc(int32 force)
 	// while holding a lock.  The next mallocgc
 	// without a lock will do the gc instead.
 	m = runtime_m();
-	if(!mstats.enablegc || runtime_g() == m->g0 || m->locks > 0 || runtime_panicking)
+	pmstats = mstats();
+	if(!pmstats->enablegc || runtime_g() == m->g0 || m->locks > 0 || runtime_panicking() || m->preemptoff.len > 0)
 		return;
 
 	if(gcpercent == GcpercentUnknown) {	// first time through
@@ -2159,11 +2143,11 @@ runtime_gc(int32 force)
 	if(gcpercent < 0)
 		return;
 
-	runtime_semacquire(&runtime_worldsema, false);
-	if(force==0 && mstats.heap_alloc < mstats.next_gc) {
+	runtime_acquireWorldsema();
+	if(force==0 && pmstats->heap_alloc < pmstats->next_gc) {
 		// typically threads which lost the race to grab
 		// worldsema exit here when gc is done.
-		runtime_semrelease(&runtime_worldsema);
+		runtime_releaseWorldsema();
 		return;
 	}
 
@@ -2171,7 +2155,7 @@ runtime_gc(int32 force)
 	a.start_time = runtime_nanotime();
 	a.eagersweep = force >= 2;
 	m->gcing = 1;
-	runtime_stoptheworld();
+	runtime_stopTheWorldWithSema();
 	
 	clearpools();
 
@@ -2186,8 +2170,8 @@ runtime_gc(int32 force)
 		// switch to g0, call gc(&a), then switch back
 		g = runtime_g();
 		g->param = &a;
-		g->status = Gwaiting;
-		g->waitreason = "garbage collection";
+		g->atomicstatus = _Gwaiting;
+		g->waitreason = runtime_gostringnocopy((const byte*)"garbage collection");
 		runtime_mcall(mgc);
 		m = runtime_m();
 	}
@@ -2195,8 +2179,8 @@ runtime_gc(int32 force)
 	// all done
 	m->gcing = 0;
 	m->locks++;
-	runtime_semrelease(&runtime_worldsema);
-	runtime_starttheworld();
+	runtime_releaseWorldsema();
+	runtime_startTheWorldWithSema();
 	m->locks--;
 
 	// now that gc is done, kick off finalizer thread if needed
@@ -2214,7 +2198,7 @@ mgc(G *gp)
 {
 	gc(gp->param);
 	gp->param = nil;
-	gp->status = Grunning;
+	gp->atomicstatus = _Grunning;
 	runtime_gogo(gp);
 }
 
@@ -2222,10 +2206,11 @@ static void
 gc(struct gc_args *args)
 {
 	M *m;
-	int64 t0, t1, t2, t3, t4;
+	int64 tm0, tm1, tm2, tm3, tm4;
 	uint64 heap0, heap1, obj, ninstr;
 	GCStats stats;
 	uint32 i;
+	MStats *pmstats;
 	// Eface eface;
 
 	m = runtime_m();
@@ -2234,7 +2219,7 @@ gc(struct gc_args *args)
 		runtime_tracegc();
 
 	m->traceback = 2;
-	t0 = args->start_time;
+	tm0 = args->start_time;
 	work.tstart = args->start_time; 
 
 	if(CollectStats)
@@ -2242,12 +2227,12 @@ gc(struct gc_args *args)
 
 	m->locks++;	// disable gc during mallocs in parforalloc
 	if(work.markfor == nil)
-		work.markfor = runtime_parforalloc(MaxGcproc);
+		work.markfor = runtime_parforalloc(_MaxGcproc);
 	m->locks--;
 
-	t1 = 0;
+	tm1 = 0;
 	if(runtime_debug.gctrace)
-		t1 = runtime_nanotime();
+		tm1 = runtime_nanotime();
 
 	// Sweep what is not sweeped by bgsweep.
 	while(runtime_sweepone() != (uintptr)-1)
@@ -2256,23 +2241,23 @@ gc(struct gc_args *args)
 	work.nwait = 0;
 	work.ndone = 0;
 	work.nproc = runtime_gcprocs();
-	runtime_parforsetup(work.markfor, work.nproc, RootCount + runtime_allglen, false, &markroot_funcval);
+	runtime_parforsetup(work.markfor, work.nproc, RootCount + runtime_getallglen(), false, &markroot_funcval);
 	if(work.nproc > 1) {
 		runtime_noteclear(&work.alldone);
 		runtime_helpgc(work.nproc);
 	}
 
-	t2 = 0;
+	tm2 = 0;
 	if(runtime_debug.gctrace)
-		t2 = runtime_nanotime();
+		tm2 = runtime_nanotime();
 
 	gchelperstart();
 	runtime_parfordo(work.markfor);
 	scanblock(nil, true);
 
-	t3 = 0;
+	tm3 = 0;
 	if(runtime_debug.gctrace)
-		t3 = runtime_nanotime();
+		tm3 = runtime_nanotime();
 
 	bufferList[m->helpgc].busy = 0;
 	if(work.nproc > 1)
@@ -2281,28 +2266,29 @@ gc(struct gc_args *args)
 	cachestats();
 	// next_gc calculation is tricky with concurrent sweep since we don't know size of live heap
 	// estimate what was live heap size after previous GC (for tracing only)
-	heap0 = mstats.next_gc*100/(gcpercent+100);
+	pmstats = mstats();
+	heap0 = pmstats->next_gc*100/(gcpercent+100);
 	// conservatively set next_gc to high value assuming that everything is live
 	// concurrent/lazy sweep will reduce this number while discovering new garbage
-	mstats.next_gc = mstats.heap_alloc+(mstats.heap_alloc-runtime_stacks_sys)*gcpercent/100;
+	pmstats->next_gc = pmstats->heap_alloc+(pmstats->heap_alloc-runtime_stacks_sys)*gcpercent/100;
 
-	t4 = runtime_nanotime();
-	mstats.last_gc = runtime_unixnanotime();  // must be Unix time to make sense to user
-	mstats.pause_ns[mstats.numgc%nelem(mstats.pause_ns)] = t4 - t0;
-	mstats.pause_end[mstats.numgc%nelem(mstats.pause_end)] = mstats.last_gc;
-	mstats.pause_total_ns += t4 - t0;
-	mstats.numgc++;
-	if(mstats.debuggc)
-		runtime_printf("pause %D\n", t4-t0);
+	tm4 = runtime_nanotime();
+	pmstats->last_gc = runtime_unixnanotime();  // must be Unix time to make sense to user
+	pmstats->pause_ns[pmstats->numgc%nelem(pmstats->pause_ns)] = tm4 - tm0;
+	pmstats->pause_end[pmstats->numgc%nelem(pmstats->pause_end)] = pmstats->last_gc;
+	pmstats->pause_total_ns += tm4 - tm0;
+	pmstats->numgc++;
+	if(pmstats->debuggc)
+		runtime_printf("pause %D\n", tm4-tm0);
 
 	if(runtime_debug.gctrace) {
-		heap1 = mstats.heap_alloc;
+		heap1 = pmstats->heap_alloc;
 		runtime_updatememstats(&stats);
-		if(heap1 != mstats.heap_alloc) {
-			runtime_printf("runtime: mstats skew: heap=%D/%D\n", heap1, mstats.heap_alloc);
+		if(heap1 != pmstats->heap_alloc) {
+			runtime_printf("runtime: mstats skew: heap=%D/%D\n", heap1, pmstats->heap_alloc);
 			runtime_throw("mstats skew");
 		}
-		obj = mstats.nmalloc - mstats.nfree;
+		obj = pmstats->nmalloc - pmstats->nfree;
 
 		stats.nprocyield += work.markfor->nprocyield;
 		stats.nosyield += work.markfor->nosyield;
@@ -2311,9 +2297,9 @@ gc(struct gc_args *args)
 		runtime_printf("gc%d(%d): %D+%D+%D+%D us, %D -> %D MB, %D (%D-%D) objects,"
 				" %d/%d/%d sweeps,"
 				" %D(%D) handoff, %D(%D) steal, %D/%D/%D yields\n",
-			mstats.numgc, work.nproc, (t1-t0)/1000, (t2-t1)/1000, (t3-t2)/1000, (t4-t3)/1000,
+			pmstats->numgc, work.nproc, (tm1-tm0)/1000, (tm2-tm1)/1000, (tm3-tm2)/1000, (tm4-tm3)/1000,
 			heap0>>20, heap1>>20, obj,
-			mstats.nmalloc, mstats.nfree,
+			pmstats->nmalloc, pmstats->nfree,
 			sweep.nspan, gcstats.nbgsweep, gcstats.npausesweep,
 			stats.nhandoff, stats.nhandoffcnt,
 			work.markfor->nsteal, work.markfor->nstealcnt,
@@ -2352,7 +2338,7 @@ gc(struct gc_args *args)
 
 	// Free the old cached array if necessary.
 	if(sweep.spans && sweep.spans != runtime_mheap.allspans)
-		runtime_SysFree(sweep.spans, sweep.nspan*sizeof(sweep.spans[0]), &mstats.other_sys);
+		runtime_SysFree(sweep.spans, sweep.nspan*sizeof(sweep.spans[0]), &pmstats->other_sys);
 	// Cache the current array.
 	runtime_mheap.sweepspans = runtime_mheap.allspans;
 	runtime_mheap.sweepgen += 2;
@@ -2368,7 +2354,7 @@ gc(struct gc_args *args)
 			sweep.g = __go_go(bgsweep, nil);
 		else if(sweep.parked) {
 			sweep.parked = false;
-			runtime_ready(sweep.g);
+			runtime_ready(sweep.g, 0, true);
 		}
 		runtime_unlock(&gclock);
 	} else {
@@ -2383,36 +2369,6 @@ gc(struct gc_args *args)
 	m->traceback = 0;
 }
 
-extern uintptr runtime_sizeof_C_MStats
-  __asm__ (GOSYM_PREFIX "runtime.Sizeof_C_MStats");
-
-void runtime_ReadMemStats(MStats *)
-  __asm__ (GOSYM_PREFIX "runtime.ReadMemStats");
-
-void
-runtime_ReadMemStats(MStats *stats)
-{
-	M *m;
-
-	// Have to acquire worldsema to stop the world,
-	// because stoptheworld can only be used by
-	// one goroutine at a time, and there might be
-	// a pending garbage collection already calling it.
-	runtime_semacquire(&runtime_worldsema, false);
-	m = runtime_m();
-	m->gcing = 1;
-	runtime_stoptheworld();
-	runtime_updatememstats(nil);
-	// Size of the trailing by_size array differs between Go and C,
-	// NumSizeClasses was changed, but we can not change Go struct because of backward compatibility.
-	runtime_memmove(stats, &mstats, runtime_sizeof_C_MStats);
-	m->gcing = 0;
-	m->locks++;
-	runtime_semrelease(&runtime_worldsema);
-	runtime_starttheworld();
-	m->locks--;
-}
-
 void runtime_debug_readGCStats(Slice*)
   __asm__("runtime_debug.readGCStats");
 
@@ -2421,30 +2377,34 @@ runtime_debug_readGCStats(Slice *pauses)
 {
 	uint64 *p;
 	uint32 i, n;
+	MStats *pmstats;
 
 	// Calling code in runtime/debug should make the slice large enough.
-	if((size_t)pauses->cap < nelem(mstats.pause_ns)+3)
+	pmstats = mstats();
+	if((size_t)pauses->cap < nelem(pmstats->pause_ns)+3)
 		runtime_throw("runtime: short slice passed to readGCStats");
 
 	// Pass back: pauses, last gc (absolute time), number of gc, total pause ns.
 	p = (uint64*)pauses->array;
 	runtime_lock(&runtime_mheap);
-	n = mstats.numgc;
-	if(n > nelem(mstats.pause_ns))
-		n = nelem(mstats.pause_ns);
+	n = pmstats->numgc;
+	if(n > nelem(pmstats->pause_ns))
+		n = nelem(pmstats->pause_ns);
 	
 	// The pause buffer is circular. The most recent pause is at
 	// pause_ns[(numgc-1)%nelem(pause_ns)], and then backward
 	// from there to go back farther in time. We deliver the times
 	// most recent first (in p[0]).
-	for(i=0; i<n; i++)
-		p[i] = mstats.pause_ns[(mstats.numgc-1-i)%nelem(mstats.pause_ns)];
+	for(i=0; i<n; i++) {
+		p[i] = pmstats->pause_ns[(pmstats->numgc-1-i)%nelem(pmstats->pause_ns)];
+		p[n+i] = pmstats->pause_end[(pmstats->numgc-1-i)%nelem(pmstats->pause_ns)];
+	}
 
-	p[n] = mstats.last_gc;
-	p[n+1] = mstats.numgc;
-	p[n+2] = mstats.pause_total_ns;	
+	p[n+n] = pmstats->last_gc;
+	p[n+n+1] = pmstats->numgc;
+	p[n+n+2] = pmstats->pause_total_ns;
 	runtime_unlock(&runtime_mheap);
-	pauses->__count = n+3;
+	pauses->__count = n+n+3;
 }
 
 int32
@@ -2468,7 +2428,7 @@ gchelperstart(void)
 	M *m;
 
 	m = runtime_m();
-	if(m->helpgc < 0 || m->helpgc >= MaxGcproc)
+	if(m->helpgc < 0 || m->helpgc >= _MaxGcproc)
 		runtime_throw("gchelperstart: bad m->helpgc");
 	if(runtime_xchg(&bufferList[m->helpgc].busy, 1))
 		runtime_throw("gchelperstart: already busy");
@@ -2492,8 +2452,8 @@ runfinq(void* dummy __attribute__ ((unused)))
 	fb = nil;
 	next = nil;
 	i = 0;
-	ef.__type_descriptor = nil;
-	ef.__object = nil;
+	ef._type = nil;
+	ef.data = nil;
 	
 	// force flush to memory
 	USED(&f);
@@ -2522,21 +2482,23 @@ runfinq(void* dummy __attribute__ ((unused)))
 
 				f = &fb->fin[i];
 				fint = ((const Type**)f->ft->__in.array)[0];
-				if((fint->__code & kindMask) == KindPtr) {
+				if((fint->__code & kindMask) == kindPtr) {
 					// direct use of pointer
 					param = &f->arg;
 				} else if(((const InterfaceType*)fint)->__methods.__count == 0) {
 					// convert to empty interface
-					ef.__type_descriptor = (const Type*)f->ot;
-					ef.__object = f->arg;
+					// using memcpy as const_cast.
+					memcpy(&ef._type, &f->ot,
+					       sizeof ef._type);
+					ef.data = f->arg;
 					param = &ef;
 				} else {
 					// convert to interface with methods
-					iface.__methods = __go_convert_interface_2((const Type*)fint,
-										   (const Type*)f->ot,
-										   1);
-					iface.__object = f->arg;
-					if(iface.__methods == nil)
+					iface.tab = getitab(fint,
+							    (const Type*)f->ot,
+							    true);
+					iface.data = f->arg;
+					if(iface.data == nil)
 						runtime_throw("invalid type conversion in runfinq");
 					param = &iface;
 				}
@@ -2558,8 +2520,8 @@ runfinq(void* dummy __attribute__ ((unused)))
 		fb = nil;
 		next = nil;
 		i = 0;
-		ef.__type_descriptor = nil;
-		ef.__object = nil;
+		ef._type = nil;
+		ef.data = nil;
 		runtime_gc(1);	// trigger another gc to clean up the finalized objects, if possible
 	}
 }
@@ -2576,6 +2538,20 @@ runtime_createfing(void)
 	if(fing == nil)
 		fing = __go_go(runfinq, nil);
 	runtime_unlock(&gclock);
+}
+
+bool getfingwait() __asm__(GOSYM_PREFIX "runtime.getfingwait");
+bool
+getfingwait()
+{
+	return runtime_fingwait;
+}
+
+bool getfingwake() __asm__(GOSYM_PREFIX "runtime.getfingwake");
+bool
+getfingwake()
+{
+	return runtime_fingwake;
 }
 
 G*
@@ -2751,41 +2727,6 @@ runtime_MHeap_MapBits(MHeap *h)
 	if(h->bitmap_mapped >= n)
 		return;
 
-	runtime_SysMap(h->arena_start - n, n - h->bitmap_mapped, h->arena_reserved, &mstats.gc_sys);
+	runtime_SysMap(h->arena_start - n, n - h->bitmap_mapped, h->arena_reserved, &mstats()->gc_sys);
 	h->bitmap_mapped = n;
-}
-
-// typedmemmove copies a value of type t to dst from src.
-
-extern void typedmemmove(const Type* td, void *dst, const void *src)
-  __asm__ (GOSYM_PREFIX "reflect.typedmemmove");
-
-void
-typedmemmove(const Type* td, void *dst, const void *src)
-{
-	runtime_memmove(dst, src, td->__size);
-}
-
-// typedslicecopy copies a slice of elemType values from src to dst,
-// returning the number of elements copied.
-
-extern intgo typedslicecopy(const Type* elem, Slice dst, Slice src)
-  __asm__ (GOSYM_PREFIX "reflect.typedslicecopy");
-
-intgo
-typedslicecopy(const Type* elem, Slice dst, Slice src)
-{
-	intgo n;
-	void *dstp;
-	void *srcp;
-
-	n = dst.__count;
-	if (n > src.__count)
-		n = src.__count;
-	if (n == 0)
-		return 0;
-	dstp = dst.__values;
-	srcp = src.__values;
-	memmove(dstp, srcp, (uintptr_t)n * elem->__size);
-	return n;
 }

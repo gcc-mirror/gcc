@@ -1,5 +1,5 @@
 /* Integrated Register Allocator (IRA) entry point.
-   Copyright (C) 2006-2016 Free Software Foundation, Inc.
+   Copyright (C) 2006-2017 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -371,6 +371,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "regs.h"
@@ -791,78 +792,85 @@ setup_pressure_classes (void)
   HARD_REG_SET temp_hard_regset2;
   bool insert_p;
 
-  n = 0;
-  for (cl = 0; cl < N_REG_CLASSES; cl++)
-    {
-      if (ira_class_hard_regs_num[cl] == 0)
-	continue;
-      if (ira_class_hard_regs_num[cl] != 1
-	  /* A register class without subclasses may contain a few
-	     hard registers and movement between them is costly
-	     (e.g. SPARC FPCC registers).  We still should consider it
-	     as a candidate for a pressure class.  */
-	  && alloc_reg_class_subclasses[cl][0] < cl)
+  if (targetm.compute_pressure_classes)
+    n = targetm.compute_pressure_classes (pressure_classes);
+  else
+    { 
+      n = 0;
+      for (cl = 0; cl < N_REG_CLASSES; cl++)
 	{
-	  /* Check that the moves between any hard registers of the
-	     current class are not more expensive for a legal mode
-	     than load/store of the hard registers of the current
-	     class.  Such class is a potential candidate to be a
-	     register pressure class.  */
-	  for (m = 0; m < NUM_MACHINE_MODES; m++)
+	  if (ira_class_hard_regs_num[cl] == 0)
+	    continue;
+	  if (ira_class_hard_regs_num[cl] != 1
+	      /* A register class without subclasses may contain a few
+		 hard registers and movement between them is costly
+		 (e.g. SPARC FPCC registers).  We still should consider it
+		 as a candidate for a pressure class.  */
+	      && alloc_reg_class_subclasses[cl][0] < cl)
 	    {
-	      COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
-	      AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
-	      AND_COMPL_HARD_REG_SET (temp_hard_regset,
-				      ira_prohibited_class_mode_regs[cl][m]);
-	      if (hard_reg_set_empty_p (temp_hard_regset))
+	      /* Check that the moves between any hard registers of the
+		 current class are not more expensive for a legal mode
+		 than load/store of the hard registers of the current
+		 class.  Such class is a potential candidate to be a
+		 register pressure class.  */
+	      for (m = 0; m < NUM_MACHINE_MODES; m++)
+		{
+		  COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
+		  AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
+		  AND_COMPL_HARD_REG_SET (temp_hard_regset,
+					  ira_prohibited_class_mode_regs[cl][m]);
+		  if (hard_reg_set_empty_p (temp_hard_regset))
+		    continue;
+		  ira_init_register_move_cost_if_necessary ((machine_mode) m);
+		  cost = ira_register_move_cost[m][cl][cl];
+		  if (cost <= ira_max_memory_move_cost[m][cl][1]
+		      || cost <= ira_max_memory_move_cost[m][cl][0])
+		    break;
+		}
+	      if (m >= NUM_MACHINE_MODES)
 		continue;
-	      ira_init_register_move_cost_if_necessary ((machine_mode) m);
-	      cost = ira_register_move_cost[m][cl][cl];
-	      if (cost <= ira_max_memory_move_cost[m][cl][1]
-		  || cost <= ira_max_memory_move_cost[m][cl][0])
-		break;
 	    }
-	  if (m >= NUM_MACHINE_MODES)
-	    continue;
-	}
-      curr = 0;
-      insert_p = true;
-      COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
-      AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
-      /* Remove so far added pressure classes which are subset of the
-	 current candidate class.  Prefer GENERAL_REGS as a pressure
-	 register class to another class containing the same
-	 allocatable hard registers.  We do this because machine
-	 dependent cost hooks might give wrong costs for the latter
-	 class but always give the right cost for the former class
-	 (GENERAL_REGS).  */
-      for (i = 0; i < n; i++)
-	{
-	  cl2 = pressure_classes[i];
-	  COPY_HARD_REG_SET (temp_hard_regset2, reg_class_contents[cl2]);
-	  AND_COMPL_HARD_REG_SET (temp_hard_regset2, no_unit_alloc_regs);
-	  if (hard_reg_set_subset_p (temp_hard_regset, temp_hard_regset2)
-	      && (! hard_reg_set_equal_p (temp_hard_regset, temp_hard_regset2)
-		  || cl2 == (int) GENERAL_REGS))
+	  curr = 0;
+	  insert_p = true;
+	  COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
+	  AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
+	  /* Remove so far added pressure classes which are subset of the
+	     current candidate class.  Prefer GENERAL_REGS as a pressure
+	     register class to another class containing the same
+	     allocatable hard registers.  We do this because machine
+	     dependent cost hooks might give wrong costs for the latter
+	     class but always give the right cost for the former class
+	     (GENERAL_REGS).  */
+	  for (i = 0; i < n; i++)
 	    {
+	      cl2 = pressure_classes[i];
+	      COPY_HARD_REG_SET (temp_hard_regset2, reg_class_contents[cl2]);
+	      AND_COMPL_HARD_REG_SET (temp_hard_regset2, no_unit_alloc_regs);
+	      if (hard_reg_set_subset_p (temp_hard_regset, temp_hard_regset2)
+		  && (! hard_reg_set_equal_p (temp_hard_regset,
+					      temp_hard_regset2)
+		      || cl2 == (int) GENERAL_REGS))
+		{
+		  pressure_classes[curr++] = (enum reg_class) cl2;
+		  insert_p = false;
+		  continue;
+		}
+	      if (hard_reg_set_subset_p (temp_hard_regset2, temp_hard_regset)
+		  && (! hard_reg_set_equal_p (temp_hard_regset2,
+					      temp_hard_regset)
+		      || cl == (int) GENERAL_REGS))
+		continue;
+	      if (hard_reg_set_equal_p (temp_hard_regset2, temp_hard_regset))
+		insert_p = false;
 	      pressure_classes[curr++] = (enum reg_class) cl2;
-	      insert_p = false;
-	      continue;
 	    }
-	  if (hard_reg_set_subset_p (temp_hard_regset2, temp_hard_regset)
-	      && (! hard_reg_set_equal_p (temp_hard_regset2, temp_hard_regset)
-		  || cl == (int) GENERAL_REGS))
-	    continue;
-	  if (hard_reg_set_equal_p (temp_hard_regset2, temp_hard_regset))
-	    insert_p = false;
-	  pressure_classes[curr++] = (enum reg_class) cl2;
+	  /* If the current candidate is a subset of a so far added
+	     pressure class, don't add it to the list of the pressure
+	     classes.  */
+	  if (insert_p)
+	    pressure_classes[curr++] = (enum reg_class) cl;
+	  n = curr;
 	}
-      /* If the current candidate is a subset of a so far added
-	 pressure class, don't add it to the list of the pressure
-	 classes.  */
-      if (insert_p)
-	pressure_classes[curr++] = (enum reg_class) cl;
-      n = curr;
     }
 #ifdef ENABLE_IRA_CHECKING
   {
@@ -1004,7 +1012,7 @@ setup_allocno_and_important_classes (void)
 				    temp_hard_regset2))
 	    break;
 	}
-      if (j >= n)
+      if (j >= n || targetm.additional_allocno_class_p (i))
 	classes[n++] = (enum reg_class) i;
       else if (i == GENERAL_REGS)
 	/* Prefer general regs.  For i386 example, it means that
@@ -1665,6 +1673,8 @@ ira_init_once (void)
 {
   ira_init_costs_once ();
   lra_init_once ();
+
+  ira_use_lra_p = targetm.lra_p ();
 }
 
 /* Free ira_max_register_move_cost, ira_may_move_in_cost and
@@ -1832,6 +1842,7 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 		  case '#':
 		  case ',':
 		    c = '\0';
+		    /* FALLTHRU */
 		  case '\0':
 		    len = 0;
 		    break;
@@ -2252,10 +2263,13 @@ compute_regs_asm_clobbered (void)
 void
 ira_setup_eliminable_regset (void)
 {
-#ifdef ELIMINABLE_REGS
   int i;
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
-#endif
+
+  /* Setup is_leaf as frame_pointer_required may use it.  This function
+     is called by sched_init before ira if scheduling is enabled.  */
+  crtl->is_leaf = leaf_function_p ();
+
   /* FIXME: If EXIT_IGNORE_STACK is set, we will not save and restore
      sp for alloca.  So we can't eliminate the frame pointer in that
      case.  At some point, we should improve this by emitting the
@@ -2291,7 +2305,6 @@ ira_setup_eliminable_regset (void)
 
   /* Build the regset of all eliminable registers and show we can't
      use those that we already know won't be eliminated.  */
-#ifdef ELIMINABLE_REGS
   for (i = 0; i < (int) ARRAY_SIZE (eliminables); i++)
     {
       bool cannot_elim
@@ -2325,19 +2338,6 @@ ira_setup_eliminable_regset (void)
       else
 	df_set_regs_ever_live (HARD_FRAME_POINTER_REGNUM, true);
     }
-
-#else
-  if (!TEST_HARD_REG_BIT (crtl->asm_clobbers, HARD_FRAME_POINTER_REGNUM))
-    {
-      SET_HARD_REG_BIT (eliminable_regset, FRAME_POINTER_REGNUM);
-      if (frame_pointer_needed)
-	SET_HARD_REG_BIT (ira_no_alloc_regs, FRAME_POINTER_REGNUM);
-    }
-  else if (frame_pointer_needed)
-    error ("%s cannot be used in asm here", reg_names[FRAME_POINTER_REGNUM]);
-  else
-    df_set_regs_ever_live (FRAME_POINTER_REGNUM, true);
-#endif
 }
 
 
@@ -2651,7 +2651,7 @@ ira_update_equiv_info_by_shuffle_insn (int to_regno, int from_regno, rtx_insn *i
 	}
       if (find_reg_note (insn, REG_EQUIV, x) == NULL_RTX)
 	{
-	  note = set_unique_reg_note (insn, REG_EQUIV, x);
+	  note = set_unique_reg_note (insn, REG_EQUIV, copy_rtx (x));
 	  gcc_assert (note != NULL_RTX);
 	  if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
 	    {
@@ -3673,6 +3673,11 @@ combine_and_move_insns (void)
       if (JUMP_P (use_insn))
 	continue;
 
+      /* Also don't substitute into a conditional trap insn -- it can become
+	 an unconditional trap, and that is a flow control insn.  */
+      if (GET_CODE (PATTERN (use_insn)) == TRAP_IF)
+	continue;
+
       df_ref def = DF_REG_DEF_CHAIN (regno);
       gcc_assert (DF_REG_DEF_COUNT (regno) == 1 && DF_REF_INSN_INFO (def));
       rtx_insn *def_insn = DF_REF_INSN (def);
@@ -3709,6 +3714,14 @@ combine_and_move_insns (void)
 	  remove_death (regno, use_insn);
 	  SET_REG_N_REFS (regno, 0);
 	  REG_FREQ (regno) = 0;
+	  df_ref use;
+	  FOR_EACH_INSN_USE (use, def_insn)
+	    {
+	      unsigned int use_regno = DF_REF_REGNO (use);
+	      if (!HARD_REGISTER_NUM_P (use_regno))
+		reg_equiv[use_regno].replace = 0;
+	    }
+
 	  delete_insn (def_insn);
 
 	  reg_equiv[regno].init_insns = NULL;
@@ -3751,7 +3764,7 @@ combine_and_move_insns (void)
 	     use_insn, when regno was seen as non-local.  Now that
 	     regno is local to this block, and dies, such an
 	     equivalence is invalid.  */
-	  if (find_reg_note (use_insn, REG_EQUIV, NULL_RTX))
+	  if (find_reg_note (use_insn, REG_EQUIV, regno_reg_rtx[regno]))
 	    {
 	      rtx set = single_set (use_insn);
 	      if (set && REG_P (SET_DEST (set)))
@@ -5076,12 +5089,20 @@ ira (FILE *f)
   bool saved_flag_caller_saves = flag_caller_saves;
   enum ira_region saved_flag_ira_region = flag_ira_region;
 
+  clear_bb_flags ();
+
+  /* Determine if the current function is a leaf before running IRA
+     since this can impact optimizations done by the prologue and
+     epilogue thus changing register elimination offsets.
+     Other target callbacks may use crtl->is_leaf too, including
+     SHRINK_WRAPPING_ENABLED, so initialize as early as possible.  */
+  crtl->is_leaf = leaf_function_p ();
+
   /* Perform target specific PIC register initialization.  */
   targetm.init_pic_reg ();
 
   ira_conflicts_p = optimize > 0;
 
-  ira_use_lra_p = targetm.lra_p ();
   /* If there are too many pseudos and/or basic blocks (e.g. 10K
      pseudos and 10K blocks or 100K pseudos and 1K blocks), we will
      use simplified and faster algorithms in LRA.  */
@@ -5161,11 +5182,6 @@ ira (FILE *f)
      to generate these warnings.  */
   if (warn_clobbered)
     generate_setjmp_warnings ();
-
-  /* Determine if the current function is a leaf before running IRA
-     since this can impact optimizations done by the prologue and
-     epilogue thus changing register elimination offsets.  */
-  crtl->is_leaf = leaf_function_p ();
 
   if (resize_reg_info () && flag_ira_loop_pressure)
     ira_set_pseudo_classes (true, ira_dump_file);

@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_fp16_alternative_ok } */
 /* { dg-options "-mfp16-format=alternative" } */
 
 __fp16 xx = 0.0;

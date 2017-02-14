@@ -1,6 +1,6 @@
 // 2005-09-30  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,8 +37,6 @@ struct Punct3: numpunct<char>
 // libstdc++/23953
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-  
   ostringstream oss1, oss2, oss3;
   string result1, result2, result3;
 

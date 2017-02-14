@@ -114,6 +114,9 @@ AC_SUBST(MAINT)
 AC_DEFINE_UNQUOTED([SED_PROGRAM], "${SED}",
    [Defined to the best working sed program on the host system])
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 AC_CONFIG_HEADERS(config.h, [echo timestamp > stamp-h])
 AC_CONFIG_FILES(Makefile mkheaders.almost:mkheaders.in)
 AC_OUTPUT

@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,9 +16,8 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* *-*-cygwin *-*-rtems* *-*-darwin* powerpc-ibm-aix* } }
-// { dg-options " -std=gnu++11 -pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* powerpc-ibm-aix* } }
-// { dg-options " -std=gnu++11 -pthreads" { target *-*-solaris* } }
-// { dg-options " -std=gnu++11 " { target *-*-cygwin *-*-rtems* *-*-darwin* } }
+// { dg-options "-pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* powerpc-ibm-aix* } }
+// { dg-require-effective-target c++11 }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-time "" }
@@ -41,8 +40,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   // test interruption of this_thread::sleep_for() by a signal
   struct sigaction sa{ };
   sa.sa_handler = +[](int) { };
@@ -81,8 +78,6 @@ struct slow_clock
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   // test that this_thread::sleep_until() handles clock adjustments
   auto when = slow_clock::now() + std::chrono::seconds(2);
   std::this_thread::sleep_until(when);

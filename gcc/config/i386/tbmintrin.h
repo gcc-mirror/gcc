@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2010-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -38,12 +38,12 @@
 extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __bextri_u32 (unsigned int __X, const unsigned int __I)
 {
-	return __builtin_ia32_bextri_u32 (__X, __I);
+  return __builtin_ia32_bextri_u32 (__X, __I);
 }
 #else
-#define __bextri_u32(X, I)                                           \
-        ((unsigned int)__builtin_ia32_bextri_u32 ((unsigned int)(X), \
-	                                          (unsigned int)(I)))
+#define __bextri_u32(X, I)						\
+  ((unsigned int)__builtin_ia32_bextri_u32 ((unsigned int)(X),		\
+					    (unsigned int)(I)))
 #endif /*__OPTIMIZE__ */
 
 extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, __artificial__))

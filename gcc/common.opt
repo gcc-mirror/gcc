@@ -1,6 +1,6 @@
 ; Options for the language- and target-independent parts of the compiler.
 
-; Copyright (C) 2003-2016 Free Software Foundation, Inc.
+; Copyright (C) 2003-2017 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -57,10 +57,6 @@ int flag_incremental_link = 0
 ; 2 means C99-like requirements for complex multiply and divide.
 Variable
 int flag_complex_method = 1
-
-; Nonzero if subexpressions must be evaluated from left-to-right.
-Variable
-int flag_evaluation_order = 0
 
 ; Language specific warning pass for unused results.
 Variable
@@ -228,7 +224,7 @@ unsigned int flag_sanitize
 
 ; What sanitizers should recover from errors
 Variable
-unsigned int flag_sanitize_recover = SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT | SANITIZE_KERNEL_ADDRESS
+unsigned int flag_sanitize_recover = (SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT | SANITIZE_KERNEL_ADDRESS) & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN)
 
 fsanitize-coverage=trace-pc
 Common Report Var(flag_sanitize_coverage)
@@ -601,6 +597,13 @@ Whsa
 Common Var(warn_hsa) Init(1) Warning
 Warn when a function cannot be expanded to HSAIL.
 
+Wimplicit-fallthrough
+Common Alias(Wimplicit-fallthrough=,3,0) Warning
+
+Wimplicit-fallthrough=
+Common Var(warn_implicit_fallthrough) RejectNegative Joined UInteger Warning
+Warn when a switch case falls through.
+
 Winline
 Common Var(warn_inline) Warning
 Warn when an inlined function cannot be inlined.
@@ -661,7 +664,25 @@ Warn about returning a pointer/reference to a local or temporary variable.
 
 Wshadow
 Common Var(warn_shadow) Warning
-Warn when one local variable shadows another.
+Warn when one variable shadows another.  Same as -Wshadow=global.
+
+Wshadow=global
+Common Warning Alias(Wshadow)
+Warn when one variable shadows another (globally).
+
+Wshadow=local
+Common Var(warn_shadow_local) Warning EnabledBy(Wshadow)
+Warn when one local variable shadows another local variable or parameter.
+
+Wshadow-local
+Common Warning Undocumented Alias(Wshadow=local)
+
+Wshadow=compatible-local
+Common Var(warn_shadow_compatible_local) Warning EnabledBy(Wshadow=local)
+Warn when one local variable shadows another local variable or parameter of compatible type.
+
+Wshadow-compatible-local
+Common Warning Undocumented Alias(Wshadow=compatible-local)
 
 Wstack-protector
 Common Var(warn_stack_protect) Warning
@@ -828,6 +849,9 @@ Driver
 dumpversion
 Driver
 
+dumpfullversion
+Driver
+
 e
 Driver Joined Separate
 
@@ -882,6 +906,10 @@ Driver Undocumented
 ;     identity, such as ia32 calling convention attributes (stdcall, etc.)
 ;     Default in G++ 6 (set in c_common_post_options).
 ;
+; 11: The version of the ABI that corrects mangling of sizeof... expressions
+;     and introduces new inheriting constructor handling.
+;     Default in G++ 7.
+;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=
@@ -898,6 +926,9 @@ Align the start of functions.
 
 falign-functions=
 Common RejectNegative Joined UInteger Var(align_functions)
+
+flimit-function-alignment
+Common Report Var(flag_limit_function_alignment) Optimization Init(0)
 
 falign-jumps
 Common Report Var(align_jumps,0) Optimization UInteger
@@ -956,6 +987,9 @@ After diagnosing undefined behavior attempt to continue execution.
 fsanitize-recover
 Common Report
 This switch is deprecated; use -fsanitize-recover= instead.
+
+fsanitize-address-use-after-scope
+Common Driver Report Var(flag_sanitize_address_use_after_scope) Init(0)
 
 fsanitize-undefined-trap-on-error
 Common Driver Report Var(flag_sanitize_undefined_trap_on_error) Init(0)
@@ -1031,12 +1065,16 @@ Common Var(flag_check_new)
 Check the return value of new in C++.
 
 fchecking
-Common Var(flag_checking) Init(CHECKING_P)
+Common Var(flag_checking) Init(CHECKING_P ? ENABLE_EXTRA_CHECKING ? 2 : 1 : 0)
 Perform internal consistency checkings.
 
 fchecking=
 Common Joined RejectNegative UInteger Var(flag_checking)
 Perform internal consistency checkings.
+
+fcode-hoisting
+Common Report Var(flag_code_hoisting) Optimization
+Enable code hoisting.
 
 fcombine-stack-adjustments
 Common Report Var(flag_combine_stack_adjustments) Optimization
@@ -1189,6 +1227,10 @@ fdiagnostics-parseable-fixits
 Common Var(flag_diagnostics_parseable_fixits)
 Print fixit hints in machine-readable form.
 
+fdiagnostics-generate-patch
+Common Var(flag_diagnostics_generate_patch)
+Print fix-it hints to stderr in unified diff format.
+
 fdiagnostics-show-option
 Common Var(flag_diagnostics_show_option) Init(1)
 Amend appropriate diagnostic messages with the command line option that controls them.
@@ -1223,7 +1265,7 @@ Suppress output of addresses in debugging dumps.
 freport-bug
 Common Driver Var(flag_report_bug)
 Collect and dump debug information into temporary file if ICE in C/C++
-compiler occured.
+compiler occurred.
 
 fdump-internal-locations
 Common Var(flag_dump_locations) Init(0)
@@ -1278,7 +1320,7 @@ Common Report Var(flag_expensive_optimizations) Optimization
 Perform a number of minor, expensive optimizations.
 
 fexcess-precision=
-Common Joined RejectNegative Enum(excess_precision) Var(flag_excess_precision_cmdline) Init(EXCESS_PRECISION_DEFAULT)
+Common Joined RejectNegative Enum(excess_precision) Var(flag_excess_precision_cmdline) Init(EXCESS_PRECISION_DEFAULT) SetByCombined
 -fexcess-precision=[fast|standard]	Specify handling of excess floating-point precision.
 
 Enum
@@ -1289,6 +1331,21 @@ Enum(excess_precision) String(fast) Value(EXCESS_PRECISION_FAST)
 
 EnumValue
 Enum(excess_precision) String(standard) Value(EXCESS_PRECISION_STANDARD)
+
+; Whether we permit the extended set of values for FLT_EVAL_METHOD
+; introduced in ISO/IEC TS 18661-3, or limit ourselves to those in C99/C11.
+fpermitted-flt-eval-methods=
+Common Joined RejectNegative Enum(permitted_flt_eval_methods) Var(flag_permitted_flt_eval_methods) Init(PERMITTED_FLT_EVAL_METHODS_DEFAULT)
+-fpermitted-flt-eval-methods=[c11|ts-18661]	Specify which values of FLT_EVAL_METHOD are permitted.
+
+Enum
+Name(permitted_flt_eval_methods) Type(enum permitted_flt_eval_methods) UnknownError(unknown specification for the set of FLT_EVAL_METHOD values to permit %qs)
+
+EnumValue
+Enum(permitted_flt_eval_methods) String(c11) Value(PERMITTED_FLT_EVAL_METHODS_C11)
+
+EnumValue
+Enum(permitted_flt_eval_methods) String(ts-18661-3) Value(PERMITTED_FLT_EVAL_METHODS_TS_18661)
 
 ffast-math
 Common Optimization
@@ -1445,6 +1502,10 @@ fstrict-volatile-bitfields
 Common Report Var(flag_strict_volatile_bitfields) Init(-1) Optimization
 Force bitfield accesses to match their type width.
 
+fstore-merging
+Common Report Var(flag_store_merging) Optimization
+Merge adjacent stores.
+
 fguess-branch-probability
 Common Report Var(flag_guess_branch_prob) Optimization
 Enable guessing of branch probabilities.
@@ -1486,8 +1547,8 @@ Common Report Var(flag_tree_loop_if_convert) Init(-1) Optimization
 Convert conditional jumps in innermost loops to branchless equivalents.
 
 ftree-loop-if-convert-stores
-Common Report Var(flag_tree_loop_if_convert_stores) Optimization
-Also if-convert conditional jumps containing memory writes.
+Common Ignore
+Does nothing. Preserved for backward compatibility.
 
 ; -finhibit-size-directive inhibits output of .size for ELF.
 ; This is used only for compiling crtstuff.c,
@@ -1554,6 +1615,10 @@ fipa-cp-alignment
 Common Report Var(flag_ipa_cp_alignment) Optimization
 Perform alignment discovery and propagation to make Interprocedural constant propagation stronger.
 
+fipa-bit-cp
+Common Report Var(flag_ipa_bit_cp) Optimization
+Perform interprocedural bitwise constant propagation.
+
 fipa-profile
 Common Report Var(flag_ipa_profile) Init(0) Optimization
 Perform interprocedural profile propagation.
@@ -1575,7 +1640,7 @@ Common Report Var(flag_ipa_icf_functions) Optimization
 Perform Identical Code Folding for functions.
 
 fipa-icf-variables
-Common Report Var(flag_ipa_icf_variables)
+Common Report Var(flag_ipa_icf_variables) Optimization
 Perform Identical Code Folding for variables.
 
 fipa-reference
@@ -1589,6 +1654,10 @@ Does nothing. Preserved for backward compatibility.
 fipa-struct-reorg
 Common Ignore
 Does nothing. Preserved for backward compatibility.
+
+fipa-vrp
+Common Report Var(flag_ipa_vrp) Optimization
+Perform IPA Value Range Propagation.
 
 fira-algorithm=
 Common Joined RejectNegative Enum(ira_algorithm) Var(flag_ira_algorithm) Init(IRA_ALGORITHM_CB) Optimization
@@ -1909,6 +1978,22 @@ fprofile-correction
 Common Report Var(flag_profile_correction)
 Enable correction of flow inconsistent profile data input.
 
+fprofile-update=
+Common Joined RejectNegative Enum(profile_update) Var(flag_profile_update) Init(PROFILE_UPDATE_SINGLE)
+-fprofile-update=[single|atomic|prefer-atomic]	Set the profile update method.
+
+Enum
+Name(profile_update) Type(enum profile_update) UnknownError(unknown profile update method %qs)
+
+EnumValue
+Enum(profile_update) String(single) Value(PROFILE_UPDATE_SINGLE)
+
+EnumValue
+Enum(profile_update) String(atomic) Value(PROFILE_UPDATE_ATOMIC)
+
+EnumValue
+Enum(profile_update) String(prefer-atomic) Value(PROFILE_UPDATE_PREFER_ATOMIC)
+
 fprofile-generate
 Common
 Enable common options for generating profile info for profile feedback directed optimizations.
@@ -2070,9 +2155,9 @@ fselective-scheduling2
 Common Report Var(flag_selective_scheduling2) Optimization
 Run selective scheduling after reload.
 
-fself-test
-Common Undocumented Var(flag_self_test)
-Run self-tests.
+fself-test=
+Common Undocumented Joined Var(flag_self_test)
+Run self-tests, using the given path to locate test files.
 
 fsel-sched-pipelining
 Common Report Var(flag_sel_sched_pipelining) Init(0) Optimization
@@ -2160,6 +2245,10 @@ fshrink-wrap
 Common Report Var(flag_shrink_wrap) Optimization
 Emit function prologues only before parts of the function that need it,
 rather than at the top of the function.
+
+fshrink-wrap-separate
+Common Report Var(flag_shrink_wrap_separate) Init(1) Optimization
+Shrink-wrap parts of the prologue and epilogue separately.
 
 fsignaling-nans
 Common Report Var(flag_signaling_nans) Optimization SetByCombined
@@ -2276,6 +2365,10 @@ ftime-report
 Common Report Var(time_report)
 Report the time taken by each compiler pass.
 
+ftime-report-details
+Common Report Var(time_report_details)
+Record times taken by sub-phases separately.
+
 ftls-model=
 Common Joined RejectNegative Enum(tls_model) Var(flag_tls_default) Init(TLS_MODEL_GLOBAL_DYNAMIC)
 -ftls-model=[global-dynamic|local-dynamic|initial-exec|local-exec]	Set the default thread-local storage code generation model.
@@ -2302,6 +2395,11 @@ Reorder top level functions, variables, and asms.
 ftracer
 Common Report Var(flag_tracer) Optimization
 Perform superblock formation via tail duplication.
+
+ftrampolines
+Common Report Var(flag_trampolines) Init(0)
+For targets that normally need trampolines for nested functions, always
+generate them instead of using descriptors.
 
 ; Zero means that floating-point math operations cannot generate a
 ; (user-visible) trap.  This is the case, for example, in nonstop
@@ -2500,8 +2598,8 @@ Perform loop unrolling for all loops.
 ; that control loops do not overflow and that the loops with nontrivial
 ; exit condition are not infinite
 funsafe-loop-optimizations
-Common Report Var(flag_unsafe_loop_optimizations) Optimization
-Allow loop optimizations to assume that the loops behave in normal way.
+Common Ignore
+Does nothing.  Preserved for backward compatibility.
 
 fassociative-math
 Common Report Var(flag_associative_math) SetByCombined Optimization
@@ -2524,6 +2622,10 @@ funswitch-loops
 Common Report Var(flag_unswitch_loops) Optimization
 Perform loop unswitching.
 
+fsplit-loops
+Common Report Var(flag_split_loops) Optimization
+Perform loop splitting.
+
 funwind-tables
 Common Report Var(flag_unwind_tables) Optimization
 Just generate unwind tables for exception handling.
@@ -2545,7 +2647,7 @@ Common Undocumented Var(flag_use_linker_plugin)
 ; will be set according to optimize, debug_info_level and debug_hooks
 ; in process_options ().
 fvar-tracking
-Common Report Var(flag_var_tracking) Init(2) Optimization
+Common Report Var(flag_var_tracking) Init(2) PerFunction
 Perform variable tracking.
 
 ; Positive if we should track variables at assignments, negative if
@@ -2553,13 +2655,13 @@ Perform variable tracking.
 ; annotations.  When flag_var_tracking_assignments ==
 ; AUTODETECT_VALUE it will be set according to flag_var_tracking.
 fvar-tracking-assignments
-Common Report Var(flag_var_tracking_assignments) Init(2) Optimization
+Common Report Var(flag_var_tracking_assignments) Init(2) PerFunction
 Perform variable tracking by annotating assignments.
 
 ; Nonzero if we should toggle flag_var_tracking_assignments after
 ; processing options and computing its default.  */
 fvar-tracking-assignments-toggle
-Common Report Var(flag_var_tracking_assignments_toggle) Optimization
+Common Report Var(flag_var_tracking_assignments_toggle) PerFunction
 Toggle -fvar-tracking-assignments.
 
 ; Positive if we should track uninitialized variables, negative if
@@ -2567,7 +2669,7 @@ Toggle -fvar-tracking-assignments.
 ; annotations.  When flag_var_tracking_uninit == AUTODETECT_VALUE it
 ; will be set according to flag_var_tracking.
 fvar-tracking-uninit
-Common Report Var(flag_var_tracking_uninit) Optimization
+Common Report Var(flag_var_tracking_uninit) PerFunction
 Perform variable tracking and also tag variables that are uninitialized.
 
 ftree-vectorize
@@ -2611,12 +2713,8 @@ EnumValue
 Enum(vect_cost_model) String(cheap) Value(VECT_COST_MODEL_CHEAP)
 
 fvect-cost-model
-Common RejectNegative Alias(fvect-cost-model=,dynamic)
+Common Alias(fvect-cost-model=,dynamic,unlimited)
 Enables the dynamic vectorizer cost model.  Preserved for backward compatibility.
-
-fno-vect-cost-model
-Common RejectNegative Alias(fvect-cost-model=,unlimited)
-Enables the unlimited vectorizer cost model.  Preserved for backward compatibility.
 
 ftree-vect-loop-version
 Common Ignore
@@ -2704,43 +2802,43 @@ Common Report Var(flag_zero_initialized_in_bss) Init(1)
 Put zero initialized data in the bss section.
 
 g
-Common JoinedOrMissing
+Common Driver JoinedOrMissing
 Generate debug information in default format.
 
 gcoff
-Common JoinedOrMissing Negative(gdwarf)
+Common Driver JoinedOrMissing Negative(gdwarf)
 Generate debug information in COFF format.
 
 gdwarf
-Common JoinedOrMissing Negative(gdwarf-)
+Common Driver JoinedOrMissing Negative(gdwarf-)
 Generate debug information in default version of DWARF format.
 
 gdwarf-
-Common Joined UInteger Var(dwarf_version) Init(4) Negative(gstabs)
+Common Driver Joined UInteger Var(dwarf_version) Init(4) Negative(gstabs)
 Generate debug information in DWARF v2 (or later) format.
 
 ggdb
-Common JoinedOrMissing
+Common Driver JoinedOrMissing
 Generate debug information in default extended format.
 
 gno-pubnames
-Common Negative(gpubnames) Var(debug_generate_pub_sections, 0) Init(-1)
+Common Driver Negative(gpubnames) Var(debug_generate_pub_sections, 0) Init(-1)
 Don't generate DWARF pubnames and pubtypes sections.
 
 gpubnames
-Common Negative(ggnu-pubnames) Var(debug_generate_pub_sections, 1)
+Common Driver Negative(ggnu-pubnames) Var(debug_generate_pub_sections, 1)
 Generate DWARF pubnames and pubtypes sections.
 
 ggnu-pubnames
-Common Negative(gno-pubnames) Var(debug_generate_pub_sections, 2)
+Common Driver Negative(gno-pubnames) Var(debug_generate_pub_sections, 2)
 Generate DWARF pubnames and pubtypes sections with GNU extensions.
 
 gno-record-gcc-switches
-Common RejectNegative Var(dwarf_record_gcc_switches,0) Init(1)
+Common Driver RejectNegative Var(dwarf_record_gcc_switches,0) Init(1)
 Don't record gcc command line switches in DWARF DW_AT_producer.
 
 grecord-gcc-switches
-Common RejectNegative Var(dwarf_record_gcc_switches,1)
+Common Driver RejectNegative Var(dwarf_record_gcc_switches,1)
 Record gcc command line switches in DWARF DW_AT_producer.
 
 gno-split-dwarf
@@ -2752,35 +2850,35 @@ Common Driver RejectNegative Var(dwarf_split_debug_info,1)
 Generate debug information in separate .dwo files.
 
 gstabs
-Common JoinedOrMissing Negative(gstabs+)
+Common Driver JoinedOrMissing Negative(gstabs+)
 Generate debug information in STABS format.
 
 gstabs+
-Common JoinedOrMissing Negative(gvms)
+Common Driver JoinedOrMissing Negative(gvms)
 Generate debug information in extended STABS format.
 
 gno-strict-dwarf
-Common RejectNegative Var(dwarf_strict,0) Init(0)
+Common Driver RejectNegative Var(dwarf_strict,0) Init(0)
 Emit DWARF additions beyond selected version.
 
 gstrict-dwarf
-Common Report RejectNegative Var(dwarf_strict,1)
+Common Driver Report RejectNegative Var(dwarf_strict,1)
 Don't emit DWARF additions beyond selected version.
 
 gtoggle
-Common Report Var(flag_gtoggle)
+Common Driver Report Var(flag_gtoggle)
 Toggle debug information generation.
 
 gvms
-Common JoinedOrMissing Negative(gxcoff)
+Common Driver JoinedOrMissing Negative(gxcoff)
 Generate debug information in VMS format.
 
 gxcoff
-Common JoinedOrMissing Negative(gxcoff+)
+Common Driver JoinedOrMissing Negative(gxcoff+)
 Generate debug information in XCOFF format.
 
 gxcoff+
-Common JoinedOrMissing Negative(gcoff)
+Common Driver JoinedOrMissing Negative(gcoff)
 Generate debug information in extended XCOFF format.
 
 Enum

@@ -1,5 +1,5 @@
 /* Demangler test program,
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Written by Zack Weinberg <zack@codesourcery.com
 
    This file is part of GNU libiberty.

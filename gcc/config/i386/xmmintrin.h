@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -67,6 +67,9 @@ _mm_prefetch (const void *__P, enum _mm_hint __I)
 /* The Intel API is flexible enough that we must allow aliasing with other
    vector types, and their scalar components.  */
 typedef float __m128 __attribute__ ((__vector_size__ (16), __may_alias__));
+
+/* Unaligned version of the same type.  */
+typedef float __m128_u __attribute__ ((__vector_size__ (16), __may_alias__, __aligned__ (1)));
 
 /* Internal data types for implementing the intrinsics.  */
 typedef float __v4sf __attribute__ ((__vector_size__ (16)));
@@ -921,14 +924,14 @@ _mm_load_ps1 (float const *__P)
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_load_ps (float const *__P)
 {
-  return (__m128) *(__v4sf *)__P;
+  return *(__m128 *)__P;
 }
 
 /* Load four SPFP values from P.  The address need not be 16-byte aligned.  */
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_loadu_ps (float const *__P)
 {
-  return (__m128) __builtin_ia32_loadups (__P);
+  return *(__m128_u *)__P;
 }
 
 /* Load four SPFP values in reverse order.  The address must be aligned.  */
@@ -970,14 +973,14 @@ _mm_cvtss_f32 (__m128 __A)
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_store_ps (float *__P, __m128 __A)
 {
-  *(__v4sf *)__P = (__v4sf)__A;
+  *(__m128 *)__P = __A;
 }
 
 /* Store four SPFP values.  The address need not be 16-byte aligned.  */
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_storeu_ps (float *__P, __m128 __A)
 {
-  __builtin_ia32_storeups (__P, (__v4sf)__A);
+  *(__m128_u *)__P = __A;
 }
 
 /* Store the lower SPFP value across four words.  */

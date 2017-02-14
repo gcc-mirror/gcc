@@ -1,4 +1,4 @@
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -70,7 +70,6 @@ static void drain(std::auto_ptr<T>)
 int
 test07()
 {
-  bool test __attribute__((unused)) = true;
   reset_count_struct __attribute__((unused)) reset;
 
   drain(source<A>());

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2010, Free Software Foundation, Inc.            --
+--          Copyright (C) 2010-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,8 +33,7 @@ with System; use System;
 
 package body Ada.Locales is
 
-   type Lower_4 is array (1 .. 4) of Character range 'a' .. 'z';
-   type Upper_4 is array (1 .. 4) of Character range 'A' .. 'Z';
+   type Str_4 is new String (1 .. 4);
 
    --------------
    -- Language --
@@ -43,7 +42,7 @@ package body Ada.Locales is
    function Language return Language_Code is
       procedure C_Get_Language_Code (P : Address);
       pragma Import (C, C_Get_Language_Code);
-      F : Lower_4;
+      F : Str_4;
    begin
       C_Get_Language_Code (F'Address);
       return Language_Code (F (1 .. 3));
@@ -56,7 +55,7 @@ package body Ada.Locales is
    function Country return Country_Code is
       procedure C_Get_Country_Code (P : Address);
       pragma Import (C, C_Get_Country_Code);
-      F : Upper_4;
+      F : Str_4;
    begin
       C_Get_Country_Code (F'Address);
       return Country_Code (F (1 .. 2));

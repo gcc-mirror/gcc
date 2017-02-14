@@ -1,5 +1,5 @@
 /* Language-dependent hooks for C++.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -137,10 +137,7 @@ static tree
 cp_eh_personality (void)
 {
   if (!cp_eh_personality_decl)
-    {
-      const char *lang = (pragma_java_exceptions ? "gcj" : "gxx");
-      cp_eh_personality_decl = build_personality_function (lang);
-    }
+    cp_eh_personality_decl = build_personality_function ("gxx");
 
   return cp_eh_personality_decl;
 }

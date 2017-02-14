@@ -1,6 +1,6 @@
 // POD character, std::char_traits specialization -*- C++ -*-
 
-// Copyright (C) 2002-2016 Free Software Foundation, Inc.
+// Copyright (C) 2002-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,7 +32,7 @@ int main()
   typedef character<value_type, int_type>	char_type;
   typedef std::char_traits<char_type> 		traits_type;
 
-  bool test __attribute__((unused)) = true;
+  bool test = true;
 
   // 1 char_type <-> value_type conversions
   value_type uc1 = 'c';

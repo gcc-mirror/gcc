@@ -1,4 +1,4 @@
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,8 +39,6 @@ bool even(const copy_tracker& ct)
 void
 test1(int throw_count)
 {
-  bool test __attribute__((unused)) = true;
-
   copy_tracker vals[30];
   for(int i = 0; i < 30; ++i)
     vals[i] = A[i];

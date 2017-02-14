@@ -1,12 +1,11 @@
 // { dg-do run { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* *-*-cygwin *-*-rtems* *-*-darwin* powerpc-ibm-aix* } }
-// { dg-options " -std=gnu++11 -pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* powerpc-ibm-aix* } }
-// { dg-options " -std=gnu++11 -pthreads" { target *-*-solaris* } }
-// { dg-options " -std=gnu++11 " { target *-*-cygwin *-*-rtems* *-*-darwin* } }
+// { dg-options "-pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* powerpc-ibm-aix* } }
+// { dg-require-effective-target c++11 }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-sleep "" }
 
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,8 +32,6 @@ namespace chr = std::chrono;
 
 void foo()
 {
-  bool test __attribute__((unused)) = true;
-
   chr::system_clock::time_point begin = chr::system_clock::now();
   chr::microseconds ms(500);
 
@@ -45,8 +42,6 @@ void foo()
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-
   try 
     {
       std::thread t(foo);

@@ -1,6 +1,6 @@
 // 2005-06-07 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,7 +37,6 @@ void test05()
   typedef streambuf_type::off_type 	off_type;
   typedef size_t 			size_type;
 
-  bool test __attribute__((unused)) = true;
   std::streamoff  			strmof_1;
   testbuf	sb01;
 

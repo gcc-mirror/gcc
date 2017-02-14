@@ -1,6 +1,6 @@
 // 2006-08-05  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2006-2016 Free Software Foundation, Inc.
+// Copyright (C) 2006-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -75,8 +75,6 @@ const unsigned N11 = sizeof(A11) / sizeof(bool);
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::vector<bool>  vec_type;
 
   vec_type v;

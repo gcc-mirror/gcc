@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // 2008-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,8 +24,7 @@
 
 // DR 761. unordered_map needs an at() member function.
 void test01() 
-{ 
-  bool test __attribute__((unused)) = true;
+{
   typedef std::unordered_map<int, double> map_type;
 
   {

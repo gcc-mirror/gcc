@@ -1,5 +1,5 @@
 /* Definitions for computing resource usage of specific insns.
-   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+   Copyright (C) 1999-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "rtl.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "regs.h"
 #include "emit-rtl.h"
@@ -364,6 +365,7 @@ mark_referenced_resources (rtx x, struct resources *res,
 	}
 
       /* ... fall through to other INSN processing ...  */
+      gcc_fallthrough ();
 
     case INSN:
     case JUMP_INSN:
@@ -674,6 +676,7 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 	}
 
       /* ... and also what its RTL says it modifies, if anything.  */
+      gcc_fallthrough ();
 
     case JUMP_INSN:
     case INSN:
@@ -1122,7 +1125,7 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
       rtx_insn *stop_insn = next_active_insn (jump_insn);
 
       if (!ANY_RETURN_P (jump_target))
-	jump_target = next_active_insn (jump_target);
+	jump_target = next_active_insn (as_a<rtx_insn *> (jump_target));
       mark_target_live_regs (insns, jump_target, &new_resources);
       CLEAR_RESOURCE (&set);
       CLEAR_RESOURCE (&needed);

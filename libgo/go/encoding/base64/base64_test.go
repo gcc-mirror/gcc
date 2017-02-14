@@ -85,6 +85,11 @@ var encodingTests = []encodingTest{
 	{RawStdEncoding, rawRef},
 	{RawURLEncoding, rawUrlRef},
 	{funnyEncoding, funnyRef},
+	{StdEncoding.Strict(), stdRef},
+	{URLEncoding.Strict(), urlRef},
+	{RawStdEncoding.Strict(), rawRef},
+	{RawURLEncoding.Strict(), rawUrlRef},
+	{funnyEncoding.Strict(), funnyRef},
 }
 
 var bigtest = testpair{
@@ -221,7 +226,7 @@ func TestDecodeCorrupt(t *testing.T) {
 		_, err := StdEncoding.Decode(dbuf, []byte(tc.input))
 		if tc.offset == -1 {
 			if err != nil {
-				t.Error("Decoder wrongly detected coruption in", tc.input)
+				t.Error("Decoder wrongly detected corruption in", tc.input)
 			}
 			continue
 		}
@@ -230,6 +235,51 @@ func TestDecodeCorrupt(t *testing.T) {
 			testEqual(t, "Corruption in %q at offset %v, want %v", tc.input, int(err), tc.offset)
 		default:
 			t.Error("Decoder failed to detect corruption in", tc)
+		}
+	}
+}
+
+func TestEncodedLen(t *testing.T) {
+	for _, tt := range []struct {
+		enc  *Encoding
+		n    int
+		want int
+	}{
+		{RawStdEncoding, 0, 0},
+		{RawStdEncoding, 1, 2},
+		{RawStdEncoding, 2, 3},
+		{RawStdEncoding, 3, 4},
+		{RawStdEncoding, 7, 10},
+		{StdEncoding, 0, 0},
+		{StdEncoding, 1, 4},
+		{StdEncoding, 2, 4},
+		{StdEncoding, 3, 4},
+		{StdEncoding, 4, 8},
+		{StdEncoding, 7, 12},
+	} {
+		if got := tt.enc.EncodedLen(tt.n); got != tt.want {
+			t.Errorf("EncodedLen(%d): got %d, want %d", tt.n, got, tt.want)
+		}
+	}
+}
+
+func TestDecodedLen(t *testing.T) {
+	for _, tt := range []struct {
+		enc  *Encoding
+		n    int
+		want int
+	}{
+		{RawStdEncoding, 0, 0},
+		{RawStdEncoding, 2, 1},
+		{RawStdEncoding, 3, 2},
+		{RawStdEncoding, 4, 3},
+		{RawStdEncoding, 10, 7},
+		{StdEncoding, 0, 0},
+		{StdEncoding, 4, 3},
+		{StdEncoding, 8, 6},
+	} {
+		if got := tt.enc.DecodedLen(tt.n); got != tt.want {
+			t.Errorf("DecodedLen(%d): got %d, want %d", tt.n, got, tt.want)
 		}
 	}
 }
@@ -388,6 +438,22 @@ func TestDecoderIssue7733(t *testing.T) {
 	}
 	if string(s) != "abcd" {
 		t.Errorf("DecodeString = %q; want abcd", s)
+	}
+}
+
+func TestDecoderIssue15656(t *testing.T) {
+	_, err := StdEncoding.Strict().DecodeString("WvLTlMrX9NpYDQlEIFlnDB==")
+	want := CorruptInputError(22)
+	if !reflect.DeepEqual(want, err) {
+		t.Errorf("Error = %v; want CorruptInputError(22)", err)
+	}
+	_, err = StdEncoding.Strict().DecodeString("WvLTlMrX9NpYDQlEIFlnDA==")
+	if err != nil {
+		t.Errorf("Error = %v; want nil", err)
+	}
+	_, err = StdEncoding.DecodeString("WvLTlMrX9NpYDQlEIFlnDB==")
+	if err != nil {
+		t.Errorf("Error = %v; want nil", err)
 	}
 }
 

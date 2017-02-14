@@ -1,3 +1,129 @@
+2017-02-06  Palmer Dabbelt  <palmer@dabbelt.com>
+
+	* config-list.mki (LIST): Add riscv32-unknown-linux-gun and
+	riscv64-unknown-linux-gnu.
+
+2017-01-31  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* update-copyright.py (Copyright.process_file): Retain original
+	file mode.
+
+2017-01-29  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update-copyright.py: Fix the name of this script in examples.
+
+2017-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Add libhsail-rt to self.default_dirs
+	and call self.add_dir on it.  Add Intel Corporation to external
+	authors.
+
+2017-01-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc_update (files_and_dependencies): Care for "libhsail-rt".
+
+2017-01-23  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* patch_tester.sh (TESTLOGS): Remove
+	$TARGET/libjava/testsuite/libjava.sum.
+
+2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* warn_summary: Remove the -java option.
+
+2017-01-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update-copyright.py (LibJavaFilter): Remove.
+
+2017-01-17  Gerald Pfeifer  <gerald@pfeifer.com>	
+	
+	* gcc_update: Remove entries related to GCJ and libgcj.
+	Complete copyright years and adjust my e-mail address.
+
+2017-01-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc_update: Adjust touch list for ARM.
+
+2017-01-08  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* download_ecj: Remove.
+
+2017-01-05  Martin Liska  <mliska@suse.cz>
+
+	* vimrc: Update indentation definition.
+
+2017-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py (GCCCmdLine): Add include, libcc1, libiberty,
+	libssp, libvtv and lto-plugin to default_dirs.
+
+2017-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py (TestsuiteFilter): Skip params/README.
+	(GCCCmdLine): Remove libjava and libjava/testsuite add_dir.
+
+2016-12-14  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Add new column to output and new sorting
+	option. Fix coding style to not exceed 80 characters.
+	* analyze_brprob_spec.py: Add new sorting
+	option. Fix coding style to not exceed 80 characters.
+
+2016-10-24  Moritz Klammler  <moritz@glammler.eu>
+
+	PR other/61439
+	* download_prerequisites: Conditionally verify checksums of
+	downloaded pacakges.  Add help text.  
+	* prerequisites.md5: New file.
+	* prerequisites.sha512: New file.
+
+2016-10-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* check_GNU_style.sh (remove_testsuite): New function.
+	Use it to remove testsuite from the diff.
+
+2016-09-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* dg-extract-results.sh: Revert bogus change.
+
+2016-09-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* dg-extract-results.py: Report DejaGnu error in the final
+	summary.
+	* dg-extract-results.sh: Likewise.
+
+2016-09-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* compare_tests: Take ERROR messages into account when
+          comparing.
+
+2016-08-17  Martin Liska  <mliska@suse.cz>
+
+	* mark_spam.py: Mark as spam all comments done by a creator.
+
+2016-08-15  Martin Liska  <mliska@suse.cz>
+
+	* mark_spam.py: Add error handling and reset
+	another properties of attachments and bugs.
+
+2016-08-11  Martin Liska  <mliska@suse.cz>
+
+	* mark_spam.py: Mark attachments as obsolete and rename them.
+
+2016-08-03  Eric Gallager  <egall@gwmail.gwu.edu>
+
+	* download_prerequisites: Explicitly remove existing symlinks
+	before trying to create new ones.
+
+2016-07-28  Martin Liska  <mliska@suse.cz>
+
+	* mark_spam.py: New file.
+
+2016-07-21  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: If there's no loop, do not calculate
+	average number of loop iterations.
+
 2016-06-24  Martin Liska  <mliska@suse.cz>
 
 	* analyze_brprob.py: Parse and display average number

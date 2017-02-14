@@ -9,7 +9,7 @@ template<typename X> struct auto_ptr {
    typedef X element_type;
 
    explicit auto_ptr(X* p =0) throw() : px(p) {}
-   auto_ptr(auto_ptr& r) throw() : px(r.release()) {} // { dg-message "note" } candidate
+   auto_ptr(auto_ptr& r) throw() : px(r.release()) {} // { dg-message "note" "" { target c++14_down } } candidate
    template<typename Y>
       auto_ptr(auto_ptr<Y>& r) throw() : px(r.release()) {}
 
@@ -44,12 +44,12 @@ struct Derived : Base { Derived() {} };
 
 auto_ptr<Derived> f() { auto_ptr<Derived> null(0); return null; }
 void g(auto_ptr<Derived>) { }
-void h(auto_ptr<Base>) { }	// { dg-message "initializing" }
+void h(auto_ptr<Base>) { }	// { dg-message "initializing" "" { target c++14_down } }
 
 int main() {
     auto_ptr<Base> x(f());
     auto_ptr<Derived> y(f());
     x = y;
     g(f());
-    h(f());			// { dg-error "rvalue" "" } no usable copy ctor
+    h(f());			// { dg-error "rvalue" "" { target c++14_down } } no usable copy ctor
 }

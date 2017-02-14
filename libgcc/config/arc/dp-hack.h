@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2017 Free Software Foundation, Inc.
    Contributor: Joern Rennecke <joern.rennecke@embecosm.com>
 		on behalf of Synopsys Inc.
 
@@ -30,21 +30,23 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define FINE_GRAINED_LIBRARIES
 #define ARC_DP_DEBUG 1
-#if !defined (__ARC_NORM__) || ARC_DP_DEBUG
+#define ARC_OPTFPE (defined (__ARC700__) || defined (__ARC_FPX_QUARK__))
+
+#if !ARC_OPTFPE || ARC_DP_DEBUG
 #define L_pack_df
 #define L_unpack_df
 #define L_make_df
 #define L_thenan_df
 #define L_sf_to_df
 #endif
-#ifndef __ARC_NORM__
+#if !ARC_OPTFPE
 #define L_addsub_df
 #elif ARC_DP_DEBUG
 #define L_addsub_df
 #define __adddf3 __adddf3_c
 #define __subdf3 __subdf3_c
 #endif
-#ifndef __ARC_NORM__
+#if !ARC_OPTFPE
 #define L_mul_df
 #define L_div_df
 #elif (!defined (__ARC700__) && !defined (__ARC_MUL64__) \
@@ -59,7 +61,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define L_div_df
 #define __divdf3 __divdf3_c
 #endif
-#ifndef __ARC_NORM__
+#if !ARC_OPTFPE
 #define L_df_to_sf
 #define L_si_to_df
 #define L_df_to_si
@@ -77,7 +79,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define L_usi_to_df
 #define __floatunsidf __floatunsidf_c
 #endif
-#ifndef __ARC_NORM__
+#if !ARC_OPTFPE
 #define L_fpcmp_parts_df
 #define L_compare_df
 #define L_eq_df

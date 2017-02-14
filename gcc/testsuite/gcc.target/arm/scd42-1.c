@@ -1,6 +1,7 @@
 /* Verify that mov is preferred on XScale for loading a 1 byte constant. */
 /* { dg-do compile } */
-/* { dg-skip-if "incompatible options" { arm*-*-* } { "-march=*" } { "" } } */
+/* { dg-skip-if "Test is specific to Xscale" { arm*-*-* } { "-march=*" } { "-march=xscale" } } */
+/* { dg-skip-if "Test is specific to Xscale" { arm*-*-* } { "-mcpu=*" } { "-mcpu=xscale" } } */
 /* { dg-skip-if "do not override -mfloat-abi" { *-*-* } { "-mfloat-abi=*" } { "-mfloat-abi=softfp" } } */
 /* { dg-options "-mcpu=xscale -O -mfloat-abi=softfp" } */
 

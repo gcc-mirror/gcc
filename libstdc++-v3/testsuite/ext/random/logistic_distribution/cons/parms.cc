@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2014-07-11  Edward M. Smith-Rowland  <3dw4rd@verizon.net>
 //
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,6 @@
 void
 test01()
 {
-  bool test [[gnu::unused]] = true;
-
   __gnu_cxx::logistic_distribution<> u(1.5, 3.0);
   VERIFY( u.a() == 1.5 );
   VERIFY( u.b() == 3.0 );
@@ -40,9 +38,22 @@ test01()
   VERIFY( u.max() == std::numeric_limits<result_type>::max() );
 }
 
-int
-main()
+void
+test02()
+{
+  using param_type = __gnu_cxx::logistic_distribution<>::param_type;
+  const param_type p(1.5, 3.0);
+  __gnu_cxx::logistic_distribution<> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
+
+  typedef __gnu_cxx::logistic_distribution<>::result_type result_type;
+  VERIFY( u.min() == -std::numeric_limits<result_type>::max() );
+  VERIFY( u.max() == std::numeric_limits<result_type>::max() );
+}
+
+int main()
 {
   test01();
-  return 0;
+  test02();
 }

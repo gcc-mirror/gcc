@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015 Intel Corporation.
+ * Copyright 2010-2016 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -147,12 +147,12 @@ extern "C" {
 COIACCESSAPI
 COIRESULT
 COIEventWait(
-            uint16_t        in_NumEvents,
-    const   COIEVENT*       in_pEvents,
-            int32_t         in_TimeoutMilliseconds,
-            uint8_t         in_WaitForAll,
-            uint32_t*       out_pNumSignaled,
-            uint32_t*       out_pSignaledIndices);
+    uint16_t        in_NumEvents,
+    const   COIEVENT       *in_pEvents,
+    int32_t         in_TimeoutMilliseconds,
+    uint8_t         in_WaitForAll,
+    uint32_t       *out_pNumSignaled,
+    uint32_t       *out_pSignaledIndices);
 
 
 
@@ -174,7 +174,7 @@ COIEventWait(
 COIACCESSAPI
 COIRESULT
 COIEventRegisterUserEvent(
-            COIEVENT* out_pEvent);
+    COIEVENT *out_pEvent);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -188,12 +188,12 @@ COIEventRegisterUserEvent(
 ///
 /// @return COI_INVALID_HANDLE if in_Event is not a UserEvent
 ///
-/// @return COI_SUCCESS an event is successfully registered
+/// @return COI_SUCCESS if an event is successfully unregistered
 ///
 COIACCESSAPI
 COIRESULT
 COIEventUnregisterUserEvent(
-            COIEVENT in_Event);
+    COIEVENT in_Event);
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -225,9 +225,9 @@ COIEventUnregisterUserEvent(
 ///         they can interpret it as they choose.
 ///
 typedef void (*COI_EVENT_CALLBACK)(
-            COIEVENT            in_Event,
+    COIEVENT            in_Event,
     const   COIRESULT           in_Result,
-    const   void*               in_UserData);
+    const   void               *in_UserData);
 
 
 
@@ -285,10 +285,10 @@ typedef void (*COI_EVENT_CALLBACK)(
 COIACCESSAPI
 COIRESULT
 COIEventRegisterCallback(
-      const COIEVENT                in_Event,
-            COI_EVENT_CALLBACK      in_Callback,
-      const void*                   in_UserData,
-      const uint64_t                in_Flags);
+    const COIEVENT                in_Event,
+    COI_EVENT_CALLBACK      in_Callback,
+    const void                   *in_UserData,
+    const uint64_t                in_Flags);
 
 
 

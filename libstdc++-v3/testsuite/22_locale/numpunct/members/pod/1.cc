@@ -1,6 +1,6 @@
 // 2003-07-09  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,8 +34,6 @@ void test01()
   typedef numpunct<pod_ushort>::string_type 	string_type;
   typedef basic_stringbuf<pod_ushort> 	stringbuf_type;
   typedef basic_ostream<pod_ushort> 		ostream_type;
-  
-  bool test __attribute__((unused)) = true;
 
   // Pre-cache sanity check.
   const locale 	loc(locale::classic(), new numpunct<pod_ushort>);

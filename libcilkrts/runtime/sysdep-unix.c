@@ -465,7 +465,7 @@ char* sysdep_reset_jump_buffers_for_resume(cilk_fiber* fiber,
 
     CILK_ASSERT(fiber);
     void* sp = (void*)get_sp_for_executing_sf(cilk_fiber_get_stack_base(fiber), ff, sf);
-    SP(sf) = sp;
+    SP(sf) = CILK_ADJUST_SP(sp);
 
     /* Debugging: make sure stack is accessible. */
     ((volatile char *)sp)[-1];
@@ -495,7 +495,7 @@ NORETURN sysdep_longjmp_to_sf(char* new_sp,
 #endif
 
     // Set the stack pointer.
-    SP(sf) = new_sp;
+    SP(sf) = CILK_ADJUST_SP(new_sp);
 
 #ifdef RESTORE_X86_FP_STATE
     if (CILK_FRAME_VERSION_VALUE(sf->flags) >= 1) {
@@ -568,7 +568,7 @@ static const char *get_runtime_path ()
 {
     // dladdr is a glibc extension. If it's available, use it to find the path
     // for libcilkrts.so
-#ifdef _GNU_SOURCE
+#if HAVE_DLADDR
     Dl_info info;
     if (0 != dladdr(dummy_function, &info))
         return info.dli_fname;
@@ -689,7 +689,6 @@ static void write_version_file (global_state_t *g, int n)
     // ==================
     // System cores: 8
     // Cilk workers requested: 8
-    // Thread creator: Private
 
     fprintf(fp, "\nThread information\n");
     fprintf(fp, "==================\n");
@@ -699,11 +698,6 @@ static void write_version_file (global_state_t *g, int n)
     fprintf(fp, "System cores: %d\n", (int)sysconf(_SC_NPROCESSORS_ONLN));
 #endif    
     fprintf(fp, "Cilk workers requested: %d\n", n);
-#if (PARALLEL_THREAD_CREATE)
-        fprintf(fp, "Thread creator: Private (parallel)\n");
-#else
-        fprintf(fp, "Thread creator: Private\n");
-#endif
 
     if (fp != stderr && fp != stdout) fclose(fp);
     else fflush(fp); // flush the handle buffer if it is stdout or stderr.

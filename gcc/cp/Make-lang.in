@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU C++.
-#   Copyright (C) 1994-2016 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2017 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -164,7 +164,7 @@ check-c++ : check-g++
 
 # Run the testsuite in C++1z mode.
 check-c++1z:
-	$(MAKE) GXX_TESTSUITE_STDS=1z check-g++
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS)" GXX_TESTSUITE_STDS=1z check-g++
 
 # Run the testsuite in all standard conformance levels.
 check-c++-all:

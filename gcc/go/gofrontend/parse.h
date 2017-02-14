@@ -81,7 +81,8 @@ class Parse
     Expression* expr;
 
     Type_switch()
-      : found(false), name(), location(UNKNOWN_LOCATION), expr(NULL)
+        : found(false), name(), location(Linemap::unknown_location()),
+          expr(NULL)
     { }
   };
 
@@ -209,7 +210,7 @@ class Parse
   void simple_var_decl_or_assignment(const std::string&, Location,
 				     bool may_be_composite_lit,
 				     Range_clause*, Type_switch*);
-  void function_decl(bool saw_nointerface);
+  void function_decl(unsigned int pragmas);
   Typed_identifier* receiver();
   Expression* operand(bool may_be_sink, bool *is_parenthesized);
   Expression* enclosing_var_reference(Named_object*, Named_object*,

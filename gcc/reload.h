@@ -1,5 +1,5 @@
 /* Communication between reload.c, reload1.c and the rest of compiler.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -159,9 +159,6 @@ struct target_reload {
      which these are valid is the same as spill_indirect_levels, above.  */
   bool x_indirect_symref_ok;
 
-  /* Nonzero if an address (plus (reg frame_pointer) (reg ...)) is valid.  */
-  bool x_double_reg_address_ok;
-
   /* Nonzero if indirect addressing is supported on the machine; this means
      that spilling (REG n) does not require reloading it into a register in
      order to do (MEM (REG n)) or (MEM (PLUS (REG n) (CONST_INT c))).  The
@@ -180,6 +177,10 @@ struct target_reload {
   machine_mode (x_regno_save_mode
 		     [FIRST_PSEUDO_REGISTER]
 		     [MAX_MOVE_MAX / MIN_UNITS_PER_WORD + 1]);
+
+  /* Nonzero if an address (plus (reg frame_pointer) (reg ...)) is valid
+     in the given mode.  */
+  bool x_double_reg_address_ok[MAX_MACHINE_MODE];
 
   /* We will only make a register eligible for caller-save if it can be
      saved in its widest mode with a simple SET insn as long as the memory

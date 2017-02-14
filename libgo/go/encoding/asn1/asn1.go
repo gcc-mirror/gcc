@@ -393,7 +393,7 @@ func isPrintable(b byte) bool {
 // byte slice and returns it.
 func parseIA5String(bytes []byte) (ret string, err error) {
 	for _, b := range bytes {
-		if b >= 0x80 {
+		if b >= utf8.RuneSelf {
 			err = SyntaxError{"IA5String contains invalid character"}
 			return
 		}
@@ -459,6 +459,11 @@ func parseTagAndLength(bytes []byte, initOffset int) (ret tagAndLength, offset i
 	if ret.tag == 0x1f {
 		ret.tag, offset, err = parseBase128Int(bytes, offset)
 		if err != nil {
+			return
+		}
+		// Tags should be encoded in minimal form.
+		if ret.tag < 0x1f {
+			err = SyntaxError{"non-minimal tag"}
 			return
 		}
 	}
@@ -836,6 +841,13 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 	case reflect.Struct:
 		structType := fieldType
 
+		for i := 0; i < structType.NumField(); i++ {
+			if structType.Field(i).PkgPath != "" {
+				err = StructuralError{"struct contains unexported fields"}
+				return
+			}
+		}
+
 		if structType.NumField() > 0 &&
 			structType.Field(0).Type == rawContentsType {
 			bytes := bytes[initOffset:offset]
@@ -964,7 +976,7 @@ func setDefaultValue(v reflect.Value, params fieldParameters) (ok bool) {
 // The following tags on struct fields have special meaning to Unmarshal:
 //
 //	application	specifies that a APPLICATION tag is used
-//	default:x	sets the default value for optional integer fields
+//	default:x	sets the default value for optional integer fields (only used if optional is also present)
 //	explicit	specifies that an additional, explicit tag wraps the implicit one
 //	optional	marks the field as ASN.1 OPTIONAL
 //	set		causes a SET, rather than a SEQUENCE type to be expected

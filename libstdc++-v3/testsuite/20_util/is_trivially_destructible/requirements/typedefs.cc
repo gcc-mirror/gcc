@@ -1,8 +1,8 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 //
 // 2012-04-15  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2012-2016 Free Software Foundation, Inc.
+// Copyright (C) 2012-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,8 +23,6 @@
 // NB: This file is for testing type_traits with NO OTHER INCLUDES.
 
 #include <type_traits>
-
-// { dg-do compile }
 
 void test01()
 {

@@ -710,4 +710,4 @@ f4 (char *x, char **y, int z, char w[64])
   return z;
 }
 
-/* { dg-prune-output "\[\n\r\]*will always overflow\[\n\r\]*" } */
+/* { dg-prune-output "\[\n\r\]*writing\[\n\r\]*" } */

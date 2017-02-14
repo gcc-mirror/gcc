@@ -2,7 +2,7 @@ ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
 
 if LIBMPX_SUPPORTED
 # May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 AM_CPPFLAGS = -I$(top_srcdir)/..
 AM_CFLAGS = $(XCFLAGS)

@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime class related functions
-   Copyright (C) 1993-2016 Free Software Foundation, Inc.
+   Copyright (C) 1993-2017 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GCC.
@@ -31,8 +31,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <string.h>                     /* For memcpy()  */
 
 #if OBJC_WITH_GC
-# include <gc.h>
-# include <gc_typed.h>
+# include <gc/gc.h>
+# include <gc/gc_typed.h>
 #endif
 
 /* FIXME: The semantics of extraBytes are not really clear.  */

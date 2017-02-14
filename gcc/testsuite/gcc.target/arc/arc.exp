@@ -1,15 +1,15 @@
-# Copyright (C) 2007-2016 Free Software Foundation, Inc.
+# Copyright (C) 2007-2017 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
@@ -23,6 +23,76 @@ if ![istarget arc*-*-*] then {
 
 # Load support procs.
 load_lib gcc-dg.exp
+
+# Return 1 if this is a compiler supporting ARCv2 EM as default processor
+proc check_effective_target_arcem { } {
+    return [check_no_compiler_messages arcem assembly {
+	#if !defined(__ARCEM__)
+	#error No ARC EM
+	#endif
+    }]
+}
+
+# Return 1 if we compile for ARC700
+proc check_effective_target_arc700 { } {
+    return [check_no_compiler_messages arc700 assembly {
+	#if !defined(__ARC700__)
+	#error No ARC 700
+	#endif
+    }]
+}
+
+# Return 1 if we compile for ARC6xx
+proc check_effective_target_arc6xx { } {
+    return [check_no_compiler_messages arc6xx assembly {
+	#if !defined(__ARC600__) && !defined(__ARC601__)
+	#error No ARC 6xx
+	#endif
+    }]
+}
+
+# Return 1 if we have mpy
+proc check_effective_target_arcmpy { } {
+    return [check_no_compiler_messages arcmpy assembly {
+	#if !defined(__ARC_MPY__)
+	#error No MPY
+	#endif
+    }]
+}
+
+# Return 1 if this is a compiler supporting ARC HS as default processor
+proc check_effective_target_archs { } {
+    return [check_no_compiler_messages archs assembly {
+	#if !defined(__ARCHS__)
+	#error No ARC HS
+	#endif
+    }]
+}
+
+proc check_cl { flags } {
+    return [check_no_compiler_messages check_$flags assembly {
+	#if !defined(__arc__)
+	#error Extra mcpu options
+	#endif
+    } "$flags"]
+}
+
+# Return 1 if there are no extra mcpu options given via command line
+proc check_effective_target_clmcpu { } {
+    if { [check_cl "-mcpu=arc700"]
+	 && [check_cl "-mcpu=arcem" ] } {
+	return 1
+    }
+    return 0
+}
+
+proc check_effective_target_barrelshifter { } {
+    return [check_no_compiler_messages barrelshifter assembly {
+	#if !defined(__ARC_BARREL_SHIFTER__)
+	#error No barrel shifter for this confi
+	#endif
+    }]
+}
 
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS

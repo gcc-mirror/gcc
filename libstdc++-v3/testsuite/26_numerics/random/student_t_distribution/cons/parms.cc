@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 //
 // 2008-11-24  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2008-2016 Free Software Foundation, Inc.
+// Copyright (C) 2008-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,10 +29,21 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::student_t_distribution<> u(1.5);
   VERIFY( u.n() == 1.5 );
+  typedef std::student_t_distribution<>::result_type result_type;
+  VERIFY( u.min() == std::numeric_limits<result_type>::lowest() );
+  VERIFY( u.max() == std::numeric_limits<result_type>::max() );
+}
+
+void
+test02()
+{
+  using param_type = std::student_t_distribution<>::param_type;
+  const param_type p(1.5);
+  std::student_t_distribution<> u(p);
+  VERIFY( u.param() == p );
+  VERIFY( u.param() != param_type{} );
   typedef std::student_t_distribution<>::result_type result_type;
   VERIFY( u.min() == std::numeric_limits<result_type>::lowest() );
   VERIFY( u.max() == std::numeric_limits<result_type>::max() );
@@ -41,5 +52,5 @@ test01()
 int main()
 {
   test01();
-  return 0;
+  test02();
 }

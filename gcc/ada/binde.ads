@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,30 +23,38 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines to determine elaboration order
+--  This package contains the routine that determines library-level elaboration
+--  order.
 
 with ALI;   use ALI;
-with Table;
+with Namet; use Namet;
 with Types; use Types;
+
+with GNAT.Dynamic_Tables;
 
 package Binde is
 
-   --  The following table records the chosen elaboration order. It is used
-   --  by Gen_Elab_Call to generate the sequence of elaboration calls. Note
-   --  that units are included in this table even if they have no elaboration
+   package Unit_Id_Tables is new GNAT.Dynamic_Tables
+     (Table_Component_Type => Unit_Id,
+      Table_Index_Type     => Nat,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 500,
+      Table_Increment      => 200);
+   use Unit_Id_Tables;
+
+   subtype Unit_Id_Table is Unit_Id_Tables.Instance;
+   subtype Unit_Id_Array is Unit_Id_Tables.Table_Type;
+
+   procedure Find_Elab_Order
+     (Elab_Order          : out Unit_Id_Table;
+      First_Main_Lib_File : File_Name_Type);
+   --  Determine elaboration order.
+   --
+   --  The Elab_Order table records the chosen elaboration order. It is used by
+   --  Gen_Elab_Calls to generate the sequence of elaboration calls. Note that
+   --  units are included in this table even if they have no elaboration
    --  routine, since the table is also used to drive the generation of object
-   --  files in the binder output. Gen_Elab_Call skips any units that have no
+   --  files in the binder output. Gen_Elab_Calls skips any units that have no
    --  elaboration routine.
-
-   package Elab_Order is new Table.Table (
-     Table_Component_Type => Unit_Id,
-     Table_Index_Type     => Nat,
-     Table_Low_Bound      => 1,
-     Table_Initial        => 500,
-     Table_Increment      => 200,
-     Table_Name           => "Elab_Order");
-
-   procedure Find_Elab_Order;
-   --  Determine elaboration order
 
 end Binde;

@@ -1,6 +1,6 @@
 // 2007-08-02  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,8 +23,6 @@
 // DR 660. Missing Bitwise Operations.
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   for (int i1 = 0; i1 < 1000; ++i1)
     for (int i2 = 0; i2 < 1000; ++i2)
       {

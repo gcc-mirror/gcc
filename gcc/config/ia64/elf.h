@@ -1,6 +1,6 @@
 /* Definitions for embedded ia64-elf target.
 
-Copyright (C) 2000-2016 Free Software Foundation, Inc.
+Copyright (C) 2000-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -64,7 +64,5 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 			 %{!symbolic: \
 			  %{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}}\
 			crti.o%s crtbegin.o%s"
-
-#define IA64_NO_LIBGCC_TFMODE
 
 /* End of elf.h */

@@ -1,5 +1,5 @@
 /* Demangler for the D programming language
-   Copyright 2014, 2015, 2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2017 Free Software Foundation, Inc.
    Written by Iain Buclaw (ibuclaw@gdcproject.org)
 
 This file is part of the libiberty library.

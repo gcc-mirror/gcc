@@ -1,4 +1,4 @@
-# Copyright (C) 2013-2016 Free Software Foundation, Inc.
+# Copyright (C) 2013-2017 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,6 +18,10 @@
 load_lib gcc-dg.exp
 load_lib torture-options.exp
 
+if { ![check_effective_target_int32] } {
+    return
+}
+
 # Initialize `dg'.
 torture-init
 dg-init
@@ -31,10 +35,6 @@ set SSO_TORTURE_OPTIONS [list \
 	{ -Og -g } ]
 
 set-torture-options $SSO_TORTURE_OPTIONS
-
-if { ![check_effective_target_int32] } {
-    return
-}
 
 # Main loop.
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] "" ""

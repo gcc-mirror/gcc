@@ -1,6 +1,6 @@
 // { dg-require-namedlocale "en_US.UTF-8" }
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,6 @@ const char name_04[] = "tmp_11389-4";
 void test04()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   filebuf fbout;
   fbout.open(name_04, ios_base::out);

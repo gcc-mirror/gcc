@@ -1,5 +1,5 @@
 /* Dwarf2 Call Frame Information helper routines.
-   Copyright (C) 1992-2016 Free Software Foundation, Inc.
+   Copyright (C) 1992-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "tree-pass.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "emit-rtl.h"
 #include "stor-layout.h"
@@ -1235,7 +1236,7 @@ dwarf2out_frame_debug_cfa_register (rtx set)
   reg_save (sregno, dregno, 0);
 }
 
-/* A subroutine of dwarf2out_frame_debug, process a REG_CFA_EXPRESSION note. */
+/* A subroutine of dwarf2out_frame_debug, process a REG_CFA_EXPRESSION note.  */
 
 static void
 dwarf2out_frame_debug_cfa_expression (rtx set)
@@ -1265,6 +1266,29 @@ dwarf2out_frame_debug_cfa_expression (rtx set)
      and, as above, we could manage flushing for epilogues.  */
   add_cfi (cfi);
   update_row_reg_save (cur_row, regno, cfi);
+}
+
+/* A subroutine of dwarf2out_frame_debug, process a REG_CFA_VAL_EXPRESSION
+   note.  */
+
+static void
+dwarf2out_frame_debug_cfa_val_expression (rtx set)
+{
+  rtx dest = SET_DEST (set);
+  gcc_assert (REG_P (dest));
+
+  rtx span = targetm.dwarf_register_span (dest);
+  gcc_assert (!span);
+
+  rtx src = SET_SRC (set);
+  dw_cfi_ref cfi = new_cfi ();
+  cfi->dw_cfi_opc = DW_CFA_val_expression;
+  cfi->dw_cfi_oprnd1.dw_cfi_reg_num = dwf_regno (dest);
+  cfi->dw_cfi_oprnd2.dw_cfi_loc
+    = mem_loc_descriptor (src, GET_MODE (src),
+			  GET_MODE (dest), VAR_INIT_STATUS_INITIALIZED);
+  add_cfi (cfi);
+  update_row_reg_save (cur_row, dwf_regno (dest), cfi);
 }
 
 /* A subroutine of dwarf2out_frame_debug, process a REG_CFA_RESTORE note.  */
@@ -2033,10 +2057,16 @@ dwarf2out_frame_debug (rtx_insn *insn)
 	break;
 
       case REG_CFA_EXPRESSION:
+      case REG_CFA_VAL_EXPRESSION:
 	n = XEXP (note, 0);
 	if (n == NULL)
 	  n = single_set (insn);
-	dwarf2out_frame_debug_cfa_expression (n);
+
+	if (REG_NOTE_KIND (note) == REG_CFA_EXPRESSION)
+	  dwarf2out_frame_debug_cfa_expression (n);
+	else
+	  dwarf2out_frame_debug_cfa_val_expression (n);
+
 	handled_one = true;
 	break;
 
@@ -2068,7 +2098,9 @@ dwarf2out_frame_debug (rtx_insn *insn)
 	handled_one = true;
 	break;
 
+      case REG_CFA_TOGGLE_RA_MANGLE:
       case REG_CFA_WINDOW_SAVE:
+	/* We overload both of these operations onto the same DWARF opcode.  */
 	dwarf2out_frame_debug_cfa_window_save ();
 	handled_one = true;
 	break;
@@ -2238,6 +2270,8 @@ add_cfis_to_fde (void)
     }
 }
 
+static void dump_cfi_row (FILE *f, dw_cfi_row *row);
+
 /* If LABEL is the start of a trace, then initialize the state of that
    trace from CUR_TRACE and CUR_ROW.  */
 
@@ -2281,7 +2315,21 @@ maybe_record_trace_start (rtx_insn *start, rtx_insn *origin)
       /* We ought to have the same state incoming to a given trace no
 	 matter how we arrive at the trace.  Anything else means we've
 	 got some kind of optimization error.  */
-      gcc_checking_assert (cfi_row_equal_p (cur_row, ti->beg_row));
+#if CHECKING_P
+      if (!cfi_row_equal_p (cur_row, ti->beg_row))
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Inconsistent CFI state!\n");
+	      fprintf (dump_file, "SHOULD have:\n");
+	      dump_cfi_row (dump_file, ti->beg_row);
+	      fprintf (dump_file, "DO have:\n");
+	      dump_cfi_row (dump_file, cur_row);
+	    }
+
+	  gcc_unreachable ();
+	}
+#endif
 
       /* The args_size is allowed to conflict if it isn't actually used.  */
       if (ti->beg_true_args_size != args_size)
@@ -2354,8 +2402,10 @@ create_trace_edges (rtx_insn *insn)
 	}
       else if (computed_jump_p (insn))
 	{
-	  for (rtx_insn_list *lab = forced_labels; lab; lab = lab->next ())
-	    maybe_record_trace_start (lab->insn (), insn);
+	  rtx_insn *temp;
+	  unsigned int i;
+	  FOR_EACH_VEC_SAFE_ELT (forced_labels, i, temp)
+	    maybe_record_trace_start (temp, insn);
 	}
       else if (returnjump_p (insn))
 	;
@@ -3013,7 +3063,8 @@ output_cfa_loc (dw_cfi_ref cfi, int for_eh)
   dw_loc_descr_ref loc;
   unsigned long size;
 
-  if (cfi->dw_cfi_opc == DW_CFA_expression)
+  if (cfi->dw_cfi_opc == DW_CFA_expression
+      || cfi->dw_cfi_opc == DW_CFA_val_expression)
     {
       unsigned r =
 	DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, for_eh);
@@ -3039,7 +3090,8 @@ output_cfa_loc_raw (dw_cfi_ref cfi)
   dw_loc_descr_ref loc;
   unsigned long size;
 
-  if (cfi->dw_cfi_opc == DW_CFA_expression)
+  if (cfi->dw_cfi_opc == DW_CFA_expression
+      || cfi->dw_cfi_opc == DW_CFA_val_expression)
     {
       unsigned r =
 	DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, 1);
@@ -3186,6 +3238,7 @@ output_cfi (dw_cfi_ref cfi, dw_fde_ref fde, int for_eh)
 
 	case DW_CFA_def_cfa_expression:
 	case DW_CFA_expression:
+	case DW_CFA_val_expression:
 	  output_cfa_loc (cfi, for_eh);
 	  break;
 
@@ -3300,16 +3353,13 @@ output_cfi_directive (FILE *f, dw_cfi_ref cfi)
       break;
 
     case DW_CFA_def_cfa_expression:
-      if (f != asm_out_file)
-	{
-	  fprintf (f, "\t.cfi_def_cfa_expression ...\n");
-	  break;
-	}
-      /* FALLTHRU */
     case DW_CFA_expression:
+    case DW_CFA_val_expression:
       if (f != asm_out_file)
 	{
-	  fprintf (f, "\t.cfi_cfa_expression ...\n");
+	  fprintf (f, "\t.cfi_%scfa_%sexpression ...\n",
+		   cfi->dw_cfi_opc == DW_CFA_def_cfa_expression ? "def_" : "",
+		   cfi->dw_cfi_opc == DW_CFA_val_expression ? "val_" : "");
 	  break;
 	}
       fprintf (f, "\t.cfi_escape %#x,", cfi->dw_cfi_opc);

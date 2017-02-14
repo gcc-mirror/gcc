@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2011-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,15 +16,13 @@
 // <http://www.gnu.org/licenses/>.
 
 // 21.4.6.5 basic_string::pop_back
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 #include <string>
 #include <testsuite_hooks.h>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::wstring cstr(L"Badger");
   std::wstring str = cstr;
   str.pop_back();

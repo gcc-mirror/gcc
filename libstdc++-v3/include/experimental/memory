@@ -1,6 +1,6 @@
 // <experimental/memory> -*- C++ -*-
 
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,8 +42,8 @@
 #include <memory>
 #include <type_traits>
 #include <utility>
-#include <functional>
 #include <experimental/bits/shared_ptr.h>
+#include <bits/functional_hash.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -124,9 +124,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr __pointer
       release() noexcept
       {
-	__pointer tmp = get();
+	__pointer __tmp = get();
 	reset();
-	return tmp;
+	return __tmp;
       }
 
       constexpr void

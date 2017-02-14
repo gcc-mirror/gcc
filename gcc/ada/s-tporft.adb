@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 2002-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,7 +66,7 @@ begin
      (Self_Id, null, Null_Address, Null_Task,
       Foreign_Task_Elaborated'Access,
       System.Priority'First, System.Multiprocessors.Not_A_Specific_CPU, null,
-      Task_Info.Unspecified_Task_Info, 0, Self_Id, Succeeded);
+      Task_Info.Unspecified_Task_Info, 0, 0, Self_Id, Succeeded);
    Unlock_RTS;
    pragma Assert (Succeeded);
 

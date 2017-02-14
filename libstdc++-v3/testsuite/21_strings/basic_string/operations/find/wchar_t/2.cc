@@ -1,6 +1,6 @@
 // 1999-06-09 bkoz
 
-// Copyright (C) 1994-2016 Free Software Foundation, Inc.
+// Copyright (C) 1994-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,9 +22,8 @@
 #include <string>
 #include <testsuite_hooks.h>
 
-bool test02(void)
+void test02(void)
 {
-  bool test __attribute__((unused)) = true;
   typedef std::wstring::size_type csize_type;
   csize_type npos = std::wstring::npos;
   csize_type csz01, csz02;
@@ -82,7 +81,6 @@ bool test02(void)
   csz01 = str01.find_first_of(L'z');
   csz02 = str01.size() - 1;
   VERIFY( csz01 == csz02 );
-  return test;
 }
 
 int main()

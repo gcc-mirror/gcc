@@ -1,6 +1,6 @@
 /* Plugin for offload execution on Intel MIC devices.
 
-   Copyright (C) 2014-2015 Free Software Foundation, Inc.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
 
    Contributed by Ilya Verbin <ilya.verbin@intel.com>.
 

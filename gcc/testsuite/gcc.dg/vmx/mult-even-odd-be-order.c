@@ -4,18 +4,18 @@
 
 static void test()
 {
-  vector unsigned char vuca = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-  vector unsigned char vucb = {2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3};
-  vector signed char vsca = {-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7};
-  vector signed char vscb = {2,-3,2,-3,2,-3,2,-3,2,-3,2,-3,2,-3,2,-3};
-  vector unsigned short vusa = {0,1,2,3,4,5,6,7};
-  vector unsigned short vusb = {2,3,2,3,2,3,2,3};
-  vector signed short vssa = {-4,-3,-2,-1,0,1,2,3};
-  vector signed short vssb = {2,-3,2,-3,2,-3,2,-3};
-  vector unsigned short vuse, vuso;
-  vector signed short vsse, vsso;
-  vector unsigned int vuie, vuio;
-  vector signed int vsie, vsio;
+  volatile vector unsigned char vuca = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+  volatile vector unsigned char vucb = {2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3};
+  volatile vector signed char vsca = {-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7};
+  volatile vector signed char vscb = {2,-3,2,-3,2,-3,2,-3,2,-3,2,-3,2,-3,2,-3};
+  volatile vector unsigned short vusa = {0,1,2,3,4,5,6,7};
+  volatile vector unsigned short vusb = {2,3,2,3,2,3,2,3};
+  volatile vector signed short vssa = {-4,-3,-2,-1,0,1,2,3};
+  volatile vector signed short vssb = {2,-3,2,-3,2,-3,2,-3};
+  volatile vector unsigned short vuse, vuso;
+  volatile vector signed short vsse, vsso;
+  volatile vector unsigned int vuie, vuio;
+  volatile vector signed int vsie, vsio;
 
   vuse = vec_mule (vuca, vucb);
   vuso = vec_mulo (vuca, vucb);

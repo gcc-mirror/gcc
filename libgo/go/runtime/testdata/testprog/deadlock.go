@@ -1,4 +1,4 @@
-// Copyright 2015 The Go Authors.  All rights reserved.
+// Copyright 2015 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -30,6 +30,9 @@ func init() {
 	register("PanicAfterGoexit", PanicAfterGoexit)
 	register("RecoveredPanicAfterGoexit", RecoveredPanicAfterGoexit)
 	register("PanicTraceback", PanicTraceback)
+	register("GoschedInPanic", GoschedInPanic)
+	register("SyscallInPanic", SyscallInPanic)
+	register("PanicLoop", PanicLoop)
 }
 
 func SimpleDeadlock() {
@@ -152,6 +155,29 @@ func GoexitInPanic() {
 	runtime.Goexit()
 }
 
+type errorThatGosched struct{}
+
+func (errorThatGosched) Error() string {
+	runtime.Gosched()
+	return "errorThatGosched"
+}
+
+func GoschedInPanic() {
+	panic(errorThatGosched{})
+}
+
+type errorThatPrint struct{}
+
+func (errorThatPrint) Error() string {
+	fmt.Println("1")
+	fmt.Println("2")
+	return "3"
+}
+
+func SyscallInPanic() {
+	panic(errorThatPrint{})
+}
+
 func PanicAfterGoexit() {
 	defer func() {
 		panic("hello")
@@ -188,4 +214,14 @@ func pt2() {
 		panic("panic pt2")
 	}()
 	panic("hello")
+}
+
+type panicError struct{}
+
+func (*panicError) Error() string {
+	panic("double error")
+}
+
+func PanicLoop() {
+	panic(&panicError{})
 }

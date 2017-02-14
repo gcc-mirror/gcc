@@ -1,8 +1,9 @@
-/* Test intermediate rounding of double to float and then to __fp16, using
-   an example of a number that would round differently if it went directly
-   from double to __fp16.  */
+/* Test that rounding double to __fp16 happens directly, using an example
+   of a number that would round differently if it went from double to
+   __fp16 via float.  */
 
 /* { dg-do run } */
+/* { dg-require-effective-target arm_fp16_alternative_ok } */
 /* { dg-options "-mfp16-format=alternative" } */
 
 #include <stdlib.h>
@@ -10,8 +11,8 @@
 /* The original double value.  */
 #define ORIG 0x1.0020008p0
 
-/* The expected (double)((__fp16)((float)ORIG)) value.  */
-#define ROUNDED 0x1.0000000p0
+/* The expected (double)((__fp16)ORIG) value.  */
+#define ROUNDED 0x1.0040000p0
 
 typedef union u {
   __fp16 f;

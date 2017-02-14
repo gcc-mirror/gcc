@@ -1,5 +1,5 @@
 /* Default language-specific hooks.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -77,14 +77,6 @@ lhd_do_nothing_f (struct function * ARG_UNUSED (f))
 /* Do nothing (return NULL_TREE).  */
 
 tree
-lhd_return_null_tree_v (void)
-{
-  return NULL_TREE;
-}
-
-/* Do nothing (return NULL_TREE).  */
-
-tree
 lhd_return_null_tree (tree ARG_UNUSED (t))
 {
   return NULL_TREE;
@@ -128,7 +120,7 @@ lhd_warn_unused_global_decl (const_tree decl)
 
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl))
     return false;
-  if (TREE_CODE (decl) == VAR_DECL && TREE_READONLY (decl))
+  if (VAR_P (decl) && TREE_READONLY (decl))
     return false;
   if (DECL_IN_SYSTEM_HEADER (decl))
     return false;
@@ -152,7 +144,7 @@ lhd_set_decl_assembler_name (tree decl)
      VAR_DECLs for variables with static storage duration need a real
      DECL_ASSEMBLER_NAME.  */
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
-	      || (TREE_CODE (decl) == VAR_DECL
+	      || (VAR_P (decl)
 		  && (TREE_STATIC (decl)
 		      || DECL_EXTERNAL (decl)
 		      || TREE_PUBLIC (decl))));
@@ -477,6 +469,56 @@ lhd_make_node (enum tree_code code)
   return make_node (code);
 }
 
+/* Default implementation of LANG_HOOKS_TYPE_FOR_SIZE.
+   Return an integer type with PRECISION bits of precision,
+   that is unsigned if UNSIGNEDP is nonzero, otherwise signed.  */
+
+tree
+lhd_type_for_size (unsigned precision, int unsignedp)
+{
+  int i;
+
+  if (precision == TYPE_PRECISION (integer_type_node))
+    return unsignedp ? unsigned_type_node : integer_type_node;
+
+  if (precision == TYPE_PRECISION (signed_char_type_node))
+    return unsignedp ? unsigned_char_type_node : signed_char_type_node;
+
+  if (precision == TYPE_PRECISION (short_integer_type_node))
+    return unsignedp ? short_unsigned_type_node : short_integer_type_node;
+
+  if (precision == TYPE_PRECISION (long_integer_type_node))
+    return unsignedp ? long_unsigned_type_node : long_integer_type_node;
+
+  if (precision == TYPE_PRECISION (long_long_integer_type_node))
+    return unsignedp
+	   ? long_long_unsigned_type_node
+	   : long_long_integer_type_node;
+
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i]
+	&& precision == int_n_data[i].bitsize)
+      return (unsignedp ? int_n_trees[i].unsigned_type
+	      : int_n_trees[i].signed_type);
+
+  if (precision <= TYPE_PRECISION (intQI_type_node))
+    return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
+
+  if (precision <= TYPE_PRECISION (intHI_type_node))
+    return unsignedp ? unsigned_intHI_type_node : intHI_type_node;
+
+  if (precision <= TYPE_PRECISION (intSI_type_node))
+    return unsignedp ? unsigned_intSI_type_node : intSI_type_node;
+
+  if (precision <= TYPE_PRECISION (intDI_type_node))
+    return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
+
+  if (precision <= TYPE_PRECISION (intTI_type_node))
+    return unsignedp ? unsigned_intTI_type_node : intTI_type_node;
+
+  return NULL_TREE;
+}
+
 HOST_WIDE_INT
 lhd_to_target_charset (HOST_WIDE_INT c)
 {
@@ -513,6 +555,24 @@ lhd_omp_assignment (tree clause ATTRIBUTE_UNUSED, tree dst, tree src)
 void
 lhd_omp_finish_clause (tree, gimple_seq *)
 {
+}
+
+/* Return true if DECL is a scalar variable (for the purpose of
+   implicit firstprivatization).  */
+
+bool
+lhd_omp_scalar_p (tree decl)
+{
+  tree type = TREE_TYPE (decl);
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    type = TREE_TYPE (type);
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    type = TREE_TYPE (type);
+  if (INTEGRAL_TYPE_P (type)
+      || SCALAR_FLOAT_TYPE_P (type)
+      || TREE_CODE (type) == POINTER_TYPE)
+    return true;
+  return false;
 }
 
 /* Register language specific type size variables as potentially OpenMP
@@ -693,6 +753,41 @@ lhd_enum_underlying_base_type (const_tree enum_type)
 					 TYPE_UNSIGNED (enum_type));
 }
 
+/* Default implementation of LANG_HOOKS_GET_SUBSTRING_LOCATION.  */
+
+const char *
+lhd_get_substring_location (const substring_loc &, location_t *)
+{
+  return "unimplemented";
+}
+
+/* Default implementation of LANG_HOOKS_DECL_DWARF_ATTRIBUTE.  Don't add
+   any attributes.  */
+
+int
+lhd_decl_dwarf_attribute (const_tree, int)
+{
+  return -1;
+}
+
+/* Default implementation of LANG_HOOKS_TYPE_DWARF_ATTRIBUTE.  Don't add
+   any attributes.  */
+
+int
+lhd_type_dwarf_attribute (const_tree, int)
+{
+  return -1;
+}
+
+/* Default implementation of LANG_HOOKS_UNIT_SIZE_WITHOUT_REUSABLE_PADDING.
+   Just return TYPE_SIZE_UNIT unadjusted.  */
+
+tree
+lhd_unit_size_without_reusable_padding (tree t)
+{
+  return TYPE_SIZE_UNIT (t);
+}
+
 /* Returns true if the current lang_hooks represents the GNU C frontend.  */
 
 bool
@@ -716,4 +811,13 @@ bool
 lang_GNU_Fortran (void)
 {
   return strncmp (lang_hooks.name, "GNU Fortran", 11) == 0;
+}
+
+/* Returns true if the current lang_hooks represents the GNU Objective-C
+   frontend.  */
+
+bool
+lang_GNU_OBJC (void)
+{
+  return strncmp (lang_hooks.name, "GNU Objective-C", 15) == 0;
 }

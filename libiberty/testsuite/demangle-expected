@@ -4200,6 +4200,9 @@ decltype (new auto({parm#1})) f<int>(int)
 _Z1fIiERDaRKT_S1_
 auto& f<int>(int const&, int)
 --format=gnu-v3
+_Z1gIiEDcRKT_S0_
+decltype(auto) g<int>(int const&, int)
+--format=gnu-v3
 _Z1gILi1EEvR1AIXT_EER1BIXscbT_EE
 void g<1>(A<1>&, B<static_cast<bool>(1)>&)
 --format=gnu-v3
@@ -4536,6 +4539,24 @@ void baz<int>(A<sizeof (foo((int)(), (floatcomplex )00000000_00000000))>*)
 --format=gnu-v3
 _Z3fooI1FEN1XIXszdtcl1PclcvT__EEE5arrayEE4TypeEv
 X<sizeof ((P(((F)())())).array)>::Type foo<F>()
+
+_Z1fIJidEEv1AIXsZT_EE
+void f<int, double>(A<2>)
+
+_ZN1A1fIJiiEiJiiiEEEvRAsPDpT_T0_DpT1_E_iS3_S5_
+void A::f<int, int, int, int, int, int>(int (&) [6], int, int, int, int)
+
+_Z10unary_leftIJLi1ELi2ELi3EEEv1AIXflplT_EE
+void unary_left<1, 2, 3>(A<(...+(1, 2, 3))>)
+
+_Z11unary_rightIJLi1ELi2ELi3EEEv1AIXfrplT_EE
+void unary_right<1, 2, 3>(A<((1, 2, 3)+...)>)
+
+_Z11binary_leftIJLi1ELi2ELi3EEEv1AIXfLplLi42ET_EE
+void binary_left<1, 2, 3>(A<((42)+...+(1, 2, 3))>)
+
+_Z12binary_rightIJLi1ELi2ELi3EEEv1AIXfRplT_Li42EEE
+void binary_right<1, 2, 3>(A<((1, 2, 3)+...+(42))>)
 #
 # Tests a use-after-free problem PR70481
 
@@ -4556,3 +4577,115 @@ __vt_90000000000cafebabe
 
 _Z80800000000000000000000
 _Z80800000000000000000000
+#
+# Tests write access violation PR70926
+
+0__Ot2m02R5T0000500000
+0__Ot2m02R5T0000500000
+#
+
+0__GT50000000000_
+0__GT50000000000_
+#
+
+__t2m05B500000000000000000_
+__t2m05B500000000000000000_
+#
+# Tests stack overflow PR71696
+
+__10%0__S4_0T0T0
+%0<>::%0(%0<>)
+
+# Inheriting constructor
+_ZN1DCI11BEi
+D::B(int)
+
+# exception-specification (C++17)
+_Z1fIvJiELb0EEvPDOT1_EFT_DpT0_E
+void f<void, int, false>(void (*)(int) noexcept(false))
+
+_Z1fIvJiELb0EEvPDoFT_DpT0_E
+void f<void, int, false>(void (*)(int) noexcept)
+
+_Z1fIvJiELb0EEvPDwiEFT_DpT0_E
+void f<void, int, false>(void (*)(int) throw(int))
+
+# Could crash
+_
+_
+
+# Could crash
+_vt
+_vt
+
+# Could crash
+_$_1Acitz
+_$_1Acitz
+
+# Could crash
+_$_H1R
+_$_H1R
+
+# Could crash
+_Q8ccQ4M2e.
+_Q8ccQ4M2e.
+
+# fold-expression with missing third component could crash.
+_Z12binary_rightIJLi1ELi2ELi3EEEv1AIXfRplT_LiEEE
+_Z12binary_rightIJLi1ELi2ELi3EEEv1AIXfRplT_LiEEE
+
+# ?: expression with missing third component could crash.
+AquT_quT_4mxautouT_4mxxx
+AquT_quT_4mxautouT_4mxxx
+
+# pr c++/78252 generic lambda mangling uses template parms, and leads
+# to unbounded recursion if not dealt with properly
+_Z7forwardIRZ3FoovEUlRT_E_EOS0_S1_
+Foo()::{lambda(auto:1&)#1}& forward<Foo()::{lambda(auto:1&)#1}&>(Foo()::{lambda(auto:1&)#1}&)
+
+_Z7forwardIZ3FoovEUlRiRT_E_EOS1_S2_
+Foo()::{lambda(int&, auto:1&)#1}&& forward<Foo()::{lambda(int&, auto:1&)#1}>(Foo()::{lambda(int&, auto:1&)#1}&)
+
+_Z7forwardIZ3FoovEUlRT_R1XIiEE0_EOS0_S1_
+Foo()::{lambda(auto:1&, X<int>&)#2}&& forward<Foo()::{lambda(auto:1&, X<int>&)#2}>(Foo()::{lambda(auto:1&, X<int>&)#2}&)
+
+_Z7forwardIZ3FoovEUlPA5_T_E1_EOS0_RS0_
+Foo()::{lambda(auto:1 (*&&forward<Foo()::{lambda(auto:1 (*) [5])#3}>(auto:1&)) [5])#3}
+
+_Z3eatIZ3FoovEUlRiRT_E_EvS2_
+void eat<Foo()::{lambda(int&, auto:1&)#1}>(Foo()::{lambda(int&, auto:1&)#1}&)
+
+_Z3eatIZ3FoovEUlRT_R1XIiEE0_EvS1_
+void eat<Foo()::{lambda(auto:1&, X<int>&)#2}>(Foo()::{lambda(auto:1&, X<int>&)#2}&)
+
+_Z3eatIZ3FoovEUlPA5_T_E1_EvRS0_
+void eat<Foo()::{lambda(auto:1 (*) [5])#3}>(Foo()::{lambda(auto:1 (*&) [5])#3})
+
+_Z3eatIPiZ3FoovEUlPT_PT0_E4_EvRS1_RS3_
+void eat<int*, Foo()::{lambda(auto:1*, auto:2*)#6}>(int*&, Foo()::{lambda(auto:1*, auto:2*)#6}&)
+
+_Z3eatIPiZ3BarIsEvvEUlPsPT_PT0_E0_EvRS3_RS5_
+void eat<int*, void Bar<short>()::{lambda(short*, auto:1*, auto:2*)#2}>(int*&, void Bar<short>()::{lambda(short*, auto:1*, auto:2*)#2}&)
+
+# PR 77489
+_ZZ3foovE8localVar_9
+foo()::localVar
+
+_ZZ3foovE8localVar_10
+foo()::localVar
+
+_ZZ3foovE8localVar__10_
+foo()::localVar
+
+_ZZ3foovE8localVar__9_
+_ZZ3foovE8localVar__9_
+
+_ZZ3foovE8localVar__12
+_ZZ3foovE8localVar__12
+
+# PR 70182
+_Z1gI1AEv1SIXadsrT_onplEE
+void g<A>(S<&A::operator+>)
+
+_Z1gI1AEv1SIXadsrT_plEE
+void g<A>(S<&A::operator+>)

@@ -1,0 +1,44 @@
+/* ACLE builtin definitions for ARM.
+   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Contributed by ARM Ltd.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 3, or (at your
+   option) any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+VAR1 (UBINOP, crc32b, si)
+VAR1 (UBINOP, crc32h, si)
+VAR1 (UBINOP, crc32w, si)
+VAR1 (UBINOP, crc32cb, si)
+VAR1 (UBINOP, crc32ch, si)
+VAR1 (UBINOP, crc32cw, si)
+VAR1 (CDP, cdp, void)
+VAR1 (CDP, cdp2, void)
+VAR1 (LDC, ldc, void)
+VAR1 (LDC, ldc2, void)
+VAR1 (LDC, ldcl, void)
+VAR1 (LDC, ldc2l, void)
+VAR1 (STC, stc, void)
+VAR1 (STC, stc2, void)
+VAR1 (STC, stcl, void)
+VAR1 (STC, stc2l, void)
+VAR1 (MCR, mcr, void)
+VAR1 (MCR, mcr2, void)
+VAR1 (MRC, mrc, si)
+VAR1 (MRC, mrc2, si)
+VAR1 (MCRR, mcrr, void)
+VAR1 (MCRR, mcrr2, void)
+VAR1 (MRRC, mrrc, di)
+VAR1 (MRRC, mrrc2, di)

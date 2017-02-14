@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GCC.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-expr.h"
 #include "cfghooks.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "expmed.h"
@@ -141,7 +142,7 @@ extern tree debug_find_var_in_block_tree (tree, tree);
    can always export `prologue_epilogue_contains'.  */
 static void record_insns (rtx_insn *, rtx, hash_table<insn_cache_hasher> **)
      ATTRIBUTE_UNUSED;
-static bool contains (const_rtx, hash_table<insn_cache_hasher> *);
+static bool contains (const rtx_insn *, hash_table<insn_cache_hasher> *);
 static void prepare_function_start (void);
 static void do_clobber_return_reg (rtx, void *);
 static void do_use_return_reg (rtx, void *);
@@ -233,7 +234,7 @@ frame_offset_overflow (HOST_WIDE_INT offset, tree func)
 {
   unsigned HOST_WIDE_INT size = FRAME_GROWS_DOWNWARD ? -offset : offset;
 
-  if (size > ((unsigned HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (Pmode) - 1))
+  if (size > (HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (Pmode) - 1))
 	       /* Leave room for the fixed part of the frame.  */
 	       - 64 * UNITS_PER_WORD)
     {
@@ -243,6 +244,14 @@ frame_offset_overflow (HOST_WIDE_INT offset, tree func)
     }
 
   return FALSE;
+}
+
+/* Return the minimum spill slot alignment for a register of mode MODE.  */
+
+unsigned int
+spill_slot_alignment (machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return STACK_SLOT_ALIGNMENT (NULL_TREE, mode, GET_MODE_ALIGNMENT (mode));
 }
 
 /* Return stack slot alignment in bits for TYPE and MODE.  */
@@ -499,8 +508,7 @@ assign_stack_local_1 (machine_mode mode, HOST_WIDE_INT size,
   set_mem_align (x, alignment_in_bits);
   MEM_NOTRAP_P (x) = 1;
 
-  stack_slot_list
-    = gen_rtx_EXPR_LIST (VOIDmode, x, stack_slot_list);
+  vec_safe_push (stack_slot_list, x);
 
   if (frame_offset_overflow (frame_offset, current_function_decl))
     frame_offset = 0;
@@ -829,8 +837,7 @@ assign_stack_temp_for_type (machine_mode mode, HOST_WIDE_INT size,
 	      p->type = best_p->type;
 	      insert_slot_to_list (p, &avail_temp_slots);
 
-	      stack_slot_list = gen_rtx_EXPR_LIST (VOIDmode, p->slot,
-						   stack_slot_list);
+	      vec_safe_push (stack_slot_list, p->slot);
 
 	      best_p->size = rounded_size;
 	      best_p->full_size = rounded_size;
@@ -902,7 +909,7 @@ assign_stack_temp_for_type (machine_mode mode, HOST_WIDE_INT size,
 
   /* Create a new MEM rtx to avoid clobbering MEM flags of old slots.  */
   slot = gen_rtx_MEM (mode, XEXP (p->slot, 0));
-  stack_slot_list = gen_rtx_EXPR_LIST (VOIDmode, slot, stack_slot_list);
+  vec_safe_push (stack_slot_list, slot);
 
   /* If we know the alias set for the memory that will be used, use
      it.  If there's no TYPE, then we don't know anything about the
@@ -1828,8 +1835,7 @@ instantiate_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	  if (TREE_CODE (t) == PARM_DECL && DECL_NAMELESS (t)
 	      && DECL_INCOMING_RTL (t))
 	    instantiate_decl_rtl (DECL_INCOMING_RTL (t));
-	  if ((TREE_CODE (t) == VAR_DECL
-	       || TREE_CODE (t) == RESULT_DECL)
+	  if ((VAR_P (t) || TREE_CODE (t) == RESULT_DECL)
 	      && DECL_HAS_VALUE_EXPR_P (t))
 	    {
 	      tree v = DECL_VALUE_EXPR (t);
@@ -1852,7 +1858,7 @@ instantiate_decls_1 (tree let)
     {
       if (DECL_RTL_SET_P (t))
 	instantiate_decl_rtl (DECL_RTL (t));
-      if (TREE_CODE (t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (t))
+      if (VAR_P (t) && DECL_HAS_VALUE_EXPR_P (t))
 	{
 	  tree v = DECL_VALUE_EXPR (t);
 	  walk_tree (&v, instantiate_expr, NULL, NULL);
@@ -1903,7 +1909,8 @@ instantiate_decls (tree fndecl)
     instantiate_decl_rtl (DECL_RTL (DECL_VALUE_EXPR (decl)));
 
   /* Now process all variables defined in the function or its subblocks.  */
-  instantiate_decls_1 (DECL_INITIAL (fndecl));
+  if (DECL_INITIAL (fndecl))
+    instantiate_decls_1 (DECL_INITIAL (fndecl));
 
   FOR_EACH_LOCAL_DECL (cfun, ix, decl)
     if (DECL_RTL_SET_P (decl))
@@ -2324,7 +2331,7 @@ split_complex_args (vec<tree> *args)
 	  p = copy_node (p);
 	  TREE_TYPE (p) = subtype;
 	  DECL_ARG_TYPE (p) = TREE_TYPE (DECL_ARG_TYPE (p));
-	  DECL_MODE (p) = VOIDmode;
+	  SET_DECL_MODE (p, VOIDmode);
 	  DECL_SIZE (p) = NULL;
 	  DECL_SIZE_UNIT (p) = NULL;
 	  /* If this arg must go in memory, put it in a pseudo here.
@@ -2718,7 +2725,7 @@ assign_parm_find_stack_rtl (tree parm, struct assign_parm_data_one *data)
   else if (CONST_INT_P (offset_rtx))
     {
       align = INTVAL (offset_rtx) * BITS_PER_UNIT | boundary;
-      align = align & -align;
+      align = least_bit_hwi (align);
     }
   set_mem_align (stack_parm, align);
 
@@ -4376,7 +4383,7 @@ setjmp_vars_warning (bitmap setjmp_crosses, tree block)
 
   for (decl = BLOCK_VARS (block); decl; decl = DECL_CHAIN (decl))
     {
-      if (TREE_CODE (decl) == VAR_DECL
+      if (VAR_P (decl)
 	  && DECL_RTL_SET_P (decl)
 	  && REG_P (DECL_RTL (decl))
 	  && regno_clobbered_at_setjmp (setjmp_crosses, REGNO (DECL_RTL (decl))))
@@ -4804,9 +4811,9 @@ invoke_set_current_function_hook (tree fndecl)
 /* cfun should never be set directly; use this function.  */
 
 void
-set_cfun (struct function *new_cfun)
+set_cfun (struct function *new_cfun, bool force)
 {
-  if (cfun != new_cfun)
+  if (cfun != new_cfun || force)
     {
       cfun = new_cfun;
       invoke_set_current_function_hook (new_cfun ? new_cfun->decl : NULL_TREE);
@@ -5061,7 +5068,10 @@ stack_protect_epilogue (void)
   rtx_insn *seq;
 
   x = expand_normal (crtl->stack_protect_guard);
-  y = expand_normal (guard_decl);
+  if (guard_decl)
+    y = expand_normal (guard_decl);
+  else
+    y = const0_rtx;
 
   /* Allow the target to compare Y with X without leaking either into
      a register.  */
@@ -5626,7 +5636,7 @@ expand_function_end (void)
     emit_insn (gen_blockage ());
 
   /* If stack protection is enabled for this function, check the guard.  */
-  if (crtl->stack_protect_guard)
+  if (crtl->stack_protect_guard && targetm.stack_protect_runtime_enabled_p ())
     stack_protect_epilogue ();
 
   /* If we had calls to alloca, and this machine needs
@@ -5732,7 +5742,7 @@ maybe_copy_prologue_epilogue_insn (rtx insn, rtx copy)
    we can be running after reorg, SEQUENCE rtl is possible.  */
 
 static bool
-contains (const_rtx insn, hash_table<insn_cache_hasher> *hash)
+contains (const rtx_insn *insn, hash_table<insn_cache_hasher> *hash)
 {
   if (hash == NULL)
     return false;
@@ -5747,11 +5757,23 @@ contains (const_rtx insn, hash_table<insn_cache_hasher> *hash)
       return false;
     }
 
-  return hash->find (const_cast<rtx> (insn)) != NULL;
+  return hash->find (const_cast<rtx_insn *> (insn)) != NULL;
 }
 
 int
-prologue_epilogue_contains (const_rtx insn)
+prologue_contains (const rtx_insn *insn)
+{
+  return contains (insn, prologue_insn_hash);
+}
+
+int
+epilogue_contains (const rtx_insn *insn)
+{
+  return contains (insn, epilogue_insn_hash);
+}
+
+int
+prologue_epilogue_contains (const rtx_insn *insn)
 {
   if (contains (insn, prologue_insn_hash))
     return 1;
@@ -5760,6 +5782,17 @@ prologue_epilogue_contains (const_rtx insn)
   return 0;
 }
 
+void
+record_prologue_seq (rtx_insn *seq)
+{
+  record_insns (seq, NULL, &prologue_insn_hash);
+}
+
+void
+record_epilogue_seq (rtx_insn *seq)
+{
+  record_insns (seq, NULL, &epilogue_insn_hash);
+}
 
 /* Set JUMP_LABEL for a return insn.  */
 
@@ -5929,9 +5962,24 @@ thread_prologue_and_epilogue_insns (void)
   /* Try to perform a kind of shrink-wrapping, making sure the
      prologue/epilogue is emitted only around those parts of the
      function that require it.  */
-
   try_shrink_wrapping (&entry_edge, prologue_seq);
 
+  /* If the target can handle splitting the prologue/epilogue into separate
+     components, try to shrink-wrap these components separately.  */
+  try_shrink_wrapping_separate (entry_edge->dest);
+
+  /* If that did anything for any component we now need the generate the
+     "main" prologue again.  Because some targets require some of these
+     to be called in a specific order (i386 requires the split prologue
+     to be first, for example), we create all three sequences again here.
+     If this does not work for some target, that target should not enable
+     separate shrink-wrapping.  */
+  if (crtl->shrink_wrapped_separate)
+    {
+      split_prologue_seq = make_split_prologue_seq ();
+      prologue_seq = make_prologue_seq ();
+      epilogue_seq = make_epilogue_seq ();
+    }
 
   rtl_profile_for_bb (EXIT_BLOCK_PTR_FOR_FN (cfun));
 
@@ -6018,12 +6066,11 @@ thread_prologue_and_epilogue_insns (void)
       commit_edge_insertions ();
 
       /* Look for basic blocks within the prologue insns.  */
-      sbitmap blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
+      auto_sbitmap blocks (last_basic_block_for_fn (cfun));
       bitmap_clear (blocks);
       bitmap_set_bit (blocks, entry_edge->dest->index);
       bitmap_set_bit (blocks, orig_entry_edge->dest->index);
       find_many_sub_basic_blocks (blocks);
-      sbitmap_free (blocks);
     }
 
   default_rtl_profile ();
@@ -6584,7 +6631,7 @@ match_asm_constraints_1 (rtx_insn *insn, rtx *p_sets, int noutputs)
 void
 add_local_decl (struct function *fun, tree d)
 {
-  gcc_assert (TREE_CODE (d) == VAR_DECL);
+  gcc_assert (VAR_P (d));
   vec_safe_push (fun->local_decls, d);
 }
 

@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C++.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -317,7 +317,7 @@ build_up_reference (tree type, tree arg, int flags, tree decl,
 
   gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
 
-  if ((flags & DIRECT_BIND) && ! real_lvalue_p (arg))
+  if ((flags & DIRECT_BIND) && ! lvalue_p (arg))
     {
       /* Create a new temporary variable.  We can't just use a TARGET_EXPR
 	 here because it needs to live as long as DECL.  */
@@ -330,7 +330,7 @@ build_up_reference (tree type, tree arg, int flags, tree decl,
       cp_finish_decl (arg, targ, /*init_const_expr_p=*/false, NULL_TREE,
 		      LOOKUP_ONLYCONVERTING|DIRECT_BIND);
     }
-  else if (!(flags & DIRECT_BIND) && ! lvalue_p (arg))
+  else if (!(flags & DIRECT_BIND) && ! obvalue_p (arg))
     return get_target_expr_sfinae (arg, complain);
 
   /* If we had a way to wrap this up, and say, if we ever needed its
@@ -439,7 +439,7 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 	= build_type_conversion (reftype, expr);
 
       if (rval_as_conversion && rval_as_conversion != error_mark_node
-	  && real_lvalue_p (rval_as_conversion))
+	  && lvalue_p (rval_as_conversion))
 	{
 	  expr = rval_as_conversion;
 	  rval_as_conversion = NULL_TREE;
@@ -457,7 +457,7 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 	tree ttr = lvalue_type (expr);
 
 	if ((complain & tf_error)
-	    && ! real_lvalue_p (expr))
+	    && ! lvalue_p (expr))
 	  diagnose_ref_binding (loc, reftype, intype, decl);
 
 	if (! (convtype & CONV_CONST)
@@ -473,7 +473,7 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 
       return build_up_reference (reftype, expr, flags, decl, complain);
     }
-  else if ((convtype & CONV_REINTERPRET) && lvalue_p (expr))
+  else if ((convtype & CONV_REINTERPRET) && obvalue_p (expr))
     {
       /* When casting an lvalue to a reference type, just convert into
 	 a pointer to the new type and deference it.  This is allowed
@@ -645,6 +645,7 @@ cp_convert_and_check (tree type, tree expr, tsubst_flags_t complain)
 	{
 	  /* Avoid bogus -Wparentheses warnings.  */
 	  warning_sentinel w (warn_parentheses);
+	  warning_sentinel c (warn_int_in_bool_context);
 	  folded_result = cp_convert (type, folded, tf_none);
 	}
       folded_result = fold_simple (folded_result);
@@ -797,7 +798,15 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	     to the underlying type first.  */
 	  if (SCOPED_ENUM_P (intype) && (convtype & CONV_STATIC))
 	    e = build_nop (ENUM_UNDERLYING_TYPE (intype), e);
-	  return cp_truthvalue_conversion (e);
+	  if (complain & tf_warning)
+	    return cp_truthvalue_conversion (e);
+	  else
+	    {
+	      /* Prevent bogus -Wint-in-bool-context warnings coming
+		 from c_common_truthvalue_conversion down the line.  */
+	      warning_sentinel w (warn_int_in_bool_context);
+	      return cp_truthvalue_conversion (e);
+	    }
 	}
 
       converted = convert_to_integer_maybe_fold (type, e, dofold);
@@ -1663,7 +1672,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
       case INTEGER_TYPE:
 	if ((desires & WANT_NULL) && null_ptr_cst_p (expr))
 	  return expr;
-	/* else fall through...  */
+	/* fall through.  */
 
       case BOOLEAN_TYPE:
 	return (desires & WANT_INT) ? expr : NULL_TREE;
@@ -1931,9 +1940,84 @@ tx_unsafe_fn_variant (tree t)
 /* Return true iff FROM can convert to TO by a transaction-safety
    conversion.  */
 
-bool
+static bool
 can_convert_tx_safety (tree to, tree from)
 {
   return (flag_tm && tx_safe_fn_type_p (from)
 	  && same_type_p (to, tx_unsafe_fn_variant (from)));
+}
+
+/* Return true iff FROM can convert to TO by dropping noexcept.  */
+
+static bool
+noexcept_conv_p (tree to, tree from)
+{
+  if (!flag_noexcept_type)
+    return false;
+
+  tree t = non_reference (to);
+  tree f = from;
+  if (TYPE_PTRMEMFUNC_P (t)
+      && TYPE_PTRMEMFUNC_P (f))
+    {
+      t = TYPE_PTRMEMFUNC_FN_TYPE (t);
+      f = TYPE_PTRMEMFUNC_FN_TYPE (f);
+    }
+  if (TREE_CODE (t) == POINTER_TYPE
+      && TREE_CODE (f) == POINTER_TYPE)
+    {
+      t = TREE_TYPE (t);
+      f = TREE_TYPE (f);
+    }
+  tree_code code = TREE_CODE (f);
+  if (TREE_CODE (t) != code)
+    return false;
+  if (code != FUNCTION_TYPE && code != METHOD_TYPE)
+    return false;
+  if (!type_throw_all_p (t)
+      || type_throw_all_p (f))
+    return false;
+  tree v = build_exception_variant (f, NULL_TREE);
+  return same_type_p (t, v);
+}
+
+/* Return true iff FROM can convert to TO by a function pointer conversion.  */
+
+bool
+fnptr_conv_p (tree to, tree from)
+{
+  tree t = non_reference (to);
+  tree f = from;
+  if (TYPE_PTRMEMFUNC_P (t)
+      && TYPE_PTRMEMFUNC_P (f))
+    {
+      t = TYPE_PTRMEMFUNC_FN_TYPE (t);
+      f = TYPE_PTRMEMFUNC_FN_TYPE (f);
+    }
+  if (TREE_CODE (t) == POINTER_TYPE
+      && TREE_CODE (f) == POINTER_TYPE)
+    {
+      t = TREE_TYPE (t);
+      f = TREE_TYPE (f);
+    }
+
+  return (noexcept_conv_p (t, f)
+	  || can_convert_tx_safety (t, f));
+}
+
+/* Return FN with any NOP_EXPRs that represent function pointer
+   conversions stripped.  */
+
+tree
+strip_fnptr_conv (tree fn)
+{
+  while (TREE_CODE (fn) == NOP_EXPR)
+    {
+      tree op = TREE_OPERAND (fn, 0);
+      if (fnptr_conv_p (TREE_TYPE (fn), TREE_TYPE (op)))
+	fn = op;
+      else
+	break;
+    }
+  return fn;
 }

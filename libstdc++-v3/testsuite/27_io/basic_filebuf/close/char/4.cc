@@ -1,6 +1,6 @@
 // 2003-05-19  Paolo Carlini  <pcarlini@unitus.it>
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,8 +34,6 @@ const char name_02[] = "filebuf_virtuals-2.txt"; // empty file, need to create
 void test_04()
 {
   typedef std::filebuf::traits_type 	traits_type;
-
-  bool test __attribute__((unused)) = true;
 
   std::filebuf fb_01, fb_02;
   char buffer[] = "xxxxxxxxxx";

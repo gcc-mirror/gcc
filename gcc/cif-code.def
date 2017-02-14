@@ -1,7 +1,7 @@
 /* This file contains the definitions of the cgraph_inline_failed_t
    enums used in GCC.
 
-   Copyright (C) 2008-2016 Free Software Foundation, Inc.
+   Copyright (C) 2008-2017 Free Software Foundation, Inc.
    Contributed by Doug Kwan <dougkwan@google.com>
 
 This file is part of GCC.
@@ -138,4 +138,4 @@ DEFCIFCODE(UNREACHABLE, CIF_FINAL_ERROR,
 
 /* We can't inline because of instrumentation thunk.  */
 DEFCIFCODE(CHKP, CIF_FINAL_ERROR,
-	   N_("caller is instrumetnation thunk"))
+	   N_("caller is instrumentation thunk"))

@@ -16,7 +16,7 @@ int main()
               std::find_if( l.begin(), l.end(),
                        // This is a typo, it should be bind2nd, but an
                        // ICE is not a very helpful diagnostic!
-                       std::binder2nd( std::equal_to<int>(), 2 ) ); // { dg-error "" } 
+                       std::binder2nd( std::equal_to<int>(), 2 ) ); // { dg-error "" "" { target c++14_down } }
       assert( *(it) == 2 );
 }
 

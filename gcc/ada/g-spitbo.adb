@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2012, AdaCore                     --
+--                     Copyright (C) 1998-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -333,7 +333,7 @@ package body GNAT.Spitbol is
       -- Adjust --
       ------------
 
-      procedure Adjust (Object : in out Table) is
+      overriding procedure Adjust (Object : in out Table) is
          Ptr1 : Hash_Element_Ptr;
          Ptr2 : Hash_Element_Ptr;
 
@@ -555,7 +555,7 @@ package body GNAT.Spitbol is
       -- Finalize --
       --------------
 
-      procedure Finalize (Object : in out Table) is
+      overriding procedure Finalize (Object : in out Table) is
          Ptr1 : Hash_Element_Ptr;
          Ptr2 : Hash_Element_Ptr;
 

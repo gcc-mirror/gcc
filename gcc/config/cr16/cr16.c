@@ -1,5 +1,5 @@
 /* Output routines for CR16 processor.
-   Copyright (C) 2012-2016 Free Software Foundation, Inc.
+   Copyright (C) 2012-2017 Free Software Foundation, Inc.
    Contributed by KPIT Cummins Infosystems Limited.
   
    This file is part of GCC.
@@ -26,6 +26,7 @@
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "regs.h"
 #include "emit-rtl.h"
@@ -171,6 +172,9 @@ static void cr16_print_operand_address (FILE *, machine_mode, rtx);
 #define TARGET_LEGITIMATE_CONSTANT_P    cr16_legitimate_constant_p
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P     cr16_legitimate_address_p
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 /* Returning function value.  */
 #undef TARGET_FUNCTION_VALUE
@@ -1117,10 +1121,8 @@ legitimate_pic_operand_p (rtx x)
     {
     case SYMBOL_REF:
       return 0;
-      break;
     case LABEL_REF:
       return 0;
-      break;
     case CONST:
       /* REVISIT: Use something like symbol_referenced_p.  */
       if (GET_CODE (XEXP (x, 0)) == PLUS
@@ -1131,7 +1133,6 @@ legitimate_pic_operand_p (rtx x)
       break;
     case MEM:
       return legitimate_pic_operand_p (XEXP (x, 0));
-      break;
     default:
       break;
     }
@@ -1475,6 +1476,7 @@ cr16_print_operand (FILE * file, rtx x, int code)
     case 'g':
       /* 'g' is used for implicit mem: dereference.  */
       ptr_dereference = 1;
+      /* FALLTHRU */
     case 'f':
     case 0:
       /* default.  */
@@ -1527,6 +1529,7 @@ cr16_print_operand (FILE * file, rtx x, int code)
 	  cr16_print_operand_address (file, VOIDmode, x);
 	  return;
 	}
+      gcc_unreachable ();
     default:
       output_operand_lossage ("invalid %%xn code");
     }

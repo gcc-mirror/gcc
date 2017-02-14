@@ -13,8 +13,8 @@
 
 /* ---------------------------- local definitions -------------------------- */
 
-#define DEFAULT_MAX_REPETITIONS 5
-#define DEFAULT_REQUIRED_QUORUM ((DEFAULT_MAX_REPETITIONS) - 1)
+#define DEFAULT_MAX_REPETITIONS 7
+#define DEFAULT_REQUIRED_QUORUM 4
 #define DEFAULT_ABORT_ADDRESS (0x12345678u)
 
 /* ---------------------------- local macros ------------------------------- */

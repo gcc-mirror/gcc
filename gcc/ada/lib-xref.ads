@@ -651,6 +651,15 @@ package Lib.Xref is
       --  the information collected in the tables in library package called
       --  SPARK_Xrefs, and using routines in Lib.Util.
 
+      generic
+         with procedure Process (N : Node_Id) is <>;
+      procedure Traverse_Compilation_Unit
+        (CU           : Node_Id;
+         Inside_Stubs : Boolean);
+      --  Call Process on all declarations within compilation unit CU. If
+      --  Inside_Stubs is True, then the body of stubs is also traversed.
+      --  Generic declarations are ignored.
+
    end SPARK_Specific;
 
    -----------------
@@ -691,7 +700,7 @@ package Lib.Xref is
    --  the spec. The entity in the body is treated as a reference with type
    --  'b'. Similar handling for references to subprogram formals.
    --
-   --  The call has no effect if N is not in the extended main source unit
+   --  The call has no effect if N is not in the extended main source unit.
    --  This check is omitted for type 'e' references (where it is useful to
    --  have structural scoping information for other than the main source),
    --  and for 'p' (since we want to pick up inherited primitive operations

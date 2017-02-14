@@ -1,5 +1,5 @@
 /* Utility routines for data type conversion for GCC.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -164,6 +164,7 @@ convert_to_real_1 (tree type, tree expr, bool fold_p)
 	       -fmath-errno.  */
 	    if (flag_errno_math)
 	      break;
+	    gcc_fallthrough ();
 	  CASE_MATHFN (ACOS)
 	  CASE_MATHFN (ACOSH)
 	  CASE_MATHFN (ASIN)
@@ -184,6 +185,7 @@ convert_to_real_1 (tree type, tree expr, bool fold_p)
 	    /* The above functions are not safe to do this conversion.  */
 	    if (!flag_unsafe_math_optimizations)
 	      break;
+	    gcc_fallthrough ();
 	  CASE_MATHFN (SQRT)
 	  CASE_MATHFN (FABS)
 	  CASE_MATHFN (LOGB)
@@ -516,7 +518,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	  /* Only convert nearbyint* if we can ignore math exceptions.  */
 	  if (flag_trapping_math)
 	    break;
-	  /* ... Fall through ...  */
+	  gcc_fallthrough ();
 	CASE_FLT_FN (BUILT_IN_RINT):
 	  /* Only convert in ISO C99 mode and with -fno-math-errno.  */
 	  if (!targetm.libc_has_function (function_c99_misc) || flag_errno_math)
@@ -644,10 +646,11 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	 to TYPE.  */
       else if (TREE_CODE (type) == ENUMERAL_TYPE
 	       || outprec != GET_MODE_PRECISION (TYPE_MODE (type)))
-	return build1 (NOP_EXPR, type,
-		       convert (lang_hooks.types.type_for_mode
-				(TYPE_MODE (type), TYPE_UNSIGNED (type)),
-				expr));
+	{
+	  expr = convert (lang_hooks.types.type_for_mode
+			  (TYPE_MODE (type), TYPE_UNSIGNED (type)), expr);
+	  return maybe_fold_build1_loc (dofold, loc, NOP_EXPR, type, expr);
+	}
 
       /* Here detect when we can distribute the truncation down past some
 	 arithmetic.  For example, if adding two longs and converting to an

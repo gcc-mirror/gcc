@@ -1,6 +1,7 @@
+// { dg-do run { target c++11 } }
 // { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__" }
 //
-// Copyright (C) 2016 Free Software Foundation, Inc.
+// Copyright (C) 2016-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -642,7 +643,6 @@ template<typename Tp, unsigned int Num>
   void
   test(const testcase_cyl_bessel_j<Tp> (&data)[Num], Tp toler)
   {
-    bool test __attribute__((unused)) = true;
     const Tp eps = std::numeric_limits<Tp>::epsilon();
     Tp max_abs_diff = -Tp(1);
     Tp max_abs_frac = -Tp(1);

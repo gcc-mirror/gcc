@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,6 @@ void test01()
 {
   typedef std::system_error test_type;
 
-  bool test __attribute__((unused)) = true;
   const std::string xxx(10000, 'x');
   test_type t(std::error_code(), xxx);
   VERIFY( std::string(t.what()).find(xxx) != std::string::npos );

@@ -1,5 +1,5 @@
 /* NVPTX common hooks.
-   Copyright (C) 2014-2016 Free Software Foundation, Inc.
+   Copyright (C) 2014-2017 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
 This file is part of GCC.
@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "diagnostic-core.h"
 #include "tm.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "common/common-target.h"
 #include "common/common-target-def.h"

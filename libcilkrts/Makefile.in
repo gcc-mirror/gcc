@@ -161,7 +161,8 @@ DIST_COMMON = $(srcdir)/include/internal/rev.mk README ChangeLog \
 @MAC_LINKER_SCRIPT_TRUE@am__append_2 = -Wl,-exported_symbols_list,$(srcdir)/runtime/mac-symbols.txt
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
@@ -349,6 +350,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+get_gcc_base_ver = @get_gcc_base_ver@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -396,7 +398,7 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 
 # Enable Intel Cilk Plus extension
 
-# Always generate unwind tables
+#Always generate unwind tables
 GENERAL_FLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/runtime \
 	-I$(top_srcdir)/runtime/config/$(config_dir) \
 	-I$(top_srcdir)/runtime/sslib -DIN_CILK_RUNTIME=1 -fcilkplus \
@@ -406,7 +408,7 @@ AM_CPPFLAGS = $(GENERAL_FLAGS)
 AM_LDFLAGS = $(XLDFLAGS)
 
 # May be used by toolexeclibdir.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 # Target list.
 nodist_toolexeclib_HEADERS = libcilkrts.spec
@@ -455,7 +457,7 @@ libcilkrts_la_SOURCES = \
   runtime/sysdep-unix.c            \
   runtime/worker_mutex.c
 
-CILK_REVISION = 4420
+CILK_REVISION = 4467
 
 # Load the $(REVISION) value.
 

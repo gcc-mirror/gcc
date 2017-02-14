@@ -2,6 +2,7 @@ extern void abort (void);
 
 /* { dg-options "-O2" } */
 /* { dg-do run } */
+/* { dg-require-effective-target int32plus } */
 
 #define TYPE_MAX(type, sign)	\
   ((!sign) ? ((1 << (sizeof (type) * 8 - 1)) - 1) :	\

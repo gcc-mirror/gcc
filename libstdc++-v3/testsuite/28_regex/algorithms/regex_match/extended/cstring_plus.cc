@@ -1,9 +1,9 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2010-06-21  Stephen M. Webb <stephen.webb@bregmasoft.ca>
 //
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,8 +33,6 @@ using namespace std;
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::regex  re("(a+)", std::regex::extended);
   const char target[] = "aa";
   std::cmatch m;

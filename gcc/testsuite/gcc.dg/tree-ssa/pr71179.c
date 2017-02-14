@@ -1,6 +1,5 @@
-
 /* { dg-do compile } */
-/* { dg-options "-O3 -ffast-math" } */
+/* { dg-options "-O3 -ffast-math -Wno-psabi" } */
 
 typedef float __m128 __attribute__ ((__vector_size__ (16), __may_alias__));
 

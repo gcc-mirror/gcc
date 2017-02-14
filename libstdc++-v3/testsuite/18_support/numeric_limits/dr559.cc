@@ -1,8 +1,8 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-02-17  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,6 @@
 template<typename T>
   void do_test_aux()
   {
-    bool test __attribute__((unused)) = true;
     typedef std::numeric_limits<T> cv_limits;
     typedef std::numeric_limits<typename std::remove_cv<T>::type> limits;
 

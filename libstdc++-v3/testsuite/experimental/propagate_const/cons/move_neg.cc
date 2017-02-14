@@ -1,7 +1,6 @@
-// { dg-options "-std=gnu++14" }
-// { dg-do compile }
+// { dg-do compile { target c++14 } }
 
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -14,7 +13,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-// You should have received a moved_to of the GNU General Public License along
+// You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
@@ -26,10 +25,10 @@
 using std::experimental::propagate_const;
 using std::unique_ptr;
 
-// { dg-error "no type" "" { target *-*-* } 117 }
-// { dg-error "no type" "" { target *-*-* } 124 }
-// { dg-error "no type" "" { target *-*-* } 133 }
-// { dg-error "no type" "" { target *-*-* } 142 }
+// { dg-error "no type" "" { target *-*-* } 120 }
+// { dg-error "no type" "" { target *-*-* } 127 }
+// { dg-error "no type" "" { target *-*-* } 136 }
+// { dg-error "no type" "" { target *-*-* } 145 }
 
 int main()
 {

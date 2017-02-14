@@ -1,6 +1,6 @@
 // 981208 bkoz test functionality of basic_stringbuf for char_type == wchar_t
 
-// Copyright (C) 1997-2016 Free Software Foundation, Inc.
+// Copyright (C) 1997-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,6 @@ std::wstringbuf strb_03(str_03, std::ios_base::out);
 // test overloaded virtual functions
 void test04() 
 {
-  bool test __attribute__((unused)) = true;
   std::wstring 		str_tmp;
   typedef std::wstringbuf::int_type int_type;
   typedef std::wstringbuf::traits_type traits_type;

@@ -55,5 +55,5 @@ subroutine f1
 end subroutine f1
 subroutine f2
   use udr5m3	! { dg-error "Previous !.OMP DECLARE REDUCTION|Ambiguous interfaces" }
-  use udr5m2	! { dg-error "Ambiguous !.OMP DECLARE REDUCTION" }
+  use udr5m2	! { dg-error "Ambiguous !.OMP DECLARE REDUCTION|Ambiguous interfaces" }
 end subroutine f2

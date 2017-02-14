@@ -1,5 +1,5 @@
 /* Part of CPP library.
-   Copyright (C) 1997-2016 Free Software Foundation, Inc.
+   Copyright (C) 1997-2017 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -754,7 +754,9 @@ struct normalize_state
 extern bool _cpp_valid_ucn (cpp_reader *, const unsigned char **,
 			    const unsigned char *, int,
 			    struct normalize_state *state,
-			    cppchar_t *);
+			    cppchar_t *,
+			    source_range *char_range,
+			    cpp_string_location_reader *loc_reader);
 extern void _cpp_destroy_iconv (cpp_reader *);
 extern unsigned char *_cpp_convert_input (cpp_reader *, const char *,
 					  unsigned char *, size_t, size_t,

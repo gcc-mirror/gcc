@@ -14,7 +14,7 @@ struct S
   bool shadow = false;
 };
 
-extern "C" void printf(...);
+extern "C" int printf(const char*, ...);
 #define assert(e) if (e); else \
 		 printf ("%s:%d: !(%s)\n", __FILE__, __LINE__, #e), __builtin_abort ();
 

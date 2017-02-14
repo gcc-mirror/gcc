@@ -16,6 +16,6 @@ int main ()
 {
   return foo ();
 }
-/* { dg-final-use { scan-ipa-dump-times "Read tp_first_run: 0" 1 "profile"} } */
-/* { dg-final-use { scan-ipa-dump-times "Read tp_first_run: 1" 1 "profile"} } */
-/* { dg-final-use { scan-ipa-dump-times "Read tp_first_run: 2" 1 "profile"} } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump-times "Read tp_first_run: 0" 1 "profile"} } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump-times "Read tp_first_run: 1" 1 "profile"} } */
+/* { dg-final-use-not-autofdo { scan-ipa-dump-times "Read tp_first_run: 2" 1 "profile"} } */

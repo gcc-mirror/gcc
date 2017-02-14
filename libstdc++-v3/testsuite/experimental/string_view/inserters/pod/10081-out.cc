@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,8 +36,6 @@ test01()
   typedef experimental::basic_string_view<pod_ushort> 	string_type;
   typedef basic_stringbuf<pod_ushort> 	stringbuf_type;
   typedef basic_ostream<pod_ushort> 	ostream_type;
-
-  bool test [[gnu::unused]] = true;
 
   string_type str;
   stringbuf_type strbuf01;

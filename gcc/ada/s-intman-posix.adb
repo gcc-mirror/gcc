@@ -131,16 +131,11 @@ package body System.Interrupt_Management is
       --  treatment of the abort signal in System.Task_Primitives.Operations.
 
       case signo is
-         when SIGFPE =>
-            raise Constraint_Error;
-         when SIGILL =>
-            raise Program_Error;
-         when SIGSEGV =>
-            raise Storage_Error;
-         when SIGBUS =>
-            raise Storage_Error;
-         when others =>
-            null;
+         when SIGFPE  => raise Constraint_Error;
+         when SIGILL  => raise Program_Error;
+         when SIGSEGV => raise Storage_Error;
+         when SIGBUS  => raise Storage_Error;
+         when others  => null;
       end case;
    end Notify_Exception;
 

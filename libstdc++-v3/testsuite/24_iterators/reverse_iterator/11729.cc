@@ -1,6 +1,6 @@
 // 2005-10-04  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,8 +25,6 @@
 // libstdc++/11729
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
   typedef std::vector<int> Vec;
   typedef Vec::reverse_iterator reverse_iterator;
   typedef Vec::const_reverse_iterator const_reverse_iterator;

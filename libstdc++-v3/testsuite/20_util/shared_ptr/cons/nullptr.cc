@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,8 +39,6 @@ struct deleter
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<int> p = nullptr;
   VERIFY( p.get() == nullptr );
   VERIFY( p.use_count() == 0 );
@@ -50,8 +48,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   deleter d;
   std::shared_ptr<int> p(nullptr, std::ref(d));
   VERIFY( p.get() == nullptr );
@@ -66,8 +62,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   deleter d;
   __gnu_test::tracker_allocator<int> a;
   std::shared_ptr<int> p(nullptr, std::ref(d), a);

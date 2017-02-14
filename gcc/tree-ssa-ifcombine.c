@@ -1,5 +1,5 @@
 /* Combining of if-expressions on trees.
-   Copyright (C) 2007-2016 Free Software Foundation, Inc.
+   Copyright (C) 2007-2017 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.
@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "cfghooks.h"
 #include "tree-pass.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "ssa.h"
 #include "tree-pretty-print.h"
@@ -331,6 +332,51 @@ recognize_bits_test (gcond *cond, tree *name, tree *bits, bool inv)
   return true;
 }
 
+
+/* Update profile after code in outer_cond_bb was adjusted so
+   outer_cond_bb has no condition.  */
+
+static void
+update_profile_after_ifcombine (basic_block inner_cond_bb,
+			        basic_block outer_cond_bb)
+{
+  edge outer_to_inner = find_edge (outer_cond_bb, inner_cond_bb);
+  edge outer2 = (EDGE_SUCC (outer_cond_bb, 0) == outer_to_inner
+		 ? EDGE_SUCC (outer_cond_bb, 1)
+		 : EDGE_SUCC (outer_cond_bb, 0));
+  edge inner_taken = EDGE_SUCC (inner_cond_bb, 0);
+  edge inner_not_taken = EDGE_SUCC (inner_cond_bb, 1);
+  
+  if (inner_taken->dest != outer2->dest)
+    std::swap (inner_taken, inner_not_taken);
+  gcc_assert (inner_taken->dest == outer2->dest);
+
+  /* In the following we assume that inner_cond_bb has single predecessor.  */
+  gcc_assert (single_pred_p (inner_cond_bb));
+
+  /* Path outer_cond_bb->(outer2) needs to be merged into path
+     outer_cond_bb->(outer_to_inner)->inner_cond_bb->(inner_taken)
+     and probability of inner_not_taken updated.  */
+
+  outer_to_inner->count = outer_cond_bb->count;
+  inner_cond_bb->count = outer_cond_bb->count;
+  inner_taken->count += outer2->count;
+  outer2->count = 0;
+
+  inner_taken->probability = outer2->probability
+			     + RDIV (outer_to_inner->probability
+				     * inner_taken->probability,
+				     REG_BR_PROB_BASE);
+  if (inner_taken->probability > REG_BR_PROB_BASE)
+    inner_taken->probability = REG_BR_PROB_BASE;
+  inner_not_taken->probability = REG_BR_PROB_BASE
+				 - inner_taken->probability;
+
+  outer_to_inner->probability = REG_BR_PROB_BASE;
+  inner_cond_bb->frequency = outer_cond_bb->frequency;
+  outer2->probability = 0;
+}
+
 /* If-convert on a and pattern with a common else block.  The inner
    if is specified by its INNER_COND_BB, the outer by OUTER_COND_BB.
    inner_inv, outer_inv and result_inv indicate whether the conditions
@@ -392,6 +438,8 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
       gimple_cond_set_condition_from_tree (outer_cond,
 	outer_inv ? boolean_false_node : boolean_true_node);
       update_stmt (outer_cond);
+
+      update_profile_after_ifcombine (inner_cond_bb, outer_cond_bb);
 
       if (dump_file)
 	{
@@ -470,6 +518,7 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
       gimple_cond_set_condition_from_tree (outer_cond,
 	outer_inv ? boolean_false_node : boolean_true_node);
       update_stmt (outer_cond);
+      update_profile_after_ifcombine (inner_cond_bb, outer_cond_bb);
 
       if (dump_file)
 	{
@@ -553,6 +602,7 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
       gimple_cond_set_condition_from_tree (outer_cond,
 	outer_inv ? boolean_false_node : boolean_true_node);
       update_stmt (outer_cond);
+      update_profile_after_ifcombine (inner_cond_bb, outer_cond_bb);
 
       if (dump_file)
 	{

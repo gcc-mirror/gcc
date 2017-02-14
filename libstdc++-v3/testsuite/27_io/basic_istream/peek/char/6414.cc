@@ -1,6 +1,6 @@
 // 2000-06-29 bkoz
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,6 @@
 // fstreams
 void test04(void)
 {
-  bool test __attribute__((unused)) = true;
   std::istream::pos_type pos01, pos02;
   const char str_lit01[] = "istream_seeks-1.txt";
   std::ifstream if01(str_lit01, std::ios_base::in | std::ios_base::out);

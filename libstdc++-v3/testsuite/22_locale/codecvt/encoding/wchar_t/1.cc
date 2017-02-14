@@ -1,6 +1,6 @@
 // 2000-08-17 Benjamin Kosnik <bkoz@cygnus.com>
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +28,6 @@ void test01()
 {
   using namespace std;
   typedef codecvt<wchar_t, char, mbstate_t> 	w_codecvt;
-  bool test __attribute__((unused)) = true;
 
   locale 		loc_c = locale::classic();
   const w_codecvt* 	cvt = &use_facet<w_codecvt>(loc_c); 

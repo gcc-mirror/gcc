@@ -1,7 +1,6 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,8 +27,6 @@ using namespace std;
 int
 main()
 {
-  bool test __attribute__((unused)) = true;
-
   static_assert(tuple_size<tuple<>>::value == 0, "");
   static_assert(tuple_size<tuple<int>>::value == 1, "");
   static_assert(tuple_size<tuple<void>>::value == 1, "");

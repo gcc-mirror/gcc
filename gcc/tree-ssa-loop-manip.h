@@ -1,5 +1,5 @@
 /* Header file for High-level loop manipulation functions.
-   Copyright (C) 2013-2016 Free Software Foundation, Inc.
+   Copyright (C) 2013-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,6 +24,8 @@ typedef void (*transform_callback)(struct loop *, void *);
 
 extern void create_iv (tree, tree, tree, struct loop *, gimple_stmt_iterator *,
 		       bool, tree *, tree *);
+extern void rewrite_into_loop_closed_ssa_1 (bitmap, unsigned, int,
+					    struct loop *);
 extern void rewrite_into_loop_closed_ssa (bitmap, unsigned);
 extern void rewrite_virtuals_into_loop_closed_ssa (struct loop *);
 extern void verify_loop_closed_ssa (bool);

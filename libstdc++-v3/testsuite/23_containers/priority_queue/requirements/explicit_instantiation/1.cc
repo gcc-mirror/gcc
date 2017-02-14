@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,3 +23,13 @@
 #include <queue>
 
 template class std::priority_queue<int>;
+
+struct NonDefaultConstructible : std::vector<int> {
+  NonDefaultConstructible(int) { }
+};
+struct Cmp : std::less<int> {
+  Cmp(int) { }
+};
+template class std::priority_queue<int, NonDefaultConstructible>;
+template class std::priority_queue<int, NonDefaultConstructible, Cmp>;
+template class std::priority_queue<int, std::vector<int>, Cmp>;

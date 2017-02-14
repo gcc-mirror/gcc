@@ -2,7 +2,7 @@
 
    Contributed by Evgeny Stupachenko <evstupac@gmail.com>
 
-   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Copyright (C) 2015-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -42,7 +42,7 @@ static void
 create_dispatcher_calls (struct cgraph_node *node)
 {
   cgraph_edge *e;
-  cgraph_edge *e_next;
+  cgraph_edge *e_next = NULL;
 
   /* We need to remember NEXT_CALLER as it could be modified in the loop.  */
   for (e = node->callers; e ;e = (e == NULL) ? e_next : e->next_caller)
@@ -87,6 +87,7 @@ create_dispatcher_calls (struct cgraph_node *node)
 	inode->resolve_alias (cgraph_node::get (resolver_decl));
 
       e->redirect_callee (inode);
+      e->redirect_call_stmt_to_callee ();
       /*  Since REDIRECT_CALLEE modifies NEXT_CALLER field we move to
 	  previously set NEXT_CALLER.  */
       e = NULL;
@@ -101,22 +102,18 @@ get_attr_len (tree arglist)
 {
   tree arg;
   int str_len_sum = 0;
-  int argnum = 1;
+  int argnum = 0;
 
   for (arg = arglist; arg; arg = TREE_CHAIN (arg))
     {
-      unsigned int i;
       const char *str = TREE_STRING_POINTER (TREE_VALUE (arg));
-      int len = strlen (str);
-
+      size_t len = strlen (str);
       str_len_sum += len + 1;
-      if (arg != arglist)
+      for (const char *p = strchr (str, ','); p; p = strchr (p + 1, ','))
 	argnum++;
-      for (i = 0; i < strlen (str); i++)
-	if (str[i] == ',')
-	  argnum++;
+      argnum++;
     }
-  if (argnum == 1)
+  if (argnum <= 1)
     return -1;
   return str_len_sum;
 }
@@ -134,8 +131,9 @@ get_attr_str (tree arglist, char *attr_str)
   for (arg = arglist; arg; arg = TREE_CHAIN (arg))
     {
       const char *str = TREE_STRING_POINTER (TREE_VALUE (arg));
-
       size_t len = strlen (str);
+      for (const char *p = strchr (str, ','); p; p = strchr (p + 1, ','))
+	argnum++;
       memcpy (attr_str + str_len_sum, str, len);
       attr_str[str_len_sum + len] = TREE_CHAIN (arg) ? ',' : '\0';
       str_len_sum += len + 1;
@@ -152,19 +150,16 @@ separate_attrs (char *attr_str, char **attrs)
 {
   int i = 0;
   bool has_default = false;
-  char *attr = strtok (attr_str, ",");
 
-  while (attr != NULL)
+  for (char *attr = strtok (attr_str, ",");
+       attr != NULL; attr = strtok (NULL, ","))
     {
       if (strcmp (attr, "default") == 0)
 	{
 	  has_default = true;
-	  attr = strtok (NULL, ",");
 	  continue;
 	}
-      attrs[i] = attr;
-      attr = strtok (NULL, ",");
-      i++;
+      attrs[i++] = attr;
     }
   if (!has_default)
     return -1;
@@ -235,7 +230,7 @@ create_target_clone (cgraph_node *node, bool definition, char *name)
    create the appropriate clone for each valid target attribute.  */
 
 static bool
-expand_target_clones (struct cgraph_node *node, bool defenition)
+expand_target_clones (struct cgraph_node *node, bool definition)
 {
   int i;
   /* Parsing target attributes separated by comma.  */
@@ -266,6 +261,8 @@ expand_target_clones (struct cgraph_node *node, bool defenition)
     {
       error_at (DECL_SOURCE_LOCATION (node->decl),
 		"default target was not set");
+      XDELETEVEC (attrs);
+      XDELETEVEC (attr_str);
       return false;
     }
 
@@ -286,22 +283,25 @@ expand_target_clones (struct cgraph_node *node, bool defenition)
 
       create_new_asm_name (attr, suffix);
       /* Create new target clone.  */
-      cgraph_node *new_node = create_target_clone (node, defenition, suffix);
+      cgraph_node *new_node = create_target_clone (node, definition, suffix);
+      new_node->local.local = false;
       XDELETEVEC (suffix);
 
       /* Set new attribute for the clone.  */
       tree attributes = make_attribute ("target", attr,
 					DECL_ATTRIBUTES (new_node->decl));
       DECL_ATTRIBUTES (new_node->decl) = attributes;
+      location_t saved_loc = input_location;
+      input_location = DECL_SOURCE_LOCATION (node->decl);
       if (!targetm.target_option.valid_attribute_p (new_node->decl, NULL,
-						    TREE_VALUE (attributes), 0))
+						    TREE_VALUE (attributes),
+						    0))
 	{
-	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		      "attribute(target_clones(\"%s\")) is not "
-		      "valid for current target", attr);
+	  input_location = saved_loc;
 	  continue;
 	}
 
+      input_location = saved_loc;
       decl2_v = new_node->function_version ();
       if (decl2_v != NULL)
         continue;
@@ -320,35 +320,35 @@ expand_target_clones (struct cgraph_node *node, bool defenition)
       DECL_FUNCTION_VERSIONED (new_node->decl) = 1;
     }
 
-  /* Setting new attribute to initial function.  */
-  tree attributes =  make_attribute ("target", "default",
-				     DECL_ATTRIBUTES (node->decl));
-  DECL_ATTRIBUTES (node->decl) = attributes;
-  if (!targetm.target_option.valid_attribute_p (node->decl, NULL,
-						TREE_VALUE (attributes), 0))
-    {
-      error_at (DECL_SOURCE_LOCATION (node->decl),
-		"attribute(target_clones(\"default\")) is not "
-		"valid for current target");
-      return false;
-    }
-
   XDELETEVEC (attrs);
   XDELETEVEC (attr_str);
-  return true;
-}
 
-static bool target_clone_pass;
+  /* Setting new attribute to initial function.  */
+  tree attributes = make_attribute ("target", "default",
+				    DECL_ATTRIBUTES (node->decl));
+  DECL_ATTRIBUTES (node->decl) = attributes;
+  location_t saved_loc = input_location;
+  input_location = DECL_SOURCE_LOCATION (node->decl);
+  bool ret
+    = targetm.target_option.valid_attribute_p (node->decl, NULL,
+					       TREE_VALUE (attributes), 0);
+  input_location = saved_loc;
+  return ret;
+}
 
 static unsigned int
 ipa_target_clone (void)
 {
   struct cgraph_node *node;
 
-  target_clone_pass = false;
+  bool target_clone_pass = false;
   FOR_EACH_FUNCTION (node)
-    if (node->definition)
-      target_clone_pass |= expand_target_clones (node, true);
+    target_clone_pass |= expand_target_clones (node, node->definition);
+
+  if (target_clone_pass)
+    FOR_EACH_FUNCTION (node)
+      create_dispatcher_calls (node);
+
   return 0;
 }
 
@@ -364,7 +364,7 @@ const pass_data pass_data_target_clone =
   0,				/* properties_provided */
   0,				/* properties_destroyed */
   0,				/* todo_flags_start */
-  0				/* todo_flags_finish */
+  TODO_update_ssa		/* todo_flags_finish */
 };
 
 class pass_target_clone : public simple_ipa_opt_pass
@@ -391,59 +391,4 @@ simple_ipa_opt_pass *
 make_pass_target_clone (gcc::context *ctxt)
 {
   return new pass_target_clone (ctxt);
-}
-
-static unsigned int
-ipa_dispatcher_calls (void)
-{
-  struct cgraph_node *node;
-
-  FOR_EACH_FUNCTION (node)
-    if (!node->definition)
-      target_clone_pass |= expand_target_clones (node, false);
-  if (target_clone_pass)
-    FOR_EACH_FUNCTION (node)
-      create_dispatcher_calls (node);
-  return 0;
-}
-
-namespace {
-
-const pass_data pass_data_dispatcher_calls =
-{
-  SIMPLE_IPA_PASS,		/* type */
-  "dispachercalls",		/* name */
-  OPTGROUP_NONE,		/* optinfo_flags */
-  TV_NONE,			/* tv_id */
-  ( PROP_ssa | PROP_cfg ),	/* properties_required */
-  0,				/* properties_provided */
-  0,				/* properties_destroyed */
-  0,				/* todo_flags_start */
-  0				/* todo_flags_finish */
-};
-
-class pass_dispatcher_calls : public simple_ipa_opt_pass
-{
-public:
-  pass_dispatcher_calls (gcc::context *ctxt)
-    : simple_ipa_opt_pass (pass_data_dispatcher_calls, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *) { return ipa_dispatcher_calls (); }
-};
-
-bool
-pass_dispatcher_calls::gate (function *)
-{
-  return true;
-}
-
-} // anon namespace
-
-simple_ipa_opt_pass *
-make_pass_dispatcher_calls (gcc::context *ctxt)
-{
-  return new pass_dispatcher_calls (ctxt);
 }

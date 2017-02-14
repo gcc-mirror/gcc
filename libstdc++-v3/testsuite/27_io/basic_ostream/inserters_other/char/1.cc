@@ -1,7 +1,7 @@
 // 1999-08-16 bkoz
 // 1999-11-01 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,7 +40,6 @@ void
 test02() 
 {
   typedef std::ios_base::iostate iostate;
-  bool test __attribute__((unused)) = true;
 
   // basic_ostream<_CharT, _Traits>::operator<<(__streambuf_type* __sb)
   // filebuf-> NULL 

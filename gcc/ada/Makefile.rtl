@@ -493,6 +493,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-bignum$(objext) \
   s-bitops$(objext) \
   s-boarop$(objext) \
+  s-boustr$(objext) \
   s-bytswa$(objext) \
   s-carsi8$(objext) \
   s-carun8$(objext) \
@@ -658,7 +659,6 @@ GNATRTL_NONTASKING_OBJS= \
   s-stache$(objext) \
   s-stalib$(objext) \
   s-stausa$(objext) \
-  s-stchop$(objext) \
   s-stoele$(objext) \
   s-stopoo$(objext) \
   s-stposu$(objext) \

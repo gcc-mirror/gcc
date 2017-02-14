@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -115,7 +115,8 @@ package body Exception_Propagation is
       GCC_Exception : not null GCC_Exception_Access);
    pragma Export
      (C, Set_Exception_Parameter, "__gnat_set_exception_parameter");
-   --  Called inserted by gigi to initialize the exception parameter
+   --  Called inserted by gigi to set the exception choice parameter from the
+   --  gcc occurrence.
 
    procedure Set_Foreign_Occurrence (Excep : EOA; Mo : System.Address);
    --  Utility routine to initialize occurrence Excep from a foreign exception

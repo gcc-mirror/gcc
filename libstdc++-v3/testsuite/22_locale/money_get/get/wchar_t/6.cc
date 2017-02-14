@@ -1,6 +1,6 @@
 // 2001-09-12 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,8 +46,6 @@ void test06()
 {
   using namespace std;
   typedef istreambuf_iterator<wchar_t> InIt;
-
-  bool test __attribute__((unused)) = true;
 
   locale loc(locale::classic(), new My_money_io);
 

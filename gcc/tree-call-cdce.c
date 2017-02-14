@@ -1,5 +1,5 @@
 /* Conditional Dead Call Elimination pass for the GNU compiler.
-   Copyright (C) 2008-2016 Free Software Foundation, Inc.
+   Copyright (C) 2008-2017 Free Software Foundation, Inc.
    Contributed by Xinliang David Li <davidxl@google.com>
 
 This file is part of GCC.
@@ -807,14 +807,30 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
 	 can_guard_call_p.  */
       join_tgt_in_edge_from_call = find_fallthru_edge (bi_call_bb->succs);
       gcc_assert (join_tgt_in_edge_from_call);
-      free_dominance_info (CDI_DOMINATORS);
+      /* We don't want to handle PHIs.  */
+      if (EDGE_COUNT (join_tgt_in_edge_from_call->dest->preds) > 1)
+	join_tgt_bb = split_edge (join_tgt_in_edge_from_call);
+      else
+	{
+	  join_tgt_bb = join_tgt_in_edge_from_call->dest;
+	  /* We may have degenerate PHIs in the destination.  Propagate
+	     those out.  */
+	  for (gphi_iterator i = gsi_start_phis (join_tgt_bb); !gsi_end_p (i);)
+	    {
+	      gphi *phi = i.phi ();
+	      replace_uses_by (gimple_phi_result (phi),
+			       gimple_phi_arg_def (phi, 0));
+	      remove_phi_node (&i, true);
+	    }
+	}
     }
   else
-    join_tgt_in_edge_from_call = split_block (bi_call_bb, bi_call);
+    {
+      join_tgt_in_edge_from_call = split_block (bi_call_bb, bi_call);
+      join_tgt_bb = join_tgt_in_edge_from_call->dest;
+    }
 
   bi_call_bsi = gsi_for_stmt (bi_call);
-
-  join_tgt_bb = join_tgt_in_edge_from_call->dest;
 
   /* Now it is time to insert the first conditional expression
      into bi_call_bb and split this bb so that bi_call is

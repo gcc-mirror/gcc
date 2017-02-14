@@ -1,11 +1,12 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-string-conversions "" }
 // { dg-xfail-run-if "PR libstdc++/64054" { *-*-solaris* } }
+// { dg-xfail-run-if "broken long double IO" { newlib_broken_long_double_io  }  "*" "" }
 
 // 2014-03-27 Rüdiger Sonderfeld
 // test the hexadecimal floating point inserters (facet num_put)
 
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,10 +27,6 @@
 #include <sstream>
 #include <string>
 #include <testsuite_hooks.h>
-
-#ifndef _GLIBCXX_ASSERT
-#  define TEST_NUMPUT_VERBOSE 1
-#endif
 
 #ifdef TEST_NUMPUT_VERBOSE
 #  include <iostream>

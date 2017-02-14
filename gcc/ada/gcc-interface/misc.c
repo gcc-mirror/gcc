@@ -255,8 +255,7 @@ static bool
 gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 {
   /* Excess precision other than "fast" requires front-end support.  */
-  if (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD
-      && TARGET_FLT_EVAL_METHOD_NON_DEFAULT)
+  if (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD)
     sorry ("-fexcess-precision=standard for Ada");
   flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
 
@@ -899,6 +898,7 @@ gnat_get_array_descr_info (const_tree const_type,
     }
 
   info->ndimensions = i;
+  info->rank = NULL_TREE;
 
   /* Too many dimensions?  Give up generating proper description: yield instead
      nested arrays.  Note that in this case, this hook is invoked once on each
@@ -1367,7 +1367,7 @@ get_lang_specific (tree node)
 #undef  LANG_HOOKS_TYPE_HASH_EQ
 #define LANG_HOOKS_TYPE_HASH_EQ		gnat_type_hash_eq
 #undef  LANG_HOOKS_GETDECLS
-#define LANG_HOOKS_GETDECLS		lhd_return_null_tree_v
+#define LANG_HOOKS_GETDECLS		hook_tree_void_null
 #undef  LANG_HOOKS_PUSHDECL
 #define LANG_HOOKS_PUSHDECL		gnat_return_tree
 #undef  LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL
@@ -1416,6 +1416,8 @@ get_lang_specific (tree node)
 #define LANG_HOOKS_EH_PERSONALITY	gnat_eh_personality
 #undef  LANG_HOOKS_DEEP_UNSHARING
 #define LANG_HOOKS_DEEP_UNSHARING	true
+#undef  LANG_HOOKS_CUSTOM_FUNCTION_DESCRIPTORS
+#define LANG_HOOKS_CUSTOM_FUNCTION_DESCRIPTORS true
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

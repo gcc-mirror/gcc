@@ -1,5 +1,5 @@
 ;; Predicate definitions for DEC Alpha.
-;; Copyright (C) 2004-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2017 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -181,7 +181,7 @@
     case SUBREG:
       if (register_operand (op, mode))
 	return 1;
-      /* ... fall through ...  */
+      /* fall through */
     case MEM:
       return ((TARGET_BWX || (mode != HImode && mode != QImode))
 	      && general_operand (op, mode));

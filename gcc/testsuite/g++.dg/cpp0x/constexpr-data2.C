@@ -12,7 +12,7 @@ template<typename _Tp, _Tp v>
   };
 
 // Partial specialization.
-template<typename _Tp, _Tp v>
+template<typename _Tp, _Tp* v>
   struct A3<_Tp*, v>
   {
     typedef _Tp* value_type;

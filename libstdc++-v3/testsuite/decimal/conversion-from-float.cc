@@ -1,4 +1,4 @@
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,6 @@ using namespace std::decimal;
 void
 conversion_from_float_32 ()
 {
-  bool test __attribute__((unused)) = true;
   decimal32 d32(123);
   decimal64 d64(234);
   decimal128 d128(345);
@@ -52,7 +51,6 @@ conversion_from_float_32 ()
 void
 conversion_from_float_64 ()
 {
-  bool test __attribute__((unused)) = true;
   decimal32 d32(123);
   decimal64 d64(234);
   decimal128 d128(345);
@@ -75,7 +73,6 @@ conversion_from_float_64 ()
 void
 conversion_from_float_128 ()
 {
-  bool test __attribute__((unused)) = true;
   decimal32 d32(123);
   decimal64 d64(234);
   decimal128 d128(345);

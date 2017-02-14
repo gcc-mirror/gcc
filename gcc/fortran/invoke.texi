@@ -1,10 +1,10 @@
-@c Copyright (C) 2004-2016 Free Software Foundation, Inc.
+@c Copyright (C) 2004-2017 Free Software Foundation, Inc.
 @c This is part of the GNU Fortran manual.   
 @c For copying conditions, see the file gfortran.texi.
 
 @ignore
 @c man begin COPYRIGHT
-Copyright @copyright{} 2004-2016 Free Software Foundation, Inc.
+Copyright @copyright{} 2004-2017 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -116,13 +116,15 @@ by type.  Explanations are in the following sections.
 @xref{Fortran Dialect Options,,Options controlling Fortran dialect}.
 @gccoptlist{-fall-intrinsics -fbackslash -fcray-pointer -fd-lines-as-code @gol
 -fd-lines-as-comments @gol
--fdec -fdec-structure -fdefault-double-8 -fdefault-integer-8 @gol
+-fdec -fdec-structure -fdec-intrinsic-ints -fdec-static -fdec-math @gol
+-fdefault-double-8 -fdefault-integer-8 @gol
 -fdefault-real-8 -fdollar-ok -ffixed-line-length-@var{n} @gol
 -ffixed-line-length-none -ffree-form -ffree-line-length-@var{n} @gol
 -ffree-line-length-none -fimplicit-none -finteger-4-integer-8 @gol
 -fmax-identifier-length -fmodule-private -ffixed-form -fno-range-check @gol
 -fopenacc -fopenmp -freal-4-real-10 -freal-4-real-16 -freal-4-real-8 @gol
 -freal-8-real-10 -freal-8-real-16 -freal-8-real-4 -std=@var{std}
+-ftest-forall-temp
 }
 
 @item Preprocessing Options
@@ -140,7 +142,7 @@ by type.  Explanations are in the following sections.
 @item Error and Warning Options
 @xref{Error and Warning Options,,Options to request or suppress errors
 and warnings}.
-@gccoptlist{-Waliasing -Wall -Wampersand -Warray-bounds
+@gccoptlist{-Waliasing -Wall -Wampersand -Wargument-mismatch -Warray-bounds
 -Wc-binding-type -Wcharacter-truncation @gol
 -Wconversion -Wfunction-elimination -Wimplicit-interface @gol
 -Wimplicit-procedure -Wintrinsic-shadow -Wuse-without-only -Wintrinsics-std @gol
@@ -177,6 +179,7 @@ and warnings}.
 -fcoarray=@var{<none|single|lib>} -fexternal-blas -ff2c
 -ffrontend-optimize @gol
 -finit-character=@var{n} -finit-integer=@var{n} -finit-local-zero @gol
+-finit-derived @gol
 -finit-logical=@var{<true|false>}
 -finit-real=@var{<zero|inf|-inf|nan|snan>} @gol
 -finline-matmul-limit=@var{n} @gol
@@ -234,11 +237,15 @@ comment lines.
 DEC compatibility mode. Enables extensions and other features that mimic
 the default behavior of older compilers (such as DEC).
 These features are non-standard and should be avoided at all costs.
-For details on GNU Fortran's implementation of these extensions see the 
+For details on GNU Fortran's implementation of these extensions see the
 full documentation.
 
 Other flags enabled by this switch are:
 @option{-fdollar-ok} @option{-fcray-pointer} @option{-fdec-structure}
+@option{-fdec-intrinsic-ints} @option{-fdec-static} @option{-fdec-math}
+
+If @option{-fd-lines-as-code}/@option{-fd-lines-as-comments} are unset, then
+@option{-fdec} also sets @option{-fd-lines-as-comments}.
 
 @item -fdec-structure
 @opindex @code{fdec-structure}
@@ -246,6 +253,21 @@ Enable DEC @code{STRUCTURE} and @code{RECORD} as well as @code{UNION},
 @code{MAP}, and dot ('.') as a member separator (in addition to '%'). This is
 provided for compatibility only; Fortran 90 derived types should be used
 instead where possible.
+
+@item -fdec-intrinsic-ints
+@opindex @code{fdec-intrinsic-ints}
+Enable B/I/J/K kind variants of existing integer functions (e.g. BIAND, IIAND,
+JIAND, etc...). For a complete list of intrinsics see the full documentation.
+
+@item -fdec-math
+@opindex @code{fdec-math}
+Enable legacy math intrinsics such as COTAN and degree-valued trigonometric
+functions (e.g. TAND, ATAND, etc...) for compatability with older code.
+
+@item -fdec-static
+@opindex @code{fdec-static}
+Enable DEC-style STATIC and AUTOMATIC attributes to explicitly specify
+the storage of variables and other objects.
 
 @item -fdollar-ok
 @opindex @code{fdollar-ok}
@@ -437,6 +459,10 @@ that are permitted but obsolescent in later standards. @samp{-std=f2008ts}
 allows the Fortran 2008 standard including the additions of the 
 Technical Specification (TS) 29113 on Further Interoperability of Fortran
 with C and TS 18508 on Additional Parallel Features in Fortran.
+
+@item -ftest-forall-temp
+@opindex @code{ftest-forall-temp}
+Enhance test coverage by forcing most forall assignments to use temporary.
 
 @end table
 
@@ -728,8 +754,10 @@ Check the code for syntax errors, but do not actually compile it.  This
 will generate module files for each module present in the code, but no
 other output file.
 
-@item -pedantic
+@item -Wpedantic
+@itemx -pedantic
 @opindex @code{pedantic}
+@opindex @code{Wpedantic}
 Issue warnings for uses of extensions to Fortran 95.
 @option{-pedantic} also applies to C-language constructs where they
 occur in GNU Fortran source files, such as use of @samp{\e} in a
@@ -799,6 +827,15 @@ given with @option{-Wampersand}, @option{-pedantic}, @option{-std=f95},
 given in a continued character constant, GNU Fortran assumes continuation
 at the first non-comment, non-whitespace character after the ampersand
 that initiated the continuation.
+
+@item -Wargument-mismatch
+@opindex @code{Wargument-mismatch}
+@cindex warnings, argument mismatch
+@cindex warnings, parameter mismatch
+@cindex warnings, interface mismatch
+Warn about type, rank, and other mismatches between formal parameters and actual
+arguments to functions and subroutines.  These warnings are recommended and
+thus enabled by default.
 
 @item -Warray-temporaries
 @opindex @code{Warray-temporaries}
@@ -929,7 +966,8 @@ is active for @option{-pedantic}, @option{-std=f95}, @option{-std=f2003},
 @opindex @code{Wundefined-do-loop}
 @cindex warnings, undefined do loop
 Warn if a DO loop with step either 1 or -1 yields an underflow or an overflow
-during iteration of an induction variable of the loop.  Enabled by default.
+during iteration of an induction variable of the loop.
+This option is implied by @option{-Wall}.
 
 @item -Wunderflow
 @opindex @code{Wunderflow}
@@ -1602,11 +1640,13 @@ on the stack. This flag cannot be used together with
 @option{-fmax-stack-var-size=} or @option{-fno-automatic}.
 
 @item -finit-local-zero
+@itemx -finit-derived
 @itemx -finit-integer=@var{n}
 @itemx -finit-real=@var{<zero|inf|-inf|nan|snan>}
 @itemx -finit-logical=@var{<true|false>}
 @itemx -finit-character=@var{n}
 @opindex @code{finit-local-zero}
+@opindex @code{finit-derived}
 @opindex @code{finit-integer}
 @opindex @code{finit-real}
 @opindex @code{finit-logical}
@@ -1621,12 +1661,12 @@ initialization options are provided by the
 the real and imaginary parts of local @code{COMPLEX} variables),
 @option{-finit-logical=@var{<true|false>}}, and
 @option{-finit-character=@var{n}} (where @var{n} is an ASCII character
-value) options.  These options do not initialize
+value) options.  Components of derived type variables will be initialized
+according to these flags only with @option{-finit-derived}.  These options do
+not initialize
 @itemize @bullet
 @item
 allocatable arrays
-@item
-components of derived type variables
 @item
 variables that appear in an @code{EQUIVALENCE} statement.
 @end itemize

@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2017 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -54,9 +54,9 @@
 	    (match_test "op == const0_rtx"))))
 
 (define_predicate "aarch64_reg_or_fp_zero"
-  (and (match_code "reg,subreg,const_double")
-       (ior (match_operand 0 "register_operand")
-	    (match_test "aarch64_float_const_zero_rtx_p (op)"))))
+  (ior (match_operand 0 "register_operand")
+	(and (match_code "const_double")
+	     (match_test "aarch64_float_const_zero_rtx_p (op)"))))
 
 (define_predicate "aarch64_reg_zero_or_m1_or_1"
   (and (match_code "reg,subreg,const_int")
@@ -105,6 +105,10 @@
 (define_predicate "aarch64_logical_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_logical_immediate")))
+
+(define_predicate "aarch64_logical_and_immediate"
+  (and (match_code "const_int")
+       (match_test "aarch64_and_bitmask_imm (INTVAL (op), mode)")))
 
 (define_predicate "aarch64_shift_imm_si"
   (and (match_code "const_int")
@@ -180,6 +184,7 @@
 	  || GET_CODE (XEXP (op, 1)) != CONST_INT)
 	return false;
       op = XEXP (op, 0);
+      /* FALLTHRU */
 
     case SYMBOL_REF:
       return SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_INITIAL_EXEC;
@@ -201,6 +206,7 @@
 	  || GET_CODE (XEXP (op, 1)) != CONST_INT)
 	return false;
       op = XEXP (op, 0);
+      /* FALLTHRU */
 
     case SYMBOL_REF:
       return SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_LOCAL_EXEC;

@@ -10,7 +10,6 @@ MODULE WinData
   INTEGER (1), PARAMETER :: MAXFLD = 25_1, MAXHED = 5_1, MAXCHR = 80_1
   integer :: i
   TYPE TWindowData
-    CHARACTER (MAX_FLD_HED, 1) :: DWFdHd(MAXFLD) = [(" ", i = 1, MAXFLD)]
-    ! { dg-error "specification expression" "" { target *-*-* } 13 }
+    CHARACTER (MAX_FLD_HED, 1) :: DWFdHd(MAXFLD) = [(" ", i = 1, MAXFLD)] ! { dg-error "Scalar INTEGER expression" }
   END TYPE TWindowData
 END MODULE WinData

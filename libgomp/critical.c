@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2017 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -115,33 +115,11 @@ GOMP_critical_name_end (void **pptr)
   gomp_mutex_unlock (plock);
 }
 
-/* This mutex is used when atomic operations don't exist for the target
-   in the mode requested.  The result is not globally atomic, but works so
-   long as all parallel references are within #pragma omp atomic directives.
-   According to responses received from omp@openmp.org, appears to be within
-   spec.  Which makes sense, since that's how several other compilers 
-   handle this situation as well.  */
-
-static gomp_mutex_t atomic_lock;
-
-void
-GOMP_atomic_start (void)
-{
-  gomp_mutex_lock (&atomic_lock);
-}
-
-void
-GOMP_atomic_end (void)
-{
-  gomp_mutex_unlock (&atomic_lock);
-}
-
 #if !GOMP_MUTEX_INIT_0
 static void __attribute__((constructor))
 initialize_critical (void)
 {
   gomp_mutex_init (&default_lock);
-  gomp_mutex_init (&atomic_lock);
 #ifndef HAVE_SYNC_BUILTINS
   gomp_mutex_init (&create_lock_lock);
 #endif

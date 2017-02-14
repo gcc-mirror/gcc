@@ -1,8 +1,8 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 // 2010-11-10  Paolo Carlini  <paolo.carlini@oracle.com> 
 //
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,6 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using __gnu_test::rvalstruct;
 
   typedef std::set<rvalstruct> Set;
@@ -43,7 +42,6 @@ void test01()
 
 void test02()
 {
-  bool test __attribute__((unused)) = true;
   using __gnu_test::rvalstruct;
 
   typedef std::set<rvalstruct> Set;

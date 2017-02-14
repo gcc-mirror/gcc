@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 // { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 27.6.3 template class basic_streambuf
@@ -47,8 +47,6 @@ struct streambuf : std::streambuf
 
 void streambuf::test_copy() const
 {
-  bool test __attribute__((unused)) = true;
-
   streambuf a(*this);
 
   VERIFY( eback()  == a.eback() );
@@ -62,8 +60,6 @@ void streambuf::test_copy() const
 
 void streambuf::test_assign() const
 {
-  bool test __attribute__((unused)) = true;
-
   streambuf a;
   a = *this;
 
@@ -78,8 +74,6 @@ void streambuf::test_assign() const
 
 void streambuf::test_swap() const
 {
-  bool test __attribute__((unused)) = true;
-
   streambuf a(*this);
   streambuf b;
   const streambuf c(b);

@@ -1,5 +1,5 @@
 // { dg-do compile }
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,7 +31,9 @@ void test01()
   it <= it;
   it > it;
   it >= it;
-  it - it;
+#if __cplusplus < 201103L
+  it - it; // See PR libstdc++/71771
+#endif
   1 + it;
   it + 1;
 }

@@ -46,8 +46,8 @@ subroutine i_am_ok
 end subroutine i_am_ok
 
 program main
-  USE f77_blas_extra ! { dg-error "Ambiguous interfaces" }
-  USE f77_blas_generic
+  USE f77_blas_extra   ! { dg-error "Ambiguous interfaces" }
+  USE f77_blas_generic ! { dg-error "Ambiguous interfaces" }
   character(6) :: chr
   chr = ""
   call bl_copy(1.0, chr)

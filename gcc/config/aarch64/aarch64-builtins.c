@@ -1,5 +1,5 @@
 /* Builtins' description for AArch64 SIMD architecture.
-   Copyright (C) 2011-2016 Free Software Foundation, Inc.
+   Copyright (C) 2011-2017 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -27,6 +27,7 @@
 #include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "expmed.h"
 #include "optabs.h"
@@ -62,6 +63,7 @@
 #define si_UP    SImode
 #define sf_UP    SFmode
 #define hi_UP    HImode
+#define hf_UP    HFmode
 #define qi_UP    QImode
 #define UP(X) X##_UP
 
@@ -139,6 +141,10 @@ aarch64_types_binop_ssu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_unsigned };
 #define TYPES_BINOP_SSU (aarch64_types_binop_ssu_qualifiers)
 static enum aarch64_type_qualifiers
+aarch64_types_binop_uss_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_none, qualifier_none };
+#define TYPES_BINOP_USS (aarch64_types_binop_uss_qualifiers)
+static enum aarch64_type_qualifiers
 aarch64_types_binopp_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_poly, qualifier_poly, qualifier_poly };
 #define TYPES_BINOPP (aarch64_types_binopp_qualifiers)
@@ -164,6 +170,10 @@ aarch64_types_quadop_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define TYPES_QUADOP_LANE (aarch64_types_quadop_lane_qualifiers)
 
 static enum aarch64_type_qualifiers
+aarch64_types_binop_imm_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_poly, qualifier_none, qualifier_immediate };
+#define TYPES_GETREGP (aarch64_types_binop_imm_p_qualifiers)
+static enum aarch64_type_qualifiers
 aarch64_types_binop_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_immediate };
 #define TYPES_GETREG (aarch64_types_binop_imm_qualifiers)
@@ -182,11 +192,20 @@ aarch64_types_unsigned_shift_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define TYPES_USHIFTIMM (aarch64_types_unsigned_shift_qualifiers)
 
 static enum aarch64_type_qualifiers
-aarch64_types_ternop_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_none, qualifier_none, qualifier_immediate };
-#define TYPES_SETREG (aarch64_types_ternop_imm_qualifiers)
-#define TYPES_SHIFTINSERT (aarch64_types_ternop_imm_qualifiers)
-#define TYPES_SHIFTACC (aarch64_types_ternop_imm_qualifiers)
+aarch64_types_ternop_s_imm_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_poly, qualifier_immediate};
+#define TYPES_SETREGP (aarch64_types_ternop_s_imm_p_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_ternop_s_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_none, qualifier_none, qualifier_immediate};
+#define TYPES_SETREG (aarch64_types_ternop_s_imm_qualifiers)
+#define TYPES_SHIFTINSERT (aarch64_types_ternop_s_imm_qualifiers)
+#define TYPES_SHIFTACC (aarch64_types_ternop_s_imm_qualifiers)
+
+static enum aarch64_type_qualifiers
+aarch64_types_ternop_p_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_poly, qualifier_poly, qualifier_poly, qualifier_immediate};
+#define TYPES_SHIFTINSERTP (aarch64_types_ternop_p_imm_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_unsigned_shiftacc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -199,6 +218,11 @@ static enum aarch64_type_qualifiers
 aarch64_types_combine_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none };
 #define TYPES_COMBINE (aarch64_types_combine_qualifiers)
+
+static enum aarch64_type_qualifiers
+aarch64_types_combine_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_poly, qualifier_poly, qualifier_poly };
+#define TYPES_COMBINEP (aarch64_types_combine_p_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_load1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -232,6 +256,10 @@ aarch64_types_bsl_u_qualifiers[SIMD_MAX_BUILTIN_ARGS]
    a DImode pointer to the location to store to, so we must use
    qualifier_map_mode | qualifier_pointer to build a pointer to the
    element type of the vector.  */
+static enum aarch64_type_qualifiers
+aarch64_types_store1_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_pointer_map_mode, qualifier_poly };
+#define TYPES_STORE1P (aarch64_types_store1_p_qualifiers)
 static enum aarch64_type_qualifiers
 aarch64_types_store1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_pointer_map_mode, qualifier_none };
@@ -348,6 +376,10 @@ enum aarch64_builtins
   AARCH64_CRC32_BUILTIN_BASE,
   AARCH64_CRC32_BUILTINS
   AARCH64_CRC32_BUILTIN_MAX,
+  /* ARMv8.3-A Pointer Authentication Builtins.  */
+  AARCH64_PAUTH_BUILTIN_AUTIA1716,
+  AARCH64_PAUTH_BUILTIN_PACIA1716,
+  AARCH64_PAUTH_BUILTIN_XPACLRI,
   AARCH64_BUILTIN_MAX
 };
 
@@ -438,12 +470,14 @@ static struct aarch64_simd_type_info aarch64_simd_types [] = {
 };
 #undef ENTRY
 
-/* This type is not SIMD-specific; it is the user-visible __fp16.  */
-static tree aarch64_fp16_type_node = NULL_TREE;
-
 static tree aarch64_simd_intOI_type_node = NULL_TREE;
 static tree aarch64_simd_intCI_type_node = NULL_TREE;
 static tree aarch64_simd_intXI_type_node = NULL_TREE;
+
+/* The user-visible __fp16 type, and a pointer to that type.  Used
+   across the back-end.  */
+tree aarch64_fp16_type_node = NULL_TREE;
+tree aarch64_fp16_ptr_type_node = NULL_TREE;
 
 static const char *
 aarch64_mangle_builtin_scalar_type (const_tree type)
@@ -755,16 +789,16 @@ aarch64_init_simd_builtins (void)
 
 	  if (qualifiers & qualifier_unsigned)
 	    {
-	      type_signature[arg_num] = 'u';
+	      type_signature[op_num] = 'u';
 	      print_type_signature_p = true;
 	    }
 	  else if (qualifiers & qualifier_poly)
 	    {
-	      type_signature[arg_num] = 'p';
+	      type_signature[op_num] = 'p';
 	      print_type_signature_p = true;
 	    }
 	  else
-	    type_signature[arg_num] = 's';
+	    type_signature[op_num] = 's';
 
 	  /* Skip an internal operand for vget_{low, high}.  */
 	  if (qualifiers & qualifier_internal)
@@ -878,6 +912,48 @@ aarch64_init_builtin_rsqrt (void)
   }
 }
 
+/* Initialize the backend types that support the user-visible __fp16
+   type, also initialize a pointer to that type, to be used when
+   forming HFAs.  */
+
+static void
+aarch64_init_fp16_types (void)
+{
+  aarch64_fp16_type_node = make_node (REAL_TYPE);
+  TYPE_PRECISION (aarch64_fp16_type_node) = 16;
+  layout_type (aarch64_fp16_type_node);
+
+  (*lang_hooks.types.register_builtin_type) (aarch64_fp16_type_node, "__fp16");
+  aarch64_fp16_ptr_type_node = build_pointer_type (aarch64_fp16_type_node);
+}
+
+/* Pointer authentication builtins that will become NOP on legacy platform.
+   Currently, these builtins are for internal use only (libgcc EH unwinder).  */
+
+void
+aarch64_init_pauth_hint_builtins (void)
+{
+  /* Pointer Authentication builtins.  */
+  tree ftype_pointer_auth
+    = build_function_type_list (ptr_type_node, ptr_type_node,
+				unsigned_intDI_type_node, NULL_TREE);
+  tree ftype_pointer_strip
+    = build_function_type_list (ptr_type_node, ptr_type_node, NULL_TREE);
+
+  aarch64_builtin_decls[AARCH64_PAUTH_BUILTIN_AUTIA1716]
+    = add_builtin_function ("__builtin_aarch64_autia1716", ftype_pointer_auth,
+			    AARCH64_PAUTH_BUILTIN_AUTIA1716, BUILT_IN_MD, NULL,
+			    NULL_TREE);
+  aarch64_builtin_decls[AARCH64_PAUTH_BUILTIN_PACIA1716]
+    = add_builtin_function ("__builtin_aarch64_pacia1716", ftype_pointer_auth,
+			    AARCH64_PAUTH_BUILTIN_PACIA1716, BUILT_IN_MD, NULL,
+			    NULL_TREE);
+  aarch64_builtin_decls[AARCH64_PAUTH_BUILTIN_XPACLRI]
+    = add_builtin_function ("__builtin_aarch64_xpaclri", ftype_pointer_strip,
+			    AARCH64_PAUTH_BUILTIN_XPACLRI, BUILT_IN_MD, NULL,
+			    NULL_TREE);
+}
+
 void
 aarch64_init_builtins (void)
 {
@@ -899,17 +975,22 @@ aarch64_init_builtins (void)
     = add_builtin_function ("__builtin_aarch64_set_fpsr", ftype_set_fpr,
 			    AARCH64_BUILTIN_SET_FPSR, BUILT_IN_MD, NULL, NULL_TREE);
 
-  aarch64_fp16_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (aarch64_fp16_type_node) = 16;
-  layout_type (aarch64_fp16_type_node);
-
-  (*lang_hooks.types.register_builtin_type) (aarch64_fp16_type_node, "__fp16");
+  aarch64_init_fp16_types ();
 
   if (TARGET_SIMD)
     aarch64_init_simd_builtins ();
 
   aarch64_init_crc32_builtins ();
   aarch64_init_builtin_rsqrt ();
+
+  /* Initialize pointer authentication builtins which are backed by instructions
+     in NOP encoding space.
+
+     NOTE: these builtins are supposed to be used by libgcc unwinder only, as
+     there is no support on return address signing under ILP32, we don't
+     register them.  */
+  if (!TARGET_ILP32)
+    aarch64_init_pauth_hint_builtins ();
 }
 
 tree
@@ -999,6 +1080,7 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 		}
 	      /* Fall through - if the lane index isn't a constant then
 		 the next case will error.  */
+	      /* FALLTHRU */
 	    case SIMD_ARG_CONSTANT:
 constant_arg:
 	      if (!(*insn_data[icode].operand[opc].predicate)
@@ -1251,6 +1333,44 @@ aarch64_expand_builtin (tree exp,
 	}
       emit_insn (pat);
       return target;
+
+    case AARCH64_PAUTH_BUILTIN_AUTIA1716:
+    case AARCH64_PAUTH_BUILTIN_PACIA1716:
+    case AARCH64_PAUTH_BUILTIN_XPACLRI:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op0 = force_reg (Pmode, expand_normal (arg0));
+
+      if (!target)
+	target = gen_reg_rtx (Pmode);
+      else
+	target = force_reg (Pmode, target);
+
+      emit_move_insn (target, op0);
+
+      if (fcode == AARCH64_PAUTH_BUILTIN_XPACLRI)
+	{
+	  rtx lr = gen_rtx_REG (Pmode, R30_REGNUM);
+	  icode = CODE_FOR_xpaclri;
+	  emit_move_insn (lr, op0);
+	  emit_insn (GEN_FCN (icode) ());
+	  emit_move_insn (target, lr);
+	}
+      else
+	{
+	  tree arg1 = CALL_EXPR_ARG (exp, 1);
+	  rtx op1 = force_reg (Pmode, expand_normal (arg1));
+	  icode = (fcode == AARCH64_PAUTH_BUILTIN_PACIA1716
+		   ? CODE_FOR_paci1716 : CODE_FOR_auti1716);
+
+	  rtx x16_reg = gen_rtx_REG (Pmode, R16_REGNUM);
+	  rtx x17_reg = gen_rtx_REG (Pmode, R17_REGNUM);
+	  emit_move_insn (x17_reg, op0);
+	  emit_move_insn (x16_reg, op1);
+	  emit_insn (GEN_FCN (icode) ());
+	  emit_move_insn (target, x17_reg);
+	}
+
+      return target;
     }
 
   if (fcode >= AARCH64_SIMD_BUILTIN_BASE && fcode <= AARCH64_SIMD_BUILTIN_MAX)
@@ -1441,7 +1561,6 @@ aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
     {
       BUILTIN_VDQF (UNOP, abs, 2)
 	return fold_build1 (ABS_EXPR, type, args[0]);
-	break;
       VAR1 (UNOP, floatv2si, 2, v2sf)
       VAR1 (UNOP, floatv4si, 2, v4sf)
       VAR1 (UNOP, floatv2di, 2, v2df)

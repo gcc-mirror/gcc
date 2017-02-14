@@ -1,6 +1,6 @@
 ; Options for the ARM port of the compiler.
 
-; Copyright (C) 2005-2016 Free Software Foundation, Inc.
+; Copyright (C) 2005-2017 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -61,10 +61,6 @@ Generate a call to abort if a noreturn function returns.
 mapcs
 Target RejectNegative Mask(APCS_FRAME) Undocumented
 
-mapcs-float
-Target Report Mask(APCS_FLOAT)
-Pass FP arguments in FP registers.
-
 mapcs-frame
 Target Report Mask(APCS_FRAME)
 Generate APCS conformant stack frames.
@@ -77,7 +73,7 @@ mapcs-stack-check
 Target Report Mask(APCS_STACK) Undocumented
 
 march=
-Target RejectNegative ToLower Joined Enum(arm_arch) Var(arm_arch_option)
+Target RejectNegative ToLower Joined Enum(arm_arch) Var(arm_arch_option) Save
 Specify the name of the target architecture.
 
 ; Other arm_arch values are loaded from arm-tables.opt
@@ -102,12 +98,16 @@ Target Report Mask(CALLER_INTERWORKING)
 Thumb: Assume function pointers may go to non-Thumb aware code.
 
 mcpu=
-Target RejectNegative ToLower Joined Enum(processor_type) Var(arm_cpu_option) Init(arm_none)
+Target RejectNegative ToLower Joined Enum(processor_type) Var(arm_cpu_option) Init(TARGET_CPU_arm_none) Save
 Specify the name of the target CPU.
 
 mfloat-abi=
 Target RejectNegative Joined Enum(float_abi_type) Var(arm_float_abi) Init(TARGET_DEFAULT_FLOAT_ABI)
 Specify if floating point hardware should be used.
+
+mcmse
+Target RejectNegative Var(use_cmse)
+Specify that the compiler should target secure code as per ARMv8-M Security Extensions.
 
 Enum
 Name(float_abi_type) Type(enum float_abi_type)
@@ -144,7 +144,7 @@ EnumValue
 Enum(arm_fp16_format_type) String(alternative) Value(ARM_FP16_FORMAT_ALTERNATIVE)
 
 mfpu=
-Target RejectNegative Joined Enum(arm_fpu) Var(arm_fpu_index) Save
+Target RejectNegative Joined Enum(arm_fpu) Var(arm_fpu_index) Init(TARGET_FPU_auto) Save
 Specify the name of the target floating point hardware/format.
 
 mhard-float
@@ -223,7 +223,7 @@ Target Report Mask(TPCS_LEAF_FRAME)
 Thumb: Generate (leaf) stack frames even if not needed.
 
 mtune=
-Target RejectNegative ToLower Joined Enum(processor_type) Var(arm_tune_option) Init(arm_none)
+Target RejectNegative ToLower Joined Enum(processor_type) Var(arm_tune_option) Init(TARGET_CPU_arm_none) Save
 Tune code for the given processor.
 
 mprint-tune-info
@@ -253,14 +253,6 @@ mrestrict-it
 Target Report Var(arm_restrict_it) Init(2) Save
 Generate IT blocks appropriate for ARMv8.
 
-mold-rtx-costs
-Target Report Mask(OLD_RTX_COSTS)
-Use the old RTX costing tables (transitional).
-
-mnew-generic-costs
-Target Report Mask(NEW_GENERIC_COSTS)
-Use the new generic RTX cost tables if new core-specific cost table not available (transitional).
-
 mfix-cortex-m3-ldrd
 Target Report Var(fix_cm3_ldrd) Init(2)
 Avoid overlapping destination and address registers on LDRD instructions
@@ -281,3 +273,7 @@ Assume loading data from flash is slower than fetching instructions.
 masm-syntax-unified
 Target Report Var(inline_asm_unified) Init(0) Save
 Assume unified syntax for inline assembly code.
+
+mpure-code
+Target Report Var(target_pure_code) Init(0)
+Do not allow constant data to be placed in code sections.

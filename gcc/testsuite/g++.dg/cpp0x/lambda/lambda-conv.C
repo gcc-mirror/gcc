@@ -1,6 +1,6 @@
 // Test for conversion from stateless lambda to function pointer.
 
-// { dg-do compile { target c++11 } }
+// { dg-do compile { target c++11_only } }
 // { dg-final { scan-assembler "weak\[^\n\r\]*_?_ZZ1fvENKUlvE_cvPFvvEEv" { target { ! { *-*-darwin* *-*-mingw* *-*-cygwin *-*-hpux10* } } } } }
 
 inline void f()

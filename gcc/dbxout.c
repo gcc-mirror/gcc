@@ -1,5 +1,5 @@
 /* Output dbx-format symbol table information from GNU compiler.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "rtl.h"
 #include "tree.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "insn-config.h"
@@ -344,7 +345,7 @@ const struct gcc_debug_hooks dbx_debug_hooks =
 {
   dbxout_init,
   dbxout_finish,
-  debug_nothing_void,
+  debug_nothing_charstar,
   debug_nothing_void,
   debug_nothing_int_charstar,
   debug_nothing_int_charstar,
@@ -388,7 +389,7 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
 {
   dbxout_init,
   dbxout_finish,
-  debug_nothing_void,
+  debug_nothing_charstar,
   debug_nothing_void,
   debug_nothing_int_charstar,
   debug_nothing_int_charstar,
@@ -1333,7 +1334,7 @@ dbxout_early_global_decl (tree decl ATTRIBUTE_UNUSED)
 static void
 dbxout_late_global_decl (tree decl)
 {
-  if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
+  if (VAR_P (decl) && !DECL_EXTERNAL (decl))
     {
       int saved_tree_used = TREE_USED (decl);
       TREE_USED (decl) = 1;
@@ -1478,6 +1479,7 @@ dbxout_type_fields (tree type)
 
       /* Omit here local type decls until we know how to support them.  */
       if (TREE_CODE (tem) == TYPE_DECL
+	  || TREE_CODE (tem) == TEMPLATE_DECL
 	  /* Omit here the nameless fields that are used to skip bits.  */
 	  || DECL_IGNORED_P (tem)
 	  /* Omit fields whose position or size are variable or too large to
@@ -1511,7 +1513,7 @@ dbxout_type_fields (tree type)
 			&& DECL_BIT_FIELD_TYPE (tem))
 		       ? DECL_BIT_FIELD_TYPE (tem) : TREE_TYPE (tem), 0);
 
-	  if (TREE_CODE (tem) == VAR_DECL)
+	  if (VAR_P (tem))
 	    {
 	      if (TREE_STATIC (tem) && use_gnu_debug_info_extensions)
 		{
@@ -2485,7 +2487,7 @@ dbxout_expand_expr (tree expr)
 	rtx x;
 
 	tem = get_inner_reference (expr, &bitsize, &bitpos, &offset, &mode,
-				   &unsignedp, &reversep, &volatilep, true);
+				   &unsignedp, &reversep, &volatilep);
 
 	x = dbxout_expand_expr (tem);
 	if (x == NULL || !MEM_P (x))
@@ -2610,7 +2612,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 
   if (flag_debug_only_used_symbols
       && (!TREE_USED (decl)
-          && (TREE_CODE (decl) != VAR_DECL || !DECL_INITIAL (decl))))
+          && (!VAR_P (decl) || !DECL_INITIAL (decl))))
     DBXOUT_DECR_NESTING_AND_RETURN (0);
 
   /* If dbxout_init has not yet run, queue this symbol for later.  */
@@ -2865,9 +2867,9 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
       /* PARM_DECLs go in their own separate chain and are output by
 	 dbxout_reg_parms and dbxout_parms, except for those that are
 	 disguised VAR_DECLs like Out parameters in Ada.  */
-      gcc_assert (TREE_CODE (decl) == VAR_DECL);
+      gcc_assert (VAR_P (decl));
 
-      /* ... fall through ...  */
+      /* fall through */
 
     case RESULT_DECL:
     case VAR_DECL:
@@ -3272,7 +3274,7 @@ dbxout_common_check (tree decl, int *value)
      ??? DECL_THREAD_LOCAL_P check prevents problems with improper .stabs
      for thread-local symbols.  Can be handled via same mechanism as used
      in dwarf2out.c.  */
-  if (TREE_CODE (decl) != VAR_DECL
+  if (!VAR_P (decl)
       || !TREE_STATIC (decl)
       || !DECL_HAS_VALUE_EXPR_P (decl)
       || DECL_THREAD_LOCAL_P (decl)

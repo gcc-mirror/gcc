@@ -1,6 +1,6 @@
 // 2006-06-04  Stephen M. Webb <stephen.webb@bregmasoft.com>
 //
-// Copyright (C) 2006-2016 Free Software Foundation, Inc.
+// Copyright (C) 2006-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,8 +27,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::stringstream str;
   std::tr1::minstd_rand0 a;
   std::tr1::minstd_rand0 b;

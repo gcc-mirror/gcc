@@ -12,32 +12,25 @@ import (
 	"unicode/utf8"
 )
 
-// explode splits s into an array of UTF-8 sequences, one per Unicode character (still strings) up to a maximum of n (n < 0 means no limit).
-// Invalid UTF-8 sequences become correct encodings of U+FFF8.
+// explode splits s into a slice of UTF-8 strings,
+// one string per Unicode character up to a maximum of n (n < 0 means no limit).
+// Invalid UTF-8 sequences become correct encodings of U+FFFD.
 func explode(s string, n int) []string {
-	if n == 0 {
-		return nil
-	}
 	l := utf8.RuneCountInString(s)
-	if n <= 0 || n > l {
+	if n < 0 || n > l {
 		n = l
 	}
 	a := make([]string, n)
-	var size int
-	var ch rune
-	i, cur := 0, 0
-	for ; i+1 < n; i++ {
-		ch, size = utf8.DecodeRuneInString(s[cur:])
+	for i := 0; i < n-1; i++ {
+		ch, size := utf8.DecodeRuneInString(s)
+		a[i] = s[:size]
+		s = s[size:]
 		if ch == utf8.RuneError {
 			a[i] = string(utf8.RuneError)
-		} else {
-			a[i] = s[cur : cur+size]
 		}
-		cur += size
 	}
-	// add the rest, if there is any
-	if cur < len(s) {
-		a[i] = s[cur:]
+	if n > 0 {
+		a[n-1] = s
 	}
 	return a
 }
@@ -84,48 +77,18 @@ func hashStrRev(sep string) (uint32, uint32) {
 func Count(s, sep string) int {
 	n := 0
 	// special cases
-	switch {
-	case len(sep) == 0:
+	if len(sep) == 0 {
 		return utf8.RuneCountInString(s) + 1
-	case len(sep) == 1:
-		// special case worth making fast
-		c := sep[0]
-		for i := 0; i < len(s); i++ {
-			if s[i] == c {
-				n++
-			}
-		}
-		return n
-	case len(sep) > len(s):
-		return 0
-	case len(sep) == len(s):
-		if sep == s {
-			return 1
-		}
-		return 0
 	}
-	// Rabin-Karp search
-	hashsep, pow := hashStr(sep)
-	h := uint32(0)
-	for i := 0; i < len(sep); i++ {
-		h = h*primeRK + uint32(s[i])
-	}
-	lastmatch := 0
-	if h == hashsep && s[:len(sep)] == sep {
+	offset := 0
+	for {
+		i := Index(s[offset:], sep)
+		if i == -1 {
+			return n
+		}
 		n++
-		lastmatch = len(sep)
+		offset += i + len(sep)
 	}
-	for i := len(sep); i < len(s); {
-		h *= primeRK
-		h += uint32(s[i])
-		h -= pow * uint32(s[i-len(sep)])
-		i++
-		if h == hashsep && lastmatch <= i-len(sep) && s[i-len(sep):i] == sep {
-			n++
-			lastmatch = i
-		}
-	}
-	return n
 }
 
 // Contains reports whether substr is within s.
@@ -182,24 +145,40 @@ func LastIndex(s, sep string) int {
 
 // IndexRune returns the index of the first instance of the Unicode code point
 // r, or -1 if rune is not present in s.
+// If r is utf8.RuneError, it returns the first instance of any
+// invalid UTF-8 byte sequence.
 func IndexRune(s string, r rune) int {
 	switch {
-	case r < utf8.RuneSelf:
+	case 0 <= r && r < utf8.RuneSelf:
 		return IndexByte(s, byte(r))
-	default:
-		for i, c := range s {
-			if c == r {
+	case r == utf8.RuneError:
+		for i, r := range s {
+			if r == utf8.RuneError {
 				return i
 			}
 		}
+		return -1
+	case !utf8.ValidRune(r):
+		return -1
+	default:
+		return Index(s, string(r))
 	}
-	return -1
 }
 
 // IndexAny returns the index of the first instance of any Unicode code point
 // from chars in s, or -1 if no Unicode code point from chars is present in s.
 func IndexAny(s, chars string) int {
 	if len(chars) > 0 {
+		if len(s) > 8 {
+			if as, isASCII := makeASCIISet(chars); isASCII {
+				for i := 0; i < len(s); i++ {
+					if as.contains(s[i]) {
+						return i
+					}
+				}
+				return -1
+			}
+		}
 		for i, c := range s {
 			for _, m := range chars {
 				if c == m {
@@ -216,11 +195,21 @@ func IndexAny(s, chars string) int {
 // present in s.
 func LastIndexAny(s, chars string) int {
 	if len(chars) > 0 {
+		if len(s) > 8 {
+			if as, isASCII := makeASCIISet(chars); isASCII {
+				for i := len(s) - 1; i >= 0; i-- {
+					if as.contains(s[i]) {
+						return i
+					}
+				}
+				return -1
+			}
+		}
 		for i := len(s); i > 0; {
-			rune, size := utf8.DecodeLastRuneInString(s[0:i])
+			r, size := utf8.DecodeLastRuneInString(s[:i])
 			i -= size
-			for _, m := range chars {
-				if rune == m {
+			for _, c := range chars {
+				if r == c {
 					return i
 				}
 			}
@@ -346,14 +335,22 @@ func FieldsFunc(s string, f func(rune) bool) []string {
 	return a
 }
 
-// Join concatenates the elements of a to create a single string.   The separator string
+// Join concatenates the elements of a to create a single string. The separator string
 // sep is placed between elements in the resulting string.
 func Join(a []string, sep string) string {
-	if len(a) == 0 {
+	switch len(a) {
+	case 0:
 		return ""
-	}
-	if len(a) == 1 {
+	case 1:
 		return a[0]
+	case 2:
+		// Special case for common small values.
+		// Remove if golang.org/issue/6714 is fixed
+		return a[0] + sep + a[1]
+	case 3:
+		// Special case for common small values.
+		// Remove if golang.org/issue/6714 is fixed
+		return a[0] + sep + a[1] + sep + a[2]
 	}
 	n := len(sep) * (len(a) - 1)
 	for i := 0; i < len(a); i++ {
@@ -384,8 +381,8 @@ func HasSuffix(s, suffix string) bool {
 // dropped from the string with no replacement.
 func Map(mapping func(rune) rune, s string) string {
 	// In the worst case, the string can grow when mapped, making
-	// things unpleasant.  But it's so rare we barge in assuming it's
-	// fine.  It could also shrink but that falls out naturally.
+	// things unpleasant. But it's so rare we barge in assuming it's
+	// fine. It could also shrink but that falls out naturally.
 	maxbytes := len(s) // length of b
 	nbytes := 0        // number of bytes encoded in b
 	// The output buffer b is initialized on demand, the first
@@ -423,7 +420,20 @@ func Map(mapping func(rune) rune, s string) string {
 }
 
 // Repeat returns a new string consisting of count copies of the string s.
+//
+// It panics if count is negative or if
+// the result of (len(s) * count) overflows.
 func Repeat(s string, count int) string {
+	// Since we cannot return an error on overflow,
+	// we should panic if the repeat will generate
+	// an overflow.
+	// See Issue golang.org/issue/16237
+	if count < 0 {
+		panic("strings: negative Repeat count")
+	} else if count > 0 && len(s)*count/count != len(s) {
+		panic("strings: Repeat count causes overflow")
+	}
+
 	b := make([]byte, len(s)*count)
 	bp := copy(b, s)
 	for bp < len(b) {
@@ -444,20 +454,20 @@ func ToTitle(s string) string { return Map(unicode.ToTitle, s) }
 
 // ToUpperSpecial returns a copy of the string s with all Unicode letters mapped to their
 // upper case, giving priority to the special casing rules.
-func ToUpperSpecial(_case unicode.SpecialCase, s string) string {
-	return Map(func(r rune) rune { return _case.ToUpper(r) }, s)
+func ToUpperSpecial(c unicode.SpecialCase, s string) string {
+	return Map(func(r rune) rune { return c.ToUpper(r) }, s)
 }
 
 // ToLowerSpecial returns a copy of the string s with all Unicode letters mapped to their
 // lower case, giving priority to the special casing rules.
-func ToLowerSpecial(_case unicode.SpecialCase, s string) string {
-	return Map(func(r rune) rune { return _case.ToLower(r) }, s)
+func ToLowerSpecial(c unicode.SpecialCase, s string) string {
+	return Map(func(r rune) rune { return c.ToLower(r) }, s)
 }
 
 // ToTitleSpecial returns a copy of the string s with all Unicode letters mapped to their
 // title case, giving priority to the special casing rules.
-func ToTitleSpecial(_case unicode.SpecialCase, s string) string {
-	return Map(func(r rune) rune { return _case.ToTitle(r) }, s)
+func ToTitleSpecial(c unicode.SpecialCase, s string) string {
+	return Map(func(r rune) rune { return c.ToTitle(r) }, s)
 }
 
 // isSeparator reports whether the rune could mark a word boundary.
@@ -580,7 +590,43 @@ func lastIndexFunc(s string, f func(rune) bool, truth bool) int {
 	return -1
 }
 
+// asciiSet is a 32-byte value, where each bit represents the presence of a
+// given ASCII character in the set. The 128-bits of the lower 16 bytes,
+// starting with the least-significant bit of the lowest word to the
+// most-significant bit of the highest word, map to the full range of all
+// 128 ASCII characters. The 128-bits of the upper 16 bytes will be zeroed,
+// ensuring that any non-ASCII character will be reported as not in the set.
+type asciiSet [8]uint32
+
+// makeASCIISet creates a set of ASCII characters and reports whether all
+// characters in chars are ASCII.
+func makeASCIISet(chars string) (as asciiSet, ok bool) {
+	for i := 0; i < len(chars); i++ {
+		c := chars[i]
+		if c >= utf8.RuneSelf {
+			return as, false
+		}
+		as[c>>5] |= 1 << uint(c&31)
+	}
+	return as, true
+}
+
+// contains reports whether c is inside the set.
+func (as *asciiSet) contains(c byte) bool {
+	return (as[c>>5] & (1 << uint(c&31))) != 0
+}
+
 func makeCutsetFunc(cutset string) func(rune) bool {
+	if len(cutset) == 1 && cutset[0] < utf8.RuneSelf {
+		return func(r rune) bool {
+			return r == rune(cutset[0])
+		}
+	}
+	if as, isASCII := makeASCIISet(cutset); isASCII {
+		return func(r rune) bool {
+			return r < utf8.RuneSelf && as.contains(byte(r))
+		}
+	}
 	return func(r rune) bool { return IndexRune(cutset, r) >= 0 }
 }
 
@@ -714,7 +760,7 @@ func EqualFold(s, t string) bool {
 			return false
 		}
 
-		// General case.  SimpleFold(x) returns the next equivalent rune > x
+		// General case. SimpleFold(x) returns the next equivalent rune > x
 		// or wraps around to smaller values.
 		r := unicode.SimpleFold(sr)
 		for r != sr && r < tr {
@@ -726,6 +772,6 @@ func EqualFold(s, t string) bool {
 		return false
 	}
 
-	// One string is empty.  Are both?
+	// One string is empty. Are both?
 	return s == t
 }

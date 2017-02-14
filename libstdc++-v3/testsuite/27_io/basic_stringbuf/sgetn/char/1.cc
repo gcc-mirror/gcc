@@ -1,6 +1,6 @@
 // 981208 bkoz test functionality of basic_stringbuf for char_type == char
 
-// Copyright (C) 1997-2016 Free Software Foundation, Inc.
+// Copyright (C) 1997-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,6 @@ std::stringbuf strb_03(str_03, std::ios_base::out);
 // test overloaded virtual functions
 void test04() 
 {
-  bool test __attribute__((unused)) = true;
   std::streamsize 		strmsz_1, strmsz_2;
   typedef std::stringbuf::int_type int_type;
   typedef std::stringbuf::traits_type traits_type;
@@ -66,7 +65,7 @@ void test04()
   // approp and returning the number of chars assigned
   strmsz_1 = strb_01.in_avail();
   strmsz_2 = strb_02.in_avail();
-  test = strmsz_1 != strmsz_2;
+  VERIFY( strmsz_1 != strmsz_2 );
   VERIFY( strmsz_1 != static_cast<std::streamsize>(str_01.length()) );
   // because now we've moved into string
   VERIFY( strmsz_2 != static_cast<std::streamsize>(str_02.length()) ); 

@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
-   ffi.c - (c) 2011 Anthony Green
+   ffi.c - (c) 2016 John David Anglin
+	   (c) 2011 Anthony Green
            (c) 2008 Red Hat, Inc.
 	   (c) 2006 Free Software Foundation, Inc.
            (c) 2003-2004 Randolph Chung <tausq@debian.org>
@@ -51,7 +52,8 @@
 
 #define debug(lvl, x...) do { if (lvl <= DEBUG_LEVEL) { printf(x); } } while (0)
 
-static inline int ffi_struct_type(ffi_type *t)
+static inline int
+ffi_struct_type (ffi_type *t)
 {
   size_t sz = t->size;
 
@@ -139,7 +141,8 @@ static inline int ffi_struct_type(ffi_type *t)
    NOTE: We load floating point args in this function... that means we
    assume gcc will not mess with fp regs in here.  */
 
-void ffi_prep_args_pa32(UINT32 *stack, extended_cif *ecif, unsigned bytes)
+void
+ffi_prep_args_pa32 (UINT32 *stack, extended_cif *ecif, unsigned bytes)
 {
   register unsigned int i;
   register ffi_type **p_arg;
@@ -275,7 +278,8 @@ void ffi_prep_args_pa32(UINT32 *stack, extended_cif *ecif, unsigned bytes)
   return;
 }
 
-static void ffi_size_stack_pa32(ffi_cif *cif)
+static void
+ffi_size_stack_pa32 (ffi_cif *cif)
 {
   ffi_type **ptr;
   int i;
@@ -316,7 +320,8 @@ static void ffi_size_stack_pa32(ffi_cif *cif)
 }
 
 /* Perform machine dependent cif processing.  */
-ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
+ffi_status
+ffi_prep_cif_machdep (ffi_cif *cif)
 {
   /* Set the return type flag */
   switch (cif->rtype->type)
@@ -369,11 +374,13 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
   return FFI_OK;
 }
 
-extern void ffi_call_pa32(void (*)(UINT32 *, extended_cif *, unsigned),
-			  extended_cif *, unsigned, unsigned, unsigned *,
-			  void (*fn)(void));
+extern void ffi_call_pa32 (void (*)(UINT32 *, extended_cif *, unsigned),
+			   extended_cif *, unsigned, unsigned, unsigned *,
+			   void (*fn)(void), void *closure);
 
-void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
+static void
+ffi_call_int (ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue,
+	      void *closure)
 {
   extended_cif ecif;
 
@@ -401,8 +408,8 @@ void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
     {
     case FFI_PA32:
       debug(3, "Calling ffi_call_pa32: ecif=%p, bytes=%u, flags=%u, rvalue=%p, fn=%p\n", &ecif, cif->bytes, cif->flags, ecif.rvalue, (void *)fn);
-      ffi_call_pa32(ffi_prep_args_pa32, &ecif, cif->bytes,
-		     cif->flags, ecif.rvalue, fn);
+      ffi_call_pa32 (ffi_prep_args_pa32, &ecif, cif->bytes,
+		     cif->flags, ecif.rvalue, fn, closure);
       break;
 
     default:
@@ -411,14 +418,30 @@ void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
     }
 }
 
+void
+ffi_call (ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
+{
+  ffi_call_int (cif, fn, rvalue, avalue, NULL);
+}
+
+void
+ffi_call_go (ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue,
+	     void *closure)
+{
+  ffi_call_int (cif, fn, rvalue, avalue, closure);
+}
+
 #if FFI_CLOSURES
 /* This is more-or-less an inverse of ffi_call -- we have arguments on
    the stack, and we need to fill them into a cif structure and invoke
    the user function. This really ought to be in asm to make sure
    the compiler doesn't do things we don't expect.  */
-ffi_status ffi_closure_inner_pa32(ffi_closure *closure, UINT32 *stack)
+ffi_status
+ffi_closure_inner_pa32 (void *closure, UINT32 *stack, int closure_type)
 {
   ffi_cif *cif;
+  void (*fun)(ffi_cif *,void *,void **,void *); 
+  void *user_data;
   void **avalue;
   void *rvalue;
   UINT32 ret[2]; /* function can return up to 64-bits in registers */
@@ -428,7 +451,19 @@ ffi_status ffi_closure_inner_pa32(ffi_closure *closure, UINT32 *stack)
   unsigned int slot = FIRST_ARG_SLOT;
   register UINT32 r28 asm("r28");
 
-  cif = closure->cif;
+  /* A non-zero closure type indicates a go closure.  */
+  if (closure_type)
+    {
+      cif = ((ffi_go_closure *)closure)->cif;
+      fun = ((ffi_go_closure *)closure)->fun;
+      user_data = closure;
+    }
+  else
+    {
+      cif = ((ffi_closure *)closure)->cif;
+      fun = ((ffi_closure *)closure)->fun;
+      user_data = ((ffi_closure *)closure)->user_data;
+    }
 
   /* If returning via structure, callee will write to our pointer.  */
   if (cif->flags == FFI_TYPE_STRUCT)
@@ -436,7 +471,7 @@ ffi_status ffi_closure_inner_pa32(ffi_closure *closure, UINT32 *stack)
   else
     rvalue = &ret[0];
 
-  avalue = (void **)alloca(cif->nargs * FFI_SIZEOF_ARG);
+  avalue = (void **) alloca (cif->nargs * FFI_SIZEOF_ARG);
   avn = cif->nargs;
   p_arg = cif->arg_types;
 
@@ -529,7 +564,7 @@ ffi_status ffi_closure_inner_pa32(ffi_closure *closure, UINT32 *stack)
     }
 
   /* Invoke the closure.  */
-  (closure->fun) (cif, rvalue, avalue, closure->user_data);
+  fun (cif, rvalue, avalue, user_data);
 
   debug(3, "after calling function, ret[0] = %08x, ret[1] = %08x\n", ret[0],
 	ret[1]);
@@ -621,6 +656,7 @@ ffi_status ffi_closure_inner_pa32(ffi_closure *closure, UINT32 *stack)
    cif specifies the argument and result types for fun.
    The cif must already be prep'ed.  */
 
+extern void ffi_go_closure_pa32(void);
 extern void ffi_closure_pa32(void);
 
 ffi_status
@@ -716,4 +752,21 @@ ffi_prep_closure_loc (ffi_closure* closure,
 
   return FFI_OK;
 }
+
+#ifdef FFI_GO_CLOSURES
+ffi_status
+ffi_prep_go_closure (ffi_go_closure *closure,
+		     ffi_cif *cif,
+		     void (*fun)(ffi_cif *, void *, void **, void *))
+{
+  if (cif->abi != FFI_PA32)
+    return FFI_BAD_ABI;
+
+  closure->tramp = &ffi_go_closure_pa32;
+  closure->cif = cif;
+  closure->fun = fun;
+
+  return FFI_OK;
+}
+#endif /* FFI_GO_CLOSURES */
 #endif

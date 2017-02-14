@@ -1,5 +1,5 @@
 ;; Frv Machine Description
-;; Copyright (C) 1999-2016 Free Software Foundation, Inc.
+;; Copyright (C) 1999-2017 Free Software Foundation, Inc.
 ;; Contributed by Red Hat, Inc.
 
 ;; This file is part of GCC.
@@ -7347,9 +7347,8 @@
   ""
   "
 {
-  rtx insn;
-
-  insn = emit_insn (gen_symGOT2reg_i (operands[0], operands[1], operands[2], operands[3]));
+  rtx_insn *insn = emit_insn (gen_symGOT2reg_i (operands[0], operands[1],
+						operands[2], operands[3]));
 
   MEM_READONLY_P (SET_SRC (PATTERN (insn))) = 1;
 
@@ -7431,7 +7430,8 @@
   ""
   "
 {
-  rtx insn = emit_insn (gen_symGOTOFF2reg_i (operands[0], operands[1], operands[2], operands[3]));
+  rtx_insn *insn = emit_insn (gen_symGOTOFF2reg_i (operands[0], operands[1],
+						   operands[2], operands[3]));
 
   set_unique_reg_note (insn, REG_EQUAL, operands[1]);
 
@@ -7457,8 +7457,6 @@
   ""
   "
 {
-  rtx insn;
-
   if (!can_create_pseudo_p ())
     operands[4] = operands[0];
   else
@@ -7466,8 +7464,8 @@
 
   emit_insn (frv_gen_GPsym2reg (operands[4], operands[2]));
 
-  insn = emit_insn (gen_symGOTOFF2reg_i (operands[0], operands[1],
-					 operands[4], operands[3]));
+  rtx_insn *insn = emit_insn (gen_symGOTOFF2reg_i (operands[0], operands[1],
+						   operands[4], operands[3]));
 
   set_unique_reg_note (insn, REG_EQUAL, operands[1]);
 
@@ -7483,8 +7481,6 @@
   ""
   "
 {
-  rtx insn;
-
   if (!can_create_pseudo_p ())
     {
       emit_insn (gen_symGOT2reg (operands[0], operands[1], operands[2],
@@ -7496,8 +7492,8 @@
 
   emit_insn (frv_gen_GPsym2reg (operands[4], operands[2]));
 
-  insn = emit_insn (gen_symGOTOFF2reg_hilo (operands[0], operands[1],
-					    operands[4], operands[3]));
+  rtx_insn *insn = emit_insn (gen_symGOTOFF2reg_hilo (operands[0], operands[1],
+						      operands[4], operands[3]));
 
   set_unique_reg_note (insn, REG_EQUAL, operands[1]);
 

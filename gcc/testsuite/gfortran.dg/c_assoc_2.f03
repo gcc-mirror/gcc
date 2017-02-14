@@ -20,7 +20,7 @@ contains
        call abort()
     end if
 
-    if(.not. c_associated()) then ! { dg-error "Missing actual argument 'C_PTR_1' in call to 'c_associated'" }
+    if(.not. c_associated()) then ! { dg-error "Missing actual argument" }
        call abort()
     end if
 

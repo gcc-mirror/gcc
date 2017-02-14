@@ -1,6 +1,6 @@
 // <experimental/any> -*- C++ -*-
 
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,6 +39,7 @@
 #include <new>
 #include <utility>
 #include <type_traits>
+#include <experimental/bits/lfts_config.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -190,16 +191,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// Copy the state of another object.
     any& operator=(const any& __rhs)
     {
-      if (__rhs.empty())
-	clear();
-      else if (this != &__rhs)
-	{
-	  if (!empty())
-	    _M_manager(_Op_destroy, this, nullptr);
-	  _Arg __arg;
-	  __arg._M_any = this;
-	  __rhs._M_manager(_Op_clone, &__rhs, &__arg);
-	}
+      *this = any(__rhs);
       return *this;
     }
 
@@ -214,8 +206,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	clear();
       else if (this != &__rhs)
 	{
-	  if (!empty())
-	    _M_manager(_Op_destroy, this, nullptr);
+	  clear();
 	  _Arg __arg;
 	  __arg._M_any = this;
 	  __rhs._M_manager(_Op_xfer, &__rhs, &__arg);
@@ -424,7 +415,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     void* __any_caster(const any* __any)
     {
-      if (__any->_M_manager != &any::_Manager<decay_t<_Tp>>::_S_manage)
+      struct _None { };
+      using _Up = decay_t<_Tp>;
+      using _Vp = conditional_t<is_copy_constructible<_Up>::value, _Up, _None>;
+      if (__any->_M_manager != &any::_Manager<_Vp>::_S_manage)
 	return nullptr;
       any::_Arg __arg;
       __any->_M_manager(any::_Op_access, __any, &__arg);
@@ -484,7 +478,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__ptr->~_Tp();
 	break;
       case _Op_xfer:
-	::new(&__arg->_M_any->_M_storage._M_buffer) _Tp(*__ptr);
+	::new(&__arg->_M_any->_M_storage._M_buffer) _Tp
+	  (std::move(*const_cast<_Tp*>(__ptr)));
 	__ptr->~_Tp();
 	__arg->_M_any->_M_manager = __any->_M_manager;
 	const_cast<any*>(__any)->_M_manager = nullptr;

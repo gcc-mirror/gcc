@@ -62,13 +62,11 @@ func (check *Checker) call(x *operand, e *ast.CallExpr) exprKind {
 		}
 
 		arg, n, _ := unpack(func(x *operand, i int) { check.multiExpr(x, e.Args[i]) }, len(e.Args), false)
-		if arg == nil {
+		if arg != nil {
+			check.arguments(x, e, sig, arg, n)
+		} else {
 			x.mode = invalid
-			x.expr = e
-			return statement
 		}
-
-		check.arguments(x, e, sig, arg, n)
 
 		// determine result
 		switch sig.results.Len() {
@@ -81,6 +79,7 @@ func (check *Checker) call(x *operand, e *ast.CallExpr) exprKind {
 			x.mode = value
 			x.typ = sig.results
 		}
+
 		x.expr = e
 		check.hasCallOrRecv = true
 
@@ -276,24 +275,34 @@ func (check *Checker) selector(x *operand, e *ast.SelectorExpr) {
 	// so we don't need a "package" mode for operands: package names
 	// can only appear in qualified identifiers which are mapped to
 	// selector expressions.
+	// (see also decl.go: checker.aliasDecl)
+	// TODO(gri) factor this code out and share with checker.aliasDecl
 	if ident, ok := e.X.(*ast.Ident); ok {
 		_, obj := check.scope.LookupParent(ident.Name, check.pos)
-		if pkg, _ := obj.(*PkgName); pkg != nil {
-			assert(pkg.pkg == check.pkg)
-			check.recordUse(ident, pkg)
-			pkg.used = true
-			exp := pkg.imported.scope.Lookup(sel)
+		if pname, _ := obj.(*PkgName); pname != nil {
+			assert(pname.pkg == check.pkg)
+			check.recordUse(ident, pname)
+			pname.used = true
+			pkg := pname.imported
+			exp := pkg.scope.Lookup(sel)
 			if exp == nil {
-				if !pkg.imported.fake {
-					check.errorf(e.Pos(), "%s not declared by package %s", sel, ident)
+				if !pkg.fake {
+					check.errorf(e.Pos(), "%s not declared by package %s", sel, pkg.name)
 				}
 				goto Error
 			}
 			if !exp.Exported() {
-				check.errorf(e.Pos(), "%s not exported by package %s", sel, ident)
+				check.errorf(e.Pos(), "%s not exported by package %s", sel, pkg.name)
 				// ok to continue
 			}
 			check.recordUse(e.Sel, exp)
+			exp = original(exp)
+
+			// avoid further errors if the imported object is an alias that's broken
+			if exp == nil {
+				goto Error
+			}
+
 			// Simplified version of the code for *ast.Idents:
 			// - imported objects are always fully initialized
 			switch exp := exp.(type) {
@@ -316,6 +325,7 @@ func (check *Checker) selector(x *operand, e *ast.SelectorExpr) {
 				x.typ = exp.typ
 				x.id = exp.id
 			default:
+				check.dump("unexpected object %v", exp)
 				unreachable()
 			}
 			x.expr = e

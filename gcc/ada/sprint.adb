@@ -1328,6 +1328,15 @@ package body Sprint is
                Sprint_Node (Expression (Node));
             end if;
 
+         when N_Iterated_Component_Association =>
+            Set_Debug_Sloc;
+            Write_Str (" for ");
+            Write_Id (Defining_Identifier (Node));
+            Write_Str (" in ");
+            Sprint_Bar_List (Discrete_Choices (Node));
+            Write_Str (" => ");
+            Sprint_Node (Expression (Node));
+
          when N_Component_Clause =>
             Write_Indent;
             Sprint_Node (Component_Name (Node));
@@ -1765,6 +1774,13 @@ package body Sprint is
             else
                Write_Indent_Str (";");
             end if;
+
+         when N_Delta_Aggregate =>
+            Write_Str_With_Col_Check_Sloc ("(");
+            Sprint_Node (Expression (Node));
+            Write_Str_With_Col_Check (" with delta ");
+            Sprint_Comma_List (Component_Associations (Node));
+            Write_Char (')');
 
          when N_Extension_Aggregate =>
             Write_Str_With_Col_Check_Sloc ("(");
@@ -2824,7 +2840,7 @@ package body Sprint is
 
          when N_Pragma =>
             Write_Indent_Str_Sloc ("pragma ");
-            Write_Name_With_Col_Check (Pragma_Name (Node));
+            Write_Name_With_Col_Check (Pragma_Name_Unmapped (Node));
 
             if Present (Pragma_Argument_Associations (Node)) then
                Sprint_Opt_Paren_Comma_List
@@ -3277,6 +3293,9 @@ package body Sprint is
             Write_Char (')');
             Extra_Blank_Line;
             Sprint_Node (Proper_Body (Node));
+
+         when N_Target_Name =>
+            Write_Char ('@');
 
          when N_Task_Body =>
             Write_Indent_Str_Sloc ("task body ");
@@ -3967,7 +3986,9 @@ package body Sprint is
 
             Write_Str (");");
 
-         when E_Signed_Integer_Subtype | E_Enumeration_Subtype =>
+         when E_Enumeration_Subtype
+            | E_Signed_Integer_Subtype
+         =>
             Write_Str_With_Col_Check ("subtype ");
             Write_Id (E);
             Write_Str (" is ");
@@ -3983,7 +4004,6 @@ package body Sprint is
             Write_Ekind (E);
             Write_Str (">;");
       end case;
-
    end Write_Implicit_Def;
 
    ------------------
@@ -4256,11 +4276,11 @@ package body Sprint is
                   --  Signed integer types, and modular integer subtypes,
                   --  and also enumeration subtypes.
 
-                  when E_Signed_Integer_Type     |
-                       E_Signed_Integer_Subtype  |
-                       E_Modular_Integer_Subtype |
-                       E_Enumeration_Subtype     =>
-
+                  when E_Enumeration_Subtype
+                     | E_Modular_Integer_Subtype
+                     | E_Signed_Integer_Subtype
+                     | E_Signed_Integer_Type
+                  =>
                      Write_Header (Ekind (Typ) = E_Signed_Integer_Type);
 
                      if Ekind (Typ) = E_Signed_Integer_Type then
@@ -4320,9 +4340,9 @@ package body Sprint is
 
                   --  Floating point types and subtypes
 
-                  when E_Floating_Point_Type    |
-                       E_Floating_Point_Subtype =>
-
+                  when E_Floating_Point_Subtype
+                     | E_Floating_Point_Type
+                  =>
                      Write_Header (Ekind (Typ) = E_Floating_Point_Type);
 
                      if Ekind (Typ) = E_Floating_Point_Type then
@@ -4365,7 +4385,9 @@ package body Sprint is
 
                   --  Record subtypes
 
-                  when E_Record_Subtype | E_Record_Subtype_With_Private =>
+                  when E_Record_Subtype
+                     | E_Record_Subtype_With_Private
+                  =>
                      Write_Header (False);
                      Write_Str ("record");
                      Indent_Begin;
@@ -4388,8 +4410,9 @@ package body Sprint is
 
                   --  Class-Wide types
 
-                  when E_Class_Wide_Type    |
-                       E_Class_Wide_Subtype =>
+                  when E_Class_Wide_Subtype
+                     | E_Class_Wide_Type
+                  =>
                      Write_Header (Ekind (Typ) = E_Class_Wide_Type);
                      Write_Name_With_Col_Check (Chars (Etype (Typ)));
                      Write_Str ("'Class");
@@ -4458,7 +4481,6 @@ package body Sprint is
                   when others =>
                      Write_Header (True);
                      Write_Str ("???");
-
                end case;
             end if;
 

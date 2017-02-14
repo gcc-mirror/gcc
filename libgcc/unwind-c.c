@@ -1,5 +1,5 @@
 /* Supporting functions for C exception handling.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldy@quesejoda.com>.
    Shamelessly stolen from the Java front end.
 
@@ -26,6 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "tconfig.h"
 #include "tsystem.h"
+#include "auto-target.h"
 #include "unwind.h"
 #define NO_SIZE_OF_ENCODED_VALUE
 #include "unwind-pe.h"

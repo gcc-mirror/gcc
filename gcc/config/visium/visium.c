@@ -1,5 +1,5 @@
 /* Output routines for Visium.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
    This file is part of GCC.
@@ -27,6 +27,7 @@
 #include "tree.h"
 #include "gimple-expr.h"
 #include "df.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
 #include "expmed.h"
@@ -211,7 +212,7 @@ static int visium_issue_rate (void);
 
 static int visium_adjust_priority (rtx_insn *, int);
 
-static int visium_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
+static int visium_adjust_cost (rtx_insn *, int, rtx_insn *, int, unsigned int);
 
 static int visium_register_move_cost (enum machine_mode, reg_class_t,
 				      reg_class_t);
@@ -263,6 +264,9 @@ static unsigned int visium_reorg (void);
 
 #undef  TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P visium_legitimate_constant_p
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P hook_bool_void_false
 
 #undef  TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P visium_legitimate_address_p
@@ -528,14 +532,15 @@ visium_adjust_priority (rtx_insn *insn, int priority)
    a dependency LINK of INSN on DEP_INSN.  COST is the current cost.  */
 
 static int
-visium_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
+visium_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
+		    unsigned int)
 {
   enum attr_type attr_type;
 
   /* Don't adjust costs for true dependencies as they are described with
      bypasses.  But we make an exception for the first scheduling pass to
      help the subsequent postreload compare elimination pass.  */
-  if (REG_NOTE_KIND (link) == REG_DEP_TRUE)
+  if (dep_type == REG_DEP_TRUE)
     {
       if (!reload_completed
 	  && recog_memoized (insn) >= 0
@@ -557,11 +562,12 @@ visium_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 
 	      /* The logical instructions use CCmode and thus work with any
 		 comparison operator, whereas the arithmetic instructions use
-		 CC_NOOVmode and thus work with only a small subset.  */
+		 CCNZmode and thus work with only a small subset.  */
 	      if (dep_attr_type == TYPE_LOGIC
 		  || (dep_attr_type == TYPE_ARITH
-		      && visium_noov_operator (XEXP (src, 0),
-					       GET_MODE (XEXP (src, 0)))))
+		      && visium_nz_comparison_operator (XEXP (src, 0),
+							GET_MODE
+							(XEXP (src, 0)))))
 		return 0;
 	    }
 	}
@@ -576,7 +582,7 @@ visium_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 
   /* Anti dependency: DEP_INSN reads a register that INSN writes some
      cycles later.  */
-  if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
+  if (dep_type == REG_DEP_ANTI)
     {
       /* On the GR5, the latency of FP instructions needs to be taken into
 	 account for every dependency involving a write.  */
@@ -637,7 +643,7 @@ visium_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 
   /* Output dependency: DEP_INSN writes a register that INSN writes some
      cycles later.  */
-  else if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
+  else if (dep_type == REG_DEP_OUTPUT)
     {
       /* On the GR5, the latency of FP instructions needs to be taken into
 	 account for every dependency involving a write.  */
@@ -1621,8 +1627,8 @@ visium_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
      7:   {
      8:     bytes = 0;
      9:     addr_rtx = ovfl;
-     10:     ovfl += rsize;
-     11:   }
+     10:    ovfl += rsize;
+     11:  }
 
    */
 
@@ -1686,6 +1692,16 @@ visium_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   gimplify_and_add (t, pre_p);
   t = build1 (LABEL_EXPR, void_type_node, lab_over);
   gimplify_and_add (t, pre_p);
+
+  /* Emit a big-endian correction if size < UNITS_PER_WORD.  */
+  if (size < UNITS_PER_WORD)
+    {
+      t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (addr), addr,
+		  size_int (UNITS_PER_WORD - size));
+      t = build2 (MODIFY_EXPR, void_type_node, addr, t);
+      gimplify_and_add (t, pre_p);
+    }
+
   addr = fold_convert (ptrtype, addr);
 
   return build_va_arg_indirect_ref (addr);
@@ -2109,16 +2125,12 @@ visium_split_double_add (enum rtx_code code, rtx op0, rtx op1, rtx op2)
       op8 = gen_highpart (SImode, op2);
     }
 
-  /* This is the {add,sub,neg}si3_insn_set_flags pattern.  */
   if (op4 == const0_rtx)
-    x = gen_rtx_NEG (SImode, op5);
+    pat = gen_negsi2_insn_set_carry (op3, op5);
+  else if (code == MINUS)
+    pat = gen_subsi3_insn_set_carry (op3, op4, op5);
   else
-    x = gen_rtx_fmt_ee (code, SImode, op4, op5);
-  pat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
-  XVECEXP (pat, 0, 0) = gen_rtx_SET (op3, x);
-  flags = gen_rtx_REG (CC_NOOVmode, FLAGS_REGNUM);
-  x = gen_rtx_COMPARE (CC_NOOVmode, shallow_copy_rtx (x), const0_rtx);
-  XVECEXP (pat, 0, 1) = gen_rtx_SET (flags, x);
+    pat = gen_addsi3_insn_set_carry (op3, op4, op5);
   emit_insn (pat);
 
   /* This is the plus_[plus_]sltu_flags or minus_[minus_]sltu_flags pattern.  */
@@ -2126,6 +2138,7 @@ visium_split_double_add (enum rtx_code code, rtx op0, rtx op1, rtx op2)
     x = op7;
   else
     x = gen_rtx_fmt_ee (code, SImode, op7, op8);
+  flags = gen_rtx_REG (CCCmode, FLAGS_REGNUM);
   x = gen_rtx_fmt_ee (code, SImode, x, gen_rtx_LTU (SImode, flags, const0_rtx));
   pat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
   XVECEXP (pat, 0, 0) = gen_rtx_SET (op6, x);
@@ -2810,6 +2823,24 @@ visium_select_cc_mode (enum rtx_code code, rtx op0, rtx op1)
 	}
     }
 
+  /* This is for the cmp<mode>_sne pattern.  */
+  if (op1 == constm1_rtx)
+    return CCCmode;
+
+  /* This is for the add<mode>3_insn_set_carry pattern.  */
+  if ((code == LTU || code == GEU)
+      && GET_CODE (op0) == PLUS
+      && rtx_equal_p (XEXP (op0, 0), op1))
+    return CCCmode;
+
+  /* This is for the {add,sub,neg}<mode>3_insn_set_overflow pattern.  */
+  if ((code == EQ || code == NE)
+      && GET_CODE (op1) == UNSPEC
+      && (XINT (op1, 1) == UNSPEC_ADDV
+	  || XINT (op1, 1) == UNSPEC_SUBV
+	  || XINT (op1, 1) == UNSPEC_NEGV))
+    return CCVmode;
+
   if (op1 != const0_rtx)
     return CCmode;
 
@@ -2821,21 +2852,24 @@ visium_select_cc_mode (enum rtx_code code, rtx op0, rtx op1)
     case ASHIFT:
     case LTU:
     case LT:
-      /* The V flag may be set differently from a COMPARE with zero.
-	 The consequence is that a comparison operator testing V must
-	 be turned into another operator not testing V and yielding
-	 the same result for a comparison with zero.  That's possible
-	 for GE/LT which become NC/NS respectively, but not for GT/LE
-	 for which the altered operator doesn't exist on the Visium.  */
-      return CC_NOOVmode;
+      /* The C and V flags may be set differently from a COMPARE with zero.
+	 The consequence is that a comparison operator testing C or V must
+	 be turned into another operator not testing C or V and yielding
+	 the same result for a comparison with zero.  That's possible for
+	 GE/LT which become NC/NS respectively, but not for GT/LE for which
+	 the altered operator doesn't exist on the Visium.  */
+      return CCNZmode;
 
     case ZERO_EXTRACT:
       /* This is a btst, the result is in C instead of Z.  */
-      return CC_BTSTmode;
+      return CCCmode;
 
     case CONST_INT:
       /* This is a degenerate case, typically an uninitialized variable.  */
       gcc_assert (op0 == constm1_rtx);
+
+      /* ... fall through ... */
+
     case REG:
     case AND:
     case IOR:
@@ -3073,21 +3107,25 @@ output_cbranch (rtx label, enum rtx_code code, enum machine_mode cc_mode,
   switch (code)
     {
     case NE:
-      if (cc_mode == CC_BTSTmode)
+      if (cc_mode == CCCmode)
 	cond = "cs";
+      else if (cc_mode == CCVmode)
+	cond = "os";
       else
 	cond = "ne";
       break;
 
     case EQ:
-      if (cc_mode == CC_BTSTmode)
+      if (cc_mode == CCCmode)
 	cond = "cc";
+      else if (cc_mode == CCVmode)
+	cond = "oc";
       else
 	cond = "eq";
       break;
 
     case GE:
-      if (cc_mode == CC_NOOVmode)
+      if (cc_mode == CCNZmode)
 	cond = "nc";
       else
 	cond = "ge";
@@ -3106,8 +3144,8 @@ output_cbranch (rtx label, enum rtx_code code, enum machine_mode cc_mode,
 
     case LT:
       if (cc_mode == CCFPmode || cc_mode == CCFPEmode)
-	cond = "ns";
-      else if (cc_mode == CC_NOOVmode)
+	cond = "cs"; /* or "ns" */
+      else if (cc_mode == CCNZmode)
 	cond = "ns";
       else
 	cond = "lt";
@@ -3138,7 +3176,7 @@ output_cbranch (rtx label, enum rtx_code code, enum machine_mode cc_mode,
       break;
 
     case UNGE:
-      cond = "nc";
+      cond = "cc"; /* or "nc" */
       break;
 
     case UNGT:

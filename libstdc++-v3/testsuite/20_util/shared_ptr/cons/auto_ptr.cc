@@ -1,6 +1,7 @@
-// { dg-options "-std=gnu++11 -Wno-deprecated" }
+// { dg-options "-Wno-deprecated" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,26 +25,53 @@
 
 struct A { };
 
+int destroyed = 0;
+struct B : A { ~B() { ++destroyed; } };
+
 // 20.6.6.2.1 shared_ptr constructors [util.smartptr.shared.const]
 
 // Construction from auto_ptr
-int
+
+template<typename From, typename To>
+constexpr bool constructible()
+{
+  using namespace std;
+  return is_constructible<shared_ptr<To>, auto_ptr<From>>::value
+    && is_constructible<shared_ptr<const To>, auto_ptr<From>>::value
+    && is_constructible<shared_ptr<const To>, auto_ptr<const From>>::value;
+}
+
+static_assert(  constructible< A,   A    >(), "A -> A compatible" );
+static_assert(  constructible< B,   A    >(), "B -> A compatible" );
+static_assert(  constructible< int, int  >(), "int -> int compatible" );
+static_assert( !constructible< int, long >(), "int -> long not compatible" );
+
+void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::auto_ptr<A> a(new A);
   std::shared_ptr<A> a2(std::move(a));
   VERIFY( a.get() == 0 );
   VERIFY( a2.get() != 0 );
   VERIFY( a2.use_count() == 1 );
+}
 
-  return 0;
+void
+test02()
+{
+  std::auto_ptr<B> b(new B);
+  std::shared_ptr<A> a(std::move(b));
+  VERIFY( b.get() == 0 );
+  VERIFY( a.get() != 0 );
+  VERIFY( a.use_count() == 1 );
+  a.reset();
+  VERIFY( destroyed == 1 );
 }
 
 int
 main()
 {
   test01();
+  test02();
   return 0;
 }

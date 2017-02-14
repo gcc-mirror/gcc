@@ -1,5 +1,5 @@
 /* Symbol table.
-   Copyright (C) 2012-2016 Free Software Foundation, Inc.
+   Copyright (C) 2012-2017 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -273,8 +273,7 @@ symbol_table::change_decl_assembler_name (tree decl, tree name)
 
   /* We can have user ASM names on things, like global register variables, that
      are not in the symbol table.  */
-  if ((TREE_CODE (decl) == VAR_DECL
-       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
+  if ((VAR_P (decl) && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
       || TREE_CODE (decl) == FUNCTION_DECL)
     node = symtab_node::get (decl);
   if (!DECL_ASSEMBLER_NAME_SET_P (decl))
@@ -589,21 +588,27 @@ symtab_node::create_reference (symtab_node *referred_node,
   return ref;
 }
 
-/* If VAL is a reference to a function or a variable, add a reference from
-   this symtab_node to the corresponding symbol table node.  USE_TYPE specify
-   type of the use and STMT the statement (if it exists).  Return the new
-   reference or NULL if none was created.  */
-
 ipa_ref *
-symtab_node::maybe_create_reference (tree val, enum ipa_ref_use use_type,
-				     gimple *stmt)
+symtab_node::maybe_create_reference (tree val, gimple *stmt)
 {
   STRIP_NOPS (val);
-  if (TREE_CODE (val) != ADDR_EXPR)
-    return NULL;
+  ipa_ref_use use_type;
+
+  switch (TREE_CODE (val))
+    {
+    case VAR_DECL:
+      use_type = IPA_REF_LOAD;
+      break;
+    case ADDR_EXPR:
+      use_type = IPA_REF_ADDR;
+      break;
+    default:
+      gcc_assert (!handled_component_p (val));
+      return NULL;
+    }
+
   val = get_base_var (val);
-  if (val && (TREE_CODE (val) == FUNCTION_DECL
-	       || TREE_CODE (val) == VAR_DECL))
+  if (val && VAR_OR_FUNCTION_DECL_P (val))
     {
       symtab_node *referred = symtab_node::get (val);
       gcc_checking_assert (referred);
@@ -885,6 +890,7 @@ symtab_node::dump_base (FILE *f)
     {
       fprintf (f, "  Aux:");
       dump_addr (f, " @", (void *)aux);
+      fprintf (f, "\n");
     }
 
   fprintf (f, "  References: ");
@@ -967,7 +973,7 @@ symtab_node::verify_base (void)
     }
   else if (is_a <varpool_node *> (this))
     {
-      if (TREE_CODE (decl) != VAR_DECL)
+      if (!VAR_P (decl))
 	{
           error ("variable symbol is not variable");
           error_found = true;
@@ -1031,7 +1037,7 @@ symtab_node::verify_base (void)
     }
   if (analyzed && !definition)
     {
-      error ("node is analyzed byt it is not a definition");
+      error ("node is analyzed but it is not a definition");
       error_found = true;
     }
   if (cpp_implicit_alias && !alias)
@@ -1254,14 +1260,15 @@ symtab_node::make_decl_local (void)
 	alias->make_decl_local ();
     }
 
-  if (TREE_CODE (decl) == VAR_DECL)
+  if (VAR_P (decl))
     {
       DECL_COMMON (decl) = 0;
       /* ADDRESSABLE flag is not defined for public symbols.  */
       TREE_ADDRESSABLE (decl) = 1;
       TREE_STATIC (decl) = 1;
     }
-  else gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+  else
+    gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
   DECL_COMDAT (decl) = 0;
   DECL_WEAK (decl) = 0;
@@ -1303,7 +1310,7 @@ symtab_node::copy_visibility_from (symtab_node *n)
 	alias->copy_visibility_from (n);
     }
 
-  if (TREE_CODE (decl) == VAR_DECL)
+  if (VAR_P (decl))
     {
       DECL_COMMON (decl) = DECL_COMMON (n->decl);
       /* ADDRESSABLE flag is not defined for public symbols.  */
@@ -1441,7 +1448,7 @@ symtab_node::fixup_same_cpp_alias_visibility (symtab_node *target)
 }
 
 /* Set section, do not recurse into aliases.
-   When one wants to change section of symbol and its aliases,
+   When one wants to change section of a symbol and its aliases,
    use set_section.  */
 
 void
@@ -1990,13 +1997,12 @@ symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
   if (rs1 != rs2 && avail1 >= AVAIL_AVAILABLE && avail2 >= AVAIL_AVAILABLE)
     binds_local1 = binds_local2 = true;
 
-  if ((binds_local1 ? rs1 : this)
-       == (binds_local2 ? rs2 : s2))
+  if (binds_local1 && binds_local2 && rs1 == rs2)
     {
       /* We made use of the fact that alias is not weak.  */
-      if (binds_local1 && rs1 != this)
+      if (rs1 != this)
         refuse_visibility_changes = true;
-      if (binds_local2 && rs2 != s2)
+      if (rs2 != s2)
         s2->refuse_visibility_changes = true;
       return 1;
     }
@@ -2099,7 +2105,7 @@ symtab_node::can_increase_alignment_p (void)
   symtab_node *target = ultimate_alias_target ();
 
   /* For now support only variables.  */
-  if (TREE_CODE (decl) != VAR_DECL)
+  if (!VAR_P (decl))
     return false;
 
   /* With -fno-toplevel-reorder we may have already output the constant.  */
@@ -2216,6 +2222,11 @@ symtab_node::binds_to_current_def_p (symtab_node *ref)
 {
   if (!definition)
     return false;
+  if (transparent_alias)
+    return definition
+	   && get_alias_target()->binds_to_current_def_p (ref);
+  if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (decl)))
+    return false;
   if (decl_binds_to_current_def_p (decl))
     return true;
 
@@ -2227,8 +2238,6 @@ symtab_node::binds_to_current_def_p (symtab_node *ref)
   if (DECL_EXTERNAL (decl))
     return false;
 
-  if (!externally_visible)
-    debug ();
   gcc_assert (externally_visible);
 
   if (ref)

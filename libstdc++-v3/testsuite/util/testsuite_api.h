@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Exception testing utils for the C++ library testsuite.
 //
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -70,7 +70,6 @@ namespace __gnu_test
       // behavior is ambiguity.
       static void test()
       {
-	bool test __attribute__((unused)) = true;
 	try
 	  { throw error_type(); }
 	catch (std::exception const&)

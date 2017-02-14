@@ -85,6 +85,10 @@ func (check *Checker) objDecl(obj Object, def *Named, path []*TypeName) {
 	case *Func:
 		// functions may be recursive - no need to track dependencies
 		check.funcDecl(obj, d)
+	// Alias-related code. Keep for now.
+	// case *Alias:
+	// 	// aliases cannot be recursive - no need to track dependencies
+	// 	check.aliasDecl(obj, d)
 	default:
 		unreachable()
 	}
@@ -141,6 +145,14 @@ func (check *Checker) varDecl(obj *Var, lhs []*Var, typ, init ast.Expr) {
 	// determine type, if any
 	if typ != nil {
 		obj.typ = check.typ(typ)
+		// We cannot spread the type to all lhs variables if there
+		// are more than one since that would mark them as checked
+		// (see Checker.objDecl) and the assignment of init exprs,
+		// if any, would not be checked.
+		//
+		// TODO(gri) If we have no init expr, we should distribute
+		// a given type otherwise we need to re-evalate the type
+		// expr for each lhs variable, leading to duplicate work.
 	}
 
 	// check initialization
@@ -173,6 +185,17 @@ func (check *Checker) varDecl(obj *Var, lhs []*Var, typ, init ast.Expr) {
 			panic("inconsistent lhs")
 		}
 	}
+
+	// We have multiple variables on the lhs and one init expr.
+	// Make sure all variables have been given the same type if
+	// one was specified, otherwise they assume the type of the
+	// init expression values (was issue #15755).
+	if typ != nil {
+		for _, lhs := range lhs {
+			lhs.typ = obj.typ
+		}
+	}
+
 	check.initVars(lhs, []ast.Expr{init}, token.NoPos)
 }
 
@@ -308,6 +331,106 @@ func (check *Checker) funcDecl(obj *Func, decl *declInfo) {
 	if !check.conf.IgnoreFuncBodies && fdecl.Body != nil {
 		check.later(obj.name, decl, sig, fdecl.Body)
 	}
+}
+
+// original returns the original Object if obj is an Alias;
+// otherwise it returns obj. The result is never an Alias,
+// but it may be nil.
+func original(obj Object) Object {
+	// an alias stands for the original object; use that one instead
+	if alias, _ := obj.(*disabledAlias); alias != nil {
+		obj = alias.orig
+		// aliases always refer to non-alias originals
+		if _, ok := obj.(*disabledAlias); ok {
+			panic("original is an alias")
+		}
+	}
+	return obj
+}
+
+func (check *Checker) aliasDecl(obj *disabledAlias, decl *declInfo) {
+	assert(obj.typ == nil)
+
+	// alias declarations cannot use iota
+	assert(check.iota == nil)
+
+	// assume alias is invalid to start with
+	obj.typ = Typ[Invalid]
+
+	// rhs must be package-qualified identifer pkg.sel (see also call.go: checker.selector)
+	// TODO(gri) factor this code out and share with checker.selector
+	rhs := decl.init
+	var pkg *Package
+	var sel *ast.Ident
+	if sexpr, ok := rhs.(*ast.SelectorExpr); ok {
+		if ident, ok := sexpr.X.(*ast.Ident); ok {
+			_, obj := check.scope.LookupParent(ident.Name, check.pos)
+			if pname, _ := obj.(*PkgName); pname != nil {
+				assert(pname.pkg == check.pkg)
+				check.recordUse(ident, pname)
+				pname.used = true
+				pkg = pname.imported
+				sel = sexpr.Sel
+			}
+		}
+	}
+	if pkg == nil {
+		check.errorf(rhs.Pos(), "invalid alias: %v is not a package-qualified identifier", rhs)
+		return
+	}
+
+	// qualified identifier must denote an exported object
+	orig := pkg.scope.Lookup(sel.Name)
+	if orig == nil || !orig.Exported() {
+		if !pkg.fake {
+			check.errorf(rhs.Pos(), "%s is not exported by package %s", sel.Name, pkg.name)
+		}
+		return
+	}
+	check.recordUse(sel, orig)
+	orig = original(orig)
+
+	// avoid further errors if the imported object is an alias that's broken
+	if orig == nil {
+		return
+	}
+
+	// An alias declaration must not refer to package unsafe.
+	if orig.Pkg() == Unsafe {
+		check.errorf(rhs.Pos(), "invalid alias: %s refers to package unsafe (%v)", obj.Name(), orig)
+		return
+	}
+
+	// The original must be of the same kind as the alias declaration.
+	var why string
+	switch obj.kind {
+	case token.CONST:
+		if _, ok := orig.(*Const); !ok {
+			why = "constant"
+		}
+	case token.TYPE:
+		if _, ok := orig.(*TypeName); !ok {
+			why = "type"
+		}
+	case token.VAR:
+		if _, ok := orig.(*Var); !ok {
+			why = "variable"
+		}
+	case token.FUNC:
+		if _, ok := orig.(*Func); !ok {
+			why = "function"
+		}
+	default:
+		unreachable()
+	}
+	if why != "" {
+		check.errorf(rhs.Pos(), "invalid alias: %v is not a %s", orig, why)
+		return
+	}
+
+	// alias is valid
+	obj.typ = orig.Type()
+	obj.orig = orig
 }
 
 func (check *Checker) declStmt(decl ast.Decl) {

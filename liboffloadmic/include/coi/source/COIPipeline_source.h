@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015 Intel Corporation.
+ * Copyright 2010-2016 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -159,10 +159,10 @@ typedef enum COI_ACCESS_FLAGS
 COIACCESSAPI
 COIRESULT
 COIPipelineCreate(
-            COIPROCESS          in_Process,
-            COI_CPU_MASK        in_Mask,
-            uint32_t            in_StackSize,
-            COIPIPELINE*        out_pPipeline);
+    COIPROCESS          in_Process,
+    COI_CPU_MASK        in_Mask,
+    uint32_t            in_StackSize,
+    COIPIPELINE        *out_pPipeline);
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
@@ -177,7 +177,7 @@ COIPipelineCreate(
 COIACCESSAPI
 COIRESULT
 COIPipelineDestroy(
-            COIPIPELINE         in_Pipeline);
+    COIPIPELINE         in_Pipeline);
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -194,8 +194,8 @@ COIPipelineDestroy(
 ///    RunFunctions. Setting it incorrectly can lead to cyclic dependencies
 ///    and can cause the respective pipeline to stall.
 /// 2. RunFunctions can also segfault if enough memory space is not available
-///    on the sink for the buffers passed in. Pinned buffers and buffers that
-///    are AddRef'd need to be accounted for available memory space. In other
+///    on the sink for the buffers passed in. Buffers that are AddRef'd
+///    need to be accounted for available memory space. In other
 ///    words, this memory is not available for use until it is freed up.
 /// 3. Unexpected segmentation faults or erroneous behavior can occur if
 ///    handles or data passed in to Runfunction gets destroyed before the
@@ -322,8 +322,8 @@ COIPipelineDestroy(
 /// @return COI_ARGUMENT_MISMATCH if in_pReturnValue is non-NULL but
 ///         in_ReturnValueLen is zero.
 ///
-/// @return COI_RETRY if any input buffers, which are not pinned buffers,
-///         are still mapped when passed to the run function.
+/// @return COI_RETRY if any input buffers are still mapped when
+///         passed to the run function.
 ///
 /// @return COI_MISSING_DEPENDENCY if buffer was not created on the process
 ///         associated with the pipeline that was passed in.
@@ -334,18 +334,18 @@ COIPipelineDestroy(
 COIACCESSAPI
 COIRESULT
 COIPipelineRunFunction(
-            COIPIPELINE         in_Pipeline,
-            COIFUNCTION         in_Function,
-            uint32_t            in_NumBuffers,
-    const   COIBUFFER*          in_pBuffers,
-    const   COI_ACCESS_FLAGS*   in_pBufferAccessFlags,
-            uint32_t            in_NumDependencies,
-    const   COIEVENT*           in_pDependencies,
-    const   void*               in_pMiscData,
-            uint16_t            in_MiscDataLen,
-            void*               out_pAsyncReturnValue,
-            uint16_t            in_AsyncReturnValueLen,
-            COIEVENT*           out_pCompletion);
+    COIPIPELINE         in_Pipeline,
+    COIFUNCTION         in_Function,
+    uint32_t            in_NumBuffers,
+    const   COIBUFFER          *in_pBuffers,
+    const   COI_ACCESS_FLAGS   *in_pBufferAccessFlags,
+    uint32_t            in_NumDependencies,
+    const   COIEVENT           *in_pDependencies,
+    const   void               *in_pMiscData,
+    uint16_t            in_MiscDataLen,
+    void               *out_pAsyncReturnValue,
+    uint16_t            in_AsyncReturnValueLen,
+    COIEVENT           *out_pCompletion);
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -369,8 +369,8 @@ COIPipelineRunFunction(
 COIACCESSAPI
 COIRESULT
 COIPipelineGetEngine(
-            COIPIPELINE         in_Pipeline,
-            COIENGINE*          out_pEngine);
+    COIPIPELINE         in_Pipeline,
+    COIENGINE          *out_pEngine);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -404,10 +404,10 @@ COIPipelineGetEngine(
 COIACCESSAPI
 COIRESULT
 COIPipelineSetCPUMask(
-            COIPROCESS          in_Process,
-            uint32_t            in_CoreID,
-            uint8_t             in_ThreadID,
-            COI_CPU_MASK*       out_pMask);
+    COIPROCESS          in_Process,
+    uint32_t            in_CoreID,
+    uint8_t             in_ThreadID,
+    COI_CPU_MASK       *out_pMask);
 
 //////////////////////////////////////////////////////////////////////////////
 ///
@@ -426,7 +426,7 @@ COIPipelineSetCPUMask(
 COIACCESSAPI
 COIRESULT
 COIPipelineClearCPUMask(
-            COI_CPU_MASK*       in_Mask);
+    COI_CPU_MASK       *in_Mask);
 
 #ifdef __cplusplus
 } /* extern "C" */

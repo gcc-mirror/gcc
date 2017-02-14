@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003-2016 Free Software Foundation, Inc.
+   Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1507,9 +1507,6 @@ initialize_inline_failed (struct cgraph_edge *e)
     e->inline_failed = CIF_BODY_NOT_AVAILABLE;
   else if (callee->local.redefined_extern_inline)
     e->inline_failed = CIF_REDEFINED_EXTERN_INLINE;
-  else if (cfun && fn_contains_cilk_spawn_p (cfun))
-    /* We can't inline if the function is spawing a function.  */
-    e->inline_failed = CIF_CILK_SPAWN;
   else
     e->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
   gcc_checking_assert (!e->call_stmt_cannot_inline_p
@@ -2154,6 +2151,23 @@ struct record_modified_bb_info
   gimple *stmt;
 };
 
+/* Value is initialized in INIT_BB and used in USE_BB.  We want to copute
+   probability how often it changes between USE_BB.
+   INIT_BB->frequency/USE_BB->frequency is an estimate, but if INIT_BB
+   is in different loop nest, we can do better.
+   This is all just estimate.  In theory we look for minimal cut separating
+   INIT_BB and USE_BB, but we only want to anticipate loop invariant motion
+   anyway.  */
+
+static basic_block
+get_minimal_bb (basic_block init_bb, basic_block use_bb)
+{
+  struct loop *l = find_common_loop (init_bb->loop_father, use_bb->loop_father);
+  if (l && l->header->frequency < init_bb->frequency)
+    return l->header;
+  return init_bb;
+}
+
 /* Callback of walk_aliased_vdefs.  Records basic blocks where the value may be
    set except for info->stmt.  */
 
@@ -2167,7 +2181,9 @@ record_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
   bitmap_set_bit (info->bb_set,
 		  SSA_NAME_IS_DEFAULT_DEF (vdef)
 		  ? ENTRY_BLOCK_PTR_FOR_FN (cfun)->index
-		  : gimple_bb (SSA_NAME_DEF_STMT (vdef))->index);
+		  : get_minimal_bb
+			 (gimple_bb (SSA_NAME_DEF_STMT (vdef)),
+			  gimple_bb (info->stmt))->index);
   return false;
 }
 
@@ -2183,28 +2199,35 @@ param_change_prob (gimple *stmt, int i)
 {
   tree op = gimple_call_arg (stmt, i);
   basic_block bb = gimple_bb (stmt);
-  tree base;
 
-  /* Global invariants neve change.  */
-  if (is_gimple_min_invariant (op))
+  if (TREE_CODE (op) == WITH_SIZE_EXPR)
+    op = TREE_OPERAND (op, 0);
+
+  tree base = get_base_address (op);
+
+  /* Global invariants never change.  */
+  if (is_gimple_min_invariant (base))
     return 0;
+
   /* We would have to do non-trivial analysis to really work out what
      is the probability of value to change (i.e. when init statement
      is in a sibling loop of the call). 
 
      We do an conservative estimate: when call is executed N times more often
      than the statement defining value, we take the frequency 1/N.  */
-  if (TREE_CODE (op) == SSA_NAME)
+  if (TREE_CODE (base) == SSA_NAME)
     {
       int init_freq;
 
       if (!bb->frequency)
 	return REG_BR_PROB_BASE;
 
-      if (SSA_NAME_IS_DEFAULT_DEF (op))
+      if (SSA_NAME_IS_DEFAULT_DEF (base))
 	init_freq = ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency;
       else
-	init_freq = gimple_bb (SSA_NAME_DEF_STMT (op))->frequency;
+	init_freq = get_minimal_bb
+		      (gimple_bb (SSA_NAME_DEF_STMT (base)),
+		       gimple_bb (stmt))->frequency;
 
       if (!init_freq)
 	init_freq = 1;
@@ -2213,9 +2236,7 @@ param_change_prob (gimple *stmt, int i)
       else
 	return REG_BR_PROB_BASE;
     }
-
-  base = get_base_address (op);
-  if (base)
+  else
     {
       ao_ref refd;
       int max;
@@ -2256,7 +2277,6 @@ param_change_prob (gimple *stmt, int i)
       else
 	return REG_BR_PROB_BASE;
     }
-  return REG_BR_PROB_BASE;
 }
 
 /* Find whether a basic block BB is the final block of a (half) diamond CFG
@@ -2396,9 +2416,7 @@ find_foldable_builtin_expect (basic_block bb)
     {
       gimple *stmt = gsi_stmt (bsi);
       if (gimple_call_builtin_p (stmt, BUILT_IN_EXPECT)
-	  || (is_gimple_call (stmt)
-	      && gimple_call_internal_p (stmt)
-	      && gimple_call_internal_fn (stmt) == IFN_BUILTIN_EXPECT))
+	  || gimple_call_internal_p (stmt, IFN_BUILTIN_EXPECT))
         {
           tree var = gimple_call_lhs (stmt);
           tree arg = gimple_call_arg (stmt, 0);
@@ -2970,7 +2988,7 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
       inline_update_overall_summary (node);
       info->self_size = info->size;
       info->self_time = info->time;
-      /* We can not inline instrumetnation clones.  */
+      /* We can not inline instrumentation clones.  */
       if (node->thunk.add_pointer_bounds_args)
 	{
           info->inlinable = false;
@@ -3524,18 +3542,22 @@ remap_edge_change_prob (struct cgraph_edge *inlined_edge,
 	{
 	  struct ipa_jump_func *jfunc = ipa_get_ith_jump_func (args, i);
 	  if (jfunc->type == IPA_JF_PASS_THROUGH
-	      && (ipa_get_jf_pass_through_formal_id (jfunc)
-		  < (int) inlined_es->param.length ()))
+	      || jfunc->type == IPA_JF_ANCESTOR)
 	    {
-	      int jf_formal_id = ipa_get_jf_pass_through_formal_id (jfunc);
-	      int prob1 = es->param[i].change_prob;
-	      int prob2 = inlined_es->param[jf_formal_id].change_prob;
-	      int prob = combine_probabilities (prob1, prob2);
+	      int id = jfunc->type == IPA_JF_PASS_THROUGH
+		       ? ipa_get_jf_pass_through_formal_id (jfunc)
+		       : ipa_get_jf_ancestor_formal_id (jfunc);
+	      if (id < (int) inlined_es->param.length ())
+		{
+		  int prob1 = es->param[i].change_prob;
+		  int prob2 = inlined_es->param[id].change_prob;
+		  int prob = combine_probabilities (prob1, prob2);
 
-	      if (prob1 && prob2 && !prob)
-		prob = 1;
+		  if (prob1 && prob2 && !prob)
+		    prob = 1;
 
-	      es->param[i].change_prob = prob;
+		  es->param[i].change_prob = prob;
+		}
 	    }
 	}
     }
@@ -4430,7 +4452,6 @@ write_inline_edge_summary (struct output_block *ob, struct cgraph_edge *e)
 void
 inline_write_summary (void)
 {
-  struct cgraph_node *node;
   struct output_block *ob = create_output_block (LTO_section_inline_summary);
   lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
   unsigned int count = 0;
@@ -4449,19 +4470,16 @@ inline_write_summary (void)
     {
       symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
       cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
-      if (cnode && (node = cnode)->definition && !node->alias)
+      if (cnode && cnode->definition && !cnode->alias)
 	{
-	  struct inline_summary *info = inline_summaries->get (node);
+	  struct inline_summary *info = inline_summaries->get (cnode);
 	  struct bitpack_d bp;
 	  struct cgraph_edge *edge;
 	  int i;
 	  size_time_entry *e;
 	  struct condition *c;
 
-	  streamer_write_uhwi (ob,
-			       lto_symtab_encoder_encode (encoder,
-							  
-							  node));
+	  streamer_write_uhwi (ob, lto_symtab_encoder_encode (encoder, cnode));
 	  streamer_write_hwi (ob, info->estimated_self_stack_size);
 	  streamer_write_hwi (ob, info->self_size);
 	  streamer_write_hwi (ob, info->self_time);
@@ -4494,9 +4512,9 @@ inline_write_summary (void)
 	  write_predicate (ob, info->loop_iterations);
 	  write_predicate (ob, info->loop_stride);
 	  write_predicate (ob, info->array_index);
-	  for (edge = node->callees; edge; edge = edge->next_callee)
+	  for (edge = cnode->callees; edge; edge = edge->next_callee)
 	    write_inline_edge_summary (ob, edge);
-	  for (edge = node->indirect_calls; edge; edge = edge->next_callee)
+	  for (edge = cnode->indirect_calls; edge; edge = edge->next_callee)
 	    write_inline_edge_summary (ob, edge);
 	}
     }

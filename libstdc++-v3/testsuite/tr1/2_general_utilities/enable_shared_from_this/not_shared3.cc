@@ -1,4 +1,4 @@
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,8 +27,6 @@ struct X : public std::tr1::enable_shared_from_this<X>
 int
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::tr1::shared_ptr<X> p(new X);
 
   X x;

@@ -49,7 +49,7 @@ target = @target@
 target_noncanonical:=@target_noncanonical@
 
 # The version of GCC in this tree
-gcc_version := $(shell cat $(srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(srcdir)/../gcc/BASE-VER)
 
 # Directory in which the compiler finds libraries etc.
 libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)

@@ -35,5 +35,6 @@ int main ()
    foo ((i * i) % 5);
  return 0;
 }
-/* { dg-final-use { scan-rtl-dump-times ";; basic block\[^\\n\]*count 4000" 2 "expand"} } */
-/* { dg-final-use { scan-rtl-dump-times ";; basic block\[^\\n\]*count 2000" 1 "expand"} } */
+/* autofdo cannot do that precise execution numbers */
+/* { dg-final-use-not-autofdo { scan-rtl-dump-times ";; basic block\[^\\n\]*count 4000" 2 "expand"} } */
+/* { dg-final-use-not-autofdo { scan-rtl-dump-times ";; basic block\[^\\n\]*count 2000" 1 "expand"} } */

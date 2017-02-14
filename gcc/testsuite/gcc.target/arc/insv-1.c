@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "" { ! { clmcpu } } } */
 /* { dg-options "-mcpu=nps400 -O2 -mbitops" } */
 
 /* ??? Irrespective of insn set, generated code for this is a mess.  */

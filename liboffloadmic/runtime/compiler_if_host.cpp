@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2016 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -161,6 +161,8 @@ extern "C" OFFLOAD OFFLOAD_TARGET_ACQUIRE(
     return ofld;
 }
 
+// This routine is called for OpenMP4.5 offload calls
+// OpenMP 4.5 offload is always optional.
 extern "C" OFFLOAD OFFLOAD_TARGET_ACQUIRE1(
     const int*  device_num,
     const char* file,
@@ -171,8 +173,8 @@ extern "C" OFFLOAD OFFLOAD_TARGET_ACQUIRE1(
 
     // make sure libray is initialized and at least one device is available
     if (!__offload_init_library()) {
-        LIBOFFLOAD_ERROR(c_device_is_not_available);
-        exit(1);
+       OFFLOAD_DEBUG_TRACE(2, "No device available, fall back to host\n");
+       return NULL;
     }
 
     // OFFLOAD_TIMER_INIT must follow call to __offload_init_library
@@ -377,6 +379,10 @@ static int offload_offload_wrap(
     OffloadFlags offload_flags
 )
 {
+    if (signal) {
+       ofld->set_signal(*signal);
+    }
+
     bool ret = ofld->offload(name, is_empty, vars, vars2, num_vars,
                              waits, num_waits, signal, entry_id,
                              stack_addr, offload_flags);

@@ -1,5 +1,5 @@
 /* Do-nothing debug hooks for GCC.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2017 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -26,7 +26,7 @@ const struct gcc_debug_hooks do_nothing_debug_hooks =
 {
   debug_nothing_charstar,
   debug_nothing_charstar,
-  debug_nothing_void,			/* early_finish */
+  debug_nothing_charstar,			/* early_finish */
   debug_nothing_void,
   debug_nothing_int_charstar,
   debug_nothing_int_charstar,

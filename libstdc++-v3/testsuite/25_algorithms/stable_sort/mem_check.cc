@@ -1,4 +1,4 @@
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,8 +36,6 @@ const int A[] = {10, 20, 1, 11, 2, 21, 28, 29, 12, 35, 15, 27, 6, 16, 7,
 void
 test_mem1(int throw_count)
 {
-  bool test __attribute__((unused)) = true;
-
   copy_tracker vals[30];
   for(int i = 0; i < 30; ++i)
     vals[i] = A[i];
@@ -67,8 +65,6 @@ is_ordered(const copy_tracker& lhs, const copy_tracker& rhs)
 void
 test_mem2(int throw_count)
 {
-  bool test __attribute__((unused)) = true;
-
   copy_tracker vals[30];
   for(int i = 0; i < 30; ++i)
     vals[i] = A[i];

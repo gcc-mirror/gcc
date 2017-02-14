@@ -817,8 +817,10 @@ package body Sinput.L is
 
             --  PRAGMA, WITH, USE (which can appear before a body)
 
-            when Tok_Pragma | Tok_With | Tok_Use =>
-
+            when Tok_Pragma
+               | Tok_Use
+               | Tok_With
+            =>
                --  We just want to skip any of these, do it by skipping to a
                --  semicolon, but check for EOF, in case we have bad syntax.
 
@@ -844,7 +846,9 @@ package body Sinput.L is
 
             --  FUNCTION or PROCEDURE
 
-            when Tok_Procedure | Tok_Function =>
+            when Tok_Function
+               | Tok_Procedure
+            =>
                Pcount := 0;
 
                --  Loop through tokens following PROCEDURE or FUNCTION
@@ -870,7 +874,10 @@ package body Sinput.L is
 
                      --  BEGIN or IS or END definitely means body is present
 
-                     when Tok_Begin | Tok_Is | Tok_End =>
+                     when Tok_Begin
+                        | Tok_End
+                        | Tok_Is
+                     =>
                         return True;
 
                      --  Semicolon means no body present if at outside any

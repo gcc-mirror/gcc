@@ -4,7 +4,7 @@
 
 // 2000-09-13 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,6 @@
 // More tests for locale("") == POSIX locale::name. 
 void test04()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
 
 #ifdef _GLIBCXX_HAVE_SETENV

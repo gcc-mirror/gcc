@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,8 +34,6 @@ using __gnu_test::rvalstruct;
 
 typedef test_container<rvalstruct, forward_iterator_wrapper> Fcontainer;
 typedef test_container<rvalstruct, bidirectional_iterator_wrapper> Bcontainer;
-
-bool test __attribute__((unused)) = true;
 
 const int A[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
 const int B[] = {2, 4, 6, 8, 10, 12, 14, 16, 1, 3, 5, 7, 9, 11, 13, 15, 17};

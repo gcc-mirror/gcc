@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-pre-stats" } */
+/* { dg-options "-O2 -fno-code-hoisting -fdump-tree-pre-stats" } */
 int *gp;
 int foo(int p)
 {
@@ -10,5 +10,6 @@ int foo(int p)
   return (*gp + t);
 }
 
-/* We will eliminate one load of gp and one indirect load of *gp. */
-/* { dg-final { scan-tree-dump-times "Eliminated: 2" 1 "pre"} } */
+/* We will eliminate one load of gp and one indirect load of *gp and
+   the add of zero. */
+/* { dg-final { scan-tree-dump-times "Eliminated: 3" 1 "pre"} } */

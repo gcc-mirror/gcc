@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -129,21 +129,73 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if (defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) \
      || (defined (__cplusplus) && __cplusplus >= 201103L)
-/* The floating-point expression evaluation method.
-        -1  indeterminate
-         0  evaluate all operations and constants just to the range and
-            precision of the type
-         1  evaluate operations and constants of type float and double
-            to the range and precision of the double type, evaluate
-            long double operations and constants to the range and
-            precision of the long double type
-         2  evaluate all operations and constants to the range and
-            precision of the long double type
+/* The floating-point expression evaluation method.  The precise
+   definitions of these values are generalised to include support for
+   the interchange and extended types defined in ISO/IEC TS 18661-3.
+   Prior to this (for C99/C11) the definitions were:
+
+	-1  indeterminate
+	 0  evaluate all operations and constants just to the range and
+	    precision of the type
+	 1  evaluate operations and constants of type float and double
+	    to the range and precision of the double type, evaluate
+	    long double operations and constants to the range and
+	    precision of the long double type
+	 2  evaluate all operations and constants to the range and
+	    precision of the long double type
+
+   The TS 18661-3 definitions are:
+
+	-1  indeterminate
+	 0  evaluate all operations and constants, whose semantic type has
+	    at most the range and precision of float, to the range and
+	    precision of float; evaluate all other operations and constants
+	    to the range and precision of the semantic type.
+	 1  evaluate all operations and constants, whose semantic type has
+	    at most the range and precision of double, to the range and
+	    precision of double; evaluate all other operations and constants
+	    to the range and precision of the semantic type.
+	 2  evaluate all operations and constants, whose semantic type has
+	    at most the range and precision of long double, to the range and
+	    precision of long double; evaluate all other operations and
+	    constants to the range and precision of the semantic type.
+	 N  where _FloatN  is a supported interchange floating type
+	    evaluate all operations and constants, whose semantic type has
+	    at most the range and precision of the _FloatN type, to the
+	    range and precision of the _FloatN type; evaluate all other
+	    operations and constants to the range and precision of the
+	    semantic type.
+	 N + 1, where _FloatNx is a supported extended floating type
+	    evaluate operations and constants, whose semantic type has at
+	    most the range and precision of the _FloatNx type, to the range
+	    and precision of the _FloatNx type; evaluate all other
+	    operations and constants to the range and precision of the
+	    semantic type.
+
+   The compiler predefines two macros:
+
+      __FLT_EVAL_METHOD__
+      Which, depending on the value given for
+      -fpermitted-flt-eval-methods, may be limited to only those values
+      for FLT_EVAL_METHOD defined in C99/C11.
+
+     __FLT_EVAL_METHOD_TS_18661_3__
+      Which always permits the values for FLT_EVAL_METHOD defined in
+      ISO/IEC TS 18661-3.
+
+     Here we want to use __FLT_EVAL_METHOD__, unless
+     __STDC_WANT_IEC_60559_TYPES_EXT__ is defined, in which case the user
+     is specifically asking for the ISO/IEC TS 18661-3 types, so we use
+     __FLT_EVAL_METHOD_TS_18661_3__.
 
    ??? This ought to change with the setting of the fp control word;
    the value provided by the compiler assumes the widest setting.  */
 #undef FLT_EVAL_METHOD
+#ifdef __STDC_WANT_IEC_60559_TYPES_EXT__
+#define FLT_EVAL_METHOD __FLT_EVAL_METHOD_TS_18661_3__
+#else
 #define FLT_EVAL_METHOD	__FLT_EVAL_METHOD__
+#endif
 
 /* Number of decimal digits, n, such that any floating-point number in the
    widest supported floating type with pmax radix b digits can be rounded
@@ -165,7 +217,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef LDBL_DECIMAL_DIG
 #define FLT_DECIMAL_DIG		__FLT_DECIMAL_DIG__
 #define DBL_DECIMAL_DIG		__DBL_DECIMAL_DIG__
-#define LDBL_DECIMAL_DIG	__DECIMAL_DIG__
+#define LDBL_DECIMAL_DIG	__LDBL_DECIMAL_DIG__
 
 /* Whether types support subnormal numbers.  */
 #undef FLT_HAS_SUBNORM
@@ -184,6 +236,194 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define LDBL_TRUE_MIN	__LDBL_DENORM_MIN__
 
 #endif /* C11 */
+
+#ifdef __STDC_WANT_IEC_60559_BFP_EXT__
+/* Number of decimal digits for which conversions between decimal
+   character strings and binary formats, in both directions, are
+   correctly rounded.  */
+#define CR_DECIMAL_DIG	__UINTMAX_MAX__
+#endif
+
+#ifdef __STDC_WANT_IEC_60559_TYPES_EXT__
+/* Constants for _FloatN and _FloatNx types from TS 18661-3.  See
+   comments above for their semantics.  */
+
+#ifdef __FLT16_MANT_DIG__
+#undef FLT16_MANT_DIG
+#define FLT16_MANT_DIG		__FLT16_MANT_DIG__
+#undef FLT16_DIG
+#define FLT16_DIG		__FLT16_DIG__
+#undef FLT16_MIN_EXP
+#define FLT16_MIN_EXP		__FLT16_MIN_EXP__
+#undef FLT16_MIN_10_EXP
+#define FLT16_MIN_10_EXP	__FLT16_MIN_10_EXP__
+#undef FLT16_MAX_EXP
+#define FLT16_MAX_EXP		__FLT16_MAX_EXP__
+#undef FLT16_MAX_10_EXP
+#define FLT16_MAX_10_EXP	__FLT16_MAX_10_EXP__
+#undef FLT16_MAX
+#define FLT16_MAX		__FLT16_MAX__
+#undef FLT16_EPSILON
+#define FLT16_EPSILON		__FLT16_EPSILON__
+#undef FLT16_MIN
+#define FLT16_MIN		__FLT16_MIN__
+#undef FLT16_DECIMAL_DIG
+#define FLT16_DECIMAL_DIG	__FLT16_DECIMAL_DIG__
+#undef FLT16_TRUE_MIN
+#define FLT16_TRUE_MIN		__FLT16_DENORM_MIN__
+#endif /* __FLT16_MANT_DIG__.  */
+
+#ifdef __FLT32_MANT_DIG__
+#undef FLT32_MANT_DIG
+#define FLT32_MANT_DIG		__FLT32_MANT_DIG__
+#undef FLT32_DIG
+#define FLT32_DIG		__FLT32_DIG__
+#undef FLT32_MIN_EXP
+#define FLT32_MIN_EXP		__FLT32_MIN_EXP__
+#undef FLT32_MIN_10_EXP
+#define FLT32_MIN_10_EXP	__FLT32_MIN_10_EXP__
+#undef FLT32_MAX_EXP
+#define FLT32_MAX_EXP		__FLT32_MAX_EXP__
+#undef FLT32_MAX_10_EXP
+#define FLT32_MAX_10_EXP	__FLT32_MAX_10_EXP__
+#undef FLT32_MAX
+#define FLT32_MAX		__FLT32_MAX__
+#undef FLT32_EPSILON
+#define FLT32_EPSILON		__FLT32_EPSILON__
+#undef FLT32_MIN
+#define FLT32_MIN		__FLT32_MIN__
+#undef FLT32_DECIMAL_DIG
+#define FLT32_DECIMAL_DIG	__FLT32_DECIMAL_DIG__
+#undef FLT32_TRUE_MIN
+#define FLT32_TRUE_MIN		__FLT32_DENORM_MIN__
+#endif /* __FLT32_MANT_DIG__.  */
+
+#ifdef __FLT64_MANT_DIG__
+#undef FLT64_MANT_DIG
+#define FLT64_MANT_DIG		__FLT64_MANT_DIG__
+#undef FLT64_DIG
+#define FLT64_DIG		__FLT64_DIG__
+#undef FLT64_MIN_EXP
+#define FLT64_MIN_EXP		__FLT64_MIN_EXP__
+#undef FLT64_MIN_10_EXP
+#define FLT64_MIN_10_EXP	__FLT64_MIN_10_EXP__
+#undef FLT64_MAX_EXP
+#define FLT64_MAX_EXP		__FLT64_MAX_EXP__
+#undef FLT64_MAX_10_EXP
+#define FLT64_MAX_10_EXP	__FLT64_MAX_10_EXP__
+#undef FLT64_MAX
+#define FLT64_MAX		__FLT64_MAX__
+#undef FLT64_EPSILON
+#define FLT64_EPSILON		__FLT64_EPSILON__
+#undef FLT64_MIN
+#define FLT64_MIN		__FLT64_MIN__
+#undef FLT64_DECIMAL_DIG
+#define FLT64_DECIMAL_DIG	__FLT64_DECIMAL_DIG__
+#undef FLT64_TRUE_MIN
+#define FLT64_TRUE_MIN		__FLT64_DENORM_MIN__
+#endif /* __FLT64_MANT_DIG__.  */
+
+#ifdef __FLT128_MANT_DIG__
+#undef FLT128_MANT_DIG
+#define FLT128_MANT_DIG		__FLT128_MANT_DIG__
+#undef FLT128_DIG
+#define FLT128_DIG		__FLT128_DIG__
+#undef FLT128_MIN_EXP
+#define FLT128_MIN_EXP		__FLT128_MIN_EXP__
+#undef FLT128_MIN_10_EXP
+#define FLT128_MIN_10_EXP	__FLT128_MIN_10_EXP__
+#undef FLT128_MAX_EXP
+#define FLT128_MAX_EXP		__FLT128_MAX_EXP__
+#undef FLT128_MAX_10_EXP
+#define FLT128_MAX_10_EXP	__FLT128_MAX_10_EXP__
+#undef FLT128_MAX
+#define FLT128_MAX		__FLT128_MAX__
+#undef FLT128_EPSILON
+#define FLT128_EPSILON		__FLT128_EPSILON__
+#undef FLT128_MIN
+#define FLT128_MIN		__FLT128_MIN__
+#undef FLT128_DECIMAL_DIG
+#define FLT128_DECIMAL_DIG	__FLT128_DECIMAL_DIG__
+#undef FLT128_TRUE_MIN
+#define FLT128_TRUE_MIN		__FLT128_DENORM_MIN__
+#endif /* __FLT128_MANT_DIG__.  */
+
+#ifdef __FLT32X_MANT_DIG__
+#undef FLT32X_MANT_DIG
+#define FLT32X_MANT_DIG		__FLT32X_MANT_DIG__
+#undef FLT32X_DIG
+#define FLT32X_DIG		__FLT32X_DIG__
+#undef FLT32X_MIN_EXP
+#define FLT32X_MIN_EXP		__FLT32X_MIN_EXP__
+#undef FLT32X_MIN_10_EXP
+#define FLT32X_MIN_10_EXP	__FLT32X_MIN_10_EXP__
+#undef FLT32X_MAX_EXP
+#define FLT32X_MAX_EXP		__FLT32X_MAX_EXP__
+#undef FLT32X_MAX_10_EXP
+#define FLT32X_MAX_10_EXP	__FLT32X_MAX_10_EXP__
+#undef FLT32X_MAX
+#define FLT32X_MAX		__FLT32X_MAX__
+#undef FLT32X_EPSILON
+#define FLT32X_EPSILON		__FLT32X_EPSILON__
+#undef FLT32X_MIN
+#define FLT32X_MIN		__FLT32X_MIN__
+#undef FLT32X_DECIMAL_DIG
+#define FLT32X_DECIMAL_DIG	__FLT32X_DECIMAL_DIG__
+#undef FLT32X_TRUE_MIN
+#define FLT32X_TRUE_MIN		__FLT32X_DENORM_MIN__
+#endif /* __FLT32X_MANT_DIG__.  */
+
+#ifdef __FLT64X_MANT_DIG__
+#undef FLT64X_MANT_DIG
+#define FLT64X_MANT_DIG		__FLT64X_MANT_DIG__
+#undef FLT64X_DIG
+#define FLT64X_DIG		__FLT64X_DIG__
+#undef FLT64X_MIN_EXP
+#define FLT64X_MIN_EXP		__FLT64X_MIN_EXP__
+#undef FLT64X_MIN_10_EXP
+#define FLT64X_MIN_10_EXP	__FLT64X_MIN_10_EXP__
+#undef FLT64X_MAX_EXP
+#define FLT64X_MAX_EXP		__FLT64X_MAX_EXP__
+#undef FLT64X_MAX_10_EXP
+#define FLT64X_MAX_10_EXP	__FLT64X_MAX_10_EXP__
+#undef FLT64X_MAX
+#define FLT64X_MAX		__FLT64X_MAX__
+#undef FLT64X_EPSILON
+#define FLT64X_EPSILON		__FLT64X_EPSILON__
+#undef FLT64X_MIN
+#define FLT64X_MIN		__FLT64X_MIN__
+#undef FLT64X_DECIMAL_DIG
+#define FLT64X_DECIMAL_DIG	__FLT64X_DECIMAL_DIG__
+#undef FLT64X_TRUE_MIN
+#define FLT64X_TRUE_MIN		__FLT64X_DENORM_MIN__
+#endif /* __FLT64X_MANT_DIG__.  */
+
+#ifdef __FLT128X_MANT_DIG__
+#undef FLT128X_MANT_DIG
+#define FLT128X_MANT_DIG	__FLT128X_MANT_DIG__
+#undef FLT128X_DIG
+#define FLT128X_DIG		__FLT128X_DIG__
+#undef FLT128X_MIN_EXP
+#define FLT128X_MIN_EXP		__FLT128X_MIN_EXP__
+#undef FLT128X_MIN_10_EXP
+#define FLT128X_MIN_10_EXP	__FLT128X_MIN_10_EXP__
+#undef FLT128X_MAX_EXP
+#define FLT128X_MAX_EXP		__FLT128X_MAX_EXP__
+#undef FLT128X_MAX_10_EXP
+#define FLT128X_MAX_10_EXP	__FLT128X_MAX_10_EXP__
+#undef FLT128X_MAX
+#define FLT128X_MAX		__FLT128X_MAX__
+#undef FLT128X_EPSILON
+#define FLT128X_EPSILON		__FLT128X_EPSILON__
+#undef FLT128X_MIN
+#define FLT128X_MIN		__FLT128X_MIN__
+#undef FLT128X_DECIMAL_DIG
+#define FLT128X_DECIMAL_DIG	__FLT128X_DECIMAL_DIG__
+#undef FLT128X_TRUE_MIN
+#define FLT128X_TRUE_MIN	__FLT128X_DENORM_MIN__
+#endif /* __FLT128X_MANT_DIG__.  */
+
+#endif /* __STDC_WANT_IEC_60559_TYPES_EXT__.  */
 
 #ifdef __STDC_WANT_DEC_FP__
 /* Draft Technical Report 24732, extension for decimal floating-point

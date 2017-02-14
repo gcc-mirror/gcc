@@ -1,7 +1,7 @@
 // Derived from libstdc++/12048 by LJR <ljrittle@acm.org> with
 // reminder from Petur Runolfsson <peturr02@ru.is>.
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,9 +22,8 @@
 // equivalent and interchangable. Currently however, cin.rdbuf()->sungetc()
 // only returns characters that were read with cin.rdbuf()->sbumpc()
 
-// { dg-require-fileio "" }
-
 // { dg-do run { xfail *-*-* } }
+// { dg-require-fileio "" }
 
 #include <iostream>
 #include <cstdio>

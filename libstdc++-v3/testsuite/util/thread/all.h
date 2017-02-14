@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Utilities for testing threads for the C++ library testsuite.
 //
-// Copyright (C) 2009-2016 Free Software Foundation, Inc.
+// Copyright (C) 2009-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,7 @@
 #include <stdexcept>
 #include <type_traits>
 
-// C++0x only.
+// C++11 only.
 namespace __gnu_test
 {
   // Assume _Tp::native_handle_type.

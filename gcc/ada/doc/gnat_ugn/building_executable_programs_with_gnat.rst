@@ -28,14 +28,14 @@ how to make use of the general GNU make mechanism
 in a GNAT context (see :ref:`Using_the_GNU_make_Utility`).
 
 .. only:: PRO or GPL
-  
+
    For building large systems with components possibly written
    in different languages (such as Ada, C, C++ and Fortran)
    and organized into subsystems and libraries, the GPRbuild
    tool can be used. This tool, and the Project Manager
    facility that it is based upon, is described in
    *GPRbuild and GPR Companion Tools User's Guide*.
-	  
+
 
 .. _The_GNAT_Make_Program_gnatmake:
 
@@ -527,7 +527,7 @@ You may specify any of the following switches to *gnatmake*:
 :samp:`-P{project}`
   Use project file `project`. Only one such switch can be used.
 
-.. -- Comment:  
+.. -- Comment:
   :ref:`gnatmake_and_Project_Files`.
 
 
@@ -1445,9 +1445,7 @@ Alphabetical List of All Switches
   *-gnatc* as a builder switch (before *-cargs* or in package
   Builder of the project file) then *gnatmake* will not fail because
   it will not look for the object files after compilation, and it will not try
-  to build and link. This switch may not be given if a previous `-gnatR`
-  switch has been given, since `-gnatR` requires that the code generator
-  be called to complete determination of representation information.
+  to build and link.
 
 
 .. index:: -gnatC  (gcc)
@@ -1476,7 +1474,7 @@ Alphabetical List of All Switches
 
 :samp:`-gnatD`
   Create expanded source files for source level debugging. This switch
-  also suppress generation of cross-reference information
+  also suppresses generation of cross-reference information
   (see *-gnatx*). Note that this switch is not allowed if a previous
   -gnatR switch has been given, since these two switches are not compatible.
 
@@ -1917,8 +1915,8 @@ Alphabetical List of All Switches
 .. index:: -gnatn  (gcc)
 
 :samp:`-gnatn[12]`
-  Activate inlining for subprograms for which pragma `Inline` is
-  specified. This inlining is performed by the GCC back-end. An optional
+  Activate inlining across modules for subprograms for which pragma `Inline`
+  is specified. This inlining is performed by the GCC back-end. An optional
   digit sets the inlining level: 1 for moderate inlining across modules
   or 2 for full inlining across modules. If no inlining level is specified,
   the compiler will pick it based on the optimization level.
@@ -5417,16 +5415,16 @@ Subprogram Inlining Control
 .. index:: -gnatn  (gcc)
 
 :samp:`-gnatn[12]`
-  The `n` here is intended to suggest the first syllable of the
-  word 'inline'.
-  GNAT recognizes and processes `Inline` pragmas. However, for the
-  inlining to actually occur, optimization must be enabled and, in order
-  to enable inlining of subprograms specified by pragma `Inline`,
+  The `n` here is intended to suggest the first syllable of the word 'inline'.
+  GNAT recognizes and processes `Inline` pragmas. However, for inlining to
+  actually occur, optimization must be enabled and, by default, inlining of
+  subprograms across modules is not performed. If you want to additionally
+  enable inlining of subprograms specified by pragma `Inline` across modules,
   you must also specify this switch.
-  In the absence of this switch, GNAT does not attempt
-  inlining and does not need to access the bodies of
-  subprograms for which `pragma Inline` is specified if they are not
-  in the current unit.
+
+  In the absence of this switch, GNAT does not attempt inlining across modules
+  and does not access the bodies of subprograms for which `pragma Inline` is
+  specified if they are not in the current unit.
 
   You can optionally specify the inlining level: 1 for moderate inlining across
   modules, which is a good compromise between compilation times and performances
@@ -5659,7 +5657,7 @@ Debugging Control
   you to do source level debugging using the generated code which is
   sometimes useful for complex code, for example to find out exactly
   which part of a complex construction raised an exception. This switch
-  also suppress generation of cross-reference information (see
+  also suppresses generation of cross-reference information (see
   *-gnatx*) since otherwise the cross-reference information
   would refer to the :file:`.dg` file, which would cause
   confusion since this is not the original source file.
@@ -5726,12 +5724,6 @@ Debugging Control
   Note that it is possible for record components to have zero size. In
   this case, the component clause uses an obvious extension of permitted
   Ada syntax, for example `at 0 range 0 .. -1`.
-
-  Representation information requires that code be generated (since it is the
-  code generator that lays out complex data structures). If an attempt is made
-  to output representation information when no code is generated, for example
-  when a subunit is compiled on its own, then no information can be generated
-  and the compiler outputs a message to this effect.
 
 
 .. index:: -gnatS  (gcc)
@@ -5900,6 +5892,21 @@ special needs lead to requirements in this area. In particular,
 there is no point in using *-m* switches to improve performance
 unless you actually see a performance improvement.
 
+
+.. _Linker_Switches:
+
+Linker Switches
+===============
+
+Linker switches can be specified after :samp:`-largs` builder switch.
+
+.. index:: -fuse-ld=name
+
+:samp:`-fuse-ld={name}`
+  Linker to be used. The default is ``bfd`` for :file:`ld.bfd`,
+  the alternative being ``gold`` for :file:`ld.gold`. The later is
+  a more recent and faster linker, but only available on GNU/Linux
+  platforms.
 
 .. _Binding_with_gnatbind:
 
@@ -6113,10 +6120,12 @@ be presented in subsequent sections.
   blocks (whose size is the minimum of the default secondary stack size value,
   and the actual size needed for the current allocation request).
 
-  For certain targets, notably VxWorks 653,
-  the secondary stack is allocated by carving off a fixed ratio chunk of the
-  primary task stack. The -D option is used to define the
-  size of the environment task's secondary stack.
+  For certain targets, notably VxWorks 653 and bare board targets,
+  the secondary stack is allocated by carving off a chunk of the primary task 
+  stack. By default this is a fixed percentage of the primary task stack as
+  defined by System.Parameter.Sec_Stack_Percentage. This can be overridden per 
+  task using the Secondary_Stack_Size pragma/aspect. The -D option is used to
+  define the size of the environment task's secondary stack.
 
 
 .. index:: -e  (gnatbind)
@@ -6150,6 +6159,11 @@ be presented in subsequent sections.
 :samp:`-E`
   Currently the same as `-Ea`.
 
+
+.. index:: -f  (gnatbind)
+
+:samp:`-f{elab-order}`
+  Force elaboration order.
 
 .. index:: -F  (gnatbind)
 
@@ -6598,6 +6612,47 @@ Elaboration Control
 
 The following switches provide additional control over the elaboration
 order. For full details see :ref:`Elaboration_Order_Handling_in_GNAT`.
+
+
+.. index:: -f  (gnatbind)
+
+:samp:`-f{elab-order}`
+  Force elaboration order.
+
+  `elab-order` should be the name of a "forced elaboration order file", that
+  is, a text file containing library item names, one per line. A name of the
+  form "some.unit%s" or "some.unit (spec)" denotes the spec of Some.Unit. A
+  name of the form "some.unit%b" or "some.unit (body)" denotes the body of
+  Some.Unit. Each pair of lines is taken to mean that there is an elaboration
+  dependence of the second line on the first. For example, if the file
+  contains:
+
+  .. code-block:: ada
+
+      this (spec)
+      this (body)
+      that (spec)
+      that (body)
+
+  then the spec of This will be elaborated before the body of This, and the
+  body of This will be elaborated before the spec of That, and the spec of That
+  will be elaborated before the body of That. The first and last of these three
+  dependences are already required by Ada rules, so this file is really just
+  forcing the body of This to be elaborated before the spec of That.
+
+  The given order must be consistent with Ada rules, or else `gnatbind` will
+  give elaboration cycle errors. For example, if you say x (body) should be
+  elaborated before x (spec), there will be a cycle, because Ada rules require
+  x (spec) to be elaborated before x (body); you can't have the spec and body
+  both elaborated before each other.
+
+  If you later add "with That;" to the body of This, there will be a cycle, in
+  which case you should erase either "this (body)" or "that (spec)" from the
+  above forced elaboration order file.
+
+  Blank lines and Ada-style comments are ignored. Unit names that do not exist
+  in the program are ignored. Units in the GNAT predefined library are also
+  ignored.
 
 
   .. index:: -p  (gnatbind)

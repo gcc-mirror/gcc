@@ -15,22 +15,25 @@ import (
 // A Buffer is a variable-sized buffer of bytes with Read and Write methods.
 // The zero value for Buffer is an empty buffer ready to use.
 type Buffer struct {
-	buf       []byte            // contents are the bytes buf[off : len(buf)]
-	off       int               // read at &buf[off], write at &buf[len(buf)]
-	runeBytes [utf8.UTFMax]byte // avoid allocation of slice on each WriteByte or Rune
-	bootstrap [64]byte          // memory to hold first slice; helps small buffers (Printf) avoid allocation.
-	lastRead  readOp            // last read operation, so that Unread* can work correctly.
+	buf       []byte   // contents are the bytes buf[off : len(buf)]
+	off       int      // read at &buf[off], write at &buf[len(buf)]
+	bootstrap [64]byte // memory to hold first slice; helps small buffers avoid allocation.
+	lastRead  readOp   // last read operation, so that Unread* can work correctly.
 }
 
 // The readOp constants describe the last action performed on
-// the buffer, so that UnreadRune and UnreadByte can
-// check for invalid usage.
+// the buffer, so that UnreadRune and UnreadByte can check for
+// invalid usage. opReadRuneX constants are chosen such that
+// converted to int they correspond to the rune size that was read.
 type readOp int
 
 const (
-	opInvalid  readOp = iota // Non-read operation.
-	opReadRune               // Read rune.
-	opRead                   // Any other read operation.
+	opRead      readOp = -1 // Any other read operation.
+	opInvalid          = 0  // Non-read operation.
+	opReadRune1        = 1  // Read rune of size 1.
+	opReadRune2        = 2  // Read rune of size 2.
+	opReadRune3        = 3  // Read rune of size 3.
+	opReadRune4        = 4  // Read rune of size 4.
 )
 
 // ErrTooLarge is passed to panic if memory cannot be allocated to store data in a buffer.
@@ -44,7 +47,7 @@ var ErrTooLarge = errors.New("bytes.Buffer: too large")
 func (b *Buffer) Bytes() []byte { return b.buf[b.off:] }
 
 // String returns the contents of the unread portion of the buffer
-// as a string.  If the Buffer is a nil pointer, it returns "<nil>".
+// as a string. If the Buffer is a nil pointer, it returns "<nil>".
 func (b *Buffer) String() string {
 	if b == nil {
 		// Special case, useful in debugging.
@@ -145,7 +148,7 @@ func (b *Buffer) WriteString(s string) (n int, err error) {
 }
 
 // MinRead is the minimum slice size passed to a Read call by
-// Buffer.ReadFrom.  As long as the Buffer has at least MinRead bytes beyond
+// Buffer.ReadFrom. As long as the Buffer has at least MinRead bytes beyond
 // what is required to hold the contents of r, ReadFrom will not grow the
 // underlying buffer.
 const MinRead = 512
@@ -246,13 +249,15 @@ func (b *Buffer) WriteRune(r rune) (n int, err error) {
 		b.WriteByte(byte(r))
 		return 1, nil
 	}
-	n = utf8.EncodeRune(b.runeBytes[0:], r)
-	b.Write(b.runeBytes[0:n])
+	b.lastRead = opInvalid
+	m := b.grow(utf8.UTFMax)
+	n = utf8.EncodeRune(b.buf[m:m+utf8.UTFMax], r)
+	b.buf = b.buf[:m+n]
 	return n, nil
 }
 
 // Read reads the next len(p) bytes from the buffer or until the buffer
-// is drained.  The return value n is the number of bytes read.  If the
+// is drained. The return value n is the number of bytes read. If the
 // buffer has no data to return, err is io.EOF (unless len(p) is zero);
 // otherwise it is nil.
 func (b *Buffer) Read(p []byte) (n int, err error) {
@@ -293,14 +298,14 @@ func (b *Buffer) Next(n int) []byte {
 
 // ReadByte reads and returns the next byte from the buffer.
 // If no byte is available, it returns error io.EOF.
-func (b *Buffer) ReadByte() (c byte, err error) {
+func (b *Buffer) ReadByte() (byte, error) {
 	b.lastRead = opInvalid
 	if b.off >= len(b.buf) {
 		// Buffer is empty, reset to recover space.
 		b.Truncate(0)
 		return 0, io.EOF
 	}
-	c = b.buf[b.off]
+	c := b.buf[b.off]
 	b.off++
 	b.lastRead = opRead
 	return c, nil
@@ -318,14 +323,15 @@ func (b *Buffer) ReadRune() (r rune, size int, err error) {
 		b.Truncate(0)
 		return 0, 0, io.EOF
 	}
-	b.lastRead = opReadRune
 	c := b.buf[b.off]
 	if c < utf8.RuneSelf {
 		b.off++
+		b.lastRead = opReadRune1
 		return rune(c), 1, nil
 	}
 	r, n := utf8.DecodeRune(b.buf[b.off:])
 	b.off += n
+	b.lastRead = readOp(n)
 	return r, n, nil
 }
 
@@ -335,22 +341,21 @@ func (b *Buffer) ReadRune() (r rune, size int, err error) {
 // it is stricter than UnreadByte, which will unread the last byte
 // from any read operation.)
 func (b *Buffer) UnreadRune() error {
-	if b.lastRead != opReadRune {
+	if b.lastRead <= opInvalid {
 		return errors.New("bytes.Buffer: UnreadRune: previous operation was not ReadRune")
 	}
-	b.lastRead = opInvalid
-	if b.off > 0 {
-		_, n := utf8.DecodeLastRune(b.buf[0:b.off])
-		b.off -= n
+	if b.off >= int(b.lastRead) {
+		b.off -= int(b.lastRead)
 	}
+	b.lastRead = opInvalid
 	return nil
 }
 
 // UnreadByte unreads the last byte returned by the most recent
-// read operation.  If write has happened since the last read, UnreadByte
+// read operation. If write has happened since the last read, UnreadByte
 // returns an error.
 func (b *Buffer) UnreadByte() error {
-	if b.lastRead != opReadRune && b.lastRead != opRead {
+	if b.lastRead == opInvalid {
 		return errors.New("bytes.Buffer: UnreadByte: previous operation was not a read")
 	}
 	b.lastRead = opInvalid
@@ -400,7 +405,7 @@ func (b *Buffer) ReadString(delim byte) (line string, err error) {
 }
 
 // NewBuffer creates and initializes a new Buffer using buf as its initial
-// contents.  It is intended to prepare a Buffer to read existing data.  It
+// contents. It is intended to prepare a Buffer to read existing data. It
 // can also be used to size the internal buffer for writing. To do that,
 // buf should have the desired capacity but a length of zero.
 //

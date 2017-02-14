@@ -1501,9 +1501,9 @@ package body Prj.Nmsc is
                            Lang_Index.Config.Compiler_Driver :=
                              File_Name_Type (Element.Value.Value);
 
-                        when Name_Required_Switches
-                           | Name_Leading_Required_Switches
-                           =>
+                        when Name_Leading_Required_Switches
+                           | Name_Required_Switches
+                        =>
                            Put (Into_List =>
                                   Lang_Index.Config.
                                     Compiler_Leading_Required_Switches,
@@ -1808,8 +1808,9 @@ package body Prj.Nmsc is
                     and then Element.Value.Value /= No_Name
                   then
                      case Current_Array.Name is
-                        when Name_Spec_Suffix | Name_Specification_Suffix =>
-
+                        when Name_Spec_Suffix
+                           | Name_Specification_Suffix
+                        =>
                            --  Attribute Spec_Suffix (<language>)
 
                            Get_Name_String (Element.Value.Value);
@@ -1818,8 +1819,9 @@ package body Prj.Nmsc is
                            Lang_Index.Config.Naming_Data.Spec_Suffix :=
                              Name_Find;
 
-                        when Name_Implementation_Suffix | Name_Body_Suffix =>
-
+                        when Name_Body_Suffix
+                           | Name_Implementation_Suffix
+                        =>
                            Get_Name_String (Element.Value.Value);
                            Canonical_Case_File_Name
                              (Name_Buffer (1 .. Name_Len));
@@ -2513,6 +2515,7 @@ package body Prj.Nmsc is
                                  & """ for Objects_Linked",
                                  Element.Value.Location, Project);
                         end;
+
                      when others =>
                         null;
                   end case;
@@ -3448,7 +3451,9 @@ package body Prj.Nmsc is
                      Lib_Name.Location, Project);
                end if;
 
-            when Library | Aggregate_Library =>
+            when Aggregate_Library
+               | Library
+            =>
                if not Project.Library then
                   if Project.Library_Name = No_Name then
                      Error_Msg
@@ -4043,7 +4048,9 @@ package body Prj.Nmsc is
 
       begin
          case Kind is
-            when Impl | Sep =>
+            when Impl
+               | Sep
+            =>
                Exceptions :=
                  Value_Of
                    (Name_Implementation_Exceptions,
@@ -4139,7 +4146,9 @@ package body Prj.Nmsc is
 
       begin
          case Kind is
-            when Impl | Sep =>
+            when Impl
+               | Sep
+            =>
                Exceptions :=
                  Value_Of
                    (Name_Body,
@@ -4403,11 +4412,11 @@ package body Prj.Nmsc is
                Lang_Id := Project.Languages;
                while Lang_Id /= No_Language_Index loop
                   case Lang_Id.Config.Kind is
-                  when File_Based =>
-                     Process_Exceptions_File_Based (Lang_Id, Kind);
+                     when File_Based =>
+                        Process_Exceptions_File_Based (Lang_Id, Kind);
 
-                  when Unit_Based =>
-                     Process_Exceptions_Unit_Based (Lang_Id, Kind);
+                     when Unit_Based =>
+                        Process_Exceptions_Unit_Based (Lang_Id, Kind);
                   end case;
 
                   Lang_Id := Lang_Id.Next;
@@ -6001,7 +6010,9 @@ package body Prj.Nmsc is
                   end if;
                end loop;
 
-            when Mixed_Case | Unknown =>
+            when Mixed_Case
+               | Unknown
+            =>
                null;
          end case;
       end if;
@@ -8412,11 +8423,13 @@ package body Prj.Nmsc is
          when Silent =>
             null;
 
-         when Warning | Error =>
+         when Error
+            | Warning
+         =>
             declare
                Msg : constant String :=
-                      "<there are no "
-                      & Lang_Name & " sources in this project";
+                       "<there are no " & Lang_Name
+                         & " sources in this project";
 
             begin
                Error_Msg_Warn := Data.Flags.When_No_Sources = Warning;

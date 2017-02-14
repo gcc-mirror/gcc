@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, FreeBSD/arm version.
-   Copyright (C) 2002-2016 Free Software Foundation, Inc.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by Wasabi Systems, Inc.
 
    This file is part of GCC.
@@ -111,14 +111,6 @@
 
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
-
-#if defined (TARGET_FREEBSD_ARMv6)
-#undef  SUBTARGET_CPU_DEFAULT
-#define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm1176jzs
-#else
-#undef  SUBTARGET_CPU_DEFAULT
-#define SUBTARGET_CPU_DEFAULT   TARGET_CPU_arm9
-#endif
 
 /* FreeBSD 10 does not support unaligned access for armv6 and up.
    Unaligned access support was added in FreeBSD 11.  */

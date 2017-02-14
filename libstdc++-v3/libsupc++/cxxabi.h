@@ -1,6 +1,6 @@
 // ABI Support -*- C++ -*-
 
-// Copyright (C) 2000-2016 Free Software Foundation, Inc.
+// Copyright (C) 2000-2017 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -49,10 +49,7 @@
 #include <bits/c++config.h>
 #include <bits/cxxabi_tweaks.h>
 #include <bits/cxxabi_forced.h>
-
-#ifndef _GLIBCXX_CDTOR_CALLABI
-#define _GLIBCXX_CDTOR_CALLABI
-#endif
+#include <bits/cxxabi_init_exception.h>
 
 #ifdef __cplusplus
 namespace __cxxabiv1
@@ -282,7 +279,8 @@ namespace __cxxabiv1
 	__restrict_mask = 0x4,
 	__incomplete_mask = 0x8,
 	__incomplete_class_mask = 0x10,
-	__transaction_safe_mask = 0x20
+	__transaction_safe_mask = 0x20,
+	__noexcept_mask = 0x40
       };
 
   protected:
@@ -607,10 +605,6 @@ namespace __cxxabiv1
 
   __cxa_eh_globals*
   __cxa_get_globals_fast() _GLIBCXX_NOTHROW __attribute__ ((__const__));
-
-  // Allocate memory for the primary exception plus the thrown object.
-  void*
-  __cxa_allocate_exception(size_t) _GLIBCXX_NOTHROW;
 
   // Free the space allocated for the primary exception.
   void 

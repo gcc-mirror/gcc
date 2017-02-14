@@ -15,7 +15,7 @@ import (
  */
 
 // An Encoding is a radix 64 encoding/decoding scheme, defined by a
-// 64-character alphabet.  The most common encoding is the "base64"
+// 64-character alphabet. The most common encoding is the "base64"
 // encoding defined in RFC 4648 and used in MIME (RFC 2045) and PEM
 // (RFC 1421).  RFC 4648 also defines an alternate encoding, which is
 // the standard encoding with - and _ substituted for + and /.
@@ -23,6 +23,7 @@ type Encoding struct {
 	encode    [64]byte
 	decodeMap [256]byte
 	padChar   rune
+	strict    bool
 }
 
 const (
@@ -62,6 +63,14 @@ func (enc Encoding) WithPadding(padding rune) *Encoding {
 	return &enc
 }
 
+// Strict creates a new encoding identical to enc except with
+// strict decoding enabled. In this mode, the decoder requires that
+// trailing padding bits are zero, as described in RFC 4648 section 3.5.
+func (enc Encoding) Strict() *Encoding {
+	enc.strict = true
+	return &enc
+}
+
 // StdEncoding is the standard base64 encoding, as defined in
 // RFC 4648.
 var StdEncoding = NewEncoding(encodeStd)
@@ -89,7 +98,7 @@ var RawURLEncoding = URLEncoding.WithPadding(NoPadding)
 //
 // The encoding pads the output to a multiple of 4 bytes,
 // so Encode is not appropriate for use on individual blocks
-// of a large data stream.  Use NewEncoder() instead.
+// of a large data stream. Use NewEncoder() instead.
 func (enc *Encoding) Encode(dst, src []byte) {
 	if len(src) == 0 {
 		return
@@ -213,7 +222,7 @@ func (e *encoder) Close() error {
 	return e.err
 }
 
-// NewEncoder returns a new base64 stream encoder.  Data written to
+// NewEncoder returns a new base64 stream encoder. Data written to
 // the returned writer will be encoded using enc and then written to w.
 // Base64 encodings operate in 4-byte blocks; when finished
 // writing, the caller must Close the returned encoder to flush any
@@ -311,15 +320,24 @@ func (enc *Encoding) decode(dst, src []byte) (n int, end bool, err error) {
 
 		// Convert 4x 6bit source bytes into 3 bytes
 		val := uint(dbuf[0])<<18 | uint(dbuf[1])<<12 | uint(dbuf[2])<<6 | uint(dbuf[3])
+		dbuf[2], dbuf[1], dbuf[0] = byte(val>>0), byte(val>>8), byte(val>>16)
 		switch dlen {
 		case 4:
-			dst[2] = byte(val >> 0)
+			dst[2] = dbuf[2]
+			dbuf[2] = 0
 			fallthrough
 		case 3:
-			dst[1] = byte(val >> 8)
+			dst[1] = dbuf[1]
+			if enc.strict && dbuf[2] != 0 {
+				return n, end, CorruptInputError(si - 1)
+			}
+			dbuf[1] = 0
 			fallthrough
 		case 2:
-			dst[0] = byte(val >> 16)
+			dst[0] = dbuf[0]
+			if enc.strict && (dbuf[1] != 0 || dbuf[2] != 0) {
+				return n, end, CorruptInputError(si - 2)
+			}
 		}
 		dst = dst[dinc:]
 		n += dlen - 1
@@ -328,9 +346,9 @@ func (enc *Encoding) decode(dst, src []byte) (n int, end bool, err error) {
 	return n, end, err
 }
 
-// Decode decodes src using the encoding enc.  It writes at most
+// Decode decodes src using the encoding enc. It writes at most
 // DecodedLen(len(src)) bytes to dst and returns the number of bytes
-// written.  If src contains invalid base64 data, it will return the
+// written. If src contains invalid base64 data, it will return the
 // number of bytes successfully written and CorruptInputError.
 // New line characters (\r and \n) are ignored.
 func (enc *Encoding) Decode(dst, src []byte) (n int, err error) {
@@ -459,7 +477,7 @@ func NewDecoder(enc *Encoding, r io.Reader) io.Reader {
 func (enc *Encoding) DecodedLen(n int) int {
 	if enc.padChar == NoPadding {
 		// Unpadded data may end with partial block of 2-3 characters.
-		return (n*6 + 7) / 8
+		return n * 6 / 8
 	}
 	// Padded base64 should always be a multiple of 4 characters in length.
 	return n / 4 * 3

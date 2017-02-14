@@ -174,6 +174,7 @@ dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
+get_gcc_base_ver = @get_gcc_base_ver@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -219,7 +220,7 @@ toplevel_srcdir = @toplevel_srcdir@
 AUTOMAKE_OPTIONS = foreign dejagnu
 
 # May be used by various substitution variables.
-gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 EXPECT = $(shell if test -f $(top_builddir)/../expect/expect; then \
 	   echo $(top_builddir)/../expect/expect; else echo expect; fi)
 

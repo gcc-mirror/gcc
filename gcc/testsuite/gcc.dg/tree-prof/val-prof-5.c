@@ -6,11 +6,12 @@ main()
 {
 	int i;
 	for (i = 0; i < 1000; i++)
-		if (a[i])
+		if (a[i] != 1)
 			a[i]/=b;
 		else
 			a[i]/=b;
 	return 0;
 }
-/* { dg-final-use { scan-ipa-dump "Div.mod by constant b.*=997 transformation on insn" "profile" } } */
+/* autofdo does not do value profiling so far */
+/* { dg-final-use-not-autofdo { scan-ipa-dump "Div.mod by constant b.*=997 transformation on insn" "profile" } } */
 /* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized"} } */

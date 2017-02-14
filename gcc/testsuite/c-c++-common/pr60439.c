@@ -131,11 +131,6 @@ f6 (bool b)
     case 3:
       break;
     }
-  switch (b++) /* { dg-warning "switch condition has" } */
-    {
-    case 3:
-      break;
-    }
 }
 
 void

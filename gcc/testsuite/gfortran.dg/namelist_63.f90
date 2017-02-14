@@ -1,6 +1,6 @@
 ! { dg-do compile }
-!
-! PR fortran/45530
+! { dg-options -std=f95 }
+! PR fortran/45530, updated for PR78659
 !
 ! Contributed by david.sagan@gmail.com
 !
@@ -24,5 +24,6 @@ type region_struct
 end type
 
 type (c_struct) curve(10)
-namelist / params / curve ! { dg-error "ALLOCATABLE or POINTER components and thus requires a defined input/output" }
+! The following is allowed with f2003.
+namelist / params / curve ! { dg-error "ALLOCATABLE or POINTER components" }
 end program

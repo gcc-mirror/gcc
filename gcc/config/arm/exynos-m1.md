@@ -1,5 +1,5 @@
 ;; Samsung Exynos M1 pipeline description
-;; Copyright (C) 2014-2016 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2017 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -358,7 +358,7 @@
 	    (eq_attr "type" "alu_imm, alus_imm, logic_imm, logics_imm,\
 			     alu_sreg, alus_sreg, logic_reg, logics_reg,\
 			     adc_imm, adcs_imm, adc_reg, adcs_reg,\
-			     adr, bfm, clz, rbit, rev, csel, alu_dsp_reg,\
+			     adr, bfm, bfx, clz, rbit, rev, csel, alu_dsp_reg,\
 			     shift_imm, shift_reg, rotate_imm, extend,\
 			     mov_imm, mov_reg,\
 			     mvn_imm, mvn_reg,\
@@ -372,7 +372,7 @@
 	    (eq_attr "type" "alu_imm, alus_imm, logic_imm, logics_imm,\
 			     alu_sreg, alus_sreg, logic_reg, logics_reg,\
 			     adc_imm, adcs_imm, adc_reg, adcs_reg,\
-			     adr, bfm, clz, rbit, rev, alu_dsp_reg,\
+			     adr, bfm, bfx, clz, rbit, rev, alu_dsp_reg,\
 			     shift_imm, shift_reg, rotate_imm, extend,\
 			     mov_imm, mov_reg,\
 			     mvn_imm, mvn_reg,\

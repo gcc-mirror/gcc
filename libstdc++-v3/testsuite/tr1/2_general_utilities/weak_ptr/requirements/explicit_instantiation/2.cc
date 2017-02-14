@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,9 +26,8 @@
 // library this checks the templates can be instantiated for non-default
 // lock policy, for a single-threaded lib this is redundant but harmless.
 using namespace __gnu_test;
-using std::tr1::__weak_ptr;
 using std::tr1::_S_single;
-template class __weak_ptr<int, _S_single>;
-template class __weak_ptr<void, _S_single>;
-template class __weak_ptr<ClassType, _S_single>;
-template class __weak_ptr<IncompleteClass, _S_single>;
+template class std::tr1::__weak_ptr<int, _S_single>;
+template class std::tr1::__weak_ptr<void, _S_single>;
+template class std::tr1::__weak_ptr<ClassType, _S_single>;
+template class std::tr1::__weak_ptr<IncompleteClass, _S_single>;

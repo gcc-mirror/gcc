@@ -1,5 +1,5 @@
 /* Generate code to initialize optabs from machine description.
-   Copyright (C) 1993-2016 Free Software Foundation, Inc.
+   Copyright (C) 1993-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -257,6 +257,7 @@ main (int argc, const char **argv)
 	   "#include \"varasm.h\"\n"
 	   "#include \"stor-layout.h\"\n"
 	   "#include \"calls.h\"\n"
+	   "#include \"memmodel.h\"\n"
 	   "#include \"tm_p.h\"\n"
 	   "#include \"flags.h\"\n"
 	   "#include \"insn-config.h\"\n"

@@ -1,5 +1,5 @@
 /* Definitions for the shared dumpfile.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,6 +29,7 @@ enum tree_dump_index
   TDI_none,			/* No dump */
   TDI_cgraph,                   /* dump function call graph.  */
   TDI_inheritance,              /* dump type inheritance graph.  */
+  TDI_clones,			/* dump IPA cloning decisions.  */
   TDI_tu,			/* dump the whole translation unit.  */
   TDI_class,			/* dump class hierarchy.  */
   TDI_original,			/* dump each function before optimizing it */
@@ -82,9 +83,10 @@ enum tree_dump_index
 #define TDF_CSELIB	(1 << 23)	/* Dump cselib details.  */
 #define TDF_SCEV	(1 << 24)	/* Dump SCEV details.  */
 #define TDF_COMMENT	(1 << 25)	/* Dump lines with prefix ";;"  */
-#define MSG_OPTIMIZED_LOCATIONS  (1 << 26)  /* -fopt-info optimized sources */
-#define MSG_MISSED_OPTIMIZATION  (1 << 27)  /* missed opportunities */
-#define MSG_NOTE                 (1 << 28)  /* general optimization info */
+#define TDF_GIMPLE	(1 << 26)	/* Dump in GIMPLE FE syntax  */
+#define MSG_OPTIMIZED_LOCATIONS  (1 << 27)  /* -fopt-info optimized sources */
+#define MSG_MISSED_OPTIMIZATION  (1 << 28)  /* missed opportunities */
+#define MSG_NOTE                 (1 << 29)  /* general optimization info */
 #define MSG_ALL         (MSG_OPTIMIZED_LOCATIONS | MSG_MISSED_OPTIMIZATION \
                          | MSG_NOTE)
 
@@ -97,7 +99,8 @@ enum tree_dump_index
 #define OPTGROUP_LOOP        (1 << 2)   /* Loop optimization passes */
 #define OPTGROUP_INLINE      (1 << 3)   /* Inlining passes */
 #define OPTGROUP_VEC         (1 << 4)   /* Vectorization passes */
-#define OPTGROUP_OTHER       (1 << 5)   /* All other passes */
+#define OPTGROUP_OPENMP      (1 << 5)	/* OpenMP specific transformations */
+#define OPTGROUP_OTHER       (1 << 6)   /* All other passes */
 #define OPTGROUP_ALL	     (OPTGROUP_IPA | OPTGROUP_LOOP | OPTGROUP_INLINE \
                               | OPTGROUP_VEC | OPTGROUP_OTHER)
 

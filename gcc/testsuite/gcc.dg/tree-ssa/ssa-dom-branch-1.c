@@ -19,9 +19,9 @@ try_combine (rtx i1, rtx newpat)
   else if (i1 && foo ());
 }
 
-/* There should be three tests against i1.  Two from the hash table
+/* There should be two tests against i1.  One from the hash table
    dumps, one in the code itself.  */
-/* { dg-final { scan-tree-dump-times "if .i1_" 3 "dom2"} } */
+/* { dg-final { scan-tree-dump-times "if .i1_" 2 "dom2"} } */
 
 /* There should be no actual jump threads realized by DOM.  The
    legitimize jump threads are handled in VRP and those discovered

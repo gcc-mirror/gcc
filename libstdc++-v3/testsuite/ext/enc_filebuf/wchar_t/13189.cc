@@ -1,6 +1,6 @@
 // { dg-require-iconv "ISO-8859-1" }
 
-// Copyright (C) 2003-2016 Free Software Foundation, Inc.
+// Copyright (C) 2003-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +28,6 @@ void test01()
   typedef filebuf_type::state_type state_type;
   typedef codecvt<char_type, char, state_type> enc_codecvt;
 
-  bool test __attribute__((unused)) = true;
   ios_base::openmode mode = ios_base::in | ios_base::out | ios_base::trunc;
   try
     {

@@ -1,4 +1,4 @@
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,8 +26,6 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::wstringbuf strbuf01;
   std::wostream strm1(&strbuf01);
   const std::wostream::sentry sentry1(strm1);

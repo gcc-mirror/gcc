@@ -1,5 +1,5 @@
 /* Definitions for PA_RISC with ELF format on 64-bit Linux
-   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+   Copyright (C) 1999-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,10 +28,8 @@ along with GCC; see the file COPYING3.  If not see
   {ARG_POINTER_REGNUM,	 FRAME_POINTER_REGNUM},				\
 }
 
-/* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It
-   specifies the initial difference between the specified pair of
-   registers.  This macro must be defined if `ELIMINABLE_REGS' is
-   defined.  */
+/* This macro returns the initial difference between the specified pair
+   of registers.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
   do								\
     {								\

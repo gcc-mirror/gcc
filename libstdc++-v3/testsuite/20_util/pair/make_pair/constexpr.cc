@@ -1,7 +1,6 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2011-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +27,6 @@
 void
 test1()
 {
-  bool test __attribute__((unused)) = true;
   typedef std::pair<int, float> pair_type;
   constexpr pair_type p1 __attribute__((unused)) = std::make_pair(22, 22.222);
 }

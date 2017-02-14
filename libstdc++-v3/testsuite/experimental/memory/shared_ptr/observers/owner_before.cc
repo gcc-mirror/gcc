@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++14" }
+// { dg-do run { target c++14 } }
 
-// Copyright (C) 2015-2016 Free Software Foundation, Inc.
+// Copyright (C) 2015-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,8 +36,6 @@ struct B : A { };
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   // test empty shared_ptrs compare equivalent
   std::experimental::shared_ptr<A[5]> p1;
   std::experimental::shared_ptr<B[5]> p2;
@@ -47,8 +45,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = true;
-
   std::experimental::shared_ptr<A[5]> a0;
 
   std::experimental::shared_ptr<A[5]> a1(new A[5]);
@@ -69,8 +65,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = true;
-
   std::experimental::shared_ptr<A[5]> p1(new A[5]);
   std::experimental::shared_ptr<int> p2(p1, &p1[0].i);
   VERIFY( !p1.owner_before(p2) && !p2.owner_before(p1) );

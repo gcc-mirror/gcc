@@ -1,7 +1,6 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,24 +28,10 @@ struct B { };
 // 20.6.6.2.3 shared_ptr assignment [util.smartptr.shared.assign]
 
 // Assignment from incompatible shared_ptr<Y>
-int
+void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   std::shared_ptr<A> a;
   std::shared_ptr<B> b;
-  a = b;                      // { dg-error "here" }
-
-  return 0;
+  a = b;                      // { dg-error "no match" }
 }
-
-int 
-main()
-{
-  test01();
-  return 0;
-}
-// { dg-error "In instantiation" "" { target *-*-* } 0 }
-// { dg-error "cannot convert" "" { target *-*-* } 0 }
-// { dg-error "required from" "" { target *-*-* } 0 }

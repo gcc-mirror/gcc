@@ -1,6 +1,6 @@
 // 1999-10-11 bkoz
 
-// Copyright (C) 1999-2016 Free Software Foundation, Inc.
+// Copyright (C) 1999-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -87,8 +87,6 @@ const wchar_t Inbuf_2::buf[] = L"Atteivlis";
 
 void test12()
 { 
-  bool test __attribute__((unused)) = true;
- 
   Outbuf_2 outbuf2;
   std::wostream os (&outbuf2);
   Inbuf_2 inbuf2;

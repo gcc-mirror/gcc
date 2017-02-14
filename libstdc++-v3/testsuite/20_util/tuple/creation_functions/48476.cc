@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2011-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,6 @@ template<typename... Args1, typename... Args2>
   void
   check_tuple_cat(std::tuple<Args1...> t1, std::tuple<Args2...> t2)
   {
-    bool test __attribute__((unused)) = true;
-
     typedef std::tuple<Args1..., Args2...> concatenated;
   
     auto cat1 = std::tuple_cat(     t1,       t2 );

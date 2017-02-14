@@ -1,5 +1,5 @@
 /* Configuration file for Symbian OS on ARM processors.
-   Copyright (C) 2004-2016 Free Software Foundation, Inc.
+   Copyright (C) 2004-2017 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC   
 
    This file is part of GCC.
@@ -58,12 +58,6 @@
 
 /* Support the "dllimport" attribute.  */
 #define TARGET_DLLIMPORT_DECL_ATTRIBUTES 1
-
-/* Symbian OS assumes ARM V5 or above.  Since -march=armv5 is
-   equivalent to making the ARM 10TDMI core the default, we can set
-   SUBTARGET_CPU_DEFAULT and get an equivalent effect.  */
-#undef SUBTARGET_CPU_DEFAULT
-#define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm10tdmi
 
 /* The assembler should assume VFP FPU format, and armv5t.  */
 #undef SUBTARGET_ASM_FLOAT_SPEC

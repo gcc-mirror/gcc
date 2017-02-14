@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,10 +31,10 @@ with Types; use Types;
 
 package Binderr is
 
-   Errors_Detected : Int;
+   Errors_Detected : Nat;
    --  Number of errors detected so far
 
-   Warnings_Detected : Int;
+   Warnings_Detected : Nat;
    --  Number of warnings detected
 
    Info_Prefix_Suppress : Boolean := False;

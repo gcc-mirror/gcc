@@ -1,6 +1,6 @@
 // Functor implementations -*- C++ -*-
 
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -224,8 +224,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201103L
 
-#define __cpp_lib_transparent_operators 201210
-//#define __cpp_lib_generic_associative_lookup 201304
+#define __cpp_lib_transparent_operators 201510
 
   template<>
     struct plus<void>

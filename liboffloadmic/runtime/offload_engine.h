@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014-2015 Intel Corporation.  All Rights Reserved.
+    Copyright (c) 2014-2016 Intel Corporation.  All Rights Reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -39,7 +39,7 @@
 #include "offload_common.h"
 #include "coi/coi_client.h"
 
-#define SIGNAL_IS_REMOVED ((OffloadDescriptor *)-1)
+#define SIGNAL_HAS_COMPLETED ((OffloadDescriptor *)-1)
 const int64_t no_stream = -1;
 
 // Address range
@@ -83,7 +83,7 @@ public:
     PtrData(const void *addr, uint64_t len) :
         cpu_addr(addr, len), cpu_buf(0),
         mic_addr(0), alloc_disp(0), mic_buf(0), mic_offset(0),
-        ref_count(0), is_static(false)
+        ref_count(0), is_static(false), is_omp_associate(false)
     {}
 
     //
@@ -93,7 +93,9 @@ public:
         cpu_addr(ptr.cpu_addr), cpu_buf(ptr.cpu_buf),
         mic_addr(ptr.mic_addr), alloc_disp(ptr.alloc_disp),
         mic_buf(ptr.mic_buf), mic_offset(ptr.mic_offset),
-        ref_count(ptr.ref_count), is_static(ptr.is_static)
+        ref_count(ptr.ref_count), is_static(ptr.is_static),
+        is_omp_associate(ptr.is_omp_associate),
+        var_alloc_type(0)
     {}
 
     bool operator<(const PtrData &o) const {
@@ -104,7 +106,7 @@ public:
     }
 
     long add_reference() {
-        if (is_static) {
+        if (is_omp_associate || (is_static && !var_alloc_type)) {
             return LONG_MAX;
         }
 #ifndef TARGET_WINNT
@@ -115,7 +117,7 @@ public:
     }
 
     long remove_reference() {
-        if (is_static) {
+        if (is_omp_associate || (is_static && !var_alloc_type)) {
             return LONG_MAX;
         }
 #ifndef TARGET_WINNT
@@ -126,7 +128,7 @@ public:
     }
 
     long get_reference() const {
-        if (is_static) {
+        if (is_omp_associate || (is_static && !var_alloc_type)) {
             return LONG_MAX;
         }
         return ref_count;
@@ -151,6 +153,11 @@ public:
 
     // if true buffers are created from static memory
     bool            is_static;
+
+    // true if MIC buffer created by omp_target_associate
+    bool            is_omp_associate;
+
+    bool            var_alloc_type;
     mutex_t         alloc_ptr_data_lock;
 
 private:
@@ -362,10 +369,16 @@ struct Stream
     static Stream* find_stream(uint64_t handle, bool remove);
 
     static _Offload_stream  add_stream(int device, int number_of_cpus) {
+        _Offload_stream result;
         m_stream_lock.lock();
-        all_streams[++m_streams_count] = new Stream(device, number_of_cpus);
+        result = ++m_streams_count;
+        all_streams[m_streams_count] = new Stream(device, number_of_cpus);
         m_stream_lock.unlock();
-        return(m_streams_count);
+        return(result);
+    }
+
+    static uint64_t get_streams_count() {
+        return m_streams_count;
     }
 
     typedef std::map<uint64_t, Stream*> StreamMap;
@@ -390,12 +403,21 @@ struct Stream
 };
 
 typedef std::map<uint64_t, Stream*> StreamMap;
+typedef std::bitset<COI_MAX_HW_THREADS> micLcpuMask;
+
+// ordered by count double linked list of cpus used by streams
+typedef struct CpuEl{
+    uint64_t      count; // number of streams using the cpu
+    struct CpuEl* prev;  // cpu with the same or lesser count
+    struct CpuEl* next;  // cpu with the same or greater count
+} CpuEl;
 
 // class representing a single engine
 struct Engine {
     friend void __offload_init_library_once(void);
     friend void __offload_fini_library(void);
 
+#define CPU_INDEX(x) (x - m_cpus)
 #define check_result(res, tag, ...) \
     { \
         if (res == COI_PROCESS_DIED) { \
@@ -418,6 +440,10 @@ struct Engine {
 
     const COIPROCESS& get_process() const {
         return m_process;
+    }
+
+    bool get_ready() {
+        return m_ready;
     }
 
     uint64_t get_thread_id(void);
@@ -539,7 +565,7 @@ struct Engine {
             if (it != m_signal_map.end()) {
                 desc = it->second;
                 if (remove) {
-                    it->second = SIGNAL_IS_REMOVED;
+                    it->second = SIGNAL_HAS_COMPLETED;
                 }
             }
         }
@@ -548,7 +574,22 @@ struct Engine {
         return desc;
     }
 
+    void complete_signaled_ofld(const void *signal) {
+
+        m_signal_lock.lock();
+        {
+            SignalMap::iterator it = m_signal_map.find(signal);
+            if (it != m_signal_map.end()) {
+                it->second = SIGNAL_HAS_COMPLETED;
+            }
+        }
+        m_signal_lock.unlock();
+    }
+
     void stream_destroy(_Offload_stream handle);
+
+    void move_cpu_el_after(CpuEl* cpu_what, CpuEl* cpu_after);
+    void print_stream_cpu_list(const char *);
 
     COIPIPELINE get_pipeline(_Offload_stream stream);
 
@@ -564,10 +605,11 @@ struct Engine {
 
 private:
     Engine() : m_index(-1), m_physical_index(-1), m_process(0), m_ready(false),
-               m_proc_number(0)
+               m_proc_number(0), m_assigned_cpus(0), m_cpus(0), m_cpu_head(0)
     {}
 
     ~Engine() {
+        m_ready = false;
         for (StreamMap::iterator it = m_stream_map.begin();
              it != m_stream_map.end(); it++) {
             Stream * stream = it->second;
@@ -576,12 +618,21 @@ private:
         if (m_process != 0) {
             fini_process(false);
         }
+        if (m_assigned_cpus) {
+            delete m_assigned_cpus;
+        }
     }
 
     // set indexes
     void set_indexes(int logical_index, int physical_index) {
         m_index = logical_index;
         m_physical_index = physical_index;
+    }
+
+    // set CPU mask
+    void set_cpu_mask(micLcpuMask *cpu_mask)
+    {
+        m_assigned_cpus = cpu_mask;
     }
 
     // start process on device
@@ -611,6 +662,9 @@ private:
     int         m_index;
     int         m_physical_index;
 
+    // cpu mask
+    micLcpuMask *m_assigned_cpus;
+
     // number of COI pipes created for the engine
     long        m_proc_number;
 
@@ -634,11 +688,12 @@ private:
     mutex_t   m_signal_lock;
 
     // streams
-    StreamMap m_stream_map;
-    mutex_t   m_stream_lock;
-    int       m_num_cores;
-    int       m_num_threads;
-    std::bitset<COI_MAX_HW_THREADS> m_cpus;
+    StreamMap   m_stream_map;
+    mutex_t     m_stream_lock;
+    int         m_num_cores;
+    int         m_num_threads;
+    CpuEl*      m_cpus;
+    CpuEl*      m_cpu_head;
 
     // List of dynamic libraries to be registred
     DynLibList m_dyn_libs;

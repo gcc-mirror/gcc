@@ -1,10 +1,9 @@
-// { dg-do run }
-// { dg-options "-std=gnu++11" }
+// { dg-do run { target c++11 } }
 
 //
 // 2010-06-23  Stephen M. Webb <stephen.webb@bregmasoft.ca>
 //
-// Copyright (C) 2010-2016 Free Software Foundation, Inc.
+// Copyright (C) 2010-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,20 +31,19 @@
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
   typedef char CharT;
   typedef std::regex_traits<CharT> traits;
 
-	char n1[] = "lower";
-	char n2[] = "alpha";
-	traits t;
+  char n1[] = "lower";
+  char n2[] = "alpha";
+  traits t;
 
   traits::char_class_type c1 = t.lookup_classname(n1, n1+sizeof(n1)-1);
   VERIFY( c1 != 0 );
 
   traits::char_class_type c2 = t.lookup_classname(n1, n1+sizeof(n1)-1, true);
   traits::char_class_type c3 = t.lookup_classname(n2, n2+sizeof(n2)-1, true);
-	VERIFY( c2 == c3 );
+  VERIFY( c2 == c3 );
 }
 
 // Test forward iterator

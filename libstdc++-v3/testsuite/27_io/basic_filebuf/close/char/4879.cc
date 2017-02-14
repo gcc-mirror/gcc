@@ -1,7 +1,7 @@
 // { dg-require-fork "" }
 // { dg-require-mkfifo "" }
  
-// Copyright (C) 2001-2016 Free Software Foundation, Inc.
+// Copyright (C) 2001-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,9 +34,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-// No asserts, avoid leaking the semaphores if a VERIFY fails.
-#undef _GLIBCXX_ASSERT
-
 #include <testsuite_hooks.h>
 
 // libstdc++/2913, libstdc++/4879
@@ -46,7 +43,7 @@ test_04()
 {
   using namespace __gnu_test;
 
-  bool test __attribute__((unused)) = true;
+  bool test = true;
   const char* name = "tmp_fifo1";
   semaphore s1, s2;
 
@@ -92,7 +89,6 @@ test_04()
   if (!(ofs.rdstate() & std::ios::failbit))
     {
       test = false;
-      VERIFY( test );
     }
 
   unlink(name);

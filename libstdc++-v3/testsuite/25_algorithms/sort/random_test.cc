@@ -1,4 +1,4 @@
-// Copyright (C) 2013-2016 Free Software Foundation, Inc.
+// Copyright (C) 2013-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,8 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11" }
-// { dg-options "-std=gnu++11 -DSIMULATOR_TEST" { target simulator } }
+// { dg-options "-DSIMULATOR_TEST" { target simulator } }
+// { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 
 // 25.4.1 [lib.alg.sort]
@@ -37,8 +37,6 @@ struct testSort
   template<typename Container, typename RandomGen>
   void operator()(Container con, RandomGen&)
   {
-    bool test __attribute__((unused)) = true;
-
     std::sort(con.begin(), con.end());
     VERIFY( std::is_sorted(con.begin(), con.end()) );
   }

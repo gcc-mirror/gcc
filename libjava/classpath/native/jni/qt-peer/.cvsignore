@@ -1,9 +1,0 @@
-*.o
-*.a
-*.lo
-*.la
-.libs
-.deps
-Makefile
-Makefile.in
-slotcallbacks.moc.h

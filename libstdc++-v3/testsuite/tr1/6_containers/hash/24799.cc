@@ -1,6 +1,6 @@
 // 2005-11-11  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2005-2016 Free Software Foundation, Inc.
+// Copyright (C) 2005-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,6 @@ template<typename T>
   void
   do_test()
   {
-    bool test __attribute__((unused)) = true;
-
     using std::tr1::is_same;
     using __gnu_test::test_relationship;
 

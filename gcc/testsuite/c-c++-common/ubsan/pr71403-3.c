@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O3 -fsanitize=unreachable" } */
+/* { dg-additional-options "-fsanitize=unreachable" } */
 
 
 int a, b, c, d;

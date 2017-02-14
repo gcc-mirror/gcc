@@ -1,5 +1,5 @@
 /* HOST_WIDE_INT definitions for the GNU compiler.
-   Copyright (C) 1998-2016 Free Software Foundation, Inc.
+   Copyright (C) 1998-2017 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -63,6 +63,8 @@ extern char sizeof_long_long_must_be_8[sizeof (long long) == 8 ? 1 : -1];
 #endif
 
 #define HOST_WIDE_INT_UC(X) HOST_WIDE_INT_C (X ## U)
+#define HOST_WIDE_INT_0 HOST_WIDE_INT_C (0)
+#define HOST_WIDE_INT_0U HOST_WIDE_INT_UC (0)
 #define HOST_WIDE_INT_1 HOST_WIDE_INT_C (1)
 #define HOST_WIDE_INT_1U HOST_WIDE_INT_UC (1)
 #define HOST_WIDE_INT_M1 HOST_WIDE_INT_C (-1)
@@ -132,6 +134,31 @@ typedef HOST_WIDE_INT __gcc_host_wide_int__;
 #endif
 
 /* Inline functions operating on HOST_WIDE_INT.  */
+
+/* Return X with all but the lowest bit masked off.  */
+
+static inline unsigned HOST_WIDE_INT
+least_bit_hwi (unsigned HOST_WIDE_INT x)
+{
+  return (x & -x);
+}
+
+/* True if X is zero or a power of two.  */
+
+static inline bool
+pow2_or_zerop (unsigned HOST_WIDE_INT x)
+{
+  return least_bit_hwi (x) == x;
+}
+
+/* True if X is a power of two.  */
+
+static inline bool
+pow2p_hwi (unsigned HOST_WIDE_INT x)
+{
+  return x && pow2_or_zerop (x);
+}
+
 #if GCC_VERSION < 3004
 
 extern int clz_hwi (unsigned HOST_WIDE_INT x);
@@ -220,13 +247,13 @@ ceil_log2 (unsigned HOST_WIDE_INT x)
 static inline int
 exact_log2 (unsigned HOST_WIDE_INT x)
 {
-  return x == (x & -x) && x ? ctz_hwi (x) : -1;
+  return pow2p_hwi (x) ? ctz_hwi (x) : -1;
 }
 
 #endif /* GCC_VERSION >= 3004 */
 
 #define HOST_WIDE_INT_MIN (HOST_WIDE_INT) \
-  ((unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1))
+  (HOST_WIDE_INT_1U << (HOST_BITS_PER_WIDE_INT - 1))
 #define HOST_WIDE_INT_MAX (~(HOST_WIDE_INT_MIN))
 
 extern HOST_WIDE_INT abs_hwi (HOST_WIDE_INT);
@@ -235,6 +262,14 @@ extern HOST_WIDE_INT gcd (HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT pos_mul_hwi (HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT mul_hwi (HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT least_common_multiple (HOST_WIDE_INT, HOST_WIDE_INT);
+
+/* Like ctz_hwi, except 0 when x == 0.  */
+
+static inline int
+ctz_or_zero (unsigned HOST_WIDE_INT x)
+{
+  return ffs_hwi (x) - 1;
+}
 
 /* Sign extend SRC starting from PREC.  */
 
@@ -276,7 +311,7 @@ zext_hwi (unsigned HOST_WIDE_INT src, unsigned int prec)
   else
     {
       gcc_checking_assert (prec < HOST_BITS_PER_WIDE_INT);
-      return src & (((unsigned HOST_WIDE_INT) 1 << prec) - 1);
+      return src & ((HOST_WIDE_INT_1U << prec) - 1);
     }
 }
 

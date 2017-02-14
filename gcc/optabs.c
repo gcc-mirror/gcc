@@ -1,5 +1,5 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
-   Copyright (C) 1987-2016 Free Software Foundation, Inc.
+   Copyright (C) 1987-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "memmodel.h"
 #include "predict.h"
 #include "tm_p.h"
 #include "expmed.h"
@@ -1711,8 +1712,9 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	{
 	  if (optab_handler (mov_optab, mode) != CODE_FOR_nothing)
 	    {
-	      temp = emit_move_insn (target ? target : product, product);
-	      set_dst_reg_note (temp,
+	      rtx_insn *move = emit_move_insn (target ? target : product,
+					       product);
+	      set_dst_reg_note (move,
 				REG_EQUAL,
 				gen_rtx_fmt_ee (MULT, mode,
 						copy_rtx (op0),
@@ -2381,18 +2383,26 @@ expand_parity (machine_mode mode, rtx op0, rtx target)
 
 	      last = get_last_insn ();
 
-	      if (target == 0)
-		target = gen_reg_rtx (mode);
+	      if (target == 0 || GET_MODE (target) != wider_mode)
+		target = gen_reg_rtx (wider_mode);
+
 	      xop0 = widen_operand (op0, wider_mode, mode, true, false);
 	      temp = expand_unop (wider_mode, popcount_optab, xop0, NULL_RTX,
 				  true);
 	      if (temp != 0)
 		temp = expand_binop (wider_mode, and_optab, temp, const1_rtx,
 				     target, true, OPTAB_DIRECT);
-	      if (temp == 0)
-		delete_insns_since (last);
 
-	      return temp;
+	      if (temp)
+		{
+		  if (mclass != MODE_INT
+		      || !TRULY_NOOP_TRUNCATION_MODES_P (mode, wider_mode))
+		    return convert_to_mode (mode, temp, 0);
+		  else
+		    return gen_lowpart (mode, temp);
+		}
+	      else
+		delete_insns_since (last);
 	    }
 	}
     }
@@ -3671,10 +3681,9 @@ emit_libcall_block_1 (rtx_insn *insns, rtx target, rtx result, rtx equiv,
 }
 
 void
-emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
+emit_libcall_block (rtx_insn *insns, rtx target, rtx result, rtx equiv)
 {
-  emit_libcall_block_1 (safe_as_a <rtx_insn *> (insns),
-			target, result, equiv, false);
+  emit_libcall_block_1 (insns, target, result, equiv, false);
 }
 
 /* Nonzero if we can perform a comparison of mode MODE straightforwardly.
@@ -3716,13 +3725,17 @@ can_compare_p (enum rtx_code code, machine_mode mode,
 }
 
 /* This function is called when we are going to emit a compare instruction that
-   compares the values found in *PX and *PY, using the rtl operator COMPARISON.
-
-   *PMODE is the mode of the inputs (in case they are const_int).
-   *PUNSIGNEDP nonzero says that the operands are unsigned;
-   this matters if they need to be widened (as given by METHODS).
+   compares the values found in X and Y, using the rtl operator COMPARISON.
 
    If they have mode BLKmode, then SIZE specifies the size of both operands.
+
+   UNSIGNEDP nonzero says that the operands are unsigned;
+   this matters if they need to be widened (as given by METHODS).
+
+   *PTEST is where the resulting comparison RTX is returned or NULL_RTX
+   if we failed to produce one.
+
+   *PMODE is the mode of the inputs (in case they are const_int).
 
    This function performs all the setup necessary so that the caller only has
    to emit a single comparison insn.  This setup can involve doing a BLKmode
@@ -4213,6 +4226,17 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
   rtx_insn *last;
   enum insn_code icode;
   enum rtx_code reversed;
+
+  /* If the two source operands are identical, that's just a move.  */
+
+  if (rtx_equal_p (op2, op3))
+    {
+      if (!target)
+	target = gen_reg_rtx (mode);
+
+      emit_move_insn (target, op3);
+      return target;
+    }
 
   /* If one operand is constant, make it the second one.  Only do this
      if the other operand is not constant as well.  */
@@ -4903,7 +4927,7 @@ expand_fix (rtx to, rtx from, int unsignedp)
 	  expand_fix (to, target, 0);
 	  target = expand_binop (GET_MODE (to), xor_optab, to,
 				 gen_int_mode
-				 ((HOST_WIDE_INT) 1 << (bitsize - 1),
+				 (HOST_WIDE_INT_1 << (bitsize - 1),
 				  GET_MODE (to)),
 				 to, 1, OPTAB_LIB_WIDEN);
 
@@ -5258,14 +5282,15 @@ get_rtx_code (enum tree_code tcode, bool unsignedp)
   return code;
 }
 
-/* Return comparison rtx for COND. Use UNSIGNEDP to select signed or
-   unsigned operators.  OPNO holds an index of the first comparison
-   operand in insn with code ICODE.  Do not generate compare instruction.  */
+/* Return a comparison rtx of mode CMP_MODE for COND.  Use UNSIGNEDP to
+   select signed or unsigned operators.  OPNO holds the index of the
+   first comparison operand for insn ICODE.  Do not generate the
+   compare instruction itself.  */
 
 static rtx
-vector_compare_rtx (enum tree_code tcode, tree t_op0, tree t_op1,
-		    bool unsignedp, enum insn_code icode,
-		    unsigned int opno)
+vector_compare_rtx (machine_mode cmp_mode, enum tree_code tcode,
+		    tree t_op0, tree t_op1, bool unsignedp,
+		    enum insn_code icode, unsigned int opno)
 {
   struct expand_operand ops[2];
   rtx rtx_op0, rtx_op1;
@@ -5293,7 +5318,7 @@ vector_compare_rtx (enum tree_code tcode, tree t_op0, tree t_op1,
   create_input_operand (&ops[1], rtx_op1, m1);
   if (!maybe_legitimize_operands (icode, opno, 2, ops))
     gcc_unreachable ();
-  return gen_rtx_fmt_ee (rcode, VOIDmode, ops[0].value, ops[1].value);
+  return gen_rtx_fmt_ee (rcode, cmp_mode, ops[0].value, ops[1].value);
 }
 
 /* Checks if vec_perm mask SEL is a constant equivalent to a shift of the first
@@ -5612,9 +5637,15 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
 
   icode = get_vcond_icode (mode, cmp_op_mode, unsignedp);
   if (icode == CODE_FOR_nothing)
-    return 0;
+    {
+      if (tcode == EQ_EXPR || tcode == NE_EXPR)
+	icode = get_vcond_eq_icode (mode, cmp_op_mode);
+      if (icode == CODE_FOR_nothing)
+	return 0;
+    }
 
-  comparison = vector_compare_rtx (tcode, op0a, op0b, unsignedp, icode, 4);
+  comparison = vector_compare_rtx (VOIDmode, tcode, op0a, op0b, unsignedp,
+				   icode, 4);
   rtx_op1 = expand_normal (op1);
   rtx_op2 = expand_normal (op2);
 
@@ -5651,9 +5682,15 @@ expand_vec_cmp_expr (tree type, tree exp, rtx target)
 
   icode = get_vec_cmp_icode (vmode, mask_mode, unsignedp);
   if (icode == CODE_FOR_nothing)
-    return 0;
+    {
+      if (tcode == EQ_EXPR || tcode == NE_EXPR)
+	icode = get_vec_cmp_eq_icode (vmode, mask_mode);
+      if (icode == CODE_FOR_nothing)
+	return 0;
+    }
 
-  comparison = vector_compare_rtx (tcode, op0a, op0b, unsignedp, icode, 2);
+  comparison = vector_compare_rtx (mask_mode, tcode, op0a, op0b,
+				   unsignedp, icode, 2);
   create_output_operand (&ops[0], target, mask_mode);
   create_fixed_operand (&ops[1], comparison);
   create_fixed_operand (&ops[2], XEXP (comparison, 0));
@@ -6049,7 +6086,14 @@ expand_atomic_test_and_set (rtx target, rtx mem, enum memmodel model)
 rtx
 expand_atomic_exchange (rtx target, rtx mem, rtx val, enum memmodel model)
 {
+  machine_mode mode = GET_MODE (mem);
   rtx ret;
+
+  /* If loads are not atomic for the required size and we are not called to
+     provide a __sync builtin, do not do anything so that we stay consistent
+     with atomic loads of the same size.  */
+  if (!can_atomic_load_p (mode) && !is_mm_sync (model))
+    return NULL_RTX;
 
   ret = maybe_emit_atomic_exchange (target, mem, val, model);
 
@@ -6083,6 +6127,12 @@ expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
   enum insn_code icode;
   rtx target_oval, target_bool = NULL_RTX;
   rtx libfunc;
+
+  /* If loads are not atomic for the required size and we are not called to
+     provide a __sync builtin, do not do anything so that we stay consistent
+     with atomic loads of the same size.  */
+  if (!can_atomic_load_p (mode) && !is_mm_sync (succ_model))
+    return false;
 
   /* Load expected into a register for the compare and swap.  */
   if (MEM_P (expected))
@@ -6279,19 +6329,13 @@ expand_atomic_load (rtx target, rtx mem, enum memmodel model)
     }
 
   /* If the size of the object is greater than word size on this target,
-     then we assume that a load will not be atomic.  */
+     then we assume that a load will not be atomic.  We could try to
+     emulate a load with a compare-and-swap operation, but the store that
+     doing this could result in would be incorrect if this is a volatile
+     atomic load or targetting read-only-mapped memory.  */
   if (GET_MODE_PRECISION (mode) > BITS_PER_WORD)
-    {
-      /* Issue val = compare_and_swap (mem, 0, 0).
-	 This may cause the occasional harmless store of 0 when the value is
-	 already 0, but it seems to be OK according to the standards guys.  */
-      if (expand_atomic_compare_and_swap (NULL, &target, mem, const0_rtx,
-					  const0_rtx, false, model, model))
-	return target;
-      else
-      /* Otherwise there is no atomic load, leave the library call.  */
-        return NULL_RTX;
-    }
+    /* If there is no atomic load, leave the library call.  */
+    return NULL_RTX;
 
   /* Otherwise assume loads are atomic, and emit the proper barriers.  */
   if (!target || target == const0_rtx)
@@ -6333,7 +6377,9 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
 	return const0_rtx;
     }
 
-  /* If using __sync_lock_release is a viable alternative, try it.  */
+  /* If using __sync_lock_release is a viable alternative, try it.
+     Note that this will not be set to true if we are expanding a generic
+     __atomic_store_n.  */
   if (use_release)
     {
       icode = direct_optab_handler (sync_lock_release_optab, mode);
@@ -6352,16 +6398,22 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
     }
 
   /* If the size of the object is greater than word size on this target,
-     a default store will not be atomic, Try a mem_exchange and throw away
-     the result.  If that doesn't work, don't do anything.  */
+     a default store will not be atomic.  */
   if (GET_MODE_PRECISION (mode) > BITS_PER_WORD)
     {
-      rtx target = maybe_emit_atomic_exchange (NULL_RTX, mem, val, model);
-      if (!target)
-        target = maybe_emit_compare_and_swap_exchange_loop (NULL_RTX, mem, val);
-      if (target)
-        return const0_rtx;
-      else
+      /* If loads are atomic or we are called to provide a __sync builtin,
+	 we can try a atomic_exchange and throw away the result.  Otherwise,
+	 don't do anything so that we do not create an inconsistency between
+	 loads and stores.  */
+      if (can_atomic_load_p (mode) || is_mm_sync (model))
+	{
+	  rtx target = maybe_emit_atomic_exchange (NULL_RTX, mem, val, model);
+	  if (!target)
+	    target = maybe_emit_compare_and_swap_exchange_loop (NULL_RTX, mem,
+								val);
+	  if (target)
+	    return const0_rtx;
+	}
         return NULL_RTX;
     }
 
@@ -6675,6 +6727,12 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
   machine_mode mode = GET_MODE (mem);
   rtx result;
   bool unused_result = (target == const0_rtx);
+
+  /* If loads are not atomic for the required size and we are not called to
+     provide a __sync builtin, do not do anything so that we stay consistent
+     with atomic loads of the same size.  */
+  if (!can_atomic_load_p (mode) && !is_mm_sync (model))
+    return NULL_RTX;
 
   result = expand_atomic_fetch_op_no_fallback (target, mem, val, code, model,
 					       after);

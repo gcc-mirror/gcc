@@ -1,6 +1,6 @@
 // <regex> -*- C++ -*-
 
-// Copyright (C) 2007-2016 Free Software Foundation, Inc.
+// Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,7 +37,6 @@
 
 #include <algorithm>
 #include <bitset>
-#include <functional>
 #ifdef _GLIBCXX_DEBUG
 # include <iosfwd>
 #endif
@@ -54,6 +53,7 @@
 #include <cstring>
 
 #include <ext/aligned_buffer.h>
+#include <bits/std_function.h>
 #include <bits/regex_constants.h>
 #include <bits/regex_error.h>
 #include <bits/regex_automaton.h>

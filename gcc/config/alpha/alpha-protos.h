@@ -1,5 +1,5 @@
 /* Prototypes for alpha.c functions used in the md file & elsewhere.
-   Copyright (C) 1999-2016 Free Software Foundation, Inc.
+   Copyright (C) 1999-2017 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -112,3 +112,9 @@ extern rtx unicosmk_add_call_info_word (rtx);
 extern bool some_small_symbolic_operand_int (rtx);
 extern int tls_symbolic_operand_1 (rtx, int, int);
 extern rtx resolve_reload_operand (rtx);
+
+namespace gcc { class context; }
+class rtl_opt_pass;
+
+extern rtl_opt_pass *make_pass_handle_trap_shadows (gcc::context *);
+extern rtl_opt_pass *make_pass_align_insns (gcc::context *);
