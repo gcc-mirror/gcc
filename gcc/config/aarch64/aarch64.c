@@ -10845,6 +10845,8 @@ aarch64_simd_container_mode (machine_mode mode, unsigned width)
 	    return V2DFmode;
 	  case SFmode:
 	    return V4SFmode;
+	  case HFmode:
+	    return V8HFmode;
 	  case SImode:
 	    return V4SImode;
 	  case HImode:
@@ -10861,6 +10863,8 @@ aarch64_simd_container_mode (machine_mode mode, unsigned width)
 	  {
 	  case SFmode:
 	    return V2SFmode;
+	  case HFmode:
+	    return V4HFmode;
 	  case SImode:
 	    return V2SImode;
 	  case HImode:
