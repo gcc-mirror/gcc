@@ -1,3 +1,10 @@
+2017-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79481
+	* config/i386/avx512pfintrin.h (_mm512_prefetch_i32gather_pd,
+	_mm512_prefetch_i32gather_ps, _mm512_prefetch_i64gather_pd,
+	_mm512_prefetch_i64gather_ps): New inline functions and macros.
+
 2017-02-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/79495
