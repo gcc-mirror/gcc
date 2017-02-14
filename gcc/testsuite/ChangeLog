@@ -1,3 +1,12 @@
+2017-02-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/79495
+	* gcc.target/i386/pr79495.c: New test.
+
+	PR middle-end/61225
+	* gcc.target/i386/pr49095.c: Add -fno-shrink-wrap to dg-options.
+	Use dg-additional-options for ia32 target.  Remove XFAIL.
+
 2017-02-13  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/79296
@@ -362,8 +371,8 @@
 	Backport from mainline
 	2016-11-07  Bernd Schmidt  <bschmidt@redhat.com>
 
-        PR rtl-optimization/77309
-        * gcc.dg/torture/pr77309.c: New test.
+	PR rtl-optimization/77309
+	* gcc.dg/torture/pr77309.c: New test.
 
 2016-12-12 Thomas Preud'homme <thomas.preudhomme@arm.com>
 
@@ -772,7 +781,7 @@
 	* g++.dg/torture/pr77822.C: New test.
 
 2016-11-20  Harald Anlauf  <anlauf@gmx.de>
- 
+
 	PR fortran/69741
 	* gfortran.dg/forall_18.f90: New testcase.
 
