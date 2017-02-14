@@ -1066,6 +1066,59 @@ insert_phi_nodes (bitmap_head *dfs)
 
   timevar_push (TV_TREE_INSERT_PHI_NODES);
 
+  /* When the gimplifier introduces SSA names it cannot easily avoid
+     situations where abnormal edges added by CFG construction break
+     the use-def dominance requirement.  For this case rewrite SSA
+     names with broken use-def dominance out-of-SSA and register them
+     for PHI insertion.  We only need to do this if abnormal edges
+     can appear in the function.  */
+  tree name;
+  if (cfun->calls_setjmp
+      || cfun->has_nonlocal_label)
+    FOR_EACH_SSA_NAME (i, name, cfun)
+      {
+	gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+	if (SSA_NAME_IS_DEFAULT_DEF (name))
+	  continue;
+
+	basic_block def_bb = gimple_bb (def_stmt);
+	imm_use_iterator it;
+	gimple *use_stmt;
+	bool need_phis = false;
+	FOR_EACH_IMM_USE_STMT (use_stmt, it, name)
+	  {
+	    basic_block use_bb = gimple_bb (use_stmt);
+	    if (use_bb != def_bb
+		&& ! dominated_by_p (CDI_DOMINATORS, use_bb, def_bb))
+	      need_phis = true;
+	  }
+	if (need_phis)
+	  {
+	    tree var = create_tmp_reg (TREE_TYPE (name));
+	    use_operand_p use_p;
+	    FOR_EACH_IMM_USE_STMT (use_stmt, it, name)
+	      {
+		basic_block use_bb = gimple_bb (use_stmt);
+		FOR_EACH_IMM_USE_ON_STMT (use_p, it)
+		    SET_USE (use_p, var);
+		update_stmt (use_stmt);
+		set_livein_block (var, use_bb);
+		set_rewrite_uses (use_stmt, true);
+		bitmap_set_bit (interesting_blocks, use_bb->index);
+	      }
+	    def_operand_p def_p;
+	    ssa_op_iter dit;
+	    FOR_EACH_SSA_DEF_OPERAND (def_p, def_stmt, dit, SSA_OP_DEF)
+	      if (DEF_FROM_PTR (def_p) == name)
+		SET_DEF (def_p, var);
+	    update_stmt (def_stmt);
+	    set_def_block (var, def_bb, false);
+	    set_register_defs (def_stmt, true);
+	    bitmap_set_bit (interesting_blocks, def_bb->index);
+	    release_ssa_name (name);
+	  }
+      }
+
   auto_vec<var_info *> vars (var_infos->elements ());
   FOR_EACH_HASH_TABLE_ELEMENT (*var_infos, info, var_info_p, hi)
     if (info->info.need_phi_state != NEED_PHI_STATE_NO)
