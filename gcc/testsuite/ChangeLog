@@ -1,3 +1,10 @@
+2017-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79487
+	* gcc.dg/dfp/pr79487.c: New test.
+	* c-c++-common/ubsan/float-cast-overflow-8.c (TEST): Revert
+	2017-02-13 change.
+
 2017-01-14  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/vsx-builtin-3.c: Add missing test case for the

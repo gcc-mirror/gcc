@@ -8,7 +8,7 @@
 #define TEST(type1, type2) \
   if (type1##_MIN)						\
     {								\
-      volatile type2 min = type1##_MIN;				\
+      type2 min = type1##_MIN;					\
       type2 add = -1.0;						\
       while (1)							\
 	{							\
@@ -28,7 +28,7 @@
       volatile type1 tem3 = cvt_##type1##_##type2 (-1.0f);	\
     }								\
   {								\
-    volatile type2 max = type1##_MAX;				\
+    type2 max = type1##_MAX;					\
     type2 add = 1.0;						\
     while (1)							\
       {								\
