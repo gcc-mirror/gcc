@@ -33,6 +33,7 @@ namespace {
 class seriator
 {
   static const size_t ALLOC = 32768;
+
 protected:
   FILE *stream;
 public:
@@ -51,13 +52,13 @@ public:
   ~seriator ();
 
 public:
-  bool ok ()
+  int error ()
   {
-    errno = err;
-    return !err;
+    return err;
   }
 public:
-  void bad (int e)
+  /* Set an error.  We store the first errno.  */
+  void bad (int e = -1)
   {
     if (!err)
       err = e;
@@ -92,9 +93,14 @@ public:
 private:
   void flush_bits ();
   size_t reserve (size_t);
+  void flush ();
 
 public:
-  bool flush ();
+  int done ()
+  {
+    flush ();
+    return error ();
+  }
 
 public:
   void b (bool);
@@ -130,6 +136,12 @@ private:
 
 public:
   bool peek_u (unsigned u);
+  int done ()
+  {
+    if (reserve (1))
+      bad ();
+    return error ();
+  }
   bool b ();
   int c ();
   int i ();
@@ -151,6 +163,9 @@ public:
    buf - fixed size buffer
    str - variable length string  */
 
+/* Bools are packed into bytes.  These are automatically flushed when
+   full, or we change to a different type.  */
+
 void writer::b (bool x)
 {
   bits |= unsigned (x) << bit_pos++;
@@ -166,7 +181,9 @@ bool reader::b ()
   bit_pos = (bit_pos + 1) & 7;
   return v;
 }
-  
+
+/* Chars are unsigned and written as single bytes.  */
+
 void writer::c (unsigned char x)
 {
   reserve (1);
@@ -177,25 +194,29 @@ int reader::c ()
 {
   if (reserve (1))
     return (unsigned char)buffer[pos++];
-  bad (EILSEQ);
+  bad ();
   return 0;
 }
-  
+
+/* Ints are written as sleb128.  I suppose we could pack the first
+   few bits into any partially-filled bool buffer.  */
+
 void writer::i (int x)
 {
   reserve ((sizeof (x) * 8 + 6) / 7);
 
   int end = x < 0 ? -1 : 0;
-  unsigned byte;
-  for (;;)
+  bool more;
+
+  do
     {
-      byte = x & 127;
-      x >>= 7;
-      if (x == end)
-	break;
-      buffer[pos++] = byte | 128;
+      unsigned byte = x & 127;
+      x >>= 6; /* Signed shift.  */
+      more = x != end;
+      buffer[pos++] = byte | (more << 7);
+      x >>= 1; /* Signed shift.  */
     }
-  buffer[pos++] = byte;
+  while (more);
 }
 
 int reader::i ()
@@ -205,32 +226,62 @@ int reader::i ()
   size_t bytes = reserve ((sizeof (v) * 8 + 6) / 7);
   unsigned byte;
 
-  for (;;)
+  do
     {
       if (!bytes--)
 	{
-	  bad (EILSEQ);
+	  bad ();
 	  return v;
 	}
       byte = buffer[pos++];
       v |= (byte & 127) << bit;
       bit += 7;
-      if (!(byte & 128))
-	break;
     }
+  while (byte & 128);
+
   if (byte & 0x40 && bit < sizeof (v) * 8)
     v |= ~(int)0 << bit;
   return v;
 }
 
+/* Unsigned are written as uleb128 too.  */
+
 inline void writer::u (unsigned x)
 {
-  i (int (x));
+  reserve ((sizeof (x) * 8 + 6) / 7);
+
+  bool more;
+  do
+    {
+      unsigned byte = x & 127;
+      x >>= 7;
+      more = x != 0;
+      buffer[pos++] = byte | (more << 7);
+    }
+  while (more);
 }
 
 inline unsigned reader::u ()
 {
-  return unsigned (i ());
+  unsigned v = 0;
+  unsigned bit = 0;
+  size_t bytes = reserve ((sizeof (v) * 8 + 6) / 7);
+  unsigned byte;
+
+  do
+    {
+      if (!bytes--)
+	{
+	  bad ();
+	  return v;
+	}
+      byte = buffer[pos++];
+      v |= (byte & 127) << bit;
+      bit += 7;
+    }
+  while (byte & 128);
+
+  return v;
 }
 
 /* Peek at the next char and return true, if it matches U.  */
@@ -248,15 +299,17 @@ void writer::wi (HOST_WIDE_INT x)
   reserve ((sizeof (x) * 8 + 6) / 7);
 
   int end = x < 0 ? -1 : 0;
+  bool more;
+
   do
     {
       unsigned byte = x & 127;
-      x >>= 7;
-      if (x != end)
-	byte |= 128;
-      buffer[pos++] = byte;
+      x >>= 6; /* Signed shift.  */
+      more = x != end;
+      buffer[pos++] = byte | (more << 7);
+      x >>= 1; /* Signed shift.  */
     }
-  while (x != end);
+  while (more);
 }
 
 HOST_WIDE_INT reader::wi ()
@@ -266,19 +319,19 @@ HOST_WIDE_INT reader::wi ()
   size_t bytes = reserve ((sizeof (v) * 8 + 6) / 7);
   unsigned byte;
 
-  for (;;)
+  do
     {
       if (!bytes--)
 	{
-	  bad (EILSEQ);
+	  bad ();
 	  return v;
 	}
       byte = buffer[pos++];
       v |= (byte & 127) << bit;
       bit += 7;
-      if (!(byte & 128))
-	break;
     }
+  while (byte & 128);
+
   if (byte & 0x40 && bit < sizeof (v) * 8)
     v |= ~(HOST_WIDE_INT)0 << bit;
   return v;
@@ -324,7 +377,7 @@ const char *reader::buf (size_t len)
   if (have < len)
     {
       memset (v + have, 0, len - have);
-      bad (EILSEQ);
+      bad ();
     }
   pos += have;
   return v;
@@ -345,12 +398,12 @@ const char *reader::str (size_t *len_p)
     {
       /* Force read string to be not totally broken.  */
       buffer[pos-1] = 0;
-      bad (EILSEQ);
+      bad ();
     }
   return str;
 }
 
-bool
+void
 writer::flush ()
 {
   flush_bits ();
@@ -359,7 +412,6 @@ writer::flush ()
   if (bytes != pos && !err)
     err = errno;
   pos = 0;
-  return ok ();
 }
 
 void
@@ -436,9 +488,8 @@ public:
     t_import,
     /* Tree codes.  */
     t_tree_base = 0x100,
-    t_tree_hwm = 0xfff,
     /* First reference index.  */
-    t_ref_base
+    t_ref_base = 0x1000
   };
 
 private:
@@ -447,6 +498,7 @@ private:
 public:
   streamer () : index (t_ref_base)
   {
+    gcc_assert (MAX_TREE_CODES <= t_ref_base - t_tree_base);
   }
 
 protected:
@@ -545,15 +597,17 @@ public:
 
 public:
   void header (FILE *, tree);
-  void eof ();
-  void rec_conf (FILE *);
-  void rec_import (FILE *, tree, bool);
-  bool done ()
+  void tag_eof ();
+  void tag_conf (FILE *);
+  void tag_import (FILE *, tree, bool);
+  int done ()
   {
-    return w.flush ();
+    return w.done ();
   }
-  void ref (tree, bool = false);
-  void decl (tree);
+
+public:
+  void write_tree (FILE *, tree);
+  void walk_namespace (FILE *, bool, tree);
 };
 
 out::out (FILE *s, const char *n)
@@ -563,12 +617,6 @@ out::out (FILE *s, const char *n)
 
 out::~out ()
 {
-}
-
-void
-out::eof ()
-{
-  w.c (t_eof);
 }
 
 /* Streamer in.  */
@@ -585,9 +633,17 @@ public:
 
 public:
   bool header (FILE *, tree);
-  bool rec_conf (FILE *);
-  int rec_import (FILE *, tree &);
+  int tag_eof (FILE *);
+  bool tag_conf (FILE *);
+  int tag_import (FILE *, tree &);
   int read_one (FILE *, tree &);
+  int done ()
+  {
+    return r.done ();
+  }
+
+public:
+  bool read_tree (FILE *, tree *, unsigned = 0);
 };
 
 in::in (FILE *s, const char *n, bool is_impl)
@@ -640,18 +696,18 @@ in::header (FILE *d, tree name)
       else
 	{
 	  /* Times differ, give it a go.  */
-	  warning (0, "%qs version %d, but time is %d, not %d",
+	  warning (0, "%qs is version %d, but timestamp is %d, not %d",
 		   r.name, v_date, v_time, ver_time);
 	  have_a_go = true;
 	}
       if (!have_a_go)
 	{
-	  r.bad (EINVAL);
+	  r.bad (-1);
 	  return false;
 	}
     }
   if (d)
-    fprintf (d, "Expecting %d:%04d found %d:%04\n", ver_date, ver_time,
+    fprintf (d, "Expecting %d:%04d found %d:%04d\n", ver_date, ver_time,
 	     v_date, v_time);
 
   size_t l;
@@ -666,13 +722,27 @@ in::header (FILE *d, tree name)
   return true;
 }
 
+void
+out::tag_eof ()
+{
+  w.c (t_eof);
+}
+
+int
+in::tag_eof (FILE *d)
+{
+  if (d)
+    fprintf (d, "Read eof\n");
+  return -1; /* Denote EOF.  */
+}
+
 /* Record config info
    str:<target-triplet>
    str:<host-triplet>  ; lock this for now.
 */
 
 void
-out::rec_conf (FILE *d)
+out::tag_conf (FILE *d)
 {
   if (d)
     fprintf (d, "Writing target='%s', host='%s'\n",
@@ -683,7 +753,7 @@ out::rec_conf (FILE *d)
 }
 
 bool
-in::rec_conf (FILE *d)
+in::tag_conf (FILE *d)
 {
   size_t l;
   const char *targ = r.str (&l);
@@ -710,7 +780,7 @@ in::rec_conf (FILE *d)
    str:module_name  */
 
 void
-out::rec_import (FILE *d, tree name, bool is_export)
+out::tag_import (FILE *d, tree name, bool is_export)
 {
   if (d)
     fprintf (d, "Writing %s '%s'\n", is_export ? "export module" : "import",
@@ -721,7 +791,7 @@ out::rec_import (FILE *d, tree name, bool is_export)
 }
 
 int
-in::rec_import (FILE *d, tree &imp)
+in::tag_import (FILE *d, tree &imp)
 {
   bool is_exp = r.b ();
   size_t l;
@@ -742,6 +812,8 @@ in::rec_import (FILE *d, tree &imp)
     goto bad;
 
   imp = get_identifier_with_length (mod, l);
+  if (d)
+    fprintf (d, "Read import '%s'\n", mod);
   return (is_exp ? 1 : 0) | 0x10;
  bad:
   error ("module name '%qs' is malformed", mod);
@@ -751,27 +823,168 @@ in::rec_import (FILE *d, tree &imp)
 int
 in::read_one (FILE *d, tree &imp)
 {
-  unsigned key = r.c ();
-  switch (key)
+  unsigned tag = r.u ();
+  if (tag == t_eof)
+    return tag_eof (d);
+  else if (tag == t_conf)
+    return tag_conf (d);
+  else if (tag == t_import)
+    return tag_import (d, imp);
+
+  tree t;
+  if (!read_tree (d, &t, tag))
     {
-    default:
-      error ("unknown key %qd", key);
+      if (t == error_mark_node)
+	error ("unknown key %qd", tag);
+      r.bad ();
       return false;
-
-    case t_eof:
-      if (d)
-	fprintf (d, "Read eof\n");
-      return -1; /* Denote EOF.  */
-
-    case t_conf:
-      return rec_conf (d);
-
-    case t_import:
-      return rec_import (d, imp);
-
-      // FIXME: some code needed here
     }
-  return false;
+  // FIXME: read body
+  return true;
+}
+
+/* Write either the decl (as a declaration) itself (and create a
+   mapping for it), or write the existing mapping.  This is
+   essentially the lisp self-referential structure pretty-printer,
+   except that we implicitly number every node, so need neither two
+   passes, nor explicit labelling.   */
+
+void
+out::write_tree (FILE *d, tree t)
+{
+  if (!t)
+    {
+      w.u (0); /* This also matches t_eof, but we cannot be confused. */
+      return;
+    }
+  
+  bool existed;
+  unsigned *val = &map.get_or_insert (t, &existed);
+  if (existed)
+    {
+      w.u (*val);
+      return;
+    }
+
+  *val = next ();
+  tree_code code = TREE_CODE (t);
+  if (d)
+    fprintf (d, "Writing:%u %s (%s:%d)\n", *val, get_tree_code_name (code),
+	     tree_code_class_strings [TREE_CODE_CLASS (code)], code);
+
+  gcc_assert (t_tree_base + code < t_ref_base);
+  w.u (t_tree_base + code);
+  // FIXME:Write length info
+  // Write core bits
+  // Write lang_specific info
+  // write lang_specific bits
+  // Write core pointers & vals
+  // Write lang_specific pointers & vals
+}
+
+/* Read in a tree using TAG.  TAG is either a back reference, or a
+   TREE_CODE for a new TREE.  For any tree that is a DECL, this does
+   not read in a definition (initial value, class defn, function body,
+   instantiations, whatever).  Return true on success.  Sets *TP to
+   error_mark_node if TAG is totally bogus.  */
+
+bool
+in::read_tree (FILE *d, tree *tp, unsigned tag)
+{
+  if (!tag)
+    tag = r.u ();
+
+  if (!tag)
+    {
+      *tp = NULL_TREE;
+      return true;
+    }
+
+  if (tag >= t_ref_base)
+    {
+      tree *val = map.get (tag);
+
+      *tp = val ? *val : error_mark_node;
+      if (d)
+	fprintf (d, "Reading:%u mapping to %p (%s)\n", tag, (void *)*tp,
+		 *tp ? get_tree_code_name (TREE_CODE (*tp)) : "NULL");
+      return val != NULL;
+    }
+
+  if (tag < t_tree_base || tag >= t_tree_base + MAX_TREE_CODES)
+    {
+      *tp = error_mark_node;
+      return false;
+    }
+
+  tree_code code = tree_code (tag - t_tree_base);
+
+  // FIXME:Get length
+  tree t = NULL_TREE;
+
+  // FIXME:alloc tree
+
+  // Insert into map -- fixup for duplicates?
+  // Perhaps we should add it later, but we do need to reserve the
+  // number now.
+  tag = next ();
+  bool existed = map.put (tag, t);
+  gcc_assert (!existed);
+  if (d)
+    fprintf (d, "Reading:%u %s (%s:%d)\n", tag, get_tree_code_name (code),
+	     tree_code_class_strings [TREE_CODE_CLASS (code)], code);
+
+  // FIXME:Read core bits
+  // FIXME:read lang_specific bits
+  // FIXME:Read core ptrs & vals
+  // FIXME:Read lang_specific ptrs & vals
+
+  *tp = t;
+
+  // FIXME:Do decl-specific processing, dup decls and symbol table things
+  return true;
+}
+
+void
+out::walk_namespace (FILE *d, bool defns, tree ns)
+{
+  gcc_assert (!defns); // FIXME: todo
+
+  bool mod_ns = CURRENT_MODULE_NAMESPACE_P (ns);
+
+  /* Don't walk into other module's namespaces.  */
+  if (MODULE_NAMESPACE_P (ns) && !mod_ns)
+    {
+      if (d)
+	fprintf (d, "Skipping namespace '%s'\n",
+		 IDENTIFIER_POINTER (DECL_NAME (ns)));
+      return;
+    }
+
+  if (d)
+    fprintf (d, "Walking namespace '%s'\n",
+	     IDENTIFIER_POINTER (DECL_NAME (ns)));
+
+  const cp_binding_level *b = NAMESPACE_LEVEL (ns);
+  for (tree name = b->names; name; name = TREE_CHAIN (name))
+    if (mod_ns || MODULE_EXPORT_P (name))
+      {
+	// FIXME:Add other decls later
+	switch (TREE_CODE (name))
+	  {
+	  case FUNCTION_DECL:
+	    write_tree (d, name);
+	  case VAR_DECL:
+	  case TYPE_DECL:
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+	
+      }
+  for (tree inner = b->namespaces; inner;
+       inner = DECL_CHAIN (inner))
+    walk_namespace (d, defns, inner);
 }
 
 }
@@ -827,10 +1040,11 @@ dclose (FILE *stream)
 /* If we're in the purview of a module, push its local namespace.  */
 
 void
-push_module_namespace ()
+push_module_namespace (bool do_it)
 {
-  gcc_assert (TREE_CODE (current_scope ()) == NAMESPACE_DECL);
-  if (module_namespace_name && push_namespace (module_namespace_name) < 0)
+  gcc_assert (TREE_CODE (current_scope ()) == NAMESPACE_DECL
+	      && (!do_it || module_namespace_name));
+  if (do_it && push_namespace (module_namespace_name) < 0)
     {
       MODULE_NAMESPACE_P (current_namespace) = true;
       make_namespace_inline ();
@@ -839,12 +1053,14 @@ push_module_namespace ()
 
 /* If we're in the current module's local namespace, pop out of it.  */
 
-void
+bool
 pop_module_namespace ()
 {
   gcc_assert (TREE_CODE (current_scope ()) == NAMESPACE_DECL);
-  if (CURRENT_MODULE_NAMESPACE_P (current_namespace))
+  bool do_it = CURRENT_MODULE_NAMESPACE_P (current_namespace);
+  if (do_it)
     pop_namespace ();
+  return do_it;
 }
 
 /* Nest a module export level.  Return true if we were already in a
@@ -936,7 +1152,7 @@ static bool
 read_module (FILE *stream, const char *fname, tree name, import_kind kind)
 {
   in in (stream, fname, kind == ik_impl);
-  FILE *d =  dopen ();
+  FILE *d = dopen ();
 
   if (d)
     fprintf (d, "Importing '%s'\n", IDENTIFIER_POINTER (name));
@@ -976,14 +1192,21 @@ read_module (FILE *stream, const char *fname, tree name, import_kind kind)
 	  }
     }
 
+  if (int e = in.done ())
+    {
+      error ("failed to read module %qE (%qs): %s", name, fname,
+	     e >= 0 ? xstrerror (errno) : "Bad file data");
+      ok = false;
+    }
+
   dclose (d);
-  return ok != 0;
+  return ok;
 }
 
 /* Import the module NAME into the current TU. */
 
 static bool
-do_import_module (location_t loc, tree name, tree attrs, import_kind kind)
+do_import_module (location_t loc, tree name, tree, import_kind kind)
 {
   if (!imported_modules)
     imported_modules = new hash_map<tree, unsigned>;
@@ -1074,7 +1297,7 @@ declare_module (location_t loc, tree name, tree attrs)
 
   do_import_module (loc, name, attrs, inter ? ik_inter : ik_impl);
 
-  push_module_namespace ();
+  push_module_namespace (true);
   is_interface = inter;
 }
 
@@ -1085,7 +1308,7 @@ write_import (const tree &name, const unsigned &kind,
 	      write_import_cl const &cl)
 {
   if (kind == ik_import || kind == ik_export)
-    cl.first->rec_import (cl.second, name, kind == ik_export);
+    cl.first->tag_import (cl.second, name, kind == ik_export);
   return false;
 }
 
@@ -1099,18 +1322,22 @@ write_module (FILE *stream, const char *fname, tree name)
     fprintf (d, "Writing module '%s'\n", IDENTIFIER_POINTER (name));
 
   out.header (d, name);
-  out.rec_conf (d);
+  out.tag_conf (d);
   // FIXME:Write 'important' flags etc
 
   /* Write the import table.  */
   imported_modules->traverse<const write_import_cl &, write_import>
     (write_import_cl (&out, d));
   
-  // FIXME:Write decls & defns
+  /* Write decls.  */
+  out.walk_namespace (d, false, global_namespace);
 
-  out.eof ();
-  if (!out.done ())
-    error ("failed to write module file %qE (%qs): %m", name, fname);
+  // FIXME:Write defns
+
+  out.tag_eof ();
+  if (int e = out.done ())
+    error ("failed to write module %qE (%qs): %s", name, fname,
+	   e >= 0 ? xstrerror (errno) : "Bad file data");
   dclose (d);
 }
 

@@ -1,3 +1,19 @@
+2017-02-15  Nathan Sidwell  <nathan@acm.org>
+
+	Start of tree reading & writing.  Module namespace fix.
+	gcc/cp/
+	* cp-tree.h (pop_module_namespace, push_module_namespace): Add flag.
+	* parser.c (check_module_outermost, cp_parser_module_export,
+	cp_parser_module_proclamation, cp_parser_namespace_definition): Adjust.
+	* module.c (pop_module_namespace, push_module_namespace): Add
+	flag.
+	(reader::read_tree, writer::write_tree): Initial stubs.
+	(read_module, write_module, do_import_module, declare_module): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/mod-exp-1_a.C: New.
+	* g++.dg/modules/mod-exp-1_b.C: New.
+	* g++.dg/modules/mod-sym-1.C: Add cases.
+
 2017-02-14  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
