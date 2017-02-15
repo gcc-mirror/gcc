@@ -12063,14 +12063,6 @@ grokdeclarator (const cp_declarator *declarator,
 					    : input_location,
 					    VAR_DECL, unqualified_id, type);
 		set_linkage_for_static_data_member (decl);
-		if (thread_p)
-		  {
-		    CP_DECL_THREAD_LOCAL_P (decl) = true;
-		    if (!processing_template_decl)
-		      set_decl_tls_model (decl, decl_default_tls_model (decl));
-		    if (declspecs->gnu_thread_keyword_p)
-		      SET_DECL_GNU_TLS_P (decl);
-		  }
 		if (concept_p)
 		    error ("static data member %qE declared %<concept%>",
 			   unqualified_id);
@@ -12091,6 +12083,15 @@ grokdeclarator (const cp_declarator *declarator,
 		     definition is provided, unless this is an inline
 		     variable.  */
 		  DECL_EXTERNAL (decl) = 1;
+
+		if (thread_p)
+		  {
+		    CP_DECL_THREAD_LOCAL_P (decl) = true;
+		    if (!processing_template_decl)
+		      set_decl_tls_model (decl, decl_default_tls_model (decl));
+		    if (declspecs->gnu_thread_keyword_p)
+		      SET_DECL_GNU_TLS_P (decl);
+		  }
 	      }
 	    else
 	      {
