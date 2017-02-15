@@ -1,5 +1,7 @@
 2017-02-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/18_support/nested_exception/79114.cc: Add dg-require.
+
 	Backport from mainline
 	2016-12-15  Jonathan Wakely  <jwakely@redhat.com>
 
