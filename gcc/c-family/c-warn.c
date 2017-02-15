@@ -1864,6 +1864,9 @@ do_warn_double_promotion (tree result_type, tree type1, tree type2,
      warn about it.  */
   if (c_inhibit_evaluation_warnings)
     return;
+  /* If an invalid conversion has occured, don't warn.  */
+  if (result_type == error_mark_node)
+    return;
   if (TYPE_MAIN_VARIANT (result_type) != double_type_node
       && TYPE_MAIN_VARIANT (result_type) != complex_double_type_node)
     return;
