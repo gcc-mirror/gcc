@@ -1,3 +1,11 @@
+2017-02-14  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64-cores.def (thunderx2t99): Move to under 'C"
+	cores and change the partno/implementer to be correct.
+	(thunderx2t99p1): New core which replaces thunderx2t99 and still has
+	the 'B" as the implementer.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+
 2017-02-14  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000.c: Add case statement entry to make the
