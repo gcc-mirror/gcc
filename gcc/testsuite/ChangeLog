@@ -1,3 +1,7 @@
+2017-02-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/cpp0x/pr79296.C: Move dg-do compile directive first.
+
 2017-02-15  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc.dg/graphite/graphite.exp: Merge "fuse_files" into

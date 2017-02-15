@@ -1,6 +1,6 @@
+// { dg-do compile { target c++11 } }
 // { dg-require-effective-target lto }
 // { dg-additional-options "-flto" }
-// { dg-do compile { target c++11 } }
 
 // PR 79296 ICE mangling local class of localized instantiation
 
