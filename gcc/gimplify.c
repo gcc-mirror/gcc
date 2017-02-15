@@ -8136,8 +8136,9 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	  if ((ctx->region_type & ORT_TARGET) != 0
 	      && !(n->value & GOVD_SEEN)
 	      && GOMP_MAP_ALWAYS_P (OMP_CLAUSE_MAP_KIND (c)) == 0
-	      && !lookup_attribute ("omp declare target link",
-				    DECL_ATTRIBUTES (decl)))
+	      && (!is_global_var (decl)
+		  || !lookup_attribute ("omp declare target link",
+					DECL_ATTRIBUTES (decl))))
 	    {
 	      remove = true;
 	      /* For struct element mapping, if struct is never referenced
