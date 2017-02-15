@@ -597,6 +597,33 @@ get_nsdmi (tree member, bool in_ctor)
   return init;
 }
 
+/* Diagnose the flexible array MEMBER if its INITializer is non-null
+   and return true if so.  Otherwise return false.  */
+
+static bool
+maybe_reject_flexarray_init (tree member, tree init)
+{
+  tree type = TREE_TYPE (member);
+
+  if (!init
+      || TREE_CODE (type) != ARRAY_TYPE
+      || TYPE_DOMAIN (type))
+    return false;
+
+  /* Point at the flexible array member declaration if it's initialized
+     in-class, and at the ctor if it's initialized in a ctor member
+     initializer list.  */
+  location_t loc;
+  if (DECL_INITIAL (member) == init
+      || DECL_DEFAULTED_FN (current_function_decl))
+    loc = DECL_SOURCE_LOCATION (member);
+  else
+    loc = DECL_SOURCE_LOCATION (current_function_decl);
+
+  error_at (loc, "initializer for flexible array member %q#D", member);
+  return true;
+}
+
 /* Initialize MEMBER, a FIELD_DECL, with INIT, a TREE_LIST of
    arguments.  If TREE_LIST is void_type_node, an empty initializer
    list was given; if NULL_TREE no initializer was given.  */
@@ -722,10 +749,18 @@ perform_member_init (tree member, tree init)
 	{
 	  if (init)
 	    {
-	      if (TREE_CHAIN (init))
+	      /* Check to make sure the member initializer is valid and
+		 something like a CONSTRUCTOR in: T a[] = { 1, 2 } and
+		 if it isn't, return early to avoid triggering another
+		 error below.  */
+	      if (maybe_reject_flexarray_init (member, init))
+		return;
+
+	      if (TREE_CODE (init) != TREE_LIST || TREE_CHAIN (init))
 		init = error_mark_node;
 	      else
 		init = TREE_VALUE (init);
+
 	      if (BRACE_ENCLOSED_INITIALIZER_P (init))
 		init = digest_init (type, init, tf_warning_or_error);
 	    }
@@ -800,16 +835,9 @@ perform_member_init (tree member, tree init)
 	   in that case.  */
 	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
 						tf_warning_or_error);
-      if (TREE_CODE (type) == ARRAY_TYPE
-	  && TYPE_DOMAIN (type) == NULL_TREE
-	  && init != NULL_TREE)
-	{
-	  error_at (DECL_SOURCE_LOCATION (current_function_decl),
-		    "member initializer for flexible array member");
-	  inform (DECL_SOURCE_LOCATION (member), "%q#D initialized", member);
-	}
 
-      if (init)
+      /* Reject a member initializer for a flexible array member.  */
+      if (init && !maybe_reject_flexarray_init (member, init))
 	finish_expr_stmt (cp_build_modify_expr (input_location, decl,
 						INIT_EXPR, init,
 						tf_warning_or_error));
