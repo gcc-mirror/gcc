@@ -30,6 +30,7 @@
 #include <list>
 #include <map>
 #include <set>
+#include <vector>
 #include <ext/slist>
 
 int
@@ -53,6 +54,9 @@ main()
   std::deque<std::string>::iterator deqiter = deq.begin();
 // { dg-final { note-test deqiter {"one"} } }
 
+  std::deque<int>::iterator deqiter0;
+// { dg-final { note-test deqiter0 {non-dereferenceable iterator for std::deque} } }
+
   std::list<std::string> lst;
   lst.push_back("one");
   lst.push_back("two");
@@ -66,12 +70,18 @@ main()
   tem = *lstciter;
 // { dg-final { note-test lstciter {"one"}} }
 
+  std::list<int>::iterator lstiter0;
+// { dg-final { note-test lstiter0 {non-dereferenceable iterator for std::list} } }
+
   std::map<std::string, int> mp;
   mp["zardoz"] = 23;
 // { dg-final { note-test mp {std::map with 1 elements = {["zardoz"] = 23}} } }
 
   std::map<std::string, int>::iterator mpiter = mp.begin();
 // { dg-final { note-test mpiter {{first = "zardoz", second = 23}} } }
+
+  std::map<std::string, int>::iterator mpiter0;
+// { dg-final { note-test mpiter0 {non-dereferenceable iterator for associative container} } }
 
   // PR 67440
   const std::set<int> const_intset = {2, 3};
@@ -85,6 +95,20 @@ main()
   std::set<std::string>::const_iterator spciter = sp.begin();
 // { dg-final { note-test spciter {"barrel"} } }
 
+  std::set<int>::iterator spiter0;
+// { dg-final { note-test spiter0 {non-dereferenceable iterator for associative container} } }
+
+  std::vector<int> v;
+  v.push_back(1);
+  v.push_back(2);
+  v.erase(v.begin());
+// { dg-final { note-test v {std::vector of length 1, capacity 2 = {2}} } }
+  std::vector<int>::iterator viter3 = v.begin();
+// { dg-final { note-test viter3 {2} } }
+
+  std::vector<int>::iterator viter0;
+// { dg-final { note-test viter0 {non-dereferenceable iterator for std::vector} } }
+
   __gnu_cxx::slist<int> sll;
   sll.push_front(23);
   sll.push_front(47);
@@ -92,6 +116,9 @@ main()
 
   __gnu_cxx::slist<int>::iterator slliter = sll.begin();
 // { dg-final { note-test slliter {47} } }
+
+  __gnu_cxx::slist<int>::iterator slliter0;
+// { dg-final { note-test slliter0 {non-dereferenceable iterator for __gnu_cxx::slist} } }
 
   std::cout << "\n";
   return 0;			// Mark SPOT
