@@ -543,6 +543,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-passes @gol
 -fdump-rtl-@var{pass}  -fdump-rtl-@var{pass}=@var{filename} @gol
 -fdump-statistics @gol
+-fdump-final-insns@r{[}=@var{file}@r{]}
 -fdump-tree-all @gol
 -fdump-tree-@var{switch} @gol
 -fdump-tree-@var{switch}-@var{options} @gol
