@@ -1,6 +1,13 @@
 2017-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79338
+	* tree-parloops.c (gather_scalar_reductions): Don't call
+	vect_analyze_loop_form for loop->inner before destroying loop's
+	loop_vinfo.
+
 	2017-02-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79197
