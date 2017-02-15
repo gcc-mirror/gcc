@@ -37,7 +37,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.1-b20170101\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2017-01-01 00:52+0000\n"
-"PO-Revision-Date: 2017-01-29 16:44+0100\n"
+"PO-Revision-Date: 2017-02-15 20:28+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -15432,22 +15432,19 @@ msgid "AutoFDO profile version %u does match %u."
 msgstr "La versión %u de perfil AutoFDO no cuadra con %u."
 
 #: auto-profile.c:946
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot read LTO decls from %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot read string table from %s."
-msgstr "no se pueden leer las decls LTO de %s."
+msgstr "No se puede leer la tabla de cadenas de %s."
 
 #: auto-profile.c:954
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot read LTO decls from %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot read function profile from %s."
-msgstr "no se pueden leer las decls LTO de %s."
+msgstr "No se puede leer el perfil de función de %s."
 
 #: auto-profile.c:964
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot read LTO decls from %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot read working set from %s."
-msgstr "no se pueden leer las decls LTO de %s."
+msgstr "No se puede leer el conjunto de trabajo de %s."
 
 #: bt-load.c:1564
 #, gcc-internal-format
@@ -15455,10 +15452,9 @@ msgid "branch target register load optimization is not intended to be run twice"
 msgstr "la optimización de carga de registro objetivo no se pensó para ser ejecutada dos veces"
 
 #: builtins.c:642
-#, fuzzy, gcc-internal-format
-#| msgid "offset outside bounds of constant string"
+#, gcc-internal-format
 msgid "offset %qwi outside bounds of constant string"
-msgstr "el desplazamiento fuera de los límites de la constante de cadena"
+msgstr "el desplazamiento %qwi fuera de los límites de la constante de cadena"
 
 #: builtins.c:1240
 #, gcc-internal-format
@@ -15483,57 +15479,57 @@ msgstr "el tercer argumento para %<__builtin_prefetch%> es no válido; se usa ce
 #: builtins.c:3165
 #, gcc-internal-format
 msgid "%K%qD: specified size %wu exceeds maximum object size %wu"
-msgstr ""
+msgstr "%K%qD: el tamaño especificado %wu excede el tamaño máximo %wu del objeto"
 
 #: builtins.c:3172
 #, gcc-internal-format
 msgid "%K%qD: specified size between %wu and %wu exceeds maximum object size %wu"
-msgstr ""
+msgstr "%K%qD: el tamaño especificado entre %wu y %wu excede el tamaño de objeto máximo %wu"
 
 #: builtins.c:3197
 #, gcc-internal-format
 msgid "%K%qD: writing at least %wu byte into a region of size %wu overflows the destination"
-msgstr ""
+msgstr "%K%qD: escribir %wu o más byte en una región de tamaño %wu desborda el destino"
 
 #: builtins.c:3204
 #, gcc-internal-format
 msgid "%K%qD: writing %wu byte into a region of size %wu overflows the destination"
-msgstr ""
+msgstr "%K%qD: escribir %wu byte en una región de tamaño %wu desborda el destino"
 
 #: builtins.c:3206
 #, gcc-internal-format
 msgid "%K%qD writing %wu bytes into a region of size %wu overflows the destination"
-msgstr ""
+msgstr "%K%qD: escribir %wu bytes en una región de tamaño %wu desborda el destino"
 
 #: builtins.c:3212
 #, gcc-internal-format
 msgid "%K%qD: writing between %wu and %wu bytes into a region of size %wu overflows the destination"
-msgstr ""
+msgstr "%K%qD: escribir entre %wu y %wu bytes en una región de tamaño %wu desborda el destino"
 
 #: builtins.c:3241
 #, gcc-internal-format
 msgid "%K%qD: specified bound %wu exceeds maximum object size %wu"
-msgstr ""
+msgstr "%K%qD: el límite %wu especificado excede el tamaño de objeto máximo %wu"
 
 #: builtins.c:3248
 #, gcc-internal-format
 msgid "%K%qD: specified bound between %wu and %wu  exceeds maximum object size %wu"
-msgstr ""
+msgstr "%K%qD: el límite especificado entre %wu y %wu excede el tamaño de objeto máximo %wu"
 
 #: builtins.c:3262
 #, gcc-internal-format
 msgid "%K%qD: specified bound %wu exceeds the size %wu of the destination"
-msgstr ""
+msgstr "%K%qD: el límite %wu especificado excede el tamaño %wu del destino"
 
 #: builtins.c:3269
 #, gcc-internal-format
 msgid "%K%qD: specified bound between %wu and %wu  exceeds the size %wu of the destination"
-msgstr ""
+msgstr "%K%qD: el límite especificado entre %wu y %wu excede el tamaño %wu del destino"
 
 #: builtins.c:3767 builtins.c:3831
 #, gcc-internal-format
 msgid "specified bound %wu equals the size of the destination"
-msgstr ""
+msgstr "el límite %wu especificado es igual al tamaño del destino"
 
 #: builtins.c:4674 gimplify.c:3130
 #, gcc-internal-format
@@ -15541,23 +15537,21 @@ msgid "too few arguments to function %<va_start%>"
 msgstr "faltan argumentos para la función %<va_start%>"
 
 #: builtins.c:4774
-#, fuzzy, gcc-internal-format
-#| msgid "invalid use of %qD"
+#, gcc-internal-format
 msgid "invalid argument to %qD"
-msgstr "uso no válido de %qD"
+msgstr "argumento no válido para %qD"
 
 #: builtins.c:4787
-#, fuzzy, gcc-internal-format
-#| msgid "unsupported argument type to builtin function"
+#, gcc-internal-format
 msgid "unsupported argument to %qD"
-msgstr "no se admite el tipo de argumento para la función interna"
+msgstr "no se admite el argumento para %qD"
 
 #. Warn since no effort is made to ensure that any frame
 #. beyond the current one exists or can be safely reached.
 #: builtins.c:4795
 #, gcc-internal-format
 msgid "calling %qD with a nonzero argument is unsafe"
-msgstr ""
+msgstr "llamar a %qD con un argumento distinto de cero es arriesgado"
 
 #: builtins.c:5062
 #, gcc-internal-format
@@ -15615,16 +15609,14 @@ msgid "non-integer argument 1 to __atomic_is_lock_free"
 msgstr "el argumento 1 para __atomic_is_lock_free no es un entero"
 
 #: builtins.c:6325
-#, fuzzy, gcc-internal-format
-#| msgid "__builtin_eh_return not supported on this target"
+#, gcc-internal-format
 msgid "__builtin_thread_pointer is not supported on this target"
-msgstr "no se admite __builtin_eh_return en este objetivo"
+msgstr "no se admite __builtin_thread_pointer en este objetivo"
 
 #: builtins.c:6345
-#, fuzzy, gcc-internal-format
-#| msgid "__builtin_eh_return not supported on this target"
+#, gcc-internal-format
 msgid "__builtin_set_thread_pointer is not supported on this target"
-msgstr "no se admite __builtin_eh_return en este objetivo"
+msgstr "no se admite __builtin_set_thread_pointer en este objetivo"
 
 #. All valid uses of __builtin_va_arg_pack () are removed during
 #. inlining.
@@ -15648,10 +15640,9 @@ msgstr "el segundo argumento de %<__builtin_longjump%> debe ser 1"
 #. Software implementation of Pointer Bounds Checker is NYI.
 #. Target support is required.
 #: builtins.c:7490
-#, fuzzy, gcc-internal-format
-#| msgid "target format does not support infinity"
+#, gcc-internal-format
 msgid "Your target platform does not support -fcheck-pointer-bounds"
-msgstr "el formato objetivo no soporta infinito"
+msgstr "Su plataforma objetivo no soporta -fcheck-pointer-bounds"
 
 #: builtins.c:7809
 #, gcc-internal-format
@@ -15684,8 +15675,7 @@ msgid "second parameter of %<va_start%> not last named argument"
 msgstr "el segundo parámetro de %<va_start%> no es el último argumento nombrado"
 
 #: builtins.c:9500
-#, fuzzy, gcc-internal-format
-#| msgid "undefined behaviour when second parameter of %<va_start%> is declared with %<register%> storage"
+#, gcc-internal-format
 msgid "undefined behavior when second parameter of %<va_start%> is declared with %<register%> storage"
 msgstr "la conducta es indefinida cuando el segundo parámetro de %<va_start%> se declara con almacenamiento %<register%>"
 
@@ -15710,71 +15700,64 @@ msgid "%Kattempt to free a non-heap object"
 msgstr "%Kse intenta liberar un objeto que no es de pila"
 
 #: calls.c:1319
-#, fuzzy, gcc-internal-format
-#| msgid "Argument of %s function at %L is negative"
+#, gcc-internal-format
 msgid "argument %i value %qE is negative"
-msgstr "El argumento de la función %s en %L es negativo"
+msgstr "argumento %i, valor %qE, negativo"
 
 #: calls.c:1337
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Second argument MOD at %L is zero"
+#, gcc-internal-format, gfc-internal-format
 msgid "argument %i value is zero"
-msgstr "El segundo argumento MOD en %L es cero"
+msgstr "el valor del argumento %i es cero"
 
 #: calls.c:1354
 #, gcc-internal-format
 msgid "argument %i value %qE exceeds maximum object size %E"
-msgstr ""
+msgstr "argumento %i, valor %qE, supera el tamaño máximo %E del objeto"
 
 #: calls.c:1399 calls.c:1424
 #, gcc-internal-format
 msgid "argument %i range [%E, %E] exceeds maximum object size %E"
-msgstr ""
+msgstr "argumento %i, rango [%E, %E], supera el tamaño máximo %E del objeto"
 
 #: calls.c:1401
 #, gcc-internal-format
 msgid "argument %i range [%E, %E] is both negative and exceeds maximum object size %E"
-msgstr ""
+msgstr "argumento %i, rango [%E, %E], es negativo y además supera el tamaño máximo %E del objeto"
 
 #: calls.c:1418
-#, fuzzy, gcc-internal-format
-#| msgid "Argument of %s function at %L is negative"
+#, gcc-internal-format
 msgid "argument %i range [%E, %E] is negative"
-msgstr "El argumento de la función %s en %L es negativo"
+msgstr "el argumento %i, rango [%E, %E], es negativo"
 
 #: calls.c:1453
 #, gcc-internal-format
 msgid "product %<%E * %E%> of arguments %i and %i exceeds %<SIZE_MAX%>"
-msgstr ""
+msgstr "el producto %<%E * %E%> de los argumentos %i y %i supera %<SIZE_MAX%>"
 
 #: calls.c:1459
 #, gcc-internal-format
 msgid "product %<%E * %E%> of arguments %i and %i exceeds maximum object size %E"
-msgstr ""
+msgstr "el producto %<%E * %E%> de los argumentos %i y %i supera el tamaño máximo %E del objeto"
 
 #: calls.c:1470 calls.c:1473
-#, fuzzy, gcc-internal-format
-#| msgid "argument %d of %qE must be in the range %d...%d"
+#, gcc-internal-format
 msgid "argument %i in the range [%E, %E]"
-msgstr "el argumento %d de %qE debe estar dentro del rango %d...%d"
+msgstr "el argumento %i está dentro del rango [%E, %E]"
 
 #: calls.c:1484
-#, fuzzy, gcc-internal-format
-#| msgid "call to non-function %qD"
+#, gcc-internal-format
 msgid "in a call to built-in allocation function %qD"
-msgstr "llamada a %qD que no es función"
+msgstr "en una llamada a la función de reserva interna %qD"
 
 #: calls.c:1487
-#, fuzzy, gcc-internal-format
-#| msgid "inline function %q+D declared weak"
+#, gcc-internal-format
 msgid "in a call to allocation function %qD declared here"
-msgstr "la función inline %q+D se declaró weak"
+msgstr "en una llamada a la función de reserva %qD declarada aquí"
 
 #: calls.c:1501
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "[cannot find %s]"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot tail-call: %s"
-msgstr "[no se puede encontrar %s]"
+msgstr "llamada al extremo imposible: %s"
 
 #: calls.c:3064
 #, gcc-internal-format
@@ -15782,10 +15765,9 @@ msgid "function call has aggregate value"
 msgstr "la llamada a la función tiene valor agregado"
 
 #: calls.c:3742
-#, fuzzy, gcc-internal-format
-#| msgid "passing %qT for argument %P to %qD"
+#, gcc-internal-format
 msgid "passing too large argument on stack"
-msgstr "pasando %qT para el argumento %P de %qD"
+msgstr "pasando argumento demasiado grande a la pila"
 
 #: cfgexpand.c:1645 function.c:993 varasm.c:2179
 #, gcc-internal-format
@@ -15793,10 +15775,9 @@ msgid "size of variable %q+D is too large"
 msgstr "el tamaño de la variable %q+D es demasiado grande"
 
 #: cfgexpand.c:1657
-#, fuzzy, gcc-internal-format
-#| msgid "Global register variable %qD used in nested function."
+#, gcc-internal-format
 msgid "cannot allocate stack for variable %q+D, naked function."
-msgstr "Se usó la variable de registro global %qD en una función anidada."
+msgstr "no se puede reservar espacio en la pila para la variable %q+D, función desnuda."
 
 #: cfgexpand.c:2734
 #, gcc-internal-format
@@ -15936,10 +15917,9 @@ msgid "verify_flow_info failed"
 msgstr "falló verify_flow_info"
 
 #: cfghooks.c:310
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support duplicate_block"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not support dump_bb_for_graph"
-msgstr "%s no admite duplicate_block"
+msgstr "%s no admite dump_bb_for_graph"
 
 #: cfghooks.c:353
 #, gcc-internal-format, gfc-internal-format
@@ -16044,28 +16024,27 @@ msgstr ""
 #: cfgloop.c:1342
 #, gcc-internal-format
 msgid "corrupt loop tree root"
-msgstr ""
+msgstr "raíz de árbol de bucle corrupta"
 
 #: cfgloop.c:1352
 #, gcc-internal-format, gfc-internal-format
 msgid "loop with header %d marked for removal"
-msgstr ""
+msgstr "bucle con encabecado %d marcado para borrar"
 
 #: cfgloop.c:1357
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Enable loop header copying on trees"
+#, gcc-internal-format, gfc-internal-format
 msgid "loop with header %d not in loop tree"
-msgstr "Activa la copia de encabezado de bucles en árboles"
+msgstr "el bucle con encabezado %d no está en el árbol del bucle"
 
 #: cfgloop.c:1363
 #, gcc-internal-format, gfc-internal-format
 msgid "non-loop with header %d not marked for removal"
-msgstr ""
+msgstr "el no-bucle con encabezado %d no está marcado para borrarse"
 
 #: cfgloop.c:1377
 #, gcc-internal-format, gfc-internal-format
 msgid "removed loop %d in loop tree"
-msgstr ""
+msgstr "se ha borrado el bucle %d en el árbol del bucle"
 
 #: cfgloop.c:1385
 #, gcc-internal-format, gfc-internal-format
@@ -16073,22 +16052,19 @@ msgid "size of loop %d should be %d, not %d"
 msgstr "el tamaño del bucle %d debe ser %d, no %d"
 
 #: cfgloop.c:1396
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "bb %d do not belong to loop %d"
+#, gcc-internal-format, gfc-internal-format
 msgid "bb %d does not belong to loop %d"
 msgstr "el bb %d no pertenece al bucle %d"
 
 #: cfgloop.c:1408
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "size of loop %d should be %d, not %d"
+#, gcc-internal-format, gfc-internal-format
 msgid "bb %d has father loop %d, should be loop %d"
-msgstr "el tamaño del bucle %d debe ser %d, no %d"
+msgstr "bb %d tiene el bucle padre %d; debería ser el bucle %d"
 
 #: cfgloop.c:1424
-#, fuzzy, gcc-internal-format
-#| msgid "loop %d%'s header does not have exactly 2 entries"
+#, gcc-internal-format
 msgid "loop %d%'s header is not a loop header"
-msgstr "el encabezado del bucle %d no tiene exactamente 2 entradas"
+msgstr "el encabezado del bucle %d no es un encabezado de bucle"
 
 #: cfgloop.c:1430
 #, gcc-internal-format
@@ -16096,16 +16072,14 @@ msgid "loop %d%'s header does not have exactly 2 entries"
 msgstr "el encabezado del bucle %d no tiene exactamente 2 entradas"
 
 #: cfgloop.c:1437
-#, fuzzy, gcc-internal-format
-#| msgid "loop %d%'s latch does not have header as successor"
+#, gcc-internal-format
 msgid "loop %d%'s latch does not have an edge to its header"
-msgstr "el cerrojo del bucle %d no tiene un encabezado como sucesor"
+msgstr "el cerrojo del bucle %d no tiene un borde a su encabezado"
 
 #: cfgloop.c:1442
-#, fuzzy, gcc-internal-format
-#| msgid "loop %d%'s latch does not have header as successor"
+#, gcc-internal-format
 msgid "loop %d%'s latch is not dominated by its header"
-msgstr "el cerrojo del bucle %d no tiene un encabezado como sucesor"
+msgstr "el cerrojo del bucle %d no está dominado por su encabezado"
 
 #: cfgloop.c:1450
 #, gcc-internal-format
@@ -16203,10 +16177,9 @@ msgid "partition found but function partition flag not set"
 msgstr ""
 
 #: cfgrtl.c:2451
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "verify_flow_info: REG_BR_PROB does not match cfg %wi %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: REG_BR_PROB does not match cfg %i %i"
-msgstr "verify_flow_info: REG_BR_PROB no coincide con la configuración %wi %i"
+msgstr "verify_flow_info: REG_BR_PROB no coincide con la configuración %i %i"
 
 #: cfgrtl.c:2472
 #, gcc-internal-format
@@ -16214,22 +16187,19 @@ msgid "EDGE_CROSSING incorrectly set across same section"
 msgstr "se establece EDGE_CROSSING incorrectamente a través de la misma sección"
 
 #: cfgrtl.c:2477
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "fallthru edge crosses section boundary (bb %i)"
+#, gcc-internal-format, gfc-internal-format
 msgid "fallthru edge crosses section boundary in bb %i"
-msgstr "el borde de caída cruza el límite de la sección (bb %i)"
+msgstr "el borde de caída cruza el límite de la sección en bb %i"
 
 #: cfgrtl.c:2483
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "EH edge crosses section boundary (bb %i)"
+#, gcc-internal-format, gfc-internal-format
 msgid "EH edge crosses section boundary in bb %i"
-msgstr "el borde EH cruza el límite de la sección (bb %i)"
+msgstr "el borde EH cruza el límite de la sección en bb %i)"
 
 #: cfgrtl.c:2489
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "EH edge crosses section boundary (bb %i)"
+#, gcc-internal-format, gfc-internal-format
 msgid "No region crossing jump at section boundary in bb %i"
-msgstr "el borde EH cruza el límite de la sección (bb %i)"
+msgstr "No hay ninguna región que cruce el salto en el límite de la sección en bb %i"
 
 #: cfgrtl.c:2496
 #, gcc-internal-format
@@ -16239,19 +16209,17 @@ msgstr "falta EDGE_CROSSING a través del límite de la sección"
 #: cfgrtl.c:2526
 #, gcc-internal-format, gfc-internal-format
 msgid "Region crossing jump across same section in bb %i"
-msgstr ""
+msgstr "La región cruza el salto a través de la misma sección en bb %i"
 
 #: cfgrtl.c:2533
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "missing REG_EH_REGION note in the end of bb %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "missing REG_EH_REGION note at the end of bb %i"
 msgstr "falta la nota REG_EH_REGION al final de bb %i"
 
 #: cfgrtl.c:2538
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "too many outgoing branch edges from bb %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "too many exception handling edges in bb %i"
-msgstr "demasiados bordes de ramificación de salida de bb %i"
+msgstr "demasiados bordes de de manejo de excepciones en bb %i"
 
 #: cfgrtl.c:2546
 #, gcc-internal-format, gfc-internal-format
@@ -16259,34 +16227,29 @@ msgid "too many outgoing branch edges from bb %i"
 msgstr "demasiados bordes de ramificación de salida de bb %i"
 
 #: cfgrtl.c:2551
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "fallthru edge after unconditional jump %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "fallthru edge after unconditional jump in bb %i"
-msgstr "borde de caída después del salto incondicional %i"
+msgstr "borde de caída después del salto incondicional en bb %i"
 
 #: cfgrtl.c:2556
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "wrong number of branch edges after unconditional jump %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "wrong number of branch edges after unconditional jump in bb %i"
-msgstr "número errónel de bordes de ramificación después del salto incondicional %i"
+msgstr "número errónel de bordes de ramificación después del salto incondicional en bb %i"
 
 #: cfgrtl.c:2563
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "wrong amount of branch edges after conditional jump %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "wrong amount of branch edges after conditional jump in bb %i"
-msgstr "cantidad errónea de bordes de ramificación después del salto condicional %i"
+msgstr "cantidad errónea de bordes de ramificación después del salto condicional en bb %i"
 
 #: cfgrtl.c:2569
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "call edges for non-call insn in bb %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "abnormal call edges for non-call insn in bb %i"
-msgstr "bordes de llamada para una insn que no es llamada en bb %i"
+msgstr "bordes de llamada anómalos para una insn que no es llamada en bb %i"
 
 #: cfgrtl.c:2574
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "call edges for non-call insn in bb %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "sibcall edges for non-call insn in bb %i"
-msgstr "bordes de llamada para una insn que no es llamada en bb %i"
+msgstr "bordes sibcall para una insn que no es llamada en bb %i"
 
 #: cfgrtl.c:2584
 #, gcc-internal-format, gfc-internal-format
@@ -16399,16 +16362,14 @@ msgid "execution count is negative"
 msgstr "la cuenta de ejecución es negativa"
 
 #: cgraph.c:3068
-#, fuzzy, gcc-internal-format
-#| msgid "node is alone in a comdat group"
+#, gcc-internal-format
 msgid "inline clone in same comdat group list"
-msgstr "el nodo está solo en un grupo comdat"
+msgstr "clon en línea en el mismo grupo comdat"
 
 #: cgraph.c:3073
-#, fuzzy, gcc-internal-format
-#| msgid "Assume symbols might be invalid"
+#, gcc-internal-format
 msgid "local symbols must be defined"
-msgstr "Asume que los símbolos pueden ser no válidos"
+msgstr "los símbolos locales deben definirse"
 
 #: cgraph.c:3078
 #, gcc-internal-format
@@ -16421,10 +16382,9 @@ msgid "inline clone with address taken"
 msgstr "clon incluido en línea con dirección tomada"
 
 #: cgraph.c:3088
-#, fuzzy, gcc-internal-format
-#| msgid "inline clone is needed"
+#, gcc-internal-format
 msgid "inline clone is forced to output"
-msgstr "se necesita un clon incluido en línea"
+msgstr "se fuerza en la salida un clon incluido en línea"
 
 #: cgraph.c:3095
 #, gcc-internal-format, gfc-internal-format
@@ -16439,7 +16399,7 @@ msgstr "Un borde indirecto de %s no está marcado como indirecto o tiene indirec
 #: cgraph.c:3117
 #, gcc-internal-format, gfc-internal-format
 msgid "comdat-local function called by %s outside its comdat"
-msgstr ""
+msgstr "función comdat-local llamada por %s fuera de su comdat"
 
 #: cgraph.c:3127
 #, gcc-internal-format
@@ -16462,10 +16422,9 @@ msgid "caller edge frequency %i does not match BB frequency %i"
 msgstr "la frecuencia de borde llamador %i no coincide con la frecuencia BB %i"
 
 #: cgraph.c:3177
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "caller edge frequency %i does not match BB frequency %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "indirect call frequency %i does not match BB frequency %i"
-msgstr "la frecuencia de borde llamador %i no coincide con la frecuencia BB %i"
+msgstr "la frecuencia de llamadas indirectas %i no coincide con la frecuencia BB %i"
 
 #: cgraph.c:3186
 #, gcc-internal-format
@@ -16478,28 +16437,24 @@ msgid "inlined_to pointer refers to itself"
 msgstr "el puntero inlined_to se refiere a sí mismo"
 
 #: cgraph.c:3203
-#, fuzzy, gcc-internal-format
-#| msgid "node has wrong clone_of"
+#, gcc-internal-format
 msgid "cgraph_node has wrong clone_of"
-msgstr "el nodo tiene un clone_of erróneo"
+msgstr "el cgraph_node tiene un clone_of erróneo"
 
 #: cgraph.c:3215
-#, fuzzy, gcc-internal-format
-#| msgid "node has wrong clone list"
+#, gcc-internal-format
 msgid "cgraph_node has wrong clone list"
-msgstr "el nodo tiene una lista de clones errónea"
+msgstr "el cgraph_node tiene una lista de clones errónea"
 
 #: cgraph.c:3221
-#, fuzzy, gcc-internal-format
-#| msgid "node is in clone list but it is not clone"
+#, gcc-internal-format
 msgid "cgraph_node is in clone list but it is not clone"
-msgstr "el nodo está en la lista de clones pero no es clon"
+msgstr "el cgraph_node está en la lista de clones pero no es clon"
 
 #: cgraph.c:3226
-#, fuzzy, gcc-internal-format
-#| msgid "node has wrong prev_clone pointer"
+#, gcc-internal-format
 msgid "cgraph_node has wrong prev_clone pointer"
-msgstr "el nodo tiene un puntero prev_clone erróneo"
+msgstr "el cgraph_node tiene un puntero prev_clone erróneo"
 
 #: cgraph.c:3231
 #, gcc-internal-format
@@ -16529,7 +16484,7 @@ msgstr "El alias analizado no tiene referencia"
 #: cgraph.c:3272
 #, gcc-internal-format
 msgid "Instrumentation clone does not reference original node"
-msgstr ""
+msgstr "El clon de instrumentación no hace referencia al nodo original"
 
 #: cgraph.c:3279
 #, fuzzy, gcc-internal-format
@@ -54719,10 +54674,9 @@ msgid "associate_integer_pointer(): Already associated"
 msgstr ""
 
 #: fortran/module.c:539
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Fortran 2003: module nature in USE statement at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "module nature in USE statement at %C"
-msgstr "Fortran 2003: módulo natural en la declaración USE en %C"
+msgstr "módulo natural en la declaración USE en %C"
 
 #: fortran/module.c:551
 #, gcc-internal-format, gfc-internal-format
@@ -54735,10 +54689,9 @@ msgid "\"::\" was expected after module nature at %C but was not found"
 msgstr "Se esperaba \"::\" después del módulo natural en %C pero no se encontró"
 
 #: fortran/module.c:574
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Fortran 2003: \"USE :: module\" at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "\"USE :: module\" at %C"
-msgstr "Fortran 2003: \"USE :: module\" en %C"
+msgstr "\"USE :: module\" en %C"
 
 #: fortran/module.c:633
 #, gcc-internal-format, gfc-internal-format
@@ -54746,51 +54699,44 @@ msgid "Missing generic specification in USE statement at %C"
 msgstr "Falta la especificación genérica en la declaración USE en %C"
 
 #: fortran/module.c:641
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Fortran 2003: Renaming operators in USE statements at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Renaming operators in USE statements at %C"
-msgstr "Fortran 2003: Se renombran operadores en declaraciones USE en %C"
+msgstr "Se renombran operadores en declaraciones USE en %C"
 
 #: fortran/module.c:682
-#, fuzzy, gcc-internal-format
-#| msgid "The name '%s' at %C has already been used as an external module name."
+#, gcc-internal-format
 msgid "The name %qs at %C has already been used as an external module name."
-msgstr "El nombre '%s' en %C ya se está usando como un nombre de módulo externo."
+msgstr "El nombre %qs en %C ya se está usando como un nombre de módulo externo."
 
 #: fortran/module.c:745
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Junk after PROCEDURE declaration at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "SUBMODULE declaration at %C"
-msgstr "Basura después de la declaración PROCEDURE en %C"
+msgstr "declaración SUBMODULE en %C"
 
 #: fortran/module.c:818
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Syntax error in SAVE statement at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Syntax error in SUBMODULE statement at %C"
-msgstr "Error sintáctico en la declaración SAVE en %C"
+msgstr "Error sintáctico en la sentencia SUBMODULE en %C"
 
 #: fortran/module.c:1163
-#, fuzzy, gcc-internal-format
-#| msgid "Reading module %s at line %d column %d: %s"
+#, gcc-internal-format
 msgid "Reading module %qs at line %d column %d: %s"
-msgstr "Leyendo el módulo %s en la línea %d columna %d: %s"
+msgstr "Leyendo el módulo %qs en la línea %d columna %d: %s"
 
 #: fortran/module.c:1167
-#, fuzzy, gcc-internal-format
-#| msgid "Writing module %s at line %d column %d: %s"
+#, gcc-internal-format
 msgid "Writing module %qs at line %d column %d: %s"
-msgstr "Escribiendo el módulo %s en la línea %d columna %d: %s"
+msgstr "Escribiendo el módulo %qs en la línea %d columna %d: %s"
 
 #: fortran/module.c:1171
-#, fuzzy, gcc-internal-format
-#| msgid "Module %s at line %d column %d: %s"
+#, gcc-internal-format
 msgid "Module %qs at line %d column %d: %s"
-msgstr "Módulo %s en la línea %d columna %d: %s"
+msgstr "Módulo %qs en la línea %d columna %d: %s"
 
 #: fortran/module.c:1566
 #, gcc-internal-format
 msgid "require_atom(): bad atom type required"
-msgstr ""
+msgstr "require_atom(): tipo de átomo requerido incorrecto"
 
 #: fortran/module.c:1615
 #, gcc-internal-format, gfc-internal-format
@@ -54800,22 +54746,22 @@ msgstr "Error al escribir el fichero de módulos: %s"
 #: fortran/module.c:1659
 #, gcc-internal-format
 msgid "write_atom(): Writing negative integer"
-msgstr ""
+msgstr "write_atom(): Escribiendo entero negativo"
 
 #: fortran/module.c:1666
 #, gcc-internal-format
 msgid "write_atom(): Trying to write dab atom"
-msgstr ""
+msgstr "write_atom(): Intentando escribir átomo incorrecto"
 
 #: fortran/module.c:1872
 #, gcc-internal-format
 msgid "unquote_string(): got bad string"
-msgstr ""
+msgstr "unquote_string(): cadena incorrecta"
 
 #: fortran/module.c:2673
 #, gcc-internal-format
 msgid "mio_array_ref(): Unknown array ref"
-msgstr ""
+msgstr "mio_array_ref(): Referencia de array desconocido"
 
 #: fortran/module.c:3649
 #, gcc-internal-format, gfc-internal-format
@@ -54825,112 +54771,98 @@ msgstr "La lista de nombres %s no se puede renombrar por asociación de USE a %s
 #: fortran/module.c:4770
 #, gcc-internal-format, gfc-internal-format
 msgid "Ambiguous !$OMP DECLARE REDUCTION from module %s at %L"
-msgstr ""
+msgstr "!$OMP DECLARE REDUCTION ambiguo en el módulo %s en %L"
 
 #: fortran/module.c:4773
 #, gcc-internal-format, gfc-internal-format
 msgid "Previous !$OMP DECLARE REDUCTION from module %s at %L"
-msgstr ""
+msgstr "!$OMP DECLARE REDUCTION anterior en el módulo %s en %L"
 
 #: fortran/module.c:4967
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' of module '%s', imported at %C, is also the name of the current program unit"
+#, gcc-internal-format
 msgid "%qs of module %qs, imported at %C, is also the name of the current program unit"
-msgstr "'%s' del módulo '%s', importado en %C, es también el nombre de la unidad de programa actual"
+msgstr "%qs del módulo %qs, importado en %C, es también el nombre de la unidad de programa actual"
 
 #: fortran/module.c:5328
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' referenced at %L not found in module '%s'"
+#, gcc-internal-format
 msgid "Symbol %qs referenced at %L not found in module %qs"
-msgstr "El símbolo '%s' referenciado en %L no se encontró en el módulo '%s'"
+msgstr "El símbolo %qs referenciado en %L no se encontró en el módulo %qs"
 
 #: fortran/module.c:5335
-#, fuzzy, gcc-internal-format
-#| msgid "User operator '%s' referenced at %L not found in module '%s'"
+#, gcc-internal-format
 msgid "User operator %qs referenced at %L not found in module %qs"
-msgstr "El operador de usuario '%s' referenciado en %L no se encontró en el módulo '%s'"
+msgstr "El operador de usuario %qs referenciado en %L no se encontró en el módulo %qs"
 
 #: fortran/module.c:5340
-#, fuzzy, gcc-internal-format
-#| msgid "Intrinsic operator '%s' referenced at %L not found in module '%s'"
+#, gcc-internal-format
 msgid "Intrinsic operator %qs referenced at %L not found in module %qs"
-msgstr "El operador intrínseco '%s' referenciado en %L no se encontró en el módulo '%s'"
+msgstr "El operador intrínseco %qs referenciado en %L no se encontró en el módulo %qs"
 
 #: fortran/module.c:5575
 #, gcc-internal-format
 msgid "write_symbol(): bad module symbol %qs"
-msgstr ""
+msgstr "write_symbol(): símbolo de módulo %qs incorrecto"
 
 #: fortran/module.c:5908
 #, gcc-internal-format
 msgid "write_symtree(): Symbol not written"
-msgstr ""
+msgstr "write_symtree(): Símbolo no escrito"
 
 #: fortran/module.c:6095
-#, fuzzy, gcc-internal-format
-#| msgid "Can't open module file '%s' for writing at %C: %s"
+#, gcc-internal-format
 msgid "Can't open module file %qs for writing at %C: %s"
-msgstr "No se puede abrir el fichero de módulo '%s' para escritura en %C: %s"
+msgstr "No se puede abrir el fichero de módulo %qs para escritura en %C: %s"
 
 # El mensaje de error seguramente está mal redactado. cfuga
 #: fortran/module.c:6114
-#, fuzzy, gcc-internal-format
-#| msgid "Error writing module file '%s' for writing: %s"
+#, gcc-internal-format
 msgid "Error writing module file %qs for writing: %s"
-msgstr "Error al escribir al fichero de módulo '%s' para escritura: %s"
+msgstr "Error al escribir al fichero de módulo %qs para escritura: %s"
 
 #: fortran/module.c:6125
-#, fuzzy, gcc-internal-format
-#| msgid "Can't delete module file '%s': %s"
+#, gcc-internal-format
 msgid "Can't delete module file %qs: %s"
-msgstr "No se puede borrar el fichero de módulo '%s': %s"
+msgstr "No se puede borrar el fichero de módulo %qs: %s"
 
 #: fortran/module.c:6128
-#, fuzzy, gcc-internal-format
-#| msgid "Can't rename module file '%s' to '%s': %s"
+#, gcc-internal-format
 msgid "Can't rename module file %qs to %qs: %s"
-msgstr "No se puede renombrar el fichero de módulo '%s' a '%s': %s"
+msgstr "No se puede renombrar el fichero de módulo %qs a %qs: %s"
 
 #: fortran/module.c:6134
-#, fuzzy, gcc-internal-format
-#| msgid "Can't delete temporary module file '%s': %s"
+#, gcc-internal-format
 msgid "Can't delete temporary module file %qs: %s"
-msgstr "No se puede borrar el fichero de módulo temporal '%s': %s"
+msgstr "No se puede borrar el fichero de módulo temporal %qs: %s"
 
 #: fortran/module.c:6177
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' already declared"
+#, gcc-internal-format
 msgid "Symbol %qs at %C already declared"
-msgstr "El símbolo '%s' ya se había declarado"
+msgstr "El símbolo %qs en %C ya se había declarado"
 
 #: fortran/module.c:6248
 #, gcc-internal-format, gfc-internal-format
 msgid "import_iso_c_binding_module(): Unable to create symbol for %s"
-msgstr ""
+msgstr "import_iso_c_binding_module(): Imposible crear símbolo para %s"
 
 #: fortran/module.c:6356 fortran/module.c:6700
-#, fuzzy, gcc-internal-format
-#| msgid "The symbol '%s', referenced at %L, is not in the selected standard"
+#, gcc-internal-format
 msgid "The symbol %qs, referenced at %L, is not in the selected standard"
-msgstr "El símbolo '%s' referenciado en %L, no está en el módulo estándar"
+msgstr "El símbolo %qs referenciado en %L, no está en el estándar seleccionado"
 
 #: fortran/module.c:6484
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' referenced at %L not found in intrinsic module ISO_C_BINDING"
+#, gcc-internal-format
 msgid "Symbol %qs referenced at %L not found in intrinsic module ISO_C_BINDING"
-msgstr "El símbolo '%s' referenciado en %L no se encontró en el módulo intrínseco ISO_C_BINDING"
+msgstr "El símbolo %qs referenciado en %L no se encontró en el módulo intrínseco ISO_C_BINDING"
 
 #: fortran/module.c:6505 fortran/module.c:6538 fortran/module.c:6580
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' already declared"
+#, gcc-internal-format
 msgid "Symbol %qs already declared"
-msgstr "El símbolo '%s' ya se había declarado"
+msgstr "El símbolo %qs ya se había declarado"
 
 #: fortran/module.c:6685
-#, fuzzy, gcc-internal-format
-#| msgid "Use of intrinsic module '%s' at %C conflicts with non-intrinsic module name used previously"
+#, gcc-internal-format
 msgid "Use of intrinsic module %qs at %C conflicts with non-intrinsic module name used previously"
-msgstr "El uso del módulo intrínseco '%s' en %C tiene conflictos con un nombre de módulo no intrínseco usado previamente"
+msgstr "El uso del módulo intrínseco %qs en %C tiene conflictos con un nombre de módulo no intrínseco usado previamente"
 
 #: fortran/module.c:6707
 #, fuzzy, gcc-internal-format
