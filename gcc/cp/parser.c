@@ -24749,22 +24749,10 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
       /* C++14 deprecated attribute is equivalent to GNU's.  */
       else if (is_attribute_p ("deprecated", attr_id))
-	{
-	  if (cxx_dialect == cxx11)
-	    pedwarn (token->location, OPT_Wpedantic,
-		     "%<deprecated%> is a C++14 feature;"
-		     " use %<gnu::deprecated%>");
-	  TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
-	}
+	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
       /* C++17 fallthrough attribute is equivalent to GNU's.  */
       else if (is_attribute_p ("fallthrough", attr_id))
-	{
-	  if (cxx_dialect < cxx1z)
-	    pedwarn (token->location, OPT_Wpedantic,
-		     "%<fallthrough%> is a C++17 feature;"
-		     " use %<gnu::fallthrough%>");
-	  TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
-	}
+	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
       /* Transactional Memory TS optimize_for_synchronized attribute is
 	 equivalent to GNU transaction_callable.  */
       else if (is_attribute_p ("optimize_for_synchronized", attr_id))
