@@ -1,3 +1,10 @@
+2017-02-15  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/79513
+	* include/std/variant (visit()): Forward variant types to the return
+	type detection code.
+	* testsuite/20_util/variant/compile.cc: Add test cases.
+
 2017-02-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libstdc++/79348
