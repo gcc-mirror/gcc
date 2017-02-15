@@ -599,7 +599,18 @@ is_reassociable_op (gimple *stmt, enum tree_code code, struct loop *loop)
   if (is_gimple_assign (stmt)
       && gimple_assign_rhs_code (stmt) == code
       && has_single_use (gimple_assign_lhs (stmt)))
-    return true;
+    {
+      tree rhs1 = gimple_assign_rhs1 (stmt);
+      tree rhs2 = gimple_assign_rhs1 (stmt);
+      if (TREE_CODE (rhs1) == SSA_NAME
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1))
+	return false;
+      if (rhs2
+	  && TREE_CODE (rhs2) == SSA_NAME
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs2))
+	return false;
+      return true;
+    }
 
   return false;
 }
@@ -4466,6 +4477,8 @@ static bool
 can_reassociate_p (tree op)
 {
   tree type = TREE_TYPE (op);
+  if (TREE_CODE (op) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op))
+    return false;
   if ((ANY_INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_WRAPS (type))
       || NON_SAT_FIXED_POINT_TYPE_P (type)
       || (flag_associative_math && FLOAT_TYPE_P (type)))
