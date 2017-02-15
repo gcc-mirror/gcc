@@ -1,5 +1,13 @@
 2017-02-15  Tim Shen  <timshen@google.com>
 
+	PR libstdc++/78723
+	* include/std/variant (operator<(), operator>(), operator<=(),
+	operator>=(), operator==(), operator!=()): Implement P0393R3.
+	* testsuite/20_util/variant/compile.cc: Adjust tests.
+	* testsuite/20_util/variant/run.cc: Adjust tests.
+
+2017-02-15  Tim Shen  <timshen@google.com>
+
 	PR libstdc++/79513
 	* include/std/variant (visit()): Forward variant types to the return
 	type detection code.
