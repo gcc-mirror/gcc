@@ -1,3 +1,15 @@
+2017-02-15  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79464 - ICE in IPA with omitted constructor parms
+	* class.c (build_clone): Also omit parms from TYPE_ARG_TYPES.
+	(adjust_clone_args): Adjust.
+	(add_method): Remember omitted parms.
+	* call.c (add_function_candidate): Likewise.
+	* mangle.c (write_method_parms): Likewise.
+	* method.c (ctor_omit_inherited_parms): Return false if there are no
+	parms to omit.
+
 2017-02-15  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/79363

@@ -1149,6 +1149,12 @@ add_method (tree type, tree method, tree using_decl)
       if (! DECL_STATIC_FUNCTION_P (method))
 	parms2 = TREE_CHAIN (parms2);
 
+      /* Bring back parameters omitted from an inherited ctor.  */
+      if (ctor_omit_inherited_parms (fn))
+	parms1 = FUNCTION_FIRST_USER_PARMTYPE (DECL_ORIGIN (fn));
+      if (ctor_omit_inherited_parms (method))
+	parms2 = FUNCTION_FIRST_USER_PARMTYPE (DECL_ORIGIN (method));
+
       if (compparms (parms1, parms2)
 	  && (!DECL_CONV_FN_P (fn)
 	      || same_type_p (TREE_TYPE (fn_type),
@@ -4761,6 +4767,10 @@ build_clone (tree fn, tree name)
 	DECL_VINDEX (clone) = NULL_TREE;
     }
 
+  bool ctor_omit_inherited_parms_p = ctor_omit_inherited_parms (clone);
+  if (ctor_omit_inherited_parms_p)
+    gcc_assert (DECL_HAS_IN_CHARGE_PARM_P (clone));
+
   /* If there was an in-charge parameter, drop it from the function
      type.  */
   if (DECL_HAS_IN_CHARGE_PARM_P (clone))
@@ -4780,8 +4790,12 @@ build_clone (tree fn, tree name)
       if (DECL_HAS_VTT_PARM_P (fn)
 	  && ! DECL_NEEDS_VTT_PARM_P (clone))
 	parmtypes = TREE_CHAIN (parmtypes);
-       /* If this is subobject constructor or destructor, add the vtt
-	 parameter.  */
+      if (ctor_omit_inherited_parms_p)
+	{
+	  /* If we're omitting inherited parms, that just leaves the VTT.  */
+	  gcc_assert (DECL_NEEDS_VTT_PARM_P (clone));
+	  parmtypes = tree_cons (NULL_TREE, vtt_parm_type, void_list_node);
+	}
       TREE_TYPE (clone)
 	= build_method_type_directly (basetype,
 				      TREE_TYPE (TREE_TYPE (clone)),
@@ -4818,7 +4832,7 @@ build_clone (tree fn, tree name)
 
   /* A base constructor inheriting from a virtual base doesn't get the
      arguments.  */
-  if (ctor_omit_inherited_parms (clone))
+  if (ctor_omit_inherited_parms_p)
     DECL_CHAIN (DECL_CHAIN (DECL_ARGUMENTS (clone))) = NULL_TREE;
 
   for (parms = DECL_ARGUMENTS (clone); parms; parms = DECL_CHAIN (parms))
@@ -4965,6 +4979,13 @@ adjust_clone_args (tree decl)
 	   decl_parms = TREE_CHAIN (decl_parms),
 	     clone_parms = TREE_CHAIN (clone_parms))
 	{
+	  if (clone_parms == void_list_node)
+	    {
+	      gcc_assert (decl_parms == clone_parms
+			  || ctor_omit_inherited_parms (clone));
+	      break;
+	    }
+
 	  gcc_assert (same_type_p (TREE_TYPE (decl_parms),
 				   TREE_TYPE (clone_parms)));
 
@@ -4999,7 +5020,7 @@ adjust_clone_args (tree decl)
 	      break;
 	    }
 	}
-      gcc_assert (!clone_parms);
+      gcc_assert (!clone_parms || clone_parms == void_list_node);
     }
 }
 
