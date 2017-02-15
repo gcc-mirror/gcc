@@ -1263,7 +1263,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__throw_bad_variant_access("Unexpected index");
 
       using _Result_type =
-	decltype(std::forward<_Visitor>(__visitor)(get<0>(__variants)...));
+	decltype(std::forward<_Visitor>(__visitor)(
+	    get<0>(std::forward<_Variants>(__variants))...));
 
       constexpr auto& __vtable = __detail::__variant::__gen_vtable<
 	_Result_type, _Visitor&&, _Variants&&...>::_S_vtable;
