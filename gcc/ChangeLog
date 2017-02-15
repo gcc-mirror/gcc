@@ -1,3 +1,9 @@
+2017-02-15  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/79347
+	* tree-vect-loop-manip.c (vect_do_peeling): Maintain profile
+	counters during peeling.
+
 2017-02-15  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* Makefile.in (site.exp): Remove "set ISLVER".
