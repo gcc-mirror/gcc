@@ -1,3 +1,8 @@
+2017-02-15  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR target/79421
+	* config/s390/s390.c: define TARGET_CUSTOM_FUNCTION_DESCRIPTORS.
+
 2017-02-14  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64-cores.def (thunderx2t99): Move to under 'C"
