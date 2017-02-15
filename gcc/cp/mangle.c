@@ -2740,6 +2740,10 @@ write_method_parms (tree parm_types, const int method_p, const tree decl)
 	  parm_types = TREE_CHAIN (parm_types);
 	  parm_decl = DECL_CHAIN (parm_decl);
 	}
+
+      if (decl && ctor_omit_inherited_parms (decl))
+	/* Bring back parameters omitted from an inherited ctor.  */
+	parm_types = FUNCTION_FIRST_USER_PARMTYPE (DECL_ORIGIN (decl));
     }
 
   for (first_parm_type = parm_types;
