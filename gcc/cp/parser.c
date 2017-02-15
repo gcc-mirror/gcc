@@ -35345,7 +35345,7 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 	    id = get_identifier ("omp declare target");
 
 	  DECL_ATTRIBUTES (decl)
-			   = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (decl));
+	    = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (decl));
 	  if (global_bindings_p ())
 	    {
 	      symtab_node *node = symtab_node::get (decl);
@@ -35885,8 +35885,11 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
 	}
       if (!at1)
 	{
-	  symtab_node *node = symtab_node::get (t);
 	  DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+	  if (TREE_CODE (t) != FUNCTION_DECL && !is_global_var (t))
+	    continue;
+
+	  symtab_node *node = symtab_node::get (t);
 	  if (node != NULL)
 	    {
 	      node->offloadable = 1;

@@ -19890,7 +19890,9 @@ find_link_var_op (tree *tp, int *walk_subtrees, void *)
 {
   tree t = *tp;
 
-  if (TREE_CODE (t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (t)
+  if (TREE_CODE (t) == VAR_DECL
+      && DECL_HAS_VALUE_EXPR_P (t)
+      && is_global_var (t)
       && lookup_attribute ("omp declare target link", DECL_ATTRIBUTES (t)))
     {
       *walk_subtrees = 0;
