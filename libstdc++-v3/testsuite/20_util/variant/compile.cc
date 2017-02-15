@@ -65,7 +65,11 @@ struct nonliteral
   nonliteral() { }
 
   bool operator<(const nonliteral&) const;
+  bool operator<=(const nonliteral&) const;
   bool operator==(const nonliteral&) const;
+  bool operator!=(const nonliteral&) const;
+  bool operator>=(const nonliteral&) const;
+  bool operator>(const nonliteral&) const;
 };
 
 void default_ctor()

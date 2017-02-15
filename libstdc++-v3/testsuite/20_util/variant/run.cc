@@ -47,6 +47,13 @@ struct AlwaysThrow
     throw nullptr;
     return *this;
   }
+
+  bool operator<(const AlwaysThrow&) const { VERIFY(false); }
+  bool operator<=(const AlwaysThrow&) const { VERIFY(false); }
+  bool operator==(const AlwaysThrow&) const { VERIFY(false); }
+  bool operator!=(const AlwaysThrow&) const { VERIFY(false); }
+  bool operator>=(const AlwaysThrow&) const { VERIFY(false); }
+  bool operator>(const AlwaysThrow&) const { VERIFY(false); }
 };
 
 void default_ctor()
@@ -229,6 +236,23 @@ void test_relational()
 
   VERIFY((variant<int, string>(2) < variant<int, string>("a")));
   VERIFY((variant<string, int>(2) > variant<string, int>("a")));
+
+  {
+    variant<int, AlwaysThrow> v, w;
+    try
+      {
+	AlwaysThrow a;
+	v = a;
+      }
+    catch (nullptr_t) { }
+    VERIFY(v.valueless_by_exception());
+    VERIFY(v < w);
+    VERIFY(v <= w);
+    VERIFY(!(v == w));
+    VERIFY(v != w);
+    VERIFY(w > v);
+    VERIFY(w >= v);
+  }
 }
 
 void test_swap()
