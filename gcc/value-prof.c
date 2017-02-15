@@ -1376,7 +1376,13 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
   gimple_call_set_fndecl (dcall_stmt, direct_call->decl);
   dflags = flags_from_decl_or_type (direct_call->decl);
   if ((dflags & ECF_NORETURN) != 0)
-    gimple_call_set_lhs (dcall_stmt, NULL_TREE);
+    {
+      tree lhs = gimple_call_lhs (dcall_stmt);
+      if (lhs
+          && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (lhs))) == INTEGER_CST
+          && !TREE_ADDRESSABLE (TREE_TYPE (lhs)))
+	gimple_call_set_lhs (dcall_stmt, NULL_TREE);
+    }
   gsi_insert_before (&gsi, dcall_stmt, GSI_SAME_STMT);
 
   /* Fix CFG. */
