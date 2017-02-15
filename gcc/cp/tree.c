@@ -2830,8 +2830,10 @@ build_min_non_dep_op_overload (enum tree_code op,
   nargs = call_expr_nargs (non_dep);
 
   expected_nargs = cp_tree_code_length (op);
-  if (op == POSTINCREMENT_EXPR
-      || op == POSTDECREMENT_EXPR)
+  if ((op == POSTINCREMENT_EXPR
+       || op == POSTDECREMENT_EXPR)
+      /* With -fpermissive non_dep could be operator++().  */
+      && (!flag_permissive || nargs != expected_nargs))
     expected_nargs += 1;
   gcc_assert (nargs == expected_nargs);
 
