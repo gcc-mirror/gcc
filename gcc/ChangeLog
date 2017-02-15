@@ -1,6 +1,12 @@
 2017-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79267
+	* value-prof.c (gimple_ic): Only drop lhs for noreturn calls
+	if should_remove_lhs_p is true.
+
 	2017-01-17  Kito Cheng  <kito.cheng@gmail.com>
 		    Kuan-Lin Chen  <kuanlinchentw@gmail.com>
 
