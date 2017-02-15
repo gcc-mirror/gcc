@@ -1,5 +1,15 @@
 2017-02-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/79301
+	* g++.dg/cpp1y/feat-cxx11-neg.C: Remove (with pedwarn) from
+	[[deprecated]] comment.
+	* g++.dg/cpp1y/feat-cxx98-neg.C: Likewise.
+	* g++.dg/cpp1y/feat-cxx11.C: Likewise.
+	* g++.dg/cpp1y/attr-deprecated-neg.C: Don't expect warnings for
+	[[deprecated]] in -std=c++11.
+	* g++.dg/cpp0x/fallthrough2.C: Don't expect warnings for
+	[[fallthrough]] in -std=c++11 and -std=c++14.
+
 	PR c++/79288
 	* g++.dg/tls/pr79288.C: New test.
 
