@@ -1271,8 +1271,8 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	  res = expand_expr_real_2 (&ops, NULL_RTX, wmode, EXPAND_NORMAL);
 	  rtx hipart = expand_shift (RSHIFT_EXPR, wmode, res, prec,
 				     NULL_RTX, uns);
-	  hipart = gen_lowpart (mode, hipart);
-	  res = gen_lowpart (mode, res);
+	  hipart = convert_modes (mode, wmode, hipart, uns);
+	  res = convert_modes (mode, wmode, res, uns);
 	  if (uns)
 	    /* For the unsigned multiplication, there was overflow if
 	       HIPART is non-zero.  */
@@ -1305,16 +1305,16 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	  unsigned int hprec = GET_MODE_PRECISION (hmode);
 	  rtx hipart0 = expand_shift (RSHIFT_EXPR, mode, op0, hprec,
 				      NULL_RTX, uns);
-	  hipart0 = gen_lowpart (hmode, hipart0);
-	  rtx lopart0 = gen_lowpart (hmode, op0);
+	  hipart0 = convert_modes (hmode, mode, hipart0, uns);
+	  rtx lopart0 = convert_modes (hmode, mode, op0, uns);
 	  rtx signbit0 = const0_rtx;
 	  if (!uns)
 	    signbit0 = expand_shift (RSHIFT_EXPR, hmode, lopart0, hprec - 1,
 				     NULL_RTX, 0);
 	  rtx hipart1 = expand_shift (RSHIFT_EXPR, mode, op1, hprec,
 				      NULL_RTX, uns);
-	  hipart1 = gen_lowpart (hmode, hipart1);
-	  rtx lopart1 = gen_lowpart (hmode, op1);
+	  hipart1 = convert_modes (hmode, mode, hipart1, uns);
+	  rtx lopart1 = convert_modes (hmode, mode, op1, uns);
 	  rtx signbit1 = const0_rtx;
 	  if (!uns)
 	    signbit1 = expand_shift (RSHIFT_EXPR, hmode, lopart1, hprec - 1,
@@ -1505,11 +1505,12 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	     if (loxhi >> (bitsize / 2) == 0		 (if uns).  */
 	  rtx hipartloxhi = expand_shift (RSHIFT_EXPR, mode, loxhi, hprec,
 					  NULL_RTX, 0);
-	  hipartloxhi = gen_lowpart (hmode, hipartloxhi);
+	  hipartloxhi = convert_modes (hmode, mode, hipartloxhi, 0);
 	  rtx signbitloxhi = const0_rtx;
 	  if (!uns)
 	    signbitloxhi = expand_shift (RSHIFT_EXPR, hmode,
-					 gen_lowpart (hmode, loxhi),
+					 convert_modes (hmode, mode,
+							loxhi, 0),
 					 hprec - 1, NULL_RTX, 0);
 
 	  do_compare_rtx_and_jump (signbitloxhi, hipartloxhi, NE, true, hmode,
@@ -1519,7 +1520,8 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	  /* res = (loxhi << (bitsize / 2)) | (hmode) lo0xlo1;  */
 	  rtx loxhishifted = expand_shift (LSHIFT_EXPR, mode, loxhi, hprec,
 					   NULL_RTX, 1);
-	  tem = convert_modes (mode, hmode, gen_lowpart (hmode, lo0xlo1), 1);
+	  tem = convert_modes (mode, hmode,
+			       convert_modes (hmode, mode, lo0xlo1, 1), 1);
 
 	  tem = expand_simple_binop (mode, IOR, loxhishifted, tem, res,
 				     1, OPTAB_DIRECT);

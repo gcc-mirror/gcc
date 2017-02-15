@@ -1,3 +1,13 @@
+2017-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-01-17  Kito Cheng  <kito.cheng@gmail.com>
+		    Kuan-Lin Chen  <kuanlinchentw@gmail.com>
+
+	PR target/79079
+	* internal-fn.c (expand_mul_overflow): Use convert_modes instead of
+	gen_lowpart.
+
 2017-02-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/79495
