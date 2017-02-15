@@ -1,3 +1,7 @@
+2017-02-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.in (site.exp): Remove "set ISLVER".
+
 2017-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79487
