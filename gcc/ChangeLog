@@ -1,3 +1,10 @@
+2017-02-16  Alan Modra  <amodra@gmail.com>
+
+	PR rtl-optimization/79286
+	* ira.c (def_dominates_uses): New function.
+	(update_equiv_regs): Don't create an equivalence for insns that
+	may trap where the register def does not dominate the use.
+
 2017-02-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/78127

@@ -3300,6 +3300,49 @@ adjust_cleared_regs (rtx loc, const_rtx old_rtx ATTRIBUTE_UNUSED, void *data)
   return NULL_RTX;
 }
 
+/* Given register REGNO is set only once, return true if the defining
+   insn dominates all uses.  */
+
+static bool
+def_dominates_uses (int regno)
+{
+  df_ref def = DF_REG_DEF_CHAIN (regno);
+
+  struct df_insn_info *def_info = DF_REF_INSN_INFO (def);
+  /* If this is an artificial def (eh handler regs, hard frame pointer
+     for non-local goto, regs defined on function entry) then def_info
+     is NULL and the reg is always live before any use.  We might
+     reasonably return true in that case, but since the only call
+     of this function is currently here in ira.c when we are looking
+     at a defining insn we can't have an artificial def as that would
+     bump DF_REG_DEF_COUNT.  */
+  gcc_assert (DF_REG_DEF_COUNT (regno) == 1 && def_info != NULL);
+
+  rtx_insn *def_insn = DF_REF_INSN (def);
+  basic_block def_bb = BLOCK_FOR_INSN (def_insn);
+
+  for (df_ref use = DF_REG_USE_CHAIN (regno);
+       use;
+       use = DF_REF_NEXT_REG (use))
+    {
+      struct df_insn_info *use_info = DF_REF_INSN_INFO (use);
+      /* Only check real uses, not artificial ones.  */
+      if (use_info)
+	{
+	  rtx_insn *use_insn = DF_REF_INSN (use);
+	  if (!DEBUG_INSN_P (use_insn))
+	    {
+	      basic_block use_bb = BLOCK_FOR_INSN (use_insn);
+	      if (use_bb != def_bb
+		  ? !dominated_by_p (CDI_DOMINATORS, use_bb, def_bb)
+		  : DF_INSN_INFO_LUID (use_info) < DF_INSN_INFO_LUID (def_info))
+		return false;
+	    }
+	}
+    }
+  return true;
+}
+
 /* Find registers that are equivalent to a single value throughout the
    compilation (either because they can be referenced in memory or are
    set once from a single constant).  Lower their priority for a
@@ -3498,9 +3541,18 @@ update_equiv_regs (void)
 	    = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv[regno].init_insns);
 
 	  /* If this register is known to be equal to a constant, record that
-	     it is always equivalent to the constant.  */
+	     it is always equivalent to the constant.
+	     Note that it is possible to have a register use before
+	     the def in loops (see gcc.c-torture/execute/pr79286.c)
+	     where the reg is undefined on first use.  If the def insn
+	     won't trap we can use it as an equivalence, effectively
+	     choosing the "undefined" value for the reg to be the
+	     same as the value set by the def.  */
 	  if (DF_REG_DEF_COUNT (regno) == 1
-	      && note && ! rtx_varies_p (XEXP (note, 0), 0))
+	      && note
+	      && !rtx_varies_p (XEXP (note, 0), 0)
+	      && (!may_trap_p (XEXP (note, 0))
+		  || def_dominates_uses (regno)))
 	    {
 	      rtx note_value = XEXP (note, 0);
 	      remove_note (insn, note);
