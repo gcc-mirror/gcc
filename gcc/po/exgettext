@@ -21,6 +21,8 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+BUGURL="https://gcc.gnu.org/bugs/"
+
 # Always operate in the C locale.
 LANG=C
 LANGUAGE=C
@@ -293,13 +295,13 @@ echo "running xgettext..." >&2
 $xgettext --default-domain=$package --directory=$srcdir \
 	  --add-comments `cat $kopt` --files-from=$posr \
 	  --copyright-holder="Free Software Foundation, Inc." \
-	  --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
+	  --msgid-bugs-address="$BUGURL" \
 	  --language=c -o $pottmp1
 if test -s $posrcxx; then
   $xgettext --default-domain=$package --directory=$srcdir \
 	    --add-comments `cat $kopt` --files-from=$posrcxx \
 	    --copyright-holder="Free Software Foundation, Inc." \
-	    --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
+	    --msgid-bugs-address="$BUGURL" \
 	    --language=c++ -o $pottmp2
 else
   echo > $pottmp2
@@ -307,12 +309,12 @@ fi
 $xgettext --default-domain=$package --directory=$srcdir \
 	  --add-comments --keyword= `cat $kopt2` --files-from=$posr \
 	  --copyright-holder="Free Software Foundation, Inc." \
-	  --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
+	  --msgid-bugs-address="$BUGURL" \
 	  --language=GCC-source -o $pottmp3
 $xgettext --default-domain=$package \
 	  --add-comments $pottmp1 $pottmp2 $pottmp3 \
 	  --copyright-holder="Free Software Foundation, Inc." \
-	  --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
+	  --msgid-bugs-address="$BUGURL" \
 	  --language=PO -o $pottmp
 # Remove local paths from .pot file.
 sed "s:$srcdir/::g;s:$pwd/::g;" <$pottmp >po/$package.pot
