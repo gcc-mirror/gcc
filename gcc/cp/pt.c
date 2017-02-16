@@ -10073,6 +10073,28 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
   tree t;
   tree *p;
 
+  if (attributes == NULL_TREE)
+    return;
+
+  if (DECL_P (*decl_p))
+    {
+      if (TREE_TYPE (*decl_p) == error_mark_node)
+	return;
+      p = &DECL_ATTRIBUTES (*decl_p);
+      /* DECL_ATTRIBUTES comes from copy_node in tsubst_decl, and is identical
+         to our attributes parameter.  */
+      gcc_assert (*p == attributes);
+    }
+  else
+    {
+      p = &TYPE_ATTRIBUTES (*decl_p);
+      /* TYPE_ATTRIBUTES was set up (with abi_tag and may_alias) in
+	 lookup_template_class_1, and should be preserved.  */
+      gcc_assert (*p != attributes);
+      while (*p)
+	p = &TREE_CHAIN (*p);
+    }
+
   for (t = attributes; t; t = TREE_CHAIN (t))
     if (ATTR_IS_DEPENDENT (t))
       {
@@ -10081,21 +10103,13 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
 	break;
       }
 
-  if (DECL_P (*decl_p))
-    {
-      if (TREE_TYPE (*decl_p) == error_mark_node)
-	return;
-      p = &DECL_ATTRIBUTES (*decl_p);
-    }
-  else
-    p = &TYPE_ATTRIBUTES (*decl_p);
-
+  *p = attributes;
   if (last_dep)
     {
       tree late_attrs = NULL_TREE;
       tree *q = &late_attrs;
 
-      for (*p = attributes; *p; )
+      for (; *p; )
 	{
 	  t = *p;
 	  if (ATTR_IS_DEPENDENT (t))
