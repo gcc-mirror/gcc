@@ -2389,14 +2389,7 @@ lra (FILE *f)
     {
       for (;;)
 	{
-	  /* We should try to assign hard registers to scratches even
-	     if there were no RTL transformations in lra_constraints.
-	     Also we should check IRA assignments on the first
-	     iteration as they can be wrong because of early clobbers
-	     operands which are ignored in IRA.  */
-	  if (! lra_constraints (lra_constraint_iter == 0)
-	      && lra_constraint_iter > 1)
-	    break;
+	  bool reloads_p = lra_constraints (lra_constraint_iter == 0);
 	  /* Constraint transformations may result in that eliminable
 	     hard regs become uneliminable and pseudos which use them
 	     should be spilled.	 It is better to do it before pseudo
@@ -2406,6 +2399,23 @@ lra (FILE *f)
 	     RS6000_PIC_OFFSET_TABLE_REGNUM uneliminable if we started
 	     to use a constant pool.  */
 	  lra_eliminate (false, false);
+	  /* We should try to assign hard registers to scratches even
+	     if there were no RTL transformations in lra_constraints.
+	     Also we should check IRA assignments on the first
+	     iteration as they can be wrong because of early clobbers
+	     operands which are ignored in IRA.  */
+	  if (! reloads_p && lra_constraint_iter > 1)
+	    {
+	      /* Stack is not empty here only when there are changes
+		 during the elimination sub-pass.  */
+	      if (bitmap_empty_p (lra_constraint_insn_stack_bitmap))
+		break;
+	      else
+		/* If there are no reloads but changing due
+		   elimination, restart the constraint sub-pass
+		   first.  */
+		continue;
+	    }
 	  /* Do inheritance only for regular algorithms.  */
 	  if (! lra_simple_p)
 	    {

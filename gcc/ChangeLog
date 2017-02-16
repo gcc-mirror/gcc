@@ -1,3 +1,9 @@
+2017-02-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/78127
+	* lra.c (lra): Call lra_eliminate before finish the loop after
+	lra_constraint.
+
 2017-02-16  Richard Biener  <rguenther@suse.de>
 
 	* graphite.h: Do not include isl/isl_val_gmp.h, instead include
