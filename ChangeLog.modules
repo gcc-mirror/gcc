@@ -1,3 +1,14 @@
+2017-02-16  Nathan Sidwell  <nathan@acm.org>
+
+	Node length & allocation.  Global trees.
+	gcc/cp/
+	* module.c (streamer::tags): Rename to ...
+	(streamer::record_tag): ... here.  Fixup.
+	(out::tag_trees, out::start, out::write_loc): New.
+	(in::tag_trees, in::start, in::finish, in::read_loc): New.
+	(out::write_tree, in::read_tree): Adjust.
+	(write_module): Write global trees.
+
 2017-02-15  Nathan Sidwell  <nathan@acm.org>
 
 	Start of tree reading & writing.  Module namespace fix.

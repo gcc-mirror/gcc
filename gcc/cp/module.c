@@ -479,26 +479,26 @@ class streamer
 {
 public:
   /* Record tags.  */
-  enum tags
+  enum record_tag
   {
     /* Module-specific records.  */
-    t_eof,
-    t_conf,
-    t_flags,
-    t_import,
-    /* Tree codes.  */
-    t_tree_base = 0x100,
-    /* First reference index.  */
-    t_ref_base = 0x1000
+    rt_eof,  /* End Of File.  duh! */
+    rt_conf, /* Config info (baked in stuff like target-triplet) */
+    rt_flags, /* Flags that affect AST generation, such as fshort-enum.  */
+    rt_import, /* A nested import. */
+    rt_trees, /* Common global trees.  */
+    rt_cptrees, /* C++ global trees.  */
+    rt_tree_base = 0x100,      /* Tree codes.  */
+    rt_ref_base = 0x1000    /* Back-reference indices.  */
   };
 
 private:
   unsigned index;
 
 public:
-  streamer () : index (t_ref_base)
+  streamer () : index (rt_ref_base)
   {
-    gcc_assert (MAX_TREE_CODES <= t_ref_base - t_tree_base);
+    gcc_assert (MAX_TREE_CODES <= rt_ref_base - rt_tree_base);
   }
 
 protected:
@@ -544,43 +544,44 @@ int streamer::version ()
   if (EXPERIMENTAL)
     {
       /* Force the version to be very volatile.  */
-      /* __DATE__ "mon dd yyyy" */
-      int year = ((__DATE__[7] - '0') * 1000
-		  + (__DATE__[8] - '0') * 100
-		  + (__DATE__[9] - '0') * 10
-		  + (__DATE__[10] - '0') * 1);
+      static const char DATE[] = __DATE__;    /* "mon dd yyyy" */
+      int year = ((DATE[7] - '0') * 1000
+		  + (DATE[8] - '0') * 100
+		  + (DATE[9] - '0') * 10
+		  + (DATE[10] - '0') * 1);
       /* JanFebMarAprMayJunJulAugSepOctNovDec */
-      int mon = (__DATE__[0] == 'J' // Jan Jun Jul
-		 ? (__DATE__[1] == 'a' ? 1 // Jan
-		    : __DATE__[2] == 'n' ? 6 // Jun
-		    : __DATE__[2] == 'l' ? 7 // Jul
+      int mon = (DATE[0] == 'J' // Jan Jun Jul
+		 ? (DATE[1] == 'a' ? 1 // Jan
+		    : DATE[2] == 'n' ? 6 // Jun
+		    : DATE[2] == 'l' ? 7 // Jul
 		    : 0) // oops
-		 : __DATE__[0] == 'F' ? 2 // Feb
-		 : __DATE__[0] == 'M' // Mar May
-		 ? (__DATE__[2] == 'r' ? 3 // Mar
-		    : __DATE__[2] == 'y' ? 5 // May
-		: 0) // oops
-		 : __DATE__[0] == 'A' // Apr Aug
-		 ? (__DATE__[1] == 'p' ? 4 // Apr
-		    : __DATE__[1] == 'u' ? 8 // Aug
+		 : DATE[0] == 'F' ? 2 // Feb
+		 : DATE[0] == 'M' // Mar May
+		 ? (DATE[2] == 'r' ? 3 // Mar
+		    : DATE[2] == 'y' ? 5 // May
 		    : 0) // oops
-		 : __DATE__[0] == 'S' ? 9 // Sep
-		 : __DATE__[0] == 'O' ? 10 // Oct
-		 : __DATE__[0] == 'N' ? 11 // Nov
-		 : __DATE__[0] == 'D' ? 12 // Dec
+		 : DATE[0] == 'A' // Apr Aug
+		 ? (DATE[1] == 'p' ? 4 // Apr
+		    : DATE[1] == 'u' ? 8 // Aug
+		    : 0) // oops
+		 : DATE[0] == 'S' ? 9 // Sep
+		 : DATE[0] == 'O' ? 10 // Oct
+		 : DATE[0] == 'N' ? 11 // Nov
+		 : DATE[0] == 'D' ? 12 // Dec
 		 : 0); // oops
-      int day = ((__DATE__[4] == ' ' ? 0 : (__DATE__[4] - '0') * 10)
-		 + (__DATE__[5] - '0') * 1);
-      
-      /* __TIME__ "hh:mm:ss" */
-      int hour = ((__TIME__[0] - '0') * 10
-		  + (__TIME__[1] - '0') * 1);
-      int min =  ((__TIME__[3] - '0') * 10
-		  + (__TIME__[4] - '0') * 1);
-      int date = (((year % 100) * 100) + mon) * 100 + day;
-      int time = (hour * 100) + min;
-      
-      version = -((date * 10000) + time);
+      int day = ((DATE[4] == ' ' ? 0 : (DATE[4] - '0') * 10)
+		 + (DATE[5] - '0') * 1);
+      gcc_assert (year && mon && day);
+
+      static const char TIME[] = __TIME__;  /* "hh:mm:ss" */
+      int hour = ((TIME[0] - '0') * 10
+		  + (TIME[1] - '0') * 1);
+      int min =  ((TIME[3] - '0') * 10
+		  + (TIME[4] - '0') * 1);
+
+      int date = (((year % 100) * 100) + mon) * 100 + day; /* YYMMDD */
+      int time = (hour * 100) + min;		/* hhmm */
+      version = -((date * 10000) + time);       /* -YYMMDDhhmm */
     }
   return version;
 }
@@ -600,10 +601,15 @@ public:
   void tag_eof ();
   void tag_conf (FILE *);
   void tag_import (FILE *, tree, bool);
+  void tag_trees (FILE *, record_tag, tree *, unsigned);
   int done ()
   {
     return w.done ();
   }
+
+private:
+  void start (tree_code, tree);
+  void write_loc (location_t);
 
 public:
   void write_tree (FILE *, tree);
@@ -625,6 +631,7 @@ class in : public streamer
   reader r;
   typedef unbounded_int_hashmap_traits<unsigned,tree> traits;
   hash_map<unsigned,tree,traits> map; /* ids to trees  */
+  tree scope;
   bool impl;
 
 public:
@@ -636,18 +643,24 @@ public:
   int tag_eof (FILE *);
   bool tag_conf (FILE *);
   int tag_import (FILE *, tree &);
+  bool tag_trees (FILE *, record_tag, tree *, unsigned);
   int read_one (FILE *, tree &);
   int done ()
   {
     return r.done ();
   }
 
+private:
+  tree start (tree_code);
+  tree finish (FILE *, tree);
+  location_t read_loc ();
+
 public:
   bool read_tree (FILE *, tree *, unsigned = 0);
 };
 
 in::in (FILE *s, const char *n, bool is_impl)
-  :r (s, n), impl (is_impl)
+  :r (s, n), scope (NULL_TREE), impl (is_impl)
 {
 }
 
@@ -725,7 +738,7 @@ in::header (FILE *d, tree name)
 void
 out::tag_eof ()
 {
-  w.c (t_eof);
+  w.u (rt_eof);
 }
 
 int
@@ -747,7 +760,7 @@ out::tag_conf (FILE *d)
   if (d)
     fprintf (d, "Writing target='%s', host='%s'\n",
 	     TARGET_MACHINE, HOST_MACHINE);
-  w.c (t_conf);
+  w.u (rt_conf);
   w.str (TARGET_MACHINE, strlen (TARGET_MACHINE));
   w.str (HOST_MACHINE, strlen (HOST_MACHINE));
 }
@@ -775,6 +788,54 @@ in::tag_conf (FILE *d)
   return true;
 }
 
+/* Global tree array
+   u:count
+   b[]:insert_p  */
+
+void
+out::tag_trees (FILE *d, record_tag rt, tree *ary, unsigned num)
+{
+  w.u (rt);
+  w.u (num);
+  unsigned n = 0;
+  for (unsigned ix = 0; ix != num; ix++)
+    {
+      bool existed;
+      unsigned *val = &map.get_or_insert (ary[ix], &existed);
+      if (!existed)
+	{
+	  n++;
+	  *val = next ();
+	}
+      w.b (!existed);
+    }
+  if (d)
+    fprintf (d, "Writing %u fixed trees (%d unique)\n", num, n);
+}
+
+bool
+in::tag_trees (FILE *d, record_tag, tree *ary, unsigned num)
+{
+  unsigned n = r.u ();
+  if (n != num)
+    {
+      error ("%qs has %u trees, expected %u", r.name, n, num);
+      return false;
+    }
+
+  n = 0;
+  for (unsigned ix = 0; ix != num; ix++)
+    if (r.b ())
+      {
+	n++;
+	map.put (next (), ary[num]);
+      }
+
+  if (d)
+    fprintf (d, "Reading %u fixed trees (%d unique)\n", num, n);
+  return true;
+}
+
 /* Record import
    b:is_export
    str:module_name  */
@@ -785,7 +846,7 @@ out::tag_import (FILE *d, tree name, bool is_export)
   if (d)
     fprintf (d, "Writing %s '%s'\n", is_export ? "export module" : "import",
 	     IDENTIFIER_POINTER (name));
-  w.c (t_import);
+  w.u (rt_import);
   w.b (is_export);
   w.str (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
 }
@@ -823,24 +884,146 @@ in::tag_import (FILE *d, tree &imp)
 int
 in::read_one (FILE *d, tree &imp)
 {
-  unsigned tag = r.u ();
-  if (tag == t_eof)
-    return tag_eof (d);
-  else if (tag == t_conf)
-    return tag_conf (d);
-  else if (tag == t_import)
-    return tag_import (d, imp);
+  unsigned rt = r.u ();
+  switch (rt)
+    {
+    case rt_eof:
+      return tag_eof (d);
+    case rt_conf:
+      return tag_conf (d);
+    case rt_import:
+      return tag_import (d, imp);
+    case rt_trees:
+      return tag_trees (d, record_tag (rt), global_trees, TI_MAX);
+    case rt_cptrees:
+      return tag_trees (d, record_tag (rt), cp_global_trees, CPTI_MAX);
 
+    default:
+      break;
+    }
+  
   tree t;
-  if (!read_tree (d, &t, tag))
+  if (!read_tree (d, &t, rt))
     {
       if (t == error_mark_node)
-	error ("unknown key %qd", tag);
+	error ("unknown key %qd", rt);
       r.bad ();
       return false;
     }
   // FIXME: read body
   return true;
+}
+
+/* Read & write locations.  */
+
+void
+out::write_loc (location_t)
+{
+  // FIXME:Do something
+}
+
+location_t
+in::read_loc ()
+{
+  // FIXME:Do something^-1
+  return UNKNOWN_LOCATION;
+}
+
+/* Start tree write.  Write information to allocate the receiving
+   node.  */
+
+void
+out::start (tree_code code, tree t)
+{
+  switch (code)
+    {
+    default:
+      break;
+    case IDENTIFIER_NODE:
+      w.str (IDENTIFIER_POINTER (t), IDENTIFIER_LENGTH (t));
+      break;
+    case TREE_BINFO:
+      w.u (BINFO_N_BASE_BINFOS (t));
+      break;
+    case TREE_VEC:
+      w.u (TREE_VEC_LENGTH (t));
+      break;
+    case CALL_EXPR:
+      w.u (VL_EXP_OPERAND_LENGTH (t));
+      break;
+    case STRING_CST:
+      w.str (TREE_STRING_POINTER (t), TREE_STRING_LENGTH (t));
+      break;
+    case VECTOR_CST:
+      w.u (VECTOR_CST_NELTS (t));
+      break;
+    case INTEGER_CST:
+      w.u (TREE_INT_CST_NUNITS (t));
+      w.u (TREE_INT_CST_EXT_NUNITS (t));
+      break;
+    case OMP_CLAUSE:
+      gcc_unreachable (); // FIXME:
+    }
+}
+
+/* Start tree read.  Allocate the receiving node.  */
+
+tree
+in::start (tree_code code)
+{
+  tree t = NULL_TREE;
+  
+  switch (code)
+    {
+    default:
+      t = make_node (code);
+      break;
+    case IDENTIFIER_NODE:
+    case STRING_CST:
+      {
+	size_t l;
+	const char *str = r.str (&l);
+	if (code == IDENTIFIER_NODE)
+	  t = get_identifier_with_length (str, l);
+	else
+	  t = build_string (l, str);
+      }
+      break;
+    case TREE_BINFO:
+      t = make_tree_binfo (r.u ());
+      break;
+    case TREE_VEC:
+      t = make_tree_vec (r.u ());
+      break;
+    case CALL_EXPR:
+      t = build_vl_exp (CALL_EXPR, r.s ());
+      break;
+    case VECTOR_CST:
+      t = make_vector (r.u ());
+      break;
+    case INTEGER_CST:
+      {
+	unsigned n = r.u ();
+	unsigned e = r.u ();
+	t = make_int_cst (n, e);
+      }
+      break;
+    case OMP_CLAUSE:
+      gcc_unreachable (); // FIXME:
+    }
+  
+  return t;
+}
+
+/* Semantic processing.  Add to symbol table etc.  Return
+   possibly-remapped tree.  */
+
+tree
+in::finish (FILE *d, tree t)
+{
+  // FIXME
+  return t;
+  
 }
 
 /* Write either the decl (as a declaration) itself (and create a
@@ -872,14 +1055,20 @@ out::write_tree (FILE *d, tree t)
     fprintf (d, "Writing:%u %s (%s:%d)\n", *val, get_tree_code_name (code),
 	     tree_code_class_strings [TREE_CODE_CLASS (code)], code);
 
-  gcc_assert (t_tree_base + code < t_ref_base);
-  w.u (t_tree_base + code);
-  // FIXME:Write length info
-  // Write core bits
-  // Write lang_specific info
-  // write lang_specific bits
-  // Write core pointers & vals
-  // Write lang_specific pointers & vals
+  gcc_assert (rt_tree_base + code < rt_ref_base);
+  w.u (rt_tree_base + code);
+  start (code, t);
+
+  if (code == IDENTIFIER_NODE)
+    ;
+  else
+    {
+      // FIXME:Write core bits
+      // FIXME:Write lang_specific info
+      // FIXME:write lang_specific bits
+      // FIXME:Write core pointers & vals
+      // FIXME:Write lang_specific pointers & vals
+    }
 }
 
 /* Read in a tree using TAG.  TAG is either a back reference, or a
@@ -900,7 +1089,7 @@ in::read_tree (FILE *d, tree *tp, unsigned tag)
       return true;
     }
 
-  if (tag >= t_ref_base)
+  if (tag >= rt_ref_base)
     {
       tree *val = map.get (tag);
 
@@ -911,22 +1100,17 @@ in::read_tree (FILE *d, tree *tp, unsigned tag)
       return val != NULL;
     }
 
-  if (tag < t_tree_base || tag >= t_tree_base + MAX_TREE_CODES)
+  if (tag < rt_tree_base || tag >= rt_tree_base + MAX_TREE_CODES)
     {
       *tp = error_mark_node;
       return false;
     }
 
-  tree_code code = tree_code (tag - t_tree_base);
+  tree_code code = tree_code (tag - rt_tree_base);
 
-  // FIXME:Get length
-  tree t = NULL_TREE;
+  tree t = start (code);
 
-  // FIXME:alloc tree
-
-  // Insert into map -- fixup for duplicates?
-  // Perhaps we should add it later, but we do need to reserve the
-  // number now.
+  /* Insert into map.  */
   tag = next ();
   bool existed = map.put (tag, t);
   gcc_assert (!existed);
@@ -934,11 +1118,21 @@ in::read_tree (FILE *d, tree *tp, unsigned tag)
     fprintf (d, "Reading:%u %s (%s:%d)\n", tag, get_tree_code_name (code),
 	     tree_code_class_strings [TREE_CODE_CLASS (code)], code);
 
-  // FIXME:Read core bits
-  // FIXME:read lang_specific bits
-  // FIXME:Read core ptrs & vals
-  // FIXME:Read lang_specific ptrs & vals
+  if (code != IDENTIFIER_NODE)
+    {
+      // FIXME:Read core bits
+      // FIXME:read lang_specific bits
+      // FIXME:Read core ptrs & vals
+      // FIXME:Read lang_specific ptrs & vals
+    }
 
+  tree found = finish (d, t);
+  if (found)
+    {
+      /* Update the mapping.  */
+      map.put (tag, found);
+      t = found;
+    }
   *tp = t;
 
   // FIXME:Do decl-specific processing, dup decls and symbol table things
@@ -1325,6 +1519,12 @@ write_module (FILE *stream, const char *fname, tree name)
   out.tag_conf (d);
   // FIXME:Write 'important' flags etc
 
+  /* Dump the global trees directly to save encoding them for no
+     reason.  Further types such as sizetype are oddly recursive, and
+     this avoids having to deal with that in the reader.  */
+  out.tag_trees (d, streamer::rt_trees, global_trees, TI_MAX);
+  out.tag_trees (d, streamer::rt_cptrees, cp_global_trees, CPTI_MAX);
+
   /* Write the import table.  */
   imported_modules->traverse<const write_import_cl &, write_import>
     (write_import_cl (&out, d));
@@ -1332,7 +1532,8 @@ write_module (FILE *stream, const char *fname, tree name)
   /* Write decls.  */
   out.walk_namespace (d, false, global_namespace);
 
-  // FIXME:Write defns
+  // FIXME:Write defns.  Probably fine just to do it during the first
+  // namespace walk.
 
   out.tag_eof ();
   if (int e = out.done ())
