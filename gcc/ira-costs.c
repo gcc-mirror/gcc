@@ -1452,7 +1452,8 @@ scan_one_insn (rtx_insn *insn)
     {
       rtx x = XEXP (PATTERN (insn), 0);
       if (GET_CODE (x) == REG
-	  && REGNO (x) >= FIRST_PSEUDO_REGISTER)
+	  && REGNO (x) >= FIRST_PSEUDO_REGISTER
+	  && have_regs_of_mode[GET_MODE (x)])
         ira_init_register_move_cost_if_necessary (GET_MODE (x));
       return insn;
     }
