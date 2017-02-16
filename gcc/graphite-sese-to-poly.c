@@ -55,7 +55,6 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/constraint.h>
 #include <isl/aff.h>
 #include <isl/val.h>
-#include <isl/val_gmp.h>
 
 #include "graphite.h"
 
@@ -154,16 +153,32 @@ extract_affine_name (scop_p s, tree e, __isl_take isl_space *space)
   return isl_pw_aff_alloc (dom, aff);
 }
 
+/* Convert WI to a isl_val with CTX.  */
+
+static __isl_give isl_val *
+isl_val_int_from_wi (isl_ctx *ctx, const widest_int &wi)
+{
+  if (wi::neg_p (wi, SIGNED))
+    {
+      widest_int mwi = -wi;
+      return isl_val_neg (isl_val_int_from_chunks (ctx, mwi.get_len (),
+						   sizeof (HOST_WIDE_INT),
+						   mwi.get_val ()));
+    }
+  return isl_val_int_from_chunks (ctx, wi.get_len (), sizeof (HOST_WIDE_INT),
+				  wi.get_val ());
+}
+
 /* Extract an affine expression from the gmp constant G.  */
 
 static isl_pw_aff *
-extract_affine_gmp (mpz_t g, __isl_take isl_space *space)
+extract_affine_wi (const widest_int &g, __isl_take isl_space *space)
 {
   isl_local_space *ls = isl_local_space_from_space (isl_space_copy (space));
   isl_aff *aff = isl_aff_zero_on_domain (ls);
   isl_set *dom = isl_set_universe (space);
   isl_ctx *ct = isl_aff_get_ctx (aff);
-  isl_val *v = isl_val_int_from_gmp (ct, g);
+  isl_val *v = isl_val_int_from_wi (ct, g);
   aff = isl_aff_add_constant_val (aff, v);
 
   return isl_pw_aff_alloc (dom, aff);
@@ -174,13 +189,7 @@ extract_affine_gmp (mpz_t g, __isl_take isl_space *space)
 static isl_pw_aff *
 extract_affine_int (tree e, __isl_take isl_space *space)
 {
-  mpz_t g;
-
-  mpz_init (g);
-  tree_int_to_gmp (e, g);
-  isl_pw_aff *res = extract_affine_gmp (g, space);
-  mpz_clear (g);
-
+  isl_pw_aff *res = extract_affine_wi (wi::to_widest (e), space);
   return res;
 }
 
@@ -411,15 +420,11 @@ add_param_constraints (scop_p scop, graphite_dim_t p)
     {
       isl_space *space = isl_set_get_space (scop->param_context);
       isl_constraint *c;
-      mpz_t g;
       isl_val *v;
 
       c = isl_inequality_alloc (isl_local_space_from_space (space));
-      mpz_init (g);
-      tree_int_to_gmp (lb, g);
-      v = isl_val_int_from_gmp (scop->isl_context, g);
+      v = isl_val_int_from_wi (scop->isl_context, wi::to_widest (lb));
       v = isl_val_neg (v);
-      mpz_clear (g);
       c = isl_constraint_set_constant_val (c, v);
       c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, 1);
 
@@ -431,15 +436,11 @@ add_param_constraints (scop_p scop, graphite_dim_t p)
     {
       isl_space *space = isl_set_get_space (scop->param_context);
       isl_constraint *c;
-      mpz_t g;
       isl_val *v;
 
       c = isl_inequality_alloc (isl_local_space_from_space (space));
 
-      mpz_init (g);
-      tree_int_to_gmp (ub, g);
-      v = isl_val_int_from_gmp (scop->isl_context, g);
-      mpz_clear (g);
+      v = isl_val_int_from_wi (scop->isl_context, wi::to_widest (ub));
       c = isl_constraint_set_constant_val (c, v);
       c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, -1);
 
@@ -773,11 +774,8 @@ add_loop_constraints (scop_p scop, __isl_take isl_set *domain, loop_p loop,
       isl_local_space *ls = isl_local_space_from_space (space);
       isl_constraint *c = isl_inequality_alloc (ls);
       c = isl_constraint_set_coefficient_si (c, isl_dim_set, loop_index, -1);
-      mpz_t g;
-      mpz_init (g);
-      tree_int_to_gmp (nb_iters, g);
-      isl_val *v = isl_val_int_from_gmp (scop->isl_context, g);
-      mpz_clear (g);
+      isl_val *v
+	= isl_val_int_from_wi (scop->isl_context, wi::to_widest (nb_iters));
       c = isl_constraint_set_constant_val (c, v);
       return isl_set_add_constraint (domain, c);
     }
@@ -817,12 +815,9 @@ add_loop_constraints (scop_p scop, __isl_take isl_set *domain, loop_p loop,
 
   /* NIT is an upper bound to NB_ITERS: "NIT >= NB_ITERS", although we
      do not know whether the loop executes at least once.  */
-  mpz_t g;
-  mpz_init (g);
-  wi::to_mpz (nit, g, SIGNED);
-  mpz_sub_ui (g, g, 1);
+  --nit;
 
-  isl_pw_aff *approx = extract_affine_gmp (g, isl_space_copy (space));
+  isl_pw_aff *approx = extract_affine_wi (nit, isl_space_copy (space));
   isl_set *x = isl_pw_aff_ge_set (approx, aff_nb_iters);
   x = isl_set_project_out (x, isl_dim_set, 0,
 			   isl_set_dim (x, isl_dim_set));
@@ -831,8 +826,7 @@ add_loop_constraints (scop_p scop, __isl_take isl_set *domain, loop_p loop,
   ls = isl_local_space_from_space (space);
   c = isl_inequality_alloc (ls);
   c = isl_constraint_set_coefficient_si (c, isl_dim_set, loop_index, -1);
-  isl_val *v = isl_val_int_from_gmp (scop->isl_context, g);
-  mpz_clear (g);
+  isl_val *v = isl_val_int_from_wi (scop->isl_context, nit);
   c = isl_constraint_set_constant_val (c, v);
 
   if (dump_file)
