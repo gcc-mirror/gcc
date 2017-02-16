@@ -149,7 +149,9 @@ namespace std
 #if _GLIBCXX_USE_C99_STDIO
 
 #undef snprintf
+#ifndef AMIGA
 #undef vfscanf
+#endif
 #undef vscanf
 #undef vsnprintf
 #undef vsscanf
