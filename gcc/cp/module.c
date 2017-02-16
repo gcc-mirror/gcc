@@ -486,11 +486,18 @@ public:
     rt_conf, /* Config info (baked in stuff like target-triplet) */
     rt_flags, /* Flags that affect AST generation, such as fshort-enum.  */
     rt_import, /* A nested import. */
-    rt_trees, /* Common global trees.  */
-    rt_cptrees, /* C++ global trees.  */
+    rt_trees, /* Global trees.  */
     rt_tree_base = 0x100,      /* Tree codes.  */
     rt_ref_base = 0x1000    /* Back-reference indices.  */
   };
+  struct gtp 
+  {
+    const tree *ptr;
+    unsigned num;
+  };
+
+public:
+  static const gtp global_tree_arys[];
 
 private:
   unsigned index;
@@ -601,7 +608,7 @@ public:
   void tag_eof ();
   void tag_conf (FILE *);
   void tag_import (FILE *, tree, bool);
-  void tag_trees (FILE *, record_tag, tree *, unsigned);
+  void tag_trees (FILE *);
   int done ()
   {
     return w.done ();
@@ -610,6 +617,7 @@ public:
 private:
   void start (tree_code, tree);
   void write_loc (location_t);
+  void write_tree_ary (FILE *, unsigned, const gtp *);
   void write_core_bools (FILE *, tree);
   void write_core_vals (FILE *, tree);
 
@@ -645,7 +653,7 @@ public:
   int tag_eof (FILE *);
   bool tag_conf (FILE *);
   int tag_import (FILE *, tree &);
-  bool tag_trees (FILE *, record_tag, tree *, unsigned);
+  bool tag_trees (FILE *);
   int read_one (FILE *, tree &);
   int done ()
   {
@@ -653,9 +661,13 @@ public:
   }
 
 private:
+  tree finish_namespace (FILE *, tree);
+  tree finish_function (FILE *, tree);
+private:
   tree start (tree_code);
   tree finish (FILE *, tree);
   location_t read_loc ();
+  bool read_tree_ary (FILE *, unsigned, const gtp *);
   bool read_core_bools (FILE *, tree);
   bool read_core_vals (FILE *, tree);
 
@@ -800,38 +812,102 @@ in::tag_conf (FILE *d)
   return true;
 }
 
+/* Dump the global trees directly to save encoding them for no reason.
+   Further types such as sizetype and global_namespace are oddly
+   recursive, and this avoids having to deal with that in the
+   reader.
+
+   u:count
+   <ary>*
+*/
+
+const streamer::gtp streamer::global_tree_arys[] =
+  {
+    {global_trees, TI_MAX},
+    {cp_global_trees, CPTI_MAX},
+    {&global_namespace, 1},
+    {NULL, 0}
+  };
+
+void
+out::tag_trees (FILE *d)
+{
+  w.u (rt_trees);
+  unsigned ix;
+  for (ix = 0; global_tree_arys[ix].ptr; ix++)
+    continue;
+  w.u (ix);
+  for (ix = 0; global_tree_arys[ix].ptr; ix++)
+    write_tree_ary (d, ix, &global_tree_arys[ix]);
+}
+
+bool
+in::tag_trees (FILE *d)
+{
+  unsigned n = r.u ();
+  unsigned ix;
+
+  for (ix = 0; ix != n && global_tree_arys[ix].ptr; ix++)
+    if (!read_tree_ary (d, ix, &global_tree_arys[ix]))
+      return false;
+
+  if (ix != n || global_tree_arys[ix].ptr)
+    {
+      error ("%qs has %u arrays, expected %u", r.name, n, ix);
+      return false;
+    }
+  return true;
+}
+
 /* Global tree array
    u:count
    b[]:insert_p  */
 
 void
-out::tag_trees (FILE *d, record_tag rt, tree *ary, unsigned num)
+out::write_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
 {
-  w.u (rt);
+  const tree *ary = ary_p->ptr;
+  unsigned num = ary_p->num;
+
   w.u (num);
+
   unsigned n = 0;
   for (unsigned ix = 0; ix != num; ix++)
     {
-      bool existed;
-      unsigned *val = &map.get_or_insert (ary[ix], &existed);
-      if (!existed)
+      bool insert = false;
+  
+      if (ary[ix])
 	{
-	  n++;
-	  *val = next ();
+	  bool existed;
+	  unsigned *val = &map.get_or_insert (ary[ix], &existed);
+	  if (!existed)
+	    {
+	      n++;
+	      *val = next ();
+	      insert = true;
+	    }
+	  if (d)
+	    fprintf (d, "Fixed %u:%u index %u is %p (%s)%s\n",
+		     ary_num, ix, *val, (void *)ary[ix],
+		     get_tree_code_name (TREE_CODE (ary[ix])),
+		     insert ? " inserted" : "");
 	}
-      w.b (!existed);
+      w.b (insert);
     }
   if (d)
     fprintf (d, "Writing %u fixed trees (%d unique)\n", num, n);
 }
 
 bool
-in::tag_trees (FILE *d, record_tag, tree *ary, unsigned num)
+in::read_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
 {
+  const tree *ary = ary_p->ptr;
+  unsigned num = ary_p->num;
+
   unsigned n = r.u ();
   if (n != num)
     {
-      error ("%qs has %u trees, expected %u", r.name, n, num);
+      error ("%qs array %u %u trees, expected %u", r.name, ary_num, n, num);
       return false;
     }
 
@@ -839,8 +915,16 @@ in::tag_trees (FILE *d, record_tag, tree *ary, unsigned num)
   for (unsigned ix = 0; ix != num; ix++)
     if (r.b ())
       {
+	tree t = ary[ix];
+	unsigned tag = next ();
+
+	gcc_assert (t);
 	n++;
-	map.put (next (), ary[num]);
+	map.put (tag, t);
+	if (d)
+	  fprintf (d, "Fixed %u:%u index %u is %p (%s)\n",
+		   ary_num, ix, tag, (void *)t,
+		   get_tree_code_name (TREE_CODE (t)));
       }
 
   if (d)
@@ -906,9 +990,7 @@ in::read_one (FILE *d, tree &imp)
     case rt_import:
       return tag_import (d, imp);
     case rt_trees:
-      return tag_trees (d, record_tag (rt), global_trees, TI_MAX);
-    case rt_cptrees:
-      return tag_trees (d, record_tag (rt), cp_global_trees, CPTI_MAX);
+      return tag_trees (d);
 
     default:
       break;
@@ -1047,9 +1129,18 @@ in::start (tree_code code)
 tree
 in::finish (FILE *d, tree t)
 {
-  // FIXME
-  return t;
+  switch (TREE_CODE (t))
+    {
+    default: break;
+
+    case NAMESPACE_DECL:
+      return finish_namespace (d, t);
+
+    case FUNCTION_DECL:
+      return finish_function (d, t);
+    }
   
+  return t;
 }
 
 /* Read & write the core boolean flags.  */
@@ -1276,7 +1367,7 @@ out::write_core_vals (FILE *d, tree t)
       WT (TYPE_ATTRIBUTES (t));
       WT (TYPE_NAME (t));
       WT (TYPE_MAIN_VARIANT (t));
-      WT (TYPE_CONTEXT (t));
+      WT (CP_TYPE_CONTEXT (t));
       WT (TYPE_STUB_DECL (t));
     }
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_NON_COMMON))
@@ -1303,7 +1394,7 @@ out::write_core_vals (FILE *d, tree t)
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_MINIMAL))
     {
       WT (DECL_NAME (t));
-      WT (DECL_CONTEXT (t));
+      WT (CP_DECL_CONTEXT (t));
     }
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_COMMON))
     {
@@ -1434,8 +1525,21 @@ out::write_tree (FILE *d, tree t)
   *val = next ();
   tree_code code = TREE_CODE (t);
   if (d)
-    fprintf (d, "Writing:%u %s (%s:%d)\n", *val, get_tree_code_name (code),
-	     tree_code_class_strings [TREE_CODE_CLASS (code)], code);
+    {
+      tree name = t;
+      
+      if (TYPE_P (name))
+	name = TYPE_NAME (name);
+      if (!name)
+	;
+      else if (DECL_P (name))
+	name = DECL_NAME (name);
+      else if (TREE_CODE (name) != IDENTIFIER_NODE)
+	name = NULL_TREE;
+      fprintf (d, "Writing:%u %p (%s:%s)\n", *val, (void *)t,
+	       get_tree_code_name (TREE_CODE (t)),
+	       name ? IDENTIFIER_POINTER (name) : "");
+    }
 
   gcc_assert (rt_tree_base + code < rt_ref_base);
   w.u (rt_tree_base + code);
@@ -1478,7 +1582,7 @@ in::read_tree (FILE *d, tree *tp, unsigned tag)
 
       *tp = val ? *val : error_mark_node;
       if (d)
-	fprintf (d, "Reading:%u mapping to %p (%s)\n", tag, (void *)*tp,
+	fprintf (d, "Reading:%u found %p (%s)\n", tag, (void *)*tp,
 		 *tp ? get_tree_code_name (TREE_CODE (*tp)) : "NULL");
       return val != NULL;
     }
@@ -1498,8 +1602,7 @@ in::read_tree (FILE *d, tree *tp, unsigned tag)
   bool existed = map.put (tag, t);
   gcc_assert (!existed);
   if (d)
-    fprintf (d, "Reading:%u %s (%s:%d)\n", tag, get_tree_code_name (code),
-	     tree_code_class_strings [TREE_CODE_CLASS (code)], code);
+    fprintf (d, "Reading:%u %s\n", tag, get_tree_code_name (code));
 
   if (code != IDENTIFIER_NODE)
     {
@@ -1512,16 +1615,32 @@ in::read_tree (FILE *d, tree *tp, unsigned tag)
     }
 
   tree found = finish (d, t);
-  if (found)
+  if (found != t)
     {
       /* Update the mapping.  */
-      map.put (tag, found);
       t = found;
+      map.put (tag, t);
     }
-  *tp = t;
+  *tp = t ? t : error_mark_node;
 
-  // FIXME:Do decl-specific processing, dup decls and symbol table things
-  return true;
+  if (d && t)
+    {
+      tree name = found;
+      
+      if (TYPE_P (name))
+	name = TYPE_NAME (name);
+      if (!name)
+	;
+      else if (DECL_P (name))
+	name = DECL_NAME (name);
+      else if (TREE_CODE (name) != IDENTIFIER_NODE)
+	name = NULL_TREE;
+      fprintf (d, "Index %u inserting %p (%s:%s)\n", tag, (void *)found,
+	       get_tree_code_name (TREE_CODE (found)),
+	       name ? IDENTIFIER_POINTER (name) : "");
+    }
+
+  return t != NULL_TREE;
 }
 
 void
@@ -1589,6 +1708,53 @@ static location_t module_loc;
 static GTY(()) tree proclaimer;
 static bool is_interface;
 static int export_depth; /* -1 for singleton export.  */
+
+tree
+in::finish_function (FILE *d, tree fn)
+{
+  return fn;
+}
+
+/* NS has just been read in.  Find the actual namespace we should be
+   using.  */
+
+tree
+in::finish_namespace (FILE *d, tree ns)
+{
+  tree res = NULL_TREE;
+
+  /* We will not have frobbed the namespace yet.  */
+  set_scope (DECL_CONTEXT (ns));
+  if (int push = push_namespace (DECL_NAME (ns)))
+    {
+      bool inline_p = NAMESPACE_INLINE_P (ns);
+      bool module_p = MODULE_NAMESPACE_P (ns);
+
+      res = current_namespace;
+      if (module_p && (!impl || DECL_NAME (ns) != module_namespace_name))
+	inline_p = false;
+
+      if (push < 0)
+	{
+	  if (module_p)
+	    MODULE_NAMESPACE_P (res) = true;
+	  if (inline_p)
+	    make_namespace_inline ();
+	}
+      else
+	{
+	  /* Existing namespace.  Make sure it matches.  */
+	  if (inline_p != NAMESPACE_INLINE_P (ns)
+	      || module_p != MODULE_NAMESPACE_P (ns))
+	    {
+	      error ("mismatched namespace %qD", res);
+	      res = NULL_TREE;
+	    }
+	}
+    }
+
+  return res;
+}
 
 /* The set of imported modules.  The current declared module is
    included in this set too.  Maps to an import_kind.  */
@@ -1904,11 +2070,7 @@ write_module (FILE *stream, const char *fname, tree name)
   out.tag_conf (d);
   // FIXME:Write 'important' flags etc
 
-  /* Dump the global trees directly to save encoding them for no
-     reason.  Further types such as sizetype are oddly recursive, and
-     this avoids having to deal with that in the reader.  */
-  out.tag_trees (d, streamer::rt_trees, global_trees, TI_MAX);
-  out.tag_trees (d, streamer::rt_cptrees, cp_global_trees, CPTI_MAX);
+  out.tag_trees (d);
 
   /* Write the import table.  */
   imported_modules->traverse<const write_import_cl &, write_import>

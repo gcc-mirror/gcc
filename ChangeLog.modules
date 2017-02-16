@@ -1,5 +1,13 @@
 2017-02-16  Nathan Sidwell  <nathan@acm.org>
 
+	Namespace decls!
+	gcc/cp/
+	* module.c (out::write_tree_ary, in::read_tree_ary): New.
+	(out::tag_trees, in::tag_trees): Repurpose.
+	(in::finish_namespace, in::finish_function): New.
+	(out::write_tree, in::read_tree): Adjust.
+	(in::finish): Adjust.
+
 	Some actual tree writing & reading
 	gcc/cp/
 	* module.c (out::write_core_bools, out::write_core_vals): New.
