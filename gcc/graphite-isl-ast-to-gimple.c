@@ -73,22 +73,6 @@ struct ast_build_info
   bool is_parallelizable;
 };
 
-/* Converts a GMP constant VAL to a tree and returns it.  */
-
-static tree
-gmp_cst_to_tree (tree type, mpz_t val)
-{
-  tree t = type ? type : integer_type_node;
-  mpz_t tmp;
-
-  mpz_init (tmp);
-  mpz_set (tmp, val);
-  wide_int wi = wi::from_mpz (t, tmp, true);
-  mpz_clear (tmp);
-
-  return wide_int_to_tree (t, wi);
-}
-
 /* Verifies properties that GRAPHITE should maintain during translation.  */
 
 static inline void
@@ -325,16 +309,20 @@ gcc_expression_from_isl_expr_int (tree type, __isl_take isl_ast_expr *expr)
 {
   gcc_assert (isl_ast_expr_get_type (expr) == isl_ast_expr_int);
   isl_val *val = isl_ast_expr_get_val (expr);
-  mpz_t val_mpz_t;
-  mpz_init (val_mpz_t);
+  size_t n = isl_val_n_abs_num_chunks (val, sizeof (HOST_WIDE_INT));
+  HOST_WIDE_INT *chunks = XALLOCAVEC (HOST_WIDE_INT, n);
   tree res;
-  if (isl_val_get_num_gmp (val, val_mpz_t) == -1)
+  if (isl_val_get_abs_num_chunks (val, sizeof (HOST_WIDE_INT), chunks) == -1)
     res = NULL_TREE;
   else
-    res = gmp_cst_to_tree (type, val_mpz_t);
+    {
+      widest_int wi = widest_int::from_array (chunks, n, true);
+      if (isl_val_is_neg (val))
+	wi = -wi;
+      res = wide_int_to_tree (type, wi);
+    }
   isl_val_free (val);
   isl_ast_expr_free (expr);
-  mpz_clear (val_mpz_t);
   return res;
 }
 

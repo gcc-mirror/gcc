@@ -1,3 +1,17 @@
+2017-02-16  Richard Biener  <rguenther@suse.de>
+
+	* graphite.h: Do not include isl/isl_val_gmp.h, instead include
+	isl/isl_val.h.
+	* graphite-isl-ast-to-gimple.c (gmp_cst_to_tree): Remove.
+	(gcc_expression_from_isl_expr_int): Use generic isl_val interface.
+	* graphite-sese-to-poly.c: Do not include isl/isl_val_gmp.h.
+	(isl_val_int_from_wi): New function.
+	(extract_affine_gmp): Rename to ...
+	(extract_affine_wi): ... this, take a widest_int.
+	(extract_affine_int): Just wrap extract_affine_wi.
+	(add_param_constraints): Use isl_val_int_from_wi.
+	(add_loop_constraints): Likewise, and extract_affine_wi.
+
 2017-02-15 Jeff Law  <law@redhat.com>
 
 	PR middle-end/79521
