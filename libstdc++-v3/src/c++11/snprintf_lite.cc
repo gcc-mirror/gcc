@@ -81,7 +81,7 @@ namespace __gnu_cxx {
 	__val /= 10;
       }
     while (__val != 0);
-    size_t __len = __out - __cs;
+    size_t __len = __cs + __ilen - __out;
     if (__bufsize < __len)
       return -1;
 

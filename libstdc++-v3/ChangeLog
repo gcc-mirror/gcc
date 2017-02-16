@@ -1,3 +1,9 @@
+2017-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60936
+	* src/c++11/snprintf_lite.cc (__concat_size_t): Calculate length
+	written to buffer, not length remaining in buffer.
+
 2017-02-15  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/78723
