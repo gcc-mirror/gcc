@@ -1379,4 +1379,8 @@ i[34567]86-*-linux* | x86_64-*-linux*)
 	fi
 	tm_file="${tm_file} i386/value-unwind.h"
 	;;
+aarch64*-*-*)
+	# ILP32 needs an extra header for unwinding
+	tm_file="${tm_file} aarch64/value-unwind.h"
+	;;
 esac
