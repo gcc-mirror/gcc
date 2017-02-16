@@ -610,6 +610,8 @@ public:
 private:
   void start (tree_code, tree);
   void write_loc (location_t);
+  void write_core_bools (FILE *, tree);
+  void write_core_vals (FILE *, tree);
 
 public:
   void write_tree (FILE *, tree);
@@ -654,6 +656,11 @@ private:
   tree start (tree_code);
   tree finish (FILE *, tree);
   location_t read_loc ();
+  bool read_core_bools (FILE *, tree);
+  bool read_core_vals (FILE *, tree);
+
+private:
+  void set_scope (tree);
 
 public:
   bool read_tree (FILE *, tree *, unsigned = 0);
@@ -666,6 +673,11 @@ in::in (FILE *s, const char *n, bool is_impl)
 
 in::~in ()
 {
+  if (scope)
+    {
+      pop_scope (scope);
+      pop_scope (global_namespace);
+    }
 }
 
 void
@@ -929,6 +941,20 @@ in::read_loc ()
   return UNKNOWN_LOCATION;
 }
 
+void
+in::set_scope (tree ctx)
+{
+  if (ctx != scope)
+    {
+      if (scope)
+	pop_scope (scope);
+      else
+	push_scope (global_namespace);
+      scope = push_scope (ctx);
+      gcc_assert (scope);
+    }
+}
+
 /* Start tree write.  Write information to allocate the receiving
    node.  */
 
@@ -1026,6 +1052,362 @@ in::finish (FILE *d, tree t)
   
 }
 
+/* Read & write the core boolean flags.  */
+
+void
+out::write_core_bools (FILE *, tree t)
+{
+#define WB(X) w.b (X)
+  WB (TREE_ADDRESSABLE (t));
+  WB (TREE_THIS_VOLATILE (t));
+  WB (TREE_PRIVATE (t));
+  WB (TREE_PROTECTED (t));
+  WB (TREE_DEPRECATED (t));
+
+  if (TREE_CODE (t) != TREE_VEC)
+    {
+      WB (TREE_LANG_FLAG_0 (t));
+      WB (TREE_LANG_FLAG_1 (t));
+      WB (TREE_LANG_FLAG_2 (t));
+      WB (TREE_LANG_FLAG_3 (t));
+      WB (TREE_LANG_FLAG_4 (t));
+      WB (TREE_LANG_FLAG_5 (t));
+      WB (TREE_LANG_FLAG_6 (t));
+    }
+  
+  if (TYPE_P (t))
+    {
+      WB (TYPE_UNSIGNED (t));
+      WB (TYPE_ARTIFICIAL (t));
+      WB (TYPE_LANG_FLAG_0 (t));
+      WB (TYPE_LANG_FLAG_1 (t));
+      WB (TYPE_LANG_FLAG_2 (t));
+      WB (TYPE_LANG_FLAG_3 (t));
+      WB (TYPE_LANG_FLAG_4 (t));
+      WB (TYPE_LANG_FLAG_5 (t));
+      WB (TYPE_LANG_FLAG_6 (t));
+      WB (TYPE_LANG_FLAG_7 (t));
+    }
+  else
+    {
+      WB (TREE_SIDE_EFFECTS (t));
+      WB (TREE_CONSTANT (t));
+      WB (TREE_READONLY (t));
+      WB (TREE_NO_WARNING (t));
+    }
+  
+  if (DECL_P (t))
+    {
+      WB (DECL_UNSIGNED (t));
+      WB (DECL_NAMELESS (t));
+    }
+
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
+    {
+      WB (TYPE_STRING_FLAG (t));
+      WB (TYPE_NEEDS_CONSTRUCTING (t));
+      WB (TYPE_PACKED (t));
+      WB (TYPE_RESTRICT (t));
+      WB (TYPE_USER_ALIGN (t));
+      WB (TYPE_READONLY (t));
+    }
+
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_COMMON))
+    {
+      WB (DECL_NONLOCAL (t));
+      WB (DECL_VIRTUAL_P (t));
+      WB (DECL_IGNORED_P (t));
+      WB (DECL_ABSTRACT_P (t));
+      WB (DECL_ARTIFICIAL (t));
+      WB (DECL_USER_ALIGN (t));
+      WB (DECL_PRESERVE_P (t));
+      WB (DECL_EXTERNAL (t));
+    }
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WITH_VIS))
+    {
+      WB (DECL_COMMON (t));
+      WB (DECL_DLLIMPORT_P (t));
+      WB (DECL_WEAK (t));
+      WB (DECL_SEEN_IN_BIND_EXPR_P (t));
+      WB (DECL_COMDAT (t));
+      WB (DECL_VISIBILITY_SPECIFIED (t));
+
+      switch (TREE_CODE (t))
+	{
+	default:
+	  break;
+	case VAR_DECL:
+	  WB (DECL_HARD_REGISTER (t));
+	  WB (DECL_IN_CONSTANT_POOL (t));
+	  break;
+	case FUNCTION_DECL:
+	  WB (DECL_FINAL_P (t));
+	  WB (DECL_CXX_CONSTRUCTOR_P (t));
+	  WB (DECL_CXX_DESTRUCTOR_P (t));
+	  break;
+	}
+    }
+  // FIXME: Add more
+#undef WB
+}
+
+bool
+in::read_core_bools (FILE *, tree t)
+{
+#define RB(X) (X) = r.b ()
+  RB (TREE_ADDRESSABLE (t));
+  RB (TREE_THIS_VOLATILE (t));
+  RB (TREE_PRIVATE (t));
+  RB (TREE_PROTECTED (t));
+  RB (TREE_DEPRECATED (t));
+
+  if (TREE_CODE (t) != TREE_VEC)
+    {
+      RB (TREE_LANG_FLAG_0 (t));
+      RB (TREE_LANG_FLAG_1 (t));
+      RB (TREE_LANG_FLAG_2 (t));
+      RB (TREE_LANG_FLAG_3 (t));
+      RB (TREE_LANG_FLAG_4 (t));
+      RB (TREE_LANG_FLAG_5 (t));
+      RB (TREE_LANG_FLAG_6 (t));
+    }
+  
+  if (TYPE_P (t))
+    {
+      RB (TYPE_UNSIGNED (t));
+      RB (TYPE_ARTIFICIAL (t));
+      RB (TYPE_LANG_FLAG_0 (t));
+      RB (TYPE_LANG_FLAG_1 (t));
+      RB (TYPE_LANG_FLAG_2 (t));
+      RB (TYPE_LANG_FLAG_3 (t));
+      RB (TYPE_LANG_FLAG_4 (t));
+      RB (TYPE_LANG_FLAG_5 (t));
+      RB (TYPE_LANG_FLAG_6 (t));
+      RB (TYPE_LANG_FLAG_7 (t));
+    }
+  else
+    {
+      RB (TREE_SIDE_EFFECTS (t));
+      RB (TREE_CONSTANT (t));
+      RB (TREE_READONLY (t));
+      RB (TREE_NO_WARNING (t));
+    }
+  
+  if (DECL_P (t))
+    {
+      RB (DECL_UNSIGNED (t));
+      RB (DECL_NAMELESS (t));
+    }
+
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
+    {
+      RB (TYPE_STRING_FLAG (t));
+      RB (TYPE_NEEDS_CONSTRUCTING (t));
+      RB (TYPE_PACKED (t));
+      RB (TYPE_RESTRICT (t));
+      RB (TYPE_USER_ALIGN (t));
+      RB (TYPE_READONLY (t));
+    }
+
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_COMMON))
+    {
+      RB (DECL_NONLOCAL (t));
+      RB (DECL_VIRTUAL_P (t));
+      RB (DECL_IGNORED_P (t));
+      RB (DECL_ABSTRACT_P (t));
+      RB (DECL_ARTIFICIAL (t));
+      RB (DECL_USER_ALIGN (t));
+      RB (DECL_PRESERVE_P (t));
+      RB (DECL_EXTERNAL (t));
+    }
+
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WITH_VIS))
+    {
+      RB (DECL_COMMON (t));
+      RB (DECL_DLLIMPORT_P (t));
+      RB (DECL_WEAK (t));
+      RB (DECL_SEEN_IN_BIND_EXPR_P (t));
+      RB (DECL_COMDAT (t));
+      RB (DECL_VISIBILITY_SPECIFIED (t));
+
+      switch (TREE_CODE (t))
+	{
+	default:
+	  break;
+	case VAR_DECL:
+	  RB (DECL_HARD_REGISTER (t));
+	  RB (DECL_IN_CONSTANT_POOL (t));
+	  break;
+	case FUNCTION_DECL:
+	  RB (DECL_FINAL_P (t));
+	  RB (DECL_CXX_CONSTRUCTOR_P (t));
+	  RB (DECL_CXX_DESTRUCTOR_P (t));
+	  break;
+	}
+    }
+      
+  // Add more
+#undef RB
+  return true;
+}
+
+/* Read & write the core values and pointers.  */
+
+void
+out::write_core_vals (FILE *d, tree t)
+{
+#define WU(X) w.u (X)
+#define WT(X) write_tree (d, X)
+  WT (TREE_TYPE (t));
+
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_LIST))
+    {
+      WT (TREE_PURPOSE (t));
+      WT (TREE_VALUE (t));
+      WT (TREE_CHAIN (t));
+    }
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
+    {
+      WU (TYPE_MODE_RAW (t));
+      WU (TYPE_PRECISION (t));
+      WU (TYPE_ALIGN (t));
+      WT (TYPE_SIZE (t));
+      WT (TYPE_SIZE_UNIT (t));
+      WT (TYPE_ATTRIBUTES (t));
+      WT (TYPE_NAME (t));
+      WT (TYPE_MAIN_VARIANT (t));
+      WT (TYPE_CONTEXT (t));
+      WT (TYPE_STUB_DECL (t));
+    }
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_NON_COMMON))
+    {
+      switch (TREE_CODE (t))
+	{
+	default:
+	  break;
+	case ENUMERAL_TYPE:
+	  WT (TYPE_VALUES (t));
+	  break;
+	case  ARRAY_TYPE:
+	  WT (TYPE_DOMAIN (t));
+	  break;
+	case FUNCTION_TYPE:
+	case METHOD_TYPE:
+	  WT (TYPE_ARG_TYPES (t));
+	  break;
+	}
+      if (!POINTER_TYPE_P (t))
+	WT (TYPE_MINVAL (t));
+      WT (TYPE_MAXVAL (t));
+    }
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_MINIMAL))
+    {
+      WT (DECL_NAME (t));
+      WT (DECL_CONTEXT (t));
+    }
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_COMMON))
+    {
+      WU (DECL_MODE (t));
+      WU (DECL_ALIGN (t));
+      WT (DECL_SIZE (t));
+      WT (DECL_SIZE_UNIT (t));
+      WT (DECL_ATTRIBUTES (t));
+    }
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_NON_COMMON))
+    {
+      if (TREE_CODE (t) == TYPE_DECL)
+	WT (DECL_ORIGINAL_TYPE (t));
+    }
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WITH_VIS))
+    {
+      WU (DECL_VISIBILITY (t));
+      WT (DECL_ASSEMBLER_NAME_SET_P (t)
+	  ? DECL_ASSEMBLER_NAME (t) : NULL_TREE);
+    }
+#undef WT
+#undef WU
+}
+
+bool
+in::read_core_vals (FILE *d, tree t)
+{
+#define RU(X) ((X) = r.u ())
+#define RM(X) ((X) = machine_mode (r.u ()))
+#define RT(X) if (!read_tree (d, &(X))) return false
+  RT (TREE_TYPE (t));
+
+   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_LIST))
+    {
+      RT (TREE_PURPOSE (t));
+      RT (TREE_VALUE (t));
+      RT (TREE_CHAIN (t));
+    }
+ if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
+    {
+      RM (TYPE_MODE_RAW (t));
+      RU (TYPE_PRECISION (t));
+      SET_TYPE_ALIGN (t, r.u ());
+      RT (TYPE_SIZE (t));
+      RT (TYPE_SIZE_UNIT (t));
+      RT (TYPE_ATTRIBUTES (t));
+      RT (TYPE_NAME (t));
+      RT (TYPE_MAIN_VARIANT (t));
+      RT (TYPE_CONTEXT (t));
+      RT (TYPE_STUB_DECL (t));
+    }
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_NON_COMMON))
+    {
+      switch (TREE_CODE (t))
+	{
+	default:
+	  break;
+	case ENUMERAL_TYPE:
+	  RT (TYPE_VALUES (t));
+	  break;
+	case  ARRAY_TYPE:
+	  RT (TYPE_DOMAIN (t));
+	  break;
+	case FUNCTION_TYPE:
+	case METHOD_TYPE:
+	  RT (TYPE_ARG_TYPES (t));
+	  break;
+	}
+      if (!POINTER_TYPE_P (t))
+	RT (TYPE_MINVAL (t));
+      RT (TYPE_MAXVAL (t));
+    }
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_MINIMAL))
+    {
+      RT (DECL_NAME (t));
+      RT (DECL_CONTEXT (t));
+    }
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_COMMON))
+    {
+      RM (DECL_MODE (t));
+      SET_DECL_ALIGN (t, r.u ());
+      RT (DECL_SIZE (t));
+      RT (DECL_SIZE_UNIT (t));
+      RT (DECL_ATTRIBUTES (t));
+    }
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_NON_COMMON))
+    {
+      if (TREE_CODE (t) == TYPE_DECL)
+	RT (DECL_ORIGINAL_TYPE (t));
+    }
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WITH_VIS))
+    {
+      DECL_VISIBILITY (t) = symbol_visibility (r.u ());
+      tree name;
+      RT (name);
+      if (name)
+	SET_DECL_ASSEMBLER_NAME (t, name);
+    }
+#undef RT
+#undef RM
+#undef RU
+  return true;
+}
+
 /* Write either the decl (as a declaration) itself (and create a
    mapping for it), or write the existing mapping.  This is
    essentially the lisp self-referential structure pretty-printer,
@@ -1059,10 +1441,11 @@ out::write_tree (FILE *d, tree t)
   w.u (rt_tree_base + code);
   start (code, t);
 
-  if (code == IDENTIFIER_NODE)
-    ;
-  else
+  if (code != IDENTIFIER_NODE)
     {
+      write_core_bools (d, t);
+      write_core_vals (d, t);
+      
       // FIXME:Write core bits
       // FIXME:Write lang_specific info
       // FIXME:write lang_specific bits
@@ -1120,9 +1503,11 @@ in::read_tree (FILE *d, tree *tp, unsigned tag)
 
   if (code != IDENTIFIER_NODE)
     {
-      // FIXME:Read core bits
+      if (!read_core_bools (d, t)
+	  || !read_core_vals (d, t))
+	return false;
+
       // FIXME:read lang_specific bits
-      // FIXME:Read core ptrs & vals
       // FIXME:Read lang_specific ptrs & vals
     }
 

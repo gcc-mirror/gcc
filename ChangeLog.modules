@@ -1,5 +1,12 @@
 2017-02-16  Nathan Sidwell  <nathan@acm.org>
 
+	Some actual tree writing & reading
+	gcc/cp/
+	* module.c (out::write_core_bools, out::write_core_vals): New.
+	(in::read_core_bools, in::read_core_vals): New.
+	(in::set_scope): New.
+	(out::write_tree, in::read_tree): Call core readers/writers.
+
 	Node length & allocation.  Global trees.
 	gcc/cp/
 	* module.c (streamer::tags): Rename to ...
