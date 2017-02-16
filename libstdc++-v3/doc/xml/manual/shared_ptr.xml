@@ -461,7 +461,7 @@ be private.
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://boost.org/libs/smart_ptr/shared_ptr.htm">
+	      xlink:href="http://www.boost.org/libs/smart_ptr/shared_ptr.htm">
       Boost C++ Libraries documentation, shared_ptr
 	</link>
       </title>
