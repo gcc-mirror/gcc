@@ -1,3 +1,11 @@
+2017-01-16  Carl Love  <cel@us.ibm.com>
+
+	Backport from mainline commit r245460 on 2017-02-14
+
+	PR 79545
+	* gcc.target/powerpc/vsx-builtin-3.c: Add missing test case for the
+	xvcvsxdsp and xvcvuxdsp instructions.
+
 2017-02-06  Carl Love  <cel@us.ibm.com>
 	* gcc.target/powerpc/builtins-3-p8.c:  Add new testfile for missing
 	vec_packs built-in tests.

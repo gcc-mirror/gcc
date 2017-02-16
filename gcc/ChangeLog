@@ -1,3 +1,15 @@
+2017-02-16  Carl Love  <cel@us.ibm.com>
+
+	Backport from mainline commit r245460 on 2017-02-14
+
+	PR 79545
+	* config/rs6000/rs6000.c: Add case statement entry to make the xvcvuxdsp
+	built-in argument unsigned.
+	* config/rs6000/vsx.md: Fix the source and return operand types so they
+	match the instruction definitions from the ISA document.  Fix typo
+	in the instruction generation for the (define_insn "vsx_xvcvuxdsp"
+	statement.
+
 2017-02-14  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
