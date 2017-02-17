@@ -15203,7 +15203,7 @@ c_parser_omp_ordered (c_parser *parser, enum pragma_context context,
   if (context != pragma_stmt && context != pragma_compound)
     {
       c_parser_error (parser, "expected declaration specifiers");
-      c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);
+      c_parser_skip_to_pragma_eol (parser, false);
       return false;
     }
 
@@ -16583,8 +16583,11 @@ c_parser_omp_declare_target (c_parser *parser)
 	}
       if (!at1)
 	{
-	  symtab_node *node = symtab_node::get (t);
 	  DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+	  if (TREE_CODE (t) != FUNCTION_DECL && !is_global_var (t))
+	    continue;
+
+	  symtab_node *node = symtab_node::get (t);
 	  if (node != NULL)
 	    {
 	      node->offloadable = 1;

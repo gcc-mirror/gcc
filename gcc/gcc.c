@@ -1919,6 +1919,9 @@ static int have_c = 0;
 /* Was the option -o passed.  */
 static int have_o = 0;
 
+/* Was the option -E passed.  */
+static int have_E = 0;
+
 /* Pointer to output file name passed in with -o. */
 static const char *output_file = 0;
 
@@ -4029,6 +4032,10 @@ driver_handle_option (struct gcc_options *opts,
 		    PREFIX_PRIORITY_B_OPT, 0, 0);
       }
       validated = true;
+      break;
+
+    case OPT_E:
+      have_E = true;
       break;
 
     case OPT_x:
@@ -7692,6 +7699,17 @@ driver::build_option_suggestions (void)
 	  {
 	    for (int j = 0; sanitizer_opts[j].name != NULL; ++j)
 	      {
+		struct cl_option optb;
+		/* -fsanitize=all is not valid, only -fno-sanitize=all.
+		   So don't register the positive misspelling candidates
+		   for it.  */
+		if (sanitizer_opts[j].flag == ~0U && i == OPT_fsanitize_)
+		  {
+		    optb = *option;
+		    optb.opt_text = opt_text = "-fno-sanitize=";
+		    optb.cl_reject_negative = true;
+		    option = &optb;
+		  }
 		/* Get one arg at a time e.g. "-fsanitize=address".  */
 		char *with_arg = concat (opt_text,
 					 sanitizer_opts[j].name,
@@ -8273,7 +8291,17 @@ lookup_compiler (const char *name, size_t length, const char *language)
     {
       for (cp = compilers + n_compilers - 1; cp >= compilers; cp--)
 	if (cp->suffix[0] == '@' && !strcmp (cp->suffix + 1, language))
-	  return cp;
+	  {
+	    if (name != NULL && strcmp (name, "-") == 0
+		&& (strcmp (cp->suffix, "@c-header") == 0
+		    || strcmp (cp->suffix, "@c++-header") == 0)
+		&& !have_E)
+	      fatal_error (input_location,
+			   "cannot use %<-%> as input filename for a "
+			   "precompiled header");
+
+	    return cp;
+	  }
 
       error ("language %s not recognized", language);
       return 0;

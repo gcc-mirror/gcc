@@ -53,7 +53,7 @@ test01()
   cit = cx.find(2L);
   VERIFY( cit == cx.end() );
 
-  VERIFY( Cmp::count == 0);
+  VERIFY( Cmp::count == 0 );
 
   static_assert(std::is_same<decltype(it), test_type::iterator>::value,
       "find returns iterator");
@@ -76,7 +76,7 @@ test02()
   cn = cx.count(2L);
   VERIFY( cn == 0 );
 
-  VERIFY( Cmp::count == 0);
+  VERIFY( Cmp::count == 0 );
 }
 
 void
@@ -94,7 +94,12 @@ test03()
   cit = cx.lower_bound(2L);
   VERIFY( cit != cx.end() && cit->second == '4' );
 
-  VERIFY( Cmp::count == 0);
+  VERIFY( Cmp::count == 0 );
+
+  static_assert(std::is_same<decltype(it), test_type::iterator>::value,
+      "lower_bound returns iterator");
+  static_assert(std::is_same<decltype(cit), test_type::const_iterator>::value,
+      "const lower_bound returns const_iterator");
 }
 
 void
@@ -112,7 +117,12 @@ test04()
   cit = cx.upper_bound(3L);
   VERIFY( cit == cx.end() );
 
-  VERIFY( Cmp::count == 0);
+  VERIFY( Cmp::count == 0 );
+
+  static_assert(std::is_same<decltype(it), test_type::iterator>::value,
+      "upper_bound returns iterator");
+  static_assert(std::is_same<decltype(cit), test_type::const_iterator>::value,
+      "const upper_bound returns const_iterator");
 }
 
 void
@@ -130,9 +140,37 @@ test05()
   cit = cx.equal_range(2L);
   VERIFY( cit.first == cit.second && cit.first != cx.end() );
 
-  VERIFY( Cmp::count == 0);
+  VERIFY( Cmp::count == 0 );
+
+  using pair = std::pair<test_type::iterator, test_type::iterator>;
+  static_assert(std::is_same<decltype(it), pair>::value,
+      "equal_range returns pair<iterator, iterator>");
+  using cpair = std::pair<test_type::const_iterator, test_type::const_iterator>;
+  static_assert(std::is_same<decltype(cit), cpair>::value,
+      "const equal_range returns pair<const_iterator, const_iterator>");
 }
 
+void
+test06()
+{
+  // PR libstdc++/78273
+
+  struct C {
+    bool operator()(int l, int r) const { return l < r; }
+
+    struct Partition { };
+
+    bool operator()(int l, Partition) const { return l < 2; }
+    bool operator()(Partition, int r) const { return 4 < r; }
+
+    using is_transparent = void;
+  };
+
+  std::map<int, int, C> m{ {1,0}, {2,0}, {3,0}, {4, 0}, {5, 0} };
+
+  auto n = m.count(C::Partition{});
+  VERIFY( n == 3 );
+}
 
 int
 main()
@@ -142,4 +180,5 @@ main()
   test03();
   test04();
   test05();
+  test06();
 }

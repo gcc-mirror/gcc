@@ -380,26 +380,36 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // 300. list::merge() specification incomplete
       if (this != std::__addressof(__x))
 	{
-	  _M_check_equal_allocators(__x); 
+	  _M_check_equal_allocators(__x);
 
 	  iterator __first1 = begin();
 	  iterator __last1 = end();
 	  iterator __first2 = __x.begin();
 	  iterator __last2 = __x.end();
-	  while (__first1 != __last1 && __first2 != __last2)
-	    if (*__first2 < *__first1)
-	      {
-		iterator __next = __first2;
-		_M_transfer(__first1, __first2, ++__next);
-		__first2 = __next;
-	      }
-	    else
-	      ++__first1;
-	  if (__first2 != __last2)
-	    _M_transfer(__last1, __first2, __last2);
+	  size_t __orig_size = __x.size();
+	  __try {
+	    while (__first1 != __last1 && __first2 != __last2)
+	      if (*__first2 < *__first1)
+		{
+		  iterator __next = __first2;
+		  _M_transfer(__first1, __first2, ++__next);
+		  __first2 = __next;
+		}
+	      else
+		++__first1;
+	    if (__first2 != __last2)
+	      _M_transfer(__last1, __first2, __last2);
 
-	  this->_M_inc_size(__x._M_get_size());
-	  __x._M_set_size(0);
+	    this->_M_inc_size(__x._M_get_size());
+	    __x._M_set_size(0);
+	  }
+	  __catch(...)
+	    {
+	      size_t __dist = distance(__first2, __last2);
+	      this->_M_inc_size(__orig_size - __dist);
+	      __x._M_set_size(__dist);
+	      __throw_exception_again;
+	    }
 	}
     }
 
@@ -423,20 +433,31 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    iterator __last1 = end();
 	    iterator __first2 = __x.begin();
 	    iterator __last2 = __x.end();
-	    while (__first1 != __last1 && __first2 != __last2)
-	      if (__comp(*__first2, *__first1))
-		{
-		  iterator __next = __first2;
-		  _M_transfer(__first1, __first2, ++__next);
-		  __first2 = __next;
-		}
-	      else
-		++__first1;
-	    if (__first2 != __last2)
-	      _M_transfer(__last1, __first2, __last2);
+	    size_t __orig_size = __x.size();
+	    __try
+	      {
+		while (__first1 != __last1 && __first2 != __last2)
+		  if (__comp(*__first2, *__first1))
+		    {
+		      iterator __next = __first2;
+		      _M_transfer(__first1, __first2, ++__next);
+		      __first2 = __next;
+		    }
+		  else
+		    ++__first1;
+		if (__first2 != __last2)
+		  _M_transfer(__last1, __first2, __last2);
 
-	    this->_M_inc_size(__x._M_get_size());
-	    __x._M_set_size(0);
+		this->_M_inc_size(__x._M_get_size());
+		__x._M_set_size(0);
+	      }
+	    __catch(...)
+	      {
+		size_t __dist = distance(__first2, __last2);
+		this->_M_inc_size(__orig_size - __dist);
+		__x._M_set_size(__dist);
+		__throw_exception_again;
+	      }
 	  }
       }
 

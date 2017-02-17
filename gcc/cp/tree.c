@@ -2775,7 +2775,7 @@ build_min_non_dep (enum tree_code code, tree non_dep, ...)
 
   t = make_node (code);
   length = TREE_CODE_LENGTH (code);
-  TREE_TYPE (t) = TREE_TYPE (non_dep);
+  TREE_TYPE (t) = unlowered_expr_type (non_dep);
   TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (non_dep);
 
   for (i = 0; i < length; i++)
@@ -2830,8 +2830,10 @@ build_min_non_dep_op_overload (enum tree_code op,
   nargs = call_expr_nargs (non_dep);
 
   expected_nargs = cp_tree_code_length (op);
-  if (op == POSTINCREMENT_EXPR
-      || op == POSTDECREMENT_EXPR)
+  if ((op == POSTINCREMENT_EXPR
+       || op == POSTDECREMENT_EXPR)
+      /* With -fpermissive non_dep could be operator++().  */
+      && (!flag_permissive || nargs != expected_nargs))
     expected_nargs += 1;
   gcc_assert (nargs == expected_nargs);
 
@@ -4145,6 +4147,14 @@ decl_linkage (tree decl)
   /* Things that are TREE_PUBLIC have external linkage.  */
   if (TREE_PUBLIC (decl))
     return lk_external;
+
+  /* maybe_thunk_body clears TREE_PUBLIC on the maybe-in-charge 'tor variants,
+     check one of the "clones" for the real linkage.  */
+  if ((DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl)
+       || DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl))
+      && DECL_CHAIN (decl)
+      && DECL_CLONED_FUNCTION (DECL_CHAIN (decl)))
+    return decl_linkage (DECL_CHAIN (decl));
 
   if (TREE_CODE (decl) == NAMESPACE_DECL)
     return lk_external;

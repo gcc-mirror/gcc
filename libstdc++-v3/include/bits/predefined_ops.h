@@ -24,7 +24,7 @@
 
 /** @file predefined_ops.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  You should not attempt to use it directly. @headername{algorithm}
  */
 
 #ifndef _GLIBCXX_PREDEFINED_OPS_H
@@ -42,6 +42,7 @@ namespace __ops
       operator()(_Iterator1 __it1, _Iterator2 __it2) const
       { return *__it1 < *__it2; }
   };
+
   _GLIBCXX14_CONSTEXPR
   inline _Iter_less_iter
   __iter_less_iter()
@@ -53,7 +54,7 @@ namespace __ops
       bool
       operator()(_Iterator __it, _Value& __val) const
       { return *__it < __val; }
-    };
+  };
 
   inline _Iter_less_val
   __iter_less_val()
@@ -69,7 +70,7 @@ namespace __ops
       bool
       operator()(_Value& __val, _Iterator __it) const
       { return __val < *__it; }
-    };
+  };
 
   inline _Val_less_iter
   __val_less_iter()
@@ -85,7 +86,7 @@ namespace __ops
       bool
       operator()(_Iterator1 __it1, _Iterator2 __it2) const
       { return *__it1 == *__it2; }
-    };
+  };
 
   inline _Iter_equal_to_iter
   __iter_equal_to_iter()
@@ -97,7 +98,7 @@ namespace __ops
       bool
       operator()(_Iterator __it, _Value& __val) const
       { return *__it == __val; }
-    };
+  };
 
   inline _Iter_equal_to_val
   __iter_equal_to_val()
@@ -111,7 +112,8 @@ namespace __ops
     struct _Iter_comp_iter
     {
       _Compare _M_comp;
-      _GLIBCXX14_CONSTEXPR
+
+      explicit _GLIBCXX14_CONSTEXPR
       _Iter_comp_iter(_Compare __comp)
 	: _M_comp(__comp)
       { }
@@ -134,6 +136,7 @@ namespace __ops
     {
       _Compare _M_comp;
 
+      explicit
       _Iter_comp_val(_Compare __comp)
 	: _M_comp(__comp)
       { }
@@ -159,6 +162,7 @@ namespace __ops
     {
       _Compare _M_comp;
 
+      explicit
       _Val_comp_iter(_Compare __comp)
 	: _M_comp(__comp)
       { }
@@ -184,6 +188,7 @@ namespace __ops
     {
       _Value& _M_value;
 
+      explicit
       _Iter_equals_val(_Value& __value)
 	: _M_value(__value)
       { }
@@ -202,16 +207,17 @@ namespace __ops
   template<typename _Iterator1>
     struct _Iter_equals_iter
     {
-      typename std::iterator_traits<_Iterator1>::reference _M_ref;
+      _Iterator1 _M_it1;
 
+      explicit
       _Iter_equals_iter(_Iterator1 __it1)
-	: _M_ref(*__it1)
+	: _M_it1(__it1)
       { }
 
       template<typename _Iterator2>
 	bool
 	operator()(_Iterator2 __it2)
-	{ return *__it2 == _M_ref; }
+	{ return *__it2 == *_M_it1; }
     };
 
   template<typename _Iterator>
@@ -224,6 +230,7 @@ namespace __ops
     {
       _Predicate _M_pred;
 
+      explicit
       _Iter_pred(_Predicate __pred)
 	: _M_pred(__pred)
       { }
@@ -264,16 +271,16 @@ namespace __ops
     struct _Iter_comp_to_iter
     {
       _Compare _M_comp;
-      typename std::iterator_traits<_Iterator1>::reference _M_ref;
+      _Iterator1 _M_it1;
 
       _Iter_comp_to_iter(_Compare __comp, _Iterator1 __it1)
-	: _M_comp(__comp), _M_ref(*__it1)
+	: _M_comp(__comp), _M_it1(__it1)
       { }
 
       template<typename _Iterator2>
 	bool
 	operator()(_Iterator2 __it2)
-	{ return bool(_M_comp(*__it2, _M_ref)); }
+	{ return bool(_M_comp(*__it2, *_M_it1)); }
     };
 
   template<typename _Compare, typename _Iterator>
@@ -286,6 +293,7 @@ namespace __ops
     {
       _Predicate _M_pred;
 
+      explicit
       _Iter_negate(_Predicate __pred)
 	: _M_pred(__pred)
       { }

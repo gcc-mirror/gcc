@@ -12,3 +12,16 @@
 #if defined( SOLARIS_GETC_STRICT_STDC_CHECK )
 #if	!defined(_REENTRANT) && !defined(_LP64) && (!defined(_STRICT_STDC) || (__cplusplus >= 199711L))
 #endif  /* SOLARIS_GETC_STRICT_STDC_CHECK */
+
+
+#if defined( SOLARIS_GETS_C11_CHECK )
+#if __STDC_VERSION__ < 201112L && __cplusplus < 201402L
+extern char	*gets(char *) __attribute__((__deprecated__));
+#endif
+#endif  /* SOLARIS_GETS_C11_CHECK */
+
+
+#if defined( SOLARIS_GETS_CXX14_CHECK )
+#if __STDC_VERSION__ < 201112L && __cplusplus < 201402L
+extern char	*gets(char *) __ATTR_DEPRECATED;
+#endif  /* SOLARIS_GETS_CXX14_CHECK */

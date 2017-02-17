@@ -10,7 +10,7 @@
 struct ParForThread
 {
 	// the thread's iteration space [32lsb, 32msb)
-	uint64 pos;
+	uint64 pos __attribute__((aligned(8)));
 	// stats
 	uint64 nsteal;
 	uint64 nstealcnt;

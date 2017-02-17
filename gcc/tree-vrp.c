@@ -7057,8 +7057,7 @@ vrp_valueize_1 (tree name)
 static enum ssa_prop_result
 vrp_visit_assignment_or_call (gimple *stmt, tree *output_p)
 {
-  tree def, lhs;
-  ssa_op_iter iter;
+  tree lhs;
   enum gimple_code code = gimple_code (stmt);
   lhs = gimple_get_lhs (stmt);
 
@@ -7175,8 +7174,7 @@ vrp_visit_assignment_or_call (gimple *stmt, tree *output_p)
       }
 
   /* Every other statement produces no useful ranges.  */
-  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
-    set_value_range_to_varying (get_value_range (def));
+  set_defs_to_varying (stmt);
 
   return SSA_PROP_VARYING;
 }

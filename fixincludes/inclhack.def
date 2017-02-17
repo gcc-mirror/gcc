@@ -3482,6 +3482,43 @@ fix = {
 };
 
 /*
+ *  Solaris <iso/stdio_iso.h> should deprecate gets before C11.
+ */
+fix = {
+    hackname  = solaris_gets_c11;
+    mach      = "*-*-solaris2*";
+    files     = "iso/stdio_iso.h";
+    select    = "(extern char[ \t]*\\*gets\\(char \\*\\));";
+
+    c_fix     = format;
+    c_fix_arg = "#if __STDC_VERSION__ < 201112L && __cplusplus < 201402L\n"
+    		"%1 __attribute__((__deprecated__));\n"
+		"#endif";
+
+    test_text = "extern char	*gets(char *);";
+};
+
+/*
+ *  Solaris <iso/stdio_iso.h> shouldn't declare gets for C++14.
+ */
+fix = {
+    hackname  = solaris_gets_cxx14;
+    mach      = "*-*-solaris2*";
+    files     = "iso/stdio_iso.h";
+    select    = <<- _EOSelect_
+(#if __STDC_VERSION__ < 201112L)
+(extern char	\*gets\(char \*\) __ATTR_DEPRECATED;)
+_EOSelect_;
+    c_fix     = format;
+    c_fix_arg = "%1 && __cplusplus < 201402L\n%2";
+
+    test_text = <<- _EOText_
+#if __STDC_VERSION__ < 201112L
+extern char	*gets(char *) __ATTR_DEPRECATED;
+_EOText_;
+};
+
+/*
  * Sun Solaris 2 has a version of sys/int_const.h that defines
  * UINT8_C and UINT16_C to unsigned constants.
  */
@@ -3871,6 +3908,21 @@ fix = {
 };
 
 /*
+ *  Solaris <stdio.h> shouldn't use std::gets for C++14.
+ */
+fix = {
+    hackname  = solaris_std_gets_cxx14;
+    mach      = "*-*-solaris2*";
+    files     = "stdio.h";
+    select    = "using std::gets;";
+
+    c_fix     = format;
+    c_fix_arg = "#if __cplusplus < 201402L\n%0\n#endif";
+
+    test_text = "using std::gets;";
+};
+
+/*
  * Sun Solaris 8 has what appears to be some gross workaround for
  * some old version of their c++ compiler.  G++ doesn't want it
  * either, but doesn't want to be tied to SunPRO version numbers.
@@ -3886,6 +3938,21 @@ fix = {
     sed      = 's/defined(__cplusplus) && (__cplusplus < 54321L)/0/';
 
     test_text = "#if\tdefined(__cplusplus) && (__cplusplus < 54321L)";
+};
+
+/*
+ *  Solaris <stdlib.h> shouldn't use _Noreturn, breaks with C++.
+ */
+fix = {
+    hackname  = solaris_stdlib_noreturn;
+    mach      = "*-*-solaris2*";
+    files     = "iso/stdlib_c99.h";
+    select    = "(extern) _Noreturn (void quick_exit\\(int\\));";
+
+    c_fix     = format;
+    c_fix_arg = "%1 %2 __attribute__((__noreturn__));";
+
+    test_text = "extern _Noreturn void quick_exit(int);";
 };
 
 /*

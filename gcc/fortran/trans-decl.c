@@ -887,6 +887,10 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 	  DECL_CONTEXT (token) = sym->ns->proc_name->backend_decl;
 	  gfc_module_add_decl (cur_module, token);
 	}
+      else if (sym->attr.host_assoc
+	       && TREE_CODE (DECL_CONTEXT (current_function_decl))
+	       != TRANSLATION_UNIT_DECL)
+	gfc_add_decl_to_parent_function (token);
       else
 	gfc_add_decl_to_function (token);
     }

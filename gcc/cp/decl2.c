@@ -1875,6 +1875,14 @@ vague_linkage_p (tree decl)
 {
   if (!TREE_PUBLIC (decl))
     {
+      /* maybe_thunk_body clears TREE_PUBLIC on the maybe-in-charge 'tor
+	 variants, check one of the "clones" for the real linkage.  */
+      if ((DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl)
+	   || DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl))
+	  && DECL_CHAIN (decl)
+	  && DECL_CLONED_FUNCTION (DECL_CHAIN (decl)))
+	return vague_linkage_p (DECL_CHAIN (decl));
+
       gcc_checking_assert (!DECL_COMDAT (decl));
       return false;
     }
@@ -2272,11 +2280,6 @@ constrain_visibility_for_template (tree decl, tree targs)
 void
 determine_visibility (tree decl)
 {
-  tree class_type = NULL_TREE;
-  bool use_template;
-  bool orig_visibility_specified;
-  enum symbol_visibility orig_visibility;
-
   /* Remember that all decls get VISIBILITY_DEFAULT when built.  */
 
   /* Only relevant for names with external linkage.  */
@@ -2288,25 +2291,28 @@ determine_visibility (tree decl)
      maybe_clone_body.  */
   gcc_assert (!DECL_CLONED_FUNCTION_P (decl));
 
-  orig_visibility_specified = DECL_VISIBILITY_SPECIFIED (decl);
-  orig_visibility = DECL_VISIBILITY (decl);
+  bool orig_visibility_specified = DECL_VISIBILITY_SPECIFIED (decl);
+  enum symbol_visibility orig_visibility = DECL_VISIBILITY (decl);
 
+  /* The decl may be a template instantiation, which could influence
+     visibilty.  */
+  tree template_decl = NULL_TREE;
   if (TREE_CODE (decl) == TYPE_DECL)
     {
       if (CLASS_TYPE_P (TREE_TYPE (decl)))
-	use_template = CLASSTYPE_USE_TEMPLATE (TREE_TYPE (decl));
+	{
+	  if (CLASSTYPE_USE_TEMPLATE (TREE_TYPE (decl)))
+	    template_decl = decl;
+	}
       else if (TYPE_TEMPLATE_INFO (TREE_TYPE (decl)))
-	use_template = 1;
-      else
-	use_template = 0;
+	template_decl = decl;
     }
-  else if (DECL_LANG_SPECIFIC (decl))
-    use_template = DECL_USE_TEMPLATE (decl);
-  else
-    use_template = 0;
+  else if (DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
+    template_decl = decl;
 
   /* If DECL is a member of a class, visibility specifiers on the
      class can influence the visibility of the DECL.  */
+  tree class_type = NULL_TREE;
   if (DECL_CLASS_SCOPE_P (decl))
     class_type = DECL_CONTEXT (decl);
   else
@@ -2349,8 +2355,11 @@ determine_visibility (tree decl)
 	    }
 
 	  /* Local classes in templates have CLASSTYPE_USE_TEMPLATE set,
-	     but have no TEMPLATE_INFO, so don't try to check it.  */
-	  use_template = 0;
+	     but have no TEMPLATE_INFO.  Their containing template
+	     function does, and the local class could be constrained
+	     by that.  */
+	  if (template_decl)
+	    template_decl = fn;
 	}
       else if (VAR_P (decl) && DECL_TINFO_P (decl)
 	       && flag_visibility_ms_compat)
@@ -2380,7 +2389,7 @@ determine_visibility (tree decl)
 	      && !CLASSTYPE_VISIBILITY_SPECIFIED (TREE_TYPE (DECL_NAME (decl))))
 	    targetm.cxx.determine_class_data_visibility (decl);
 	}
-      else if (use_template)
+      else if (template_decl)
 	/* Template instantiations and specializations get visibility based
 	   on their template unless they override it with an attribute.  */;
       else if (! DECL_VISIBILITY_SPECIFIED (decl))
@@ -2397,11 +2406,11 @@ determine_visibility (tree decl)
 	}
     }
 
-  if (use_template)
+  if (template_decl)
     {
       /* If the specialization doesn't specify visibility, use the
 	 visibility from the template.  */
-      tree tinfo = get_template_info (decl);
+      tree tinfo = get_template_info (template_decl);
       tree args = TI_ARGS (tinfo);
       tree attribs = (TREE_CODE (decl) == TYPE_DECL
 		      ? TYPE_ATTRIBUTES (TREE_TYPE (decl))

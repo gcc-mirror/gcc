@@ -1,3 +1,52 @@
+2017-02-07  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* trans-types.c	(gfc_get_int_kind_from_width_isofortranen):  Choose
+	REAL type with the widest precision if two (or more) have the same
+	storage size.
+
+2017-01-29  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backported from trunk
+	2017-01-13  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/70697
+	* resolve.c (resolve_lock_unlock_event): Resolve the expression for
+	event's until_count.
+
+2017-01-29  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/70696
+	* trans-expr.c (gfc_get_tree_for_caf_expr): Ensure the backend_decl
+	is valid before accessing it.  Remove unnecessary assert.
+	* trans-decl.c (gfc_build_qualified_array): Add static tokens to the
+	parent function's scope only, when the decl-context is not the
+	translation unit.
+
+2017-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2016-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/78866
+	* openmp.c (resolve_omp_clauses): Diagnose assumed size arrays in
+	OpenMP map, to and from clauses.
+	* trans-openmp.c: Include diagnostic-core.h, temporarily redefining
+	GCC_DIAG_STYLE to __gcc_tdiag__.
+	(gfc_omp_finish_clause): Diagnose implicitly mapped assumed size
+	arrays.
+
+2016-12-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/78239
+	* decl.c (char_len_param_value): Also check for -fimplicit-none
+	when determining if implicit none is in force.
+
+2016-12-21  Release Manager
+
+	* GCC 6.3.0 released.
+
 2016-12-09  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from trunk

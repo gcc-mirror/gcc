@@ -93,6 +93,11 @@ reload_cse_simplify (rtx_insn *insn, rtx testreg)
   basic_block insn_bb = BLOCK_FOR_INSN (insn);
   unsigned insn_bb_succs = EDGE_COUNT (insn_bb->succs);
 
+  /* If NO_FUNCTION_CSE has been set by the target, then we should not try
+     to cse function calls.  */
+  if (NO_FUNCTION_CSE && CALL_P (insn))
+    return false;
+
   if (GET_CODE (body) == SET)
     {
       int count = 0;

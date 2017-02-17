@@ -237,6 +237,8 @@ echo "scanning option files..." >&2
     field = 0
     while (getline < file) {
 	if (/^[ \t]*(;|$)/ || !/^[^ \t]/) {
+	    if (field > 2)
+		printf("_(\"%s\")\n", line)
 	    field = 0
 	} else {
 	    if ((field == 1) && /MissingArgError/) {
@@ -275,12 +277,15 @@ echo "scanning option files..." >&2
 	    if (field == 2) {
 		line = $0
 		printf("#line %d \"%s\"\n", lineno, file)
-		printf("_(\"%s\")\n", line)
+	    } else if (field > 2) {
+		line = line " " $0
 	    }
 	    field++;
 	}
 	lineno++;
     }
+    if (field > 2)
+	printf("_(\"%s\")\n", line)
   }') >> $emsg
 
 # Run the xgettext commands, with temporary added as a file to scan.

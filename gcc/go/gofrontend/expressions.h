@@ -1633,10 +1633,11 @@ class Unary_expression : public Expression
   }
 
   // Apply unary opcode OP to UNC, setting NC.  Return true if this
-  // could be done, false if not.  Issue errors for overflow.
+  // could be done, false if not.  On overflow, issues an error and
+  // sets *ISSUED_ERROR.
   static bool
   eval_constant(Operator op, const Numeric_constant* unc,
-		Location, Numeric_constant* nc);
+		Location, Numeric_constant* nc, bool *issued_error);
 
   static Expression*
   do_import(Import*);
@@ -1755,11 +1756,11 @@ class Binary_expression : public Expression
 
   // Apply binary opcode OP to LEFT_NC and RIGHT_NC, setting NC.
   // Return true if this could be done, false if not.  Issue errors at
-  // LOCATION as appropriate.
+  // LOCATION as appropriate, and sets *ISSUED_ERROR if it did.
   static bool
   eval_constant(Operator op, Numeric_constant* left_nc,
 		Numeric_constant* right_nc, Location location,
-		Numeric_constant* nc);
+		Numeric_constant* nc, bool* issued_error);
 
   // Compare constants LEFT_NC and RIGHT_NC according to OP, setting
   // *RESULT.  Return true if this could be done, false if not.  Issue

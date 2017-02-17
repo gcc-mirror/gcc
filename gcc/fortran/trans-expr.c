@@ -1898,8 +1898,11 @@ gfc_get_tree_for_caf_expr (gfc_expr *expr)
 		     &expr->where);
     }
 
-  caf_decl = expr->symtree->n.sym->backend_decl;
-  gcc_assert (caf_decl);
+  /* Make sure the backend_decl is present before accessing it.  */
+  caf_decl = expr->symtree->n.sym->backend_decl == NULL_TREE
+      ? gfc_get_symbol_decl (expr->symtree->n.sym)
+      : expr->symtree->n.sym->backend_decl;
+
   if (expr->symtree->n.sym->ts.type == BT_CLASS)
     caf_decl = gfc_class_data_get (caf_decl);
   if (expr->symtree->n.sym->attr.codimension)

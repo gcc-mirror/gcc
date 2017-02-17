@@ -154,14 +154,14 @@ struct	Lock
 	// Futex-based impl treats it as uint32 key,
 	// while sema-based impl as M* waitm.
 	// Used to be a union, but unions break precise GC.
-	uintptr	key;
+	uintptr	key __attribute__((aligned(4)));
 };
 struct	Note
 {
 	// Futex-based impl treats it as uint32 key,
 	// while sema-based impl as M* waitm.
 	// Used to be a union, but unions break precise GC.
-	uintptr	key;
+	uintptr	key __attribute__((aligned(4)));
 };
 struct String
 {
@@ -431,7 +431,7 @@ struct ParFor
 					// otherwise parfor may return while other threads are still working
 	ParForThread *thr;		// array of thread descriptors
 	// stats
-	uint64 nsteal;
+	uint64 nsteal __attribute__((aligned(8))); // force alignment for m68k
 	uint64 nstealcnt;
 	uint64 nprocyield;
 	uint64 nosyield;

@@ -716,14 +716,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Kt>
 	auto
 	lower_bound(const _Kt& __x)
-	-> decltype(_M_t._M_lower_bound_tr(__x))
-	{ return _M_t._M_lower_bound_tr(__x); }
+	-> decltype(iterator(_M_t._M_lower_bound_tr(__x)))
+	{ return iterator(_M_t._M_lower_bound_tr(__x)); }
 
       template<typename _Kt>
 	auto
 	lower_bound(const _Kt& __x) const
-	-> decltype(_M_t._M_lower_bound_tr(__x))
-	{ return _M_t._M_lower_bound_tr(__x); }
+	-> decltype(iterator(_M_t._M_lower_bound_tr(__x)))
+	{ return iterator(_M_t._M_lower_bound_tr(__x)); }
 #endif
       //@}
 
@@ -746,14 +746,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Kt>
 	auto
 	upper_bound(const _Kt& __x)
-	-> decltype(_M_t._M_upper_bound_tr(__x))
-	{ return _M_t._M_upper_bound_tr(__x); }
+	-> decltype(iterator(_M_t._M_upper_bound_tr(__x)))
+	{ return iterator(_M_t._M_upper_bound_tr(__x)); }
 
       template<typename _Kt>
 	auto
 	upper_bound(const _Kt& __x) const
-	-> decltype(_M_t._M_upper_bound_tr(__x))
-	{ return _M_t._M_upper_bound_tr(__x); }
+	-> decltype(iterator(_M_t._M_upper_bound_tr(__x)))
+	{ return iterator(_M_t._M_upper_bound_tr(__x)); }
 #endif
       //@}
 
@@ -785,14 +785,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Kt>
 	auto
 	equal_range(const _Kt& __x)
-	-> decltype(_M_t._M_equal_range_tr(__x))
-	{ return _M_t._M_equal_range_tr(__x); }
+	-> decltype(pair<iterator, iterator>(_M_t._M_equal_range_tr(__x)))
+	{ return pair<iterator, iterator>(_M_t._M_equal_range_tr(__x)); }
 
       template<typename _Kt>
 	auto
 	equal_range(const _Kt& __x) const
-	-> decltype(_M_t._M_equal_range_tr(__x))
-	{ return _M_t._M_equal_range_tr(__x); }
+	-> decltype(pair<iterator, iterator>(_M_t._M_equal_range_tr(__x)))
+	{ return pair<iterator, iterator>(_M_t._M_equal_range_tr(__x)); }
 #endif
       //@}
 

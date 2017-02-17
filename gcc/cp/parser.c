@@ -762,7 +762,7 @@ cp_lexer_previous_token (cp_lexer *lexer)
   /* Skip past purged tokens.  */
   while (tp->purged_p)
     {
-      gcc_assert (tp != lexer->buffer->address ());
+      gcc_assert (tp != vec_safe_address (lexer->buffer));
       tp--;
     }
 
@@ -12406,9 +12406,11 @@ cp_parser_simple_declaration (cp_parser* parser,
       if (cp_parser_error_occurred (parser))
 	goto done;
 
-      if (auto_result)
+      if (auto_result
+	  && (!processing_template_decl || !type_uses_auto (auto_result)))
 	{
-	  if (last_type && last_type != error_mark_node
+	  if (last_type
+	      && last_type != error_mark_node
 	      && !same_type_p (auto_result, last_type))
 	    {
 	      /* If the list of declarators contains more than one declarator,
@@ -24140,11 +24142,7 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 
       if (!cp_parser_parse_definitely (parser))
 	{
-	  gcc_assert (alignas_expr == error_mark_node
-		      || alignas_expr == NULL_TREE);
-
-	  alignas_expr =
-	    cp_parser_assignment_expression (parser);
+	  alignas_expr = cp_parser_assignment_expression (parser);
 	  if (alignas_expr == error_mark_node)
 	    cp_parser_skip_to_end_of_statement (parser);
 	  if (alignas_expr == NULL_TREE
@@ -34060,13 +34058,6 @@ cp_parser_omp_ordered (cp_parser *parser, cp_token *pragma_tok,
 {
   location_t loc = pragma_tok->location;
 
-  if (context != pragma_stmt && context != pragma_compound)
-    {
-      cp_parser_error (parser, "expected declaration specifiers");
-      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-      return false;
-    }
-
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
@@ -34959,13 +34950,6 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 {
   tree *pc = NULL, stmt;
 
-  if (context != pragma_stmt && context != pragma_compound)
-    {
-      cp_parser_error (parser, "expected declaration specifiers");
-      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-      return false;
-    }
-
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
@@ -35347,7 +35331,7 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 	    id = get_identifier ("omp declare target");
 
 	  DECL_ATTRIBUTES (decl)
-			   = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (decl));
+	    = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (decl));
 	  if (global_bindings_p ())
 	    {
 	      symtab_node *node = symtab_node::get (decl);
@@ -35887,8 +35871,11 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
 	}
       if (!at1)
 	{
-	  symtab_node *node = symtab_node::get (t);
 	  DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+	  if (TREE_CODE (t) != FUNCTION_DECL && !is_global_var (t))
+	    continue;
+
+	  symtab_node *node = symtab_node::get (t);
 	  if (node != NULL)
 	    {
 	      node->offloadable = 1;
@@ -37404,12 +37391,16 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
       return true;
 
     case PRAGMA_OMP_ORDERED:
+      if (context != pragma_stmt && context != pragma_compound)
+	goto bad_stmt;
       stmt = push_omp_privatization_clauses (false);
       ret = cp_parser_omp_ordered (parser, pragma_tok, context, if_p);
       pop_omp_privatization_clauses (stmt);
       return ret;
 
     case PRAGMA_OMP_TARGET:
+      if (context != pragma_stmt && context != pragma_compound)
+	goto bad_stmt;
       stmt = push_omp_privatization_clauses (false);
       ret = cp_parser_omp_target (parser, pragma_tok, context, if_p);
       pop_omp_privatization_clauses (stmt);

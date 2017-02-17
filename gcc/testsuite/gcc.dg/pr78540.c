@@ -1,6 +1,6 @@
 /* PR middle-end/78540 */
 /* { dg-do compile { target int128 } } */
-/* { dg-options "-O2 -Wno-psabi" } */
+/* { dg-options "-O2 -Wno-psabi -w" } */
 /* { dg-additional-options "-march=core2" { target i?86-*-* x86_64-*-* } } */
 
 typedef unsigned __int128 V __attribute__ ((vector_size (64)));

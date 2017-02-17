@@ -8840,10 +8840,13 @@ resolve_lock_unlock_event (gfc_code *code)
     return;
 
   /* Check for EVENT WAIT the UNTIL_COUNT.  */
-  if (code->op == EXEC_EVENT_WAIT && code->expr4
-      && (code->expr4->ts.type != BT_INTEGER || code->expr4->rank != 0))
-    gfc_error ("UNTIL_COUNT= argument at %L must be a scalar INTEGER "
-	       "expression", &code->expr4->where);
+  if (code->op == EXEC_EVENT_WAIT && code->expr4)
+    {
+      if (!gfc_resolve_expr (code->expr4) || code->expr4->ts.type != BT_INTEGER
+	  || code->expr4->rank != 0)
+	gfc_error ("UNTIL_COUNT= argument at %L must be a scalar INTEGER "
+		   "expression", &code->expr4->where);
+    }
 }
 
 

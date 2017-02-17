@@ -1,3 +1,251 @@
+2017-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79114
+	* testsuite/18_support/nested_exception/79114.cc: Add dg-require.
+
+	Backport from mainline
+	2016-12-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59170
+	* python/libstdcxx/v6/printers.py (StdListIteratorPrinter.to_string)
+	(StdSlistIteratorPrinter.to_string, StdVectorIteratorPrinter.to_string)
+	(StdRbtreeIteratorPrinter.to_string)
+	(StdDequeIteratorPrinter.to_string): Add check for value-initialized
+	iterators.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Test them.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+
+	Backport from mainline
+	2016-12-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59161
+	* python/libstdcxx/v6/printers.py (StdListIteratorPrinter.to_string)
+	(StdSlistIteratorPrinter.to_string, StdVectorIteratorPrinter.to_string)
+	(StdRbtreeIteratorPrinter.to_string, StdDequeIteratorPrinter.to_string)
+	(StdDebugIteratorPrinter.to_string): Return string instead of
+	gdb.Value.
+	* testsuite/libstdc++-prettyprinters/59161.cc: New test.
+
+	Backport from mainline
+	2016-12-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (UniquePointerPrinter.to_string):
+	Remove redundant parentheses.
+	(RbtreeIterator, StdRbtreeIteratorPrinter): Add docstrings.
+	(StdForwardListPrinter.to_string): Remove redundant parentheses.
+	(StdExpOptionalPrinter.to_string): Use string formatting instead of
+	concatenation.
+	(TemplateTypePrinter): Adjust whitespace.
+
+	Backport from mainline
+	2016-12-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/xmethods.py (UniquePtrGetWorker.__init__): Use
+	correct element type for unique_ptr<T[]>.
+	(UniquePtrGetWorker._supports, UniquePtrDerefWorker._supports): New
+	functions to disable unsupported operators for unique_ptr<T[]>.
+	(UniquePtrSubscriptWorker): New worker for operator[].
+	(UniquePtrMethodsMatcher.__init__): Register UniquePtrSubscriptWorker.
+	(UniquePtrMethodsMatcher.match): Call _supports on the chosen worker.
+	(SharedPtrGetWorker, SharedPtrDerefWorker, SharedPtrSubscriptWorker)
+	(SharedPtrUseCountWorker, SharedPtrUniqueWorker): New workers.
+	(SharedPtrMethodsMatcher): New matcher for shared_ptr.
+	(register_libstdcxx_xmethods): Register SharedPtrMethodsMatcher.
+	* testsuite/libstdc++-xmethods/unique_ptr.cc: Test arrays.
+	* testsuite/libstdc++-xmethods/shared_ptr.cc: New test.
+
+2017-02-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2017-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/72792
+	* include/bits/alloc_traits.h (__allocator_traits_base::__diff_type)
+	(__allocator_traits_base::__size_type): Remove.
+	(allocator_traits::_Ptr): New class template to detect const and void
+	pointer types without instantiating pointer_traits::rebind
+	unnecessarily.
+	(allocator_traits::_Diff): Likewise for detecting difference_type.
+	(allocator_traits::_Size): New class template to detect size_type
+	without instantiating make_unsigned unnecessarily.
+	* include/bits/ptr_traits.h (pointer_traits::element_type): Use
+	__detected_or_t instead of __detected_or_t_.
+	* include/std/type_traits (__detected_or_t_): Remove.
+	* testsuite/20_util/allocator_traits/members/pointers.cc: New test.
+
+	Backport from mainline
+	2017-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/72792
+	PR libstdc++/72793
+	* include/bits/alloc_traits.h (__allocator_traits_base::__rebind):
+	Replace with class template using void_t.
+	(__alloc_rebind): Define in terms of
+	__allocator_traits_base::__rebind.
+	(allocator_traits): Remove unconditional static_assert for
+	rebind_alloc.
+	* include/bits/ptr_traits.h (__replace_first_arg): Remove type member.
+	(pointer_traits::__rebind): Replace with class template using void_t.
+	(pointer_traits::rebind): Define in terms of __rebind.
+	(pointer_traits): Remove unconditional static_assert for rebind.
+	* testsuite/20_util/allocator_traits/members/rebind_alloc.cc: New test.
+	* testsuite/20_util/pointer_traits/rebind.cc: New test.
+
+	Backport from mainline
+	2017-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69321
+	* include/experimental/any (__any_caster): Avoid instantiating
+	manager function for types that can't be stored in any.
+	* testsuite/experimental/any/misc/any_cast.cc: Test non-copyable type.
+
+	Backport from mainline
+	2017-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69301
+	* include/std/atomic (atomic<T>::load, atomic<T>::exchange): Use
+	aligned buffer instead of default-initialized variable.
+	* testsuite/29_atomics/atomic/69301.cc: New test.
+	* include/experimental/memory (observer_ptr::release): Use reserved
+	name.
+	* include/ext/pointer.h (_Pointer_adapter::operator++(int))
+	(_Pointer_adapter::operator--(int)): Likewise.
+
+	Backport from mainline
+	2017-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79114
+	* libsupc++/nested_exception.h (throw_with_nested): Use decay instead
+	of remove_reference.
+	* testsuite/18_support/nested_exception/79114.cc: New test.
+
+	Backport from mainline
+	2017-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78702
+	* include/bits/locale_classes.h (locale::facet::__shim): Change from
+	private to protected.
+	* src/c++11/cxx11-shim_facets.cc (__shim_accessor): Define helper to
+	make locale::facet::__shim accessible.
+
+	Backport from mainline
+	2017-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78134
+	* include/bits/stl_map.h (map::lower_bound, map::upper_bound)
+	(map::equal_range): Fix return type of heterogeneous overloads.
+	* include/bits/stl_multimap.h (multimap::lower_bound)
+	(multimap::upper_bound, multimap::equal_range): Likewise.
+	* include/bits/stl_multiset.h (multiset::lower_bound)
+	(multiset::upper_bound, multiset::equal_range): Likewise.
+	* include/bits/stl_set.h (set::lower_bound, set::upper_bound)
+	(set::equal_range): Likewise.
+	* testsuite/23_containers/map/operations/2.cc: Check return types.
+	* testsuite/23_containers/multimap/operations/2.cc: Likewise.
+	* testsuite/23_containers/multiset/operations/2.cc: Likewise.
+	* testsuite/23_containers/set/operations/2.cc: Likewise.
+
+	Backport from mainline
+	2017-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78273
+	* include/bits/stl_map.h (map::count<_Kt>(const _Kt&)): Don't assume
+	the heterogeneous comparison can only find one match.
+	* include/bits/stl_set.h (set::count<_Kt>(const _Kt&)): Likewise.
+	* testsuite/23_containers/map/operations/2.cc: Test count works with
+	comparison function that just partitions rather than sorting.
+	* testsuite/23_containers/set/operations/2.cc: Likewise.
+
+2017-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78346
+	* include/bits/predefined_ops.h (_Iter_equals_iter): Store iterator
+	not its referent.
+	(_Iter_comp_to_iter): Likewise.
+	* testsuite/25_algorithms/search/78346.cc: New test.
+
+	PR libstdc++/79195
+	* include/experimental/array (make_array): Use common_type<_Dest>
+	and delay instantiation of common_type until after conditional_t.
+	Qualify std::forward call.
+	(to_array): Add exception specification.
+	* testsuite/experimental/array/make_array.cc: Test argument types
+	without a common type.
+
+	PR libstdc++/79254
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::operator=(const basic_string&)): If source object is
+	small just deallocate, otherwise perform new allocation before
+	making any changes.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/copy_assign.cc:
+	Test exception-safety of copy assignment when allocator propagates.
+	* testsuite/21_strings/basic_string/allocator/char/copy_assign.cc:
+	Likewise.
+	* testsuite/util/testsuite_allocator.h (uneq_allocator::swap): Make
+	std::swap visible.
+
+2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Backport from mainline
+	2017-01-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/faq.xml: Update address of C++ ABI link.
+	* doc/xml/manual/abi.xml: Ditto.
+	
+2017-01-16  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Backport from mainline
+	2017-01-16  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/78389
+	* include/bits/list.tcc (merge(list&&)): Fix backwards size adjustments.
+	(merge(list&&, _StrictWeakOrdering)): Likewise.
+	* testsuite/23_containers/list/operations/78389.cc: Add
+	better test for the sizes.
+
+2017-01-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Backport from mainline
+        2017-01-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/78389
+	* include/bits/list.tcc (merge(list&&)):
+	Adjust list sizes if the comparator throws.
+	(merge(list&&, _StrictWeakOrdering)): Likewise.
+	* testsuite/23_containers/list/operations/78389.cc: New.
+
+2017-01-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Backport from mainline
+        2016-12-19  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Make the perfect-forwarding constructor of a two-element tuple
+	sfinae away when the first argument is an allocator_arg.
+	* include/std/tuple (tuple(_U1&&, _U2&&)): Constrain.
+	* testsuite/20_util/tuple/cons/allocator_with_any.cc: New.
+
+2017-01-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2017-01-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78956
+	* include/std/thread (thread(const thread&&)): Add deleted
+	constructor.
+	* testsuite/30_threads/thread/cons/lwg2097.cc: New test.
+
+2017-01-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78991
+	* include/bits/predefined_ops.h (_Iter_comp_iter, _Iter_comp_val)
+	(_Val_comp_iter, _Iter_equals_val, _Iter_pred, _Iter_comp_to_val)
+	(_Iter_comp_to_iter, _Iter_negate): Make constructors explicit.
+	* testsuite/25_algorithms/sort/78991.cc: New test.
+
+2016-12-21  Release Manager
+
+	* GCC 6.3.0 released.
+
 2016-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline

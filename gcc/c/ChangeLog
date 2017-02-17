@@ -1,3 +1,22 @@
+2017-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/79431
+	* c-parser.c (c_parser_omp_declare_target): Don't invoke
+	symtab_node::get on automatic variables.
+
+2016-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/77767
+	* c-decl.c (grokdeclarator): If *expr is non-NULL, append expression
+	to *expr instead of overwriting it.
+
+2016-12-21  Release Manager
+
+	* GCC 6.3.0 released.
+
 2016-11-05  Martin Sebor  <msebor@redhat.com>
 
 	Backport from trunk.

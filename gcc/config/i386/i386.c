@@ -27721,7 +27721,7 @@ memory_address_length (rtx addr, bool lea)
   else if (disp && !base && !index)
     {
       len += 4;
-      if (rip_relative_addr_p (&parts))
+      if (!rip_relative_addr_p (&parts))
 	len++;
     }
   else
@@ -35719,35 +35719,35 @@ ix86_init_mmx_sse_builtins (void)
 
   /* AVX512F */
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gathersiv16sf",
-	       V16SF_FTYPE_V16SF_PCFLOAT_V16SI_HI_INT,
+	       V16SF_FTYPE_V16SF_PCVOID_V16SI_HI_INT,
 	       IX86_BUILTIN_GATHER3SIV16SF);
 
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gathersiv8df",
-	       V8DF_FTYPE_V8DF_PCDOUBLE_V8SI_QI_INT,
+	       V8DF_FTYPE_V8DF_PCVOID_V8SI_QI_INT,
 	       IX86_BUILTIN_GATHER3SIV8DF);
 
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatherdiv16sf",
-	       V8SF_FTYPE_V8SF_PCFLOAT_V8DI_QI_INT,
+	       V8SF_FTYPE_V8SF_PCVOID_V8DI_QI_INT,
 	       IX86_BUILTIN_GATHER3DIV16SF);
 
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatherdiv8df",
-	       V8DF_FTYPE_V8DF_PCDOUBLE_V8DI_QI_INT,
+	       V8DF_FTYPE_V8DF_PCVOID_V8DI_QI_INT,
 	       IX86_BUILTIN_GATHER3DIV8DF);
 
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gathersiv16si",
-	       V16SI_FTYPE_V16SI_PCINT_V16SI_HI_INT,
+	       V16SI_FTYPE_V16SI_PCVOID_V16SI_HI_INT,
 	       IX86_BUILTIN_GATHER3SIV16SI);
 
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gathersiv8di",
-	       V8DI_FTYPE_V8DI_PCINT64_V8SI_QI_INT,
+	       V8DI_FTYPE_V8DI_PCVOID_V8SI_QI_INT,
 	       IX86_BUILTIN_GATHER3SIV8DI);
 
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatherdiv16si",
-	       V8SI_FTYPE_V8SI_PCINT_V8DI_QI_INT,
+	       V8SI_FTYPE_V8SI_PCVOID_V8DI_QI_INT,
 	       IX86_BUILTIN_GATHER3DIV16SI);
 
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatherdiv8di",
-	       V8DI_FTYPE_V8DI_PCINT64_V8DI_QI_INT,
+	       V8DI_FTYPE_V8DI_PCVOID_V8DI_QI_INT,
 	       IX86_BUILTIN_GATHER3DIV8DI);
 
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_gatheraltsiv8df ",
@@ -35767,100 +35767,100 @@ ix86_init_mmx_sse_builtins (void)
 	       IX86_BUILTIN_GATHER3ALTDIV16SI);
 
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scattersiv16sf",
-	       VOID_FTYPE_PFLOAT_HI_V16SI_V16SF_INT,
+	       VOID_FTYPE_PVOID_HI_V16SI_V16SF_INT,
 	       IX86_BUILTIN_SCATTERSIV16SF);
 
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scattersiv8df",
-	       VOID_FTYPE_PDOUBLE_QI_V8SI_V8DF_INT,
+	       VOID_FTYPE_PVOID_QI_V8SI_V8DF_INT,
 	       IX86_BUILTIN_SCATTERSIV8DF);
 
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scatterdiv16sf",
-	       VOID_FTYPE_PFLOAT_QI_V8DI_V8SF_INT,
+	       VOID_FTYPE_PVOID_QI_V8DI_V8SF_INT,
 	       IX86_BUILTIN_SCATTERDIV16SF);
 
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scatterdiv8df",
-	       VOID_FTYPE_PDOUBLE_QI_V8DI_V8DF_INT,
+	       VOID_FTYPE_PVOID_QI_V8DI_V8DF_INT,
 	       IX86_BUILTIN_SCATTERDIV8DF);
 
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scattersiv16si",
-	       VOID_FTYPE_PINT_HI_V16SI_V16SI_INT,
+	       VOID_FTYPE_PVOID_HI_V16SI_V16SI_INT,
 	       IX86_BUILTIN_SCATTERSIV16SI);
 
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scattersiv8di",
-	       VOID_FTYPE_PLONGLONG_QI_V8SI_V8DI_INT,
+	       VOID_FTYPE_PVOID_QI_V8SI_V8DI_INT,
 	       IX86_BUILTIN_SCATTERSIV8DI);
 
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scatterdiv16si",
-	       VOID_FTYPE_PINT_QI_V8DI_V8SI_INT,
+	       VOID_FTYPE_PVOID_QI_V8DI_V8SI_INT,
 	       IX86_BUILTIN_SCATTERDIV16SI);
 
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scatterdiv8di",
-	       VOID_FTYPE_PLONGLONG_QI_V8DI_V8DI_INT,
+	       VOID_FTYPE_PVOID_QI_V8DI_V8DI_INT,
 	       IX86_BUILTIN_SCATTERDIV8DI);
 
   /* AVX512VL */
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv2df",
-	       V2DF_FTYPE_V2DF_PCDOUBLE_V4SI_QI_INT,
+	       V2DF_FTYPE_V2DF_PCVOID_V4SI_QI_INT,
 	       IX86_BUILTIN_GATHER3SIV2DF);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv4df",
-	       V4DF_FTYPE_V4DF_PCDOUBLE_V4SI_QI_INT,
+	       V4DF_FTYPE_V4DF_PCVOID_V4SI_QI_INT,
 	       IX86_BUILTIN_GATHER3SIV4DF);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div2df",
-	       V2DF_FTYPE_V2DF_PCDOUBLE_V2DI_QI_INT,
+	       V2DF_FTYPE_V2DF_PCVOID_V2DI_QI_INT,
 	       IX86_BUILTIN_GATHER3DIV2DF);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div4df",
-	       V4DF_FTYPE_V4DF_PCDOUBLE_V4DI_QI_INT,
+	       V4DF_FTYPE_V4DF_PCVOID_V4DI_QI_INT,
 	       IX86_BUILTIN_GATHER3DIV4DF);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv4sf",
-	       V4SF_FTYPE_V4SF_PCFLOAT_V4SI_QI_INT,
+	       V4SF_FTYPE_V4SF_PCVOID_V4SI_QI_INT,
 	       IX86_BUILTIN_GATHER3SIV4SF);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv8sf",
-	       V8SF_FTYPE_V8SF_PCFLOAT_V8SI_QI_INT,
+	       V8SF_FTYPE_V8SF_PCVOID_V8SI_QI_INT,
 	       IX86_BUILTIN_GATHER3SIV8SF);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div4sf",
-	       V4SF_FTYPE_V4SF_PCFLOAT_V2DI_QI_INT,
+	       V4SF_FTYPE_V4SF_PCVOID_V2DI_QI_INT,
 	       IX86_BUILTIN_GATHER3DIV4SF);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div8sf",
-	       V4SF_FTYPE_V4SF_PCFLOAT_V4DI_QI_INT,
+	       V4SF_FTYPE_V4SF_PCVOID_V4DI_QI_INT,
 	       IX86_BUILTIN_GATHER3DIV8SF);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv2di",
-	       V2DI_FTYPE_V2DI_PCINT64_V4SI_QI_INT,
+	       V2DI_FTYPE_V2DI_PCVOID_V4SI_QI_INT,
 	       IX86_BUILTIN_GATHER3SIV2DI);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv4di",
-	       V4DI_FTYPE_V4DI_PCINT64_V4SI_QI_INT,
+	       V4DI_FTYPE_V4DI_PCVOID_V4SI_QI_INT,
 	       IX86_BUILTIN_GATHER3SIV4DI);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div2di",
-	       V2DI_FTYPE_V2DI_PCINT64_V2DI_QI_INT,
+	       V2DI_FTYPE_V2DI_PCVOID_V2DI_QI_INT,
 	       IX86_BUILTIN_GATHER3DIV2DI);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div4di",
-	       V4DI_FTYPE_V4DI_PCINT64_V4DI_QI_INT,
+	       V4DI_FTYPE_V4DI_PCVOID_V4DI_QI_INT,
 	       IX86_BUILTIN_GATHER3DIV4DI);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv4si",
-	       V4SI_FTYPE_V4SI_PCINT_V4SI_QI_INT,
+	       V4SI_FTYPE_V4SI_PCVOID_V4SI_QI_INT,
 	       IX86_BUILTIN_GATHER3SIV4SI);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3siv8si",
-	       V8SI_FTYPE_V8SI_PCINT_V8SI_QI_INT,
+	       V8SI_FTYPE_V8SI_PCVOID_V8SI_QI_INT,
 	       IX86_BUILTIN_GATHER3SIV8SI);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div4si",
-	       V4SI_FTYPE_V4SI_PCINT_V2DI_QI_INT,
+	       V4SI_FTYPE_V4SI_PCVOID_V2DI_QI_INT,
 	       IX86_BUILTIN_GATHER3DIV4SI);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3div8si",
-	       V4SI_FTYPE_V4SI_PCINT_V4DI_QI_INT,
+	       V4SI_FTYPE_V4SI_PCVOID_V4DI_QI_INT,
 	       IX86_BUILTIN_GATHER3DIV8SI);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_gather3altsiv4df ",
@@ -35880,67 +35880,67 @@ ix86_init_mmx_sse_builtins (void)
 	       IX86_BUILTIN_GATHER3ALTDIV8SI);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scattersiv8sf",
-	       VOID_FTYPE_PFLOAT_QI_V8SI_V8SF_INT,
+	       VOID_FTYPE_PVOID_QI_V8SI_V8SF_INT,
 	       IX86_BUILTIN_SCATTERSIV8SF);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scattersiv4sf",
-	       VOID_FTYPE_PFLOAT_QI_V4SI_V4SF_INT,
+	       VOID_FTYPE_PVOID_QI_V4SI_V4SF_INT,
 	       IX86_BUILTIN_SCATTERSIV4SF);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scattersiv4df",
-	       VOID_FTYPE_PDOUBLE_QI_V4SI_V4DF_INT,
+	       VOID_FTYPE_PVOID_QI_V4SI_V4DF_INT,
 	       IX86_BUILTIN_SCATTERSIV4DF);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scattersiv2df",
-	       VOID_FTYPE_PDOUBLE_QI_V4SI_V2DF_INT,
+	       VOID_FTYPE_PVOID_QI_V4SI_V2DF_INT,
 	       IX86_BUILTIN_SCATTERSIV2DF);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatterdiv8sf",
-	       VOID_FTYPE_PFLOAT_QI_V4DI_V4SF_INT,
+	       VOID_FTYPE_PVOID_QI_V4DI_V4SF_INT,
 	       IX86_BUILTIN_SCATTERDIV8SF);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatterdiv4sf",
-	       VOID_FTYPE_PFLOAT_QI_V2DI_V4SF_INT,
+	       VOID_FTYPE_PVOID_QI_V2DI_V4SF_INT,
 	       IX86_BUILTIN_SCATTERDIV4SF);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatterdiv4df",
-	       VOID_FTYPE_PDOUBLE_QI_V4DI_V4DF_INT,
+	       VOID_FTYPE_PVOID_QI_V4DI_V4DF_INT,
 	       IX86_BUILTIN_SCATTERDIV4DF);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatterdiv2df",
-	       VOID_FTYPE_PDOUBLE_QI_V2DI_V2DF_INT,
+	       VOID_FTYPE_PVOID_QI_V2DI_V2DF_INT,
 	       IX86_BUILTIN_SCATTERDIV2DF);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scattersiv8si",
-	       VOID_FTYPE_PINT_QI_V8SI_V8SI_INT,
+	       VOID_FTYPE_PVOID_QI_V8SI_V8SI_INT,
 	       IX86_BUILTIN_SCATTERSIV8SI);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scattersiv4si",
-	       VOID_FTYPE_PINT_QI_V4SI_V4SI_INT,
+	       VOID_FTYPE_PVOID_QI_V4SI_V4SI_INT,
 	       IX86_BUILTIN_SCATTERSIV4SI);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scattersiv4di",
-	       VOID_FTYPE_PLONGLONG_QI_V4SI_V4DI_INT,
+	       VOID_FTYPE_PVOID_QI_V4SI_V4DI_INT,
 	       IX86_BUILTIN_SCATTERSIV4DI);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scattersiv2di",
-	       VOID_FTYPE_PLONGLONG_QI_V4SI_V2DI_INT,
+	       VOID_FTYPE_PVOID_QI_V4SI_V2DI_INT,
 	       IX86_BUILTIN_SCATTERSIV2DI);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatterdiv8si",
-	       VOID_FTYPE_PINT_QI_V4DI_V4SI_INT,
+	       VOID_FTYPE_PVOID_QI_V4DI_V4SI_INT,
 	       IX86_BUILTIN_SCATTERDIV8SI);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatterdiv4si",
-	       VOID_FTYPE_PINT_QI_V2DI_V4SI_INT,
+	       VOID_FTYPE_PVOID_QI_V2DI_V4SI_INT,
 	       IX86_BUILTIN_SCATTERDIV4SI);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatterdiv4di",
-	       VOID_FTYPE_PLONGLONG_QI_V4DI_V4DI_INT,
+	       VOID_FTYPE_PVOID_QI_V4DI_V4DI_INT,
 	       IX86_BUILTIN_SCATTERDIV4DI);
 
   def_builtin (OPTION_MASK_ISA_AVX512VL, "__builtin_ia32_scatterdiv2di",
-	       VOID_FTYPE_PLONGLONG_QI_V2DI_V2DI_INT,
+	       VOID_FTYPE_PVOID_QI_V2DI_V2DI_INT,
 	       IX86_BUILTIN_SCATTERDIV2DI);
   def_builtin (OPTION_MASK_ISA_AVX512F, "__builtin_ia32_scatteraltsiv8df ",
 	       VOID_FTYPE_PDOUBLE_QI_V16SI_V8DF_INT,
@@ -35960,28 +35960,28 @@ ix86_init_mmx_sse_builtins (void)
 
   /* AVX512PF */
   def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_gatherpfdpd",
-	       VOID_FTYPE_QI_V8SI_PCINT64_INT_INT,
+	       VOID_FTYPE_QI_V8SI_PCVOID_INT_INT,
 	       IX86_BUILTIN_GATHERPFDPD);
   def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_gatherpfdps",
-	       VOID_FTYPE_HI_V16SI_PCINT_INT_INT,
+	       VOID_FTYPE_HI_V16SI_PCVOID_INT_INT,
 	       IX86_BUILTIN_GATHERPFDPS);
   def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_gatherpfqpd",
-	       VOID_FTYPE_QI_V8DI_PCINT64_INT_INT,
+	       VOID_FTYPE_QI_V8DI_PCVOID_INT_INT,
 	       IX86_BUILTIN_GATHERPFQPD);
   def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_gatherpfqps",
-	       VOID_FTYPE_QI_V8DI_PCINT_INT_INT,
+	       VOID_FTYPE_QI_V8DI_PCVOID_INT_INT,
 	       IX86_BUILTIN_GATHERPFQPS);
   def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_scatterpfdpd",
-	       VOID_FTYPE_QI_V8SI_PCINT64_INT_INT,
+	       VOID_FTYPE_QI_V8SI_PCVOID_INT_INT,
 	       IX86_BUILTIN_SCATTERPFDPD);
   def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_scatterpfdps",
-	       VOID_FTYPE_HI_V16SI_PCINT_INT_INT,
+	       VOID_FTYPE_HI_V16SI_PCVOID_INT_INT,
 	       IX86_BUILTIN_SCATTERPFDPS);
   def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_scatterpfqpd",
-	       VOID_FTYPE_QI_V8DI_PCINT64_INT_INT,
+	       VOID_FTYPE_QI_V8DI_PCVOID_INT_INT,
 	       IX86_BUILTIN_SCATTERPFQPD);
   def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_scatterpfqps",
-	       VOID_FTYPE_QI_V8DI_PCINT_INT_INT,
+	       VOID_FTYPE_QI_V8DI_PCVOID_INT_INT,
 	       IX86_BUILTIN_SCATTERPFQPS);
 
   /* SHA */
