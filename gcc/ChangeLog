@@ -1,3 +1,14 @@
+2017-02-17  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/79529
+	* tree-ssa-loop-unswitch.c (is_maybe_undefined): Use
+	ssa_defined_default_def_p to handle cases which are implicitly
+	defined.
+	* tree-ssa.c (ssa_defined_default_def_p): New function.
+	(ssa_undefined_value_p): Use ssa_defined_default_def_p to handle cases
+	which are implicitly defined.
+	* tree-ssa.h (ssa_defined_default_def_p): Declare.
+
 2017-02-17  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/79576
