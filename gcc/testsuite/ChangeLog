@@ -1,3 +1,8 @@
+2017-02-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.dg/pr59833.c: Add -fsignaling-nans to options.
+	* gcc.dg/pr61441.c: Ditto.
+
 2017-02-17  Martin Liska  <mliska@suse.cz>
 
 	PR rtl-optimization/79574
