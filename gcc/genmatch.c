@@ -192,6 +192,11 @@ output_line_directive (FILE *f, source_location location,
     {
       /* When writing to a dumpfile only dump the filename.  */
       const char *file = strrchr (loc.file, DIR_SEPARATOR);
+#if defined(DIR_SEPARATOR_2)
+      const char *pos2 = strrchr (loc.file, DIR_SEPARATOR_2);
+      if (pos2 && (!file || (pos2 > file)))
+	file = pos2;
+#endif
       if (!file)
 	file = loc.file;
       else
