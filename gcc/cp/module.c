@@ -663,6 +663,8 @@ public:
 private:
   tree finish_namespace (FILE *, tree);
   tree finish_function (FILE *, tree);
+  tree finish_type (FILE *, tree);
+
 private:
   tree start (tree_code);
   tree finish (FILE *, tree);
@@ -1129,6 +1131,9 @@ in::start (tree_code code)
 tree
 in::finish (FILE *d, tree t)
 {
+  if (TYPE_P (t))
+    return finish_type (d, t);
+
   switch (TREE_CODE (t))
     {
     default: break;
@@ -1349,6 +1354,7 @@ out::write_core_vals (FILE *d, tree t)
 {
 #define WU(X) w.u (X)
 #define WT(X) write_tree (d, X)
+
   WT (TREE_TYPE (t));
 
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_LIST))
@@ -1359,6 +1365,12 @@ out::write_core_vals (FILE *d, tree t)
     }
   if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
     {
+      /* By construction we want to make sure we have the canonical
+	 and main variants already in the type table, so emit them
+	 now.  */
+      WT (TYPE_CANONICAL (t));
+      WT (TYPE_MAIN_VARIANT (t));
+
       WU (TYPE_MODE_RAW (t));
       WU (TYPE_PRECISION (t));
       WU (TYPE_ALIGN (t));
@@ -1366,7 +1378,6 @@ out::write_core_vals (FILE *d, tree t)
       WT (TYPE_SIZE_UNIT (t));
       WT (TYPE_ATTRIBUTES (t));
       WT (TYPE_NAME (t));
-      WT (TYPE_MAIN_VARIANT (t));
       WT (CP_TYPE_CONTEXT (t));
       WT (TYPE_STUB_DECL (t));
     }
@@ -1435,6 +1446,9 @@ in::read_core_vals (FILE *d, tree t)
     }
  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
     {
+      RT (TYPE_CANONICAL (t));
+      RT (TYPE_MAIN_VARIANT (t));
+
       RM (TYPE_MODE_RAW (t));
       RU (TYPE_PRECISION (t));
       SET_TYPE_ALIGN (t, r.u ());
@@ -1442,7 +1456,6 @@ in::read_core_vals (FILE *d, tree t)
       RT (TYPE_SIZE_UNIT (t));
       RT (TYPE_ATTRIBUTES (t));
       RT (TYPE_NAME (t));
-      RT (TYPE_MAIN_VARIANT (t));
       RT (TYPE_CONTEXT (t));
       RT (TYPE_STUB_DECL (t));
     }
@@ -1709,6 +1722,59 @@ static GTY(()) tree proclaimer;
 static bool is_interface;
 static int export_depth; /* -1 for singleton export.  */
 
+/* Rebuild a streamed in type.  */
+// FIXME: Genericise to other types?
+// Remember buld_cplus_array_type
+
+tree
+in::finish_type (FILE *d, tree type)
+{
+  tree main = TYPE_MAIN_VARIANT (type);
+  
+  if (main != type)
+    {
+      /* See if we have this type already on the variant
+	 list.  This could only happen if the originally read in main
+	 variant was remapped, but we don't have that knowledge.
+	 FIXME: Determine if this is a problem, and then maybe fix it.  */
+      for (tree probe = main; probe; probe = TYPE_NEXT_VARIANT (probe))
+	if (check_base_type (type, probe)
+	    && TYPE_QUALS (type) == TYPE_QUALS (probe)
+	    && comp_except_specs (TYPE_RAISES_EXCEPTIONS (type),
+				  TYPE_RAISES_EXCEPTIONS (probe), ce_exact)
+	    && type_memfn_rqual (type) == type_memfn_rqual (probe))
+	  {
+	    free_node (type);
+	    type = probe;
+	    goto found_variant;
+	  }
+
+      /* Splice it into the main variant list.  */
+      TYPE_NEXT_VARIANT (type) = TYPE_NEXT_VARIANT (main);
+      TYPE_NEXT_VARIANT (main) = type;
+      /* CANONICAL_TYPE is either already correctly remapped.  Or
+         correctly already us.  FIXME:Are we sure about this?  */
+    found_variant:;
+    }
+  else if (TYPE_CANONICAL (type) == type)
+    {
+      /* We were both the main variant and canonical type.  */
+      gcc_assert (TYPE_ALIGN (type));
+      hashval_t hash = type_hash_default (type);
+      /* type_hash_canon frees type, if we find it already.  */
+      type = type_hash_canon (hash, type);
+    }
+  else
+    {
+      /* We were the main variant, thus we cannot have weird extra
+	 decorations to not allow us to be the main variant here.
+	 However we're not the canonical type.  Where do we look?  */
+      gcc_unreachable (); // FIXME
+    }
+
+  return type;
+}
+
 tree
 in::finish_function (FILE *d, tree fn)
 {
@@ -1752,6 +1818,7 @@ in::finish_namespace (FILE *d, tree ns)
 	    }
 	}
     }
+  free_node (ns);
 
   return res;
 }

@@ -1,5 +1,13 @@
 2017-02-17  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (in::finish_type): New.
+	(in::finish): Call it.
+	(out::write_core_vals, in::read_core_vals): Ensure canonical_type
+	and type_main_variant are dumped early.
+	gcc/testsuite/
+	* g++/modules/mod-exp-1_b.C: Extend.
+
 	Canonicalize canonical type hashing
 	gcc/
 	* tree.h (type_hash_default): Declare.
