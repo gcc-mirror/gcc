@@ -53,10 +53,6 @@
 # error "FLT16_TRUE_MIN undefined"
 #endif
 
-#if FLT16_DECIMAL_DIG > DECIMAL_DIG
-# error "FLT16_DECIMAL_DIG > DECIMAL_DIG"
-#endif
-
 #if FLT16_MANT_DIG != 11 || FLT16_MAX_EXP != 16 || FLT16_MIN_EXP != -13
 # error "_Float16 bad format"
 #endif

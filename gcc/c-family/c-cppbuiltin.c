@@ -245,11 +245,10 @@ builtin_define_float_constants (const char *name_prefix,
     if (type_decimal_dig < type_d_decimal_dig)
       type_decimal_dig++;
   }
-  /* Arbitrarily, define __DECIMAL_DIG__ when defining macros for long
-     double, although it may be greater than the value for long
-     double.  */
+  /* Define __DECIMAL_DIG__ to the value for long double to be
+     compatible with C99 and C11; see DR#501 and N2108.  */
   if (type == long_double_type_node)
-    builtin_define_with_int_value ("__DECIMAL_DIG__", decimal_dig);
+    builtin_define_with_int_value ("__DECIMAL_DIG__", type_decimal_dig);
   sprintf (name, "__%s_DECIMAL_DIG__", name_prefix);
   builtin_define_with_int_value (name, type_decimal_dig);
 
