@@ -1,3 +1,22 @@
+2017-02-17  Julia Koval  <julia.koval@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_RDPID_SET): New.
+	(OPTION_MASK_ISA_PKU_UNSET): New.
+	(ix86_handle_option): Handle -mrdpid.
+	* config/i386/cpuid.h (bit_RDPID): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu):
+	Detect RDPID feature.
+	* config/i386/i386-builtin.def (__builtin_ia32_rdpid): New.
+	* config/i386/i386-c.c (ix86_target_macros_internal):
+	Handle RDPID flag.
+	* config/i386/i386.c (ix86_target_string): Add -mrdpid to isa2_opts.
+	(ix86_valid_target_attribute_inner_p): Add "rdpid".
+	(ix86_expand_builtin): Handle IX86_BUILTIN_RDPID.
+	* config/i386/i386.h (TARGET_RDPID, TARGET_RDPID_P): New.
+	* config/i386/i386.md (define_insn "rdpid"): New.
+	* config/i386/i386.opt Add -mrdpid.
+	* config/i386/immintrin.h (_rdpid_u32): New.
+
 2017-02-17  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/79541

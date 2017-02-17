@@ -134,6 +134,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_MWAITX_SET OPTION_MASK_ISA_MWAITX
 #define OPTION_MASK_ISA_CLZERO_SET OPTION_MASK_ISA_CLZERO
 #define OPTION_MASK_ISA_PKU_SET OPTION_MASK_ISA_PKU
+#define OPTION_MASK_ISA_RDPID_SET OPTION_MASK_ISA_RDPID
 
 /* Define a set of ISAs which aren't available when a given ISA is
    disabled.  MMX and SSE ISAs are handled separately.  */
@@ -198,6 +199,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_MWAITX_UNSET OPTION_MASK_ISA_MWAITX
 #define OPTION_MASK_ISA_CLZERO_UNSET OPTION_MASK_ISA_CLZERO
 #define OPTION_MASK_ISA_PKU_UNSET OPTION_MASK_ISA_PKU
+#define OPTION_MASK_ISA_RDPID_UNSET OPTION_MASK_ISA_RDPID
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -454,6 +456,19 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_AVX512ER_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX512ER_UNSET;
+	}
+      return true;
+
+    case OPT_mrdpid:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_RDPID_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_RDPID_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_RDPID_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_RDPID_UNSET;
 	}
       return true;
 
