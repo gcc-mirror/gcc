@@ -1,3 +1,8 @@
+2017-02-17  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/79536
+	* gcc.dg/torture/pr79536.c: New test.
+
 2017-02-16  Alan Modra  <amodra@gmail.com>
 
 	* gcc.c-torture/execute/pr79286.c: New.

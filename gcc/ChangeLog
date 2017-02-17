@@ -1,3 +1,9 @@
+2017-02-17  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/79536
+	* fold-const.c (fold_negate_expr_1): Renamed from fold_negate_expr.
+	(fold_negate_expr): New wrapper.
+
 2017-02-16  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (C++ Dialect Options) [-Wno-non-template-friend]: 
