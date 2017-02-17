@@ -2996,19 +2996,13 @@ But this use is not portable across different compilers.
 @item -Wno-non-template-friend @r{(C++ and Objective-C++ only)}
 @opindex Wno-non-template-friend
 @opindex Wnon-template-friend
-Disable warnings when non-templatized friend functions are declared
-within a template.  Since the advent of explicit template specification
-support in G++, if the name of the friend is an unqualified-id (i.e.,
-@samp{friend foo(int)}), the C++ language specification demands that the
-friend declare or define an ordinary, nontemplate function.  (Section
-14.5.3).  Before G++ implemented explicit specification, unqualified-ids
-could be interpreted as a particular specialization of a templatized
-function.  Because this non-conforming behavior is no longer the default
-behavior for G++, @option{-Wnon-template-friend} allows the compiler to
-check existing code for potential trouble spots and is on by default.
-This new compiler behavior can be turned off with
-@option{-Wno-non-template-friend}, which keeps the conformant compiler code
-but disables the helpful warning.
+Disable warnings when non-template friend functions are declared
+within a template.  In very old versions of GCC that predate implementation
+of the ISO standard, declarations such as 
+@samp{friend int foo(int)}, where the name of the friend is an unqualified-id,
+could be interpreted as a particular specialization of a template
+function; the warning exists to diagnose compatibility problems, 
+and is enabled by default.
 
 @item -Wold-style-cast @r{(C++ and Objective-C++ only)}
 @opindex Wold-style-cast
