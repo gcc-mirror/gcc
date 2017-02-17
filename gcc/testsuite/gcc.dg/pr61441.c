@@ -1,5 +1,5 @@
 /* { dg-do run { target { *-*-linux* *-*-gnu* } } } */
-/* { dg-options "-O1 -lm -fexcess-precision=standard" } */
+/* { dg-options "-O1 -lm -fexcess-precision=standard -fsignaling-nans" } */
 /* { dg-require-effective-target issignaling } */
 
 #define _GNU_SOURCE
