@@ -7612,6 +7612,10 @@ convert_template_argument (tree parm,
 
       if (tree a = type_uses_auto (t))
 	{
+	  if (ARGUMENT_PACK_P (orig_arg))
+	    /* There's nothing to check for an auto argument pack.  */
+	    return orig_arg;
+
 	  t = do_auto_deduction (t, arg, a, complain, adc_unify, args);
 	  if (t == error_mark_node)
 	    return error_mark_node;
@@ -11649,8 +11653,11 @@ tsubst_template_args (tree t, tree args, tsubst_flags_t complain, tree in_decl)
             new_arg = error_mark_node;
 
           if (TREE_CODE (new_arg) == NONTYPE_ARGUMENT_PACK) {
-            TREE_TYPE (new_arg) = tsubst (TREE_TYPE (orig_arg), args,
-                                          complain, in_decl);
+	    if (type_uses_auto (TREE_TYPE (orig_arg)))
+	      TREE_TYPE (new_arg) = TREE_TYPE (orig_arg);
+	    else
+	      TREE_TYPE (new_arg) = tsubst (TREE_TYPE (orig_arg), args,
+					    complain, in_decl);
             TREE_CONSTANT (new_arg) = TREE_CONSTANT (orig_arg);
 
             if (TREE_TYPE (new_arg) == error_mark_node)
