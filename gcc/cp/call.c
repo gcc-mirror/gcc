@@ -7955,7 +7955,14 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
       /* Pull out the real argument, disregarding const-correctness.  */
       targ = arg;
-      while (CONVERT_EXPR_P (targ)
+      /* Strip the reference binding for the constructor parameter.  */
+      if (CONVERT_EXPR_P (targ)
+	  && TREE_CODE (TREE_TYPE (targ)) == REFERENCE_TYPE)
+	targ = TREE_OPERAND (targ, 0);
+      /* But don't strip any other reference bindings; binding a temporary to a
+	 reference prevents copy elision.  */
+      while ((CONVERT_EXPR_P (targ)
+	      && TREE_CODE (TREE_TYPE (targ)) != REFERENCE_TYPE)
 	     || TREE_CODE (targ) == NON_LVALUE_EXPR)
 	targ = TREE_OPERAND (targ, 0);
       if (TREE_CODE (targ) == ADDR_EXPR)
