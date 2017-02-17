@@ -15719,6 +15719,7 @@ cp_parser_template_name (cp_parser* parser,
 	    cp_lexer_purge_tokens_after (parser->lexer, start);
 	  if (is_identifier)
 	    *is_identifier = true;
+	  parser->context->object_type = NULL_TREE;
 	  return identifier;
 	}
 
@@ -15730,7 +15731,12 @@ cp_parser_template_name (cp_parser* parser,
 	  && (!parser->scope
 	      || (TYPE_P (parser->scope)
 		  && dependent_type_p (parser->scope))))
-	return identifier;
+	{
+	  /* We're optimizing away the call to cp_parser_lookup_name, but we
+	     still need to do this.  */
+	  parser->context->object_type = NULL_TREE;
+	  return identifier;
+	}
     }
 
   /* Look up the name.  */
