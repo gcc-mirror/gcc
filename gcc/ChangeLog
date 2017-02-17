@@ -1,3 +1,157 @@
+2017-02-17  Julia Koval  <julia.koval@intel.com>
+
+	PR target/76731
+	* config/i386/avx512fintrin.h
+	(_mm512_i32gather_ps): Change __addr type to void const*.
+	(_mm512_mask_i32gather_ps): Ditto.
+	(_mm512_i32gather_pd): Ditto.
+	(_mm512_mask_i32gather_pd): Ditto.
+	(_mm512_i64gather_ps): Ditto.
+	(_mm512_mask_i64gather_ps): Ditto.
+	(_mm512_i64gather_pd): Ditto.
+	(_mm512_mask_i64gather_pd): Ditto.
+	(_mm512_i32gather_epi32): Ditto.
+	(_mm512_mask_i32gather_epi32): Ditto.
+	(_mm512_i32gather_epi64): Ditto.
+	(_mm512_mask_i32gather_epi64): Ditto.
+	(_mm512_i64gather_epi32): Ditto.
+	(_mm512_mask_i64gather_epi32): Ditto.
+	(_mm512_i64gather_epi64): Ditto.
+	(_mm512_mask_i64gather_epi64): Ditto.
+	(_mm512_i32scatter_ps): Change __addr type to void*.
+	(_mm512_mask_i32scatter_ps): Ditto.
+	(_mm512_i32scatter_pd): Ditto.
+	(_mm512_mask_i32scatter_pd): Ditto.
+	(_mm512_i64scatter_ps): Ditto.
+	(_mm512_mask_i64scatter_ps): Ditto.
+	(_mm512_i64scatter_pd): Ditto.
+	(_mm512_mask_i64scatter_pd): Ditto.
+	(_mm512_i32scatter_epi32): Ditto.
+	(_mm512_mask_i32scatter_epi32): Ditto.
+	(_mm512_i32scatter_epi64): Ditto.
+	(_mm512_mask_i32scatter_epi64): Ditto.
+	(_mm512_i64scatter_epi32): Ditto.
+	(_mm512_mask_i64scatter_epi32): Ditto.
+	(_mm512_i64scatter_epi64): Ditto.
+	(_mm512_mask_i64scatter_epi64): Ditto.
+	* config/i386/avx512pfintrin.h
+	(_mm512_mask_prefetch_i32gather_pd): Change addr type to void const*.
+	(_mm512_mask_prefetch_i32gather_ps): Ditto.
+	(_mm512_mask_prefetch_i64gather_pd): Ditto.
+	(_mm512_mask_prefetch_i64gather_ps): Ditto.
+	(_mm512_prefetch_i32scatter_pd): Change addr type to void*.
+	(_mm512_prefetch_i32scatter_ps): Ditto.
+	(_mm512_mask_prefetch_i32scatter_pd): Ditto.
+	(_mm512_mask_prefetch_i32scatter_ps): Ditto.
+	(_mm512_prefetch_i64scatter_pd): Ditto.
+	(_mm512_prefetch_i64scatter_ps): Ditto.
+	(_mm512_mask_prefetch_i64scatter_pd): Ditto.
+	(_mm512_mask_prefetch_i64scatter_ps): Ditto.
+	* config/i386/avx512vlintrin.h
+	(_mm256_mmask_i32gather_ps): Change __addr type to void const*.
+	(_mm_mmask_i32gather_ps): Ditto.
+	(_mm256_mmask_i32gather_pd): Ditto.
+	(_mm_mmask_i32gather_pd): Ditto.
+	(_mm256_mmask_i64gather_ps): Ditto.
+	(_mm_mmask_i64gather_ps): Ditto.
+	(_mm256_mmask_i64gather_pd): Ditto.
+	(_mm_mmask_i64gather_pd): Ditto.
+	(_mm256_mmask_i32gather_epi32): Ditto.
+	(_mm_mmask_i32gather_epi32): Ditto.
+	(_mm256_mmask_i32gather_epi64): Ditto.
+	(_mm_mmask_i32gather_epi64): Ditto.
+	(_mm256_mmask_i64gather_epi32): Ditto.
+	(_mm_mmask_i64gather_epi32): Ditto.
+	(_mm256_mmask_i64gather_epi64): Ditto.
+	(_mm_mmask_i64gather_epi64): Ditto.
+	(_mm256_i32scatter_ps): Change __addr type to void*.
+	(_mm256_mask_i32scatter_ps): Ditto.
+	(_mm_i32scatter_ps): Ditto.
+	(_mm_mask_i32scatter_ps): Ditto.
+	(_mm256_i32scatter_pd): Ditto.
+	(_mm256_mask_i32scatter_pd): Ditto.
+	(_mm_i32scatter_pd): Ditto.
+	(_mm_mask_i32scatter_pd): Ditto.
+	(_mm256_i64scatter_ps): Ditto.
+	(_mm256_mask_i64scatter_ps): Ditto.
+	(_mm_i64scatter_ps): Ditto.
+	(_mm_mask_i64scatter_ps): Ditto.
+	(_mm256_i64scatter_pd): Ditto.
+	(_mm256_mask_i64scatter_pd): Ditto.
+	(_mm_i64scatter_pd): Ditto.
+	(_mm_mask_i64scatter_pd): Ditto.
+	(_mm256_i32scatter_epi32): Ditto.
+	(_mm256_mask_i32scatter_epi32): Ditto.
+	(_mm_i32scatter_epi32): Ditto.
+	(_mm_mask_i32scatter_epi32): Ditto.
+	(_mm256_i32scatter_epi64): Ditto.
+	(_mm256_mask_i32scatter_epi64): Ditto.
+	(_mm_i32scatter_epi64): Ditto.
+	(_mm_mask_i32scatter_epi64): Ditto.
+	(_mm256_i64scatter_epi32): Ditto.
+	(_mm256_mask_i64scatter_epi32): Ditto.
+	(_mm_i64scatter_epi32): Ditto.
+	(_mm_mask_i64scatter_epi32): Ditto.
+	(_mm256_i64scatter_epi64): Ditto.
+	(_mm256_mask_i64scatter_epi64): Ditto.
+	(_mm_i64scatter_epi64): Ditto.
+	(_mm_mask_i64scatter_epi64): Ditto.
+	* config/i386/i386-builtin-types.def (V16SF_V16SF_PCFLOAT_V16SI_HI_INT)
+	(V8DF_V8DF_PCDOUBLE_V8SI_QI_INT, V8SF_V8SF_PCFLOAT_V8DI_QI_INT)
+	(V8DF_V8DF_PCDOUBLE_V8DI_QI_INT, V16SI_V16SI_PCINT_V16SI_HI_INT)
+	(V8DI_V8DI_PCINT64_V8SI_QI_INT, V8SI_V8SI_PCINT_V8DI_QI_INT)
+	(V8DI_V8DI_PCINT64_V8DI_QI_INT, V2DF_V2DF_PCDOUBLE_V4SI_QI_INT)
+	(V4DF_V4DF_PCDOUBLE_V4SI_QI_INT, V2DF_V2DF_PCDOUBLE_V2DI_QI_INT)
+	(V4DF_V4DF_PCDOUBLE_V4DI_QI_INT, V4SF_V4SF_PCFLOAT_V4SI_QI_INT)
+	(V8SF_V8SF_PCFLOAT_V8SI_QI_INT, V4SF_V4SF_PCFLOAT_V2DI_QI_INT)
+	(V4SF_V4SF_PCFLOAT_V4DI_QI_INT, V2DI_V2DI_PCINT64_V4SI_QI_INT)
+	(V4DI_V4DI_PCINT64_V4SI_QI_INT, V2DI_V2DI_PCINT64_V2DI_QI_INT)
+	(V4DI_V4DI_PCINT64_V4DI_QI_INT, V4SI_V4SI_PCINT_V4SI_QI_INT)
+	(V8SI_V8SI_PCINT_V8SI_QI_INT, V4SI_V4SI_PCINT_V2DI_QI_INT)
+	(V4SI_V4SI_PCINT_V4DI_QI_INT, VOID_PFLOAT_HI_V16SI_V16SF_INT)
+	(VOID_PFLOAT_QI_V8SI_V8SF_INT, VOID_PFLOAT_QI_V4SI_V4SF_INT)
+	(VOID_PDOUBLE_QI_V8SI_V8DF_INT, VOID_PDOUBLE_QI_V4SI_V4DF_INT)
+	(VOID_PDOUBLE_QI_V4SI_V2DF_INT, VOID_PFLOAT_QI_V8DI_V8SF_INT)
+	(VOID_PFLOAT_QI_V4DI_V4SF_INT, VOID_PFLOAT_QI_V2DI_V4SF_INT)
+	(VOID_PDOUBLE_QI_V8DI_V8DF_INT, VOID_PDOUBLE_QI_V4DI_V4DF_INT)
+	(VOID_PDOUBLE_QI_V2DI_V2DF_INT, VOID_PINT_HI_V16SI_V16SI_INT)
+	(VOID_PINT_QI_V8SI_V8SI_INT, VOID_PINT_QI_V4SI_V4SI_INT)
+	(VOID_PLONGLONG_QI_V8SI_V8DI_INT, VOID_PLONGLONG_QI_V4SI_V4DI_INT)
+	(VOID_PLONGLONG_QI_V4SI_V2DI_INT, VOID_PINT_QI_V8DI_V8SI_INT)
+	(VOID_PINT_QI_V4DI_V4SI_INT, VOID_PINT_QI_V2DI_V4SI_INT)
+	(VOID_PLONGLONG_QI_V8DI_V8DI_INT, VOID_QI_V8SI_PCINT64_INT_INT)
+	(VOID_PLONGLONG_QI_V4DI_V4DI_INT, VOID_PLONGLONG_QI_V2DI_V2DI_INT)
+	(VOID_HI_V16SI_PCINT_INT_INT, VOID_QI_V8DI_PCINT64_INT_INT)
+	(VOID_QI_V8DI_PCINT_INT_INT): Remove.
+	(V16SF_V16SF_PCVOID_V16SI_HI_INT,  V8DF_V8DF_PCVOID_V8SI_QI_INT)
+	(V8SF_V8SF_PCVOID_V8DI_QI_INT, V8DF_V8DF_PCVOID_V8DI_QI_INT)
+	(V16SI_V16SI_PCVOID_V16SI_HI_INT, V8DI_V8DI_PCVOID_V8SI_QI_INT)
+	(V8SI_V8SI_PCVOID_V8DI_QI_INT, V8DI_V8DI_PCVOID_V8DI_QI_INT)
+	(VOID_PVOID_HI_V16SI_V16SF_INT, VOID_PVOID_QI_V8SI_V8DF_INT)
+	(VOID_PVOID_QI_V8DI_V8SF_INT, VOID_PVOID_QI_V8DI_V8DF_INT)
+	(VOID_PVOID_HI_V16SI_V16SI_INT, VOID_PVOID_QI_V8SI_V8DI_INT)
+	(VOID_PVOID_QI_V8DI_V8SI_INT, VOID_PVOID_QI_V8DI_V8DI_INT)
+	(V2DF_V2DF_PCVOID_V4SI_QI_INT, V4DF_V4DF_PCVOID_V4SI_QI_INT)
+	(V2DF_V2DF_PCVOID_V2DI_QI_INT, V4DF_V4DF_PCVOID_V4DI_QI_INT
+	(V4SF_V4SF_PCVOID_V4SI_QI_INT, V8SF_V8SF_PCVOID_V8SI_QI_INT)
+	(V4SF_V4SF_PCVOID_V2DI_QI_INT, V4SF_V4SF_PCVOID_V4DI_QI_INT)
+	(V2DI_V2DI_PCVOID_V4SI_QI_INT, V4DI_V4DI_PCVOID_V4SI_QI_INT)
+	(V2DI_V2DI_PCVOID_V2DI_QI_INT, V4DI_V4DI_PCVOID_V4DI_QI_INT)
+	(V4SI_V4SI_PCVOID_V4SI_QI_INT, V8SI_V8SI_PCVOID_V8SI_QI_INT)
+	(V4SI_V4SI_PCVOID_V2DI_QI_INT, V4SI_V4SI_PCVOID_V4DI_QI_INT)
+	(VOID_PVOID_QI_V8SI_V8SF_INT, VOID_PVOID_QI_V4SI_V4SF_INT)
+	(VOID_PVOID_QI_V4SI_V4DF_INT, VOID_PVOID_QI_V4SI_V2DF_INT)
+	(VOID_PVOID_QI_V4DI_V4SF_INT, VOID_PVOID_QI_V2DI_V4SF_INT)
+	(VOID_PVOID_QI_V4DI_V4DF_INT, VOID_PVOID_QI_V2DI_V2DF_INT)
+	(VOID_PVOID_QI_V8SI_V8SI_INT, VOID_PVOID_QI_V4SI_V4SI_INT)
+	(VOID_PVOID_QI_V4SI_V4DI_INT, VOID_PVOID_QI_V4SI_V2DI_INT)
+	(VOID_PVOID_QI_V4DI_V4SI_INT, VOID_PVOID_QI_V2DI_V4SI_INT)
+	(VOID_PVOID_QI_V4DI_V4DI_INT, VOID_PVOID_QI_V2DI_V2DI_INT)
+	(VOID_QI_V8SI_PCVOID_INT_INT, VOID_HI_V16SI_PCVOID_INT_INT)
+	(VOID_QI_V8DI_PCVOID_INT_INT): Add.
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Adjust builtin
+	definitions accordingly.
+
 2017-02-16  Carl Love  <cel@us.ibm.com>
 
 	Backport from mainline commit r245460 on 2017-02-14
