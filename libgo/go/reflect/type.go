@@ -1174,6 +1174,7 @@ func (t *rtype) ptrTo() *rtype {
 	pp := *prototype
 
 	pp.string = &s
+	pp.ptrToThis = nil
 
 	// For the type structures linked into the binary, the
 	// compiler provides a good hash of the string.
