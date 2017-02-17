@@ -113,6 +113,22 @@ _rdrand32_step (unsigned int *__P)
 #pragma GCC pop_options
 #endif /* __DISABLE_RDRND__ */
 
+#ifndef __RDPID__
+#pragma GCC push_options
+#pragma GCC target("rdpid")
+#define __DISABLE_RDPID__
+#endif /* __RDPID__ */
+extern __inline unsigned int
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_rdpid_u32 (void)
+{
+  return __builtin_ia32_rdpid ();
+}
+#ifdef __DISABLE_RDPID__
+#undef __DISABLE_RDPID__
+#pragma GCC pop_options
+#endif /* __DISABLE_RDPID__ */
+
 #ifdef  __x86_64__
 
 #ifndef __FSGSBASE__

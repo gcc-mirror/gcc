@@ -1,3 +1,14 @@
+2017-02-17  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/rdpid.c New test.
+	* gcc.target/i386/sse-12.c: Add -mrdpid.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+
 2017-02-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.dg/pr59833.c: Add -fsignaling-nans to options.

@@ -4281,6 +4281,7 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
      ISAs come first.  Target string will be displayed in the same order.  */
   static struct ix86_target_opts isa2_opts[] =
   {
+    { "-mrdpid",	OPTION_MASK_ISA_RDPID },
     { "-msgx",		OPTION_MASK_ISA_SGX },
     { "-mavx5124vnniw", OPTION_MASK_ISA_AVX5124VNNIW },
     { "-mavx5124fmaps", OPTION_MASK_ISA_AVX5124FMAPS },
@@ -4348,6 +4349,7 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mmpx",		OPTION_MASK_ISA_MPX },
     { "-mclwb",		OPTION_MASK_ISA_CLWB }
   };
+
   /* Flag options.  */
   static struct ix86_target_opts flag_opts[] =
   {
@@ -6711,6 +6713,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("fxsr",	OPT_mfxsr),
     IX86_ATTR_ISA ("mpx",	OPT_mmpx),
     IX86_ATTR_ISA ("clwb",	OPT_mclwb),
+    IX86_ATTR_ISA ("rdpid",	OPT_mrdpid),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -38689,6 +38692,9 @@ s4fma_expand:
 		}
 	      return target;
 	    }
+	    case IX86_BUILTIN_RDPID:
+	      return ix86_expand_special_args_builtin (bdesc_args2 + i, exp,
+						     target);
 	  default:
 	    return ix86_expand_args_builtin (bdesc_args2 + i, exp, target);
 	  }
