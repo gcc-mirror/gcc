@@ -1,3 +1,8 @@
+2017-02-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/79261
+	* gcc.target/powerpc/vec-xxpermdi.c: New file.
+
 2017-02-17  Julia Koval  <julia.koval@intel.com>
 
 	* gcc.target/i386/rdpid.c New test.
