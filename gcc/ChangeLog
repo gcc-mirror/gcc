@@ -1,5 +1,10 @@
 2017-02-17  Martin Liska  <mliska@suse.cz>
 
+	PR rtl-optimization/79577
+	* params.def (selsched-max-sched-times): Increase minimum to 1.
+
+2017-02-17  Martin Liska  <mliska@suse.cz>
+
 	PR rtl-optimization/79574
 	* gcse.c (want_to_gcse_p): Prevent integer overflow.
 
