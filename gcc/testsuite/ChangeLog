@@ -1,3 +1,13 @@
+2017-02-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-float-2.c: New test.
+	* gcc.dg/torture/float128-floath.c,
+	gcc.dg/torture/float128x-floath.c,
+	gcc.dg/torture/float16-floath.c, gcc.dg/torture/float32-floath.c,
+	gcc.dg/torture/float32x-floath.c, gcc.dg/torture/float64-floath.c,
+	gcc.dg/torture/float64x-floath.c: Do not test comparison of
+	*_DECIMAL_DIG macros with DECIMAL_DIG.
+
 2017-02-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/79261

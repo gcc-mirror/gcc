@@ -53,10 +53,6 @@
 # error "FLT32X_TRUE_MIN undefined"
 #endif
 
-#if FLT32X_DECIMAL_DIG > DECIMAL_DIG
-# error "FLT32X_DECIMAL_DIG > DECIMAL_DIG"
-#endif
-
 #if FLT32X_MANT_DIG < 32 || FLT32X_MAX_EXP < 1024 || FLT32X_MIN_EXP + FLT32X_MAX_EXP != 3
 # error "_Float32x bad format"
 #endif
