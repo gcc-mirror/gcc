@@ -6353,7 +6353,6 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 {
   tree maxindex, type, main_type, elt, unqual_elt;
   int failure = 0, quals;
-  hashval_t hashcode = 0;
   bool overflow_p = false;
 
   maxindex = size_zero_node;
@@ -6450,9 +6449,7 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
   layout_type (main_type);
 
   /* Make sure we have the canonical MAIN_TYPE. */
-  hashcode = iterative_hash_object (TYPE_HASH (unqual_elt), hashcode);
-  hashcode = iterative_hash_object (TYPE_HASH (TYPE_DOMAIN (main_type)),
-				    hashcode);
+  hashval_t hashcode = type_hash_default (main_type);
   main_type = type_hash_canon (hashcode, main_type);
 
   /* Fix the canonical type.  */

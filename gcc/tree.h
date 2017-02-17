@@ -4280,6 +4280,7 @@ extern tree build_variant_type_copy (tree);
    How the hash code is computed is up to the caller, as long as any two
    callers that could hash identical-looking type nodes agree.  */
 
+extern hashval_t type_hash_default (tree);
 extern tree type_hash_canon (unsigned int, tree);
 
 extern tree convert (tree, tree);
