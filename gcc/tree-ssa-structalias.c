@@ -7296,9 +7296,15 @@ visit_loadstore (gimple *, tree base, tree ref, void *data)
       || TREE_CODE (base) == TARGET_MEM_REF)
     {
       tree ptr = TREE_OPERAND (base, 0);
-      if (TREE_CODE (ptr) == SSA_NAME
-	  && ! SSA_NAME_IS_DEFAULT_DEF (ptr))
+      if (TREE_CODE (ptr) == SSA_NAME)
 	{
+	  /* For parameters, get at the points-to set for the actual parm
+	     decl.  */
+	  if (SSA_NAME_IS_DEFAULT_DEF (ptr)
+	      && (TREE_CODE (SSA_NAME_VAR (ptr)) == PARM_DECL
+		  || TREE_CODE (SSA_NAME_VAR (ptr)) == RESULT_DECL))
+	    ptr = SSA_NAME_VAR (ptr);
+
 	  /* We need to make sure 'ptr' doesn't include any of
 	     the restrict tags we added bases for in its points-to set.  */
 	  varinfo_t vi = lookup_vi_for_tree (ptr);
