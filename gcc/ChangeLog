@@ -1,5 +1,10 @@
 2017-02-17  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/79576
+	* params.def (max-ssa-name-query-depth): Limit to 10.
+
+2017-02-17  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/79552
 	* tree-ssa-structalias.c (visit_loadstore): Properly verify
 	default defs.
