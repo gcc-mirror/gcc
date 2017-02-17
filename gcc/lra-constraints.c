@@ -3773,9 +3773,9 @@ curr_insn_transform (bool check_only_p)
 	fatal_insn ("unable to generate reloads for:", curr_insn);
       error_for_asm (curr_insn,
 		     "inconsistent operand constraints in an %<asm%>");
-      /* Avoid further trouble with this insn.	*/
-      PATTERN (curr_insn) = gen_rtx_USE (VOIDmode, const0_rtx);
-      lra_invalidate_insn_data (curr_insn);
+      /* Avoid further trouble with this insn.  Don't generate use
+	 pattern here as we could use the insn SP offset.  */
+      lra_set_insn_deleted (curr_insn);
       return true;
     }
 

@@ -1,3 +1,9 @@
+2017-02-17  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/79541
+	* lra-constraints.c (curr_insn_transform): Remove wrong asm insn
+	instead of transforming it into USE.
+
 2017-02-17  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (extendsfdf2): Remove default arguments.
