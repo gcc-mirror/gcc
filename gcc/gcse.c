@@ -790,7 +790,7 @@ want_to_gcse_p (rtx x, machine_mode mode, int *max_distance_ptr)
 	/* PRE doesn't implement max_distance restriction.  */
 	{
 	  int cost;
-	  int max_distance;
+	  HOST_WIDE_INT max_distance;
 
 	  gcc_assert (!optimize_function_for_speed_p (cfun)
 		      && optimize_function_for_size_p (cfun));
@@ -798,7 +798,8 @@ want_to_gcse_p (rtx x, machine_mode mode, int *max_distance_ptr)
 
 	  if (cost < COSTS_N_INSNS (GCSE_UNRESTRICTED_COST))
 	    {
-	      max_distance = (GCSE_COST_DISTANCE_RATIO * cost) / 10;
+	      max_distance
+		= ((HOST_WIDE_INT)GCSE_COST_DISTANCE_RATIO * cost) / 10;
 	      if (max_distance == 0)
 		return 0;
 

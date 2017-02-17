@@ -1,3 +1,8 @@
+2017-02-17  Martin Liska  <mliska@suse.cz>
+
+	PR rtl-optimization/79574
+	* gcc.dg/pr79574.c: New test.
+
 2017-02-17  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/79536

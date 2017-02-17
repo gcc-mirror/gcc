@@ -1,5 +1,10 @@
 2017-02-17  Martin Liska  <mliska@suse.cz>
 
+	PR rtl-optimization/79574
+	* gcse.c (want_to_gcse_p): Prevent integer overflow.
+
+2017-02-17  Martin Liska  <mliska@suse.cz>
+
 	PR tree-optimization/79529
 	* tree-ssa-loop-unswitch.c (is_maybe_undefined): Use
 	ssa_defined_default_def_p to handle cases which are implicitly
