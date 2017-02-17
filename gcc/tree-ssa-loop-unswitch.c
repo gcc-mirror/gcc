@@ -134,9 +134,7 @@ is_maybe_undefined (const tree name, gimple *stmt, struct loop *loop)
       if (ssa_undefined_value_p (t, true))
 	return true;
 
-      /* A PARM_DECL will not have an SSA_NAME_DEF_STMT.  Parameters
-	 get their initial value from function entry.  */
-      if (SSA_NAME_VAR (t) && TREE_CODE (SSA_NAME_VAR (t)) == PARM_DECL)
+      if (ssa_defined_default_def_p (t))
 	continue;
 
       gimple *def = SSA_NAME_DEF_STMT (t);

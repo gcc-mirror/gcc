@@ -1251,6 +1251,29 @@ tree_ssa_strip_useless_type_conversions (tree exp)
   return exp;
 }
 
+/* Return true if T, as SSA_NAME, has an implicit default defined value.  */
+
+bool
+ssa_defined_default_def_p (tree t)
+{
+  tree var = SSA_NAME_VAR (t);
+
+  if (!var)
+    ;
+  /* Parameters get their initial value from the function entry.  */
+  else if (TREE_CODE (var) == PARM_DECL)
+    return true;
+  /* When returning by reference the return address is actually a hidden
+     parameter.  */
+  else if (TREE_CODE (var) == RESULT_DECL && DECL_BY_REFERENCE (var))
+    return true;
+  /* Hard register variables get their initial value from the ether.  */
+  else if (VAR_P (var) && DECL_HARD_REGISTER (var))
+    return true;
+
+  return false;
+}
+
 
 /* Return true if T, an SSA_NAME, has an undefined value.  PARTIAL is what
    should be returned if the value is only partially undefined.  */
@@ -1259,19 +1282,8 @@ bool
 ssa_undefined_value_p (tree t, bool partial)
 {
   gimple *def_stmt;
-  tree var = SSA_NAME_VAR (t);
 
-  if (!var)
-    ;
-  /* Parameters get their initial value from the function entry.  */
-  else if (TREE_CODE (var) == PARM_DECL)
-    return false;
-  /* When returning by reference the return address is actually a hidden
-     parameter.  */
-  else if (TREE_CODE (var) == RESULT_DECL && DECL_BY_REFERENCE (var))
-    return false;
-  /* Hard register variables get their initial value from the ether.  */
-  else if (VAR_P (var) && DECL_HARD_REGISTER (var))
+  if (ssa_defined_default_def_p (t))
     return false;
 
   /* The value is undefined iff its definition statement is empty.  */
