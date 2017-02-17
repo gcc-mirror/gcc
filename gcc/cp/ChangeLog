@@ -1,5 +1,9 @@
 2017-02-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/78690 - ICE with using and global type with same name
+	* pt.c (type_dependent_object_expression_p): True for
+	IDENTIFIER_NODE.
+
 	PR c++/79549 - C++17 ICE with non-type auto template parameter pack
 	* pt.c (convert_template_argument): Just return an auto arg pack.
 	(tsubst_template_args): Don't tsubst an auto pack type.
