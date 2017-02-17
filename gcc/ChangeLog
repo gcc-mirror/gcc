@@ -1,3 +1,11 @@
+2017-02-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (extendsfdf2): Remove default arguments.
+	If HONOR_SNANS (SFmode) force the input to a register.
+	(*extendsfdf2_fpr): Add !HONOR_SNANS (SFmode) condition.
+	(*extendsfdf2_snan): New pattern, used when using SNaNs; it generates
+	an frsp or similar insn.
+
 2017-02-17  Martin Liska  <mliska@suse.cz>
 
 	PR rtl-optimization/79577
