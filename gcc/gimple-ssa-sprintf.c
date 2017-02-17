@@ -1232,10 +1232,6 @@ format_integer (const directive &dir, tree arg)
        of the format string by returning [-1, -1].  */
     return fmtresult ();
 
-  /* True if the LIKELY counter should be adjusted upward from the MIN
-     counter to account for arguments with unknown values.  */
-  bool likely_adjust = false;
-
   fmtresult res;
 
   /* Using either the range the non-constant argument is in, or its
@@ -1265,14 +1261,6 @@ format_integer (const directive &dir, tree arg)
 
 	  res.argmin = argmin;
 	  res.argmax = argmax;
-
-	  /* Set the adjustment for an argument whose range includes
-	     zero since that doesn't include the octal or hexadecimal
-	     base prefix.  */
-	  wide_int wzero = wi::zero (wi::get_precision (min));
-	  if (wi::le_p (min, wzero, SIGNED)
-	      && !wi::neg_p (max))
-	    likely_adjust = true;
 	}
       else if (range_type == VR_ANTI_RANGE)
 	{
@@ -1307,11 +1295,6 @@ format_integer (const directive &dir, tree arg)
 
   if (!argmin)
     {
-      /* Set the adjustment for an argument whose range includes
-	 zero since that doesn't include the octal or hexadecimal
-	 base prefix.  */
-      likely_adjust = true;
-
       if (TREE_CODE (argtype) == POINTER_TYPE)
 	{
 	  argmin = build_int_cst (pointer_sized_int_node, 0);
@@ -1364,14 +1347,20 @@ format_integer (const directive &dir, tree arg)
       res.range.max = MAX (max1, max2);
     }
 
-  /* Add the adjustment for an argument whose range includes zero
-     since it doesn't include the octal or hexadecimal base prefix.  */
+  /* If the range is known, use the maximum as the likely length.  */
   if (res.knownrange)
     res.range.likely = res.range.max;
   else
     {
+      /* Otherwise, use the minimum.  Except for the case where for %#x or
+         %#o the minimum is just for a single value in the range (0) and
+         for all other values it is something longer, like 0x1 or 01.
+	  Use the length for value 1 in that case instead as the likely
+	  length.  */
       res.range.likely = res.range.min;
-      if (likely_adjust && maybebase && base != 10)
+      if (maybebase
+	  && base != 10
+	  && (tree_int_cst_sgn (argmin) < 0 || tree_int_cst_sgn (argmax) > 0))
 	{
 	  if (res.range.min == 1)
 	    res.range.likely += base == 8 ? 1 : 2;

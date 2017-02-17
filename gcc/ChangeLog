@@ -1,3 +1,9 @@
+2017-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79327
+	* gimple-ssa-sprintf.c (format_integer): Remove likely_adjust
+	variable, its initialization and use.
+
 2017-02-17  Julia Koval  <julia.koval@intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_RDPID_SET): New.
