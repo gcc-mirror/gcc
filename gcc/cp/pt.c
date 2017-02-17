@@ -23932,6 +23932,10 @@ type_dependent_expression_p (tree expression)
 bool
 type_dependent_object_expression_p (tree object)
 {
+  /* An IDENTIFIER_NODE can sometimes have a TREE_TYPE, but it's still
+     dependent.  */
+  if (TREE_CODE (object) == IDENTIFIER_NODE)
+    return true;
   tree scope = TREE_TYPE (object);
   return (!scope || dependent_scope_p (scope));
 }
