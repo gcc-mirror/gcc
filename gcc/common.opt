@@ -2805,6 +2805,14 @@ gcoff
 Common Driver JoinedOrMissing Negative(gdwarf)
 Generate debug information in COFF format.
 
+gno-column-info
+Common Driver RejectNegative Var(debug_column_info,0) Init(0)
+Don't record DW_AT_decl_column and DW_AT_call_column in DWARF.
+
+gcolumn-info
+Common Driver RejectNegative Var(debug_column_info,1)
+Record DW_AT_decl_column and DW_AT_call_column in DWARF.
+
 gdwarf
 Common Driver JoinedOrMissing Negative(gdwarf-)
 Generate debug information in default version of DWARF format.
