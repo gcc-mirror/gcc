@@ -1,5 +1,39 @@
 2017-02-18  Jakub Jelinek  <jakub@redhat.com>
 
+	* final.c (last_columnnum, override_columnnum): New variables.
+	(final_start_function): Set last_columnnum, pass it to begin_prologue
+	hook and pass 0 to dwarf2out_begin_prologue.
+	(final_scan_insn): Update override_columnnum.  Pass last_columnnum
+	to source_line debug hook.
+	(notice_source_line): Compute last_columnnum and for debug_column_info
+	return true on column changes.
+	* debug.h (struct gcc_debug_hooks): Add column argument to
+	source_line and begin_prologue hooks.
+	(debug_nothing_int_charstar_int_bool): Remove prototype.
+	(debug_nothing_int_int_charstar,
+	debug_nothing_int_int_charstar_int_bool): New prototypes.
+	(dwarf2out_begin_prologue): Add column argument.
+	* debug.c (do_nothing_debug_hooks): Adjust source_line and
+	begin_prologue hooks.
+	(debug_nothing_int_charstar_int_bool): Remove.
+	(debug_nothing_int_int_charstar,
+	debug_nothing_int_int_charstar_int_bool): New functions.
+	* dwarf2out.c (dwarf2out_begin_prologue): Add column argument, pass it
+	through to dwarf2out_source_line.
+	(dwarf2_lineno_debug_hooks): Adjust begin_prologue hook.
+	(dwarf2out_source_line): Add column argument, emit it if requested.
+	* sdbout.c (sdbout_source_line, sdbout_begin_prologue): Add column
+	arguments.
+	* xcoffout.h (xcoffout_begin_prologue, xcoffout_source_line): Likewise.
+	* xcoffout.c (xcoffout_begin_prologue, xcoffout_source_line): Likewise.
+	* vmsdbgout.c (vmsdbgout_begin_prologue): Add column argument, pass it
+	through to dwarf2out_begin_prologue.
+	(vmsdbgout_source_line): Add column argument, pass it through to
+	dwarf2out_source_line.
+	* dbxout.c (dbxout_begin_prologue): Add column argument, adjust
+	dbxout_source_line caller.
+	(dbxout_source_line): Add column argument.
+
 	* common.opt (gno-column-info, gcolumn-info): New options.
 	* dwarf2out.c (dwarf2_lineno_debug_hooks): Formatting fix.
 	(check_die): Also test for multiple DW_AT_decl_column attributes.

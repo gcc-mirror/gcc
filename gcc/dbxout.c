@@ -332,8 +332,9 @@ static void debug_free_queue (void);
 /* The debug hooks structure.  */
 #if defined (DBX_DEBUGGING_INFO)
 
-static void dbxout_source_line (unsigned int, const char *, int, bool);
-static void dbxout_begin_prologue (unsigned int, const char *);
+static void dbxout_source_line (unsigned int, unsigned int, const char *,
+				int, bool);
+static void dbxout_begin_prologue (unsigned int, unsigned int, const char *);
 static void dbxout_source_file (const char *);
 static void dbxout_function_end (tree);
 static void dbxout_begin_function (tree);
@@ -1241,7 +1242,9 @@ dbxout_source_file (const char *filename)
    function scope  */
 
 static void
-dbxout_begin_prologue (unsigned int lineno, const char *filename)
+dbxout_begin_prologue (unsigned int lineno,
+		       unsigned int column ATTRIBUTE_UNUSED,
+		       const char *filename)
 {
   if (use_gnu_debug_info_extensions
       && !NO_DBX_FUNCTION_END
@@ -1252,7 +1255,7 @@ dbxout_begin_prologue (unsigned int lineno, const char *filename)
   /* pre-increment the scope counter */
   scope_labelno++;
 
-  dbxout_source_line (lineno, filename, 0, true);
+  dbxout_source_line (lineno, 0, filename, 0, true);
   /* Output function begin block at function scope, referenced
      by dbxout_block, dbxout_source_line and dbxout_function_end.  */
   emit_pending_bincls_if_required ();
@@ -1263,8 +1266,8 @@ dbxout_begin_prologue (unsigned int lineno, const char *filename)
    number LINENO.  */
 
 static void
-dbxout_source_line (unsigned int lineno, const char *filename,
-                    int discriminator ATTRIBUTE_UNUSED,
+dbxout_source_line (unsigned int lineno, unsigned int column ATTRIBUTE_UNUSED,
+		    const char *filename, int discriminator ATTRIBUTE_UNUSED,
                     bool is_stmt ATTRIBUTE_UNUSED)
 {
   dbxout_source_file (filename);

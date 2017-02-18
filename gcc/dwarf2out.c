@@ -93,7 +93,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gdb/gdb-index.h"
 #include "rtl-iter.h"
 
-static void dwarf2out_source_line (unsigned int, const char *, int, bool);
+static void dwarf2out_source_line (unsigned int, unsigned int, const char *,
+				   int, bool);
 static rtx_insn *last_var_location_insn;
 static rtx_insn *cached_next_real_insn;
 static void dwarf2out_decl (tree);
@@ -1023,6 +1024,7 @@ dwarf2out_alloc_current_fde (void)
 
 void
 dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
+			  unsigned int column ATTRIBUTE_UNUSED,
 			  const char *file ATTRIBUTE_UNUSED)
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -1073,7 +1075,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
      prologue case, not the eh frame case.  */
 #ifdef DWARF2_DEBUGGING_INFO
   if (file)
-    dwarf2out_source_line (line, file, 0, true);
+    dwarf2out_source_line (line, column, file, 0, true);
 #endif
 
   if (dwarf2out_do_cfi_asm ())
@@ -1099,7 +1101,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
 
 void
 dwarf2out_vms_end_prologue (unsigned int line ATTRIBUTE_UNUSED,
-			const char *file ATTRIBUTE_UNUSED)
+			    const char *file ATTRIBUTE_UNUSED)
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
@@ -2733,7 +2735,7 @@ const struct gcc_debug_hooks dwarf2_lineno_debug_hooks =
   debug_nothing_int_int,	         /* end_block */
   debug_true_const_tree,	         /* ignore_block */
   dwarf2out_source_line,		 /* source_line */
-  debug_nothing_int_charstar,	         /* begin_prologue */
+  debug_nothing_int_int_charstar,	 /* begin_prologue */
   debug_nothing_int_charstar,	         /* end_prologue */
   debug_nothing_int_charstar,	         /* begin_epilogue */
   debug_nothing_int_charstar,	         /* end_epilogue */
@@ -26534,7 +26536,8 @@ push_dw_line_info_entry (dw_line_info_table *table,
 /* ??? The discriminator parameter ought to be unsigned.  */
 
 static void
-dwarf2out_source_line (unsigned int line, const char *filename,
+dwarf2out_source_line (unsigned int line, unsigned int column,
+		       const char *filename,
                        int discriminator, bool is_stmt)
 {
   unsigned int file_num;
@@ -26547,6 +26550,9 @@ dwarf2out_source_line (unsigned int line, const char *filename,
      by simply removing it if we're not supposed to output it.  */
   if (dwarf_version < 4 && dwarf_strict)
     discriminator = 0;
+
+  if (!debug_column_info)
+    column = 0;
 
   table = cur_line_info_table;
   file_num = maybe_emit_file (lookup_filename (filename));
@@ -26567,6 +26573,7 @@ dwarf2out_source_line (unsigned int line, const char *filename,
 
   if (0 && file_num == table->file_num
       && line == table->line_num
+      && column == table->column_num
       && discriminator == table->discrim_num
       && is_stmt == table->is_stmt)
     return;
@@ -26575,7 +26582,14 @@ dwarf2out_source_line (unsigned int line, const char *filename,
 
   /* If requested, emit something human-readable.  */
   if (flag_debug_asm)
-    fprintf (asm_out_file, "\t%s %s:%d\n", ASM_COMMENT_START, filename, line);
+    {
+      if (debug_column_info)
+	fprintf (asm_out_file, "\t%s %s:%d:%d\n", ASM_COMMENT_START,
+		 filename, line, column);
+      else
+	fprintf (asm_out_file, "\t%s %s:%d\n", ASM_COMMENT_START,
+		 filename, line);
+    }
 
   if (DWARF2_ASM_LINE_DEBUG_INFO)
     {
@@ -26587,7 +26601,10 @@ dwarf2out_source_line (unsigned int line, const char *filename,
       putc (' ', asm_out_file);
       fprint_ul (asm_out_file, line);
       putc (' ', asm_out_file);
-      putc ('0', asm_out_file);
+      if (debug_column_info)
+	fprint_ul (asm_out_file, column);
+      else
+	putc ('0', asm_out_file);
 
       if (is_stmt != table->is_stmt)
 	{
@@ -26616,10 +26633,13 @@ dwarf2out_source_line (unsigned int line, const char *filename,
       if (is_stmt != table->is_stmt)
 	push_dw_line_info_entry (table, LI_negate_stmt, 0);
       push_dw_line_info_entry (table, LI_set_line, line);
+      if (debug_column_info)
+	push_dw_line_info_entry (table, LI_set_column, column);
     }
 
   table->file_num = file_num;
   table->line_num = line;
+  table->column_num = column;
   table->discrim_num = discriminator;
   table->is_stmt = is_stmt;
   table->in_use = true;
