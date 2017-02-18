@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_MMX_SET OPTION_MASK_ISA_MMX
 #define OPTION_MASK_ISA_3DNOW_SET \
   (OPTION_MASK_ISA_3DNOW | OPTION_MASK_ISA_MMX_SET)
+#define OPTION_MASK_ISA_3DNOW_A_SET \
+  (OPTION_MASK_ISA_3DNOW_A | OPTION_MASK_ISA_3DNOW_SET)
 
 #define OPTION_MASK_ISA_SSE_SET OPTION_MASK_ISA_SSE
 #define OPTION_MASK_ISA_SSE2_SET \
@@ -293,7 +295,17 @@ ix86_handle_option (struct gcc_options *opts,
       return true;
 
     case OPT_m3dnowa:
-      return false;
+      if (value)
+	{
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_3DNOW_A_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_3DNOW_A_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_3DNOW_A_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_3DNOW_A_UNSET;
+	}
+      return true;
 
     case OPT_msse:
       if (value)
