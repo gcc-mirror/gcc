@@ -1,3 +1,8 @@
+2017-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79559
+	* gcc.target/i386/pr79559.c: New test.
+
 2017-02-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c11-float-2.c: New test.
