@@ -1,5 +1,16 @@
 2017-02-18  Jakub Jelinek  <jakub@redhat.com>
 
+	* common.opt (gno-column-info, gcolumn-info): New options.
+	* dwarf2out.c (dwarf2_lineno_debug_hooks): Formatting fix.
+	(check_die): Also test for multiple DW_AT_decl_column attributes.
+	(add_src_coords_attributes, dwarf2out_imported_module_or_decl_1): Add
+	DW_AT_decl_column if requested.
+	(gen_subprogram_die): Compare and/or add also DW_AT_decl_column
+	if requested.
+	(gen_variable_die): Likewise.
+	(add_call_src_coords_attributes): Add DW_AT_call_column if requested.
+	* doc/invoke.texi (-gcolumn-info, -gno-column-info): Document.
+
 	PR target/79569
 	* config/i386/i386.opt (m3dnowa): Replace Undocumented with Report.
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_3DNOW_A_SET): Define.

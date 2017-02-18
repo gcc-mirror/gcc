@@ -338,6 +338,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-@var{version} @gol
 -ggdb  -grecord-gcc-switches  -gno-record-gcc-switches @gol
 -gstabs  -gstabs+  -gstrict-dwarf  -gno-strict-dwarf @gol
+-gcolumn-info  -gno-column-info @gol
 -gvms  -gxcoff  -gxcoff+  -gz@r{[}=@var{type}@r{]} @gol
 -fdebug-prefix-map=@var{old}=@var{new}  -fdebug-types-section @gol
 -feliminate-dwarf2-dups  -fno-eliminate-unused-debug-types @gol
@@ -6815,6 +6816,14 @@ DWARF extensions from later standard versions is allowed.
 @opindex gno-strict-dwarf
 Allow using extensions of later DWARF standard version than selected with
 @option{-gdwarf-@var{version}}.
+
+@item -gcolumn-info
+@item -gno-column-info
+@opindex gcolumn-info
+@opindex gno-column-info
+Emit location column information into DWARF debugging information, rather
+than just file and line.
+This option is disabled by default.
 
 @item -gz@r{[}=@var{type}@r{]}
 @opindex gz
