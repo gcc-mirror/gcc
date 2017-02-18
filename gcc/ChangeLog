@@ -1,5 +1,13 @@
 2017-02-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/79569
+	* config/i386/i386.opt (m3dnowa): Replace Undocumented with Report.
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_3DNOW_A_SET): Define.
+	(ix86_handle_option): Handle OPT_m3dnowa.
+	* doc/invoke.texi (-m3dnowa): Document.
+	* doc/extend.texi (__builtin_ia32_pmulhuw, __builtin_ia32_pf2iw): Use
+	-m3dnowa instead of -m3dnow -march=athlon.
+
 	PR target/79559
 	* config/i386/i386.c (ix86_print_operand): Use output_operand_lossage
 	instead of gcc_assert for K, r and R code checks.  Formatting fixes.
