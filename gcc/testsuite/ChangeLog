@@ -1,3 +1,7 @@
+2017-02-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/tls/thread_local-order2.C: xfail on hppa*-*-hpux*.
+
 2017-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79569
