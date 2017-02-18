@@ -1,5 +1,10 @@
 2017-02-18  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/xml/manual/io.xml: Update link to groups.google.com.
+	Tweak link description.
+
+2017-02-18  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* doc/xml/manual/profile_mode.xml: Fix link.
 
 2017-02-16  Gerald Pfeifer  <gerald@pfeifer.com>
