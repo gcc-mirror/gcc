@@ -49,7 +49,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define WCHAR_TYPE_SIZE 32
 
 #undef ASM_SPEC
-#define ASM_SPEC "%{m32:--32} %{m64:--64} %{mx32:--x32}"
+#define ASM_SPEC "%{m16|m32:--32} %{m64:--64} %{mx32:--x32}"
 
 #undef ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \

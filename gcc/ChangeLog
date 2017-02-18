@@ -1,3 +1,11 @@
+2017-02-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Backport from mainline
+	2016-12-11  Roger Pau Monné  <roger.pau@citrix.com>
+
+	* config/i386/x86-64.h: Append --32 to the assembler options when
+	-m16 is used on non-glibc systems as well.
+
 2017-02-17  Julia Koval  <julia.koval@intel.com>
 
 	PR target/76731
