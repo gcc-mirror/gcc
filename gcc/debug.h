@@ -65,13 +65,14 @@ struct gcc_debug_hooks
      though the BLOCK information is messed up.  Defaults to true.  */
   bool (* ignore_block) (const_tree);
 
-  /* Record a source file location at (FILE, LINE, DISCRIMINATOR).  */
-  void (* source_line) (unsigned int line, const char *file,
-                        int discriminator, bool is_stmt);
+  /* Record a source file location at (FILE, LINE, COLUMN, DISCRIMINATOR).  */
+  void (* source_line) (unsigned int line, unsigned int column,
+			const char *file, int discriminator, bool is_stmt);
 
   /* Called at start of prologue code.  LINE is the first line in the
      function.  */
-  void (* begin_prologue) (unsigned int line, const char *file);
+  void (* begin_prologue) (unsigned int line, unsigned int column,
+			   const char *file);
 
   /* Called at end of prologue code.  LINE is the first line in the
      function.  */
@@ -193,9 +194,13 @@ extern const struct gcc_debug_hooks *debug_hooks;
 /* The do-nothing hooks.  */
 extern void debug_nothing_void (void);
 extern void debug_nothing_charstar (const char *);
+extern void debug_nothing_int_int_charstar (unsigned int, unsigned int,
+					    const char *);
 extern void debug_nothing_int_charstar (unsigned int, const char *);
-extern void debug_nothing_int_charstar_int_bool (unsigned int, const char *,
-                                                 int, bool);
+extern void debug_nothing_int_int_charstar_int_bool (unsigned int,
+						     unsigned int,
+						     const char *,
+						     int, bool);
 extern void debug_nothing_int (unsigned int);
 extern void debug_nothing_int_int (unsigned int, unsigned int);
 extern void debug_nothing_tree (tree);
@@ -217,7 +222,8 @@ extern const struct gcc_debug_hooks vmsdbg_debug_hooks;
 
 /* Dwarf2 frame information.  */
 
-extern void dwarf2out_begin_prologue (unsigned int, const char *);
+extern void dwarf2out_begin_prologue (unsigned int, unsigned int,
+				      const char *);
 extern void dwarf2out_vms_end_prologue (unsigned int, const char *);
 extern void dwarf2out_vms_begin_epilogue (unsigned int, const char *);
 extern void dwarf2out_end_epilogue (unsigned int, const char *);
