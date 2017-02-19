@@ -1,3 +1,9 @@
+2017-02-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/69523
+	* doc/invoke.texi (C++ Dialect Options) [-Wliteral-suffix]: Update
+	description.
+
 2017-02-19  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gimple-pretty-print.c (dump_ternary_rhs): Adjust gimple dump format

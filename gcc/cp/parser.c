@@ -5812,8 +5812,9 @@ cp_parser_unqualified_id (cp_parser* parser,
 	      const char *name = UDLIT_OP_SUFFIX (id);
 	      if (name[0] != '_' && !in_system_header_at (input_location)
 		  && declarator_p)
-		warning (0, "literal operator suffixes not preceded by %<_%>"
-			    " are reserved for future standardization");
+		warning (OPT_Wliteral_suffix,
+			 "literal operator suffixes not preceded by %<_%>"
+			 " are reserved for future standardization");
 	    }
 
 	  return id;
