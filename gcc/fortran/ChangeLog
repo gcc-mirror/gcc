@@ -1,3 +1,10 @@
+017-02-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79402
+	* resolve.c (fixup_unique_dummy): New function.
+	(gfc_resolve_expr): Call it for dummy variables with a unique
+	symtree name.
+
 2017-02-19  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/79335
