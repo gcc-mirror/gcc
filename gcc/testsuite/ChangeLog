@@ -1,3 +1,8 @@
+2017-02-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79402
+	* gfortran.dg/submodule_23.f90: New test.
+
 2017-02-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/79380
@@ -142,7 +147,7 @@
 
 	PR target/79481
 	* gcc.target/i386/sse-14.c (test_2vx): Add void return type.
-	(test_3vx): Change return type from int to void. 
+	(test_3vx): Change return type from int to void.
 	(_mm512_prefetch_i32gather_ps, _mm512_prefetch_i32scatter_ps,
 	_mm512_prefetch_i64gather_ps, _mm512_prefetch_i64scatter_ps,
 	_mm512_prefetch_i32gather_pd, _mm512_prefetch_i32scatter_pd,
