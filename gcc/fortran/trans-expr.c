@@ -7516,7 +7516,6 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init, bool coarray)
 	  && (!c->expr || c->expr->expr_type == EXPR_NULL))
 	{
 	  tree token, desc, size;
-	  symbol_attribute attr;
 	  bool is_array = cm->ts.type == BT_CLASS
 	      ? CLASS_DATA (cm)->attr.dimension : cm->attr.dimension;
 
@@ -7549,7 +7548,10 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init, bool coarray)
 	    }
 	  else
 	    {
-	      desc = gfc_conv_scalar_to_descriptor (&se, field, attr);
+	      desc = gfc_conv_scalar_to_descriptor (&se, field,
+						    cm->ts.type == BT_CLASS
+						    ? CLASS_DATA (cm)->attr
+						    : cm->attr);
 	      size = TYPE_SIZE_UNIT (TREE_TYPE (field));
 	    }
 	  gfc_add_block_to_block (&block, &se.pre);
