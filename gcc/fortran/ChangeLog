@@ -1,4 +1,12 @@
-017-02-19  Paul Thomas  <pault@gcc.gnu.org>
+2017-02-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79447
+	* decl.c (gfc_set_constant_character_len): Whitespace.
+	(gfc_match_end): Catch case where a procedure is contained in
+	a module procedure and ensure that 'end procedure' is the
+	correct termination.
+
+2017-02-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/79402
 	* resolve.c (fixup_unique_dummy): New function.
