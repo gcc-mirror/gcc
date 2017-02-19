@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_AMIGAOS
 #define TARGET_AMIGAOS 1
 
-extern void amigaos_init_cumulative_args (CUMULATIVE_ARGS *, tree);
+extern void amigaos_init_cumulative_args (CUMULATIVE_ARGS *, tree, tree);
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
@@ -32,7 +32,7 @@ extern void amigaos_init_cumulative_args (CUMULATIVE_ARGS *, tree);
 
 #undef INIT_CUMULATIVE_ARGS
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
-  (amigaos_init_cumulative_args(&(CUM), (FNTYPE)))
+  (amigaos_init_cumulative_args(&(CUM), (FNTYPE), (INDIRECT)))
 
 
 extern int amigaos_restore_a4 (void);

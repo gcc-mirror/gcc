@@ -481,6 +481,8 @@ while (0)
      affects_type_identity } */
 #define SUBTARGET_ATTRIBUTES                                            \
   { "regparm", 1, 1, true,  false, false, amigaos_handle_type_attribute,\
+    false }, \
+  { "stkparm", 0, 0, true,  false, false, amigaos_handle_type_attribute,\
     false },
 
 #define GOT_SYMBOL_NAME ""

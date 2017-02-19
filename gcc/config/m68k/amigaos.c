@@ -381,7 +381,7 @@ static CUMULATIVE_ARGS * lastcum;
  For a library call, FNTYPE is 0.  */
 
 void
-amigaos_init_cumulative_args (CUMULATIVE_ARGS *cump, tree fntype)
+amigaos_init_cumulative_args (CUMULATIVE_ARGS *cump, tree fntype, tree decl)
 {
   struct amigaos_args * cum = &mycum;
   lastcum = cump;
@@ -397,11 +397,12 @@ amigaos_init_cumulative_args (CUMULATIVE_ARGS *cump, tree fntype)
 
   if (fntype)
     {
-      if (lookup_attribute ("stkparm", TYPE_ATTRIBUTES(fntype)))
-	cum->num_of_regs = 0;
+      tree attrs = DECL_ATTRIBUTES(decl);
+      if (lookup_attribute ("stkparm", attrs))
+	  cum->num_of_regs = 0;
       else
 	{
-	  tree ratree = lookup_attribute ("regparm", TYPE_ATTRIBUTES(fntype));
+	  tree ratree = lookup_attribute ("regparm", attrs);
 	  cum->num_of_regs = amigaos_regparm != 0 ?
 	      amigaos_regparm : AMIGAOS_DEFAULT_REGPARM;
 	  if (ratree)
@@ -530,11 +531,11 @@ _m68k_function_arg (CUMULATIVE_ARGS *cump, machine_mode mode, const_tree type)
 	  long mask;
 
 	  look_for_reg: mask = 1 << regbegin;
-	  for (reg = 0; reg < cum->num_of_regs; reg++, mask <<= 1)
+	  for (reg = 0; reg < AMIGAOS_MAX_REGPARM; reg++, mask <<= 1)
 	    if (!(cum->regs_already_used & mask))
 	      {
 		int end;
-		for (end = reg; end < cum->num_of_regs && end < reg + len;
+		for (end = reg; end < AMIGAOS_MAX_REGPARM && end < reg + len;
 		    end++, mask <<= 1)
 		  if (cum->regs_already_used & mask)
 		    break;
@@ -546,8 +547,9 @@ _m68k_function_arg (CUMULATIVE_ARGS *cump, machine_mode mode, const_tree type)
 		  }
 	      }
 
-	  if (reg == cum->num_of_regs && altregbegin != -1)
+	  if (reg == AMIGAOS_MAX_REGPARM && altregbegin != -1)
 	    {
+	      DPRINTF(("look for alt reg\n"));
 	      regbegin = altregbegin;
 	      altregbegin = -1;
 	      goto look_for_reg;
@@ -556,6 +558,7 @@ _m68k_function_arg (CUMULATIVE_ARGS *cump, machine_mode mode, const_tree type)
 
       if (cum->last_arg_reg != -1)
 	{
+	  --cum->num_of_regs;
 	  DPRINTF(("-> gen_rtx_REG %d\r\n", cum->last_arg_reg));
 	  return gen_rtx_REG (mode, cum->last_arg_reg);
 	}
@@ -771,7 +774,7 @@ bool
 amigaos_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno,
 		   int *total, bool speed)
 {
-  DPRINTF(("outer: %d, opno: %d", outer_code, opno));
+//  DPRINTF(("outer: %d, opno: %d", outer_code, opno));
 //  debug_rtx(x);
   bool r = m68k_rtx_costs (x, mode, outer_code, opno, total, speed);
   *total *= 4;

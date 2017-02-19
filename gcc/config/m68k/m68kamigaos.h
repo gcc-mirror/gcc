@@ -194,8 +194,8 @@ amiga_declare_object = 0
       builtin_define ("__saveds=__attribute__((__saveds__))");		\
       builtin_define ("__interrupt=__attribute__((__interrupt__))");	\
       builtin_define ("__stackext=__attribute__((__stackext__))");	\
-      builtin_define ("__regargs=__attribute__((regparm))");	\
-      builtin_define ("__stdargs=__attribute__((stkparm))");	\
+      builtin_define ("__regargs=__attribute__((__regparm__))");	\
+      builtin_define ("__stdargs=__attribute__((__stkparm__))");	\
       builtin_define ("__aligned=__attribute__((__aligned__(4)))");	\
       builtin_define_std ("amiga");					\
       builtin_define_std ("amigaos");					\
