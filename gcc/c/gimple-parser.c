@@ -856,6 +856,28 @@ c_parser_gimple_postfix_expression (c_parser *parser)
 	      expr.value = fold_convert (type, val);
 	      return expr;
 	    }
+	  else if (strcmp (IDENTIFIER_POINTER (id), "__FMA") == 0)
+	    {
+	      c_parser_consume_token (parser);
+	      auto_vec<tree> args;
+
+	      if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+		{
+		  c_parser_gimple_expr_list (parser, &args);
+		  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+					     "expected %<)%>");
+		}
+	      if (args.length () != 3)
+		{
+		  error_at (loc, "invalid number of operands to __FMA");
+		  expr.value = error_mark_node;
+		  return expr;
+		}
+	      expr.value = build3_loc (loc, FMA_EXPR, TREE_TYPE (args[0]),
+				       args[0], args[1], args[2]);
+	      return expr;
+	    }
+
 	  /* SSA name.  */
 	  unsigned version, ver_offset;
 	  if (! lookup_name (id)
