@@ -1,3 +1,23 @@
+2017-02-19  Dinka Ranns  <dinka.ranns@googlemail.com>
+
+	C++17 GB50 resolution
+	* include/std/chrono (duration::operator++()): Add
+	_GLIBCXX17_CONSTEXPR.
+	(duration::operator++(int)): Likewise.
+	(duration::operator--()): Likewise.
+	(duration::operator--(int)): Likewise.
+	(duration::operator+=(const duration&)): Likewise.
+	(duration::operator-=(const duration&)): Likewise.
+	(duration::operator*=(const rep&)): Likewise.
+	(duration::operator/=(const rep&)): Likewise.
+	(duration::operator%=(const rep&)): Likewise.
+	(duration::operator%=(const duration&)): Likewise.
+	(time_point::operator+=(const duration&)): Likewise.
+	(time_point::operator-=(const duration&)): Likewise.
+	* testsuite/20_util/duration/arithmetic/constexpr_c++17.cc: New test.
+	* testsuite/20_util/duration/literals/range.cc: Adjust dg-error.
+	* testsuite/20_util/time_point/arithmetic/constexpr.cc: New test.
+
 2017-02-19  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/debug.xml: Adjust link to ThreadSanitizer.
