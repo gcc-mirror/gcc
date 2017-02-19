@@ -2852,6 +2852,11 @@ int main() @{
 
 In this case, @code{PRId64} is treated as a separate preprocessing token.
 
+Additionally, warn when a user-defined literal operator is declared with
+a literal suffix identifier that doesn't begin with an underscore. Literal
+suffix identifiers that don't begin with an underscore are reserved for
+future standardization.
+
 This warning is enabled by default.
 
 @item -Wlto-type-mismatch
