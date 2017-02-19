@@ -1,3 +1,8 @@
+2017-02-19  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR target/71017
+	* config/i386/cpuid.h: Fix undefined behavior.
+
 2017-02-18  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	Backport from mainline
