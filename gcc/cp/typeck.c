@@ -1795,6 +1795,12 @@ cxx_alignas_expr (tree e)
 
          the assignment-expression shall be an integral constant
 	 expression.  */
+
+  if (!INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (e)))
+    {
+      error ("%<alignas%> argument has non-integral type %qT", TREE_TYPE (e));
+      return error_mark_node;
+    }
   
   return cxx_constant_value (e);
 }
