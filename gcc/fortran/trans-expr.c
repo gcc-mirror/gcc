@@ -9961,13 +9961,16 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	  tree cond;
 	  const char* msg;
 
+	  tmp = INDIRECT_REF_P (lse.expr)
+	      ? gfc_build_addr_expr (NULL_TREE, lse.expr) : lse.expr;
+
 	  /* We should only get array references here.  */
-	  gcc_assert (TREE_CODE (lse.expr) == POINTER_PLUS_EXPR
-		      || TREE_CODE (lse.expr) == ARRAY_REF);
+	  gcc_assert (TREE_CODE (tmp) == POINTER_PLUS_EXPR
+		      || TREE_CODE (tmp) == ARRAY_REF);
 
 	  /* 'tmp' is either the pointer to the array(POINTER_PLUS_EXPR)
 	     or the array itself(ARRAY_REF).  */
-	  tmp = TREE_OPERAND (lse.expr, 0);
+	  tmp = TREE_OPERAND (tmp, 0);
 
 	  /* Provide the address of the array.  */
 	  if (TREE_CODE (lse.expr) == ARRAY_REF)

@@ -7,6 +7,12 @@
 
 2017-02-19  Andre Vehreschild  <vehre@gcc.gnu.org>
 
+	PR fortran/79229
+	* trans-expr.c (gfc_trans_assignment_1): Deref indirect refs when
+	compiling with -fcheck=mem to check the pointer and not the data.
+
+2017-02-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
 	PR fortran/79335
 	* trans-array.c (duplicate_allocatable_coarray): Ensure attributes
 	passed are properly initialized.
