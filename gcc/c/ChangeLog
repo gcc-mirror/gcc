@@ -1,5 +1,11 @@
 2017-02-19  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Check return
+	value of c_parser_parse_ssa_name against error_mark_node and emit
+	error if ssa name is anonymous and written as default definition.
+
+2017-02-19  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
 	* gimple-parser.c (c_parser_gimple_postfix_expression): Handle
 	FMA_EXPR.
 
