@@ -7568,6 +7568,21 @@ access_attr_decl (gfc_statement st)
 
 	case INTERFACE_GENERIC:
 	case INTERFACE_DTIO:
+
+	  if (type == INTERFACE_DTIO
+	      && gfc_current_ns->proc_name
+	      && gfc_current_ns->proc_name->attr.flavor == FL_MODULE)
+	    {
+	      gfc_find_symbol (name, gfc_current_ns, 0, &sym);
+	      if (sym == NULL)
+		{
+		  gfc_error ("The GENERIC DTIO INTERFACE at %C is not "
+			     "present in the MODULE '%s'",
+			     gfc_current_ns->proc_name->name);
+		  return MATCH_ERROR;
+		}
+	    }
+
 	  if (gfc_get_symbol (name, NULL, &sym))
 	    goto done;
 

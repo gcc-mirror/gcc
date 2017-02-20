@@ -1244,6 +1244,26 @@ require_type (st_parameter_dt *dtp, bt expected, bt actual, const fnode *f)
 }
 
 
+/* Check that the dtio procedure required for formatted IO is present.  */
+
+static int
+check_dtio_proc (st_parameter_dt *dtp, const fnode *f)
+{
+  char buffer[BUFLEN];
+
+  if (dtp->u.p.fdtio_ptr != NULL)
+    return 0;
+
+  snprintf (buffer, BUFLEN,
+	    "Missing DTIO procedure or intrinsic type passed for item %d "
+	    "in formatted transfer",
+	    dtp->u.p.item_count - 1);
+
+  format_error (dtp, f, buffer);
+  return 1;
+}
+
+
 static int
 require_numeric_type (st_parameter_dt *dtp, bt actual, const fnode *f)
 {
@@ -1436,6 +1456,9 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	case FMT_DT:
 	  if (n == 0)
 	    goto need_read_data;
+
+	  if (check_dtio_proc (dtp, f))
+	    return;
 	  if (require_type (dtp, BT_CLASS, type, f))
 	    return;
 	  int unit = dtp->u.p.current_unit->unit_number;
@@ -1938,8 +1961,12 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	      child_iomsg_len = IOMSG_LEN;
 	    }
 
+	  if (check_dtio_proc (dtp, f))
+	    return;
+
 	  /* Call the user defined formatted WRITE procedure.  */
 	  dtp->u.p.current_unit->child_dtio++;
+
 	  dtp->u.p.fdtio_ptr (p, &unit, iotype, f->u.udf.vlist,
 			      child_iostat, child_iomsg,
 			      iotype_len, child_iomsg_len);

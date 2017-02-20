@@ -1,3 +1,9 @@
+2017-02-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79382
+	* decl.c (access_attr_decl): Test for presence of generic DTIO
+	interface and emit error if not present.
+
 2017-02-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/79434
