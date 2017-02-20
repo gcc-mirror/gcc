@@ -1,3 +1,13 @@
+2017-02-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79434
+	* parse.c (check_component, parse_union): Whitespace.
+	(set_syms_host_assoc): For a derived type, check if the module
+	in which it was declared is one of the submodule ancestors. If
+	it is, make the components public. Otherwise, reset attribute
+	'host_assoc' and set 'use-assoc' so that encapsulation is
+	preserved.
+
 2017-02-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/79447
