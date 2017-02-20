@@ -406,8 +406,9 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
 
 	  /* In the first pass, we force the renaming of registers that
 	     don't belong to PREFERRED_CLASS to registers that do, even
-	     though the latters were used not very long ago.  */
-	  if ((pass == 0
+	     though the latters were used not very long ago.
+	     Also use a register if no best_new_reg was found till now  */
+	  if (((pass == 0 || !has_preferred_class)
 	      && !TEST_HARD_REG_BIT (reg_class_contents[preferred_class],
 				     best_new_reg))
 	      || tick[best_new_reg] > tick[new_reg])

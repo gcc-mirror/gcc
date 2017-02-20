@@ -1299,7 +1299,7 @@ process_options (void)
     flag_web = flag_unroll_loops || flag_peel_loops;
 
   if (flag_rename_registers == AUTODETECT_VALUE)
-    flag_rename_registers = flag_unroll_loops || flag_peel_loops;
+    flag_rename_registers = flag_unroll_loops || flag_peel_loops || optimize >= 2;
 
   if (flag_non_call_exceptions)
     flag_asynchronous_unwind_tables = 1;
