@@ -4130,7 +4130,15 @@ curr_insn_transform (bool check_only_p)
 			  && (goal_alt[i] == NO_REGS
 			      || (simplify_subreg_regno
 				  (ira_class_hard_regs[goal_alt[i]][0],
-				   GET_MODE (reg), byte, mode) >= 0)))))
+				   GET_MODE (reg), byte, mode) >= 0)))
+		      /* WORD_REGISTER_OPERATIONS targets require the register
+			 to be reloaded when the outer mode is strictly
+			 narrower than the inner mode.  Note: It may be
+			 necessary to always reload the inner mode here but it
+			 requires further investigation.  */
+		      || (GET_MODE_PRECISION (mode)
+			  < GET_MODE_PRECISION (GET_MODE (reg))
+			  && WORD_REGISTER_OPERATIONS)))
 		{
 		  if (type == OP_OUT)
 		    type = OP_INOUT;
