@@ -2057,7 +2057,9 @@ add_function_candidate (struct z_candidate **candidates,
     {
       tree ptype = non_reference (TREE_VALUE (parmlist));
       tree dtype = DECL_CONTEXT (fn);
-      if (reference_related_p (ptype, dtype))
+      tree btype = DECL_INHERITED_CTOR_BASE (fn);
+      if (reference_related_p (ptype, dtype)
+	  && reference_related_p (btype, ptype))
 	{
 	  viable = false;
 	  reason = inherited_ctor_rejection ();
