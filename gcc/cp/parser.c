@@ -12883,7 +12883,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 	break;
       else if (maybe_range_for_decl)
 	{
-	  if (declares_class_or_enum && token->type == CPP_COLON)
+	  if ((declares_class_or_enum & 2) && token->type == CPP_COLON)
 	    permerror (decl_specifiers.locations[ds_type_spec],
 		       "types may not be defined in a for-range-declaration");
 	  break;
