@@ -1,4 +1,10 @@
-2017-02-18  Gerald Pfeifer  <gerald@pfeifer.com>
+2017-02-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* Makefile.in (BUILD_SYSTEM_HEADER_DIR): New make variabe.
+	(LIMITS_H_TEST, if_multiarch, stmp-fixinc): Use BUILD_SYSTEM_HEADER_DIR
+	instead of SYSTEM_HEADER_DIR.
+
+2017-02-20  Gerald Pfeifer  <gerald@pfeifer.com>
 	    Martin Liška  <mliska@suse.cz>
 
 	* doc/invoke.texi (use-after-scope-direct-emission-threshold):
