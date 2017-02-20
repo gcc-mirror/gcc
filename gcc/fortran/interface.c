@@ -4615,7 +4615,7 @@ check_dtio_arg_TKR_intent (gfc_symbol *fsym, bool typebound, bt type,
       && rank == 0
       && (((type == BT_CLASS) && CLASS_DATA (fsym)->attr.dimension)
 	  || ((type != BT_CLASS) && fsym->attr.dimension)))
-    gfc_error ("DTIO dummy argument at %L be a scalar",
+    gfc_error ("DTIO dummy argument at %L must be a scalar",
 	       &fsym->declared_at);
   else if (rank == 1
 	   && (fsym->as == NULL || fsym->as->type != AS_ASSUMED_SHAPE))
@@ -4829,7 +4829,7 @@ gfc_find_typebound_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
   gfc_symtree *tb_io_st = NULL;
   bool t = false;
 
-  if (!derived || derived->attr.flavor != FL_DERIVED)
+  if (!derived || !derived->resolved || derived->attr.flavor != FL_DERIVED)
     return NULL;
 
   /* Try to find a typebound DTIO binding.  */

@@ -1,3 +1,15 @@
+2017-02-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79599
+	* interface.c (check_dtio_arg_TKR_intent): Supply 'must'
+	missing from error message.
+
+2017-02-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79523
+	* interface.c (gfc_find_typebound_dtio_proc): Guard test for
+	flavor attribute by checking that symbol is resolved.
+
 2017-02-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/79382
