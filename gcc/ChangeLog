@@ -1,3 +1,9 @@
+2017-02-20  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	PR target/78660
+	* lra-constraints.c (curr_insn_transform): Handle
+	WORD_REGISTER_OPERATIONS requirements when reloading SUBREGs.
+
 2017-02-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	Revert:
