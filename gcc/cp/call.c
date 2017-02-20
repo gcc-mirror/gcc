@@ -8356,9 +8356,15 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
       /* FIXME P0135 doesn't say how to handle direct initialization from a
 	 type with a suitable conversion operator.  Let's handle it like
 	 copy-initialization, but allowing explict conversions.  */
+      tsubst_flags_t sub_complain = tf_warning;
+      if (!is_dummy_object (instance))
+	/* If we're using this to initialize a non-temporary object, don't
+	   require the destructor to be accessible.  */
+	sub_complain |= tf_no_cleanup;
       if (!reference_related_p (class_type, TREE_TYPE (arg)))
 	arg = perform_implicit_conversion_flags (class_type, arg,
-						 tf_warning, flags);
+						 sub_complain,
+						 flags);
       if ((TREE_CODE (arg) == TARGET_EXPR
 	   || TREE_CODE (arg) == CONSTRUCTOR)
 	  && (same_type_ignoring_top_level_qualifiers_p
