@@ -6,6 +6,9 @@
 	PR middle-end/79537
 	* gcc.dg/comp-goto-4.c: New.
 
+	PR sanitizer/79558
+	* c-c++-common/ubsan/bounds-14.c: New test.
+
 2017-02-20  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
