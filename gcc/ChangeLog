@@ -1,3 +1,8 @@
+2017-02-20  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/79537
+	* gimplify.c (gimplify_expr): Handle unused *&&L;.
+
 2017-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79568
