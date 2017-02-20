@@ -1,5 +1,11 @@
 2017-02-20  Matthew Fortune  <matthew.fortune@imgtec.com>
 
+	PR target/78012
+	* lra-constraints.c (split_reg): Check requested split mode
+	is supported by the register.
+
+2017-02-20  Matthew Fortune  <matthew.fortune@imgtec.com>
+
 	* lra-constraints.c (simplify_operand_subreg): Remove early
 	return false.
 

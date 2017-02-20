@@ -5396,6 +5396,26 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
 	    }
 	  return false;
 	}
+      /* Split_if_necessary can split hard registers used as part of a
+	 multi-register mode but splits each register individually.  The
+	 mode used for each independent register may not be supported
+	 so reject the split.  Splitting the wider mode should theoretically
+	 be possible but is not implemented.  */
+      if (! HARD_REGNO_MODE_OK (hard_regno, mode))
+	{
+	  if (lra_dump_file != NULL)
+	    {
+	      fprintf (lra_dump_file,
+		       "    Rejecting split of %d(%s): unsuitable mode %s\n",
+		       original_regno,
+		       reg_class_names[lra_get_allocno_class (original_regno)],
+		       GET_MODE_NAME (mode));
+	      fprintf
+		(lra_dump_file,
+		 "    ))))))))))))))))))))))))))))))))))))))))))))))))\n");
+	    }
+	  return false;
+	}
       new_reg = lra_create_new_reg (mode, original_reg, rclass, "split");
       reg_renumber[REGNO (new_reg)] = hard_regno;
     }
