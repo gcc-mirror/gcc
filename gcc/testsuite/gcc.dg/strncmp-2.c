@@ -19,7 +19,12 @@ static void test_driver_strncmp (void (test_strncmp)(const char *, const char *,
 {
   long pgsz = sysconf(_SC_PAGESIZE);
   char buf1[sz+1];
-  char *buf2 = aligned_alloc(pgsz,2*pgsz);
+  char *buf2;
+#if _POSIX_C_SOURCE >= 200112L
+  if ( posix_memalign ((void **)&buf2, pgsz, 2*pgsz) ) abort ();
+#else
+  if ( !(buf2 = valloc(2*pgsz))) abort ();
+#endif
   char *p2;
   int r,i,e;
 
@@ -35,6 +40,7 @@ static void test_driver_strncmp (void (test_strncmp)(const char *, const char *,
     e = lib_memcmp(buf1,p2,sz);
     (*test_memcmp)(buf1,p2,e);
   }
+  free(buf2);
 }
 
 #define RUN_TEST(SZ) test_driver_strncmp (test_strncmp_ ## SZ, test_memcmp_ ## SZ, SZ);
