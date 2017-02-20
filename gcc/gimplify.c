@@ -11157,8 +11157,11 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   if (fallback == fb_none && *expr_p && !is_gimple_stmt (*expr_p))
     {
       /* We aren't looking for a value, and we don't have a valid
-	 statement.  If it doesn't have side-effects, throw it away.  */
-      if (!TREE_SIDE_EFFECTS (*expr_p))
+	 statement.  If it doesn't have side-effects, throw it away.
+	 We can also get here with code such as "*&&L;", where L is
+	 a LABEL_DECL that is marked as FORCED_LABEL.  */
+      if (TREE_CODE (*expr_p) == LABEL_DECL
+	  || !TREE_SIDE_EFFECTS (*expr_p))
 	*expr_p = NULL;
       else if (!TREE_THIS_VOLATILE (*expr_p))
 	{
