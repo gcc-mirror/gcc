@@ -1,3 +1,8 @@
+2017-02-20  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/78056
+	* gcc.target/powerpc/pr78056-8.c: Remove.
+
 2017-02-20  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/79537
