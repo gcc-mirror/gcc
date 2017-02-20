@@ -395,7 +395,7 @@ amigaos_init_cumulative_args (CUMULATIVE_ARGS *cump, tree fntype, tree decl)
   cum->last_arg_reg = -1;
   cum->regs_already_used = 0;
 
-  if (fntype)
+  if (decl)
     {
       tree attrs = DECL_ATTRIBUTES(decl);
       if (lookup_attribute ("stkparm", attrs))
