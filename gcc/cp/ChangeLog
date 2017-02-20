@@ -1,5 +1,9 @@
 2017-02-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/78282 - auto template and pack expansion
+	* pt.c (find_parameter_packs_r): Don't walk into the type of
+	templates other than template template-parameters.
+
 	PR c++/79606 - ICE with this->base_member in NSDMI
 	* class.c (build_base_path): Check processing_template_decl.
 
