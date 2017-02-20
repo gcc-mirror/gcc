@@ -20918,8 +20918,13 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
     case INDIRECT_REF:
       if (REFERENCE_REF_P (parm))
 	{
+	  bool pexp = PACK_EXPANSION_P (arg);
+	  if (pexp)
+	    arg = PACK_EXPANSION_PATTERN (arg);
 	  if (REFERENCE_REF_P (arg))
 	    arg = TREE_OPERAND (arg, 0);
+	  if (pexp)
+	    arg = make_pack_expansion (arg);
 	  return unify (tparms, targs, TREE_OPERAND (parm, 0), arg,
 			strict, explain_p);
 	}
