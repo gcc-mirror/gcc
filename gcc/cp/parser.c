@@ -23926,8 +23926,8 @@ cp_parser_exception_specification_opt (cp_parser* parser)
 	}
       else if (cxx_dialect >= cxx11 && !in_system_header_at (loc))
 	warning_at (loc, OPT_Wdeprecated,
-		    "dynamic exception specifications are deprecated in C++11;"
-		    " use %<noexcept%> instead");
+		    "dynamic exception specifications are deprecated in "
+		    "C++11");
     }
   /* In C++17, throw() is equivalent to noexcept (true).  throw()
      is deprecated in C++11 and above as well, but is still widely used,

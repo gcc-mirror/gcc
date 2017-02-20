@@ -1,5 +1,9 @@
 2017-02-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/79400 - confusing suggestion of 'noexcept'
+	* parser.c (cp_parser_exception_specification_opt): Remove
+	suggestion for deprecated dynamic exception-specification.
+
 	PR c++/79470 - partial ordering with reference parameters
 	* pt.c (unify) [INDIRECT_REF]: Handle pack expansions.
 
