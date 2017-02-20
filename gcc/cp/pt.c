@@ -25118,7 +25118,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
     {
       tree t = cands;
       for (; t; t = OVL_NEXT (t))
-	if (DECL_NONCONVERTING_P (DECL_TEMPLATE_RESULT (OVL_CURRENT (t))))
+	if (DECL_NONCONVERTING_P (STRIP_TEMPLATE (OVL_CURRENT (t))))
 	  break;
       if (t)
 	{
@@ -25126,7 +25126,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	  for (t = cands; t; t = OVL_NEXT (t))
 	    {
 	      tree f = OVL_CURRENT (t);
-	      if (!DECL_NONCONVERTING_P (DECL_TEMPLATE_RESULT (f)))
+	      if (!DECL_NONCONVERTING_P (STRIP_TEMPLATE (f)))
 		pruned = build_overload (f, pruned);
 	    }
 	  cands = pruned;

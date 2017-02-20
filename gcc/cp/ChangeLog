@@ -1,5 +1,9 @@
 2017-02-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/79500 - ICE with non-template deduction guide
+	* pt.c (do_class_deduction): Use STRIP_TEMPLATE rather than
+	DECL_TEMPLATE_RESULT.
+
 	PR c++/79580 - ICE with compound literal
 	* parser.c (cp_parser_class_head): If we're in the middle of an
 	expression, use ts_within_enclosing_non_class.
