@@ -88,9 +88,9 @@ BDESC_END (PCMPISTR, SPECIAL_ARGS)
 
 /* Special builtins with variable number of arguments.  */
 BDESC_FIRST (special_args, SPECIAL_ARGS,
-       ~OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_rdtsc", IX86_BUILTIN_RDTSC, UNKNOWN, (int) UINT64_FTYPE_VOID)
-BDESC (~OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_rdtscp", IX86_BUILTIN_RDTSCP, UNKNOWN, (int) UINT64_FTYPE_PUNSIGNED)
-BDESC (~OPTION_MASK_ISA_64BIT, CODE_FOR_pause, "__builtin_ia32_pause", IX86_BUILTIN_PAUSE, UNKNOWN, (int) VOID_FTYPE_VOID)
+       0, CODE_FOR_nothing, "__builtin_ia32_rdtsc", IX86_BUILTIN_RDTSC, UNKNOWN, (int) UINT64_FTYPE_VOID)
+BDESC (0, CODE_FOR_nothing, "__builtin_ia32_rdtscp", IX86_BUILTIN_RDTSCP, UNKNOWN, (int) UINT64_FTYPE_PUNSIGNED)
+BDESC (0, CODE_FOR_pause, "__builtin_ia32_pause", IX86_BUILTIN_PAUSE, UNKNOWN, (int) VOID_FTYPE_VOID)
 
 /* 80387 (for use internally for atomic compound assignment).  */
 BDESC (0, CODE_FOR_fnstenv, "__builtin_ia32_fnstenv", IX86_BUILTIN_FNSTENV, UNKNOWN, (int) VOID_FTYPE_PVOID)
@@ -385,13 +385,13 @@ BDESC_END (SPECIAL_ARGS, ARGS)
 
 /* Builtins with variable number of arguments.  */
 BDESC_FIRST (args, ARGS,
-       ~OPTION_MASK_ISA_64BIT, CODE_FOR_bsr, "__builtin_ia32_bsrsi", IX86_BUILTIN_BSRSI, UNKNOWN, (int) INT_FTYPE_INT)
+       0, CODE_FOR_bsr, "__builtin_ia32_bsrsi", IX86_BUILTIN_BSRSI, UNKNOWN, (int) INT_FTYPE_INT)
 BDESC (OPTION_MASK_ISA_64BIT, CODE_FOR_bsr_rex64, "__builtin_ia32_bsrdi", IX86_BUILTIN_BSRDI, UNKNOWN, (int) INT64_FTYPE_INT64)
-BDESC (~OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_rdpmc", IX86_BUILTIN_RDPMC, UNKNOWN, (int) UINT64_FTYPE_INT)
-BDESC (~OPTION_MASK_ISA_64BIT, CODE_FOR_rotlqi3, "__builtin_ia32_rolqi", IX86_BUILTIN_ROLQI, UNKNOWN, (int) UINT8_FTYPE_UINT8_INT)
-BDESC (~OPTION_MASK_ISA_64BIT, CODE_FOR_rotlhi3, "__builtin_ia32_rolhi", IX86_BUILTIN_ROLHI, UNKNOWN, (int) UINT16_FTYPE_UINT16_INT)
-BDESC (~OPTION_MASK_ISA_64BIT, CODE_FOR_rotrqi3, "__builtin_ia32_rorqi", IX86_BUILTIN_RORQI, UNKNOWN, (int) UINT8_FTYPE_UINT8_INT)
-BDESC (~OPTION_MASK_ISA_64BIT, CODE_FOR_rotrhi3, "__builtin_ia32_rorhi", IX86_BUILTIN_RORHI, UNKNOWN, (int) UINT16_FTYPE_UINT16_INT)
+BDESC (0, CODE_FOR_nothing, "__builtin_ia32_rdpmc", IX86_BUILTIN_RDPMC, UNKNOWN, (int) UINT64_FTYPE_INT)
+BDESC (0, CODE_FOR_rotlqi3, "__builtin_ia32_rolqi", IX86_BUILTIN_ROLQI, UNKNOWN, (int) UINT8_FTYPE_UINT8_INT)
+BDESC (0, CODE_FOR_rotlhi3, "__builtin_ia32_rolhi", IX86_BUILTIN_ROLHI, UNKNOWN, (int) UINT16_FTYPE_UINT16_INT)
+BDESC (0, CODE_FOR_rotrqi3, "__builtin_ia32_rorqi", IX86_BUILTIN_RORQI, UNKNOWN, (int) UINT8_FTYPE_UINT8_INT)
+BDESC (0, CODE_FOR_rotrhi3, "__builtin_ia32_rorhi", IX86_BUILTIN_RORHI, UNKNOWN, (int) UINT16_FTYPE_UINT16_INT)
 
 /* MMX */
 BDESC (OPTION_MASK_ISA_MMX, CODE_FOR_mmx_addv8qi3, "__builtin_ia32_paddb", IX86_BUILTIN_PADDB, UNKNOWN, (int) V8QI_FTYPE_V8QI_V8QI)
