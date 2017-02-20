@@ -4751,7 +4751,7 @@ print_operand_address (FILE *file, rtx addr)
 	  else
 	    output_addr_const (file, addr);
 
-	  if (!RTX_FLAG (addr, frame_related))
+	  if (!RTX_FLAG (addr, frame_related) && !SYMBOL_REF_FUNCTION_P(addr))
 	    {
 //	      debug_rtx(addr);
 	      if (flag_mybaserel == 1)
