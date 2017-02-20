@@ -375,6 +375,7 @@ build_base_path (enum tree_code code,
      set up properly yet, and the value doesn't matter there either; we're
      just interested in the result of overload resolution.  */
   if (cp_unevaluated_operand != 0
+      || processing_template_decl
       || in_template_function ())
     {
       expr = build_nop (ptr_target_type, expr);
