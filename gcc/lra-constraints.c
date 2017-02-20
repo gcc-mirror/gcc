@@ -1600,7 +1600,8 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	 the memory.  Typical case is when the index scale should
 	 correspond the memory.  */
       *curr_id->operand_loc[nop] = operand;
-      return false;
+      /* Do not return false here as the MEM_P (reg) will be processed
+	 later in this function.  */
     }
   else if (REG_P (reg) && REGNO (reg) < FIRST_PSEUDO_REGISTER)
     {

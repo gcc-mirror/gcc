@@ -1,5 +1,10 @@
 2017-02-20  Matthew Fortune  <matthew.fortune@imgtec.com>
 
+	* lra-constraints.c (simplify_operand_subreg): Remove early
+	return false.
+
+2017-02-20  Matthew Fortune  <matthew.fortune@imgtec.com>
+
 	PR target/78660
 	* lra-constraints.c (curr_insn_transform): Tighten condition
 	for converting SUBREG reloads from OP_OUT to OP_INOUT.
