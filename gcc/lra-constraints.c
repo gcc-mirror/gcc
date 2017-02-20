@@ -4140,7 +4140,17 @@ curr_insn_transform (bool check_only_p)
 			  < GET_MODE_PRECISION (GET_MODE (reg))
 			  && WORD_REGISTER_OPERATIONS)))
 		{
-		  if (type == OP_OUT)
+		  /* An OP_INOUT is required when reloading a subreg of a
+		     mode wider than a word to ensure that data beyond the
+		     word being reloaded is preserved.  Also automatically
+		     ensure that strict_low_part reloads are made into
+		     OP_INOUT which should already be true from the backend
+		     constraints.  */
+		  if (type == OP_OUT
+		      && (curr_static_id->operand[i].strict_low
+			  || (GET_MODE_SIZE (GET_MODE (reg)) > UNITS_PER_WORD
+			      && (GET_MODE_SIZE (mode)
+				  < GET_MODE_SIZE (GET_MODE (reg))))))
 		    type = OP_INOUT;
 		  loc = &SUBREG_REG (*loc);
 		  mode = GET_MODE (*loc);
