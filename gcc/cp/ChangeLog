@@ -1,5 +1,8 @@
 2017-02-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/78139 - destructor needed by new-expression
+	* call.c (build_special_member_call): Use tf_no_cleanup.
+
 	PR c++/78282 - auto template and pack expansion
 	* pt.c (find_parameter_packs_r): Don't walk into the type of
 	templates other than template template-parameters.
