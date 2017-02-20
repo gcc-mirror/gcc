@@ -1,5 +1,8 @@
 2017-02-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/79606 - ICE with this->base_member in NSDMI
+	* class.c (build_base_path): Check processing_template_decl.
+
 	PR c++/79607 - ICE with T{} initializer
 	* decl.c (type_dependent_init_p): Check the type of a CONSTRUCTOR.
 
