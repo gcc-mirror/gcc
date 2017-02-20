@@ -1,3 +1,12 @@
+2017-02-20  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2017-02-17  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/79536
+	* fold-const.c (fold_negate_expr_1): Renamed from fold_negate_expr.
+	(fold_negate_expr): New wrapper.
+
 2017-02-17  Carl Love  <cel@us.ibm.com>
 
 	Backport from mainline commit r245460 on 2017-02-14
