@@ -1,5 +1,11 @@
 2017-02-21  Martin Jambor  <mjambor@suse.cz>
 
+	PR lto/79579
+	* ipa-prop.c (ipa_prop_write_jump_functions): Bail out if no edges
+	have been analyzed.
+
+2017-02-21  Martin Jambor  <mjambor@suse.cz>
+
 	* common.opt (-fipa-cp-alignment): Mark as ignored and preserved
 	for backward compatibility only.
 	* doc/invoke.texi (Option Summary): Remove all references to
