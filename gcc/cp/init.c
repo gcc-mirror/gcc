@@ -600,7 +600,7 @@ get_nsdmi (tree member, bool in_ctor)
 /* Diagnose the flexible array MEMBER if its INITializer is non-null
    and return true if so.  Otherwise return false.  */
 
-static bool
+bool
 maybe_reject_flexarray_init (tree member, tree init)
 {
   tree type = TREE_TYPE (member);
@@ -615,6 +615,7 @@ maybe_reject_flexarray_init (tree member, tree init)
      initializer list.  */
   location_t loc;
   if (DECL_INITIAL (member) == init
+      || !current_function_decl
       || DECL_DEFAULTED_FN (current_function_decl))
     loc = DECL_SOURCE_LOCATION (member);
   else
