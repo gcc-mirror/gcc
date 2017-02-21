@@ -16,4 +16,4 @@
 
 __attribute__((deprecated)) void foo (void); /* { dg-bogus "declared here" "" { xfail { c++ } } } */
 
-C (foo) /* { dg-bogus "is deprecated"  "" { xfail { c++ } } } */
+C (foo) /* { dg-bogus "is deprecated" } */
