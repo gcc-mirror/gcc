@@ -1,5 +1,10 @@
 2017-02-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/79633
+	* tree-chkp-opt.c (chkp_optimize_string_function_calls): Use
+	is_gimple_call instead of comparing gimple_code with GIMPLE_CALL.
+	Use gimple_call_builtin_p.
+
 	PR target/79570
 	* sel-sched.c (moveup_expr_cached): Don't call sel_bb_head
 	on temporarily removed DEBUG_INSNs.
