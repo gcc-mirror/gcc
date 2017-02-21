@@ -1,3 +1,8 @@
+2017-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/79589
+	* g++.dg/ubsan/pr79589.C: New test.
+
 2017-02-21  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/79621
