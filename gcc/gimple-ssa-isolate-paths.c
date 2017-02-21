@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "tree-cfg.h"
+#include "cfganal.h"
 #include "intl.h"
 
 
@@ -350,6 +351,16 @@ find_implicit_erroneous_behavior (void)
 	 of the isolated block which in turn means updating PHIs at
 	 the targets of those abnormal outgoing edges.  */
       if (has_abnormal_or_eh_outgoing_edge_p (bb))
+	continue;
+
+
+      /* If BB has an edge to itself, then duplication of BB below
+	 could result in reallocation of BB's PHI nodes.   If that happens
+	 then the loop below over the PHIs would use the old PHI and
+	 thus invalid information.  We don't have a good way to know
+	 if a PHI has been reallocated, so just avoid isolation in
+	 this case.  */
+      if (find_edge (bb, bb))
 	continue;
 
       /* First look for a PHI which sets a pointer to NULL and which
