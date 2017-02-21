@@ -3879,7 +3879,7 @@ prune_vars_needing_no_initialization (tree *vars)
       tree init = TREE_PURPOSE (t);
 
       /* Deal gracefully with error.  */
-      if (decl == error_mark_node)
+      if (error_operand_p (decl))
 	{
 	  var = &TREE_CHAIN (t);
 	  continue;
