@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target c99_runtime } } */
 /* { dg-options "-O -fgimple -fdump-tree-ssa-gimple" } */
 
 #define foo(type, num) \
