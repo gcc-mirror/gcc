@@ -1,3 +1,8 @@
+2017-02-20  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/79642
+	* lang.opt (-fgo-relative-import-path): Change space to tab.
+
 2017-02-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79256
