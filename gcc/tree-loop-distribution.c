@@ -1072,6 +1072,13 @@ classify_partition (loop_p loop, struct graph *rdg, partition *partition)
       /* But exactly one store and/or load.  */
       for (j = 0; RDG_DATAREFS (rdg, i).iterate (j, &dr); ++j)
 	{
+	  tree type = TREE_TYPE (DR_REF (dr));
+
+	  /* The memset, memcpy and memmove library calls are only
+	     able to deal with generic address space.  */
+	  if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (type)))
+	    return;
+
 	  if (DR_IS_READ (dr))
 	    {
 	      if (single_load != NULL)
