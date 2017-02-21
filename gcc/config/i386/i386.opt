@@ -258,7 +258,7 @@ Use given assembler dialect.
 
 Enum
 Name(asm_dialect) Type(enum asm_dialect)
-Known assembler dialects (for use with the -masm-dialect= option):
+Known assembler dialects (for use with the -masm= option):
 
 EnumValue
 Enum(asm_dialect) String(intel) Value(ASM_INTEL)
