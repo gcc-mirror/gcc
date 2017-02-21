@@ -1,3 +1,12 @@
+2017-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79494
+	* config/i386/i386.c (ix86_expand_split_stack_prologue): Call
+	make_reg_eh_region_note_nothrow_nononlocal on call_insn.
+	* config/rs6000/rs6000.c: Include except.h.
+	(rs6000_expand_split_stack_prologue): Call
+	make_reg_eh_region_note_nothrow_nononlocal on the call insn.
+
 2017-02-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/79579
