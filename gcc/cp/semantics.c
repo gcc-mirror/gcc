@@ -3743,7 +3743,15 @@ finish_id_expression (tree id_expression,
 	  if (TREE_CODE (first_fn) == TEMPLATE_DECL)
 	    first_fn = DECL_TEMPLATE_RESULT (first_fn);
 
-	  if (!really_overloaded_fn (decl)
+	  /* [basic.def.odr]: "A function whose name appears as a
+	     potentially-evaluated expression is odr-used if it is the unique
+	     lookup result".
+
+	     But only mark it if it's a complete postfix-expression; in a call,
+	     ADL might select a different function, and we'll call mark_used in
+	     build_over_call.  */
+	  if (done
+	      && !really_overloaded_fn (decl)
 	      && !mark_used (first_fn))
 	    return error_mark_node;
 

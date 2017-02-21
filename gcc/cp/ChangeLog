@@ -1,5 +1,10 @@
 2017-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50308 - wrong deprecated warning with ADL
+	PR c++/17729 - duplicate deprecated warning
+	* semantics.c (finish_id_expression): Only call mark_used on a
+	function if we aren't building a call.
+
 	PR c++/41727 - ICE with partial spec of partial instantiation
 	* pt.c (process_partial_specialization): For now, don't check more
 	specialized if there is more than one level of args.
