@@ -1,4 +1,9 @@
-2016-02-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+2017-02-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.dg/plugin/diagnostic-test-expressions-1.c: Add -Wno-psabi
+	to dg-options.
+
+2017-02-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.dg/gimplefe-26.c: Require c99_runtime.
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdiagnostics-show-caret" } */
+/* { dg-options "-O -fdiagnostics-show-caret -Wno-psabi" } */
 
 /* This is a collection of unittests to verify that we're correctly
    capturing the source code ranges of various kinds of expression.
