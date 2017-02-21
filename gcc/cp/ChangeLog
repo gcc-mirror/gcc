@@ -1,3 +1,9 @@
+2017-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79639
+	* constexpr.c (cxx_eval_store_expression): If *valp is a PTRMEM_CST,
+	call cplus_expand_constant on it first.
+
 2017-02-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/78139 - destructor needed by new-expression
