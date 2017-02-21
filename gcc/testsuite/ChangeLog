@@ -1,3 +1,7 @@
+2016-02-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/gimplefe-26.c: Require c99_runtime.
+
 2017-02-20  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/78056
