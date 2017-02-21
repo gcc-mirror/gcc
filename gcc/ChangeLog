@@ -1,3 +1,10 @@
+2017-02-21  Martin Jambor  <mjambor@suse.cz>
+
+	* common.opt (-fipa-cp-alignment): Mark as ignored and preserved
+	for backward compatibility only.
+	* doc/invoke.texi (Option Summary): Remove all references to
+	-fipa-cp-alignment.
+
 2017-02-21  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	PR target/78660
