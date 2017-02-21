@@ -66,6 +66,7 @@
 #include "builtins.h"
 #include "context.h"
 #include "tree-pass.h"
+#include "except.h"
 #if TARGET_XCOFF
 #include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
 #endif
@@ -31680,6 +31681,8 @@ rs6000_expand_split_stack_prologue (void)
      split_stack_return use r0.  */
   use_reg (&call_fusage, r0);
   add_function_usage_to (insn, call_fusage);
+  /* Indicate that this function can't jump to non-local gotos.  */
+  make_reg_eh_region_note_nothrow_nononlocal (insn);
   emit_insn (gen_frame_load (r0, r1, info->lr_save_offset));
   insn = emit_move_insn (lr, r0);
   add_reg_note (insn, REG_CFA_RESTORE, lr);
