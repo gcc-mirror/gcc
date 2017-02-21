@@ -258,12 +258,11 @@ one of the edges entering loop header, thus performing either loop
 unrolling or loop peeling.  @code{can_duplicate_loop_p}
 (@code{can_unroll_loop_p} on GIMPLE) must be true for the duplicated
 loop.
-@item @code{loop_version}, @code{tree_ssa_loop_version}: These function
-create a copy of a loop, and a branch before them that selects one of
-them depending on the prescribed condition.  This is useful for
-optimizations that need to verify some assumptions in runtime (one of
-the copies of the loop is usually left unchanged, while the other one is
-transformed in some way).
+@item @code{loop_version}: This function creates a copy of a loop, and
+a branch before them that selects one of them depending on the
+prescribed condition.  This is useful for optimizations that need to
+verify some assumptions in runtime (one of the copies of the loop is
+usually left unchanged, while the other one is transformed in some way).
 @item @code{tree_unroll_loop}: Unrolls the loop, including peeling the
 extra iterations to make the number of iterations divisible by unroll
 factor, updating the exit condition, and removing the exits that now
