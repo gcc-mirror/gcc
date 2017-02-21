@@ -1689,9 +1689,12 @@ lv_adjust_loop_entry_edge (basic_block first_head, basic_block second_head,
    This transformation given a condition and a loop, creates
    -if (condition) { loop_copy1 } else { loop_copy2 },
    where loop_copy1 is the loop transformed in one way, and loop_copy2
-   is the loop transformed in another way (or unchanged). 'condition'
+   is the loop transformed in another way (or unchanged). COND_EXPR
    may be a run time test for things that were not resolved by static
    analysis (overlapping ranges (anti-aliasing), alignment, etc.).
+
+   If non-NULL, CONDITION_BB is set to the basic block containing the
+   condition.
 
    THEN_PROB is the probability of the then edge of the if.  THEN_SCALE
    is the ratio by that the frequencies in the original loop should
