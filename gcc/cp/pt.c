@@ -4619,6 +4619,9 @@ process_partial_specialization (tree decl)
 
   /* If we aren't in a dependent class, we can actually try deduction.  */
   else if (tpd.level == 1
+	   /* FIXME we should be able to handle a partial specialization of a
+	      partial instantiation, but currently we can't (c++/41727).  */
+	   && TMPL_ARGS_DEPTH (specargs) == 1
 	   && !get_partial_spec_bindings (maintmpl, maintmpl, specargs))
     {
       if (permerror (input_location, "partial specialization %qD is not "
