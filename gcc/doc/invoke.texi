@@ -372,7 +372,7 @@ Objective-C and Objective-C++ Dialects}.
 -fif-conversion2  -findirect-inlining @gol
 -finline-functions  -finline-functions-called-once  -finline-limit=@var{n} @gol
 -finline-small-functions  -fipa-cp  -fipa-cp-clone @gol
--fipa-cp-alignment  -fipa-bit-cp @gol
+-fipa-bit-cp @gol
 -fipa-pta  -fipa-profile  -fipa-pure-const  -fipa-reference  -fipa-icf @gol
 -fira-algorithm=@var{algorithm} @gol
 -fira-region=@var{region}  -fira-hoist-pressure @gol
@@ -7063,7 +7063,6 @@ also turns on the following optimization flags:
 -finline-small-functions @gol
 -findirect-inlining @gol
 -fipa-cp @gol
--fipa-cp-alignment @gol
 -fipa-bit-cp @gol
 -fipa-sra @gol
 -fipa-icf @gol
@@ -8072,15 +8071,6 @@ Because this optimization can create multiple copies of functions,
 it may significantly increase code size
 (see @option{--param ipcp-unit-growth=@var{value}}).
 This flag is enabled by default at @option{-O3}.
-
-@item -fipa-cp-alignment
-@opindex -fipa-cp-alignment
-When enabled, this optimization propagates alignment of function
-parameters to support better vectorization and string operations.
-
-This flag is enabled by default at @option{-O2} and @option{-Os}.  It
-requires that @option{-fipa-cp} is enabled.
-@option{-fipa-cp-alignment} is obsolete, use @option{-fipa-bit-cp} instead.
 
 @item -fipa-bit-cp
 @opindex -fipa-bit-cp
