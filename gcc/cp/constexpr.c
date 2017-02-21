@@ -2263,9 +2263,10 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
   nelts = cxx_eval_constant_expression (ctx, nelts, false, non_constant_p,
 					overflow_p);
   VERIFY_CONSTANT (nelts);
-  if (lval
-      ? !tree_int_cst_le (index, nelts)
-      : !tree_int_cst_lt (index, nelts))
+  if ((lval
+       ? !tree_int_cst_le (index, nelts)
+       : !tree_int_cst_lt (index, nelts))
+      || tree_int_cst_sgn (index) < 0)
     {
       diag_array_subscript (ctx, ary, index);
       *non_constant_p = true;
