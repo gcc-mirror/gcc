@@ -760,6 +760,11 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_C_EXCESS_PRECISION
 #define TARGET_C_EXCESS_PRECISION arm_excess_precision
 
+/* Although the architecture reserves bits 0 and 1, only the former is
+   used for ARM/Thumb ISA selection in v7 and earlier versions.  */
+#undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
+#define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 2
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Obstack for minipool constant handling.  */
@@ -7172,6 +7177,29 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
       && decl
       && DECL_WEAK (decl))
     return false;
+
+  /* We cannot do a tailcall for an indirect call by descriptor if all the
+     argument registers are used because the only register left to load the
+     address is IP and it will already contain the static chain.  */
+  if (!decl && CALL_EXPR_BY_DESCRIPTOR (exp) && !flag_trampolines)
+    {
+      tree fntype = TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (exp)));
+      CUMULATIVE_ARGS cum;
+      cumulative_args_t cum_v;
+
+      arm_init_cumulative_args (&cum, fntype, NULL_RTX, NULL_TREE);
+      cum_v = pack_cumulative_args (&cum);
+
+      for (tree t = TYPE_ARG_TYPES (fntype); t; t = TREE_CHAIN (t))
+	{
+	  tree type = TREE_VALUE (t);
+	  if (!VOID_TYPE_P (type))
+	    arm_function_arg_advance (cum_v, TYPE_MODE (type), type, true);
+	}
+
+      if (!arm_function_arg (cum_v, SImode, integer_type_node, true))
+	return false;
+    }
 
   /* Everything else is ok.  */
   return true;
@@ -30310,7 +30338,9 @@ arm_relayout_function (tree fndecl)
     callee_tree = target_option_default_node;
 
   struct cl_target_option *opts = TREE_TARGET_OPTION (callee_tree);
-  SET_DECL_ALIGN (fndecl, FUNCTION_BOUNDARY_P (opts->x_target_flags));
+  SET_DECL_ALIGN
+    (fndecl,
+     FUNCTION_ALIGNMENT (FUNCTION_BOUNDARY_P (opts->x_target_flags)));
 }
 
 /* Inner function to process the attribute((target(...))), take an argument and

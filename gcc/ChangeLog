@@ -1,3 +1,12 @@
+2017-02-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/67205
+	* config/arm/arm.c (TARGET_CUSTOM_FUNCTION_DESCRIPTORS): Define.
+	(arm_function_ok_for_sibcall): Return false for an indirect call by
+	descriptor if all the argument registers are used.
+	(arm_relayout_function): Use FUNCTION_ALIGNMENT macro to adjust the
+	alignment of the function.
+
 2017-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/61441
