@@ -1,3 +1,12 @@
+2017-02-21  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	PR target/78660
+	Revert:
+	2017-02-20  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* lra-constraints.c (curr_insn_transform): Handle
+	WORD_REGISTER_OPERATIONS requirements when reloading SUBREGs.
+
 2017-02-21  Martin Liska  <mliska@suse.cz>
 
 	* config/i386/i386.opt: Replace -masm-dialect with -masm.
