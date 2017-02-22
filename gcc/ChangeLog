@@ -1,3 +1,10 @@
+2017-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79666
+	* tree-vrp.c (extract_range_from_binary_expr_1): Make sure
+	to not symbolically negate if that may introduce undefined
+	overflow.
+
 2017-02-22  Martin Liska  <mliska@suse.cz>
 
 	PR lto/79587
