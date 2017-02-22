@@ -1,3 +1,18 @@
+2017-02-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2017-02-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/79261
+	* config/rs6000/rs6000.c (rs6000_expand_ternop_builtin): Add
+	support for CODE_FOR_vsx_xxpermdi_v2d[fi]_be.
+	* config/rs6000/rs6000.md (reload_gpr_from_vsx<mode>): Call
+	generator for vsx_xxpermdi_<mode>_be.
+	* config/rs6000/vsx.md (vsx_xxpermdi_<mode>): Remove logic to
+	force big-endian semantics.
+	(vsx_xxpermdi_<mode>_be): New define_expand with same
+	implementation as previous version of vsx_xxpermdi_<mode>.
+
 2017-02-19  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR target/71017

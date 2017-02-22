@@ -1948,6 +1948,38 @@
 	  op1 = gen_lowpart (V2DImode, op1);
 	}
     }
+  emit_insn (gen (target, op0, op1, perm0, perm1));
+  DONE;
+})
+
+;; Special version of xxpermdi that retains big-endian semantics.
+(define_expand "vsx_xxpermdi_<mode>_be"
+  [(match_operand:VSX_L 0 "vsx_register_operand" "")
+   (match_operand:VSX_L 1 "vsx_register_operand" "")
+   (match_operand:VSX_L 2 "vsx_register_operand" "")
+   (match_operand:QI 3 "u5bit_cint_operand" "")]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+{
+  rtx target = operands[0];
+  rtx op0 = operands[1];
+  rtx op1 = operands[2];
+  int mask = INTVAL (operands[3]);
+  rtx perm0 = GEN_INT ((mask >> 1) & 1);
+  rtx perm1 = GEN_INT ((mask & 1) + 2);
+  rtx (*gen) (rtx, rtx, rtx, rtx, rtx);
+
+  if (<MODE>mode == V2DFmode)
+    gen = gen_vsx_xxpermdi2_v2df_1;
+  else
+    {
+      gen = gen_vsx_xxpermdi2_v2di_1;
+      if (<MODE>mode != V2DImode)
+	{
+	  target = gen_lowpart (V2DImode, target);
+	  op0 = gen_lowpart (V2DImode, op0);
+	  op1 = gen_lowpart (V2DImode, op1);
+	}
+    }
   /* In little endian mode, vsx_xxpermdi2_<mode>_1 will perform a
      transformation we don't want; it is necessary for
      rs6000_expand_vec_perm_const_1 but not for this use.  So we
