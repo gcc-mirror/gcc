@@ -1541,11 +1541,22 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	     subregs as we don't substitute such equiv memory (see processing
 	     equivalences in function lra_constraints) and because for spilled
 	     pseudos we allocate stack memory enough for the biggest
-	     corresponding paradoxical subreg.  */
-	  if (!(MEM_ALIGN (subst) < GET_MODE_ALIGNMENT (mode)
-		&& SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (subst)))
-	      || (MEM_ALIGN (reg) < GET_MODE_ALIGNMENT (innermode)
-		  && SLOW_UNALIGNED_ACCESS (innermode, MEM_ALIGN (reg))))
+	     corresponding paradoxical subreg.
+
+	     However, do not blindly simplify a (subreg (mem ...)) for
+	     WORD_REGISTER_OPERATIONS targets as this may lead to loading junk
+	     data into a register when the inner is narrower than outer or
+	     missing important data from memory when the inner is wider than
+	     outer.  This rule only applies to modes that are no wider than
+	     a word.  */
+	  if (!(GET_MODE_PRECISION (mode) != GET_MODE_PRECISION (innermode)
+		&& GET_MODE_SIZE (mode) <= UNITS_PER_WORD
+		&& GET_MODE_SIZE (innermode) <= UNITS_PER_WORD
+		&& WORD_REGISTER_OPERATIONS)
+	      && (!(MEM_ALIGN (subst) < GET_MODE_ALIGNMENT (mode)
+		    && SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (subst)))
+		  || (MEM_ALIGN (reg) < GET_MODE_ALIGNMENT (innermode)
+		      && SLOW_UNALIGNED_ACCESS (innermode, MEM_ALIGN (reg)))))
 	    return true;
 
 	  *curr_id->operand_loc[nop] = operand;
