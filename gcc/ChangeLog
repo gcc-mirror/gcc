@@ -22,6 +22,13 @@
 	* value-prof.c (stream_out_histogram_value): Make assert more
 	precise based on type of counter.
 
+2017-02-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/79593
+	* config/i386/i386.md (standard_x87sse_constant_load splitter):
+	Use nonimmediate_operand instead of memory_operand for operand 1.
+	(float-extend standard_x87sse_constant_load splitter): Ditto.
+
 2017-02-21 Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/79621
