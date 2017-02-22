@@ -1,5 +1,13 @@
 2017-02-22  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/79673
+	* tree-ssa-pre.c (compute_avail): Use wide_int_to_tree to
+	convert the [TARGET_]MEM_REF offset INTEGER_CST, scrapping off
+	irrelevant address-space qualifiers and avoiding a
+	ADDR_SPACE_CONVERT_EXPR from fold_convert.
+
+2017-02-22  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/79666
 	* tree-vrp.c (extract_range_from_binary_expr_1): Make sure
 	to not symbolically negate if that may introduce undefined
