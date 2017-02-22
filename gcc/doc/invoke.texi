@@ -6218,7 +6218,7 @@ Do not warn if a multicharacter constant (@samp{'FOOF'}) is used.
 Usually they indicate a typo in the user's code, as they have
 implementation-defined values, and should not be used in portable code.
 
-@item -Wnormalized@r{[}=@r{<}none@r{|}id@r{|}nfc@r{|}nfkc@r{>]}
+@item -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]}
 @opindex Wnormalized=
 @opindex Wnormalized
 @opindex Wno-normalized
