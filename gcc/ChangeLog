@@ -1,3 +1,11 @@
+2017-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (gen_variable_die): For -gdwarf-5, use DW_TAG_variable
+	instead of DW_TAG_member for static data member declarations and don't
+	set no_linkage_name for static inline data members.
+	(gen_member_die): For -gdwarf-5 don't change DW_TAG_variable
+	to DW_TAG_member.
+
 2017-02-22  Martin Liska  <mliska@suse.cz>
 
 	* doc/invoke.texi: Replace inequality signs with square brackets
