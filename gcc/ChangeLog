@@ -1,3 +1,10 @@
+2017-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70465
+	* reg-stack.c (emit_swap_insn): Treat (float_extend:?F (mem:?F))
+	and (const_double:?F) like (mem:?F) for the purpose of fxch %st(1)
+	elimination by swapping fld*.
+
 2017-02-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79673
