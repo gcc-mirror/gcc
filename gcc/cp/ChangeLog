@@ -1,3 +1,13 @@
+2017-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79664
+	* parser.c (cp_parser_omp_teams, cp_parser_omp_target): Use
+	SET_EXPR_LOCATION on OMP_TARGET/OMP_TEAMS tree.
+	* constexpr.c (potential_constant_expression_1): Handle
+	OMP_*, OACC_* and CILK_* trees.  Use error_at with
+	EXPR_LOC_OR_LOC (t, input_location) computed early
+	instead of error, or error_at with location_of (t).
+
 2017-02-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/79653
