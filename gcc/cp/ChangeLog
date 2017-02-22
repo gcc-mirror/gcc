@@ -1,3 +1,11 @@
+2017-02-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/79653
+	* parser.c (cp_parser_std_attribute_spec): Don't build the attribute
+	if the alignas expression is erroneous.
+	* pt.c (tsubst_attribute): If tsubst_pack_expansion fails, return
+	error_mark_node.
+
 2017-02-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50308 - wrong deprecated warning with ADL

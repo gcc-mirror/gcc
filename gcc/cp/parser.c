@@ -24977,11 +24977,16 @@ cp_parser_std_attribute_spec (cp_parser *parser)
       alignas_expr = cxx_alignas_expr (alignas_expr);
       alignas_expr = build_tree_list (NULL_TREE, alignas_expr);
 
+      /* Handle alignas (pack...).  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
 	{
 	  cp_lexer_consume_token (parser->lexer);
 	  alignas_expr = make_pack_expansion (alignas_expr);
 	}
+
+      /* Something went wrong, so don't build the attribute.  */
+      if (alignas_expr == error_mark_node)
+	return error_mark_node;
 
       if (cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN) == NULL)
 	{
