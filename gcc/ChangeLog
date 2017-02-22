@@ -1,3 +1,8 @@
+2017-02-22  Sameera Deshpande  <sameera.deshpande@imgtec.com>
+
+	* config/mips/mips.c (mips_return_in_memory): Force FP
+	vector types to be returned in memory for o32 ABI.
+
 2017-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (gen_variable_die): For -gdwarf-5, use DW_TAG_variable
