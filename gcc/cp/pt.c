@@ -25126,6 +25126,14 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 
   if (cands == NULL_TREE)
     {
+      if (args->length() == 0)
+	{
+	  /* Try tmpl<>.  */
+	  tree t = lookup_template_class (tmpl, NULL_TREE, NULL_TREE,
+					  NULL_TREE, false, tf_none);
+	  if (t != error_mark_node)
+	    return t;
+	}
       error ("cannot deduce template arguments for %qT, as it has "
 	     "no deduction guides or user-declared constructors", type);
       return error_mark_node;
