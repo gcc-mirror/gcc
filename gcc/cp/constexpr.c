@@ -5001,10 +5001,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
     return false;
   if (t == NULL_TREE)
     return true;
+  location_t loc = EXPR_LOC_OR_LOC (t, input_location);
   if (TREE_THIS_VOLATILE (t) && !DECL_P (t))
     {
       if (flags & tf_error)
-        error ("expression %qE has side-effects", t);
+        error_at (loc, "expression %qE has side-effects", t);
       return false;
     }
   if (CONSTANT_CLASS_P (t))
@@ -5086,8 +5087,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	      {
 		/* fold_call_expr can't do anything with IFN calls.  */
 		if (flags & tf_error)
-		  error_at (EXPR_LOC_OR_LOC (t, input_location),
-			    "call to internal function %qE", t);
+		  error_at (loc, "call to internal function %qE", t);
 		return false;
 	      }
 	  }
@@ -5105,8 +5105,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 		  {
 		    if (flags & tf_error)
 		      {
-			error_at (EXPR_LOC_OR_LOC (t, input_location),
-				  "call to non-constexpr function %qD", fun);
+			error_at (loc, "call to non-constexpr function %qD",
+				  fun);
 			explain_invalid_constexpr_fn (fun);
 		      }
 		    return false;
@@ -5199,8 +5199,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	    && !integer_zerop (from))
 	  {
 	    if (flags & tf_error)
-	      error_at (EXPR_LOC_OR_LOC (t, input_location),
-			"reinterpret_cast from integer to pointer");
+	      error_at (loc, "reinterpret_cast from integer to pointer");
 	    return false;
 	  }
         return (RECUR (from, TREE_CODE (t) != VIEW_CONVERT_EXPR));
@@ -5266,7 +5265,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 		&& !DECL_DECLARED_CONSTEXPR_P (DECL_CONTEXT (x)))
 	      {
 		if (flags & tf_error)
-		  error ("use of %<this%> in a constant expression");
+		  error_at (loc, "use of %<this%> in a constant expression");
 		return false;
 	      }
 	    return true;
@@ -5354,10 +5353,40 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
     case DELETE_EXPR:
     case VEC_DELETE_EXPR:
     case THROW_EXPR:
+    case OMP_PARALLEL:
+    case OMP_TASK:
+    case OMP_FOR:
+    case OMP_DISTRIBUTE:
+    case OMP_TASKLOOP:
+    case OMP_TEAMS:
+    case OMP_TARGET_DATA:
+    case OMP_TARGET:
+    case OMP_SECTIONS:
+    case OMP_ORDERED:
+    case OMP_CRITICAL:
+    case OMP_SINGLE:
+    case OMP_SECTION:
+    case OMP_MASTER:
+    case OMP_TASKGROUP:
+    case OMP_TARGET_UPDATE:
+    case OMP_TARGET_ENTER_DATA:
+    case OMP_TARGET_EXIT_DATA:
     case OMP_ATOMIC:
     case OMP_ATOMIC_READ:
     case OMP_ATOMIC_CAPTURE_OLD:
     case OMP_ATOMIC_CAPTURE_NEW:
+    case OACC_PARALLEL:
+    case OACC_KERNELS:
+    case OACC_DATA:
+    case OACC_HOST_DATA:
+    case OACC_LOOP:
+    case OACC_CACHE:
+    case OACC_DECLARE:
+    case OACC_ENTER_DATA:
+    case OACC_EXIT_DATA:
+    case OACC_UPDATE:
+    case CILK_SIMD:
+    case CILK_FOR:
       /* GCC internal stuff.  */
     case VA_ARG_EXPR:
     case OBJ_TYPE_REF:
@@ -5366,7 +5395,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
     case AT_ENCODE_EXPR:
     fail:
       if (flags & tf_error)
-	error ("expression %qE is not a constant expression", t);
+	error_at (loc, "expression %qE is not a constant expression", t);
       return false;
 
     case TYPEID_EXPR:
@@ -5378,8 +5407,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	    && TYPE_POLYMORPHIC_P (TREE_TYPE (e)))
           {
             if (flags & tf_error)
-              error ("typeid-expression is not a constant expression "
-                     "because %qE is of polymorphic type", e);
+              error_at (loc, "typeid-expression is not a constant expression "
+			"because %qE is of polymorphic type", e);
             return false;
           }
         return true;
@@ -5438,8 +5467,9 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	   constant expression.  */
 	{
 	  if (flags & tf_error)
-	    error ("cast to non-integral type %qT in a constant expression",
-		   TREE_TYPE (t));
+	    error_at (loc,
+		      "cast to non-integral type %qT in a constant expression",
+		      TREE_TYPE (t));
 	  return false;
 	}
 
@@ -5504,8 +5534,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	{
 	  if (flags & tf_error)
 	    {
-	      error ("temporary of non-literal type %qT in a "
-		     "constant expression", TREE_TYPE (t));
+	      error_at (loc, "temporary of non-literal type %qT in a "
+			"constant expression", TREE_TYPE (t));
 	      explain_non_literal_class (TREE_TYPE (t));
 	    }
 	  return false;
@@ -5657,8 +5687,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
       if (COND_EXPR_IS_VEC_DELETE (t))
 	{
 	  if (flags & tf_error)
-	    error_at (location_of (t),
-		      "%<delete[]%> is not a constant expression");
+	    error_at (loc, "%<delete[]%> is not a constant expression");
 	  return false;
 	}
       /* Fall through.  */
@@ -5681,7 +5710,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 					     want_rval, strict, tf_none))
 	  return true;
       if (flags & tf_error)
-	error ("expression %qE is not a constant expression", t);
+	error_at (loc, "expression %qE is not a constant expression", t);
       return false;
 
     case VEC_INIT_EXPR:
@@ -5689,7 +5718,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	return true;
       if (flags & tf_error)
 	{
-	  error ("non-constant array initialization");
+	  error_at (loc, "non-constant array initialization");
 	  diagnose_non_constexpr_vec_init (t);
 	}
       return false;
@@ -5710,7 +5739,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	if (breaks (target) || continues (target))
 	  return true;
 	if (flags & tf_error)
-	  error ("%<goto%> is not a constant expression");
+	  error_at (loc, "%<goto%> is not a constant expression");
 	return false;
       }
 

@@ -26,7 +26,7 @@ foo (int x)
   {
   #pragma omp target teams
     { case 0:; }		// { dg-error "jump" }
-				// { dg-warning "statement will never be executed" "" { target *-*-* } 28 }
+				// { dg-warning "statement will never be executed" "" { target *-*-* } 27 }
                                 // { dg-message "enters" "" { target *-*-* } 28 }
   }
 }
