@@ -22669,7 +22669,8 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
       && lang_hooks.decls.decl_dwarf_attribute (decl, DW_AT_inline) != -1)
     {
       declaration = true;
-      no_linkage_name = true;
+      if (dwarf_version < 5)
+	no_linkage_name = true;
     }
 
   ultimate_origin = decl_ultimate_origin (decl_or_origin);
@@ -22820,9 +22821,10 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
     }
 
   /* For static data members, the declaration in the class is supposed
-     to have DW_TAG_member tag; the specification should still be
-     DW_TAG_variable referencing the DW_TAG_member DIE.  */
-  if (declaration && class_scope_p (context_die))
+     to have DW_TAG_member tag in DWARF{3,4} and we emit it for compatibility
+     also in DWARF2; the specification should still be DW_TAG_variable
+     referencing the DW_TAG_member DIE.  */
+  if (declaration && class_scope_p (context_die) && dwarf_version < 5)
     var_die = new_die (DW_TAG_member, context_die, decl);
   else
     var_die = new_die (DW_TAG_variable, context_die, decl);
@@ -24091,7 +24093,8 @@ gen_member_die (tree type, dw_die_ref context_die)
 	      && get_AT (child, DW_AT_specification) == NULL)
 	    {
 	      reparent_child (child, context_die);
-	      child->die_tag = DW_TAG_member;
+	      if (dwarf_version < 5)
+		child->die_tag = DW_TAG_member;
 	    }
 	  else
 	    splice_child_die (context_die, child);
@@ -24113,7 +24116,7 @@ gen_member_die (tree type, dw_die_ref context_die)
 	}
 
       /* For C++ inline static data members emit immediately a DW_TAG_variable
-	 DIE that will refer to that DW_TAG_member through
+	 DIE that will refer to that DW_TAG_member/DW_TAG_variable through
 	 DW_AT_specification.  */
       if (TREE_STATIC (member)
 	  && (lang_hooks.decls.decl_dwarf_attribute (member, DW_AT_inline)
