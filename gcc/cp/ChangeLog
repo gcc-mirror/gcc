@@ -6,6 +6,9 @@
 	* pt.c (tsubst_attribute): If tsubst_pack_expansion fails, return
 	error_mark_node.
 
+	PR c++/79657
+	* semantics.c (finish_underlying_type): Bail out for incomplete enums.
+
 2017-02-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50308 - wrong deprecated warning with ADL

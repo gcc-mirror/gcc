@@ -4,6 +4,9 @@
 	* g++.dg/cpp0x/alignas10.C: New test.
 	* g++.dg/cpp0x/alignas9.C: New test.
 
+	PR c++/79657
+	* g++.dg/ext/underlying_type12.C: New test.
+
 2017-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70465
