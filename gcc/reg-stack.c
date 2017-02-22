@@ -895,12 +895,16 @@ emit_swap_insn (rtx_insn *insn, stack_ptr regstack, rtx reg)
 	 just use
 	   fld b
 	   fld a
-         if possible.  */
+	 if possible.  Similarly for fld1, fldz, fldpi etc. instead of any
+	 of the loads or for float extension from memory.  */
 
+      i1src = SET_SRC (i1set);
+      if (GET_CODE (i1src) == FLOAT_EXTEND)
+	i1src = XEXP (i1src, 0);
       if (REG_P (i1dest)
 	  && REGNO (i1dest) == FIRST_STACK_REG
-	  && MEM_P (SET_SRC (i1set))
-	  && !side_effects_p (SET_SRC (i1set))
+	  && (MEM_P (i1src) || GET_CODE (i1src) == CONST_DOUBLE)
+	  && !side_effects_p (i1src)
 	  && hard_regno == FIRST_STACK_REG + 1
 	  && i1 != BB_HEAD (current_block))
 	{
@@ -930,6 +934,9 @@ emit_swap_insn (rtx_insn *insn, stack_ptr regstack, rtx reg)
 	      && (i2set = single_set (i2)) != NULL_RTX)
 	    {
 	      rtx i2dest = *get_true_reg (&SET_DEST (i2set));
+	      rtx i2src = SET_SRC (i2set);
+	      if (GET_CODE (i2src) == FLOAT_EXTEND)
+		i2src = XEXP (i2src, 0);
 	      /* If the last two insns before insn that involve
 		 stack regs are loads, where the latter (i1)
 		 pushes onto the register stack and thus
@@ -937,9 +944,9 @@ emit_swap_insn (rtx_insn *insn, stack_ptr regstack, rtx reg)
 		 %st to %st(1), consider swapping them.  */
 	      if (REG_P (i2dest)
 		  && REGNO (i2dest) == FIRST_STACK_REG
-		  && MEM_P (SET_SRC (i2set))
+		  && (MEM_P (i2src) || GET_CODE (i2src) == CONST_DOUBLE)
 		  /* Ensure i2 doesn't have other side-effects.  */
-		  && !side_effects_p (SET_SRC (i2set))
+		  && !side_effects_p (i2src)
 		  /* And that the two instructions can actually be
 		     swapped, i.e. there shouldn't be any stores
 		     in between i2 and i1 that might alias with
