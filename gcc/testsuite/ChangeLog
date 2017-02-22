@@ -1,3 +1,11 @@
+2017-02-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2017-02-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/79261
+	* gcc.target/powerpc/vec-xxpermdi.c: New file.
+
 2017-02-20  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
