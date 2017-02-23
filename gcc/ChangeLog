@@ -1,3 +1,9 @@
+2017-02-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79683
+	* tree-vect-stmts.c (vect_analyze_stmt): Do not overwrite
+	vector types for data-refs.
+
 2017-02-23  Martin Liska  <mliska@suse.cz>
 
 	* params.def (PARAM_MIN_NONDEBUG_INSN_UID): Change default to 0.

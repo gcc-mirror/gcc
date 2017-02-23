@@ -8486,37 +8486,42 @@ vect_analyze_stmt (gimple *stmt, bool *need_to_vectorize, slp_tree node)
     {
       gcc_assert (PURE_SLP_STMT (stmt_info));
 
-      scalar_type = TREE_TYPE (gimple_get_lhs (stmt));
-      if (dump_enabled_p ())
-        {
-          dump_printf_loc (MSG_NOTE, vect_location,
-                           "get vectype for scalar type:  ");
-          dump_generic_expr (MSG_NOTE, TDF_SLIM, scalar_type);
-          dump_printf (MSG_NOTE, "\n");
-        }
+      /* Memory accesses already got their vector type assigned
+         in vect_analyze_data_refs.  */
+      if (! STMT_VINFO_DATA_REF (stmt_info))
+	{
+	  scalar_type = TREE_TYPE (gimple_get_lhs (stmt));
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "get vectype for scalar type:  ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, scalar_type);
+	      dump_printf (MSG_NOTE, "\n");
+	    }
 
-      vectype = get_vectype_for_scalar_type (scalar_type);
-      if (!vectype)
-        {
-          if (dump_enabled_p ())
-            {
-               dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                "not SLPed: unsupported data-type ");
-               dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-                                  scalar_type);
-              dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-            }
-          return false;
-        }
+	  vectype = get_vectype_for_scalar_type (scalar_type);
+	  if (!vectype)
+	    {
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				   "not SLPed: unsupported data-type ");
+		  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+				     scalar_type);
+		  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
+		}
+	      return false;
+	    }
 
-      if (dump_enabled_p ())
-        {
-          dump_printf_loc (MSG_NOTE, vect_location, "vectype:  ");
-          dump_generic_expr (MSG_NOTE, TDF_SLIM, vectype);
-          dump_printf (MSG_NOTE, "\n");
-        }
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location, "vectype:  ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, vectype);
+	      dump_printf (MSG_NOTE, "\n");
+	    }
 
-      STMT_VINFO_VECTYPE (stmt_info) = vectype;
+	  STMT_VINFO_VECTYPE (stmt_info) = vectype;
+	}
    }
 
   if (STMT_VINFO_RELEVANT_P (stmt_info))
