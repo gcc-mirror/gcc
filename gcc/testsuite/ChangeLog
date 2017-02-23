@@ -1,3 +1,8 @@
+2017-02-22  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/79578
+	* g++.dg/tree-ssa/ssa-dse-3.C: New test.
+
 2017-02-22  Sameera Deshpande  <sameera.deshpande@imgtec.com>
 
 	* gcc.target/mips/msa-fp-cc.c: New test.
