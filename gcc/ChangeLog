@@ -1,3 +1,7 @@
+2017-02-23  Martin Liska  <mliska@suse.cz>
+
+	* params.def (PARAM_MIN_NONDEBUG_INSN_UID): Change default to 0.
+
 2017-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/79665

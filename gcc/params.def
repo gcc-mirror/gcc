@@ -965,7 +965,7 @@ DEFPARAM (PARAM_MAX_VARTRACK_REVERSE_OP_SIZE,
 DEFPARAM (PARAM_MIN_NONDEBUG_INSN_UID,
 	  "min-nondebug-insn-uid",
 	  "The minimum UID to be used for a nondebug insn.",
-	  0, 1, 0)
+	  0, 0, 0)
 
 DEFPARAM (PARAM_IPA_SRA_PTR_GROWTH_FACTOR,
 	  "ipa-sra-ptr-growth-factor",
