@@ -1599,7 +1599,12 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 	}
       else if (DECL_TEMPLATE_SPECIALIZATION (fn))
 	{
-	  if (!duplicate_decls (spec, fn, is_friend) && DECL_INITIAL (spec))
+	  tree dd = duplicate_decls (spec, fn, is_friend);
+	  if (dd == error_mark_node)
+	    /* We've already complained in duplicate_decls.  */
+	    return error_mark_node;
+
+	  if (dd == NULL_TREE && DECL_INITIAL (spec))
 	    /* Dup decl failed, but this is a new definition. Set the
 	       line number so any errors match this new
 	       definition.  */
