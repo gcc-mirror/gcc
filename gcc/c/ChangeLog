@@ -1,3 +1,12 @@
+2017-02-23  Richard Biener  <rguenther@suse.de>
+
+	PR c/79684
+	* gimple-parser.c (c_parser_gimple_statement): Use set_error
+	to initialize c_exprs to return.
+	(c_parser_gimple_binary_expression): Likewise.
+	(c_parser_gimple_unary_expression): Likewise.
+	(c_parser_gimple_postfix_expression): Likewise.
+
 2017-02-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c/79662
