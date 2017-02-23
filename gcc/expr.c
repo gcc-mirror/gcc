@@ -8809,6 +8809,34 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	 where some terms of the dividend have coeffs divisible by it.  */
       expand_operands (treeop0, treeop1,
 		       subtarget, &op0, &op1, EXPAND_NORMAL);
+      if (SCALAR_INT_MODE_P (mode)
+	  && optimize >= 2
+	  && get_range_pos_neg (treeop0) == 1
+	  && get_range_pos_neg (treeop1) == 1)
+	{
+	  /* If both arguments are known to be positive when interpreted
+	     as signed, we can expand it as both signed and unsigned
+	     division or modulo.  Choose the cheaper sequence in that case.  */
+	  bool speed_p = optimize_insn_for_speed_p ();
+	  do_pending_stack_adjust ();
+	  start_sequence ();
+	  rtx uns_ret = expand_divmod (0, code, mode, op0, op1, target, 1);
+	  rtx_insn *uns_insns = get_insns ();
+	  end_sequence ();
+	  start_sequence ();
+	  rtx sgn_ret = expand_divmod (0, code, mode, op0, op1, target, 0);
+	  rtx_insn *sgn_insns = get_insns ();
+	  end_sequence ();
+	  unsigned uns_cost = seq_cost (uns_insns, speed_p);
+	  unsigned sgn_cost = seq_cost (sgn_insns, speed_p);
+	  if (uns_cost < sgn_cost || (uns_cost == sgn_cost && unsignedp))
+	    {
+	      emit_insn (uns_insns);
+	      return uns_ret;
+	    }
+	  emit_insn (sgn_insns);
+	  return sgn_ret;
+	}
       return expand_divmod (0, code, mode, op0, op1, target, unsignedp);
 
     case RDIV_EXPR:

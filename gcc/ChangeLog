@@ -1,4 +1,15 @@
-2017-02-22 Jeff Law  <law@redhat.com>
+2017-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79665
+	* internal-fn.c (get_range_pos_neg): Moved to ...
+	* tree.c (get_range_pos_neg): ... here.  No longer static.
+	* tree.h (get_range_pos_neg): New prototype.
+	* expr.c (expand_expr_real_2) <case TRUNC_DIV_EXPR>: If both arguments
+	are known to be in between 0 and signed maximum inclusive, try to
+	expand both unsigned and signed divmod and use the cheaper one from
+	those.
+
+2017-02-22  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/79578
 	* tree-ssa-dse.c (clear_bytes_written_by): Use operand_equal_p
