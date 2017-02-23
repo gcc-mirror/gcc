@@ -39,10 +39,9 @@
 # include <bits/c++14_warning.h>
 #else
 
-#include <experimental/type_traits>
+#include <iterator>
 #include <iosfwd>
-#include <bits/move.h>
-#include <bits/stl_iterator_base_types.h>
+#include <experimental/type_traits>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
