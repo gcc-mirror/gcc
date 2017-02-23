@@ -41,7 +41,7 @@
 2017-02-22  Martin Liska  <mliska@suse.cz>
 
 	* doc/invoke.texi: Replace inequality signs with square brackets
-	for -Wnornalized.
+	for -Wnormalized.
 
 2017-02-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
