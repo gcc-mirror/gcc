@@ -1,3 +1,13 @@
+2017-02-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/visium.md (type): Add trap.
+	(b): New mode attribute.
+	(*btst): Rename into...
+	(*btst<mode>): ...this and adjust.
+	(*cbranchsi4_btst_insn): Rename into...
+	(*cbranch<mode>4_btst_insn): ...this and adjust.
+	(trap): New define_insn.
+
 2017-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/79389

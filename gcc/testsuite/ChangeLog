@@ -1,3 +1,8 @@
+2017-02-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/visium/bit_test.c: Accept any lsr form.
+	* gcc.target/visium/block_move.c: Tweak.
+
 2017-02-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	PR 68749
