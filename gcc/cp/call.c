@@ -7838,12 +7838,13 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (flags & LOOKUP_NO_CONVERSION)
 	conv->user_conv_p = true;
 
-      val = convert_like_with_context (conv, arg, fn, i - is_method,
-				       conversion_warning
-				       ? complain
-				       : complain & (~tf_warning));
+      tsubst_flags_t arg_complain = complain & (~tf_no_cleanup);
+      if (!conversion_warning)
+	arg_complain &= ~tf_warning;
 
-      val = convert_for_arg_passing (type, val, complain);
+      val = convert_like_with_context (conv, arg, fn, i - is_method,
+				       arg_complain);
+      val = convert_for_arg_passing (type, val, arg_complain);
 	
       if (val == error_mark_node)
         return error_mark_node;
