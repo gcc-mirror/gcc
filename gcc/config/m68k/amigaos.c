@@ -386,7 +386,7 @@ amigaos_init_cumulative_args (CUMULATIVE_ARGS *cump, tree fntype, tree decl)
   struct amigaos_args * cum = &mycum;
   lastcum = cump;
   cum->num_of_regs = amigaos_regparm > 0 ? amigaos_regparm : 0;
-  DPRINTF(("amigaos_init_cumulative_args %p -> %d\r\n", cum, cum->num_of_regs));
+  DPRINTF(("0amigaos_init_cumulative_args %p -> %d\r\n", cum, cum->num_of_regs));
 
   /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
@@ -451,6 +451,7 @@ amigaos_init_cumulative_args (CUMULATIVE_ARGS *cump, tree fntype, tree decl)
   else
     /* Call to compiler-support function. */
     cum->formal_type = 0;
+  DPRINTF(("1amigaos_init_cumulative_args %p -> %d\r\n", cum, cum->num_of_regs));
 }
 
 /* Update the data in CUM to advance over an argument.  */
@@ -531,11 +532,11 @@ _m68k_function_arg (CUMULATIVE_ARGS *cump, machine_mode mode, const_tree type)
 	  long mask;
 
 	  look_for_reg: mask = 1 << regbegin;
-	  for (reg = 0; reg < AMIGAOS_MAX_REGPARM; reg++, mask <<= 1)
+	  for (reg = 0; reg < cum->num_of_regs; reg++, mask <<= 1)
 	    if (!(cum->regs_already_used & mask))
 	      {
 		int end;
-		for (end = reg; end < AMIGAOS_MAX_REGPARM && end < reg + len;
+		for (end = reg; end < cum->num_of_regs && end < reg + len;
 		    end++, mask <<= 1)
 		  if (cum->regs_already_used & mask)
 		    break;
@@ -547,18 +548,17 @@ _m68k_function_arg (CUMULATIVE_ARGS *cump, machine_mode mode, const_tree type)
 		  }
 	      }
 
-	  if (reg == AMIGAOS_MAX_REGPARM && altregbegin != -1)
-	    {
-	      DPRINTF(("look for alt reg\n"));
-	      regbegin = altregbegin;
-	      altregbegin = -1;
-	      goto look_for_reg;
-	    }
+//	  if (reg == AMIGAOS_MAX_REGPARM && altregbegin != -1)
+//	    {
+//	      DPRINTF(("look for alt reg\n"));
+//	      regbegin = altregbegin;
+//	      altregbegin = -1;
+//	      goto look_for_reg;
+//	    }
 	}
 
       if (cum->last_arg_reg != -1)
 	{
-	  --cum->num_of_regs;
 	  DPRINTF(("-> gen_rtx_REG %d\r\n", cum->last_arg_reg));
 	  return gen_rtx_REG (mode, cum->last_arg_reg);
 	}
