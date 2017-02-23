@@ -4751,14 +4751,38 @@ print_operand_address (FILE *file, rtx addr)
 	  else
 	    output_addr_const (file, addr);
 
-	  if (!RTX_FLAG (addr, frame_related) && !SYMBOL_REF_FUNCTION_P(addr))
+#ifdef TARGET_AMIGA
+	  if (SYMBOL_REF_FUNCTION_P(addr))
 	    {
-//	      debug_rtx(addr);
-	      if (flag_mybaserel == 1)
-		  asm_fprintf (file, ".w(a4)");
-	      else if (flag_mybaserel == 2)
-		  asm_fprintf (file, "(a4)");
+	      if (flag_smallcode)
+		asm_fprintf(file, ":w(pc)");
 	    }
+	  else if (flag_mybaserel)
+	    {
+	      /* search the decl. */
+	      tree decl = SYMBOL_REF_DECL (addr);
+	      if (!decl)
+		{
+		  rtx x = XEXP(addr, 0);
+		  if (CONSTANT_POOL_ADDRESS_P(x))
+		    decl = SYMBOL_REF_DECL (x);
+		  if (!decl)
+		    {
+		      x = XEXP(x, 0);
+		      decl = SYMBOL_REF_DECL (x);
+		    }
+	        }
+
+	     /* Qualifies for a4 if common or bss. Do not ref to .text! */
+	     if (decl && (DECL_COMMON (decl) || bss_initializer_p (decl)))
+	      {
+	        if (flag_mybaserel == 1)
+	          asm_fprintf (file, ":W(a4)");
+	        else if (flag_mybaserel == 2)
+	          asm_fprintf (file, ":L(a4)");
+	      }
+	  }
+#endif
 	}
     }
   else
