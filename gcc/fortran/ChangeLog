@@ -1,3 +1,111 @@
+2017-02-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79599
+	* interface.c (check_dtio_arg_TKR_intent): Supply 'must'
+	missing from error message.
+
+2017-02-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79523
+	* interface.c (gfc_find_typebound_dtio_proc): Guard test for
+	flavor attribute by checking that symbol is resolved.
+
+2017-02-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79382
+	* decl.c (access_attr_decl): Test for presence of generic DTIO
+	interface and emit error if not present.
+
+2017-02-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79434
+	* parse.c (check_component, parse_union): Whitespace.
+	(set_syms_host_assoc): For a derived type, check if the module
+	in which it was declared is one of the submodule ancestors. If
+	it is, make the components public. Otherwise, reset attribute
+	'host_assoc' and set 'use-assoc' so that encapsulation is
+	preserved.
+
+2017-02-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79447
+	* decl.c (gfc_set_constant_character_len): Whitespace.
+	(gfc_match_end): Catch case where a procedure is contained in
+	a module procedure and ensure that 'end procedure' is the
+	correct termination.
+
+2017-02-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79402
+	* resolve.c (fixup_unique_dummy): New function.
+	(gfc_resolve_expr): Call it for dummy variables with a unique
+	symtree name.
+
+2017-02-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/79229
+	* trans-expr.c (gfc_trans_assignment_1): Deref indirect refs when
+	compiling with -fcheck=mem to check the pointer and not the data.
+
+2017-02-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/79335
+	* trans-array.c (duplicate_allocatable_coarray): Ensure attributes
+	passed are properly initialized.
+	(structure_alloc_comps): Same.
+	* trans-expr.c (gfc_trans_structure_assign): Same.
+
+2017-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-expr.c (gfc_conv_substring): Add missing space in diagnostics.
+
+2017-02-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/65542
+	* intrinsic.c (gfc_intrinsic_func_interface):  Return an error
+	for -std=f95 for disallowed transformational functions in
+	initialization expressions.
+
+2017-02-09  Cesar Philippidis  <cesar@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* openmp.c (resolve_omp_clauses): Error on directives
+	containing both tile and collapse clauses.
+	(resolve_oacc_loop_blocks): Represent '*' tile arguments as zero.
+	* trans-openmp.c (gfc_trans_omp_do): Lower tiled loops like
+	collapsed loops.
+
+2017-02-07  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* trans-types.c	(gfc_get_int_kind_from_width_isofortranen):  Choose
+	REAL type with the widest precision if two (or more) have the same
+	storage size.
+
+2017-02-05  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/79344
+	* trans-stmt.c (gfc_trans_allocate): Only deallocate the components of
+	the temporary, when a new object was created for the temporary.  Not
+	when it is just an alias to an existing object.
+
+2017-02-05  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/79335
+	* trans-decl.c (generate_coarray_sym_init): Retrieve the symbol's
+	attributes before using them.
+
+2017-02-05  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/78958
+	* trans-stmt.c (gfc_trans_allocate): Add the multiplying the _len
+	component of unlimited polymorphic objects when source-allocating.
+
+2017-02-05  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/79230
+	* trans-array.c (structure_alloc_comps): Ignore pointer components when
+	freeing structures.
+
 2017-01-25  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR lto/79061

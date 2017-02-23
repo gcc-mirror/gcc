@@ -6482,7 +6482,8 @@ int
 frv_adjust_field_align (tree field, int computed)
 {
   /* Make sure that the bitfield is not wider than the type.  */
-  if (DECL_BIT_FIELD (field)
+  if (field
+      && DECL_BIT_FIELD (field)
       && !DECL_ARTIFICIAL (field))
     {
       tree parent = DECL_CONTEXT (field);

@@ -41,7 +41,11 @@ struct gcc_c_context;
 
 enum gcc_c_api_version
 {
-  GCC_C_FE_VERSION_0 = 0
+  GCC_C_FE_VERSION_0 = 0,
+
+  /* Added char_type.  Added new version of int_type and float_type,
+     deprecated int_type_v0 and float_type_v0.  */
+  GCC_C_FE_VERSION_1 = 1
 };
 
 /* Qualifiers.  */
@@ -111,19 +115,6 @@ typedef gcc_address gcc_c_symbol_address_function (void *datum,
 						   struct gcc_c_context *ctxt,
 						   const char *identifier);
 
-/* An array of types used for creating a function type.  */
-
-struct gcc_type_array
-{
-  /* Number of elements.  */
-
-  int n_elements;
-
-  /* The elements.  */
-
-  gcc_type *elements;
-};
-
 /* The vtable used by the C front end.  */
 
 struct gcc_c_fe_vtable
@@ -146,7 +137,7 @@ struct gcc_c_fe_vtable
      provides the declaration.
 
      DATUM is an arbitrary piece of data that is passed back verbatim
-     to the callbakcs in requests.  */
+     to the callbacks in requests.  */
 
   void (*set_callbacks) (struct gcc_c_context *self,
 			 gcc_c_oracle_function *binding_oracle,

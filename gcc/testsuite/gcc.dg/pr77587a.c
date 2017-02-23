@@ -1,5 +1,6 @@
 /* PR target/77587 */
 /* { dg-do compile } */
+/* { dg-require-alias "" } */
 /* { dg-require-weak-override "" } */
 
 void

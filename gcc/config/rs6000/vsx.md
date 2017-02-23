@@ -1914,19 +1914,19 @@
   [(set_attr "type" "vecdouble")])
 
 (define_insn "vsx_xvcvsxdsp"
-  [(set (match_operand:V4SI 0 "vsx_register_operand" "=wd,?wa")
-	(unspec:V4SI [(match_operand:V2DF 1 "vsx_register_operand" "wf,wa")]
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wd,?wa")
+	(unspec:V4SF [(match_operand:V2DI 1 "vsx_register_operand" "wf,wa")]
 		     UNSPEC_VSX_CVSXDSP))]
   "VECTOR_UNIT_VSX_P (V2DFmode)"
   "xvcvsxdsp %x0,%x1"
   [(set_attr "type" "vecfloat")])
 
 (define_insn "vsx_xvcvuxdsp"
-  [(set (match_operand:V4SI 0 "vsx_register_operand" "=wd,?wa")
-	(unspec:V4SI [(match_operand:V2DF 1 "vsx_register_operand" "wf,wa")]
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wd,?wa")
+	(unspec:V4SF [(match_operand:V2DI 1 "vsx_register_operand" "wf,wa")]
 		     UNSPEC_VSX_CVUXDSP))]
   "VECTOR_UNIT_VSX_P (V2DFmode)"
-  "xvcvuxwdp %x0,%x1"
+  "xvcvuxdsp %x0,%x1"
   [(set_attr "type" "vecdouble")])
 
 ;; Convert from 32-bit to 64-bit types
@@ -2435,10 +2435,42 @@
 
 ;; Expand the builtin form of xxpermdi to canonical rtl.
 (define_expand "vsx_xxpermdi_<mode>"
-  [(match_operand:VSX_L 0 "vsx_register_operand" "")
-   (match_operand:VSX_L 1 "vsx_register_operand" "")
-   (match_operand:VSX_L 2 "vsx_register_operand" "")
-   (match_operand:QI 3 "u5bit_cint_operand" "")]
+  [(match_operand:VSX_L 0 "vsx_register_operand")
+   (match_operand:VSX_L 1 "vsx_register_operand")
+   (match_operand:VSX_L 2 "vsx_register_operand")
+   (match_operand:QI 3 "u5bit_cint_operand")]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+{
+  rtx target = operands[0];
+  rtx op0 = operands[1];
+  rtx op1 = operands[2];
+  int mask = INTVAL (operands[3]);
+  rtx perm0 = GEN_INT ((mask >> 1) & 1);
+  rtx perm1 = GEN_INT ((mask & 1) + 2);
+  rtx (*gen) (rtx, rtx, rtx, rtx, rtx);
+
+  if (<MODE>mode == V2DFmode)
+    gen = gen_vsx_xxpermdi2_v2df_1;
+  else
+    {
+      gen = gen_vsx_xxpermdi2_v2di_1;
+      if (<MODE>mode != V2DImode)
+	{
+	  target = gen_lowpart (V2DImode, target);
+	  op0 = gen_lowpart (V2DImode, op0);
+	  op1 = gen_lowpart (V2DImode, op1);
+	}
+    }
+  emit_insn (gen (target, op0, op1, perm0, perm1));
+  DONE;
+})
+
+;; Special version of xxpermdi that retains big-endian semantics.
+(define_expand "vsx_xxpermdi_<mode>_be"
+  [(match_operand:VSX_L 0 "vsx_register_operand")
+   (match_operand:VSX_L 1 "vsx_register_operand")
+   (match_operand:VSX_L 2 "vsx_register_operand")
+   (match_operand:QI 3 "u5bit_cint_operand")]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
   rtx target = operands[0];
@@ -3870,7 +3902,7 @@
     {
       rtx op1 = operands[1];
       rtx v4si_tmp = gen_reg_rtx (V4SImode);
-      emit_insn (gen_vsx_xxpermdi_v4si (v4si_tmp, op1, op1, const1_rtx));
+      emit_insn (gen_vsx_xxpermdi_v4si_be (v4si_tmp, op1, op1, const1_rtx));
       operands[1] = v4si_tmp;
       operands[3] = GEN_INT (12 - INTVAL (operands[3]));
     }

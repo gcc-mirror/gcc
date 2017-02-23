@@ -384,7 +384,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 
       void
-      _M_assign(const basic_string& __rcs);
+      _M_assign(const basic_string&);
 
       void
       _M_mutate(size_type __pos, size_type __len1, const _CharT* __s,
@@ -632,10 +632,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	    if (!_Alloc_traits::_S_always_equal() && !_M_is_local()
 		&& _M_get_allocator() != __str._M_get_allocator())
 	      {
-		// replacement allocator cannot free existing storage
-		_M_destroy(_M_allocated_capacity);
-		_M_data(_M_local_data());
-		_M_set_length(0);
+		// Propagating allocator cannot free existing storage so must
+		// deallocate it before replacing current allocator.
+		if (__str.size() <= _S_local_capacity)
+		  {
+		    _M_destroy(_M_allocated_capacity);
+		    _M_data(_M_local_data());
+		    _M_set_length(0);
+		  }
+		else
+		  {
+		    const auto __len = __str.size();
+		    auto __alloc = __str._M_get_allocator();
+		    // If this allocation throws there are no effects:
+		    auto __ptr = _Alloc_traits::allocate(__alloc, __len + 1);
+		    _M_destroy(_M_allocated_capacity);
+		    _M_data(__ptr);
+		    _M_capacity(__len);
+		    _M_set_length(__len);
+		  }
 	      }
 	    std::__alloc_on_copy(_M_get_allocator(), __str._M_get_allocator());
 	  }

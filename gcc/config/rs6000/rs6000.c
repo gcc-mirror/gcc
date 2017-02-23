@@ -66,6 +66,7 @@
 #include "builtins.h"
 #include "context.h"
 #include "tree-pass.h"
+#include "except.h"
 #if TARGET_XCOFF
 #include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
 #endif
@@ -1606,6 +1607,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_SCHED_SET_SCHED_CONTEXT rs6000_set_sched_context
 #undef TARGET_SCHED_FREE_SCHED_CONTEXT
 #define TARGET_SCHED_FREE_SCHED_CONTEXT rs6000_free_sched_context
+
+#undef TARGET_SCHED_CAN_SPECULATE_INSN
+#define TARGET_SCHED_CAN_SPECULATE_INSN rs6000_sched_can_speculate_insn
 
 #undef TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD
 #define TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD rs6000_builtin_mask_for_load
@@ -7972,9 +7976,9 @@ rs6000_data_alignment (tree type, unsigned int align, enum data_align how)
 /* Previous GCC releases forced all vector types to have 16-byte alignment.  */
 
 bool
-rs6000_special_adjust_field_align_p (tree field, unsigned int computed)
+rs6000_special_adjust_field_align_p (tree type, unsigned int computed)
 {
-  if (TARGET_ALTIVEC && TREE_CODE (TREE_TYPE (field)) == VECTOR_TYPE)
+  if (TARGET_ALTIVEC && TREE_CODE (type) == VECTOR_TYPE)
     {
       if (computed != 128)
 	{
@@ -15433,6 +15437,8 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
     }
   else if (icode == CODE_FOR_vsx_xxpermdi_v2df
            || icode == CODE_FOR_vsx_xxpermdi_v2di
+           || icode == CODE_FOR_vsx_xxpermdi_v2df_be
+           || icode == CODE_FOR_vsx_xxpermdi_v2di_be
            || icode == CODE_FOR_vsx_xxsldwi_v16qi
            || icode == CODE_FOR_vsx_xxsldwi_v8hi
            || icode == CODE_FOR_vsx_xxsldwi_v4si
@@ -17292,7 +17298,7 @@ rs6000_init_builtins (void)
   TYPE_NAME (V16QI_type_node) = tdecl;
 
   tdecl = add_builtin_type ("__vector __bool char", bool_V16QI_type_node);
-  TYPE_NAME ( bool_V16QI_type_node) = tdecl;
+  TYPE_NAME (bool_V16QI_type_node) = tdecl;
 
   tdecl = add_builtin_type ("__vector unsigned short", unsigned_V8HI_type_node);
   TYPE_NAME (unsigned_V8HI_type_node) = tdecl;
@@ -18591,6 +18597,7 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
       break;
 
       /* unsigned args, signed return.  */
+    case VSX_BUILTIN_XVCVUXDSP:
     case VSX_BUILTIN_XVCVUXDDP_UNS:
     case ALTIVEC_BUILTIN_UNSFLOAT_V4SI_V4SF:
       h.uns_p[1] = 1;
@@ -19458,24 +19465,31 @@ expand_block_compare (rtx operands[])
   rtx src1 = orig_src1;
   rtx src2 = orig_src2;
 
-  /* If this is not a fixed size compare, just call memcmp */
+  /* This case is complicated to handle because the subtract
+     with carry instructions do not generate the 64-bit
+     carry and so we must emit code to calculate it ourselves.
+     We choose not to implement this yet.  */
+  if (TARGET_32BIT && TARGET_POWERPC64)
+    return false;
+
+  /* If this is not a fixed size compare, just call memcmp.  */
   if (!CONST_INT_P (bytes_rtx))
     return false;
 
-  /* This must be a fixed size alignment */
+  /* This must be a fixed size alignment.  */
   if (!CONST_INT_P (align_rtx))
     return false;
 
   unsigned int base_align = UINTVAL (align_rtx) / BITS_PER_UNIT;
 
-  /* SLOW_UNALIGNED_ACCESS -- don't do unaligned stuff */
+  /* SLOW_UNALIGNED_ACCESS -- don't do unaligned stuff.  */
   if (SLOW_UNALIGNED_ACCESS (word_mode, MEM_ALIGN (orig_src1))
       || SLOW_UNALIGNED_ACCESS (word_mode, MEM_ALIGN (orig_src2)))
     return false;
 
   gcc_assert (GET_MODE (target) == SImode);
 
-  /* Anything to move? */
+  /* Anything to move?  */
   unsigned HOST_WIDE_INT bytes = UINTVAL (bytes_rtx);
   if (bytes == 0)
     return true;
@@ -19490,6 +19504,13 @@ expand_block_compare (rtx operands[])
 
   rtx tmp_reg_src1 = gen_reg_rtx (word_mode);
   rtx tmp_reg_src2 = gen_reg_rtx (word_mode);
+  /* P7/P8 code uses cond for subfc. but P9 uses
+     it for cmpld which needs CCUNSmode. */
+  rtx cond;
+  if (TARGET_P9_MISC)
+    cond = gen_reg_rtx (CCUNSmode);
+  else
+    cond = gen_reg_rtx (CCmode);
 
   /* If we have an LE target without ldbrx and word_mode is DImode,
      then we must avoid using word_mode.  */
@@ -19512,27 +19533,35 @@ expand_block_compare (rtx operands[])
   rtx convert_label = NULL;
   rtx final_label = NULL;
 
-  /* Example of generated code for 11 bytes aligned 1 byte:
-     .L10:
-             ldbrx 10,6,9
-             ldbrx 9,7,9
-             subf. 9,9,10
-             bne 0,.L8
-             addi 9,4,7
-             lwbrx 10,0,9
-             addi 9,5,7
-             lwbrx 9,0,9
+  /* Example of generated code for 18 bytes aligned 1 byte.
+     Compiled with -fno-reorder-blocks for clarity.
+             ldbrx 10,31,8
+             ldbrx 9,7,8
+             subfc. 9,9,10
+             bne 0,.L6487
+             addi 9,12,8
+             addi 5,11,8
+             ldbrx 10,0,9
+             ldbrx 9,0,5
+             subfc. 9,9,10
+             bne 0,.L6487
+             addi 9,12,16
+             lhbrx 10,0,9
+             addi 9,11,16
+             lhbrx 9,0,9
              subf 9,9,10
-             b .L9
-     .L8: # convert_label
-             cntlzd 9,9
-             addi 9,9,-1
-             xori 9,9,0x3f
-     .L9: # final_label
+             b .L6488
+             .p2align 4,,15
+     .L6487: #convert_label
+             popcntd 9,9
+             subfe 10,10,10
+             or 9,9,10
+     .L6488: #final_label
+             extsw 10,9
 
-     We start off with DImode and have a compare/branch to something
-     with a smaller mode then we will need a block with the DI->SI conversion
-     that may or may not be executed.  */
+     We start off with DImode for two blocks that jump to the DI->SI conversion
+     if the difference is found there, then a final block of HImode that skips
+     the DI->SI conversion.  */
 
   while (bytes > 0)
     {
@@ -19600,26 +19629,18 @@ expand_block_compare (rtx operands[])
 	    }
 	}
 
-      /* We previously did a block that need 64->32 conversion but
-	 the current block does not, so a label is needed to jump
-	 to the end.  */
-      if (generate_6432_conversion && !final_label
-	  && GET_MODE_SIZE (GET_MODE (target)) >= load_mode_size)
-	final_label = gen_label_rtx ();
-
-      /* Do we need a 64->32 conversion block?  */
       int remain = bytes - cmp_bytes;
-      if (GET_MODE_SIZE (GET_MODE (target)) < GET_MODE_SIZE (load_mode))
-	{
-	  generate_6432_conversion = true;
-	  if (remain > 0 && !convert_label)
-	    convert_label = gen_label_rtx ();
-	}
-
-      if (GET_MODE_SIZE (GET_MODE (target)) >= GET_MODE_SIZE (load_mode))
+      if (GET_MODE_SIZE (GET_MODE (target)) > GET_MODE_SIZE (load_mode))
 	{
 	  /* Target is larger than load size so we don't need to
 	     reduce result size.  */
+
+	  /* We previously did a block that need 64->32 conversion but
+	     the current block does not, so a label is needed to jump
+	     to the end.  */
+	  if (generate_6432_conversion && !final_label)
+	    final_label = gen_label_rtx ();
+
 	  if (remain > 0)
 	    {
 	      /* This is not the last block, branch to the end if the result
@@ -19627,11 +19648,12 @@ expand_block_compare (rtx operands[])
 	      if (!final_label)
 		final_label = gen_label_rtx ();
 	      rtx fin_ref = gen_rtx_LABEL_REF (VOIDmode, final_label);
-	      rtx cond = gen_reg_rtx (CCmode);
 	      rtx tmp = gen_rtx_MINUS (word_mode, tmp_reg_src1, tmp_reg_src2);
-	      rs6000_emit_dot_insn (tmp_reg_src2, tmp, 2, cond);
-	      emit_insn (gen_movsi (target, gen_lowpart (SImode, tmp_reg_src2)));
-	      rtx ne_rtx = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+	      rtx cr = gen_reg_rtx (CCmode);
+	      rs6000_emit_dot_insn (tmp_reg_src2, tmp, 2, cr);
+	      emit_insn (gen_movsi (target,
+				    gen_lowpart (SImode, tmp_reg_src2)));
+	      rtx ne_rtx = gen_rtx_NE (VOIDmode, cr, const0_rtx);
 	      rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, ne_rtx,
 						 fin_ref, pc_rtx);
 	      rtx j = emit_jump_insn (gen_rtx_SET (pc_rtx, ifelse));
@@ -19662,7 +19684,11 @@ expand_block_compare (rtx operands[])
 	}
       else
 	{
+	  /* Do we need a 64->32 conversion block? We need the 64->32
+	     conversion even if target size == load_mode size because
+	     the subtract generates one extra bit.  */
 	  generate_6432_conversion = true;
+
 	  if (remain > 0)
 	    {
 	      if (!convert_label)
@@ -19670,9 +19696,22 @@ expand_block_compare (rtx operands[])
 
 	      /* Compare to zero and branch to convert_label if not zero.  */
 	      rtx cvt_ref = gen_rtx_LABEL_REF (VOIDmode, convert_label);
-	      rtx cond = gen_reg_rtx (CCmode);
-	      rtx tmp = gen_rtx_MINUS (DImode, tmp_reg_src1, tmp_reg_src2);
-	      rs6000_emit_dot_insn (tmp_reg_src2, tmp, 2, cond);
+	      if (TARGET_P9_MISC)
+		{
+		/* Generate a compare, and convert with a setb later.  */
+		  rtx cmp = gen_rtx_COMPARE (CCUNSmode, tmp_reg_src1,
+					     tmp_reg_src2);
+		  emit_insn (gen_rtx_SET (cond, cmp));
+		}
+	      else
+		/* Generate a subfc. and use the longer
+		   sequence for conversion.  */
+		if (TARGET_64BIT)
+		  emit_insn (gen_subfdi3_carry_dot2 (tmp_reg_src2, tmp_reg_src2,
+						     tmp_reg_src1, cond));
+		else
+		  emit_insn (gen_subfsi3_carry_dot2 (tmp_reg_src2, tmp_reg_src2,
+						     tmp_reg_src1, cond));
 	      rtx ne_rtx = gen_rtx_NE (VOIDmode, cond, const0_rtx);
 	      rtx ifelse = gen_rtx_IF_THEN_ELSE (VOIDmode, ne_rtx,
 						 cvt_ref, pc_rtx);
@@ -19682,10 +19721,21 @@ expand_block_compare (rtx operands[])
 	    }
 	  else
 	    {
-	      /* Just do the subtract.  Since this is the last block the
-		 convert code will be generated immediately following.  */
-	      emit_insn (gen_subdi3 (tmp_reg_src2, tmp_reg_src1,
-				     tmp_reg_src2));
+	      /* Just do the subtract/compare.  Since this is the last block
+		 the convert code will be generated immediately following.  */
+	      if (TARGET_P9_MISC)
+		{
+		  rtx cmp = gen_rtx_COMPARE (CCUNSmode, tmp_reg_src1,
+					     tmp_reg_src2);
+		  emit_insn (gen_rtx_SET (cond, cmp));
+		}
+	      else
+		if (TARGET_64BIT)
+		  emit_insn (gen_subfdi3_carry (tmp_reg_src2, tmp_reg_src2,
+						tmp_reg_src1));
+		else
+		  emit_insn (gen_subfsi3_carry (tmp_reg_src2, tmp_reg_src2,
+						tmp_reg_src1));
 	    }
 	}
 
@@ -19699,12 +19749,46 @@ expand_block_compare (rtx operands[])
 	emit_label (convert_label);
 
       /* We need to produce DI result from sub, then convert to target SI
-	 while maintaining <0 / ==0 / >0 properties.
-	 Segher's sequence: cntlzd 3,3 ; addi 3,3,-1 ; xori 3,3,63 */
-      emit_insn (gen_clzdi2 (tmp_reg_src2, tmp_reg_src2));
-      emit_insn (gen_adddi3 (tmp_reg_src2, tmp_reg_src2, GEN_INT (-1)));
-      emit_insn (gen_xordi3 (tmp_reg_src2, tmp_reg_src2, GEN_INT (63)));
-      emit_insn (gen_movsi (target, gen_lowpart (SImode, tmp_reg_src2)));
+	 while maintaining <0 / ==0 / >0 properties. This sequence works:
+	 subfc L,A,B
+	 subfe H,H,H
+	 popcntd L,L
+	 rldimi L,H,6,0
+
+	 This is an alternate one Segher cooked up if somebody
+	 wants to expand this for something that doesn't have popcntd:
+	 subfc L,a,b
+	 subfe H,x,x
+	 addic t,L,-1
+	 subfe v,t,L
+	 or z,v,H
+
+	 And finally, p9 can just do this:
+	 cmpld A,B
+	 setb r */
+
+      if (TARGET_P9_MISC)
+	{
+	  emit_insn (gen_setb_unsigned (target, cond));
+	}
+      else
+	{
+	  if (TARGET_64BIT)
+	    {
+	      rtx tmp_reg_ca = gen_reg_rtx (DImode);
+	      emit_insn (gen_subfdi3_carry_in_xx (tmp_reg_ca));
+	      emit_insn (gen_popcntddi2 (tmp_reg_src2, tmp_reg_src2));
+	      emit_insn (gen_iordi3 (tmp_reg_src2, tmp_reg_src2, tmp_reg_ca));
+	      emit_insn (gen_movsi (target, gen_lowpart (SImode, tmp_reg_src2)));
+	    }
+	  else
+	    {
+	      rtx tmp_reg_ca = gen_reg_rtx (SImode);
+	      emit_insn (gen_subfsi3_carry_in_xx (tmp_reg_ca));
+	      emit_insn (gen_popcntdsi2 (tmp_reg_src2, tmp_reg_src2));
+	      emit_insn (gen_iorsi3 (target, tmp_reg_src2, tmp_reg_ca));
+	    }
+	}
     }
 
   if (final_label)
@@ -19851,14 +19935,25 @@ expand_strn_compare (rtx operands[], int no_length)
 	 cmpldi	cr7,r8,4096-16
 	 bgt	cr7,L(pagecross) */
 
-      if (align1 < 8)
-	expand_strncmp_align_check (strncmp_label, src1, compare_length);
-      if (align2 < 8)
-	expand_strncmp_align_check (strncmp_label, src2, compare_length);
+      /* Make sure that the length we use for the alignment test and
+         the subsequent code generation are in agreement so we do not
+         go past the length we tested for a 4k boundary crossing.  */
+      unsigned HOST_WIDE_INT align_test = compare_length;
+      if (align_test < 8)
+        {
+          align_test = HOST_WIDE_INT_1U << ceil_log2 (align_test);
+          base_align = align_test;
+        }
+      else
+        {
+          align_test = ROUND_UP (align_test, 8);
+          base_align = 8;
+        }
 
-      /* After the runtime alignment checks, we can use any alignment we
-	 like as we know there is no 4k boundary crossing.  */
-      base_align = 8;
+      if (align1 < 8)
+        expand_strncmp_align_check (strncmp_label, src1, align_test);
+      if (align2 < 8)
+        expand_strncmp_align_check (strncmp_label, src2, align_test);
 
       /* Now generate the following sequence:
 	 - branch to begin_compare
@@ -21246,7 +21341,7 @@ register_to_reg_type (rtx reg, bool *is_altivec)
       regno = true_regnum (reg);
       if (regno < 0 || regno >= FIRST_PSEUDO_REGISTER)
 	return PSEUDO_REG_TYPE;
-    }	
+    }
 
   gcc_assert (regno >= 0);
 
@@ -24609,92 +24704,6 @@ rs6000_expand_float128_convert (rtx dest, rtx src, bool unsigned_p)
   return;
 }
 
-/* Split a conversion from __float128 to an integer type into separate insns.
-   OPERANDS points to the destination, source, and V2DI temporary
-   register. CODE is either FIX or UNSIGNED_FIX.  */
-
-void
-convert_float128_to_int (rtx *operands, enum rtx_code code)
-{
-  rtx dest = operands[0];
-  rtx src = operands[1];
-  rtx tmp = operands[2];
-  rtx cvt;
-  rtvec cvt_vec;
-  rtx cvt_unspec;
-  rtvec move_vec;
-  rtx move_unspec;
-
-  if (GET_CODE (tmp) == SCRATCH)
-    tmp = gen_reg_rtx (V2DImode);
-
-  if (MEM_P (dest))
-    dest = rs6000_address_for_fpconvert (dest);
-
-  /* Generate the actual convert insn of the form:
-     (set (tmp) (unspec:V2DI [(fix:SI (reg:KF))] UNSPEC_IEEE128_CONVERT)).  */
-  cvt = gen_rtx_fmt_e (code, GET_MODE (dest), src);
-  cvt_vec = gen_rtvec (1, cvt);
-  cvt_unspec = gen_rtx_UNSPEC (V2DImode, cvt_vec, UNSPEC_IEEE128_CONVERT);
-  emit_insn (gen_rtx_SET (tmp, cvt_unspec));
-
-  /* Generate the move insn of the form:
-     (set (dest:SI) (unspec:SI [(tmp:V2DI))] UNSPEC_IEEE128_MOVE)).  */
-  move_vec = gen_rtvec (1, tmp);
-  move_unspec = gen_rtx_UNSPEC (GET_MODE (dest), move_vec, UNSPEC_IEEE128_MOVE);
-  emit_insn (gen_rtx_SET (dest, move_unspec));
-}
-
-/* Split a conversion from an integer type to __float128 into separate insns.
-   OPERANDS points to the destination, source, and V2DI temporary
-   register. CODE is either FLOAT or UNSIGNED_FLOAT.  */
-
-void
-convert_int_to_float128 (rtx *operands, enum rtx_code code)
-{
-  rtx dest = operands[0];
-  rtx src = operands[1];
-  rtx tmp = operands[2];
-  rtx cvt;
-  rtvec cvt_vec;
-  rtx cvt_unspec;
-  rtvec move_vec;
-  rtx move_unspec;
-  rtx unsigned_flag;
-
-  if (GET_CODE (tmp) == SCRATCH)
-    tmp = gen_reg_rtx (V2DImode);
-
-  if (MEM_P (src))
-    src = rs6000_address_for_fpconvert (src);
-
-  /* Generate the move of the integer into the Altivec register of the form:
-     (set (tmp:V2DI) (unspec:V2DI [(src:SI)
-				   (const_int 0)] UNSPEC_IEEE128_MOVE)).
-
-     or:
-     (set (tmp:V2DI) (unspec:V2DI [(src:DI)] UNSPEC_IEEE128_MOVE)).  */
-
-  if (GET_MODE (src) == SImode)
-    {
-      unsigned_flag = (code == UNSIGNED_FLOAT) ? const1_rtx : const0_rtx;
-      move_vec = gen_rtvec (2, src, unsigned_flag);
-    }
-  else
-    move_vec = gen_rtvec (1, src);
-
-  move_unspec = gen_rtx_UNSPEC (V2DImode, move_vec, UNSPEC_IEEE128_MOVE);
-  emit_insn (gen_rtx_SET (tmp, move_unspec));
-
-  /* Generate the actual convert insn of the form:
-     (set (dest:KF) (float:KF (unspec:DI [(tmp:V2DI)]
-					 UNSPEC_IEEE128_CONVERT))).  */
-  cvt_vec = gen_rtvec (1, tmp);
-  cvt_unspec = gen_rtx_UNSPEC (DImode, cvt_vec, UNSPEC_IEEE128_CONVERT);
-  cvt = gen_rtx_fmt_e (code, GET_MODE (dest), cvt_unspec);
-  emit_insn (gen_rtx_SET (dest, cvt));
-}
-
 
 /* Emit the RTL for an sISEL pattern.  */
 
@@ -25131,7 +25140,6 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
   machine_mode cc_mode = CCmode;
   rtx mask;
   rtx cond2;
-  rtx tmp;
   bool invert_move = false;
 
   if (VECTOR_UNIT_NONE_P (dest_mode))
@@ -25157,12 +25165,29 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
 	return 0;
       break;
 
-      /* Mark unsigned tests with CCUNSmode.  */
+    case GE:
+    case LE:
+      if (GET_MODE_CLASS (mask_mode) == MODE_VECTOR_INT)
+	{
+	  /* Invert condition to avoid compound test.  */
+	  invert_move = true;
+	  rcode = reverse_condition (rcode);
+	}
+      break;
+
     case GTU:
     case GEU:
     case LTU:
     case LEU:
+      /* Mark unsigned tests with CCUNSmode.  */
       cc_mode = CCUNSmode;
+
+      /* Invert condition to avoid compound test if necessary.  */
+      if (rcode == GEU || rcode == LEU)
+	{
+	  invert_move = true;
+	  rcode = reverse_condition (rcode);
+	}
       break;
 
     default:
@@ -25176,11 +25201,43 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
     return 0;
 
   if (invert_move)
+    std::swap (op_true, op_false);
+
+  /* Optimize vec1 == vec2, to know the mask generates -1/0.  */
+  if (GET_MODE_CLASS (dest_mode) == MODE_VECTOR_INT
+      && (GET_CODE (op_true) == CONST_VECTOR
+	  || GET_CODE (op_false) == CONST_VECTOR))
     {
-      tmp = op_true;
-      op_true = op_false;
-      op_false = tmp;
+      rtx constant_0 = CONST0_RTX (dest_mode);
+      rtx constant_m1 = CONSTM1_RTX (dest_mode);
+
+      if (op_true == constant_m1 && op_false == constant_0)
+	{
+	  emit_move_insn (dest, mask);
+	  return 1;
+	}
+
+      else if (op_true == constant_0 && op_false == constant_m1)
+	{
+	  emit_insn (gen_rtx_SET (dest, gen_rtx_NOT (dest_mode, mask)));
+	  return 1;
+	}
+
+      /* If we can't use the vector comparison directly, perhaps we can use
+	 the mask for the true or false fields, instead of loading up a
+	 constant.  */
+      if (op_true == constant_m1)
+	op_true = mask;
+
+      if (op_false == constant_0)
+	op_false = mask;
     }
+
+  if (!REG_P (op_true) && !SUBREG_P (op_true))
+    op_true = force_reg (dest_mode, op_true);
+
+  if (!REG_P (op_false) && !SUBREG_P (op_false))
+    op_false = force_reg (dest_mode, op_false);
 
   cond2 = gen_rtx_fmt_ee (NE, cc_mode, gen_lowpart (dest_mode, mask),
 			  CONST0_RTX (dest_mode));
@@ -31624,6 +31681,8 @@ rs6000_expand_split_stack_prologue (void)
      split_stack_return use r0.  */
   use_reg (&call_fusage, r0);
   add_function_usage_to (insn, call_fusage);
+  /* Indicate that this function can't jump to non-local gotos.  */
+  make_reg_eh_region_note_nothrow_nononlocal (insn);
   emit_insn (gen_frame_load (r0, r1, info->lr_save_offset));
   insn = emit_move_insn (lr, r0);
   add_reg_note (insn, REG_CFA_RESTORE, lr);
@@ -34849,6 +34908,23 @@ rs6000_free_sched_context (void *_sc)
   free (_sc);
 }
 
+static bool
+rs6000_sched_can_speculate_insn (rtx_insn *insn)
+{
+  switch (get_attr_type (insn))
+    {
+    case TYPE_DIV:
+    case TYPE_SDIV:
+    case TYPE_DDIV:
+    case TYPE_VECDIV:
+    case TYPE_SSQRT:
+    case TYPE_DSQRT:
+      return false;
+
+    default:
+      return true;
+  }
+}
 
 /* Length in units of the trampoline for entering a nested function.  */
 

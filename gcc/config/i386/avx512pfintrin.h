@@ -48,6 +48,24 @@ typedef unsigned short __mmask16;
 #ifdef __OPTIMIZE__
 extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_prefetch_i32gather_pd (__m256i __index, void const *__addr,
+			      int __scale, int __hint)
+{
+  __builtin_ia32_gatherpfdpd ((__mmask8) 0xFF, (__v8si) __index, __addr,
+			      __scale, __hint);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_prefetch_i32gather_ps (__m512i __index, void const *__addr,
+			      int __scale, int __hint)
+{
+  __builtin_ia32_gatherpfdps ((__mmask16) 0xFFFF, (__v16si) __index, __addr,
+			      __scale, __hint);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_prefetch_i32gather_pd (__m256i __index, __mmask8 __mask,
 				   void const *__addr, int __scale, int __hint)
 {
@@ -62,6 +80,24 @@ _mm512_mask_prefetch_i32gather_ps (__m512i __index, __mmask16 __mask,
 {
   __builtin_ia32_gatherpfdps (__mask, (__v16si) __index, __addr, __scale,
 			      __hint);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_prefetch_i64gather_pd (__m512i __index, void const *__addr,
+			      int __scale, int __hint)
+{
+  __builtin_ia32_gatherpfqpd ((__mmask8) 0xFF, (__v8di) __index, __addr,
+			      __scale, __hint);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_prefetch_i64gather_ps (__m512i __index, void const *__addr,
+			      int __scale, int __hint)
+{
+  __builtin_ia32_gatherpfqps ((__mmask8) 0xFF, (__v8di) __index, __addr,
+			      __scale, __hint);
 }
 
 extern __inline void
@@ -155,6 +191,14 @@ _mm512_mask_prefetch_i64scatter_ps (void *__addr, __mmask16 __mask,
 }
 
 #else
+#define _mm512_prefetch_i32gather_pd(INDEX, ADDR, SCALE, HINT)		     \
+  __builtin_ia32_gatherpfdpd ((__mmask8)0xFF, (__v8si)(__m256i)INDEX,	     \
+			      (void const *)ADDR, (int)SCALE, (int)HINT)
+
+#define _mm512_prefetch_i32gather_ps(INDEX, ADDR, SCALE, HINT)		     \
+  __builtin_ia32_gatherpfdps ((__mmask16)0xFFFF, (__v16si)(__m512i)INDEX,    \
+			      (void const *)ADDR, (int)SCALE, (int)HINT)
+
 #define _mm512_mask_prefetch_i32gather_pd(INDEX, MASK, ADDR, SCALE, HINT)    \
   __builtin_ia32_gatherpfdpd ((__mmask8)MASK, (__v8si)(__m256i)INDEX,	     \
 			      (void const *)ADDR, (int)SCALE, (int)HINT)
@@ -162,6 +206,14 @@ _mm512_mask_prefetch_i64scatter_ps (void *__addr, __mmask16 __mask,
 #define _mm512_mask_prefetch_i32gather_ps(INDEX, MASK, ADDR, SCALE, HINT)    \
   __builtin_ia32_gatherpfdps ((__mmask16)MASK, (__v16si)(__m512i)INDEX,      \
 			      (void const *)ADDR, (int)SCALE, (int)HINT)
+
+#define _mm512_prefetch_i64gather_pd(INDEX, ADDR, SCALE, HINT)		     \
+  __builtin_ia32_gatherpfqpd ((__mmask8)0xFF, (__v8di)(__m512i)INDEX,	     \
+			      (void *)ADDR, (int)SCALE, (int)HINT)
+
+#define _mm512_prefetch_i64gather_ps(INDEX, ADDR, SCALE, HINT)		     \
+  __builtin_ia32_gatherpfqps ((__mmask8)0xFF, (__v8di)(__m512i)INDEX,	     \
+			      (void *)ADDR, (int)SCALE, (int)HINT)
 
 #define _mm512_mask_prefetch_i64gather_pd(INDEX, MASK, ADDR, SCALE, HINT)    \
   __builtin_ia32_gatherpfqpd ((__mmask8)MASK, (__v8di)(__m512i)INDEX,	     \

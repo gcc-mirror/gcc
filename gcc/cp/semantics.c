@@ -2962,6 +2962,12 @@ finish_member_declaration (tree decl)
   /* We should see only one DECL at a time.  */
   gcc_assert (DECL_CHAIN (decl) == NULL_TREE);
 
+  /* Don't add decls after definition.  */
+  gcc_assert (TYPE_BEING_DEFINED (current_class_type)
+	      /* We can add lambda types when late parsing default
+		 arguments.  */
+	      || LAMBDA_TYPE_P (TREE_TYPE (decl)));
+
   /* Set up access control for DECL.  */
   TREE_PRIVATE (decl)
     = (current_access_specifier == access_private_node);
@@ -3563,9 +3569,13 @@ finish_id_expression (tree id_expression,
 		    ? CP_ID_KIND_UNQUALIFIED_DEPENDENT
 		    : CP_ID_KIND_UNQUALIFIED)));
 
-      /* If the name was dependent on a template parameter, we will
-	 resolve the name at instantiation time.  */
-      if (dependent_p)
+      /* If the name was dependent on a template parameter and we're not in a
+	 default capturing generic lambda within a template, we will resolve the
+	 name at instantiation time.  FIXME: For lambdas, we should defer
+	 building the closure type until instantiation time then we won't need
+	 the extra test here.  */
+      if (dependent_p
+	  && !parsing_default_capturing_generic_lambda_in_template ())
 	{
 	  if (DECL_P (decl)
 	      && any_dependent_type_attributes_p (DECL_ATTRIBUTES (decl)))
@@ -3733,7 +3743,15 @@ finish_id_expression (tree id_expression,
 	  if (TREE_CODE (first_fn) == TEMPLATE_DECL)
 	    first_fn = DECL_TEMPLATE_RESULT (first_fn);
 
-	  if (!really_overloaded_fn (decl)
+	  /* [basic.def.odr]: "A function whose name appears as a
+	     potentially-evaluated expression is odr-used if it is the unique
+	     lookup result".
+
+	     But only mark it if it's a complete postfix-expression; in a call,
+	     ADL might select a different function, and we'll call mark_used in
+	     build_over_call.  */
+	  if (done
+	      && !really_overloaded_fn (decl)
 	      && !mark_used (first_fn))
 	    return error_mark_node;
 
@@ -3820,7 +3838,8 @@ finish_underlying_type (tree type)
       return underlying_type;
     }
 
-  complete_type (type);
+  if (!complete_type_or_else (type, NULL_TREE))
+    return error_mark_node;
 
   if (TREE_CODE (type) != ENUMERAL_TYPE)
     {
@@ -3995,13 +4014,13 @@ finish_bases (tree type, bool direct)
    fold_offsetof.  */
 
 tree
-finish_offsetof (tree expr, location_t loc)
+finish_offsetof (tree object_ptr, tree expr, location_t loc)
 {
   /* If we're processing a template, we can't finish the semantics yet.
      Otherwise we can fold the entire expression now.  */
   if (processing_template_decl)
     {
-      expr = build1 (OFFSETOF_EXPR, size_type_node, expr);
+      expr = build2 (OFFSETOF_EXPR, size_type_node, expr, object_ptr);
       SET_EXPR_LOCATION (expr, loc);
       return expr;
     }
@@ -4031,19 +4050,15 @@ finish_offsetof (tree expr, location_t loc)
     }
   if (REFERENCE_REF_P (expr))
     expr = TREE_OPERAND (expr, 0);
-  if (TREE_CODE (expr) == COMPONENT_REF)
-    {
-      tree object = TREE_OPERAND (expr, 0);
-      if (!complete_type_or_else (TREE_TYPE (object), object))
-	return error_mark_node;
-      if (warn_invalid_offsetof
-	  && CLASS_TYPE_P (TREE_TYPE (object))
-	  && CLASSTYPE_NON_STD_LAYOUT (TREE_TYPE (object))
-	  && cp_unevaluated_operand == 0)
-	pedwarn (loc, OPT_Winvalid_offsetof,
-		 "offsetof within non-standard-layout type %qT is undefined",
-		 TREE_TYPE (object));
-    }
+  if (!complete_type_or_else (TREE_TYPE (TREE_TYPE (object_ptr)), object_ptr))
+    return error_mark_node;
+  if (warn_invalid_offsetof
+      && CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (object_ptr)))
+      && CLASSTYPE_NON_STD_LAYOUT (TREE_TYPE (TREE_TYPE (object_ptr)))
+      && cp_unevaluated_operand == 0)
+    pedwarn (loc, OPT_Winvalid_offsetof,
+	     "offsetof within non-standard-layout type %qT is undefined",
+	     TREE_TYPE (TREE_TYPE (object_ptr)));
   return fold_offsetof (expr);
 }
 
@@ -5107,7 +5122,7 @@ omp_reduction_id (enum tree_code reduction_code, tree reduction_id, tree type)
     case BIT_IOR_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
-      reduction_id = ansi_opname (reduction_code);
+      reduction_id = cp_operator_id (reduction_code);
       break;
     case MIN_EXPR:
       p = "min";
@@ -7093,7 +7108,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      else if (!type_dependent_expression_p (t)
 		       && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 		{
-		  error ("%<tile%> value must be integral");
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<tile%> argument needs integral type");
 		  remove = true;
 		}
 	      else
@@ -7101,14 +7117,16 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  t = mark_rvalue_use (t);
 		  if (!processing_template_decl)
 		    {
+		      /* Zero is used to indicate '*', we permit you
+			 to get there via an ICE of value zero.  */
 		      t = maybe_constant_value (t);
-		      if (TREE_CODE (t) == INTEGER_CST
-			  && tree_int_cst_sgn (t) != 1
-			  && t != integer_minus_one_node)
+		      if (!tree_fits_shwi_p (t)
+			  || tree_to_shwi (t) < 0)
 			{
-			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
-				      "%<tile%> value must be positive");
-			  t = integer_one_node;
+			  error_at (OMP_CLAUSE_LOCATION (c),
+				    "%<tile%> argument needs positive "
+				    "integral constant");
+			  remove = true;
 			}
 		    }
 		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
@@ -8007,11 +8025,19 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
   gcc_assert (TREE_VEC_LENGTH (declv) == TREE_VEC_LENGTH (incrv));
   if (TREE_VEC_LENGTH (declv) > 1)
     {
-      tree c = omp_find_clause (clauses, OMP_CLAUSE_COLLAPSE);
+      tree c;
+
+      c = omp_find_clause (clauses, OMP_CLAUSE_TILE);
       if (c)
-	collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (c));
-      if (collapse != TREE_VEC_LENGTH (declv))
-	ordered = TREE_VEC_LENGTH (declv);
+	collapse = list_length (OMP_CLAUSE_TILE_LIST (c));
+      else
+	{
+	  c = omp_find_clause (clauses, OMP_CLAUSE_COLLAPSE);
+	  if (c)
+	    collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (c));
+	  if (collapse != TREE_VEC_LENGTH (declv))
+	    ordered = TREE_VEC_LENGTH (declv);
+	}
     }
   for (i = 0; i < TREE_VEC_LENGTH (declv); i++)
     {
@@ -9012,7 +9038,7 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
   if (assign_p)
     {
       int ix;
-      ix = lookup_fnfields_1 (type, ansi_assopname (NOP_EXPR));
+      ix = lookup_fnfields_1 (type, cp_assignment_operator_id (NOP_EXPR));
       if (ix < 0)
 	return false;
       fns = (*CLASSTYPE_METHOD_VEC (type))[ix];
@@ -9295,7 +9321,8 @@ is_this_parameter (tree t)
 {
   if (!DECL_P (t) || DECL_NAME (t) != this_identifier)
     return false;
-  gcc_assert (TREE_CODE (t) == PARM_DECL || is_capture_proxy (t));
+  gcc_assert (TREE_CODE (t) == PARM_DECL || is_capture_proxy (t)
+	      || (cp_binding_oracle && TREE_CODE (t) == VAR_DECL));
   return true;
 }
 
@@ -9419,7 +9446,7 @@ finish_unary_fold_expr (tree expr, int op, tree_code dir)
 
   // Build the fold expression.
   tree code = build_int_cstu (integer_type_node, abs (op));
-  tree fold = build_min (dir, unknown_type_node, code, pack);
+  tree fold = build_min_nt_loc (UNKNOWN_LOCATION, dir, code, pack);
   FOLD_EXPR_MODIFY_P (fold) = (op < 0);
   return fold;
 }
@@ -9445,7 +9472,7 @@ finish_binary_fold_expr (tree pack, tree init, int op, tree_code dir)
 {
   pack = make_pack_expansion (pack);
   tree code = build_int_cstu (integer_type_node, abs (op));
-  tree fold = build_min (dir, unknown_type_node, code, pack, init);
+  tree fold = build_min_nt_loc (UNKNOWN_LOCATION, dir, code, pack, init);
   FOLD_EXPR_MODIFY_P (fold) = (op < 0);
   return fold;
 }

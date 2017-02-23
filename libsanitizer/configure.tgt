@@ -39,6 +39,8 @@ case "${target}" in
 	;;
   sparc*-*-linux*)
 	;;
+  s390*-*-linux*)
+	;;
   arm*-*-linux*)
 	;;
   aarch64*-*-linux*)

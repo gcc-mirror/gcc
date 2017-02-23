@@ -1,4 +1,36 @@
-2017-01-24  Pekka Jääskeläinen <pekka@parmance.com>
+2017-02-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.tpl: Remove HOST_ISLVER.
+	(HOST_EXPORTS): Remove ISLVER.
+	* Makefile.in: Regenerate.
+
+2017-02-13  Richard Biener  <rguenther@suse.de>
+
+	* configure: Re-generate.
+
+2017-02-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS: Adjust bug reporting URL.
+
+2017-02-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS (Write After Approval): Remove redundant entry
+	for Andrew Burgess.
+
+2017-02-03  John David Anglin  <danglin@gcc.gnu.org>
+
+        * configure.ac: Add gcc/function-tests.o to compare_exclusions for
+	32-bit hppa*-*-hpux*.
+        * configure: Regenerate.
+
+2017-01-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* configure.ac: Moved the white list of enabling BRIG FE to
+	libhsail-rt/configure.tgt.
+	* configure: Regenerated.
+	* MAINTAINERS: Updated maintainers for BRIG FE and libhsail-rt.
+
+2017-01-24  Pekka Jääskeläinen  <pekka@parmance.com>
 	    Martin Jambor  <mjambor@suse.cz>
 
 	* Makefile.def (target_modules): Added libhsail-rt.

@@ -243,11 +243,8 @@ static bool arc_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 						enum by_pieces_operation op,
 						bool);
 
-static const arc_cpu_t *arc_selected_cpu;
-static const arc_arch_t *arc_selected_arch;
-
-/* Global var which sets the current compilation architecture.  */
-enum base_architecture arc_base_cpu;
+/* Globally visible information about currently selected cpu.  */
+const arc_cpu_t *arc_selected_cpu;
 
 /* Implements target hook vector_mode_supported_p.  */
 
@@ -787,11 +784,9 @@ arc_override_options (void)
 
   /* Set the default cpu options.  */
   arc_selected_cpu = &arc_cpu_types[(int) arc_cpu];
-  arc_selected_arch = &arc_arch_types[(int) arc_selected_cpu->arch];
-  arc_base_cpu = arc_selected_arch->arch;
 
   /* Set the architectures.  */
-  switch (arc_selected_arch->arch)
+  switch (arc_selected_cpu->arch_info->arch_id)
     {
     case BASE_ARCH_em:
       arc_cpu_string = "EM";
@@ -822,16 +817,16 @@ arc_override_options (void)
     if ((arc_selected_cpu->flags & CODE)		\
 	&& ((target_flags_explicit & MASK) == 0))	\
       target_flags |= MASK;				\
-    if (arc_selected_arch->dflags & CODE)		\
+    if (arc_selected_cpu->arch_info->dflags & CODE)	\
       target_flags |= MASK;				\
   } while (0);
-#define ARC_OPTX(NAME, CODE, VAR, VAL, DOC)	\
-  do {						\
-    if ((arc_selected_cpu->flags & CODE)	\
-	&& (VAR == DEFAULT_##VAR))		\
-      VAR = VAL;				\
-    if (arc_selected_arch->dflags & CODE)	\
-      VAR = VAL;				\
+#define ARC_OPTX(NAME, CODE, VAR, VAL, DOC)		\
+  do {							\
+    if ((arc_selected_cpu->flags & CODE)		\
+	&& (VAR == DEFAULT_##VAR))			\
+      VAR = VAL;					\
+    if (arc_selected_cpu->arch_info->dflags & CODE)	\
+      VAR = VAL;					\
   } while (0);
 
 #include "arc-options.def"
@@ -844,18 +839,18 @@ arc_override_options (void)
 #define ARC_OPTX(NAME, CODE, VAR, VAL, DOC)			\
   do {								\
     if ((VAR == VAL)						\
-	&& (!(arc_selected_arch->flags & CODE)))		\
+	&& (!(arc_selected_cpu->arch_info->flags & CODE)))	\
       {								\
 	error ("%s is not available for %s architecture",	\
-	       DOC, arc_selected_arch->name);			\
+	       DOC, arc_selected_cpu->arch_info->name);		\
       }								\
   } while (0);
 #define ARC_OPT(NAME, CODE, MASK, DOC)				\
   do {								\
     if ((target_flags & MASK)					\
-	&& (!(arc_selected_arch->flags & CODE)))		\
+	&& (!(arc_selected_cpu->arch_info->flags & CODE)))	\
       error ("%s is not available for %s architecture",		\
-	     DOC, arc_selected_arch->name);			\
+	     DOC, arc_selected_cpu->arch_info->name);		\
   } while (0);
 
 #include "arc-options.def"

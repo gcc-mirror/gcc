@@ -4,22 +4,22 @@
 
 struct S {
   int i;
-  char a[] = "foo";
-  S () {} // { dg-error "member initializer for flexible array member" }
+  char a[] = "foo";   // { dg-error "initializer for flexible array member" }
+  S () {}
 };
 
-struct T { // { dg-error "member initializer for flexible array member" }
+struct T {
   int i;
-  char a[] = "foo";
+  char a[] = "foo";   // { dg-error "initializer for flexible array member" }
 };
 
 struct U {
   int i;
-  char a[] = "foo";
+  char a[] = "foo";   // { dg-error "initializer for flexible array member" }
   U ();
 };
 
-U::U() {} // { dg-error "member initializer for flexible array member" }
+U::U() {}
 
 int
 main ()
@@ -29,17 +29,17 @@ main ()
 
 struct V {
   int i;
-  struct W { // { dg-error "member initializer for flexible array member" }
+  struct W {
     int j;
-    char a[] = "foo";
+    char a[] = "foo";   // { dg-error "initializer for flexible array member" }
   } w;
   V () {}
 };
 
 template <class T>
-struct X { // { dg-error "member initializer for flexible array member" }
+struct X {
   int i;
-  T a[] = "foo";
+  T a[] = "foo";   // { dg-error "initializer for flexible array member" }
 };
 
 void

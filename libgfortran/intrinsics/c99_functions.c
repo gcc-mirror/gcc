@@ -913,7 +913,7 @@ cexp (double complex z)
 }
 #endif
 
-#if !defined(HAVE_CEXPL) && defined(HAVE_COSL) && defined(HAVE_SINL) && defined(EXPL)
+#if !defined(HAVE_CEXPL) && defined(HAVE_COSL) && defined(HAVE_SINL) && defined(HAVE_EXPL)
 #define HAVE_CEXPL 1
 long double complex cexpl (long double complex z);
 

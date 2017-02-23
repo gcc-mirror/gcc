@@ -102,6 +102,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_ABM_P(x)	TARGET_ISA_ABM_P(x)
 #define TARGET_SGX	TARGET_ISA_SGX
 #define TARGET_SGX_P(x)	TARGET_ISA_SGX_P(x)
+#define TARGET_RDPID	TARGET_ISA_RDPID
+#define TARGET_RDPID_P(x)	TARGET_ISA_RDPID_P(x)
 #define TARGET_BMI	TARGET_ISA_BMI
 #define TARGET_BMI_P(x)	TARGET_ISA_BMI_P(x)
 #define TARGET_BMI2	TARGET_ISA_BMI2
@@ -166,7 +168,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_MWAITX_P(x)	TARGET_ISA_MWAITX_P(x)
 #define TARGET_PKU	TARGET_ISA_PKU
 #define TARGET_PKU_P(x)	TARGET_ISA_PKU_P(x)
-
 
 #define TARGET_LP64	TARGET_ABI_64
 #define TARGET_LP64_P(x)	TARGET_ABI_64_P(x)
@@ -847,8 +848,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define BIGGEST_FIELD_ALIGNMENT 32
 #endif
 #else
-#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
-  x86_field_alignment ((FIELD), (COMPUTED))
+#define ADJUST_FIELD_ALIGN(FIELD, TYPE, COMPUTED) \
+  x86_field_alignment ((TYPE), (COMPUTED))
 #endif
 
 /* If defined, a C expression to compute the alignment given to a
@@ -1427,7 +1428,7 @@ enum reg_class
    "FLOAT_INT_SSE_REGS",		\
    "MASK_EVEX_REGS",			\
    "MASK_REGS",				\
-   "MOD4_SSE_REGS"			\
+   "MOD4_SSE_REGS",			\
    "ALL_REGS" }
 
 /* Define which registers fit in which classes.  This is an initializer

@@ -673,37 +673,37 @@ s390_init_builtins (void)
     c_uint64_type_node = long_long_unsigned_type_node;
 
 #undef DEF_TYPE
-#define DEF_TYPE(INDEX, BFLAGS, NODE, CONST_P)		\
+#define DEF_TYPE(INDEX, NODE, CONST_P)			\
   if (s390_builtin_types[INDEX] == NULL)		\
     s390_builtin_types[INDEX] = (!CONST_P) ?		\
       (NODE) : build_type_variant ((NODE), 1, 0);
 
 #undef DEF_POINTER_TYPE
-#define DEF_POINTER_TYPE(INDEX, BFLAGS, INDEX_BASE)			\
+#define DEF_POINTER_TYPE(INDEX, INDEX_BASE)				\
   if (s390_builtin_types[INDEX] == NULL)				\
     s390_builtin_types[INDEX] =						\
       build_pointer_type (s390_builtin_types[INDEX_BASE]);
 
 #undef DEF_DISTINCT_TYPE
-#define DEF_DISTINCT_TYPE(INDEX, BFLAGS, INDEX_BASE)			\
+#define DEF_DISTINCT_TYPE(INDEX, INDEX_BASE)				\
   if (s390_builtin_types[INDEX] == NULL)				\
     s390_builtin_types[INDEX] =						\
       build_distinct_type_copy (s390_builtin_types[INDEX_BASE]);
 
 #undef DEF_VECTOR_TYPE
-#define DEF_VECTOR_TYPE(INDEX, BFLAGS, INDEX_BASE, ELEMENTS)		\
+#define DEF_VECTOR_TYPE(INDEX, INDEX_BASE, ELEMENTS)			\
   if (s390_builtin_types[INDEX] == NULL)				\
     s390_builtin_types[INDEX] =						\
       build_vector_type (s390_builtin_types[INDEX_BASE], ELEMENTS);
 
 #undef DEF_OPAQUE_VECTOR_TYPE
-#define DEF_OPAQUE_VECTOR_TYPE(INDEX, BFLAGS, INDEX_BASE, ELEMENTS)	\
+#define DEF_OPAQUE_VECTOR_TYPE(INDEX, INDEX_BASE, ELEMENTS)		\
   if (s390_builtin_types[INDEX] == NULL)				\
     s390_builtin_types[INDEX] =						\
       build_opaque_vector_type (s390_builtin_types[INDEX_BASE], ELEMENTS);
 
 #undef DEF_FN_TYPE
-#define DEF_FN_TYPE(INDEX, BFLAGS, args...)			\
+#define DEF_FN_TYPE(INDEX, args...)				\
   if (s390_builtin_fn_types[INDEX] == NULL)			\
     s390_builtin_fn_types[INDEX] =				\
       build_function_type_list (args, NULL_TREE);
@@ -750,12 +750,12 @@ s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
       int bitwidth = bitwidths[op_flags - O_U1];
 
       if (!tree_fits_uhwi_p (arg)
-	  || tree_to_uhwi (arg) > ((unsigned HOST_WIDE_INT)1 << bitwidth) - 1)
+	  || tree_to_uhwi (arg) > (HOST_WIDE_INT_1U << bitwidth) - 1)
 	{
 	  error("constant argument %d for builtin %qF is out of range (0.."
 		HOST_WIDE_INT_PRINT_UNSIGNED ")",
 		argnum, decl,
-		((unsigned HOST_WIDE_INT)1 << bitwidth) - 1);
+		(HOST_WIDE_INT_1U << bitwidth) - 1);
 	  return false;
 	}
     }
@@ -766,15 +766,15 @@ s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
       int bitwidth = bitwidths[op_flags - O_S2];
 
       if (!tree_fits_shwi_p (arg)
-	  || tree_to_shwi (arg) < -((HOST_WIDE_INT)1 << (bitwidth - 1))
-	  || tree_to_shwi (arg) > (((HOST_WIDE_INT)1 << (bitwidth - 1)) - 1))
+	  || tree_to_shwi (arg) < -(HOST_WIDE_INT_1 << (bitwidth - 1))
+	  || tree_to_shwi (arg) > ((HOST_WIDE_INT_1 << (bitwidth - 1)) - 1))
 	{
 	  error("constant argument %d for builtin %qF is out of range ("
 		HOST_WIDE_INT_PRINT_DEC ".."
 		HOST_WIDE_INT_PRINT_DEC ")",
 		argnum, decl,
-		-((HOST_WIDE_INT)1 << (bitwidth - 1)),
-		((HOST_WIDE_INT)1 << (bitwidth - 1)) - 1);
+		-(HOST_WIDE_INT_1 << (bitwidth - 1)),
+		(HOST_WIDE_INT_1 << (bitwidth - 1)) - 1);
 	  return false;
 	}
     }
@@ -1561,7 +1561,7 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 	  && modesize <= HOST_BITS_PER_WIDE_INT)
 	{
 	  unsigned HOST_WIDE_INT block;
-	  block = ((unsigned HOST_WIDE_INT) 1 << len) - 1;
+	  block = (HOST_WIDE_INT_1U << len) - 1;
 	  block <<= modesize - pos - len;
 
 	  *op0 = gen_rtx_AND (GET_MODE (inner), inner,
@@ -1610,7 +1610,7 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
       && INTVAL (*op1) == 0xffff
       && SCALAR_INT_MODE_P (GET_MODE (*op0))
       && (nonzero_bits (*op0, GET_MODE (*op0))
-	  & ~(unsigned HOST_WIDE_INT) 0xffff) == 0)
+	  & ~HOST_WIDE_INT_UC (0xffff)) == 0)
     {
       *op0 = gen_lowpart (HImode, *op0);
       *op1 = constm1_rtx;
@@ -2212,14 +2212,13 @@ s390_extract_part (rtx op, machine_mode mode, int def)
   unsigned HOST_WIDE_INT value = 0;
   int max_parts = HOST_BITS_PER_WIDE_INT / GET_MODE_BITSIZE (mode);
   int part_bits = GET_MODE_BITSIZE (mode);
-  unsigned HOST_WIDE_INT part_mask
-    = ((unsigned HOST_WIDE_INT)1 << part_bits) - 1;
+  unsigned HOST_WIDE_INT part_mask = (HOST_WIDE_INT_1U << part_bits) - 1;
   int i;
 
   for (i = 0; i < max_parts; i++)
     {
       if (i == 0)
-	value = (unsigned HOST_WIDE_INT) INTVAL (op);
+	value = UINTVAL (op);
       else
 	value >>= part_bits;
 
@@ -2243,7 +2242,7 @@ s390_single_part (rtx op,
   unsigned HOST_WIDE_INT value = 0;
   int n_parts = GET_MODE_SIZE (mode) / GET_MODE_SIZE (part_mode);
   unsigned HOST_WIDE_INT part_mask
-    = ((unsigned HOST_WIDE_INT)1 << GET_MODE_BITSIZE (part_mode)) - 1;
+    = (HOST_WIDE_INT_1U << GET_MODE_BITSIZE (part_mode)) - 1;
   int i, part = -1;
 
   if (GET_CODE (op) != CONST_INT)
@@ -2252,7 +2251,7 @@ s390_single_part (rtx op,
   for (i = 0; i < n_parts; i++)
     {
       if (i == 0)
-	value = (unsigned HOST_WIDE_INT) INTVAL (op);
+	value = UINTVAL (op);
       else
 	value >>= GET_MODE_BITSIZE (part_mode);
 
@@ -2282,9 +2281,9 @@ s390_contiguous_bitmask_nowrap_p (unsigned HOST_WIDE_INT in, int size,
 {
   int start;
   int end = -1;
-  int lowbit = sizeof (HOST_WIDE_INT) * BITS_PER_UNIT - 1;
-  int highbit = sizeof (HOST_WIDE_INT) * BITS_PER_UNIT - size;
-  unsigned HOST_WIDE_INT bitmask = 1ULL;
+  int lowbit = HOST_BITS_PER_WIDE_INT - 1;
+  int highbit = HOST_BITS_PER_WIDE_INT - size;
+  unsigned HOST_WIDE_INT bitmask = HOST_WIDE_INT_1U;
 
   gcc_assert (!!pstart == !!pend);
   for (start = lowbit; start >= highbit; bitmask <<= 1, start--)
@@ -2314,7 +2313,8 @@ s390_contiguous_bitmask_nowrap_p (unsigned HOST_WIDE_INT in, int size,
       unsigned HOST_WIDE_INT mask;
 
       /* Calculate a mask for all bits beyond the contiguous bits.  */
-      mask = ((~(0ULL) >> highbit) & (~(0ULL) << (lowbit - start + 1)));
+      mask = ((~HOST_WIDE_INT_0U >> highbit)
+	      & (~HOST_WIDE_INT_0U << (lowbit - start + 1)));
       if (mask & in)
 	/* There are more bits set beyond the first range of one bits.  */
 	return false;
@@ -2343,11 +2343,11 @@ bool
 s390_contiguous_bitmask_p (unsigned HOST_WIDE_INT in, bool wrap_p,
 			   int size, int *start, int *end)
 {
-  int bs = sizeof (HOST_WIDE_INT) * BITS_PER_UNIT;
+  int bs = HOST_BITS_PER_WIDE_INT;
   bool b;
 
   gcc_assert (!!start == !!end);
-  if ((in & ((~(0ULL)) >> (bs - size))) == 0)
+  if ((in & ((~HOST_WIDE_INT_0U) >> (bs - size))) == 0)
     /* This cannot be expressed as a contiguous bitmask.  Exit early because
        the second call of s390_contiguous_bitmask_nowrap_p would accept this as
        a valid bitmask.  */
@@ -2406,10 +2406,8 @@ s390_contiguous_bitmask_vector_p (rtx op, int *start, int *end)
     {
       if (start)
 	{
-	  int bs = sizeof (HOST_WIDE_INT) * BITS_PER_UNIT;
-
-	  *start -= (bs - size);
-	  *end -= (bs - size);
+	  *start -= (HOST_BITS_PER_WIDE_INT - size);
+	  *end -= (HOST_BITS_PER_WIDE_INT - size);
 	}
       return true;
     }
@@ -3470,7 +3468,7 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
 	  && CONST_INT_P (XEXP (XEXP (x, 1), 1))
 	  && (UINTVAL (XEXP (XEXP (x, 0), 1)) ==
-	      (1UL << UINTVAL (XEXP (XEXP (x, 1), 1))) - 1))
+	      (HOST_WIDE_INT_1U << UINTVAL (XEXP (XEXP (x, 1), 1))) - 1))
 	{
 	  *total = COSTS_N_INSNS (2);
 	  return true;
@@ -4596,8 +4594,8 @@ legitimize_pic_address (rtx orig, rtx reg)
 
       if (TARGET_CPU_ZARCH
 	  && larl_operand (const_addr, VOIDmode)
-	  && INTVAL (addend) < (HOST_WIDE_INT)1 << 31
-	  && INTVAL (addend) >= -((HOST_WIDE_INT)1 << 31))
+	  && INTVAL (addend) < HOST_WIDE_INT_1 << 31
+	  && INTVAL (addend) >= -(HOST_WIDE_INT_1 << 31))
 	{
 	  if (INTVAL (addend) & 1)
 	    {
@@ -7347,6 +7345,7 @@ void
 print_operand_address (FILE *file, rtx addr)
 {
   struct s390_address ad;
+  memset (&ad, 0, sizeof (s390_address));
 
   if (s390_loadrelative_operand_p (addr, NULL, NULL))
     {
@@ -12195,7 +12194,7 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   tree f_gpr, f_fpr, f_ovf, f_sav;
   tree gpr, fpr, ovf, sav, reg, t, u;
   int indirect_p, size, n_reg, sav_ofs, sav_scale, max_reg;
-  tree lab_false, lab_over;
+  tree lab_false, lab_over = NULL_TREE;
   tree addr = create_tmp_var (ptr_type_node, "addr");
   bool left_align_p; /* How a value < UNITS_PER_LONG is aligned within
 			a stack slot.  */
@@ -15435,6 +15434,14 @@ s390_excess_precision (enum excess_precision_type type)
   return FLT_EVAL_METHOD_UNPREDICTABLE;
 }
 
+/* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
+
+static unsigned HOST_WIDE_INT
+s390_asan_shadow_offset (void)
+{
+  return TARGET_64BIT ? HOST_WIDE_INT_1U << 52 : HOST_WIDE_INT_UC (0x20000000);
+}
+
 /* Initialize GCC target structure.  */
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -15536,6 +15543,8 @@ s390_excess_precision (enum excess_precision_type type)
 #define TARGET_BUILD_BUILTIN_VA_LIST s390_build_builtin_va_list
 #undef TARGET_EXPAND_BUILTIN_VA_START
 #define TARGET_EXPAND_BUILTIN_VA_START s390_va_start
+#undef TARGET_ASAN_SHADOW_OFFSET
+#define TARGET_ASAN_SHADOW_OFFSET s390_asan_shadow_offset
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR s390_gimplify_va_arg
 
@@ -15622,6 +15631,10 @@ s390_excess_precision (enum excess_precision_type type)
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE s390_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT s390_trampoline_init
+
+/* PR 79421 */
+#undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
+#define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1
 
 #undef TARGET_UNWIND_WORD_MODE
 #define TARGET_UNWIND_WORD_MODE s390_unwind_word_mode

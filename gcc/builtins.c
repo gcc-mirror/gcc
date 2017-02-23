@@ -334,9 +334,11 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
 	 Do so only if get_pointer_alignment_1 did not reveal absolute
 	 alignment knowledge and if using that alignment would
 	 improve the situation.  */
+      unsigned int talign;
       if (!addr_p && !known_alignment
-	  && TYPE_ALIGN (TREE_TYPE (exp)) > align)
-	align = TYPE_ALIGN (TREE_TYPE (exp));
+	  && (talign = min_align_of_type (TREE_TYPE (exp)) * BITS_PER_UNIT)
+	  && talign > align)
+	align = talign;
       else
 	{
 	  /* Else adjust bitpos accordingly.  */
@@ -6157,8 +6159,9 @@ fold_builtin_atomic_always_lock_free (tree arg0, tree arg1)
 
   /* Check if a compare_and_swap pattern exists for the mode which represents
      the required size.  The pattern is not allowed to fail, so the existence
-     of the pattern indicates support is present.  */
-  if (can_compare_and_swap_p (mode, true))
+     of the pattern indicates support is present.  Also require that an
+     atomic load exists for the required size.  */
+  if (can_compare_and_swap_p (mode, true) && can_atomic_load_p (mode))
     return boolean_true_node;
   else
     return boolean_false_node;

@@ -264,21 +264,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       swap(__ref_cast<_Lhs>(__lhs), __ref_cast<_Rhs>(__rhs));
     }
 
-  template<typename _Variant, size_t _Np>
-    constexpr bool
-    __erased_equal_to(_Variant&& __lhs, _Variant&& __rhs)
-    {
-      return __get<_Np>(std::forward<_Variant>(__lhs))
-	  == __get<_Np>(std::forward<_Variant>(__rhs));
+#define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP, __NAME) \
+  template<typename _Variant, size_t _Np> \
+    constexpr bool \
+    __erased_##__NAME(const _Variant& __lhs, const _Variant& __rhs) \
+    { \
+      return __get<_Np>(std::forward<_Variant>(__lhs)) \
+	  __OP __get<_Np>(std::forward<_Variant>(__rhs)); \
     }
 
-  template<typename _Variant, size_t _Np>
-    constexpr bool
-    __erased_less_than(const _Variant& __lhs, const _Variant& __rhs)
-    {
-      return __get<_Np>(std::forward<_Variant>(__lhs))
-	  < __get<_Np>(std::forward<_Variant>(__rhs));
-    }
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(<, less)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(<=, less_equal)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(==, equal)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(!=, not_equal)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(>=, greater_equal)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(>, greater)
+
+#undef _VARIANT_RELATION_FUNCTION_TEMPLATE
 
   template<typename _Tp>
     constexpr size_t
@@ -813,62 +815,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(__ptr);
     }
 
-  template<typename... _Types>
-    constexpr bool operator==(const variant<_Types...>& __lhs,
-			      const variant<_Types...>& __rhs)
-    {
-      return __lhs._M_equal_to(__rhs, std::index_sequence_for<_Types...>{});
-    }
+  struct monostate { };
 
-  template<typename... _Types>
-    constexpr inline bool
-    operator!=(const variant<_Types...>& __lhs, const variant<_Types...>& __rhs)
-    { return !(__lhs == __rhs); }
+#define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP, __NAME) \
+  template<typename... _Types> \
+    constexpr bool operator __OP(const variant<_Types...>& __lhs, \
+				 const variant<_Types...>& __rhs) \
+    { \
+      return __lhs._M_##__NAME(__rhs, std::index_sequence_for<_Types...>{}); \
+    } \
+\
+  constexpr bool operator __OP(monostate, monostate) noexcept \
+  { return 0 __OP 0; }
 
-  template<typename... _Types>
-    constexpr inline bool
-    operator<(const variant<_Types...>& __lhs, const variant<_Types...>& __rhs)
-    {
-      return __lhs._M_less_than(__rhs, std::index_sequence_for<_Types...>{});
-    }
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(<, less)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(<=, less_equal)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(==, equal)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(!=, not_equal)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(>=, greater_equal)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(>, greater)
 
-  template<typename... _Types>
-    constexpr inline bool
-    operator>(const variant<_Types...>& __lhs, const variant<_Types...>& __rhs)
-    { return __rhs < __lhs; }
-
-  template<typename... _Types>
-    constexpr inline bool
-    operator<=(const variant<_Types...>& __lhs, const variant<_Types...>& __rhs)
-    { return !(__lhs > __rhs); }
-
-  template<typename... _Types>
-    constexpr inline bool
-    operator>=(const variant<_Types...>& __lhs, const variant<_Types...>& __rhs)
-    { return !(__lhs < __rhs); }
+#undef _VARIANT_RELATION_FUNCTION_TEMPLATE
 
   template<typename _Visitor, typename... _Variants>
     constexpr decltype(auto) visit(_Visitor&&, _Variants&&...);
-
-  struct monostate { };
-
-  constexpr bool operator<(monostate, monostate) noexcept
-  { return false; }
-
-  constexpr bool operator>(monostate, monostate) noexcept
-  { return false; }
-
-  constexpr bool operator<=(monostate, monostate) noexcept
-  { return true; }
-
-  constexpr bool operator>=(monostate, monostate) noexcept
-  { return true; }
-
-  constexpr bool operator==(monostate, monostate) noexcept
-  { return true; }
-
-  constexpr bool operator!=(monostate, monostate) noexcept
-  { return false; }
 
   template<typename... _Types>
     inline enable_if_t<(is_move_constructible_v<_Types> && ...)
@@ -1140,51 +1110,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     private:
-      template<size_t... __indices>
-	static constexpr bool
-	(*_S_equal_to_vtable[])(const variant&, const variant&) =
-	  { &__detail::__variant::__erased_equal_to<
-	    const variant&, __indices>... };
-
-      template<size_t... __indices>
-	static constexpr bool
-	(*_S_less_than_vtable[])(const variant&, const variant&) =
-	  { &__detail::__variant::__erased_less_than<
-	      const variant&, __indices>... };
-
-      template<size_t... __indices>
-	constexpr bool
-	_M_equal_to(const variant& __rhs,
-		    std::index_sequence<__indices...>) const
-	{
-	  if (this->index() != __rhs.index())
-	    return false;
-
-	  if (this->valueless_by_exception())
-	    return true;
-
-	  return _S_equal_to_vtable<__indices...>[this->index()](*this, __rhs);
+#define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP, __NAME) \
+      template<size_t... __indices> \
+	static constexpr bool \
+	(*_S_erased_##__NAME[])(const variant&, const variant&) = \
+	  { &__detail::__variant::__erased_##__NAME< \
+                const variant&, __indices>... }; \
+      template<size_t... __indices> \
+	constexpr inline bool \
+	_M_##__NAME(const variant& __rhs, \
+		    std::index_sequence<__indices...>) const \
+	{ \
+	  auto __lhs_index = this->index(); \
+	  auto __rhs_index = __rhs.index(); \
+	  if (__lhs_index != __rhs_index || valueless_by_exception()) \
+	    /* Modulo addition. */ \
+	    return __lhs_index + 1 __OP __rhs_index + 1; \
+	  return _S_erased_##__NAME<__indices...>[__lhs_index](*this, __rhs); \
 	}
 
-      template<size_t... __indices>
-	constexpr inline bool
-	_M_less_than(const variant& __rhs,
-		     std::index_sequence<__indices...>) const
-	{
-	  auto __lhs_index = this->index();
-	  auto __rhs_index = __rhs.index();
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(<, less)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(<=, less_equal)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(==, equal)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(!=, not_equal)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(>=, greater_equal)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(>, greater)
 
-	  if (__lhs_index < __rhs_index)
-	    return true;
-
-	  if (__lhs_index > __rhs_index)
-	    return false;
-
-	  if (this->valueless_by_exception())
-	    return false;
-
-	  return _S_less_than_vtable<__indices...>[__lhs_index](*this, __rhs);
-	}
+#undef _VARIANT_RELATION_FUNCTION_TEMPLATE
 
       template<size_t _Np, typename _Vp>
 	friend constexpr decltype(auto) __detail::__variant::
@@ -1200,15 +1152,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
         __get_storage(_Vp&& __v);
 
-      template<typename... _Tp>
-	friend constexpr bool
-	operator==(const variant<_Tp...>& __lhs,
-		   const variant<_Tp...>& __rhs);
+#define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP) \
+      template<typename... _Tp> \
+	friend constexpr bool \
+	operator __OP(const variant<_Tp...>& __lhs, \
+		      const variant<_Tp...>& __rhs);
 
-      template<typename... _Tp>
-	friend constexpr bool
-	operator<(const variant<_Tp...>& __lhs,
-		  const variant<_Tp...>& __rhs);
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(<)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(<=)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(==)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(!=)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(>=)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(>)
+
+#undef _VARIANT_RELATION_FUNCTION_TEMPLATE
     };
 
   template<size_t _Np, typename... _Types>
@@ -1263,7 +1220,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__throw_bad_variant_access("Unexpected index");
 
       using _Result_type =
-	decltype(std::forward<_Visitor>(__visitor)(get<0>(__variants)...));
+	decltype(std::forward<_Visitor>(__visitor)(
+	    get<0>(std::forward<_Variants>(__variants))...));
 
       constexpr auto& __vtable = __detail::__variant::__gen_vtable<
 	_Result_type, _Visitor&&, _Variants&&...>::_S_vtable;

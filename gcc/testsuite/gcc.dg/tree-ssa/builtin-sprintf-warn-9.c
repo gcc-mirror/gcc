@@ -1,276 +1,158 @@
-/* 78696 - -fprintf-return-value misoptimizes %.Ng where N is greater than 10
-   Test to verify the correctness of ranges of output computed for floating
-   point directives.
-   { dg-do compile }
-   { dg-options "-O2 -Wformat -Wformat-overflow -ftrack-macro-expansion=0" } */
+/* { dg-do compile } */
+/* { dg-options "-O2 -Wformat -Wformat-overflow=2 -ftrack-macro-expansion=0" } */
 
-typedef __builtin_va_list va_list;
+typedef __SIZE_TYPE__ size_t;
 
-char dst[1];
+#define INT_MAX   __INT_MAX__
+#define INT_MIN   (-INT_MAX - 1)
 
-extern void sink (int, void*);
+#ifndef LINE
+#  define LINE 0
+#endif
 
-/* Macro to test either width or precision specified by the asterisk
-   (but not both).  */
-#define T1(fmt, a)    sink (__builtin_sprintf (dst + 1, fmt, a, x), dst)
+int dummy_sprintf (char*, const char*, ...);
+void sink (void*);
 
-/* Macro to test both width and precision specified by the asterisk.  */
-#define T2(fmt, w, p) sink (__builtin_sprintf (dst + 1, fmt, w, p, x), dst)
+char buffer[4096];
+char *ptr;
 
-/* Macro to test vsprintf with both width and precision specified by
-   the asterisk.  */
-#define T(fmt) sink (__builtin_vsprintf (dst + 1, fmt, va), dst)
+/* Helper to expand function to either __builtin_f or dummy_f to
+   make debugging GCC easy.  */
+#define FUNC(f)							\
+  ((!LINE || LINE == __LINE__) ? __builtin_ ## f : dummy_ ## f)
 
-/* Exercise %a.  */
-void test_a (int w, int p, double x)
+/* Evaluate to an array of SIZE characters when non-negative, or to
+   a pointer to an unknown object otherwise.  */
+#define buffer(size)					\
+  ((0 <= size) ? buffer + sizeof buffer - (size) : ptr)
+
+#define T(bufsize, fmt, ...)						\
+  do {									\
+    char *buf = buffer (bufsize);					\
+    FUNC (sprintf)(buf, fmt, __VA_ARGS__);				\
+    sink (buf);								\
+  } while (0)
+
+
+/* Identity function to verify that the checker figures out the value
+   of the operand even when it's not constant (i.e., makes use of
+   inlining and constant propagation information).  */
+
+int i (int x) { return x; }
+const char* s (const char *str) { return str; }
+
+/* Function to "generate" a unique unknown number (as far as GCC can
+   tell) each time it's called.  It prevents the optimizer from being
+   able to narrow down the ranges of possible values in test functions
+   with repeated references to the same variable.  */
+extern int value (void);
+
+/* Return a value in the range [MIN, MAX].  */
+int range (int min, int max)
 {
-  T1 ("%.*a", 0);     /* { dg-warning "between 6 and 10 bytes" } */
-  T1 ("%.*a", 1);     /* { dg-warning "between 8 and 12 bytes" } */
-  T1 ("%.*a", 2);     /* { dg-warning "between 9 and 13 bytes" } */
-  T1 ("%.*a", 99);    /* { dg-warning "between 106 and 110 bytes" } */
-  T1 ("%.*a", 199);   /* { dg-warning "between 206 and 210 bytes" } */
-  T1 ("%.*a", 1099);  /* { dg-warning "between 1106 and 1110 bytes" } */
-
-  T1 ("%*.a", 0);     /* { dg-warning "between 6 and 10 bytes" } */
-  T1 ("%*.a", 1);     /* { dg-warning "between 6 and 10 bytes" } */
-  T1 ("%*.a", 3);     /* { dg-warning "between 6 and 10 bytes" } */
-  T1 ("%*.a", 6);     /* { dg-warning "between 6 and 10 bytes" } */
-  T1 ("%*.a", 7);     /* { dg-warning "between 7 and 10 bytes" } */
-
-  T1 ("%*.a", w);     /* { dg-warning "writing 6 or more bytes" } */
-  T1 ("%*.0a", w);    /* { dg-warning "writing 6 or more bytes" } */
-  T1 ("%*.1a", w);    /* { dg-warning "writing 8 or more bytes" } */
-  T1 ("%*.2a", w);    /* { dg-warning "writing 9 or more bytes" } */
-
-  T1 ("%.*a",  p);    /* { dg-warning "writing 6 or more bytes" } */
-  T1 ("%1.*a", p);    /* { dg-warning "writing 6 or more bytes" } */
-  T1 ("%2.*a", p);    /* { dg-warning "writing 6 or more bytes" } */
-  T1 ("%3.*a", p);    /* { dg-warning "writing 6 or more bytes" } */
-
-  T2 ("%*.*a", w, p); /* { dg-warning "writing 6 or more bytes" } */
-  T2 ("%*.*a", w, p); /* { dg-warning "writing 6 or more bytes" } */
-  T2 ("%*.*a", w, p); /* { dg-warning "writing 6 or more bytes" } */
+  int val = value ();
+  return val < min || max < val ? min : val;
 }
 
-/* Exercise %e.  */
-void test_e (int w, int p, double x)
+#define R(min, max) range (min, max)
+
+/* Verify that the checker can detect buffer overflow when the "%s"
+   argument is in a known range of lengths and one or both of which
+   exceed the size of the destination.  */
+
+void test_sprintf_chk_string (const char *s)
 {
-  T1 ("%.*e", 0);     /* { dg-warning "between 5 and 7 bytes" } */
-  T1 ("%.*e", 1);     /* { dg-warning "between 7 and 9 bytes" } */
-  T1 ("%.*e", 2);     /* { dg-warning "between 8 and 10 bytes" } */
-  T1 ("%.*e", 99);    /* { dg-warning "between 105 and 107 bytes" } */
-  T1 ("%.*e", 199);   /* { dg-warning "between 205 and 207 bytes" } */
-  T1 ("%.*e", 1099);  /* { dg-warning "between 1105 and 1107 bytes" } */
+  T (1, "%*s", R (0, 1), "");     /* { dg-warning "may write a terminating nul" } */
+  T (1, "%*s", R (-2, -1), "");   /* { dg-warning "writing up to 2 bytes" } */
+  T (1, "%*s", R (-3,  2), "");   /* { dg-warning "writing up to 3 bytes" } */
+  T (1, "%*s", R (-4,  5), "");   /* { dg-warning "writing up to 5 bytes" } */
 
-  T1 ("%*.e", 0);     /* { dg-warning "between 5 and 7 bytes" } */
-  T1 ("%*.e", 1);     /* { dg-warning "between 5 and 7 bytes" } */
-  T1 ("%*.e", 1);     /* { dg-warning "between 5 and 7 bytes" } */
-  T1 ("%*.e", 3);     /* { dg-warning "between 5 and 7 bytes" } */
-  T1 ("%*.e", 6);     /* { dg-warning "between 6 and 7 bytes" } */
-  T1 ("%*.e", 7);     /* { dg-warning "writing 7 bytes" } */
+  T (1, "%*s", R ( -5, 6), "1");  /* { dg-warning "writing between 1 and 6 bytes" } */
+  T (1, "%*s", R ( -6, 7), "12"); /* { dg-warning "writing between 2 and 7 bytes" } */
 
-  T1 ("%*.e", w);     /* { dg-warning "writing 5 or more bytes" } */
-  T1 ("%*.0e", w);    /* { dg-warning "writing 5 or more bytes" } */
-  T1 ("%*.1e", w);    /* { dg-warning "writing 7 or more bytes" } */
-  T1 ("%*.2e", w);    /* { dg-warning "writing 8 or more bytes" } */
+  T (1, "%.*s", R (0, 1), "");
+  T (1, "%.*s", R (0, 1), s);     /* { dg-warning "may write a terminating nul" } */
+  T (1, "%.*s", R (-2, -1), "");
+  T (1, "%.*s", R (-2, -1), s);   /* { dg-warning "may write a terminating nul" } */
+  T (1, "%.*s", R (-3,  2), "");
+  T (1, "%.*s", R (-4,  5), "");
 
-  T1 ("%.*e",  p);    /* { dg-warning "writing 5 or more bytes" } */
-  T1 ("%1.*e", p);    /* { dg-warning "writing 5 or more bytes" } */
-  T1 ("%2.*e", p);    /* { dg-warning "writing 5 or more bytes" } */
-  T1 ("%3.*e", p);    /* { dg-warning "writing 5 or more bytes" } */
+  T (1, "%.*s", R ( -5, 6), "1");  /* { dg-warning "may write a terminating nul" } */
+  T (1, "%.*s", R ( -6, 7), "12"); /* { dg-warning "writing up to 2 bytes " } */
+  T (1, "%.*s", R (  1, 7), "12"); /* { dg-warning "writing between 1 and 2 bytes " } */
+  T (1, "%.*s", R (  2, 7), "12"); /* { dg-warning "writing 2 bytes " } */
 
-  T2 ("%*.*e", w, p); /* { dg-warning "writing 5 or more bytes" } */
-  T2 ("%*.*e", w, p); /* { dg-warning "writing 5 or more bytes" } */
-  T2 ("%*.*e", w, p); /* { dg-warning "writing 5 or more bytes" } */
+  T (1, "%*.*s", R (0, 1), R (0, 1), "");     /* { dg-warning "may write a terminating nul" } */
+  T (1, "%*.*s", R (0, 2), R (0, 1), "");     /* { dg-warning "directive writing up to 2 bytes into a region of size 1" } */
+  T (1, "%*.*s", R (0, 3), R (0, 1), "");     /* { dg-warning "writing up to 3 bytes" } */
+
+  T (1, "%*.*s", R (0, 1), R (0, 1), "1");    /* { dg-warning "may write a terminating nul" } */
+  T (1, "%*.*s", R (0, 2), R (0, 1), "1");    /* { dg-warning "writing up to 2 bytes" } */
+  T (1, "%*.*s", R (0, 3), R (0, 1), "1");    /* { dg-warning "writing up to 3 bytes" } */
+
+  T (1, "%*.*s", R (0, 1), R (0, 1), "12");   /* { dg-warning "may write a terminating nul" } */
+  T (1, "%*.*s", R (0, 2), R (0, 1), "12");   /* { dg-warning "writing up to 2 bytes" } */
+  T (1, "%*.*s", R (0, 3), R (0, 1), "12");   /* { dg-warning "writing up to 3 bytes" } */
+
+  T (1, "%*.*s", R (0, 1), R (0, 1), "123");  /* { dg-warning "may write a terminating nul" } */
+  T (1, "%*.*s", R (0, 2), R (0, 1), "123");  /* { dg-warning "writing up to 2 bytes" } */
+  T (1, "%*.*s", R (0, 3), R (0, 1), "123");  /* { dg-warning "writing up to 3 bytes" } */
+  T (1, "%*.*s", R (0, 3), R (0, 1), s);      /* { dg-warning "writing up to 3 bytes" } */
+
+  T (1, "%*.*s", R (0, 1), R (0, 2), "123");  /* { dg-warning "writing up to 2 bytes" } */
+  T (1, "%*.*s", R (0, 2), R (0, 2), "123");  /* { dg-warning "writing up to 2 bytes" } */
+  T (1, "%*.*s", R (0, 3), R (0, 2), "123");  /* { dg-warning "writing up to 3 bytes" } */
+  T (1, "%*.*s", R (0, 3), R (0, 2), s);      /* { dg-warning "writing up to 3 bytes" } */
+
+  T (1, "%*.*s", R (0, 1), R (0, 3), "123");  /* { dg-warning "writing up to 3 bytes" } */
+  T (1, "%*.*s", R (0, 2), R (0, 3), "123");  /* { dg-warning "writing up to 3 bytes" } */
+  T (1, "%*.*s", R (0, 3), R (0, 3), "123");  /* { dg-warning "writing up to 3 bytes" } */
+  T (1, "%*.*s", R (0, 3), R (0, 3), s);      /* { dg-warning "writing up to 3 bytes" } */
+
+  T (1, "%*.*s", R (1, 1), R (0, 3), "123");  /* { dg-warning "writing between 1 and 3 bytes" } */
+  T (1, "%*.*s", R (1, 2), R (0, 3), "123");  /* { dg-warning "writing between 1 and 3 bytes" } */
+  T (1, "%*.*s", R (1, 3), R (0, 3), "123");  /* { dg-warning "writing between 1 and 3 bytes" } */
+  T (1, "%*.*s", R (1, 3), R (0, 3), s);      /* { dg-warning "writing between 1 and 3 bytes" } */
+
+  T (1, "%*.*s", R (1, 1), R (1, 3), "123");  /* { dg-warning "writing between 1 and 3 bytes" } */
+  T (1, "%*.*s", R (1, 2), R (1, 3), "123");  /* { dg-warning "writing between 1 and 3 bytes" } */
+  T (1, "%*.*s", R (1, 3), R (1, 3), "123");  /* { dg-warning "writing between 1 and 3 bytes" } */
+  T (1, "%*.*s", R (1, 3), R (1, 3), s);      /* { dg-warning "writing between 1 and 3 bytes" } */
+
+  T (1, "%*.*s", R (2, 3), R (1, 3), "123");  /* { dg-warning "writing between 2 and 3 bytes" } */
+  T (1, "%*.*s", R (3, 4), R (1, 3), "123");  /* { dg-warning "writing between 3 and 4 bytes" } */
+  T (1, "%*.*s", R (4, 5), R (1, 3), "123");  /* { dg-warning "writing between 4 and 5 bytes" } */
+  T (1, "%*.*s", R (2, 3), R (1, 3), s);      /* { dg-warning "writing between 2 and 3 bytes" } */
 }
 
-/* Exercise %f.  */
-void test_f (int w, int p, double x)
+void test_sprintf_chk_int (int w, int p, int i)
 {
-  T1 ("%.*f", 0);           /* { dg-warning "between 1 and 310 bytes" } */
-  T1 ("%.*f", 1);           /* { dg-warning "between 3 and 312 bytes" } */
-  T1 ("%.*f", 2);           /* { dg-warning "between 4 and 313 bytes" } */
-  T1 ("%.*f", 99);          /* { dg-warning "between 101 and 410 bytes" } */
-  T1 ("%.*f", 199);         /* { dg-warning "between 201 and 510 bytes" } */
-  T1 ("%.*f", 1099);        /* { dg-warning "between 1101 and 1410 bytes" } */
+  T (1, "%*d", w, 0);             /* { dg-warning "may write a terminating nul|directive writing between 1 and \[0-9\]+ bytes" } */
+  T (1, "%*d", w, i);             /* { dg-warning "may write a terminating nul|directive writing between 1 and \[0-9\]+ bytes" } */
 
-  T2 ("%*.*f", 0, 0);       /* { dg-warning "between 1 and 310 bytes" } */
-  T2 ("%*.*f", 1, 0);       /* { dg-warning "between 1 and 310 bytes" } */
-  T2 ("%*.*f", 2, 0);       /* { dg-warning "between 2 and 310 bytes" } */
-  T2 ("%*.*f", 3, 0);       /* { dg-warning "between 3 and 310 bytes" } */
-  T2 ("%*.*f", 310, 0);     /* { dg-warning "writing 310 bytes" } */
-  T2 ("%*.*f", 311, 0);     /* { dg-warning "writing 311 bytes" } */
-  T2 ("%*.*f", 312, 312);   /* { dg-warning "between 314 and 623 bytes" } */
-  T2 ("%*.*f", 312, 313);   /* { dg-warning "between 315 and 624 bytes" } */
+  T (1, "%*d", R (-1, 1), 0);     /* { dg-warning "writing a terminating nul" } */
+  T (1, "%*d", R ( 0, 1), 0);     /* { dg-warning "writing a terminating nul" } */
+  T (1, "%+*d", R ( 0, 1), 0);    /* { dg-warning "directive writing 2 bytes" } */
+  T (1, "%+*u", R ( 0, 1), 0);    /* { dg-warning "writing a terminating nul" } */
+  T (2, "%*d", R (-3, -2), 0);     /* { dg-warning "directive writing between 1 and 3 bytes" } */
+  T (2, "%*d", R (-3, -1), 0);     /* { dg-warning "directive writing between 1 and 3 bytes" } */
+  T (2, "%*d", R (-3,  0), 0);     /* { dg-warning "directive writing between 1 and 3 bytes" } */
+  T (2, "%*d", R (-2, -1), 0);     /* { dg-warning "may write a terminating nul" } */
+  T (2, "%*d", R (-2,  2), 0);     /* { dg-warning "may write a terminating nul" } */
+  T (2, "%*d", R (-1,  2), 0);     /* { dg-warning "may write a terminating nul" } */
+  T (2, "%*d", R ( 0,  2), 0);     /* { dg-warning "may write a terminating nul" } */
+  T (2, "%*d", R ( 1,  2), 0);     /* { dg-warning "may write a terminating nul" } */
 
-  T1 ("%*.f", w);           /* { dg-warning "writing 1 or more bytes" } */
-  T1 ("%*.0f", w);          /* { dg-warning "writing 1 or more bytes" } */
-  T1 ("%*.1f", w);          /* { dg-warning "writing 3 or more bytes" } */
-  T1 ("%*.2f", w);          /* { dg-warning "writing 4 or more bytes" } */
-
-  T1 ("%.*f",  p);          /* { dg-warning "writing 1 or more bytes" } */
-  T1 ("%1.*f", p);          /* { dg-warning "writing 1 or more bytes" } */
-  T1 ("%2.*f", p);          /* { dg-warning "writing 2 or more bytes" } */
-  T1 ("%3.*f", p);          /* { dg-warning "writing 3 or more bytes" } */
-
-  T2 ("%*.*f", w, p);       /* { dg-warning "writing 1 or more bytes" } */
-  T2 ("%*.*f", w, p);       /* { dg-warning "writing 1 or more bytes" } */
-  T2 ("%*.*f", w, p);       /* { dg-warning "writing 1 or more bytes" } */
+  T (1, "%.*d", p, 0);             /* { dg-warning "may write a terminating nul|directive writing up to \[0-9\]+ bytes" } */
+  T (1, "%.*d", p, i);             /* { dg-warning "may write a terminating nul||directive writing up to \[0-9\]+ bytes" } */
+  T (1, "%.*d", R (INT_MIN, -1), 0);     /* { dg-warning "writing a terminating nul" } */
+  T (1, "%.*d", R (INT_MIN,  0), 0);     /* { dg-warning "may write a terminating nul" } */
+  T (1, "%.*d", R (-2, -1), 0);     /* { dg-warning "writing a terminating nul" } */
+  T (1, "%.*d", R (-1,  1), 0);     /* { dg-warning "may write a terminating nul" } */
+  T (1, "%.*d", R ( 0,  1), 0);     /* { dg-warning "may write a terminating nul" } */
+  T (1, "%.*d", R ( 0,  2), 0);     /* { dg-warning "directive writing up to 2 bytes" } */
+  T (1, "%.*d", R ( 0,  INT_MAX - 1), 0);     /* { dg-warning "directive writing up to \[0-9\]+ bytes" } */
+  T (1, "%.*d", R ( 1,  INT_MAX - 1), 0);     /* { dg-warning "directive writing between 1 and \[0-9\]+ bytes" } */
 }
 
-/* Exercise %g.  The expected output is the lesser of %e and %f.  */
-void test_g (double x)
-{
-  T1 ("%.*g", 0);           /* { dg-warning "between 1 and 7 bytes" } */
-  T1 ("%.*g", 1);           /* { dg-warning "between 1 and 7 bytes" } */
-  T1 ("%.*g", 2);           /* { dg-warning "between 1 and 9 bytes" } */
-  T1 ("%.*g", 99);          /* { dg-warning "between 1 and 106 bytes" } */
-  T1 ("%.*g", 199);         /* { dg-warning "between 1 and 206 bytes" } */
-  T1 ("%.*g", 1099);        /* { dg-warning "between 1 and 310 bytes" } */
-
-  T2 ("%*.*g", 0, 0);       /* { dg-warning "between 1 and 7 bytes" } */
-  T2 ("%*.*g", 1, 0);       /* { dg-warning "between 1 and 7 bytes" } */
-  T2 ("%*.*g", 2, 0);       /* { dg-warning "between 2 and 7 bytes" } */
-  T2 ("%*.*g", 3, 0);       /* { dg-warning "between 3 and 7 bytes" } */
-  T2 ("%*.*g", 7, 0);       /* { dg-warning "writing 7 bytes" } */
-  T2 ("%*.*g", 310, 0);     /* { dg-warning "writing 310 bytes" } */
-  T2 ("%*.*g", 311, 0);     /* { dg-warning "writing 311 bytes" } */
-  T2 ("%*.*g", 312, 312);   /* { dg-warning "writing 312 bytes" } */
-  T2 ("%*.*g", 312, 313);   /* { dg-warning "writing 312 bytes" } */
-  T2 ("%*.*g", 333, 999);   /* { dg-warning "writing 333 bytes" } */
-}
-
-/* Exercise %a.  */
-void test_a_va (va_list va)
-{
-  T ("%.0a");       /* { dg-warning "between 6 and 10 bytes" } */
-  T ("%.1a");       /* { dg-warning "between 8 and 12 bytes" } */
-  T ("%.2a");       /* { dg-warning "between 9 and 13 bytes" } */
-  T ("%.99a");      /* { dg-warning "between 106 and 110 bytes" } */
-  T ("%.199a");     /* { dg-warning "between 206 and 210 bytes" } */
-  T ("%.1099a");    /* { dg-warning "between 1106 and 1110 bytes" } */
-
-  T ("%0.a");       /* { dg-warning "between 6 and 10 bytes" } */
-  T ("%1.a");       /* { dg-warning "between 6 and 10 bytes" } */
-  T ("%3.a");       /* { dg-warning "between 6 and 10 bytes" } */
-  T ("%6.a");       /* { dg-warning "between 6 and 10 bytes" } */
-  T ("%7.a");       /* { dg-warning "between 7 and 10 bytes" } */
-
-  T ("%*.a");       /* { dg-warning "writing 6 or more bytes" } */
-  T ("%*.0a");      /* { dg-warning "writing 6 or more bytes" } */
-  T ("%*.1a");      /* { dg-warning "writing 8 or more bytes" } */
-  T ("%*.2a");      /* { dg-warning "writing 9 or more bytes" } */
-
-  T ("%.*a");       /* { dg-warning "writing 6 or more bytes" } */
-  T ("%1.*a");      /* { dg-warning "writing 6 or more bytes" } */
-  T ("%2.*a");      /* { dg-warning "writing 6 or more bytes" } */
-  T ("%6.*a");      /* { dg-warning "writing 6 or more bytes" } */
-  T ("%9.*a");      /* { dg-warning "writing 9 or more bytes" } */
-
-  T ("%*.*a");      /* { dg-warning "writing 6 or more bytes" } */
-}
-
-/* Exercise %e.  */
-void test_e_va (va_list va)
-{
-  T ("%e");         /* { dg-warning "between 12 and 14 bytes" } */
-  T ("%+e");        /* { dg-warning "between 13 and 14 bytes" } */
-  T ("% e");        /* { dg-warning "between 13 and 14 bytes" } */
-  T ("%#e");        /* { dg-warning "between 12 and 14 bytes" } */
-  T ("%#+e");       /* { dg-warning "between 13 and 14 bytes" } */
-  T ("%# e");       /* { dg-warning "between 13 and 14 bytes" } */
-
-  T ("%.e");        /* { dg-warning "between 5 and 7 bytes" } */
-  T ("%.0e");       /* { dg-warning "between 5 and 7 bytes" } */
-  T ("%.1e");       /* { dg-warning "between 7 and 9 bytes" } */
-  T ("%.2e");       /* { dg-warning "between 8 and 10 bytes" } */
-  T ("%.99e");      /* { dg-warning "between 105 and 107 bytes" } */
-  T ("%.199e");     /* { dg-warning "between 205 and 207 bytes" } */
-  T ("%.1099e");    /* { dg-warning "between 1105 and 1107 bytes" } */
-
-  T ("%0.e");       /* { dg-warning "between 5 and 7 bytes" } */
-  T ("%1.e");       /* { dg-warning "between 5 and 7 bytes" } */
-  T ("%1.e");       /* { dg-warning "between 5 and 7 bytes" } */
-  T ("%3.e");       /* { dg-warning "between 5 and 7 bytes" } */
-  T ("%6.e");       /* { dg-warning "between 6 and 7 bytes" } */
-  T ("%7.e");       /* { dg-warning "writing 7 bytes" } */
-
-  T ("%.*e");       /* { dg-warning "writing 5 or more bytes" } */
-  T ("%1.*e");      /* { dg-warning "writing 5 or more bytes" } */
-  T ("%6.*e");      /* { dg-warning "writing 6 or more bytes" } */
-  T ("%9.*e");      /* { dg-warning "writing 9 or more bytes" } */
-
-  T ("%*.*e");      /* { dg-warning "writing 5 or more bytes" } */
-}
-
-/* Exercise %f.  */
-void test_f_va (va_list va)
-{
-  T ("%f");         /* { dg-warning "between 8 and 317 bytes" } */
-  T ("%+f");        /* { dg-warning "between 9 and 317 bytes" } */
-  T ("% f");        /* { dg-warning "between 9 and 317 bytes" } */
-  T ("%#f");        /* { dg-warning "between 8 and 317 bytes" } */
-  T ("%+f");        /* { dg-warning "between 9 and 317 bytes" } */
-  T ("% f");        /* { dg-warning "between 9 and 317 bytes" } */
-  T ("%#+f");       /* { dg-warning "between 9 and 317 bytes" } */
-  T ("%# f");       /* { dg-warning "between 9 and 317 bytes" } */
-
-  T ("%.f");        /* { dg-warning "between 1 and 310 bytes" } */
-  T ("%.0f");       /* { dg-warning "between 1 and 310 bytes" } */
-  T ("%.1f");       /* { dg-warning "between 3 and 312 bytes" } */
-  T ("%.2f");       /* { dg-warning "between 4 and 313 bytes" } */
-  T ("%.99f");      /* { dg-warning "between 101 and 410 bytes" } */
-  T ("%.199f");     /* { dg-warning "between 201 and 510 bytes" } */
-  T ("%.1099f");    /* { dg-warning "between 1101 and 1410 bytes" } */
-
-  T ("%0.0f");      /* { dg-warning "between 1 and 310 bytes" } */
-  T ("%1.0f");      /* { dg-warning "between 1 and 310 bytes" } */
-  T ("%2.0f");      /* { dg-warning "between 2 and 310 bytes" } */
-  T ("%3.0f");      /* { dg-warning "between 3 and 310 bytes" } */
-  T ("%310.0f");    /* { dg-warning "writing 310 bytes" } */
-  T ("%311.0f");    /* { dg-warning "writing 311 bytes" } */
-  T ("%312.312f");  /* { dg-warning "between 314 and 623 bytes" } */
-  T ("%312.313f");  /* { dg-warning "between 315 and 624 bytes" } */
-
-  T ("%.*f");       /* { dg-warning "writing 1 or more bytes" } */
-  T ("%1.*f");      /* { dg-warning "writing 1 or more bytes" } */
-  T ("%3.*f");      /* { dg-warning "writing 3 or more bytes" } */
-
-  T ("%*.*f");      /* { dg-warning "writing 1 or more bytes" } */
-}
-
-/* Exercise %g.  The expected output is the lesser of %e and %f.  */
-void test_g_va (va_list va)
-{
-  T ("%g");         /* { dg-warning "between 1 and 13 bytes" } */
-  T ("%+g");        /* { dg-warning "between 2 and 13 bytes" } */
-  T ("% g");        /* { dg-warning "between 2 and 13 bytes" } */
-  T ("%#g");        /* { dg-warning "between 1 and 13 bytes" } */
-  T ("%#+g");       /* { dg-warning "between 2 and 13 bytes" } */
-  T ("%# g");       /* { dg-warning "between 2 and 13 bytes" } */
-
-  T ("%.g");        /* { dg-warning "between 1 and 7 bytes" } */
-  T ("%.0g");       /* { dg-warning "between 1 and 7 bytes" } */
-  T ("%.1g");       /* { dg-warning "between 1 and 7 bytes" } */
-  T ("%.2g");       /* { dg-warning "between 1 and 9 bytes" } */
-  T ("%.99g");      /* { dg-warning "between 1 and 106 bytes" } */
-  T ("%.199g");     /* { dg-warning "between 1 and 206 bytes" } */
-  T ("%.1099g");    /* { dg-warning "between 1 and 310 bytes" } */
-
-  T ("%0.0g");      /* { dg-warning "between 1 and 7 bytes" } */
-  T ("%1.0g");      /* { dg-warning "between 1 and 7 bytes" } */
-  T ("%2.0g");      /* { dg-warning "between 2 and 7 bytes" } */
-  T ("%3.0g");      /* { dg-warning "between 3 and 7 bytes" } */
-  T ("%7.0g");      /* { dg-warning "writing 7 bytes" } */
-  T ("%310.0g");    /* { dg-warning "writing 310 bytes" } */
-  T ("%311.0g");    /* { dg-warning "writing 311 bytes" } */
-  T ("%312.312g");  /* { dg-warning "writing 312 bytes" } */
-  T ("%312.313g");  /* { dg-warning "writing 312 bytes" } */
-  T ("%333.999g");  /* { dg-warning "writing 333 bytes" } */
-
-  T ("%.*g");       /* { dg-warning "writing 1 or more bytes" } */
-  T ("%1.*g");      /* { dg-warning "writing 1 or more bytes" } */
-  T ("%4.*g");      /* { dg-warning "writing 4 or more bytes" } */
-
-  T ("%*.*g");      /* { dg-warning "writing 1 or more bytes" } */
-}
+/* { dg-prune-output "flag used with .%.. gnu_printf format" } */

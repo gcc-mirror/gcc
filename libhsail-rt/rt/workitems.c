@@ -938,7 +938,7 @@ __hsail_alloca_pop_frame (PHSAWorkItem *wi)
   volatile PHSAWorkGroup *wg = wi->wg;
 
   wg->alloca_stack_p = wg->alloca_frame_p;
-  memcpy (&wg->alloca_frame_p,
+  memcpy ((void *) &wg->alloca_frame_p,
 	  (const void *) (wg->private_base_ptr + wg->alloca_frame_p), 4);
   /* Now frame_p points to the beginning of the previous function's
      frame and stack_p to its end.  */

@@ -2855,12 +2855,12 @@ epiphany_special_round_type_align (tree type, unsigned computed,
    arrays-at-the-end-of-structs work, like for struct gcov_fn_info in
    libgcov.c .  */
 unsigned
-epiphany_adjust_field_align (tree field, unsigned computed)
+epiphany_adjust_field_align (tree type, unsigned computed)
 {
   if (computed == 32
-      && TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE)
+      && TREE_CODE (type) == ARRAY_TYPE)
     {
-      tree elmsz = TYPE_SIZE (TREE_TYPE (TREE_TYPE (field)));
+      tree elmsz = TYPE_SIZE (TREE_TYPE (type));
 
       if (!tree_fits_uhwi_p (elmsz) || tree_to_uhwi (elmsz) >= 32)
 	return 64;

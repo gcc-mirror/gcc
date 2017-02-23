@@ -1446,7 +1446,7 @@ const __memx void *pfoo = &foo;
 
 @noindent
 Such code requires at least binutils 2.23, see
-@w{@uref{http://sourceware.org/PR13503,PR13503}}.
+@w{@uref{https://sourceware.org/PR13503,PR13503}}.
 
 @item
 On the reduced Tiny devices like ATtiny40, no address spaces are supported.
@@ -3516,7 +3516,7 @@ same as for the @option{-mcpu=} command-line option.
 @item sign-return-address
 @cindex @code{sign-return-address} function attribute, AArch64
 Select the function scope on which return address signing will be applied.  The
-behaviour and permissible arguments are the same as for the command-line option
+behavior and permissible arguments are the same as for the command-line option
 @option{-msign-return-address=}.  The default value is @code{none}.
 
 @end table
@@ -10103,7 +10103,7 @@ after addition, conditional jump on carry etc.
 @section x86-Specific Memory Model Extensions for Transactional Memory
 
 The x86 architecture supports additional memory ordering flags
-to mark lock critical sections for hardware lock elision. 
+to mark critical sections for hardware lock elision. 
 These must be specified in addition to an existing memory order to
 atomic intrinsics.
 
@@ -12657,7 +12657,7 @@ void __builtin_arm_set_fpscr (unsigned int)
 @subsection ARM ARMv8-M Security Extensions
 
 GCC implements the ARMv8-M Security Extensions as described in the ARMv8-M
-Security Extensions: Requiremenets on Development Tools Engineering
+Security Extensions: Requirements on Development Tools Engineering
 Specification, which can be found at
 @uref{http://infocenter.arm.com/help/topic/com.arm.doc.ecm0359818/ECM0359818_armv8m_security_extensions_reqs_on_dev_tools_1_0.pdf}.
 
@@ -13993,7 +13993,7 @@ data elements.  The following vectors typedefs are included in @code{msa.h}:
 @item @code{v2f64}, a vector of two 64-bit doubles.
 @end itemize
 
-Intructions and corresponding built-ins may have additional restrictions and/or
+Instructions and corresponding built-ins may have additional restrictions and/or
 input/output values manipulated:
 @itemize
 @item @code{imm0_1}, an integer literal in range 0 to 1;
@@ -19513,9 +19513,8 @@ v2si __builtin_ia32_psradi (v2si, int)
 @end smallexample
 
 The following built-in functions are made available either with
-@option{-msse}, or with a combination of @option{-m3dnow} and
-@option{-march=athlon}.  All of them generate the machine
-instruction that is part of the name.
+@option{-msse}, or with @option{-m3dnowa}.  All of them generate
+the machine instruction that is part of the name.
 
 @smallexample
 v4hi __builtin_ia32_pmulhuw (v4hi, v4hi)
@@ -20615,9 +20614,8 @@ v2sf __builtin_ia32_pi2fd (v2si)
 v4hi __builtin_ia32_pmulhrw (v4hi, v4hi)
 @end smallexample
 
-The following built-in functions are available when both @option{-m3dnow}
-and @option{-march=athlon} are used.  All of them generate the machine
-instruction that is part of the name.
+The following built-in functions are available when @option{-m3dnowa} is used.
+All of them generate the machine instruction that is part of the name.
 
 @smallexample
 v2si __builtin_ia32_pf2iw (v2sf)

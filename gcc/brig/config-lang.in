@@ -28,7 +28,7 @@ language="brig"
 
 compilers="brig1\$(exeext)"
 
-target_libs="target-libbrig target-libhsail-rt"
+target_libs="target-libhsail-rt"
 
 # The BRIG frontend is written in C++, so we need to build the C++
 # compiler during stage 1.  Note: when cross-compiling / not bootstrapping,

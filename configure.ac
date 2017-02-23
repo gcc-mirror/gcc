@@ -634,6 +634,23 @@ if test -d ${srcdir}/libmpx; then
     fi
 fi
 
+# Disable libhsail-rt on unsupported systems.
+if test -d ${srcdir}/libhsail-rt; then
+    if test x$enable_libhsail_rt = x; then
+        AC_MSG_CHECKING([for libhsail-rt support])
+        if (srcdir=${srcdir}/libhsail-rt; \
+                . ${srcdir}/configure.tgt; \
+                test -n "$UNSUPPORTED")
+        then
+            AC_MSG_RESULT([no])
+            unsupported_languages="$unsupported_languages brig"
+            # This implicitly disables also target-libhsail-rt as it won't
+            # get added to the build without BRIG FE.
+        else
+            AC_MSG_RESULT([yes])
+        fi
+    fi
+fi
 
 
 # Disable libquadmath for some systems.
@@ -812,19 +829,6 @@ if test x$enable_libgo = x; then
 	;;
     esac
 fi
-
-# Disable the BRIG frontend and libhsail-rt on untested or known
-# broken systems. Currently it has been tested only on x86_64 Linux
-# of the upstream gcc targets. More targets shall be added after testing.
-case "${target}" in
-  x86_64-*-linux*)
-    ;;
-    *)
-    unsupported_languages="$unsupported_languages brig"
-    # This implicitly disables also target-libhsail-rt as it won't
-    # get added to the build without BRIG FE.
-    ;;
-esac
 
 # Default libgloss CPU subdirectory.
 libgloss_dir="$target_cpu"
@@ -3505,7 +3509,7 @@ fi
 compare_exclusions="gcc/cc*-checksum\$(objext) | gcc/ada/*tools/*"
 case "$target" in
   hppa*64*-*-hpux*) ;;
-  hppa*-*-hpux*) compare_exclusions="gcc/cc*-checksum\$(objext) | */libgcc/lib2funcs* | gcc/ada/*tools/*" ;;
+  hppa*-*-hpux*) compare_exclusions="gcc/cc*-checksum\$(objext) | */libgcc/lib2funcs* | gcc/ada/*tools/* | gcc/function-tests.o" ;;
   powerpc*-ibm-aix*) compare_exclusions="gcc/cc*-checksum\$(objext) | gcc/ada/*tools/* | *libgomp*\$(objext)" ;;
 esac
 AC_SUBST(compare_exclusions)

@@ -96,6 +96,7 @@ AC_DEFUN([LIBAT_HAVE_ATOMIC_LOADSTORE],[
   LIBAT_DEFINE_YESNO([HAVE_ATOMIC_LDST_$2], [$libat_cv_have_at_ldst_$2],
 	[Have __atomic_load/store for $2 byte integers.])
   AH_BOTTOM([#define MAYBE_HAVE_ATOMIC_LDST_$2 HAVE_ATOMIC_LDST_$2])
+  AH_BOTTOM([#define FAST_ATOMIC_LDST_$2 HAVE_ATOMIC_LDST_$2])
 ])
 
 dnl

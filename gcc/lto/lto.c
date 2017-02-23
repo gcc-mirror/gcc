@@ -2288,6 +2288,8 @@ do_stream_out (char *temp_filename, lto_symtab_encoder_t encoder)
 
   ipa_write_optimization_summaries (encoder);
 
+  free (CONST_CAST (char *, file->filename));
+
   lto_set_current_out_file (NULL);
   lto_obj_file_close (file);
   free (file);

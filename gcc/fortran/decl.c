@@ -1499,7 +1499,7 @@ gfc_set_constant_character_len (int len, gfc_expr *expr, int check_len)
 
   if (expr->ts.type != BT_CHARACTER)
     return;
- 
+
   if (expr->expr_type != EXPR_CONSTANT)
     {
       gfc_error_now ("CHARACTER length must be a constant at %L", &expr->where);
@@ -6756,7 +6756,7 @@ gfc_match_end (gfc_statement *st)
   match m;
   gfc_namespace *parent_ns, *ns, *prev_ns;
   gfc_namespace **nsp;
-  bool abreviated_modproc_decl;
+  bool abreviated_modproc_decl = false;
   bool got_matching_end = false;
 
   old_loc = gfc_current_locus;
@@ -6780,15 +6780,17 @@ gfc_match_end (gfc_statement *st)
       state = gfc_state_stack->previous->state;
       block_name = gfc_state_stack->previous->sym == NULL
 		 ? NULL : gfc_state_stack->previous->sym->name;
+      abreviated_modproc_decl = gfc_state_stack->previous->sym
+		&& gfc_state_stack->previous->sym->abr_modproc_decl;
       break;
 
     default:
       break;
     }
 
-  abreviated_modproc_decl
-	= gfc_current_block ()
-	  && gfc_current_block ()->abr_modproc_decl;
+  if (!abreviated_modproc_decl)
+    abreviated_modproc_decl = gfc_current_block ()
+			      && gfc_current_block ()->abr_modproc_decl;
 
   switch (state)
     {
@@ -7566,6 +7568,21 @@ access_attr_decl (gfc_statement st)
 
 	case INTERFACE_GENERIC:
 	case INTERFACE_DTIO:
+
+	  if (type == INTERFACE_DTIO
+	      && gfc_current_ns->proc_name
+	      && gfc_current_ns->proc_name->attr.flavor == FL_MODULE)
+	    {
+	      gfc_find_symbol (name, gfc_current_ns, 0, &sym);
+	      if (sym == NULL)
+		{
+		  gfc_error ("The GENERIC DTIO INTERFACE at %C is not "
+			     "present in the MODULE '%s'",
+			     gfc_current_ns->proc_name->name);
+		  return MATCH_ERROR;
+		}
+	    }
+
 	  if (gfc_get_symbol (name, NULL, &sym))
 	    goto done;
 

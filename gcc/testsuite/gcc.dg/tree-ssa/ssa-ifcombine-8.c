@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-trapping-math -fdump-tree-ifcombine" } */
+/* { dg-options "-O -fno-trapping-math -fdump-tree-ifcombine-details-blocks" } */
 
 double test1 (double i, double j)
 {
@@ -22,3 +22,4 @@ plouf:
    Instead we get u<=, which is acceptable with -fno-trapping-math.  */
 
 /* { dg-final { scan-tree-dump " u<= " "ifcombine" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "ifcombine" } } */

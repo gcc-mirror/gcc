@@ -59,15 +59,15 @@ void must_not_eliminate (void);
 
 typedef __SIZE_TYPE__ size_t;
 
-extern int i;
-extern unsigned u;
-extern long li;
-extern unsigned long lu;
-extern size_t sz;
-extern char *str;
+volatile int i;
+volatile unsigned u;
+volatile long li;
+volatile unsigned long lu;
+volatile size_t sz;
+volatile char *str;
 
-extern double d;
-extern long double ld;
+volatile double d;
+volatile long double ld;
 
 /* Verify that overflowing the destination object disables the return
    value optimization.  */
@@ -280,7 +280,8 @@ RNG (0,  6,   8, "%s%ls", "1", L"2");
 
 */
 
-/*  Only conditional calls to abort should be made (with any probability):
+/*  Only conditional calls to must_not_eliminate must be made (with
+    any probability):
     { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\]:\n *must_not_eliminate" 124 "optimized" { target { ilp32 || lp64 } } } }
     { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\]:\n *must_not_eliminate" 93 "optimized" { target { { ! ilp32 } && { ! lp64 } } } } }
     No unconditional calls to abort should be made:

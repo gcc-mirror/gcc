@@ -1,3 +1,22 @@
+2017-02-12  John Marino  <gnugcc@marino.st>
+
+	* system-freebsd-x86.ads: Rename into...
+	* system-freebsd.ads: ...this.
+	(Default_Bit_Order): Define using Standard'Default_Bit_Order.
+	* gcc-interface/Makefile.in: Support aarch64-freebsd.
+	(x86-64/FreeBSD): Adjust to above renaming.
+	(i386/FreeBSD): Likewise.
+
+2017-02-09  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* comperr.adb: Update FSF bug reporting URL.
+
+2017-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+            Jakub Jelinek  <jakub@redhat.com>
+
+	PR ada/79309
+	* adaint.c (__gnat_killprocesstree): Fix broken string handling.
+
 2017-01-25  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR lto/79061

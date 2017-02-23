@@ -66,14 +66,14 @@ T fibonacci (T f)
 
 int main (void)
 {
-  Some_Struct f (40), f_serial(40);
+  Some_Struct f (32), f_serial(32);
   f = fibonacci (f);
   f_serial = fibonacci_serial (f_serial);
   
   if (f != f_serial)
     __builtin_abort ();
   
-  int t = 40, t_serial = 40;
+  int t = 32, t_serial = 32;
   t = fibonacci (t);
   t_serial = fibonacci_serial (t_serial);
   if (t != t_serial)
@@ -86,8 +86,8 @@ int main (void)
     __builtin_abort ();
 
 #if HAVE_IO
-  std::cout << "Fib_Parallel (40) = " << f.get_calculated_value() << std::endl;
-  std::cout << "Fib_Serial   (40) = " << f_serial.get_calculated_value() 
+  std::cout << "Fib_Parallel (32) = " << f.get_calculated_value() << std::endl;
+  std::cout << "Fib_Serial   (32) = " << f_serial.get_calculated_value() 
     << std::endl;
 #endif
   return 0;

@@ -29,15 +29,16 @@ along with GCC; see the file COPYING3.  If not see
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <sstream>
+#include "marshall-c.hh"
 #include "rpc.hh"
 #include "connection.hh"
 #include "names.hh"
 #include "callbacks.hh"
-#include "gcc-interface.h"
 #include "libiberty.h"
 #include "xregex.h"
 #include "findcomp.hh"
-#include "compiler-name.h"
+#include "c-compiler-name.h"
+#include "intl.h"
 
 struct libcc1;
 
@@ -66,6 +67,56 @@ struct libcc1 : public gcc_c_context
 
   std::vector<std::string> args;
   std::string source_file;
+
+  /* Non-zero as an equivalent to gcc driver option "-v".  */
+  bool verbose;
+
+  /* Compiler to set by set_triplet_regexp or set_driver_filename.  */
+  class compiler
+  {
+  protected:
+    libcc1 *self_;
+  public:
+    compiler (libcc1 *self) : self_ (self)
+    {
+    }
+    virtual char *find (std::string &compiler) const;
+    virtual ~compiler ()
+    {
+    }
+  } *compilerp;
+
+  /* Compiler to set by set_triplet_regexp.  */
+  class compiler_triplet_regexp : public compiler
+  {
+  private:
+    std::string triplet_regexp_;
+  public:
+    virtual char *find (std::string &compiler) const;
+    compiler_triplet_regexp (libcc1 *self, std::string triplet_regexp)
+      : compiler (self), triplet_regexp_ (triplet_regexp)
+    {
+    }
+    virtual ~compiler_triplet_regexp ()
+    {
+    }
+  };
+
+  /* Compiler to set by set_driver_filename.  */
+  class compiler_driver_filename : public compiler
+  {
+  private:
+    std::string driver_filename_;
+  public:
+    virtual char *find (std::string &compiler) const;
+    compiler_driver_filename (libcc1 *self, std::string driver_filename)
+      : compiler (self), driver_filename_ (driver_filename)
+    {
+    }
+    virtual ~compiler_driver_filename ()
+    {
+    }
+  };
 };
 
 // A local subclass of connection that holds a back-pointer to the
@@ -97,7 +148,9 @@ libcc1::libcc1 (const gcc_base_vtable *v,
     print_function (NULL),
     print_datum (NULL),
     args (),
-    source_file ()
+    source_file (),
+    verbose (false),
+    compilerp (new libcc1::compiler (this))
 {
   base.ops = v;
   c_ops = cv;
@@ -106,34 +159,40 @@ libcc1::libcc1 (const gcc_base_vtable *v,
 libcc1::~libcc1 ()
 {
   delete connection;
+  delete compilerp;
 }
 
 
 
-// This is a wrapper function that is called by the RPC system and
-// that then forwards the call to the library user.  Note that the
-// return value is not used; the type cannot be 'void' due to
-// limitations in our simple RPC.
-int
-call_binding_oracle (cc1_plugin::connection *conn,
-		     enum gcc_c_oracle_request request,
-		     const char *identifier)
-{
-  libcc1 *self = ((libcc1_connection *) conn)->back_ptr;
+// Enclose these functions in an anonymous namespace because they
+// shouldn't be exported, but they can't be static because they're
+// used as template arguments.
+namespace {
+  // This is a wrapper function that is called by the RPC system and
+  // that then forwards the call to the library user.  Note that the
+  // return value is not used; the type cannot be 'void' due to
+  // limitations in our simple RPC.
+  int
+  c_call_binding_oracle (cc1_plugin::connection *conn,
+			 enum gcc_c_oracle_request request,
+			 const char *identifier)
+  {
+    libcc1 *self = ((libcc1_connection *) conn)->back_ptr;
 
-  self->binding_oracle (self->oracle_datum, self, request, identifier);
-  return 1;
-}
+    self->binding_oracle (self->oracle_datum, self, request, identifier);
+    return 1;
+  }
 
-// This is a wrapper function that is called by the RPC system and
-// that then forwards the call to the library user.
-gcc_address
-call_symbol_address (cc1_plugin::connection *conn, const char *identifier)
-{
-  libcc1 *self = ((libcc1_connection *) conn)->back_ptr;
+  // This is a wrapper function that is called by the RPC system and
+  // that then forwards the call to the library user.
+  gcc_address
+  c_call_symbol_address (cc1_plugin::connection *conn, const char *identifier)
+  {
+    libcc1 *self = ((libcc1_connection *) conn)->back_ptr;
 
-  return self->address_oracle (self->oracle_datum, self, identifier);
-}
+    return self->address_oracle (self->oracle_datum, self, identifier);
+  }
+} /* anonymous namespace */
 
 
 
@@ -244,19 +303,19 @@ static const struct gcc_c_fe_vtable c_vtable =
   set_callbacks,
 
 #define GCC_METHOD0(R, N) \
-  rpc<R, cc1_plugin::N>,
+  rpc<R, cc1_plugin::c::N>,
 #define GCC_METHOD1(R, N, A) \
-  rpc<R, cc1_plugin::N, A>,
+  rpc<R, cc1_plugin::c::N, A>,
 #define GCC_METHOD2(R, N, A, B) \
-  rpc<R, cc1_plugin::N, A, B>,
+  rpc<R, cc1_plugin::c::N, A, B>,
 #define GCC_METHOD3(R, N, A, B, C) \
-  rpc<R, cc1_plugin::N, A, B, C>,
+  rpc<R, cc1_plugin::c::N, A, B, C>,
 #define GCC_METHOD4(R, N, A, B, C, D) \
-  rpc<R, cc1_plugin::N, A, B, C, D>,
+  rpc<R, cc1_plugin::c::N, A, B, C, D>,
 #define GCC_METHOD5(R, N, A, B, C, D, E) \
-  rpc<R, cc1_plugin::N, A, B, C, D, E>,
+  rpc<R, cc1_plugin::c::N, A, B, C, D, E>,
 #define GCC_METHOD7(R, N, A, B, C, D, E, F, G) \
-  rpc<R, cc1_plugin::N, A, B, C, D, E, F, G>,
+  rpc<R, cc1_plugin::c::N, A, B, C, D, E, F, G>,
 
 #include "gcc-c-fe.def"
 
@@ -306,17 +365,29 @@ make_regexp (const char *triplet_regexp, const char *compiler)
   return buf.str ();
 }
 
-static char *
-libcc1_set_arguments (struct gcc_base_context *s,
-		      const char *triplet_regexp,
-		      int argc, char **argv)
+static void
+libcc1_set_verbose (struct gcc_base_context *s, int /* bool */ verbose)
 {
   libcc1 *self = (libcc1 *) s;
-  regex_t triplet;
-  int code;
 
-  std::string rx = make_regexp (triplet_regexp, COMPILER_NAME);
-  code = regcomp (&triplet, rx.c_str (), REG_EXTENDED | REG_NOSUB);
+  self->verbose = verbose != 0;
+}
+
+char *
+libcc1::compiler::find (std::string &compiler ATTRIBUTE_UNUSED) const
+{
+  return xstrdup (_("Compiler has not been specified"));
+}
+
+char *
+libcc1::compiler_triplet_regexp::find (std::string &compiler) const
+{
+  std::string rx = make_regexp (triplet_regexp_.c_str (), C_COMPILER_NAME);
+  if (self_->verbose)
+    fprintf (stderr, _("searching for compiler matching regex %s\n"),
+	     rx.c_str());
+  regex_t triplet;
+  int code = regcomp (&triplet, rx.c_str (), REG_EXTENDED | REG_NOSUB);
   if (code != 0)
     {
       size_t len = regerror (code, &triplet, NULL, 0);
@@ -331,7 +402,6 @@ libcc1_set_arguments (struct gcc_base_context *s,
 		     (char *) NULL);
     }
 
-  std::string compiler;
   if (!find_compiler (triplet, &compiler))
     {
       regfree (&triplet);
@@ -341,6 +411,32 @@ libcc1_set_arguments (struct gcc_base_context *s,
 		     (char *) NULL);
     }
   regfree (&triplet);
+  if (self_->verbose)
+    fprintf (stderr, _("found compiler %s\n"), compiler.c_str());
+  return NULL;
+}
+
+char *
+libcc1::compiler_driver_filename::find (std::string &compiler) const
+{
+  // Simulate fnotice by fprintf.
+  if (self_->verbose)
+    fprintf (stderr, _("using explicit compiler filename %s\n"),
+	     driver_filename_.c_str());
+  compiler = driver_filename_;
+  return NULL;
+}
+
+static char *
+libcc1_set_arguments (struct gcc_base_context *s,
+		      int argc, char **argv)
+{
+  libcc1 *self = (libcc1 *) s;
+
+  std::string compiler;
+  char *errmsg = self->compilerp->find (compiler);
+  if (errmsg != NULL)
+    return errmsg;
 
   self->args.push_back (compiler);
 
@@ -348,6 +444,41 @@ libcc1_set_arguments (struct gcc_base_context *s,
     self->args.push_back (argv[i]);
 
   return NULL;
+}
+
+static char *
+libcc1_set_triplet_regexp (struct gcc_base_context *s,
+			   const char *triplet_regexp)
+{
+  libcc1 *self = (libcc1 *) s;
+
+  delete self->compilerp;
+  self->compilerp = new libcc1::compiler_triplet_regexp (self, triplet_regexp);
+  return NULL;
+}
+
+static char *
+libcc1_set_driver_filename (struct gcc_base_context *s,
+			    const char *driver_filename)
+{
+  libcc1 *self = (libcc1 *) s;
+
+  delete self->compilerp;
+  self->compilerp = new libcc1::compiler_driver_filename (self,
+							  driver_filename);
+  return NULL;
+}
+
+static char *
+libcc1_set_arguments_v0 (struct gcc_base_context *s,
+			 const char *triplet_regexp,
+			 int argc, char **argv)
+{
+  char *errmsg = libcc1_set_triplet_regexp (s, triplet_regexp);
+  if (errmsg != NULL)
+    return errmsg;
+
+  return libcc1_set_arguments (s, argc, argv);
 }
 
 static void
@@ -405,7 +536,7 @@ fork_exec (libcc1 *self, char **argv, int spair_fds[2], int stderr_fds[2])
 
       cc1_plugin::status result = cc1_plugin::FAIL;
       if (self->connection->send ('H')
-	  && ::cc1_plugin::marshall (self->connection, GCC_C_FE_VERSION_0))
+	  && ::cc1_plugin::marshall (self->connection, GCC_C_FE_VERSION_1))
 	result = self->connection->wait_for_query ();
 
       close (spair_fds[0]);
@@ -434,8 +565,7 @@ fork_exec (libcc1 *self, char **argv, int spair_fds[2], int stderr_fds[2])
 
 static int
 libcc1_compile (struct gcc_base_context *s,
-		const char *filename,
-		int verbose)
+		const char *filename)
 {
   libcc1 *self = (libcc1 *) s;
 
@@ -466,7 +596,7 @@ libcc1_compile (struct gcc_base_context *s,
   self->args.push_back ("-c");
   self->args.push_back ("-o");
   self->args.push_back (filename);
-  if (verbose)
+  if (self->verbose)
     self->args.push_back ("-v");
 
   self->connection = new libcc1_connection (fds[0], stderr_fds[0], self);
@@ -475,12 +605,12 @@ libcc1_compile (struct gcc_base_context *s,
     = cc1_plugin::callback<int,
 			   enum gcc_c_oracle_request,
 			   const char *,
-			   call_binding_oracle>;
+			   c_call_binding_oracle>;
   self->connection->add_callback ("binding_oracle", fun);
 
   fun = cc1_plugin::callback<gcc_address,
 			     const char *,
-			     call_symbol_address>;
+			     c_call_symbol_address>;
   self->connection->add_callback ("address_oracle", fun);
 
   char **argv = new (std::nothrow) char *[self->args.size () + 1];
@@ -494,6 +624,14 @@ libcc1_compile (struct gcc_base_context *s,
   return fork_exec (self, argv, fds, stderr_fds);
 }
 
+static int
+libcc1_compile_v0 (struct gcc_base_context *s, const char *filename,
+		   int verbose)
+{
+  libcc1_set_verbose (s, verbose);
+  return libcc1_compile (s, filename);
+}
+
 static void
 libcc1_destroy (struct gcc_base_context *s)
 {
@@ -504,12 +642,17 @@ libcc1_destroy (struct gcc_base_context *s)
 
 static const struct gcc_base_vtable vtable =
 {
-  GCC_FE_VERSION_0,
-  libcc1_set_arguments,
+  GCC_FE_VERSION_1,
+  libcc1_set_arguments_v0,
   libcc1_set_source_file,
   libcc1_set_print_callback,
+  libcc1_compile_v0,
+  libcc1_destroy,
+  libcc1_set_verbose,
   libcc1_compile,
-  libcc1_destroy
+  libcc1_set_arguments,
+  libcc1_set_triplet_regexp,
+  libcc1_set_driver_filename,
 };
 
 extern "C" gcc_c_fe_context_function gcc_c_fe_context;
@@ -523,7 +666,8 @@ struct gcc_c_context *
 gcc_c_fe_context (enum gcc_base_api_version base_version,
 		  enum gcc_c_api_version c_version)
 {
-  if (base_version != GCC_FE_VERSION_0 || c_version != GCC_C_FE_VERSION_0)
+  if ((base_version != GCC_FE_VERSION_0 && base_version != GCC_FE_VERSION_1)
+      || (c_version != GCC_C_FE_VERSION_0 && c_version != GCC_C_FE_VERSION_1))
     return NULL;
 
   return new libcc1 (&vtable, &c_vtable);

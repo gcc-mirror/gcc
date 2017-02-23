@@ -718,7 +718,8 @@ layout_decl (tree decl, unsigned int known_align)
 				     (unsigned) BIGGEST_FIELD_ALIGNMENT));
 #endif
 #ifdef ADJUST_FIELD_ALIGN
-	  SET_DECL_ALIGN (decl, ADJUST_FIELD_ALIGN (decl, DECL_ALIGN (decl)));
+	  SET_DECL_ALIGN (decl, ADJUST_FIELD_ALIGN (decl, TREE_TYPE (decl),
+						    DECL_ALIGN (decl)));
 #endif
 	}
 
@@ -1032,7 +1033,7 @@ update_alignment_for_field (record_layout_info rli, tree field,
 
 #ifdef ADJUST_FIELD_ALIGN
 	  if (! TYPE_USER_ALIGN (type))
-	    type_align = ADJUST_FIELD_ALIGN (field, type_align);
+	    type_align = ADJUST_FIELD_ALIGN (field, type, type_align);
 #endif
 
 	  /* Targets might chose to handle unnamed and hence possibly
@@ -1260,7 +1261,7 @@ place_field (record_layout_info rli, tree field)
 
 #ifdef ADJUST_FIELD_ALIGN
       if (! TYPE_USER_ALIGN (type))
-	type_align = ADJUST_FIELD_ALIGN (field, type_align);
+	type_align = ADJUST_FIELD_ALIGN (field, type, type_align);
 #endif
 
       /* A bit field may not span more units of alignment of its type
@@ -1303,7 +1304,7 @@ place_field (record_layout_info rli, tree field)
 
 #ifdef ADJUST_FIELD_ALIGN
       if (! TYPE_USER_ALIGN (type))
-	type_align = ADJUST_FIELD_ALIGN (field, type_align);
+	type_align = ADJUST_FIELD_ALIGN (field, type, type_align);
 #endif
 
       if (maximum_field_alignment != 0)
@@ -2411,9 +2412,7 @@ min_align_of_type (tree type)
 #endif
       unsigned int field_align = align;
 #ifdef ADJUST_FIELD_ALIGN
-      tree field = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE, type);
-      field_align = ADJUST_FIELD_ALIGN (field, field_align);
-      ggc_free (field);
+      field_align = ADJUST_FIELD_ALIGN (NULL_TREE, type, field_align);
 #endif
       align = MIN (align, field_align);
     }

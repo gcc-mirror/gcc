@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fdump-tree-original -fcoarray=lib -lcaf_single" }
+! { dg-additional-options "-latomic" { target libatomic_available } }
 
 program Jac
   type Domain

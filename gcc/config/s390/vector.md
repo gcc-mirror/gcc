@@ -144,6 +144,7 @@
 (include "vx-builtins.md")
 
 ; Full HW vector size moves
+; vgmb, vgmh, vgmf, vgmg, vrepib, vrepih, vrepif, vrepig
 (define_insn "mov<mode>"
   [(set (match_operand:V_128 0 "nonimmediate_operand" "=v,v,R,  v,  v,  v,  v,  v,v,d")
 	(match_operand:V_128 1 "general_operand"      " v,R,v,j00,jm1,jyy,jxx,jKK,d,v"))]
@@ -329,6 +330,7 @@
 ; FIXME: A target memory operand seems to be useful otherwise we end
 ; up with vl vlvgg vst.  Shouldn't the middle-end be able to handle
 ; that itself?
+; vlvgb, vlvgh, vlvgf, vlvgg, vleb, vleh, vlef, vleg, vleib, vleih, vleif, vleig
 (define_insn "*vec_set<mode>"
   [(set (match_operand:V                    0 "register_operand"  "=v,v,v")
 	(unspec:V [(match_operand:<non_vec> 1 "general_operand"    "d,R,K")
@@ -344,6 +346,7 @@
    vlei<bhfgq>\t%v0,%1,%2"
   [(set_attr "op_type" "VRS,VRX,VRI")])
 
+; vlvgb, vlvgh, vlvgf, vlvgg
 (define_insn "*vec_set<mode>_plus"
   [(set (match_operand:V                      0 "register_operand" "=v")
 	(unspec:V [(match_operand:<non_vec>   1 "general_operand"   "d")
@@ -366,6 +369,7 @@
 			  UNSPEC_VEC_EXTRACT))]
   "TARGET_VX")
 
+; vlgvb, vlgvh, vlgvf, vlgvg, vsteb, vsteh, vstef, vsteg
 (define_insn "*vec_extract<mode>"
   [(set (match_operand:<non_vec> 0 "nonimmediate_operand"          "=d,R")
 	(unspec:<non_vec> [(match_operand:V  1 "register_operand"   "v,v")
@@ -379,6 +383,7 @@
    vste<bhfgq>\t%v1,%0,%2"
   [(set_attr "op_type" "VRS,VRX")])
 
+; vlgvb, vlgvh, vlgvf, vlgvg
 (define_insn "*vec_extract<mode>_plus"
   [(set (match_operand:<non_vec>                      0 "nonimmediate_operand" "=d")
 	(unspec:<non_vec> [(match_operand:V           1 "register_operand"      "v")
@@ -399,6 +404,7 @@
 })
 
 ; Replicate from vector element
+; vrepb, vreph, vrepf, vrepg
 (define_insn "*vec_splat<mode>"
   [(set (match_operand:V_HW   0 "register_operand" "=v")
 	(vec_duplicate:V_HW
@@ -410,6 +416,7 @@
   "vrep<bhfgq>\t%v0,%v1,%2"
   [(set_attr "op_type" "VRI")])
 
+; vlrepb, vlreph, vlrepf, vlrepg, vrepib, vrepih, vrepif, vrepig, vrepb, vreph, vrepf, vrepg
 (define_insn "*vec_splats<mode>"
   [(set (match_operand:V_HW                          0 "register_operand" "=v,v,v,v")
 	(vec_duplicate:V_HW (match_operand:<non_vec> 1 "general_operand"  " R,K,v,d")))]
@@ -692,6 +699,7 @@
 })
 
 ; Count leading zeros
+; vclzb, vclzh, vclzf, vclzg
 (define_insn "clz<mode>2"
   [(set (match_operand:V        0 "register_operand" "=v")
 	(clz:V (match_operand:V 1 "register_operand"  "v")))]
@@ -700,6 +708,7 @@
   [(set_attr "op_type" "VRR")])
 
 ; Count trailing zeros
+; vctzb, vctzh, vctzf, vctzg
 (define_insn "ctz<mode>2"
   [(set (match_operand:V        0 "register_operand" "=v")
 	(ctz:V (match_operand:V 1 "register_operand"  "v")))]
@@ -1109,7 +1118,7 @@
 		      UNSPEC_VEC_VFENECC))]
   "TARGET_VX"
 {
-  unsigned HOST_WIDE_INT flags = INTVAL (operands[3]);
+  unsigned HOST_WIDE_INT flags = UINTVAL (operands[3]);
 
   gcc_assert (!(flags & ~(VSTRING_FLAG_ZS | VSTRING_FLAG_CS)));
   flags &= ~VSTRING_FLAG_CS;

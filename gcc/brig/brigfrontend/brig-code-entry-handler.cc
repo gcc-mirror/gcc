@@ -456,9 +456,13 @@ brig_code_entry_handler::build_address_operand
 
   /* We might have two const offsets in case of group or private arrays
      which have the first offset to the incoming group/private pointer
-     arg, and the second one an offset to it.  */
+     arg, and the second one an offset to it. It's also legal to have
+     a reference with a zero constant offset but no symbol.  I've seen
+     codes that reference kernarg segment like this.  Thus, if at this
+     point there is no address expression at all we assume it's an
+     access to offset 0. */
   uint64_t offs = gccbrig_to_uint64_t (addr_operand.offset);
-  if (offs > 0)
+  if (offs > 0 || addr == NULL_TREE)
     {
       tree const_offset_2 = build_int_cst (size_type_node, offs);
       if (addr == NULL_TREE)
@@ -606,8 +610,9 @@ brig_code_entry_handler::get_tree_cst_for_hsa_operand
 	  if (bytes_left < scalar_element_size * element_count)
 	    fatal_error (UNKNOWN_LOCATION,
 			 "Not enough bytes left for the initializer "
-			 "(%lu need %lu).",
-			 bytes_left, scalar_element_size * element_count);
+			 "(%lu need %lu).", (unsigned long) bytes_left,
+			 (unsigned long) (scalar_element_size
+					  * element_count));
 
 	  vec<constructor_elt, va_gc> *vec_els = NULL;
 	  for (size_t i = 0; i < element_count; ++i)
@@ -625,8 +630,8 @@ brig_code_entry_handler::get_tree_cst_for_hsa_operand
 	  if (bytes_left < scalar_element_size)
 	    fatal_error (UNKNOWN_LOCATION,
 			 "Not enough bytes left for the initializer "
-			 "(%lu need %lu).",
-			 bytes_left, scalar_element_size);
+			 "(%lu need %lu).", (unsigned long) bytes_left,
+			 (unsigned long) scalar_element_size);
 	  cst = build_tree_cst_element (scalar_element_type, next_data);
 	  bytes_left -= scalar_element_size;
 	  next_data += scalar_element_size;

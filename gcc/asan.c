@@ -2373,22 +2373,6 @@ asan_needs_odr_indicator_p (tree decl)
 	  && TREE_PUBLIC (decl));
 }
 
-/* For given DECL return its corresponding TRANSLATION_UNIT_DECL.  */
-
-static const_tree
-get_translation_unit_decl (tree decl)
-{
-  const_tree context = decl;
-  while (context && TREE_CODE (context) != TRANSLATION_UNIT_DECL)
-    {
-      if (TREE_CODE (context) == BLOCK)
-	context = BLOCK_SUPERCONTEXT (context);
-      else
-	context = get_containing_scope (context);
-    }
-  return context;
-}
-
 /* Append description of a single global DECL into vector V.
    TYPE is __asan_global struct type as returned by asan_global_struct.  */
 
@@ -2408,14 +2392,7 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
     pp_string (&asan_pp, "<unknown>");
   str_cst = asan_pp_string (&asan_pp);
 
-  const char *filename = main_input_filename;
-  if (in_lto_p)
-    {
-      const_tree translation_unit_decl = get_translation_unit_decl (decl);
-      if (translation_unit_decl && DECL_NAME (translation_unit_decl) != NULL)
-	filename = IDENTIFIER_POINTER (DECL_NAME (translation_unit_decl));
-    }
-  pp_string (&module_name_pp, filename);
+  pp_string (&module_name_pp, main_input_filename);
   module_name_cst = asan_pp_string (&module_name_pp);
 
   if (asan_needs_local_alias (decl))
@@ -2451,7 +2428,11 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
 			  fold_convert (const_ptr_type_node, module_name_cst));
   varpool_node *vnode = varpool_node::get (decl);
-  int has_dynamic_init = vnode ? vnode->dynamically_initialized : 0;
+  int has_dynamic_init = 0;
+  /* FIXME: Enable initialization order fiasco detection in LTO mode once
+     proper fix for PR 79061 will be applied.  */
+  if (!in_lto_p)
+    has_dynamic_init = vnode ? vnode->dynamically_initialized : 0;
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
 			  build_int_cst (uptr, has_dynamic_init));
   tree locptr = NULL_TREE;

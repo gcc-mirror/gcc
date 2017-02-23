@@ -1,0 +1,1 @@
+LIB2FUNCS_EXCLUDE += _divsi3 _modsi3 _udivsi3 _umodsi3 _mulsi3 _muldi3

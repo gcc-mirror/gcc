@@ -1713,7 +1713,8 @@ sms_schedule (void)
 			       * REG_BR_PROB_BASE) / 100;
 
 	      loop_version (loop, comp_rtx, &condition_bb,
-	  		    prob, prob, REG_BR_PROB_BASE - prob,
+	  		    prob, REG_BR_PROB_BASE - prob,
+			    prob, REG_BR_PROB_BASE - prob,
 			    true);
 	     }
 

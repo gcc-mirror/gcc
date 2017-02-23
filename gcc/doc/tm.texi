@@ -1042,13 +1042,15 @@ structure and union fields only, unless the field alignment has been set
 by the @code{__attribute__ ((aligned (@var{n})))} construct.
 @end defmac
 
-@defmac ADJUST_FIELD_ALIGN (@var{field}, @var{computed})
-An expression for the alignment of a structure field @var{field} if the
-alignment computed in the usual way (including applying of
-@code{BIGGEST_ALIGNMENT} and @code{BIGGEST_FIELD_ALIGNMENT} to the
+@defmac ADJUST_FIELD_ALIGN (@var{field}, @var{type}, @var{computed})
+An expression for the alignment of a structure field @var{field} of
+type @var{type} if the alignment computed in the usual way (including
+applying of @code{BIGGEST_ALIGNMENT} and @code{BIGGEST_FIELD_ALIGNMENT} to the
 alignment) is @var{computed}.  It overrides alignment only if the
 field alignment has not been set by the
-@code{__attribute__ ((aligned (@var{n})))} construct.
+@code{__attribute__ ((aligned (@var{n})))} construct.  Note that @var{field}
+may be @code{NULL_TREE} in case we just query for the minimum alignment
+of a field of type @var{type} in structure context.
 @end defmac
 
 @defmac MAX_STACK_ALIGNMENT
@@ -6998,6 +7000,14 @@ This hook is used by the insn scheduler to find out what features should be
 enabled/used.
 The structure *@var{spec_info} should be filled in by the target.
 The structure describes speculation types that can be used in the scheduler.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_SCHED_CAN_SPECULATE_INSN (rtx_insn *@var{insn})
+Some instructions should never be speculated by the schedulers, usually
+ because the instruction is too expensive to get this wrong.  Often such
+ instructions have long latency, and often they are not fully modeled in the
+ pipeline descriptions.  This hook should return @code{false} if @var{insn}
+ should not be speculated.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_SCHED_SMS_RES_MII (struct ddg *@var{g})

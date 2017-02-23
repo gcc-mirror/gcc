@@ -765,9 +765,8 @@
 	For PDF output, something that transforms valid Docbook XML to PDF is
 	required. Possible solutions include <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://dblatex.sourceforge.net">dblatex</link>,
 	<command>xmlto</command>, or <command>prince</command>. Of
-	these, <command>dblatex</command> is the default. Other
-	options are listed on the DocBook web <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://wiki.docbook.org/topic/DocBookPublishingTools">pages</link>. Please
-	consult the <email>libstdc++@gcc.gnu.org</email> list when
+	these, <command>dblatex</command> is the default.
+	Please consult the <email>libstdc++@gcc.gnu.org</email> list when
 	preparing printed manuals for current best practice and
 	suggestions.
       </para>
@@ -778,7 +777,7 @@
       </para>
 
       <para>
-	For epub output, the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://sourceforge.net/projects/docbook/files/epub3/">stylesheets</link> for EPUB3 are required. These stylesheets are still in development. To validate the created file, <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://code.google.com/p/epubcheck/">epubcheck</link> is necessary.
+	For epub output, the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://sourceforge.net/projects/docbook/files/epub3/">stylesheets</link> for EPUB3 are required. These stylesheets are still in development. To validate the created file, <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://github.com/IDPF/epubcheck">epubcheck</link> is necessary.
       </para>
     </section>
 
@@ -1022,9 +1021,8 @@ make <literal>XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</literal>
       
 
       <para>
-	Complete details on Docbook markup can be found in the DocBook
-	Element Reference,
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.docbook.org/tdg/en/html/part2.html">online</link>.
+	Complete details on Docbook markup can be found in the
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://tdg.docbook.org/tdg/5.0/ref-elements.html">DocBook Element Reference</link>.
 	An incomplete reference for HTML to Docbook conversion is
 	detailed in the table below.
       </para>

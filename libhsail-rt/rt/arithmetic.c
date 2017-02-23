@@ -376,41 +376,25 @@ __hsail_ftz_f64 (double a)
 uint32_t
 __hsail_borrow_u32 (uint32_t a, uint32_t b)
 {
-  uint64_t c = (uint64_t) a - (uint64_t) b;
-  if (c > UINT32_MAX)
-    return 1;
-  else
-    return 0;
+  return __builtin_sub_overflow_p (a, b, a);
 }
 
 uint64_t
 __hsail_borrow_u64 (uint64_t a, uint64_t b)
 {
-  __uint128_t c = (__uint128_t) a - (__uint128_t) b;
-  if (c > UINT64_MAX)
-    return 1;
-  else
-    return 0;
+  return __builtin_sub_overflow_p (a, b, a);
 }
 
 uint32_t
 __hsail_carry_u32 (uint32_t a, uint32_t b)
 {
-  uint64_t c = (uint64_t) a + (uint64_t) b;
-  if (c > UINT32_MAX)
-    return 1;
-  else
-    return 0;
+  return __builtin_add_overflow_p (a, b, a);
 }
 
 uint64_t
 __hsail_carry_u64 (uint64_t a, uint64_t b)
 {
-  __uint128_t c = (__uint128_t) a + (__uint128_t) b;
-  if (c > UINT64_MAX)
-    return 1;
-  else
-    return 0;
+  return __builtin_add_overflow_p (a, b, a);
 }
 
 float

@@ -118,6 +118,9 @@ rtx_insn *current_output_insn;
 /* Line number of last NOTE.  */
 static int last_linenum;
 
+/* Column number of last NOTE.  */
+static int last_columnnum;
+
 /* Last discriminator written to assembly.  */
 static int last_discriminator;
 
@@ -133,9 +136,10 @@ static int high_function_linenum;
 /* Filename of last NOTE.  */
 static const char *last_filename;
 
-/* Override filename and line number.  */
+/* Override filename, line and column number.  */
 static const char *override_filename;
 static int override_linenum;
+static int override_columnnum;
 
 /* Whether to force emission of a line note before the next insn.  */
 static bool force_source_line = false;
@@ -1763,6 +1767,7 @@ final_start_function (rtx_insn *first, FILE *file,
 
   last_filename = LOCATION_FILE (prologue_location);
   last_linenum = LOCATION_LINE (prologue_location);
+  last_columnnum = LOCATION_COLUMN (prologue_location);
   last_discriminator = discriminator = 0;
 
   high_block_linenum = high_function_linenum = last_linenum;
@@ -1771,10 +1776,10 @@ final_start_function (rtx_insn *first, FILE *file,
     asan_function_start ();
 
   if (!DECL_IGNORED_P (current_function_decl))
-    debug_hooks->begin_prologue (last_linenum, last_filename);
+    debug_hooks->begin_prologue (last_linenum, last_columnnum, last_filename);
 
   if (!dwarf2_debug_info_emitted_p (current_function_decl))
-    dwarf2out_begin_prologue (0, NULL);
+    dwarf2out_begin_prologue (0, 0, NULL);
 
 #ifdef LEAF_REG_REMAP
   if (crtl->uses_only_leaf_regs)
@@ -2335,6 +2340,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		{
 		  override_filename = LOCATION_FILE (*locus_ptr);
 		  override_linenum = LOCATION_LINE (*locus_ptr);
+		  override_columnnum = LOCATION_COLUMN (*locus_ptr);
 		}
 	    }
 	  break;
@@ -2370,11 +2376,13 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		{
 		  override_filename = LOCATION_FILE (*locus_ptr);
 		  override_linenum = LOCATION_LINE (*locus_ptr);
+		  override_columnnum = LOCATION_COLUMN (*locus_ptr);
 		}
 	      else
 		{
 		  override_filename = NULL;
 		  override_linenum = 0;
+		  override_columnnum = 0;
 		}
 	    }
 	  break;
@@ -2592,8 +2600,9 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	  {
 	    if (flag_verbose_asm)
 	      asm_show_source (last_filename, last_linenum);
-	    (*debug_hooks->source_line) (last_linenum, last_filename,
-					 last_discriminator, is_stmt);
+	    (*debug_hooks->source_line) (last_linenum, last_columnnum,
+					 last_filename, last_discriminator,
+					 is_stmt);
 	  }
 
 	if (GET_CODE (body) == PARALLEL
@@ -3078,23 +3087,26 @@ static bool
 notice_source_line (rtx_insn *insn, bool *is_stmt)
 {
   const char *filename;
-  int linenum;
+  int linenum, columnnum;
 
   if (override_filename)
     {
       filename = override_filename;
       linenum = override_linenum;
+      columnnum = override_columnnum;
     }
   else if (INSN_HAS_LOCATION (insn))
     {
       expanded_location xloc = insn_location (insn);
       filename = xloc.file;
       linenum = xloc.line;
+      columnnum = xloc.column;
     }
   else
     {
       filename = NULL;
       linenum = 0;
+      columnnum = 0;
     }
 
   if (filename == NULL)
@@ -3102,11 +3114,13 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
 
   if (force_source_line
       || filename != last_filename
-      || last_linenum != linenum)
+      || last_linenum != linenum
+      || (debug_column_info && last_columnnum != columnnum))
     {
       force_source_line = false;
       last_filename = filename;
       last_linenum = linenum;
+      last_columnnum = columnnum;
       last_discriminator = discriminator;
       *is_stmt = true;
       high_block_linenum = MAX (last_linenum, high_block_linenum);

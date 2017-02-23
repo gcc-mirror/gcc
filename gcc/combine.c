@@ -4148,7 +4148,16 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 				     PATTERN (undobuf.other_insn)))
 	      ||(REG_NOTE_KIND (note) == REG_UNUSED
 		 && !reg_set_p (XEXP (note, 0),
-				PATTERN (undobuf.other_insn))))
+				PATTERN (undobuf.other_insn)))
+	      /* Simply drop equal note since it may be no longer valid
+		 for other_insn.  It may be possible to record that CC
+		 register is changed and only discard those notes, but
+		 in practice it's unnecessary complication and doesn't
+		 give any meaningful improvement.
+
+		 See PR78559.  */
+	      || REG_NOTE_KIND (note) == REG_EQUAL
+	      || REG_NOTE_KIND (note) == REG_EQUIV)
 	    remove_note (undobuf.other_insn, note);
 	}
 
@@ -14278,6 +14287,11 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 			  distribute_notes (old_notes, tem_insn, tem_insn, NULL,
 					    NULL_RTX, NULL_RTX, NULL_RTX);
 			  distribute_links (LOG_LINKS (tem_insn));
+
+			  unsigned int regno = REGNO (XEXP (note, 0));
+			  reg_stat_type *rsp = &reg_stat[regno];
+			  if (rsp->last_set == tem_insn)
+			    record_value_for_reg (XEXP (note, 0), NULL, NULL_RTX);
 
 			  SET_INSN_DELETED (tem_insn);
 			  if (tem_insn == i2)

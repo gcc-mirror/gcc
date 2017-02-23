@@ -39,17 +39,6 @@ VECT_VAR_DECL(vdup_n_expected2,poly,64,1) [] = { 0xfffffffffffffff2 };
 VECT_VAR_DECL(vdup_n_expected2,poly,64,2) [] = { 0xfffffffffffffff2,
 						 0xfffffffffffffff2 };
 
-/* Expected results: vmov_n.  */
-VECT_VAR_DECL(vmov_n_expected0,poly,64,1) [] = { 0xfffffffffffffff0 };
-VECT_VAR_DECL(vmov_n_expected0,poly,64,2) [] = { 0xfffffffffffffff0,
-						 0xfffffffffffffff0 };
-VECT_VAR_DECL(vmov_n_expected1,poly,64,1) [] = { 0xfffffffffffffff1 };
-VECT_VAR_DECL(vmov_n_expected1,poly,64,2) [] = { 0xfffffffffffffff1,
-						 0xfffffffffffffff1 };
-VECT_VAR_DECL(vmov_n_expected2,poly,64,1) [] = { 0xfffffffffffffff2 };
-VECT_VAR_DECL(vmov_n_expected2,poly,64,2) [] = { 0xfffffffffffffff2,
-						 0xfffffffffffffff2 };
-
 /* Expected results: vext.  */
 VECT_VAR_DECL(vext_expected,poly,64,1) [] = { 0xfffffffffffffff0 };
 VECT_VAR_DECL(vext_expected,poly,64,2) [] = { 0xfffffffffffffff1, 0x88 };
@@ -124,6 +113,29 @@ VECT_VAR_DECL(vst1_lane_expected,poly,64,1) [] = { 0xfffffffffffffff0 };
 VECT_VAR_DECL(vst1_lane_expected,poly,64,2) [] = { 0xfffffffffffffff0,
 						   0x3333333333333333 };
 
+/* Expected results: vget_lane.  */
+VECT_VAR_DECL(vget_lane_expected,poly,64,1) = 0xfffffffffffffff0;
+VECT_VAR_DECL(vget_lane_expected,poly,64,2) = 0xfffffffffffffff0;
+
+/* Expected results: vset_lane.  */
+VECT_VAR_DECL(vset_lane_expected,poly,64,1) [] = { 0x88 };
+VECT_VAR_DECL(vset_lane_expected,poly,64,2) [] = { 0xfffffffffffffff0, 0x11 };
+
+/* Expected results: vtst.  */
+VECT_VAR_DECL(vtst_expected,uint,64,1) [] = { 0x0 };
+
+#ifdef __aarch64__
+/* Expected results: vmov_n.  */
+VECT_VAR_DECL(vmov_n_expected0,poly,64,1) [] = { 0xfffffffffffffff0 };
+VECT_VAR_DECL(vmov_n_expected0,poly,64,2) [] = { 0xfffffffffffffff0,
+						 0xfffffffffffffff0 };
+VECT_VAR_DECL(vmov_n_expected1,poly,64,1) [] = { 0xfffffffffffffff1 };
+VECT_VAR_DECL(vmov_n_expected1,poly,64,2) [] = { 0xfffffffffffffff1,
+						 0xfffffffffffffff1 };
+VECT_VAR_DECL(vmov_n_expected2,poly,64,1) [] = { 0xfffffffffffffff2 };
+VECT_VAR_DECL(vmov_n_expected2,poly,64,2) [] = { 0xfffffffffffffff2,
+						 0xfffffffffffffff2 };
+
 /* Expected results: vldX_lane.  */
 VECT_VAR_DECL(expected_vld_st2_0,poly,64,1) [] = { 0xfffffffffffffff0 };
 VECT_VAR_DECL(expected_vld_st2_0,poly,64,2) [] = { 0xfffffffffffffff0,
@@ -153,9 +165,9 @@ VECT_VAR_DECL(expected_vld_st4_3,poly,64,1) [] = { 0xfffffffffffffff3 };
 VECT_VAR_DECL(expected_vld_st4_3,poly,64,2) [] = { 0xaaaaaaaaaaaaaaaa,
 						   0xaaaaaaaaaaaaaaaa };
 
-/* Expected results: vget_lane.  */
-VECT_VAR_DECL(vget_lane_expected,poly,64,1) = 0xfffffffffffffff0;
-VECT_VAR_DECL(vget_lane_expected,poly,64,2) = 0xfffffffffffffff0;
+/* Expected results: vtst.  */
+VECT_VAR_DECL(vtst_expected,uint,64,2) [] = { 0x0, 0xffffffffffffffff };
+#endif
 
 int main (void)
 {
@@ -727,7 +739,105 @@ int main (void)
   CHECK_POLY(TEST_MSG, poly, 64, 1, PRIx64, vst1_lane_expected, "");
   CHECK_POLY(TEST_MSG, poly, 64, 2, PRIx64, vst1_lane_expected, "");
 
+  /* vget_lane_p64 tests.  */
+#undef TEST_MSG
+#define TEST_MSG "VGET_LANE/VGETQ_LANE"
+
+#define TEST_VGET_LANE(Q, T1, T2, W, N, L)				   \
+  VECT_VAR(vget_lane_vector, T1, W, N) = vget##Q##_lane_##T2##W(VECT_VAR(vget_lane_vector1, T1, W, N), L); \
+  if (VECT_VAR(vget_lane_vector, T1, W, N) != VECT_VAR(vget_lane_expected, T1, W, N)) {		\
+    fprintf(stderr,							   \
+	    "ERROR in %s (%s line %d in result '%s') at type %s "	   \
+	    "got 0x%" PRIx##W " != 0x%" PRIx##W "\n",			   \
+	    TEST_MSG, __FILE__, __LINE__,				   \
+	    STR(VECT_VAR(vget_lane_expected, T1, W, N)),		   \
+	    STR(VECT_NAME(T1, W, N)),					   \
+	    VECT_VAR(vget_lane_vector, T1, W, N),			   \
+	    VECT_VAR(vget_lane_expected, T1, W, N));			   \
+    abort ();								   \
+  }
+
+  /* Initialize input values.  */
+  DECL_VARIABLE(vget_lane_vector1, poly, 64, 1);
+  DECL_VARIABLE(vget_lane_vector1, poly, 64, 2);
+
+  VLOAD(vget_lane_vector1, buffer,  , poly, p, 64, 1);
+  VLOAD(vget_lane_vector1, buffer, q, poly, p, 64, 2);
+
+  VECT_VAR_DECL(vget_lane_vector, poly, 64, 1);
+  VECT_VAR_DECL(vget_lane_vector, poly, 64, 2);
+
+  TEST_VGET_LANE( , poly, p, 64, 1, 0);
+  TEST_VGET_LANE(q, poly, p, 64, 2, 0);
+
+
+  /* vset_lane_p64 tests.  */
+#undef TEST_MSG
+#define TEST_MSG "VSET_LANE/VSETQ_LANE"
+
+#define TEST_VSET_LANE(Q, T1, T2, W, N, V, L)				\
+  VECT_VAR(vset_lane_vector, T1, W, N) =						\
+    vset##Q##_lane_##T2##W(V,						\
+			   VECT_VAR(vset_lane_vector, T1, W, N),			\
+			   L);						\
+  vst1##Q##_##T2##W(VECT_VAR(result, T1, W, N), VECT_VAR(vset_lane_vector, T1, W, N))
+
+  /* Initialize input values.  */
+  DECL_VARIABLE(vset_lane_vector, poly, 64, 1);
+  DECL_VARIABLE(vset_lane_vector, poly, 64, 2);
+
+  CLEAN(result, uint, 64, 1);
+  CLEAN(result, uint, 64, 2);
+
+  VLOAD(vset_lane_vector, buffer, , poly, p, 64, 1);
+  VLOAD(vset_lane_vector, buffer, q, poly, p, 64, 2);
+
+  /* Choose value and lane arbitrarily.  */
+  TEST_VSET_LANE(, poly, p, 64, 1, 0x88, 0);
+  TEST_VSET_LANE(q, poly, p, 64, 2, 0x11, 1);
+
+  CHECK(TEST_MSG, poly, 64, 1, PRIx64, vset_lane_expected, "");
+  CHECK(TEST_MSG, poly, 64, 2, PRIx64, vset_lane_expected, "");
+
+
+  /* vtst_p64 tests.  */
+#undef TEST_MSG
+#define TEST_MSG "VTST"
+  
+#define TEST_VTST1(INSN, Q, T1, T2, W, N)			\
+  VECT_VAR(vtst_vector_res, uint, W, N) =			\
+    INSN##Q##_##T2##W(VECT_VAR(vtst_vector, T1, W, N),		\
+		      VECT_VAR(vtst_vector2, T1, W, N));	\
+    vst1##Q##_u##W(VECT_VAR(result, uint, W, N),		\
+		   VECT_VAR(vtst_vector_res, uint, W, N))
+
+#define TEST_VTST(INSN, Q, T1, T2, W, N)	\
+  TEST_VTST1(INSN, Q, T1, T2, W, N)		\
+
+  /* Initialize input values.  */
+  DECL_VARIABLE(vtst_vector, poly, 64, 1);
+  DECL_VARIABLE(vtst_vector2, poly, 64, 1);
+  DECL_VARIABLE(vtst_vector_res, uint, 64, 1);
+
+  CLEAN(result, uint, 64, 1);
+
+  VLOAD(vtst_vector, buffer,  , poly, p, 64, 1);
+  VDUP(vtst_vector2, , poly, p, 64, 1, 5);
+
+  TEST_VTST(vtst, , poly, p, 64, 1);
+
+  CHECK(TEST_MSG, uint, 64, 1, PRIx64, vtst_expected, "");
+
+  /* vtstq_p64 is supported by aarch64 only.  */
 #ifdef __aarch64__
+  DECL_VARIABLE(vtst_vector, poly, 64, 2);
+  DECL_VARIABLE(vtst_vector2, poly, 64, 2);
+  DECL_VARIABLE(vtst_vector_res, uint, 64, 2);
+  CLEAN(result, uint, 64, 2);
+  VLOAD(vtst_vector, buffer, q, poly, p, 64, 2);
+  VDUP(vtst_vector2, q, poly, p, 64, 2, 5);
+  TEST_VTST(vtst, q, poly, p, 64, 2);
+  CHECK(TEST_MSG, uint, 64, 2, PRIx64, vtst_expected, "");
 
   /* vmov_n_p64 tests.  */
 #undef TEST_MSG
@@ -766,37 +876,6 @@ int main (void)
       abort();
     }
   }
-
-  /* vget_lane_p64 tests.  */
-#undef TEST_MSG
-#define TEST_MSG "VGET_LANE/VGETQ_LANE"
-
-#define TEST_VGET_LANE(Q, T1, T2, W, N, L)				   \
-  VECT_VAR(vget_lane_vector, T1, W, N) = vget##Q##_lane_##T2##W(VECT_VAR(vector, T1, W, N), L); \
-  if (VECT_VAR(vget_lane_vector, T1, W, N) != VECT_VAR(vget_lane_expected, T1, W, N)) {		\
-    fprintf(stderr,							   \
-	    "ERROR in %s (%s line %d in result '%s') at type %s "	   \
-	    "got 0x%" PRIx##W " != 0x%" PRIx##W "\n",			   \
-	    TEST_MSG, __FILE__, __LINE__,				   \
-	    STR(VECT_VAR(vget_lane_expected, T1, W, N)),		   \
-	    STR(VECT_NAME(T1, W, N)),					   \
-	    (uint##W##_t)VECT_VAR(vget_lane_vector, T1, W, N),		   \
-	    (uint##W##_t)VECT_VAR(vget_lane_expected, T1, W, N));	   \
-    abort ();								   \
-  }
-
-  /* Initialize input values.  */
-  DECL_VARIABLE(vector, poly, 64, 1);
-  DECL_VARIABLE(vector, poly, 64, 2);
-
-  VLOAD(vector, buffer,  , poly, p, 64, 1);
-  VLOAD(vector, buffer, q, poly, p, 64, 2);
-
-  VECT_VAR_DECL(vget_lane_vector, poly, 64, 1);
-  VECT_VAR_DECL(vget_lane_vector, poly, 64, 2);
-
-  TEST_VGET_LANE( , poly, p, 64, 1, 0);
-  TEST_VGET_LANE(q, poly, p, 64, 2, 0);
 
   /* vldx_lane_p64 tests.  */
 #undef TEST_MSG

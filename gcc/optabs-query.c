@@ -584,6 +584,25 @@ can_atomic_exchange_p (machine_mode mode, bool allow_libcall)
   return can_compare_and_swap_p (mode, allow_libcall);
 }
 
+/* Return true if an atomic load can be performed without falling back to
+   a compare-and-swap.  */
+
+bool
+can_atomic_load_p (machine_mode mode)
+{
+  enum insn_code icode;
+
+  /* Does the target supports the load directly?  */
+  icode = direct_optab_handler (atomic_load_optab, mode);
+  if (icode != CODE_FOR_nothing)
+    return true;
+
+  /* If the size of the object is greater than word size on this target,
+     then we assume that a load will not be atomic.  Also see
+     expand_atomic_load.  */
+  return GET_MODE_PRECISION (mode) <= BITS_PER_WORD;
+}
+
 /* Determine whether "1 << x" is relatively cheap in word_mode.  */
 
 bool

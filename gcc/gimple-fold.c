@@ -1177,11 +1177,15 @@ gimple_fold_builtin_memset (gimple_stmt_iterator *gsi, tree c, tree len)
    length and 2 for maximum value ARG can have.
    When FUZZY is set and the length of a string cannot be determined,
    the function instead considers as the maximum possible length the
-   size of a character array it may refer to.  */
+   size of a character array it may refer to.
+   Set *FLEXP to true if the range of the string lengths has been
+   obtained from the upper bound of an array at the end of a struct.
+   Such an array may hold a string that's longer than its upper bound
+   due to it being used as a poor-man's flexible array member.  */
 
 static bool
 get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
-		  bool fuzzy)
+		  bool fuzzy, bool *flexp)
 {
   tree var, val;
   gimple *def_stmt;
@@ -1202,7 +1206,7 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 	  if (TREE_CODE (aop0) == INDIRECT_REF
 	      && TREE_CODE (TREE_OPERAND (aop0, 0)) == SSA_NAME)
 	    return get_range_strlen (TREE_OPERAND (aop0, 0),
-				     length, visited, type, fuzzy);
+				     length, visited, type, fuzzy, flexp);
 	}
 
       if (type == 2)
@@ -1219,7 +1223,7 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 	{
 	  if (TREE_CODE (arg) == ADDR_EXPR)
 	    return get_range_strlen (TREE_OPERAND (arg, 0), length,
-				     visited, type, fuzzy);
+				     visited, type, fuzzy, flexp);
 
 	  if (TREE_CODE (arg) == COMPONENT_REF
 	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 1))) == ARRAY_TYPE)
@@ -1228,15 +1232,21 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 		 bound on the length of the array.  This may be overly
 		 optimistic if the array itself isn't NUL-terminated and
 		 the caller relies on the subsequent member to contain
-		 the NUL.  */
+		 the NUL.
+		 Set *FLEXP to true if the array whose bound is being
+		 used is at the end of a struct.  */
+	      if (array_at_struct_end_p (arg, true))
+		*flexp = true;
+
 	      arg = TREE_OPERAND (arg, 1);
 	      val = TYPE_SIZE_UNIT (TREE_TYPE (arg));
 	      if (!val || integer_zerop (val))
 		return false;
 	      val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,
 				 integer_one_node);
-	      /* Avoid using the array size as the minimum.  */
-	      minlen = NULL;
+	      /* Set the minimum size to zero since the string in
+		 the array could have zero length.  */
+	      *minlen = ssize_int (0);
 	    }
 	}
 
@@ -1295,14 +1305,14 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
             || gimple_assign_unary_nop_p (def_stmt))
           {
             tree rhs = gimple_assign_rhs1 (def_stmt);
-	    return get_range_strlen (rhs, length, visited, type, fuzzy);
+	    return get_range_strlen (rhs, length, visited, type, fuzzy, flexp);
           }
 	else if (gimple_assign_rhs_code (def_stmt) == COND_EXPR)
 	  {
 	    tree op2 = gimple_assign_rhs2 (def_stmt);
 	    tree op3 = gimple_assign_rhs3 (def_stmt);
-	    return get_range_strlen (op2, length, visited, type, fuzzy)
-	      && get_range_strlen (op3, length, visited, type, fuzzy);
+	    return get_range_strlen (op2, length, visited, type, fuzzy, flexp)
+	      && get_range_strlen (op3, length, visited, type, fuzzy, flexp);
           }
         return false;
 
@@ -1325,7 +1335,7 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
             if (arg == gimple_phi_result (def_stmt))
               continue;
 
-	    if (!get_range_strlen (arg, length, visited, type, fuzzy))
+	    if (!get_range_strlen (arg, length, visited, type, fuzzy, flexp))
 	      {
 		if (fuzzy)
 		  *maxlen = build_all_ones_cst (size_type_node);
@@ -1349,19 +1359,26 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
    and array declared as 'char array[8]', MINMAXLEN[0] will be set
    to 3 and MINMAXLEN[1] to 7, the longest string that could be
    stored in array.
-*/
+   Return true if the range of the string lengths has been obtained
+   from the upper bound of an array at the end of a struct.  Such
+   an array may hold a string that's longer than its upper bound
+   due to it being used as a poor-man's flexible array member.  */
 
-void get_range_strlen (tree arg, tree minmaxlen[2])
+bool
+get_range_strlen (tree arg, tree minmaxlen[2])
 {
   bitmap visited = NULL;
 
   minmaxlen[0] = NULL_TREE;
   minmaxlen[1] = NULL_TREE;
 
-  get_range_strlen (arg, minmaxlen, &visited, 1, true);
+  bool flexarray = false;
+  get_range_strlen (arg, minmaxlen, &visited, 1, true, &flexarray);
 
   if (visited)
     BITMAP_FREE (visited);
+
+  return flexarray;
 }
 
 tree
@@ -1369,7 +1386,9 @@ get_maxval_strlen (tree arg, int type)
 {
   bitmap visited = NULL;
   tree len[2] = { NULL_TREE, NULL_TREE };
-  if (!get_range_strlen (arg, len, &visited, type, false))
+
+  bool dummy;
+  if (!get_range_strlen (arg, len, &visited, type, false, &dummy))
     len[1] = NULL_TREE;
   if (visited)
     BITMAP_FREE (visited);

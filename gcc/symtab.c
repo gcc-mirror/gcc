@@ -890,6 +890,7 @@ symtab_node::dump_base (FILE *f)
     {
       fprintf (f, "  Aux:");
       dump_addr (f, " @", (void *)aux);
+      fprintf (f, "\n");
     }
 
   fprintf (f, "  References: ");
@@ -2224,6 +2225,8 @@ symtab_node::binds_to_current_def_p (symtab_node *ref)
   if (transparent_alias)
     return definition
 	   && get_alias_target()->binds_to_current_def_p (ref);
+  if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (decl)))
+    return false;
   if (decl_binds_to_current_def_p (decl))
     return true;
 

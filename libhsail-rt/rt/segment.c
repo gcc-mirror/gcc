@@ -32,9 +32,10 @@ __hsail_segmentp_private (uint64_t flat_addr, PHSAWorkItem *wi)
   if (flat_addr == 0)
     return 1;
   else
-    return (void *) flat_addr >= wi->wg->private_base_ptr
-	   && (void *) flat_addr
-		< wi->wg->private_base_ptr + wi->wg->private_segment_total_size;
+    return ((void *) (uintptr_t) flat_addr >= wi->wg->private_base_ptr
+	    && ((void *) (uintptr_t) flat_addr
+		< (wi->wg->private_base_ptr
+		   + wi->wg->private_segment_total_size)));
 }
 
 uint32_t
@@ -43,9 +44,10 @@ __hsail_segmentp_group (uint64_t flat_addr, PHSAWorkItem *wi)
   if (flat_addr == 0)
     return 1;
   else
-    return (void *) flat_addr >= wi->wg->group_base_ptr
-	   && (void *) flat_addr < wi->wg->group_base_ptr
-				     + wi->launch_data->dp->group_segment_size;
+    return ((void *) (uintptr_t) flat_addr >= wi->wg->group_base_ptr
+	    && ((void *) (uintptr_t) flat_addr
+		< (wi->wg->group_base_ptr
+		   + wi->launch_data->dp->group_segment_size)));
 }
 
 uint32_t

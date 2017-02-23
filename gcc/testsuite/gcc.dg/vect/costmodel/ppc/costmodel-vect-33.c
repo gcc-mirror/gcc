@@ -36,7 +36,12 @@ int main (void)
 } 
 
 /* Peeling to align the store is used. Overhead of peeling is too high.  */
-/* { dg-final { scan-tree-dump-times "vectorization not profitable" 1 "vect" { target vector_alignment_reachable } } } */
+/* { dg-final { scan-tree-dump-times "vectorization not profitable" 1 "vect" { target { ! natural_alignment_32 } } } } */
 
-/* Versioning to align the store is used. Overhead of versioning is not too high.  */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target {! vector_alignment_reachable} } } } */
+/* Vectorization occurs, either because overhead of versioning is not
+   too high, or because the hardware supports efficient unaligned accesses.  */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { natural_alignment_32 } } } } */
+
+/* Versioning to align the store is used.  Overhead of versioning is not 
+   too high.  */
+/* { dg-final { scan-tree-dump-times "loop versioned for vectorization to enhance alignment" 1 "vect" { target { natural_alignment_32 && { ! vect_hw_misalign } } } } } */

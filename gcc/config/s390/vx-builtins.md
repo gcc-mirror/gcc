@@ -65,6 +65,7 @@
 
 ; Vector gather element
 
+; vgef, vgeg
 (define_insn "vec_gather_element<mode>"
   [(set (match_operand:V_HW_32_64                     0 "register_operand"  "=v")
 	(unspec:V_HW_32_64 [(match_operand:V_HW_32_64 1 "register_operand"   "0")
@@ -125,7 +126,7 @@
   int i;
   unsigned mask = 0x8000;
   rtx const_vec[16];
-  unsigned HOST_WIDE_INT byte_mask = INTVAL (operands[1]);
+  unsigned HOST_WIDE_INT byte_mask = UINTVAL (operands[1]);
 
   for (i = 0; i < 16; i++)
     {
@@ -167,6 +168,7 @@
 
 ; vec_extract is also an RTL standard name -> vector.md
 
+; vllezb, vllezh, vllezf, vllezg
 (define_insn "vec_insert_and_zero<mode>"
   [(set (match_operand:V_HW                    0 "register_operand" "=v")
 	(unspec:V_HW [(match_operand:<non_vec> 1 "memory_operand"    "R")]
@@ -187,6 +189,7 @@
 ; FIXME: The following two patterns might using vec_merge. But what is
 ; the canonical form: (vec_select (vec_merge op0 op1)) or (vec_merge
 ; (vec_select op0) (vec_select op1)
+; vmrhb, vmrhh, vmrhf, vmrhg
 (define_insn "vec_mergeh<mode>"
   [(set (match_operand:V_HW               0 "register_operand" "=v")
 	(unspec:V_HW [(match_operand:V_HW 1 "register_operand"  "v")
@@ -196,6 +199,7 @@
   "vmrh<bhfgq>\t%v0,%1,%2"
   [(set_attr "op_type" "VRR")])
 
+; vmrlb, vmrlh, vmrlf, vmrlg
 (define_insn "vec_mergel<mode>"
   [(set (match_operand:V_HW               0 "register_operand" "=v")
 	(unspec:V_HW [(match_operand:V_HW 1 "register_operand"  "v")
@@ -208,6 +212,7 @@
 
 ; Vector pack
 
+; vpkh, vpkf, vpkg
 (define_insn "vec_pack<mode>"
   [(set (match_operand:<vec_half>                    0 "register_operand" "=v")
 	(unspec:<vec_half> [(match_operand:VI_HW_HSD 1 "register_operand"  "v")
@@ -220,6 +225,7 @@
 
 ; Vector pack saturate
 
+; vpksh, vpksf, vpksg
 (define_insn "vec_packs<mode>"
   [(set (match_operand:<vec_half>                    0 "register_operand" "=v")
 	(unspec:<vec_half> [(match_operand:VI_HW_HSD 1 "register_operand"  "v")
@@ -249,6 +255,7 @@
   operands[4] = gen_reg_rtx (SImode);
 })
 
+; vpksh, vpksf, vpksg
 (define_insn "*vec_packs_cc<mode>"
   [(set (reg:CCRAW CC_REGNUM)
 	(unspec:CCRAW [(match_operand:VI_HW_HSD 1 "register_operand" "v")
@@ -264,6 +271,7 @@
 
 ; Vector pack logical saturate
 
+; vpklsh, vpklsf, vpklsg
 (define_insn "vec_packsu<mode>"
   [(set (match_operand:<vec_half>                    0 "register_operand" "=v")
 	(unspec:<vec_half> [(match_operand:VI_HW_HSD 1 "register_operand"  "v")
@@ -322,6 +330,7 @@
   operands[4] = gen_reg_rtx (SImode);
 })
 
+; vpklsh, vpklsf, vpklsg
 (define_insn "*vec_packsu_cc<mode>"
   [(set (reg:CCRAW CC_REGNUM)
 	(unspec:CCRAW [(match_operand:VI_HW_HSD 1 "register_operand" "v")
@@ -403,6 +412,7 @@
   [(set_attr "op_type" "VRV")])
 
 ; A 31 bit target address is generated from 64 bit elements
+; vsceg
 (define_insn "vec_scatter_element<V_HW_64:mode>_SI"
   [(set (mem:<non_vec>
 	 (plus:SI (subreg:SI
@@ -417,6 +427,7 @@
   [(set_attr "op_type" "VRV")])
 
 ; Element size and target address size is the same
+; vscef, vsceg
 (define_insn "vec_scatter_element<mode>_<non_vec_int>"
   [(set (mem:<non_vec>
 	 (plus:<non_vec_int> (unspec:<non_vec_int>
@@ -482,6 +493,7 @@
 ; Vector sign extend to doubleword
 
 ; Sign extend of right most vector element to respective double-word
+; vsegb, vsegh, vsegf
 (define_insn "vec_extend<mode>"
   [(set (match_operand:VI_HW_QHS                    0 "register_operand" "=v")
 	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand"  "v")]
@@ -551,6 +563,7 @@
 
 ; Vector add compute carry
 
+; vaccb, vacch, vaccf, vaccg, vaccq
 (define_insn "vacc<bhfgq>_<mode>"
   [(set (match_operand:VIT_HW                 0 "register_operand" "=v")
 	(unspec:VIT_HW [(match_operand:VIT_HW 1 "register_operand" "%v")
@@ -638,6 +651,7 @@
 
 ; Vector average
 
+; vavgb, vavgh, vavgf, vavgg
 (define_insn "vec_avg<mode>"
   [(set (match_operand:VI_HW                0 "register_operand" "=v")
 	(unspec:VI_HW [(match_operand:VI_HW 1 "register_operand" "%v")
@@ -649,6 +663,7 @@
 
 ; Vector average logical
 
+; vavglb, vavglh, vavglf, vavglg
 (define_insn "vec_avgu<mode>"
   [(set (match_operand:VI_HW                0 "register_operand" "=v")
 	(unspec:VI_HW [(match_operand:VI_HW 1 "register_operand" "%v")
@@ -787,6 +802,7 @@
 
 ; Vector Galois field multiply sum
 
+; vgfmb, vgfmh, vgfmf
 (define_insn "vec_gfmsum<mode>"
   [(set (match_operand:VI_HW_QHS 0 "register_operand" "=v")
 	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "v")
@@ -805,6 +821,7 @@
   "vgfmg\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
+; vgfmab, vgfmah, vgfmaf
 (define_insn "vec_gfmsum_accum<mode>"
   [(set (match_operand:<vec_double> 0 "register_operand" "=v")
 	(unspec:<vec_double> [(match_operand:VI_HW_QHS 1 "register_operand" "v")
@@ -1115,6 +1132,7 @@
 
 ; Vector subtract compute borrow indication
 
+; vscbib, vscbih, vscbif, vscbig, vscbiq
 (define_insn "vscbi<bhfgq>_<mode>"
   [(set (match_operand:VIT_HW 0 "register_operand"                "=v")
 	(unspec:VIT_HW [(match_operand:VIT_HW 1 "register_operand" "v")
@@ -1214,7 +1232,7 @@
 			  UNSPEC_VEC_VFAE))]
   "TARGET_VX"
 {
-  unsigned HOST_WIDE_INT flags = INTVAL (operands[3]);
+  unsigned HOST_WIDE_INT flags = UINTVAL (operands[3]);
 
   if (flags & VSTRING_FLAG_ZS)
     {
@@ -1241,7 +1259,7 @@
 		      UNSPEC_VEC_VFAECC))]
   "TARGET_VX"
 {
-  unsigned HOST_WIDE_INT flags = INTVAL (operands[3]);
+  unsigned HOST_WIDE_INT flags = UINTVAL (operands[3]);
 
   if (flags & VSTRING_FLAG_ZS)
     {
@@ -1320,7 +1338,7 @@
 		      UNSPEC_VEC_VFEECC))]
   "TARGET_VX"
 {
-  unsigned HOST_WIDE_INT flags = INTVAL (operands[3]);
+  unsigned HOST_WIDE_INT flags = UINTVAL (operands[3]);
 
   gcc_assert (!(flags & ~(VSTRING_FLAG_ZS | VSTRING_FLAG_CS)));
   flags &= ~VSTRING_FLAG_CS;
@@ -1497,7 +1515,7 @@
 			  UNSPEC_VEC_VSTRC))]
   "TARGET_VX"
 {
-  unsigned HOST_WIDE_INT flags = INTVAL (operands[4]);
+  unsigned HOST_WIDE_INT flags = UINTVAL (operands[4]);
 
   if (flags & VSTRING_FLAG_ZS)
     {
@@ -1526,7 +1544,7 @@
 		      UNSPEC_VEC_VSTRCCC))]
   "TARGET_VX"
 {
-  unsigned HOST_WIDE_INT flags = INTVAL (operands[4]);
+  unsigned HOST_WIDE_INT flags = UINTVAL (operands[4]);
 
   if (flags & VSTRING_FLAG_ZS)
     {
@@ -1726,41 +1744,6 @@
   "TARGET_VX && !(UINTVAL (operands[2]) & 3) && UINTVAL (operands[3]) <= 7"
   "vfidb\t%v0,%v1,%b2,%b3"
   [(set_attr "op_type" "VRR")])
-
-(define_expand "vec_ceil"
-  [(set (match_operand:V2DI               0 "register_operand" "")
-	(unspec:V2DI [(match_operand:V2DF 1 "register_operand" "")
-		      (const_int VEC_RND_TO_INF)]
-		     UNSPEC_VEC_VFIDB))]
-  "TARGET_VX")
-
-(define_expand "vec_floor"
-  [(set (match_operand:V2DI               0 "register_operand" "")
-	(unspec:V2DI [(match_operand:V2DF 1 "register_operand" "")
-		      (const_int VEC_RND_TO_MINF)]
-		     UNSPEC_VEC_VFIDB))]
-  "TARGET_VX")
-
-(define_expand "vec_trunc"
-  [(set (match_operand:V2DI               0 "register_operand" "")
-	(unspec:V2DI [(match_operand:V2DF 1 "register_operand" "")
-		      (const_int VEC_RND_TO_ZERO)]
-		     UNSPEC_VEC_VFIDB))]
-  "TARGET_VX")
-
-(define_expand "vec_roundc"
-  [(set (match_operand:V2DI               0 "register_operand" "")
-	(unspec:V2DI [(match_operand:V2DF 1 "register_operand" "")
-		      (const_int VEC_RND_CURRENT)]
-		     UNSPEC_VEC_VFIDB))]
-  "TARGET_VX")
-
-(define_expand "vec_round"
-  [(set (match_operand:V2DI               0 "register_operand" "")
-	(unspec:V2DI [(match_operand:V2DF 1 "register_operand" "")
-		      (const_int VEC_RND_NEAREST_TO_EVEN)]
-		     UNSPEC_VEC_VFIDB))]
-  "TARGET_VX")
 
 
 ; Vector load lengthened - V4SF -> V2DF

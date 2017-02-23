@@ -1,3 +1,7 @@
+2017-02-09  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* Makefile.in (po/$(PACKAGE).pot): Adjust bug reporting URL.
+
 2017-01-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/77949

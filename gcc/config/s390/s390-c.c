@@ -321,7 +321,7 @@ s390_cpu_cpp_builtins_internal (cpp_reader *pfile,
   s390_def_or_undef_macro (pfile, MASK_OPT_HTM, old_opts, opts,
 			   "__HTM__", "__HTM__");
   s390_def_or_undef_macro (pfile, MASK_OPT_VX, old_opts, opts,
-			   "__S390_VX__", "__S390_VX__");
+			   "__VX__", "__VX__");
   s390_def_or_undef_macro (pfile, MASK_ZVECTOR, old_opts, opts,
 			   "__VEC__=10301", "__VEC__");
   s390_def_or_undef_macro (pfile, MASK_ZVECTOR, old_opts, opts,
@@ -340,8 +340,8 @@ s390_cpu_cpp_builtins_internal (cpp_reader *pfile,
       arch_level--;
     /* Review when a new arch is added and increase the value.  */
     char dummy[23 - 2 * PROCESSOR_max] __attribute__((unused));
-    sprintf (macro_def, "__S390_ARCH_LEVEL__=%d", arch_level);
-    cpp_undef (pfile, "__S390_ARCH_LEVEL__");
+    sprintf (macro_def, "__ARCH__=%d", arch_level);
+    cpp_undef (pfile, "__ARCH__");
     cpp_define (pfile, macro_def);
   }
 

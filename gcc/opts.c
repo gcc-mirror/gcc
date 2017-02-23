@@ -2150,6 +2150,8 @@ common_handle_option (struct gcc_options *opts,
 	opts->x_flag_profile_values = value;
       if (!opts_set->x_flag_inline_functions)
 	opts->x_flag_inline_functions = value;
+      if (!opts_set->x_flag_ipa_bit_cp)
+	opts->x_flag_ipa_bit_cp = value;
       /* FIXME: Instrumentation we insert makes ipa-reference bitmaps
 	 quadratic.  Disable the pass until better memory representation
 	 is done.  */

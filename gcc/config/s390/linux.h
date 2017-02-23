@@ -24,9 +24,12 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Target specific type definitions.  */
 
-/* ??? Do we really want long as size_t on 31-bit?  */
+/* For 31 bit our size type differs from most other targets (where it
+   is "unsigned int").  The difference tends to cause trouble e.g.:
+   Glibc BZ #16712, GCC BZ #79358 but cannot be changed due to ABI
+   issues.  */
 #undef  SIZE_TYPE
-#define SIZE_TYPE (TARGET_64BIT ? "long unsigned int" : "long unsigned int")
+#define SIZE_TYPE "long unsigned int"
 #undef  PTRDIFF_TYPE
 #define PTRDIFF_TYPE (TARGET_64BIT ? "long int" : "int")
 

@@ -52,7 +52,7 @@ void fuint (unsigned j, char *p)
   if (j > 999)
     return;
 
-  snprintf (p, 4, "%3u", j);   /* { dg-bogus "may be truncated" "unsigned int" { xfail *-*-* } } */
+  snprintf (p, 4, "%3u", j);
 }
 
 void fint (int j, char *p)
@@ -62,7 +62,7 @@ void fint (int j, char *p)
   if (k > 999)
     return;
 
-  snprintf (p, 4, "%3u", k);   /* { dg-bogus "may be truncated" "signed int" { xfail *-*-* } } */
+  snprintf (p, 4, "%3u", k);
 }
 
 void fulong (unsigned long j, char *p)
@@ -70,7 +70,7 @@ void fulong (unsigned long j, char *p)
   if (j > 999)
     return;
 
-  snprintf (p, 4, "%3lu", j);   /* { dg-bogus "may be truncated" "unsigned long" { xfail *-*-* } } */
+  snprintf (p, 4, "%3lu", j);
 }
 
 void flong (long j, char *p)
@@ -80,7 +80,7 @@ void flong (long j, char *p)
   if (k > 999)
     return;
 
-  snprintf (p, 4, "%3lu", k);   /* { dg-bogus "may be truncated" "signed long" { xfail *-*-* } } */
+  snprintf (p, 4, "%3lu", k);
 }
 
 void fullong (unsigned long long j, char *p)
@@ -88,7 +88,7 @@ void fullong (unsigned long long j, char *p)
   if (j > 999)
     return;
 
-  snprintf (p, 4, "%3llu", j);   /* { dg-bogus "may be truncated" "signed long" { xfail *-*-* } } */
+  snprintf (p, 4, "%3llu", j);
 }
 
 void fllong (long long j, char *p)
@@ -98,7 +98,7 @@ void fllong (long long j, char *p)
   if (k > 999)
     return;
 
-  snprintf (p, 4, "%3llu", k);   /* { dg-bogus "may be truncated" "unsigned long long" { xfail *-*-* } } */
+  snprintf (p, 4, "%3llu", k);
 }
 
 /* { dg-final { scan-tree-dump-not "abort" "optimized" } } */

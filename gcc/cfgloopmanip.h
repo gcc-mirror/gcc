@@ -58,6 +58,7 @@ basic_block create_preheader (struct loop *, int);
 extern void create_preheaders (int);
 extern void force_single_succ_latches (void);
 struct loop * loop_version (struct loop *, void *,
-			    basic_block *, unsigned, unsigned, unsigned, bool);
+			    basic_block *, unsigned, unsigned,
+			    unsigned, unsigned, bool);
 
 #endif /* GCC_CFGLOOPMANIP_H */

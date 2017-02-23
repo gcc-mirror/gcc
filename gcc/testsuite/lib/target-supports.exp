@@ -6514,9 +6514,7 @@ proc check_effective_target_section_anchors { } {
 # Return 1 if the target supports atomic operations on "int_128" values.
 
 proc check_effective_target_sync_int_128 { } {
-    if { (([istarget i?86-*-*] || [istarget x86_64-*-*])
-	  && ![is-effective-target ia32])
-	 || [istarget spu-*-*] } {
+    if { [istarget spu-*-*] } {
 	return 1
     } else {
 	return 0
@@ -6525,23 +6523,10 @@ proc check_effective_target_sync_int_128 { } {
 
 # Return 1 if the target supports atomic operations on "int_128" values
 # and can execute them.
+# This requires support for both compare-and-swap and true atomic loads.
 
 proc check_effective_target_sync_int_128_runtime { } {
-    if { (([istarget i?86-*-*] || [istarget x86_64-*-*])
-	  && ![is-effective-target ia32]
-	  && [check_cached_effective_target sync_int_128_available {
-	      check_runtime_nocache sync_int_128_available {
-		  #include "cpuid.h"
-		  int main ()
-		  {
-		      unsigned int eax, ebx, ecx, edx;
-		      if (__get_cpuid (1, &eax, &ebx, &ecx, &edx))
-			return !(ecx & bit_CMPXCHG16B);
-		      return 1;
-		  }
-	      } ""
-	  }])
-	 || [istarget spu-*-*] } {
+    if { [istarget spu-*-*] } {
 	return 1
     } else {
 	return 0
@@ -7986,6 +7971,7 @@ proc check_effective_target_logical_op_short_circuit {} {
 	 || [istarget s390*-*-*]
 	 || [istarget powerpc*-*-*]
 	 || [istarget nios2*-*-*]
+	 || [istarget riscv*-*-*]
 	 || [istarget visium-*-*]
 	 || [check_effective_target_arm_cortex_m] } {
 	return 1

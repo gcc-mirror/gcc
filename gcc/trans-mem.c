@@ -620,7 +620,7 @@ diagnose_tm_1_op (tree *tp, int *walk_subtrees, void *data)
 		  "invalid use of volatile lvalue inside transaction");
       else if (d->func_flags & DIAG_TM_SAFE)
 	error_at (gimple_location (d->stmt),
-		  "invalid use of volatile lvalue inside %<transaction_safe%>"
+		  "invalid use of volatile lvalue inside %<transaction_safe%> "
 		  "function");
     }
 

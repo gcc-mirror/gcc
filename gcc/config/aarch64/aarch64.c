@@ -365,10 +365,12 @@ static const struct cpu_regmove_cost thunderx2t99_regmove_cost =
 /* Generic costs for vector insn classes.  */
 static const struct cpu_vector_cost generic_vector_cost =
 {
-  1, /* scalar_stmt_cost  */
+  1, /* scalar_int_stmt_cost  */
+  1, /* scalar_fp_stmt_cost  */
   1, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  1, /* vec_stmt_cost  */
+  1, /* vec_int_stmt_cost  */
+  1, /* vec_fp_stmt_cost  */
   2, /* vec_permute_cost  */
   1, /* vec_to_scalar_cost  */
   1, /* scalar_to_vec_cost  */
@@ -383,10 +385,12 @@ static const struct cpu_vector_cost generic_vector_cost =
 /* ThunderX costs for vector insn classes.  */
 static const struct cpu_vector_cost thunderx_vector_cost =
 {
-  1, /* scalar_stmt_cost  */
+  1, /* scalar_int_stmt_cost  */
+  1, /* scalar_fp_stmt_cost  */
   3, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  4, /* vec_stmt_cost  */
+  4, /* vec_int_stmt_cost  */
+  4, /* vec_fp_stmt_cost  */
   4, /* vec_permute_cost  */
   2, /* vec_to_scalar_cost  */
   2, /* scalar_to_vec_cost  */
@@ -401,10 +405,12 @@ static const struct cpu_vector_cost thunderx_vector_cost =
 /* Generic costs for vector insn classes.  */
 static const struct cpu_vector_cost cortexa57_vector_cost =
 {
-  1, /* scalar_stmt_cost  */
+  1, /* scalar_int_stmt_cost  */
+  1, /* scalar_fp_stmt_cost  */
   4, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  2, /* vec_stmt_cost  */
+  2, /* vec_int_stmt_cost  */
+  2, /* vec_fp_stmt_cost  */
   3, /* vec_permute_cost  */
   8, /* vec_to_scalar_cost  */
   8, /* scalar_to_vec_cost  */
@@ -418,10 +424,12 @@ static const struct cpu_vector_cost cortexa57_vector_cost =
 
 static const struct cpu_vector_cost exynosm1_vector_cost =
 {
-  1, /* scalar_stmt_cost  */
+  1, /* scalar_int_stmt_cost  */
+  1, /* scalar_fp_stmt_cost  */
   5, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  3, /* vec_stmt_cost  */
+  3, /* vec_int_stmt_cost  */
+  3, /* vec_fp_stmt_cost  */
   3, /* vec_permute_cost  */
   3, /* vec_to_scalar_cost  */
   3, /* scalar_to_vec_cost  */
@@ -436,10 +444,12 @@ static const struct cpu_vector_cost exynosm1_vector_cost =
 /* Generic costs for vector insn classes.  */
 static const struct cpu_vector_cost xgene1_vector_cost =
 {
-  1, /* scalar_stmt_cost  */
+  1, /* scalar_int_stmt_cost  */
+  1, /* scalar_fp_stmt_cost  */
   5, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  2, /* vec_stmt_cost  */
+  2, /* vec_int_stmt_cost  */
+  2, /* vec_fp_stmt_cost  */
   2, /* vec_permute_cost  */
   4, /* vec_to_scalar_cost  */
   4, /* scalar_to_vec_cost  */
@@ -454,10 +464,12 @@ static const struct cpu_vector_cost xgene1_vector_cost =
 /* Costs for vector insn classes for Vulcan.  */
 static const struct cpu_vector_cost thunderx2t99_vector_cost =
 {
-  6, /* scalar_stmt_cost  */
+  1, /* scalar_int_stmt_cost  */
+  6, /* scalar_fp_stmt_cost  */
   4, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  6, /* vec_stmt_cost  */
+  5, /* vec_int_stmt_cost  */
+  6, /* vec_fp_stmt_cost  */
   3, /* vec_permute_cost  */
   6, /* vec_to_scalar_cost  */
   5, /* scalar_to_vec_cost  */
@@ -780,7 +792,7 @@ static const struct tune_params thunderx2t99_tunings =
   &generic_approx_modes,
   4, /* memmov_cost.  */
   4, /* issue_rate.  */
-  AARCH64_FUSE_NOTHING, /* fuseable_ops.  */
+  (AARCH64_FUSE_CMP_BRANCH | AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
   16,	/* function_align.  */
   8,	/* jump_align.  */
   16,	/* loop_align.  */
@@ -8119,50 +8131,55 @@ aarch64_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 				    int misalign ATTRIBUTE_UNUSED)
 {
   unsigned elements;
+  const cpu_vector_cost *costs = aarch64_tune_params.vec_costs;
+  bool fp = false;
+
+  if (vectype != NULL)
+    fp = FLOAT_TYPE_P (vectype);
 
   switch (type_of_cost)
     {
       case scalar_stmt:
-	return aarch64_tune_params.vec_costs->scalar_stmt_cost;
+	return fp ? costs->scalar_fp_stmt_cost : costs->scalar_int_stmt_cost;
 
       case scalar_load:
-	return aarch64_tune_params.vec_costs->scalar_load_cost;
+	return costs->scalar_load_cost;
 
       case scalar_store:
-	return aarch64_tune_params.vec_costs->scalar_store_cost;
+	return costs->scalar_store_cost;
 
       case vector_stmt:
-	return aarch64_tune_params.vec_costs->vec_stmt_cost;
+	return fp ? costs->vec_fp_stmt_cost : costs->vec_int_stmt_cost;
 
       case vector_load:
-	return aarch64_tune_params.vec_costs->vec_align_load_cost;
+	return costs->vec_align_load_cost;
 
       case vector_store:
-	return aarch64_tune_params.vec_costs->vec_store_cost;
+	return costs->vec_store_cost;
 
       case vec_to_scalar:
-	return aarch64_tune_params.vec_costs->vec_to_scalar_cost;
+	return costs->vec_to_scalar_cost;
 
       case scalar_to_vec:
-	return aarch64_tune_params.vec_costs->scalar_to_vec_cost;
+	return costs->scalar_to_vec_cost;
 
       case unaligned_load:
-	return aarch64_tune_params.vec_costs->vec_unalign_load_cost;
+	return costs->vec_unalign_load_cost;
 
       case unaligned_store:
-	return aarch64_tune_params.vec_costs->vec_unalign_store_cost;
+	return costs->vec_unalign_store_cost;
 
       case cond_branch_taken:
-	return aarch64_tune_params.vec_costs->cond_taken_branch_cost;
+	return costs->cond_taken_branch_cost;
 
       case cond_branch_not_taken:
-	return aarch64_tune_params.vec_costs->cond_not_taken_branch_cost;
+	return costs->cond_not_taken_branch_cost;
 
       case vec_perm:
-	return aarch64_tune_params.vec_costs->vec_permute_cost;
+	return costs->vec_permute_cost;
 
       case vec_promote_demote:
-	return aarch64_tune_params.vec_costs->vec_stmt_cost;
+	return fp ? costs->vec_fp_stmt_cost : costs->vec_int_stmt_cost;
 
       case vec_construct:
         elements = TYPE_VECTOR_SUBPARTS (vectype);
@@ -10828,6 +10845,8 @@ aarch64_simd_container_mode (machine_mode mode, unsigned width)
 	    return V2DFmode;
 	  case SFmode:
 	    return V4SFmode;
+	  case HFmode:
+	    return V8HFmode;
 	  case SImode:
 	    return V4SImode;
 	  case HImode:
@@ -10844,6 +10863,8 @@ aarch64_simd_container_mode (machine_mode mode, unsigned width)
 	  {
 	  case SFmode:
 	    return V2SFmode;
+	  case HFmode:
+	    return V4HFmode;
 	  case SImode:
 	    return V2SImode;
 	  case HImode:
@@ -10893,21 +10914,6 @@ aarch64_mangle_type (const_tree type)
 
   /* Use the default mangling.  */
   return NULL;
-}
-
-
-/* Return true if the rtx_insn contains a MEM RTX somewhere
-   in it.  */
-
-static bool
-has_memory_op (rtx_insn *mem_insn)
-{
-  subrtx_iterator::array_type array;
-  FOR_EACH_SUBRTX (iter, array, PATTERN (mem_insn), ALL)
-    if (MEM_P (*iter))
-      return true;
-
-  return false;
 }
 
 /* Find the first rtx_insn before insn that will generate an assembly
@@ -11002,7 +11008,7 @@ aarch64_madd_needs_nop (rtx_insn* insn)
      Restore recog state to INSN to avoid state corruption.  */
   extract_constrain_insn_cached (insn);
 
-  if (!prev || !has_memory_op (prev))
+  if (!prev || !contains_mem_rtx_p (PATTERN (prev)))
     return false;
 
   body = single_set (prev);
@@ -14680,6 +14686,35 @@ aarch64_excess_precision (enum excess_precision_type type)
   return FLT_EVAL_METHOD_UNPREDICTABLE;
 }
 
+/* Implement TARGET_SCHED_CAN_SPECULATE_INSN.  Return true if INSN can be
+   scheduled for speculative execution.  Reject the long-running division
+   and square-root instructions.  */
+
+static bool
+aarch64_sched_can_speculate_insn (rtx_insn *insn)
+{
+  switch (get_attr_type (insn))
+    {
+      case TYPE_SDIV:
+      case TYPE_UDIV:
+      case TYPE_FDIVS:
+      case TYPE_FDIVD:
+      case TYPE_FSQRTS:
+      case TYPE_FSQRTD:
+      case TYPE_NEON_FP_SQRT_S:
+      case TYPE_NEON_FP_SQRT_D:
+      case TYPE_NEON_FP_SQRT_S_Q:
+      case TYPE_NEON_FP_SQRT_D_Q:
+      case TYPE_NEON_FP_DIV_S:
+      case TYPE_NEON_FP_DIV_D:
+      case TYPE_NEON_FP_DIV_S_Q:
+      case TYPE_NEON_FP_DIV_D_Q:
+	return false;
+      default:
+	return true;
+    }
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
@@ -15067,6 +15102,9 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
 #define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
   aarch64_use_by_pieces_infrastructure_p
+
+#undef TARGET_SCHED_CAN_SPECULATE_INSN
+#define TARGET_SCHED_CAN_SPECULATE_INSN aarch64_sched_can_speculate_insn
 
 #undef TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost

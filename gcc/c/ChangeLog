@@ -1,3 +1,81 @@
+2017-02-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/79662
+	* c-typeck.c (convert_arguments): Handle error_mark_node.
+
+2017-02-19  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Check return
+	value of c_parser_parse_ssa_name against error_mark_node and emit
+	error if ssa name is anonymous and written as default definition.
+
+2017-02-19  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Handle
+	FMA_EXPR.
+
+2017-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79512
+	* c-parser.c (c_parser_omp_target): For -fopenmp-simd
+	ignore #pragma omp target even when not followed by identifier.
+
+2017-02-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gimpler-parser.c (c_parser_gimple_statement): Handle ABS_EXPR.
+	(c_parser_gimple_unary_expression): Likewise.
+
+2017-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_oacc_declare): Add missing space in
+	diagnostics.
+
+2017-02-13  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR c/79478
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Call
+	set_c_expr_source_range when parsing ssa-name.
+
+2017-02-10  Prasad Ghangal  <prasad.ghangal@gmail.com>
+	Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_binary_expression): Avoid
+	building IL when arguments are error_mark_node.
+	(c_parser_gimple_unary_expression): Likewise.
+	(c_parser_gimple_if_stmt): Likewise.
+	(c_parser_gimple_switch_stmt): Likewise.
+	(c_parser_gimple_return_stmt): Likewise.
+	(c_parser_parse_ssa_name): When name lookup fails do not build
+	an SSA name.  Use undeclared rather than not declared in error
+	reporting.
+
+2017-02-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/79428
+	* c-parser.c (c_parser_omp_ordered): Call c_parser_skip_to_pragma_eol
+	instead of c_parser_skip_until_found.
+
+2017-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/79431
+	* c-parser.c (c_parser_omp_declare_target): Don't invoke
+	symtab_node::get on automatic variables.
+
+2016-02-09  Nathan Sidwell  <nathan@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_collapse): Disallow tile.
+	(c_parser_oacc_clause_tile): Disallow collapse. Fix parsing and
+	semantic checking.
+	* c-parser.c (c_parser_omp_for_loop): Accept tiling constructs.
+
+2017-02-07  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_expr_list): Simplify.
+	(c_parser_gimple_postfix_expression_after_primary):
+	Do not use c_build_function_call_vec to avoid folding and promotion.
+	Simplify.
+
 2017-01-25  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR lto/79061

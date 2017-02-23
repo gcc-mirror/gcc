@@ -2266,7 +2266,7 @@ real_from_integer (REAL_VALUE_TYPE *r, format_helper fmt,
 
   if (fmt.decimal_p ())
     decimal_from_integer (r);
-  else if (fmt)
+  if (fmt)
     real_convert (r, fmt, r);
 }
 

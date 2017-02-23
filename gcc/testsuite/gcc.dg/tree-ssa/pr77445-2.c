@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-thread1-details-blocks-stats" } */
+/* { dg-options "-O2 -fdump-tree-thread-details-blocks-stats" } */
 typedef enum STATES {
 	START=0,
 	INVALID,
@@ -121,3 +121,7 @@ enum STATES FMS( u8 **in , u32 *transitions) {
    increase much.  */
 /* { dg-final { scan-tree-dump "Jumps threaded: 1\[1-9\]" "thread1" } } */
 /* { dg-final { scan-tree-dump-times "Invalid sum" 2 "thread1" } } */
+/* { dg-final { scan-tree-dump-not "not considered" "thread1" } } */
+/* { dg-final { scan-tree-dump-not "not considered" "thread2" } } */
+/* { dg-final { scan-tree-dump-not "not considered" "thread3" } } */
+/* { dg-final { scan-tree-dump-not "not considered" "thread4" } } */

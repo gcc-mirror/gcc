@@ -338,6 +338,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-@var{version} @gol
 -ggdb  -grecord-gcc-switches  -gno-record-gcc-switches @gol
 -gstabs  -gstabs+  -gstrict-dwarf  -gno-strict-dwarf @gol
+-gcolumn-info  -gno-column-info @gol
 -gvms  -gxcoff  -gxcoff+  -gz@r{[}=@var{type}@r{]} @gol
 -fdebug-prefix-map=@var{old}=@var{new}  -fdebug-types-section @gol
 -feliminate-dwarf2-dups  -fno-eliminate-unused-debug-types @gol
@@ -371,7 +372,7 @@ Objective-C and Objective-C++ Dialects}.
 -fif-conversion2  -findirect-inlining @gol
 -finline-functions  -finline-functions-called-once  -finline-limit=@var{n} @gol
 -finline-small-functions  -fipa-cp  -fipa-cp-clone @gol
--fipa-cp-alignment  -fipa-bit-cp @gol
+-fipa-bit-cp @gol
 -fipa-pta  -fipa-profile  -fipa-pure-const  -fipa-reference  -fipa-icf @gol
 -fira-algorithm=@var{algorithm} @gol
 -fira-region=@var{region}  -fira-hoist-pressure @gol
@@ -543,30 +544,11 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-passes @gol
 -fdump-rtl-@var{pass}  -fdump-rtl-@var{pass}=@var{filename} @gol
 -fdump-statistics @gol
+-fdump-final-insns@r{[}=@var{file}@r{]}
 -fdump-tree-all @gol
--fdump-tree-original@r{[}-@var{n}@r{]}  @gol
--fdump-tree-optimized@r{[}-@var{n}@r{]} @gol
--fdump-tree-cfg  -fdump-tree-alias @gol
--fdump-tree-ch @gol
--fdump-tree-ssa@r{[}-@var{n}@r{]}  -fdump-tree-pre@r{[}-@var{n}@r{]} @gol
--fdump-tree-ccp@r{[}-@var{n}@r{]}  -fdump-tree-dce@r{[}-@var{n}@r{]} @gol
--fdump-tree-gimple@r{[}-raw@r{]} @gol
--fdump-tree-dom@r{[}-@var{n}@r{]} @gol
--fdump-tree-dse@r{[}-@var{n}@r{]} @gol
--fdump-tree-phiprop@r{[}-@var{n}@r{]} @gol
--fdump-tree-phiopt@r{[}-@var{n}@r{]} @gol
--fdump-tree-backprop@r{[}-@var{n}@r{]} @gol
--fdump-tree-forwprop@r{[}-@var{n}@r{]} @gol
--fdump-tree-nrv  -fdump-tree-vect @gol
--fdump-tree-sink @gol
--fdump-tree-sra@r{[}-@var{n}@r{]} @gol
--fdump-tree-forwprop@r{[}-@var{n}@r{]} @gol
--fdump-tree-fre@r{[}-@var{n}@r{]} @gol
--fdump-tree-vtable-verify @gol
--fdump-tree-vrp@r{[}-@var{n}@r{]} @gol
--fdump-tree-split-paths@r{[}-@var{n}@r{]} @gol
--fdump-tree-storeccp@r{[}-@var{n}@r{]} @gol
--fdump-final-insns=@var{file} @gol
+-fdump-tree-@var{switch} @gol
+-fdump-tree-@var{switch}-@var{options} @gol
+-fdump-tree-@var{switch}-@var{options}=@var{filename} @gol
 -fcompare-debug@r{[}=@var{opts}@r{]}  -fcompare-debug-second @gol
 -fenable-@var{kind}-@var{pass} @gol
 -fenable-@var{kind}-@var{pass}=@var{range-list} @gol
@@ -979,6 +961,20 @@ Objective-C and Objective-C++ Dialects}.
 @emph{PowerPC Options}
 See RS/6000 and PowerPC Options.
 
+@emph{RISC-V Options}
+@gccoptlist{-mbranch-cost=@var{N-instruction} @gol
+-mmemcpy  -mno-memcpy @gol
+-mplt  -mno-plt @gol
+-mabi=@var{ABI-string} @gol
+-mfdiv  -mno-fdiv @gol
+-mdiv  -mno-div @gol
+-march=@var{ISA-string} @gol
+-mtune=@var{processor-string} @gol
+-msmall-data-limit=@var{N-bytes} @gol
+-msave-restore  -mno-save-restore @gol
+-mcmodel=@var{code-model} @gol
+-mexplicit-relocs  -mno-explicit-relocs @gol}
+
 @emph{RL78 Options}
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs @gol
 -mcpu=g10  -mcpu=g13  -mcpu=g14  -mg10  -mg13  -mg14 @gol
@@ -1193,9 +1189,9 @@ See RS/6000 and PowerPC Options.
 -mavx512bw  -mavx512dq  -mavx512ifma  -mavx512vbmi  -msha  -maes @gol
 -mpclmul  -mfsgsbase  -mrdrnd  -mf16c  -mfma @gol
 -mprefetchwt1  -mclflushopt  -mxsavec  -mxsaves @gol
--msse4a  -m3dnow  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop  -mlzcnt @gol
--mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mlwp  -mmpx  -mmwaitx @gol
--mclzero  -mpku  -mthreads @gol
+-msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
+-mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mlwp  -mmpx  @gol
+-mmwaitx  -mclzero  -mpku  -mthreads @gol
 -mms-bitfields  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy} @gol
@@ -2048,7 +2044,7 @@ can be omitted, to use a target-specific default value.
 Enable handling of OpenMP directives @code{#pragma omp} in C/C++ and
 @code{!$omp} in Fortran.  When @option{-fopenmp} is specified, the
 compiler generates parallel code according to the OpenMP Application
-Program Interface v4.0 @w{@uref{http://www.openmp.org/}}.  This option
+Program Interface v4.5 @w{@uref{http://www.openmp.org/}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
 have support for @option{-pthread}. @option{-fopenmp} implies
 @option{-fopenmp-simd}.
@@ -2856,6 +2852,11 @@ int main() @{
 
 In this case, @code{PRId64} is treated as a separate preprocessing token.
 
+Additionally, warn when a user-defined literal operator is declared with
+a literal suffix identifier that doesn't begin with an underscore. Literal
+suffix identifiers that don't begin with an underscore are reserved for
+future standardization.
+
 This warning is enabled by default.
 
 @item -Wlto-type-mismatch
@@ -3001,19 +3002,13 @@ But this use is not portable across different compilers.
 @item -Wno-non-template-friend @r{(C++ and Objective-C++ only)}
 @opindex Wno-non-template-friend
 @opindex Wnon-template-friend
-Disable warnings when non-templatized friend functions are declared
-within a template.  Since the advent of explicit template specification
-support in G++, if the name of the friend is an unqualified-id (i.e.,
-@samp{friend foo(int)}), the C++ language specification demands that the
-friend declare or define an ordinary, nontemplate function.  (Section
-14.5.3).  Before G++ implemented explicit specification, unqualified-ids
-could be interpreted as a particular specialization of a templatized
-function.  Because this non-conforming behavior is no longer the default
-behavior for G++, @option{-Wnon-template-friend} allows the compiler to
-check existing code for potential trouble spots and is on by default.
-This new compiler behavior can be turned off with
-@option{-Wno-non-template-friend}, which keeps the conformant compiler code
-but disables the helpful warning.
+Disable warnings when non-template friend functions are declared
+within a template.  In very old versions of GCC that predate implementation
+of the ISO standard, declarations such as 
+@samp{friend int foo(int)}, where the name of the friend is an unqualified-id,
+could be interpreted as a particular specialization of a template
+function; the warning exists to diagnose compatibility problems, 
+and is enabled by default.
 
 @item -Wold-style-cast @r{(C++ and Objective-C++ only)}
 @opindex Wold-style-cast
@@ -4105,7 +4100,7 @@ logic @option{-Wformat-overflow}.
 Level @var{1} of @option{-Wformat-truncation} enabled by @option{-Wformat}
 employs a conservative approach that warns only about calls to bounded
 functions whose return value is unused and that will most likely result
-in output truncatation.
+in output truncation.
 
 @item -Wformat-truncation=2
 Level @var{2} warns also about calls to bounded functions whose return
@@ -4315,7 +4310,7 @@ fallthrough comments, only attributes disable the warning.
 @end itemize
 
 The comment needs to be followed after optional whitespace and other comments
-by @code{case} or @code{default} keywords or by a user label that preceeds some
+by @code{case} or @code{default} keywords or by a user label that precedes some
 @code{case} or @code{default} label.
 
 @smallexample
@@ -5151,7 +5146,7 @@ or where the result of the size computation in an integer type with infinite
 precision would exceed @code{SIZE_MAX / 2}.  The option argument @var{n}
 may end in one of the standard suffixes designating a multiple of bytes
 such as @code{kB} and @code{KiB} for kilobyte and kibibyte, respectively,
-@code{MB} and @code{MiB} for magabyte and mebibyte, and so on.
+@code{MB} and @code{MiB} for megabyte and mebibyte, and so on.
 @xref{Function Attributes}.
 
 @item -Walloca
@@ -5941,7 +5936,7 @@ while} statement.  This warning is also enabled by @option{-Wextra}.
 @opindex Wenum-compare
 @opindex Wno-enum-compare
 Warn about a comparison between values of different enumerated types.
-In C++ enumeral mismatches in conditional expressions are also
+In C++ enumerated type mismatches in conditional expressions are also
 diagnosed and the warning is enabled by default.  In C this warning is 
 enabled by @option{-Wall}.
 
@@ -6223,7 +6218,7 @@ Do not warn if a multicharacter constant (@samp{'FOOF'}) is used.
 Usually they indicate a typo in the user's code, as they have
 implementation-defined values, and should not be used in portable code.
 
-@item -Wnormalized@r{[}=@r{<}none@r{|}id@r{|}nfc@r{|}nfkc@r{>]}
+@item -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]}
 @opindex Wnormalized=
 @opindex Wnormalized
 @opindex Wno-normalized
@@ -6827,6 +6822,14 @@ DWARF extensions from later standard versions is allowed.
 Allow using extensions of later DWARF standard version than selected with
 @option{-gdwarf-@var{version}}.
 
+@item -gcolumn-info
+@item -gno-column-info
+@opindex gcolumn-info
+@opindex gno-column-info
+Emit location column information into DWARF debugging information, rather
+than just file and line.
+This option is disabled by default.
+
 @item -gz@r{[}=@var{type}@r{]}
 @opindex gz
 Produce compressed debug sections in DWARF format, if that is supported.
@@ -7060,7 +7063,6 @@ also turns on the following optimization flags:
 -finline-small-functions @gol
 -findirect-inlining @gol
 -fipa-cp @gol
--fipa-cp-alignment @gol
 -fipa-bit-cp @gol
 -fipa-sra @gol
 -fipa-icf @gol
@@ -8069,15 +8071,6 @@ Because this optimization can create multiple copies of functions,
 it may significantly increase code size
 (see @option{--param ipcp-unit-growth=@var{value}}).
 This flag is enabled by default at @option{-O3}.
-
-@item -fipa-cp-alignment
-@opindex -fipa-cp-alignment
-When enabled, this optimization propagates alignment of function
-parameters to support better vectorization and string operations.
-
-This flag is enabled by default at @option{-O2} and @option{-Os}.  It
-requires that @option{-fipa-cp} is enabled.
-@option{-fipa-cp-alignment} is obsolete, use @option{-fipa-bit-cp} instead.
 
 @item -fipa-bit-cp
 @opindex -fipa-bit-cp
@@ -9691,7 +9684,7 @@ The default value is 40.
 
 @item inline-min-speedup
 When estimated performance improvement of caller + callee runtime exceeds this
-threshold (in precent), the function can be inlined regardless the limit on
+threshold (in percent), the function can be inlined regardless of the limit on
 @option{--param max-inline-insns-single} and @option{--param
 max-inline-insns-auto}.
 
@@ -10489,13 +10482,14 @@ E.g. to disable inline code use
 @option{--param asan-instrumentation-with-call-threshold=0}.
 
 @item use-after-scope-direct-emission-threshold
-If size of a local variables in bytes is smaller of equal to this number,
-direct instruction emission is utilized to poison and unpoison local variables.
+If the size of a local variable in bytes is smaller or equal to this
+number, directly poison (or unpoison) shadow memory instead of using
+run-time callbacks.  The default value is 256.
 
 @item chkp-max-ctor-size
 Static constructors generated by Pointer Bounds Checker may become very
 large and significantly increase compile time at optimization level
-@option{-O1} and higher.  This parameter is a maximum nubmer of statements
+@option{-O1} and higher.  This parameter is a maximum number of statements
 in a single generated constructor.  Default value is 5000.
 
 @item max-fsm-thread-path-insns
@@ -10584,7 +10578,12 @@ linking.
 @opindex fprofile-arcs
 Add code so that program flow @dfn{arcs} are instrumented.  During
 execution the program records how many times each branch and call is
-executed and how many times it is taken or returns.  When the compiled
+executed and how many times it is taken or returns.  On targets that support
+constructors with priority support, profiling properly handles constructors,
+destructors and C++ constructors (and destructors) of classes which are used
+as a type of a global variable.
+
+When the compiled
 program exits it saves this data to a file called
 @file{@var{auxname}.gcda} for each source file.  The data may be used for
 profile-directed optimizations (@option{-fbranch-probabilities}), or for
@@ -12966,8 +12965,8 @@ Dump after function inlining.
 
 @item -fdump-passes
 @opindex fdump-passes
-Dump the list of optimization passes that are turned on and off by
-the current command-line options.
+Print on @file{stderr} the list of optimization passes that are turned
+on and off by the current command-line options.
 
 @item -fdump-statistics-@var{option}
 @opindex fdump-statistics
@@ -12980,9 +12979,11 @@ whole compilation unit while @samp{-details} dumps every event as
 the passes generate them.  The default with no option is to sum
 counters for each function compiled.
 
-@item -fdump-tree-@var{switch}
+@item -fdump-tree-all
+@itemx -fdump-tree-@var{switch}
 @itemx -fdump-tree-@var{switch}-@var{options}
 @itemx -fdump-tree-@var{switch}-@var{options}=@var{filename}
+@opindex fdump-tree-all
 @opindex fdump-tree
 Control the dumping at various stages of processing the intermediate
 language tree to a file.  The file name is generated by appending a
@@ -13064,18 +13065,13 @@ example,
 
 @smallexample
 gcc -O2 -ftree-vectorize -fdump-tree-vect-blocks=foo.dump
-     -fdump-tree-pre=stderr file.c
+     -fdump-tree-pre=/dev/stderr file.c
 @end smallexample
 
 outputs vectorizer dump into @file{foo.dump}, while the PRE dump is
 output on to @file{stderr}. If two conflicting dump filenames are
 given for the same pass, then the latter option overrides the earlier
 one.
-
-@item split-paths
-@opindex fdump-tree-split-paths
-Dump each function after splitting paths to loop backedges.  The file
-name is made by appending @file{.split-paths} to the source file name.
 
 @item all
 Turn on all options, except @option{raw}, @option{slim}, @option{verbose}
@@ -13086,148 +13082,33 @@ Turn on all optimization options, i.e., @option{optimized},
 @option{missed}, and @option{note}.
 @end table
 
-The following tree dumps are possible:
-@table @samp
+To determine what tree dumps are available or find the dump for a pass
+of interest follow the steps below.
 
-@item original
-@opindex fdump-tree-original
-Dump before any tree based optimization, to @file{@var{file}.original}.
-
-@item optimized
-@opindex fdump-tree-optimized
-Dump after all tree based optimization, to @file{@var{file}.optimized}.
-
-@item gimple
-@opindex fdump-tree-gimple
-Dump each function before and after the gimplification pass to a file.  The
-file name is made by appending @file{.gimple} to the source file name.
-
-@item cfg
-@opindex fdump-tree-cfg
-Dump the control flow graph of each function to a file.  The file name is
-made by appending @file{.cfg} to the source file name.
-
-@item ch
-@opindex fdump-tree-ch
-Dump each function after copying loop headers.  The file name is made by
-appending @file{.ch} to the source file name.
-
-@item ssa
-@opindex fdump-tree-ssa
-Dump SSA related information to a file.  The file name is made by appending
-@file{.ssa} to the source file name.
-
-@item alias
-@opindex fdump-tree-alias
-Dump aliasing information for each function.  The file name is made by
-appending @file{.alias} to the source file name.
-
-@item ccp
-@opindex fdump-tree-ccp
-Dump each function after CCP@.  The file name is made by appending
-@file{.ccp} to the source file name.
-
-@item storeccp
-@opindex fdump-tree-storeccp
-Dump each function after STORE-CCP@.  The file name is made by appending
-@file{.storeccp} to the source file name.
-
-@item pre
-@opindex fdump-tree-pre
-Dump trees after partial redundancy elimination and/or code hoisting.
-The file name is made by appending @file{.pre} to the source file name.
-
-@item fre
-@opindex fdump-tree-fre
-Dump trees after full redundancy elimination.  The file name is made
-by appending @file{.fre} to the source file name.
-
-@item copyprop
-@opindex fdump-tree-copyprop
-Dump trees after copy propagation.  The file name is made
-by appending @file{.copyprop} to the source file name.
-
-@item store_copyprop
-@opindex fdump-tree-store_copyprop
-Dump trees after store copy-propagation.  The file name is made
-by appending @file{.store_copyprop} to the source file name.
-
-@item dce
-@opindex fdump-tree-dce
-Dump each function after dead code elimination.  The file name is made by
-appending @file{.dce} to the source file name.
-
-@item sra
-@opindex fdump-tree-sra
-Dump each function after performing scalar replacement of aggregates.  The
-file name is made by appending @file{.sra} to the source file name.
-
-@item sink
-@opindex fdump-tree-sink
-Dump each function after performing code sinking.  The file name is made
-by appending @file{.sink} to the source file name.
-
-@item dom
-@opindex fdump-tree-dom
-Dump each function after applying dominator tree optimizations.  The file
-name is made by appending @file{.dom} to the source file name.
-
-@item dse
-@opindex fdump-tree-dse
-Dump each function after applying dead store elimination.  The file
-name is made by appending @file{.dse} to the source file name.
-
-@item phiopt
-@opindex fdump-tree-phiopt
-Dump each function after optimizing PHI nodes into straightline code.  The file
-name is made by appending @file{.phiopt} to the source file name.
-
-@item backprop
-@opindex fdump-tree-backprop
-Dump each function after back-propagating use information up the definition
-chain.  The file name is made by appending @file{.backprop} to the
-source file name.
-
-@item forwprop
-@opindex fdump-tree-forwprop
-Dump each function after forward propagating single use variables.  The file
-name is made by appending @file{.forwprop} to the source file name.
-
-@item nrv
-@opindex fdump-tree-nrv
-Dump each function after applying the named return value optimization on
-generic trees.  The file name is made by appending @file{.nrv} to the source
-file name.
-
-@item vect
-@opindex fdump-tree-vect
-Dump each function after applying vectorization of loops.  The file name is
-made by appending @file{.vect} to the source file name.
-
-@item slp
-@opindex fdump-tree-slp
-Dump each function after applying vectorization of basic blocks.  The file name
-is made by appending @file{.slp} to the source file name.
-
-@item vrp
-@opindex fdump-tree-vrp
-Dump each function after Value Range Propagation (VRP).  The file name
-is made by appending @file{.vrp} to the source file name.
-
-@item early vrp
-@opindex fdump-tree-evrp
-Dump each function after Early Value Range Propagation (EVRP).  The file name
-is made by appending @file{.evrp} to the source file name.
-
-@item oaccdevlow
-@opindex fdump-tree-oaccdevlow
-Dump each function after applying device-specific OpenACC transformations.
-The file name is made by appending @file{.oaccdevlow} to the source file name.
-
-@item all
-@opindex fdump-tree-all
-Enable all the available tree dumps with the flags provided in this option.
-@end table
+@enumerate
+@item
+Invoke GCC with @option{-fdump-passes} and in the @file{stderr} output
+look for a code that corresponds to the pass you are interested in.
+For example, the codes @code{tree-evrp}, @code{tree-vrp1}, and
+@code{tree-vrp2} correspond to the three Value Range Propagation passes.
+The number at the end distinguishes distinct invocations of the same pass.
+@item
+To enable the creation of the dump file, append the pass code to
+the @option{-fdump-} option prefix and invoke GCC with it.  For example,
+to enable the dump from the Early Value Range Propagation pass, invoke
+GCC with the @option{-fdump-tree-evrp} option.  Optionally, you may
+specify the name of the dump file.  If you don't specify one, GCC
+creates as described below.
+@item
+Find the pass dump in a file whose name is composed of three components
+separated by a period: the name of the source file GCC was invoked to
+compile, a numeric suffix indicating the pass number followed by the
+letter @samp{t} for tree passes (and the letter @samp{r} for RTL passes),
+and finally the pass code.  For example, the Early VRP pass dump might
+be in a file named @file{myfile.c.038t.evrp} in the current working
+directory.  Note that the numeric codes are not stable and may change
+from one version of GCC to another.
+@end enumerate
 
 @item -fopt-info
 @itemx -fopt-info-@var{options}
@@ -13874,6 +13755,7 @@ platform.
 * PDP-11 Options::
 * picoChip Options::
 * PowerPC Options::
+* RISC-V Options::
 * RL78 Options::
 * RS/6000 and PowerPC Options::
 * RX Options::
@@ -15567,7 +15449,7 @@ before calling a function and popped afterwards.
 
 Popping the arguments after the function call can be expensive on
 AVR so that accumulating the stack space might lead to smaller
-executables because arguments need not to be removed from the
+executables because arguments need not be removed from the
 stack after such a function call.
 
 This option can lead to reduced code size for functions that perform
@@ -15824,7 +15706,7 @@ Alternatively, @code{func_4} can be defined in the linker script.
 @cindex @code{RAMPZ}
 Some AVR devices support memories larger than the 64@tie{}KiB range
 that can be accessed with 16-bit pointers.  To access memory locations
-outside this 64@tie{}KiB range, the contentent of a @code{RAMP}
+outside this 64@tie{}KiB range, the content of a @code{RAMP}
 register is used as high part of the address:
 The @code{X}, @code{Y}, @code{Z} address register is concatenated
 with the @code{RAMPX}, @code{RAMPY}, @code{RAMPZ} special function
@@ -20948,6 +20830,70 @@ these warnings.
 
 These are listed under @xref{RS/6000 and PowerPC Options}.
 
+@node RISC-V Options
+@subsection RISC-V Options
+@cindex RISC-V Options
+
+These command-line options are defined for RISC-V targets:
+
+@table @gcctabopt
+@item -mbranch-cost=@var{n}
+@opindex mbranch-cost
+Set the cost of branches to roughly @var{n} instructions.
+
+@item -mmemcpy
+@itemx -mno-memcpy
+@opindex mmemcpy
+Don't optimize block moves.
+
+@item -mplt
+@itemx -mno-plt
+@opindex plt
+When generating PIC code, allow the use of PLTs. Ignored for non-PIC.
+
+@item -mabi=@var{ABI-string}
+@opindex mabi
+Specify integer and floating-point calling convention.  This defaults to the
+natural calling convention: e.g.@ LP64 for RV64I, ILP32 for RV32I, LP64D for
+RV64G.
+
+@item -mfdiv
+@itemx -mno-fdiv
+@opindex mfdiv
+Use hardware floating-point divide and square root instructions.  This requires
+the F or D extensions for floating-point registers.
+
+@item -mdiv
+@itemx -mno-div
+@opindex mdiv
+Use hardware instructions for integer division.  This requires the M extension.
+
+@item -march=@var{ISA-string}
+@opindex march
+Generate code for given RISC-V ISA (e.g.@ @samp{rv64im}).  ISA strings must be
+lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, and @samp{rv32imaf}.
+
+@item -mtune=@var{processor-string}
+@opindex mtune
+Optimize the output for the given processor, specified by microarchitecture
+name.
+
+@item -msmall-data-limit=@var{n}
+@opindex msmall-data-limit
+Put global and static data smaller than @var{n} bytes into a special section
+(on some targets).
+
+@item -msave-restore
+@itemx -mno-save-restore
+@opindex msave-restore
+Use smaller but slower prologue and epilogue code.
+
+@item -mcmodel=@var{code-model}
+@opindex mcmodel
+Specify the code model.
+
+@end table
+
 @node RL78 Options
 @subsection RL78 Options
 @cindex RL78 Options
@@ -25056,6 +25002,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -m3dnow
 @opindex m3dnow
 @need 200
+@itemx -m3dnowa
+@opindex m3dnowa
+@need 200
 @itemx -mpopcnt
 @opindex mpopcnt
 @need 200
@@ -25105,7 +25054,7 @@ These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
 SHA, AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM,
 AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA AVX512VBMI, BMI, BMI2, FXSR,
-XSAVE, XSAVEOPT, LZCNT, RTM, MPX, MWAITX, PKU or 3DNow!@:
+XSAVE, XSAVEOPT, LZCNT, RTM, MPX, MWAITX, PKU, 3DNow!@: or enhanced 3DNow!@:
 extended instruction sets.  Each has a corresponding @option{-mno-} option
 to disable use of these instructions.
 

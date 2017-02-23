@@ -1,3 +1,115 @@
+2017-01-30  Alexandre Oliva <aoliva@redhat.com>
+
+	Introduce C++ support.
+	* Makefile.am (AM_CPPFLAGS): Move some -I flags to...
+	(CPPFLAGS_FOR_C_FAMILY, CPPFLAGS_FOR_C, CPPFLAGS_FOR_CXX): ...
+	new macros.
+	(plugin_LTLIBRARIES): Add libcp1plugin.la.
+	(BUILT_SOURCES, MOSTLYCLEANFILES): Add...
+	(cp-compiler-name.h): ... this.  New.
+	(c-compiler-name.h): Rename all over from...
+	(compiler-name.h): ... this.  Create it atomically.
+	(marshall_c_source, marshall_cxx_source): New macros.
+	(libcc1plugin_la_SOURCES): Rename plugin.cc to libcc1plugin.cc.
+	Add marshall_c_source expansion.
+	(libcc1plugin.lo_CPPFLAGS): New macro.
+	(libcp1plugin_la_LDFLAGS): Likewise.
+	(libcp1plugin_la_SOURCES): Likewise.
+	(libcp1plugin.lo_CPPFLAGS): Likewise.
+	(libcp1plugin_la_LIBADD): Likewise.
+	(libcp1plugin_la_DEPENDENCIES): Likewise.
+	(libcp1plugin_la_LINK): Likewise.
+	(libcc1_la_SOURCES): Added marshall_c_source and
+	marshall_cxx_source expansions.
+	* Makefile.in: Rebuild.
+	* compiler-name.h: Rename all over to...
+	* c-compiler-name.h: ... this.  Define C_COMPILER_NAME instead
+	of COMPILER_NAME.
+	* plugin.cc: Rename all over to...
+	* libcc1plugin.cc: ... this.  Include marshall-c.hh.
+	(address_rewriter): Drop cleaning up of VLA sizes.
+	(plugin_build_decl): Mark decls as external.
+	(plugin_tagbind): Propagate name to all variants.
+	(build_anonymous_node): New.
+	(plugin_build_record_type): Use it instead of make_node.
+	(plugin_build_union_type): Likewise.
+	(plugin_build_enum_type): Likewise.
+	(plugin_finish_record_or_union): Update all type variants.
+	(safe_lookup_builtin_type): New.
+	(plugin_int_check): Factor out of, and add checks to, ...
+	(plugin_int_type): ... this.  Rename to...
+	(plugin_int_type_v0): ... this.
+	(plugin_int_type): New interface, new implementation.
+	(plugin_char_type): New.
+	(plugin_float_type_v0): Rename from...
+	(plugin_float_type): ... this.  New interface, new implementation.
+	(plugin_init): Bump handshake version.
+	* libcc1.cc: Include marshall-c.hh.  Drop gcc-interface.h.
+	(call_binding_oracle): Rename to...
+	(c_call_binding_oracle): ... this, into anonymous namespace.
+	(call_symbol_address): Rename to...
+	(c_call_symbol_address): ... this, likewise.
+	(GCC_METHOD#): Move methods into cc1plugin::c:: namespace.
+	(libcc1::compiler::find): Refer to C_COMPILER_NAME.
+	(fork_exec): Bump to GCC_C_FE_VERSION_1.
+	(libcc1_compile): Prefix callbacks with c_.
+	(gcc_c_fe_context): Accept GCC_C_FE_VERSION_1.
+	* libcc1.sym: Export gcc_cp_fe_context.
+	* libcp1.cc: New, mostly copied and adjusted from libcc1.cc.
+	* libcp1plugin.cc: New, initially copied from libcc1plugin.cc.
+	* libcp1plugin.sym: New.
+	* marshall-c.hh: New.  Move C-specific types from...
+	* marshall.cc: ... this.
+	(cc1_plugin::marshall_array_start): New.
+	(cc1_plugin::marshall_array_elmts): New.
+	(cc1_plugin::marshall for gcc_type_array): Use the above.
+	(cc1_plugin::unmarshall_array_start): New.
+	(cc1_plugin::unmarshall_array_elmts): New.
+	(cc1_plugin::unmarshall for gcc_type_array): Use the above.
+	* marshall.hh: Declare the new array building blocks.
+	Drop C-specific unmarshall declarations.
+	* marshall-cp.hh: New.
+	* names.cc (GCC_METHOD#): Add LANG:: to method names.
+	(LANG): Define while including gcc-c-fe.def and gcc-cp-fe.def.
+	* names.hh: Include gcc-c-fe.def and gcc-cp-fe.def in the
+	corresponding namespaces.
+	* rpc.hh: Don't include marshall.hh.
+	[GCC_CP_INTERFACE_H] (argument_wrapper): Specialize for
+	gcc_vbase_array, gcc_cp_template_args, gcc_cp_function_args.
+
+2017-01-30  Jan Kratochvil <jan.kratochvil@redhat.com>
+
+	* findcomp.cc: Include system.h.
+	(search_dir): Return absolute filename.
+
+	* libcc1.cc (libcc1): Add class compiler with field compilerp,
+	class compiler_triplet_regexp and class
+	compiler_driver_filename.
+	(libcc1::libcc1): Initialize compilerp.
+	(libcc1::~libcc1): Delete compilerp.
+	(libcc1::compiler::find, libcc1::compiler_triplet_regexp::find)
+	(libcc1::compiler_driver_filename::find): New methods.
+	(libcc1_set_arguments): Remove parameter triplet_regexp.
+	(libcc1_set_triplet_regexp, libcc1_set_driver_filename)
+	(libcc1_set_arguments_v0): New functions.
+	(vtable): Use libcc1_set_arguments_v0, add
+	libcc1_set_arguments, libcc1_set_triplet_regexp and
+	libcc1_set_driver_filename.
+
+	* libcc1.cc: Include intl.h.
+	(struct libcc1): Add field verbose.
+	(libcc1::libcc1): Initialize it.
+	(libcc1_set_verbose): New function.
+	(libcc1_set_arguments): Print messages for VERBOSE.
+	(libcc1_compile): Remove parameter verbose.  Use VERBOSE from
+	SELF.
+	(libcc1_compile_v0): New function.
+	(vtable): Use libcc1_compile_v0 and add libcc1_compile and
+	libcc1_set_verbose.
+
+	* libcc1.cc (vtable): Update to GCC_FE_VERSION_1.
+	(gcc_c_fe_context): Accept also GCC_FE_VERSION_1.
+
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046

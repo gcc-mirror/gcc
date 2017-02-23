@@ -3710,10 +3710,10 @@
 (define_code_iterator BCD_TEST [eq lt gt unordered])
 
 (define_insn "bcd<bcd_add_sub>"
-  [(set (match_operand:V1TI 0 "register_operand" "")
-	(unspec:V1TI [(match_operand:V1TI 1 "register_operand" "")
-		      (match_operand:V1TI 2 "register_operand" "")
-		      (match_operand:QI 3 "const_0_to_1_operand" "")]
+  [(set (match_operand:V1TI 0 "gpc_reg_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "gpc_reg_operand" "v")
+		      (match_operand:V1TI 2 "gpc_reg_operand" "v")
+		      (match_operand:QI 3 "const_0_to_1_operand" "n")]
 		     UNSPEC_BCD_ADD_SUB))
    (clobber (reg:CCFP CR6_REGNO))]
   "TARGET_P8_VECTOR"
@@ -3838,12 +3838,25 @@
 ;; Otherwise, set operand 0 to 0.  Note that the result stored into
 ;; register operand 0 is non-zero iff either the LT or GT bits are on
 ;; within condition register operand 1.
-(define_insn "*setb_internal"
+(define_insn "setb_signed"
    [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
 	 (if_then_else:SI (lt (match_operand:CC 1 "cc_reg_operand" "y")
 			      (const_int 0))
 			  (const_int -1)
 			  (if_then_else (gt (match_dup 1)
+					    (const_int 0))
+					(const_int 1)
+					(const_int 0))))]
+  "TARGET_P9_MISC"
+  "setb %0,%1"
+  [(set_attr "type" "logical")])
+
+(define_insn "setb_unsigned"
+   [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
+	 (if_then_else:SI (ltu (match_operand:CCUNS 1 "cc_reg_operand" "y")
+			      (const_int 0))
+			  (const_int -1)
+			  (if_then_else (gtu (match_dup 1)
 					    (const_int 0))
 					(const_int 1)
 					(const_int 0))))]

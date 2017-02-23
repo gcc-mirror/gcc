@@ -73,8 +73,7 @@ static void c_parser_gimple_switch_stmt (c_parser *, gimple_seq *);
 static void c_parser_gimple_return_stmt (c_parser *, gimple_seq *);
 static void c_finish_gimple_return (location_t, tree);
 static tree c_parser_gimple_paren_condition (c_parser *);
-static vec<tree, va_gc> *c_parser_gimple_expr_list (c_parser *,
-		    vec<tree, va_gc> **, vec<location_t> *);
+static void c_parser_gimple_expr_list (c_parser *, vec<tree> *);
 
 
 /* Parse the body of a function declaration marked with "__GIMPLE".  */
@@ -326,6 +325,13 @@ c_parser_gimple_statement (c_parser *parser, gimple_seq *seq)
   /* Unary expression.  */
   switch (c_parser_peek_token (parser)->type)
     {
+    case CPP_NAME:
+      {
+	tree id = c_parser_peek_token (parser)->value;
+	if (strcmp (IDENTIFIER_POINTER (id), "__ABS") == 0)
+	  goto build_unary_expr;
+	break;
+      }
     case CPP_KEYWORD:
       if (c_parser_peek_token (parser)->keyword != RID_REALPART
 	  && c_parser_peek_token (parser)->keyword != RID_IMAGPART)
@@ -337,6 +343,7 @@ c_parser_gimple_statement (c_parser *parser, gimple_seq *seq)
     case CPP_COMPL:
     case CPP_NOT:
     case CPP_MULT: /* pointer deref */
+    build_unary_expr:
       rhs = c_parser_gimple_unary_expression (parser);
       if (rhs.value != error_mark_node)
 	{
@@ -525,9 +532,8 @@ c_parser_gimple_binary_expression (c_parser *parser)
   location_t ret_loc = c_parser_peek_token (parser)->location;
   c_parser_consume_token (parser);
   rhs = c_parser_gimple_postfix_expression (parser);
-  if (c_parser_error (parser))
-    return ret;
-  ret.value = build2_loc (ret_loc, code, ret_type, lhs.value, rhs.value);
+  if (lhs.value != error_mark_node && rhs.value != error_mark_node)
+    ret.value = build2_loc (ret_loc, code, ret_type, lhs.value, rhs.value);
   return ret;
 }
 
@@ -538,7 +544,7 @@ c_parser_gimple_binary_expression (c_parser *parser)
      unary-operator gimple-postfix-expression
 
    unary-operator: one of
-     & * + - ~
+     & * + - ~ abs_expr
 */
 
 static c_expr
@@ -561,6 +567,8 @@ c_parser_gimple_unary_expression (c_parser *parser)
       {
 	c_parser_consume_token (parser);
 	op = c_parser_gimple_postfix_expression (parser);
+	if (op.value == error_mark_node)
+	  return ret;
 	finish = op.get_finish ();
 	location_t combined_loc = make_location (op_loc, op_loc, finish);
 	ret.value = build_simple_mem_ref_loc (combined_loc, op.value);
@@ -599,6 +607,18 @@ c_parser_gimple_unary_expression (c_parser *parser)
 	  return parser_build_unary_op (op_loc, IMAGPART_EXPR, op);
 	default:
 	  return c_parser_gimple_postfix_expression (parser);
+	}
+    case CPP_NAME:
+	{
+	  tree id = c_parser_peek_token (parser)->value;
+	  if (strcmp (IDENTIFIER_POINTER (id), "__ABS") == 0)
+	    {
+	      c_parser_consume_token (parser);
+	      op = c_parser_gimple_postfix_expression (parser);
+	      return parser_build_unary_op (op_loc, ABS_EXPR, op);
+	    }
+	  else
+	    return c_parser_gimple_postfix_expression (parser);
 	}
     default:
       return c_parser_gimple_postfix_expression (parser);
@@ -644,7 +664,7 @@ c_parser_parse_ssa_name (c_parser *parser,
 	{
 	  if (! type)
 	    {
-	      c_parser_error (parser, "SSA name not declared"); 
+	      c_parser_error (parser, "SSA name undeclared"); 
 	      return error_mark_node;
 	    }
 	  name = make_ssa_name_fn (cfun, type, NULL, version);
@@ -664,9 +684,9 @@ c_parser_parse_ssa_name (c_parser *parser,
 	  id = get_identifier (var_name);
 	  tree parent = lookup_name (id);
 	  XDELETEVEC (var_name);
-	  if (! parent)
+	  if (! parent || parent == error_mark_node)
 	    {
-	      c_parser_error (parser, "base variable or SSA name not declared"); 
+	      c_parser_error (parser, "base variable or SSA name undeclared"); 
 	      return error_mark_node;
 	    }
 	  if (VECTOR_TYPE_P (TREE_TYPE (parent))
@@ -836,6 +856,28 @@ c_parser_gimple_postfix_expression (c_parser *parser)
 	      expr.value = fold_convert (type, val);
 	      return expr;
 	    }
+	  else if (strcmp (IDENTIFIER_POINTER (id), "__FMA") == 0)
+	    {
+	      c_parser_consume_token (parser);
+	      auto_vec<tree> args;
+
+	      if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+		{
+		  c_parser_gimple_expr_list (parser, &args);
+		  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+					     "expected %<)%>");
+		}
+	      if (args.length () != 3)
+		{
+		  error_at (loc, "invalid number of operands to __FMA");
+		  expr.value = error_mark_node;
+		  return expr;
+		}
+	      expr.value = build3_loc (loc, FMA_EXPR, TREE_TYPE (args[0]),
+				       args[0], args[1], args[2]);
+	      return expr;
+	    }
+
 	  /* SSA name.  */
 	  unsigned version, ver_offset;
 	  if (! lookup_name (id)
@@ -844,6 +886,9 @@ c_parser_gimple_postfix_expression (c_parser *parser)
 	      c_parser_consume_token (parser);
 	      expr.value = c_parser_parse_ssa_name (parser, id, NULL_TREE,
 						    version, ver_offset);
+	      if (expr.value == error_mark_node)
+		return expr;
+	      set_c_expr_source_range (&expr, tok_range);
 	      /* For default definition SSA names.  */
 	      if (c_parser_next_token_is (parser, CPP_OPEN_PAREN)
 		  && c_parser_peek_2nd_token (parser)->type == CPP_NAME
@@ -857,6 +902,13 @@ c_parser_gimple_postfix_expression (c_parser *parser)
 		  c_parser_consume_token (parser);
 		  if (! SSA_NAME_IS_DEFAULT_DEF (expr.value))
 		    {
+		      if (!SSA_NAME_VAR (expr.value))
+			{
+			  error_at (loc, "anonymous SSA name cannot have"
+				    " default definition");
+			  expr.value = error_mark_node;
+			  return expr;
+			}
 		      set_ssa_default_def (cfun, SSA_NAME_VAR (expr.value),
 					   expr.value);
 		      SSA_NAME_DEF_STMT (expr.value) = gimple_build_nop ();
@@ -898,10 +950,6 @@ c_parser_gimple_postfix_expression_after_primary (c_parser *parser,
 						  location_t expr_loc,
 						  struct c_expr expr)
 {
-  struct c_expr orig_expr;
-  vec<tree, va_gc> *exprlist;
-  vec<tree, va_gc> *origtypes = NULL;
-  vec<location_t> arg_loc = vNULL;
   location_t start;
   location_t finish;
   tree ident;
@@ -936,34 +984,16 @@ c_parser_gimple_postfix_expression_after_primary (c_parser *parser,
 	  {
 	    /* Function call.  */
 	    c_parser_consume_token (parser);
-	    if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
-	      exprlist = NULL;
-	    else
-	      exprlist = c_parser_gimple_expr_list (parser, &origtypes,
-						    &arg_loc);
+	    auto_vec<tree> exprlist;
+	    if (! c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	      c_parser_gimple_expr_list (parser, &exprlist);
 	    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				       "expected %<)%>");
-	    orig_expr = expr;
-	    start = expr.get_start ();
-	    finish = c_parser_tokens_buf (parser, 0)->get_finish ();
-	    expr.value = c_build_function_call_vec (expr_loc, arg_loc,
-						    expr.value,
-						    exprlist, origtypes);
-	    set_c_expr_source_range (&expr, start, finish);
-
+	    expr.value = build_call_array_loc
+		(expr_loc, TREE_TYPE (TREE_TYPE (expr.value)),
+		 expr.value, exprlist.length (), exprlist.address ());
 	    expr.original_code = ERROR_MARK;
-	    if (TREE_CODE (expr.value) == INTEGER_CST
-		&& TREE_CODE (orig_expr.value) == FUNCTION_DECL
-		&& DECL_BUILT_IN_CLASS (orig_expr.value) == BUILT_IN_NORMAL
-		&& DECL_FUNCTION_CODE (orig_expr.value) == BUILT_IN_CONSTANT_P)
-	      expr.original_code = C_MAYBE_CONST_EXPR;
 	    expr.original_type = NULL;
-	    if (exprlist)
-	      {
-		release_tree_vector (exprlist);
-		release_tree_vector (origtypes);
-	      }
-	    arg_loc.release ();
 	    break;
 	  }
 	case CPP_DOT:
@@ -1058,41 +1088,19 @@ c_parser_gimple_postfix_expression_after_primary (c_parser *parser,
 
  */
 
-static vec<tree, va_gc> *
-c_parser_gimple_expr_list (c_parser *parser, vec<tree, va_gc> **p_orig_types,
-			   vec<location_t> *locations)
+static void
+c_parser_gimple_expr_list (c_parser *parser, vec<tree> *ret)
 {
-  vec<tree, va_gc> *ret;
-  vec<tree, va_gc> *orig_types;
   struct c_expr expr;
-  location_t loc = c_parser_peek_token (parser)->location;
-
-  ret = make_tree_vector ();
-  if (p_orig_types == NULL)
-    orig_types = NULL;
-  else
-    orig_types = make_tree_vector ();
 
   expr = c_parser_gimple_unary_expression (parser);
-  vec_safe_push (ret, expr.value);
-  if (orig_types)
-    vec_safe_push (orig_types, expr.original_type);
-  if (locations)
-    locations->safe_push (loc);
+  ret->safe_push (expr.value);
   while (c_parser_next_token_is (parser, CPP_COMMA))
     {
       c_parser_consume_token (parser);
-      loc = c_parser_peek_token (parser)->location;
       expr = c_parser_gimple_unary_expression (parser);
-      vec_safe_push (ret, expr.value);
-      if (orig_types)
-	vec_safe_push (orig_types, expr.original_type);
-      if (locations)
-	locations->safe_push (loc);
+      ret->safe_push (expr.value);
     }
-  if (orig_types)
-    *p_orig_types = orig_types;
-  return ret;
 }
 
 /* Parse gimple label.
@@ -1345,8 +1353,9 @@ c_parser_gimple_if_stmt (c_parser *parser, gimple_seq *seq)
       return;
     }
 
-  gimple_seq_add_stmt (seq, gimple_build_cond_from_tree (cond, t_label,
-							 f_label));
+  if (cond != error_mark_node)
+    gimple_seq_add_stmt (seq, gimple_build_cond_from_tree (cond, t_label,
+							   f_label));
 }
 
 /* Parse gimple switch-statement.
@@ -1486,10 +1495,13 @@ c_parser_gimple_switch_stmt (c_parser *parser, gimple_seq *seq)
     }
   if (! c_parser_require (parser, CPP_CLOSE_BRACE, "expected %<}%>"))
     return;
-  gimple_seq_add_stmt (seq, gimple_build_switch (cond_expr.value,
-						 default_label, labels));
-  gimple_seq_add_seq (seq, switch_body);
-  labels.release();
+
+  if (cond_expr.value != error_mark_node)
+    {
+      gimple_seq_add_stmt (seq, gimple_build_switch (cond_expr.value,
+						     default_label, labels));
+      gimple_seq_add_seq (seq, switch_body);
+    }
 }
 
 /* Parse gimple return statement.  */
@@ -1510,9 +1522,12 @@ c_parser_gimple_return_stmt (c_parser *parser, gimple_seq *seq)
     {
       location_t xloc = c_parser_peek_token (parser)->location;
       c_expr expr = c_parser_gimple_unary_expression (parser);
-      c_finish_gimple_return (xloc, expr.value);
-      ret = gimple_build_return (expr.value);
-      gimple_seq_add_stmt (seq, ret);
+      if (expr.value != error_mark_node)
+	{
+	  c_finish_gimple_return (xloc, expr.value);
+	  ret = gimple_build_return (expr.value);
+	  gimple_seq_add_stmt (seq, ret);
+	}
     }
 }
 

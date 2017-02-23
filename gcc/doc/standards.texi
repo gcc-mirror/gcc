@@ -290,7 +290,7 @@ GCC has currently no support for non-fragile instance variables.
 The authoritative manual on Objective-C 2.0 is available from Apple:
 @itemize
 @item
-@uref{https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/Introduction/Introduction.html}
+@uref{https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/Introduction/Introduction.html}
 @end itemize
 
 For more information concerning the history of Objective-C that is
@@ -299,7 +299,7 @@ available online, see @uref{http://gcc.gnu.org/readings.html}
 @section Go Language
 
 As of the GCC 4.7.1 release, GCC supports the Go 1 language standard,
-described at @uref{http://golang.org/doc/go1.html}.
+described at @uref{https://golang.org/doc/go1}.
 
 @section HSA Intermediate Language (HSAIL)
 

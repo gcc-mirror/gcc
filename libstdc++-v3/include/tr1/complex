@@ -371,7 +371,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   using std::arg;
-  using std::conj;
+
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    conj(const std::complex<_Tp>& __z)
+    { return std::conj(__z); }
+
+  template<typename _Tp>
+    inline std::complex<typename __gnu_cxx::__promote<_Tp>::__type>
+    conj(_Tp __x)
+    { return __x; }
+
   using std::imag;
   using std::norm;
   using std::polar;

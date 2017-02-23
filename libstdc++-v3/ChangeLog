@@ -1,4 +1,318 @@
+2017-02-19  Dinka Ranns  <dinka.ranns@googlemail.com>
+
+	C++17 GB50 resolution
+	* include/std/chrono (duration::operator++()): Add
+	_GLIBCXX17_CONSTEXPR.
+	(duration::operator++(int)): Likewise.
+	(duration::operator--()): Likewise.
+	(duration::operator--(int)): Likewise.
+	(duration::operator+=(const duration&)): Likewise.
+	(duration::operator-=(const duration&)): Likewise.
+	(duration::operator*=(const rep&)): Likewise.
+	(duration::operator/=(const rep&)): Likewise.
+	(duration::operator%=(const rep&)): Likewise.
+	(duration::operator%=(const duration&)): Likewise.
+	(time_point::operator+=(const duration&)): Likewise.
+	(time_point::operator-=(const duration&)): Likewise.
+	* testsuite/20_util/duration/arithmetic/constexpr_c++17.cc: New test.
+	* testsuite/20_util/duration/literals/range.cc: Adjust dg-error.
+	* testsuite/20_util/time_point/arithmetic/constexpr.cc: New test.
+
+2017-02-19  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/debug.xml: Adjust link to ThreadSanitizer.
+
+2017-02-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/io.xml: Update link to groups.google.com.
+	Tweak link description.
+
+2017-02-18  Gerald Pfeifer  <gerald@pfeifer.com>
+	
+	* doc/xml/manual/profile_mode.xml: Fix link.
+
+2017-02-16  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures.xml: Simplify and
+	standardize references to boost.org.
+	* doc/xml/manual/policy_data_structures_biblio.xml: Ditto.
+	* doc/xml/manual/shared_ptr.xml: Ditto.
+
+2017-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60936
+	* src/c++11/snprintf_lite.cc (__concat_size_t): Calculate length
+	written to buffer, not length remaining in buffer.
+
+2017-02-15  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/78723
+	* include/std/variant (operator<(), operator>(), operator<=(),
+	operator>=(), operator==(), operator!=()): Implement P0393R3.
+	* testsuite/20_util/variant/compile.cc: Adjust tests.
+	* testsuite/20_util/variant/run.cc: Adjust tests.
+
+2017-02-15  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/79513
+	* include/std/variant (visit()): Forward variant types to the return
+	type detection code.
+	* testsuite/20_util/variant/compile.cc: Add test cases.
+
+2017-02-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libstdc++/79348
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
+
+2017-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/79348
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Likewise.
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/s390x-linux-gnu/32/baseline_symbols.txt: Likewise.
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Likewise.
+
+2017-02-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79486
+	* include/std/future (__future_base::_Task_state::_M_run)
+	(__future_base::_Task_state::_M_run_delayed): Use lvalue types in
+	result_of expressions.
+	* testsuite/30_threads/packaged_task/79486.cc: New.
+
+2017-02-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79467
+	* include/bits/shared_ptr_base.h (__shared_ptr(_Yp*, _Deleter))
+	(__shared_ptr(_Yp*, _Deleter, _Alloc)): Use lvalue types in
+	__is_callable check.
+	* testsuite/20_util/shared_ptr/cons/79467.cc: New.
+
+	* include/bits/atomic_base.h: Re-indent.
+
+2017-02-10  Gerald Pfeifer  <gerald@pfeifer.com> 
+
+	* doc/xml/manual/profile_mode.xml: Update a paper reference. 
+
+2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* src/c++11/snprintf_lite.cc (__err): Use https for bug reporting.
+
+2017-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/policy_data_structures.xml: Fix spelling of author's
+	name.
+	* doc/xml/manual/policy_data_structures_biblio.xml: Likewise. Remove
+	broken links to texts that are no longer online.
+	* doc/xml/manual/profile_mode.xml: Update links to CGO 2009 paper and
+	LCPC 2006 paper.
+	* doc/xml/manual/using.xml: Update links to memory model information.
+	* doc/xml/manual/using_exceptions.xml: Update link to "Appendix E:
+	Standard-Library Exception Safety".
+	* doc/html/*: Regenerate.
+
+2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
+	
+	* doc/xml/manual/profile_mode.xml: Unbreak link to
+	"Optimizing Sorting with Machine Learning Algorithms".
+
+2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
+	
+	* src/c++11/snprintf_lite.cc (__err): Update bug reporting URL.
+
+2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
+	
+	* doc/xml/manual/abi.xml: Update link to "Sun Studio 11: C++
+	Migration Guide".
+
+2017-02-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/html/ext/lwg-active.html: Remove.
+	* doc/html/ext/lwg-closed.html: Ditto.
+	* doc/html/ext/lwg-defects.html: Ditto.
+
+	* doc/Makefile.am (xml_extradir): Remove.
+	(xml_extra): Ditto.
+	(stamp-html-docbook-lwg): Remove recipe...
+	(stamp-html-docbook-data): ...and its use here.
+	* doc/Makefile.in: Regenerate.
+
+	* doc/xml/manual/intro.xml: Shorten two paragraphs explaining
+	the relationship to the upstream working group.
+	Replace a local link to ../ext/lwg-active.html by the upstream one.
+	Replace all reference to ../ext/lwg-defects.html by a new entity
+	&DR; which refers to the upstream address.
+
+2017-02-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Fix link to N4284.
+
+2017-02-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79323
+	* testsuite/20_util/duration/literals/range.cc: Prune extra output
+	at -O0.
+
+2017-02-06  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Update URL of the
+	DocBook Element Reference.  Use that term as link description
+	instead of "online".
+	epubcheck has moved to GitHub.
+	Remove obsolete link to DocBook Publishing Tools.
+
+2017-02-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66145
+	* testsuite/27_io/basic_ios/copyfmt/char/1.cc: Restore ABI override
+	so new ios::failure can be caught even when old ABI is the default.
+	* testsuite/27_io/basic_ios/exceptions/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/
+	exceptions_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	exceptions_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/char/12297.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/wchar_t/12297.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/ios_base/storage/2.cc: Likewise.
+
+	PR libstdc++/60936
+	* src/c++11/Makefile.am: Add new files.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/cow-string-inst.cc [!_GLIBCXX_USE_CXX11_ABI]
+	(operator<<, operator>>, getline): Move explicit instantiations to ...
+	* src/c++11/cow-string-io-inst.cc: ... new file.
+	* src/c++11/cow-wstring-inst.cc [!_GLIBCXX_USE_CXX11_ABI]
+	(operator<<, operator>>, getline): Move explicit instantiations to ...
+	* src/c++11/cow-wstring-io-inst.cc: ... new file.
+	* src/c++11/functexcept.cc (__throw_ios_failure, __throw_system_error)
+	(__throw_future_error, __throw_bad_function_call):
+	(__throw_regex_error): Move functions for C++11 exceptions to the
+	files that define the exception types.
+	* src/c++11/functional.cc (__throw_bad_function_call): Move here.
+	* src/c++11/future.cc (__throw_future_error): Likewise.
+	* src/c++11/ios.cc (__throw_ios_failure): Likewise.
+	* src/c++11/regex.cc (__throw_regex_error): Likewise.
+	* src/c++11/snprintf_lite.cc (__concat_size_t): Print decimal
+	representation directly instead of calling __int_to_char.
+	* src/c++11/sso_string.cc (__sso_string): New file for definition
+	of __sso_string type.
+	* src/c++11/string-io-inst.cc [_GLIBCXX_USE_CXX11_ABI]: New file for
+	explicit instantiations of narrow string I/O functions.
+	* src/c++11/system_error.cc (__throw_system_error): Move here.
+	(__sso_string): Move to new file.
+	* src/c++11/wstring-io-inst.cc [_GLIBCXX_USE_CXX11_ABI]: New file for
+	explicit instantiations of wide string I/O functions.
+	* src/c++98/misc-inst.cc [_GLIBCXX_USE_CXX11_ABI] (operator<<)
+	(operator>>, getline): Remove explicit instantiations from here.
+
+2017-02-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
+
+2017-02-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.host: Separate Solaris/SPARC and x86 baselines.
+	* config/abi/post/solaris2.10/baseline_symbols.txt: Move ...
+	* config/abi/post/sparc-solaris2.10/baseline_symbols.txt: ... here.
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt: Move ...
+	* config/abi/post/sparc-solaris2.10/sparcv9/baseline_symbols.txt:
+	... here.
+	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Move ...
+	* config/abi/post/i386-solaris2.10/amd64/baseline_symbols.txt: ... here.
+	* config/abi/post/i386-solaris2.10/baseline_symbols.txt: New file.
+	* config/abi/post/solaris2.11/baseline_symbols.txt: Move ...
+	* config/abi/post/sparc-solaris2.11/baseline_symbols.txt: ... here.
+	* config/abi/post/solaris2.11/sparcv9/baseline_symbols.txt: Move ...
+	* config/abi/post/sparc-solaris2.11/sparcv9/baseline_symbols.txt:
+	... here.
+	* config/abi/post/solaris2.11/amd64/baseline_symbols.txt: Move ...
+	* config/abi/post/i386-solaris2.11/amd64/baseline_symbols.txt: ... here.
+	* config/abi/post/i386-solaris2.11/baseline_symbols.txt: New file.
+
+	* config/abi/post/solaris2.10/baseline_symbols.txt: Regenerate.
+	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.11/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.11/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/solaris2.11/sparcv9/baseline_symbols.txt: Likewise.
+
+2017-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78346
+	* include/bits/predefined_ops.h (_Iter_equals_iter): Store iterator
+	not its referent.
+	(_Iter_comp_to_iter): Likewise.
+	* testsuite/25_algorithms/search/78346.cc: New test.
+
+	PR libstdc++/79254
+	* config/abi/pre/gnu.ver: Remove recently added symbols.
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::_M_copy_assign): Remove.
+	(basic_string::operator=(const basic_string&)): Don't dispatch to
+	_M_copy_assign. If source object is small just deallocate, otherwise
+	perform new allocation before making any changes.
+	* include/bits/basic_string.tcc [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::_M_copy_assign(const basic_string&, true_type)):
+	Remove.
+	* testsuite/21_strings/basic_string/allocator/char/copy_assign.cc:
+	Test cases where the allocators are equal or the string is small.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/copy_assign.cc:
+	Likewise.
+
+2017-01-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement LWG 2825, LWG 2756 breaks class template argument
+	deduction for optional.
+	* include/std/optional: Add a deduction guide.
+	* testsuite/20_util/optional/cons/deduction_guide.cc: New.
+
+2017-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79254
+	* config/abi/pre/gnu.ver: Add new symbols.
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::_M_copy_assign): New overloaded functions to perform
+	copy assignment.
+	(basic_string::operator=(const basic_string&)): Dispatch to
+	_M_copy_assign.
+	* include/bits/basic_string.tcc [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::_M_copy_assign(const basic_string&, true_type)):
+	Define, performing rollback on exception.
+	* testsuite/21_strings/basic_string/allocator/char/copy_assign.cc:
+	Test exception-safety guarantee.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/copy_assign.cc:
+	Likewise.
+	* testsuite/util/testsuite_allocator.h (uneq_allocator::swap): Make
+	std::swap visible.
+
 2017-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/70607
+	* include/tr1/complex (conj): Remove using-declaration and restore
+	overloads, reverting previous change.
+
+	* testsuite/23_containers/list/operations/78389.cc: Fix for C++11
+	mode.
+	* testsuite/23_containers/priority_queue/requirements/constructible.cc:
+	Mark as unsupported in C++98 mode.
+	* testsuite/23_containers/queue/requirements/constructible.cc:
+	Likewise.
+	* testsuite/23_containers/stack/requirements/constructible.cc:
+	Likewise.
+	* testsuite/25_algorithms/make_heap/movable.cc: Fix for C++11 mode.
 
 	PR libstdc++/79243
 	* include/bits/c++config (literals::string_view_literals::__7): Add.

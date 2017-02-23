@@ -109,6 +109,80 @@ tree_ssa_unswitch_loops (void)
   return 0;
 }
 
+/* Return TRUE if an SSA_NAME maybe undefined and is therefore
+   unsuitable for unswitching.  STMT is the statement we are
+   considering for unswitching and LOOP is the loop it appears in.  */
+
+static bool
+is_maybe_undefined (const tree name, gimple *stmt, struct loop *loop)
+{
+  /* The loop header is the only block we can trivially determine that
+     will always be executed.  If the comparison is in the loop
+     header, we know it's OK to unswitch on it.  */
+  if (gimple_bb (stmt) == loop->header)
+    return false;
+
+  auto_bitmap visited_ssa;
+  auto_vec<tree> worklist;
+  worklist.safe_push (name);
+  bitmap_set_bit (visited_ssa, SSA_NAME_VERSION (name));
+  while (!worklist.is_empty ())
+    {
+      tree t = worklist.pop ();
+
+      /* If it's obviously undefined, avoid further computations.  */
+      if (ssa_undefined_value_p (t, true))
+	return true;
+
+      if (ssa_defined_default_def_p (t))
+	continue;
+
+      gimple *def = SSA_NAME_DEF_STMT (t);
+
+      /* Check that all the PHI args are fully defined.  */
+      if (gphi *phi = dyn_cast <gphi *> (def))
+	{
+	  for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
+	    {
+	      tree t = gimple_phi_arg_def (phi, i);
+	      /* If an SSA has already been seen, it may be a loop,
+		 but we can continue and ignore this use.  Otherwise,
+		 add the SSA_NAME to the queue and visit it later.  */
+	      if (TREE_CODE (t) == SSA_NAME
+		  && bitmap_set_bit (visited_ssa, SSA_NAME_VERSION (t)))
+		worklist.safe_push (t);
+	    }
+	  continue;
+	}
+
+      /* Uses in stmts always executed when the region header executes
+	 are fine.  */
+      if (dominated_by_p (CDI_DOMINATORS, loop->header, gimple_bb (def)))
+	continue;
+
+      /* Handle calls and memory loads conservatively.  */
+      if (!is_gimple_assign (def)
+	  || (gimple_assign_single_p (def)
+	      && gimple_vuse (def)))
+	return true;
+
+      /* Check that any SSA names used to define NAME are also fully
+	 defined.  */
+      use_operand_p use_p;
+      ssa_op_iter iter;
+      FOR_EACH_SSA_USE_OPERAND (use_p, def, iter, SSA_OP_USE)
+	{
+	  tree t = USE_FROM_PTR (use_p);
+	  /* If an SSA has already been seen, it may be a loop,
+	     but we can continue and ignore this use.  Otherwise,
+	     add the SSA_NAME to the queue and visit it later.  */
+	  if (bitmap_set_bit (visited_ssa, SSA_NAME_VERSION (t)))
+	    worklist.safe_push (t);
+	}
+    }
+  return false;
+}
+
 /* Checks whether we can unswitch LOOP on condition at end of BB -- one of its
    basic blocks (for what it means see comments below).  */
 
@@ -136,14 +210,14 @@ tree_may_unswitch_on (basic_block bb, struct loop *loop)
   /* Condition must be invariant.  */
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
-      /* Unswitching on undefined values would introduce undefined
-	 behavior that the original program might never exercise.  */
-      if (ssa_undefined_value_p (use, true))
-	return NULL_TREE;
       def = SSA_NAME_DEF_STMT (use);
       def_bb = gimple_bb (def);
       if (def_bb
 	  && flow_bb_inside_loop_p (loop, def_bb))
+	return NULL_TREE;
+      /* Unswitching on undefined values would introduce undefined
+	 behavior that the original program might never exercise.  */
+      if (is_maybe_undefined (use, stmt, loop))
 	return NULL_TREE;
     }
 
@@ -417,7 +491,7 @@ tree_unswitch_loop (struct loop *loop,
   extract_true_false_edges_from_block (unswitch_on, &edge_true, &edge_false);
   prob_true = edge_true->probability;
   return loop_version (loop, unshare_expr (cond),
-		       NULL, prob_true, prob_true,
+		       NULL, prob_true, REG_BR_PROB_BASE - prob_true, prob_true,
 		       REG_BR_PROB_BASE - prob_true, false);
 }
 
@@ -711,6 +785,7 @@ hoist_guard (struct loop *loop, edge guard)
   edge te, fe, e, new_edge;
   gimple *stmt;
   basic_block guard_bb = guard->src;
+  edge not_guard;
   gimple_stmt_iterator gsi;
   int flags = 0;
   bool fix_dom_of_exit;
@@ -742,18 +817,80 @@ hoist_guard (struct loop *loop, edge guard)
   update_stmt (cond_stmt);
   /* Create new loop pre-header.  */
   e = split_block (pre_header, last_stmt (pre_header));
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "  Moving guard %i->%i (prob %i) to bb %i, "
+	     "new preheader is %i\n",
+	     guard->src->index, guard->dest->index, guard->probability,
+	     e->src->index, e->dest->index);
+
   gcc_assert (loop_preheader_edge (loop)->src == e->dest);
+
   if (guard == fe)
     {
       e->flags = EDGE_TRUE_VALUE;
       flags |= EDGE_FALSE_VALUE;
+      not_guard = te;
     }
   else
     {
       e->flags = EDGE_FALSE_VALUE;
       flags |= EDGE_TRUE_VALUE;
+      not_guard = fe;
     }
   new_edge = make_edge (pre_header, exit->dest, flags);
+
+  /* Determine the probability that we skip the loop.  Assume that loop has
+     same average number of iterations regardless outcome of guard.  */
+  new_edge->probability = guard->probability;
+  int skip_count = guard->src->count
+		   ? RDIV (guard->count * pre_header->count, guard->src->count)
+		   : apply_probability (guard->count, new_edge->probability);
+
+  if (skip_count > e->count)
+    {
+      fprintf (dump_file, "  Capping count; expect profile inconsistency\n");
+      skip_count = e->count;
+    }
+  new_edge->count = skip_count;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "  Estimated probability of skipping loop is %i\n",
+	     new_edge->probability);
+
+  /* Update profile after the transform:
+
+     First decrease count of path from newly hoisted loop guard
+     to loop header...  */
+  e->count -= skip_count;
+  e->probability = REG_BR_PROB_BASE - new_edge->probability;
+  e->dest->count = e->count;
+  e->dest->frequency = EDGE_FREQUENCY (e);
+
+  /* ... now update profile to represent that original guard will be optimized
+     away ...  */
+  guard->probability = 0;
+  guard->count = 0;
+  not_guard->probability = REG_BR_PROB_BASE;
+  /* This count is wrong (frequency of not_guard does not change),
+     but will be scaled later.  */
+  not_guard->count = guard->src->count;
+
+  /* ... finally scale everything in the loop except for guarded basic blocks
+     where profile does not change.  */
+  basic_block *body = get_loop_body (loop);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "  Scaling nonguarded BBs in loop:");
+  for (unsigned int i = 0; i < loop->num_nodes; i++)
+    {
+      basic_block bb = body[i];
+      if (!dominated_by_p (CDI_DOMINATORS, bb, not_guard->dest))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, " %i", bb->index);
+          scale_bbs_frequencies_int (&bb, 1, e->probability, REG_BR_PROB_BASE);
+  	}
+    }
+
   if (fix_dom_of_exit)
     set_immediate_dominator (CDI_DOMINATORS, exit->dest, pre_header);
   /* Add NEW_ADGE argument for all phi in post-header block.  */
@@ -780,7 +917,9 @@ hoist_guard (struct loop *loop, edge guard)
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  guard hoisted.\n");
+    fprintf (dump_file, "\n  guard hoisted.\n");
+
+  free (body);
 }
 
 /* Return true if phi argument for exit edge can be used

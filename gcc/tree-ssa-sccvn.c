@@ -3684,7 +3684,7 @@ visit_reference_op_store (tree lhs, tree op, gimple *stmt)
 	 number of the vuse it came from.  */
 
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Store matched earlier value,"
+	fprintf (dump_file, "Store matched earlier value, "
 		 "value numbering store vdefs to matching vuses.\n");
 
       changed |= set_ssa_val_to (vdef, SSA_VAL (vuse));

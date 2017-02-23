@@ -60,6 +60,9 @@ void test_sprintf_chk_string (const char *s, const char *t)
   T (1, "%s", x ? "1" : "");       /* { dg-warning "nul past the end" } */
   T (1, "%s", x ? s : "1");        /* { dg-warning "nul past the end" } */
   T (1, "%s", x ? "1" : s);        /* { dg-warning "nul past the end" } */
+
+  /* When neither string is known no warning should be issued at level 1
+     since their lenghts are assumed to be zero.  */
   T (1, "%s", x ? s : t);
 
   T (2, "%s", x ? "" : "1");
@@ -85,7 +88,7 @@ void test_sprintf_chk_integer_value (void)
   T ( 1, "%i",  i (    0));         /* { dg-warning "nul past the end" } */
   T ( 1, "%i",  i (    1));         /* { dg-warning "nul past the end" } */
   T ( 1, "%i",  i (   -1));         /* { dg-warning "into a region" } */
-  T ( 1, "%i_", i (    1));         /* { dg-warning "character ._. at offset 2 past the end" } */
+  T ( 1, "%i_", i (    1));         /* { dg-warning " 1 byte into a region of size 0" } */
   T ( 1, "_%i", i (    1));         /* { dg-warning "into a region" } */
   T ( 1, "_%i_",i (    1));         /* { dg-warning "into a region" } */
   T ( 1, "%o",  i (    0));         /* { dg-warning "nul past the end" } */
@@ -102,7 +105,7 @@ void test_sprintf_chk_integer_value (void)
   T ( 2, "%i",  i (   10));         /* { dg-warning "nul past the end" } */
   T ( 2, "%i_", i (    0));         /* { dg-warning "nul past the end" } */
   T ( 2, "_%i", i (    0));         /* { dg-warning "nul past the end" } */
-  T ( 2, "_%i_",i (    0));         /* { dg-warning "character ._. at offset 3 past the end" } */
+  T ( 2, "_%i_",i (    0));         /* { dg-warning " 1 byte into a region of size 0" } */
   T ( 2, "%o",  i (    1));
   T ( 2, "%o",  i (    7));
   T ( 2, "%o",  i (  010));         /* { dg-warning "nul past the end" } */
@@ -195,7 +198,7 @@ void test_sprintf_chk_range_schar (void)
   /* { dg-message "directive argument in the range \\\[1024, 1034\\\]" "note" { target *-*-* } .-1 } */
 
   T ( 0, "%hhi", R (1024, 2035));   /* { dg-warning ".%hhi. directive writing between 1 and 4 bytes into a region of size 0" } */
-  /* { dg-message "using the range \\\[0, -128\\\] for directive argument" "note" { target *-*-* } .-1 } */
+  /* { dg-message "using the range \\\[-128, 127\\\] for directive argument" "note" { target *-*-* } .-1 } */
 
 #undef R
 #define R(min, max) range_schar (min, max)
@@ -211,10 +214,10 @@ void test_sprintf_chk_range_schar (void)
   T ( 3, "%i",  R (  0,  99));
   T ( 3, "%i",  R (  0, 100));  /* { dg-warning "may write a terminating nul past the end of the destination" } */
 
-  /* The following call may write as few as 3 bytes and as many as 5.
+  /* The following call may write as few as 2 bytes and as many as 4.
      It's a judgment call how best to diagnose it to make the potential
      problem clear.  */
-  T ( 3, "%i%i", R (1, 10), R (9, 10));   /* { dg-warning "may write a terminating nul past the end|.%i. directive writing between 1 and 2 bytes into a region of size 1" } */
+  T ( 3, "%i%i", R (1, 10), R (9, 10));   /* { dg-warning "directive writing between 1 and 2 bytes into a region of size between 1 and 2" } */
 
   T ( 4, "%i%i", R (10, 11), R (12, 13));   /* { dg-warning "nul past the end" } */
 
@@ -224,7 +227,11 @@ void test_sprintf_chk_range_schar (void)
   T ( 6, "%i_%i_%i", R (0, 9), R (0, 9), R (0, 10));  /* { dg-warning "may write a terminating nul past the end" } */
   T ( 6, "%i_%i_%i", R (0, 9), R (0, 10), R (0, 9));  /* { dg-warning "may write a terminating nul past the end" } */
   T ( 6, "%i_%i_%i", R (0, 10), R (0, 9), R (0, 9));  /* { dg-warning "may write a terminating nul past the end" } */
-  T ( 6, "%i_%i_%i", R (0, 9), R (0, 10), R (0, 10)); /* { dg-warning "may write a terminating nul past the end|.%i. directive writing between 1 and 2 bytes into a region of size 1" } */
+  T ( 6, "%hhi_%hi_%i", R (0, 9), R (0, 10), R (0, 10)); /* { dg-warning ".i. directive writing between 1 and 2 bytes into a region of size between 1 and 2" } */
+  T ( 6, "%3i|%2i/%1i", R (0, 99), R (0, 99), R (0, 99)); /* { dg-warning "./. directive writing 1 byte into a region of size 0" } */
+  T ( 6, "%.3i|%.2i/%i", R (0, 99), R (0, 99), R (0, 99)); /* { dg-warning "./. directive writing 1 byte into a region of size 0" } */
+  T ( 6, "%.3i|%.2i/%i", R (0, 119), R (0, 99), R (0, 99)); /* { dg-warning "./. directive writing 1 byte into a region of size 0" } */
+  T ( 6, "%.3i|%.2i/%i", R (0, 1), R (0, 2), R (0, 3)); /* { dg-warning "./. directive writing 1 byte into a region of size 0" } */
 }
 
 void test_sprintf_chk_range_uchar (void)

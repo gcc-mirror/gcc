@@ -1,5 +1,5 @@
 /* { dg-do run { target { ilp32 || lp64 } } } */
-/* { dg-options "-O2" } */
+/* { dg-skip-if "" { *-*-* }  { "*" } { "-O2" } } */
 /* { dg-additional-options "-fno-omit-frame-pointer" { target *-*-darwin* } } */
 /* { dg-shouldfail "asan" } */
 

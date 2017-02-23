@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=c99 -Wformat -Wformat-overflow=2 -ftrack-macro-expansion=0" } */
+/* { dg-options "-Wformat -Wformat-overflow=2 -ftrack-macro-expansion=0" } */
 
 /* When debugging, define LINE to the line number of the test case to exercise
    and avoid exercising any of the others.  The buffer and objsize macros
@@ -47,12 +47,16 @@ void test_s_const (void)
   T (1, "%*ls",  0, L"\0");
   T (1, "%*ls",  1, L"");       /* { dg-warning "nul past the end" } */
 
-  T (1, "%ls",      L"1");      /* { dg-warning "directive writing between 1 and 6 bytes into a region of size 1" } */
+  /* A wide character converts into between zero and MB_LEN_MAX bytes
+     (although individual ASCII characters are assumed to convert into
+     1 bt %lc so this could be made smarter.  */
+  T (1, "%ls",      L"1");      /* { dg-warning "directive writing up to 6 bytes into a region of size 1" } */
   T (1, "%.0ls",    L"1");
   T (2, "%.0ls",    L"1");
   T (2, "%.1ls",    L"1");
   T (2, "%.2ls",    L"1");      /* { dg-warning "nul past the end" } */
-  T (2, "%.3ls",    L"1");      /* { dg-warning "directive writing between 1 and 3 bytes into a region of size 2" } */
+  T (2, "%.3ls",    L"1");      /* { dg-warning "directive writing up to 3 bytes into a region of size 2" } */
+  T (2, "%.7ls",    L"1");      /* { dg-warning "directive writing up to 6 bytes into a region of size 2" } */
   T (2, "%.2ls",    L"12");     /* { dg-warning "nul past the end" } */
 
   /* The "%.2ls" directive below will write at a minimum 1 byte (because
@@ -71,8 +75,8 @@ void test_s_const (void)
   T (3, "%.3ls",    L"12");     /* { dg-warning "nul past the end" } */
   T (4, "%.3ls",    L"123");
   T (4, "%.4ls",    L"123");    /* { dg-warning "nul past the end" } */
-  T (4, "%.5ls",    L"123");    /* { dg-warning "directive writing between 3 and 5 bytes into a region of size 4" } */
-  T (4, "%.6ls",    L"123");    /* { dg-warning "directive writing between 3 and 6 bytes into a region of size 4" } */
+  T (4, "%.5ls",    L"123");    /* { dg-warning "directive writing up to 5 bytes into a region of size 4" } */
+  T (4, "%.6ls",    L"123");    /* { dg-warning "directive writing up to 6 bytes into a region of size 4" } */
 }
 
 
@@ -87,37 +91,48 @@ struct Arrays {
 
 /* Exercise buffer overflow detection with non-const string arguments.  */
 
-void test_s_nonconst (const char *s, const wchar_t *ws, struct Arrays *a)
+void test_s_nonconst (int w, int p, const char *s, const wchar_t *ws,
+		      struct Arrays *a)
 {
   T (0, "%s",   s);             /* { dg-warning "into a region" "sprintf transformed into strcpy" { xfail *-*-* } } */
   T (1, "%s",   s);             /* { dg-warning "nul past the end" "sprintf transformed into strcpy" { xfail *-*-* } } */
-  T (1, "%1s",  s);             /* { dg-warning "nul past the end" } */
+  T (1, "%1s",  s);             /* { dg-warning "writing a terminating nul" } */
   T (1, "%.0s", s);
   T (1, "%.1s", s);             /* { dg-warning "may write a terminating nul" } */
+  T (1, "%*s", 0, s);           /* { dg-warning "may write a terminating nul" } */
+  T (1, "%*s", 1, s);           /* { dg-warning "writing a terminating nul" } */
+  T (1, "%*s", 2, s);           /* { dg-warning "directive writing 2 or more bytes" } */
+  T (1, "%*s", 3, s);           /* { dg-warning "directive writing 3 or more bytes" } */
+
+  T (1, "%.*s", 1, s);          /* { dg-warning "may write a terminating nul" } */
+  T (1, "%.*s", 2, s);          /* { dg-warning "writing up to 2 bytes" } */
+  T (1, "%.*s", 3, s);          /* { dg-warning "writing up to 3 bytes" } */
 
   T (1, "%.0ls",  ws);
   T (1, "%.1ls",  ws);          /* { dg-warning "may write a terminating nul" } */
-  T (1, "%ls",    ws);          /* { dg-warning "writing a terminating nul" } */
+  T (1, "%ls",    ws);          /* { dg-warning "may write a terminating nul" } */
 
   /* Verify that the size of the array is used in lieu of its length.
-     The minus sign disables GCC's sprintf to strcpy transformation.  */
-  T (1, "%-s", a->a1);          /* { dg-warning "nul past the end" } */
+     The minus sign disables GCC's sprintf to strcpy transformation.
+     In the case below, the length of s->a1 can be at most zero, so
+     the call should not be diagnosed.  */
+  T (1, "%-s", a->a1);
 
   /* In the following test, since the length of the strings isn't known,
      their type (the array) is used to bound the maximum length to 1,
      which means the "%-s" directive would not overflow the buffer,
      but it would leave no room for the terminating nul.  */
-  T (1, "%-s", a->a2);          /* { dg-warning "writing a terminating nul" } */
+  T (1, "%-s", a->a2);          /* { dg-warning "may write a terminating nul" } */
 
   /* Unlike in the test above, since the length of the string is bounded
      by the array type to at most 2, the "^-s" directive is diagnosed firts,
      preventing the diagnostic about the terminatinb nul.  */
-  T (1, "%-s", a->a3);          /* { dg-warning "directive writing between 1 and 2 bytes" } */
+  T (1, "%-s", a->a3);          /* { dg-warning "directive writing up to 2 bytes" } */
 
   /* The length of a zero length array and flexible array member is
      unknown and at leve 2 assumed to be at least 1.  */
-  T (1, "%-s", a->a0);          /* { dg-warning "nul past the end" } */
-  T (1, "%-s", a->ax);          /* { dg-warning "nul past the end" } */
+  T (1, "%-s", a->a0);          /* { dg-warning "may write a terminating nul" } */
+  T (1, "%-s", a->ax);          /* { dg-warning "may write a terminating nul" } */
 
   T (2, "%-s", a->a0);
   T (2, "%-s", a->ax);
@@ -145,20 +160,20 @@ void test_hh_nonconst (int w, int p, int x, unsigned y)
 
   /* Zero precision means that zero argument formats as no bytes unless
      length or flags make it otherwise.  */
-  T (1, "%.*hhi",    0, x);     /* { dg-warning "between 0 and 4 bytes" } */
-  T (2, "%.*hhi",    0, x);     /* { dg-warning "between 0 and 4 bytes" } */
-  T (3, "%.*hhi",    0, x);     /* { dg-warning "between 0 and 4 bytes" } */
+  T (1, "%.*hhi",    0, x);     /* { dg-warning "writing up to 4 bytes" } */
+  T (2, "%.*hhi",    0, x);     /* { dg-warning "writing up to 4 bytes" } */
+  T (3, "%.*hhi",    0, x);     /* { dg-warning "writing up to 4 bytes" } */
   T (4, "%.*hhi",    0, x);     /* { dg-warning "may write a terminating nul past the end of the destination" } */
 
-  T (1, "%.*hhi",    0, y);     /* { dg-warning "between 0 and 4 bytes" } */
-  T (2, "%.*hhi",    0, y);     /* { dg-warning "between 0 and 4 bytes" } */
-  T (3, "%.*hhi",    0, y);     /* { dg-warning "between 0 and 4 bytes" } */
+  T (1, "%.*hhi",    0, y);     /* { dg-warning "writing up to 4 bytes" } */
+  T (2, "%.*hhi",    0, y);     /* { dg-warning "writing up to 4 bytes" } */
+  T (3, "%.*hhi",    0, y);     /* { dg-warning "writing up to 4 bytes" } */
   T (4, "%.*hhi",    0, y);     /* { dg-warning "may write a terminating nul past the end of the destination" } */
 
-  T (1, "%#.*hhi",    0, y);    /* { dg-warning "between 0 and 4 bytes" } */
+  T (1, "%#.*hhi",    0, y);    /* { dg-warning "writing up to 4 bytes" } */
   /* { dg-warning ".#. flag used" "-Wformat" { target *-*-* } .-1 } */
   T (1, "%+.*hhi",    0, y);    /* { dg-warning "between 1 and 4 bytes" } */
-  T (1, "%-.*hhi",    0, y);    /* { dg-warning "between 0 and 4 bytes" } */
+  T (1, "%-.*hhi",    0, y);    /* { dg-warning "writing up to 4 bytes" } */
   T (1, "% .*hhi",    0, y);    /* { dg-warning "between 1 and 4 bytes" } */
 
   T (1, "%#.*hhi",    1, y);    /* { dg-warning "between 1 and 4 bytes" } */
@@ -167,18 +182,18 @@ void test_hh_nonconst (int w, int p, int x, unsigned y)
   T (1, "%-.*hhi",    1, y);    /* { dg-warning "between 1 and 4 bytes" } */
   T (1, "% .*hhi",    1, y);    /* { dg-warning "between 2 and 4 bytes" } */
 
-  T (1, "%#.*hhi",    p, y);    /* { dg-warning "writing 0 or more bytes" } */
+  T (1, "%#.*hhi",    p, y);    /* { dg-warning "writing up to \[0-9\]+ bytes" } */
   /* { dg-warning ".#. flag used" "-Wformat" { target *-*-* } .-1 } */
-  T (1, "%+.*hhi",    p, y);    /* { dg-warning "writing 1 or more bytes" } */
-  T (1, "%-.*hhi",    p, y);    /* { dg-warning "writing 0 or more bytes" } */
-  T (1, "% .*hhi",    p, y);    /* { dg-warning "writing 1 or more bytes" } */
+  T (1, "%+.*hhi",    p, y);    /* { dg-warning "writing 1 or more bytes|writing between 1 and \[0-9\]+ bytes" } */
+  T (1, "%-.*hhi",    p, y);    /* { dg-warning "writing up to \[0-9\]+ bytes" } */
+  T (1, "% .*hhi",    p, y);    /* { dg-warning "writing between 1 and \[0-9\]+ bytes|writing 1 or more bytes" } */
 
-  T (1, "%#.*hhu",    0, y);    /* { dg-warning "between 0 and 3 bytes" } */
+  T (1, "%#.*hhu",    0, y);    /* { dg-warning "writing up to 3 bytes" } */
   /* { dg-warning ".#. flag used" "-Wformat" { target *-*-* } .-1 } */
-  T (1, "%+.*hhu",    0, y);    /* { dg-warning "between 0 and 3 bytes" } */
+  T (1, "%+.*hhu",    0, y);    /* { dg-warning "writing up to 3 bytes" } */
   /* { dg-warning ".\\+. flag used" "-Wformat" { target *-*-* } .-1 } */
-  T (1, "%-.*hhu",    0, y);    /* { dg-warning "between 0 and 3 bytes" } */
-  T (1, "% .*hhu",    0, y);    /* { dg-warning "between 0 and 3 bytes" } */
+  T (1, "%-.*hhu",    0, y);    /* { dg-warning "writing up to 3 bytes" } */
+  T (1, "% .*hhu",    0, y);    /* { dg-warning "writing up to 3 bytes" } */
   /* { dg-warning ". . flag used" "-Wformat" { target *-*-* } .-1 } */
 }
 

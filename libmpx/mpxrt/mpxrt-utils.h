@@ -66,5 +66,6 @@ void __mpxrt_print (verbose_type vt, const char* frmt, ...);
 mpx_rt_mode_t __mpxrt_mode (void);
 void __mpxrt_utils_free (void);
 void __mpxrt_print_summary (uint64_t num_brs, uint64_t l1_size);
+void __mpxrt_stop (void) __attribute__ ((noreturn));
 
 #endif /* MPXRT_UTILS_H */

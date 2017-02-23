@@ -3396,14 +3396,16 @@ void __gnat_killprocesstree (int pid, int sig_num)
     {
       if ((d->d_type & DT_DIR) == DT_DIR)
         {
-          char statfile[64] = { 0 };
+          char statfile[64];
           int _pid, _ppid;
 
           /* read /proc/<PID>/stat */
 
-          strncpy (statfile, "/proc/", sizeof(statfile));
-          strncat (statfile, d->d_name, sizeof(statfile));
-          strncat (statfile, "/stat", sizeof(statfile));
+          if (strlen (d->d_name) >= sizeof (statfile) - strlen ("/proc//stat"))
+            continue;
+          strcpy (statfile, "/proc/");
+          strcat (statfile, d->d_name);
+          strcat (statfile, "/stat");
 
           FILE *fd = fopen (statfile, "r");
 

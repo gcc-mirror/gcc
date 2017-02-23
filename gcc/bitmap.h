@@ -802,4 +802,25 @@ bmp_iter_and_compl (bitmap_iterator *bi, unsigned *bit_no)
        bmp_iter_and_compl (&(ITER), &(BITNUM));				\
        bmp_iter_next (&(ITER), &(BITNUM)))
 
+/* A class that ties the lifetime of a bitmap to its scope.  */
+class auto_bitmap
+{
+ public:
+  auto_bitmap () { bits = BITMAP_ALLOC (NULL); }
+  ~auto_bitmap () { BITMAP_FREE (bits); }
+  // Allow calling bitmap functions on our bitmap.
+  operator bitmap () { return bits; }
+
+ private:
+  // Prevent making a copy that references our bitmap.
+  auto_bitmap (const auto_bitmap &);
+  auto_bitmap &operator = (const auto_bitmap &);
+#if __cplusplus >= 201103L
+  auto_bitmap (auto_bitmap &&);
+  auto_bitmap &operator = (auto_bitmap &&);
+#endif
+
+  bitmap bits;
+};
+
 #endif /* GCC_BITMAP_H */

@@ -37,6 +37,7 @@ case "${target_cpu}" in
 	ARCH=alpha
 	;;
   rs6000 | powerpc*)	ARCH=powerpc ;;
+  riscv*)		ARCH=riscv ;;
   sh*)			ARCH=sh ;;
 
   arm*)

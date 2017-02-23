@@ -99,7 +99,7 @@ is_gimple_sizepos (tree expr)
      but that will cause problems if this type is from outside the function.
      It's OK to have that here.  */
   return (expr == NULL_TREE
-	  || TREE_CONSTANT (expr)
+	  || TREE_CODE (expr) == INTEGER_CST
 	  || TREE_CODE (expr) == VAR_DECL
 	  || CONTAINS_PLACEHOLDER_P (expr));
 }                                        

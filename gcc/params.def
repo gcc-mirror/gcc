@@ -52,7 +52,7 @@ DEFPARAM (PARAM_PREDICTABLE_BRANCH_OUTCOME,
 DEFPARAM (PARAM_INLINE_MIN_SPEEDUP,
 	  "inline-min-speedup",
 	  "The minimal estimated speedup allowing inliner to ignore inline-insns-single and inline-insns-auto.",
-	  10, 0, 0)
+	  8, 0, 0)
 
 /* The single function inlining limit. This is the maximum size
    of a function counted in internal gcc instructions (not in
@@ -657,7 +657,7 @@ DEFPARAM(PARAM_SELSCHED_MAX_LOOKAHEAD,
 DEFPARAM(PARAM_SELSCHED_MAX_SCHED_TIMES,
          "selsched-max-sched-times",
          "Maximum number of times that an insn could be scheduled.",
-         2, 0, 0)
+         2, 1, 0)
 
 DEFPARAM(PARAM_SELSCHED_INSNS_TO_RENAME,
          "selsched-insns-to-rename",
@@ -1237,7 +1237,7 @@ DEFPARAM (PARAM_MAX_SSA_NAME_QUERY_DEPTH,
 	  "max-ssa-name-query-depth",
 	  "Maximum recursion depth allowed when querying a property of an"
 	  " SSA name.",
-	  3, 1, 0)
+	  3, 1, 10)
 
 DEFPARAM (PARAM_MAX_RTL_IF_CONVERSION_INSNS,
 	  "max-rtl-if-conversion-insns",

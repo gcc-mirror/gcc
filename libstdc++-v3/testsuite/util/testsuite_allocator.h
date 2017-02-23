@@ -287,7 +287,7 @@ namespace __gnu_test
 
       Alloc& base() { return *this; }
       const Alloc& base() const  { return *this; }
-      void swap_base(Alloc& b) { swap(b, this->base()); }
+      void swap_base(Alloc& b) { using std::swap; swap(b, this->base()); }
 
     public:
       typedef typename check_consistent_alloc_value_type<Tp, Alloc>::value_type

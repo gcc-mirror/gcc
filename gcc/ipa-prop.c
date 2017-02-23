@@ -176,16 +176,21 @@ ipa_dump_param (FILE *file, struct ipa_node_params *info, int i)
     }
 }
 
-/* Initialize the ipa_node_params structure associated with NODE 
-   to hold PARAM_COUNT parameters.  */
+/* If necessary, allocate vector of parameter descriptors in info of NODE.
+   Return true if they were allocated, false if not.  */
 
-void
+static bool
 ipa_alloc_node_params (struct cgraph_node *node, int param_count)
 {
   struct ipa_node_params *info = IPA_NODE_REF (node);
 
   if (!info->descriptors && param_count)
-    vec_safe_grow_cleared (info->descriptors, param_count);
+    {
+      vec_safe_grow_cleared (info->descriptors, param_count);
+      return true;
+    }
+  else
+    return false;
 }
 
 /* Initialize the ipa_node_params structure associated with NODE by counting
@@ -197,11 +202,9 @@ ipa_initialize_node_params (struct cgraph_node *node)
 {
   struct ipa_node_params *info = IPA_NODE_REF (node);
 
-  if (!info->descriptors)
-    {
-      ipa_alloc_node_params (node, count_formal_params (node->decl));
-      ipa_populate_param_decls (node, *info->descriptors);
-    }
+  if (!info->descriptors
+      && ipa_alloc_node_params (node, count_formal_params (node->decl)))
+    ipa_populate_param_decls (node, *info->descriptors);
 }
 
 /* Print the jump functions associated with call graph edge CS to file F.  */
@@ -3574,7 +3577,7 @@ ipa_free_all_edge_args (void)
 void
 ipa_free_all_node_params (void)
 {
-  ipa_node_params_sum->~ipa_node_params_t ();
+  ipa_node_params_sum->release ();
   ipa_node_params_sum = NULL;
 }
 
@@ -3734,38 +3737,6 @@ ipa_add_new_function (cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
   if (node->has_gimple_body_p ())
     ipa_analyze_node (node);
-}
-
-/* Initialize a newly created param info.  */
-
-void
-ipa_node_params_t::insert (cgraph_node *, ipa_node_params *info)
-{
-  info->lattices = NULL;
-  info->ipcp_orig_node = NULL;
-  info->known_csts = vNULL;
-  info->known_contexts = vNULL;
-  info->analysis_done = 0;
-  info->node_enqueued = 0;
-  info->do_clone_for_all_contexts = 0;
-  info->is_all_contexts_clone = 0;
-  info->node_dead = 0;
-  info->node_within_scc = 0;
-  info->node_calling_single_call = 0;
-  info->versionable = 0;
-}
-
-/* Frees all dynamically allocated structures that the param info points
-   to.  */
-
-void
-ipa_node_params_t::remove (cgraph_node *, ipa_node_params *info)
-{
-  free (info->lattices);
-  /* Lattice values and their sources are deallocated with their alocation
-     pool.  */
-  info->known_csts.release ();
-  info->known_contexts.release ();
 }
 
 /* Hook that is called by summary when a node is duplicated.  */
@@ -5069,7 +5040,7 @@ ipa_prop_write_jump_functions (void)
   lto_symtab_encoder_iterator lsei;
   lto_symtab_encoder_t encoder;
 
-  if (!ipa_node_params_sum)
+  if (!ipa_node_params_sum || !ipa_edge_args_vector)
     return;
 
   ob = create_output_block (LTO_section_jump_functions);

@@ -1,3 +1,21 @@
+2017-02-06  Palmer Dabbelt <palmer@dabbelt.com>
+
+	* configure.tgt: Add RISC-V tuple.
+
+2017-02-01  Richard Henderson  <rth@redhat.com>
+            Torvald Riegel  <triegel@redhat.com>
+
+	* acinclude.m4: Add #define FAST_ATOMIC_LDST_*.
+	* auto-config.h.in: Regenerate.
+	* config/x86/host-config.h (FAST_ATOMIC_LDST_16): Define to 0.
+	(atomic_compare_exchange_n): New.
+	* glfree.c (EXACT, LARGER): Change condition and add comments.
+
+2017-01-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/78945
+	* config/arm/exch_n.c (libat_exchange): Check __ARM_FEATURE_SIMD32.
+
 2017-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046

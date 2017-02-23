@@ -1,6 +1,6 @@
 -- { dg-do compile { target *-*-linux* } }
 -- { dg-options "-ftrampolines -gnatws" }
--- { dg-skip-if "standard descriptors" { ia64-*-* powerpc64-*-* } }
+-- { dg-skip-if "standard descriptors" { hppa*-*-* ia64-*-* powerpc64-*-* } }
 
 procedure Trampoline4 is
 

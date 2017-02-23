@@ -28,13 +28,13 @@
 # output has been vetted.  You can instead pass the names of individual
 # directories, including those that haven't been approved.  So:
 #
-#    update-copyright.pl --this-year
+#    update-copyright.py --this-year
 #
 # is the command that would be used at the beginning of a year to update
 # all copyright notices (and possibly at other times to check whether
 # new files have been added with old years).  On the other hand:
 #
-#    update-copyright.pl --this-year libitm
+#    update-copyright.py --this-year libitm
 #
 # would run the script on just libitm/.
 #
@@ -393,8 +393,10 @@ class Copyright:
         lines = []
         changed = False
         line_filter = filter.get_line_filter (dir, filename)
+        mode = None
         with open (pathname, 'r') as file:
             prev = None
+            mode = os.fstat (file.fileno()).st_mode
             for line in file:
                 while line:
                     next_line = None
@@ -421,6 +423,7 @@ class Copyright:
             with open (tmp_pathname, 'w') as file:
                 for line in lines:
                     file.write (line)
+                os.fchmod (file.fileno(), mode)
             if self.use_quilt:
                 subprocess.call (['quilt', 'add', pathname])
             os.rename (tmp_pathname, pathname)

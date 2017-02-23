@@ -597,6 +597,34 @@ get_nsdmi (tree member, bool in_ctor)
   return init;
 }
 
+/* Diagnose the flexible array MEMBER if its INITializer is non-null
+   and return true if so.  Otherwise return false.  */
+
+bool
+maybe_reject_flexarray_init (tree member, tree init)
+{
+  tree type = TREE_TYPE (member);
+
+  if (!init
+      || TREE_CODE (type) != ARRAY_TYPE
+      || TYPE_DOMAIN (type))
+    return false;
+
+  /* Point at the flexible array member declaration if it's initialized
+     in-class, and at the ctor if it's initialized in a ctor member
+     initializer list.  */
+  location_t loc;
+  if (DECL_INITIAL (member) == init
+      || !current_function_decl
+      || DECL_DEFAULTED_FN (current_function_decl))
+    loc = DECL_SOURCE_LOCATION (member);
+  else
+    loc = DECL_SOURCE_LOCATION (current_function_decl);
+
+  error_at (loc, "initializer for flexible array member %q#D", member);
+  return true;
+}
+
 /* Initialize MEMBER, a FIELD_DECL, with INIT, a TREE_LIST of
    arguments.  If TREE_LIST is void_type_node, an empty initializer
    list was given; if NULL_TREE no initializer was given.  */
@@ -722,10 +750,18 @@ perform_member_init (tree member, tree init)
 	{
 	  if (init)
 	    {
-	      if (TREE_CHAIN (init))
+	      /* Check to make sure the member initializer is valid and
+		 something like a CONSTRUCTOR in: T a[] = { 1, 2 } and
+		 if it isn't, return early to avoid triggering another
+		 error below.  */
+	      if (maybe_reject_flexarray_init (member, init))
+		return;
+
+	      if (TREE_CODE (init) != TREE_LIST || TREE_CHAIN (init))
 		init = error_mark_node;
 	      else
 		init = TREE_VALUE (init);
+
 	      if (BRACE_ENCLOSED_INITIALIZER_P (init))
 		init = digest_init (type, init, tf_warning_or_error);
 	    }
@@ -800,16 +836,9 @@ perform_member_init (tree member, tree init)
 	   in that case.  */
 	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
 						tf_warning_or_error);
-      if (TREE_CODE (type) == ARRAY_TYPE
-	  && TYPE_DOMAIN (type) == NULL_TREE
-	  && init != NULL_TREE)
-	{
-	  error_at (DECL_SOURCE_LOCATION (current_function_decl),
-		    "member initializer for flexible array member");
-	  inform (DECL_SOURCE_LOCATION (member), "%q#D initialized", member);
-	}
 
-      if (init)
+      /* Reject a member initializer for a flexible array member.  */
+      if (init && !maybe_reject_flexarray_init (member, init))
 	finish_expr_stmt (cp_build_modify_expr (input_location, decl,
 						INIT_EXPR, init,
 						tf_warning_or_error));
@@ -2606,7 +2635,7 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 			exact_size ?
 			"placement new constructing an object of type %qT "
 			"and size %qwu in a region of type %qT and size %qwi"
-			: "placement new constructing an object of type %qT"
+			: "placement new constructing an object of type %qT "
 			"and size %qwu in a region of type %qT and size "
 			"at most %qwu",
 			type, bytes_need, TREE_TYPE (oper),
@@ -2924,7 +2953,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
   tree fnname;
   tree fns;
 
-  fnname = ansi_opname (array_p ? VEC_NEW_EXPR : NEW_EXPR);
+  fnname = cp_operator_id (array_p ? VEC_NEW_EXPR : NEW_EXPR);
 
   member_new_p = !globally_qualified_p
 		 && CLASS_TYPE_P (elt_type)
@@ -3282,7 +3311,19 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	      init_expr = cp_build_modify_expr (input_location, init_expr,
 						INIT_EXPR, ie, complain);
 	    }
-	  stable = stabilize_init (init_expr, &init_preeval_expr);
+	  /* If the initializer uses C++14 aggregate NSDMI that refer to the
+	     object being initialized, replace them now and don't try to
+	     preevaluate.  */
+	  bool had_placeholder = false;
+	  if (cxx_dialect >= cxx14
+	      && !processing_template_decl
+	      && TREE_CODE (init_expr) == INIT_EXPR)
+	    TREE_OPERAND (init_expr, 1)
+	      = replace_placeholders (TREE_OPERAND (init_expr, 1),
+				      TREE_OPERAND (init_expr, 0),
+				      &had_placeholder);
+	  stable = (!had_placeholder
+		    && stabilize_init (init_expr, &init_preeval_expr));
 	}
 
       if (init_expr == error_mark_node)
@@ -3454,7 +3495,17 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
       orig_placement = make_tree_vector_copy (*placement);
       orig_nelts = nelts;
       if (*init)
-	orig_init = make_tree_vector_copy (*init);
+	{
+	  orig_init = make_tree_vector_copy (*init);
+	  /* Also copy any CONSTRUCTORs in *init, since reshape_init and
+	     digest_init clobber them in place.  */
+	  for (unsigned i = 0; i < orig_init->length(); ++i)
+	    {
+	      tree e = (**init)[i];
+	      if (TREE_CODE (e) == CONSTRUCTOR)
+		(**init)[i] = copy_node (e);
+	    }
+	}
 
       make_args_non_dependent (*placement);
       if (nelts)

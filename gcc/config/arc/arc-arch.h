@@ -47,6 +47,23 @@ enum base_architecture
     BASE_ARCH_END
   };
 
+/* Architecture specific propoerties.  */
+
+typedef struct
+{
+  /* Architecture name.  */
+  const char *const name;
+
+  /* Architecture class.  */
+  enum base_architecture arch_id;
+
+  /* All allowed flags for this architecture.  */
+  const unsigned long long flags;
+
+  /* Default flags for this architecture.  It is a subset of
+     FLAGS.  */
+  const unsigned long long dflags;
+} arc_arch_t;
 
 /* Tune variants.  Needs to match the attr_tune enum.  */
 
@@ -66,7 +83,7 @@ typedef struct
   const char *const name;
 
   /* Architecture class.  */
-  enum base_architecture arch;
+  const arc_arch_t *arch_info;
 
   /* Specific processor type.  */
   enum processor_type processor;
@@ -76,28 +93,8 @@ typedef struct
 
   /* Tune value.  */
   enum arc_tune_attr tune;
+
 } arc_cpu_t;
-
-
-/* Architecture specific propoerties.  */
-
-typedef struct
-{
-  /* Architecture name.  */
-  const char *const name;
-
-  /* Architecture class.  */
-  enum base_architecture arch;
-
-  /* All allowed flags for this architecture.  */
-  const unsigned long long flags;
-
-  /* Default flags for this architecture.  It is a subset of
-     FLAGS.  */
-  const unsigned long long dflags;
-} arc_arch_t;
-
-
 
 const arc_arch_t arc_arch_types[] =
   {
@@ -111,13 +108,16 @@ const arc_arch_t arc_arch_types[] =
 
 const arc_cpu_t arc_cpu_types[] =
   {
-    {"none", BASE_ARCH_NONE, PROCESSOR_NONE, 0, ARC_TUNE_NONE},
+    {"none", NULL, PROCESSOR_NONE, 0, ARC_TUNE_NONE},
 #define ARC_CPU(NAME, ARCH, FLAGS, TUNE)	\
-    {#NAME, BASE_ARCH_##ARCH, PROCESSOR_##NAME, FLAGS, ARC_TUNE_##TUNE},
+    {#NAME, &arc_arch_types [BASE_ARCH_##ARCH], PROCESSOR_##NAME, FLAGS, ARC_TUNE_##TUNE },
 #include "arc-cpus.def"
 #undef ARC_CPU
-    {NULL, BASE_ARCH_END, PROCESSOR_NONE, 0, ARC_TUNE_NONE}
+    {NULL, NULL, PROCESSOR_NONE, 0, ARC_TUNE_NONE}
   };
+
+/* Currently selected cpu type.  */
+extern const arc_cpu_t *arc_selected_cpu;
 
 #endif
 #endif /* GCC_ARC_ARCH_H */

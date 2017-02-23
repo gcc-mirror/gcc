@@ -60,13 +60,14 @@ AARCH64_CORE("falkor",      falkor,    cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AA
 AARCH64_CORE("qdf24xx",     qdf24xx,   cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, qdf24xx,   0x51, 0xC00, -1)
 
 /* Cavium ('C') cores. */
-AARCH64_CORE("thunderx",      thunderx,      thunderx,  8A,    AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO | AARCH64_FL_LSE, thunderx,  0x43, 0x0a0, -1)
+AARCH64_CORE("thunderx",      thunderx,      thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a0, -1)
 /* Do not swap around "thunderxt88p1" and "thunderxt88",
    this order is required to handle variant correctly. */
-AARCH64_CORE("thunderxt88p1", thunderxt88p1, thunderx,  8A,    AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO,		   thunderx,  0x43, 0x0a1, 0)
-AARCH64_CORE("thunderxt88",   thunderxt88,   thunderx,  8A,    AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO | AARCH64_FL_LSE, thunderx,  0x43, 0x0a1, -1)
-AARCH64_CORE("thunderxt81",   thunderxt81,   thunderx,  8_1A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO | AARCH64_FL_LSE, thunderx,  0x43, 0x0a2, -1)
-AARCH64_CORE("thunderxt83",   thunderxt83,   thunderx,  8_1A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO | AARCH64_FL_LSE, thunderx,  0x43, 0x0a3, -1)
+AARCH64_CORE("thunderxt88p1", thunderxt88p1, thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO,	thunderx,  0x43, 0x0a1, 0)
+AARCH64_CORE("thunderxt88",   thunderxt88,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a1, -1)
+AARCH64_CORE("thunderxt81",   thunderxt81,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a2, -1)
+AARCH64_CORE("thunderxt83",   thunderxt83,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a3, -1)
+AARCH64_CORE("thunderx2t99",  thunderx2t99,  thunderx2t99, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_CRYPTO, thunderx2t99, 0x43, 0x0af, -1)
 
 /* APM ('P') cores. */
 AARCH64_CORE("xgene1",      xgene1,    xgene1,    8A,  AARCH64_FL_FOR_ARCH8, xgene1, 0x50, 0x000, -1)
@@ -74,8 +75,8 @@ AARCH64_CORE("xgene1",      xgene1,    xgene1,    8A,  AARCH64_FL_FOR_ARCH8, xge
 /* V8.1 Architecture Processors.  */
 
 /* Broadcom ('B') cores. */
-AARCH64_CORE("thunderx2t99",  thunderx2t99, cortexa57, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_CRYPTO, thunderx2t99, 0x42, 0x516, -1)
-AARCH64_CORE("vulcan",  vulcan, cortexa57, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_CRYPTO, thunderx2t99, 0x42, 0x516, -1)
+AARCH64_CORE("thunderx2t99p1",  thunderx2t99p1, thunderx2t99, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_CRYPTO, thunderx2t99, 0x42, 0x516, -1)
+AARCH64_CORE("vulcan",  vulcan, thunderx2t99, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_CRYPTO, thunderx2t99, 0x42, 0x516, -1)
 
 /* V8 big.LITTLE implementations.  */
 

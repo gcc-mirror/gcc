@@ -67,9 +67,10 @@ struct oacc_loop
   tree routine;  /* Pseudo-loop enclosing a routine.  */
 
   unsigned mask;   /* Partitioning mask.  */
+  unsigned e_mask; /* Partitioning of element loops (when tiling).  */
   unsigned inner;  /* Partitioning of inner loops.  */
   unsigned flags;  /* Partitioning flags.  */
-  unsigned ifns;   /* Contained loop abstraction functions.  */
+  vec<gcall *> ifns;  /* Contained loop abstraction functions.  */
   tree chunk_size; /* Chunk size.  */
   gcall *head_end; /* Final marker of head sequence.  */
 };
@@ -217,6 +218,23 @@ omp_finish_file (void)
     }
 }
 
+/* Call dim_pos (POS == true) or dim_size (POS == false) builtins for
+   axis DIM.  Return a tmp var holding the result.  */
+
+static tree
+oacc_dim_call (bool pos, int dim, gimple_seq *seq)
+{
+  tree arg = build_int_cst (unsigned_type_node, dim);
+  tree size = create_tmp_var (integer_type_node);
+  enum internal_fn fn = pos ? IFN_GOACC_DIM_POS : IFN_GOACC_DIM_SIZE;
+  gimple *call = gimple_build_call_internal (fn, 1, arg);
+
+  gimple_call_set_lhs (call, size);
+  gimple_seq_add_stmt (seq, call);
+
+  return size;
+}
+
 /* Find the number of threads (POS = false), or thread number (POS =
    true) for an OpenACC region partitioned as MASK.  Setup code
    required for the calculation is added to SEQ.  */
@@ -231,29 +249,17 @@ oacc_thread_numbers (bool pos, int mask, gimple_seq *seq)
   for (ix = GOMP_DIM_GANG; ix != GOMP_DIM_MAX; ix++)
     if (GOMP_DIM_MASK (ix) & mask)
       {
-	tree arg = build_int_cst (unsigned_type_node, ix);
-
 	if (res)
 	  {
 	    /* We had an outer index, so scale that by the size of
 	       this dimension.  */
-	    tree n = create_tmp_var (integer_type_node);
-	    gimple *call
-	      = gimple_build_call_internal (IFN_GOACC_DIM_SIZE, 1, arg);
-
-	    gimple_call_set_lhs (call, n);
-	    gimple_seq_add_stmt (seq, call);
+	    tree n = oacc_dim_call (false, ix, seq);
 	    res = fold_build2 (MULT_EXPR, integer_type_node, res, n);
 	  }
 	if (pos)
 	  {
 	    /* Determine index in this dimension.  */
-	    tree id = create_tmp_var (integer_type_node);
-	    gimple *call = gimple_build_call_internal
-	      (IFN_GOACC_DIM_POS, 1, arg);
-
-	    gimple_call_set_lhs (call, id);
-	    gimple_seq_add_stmt (seq, call);
+	    tree id = oacc_dim_call (true, ix, seq);
 	    if (res)
 	      res = fold_build2 (PLUS_EXPR, integer_type_node, res, id);
 	    else
@@ -452,6 +458,85 @@ oacc_xform_loop (gcall *call)
   gsi_replace_with_seq (&gsi, seq, true);
 }
 
+/* Transform a GOACC_TILE call.  Determines the element loop span for
+   the specified loop of the nest.  This is 1 if we're not tiling.
+   
+   GOACC_TILE (collapse_count, loop_no, tile_arg, gwv_tile, gwv_element);  */
+
+static void
+oacc_xform_tile (gcall *call)
+{
+  gimple_stmt_iterator gsi = gsi_for_stmt (call);
+  unsigned collapse = tree_to_uhwi (gimple_call_arg (call, 0));
+  /* Inner loops have higher loop_nos.  */
+  unsigned loop_no = tree_to_uhwi (gimple_call_arg (call, 1));
+  tree tile_size = gimple_call_arg (call, 2);
+  unsigned e_mask = tree_to_uhwi (gimple_call_arg (call, 4));
+  tree lhs = gimple_call_lhs (call);
+  tree type = TREE_TYPE (lhs);
+  gimple_seq seq = NULL;
+  tree span = build_int_cst (type, 1);
+
+  gcc_assert (!(e_mask
+		& ~(GOMP_DIM_MASK (GOMP_DIM_VECTOR)
+		    | GOMP_DIM_MASK (GOMP_DIM_WORKER))));
+  push_gimplify_context (!seen_error ());
+
+#ifndef ACCEL_COMPILER
+  /* Partitioning disabled on host compilers.  */
+  e_mask = 0;
+#endif
+  if (!e_mask)
+    /* Not paritioning.  */
+    span = integer_one_node;
+  else if (!integer_zerop (tile_size))
+    /* User explicitly specified size.  */
+    span = tile_size;
+  else
+    {
+      /* Pick a size based on the paritioning of the element loop and
+	 the number of loop nests.  */
+      tree first_size = NULL_TREE;
+      tree second_size = NULL_TREE;
+
+      if (e_mask & GOMP_DIM_MASK (GOMP_DIM_VECTOR))
+	first_size = oacc_dim_call (false, GOMP_DIM_VECTOR, &seq);
+      if (e_mask & GOMP_DIM_MASK (GOMP_DIM_WORKER))
+	second_size = oacc_dim_call (false, GOMP_DIM_WORKER, &seq);
+
+      if (!first_size)
+	{
+	  first_size = second_size;
+	  second_size = NULL_TREE;
+	}
+
+      if (loop_no + 1 == collapse)
+	{
+	  span = first_size;
+	  if (!loop_no && second_size)
+	    span = fold_build2 (MULT_EXPR, TREE_TYPE (span),
+				span, second_size);
+	}
+      else if (loop_no + 2 == collapse)
+	span = second_size;
+      else
+	span = NULL_TREE;
+
+      if (!span)
+	/* There's no obvious element size for this loop.  Options
+	   are 1, first_size or some non-unity constant (32 is my
+	   favourite).   We should gather some statistics.  */
+	span = first_size;
+    }
+
+  span = fold_convert (type, span);
+  gimplify_assign (lhs, span, &seq);
+
+  pop_gimplify_context (NULL);
+
+  gsi_replace_with_seq (&gsi, seq, true);
+}
+
 /* Default partitioned and minimum partitioned dimensions.  */
 
 static int oacc_default_dims[GOMP_DIM_MAX];
@@ -596,7 +681,6 @@ new_oacc_loop_raw (oacc_loop *parent, location_t loc)
   oacc_loop *loop = XCNEW (oacc_loop);
 
   loop->parent = parent;
-  loop->child = loop->sibling = NULL;
 
   if (parent)
     {
@@ -605,16 +689,6 @@ new_oacc_loop_raw (oacc_loop *parent, location_t loc)
     }
 
   loop->loc = loc;
-  loop->marker = NULL;
-  memset (loop->heads, 0, sizeof (loop->heads));
-  memset (loop->tails, 0, sizeof (loop->tails));
-  loop->routine = NULL_TREE;
-
-  loop->mask = loop->flags = loop->inner = 0;
-  loop->ifns = 0;
-  loop->chunk_size = 0;
-  loop->head_end = NULL;
-
   return loop;
 }
 
@@ -674,7 +748,7 @@ static oacc_loop *
 finish_oacc_loop (oacc_loop *loop)
 {
   /* If the loop has been collapsed, don't partition it.  */
-  if (!loop->ifns)
+  if (loop->ifns.is_empty ())
     loop->mask = loop->flags = 0;
   return loop->parent;
 }
@@ -689,6 +763,7 @@ free_oacc_loop (oacc_loop *loop)
   if (loop->child)
     free_oacc_loop (loop->child);
 
+  loop->ifns.release ();
   free (loop);
 }
 
@@ -810,9 +885,10 @@ oacc_loop_discover_walk (oacc_loop *loop, basic_block bb)
 	  break;
 
 	case IFN_GOACC_LOOP:
-	  /* Count the goacc loop abstraction fns, to determine if the
-	     loop was collapsed already.  */
-	  loop->ifns++;
+	case IFN_GOACC_TILE:
+	  /* Record the abstraction function, so we can manipulate it
+	     later.  */
+	  loop->ifns.safe_push (call);
 	  break;
 
 	case IFN_UNIQUE:
@@ -947,51 +1023,6 @@ oacc_loop_xform_head_tail (gcall *from, int level)
     }
 }
 
-/* Transform the IFN_GOACC_LOOP internal functions by providing the
-   determined partitioning mask and chunking argument.  END_MARKER
-   points at the end IFN_HEAD_TAIL call intgroducing the loop.  IFNS
-   is the number of IFN_GOACC_LOOP calls for the loop.  MASK_ARG is
-   the replacement partitioning mask and CHUNK_ARG is the replacement
-   chunking arg.  */
-
-static void
-oacc_loop_xform_loop (gcall *end_marker, unsigned ifns,
-		      tree mask_arg, tree chunk_arg)
-{
-  gimple_stmt_iterator gsi = gsi_for_stmt (end_marker);
-
-  gcc_checking_assert (ifns);
-  for (;;)
-    {
-      for (; !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  gimple *stmt = gsi_stmt (gsi);
-
-	  if (!is_gimple_call (stmt))
-	    continue;
-
-	  gcall *call = as_a <gcall *> (stmt);
-
-	  if (!gimple_call_internal_p (call))
-	    continue;
-
-	  if (gimple_call_internal_fn (call) != IFN_GOACC_LOOP)
-	    continue;
-
-	  *gimple_call_arg_ptr (call, 5) = mask_arg;
-	  *gimple_call_arg_ptr (call, 4) = chunk_arg;
-	  ifns--;
-	  if (!ifns)
-	    return;
-	}
-
-      /* The LOOP_BOUND ifn could be in the single successor
-	 block.  */
-      basic_block bb = single_succ (gsi_bb (gsi));
-      gsi = gsi_start_bb (bb);
-    }
-}
-
 /* Process the discovered OpenACC loops, setting the correct
    partitioning level etc.  */
 
@@ -1004,13 +1035,34 @@ oacc_loop_process (oacc_loop *loop)
   if (loop->mask && !loop->routine)
     {
       int ix;
-      unsigned mask = loop->mask;
-      unsigned dim = GOMP_DIM_GANG;
-      tree mask_arg = build_int_cst (unsigned_type_node, mask);
+      tree mask_arg = build_int_cst (unsigned_type_node, loop->mask);
+      tree e_mask_arg = build_int_cst (unsigned_type_node, loop->e_mask);
       tree chunk_arg = loop->chunk_size;
+      gcall *call;
+      
+      for (ix = 0; loop->ifns.iterate (ix, &call); ix++)
+	switch (gimple_call_internal_fn (call))
+	  {
+	  case IFN_GOACC_LOOP:
+	    {
+	      bool is_e = gimple_call_arg (call, 5) == integer_minus_one_node;
+	      gimple_call_set_arg (call, 5, is_e ? e_mask_arg : mask_arg);
+	      if (!is_e)
+		gimple_call_set_arg (call, 4, chunk_arg);
+	    }
+	    break;
 
-      oacc_loop_xform_loop (loop->head_end, loop->ifns, mask_arg, chunk_arg);
+	  case IFN_GOACC_TILE:
+	    gimple_call_set_arg (call, 3, mask_arg);
+	    gimple_call_set_arg (call, 4, e_mask_arg);
+	    break;
 
+	  default:
+	    gcc_unreachable ();
+	  }
+
+      unsigned dim = GOMP_DIM_GANG;
+      unsigned mask = loop->mask | loop->e_mask;
       for (ix = 0; ix != GOMP_DIM_MAX && mask; ix++)
 	{
 	  while (!(GOMP_DIM_MASK (dim) & mask))
@@ -1050,9 +1102,15 @@ oacc_loop_fixed_partitions (oacc_loop *loop, unsigned outer_mask)
     {
       bool auto_par = (loop->flags & OLF_AUTO) != 0;
       bool seq_par = (loop->flags & OLF_SEQ) != 0;
-
+      bool tiling = (loop->flags & OLF_TILE) != 0;
+      
       this_mask = ((loop->flags >> OLF_DIM_BASE)
 		   & (GOMP_DIM_MASK (GOMP_DIM_MAX) - 1));
+
+      /* Apply auto partitioning if this is a non-partitioned regular
+	 loop, or (no more than) single axis tiled loop.  */
+      bool maybe_auto
+	= !seq_par && this_mask == (tiling ? this_mask & -this_mask : 0);
 
       if ((this_mask != 0) + auto_par + seq_par > 1)
 	{
@@ -1062,7 +1120,7 @@ oacc_loop_fixed_partitions (oacc_loop *loop, unsigned outer_mask)
 		      ? "%<seq%> overrides other OpenACC loop specifiers"
 		      : "%<auto%> conflicts with other OpenACC loop "
 		      "specifiers");
-	  auto_par = false;
+	  maybe_auto = false;
 	  loop->flags &= ~OLF_AUTO;
 	  if (seq_par)
 	    {
@@ -1071,15 +1129,19 @@ oacc_loop_fixed_partitions (oacc_loop *loop, unsigned outer_mask)
 	      this_mask = 0;
 	    }
 	}
-      if (auto_par && (loop->flags & OLF_INDEPENDENT))
-	mask_all |= GOMP_DIM_MASK (GOMP_DIM_MAX);
+
+      if (maybe_auto && (loop->flags & OLF_INDEPENDENT))
+	{
+	  loop->flags |= OLF_AUTO;
+	  mask_all |= GOMP_DIM_MASK (GOMP_DIM_MAX);
+	}
     }
 
   if (this_mask & outer_mask)
     {
       const oacc_loop *outer;
       for (outer = loop->parent; outer; outer = outer->parent)
-	if (outer->mask & this_mask)
+	if ((outer->mask | outer->e_mask) & this_mask)
 	  break;
 
       if (noisy)
@@ -1125,13 +1187,33 @@ oacc_loop_fixed_partitions (oacc_loop *loop, unsigned outer_mask)
 	}
     }
 
-  loop->mask = this_mask;
   mask_all |= this_mask;
+
+  if (loop->flags & OLF_TILE)
+    {
+      /* When tiling, vector goes to the element loop, and failing
+	 that we put worker there.  The std doesn't contemplate
+	 specifying all three.  We choose to put worker and vector on
+	 the element loops in that case.  */
+      unsigned this_e_mask = this_mask & GOMP_DIM_MASK (GOMP_DIM_VECTOR);
+      if (!this_e_mask || this_mask & GOMP_DIM_MASK (GOMP_DIM_GANG))
+	this_e_mask |= this_mask & GOMP_DIM_MASK (GOMP_DIM_WORKER);
+
+      loop->e_mask = this_e_mask;
+      this_mask ^= this_e_mask;
+    }
+
+  loop->mask = this_mask;
+
+  if (dump_file)
+    fprintf (dump_file, "Loop %s:%d user specified %d & %d\n",
+	     LOCATION_FILE (loop->loc), LOCATION_LINE (loop->loc),
+	     loop->mask, loop->e_mask);
 
   if (loop->child)
     {
-      loop->inner = oacc_loop_fixed_partitions (loop->child,
-						outer_mask | this_mask);
+      unsigned tmp_mask = outer_mask | this_mask | loop->e_mask;
+      loop->inner = oacc_loop_fixed_partitions (loop->child, tmp_mask);
       mask_all |= loop->inner;
     }
 
@@ -1143,14 +1225,17 @@ oacc_loop_fixed_partitions (oacc_loop *loop, unsigned outer_mask)
 
 /* Walk the OpenACC loop heirarchy to assign auto-partitioned loops.
    OUTER_MASK is the partitioning this loop is contained within.
+   OUTER_ASSIGN is true if an outer loop is being auto-partitioned.
    Return the cumulative partitioning used by this loop, siblings and
    children.  */
 
 static unsigned
-oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask)
+oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask,
+			   bool outer_assign)
 {
   bool assign = (loop->flags & OLF_AUTO) && (loop->flags & OLF_INDEPENDENT);
   bool noisy = true;
+  bool tiling = loop->flags & OLF_TILE;
 
 #ifdef ACCEL_COMPILER
   /* When device_type is supported, we want the device compiler to be
@@ -1158,29 +1243,50 @@ oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask)
   noisy = false;
 #endif
 
-  if (assign && outer_mask < GOMP_DIM_MASK (GOMP_DIM_MAX - 1))
+  if (assign && (!outer_assign || loop->inner))
     {
-      /* Allocate the outermost loop at the outermost available
-	 level.  */
-      unsigned this_mask = outer_mask + 1;
+      /* Allocate outermost and non-innermost loops at the outermost
+	 non-innermost available level.  */
+      unsigned this_mask = GOMP_DIM_MASK (GOMP_DIM_GANG);
 
-      if (!(this_mask & loop->inner))
-	loop->mask = this_mask;
+      /* Find the first outermost available partition. */
+      while (this_mask <= outer_mask)
+	this_mask <<= 1;
+      
+      /* Grab two axes if tiling, and we've not assigned anything  */
+      if (tiling && !(loop->mask | loop->e_mask))
+	this_mask |= this_mask << 1;
+
+      /* Prohibit the innermost partitioning at the moment.  */
+      this_mask &= GOMP_DIM_MASK (GOMP_DIM_MAX - 1) - 1;
+
+      /* Don't use any dimension explicitly claimed by an inner loop. */
+      this_mask &= ~loop->inner;
+
+      if (tiling && !loop->e_mask)
+	{
+	  /* If we got two axes, allocate the inner one to the element
+	     loop.  */
+	  loop->e_mask = this_mask & (this_mask << 1);
+	  this_mask ^= loop->e_mask;
+	}
+
+      loop->mask |= this_mask;
     }
 
   if (loop->child)
     {
-      unsigned child_mask = outer_mask | loop->mask;
-
-      if (loop->mask || assign)
-	child_mask |= GOMP_DIM_MASK (GOMP_DIM_MAX);
-
-      loop->inner = oacc_loop_auto_partitions (loop->child, child_mask);
+      unsigned tmp_mask = outer_mask | loop->mask | loop->e_mask;
+      loop->inner = oacc_loop_auto_partitions (loop->child, tmp_mask,
+					       outer_assign | assign);
     }
 
-  if (assign && !loop->mask)
+  if (assign && (!loop->mask || (tiling && !loop->e_mask) || !outer_assign))
     {
-      /* Allocate the loop at the innermost available level.  */
+      /* Allocate the loop at the innermost available level.  Note
+	 that we do this even if we already assigned this loop the
+	 outermost available level above.  That way we'll partition
+	 this along 2 axes, if they are available.  */
       unsigned this_mask = 0;
 
       /* Determine the outermost partitioning used within this loop.  */
@@ -1193,24 +1299,44 @@ oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask)
       /* And avoid picking one use by an outer loop.  */
       this_mask &= ~outer_mask;
 
-      if (!this_mask && noisy)
-	warning_at (loop->loc, 0,
-		    "insufficient partitioning available to parallelize loop");
+      /* If tiling and we failed completely above, grab the next one
+	 too.  Making sure it doesn't hit an outer loop.  */
+      if (tiling)
+	{
+	  this_mask &= ~(loop->e_mask | loop->mask);
+	  unsigned tile_mask = ((this_mask >> 1)
+				& ~(outer_mask | loop->e_mask | loop->mask));
 
-      loop->mask = this_mask;
+	  if (tile_mask || loop->mask)
+	    {
+	      loop->e_mask |= this_mask;
+	      this_mask = tile_mask;
+	    }
+	  if (!loop->e_mask && noisy)
+	    warning_at (loop->loc, 0,
+			"insufficient partitioning available"
+			" to parallelize element loop");
+	}
+
+      loop->mask |= this_mask;
+      if (!loop->mask && noisy)
+	warning_at (loop->loc, 0,
+		    "insufficient partitioning available"
+		    " to parallelize%s loop", tiling ? " tile" : "");
     }
 
   if (assign && dump_file)
-    fprintf (dump_file, "Auto loop %s:%d assigned %d\n",
+    fprintf (dump_file, "Auto loop %s:%d assigned %d & %d\n",
 	     LOCATION_FILE (loop->loc), LOCATION_LINE (loop->loc),
-	     loop->mask);
+	     loop->mask, loop->e_mask);
 
   unsigned inner_mask = 0;
 
   if (loop->sibling)
-    inner_mask |= oacc_loop_auto_partitions (loop->sibling, outer_mask);
+    inner_mask |= oacc_loop_auto_partitions (loop->sibling,
+					     outer_mask, outer_assign);
 
-  inner_mask |= loop->inner | loop->mask;
+  inner_mask |= loop->inner | loop->mask | loop->e_mask;
 
   return inner_mask;
 }
@@ -1226,7 +1352,7 @@ oacc_loop_partition (oacc_loop *loop, unsigned outer_mask)
   if (mask_all & GOMP_DIM_MASK (GOMP_DIM_MAX))
     {
       mask_all ^= GOMP_DIM_MASK (GOMP_DIM_MAX);
-      mask_all |= oacc_loop_auto_partitions (loop, outer_mask);
+      mask_all |= oacc_loop_auto_partitions (loop, outer_mask, false);
     }
   return mask_all;
 }
@@ -1376,6 +1502,11 @@ execute_oacc_device_lower ()
 	  {
 	  default: break;
 
+	  case IFN_GOACC_TILE:
+	    oacc_xform_tile (call);
+	    rescan = true;
+	    break;
+	    
 	  case IFN_GOACC_LOOP:
 	    oacc_xform_loop (call);
 	    rescan = true;
@@ -1403,7 +1534,7 @@ execute_oacc_device_lower ()
 	      switch (kind)
 		{
 		default:
-		  gcc_unreachable ();
+		  break;
 
 		case IFN_UNIQUE_OACC_FORK:
 		case IFN_UNIQUE_OACC_JOIN:
@@ -1679,7 +1810,9 @@ find_link_var_op (tree *tp, int *walk_subtrees, void *)
 {
   tree t = *tp;
 
-  if (VAR_P (t) && DECL_HAS_VALUE_EXPR_P (t)
+  if (VAR_P (t)
+      && DECL_HAS_VALUE_EXPR_P (t)
+      && is_global_var (t)
       && lookup_attribute ("omp declare target link", DECL_ATTRIBUTES (t)))
     {
       *walk_subtrees = 0;

@@ -433,7 +433,7 @@ unqualified_name_lookup_error (tree name, location_t loc)
 
   if (IDENTIFIER_OPNAME_P (name))
     {
-      if (name != ansi_opname (ERROR_MARK))
+      if (name != cp_operator_id (ERROR_MARK))
 	error_at (loc, "%qD not defined", name);
     }
   else

@@ -1059,8 +1059,11 @@ grokbitfield (const cp_declarator *declarator,
 	  && !INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (width)))
 	error ("width of bit-field %qD has non-integral type %qT", value,
 	       TREE_TYPE (width));
-      DECL_INITIAL (value) = width;
-      SET_DECL_C_BIT_FIELD (value);
+      else
+	{
+	  DECL_INITIAL (value) = width;
+	  SET_DECL_C_BIT_FIELD (value);
+	}
     }
 
   DECL_IN_AGGR_P (value) = 1;
@@ -2222,11 +2225,6 @@ constrain_visibility_for_template (tree decl, tree targs)
 void
 determine_visibility (tree decl)
 {
-  tree class_type = NULL_TREE;
-  bool use_template;
-  bool orig_visibility_specified;
-  enum symbol_visibility orig_visibility;
-
   /* Remember that all decls get VISIBILITY_DEFAULT when built.  */
 
   /* Only relevant for names with external linkage.  */
@@ -2238,25 +2236,28 @@ determine_visibility (tree decl)
      maybe_clone_body.  */
   gcc_assert (!DECL_CLONED_FUNCTION_P (decl));
 
-  orig_visibility_specified = DECL_VISIBILITY_SPECIFIED (decl);
-  orig_visibility = DECL_VISIBILITY (decl);
+  bool orig_visibility_specified = DECL_VISIBILITY_SPECIFIED (decl);
+  enum symbol_visibility orig_visibility = DECL_VISIBILITY (decl);
 
+  /* The decl may be a template instantiation, which could influence
+     visibilty.  */
+  tree template_decl = NULL_TREE;
   if (TREE_CODE (decl) == TYPE_DECL)
     {
       if (CLASS_TYPE_P (TREE_TYPE (decl)))
-	use_template = CLASSTYPE_USE_TEMPLATE (TREE_TYPE (decl));
+	{
+	  if (CLASSTYPE_USE_TEMPLATE (TREE_TYPE (decl)))
+	    template_decl = decl;
+	}
       else if (TYPE_TEMPLATE_INFO (TREE_TYPE (decl)))
-	use_template = 1;
-      else
-	use_template = 0;
+	template_decl = decl;
     }
-  else if (DECL_LANG_SPECIFIC (decl))
-    use_template = DECL_USE_TEMPLATE (decl);
-  else
-    use_template = 0;
+  else if (DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
+    template_decl = decl;
 
   /* If DECL is a member of a class, visibility specifiers on the
      class can influence the visibility of the DECL.  */
+  tree class_type = NULL_TREE;
   if (DECL_CLASS_SCOPE_P (decl))
     class_type = DECL_CONTEXT (decl);
   else
@@ -2299,8 +2300,11 @@ determine_visibility (tree decl)
 	    }
 
 	  /* Local classes in templates have CLASSTYPE_USE_TEMPLATE set,
-	     but have no TEMPLATE_INFO, so don't try to check it.  */
-	  use_template = 0;
+	     but have no TEMPLATE_INFO.  Their containing template
+	     function does, and the local class could be constrained
+	     by that.  */
+	  if (template_decl)
+	    template_decl = fn;
 	}
       else if (VAR_P (decl) && DECL_TINFO_P (decl)
 	       && flag_visibility_ms_compat)
@@ -2330,7 +2334,7 @@ determine_visibility (tree decl)
 	      && !CLASSTYPE_VISIBILITY_SPECIFIED (TREE_TYPE (DECL_NAME (decl))))
 	    targetm.cxx.determine_class_data_visibility (decl);
 	}
-      else if (use_template)
+      else if (template_decl)
 	/* Template instantiations and specializations get visibility based
 	   on their template unless they override it with an attribute.  */;
       else if (! DECL_VISIBILITY_SPECIFIED (decl))
@@ -2347,11 +2351,11 @@ determine_visibility (tree decl)
 	}
     }
 
-  if (use_template)
+  if (template_decl)
     {
       /* If the specialization doesn't specify visibility, use the
 	 visibility from the template.  */
-      tree tinfo = get_template_info (decl);
+      tree tinfo = get_template_info (template_decl);
       tree args = TI_ARGS (tinfo);
       tree attribs = (TREE_CODE (decl) == TYPE_DECL
 		      ? TYPE_ATTRIBUTES (TREE_TYPE (decl))
@@ -3875,7 +3879,7 @@ prune_vars_needing_no_initialization (tree *vars)
       tree init = TREE_PURPOSE (t);
 
       /* Deal gracefully with error.  */
-      if (decl == error_mark_node)
+      if (error_operand_p (decl))
 	{
 	  var = &TREE_CHAIN (t);
 	  continue;
@@ -4386,7 +4390,7 @@ maybe_warn_sized_delete (enum tree_code code)
   tree sized = NULL_TREE;
   tree unsized = NULL_TREE;
 
-  for (tree ovl = IDENTIFIER_GLOBAL_VALUE (ansi_opname (code));
+  for (tree ovl = IDENTIFIER_GLOBAL_VALUE (cp_operator_id (code));
        ovl; ovl = OVL_NEXT (ovl))
     {
       tree fn = OVL_CURRENT (ovl);
@@ -5081,12 +5085,9 @@ mark_used (tree decl, tsubst_flags_t complain)
       || DECL_LANG_SPECIFIC (decl) == NULL
       || DECL_THUNK_P (decl))
     {
-      if (!processing_template_decl && type_uses_auto (TREE_TYPE (decl)))
-	{
-	  if (complain & tf_error)
-	    error ("use of %qD before deduction of %<auto%>", decl);
-	  return false;
-	}
+      if (!processing_template_decl
+	  && !require_deduced_type (decl, complain))
+	return false;
       return true;
     }
 
@@ -5114,12 +5115,8 @@ mark_used (tree decl, tsubst_flags_t complain)
       && uses_template_parms (DECL_TI_ARGS (decl)))
     return true;
 
-  if (undeduced_auto_decl (decl))
-    {
-      if (complain & tf_error)
-	error ("use of %qD before deduction of %<auto%>", decl);
-      return false;
-    }
+  if (!require_deduced_type (decl, complain))
+    return false;
 
   /* If we don't need a value, then we don't need to synthesize DECL.  */
   if (cp_unevaluated_operand || in_discarded_stmt)
