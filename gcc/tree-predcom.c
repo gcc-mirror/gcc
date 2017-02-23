@@ -2283,7 +2283,7 @@ combine_chains (chain_p ch1, chain_p ch2)
   enum tree_code op = ERROR_MARK;
   bool swap = false;
   chain_p new_chain;
-  unsigned i;
+  int i, j, num;
   gimple *root_stmt;
   tree rslt_type = NULL_TREE;
 
@@ -2305,6 +2305,9 @@ combine_chains (chain_p ch1, chain_p ch2)
 	return NULL;
     }
 
+  ch1->combined = true;
+  ch2->combined = true;
+
   if (swap)
     std::swap (ch1, ch2);
 
@@ -2317,39 +2320,41 @@ combine_chains (chain_p ch1, chain_p ch2)
   new_chain->length = ch1->length;
 
   gimple *insert = NULL;
-  auto_vec<dref> tmp_refs;
-  gcc_assert (ch1->refs.length () == ch2->refs.length ());
-  /* Process in reverse order so dominance point is ready when it comes
-     to the root ref.  */
-  for (i = ch1->refs.length (); i > 0; i--)
+  num = ch1->refs.length ();
+  i = (new_chain->length == 0) ? num - 1 : 0;
+  j = (new_chain->length == 0) ? -1 : 1;
+  /* For ZERO length chain, process refs in reverse order so that dominant
+     position is ready when it comes to the root ref.
+     For non-ZERO length chain, process refs in order.  See PR79663.  */
+  for (; num > 0; num--, i += j)
     {
-      r1 = ch1->refs[i - 1];
-      r2 = ch2->refs[i - 1];
+      r1 = ch1->refs[i];
+      r2 = ch2->refs[i];
       nw = XCNEW (struct dref_d);
       nw->distance = r1->distance;
-      nw->stmt = stmt_combining_refs (r1, r2, i == 1 ? insert : NULL);
 
-      /* Record dominance point where root combined stmt should be inserted
-	 for chains with 0 length.  Though all root refs dominate following
-	 refs, it's possible the combined stmt doesn't.  See PR70754.  */
-      if (ch1->length == 0
+      /* For ZERO length chain, insert combined stmt of root ref at dominant
+	 position.  */
+      nw->stmt = stmt_combining_refs (r1, r2, i == 0 ? insert : NULL);
+      /* For ZERO length chain, record dominant position where combined stmt
+	 of root ref should be inserted.  In this case, though all root refs
+	 dominate following ones, it's possible that combined stmt doesn't.
+	 See PR70754.  */
+      if (new_chain->length == 0
 	  && (insert == NULL || stmt_dominates_stmt_p (nw->stmt, insert)))
 	insert = nw->stmt;
 
-      tmp_refs.safe_push (nw);
+      new_chain->refs.safe_push (nw);
     }
-
-  /* Restore the order for new chain's refs.  */
-  for (i = tmp_refs.length (); i > 0; i--)
-    new_chain->refs.safe_push (tmp_refs[i - 1]);
-
-  ch1->combined = true;
-  ch2->combined = true;
-
-  /* For chains with 0 length, has_max_use_after must be true since root
-     combined stmt must dominates others.  */
   if (new_chain->length == 0)
     {
+      /* Restore the order for ZERO length chain's refs.  */
+      num = new_chain->refs.length () >> 1;
+      for (i = 0, j = new_chain->refs.length () - 1; i < num; i++, j--)
+	std::swap (new_chain->refs[i], new_chain->refs[j]);
+
+      /* For ZERO length chain, has_max_use_after must be true since root
+	 combined stmt must dominates others.  */
       new_chain->has_max_use_after = true;
       return new_chain;
     }
