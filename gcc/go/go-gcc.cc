@@ -506,6 +506,10 @@ class Gcc_backend : public Backend
                            const std::vector<Bfunction*>&,
                            const std::vector<Bvariable*>&);
 
+  void
+  write_export_data(const char* bytes, unsigned int size);
+
+
  private:
   // Make a Bexpression from a tree.
   Bexpression*
@@ -3210,6 +3214,13 @@ Gcc_backend::write_global_definitions(
 
   delete[] defs;
 }
+
+void
+Gcc_backend::write_export_data(const char* bytes, unsigned int size)
+{
+  go_write_export_data(bytes, size);
+}
+
 
 // Define a builtin function.  BCODE is the builtin function code
 // defined by builtins.def.  NAME is the name of the builtin function.

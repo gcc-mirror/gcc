@@ -10231,16 +10231,13 @@ Call_expression::do_get_backend(Translate_context* context)
 
   if (this->results_ != NULL)
     {
-      go_assert(this->call_temp_ != NULL);
-      Expression* call_ref =
-          Expression::make_temporary_reference(this->call_temp_, location);
-      Bexpression* bcall_ref = call_ref->get_backend(context);
+      Bexpression* bcall_ref = this->call_result_ref(context);
       Bfunction* bfunction = context->function()->func_value()->get_decl();
       Bstatement* assn_stmt =
           gogo->backend()->assignment_statement(bfunction,
                                                 bcall_ref, call, location);
 
-      this->call_ = this->set_results(context, bcall_ref);
+      this->call_ = this->set_results(context);
 
       Bexpression* set_and_call =
           gogo->backend()->compound_expression(assn_stmt, this->call_,
@@ -10252,15 +10249,31 @@ Call_expression::do_get_backend(Translate_context* context)
   return this->call_;
 }
 
+// Return the backend representation of a reference to the struct used
+// to capture the result of a multiple-output call.
+
+Bexpression*
+Call_expression::call_result_ref(Translate_context* context)
+{
+  go_assert(this->call_temp_ != NULL);
+  Location location = this->location();
+  Expression* call_ref =
+      Expression::make_temporary_reference(this->call_temp_, location);
+  Bexpression* bcall_ref = call_ref->get_backend(context);
+  return bcall_ref;
+}
+
 // Set the result variables if this call returns multiple results.
 
 Bexpression*
-Call_expression::set_results(Translate_context* context, Bexpression* call)
+Call_expression::set_results(Translate_context* context)
 {
   Gogo* gogo = context->gogo();
 
   Bexpression* results = NULL;
   Location loc = this->location();
+
+  go_assert(this->call_temp_ != NULL);
 
   size_t rc = this->result_count();
   for (size_t i = 0; i < rc; ++i)
@@ -10277,12 +10290,15 @@ Call_expression::set_results(Translate_context* context, Bexpression* call)
 
       Bfunction* bfunction = context->function()->func_value()->get_decl();
       Bexpression* result_ref = ref->get_backend(context);
+      Bexpression* bcall_ref = this->call_result_ref(context);
       Bexpression* call_result =
-          gogo->backend()->struct_field_expression(call, i, loc);
+          gogo->backend()->struct_field_expression(bcall_ref, i, loc);
       Bstatement* assn_stmt =
           gogo->backend()->assignment_statement(bfunction,
                                                 result_ref, call_result, loc);
 
+      bcall_ref = this->call_result_ref(context);
+      call_result = gogo->backend()->struct_field_expression(bcall_ref, i, loc);
       Bexpression* result =
           gogo->backend()->compound_expression(assn_stmt, call_result, loc);
 

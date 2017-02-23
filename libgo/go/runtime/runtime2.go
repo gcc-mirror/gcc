@@ -409,8 +409,8 @@ type g struct {
 	gcinitialsp   unsafe.Pointer
 	gcregs        g_ucontext_t
 
-	entry    unsafe.Pointer // goroutine entry point
-	fromgogo bool           // whether entered from gogo function
+	entry    uintptr // goroutine entry point
+	fromgogo bool    // whether entered from gogo function
 
 	issystem     bool // do not output in stack dump
 	isbackground bool // ignore in deadlock detector
@@ -431,7 +431,7 @@ type m struct {
 	gsignal *g     // signal-handling g
 	sigmask sigset // storage for saved signal mask
 	// Not for gccgo: tls           [6]uintptr // thread-local storage (for x86 extern register)
-	mstartfn    uintptr
+	mstartfn    func()
 	curg        *g       // current running goroutine
 	caughtsig   guintptr // goroutine running during fatal signal
 	p           puintptr // attached p for executing go code (nil if not executing go code)
@@ -714,10 +714,6 @@ type _defer struct {
 	// function function will be somewhere in libffi, so __retaddr
 	// is not useful.
 	makefunccanrecover bool
-
-	// Set to true if this defer stack entry is not part of the
-	// defer pool.
-	special bool
 }
 
 // panics

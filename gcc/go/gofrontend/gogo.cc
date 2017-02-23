@@ -4497,7 +4497,7 @@ Gogo::do_exports()
 {
   // For now we always stream to a section.  Later we may want to
   // support streaming to a separate file.
-  Stream_to_section stream;
+  Stream_to_section stream(this->backend());
 
   // Write out either the prefix or pkgpath depending on how we were
   // invoked.

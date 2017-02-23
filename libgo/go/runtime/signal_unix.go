@@ -216,7 +216,7 @@ func sigtrampgo(sig uint32, info *_siginfo_t, ctx unsafe.Pointer) {
 		c := sigctxt{info, ctx}
 		if sig == _SIGPROF {
 			_, pc := getSiginfo(info, ctx)
-			sigprofNonGoPC(pc)
+			sigprofNonGo(pc)
 			return
 		}
 		badsignal(uintptr(sig), &c)

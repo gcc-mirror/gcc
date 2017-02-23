@@ -53,6 +53,7 @@ main (int argc, char **argv)
   runtime_check ();
   runtime_args (argc, (byte **) argv);
   runtime_osinit ();
+  runtime_sched = runtime_getsched();
   runtime_schedinit ();
   __go_go (runtime_main, NULL);
   runtime_mstart (runtime_m ());

@@ -125,9 +125,12 @@ func mincore(addr unsafe.Pointer, n uintptr, dst *byte) int32
 //go:noescape
 func jmpdefer(fv *funcval, argp uintptr)
 func exit1(code int32)
-func asminit()
 func setg(gg *g)
+
+//extern __builtin_trap
 func breakpoint()
+
+func asminit() {}
 
 // reflectcall calls fn with a copy of the n argument bytes pointed at by arg.
 // After fn returns, reflectcall copies n-retoffset result bytes
@@ -266,18 +269,6 @@ func setIsCgo() {
 	iscgo = true
 }
 
-// Temporary for gccgo until we port proc.go.
-//go:linkname makeMainInitDone runtime.makeMainInitDone
-func makeMainInitDone() {
-	main_init_done = make(chan bool)
-}
-
-// Temporary for gccgo until we port proc.go.
-//go:linkname closeMainInitDone runtime.closeMainInitDone
-func closeMainInitDone() {
-	close(main_init_done)
-}
-
 // For gccgo, to communicate from the C code to the Go code.
 //go:linkname setCpuidECX runtime.setCpuidECX
 func setCpuidECX(v uint32) {
@@ -363,7 +354,8 @@ var writeBarrier struct {
 	alignme uint64 // guarantee alignment so that compiler can use a 32 or 64-bit load
 }
 
-func queueRescan(*g) {
+func queueRescan(gp *g) {
+	gp.gcscanvalid = false
 }
 
 // Here for gccgo until we port atomic_pointer.go and mgc.go.
@@ -385,9 +377,6 @@ func errno() int
 // Temporary for gccgo until we port proc.go.
 func entersyscall(int32)
 func entersyscallblock(int32)
-func exitsyscall(int32)
-func gopark(func(*g, unsafe.Pointer) bool, unsafe.Pointer, string, byte, int)
-func goparkunlock(*mutex, string, byte, int)
 
 // Temporary hack for gccgo until we port the garbage collector.
 func typeBitsBulkBarrier(typ *_type, dst, src, size uintptr) {}
@@ -417,26 +406,9 @@ func getMstats() *mstats {
 	return &memstats
 }
 
-// Temporary for gccgo until we port proc.go.
-func setcpuprofilerate_m(hz int32)
-
 // Temporary for gccgo until we port mem_GOOS.go.
 func sysAlloc(n uintptr, sysStat *uint64) unsafe.Pointer
 func sysFree(v unsafe.Pointer, n uintptr, sysStat *uint64)
-
-// Temporary for gccgo until we port proc.go, so that the C signal
-// handler can call into cpuprof.
-//go:linkname cpuprofAdd runtime.cpuprofAdd
-func cpuprofAdd(stk []uintptr) {
-	cpuprof.add(stk)
-}
-
-// For gccgo until we port proc.go.
-func Breakpoint()
-func LockOSThread()
-func UnlockOSThread()
-func lockOSThread()
-func unlockOSThread()
 
 // Temporary for gccgo until we port malloc.go
 func persistentalloc(size, align uintptr, sysStat *uint64) unsafe.Pointer
@@ -470,10 +442,6 @@ var zerobase uintptr
 func getZerobase() *uintptr {
 	return &zerobase
 }
-
-// Temporary for gccgo until we port proc.go.
-func sigprof()
-func goexit1()
 
 // Get signal trampoline, written in C.
 func getSigtramp() uintptr
@@ -608,7 +576,9 @@ type mheap struct {
 var mheap_ mheap
 
 // Temporary for gccgo until we port mheap.go.
+func scavenge(int32, uint64, uint64)
 func (h *mheap) scavenge(k int32, now, limit uint64) {
+	scavenge(k, now, limit)
 }
 
 // Temporary for gccgo until we initialize ncpu in Go.
@@ -639,4 +609,44 @@ var gcMarkWorkerModeStrings = [...]string{
 	"GC (dedicated)",
 	"GC (fractional)",
 	"GC (idle)",
+}
+
+// Temporary for gccgo until we port mgc.go.
+func gcenable() {
+	memstats.enablegc = true
+}
+
+// Temporary for gccgo until we port mgc.go.
+func gcinit() {
+}
+
+// Temporary for gccgo until we port mgc.go.
+//go:linkname runtime_m0 runtime.runtime_m0
+func runtime_m0() *m {
+	return &m0
+}
+
+// Temporary for gccgo until we port mgc.go.
+//go:linkname runtime_g0 runtime.runtime_g0
+func runtime_g0() *g {
+	return &g0
+}
+
+// Temporary for gccgo until we port mgc.go.
+type gcMode int
+
+const (
+	gcBackgroundMode gcMode = iota // concurrent GC and sweep
+	gcForceMode                    // stop-the-world GC now, concurrent sweep
+	gcForceBlockMode               // stop-the-world GC now and STW sweep (forced by user)
+)
+
+// Temporary for gccgo until we port mgc.g0.
+func gc(int32)
+func gcStart(mode gcMode, forceTrigger bool) {
+	var force int32
+	if forceTrigger {
+		force = 1
+	}
+	gc(force)
 }

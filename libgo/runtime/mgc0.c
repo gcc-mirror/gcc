@@ -132,7 +132,7 @@ clearpools(void)
 						 poolcleanup);
 	}
 
-	for(pp=runtime_allp; (p=*pp) != nil; pp++) {
+	for(pp=runtime_getAllP(); (p=*pp) != nil; pp++) {
 		// clear tinyalloc pool
 		c = p->mcache;
 		if(c != nil) {
@@ -1277,9 +1277,9 @@ markroot(ParFor *desc, uint32 i)
 
 	case RootBss:
 		// For gccgo we use this for all the other global roots.
-		enqueue1(&wbuf, (Obj){(byte*)&runtime_m0, sizeof runtime_m0, 0});
-		enqueue1(&wbuf, (Obj){(byte*)&runtime_g0, sizeof runtime_g0, 0});
-		enqueue1(&wbuf, (Obj){(byte*)&runtime_allp, sizeof runtime_allp, 0});
+		enqueue1(&wbuf, (Obj){(byte*)runtime_m0(), sizeof(M), 0});
+		enqueue1(&wbuf, (Obj){(byte*)runtime_g0(), sizeof(G), 0});
+		enqueue1(&wbuf, (Obj){(byte*)runtime_getAllP(), _MaxGomaxprocs * sizeof(P*), 0});
 		enqueue1(&wbuf, (Obj){(byte*)&work, sizeof work, 0});
 		break;
 
@@ -1821,7 +1821,7 @@ bgsweep(void* dummy __attribute__ ((unused)))
 		}
 		sweep.parked = true;
 		runtime_g()->isbackground = true;
-		runtime_parkunlock(&gclock, "GC sweep wait");
+		runtime_goparkunlock(&gclock, runtime_gostringnocopy((const byte*)"GC sweep wait"), traceEvGoBlock, 1);
 		runtime_g()->isbackground = false;
 	}
 }
@@ -1965,7 +1965,7 @@ cachestats(void)
 	MCache *c;
 	P *p, **pp;
 
-	for(pp=runtime_allp; (p=*pp) != nil; pp++) {
+	for(pp=runtime_getAllP(); (p=*pp) != nil; pp++) {
 		c = p->mcache;
 		if(c==nil)
 			continue;
@@ -1980,7 +1980,7 @@ flushallmcaches(void)
 	MCache *c;
 
 	// Flush MCache's to MCentral.
-	for(pp=runtime_allp; (p=*pp) != nil; pp++) {
+	for(pp=runtime_getAllP(); (p=*pp) != nil; pp++) {
 		c = p->mcache;
 		if(c==nil)
 			continue;
@@ -2469,7 +2469,7 @@ runfinq(void* dummy __attribute__ ((unused)))
 		if(fb == nil) {
 			runtime_fingwait = true;
 			runtime_g()->isbackground = true;
-			runtime_parkunlock(&finlock, "finalizer wait");
+			runtime_goparkunlock(&finlock, runtime_gostringnocopy((const byte*)"finalizer wait"), traceEvGoBlock, 1);
 			runtime_g()->isbackground = false;
 			continue;
 		}

@@ -1177,7 +1177,12 @@ Type::type_descriptor_pointer(Gogo* gogo, Location location)
   Bexpression* var_expr =
       gogo->backend()->var_expression(t->type_descriptor_var_,
                                       VE_rvalue, location);
-  return gogo->backend()->address_expression(var_expr, location);
+  Bexpression* var_addr =
+      gogo->backend()->address_expression(var_expr, location);
+  Type* td_type = Type::make_type_descriptor_type();
+  Btype* td_btype = td_type->get_backend(gogo);
+  Btype* ptd_btype = gogo->backend()->pointer_type(td_btype);
+  return gogo->backend()->convert_expression(ptd_btype, var_addr, location);
 }
 
 // A mapping from unnamed types to type descriptor variables.

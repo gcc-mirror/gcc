@@ -29,12 +29,12 @@ func sighandler(sig uint32, info *_siginfo_t, ctxt unsafe.Pointer, gp *g) {
 	_g_ := getg()
 	c := sigctxt{info, ctxt}
 
+	sigfault, sigpc := getSiginfo(info, ctxt)
+
 	if sig == _SIGPROF {
-		sigprof()
+		sigprof(sigpc, gp, _g_.m)
 		return
 	}
-
-	sigfault, sigpc := getSiginfo(info, ctxt)
 
 	flags := int32(_SigThrow)
 	if sig < uint32(len(sigtable)) {

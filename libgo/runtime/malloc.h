@@ -405,14 +405,14 @@ void	runtime_MGetSizeClassInfo(int32 sizeclass, uintptr *size, int32 *npages, in
 void*	runtime_MHeap_SysAlloc(MHeap *h, uintptr n);
 void	runtime_MHeap_MapBits(MHeap *h);
 void	runtime_MHeap_MapSpans(MHeap *h);
-void	runtime_MHeap_Scavenger(void*);
 void	runtime_MHeap_SplitSpan(MHeap *h, MSpan *s);
 
 void*	runtime_mallocgc(uintptr size, uintptr typ, uint32 flag);
 void*	runtime_persistentalloc(uintptr size, uintptr align, uint64 *stat)
   __asm__(GOSYM_PREFIX "runtime.persistentalloc");
 int32	runtime_mlookup(void *v, byte **base, uintptr *size, MSpan **s);
-void	runtime_gc(int32 force);
+void	runtime_gc(int32 force)
+  __asm__(GOSYM_PREFIX "runtime.gc");
 uintptr	runtime_sweepone(void);
 void	runtime_markscan(void *v);
 void	runtime_marknogc(void *v);

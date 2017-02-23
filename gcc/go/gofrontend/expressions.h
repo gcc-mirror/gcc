@@ -2267,7 +2267,10 @@ class Call_expression : public Expression
 			    Expression**);
 
   Bexpression*
-  set_results(Translate_context*, Bexpression*);
+  set_results(Translate_context*);
+
+  Bexpression*
+  call_result_ref(Translate_context* context);
 
   // The function to call.
   Expression* fn_;

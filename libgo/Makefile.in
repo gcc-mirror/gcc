@@ -191,19 +191,18 @@ libgo_llgo_la_DEPENDENCIES = $(am__DEPENDENCIES_4)
 @LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@am__objects_4 =  \
 @LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@	getncpu-bsd.lo
 @LIBGO_IS_LINUX_TRUE@am__objects_4 = getncpu-linux.lo
-am__objects_5 = aeshash.lo go-assert.lo go-breakpoint.lo go-caller.lo \
-	go-callers.lo go-cdiv.lo go-cgo.lo go-construct-map.lo \
-	go-ffi.lo go-fieldtrack.lo go-matherr.lo go-memclr.lo \
-	go-memcmp.lo go-memequal.lo go-memmove.lo go-nanotime.lo \
-	go-now.lo go-new.lo go-nosys.lo go-reflect-call.lo \
-	go-runtime-error.lo go-setenv.lo go-signal.lo go-strslice.lo \
-	go-typedesc-equal.lo go-unsafe-new.lo go-unsafe-newarray.lo \
-	go-unsafe-pointer.lo go-unsetenv.lo go-unwind.lo go-varargs.lo \
-	env_posix.lo heapdump.lo mcache.lo mcentral.lo \
-	$(am__objects_1) mfixalloc.lo mgc0.lo mheap.lo msize.lo \
-	panic.lo parfor.lo print.lo proc.lo runtime_c.lo thread.lo \
-	$(am__objects_2) yield.lo $(am__objects_3) malloc.lo \
-	$(am__objects_4)
+am__objects_5 = aeshash.lo go-assert.lo go-caller.lo go-callers.lo \
+	go-cdiv.lo go-cgo.lo go-construct-map.lo go-ffi.lo \
+	go-fieldtrack.lo go-matherr.lo go-memclr.lo go-memcmp.lo \
+	go-memequal.lo go-memmove.lo go-nanotime.lo go-now.lo \
+	go-new.lo go-nosys.lo go-reflect-call.lo go-runtime-error.lo \
+	go-setenv.lo go-signal.lo go-strslice.lo go-typedesc-equal.lo \
+	go-unsafe-new.lo go-unsafe-newarray.lo go-unsafe-pointer.lo \
+	go-unsetenv.lo go-unwind.lo go-varargs.lo env_posix.lo \
+	heapdump.lo mcache.lo mcentral.lo $(am__objects_1) \
+	mfixalloc.lo mgc0.lo mheap.lo msize.lo panic.lo parfor.lo \
+	print.lo proc.lo runtime_c.lo thread.lo $(am__objects_2) \
+	yield.lo $(am__objects_3) malloc.lo $(am__objects_4)
 am_libgo_llgo_la_OBJECTS = $(am__objects_5)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 libgo_llgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -777,7 +776,6 @@ toolexeclibgounicode_DATA = \
 runtime_files = \
 	runtime/aeshash.c \
 	runtime/go-assert.c \
-	runtime/go-breakpoint.c \
 	runtime/go-caller.c \
 	runtime/go-callers.c \
 	runtime/go-cdiv.c \
@@ -1329,6 +1327,7 @@ TEST_PACKAGES = \
 	runtime/internal/sys/check \
 	runtime/pprof/check \
 	runtime/pprof/internal/protopprof/check \
+	runtime/trace/check \
 	sync/atomic/check \
 	text/scanner/check \
 	text/tabwriter/check \
@@ -1488,7 +1487,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getncpu-none.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getncpu-solaris.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-assert.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-breakpoint.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-caller.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-callers.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-cdiv.Plo@am__quote@
@@ -1617,13 +1615,6 @@ go-assert.lo: runtime/go-assert.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-assert.c' object='go-assert.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-assert.lo `test -f 'runtime/go-assert.c' || echo '$(srcdir)/'`runtime/go-assert.c
-
-go-breakpoint.lo: runtime/go-breakpoint.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-breakpoint.lo -MD -MP -MF $(DEPDIR)/go-breakpoint.Tpo -c -o go-breakpoint.lo `test -f 'runtime/go-breakpoint.c' || echo '$(srcdir)/'`runtime/go-breakpoint.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-breakpoint.Tpo $(DEPDIR)/go-breakpoint.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-breakpoint.c' object='go-breakpoint.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-breakpoint.lo `test -f 'runtime/go-breakpoint.c' || echo '$(srcdir)/'`runtime/go-breakpoint.c
 
 go-caller.lo: runtime/go-caller.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-caller.lo -MD -MP -MF $(DEPDIR)/go-caller.Tpo -c -o go-caller.lo `test -f 'runtime/go-caller.c' || echo '$(srcdir)/'`runtime/go-caller.c

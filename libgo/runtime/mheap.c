@@ -457,15 +457,6 @@ MHeap_FreeLocked(MHeap *h, MSpan *s)
 		runtime_MSpanList_Insert(&h->freelarge, s);
 }
 
-static void
-forcegchelper(void *vnote)
-{
-	Note *note = (Note*)vnote;
-
-	runtime_gc(1);
-	runtime_notewakeup(note);
-}
-
 static uintptr
 scavengelist(MSpan *list, uint64 now, uint64 limit)
 {
@@ -498,7 +489,10 @@ scavengelist(MSpan *list, uint64 now, uint64 limit)
 	return sumreleased;
 }
 
-static void
+void scavenge(int32, uint64, uint64)
+  __asm__ (GOSYM_PREFIX "runtime.scavenge");
+
+void
 scavenge(int32 k, uint64 now, uint64 limit)
 {
 	uint32 i;
@@ -517,62 +511,6 @@ scavenge(int32 k, uint64 now, uint64 limit)
 		runtime_printf("scvg%d: inuse: %D, idle: %D, sys: %D, released: %D, consumed: %D (MB)\n",
 			k, mstats()->heap_inuse>>20, mstats()->heap_idle>>20, mstats()->heap_sys>>20,
 			mstats()->heap_released>>20, (mstats()->heap_sys - mstats()->heap_released)>>20);
-	}
-}
-
-// Release (part of) unused memory to OS.
-// Goroutine created at startup.
-// Loop forever.
-void
-runtime_MHeap_Scavenger(void* dummy)
-{
-	G *g;
-	MHeap *h;
-	uint64 tick, now, forcegc, limit;
-	int64 unixnow;
-	uint32 k;
-	Note note, *notep;
-
-	USED(dummy);
-
-	g = runtime_g();
-	g->issystem = true;
-	g->isbackground = true;
-
-	// If we go two minutes without a garbage collection, force one to run.
-	forcegc = 2*60*1e9;
-	// If a span goes unused for 5 minutes after a garbage collection,
-	// we hand it back to the operating system.
-	limit = 5*60*1e9;
-	// Make wake-up period small enough for the sampling to be correct.
-	if(forcegc < limit)
-		tick = forcegc/2;
-	else
-		tick = limit/2;
-
-	h = &runtime_mheap;
-	for(k=0;; k++) {
-		runtime_noteclear(&note);
-		runtime_notetsleepg(&note, tick);
-
-		runtime_lock(h);
-		unixnow = runtime_unixnanotime();
-		if(unixnow - mstats()->last_gc > forcegc) {
-			runtime_unlock(h);
-			// The scavenger can not block other goroutines,
-			// otherwise deadlock detector can fire spuriously.
-			// GC blocks other goroutines via the runtime_worldsema.
-			runtime_noteclear(&note);
-			notep = &note;
-			__go_go(forcegchelper, (void*)notep);
-			runtime_notetsleepg(&note, -1);
-			if(runtime_debug.gctrace > 0)
-				runtime_printf("scvg%d: GC forced\n", k);
-			runtime_lock(h);
-		}
-		now = runtime_nanotime();
-		scavenge(k, now, limit);
-		runtime_unlock(h);
 	}
 }
 

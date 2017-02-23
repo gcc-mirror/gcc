@@ -430,7 +430,6 @@ endif
 runtime_files = \
 	runtime/aeshash.c \
 	runtime/go-assert.c \
-	runtime/go-breakpoint.c \
 	runtime/go-caller.c \
 	runtime/go-callers.c \
 	runtime/go-cdiv.c \
@@ -1296,6 +1295,7 @@ TEST_PACKAGES = \
 	runtime/internal/sys/check \
 	runtime/pprof/check \
 	runtime/pprof/internal/protopprof/check \
+	runtime/trace/check \
 	sync/atomic/check \
 	text/scanner/check \
 	text/tabwriter/check \
