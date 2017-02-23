@@ -270,7 +270,7 @@ c_parser_gimple_statement (c_parser *parser, gimple_seq *seq)
 
   lhs = c_parser_gimple_unary_expression (parser);
   loc = EXPR_LOCATION (lhs.value);
-  rhs.value = error_mark_node;
+  rhs.set_error ();
 
   /* GIMPLE call statement without LHS.  */
   if (c_parser_next_token_is (parser, CPP_SEMICOLON)
@@ -455,7 +455,7 @@ c_parser_gimple_binary_expression (c_parser *parser)
   /* Location of the binary operator.  */
   struct c_expr ret, lhs, rhs;
   enum tree_code code = ERROR_MARK;
-  ret.value = error_mark_node;
+  ret.set_error ();
   lhs = c_parser_gimple_postfix_expression (parser);
   if (c_parser_error (parser))
     return ret;
@@ -553,9 +553,7 @@ c_parser_gimple_unary_expression (c_parser *parser)
   struct c_expr ret, op;
   location_t op_loc = c_parser_peek_token (parser)->location;
   location_t finish;
-  ret.original_code = ERROR_MARK;
-  ret.original_type = NULL;
-  ret.value = error_mark_node;
+  ret.set_error ();
   switch (c_parser_peek_token (parser)->type)
     {
     case CPP_AND:
@@ -723,11 +721,10 @@ c_parser_parse_ssa_name (c_parser *parser,
 static struct c_expr
 c_parser_gimple_postfix_expression (c_parser *parser)
 {
-  struct c_expr expr;
   location_t loc = c_parser_peek_token (parser)->location;
   source_range tok_range = c_parser_peek_token (parser)->get_range ();
-  expr.original_code = ERROR_MARK;
-  expr.original_type = NULL;
+  struct c_expr expr;
+  expr.set_error ();
   switch (c_parser_peek_token (parser)->type)
     {
     case CPP_NUMBER:
