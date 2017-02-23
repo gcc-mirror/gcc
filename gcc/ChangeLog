@@ -1,3 +1,8 @@
+2017-01-23  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR target/71017
+	* config/i386/cpuid.h: Fix another undefined behavior.
+
 2017-02-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79683
