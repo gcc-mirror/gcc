@@ -137,9 +137,10 @@
 ;nop           No operation.
 ;multi         Multiple instructions which split.
 ;asm           User asm instructions.
+;trap          Trap instructions.
 
 (define_attr "type"
-"imm_reg,mem_reg,eam_reg,fp_reg,reg_mem,reg_eam,reg_fp,arith,arith2,logic,abs_branch,branch,bmi,call,ret,rfi,dsi,cmp,div,divd,mul,shiftdi,fdiv,fsqrt,ftoi,itof,fmove,fcmp,fp,nop,multi,asm" (const_string "logic"))
+"imm_reg,mem_reg,eam_reg,fp_reg,reg_mem,reg_eam,reg_fp,arith,arith2,logic,abs_branch,branch,bmi,call,ret,rfi,dsi,cmp,div,divd,mul,shiftdi,fdiv,fsqrt,ftoi,itof,fmove,fcmp,fp,nop,multi,asm,trap" (const_string "logic"))
 
 ; Those insns that occupy 4 bytes.
 (define_attr "single_insn" "no,yes"
@@ -205,6 +206,7 @@
 
 (define_mode_iterator QHI [QI HI])
 (define_mode_iterator I [QI HI SI])
+(define_mode_attr b [(QI "8") (HI "16") (SI "32")])
 (define_mode_attr s [(QI ".b") (HI ".w") (SI ".l")])
 
 ; This code iterator allows signed and unsigned widening multiplications
@@ -1986,15 +1988,15 @@
 
 ; BITS_BIG_ENDIAN is defined to 1 so operand #1 counts from the MSB.
 
-(define_insn "*btst"
+(define_insn "*btst<mode>"
   [(set (reg:CCC R_FLAGS)
-	(compare:CCC (zero_extract:SI
-		       (match_operand:SI 0 "register_operand" "r")
+	(compare:CCC (zero_extract:I
+		       (match_operand:I 0 "register_operand" "r")
 		       (const_int 1)
 		       (match_operand:QI 1 "const_shift_operand" "K"))
 		     (const_int 0)))]
   "reload_completed"
-  "lsr.l   r0,%0,32-%1"
+  "lsr<s>   r0,%0,<b>-%1"
   [(set_attr "type" "logic")])
 
 ;;
@@ -2373,11 +2375,11 @@
 }
   [(set_attr "type" "cmp")])
 
-(define_insn_and_split "*cbranchsi4_btst_insn"
+(define_insn_and_split "*cbranch<mode>4_btst_insn"
   [(set (pc)
 	(if_then_else (match_operator 0 "visium_equality_comparison_operator"
-		       [(zero_extract:SI
-			   (match_operand:SI 1 "register_operand" "r")
+		       [(zero_extract:I
+			   (match_operand:I 1 "register_operand" "r")
 			   (const_int 1)
 			   (match_operand:QI 2 "const_shift_operand" "K"))
 		        (const_int 0)])
@@ -2509,6 +2511,20 @@
   ""
   "bra     tr,%0,r0%#		;tablejump"
   [(set_attr "type" "abs_branch")])
+
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; trap instructions
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 0))]
+  ""
+  "stop    0,r0"
+  [(set_attr "type" "trap")])
 
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
