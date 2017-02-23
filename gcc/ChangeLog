@@ -1,3 +1,23 @@
+2017-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79389
+	* ifcvt.c (struct noce_if_info): Add rev_cond field.
+	(noce_reversed_cond_code): New function.
+	(noce_emit_store_flag): Use rev_cond if non-NULL instead of
+	reversed_comparison_code.  Formatting fix.
+	(noce_try_store_flag): Test rev_cond != NULL in addition to
+	reversed_comparison_code.
+	(noce_try_store_flag_constants): Likewise.
+	(noce_try_store_flag_mask): Likewise.
+	(noce_try_addcc): Use rev_cond if non-NULL instead of
+	reversed_comparison_code.
+	(noce_try_cmove_arith): Likewise.  Formatting fixes.
+	(noce_try_minmax, noce_try_abs): Clear rev_cond.
+	(noce_find_if_block): Initialize rev_cond.
+	(find_cond_trap): Call noce_get_condition with then_bb == trap_bb
+	instead of false as last argument never attempt to reverse it
+	afterwards.
+
 2017-02-23  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/79663
