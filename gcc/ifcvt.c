@@ -777,6 +777,9 @@ struct noce_if_info
   /* The jump condition.  */
   rtx cond;
 
+  /* Reversed jump condition.  */
+  rtx rev_cond;
+
   /* New insns should be inserted before this one.  */
   rtx_insn *cond_earliest;
 
@@ -843,6 +846,17 @@ static int noce_try_minmax (struct noce_if_info *);
 static int noce_try_abs (struct noce_if_info *);
 static int noce_try_sign_mask (struct noce_if_info *);
 
+/* Return the comparison code for reversed condition for IF_INFO,
+   or UNKNOWN if reversing the condition is not possible.  */
+
+static inline enum rtx_code
+noce_reversed_cond_code (struct noce_if_info *if_info)
+{
+  if (if_info->rev_cond)
+    return GET_CODE (if_info->rev_cond);
+  return reversed_comparison_code (if_info->cond, if_info->jump);
+}
+
 /* Return TRUE if SEQ is a good candidate as a replacement for the
    if-convertible sequence described in IF_INFO.  */
 
@@ -888,6 +902,14 @@ noce_emit_store_flag (struct noce_if_info *if_info, rtx x, int reversep,
       if (if_info->then_else_reversed)
 	reversep = !reversep;
     }
+  else if (reversep
+	   && if_info->rev_cond
+	   && general_operand (XEXP (if_info->rev_cond, 0), VOIDmode)
+	   && general_operand (XEXP (if_info->rev_cond, 1), VOIDmode))
+    {
+      cond = if_info->rev_cond;
+      reversep = false;
+    }
 
   if (reversep)
     code = reversed_comparison_code (cond, if_info->jump);
@@ -898,7 +920,7 @@ noce_emit_store_flag (struct noce_if_info *if_info, rtx x, int reversep,
       && (normalize == 0 || STORE_FLAG_VALUE == normalize))
     {
       rtx src = gen_rtx_fmt_ee (code, GET_MODE (x), XEXP (cond, 0),
-			    XEXP (cond, 1));
+				XEXP (cond, 1));
       rtx set = gen_rtx_SET (x, src);
 
       start_sequence ();
@@ -1209,8 +1231,7 @@ noce_try_store_flag (struct noce_if_info *if_info)
   else if (if_info->b == const0_rtx
 	   && CONST_INT_P (if_info->a)
 	   && INTVAL (if_info->a) == STORE_FLAG_VALUE
-	   && (reversed_comparison_code (if_info->cond, if_info->jump)
-	       != UNKNOWN))
+	   && noce_reversed_cond_code (if_info) != UNKNOWN)
     reversep = 1;
   else
     return FALSE;
@@ -1371,9 +1392,7 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
 
       diff = trunc_int_for_mode (diff, mode);
 
-      can_reverse = (reversed_comparison_code (if_info->cond, if_info->jump)
-		     != UNKNOWN);
-
+      can_reverse = noce_reversed_cond_code (if_info) != UNKNOWN;
       reversep = false;
       if (diff == STORE_FLAG_VALUE || diff == -STORE_FLAG_VALUE)
 	{
@@ -1553,11 +1572,18 @@ noce_try_addcc (struct noce_if_info *if_info)
 
   if (GET_CODE (if_info->a) == PLUS
       && rtx_equal_p (XEXP (if_info->a, 0), if_info->b)
-      && (reversed_comparison_code (if_info->cond, if_info->jump)
-	  != UNKNOWN))
+      && noce_reversed_cond_code (if_info) != UNKNOWN)
     {
-      rtx cond = if_info->cond;
-      enum rtx_code code = reversed_comparison_code (cond, if_info->jump);
+      rtx cond = if_info->rev_cond;
+      enum rtx_code code;
+
+      if (cond == NULL_RTX)
+	{
+	  cond = if_info->cond;
+	  code = reversed_comparison_code (cond, if_info->jump);
+	}
+      else
+	code = GET_CODE (cond);
 
       /* First try to use addcc pattern.  */
       if (general_operand (XEXP (cond, 0), VOIDmode)
@@ -1652,9 +1678,7 @@ noce_try_store_flag_mask (struct noce_if_info *if_info)
 
   if ((if_info->a == const0_rtx
        && rtx_equal_p (if_info->b, if_info->x))
-      || ((reversep = (reversed_comparison_code (if_info->cond,
-						 if_info->jump)
-		       != UNKNOWN))
+      || ((reversep = (noce_reversed_cond_code (if_info) != UNKNOWN))
 	  && if_info->b == const0_rtx
 	  && rtx_equal_p (if_info->a, if_info->x)))
     {
@@ -2086,6 +2110,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
   rtx target;
   int is_mem = 0;
   enum rtx_code code;
+  rtx cond = if_info->cond;
   rtx_insn *ifcvt_seq;
 
   /* A conditional move from two memory sources is equivalent to a
@@ -2117,7 +2142,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 	  x = y;
   */
 
-  code = GET_CODE (if_info->cond);
+  code = GET_CODE (cond);
   insn_a = if_info->insn_a;
   insn_b = if_info->insn_b;
 
@@ -2127,7 +2152,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
     return FALSE;
 
   /* Possibly rearrange operands to make things come out more natural.  */
-  if (reversed_comparison_code (if_info->cond, if_info->jump) != UNKNOWN)
+  if (noce_reversed_cond_code (if_info) != UNKNOWN)
     {
       int reversep = 0;
       if (rtx_equal_p (b, x))
@@ -2137,7 +2162,13 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 
       if (reversep)
 	{
-	  code = reversed_comparison_code (if_info->cond, if_info->jump);
+	  if (if_info->rev_cond)
+	    {
+	      cond = if_info->rev_cond;
+	      code = GET_CODE (cond);
+	    }
+	  else
+	    code = reversed_comparison_code (cond, if_info->jump);
 	  std::swap (a, b);
 	  std::swap (insn_a, insn_b);
 	  std::swap (a_simple, b_simple);
@@ -2173,7 +2204,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
   rtx emit_b = NULL_RTX;
   rtx_insn *tmp_insn = NULL;
   bool modified_in_a = false;
-  bool  modified_in_b = false;
+  bool modified_in_b = false;
   /* If either operand is complex, load it into a register first.
      The best way to do this is to copy the original insn.  In this
      way we preserve any clobbers etc that the insn may have had.
@@ -2231,7 +2262,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 	      rtx tmp_reg = tmp_b ? tmp_b : gen_reg_rtx (GET_MODE (b));
 	      emit_b = gen_rtx_SET (tmp_reg, b);
 	      b = tmp_reg;
-	  }
+	    }
 	}
     }
 
@@ -2286,8 +2317,8 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
   else
     goto end_seq_and_fail;
 
-  target = noce_emit_cmove (if_info, x, code, XEXP (if_info->cond, 0),
-			    XEXP (if_info->cond, 1), a, b);
+  target = noce_emit_cmove (if_info, x, code, XEXP (cond, 0), XEXP (cond, 1),
+			    a, b);
 
   if (! target)
     goto end_seq_and_fail;
@@ -2576,6 +2607,7 @@ noce_try_minmax (struct noce_if_info *if_info)
   emit_insn_before_setloc (seq, if_info->jump, INSN_LOCATION (if_info->insn_a));
   if_info->cond = cond;
   if_info->cond_earliest = earliest;
+  if_info->rev_cond = NULL_RTX;
   if_info->transform_name = "noce_try_minmax";
 
   return TRUE;
@@ -2743,6 +2775,7 @@ noce_try_abs (struct noce_if_info *if_info)
   emit_insn_before_setloc (seq, if_info->jump, INSN_LOCATION (if_info->insn_a));
   if_info->cond = cond;
   if_info->cond_earliest = earliest;
+  if_info->rev_cond = NULL_RTX;
   if_info->transform_name = "noce_try_abs";
 
   return TRUE;
@@ -4064,6 +4097,11 @@ noce_find_if_block (basic_block test_bb, edge then_edge, edge else_edge,
   if_info.else_bb = else_bb;
   if_info.join_bb = join_bb;
   if_info.cond = cond;
+  rtx_insn *rev_cond_earliest;
+  if_info.rev_cond = noce_get_condition (jump, &rev_cond_earliest,
+					 !then_else_reversed);
+  gcc_assert (if_info.rev_cond == NULL_RTX
+	      || rev_cond_earliest == cond_earliest);
   if_info.cond_earliest = cond_earliest;
   if_info.jump = jump;
   if_info.then_else_reversed = then_else_reversed;
@@ -4634,7 +4672,6 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
   rtx_insn *trap, *jump;
   rtx cond;
   rtx_insn *cond_earliest;
-  enum rtx_code code;
 
   /* Locate the block with the trap instruction.  */
   /* ??? While we look for no successors, we really ought to allow
@@ -4654,7 +4691,7 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
 
   /* If this is not a standard conditional jump, we can't parse it.  */
   jump = BB_END (test_bb);
-  cond = noce_get_condition (jump, &cond_earliest, false);
+  cond = noce_get_condition (jump, &cond_earliest, then_bb == trap_bb);
   if (! cond)
     return FALSE;
 
@@ -4670,17 +4707,8 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
   if (GET_MODE (XEXP (cond, 0)) == BLKmode)
     return FALSE;
 
-  /* Reverse the comparison code, if necessary.  */
-  code = GET_CODE (cond);
-  if (then_bb == trap_bb)
-    {
-      code = reversed_comparison_code (cond, jump);
-      if (code == UNKNOWN)
-	return FALSE;
-    }
-
   /* Attempt to generate the conditional trap.  */
-  rtx_insn *seq = gen_cond_trap (code, copy_rtx (XEXP (cond, 0)),
+  rtx_insn *seq = gen_cond_trap (GET_CODE (cond), copy_rtx (XEXP (cond, 0)),
 				 copy_rtx (XEXP (cond, 1)),
 				 TRAP_CODE (PATTERN (trap)));
   if (seq == NULL)
