@@ -3499,7 +3499,14 @@ return_value_ok_for_nrv_p (tree ret_obj, tree ret_val)
   if (TREE_ADDRESSABLE (ret_val))
     return false;
 
+  /* For the constrained case, test for overalignment.  */
   if (ret_obj && DECL_ALIGN (ret_val) > DECL_ALIGN (ret_obj))
+    return false;
+
+  /* For the unconstrained case, test for bogus initialization.  */
+  if (!ret_obj
+      && DECL_INITIAL (ret_val)
+      && TREE_CODE (DECL_INITIAL (ret_val)) == NULL_EXPR)
     return false;
 
   return true;
