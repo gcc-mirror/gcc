@@ -3534,6 +3534,7 @@ max_size (tree exp, bool max_p)
 {
   enum tree_code code = TREE_CODE (exp);
   tree type = TREE_TYPE (exp);
+  tree op0, op1, op2;
 
   switch (TREE_CODE_CLASS (code))
     {
@@ -3575,15 +3576,19 @@ max_size (tree exp, bool max_p)
       return exp;
 
     case tcc_comparison:
-      return max_p ? size_one_node : size_zero_node;
+      return build_int_cst (type, max_p ? 1 : 0);
 
     case tcc_unary:
       if (code == NON_LVALUE_EXPR)
 	return max_size (TREE_OPERAND (exp, 0), max_p);
 
-      return fold_build1 (code, type,
-			  max_size (TREE_OPERAND (exp, 0),
-				    code == NEGATE_EXPR ? !max_p : max_p));
+      op0 = max_size (TREE_OPERAND (exp, 0),
+		      code == NEGATE_EXPR ? !max_p : max_p);
+
+      if (op0 == TREE_OPERAND (exp, 0))
+	return exp;
+
+      return fold_build1 (code, type, op0);
 
     case tcc_binary:
       {
@@ -3623,6 +3628,9 @@ max_size (tree exp, bool max_p)
 	    code = PLUS_EXPR;
 	  }
 
+	if (lhs == TREE_OPERAND (exp, 0) && rhs == TREE_OPERAND (exp, 1))
+	  return exp;
+
 	/* We need to detect overflows so we call size_binop here.  */
 	return size_binop (code, lhs, rhs);
       }
@@ -3634,23 +3642,40 @@ max_size (tree exp, bool max_p)
 	  if (code == SAVE_EXPR)
 	    return exp;
 
-	  return fold_build1 (code, type,
-			      max_size (TREE_OPERAND (exp, 0),
-			      code == TRUTH_NOT_EXPR ? !max_p : max_p));
+	  op0 = max_size (TREE_OPERAND (exp, 0),
+			  code == TRUTH_NOT_EXPR ? !max_p : max_p);
+
+	  if (op0 == TREE_OPERAND (exp, 0))
+	    return exp;
+
+	  return fold_build1 (code, type, op0);
 
 	case 2:
 	  if (code == COMPOUND_EXPR)
 	    return max_size (TREE_OPERAND (exp, 1), max_p);
 
-	  return fold_build2 (code, type,
-			      max_size (TREE_OPERAND (exp, 0), max_p),
-			      max_size (TREE_OPERAND (exp, 1), max_p));
+	  op0 = max_size (TREE_OPERAND (exp, 0), max_p);
+	  op1 = max_size (TREE_OPERAND (exp, 1), max_p);
+
+	  if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1))
+	    return exp;
+
+	  return fold_build2 (code, type, op0, op1);
 
 	case 3:
 	  if (code == COND_EXPR)
-	    return fold_build2 (max_p ? MAX_EXPR : MIN_EXPR, type,
-				max_size (TREE_OPERAND (exp, 1), max_p),
-				max_size (TREE_OPERAND (exp, 2), max_p));
+	    {
+	      op1 = TREE_OPERAND (exp, 1);
+	      op2 = TREE_OPERAND (exp, 2);
+
+	      if (!op1 || !op2)
+		return exp;
+
+	      return
+		fold_build2 (max_p ? MAX_EXPR : MIN_EXPR, type,
+			     max_size (op1, max_p), max_size (op2, max_p));
+	    }
+	  break;
 
 	default:
 	  break;
