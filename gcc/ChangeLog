@@ -1,3 +1,11 @@
+2017-02-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/arc/arc.c (arc_ccfsm_advance): Only take the PATTERN of
+	this_insn if it is an INSN or JUMP_INSN.
+	(force_offsettable): Look at base, not at addr.
+	* config/arc/predicates.md (brcc_nolimm_operator): Don't call INTVAL
+	on things that aren't necessarily CONST_INTs.
+
 2017-02-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/invoke.texi (x86 Options, -mfpmath=sse): Mention that
