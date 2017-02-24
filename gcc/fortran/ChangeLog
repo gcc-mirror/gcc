@@ -1,3 +1,15 @@
+2017-02-25  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/79601
+	* interface.c (check_dtio_arg_TKR_intent): Change 'intent'
+	to 'INTENT'.
+
+2017-02-25  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/79597
+	* interface.c (gfc_match_end_interface): Remove spurious comma
+	and space, replace 'got %s' with 'got %qs'.
+
 2017-02-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/79599
