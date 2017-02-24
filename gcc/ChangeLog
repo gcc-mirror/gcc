@@ -1,3 +1,9 @@
+2017-02-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* doc/invoke.texi (x86 Options, -mfpmath=sse): Mention that
+	-mfpmath=sse is the default also for x86-32 targets with SSE2
+	instruction set when @option{-ffast-math} is enabled
+
 2017-02-24  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimizatoin/79286
