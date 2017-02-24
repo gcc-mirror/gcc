@@ -1,5 +1,18 @@
 2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu): If
+	there is no end label, put the location of the At_End procedure on
+	the call to the procedure.
+
+2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.c (gnat_type_max_size): Try to return a meaningful
+	value for array types with TYPE_INDEX_TYPE set on their domain type.
+	* gcc-interface/utils.c (max_size): For operations and expressions, do
+	not build a new node if the operands have not changed or are missing.
+
+2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (max_size) <tcc_expression>: Flip the second
 	argument when recursing on TRUTH_NOT_EXPR.
 
