@@ -1,3 +1,9 @@
+2017-02-24  Marek Polacek  <polacek@redhat.com>
+
+	PR translation/79705
+	* decl.c (check_redeclaration_exception_specification): Mark a string
+	for translation.  Make the pointer const.
+
 2017-02-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/79361
