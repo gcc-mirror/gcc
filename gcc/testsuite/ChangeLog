@@ -1,3 +1,7 @@
+2017-02-24  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/ext/complit15.C: Require LTO.
+
 2017-02-24  Toma Tabacu  <toma.tabacu@imgtec.com>
 
 	* gcc.dg/tree-ssa/ssa-thread-14.c (dg-options): Use
@@ -147,6 +151,11 @@
 2017-02-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.dg/gimplefe-26.c: Require c99_runtime.
+
+2017-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79580
+	* g++.dg/ext/complit15.C: New.
 
 2017-02-20  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
