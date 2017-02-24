@@ -444,7 +444,7 @@ for (i = 0; i < n_enabledby; i++) {
             print "      if (" condition ")"
             print "        handle_generated_option (opts, opts_set,"
             print "                                 " opt_enum(thisenable[j]) ", NULL, " value ","
-            print "                                 lang_mask, kind, loc, handlers, dc);"
+            print "                                 lang_mask, kind, loc, handlers, true, dc);"
         } else {
             print "#error " thisenable[j] " does not have a Var() flag"
         }
@@ -497,7 +497,7 @@ for (i = 0; i < n_langs; i++) {
                 print "      if (!opts_set->x_" opt_var_name ")"
                 print "        handle_generated_option (opts, opts_set,"
                 print "                                 " opt_enum(thisenable_opt) ", NULL, " value ","
-                print "                                 lang_mask, kind, loc, handlers, dc);"
+                print "                                 lang_mask, kind, loc, handlers, true, dc);"
             } else {
                 print "#error " thisenable_opt " does not have a Var() flag"
             }

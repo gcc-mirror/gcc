@@ -149,7 +149,7 @@ gnat_handle_option (size_t scode, const char *arg, int value, int kind,
       handle_generated_option (&global_options, &global_options_set,
 			       OPT_Wunused, NULL, value,
 			       gnat_option_lang_mask (), kind, loc,
-			       handlers, global_dc);
+			       handlers, true, global_dc);
       warn_uninitialized = value;
       warn_maybe_uninitialized = value;
       break;

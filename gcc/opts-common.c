@@ -959,9 +959,10 @@ keep:
    option for options from the source file, UNKNOWN_LOCATION
    otherwise.  GENERATED_P is true for an option generated as part of
    processing another option or otherwise generated internally, false
-   for one explicitly passed by the user.  Returns false if the switch
-   was invalid.  DC is the diagnostic context for options affecting
-   diagnostics state, or NULL.  */
+   for one explicitly passed by the user.  control_warning_option
+   generated options are considered explicitly passed by the user.
+   Returns false if the switch was invalid.  DC is the diagnostic
+   context for options affecting diagnostics state, or NULL.  */
 
 static bool
 handle_option (struct gcc_options *opts,
@@ -1005,13 +1006,13 @@ handle_generated_option (struct gcc_options *opts,
 			 size_t opt_index, const char *arg, int value,
 			 unsigned int lang_mask, int kind, location_t loc,
 			 const struct cl_option_handlers *handlers,
-			 diagnostic_context *dc)
+			 bool generated_p, diagnostic_context *dc)
 {
   struct cl_decoded_option decoded;
 
   generate_option (opt_index, arg, value, lang_mask, &decoded);
   return handle_option (opts, opts_set, &decoded, lang_mask, kind, loc,
-			handlers, true, dc);
+			handlers, generated_p, dc);
 }
 
 /* Fill in *DECODED with an option described by OPT_INDEX, ARG and
@@ -1503,7 +1504,7 @@ control_warning_option (unsigned int opt_index, int kind, const char *arg,
 
 	  handle_generated_option (opts, opts_set,
 				   opt_index, arg, value, lang_mask,
-				   kind, loc, handlers, dc);
+				   kind, loc, handlers, false, dc);
 	}
     }
 }
