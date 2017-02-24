@@ -3635,7 +3635,8 @@ max_size (tree exp, bool max_p)
 	    return exp;
 
 	  return fold_build1 (code, type,
-			      max_size (TREE_OPERAND (exp, 0), max_p));
+			      max_size (TREE_OPERAND (exp, 0),
+			      code == TRUTH_NOT_EXPR ? !max_p : max_p));
 
 	case 2:
 	  if (code == COMPOUND_EXPR)
