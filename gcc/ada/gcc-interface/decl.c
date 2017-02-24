@@ -6685,6 +6685,7 @@ static tree
 gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 		   bool definition, bool debug_info_p)
 {
+  const Entity_Id gnat_record_type = Underlying_Type (Scope (gnat_field));
   const Entity_Id gnat_field_type = Etype (gnat_field);
   const bool is_aliased
     = Is_Aliased (gnat_field);
@@ -6771,8 +6772,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   if (Present (Component_Clause (gnat_field)))
     {
       Node_Id gnat_clause = Component_Clause (gnat_field);
-      Entity_Id gnat_parent
-	= Parent_Subtype (Underlying_Type (Scope (gnat_field)));
+      Entity_Id gnat_parent = Parent_Subtype (gnat_record_type);
 
       gnu_pos = UI_To_gnu (Component_Bit_Offset (gnat_field), bitsizetype);
       gnu_size = validate_size (Esize (gnat_field), gnu_field_type,
@@ -6891,7 +6891,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 
   /* If the record has rep clauses and this is the tag field, make a rep
      clause for it as well.  */
-  else if (Has_Specified_Layout (Scope (gnat_field))
+  else if (Has_Specified_Layout (gnat_record_type)
 	   && Chars (gnat_field) == Name_uTag)
     {
       gnu_pos = bitsize_zero_node;
@@ -6928,11 +6928,14 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
       /* If the field's type is justified modular, we would need to remove
 	 the wrapper to (better) meet the layout requirements.  However we
 	 can do so only if the field is not aliased to preserve the unique
-	 layout and if the prescribed size is not greater than that of the
-	 packed array to preserve the justification.  */
+	 layout, if it has the same storage order as the enclosing record
+	 and if the prescribed size is not greater than that of the packed
+	 array to preserve the justification.  */
       if (!needs_strict_alignment
 	  && TREE_CODE (gnu_field_type) == RECORD_TYPE
 	  && TYPE_JUSTIFIED_MODULAR_P (gnu_field_type)
+	  && TYPE_REVERSE_STORAGE_ORDER (gnu_field_type)
+	     == Reverse_Storage_Order (gnat_record_type)
 	  && tree_int_cst_compare (gnu_size, TYPE_ADA_SIZE (gnu_field_type))
 	       <= 0)
 	gnu_field_type = TREE_TYPE (TYPE_FIELDS (gnu_field_type));
