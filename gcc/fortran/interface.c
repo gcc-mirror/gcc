@@ -398,10 +398,10 @@ gfc_match_end_interface (void)
 	      m = MATCH_ERROR;
 	      if (strcmp(s2, "none") == 0)
 		gfc_error ("Expecting %<END INTERFACE OPERATOR (%s)%> "
-			   "at %C, ", s1);
+			   "at %C", s1);
 	      else
 		gfc_error ("Expecting %<END INTERFACE OPERATOR (%s)%> at %C, "
-			   "but got %s", s1, s2);
+			   "but got %qs", s1, s2);
 	    }
 
 	}
@@ -4623,7 +4623,7 @@ check_dtio_arg_TKR_intent (gfc_symbol *fsym, bool typebound, bt type,
 	       "ASSUMED SHAPE ARRAY", &fsym->declared_at);
 
   if (fsym->attr.intent != intent)
-    gfc_error ("DTIO dummy argument at %L must have intent %s",
+    gfc_error ("DTIO dummy argument at %L must have INTENT %s",
 	       &fsym->declared_at, gfc_code2string (intents, (int)intent));
   return;
 }
