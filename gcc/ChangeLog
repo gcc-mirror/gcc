@@ -1,3 +1,9 @@
+2017-02-24  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimizatoin/79286
+	* ira.c (update_equiv_regs): Drop may_trap_p exception to
+	dominance test.
+
 2017-02-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79389
