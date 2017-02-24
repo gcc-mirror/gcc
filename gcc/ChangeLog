@@ -1,3 +1,9 @@
+2017-02-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79389
+	* gimple-ssa-split-paths.c (is_feasible_trace): Properly skip
+	debug insns.
+
 2017-02-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-ssa-loop-niter.c (number_of_iterations_exit): Update

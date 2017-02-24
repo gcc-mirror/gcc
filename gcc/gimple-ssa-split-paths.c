@@ -249,6 +249,8 @@ is_feasible_trace (basic_block bb)
 		  imm_use_iterator iter2;
 		  FOR_EACH_IMM_USE_FAST (use2_p, iter2, gimple_phi_result (stmt))
 		    {
+		      if (is_gimple_debug (USE_STMT (use2_p)))
+			continue;
 		      basic_block use_bb = gimple_bb (USE_STMT (use2_p));
 		      if (use_bb != bb
 			  && dominated_by_p (CDI_DOMINATORS, bb, use_bb))
@@ -280,11 +282,15 @@ is_feasible_trace (basic_block bb)
 	    use_operand_p use_p;
 	    imm_use_iterator iter;
 	    FOR_EACH_IMM_USE_FAST (use_p, iter, op)
-	      if (gimple_bb (USE_STMT (use_p)) == bb)
-		{
-		  found_cprop_opportunity = true;
-		  break;
-		}
+	      {
+		if (is_gimple_debug (USE_STMT (use_p)))
+		  continue;
+		if (gimple_bb (USE_STMT (use_p)) == bb)
+		  {
+		    found_cprop_opportunity = true;
+		    break;
+		  }
+	      }
 	  }
 	if (found_cprop_opportunity)
 	  break;
