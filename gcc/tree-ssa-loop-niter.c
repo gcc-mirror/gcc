@@ -2345,8 +2345,8 @@ number_of_iterations_exit_assumptions (struct loop *loop, edge exit,
   return (!integer_zerop (niter->assumptions));
 }
 
-/* Like number_of_iterations_exit, but return TRUE only if the niter
-   information holds unconditionally.  */
+/* Like number_of_iterations_exit_assumptions, but return TRUE only if
+   the niter information holds unconditionally.  */
 
 bool
 number_of_iterations_exit (struct loop *loop, edge exit,
@@ -4194,7 +4194,7 @@ nowrap_type_p (tree type)
 }
 
 /* Return true if we can prove LOOP is exited before evolution of induction
-   variabled {BASE, STEP} overflows with respect to its type bound.  */
+   variable {BASE, STEP} overflows with respect to its type bound.  */
 
 static bool
 loop_exits_before_overflow (tree base, tree step,

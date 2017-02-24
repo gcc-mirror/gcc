@@ -1,3 +1,9 @@
+2017-02-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-loop-niter.c (number_of_iterations_exit): Update
+	function comment to reflect reality.
+	(loop_exits_before_overflow): Fix typo in function description.
+
 2017-02-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79389
