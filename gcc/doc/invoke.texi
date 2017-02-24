@@ -879,6 +879,7 @@ Objective-C and Objective-C++ Dialects}.
 -mexplicit-relocs  -mno-explicit-relocs @gol
 -mcheck-zero-division  -mno-check-zero-division @gol
 -mdivide-traps  -mdivide-breaks @gol
+-mload-store-pairs  -mno-load-store-pairs @gol
 -mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls @gol
 -mmad  -mno-mad  -mimadd  -mno-imadd  -mfused-madd  -mno-fused-madd  -nocpp @gol
 -mfix-24k  -mno-fix-24k @gol
@@ -19494,6 +19495,15 @@ The default is usually @option{-mdivide-traps}, but this can be
 overridden at configure time using @option{--with-divide=breaks}.
 Divide-by-zero checks can be completely disabled using
 @option{-mno-check-zero-division}.
+
+@item -mload-store-pairs
+@itemx -mno-load-store-pairs
+@opindex mload-store-pairs
+@opindex mno-load-store-pairs
+Enable (disable) an optimization that pairs consecutive load or store
+instructions to enable load/store bonding.  This option is enabled by
+default but only takes effect when the selected architecture is known
+to support bonding.
 
 @item -mmemcpy
 @itemx -mno-memcpy
