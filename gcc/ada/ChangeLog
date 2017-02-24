@@ -1,5 +1,11 @@
 2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_field): Do not remove the wrapper
+	around a justified modular type if it doesn't have the same scalar
+	storage order as the enclosing record type.
+
+2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu): Do not apply special handling
 	of boolean rvalues to function calls.
 
