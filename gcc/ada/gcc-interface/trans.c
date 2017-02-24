@@ -7322,7 +7322,6 @@ gnat_to_gnu (Node_Id gnat_node)
       && (kind == N_Identifier
 	  || kind == N_Expanded_Name
 	  || kind == N_Explicit_Dereference
-	  || kind == N_Function_Call
 	  || kind == N_Indexed_Component
 	  || kind == N_Selected_Component)
       && TREE_CODE (get_base_type (gnu_result_type)) == BOOLEAN_TYPE

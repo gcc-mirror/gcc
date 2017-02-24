@@ -1,5 +1,10 @@
 2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gnat_to_gnu): Do not apply special handling
+	of boolean rvalues to function calls.
+
+2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (return_value_ok_for_nrv_p): Add sanity check.
 
 2016-11-22  Uros Bizjak  <ubizjak@gmail.com>
