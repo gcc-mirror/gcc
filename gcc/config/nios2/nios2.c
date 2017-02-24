@@ -1416,6 +1416,8 @@ nios2_option_override (void)
 static bool
 nios2_simple_const_p (const_rtx cst)
 {
+  if (!CONST_INT_P (cst))
+    return false;
   HOST_WIDE_INT val = INTVAL (cst);
   return SMALL_INT (val) || SMALL_INT_UNSIGNED (val) || UPPER16_INT (val);
 }
@@ -1753,6 +1755,8 @@ nios2_alternate_compare_const (enum rtx_code code, rtx op,
 			       enum rtx_code *alt_code, rtx *alt_op,
 			       machine_mode mode)
 {
+  gcc_assert (CONST_INT_P (op));
+
   HOST_WIDE_INT opval = INTVAL (op);
   enum rtx_code scode = signed_condition (code);
   bool dec_p = (scode == LT || scode == GE);
@@ -1788,6 +1792,7 @@ nios2_alternate_compare_const (enum rtx_code code, rtx op,
 static bool
 nios2_valid_compare_const_p (enum rtx_code code, rtx op)
 {
+  gcc_assert (CONST_INT_P (op));
   switch (code)
     {
     case EQ: case NE: case GE: case LT:
@@ -1846,7 +1851,7 @@ nios2_validate_compare (machine_mode mode, rtx *cmp, rtx *op1, rtx *op2)
   if (GET_MODE_CLASS (mode) == MODE_FLOAT)
     return nios2_validate_fpu_compare (mode, cmp, op1, op2, true);
 
-  if (!reg_or_0_operand (*op2, mode))
+  if (CONST_INT_P (*op2) && *op2 != const0_rtx)
     {
       /* Create alternate constant compare.  */
       nios2_alternate_compare_const (code, *op2, &alt_code, &alt_op2, mode);
@@ -1878,8 +1883,11 @@ nios2_validate_compare (machine_mode mode, rtx *cmp, rtx *op1, rtx *op2)
 	  code = alt_code;
 	  *op2 = alt_op2;
 	}
-      *op2 = force_reg (SImode, *op2);
+      *op2 = force_reg (mode, *op2);
     }
+    else if (!reg_or_0_operand (*op2, mode))
+      *op2 = force_reg (mode, *op2);
+    
  check_rebuild_cmp:
   if (code == GT || code == GTU || code == LE || code == LEU)
     {
@@ -4557,6 +4565,8 @@ ldstwm_operation_p (rtx op, bool load_p)
 	  rtx first_base, first_offset;
 	  if (!split_mem_address (XEXP (mem, 0),
 				  &first_base, &first_offset))
+	    return false;
+	  if (!REG_P (first_base) || !CONST_INT_P (first_offset))
 	    return false;
 	  base_reg = first_base;
 	  inc_p = INTVAL (first_offset) >= 0;
