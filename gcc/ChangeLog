@@ -1,3 +1,8 @@
+2017-02-24  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	PR target/79473
+	* doc/invoke.texi: Document -mload-store-pairs.
+
 2017-02-24  Segher Boessenkool  <segher@kernel.crashing.org>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
