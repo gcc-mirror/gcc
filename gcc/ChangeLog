@@ -1,5 +1,11 @@
 2017-02-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/sh/sh.md (tstsi_t): If operands[0] is a SUBREG instead of
+	a REG, look at the REG it is a SUBREG of.
+	(splitter for cmpeqsi_t): Ditto.
+
+2017-02-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/pa/pa.c (pa_combine_instructions): Do not share RTL.  Make
 	the special USEs with the pattern of the insn, not the insn itself.
 
