@@ -5034,7 +5034,7 @@
   [(set (match_dup 0) (match_dup 3))
    (set (match_dup 0) (and:SI (match_dup 0) (match_dup 4)))]
 {
-  machine_mode zmode = INTVAL (operands[2]) <= 255 ? QImode : HImode;
+  machine_mode zmode = INTVAL (operands[1]) <= 255 ? QImode : HImode;
   rtx op1
     = (REG_S_P (operands[2])
        ? gen_rtx_REG (zmode, REGNO (operands[2]))
