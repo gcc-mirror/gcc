@@ -1,3 +1,8 @@
+2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (max_size) <tcc_expression>: Flip the second
+	argument when recursing on TRUTH_NOT_EXPR.
+
 2017-02-12  John Marino  <gnugcc@marino.st>
 
 	* system-freebsd-x86.ads: Rename into...
