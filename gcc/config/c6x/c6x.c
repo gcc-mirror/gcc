@@ -3799,6 +3799,7 @@ predicate_insn (rtx_insn *insn, rtx cond, bool doit)
     {
       if (doit)
 	{
+	  cond = copy_rtx (cond);
 	  rtx newpat = gen_rtx_COND_EXEC (VOIDmode, cond, PATTERN (insn));
 	  PATTERN (insn) = newpat;
 	  INSN_CODE (insn) = -1;

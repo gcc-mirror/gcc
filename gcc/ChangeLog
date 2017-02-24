@@ -1,5 +1,9 @@
 2017-02-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/c6x/c6x.c (predicate_insn): Do not incorrectly share RTL.
+
+2017-02-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/arc/arc.c (arc_ccfsm_advance): Only take the PATTERN of
 	this_insn if it is an INSN or JUMP_INSN.
 	(force_offsettable): Look at base, not at addr.
