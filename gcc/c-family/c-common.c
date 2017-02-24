@@ -5364,6 +5364,49 @@ check_function_sentinel (const_tree fntype, int nargs, tree *argarray)
     }
 }
 
+/* Check that the same argument isn't passed to restrict arguments
+   and other arguments.  */
+
+static void
+check_function_restrict (const_tree fndecl, const_tree fntype,
+			 int nargs, tree *argarray)
+{
+  int i;
+  tree parms;
+
+  if (fndecl
+      && TREE_CODE (fndecl) == FUNCTION_DECL
+      && DECL_ARGUMENTS (fndecl))
+    parms = DECL_ARGUMENTS (fndecl);
+  else
+    parms = TYPE_ARG_TYPES (fntype);
+
+  for (i = 0; i < nargs; i++)
+    TREE_VISITED (argarray[i]) = 0;
+
+  for (i = 0; i < nargs && parms && parms != void_list_node; i++)
+    {
+      tree type;
+      if (TREE_CODE (parms) == PARM_DECL)
+	{
+	  type = TREE_TYPE (parms);
+	  parms = DECL_CHAIN (parms);
+	}
+      else
+	{
+	  type = TREE_VALUE (parms);
+	  parms = TREE_CHAIN (parms);
+	}
+      if (POINTER_TYPE_P (type)
+	  && TYPE_RESTRICT (type)
+	  && !TYPE_READONLY (TREE_TYPE (type)))
+	warn_for_restrict (i, argarray, nargs);
+    }
+
+  for (i = 0; i < nargs; i++)
+    TREE_VISITED (argarray[i]) = 0;
+}
+
 /* Helper for check_function_nonnull; given a list of operands which
    must be non-null in ARGS, determine if operand PARAM_NUM should be
    checked.  */
@@ -5605,8 +5648,8 @@ attribute_fallthrough_p (tree attr)
    There are NARGS arguments in the array ARGARRAY.  LOC should be used for
    diagnostics.  Return true if -Wnonnull warning has been diagnosed.  */
 bool
-check_function_arguments (location_t loc, const_tree fntype, int nargs,
-			  tree *argarray)
+check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
+			  int nargs, tree *argarray)
 {
   bool warned_p = false;
 
@@ -5624,6 +5667,9 @@ check_function_arguments (location_t loc, const_tree fntype, int nargs,
 
   if (warn_format)
     check_function_sentinel (fntype, nargs, argarray);
+
+  if (warn_restrict)
+    check_function_restrict (fndecl, fntype, nargs, argarray);
   return warned_p;
 }
 

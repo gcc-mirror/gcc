@@ -7903,14 +7903,17 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
      the check_function_arguments function might warn about something.  */
 
   bool warned_p = false;
-  if (warn_nonnull || warn_format || warn_suggest_attribute_format)
+  if (warn_nonnull
+      || warn_format
+      || warn_suggest_attribute_format
+      || warn_restrict)
     {
       tree *fargs = (!nargs ? argarray
 			    : (tree *) alloca (nargs * sizeof (tree)));
       for (j = 0; j < nargs; j++)
 	fargs[j] = maybe_constant_value (argarray[j]);
 
-      warned_p = check_function_arguments (input_location, TREE_TYPE (fn),
+      warned_p = check_function_arguments (input_location, fn, TREE_TYPE (fn),
 					   nargs, fargs);
     }
 
