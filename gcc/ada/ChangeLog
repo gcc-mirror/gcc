@@ -1,5 +1,13 @@
 2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (fold_bit_position): New function.
+	(rest_of_record_type_compilation): Call it instead of bit_position to
+	compute the field position and remove the call to remove_conversions.
+	(compute_related_constant): Factor out the multiplication in both
+	operands, if any, and streamline the final test.
+
+2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (return_value_ok_for_nrv_p): Add sanity check.
 
 2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
