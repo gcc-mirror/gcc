@@ -1,4 +1,16 @@
 2017-02-24  Segher Boessenkool  <segher@kernel.crashing.org>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.c (nios2_simple_const_p): Returns false if the
+	argument isn't a CONST_INT.
+	(nios2_alternate_compare_const): Assert op is a CONST_INT.
+	(nios2_valid_compare_const_p): Assert op is a CONST_INT.
+	(nios2_validate_compare): Bypass alternate compare logic if *op2
+	is not a CONST_INT.
+	(ldstwm_operation_p): Return false if first_base is not a REG or
+	if first_offset is not a CONST_INT.
+
+2017-02-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/cris/cris.md: Use correct operand in a define_peephole2.
 
