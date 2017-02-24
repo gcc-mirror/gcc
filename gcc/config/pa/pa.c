@@ -9178,17 +9178,17 @@ pa_combine_instructions (void)
 		  || anchor_attr == PA_COMBINE_TYPE_FMPY))
 	    {
 	      /* Emit the new instruction and delete the old anchor.  */
-	      emit_insn_before (gen_rtx_PARALLEL
-				(VOIDmode,
-				 gen_rtvec (2, PATTERN (anchor),
-					    PATTERN (floater))),
-				anchor);
+	      rtvec vtemp = gen_rtvec (2, copy_rtx (PATTERN (anchor)),
+				       copy_rtx (PATTERN (floater)));
+	      rtx temp = gen_rtx_PARALLEL (VOIDmode, vtemp);
+	      emit_insn_before (temp, anchor);
 
 	      SET_INSN_DELETED (anchor);
 
 	      /* Emit a special USE insn for FLOATER, then delete
 		 the floating insn.  */
-	      emit_insn_before (gen_rtx_USE (VOIDmode, floater), floater);
+	      temp = copy_rtx (PATTERN (floater));
+	      emit_insn_before (gen_rtx_USE (VOIDmode, temp), floater);
 	      delete_insn (floater);
 
 	      continue;
@@ -9196,21 +9196,19 @@ pa_combine_instructions (void)
 	  else if (floater
 		   && anchor_attr == PA_COMBINE_TYPE_UNCOND_BRANCH)
 	    {
-	      rtx temp;
 	      /* Emit the new_jump instruction and delete the old anchor.  */
-	      temp
-		= emit_jump_insn_before (gen_rtx_PARALLEL
-					 (VOIDmode,
-					  gen_rtvec (2, PATTERN (anchor),
-						     PATTERN (floater))),
-					 anchor);
+	      rtvec vtemp = gen_rtvec (2, copy_rtx (PATTERN (anchor)),
+				       copy_rtx (PATTERN (floater)));
+	      rtx temp = gen_rtx_PARALLEL (VOIDmode, vtemp);
+	      temp = emit_jump_insn_before (temp, anchor);
 
 	      JUMP_LABEL (temp) = JUMP_LABEL (anchor);
 	      SET_INSN_DELETED (anchor);
 
 	      /* Emit a special USE insn for FLOATER, then delete
 		 the floating insn.  */
-	      emit_insn_before (gen_rtx_USE (VOIDmode, floater), floater);
+	      temp = copy_rtx (PATTERN (floater));
+	      emit_insn_before (gen_rtx_USE (VOIDmode, temp), floater);
 	      delete_insn (floater);
 	      continue;
 	    }
