@@ -1,5 +1,13 @@
 2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c: Include demangle.h.
+	(is_cplusplus_method): Return again true for a primitive operation
+	only if it is dispatching.  For a subprogram with an interface name,
+	call the demangler to get the number of C++ parameters and compare it
+	with the number of Ada parameters.
+
+2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu): If
 	there is no end label, put the location of the At_End procedure on
 	the call to the procedure.

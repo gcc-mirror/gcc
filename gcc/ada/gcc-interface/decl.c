@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -34,6 +34,7 @@
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "tree-inline.h"
+#include "demangle.h"
 
 #include "ada.h"
 #include "types.h"
@@ -5093,16 +5094,16 @@ get_unpadded_type (Entity_Id gnat_entity)
 bool
 is_cplusplus_method (Entity_Id gnat_entity)
 {
-  /* Check that the subprogram has C++ convention.  */
-  if (Convention (gnat_entity) != Convention_CPP)
-    return false;
-
   /* A constructor is a method on the C++ side.  We deal with it now because
      it is declared without the 'this' parameter in the sources and, although
      the front-end will create a version with the 'this' parameter for code
      generation purposes, we want to return true for both versions.  */
   if (Is_Constructor (gnat_entity))
     return true;
+
+  /* Check that the subprogram has C++ convention.  */
+  if (Convention (gnat_entity) != Convention_CPP)
+    return false;
 
   /* And that the type of the first parameter (indirectly) has it too.  */
   Entity_Id gnat_first = First_Formal (gnat_entity);
@@ -5115,19 +5116,75 @@ is_cplusplus_method (Entity_Id gnat_entity)
   if (Convention (gnat_type) != Convention_CPP)
     return false;
 
-  /* This is the main case: C++ method imported as a primitive operation.
-     Note that a C++ class with no virtual functions can be imported as a
-     limited record type so the operation is not necessarily dispatching.  */
-  if (Is_Primitive (gnat_entity))
+  /* This is the main case: a C++ virtual method imported as a primitive
+     operation of a tagged type.  */
+  if (Is_Dispatching_Operation (gnat_entity))
+    return true;
+
+  /* This is set on the E_Subprogram_Type built for a dispatching call.  */
+  if (Is_Dispatch_Table_Entity (gnat_entity))
     return true;
 
   /* A thunk needs to be handled like its associated primitive operation.  */
   if (Is_Subprogram (gnat_entity) && Is_Thunk (gnat_entity))
     return true;
 
-  /* This is set on the E_Subprogram_Type built for a dispatching call.  */
-  if (Is_Dispatch_Table_Entity (gnat_entity))
-    return true;
+  /* Now on to the annoying case: a C++ non-virtual method, imported either
+     as a non-primitive operation of a tagged type or as a primitive operation
+     of an untagged type.  We cannot reliably differentiate these cases from
+     their static member or regular function equivalents in Ada, so we ask
+     the C++ side through the mangled name of the function, as the implicit
+     'this' parameter is not encoded in the mangled name of a method.  */
+  if (Is_Subprogram (gnat_entity) && Present (Interface_Name (gnat_entity)))
+    {
+      String_Pointer sp = { NULL, NULL };
+      Get_External_Name (gnat_entity, false, sp);
+
+      void *mem;
+      struct demangle_component *cmp
+	= cplus_demangle_v3_components (Name_Buffer,
+					DMGL_GNU_V3
+					| DMGL_TYPES
+					| DMGL_PARAMS
+					| DMGL_RET_DROP,
+					&mem);
+      if (!cmp)
+	return false;
+
+      /* We need to release MEM once we have a successful demangling.  */
+      bool ret = false;
+
+      if (cmp->type == DEMANGLE_COMPONENT_TYPED_NAME
+	  && cmp->u.s_binary.right->type == DEMANGLE_COMPONENT_FUNCTION_TYPE
+	  && (cmp = cmp->u.s_binary.right->u.s_binary.right) != NULL
+	  && cmp->type == DEMANGLE_COMPONENT_ARGLIST)
+	{
+	  /* Make sure there is at least one parameter in C++ too.  */
+	  if (cmp->u.s_binary.left)
+	    {
+	      unsigned int n_ada_args = 0;
+	      do {
+		n_ada_args++;
+		gnat_first = Next_Formal (gnat_first);
+	      } while (Present (gnat_first));
+
+	      unsigned int n_cpp_args = 0;
+	      do {
+		n_cpp_args++;
+		cmp = cmp->u.s_binary.right;
+	      } while (cmp);
+
+	      if (n_cpp_args < n_ada_args)
+		ret = true;
+	    }
+	  else
+	    ret = true;
+	}
+
+      free (mem);
+
+      return ret;
+    }
 
   return false;
 }
