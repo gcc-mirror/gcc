@@ -1,5 +1,9 @@
 2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/opt63.adb: New test.
+
+2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/discr47.adb: New test.
 
 2017-02-24  Richard Biener  <rguenther@suse.de>

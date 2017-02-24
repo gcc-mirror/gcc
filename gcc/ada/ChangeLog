@@ -1,5 +1,9 @@
 2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (return_value_ok_for_nrv_p): Add sanity check.
+
+2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c: Include demangle.h.
 	(is_cplusplus_method): Return again true for a primitive operation
 	only if it is dispatching.  For a subprogram with an interface name,
