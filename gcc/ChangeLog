@@ -1,5 +1,9 @@
 2017-02-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/cris/cris.md: Use correct operand in a define_peephole2.
+
+2017-02-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/c6x/c6x.c (predicate_insn): Do not incorrectly share RTL.
 
 2017-02-24  Segher Boessenkool  <segher@kernel.crashing.org>
