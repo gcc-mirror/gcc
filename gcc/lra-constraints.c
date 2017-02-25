@@ -2927,18 +2927,18 @@ base_to_reg (struct address_info *ad)
   rtx_insn *insn;
   rtx_insn *last_insn = get_last_insn();
 
-  lra_assert (ad->base == ad->base_term && ad->disp == ad->disp_term);
+  lra_assert (ad->disp == ad->disp_term);
   cl = base_reg_class (ad->mode, ad->as, ad->base_outer_code,
                        get_index_code (ad));
-  new_reg = lra_create_new_reg (GET_MODE (*ad->base_term), NULL_RTX,
+  new_reg = lra_create_new_reg (GET_MODE (*ad->base), NULL_RTX,
                                 cl, "base");
   new_inner = simplify_gen_binary (PLUS, GET_MODE (new_reg), new_reg,
                                    ad->disp_term == NULL
-                                   ? gen_int_mode (0, ad->mode)
+                                   ? const0_rtx
                                    : *ad->disp_term);
   if (!valid_address_p (ad->mode, new_inner, ad->as))
     return NULL_RTX;
-  insn = emit_insn (gen_rtx_SET (new_reg, *ad->base_term));
+  insn = emit_insn (gen_rtx_SET (new_reg, *ad->base));
   code = recog_memoized (insn);
   if (code < 0)
     {
