@@ -1,5 +1,7 @@
 2017-02-25  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-ssa-loop-niter.c (number_of_iterations_exit): Simplify warning.
+
 	PR debug/77589
 	* dwarf2out.c (struct dw_loc_list_struct): Add noted_variable_value
 	bitfield.

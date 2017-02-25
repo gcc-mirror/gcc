@@ -2362,13 +2362,9 @@ number_of_iterations_exit (struct loop *loop, edge exit,
     return true;
 
   if (warn)
-    {
-      const char *wording;
-
-      wording = N_("missed loop optimization, the loop counter may overflow");
-      warning_at (gimple_location_safe (stmt),
-		  OPT_Wunsafe_loop_optimizations, "%s", gettext (wording));
-    }
+    warning_at (gimple_location_safe (stmt),
+		OPT_Wunsafe_loop_optimizations,
+		"missed loop optimization, the loop counter may overflow");
 
   return false;
 }
