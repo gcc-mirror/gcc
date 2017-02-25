@@ -1,5 +1,9 @@
 2017-02-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/79396
+	* tree-eh.c (operation_could_trap_p, stmt_could_throw_1_p): Handle
+	FMA_EXPR like tcc_binary or tcc_unary.
+
 	* tree-ssa-loop-niter.c (number_of_iterations_exit): Simplify warning.
 
 	PR debug/77589
