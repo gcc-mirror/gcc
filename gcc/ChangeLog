@@ -1,3 +1,46 @@
+2017-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/77589
+	* dwarf2out.c (struct dw_loc_list_struct): Add noted_variable_value
+	bitfield.
+	(size_of_loc_descr): Handle DW_OP_GNU_variable_value.
+	(output_loc_operands): Handle DW_OP_call_ref and
+	DW_OP_GNU_variable_value.
+	(struct variable_value_struct): New type.
+	(struct variable_value_hasher): Likewise.
+	(variable_value_hash): New variable.
+	(string_types): Remove.
+	(copy_loc_descr): New function.
+	(add_loc_descr_to_each): Clarify comment.  Use copy_loc_descr.
+	(prepend_loc_descr_to_each): New function.
+	(add_loc_list): Fix comment typo.  Use prepend_loc_descr_to_each
+	instead of add_loc_descr_to_each if the first argument is single
+	location list and the second has multiple.
+	(resolve_args_picking_1): Handle DW_OP_GNU_variable_value.
+	(loc_list_from_tree_1): For early_dwarf, emit DW_OP_GNU_variable_value
+	when looking for variable value which doesn't have other location info.
+	(loc_list_from_tree): Formatting fix.
+	(gen_array_type_die): Simplify DW_AT_string_length handling.
+	(adjust_string_types): Remove.
+	(gen_subprogram_die): Don't call adjust_string_types nor test/set
+	string_types.  Call resolve_variable_values.
+	(prune_unused_types_walk_loc_descr): Handle DW_OP_GNU_variable_value.
+	(resolve_addr_in_expr): Likewise.  Add A argument.
+	(copy_deref_exprloc): Remove deref argument.  Adjust for the
+	original expression being DW_OP_GNU_variable_value with optionally
+	DW_OP_stack_value after it instead of DW_OP_call4 with DW_OP_deref
+	optionally after it.
+	(optimize_string_length): Rework for DW_OP_GNU_variable_value.
+	(resolve_addr): Adjust optimize_string_length and resolve_addr_in_expr
+	callers.  Set remove_AT_byte_size if removing DW_AT_string_length.
+	(variable_value_hasher::hash, variable_value_hasher::equal): New
+	methods.
+	(resolve_variable_value_in_expr, resolve_variable_value,
+	resolve_variable_values, note_variable_value_in_expr,
+	note_variable_value): New functions.
+	(dwarf2out_early_finish): Call note_variable_value on all toplevel
+	DIEs.
+
 2017-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/79677
