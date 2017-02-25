@@ -1293,6 +1293,8 @@ typedef struct GTY(()) dw_loc_list_struct {
   unsigned char num_assigned : 1;
   /* True if .debug_loclists.dwo offset has been emitted for it already.  */
   unsigned char offset_emitted : 1;
+  /* True if note_variable_value_in_expr has been called on it.  */
+  unsigned char noted_variable_value : 1;
   /* True if the range should be emitted even if begin and end
      are the same.  */
   bool force;
@@ -1791,6 +1793,7 @@ size_of_loc_descr (dw_loc_descr_ref loc)
       size += 4;
       break;
     case DW_OP_call_ref:
+    case DW_OP_GNU_variable_value:
       size += DWARF_REF_SIZE;
       break;
     case DW_OP_implicit_value:
@@ -2211,6 +2214,17 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
 				     : 0xffffffff));
 	dw2_asm_output_data ((loc->dw_loc_opc == DW_OP_call2) ? 2 : 4,
 			     die_offset, NULL);
+      }
+      break;
+
+    case DW_OP_call_ref:
+    case DW_OP_GNU_variable_value:
+      {
+	char label[MAX_ARTIFICIAL_LABEL_BYTES
+		   + HOST_BITS_PER_WIDE_INT / 2 + 2];
+	gcc_assert (val1->val_class == dw_val_class_die_ref);
+	get_ref_die_offset_label (label, val1->v.val_die_ref.die);
+	dw2_asm_output_offset (DWARF_REF_SIZE, label, debug_info_section, NULL);
       }
       break;
 
@@ -3097,6 +3111,23 @@ struct decl_die_hasher : ggc_ptr_hash<die_node>
    The key is a DECL_UID() which is a unique number identifying each decl.  */
 static GTY (()) hash_table<decl_die_hasher> *decl_die_table;
 
+struct GTY ((for_user)) variable_value_struct {
+  unsigned int decl_id;
+  vec<dw_die_ref, va_gc> *dies;
+};
+
+struct variable_value_hasher : ggc_ptr_hash<variable_value_struct>
+{
+  typedef tree compare_type;
+
+  static hashval_t hash (variable_value_struct *);
+  static bool equal (variable_value_struct *, tree);
+};
+/* A hash table of DIEs that contain DW_OP_GNU_variable_value with
+   dw_val_class_decl_ref class, indexed by FUNCTION_DECLs which is
+   DECL_CONTEXT of the referenced VAR_DECLs.  */
+static GTY (()) hash_table<variable_value_hasher> *variable_value_hash;
+
 struct block_die_hasher : ggc_ptr_hash<die_struct>
 {
   static hashval_t hash (die_struct *);
@@ -3286,10 +3317,6 @@ static HOST_WIDE_INT frame_pointer_fb_offset;
 static bool frame_pointer_fb_offset_valid;
 
 static vec<dw_die_ref> base_types;
-
-/* Pointer to vector of DW_TAG_string_type DIEs that need finalization
-   once all arguments are parsed.  */
-static vec<dw_die_ref> *string_types;
 
 /* Flags to represent a set of attribute classes for attributes that represent
    a scalar value (bounds, pointers, ...).  */
@@ -3605,6 +3632,7 @@ static void gen_remaining_tmpl_value_param_die_attribute (void);
 static bool generic_type_p (tree);
 static void schedule_generic_params_dies_gen (tree t);
 static void gen_scheduled_generic_parms_dies (void);
+static void resolve_variable_values (void);
 
 static const char *comp_dir_string (void);
 
@@ -16292,7 +16320,17 @@ single_element_loc_list_p (dw_loc_list_ref list)
   return !list->ll_symbol;
 }
 
-/* To each location in list LIST add loc descr REF.  */
+/* Duplicate a single element of location list.  */
+
+static inline dw_loc_descr_ref
+copy_loc_descr (dw_loc_descr_ref ref)
+{
+  dw_loc_descr_ref copy = ggc_alloc<dw_loc_descr_node> ();
+  memcpy (copy, ref, sizeof (dw_loc_descr_node));
+  return copy;
+}
+
+/* To each location in list LIST append loc descr REF.  */
 
 static void
 add_loc_descr_to_each (dw_loc_list_ref list, dw_loc_descr_ref ref)
@@ -16302,16 +16340,31 @@ add_loc_descr_to_each (dw_loc_list_ref list, dw_loc_descr_ref ref)
   list = list->dw_loc_next;
   while (list)
     {
-      copy = ggc_alloc<dw_loc_descr_node> ();
-      memcpy (copy, ref, sizeof (dw_loc_descr_node));
+      copy = copy_loc_descr (ref);
       add_loc_descr (&list->expr, copy);
       while (copy->dw_loc_next)
-	{
-	  dw_loc_descr_ref new_copy = ggc_alloc<dw_loc_descr_node> ();
-	  memcpy (new_copy, copy->dw_loc_next, sizeof (dw_loc_descr_node));
-	  copy->dw_loc_next = new_copy;
-	  copy = new_copy;
-	}
+	copy = copy->dw_loc_next = copy_loc_descr (copy->dw_loc_next);
+      list = list->dw_loc_next;
+    }
+}
+
+/* To each location in list LIST prepend loc descr REF.  */
+
+static void
+prepend_loc_descr_to_each (dw_loc_list_ref list, dw_loc_descr_ref ref)
+{
+  dw_loc_descr_ref copy;
+  dw_loc_descr_ref ref_end = list->expr;
+  add_loc_descr (&ref, list->expr);
+  list->expr = ref;
+  list = list->dw_loc_next;
+  while (list)
+    {
+      dw_loc_descr_ref end = list->expr;
+      list->expr = copy = copy_loc_descr (ref);
+      while (copy->dw_loc_next != ref_end)
+	copy = copy->dw_loc_next = copy_loc_descr (copy->dw_loc_next);
+      copy->dw_loc_next = end;
       list = list->dw_loc_next;
     }
 }
@@ -16322,7 +16375,7 @@ add_loc_descr_to_each (dw_loc_list_ref list, dw_loc_descr_ref ref)
    Might be destructive on both RET and LIST.
 
    TODO: We handle only simple cases of RET or LIST having at most one
-   element. General case would inolve sorting the lists in program order
+   element.  General case would involve sorting the lists in program order
    and merging them that will need some additional work.
    Adding that will improve quality of debug info especially for SRA-ed
    structures.  */
@@ -16344,7 +16397,7 @@ add_loc_list (dw_loc_list_ref *ret, dw_loc_list_ref list)
     }
   if (!(*ret)->dw_loc_next)
     {
-      add_loc_descr_to_each (list, (*ret)->expr);
+      prepend_loc_descr_to_each (list, (*ret)->expr);
       *ret = list;
       return;
     }
@@ -16824,6 +16877,7 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 	case DW_OP_fbreg:
 	case DW_OP_push_object_address:
 	case DW_OP_call_frame_cfa:
+	case DW_OP_GNU_variable_value:
 	  ++frame_offset_;
 	  break;
 
@@ -17299,6 +17353,31 @@ loc_list_from_tree_1 (tree loc, int want_address,
 	rtl = rtl_for_decl_location (loc);
 	if (rtl == NULL_RTX)
 	  {
+	    if (TREE_CODE (loc) != FUNCTION_DECL
+		&& early_dwarf
+		&& current_function_decl
+		&& want_address != 1
+		&& (INTEGRAL_TYPE_P (TREE_TYPE (loc))
+		    || POINTER_TYPE_P (TREE_TYPE (loc)))
+		&& DECL_CONTEXT (loc) == current_function_decl
+		&& (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (loc)))
+		    <= DWARF2_ADDR_SIZE))
+	      {
+		dw_die_ref ref = lookup_decl_die (loc);
+		ret = new_loc_descr (DW_OP_GNU_variable_value, 0, 0);
+		if (ref)
+		  {
+		    ret->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+		    ret->dw_loc_oprnd1.v.val_die_ref.die = ref;
+		    ret->dw_loc_oprnd1.v.val_die_ref.external = 0;
+		  }
+		else
+		  {
+		    ret->dw_loc_oprnd1.val_class = dw_val_class_decl_ref;
+		    ret->dw_loc_oprnd1.v.val_decl_ref = loc;
+		  }
+		break;
+	      }
 	    expansion_failed (loc, NULL_RTX, "DECL has no RTL");
 	    return 0;
 	  }
@@ -17873,8 +17952,7 @@ loc_list_from_tree (tree loc, int want_address,
   dw_loc_list_ref result = loc_list_from_tree_1 (loc, want_address, context);
 
   for (dw_loc_list_ref loc_cur = result;
-       loc_cur != NULL; loc_cur =
-       loc_cur->dw_loc_next)
+       loc_cur != NULL; loc_cur = loc_cur->dw_loc_next)
     loc_descr_without_nops (loc_cur->expr);
   return result;
 }
@@ -20685,7 +20763,6 @@ gen_array_type_die (tree type, dw_die_ref context_die)
 	{
 	  tree szdecl = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
 	  tree rszdecl = szdecl;
-	  HOST_WIDE_INT rsize = 0;
 
 	  size = int_size_in_bytes (TREE_TYPE (szdecl));
 	  if (!DECL_P (szdecl))
@@ -20694,8 +20771,8 @@ gen_array_type_die (tree type, dw_die_ref context_die)
 		  && DECL_P (TREE_OPERAND (szdecl, 0)))
 		{
 		  rszdecl = TREE_OPERAND (szdecl, 0);
-		  rsize = int_size_in_bytes (TREE_TYPE (rszdecl));
-		  if (rsize <= 0)
+		  if (int_size_in_bytes (TREE_TYPE (rszdecl))
+		      != DWARF2_ADDR_SIZE)
 		    size = 0;
 		}
 	      else
@@ -20703,41 +20780,9 @@ gen_array_type_die (tree type, dw_die_ref context_die)
 	    }
 	  if (size > 0)
 	    {
-	      dw_loc_list_ref loc = loc_list_from_tree (szdecl, 2, NULL);
-	      if (loc == NULL
-		  && early_dwarf
-		  && current_function_decl
-		  && DECL_CONTEXT (rszdecl) == current_function_decl)
-		{
-		  dw_die_ref ref = lookup_decl_die (rszdecl);
-		  dw_loc_descr_ref l = NULL;
-		  if (ref)
-		    {
-		      l = new_loc_descr (DW_OP_call4, 0, 0);
-		      l->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
-		      l->dw_loc_oprnd1.v.val_die_ref.die = ref;
-		      l->dw_loc_oprnd1.v.val_die_ref.external = 0;
-		    }
-		  else if (TREE_CODE (rszdecl) == PARM_DECL
-			   && string_types)
-		    {
-		      l = new_loc_descr (DW_OP_call4, 0, 0);
-		      l->dw_loc_oprnd1.val_class = dw_val_class_decl_ref;
-		      l->dw_loc_oprnd1.v.val_decl_ref = rszdecl;
-		      string_types->safe_push (array_die);
-		    }
-		  if (l && rszdecl != szdecl)
-		    {
-		      if (rsize == DWARF2_ADDR_SIZE)
-			add_loc_descr (&l, new_loc_descr (DW_OP_deref,
-							  0, 0));
-		      else
-			add_loc_descr (&l, new_loc_descr (DW_OP_deref_size,
-							  rsize, 0));
-		    }
-		  if (l)
-		    loc = new_loc_list (l, NULL, NULL, NULL);
-		}
+	      dw_loc_list_ref loc
+		= loc_list_from_tree (rszdecl, szdecl == rszdecl ? 2 : 0,
+				      NULL);
 	      if (loc)
 		{
 		  add_AT_location_description (array_die, DW_AT_string_length,
@@ -20812,39 +20857,6 @@ gen_array_type_die (tree type, dw_die_ref context_die)
     add_pubtype (type, array_die);
 
   add_alignment_attribute (array_die, type);
-}
-
-/* After all arguments are created, adjust any DW_TAG_string_type
-   DIEs DW_AT_string_length attributes.  */
-
-static void
-adjust_string_types (void)
-{
-  dw_die_ref array_die;
-  unsigned int i;
-  FOR_EACH_VEC_ELT (*string_types, i, array_die)
-    {
-      dw_attr_node *a = get_AT (array_die, DW_AT_string_length);
-      if (a == NULL)
-	continue;
-      dw_loc_descr_ref loc = AT_loc (a);
-      gcc_assert (loc->dw_loc_opc == DW_OP_call4
-		  && loc->dw_loc_oprnd1.val_class == dw_val_class_decl_ref);
-      dw_die_ref ref = lookup_decl_die (loc->dw_loc_oprnd1.v.val_decl_ref);
-      if (ref)
-	{
-	  loc->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
-	  loc->dw_loc_oprnd1.v.val_die_ref.die = ref;
-	  loc->dw_loc_oprnd1.v.val_die_ref.external = 0;
-	}
-      else
-	{
-	  remove_AT (array_die, DW_AT_string_length);
-	  remove_AT (array_die, dwarf_version >= 5
-				? DW_AT_string_length_byte_size
-				: DW_AT_byte_size);
-	}
-    }
 }
 
 /* This routine generates DIE for array with hidden descriptor, details
@@ -22289,6 +22301,8 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  add_AT_location_description (subr_die, DW_AT_static_link,
 				       loc_list_from_tree (fb_expr, 0, NULL));
 	}
+
+      resolve_variable_values ();
     }
 
   /* Generate child dies for template paramaters.  */
@@ -22321,9 +22335,6 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
       tree generic_decl_parm = generic_decl
 				? DECL_ARGUMENTS (generic_decl)
 				: NULL;
-      auto_vec<dw_die_ref> string_types_vec;
-      if (string_types == NULL)
-	string_types = &string_types_vec;
 
       /* Now we want to walk the list of parameters of the function and
 	 emit their relevant DIEs.
@@ -22385,14 +22396,6 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	    }
 	  else if (DECL_INITIAL (decl) == NULL_TREE)
 	    gen_unspecified_parameters_die (decl, subr_die);
-	}
-
-      /* Adjust DW_TAG_string_type DIEs if needed, now that all arguments
-	 have DIEs.  */
-      if (string_types == &string_types_vec)
-	{
-	  adjust_string_types ();
-	  string_types = NULL;
 	}
     }
 
@@ -27532,6 +27535,18 @@ prune_unused_types_walk_loc_descr (dw_loc_descr_ref loc)
 	if (loc->dw_loc_oprnd1.val_class == dw_val_class_die_ref)
 	  prune_unused_types_mark (loc->dw_loc_oprnd1.v.val_die_ref.die, 1);
 	break;
+      case DW_OP_GNU_variable_value:
+	if (loc->dw_loc_oprnd1.val_class == dw_val_class_decl_ref)
+	  {
+	    dw_die_ref ref
+	      = lookup_decl_die (loc->dw_loc_oprnd1.v.val_decl_ref);
+	    if (ref == NULL)
+	      break;
+	    loc->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+	    loc->dw_loc_oprnd1.v.val_die_ref.die = ref;
+	    loc->dw_loc_oprnd1.v.val_die_ref.external = 0;
+	  }
+	/* FALLTHRU */
       case DW_OP_call2:
       case DW_OP_call4:
       case DW_OP_call_ref:
@@ -28300,7 +28315,7 @@ optimize_one_addr_into_implicit_ptr (dw_loc_descr_ref loc)
    the location list couldn't be resolved.  */
 
 static bool
-resolve_addr_in_expr (dw_loc_descr_ref loc)
+resolve_addr_in_expr (dw_attr_node *a, dw_loc_descr_ref loc)
 {
   dw_loc_descr_ref keep = NULL;
   for (dw_loc_descr_ref prev = NULL; loc; prev = loc, loc = loc->dw_loc_next)
@@ -28360,6 +28375,7 @@ resolve_addr_in_expr (dw_loc_descr_ref loc)
       case DW_OP_implicit_pointer:
       case DW_OP_GNU_implicit_pointer:
       case DW_OP_GNU_parameter_ref:
+      case DW_OP_GNU_variable_value:
 	if (loc->dw_loc_oprnd1.val_class == dw_val_class_decl_ref)
 	  {
 	    dw_die_ref ref
@@ -28369,6 +28385,37 @@ resolve_addr_in_expr (dw_loc_descr_ref loc)
 	    loc->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
 	    loc->dw_loc_oprnd1.v.val_die_ref.die = ref;
 	    loc->dw_loc_oprnd1.v.val_die_ref.external = 0;
+	  }
+	if (loc->dw_loc_opc == DW_OP_GNU_variable_value)
+	  {
+	    if (prev == NULL
+		&& loc->dw_loc_next == NULL
+		&& AT_class (a) == dw_val_class_loc)
+	      switch (a->dw_attr)
+		{
+		  /* Following attributes allow both exprloc and reference,
+		     so if the whole expression is DW_OP_GNU_variable_value
+		     alone we could transform it into reference.  */
+		case DW_AT_byte_size:
+		case DW_AT_bit_size:
+		case DW_AT_lower_bound:
+		case DW_AT_upper_bound:
+		case DW_AT_bit_stride:
+		case DW_AT_count:
+		case DW_AT_allocated:
+		case DW_AT_associated:
+		case DW_AT_byte_stride:
+		  a->dw_attr_val.val_class = dw_val_class_die_ref;
+		  a->dw_attr_val.val_entry = NULL;
+		  a->dw_attr_val.v.val_die_ref.die
+		    = loc->dw_loc_oprnd1.v.val_die_ref.die;
+		  a->dw_attr_val.v.val_die_ref.external = 0;
+		  return true;
+		default:
+		  break;
+		}
+	    if (dwarf_strict)
+	      return false;
 	  }
 	break;
       case DW_OP_const_type:
@@ -28544,18 +28591,18 @@ non_dwarf_expression (dw_loc_descr_ref l)
 /* Return adjusted copy of EXPR:
    If it is empty DWARF expression, return it.
    If it is valid non-empty DWARF expression,
-   return copy of EXPR with copy of DEREF appended to it.
+   return copy of EXPR with DW_OP_deref appended to it.
    If it is DWARF expression followed by DW_OP_reg{N,x}, return
-   copy of the DWARF expression with DW_OP_breg{N,x} <0> appended
-   and no DEREF.
+   copy of the DWARF expression with DW_OP_breg{N,x} <0> appended.
    If it is DWARF expression followed by DW_OP_stack_value, return
    copy of the DWARF expression without anything appended.
    Otherwise, return NULL.  */
 
 static dw_loc_descr_ref
-copy_deref_exprloc (dw_loc_descr_ref expr, dw_loc_descr_ref deref)
+copy_deref_exprloc (dw_loc_descr_ref expr)
 {
-  
+  dw_loc_descr_ref tail = NULL;
+
   if (expr == NULL)
     return NULL;
 
@@ -28566,26 +28613,24 @@ copy_deref_exprloc (dw_loc_descr_ref expr, dw_loc_descr_ref deref)
   if (l)
     {
       if (l->dw_loc_opc >= DW_OP_reg0 && l->dw_loc_opc <= DW_OP_reg31)
-	deref = new_loc_descr ((enum dwarf_location_atom)
-			       (DW_OP_breg0 + (l->dw_loc_opc - DW_OP_reg0)),
-			       0, 0);
+	tail = new_loc_descr ((enum dwarf_location_atom)
+			      (DW_OP_breg0 + (l->dw_loc_opc - DW_OP_reg0)),
+			      0, 0);
       else
 	switch (l->dw_loc_opc)
 	  {
 	  case DW_OP_regx:
-	    deref = new_loc_descr (DW_OP_bregx,
-				   l->dw_loc_oprnd1.v.val_unsigned, 0);
+	    tail = new_loc_descr (DW_OP_bregx,
+				  l->dw_loc_oprnd1.v.val_unsigned, 0);
 	    break;
 	  case DW_OP_stack_value:
-	    deref = NULL;
 	    break;
 	  default:
 	    return NULL;
 	  }
     }
   else
-    deref = new_loc_descr (deref->dw_loc_opc,
-			   deref->dw_loc_oprnd1.v.val_int, 0);
+    tail = new_loc_descr (DW_OP_deref, 0, 0);
 
   dw_loc_descr_ref ret = NULL, *p = &ret;
   while (expr != l)
@@ -28596,29 +28641,55 @@ copy_deref_exprloc (dw_loc_descr_ref expr, dw_loc_descr_ref deref)
       p = &(*p)->dw_loc_next;
       expr = expr->dw_loc_next;
     }
-  *p = deref;
+  *p = tail;
   return ret;
 }
 
-/* For DW_AT_string_length attribute with DW_OP_call4 reference to a variable
-   or argument, adjust it if needed and return:
+/* For DW_AT_string_length attribute with DW_OP_GNU_variable_value
+   reference to a variable or argument, adjust it if needed and return:
    -1 if the DW_AT_string_length attribute and DW_AT_{string_length_,}byte_size
       attribute if present should be removed
-   0 keep the attribute as is if the referenced var or argument has
-     only DWARF expression that covers all ranges
+   0 keep the attribute perhaps with minor modifications, no need to rescan
    1 if the attribute has been successfully adjusted.  */
 
 static int
 optimize_string_length (dw_attr_node *a)
 {
   dw_loc_descr_ref l = AT_loc (a), lv;
-  dw_die_ref die = l->dw_loc_oprnd1.v.val_die_ref.die;
+  dw_die_ref die;
+  if (l->dw_loc_oprnd1.val_class == dw_val_class_decl_ref)
+    {
+      tree decl = l->dw_loc_oprnd1.v.val_decl_ref;
+      die = lookup_decl_die (decl);
+      if (die)
+	{
+	  l->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+	  l->dw_loc_oprnd1.v.val_die_ref.die = die;
+	  l->dw_loc_oprnd1.v.val_die_ref.external = 0;
+	}
+      else
+	return -1;
+    }
+  else
+    die = l->dw_loc_oprnd1.v.val_die_ref.die;
+
+  /* DWARF5 allows reference class, so we can then reference the DIE.
+     Only do this for DW_OP_GNU_variable_value DW_OP_stack_value.  */
+  if (l->dw_loc_next != NULL && dwarf_version >= 5)
+    {
+      a->dw_attr_val.val_class = dw_val_class_die_ref;
+      a->dw_attr_val.val_entry = NULL;
+      a->dw_attr_val.v.val_die_ref.die = die;
+      a->dw_attr_val.v.val_die_ref.external = 0;
+      return 0;
+    }
+
   dw_attr_node *av = get_AT (die, DW_AT_location);
   dw_loc_list_ref d;
   bool non_dwarf_expr = false;
 
   if (av == NULL)
-    return -1;
+    return dwarf_strict ? -1 : 0;
   switch (AT_class (av))
     {
     case dw_val_class_loc_list:
@@ -28629,22 +28700,31 @@ optimize_string_length (dw_attr_node *a)
     case dw_val_class_loc:
       lv = AT_loc (av);
       if (lv == NULL)
-	return -1;
+	return dwarf_strict ? -1 : 0;
       if (non_dwarf_expression (lv))
 	non_dwarf_expr = true;
       break;
     default:
-      return -1;
+      return dwarf_strict ? -1 : 0;
     }
 
-  /* If it is safe to keep DW_OP_call4 in, keep it.  */
+  /* If it is safe to transform DW_OP_GNU_variable_value DW_OP_stack_value
+     into DW_OP_call4  or DW_OP_GNU_variable_value into
+     DW_OP_call4 DW_OP_deref, do so.  */
   if (!non_dwarf_expr
-      && (l->dw_loc_next == NULL || AT_class (av) == dw_val_class_loc))
-    return 0;
+      && (l->dw_loc_next != NULL || AT_class (av) == dw_val_class_loc))
+    {
+      l->dw_loc_opc = DW_OP_call4;
+      if (l->dw_loc_next)
+	l->dw_loc_next = NULL;
+      else
+	l->dw_loc_next = new_loc_descr (DW_OP_deref, 0, 0);
+      return 0;
+    }
 
-  /* If not dereferencing the DW_OP_call4 afterwards, we can just
+  /* For DW_OP_GNU_variable_value DW_OP_stack_value, we can just
      copy over the DW_AT_location attribute from die to a.  */
-  if (l->dw_loc_next == NULL)
+  if (l->dw_loc_next != NULL)
     {
       a->dw_attr_val = av->dw_attr_val;
       return 1;
@@ -28658,23 +28738,25 @@ optimize_string_length (dw_attr_node *a)
       list = NULL;
       for (d = AT_loc_list (av); d != NULL; d = d->dw_loc_next)
 	{
-	  lv = copy_deref_exprloc (d->expr, l->dw_loc_next);
+	  lv = copy_deref_exprloc (d->expr);
 	  if (lv)
 	    {
 	      *p = new_loc_list (lv, d->begin, d->end, d->section);
 	      p = &(*p)->dw_loc_next;
 	    }
+	  else if (!dwarf_strict && d->expr)
+	    return 0;
 	}
       if (list == NULL)
-	return -1;
+	return dwarf_strict ? -1 : 0;
       a->dw_attr_val.val_class = dw_val_class_loc_list;
       gen_llsym (list);
       *AT_loc_list_ptr (a) = list;
       return 1;
     case dw_val_class_loc:
-      lv = copy_deref_exprloc (AT_loc (av), l->dw_loc_next);
+      lv = copy_deref_exprloc (AT_loc (av));
       if (lv == NULL)
-	return -1;
+	return dwarf_strict ? -1 : 0;
       a->dw_attr_val.v.val_loc = lv;
       return 1;
     default:
@@ -28720,7 +28802,7 @@ resolve_addr (dw_die_ref die)
 	    while (*curr)
 	      {
 		gcc_assert (!(*curr)->replaced && !(*curr)->resolved_addr);
-		if (!resolve_addr_in_expr ((*curr)->expr))
+		if (!resolve_addr_in_expr (a, (*curr)->expr))
 		  {
 		    dw_loc_list_ref next = (*curr)->dw_loc_next;
                     dw_loc_descr_ref l = (*curr)->expr;
@@ -28757,19 +28839,19 @@ resolve_addr (dw_die_ref die)
       case dw_val_class_loc:
 	{
 	  dw_loc_descr_ref l = AT_loc (a);
-	  /* Using DW_OP_call4 or DW_OP_call4 DW_OP_deref in
-	     DW_AT_string_length is only a rough approximation; unfortunately
-	     DW_AT_string_length can't be a reference to a DIE.  DW_OP_call4
-	     needs a DWARF expression, while DW_AT_location of the referenced
-	     variable or argument might be any location description.  */
+	  /* DW_OP_GNU_variable_value DW_OP_stack_value or
+	     DW_OP_GNU_variable_value in DW_AT_string_length can be converted
+	     into DW_OP_call4 or DW_OP_call4 DW_OP_deref, which is standard
+	     DWARF4 unlike DW_OP_GNU_variable_value.  Or for DWARF5
+	     DW_OP_GNU_variable_value DW_OP_stack_value can be replaced
+	     with DW_FORM_ref referencing the same DIE as
+	     DW_OP_GNU_variable_value used to reference.  */
 	  if (a->dw_attr == DW_AT_string_length
 	      && l
-	      && l->dw_loc_opc == DW_OP_call4
-	      && l->dw_loc_oprnd1.val_class == dw_val_class_die_ref
+	      && l->dw_loc_opc == DW_OP_GNU_variable_value
 	      && (l->dw_loc_next == NULL
 		  || (l->dw_loc_next->dw_loc_next == NULL
-		      && (l->dw_loc_next->dw_loc_opc == DW_OP_deref
-			  || l->dw_loc_next->dw_loc_opc != DW_OP_deref_size))))
+		      && l->dw_loc_next->dw_loc_opc == DW_OP_stack_value)))
 	    {
 	      switch (optimize_string_length (a))
 		{
@@ -28799,7 +28881,7 @@ resolve_addr (dw_die_ref die)
 	       || l == NULL
 	       || l->dw_loc_opc != DW_OP_plus_uconst
 	       || l->dw_loc_next != NULL)
-	      && !resolve_addr_in_expr (l))
+	      && !resolve_addr_in_expr (a, l))
 	    {
 	      if (dwarf_split_debug_info)
 		remove_loc_list_addr_table_entries (l);
@@ -28816,6 +28898,10 @@ resolve_addr (dw_die_ref die)
 		  optimize_location_into_implicit_ptr (die, decl);
 		  break;
 		}
+	      if (a->dw_attr == DW_AT_string_length)
+		/* If we drop DW_AT_string_length, we need to drop also
+		   DW_AT_{string_length_,}byte_size.  */
+		remove_AT_byte_size = true;
 	      remove_AT (die, a->dw_attr);
 	      ix--;
 	    }
@@ -29874,6 +29960,262 @@ dwarf2out_finish (const char *)
     }
 }
 
+/* Returns a hash value for X (which really is a variable_value_struct).  */
+
+inline hashval_t
+variable_value_hasher::hash (variable_value_struct *x)
+{
+  return (hashval_t) x->decl_id;
+}
+
+/* Return nonzero if decl_id of variable_value_struct X is the same as
+   UID of decl Y.  */
+
+inline bool
+variable_value_hasher::equal (variable_value_struct *x, tree y)
+{
+  return x->decl_id == DECL_UID (y);
+}
+
+/* Helper function for resolve_variable_value, handle
+   DW_OP_GNU_variable_value in one location expression.
+   Return true if exprloc has been changed into loclist.  */
+
+static bool
+resolve_variable_value_in_expr (dw_attr_node *a, dw_loc_descr_ref loc)
+{
+  dw_loc_descr_ref next;
+  for (dw_loc_descr_ref prev = NULL; loc; prev = loc, loc = next)
+    {
+      next = loc->dw_loc_next;
+      if (loc->dw_loc_opc != DW_OP_GNU_variable_value
+	  || loc->dw_loc_oprnd1.val_class != dw_val_class_decl_ref)
+	continue;
+
+      tree decl = loc->dw_loc_oprnd1.v.val_decl_ref;
+      if (DECL_CONTEXT (decl) != current_function_decl)
+	continue;
+
+      dw_die_ref ref = lookup_decl_die (decl);
+      if (ref)
+	{
+	  loc->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+	  loc->dw_loc_oprnd1.v.val_die_ref.die = ref;
+	  loc->dw_loc_oprnd1.v.val_die_ref.external = 0;
+	  continue;
+	}
+      dw_loc_list_ref l = loc_list_from_tree (decl, 0, NULL);
+      if (l == NULL)
+	continue;
+      if (l->dw_loc_next)
+	{
+	  if (AT_class (a) != dw_val_class_loc)
+	    continue;
+	  switch (a->dw_attr)
+	    {
+	    /* Following attributes allow both exprloc and loclist
+	       classes, so we can change them into a loclist.  */
+	    case DW_AT_location:
+	    case DW_AT_string_length:
+	    case DW_AT_return_addr:
+	    case DW_AT_data_member_location:
+	    case DW_AT_frame_base:
+	    case DW_AT_segment:
+	    case DW_AT_static_link:
+	    case DW_AT_use_location:
+	    case DW_AT_vtable_elem_location:
+	      if (prev)
+		{
+		  prev->dw_loc_next = NULL;
+		  prepend_loc_descr_to_each (l, AT_loc (a));
+		}
+	      if (next)
+		add_loc_descr_to_each (l, next);
+	      a->dw_attr_val.val_class = dw_val_class_loc_list;
+	      a->dw_attr_val.val_entry = NULL;
+	      a->dw_attr_val.v.val_loc_list = l;
+	      have_location_lists = true;
+	      return true;
+	    /* Following attributes allow both exprloc and reference,
+	       so if the whole expression is DW_OP_GNU_variable_value alone
+	       we could transform it into reference.  */
+	    case DW_AT_byte_size:
+	    case DW_AT_bit_size:
+	    case DW_AT_lower_bound:
+	    case DW_AT_upper_bound:
+	    case DW_AT_bit_stride:
+	    case DW_AT_count:
+	    case DW_AT_allocated:
+	    case DW_AT_associated:
+	    case DW_AT_byte_stride:
+	      if (prev == NULL && next == NULL)
+		break;
+	      /* FALLTHRU */
+	    default:
+	      if (dwarf_strict)
+		continue;
+	      break;
+	    }
+	  /* Create DW_TAG_variable that we can refer to.  */
+	  ref = gen_decl_die (decl, NULL_TREE, NULL,
+			      lookup_decl_die (current_function_decl));
+	  if (ref)
+	    {
+	      loc->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+	      loc->dw_loc_oprnd1.v.val_die_ref.die = ref;
+	      loc->dw_loc_oprnd1.v.val_die_ref.external = 0;
+	    }
+	  continue;
+	}
+      if (prev)
+	{
+	  prev->dw_loc_next = l->expr;
+	  add_loc_descr (&prev->dw_loc_next, next);
+	  free_loc_descr (loc, NULL);
+	  next = prev->dw_loc_next;
+	}
+      else
+	{
+	  memcpy (loc, l->expr, sizeof (dw_loc_descr_node));
+	  add_loc_descr (&loc, next);
+	  next = loc;
+	}
+      loc = prev;
+    }
+  return false;
+}
+
+/* Attempt to resolve DW_OP_GNU_variable_value using loc_list_from_tree.  */
+
+static void
+resolve_variable_value (dw_die_ref die)
+{
+  dw_attr_node *a;
+  dw_loc_list_ref loc;
+  unsigned ix;
+
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
+    switch (AT_class (a))
+      {
+      case dw_val_class_loc:
+	if (!resolve_variable_value_in_expr (a, AT_loc (a)))
+	  break;
+	/* FALLTHRU */
+      case dw_val_class_loc_list:
+	loc = AT_loc_list (a);
+	gcc_assert (loc);
+	for (; loc; loc = loc->dw_loc_next)
+	  resolve_variable_value_in_expr (a, loc->expr);
+	break;
+      default:
+	break;
+      }
+}
+
+/* Attempt to optimize DW_OP_GNU_variable_value refering to
+   temporaries in the current function.  */
+
+static void
+resolve_variable_values (void)
+{
+  if (!variable_value_hash || !current_function_decl)
+    return;
+
+  struct variable_value_struct *node
+    = variable_value_hash->find_with_hash (current_function_decl,
+					   DECL_UID (current_function_decl));
+
+  if (node == NULL)
+    return;
+
+  unsigned int i;
+  dw_die_ref die;
+  FOR_EACH_VEC_SAFE_ELT (node->dies, i, die)
+    resolve_variable_value (die);
+}
+
+/* Helper function for note_variable_value, handle one location
+   expression.  */
+
+static void
+note_variable_value_in_expr (dw_die_ref die, dw_loc_descr_ref loc)
+{
+  for (; loc; loc = loc->dw_loc_next)
+    if (loc->dw_loc_opc == DW_OP_GNU_variable_value
+	&& loc->dw_loc_oprnd1.val_class == dw_val_class_decl_ref)
+      {
+	tree decl = loc->dw_loc_oprnd1.v.val_decl_ref;
+	dw_die_ref ref = lookup_decl_die (decl);
+	if (ref)
+	  {
+	    loc->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+	    loc->dw_loc_oprnd1.v.val_die_ref.die = ref;
+	    loc->dw_loc_oprnd1.v.val_die_ref.external = 0;
+	  }
+	if (VAR_P (decl)
+	    && DECL_CONTEXT (decl)
+	    && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL
+	    && lookup_decl_die (DECL_CONTEXT (decl)))
+	  {
+	    if (!variable_value_hash)
+	      variable_value_hash
+		= hash_table<variable_value_hasher>::create_ggc (10);
+
+	    tree fndecl = DECL_CONTEXT (decl);
+	    struct variable_value_struct *node;
+	    struct variable_value_struct **slot
+	      = variable_value_hash->find_slot_with_hash (fndecl,
+							  DECL_UID (fndecl),
+							  INSERT);
+	    if (*slot == NULL)
+	      {
+		node = ggc_cleared_alloc<variable_value_struct> ();
+		node->decl_id = DECL_UID (fndecl);
+		*slot = node;
+	      }
+	    else
+	      node = *slot;
+
+	    vec_safe_push (node->dies, die);
+	  }
+      }
+}
+
+/* Walk the tree DIE and note DIEs with DW_OP_GNU_variable_value still
+   with dw_val_class_decl_ref operand.  */
+
+static void
+note_variable_value (dw_die_ref die)
+{
+  dw_die_ref c;
+  dw_attr_node *a;
+  dw_loc_list_ref loc;
+  unsigned ix;
+
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
+    switch (AT_class (a))
+      {
+      case dw_val_class_loc_list:
+	loc = AT_loc_list (a);
+	gcc_assert (loc);
+	if (!loc->noted_variable_value)
+	  {
+	    loc->noted_variable_value = 1;
+	    for (; loc; loc = loc->dw_loc_next)
+	      note_variable_value_in_expr (die, loc->expr);
+	  }
+	break;
+      case dw_val_class_loc:
+	note_variable_value_in_expr (die, AT_loc (a));
+	break;
+      default:
+	break;
+      }
+
+  /* Mark children.  */
+  FOR_EACH_CHILD (die, c, note_variable_value (c));
+}
+
 /* Perform any cleanups needed after the early debug generation pass
    has run.  */
 
@@ -29999,6 +30341,17 @@ dwarf2out_early_finish (const char *filename)
 	  cu_die_list = cu;
 	}
     }
+
+  /* Traverse the DIE's and note DIEs with DW_OP_GNU_variable_value still
+     with dw_val_class_decl_ref operand.  */
+  note_variable_value (comp_unit_die ());
+  for (limbo_die_node *node = cu_die_list; node; node = node->next)
+    note_variable_value (node->die);
+  for (comdat_type_node *ctnode = comdat_type_list; ctnode != NULL;
+       ctnode = ctnode->next)
+    note_variable_value (ctnode->root_die);
+  for (limbo_die_node *node = limbo_die_list; node; node = node->next)
+    note_variable_value (node->die);
 
   /* The early debug phase is now finished.  */
   early_dwarf_finished = true;
