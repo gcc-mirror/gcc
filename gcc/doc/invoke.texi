@@ -10468,13 +10468,12 @@ To disable built-in functions protection use
 
 @item asan-use-after-return
 Enable detection of use-after-return.  This kind of protection
-is enabled by default when using @option{-fsanitize=address} option.
-To disable use-after-return detection use 
-@option{--param asan-use-after-return=0}.
+is enabled by default when using the @option{-fsanitize=address} option.
+To disable it use @option{--param asan-use-after-return=0}.
 
-Note: The check is disabled by default at runtime.  To enable the check,
-you should set environment variable @env{ASAN_OPTIONS} to
-@code{detect_stack_use_after_return=1}.
+Note: By default the check is disabled at run time.  To enable it,
+add @code{detect_stack_use_after_return=1} to the environment variable
+@env{ASAN_OPTIONS}.
 
 @item asan-instrumentation-with-call-threshold
 If number of memory accesses in function being instrumented
