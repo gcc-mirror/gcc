@@ -1,5 +1,5 @@
 ! { dg-do  run }
-! { dg-options "-ffrontend-optimize -fdump-tree-original -Wrealloc-lhs" }
+! { dg-options "-ffrontend-optimize -fdump-tree-optimized -Wrealloc-lhs" }
 ! PR 37131 - check basic functionality of inlined matmul, making
 ! sure that the library is not called, with and without reallocation.
 
@@ -149,4 +149,4 @@ program main
 
 end program main
 
-! { dg-final { scan-tree-dump-times "_gfortran_matmul" 0 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_matmul" 0 "optimized" } }
