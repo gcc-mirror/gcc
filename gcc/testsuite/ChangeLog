@@ -1,3 +1,13 @@
+2017-02-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/51119
+	* gfortran.dg/inline_matmul_1.f90: Scan optimized dump instead
+	of original.
+	* gfortran.dg/inline_matmul_11.f90: Likewise.
+	* gfortran.dg/inline_matmul_9.f90: Likewise.
+	* gfortran.dg/matmul_13.f90: New test.
+	* gfortran.dg/matmul_14.f90: New test.
+
 2017-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/79396

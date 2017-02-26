@@ -1,5 +1,5 @@
 ! { dg-do  run }
-! { dg-options "-ffrontend-optimize -fdump-tree-original" }
+! { dg-options "-ffrontend-optimize -fdump-tree-optimized" }
 ! PR 66041 - this used to ICE with an incomplete fix for the PR.
 program main
   implicit none
@@ -21,4 +21,4 @@ program main
   if (any (c2-reshape([248., -749.],shape(c2)) /= 0.)) call abort
 end program main
 
-! { dg-final { scan-tree-dump-times "_gfortran_matmul" 0 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_matmul" 0 "optimized" } }

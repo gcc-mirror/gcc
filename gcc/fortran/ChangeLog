@@ -1,3 +1,10 @@
+2017-02-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/51119
+	* options.c (gfc_post_options): Set default limit for matmul
+	inlining to 30.
+	* invoke.texi: Document change.
+
 2017-02-25  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/79601
