@@ -6324,7 +6324,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		   vect_permute_store_chain().  */
 		vec_oprnd = result_chain[i];
 
-	      data_ref = fold_build2 (MEM_REF, TREE_TYPE (vec_oprnd),
+	      data_ref = fold_build2 (MEM_REF, vectype,
 				      dataref_ptr,
 				      dataref_offset
 				      ? dataref_offset
