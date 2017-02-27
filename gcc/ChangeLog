@@ -1,3 +1,23 @@
+2017-02-27  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config.gcc (arc*-): Clean up, use arc/big.h, arc/elf.h, and
+	arc/linux.h headers.
+	* config/arc/arc.h (TARGET_OS_CPP_BUILTINS): Remove.
+	(LINK_SPEC): Likewise.
+	(ARC_TLS_EXTRA_START_SPEC): Likewise.
+	(EXTRA_SPECS): Likewise.
+	(STARTFILE_SPEC): Likewise.
+	(ENDFILE_SPEC): Likewise.
+	(LIB_SPEC): Likewise.
+	(TARGET_SDATA_DEFAULT): Likewise.
+	(TARGET_MMEDIUM_CALLS_DEFAULT): Likewise.
+	(MULTILIB_DEFAULTS): Likewise.
+	(DWARF2_UNWIND_INFO): Likewise.
+	* config/arc/big.h: New file.
+	* config/arc/elf.h: Likewise.
+	* config/arc/linux.h: Likewise.
+	* config/arc/t-uClibc: Remove.
+
 2017-02-27  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/77536
