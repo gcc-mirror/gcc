@@ -1,3 +1,12 @@
+2017-02-27  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* init.c: Include intl.h.
+	(build_new_1): Move message strings into pedwarn to make them
+	-Wformat-security friendly. Mark string for translation.
+	* pt.c (tsubst_copy_and_build): Mark string for translation.
+	Make the pointer const.
+	* semantics.c (finish_id_expression): Mark strings for translation.
+
 2017-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* call.c (build_op_delete_call): Make msg1 and msg2 const.

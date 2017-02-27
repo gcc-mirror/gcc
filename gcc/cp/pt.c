@@ -17190,10 +17190,11 @@ tsubst_copy_and_build (tree t,
 		       stricter.  */
 		    bool in_lambda = (current_class_type
 				      && LAMBDA_TYPE_P (current_class_type));
-		    char const *msg = "%qD was not declared in this scope, "
-		      "and no declarations were found by "
-		      "argument-dependent lookup at the point "
-		      "of instantiation";
+		    char const *const msg
+		      = G_("%qD was not declared in this scope, "
+			   "and no declarations were found by "
+			   "argument-dependent lookup at the point "
+			   "of instantiation");
 
 		    bool diag = true;
 		    if (in_lambda)
