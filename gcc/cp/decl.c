@@ -8052,6 +8052,7 @@ expand_static_init (tree decl, tree init)
 	       } catch {
 		 if (!flag) __cxa_guard_abort (&guard);
 	       }
+	     }
 	   }
 
 	 Note that the `flag' variable is only set to 1 *after* the
