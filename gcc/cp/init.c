@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "gimplify.h"
 #include "c-family/c-ubsan.h"
+#include "intl.h"
 
 static bool begin_init_stmts (tree *, tree *);
 static tree finish_init_stmts (bool, tree, tree);
@@ -2803,15 +2804,12 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
     {
       if (complain & tf_warning_or_error)
 	{
-	  const char *msg;
-	  if (typedef_variant_p (orig_type))
-	    msg = ("non-constant array new length must be specified "
-		   "directly, not by typedef");
-	  else
-	    msg = ("non-constant array new length must be specified "
-		   "without parentheses around the type-id");
-	  pedwarn (EXPR_LOC_OR_LOC (outer_nelts, input_location),
-		   OPT_Wvla, msg);
+	  pedwarn (EXPR_LOC_OR_LOC (outer_nelts, input_location), OPT_Wvla,
+		   typedef_variant_p (orig_type)
+		   ? "non-constant array new length must be specified "
+		     "directly, not by typedef"
+		   : G_("non-constant array new length must be specified "
+			"without parentheses around the type-id"));
 	}
       else
 	return error_mark_node;
