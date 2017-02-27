@@ -1,3 +1,14 @@
+2017-02-27  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/77536
+	* tree-ssa-loop-manip.c (niter_for_unrolled_loop): New function.
+	(tree_transform_and_unroll_loop): Use above function to compute the
+	estimated niter of unrolled loop and use it when scaling profile.
+	Also use count info rather than frequency if it's non-zero.
+	* tree-ssa-loop-manip.h niter_for_unrolled_loop(): New declaration.
+	* tree-vect-loop.c (scale_profile_for_vect_loop): New function.
+	(vect_transform_loop): Call above function.
+
 2017-02-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/45397

@@ -10,4 +10,4 @@ void n(void)
     a[i]++;
 }
 
-/* { dg-final { scan-tree-dump-times "Invalid sum of " 2 "vect" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum of " "vect" } } */
