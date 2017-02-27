@@ -1,5 +1,13 @@
 2017-02-27  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/45397
+	* tree-ssa-pre.c (eliminate_insert): Handle BIT_AND_EXPR.
+	* tree-ssa-sccvn.c (valueized_wider_op): New helper.
+	(visit_nary_op): Add pattern matching for CSEing sign-changed
+	or truncated operations with wider ones.
+
+2017-02-27  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/79690
 	* tree-vect-stmts.c (vectorizable_store): Use vector type
 	built from the DR with address-space.
