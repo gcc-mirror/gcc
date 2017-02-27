@@ -1093,6 +1093,33 @@ scale_dominated_blocks_in_loop (struct loop *loop, basic_block bb,
     }
 }
 
+/* Return estimated niter for LOOP after unrolling by FACTOR times.  */
+
+gcov_type
+niter_for_unrolled_loop (struct loop *loop, unsigned factor)
+{
+  gcc_assert (factor != 0);
+  bool profile_p = false;
+  gcov_type est_niter = expected_loop_iterations_unbounded (loop, &profile_p);
+  gcov_type new_est_niter = est_niter / factor;
+
+  /* Without profile feedback, loops for which we do not know a better estimate
+     are assumed to roll 10 times.  When we unroll such loop, it appears to
+     roll too little, and it may even seem to be cold.  To avoid this, we
+     ensure that the created loop appears to roll at least 5 times (but at
+     most as many times as before unrolling).  Don't do adjustment if profile
+     feedback is present.  */
+  if (new_est_niter < 5 && !profile_p)
+    {
+      if (est_niter < 5)
+	new_est_niter = est_niter;
+      else
+	new_est_niter = 5;
+    }
+
+  return new_est_niter;
+}
+
 /* Unroll LOOP FACTOR times.  DESC describes number of iterations of LOOP.
    EXIT is the exit of the loop to that DESC corresponds.
 
@@ -1170,12 +1197,12 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   gimple_stmt_iterator bsi;
   use_operand_p op;
   bool ok;
-  unsigned est_niter, prob_entry, scale_unrolled, scale_rest, freq_e, freq_h;
-  unsigned new_est_niter, i, prob;
+  unsigned i, prob, prob_entry, scale_unrolled, scale_rest;
+  gcov_type freq_e, freq_h;
+  gcov_type new_est_niter = niter_for_unrolled_loop (loop, factor);
   unsigned irr = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
   auto_vec<edge> to_remove;
 
-  est_niter = expected_loop_iterations (loop);
   determine_exit_conditions (loop, desc, factor,
 			     &enter_main_cond, &exit_base, &exit_step,
 			     &exit_cmp, &exit_bound);
@@ -1206,22 +1233,6 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
 			   scale_unrolled, scale_rest, true);
   gcc_assert (new_loop != NULL);
   update_ssa (TODO_update_ssa);
-
-  /* Determine the probability of the exit edge of the unrolled loop.  */
-  new_est_niter = est_niter / factor;
-
-  /* Without profile feedback, loops for that we do not know a better estimate
-     are assumed to roll 10 times.  When we unroll such loop, it appears to
-     roll too little, and it may even seem to be cold.  To avoid this, we
-     ensure that the created loop appears to roll at least 5 times (but at
-     most as many times as before unrolling).  */
-  if (new_est_niter < 5)
-    {
-      if (est_niter < 5)
-	new_est_niter = est_niter;
-      else
-	new_est_niter = 5;
-    }
 
   /* Prepare the cfg and update the phi nodes.  Move the loop exit to the
      loop latch (and make its condition dummy, for the moment).  */
@@ -1326,10 +1337,25 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   /* Ensure that the frequencies in the loop match the new estimated
      number of iterations, and change the probability of the new
      exit edge.  */
-  freq_h = loop->header->frequency;
-  freq_e = EDGE_FREQUENCY (loop_preheader_edge (loop));
+
+  freq_h = loop->header->count;
+  freq_e = (loop_preheader_edge (loop))->count;
+  /* Use frequency only if counts are zero.  */
+  if (freq_h == 0 && freq_e == 0)
+    {
+      freq_h = loop->header->frequency;
+      freq_e = EDGE_FREQUENCY (loop_preheader_edge (loop));
+    }
   if (freq_h != 0)
-    scale_loop_frequencies (loop, freq_e * (new_est_niter + 1), freq_h);
+    {
+      gcov_type scale;
+      /* Avoid dropping loop body profile counter to 0 because of zero count
+	 in loop's preheader.  */
+      freq_e = MAX (freq_e, 1);
+      /* This should not overflow.  */
+      scale = GCOV_COMPUTE_SCALE (freq_e * (new_est_niter + 1), freq_h);
+      scale_loop_frequencies (loop, scale, REG_BR_PROB_BASE);
+    }
 
   exit_bb = single_pred (loop->latch);
   new_exit = find_edge (exit_bb, rest);

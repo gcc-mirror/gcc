@@ -6718,6 +6718,50 @@ loop_niters_no_overflow (loop_vec_info loop_vinfo)
   return false;
 }
 
+/* Scale profiling counters by estimation for LOOP which is vectorized
+   by factor VF.  */
+
+static void
+scale_profile_for_vect_loop (struct loop *loop, unsigned vf)
+{
+  edge preheader = loop_preheader_edge (loop);
+  /* Reduce loop iterations by the vectorization factor.  */
+  gcov_type new_est_niter = niter_for_unrolled_loop (loop, vf);
+  gcov_type freq_h = loop->header->count, freq_e = preheader->count;
+
+  /* Use frequency only if counts are zero.  */
+  if (freq_h == 0 && freq_e == 0)
+    {
+      freq_h = loop->header->frequency;
+      freq_e = EDGE_FREQUENCY (preheader);
+    }
+  if (freq_h != 0)
+    {
+      gcov_type scale;
+
+      /* Avoid dropping loop body profile counter to 0 because of zero count
+	 in loop's preheader.  */
+      freq_e = MAX (freq_e, 1);
+      /* This should not overflow.  */
+      scale = GCOV_COMPUTE_SCALE (freq_e * (new_est_niter + 1), freq_h);
+      scale_loop_frequencies (loop, scale, REG_BR_PROB_BASE);
+    }
+
+  basic_block exit_bb = single_pred (loop->latch);
+  edge exit_e = single_exit (loop);
+  exit_e->count = loop_preheader_edge (loop)->count;
+  exit_e->probability = REG_BR_PROB_BASE / (new_est_niter + 1);
+
+  edge exit_l = single_pred_edge (loop->latch);
+  int prob = exit_l->probability;
+  exit_l->probability = REG_BR_PROB_BASE - exit_e->probability;
+  exit_l->count = exit_bb->count - exit_e->count;
+  if (exit_l->count < 0)
+    exit_l->count = 0;
+  if (prob > 0)
+    scale_bbs_frequencies_int (&loop->latch, 1, exit_l->probability, prob);
+}
+
 /* Function vect_transform_loop.
 
    The analysis phase has determined that the loop is vectorizable.
@@ -6743,15 +6787,9 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   bool transform_pattern_stmt = false;
   bool check_profitability = false;
   int th;
-  /* Record number of iterations before we started tampering with the profile. */
-  gcov_type expected_iterations = expected_loop_iterations_unbounded (loop);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "=== vec_transform_loop ===\n");
-
-  /* If profile is inprecise, we have chance to fix it up.  */
-  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
-    expected_iterations = LOOP_VINFO_INT_NITERS (loop_vinfo);
 
   /* Use the more conservative vectorization threshold.  If the number
      of iterations is constant assume the cost check has been performed
@@ -7068,9 +7106,8 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
   slpeel_make_loop_iterate_ntimes (loop, niters_vector);
 
-  /* Reduce loop iterations by the vectorization factor.  */
-  scale_loop_profile (loop, GCOV_COMPUTE_SCALE (1, vf),
-		      expected_iterations / vf);
+  scale_profile_for_vect_loop (loop, vf);
+
   /* The minimum number of iterations performed by the epilogue.  This
      is 1 when peeling for gaps because we always need a final scalar
      iteration.  */
