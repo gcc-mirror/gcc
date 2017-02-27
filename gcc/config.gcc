@@ -319,6 +319,7 @@ arc*-*-*)
 	c_target_objs="arc-c.o"
 	cxx_target_objs="arc-c.o"
 	extra_options="${extra_options} arc/arc-tables.opt"
+	extra_headers="arc-simd.h"
 	;;
 arm*-*-*)
 	cpu_type=arm
@@ -1015,8 +1016,7 @@ alpha*-dec-*vms*)
 	tmake_file="${tmake_file} alpha/t-vms alpha/t-alpha"
 	;;
 arc*-*-elf*)
-	extra_headers="arc-simd.h"
-	tm_file="arc/arc-arch.h dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tm_file="arc/arc-arch.h dbxelf.h elfos.h newlib-stdint.h arc/elf.h ${tm_file}"
 	tmake_file="arc/t-multilib arc/t-arc"
 	extra_gcc_objs="driver-arc.o"
 	if test "x$with_cpu" != x; then
@@ -1033,15 +1033,12 @@ arc*-*-elf*)
 	*)	echo "with_endian=${with_endian} not supported."; exit 1 ;;
 	esac
 	case ${with_endian} in
-	big*)	tm_defines="DRIVER_ENDIAN_SELF_SPECS=\\\"%{!EL:%{!mlittle-endian:-mbig-endian}}\\\" ${tm_defines}"
+	big*)	tm_file="arc/big.h ${tm_file}"
 	esac
 	;;
 arc*-*-linux-uclibc*)
-	extra_headers="arc-simd.h"
-	tm_file="arc/arc-arch.h dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file}"
-	tmake_file="${tmake_file} arc/t-uClibc arc/t-arc"
-	tm_defines="${tm_defines} TARGET_SDATA_DEFAULT=0"
-	tm_defines="${tm_defines} TARGET_MMEDIUM_CALLS_DEFAULT=1"
+	tm_file="arc/arc-arch.h dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arc/linux.h ${tm_file}"
+	tmake_file="${tmake_file} arc/t-arc"
 	extra_gcc_objs="driver-arc.o"
 	if test "x$with_cpu" != x; then
 		tm_defines="${tm_defines} TARGET_CPU_BUILD=PROCESSOR_$with_cpu"
@@ -1057,7 +1054,7 @@ arc*-*-linux-uclibc*)
 	*)	echo "with_endian=${with_endian} not supported."; exit 1 ;;
 	esac
 	case ${with_endian} in
-	big*)	tm_defines="DRIVER_ENDIAN_SELF_SPECS=\\\"%{!EL:%{!mlittle-endian:-mbig-endian}}\\\" ${tm_defines}"
+	big*)	tm_file="arc/big.h ${tm_file}"
 	esac
         ;;
 arm-wrs-vxworks)
