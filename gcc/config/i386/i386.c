@@ -17660,6 +17660,8 @@ print_reg (rtx x, int code, FILE *file)
     case 1:
       if (regno >= ARRAY_SIZE (qi_reg_name))
 	goto normal;
+      if (!ANY_QI_REGNO_P (regno))
+	error ("unsupported size for integer register in 32-bit mode");
       reg = qi_reg_name[regno];
       break;
     case 0:
