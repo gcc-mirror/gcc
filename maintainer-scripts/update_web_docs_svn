@@ -1,7 +1,10 @@
 #!/bin/sh
 
 # Generate HTML documentation from GCC Texinfo docs.
-# This version is for GCC 3.1 and later versions.
+#
+# If you want to run this on a machine different from gcc.gnu.org, you
+# may need to adjust SVNROOT and WWWBASE below (or override them via the
+# environment).
 
 set -e
 
@@ -31,7 +34,7 @@ MANUALS="cpp
 
 CSS=/gcc.css
 
-WWWBASE=/www/gcc/htdocs
+WWWBASE=${WWWBASE:-"/www/gcc/htdocs"}
 WWWBASE_PREFORMATTED=/www/gcc/htdocs-preformatted
 WWWPREPROCESS='/www/gcc/bin/preprocess -r'
 
@@ -88,6 +91,11 @@ if [ -z "$SUBDIR" ]; then
   DOCSDIR=$WWWBASE/onlinedocs
 else
   DOCSDIR=$WWWBASE/onlinedocs/$SUBDIR
+fi
+
+if [ ! -d $WWWBASE ]; then
+  echo "WWW base directory \"$WWWBASE\" does not exist." >&2
+  exit 1
 fi
 
 if [ ! -d $DOCSDIR ]; then
