@@ -314,7 +314,7 @@ C ObjC C++ ObjC++ Var(warn_alloc_zero) Warning
 
 Walloca-larger-than=
 C ObjC C++ LTO ObjC++ Var(warn_alloca_limit) Warning Joined RejectNegative UInteger
--Walloca-larger-than=<number> Warn on unbounded uses of
+-Walloca-larger-than=<number>	Warn on unbounded uses of
 alloca, and on bounded uses of alloca whose bound can be larger than
 <number> bytes.
 
@@ -1097,7 +1097,7 @@ Warn if a variable length array is used.
 
 Wvla-larger-than=
 C ObjC C++ ObjC++ Var(warn_vla_limit) Warning Joined RejectNegative UInteger
--Wvla-larger-than=<number> Warn on unbounded uses of variable-length arrays, and
+-Wvla-larger-than=<number>	Warn on unbounded uses of variable-length arrays, and
 on bounded uses of variable-length arrays whose bound can be
 larger than <number> bytes.
 
