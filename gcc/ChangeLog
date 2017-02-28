@@ -1,5 +1,11 @@
 2017-02-28  Martin Liska  <mliska@suse.cz>
 
+	PR lto/79625
+	* read-rtl-function.c (function_reader::handle_unknown_directive):
+	Bail out when one uses -flto.
+
+2017-02-28  Martin Liska  <mliska@suse.cz>
+
 	* common.opt: Replace space with tabular for options of <number>
 	type.
 	* config/i386/i386.opt: Show <number> value for
