@@ -1,3 +1,12 @@
+2017-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79737
+	* gimple-ssa-store-merging.c (encode_tree_to_bitpos): If bitlen is
+	a multiple of BITS_PER_UNIT and !BYTES_BIG_ENDIAN, clear
+	tmpbuf[byte_size - 1].  Call natice_encode_expr with byte_size - 1
+	instead of byte_size.  Formatting fix.
+	(shift_bytes_in_array_right): Formatting fix.
+
 2017-02-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/79749
