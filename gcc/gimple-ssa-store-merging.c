@@ -253,9 +253,9 @@ shift_bytes_in_array_right (unsigned char *ptr, unsigned int sz,
       unsigned prev_carry_over = carry_over;
       carry_over = ptr[i] & carry_mask;
 
-     carry_over <<= (unsigned char) BITS_PER_UNIT - amnt;
-     ptr[i] >>= amnt;
-     ptr[i] |= prev_carry_over;
+      carry_over <<= (unsigned char) BITS_PER_UNIT - amnt;
+      ptr[i] >>= amnt;
+      ptr[i] |= prev_carry_over;
     }
 }
 
@@ -352,8 +352,9 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
 {
   unsigned int first_byte = bitpos / BITS_PER_UNIT;
   tree tmp_int = expr;
-  bool sub_byte_op_p = (bitlen % BITS_PER_UNIT) || (bitpos % BITS_PER_UNIT)
-			|| mode_for_size (bitlen, MODE_INT, 0) == BLKmode;
+  bool sub_byte_op_p = ((bitlen % BITS_PER_UNIT)
+			|| (bitpos % BITS_PER_UNIT)
+			|| mode_for_size (bitlen, MODE_INT, 0) == BLKmode);
 
   if (!sub_byte_op_p)
     return (native_encode_expr (tmp_int, ptr + first_byte, total_bytes, 0)
@@ -407,7 +408,7 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
   memset (tmpbuf, '\0', byte_size);
   /* The store detection code should only have allowed constants that are
      accepted by native_encode_expr.  */
-  if (native_encode_expr (expr, tmpbuf, byte_size, 0) == 0)
+  if (native_encode_expr (expr, tmpbuf, byte_size - 1, 0) == 0)
     gcc_unreachable ();
 
   /* The native_encode_expr machinery uses TYPE_MODE to determine how many
@@ -418,25 +419,27 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
      contain a sign bit due to sign-extension).  */
   unsigned int padding
     = byte_size - ROUND_UP (bitlen, BITS_PER_UNIT) / BITS_PER_UNIT - 1;
-  if (padding != 0
-      || bitlen % BITS_PER_UNIT != 0)
-    {
-      /* On big-endian the padding is at the 'front' so just skip the initial
-	 bytes.  */
-      if (BYTES_BIG_ENDIAN)
-	tmpbuf += padding;
+  /* On big-endian the padding is at the 'front' so just skip the initial
+     bytes.  */
+  if (BYTES_BIG_ENDIAN)
+    tmpbuf += padding;
 
-      byte_size -= padding;
-      if (bitlen % BITS_PER_UNIT != 0)
-	{
-	  if (BYTES_BIG_ENDIAN)
-	    clear_bit_region_be (tmpbuf, BITS_PER_UNIT - 1,
-				 BITS_PER_UNIT - (bitlen % BITS_PER_UNIT));
-	  else
-	    clear_bit_region (tmpbuf, bitlen,
-			      byte_size * BITS_PER_UNIT - bitlen);
-	}
+  byte_size -= padding;
+
+  if (bitlen % BITS_PER_UNIT != 0)
+    {
+      if (BYTES_BIG_ENDIAN)
+	clear_bit_region_be (tmpbuf, BITS_PER_UNIT - 1,
+			     BITS_PER_UNIT - (bitlen % BITS_PER_UNIT));
+      else
+	clear_bit_region (tmpbuf, bitlen,
+			  byte_size * BITS_PER_UNIT - bitlen);
     }
+  /* Left shifting relies on the last byte being clear if bitlen is
+     a multiple of BITS_PER_UNIT, which might not be clear if
+     there are padding bytes.  */
+  else if (!BYTES_BIG_ENDIAN)
+    tmpbuf[byte_size - 1] = '\0';
 
   /* Clear the bit region in PTR where the bits from TMPBUF will be
      inserted into.  */
