@@ -9670,18 +9670,6 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	return winner;
     }
 
-  /* F1 is generated from a deduction-guide (13.3.1.8) and F2 is not */
-  if (deduction_guide_p (cand1->fn))
-    {
-      gcc_assert (deduction_guide_p (cand2->fn));
-      /* We distinguish between candidates from an explicit deduction guide and
-	 candidates built from a constructor based on DECL_ARTIFICIAL.  */
-      int art1 = DECL_ARTIFICIAL (cand1->fn);
-      int art2 = DECL_ARTIFICIAL (cand2->fn);
-      if (art1 != art2)
-	return art2 - art1;
-    }
-
   /* or, if not that,
      F1 is a non-template function and F2 is a template function
      specialization.  */
@@ -9717,6 +9705,18 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
       winner = more_constrained (cand1->fn, cand2->fn);
       if (winner)
 	return winner;
+    }
+
+  /* F1 is generated from a deduction-guide (13.3.1.8) and F2 is not */
+  if (deduction_guide_p (cand1->fn))
+    {
+      gcc_assert (deduction_guide_p (cand2->fn));
+      /* We distinguish between candidates from an explicit deduction guide and
+	 candidates built from a constructor based on DECL_ARTIFICIAL.  */
+      int art1 = DECL_ARTIFICIAL (cand1->fn);
+      int art2 = DECL_ARTIFICIAL (cand2->fn);
+      if (art1 != art2)
+	return art2 - art1;
     }
 
   /* or, if not that, F2 is from a using-declaration, F1 is not, and the

@@ -1,3 +1,13 @@
+2017-02-28  Jason Merrill  <jason@redhat.com>
+
+	Class template argument deduction refinements
+	* call.c (joust): Move deduction guide tiebreaker down.
+	* decl.c (start_decl_1, cp_finish_decl, grokdeclarator): Allow class
+	deduction with no initializer.
+	* pt.c (build_deduction_guide): Handle implicit default/copy ctor.
+	(do_class_deduction): Use that rather than special case.
+	(do_auto_deduction): Handle null initializer.
+
 2017-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (find_decomp_class_base): Use cond ? G_("...") : G_("...")
