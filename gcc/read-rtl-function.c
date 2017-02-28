@@ -405,6 +405,9 @@ function_reader::handle_unknown_directive (file_location start_loc,
   if (strcmp (name, "function"))
     fatal_at (start_loc, "expected 'function'");
 
+  if (flag_lto)
+    error ("%<__RTL%> function cannot be compiled with %<-flto%>");
+
   parse_function ();
 }
 
