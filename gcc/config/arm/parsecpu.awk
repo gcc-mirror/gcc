@@ -124,7 +124,16 @@ function gen_data () {
 
     for (n = 1; n <= ncpus; n++) {
 	print "  {"
-	print "    \"" cpus[n] "\", TARGET_CPU_" cpu_cnames[cpus[n]] ","
+	print "    \"" cpus[n] "\","
+	if (cpus[n] in cpu_tune_for) {
+	    if (! (cpu_tune_for[cpus[n]] in cpu_cnames)) {
+		fatal("unknown \"tune for\" target " cpu_tune_for[cpus[n]] \
+		      " for CPU " cpus[n])
+	    }
+	    print "    TARGET_CPU_" cpu_cnames[cpu_tune_for[cpus[n]]] ","
+	} else {
+	    print "    TARGET_CPU_" cpu_cnames[cpus[n]] ","
+	}
 	if (cpus[n] in cpu_tune_flags) {
 	    print "    (" cpu_tune_flags[cpus[n]] "),"
 	} else print "    0,"
@@ -156,7 +165,7 @@ function gen_data () {
 	print "  {"
 	if (! (arch_tune_for[archs[n]] in cpu_cnames)) {
 	    fatal("unknown \"tune for\" target " arch_tune_for[archs[n]] \
-		  "for architecture " archs[n])
+		  " for architecture " archs[n])
 	}
 	print "    \"" archs[n] \
 	    "\", TARGET_CPU_" cpu_cnames[arch_tune_for[archs[n]]] ","

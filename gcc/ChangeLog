@@ -1,3 +1,12 @@
+2017-02-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/79742
+	* config/arm/parsecpu.awk (gen_data): Set tuning target to 'tune for'
+	entry, if present.
+	* config/arm/arm-cpus.in (cortex-m0plus.small-multiply): Correct
+	'tune for' CPU name.
+	* config/arm/arm-cpu-data.h: Regenerated.
+
 2017-02-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79732
