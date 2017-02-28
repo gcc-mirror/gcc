@@ -364,6 +364,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_object_sizes);
       /* Fold remaining builtins.  */
       NEXT_PASS (pass_fold_builtins);
+      NEXT_PASS (pass_sprintf_length, true);
       /* Copy propagation also copy-propagates constants, this is necessary
          to forward object-size and builtin folding results properly.  */
       NEXT_PASS (pass_copy_prop);

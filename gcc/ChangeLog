@@ -1,3 +1,8 @@
+2017-02-28  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/79691
+	* passes.def (pass_all_optimizations_g): Enable pass_sprintf_length.
+
 2017-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79729
