@@ -13155,6 +13155,8 @@ Enable dumps from all interprocedural optimizations.
 Enable dumps from all loop optimizations.
 @item inline
 Enable dumps from all inlining optimizations.
+@item omp
+Enable dumps from all OMP (Offloading and Multi Processing) optimizations.
 @item vec
 Enable dumps from all vectorization optimizations.
 @item optall
