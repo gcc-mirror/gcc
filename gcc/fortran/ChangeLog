@@ -1,3 +1,10 @@
+2017-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* parse.c (parse_critical_block): Use cond ? G_("...") : G_("...")
+	instead of just cond ? "..." : "...".
+	* scanner.c (gfc_next_char_literal): Likewise.
+	* match.c (match_exit_cycle): Likewise.
+
 2017-02-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/51119

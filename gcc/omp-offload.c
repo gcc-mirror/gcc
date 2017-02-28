@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-section-names.h"
 #include "gomp-constants.h"
 #include "gimple-pretty-print.h"
+#include "intl.h"
 
 /* Describe the OpenACC looping structure of a function.  The entire
    function is held in a 'NULL' loop.  */
@@ -1117,9 +1118,9 @@ oacc_loop_fixed_partitions (oacc_loop *loop, unsigned outer_mask)
 	  if (noisy)
 	    error_at (loop->loc,
 		      seq_par
-		      ? "%<seq%> overrides other OpenACC loop specifiers"
-		      : "%<auto%> conflicts with other OpenACC loop "
-		      "specifiers");
+		      ? G_("%<seq%> overrides other OpenACC loop specifiers")
+		      : G_("%<auto%> conflicts with other OpenACC loop "
+			   "specifiers"));
 	  maybe_auto = false;
 	  loop->flags &= ~OLF_AUTO;
 	  if (seq_par)

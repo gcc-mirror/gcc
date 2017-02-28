@@ -4340,8 +4340,8 @@ parse_critical_block (void)
   for (sd = gfc_state_stack; sd; sd = sd->previous)
     if (sd->state == COMP_OMP_STRUCTURED_BLOCK)
       gfc_error_now (is_oacc (sd)
-		     ? "CRITICAL block inside of OpenACC region at %C"
-		     : "CRITICAL block inside of OpenMP region at %C");
+		     ? G_("CRITICAL block inside of OpenACC region at %C")
+		     : G_("CRITICAL block inside of OpenMP region at %C"));
 
   s.ext.end_do_label = new_st.label1;
 

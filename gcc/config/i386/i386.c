@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "selftest-rtl.h"
 #include "print-rtl.h"
+#include "intl.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -5265,11 +5266,11 @@ ix86_option_override_internal (bool main_args_p,
       else if (!strcmp (opts->x_ix86_tune_string, "x86-64"))
         warning (OPT_Wdeprecated,
 		 main_args_p
-		 ? "%<-mtune=x86-64%> is deprecated; use %<-mtune=k8%> "
-		   "or %<-mtune=generic%> instead as appropriate"
-		 : "%<target(\"tune=x86-64\")%> is deprecated; use "
-		   "%<target(\"tune=k8\")%> or %<target(\"tune=generic\")%> "
-		   "instead as appropriate");
+		 ? G_("%<-mtune=x86-64%> is deprecated; use %<-mtune=k8%> "
+		      "or %<-mtune=generic%> instead as appropriate")
+		 : G_("%<target(\"tune=x86-64\")%> is deprecated; use "
+		      "%<target(\"tune=k8\")%> or %<target(\"tune=generic\")%>"
+		      " instead as appropriate"));
     }
   else
     {
@@ -5418,17 +5419,19 @@ ix86_option_override_internal (bool main_args_p,
 	if (!strcmp (opts->x_ix86_arch_string, "generic"))
 	  {
 	    error (main_args_p
-		  ? "%<generic%> CPU can be used only for %<-mtune=%> switch"
-		  : "%<generic%> CPU can be used only for "
-		    "%<target(\"tune=\")%> attribute");
+		   ? G_("%<generic%> CPU can be used only for %<-mtune=%> "
+			"switch")
+		   : G_("%<generic%> CPU can be used only for "
+			"%<target(\"tune=\")%> attribute"));
 	    return false;
 	  }
 	else if (!strcmp (opts->x_ix86_arch_string, "intel"))
 	  {
 	    error (main_args_p
-		  ? "%<intel%> CPU can be used only for %<-mtune=%> switch"
-		  : "%<intel%> CPU can be used only for "
-		    "%<target(\"tune=\")%> attribute");
+		   ? G_("%<intel%> CPU can be used only for %<-mtune=%> "
+			"switch")
+		   : G_("%<intel%> CPU can be used only for "
+			"%<target(\"tune=\")%> attribute"));
 	    return false;
 	  }
 
@@ -5656,8 +5659,8 @@ ix86_option_override_internal (bool main_args_p,
   if (i == pta_size)
     {
       error (main_args_p
-	     ? "bad value (%qs) for %<-march=%> switch"
-	     : "bad value (%qs) for %<target(\"arch=\")%> attribute",
+	     ? G_("bad value (%qs) for %<-march=%> switch")
+	     : G_("bad value (%qs) for %<target(\"arch=\")%> attribute"),
 	     opts->x_ix86_arch_string);
 
       auto_vec <const char *> candidates;
@@ -5674,16 +5677,16 @@ ix86_option_override_internal (bool main_args_p,
       if (hint)
 	inform (input_location,
 		main_args_p
-		? "valid arguments to %<-march=%> switch are: "
-		  "%s; did you mean %qs?"
-		: "valid arguments to %<target(\"arch=\")%> attribute are: "
-		  "%s; did you mean %qs?", s, hint);
+		? G_("valid arguments to %<-march=%> switch are: "
+		     "%s; did you mean %qs?")
+		: G_("valid arguments to %<target(\"arch=\")%> attribute are: "
+		     "%s; did you mean %qs?"), s, hint);
       else
 	inform (input_location,
 		main_args_p
-		? "valid arguments to %<-march=%> switch are: %s"
-		: "valid arguments to %<target(\"arch=\")%> attribute are: %s",
-		s);
+		? G_("valid arguments to %<-march=%> switch are: %s")
+		: G_("valid arguments to %<target(\"arch=\")%> attribute "
+		     "are: %s"), s);
       XDELETEVEC (s);
     }
 
@@ -5729,8 +5732,8 @@ ix86_option_override_internal (bool main_args_p,
   if (ix86_tune_specified && i == pta_size)
     {
       error (main_args_p
-	     ? "bad value (%qs) for %<-mtune=%> switch"
-	     : "bad value (%qs) for %<target(\"tune=\")%> attribute",
+	     ? G_("bad value (%qs) for %<-mtune=%> switch")
+	     : G_("bad value (%qs) for %<target(\"tune=\")%> attribute"),
 	     opts->x_ix86_tune_string);
 
       auto_vec <const char *> candidates;
@@ -5745,16 +5748,16 @@ ix86_option_override_internal (bool main_args_p,
       if (hint)
 	inform (input_location,
 		main_args_p
-		? "valid arguments to %<-mtune=%> switch are: "
-		  "%s; did you mean %qs?"
-		: "valid arguments to %<target(\"tune=\")%> attribute are: "
-		  "%s; did you mean %qs?", s, hint);
+		? G_("valid arguments to %<-mtune=%> switch are: "
+		     "%s; did you mean %qs?")
+		: G_("valid arguments to %<target(\"tune=\")%> attribute are: "
+		     "%s; did you mean %qs?"), s, hint);
       else
 	inform (input_location,
 		main_args_p
-		? "valid arguments to %<-mtune=%> switch are: %s"
-		: "valid arguments to %<target(\"tune=\")%> attribute are: %s",
-		s);
+		? G_("valid arguments to %<-mtune=%> switch are: %s")
+		: G_("valid arguments to %<target(\"tune=\")%> attribute "
+		     "are: %s"), s);
       XDELETEVEC (s);
     }
 
@@ -5856,8 +5859,9 @@ ix86_option_override_internal (bool main_args_p,
 
       if (TARGET_RTD_P (opts->x_target_flags))
 	warning (0,
-		 main_args_p ? "%<-mrtd%> is ignored in 64bit mode"
-			     : "%<target(\"rtd\")%> is ignored in 64bit mode");
+		 main_args_p
+		 ? G_("%<-mrtd%> is ignored in 64bit mode")
+		 : G_("%<target(\"rtd\")%> is ignored in 64bit mode"));
     }
   else
     {
@@ -5979,8 +5983,8 @@ ix86_option_override_internal (bool main_args_p,
   if (TARGET_SSEREGPARM_P (opts->x_target_flags)
       && ! TARGET_SSE_P (opts->x_ix86_isa_flags))
     error (main_args_p
-	   ? "%<-msseregparm%> used without SSE enabled"
-	   : "%<target(\"sseregparm\")%> used without SSE enabled");
+	   ? G_("%<-msseregparm%> used without SSE enabled")
+	   : G_("%<target(\"sseregparm\")%> used without SSE enabled"));
 
   if (opts_set->x_ix86_fpmath)
     {
@@ -6047,10 +6051,11 @@ ix86_option_override_internal (bool main_args_p,
       if (opts_set->x_target_flags & MASK_ACCUMULATE_OUTGOING_ARGS)
 	warning (0,
 		 main_args_p
-		 ? "stack probing requires %<-maccumulate-outgoing-args%> "
-		   "for correctness"
-		 : "stack probing requires "
-		   "%<target(\"accumulate-outgoing-args\")%> for correctness");
+		 ? G_("stack probing requires %<-maccumulate-outgoing-args%> "
+		      "for correctness")
+		 : G_("stack probing requires "
+		      "%<target(\"accumulate-outgoing-args\")%> for "
+		      "correctness"));
       opts->x_target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
     }
 
@@ -6062,9 +6067,10 @@ ix86_option_override_internal (bool main_args_p,
       if (opts_set->x_target_flags & MASK_ACCUMULATE_OUTGOING_ARGS)
 	warning (0,
 		 main_args_p
-		 ? "fixed ebp register requires %<-maccumulate-outgoing-args%>"
-		 : "fixed ebp register requires "
-		   "%<target(\"accumulate-outgoing-args\")%>");
+		 ? G_("fixed ebp register requires "
+		      "%<-maccumulate-outgoing-args%>")
+		 : G_("fixed ebp register requires "
+		      "%<target(\"accumulate-outgoing-args\")%>"));
       opts->x_target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
     }
 

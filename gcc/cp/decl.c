@@ -7224,8 +7224,9 @@ find_decomp_class_base (location_t loc, tree type, tree ret)
 	error_at (loc, "cannot decompose non-public member %qD of %qT",
 		  field, type);
 	inform (DECL_SOURCE_LOCATION (field),
-		TREE_PRIVATE (field) ? "declared private here"
-		: "declared protected here");
+		TREE_PRIVATE (field)
+		? G_("declared private here")
+		: G_("declared protected here"));
 	return error_mark_node;
       }
     else
@@ -11001,8 +11002,8 @@ grokdeclarator (const cp_declarator *declarator,
 		  {
 		    maybe_warn_cpp0x (CPP0X_REF_QUALIFIER);
 		    error ((flags == DTOR_FLAG)
-			   ? "destructors may not be ref-qualified"
-			   : "constructors may not be ref-qualified");
+			   ? G_("destructors may not be ref-qualified")
+			   : G_("constructors may not be ref-qualified"));
 		    rqual = REF_QUAL_NONE;
 		  }
 
@@ -14484,9 +14485,10 @@ build_enumerator (tree name, tree value, tree enumtype, tree attributes,
 			    }
 			  if (type && cxx_dialect < cxx11
 			      && itk > itk_unsigned_long)
-			    pedwarn (input_location, OPT_Wlong_long, pos ? "\
-incremented enumerator value is too large for %<unsigned long%>" :  "\
-incremented enumerator value is too large for %<long%>");
+			    pedwarn (input_location, OPT_Wlong_long,
+				     pos ? G_("\
+incremented enumerator value is too large for %<unsigned long%>") : G_("\
+incremented enumerator value is too large for %<long%>"));
 			}
 		      if (type == NULL_TREE)
 			overflowed = true;

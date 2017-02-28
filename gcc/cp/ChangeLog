@@ -1,3 +1,17 @@
+2017-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (find_decomp_class_base): Use cond ? G_("...") : G_("...")
+	instead of just cond ? "..." : "...".
+	(grokdeclarator): Likewise.
+	(build_enumerator): Likewise.
+	* init.c (build_new_1): Likewise.
+	* call.c (build_new_method_call_1): Likewise.
+	* parser.c: Include intl.h.
+	(cp_parser_oacc_enter_exit_data): Use %s and ternary operator only for
+	"enter"/"exit" keyword.
+	(cp_finalize_oacc_routine): Don't use %s to supply portions of the
+	message.
+
 2017-02-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/71568 - SFINAE forming pointer to member function
