@@ -1,3 +1,10 @@
+2017-02-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_web_docs_svn: Remove a reference to GCC 3.1.  Describe
+	settings to tweak if running on a host different from gcc.gnu.org.
+	(WWWBASE): Allow override via the environment.  Also check for
+	existance.
+
 2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* update_web_docs_svn (MANUALS): Add libitm.
