@@ -1,3 +1,9 @@
+2017-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79723
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size): Preserve
+	address-space properly.
+
 2017-02-28  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* doc/optinfo.texi (Optimization groups): Fix option used for
