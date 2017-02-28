@@ -1,3 +1,10 @@
+2017-02-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79739
+	* resolve.c (resolve_fl_procedure): Deal with the case where
+	'submodule_name' is NULL so that gfc_error does not ICE.
+	Reformat the error message to make it more consistent.
+
 2017-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* parse.c (parse_critical_block): Use cond ? G_("...") : G_("...")

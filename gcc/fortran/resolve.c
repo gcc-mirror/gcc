@@ -12341,9 +12341,10 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
       if (!gfc_check_result_characteristics (sym, iface, errmsg, 200))
 	{
 	  gfc_error ("%s between the MODULE PROCEDURE declaration "
-		     "in module %s and the declaration at %L in "
-		     "SUBMODULE %s", errmsg, module_name,
-		     &sym->declared_at, submodule_name);
+		     "in MODULE '%s' and the declaration at %L in "
+		     "(SUB)MODULE '%s'",
+		     errmsg, module_name, &sym->declared_at,
+		     submodule_name ? submodule_name : module_name);
 	  return false;
 	}
 
