@@ -8920,7 +8920,7 @@ const pass_data pass_data_lower_omp =
 {
   GIMPLE_PASS, /* type */
   "omplower", /* name */
-  OPTGROUP_OPENMP, /* optinfo_flags */
+  OPTGROUP_OMP, /* optinfo_flags */
   TV_NONE, /* tv_id */
   PROP_gimple_any, /* properties_required */
   PROP_gimple_lomp | PROP_gimple_lomp_dev, /* properties_provided */
@@ -9232,7 +9232,7 @@ const pass_data pass_data_diagnose_omp_blocks =
 {
   GIMPLE_PASS, /* type */
   "*diagnose_omp_blocks", /* name */
-  OPTGROUP_OPENMP, /* optinfo_flags */
+  OPTGROUP_OMP, /* optinfo_flags */
   TV_NONE, /* tv_id */
   PROP_gimple_any, /* properties_required */
   0, /* properties_provided */

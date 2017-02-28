@@ -140,7 +140,7 @@ static const struct dump_option_value_info optgroup_options[] =
   {"ipa", OPTGROUP_IPA},
   {"loop", OPTGROUP_LOOP},
   {"inline", OPTGROUP_INLINE},
-  {"openmp", OPTGROUP_OPENMP},
+  {"omp", OPTGROUP_OMP},
   {"vec", OPTGROUP_VEC},
   {"optall", OPTGROUP_ALL},
   {NULL, 0}
