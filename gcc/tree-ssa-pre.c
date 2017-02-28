@@ -4099,8 +4099,12 @@ eliminate_push_avail (tree op)
 static tree
 eliminate_insert (gimple_stmt_iterator *gsi, tree val)
 {
-  gimple *stmt = gimple_seq_first_stmt (VN_INFO (val)->expr);
-  if (!is_gimple_assign (stmt)
+  /* We can insert a sequence with a single assignment only.  */
+  gimple_seq stmts = VN_INFO (val)->expr;
+  if (!gimple_seq_singleton_p (stmts))
+    return NULL_TREE;
+  gassign *stmt = dyn_cast <gassign *> (gimple_seq_first_stmt (stmts));
+  if (!stmt
       || (!CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
 	  && gimple_assign_rhs_code (stmt) != VIEW_CONVERT_EXPR
 	  && gimple_assign_rhs_code (stmt) != BIT_FIELD_REF
@@ -4116,8 +4120,8 @@ eliminate_insert (gimple_stmt_iterator *gsi, tree val)
   if (!leader)
     return NULL_TREE;
 
-  gimple_seq stmts = NULL;
   tree res;
+  stmts = NULL;
   if (gimple_assign_rhs_code (stmt) == BIT_FIELD_REF)
     res = gimple_build (&stmts, BIT_FIELD_REF,
 			TREE_TYPE (val), leader,
