@@ -1,3 +1,16 @@
+2017-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c: Include intl.h.
+	(ix86_option_override_internal): Use cond ? G_("...") : G_("...")
+	instead of just cond ? "..." : "...".
+	* config/nvptx/nvptx.c (nvptx_goacc_validate_dims): Likewise.
+	* coverage.c (read_counts_file): Likewise.
+	* omp-offload.c: Include intl.h.
+	(oacc_loop_fixed_partitions): Use cond ? G_("...") : G_("...") instead
+	of just cond ? "..." : "...".
+	* gcov.c (read_count_file): Use cond ? N_("...") : N_("...") instead
+	of just cond ? "..." : "...".
+
 2017-02-28  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/79742

@@ -327,7 +327,9 @@ read_counts_file (void)
       gcov_sync (offset, length);
       if ((is_error = gcov_is_error ()))
 	{
-	  error (is_error < 0 ? "%qs has overflowed" : "%qs is corrupted",
+	  error (is_error < 0
+		 ? G_("%qs has overflowed")
+		 : G_("%qs is corrupted"),
 		 da_file_name);
 	  delete counts_hash;
 	  counts_hash = NULL;

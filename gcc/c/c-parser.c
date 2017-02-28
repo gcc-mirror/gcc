@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-parser.h"
 #include "read-rtl-function.h"
 #include "run-rtl-passes.h"
+#include "intl.h"
 
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
@@ -6159,8 +6160,8 @@ c_parser_asm_statement (c_parser *parser)
     {
       if (!c_parser_require (parser, CPP_COLON,
 			     is_goto
-			     ? "expected %<:%>"
-			     : "expected %<:%> or %<)%>"))
+			     ? G_("expected %<:%>")
+			     : G_("expected %<:%> or %<)%>")))
 	goto error_close_paren;
 
       /* Once past any colon, we're no longer a simple asm.  */
@@ -13925,9 +13926,8 @@ c_parser_oacc_enter_exit_data (c_parser *parser, bool enter)
 
   if (strcmp (p, "data") != 0)
     {
-      error_at (loc, enter
-		? "expected %<data%> after %<#pragma acc enter%>"
-		: "expected %<data%> after %<#pragma acc exit%>");
+      error_at (loc, "expected %<data%> after %<#pragma acc %s%>",
+		enter ? "enter" : "exit");
       parser->error = true;
       c_parser_skip_to_pragma_eol (parser);
       return;
@@ -13942,9 +13942,8 @@ c_parser_oacc_enter_exit_data (c_parser *parser, bool enter)
 
   if (omp_find_clause (clauses, OMP_CLAUSE_MAP) == NULL_TREE)
     {
-      error_at (loc, enter
-		? "%<#pragma acc enter data%> has no data movement clause"
-		: "%<#pragma acc exit data%> has no data movement clause");
+      error_at (loc, "%<#pragma acc %s data%> has no data movement clause",
+		enter ? "enter" : "exit");
       return;
     }
 
@@ -14270,8 +14269,10 @@ c_finish_oacc_routine (struct oacc_routine_data *data, tree fndecl,
   if (TREE_USED (fndecl) || (!is_defn && DECL_SAVED_TREE (fndecl)))
     {
       error_at (data->loc,
-		"%<#pragma acc routine%> must be applied before %s",
-		TREE_USED (fndecl) ? "use" : "definition");
+		TREE_USED (fndecl)
+		? G_("%<#pragma acc routine%> must be applied before use")
+		: G_("%<#pragma acc routine%> must be applied before "
+		     "definition"));
       data->error_seen = true;
       return;
     }

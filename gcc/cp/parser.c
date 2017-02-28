@@ -36293,9 +36293,8 @@ cp_parser_oacc_enter_exit_data (cp_parser *parser, cp_token *pragma_tok,
 
   if (strcmp (p, "data") != 0)
     {
-      error_at (loc, enter
-		? "expected %<data%> after %<#pragma acc enter%>"
-		: "expected %<data%> after %<#pragma acc exit%>");
+      error_at (loc, "expected %<data%> after %<#pragma acc %s%>",
+		enter ? "enter" : "exit");
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
       return NULL_TREE;
     }
@@ -37573,8 +37572,10 @@ cp_finalize_oacc_routine (cp_parser *parser, tree fndecl, bool is_defn)
       if (TREE_USED (fndecl) || (!is_defn && DECL_SAVED_TREE (fndecl)))
 	{
 	  error_at (parser->oacc_routine->loc,
-		    "%<#pragma acc routine%> must be applied before %s",
-		    TREE_USED (fndecl) ? "use" : "definition");
+		    TREE_USED (fndecl)
+		    ? G_("%<#pragma acc routine%> must be applied before use")
+		    : G_("%<#pragma acc routine%> must be applied before "
+			 "definition"));
 	  parser->oacc_routine = NULL;
 	  return;
 	}

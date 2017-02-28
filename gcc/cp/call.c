@@ -8772,8 +8772,8 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	      else if (DECL_CONSTRUCTOR_P (current_function_decl)
 		       || DECL_DESTRUCTOR_P (current_function_decl))
 		warning (0, (DECL_CONSTRUCTOR_P (current_function_decl)
-			     ? "pure virtual %q#D called from constructor"
-			     : "pure virtual %q#D called from destructor"),
+			     ? G_("pure virtual %q#D called from constructor")
+			     : G_("pure virtual %q#D called from destructor")),
 			 fn);
 	    }
 

@@ -2731,8 +2731,8 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
   if (o != NULL)
     {
       gfc_error (is_oacc (p)
-		 ? "%s statement at %C leaving OpenACC structured block"
-		 : "%s statement at %C leaving OpenMP structured block",
+		 ? G_("%s statement at %C leaving OpenACC structured block")
+		 : G_("%s statement at %C leaving OpenMP structured block"),
 		 gfc_ascii_statement (st));
       return MATCH_ERROR;
     }

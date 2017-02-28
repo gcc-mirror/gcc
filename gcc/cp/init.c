@@ -2811,8 +2811,8 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	{
 	  pedwarn (EXPR_LOC_OR_LOC (outer_nelts, input_location), OPT_Wvla,
 		   typedef_variant_p (orig_type)
-		   ? "non-constant array new length must be specified "
-		     "directly, not by typedef"
+		   ? G_("non-constant array new length must be specified "
+			"directly, not by typedef")
 		   : G_("non-constant array new length must be specified "
 			"without parentheses around the type-id"));
 	}
