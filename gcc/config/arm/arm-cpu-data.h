@@ -23,7 +23,8 @@
 static const struct processors all_cores[] =
 {
   {
-    "arm2", TARGET_CPU_arm2,
+    "arm2",
+    TARGET_CPU_arm2,
     (TF_CO_PROC | TF_NO_MODE32),
     "2", BASE_ARCH_2,
     {
@@ -33,7 +34,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm250", TARGET_CPU_arm250,
+    "arm250",
+    TARGET_CPU_arm250,
     (TF_CO_PROC | TF_NO_MODE32),
     "2", BASE_ARCH_2,
     {
@@ -43,7 +45,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm3", TARGET_CPU_arm3,
+    "arm3",
+    TARGET_CPU_arm3,
     (TF_CO_PROC | TF_NO_MODE32),
     "2", BASE_ARCH_2,
     {
@@ -53,7 +56,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm6", TARGET_CPU_arm6,
+    "arm6",
+    TARGET_CPU_arm6,
     (TF_CO_PROC),
     "3", BASE_ARCH_3,
     {
@@ -63,7 +67,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm60", TARGET_CPU_arm60,
+    "arm60",
+    TARGET_CPU_arm60,
     (TF_CO_PROC),
     "3", BASE_ARCH_3,
     {
@@ -73,7 +78,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm600", TARGET_CPU_arm600,
+    "arm600",
+    TARGET_CPU_arm600,
     (TF_CO_PROC | TF_WBUF),
     "3", BASE_ARCH_3,
     {
@@ -83,7 +89,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm610", TARGET_CPU_arm610,
+    "arm610",
+    TARGET_CPU_arm610,
     (TF_WBUF),
     "3", BASE_ARCH_3,
     {
@@ -93,7 +100,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm620", TARGET_CPU_arm620,
+    "arm620",
+    TARGET_CPU_arm620,
     (TF_CO_PROC | TF_WBUF),
     "3", BASE_ARCH_3,
     {
@@ -103,7 +111,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm7", TARGET_CPU_arm7,
+    "arm7",
+    TARGET_CPU_arm7,
     (TF_CO_PROC),
     "3", BASE_ARCH_3,
     {
@@ -113,7 +122,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm7d", TARGET_CPU_arm7d,
+    "arm7d",
+    TARGET_CPU_arm7d,
     (TF_CO_PROC),
     "3", BASE_ARCH_3,
     {
@@ -123,7 +133,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm7di", TARGET_CPU_arm7di,
+    "arm7di",
+    TARGET_CPU_arm7di,
     (TF_CO_PROC),
     "3", BASE_ARCH_3,
     {
@@ -133,7 +144,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm70", TARGET_CPU_arm70,
+    "arm70",
+    TARGET_CPU_arm70,
     (TF_CO_PROC),
     "3", BASE_ARCH_3,
     {
@@ -143,7 +155,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm700", TARGET_CPU_arm700,
+    "arm700",
+    TARGET_CPU_arm700,
     (TF_CO_PROC | TF_WBUF),
     "3", BASE_ARCH_3,
     {
@@ -153,7 +166,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm700i", TARGET_CPU_arm700i,
+    "arm700i",
+    TARGET_CPU_arm700i,
     (TF_CO_PROC | TF_WBUF),
     "3", BASE_ARCH_3,
     {
@@ -163,7 +177,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm710", TARGET_CPU_arm710,
+    "arm710",
+    TARGET_CPU_arm710,
     (TF_WBUF),
     "3", BASE_ARCH_3,
     {
@@ -173,7 +188,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm720", TARGET_CPU_arm720,
+    "arm720",
+    TARGET_CPU_arm720,
     (TF_WBUF),
     "3", BASE_ARCH_3,
     {
@@ -183,7 +199,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm710c", TARGET_CPU_arm710c,
+    "arm710c",
+    TARGET_CPU_arm710c,
     (TF_WBUF),
     "3", BASE_ARCH_3,
     {
@@ -193,7 +210,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm7100", TARGET_CPU_arm7100,
+    "arm7100",
+    TARGET_CPU_arm7100,
     (TF_WBUF),
     "3", BASE_ARCH_3,
     {
@@ -203,7 +221,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm7500", TARGET_CPU_arm7500,
+    "arm7500",
+    TARGET_CPU_arm7500,
     (TF_WBUF),
     "3", BASE_ARCH_3,
     {
@@ -213,7 +232,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm7500fe", TARGET_CPU_arm7500fe,
+    "arm7500fe",
+    TARGET_CPU_arm7500fe,
     (TF_CO_PROC | TF_WBUF),
     "3", BASE_ARCH_3,
     {
@@ -223,7 +243,8 @@ static const struct processors all_cores[] =
     &arm_slowmul_tune
   },
   {
-    "arm7m", TARGET_CPU_arm7m,
+    "arm7m",
+    TARGET_CPU_arm7m,
     (TF_CO_PROC),
     "3M", BASE_ARCH_3M,
     {
@@ -233,7 +254,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm7dm", TARGET_CPU_arm7dm,
+    "arm7dm",
+    TARGET_CPU_arm7dm,
     (TF_CO_PROC),
     "3M", BASE_ARCH_3M,
     {
@@ -243,7 +265,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm7dmi", TARGET_CPU_arm7dmi,
+    "arm7dmi",
+    TARGET_CPU_arm7dmi,
     (TF_CO_PROC),
     "3M", BASE_ARCH_3M,
     {
@@ -253,7 +276,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm8", TARGET_CPU_arm8,
+    "arm8",
+    TARGET_CPU_arm8,
     (TF_LDSCHED),
     "4", BASE_ARCH_4,
     {
@@ -263,7 +287,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm810", TARGET_CPU_arm810,
+    "arm810",
+    TARGET_CPU_arm810,
     (TF_LDSCHED),
     "4", BASE_ARCH_4,
     {
@@ -273,7 +298,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "strongarm", TARGET_CPU_strongarm,
+    "strongarm",
+    TARGET_CPU_strongarm,
     (TF_LDSCHED | TF_STRONG),
     "4", BASE_ARCH_4,
     {
@@ -283,7 +309,8 @@ static const struct processors all_cores[] =
     &arm_strongarm_tune
   },
   {
-    "strongarm110", TARGET_CPU_strongarm110,
+    "strongarm110",
+    TARGET_CPU_strongarm110,
     (TF_LDSCHED | TF_STRONG),
     "4", BASE_ARCH_4,
     {
@@ -293,7 +320,8 @@ static const struct processors all_cores[] =
     &arm_strongarm_tune
   },
   {
-    "strongarm1100", TARGET_CPU_strongarm1100,
+    "strongarm1100",
+    TARGET_CPU_strongarm1100,
     (TF_LDSCHED | TF_STRONG),
     "4", BASE_ARCH_4,
     {
@@ -303,7 +331,8 @@ static const struct processors all_cores[] =
     &arm_strongarm_tune
   },
   {
-    "strongarm1110", TARGET_CPU_strongarm1110,
+    "strongarm1110",
+    TARGET_CPU_strongarm1110,
     (TF_LDSCHED | TF_STRONG),
     "4", BASE_ARCH_4,
     {
@@ -313,7 +342,8 @@ static const struct processors all_cores[] =
     &arm_strongarm_tune
   },
   {
-    "fa526", TARGET_CPU_fa526,
+    "fa526",
+    TARGET_CPU_fa526,
     (TF_LDSCHED),
     "4", BASE_ARCH_4,
     {
@@ -323,7 +353,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "fa626", TARGET_CPU_fa626,
+    "fa626",
+    TARGET_CPU_fa626,
     (TF_LDSCHED),
     "4", BASE_ARCH_4,
     {
@@ -333,7 +364,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm7tdmi", TARGET_CPU_arm7tdmi,
+    "arm7tdmi",
+    TARGET_CPU_arm7tdmi,
     (TF_CO_PROC),
     "4T", BASE_ARCH_4T,
     {
@@ -343,7 +375,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm7tdmi-s", TARGET_CPU_arm7tdmis,
+    "arm7tdmi-s",
+    TARGET_CPU_arm7tdmis,
     (TF_CO_PROC),
     "4T", BASE_ARCH_4T,
     {
@@ -353,7 +386,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm710t", TARGET_CPU_arm710t,
+    "arm710t",
+    TARGET_CPU_arm710t,
     (TF_WBUF),
     "4T", BASE_ARCH_4T,
     {
@@ -363,7 +397,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm720t", TARGET_CPU_arm720t,
+    "arm720t",
+    TARGET_CPU_arm720t,
     (TF_WBUF),
     "4T", BASE_ARCH_4T,
     {
@@ -373,7 +408,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm740t", TARGET_CPU_arm740t,
+    "arm740t",
+    TARGET_CPU_arm740t,
     (TF_WBUF),
     "4T", BASE_ARCH_4T,
     {
@@ -383,7 +419,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm9", TARGET_CPU_arm9,
+    "arm9",
+    TARGET_CPU_arm9,
     (TF_LDSCHED),
     "4T", BASE_ARCH_4T,
     {
@@ -393,7 +430,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm9tdmi", TARGET_CPU_arm9tdmi,
+    "arm9tdmi",
+    TARGET_CPU_arm9tdmi,
     (TF_LDSCHED),
     "4T", BASE_ARCH_4T,
     {
@@ -403,7 +441,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm920", TARGET_CPU_arm920,
+    "arm920",
+    TARGET_CPU_arm920,
     (TF_LDSCHED),
     "4T", BASE_ARCH_4T,
     {
@@ -413,7 +452,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm920t", TARGET_CPU_arm920t,
+    "arm920t",
+    TARGET_CPU_arm920t,
     (TF_LDSCHED),
     "4T", BASE_ARCH_4T,
     {
@@ -423,7 +463,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm922t", TARGET_CPU_arm922t,
+    "arm922t",
+    TARGET_CPU_arm922t,
     (TF_LDSCHED),
     "4T", BASE_ARCH_4T,
     {
@@ -433,7 +474,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm940t", TARGET_CPU_arm940t,
+    "arm940t",
+    TARGET_CPU_arm940t,
     (TF_LDSCHED),
     "4T", BASE_ARCH_4T,
     {
@@ -443,7 +485,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "ep9312", TARGET_CPU_ep9312,
+    "ep9312",
+    TARGET_CPU_ep9312,
     (TF_LDSCHED),
     "4T", BASE_ARCH_4T,
     {
@@ -453,7 +496,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm10tdmi", TARGET_CPU_arm10tdmi,
+    "arm10tdmi",
+    TARGET_CPU_arm10tdmi,
     (TF_LDSCHED),
     "5T", BASE_ARCH_5T,
     {
@@ -463,7 +507,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm1020t", TARGET_CPU_arm1020t,
+    "arm1020t",
+    TARGET_CPU_arm1020t,
     (TF_LDSCHED),
     "5T", BASE_ARCH_5T,
     {
@@ -473,7 +518,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm9e", TARGET_CPU_arm9e,
+    "arm9e",
+    TARGET_CPU_arm9e,
     (TF_LDSCHED),
     "5TE", BASE_ARCH_5TE,
     {
@@ -483,7 +529,8 @@ static const struct processors all_cores[] =
     &arm_9e_tune
   },
   {
-    "arm946e-s", TARGET_CPU_arm946es,
+    "arm946e-s",
+    TARGET_CPU_arm946es,
     (TF_LDSCHED),
     "5TE", BASE_ARCH_5TE,
     {
@@ -493,7 +540,8 @@ static const struct processors all_cores[] =
     &arm_9e_tune
   },
   {
-    "arm966e-s", TARGET_CPU_arm966es,
+    "arm966e-s",
+    TARGET_CPU_arm966es,
     (TF_LDSCHED),
     "5TE", BASE_ARCH_5TE,
     {
@@ -503,7 +551,8 @@ static const struct processors all_cores[] =
     &arm_9e_tune
   },
   {
-    "arm968e-s", TARGET_CPU_arm968es,
+    "arm968e-s",
+    TARGET_CPU_arm968es,
     (TF_LDSCHED),
     "5TE", BASE_ARCH_5TE,
     {
@@ -513,7 +562,8 @@ static const struct processors all_cores[] =
     &arm_9e_tune
   },
   {
-    "arm10e", TARGET_CPU_arm10e,
+    "arm10e",
+    TARGET_CPU_arm10e,
     (TF_LDSCHED),
     "5TE", BASE_ARCH_5TE,
     {
@@ -523,7 +573,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm1020e", TARGET_CPU_arm1020e,
+    "arm1020e",
+    TARGET_CPU_arm1020e,
     (TF_LDSCHED),
     "5TE", BASE_ARCH_5TE,
     {
@@ -533,7 +584,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "arm1022e", TARGET_CPU_arm1022e,
+    "arm1022e",
+    TARGET_CPU_arm1022e,
     (TF_LDSCHED),
     "5TE", BASE_ARCH_5TE,
     {
@@ -543,7 +595,8 @@ static const struct processors all_cores[] =
     &arm_fastmul_tune
   },
   {
-    "xscale", TARGET_CPU_xscale,
+    "xscale",
+    TARGET_CPU_xscale,
     (TF_LDSCHED | TF_XSCALE),
     "5TE", BASE_ARCH_5TE,
     {
@@ -554,7 +607,8 @@ static const struct processors all_cores[] =
     &arm_xscale_tune
   },
   {
-    "iwmmxt", TARGET_CPU_iwmmxt,
+    "iwmmxt",
+    TARGET_CPU_iwmmxt,
     (TF_LDSCHED | TF_XSCALE),
     "5TE", BASE_ARCH_5TE,
     {
@@ -564,7 +618,8 @@ static const struct processors all_cores[] =
     &arm_xscale_tune
   },
   {
-    "iwmmxt2", TARGET_CPU_iwmmxt2,
+    "iwmmxt2",
+    TARGET_CPU_iwmmxt2,
     (TF_LDSCHED | TF_XSCALE),
     "5TE", BASE_ARCH_5TE,
     {
@@ -574,7 +629,8 @@ static const struct processors all_cores[] =
     &arm_xscale_tune
   },
   {
-    "fa606te", TARGET_CPU_fa606te,
+    "fa606te",
+    TARGET_CPU_fa606te,
     (TF_LDSCHED),
     "5TE", BASE_ARCH_5TE,
     {
@@ -584,7 +640,8 @@ static const struct processors all_cores[] =
     &arm_9e_tune
   },
   {
-    "fa626te", TARGET_CPU_fa626te,
+    "fa626te",
+    TARGET_CPU_fa626te,
     (TF_LDSCHED),
     "5TE", BASE_ARCH_5TE,
     {
@@ -594,7 +651,8 @@ static const struct processors all_cores[] =
     &arm_9e_tune
   },
   {
-    "fmp626", TARGET_CPU_fmp626,
+    "fmp626",
+    TARGET_CPU_fmp626,
     (TF_LDSCHED),
     "5TE", BASE_ARCH_5TE,
     {
@@ -604,7 +662,8 @@ static const struct processors all_cores[] =
     &arm_9e_tune
   },
   {
-    "fa726te", TARGET_CPU_fa726te,
+    "fa726te",
+    TARGET_CPU_fa726te,
     (TF_LDSCHED),
     "5TE", BASE_ARCH_5TE,
     {
@@ -614,7 +673,8 @@ static const struct processors all_cores[] =
     &arm_fa726te_tune
   },
   {
-    "arm926ej-s", TARGET_CPU_arm926ejs,
+    "arm926ej-s",
+    TARGET_CPU_arm926ejs,
     (TF_LDSCHED),
     "5TEJ", BASE_ARCH_5TEJ,
     {
@@ -624,7 +684,8 @@ static const struct processors all_cores[] =
     &arm_9e_tune
   },
   {
-    "arm1026ej-s", TARGET_CPU_arm1026ejs,
+    "arm1026ej-s",
+    TARGET_CPU_arm1026ejs,
     (TF_LDSCHED),
     "5TEJ", BASE_ARCH_5TEJ,
     {
@@ -634,7 +695,8 @@ static const struct processors all_cores[] =
     &arm_9e_tune
   },
   {
-    "arm1136j-s", TARGET_CPU_arm1136js,
+    "arm1136j-s",
+    TARGET_CPU_arm1136js,
     (TF_LDSCHED),
     "6J", BASE_ARCH_6J,
     {
@@ -644,7 +706,8 @@ static const struct processors all_cores[] =
     &arm_9e_tune
   },
   {
-    "arm1136jf-s", TARGET_CPU_arm1136jfs,
+    "arm1136jf-s",
+    TARGET_CPU_arm1136jfs,
     (TF_LDSCHED),
     "6J", BASE_ARCH_6J,
     {
@@ -655,7 +718,8 @@ static const struct processors all_cores[] =
     &arm_9e_tune
   },
   {
-    "arm1176jz-s", TARGET_CPU_arm1176jzs,
+    "arm1176jz-s",
+    TARGET_CPU_arm1176jzs,
     (TF_LDSCHED),
     "6KZ", BASE_ARCH_6KZ,
     {
@@ -665,7 +729,8 @@ static const struct processors all_cores[] =
     &arm_9e_tune
   },
   {
-    "arm1176jzf-s", TARGET_CPU_arm1176jzfs,
+    "arm1176jzf-s",
+    TARGET_CPU_arm1176jzfs,
     (TF_LDSCHED),
     "6KZ", BASE_ARCH_6KZ,
     {
@@ -676,7 +741,8 @@ static const struct processors all_cores[] =
     &arm_9e_tune
   },
   {
-    "mpcorenovfp", TARGET_CPU_mpcorenovfp,
+    "mpcorenovfp",
+    TARGET_CPU_mpcorenovfp,
     (TF_LDSCHED),
     "6K", BASE_ARCH_6K,
     {
@@ -686,7 +752,8 @@ static const struct processors all_cores[] =
     &arm_9e_tune
   },
   {
-    "mpcore", TARGET_CPU_mpcore,
+    "mpcore",
+    TARGET_CPU_mpcore,
     (TF_LDSCHED),
     "6K", BASE_ARCH_6K,
     {
@@ -697,7 +764,8 @@ static const struct processors all_cores[] =
     &arm_9e_tune
   },
   {
-    "arm1156t2-s", TARGET_CPU_arm1156t2s,
+    "arm1156t2-s",
+    TARGET_CPU_arm1156t2s,
     (TF_LDSCHED),
     "6T2", BASE_ARCH_6T2,
     {
@@ -707,7 +775,8 @@ static const struct processors all_cores[] =
     &arm_v6t2_tune
   },
   {
-    "arm1156t2f-s", TARGET_CPU_arm1156t2fs,
+    "arm1156t2f-s",
+    TARGET_CPU_arm1156t2fs,
     (TF_LDSCHED),
     "6T2", BASE_ARCH_6T2,
     {
@@ -718,7 +787,8 @@ static const struct processors all_cores[] =
     &arm_v6t2_tune
   },
   {
-    "cortex-m1", TARGET_CPU_cortexm1,
+    "cortex-m1",
+    TARGET_CPU_cortexm1,
     (TF_LDSCHED),
     "6M", BASE_ARCH_6M,
     {
@@ -728,7 +798,8 @@ static const struct processors all_cores[] =
     &arm_v6m_tune
   },
   {
-    "cortex-m0", TARGET_CPU_cortexm0,
+    "cortex-m0",
+    TARGET_CPU_cortexm0,
     (TF_LDSCHED),
     "6M", BASE_ARCH_6M,
     {
@@ -738,7 +809,8 @@ static const struct processors all_cores[] =
     &arm_v6m_tune
   },
   {
-    "cortex-m0plus", TARGET_CPU_cortexm0plus,
+    "cortex-m0plus",
+    TARGET_CPU_cortexm0plus,
     (TF_LDSCHED),
     "6M", BASE_ARCH_6M,
     {
@@ -748,7 +820,8 @@ static const struct processors all_cores[] =
     &arm_v6m_tune
   },
   {
-    "cortex-m1.small-multiply", TARGET_CPU_cortexm1smallmultiply,
+    "cortex-m1.small-multiply",
+    TARGET_CPU_cortexm1,
     (TF_LDSCHED | TF_SMALLMUL),
     "6M", BASE_ARCH_6M,
     {
@@ -758,7 +831,8 @@ static const struct processors all_cores[] =
     &arm_v6m_tune
   },
   {
-    "cortex-m0.small-multiply", TARGET_CPU_cortexm0smallmultiply,
+    "cortex-m0.small-multiply",
+    TARGET_CPU_cortexm0,
     (TF_LDSCHED | TF_SMALLMUL),
     "6M", BASE_ARCH_6M,
     {
@@ -768,7 +842,8 @@ static const struct processors all_cores[] =
     &arm_v6m_tune
   },
   {
-    "cortex-m0plus.small-multiply", TARGET_CPU_cortexm0plussmallmultiply,
+    "cortex-m0plus.small-multiply",
+    TARGET_CPU_cortexm0plus,
     (TF_LDSCHED | TF_SMALLMUL),
     "6M", BASE_ARCH_6M,
     {
@@ -778,7 +853,8 @@ static const struct processors all_cores[] =
     &arm_v6m_tune
   },
   {
-    "generic-armv7-a", TARGET_CPU_genericv7a,
+    "generic-armv7-a",
+    TARGET_CPU_genericv7a,
     (TF_LDSCHED),
     "7A", BASE_ARCH_7A,
     {
@@ -788,7 +864,8 @@ static const struct processors all_cores[] =
     &arm_cortex_tune
   },
   {
-    "cortex-a5", TARGET_CPU_cortexa5,
+    "cortex-a5",
+    TARGET_CPU_cortexa5,
     (TF_LDSCHED),
     "7A", BASE_ARCH_7A,
     {
@@ -798,7 +875,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a5_tune
   },
   {
-    "cortex-a7", TARGET_CPU_cortexa7,
+    "cortex-a7",
+    TARGET_CPU_cortexa7,
     (TF_LDSCHED),
     "7A", BASE_ARCH_7A,
     {
@@ -808,7 +886,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a7_tune
   },
   {
-    "cortex-a8", TARGET_CPU_cortexa8,
+    "cortex-a8",
+    TARGET_CPU_cortexa8,
     (TF_LDSCHED),
     "7A", BASE_ARCH_7A,
     {
@@ -818,7 +897,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a8_tune
   },
   {
-    "cortex-a9", TARGET_CPU_cortexa9,
+    "cortex-a9",
+    TARGET_CPU_cortexa9,
     (TF_LDSCHED),
     "7A", BASE_ARCH_7A,
     {
@@ -828,7 +908,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a9_tune
   },
   {
-    "cortex-a12", TARGET_CPU_cortexa12,
+    "cortex-a12",
+    TARGET_CPU_cortexa17,
     (TF_LDSCHED),
     "7A", BASE_ARCH_7A,
     {
@@ -838,7 +919,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a12_tune
   },
   {
-    "cortex-a15", TARGET_CPU_cortexa15,
+    "cortex-a15",
+    TARGET_CPU_cortexa15,
     (TF_LDSCHED),
     "7A", BASE_ARCH_7A,
     {
@@ -848,7 +930,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a15_tune
   },
   {
-    "cortex-a17", TARGET_CPU_cortexa17,
+    "cortex-a17",
+    TARGET_CPU_cortexa17,
     (TF_LDSCHED),
     "7A", BASE_ARCH_7A,
     {
@@ -858,7 +941,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a12_tune
   },
   {
-    "cortex-r4", TARGET_CPU_cortexr4,
+    "cortex-r4",
+    TARGET_CPU_cortexr4,
     (TF_LDSCHED),
     "7R", BASE_ARCH_7R,
     {
@@ -868,7 +952,8 @@ static const struct processors all_cores[] =
     &arm_cortex_tune
   },
   {
-    "cortex-r4f", TARGET_CPU_cortexr4f,
+    "cortex-r4f",
+    TARGET_CPU_cortexr4f,
     (TF_LDSCHED),
     "7R", BASE_ARCH_7R,
     {
@@ -878,18 +963,8 @@ static const struct processors all_cores[] =
     &arm_cortex_tune
   },
   {
-    "cortex-r5", TARGET_CPU_cortexr5,
-    (TF_LDSCHED),
-    "7R", BASE_ARCH_7R,
-    {
-      ISA_ARMv7r,
-      isa_bit_adiv,
-      isa_nobit
-    },
-    &arm_cortex_tune
-  },
-  {
-    "cortex-r7", TARGET_CPU_cortexr7,
+    "cortex-r5",
+    TARGET_CPU_cortexr5,
     (TF_LDSCHED),
     "7R", BASE_ARCH_7R,
     {
@@ -900,7 +975,8 @@ static const struct processors all_cores[] =
     &arm_cortex_tune
   },
   {
-    "cortex-r8", TARGET_CPU_cortexr8,
+    "cortex-r7",
+    TARGET_CPU_cortexr7,
     (TF_LDSCHED),
     "7R", BASE_ARCH_7R,
     {
@@ -911,7 +987,20 @@ static const struct processors all_cores[] =
     &arm_cortex_tune
   },
   {
-    "cortex-m7", TARGET_CPU_cortexm7,
+    "cortex-r8",
+    TARGET_CPU_cortexr7,
+    (TF_LDSCHED),
+    "7R", BASE_ARCH_7R,
+    {
+      ISA_ARMv7r,
+      isa_bit_adiv,
+      isa_nobit
+    },
+    &arm_cortex_tune
+  },
+  {
+    "cortex-m7",
+    TARGET_CPU_cortexm7,
     (TF_LDSCHED),
     "7EM", BASE_ARCH_7EM,
     {
@@ -922,7 +1011,8 @@ static const struct processors all_cores[] =
     &arm_cortex_m7_tune
   },
   {
-    "cortex-m4", TARGET_CPU_cortexm4,
+    "cortex-m4",
+    TARGET_CPU_cortexm4,
     (TF_LDSCHED),
     "7EM", BASE_ARCH_7EM,
     {
@@ -932,7 +1022,8 @@ static const struct processors all_cores[] =
     &arm_v7m_tune
   },
   {
-    "cortex-m3", TARGET_CPU_cortexm3,
+    "cortex-m3",
+    TARGET_CPU_cortexm3,
     (TF_LDSCHED),
     "7M", BASE_ARCH_7M,
     {
@@ -943,7 +1034,8 @@ static const struct processors all_cores[] =
     &arm_v7m_tune
   },
   {
-    "marvell-pj4", TARGET_CPU_marvell_pj4,
+    "marvell-pj4",
+    TARGET_CPU_marvell_pj4,
     (TF_LDSCHED),
     "7A", BASE_ARCH_7A,
     {
@@ -953,7 +1045,8 @@ static const struct processors all_cores[] =
     &arm_marvell_pj4_tune
   },
   {
-    "cortex-a15.cortex-a7", TARGET_CPU_cortexa15cortexa7,
+    "cortex-a15.cortex-a7",
+    TARGET_CPU_cortexa7,
     (TF_LDSCHED),
     "7A", BASE_ARCH_7A,
     {
@@ -963,7 +1056,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a15_tune
   },
   {
-    "cortex-a17.cortex-a7", TARGET_CPU_cortexa17cortexa7,
+    "cortex-a17.cortex-a7",
+    TARGET_CPU_cortexa7,
     (TF_LDSCHED),
     "7A", BASE_ARCH_7A,
     {
@@ -973,7 +1067,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a12_tune
   },
   {
-    "cortex-a32", TARGET_CPU_cortexa32,
+    "cortex-a32",
+    TARGET_CPU_cortexa53,
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
@@ -983,7 +1078,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a35_tune
   },
   {
-    "cortex-a35", TARGET_CPU_cortexa35,
+    "cortex-a35",
+    TARGET_CPU_cortexa53,
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
@@ -993,7 +1089,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a35_tune
   },
   {
-    "cortex-a53", TARGET_CPU_cortexa53,
+    "cortex-a53",
+    TARGET_CPU_cortexa53,
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
@@ -1003,7 +1100,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a53_tune
   },
   {
-    "cortex-a57", TARGET_CPU_cortexa57,
+    "cortex-a57",
+    TARGET_CPU_cortexa57,
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
@@ -1013,7 +1111,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a57_tune
   },
   {
-    "cortex-a72", TARGET_CPU_cortexa72,
+    "cortex-a72",
+    TARGET_CPU_cortexa57,
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
@@ -1023,7 +1122,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a57_tune
   },
   {
-    "cortex-a73", TARGET_CPU_cortexa73,
+    "cortex-a73",
+    TARGET_CPU_cortexa57,
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
@@ -1033,7 +1133,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a73_tune
   },
   {
-    "exynos-m1", TARGET_CPU_exynosm1,
+    "exynos-m1",
+    TARGET_CPU_exynosm1,
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
@@ -1043,7 +1144,8 @@ static const struct processors all_cores[] =
     &arm_exynosm1_tune
   },
   {
-    "falkor", TARGET_CPU_falkor,
+    "falkor",
+    TARGET_CPU_cortexa57,
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
@@ -1053,7 +1155,8 @@ static const struct processors all_cores[] =
     &arm_qdf24xx_tune
   },
   {
-    "qdf24xx", TARGET_CPU_qdf24xx,
+    "qdf24xx",
+    TARGET_CPU_cortexa57,
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
@@ -1063,7 +1166,8 @@ static const struct processors all_cores[] =
     &arm_qdf24xx_tune
   },
   {
-    "xgene1", TARGET_CPU_xgene1,
+    "xgene1",
+    TARGET_CPU_xgene1,
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
@@ -1073,7 +1177,8 @@ static const struct processors all_cores[] =
     &arm_xgene1_tune
   },
   {
-    "cortex-a57.cortex-a53", TARGET_CPU_cortexa57cortexa53,
+    "cortex-a57.cortex-a53",
+    TARGET_CPU_cortexa53,
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
@@ -1083,7 +1188,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a57_tune
   },
   {
-    "cortex-a72.cortex-a53", TARGET_CPU_cortexa72cortexa53,
+    "cortex-a72.cortex-a53",
+    TARGET_CPU_cortexa53,
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
@@ -1093,7 +1199,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a57_tune
   },
   {
-    "cortex-a73.cortex-a35", TARGET_CPU_cortexa73cortexa35,
+    "cortex-a73.cortex-a35",
+    TARGET_CPU_cortexa53,
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
@@ -1103,7 +1210,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a73_tune
   },
   {
-    "cortex-a73.cortex-a53", TARGET_CPU_cortexa73cortexa53,
+    "cortex-a73.cortex-a53",
+    TARGET_CPU_cortexa53,
     (TF_LDSCHED),
     "8A", BASE_ARCH_8A,
     {
@@ -1113,7 +1221,8 @@ static const struct processors all_cores[] =
     &arm_cortex_a73_tune
   },
   {
-    "cortex-m23", TARGET_CPU_cortexm23,
+    "cortex-m23",
+    TARGET_CPU_cortexm23,
     (TF_LDSCHED),
     "8M_BASE", BASE_ARCH_8M_BASE,
     {
@@ -1123,7 +1232,8 @@ static const struct processors all_cores[] =
     &arm_v6m_tune
   },
   {
-    "cortex-m33", TARGET_CPU_cortexm33,
+    "cortex-m33",
+    TARGET_CPU_cortexm33,
     (TF_LDSCHED),
     "8M_MAIN", BASE_ARCH_8M_MAIN,
     {
