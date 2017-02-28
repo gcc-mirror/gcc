@@ -2820,6 +2820,15 @@ vn_nary_op_insert_into (vn_nary_op_t vno, vn_nary_op_table_type *table,
     vno->hashcode = vn_nary_op_compute_hash (vno);
 
   slot = table->find_slot_with_hash (vno, vno->hashcode, INSERT);
+  /* While we do not want to insert things twice it's awkward to
+     avoid it in the case where visit_nary_op pattern-matches stuff
+     and ends up simplifying the replacement to itself.  We then
+     get two inserts, one from visit_nary_op and one from
+     vn_nary_build_or_lookup.
+     So allow inserts with the same value number.  */
+  if (*slot && (*slot)->result == vno->result)
+    return *slot;
+
   gcc_assert (!*slot);
 
   *slot = vno;
@@ -3544,7 +3553,11 @@ visit_nary_op (tree lhs, gassign *stmt)
 			  result = vn_nary_build_or_lookup (NOP_EXPR,
 							    type, ops);
 			  if (result)
-			    return set_ssa_val_to (lhs, result);
+			    {
+			      bool changed = set_ssa_val_to (lhs, result);
+			      vn_nary_op_insert_stmt (stmt, result);
+			      return changed;
+			    }
 			}
 		      else
 			{
@@ -3555,7 +3568,11 @@ visit_nary_op (tree lhs, gassign *stmt)
 							    TREE_TYPE (lhs),
 							    ops);
 			  if (result)
-			    return set_ssa_val_to (lhs, result);
+			    {
+			      bool changed = set_ssa_val_to (lhs, result);
+			      vn_nary_op_insert_stmt (stmt, result);
+			      return changed;
+			    }
 			}
 		    }
 		}
