@@ -1246,7 +1246,7 @@ print_filtered_help (unsigned int include_flags,
 		    }
 		  else
 		    sprintf (new_help + strlen (new_help),
-			     "%#x", * (int *) flag_var);
+			     "%d", * (int *) flag_var);
 		}
 	      else
 		strcat (new_help, option_enabled (i, opts)
