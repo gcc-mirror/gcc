@@ -1,3 +1,9 @@
+2017-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/79731
+	* fold-const.c (decode_field_reference): Reject out-of-bound
+	accesses.
+
 2017-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c: Include intl.h.
