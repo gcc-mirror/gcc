@@ -1,3 +1,8 @@
+2017-02-28  Martin Liska  <mliska@suse.cz>
+
+	* common.opt: Fix --help=option -Q for options which are of
+	an enum type.
+
 2017-02-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (print_reg): Error out for values
