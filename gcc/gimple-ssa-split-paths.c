@@ -232,12 +232,34 @@ is_feasible_trace (basic_block bb)
 	      /* But for memory the PHI alone isn't good enough.  */
 	      && ! virtual_operand_p (gimple_phi_result (stmt)))
 	    {
+	      bool found_unchanged_path = false;
 	      for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
 		if (gimple_phi_arg_def (phi, i) == gimple_phi_result (stmt))
 		  {
-		    found_useful_phi = true;
+		    found_unchanged_path = true;
 		    break;
 		  }
+	      /* If we found an unchanged path this can only be a threading
+	         opportunity if we have uses of the loop header PHI result
+		 in a stmt dominating the merge block.  Otherwise the
+		 splitting may prevent if-conversion.  */
+	      if (found_unchanged_path)
+		{
+		  use_operand_p use2_p;
+		  imm_use_iterator iter2;
+		  FOR_EACH_IMM_USE_FAST (use2_p, iter2, gimple_phi_result (stmt))
+		    {
+		      if (is_gimple_debug (USE_STMT (use2_p)))
+			continue;
+		      basic_block use_bb = gimple_bb (USE_STMT (use2_p));
+		      if (use_bb != bb
+			  && dominated_by_p (CDI_DOMINATORS, bb, use_bb))
+			{
+			  found_useful_phi = true;
+			  break;
+			}
+		    }
+		}
 	      if (found_useful_phi)
 		break;
 	    }
@@ -245,7 +267,36 @@ is_feasible_trace (basic_block bb)
       if (found_useful_phi)
 	break;
     }
-  if (! found_useful_phi)
+  /* There is one exception namely a controlling condition we can propagate
+     an equivalence from to the joiner.  */
+  bool found_cprop_opportunity = false;
+  basic_block dom = get_immediate_dominator (CDI_DOMINATORS, bb);
+  gcond *cond = as_a <gcond *> (last_stmt (dom));
+  if (gimple_cond_code (cond) == EQ_EXPR
+      || gimple_cond_code (cond) == NE_EXPR)
+    for (unsigned i = 0; i < 2; ++i)
+      {
+	tree op = gimple_op (cond, i);
+	if (TREE_CODE (op) == SSA_NAME)
+	  {
+	    use_operand_p use_p;
+	    imm_use_iterator iter;
+	    FOR_EACH_IMM_USE_FAST (use_p, iter, op)
+	      {
+		if (is_gimple_debug (USE_STMT (use_p)))
+		  continue;
+		if (gimple_bb (USE_STMT (use_p)) == bb)
+		  {
+		    found_cprop_opportunity = true;
+		    break;
+		  }
+	      }
+	  }
+	if (found_cprop_opportunity)
+	  break;
+      }
+
+  if (! found_useful_phi && ! found_cprop_opportunity)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,

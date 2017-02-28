@@ -458,8 +458,10 @@
 (define_predicate "brcc_nolimm_operator"
   (ior (match_test "REG_P (XEXP (op, 1))")
        (and (match_code "eq, ne, lt, ge, ltu, geu")
+	    (match_test "CONST_INT_P (XEXP (op, 1))")
 	    (match_test "u6_immediate_operand (XEXP (op, 1), SImode)"))
        (and (match_code "le, gt, leu, gtu")
+	    (match_test "CONST_INT_P (XEXP (op, 1))")
 	    (match_test "UNSIGNED_INT6 (INTVAL (XEXP (op, 1)) + 1)"))))
 
 ;; Return TRUE if this is the condition code register, if we aren't given

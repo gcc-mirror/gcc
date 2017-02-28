@@ -388,10 +388,16 @@ gfc_post_options (const char **pfilename)
   if (!flag_automatic)
     flag_max_stack_var_size = 0;
   
-  /* If we call BLAS directly, only inline up to the BLAS limit.  */
+  /* If the user did not specify an inline matmul limit, inline up to the BLAS
+     limit or up to 30 if no external BLAS is specified.  */
 
-  if (flag_external_blas && flag_inline_matmul_limit < 0)
-    flag_inline_matmul_limit = flag_blas_matmul_limit;
+  if (flag_inline_matmul_limit < 0)
+    {
+      if (flag_external_blas)
+	flag_inline_matmul_limit = flag_blas_matmul_limit;
+      else
+	flag_inline_matmul_limit = 30;
+    }
 
   /* Optimization implies front end optimization, unless the user
      specified it directly.  */

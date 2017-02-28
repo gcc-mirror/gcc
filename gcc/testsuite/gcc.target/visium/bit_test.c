@@ -27,5 +27,5 @@ void foo4 (unsigned char c)
     bar ();
 }
 
-/* { dg-final { scan-assembler-times "lsr.l" 2 } } */
+/* { dg-final { scan-assembler-times "lsr" 2 } } */
 /* { dg-final { scan-assembler-times "cmp" 2 } } */

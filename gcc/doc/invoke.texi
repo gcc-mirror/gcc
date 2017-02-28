@@ -879,6 +879,7 @@ Objective-C and Objective-C++ Dialects}.
 -mexplicit-relocs  -mno-explicit-relocs @gol
 -mcheck-zero-division  -mno-check-zero-division @gol
 -mdivide-traps  -mdivide-breaks @gol
+-mload-store-pairs  -mno-load-store-pairs @gol
 -mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls @gol
 -mmad  -mno-mad  -mimadd  -mno-imadd  -mfused-madd  -mno-fused-madd  -nocpp @gol
 -mfix-24k  -mno-fix-24k @gol
@@ -10467,13 +10468,12 @@ To disable built-in functions protection use
 
 @item asan-use-after-return
 Enable detection of use-after-return.  This kind of protection
-is enabled by default when using @option{-fsanitize=address} option.
-To disable use-after-return detection use 
-@option{--param asan-use-after-return=0}.
+is enabled by default when using the @option{-fsanitize=address} option.
+To disable it use @option{--param asan-use-after-return=0}.
 
-Note: The check is disabled by default at runtime.  To enable the check,
-you should set environment variable @env{ASAN_OPTIONS} to
-@code{detect_stack_use_after_return=1}.
+Note: By default the check is disabled at run time.  To enable it,
+add @code{detect_stack_use_after_return=1} to the environment variable
+@env{ASAN_OPTIONS}.
 
 @item asan-instrumentation-with-call-threshold
 If number of memory accesses in function being instrumented
@@ -13155,6 +13155,8 @@ Enable dumps from all interprocedural optimizations.
 Enable dumps from all loop optimizations.
 @item inline
 Enable dumps from all inlining optimizations.
+@item omp
+Enable dumps from all OMP (Offloading and Multi Processing) optimizations.
 @item vec
 Enable dumps from all vectorization optimizations.
 @item optall
@@ -19495,6 +19497,15 @@ overridden at configure time using @option{--with-divide=breaks}.
 Divide-by-zero checks can be completely disabled using
 @option{-mno-check-zero-division}.
 
+@item -mload-store-pairs
+@itemx -mno-load-store-pairs
+@opindex mload-store-pairs
+@opindex mno-load-store-pairs
+Enable (disable) an optimization that pairs consecutive load or store
+instructions to enable load/store bonding.  This option is enabled by
+default but only takes effect when the selected architecture is known
+to support bonding.
+
 @item -mmemcpy
 @itemx -mno-memcpy
 @opindex mmemcpy
@@ -24591,7 +24602,7 @@ The temporary results are computed in 80-bit precision instead of the precision
 specified by the type, resulting in slightly different results compared to most
 of other chips.  See @option{-ffloat-store} for more detailed description.
 
-This is the default choice for x86-32 targets.
+This is the default choice for non-Darwin x86-32 targets.
 
 @item sse
 Use scalar floating-point instructions present in the SSE instruction set.
@@ -24611,7 +24622,9 @@ The resulting code should be considerably faster in the majority of cases and av
 the numerical instability problems of 387 code, but may break some existing
 code that expects temporaries to be 80 bits.
 
-This is the default choice for the x86-64 compiler.
+This is the default choice for the x86-64 compiler, Darwin x86-32 targets,
+and the default choice for x86-32 targets with the SSE2 instruction set
+when @option{-ffast-math} is enabled.
 
 @item sse,387
 @itemx sse+387

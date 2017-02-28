@@ -127,9 +127,10 @@ func raiseproc(sig uint32) {
 //go:nosplit
 //go:nowritebarrierrec
 func sigfwd(fn uintptr, sig uint32, info *_siginfo_t, ctx unsafe.Pointer) {
-	f1 := &[1]uintptr{fn}
-	f2 := *(*func(uint32, *_siginfo_t, unsafe.Pointer))(unsafe.Pointer(&f1))
-	f2(sig, info, ctx)
+	f1 := [1]uintptr{fn}
+	f2 := &f1
+	f3 := *(*func(uint32, *_siginfo_t, unsafe.Pointer))(unsafe.Pointer(&f2))
+	f3(sig, info, ctx)
 }
 
 //go:nosplit

@@ -1,3 +1,8 @@
+2017-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/77589
+	* dwarf2.def (DW_OP_GNU_variable_value): New opcode.
+
 2017-01-30  Alexandre Oliva <aoliva@redhat.com>
 
 	Introduce C++ support in libcc1.

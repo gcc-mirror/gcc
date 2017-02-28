@@ -6225,10 +6225,10 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	 allocation function, the program is ill-formed."  */
       if (second_parm_is_size_t (fn))
 	{
-	  const char *msg1
+	  const char *const msg1
 	    = G_("exception cleanup for this placement new selects "
 		 "non-placement operator delete");
-	  const char *msg2
+	  const char *const msg2
 	    = G_("%qD is a usual (non-placement) deallocation "
 		 "function in C++14 (or with -fsized-deallocation)");
 
@@ -7838,12 +7838,13 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (flags & LOOKUP_NO_CONVERSION)
 	conv->user_conv_p = true;
 
-      val = convert_like_with_context (conv, arg, fn, i - is_method,
-				       conversion_warning
-				       ? complain
-				       : complain & (~tf_warning));
+      tsubst_flags_t arg_complain = complain & (~tf_no_cleanup);
+      if (!conversion_warning)
+	arg_complain &= ~tf_warning;
 
-      val = convert_for_arg_passing (type, val, complain);
+      val = convert_like_with_context (conv, arg, fn, i - is_method,
+				       arg_complain);
+      val = convert_for_arg_passing (type, val, arg_complain);
 	
       if (val == error_mark_node)
         return error_mark_node;
@@ -7902,14 +7903,17 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
      the check_function_arguments function might warn about something.  */
 
   bool warned_p = false;
-  if (warn_nonnull || warn_format || warn_suggest_attribute_format)
+  if (warn_nonnull
+      || warn_format
+      || warn_suggest_attribute_format
+      || warn_restrict)
     {
       tree *fargs = (!nargs ? argarray
 			    : (tree *) alloca (nargs * sizeof (tree)));
       for (j = 0; j < nargs; j++)
 	fargs[j] = maybe_constant_value (argarray[j]);
 
-      warned_p = check_function_arguments (input_location, TREE_TYPE (fn),
+      warned_p = check_function_arguments (input_location, fn, TREE_TYPE (fn),
 					   nargs, fargs);
     }
 
@@ -8768,8 +8772,8 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	      else if (DECL_CONSTRUCTOR_P (current_function_decl)
 		       || DECL_DESTRUCTOR_P (current_function_decl))
 		warning (0, (DECL_CONSTRUCTOR_P (current_function_decl)
-			     ? "pure virtual %q#D called from constructor"
-			     : "pure virtual %q#D called from destructor"),
+			     ? G_("pure virtual %q#D called from constructor")
+			     : G_("pure virtual %q#D called from destructor")),
 			 fn);
 	    }
 

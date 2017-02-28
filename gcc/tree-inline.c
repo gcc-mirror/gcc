@@ -4782,7 +4782,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	    {
 	      if (!var)
 		{
-		  tree var = create_tmp_reg_fn (cfun, TREE_TYPE (name), NULL);
+		  var = create_tmp_reg_fn (cfun, TREE_TYPE (name), NULL);
 		  SET_SSA_NAME_VAR_OR_IDENTIFIER (name, var);
 		}
 	      /* Otherwise make this variable undefined.  */

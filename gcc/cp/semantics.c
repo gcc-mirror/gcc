@@ -3510,7 +3510,7 @@ finish_id_expression (tree id_expression,
 	  && DECL_CONTEXT (decl) == NULL_TREE
 	  && !cp_unevaluated_operand)
 	{
-	  *error_msg = "use of parameter outside function body";
+	  *error_msg = G_("use of parameter outside function body");
 	  return error_mark_node;
 	}
     }
@@ -3520,13 +3520,13 @@ finish_id_expression (tree id_expression,
   if (TREE_CODE (decl) == TEMPLATE_DECL
       && !DECL_FUNCTION_TEMPLATE_P (decl))
     {
-      *error_msg = "missing template arguments";
+      *error_msg = G_("missing template arguments");
       return error_mark_node;
     }
   else if (TREE_CODE (decl) == TYPE_DECL
 	   || TREE_CODE (decl) == NAMESPACE_DECL)
     {
-      *error_msg = "expected primary-expression";
+      *error_msg = G_("expected primary-expression");
       return error_mark_node;
     }
 

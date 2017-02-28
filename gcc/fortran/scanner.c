@@ -1406,10 +1406,11 @@ restart:
 	      if (i == 4)
 		old_loc = gfc_current_locus;
 	    }
-	  gfc_error (is_openmp ? "Wrong OpenACC continuation at %C: "
-		     "expected !$ACC, got !$OMP"
-		     : "Wrong OpenMP continuation at %C: "
-		     "expected !$OMP, got !$ACC");
+	  gfc_error (is_openmp
+		     ? G_("Wrong OpenACC continuation at %C: "
+			  "expected !$ACC, got !$OMP")
+		     : G_("Wrong OpenMP continuation at %C: "
+			  "expected !$OMP, got !$ACC"));
 	}
 
       if (c != '&')
@@ -1502,10 +1503,11 @@ restart:
 	      if (gfc_wide_tolower (c) != (unsigned char) "*$acc"[i])
 		is_openmp = 1;
 	    }
-	  gfc_error (is_openmp ? "Wrong OpenACC continuation at %C: "
-		     "expected !$ACC, got !$OMP"
-		     : "Wrong OpenMP continuation at %C: "
-		     "expected !$OMP, got !$ACC");
+	  gfc_error (is_openmp
+		     ? G_("Wrong OpenACC continuation at %C: "
+			  "expected !$ACC, got !$OMP")
+		     : G_("Wrong OpenMP continuation at %C: "
+			  "expected !$OMP, got !$ACC"));
 	}
       else if (!openmp_flag && !openacc_flag)
 	for (i = 0; i < 5; i++)

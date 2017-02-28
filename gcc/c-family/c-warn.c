@@ -2170,55 +2170,49 @@ maybe_warn_bool_compare (location_t loc, enum tree_code code, tree op0,
    restrict-qualified param, and it aliases with another argument.  */
 
 void
-warn_for_restrict (unsigned param_pos, vec<tree, va_gc> *args)
+warn_for_restrict (unsigned param_pos, tree *argarray, unsigned nargs)
 {
-  tree arg = (*args)[param_pos];
-  if (TREE_VISITED (arg) || operand_equal_p (arg, null_pointer_node, 0))
+  tree arg = argarray[param_pos];
+  if (TREE_VISITED (arg) || integer_zerop (arg))
     return;
 
   location_t loc = EXPR_LOC_OR_LOC (arg, input_location);
   gcc_rich_location richloc (loc);
 
   unsigned i;
-  tree current_arg;
-  int *arg_positions = XNEWVEC (int, args->length ());
-  unsigned arg_positions_len = 0;
+  auto_vec<int, 16> arg_positions;
 
-  FOR_EACH_VEC_ELT (*args, i, current_arg) 
+  for (i = 0; i < nargs; i++)
     {
       if (i == param_pos)
 	continue;
 
-      tree current_arg = (*args)[i];
+      tree current_arg = argarray[i];
       if (operand_equal_p (arg, current_arg, 0))
 	{
 	  TREE_VISITED (current_arg) = 1; 
-	  arg_positions[arg_positions_len++] = (i + 1);
+	  arg_positions.safe_push (i + 1);
 	}
     }
 
-  if (arg_positions_len == 0)
-    {
-      free (arg_positions);
-      return;
-    }
+  if (arg_positions.is_empty ())
+    return;
 
-  for (unsigned i = 0; i < arg_positions_len; i++)
+  int pos;
+  FOR_EACH_VEC_ELT (arg_positions, i, pos)
     {
-      unsigned pos = arg_positions[i];
-      tree arg = (*args)[pos - 1];
+      arg = argarray[pos - 1];
       if (EXPR_HAS_LOCATION (arg))
 	richloc.add_range (EXPR_LOCATION (arg), false);
     }
 
-  warning_at_rich_loc_n (&richloc, OPT_Wrestrict, arg_positions_len,
+  warning_at_rich_loc_n (&richloc, OPT_Wrestrict, arg_positions.length (),
 			 "passing argument %i to restrict-qualified parameter"
 			 " aliases with argument %Z",
 			 "passing argument %i to restrict-qualified parameter"
 			 " aliases with arguments %Z",
-			 param_pos + 1, arg_positions, arg_positions_len);
-
-  free (arg_positions);
+			 param_pos + 1, arg_positions.address (),
+			 arg_positions.length ());
 }
 
 /* Callback function to determine whether an expression TP or one of its

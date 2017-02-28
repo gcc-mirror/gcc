@@ -98,11 +98,12 @@ enum tree_dump_index
 #define OPTGROUP_IPA         (1 << 1)   /* IPA optimization passes */
 #define OPTGROUP_LOOP        (1 << 2)   /* Loop optimization passes */
 #define OPTGROUP_INLINE      (1 << 3)   /* Inlining passes */
-#define OPTGROUP_VEC         (1 << 4)   /* Vectorization passes */
-#define OPTGROUP_OPENMP      (1 << 5)	/* OpenMP specific transformations */
+#define OPTGROUP_OMP         (1 << 4)   /* OMP (Offloading and Multi
+					   Processing) transformations */
+#define OPTGROUP_VEC         (1 << 5)   /* Vectorization passes */
 #define OPTGROUP_OTHER       (1 << 6)   /* All other passes */
 #define OPTGROUP_ALL	     (OPTGROUP_IPA | OPTGROUP_LOOP | OPTGROUP_INLINE \
-                              | OPTGROUP_VEC | OPTGROUP_OTHER)
+                              | OPTGROUP_OMP | OPTGROUP_VEC | OPTGROUP_OTHER)
 
 /* Define a tree dump switch.  */
 struct dump_file_info

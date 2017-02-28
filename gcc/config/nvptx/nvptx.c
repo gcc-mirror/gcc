@@ -4542,8 +4542,8 @@ nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
       if (fn_level < 0 && dims[GOMP_DIM_VECTOR] >= 0)
 	warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION, 0,
 		    dims[GOMP_DIM_VECTOR]
-		    ? "using vector_length (%d), ignoring %d"
-		    : "using vector_length (%d), ignoring runtime setting",
+		    ? G_("using vector_length (%d), ignoring %d")
+		    : G_("using vector_length (%d), ignoring runtime setting"),
 		    PTX_VECTOR_LENGTH, dims[GOMP_DIM_VECTOR]);
       dims[GOMP_DIM_VECTOR] = PTX_VECTOR_LENGTH;
       changed = true;

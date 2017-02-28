@@ -1,3 +1,58 @@
+2017-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/79677
+	* gcc-interface/misc.c (gnat_handle_option): Pass true to
+	handle_generated_option GENERATED_P.
+
+2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_field): Do not remove the wrapper
+	around a justified modular type if it doesn't have the same scalar
+	storage order as the enclosing record type.
+
+2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu): Do not apply special handling
+	of boolean rvalues to function calls.
+
+2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (fold_bit_position): New function.
+	(rest_of_record_type_compilation): Call it instead of bit_position to
+	compute the field position and remove the call to remove_conversions.
+	(compute_related_constant): Factor out the multiplication in both
+	operands, if any, and streamline the final test.
+
+2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (return_value_ok_for_nrv_p): Add sanity check.
+
+2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c: Include demangle.h.
+	(is_cplusplus_method): Return again true for a primitive operation
+	only if it is dispatching.  For a subprogram with an interface name,
+	call the demangler to get the number of C++ parameters and compare it
+	with the number of Ada parameters.
+
+2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu): If
+	there is no end label, put the location of the At_End procedure on
+	the call to the procedure.
+
+2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.c (gnat_type_max_size): Try to return a meaningful
+	value for array types with TYPE_INDEX_TYPE set on their domain type.
+	* gcc-interface/utils.c (max_size): For operations and expressions, do
+	not build a new node if the operands have not changed or are missing.
+
+2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (max_size) <tcc_expression>: Flip the second
+	argument when recursing on TRUTH_NOT_EXPR.
+
 2017-02-12  John Marino  <gnugcc@marino.st>
 
 	* system-freebsd-x86.ads: Rename into...

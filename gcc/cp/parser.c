@@ -6934,29 +6934,6 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		warn_for_memset (input_location, arg0, arg2, literal_mask);
 	      }
 
-	    if (TREE_CODE (postfix_expression) == FUNCTION_DECL
-		&& warn_restrict)
-	      {
-		unsigned i;
-		tree arg;
-		FOR_EACH_VEC_SAFE_ELT (args, i, arg)
-		  TREE_VISITED (arg) = 0;
-
-		unsigned param_pos = 0;
-		for (tree decl = DECL_ARGUMENTS (postfix_expression);
-		     decl != NULL_TREE;
-		     decl = DECL_CHAIN (decl), param_pos++)
-		  {
-		    tree type = TREE_TYPE (decl);
-		    if (POINTER_TYPE_P (type) && TYPE_RESTRICT (type)
-			&& !TYPE_READONLY (TREE_TYPE (type)))
-		      warn_for_restrict (param_pos, args);
-		  }
-
-		FOR_EACH_VEC_SAFE_ELT (args, i, arg)
-		  TREE_VISITED (arg) = 0;
-	      }
-
 	    if (TREE_CODE (postfix_expression) == COMPONENT_REF)
 	      {
 		tree instance = TREE_OPERAND (postfix_expression, 0);
@@ -36316,9 +36293,8 @@ cp_parser_oacc_enter_exit_data (cp_parser *parser, cp_token *pragma_tok,
 
   if (strcmp (p, "data") != 0)
     {
-      error_at (loc, enter
-		? "expected %<data%> after %<#pragma acc enter%>"
-		: "expected %<data%> after %<#pragma acc exit%>");
+      error_at (loc, "expected %<data%> after %<#pragma acc %s%>",
+		enter ? "enter" : "exit");
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
       return NULL_TREE;
     }
@@ -37596,8 +37572,10 @@ cp_finalize_oacc_routine (cp_parser *parser, tree fndecl, bool is_defn)
       if (TREE_USED (fndecl) || (!is_defn && DECL_SAVED_TREE (fndecl)))
 	{
 	  error_at (parser->oacc_routine->loc,
-		    "%<#pragma acc routine%> must be applied before %s",
-		    TREE_USED (fndecl) ? "use" : "definition");
+		    TREE_USED (fndecl)
+		    ? G_("%<#pragma acc routine%> must be applied before use")
+		    : G_("%<#pragma acc routine%> must be applied before "
+			 "definition"));
 	  parser->oacc_routine = NULL;
 	  return;
 	}

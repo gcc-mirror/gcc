@@ -3832,8 +3832,6 @@ arc_ccfsm_advance (rtx_insn *insn, struct arc_ccfsm *state)
 	      break;
 	    }
 
-	  scanbody = PATTERN (this_insn);
-
 	  switch (GET_CODE (this_insn))
 	    {
 	    case CODE_LABEL:
@@ -3868,6 +3866,8 @@ arc_ccfsm_advance (rtx_insn *insn, struct arc_ccfsm *state)
 	      break;
 
 	    case JUMP_INSN:
+	      scanbody = PATTERN (this_insn);
+
 	      /* If this is an unconditional branch to the same label, succeed.
 		 If it is to another label, do nothing.  If it is conditional,
 		 fail.  */
@@ -3902,6 +3902,8 @@ arc_ccfsm_advance (rtx_insn *insn, struct arc_ccfsm *state)
 	      break;
 
 	    case INSN:
+	      scanbody = PATTERN (this_insn);
+
 	      /* We can only do this with insns that can use the condition
 		 codes (and don't set them).  */
 	      if (GET_CODE (scanbody) == SET
@@ -7401,7 +7403,7 @@ force_offsettable (rtx addr, HOST_WIDE_INT size, bool reuse)
     }
   if (!REG_P (base)
       || (REGNO (base) != STACK_POINTER_REGNUM
-	  && REGNO_PTR_FRAME_P (REGNO (addr)))
+	  && REGNO_PTR_FRAME_P (REGNO (base)))
       || !CONST_INT_P (offs) || !SMALL_INT (INTVAL (offs))
       || !SMALL_INT (INTVAL (offs) + size))
     {

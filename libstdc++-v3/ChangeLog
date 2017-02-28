@@ -1,3 +1,9 @@
+2017-02-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/iterator: Include <iterator>.
+	* testsuite/experimental/iterator/requirements.cc: Check for contents
+	of <iterator>.
+
 2017-02-19  Dinka Ranns  <dinka.ranns@googlemail.com>
 
 	C++17 GB50 resolution

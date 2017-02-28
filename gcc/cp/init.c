@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "gimplify.h"
 #include "c-family/c-ubsan.h"
+#include "intl.h"
 
 static bool begin_init_stmts (tree *, tree *);
 static tree finish_init_stmts (bool, tree, tree);
@@ -2042,14 +2043,16 @@ build_offset_ref (tree type, tree member, bool address_p,
 	       If the access is to form a pointer to member, the
 	       nested-name-specifier shall name the derived class
 	       (or any class derived from that class).  */
+	  bool ok;
 	  if (address_p && DECL_P (t)
 	      && DECL_NONSTATIC_MEMBER_P (t))
-	    perform_or_defer_access_check (TYPE_BINFO (type), t, t,
-					   complain);
+	    ok = perform_or_defer_access_check (TYPE_BINFO (type), t, t,
+						complain);
 	  else
-	    perform_or_defer_access_check (basebinfo, t, t,
-					   complain);
-
+	    ok = perform_or_defer_access_check (basebinfo, t, t,
+						complain);
+	  if (!ok)
+	    return error_mark_node;
 	  if (DECL_STATIC_FUNCTION_P (t))
 	    return t;
 	  member = t;
@@ -2058,11 +2061,14 @@ build_offset_ref (tree type, tree member, bool address_p,
 	TREE_TYPE (member) = unknown_type_node;
     }
   else if (address_p && TREE_CODE (member) == FIELD_DECL)
-    /* We need additional test besides the one in
-       check_accessibility_of_qualified_id in case it is
-       a pointer to non-static member.  */
-    perform_or_defer_access_check (TYPE_BINFO (type), member, member,
-				   complain);
+    {
+      /* We need additional test besides the one in
+	 check_accessibility_of_qualified_id in case it is
+	 a pointer to non-static member.  */
+      if (!perform_or_defer_access_check (TYPE_BINFO (type), member, member,
+					  complain))
+	return error_mark_node;
+    }
 
   if (!address_p)
     {
@@ -2803,15 +2809,12 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
     {
       if (complain & tf_warning_or_error)
 	{
-	  const char *msg;
-	  if (typedef_variant_p (orig_type))
-	    msg = ("non-constant array new length must be specified "
-		   "directly, not by typedef");
-	  else
-	    msg = ("non-constant array new length must be specified "
-		   "without parentheses around the type-id");
-	  pedwarn (EXPR_LOC_OR_LOC (outer_nelts, input_location),
-		   OPT_Wvla, msg);
+	  pedwarn (EXPR_LOC_OR_LOC (outer_nelts, input_location), OPT_Wvla,
+		   typedef_variant_p (orig_type)
+		   ? G_("non-constant array new length must be specified "
+			"directly, not by typedef")
+		   : G_("non-constant array new length must be specified "
+			"without parentheses around the type-id"));
 	}
       else
 	return error_mark_node;

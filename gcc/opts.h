@@ -353,7 +353,7 @@ bool handle_generated_option (struct gcc_options *opts,
 			      size_t opt_index, const char *arg, int value,
 			      unsigned int lang_mask, int kind, location_t loc,
 			      const struct cl_option_handlers *handlers,
-			      diagnostic_context *dc);
+			      bool generated_p, diagnostic_context *dc);
 void generate_option (size_t opt_index, const char *arg, int value,
 		      unsigned int lang_mask,
 		      struct cl_decoded_option *decoded);

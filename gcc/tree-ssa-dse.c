@@ -176,7 +176,7 @@ clear_bytes_written_by (sbitmap live_bytes, gimple *stmt, ao_ref *ref)
   /* Verify we have the same base memory address, the write
      has a known size and overlaps with REF.  */
   if (valid_ao_ref_for_dse (&write)
-      && write.base == ref->base
+      && operand_equal_p (write.base, ref->base, OEP_ADDRESS_OF)
       && write.size == write.max_size
       && ((write.offset < ref->offset
 	   && write.offset + write.size > ref->offset)

@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-parser.h"
 #include "read-rtl-function.h"
 #include "run-rtl-passes.h"
+#include "intl.h"
 
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
@@ -6159,8 +6160,8 @@ c_parser_asm_statement (c_parser *parser)
     {
       if (!c_parser_require (parser, CPP_COLON,
 			     is_goto
-			     ? "expected %<:%>"
-			     : "expected %<:%> or %<)%>"))
+			     ? G_("expected %<:%>")
+			     : G_("expected %<:%> or %<)%>")))
 	goto error_close_paren;
 
       /* Once past any colon, we're no longer a simple asm.  */
@@ -8416,28 +8417,6 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	      tree arg0 = (*exprlist)[0];
 	      tree arg2 = (*exprlist)[2];
 	      warn_for_memset (expr_loc, arg0, arg2, literal_zero_mask);
-	    }
-
-	  if (TREE_CODE (expr.value) == FUNCTION_DECL && warn_restrict)
-	    {
-	      unsigned i;
-	      tree arg;
-	      FOR_EACH_VEC_SAFE_ELT (exprlist, i, arg)
-		TREE_VISITED (arg) = 0;
-
-	      unsigned param_pos = 0;
-	      function_args_iterator iter;
-	      tree t;
-	      FOREACH_FUNCTION_ARGS (TREE_TYPE (expr.value), t, iter)
-		{
-		  if (POINTER_TYPE_P (t) && TYPE_RESTRICT (t)
-		      && !TYPE_READONLY (TREE_TYPE (t)))
-		    warn_for_restrict (param_pos, exprlist);
-		  param_pos++;
-		}
-
-	      FOR_EACH_VEC_SAFE_ELT (exprlist, i, arg)
-		TREE_VISITED (arg) = 0;
 	    }
 
 	  start = expr.get_start ();
@@ -13947,9 +13926,8 @@ c_parser_oacc_enter_exit_data (c_parser *parser, bool enter)
 
   if (strcmp (p, "data") != 0)
     {
-      error_at (loc, enter
-		? "expected %<data%> after %<#pragma acc enter%>"
-		: "expected %<data%> after %<#pragma acc exit%>");
+      error_at (loc, "expected %<data%> after %<#pragma acc %s%>",
+		enter ? "enter" : "exit");
       parser->error = true;
       c_parser_skip_to_pragma_eol (parser);
       return;
@@ -13964,9 +13942,8 @@ c_parser_oacc_enter_exit_data (c_parser *parser, bool enter)
 
   if (omp_find_clause (clauses, OMP_CLAUSE_MAP) == NULL_TREE)
     {
-      error_at (loc, enter
-		? "%<#pragma acc enter data%> has no data movement clause"
-		: "%<#pragma acc exit data%> has no data movement clause");
+      error_at (loc, "%<#pragma acc %s data%> has no data movement clause",
+		enter ? "enter" : "exit");
       return;
     }
 
@@ -14292,8 +14269,10 @@ c_finish_oacc_routine (struct oacc_routine_data *data, tree fndecl,
   if (TREE_USED (fndecl) || (!is_defn && DECL_SAVED_TREE (fndecl)))
     {
       error_at (data->loc,
-		"%<#pragma acc routine%> must be applied before %s",
-		TREE_USED (fndecl) ? "use" : "definition");
+		TREE_USED (fndecl)
+		? G_("%<#pragma acc routine%> must be applied before use")
+		: G_("%<#pragma acc routine%> must be applied before "
+		     "definition"));
       data->error_seen = true;
       return;
     }
