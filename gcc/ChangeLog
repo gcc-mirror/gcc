@@ -1,3 +1,8 @@
+2017-02-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (print_reg): Error out for values
+	of 8-bit size in invalid integer register.
+
 2017-02-28  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/79691
