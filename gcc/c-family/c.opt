@@ -293,7 +293,7 @@ Warn about 'new' of type with extended alignment without -faligned-new.
 
 Waligned-new=
 C++ ObjC++ Var(warn_aligned_new) Enum(warn_aligned_new_level) Joined RejectNegative Warning LangEnabledBy(C++ ObjC++,Wall,1,0)
--Waligned-new=all Warn even if 'new' uses a class member allocation function.
+-Waligned-new=[none|global|all]	Warn even if 'new' uses a class member allocation function.
 
 Wall
 C ObjC C++ ObjC++ Warning
