@@ -1,3 +1,7 @@
+2017-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/20170228-1.c: New test.
+
 2017-02-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt63.adb: New test.

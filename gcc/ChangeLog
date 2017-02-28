@@ -1,3 +1,9 @@
+2017-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/79749
+	* config/sparc/sparc.c (sparc_frame_pointer_required): Add missing
+	condition on optimize for the leaf function test.
+
 2017-02-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
