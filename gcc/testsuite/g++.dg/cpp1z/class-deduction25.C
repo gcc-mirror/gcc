@@ -15,10 +15,10 @@ template<class T> struct A {
 template<class T, int N = remove_ref_t<T>::value> A(T&&, int*) -> A<T>; //#3
 
 A a{1,0}; // uses #1 to deduce A<int> and initializes with #1
-A b{a,0}; // uses #3 (not #2) to deduce A<A<int>&> and initializes with #1
+A b{a,0}; // uses #2 to deduce A<int> and initializes with #2
 
 template <class,class> struct same;
 template <class T> struct same<T,T> {};
 
 same<decltype(a),A<int>> s1;
-same<decltype(b),A<A<int>&>> s2;
+same<decltype(b),A<int>> s2;

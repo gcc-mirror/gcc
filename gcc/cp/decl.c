@@ -5238,13 +5238,15 @@ start_decl_1 (tree decl, bool initialized)
   else if (aggregate_definition_p && !complete_p)
     {
       if (type_uses_auto (type))
-	gcc_unreachable ();
+	gcc_assert (CLASS_PLACEHOLDER_TEMPLATE (type));
       else
-	error ("aggregate %q#D has incomplete type and cannot be defined",
-	       decl);
-      /* Change the type so that assemble_variable will give
-	 DECL an rtl we can live with: (mem (const_int 0)).  */
-      type = TREE_TYPE (decl) = error_mark_node;
+	{
+	  error ("aggregate %q#D has incomplete type and cannot be defined",
+		 decl);
+	  /* Change the type so that assemble_variable will give
+	     DECL an rtl we can live with: (mem (const_int 0)).  */
+	  type = TREE_TYPE (decl) = error_mark_node;
+	}
     }
 
   /* Create a new scope to hold this declaration if necessary.
@@ -6816,14 +6818,17 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	      return;
 	    }
 
-	  gcc_unreachable ();
+	  gcc_assert (CLASS_PLACEHOLDER_TEMPLATE (auto_node));
 	}
       d_init = init;
-      if (TREE_CODE (d_init) == TREE_LIST
-	  && !CLASS_PLACEHOLDER_TEMPLATE (auto_node))
-	d_init = build_x_compound_expr_from_list (d_init, ELK_INIT,
-						  tf_warning_or_error);
-      d_init = resolve_nondeduced_context (d_init, tf_warning_or_error);
+      if (d_init)
+	{
+	  if (TREE_CODE (d_init) == TREE_LIST
+	      && !CLASS_PLACEHOLDER_TEMPLATE (auto_node))
+	    d_init = build_x_compound_expr_from_list (d_init, ELK_INIT,
+						      tf_warning_or_error);
+	  d_init = resolve_nondeduced_context (d_init, tf_warning_or_error);
+	}
       enum auto_deduction_context adc = adc_variable_type;
       if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
 	adc = adc_decomp_type;
@@ -12323,19 +12328,12 @@ grokdeclarator (const cp_declarator *declarator,
 
     if (VAR_P (decl) && !initialized)
       if (tree auto_node = type_uses_auto (type))
-	{
-	  location_t loc = declspecs->locations[ds_type_spec];
-	  if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
-	    {
-	      error_at (loc, "invalid use of template-name %qE without an "
-			"argument list", tmpl);
-	      inform (loc, "class template argument deduction "
-		      "requires an initializer");
-	    }
-	  else
+	if (!CLASS_PLACEHOLDER_TEMPLATE (auto_node))
+	  {
+	    location_t loc = declspecs->locations[ds_type_spec];
 	    error_at (loc, "declaration of %q#D has no initializer", decl);
-	  TREE_TYPE (decl) = error_mark_node;
-	}
+	    TREE_TYPE (decl) = error_mark_node;
+	  }
 
     if (storage_class == sc_extern && initialized && !funcdef_flag)
       {
