@@ -1,3 +1,10 @@
+2017-02-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* dumpfile.h (OPTGROUP_OPENMP): Rename to OPTGROUP_OMP.  Adjust
+	all users.
+	* dumpfile.c (optgroup_options): Instead of "openmp", associate
+	OPTGROUP_OMP with "omp".
+
 2017-02-27  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR target/79544
