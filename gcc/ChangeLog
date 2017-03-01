@@ -1,3 +1,10 @@
+2017-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/79721
+	* tree-chrec.c (chrec_evaluate): Perform computation of Newtons
+	interpolating formula in wrapping arithmetic.
+	(chrec_apply): Convert chrec_evaluate return value to wanted type.
+
 2017-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/79734

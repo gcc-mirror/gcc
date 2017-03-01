@@ -536,7 +536,8 @@ tree_fold_binomial (tree type, tree n, unsigned int k)
 }
 
 /* Helper function.  Use the Newton's interpolating formula for
-   evaluating the value of the evolution function.  */
+   evaluating the value of the evolution function.
+   The result may be in an unsigned type of CHREC.  */
 
 static tree
 chrec_evaluate (unsigned var, tree chrec, tree n, unsigned int k)
@@ -549,25 +550,33 @@ chrec_evaluate (unsigned var, tree chrec, tree n, unsigned int k)
 	 && flow_loop_nested_p (var_loop, get_chrec_loop (chrec)))
     chrec = CHREC_LEFT (chrec);
 
+  /* The formula associates the expression and thus we have to make
+     sure to not introduce undefined overflow.  */
+  tree ctype = type;
+  if (INTEGRAL_TYPE_P (type)
+      && ! TYPE_OVERFLOW_WRAPS (type))
+    ctype = unsigned_type_for (type);
+
   if (TREE_CODE (chrec) == POLYNOMIAL_CHREC
       && CHREC_VARIABLE (chrec) == var)
     {
       arg1 = chrec_evaluate (var, CHREC_RIGHT (chrec), n, k + 1);
       if (arg1 == chrec_dont_know)
 	return chrec_dont_know;
-      binomial_n_k = tree_fold_binomial (type, n, k);
+      binomial_n_k = tree_fold_binomial (ctype, n, k);
       if (!binomial_n_k)
 	return chrec_dont_know;
-      arg0 = fold_build2 (MULT_EXPR, type,
-			  CHREC_LEFT (chrec), binomial_n_k);
-      return chrec_fold_plus (type, arg0, arg1);
+      tree l = chrec_convert (ctype, CHREC_LEFT (chrec), NULL);
+      arg0 = fold_build2 (MULT_EXPR, ctype, l, binomial_n_k);
+      return chrec_fold_plus (ctype, arg0, arg1);
     }
 
-  binomial_n_k = tree_fold_binomial (type, n, k);
+  binomial_n_k = tree_fold_binomial (ctype, n, k);
   if (!binomial_n_k)
     return chrec_dont_know;
 
-  return fold_build2 (MULT_EXPR, type, chrec, binomial_n_k);
+  return fold_build2 (MULT_EXPR, ctype,
+		      chrec_convert (ctype, chrec, NULL), binomial_n_k);
 }
 
 /* Evaluates "CHREC (X)" when the varying variable is VAR.
@@ -623,7 +632,7 @@ chrec_apply (unsigned var,
       else if (TREE_CODE (x) == INTEGER_CST
 	       && tree_int_cst_sgn (x) == 1)
 	/* testsuite/.../ssa-chrec-38.c.  */
-	res = chrec_evaluate (var, chrec, x, 0);
+	res = chrec_convert (type, chrec_evaluate (var, chrec, x, 0), NULL);
       else
 	res = chrec_dont_know;
       break;
