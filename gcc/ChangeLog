@@ -1,3 +1,9 @@
+2017-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79681
+	* fold-const.c (make_bit_field_ref): If orig_inner is COMPONENT_REF,
+	attempt to use its first operand as BIT_FIELD_REF base.
+
 2017-03-01  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/79721

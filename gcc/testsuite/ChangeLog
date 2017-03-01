@@ -5,6 +5,10 @@
 
 2017-03-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/79681
+	* g++.dg/cpp1y/constexpr-79681-1.C: New test.
+	* g++.dg/cpp1y/constexpr-79681-2.C: New test.
+
 	PR c++/79746
 	* g++.dg/warn/Wunused-parm-9.C: New test.
 
