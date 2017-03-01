@@ -1,3 +1,11 @@
+2017-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/79692
+	* gcc.dg/tree-ssa/builtin-sprintf-2.c: Add test cases.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-10.c: Correct %#g.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-15.c: New test.
+	* gcc.dg/tree-ssa/builtin-snprintf-3.c: Ditto.
+
 2017-03-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/invsize-2.c: New test.

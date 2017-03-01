@@ -692,6 +692,16 @@ struct directive
   {
     get_int_range (arg, integer_type_node, prec, prec + 1, false, -1);
   }
+
+  /* Return true if both width and precision are known to be
+     either constant or in some range, false otherwise.  */
+  bool known_width_and_precision () const
+  {
+    return ((width[1] < 0
+	     || (unsigned HOST_WIDE_INT)width[1] <= target_int_max ())
+	    && (prec[1] < 0
+		|| (unsigned HOST_WIDE_INT)prec[1] < target_int_max ()));
+  }
 };
 
 /* Return the logarithm of X in BASE.  */
@@ -1180,10 +1190,10 @@ format_integer (const directive &dir, tree arg)
 	  /* As a special case, a precision of zero with a zero argument
 	     results in zero bytes except in base 8 when the '#' flag is
 	     specified, and for signed conversions in base 8 and 10 when
-	     flags when either the space or '+' flag has been specified
-	     when it results in just one byte (with width having the normal
-	     effect).  This must extend to the case of a specified precision
-	     with an unknown value because it can be zero.  */
+	     either the space or '+' flag has been specified and it results
+	     in just one byte (with width having the normal effect).  This
+	     must extend to the case of a specified precision with
+	     an unknown value because it can be zero.  */
 	  res.range.min = ((base == 8 && dir.get_flag ('#')) || maybesign);
 	  if (res.range.min == 0 && dir.prec[0] != dir.prec[1])
 	    {
@@ -1254,10 +1264,12 @@ format_integer (const directive &dir, tree arg)
 	  argmax = wide_int_to_tree (argtype, max);
 
 	  /* Set KNOWNRANGE if the argument is in a known subrange
-	     of the directive's type (KNOWNRANGE may be reset below).  */
+	     of the directive's type and neither width nor precision
+	     is unknown.  (KNOWNRANGE may be reset below).  */
 	  res.knownrange
-	    = (!tree_int_cst_equal (TYPE_MIN_VALUE (dirtype), argmin)
-	       || !tree_int_cst_equal (TYPE_MAX_VALUE (dirtype), argmax));
+	    = ((!tree_int_cst_equal (TYPE_MIN_VALUE (dirtype), argmin)
+		|| !tree_int_cst_equal (TYPE_MAX_VALUE (dirtype), argmax))
+	       && dir.known_width_and_precision ());
 
 	  res.argmin = argmin;
 	  res.argmax = argmax;
@@ -1421,12 +1433,12 @@ get_mpfr_format_length (mpfr_ptr x, const char *flags, HOST_WIDE_INT prec,
 
   HOST_WIDE_INT p = prec;
 
-  if (spec == 'G')
+  if (spec == 'G' && !strchr (flags, '#'))
     {
-      /* For G/g, precision gives the maximum number of significant
-	 digits which is bounded by LDBL_MAX_10_EXP, or, for a 128
-	 bit IEEE extended precision, 4932.  Using twice as much
-	 here should be more than sufficient for any real format.  */
+      /* For G/g without the pound flag, precision gives the maximum number
+	 of significant digits which is bounded by LDBL_MAX_10_EXP, or, for
+	 a 128 bit IEEE extended precision, 4932.  Using twice as much here
+	 should be more than sufficient for any real format.  */
       if ((IEEE_MAX_10_EXP * 2) < prec)
 	prec = IEEE_MAX_10_EXP * 2;
       p = prec;
@@ -1609,7 +1621,12 @@ format_floating (const directive &dir)
 	/* Compute the upper bound for -TYPE_MAX.  */
 	res.range.max = format_floating_max (type, 'f', dir.prec[1]);
 
-	res.range.likely = res.range.min;
+	/* The minimum output with unknown precision is a single byte
+	   (e.g., "0") but the more likely output is 3 bytes ("0.0").  */
+	if (dir.prec[0] < 0 && dir.prec[1] > 0)
+	  res.range.likely = 3;
+	else
+	  res.range.likely = res.range.min;
 
 	/* The unlikely maximum accounts for the longest multibyte
 	   decimal point character.  */
@@ -1625,10 +1642,43 @@ format_floating (const directive &dir)
 	/* The %g output depends on precision and the exponent of
 	   the argument.  Since the value of the argument isn't known
 	   the lower bound on the range of bytes (not counting flags
-	   or width) is 1.  */
-	res.range.min = flagmin;
-	res.range.max = format_floating_max (type, 'g', dir.prec[1]);
-	res.range.likely = res.range.max;
+	   or width) is 1 plus radix (i.e., either "0" or "0." for
+	   "%g" and "%#g", respectively, with a zero argument).  */
+	res.range.min = flagmin + radix;
+
+	char spec = 'g';
+	HOST_WIDE_INT maxprec = dir.prec[1];
+	if (radix && maxprec)
+	  {
+	    /* When the pound flag (radix) is set, trailing zeros aren't
+	       trimmed and so the longest output is the same as for %e,
+	       except with precision minus 1 (as specified in C11).  */
+	    spec = 'e';
+	    if (maxprec > 0)
+	      --maxprec;
+	    else if (maxprec < 0)
+	      maxprec = 5;
+	  }
+
+	res.range.max = format_floating_max (type, spec, maxprec);
+
+	/* The likely output is either the maximum computed above
+	   minus 1 (assuming the maximum is positive) when precision
+	   is known (or unspecified), or the same minimum as for %e
+	   (which is computed for a non-negative argument).  Unlike
+	   for the other specifiers above the likely output isn't
+	   the minimum because for %g that's 1 which is unlikely.  */
+	if (dir.prec[1] < 0
+	    || (unsigned HOST_WIDE_INT)dir.prec[1] < target_int_max ())
+	  res.range.likely = res.range.max - 1;
+	else
+	  {
+	    HOST_WIDE_INT minprec = 6 + !radix /* decimal point */;
+	    res.range.likely = (flagmin
+				+ radix
+				+ minprec
+				+ 2 /* e+ */ + 2);
+	  }
 
 	/* The unlikely maximum accounts for the longest multibyte
 	   decimal point character.  */
@@ -1657,24 +1707,63 @@ format_floating (const directive &dir, tree arg)
 
   HOST_WIDE_INT prec[] = { dir.prec[0], dir.prec[1] };
 
+  /* For an indeterminate precision the lower bound must be assumed
+     to be zero.  */
   if (TOUPPER (dir.specifier) == 'A')
     {
+      /* Get the number of fractional decimal digits needed to represent
+	 the argument without a loss of accuracy.  */
+      tree type = arg ? TREE_TYPE (arg) :
+	(dir.modifier == FMT_LEN_L || dir.modifier == FMT_LEN_ll
+	 ? long_double_type_node : double_type_node);
+
+      unsigned fmtprec
+	= REAL_MODE_FORMAT (TYPE_MODE (type))->p;
+
+      /* The precision of the IEEE 754 double format is 53.
+	 The precision of all other GCC binary double formats
+	 is 56 or less.  */
+      unsigned maxprec = fmtprec <= 56 ? 13 : 15;
+
       /* For %a, leave the minimum precision unspecified to let
 	 MFPR trim trailing zeros (as it and many other systems
 	 including Glibc happen to do) and set the maximum
 	 precision to reflect what it would be with trailing zeros
 	 present (as Solaris and derived systems do).  */
-      if (prec[0] < 0)
-	prec[0] = -1;
-      if (prec[1] < 0)
+      if (dir.prec[1] < 0)
 	{
-          unsigned fmtprec
-	    = REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (arg)))->p;
-
-	       /* The precision of the IEEE 754 double format is 53.
-	     The precision of all other GCC binary double formats
-	     is 56 or less.  */
-	  prec[1] = fmtprec <= 56 ? 13 : 15;
+	  /* Both bounds are negative implies that precision has
+	     not been specified.  */
+	  prec[0] = maxprec;
+	  prec[1] = -1;
+	}
+      else if (dir.prec[0] < 0)
+	{
+	  /* With a negative lower bound and a non-negative upper
+	     bound set the minimum precision to zero and the maximum
+	     to the greater of the maximum precision (i.e., with
+	     trailing zeros present) and the specified upper bound.  */
+	  prec[0] = 0;
+	  prec[1] = dir.prec[1] < maxprec ? maxprec : dir.prec[1];
+	}
+    }
+  else if (dir.prec[0] < 0)
+    {
+      if (dir.prec[1] < 0)
+	{
+	  /* A precision in a strictly negative range is ignored and
+	     the default of 6 is used instead.  */
+	  prec[0] = prec[1] = 6;
+	}
+      else
+	{
+	  /* For a precision in a partly negative range, the lower bound
+	     must be assumed to be zero and the new upper bound is the
+	     greater of 6 (the default precision used when the specified
+	     precision is negative) and the upper bound of the specified
+	     range.  */
+	  prec[0] = 0;
+	  prec[1] = dir.prec[1] < 6 ? 6 : dir.prec[1];
 	}
     }
 
@@ -1734,12 +1823,23 @@ format_floating (const directive &dir, tree arg)
       res.range.max = tmp;
     }
 
-  res.knownrange = true;
+  /* The range is known unless either width or precision is unknown.  */
+  res.knownrange = dir.known_width_and_precision ();
 
-  /* For the same floating point constant use the longer output
-     as the likely maximum since with round to nearest either is
-     equally likely.  */
-  res.range.likely = res.range.max;
+  /* For the same floating point constant, unless width or precision
+     is unknown, use the longer output as the likely maximum since
+     with round to nearest either is equally likely.  Otheriwse, when
+     precision is unknown, use the greater of the minimum and 3 as
+     the likely output (for "0.0" since zero precision is unlikely).  */
+  if (res.knownrange)
+    res.range.likely = res.range.max;
+  else if (res.range.min < 3
+	   && dir.prec[0] < 0
+	   && (unsigned HOST_WIDE_INT)dir.prec[1] == target_int_max ())
+    res.range.likely = 3;
+  else
+    res.range.likely = res.range.min;
+
   res.range.unlikely = res.range.max;
 
   if (res.range.max > 2 && (prec[0] != 0 || prec[1] != 0))
