@@ -1,3 +1,8 @@
+2017-03-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Tweak link to
+	doxygen.org.
+
 2017-02-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/iterator: Include <iterator>.
