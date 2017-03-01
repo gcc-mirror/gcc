@@ -14,4 +14,4 @@ test_any_equal (vector float *arg1_p, vector float *arg2_p)
   return vec_any_eq (arg_1, arg_2);
 }
 
-/* { dg-final { scan-assembler "xvcmpnesp." } } */
+/* { dg-final { scan-assembler "xvcmpeqsp." } } */

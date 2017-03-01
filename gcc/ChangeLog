@@ -1,3 +1,89 @@
+2017-03-01  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/79395
+	* config/rs6000/altivec.h (vec_ctz and others): Change the
+	preprocessor macro that controls conditional compilation from
+	_ARCH_PWR9 to __POWER9_VECTOR__.
+	(vec_all_ne): Change parameterization of __altivec_scalar_pred
+	macro expansion under preprocessor #ifdef __POWER9_VECTOR__
+	control (instead of _ARCH_PWR9 control) so that template
+	definition uses power9-specific function.
+	(vec_any_eq): Likewise.
+	(vec_all_ne): Change macro definition to use a power9-specific
+	expansion under #ifdef __POWER9_VECTOR__ control (instead of
+	_ARCH_PWR9 control).
+	(vec_any_eq) Likewise.
+	* config/rs6000/rs6000-builtin.def (CMPNEF): Remove BU_P9V_AV_2
+	expansion for CMPNEF to remove support for xvcmpnesp instruction.
+	(CMPNED): Remove BU_P9V_AV2 expansion for CMPNED to remove
+	support for xvcmpnedp instruction.
+	(VCMPNEB_P): Replace BU_P9V_AV_P macro expansion with BU_P9V_AV_2
+	macro expansion so that Power9 implementation of vec_all_ne does
+	not use the AltiVec predicate framework.
+	(VCMPNEH_P): Likewise.
+	(VCMPNEW_P): Likewise.
+	(VCMPNED_P): Likewise.
+	(VCMPNEFP_P): Likewise.
+	(VCMPNEDP_P): Likewise.
+	(VCMPAEB_P): Add BU_P9V_AV_2 macro expansion to change
+	implementation of vec_any_eq to not use AltiVec predicate
+	framework.
+	(VCMPAEH_P): Likewise.
+	(VCMPAEW_P): Likewise.
+	(VCMPAED_P): Likewise.
+	(VCMPAEFP_P): Likewise.
+	(VCMPAEDP_P): Likewise.
+	(VCMPNE_P): Replace BU_P9V_OVERLOAD_P macro expansion with
+	BU_P9V_OVERLOAD_2 so that Power9 implementation of vec_all_ne does
+	not use the AltiVec predicate framework.
+	(VCMPAE_P): Add BU_P9V_OVERLOAD_2 macro to change implementation
+	of vec_any_eq to not use AltiVec predicate framework.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Add
+	support for predefined __POWER9_VECTOR__ macro to indicate that
+	Power9 instruction selection is enabled.
+	(altivec_overloaded_builtins): Remove extraneous
+	ALTIVEC_BUILTIN_VEC_CMPNE entry for overloaded
+	function argument types RS6000_BTI_bool_V16QI and
+	RS6000_BTI_bool_V16QI.  Remove erroneous ALTIVEC_BUILTIN_VEC_CMPNE
+	entry for overloaded function argument types RS6000_BTI_bool_V4SI
+	andRS6000_BTI_bool_V4SI, mapping to P9V_BUILTIN_CMPNEB.  Remove
+	two entries mapping to P9V_BUITIN_CMPNED and one entry mapping to
+	P9V_BUILTIN_CMPNEF to force use of instructions not specific to
+	Power9 for implementations of vec_cmpne.  Change the signature for
+	all definitions of the overloaded P9V_BUILTIN_VEC_CMPNE_P function
+	(representing vec_all_ne) to remove the previously described first
+	argument of type RS6000_BTI_INTSI, as this was an artifact of
+	reliance on the AltiVec predicate framework, which is no longer
+	used in the implementation of these functions.  Add
+	P9V_BUILTIN_VEC_VCMPAE_P entries (representing the vec_anyeq
+	function) to match all of the P9V_BUILTIN_VEC_VCMNE_P entries
+	since, unlike the AltiVec predicate framework implementation, we
+	do not share function descriptors between vec_alle and vec_anyeq.
+	(altivec_resolve_overloaded_builtin): Add SFmode and DFmode to the
+	set of modes that receive special treatment even when
+	TARGET_P9_VECTOR is true.  The special treatment emits code that
+	does not depend on Power9 instructions.
+	* config/rs6000/vector.md (vector_ne_<mode>_p): Change this
+	define_expand to not rely on AltiVec predicate framework.
+	(vector_ae_<mode>p): New define_expand to represent vec_any_eq
+	function.
+	(vector_ne_v2di_p): Change this define_expand to not rely on
+	AltiVec predicate framework.
+	(vector_ae_v2di_p): New define_expand to represent vec_any_eq
+	function.
+	(vector_ne_<mode>_p): Change this define_expand to not rely on
+	AltiVec predicate framework.
+	(vector_ae_<mode>p): New define_expand to represent vec_any_eq
+	function.
+	* config/rs6000/vsx.md (*vsx_ne_<mode>_p): For modes VSX_EXTRACT_I
+	(V16QI, V8HI, V4SI), correct a typo in the code emitted for this
+	define_insn pattern.
+	(*vsx_ne_<mode>_p): For modes VSX_F (V4SF and V2DF), remove this
+	define_insn pattern because the xvcmpne<VSs>. instruction is not
+	supported.
+	(vcmpne<VSs>): Remove this define_insn because xvcmpne<VSs>
+	instruction is not supported.
+
 2017-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/nvptx/nvptx.c: Include intl.h.

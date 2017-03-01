@@ -1,3 +1,28 @@
+2017-03-01  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/79395
+	* gcc.target/powerpc/vsu/vec-all-ne-10.c: Change scan-assembler
+	pattern to look for vcmpequd. instead of vcmpnew.
+	* gcc.target/powerpc/vsu/vec-all-ne-14.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-ne-7.c: Change scan-assembler
+	pattern to look for xvcmpeqsp. instead of xvcmpnesp.
+	* gcc.target/powerpc/vsu/vec-all-ne-8.c: Change scan-assembler to
+	look for xvcmpeqdp. instead of xvcmpnedp.
+	* gcc.target/powerpc/vsu/vec-all-ne-9.c: Change scan-assembler to
+	look for vcmpequd. instead of vcmpnew.
+	* gcc.target/powerpc/vsu/vec-any-eq-10.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-14.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-7.c: Change scan-assembler to
+	look for xvcmpeqsp. instead of xvcmpnesp.
+	* gcc.target/powerpc/vsu/vec-any-eq-8.c: Change scan-assembler to
+	look for xvcmpeqdp. instead of xvcmpnedp.
+	* gcc.target/powerpc/vsu/vec-any-eq-9.c: Change scan-assembler to
+	look for vcmpequd. instead of vcmpnew.
+	* gcc.target/powerpc/vsu/vec-cmpne-8.c: Change scan-assembler to
+	look for vcmpeqsp instead of xvcmpnesp.
+	* gcc.target/powerpc/vsu/vec-cmpne-9.c: Change scan-assembler to
+	look for xvcmpeqdp instead of xvcmpnedp.
+
 2017-03-01  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/79721

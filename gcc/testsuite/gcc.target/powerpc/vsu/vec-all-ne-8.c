@@ -14,4 +14,4 @@ test_all_not_equal (vector double *arg1_p, vector double *arg2_p)
   return vec_all_ne (arg_1, arg_2);
 }
 
-/* { dg-final { scan-assembler "xvcmpnedp." } } */
+/* { dg-final { scan-assembler "xvcmpeqdp." } } */
