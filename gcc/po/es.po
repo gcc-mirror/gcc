@@ -35,7 +35,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 7.1-b20170101\n"
+"Project-Id-Version: gcc 7.1-b20170226\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-02-25 19:14+0000\n"
 "PO-Revision-Date: 2017-02-26 12:25+0100\n"
@@ -776,10 +776,9 @@ msgstr ""
 "%s.\n"
 
 #: gcov-tool.c:520
-#, fuzzy, c-format
-#| msgid "Copyright %s 2014-2016 Free Software Foundation, Inc.\n"
+#, c-format
 msgid "Copyright %s 2014-2017 Free Software Foundation, Inc.\n"
-msgstr "Copyright %s 2014-2016 Free Software Foundation, Inc.\n"
+msgstr "Copyright %s 2014-2017 Free Software Foundation, Inc.\n"
 
 #: gcov-tool.c:523 gcov.c:691
 #, c-format
@@ -1538,8 +1537,6 @@ msgid "unreachable"
 msgstr "inalcanzable"
 
 #: cif-code.def:141
-#, fuzzy
-#| msgid "caller is instrumetnation thunk"
 msgid "caller is instrumentation thunk"
 msgstr "el llamador es thunk de instrumentación"
 
@@ -1979,10 +1976,9 @@ msgid "Average number of iterations of a loop."
 msgstr "Número medio de iteraciones en un bucle."
 
 #: params.def:537
-#, fuzzy, no-c-format
-#| msgid "Maximum number of active local stores in RTL dead store elimination."
+#, no-c-format
 msgid "Maximum size (in bytes) of objects tracked bytewise by dead store elimination."
-msgstr "Número máximo de almacenamientos locales activos en la eliminación de almacenamiento muerto RTL."
+msgstr "Número máximo (en bytes) de objetos rastreados en btyes por la eliminación de almacenamiento muerto."
 
 #: params.def:542
 #, no-c-format
@@ -2341,8 +2337,7 @@ msgid "Percentage penalty the recursive functions will receive when they are eva
 msgstr "Penalización porcentual que recibirán las funciones recursivas cuando se evalúen para clonación.."
 
 #: params.def:1015
-#, fuzzy, no-c-format
-#| msgid "Percentage penalty functions containg a single call to another function will receive when they are evaluated for cloning.."
+#, no-c-format
 msgid "Percentage penalty functions containing a single call to another function will receive when they are evaluated for cloning.."
 msgstr "Penalización porcentual que recibirán las funciones que contien una sola llamada a otra función cuando se evalúen para clonación.."
 
@@ -2414,13 +2409,12 @@ msgstr "Cantidad máxima de bbs similares con las cuales comparar un bb."
 #: params.def:1104
 #, no-c-format
 msgid "Allow the store merging pass to introduce unaligned stores if it is legal to do so"
-msgstr ""
+msgstr "Permitir que el paso de mezcla de almacenamientos introduzca almacenamientos desalineados si es legal hacerlo"
 
 #: params.def:1110
-#, fuzzy, no-c-format
-#| msgid "Maximum number of active local stores in RTL dead store elimination."
+#, no-c-format
 msgid "Maximum number of constant stores to merge in the store merging pass"
-msgstr "Número máximo de almacenamientos locales activos en la eliminación de almacenamiento muerto RTL."
+msgstr "Número máximo de almacenamientos constantes que hay que mezclar en el paso de mezcla de almacenamientos"
 
 #: params.def:1116
 #, no-c-format
@@ -2483,8 +2477,7 @@ msgid "Use callbacks instead of inline code if number of accesses in function be
 msgstr "Utiliza callbacks en lugar de código en línea si el número de accesos en la función se hace mayor o igual que este número."
 
 #: params.def:1178
-#, fuzzy, no-c-format
-#| msgid "Use direct poisoning/unpoisoning intructions for variables smaller or equal to this number."
+#, no-c-format
 msgid "Use direct poisoning/unpoisoning instructions for variables smaller or equal to this number."
 msgstr "Usa instrucciones de envenamiento/desenvenenamiento directo para variables iguales o menores que este número."
 
@@ -3445,22 +3438,19 @@ msgid "operand is not an offsettable memory reference, invalid operand code 'H'"
 msgstr "el operando no es una referencia de memoria desplazable, código de operando 'H' no válido"
 
 #: config/i386/i386.c:18162
-#, fuzzy, c-format
-#| msgid "operand is not a condition code, invalid operand code 'Y'"
+#, c-format
 msgid "operand is not an integer, invalid operand code 'K'"
-msgstr "el operando no es un código de condición, código de operando 'Y' no válido"
+msgstr "el operando no es un entero, código de operando 'K' no válido"
 
 #: config/i386/i386.c:18190
-#, fuzzy, c-format
-#| msgid "operand is not a condition code, invalid operand code 'Y'"
+#, c-format
 msgid "operand is not a specific integer, invalid operand code 'r'"
-msgstr "el operando no es un código de condición, código de operando 'Y' no válido"
+msgstr "el operando no es un entero concreto, código de operando 'r' no válido"
 
 #: config/i386/i386.c:18208
-#, fuzzy, c-format
-#| msgid "operand is not a condition code, invalid operand code 'Y'"
+#, c-format
 msgid "operand is not an integer, invalid operand code 'R'"
-msgstr "el operando no es un código de condición, código de operando 'Y' no válido"
+msgstr "el operando no es un entero, código de operando 'R' no válido"
 
 #: config/i386/i386.c:18326
 #, c-format
@@ -3942,14 +3932,10 @@ msgid "invalid expression for output modifier '%c'"
 msgstr "expresión no válida para el modificador de salida '%c'"
 
 #: config/s390/s390.c:11560
-#, fuzzy
-#| msgid "Vector argument passed to unprototyped function"
 msgid "vector argument passed to unprototyped function"
-msgstr "Se pasó un argumento vector a una función sin prototipo"
+msgstr "se pasó un argumento vector a una función sin prototipo"
 
 #: config/s390/s390.c:15373
-#, fuzzy
-#| msgid "types differ in signess"
 msgid "types differ in signedness"
 msgstr "los tipos difieren en el signo"
 
@@ -5032,10 +5018,8 @@ msgid "target argument"
 msgstr "argumento destino"
 
 #: fortran/resolve.c:2282
-#, fuzzy
-#| msgid "invalid type argument"
 msgid "value argument"
-msgstr "argumento de tipo no válido"
+msgstr "argumento de valor"
 
 #: fortran/resolve.c:2287
 msgid "volatile argument"
@@ -5725,8 +5709,6 @@ msgid "Disable preprocessing."
 msgstr "Desactiva el preprocesamiento."
 
 #: fortran/lang.opt:362
-#, fuzzy
-#| msgid "Eliminate multiple function invokations also for impure functions."
 msgid "Eliminate multiple function invocations also for impure functions."
 msgstr "También elimina invocaciones múltiples de función para funciones impure."
 
@@ -5763,8 +5745,7 @@ msgid "-fconvert=<big-endian|little-endian|native|swap> The endianness used for 
 msgstr "-fconvert=<big-endian|little-endian|native|swap> El endianness empleado en ficheros sin formato."
 
 #: fortran/lang.opt:401
-#, fuzzy, c-format
-#| msgid "Unrecognized option to endianess value: %qs"
+#, c-format
 msgid "Unrecognized option to endianness value: %qs"
 msgstr "No se reconoce la opción como valor de endianess: %qs"
 
@@ -5798,7 +5779,7 @@ msgstr "Activa el soporte para STRUCTURE/RECORD de DEC."
 
 #: fortran/lang.opt:445
 msgid "Enable DEC-style STATIC and AUTOMATIC attributes."
-msgstr ""
+msgstr "Activa los atributos de estilo DEC STATIC y AUTOMATIC."
 
 #: fortran/lang.opt:449
 msgid "Set the default double precision kind to an 8 byte wide type."
@@ -6358,10 +6339,8 @@ msgid "Warn about compile-time integer division by zero."
 msgstr "Avisa sobre la división entera por cero en tiempo de compilación."
 
 #: c-family/c.opt:473
-#, fuzzy
-#| msgid "Warn about duplicated conditions in an if-else-if chain."
 msgid "Warn about duplicated branches in if-else statements."
-msgstr "Advierte de condiciones duplicadas en cadenas if-else-if."
+msgstr "Advierte de ramas duplicadas en sentencias if-else."
 
 #: c-family/c.opt:477
 msgid "Warn about duplicated conditions in an if-else-if chain."
@@ -6437,13 +6416,11 @@ msgstr "Avisa sobre formatos de longitud cero."
 
 #: c-family/c.opt:563
 msgid "Warn about function calls with format strings that write past the end of the destination region."
-msgstr ""
+msgstr "Advierte de llamadas a funciones con cadenas de formato que escriben pasado el final de la región de destino."
 
 #: c-family/c.opt:568
-#, fuzzy
-#| msgid "Warn about casting functions to incompatible types."
 msgid "Warn about calls to snprintf and similar functions that truncate output."
-msgstr "Advierte de funciones de conversión a tipos incompatibles."
+msgstr "Advierte de llamadas a funciones como snprintf y similares que truncan la salida."
 
 #: c-family/c.opt:572
 msgid "Warn whenever type qualifiers are ignored."
@@ -6662,10 +6639,8 @@ msgid "Warn about NULL being passed to argument slots marked as requiring non-NU
 msgstr "Avisa sobre el paso de NULL a ranuras de argumento marcadas que requieren no-NULL."
 
 #: c-family/c.opt:809
-#, fuzzy
-#| msgid "-Wnormalized=<none|id|nfc|nfkc>\tWarn about non-normalised Unicode strings."
 msgid "-Wnormalized=[none|id|nfc|nfkc]\tWarn about non-normalized Unicode strings."
-msgstr "-Wnormalized=<id|nfc|nfkc>\tAvisa sobre cadenas Unicode que no están normalizadas."
+msgstr "-Wnormalized=[none|id|nfc|nfkc]\tAvisa sobre cadenas Unicode que no están normalizadas."
 
 #: c-family/c.opt:816
 msgid "argument %qs to %<-Wnormalized%> not recognized"
@@ -6724,10 +6699,8 @@ msgid "Warn when a pointer differs in signedness in an assignment."
 msgstr "Avisa cuando un puntero difiere en signo en una asignación."
 
 #: c-family/c.opt:888
-#, fuzzy
-#| msgid "Warn about use of multi-character character constants."
 msgid "Warn when a pointer is compared with a zero character constant."
-msgstr "Avisa sobre el uso de constantes de carácter multicaracteres."
+msgstr "Avisa cuando se compara un puntero con una constante de carácter cero."
 
 #: c-family/c.opt:892
 msgid "Warn when a pointer is cast to an integer of a different size."
@@ -7333,10 +7306,8 @@ msgid "Enable C++14 sized deallocation support."
 msgstr "Admite desasignación con tamaño de C++14."
 
 #: c-family/c.opt:1647
-#, fuzzy
-#| msgid "-fsso-struct=[big-endian|little-endian]\tSet the default scalar storage order."
 msgid "-fsso-struct=[big-endian|little-endian|native]\tSet the default scalar storage order."
-msgstr "-fsso-struct=[big-endian|little-endian]\tEstablece el orden de almacenamiento de escalares predeterminado."
+msgstr "-fsso-struct=[big-endian|little-endian|native]\tEstablece el orden de almacenamiento de escalares predeterminado."
 
 #: c-family/c.opt:1650
 #, c-format
@@ -7656,10 +7627,8 @@ msgid "-fgo-prefix=<string>\tSet package-specific prefix for exported Go names."
 msgstr "-fgo-prefix=<cadena>\tDefine el prefijo específico del paquete para nombres Go exportados."
 
 #: go/lang.opt:74
-#, fuzzy
-#| msgid "-fgo-relative-import-path=<path> Treat a relative import as relative to path."
 msgid "-fgo-relative-import-path=<path>\tTreat a relative import as relative to path."
-msgstr "-fgo-relative-import-path=<ruta> Trata las importaciones relativas como relativas a ruta."
+msgstr "-fgo-relative-import-path=<ruta>\tTrata las importaciones relativas como relativas a ruta."
 
 #: go/lang.opt:78
 msgid "Functions which return values must end with return statements."
@@ -7667,7 +7636,7 @@ msgstr "Las funciones con valores de devolución deben terminar con declaracione
 
 #: go/lang.opt:82
 msgid "Emit debugging information related to the escape analysis pass when run with -fgo-optimize-allocs."
-msgstr ""
+msgstr "Emite información de depuración relacionada con el paso de análisis de escape cuando se ejecuta con -fgo-optimize-allocs."
 
 #: config/vms/vms.opt:27
 msgid "Malloc data into P2 space."
@@ -8114,60 +8083,44 @@ msgid "Support TLS segment larger than 64K."
 msgstr "Admite segmentos TLS más grandes que 64K."
 
 #: config/riscv/riscv.opt:26
-#, fuzzy
-#| msgid "-mbranch-cost=COST\tSet the cost of branches to roughly COST instructions."
 msgid "-mbranch-cost=N\tSet the cost of branches to roughly N instructions."
-msgstr "-mbranch-cost=COSTO\tEstablece el costo de las ramificaciones aproximadamente a COSTO instrucciones."
+msgstr "-mbranch-cost=N\tEstablece el costo de las ramificaciones aproximadamente a N instrucciones."
 
 #: config/riscv/riscv.opt:30
-#, fuzzy
-#| msgid "When generating -mabicalls code, allow executables to use PLTs and copy relocations."
 msgid "When generating -fpic code, allow the use of PLTs. Ignored for fno-pic."
-msgstr "Al generar código -mabicalls, permite que los ejecutables usen PLTs y copien reubicaciones."
+msgstr "Al generar código -fpic, permite el uso de PLTs. Se hace caso omiso con fno-pic."
 
 #: config/riscv/riscv.opt:34
-#, fuzzy
-#| msgid "Specify the name of the target floating point configuration."
 msgid "Specify integer and floating-point calling convention."
-msgstr "Especifica el nombre de la configuración de coma flotante destino."
+msgstr "Especifica el convenio de llamadas de enteros y de coma flotante."
 
 #: config/riscv/riscv.opt:38
-#, fuzzy
-#| msgid "Known ABIs (for use with the -mabi= option):"
 msgid "Supported ABIs (for use with the -mabi= option):"
-msgstr "ABIs conocidas (para usar con la opción -mabi=):"
+msgstr "ABIs admitidas (para usar con la opción -mabi=):"
 
 #: config/riscv/riscv.opt:60
-#, fuzzy
-#| msgid "Use hardware floating point square root instruction."
 msgid "Use hardware floating-point divide and square root instructions."
-msgstr "Usa instrucciones de raíz cuadrada de coma flotante de hardware."
+msgstr "Usa instrucciones de división y de raíz cuadrada de coma flotante de hardware."
 
 #: config/riscv/riscv.opt:64
-#, fuzzy
-#| msgid "Use trap instructions to check for integer divide by zero."
 msgid "Use hardware instructions for integer division."
-msgstr "Usa instrucciones trap para revisar la división entera por cero."
+msgstr "Usa instrucciones de hardware para la división entera."
 
 #: config/riscv/riscv.opt:68
 msgid "-march=\tGenerate code for given RISC-V ISA (e.g. RV64IM).  ISA strings must be lower-case."
-msgstr ""
+msgstr "-march=\tGenera código para el RISC-V ISA dado (por ejemplo, RV64IM).  Las cadenas ISA deben ser minúsculas."
 
 #: config/riscv/riscv.opt:73 config/mips/mips.opt:401
 msgid "-mtune=PROCESSOR\tOptimize the output for PROCESSOR."
 msgstr "-mtune=PROCESADOR\tOptimiza la salida para el PROCESADOR."
 
 #: config/riscv/riscv.opt:77
-#, fuzzy
-#| msgid "-G<number>\tPut global and static data smaller than <number> bytes into a special section (on some targets)."
 msgid "-msmall-data-limit=N\tPut global and static data smaller than <number> bytes into a special section (on some targets)."
-msgstr "-G<número>\tColoca los datos globales y estáticos más pequeños que <número> bytes en una sección especial (en algunos objetivos)."
+msgstr "-msmall-data-limit=N\tColoca los datos globales y estáticos más pequeños que <N> bytes en una sección especial (en algunos objetivos)."
 
 #: config/riscv/riscv.opt:81
-#, fuzzy
-#| msgid "Use subroutines for function prologues and epilogues."
 msgid "Use smaller but slower prologue and epilogue code."
-msgstr "Usa subrutinas para los prólogos y epílogos de función."
+msgstr "Usa código de prólogo y epílogo más pequeño pero más lento."
 
 #: config/riscv/riscv.opt:85 config/aarch64/aarch64.opt:85
 msgid "Specify the code model."
@@ -8216,8 +8169,6 @@ msgid "Specify the MCU to build for."
 msgstr "Especifica la MCU para la que construir."
 
 #: config/msp430/msp430.opt:15
-#, fuzzy
-#| msgid "Warn if an MCU name is unrecognised or conflicts with other options (default: on)."
 msgid "Warn if an MCU name is unrecognized or conflicts with other options (default: on)."
 msgstr "Avisa si un nombre de MCU no se reconoce o está en conflicto con otras opciones (por defecto: activado)."
 
@@ -8347,15 +8298,15 @@ msgstr "Modo de dirección conocido (para uso con la opción -maddress-mode=):"
 
 #: config/aarch64/aarch64.opt:171
 msgid "Enable the reciprocal square root approximation.  Enabling this reduces precision of reciprocal square root results to about 16 bits for single precision and to 32 bits for double precision."
-msgstr ""
+msgstr "Activa la aproximación de raíz cuadrada recíproca.  Activar esto reduce la precisión de los resultados de la raíz cuadrada recíproca a 16 bits aproximadamente para precisión sencilla y a 32 bits para doble precisión."
 
 #: config/aarch64/aarch64.opt:177
 msgid "Enable the square root approximation.  Enabling this reduces precision of square root results to about 16 bits for single precision and to 32 bits for double precision. If enabled, it implies -mlow-precision-recip-sqrt."
-msgstr ""
+msgstr "Activa la aproximación de raíz cuadrada.  Activar esto reduce la precisión de los resultados de la raíz cuadrada a 16 bits aproximadamente para precisión sencilla y a 32 bits para doble precisión. Si se activa, implica -mlow-precision-recip-sqrt."
 
 #: config/aarch64/aarch64.opt:184
 msgid "Enable the division approximation.  Enabling this reduces precision of division results to about 16 bits for single precision and to 32 bits for double precision."
-msgstr ""
+msgstr "Activa la aproximación de la división.  Activar esto reduce la precisión de los resultados de la divisón a 16 bits aproximadamente para precisión sencilla y a 32 bits para doble precisión. Si se activa, implica -mlow-precision-recip-sqrt."
 
 #: config/aarch64/aarch64.opt:190
 msgid "Enables verbose cost model dummping in the debug dump files."
@@ -8961,10 +8912,8 @@ msgid "Use given assembler dialect."
 msgstr "Usa el dialecto de ensamblador dado."
 
 #: config/i386/i386.opt:261
-#, fuzzy
-#| msgid "Known assembler dialects (for use with the -masm-dialect= option):"
 msgid "Known assembler dialects (for use with the -masm= option):"
-msgstr "Dialectos de ensamblador conocidos (para uso con la opción -masm-dialect=):"
+msgstr "Dialectos de ensamblador conocidos (para uso con la opción -masm=):"
 
 #: config/i386/i386.opt:271
 msgid "Branches are this expensive (1-5, arbitrary units)."
@@ -9280,10 +9229,8 @@ msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F a
 msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F y AVX5124VNNIW."
 
 #: config/i386/i386.opt:710
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124VNNIW built-in functions and code generation."
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VPOPCNTDQ built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F y AVX5124VNNIW."
+msgstr "Admite funciones internas y generación de código MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F y AVX5124VPOPCNTDQ."
 
 #: config/i386/i386.opt:714
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation."
@@ -9314,16 +9261,12 @@ msgid "Support code generation of popcnt instruction."
 msgstr "Admite la generación de código de la instrucción popcnt."
 
 #: config/i386/i386.opt:742
-#, fuzzy
-#| msgid "Support XOP built-in functions and code generation."
 msgid "Support SGX built-in functions and code generation."
-msgstr "Admite funciones internas XOP y generación de código."
+msgstr "Admite funciones internas SGX y generación de código."
 
 #: config/i386/i386.opt:746
-#, fuzzy
-#| msgid "Support RDRND built-in functions and code generation."
 msgid "Support RDPID built-in functions and code generation."
-msgstr "Admite funciones internas y generación de código RDRND."
+msgstr "Admite funciones internas y generación de código RDPID."
 
 #: config/i386/i386.opt:750
 msgid "Support BMI built-in functions and code generation."
@@ -9831,8 +9774,6 @@ msgid "Make the linker relaxation machine assume that a program counter wrap-aro
 msgstr "Hace que el motor de relajación de enlace asuma que ocurre una envoltura del contador de programa."
 
 #: config/avr/avr.opt:79
-#, fuzzy
-#| msgid "Accumulate outgoing function arguments and acquire/release the needed stack space for outpoing function arguments in function prologue/epilogue.  Without this option, outgoing arguments are pushed before calling a function and popped afterwards.  This option can lead to reduced code size for functions that call many functions that get their arguments on the stack like, for example printf."
 msgid "Accumulate outgoing function arguments and acquire/release the needed stack space for outgoing function arguments in function prologue/epilogue.  Without this option, outgoing arguments are pushed before calling a function and popped afterwards.  This option can lead to reduced code size for functions that call many functions that get their arguments on the stack like, for example printf."
 msgstr "Acumula los argumentos de función salientes y adquiere/libera el espacio de pila necesario para los argumentos de función salientes en el prólogo/epílogo de la función.  Sin esta opción, los argumentos salientes se empujan antes de llamar una función y se sacan después.  Esta opción puede conducir a tamaño de código reducido para funciones que llaman muchas funciones que obtienen sus argumentos de la pila como, por ejemplo, printf."
 
@@ -10450,16 +10391,12 @@ msgid "Use AltiVec instructions."
 msgstr "Usa las instrucciones AltiVec."
 
 #: config/rs6000/rs6000.opt:145
-#, fuzzy
-#| msgid "Generate Altivec instructions using little-endian element order."
 msgid "Generate AltiVec instructions using little-endian element order."
-msgstr "Genera código instrucciones Altivec usando orden de elementos little endian."
+msgstr "Genera código instrucciones AltiVec usando orden de elementos little endian."
 
 #: config/rs6000/rs6000.opt:149
-#, fuzzy
-#| msgid "Generate Altivec instructions using big-endian element order."
 msgid "Generate AltiVec instructions using big-endian element order."
-msgstr "Genera instrucciones Altivec usando orden de elementos big endian."
+msgstr "Genera instrucciones AltiVec usando orden de elementos big endian."
 
 #: config/rs6000/rs6000.opt:153
 msgid "Use decimal floating point instructions."
@@ -10830,10 +10767,8 @@ msgid "Use the new min/max instructions defined in ISA 3.0."
 msgstr "Usa las nuevas instrucciones min/max definidas en ISA 3.0."
 
 #: config/rs6000/rs6000.opt:646
-#, fuzzy
-#| msgid "Serialize volatile memory references with MEMW instructions"
 msgid "Fuse medium/large code model toc references with the memory instruction."
-msgstr "Serializar las referencias a memoria volátil con instrucciones MEMW."
+msgstr "fusiona referencias toc de modelo código mediano/grande con la instrucción de memoria."
 
 #: config/rs6000/rs6000.opt:650
 msgid "Generate the integer modulo instructions."
@@ -10860,22 +10795,16 @@ msgid "Enable small integers to be in VSX registers."
 msgstr "Permite enteros pequeños en registros VSX."
 
 #: config/rs6000/rs6000.opt:682
-#, fuzzy
-#| msgid "Valid arguments to -mfloat-gprs=:"
 msgid "Valid arguments to -mstack-protector-guard=:"
-msgstr "Argumentos válidos para -mfloat-gprs:"
+msgstr "Argumentos válidos para -mstack-protector-guard=:"
 
 #: config/rs6000/rs6000.opt:692
-#, fuzzy
-#| msgid "Use given stack-protector guard."
 msgid "Use the given base register for addressing the stack-protector guard."
-msgstr "USa la guarda de protección de la pila dada."
+msgstr "Usa el registro base dado para direccionar la guarda de protección de la pila."
 
 #: config/rs6000/rs6000.opt:699
-#, fuzzy
-#| msgid "Use given stack-protector guard."
 msgid "Use the given offset for addressing the stack-protector guard."
-msgstr "USa la guarda de protección de la pila dada."
+msgstr "Usa el desplazamiento dado para direccionar la guarda de protección de la pila."
 
 #: config/rs6000/sysv4.opt:24
 msgid "Select ABI calling convention."
@@ -13744,8 +13673,6 @@ msgid "Suppress output of addresses in debugging dumps."
 msgstr "Suprime la salida de direcciones en los volcados de depuración."
 
 #: common.opt:1267
-#, fuzzy
-#| msgid "Collect and dump debug information into temporary file if ICE in C/C++ compiler occured."
 msgid "Collect and dump debug information into temporary file if ICE in C/C++ compiler occurred."
 msgstr "Recoge y vuelca información de depuración en un fichero temporal si ha ocurrido ICE en el compilador de C/C++."
 
@@ -14007,10 +13934,8 @@ msgid "Perform cloning to make Interprocedural constant propagation stronger."
 msgstr "Realiza la clonación para hacer la propagación constante Interprocedural más fuerte."
 
 #: common.opt:1620
-#, fuzzy
-#| msgid "Perform Interprocedural constant propagation"
 msgid "Perform interprocedural bitwise constant propagation."
-msgstr "Realiza la propagación interprocedural de las constantes."
+msgstr "Realiza la propagación interprocedural de las constantes por bits."
 
 #: common.opt:1624
 msgid "Perform interprocedural profile propagation."
@@ -15880,46 +15805,39 @@ msgid "%Kattempt to free a non-heap object"
 msgstr "%Kse intenta liberar un objeto que no es de pila"
 
 #: calls.c:1371
-#, fuzzy, gcc-internal-format
-#| msgid "argument %i value %qE is negative"
+#, gcc-internal-format
 msgid "%Kargument %i value %qE is negative"
-msgstr "argumento %i, valor %qE, negativo"
+msgstr "%Kargumento %i, valor %qE, negativo"
 
 #: calls.c:1389
-#, fuzzy, gcc-internal-format
-#| msgid "argument %i value is zero"
+#, gcc-internal-format
 msgid "%Kargument %i value is zero"
-msgstr "el valor del argumento %i es cero"
+msgstr "el valor del %Kargumento %i es cero"
 
 #: calls.c:1406
-#, fuzzy, gcc-internal-format
-#| msgid "argument %i value %qE exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%Kargument %i value %qE exceeds maximum object size %E"
-msgstr "argumento %i, valor %qE, supera el tamaño máximo %E del objeto"
+msgstr "%Kargumento %i, valor %qE, supera el tamaño máximo %E del objeto"
 
 #: calls.c:1420
-#, fuzzy, gcc-internal-format
-#| msgid "argument %i range [%E, %E] is negative"
+#, gcc-internal-format
 msgid "%Kargument %i range [%E, %E] is negative"
-msgstr "el argumento %i, rango [%E, %E], es negativo"
+msgstr "el %Kargumento %i, rango [%E, %E], es negativo"
 
 #: calls.c:1427
-#, fuzzy, gcc-internal-format
-#| msgid "argument %i range [%E, %E] exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%Kargument %i range [%E, %E] exceeds maximum object size %E"
-msgstr "argumento %i, rango [%E, %E], supera el tamaño máximo %E del objeto"
+msgstr "%Kargumento %i, rango [%E, %E], supera el tamaño máximo %E del objeto"
 
 #: calls.c:1457
-#, fuzzy, gcc-internal-format
-#| msgid "product %<%E * %E%> of arguments %i and %i exceeds %<SIZE_MAX%>"
+#, gcc-internal-format
 msgid "%Kproduct %<%E * %E%> of arguments %i and %i exceeds %<SIZE_MAX%>"
-msgstr "el producto %<%E * %E%> de los argumentos %i y %i supera %<SIZE_MAX%>"
+msgstr "el %Kproducto %<%E * %E%> de los argumentos %i y %i supera %<SIZE_MAX%>"
 
 #: calls.c:1463
-#, fuzzy, gcc-internal-format
-#| msgid "product %<%E * %E%> of arguments %i and %i exceeds maximum object size %E"
+#, gcc-internal-format
 msgid "%Kproduct %<%E * %E%> of arguments %i and %i exceeds maximum object size %E"
-msgstr "el producto %<%E * %E%> de los argumentos %i y %i supera el tamaño máximo %E del objeto"
+msgstr "el %Kproducto %<%E * %E%> de los argumentos %i y %i supera el tamaño máximo %E del objeto"
 
 #: calls.c:1474 calls.c:1477
 #, gcc-internal-format
@@ -16820,10 +16738,9 @@ msgid "%q+D alias in between function and variable is not supported"
 msgstr "No se admite alias %q+D entre función y variable"
 
 #: cgraphunit.c:1358
-#, fuzzy, gcc-internal-format
-#| msgid "Invalid declaration"
+#, gcc-internal-format
 msgid "%q+D aliased declaration"
-msgstr "Declaración no válida"
+msgstr "%q+D es una Declaración de alias"
 
 #: cgraphunit.c:1429
 #, gcc-internal-format
@@ -17776,10 +17693,9 @@ msgid "too few arguments to %%:replace-extension"
 msgstr "faltan argumentos para %%:replace-extension"
 
 #: gcc.c:9885
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "wrong number of arguments to %<__builtin_complex%>"
+#, gcc-internal-format, gfc-internal-format
 msgid "wrong number of arguments to %%:debug-level-gt"
-msgstr "número erróneo de argumentos para %<__builtin_complex%>"
+msgstr "número erróneo de argumentos para %%:debug-level-gt"
 
 #: gcov-tool.c:72
 #, gcc-internal-format, gfc-internal-format
@@ -17929,40 +17845,34 @@ msgid "nonnull argument %qD compared to NULL"
 msgstr "argumento %qD no nulo comparado con NULL"
 
 #: gimple-ssa-sprintf.c:2194 gimple-ssa-sprintf.c:2322
-#, fuzzy, gcc-internal-format
-#| msgid "output may be truncated before the last format character"
+#, gcc-internal-format
 msgid "%qE output may be truncated before the last format character"
-msgstr "la salida podría truncarse antes del último carácter de formato"
+msgstr "la salida %qE podría truncarse antes del último carácter de formato"
 
 #: gimple-ssa-sprintf.c:2196 gimple-ssa-sprintf.c:2324
-#, fuzzy, gcc-internal-format
-#| msgid "output may be truncated before the last format character"
+#, gcc-internal-format
 msgid "%qE output truncated before the last format character"
-msgstr "la salida podría truncarse antes del último carácter de formato"
+msgstr "la salida %qE podría truncarse antes del último carácter de formato"
 
 #: gimple-ssa-sprintf.c:2198 gimple-ssa-sprintf.c:2326
-#, fuzzy, gcc-internal-format
-#| msgid "may write a terminating nul past the end of the destination"
+#, gcc-internal-format
 msgid "%qE may write a terminating nul past the end of the destination"
-msgstr "podría escribir un nul al final del destino"
+msgstr "%qE podría escribir un nul al final del destino"
 
 #: gimple-ssa-sprintf.c:2200 gimple-ssa-sprintf.c:2328
-#, fuzzy, gcc-internal-format
-#| msgid "writing a terminating nul past the end of the destination"
+#, gcc-internal-format
 msgid "%qE writing a terminating nul past the end of the destination"
-msgstr "se escribe un nul al final del destino"
+msgstr "%qE se escribe un nul al final del destino"
 
 #: gimple-ssa-sprintf.c:2213
-#, fuzzy, gcc-internal-format
-#| msgid "%<%.*s%> directive output truncated writing %wu bytes into a region of size %wu"
+#, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu byte into a region of size %wu"
-msgstr "salida de la directiva %<%.*s%> truncada escribiendo %wu bytes en una región de tamaño %wu"
+msgstr "salida de la directiva %<%.*s%> podría truncarse escribiendo %wu byte en una región de tamaño %wu"
 
 #: gimple-ssa-sprintf.c:2215
-#, fuzzy, gcc-internal-format
-#| msgid "%<%.*s%> directive output truncated writing %wu bytes into a region of size %wu"
+#, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu byte into a region of size %wu"
-msgstr "salida de la directiva %<%.*s%> truncada escribiendo %wu bytes en una región de tamaño %wu"
+msgstr "salida de la directiva %<%.*s%> truncada escribiendo %wu byte en una región de tamaño %wu"
 
 #: gimple-ssa-sprintf.c:2217
 #, gcc-internal-format
