@@ -1,3 +1,14 @@
+2017-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/79692
+	* gimple-ssa-sprintf.c
+	(directive::known_width_and_precision): New function.
+	(format_integer): Use it.
+	(get_mpfr_format_length): Consider the full range of precision
+	when computing %g output with the # flag.  Set the likely byte
+	count to 3 rather than 1 when precision is indeterminate.
+	(format_floating): Correct the lower bound of precision.
+
 2017-03-01  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* doc/invoke.texi: Document default code model for 64-bit Linux.

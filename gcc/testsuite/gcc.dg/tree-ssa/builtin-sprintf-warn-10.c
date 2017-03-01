@@ -239,9 +239,11 @@ void test_g_va (va_list va)
   T ("%g");         /* { dg-warning "between 1 and 13 bytes" } */
   T ("%+g");        /* { dg-warning "between 2 and 13 bytes" } */
   T ("% g");        /* { dg-warning "between 2 and 13 bytes" } */
-  T ("%#g");        /* { dg-warning "between 1 and 13 bytes" } */
-  T ("%#+g");       /* { dg-warning "between 2 and 13 bytes" } */
-  T ("%# g");       /* { dg-warning "between 2 and 13 bytes" } */
+
+  /* The pound flag means the radix character is always present.  */
+  T ("%#g");        /* { dg-warning "between 2 and 13 bytes" } */
+  T ("%#+g");       /* { dg-warning "between 3 and 13 bytes" } */
+  T ("%# g");       /* { dg-warning "between 3 and 13 bytes" } */
 
   T ("%.g");        /* { dg-warning "between 1 and 7 bytes" } */
   T ("%.0g");       /* { dg-warning "between 1 and 7 bytes" } */
