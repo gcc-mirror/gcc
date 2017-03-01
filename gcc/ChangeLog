@@ -1,3 +1,12 @@
+2017-03-01  Pat Haugen  <pthaugen@us.ibm.com>
+
+	Backport from mainline:
+	2017-02-27  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/79544
+	* rs6000/rs6000-c.c (struct altivec_builtin_types): Use VSRAD for
+	arithmetic shift of unsigned V2DI.
+
 2017-03-01  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
