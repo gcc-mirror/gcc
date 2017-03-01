@@ -1,3 +1,8 @@
+2017-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79734
+	* g++.dg/opt/pr79734.C: New test.
+
 2017-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/79737

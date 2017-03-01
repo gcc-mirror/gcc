@@ -1,3 +1,11 @@
+2017-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79734
+	* tree-vect-generic.c (expand_vector_condition): Optimize
+	AVX512 vector boolean VEC_COND_EXPRs into bitwise operations.
+	Handle VEC_COND_EXPR where comparison has different inner width from
+	type's inner width.
+
 2017-02-28  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (ARC Options): Copy-edit to fix punctuation,
