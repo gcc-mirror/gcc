@@ -1,3 +1,9 @@
+2017-03-01  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	PR target/79752
+	* config/rs6000/rs6000.md (peephole2 for udiv/umod): Should emit
+	udiv rather than div since input pattern is unsigned.
+
 2017-03-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (print_reg): Warn for values of
