@@ -69,6 +69,7 @@
 #include "tree-phinodes.h"
 #include "cfgloop.h"
 #include "fold-const.h"
+#include "intl.h"
 
 /* This file should be included last.  */
 #include "target-def.h"

@@ -1,3 +1,7 @@
+2017-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/nvptx/nvptx.c: Include intl.h.
+
 2017-03-01  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/78140
