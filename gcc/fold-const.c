@@ -3862,6 +3862,31 @@ make_bit_field_ref (location_t loc, tree inner, tree orig_inner, tree type,
 {
   tree result, bftype;
 
+  /* Attempt not to lose the access path if possible.  */
+  if (TREE_CODE (orig_inner) == COMPONENT_REF)
+    {
+      tree ninner = TREE_OPERAND (orig_inner, 0);
+      machine_mode nmode;
+      HOST_WIDE_INT nbitsize, nbitpos;
+      tree noffset;
+      int nunsignedp, nreversep, nvolatilep = 0;
+      tree base = get_inner_reference (ninner, &nbitsize, &nbitpos,
+				       &noffset, &nmode, &nunsignedp,
+				       &nreversep, &nvolatilep);
+      if (base == inner
+	  && noffset == NULL_TREE
+	  && nbitsize >= bitsize
+	  && nbitpos <= bitpos
+	  && bitpos + bitsize <= nbitpos + nbitsize
+	  && !reversep
+	  && !nreversep
+	  && !nvolatilep)
+	{
+	  inner = ninner;
+	  bitpos -= nbitpos;
+	}
+    }
+
   alias_set_type iset = get_alias_set (orig_inner);
   if (iset == 0 && get_alias_set (inner) != iset)
     inner = fold_build2 (MEM_REF, TREE_TYPE (inner),
