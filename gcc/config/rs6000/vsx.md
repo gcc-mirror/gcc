@@ -3596,7 +3596,8 @@
 ;; Compare vectors producing a vector result and a predicate, setting CR6
 ;; to indicate a combined status.  This pattern matches v16qi, v8hi, and
 ;; v4si modes.  It does not match v2df, v4sf, or v2di modes.  There's no
-;; need to match the v2di mode because that is expanded into v4si.
+;; need to match v4sf, v2df, or v2di modes because those are expanded
+;; to use Power8 instructions.
 (define_insn "*vsx_ne_<mode>_p"
   [(set (reg:CC CR6_REGNO)
 	(unspec:CC
@@ -3607,22 +3608,7 @@
 	(ne:VSX_EXTRACT_I (match_dup 1)
 			  (match_dup 2)))]
   "TARGET_P9_VECTOR"
-  "xvcmpne<VSX_EXTRACT_WIDTH>. %0,%1,%2"
-  [(set_attr "type" "vecsimple")])
-
-;; Compare vectors producing a vector result and a predicate, setting CR6
-;; to indicate a combined status, for v4sf and v2df operands.
-(define_insn "*vsx_ne_<mode>_p"
-  [(set (reg:CC CR6_REGNO)
-	(unspec:CC [(ne:CC
-		     (match_operand:VSX_F 1 "vsx_register_operand" "wa")
-		     (match_operand:VSX_F 2 "vsx_register_operand" "wa"))]
-	 UNSPEC_PREDICATE))
-   (set (match_operand:VSX_F 0 "vsx_register_operand" "=wa")
-	(ne:VSX_F (match_dup 1)
-		  (match_dup 2)))]
-  "TARGET_P9_VECTOR"
-  "xvcmpne<VSs>. %x0,%x1,%x2"
+  "vcmpne<VSX_EXTRACT_WIDTH>. %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
 (define_insn "*vector_nez_<mode>_p"
@@ -3740,17 +3726,6 @@
 	 UNSPEC_VCMPNEH))]
   "TARGET_P9_VECTOR"
   "vcmpnew %0,%1,%2"
-  [(set_attr "type" "vecsimple")])
-
-;; Vector Compare Not Equal Float or Double
-(define_insn "vcmpne<VSs>"
-  [(set (match_operand:<VSI> 0 "vsx_register_operand" "=wa")
-	(unspec:<VSI>
-	 [(match_operand:VSX_F 1 "vsx_register_operand" "wa")
-	  (match_operand:VSX_F 2 "vsx_register_operand" "wa")]
-	 UNSPEC_VCMPNEH))]
-  "TARGET_P9_VECTOR"
-  "xvcmpne<VSs> %x0,%x1,%x2"
   [(set_attr "type" "vecsimple")])
 
 ;; Vector Compare Not Equal or Zero Word
