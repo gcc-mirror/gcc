@@ -1,3 +1,10 @@
+2017-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79746
+	* init.c (emit_mem_initializers): When not constructing vbases of
+	abstract classes, mark arguments as read for
+	-Wunused-but-set-parameter.
+
 2017-02-28  Jason Merrill  <jason@redhat.com>
 
 	Class template argument deduction refinements

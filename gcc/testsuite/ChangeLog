@@ -1,5 +1,8 @@
 2017-03-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/79746
+	* g++.dg/warn/Wunused-parm-9.C: New test.
+
 	PR tree-optimization/79734
 	* g++.dg/opt/pr79734.C: New test.
 

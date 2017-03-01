@@ -1217,6 +1217,12 @@ emit_mem_initializers (tree mem_inits)
 	/* C++14 DR1658 Means we do not have to construct vbases of
 	   abstract classes.  */
 	construct_virtual_base (subobject, arguments);
+      else
+	/* When not constructing vbases of abstract classes, at least mark
+	   the arguments expressions as read to avoid
+	   -Wunused-but-set-parameter false positives.  */
+	for (tree arg = arguments; arg; arg = TREE_CHAIN (arg))
+	  mark_exp_read (TREE_VALUE (arg));
 
       if (inherited_base)
 	pop_deferring_access_checks ();
