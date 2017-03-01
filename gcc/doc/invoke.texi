@@ -14248,70 +14248,58 @@ Compile for ARC EM.
 Compile for ARC HS.
 
 @item em
-@opindex em
-Compile for ARC EM cpu with no hardware extension.
+Compile for ARC EM CPU with no hardware extensions.
 
 @item em4
-@opindex em4
-Compile for ARC EM4 cpu.
+Compile for ARC EM4 CPU.
 
 @item em4_dmips
-@opindex em4_dmips
-Compile for ARC EM4 DMIPS cpu.
+Compile for ARC EM4 DMIPS CPU.
 
 @item em4_fpus
-@opindex em4_fpus
-Compile for ARC EM4 DMIPS cpu with single precision floating point
+Compile for ARC EM4 DMIPS CPU with the single-precision floating-point
 extension.
 
 @item em4_fpuda
-@opindex em4_fpuda
-Compile for ARC EM4 DMIPS cpu with single precision floating point and
-double assists instructions.
+Compile for ARC EM4 DMIPS CPU with single-precision floating-point and
+double assist instructions.
 
 @item hs
-@opindex hs
-Compile for ARC HS cpu with no hardware extension, except the atomic
+Compile for ARC HS CPU with no hardware extensions except the atomic
 instructions.
 
 @item hs34
-@opindex hs34
-Compile for ARC HS34 cpu.
+Compile for ARC HS34 CPU.
 
 @item hs38
-@opindex hs38
-Compile for ARC HS38 cpu.
+Compile for ARC HS38 CPU.
 
 @item hs38_linux
-@opindex hs38_linux
-Compile for ARC HS38 cpu with all hardware extensions on.
+Compile for ARC HS38 CPU with all hardware extensions on.
 
 @item arc600_norm
-@opindex arc600_norm
-Compile for ARC 600 cpu with norm instruction enabled.
+Compile for ARC 600 CPU with @code{norm} instructions enabled.
 
 @item arc600_mul32x16
-@opindex arc600_mul32x16
-Compile for ARC 600 cpu with norm and mul32x16 instructions enabled.
+Compile for ARC 600 CPU with @code{norm} and 32x16-bit multiply 
+instructions enabled.
 
 @item arc600_mul64
-@opindex arc600_mul64
-Compile for ARC 600 cpu with norm and mul64 instructions enabled.
+Compile for ARC 600 CPU with @code{norm} and @code{mul64}-family 
+instructions enabled.
 
 @item arc601_norm
-@opindex arc601_norm
-Compile for ARC 601 cpu with norm instruction enabled.
+Compile for ARC 601 CPU with @code{norm} instructions enabled.
 
 @item arc601_mul32x16
-@opindex arc601_mul32x16
-Compile for ARC 601 cpu with norm and mul32x16 instructions enabled.
+Compile for ARC 601 CPU with @code{norm} and 32x16-bit multiply
+instructions enabled.
 
 @item arc601_mul64
-@opindex arc601_mul64
-Compile for ARC 601 cpu with norm and mul64 instructions enabled.
+Compile for ARC 601 CPU with @code{norm} and @code{mul64}-family
+instructions enabled.
 
 @item nps400
-@opindex nps400
 Compile for ARC 700 on NPS400 chip.
 
 @end table
@@ -14320,52 +14308,54 @@ Compile for ARC 700 on NPS400 chip.
 @opindex mdpfp
 @itemx -mdpfp-compact
 @opindex mdpfp-compact
-FPX: Generate Double Precision FPX instructions, tuned for the compact
+Generate double-precision FPX instructions, tuned for the compact
 implementation.
 
 @item -mdpfp-fast
 @opindex mdpfp-fast
-FPX: Generate Double Precision FPX instructions, tuned for the fast
+Generate double-precision FPX instructions, tuned for the fast
 implementation.
 
 @item -mno-dpfp-lrsr
 @opindex mno-dpfp-lrsr
-Disable LR and SR instructions from using FPX extension aux registers.
+Disable @code{lr} and @code{sr} instructions from using FPX extension
+aux registers.
 
 @item -mea
 @opindex mea
-Generate Extended arithmetic instructions.  Currently only
+Generate extended arithmetic instructions.  Currently only
 @code{divaw}, @code{adds}, @code{subs}, and @code{sat16} are
 supported.  This is always enabled for @option{-mcpu=ARC700}.
 
 @item -mno-mpy
 @opindex mno-mpy
-Do not generate mpy instructions for ARC700.  This instruction is
+Do not generate @code{mpy}-family instructions for ARC700.  This option is
 deprecated.
 
 @item -mmul32x16
 @opindex mmul32x16
-Generate 32x16 bit multiply and mac instructions.
+Generate 32x16-bit multiply and multiply-accumulate instructions.
 
 @item -mmul64
 @opindex mmul64
-Generate mul64 and mulu64 instructions.  Only valid for @option{-mcpu=ARC600}.
+Generate @code{mul64} and @code{mulu64} instructions.  
+Only valid for @option{-mcpu=ARC600}.
 
 @item -mnorm
 @opindex mnorm
-Generate norm instruction.  This is the default if @option{-mcpu=ARC700}
+Generate @code{norm} instructions.  This is the default if @option{-mcpu=ARC700}
 is in effect.
 
 @item -mspfp
 @opindex mspfp
 @itemx -mspfp-compact
 @opindex mspfp-compact
-FPX: Generate Single Precision FPX instructions, tuned for the compact
+Generate single-precision FPX instructions, tuned for the compact
 implementation.
 
 @item -mspfp-fast
 @opindex mspfp-fast
-FPX: Generate Single Precision FPX instructions, tuned for the fast
+Generate single-precision FPX instructions, tuned for the fast
 implementation.
 
 @item -msimd
@@ -14376,28 +14366,29 @@ builtins.  Only valid for @option{-mcpu=ARC700}.
 @item -msoft-float
 @opindex msoft-float
 This option ignored; it is provided for compatibility purposes only.
-Software floating point code is emitted by default, and this default
-can overridden by FPX options; @samp{mspfp}, @samp{mspfp-compact}, or
-@samp{mspfp-fast} for single precision, and @samp{mdpfp},
-@samp{mdpfp-compact}, or @samp{mdpfp-fast} for double precision.
+Software floating-point code is emitted by default, and this default
+can overridden by FPX options; @option{-mspfp}, @option{-mspfp-compact}, or
+@option{-mspfp-fast} for single precision, and @option{-mdpfp},
+@option{-mdpfp-compact}, or @option{-mdpfp-fast} for double precision.
 
 @item -mswap
 @opindex mswap
-Generate swap instructions.
+Generate @code{swap} instructions.
 
 @item -matomic
 @opindex matomic
-This enables Locked Load/Store Conditional extension to implement
-atomic memopry built-in functions.  Not available for ARC 6xx or ARC
+This enables use of the locked load/store conditional extension to implement
+atomic memory built-in functions.  Not available for ARC 6xx or ARC
 EM cores.
 
 @item -mdiv-rem
 @opindex mdiv-rem
-Enable DIV/REM instructions for ARCv2 cores.
+Enable @code{div} and @code{rem} instructions for ARCv2 cores.
 
 @item -mcode-density
 @opindex mcode-density
-Enable code density instructions for ARC EM, default on for ARC HS.
+Enable code density instructions for ARC EM.  
+This option is on by default for ARC HS.
 
 @item -mll64
 @opindex mll64
@@ -14409,47 +14400,61 @@ Specify thread pointer register number.
 
 @item -mmpy-option=@var{multo}
 @opindex mmpy-option
-Compile ARCv2 code with a multiplier design option.  @samp{wlh1} is
-the default value.  The recognized values for @var{multo} are:
+Compile ARCv2 code with a multiplier design option.  You can specify 
+the option using either a string or numeric value for @var{multo}.  
+@samp{wlh1} is the default value.  The recognized values are:
 
 @table @samp
 @item 0
+@itemx none
 No multiplier available.
 
 @item 1
-@opindex w
-The multiply option is set to w: 16x16 multiplier, fully pipelined.
-The following instructions are enabled: MPYW, and MPYUW.
+@itemx w
+16x16 multiplier, fully pipelined.
+The following instructions are enabled: @code{mpyw} and @code{mpyuw}.
 
 @item 2
-@opindex wlh1
-The multiply option is set to wlh1: 32x32 multiplier, fully
+@itemx wlh1
+32x32 multiplier, fully
 pipelined (1 stage).  The following instructions are additionally
-enabled: MPY, MPYU, MPYM, MPYMU, and MPY_S.
+enabled: @code{mpy}, @code{mpyu}, @code{mpym}, @code{mpymu}, and @code{mpy_s}.
 
 @item 3
-@opindex wlh2
-The multiply option is set to wlh2: 32x32 multiplier, fully pipelined
-(2 stages).  The following instructions are additionally enabled: MPY,
-MPYU, MPYM, MPYMU, and MPY_S.
+@itemx wlh2
+32x32 multiplier, fully pipelined
+(2 stages).  The following instructions are additionally enabled: @code{mpy},
+@code{mpyu}, @code{mpym}, @code{mpymu}, and @code{mpy_s}.
 
 @item 4
-@opindex wlh3
-The multiply option is set to wlh3: Two 16x16 multiplier, blocking,
-sequential.  The following instructions are additionally enabled: MPY,
-MPYU, MPYM, MPYMU, and MPY_S.
+@itemx wlh3
+Two 16x16 multipliers, blocking,
+sequential.  The following instructions are additionally enabled: @code{mpy},
+@code{mpyu}, @code{mpym}, @code{mpymu}, and @code{mpy_s}.
 
 @item 5
-@opindex wlh4
-The multiply option is set to wlh4: One 16x16 multiplier, blocking,
-sequential.  The following instructions are additionally enabled: MPY,
-MPYU, MPYM, MPYMU, and MPY_S.
+@itemx wlh4
+One 16x16 multiplier, blocking,
+sequential.  The following instructions are additionally enabled: @code{mpy},
+@code{mpyu}, @code{mpym}, @code{mpymu}, and @code{mpy_s}.
 
 @item 6
-@opindex wlh5
-The multiply option is set to wlh5: One 32x4 multiplier, blocking,
-sequential.  The following instructions are additionally enabled: MPY,
-MPYU, MPYM, MPYMU, and MPY_S.
+@itemx wlh5
+One 32x4 multiplier, blocking,
+sequential.  The following instructions are additionally enabled: @code{mpy},
+@code{mpyu}, @code{mpym}, @code{mpymu}, and @code{mpy_s}.
+
+@item 7
+@itemx plus_dmpy
+ARC HS SIMD support.
+
+@item 8
+@itemx plus_macd
+ARC HS SIMD support.
+
+@item 9
+@itemx plus_qmacw
+ARC HS SIMD support.
 
 @end table
 
@@ -14457,82 +14462,70 @@ This option is only available for ARCv2 cores@.
 
 @item -mfpu=@var{fpu}
 @opindex mfpu
-Enables specific floating-point hardware extension for ARCv2
-core.  Supported values for @var{fpu} are:
+Enables support for specific floating-point hardware extensions for ARCv2
+cores.  Supported values for @var{fpu} are:
 
 @table @samp
 
 @item fpus
-@opindex fpus
-Enables support for single precision floating point hardware
+Enables support for single-precision floating-point hardware
 extensions@.
 
 @item fpud
-@opindex fpud
-Enables support for double precision floating point hardware
-extensions.  The single precision floating point extension is also
+Enables support for double-precision floating-point hardware
+extensions.  The single-precision floating-point extension is also
 enabled.  Not available for ARC EM@.
 
 @item fpuda
-@opindex fpuda
-Enables support for double precision floating point hardware
-extensions using double precision assist instructions.  The single
-precision floating point extension is also enabled.  This option is
+Enables support for double-precision floating-point hardware
+extensions using double-precision assist instructions.  The single-precision
+floating-point extension is also enabled.  This option is
 only available for ARC EM@.
 
 @item fpuda_div
-@opindex fpuda_div
-Enables support for double precision floating point hardware
-extensions using double precision assist instructions, and simple
-precision square-root and divide hardware extensions.  The single
-precision floating point extension is also enabled.  This option is
+Enables support for double-precision floating-point hardware
+extensions using double-precision assist instructions.
+The single-precision floating-point, square-root, and divide 
+extensions are also enabled.  This option is
 only available for ARC EM@.
 
 @item fpuda_fma
-@opindex fpuda_fma
-Enables support for double precision floating point hardware
-extensions using double precision assist instructions, and simple
-precision fused multiple and add hardware extension.  The single
-precision floating point extension is also enabled.  This option is
+Enables support for double-precision floating-point hardware
+extensions using double-precision assist instructions.
+The single-precision floating-point and fused multiply and add 
+hardware extensions are also enabled.  This option is
 only available for ARC EM@.
 
 @item fpuda_all
-@opindex fpuda_all
-Enables support for double precision floating point hardware
-extensions using double precision assist instructions, and all simple
-precision hardware extensions.  The single precision floating point
-extension is also enabled.  This option is only available for ARC EM@.
+Enables support for double-precision floating-point hardware
+extensions using double-precision assist instructions.
+All single-precision floating-point hardware extensions are also
+enabled.  This option is only available for ARC EM@.
 
 @item fpus_div
-@opindex fpus_div
-Enables support for single precision floating point, and single
-precision square-root and divide hardware extensions@.
+Enables support for single-precision floating-point, square-root and divide 
+hardware extensions@.
 
 @item fpud_div
-@opindex fpud_div
-Enables support for double precision floating point, and double
-precision square-root and divide hardware extensions.  This option
+Enables support for double-precision floating-point, square-root and divide 
+hardware extensions.  This option
 includes option @samp{fpus_div}. Not available for ARC EM@.
 
 @item fpus_fma
-@opindex fpus_fma
-Enables support for single precision floating point, and single
-precision fused multiple and add hardware extensions@.
+Enables support for single-precision floating-point and 
+fused multiply and add hardware extensions@.
 
 @item fpud_fma
-@opindex fpud_fma
-Enables support for double precision floating point, and double
-precision fused multiple and add hardware extensions.  This option
+Enables support for double-precision floating-point and 
+fused multiply and add hardware extensions.  This option
 includes option @samp{fpus_fma}.  Not available for ARC EM@.
 
 @item fpus_all
-@opindex fpus_all
-Enables support for all single precision floating point hardware
+Enables support for all single-precision floating-point hardware
 extensions@.
 
 @item fpud_all
-@opindex fpud_all
-Enables support for all single and double precision floating point
+Enables support for all single- and double-precision floating-point
 hardware extensions.  Not available for ARC EM@.
 
 @end table
@@ -14553,15 +14546,15 @@ deprecated.
 
 @item -mdvbf
 @opindex mdvbf
-Passed down to the assembler to enable the dual viterbi butterfly
+Passed down to the assembler to enable the dual Viterbi butterfly
 extension.  Also sets the preprocessor symbol @code{__Xdvbf}.  This
 option is deprecated.
 
 @c ARC700 4.10 extension instruction
 @item -mlock
 @opindex mlock
-Passed down to the assembler to enable the Locked Load/Store
-Conditional extension.  Also sets the preprocessor symbol
+Passed down to the assembler to enable the locked load/store
+conditional extension.  Also sets the preprocessor symbol
 @code{__Xlock}.
 
 @item -mmac-d16
@@ -14577,7 +14570,7 @@ Passed down to the assembler.  Also sets the preprocessor symbol
 @c ARC700 4.10 extension instruction
 @item -mrtsc
 @opindex mrtsc
-Passed down to the assembler to enable the 64-bit Time-Stamp Counter
+Passed down to the assembler to enable the 64-bit time-stamp counter
 extension instruction.  Also sets the preprocessor symbol
 @code{__Xrtsc}.  This option is deprecated.
 
@@ -14590,13 +14583,13 @@ extension instruction.  Also sets the preprocessor symbol
 
 @item -mtelephony
 @opindex mtelephony
-Passed down to the assembler to enable dual and single operand
+Passed down to the assembler to enable dual- and single-operand
 instructions for telephony.  Also sets the preprocessor symbol
 @code{__Xtelephony}.  This option is deprecated.
 
 @item -mxy
 @opindex mxy
-Passed down to the assembler to enable the XY Memory extension.  Also
+Passed down to the assembler to enable the XY memory extension.  Also
 sets the preprocessor symbol @code{__Xxy}.
 
 @end table
@@ -14642,12 +14635,12 @@ The following options control the semantics of generated code:
 @table @gcctabopt
 @item -mlong-calls
 @opindex mlong-calls
-Generate call insns as register indirect calls, thus providing access
+Generate calls as register indirect calls, thus providing access
 to the full 32-bit address range.
 
 @item -mmedium-calls
 @opindex mmedium-calls
-Don't use less than 25 bit addressing range for calls, which is the
+Don't use less than 25-bit addressing range for calls, which is the
 offset available for an unconditional branch-and-link
 instruction.  Conditional execution of function calls is suppressed, to
 allow use of the 25-bit range, rather than the 21-bit range with
@@ -14689,27 +14682,30 @@ Enable bbit peephole2.
 @item -mno-brcc
 @opindex mno-brcc
 This option disables a target-specific pass in @file{arc_reorg} to
-generate @code{BRcc} instructions.  It has no effect on @code{BRcc}
-generation driven by the combiner pass.
+generate compare-and-branch (@code{br@var{cc}}) instructions.  
+It has no effect on
+generation of these instructions driven by the combiner pass.
 
 @item -mcase-vector-pcrel
 @opindex mcase-vector-pcrel
-Use pc-relative switch case tables - this enables case table shortening.
+Use PC-relative switch case tables to enable case table shortening.
 This is the default for @option{-Os}.
 
 @item -mcompact-casesi
 @opindex mcompact-casesi
-Enable compact casesi pattern.  This is the default for @option{-Os},
+Enable compact @code{casesi} pattern.  This is the default for @option{-Os},
 and only available for ARCv1 cores.
 
 @item -mno-cond-exec
 @opindex mno-cond-exec
-Disable ARCompact specific pass to generate conditional execution instructions.
+Disable the ARCompact-specific pass to generate conditional 
+execution instructions.
+
 Due to delay slot scheduling and interactions between operand numbers,
 literal sizes, instruction lengths, and the support for conditional execution,
 the target-independent pass to generate conditional execution is often lacking,
 so the ARC port has kept a special pass around that tries to find more
-conditional execution generating opportunities after register allocation,
+conditional execution generation opportunities after register allocation,
 branch shortening, and delay slot scheduling have been done.  This pass
 generally, but not always, improves performance and code size, at the cost of
 extra compilation time, which is why there is an option to switch it off.
@@ -14719,11 +14715,11 @@ offset range because they are conditionalized, you should consider using
 
 @item -mearly-cbranchsi
 @opindex mearly-cbranchsi
-Enable pre-reload use of the cbranchsi pattern.
+Enable pre-reload use of the @code{cbranchsi} pattern.
 
 @item -mexpand-adddi
 @opindex mexpand-adddi
-Expand @code{adddi3} and @code{subdi3} at rtl generation time into
+Expand @code{adddi3} and @code{subdi3} at RTL generation time into
 @code{add.f}, @code{adc} etc.
 
 @item -mindexed-loads
@@ -14767,17 +14763,19 @@ while increasing the instruction count.
 
 @item -mq-class
 @opindex mq-class
-Enable 'q' instruction alternatives.
+Enable @samp{q} instruction alternatives.
 This is the default for @option{-Os}.
 
 @item -mRcq
 @opindex mRcq
-Enable Rcq constraint handling - most short code generation depends on this.
+Enable @samp{Rcq} constraint handling.  
+Most short code generation depends on this.
 This is the default.
 
 @item -mRcw
 @opindex mRcw
-Enable Rcw constraint handling - ccfsm condexec mostly depends on this.
+Enable @samp{Rcw} constraint handling.  
+Most ccfsm condexec mostly depends on this.
 This is the default.
 
 @item -msize-level=@var{level}
@@ -14811,22 +14809,22 @@ Supported values for @var{cpu} are
 
 @table @samp
 @item ARC600
-Tune for ARC600 cpu.
+Tune for ARC600 CPU.
 
 @item ARC601
-Tune for ARC601 cpu.
+Tune for ARC601 CPU.
 
 @item ARC700
-Tune for ARC700 cpu with standard multiplier block.
+Tune for ARC700 CPU with standard multiplier block.
 
 @item ARC700-xmac
-Tune for ARC700 cpu with XMAC block.
+Tune for ARC700 CPU with XMAC block.
 
 @item ARC725D
-Tune for ARC725D cpu.
+Tune for ARC725D CPU.
 
 @item ARC750D
-Tune for ARC750D cpu.
+Tune for ARC750D CPU.
 
 @end table
 
@@ -14860,19 +14858,19 @@ Obsolete FPX.
 @opindex mbig-endian
 @itemx -EB
 @opindex EB
-Compile code for big endian targets.  Use of these options is now
-deprecated.  Users wanting big-endian code, should use the
-@w{@code{arceb-elf32}} and @w{@code{arceb-linux-uclibc}} targets when
-building the tool chain, for which big-endian is the default.
+Compile code for big-endian targets.  Use of these options is now
+deprecated.  Big-endian code is supported by configuring GCC to build
+@w{@code{arceb-elf32}} and @w{@code{arceb-linux-uclibc}} targets,
+for which big endian is the default.
 
 @item -mlittle-endian
 @opindex mlittle-endian
 @itemx -EL
 @opindex EL
-Compile code for little endian targets.  Use of these options is now
-deprecated.  Users wanting little-endian code should use the
-@w{@code{arc-elf32}} and @w{@code{arc-linux-uclibc}} targets when
-building the tool chain, for which little-endian is the default.
+Compile code for little-endian targets.  Use of these options is now
+deprecated.  Little-endian code is supported by configuring GCC to build 
+@w{@code{arc-elf32}} and @w{@code{arc-linux-uclibc}} targets,
+for which little endian is the default.
 
 @item -mbarrel_shifter
 @opindex mbarrel_shifter
@@ -14914,7 +14912,7 @@ Replaced by @option{-mspfp-fast}.
 @opindex mtune
 Values @samp{arc600}, @samp{arc601}, @samp{arc700} and
 @samp{arc700-xmac} for @var{cpu} are replaced by @samp{ARC600},
-@samp{ARC601}, @samp{ARC700} and @samp{ARC700-xmac} respectively
+@samp{ARC601}, @samp{ARC700} and @samp{ARC700-xmac} respectively.
 
 @item -multcost=@var{num}
 @opindex multcost
