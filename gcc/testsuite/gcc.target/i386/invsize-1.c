@@ -1,4 +1,5 @@
 /* { dg-do compile { target ia32 } } */
+/* { dg-options "" } */
 
 void foo (char x)
 {

@@ -1,3 +1,8 @@
+2017-03-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (print_reg): Warn for values of
+	unsupported size in integer register.
+
 2017-03-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/79439

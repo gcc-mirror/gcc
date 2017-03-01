@@ -1,3 +1,11 @@
+2017-03-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/invsize-2.c: New test.
+	* gcc.target/i386/invsize-3.c: Ditto.
+	* gcc.target/i386/invsize-4.c: Ditto.
+	* gcc.target/i386/pr66274.c: Expect "unsuported size" warning.
+	* gcc.target/i386/stackalign/asm-1.c: Ditto.
+
 2017-03-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/79439

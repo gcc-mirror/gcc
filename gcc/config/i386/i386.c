@@ -17646,13 +17646,16 @@ print_reg (rtx x, int code, FILE *file)
 
   switch (msize)
     {
-    case 8:
-    case 4:
-      if (LEGACY_INT_REGNO_P (regno))
-	putc (msize == 8 && TARGET_64BIT ? 'r' : 'e', file);
-      /* FALLTHRU */
     case 16:
     case 12:
+    case 8:
+      if (GENERAL_REGNO_P (regno) && msize > GET_MODE_SIZE (word_mode))
+	warning (0, "unsupported size for integer register");
+      /* FALLTHRU */
+    case 4:
+      if (LEGACY_INT_REGNO_P (regno))
+	putc (msize > 4 && TARGET_64BIT ? 'r' : 'e', file);
+      /* FALLTHRU */
     case 2:
     normal:
       reg = hi_reg_name[regno];
@@ -17661,7 +17664,7 @@ print_reg (rtx x, int code, FILE *file)
       if (regno >= ARRAY_SIZE (qi_reg_name))
 	goto normal;
       if (!ANY_QI_REGNO_P (regno))
-	error ("unsupported size for integer register in 32-bit mode");
+	error ("unsupported size for integer register");
       reg = qi_reg_name[regno];
       break;
     case 0:
