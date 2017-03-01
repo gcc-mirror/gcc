@@ -1,3 +1,9 @@
+2017-02-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (ARC Options): Copy-edit to fix punctuation,
+	markup, and similar issues.  Remove @opindex entries for things
+	that aren't options.  Add missing -mmpy-option entries.
+
 2017-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/79737
