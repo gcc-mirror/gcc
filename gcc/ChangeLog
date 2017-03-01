@@ -1,3 +1,7 @@
+2017-03-01  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* doc/invoke.texi: Document default code model for 64-bit Linux.
+
 2017-03-01  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	PR target/79752

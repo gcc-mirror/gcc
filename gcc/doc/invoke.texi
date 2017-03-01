@@ -21166,7 +21166,8 @@ Generate PowerPC64 code for the small model: The TOC is limited to
 @item -mcmodel=medium
 @opindex mcmodel=medium
 Generate PowerPC64 code for the medium model: The TOC and other static
-data may be up to a total of 4G in size.
+data may be up to a total of 4G in size.  This is the default for 64-bit
+Linux.
 
 @item -mcmodel=large
 @opindex mcmodel=large
