@@ -152,11 +152,10 @@ struct GTY(()) ipa_bits
      Similar to ccp_lattice_t, if xth bit of mask is 0,
      implies xth bit of value is constant.  */
   widest_int mask;
-  /* True if jump function is known.  */
-  bool known;
 };
 
 /* Info about value ranges.  */
+
 struct GTY(()) ipa_vr
 {
   /* The data fields below are valid only if known is true.  */
@@ -175,13 +174,15 @@ struct GTY (()) ipa_jump_func
      description.  */
   struct ipa_agg_jump_function agg;
 
-  /* Information about zero/non-zero bits.  */
-  struct ipa_bits bits;
+  /* Information about zero/non-zero bits.  The pointed to structure is shared
+     betweed different jump functions.  Use ipa_set_jfunc_bits to set this
+     field.  */
+  struct ipa_bits *bits;
 
   /* Information about value range, containing valid data only when vr_known is
-     true.  */
-  value_range m_vr;
-  bool vr_known;
+     true.  The pointed to structure is shared betweed different jump
+     functions.  Use ipa_set_jfunc_vr to set this field.  */
+  struct value_range *m_vr;
 
   enum jump_func_type type;
   /* Represents a value of a jump function.  pass_through is used only in jump
@@ -547,7 +548,7 @@ struct GTY(()) ipcp_transformation_summary
   /* Linked list of known aggregate values.  */
   ipa_agg_replacement_value *agg_values;
   /* Known bits information.  */
-  vec<ipa_bits, va_gc> *bits;
+  vec<ipa_bits *, va_gc> *bits;
   /* Value range information.  */
   vec<ipa_vr, va_gc> *m_vr;
 };
@@ -630,6 +631,7 @@ extern GTY(()) vec<ipa_edge_args, va_gc> *ipa_edge_args_vector;
 /* Creating and freeing ipa_node_params and ipa_edge_args.  */
 void ipa_create_all_node_params (void);
 void ipa_create_all_edge_args (void);
+void ipa_check_create_edge_args (void);
 void ipa_free_edge_args_substructures (struct ipa_edge_args *);
 void ipa_free_all_node_params (void);
 void ipa_free_all_edge_args (void);
@@ -649,17 +651,6 @@ ipa_check_create_node_params (void)
     ipa_node_params_sum
       = (new (ggc_cleared_alloc <ipa_node_params_t> ())
 	 ipa_node_params_t (symtab, true));
-}
-
-/* This function ensures the array of edge arguments infos is big enough to
-   accommodate a structure for all edges and reallocates it if not.  */
-
-static inline void
-ipa_check_create_edge_args (void)
-{
-  if (vec_safe_length (ipa_edge_args_vector)
-      <= (unsigned) symtab->edges_max_uid)
-    vec_safe_grow_cleared (ipa_edge_args_vector, symtab->edges_max_uid + 1);
 }
 
 /* Returns true if the array of edge infos is large enough to accommodate an
@@ -703,6 +694,9 @@ tree ipa_get_indirect_edge_target (struct cgraph_edge *ie,
 struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree,
 						    bool speculative = false);
 tree ipa_impossible_devirt_target (struct cgraph_edge *, tree);
+ipa_bits *ipa_get_ipa_bits_for_value (const widest_int &value,
+				      const widest_int &mask);
+
 
 /* Functions related to both.  */
 void ipa_analyze_node (struct cgraph_node *);

@@ -1,3 +1,49 @@
+2017-03-01  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/78140
+	* ipa-prop.h (ipa_bits): Removed field known.
+	(ipa_jump_func): Removed field vr_known.  Changed fields bits and m_vr
+	to pointers.  Adjusted their comments to warn about their sharing.
+	(ipcp_transformation_summary): Change bits to a vector of pointers.
+	(ipa_check_create_edge_args): Moved to ipa-prop.c, declare.
+	(ipa_get_ipa_bits_for_value): Declare.
+	* tree-vrp.h (value_range): Mark as GTY((for_user)).
+	* ipa-prop.c (ipa_bit_ggc_hash_traits): New.
+	(ipa_bits_hash_table): Likewise.
+	(ipa_vr_ggc_hash_traits): Likewise.
+	(ipa_vr_hash_table): Likewise.
+	(ipa_print_node_jump_functions_for_edge): Adjust for bits and m_vr
+	being pointers and vr_known being removed.
+	(ipa_set_jf_unknown): Likewise.
+	(ipa_get_ipa_bits_for_value): New function.
+	(ipa_set_jfunc_bits): Likewise.
+	(ipa_get_value_range): New overloaded functions.
+	(ipa_set_jfunc_vr): Likewise.
+	(ipa_compute_jump_functions_for_edge): Use the above functions to
+	construct bits and vr parts of jump functions.
+	(ipa_check_create_edge_args): Move here from ipa-prop.h, also allocate
+	ipa_bits_hash_table and ipa_vr_hash_table if they do not already
+	exist.
+	(ipcp_grow_transformations_if_necessary): Also allocate
+	ipa_bits_hash_table and ipa_vr_hash_table if they do not already
+	exist.
+	(ipa_node_params_t::duplicate): Do not copy bits, just pointers to
+	them.  Fix too long lines.
+	(ipa_write_jump_function): Adjust for bits and m_vr being pointers and
+	vr_known being removed.
+	(ipa_read_jump_function): Use new setter functions to construct bits
+	and vr parts of jump functions or set them to NULL.
+	(write_ipcp_transformation_info): Adjust for bits being pointers.
+	(read_ipcp_transformation_info): Likewise.
+	(ipcp_update_bits): Likewise.  Fix excessively long lines a trailing
+	space.
+	Include gt-ipa-prop.h.
+	* ipa-cp.c (propagate_bits_across_jump_function): Adjust for bits
+	being pointers.
+	(ipcp_store_bits_results): Likewise.
+	(propagate_vr_across_jump_function): Adjust for m_vr being a pointer.
+	Do not write to existing jump functions but use a temporary instead.
+
 2017-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79681
