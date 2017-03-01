@@ -60,6 +60,93 @@ vec<ipcp_transformation_summary, va_gc> *ipcp_transformations;
 /* Vector where the parameter infos are actually stored. */
 vec<ipa_edge_args, va_gc> *ipa_edge_args_vector;
 
+/* Traits for a hash table for reusing already existing ipa_bits. */
+
+struct ipa_bit_ggc_hash_traits : public ggc_cache_remove <ipa_bits *>
+{
+  typedef ipa_bits *value_type;
+  typedef ipa_bits *compare_type;
+  static hashval_t
+  hash (const ipa_bits *p)
+  {
+    hashval_t t = (hashval_t) p->value.to_shwi ();
+    return iterative_hash_host_wide_int (p->mask.to_shwi (), t);
+  }
+  static bool
+  equal (const ipa_bits *a, const ipa_bits *b)
+    {
+      return a->value == b->value && a->mask == b->mask;
+    }
+  static void
+  mark_empty (ipa_bits *&p)
+    {
+      p = NULL;
+    }
+  static bool
+  is_empty (const ipa_bits *p)
+    {
+      return p == NULL;
+    }
+  static bool
+  is_deleted (const ipa_bits *p)
+    {
+      return p == reinterpret_cast<const ipa_bits *> (1);
+    }
+  static void
+  mark_deleted (ipa_bits *&p)
+    {
+      p = reinterpret_cast<ipa_bits *> (1);
+    }
+};
+
+/* Hash table for avoid repeated allocations of equal ipa_bits.  */
+static GTY ((cache)) hash_table<ipa_bit_ggc_hash_traits> *ipa_bits_hash_table;
+
+/* Traits for a hash table for reusing value_ranges used for IPA.  Note that
+   the equiv bitmap is not hashed and is expected to be NULL.  */
+
+struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
+{
+  typedef value_range *value_type;
+  typedef value_range *compare_type;
+  static hashval_t
+  hash (const value_range *p)
+  {
+    gcc_checking_assert (!p->equiv);
+    hashval_t t = (hashval_t) p->type;
+    t = iterative_hash_expr (p->min, t);
+    return iterative_hash_expr (p->max, t);
+  }
+  static bool
+  equal (const value_range *a, const value_range *b)
+    {
+      return a->type == b->type && a->min == b->min && a->max == b->max;
+    }
+  static void
+  mark_empty (value_range *&p)
+    {
+      p = NULL;
+    }
+  static bool
+  is_empty (const value_range *p)
+    {
+      return p == NULL;
+    }
+  static bool
+  is_deleted (const value_range *p)
+    {
+      return p == reinterpret_cast<const value_range *> (1);
+    }
+  static void
+  mark_deleted (value_range *&p)
+    {
+      p = reinterpret_cast<value_range *> (1);
+    }
+};
+
+/* Hash table for avoid repeated allocations of equal value_ranges.  */
+static GTY ((cache)) hash_table<ipa_vr_ggc_hash_traits> *ipa_vr_hash_table;
+
 /* Holders of ipa cgraph hooks: */
 static struct cgraph_edge_hook_list *edge_removal_hook_holder;
 static struct cgraph_2edge_hook_list *edge_duplication_hook_holder;
@@ -298,23 +385,25 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	  ctx->dump (dump_file);
 	}
 
-      if (jump_func->bits.known)
+      if (jump_func->bits)
 	{
-	  fprintf (f, "         value: "); print_hex (jump_func->bits.value, f);
-	  fprintf (f, ", mask: "); print_hex (jump_func->bits.mask, f);
+	  fprintf (f, "         value: ");
+	  print_hex (jump_func->bits->value, f);
+	  fprintf (f, ", mask: ");
+	  print_hex (jump_func->bits->mask, f);
 	  fprintf (f, "\n");
 	}
       else
 	fprintf (f, "         Unknown bits\n");
 
-      if (jump_func->vr_known)
+      if (jump_func->m_vr)
 	{
 	  fprintf (f, "         VR  ");
 	  fprintf (f, "%s[",
-		   (jump_func->m_vr.type == VR_ANTI_RANGE) ? "~" : "");
-	  print_decs (jump_func->m_vr.min, f);
+		   (jump_func->m_vr->type == VR_ANTI_RANGE) ? "~" : "");
+	  print_decs (jump_func->m_vr->min, f);
 	  fprintf (f, ", ");
-	  print_decs (jump_func->m_vr.max, f);
+	  print_decs (jump_func->m_vr->max, f);
 	  fprintf (f, "]\n");
 	}
       else
@@ -397,8 +486,8 @@ static void
 ipa_set_jf_unknown (struct ipa_jump_func *jfunc)
 {
   jfunc->type = IPA_JF_UNKNOWN;
-  jfunc->bits.known = false;
-  jfunc->vr_known = false;
+  jfunc->bits = NULL;
+  jfunc->m_vr = NULL;
 }
 
 /* Set JFUNC to be a copy of another jmp (to be used by jump function
@@ -1658,6 +1747,91 @@ ipa_get_callee_param_type (struct cgraph_edge *e, int i)
   return NULL;
 }
 
+/* Return ipa_bits with VALUE and MASK values, which can be either a newly
+   allocated structure or a previously existing one shared with other jump
+   functions and/or transformation summaries.  */
+
+ipa_bits *
+ipa_get_ipa_bits_for_value (const widest_int &value, const widest_int &mask)
+{
+  ipa_bits tmp;
+  tmp.value = value;
+  tmp.mask = mask;
+
+  ipa_bits **slot = ipa_bits_hash_table->find_slot (&tmp, INSERT);
+  if (*slot)
+    return *slot;
+
+  ipa_bits *res = ggc_alloc<ipa_bits> ();
+  res->value = value;
+  res->mask = mask;
+  *slot = res;
+
+  return res;
+}
+
+/* Assign to JF a pointer to ipa_bits structure with VALUE and MASK.  Use hash
+   table in order to avoid creating multiple same ipa_bits structures.  */
+
+static void
+ipa_set_jfunc_bits (ipa_jump_func *jf, const widest_int &value,
+		    const widest_int &mask)
+{
+  jf->bits = ipa_get_ipa_bits_for_value (value, mask);
+}
+
+/* Return a pointer to a value_range just like *TMP, but either find it in
+   ipa_vr_hash_table or allocate it in GC memory.  TMP->equiv must be NULL.  */
+
+static value_range *
+ipa_get_value_range (value_range *tmp)
+{
+  value_range **slot = ipa_vr_hash_table->find_slot (tmp, INSERT);
+  if (*slot)
+    return *slot;
+
+  value_range *vr = ggc_alloc<value_range> ();
+  *vr = *tmp;
+  *slot = vr;
+
+  return vr;
+}
+
+/* Return a pointer to a value range consisting of TYPE, MIN, MAX and an empty
+   equiv set. Use hash table in order to avoid creating multiple same copies of
+   value_ranges.  */
+
+static value_range *
+ipa_get_value_range (enum value_range_type type, tree min, tree max)
+{
+  value_range tmp;
+  tmp.type = type;
+  tmp.min = min;
+  tmp.max = max;
+  tmp.equiv = NULL;
+  return ipa_get_value_range (&tmp);
+}
+
+/* Assign to JF a pointer to a value_range structure with TYPE, MIN and MAX and
+   a NULL equiv bitmap.  Use hash table in order to avoid creating multiple
+   same value_range structures.  */
+
+static void
+ipa_set_jfunc_vr (ipa_jump_func *jf, enum value_range_type type,
+		  tree min, tree max)
+{
+  jf->m_vr = ipa_get_value_range (type, min, max);
+}
+
+/* Assign to JF a pointer to a value_range just liek TMP but either fetch a
+   copy from ipa_vr_hash_table or allocate a new on in GC memory.  */
+
+static void
+ipa_set_jfunc_vr (ipa_jump_func *jf, value_range *tmp)
+{
+  jf->m_vr = ipa_get_value_range (tmp);
+}
+
 /* Compute jump function for all arguments of callsite CS and insert the
    information in the jump_functions array in the ipa_edge_args corresponding
    to this callsite.  */
@@ -1714,14 +1888,11 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 
 	  if (addr_nonzero)
 	    {
-	      jfunc->vr_known = true;
-	      jfunc->m_vr.type = VR_ANTI_RANGE;
-	      jfunc->m_vr.min = build_int_cst (TREE_TYPE (arg), 0);
-	      jfunc->m_vr.max = build_int_cst (TREE_TYPE (arg), 0);
-	      jfunc->m_vr.equiv = NULL;
+	      tree z = build_int_cst (TREE_TYPE (arg), 0);
+	      ipa_set_jfunc_vr (jfunc, VR_ANTI_RANGE, z, z);
 	    }
 	  else
-	    gcc_assert (!jfunc->vr_known);
+	    gcc_assert (!jfunc->m_vr);
 	}
       else
 	{
@@ -1732,56 +1903,48 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	      && (type = get_range_info (arg, &min, &max))
 	      && (type == VR_RANGE || type == VR_ANTI_RANGE))
 	    {
-	      value_range vr;
+	      value_range tmpvr,resvr;
 
-	      vr.type = type;
-	      vr.min = wide_int_to_tree (TREE_TYPE (arg), min);
-	      vr.max = wide_int_to_tree (TREE_TYPE (arg), max);
-	      vr.equiv = NULL;
-	      extract_range_from_unary_expr (&jfunc->m_vr,
-					     NOP_EXPR,
-					     param_type,
-					     &vr, TREE_TYPE (arg));
-	      if (jfunc->m_vr.type == VR_RANGE
-		  || jfunc->m_vr.type == VR_ANTI_RANGE)
-		jfunc->vr_known = true;
+	      tmpvr.type = type;
+	      tmpvr.min = wide_int_to_tree (TREE_TYPE (arg), min);
+	      tmpvr.max = wide_int_to_tree (TREE_TYPE (arg), max);
+	      tmpvr.equiv = NULL;
+	      memset (&resvr, 0, sizeof (resvr));
+	      extract_range_from_unary_expr (&resvr, NOP_EXPR, param_type,
+					     &tmpvr, TREE_TYPE (arg));
+	      if (resvr.type == VR_RANGE || resvr.type == VR_ANTI_RANGE)
+		ipa_set_jfunc_vr (jfunc, &resvr);
 	      else
-		jfunc->vr_known = false;
+		gcc_assert (!jfunc->m_vr);
 	    }
 	  else
-	    gcc_assert (!jfunc->vr_known);
+	    gcc_assert (!jfunc->m_vr);
 	}
 
       if (INTEGRAL_TYPE_P (TREE_TYPE (arg))
 	  && (TREE_CODE (arg) == SSA_NAME || TREE_CODE (arg) == INTEGER_CST))
 	{
-	  jfunc->bits.known = true;
-	  
 	  if (TREE_CODE (arg) == SSA_NAME)
-	    {
-	      jfunc->bits.value = 0;
-	      jfunc->bits.mask = widest_int::from (get_nonzero_bits (arg),
-						   TYPE_SIGN (TREE_TYPE (arg)));
-	    }
+	    ipa_set_jfunc_bits (jfunc, 0,
+				widest_int::from (get_nonzero_bits (arg),
+						  TYPE_SIGN (TREE_TYPE (arg))));
 	  else
-	    {
-	      jfunc->bits.value = wi::to_widest (arg);
-	      jfunc->bits.mask = 0;
-	    }
+	    ipa_set_jfunc_bits (jfunc, wi::to_widest (arg), 0);
 	}
       else if (POINTER_TYPE_P (TREE_TYPE (arg)))
 	{
 	  unsigned HOST_WIDE_INT bitpos;
 	  unsigned align;
 
-	  jfunc->bits.known = true;
 	  get_pointer_alignment_1 (arg, &align, &bitpos);
-	  jfunc->bits.mask = wi::mask<widest_int>(TYPE_PRECISION (TREE_TYPE (arg)), false)
-			     .and_not (align / BITS_PER_UNIT - 1);
-	  jfunc->bits.value = bitpos / BITS_PER_UNIT;
+	  widest_int mask
+	    = wi::mask<widest_int>(TYPE_PRECISION (TREE_TYPE (arg)), false)
+	    .and_not (align / BITS_PER_UNIT - 1);
+	  widest_int value = bitpos / BITS_PER_UNIT;
+	  ipa_set_jfunc_bits (jfunc, value, mask);
 	}
       else
-	gcc_assert (!jfunc->bits.known);
+	gcc_assert (!jfunc->bits);
 
       if (is_gimple_ip_invariant (arg)
 	  || (VAR_P (arg)
@@ -3545,6 +3708,22 @@ ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
   return changed;
 }
 
+/* Ensure that array of edge arguments infos is big enough to accommodate a
+   structure for all edges and reallocates it if not.  Also, allocate
+   associated hash tables is they do not already exist.  */
+
+void
+ipa_check_create_edge_args (void)
+{
+  if (vec_safe_length (ipa_edge_args_vector)
+      <= (unsigned) symtab->edges_max_uid)
+    vec_safe_grow_cleared (ipa_edge_args_vector, symtab->edges_max_uid + 1);
+  if (!ipa_bits_hash_table)
+    ipa_bits_hash_table = hash_table<ipa_bit_ggc_hash_traits>::create_ggc (37);
+  if (!ipa_vr_hash_table)
+    ipa_vr_hash_table = hash_table<ipa_vr_ggc_hash_traits>::create_ggc (37);
+}
+
 /* Frees all dynamically allocated structures that the argument info points
    to.  */
 
@@ -3581,7 +3760,8 @@ ipa_free_all_node_params (void)
   ipa_node_params_sum = NULL;
 }
 
-/* Grow ipcp_transformations if necessary.  */
+/* Grow ipcp_transformations if necessary.  Also allocate any necessary hash
+   tables if they do not already exist.  */
 
 void
 ipcp_grow_transformations_if_necessary (void)
@@ -3589,6 +3769,10 @@ ipcp_grow_transformations_if_necessary (void)
   if (vec_safe_length (ipcp_transformations)
       <= (unsigned) symtab->cgraph_max_uid)
     vec_safe_grow_cleared (ipcp_transformations, symtab->cgraph_max_uid + 1);
+  if (!ipa_bits_hash_table)
+    ipa_bits_hash_table = hash_table<ipa_bit_ggc_hash_traits>::create_ggc (37);
+  if (!ipa_vr_hash_table)
+    ipa_vr_hash_table = hash_table<ipa_vr_ggc_hash_traits>::create_ggc (37);
 }
 
 /* Set the aggregate replacements of NODE to be AGGVALS.  */
@@ -3775,12 +3959,18 @@ ipa_node_params_t::duplicate(cgraph_node *src, cgraph_node *dst,
       ipa_set_node_agg_value_chain (dst, new_av);
     }
 
-  ipcp_transformation_summary *src_trans = ipcp_get_transformation_summary (src);
+  ipcp_transformation_summary *src_trans
+    = ipcp_get_transformation_summary (src);
 
   if (src_trans)
     {
       ipcp_grow_transformations_if_necessary ();
       src_trans = ipcp_get_transformation_summary (src);
+      ipcp_transformation_summary *dst_trans
+	= ipcp_get_transformation_summary (dst);
+
+      dst_trans->bits = vec_safe_copy (src_trans->bits);
+
       const vec<ipa_vr, va_gc> *src_vr = src_trans->m_vr;
       vec<ipa_vr, va_gc> *&dst_vr
 	= ipcp_get_transformation_summary (dst)->m_vr;
@@ -3790,18 +3980,6 @@ ipa_node_params_t::duplicate(cgraph_node *src, cgraph_node *dst,
 	  for (unsigned i = 0; i < src_vr->length (); ++i)
 	    dst_vr->quick_push ((*src_vr)[i]);
 	}
-    }
-
-  if (src_trans && vec_safe_length (src_trans->bits) > 0)
-    {
-      ipcp_grow_transformations_if_necessary ();
-      src_trans = ipcp_get_transformation_summary (src);
-      const vec<ipa_bits, va_gc> *src_bits = src_trans->bits;
-      vec<ipa_bits, va_gc> *&dst_bits
-	= ipcp_get_transformation_summary (dst)->bits;
-      vec_safe_reserve_exact (dst_bits, src_bits->length ());
-      for (unsigned i = 0; i < src_bits->length (); ++i)
-	dst_bits->quick_push ((*src_bits)[i]);
     }
 }
 
@@ -4718,21 +4896,21 @@ ipa_write_jump_function (struct output_block *ob,
     }
 
   bp = bitpack_create (ob->main_stream);
-  bp_pack_value (&bp, jump_func->bits.known, 1);
+  bp_pack_value (&bp, !!jump_func->bits, 1);
   streamer_write_bitpack (&bp);
-  if (jump_func->bits.known)
+  if (jump_func->bits)
     {
-      streamer_write_widest_int (ob, jump_func->bits.value);
-      streamer_write_widest_int (ob, jump_func->bits.mask);
+      streamer_write_widest_int (ob, jump_func->bits->value);
+      streamer_write_widest_int (ob, jump_func->bits->mask);
     }
-  bp_pack_value (&bp, jump_func->vr_known, 1);
+  bp_pack_value (&bp, !!jump_func->m_vr, 1);
   streamer_write_bitpack (&bp);
-  if (jump_func->vr_known)
+  if (jump_func->m_vr)
     {
       streamer_write_enum (ob->main_stream, value_rang_type,
-			   VR_LAST, jump_func->m_vr.type);
-      stream_write_tree (ob, jump_func->m_vr.min, true);
-      stream_write_tree (ob, jump_func->m_vr.max, true);
+			   VR_LAST, jump_func->m_vr->type);
+      stream_write_tree (ob, jump_func->m_vr->min, true);
+      stream_write_tree (ob, jump_func->m_vr->max, true);
     }
 }
 
@@ -4809,26 +4987,25 @@ ipa_read_jump_function (struct lto_input_block *ib,
   bool bits_known = bp_unpack_value (&bp, 1);
   if (bits_known)
     {
-      jump_func->bits.known = true;
-      jump_func->bits.value = streamer_read_widest_int (ib);
-      jump_func->bits.mask = streamer_read_widest_int (ib);
+      widest_int value = streamer_read_widest_int (ib);
+      widest_int mask = streamer_read_widest_int (ib);
+      ipa_set_jfunc_bits (jump_func, value, mask);
     }
   else
-    jump_func->bits.known = false;
+    jump_func->bits = NULL;
 
   struct bitpack_d vr_bp = streamer_read_bitpack (ib);
   bool vr_known = bp_unpack_value (&vr_bp, 1);
   if (vr_known)
     {
-      jump_func->vr_known = true;
-      jump_func->m_vr.type = streamer_read_enum (ib,
-						 value_range_type,
-						 VR_LAST);
-      jump_func->m_vr.min = stream_read_tree (ib, data_in);
-      jump_func->m_vr.max = stream_read_tree (ib, data_in);
+      enum value_range_type type = streamer_read_enum (ib, value_range_type,
+						       VR_LAST);
+      tree min = stream_read_tree (ib, data_in);
+      tree max = stream_read_tree (ib, data_in);
+      ipa_set_jfunc_vr (jump_func, type, min, max);
     }
   else
-    jump_func->vr_known = false;
+    jump_func->m_vr = NULL;
 }
 
 /* Stream out parts of cgraph_indirect_call_info corresponding to CS that are
@@ -5207,14 +5384,14 @@ write_ipcp_transformation_info (output_block *ob, cgraph_node *node)
 
       for (unsigned i = 0; i < count; ++i)
 	{
-	  const ipa_bits& bits_jfunc = (*ts->bits)[i];
+	  const ipa_bits *bits_jfunc = (*ts->bits)[i];
 	  struct bitpack_d bp = bitpack_create (ob->main_stream);
-	  bp_pack_value (&bp, bits_jfunc.known, 1);
+	  bp_pack_value (&bp, !!bits_jfunc, 1);
 	  streamer_write_bitpack (&bp);
-	  if (bits_jfunc.known)
+	  if (bits_jfunc)
 	    {
-	      streamer_write_widest_int (ob, bits_jfunc.value);
-	      streamer_write_widest_int (ob, bits_jfunc.mask);
+	      streamer_write_widest_int (ob, bits_jfunc->value);
+	      streamer_write_widest_int (ob, bits_jfunc->mask);
 	    }
 	}
     }
@@ -5281,13 +5458,14 @@ read_ipcp_transformation_info (lto_input_block *ib, cgraph_node *node,
 
       for (i = 0; i < count; i++)
 	{
-	  ipa_bits& bits_jfunc = (*ts->bits)[i];
 	  struct bitpack_d bp = streamer_read_bitpack (ib);
-	  bits_jfunc.known = bp_unpack_value (&bp, 1);
-	  if (bits_jfunc.known)
+	  bool known = bp_unpack_value (&bp, 1);
+	  if (known)
 	    {
-	      bits_jfunc.value = streamer_read_widest_int (ib);
-	      bits_jfunc.mask = streamer_read_widest_int (ib);
+	      ipa_bits *bits
+		= ipa_get_ipa_bits_for_value (streamer_read_widest_int (ib),
+					      streamer_read_widest_int (ib));
+	      (*ts->bits)[i] = bits;
 	    }
 	}
     }
@@ -5554,7 +5732,7 @@ ipcp_update_bits (struct cgraph_node *node)
   if (!ts || vec_safe_length (ts->bits) == 0)
     return;
 
-  vec<ipa_bits, va_gc> &bits = *ts->bits;
+  vec<ipa_bits *, va_gc> &bits = *ts->bits;
   unsigned count = bits.length ();
 
   for (unsigned i = 0; i < count; ++i, parm = next_parm)
@@ -5566,10 +5744,11 @@ ipcp_update_bits (struct cgraph_node *node)
       gcc_checking_assert (parm);
       next_parm = DECL_CHAIN (parm);
 
-      if (!bits[i].known
-	  || !(INTEGRAL_TYPE_P (TREE_TYPE (parm)) || POINTER_TYPE_P (TREE_TYPE (parm)))
+      if (!bits[i]
+	  || !(INTEGRAL_TYPE_P (TREE_TYPE (parm))
+	       || POINTER_TYPE_P (TREE_TYPE (parm)))
 	  || !is_gimple_reg (parm))
-	continue;       
+	continue;
 
       tree ddef = ssa_default_def (DECL_STRUCT_FUNCTION (node->decl), parm);
       if (!ddef)
@@ -5577,8 +5756,8 @@ ipcp_update_bits (struct cgraph_node *node)
 
       if (dump_file)
 	{
-	  fprintf (dump_file, "Adjusting mask for param %u to ", i); 
-	  print_hex (bits[i].mask, dump_file);
+	  fprintf (dump_file, "Adjusting mask for param %u to ", i);
+	  print_hex (bits[i]->mask, dump_file);
 	  fprintf (dump_file, "\n");
 	}
 
@@ -5587,14 +5766,14 @@ ipcp_update_bits (struct cgraph_node *node)
 	  unsigned prec = TYPE_PRECISION (TREE_TYPE (ddef));
 	  signop sgn = TYPE_SIGN (TREE_TYPE (ddef));
 
-	  wide_int nonzero_bits = wide_int::from (bits[i].mask, prec, UNSIGNED)
-				  | wide_int::from (bits[i].value, prec, sgn);
+	  wide_int nonzero_bits = wide_int::from (bits[i]->mask, prec, UNSIGNED)
+				  | wide_int::from (bits[i]->value, prec, sgn);
 	  set_nonzero_bits (ddef, nonzero_bits);
 	}
       else
 	{
-	  unsigned tem = bits[i].mask.to_uhwi ();
-	  unsigned HOST_WIDE_INT bitpos = bits[i].value.to_uhwi (); 
+	  unsigned tem = bits[i]->mask.to_uhwi ();
+	  unsigned HOST_WIDE_INT bitpos = bits[i]->value.to_uhwi ();
 	  unsigned align = tem & -tem;
 	  unsigned misalign = bitpos & (align - 1);
 
@@ -5757,3 +5936,5 @@ ipcp_transform_function (struct cgraph_node *node)
   else
     return TODO_update_ssa_only_virtuals;
 }
+
+#include "gt-ipa-prop.h"
