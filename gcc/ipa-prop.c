@@ -4777,7 +4777,7 @@ ipa_prop_write_jump_functions (void)
   lto_symtab_encoder_iterator lsei;
   lto_symtab_encoder_t encoder;
 
-  if (!ipa_node_params_sum)
+  if (!ipa_node_params_sum || !ipa_edge_args_vector)
     return;
 
   ob = create_output_block (LTO_section_jump_functions);

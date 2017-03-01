@@ -1,3 +1,12 @@
+2017-03-01  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2017-02-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/79579
+	* ipa-prop.c (ipa_prop_write_jump_functions): Bail out if no edges
+	have been analyzed.
+
 2017-02-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/79749
