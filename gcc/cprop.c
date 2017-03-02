@@ -1852,12 +1852,22 @@ one_cprop_pass (void)
 		if (! NOTE_P (insn) && ! insn->deleted ())
 		  mark_oprs_set (insn);
 
-		if (!was_uncond_trap && !seen_uncond_trap
+		if (!was_uncond_trap
 		    && GET_CODE (PATTERN (insn)) == TRAP_IF
 		    && XEXP (PATTERN (insn), 0) == const1_rtx)
 		  {
-		    seen_uncond_trap = true;
-		    uncond_traps.safe_push (insn);
+		    /* If we have already seen an unconditional trap
+		       earlier, the rest of the bb is going to be removed
+		       as unreachable.  Just turn it into a note, so that
+		       RTL verification doesn't complain about it before
+		       it is finally removed.  */
+		    if (seen_uncond_trap)
+		      set_insn_deleted (insn);
+		    else
+		      {
+			seen_uncond_trap = true;
+			uncond_traps.safe_push (insn);
+		      }
 		  }
 	      }
 	}

@@ -1,3 +1,8 @@
+2017-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/79780
+	* gcc.c-torture/compile/pr79780.c: New test.
+
 2017-03-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79345
