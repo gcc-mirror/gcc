@@ -1,3 +1,8 @@
+2017-03-02  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/66768
+	* gcc.target/i386/pr66768.c: New test.
+
 2017-03-02  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/rtl/x86_64/dfinit.c: Only run for lp64.
