@@ -1,3 +1,10 @@
+2017-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/79780
+	* cprop.c (one_cprop_pass): When second and further conditional trap
+	in a single basic block is turned into an unconditional trap, turn it
+	into a deleted note to avoid RTL verification failures.
+
 2017-03-02  Richard Biener  <rguenther@suse.de>
 
 	* fold-const.c (const_binop): Use ulow () instead of elt (0).
