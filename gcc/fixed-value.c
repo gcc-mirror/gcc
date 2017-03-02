@@ -130,8 +130,8 @@ fixed_from_string (FIXED_VALUE_TYPE *f, const char *str, machine_mode mode)
   real_arithmetic (&fixed_value, MULT_EXPR, &real_value, &base_value);
   wide_int w = real_to_integer (&fixed_value, &fail,
 				GET_MODE_PRECISION (mode));
-  f->data.low = w.elt (0);
-  f->data.high = w.elt (1);
+  f->data.low = w.ulow ();
+  f->data.high = w.uhigh ();
 
   if (temp == FIXED_MAX_EPS && ALL_FRACT_MODE_P (f->mode))
     {
@@ -1049,8 +1049,8 @@ fixed_convert_from_real (FIXED_VALUE_TYPE *f, machine_mode mode,
 
   wide_int w = real_to_integer (&fixed_value, &fail,
 				GET_MODE_PRECISION (mode));
-  f->data.low = w.elt (0);
-  f->data.high = w.elt (1);
+  f->data.low = w.ulow ();
+  f->data.high = w.uhigh ();
   temp = check_real_for_fixed_mode (&real_value, mode);
   if (temp == FIXED_UNDERFLOW) /* Minimum.  */
     {
