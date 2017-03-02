@@ -700,7 +700,7 @@
 	  (unspec:CC [(ne:CC (match_operand:VI 1 "vlogical_operand")
 			     (match_operand:VI 2 "vlogical_operand"))]
 	   UNSPEC_PREDICATE))
-     (set (match_dup 4)
+     (set (match_dup 3)
 	  (ne:VI (match_dup 1)
 		 (match_dup 2)))])
    (set (match_operand:SI 0 "register_operand" "=r")
@@ -708,7 +708,7 @@
 	       (const_int 0)))]
   "TARGET_P9_VECTOR"
 {
-  operands[4] = gen_reg_rtx (<MODE>mode);
+  operands[3] = gen_reg_rtx (<MODE>mode);
 })
 
 ;; This expansion handles the V16QI, V8HI, and V4SI modes in the
@@ -719,7 +719,7 @@
 	  (unspec:CC [(ne:CC (match_operand:VI 1 "vlogical_operand")
 			     (match_operand:VI 2 "vlogical_operand"))]
 	   UNSPEC_PREDICATE))
-     (set (match_dup 4)
+     (set (match_dup 3)
 	  (ne:VI (match_dup 1)
 		 (match_dup 2)))])
    (set (match_operand:SI 0 "register_operand" "=r")
@@ -730,7 +730,7 @@
 		(const_int 1)))]
   "TARGET_P9_VECTOR"
 {
-  operands[4] = gen_reg_rtx (<MODE>mode);
+  operands[3] = gen_reg_rtx (<MODE>mode);
 })
 
 ;; This expansion handles the V16QI, V8HI, and V4SI modes in the
@@ -763,7 +763,7 @@
 	  (unspec:CC [(eq:CC (match_operand:V2DI 1 "vlogical_operand")
 			     (match_operand:V2DI 2 "vlogical_operand"))]
 		     UNSPEC_PREDICATE))
-     (set (match_dup 4)
+     (set (match_dup 3)
 	  (eq:V2DI (match_dup 1)
 		   (match_dup 2)))])
    (set (match_operand:SI 0 "register_operand" "=r")
@@ -771,7 +771,7 @@
 	       (const_int 0)))]
   "TARGET_P9_VECTOR"
 {
-  operands[4] = gen_reg_rtx (V2DImode);
+  operands[3] = gen_reg_rtx (V2DImode);
 })
 
 ;; This expansion handles the V2DI mode in the implementation of the
@@ -786,7 +786,7 @@
 	  (unspec:CC [(eq:CC (match_operand:V2DI 1 "vlogical_operand")
 			     (match_operand:V2DI 2 "vlogical_operand"))]
 		     UNSPEC_PREDICATE))
-     (set (match_dup 4)
+     (set (match_dup 3)
 	  (eq:V2DI (match_dup 1)
 		   (match_dup 2)))])
    (set (match_operand:SI 0 "register_operand" "=r")
@@ -797,7 +797,7 @@
 		(const_int 1)))]
   "TARGET_P9_VECTOR"
 {
-  operands[4] = gen_reg_rtx (V2DImode);
+  operands[3] = gen_reg_rtx (V2DImode);
 })
 
 ;; This expansion handles the V4SF and V2DF modes in the Power9
@@ -811,7 +811,7 @@
 	  (unspec:CC [(eq:CC (match_operand:VEC_F 1 "vlogical_operand")
 			     (match_operand:VEC_F 2 "vlogical_operand"))]
 		     UNSPEC_PREDICATE))
-     (set (match_dup 4)
+     (set (match_dup 3)
 	  (eq:VEC_F (match_dup 1)
 		    (match_dup 2)))])
    (set (match_operand:SI 0 "register_operand" "=r")
@@ -819,7 +819,7 @@
 	       (const_int 0)))]
   "TARGET_P9_VECTOR"
 {
-  operands[4] = gen_reg_rtx (<MODE>mode);
+  operands[3] = gen_reg_rtx (<MODE>mode);
 })
 
 ;; This expansion handles the V4SF and V2DF modes in the Power9
@@ -833,7 +833,7 @@
 	  (unspec:CC [(eq:CC (match_operand:VEC_F 1 "vlogical_operand")
 			     (match_operand:VEC_F 2 "vlogical_operand"))]
 		     UNSPEC_PREDICATE))
-     (set (match_dup 4)
+     (set (match_dup 3)
 	  (eq:VEC_F (match_dup 1)
 		    (match_dup 2)))])
    (set (match_operand:SI 0 "register_operand" "=r")
@@ -844,7 +844,7 @@
 		(const_int 1)))]
   "TARGET_P9_VECTOR"
 {
-  operands[4] = gen_reg_rtx (<MODE>mode);
+  operands[3] = gen_reg_rtx (<MODE>mode);
 })
 
 (define_expand "vector_gt_<mode>_p"

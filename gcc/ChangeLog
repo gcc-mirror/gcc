@@ -1,3 +1,16 @@
+2017-03-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vector.md (vector_ne_<mode>_p): Correct operand
+	numbers.
+	(vector_ae_<mode>_p): Likewise.
+	(vector_nez_<mode>_p): Likewise.
+	(vector_ne_v2di_p): Likewise.
+	(vector_ae_v2di_p): Likewise.
+	(vector_ne_<mode>_p): Likewise.
+	* config/rs6000/vsx.md (vsx_tsqrt<mode>2_fg): Correct operand
+	numbers.
+	(vsx_tsqrt<mode>2_fe): Likewise.
+
 2017-03-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/79514
