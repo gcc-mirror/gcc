@@ -2324,6 +2324,10 @@ find_interesting_uses_address (struct ivopts_data *data, gimple *stmt,
     }
 
   civ = alloc_iv (data, base, step);
+  /* Fail if base object of this memory reference is unknown.  */
+  if (civ->base_object == NULL_TREE)
+    goto fail;
+
   record_group_use (data, op_p, civ, stmt, USE_ADDRESS);
   return;
 
