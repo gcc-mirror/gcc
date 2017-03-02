@@ -1,3 +1,17 @@
+2017-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79345
+	* gensupport.h (struct pattern_stats): Add min_scratch_opno field.
+	* gensupport.c (get_pattern_stats_1) <case MATCH_SCRATCH>: Update it.
+	(get_pattern_stats): Initialize it.
+	* genemit.c (gen_expand): Verify match_scratch numbers come after
+	match_operand/match_dup numbers.
+	* config/i386/i386.md (<s>mul<mode>3_highpart): Swap match_dup and
+	match_scratch numbers.
+	* config/i386/sse.md (avx2_gathersi<mode>, avx2_gatherdi<mode>):
+	Likewise.
+	* config/s390/s390.md (trunctdsd2): Likewise.
+
 2017-03-02  Richard Biener  <rguenther@suse.de>
 
 	* wide-int.h (wide_int_storage::operator=): Implement in terms

@@ -18873,7 +18873,7 @@
 		   (unspec:VEC_GATHER_MODE
 		     [(match_operand:VEC_GATHER_MODE 1 "register_operand")
 		      (mem:<ssescalarmode>
-			(match_par_dup 7
+			(match_par_dup 6
 			  [(match_operand 2 "vsib_address_operand")
 			   (match_operand:<VEC_GATHER_IDXSI>
 			      3 "register_operand")
@@ -18881,10 +18881,10 @@
 		      (mem:BLK (scratch))
 		      (match_operand:VEC_GATHER_MODE 4 "register_operand")]
 		     UNSPEC_GATHER))
-	      (clobber (match_scratch:VEC_GATHER_MODE 6))])]
+	      (clobber (match_scratch:VEC_GATHER_MODE 7))])]
   "TARGET_AVX2"
 {
-  operands[7]
+  operands[6]
     = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, operands[2], operands[3],
 					operands[5]), UNSPEC_VSIBADDR);
 })
@@ -18934,7 +18934,7 @@
 		   (unspec:VEC_GATHER_MODE
 		     [(match_operand:<VEC_GATHER_SRCDI> 1 "register_operand")
 		      (mem:<ssescalarmode>
-			(match_par_dup 7
+			(match_par_dup 6
 			  [(match_operand 2 "vsib_address_operand")
 			   (match_operand:<VEC_GATHER_IDXDI>
 			      3 "register_operand")
@@ -18942,10 +18942,10 @@
 		      (mem:BLK (scratch))
 		      (match_operand:<VEC_GATHER_SRCDI> 4 "register_operand")]
 		     UNSPEC_GATHER))
-	      (clobber (match_scratch:VEC_GATHER_MODE 6))])]
+	      (clobber (match_scratch:VEC_GATHER_MODE 7))])]
   "TARGET_AVX2"
 {
-  operands[7]
+  operands[6]
     = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, operands[2], operands[3],
 					operands[5]), UNSPEC_VSIBADDR);
 })
