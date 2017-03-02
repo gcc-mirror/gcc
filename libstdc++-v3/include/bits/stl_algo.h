@@ -5748,11 +5748,11 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
         {
 	  while (__n != 0 && __unsampled_sz >= 2)
 	    {
-	      const pair<_Size, _Size> p =
+	      const pair<_Size, _Size> __p =
 		__gen_two_uniform_ints(__unsampled_sz, __unsampled_sz - 1, __g);
 
 	      --__unsampled_sz;
-	      if (p.first < __n)
+	      if (__p.first < __n)
 		{
 		  *__out++ = *__first;
 		  --__n;
@@ -5763,7 +5763,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	      if (__n == 0) break;
 
 	      --__unsampled_sz;
-	      if (p.second < __n)
+	      if (__p.second < __n)
 		{
 		  *__out++ = *__first;
 		  --__n;

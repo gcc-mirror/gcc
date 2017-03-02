@@ -2892,12 +2892,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   /// std::is_callable_v
-  template<typename T, typename _Ret = void>
-    constexpr bool is_callable_v = is_callable<T, _Ret>::value;
+  template<typename _Tp, typename _Ret = void>
+    constexpr bool is_callable_v = is_callable<_Tp, _Ret>::value;
 
   /// std::is_nothrow_callable_v
-  template<typename T, typename _Ret = void>
-    constexpr bool is_nothrow_callable_v = is_nothrow_callable<T, _Ret>::value;
+  template<typename _Tp, typename _Ret = void>
+    constexpr bool is_nothrow_callable_v
+      = is_nothrow_callable<_Tp, _Ret>::value;
 #endif // C++17
 
 

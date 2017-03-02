@@ -168,8 +168,8 @@ namespace std
 
     template<typename _Ex>
       inline void
-      __dest_thunk(void* x)
-      { static_cast<_Ex*>(x)->~_Ex(); }
+      __dest_thunk(void* __x)
+      { static_cast<_Ex*>(__x)->~_Ex(); }
 
   } // namespace __exception_ptr
 

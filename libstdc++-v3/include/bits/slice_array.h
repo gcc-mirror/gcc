@@ -204,8 +204,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     inline
-    slice_array<_Tp>::slice_array(const slice_array<_Tp>& a)
-    : _M_sz(a._M_sz), _M_stride(a._M_stride), _M_array(a._M_array) {}
+    slice_array<_Tp>::slice_array(const slice_array<_Tp>& __a)
+    : _M_sz(__a._M_sz), _M_stride(__a._M_stride), _M_array(__a._M_array) {}
 
   //    template<typename _Tp>
   //    inline slice_array<_Tp>::~slice_array () {}
