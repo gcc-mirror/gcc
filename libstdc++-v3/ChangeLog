@@ -1,5 +1,21 @@
 2017-03-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/79789
+	* include/bits/hashtable_policy.h (__clp2): Use reserved names for
+	parameters and local variables.
+	* include/bits/ios_base.h (make_error_code, make_error_condition):
+	Likewise.
+	* include/bits/list.tcc (list::sort): Likewise.
+	* include/bits/mask_array.h (mask_array): Likewise.
+	* include/bits/regex.h (regex_token_iterator): Likewise.
+	* include/bits/slice_array.h (slice_array): Likewise.
+	* include/bits/stl_algo.h (__sample): Likewise.
+	* include/std/memory (undeclare_no_pointers): Likewise.
+	* include/std/type_traits (is_callable_v, is_nothrow_callable_v):
+	Likewise.
+	* libsupc++/exception_ptr.h (__dest_thunk): Likewise.
+	* testsuite/17_intro/headers/names.cc: New test.
+
 	PR libstdc++/79798
 	* include/std/functional (bind::_Res_type_impl): Fix incorrect use of
 	result_of that loses top-level cv-qualifiers.
