@@ -133,9 +133,9 @@ enum class pointer_safety { relaxed, preferred, strict };
 inline void
 declare_reachable(void*) { }
 
-template <class T>
-  inline T*
-  undeclare_reachable(T* __p) { return __p; }
+template <typename _Tp>
+  inline _Tp*
+  undeclare_reachable(_Tp* __p) { return __p; }
 
 inline void
 declare_no_pointers(char*, size_t) { }
