@@ -6534,6 +6534,8 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 void 
 c_common_mark_addressable_vec (tree t)
 {   
+  if (TREE_CODE (t) == C_MAYBE_CONST_EXPR)
+    t = C_MAYBE_CONST_EXPR_EXPR (t);
   while (handled_component_p (t))
     t = TREE_OPERAND (t, 0);
   if (!VAR_P (t)
