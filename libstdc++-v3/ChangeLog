@@ -1,5 +1,8 @@
 2017-03-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/17_intro/headers/names.cc: Rename to ...
+	* testsuite/17_intro/names.cc: ... here.
+
 	PR libstdc++/79789
 	* include/bits/hashtable_policy.h (__clp2): Use reserved names for
 	parameters and local variables.
