@@ -1383,28 +1383,28 @@
 
 ;; *tsqrt* returning the fg flag
 (define_expand "vsx_tsqrt<mode>2_fg"
-  [(set (match_dup 3)
+  [(set (match_dup 2)
 	(unspec:CCFP [(match_operand:VSX_B 1 "vsx_register_operand" "")]
 		     UNSPEC_VSX_TSQRT))
    (set (match_operand:SI 0 "gpc_reg_operand" "")
-	(gt:SI (match_dup 3)
+	(gt:SI (match_dup 2)
 	       (const_int 0)))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
 {
-  operands[3] = gen_reg_rtx (CCFPmode);
+  operands[2] = gen_reg_rtx (CCFPmode);
 })
 
 ;; *tsqrt* returning the fe flag
 (define_expand "vsx_tsqrt<mode>2_fe"
-  [(set (match_dup 3)
+  [(set (match_dup 2)
 	(unspec:CCFP [(match_operand:VSX_B 1 "vsx_register_operand" "")]
 		     UNSPEC_VSX_TSQRT))
    (set (match_operand:SI 0 "gpc_reg_operand" "")
-	(eq:SI (match_dup 3)
+	(eq:SI (match_dup 2)
 	       (const_int 0)))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
 {
-  operands[3] = gen_reg_rtx (CCFPmode);
+  operands[2] = gen_reg_rtx (CCFPmode);
 })
 
 (define_insn "*vsx_tsqrt<mode>2_internal"
