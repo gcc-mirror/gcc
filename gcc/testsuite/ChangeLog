@@ -1,5 +1,10 @@
 2017-03-02  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.dg/rtl/x86_64/*.c: Test for
+	"{ i?86-*-* x86_64-*-* } && lp64" targets only.
+
+2017-03-02  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/79514
 	* gcc.target/i386/pr79514.c: New test.
 
