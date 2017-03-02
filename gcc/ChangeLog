@@ -1,3 +1,20 @@
+2017-03-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79345
+	PR c++/42000
+	* tree-ssa-alias.c (walk_aliased_vdefs_1): Take a limit
+	param and abort the walk, returning -1 if it is hit.
+	(walk_aliased_vdefs): Take a limit param and pass it on.
+	* tree-ssa-alias.h (walk_aliased_vdefs): Add a limit param,
+	defaulting to 0 and return a signed int.
+	* tree-ssa-uninit.c (struct check_defs_data): New struct.
+	(check_defs): New helper.
+	(warn_uninitialized_vars): Use walk_aliased_vdefs to warn
+	about uninitialized memory.
+	* fixed-value.c (fixed_from_string): Use ulow/uhigh to avoid
+	bogus uninitialized warning.
+	(fixed_convert_from_real): Likewise.
+
 2017-03-02  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/66768

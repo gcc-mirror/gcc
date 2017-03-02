@@ -1,5 +1,13 @@
 2017-03-02  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/79345
+	PR c++/42000
+	* g++.dg/warn/Wuninitialized-7.C: New testcase.
+	* c-c++-common/ubsan/bounds-2.c: Add -Wno-uninitialized.
+	* gcc.dg/uninit-pr19430-2.c: Add expected warning.
+
+2017-03-02  Richard Biener  <rguenther@suse.de>
+
 	PR c/79756
 	* gcc.dg/vector-1.c: New testcase.
 
