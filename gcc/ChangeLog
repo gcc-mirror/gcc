@@ -1,5 +1,10 @@
 2017-03-02  Richard Biener  <rguenther@suse.de>
 
+	* wide-int.h (wide_int_storage::operator=): Implement in terms
+	of wi::copy.
+
+2017-03-02  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/79777
 	* tree-ssa-pre.c (eliminate_insert): Give up if we simplify
 	the to insert expression to sth existing.
