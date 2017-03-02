@@ -1,3 +1,10 @@
+2017-03-02  Gerald Pfeifer  <gerald@pfeifer.com>
+	    François Dumont  <frs.dumont@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/debug_mode.xml: Update and simplify note
+	on link- and run-time coexistence.
+
 2017-03-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/17_intro/headers/names.cc: Rename to ...
