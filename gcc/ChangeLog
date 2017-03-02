@@ -1,3 +1,8 @@
+2017-03-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/79514
+	* config/i386/i386.md (*pushxf_rounded): New insn_and_split pattern.
+
 2017-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/79780
@@ -2036,7 +2041,7 @@
 	scalar_stmt_cost and vec_stmt_cost.
 
 2017-02-01  Torvald Riegel  <triegel@redhat.com>
-            Richard Henderson  <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (fold_builtin_atomic_always_lock_free): Make "lock-free"
 	conditional on existance of a fast atomic load.
@@ -2337,9 +2342,9 @@
 2017-01-27  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/79239
-        * arm.c (arm_option_override): Don't call build_target_option_node
-        until after doing all option overrides.
-        (arm_valid_target_attribute_tree): Likewise.
+	* arm.c (arm_option_override): Don't call build_target_option_node
+	until after doing all option overrides.
+	(arm_valid_target_attribute_tree): Likewise.
 
 2017-01-27  Martin Liska  <mliska@suse.cz>
 
