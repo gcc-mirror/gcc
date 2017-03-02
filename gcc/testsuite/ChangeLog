@@ -1,5 +1,14 @@
 2017-03-02  Richard Biener  <rguenther@suse.de>
 
+	* gcc.dg/rtl/x86_64/dfinit.c: Only run for lp64.
+	* gcc.dg/rtl/x86_64/final.c: Likewise.
+	* gcc.dg/rtl/x86_64/into-cfglayout.c: Likewise.
+	* gcc.dg/rtl/x86_64/ira.c: Likewise.
+	* gcc.dg/rtl/x86_64/times-two.c.after-expand.c: Likewise.
+	* gcc.dg/rtl/x86_64/vregs.c: Likewise.
+
+2017-03-02  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/79777
 	* gcc.dg/torture/pr79777.c: New testcase.
 
