@@ -1,3 +1,8 @@
+2017-03-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/79514
+	* config/i386/i386.md (*pushxf_rounded): New insn_and_split pattern.
+
 2017-03-01  Pat Haugen  <pthaugen@us.ibm.com>
 
 	Backport from mainline:
