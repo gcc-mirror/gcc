@@ -1,4 +1,4 @@
-/* { dg-do run { target x86_64-*-* } } */
+/* { dg-do run { target { x86_64-*-* && lp64 } } } */
 /* { dg-options "-fdump-rtl-dfinit" } */
 
 #include "test_1.h"
