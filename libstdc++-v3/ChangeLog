@@ -1,3 +1,10 @@
+2017-03-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79798
+	* include/std/functional (bind::_Res_type_impl): Fix incorrect use of
+	result_of that loses top-level cv-qualifiers.
+	* testsuite/20_util/bind/79798.cc: New test.
+
 2017-03-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/documentation_hacking.xml: Tweak link to

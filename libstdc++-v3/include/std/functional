@@ -502,7 +502,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
       template<typename _Fn, typename _CallArgs, typename... _BArgs>
 	using _Res_type_impl
-	  = typename result_of< _Fn&(_Mu_type<_BArgs, _CallArgs>...) >::type;
+	  = typename result_of< _Fn&(_Mu_type<_BArgs, _CallArgs>&&...) >::type;
 
       template<typename _CallArgs>
 	using _Res_type = _Res_type_impl<_Functor, _CallArgs, _Bound_args...>;
