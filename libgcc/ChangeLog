@@ -1,5 +1,11 @@
 2017-03-02  Jonathan Yong <10walls@gmail.com>
 
+	* config/i386/gthr-win32.h: Define NOGDI before
+	windows.h include to prevent w32api CC_NONE macro
+	clash with libgfortran.
+
+2017-03-02  Jonathan Yong <10walls@gmail.com>
+
 	* unwind-seh.c: Suppress warnings for RtlUnwindEx calls.
 
 2017-02-16  Andrew Pinski  <apinski@cavium.com>
