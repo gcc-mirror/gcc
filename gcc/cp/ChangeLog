@@ -1,3 +1,10 @@
+2017-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79782
+	* init.c (mark_exp_read_r): New function.
+	(emit_mem_initializers): Use cp_walk_tree with mark_exp_read_r on
+	whole arguments instead of plain mark_exp_read on TREE_LIST values.
+
 2017-03-01  Jason Merrill  <jason@redhat.com>
 
 	Class template argument deduction in new-expression

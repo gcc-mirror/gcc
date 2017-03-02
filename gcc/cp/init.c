@@ -1127,6 +1127,17 @@ sort_mem_initializers (tree t, tree mem_inits)
   return sorted_inits;
 }
 
+/* Callback for cp_walk_tree to mark all PARM_DECLs in a tree as read.  */
+
+static tree
+mark_exp_read_r (tree *tp, int *, void *)
+{
+  tree t = *tp;
+  if (TREE_CODE (t) == PARM_DECL)
+    mark_exp_read (t);
+  return NULL_TREE;
+}
+
 /* Initialize all bases and members of CURRENT_CLASS_TYPE.  MEM_INITS
    is a TREE_LIST giving the explicit mem-initializer-list for the
    constructor.  The TREE_PURPOSE of each entry is a subobject (a
@@ -1221,8 +1232,7 @@ emit_mem_initializers (tree mem_inits)
 	/* When not constructing vbases of abstract classes, at least mark
 	   the arguments expressions as read to avoid
 	   -Wunused-but-set-parameter false positives.  */
-	for (tree arg = arguments; arg; arg = TREE_CHAIN (arg))
-	  mark_exp_read (TREE_VALUE (arg));
+	cp_walk_tree (&arguments, mark_exp_read_r, NULL, NULL);
 
       if (inherited_base)
 	pop_deferring_access_checks ();
