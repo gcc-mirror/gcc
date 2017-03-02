@@ -1,3 +1,7 @@
+2017-03-02  Jonathan Yong <10walls@gmail.com>
+
+	* unwind-seh.c: Suppress warnings for RtlUnwindEx calls.
+
 2017-02-16  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/value-unwind.h: New file.
