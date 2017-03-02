@@ -1,3 +1,8 @@
+2017-03-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79777
+	* gcc.dg/torture/pr79777.c: New testcase.
+
 2017-03-01  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/79692
