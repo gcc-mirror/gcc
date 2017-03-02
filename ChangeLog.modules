@@ -1,3 +1,28 @@
+2017-03-01  Nathan Sidwell  <nathan@acm.org>
+
+	Black triangle achieved
+	gcc/cp/
+	* cp-tree.h (GLOBAL_MODULE_NAMESPACE_P): New.
+	(add_lang_decl_raw, add_lang_type_raw): Declare.
+	* lex.c (add_lang_decl_raw): New.  Broken out of ...
+	(retrofit_lang_decl): ... here.  Call it.
+	(add_lang_type_raw): New.  Broken out of ...
+	(cxx_make_type): ... here.  Call it.
+	* module.c (out::write_decl_lang_bools, in::read_decl_lang_bools): New.
+	(in::~in, in::set_scope): Correct.
+	(out::write_tree, in::read_tree): Start lang_type/decl handling.
+	(in::finish_type): Fix canonical type handling.
+	(in::finish_function): Insert into symbol table.
+	(in::finish_function): Preserve scope.
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp: Add link & execute capability.
+	* g++.dg/modules/mod-decl-2_b.C: Remove XFAILs.
+	* g++.dg/modules/mod-decl-2_c.C: Remove XFAILs.
+	* g++.dg/modules/mod-impl-1_a.C: New.
+	* g++.dg/modules/mod-impl-1_b.C: New.
+	* g++.dg/modules/mod-impl-1_c.C: New.
+	* g++.dg/modules/mod-impl-1_d.C: New.
+
 2017-02-17  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

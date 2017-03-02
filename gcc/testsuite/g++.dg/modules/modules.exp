@@ -20,8 +20,8 @@
 # Test C++ modules, which requires multiple TUs
 #
 # A test case might consist of multiple source files, each is compiled
-# separately, in a well-defined order. The resulting object files might
-# be optionally linked and optionally executed. Grouping is indicated by
+# separately, in a well-defined order.  The resulting object files might
+# be optionally linked and optionally executed.  Grouping is indicated by
 # naming files '*_[a-z].C'
 
 load_lib g++-dg.exp
@@ -34,62 +34,154 @@ lappend DEFAULT_MODFLAGS "-std=c++14" "-fmodules"
 
 dg-init
 
-global module_specs
+global module_do
+global module_ifs
 
-proc mod_spec_to_file { spec } {
-    set mod $spec
-    if { [ string index $mod 0 ] == "!" } {
-	set mod [string range $mod 1 end]
+proc decode_mod_spec { spec } {
+    set not 0
+    if { [ string index $spec 0 ] == "!" } {
+	set spec [string range $spec 1 end]
+	set not 1
     }
-    return "g++-[regsub -all {\.} $mod {-}].nms"
+    set file "g++-[regsub -all {\.} $spec {-}].nms"
+    return [list $not $file]
 }
 
-# register a module interface leading '!' to expect it to NOT be present
+# Register a module interface leading '!' to expect it to NOT be present
+# dg-module-if SPEC WHEN
 proc dg-module-if { args } {
-
     if { [llength $args] > 3 } {
 	error "[lindex $args 0]: too many arguments"
 	return
     }
 
-    set mod [lindex $args 1]
-    if { ! [ string equal -length 1 $mod "!" ] } {
+    set spec [lindex $args 1]
+    set decode [decode_mod_spec $spec]
+    if { ! [lindex $decode 0] } {
 	# delete file, only if we expect to create it
-	set file [mod_spec_to_file $mod]
-	file_on_host delete $file
+	file_on_host delete [lindex $decode 1]
     }
 
-    if { [llength $args] >= 3 } {
-	switch -glob [dg-process-target [lindex $args 2]] {
-	    "S" { }
-	    "N" { return }
-	    "*" { error "[lindex $args 0]: `xfail' not allowed here"
-		return }
-	}
+    set res [list $spec]
+    if { [llength $args] > 2 } {
+	lappend res [lindex $args 2]
     }
 
-    global module_specs
-    lappend module_specs $mod
+    global module_ifs
+    lappend module_ifs $res
 }
 
 # check the expected module files exist (or not)
 # return list to delete
-proc check_module_specs { src specs } {
+proc module_if_it { src ifs } {
     set res {}
-    foreach spec $specs {
-	set absent [ string equal -length 1 $spec "!" ]
-	set file [mod_spec_to_file $spec]
-	if { $absent != [file_on_host exists $file] } {
+    foreach if_arg $ifs {
+	set spec [lindex $if_arg 0]
+	if { [llength $if_arg] > 1 } {
+	    switch [dg-process-target [lindex $if_arg 1]] {
+		"S" { }
+		"N" { continue }
+		"F" { setup_xfail "*-*-*" }
+		"P" { }
+	    }
+	}
+	set decode [decode_mod_spec $spec]
+	set absent [lindex $decode 0]
+	if { $absent != [file_on_host exists [lindex $decode 1]] } {
 	    pass "$src module $spec"
 	} else {
 	    fail "$src module $spec"
 	    set absent [expr ! $absent ]
 	}
 	if { ! $absent } {
-	    lappend res $file
+	    lappend res [lindex $decode 1]
 	}
     }
     return $res
+}
+
+# link and maybe run a set of object files
+# dg-module-do WHAT OPTIONS WHEN
+proc dg-module-do { args } {
+    if { [llength $args] > 4 } {
+	error "[lindex $args 0]: too many arguments"
+	return
+    }
+
+    global module_do
+    set module_do $args
+}
+
+proc module_do_it { do_what testcase asm_list } {
+    global tool
+
+    set run 0
+    switch [lindex $do_what 1] {
+	"link" { }
+	"run" { set run 1 }
+	default { error "unknown module-do action [lindex $do_what 0]" }
+    }
+
+    set xfail {}
+    if { [llength $do_what] > 3 } {
+	switch [dg-process-target [lindex $do_what 3]] {
+	    "S" { }
+	    "N" { return 1 }
+	    "F" { set xfail {setup_xfail "*-*-*"} }
+	    "P" { }
+	}
+    }
+
+    set ok 1
+    # make sure all asms are around
+    foreach asm $asm_list {
+	if { ! [file_on_host exists $asm] } {
+	    set ok 0
+	}
+    }
+
+    set options {}
+    if { [llength $do_what] > 2 } {
+	set options [lindex $do_what 2]
+    }
+
+    set execname "./[file tail $testcase].exe"
+
+    # link it
+    verbose "Linking $asm_list" 1
+    if { !$ok } {
+	unresolved "$testcase link"
+    } else {
+	set out [${tool}_target_compile $asm_list \
+		     $execname executable $options]
+	eval $xfail
+	if { $out == "" } {
+	    pass "$testcase link"
+	} else {
+	    fail "$testcase link"
+	    set ok 0
+	}
+    }
+
+    # run it?
+    if { !$run } {
+    } elseif { !$ok } {
+	unresolved "$testcase execute"
+    } else {
+	set out [${tool}_load $execname "" ""]
+	set status [lindex $out 0]
+	eval $xfail
+	$status "$testcase execute"
+	if { $status != "pass" } {
+	    set $ok 0
+	}
+    }
+
+    if { $ok } {
+	file_on_host delete $execname
+    }
+
+    return $ok
 }
 
 # delete the specified set of module files
@@ -103,11 +195,11 @@ proc cleanup_module_files { files } {
 foreach src [prune [lsort [find $srcdir/$subdir "*.C"]] \
 		 "$srcdir/$subdir/*_?.C"] {
     if [runtest_file_p $runtests $src] {
-	set module_specs {}
+	set module_ifs {}
 	# don't bother running these at each -std level
 	dg-test $src "" $DEFAULT_MODFLAGS
-	set subsrc [string range $src [string length $srcdir/] end]
-	cleanup_module_files [check_module_specs $subsrc $module_specs]
+	set testcase [string range $src [string length "$srcdir/"] end]
+	cleanup_module_files [module_if_it $testcase $module_ifs]
     }
 }
 
@@ -116,18 +208,31 @@ foreach src [lsort [find $srcdir/$subdir "*_a.C"]] {
     # use the FOO_a.C name as the parallelization key
     if [runtest_file_p $runtests $src] {
 	set mod_files {}
+	set module_do {}
 	set srcs [lsort [find [file dirname $src] \
 			 [regsub {_a.C$} [file tail $src] {_[a-z].C}]]]
+	set asm_list {}
 	verbose "Modules $srcs" 1
 	foreach test $srcs {
-	    set module_specs {}
+	    set module_ifs {}
 	    dg-test -keep-output $test "" $DEFAULT_MODFLAGS
-	    set subtest [string range $test [string length $srcdir/] end]
-	    lappend mod_files [check_module_specs $subtest $module_specs]
+	    lappend asm_list [regsub {\.C$} [file tail $test] {.s}]
+	    set testcase [string range $test [string length "$srcdir/"] end]
+	    lappend mod_files [module_if_it $testcase $module_ifs]
 	}
-	# FIXME: linking tests?
-	# FIXME: delete output?
-	cleanup_module_files $mod_files
+	set ok 1
+	if { $module_do != "" } {
+	    set testcase [regsub {_a.C} $src {}]
+	    set testcase \
+		[string range $testcase [string length "$srcdir/"] end]
+	    set ok [module_do_it $module_do $testcase $asm_list]
+	}
+	if { $ok } {
+	    foreach asm $asm_list {
+		file_on_host delete $asm
+	    }
+	    cleanup_module_files $mod_files
+	}
     }
 }
 

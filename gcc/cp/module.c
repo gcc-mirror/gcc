@@ -240,7 +240,7 @@ int reader::i ()
   while (byte & 128);
 
   if (byte & 0x40 && bit < sizeof (v) * 8)
-    v |= ~(int)0 << bit;
+    v |= ~(unsigned)0 << bit;
   return v;
 }
 
@@ -333,7 +333,7 @@ HOST_WIDE_INT reader::wi ()
   while (byte & 128);
 
   if (byte & 0x40 && bit < sizeof (v) * 8)
-    v |= ~(HOST_WIDE_INT)0 << bit;
+    v |= ~(unsigned HOST_WIDE_INT)0 << bit;
   return v;
 }
 
@@ -620,6 +620,7 @@ private:
   void write_tree_ary (FILE *, unsigned, const gtp *);
   void write_core_bools (FILE *, tree);
   void write_core_vals (FILE *, tree);
+  void write_decl_lang_bools (FILE *, tree);
 
 public:
   void write_tree (FILE *, tree);
@@ -672,6 +673,7 @@ private:
   bool read_tree_ary (FILE *, unsigned, const gtp *);
   bool read_core_bools (FILE *, tree);
   bool read_core_vals (FILE *, tree);
+  bool read_decl_lang_bools (FILE *, tree);
 
 private:
   void set_scope (tree);
@@ -688,10 +690,7 @@ in::in (FILE *s, const char *n, bool is_impl)
 in::~in ()
 {
   if (scope)
-    {
-      pop_scope (scope);
-      pop_scope (global_namespace);
-    }
+    pop_inner_scope (global_namespace, scope);
 }
 
 void
@@ -1031,11 +1030,12 @@ in::set_scope (tree ctx)
   if (ctx != scope)
     {
       if (scope)
-	pop_scope (scope);
+	pop_inner_scope (global_namespace, scope);
       else
-	push_scope (global_namespace);
-      scope = push_scope (ctx);
-      gcc_assert (scope);
+	gcc_assert (current_scope () == global_namespace);
+      scope = ctx;
+      tree pop = push_inner_scope (ctx);
+      gcc_assert (pop == global_namespace);
     }
 }
 
@@ -1153,9 +1153,10 @@ in::finish (FILE *d, tree t)
 void
 out::write_core_bools (FILE *, tree t)
 {
-#define WB(X) w.b (X)
+#define WB(X) (w.b (X))
   WB (TREE_ADDRESSABLE (t));
   WB (TREE_THIS_VOLATILE (t));
+  WB (TREE_PUBLIC (t));
   WB (TREE_PRIVATE (t));
   WB (TREE_PROTECTED (t));
   WB (TREE_DEPRECATED (t));
@@ -1250,9 +1251,10 @@ out::write_core_bools (FILE *, tree t)
 bool
 in::read_core_bools (FILE *, tree t)
 {
-#define RB(X) (X) = r.b ()
+#define RB(X) ((X) = r.b ())
   RB (TREE_ADDRESSABLE (t));
   RB (TREE_THIS_VOLATILE (t));
+  RB (TREE_PUBLIC (t));
   RB (TREE_PRIVATE (t));
   RB (TREE_PROTECTED (t));
   RB (TREE_DEPRECATED (t));
@@ -1347,13 +1349,30 @@ in::read_core_bools (FILE *, tree t)
   return true;
 }
 
+void
+out::write_decl_lang_bools (FILE *d, tree t)
+{
+#define WB(X) (w.b (X))
+  WB (DECL_LANGUAGE (t) == lang_cplusplus);
+#undef WB
+}
+
+bool
+in::read_decl_lang_bools (FILE *d, tree t)
+{
+#define RB(X) ((X) = r.b ())
+  SET_DECL_LANGUAGE (t, r.b () ? lang_cplusplus : lang_c);
+#undef RB
+  return true;
+}
+
 /* Read & write the core values and pointers.  */
 
 void
 out::write_core_vals (FILE *d, tree t)
 {
-#define WU(X) w.u (X)
-#define WT(X) write_tree (d, X)
+#define WU(X) (w.u (X))
+#define WT(X) (write_tree (d, X))
 
   WT (TREE_TYPE (t));
 
@@ -1368,8 +1387,8 @@ out::write_core_vals (FILE *d, tree t)
       /* By construction we want to make sure we have the canonical
 	 and main variants already in the type table, so emit them
 	 now.  */
-      WT (TYPE_CANONICAL (t));
       WT (TYPE_MAIN_VARIANT (t));
+      WT (TYPE_CANONICAL (t));
 
       WU (TYPE_MODE_RAW (t));
       WU (TYPE_PRECISION (t));
@@ -1446,8 +1465,8 @@ in::read_core_vals (FILE *d, tree t)
     }
  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
     {
-      RT (TYPE_CANONICAL (t));
       RT (TYPE_MAIN_VARIANT (t));
+      RT (TYPE_CANONICAL (t));
 
       RM (TYPE_MODE_RAW (t));
       RU (TYPE_PRECISION (t));
@@ -1561,12 +1580,22 @@ out::write_tree (FILE *d, tree t)
   if (code != IDENTIFIER_NODE)
     {
       write_core_bools (d, t);
+
+      if (TYPE_P (t))
+	{
+	  bool has_specific = TYPE_LANG_SPECIFIC (t) != NULL;
+	  w.b (has_specific);
+	  // FIXME:write lang_specific bits
+	}
+      else if (DECL_P (t))
+	{
+	  bool has_specific = DECL_LANG_SPECIFIC (t) != NULL;
+	  w.b (has_specific);
+	  if (has_specific)
+	    write_decl_lang_bools (d, t);
+	}
+
       write_core_vals (d, t);
-      
-      // FIXME:Write core bits
-      // FIXME:Write lang_specific info
-      // FIXME:write lang_specific bits
-      // FIXME:Write core pointers & vals
       // FIXME:Write lang_specific pointers & vals
     }
 }
@@ -1619,11 +1648,24 @@ in::read_tree (FILE *d, tree *tp, unsigned tag)
 
   if (code != IDENTIFIER_NODE)
     {
-      if (!read_core_bools (d, t)
-	  || !read_core_vals (d, t))
+      if (!read_core_bools (d, t))
 	return false;
 
-      // FIXME:read lang_specific bits
+      if (TYPE_P (t) && r.b ())
+	{
+	  add_lang_type_raw (t);
+	  // FIXME:read lang_specific bits
+	}
+      else if (DECL_P (t) && r.b ())
+	{
+	  add_lang_decl_raw (t);
+	  if (!read_decl_lang_bools (d, t))
+	    return false;
+	}
+
+      if (!read_core_vals (d, t))
+	return false;
+
       // FIXME:Read lang_specific ptrs & vals
     }
 
@@ -1678,7 +1720,9 @@ out::walk_namespace (FILE *d, bool defns, tree ns)
 
   const cp_binding_level *b = NAMESPACE_LEVEL (ns);
   for (tree name = b->names; name; name = TREE_CHAIN (name))
-    if (mod_ns || MODULE_EXPORT_P (name))
+    if (mod_ns || MODULE_EXPORT_P (name)
+	// FIXME: set MODULE_EXPORT_P properly.  Utter hack here
+	|| !DECL_EXTERN_C_P (name))
       {
 	// FIXME:Add other decls later
 	switch (TREE_CODE (name))
@@ -1715,16 +1759,17 @@ out::walk_namespace (FILE *d, bool defns, tree ns)
 #define MOD_SYM_DOT '_'
 #endif
 
-static GTY(()) tree module_namespace_name;
-static GTY(()) tree module_name;
-static location_t module_loc;
+static GTY(()) tree global_name; /* Name for global module namespace.  */
+static GTY(()) tree module_name; /* Name for this module namespaces. */
+static GTY(()) tree module_user; /* Name presented in diagnostics.  */
+static location_t module_loc;	 /* Location of the module decl.  */
 static GTY(()) tree proclaimer;
-static bool is_interface;
+static bool is_interface;		/* We are the interface TU. */
 static int export_depth; /* -1 for singleton export.  */
 
 /* Rebuild a streamed in type.  */
-// FIXME: Genericise to other types?
-// Remember buld_cplus_array_type
+// FIXME: c++-specific types are not in the canonical type hash.
+// Perhaps that should be changed?
 
 tree
 in::finish_type (FILE *d, tree type)
@@ -1736,7 +1781,9 @@ in::finish_type (FILE *d, tree type)
       /* See if we have this type already on the variant
 	 list.  This could only happen if the originally read in main
 	 variant was remapped, but we don't have that knowledge.
-	 FIXME: Determine if this is a problem, and then maybe fix it.  */
+	 FIXME: Determine if this is a problem, and then maybe fix
+	 it?  That would avoid a fruitless search along the variant
+	 chain.  */
       for (tree probe = main; probe; probe = TYPE_NEXT_VARIANT (probe))
 	if (check_base_type (type, probe)
 	    && TYPE_QUALS (type) == TYPE_QUALS (probe)
@@ -1744,40 +1791,67 @@ in::finish_type (FILE *d, tree type)
 				  TYPE_RAISES_EXCEPTIONS (probe), ce_exact)
 	    && type_memfn_rqual (type) == type_memfn_rqual (probe))
 	  {
+	    if (d)
+	      fprintf (d, "Type %p already found as %p variant of %p\n",
+		       (void *)type, (void *)probe, (void *)main);
 	    free_node (type);
 	    type = probe;
 	    goto found_variant;
 	  }
 
       /* Splice it into the main variant list.  */
+      if (d)
+	fprintf (d, "Type %p added as variant of %p\n",
+		 (void *)type, (void *)main);
       TYPE_NEXT_VARIANT (type) = TYPE_NEXT_VARIANT (main);
       TYPE_NEXT_VARIANT (main) = type;
       /* CANONICAL_TYPE is either already correctly remapped.  Or
          correctly already us.  FIXME:Are we sure about this?  */
     found_variant:;
     }
-  else if (TYPE_CANONICAL (type) == type)
+  else if (!TYPE_STRUCTURAL_EQUALITY_P (type))
     {
-      /* We were both the main variant and canonical type.  */
       gcc_assert (TYPE_ALIGN (type));
       hashval_t hash = type_hash_default (type);
       /* type_hash_canon frees type, if we find it already.  */
       type = type_hash_canon (hash, type);
-    }
-  else
-    {
-      /* We were the main variant, thus we cannot have weird extra
-	 decorations to not allow us to be the main variant here.
-	 However we're not the canonical type.  Where do we look?  */
-      gcc_unreachable (); // FIXME
+      // FIXME: This is where it'd be nice to determine if type
+      // was already found.  See above.
+      if (d)
+	fprintf (d, "Adding type %p as canonical %p\n",
+		 (void *)main, (void *)type);
     }
 
   return type;
 }
 
+/* Finish a function decl FN.  Insert into the symbol table or do
+   duplicate decl processing.  */
+
 tree
 in::finish_function (FILE *d, tree fn)
 {
+  // FIXME: want to look exactly in scope,  no using decls etc.
+  tree cur = lookup_qualified_name (DECL_CONTEXT (fn), DECL_NAME (fn),
+				    false, false, false);
+  if (cur == error_mark_node)
+    cur = NULL_TREE;
+  else
+    {
+      return fn;
+      gcc_unreachable (); // FIXME: deal with overloads & duplicates
+    }
+
+  set_scope (DECL_CONTEXT (fn));
+  fn = pushdecl (fn);
+  if (fn == error_mark_node)
+    return fn; // FIXME:why?
+  if (DECL_CONTEXT (fn) == global_namespace)
+    DECL_CONTEXT (fn) = DECL_CONTEXT (global_namespace);
+
+  if (d)
+    fprintf (d, "Inserting function decl %s (%p)\n",
+	     IDENTIFIER_POINTER (DECL_NAME (fn)), (void *)fn);
   return fn;
 }
 
@@ -1797,7 +1871,7 @@ in::finish_namespace (FILE *d, tree ns)
       bool module_p = MODULE_NAMESPACE_P (ns);
 
       res = current_namespace;
-      if (module_p && (!impl || DECL_NAME (ns) != module_namespace_name))
+      if (module_p && (!impl || DECL_NAME (ns) != module_name))
 	inline_p = false;
 
       if (push < 0)
@@ -1806,6 +1880,10 @@ in::finish_namespace (FILE *d, tree ns)
 	    MODULE_NAMESPACE_P (res) = true;
 	  if (inline_p)
 	    make_namespace_inline ();
+	  if (d)
+	    fprintf (d, "Creating%s namespace %s (%p)\n",
+		     inline_p ? " inline" : "",
+		     IDENTIFIER_POINTER (DECL_NAME (ns)), (void *)res);
 	}
       else
 	{
@@ -1817,6 +1895,8 @@ in::finish_namespace (FILE *d, tree ns)
 	      res = NULL_TREE;
 	    }
 	}
+      /* Pop out of the namespace so our scope cache is correct.  */
+      pop_namespace ();
     }
   free_node (ns);
 
@@ -1855,8 +1935,8 @@ void
 push_module_namespace (bool do_it)
 {
   gcc_assert (TREE_CODE (current_scope ()) == NAMESPACE_DECL
-	      && (!do_it || module_namespace_name));
-  if (do_it && push_namespace (module_namespace_name) < 0)
+	      && (!do_it || module_name));
+  if (do_it && push_namespace (module_name) < 0)
     {
       MODULE_NAMESPACE_P (current_namespace) = true;
       make_namespace_inline ();
@@ -1915,7 +1995,7 @@ module_exporting_level ()
 bool
 module_purview_p ()
 {
-  return module_name;
+  return module_user;
 }
 
 /* Return true iff we're the interface TU (this also means we're in a
@@ -2058,7 +2138,9 @@ do_import_module (location_t loc, tree name, tree, import_kind kind)
     error_at (loc, "cannot find module %qE (%qs): %m", name, fname);
   else
     {
+      tree ctx = current_scope ();
       ok = read_module (stream, fname, name, kind);
+      gcc_assert (ctx == current_scope ());
       fclose (stream);
     }
   free (fname);
@@ -2085,7 +2167,7 @@ export_module (location_t loc, tree name, tree attrs)
 void
 declare_module (location_t loc, tree name, tree attrs)
 {
-  if (module_name)
+  if (module_user)
     {
       error_at (loc, "module %qE already declared", name);
       inform (module_loc, "existing declaration");
@@ -2101,16 +2183,17 @@ declare_module (location_t loc, tree name, tree attrs)
       // FIXME: Command line switches or file suffix check?
     }
 
-  module_name = name;
+  module_user = name;
   module_loc = loc;
   char *sym = module_to_ext (name, MOD_SYM_PFX, NULL, MOD_SYM_DOT);
-  module_namespace_name = get_identifier (sym);
+  module_name = get_identifier (sym);
   free (sym);
 
   do_import_module (loc, name, attrs, inter ? ik_inter : ik_impl);
 
-  push_module_namespace (true);
   is_interface = inter;
+  if (is_interface) // FIXME:we should do in both cases (or neither)
+    push_module_namespace (true);
 }
 
 typedef std::pair<out *, FILE *> write_import_cl;
@@ -2164,7 +2247,7 @@ finish_module ()
   if (is_interface)
     {
       // FIXME:option to specify location? take dirname from output file?
-      char *fname = module_to_filename (module_name);
+      char *fname = module_to_filename (module_user);
 
       if (!errorcount)
 	{
@@ -2172,10 +2255,10 @@ finish_module ()
 
 	  if (!stream)
 	    error_at (module_loc, "cannot open module interface %qE (%qs): %m",
-		      module_name, fname);
+		      module_user, fname);
 	  else
 	    {
-	      write_module (stream, fname, module_name);
+	      write_module (stream, fname, module_user);
 	      fclose (stream);
 	    }
 	}

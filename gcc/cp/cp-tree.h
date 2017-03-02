@@ -177,6 +177,7 @@ operator == (const cp_expr &lhs, tree rhs)
       REF_PARENTHESIZED_P (in COMPONENT_REF, INDIRECT_REF, SCOPE_REF)
       AGGR_INIT_ZERO_FIRST (in AGGR_INIT_EXPR)
       CONSTRUCTOR_MUTABLE_POISON (in CONSTRUCTOR)
+      GLOBAL_MODULE_NAMESPACE_P (in NAMESPACE_DECL)
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
@@ -1044,6 +1045,10 @@ check_constraint_info (tree t)
 /* Whether the namespace contains module-linkage objects.  */
 #define MODULE_NAMESPACE_P(NODE) \
   TREE_LANG_FLAG_1 (NAMESPACE_CHECK (NODE))
+
+/* A fragment of the global module.  */
+#define GLOBAL_MODULE_NAMESPACE_P(NODE) \
+  TREE_LANG_FLAG_2 (NAMESPACE_CHECK (NODE))
 
 #define CURRENT_MODULE_NAMESPACE_P(NODE) \
   (MODULE_NAMESPACE_P (NODE) && NAMESPACE_INLINE_P (NODE))
@@ -6089,6 +6094,8 @@ extern tree unqualified_name_lookup_error	(tree,
 extern tree unqualified_fn_lookup_error		(cp_expr);
 extern tree build_lang_decl			(enum tree_code, tree, tree);
 extern tree build_lang_decl_loc			(location_t, enum tree_code, tree, tree);
+extern void add_lang_decl_raw			(tree);
+extern void add_lang_type_raw			(tree);
 extern void retrofit_lang_decl			(tree);
 extern tree copy_decl				(tree);
 extern tree copy_type				(tree);
