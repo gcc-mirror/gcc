@@ -1249,7 +1249,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
 	      return NULL_TREE;
 	    wide_int w2 = arg2;
 	    f2.data.high = w2.elt (1);
-	    f2.data.low = w2.elt (0);
+	    f2.data.low = w2.ulow ();
 	    f2.mode = SImode;
 	  }
 	  break;

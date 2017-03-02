@@ -1,5 +1,9 @@
 2017-03-02  Richard Biener  <rguenther@suse.de>
 
+	* fold-const.c (const_binop): Use ulow () instead of elt (0).
+
+2017-03-02  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/79345
 	PR c++/42000
 	* tree-ssa-alias.c (walk_aliased_vdefs_1): Take a limit
