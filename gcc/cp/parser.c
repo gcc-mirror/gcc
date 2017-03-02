@@ -8228,7 +8228,8 @@ cp_parser_new_expression (cp_parser* parser)
      contain a new-initializer of the form ( assignment-expression )".
      Additionally, consistently with the spirit of DR 1467, we want to accept
      'new auto { 2 }' too.  */
-  else if (type_uses_auto (type)
+  else if ((ret = type_uses_auto (type))
+	   && !CLASS_PLACEHOLDER_TEMPLATE (ret)
 	   && (vec_safe_length (initializer) != 1
 	       || (BRACE_ENCLOSED_INITIALIZER_P ((*initializer)[0])
 		   && CONSTRUCTOR_NELTS ((*initializer)[0]) != 1)))
