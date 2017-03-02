@@ -1,3 +1,15 @@
+2017-03-01  Jason Merrill  <jason@redhat.com>
+
+	Class template argument deduction in new-expression
+	* init.c (build_new): Handle deduction from no initializer.
+	* parser.c (cp_parser_new_expression): Don't require a single
+	expression for class template deduction.
+	* typeck2.c (cxx_incomplete_type_diagnostic): Fix diagnostic for
+	class template placeholder.
+	* pt.c (tsubst_copy) [TEMPLATE_DECL]: Handle dependent context.
+	(tsubst_copy_and_build) [TEMPLATE_ID_EXPR]: Handle SCOPE_REF.
+	(redeclare_class_template): Set TEMPLATE_TYPE_PARM_FOR_CLASS.
+
 2017-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79746
