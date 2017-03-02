@@ -75,14 +75,6 @@ extern void matmul_'rtype_code` ('rtype` * const restrict retarray,
 	int blas_limit, blas_call gemm);
 export_proto(matmul_'rtype_code`);
 
-'ifelse(rtype_letter,`r',dnl
-`#if defined(HAVE_AVX) && defined(HAVE_AVX2)
-/* REAL types generate identical code for AVX and AVX2.  Only generate
-   an AVX2 function if we are dealing with integer.  */
-#undef HAVE_AVX2
-#endif')
-`
-
 /* Put exhaustive list of possible architectures here here, ORed together.  */
 
 #if defined(HAVE_AVX) || defined(HAVE_AVX2) || defined(HAVE_AVX512F)
@@ -101,7 +93,7 @@ static' include(matmul_internal.m4)dnl
 `static void
 'matmul_name` ('rtype` * const restrict retarray, 
 	'rtype` * const restrict a, 'rtype` * const restrict b, int try_blas,
-	int blas_limit, blas_call gemm) __attribute__((__target__("avx2")));
+	int blas_limit, blas_call gemm) __attribute__((__target__("avx2,fma")));
 static' include(matmul_internal.m4)dnl
 `#endif /* HAVE_AVX2 */
 
@@ -147,7 +139,8 @@ void matmul_'rtype_code` ('rtype` * const restrict retarray,
 #endif  /* HAVE_AVX512F */
 
 #ifdef HAVE_AVX2
-      	  if (__cpu_model.__cpu_features[0] & (1 << FEATURE_AVX2))
+      	  if ((__cpu_model.__cpu_features[0] & (1 << FEATURE_AVX2))
+	     && (__cpu_model.__cpu_features[0] & (1 << FEATURE_FMA)))
 	    {
 	      matmul_p = matmul_'rtype_code`_avx2;
 	      goto tailcall;
