@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
 
 /* Test of embedding RTL dump in a C function, tagged with "__RTL".
 
