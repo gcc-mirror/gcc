@@ -356,7 +356,7 @@ upload_files() {
 # Print description if snapshot exists.
 snapshot_print() {
   if [ -e ${RELEASE}/$1 ]; then
-    hash=`openssl  md5  ${RELEASE}/$1 | sed -e 's#(.*)##' -e 's# *= *#=#'`
+    hash=`openssl  sha256  ${RELEASE}/$1 | sed -e 's#(.*)##' -e 's# *= *#=#'`
     hash2=`openssl sha1 ${RELEASE}/$1 | sed -e 's#(.*)##' -e 's# *= *#=#'`
 
     printf " %-37s%s\n\n  %s\n  %s\n\n" "$1" "$2" "$hash" "$hash2" \
