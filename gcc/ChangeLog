@@ -1,3 +1,8 @@
+2017-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/79514
+	* config/i386/i386.md (*pushxf_rounded): Use Pmode instead of DImode.
+
 2017-03-03  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/79818
