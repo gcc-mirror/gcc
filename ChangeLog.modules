@@ -1,5 +1,18 @@
 2017-03-03  Nathan Sidwell  <nathan@acm.org>
 
+	Cleanup retrofit_lang_decl.  Push to trunk.
+	gcc/cp/
+	* cp-tree.h (add_lang_decl_raw, add_lang_type_raw): Rename.
+	* lex.c (maybe_add_lang_decl_raw, maybe_add_lang_type_raw): Return
+	bool.  Don't assert.
+	(retrofit_lang_decl, cxx_make_type): Adjust.
+	* module.c (cpms_in::read_tree): Verify lang_decl/type insertion
+	valid.
+	* class.c (alter_access): Directly call retrofit_lang_decl.
+	* decl.c (push_local_name, duplicate_decls): Likewise.
+	* pt.c (push_template_decl_real, txubs_omp_clauses): Likewise.
+	* semantics.c (omp_privatize_field): Likewise.
+
 	Renaming stuff.
 	gcc/cp/
 	* module.c: Remove anon namespace, rename seriator, reader,

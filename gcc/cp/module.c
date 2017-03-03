@@ -42,7 +42,7 @@ protected:
   size_t len;
   size_t alloc;
   int err;
-  unsigned char bits;
+  unsigned bits;
   unsigned bit_pos;
 
 public:
@@ -1663,12 +1663,24 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
 
       if (TYPE_P (t) && r.b ())
 	{
-	  add_lang_type_raw (t);
+	  if (!maybe_add_lang_type_raw (t))
+	    {
+	      /* We were lied to about needing lang_type.  */
+	      r.bad ();
+	      return false;
+	    }
+	  
 	  // FIXME:read lang_specific bits
 	}
       else if (DECL_P (t) && r.b ())
 	{
-	  add_lang_decl_raw (t);
+	  if (!maybe_add_lang_decl_raw (t))
+	    {
+	      /* We were lied to about needing lang_decl.  */
+	      r.bad ();
+	      return false;
+	    }
+
 	  if (!read_decl_lang_bools (d, t))
 	    return false;
 	}

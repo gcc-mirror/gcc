@@ -6094,8 +6094,8 @@ extern tree unqualified_name_lookup_error	(tree,
 extern tree unqualified_fn_lookup_error		(cp_expr);
 extern tree build_lang_decl			(enum tree_code, tree, tree);
 extern tree build_lang_decl_loc			(location_t, enum tree_code, tree, tree);
-extern void add_lang_decl_raw			(tree);
-extern void add_lang_type_raw			(tree);
+extern bool maybe_add_lang_decl_raw		(tree);
+extern bool maybe_add_lang_type_raw		(tree);
 extern void retrofit_lang_decl			(tree);
 extern tree copy_decl				(tree);
 extern tree copy_type				(tree);
