@@ -1,3 +1,11 @@
+2017-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*pushtf): Change *roF constraint to *roC.
+	(*pushxf): Limit oF constraint to 32bit targets and add oC
+	constraint for 64bit targets.
+	(pushxf splitter): Use PUSH_ROUNDING to calculate stack adjustment.
+	(*pushdf): Change rmF constraint to rmC.
+
 2017-03-03  Martin Liska  <mliska@suse.cz>
 
 	* tree-ssa-loop-prefetch.c (pass_loop_prefetch::execute):
