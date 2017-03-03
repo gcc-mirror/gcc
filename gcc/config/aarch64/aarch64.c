@@ -12496,7 +12496,7 @@ aarch64_float_const_representable_p (rtx x)
 
   /* If the low part of the mantissa has bits set we cannot represent
      the value.  */
-  if (w.elt (0) != 0)
+  if (w.ulow () != 0)
     return false;
   /* We have rejected the lower HOST_WIDE_INT, so update our
      understanding of how many bits lie in the mantissa and

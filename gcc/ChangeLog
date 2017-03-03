@@ -1,3 +1,8 @@
+2017-03-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_float_const_representable_p):
+	Use wide_int::ulow () instead of .elt (0).
+
 2017-03-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*pushtf): Change *roF constraint to *roC.
