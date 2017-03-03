@@ -1,3 +1,9 @@
+2017-03-03  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/79699
+	* context.c (context::~context): Free MPFR caches to avoid
+	a memory leak on program exit.
+
 2017-03-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_float_const_representable_p):
