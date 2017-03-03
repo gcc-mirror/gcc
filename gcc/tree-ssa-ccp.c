@@ -2890,9 +2890,19 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
   gimple_set_location (g, gimple_location (call));
   gimple_set_vuse (g, gimple_vuse (call));
   gimple_set_vdef (g, gimple_vdef (call));
+  bool throws = stmt_can_throw_internal (call);
+  gimple_call_set_nothrow (as_a <gcall *> (g),
+			   gimple_call_nothrow_p (as_a <gcall *> (call)));
   SSA_NAME_DEF_STMT (gimple_vdef (call)) = g;
   gimple_stmt_iterator gsi = *gsip;
   gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+  edge e = NULL;
+  if (throws)
+    {
+      maybe_clean_or_replace_eh_stmt (call, g);
+      if (after || (use_bool && has_debug_uses))
+	e = find_fallthru_edge (gsi_bb (gsi)->succs);
+    }
   if (after)
     {
       /* The internal function returns the value of the specified bit
@@ -2905,23 +2915,42 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 			       use_bool ? build_int_cst (TREE_TYPE (lhs), 1)
 					: mask);
       new_lhs = gimple_assign_lhs (g);
-      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+      if (throws)
+	{
+	  gsi_insert_on_edge_immediate (e, g);
+	  gsi = gsi_for_stmt (g);
+	}
+      else
+	gsi_insert_after (&gsi, g, GSI_NEW_STMT);
     }
   if (use_bool && has_debug_uses)
     {
-      tree temp = make_node (DEBUG_EXPR_DECL);
-      DECL_ARTIFICIAL (temp) = 1;
-      TREE_TYPE (temp) = TREE_TYPE (lhs);
-      SET_DECL_MODE (temp, TYPE_MODE (TREE_TYPE (lhs)));
-      tree t = build2 (LSHIFT_EXPR, TREE_TYPE (lhs), new_lhs, bit);
-      g = gimple_build_debug_bind (temp, t, g);
-      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+      tree temp = NULL_TREE;
+      if (!throws || after || single_pred_p (e->dest))
+	{
+	  temp = make_node (DEBUG_EXPR_DECL);
+	  DECL_ARTIFICIAL (temp) = 1;
+	  TREE_TYPE (temp) = TREE_TYPE (lhs);
+	  SET_DECL_MODE (temp, TYPE_MODE (TREE_TYPE (lhs)));
+	  tree t = build2 (LSHIFT_EXPR, TREE_TYPE (lhs), new_lhs, bit);
+	  g = gimple_build_debug_bind (temp, t, g);
+	  if (throws && !after)
+	    {
+	      gsi = gsi_after_labels (e->dest);
+	      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	    }
+	  else
+	    gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+	}
       FOR_EACH_IMM_USE_STMT (g, iter, use_lhs)
 	if (is_gimple_debug (g))
 	  {
 	    use_operand_p use_p;
-	    FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-	      SET_USE (use_p, temp);
+	    if (temp == NULL_TREE)
+	      gimple_debug_bind_reset_value (g);
+	    else
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		SET_USE (use_p, temp);
 	    update_stmt (g);
 	  }
     }

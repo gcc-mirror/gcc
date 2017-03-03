@@ -3533,6 +3533,8 @@ fold_builtin_atomic_compare_exchange (gimple_stmt_iterator *gsi)
   tree itype = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (parmt)));
   tree ctype = build_complex_type (itype);
   tree expected = TREE_OPERAND (gimple_call_arg (stmt, 1), 0);
+  bool throws = false;
+  edge e = NULL;
   gimple *g = gimple_build_assign (make_ssa_name (TREE_TYPE (expected)),
 				   expected);
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
@@ -3558,19 +3560,39 @@ fold_builtin_atomic_compare_exchange (gimple_stmt_iterator *gsi)
   gimple_set_vdef (g, gimple_vdef (stmt));
   gimple_set_vuse (g, gimple_vuse (stmt));
   SSA_NAME_DEF_STMT (gimple_vdef (g)) = g;
-  if (gimple_call_lhs (stmt))
+  tree oldlhs = gimple_call_lhs (stmt);
+  if (stmt_can_throw_internal (stmt))
     {
-      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      throws = true;
+      e = find_fallthru_edge (gsi_bb (*gsi)->succs);
+    }
+  gimple_call_set_nothrow (as_a <gcall *> (g),
+			   gimple_call_nothrow_p (as_a <gcall *> (stmt)));
+  gimple_call_set_lhs (stmt, NULL_TREE);
+  gsi_replace (gsi, g, true);
+  if (oldlhs)
+    {
       g = gimple_build_assign (make_ssa_name (itype), IMAGPART_EXPR,
 			       build1 (IMAGPART_EXPR, itype, lhs));
-      gsi_insert_before (gsi, g, GSI_SAME_STMT);
-      g = gimple_build_assign (gimple_call_lhs (stmt), NOP_EXPR,
-			       gimple_assign_lhs (g));
+      if (throws)
+	{
+	  gsi_insert_on_edge_immediate (e, g);
+	  *gsi = gsi_for_stmt (g);
+	}
+      else
+	gsi_insert_after (gsi, g, GSI_NEW_STMT);
+      g = gimple_build_assign (oldlhs, NOP_EXPR, gimple_assign_lhs (g));
+      gsi_insert_after (gsi, g, GSI_NEW_STMT);
     }
-  gsi_replace (gsi, g, true);
   g = gimple_build_assign (make_ssa_name (itype), REALPART_EXPR,
 			   build1 (REALPART_EXPR, itype, lhs));
-  gsi_insert_after (gsi, g, GSI_NEW_STMT);
+  if (throws && oldlhs == NULL_TREE)
+    {
+      gsi_insert_on_edge_immediate (e, g);
+      *gsi = gsi_for_stmt (g);
+    }
+  else
+    gsi_insert_after (gsi, g, GSI_NEW_STMT);
   if (!useless_type_conversion_p (TREE_TYPE (expected), itype))
     {
       g = gimple_build_assign (make_ssa_name (TREE_TYPE (expected)),
