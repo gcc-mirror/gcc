@@ -1,3 +1,16 @@
+2017-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79805
+	* internal-fn.def (ATOMIC_BIT_TEST_AND_SET, ATOMIC_BIT_TEST_AND_RESET,
+	ATOMIC_BIT_TEST_AND_COMPLEMENT, ATOMIC_COMPARE_EXCHANGE): Remove
+	ECF_NOTHROW.
+	* gimple-fold.c (fold_builtin_atomic_compare_exchange): Set
+	gimple_call_nothrow_p flag based on whether original builtin can throw.
+	If it can, emit following stmts on the fallthrough edge.
+	* tree-ssa-ccp.c (optimize_atomic_bit_test_and): Similarly, except
+	don't create new bb if inserting just debug stmts on the edge, try to
+	insert them on the fallthru bb or just reset debug stmts.
+
 2017-03-03  Segher Boesssenkool  <segher@kernel.crashing.org>
 
 	PR target/43763
