@@ -75,5 +75,8 @@ op (Node q)
 }
 
 
-/* { dg-final { scan-rtl-dump-times "\\\(set \\\(reg:SI 5 \\\$5\\\)" 2 "expand" } }  */
-/* { dg-final { scan-rtl-dump-times "\\\(set \\\(reg:SI 6 \\\$6\\\)" 1 "expand" } }  */
+/* { dg-final { scan-rtl-dump-times "\\\(set \\\(reg:SI 5 \\\$5\\\)" 2 "expand" { target { ilp32 } } } }  */
+/* { dg-final { scan-rtl-dump-times "\\\(set \\\(reg:SI 6 \\\$6\\\)" 1 "expand" { target { ilp32 } } } }  */
+
+/* { dg-final { scan-rtl-dump-times "\\\(set \\\(reg:DI 5 \\\$5\\\)" 2 "expand" { target { lp64 } } } }  */
+/* { dg-final { scan-rtl-dump-times "\\\(set \\\(reg:DI 6 \\\$6\\\)" 1 "expand" { target { lp64 } } } }  */
