@@ -1,5 +1,11 @@
 2017-03-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/79837
+	* c-parser.c (c_parser_omp_clause_reduction): Don't mention
+	%<min%> or %<max%> in the diagnostics, instead mention identifier.
+	(c_parser_omp_declare_reduction): Don't mention %<min%> in the
+	diagnostics.
+
 	PR c/79836
 	* c-parser.c (c_parser_generic_selection): Use %<_Generic%>
 	instead of %<_Generic>.

@@ -12112,7 +12112,7 @@ c_parser_omp_clause_reduction (c_parser *parser, tree list)
 	default:
 	  c_parser_error (parser,
 			  "expected %<+%>, %<*%>, %<-%>, %<&%>, "
-			  "%<^%>, %<|%>, %<&&%>, %<||%>, %<min%> or %<max%>");
+			  "%<^%>, %<|%>, %<&&%>, %<||%> or identifier");
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, 0);
 	  return list;
 	}
@@ -16960,7 +16960,7 @@ c_parser_omp_declare_reduction (c_parser *parser, enum pragma_context context)
     default:
       c_parser_error (parser,
 		      "expected %<+%>, %<*%>, %<-%>, %<&%>, "
-		      "%<^%>, %<|%>, %<&&%>, %<||%>, %<min%> or identifier");
+		      "%<^%>, %<|%>, %<&&%>, %<||%> or identifier");
       goto fail;
     }
 
