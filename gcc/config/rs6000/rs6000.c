@@ -38848,7 +38848,12 @@ rs6000_final_prescan_insn (rtx_insn *insn, rtx *operand ATTRIBUTE_UNUSED,
       if (insn_code_number < 0)
 	return;
 
+      /* get_insn_template can modify recog_data, so save and restore it.  */
+      struct recog_data_d recog_data_save = recog_data;
+      for (int i = 0; i < recog_data.n_operands; i++)
+	recog_data.operand[i] = copy_rtx (recog_data.operand[i]);
       temp = get_insn_template (insn_code_number, insn);
+      recog_data = recog_data_save;
 
       if (get_attr_cell_micro (insn) == CELL_MICRO_ALWAYS)
 	warning_at (location, OPT_mwarn_cell_microcode,

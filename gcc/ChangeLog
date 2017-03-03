@@ -1,3 +1,10 @@
+2017-03-03  Segher Boesssenkool  <segher@kernel.crashing.org>
+
+	PR target/43763
+	* config/rs6000/rs6000.c (rs6000_final_prescan_insn): Save and
+	restore recog_data (including the operand rtxes inside it) around
+	the call to get_insn_template.
+
 2017-03-03  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/79699
