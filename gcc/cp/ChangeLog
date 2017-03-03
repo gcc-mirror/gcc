@@ -1,3 +1,8 @@
+2017-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR c++/79825
+	* cp-gimplify.c (simple_empty_class_p): Handle EMPTY_CLASS_EXPR.
+
 2017-03-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/79791
