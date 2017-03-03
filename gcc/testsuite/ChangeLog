@@ -1,3 +1,8 @@
+2017-03-03  Toma Tabacu  <toma.tabacu@imgtec.com>
+
+	* gcc.target/mips/pr68273.c (dg-final): Match SImode registers only for
+	ilp32 targets and match DImode registers for lp64 targets.
+
 2017-03-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/pr71624.C: Disable for x32.
