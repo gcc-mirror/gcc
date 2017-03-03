@@ -1,3 +1,9 @@
+2017-03-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/79791
+	* typeck.c (string_conv_p): In C++11, always call pedwarn with
+	OPT_Wwrite_strings.
+
 2017-03-02  Jason Merrill  <jason@redhat.com>
 
 	Update overload resolution with deduction guides.

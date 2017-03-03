@@ -2175,8 +2175,7 @@ string_conv_p (const_tree totype, const_tree exp, int warn)
   if (warn)
     {
       if (cxx_dialect >= cxx11)
-	pedwarn (input_location,
-		 pedantic ? OPT_Wpedantic : OPT_Wwrite_strings,
+	pedwarn (input_location, OPT_Wwrite_strings,
 		 "ISO C++ forbids converting a string constant to %qT",
 		 totype);
       else
