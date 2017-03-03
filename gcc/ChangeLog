@@ -1,3 +1,9 @@
+2017-03-03  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/79760
+	* ipa-devirt.c (maybe_record_node): Properly handle
+	__cxa_pure_virtual visibility.
+
 2017-03-03  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/79803
