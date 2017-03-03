@@ -1,3 +1,8 @@
+2017-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/79818
+	* gcc.dg/torture/pr79818.c: New testcase.
+
 2017-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79782

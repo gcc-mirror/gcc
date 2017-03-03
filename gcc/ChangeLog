@@ -1,3 +1,9 @@
+2017-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/79818
+	* match.pd ( X +- C1 CMP C2 -> X CMP C2 -+ C1): Add missing
+	TYPE_OVERFLOW_UNDEFINED check.
+
 2017-03-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/vector.md (vector_ne_<mode>_p): Correct operand

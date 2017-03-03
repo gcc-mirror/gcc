@@ -3688,7 +3688,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	&& !TYPE_OVERFLOW_TRAPS (TREE_TYPE (@0))
 	&& !TYPE_SATURATING (TREE_TYPE (@0)))
     (with { tree res = int_const_binop (rop, @2, @1); }
-     (if (TREE_OVERFLOW (res))
+     (if (TREE_OVERFLOW (res)
+	  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))
       { constant_boolean_node (cmp == NE_EXPR, type); }
       (if (single_use (@3))
        (cmp @0 { res; }))))))))
