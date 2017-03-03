@@ -1,5 +1,10 @@
 2017-03-03  Martin Liska  <mliska@suse.cz>
 
+	PR tree-optimization/79803
+	* gcc.dg/tree-ssa/pr79803.c: New test.
+
+2017-03-03  Martin Liska  <mliska@suse.cz>
+
 	PR rtl-optimization/79574
 	* gcc.dg/pr79574-2.c: New test.
 
