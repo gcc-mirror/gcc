@@ -1,3 +1,10 @@
+2017-03-03  Nathan Sidwell  <nathan@acm.org>
+
+	Renaming stuff.
+	gcc/cp/
+	* module.c: Remove anon namespace, rename seriator, reader,
+	writer, streamer, in & out.
+
 2017-03-01  Nathan Sidwell  <nathan@acm.org>
 
 	Black triangle achieved

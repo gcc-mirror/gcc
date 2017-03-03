@@ -27,10 +27,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define EXPERIMENTAL 1 /* Shtop! This module is not ready yet! */
 
-namespace {
-  
 /* Byte serializer base.  */
-class seriator
+class cpm_serial
 {
   static const size_t ALLOC = 32768;
 
@@ -48,14 +46,15 @@ protected:
   unsigned bit_pos;
 
 public:
-  seriator (FILE *, const char *);
-  ~seriator ();
+  cpm_serial (FILE *, const char *);
+  ~cpm_serial ();
 
 public:
   int error ()
   {
     return err;
   }
+
 public:
   /* Set an error.  We store the first errno.  */
   void bad (int e = -1)
@@ -65,28 +64,28 @@ public:
   }
 };
 
-seriator::seriator (FILE *s, const char *n)
+cpm_serial::cpm_serial (FILE *s, const char *n)
   :stream (s), name (n), pos (0), len (0), alloc (ALLOC),
    err (0), bits (0), bit_pos (0)
 {
   buffer = (char *) xmalloc (alloc);
 }
 
-seriator::~seriator ()
+cpm_serial::~cpm_serial ()
 {
   gcc_assert (pos == len || err);
   free (buffer);
 }
 
-/* Byte stream writer.  */
-class writer : public seriator
+/* Byte stream cpm_writer.  */
+class cpm_writer : public cpm_serial
 {
 public:
-  writer (FILE *s, const char *n)
-    : seriator (s, n)
+  cpm_writer (FILE *s, const char *n)
+    : cpm_serial (s, n)
   {
   }
-  ~writer ()
+  ~cpm_writer ()
   {
   }
 
@@ -102,8 +101,13 @@ public:
     return error ();
   }
 
+
 public:
   void b (bool);
+  void bstart ();
+  void bend ();
+
+public:
   void c (unsigned char);
   void i (int);
   void u (unsigned);
@@ -114,15 +118,15 @@ public:
   void buf (const char *, size_t);
 };
 
-/* Byte stream reader.  */
-class reader : public seriator
+/* Byte stream cpm_reader.  */
+class cpm_reader : public cpm_serial
 {
 public:
-  reader (FILE *s, const char *n)
-    : seriator (s, n)
+  cpm_reader (FILE *s, const char *n)
+    : cpm_serial (s, n)
   {
   }
-  ~reader ()
+  ~cpm_reader ()
   {
   }
 
@@ -142,7 +146,13 @@ public:
       bad ();
     return error ();
   }
+
+public:
   bool b ();
+  void bstart ();
+  void bend ();
+
+public:
   int c ();
   int i ();
   unsigned u ();
@@ -153,7 +163,7 @@ public:
   const char *buf (size_t);
 };
 
-/* Low level readers and writers.  I did think about making these
+/* Low level cpm_readers and cpm_writers.  I did think about making these
    templatized, but that started to look error prone, so went with
    type-specific names.
    b - bools,
@@ -166,14 +176,14 @@ public:
 /* Bools are packed into bytes.  These are automatically flushed when
    full, or we change to a different type.  */
 
-void writer::b (bool x)
+void cpm_writer::b (bool x)
 {
   bits |= unsigned (x) << bit_pos++;
   if (bit_pos == 8)
     flush_bits ();
 }
 
-bool reader::b ()
+bool cpm_reader::b ()
 {
   if (!bit_pos)
     bits = c ();
@@ -184,13 +194,13 @@ bool reader::b ()
 
 /* Chars are unsigned and written as single bytes.  */
 
-void writer::c (unsigned char x)
+void cpm_writer::c (unsigned char x)
 {
   reserve (1);
   buffer[pos++] = x;
 }
 
-int reader::c ()
+int cpm_reader::c ()
 {
   if (reserve (1))
     return (unsigned char)buffer[pos++];
@@ -201,7 +211,7 @@ int reader::c ()
 /* Ints are written as sleb128.  I suppose we could pack the first
    few bits into any partially-filled bool buffer.  */
 
-void writer::i (int x)
+void cpm_writer::i (int x)
 {
   reserve ((sizeof (x) * 8 + 6) / 7);
 
@@ -219,7 +229,7 @@ void writer::i (int x)
   while (more);
 }
 
-int reader::i ()
+int cpm_reader::i ()
 {
   int v = 0;
   unsigned bit = 0;
@@ -246,7 +256,7 @@ int reader::i ()
 
 /* Unsigned are written as uleb128 too.  */
 
-inline void writer::u (unsigned x)
+inline void cpm_writer::u (unsigned x)
 {
   reserve ((sizeof (x) * 8 + 6) / 7);
 
@@ -261,7 +271,7 @@ inline void writer::u (unsigned x)
   while (more);
 }
 
-inline unsigned reader::u ()
+inline unsigned cpm_reader::u ()
 {
   unsigned v = 0;
   unsigned bit = 0;
@@ -285,7 +295,7 @@ inline unsigned reader::u ()
 }
 
 /* Peek at the next char and return true, if it matches U.  */
-inline bool reader::peek_u (unsigned u)
+inline bool cpm_reader::peek_u (unsigned u)
 {
   gcc_assert (u < 128);
 
@@ -294,7 +304,7 @@ inline bool reader::peek_u (unsigned u)
   return false;
 }
 
-void writer::wi (HOST_WIDE_INT x)
+void cpm_writer::wi (HOST_WIDE_INT x)
 {
   reserve ((sizeof (x) * 8 + 6) / 7);
 
@@ -312,7 +322,7 @@ void writer::wi (HOST_WIDE_INT x)
   while (more);
 }
 
-HOST_WIDE_INT reader::wi ()
+HOST_WIDE_INT cpm_reader::wi ()
 {
   HOST_WIDE_INT v = 0;
   unsigned bit = 0;
@@ -337,17 +347,17 @@ HOST_WIDE_INT reader::wi ()
   return v;
 }
 
-inline void writer::wu (unsigned HOST_WIDE_INT x)
+inline void cpm_writer::wu (unsigned HOST_WIDE_INT x)
 {
   wi ((HOST_WIDE_INT) x);
 }
 
-inline unsigned HOST_WIDE_INT reader::wu ()
+inline unsigned HOST_WIDE_INT cpm_reader::wu ()
 {
   return (unsigned HOST_WIDE_INT) wi ();
 }
 
-inline void writer::s (size_t s)
+inline void cpm_writer::s (size_t s)
 {
   if (sizeof (s) == sizeof (unsigned))
     u (s);
@@ -355,7 +365,7 @@ inline void writer::s (size_t s)
     wu (s);
 }
 
-inline size_t reader::s ()
+inline size_t cpm_reader::s ()
 {
   if (sizeof (size_t) == sizeof (unsigned))
     return u ();
@@ -363,14 +373,14 @@ inline size_t reader::s ()
     return wu ();
 }
 
-void writer::buf (const char *buf, size_t len)
+void cpm_writer::buf (const char *buf, size_t len)
 {
   reserve (len);
   memcpy (buffer + pos, buf, len);
   pos += len;
 }
 
-const char *reader::buf (size_t len)
+const char *cpm_reader::buf (size_t len)
 {
   size_t have = reserve (len);
   char *v = buffer + pos;
@@ -383,13 +393,13 @@ const char *reader::buf (size_t len)
   return v;
 }
   
-void writer::str (const char *string, size_t len)
+void cpm_writer::str (const char *string, size_t len)
 {
   s (len);
   buf (string, len + 1);
 }
 
-const char *reader::str (size_t *len_p)
+const char *cpm_reader::str (size_t *len_p)
 {
   size_t len = s ();
   *len_p = len;
@@ -404,7 +414,7 @@ const char *reader::str (size_t *len_p)
 }
 
 void
-writer::flush ()
+cpm_writer::flush ()
 {
   flush_bits ();
   size_t bytes = fwrite (buffer, 1, pos, stream);
@@ -415,7 +425,7 @@ writer::flush ()
 }
 
 void
-reader::flush ()
+cpm_reader::flush ()
 {
   flush_bits ();
   memmove (buffer, buffer + pos, len - pos);
@@ -424,7 +434,7 @@ reader::flush ()
 }
 
 void
-writer::flush_bits ()
+cpm_writer::flush_bits ()
 {
   if (bit_pos)
     {
@@ -437,7 +447,7 @@ writer::flush_bits ()
 }
 
 size_t
-writer::reserve (size_t want)
+cpm_writer::reserve (size_t want)
 {
   flush_bits ();
   size_t have = alloc - pos;
@@ -455,7 +465,7 @@ writer::reserve (size_t want)
 }
 
 size_t
-reader::reserve (size_t want)
+cpm_reader::reserve (size_t want)
 {
   flush_bits ();
   size_t have = len - pos;
@@ -474,8 +484,8 @@ reader::reserve (size_t want)
   return have > want ? want : have;
 }
 
-/* Module streamer base.  */
-class streamer
+/* Module cpm_stream base.  */
+class cpm_stream
 {
 public:
   /* Record tags.  */
@@ -503,7 +513,7 @@ private:
   unsigned index;
 
 public:
-  streamer () : index (rt_ref_base)
+  cpm_stream () : index (rt_ref_base)
   {
     gcc_assert (MAX_TREE_CODES <= rt_ref_base - rt_tree_base);
   }
@@ -538,12 +548,12 @@ public:
   }
 };
 
-const char *streamer::ident ()
+const char *cpm_stream::ident ()
 {
   return "g++m";
 }
 
-int streamer::version ()
+int cpm_stream::version ()
 {
   /* If the on-disk format changes, update the version number.  */
   int version = 20170210;
@@ -593,15 +603,15 @@ int streamer::version ()
   return version;
 }
 
-/* streamer out.  */
-class out : public streamer
+/* cpm_stream cpms_out.  */
+class cpms_out : public cpm_stream
 {
-  writer w;
+  cpm_writer w;
   hash_map<tree,unsigned> map; /* trees to ids  */
   
 public:
-  out (FILE *, const char *);
-  ~out ();
+  cpms_out (FILE *, const char *);
+  ~cpms_out ();
 
 public:
   void header (FILE *, tree);
@@ -627,27 +637,27 @@ public:
   void walk_namespace (FILE *, bool, tree);
 };
 
-out::out (FILE *s, const char *n)
+cpms_out::cpms_out (FILE *s, const char *n)
   :w (s, n)
 {
 }
 
-out::~out ()
+cpms_out::~cpms_out ()
 {
 }
 
-/* Streamer in.  */
-class in : public streamer
+/* Cpm_Stream in.  */
+class cpms_in : public cpm_stream
 {
-  reader r;
+  cpm_reader r;
   typedef unbounded_int_hashmap_traits<unsigned,tree> traits;
   hash_map<unsigned,tree,traits> map; /* ids to trees  */
   tree scope;
   bool impl;
 
 public:
-  in (FILE *, const char *, bool);
-  ~in ();
+  cpms_in (FILE *, const char *, bool);
+  ~cpms_in ();
 
 public:
   bool header (FILE *, tree);
@@ -682,19 +692,19 @@ public:
   bool read_tree (FILE *, tree *, unsigned = 0);
 };
 
-in::in (FILE *s, const char *n, bool is_impl)
+cpms_in::cpms_in (FILE *s, const char *n, bool is_impl)
   :r (s, n), scope (NULL_TREE), impl (is_impl)
 {
 }
 
-in::~in ()
+cpms_in::~cpms_in ()
 {
   if (scope)
     pop_inner_scope (global_namespace, scope);
 }
 
 void
-out::header (FILE *d, tree name)
+cpms_out::header (FILE *d, tree name)
 {
   char const *id = ident ();
   w.buf (id, strlen (id));
@@ -706,9 +716,9 @@ out::header (FILE *d, tree name)
   w.i (v);
   w.str (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
 }
-
+  
 bool
-in::header (FILE *d, tree name)
+cpms_in::header (FILE *d, tree name)
 {
   const char *id = ident ();
   const char *i = r.buf (strlen (id));
@@ -761,13 +771,13 @@ in::header (FILE *d, tree name)
 }
 
 void
-out::tag_eof ()
+cpms_out::tag_eof ()
 {
   w.u (rt_eof);
 }
 
 int
-in::tag_eof (FILE *d)
+cpms_in::tag_eof (FILE *d)
 {
   if (d)
     fprintf (d, "Read eof\n");
@@ -780,7 +790,7 @@ in::tag_eof (FILE *d)
 */
 
 void
-out::tag_conf (FILE *d)
+cpms_out::tag_conf (FILE *d)
 {
   if (d)
     fprintf (d, "Writing target='%s', host='%s'\n",
@@ -791,7 +801,7 @@ out::tag_conf (FILE *d)
 }
 
 bool
-in::tag_conf (FILE *d)
+cpms_in::tag_conf (FILE *d)
 {
   size_t l;
   const char *targ = r.str (&l);
@@ -816,13 +826,13 @@ in::tag_conf (FILE *d)
 /* Dump the global trees directly to save encoding them for no reason.
    Further types such as sizetype and global_namespace are oddly
    recursive, and this avoids having to deal with that in the
-   reader.
+   cpm_reader.
 
    u:count
    <ary>*
 */
 
-const streamer::gtp streamer::global_tree_arys[] =
+const cpm_stream::gtp cpm_stream::global_tree_arys[] =
   {
     {global_trees, TI_MAX},
     {cp_global_trees, CPTI_MAX},
@@ -831,7 +841,7 @@ const streamer::gtp streamer::global_tree_arys[] =
   };
 
 void
-out::tag_trees (FILE *d)
+cpms_out::tag_trees (FILE *d)
 {
   w.u (rt_trees);
   unsigned ix;
@@ -843,7 +853,7 @@ out::tag_trees (FILE *d)
 }
 
 bool
-in::tag_trees (FILE *d)
+cpms_in::tag_trees (FILE *d)
 {
   unsigned n = r.u ();
   unsigned ix;
@@ -865,7 +875,7 @@ in::tag_trees (FILE *d)
    b[]:insert_p  */
 
 void
-out::write_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
+cpms_out::write_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
 {
   const tree *ary = ary_p->ptr;
   unsigned num = ary_p->num;
@@ -900,7 +910,7 @@ out::write_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
 }
 
 bool
-in::read_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
+cpms_in::read_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
 {
   const tree *ary = ary_p->ptr;
   unsigned num = ary_p->num;
@@ -938,7 +948,7 @@ in::read_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
    str:module_name  */
 
 void
-out::tag_import (FILE *d, tree name, bool is_export)
+cpms_out::tag_import (FILE *d, tree name, bool is_export)
 {
   if (d)
     fprintf (d, "Writing %s '%s'\n", is_export ? "export module" : "import",
@@ -949,7 +959,7 @@ out::tag_import (FILE *d, tree name, bool is_export)
 }
 
 int
-in::tag_import (FILE *d, tree &imp)
+cpms_in::tag_import (FILE *d, tree &imp)
 {
   bool is_exp = r.b ();
   size_t l;
@@ -979,7 +989,7 @@ in::tag_import (FILE *d, tree &imp)
 }
 
 int
-in::read_one (FILE *d, tree &imp)
+cpms_in::read_one (FILE *d, tree &imp)
 {
   unsigned rt = r.u ();
   switch (rt)
@@ -1012,20 +1022,20 @@ in::read_one (FILE *d, tree &imp)
 /* Read & write locations.  */
 
 void
-out::write_loc (location_t)
+cpms_out::write_loc (location_t)
 {
   // FIXME:Do something
 }
 
 location_t
-in::read_loc ()
+cpms_in::read_loc ()
 {
   // FIXME:Do something^-1
   return UNKNOWN_LOCATION;
 }
 
 void
-in::set_scope (tree ctx)
+cpms_in::set_scope (tree ctx)
 {
   if (ctx != scope)
     {
@@ -1043,7 +1053,7 @@ in::set_scope (tree ctx)
    node.  */
 
 void
-out::start (tree_code code, tree t)
+cpms_out::start (tree_code code, tree t)
 {
   switch (code)
     {
@@ -1079,7 +1089,7 @@ out::start (tree_code code, tree t)
 /* Start tree read.  Allocate the receiving node.  */
 
 tree
-in::start (tree_code code)
+cpms_in::start (tree_code code)
 {
   tree t = NULL_TREE;
   
@@ -1129,7 +1139,7 @@ in::start (tree_code code)
    possibly-remapped tree.  */
 
 tree
-in::finish (FILE *d, tree t)
+cpms_in::finish (FILE *d, tree t)
 {
   if (TYPE_P (t))
     return finish_type (d, t);
@@ -1151,7 +1161,7 @@ in::finish (FILE *d, tree t)
 /* Read & write the core boolean flags.  */
 
 void
-out::write_core_bools (FILE *, tree t)
+cpms_out::write_core_bools (FILE *, tree t)
 {
 #define WB(X) (w.b (X))
   WB (TREE_ADDRESSABLE (t));
@@ -1249,7 +1259,7 @@ out::write_core_bools (FILE *, tree t)
 }
 
 bool
-in::read_core_bools (FILE *, tree t)
+cpms_in::read_core_bools (FILE *, tree t)
 {
 #define RB(X) ((X) = r.b ())
   RB (TREE_ADDRESSABLE (t));
@@ -1350,7 +1360,7 @@ in::read_core_bools (FILE *, tree t)
 }
 
 void
-out::write_decl_lang_bools (FILE *d, tree t)
+cpms_out::write_decl_lang_bools (FILE *d, tree t)
 {
 #define WB(X) (w.b (X))
   WB (DECL_LANGUAGE (t) == lang_cplusplus);
@@ -1358,7 +1368,7 @@ out::write_decl_lang_bools (FILE *d, tree t)
 }
 
 bool
-in::read_decl_lang_bools (FILE *d, tree t)
+cpms_in::read_decl_lang_bools (FILE *d, tree t)
 {
 #define RB(X) ((X) = r.b ())
   SET_DECL_LANGUAGE (t, r.b () ? lang_cplusplus : lang_c);
@@ -1369,7 +1379,7 @@ in::read_decl_lang_bools (FILE *d, tree t)
 /* Read & write the core values and pointers.  */
 
 void
-out::write_core_vals (FILE *d, tree t)
+cpms_out::write_core_vals (FILE *d, tree t)
 {
 #define WU(X) (w.u (X))
 #define WT(X) (write_tree (d, X))
@@ -1450,7 +1460,7 @@ out::write_core_vals (FILE *d, tree t)
 }
 
 bool
-in::read_core_vals (FILE *d, tree t)
+cpms_in::read_core_vals (FILE *d, tree t)
 {
 #define RU(X) ((X) = r.u ())
 #define RM(X) ((X) = machine_mode (r.u ()))
@@ -1538,7 +1548,7 @@ in::read_core_vals (FILE *d, tree t)
    passes, nor explicit labelling.   */
 
 void
-out::write_tree (FILE *d, tree t)
+cpms_out::write_tree (FILE *d, tree t)
 {
   if (!t)
     {
@@ -1607,7 +1617,7 @@ out::write_tree (FILE *d, tree t)
    error_mark_node if TAG is totally bogus.  */
 
 bool
-in::read_tree (FILE *d, tree *tp, unsigned tag)
+cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
 {
   if (!tag)
     tag = r.u ();
@@ -1699,7 +1709,7 @@ in::read_tree (FILE *d, tree *tp, unsigned tag)
 }
 
 void
-out::walk_namespace (FILE *d, bool defns, tree ns)
+cpms_out::walk_namespace (FILE *d, bool defns, tree ns)
 {
   gcc_assert (!defns); // FIXME: todo
 
@@ -1741,8 +1751,6 @@ out::walk_namespace (FILE *d, bool defns, tree ns)
        inner = DECL_CHAIN (inner))
     walk_namespace (d, defns, inner);
 }
-
-}
 		  
 /* Mangling for module files.  */
 #define MOD_FNAME_PFX "g++-"
@@ -1772,7 +1780,7 @@ static int export_depth; /* -1 for singleton export.  */
 // Perhaps that should be changed?
 
 tree
-in::finish_type (FILE *d, tree type)
+cpms_in::finish_type (FILE *d, tree type)
 {
   tree main = TYPE_MAIN_VARIANT (type);
   
@@ -1806,7 +1814,7 @@ in::finish_type (FILE *d, tree type)
       TYPE_NEXT_VARIANT (type) = TYPE_NEXT_VARIANT (main);
       TYPE_NEXT_VARIANT (main) = type;
       /* CANONICAL_TYPE is either already correctly remapped.  Or
-         correctly already us.  FIXME:Are we sure about this?  */
+         correctly already us.  FIXME:Are we sure abcpms_out this?  */
     found_variant:;
     }
   else if (!TYPE_STRUCTURAL_EQUALITY_P (type))
@@ -1829,7 +1837,7 @@ in::finish_type (FILE *d, tree type)
    duplicate decl processing.  */
 
 tree
-in::finish_function (FILE *d, tree fn)
+cpms_in::finish_function (FILE *d, tree fn)
 {
   // FIXME: want to look exactly in scope,  no using decls etc.
   tree cur = lookup_qualified_name (DECL_CONTEXT (fn), DECL_NAME (fn),
@@ -1859,7 +1867,7 @@ in::finish_function (FILE *d, tree fn)
    using.  */
 
 tree
-in::finish_namespace (FILE *d, tree ns)
+cpms_in::finish_namespace (FILE *d, tree ns)
 {
   tree res = NULL_TREE;
 
@@ -1895,7 +1903,7 @@ in::finish_namespace (FILE *d, tree ns)
 	      res = NULL_TREE;
 	    }
 	}
-      /* Pop out of the namespace so our scope cache is correct.  */
+      /* Pop cpms_out of the namespace so our scope cache is correct.  */
       pop_namespace ();
     }
   free_node (ns);
@@ -1943,7 +1951,7 @@ push_module_namespace (bool do_it)
     }
 }
 
-/* If we're in the current module's local namespace, pop out of it.  */
+/* If we're in the current module's local namespace, pop cpms_out of it.  */
 
 bool
 pop_module_namespace ()
@@ -2043,7 +2051,7 @@ do_import_module (location_t, tree, tree, import_kind);
 static bool
 read_module (FILE *stream, const char *fname, tree name, import_kind kind)
 {
-  in in (stream, fname, kind == ik_impl);
+  cpms_in in (stream, fname, kind == ik_impl);
   FILE *d = dopen ();
 
   if (d)
@@ -2129,7 +2137,7 @@ do_import_module (location_t loc, tree name, tree, import_kind kind)
     return true;
 
   // FIXME:Path search along the -I path
-  // FIXME: Think about make dependency generation
+  // FIXME: Think abcpms_out make dependency generation
   char *fname = module_to_filename (name);
   FILE *stream = fopen (fname, "rb");
   bool ok = false;
@@ -2196,7 +2204,7 @@ declare_module (location_t loc, tree name, tree attrs)
     push_module_namespace (true);
 }
 
-typedef std::pair<out *, FILE *> write_import_cl;
+typedef std::pair<cpms_out *, FILE *> write_import_cl;
 inline bool /* Cannot be static, due to c++-98 external linkage
 	       requirement. */
 write_import (const tree &name, const unsigned &kind,
@@ -2210,7 +2218,7 @@ write_import (const tree &name, const unsigned &kind,
 static void
 write_module (FILE *stream, const char *fname, tree name)
 {
-  out out (stream, fname);
+  cpms_out out (stream, fname);
   FILE *d = dopen ();
 
   if (d)
