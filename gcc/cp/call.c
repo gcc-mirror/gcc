@@ -9717,6 +9717,22 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
       int art2 = DECL_ARTIFICIAL (cand2->fn);
       if (art1 != art2)
 	return art2 - art1;
+
+      if (art1)
+	{
+	  /* Prefer the special copy guide over a declared copy/move
+	     constructor.  */
+	  if (copy_guide_p (cand1->fn))
+	    return 1;
+	  if (copy_guide_p (cand2->fn))
+	    return -1;
+
+	  /* Prefer a candidate generated from a non-template constructor.  */
+	  int tg1 = template_guide_p (cand1->fn);
+	  int tg2 = template_guide_p (cand2->fn);
+	  if (tg1 != tg2)
+	    return tg2 - tg1;
+	}
     }
 
   /* or, if not that, F2 is from a using-declaration, F1 is not, and the
