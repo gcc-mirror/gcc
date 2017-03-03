@@ -1,3 +1,20 @@
+2017-03-02  Jason Merrill  <jason@redhat.com>
+
+	Allow deduction guides to look into primary template.
+	* cp-tree.h (struct saved_scope): Add deduction_guide_type.
+	(struct cp_decl_specifier_seq): Add constructor_p.
+	* parser.c (cp_parser_decl_specifier_seq): Set constructor_p.
+	(cp_parser_init_declarator): Check it.  Set ctor_dtor_or_conv_p.
+	Clear deduction_guide_type.  Don't handle deduction guide names.
+	(cp_parser_declarator): Don't clear ctor_dtor_or_conv_p.
+	(cp_parser_direct_declarator): Likewise.  Handle deduction guides.
+	(cp_parser_member_declaration, cp_parser_cache_defarg)
+	(cp_parser_objc_class_ivars): Set ctor_dtor_or_conv_p.
+	* pt.c (tsubst_copy, tsubst_copy_and_build): Revert last change.
+	(build_deduction_guide): Set deduction_guide_type.
+	(dependent_scope_p): Check deduction_guide_type.
+	* search.c (lookup_member): Likewise.
+
 2017-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79782
