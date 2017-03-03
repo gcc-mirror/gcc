@@ -26,6 +26,8 @@
 #include "avx5124fmaps-check.h"
 #elif defined (AVX5124VNNIW) && !defined (AVX512VL)
 #include "avx5124vnniw-check.h"
+#elif defined (AVX512VPOPCNTDQ) && !defined (AVX512VL)
+#include "avx512vpopcntdq-check.h"
 #elif defined (AVX512VL)
 #include "avx512vl-check.h"
 #endif
@@ -144,6 +146,9 @@ avx5124fmaps_test (void) { test_512 (); }
 #elif defined (AVX5124VNNIW) && !defined (AVX512VL)
 void
 avx5124vnniw_test (void) { test_512 (); }
+#elif defined (AVX512VPOPCNTDQ) && !defined (AVX512VL)
+void
+avx512vpopcntdq_test (void) { test_512 (); }
 #elif defined (AVX512VL)
 void
 avx512vl_test (void) { test_256 (); test_128 (); }

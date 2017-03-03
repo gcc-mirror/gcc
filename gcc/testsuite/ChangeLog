@@ -1,3 +1,12 @@
+2017-03-03  Andrew Senkevich  <andrew.senkevich@intel.com>
+
+	* gcc.target/i386/avx512vpopcntdq-check.h: New.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntd-1.c: Ditto.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntq-1.c: Ditto.
+	* gcc.target/i386/avx512f-helper.h: Add avx512vpopcntdq-check.h.
+	* gcc.target/i386/i386.exp
+	(check_effective_target_avx512vpopcntdq): New.
+
 2017-03-03  Toma Tabacu  <toma.tabacu@imgtec.com>
 
 	* gcc.target/mips/pr68273.c (dg-final): Match SImode registers only for
