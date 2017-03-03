@@ -1,3 +1,12 @@
+2017-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/79836
+	* c-parser.c (c_parser_generic_selection): Use %<_Generic%>
+	instead of %<_Generic>.
+	(c_parser_omp_ordered): Use %<depend%> instead of %<depend>.
+	(c_parser_omp_target_exit_data): Use %<release%> instead of
+	%<release>.
+
 2017-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_asm_statement): Use cond ? G_("...") : G_("...")
