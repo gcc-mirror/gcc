@@ -408,6 +408,19 @@ proc check_effective_target_avx5124vnniw { } {
     } "-mavx5124vnniw" ]
 }
 
+# Return 1 if avx512_vpopcntdq instructions can be compiled.
+proc check_effective_target_avx512vpopcntdq { } {
+    return [check_no_compiler_messages avx512vpopcntdq object {
+        typedef int __v16si __attribute__ ((__vector_size__ (64)));
+
+        __v16si
+        _mm512_popcnt_epi32 (__v16si __A)
+        {
+            return (__v16si) __builtin_ia32_vpopcountd_v16si ((__v16si) __A);
+        }
+    } "-mavx512vpopcntdq" ]
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {
