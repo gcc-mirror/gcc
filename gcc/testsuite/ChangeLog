@@ -1,3 +1,19 @@
+2017-03-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/79791
+	* g++.dg/warn/Wwrite-strings-1.C: New test.
+	* g++.dg/warn/Wwrite-strings-2.C: New test.
+	* g++.dg/warn/Wwrite-strings-3.C: New test.
+	* g++.dg/warn/Wwrite-strings-4.C: New test.
+	* g++.dg/warn/Wwrite-strings-5.C: New test.
+	* g++.dg/warn/Wwrite-strings-6.C: New test.
+	* g++.dg/warn/Wwrite-strings-7.C: New test.
+	* g++.dg/warn/Wwrite-strings-8.C: New test.
+	* g++.dg/warn/Wwrite-strings-9.C: New test.
+	* g++.dg/warn/Wwrite-strings-10.C: New test.
+	* g++.dg/warn/Wwrite-strings-11.C: New test.
+	* g++.dg/warn/Wwrite-strings-12.C: New test.
+
 2017-03-03  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/79818
