@@ -1,3 +1,10 @@
+2017-03-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/79758
+	* c-decl.c (store_parm_decls_oldstyle): Check if the element of
+	current_function_prototype_arg_types is error_mark_node.  Fix
+	formatting.  Use TREE_VALUE instead of TREE_TYPE.
+
 2017-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/79837
