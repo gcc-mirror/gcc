@@ -1,3 +1,9 @@
+2017-03-03  Richard Biener  <rguenther@suse.de>
+
+	* fixed-value.c (fixed_from_string): Restore use of elt (1)
+	in place of uhigh ().
+	(fixed_convert_from_real): Likewise.
+
 2017-03-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/79514
