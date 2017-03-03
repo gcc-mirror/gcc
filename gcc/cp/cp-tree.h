@@ -1272,6 +1272,7 @@ struct GTY(()) saved_scope {
   vec<tree, va_gc> *lang_base;
   tree lang_name;
   tree template_parms;
+  tree deduction_guide_type;
   cp_binding_level *x_previous_class_level;
   tree x_saved_tree;
 
@@ -5422,6 +5423,9 @@ struct cp_decl_specifier_seq {
   BOOL_BITFIELD gnu_thread_keyword_p : 1;
   /* True iff the type is a decltype.  */
   BOOL_BITFIELD decltype_p : 1;
+  /* True iff the declaration declares a constructor or C++17 deduction
+     guide.  */
+  BOOL_BITFIELD constructor_p : 1;
 };
 
 /* The various kinds of declarators.  */
