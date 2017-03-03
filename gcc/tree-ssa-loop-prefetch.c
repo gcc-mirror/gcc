@@ -2035,7 +2035,6 @@ pass_loop_prefetch::execute (function *fun)
   if (number_of_loops (fun) <= 1)
     return 0;
 
-  bool warned_p = false;
   if ((PREFETCH_BLOCK & (PREFETCH_BLOCK - 1)) != 0)
     {
       static bool warned = false;
