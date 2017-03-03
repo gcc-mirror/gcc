@@ -1,3 +1,8 @@
+2017-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79807
+	* gcc.target/i386/pr79807.c: New test.
+
 2017-03-03  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/79803
