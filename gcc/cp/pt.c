@@ -24852,6 +24852,35 @@ deduction_guide_p (const_tree fn)
   return false;
 }
 
+/* True if FN is the copy deduction guide, i.e. A(A)->A.  */
+
+bool
+copy_guide_p (const_tree fn)
+{
+  gcc_assert (deduction_guide_p (fn));
+  if (!DECL_ARTIFICIAL (fn))
+    return false;
+  tree parms = FUNCTION_FIRST_USER_PARMTYPE (DECL_TI_TEMPLATE (fn));
+  return (TREE_CHAIN (parms) == void_list_node
+	  && same_type_p (TREE_VALUE (parms), TREE_TYPE (DECL_NAME (fn))));
+}
+
+/* True if FN is a guide generated from a constructor template.  */
+
+bool
+template_guide_p (const_tree fn)
+{
+  gcc_assert (deduction_guide_p (fn));
+  if (!DECL_ARTIFICIAL (fn))
+    return false;
+  if (tree ctor = DECL_ABSTRACT_ORIGIN (fn))
+    {
+      tree tmpl = DECL_TI_TEMPLATE (ctor);
+      return PRIMARY_TEMPLATE_P (tmpl);
+    }
+  return false;
+}
+
 /* OLDDECL is a _DECL for a template parameter.  Return a similar parameter at
    LEVEL:INDEX, using tsubst_args and complain for substitution into non-type
    template parameter types.  Note that the handling of template template
@@ -25100,6 +25129,8 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
   TREE_TYPE (ded_tmpl) = TREE_TYPE (ded_fn);
   DECL_TEMPLATE_INFO (ded_fn) = build_template_info (ded_tmpl, targs);
   DECL_PRIMARY_TEMPLATE (ded_tmpl) = ded_tmpl;
+  if (DECL_P (ctor))
+    DECL_ABSTRACT_ORIGIN (ded_fn) = ctor;
   if (ci)
     set_constraints (ded_tmpl, ci);
 
@@ -25153,7 +25184,6 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
     }
 
   bool saw_ctor = false;
-  bool saw_copy = false;
   if (CLASSTYPE_METHOD_VEC (type))
     // FIXME cache artificial deduction guides
     for (tree fns = CLASSTYPE_CONSTRUCTORS (type); fns; fns = OVL_NEXT (fns))
@@ -25163,16 +25193,6 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	cands = ovl_cons (guide, cands);
 
 	saw_ctor = true;
-
-	tree parms = FUNCTION_FIRST_USER_PARMTYPE (fn);
-	if (parms && sufficient_parms_p (TREE_CHAIN (parms)))
-	  {
-	    tree pt = TREE_VALUE (parms);
-	    if (TREE_CODE (pt) == REFERENCE_TYPE
-		&& (same_type_ignoring_top_level_qualifiers_p
-		    (TREE_TYPE (pt), type)))
-	      saw_copy = true;
-	  }
       }
 
   if (!saw_ctor && args->length() == 0)
@@ -25180,7 +25200,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
       tree guide = build_deduction_guide (type, outer_args, complain);
       cands = ovl_cons (guide, cands);
     }
-  if (!saw_copy && args->length() == 1)
+  if (args->length() == 1)
     {
       tree guide = build_deduction_guide (build_reference_type (type),
 					  outer_args, complain);

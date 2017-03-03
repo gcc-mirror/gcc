@@ -1,5 +1,11 @@
 2017-03-02  Jason Merrill  <jason@redhat.com>
 
+	Update overload resolution with deduction guides.
+	* pt.c (do_class_deduction): Always build the copy guide.
+	(copy_guide_p, template_guide_p): New.
+	(build_deduction_guide): Remember the original constructor.
+	* call.c (joust): Prefer the copy guide and non-template guides.
+
 	Allow deduction guides to look into primary template.
 	* cp-tree.h (struct saved_scope): Add deduction_guide_type.
 	(struct cp_decl_specifier_seq): Add constructor_p.

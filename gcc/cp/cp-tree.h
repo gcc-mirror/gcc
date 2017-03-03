@@ -6288,6 +6288,8 @@ extern tree template_parm_to_arg                (tree);
 extern tree dguide_name				(tree);
 extern bool dguide_name_p			(tree);
 extern bool deduction_guide_p			(const_tree);
+extern bool copy_guide_p			(const_tree);
+extern bool template_guide_p			(const_tree);
 
 /* in repo.c */
 extern void init_repo				(void);
