@@ -1,3 +1,8 @@
+2017-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/pr71624.C: Disable for x32.
+	* g++.dg/pr71633.C: Ditto.
+
 2017-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79807
