@@ -780,6 +780,10 @@ Wnoexcept
 C++ ObjC++ Var(warn_noexcept) Warning
 Warn when a noexcept expression evaluates to false even though the expression can't actually throw.
 
+Wnoexcept-type
+C++ ObjC++ Warning Var(warn_noexcept_type) LangEnabledBy(C++ ObjC++,Wabi || Wc++1z-compat)
+Warn if C++1z noexcept function type will change the mangled name of a symbol.
+
 Wnon-template-friend
 C++ ObjC++ Var(warn_nontemplate_friend) Init(1) Warning
 Warn when non-templatized friend functions are declared within a template.
