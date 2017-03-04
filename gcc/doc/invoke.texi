@@ -215,7 +215,7 @@ in the following sections.
 -Wabi=@var{n}  -Wabi-tag  -Wconversion-null  -Wctor-dtor-privacy @gol
 -Wdelete-non-virtual-dtor  -Wliteral-suffix  -Wmultiple-inheritance @gol
 -Wnamespaces  -Wnarrowing @gol
--Wnoexcept  -Wnon-virtual-dtor  -Wreorder  -Wregister @gol
+-Wnoexcept  -Wnoexcept-type  -Wnon-virtual-dtor  -Wreorder  -Wregister @gol
 -Weffc++  -Wstrict-null-sentinel  -Wtemplates @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
 -Woverloaded-virtual  -Wno-pmf-conversions @gol
@@ -2896,6 +2896,20 @@ Warn when a noexcept-expression evaluates to false because of a call
 to a function that does not have a non-throwing exception
 specification (i.e. @code{throw()} or @code{noexcept}) but is known by
 the compiler to never throw an exception.
+
+@item -Wnoexcept @r{(C++ and Objective-C++ only)}
+@opindex Wnoexcept-type
+@opindex Wno-noexcept-type
+Warn if the C++1z feature making @code{noexcept} part of a function
+type changes the mangled name of a symbol relative to C++14.  Enabled
+by @option{-Wabi} and @option{-Wc++1z-compat}.
+
+@smallexample
+template <class T> void f(T t) @{ t(); @};
+void g() noexcept;
+void h() @{ f(g); @} // in C++14 calls f<void(*)()>, in C++1z calls f<void(*)()noexcept>
+@end smallexample
+
 
 @item -Wnon-virtual-dtor @r{(C++ and Objective-C++ only)}
 @opindex Wnon-virtual-dtor

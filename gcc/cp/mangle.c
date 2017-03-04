@@ -3856,7 +3856,7 @@ mangle_decl (const tree decl)
 
   if (G.need_cxx1z_warning
       && (TREE_PUBLIC (decl) || DECL_REALLY_EXTERN (decl)))
-    warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc__1z_compat,
+    warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wnoexcept_type,
 		"mangled name for %qD will change in C++17 because the "
 		"exception specification is part of a function type",
 		decl);

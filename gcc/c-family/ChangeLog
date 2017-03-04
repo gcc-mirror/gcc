@@ -1,3 +1,7 @@
+2017-03-03  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (Wnoexcept-type): New.
+
 2017-03-02  Richard Biener  <rguenther@suse.de>
 
 	PR c/79756

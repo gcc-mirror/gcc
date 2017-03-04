@@ -1,5 +1,8 @@
 2017-03-03  Jason Merrill  <jason@redhat.com>
 
+	* mangle.c (mangle_decl): Check -Wnoexcept-type instead of
+	-Wc++1z-compat.
+
 	Core issues 2273 and 2277
 	* call.c (joust): Adjust using-declaration tiebreaker to handle
 	the intermediate base case.
