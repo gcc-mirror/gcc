@@ -9735,20 +9735,26 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	}
     }
 
-  /* or, if not that, F2 is from a using-declaration, F1 is not, and the
-     conversion sequences are equivalent.
-     (proposed in http://lists.isocpp.org/core/2016/10/1142.php) */
+  /* F1 is a member of a class D, F2 is a member of a base class B of D, and
+     for all arguments the corresponding parameters of F1 and F2 have the same
+     type (CWG 2273/2277). */
   if (DECL_P (cand1->fn) && DECL_CLASS_SCOPE_P (cand1->fn)
       && !DECL_CONV_FN_P (cand1->fn)
       && DECL_P (cand2->fn) && DECL_CLASS_SCOPE_P (cand2->fn)
       && !DECL_CONV_FN_P (cand2->fn))
     {
-      bool used1 = (DECL_INHERITED_CTOR (cand1->fn)
-		    || (BINFO_TYPE (cand1->access_path)
-			!= DECL_CONTEXT (cand1->fn)));
-      bool used2 = (DECL_INHERITED_CTOR (cand2->fn)
-		    || (BINFO_TYPE (cand2->access_path)
-			!= DECL_CONTEXT (cand2->fn)));
+      tree base1 = DECL_CONTEXT (strip_inheriting_ctors (cand1->fn));
+      tree base2 = DECL_CONTEXT (strip_inheriting_ctors (cand2->fn));
+
+      bool used1 = false;
+      bool used2 = false;
+      if (base1 == base2)
+	/* No difference.  */;
+      else if (DERIVED_FROM_P (base1, base2))
+	used1 = true;
+      else if (DERIVED_FROM_P (base2, base1))
+	used2 = true;
+
       if (int diff = used2 - used1)
 	{
 	  for (i = 0; i < len; ++i)
