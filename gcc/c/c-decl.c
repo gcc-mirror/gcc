@@ -3147,7 +3147,7 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
 	    richloc.add_fixit_replace (hint);
 	    warned = warning_at_rich_loc
 	      (&richloc, OPT_Wimplicit_function_declaration,
-	       G_("implicit declaration of function %qE;did you mean %qs?"),
+	       G_("implicit declaration of function %qE; did you mean %qs?"),
 	       id, hint);
 	  }
 	else

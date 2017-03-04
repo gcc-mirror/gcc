@@ -1,3 +1,8 @@
+2017-03-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/79847
+	* c-decl.c (implicit_decl_warning): Add missing space.
+
 2017-03-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c/79758
