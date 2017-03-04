@@ -3732,7 +3732,7 @@ check_symbol_not_pointer (gfc_symbol *sym, locus loc, const char *name)
     gfc_error ("POINTER object %qs of derived type in %s clause at %L",
 	       sym->name, name, &loc);
   if (sym->ts.type == BT_DERIVED && sym->attr.cray_pointer)
-    gfc_error ("Cray pointer object of derived type %qs in %s clause at %L",
+    gfc_error ("Cray pointer object %qs of derived type in %s clause at %L",
 	       sym->name, name, &loc);
   if (sym->ts.type == BT_DERIVED && sym->attr.cray_pointee)
     gfc_error ("Cray pointee object of derived type %qs in %s clause at %L",
