@@ -498,7 +498,8 @@ forward_parm (tree parm)
 tree
 strip_inheriting_ctors (tree dfn)
 {
-  gcc_assert (flag_new_inheriting_ctors);
+  if (!flag_new_inheriting_ctors)
+    return dfn;
   tree fn = dfn;
   while (tree inh = DECL_INHERITED_CTOR (fn))
     {

@@ -1,3 +1,11 @@
+2017-03-03  Jason Merrill  <jason@redhat.com>
+
+	Core issues 2273 and 2277
+	* call.c (joust): Adjust using-declaration tiebreaker to handle
+	the intermediate base case.
+	* method.c (strip_inheriting_ctors): Just return the argument if
+	!flag_new_inheriting_ctors.
+
 2017-03-03  Richard Biener  <rguenther@suse.de>
 
 	PR c++/79825
