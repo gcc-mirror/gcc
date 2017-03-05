@@ -674,6 +674,24 @@ gfc_trans_stop (gfc_code *code, bool error_stop)
   return gfc_finish_block (&se.pre);
 }
 
+/* Translate the FAIL IMAGE statement.  */
+
+tree
+gfc_trans_fail_image (gfc_code *code ATTRIBUTE_UNUSED)
+{
+  if (flag_coarray == GFC_FCOARRAY_LIB)
+    return build_call_expr_loc (input_location,
+				gfor_fndecl_caf_fail_image, 1,
+				build_int_cst (pchar_type_node, 0));
+  else
+    {
+      const char *name = gfc_get_string (PREFIX ("exit_i%d"), 4);
+      gfc_symbol *exsym = gfc_get_intrinsic_sub_symbol (name);
+      tree tmp = gfc_get_symbol_decl (exsym);
+      return build_call_expr_loc (input_location, tmp, 1, integer_zero_node);
+    }
+}
+
 
 tree
 gfc_trans_lock_unlock (gfc_code *code, gfc_exec_op op)

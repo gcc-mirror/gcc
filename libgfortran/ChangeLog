@@ -1,3 +1,13 @@
+2017-03-05  Andre Vehreschild  <vehre@gcc.gnu.org>
+            Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+
+	* caf/libcaf.h: Added prototypes and stat codes for failed and stopped
+	images.
+	* caf/single.c (void _gfortran_caf_fail_image): Add the routine.
+	(int _gfortran_caf_image_status): Same.
+	(_gfortran_caf_failed_images): Same.
+	(_gfortran_caf_stopped_images): Same.
+
 2017-03-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 

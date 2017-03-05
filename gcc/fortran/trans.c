@@ -1953,6 +1953,10 @@ trans_code (gfc_code * code, tree cond)
 	  res = gfc_trans_event_post_wait (code, code->op);
 	  break;
 
+	case EXEC_FAIL_IMAGE:
+	  res = gfc_trans_fail_image (code);
+	  break;
+
 	case EXEC_FORALL:
 	  res = gfc_trans_forall (code);
 	  break;

@@ -1,3 +1,19 @@
+2017-03-05  Andre Vehreschild  <vehre@gcc.gnu.org>
+            Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+
+	* gfortran.dg/coarray/fail_image_1.f08: New test.
+	* gfortran.dg/coarray/fail_image_2.f08: New test.
+	* gfortran.dg/coarray/failed_images_1.f08: New test.
+	* gfortran.dg/coarray/failed_images_2.f08: New test.
+	* gfortran.dg/coarray/image_status_1.f08: New test.
+	* gfortran.dg/coarray/image_status_2.f08: New test.
+	* gfortran.dg/coarray/stopped_images_1.f08: New test.
+	* gfortran.dg/coarray/stopped_images_2.f08: New test.
+	* gfortran.dg/coarray_fail_st.f90: New test.
+	* gfortran.dg/coarray_failed_images_1.f08: New test.
+	* gfortran.dg/coarray_image_status_1.f08: New test.
+	* gfortran.dg/coarray_stopped_images_1.f08: New test.
+
 2017-03-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c/79758

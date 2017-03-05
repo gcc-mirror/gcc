@@ -1601,6 +1601,7 @@ gfc_match_if (gfc_statement *if_type)
   match ("event post", gfc_match_event_post, ST_EVENT_POST)
   match ("event wait", gfc_match_event_wait, ST_EVENT_WAIT)
   match ("exit", gfc_match_exit, ST_EXIT)
+  match ("fail image", gfc_match_fail_image, ST_FAIL_IMAGE)
   match ("flush", gfc_match_flush, ST_FLUSH)
   match ("forall", match_simple_forall, ST_FORALL)
   match ("go to", gfc_match_goto, ST_GOTO)
@@ -3262,6 +3263,28 @@ gfc_match_event_wait (void)
     return MATCH_ERROR;
 
   return event_statement (ST_EVENT_WAIT);
+}
+
+
+/* Match a FAIL IMAGE statement.  */
+
+match
+gfc_match_fail_image (void)
+{
+  if (!gfc_notify_std (GFC_STD_F2008_TS, "FAIL IMAGE statement at %C"))
+    return MATCH_ERROR;
+
+  if (gfc_match_char ('(') == MATCH_YES)
+    goto syntax;
+
+  new_st.op = EXEC_FAIL_IMAGE;
+
+  return MATCH_YES;
+
+syntax:
+  gfc_syntax_error (ST_FAIL_IMAGE);
+
+  return MATCH_ERROR;
 }
 
 

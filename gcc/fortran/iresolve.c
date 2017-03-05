@@ -2830,6 +2830,38 @@ gfc_resolve_atan2d (gfc_expr *f, gfc_expr *x, gfc_expr *y ATTRIBUTE_UNUSED)
 }
 
 
+/* Resolve failed_images (team, kind).  */
+
+void
+gfc_resolve_failed_images (gfc_expr *f, gfc_expr *team ATTRIBUTE_UNUSED,
+			   gfc_expr *kind)
+{
+  static char failed_images[] = "_gfortran_caf_failed_images";
+  f->rank = 1;
+  f->ts.type = BT_INTEGER;
+  if (kind == NULL)
+    f->ts.kind = gfc_default_integer_kind;
+  else
+    gfc_extract_int (kind, &f->ts.kind);
+  f->value.function.name = failed_images;
+}
+
+
+/* Resolve image_status (image, team).  */
+
+void
+gfc_resolve_image_status (gfc_expr *f, gfc_expr *image ATTRIBUTE_UNUSED,
+			  gfc_expr *team ATTRIBUTE_UNUSED)
+{
+  static char image_status[] = "_gfortran_caf_image_status";
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_default_integer_kind;
+  f->value.function.name = image_status;
+}
+
+
+/* Resolve image_index (...).  */
+
 void
 gfc_resolve_image_index (gfc_expr *f, gfc_expr *array ATTRIBUTE_UNUSED,
 			 gfc_expr *sub ATTRIBUTE_UNUSED)
@@ -2838,6 +2870,23 @@ gfc_resolve_image_index (gfc_expr *f, gfc_expr *array ATTRIBUTE_UNUSED,
   f->ts.type = BT_INTEGER;
   f->ts.kind = gfc_default_integer_kind;
   f->value.function.name = image_index;
+}
+
+
+/* Resolve stopped_images (team, kind).  */
+
+void
+gfc_resolve_stopped_images (gfc_expr *f, gfc_expr *team ATTRIBUTE_UNUSED,
+			    gfc_expr *kind)
+{
+  static char stopped_images[] = "_gfortran_caf_stopped_images";
+  f->rank = 1;
+  f->ts.type = BT_INTEGER;
+  if (kind == NULL)
+    f->ts.kind = gfc_default_integer_kind;
+  else
+    gfc_extract_int (kind, &f->ts.kind);
+  f->value.function.name = stopped_images;
 }
 
 

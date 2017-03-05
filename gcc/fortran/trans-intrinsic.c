@@ -2388,6 +2388,42 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
 }
 
 
+/* Convert a call to image_status.  */
+
+static void
+conv_intrinsic_image_status (gfc_se *se, gfc_expr *expr)
+{
+  unsigned int num_args;
+  tree *args, tmp;
+
+  num_args = gfc_intrinsic_argument_list_length (expr);
+  args = XALLOCAVEC (tree, num_args);
+  gfc_conv_intrinsic_function_args (se, expr, args, num_args);
+  /* In args[0] the number of the image the status is desired for has to be
+     given.  */
+
+  if (flag_coarray == GFC_FCOARRAY_SINGLE)
+    {
+      tree arg;
+      arg = gfc_evaluate_now (args[0], &se->pre);
+      tmp = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+			     fold_convert (integer_type_node, arg),
+			     integer_one_node);
+      tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node,
+			     tmp, integer_zero_node,
+			     build_int_cst (integer_type_node,
+					    GFC_STAT_STOPPED_IMAGE));
+    }
+  else if (flag_coarray == GFC_FCOARRAY_LIB)
+    tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_image_status, 2,
+			       args[0], build_int_cst (integer_type_node, -1));
+  else
+    gcc_unreachable ();
+
+  se->expr = tmp;
+}
+
+
 static void
 trans_image_index (gfc_se * se, gfc_expr *expr)
 {
@@ -9108,6 +9144,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       trans_image_index (se, expr);
       break;
 
+    case GFC_ISYM_IMAGE_STATUS:
+      conv_intrinsic_image_status (se, expr);
+      break;
+
     case GFC_ISYM_NUM_IMAGES:
       trans_num_images (se, expr);
       break;
@@ -9458,10 +9498,12 @@ gfc_is_intrinsic_libcall (gfc_expr * expr)
       /* Ignore absent optional parameters.  */
       return 1;
 
-    case GFC_ISYM_RESHAPE:
     case GFC_ISYM_CSHIFT:
     case GFC_ISYM_EOSHIFT:
+    case GFC_ISYM_FAILED_IMAGES:
+    case GFC_ISYM_STOPPED_IMAGES:
     case GFC_ISYM_PACK:
+    case GFC_ISYM_RESHAPE:
     case GFC_ISYM_UNPACK:
       /* Pass absent optional parameters.  */
       return 2;
