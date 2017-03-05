@@ -268,6 +268,9 @@ build_must_not_throw_expr (tree body, tree cond)
 
   if (cond && !value_dependent_expression_p (cond))
     {
+      cond = perform_implicit_conversion_flags (boolean_type_node, cond,
+						tf_warning_or_error,
+						LOOKUP_NORMAL);
       cond = cxx_constant_value (cond);
       if (integer_zerop (cond))
 	return body;

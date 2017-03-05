@@ -1,3 +1,8 @@
+2017-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70266
+	* g++.dg/tm/pr70266.C: New.
+
 2017-03-05  Andre Vehreschild  <vehre@gcc.gnu.org>
             Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 
