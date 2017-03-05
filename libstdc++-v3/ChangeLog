@@ -1,3 +1,13 @@
+2017-03-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Document P0156R2 status.
+	* doc/html/*: Regenerate.
+	* include/std/mutex (scoped_lock): Implement new C++17 template.
+	* testsuite/30_threads/scoped_lock/cons/1.cc: New test.
+	* testsuite/30_threads/scoped_lock/requirements/
+	explicit_instantiation.cc: New test.
+	* testsuite/30_threads/scoped_lock/requirements/typedefs.cc: New test.
+
 2017-03-02  Gerald Pfeifer  <gerald@pfeifer.com>
 	    François Dumont  <frs.dumont@gmail.com>
 	    Jonathan Wakely  <jwakely@redhat.com>

@@ -719,15 +719,14 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Variadic <code>lock_guard</code> </entry>
       <entry>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0156r0.html">
-	P0156R0
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0156r2.html">
+	P0156R2
 	</link>
       </entry>
-      <entry align="center"> No </entry>
-      <entry><code> __cpp_lib_lock_guard_variadic >= 201510 </code></entry>
+      <entry align="center"> 7 </entry>
+      <entry><code> __cpp_lib_scoped_lock >= 201703 </code></entry>
     </row>
 
   </tbody>
