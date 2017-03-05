@@ -191,15 +191,11 @@ template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
   perform, shortening the detect-compile-debug bug hunting cycle
   and making the debug mode easier to incorporate into development
   environments by minimizing dependencies.</p><p>Achieving link- and run-time coexistence is not a trivial
-  implementation task. To achieve this goal we required a small
-  extension to the GNU C++ compiler (since incorporated into the C++11 language specification, described in the GCC Manual for the C++ language as
-  <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/Namespace-Association.html#Namespace-Association" target="_top">namespace
-  association</a>), and a complex organization of debug- and
-  release-modes. The end result is that we have achieved per-use
-  recompilation but have had to give up some checking of the
-  <code class="code">std::basic_string</code> class template (namely, safe
-  iterators).
-</p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="methods.coexistence.compile"></a>Compile-time coexistence of release- and debug-mode components</h5></div></div></div><p>Both the release-mode components and the debug-mode
+  implementation task. To achieve this goal we use inline namespaces and
+  a complex organization of debug- and release-modes. The end result is
+  that we have achieved per-use recompilation but have had to give up
+  some checking of the <code class="code">std::basic_string</code> class template
+  (namely, safe iterators).</p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="methods.coexistence.compile"></a>Compile-time coexistence of release- and debug-mode components</h5></div></div></div><p>Both the release-mode components and the debug-mode
   components need to exist within a single translation unit so that
   the debug versions can wrap the release versions. However, only one
   of these components should be user-visible at any particular
