@@ -10883,6 +10883,9 @@ start:
 	  resolve_lock_unlock_event (code);
 	  break;
 
+	case EXEC_FAIL_IMAGE:
+	  break;
+
 	case EXEC_ENTRY:
 	  /* Keep track of which entry we are up to.  */
 	  current_entry_id = code->ext.entry->id;

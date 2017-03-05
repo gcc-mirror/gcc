@@ -6228,13 +6228,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       gfc_add_block_to_block (&se->pre, &post);
 
       /* Transformational functions of derived types with allocatable
-         components must have the result allocatable components copied.  */
+	 components must have the result allocatable components copied when the
+	 argument is actually given.  */
       arg = expr->value.function.actual;
       if (result && arg && expr->rank
-	    && expr->value.function.isym
-	    && expr->value.function.isym->transformational
-	    && arg->expr->ts.type == BT_DERIVED
-	    && arg->expr->ts.u.derived->attr.alloc_comp)
+	  && expr->value.function.isym
+	  && expr->value.function.isym->transformational
+	  && arg->expr
+	  && arg->expr->ts.type == BT_DERIVED
+	  && arg->expr->ts.u.derived->attr.alloc_comp)
 	{
 	  tree tmp2;
 	  /* Copy the allocatable components.  We have to use a

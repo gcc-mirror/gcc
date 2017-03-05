@@ -488,6 +488,7 @@ decode_statement (void)
       break;
 
     case 'f':
+      match ("fail image", gfc_match_fail_image, ST_FAIL_IMAGE);
       match ("final", gfc_match_final_decl, ST_FINAL);
       match ("flush", gfc_match_flush, ST_FLUSH);
       match ("format", gfc_match_format, ST_FORMAT);
@@ -1499,7 +1500,7 @@ next_statement (void)
   case ST_OMP_TARGET_EXIT_DATA: case ST_OMP_ORDERED_DEPEND: \
   case ST_ERROR_STOP: case ST_SYNC_ALL: \
   case ST_SYNC_IMAGES: case ST_SYNC_MEMORY: case ST_LOCK: case ST_UNLOCK: \
-  case ST_EVENT_POST: case ST_EVENT_WAIT: \
+  case ST_EVENT_POST: case ST_EVENT_WAIT: case ST_FAIL_IMAGE: \
   case ST_OACC_UPDATE: case ST_OACC_WAIT: case ST_OACC_CACHE: \
   case ST_OACC_ENTER_DATA: case ST_OACC_EXIT_DATA
 
@@ -1826,6 +1827,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_EVENT_WAIT:
       p = "EVENT WAIT";
+      break;
+    case ST_FAIL_IMAGE:
+      p = "FAIL IMAGE";
       break;
     case ST_END_ASSOCIATE:
       p = "END ASSOCIATE";

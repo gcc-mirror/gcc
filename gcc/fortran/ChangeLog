@@ -1,3 +1,51 @@
+2017-03-05  Andre Vehreschild  <vehre@gcc.gnu.org>,
+	    Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+
+	* check.c (positive_check): Add new function checking constant for
+	being greater then zero.
+	(gfc_check_image_status): Add checking of image_status arguments.
+	(gfc_check_failed_or_stopped_images): Same but for failed_- and
+	stopped_images function.
+	* dump-parse-tree.c (show_code_node): Added output of FAIL IMAGE.
+	* gfortran.h (enum gfc_statement): Added FAIL_IMAGE_ST.
+	(enum gfc_isym_id): Added new intrinsic symbols.
+	(enum gfc_exec_op): Added EXEC_FAIL_IMAGE.
+	* gfortran.texi: Added description for the new API functions. Updated
+	coverage of gfortran of TS18508.
+	* intrinsic.c (add_functions): Added symbols to resolve new intrinsic
+	functions. 
+	* intrinsic.h: Added prototypes.
+	* iresolve.c (gfc_resolve_failed_images): Resolve the failed_images
+	intrinsic.
+	(gfc_resolve_image_status): Same for image_status.
+	(gfc_resolve_stopped_images): Same for stopped_images.
+	* libgfortran.h: Added prototypes.
+	* match.c (gfc_match_if): Added matching of FAIL IMAGE statement.
+	(gfc_match_fail_image): Match a FAIL IMAGE statement.
+	* match.h: Added prototype.
+	* parse.c (decode_statement): Added matching for FAIL IMAGE.
+	(next_statement): Same.
+	(gfc_ascii_statement): Same.
+	* resolve.c: Same.
+	* simplify.c (gfc_simplify_failed_or_stopped_images): For COARRAY=
+	single a constant result can be returne.d
+	(gfc_simplify_image_status): For COARRAY=single the result is constant.
+	* st.c (gfc_free_statement): Added FAIL_IMAGE handling.
+	* trans-decl.c (gfc_build_builtin_function_decls): Added decls of the
+	new intrinsics.
+	* trans-expr.c (gfc_conv_procedure_call): This is first time all
+	arguments of a function are optional, which is now handled here
+	correctly.
+	* trans-intrinsic.c (conv_intrinsic_image_status): Translate
+	image_status.
+	(gfc_conv_intrinsic_function): Add support for image_status.
+	(gfc_is_intrinsic_libcall): Add support for the remaining new
+	intrinsics.
+	* trans-stmt.c (gfc_trans_fail_image): Trans a fail image.
+	* trans-stmt.h: Add the prototype for the above.
+	* trans.c (trans_code): Dispatch for fail_image.
+	* trans.h: Add the trees for the new intrinsics.
+
 2017-03-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/79841
