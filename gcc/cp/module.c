@@ -42,7 +42,7 @@ protected:
   size_t len;
   size_t alloc;
   int err;
-  unsigned bits;
+  unsigned bit_val;
   unsigned bit_pos;
 
 public:
@@ -62,11 +62,20 @@ public:
     if (!err)
       err = e;
   }
+
+protected:
+  /* Finish bit packet.  Rewind the bytes not used.  */
+  void bit_flush ()
+  {
+    pos -= 4 - (bit_pos + 7) / 8;
+    bit_pos = 0;
+    bit_val = 0;
+  }
 };
 
 cpm_serial::cpm_serial (FILE *s, const char *n)
   :stream (s), name (n), pos (0), len (0), alloc (ALLOC),
-   err (0), bits (0), bit_pos (0)
+   err (0), bit_val (0), bit_pos (0)
 {
   buffer = (char *) xmalloc (alloc);
 }
@@ -77,7 +86,7 @@ cpm_serial::~cpm_serial ()
   free (buffer);
 }
 
-/* Byte stream cpm_writer.  */
+/* Byte stream writer.  */
 class cpm_writer : public cpm_serial
 {
 public:
@@ -90,9 +99,9 @@ public:
   }
 
 private:
-  void flush_bits ();
   size_t reserve (size_t);
   void flush ();
+  void bytes4 (unsigned);
 
 public:
   int done ()
@@ -101,11 +110,9 @@ public:
     return error ();
   }
 
-
 public:
   void b (bool);
-  void bstart ();
-  void bend ();
+  void bflush ();
 
 public:
   void c (unsigned char);
@@ -118,7 +125,7 @@ public:
   void buf (const char *, size_t);
 };
 
-/* Byte stream cpm_reader.  */
+/* Byte stream reader.  */
 class cpm_reader : public cpm_serial
 {
 public:
@@ -131,26 +138,22 @@ public:
   }
 
 private:
-  void flush_bits ()
-  {
-    bit_pos = 0;
-  }
-  size_t reserve (size_t);
-  void flush ();
+  size_t fill (size_t);
+  unsigned bytes4 ();
 
 public:
-  bool peek_u (unsigned u);
-  int done ()
+  int done (bool atend = true)
   {
-    if (reserve (1))
+    if (atend && fill (1))
       bad ();
     return error ();
   }
 
 public:
   bool b ();
-  void bstart ();
-  void bend ();
+  void bflush ();
+private:
+  void bfill ();
 
 public:
   int c ();
@@ -163,6 +166,34 @@ public:
   const char *buf (size_t);
 };
 
+/* Finish a set of bools.  */
+
+void
+cpm_writer::bflush ()
+{
+  if (bit_pos)
+    {
+      bytes4 (bit_val);
+      bit_flush ();
+    }
+}
+
+void
+cpm_reader::bflush ()
+{
+  bit_flush ();
+}
+
+/* When reading, we don't know how many bools we'll read in.  So read
+   4 bytes-worth, and then rewind when flushing if we didn't need them
+   all.  */
+
+void
+cpm_reader::bfill ()
+{
+  bit_val = bytes4 ();
+}
+
 /* Low level cpm_readers and cpm_writers.  I did think about making these
    templatized, but that started to look error prone, so went with
    type-specific names.
@@ -173,36 +204,71 @@ public:
    buf - fixed size buffer
    str - variable length string  */
 
-/* Bools are packed into bytes.  These are automatically flushed when
-   full, or we change to a different type.  */
+/* Bools are packed into bytes.  You cannot mix bools and non-bools.
+   You must call bflush before emitting another type.  So batch your
+   bools.  */
 
-void cpm_writer::b (bool x)
+void
+cpm_writer::b (bool x)
 {
-  bits |= unsigned (x) << bit_pos++;
-  if (bit_pos == 8)
-    flush_bits ();
+  bit_val |= unsigned (x) << bit_pos++;
+  if (bit_pos == 32)
+    bflush ();
 }
 
-bool cpm_reader::b ()
+bool
+cpm_reader::b ()
 {
   if (!bit_pos)
-    bits = c ();
-  bool v = (bits >> bit_pos) & 1;
-  bit_pos = (bit_pos + 1) & 7;
+    bfill ();
+  bool v = (bit_val >> bit_pos++) & 1;
+  if (bit_pos == 32)
+    bflush ();
   return v;
+}
+
+/* Exactly 4 bytes.  Used internally for bool packing.  */
+
+void
+cpm_writer::bytes4 (unsigned val)
+{
+  reserve (4);
+  buffer[pos++] = val;
+  buffer[pos++] = val >> 8;
+  buffer[pos++] = val >> 16;
+  buffer[pos++] = val >> 24;
+}
+
+unsigned
+cpm_reader::bytes4 ()
+{
+  unsigned val = 0;
+  if (fill (4) != 4)
+    bad ();
+  else
+    {
+      val |= (unsigned char)buffer[pos++];
+      val |= (unsigned char)buffer[pos++] << 8;
+      val |= (unsigned char)buffer[pos++] << 16;
+      val |= (unsigned char)buffer[pos++] << 24;
+    }
+
+  return val;
 }
 
 /* Chars are unsigned and written as single bytes.  */
 
-void cpm_writer::c (unsigned char x)
+void
+cpm_writer::c (unsigned char x)
 {
   reserve (1);
   buffer[pos++] = x;
 }
 
-int cpm_reader::c ()
+int
+cpm_reader::c ()
 {
-  if (reserve (1))
+  if (fill (1))
     return (unsigned char)buffer[pos++];
   bad ();
   return 0;
@@ -211,7 +277,8 @@ int cpm_reader::c ()
 /* Ints are written as sleb128.  I suppose we could pack the first
    few bits into any partially-filled bool buffer.  */
 
-void cpm_writer::i (int x)
+void
+cpm_writer::i (int x)
 {
   reserve ((sizeof (x) * 8 + 6) / 7);
 
@@ -229,11 +296,12 @@ void cpm_writer::i (int x)
   while (more);
 }
 
-int cpm_reader::i ()
+int
+cpm_reader::i ()
 {
   int v = 0;
   unsigned bit = 0;
-  size_t bytes = reserve ((sizeof (v) * 8 + 6) / 7);
+  size_t bytes = fill ((sizeof (v) * 8 + 6) / 7);
   unsigned byte;
 
   do
@@ -256,7 +324,8 @@ int cpm_reader::i ()
 
 /* Unsigned are written as uleb128 too.  */
 
-inline void cpm_writer::u (unsigned x)
+void
+cpm_writer::u (unsigned x)
 {
   reserve ((sizeof (x) * 8 + 6) / 7);
 
@@ -271,11 +340,12 @@ inline void cpm_writer::u (unsigned x)
   while (more);
 }
 
-inline unsigned cpm_reader::u ()
+unsigned
+cpm_reader::u ()
 {
   unsigned v = 0;
   unsigned bit = 0;
-  size_t bytes = reserve ((sizeof (v) * 8 + 6) / 7);
+  size_t bytes = fill ((sizeof (v) * 8 + 6) / 7);
   unsigned byte;
 
   do
@@ -294,17 +364,8 @@ inline unsigned cpm_reader::u ()
   return v;
 }
 
-/* Peek at the next char and return true, if it matches U.  */
-inline bool cpm_reader::peek_u (unsigned u)
-{
-  gcc_assert (u < 128);
-
-  if (reserve (1))
-    return ((unsigned char)buffer[pos]) == u;
-  return false;
-}
-
-void cpm_writer::wi (HOST_WIDE_INT x)
+void
+cpm_writer::wi (HOST_WIDE_INT x)
 {
   reserve ((sizeof (x) * 8 + 6) / 7);
 
@@ -322,11 +383,12 @@ void cpm_writer::wi (HOST_WIDE_INT x)
   while (more);
 }
 
-HOST_WIDE_INT cpm_reader::wi ()
+HOST_WIDE_INT
+cpm_reader::wi ()
 {
   HOST_WIDE_INT v = 0;
   unsigned bit = 0;
-  size_t bytes = reserve ((sizeof (v) * 8 + 6) / 7);
+  size_t bytes = fill ((sizeof (v) * 8 + 6) / 7);
   unsigned byte;
 
   do
@@ -347,17 +409,20 @@ HOST_WIDE_INT cpm_reader::wi ()
   return v;
 }
 
-inline void cpm_writer::wu (unsigned HOST_WIDE_INT x)
+inline void
+cpm_writer::wu (unsigned HOST_WIDE_INT x)
 {
   wi ((HOST_WIDE_INT) x);
 }
 
-inline unsigned HOST_WIDE_INT cpm_reader::wu ()
+inline unsigned HOST_WIDE_INT
+cpm_reader::wu ()
 {
   return (unsigned HOST_WIDE_INT) wi ();
 }
 
-inline void cpm_writer::s (size_t s)
+inline void
+cpm_writer::s (size_t s)
 {
   if (sizeof (s) == sizeof (unsigned))
     u (s);
@@ -365,7 +430,8 @@ inline void cpm_writer::s (size_t s)
     wu (s);
 }
 
-inline size_t cpm_reader::s ()
+inline size_t
+cpm_reader::s ()
 {
   if (sizeof (size_t) == sizeof (unsigned))
     return u ();
@@ -373,17 +439,19 @@ inline size_t cpm_reader::s ()
     return wu ();
 }
 
-void cpm_writer::buf (const char *buf, size_t len)
+void
+cpm_writer::buf (const char *buf, size_t len)
 {
   reserve (len);
   memcpy (buffer + pos, buf, len);
   pos += len;
 }
 
-const char *cpm_reader::buf (size_t len)
+const char *
+cpm_reader::buf (size_t len)
 {
-  size_t have = reserve (len);
-  char *v = buffer + pos;
+  size_t have = fill (len);
+  char *v = &buffer[pos];
   if (have < len)
     {
       memset (v + have, 0, len - have);
@@ -393,13 +461,15 @@ const char *cpm_reader::buf (size_t len)
   return v;
 }
   
-void cpm_writer::str (const char *string, size_t len)
+void
+cpm_writer::str (const char *string, size_t len)
 {
   s (len);
   buf (string, len + 1);
 }
 
-const char *cpm_reader::str (size_t *len_p)
+const char *
+cpm_reader::str (size_t *len_p)
 {
   size_t len = s ();
   *len_p = len;
@@ -416,7 +486,6 @@ const char *cpm_reader::str (size_t *len_p)
 void
 cpm_writer::flush ()
 {
-  flush_bits ();
   size_t bytes = fwrite (buffer, 1, pos, stream);
   
   if (bytes != pos && !err)
@@ -424,32 +493,9 @@ cpm_writer::flush ()
   pos = 0;
 }
 
-void
-cpm_reader::flush ()
-{
-  flush_bits ();
-  memmove (buffer, buffer + pos, len - pos);
-  len -= pos;
-  pos = 0;
-}
-
-void
-cpm_writer::flush_bits ()
-{
-  if (bit_pos)
-    {
-      int v = bits;
-
-      bit_pos = 0;
-      bits = 0;
-      c (v);
-    }
-}
-
 size_t
 cpm_writer::reserve (size_t want)
 {
-  flush_bits ();
   size_t have = alloc - pos;
   if (have < want)
     {
@@ -465,13 +511,14 @@ cpm_writer::reserve (size_t want)
 }
 
 size_t
-cpm_reader::reserve (size_t want)
+cpm_reader::fill (size_t want)
 {
-  flush_bits ();
   size_t have = len - pos;
   if (have < want)
     {
-      flush ();
+      memmove (buffer, buffer + pos, len - pos);
+      len -= pos;
+      pos = 0;
       if (alloc < want)
 	{
 	  alloc = want;
@@ -905,6 +952,7 @@ cpms_out::write_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
 	}
       w.b (insert);
     }
+  w.bflush ();
   if (d)
     fprintf (d, "Writing %u fixed trees (%d unique)\n", num, n);
 }
@@ -937,6 +985,7 @@ cpms_in::read_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
 		   ary_num, ix, tag, (void *)t,
 		   get_tree_code_name (TREE_CODE (t)));
       }
+  r.bflush ();
 
   if (d)
     fprintf (d, "Reading %u fixed trees (%d unique)\n", num, n);
@@ -954,14 +1003,14 @@ cpms_out::tag_import (FILE *d, tree name, bool is_export)
     fprintf (d, "Writing %s '%s'\n", is_export ? "export module" : "import",
 	     IDENTIFIER_POINTER (name));
   w.u (rt_import);
-  w.b (is_export);
+  w.u (is_export);
   w.str (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
 }
 
 int
 cpms_in::tag_import (FILE *d, tree &imp)
 {
-  bool is_exp = r.b ();
+  bool is_exp = r.u ();
   size_t l;
   const char *mod = r.str (&l);
 
@@ -1604,7 +1653,7 @@ cpms_out::write_tree (FILE *d, tree t)
 	  if (has_specific)
 	    write_decl_lang_bools (d, t);
 	}
-
+      w.bflush ();
       write_core_vals (d, t);
       // FIXME:Write lang_specific pointers & vals
     }
@@ -1684,7 +1733,7 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
 	  if (!read_decl_lang_bools (d, t))
 	    return false;
 	}
-
+      r.bflush ();
       if (!read_core_vals (d, t))
 	return false;
 

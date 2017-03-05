@@ -1,5 +1,16 @@
 2017-03-04  Nathan Sidwell  <nathan@acm.org>
 
+	Redo bool read/write
+	gcc/cp/
+	* module.c (cpm_serial::bit_flush): New.
+	(cpm_writer::bytes4, cpm_writer::bflush: New.
+	(cpm_reader::bytes4, cpm_reader::bflush, cpm_reader::bfill): New.
+	(cpm_reader::fill): Rename from reserve.  Update callers.
+	(cpm_writer::b, cpm_reader::b): Reimplement.
+	(cpm_writer::flush_bits, cpm_reader::flush_bits): Delete.
+	(cpms_out::write_tree_ary, cpms_in::read_tree_ary): Call bflush.
+	(cpms_out::write_tree, cpms_in::read_tree): Likewise.
+
 	Cleanup test pruning.  Push to trunk.
 	gcc/testsuite/g++.dg
 	* g++-dg.exp (find-cxx-tests): New.
