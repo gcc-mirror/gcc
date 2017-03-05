@@ -1,3 +1,10 @@
+2017-03-04  Nathan Sidwell  <nathan@acm.org>
+
+	Cleanup test pruning.  Push to trunk.
+	gcc/testsuite/g++.dg
+	* g++-dg.exp (find-cxx-tests): New.
+	(main): Call it to discover direct tests rather than explicit pruning.
+
 2017-03-03  Nathan Sidwell  <nathan@acm.org>
 
 	Cleanup retrofit_lang_decl.  Push to trunk.
