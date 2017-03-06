@@ -1,3 +1,8 @@
+2017-03-06  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/79783
+	* g++.dg/asan/pr79783.C: New test.
+
 2017-03-06  Prachi Godbole  <prachi.godbole@imgtec.com>
 
 	* gcc.target/mips/msa-dotp.c: New tests.
