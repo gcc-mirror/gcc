@@ -1,3 +1,9 @@
+2017-03-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target 77850
+	* config/pa/pa-64.h (PAD_VARARGS_DOWN): Don't pad down complex and
+	vector types.
+
 2017-03-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/79514
