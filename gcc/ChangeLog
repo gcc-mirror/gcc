@@ -1,3 +1,11 @@
+2017-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79821
+	* dwarf2out.h (dw_vec_const): Change array type from unsigned char *
+	to void * for PCH reasons.
+	* dwarf2out.c (output_loc_operands, output_die): Cast
+	v.val_vec.array to unsigned char *.
+
 2017-03-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target 77850

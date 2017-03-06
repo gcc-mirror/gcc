@@ -2020,7 +2020,7 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
 		elt_size /= 2;
 		len *= 2;
 	      }
-	    for (i = 0, p = val2->v.val_vec.array;
+	    for (i = 0, p = (unsigned char *) val2->v.val_vec.array;
 		 i < len;
 		 i++, p += elt_size)
 	      dw2_asm_output_data (elt_size, extract_int (p, elt_size),
@@ -2273,7 +2273,7 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
 		  elt_size /= 2;
 		  len *= 2;
 		}
-	      for (i = 0, p = val2->v.val_vec.array;
+	      for (i = 0, p = (unsigned char *) val2->v.val_vec.array;
 		   i < len;
 		   i++, p += elt_size)
 		dw2_asm_output_data (elt_size, extract_int (p, elt_size),
@@ -10105,7 +10105,7 @@ output_die (dw_die_ref die)
 		elt_size /= 2;
 		len *= 2;
 	      }
-	    for (i = 0, p = a->dw_attr_val.v.val_vec.array;
+	    for (i = 0, p = (unsigned char *) a->dw_attr_val.v.val_vec.array;
 		 i < len;
 		 i++, p += elt_size)
 	      dw2_asm_output_data (elt_size, extract_int (p, elt_size),
