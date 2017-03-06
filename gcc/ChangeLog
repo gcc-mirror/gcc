@@ -1,3 +1,10 @@
+2017-03-06  Prachi Godbole  <prachi.godbole@imgtec.com>
+
+	* config/mips/mips-msa.md (msa_fmax_a_<msafmt>, msa_fmin_a_<msafmt>,
+	msa_max_a_<msafmt>, msa_min_a_<msafmt>): Introduce mode interator for
+	if_then_else.
+	(smin<mode>3, smax<mode>3): Change operand print code from 'B' to 'E'.
+
 2017-03-06  Martin Liska  <mliska@suse.cz>
 
 	PR sanitize/79783
