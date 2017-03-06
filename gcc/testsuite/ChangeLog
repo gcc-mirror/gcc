@@ -1,5 +1,9 @@
 2017-03-06  Prachi Godbole  <prachi.godbole@imgtec.com>
 
+	* gcc.target/mips/msa-dotp.c: New tests.
+
+2017-03-06  Prachi Godbole  <prachi.godbole@imgtec.com>
+
 	* gcc.target/mips/msa-bclri.c: New test.
 
 2017-03-05  Paolo Carlini  <paolo.carlini@oracle.com>

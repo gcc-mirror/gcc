@@ -1230,10 +1230,10 @@
 		(parallel [(const_int 0) (const_int 2)]))))
 	  (mult:V2DI
 	    (any_extend:V2DI
-	      (vec_select:V4SI (match_dup 1)
+	      (vec_select:V2SI (match_dup 1)
 		(parallel [(const_int 1) (const_int 3)])))
 	    (any_extend:V2DI
-	      (vec_select:V4SI (match_dup 2)
+	      (vec_select:V2SI (match_dup 2)
 		(parallel [(const_int 1) (const_int 3)]))))))]
   "ISA_HAS_MSA"
   "dotp_<su>.d\t%w0,%w1,%w2"
@@ -1319,10 +1319,10 @@
 		  (parallel [(const_int 0) (const_int 2)]))))
 	    (mult:V2DI
 	      (any_extend:V2DI
-		(vec_select:V4SI (match_dup 2)
+		(vec_select:V2SI (match_dup 2)
 		  (parallel [(const_int 1) (const_int 3)])))
 	      (any_extend:V2DI
-		(vec_select:V4SI (match_dup 3)
+		(vec_select:V2SI (match_dup 3)
 		  (parallel [(const_int 1) (const_int 3)])))))
 	  (match_operand:V2DI 1 "register_operand" "0")))]
   "ISA_HAS_MSA"
@@ -1414,10 +1414,10 @@
 		  (parallel [(const_int 0) (const_int 2)]))))
 	    (mult:V2DI
 	      (any_extend:V2DI
-		(vec_select:V4SI (match_dup 2)
+		(vec_select:V2SI (match_dup 2)
 		  (parallel [(const_int 1) (const_int 3)])))
 	      (any_extend:V2DI
-		(vec_select:V4SI (match_dup 3)
+		(vec_select:V2SI (match_dup 3)
 		  (parallel [(const_int 1) (const_int 3)])))))))]
   "ISA_HAS_MSA"
   "dpsub_<su>.d\t%w0,%w2,%w3"
