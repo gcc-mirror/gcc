@@ -1914,6 +1914,9 @@ Target is @samp{freestanding} as defined in section 4 of the C99 standard.
 Effectively, it is a target which supports no extra headers or libraries
 other than what is considered essential.
 
+@item gettimeofday
+Target supports @code{gettimeofday}.
+
 @item init_priority
 Target supports constructors with initialization priority arguments.
 
