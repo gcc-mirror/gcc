@@ -1,3 +1,9 @@
+2017-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79824
+	* gcc.dg/vect/pr79824-1.c: New testcase.
+	* gcc.dg/vect/pr79824-2.c: Likewise.
+
 2017-03-06  Toma Tabacu  <toma.tabacu@imgtec.com>
 
 	* gcc.dg/lto/pr60449_0.c: Add dg-require-effective-target for

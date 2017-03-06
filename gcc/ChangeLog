@@ -1,3 +1,9 @@
+2017-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79824
+	* tree-vect-stmts.c (get_group_load_store_type): Fix alignment
+	check disabling peeling for gaps.
+
 2017-03-06  Toma Tabacu  <toma.tabacu@imgtec.com>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords, Environment
