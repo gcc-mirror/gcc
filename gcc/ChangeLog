@@ -1,3 +1,21 @@
+2017-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79812
+	* config/i386/sse.md (VI8F_256_512): Remove mode iterator.
+	(<avx2_avx512>_perm<mode>): Rename to ...
+	(avx2_perm<mode>): ... this.  Use VI8F_256 iterator instead
+	of VI8F_256_512.
+	(<avx512>_perm<mode>_mask): Rename to ...
+	(avx512vl_perm<mode>_mask): ... this.  Use VI8F_256 iterator instead
+	of VI8F_256_512.
+	(<avx2_avx512>_perm<mode>_1<mask_name>): Rename to ...
+	(avx2_perm<mode>_1<mask_name): ... this.  Use VI8F_256 iterator
+	instead of VI8F_256_512.
+	(avx512f_perm<mode>): New define_expand.
+	(avx512f_perm<mode>_mask): Likewise.
+	(avx512f_perm<mode>_1<mask_name>): New define_insn.
+	(<avx512>_vec_dup<mode>_1): Fix up vec_select mode.
+
 2017-03-06  Prachi Godbole  <prachi.godbole@imgtec.com>
 
 	* config/mips/mips-msa.md (msa_fmax_a_<msafmt>, msa_fmin_a_<msafmt>,
