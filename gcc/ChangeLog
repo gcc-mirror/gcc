@@ -1,3 +1,9 @@
+2017-03-06  Julia Koval  <julia.koval@intel.com>
+
+	PR target/79793
+	* config/i386/i386.c (ix86_minimum_incoming_stack_boundary): Set
+	incoming stack boundary to 128 for 64-bit targets.
+
 2017-03-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79894

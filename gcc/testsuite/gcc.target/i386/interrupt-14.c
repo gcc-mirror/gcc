@@ -23,10 +23,10 @@ fn2 (void *frame)
 /* { dg-final { scan-assembler-not "(push|pop)(l|q)\[\\t \]*%(r|e)si" } } */
 /* { dg-final { scan-assembler-not "(push|pop)q\[\\t \]*%r\[8-9\]+" { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-not "(push|pop)q\[\\t \]*%r1\[0-5\]+" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "push(?:l|q)\[\\t \]*%(?:r|e)bp" 2 } } */
+/* { dg-final { scan-assembler-times "pushl\[\\t \]*%ebp" 2 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "leave" 2 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "pushq\[\\t \]*%rdi" 2 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "movq\[\\t \]*-8\\(%(?:r|e)bp\\),\[\\t \]*%rdi" 2 { target { { ! ia32 } && nonpic } } } } */
+/* { dg-final { scan-assembler-times "popq\[\\t \]*%rdi" 2 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "iret" 2 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "iretq" 2 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "\tcld" 2 } } */
