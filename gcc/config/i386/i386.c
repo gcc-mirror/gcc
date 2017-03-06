@@ -13054,10 +13054,10 @@ ix86_minimum_incoming_stack_boundary (bool sibcall)
 {
   unsigned int incoming_stack_boundary;
 
-  /* Stack of interrupt handler is always aligned to MIN_STACK_BOUNDARY.
-   */
+  /* Stack of interrupt handler is aligned to 128 bits in 64bit
+     mode.  */
   if (cfun->machine->func_type != TYPE_NORMAL)
-    incoming_stack_boundary = MIN_STACK_BOUNDARY;
+    incoming_stack_boundary = TARGET_64BIT ? 128 : MIN_STACK_BOUNDARY;
   /* Prefer the one specified at command line. */
   else if (ix86_user_incoming_stack_boundary)
     incoming_stack_boundary = ix86_user_incoming_stack_boundary;
