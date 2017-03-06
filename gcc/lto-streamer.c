@@ -380,7 +380,7 @@ lto_check_version (int major, int minor, const char *file_name)
 {
   if (major != LTO_major_version || minor != LTO_minor_version)
     fatal_error (input_location,
-		 "bytecode stream in file '%s' generated with LTO version "
+		 "bytecode stream in file %qs generated with LTO version "
 		 "%d.%d instead of the expected %d.%d",
 		 file_name,
 		 major, minor,

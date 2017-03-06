@@ -1,3 +1,9 @@
+2017-03-06  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer.c (lto_check_version): Use %qs in diagnostics.
+	* plugin.c (register_plugin_info): Likewise.
+	* tree-chkp.c (chkp_make_static_const_bounds): Likewise.
+
 2017-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (sse_storehps, sse_storelps,
