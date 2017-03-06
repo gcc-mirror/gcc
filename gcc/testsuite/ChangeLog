@@ -1,3 +1,8 @@
+2017-03-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64574
+	* g++.dg/template/crash125.C: New.
+
 2017-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79812
