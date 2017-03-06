@@ -1,3 +1,8 @@
+2017-03-06  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_asm_output_function_label): Use nopr %r0.
+	* config/s390/s390.md: Likewise.
+
 2017-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79812
