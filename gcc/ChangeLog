@@ -1,3 +1,10 @@
+2017-03-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/79571
+	* lra-constraints.c (process_alt_operands): Claculate static
+	reject and subtract it from overal when there will be only address
+	reloads.
+
 2017-03-06  Julia Koval  <julia.koval@intel.com>
 
 	PR target/79793
