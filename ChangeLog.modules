@@ -1,3 +1,14 @@
+2017-03-06  Nathan Sidwell  <nathan@acm.org>
+
+	Add crc checkpointing.
+	gcc/cp/
+	* module.c (cpm_serial::crc): New.
+	(cpm_serial::bit_flush): Compute crc.
+	(cpm_serial::crc_unsigned_n, crc_buffer, crc_unsigned): New.
+	(cpm_reader::checkpoint, cpm_writer::checkpoint): New.
+	(cpm_reader, cpm_writer): Add checkpointing to io.
+	(cpms_in, cpms_out): Likewise.
+
 2017-03-05  Nathan Sidwell  <nathan@acm.org>
 
 	Optimize crc.  Push to trunk

@@ -30,8 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Byte serializer base.  */
 class cpm_serial
 {
-  static const size_t ALLOC = 32768;
-
 protected:
   FILE *stream;
 public:
@@ -44,6 +42,7 @@ protected:
   int err;
   unsigned bit_val;
   unsigned bit_pos;
+  unsigned crc;
 
 public:
   cpm_serial (FILE *, const char *);
@@ -64,26 +63,58 @@ public:
   }
 
 protected:
-  /* Finish bit packet.  Rewind the bytes not used.  */
+  /* Finish bit packet.  Compute crc of bits used, rewind the bytes
+     not used.  */
   void bit_flush ()
   {
-    pos -= 4 - (bit_pos + 7) / 8;
+    gcc_assert (bit_pos);
+    unsigned bytes = (bit_pos + 7) / 8;
+    pos -= 4 - bytes;
+    crc_unsigned_n (bit_val, bytes);
     bit_pos = 0;
     bit_val = 0;
+  }
+
+protected:
+  void crc_unsigned_n (unsigned v, unsigned n)
+  {
+    crc = crc32_unsigned_n (crc, v, n);
+  }
+  void crc_buffer (const char *ptr, size_t l);
+  template<typename T> void crc_unsigned (T v)
+  {
+    unsigned bytes = sizeof (T);
+    while (bytes > 4)
+      {
+	bytes -= 4;
+	crc_unsigned_n (unsigned (v >> (bytes * 8)), 4);
+      }
+    crc_unsigned_n (unsigned (v), bytes);
   }
 };
 
 cpm_serial::cpm_serial (FILE *s, const char *n)
-  :stream (s), name (n), pos (0), len (0), alloc (ALLOC),
-   err (0), bit_val (0), bit_pos (0)
+  :stream (s), name (n), pos (0), len (0),
+   /* Force testing of buffer extension. */
+   alloc (EXPERIMENTAL ? 1 : 32768),
+   err (0), bit_val (0), bit_pos (0), crc (0)
 {
-  buffer = (char *) xmalloc (alloc);
+  buffer = XNEWVEC (char, alloc);
 }
 
 cpm_serial::~cpm_serial ()
 {
   gcc_assert (pos == len || err);
-  free (buffer);
+  XDELETEVEC (buffer);
+}
+
+void
+cpm_serial::crc_buffer (const char *ptr, size_t l)
+{
+  unsigned c = crc;
+  for (size_t ix = 0; ix != l; ix++)
+    c = crc32_byte (c, ptr[ix]);
+  crc = c;
 }
 
 /* Byte stream writer.  */
@@ -109,6 +140,9 @@ public:
     flush ();
     return error ();
   }
+
+public:
+  void checkpoint ();
 
 public:
   void b (bool);
@@ -150,6 +184,9 @@ public:
   }
 
 public:
+  bool checkpoint ();
+
+public:
   bool b ();
   void bflush ();
 private:
@@ -166,6 +203,35 @@ public:
   const char *buf (size_t);
 };
 
+/* Checkpoint a crc.  */
+
+inline void
+cpm_writer::checkpoint ()
+{
+  bytes4 (crc);
+}
+
+bool
+cpm_reader::checkpoint ()
+{
+  unsigned b = bytes4 ();
+  bool ret = b == crc;
+  if (!ret)
+    {
+      /* Map checksum error onto a reasonably specific errno.  */
+#if defined (EPROTO)
+      bad (EPROTO);
+#elif defined (EBADMSG)
+      bad (EBADMSG);
+#elif defined (EIO)
+      bad (EIO);
+#else
+      bad ();
+#endif
+    }
+  return ret;
+}
+
 /* Finish a set of bools.  */
 
 void
@@ -181,7 +247,8 @@ cpm_writer::bflush ()
 void
 cpm_reader::bflush ()
 {
-  bit_flush ();
+  if (bit_pos)
+    bit_flush ();
 }
 
 /* When reading, we don't know how many bools we'll read in.  So read
@@ -227,7 +294,8 @@ cpm_reader::b ()
   return v;
 }
 
-/* Exactly 4 bytes.  Used internally for bool packing.  */
+/* Exactly 4 bytes.  Used internally for bool packing and crc
+   transfer -- hence no crc here.  */
 
 void
 cpm_writer::bytes4 (unsigned val)
@@ -256,42 +324,47 @@ cpm_reader::bytes4 ()
   return val;
 }
 
-/* Chars are unsigned and written as single bytes.  */
+/* Chars are unsigned and written as single bytes. */
 
 void
-cpm_writer::c (unsigned char x)
+cpm_writer::c (unsigned char v)
 {
   reserve (1);
-  buffer[pos++] = x;
+  buffer[pos++] = v;
+  crc_unsigned (v);
 }
 
 int
 cpm_reader::c ()
 {
+  int v = 0;
   if (fill (1))
-    return (unsigned char)buffer[pos++];
-  bad ();
-  return 0;
+    v = (unsigned char)buffer[pos++];
+  else
+    bad ();
+  crc_unsigned (v);
+  return v;
 }
 
 /* Ints are written as sleb128.  I suppose we could pack the first
    few bits into any partially-filled bool buffer.  */
 
 void
-cpm_writer::i (int x)
+cpm_writer::i (int v)
 {
-  reserve ((sizeof (x) * 8 + 6) / 7);
+  crc_unsigned (v);
+  reserve ((sizeof (v) * 8 + 6) / 7);
 
-  int end = x < 0 ? -1 : 0;
+  int end = v < 0 ? -1 : 0;
   bool more;
 
   do
     {
-      unsigned byte = x & 127;
-      x >>= 6; /* Signed shift.  */
-      more = x != end;
+      unsigned byte = v & 127;
+      v >>= 6; /* Signed shift.  */
+      more = v != end;
       buffer[pos++] = byte | (more << 7);
-      x >>= 1; /* Signed shift.  */
+      v >>= 1; /* Signed shift.  */
     }
   while (more);
 }
@@ -319,22 +392,24 @@ cpm_reader::i ()
 
   if (byte & 0x40 && bit < sizeof (v) * 8)
     v |= ~(unsigned)0 << bit;
+  crc_unsigned (v);
   return v;
 }
 
-/* Unsigned are written as uleb128 too.  */
+/* Unsigned are written as uleb128.  */
 
 void
-cpm_writer::u (unsigned x)
+cpm_writer::u (unsigned v)
 {
-  reserve ((sizeof (x) * 8 + 6) / 7);
+  crc_unsigned (v);
+  reserve ((sizeof (v) * 8 + 6) / 7);
 
   bool more;
   do
     {
-      unsigned byte = x & 127;
-      x >>= 7;
-      more = x != 0;
+      unsigned byte = v & 127;
+      v >>= 7;
+      more = v != 0;
       buffer[pos++] = byte | (more << 7);
     }
   while (more);
@@ -360,25 +435,27 @@ cpm_reader::u ()
       bit += 7;
     }
   while (byte & 128);
+  crc_unsigned (v);
 
   return v;
 }
 
 void
-cpm_writer::wi (HOST_WIDE_INT x)
+cpm_writer::wi (HOST_WIDE_INT v)
 {
-  reserve ((sizeof (x) * 8 + 6) / 7);
+  crc_unsigned (v);
+  reserve ((sizeof (v) * 8 + 6) / 7);
 
-  int end = x < 0 ? -1 : 0;
+  int end = v < 0 ? -1 : 0;
   bool more;
 
   do
     {
-      unsigned byte = x & 127;
-      x >>= 6; /* Signed shift.  */
-      more = x != end;
+      unsigned byte = v & 127;
+      v >>= 6; /* Signed shift.  */
+      more = v != end;
       buffer[pos++] = byte | (more << 7);
-      x >>= 1; /* Signed shift.  */
+      v >>= 1; /* Signed shift.  */
     }
   while (more);
 }
@@ -406,13 +483,14 @@ cpm_reader::wi ()
 
   if (byte & 0x40 && bit < sizeof (v) * 8)
     v |= ~(unsigned HOST_WIDE_INT)0 << bit;
+  crc_unsigned (v);
   return v;
 }
 
 inline void
-cpm_writer::wu (unsigned HOST_WIDE_INT x)
+cpm_writer::wu (unsigned HOST_WIDE_INT v)
 {
-  wi ((HOST_WIDE_INT) x);
+  wi ((HOST_WIDE_INT) v);
 }
 
 inline unsigned HOST_WIDE_INT
@@ -442,6 +520,7 @@ cpm_reader::s ()
 void
 cpm_writer::buf (const char *buf, size_t len)
 {
+  crc_buffer (buf, len);
   reserve (len);
   memcpy (buffer + pos, buf, len);
   pos += len;
@@ -451,14 +530,15 @@ const char *
 cpm_reader::buf (size_t len)
 {
   size_t have = fill (len);
-  char *v = &buffer[pos];
+  char *buf = &buffer[pos];
   if (have < len)
     {
-      memset (v + have, 0, len - have);
+      memset (buf + have, 0, len - have);
       bad ();
     }
   pos += have;
-  return v;
+  crc_buffer (buf, len);
+  return buf;
 }
   
 void
@@ -487,7 +567,7 @@ void
 cpm_writer::flush ()
 {
   size_t bytes = fwrite (buffer, 1, pos, stream);
-  
+
   if (bytes != pos && !err)
     err = errno;
   pos = 0;
@@ -502,8 +582,8 @@ cpm_writer::reserve (size_t want)
       flush ();
       if (alloc < want)
 	{
-	  alloc = want;
-	  buffer = (char *) xrealloc (buffer, alloc);
+	  alloc = want + (want / 8); /* Some hysteresis.  */
+	  buffer = XRESIZEVEC (char, buffer, alloc);
 	}
       have = alloc;
     }
@@ -521,14 +601,14 @@ cpm_reader::fill (size_t want)
       pos = 0;
       if (alloc < want)
 	{
-	  alloc = want;
-	  buffer = (char *) xrealloc (buffer, alloc);
+	  alloc = want + (want / 8); /* Some hysteresis.  */
+	  buffer = XRESIZEVEC (char, buffer, alloc);
 	}
       size_t bytes = fread (buffer + len, 1, alloc - len, stream);
       len += bytes;
       have = len;
     }
-  return have > want ? want : have;
+  return have < want ? have : want;
 }
 
 /* Module cpm_stream base.  */
@@ -821,6 +901,7 @@ void
 cpms_out::tag_eof ()
 {
   w.u (rt_eof);
+  w.checkpoint ();
 }
 
 int
@@ -828,6 +909,8 @@ cpms_in::tag_eof (FILE *d)
 {
   if (d)
     fprintf (d, "Read eof\n");
+  if (!r.checkpoint ())
+    return false;
   return -1; /* Denote EOF.  */
 }
 
@@ -845,6 +928,7 @@ cpms_out::tag_conf (FILE *d)
   w.u (rt_conf);
   w.str (TARGET_MACHINE, strlen (TARGET_MACHINE));
   w.str (HOST_MACHINE, strlen (HOST_MACHINE));
+  w.checkpoint ();
 }
 
 bool
@@ -863,6 +947,9 @@ cpms_in::tag_conf (FILE *d)
       error ("%qs is host %qs, expected %qs", r.name, host, HOST_MACHINE);
       return false;
     }
+
+  if (!r.checkpoint ())
+    return false;
 
   if (d)
     fprintf (d, "Read target='%s', host='%s'\n", TARGET_MACHINE, HOST_MACHINE);
@@ -897,6 +984,7 @@ cpms_out::tag_trees (FILE *d)
   w.u (ix);
   for (ix = 0; global_tree_arys[ix].ptr; ix++)
     write_tree_ary (d, ix, &global_tree_arys[ix]);
+  w.checkpoint ();
 }
 
 bool
@@ -914,7 +1002,7 @@ cpms_in::tag_trees (FILE *d)
       error ("%qs has %u arrays, expected %u", r.name, n, ix);
       return false;
     }
-  return true;
+  return r.checkpoint ();
 }
 
 /* Global tree array
@@ -1005,6 +1093,7 @@ cpms_out::tag_import (FILE *d, tree name, bool is_export)
   w.u (rt_import);
   w.u (is_export);
   w.str (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
+  w.checkpoint ();
 }
 
 int
@@ -1013,6 +1102,9 @@ cpms_in::tag_import (FILE *d, tree &imp)
   bool is_exp = r.u ();
   size_t l;
   const char *mod = r.str (&l);
+
+  if (!r.checkpoint ())
+    return false;
 
   /* Validate name.  Dotted sequence of identifiers.  */
   size_t dot = 0;
@@ -1591,10 +1683,24 @@ cpms_in::read_core_vals (FILE *d, tree t)
 }
 
 /* Write either the decl (as a declaration) itself (and create a
-   mapping for it), or write the existing mapping.  This is
-   essentially the lisp self-referential structure pretty-printer,
+   mapping for it), or write the existing mapping or write null.  This
+   is essentially the lisp self-referential structure pretty-printer,
    except that we implicitly number every node, so need neither two
-   passes, nor explicit labelling.   */
+   passes, nor explicit labelling.
+
+   We emit in the following order:
+     <tag>
+     <core bools>
+     <lang-specific-p>
+     <bflush & checkpoint>
+     if lang-specific-p
+       <lang-specific bools>
+       <bflush & checkpoint>
+     <core vals & trees>
+     if lang-specific-p
+       <lang-specific vals & trees>
+     <checkpoint>
+*/
 
 void
 cpms_out::write_tree (FILE *d, tree t)
@@ -1640,23 +1746,26 @@ cpms_out::write_tree (FILE *d, tree t)
     {
       write_core_bools (d, t);
 
-      if (TYPE_P (t))
+      if (TYPE_P (t) || DECL_P (t))
 	{
-	  bool has_specific = TYPE_LANG_SPECIFIC (t) != NULL;
-	  w.b (has_specific);
-	  // FIXME:write lang_specific bits
-	}
-      else if (DECL_P (t))
-	{
-	  bool has_specific = DECL_LANG_SPECIFIC (t) != NULL;
-	  w.b (has_specific);
-	  if (has_specific)
+	  bool specific = (TYPE_P (t) ? TYPE_LANG_SPECIFIC (t) != NULL
+			   : DECL_LANG_SPECIFIC (t) != NULL);
+	  w.b (specific);
+	  if (!specific)
+	    ;
+	  else if (TYPE_P (t))
+	    ; // FIXME: write type lang bools
+	  else if (DECL_P (t))
 	    write_decl_lang_bools (d, t);
 	}
       w.bflush ();
+      w.checkpoint ();
+
       write_core_vals (d, t);
       // FIXME:Write lang_specific pointers & vals
     }
+
+  w.checkpoint ();
 }
 
 /* Read in a tree using TAG.  TAG is either a back reference, or a
@@ -1710,35 +1819,45 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
       if (!read_core_bools (d, t))
 	return false;
 
-      if (TYPE_P (t) && r.b ())
+      bool lied = false;
+      if (TYPE_P (t) || DECL_P (t))
 	{
-	  if (!maybe_add_lang_type_raw (t))
+	  bool specific = r.b ();
+	  if (!specific)
+	    ;
+	  else if (TYPE_P (t))
 	    {
-	      /* We were lied to about needing lang_type.  */
-	      r.bad ();
-	      return false;
+	      if (!maybe_add_lang_type_raw (t))
+		lied = true;
+	      else
+		{
+		  // FIXME:read lang_specific bits
+		}
 	    }
-	  
-	  // FIXME:read lang_specific bits
-	}
-      else if (DECL_P (t) && r.b ())
-	{
-	  if (!maybe_add_lang_decl_raw (t))
+	  else if (DECL_P (t))
 	    {
-	      /* We were lied to about needing lang_decl.  */
-	      r.bad ();
-	      return false;
+	      if (!maybe_add_lang_decl_raw (t))
+		lied = true;
+	      else if (!read_decl_lang_bools (d, t))
+		return false;
 	    }
-
-	  if (!read_decl_lang_bools (d, t))
-	    return false;
 	}
       r.bflush ();
+      if (!r.checkpoint ())
+	return false;
+      if (lied)
+	{
+	  r.bad ();
+	  return false;
+	}
       if (!read_core_vals (d, t))
 	return false;
 
       // FIXME:Read lang_specific ptrs & vals
     }
+
+  if (!r.checkpoint ())
+    return false;
 
   tree found = finish (d, t);
   if (found != t)
