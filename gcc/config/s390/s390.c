@@ -14679,6 +14679,10 @@ s390_option_override_internal (bool main_args_p,
                          opts->x_param_values,
                          opts_set->x_param_values);
 
+  maybe_set_param_value (PARAM_MIN_VECT_LOOP_BOUND, 2,
+			 opts->x_param_values,
+			 opts_set->x_param_values);
+
   /* Call target specific restore function to do post-init work.  At the moment,
      this just sets opts->x_s390_cost_pointer.  */
   s390_function_specific_restore (opts, NULL);
