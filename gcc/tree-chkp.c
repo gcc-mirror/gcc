@@ -1991,7 +1991,7 @@ chkp_make_static_const_bounds (HOST_WIDE_INT lb,
       /* We don't allow this symbol usage for non bounds.  */
       if (snode->type != SYMTAB_VARIABLE
 	  || !POINTER_BOUNDS_P (snode->decl))
-	sorry ("-fcheck-pointer-bounds requires '%s' "
+	sorry ("-fcheck-pointer-bounds requires %qs "
 	       "name for internal usage",
 	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (var)));
 

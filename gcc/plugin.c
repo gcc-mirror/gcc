@@ -334,7 +334,7 @@ register_plugin_info (const char* name, struct plugin_info *info)
 
   if (slot == NULL)
     {
-      error ("unable to register info for plugin '%s' - plugin name not found",
+      error ("unable to register info for plugin %qs - plugin name not found",
 	     name);
       return;
     }
