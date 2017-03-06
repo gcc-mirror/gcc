@@ -1,3 +1,9 @@
+2017-03-06  Prachi Godbole  <prachi.godbole@imgtec.com>
+
+	* config/mips/mips.c (mips_gen_const_int_vector): Change type of last
+	argument.
+	* config/mips/mips-protos.h (mips_gen_const_int_vector): Likewise.
+
 2017-03-06  Richard Biener  <rguenther@suse.de>
 
 	* lto-streamer.c (lto_check_version): Use %qs in diagnostics.
