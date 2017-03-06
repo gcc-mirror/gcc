@@ -1,3 +1,8 @@
+2017-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79822
+	* g++.dg/cpp0x/constexpr-79822.C: New test.
+
 2017-03-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79894

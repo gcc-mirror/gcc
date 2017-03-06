@@ -3725,8 +3725,9 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
 {
   tree_stmt_iterator i;
   tree local_target;
-  /* In a statement-expression we want to return the last value.  */
-  tree r = NULL_TREE;
+  /* In a statement-expression we want to return the last value.
+     For empty statement expression return void_node.  */
+  tree r = void_node;
   if (!jump_target)
     {
       local_target = NULL_TREE;

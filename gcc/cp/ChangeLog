@@ -1,3 +1,9 @@
+2017-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79822
+	* constexpr.c (cxx_eval_statement_list): Treat empty ({ }) like
+	({ (void) 0; }).
+
 2017-03-06  Jason Merrill  <jason@redhat.com>
 
 	Revert "Allow deduction guides to look into primary template."
