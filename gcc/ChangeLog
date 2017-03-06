@@ -1,5 +1,11 @@
 2017-03-06  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/79894
+	* tree-vectorizer.c (vectorize_loops): Set loop_vectorized_call
+	to NULL after folding it.
+
+2017-03-06  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/79824
 	* tree-vect-stmts.c (get_group_load_store_type): Fix alignment
 	check disabling peeling for gaps.
