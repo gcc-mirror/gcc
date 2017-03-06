@@ -1,5 +1,10 @@
 2017-03-06  Prachi Godbole  <prachi.godbole@imgtec.com>
 
+	* config/mips/mips-msa.md (msa_dotp_<su>_d, msa_dpadd_<su>_d,
+	msa_dpsub_<su>_d): Fix MODE for vec_select.
+
+2017-03-06  Prachi Godbole  <prachi.godbole@imgtec.com>
+
 	* config/mips/mips.c (mips_gen_const_int_vector): Change type of last
 	argument.
 	* config/mips/mips-protos.h (mips_gen_const_int_vector): Likewise.
