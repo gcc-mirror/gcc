@@ -1688,7 +1688,7 @@
 
 (define_insn "msa_fmax_a_<msafmt>"
   [(set (match_operand:FMSA 0 "register_operand" "=f")
-	(if_then_else
+	(if_then_else:FMSA
 	   (gt (abs:FMSA (match_operand:FMSA 1 "register_operand" "f"))
 	       (abs:FMSA (match_operand:FMSA 2 "register_operand" "f")))
 	   (match_dup 1)
@@ -1709,7 +1709,7 @@
 
 (define_insn "msa_fmin_a_<msafmt>"
   [(set (match_operand:FMSA 0 "register_operand" "=f")
-	(if_then_else
+	(if_then_else:FMSA
 	   (lt (abs:FMSA (match_operand:FMSA 1 "register_operand" "f"))
 	       (abs:FMSA (match_operand:FMSA 2 "register_operand" "f")))
 	   (match_dup 1)
@@ -2174,7 +2174,7 @@
 
 (define_insn "msa_max_a_<msafmt>"
   [(set (match_operand:IMSA 0 "register_operand" "=f")
-	(if_then_else
+	(if_then_else:IMSA
 	   (gt (abs:IMSA (match_operand:IMSA 1 "register_operand" "f"))
 	       (abs:IMSA (match_operand:IMSA 2 "register_operand" "f")))
 	   (match_dup 1)
@@ -2191,7 +2191,7 @@
   "ISA_HAS_MSA"
   "@
    max_s.<msafmt>\t%w0,%w1,%w2
-   maxi_s.<msafmt>\t%w0,%w1,%B2"
+   maxi_s.<msafmt>\t%w0,%w1,%E2"
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
@@ -2208,7 +2208,7 @@
 
 (define_insn "msa_min_a_<msafmt>"
   [(set (match_operand:IMSA 0 "register_operand" "=f")
-	(if_then_else
+	(if_then_else:IMSA
 	   (lt (abs:IMSA (match_operand:IMSA 1 "register_operand" "f"))
 	       (abs:IMSA (match_operand:IMSA 2 "register_operand" "f")))
 	   (match_dup 1)
@@ -2225,7 +2225,7 @@
   "ISA_HAS_MSA"
   "@
    min_s.<msafmt>\t%w0,%w1,%w2
-   mini_s.<msafmt>\t%w0,%w1,%B2"
+   mini_s.<msafmt>\t%w0,%w1,%E2"
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
