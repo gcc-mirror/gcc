@@ -1,3 +1,8 @@
+2017-03-06  Jason Merrill  <jason@redhat.com>
+
+	Revert "Allow deduction guides to look into primary template."
+	* cp-tree.h, parser.c, pt.c, search.c: Revert.
+
 2017-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70266

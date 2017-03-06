@@ -1279,13 +1279,6 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
     if (tree t = currently_open_class (type))
       type = t;
 
-  /* Declaration of a deduction guide can look inside the primary class
-     template; replace a compatible type with the real one.  */
-  if (cxx_dialect >= cxx1z
-      && scope_chain->deduction_guide_type
-      && same_type_p (type, scope_chain->deduction_guide_type))
-    type = scope_chain->deduction_guide_type;
-
   if (!basetype_path)
     basetype_path = TYPE_BINFO (type);
 
