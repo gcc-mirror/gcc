@@ -1,3 +1,7 @@
+2017-03-06  Toma Tabacu  <toma.tabacu@imgtec.com>
+
+	* gcc.target/mips/inline-memcpy-3.c (dg-options): Add -mabi=32.
+
 2017-03-06  Prachi Godbole  <prachi.godbole@imgtec.com>
 
 	* gcc.target/mips/msa-minmax.c: New tests.
