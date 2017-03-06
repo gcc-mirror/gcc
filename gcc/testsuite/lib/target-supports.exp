@@ -968,6 +968,11 @@ proc check_effective_target_setrlimit {} {
     return [check_function_available "setrlimit"]
 }
 
+# Return 1 if the target supports gettimeofday, 0 otherwise.
+proc check_effective_target_gettimeofday {} {
+    return [check_function_available "gettimeofday"]
+}
+
 # Return 1 if the target supports swapcontext, 0 otherwise.
 proc check_effective_target_swapcontext {} {
     return [check_no_compiler_messages swapcontext executable {
