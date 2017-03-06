@@ -3107,11 +3107,15 @@ asan_expand_poison_ifn (gimple_stmt_iterator *iter,
 {
   gimple *g = gsi_stmt (*iter);
   tree poisoned_var = gimple_call_lhs (g);
-  if (!poisoned_var)
+  if (!poisoned_var || has_zero_uses (poisoned_var))
     {
       gsi_remove (iter, true);
       return true;
     }
+
+  if (SSA_NAME_VAR (poisoned_var) == NULL_TREE)
+    SET_SSA_NAME_VAR_OR_IDENTIFIER (poisoned_var,
+				    create_tmp_var (TREE_TYPE (poisoned_var)));
 
   tree shadow_var = create_asan_shadow_var (SSA_NAME_VAR (poisoned_var),
 					    shadow_vars_mapping);
