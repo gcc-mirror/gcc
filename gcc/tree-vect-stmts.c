@@ -1731,7 +1731,7 @@ get_group_load_store_type (gimple *stmt, tree vectype, bool slp,
   bool single_element_p = (stmt == first_stmt
 			   && !GROUP_NEXT_ELEMENT (stmt_info));
   unsigned HOST_WIDE_INT gap = GROUP_GAP (vinfo_for_stmt (first_stmt));
-  int nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  unsigned nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   /* True if the vectorized statements would access beyond the last
      statement in the group.  */
@@ -1794,9 +1794,13 @@ get_group_load_store_type (gimple *stmt, tree vectype, bool slp,
       /* If there is a gap at the end of the group then these optimizations
 	 would access excess elements in the last iteration.  */
       bool would_overrun_p = (gap != 0);
-      /* If the access is aligned an overrun is fine.  */
+      /* If the access is aligned an overrun is fine, but only if the
+         overrun is not inside an unused vector (if the gap is as large
+	 or larger than a vector).  */
       if (would_overrun_p
-	  && aligned_access_p (STMT_VINFO_DATA_REF (stmt_info)))
+	  && gap < nunits
+	  && aligned_access_p
+		(STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt))))
 	would_overrun_p = false;
       if (!STMT_VINFO_STRIDED_P (stmt_info)
 	  && (can_overrun_p || !would_overrun_p)
