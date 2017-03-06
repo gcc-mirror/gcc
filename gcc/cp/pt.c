@@ -14641,6 +14641,15 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	     have to substitute this with one having context `D<int>'.  */
 
 	  tree context = tsubst (DECL_CONTEXT (t), args, complain, in_decl);
+	  if (dependent_scope_p (context))
+	    {
+	      /* When rewriting a constructor into a deduction guide, a
+		 non-dependent name can become dependent, so memtmpl<args>
+		 becomes context::template memtmpl<args>.  */
+	      tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	      return build_qualified_name (type, context, DECL_NAME (t),
+					   /*template*/true);
+	    }
 	  return lookup_field (context, DECL_NAME(t), 0, false);
 	}
       else
@@ -16623,6 +16632,14 @@ tsubst_copy_and_build (tree t,
 	  targs = tsubst_template_args (targs, args, complain, in_decl);
 	if (targs == error_mark_node)
 	  return error_mark_node;
+
+	if (TREE_CODE (templ) == SCOPE_REF)
+	  {
+	    tree name = TREE_OPERAND (templ, 1);
+	    tree tid = lookup_template_function (name, targs);
+	    TREE_OPERAND (templ, 1) = tid;
+	    return templ;
+	  }
 
 	if (variable_template_p (templ))
 	  RETURN (lookup_and_finish_template_variable (templ, targs, complain));
@@ -23459,9 +23476,6 @@ bool
 dependent_scope_p (tree scope)
 {
   return (scope && TYPE_P (scope) && dependent_type_p (scope)
-	  && !(cxx_dialect >= cxx1z
-	       && scope_chain->deduction_guide_type
-	       && same_type_p (scope, scope_chain->deduction_guide_type))
 	  && !currently_open_class (scope));
 }
 
@@ -25012,7 +25026,6 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
       if (outer_args)
 	ctor = tsubst (ctor, outer_args, complain, ctor);
       type = DECL_CONTEXT (ctor);
-      scope_chain->deduction_guide_type = type;
       tree fn_tmpl;
       if (TREE_CODE (ctor) == TEMPLATE_DECL)
 	{
@@ -25105,7 +25118,6 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
 	  current_template_parms = save_parms;
 	  --processing_template_decl;
 	}
-      scope_chain->deduction_guide_type = NULL_TREE;
     }
 
   if (!memtmpl)

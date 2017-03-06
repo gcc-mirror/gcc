@@ -13313,8 +13313,6 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	   && constructor_possible_p
 	   && (cp_parser_constructor_declarator_p
 	       (parser, decl_spec_seq_has_spec_p (decl_specs, ds_friend))));
-      if (constructor_p)
-	decl_specs->constructor_p = true;
 
       /* If we don't have a DECL_SPEC yet, then we must be looking at
 	 a type-specifier.  */
@@ -19012,7 +19010,7 @@ cp_parser_init_declarator (cp_parser* parser,
   enum cpp_ttype initialization_kind;
   bool is_direct_init = false;
   bool is_non_constant_init;
-  int ctor_dtor_or_conv_p = decl_specifiers->constructor_p ? -1 : 0;
+  int ctor_dtor_or_conv_p;
   bool friend_p = cp_parser_friend_p (decl_specifiers);
   tree pushed_scope = NULL_TREE;
   bool range_for_decl_p = false;
@@ -19049,9 +19047,6 @@ cp_parser_init_declarator (cp_parser* parser,
   stop_deferring_access_checks ();
 
   parser->default_arg_ok_p = saved_default_arg_ok_p;
-
-  if (cxx_dialect >= cxx1z)
-    scope_chain->deduction_guide_type = NULL_TREE;
 
   /* If the DECLARATOR was erroneous, there's no need to go
      further.  */
@@ -19100,6 +19095,25 @@ cp_parser_init_declarator (cp_parser* parser,
 
   if (function_declarator_p (declarator))
     {
+      /* Handle C++17 deduction guides.  */
+      if (!decl_specifiers->type
+	  && ctor_dtor_or_conv_p <= 0
+	  && cxx_dialect >= cxx1z)
+	{
+	  cp_declarator *id = get_id_declarator (declarator);
+	  tree name = id->u.id.unqualified_name;
+	  parser->scope = id->u.id.qualifying_scope;
+	  tree tmpl = cp_parser_lookup_name_simple (parser, name, id->id_loc);
+	  if (tmpl
+	      && (DECL_CLASS_TEMPLATE_P (tmpl)
+		  || DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl)))
+	    {
+	      id->u.id.unqualified_name = dguide_name (tmpl);
+	      id->u.id.sfk = sfk_deduction_guide;
+	      ctor_dtor_or_conv_p = 1;
+	    }
+	}
+
       /* Check to see if the token indicates the start of a
 	 function-definition.  */
       if (cp_parser_token_starts_function_definition_p (token))
@@ -19418,10 +19432,8 @@ cp_parser_init_declarator (cp_parser* parser,
 
    If CTOR_DTOR_OR_CONV_P is not NULL, *CTOR_DTOR_OR_CONV_P is used to
    detect constructors, destructors, deduction guides, or conversion operators.
-   The caller should set it before the call, to -1 if parsing the
-   decl-specifier-seq determined that we're declaring a constructor or
-   deduction guide, or 0 otherwise.  This function sets it to -1 if the
-   declarator is a name, and +1 if it is a function. Usually you just want to
+   It is set to -1 if the declarator is a name, and +1 if it is a
+   function. Otherwise it is set to zero. Usually you just want to
    test for >0, but internally the negative value is used.
 
    (The reason for CTOR_DTOR_OR_CONV_P is that a declaration must have
@@ -19451,6 +19463,11 @@ cp_parser_declarator (cp_parser* parser,
   cp_cv_quals cv_quals;
   tree class_type;
   tree gnu_attributes = NULL_TREE, std_attributes = NULL_TREE;
+
+  /* Assume this is not a constructor, destructor, or type-conversion
+     operator.  */
+  if (ctor_dtor_or_conv_p)
+    *ctor_dtor_or_conv_p = 0;
 
   if (cp_parser_allow_gnu_extensions_p (parser))
     gnu_attributes = cp_parser_gnu_attributes_opt (parser);
@@ -19749,6 +19766,9 @@ cp_parser_direct_declarator (cp_parser* parser,
 	  /* Parse an array-declarator.  */
 	  tree bounds, attrs;
 
+	  if (ctor_dtor_or_conv_p)
+	    *ctor_dtor_or_conv_p = 0;
+
 	  first = false;
 	  parser->default_arg_ok_p = false;
 	  parser->in_declarator_p = true;
@@ -20003,34 +20023,6 @@ cp_parser_direct_declarator (cp_parser* parser,
 		      *ctor_dtor_or_conv_p = -1;
 		  }
 	      }
-
-	    if (cxx_dialect >= cxx1z
-		&& sfk == sfk_none
-		&& ctor_dtor_or_conv_p
-		&& *ctor_dtor_or_conv_p == -1)
-	      {
-		/* If *ctor_dtor_or_conv_p is set and we aren't declaring a
-		   constructor, we must be declaring a deduction guide.  */
-		tree tmpl;
-		if (qualifying_scope)
-		  tmpl = (lookup_qualified_name
-			  (qualifying_scope, unqualified_name,
-			   /*prefer_type*/false, /*complain*/true));
-		else
-		  tmpl = lookup_name (unqualified_name);
-		if (tmpl
-		    && (DECL_CLASS_TEMPLATE_P (tmpl)
-			|| DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl)))
-		  {
-		    unqualified_name = dguide_name (tmpl);
-		    scope_chain->deduction_guide_type
-		      = TREE_TYPE (unqualified_name);
-		    sfk = sfk_deduction_guide;
-		  }
-		else
-		  gcc_checking_assert (false);
-	      }
-
 	    declarator = make_id_declarator (qualifying_scope,
 					     unqualified_name,
 					     sfk);
@@ -23259,7 +23251,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	      cp_declarator *declarator;
 	      tree initializer;
 	      tree asm_specification;
-	      int ctor_dtor_or_conv_p = decl_specifiers.constructor_p ? -1 : 0;
+	      int ctor_dtor_or_conv_p;
 
 	      /* Parse the declarator.  */
 	      declarator
@@ -28342,7 +28334,7 @@ cp_parser_cache_defarg (cp_parser *parser, bool nsdmi)
 		     declarator.  */
 		  do
 		    {
-		      int ctor_dtor_or_conv_p = 0;
+		      int ctor_dtor_or_conv_p;
 		      cp_lexer_consume_token (parser->lexer);
 		      cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 					    &ctor_dtor_or_conv_p,
@@ -29663,7 +29655,7 @@ cp_parser_objc_class_ivars (cp_parser* parser)
 	{
 	  tree width = NULL_TREE, attributes, first_attribute, decl;
 	  cp_declarator *declarator = NULL;
-	  int ctor_dtor_or_conv_p = 0;
+	  int ctor_dtor_or_conv_p;
 
 	  /* Check for a (possibly unnamed) bitfield declaration.  */
 	  token = cp_lexer_peek_token (parser->lexer);
