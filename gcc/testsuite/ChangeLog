@@ -1,3 +1,9 @@
+2017-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/79834
+	* c-c++-common/goacc/pragma_context.c (f2): Adjust expected
+	diagnostics.
+
 2017-03-07  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/79809

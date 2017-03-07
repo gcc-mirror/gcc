@@ -1,3 +1,16 @@
+2017-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/79834
+	* c-parser.c (c_parser_pragma): Use error_at instead of c_parser_error
+	for "may only be used in compound statements" diagnostics, change it
+	such that the same translatable string is used for all pragmas.  For
+	PRAGMA_OACC_WAIT use "acc wait" rather than "acc enter data" in the
+	diagnostics.
+	(c_parser_omp_cancellation_point, c_parser_omp_target_update,
+	c_parser_omp_target_enter_data, c_parser_omp_target_exit_data): Change
+	"may only be used in compound statements" diagnostics, such that the
+	same translatable string is used for all pragmas.
+
 2017-03-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c/79847
