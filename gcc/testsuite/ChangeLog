@@ -1,3 +1,8 @@
+2017-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/68270
+	* g++.dg/pr68270.C: New test.
+
 2017-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/79901

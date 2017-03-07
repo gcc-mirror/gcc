@@ -3266,15 +3266,15 @@ chkp_intersect_bounds (tree bounds1, tree bounds2, gimple_stmt_iterator *iter)
 }
 
 /* Return 1 if we are allowed to narrow bounds for addressed FIELD
-   and 0 othersize.  */
+   and 0 othersize.  REF is reference to the field.  */
+
 static bool
-chkp_may_narrow_to_field (tree field)
+chkp_may_narrow_to_field (tree ref, tree field)
 {
   return DECL_SIZE (field) && TREE_CODE (DECL_SIZE (field)) == INTEGER_CST
     && tree_to_uhwi (DECL_SIZE (field)) != 0
     && !(flag_chkp_flexible_struct_trailing_arrays
-	 && TREE_CODE(TREE_TYPE(field)) == ARRAY_TYPE
-	 && !DECL_CHAIN (field))
+	 && array_at_struct_end_p (ref, true))
     && (!DECL_FIELD_OFFSET (field)
 	|| TREE_CODE (DECL_FIELD_OFFSET (field)) == INTEGER_CST)
     && (!DECL_FIELD_BIT_OFFSET (field)
@@ -3284,14 +3284,15 @@ chkp_may_narrow_to_field (tree field)
 }
 
 /* Return 1 if bounds for FIELD should be narrowed to
-   field's own size.  */
+   field's own size.  REF is reference to the field.  */
+
 static bool
-chkp_narrow_bounds_for_field (tree field)
+chkp_narrow_bounds_for_field (tree ref, tree field)
 {
   HOST_WIDE_INT offs;
   HOST_WIDE_INT bit_offs;
 
-  if (!chkp_may_narrow_to_field (field))
+  if (!chkp_may_narrow_to_field (ref, field))
     return false;
 
   /* Accesse to compiler generated fields should not cause
@@ -3428,7 +3429,8 @@ chkp_parse_array_and_component_ref (tree node, tree *ptr,
 	  if (flag_chkp_narrow_bounds
 	      && !flag_chkp_narrow_to_innermost_arrray
 	      && (!last_comp
-		  || chkp_may_narrow_to_field (TREE_OPERAND (last_comp, 1))))
+		  || chkp_may_narrow_to_field (var,
+					       TREE_OPERAND (last_comp, 1))))
 	    {
 	      comp_to_narrow = last_comp;
 	      break;
@@ -3440,7 +3442,7 @@ chkp_parse_array_and_component_ref (tree node, tree *ptr,
 
 	  if (innermost_bounds
 	      && !array_ref_found
-	      && chkp_narrow_bounds_for_field (field))
+	      && chkp_narrow_bounds_for_field (var, field))
 	    comp_to_narrow = var;
 	  last_comp = var;
 
