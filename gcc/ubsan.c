@@ -145,6 +145,7 @@ ubsan_encode_value (tree t, bool in_expand_p)
 	     code by making vars unnecessarily addressable.  */
 	  tree var = create_tmp_var (type);
 	  tree tem = build2 (MODIFY_EXPR, void_type_node, var, t);
+	  mark_addressable (var);
 	  if (in_expand_p)
 	    {
 	      rtx mem

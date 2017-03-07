@@ -1,3 +1,9 @@
+2017-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/79897
+	* ubsan.c (ubsan_encode_value): Call mark_addressable on the
+	temporary.
+
 2017-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79821

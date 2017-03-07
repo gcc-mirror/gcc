@@ -1,3 +1,8 @@
+2017-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/79897
+	* c-c++-common/ubsan/pr79897.c: New test.
+
 2017-03-06  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/79571
