@@ -569,6 +569,11 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond,
   enter_e->count -= new_e->count;
   enter_e->probability = inverse_probability (probability);
   set_immediate_dominator (CDI_DOMINATORS, guard_to, dom_bb);
+
+  /* Split enter_e to preserve LOOPS_HAVE_PREHEADERS.  */
+  if (enter_e->dest->loop_father->header == enter_e->dest)
+    split_edge (enter_e);
+
   return new_e;
 }
 
