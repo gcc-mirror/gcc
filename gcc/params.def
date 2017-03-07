@@ -1102,13 +1102,13 @@ DEFPARAM (PARAM_MAX_TAIL_MERGE_COMPARISONS,
 DEFPARAM (PARAM_STORE_MERGING_ALLOW_UNALIGNED,
 	  "store-merging-allow-unaligned",
 	  "Allow the store merging pass to introduce unaligned stores "
-	  "if it is legal to do so",
+	  "if it is legal to do so.",
 	  1, 0, 1)
 
 DEFPARAM (PARAM_MAX_STORES_TO_MERGE,
 	  "max-stores-to-merge",
 	  "Maximum number of constant stores to merge in the "
-	  "store merging pass",
+	  "store merging pass.",
 	  64, 2, 0)
 
 DEFPARAM (PARAM_MAX_TAIL_MERGE_ITERATIONS,
