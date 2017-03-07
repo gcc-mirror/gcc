@@ -1,5 +1,8 @@
 2017-03-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/79901
+	* gcc.target/i386/pr79901.c: New test.
+
 	PR sanitizer/79897
 	* c-c++-common/ubsan/pr79897.c: New test.
 
