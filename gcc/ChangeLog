@@ -1,3 +1,10 @@
+2017-03-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR c/79855
+	* params.def (PARAM_STORE_MERGING_ALLOW_UNALIGNED): Add full stop
+	to end of description.
+	(PARAM_MAX_STORES_TO_MERGE): Likewise.
+
 2017-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/79901
