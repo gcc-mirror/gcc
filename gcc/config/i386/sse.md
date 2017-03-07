@@ -10841,7 +10841,7 @@
   "TARGET_AVX512F"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
-(define_insn "*avx512bw_<code><mode>3<mask_name>"
+(define_insn "*avx512f_<code><mode>3<mask_name>"
   [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v")
 	(maxmin:VI48_AVX512VL
 	  (match_operand:VI48_AVX512VL 1 "nonimmediate_operand" "%v")
@@ -10865,10 +10865,10 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "<code><mode>3"
-  [(set (match_operand:VI8_AVX2_AVX512BW 0 "register_operand")
-	(maxmin:VI8_AVX2_AVX512BW
-	  (match_operand:VI8_AVX2_AVX512BW 1 "register_operand")
-	  (match_operand:VI8_AVX2_AVX512BW 2 "register_operand")))]
+  [(set (match_operand:VI8_AVX2_AVX512F 0 "register_operand")
+	(maxmin:VI8_AVX2_AVX512F
+	  (match_operand:VI8_AVX2_AVX512F 1 "register_operand")
+	  (match_operand:VI8_AVX2_AVX512F 2 "register_operand")))]
   "TARGET_SSE4_2"
 {
   if (TARGET_AVX512F
