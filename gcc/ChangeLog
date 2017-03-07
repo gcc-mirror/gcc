@@ -1,5 +1,9 @@
 2017-03-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/79901
+	* expr.c (expand_expr_real_2): For vector MIN/MAX, if there is no
+	min/max expander, expand it using expand_vec_cond_expr.
+
 	PR sanitizer/79897
 	* ubsan.c (ubsan_encode_value): Call mark_addressable on the
 	temporary.
