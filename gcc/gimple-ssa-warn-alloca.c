@@ -78,7 +78,8 @@ pass_walloca::gate (function *fun ATTRIBUTE_UNUSED)
   if (first_time_p)
     return warn_alloca != 0;
 
-  return warn_alloca_limit > 0 || warn_vla_limit > 0;
+  return ((unsigned HOST_WIDE_INT) warn_alloca_limit > 0
+	  || (unsigned HOST_WIDE_INT) warn_vla_limit > 0);
 }
 
 // Possible problematic uses of alloca.
@@ -278,8 +279,8 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
   wide_int min, max;
   struct alloca_type_and_limit ret = alloca_type_and_limit (ALLOCA_UNBOUNDED);
 
-  gcc_assert (!is_vla || warn_vla_limit > 0);
-  gcc_assert (is_vla || warn_alloca_limit > 0);
+  gcc_assert (!is_vla || (unsigned HOST_WIDE_INT) warn_vla_limit > 0);
+  gcc_assert (is_vla || (unsigned HOST_WIDE_INT) warn_alloca_limit > 0);
 
   // Adjust warn_alloca_max_size for VLAs, by taking the underlying
   // type into account.

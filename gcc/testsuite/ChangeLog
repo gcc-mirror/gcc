@@ -1,3 +1,8 @@
+2017-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/79809
+	* g++.dg/Walloca1.C: New test.
+
 2017-03-07  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/68270

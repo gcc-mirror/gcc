@@ -1,3 +1,9 @@
+2017-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/79809
+	* gimple-ssa-warn-alloca.c (pass_walloca::gate): Use HOST_WIDE_INT.
+	(alloca_call_type): Likewise.
+
 2017-03-07  Martin Liska  <mliska@suse.cz>
 
 	* gcov.c (process_args): Put comment to correct location.
