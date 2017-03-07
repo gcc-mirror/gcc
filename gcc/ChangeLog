@@ -1,3 +1,12 @@
+2017-03-07  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/68270
+	* tree-chkp.c (chkp_may_narrow_to_field): Add new argument ref.
+	Use array_at_struct_end_p instead of DECL_CHAIN (field).
+	(chkp_narrow_bounds_for_field): Likewise.
+	(chkp_parse_array_and_component_ref): Pass one more argument to
+	call.
+
 2017-03-07  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop-manip.c (slpeel_add_loop_guard): Preserve
