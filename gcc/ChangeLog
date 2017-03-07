@@ -1,3 +1,8 @@
+2017-03-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.c (slpeel_add_loop_guard): Preserve
+	preheaders.
+
 2017-03-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/i386/i386.c (ix86_local_alignment): Align most aggregates
