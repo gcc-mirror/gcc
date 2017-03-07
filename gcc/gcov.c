@@ -776,11 +776,11 @@ process_args (int argc, char **argv)
         case 'd':
           flag_display_progress = 1;
           break;
-	case 'v':
-	  print_version ();
 	case 'x':
 	  flag_hash_filenames = 1;
 	  break;
+	case 'v':
+	  print_version ();
 	  /* print_version will exit.  */
 	default:
 	  print_usage (true);
