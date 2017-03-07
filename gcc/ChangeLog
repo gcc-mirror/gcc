@@ -1,3 +1,8 @@
+2017-03-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/i386/i386.c (ix86_local_alignment): Align most aggregates
+	of 16 bytes and more to 16 bytes, not those of 16 bits and more.
+
 2017-03-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR c/79855
