@@ -1,3 +1,14 @@
+2017-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/79834
+	* parser.c (cp_parser_omp_cancellation_point,
+	cp_parser_omp_target_enter_data, cp_parser_omp_target_exit_data,
+	cp_parser_omp_target_update): Change "may only be used in compound
+	statements" diagnostics, such that the same translatable string is
+	used for all pragmas.
+	(cp_parser_pragma): Likewise.  Use error_at instead of
+	cp_parser_error for that diagnostics.
+
 2017-03-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/79796 - ICE with NSDMI and this pointer
