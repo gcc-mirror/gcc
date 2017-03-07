@@ -1,5 +1,9 @@
 2017-03-07  Martin Liska  <mliska@suse.cz>
 
+	* gcov.c (process_args): Put comment to correct location.
+
+2017-03-07  Martin Liska  <mliska@suse.cz>
+
 	PR middle-end/68270
 	* tree-chkp.c (chkp_may_narrow_to_field): Add new argument ref.
 	Use array_at_struct_end_p instead of DECL_CHAIN (field).
