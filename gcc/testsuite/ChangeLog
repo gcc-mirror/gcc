@@ -1,3 +1,8 @@
+2017-03-08  Andrew Haley  <aph@redhat.com>
+
+	PR tree-optimization/79943
+	* gcc.dg/tree-ssa/pr79943.c: New test.
+
 2017-03-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79920
