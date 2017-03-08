@@ -1869,12 +1869,20 @@ expand_vector_ubsan_overflow (location_t loc, enum tree_code code, tree lhs,
       if (cnt > 4)
 	{
 	  tree atype = build_array_type_nelts (eltype, cnt);
-	  op0 = fold_build1_loc (loc, VIEW_CONVERT_EXPR, atype, arg0);
-	  op0 = build4_loc (loc, ARRAY_REF, eltype, op0, cntv,
-			    NULL_TREE, NULL_TREE);
-	  op1 = fold_build1_loc (loc, VIEW_CONVERT_EXPR, atype, arg1);
-	  op1 = build4_loc (loc, ARRAY_REF, eltype, op1, cntv,
-			    NULL_TREE, NULL_TREE);
+	  op0 = uniform_vector_p (arg0);
+	  if (op0 == NULL_TREE)
+	    {
+	      op0 = fold_build1_loc (loc, VIEW_CONVERT_EXPR, atype, arg0);
+	      op0 = build4_loc (loc, ARRAY_REF, eltype, op0, cntv,
+				NULL_TREE, NULL_TREE);
+	    }
+	  op1 = uniform_vector_p (arg1);
+	  if (op1 == NULL_TREE)
+	    {
+	      op1 = fold_build1_loc (loc, VIEW_CONVERT_EXPR, atype, arg1);
+	      op1 = build4_loc (loc, ARRAY_REF, eltype, op1, cntv,
+				NULL_TREE, NULL_TREE);
+	    }
 	  if (resv)
 	    {
 	      res = fold_build1_loc (loc, VIEW_CONVERT_EXPR, atype, resv);

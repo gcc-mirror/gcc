@@ -1,3 +1,10 @@
+2017-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/79904
+	* internal-fn.c (expand_vector_ubsan_overflow): If arg0 or arg1
+	is a uniform vector, use uniform_vector_p return value instead of
+	building ARRAY_REF on folded VIEW_CONVERT_EXPR to array type.
+
 2017-03-07  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/79809
