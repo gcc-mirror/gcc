@@ -1,3 +1,13 @@
+2017-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79920
+	* tree-vect-slp.c (vect_create_mask_and_perm): Remove and inline
+	with ncopies == 1 to ...
+	(vect_transform_slp_perm_load): ... here.  Properly compute
+	all element loads by iterating VF times over the group.  Do
+	not handle ncopies (computed in a broken way) in
+	vect_create_mask_and_perm.
+
 2017-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/79904
