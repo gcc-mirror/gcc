@@ -1,3 +1,10 @@
+2017-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/79940
+	* gimplify.c (gimplify_omp_for): Replace index var in outer
+	taskloop statement with an artificial variable and add
+	OMP_CLAUSE_PRIVATE clause for it.
+
 2017-03-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79955
