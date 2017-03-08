@@ -1,3 +1,9 @@
+2017-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79955
+	* tree-ssa-uninit.c (warn_uninitialized_vars): Do not warn
+	for accesses that are completely outside of the variable.
+
 2017-03-08  Andrew Haley  <aph@redhat.com>
 
 	PR tree-optimization/79943
