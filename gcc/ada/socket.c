@@ -202,7 +202,7 @@ __gnat_gethostbyaddr (const char *addr, int len, int type,
   struct hostent *rh;
   int ri;
 
-#if defined(__linux__) || defined(__GLIBC__)
+#if defined(__linux__) || defined(__GLIBC__) || defined(__rtems__)
   (void) gethostbyaddr_r (addr, len, type, ret, buf, buflen, &rh, h_errnop);
 #else
   rh = gethostbyaddr_r (addr, len, type, ret, buf, buflen, h_errnop);
