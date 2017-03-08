@@ -1,3 +1,18 @@
+2017-03-08  Mark Wielaard  <mark@klomp.org>
+
+	PR demangler/70909
+	PR demangler/67264
+	* cp-demangle.c: Fix endless recursion. Pass
+	struct demangle_component as non const.
+	(d_make_empty): Initialize variable.
+	(d_print_comp_inner): Limit recursion.
+	(d_print_comp): Decrement variable.
+	* cp-demint.c (cplus_demangle_fill_component): Initialize
+	variable.
+	(cplus_demangle_fill_builtin_type): Likewise.
+	(cplus_demangle_fill_operator): Likewise.
+	* testsuite/demangle-expected: Add tests.
+
 2017-01-18  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR PR c++/70182

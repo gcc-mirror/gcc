@@ -494,6 +494,11 @@ struct demangle_component
   /* The type of this component.  */
   enum demangle_component_type type;
 
+  /* Guard against recursive component printing.
+     Initialize to zero.  Private to d_print_comp.
+     All other fields are final after initialization.  */
+  int d_printing;
+
   union
   {
     /* For DEMANGLE_COMPONENT_NAME.  */
@@ -688,7 +693,7 @@ cplus_demangle_v3_components (const char *mangled, int options, void **mem);
 
 extern char *
 cplus_demangle_print (int options,
-                      const struct demangle_component *tree,
+                      struct demangle_component *tree,
                       int estimated_length,
                       size_t *p_allocated_size);
 
@@ -708,7 +713,7 @@ cplus_demangle_print (int options,
 
 extern int
 cplus_demangle_print_callback (int options,
-                               const struct demangle_component *tree,
+                               struct demangle_component *tree,
                                demangle_callbackref callback, void *opaque);
 
 #ifdef __cplusplus
