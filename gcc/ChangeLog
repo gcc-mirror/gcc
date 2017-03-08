@@ -1,3 +1,10 @@
+2017-03-08  Andrew Haley  <aph@redhat.com>
+
+	PR tree-optimization/79943
+	* tree-ssa-loop-split.c (compute_new_first_bound): When
+	calculating the new upper bound, (END-BEG) should be added, not
+	subtracted.
+
 2017-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/avr/avr.md (setmemhi): Make sure match_dup

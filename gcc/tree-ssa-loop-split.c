@@ -436,7 +436,6 @@ compute_new_first_bound (gimple_seq *stmts, struct tree_niter_desc *niter,
   if (POINTER_TYPE_P (TREE_TYPE (guard_init)))
     {
       enddiff = gimple_convert (stmts, sizetype, enddiff);
-      enddiff = gimple_build (stmts, NEGATE_EXPR, sizetype, enddiff);
       newbound = gimple_build (stmts, POINTER_PLUS_EXPR,
 			       TREE_TYPE (guard_init),
 			       guard_init, enddiff);
