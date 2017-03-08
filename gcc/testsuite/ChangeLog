@@ -1,3 +1,7 @@
+2017-03-08  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/Walloca1.C: Adjust dg-warning.
+
 2017-03-08  Andrew Haley  <aph@redhat.com>
 
 	PR tree-optimization/79943
