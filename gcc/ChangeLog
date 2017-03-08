@@ -1,3 +1,8 @@
+2017-03-08  Martin Sebor  <msebor@redhat.com>
+
+	PR target/79928
+	* config/nds32/nds32.c (nds32_option_override): 
+
 2017-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/79940
