@@ -1,3 +1,8 @@
+2017-03-08  Sam Thursfield  <sam.thursfield@codethink.co.uk>
+
+	* btest.c (test5): Replace #ifdef guard with 'unused' attribute
+	to fix compile warning when BACKTRACE_SUPPORTED isn't defined.
+
 2017-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
