@@ -616,7 +616,7 @@ f33 (int f1line, int f2line)
   return failures;
 }
 
-#if BACKTRACE_SUPPORTS_DATA
+static int test5 (void) __attribute__ ((unused));
 
 int global = 1;
 
@@ -685,8 +685,6 @@ test5 (void)
 
   return failures;
 }
-
-#endif /* BACKTRACE_SUPPORTS_DATA  */
 
 static void
 error_callback_create (void *data ATTRIBUTE_UNUSED, const char *msg,
