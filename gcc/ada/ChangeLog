@@ -1,3 +1,8 @@
+2017-03-08  Thanassis Tsiodras  <ttsiodras@gmail.com>
+
+	PR ada/79903
+	* socket.c (__gnat_gethostbyaddr): Add missing test for __rtems__.
+
 2017-03-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/79945
