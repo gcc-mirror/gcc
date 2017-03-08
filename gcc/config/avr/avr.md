@@ -1062,8 +1062,8 @@
                    (match_operand 2 "const_int_operand" ""))
               (use (match_operand:HI 1 "const_int_operand" ""))
               (use (match_operand:HI 3 "const_int_operand" ""))
-              (clobber (match_scratch:HI 4 ""))
-              (clobber (match_dup 5))])]
+              (clobber (match_scratch:HI 5 ""))
+              (clobber (match_dup 4))])]
   ""
   {
     rtx addr0;
@@ -1077,7 +1077,7 @@
       FAIL;
 
     mode = u8_operand (operands[1], VOIDmode) ? QImode : HImode;
-    operands[5] = gen_rtx_SCRATCH (mode);
+    operands[4] = gen_rtx_SCRATCH (mode);
     operands[1] = copy_to_mode_reg (mode,
                                     gen_int_mode (INTVAL (operands[1]), mode));
     addr0 = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
