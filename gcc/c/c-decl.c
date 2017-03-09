@@ -8201,6 +8201,10 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name)
       enumtype = make_node (ENUMERAL_TYPE);
       pushtag (loc, name, enumtype);
     }
+  /* Update type location to the one of the definition, instead of e.g.
+     a forward declaration.  */
+  else if (TYPE_STUB_DECL (enumtype))
+    DECL_SOURCE_LOCATION (TYPE_STUB_DECL (enumtype)) = loc;
 
   if (C_TYPE_BEING_DEFINED (enumtype))
     error_at (loc, "nested redefinition of %<enum %E%>", name);
