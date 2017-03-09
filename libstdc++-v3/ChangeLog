@@ -1,5 +1,8 @@
 2017-03-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/functional (_Not_fn): Define macro to simplify
+	repetitive function definitions.
+
 	* doc/xml/manual/status_cxx2017.xml: Document std::byte support.
 	* include/c_global/cstddef (std::byte): Define for C++17.
 	* testsuite/18_support/byte/global_neg.cc: New test.

@@ -902,15 +902,12 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
   template<typename _Fn>
     class _Not_fn
     {
-      template<typename _Tp>
-	using __is_nothrow_negatable
-	  = __bool_constant<noexcept(!std::declval<_Tp>())>;
-
       template<typename _Fn2, typename... _Args>
-	using __noexcept_cond = __and_<
-	  __is_nothrow_callable<_Fn2(_Args&&...)>,
-	  __is_nothrow_negatable<result_of_t<_Fn2(_Args&&...)>>
-	>;
+	using __inv_res_t = result_of_t<_Fn2(_Args&&...)>;
+
+      template<typename _Tp>
+	static decltype(!std::declval<_Tp>())
+	_S_not() noexcept(noexcept(!std::declval<_Tp>()));
 
     public:
       template<typename _Fn2>
@@ -921,39 +918,23 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       _Not_fn(_Not_fn&& __fn) = default;
       ~_Not_fn() = default;
 
-      template<typename... _Args>
-	auto
-	operator()(_Args&&... __args) &
-	noexcept(__noexcept_cond<_Fn&, _Args&&...>::value)
-	-> decltype(!std::declval<result_of_t<_Fn&(_Args&&...)>>())
-	{ return !std::__invoke(_M_fn, std::forward<_Args>(__args)...); }
-
-      template<typename... _Args>
-	auto
-	operator()(_Args&&... __args) const &
-	noexcept(__noexcept_cond<const _Fn&, _Args&&...>::value)
-	-> decltype(!std::declval<result_of_t<const _Fn&(_Args&&...)>>())
-	{ return !std::__invoke(_M_fn, std::forward<_Args>(__args)...); }
-
-      template<typename... _Args>
-	auto
-	operator()(_Args&&... __args) &&
-	noexcept(__noexcept_cond<_Fn&&, _Args&&...>::value)
-	-> decltype(!std::declval<result_of_t<_Fn&&(_Args&&...)>>())
-	{
-	  return !std::__invoke(std::move(_M_fn),
-				std::forward<_Args>(__args)...);
+      // Macro to define operator() with given cv-qualifiers ref-qualifiers,
+      // forwarding _M_fn and the function arguments with the same qualifiers,
+      // and deducing the return type and exception-specification.
+#define _GLIBCXX_NOT_FN_CALL_OP( _QUALS )				\
+      template<typename... _Args>					\
+	decltype(_S_not<__inv_res_t<_Fn _QUALS, _Args...>>())		\
+	operator()(_Args&&... __args) _QUALS				\
+	noexcept(noexcept(_S_not<__inv_res_t<_Fn _QUALS, _Args...>>()))	\
+	{								\
+	  return !std::__invoke(std::forward< _Fn _QUALS >(_M_fn),	\
+				std::forward<_Args>(__args)...);	\
 	}
-
-      template<typename... _Args>
-	auto
-	operator()(_Args&&... __args) const &&
-	noexcept(__noexcept_cond<const _Fn&&, _Args&&...>::value)
-	-> decltype(!std::declval<result_of_t<const _Fn&&(_Args&&...)>>())
-	{
-	  return !std::__invoke(std::move(_M_fn),
-				std::forward<_Args>(__args)...);
-	}
+      _GLIBCXX_NOT_FN_CALL_OP( & )
+      _GLIBCXX_NOT_FN_CALL_OP( const & )
+      _GLIBCXX_NOT_FN_CALL_OP( && )
+      _GLIBCXX_NOT_FN_CALL_OP( const && )
+#undef _GLIBCXX_NOT_FN_CALL
 
     private:
       _Fn _M_fn;
