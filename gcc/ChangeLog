@@ -1,3 +1,18 @@
+2017-03-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_gen_le_vsx_permute): Use rotate
+	instead of vec_select for V1TImode.
+	* conifg/rs6000/vsx.md (VSX_LE): Remove mode iterator that is no
+	longer needed.
+	(VSX_LE_128): Add V1TI to this mode iterator.
+	(*vsx_le_perm_load_<mode>): Change to use VSX_D mode iterator.
+	(*vsx_le_perm_store_<mode>): Likewise.
+	(pre-reload splitter for VSX stores): Likewise.
+	(post-reload splitter for VSX stores): Likewise.
+	(*vsx_xxpermdi2_le_<mode>): Likewise.
+	(*vsx_lxvd2x2_le_<mode>): Likewise.
+	(*vsx_stxvd2x2_le_<mode>): Likewise.
+
 2017-03-09  Michael Eager  <eager@eagercon.com>
 
 	Correct failures with --enable-checking=yes,rtl.
@@ -7,7 +22,7 @@
 	test for const0_rtx.
 	* config/microblaze/microblaze.md (ashlsi3_byone, ashrsi3_byone,
 	lshrsi3_byone): Replace INTVAL with test for const1_rtx.
-	
+
 2017-03-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79977
