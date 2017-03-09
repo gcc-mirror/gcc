@@ -1,3 +1,9 @@
+2017-03-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71966
+	* g++.dg/cpp0x/pr71966-1.C: New.
+	* g++.dg/cpp0x/pr71966-2.C: Likewise.
+
 2017-03-09  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/79631
