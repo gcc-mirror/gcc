@@ -3827,6 +3827,35 @@ cxx_eval_switch_expr (const constexpr_ctx *ctx, tree t,
   return NULL_TREE;
 }
 
+/* Find the object of TYPE under initialization in CTX.  */
+
+static tree
+lookup_placeholder (const constexpr_ctx *ctx, bool lval, tree type)
+{
+  if (!ctx || !ctx->ctor || (lval && !ctx->object))
+    return NULL_TREE;
+
+  /* We could use ctx->object unconditionally, but using ctx->ctor when we
+     can is a minor optimization.  */
+  if (!lval && same_type_p (TREE_TYPE (ctx->ctor), type))
+    return ctx->ctor;
+
+  /* Since an object cannot have a field of its own type, we can search outward
+     from ctx->object to find the unique containing object of TYPE.  */
+  tree ob = ctx->object;
+  while (ob)
+    {
+      if (same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (ob), type))
+	break;
+      if (handled_component_p (ob))
+	ob = TREE_OPERAND (ob, 0);
+      else
+	ob = NULL_TREE;
+    }
+
+  return ob;
+}
+
 /* Attempt to reduce the expression T to a constant value.
    On failure, issue diagnostic and return error_mark_node.  */
 /* FIXME unify with c_fully_fold */
@@ -4468,27 +4497,15 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case PLACEHOLDER_EXPR:
-      if (!ctx || !ctx->ctor || (lval && !ctx->object)
-	  || !(same_type_ignoring_top_level_qualifiers_p
-	       (TREE_TYPE (t), TREE_TYPE (ctx->ctor))))
-	{
-	  /* A placeholder without a referent.  We can get here when
-	     checking whether NSDMIs are noexcept, or in massage_init_elt;
-	     just say it's non-constant for now.  */
-	  gcc_assert (ctx->quiet);
-	  *non_constant_p = true;
-	  break;
-	}
-      else
-	{
-	  /* Use of the value or address of the current object.  We could
-	     use ctx->object unconditionally, but using ctx->ctor when we
-	     can is a minor optimization.  */
-	  tree ctor = lval ? ctx->object : ctx->ctor;
-	  return cxx_eval_constant_expression
-	    (ctx, ctor, lval,
-	     non_constant_p, overflow_p);
-	}
+      /* Use of the value or address of the current object.  */
+      if (tree ctor = lookup_placeholder (ctx, lval, TREE_TYPE (t)))
+	return cxx_eval_constant_expression (ctx, ctor, lval,
+					     non_constant_p, overflow_p);
+      /* A placeholder without a referent.  We can get here when
+	 checking whether NSDMIs are noexcept, or in massage_init_elt;
+	 just say it's non-constant for now.  */
+      gcc_assert (ctx->quiet);
+      *non_constant_p = true;
       break;
 
     case EXIT_EXPR:

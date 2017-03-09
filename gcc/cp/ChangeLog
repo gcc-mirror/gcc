@@ -1,3 +1,9 @@
+2017-03-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79797 - ICE with self-reference in array DMI.
+	* constexpr.c (lookup_placeholder): Split out...
+	(cxx_eval_constant_expression): ...from here.
+
 2017-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/79834
