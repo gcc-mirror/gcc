@@ -1,5 +1,11 @@
 2017-03-09  Martin Liska  <mliska@suse.cz>
 
+	PR tree-optimization/79631
+	* tree-chkp-opt.c (chkp_is_constant_addr): Call
+	tree_int_cst_sign_bit just for INTEGER constants.
+
+2017-03-09  Martin Liska  <mliska@suse.cz>
+
 	PR target/65705
 	PR target/69804
 	* toplev.c (process_options): Disable -fcheck-pointer-bounds with
