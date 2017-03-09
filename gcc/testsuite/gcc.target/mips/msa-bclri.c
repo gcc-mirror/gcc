@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mno-mips16 -mfp64 -mhard-float -mmsa" } */
+/* { dg-skip-if "code quality test" { *-*-* }  { "-O0" } { "" } } */
 
 typedef long long v2i64 __attribute__ ((vector_size(16)));
 
