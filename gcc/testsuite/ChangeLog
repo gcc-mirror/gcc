@@ -1,3 +1,7 @@
+2017-03-09  Prachi Godbole  <prachi.godbole@imgtec.com>
+
+	* gcc.target/mips/msa-bclri.c: Skip the test for -O0.
+
 2017-03-09  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/79764
