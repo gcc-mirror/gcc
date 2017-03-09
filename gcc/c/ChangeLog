@@ -1,3 +1,9 @@
+2017-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/79969
+	* c-decl.c (start_enum): Adjust DECL_SOURCE_LOCATION of
+	TYPE_STUB_DECL.
+
 2017-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/79834
