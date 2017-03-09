@@ -1321,7 +1321,7 @@
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(ashift:SI (match_operand:SI 1 "register_operand" "d")
                    (match_operand:SI 2 "arith_operand"    "I")))] 
-  "(INTVAL (operands[2]) == 1)"
+  "(operands[2] == const1_rtx)"
   "addk\t%0,%1,%1"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
@@ -1482,7 +1482,7 @@
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(ashiftrt:SI (match_operand:SI 1 "register_operand" "d")
                      (match_operand:SI 2 "arith_operand"    "I")))] 
-  "(INTVAL (operands[2]) == 1)"
+  "(operands[2] == const1_rtx)"
   "sra\t%0,%1"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
@@ -1571,7 +1571,7 @@
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(lshiftrt:SI (match_operand:SI 1 "register_operand" "d")
                      (match_operand:SI 2 "arith_operand"    "I")))] 
-  "(INTVAL (operands[2]) == 1)"
+  "(operands[2] == const1_rtx)"
   "srl\t%0,%1"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")

@@ -1,3 +1,13 @@
+2017-03-09  Michael Eager  <eager@eagercon.com>
+
+	Correct failures with --enable-checking=yes,rtl.
+
+	* config/microblaze/microblaze.c (microblaze_expand_shift):
+	Replace GET_CODE test with CONST_INT_P and INTVAL test with
+	test for const0_rtx.
+	* config/microblaze/microblaze.md (ashlsi3_byone, ashrsi3_byone,
+	lshrsi3_byone): Replace INTVAL with test for const1_rtx.
+	
 2017-03-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79977
