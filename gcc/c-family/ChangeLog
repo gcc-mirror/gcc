@@ -1,3 +1,10 @@
+2017-03-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/79962
+	PR c++/79984
+	* c-attribs.c (handle_nonnull_attribute): Save the result of default
+	conversion to the attribute list.
+
 2017-03-09  Martin Liska  <mliska@suse.cz>
 
 	* c-ada-spec.c (macro_length): Increment value instead of a pointer.

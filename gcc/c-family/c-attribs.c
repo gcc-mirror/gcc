@@ -2813,7 +2813,7 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
       tree arg = TREE_VALUE (args);
       if (arg && TREE_CODE (arg) != IDENTIFIER_NODE
 	  && TREE_CODE (arg) != FUNCTION_DECL)
-	arg = default_conversion (arg);
+	TREE_VALUE (args) = arg = default_conversion (arg);
 
       if (!get_nonnull_operand (arg, &arg_num))
 	{
