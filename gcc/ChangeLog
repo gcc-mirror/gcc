@@ -1,3 +1,9 @@
+2017-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79977
+	* graphite-scop-detection.c (scop_detection::merge_sese):
+	Handle the case of extra exits to blocks dominating the entry.
+
 2017-03-09  Toma Tabacu  <toma.tabacu@imgtec.com>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords, Other attributes):
