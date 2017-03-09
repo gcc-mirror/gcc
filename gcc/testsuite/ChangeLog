@@ -1,5 +1,10 @@
 2017-03-09  Martin Liska  <mliska@suse.cz>
 
+	PR tree-optimization/79631
+	* gcc.target/i386/mpx/pr79631.c: New test.
+
+2017-03-09  Martin Liska  <mliska@suse.cz>
+
 	PR target/65705
 	PR target/69804
 	* gcc.target/i386/pr71458.c: Update scanned pattern.
