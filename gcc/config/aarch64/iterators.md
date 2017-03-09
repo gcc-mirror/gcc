@@ -101,7 +101,6 @@
 			     V2SF V4SF V2DF])
 
 ;; Vector Float modes, and DF.
-(define_mode_iterator VDQF_DF [V2SF V4SF V2DF DF])
 (define_mode_iterator VHSDF_DF [(V4HF "TARGET_SIMD_F16INST")
 				(V8HF "TARGET_SIMD_F16INST")
 				V2SF V4SF V2DF DF])
@@ -132,6 +131,10 @@
 ;; All vector modes suitable for moving, loading, and storing.
 (define_mode_iterator VALL_F16 [V8QI V16QI V4HI V8HI V2SI V4SI V2DI
 				V4HF V8HF V2SF V4SF V2DF])
+
+;; The VALL_F16 modes except the 128-bit 2-element ones.
+(define_mode_iterator VALL_F16_NO_V2Q [V8QI V16QI V4HI V8HI V2SI V4SI
+				V4HF V8HF V2SF V4SF])
 
 ;; All vector modes barring HF modes, plus DI.
 (define_mode_iterator VALLDI [V8QI V16QI V4HI V8HI V2SI V4SI V2DI V2SF V4SF V2DF DI])
