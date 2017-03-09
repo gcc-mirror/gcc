@@ -1,5 +1,10 @@
 2017-03-09  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/79764
+	* g++.dg/pr79764.C: New test.
+
+2017-03-09  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/79761
 	* g++.dg/pr79761.C: New test.
 

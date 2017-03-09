@@ -325,6 +325,8 @@ static void chkp_parse_array_and_component_ref (tree node, tree *ptr,
 						tree *bounds,
 						gimple_stmt_iterator *iter,
 						bool innermost_bounds);
+static void chkp_parse_bit_field_ref (tree node, location_t loc,
+				      tree *offset, tree *size);
 
 #define chkp_bndldx_fndecl \
   (targetm.builtin_chkp_function (BUILT_IN_CHKP_BNDLDX))
@@ -3295,7 +3297,7 @@ chkp_narrow_bounds_for_field (tree ref, tree field)
   if (!chkp_may_narrow_to_field (ref, field))
     return false;
 
-  /* Accesse to compiler generated fields should not cause
+  /* Access to compiler generated fields should not cause
      bounds narrowing.  */
   if (DECL_ARTIFICIAL (field))
     return false;
@@ -3309,9 +3311,36 @@ chkp_narrow_bounds_for_field (tree ref, tree field)
 	      || bit_offs));
 }
 
+/* Perform narrowing for BOUNDS of an INNER reference.  Shift boundary
+   by OFFSET bytes and limit to SIZE bytes.  Newly created statements are
+   added to ITER.  */
+
+static tree
+chkp_narrow_size_and_offset (tree bounds, tree inner, tree offset,
+			     tree size, gimple_stmt_iterator *iter)
+{
+  tree addr = chkp_build_addr_expr (unshare_expr (inner));
+  tree t = TREE_TYPE (addr);
+
+  gimple *stmt = gimple_build_assign (NULL_TREE, addr);
+  addr = make_temp_ssa_name (t, stmt, CHKP_BOUND_TMP_NAME);
+  gimple_assign_set_lhs (stmt, addr);
+  gsi_insert_seq_before (iter, stmt, GSI_SAME_STMT);
+
+  stmt = gimple_build_assign (NULL_TREE, POINTER_PLUS_EXPR, addr, offset);
+  tree shifted = make_temp_ssa_name (t, stmt, CHKP_BOUND_TMP_NAME);
+  gimple_assign_set_lhs (stmt, shifted);
+  gsi_insert_seq_before (iter, stmt, GSI_SAME_STMT);
+
+  tree bounds2 = chkp_make_bounds (shifted, size, iter, false);
+
+  return chkp_intersect_bounds (bounds, bounds2, iter);
+}
+
 /* Perform narrowing for BOUNDS using bounds computed for field
    access COMPONENT.  ITER meaning is the same as for
    chkp_intersect_bounds.  */
+
 static tree
 chkp_narrow_bounds_to_field (tree bounds, tree component,
 			    gimple_stmt_iterator *iter)
@@ -3364,7 +3393,8 @@ chkp_parse_array_and_component_ref (tree node, tree *ptr,
   len = 1;
   while (TREE_CODE (var) == COMPONENT_REF
 	 || TREE_CODE (var) == ARRAY_REF
-	 || TREE_CODE (var) == VIEW_CONVERT_EXPR)
+	 || TREE_CODE (var) == VIEW_CONVERT_EXPR
+	 || TREE_CODE (var) == BIT_FIELD_REF)
     {
       var = TREE_OPERAND (var, 0);
       len++;
@@ -3383,9 +3413,10 @@ chkp_parse_array_and_component_ref (tree node, tree *ptr,
   if (bounds)
     *bounds = NULL;
   *safe = true;
-  *bitfield = (TREE_CODE (node) == COMPONENT_REF
-	       && DECL_BIT_FIELD_TYPE (TREE_OPERAND (node, 1)));
-  /* To get bitfield address we will need outer elemnt.  */
+  *bitfield = ((TREE_CODE (node) == COMPONENT_REF
+	       && DECL_BIT_FIELD_TYPE (TREE_OPERAND (node, 1)))
+	       || TREE_CODE (node) == BIT_FIELD_REF);
+  /* To get bitfield address we will need outer element.  */
   if (*bitfield)
     *elt = nodes[len - 2];
   else
@@ -3455,6 +3486,17 @@ chkp_parse_array_and_component_ref (tree node, tree *ptr,
 	      comp_to_narrow = NULL;
 	    }
 	}
+      else if (TREE_CODE (var) == BIT_FIELD_REF)
+	{
+	  if (flag_chkp_narrow_bounds && bounds)
+	    {
+	      tree offset, size;
+	      chkp_parse_bit_field_ref (var, UNKNOWN_LOCATION, &offset, &size);
+	      *bounds
+		= chkp_narrow_size_and_offset (*bounds, TREE_OPERAND (var, 0),
+					       offset, size, iter);
+	    }
+	}
       else if (TREE_CODE (var) == VIEW_CONVERT_EXPR)
 	/* Nothing to do for it.  */
 	;
@@ -3467,6 +3509,27 @@ chkp_parse_array_and_component_ref (tree node, tree *ptr,
 
   if (innermost_bounds && bounds && !*bounds)
     *bounds = chkp_find_bounds (*ptr, iter);
+}
+
+/* Parse BIT_FIELD_REF to a NODE for a given location LOC.  Return OFFSET
+   and SIZE in bytes.  */
+
+static
+void chkp_parse_bit_field_ref (tree node, location_t loc, tree *offset,
+			       tree *size)
+{
+  tree bpu = fold_convert (size_type_node, bitsize_int (BITS_PER_UNIT));
+  tree offs = fold_convert (size_type_node, TREE_OPERAND (node, 2));
+  tree rem = size_binop_loc (loc, TRUNC_MOD_EXPR, offs, bpu);
+  offs = size_binop_loc (loc, TRUNC_DIV_EXPR, offs, bpu);
+
+  tree s = fold_convert (size_type_node, TREE_OPERAND (node, 1));
+  s = size_binop_loc (loc, PLUS_EXPR, s, rem);
+  s = size_binop_loc (loc, CEIL_DIV_EXPR, s, bpu);
+  s = fold_convert (size_type_node, s);
+
+  *offset = offs;
+  *size = s;
 }
 
 /* Compute and return bounds for address of OBJ.  */
@@ -3492,6 +3555,7 @@ chkp_make_addressed_object_bounds (tree obj, gimple_stmt_iterator *iter)
 
     case ARRAY_REF:
     case COMPONENT_REF:
+    case BIT_FIELD_REF:
       {
 	tree elt;
 	tree ptr;
@@ -3993,23 +4057,15 @@ chkp_process_stmt (gimple_stmt_iterator *iter, tree node,
 
     case BIT_FIELD_REF:
       {
-	tree offs, rem, bpu;
+	tree offset, size;
 
 	gcc_assert (!access_offs);
 	gcc_assert (!access_size);
 
-	bpu = fold_convert (size_type_node, bitsize_int (BITS_PER_UNIT));
-	offs = fold_convert (size_type_node, TREE_OPERAND (node, 2));
-	rem = size_binop_loc (loc, TRUNC_MOD_EXPR, offs, bpu);
-	offs = size_binop_loc (loc, TRUNC_DIV_EXPR, offs, bpu);
-
-	size = fold_convert (size_type_node, TREE_OPERAND (node, 1));
-        size = size_binop_loc (loc, PLUS_EXPR, size, rem);
-        size = size_binop_loc (loc, CEIL_DIV_EXPR, size, bpu);
-        size = fold_convert (size_type_node, size);
+	chkp_parse_bit_field_ref (node, loc, &offset, &size);
 
 	chkp_process_stmt (iter, TREE_OPERAND (node, 0), loc,
-			 dirflag, offs, size, safe);
+			   dirflag, offset, size, safe);
 	return;
       }
       break;
