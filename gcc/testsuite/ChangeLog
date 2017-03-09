@@ -1,3 +1,8 @@
+2017-03-09  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* gcc.target/mips/lxc1-sxc1-1.c: Use -mhard-float.
+	* gcc.target/mips/lxc1-sxc1-2.c: Likewise.
+
 2017-03-09  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/79757
