@@ -1,5 +1,11 @@
 2017-03-09  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/79971
+	* gimple-expr.c (useless_type_conversion_p): Preserve
+	TYPE_SATURATING for fixed-point types.
+
+2017-03-09  Richard Biener  <rguenther@suse.de>
+
 	PR ipa/79970
 	* ipa-prop.c (ipa_modify_formal_parameters): Avoid changing
 	alignment of BLKmode params.
