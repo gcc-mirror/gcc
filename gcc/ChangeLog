@@ -1,5 +1,14 @@
 2017-03-09  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/79764
+	(chkp_narrow_size_and_offset): New function.
+	(chkp_parse_array_and_component_ref): Support BIT_FIELD_REF.
+	(void chkp_parse_bit_field_ref): New function.
+	(chkp_make_addressed_object_bounds): Add case for BIT_FIELD_REF.
+	(chkp_process_stmt): Use chkp_parse_bit_field_ref.
+
+2017-03-09  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/79761
 	* tree-chkp.c (chkp_get_bound_for_parm): Get bounds for a param.
 	(chkp_find_bounds_1): Remove gcc_unreachable.
