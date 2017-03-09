@@ -1,3 +1,12 @@
+2017-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79932
+	* config/i386/avx512bwintrin.h (_mm512_packs_epi32,
+	_mm512_maskz_packs_epi32, _mm512_mask_packs_epi32,
+	_mm512_packus_epi32, _mm512_maskz_packus_epi32,
+	_mm512_mask_packus_epi32): Move definitions outside of __OPTIMIZE__
+	guarded section.
+
 2017-03-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/vx-builtins.md ("vfee<mode>", "vfeez<mode>")
