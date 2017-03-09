@@ -2766,13 +2766,15 @@ process_alt_operands (int only_alternative)
 		  && REG_P (no_subreg_reg_operand[1])
 		  /* Check that we reload memory not the memory
 		     address.  */
-		  && !curr_alt_offmemok[0]
+		  && ! (curr_alt_offmemok[0]
+			&& MEM_P (no_subreg_reg_operand[0]))
 		  && reg_in_class_p (no_subreg_reg_operand[1], curr_alt[0]))
 	      || (curr_alt_win[0] && ! curr_alt_win[1]
 		  && REG_P (no_subreg_reg_operand[0])
 		  /* Check that we reload memory not the memory
 		     address.  */
-		  && !curr_alt_offmemok[1]
+		  && ! (curr_alt_offmemok[1]
+			&& MEM_P (no_subreg_reg_operand[1]))
 		  && reg_in_class_p (no_subreg_reg_operand[0], curr_alt[1])
 		  && (! CONST_POOL_OK_P (curr_operand_mode[1],
 					 no_subreg_reg_operand[1])
@@ -2785,8 +2787,11 @@ process_alt_operands (int only_alternative)
 		  && GET_CODE (no_subreg_reg_operand[1]) != PLUS)))
 	{
 	  /* We have a move insn and a new reload insn will be similar
-	     to the current insn.  We should avoid such situation as it
-	     results in LRA cycling.  */
+	     to the current insn.  We should avoid such situation as
+	     it results in LRA cycling.  */
+	  if (lra_dump_file != NULL)
+	    fprintf (lra_dump_file,
+		     "            Cycle danger: overall += LRA_MAX_REJECT\n");
 	  overall += LRA_MAX_REJECT;
 	}
       ok_p = true;
