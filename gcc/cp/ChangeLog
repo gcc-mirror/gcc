@@ -4,6 +4,10 @@
 	* tree.c (strip_typedefs): Skip the attribute handling if T is
 	a variant type which hasn't been updated yet.
 
+	PR c++/79687 - wrong code with pointer-to-member
+	* init.c (constant_value_1): Break if the variable has a dynamic
+	initializer.
+
 2017-03-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/79797 - ICE with self-reference in array DMI.
