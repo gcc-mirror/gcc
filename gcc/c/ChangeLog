@@ -1,3 +1,9 @@
+2017-03-09  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/79757
+	* c-parser.c (c_parser_declaration_or_fndef): Don't sanitize old-style
+	parameter declarations with initializers.
+
 2017-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/79969

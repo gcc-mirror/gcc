@@ -1,3 +1,12 @@
+2017-03-09  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/79757
+	* gcc.dg/ubsan/pr79757-1.c: New test.
+	* gcc.dg/ubsan/pr79757-2.c: New test.
+	* gcc.dg/ubsan/pr79757-3.c: New test.
+	* gcc.dg/ubsan/pr79757-4.c: New test.
+	* gcc.dg/ubsan/pr79757-5.c: New test.
+
 2017-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/79969
