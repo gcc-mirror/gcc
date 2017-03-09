@@ -1,3 +1,8 @@
+2017-03-09  Toma Tabacu  <toma.tabacu@imgtec.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords, Other attributes):
+	Document rdynamic.
+
 2017-03-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/79949
