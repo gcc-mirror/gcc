@@ -4198,7 +4198,8 @@ ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec adjustments)
 	  else
 	    {
 	      ptype = adj->type;
-	      if (is_gimple_reg_type (ptype))
+	      if (is_gimple_reg_type (ptype)
+		  && TYPE_MODE (ptype) != BLKmode)
 		{
 		  unsigned malign = GET_MODE_ALIGNMENT (TYPE_MODE (ptype));
 		  if (TYPE_ALIGN (ptype) != malign)

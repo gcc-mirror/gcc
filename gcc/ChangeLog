@@ -1,3 +1,9 @@
+2017-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/79970
+	* ipa-prop.c (ipa_modify_formal_parameters): Avoid changing
+	alignment of BLKmode params.
+
 2017-03-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/79913

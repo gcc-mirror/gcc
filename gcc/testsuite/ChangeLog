@@ -1,3 +1,8 @@
+2017-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/79970
+	* gcc.dg/torture/pr79970.c: New testcase.
+
 2017-03-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71966
