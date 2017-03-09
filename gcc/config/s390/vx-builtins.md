@@ -1351,9 +1351,9 @@
 
 ; vfeeb, vfeeh, vfeef
 (define_insn "vfee<mode>"
-  [(set (match_operand:VI_HW_QHS                    0 "register_operand" "")
-	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "")
-			   (match_operand:VI_HW_QHS 2 "register_operand" "")
+  [(set (match_operand:VI_HW_QHS                    0 "register_operand" "=v")
+	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand"  "v")
+			   (match_operand:VI_HW_QHS 2 "register_operand"  "v")
 			   (const_int 0)]
 			  UNSPEC_VEC_VFEE))]
   "TARGET_VX"
@@ -1362,9 +1362,9 @@
 
 ; vfeezb, vfeezh, vfeezf
 (define_insn "vfeez<mode>"
-  [(set (match_operand:VI_HW_QHS                    0 "register_operand" "")
-	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "")
-			   (match_operand:VI_HW_QHS 2 "register_operand" "")
+  [(set (match_operand:VI_HW_QHS                    0 "register_operand" "=v")
+	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand"  "v")
+			   (match_operand:VI_HW_QHS 2 "register_operand"  "v")
 			   (const_int VSTRING_FLAG_ZS)]
 			  UNSPEC_VEC_VFEE))]
   "TARGET_VX"
@@ -1423,9 +1423,9 @@
 
 ; vfenezb, vfenezh, vfenezf
 (define_insn "vfenez<mode>"
-  [(set (match_operand:VI_HW_QHS                    0 "register_operand" "")
-	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "")
-			   (match_operand:VI_HW_QHS 2 "register_operand" "")
+  [(set (match_operand:VI_HW_QHS                    0 "register_operand" "=v")
+	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand"  "v")
+			   (match_operand:VI_HW_QHS 2 "register_operand"  "v")
 			   (const_int VSTRING_FLAG_ZS)]
 			  UNSPEC_VEC_VFENE))]
   "TARGET_VX"
