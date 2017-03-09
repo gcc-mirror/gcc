@@ -817,6 +817,25 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
 	 != loop_depth (exit->dest->loop_father))
     return invalid_sese;
 
+  /* For now we just bail out when there is a loop exit in the region
+     that is not also the exit of the region.  We could enlarge the
+     region to cover the loop that region exits to.  See PR79977.  */
+  if (loop_outer (entry->src->loop_father))
+    {
+      vec<edge> exits = get_loop_exit_edges (entry->src->loop_father);
+      for (unsigned i = 0; i < exits.length (); ++i)
+	{
+	  if (exits[i] != exit
+	      && bb_in_region (exits[i]->src, entry->dest, exit->src))
+	    {
+	      DEBUG_PRINT (dp << "[scop-detection-fail] cannot merge seses.\n");
+	      exits.release ();
+	      return invalid_sese;
+	    }
+	}
+      exits.release ();
+    }
+
   /* For now we just want to bail out when exit does not post-dominate entry.
      TODO: We might just add a basic_block at the exit to make exit
      post-dominate entry (the entire region).  */

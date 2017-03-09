@@ -1,3 +1,8 @@
+2017-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79977
+	* gcc.dg/graphite/pr79977.c: New testcase.
+
 2017-03-09  Toma Tabacu  <toma.tabacu@imgtec.com>
 
 	* g++.dg/lto/pr69589_0.C: Add dg-require-effective-target for
