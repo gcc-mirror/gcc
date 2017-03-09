@@ -1,3 +1,8 @@
+2017-03-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/79900 - ICE in strip_typedefs
+	* g++.dg/warn/Wpadded-1.C: New test.
+
 2017-03-08  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/Walloca1.C: Adjust dg-warning.
