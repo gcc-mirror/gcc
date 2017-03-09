@@ -1,5 +1,10 @@
 2017-03-09  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/79971
+	* gcc.dg/fixed-point/pr79971.c: New testcase.
+
+2017-03-09  Richard Biener  <rguenther@suse.de>
+
 	PR ipa/79970
 	* gcc.dg/torture/pr79970.c: New testcase.
 
