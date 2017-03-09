@@ -1,3 +1,11 @@
+2017-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Document std::byte support.
+	* include/c_global/cstddef (std::byte): Define for C++17.
+	* testsuite/18_support/byte/global_neg.cc: New test.
+	* testsuite/18_support/byte/ops.cc: New test.
+	* testsuite/18_support/byte/requirements.cc: New test.
+
 2017-03-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Document P0156R2 status.
