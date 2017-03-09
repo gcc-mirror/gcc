@@ -1,3 +1,9 @@
+2017-03-09  Martin Liska  <mliska@suse.cz>
+
+	PR target/65705
+	PR target/69804
+	* gcc.target/i386/pr71458.c: Update scanned pattern.
+
 2017-03-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/79672

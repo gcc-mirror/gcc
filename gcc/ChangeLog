@@ -1,3 +1,10 @@
+2017-03-09  Martin Liska  <mliska@suse.cz>
+
+	PR target/65705
+	PR target/69804
+	* toplev.c (process_options): Disable -fcheck-pointer-bounds with
+	sanitizers.
+
 2017-03-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/79672
