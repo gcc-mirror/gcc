@@ -1,3 +1,16 @@
+2017-03-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/79913
+	* config/aarch64/iterators.md (VALL_F16_NO_V2Q): New mode iterator.
+	(VALL_NO_V2Q): Likewise.
+	(VDQF_DF): Delete.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_dup_lane_<vswap_width_name><mode>): Use VALL_F16_NO_V2Q
+	iterator.
+	(*aarch64_simd_vec_copy_lane_<vswap_width_name><mode>): Use
+	VALL_NO_V2Q mode iterator.
+	(*aarch64_vgetfmulx<mode>): Use VDQF iterator.
+
 2017-03-09  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/79631
