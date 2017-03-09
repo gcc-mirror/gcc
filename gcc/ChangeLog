@@ -1,5 +1,11 @@
 2017-03-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/79944
+	* asan.c (get_mem_refs_of_builtin_call): For BUILT_IN_ATOMIC* and
+	BUILT_IN_SYNC*, determine the access type from the size suffix and
+	always build a MEM_REF with that type.  Handle forgotten
+	BUILT_IN_SYNC_FETCH_AND_NAND_16 and BUILT_IN_SYNC_NAND_AND_FETCH_16.
+
 	PR target/79932
 	* config/i386/avx512vlintrin.h (_mm256_cmpge_epi32_mask,
 	_mm256_cmpge_epi64_mask, _mm256_cmpge_epu32_mask,
