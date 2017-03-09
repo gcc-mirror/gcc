@@ -1,3 +1,7 @@
+2017-03-09  Martin Liska  <mliska@suse.cz>
+
+	* c-ada-spec.c (macro_length): Increment value instead of a pointer.
+
 2017-03-03  Jason Merrill  <jason@redhat.com>
 
 	* c.opt (Wnoexcept-type): New.
