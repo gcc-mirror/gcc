@@ -1,3 +1,9 @@
+2017-03-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/79949
+	* lra-constraints.c (process_alt_operands): Check memory when
+	trying to predict a cycle.  Print about the overall increase.
+
 2017-03-09  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/79971
