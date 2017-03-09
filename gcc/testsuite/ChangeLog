@@ -1,3 +1,10 @@
+2017-03-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/79962
+	PR c++/79984
+	* c-c++-common/nonnull-3.c: New test.
+	* g++.dg/warn/Wnonnull3.C: New test.
+
 2017-03-09  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* gcc.target/mips/lxc1-sxc1-1.c: Use -mhard-float.
