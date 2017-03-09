@@ -1,6 +1,39 @@
 2017-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/79932
+	* config/i386/avx512vlintrin.h (_mm256_cmpge_epi32_mask,
+	_mm256_cmpge_epi64_mask, _mm256_cmpge_epu32_mask,
+	_mm256_cmpge_epu64_mask, _mm256_cmple_epi32_mask,
+	_mm256_cmple_epi64_mask, _mm256_cmple_epu32_mask,
+	_mm256_cmple_epu64_mask, _mm256_cmplt_epi32_mask,
+	_mm256_cmplt_epi64_mask, _mm256_cmplt_epu32_mask,
+	_mm256_cmplt_epu64_mask, _mm256_cmpneq_epi32_mask,
+	_mm256_cmpneq_epi64_mask, _mm256_cmpneq_epu32_mask,
+	_mm256_cmpneq_epu64_mask, _mm256_mask_cmpge_epi32_mask,
+	_mm256_mask_cmpge_epi64_mask, _mm256_mask_cmpge_epu32_mask,
+	_mm256_mask_cmpge_epu64_mask, _mm256_mask_cmple_epi32_mask,
+	_mm256_mask_cmple_epi64_mask, _mm256_mask_cmple_epu32_mask,
+	_mm256_mask_cmple_epu64_mask, _mm256_mask_cmplt_epi32_mask,
+	_mm256_mask_cmplt_epi64_mask, _mm256_mask_cmplt_epu32_mask,
+	_mm256_mask_cmplt_epu64_mask, _mm256_mask_cmpneq_epi32_mask,
+	_mm256_mask_cmpneq_epi64_mask, _mm256_mask_cmpneq_epu32_mask,
+	_mm256_mask_cmpneq_epu64_mask, _mm_cmpge_epi32_mask,
+	_mm_cmpge_epi64_mask, _mm_cmpge_epu32_mask, _mm_cmpge_epu64_mask,
+	_mm_cmple_epi32_mask, _mm_cmple_epi64_mask, _mm_cmple_epu32_mask,
+	_mm_cmple_epu64_mask, _mm_cmplt_epi32_mask, _mm_cmplt_epi64_mask,
+	_mm_cmplt_epu32_mask, _mm_cmplt_epu64_mask, _mm_cmpneq_epi32_mask,
+	_mm_cmpneq_epi64_mask, _mm_cmpneq_epu32_mask, _mm_cmpneq_epu64_mask,
+	_mm_mask_cmpge_epi32_mask, _mm_mask_cmpge_epi64_mask,
+	_mm_mask_cmpge_epu32_mask, _mm_mask_cmpge_epu64_mask,
+	_mm_mask_cmple_epi32_mask, _mm_mask_cmple_epi64_mask,
+	_mm_mask_cmple_epu32_mask, _mm_mask_cmple_epu64_mask,
+	_mm_mask_cmplt_epi32_mask, _mm_mask_cmplt_epi64_mask,
+	_mm_mask_cmplt_epu32_mask, _mm_mask_cmplt_epu64_mask,
+	_mm_mask_cmpneq_epi32_mask, _mm_mask_cmpneq_epi64_mask,
+	_mm_mask_cmpneq_epu32_mask, _mm_mask_cmpneq_epu64_mask): Move
+	definitions outside of __OPTIMIZE__ guarded section.
+
+	PR target/79932
 	* config/i386/avx512bwintrin.h (_mm512_packs_epi32,
 	_mm512_maskz_packs_epi32, _mm512_mask_packs_epi32,
 	_mm512_packus_epi32, _mm512_maskz_packus_epi32,
