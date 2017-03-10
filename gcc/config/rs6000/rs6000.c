@@ -18534,10 +18534,6 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
       break;
 
       /* unsigned 2 argument functions.  */
-    case ALTIVEC_BUILTIN_VMULEUB_UNS:
-    case ALTIVEC_BUILTIN_VMULEUH_UNS:
-    case ALTIVEC_BUILTIN_VMULOUB_UNS:
-    case ALTIVEC_BUILTIN_VMULOUH_UNS:
     case ALTIVEC_BUILTIN_VMULEUB:
     case ALTIVEC_BUILTIN_VMULEUH:
     case ALTIVEC_BUILTIN_VMULOUB:

@@ -1,3 +1,13 @@
+2017-03-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (VMULEUB_UNS): Remove orphaned
+	built-in.
+	(VMULEUH_UNS): Likewise.
+	(VMULOUB_UNS): Likewise.
+	(VMULOUH_UNS): Likewise.
+	* config/rs6000/rs6000.c (builtin_function_type): Remove
+	references to ALTIVEC_BUILTIN_VMUL[EO]U[BH]_UNS.
+
 2017-03-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR bootstrap/79952
