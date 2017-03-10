@@ -2309,16 +2309,16 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	  KOENIG_LOOKUP_P (result) = koenig_p;
 	  if (cfun)
 	    {
-	      do
+	      bool abnormal = true;
+	      for (ovl_iterator iter (fn); iter && abnormal; ++iter)
 		{
-		  tree fndecl = OVL_CURRENT (fn);
+		  tree fndecl = *iter;
 		  if (TREE_CODE (fndecl) != FUNCTION_DECL
 		      || !TREE_THIS_VOLATILE (fndecl))
-		    break;
-		  fn = OVL_NEXT (fn);
+		    abnormal = false;
 		}
-	      while (fn);
-	      if (!fn)
+	      // FIXME: Why?
+	      if (abnormal)
 		current_function_returns_abnormally = 1;
 	    }
 	  return result;
@@ -9029,11 +9029,11 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
   else
     return false;
 
-  for (; fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (fns); iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
  
-      if (assign_p)
+      if (assign_p) // FIXME, why this difference?
 	{
 	  if (copy_fn_p (fn) == 0)
 	    continue;

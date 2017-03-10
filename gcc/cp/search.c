@@ -1044,13 +1044,9 @@ shared_member_p (tree t)
     return 1;
   if (is_overloaded_fn (t))
     {
-      t = get_fns (t);
-      for (; t; t = OVL_NEXT (t))
-	{
-	  tree fn = OVL_CURRENT (t);
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
-	    return 0;
-	}
+      for (ovl_iterator iter (get_fns (t)); iter; ++iter)
+	if (DECL_NONSTATIC_MEMBER_FUNCTION_P (*iter))
+	  return 0;
       return 1;
     }
   return 0;
@@ -2196,28 +2192,25 @@ look_for_overrides_here (tree type, tree fndecl)
   else
     ix = lookup_fnfields_1 (type, DECL_NAME (fndecl));
   if (ix >= 0)
-    {
-      tree fns = (*CLASSTYPE_METHOD_VEC (type))[ix];
+    for (ovl_iterator iter ((*CLASSTYPE_METHOD_VEC (type))[ix]); iter; ++iter)
+      {
+	tree fn = *iter;
 
-      for (; fns; fns = OVL_NEXT (fns))
-	{
-	  tree fn = OVL_CURRENT (fns);
+	if (!DECL_VIRTUAL_P (fn))
+	  /* Not a virtual.  */;
+	else if (DECL_CONTEXT (fn) != type)
+	  /* Introduced with a using declaration.  */;
+	else if (DECL_STATIC_FUNCTION_P (fndecl))
+	  {
+	    tree btypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
+	    tree dtypes = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+	    if (compparms (TREE_CHAIN (btypes), dtypes))
+	      return fn;
+	  }
+	else if (same_signature_p (fndecl, fn))
+	  return fn;
+      }
 
-	  if (!DECL_VIRTUAL_P (fn))
-	    /* Not a virtual.  */;
-	  else if (DECL_CONTEXT (fn) != type)
-	    /* Introduced with a using declaration.  */;
-	  else if (DECL_STATIC_FUNCTION_P (fndecl))
-	    {
-	      tree btypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
-	      tree dtypes = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-	      if (compparms (TREE_CHAIN (btypes), dtypes))
-		return fn;
-	    }
-	  else if (same_signature_p (fndecl, fn))
-	    return fn;
-	}
-    }
   return NULL_TREE;
 }
 
@@ -2566,29 +2559,25 @@ lookup_conversions_r (tree binfo,
 	break;
 
       if (TREE_CODE (cur) == TEMPLATE_DECL)
-	{
-	  /* Only template conversions can be overloaded, and we must
-	     flatten them out and check each one individually.  */
-	  tree tpls;
+	/* Only template conversions can be overloaded, and we must
+	   flatten them out and check each one individually.  */
+	for (ovl_iterator iter (conv); iter; ++iter)
+	  {
+	    tree tpl = *iter;
+	    tree type = DECL_CONV_FN_TYPE (tpl);
 
-	  for (tpls = conv; tpls; tpls = OVL_NEXT (tpls))
-	    {
-	      tree tpl = OVL_CURRENT (tpls);
-	      tree type = DECL_CONV_FN_TYPE (tpl);
-
-	      if (check_hidden_convs (binfo, virtual_depth, virtualness,
-				      type, parent_tpl_convs, other_tpl_convs))
-		{
-		  my_tpl_convs = tree_cons (binfo, tpl, my_tpl_convs);
-		  TREE_TYPE (my_tpl_convs) = type;
-		  if (virtual_depth)
-		    {
-		      TREE_STATIC (my_tpl_convs) = 1;
-		      my_virtualness = 1;
-		    }
-		}
-	    }
-	}
+	    if (check_hidden_convs (binfo, virtual_depth, virtualness,
+				    type, parent_tpl_convs, other_tpl_convs))
+	      {
+		my_tpl_convs = tree_cons (binfo, tpl, my_tpl_convs);
+		TREE_TYPE (my_tpl_convs) = type;
+		if (virtual_depth)
+		  {
+		    TREE_STATIC (my_tpl_convs) = 1;
+		    my_virtualness = 1;
+		  }
+	      }
+	  }
       else
 	{
 	  tree name = DECL_NAME (cur);

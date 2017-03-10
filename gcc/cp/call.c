@@ -4458,16 +4458,15 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 
   for (; convs; convs = TREE_CHAIN (convs))
     {
-      tree fns = TREE_VALUE (convs);
       tree totype = TREE_TYPE (convs);
 
       if (TYPE_PTRFN_P (totype)
 	  || TYPE_REFFN_P (totype)
 	  || (TREE_CODE (totype) == REFERENCE_TYPE
 	      && TYPE_PTRFN_P (TREE_TYPE (totype))))
-	for (; fns; fns = OVL_NEXT (fns))
+	for (ovl_iterator iter (TREE_VALUE (convs)); iter; ++iter)
 	  {
-	    tree fn = OVL_CURRENT (fns);
+	    tree fn = *iter;
 
 	    if (DECL_NONCONVERTING_P (fn))
 	      continue;
@@ -5434,12 +5433,12 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
     /* Delay creating the implicit this parameter until it is needed.  */
     non_static_args = NULL;
 
-  for (; fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (fns); iter; ++iter)
     {
       tree fn_first_arg;
       const vec<tree, va_gc> *fn_args;
 
-      fn = OVL_CURRENT (fns);
+      fn = *iter;
 
       if (check_converting && DECL_NONCONVERTING_P (fn))
 	continue;
@@ -6210,8 +6209,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
       if (fn == error_mark_node)
 	return NULL_TREE;
 
-      if (BASELINK_P (fn))
-	fn = BASELINK_FUNCTIONS (fn);
+      fn = MAYBE_BASELINK_FUNCTIONS (fn);
 
       /* "If the lookup finds the two-parameter form of a usual deallocation
 	 function (3.7.4.2) and that function, considered as a placement
@@ -6230,10 +6228,10 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	     the usual deallocation function, so we shouldn't complain
 	     about using the operator delete (void *, size_t).  */
 	  if (DECL_CLASS_SCOPE_P (fn))
-	    for (t = BASELINK_P (fns) ? BASELINK_FUNCTIONS (fns) : fns;
-		 t; t = OVL_NEXT (t))
+	    for (ovl_iterator iter (MAYBE_BASELINK_FUNCTIONS (fns));
+		 iter; ++iter)
 	      {
-		tree elt = OVL_CURRENT (t);
+		tree elt = *iter;
 		if (usual_deallocation_fn_p (elt)
 		    && FUNCTION_ARG_CHAIN (elt) == void_list_node)
 		  goto ok;
@@ -6272,10 +6270,9 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
        allocation function. If the lookup finds a single matching
        deallocation function, that function will be called; otherwise, no
        deallocation function will be called."  */
-    for (t = BASELINK_P (fns) ? BASELINK_FUNCTIONS (fns) : fns;
-	 t; t = OVL_NEXT (t))
+    for (ovl_iterator iter (MAYBE_BASELINK_FUNCTIONS (fns)); iter; ++iter)
       {
-	tree elt = OVL_CURRENT (t);
+	tree elt = *iter;
 	if (usual_deallocation_fn_p (elt))
 	  {
 	    if (!fn)

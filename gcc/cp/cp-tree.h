@@ -453,6 +453,53 @@ struct GTY(()) tree_overload {
   tree function;
 };
 
+// ALLOC and LENGTH in clique & base for memrefs stuff
+#if 0 // New overloads
+#define OVERLOAD2_LENGTH(T) ((T)->typed.base.u.base)
+#define OVERLOAD2_ALLOC(T) ((T)->typed.base.u.clique)
+struct ovl_iterator 
+{
+  tree ovl;
+  unsigned outer;
+  unsigned inner;
+};
+
+struct GTY(()) tree_overload_2 
+{
+  struct tree_typed typed;
+  tree GTY((length ("OVERLOAD2_LENGTH ((tree)&%h)"))) elts[1];
+};
+#else // old overloads
+struct ovl_iterator 
+{
+  tree ovl;
+
+  ovl_iterator (tree o)
+  :ovl (o) {}
+
+  operator bool () const
+  {
+    return ovl;
+  }
+  ovl_iterator *operator++ ()
+  {
+    ovl = OVL_NEXT (ovl);
+    return this;
+  }
+  tree operator* () const
+  {
+    return OVL_CURRENT (ovl);
+  }
+};
+tree ovl_append (tree, tree);
+#endif
+/*
+  ovl = ovl_append (ovl/NULL, decl);
+
+  for (ovl_iterator iter (ovl); iter; ++iter)
+    { tree fn = *iter}
+ */
+
 struct GTY(()) tree_template_decl {
   struct tree_decl_common common;
   tree arguments;
@@ -470,6 +517,10 @@ struct GTY(()) tree_template_decl {
    a TEMPLATE_DECL, an OVERLOAD, or a TEMPLATE_ID_EXPR.  */
 #define BASELINK_FUNCTIONS(NODE) \
   (((struct tree_baselink*) BASELINK_CHECK (NODE))->functions)
+/* If T is a BASELINK, grab the functions, otherwise just T, which is
+   expected to already be a (list of) functions.  */
+#define MAYBE_BASELINK_FUNCTIONS(T) \
+  (BASELINK_P (T) ? BASELINK_FUNCTIONS (T) : T)
 /* The BINFO in which the search for the functions indicated by this baselink
    began.  This base is used to determine the accessibility of functions
    selected by overload resolution.  */

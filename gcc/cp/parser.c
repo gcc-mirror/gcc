@@ -4067,16 +4067,16 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
 static tree
 lookup_literal_operator (tree name, vec<tree, va_gc> *args)
 {
-  tree decl, fns;
+  tree decl;
   decl = lookup_name (name);
   if (!decl || !is_overloaded_fn (decl))
     return error_mark_node;
 
-  for (fns = decl; fns; fns = OVL_NEXT (fns))
+  for (ovl_iterator iter (decl); iter; ++iter)
     {
       unsigned int ix;
       bool found = true;
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
       tree parmtypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
       if (parmtypes != NULL_TREE)
 	{
@@ -15930,20 +15930,19 @@ cp_parser_template_name (cp_parser* parser,
     }
   else
     {
-      tree fn = NULL_TREE;
-
       /* The standard does not explicitly indicate whether a name that
 	 names a set of overloaded declarations, some of which are
 	 templates, is a template-name.  However, such a name should
 	 be a template-name; otherwise, there is no way to form a
 	 template-id for the overloaded templates.  */
-      fns = BASELINK_P (decl) ? BASELINK_FUNCTIONS (decl) : decl;
-      if (TREE_CODE (fns) == OVERLOAD)
-	for (fn = fns; fn; fn = OVL_NEXT (fn))
-	  if (TREE_CODE (OVL_CURRENT (fn)) == TEMPLATE_DECL)
-	    break;
+      bool found = false;
 
-      if (!fn)
+      for (ovl_iterator iter (MAYBE_BASELINK_FUNCTIONS (decl));
+	   iter && !found; ++iter)
+	if (TREE_CODE (*iter) == TEMPLATE_DECL)
+	  found = true;
+
+      if (!found)
 	{
 	  /* The name does not name a template.  */
 	  cp_parser_error (parser, "expected template-name");

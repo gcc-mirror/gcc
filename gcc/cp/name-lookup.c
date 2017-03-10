@@ -4005,7 +4005,7 @@ pushdecl_namespace_level (tree x, bool is_friend)
 
 /* Insert USED into the using list of USER. Set INDIRECT_flag if this
    directive is not directly from the source. Also find the common
-   ancestor and let our users know about the new namespace */
+   ancestor and let our users know about the new namespace. */
 
 static void
 add_using_namespace_1 (tree user, tree used, bool indirect)
@@ -5560,6 +5560,7 @@ arg_assoc_namespace (struct arg_lookup *k, tree scope)
   /* Also look down into inline namespaces.  */
   for (value = DECL_NAMESPACE_USING (scope); value;
        value = TREE_CHAIN (value))
+    // FIXME:Just use NAMESPACE_INLINE_P?
     if (is_associated_namespace (scope, TREE_PURPOSE (value)))
       if (arg_assoc_namespace (k, TREE_PURPOSE (value)))
 	return true;

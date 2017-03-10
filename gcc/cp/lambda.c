@@ -847,10 +847,9 @@ maybe_generic_this_capture (tree object, tree fns)
       {
 	/* We've not yet captured, so look at the function set of
 	   interest.  */
-	if (BASELINK_P (fns))
-	  fns = BASELINK_FUNCTIONS (fns);
-	for (; fns; fns = OVL_NEXT (fns))
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (OVL_CURRENT (fns)))
+	for (ovl_iterator iter (MAYBE_BASELINK_FUNCTIONS (fns));
+	     iter; ++iter)
+	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (*iter))
 	    {
 	      /* Found a non-static member.  Capture this.  */
 	      lambda_expr_this_capture (lam, true);

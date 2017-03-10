@@ -1,5 +1,23 @@
 2017-03-10  Nathan Sidwell  <nathan@acm.org>
 
+	Add OVERLOAD iterator, part 1
+	Add MAYBE_BASELINK_FUNCTIONS
+	gcc/cp/
+	* cp-tree.h (struct ovl_iterator): New.
+	(MAYBE_BASELINK_FUNCTIONS): New.
+	* call.c (build_op_call_1, add_candidates,
+	build_op_delete_call): Use new iterator.
+	* lambda.c (maybe_generic_this_capture): Likewise.
+	* method.c (inherited_ctor_binfo, binfo_inherited_from): Likewise.
+	* parser.c (lookup_literal_operator,
+	cp_parser_template_name): Likewise.
+	* search.c (shared_member_p, look_for_overrides_here,
+	lookup_conversions_r): Likewise.
+	* semantics.c (finish_call_expr,
+	classtype_has_nothrow_assign_or_copy_p): Likewise.
+	* typeck.c (check_template_keyword): Likewise.
+	* tree.c (is_overloaded_fn, get_fns): Use MAYBE_BASELINK_FUNCTIONS.
+
 	gcc/cp/
 	* gcc/cp/cp-tree.h (NAMESPACE_CHECK): Delete.
 	(MODULE_NAMESPACE_P, GLOBAL_MODULE_NAMESPACE,
