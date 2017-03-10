@@ -1640,7 +1640,7 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 	  if (hint)
 	    error_at (loc,
 		      "unrecognized argument to -f%ssanitize%s= option: %q.*s;"
-		      " did you mean %qs",
+		      " did you mean %qs?",
 		      value ? "" : "no-",
 		      code == OPT_fsanitize_ ? "" : "-recover",
 		      (int) len, p, hint);

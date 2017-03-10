@@ -1,3 +1,9 @@
+2017-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR driver/79875
+	* opts.c (parse_sanitizer_options): Add missing question mark to
+	"did you mean" message.
+
 2017-03-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def (VMULEUB_UNS): Remove orphaned
