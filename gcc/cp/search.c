@@ -1387,7 +1387,7 @@ lookup_field_fuzzy_info::fuzzy_lookup_fnfields (tree type)
 
   for (i = 0; vec_safe_iterate (method_vec, i, &fn); ++i)
     if (fn)
-      m_candidates.safe_push (DECL_NAME (OVL_CURRENT (fn)));
+      m_candidates.safe_push (OVL_NAME (fn));
 }
 
 /* Locate all fields within TYPE, append them to m_candidates.  */
@@ -1541,7 +1541,7 @@ lookup_conversion_operator (tree class_type, tree type)
 	     the class.  Therefore, if FN is not a conversion
 	     operator, there is no matching conversion operator in
 	     CLASS_TYPE.  */
-	  fn = OVL_CURRENT (fn);
+	  fn = OVL_FIRST (fn);
 	  if (!DECL_CONV_FN_P (fn))
 	    break;
 
@@ -1566,7 +1566,6 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
 {
   vec<tree, va_gc> *method_vec;
   tree fn;
-  tree tmp;
   size_t i;
 
   if (!CLASS_TYPE_P (type))
@@ -1598,7 +1597,7 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
   for (i = CLASSTYPE_FIRST_CONVERSION_SLOT;
        vec_safe_iterate (method_vec, i, &fn);
        ++i)
-    if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
+    if (!DECL_CONV_FN_P (OVL_FIRST (fn)))
       break;
 
   /* If the type is complete, use binary search.  */
@@ -1616,8 +1615,8 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
 	  if (GATHER_STATISTICS)
 	    n_outer_fields_searched++;
 
-	  tmp = (*method_vec)[i];
-	  tmp = DECL_NAME (OVL_CURRENT (tmp));
+	  tree tmp = (*method_vec)[i];
+	  tmp = OVL_NAME (tmp);
 	  if (tmp > name)
 	    hi = i;
 	  else if (tmp < name)
@@ -1631,7 +1630,7 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
       {
 	if (GATHER_STATISTICS)
 	  n_outer_fields_searched++;
-	if (DECL_NAME (OVL_CURRENT (fn)) == name)
+	if (OVL_NAME (fn) == name)
 	  return i;
       }
 
@@ -2553,7 +2552,7 @@ lookup_conversions_r (tree binfo,
        vec_safe_iterate (method_vec, i, &conv);
        ++i)
     {
-      tree cur = OVL_CURRENT (conv);
+      tree cur = OVL_FIRST (conv);
 
       if (!DECL_CONV_FN_P (cur))
 	break;
@@ -2643,7 +2642,7 @@ lookup_conversions_r (tree binfo,
 
   /* Unmark the conversions found at this level  */
   for (conv = my_convs; conv; conv = TREE_CHAIN (conv))
-    IDENTIFIER_MARKED (DECL_NAME (OVL_CURRENT (TREE_VALUE (conv)))) = 0;
+    IDENTIFIER_MARKED (OVL_NAME (TREE_VALUE (conv))) = 0;
 
   *convs = split_conversions (my_convs, parent_convs,
 			      child_convs, other_convs);
