@@ -1,3 +1,10 @@
+2017-03-10  Will Schmidt <will_schmidt@vnet.ibm.com>
+    
+	PR target/79941
+	* gcc.target/powerpc/fold-vec-mult-even_odd_misc.c: New test.
+	* gcc.target/powerpc/fold-vec-mult-even_odd_char.c: New test.
+	* gcc.target/powerpc/fold-vec-mult-even_odd_short.c: New test.
+
 2017-03-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/79967
