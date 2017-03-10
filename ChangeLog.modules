@@ -1,5 +1,22 @@
 2017-03-10  Nathan Sidwell  <nathan@acm.org>
 
+	Add OVERLOAD iterator part 4
+	gcc/cp/
+	* cp-tree.h (OVL_FIRST, OVL_NAME): New accessors.
+	* call.c (build_user_type_conversion_1,
+	print_error_for_call_failure, add_candidates): Use them.
+	* class.c (method_name_cmp, resort_method_name_cmp,
+	resort_type_method_vec, finish_struct_methods, warn_hidden,
+	resolve_address_of_overloaded_function,
+	note_name_declared_in_class): Likwise.
+	* cxx-pretty-print.c (pp_cxx_unqualified_id, pp_cxx_qualified_id,
+	cxx_pretty_printer::id_expression,
+	cxx_pretty_printer::expression): Likewise.
+	* decl.c (poplevel): Likewise.
+	* mangle.c (write_member_name): Likewise.
+	* method.c (strip_inheriting_ctors): Likewise.
+	* typeck.c (cp_build_addr_expr_1): Likewise.
+
 	Makefile-supplied timestamp.
 	gcc/cp
 	* Make-lang.in: Provide MODULE_STAMP.

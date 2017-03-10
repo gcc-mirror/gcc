@@ -2298,7 +2298,7 @@ method_name_cmp (const void* m1_p, const void* m2_p)
     return -1;
   if (*m2 == NULL_TREE)
     return 1;
-  if (DECL_NAME (OVL_CURRENT (*m1)) < DECL_NAME (OVL_CURRENT (*m2)))
+  if (OVL_NAME (*m1) < OVL_NAME (*m2))
     return -1;
   return 1;
 }
@@ -2318,8 +2318,8 @@ resort_method_name_cmp (const void* m1_p, const void* m2_p)
   if (*m2 == NULL_TREE)
     return 1;
   {
-    tree d1 = DECL_NAME (OVL_CURRENT (*m1));
-    tree d2 = DECL_NAME (OVL_CURRENT (*m2));
+    tree d1 = OVL_NAME (*m1);
+    tree d2 = OVL_NAME (*m2);
     resort_data.new_value (&d1, resort_data.cookie);
     resort_data.new_value (&d2, resort_data.cookie);
     if (d1 < d2)
@@ -2346,7 +2346,7 @@ resort_type_method_vec (void* obj,
   for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
        vec_safe_iterate (method_vec, slot, &fn);
        ++slot)
-    if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
+    if (!DECL_CONV_FN_P (OVL_FIRST (fn)))
       break;
 
   if (len - slot > 1)
@@ -2391,7 +2391,7 @@ finish_struct_methods (tree t)
   for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
        method_vec->iterate (slot, &fn_fields);
        ++slot)
-    if (!DECL_CONV_FN_P (OVL_CURRENT (fn_fields)))
+    if (!DECL_CONV_FN_P (OVL_FIRST (fn_fields)))
       break;
   if (len - slot > 1)
     qsort (method_vec->address () + slot,
@@ -3062,7 +3062,7 @@ warn_hidden (tree t)
 
       /* All functions in this slot in the CLASSTYPE_METHOD_VEC will
 	 have the same name.  Figure out what name that is.  */
-      tree name = DECL_NAME (OVL_CURRENT (fns));
+      tree name = OVL_NAME (fns);
       /* There are no possibly hidden functions yet.  */
       auto_vec<tree, 20> base_fndecls;
       /* Iterate through all of the base classes looking for possibly
@@ -8255,8 +8255,7 @@ resolve_address_of_overloaded_function (tree target_type,
       if (complain & tf_error)
 	{
 	  error ("no matches converting function %qD to type %q#T",
-		 DECL_NAME (OVL_CURRENT (overload)),
-		 target_type);
+		 OVL_NAME (overload), target_type);
 
 	  print_candidates (overload);
 	}
@@ -8696,7 +8695,7 @@ note_name_declared_in_class (tree name, tree decl)
       permerror (input_location, "declaration of %q#D", decl);
       permerror (location_of ((tree) n->value),
 		 "changes meaning of %qD from %q#D",
-		 DECL_NAME (OVL_CURRENT (decl)), (tree) n->value);
+		 OVL_NAME (decl), (tree) n->value);
     }
 }
 

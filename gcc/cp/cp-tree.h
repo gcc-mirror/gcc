@@ -492,6 +492,8 @@ struct ovl_iterator
   }
 };
 tree ovl_append (tree, tree);
+#define OVL_FIRST(T) OVL_CURRENT (T)
+#define OVL_NAME(T) DECL_NAME (OVL_CURRENT (T))
 #endif
 /*
   ovl = ovl_append (ovl/NULL, decl);

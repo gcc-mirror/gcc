@@ -3777,8 +3777,8 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 
       /* We should never try to call the abstract or base constructor
 	 from here.  */
-      gcc_assert (!DECL_HAS_IN_CHARGE_PARM_P (OVL_CURRENT (ctors))
-		  && !DECL_HAS_VTT_PARM_P (OVL_CURRENT (ctors)));
+      gcc_assert (!DECL_HAS_IN_CHARGE_PARM_P (OVL_FIRST (ctors))
+		  && !DECL_HAS_VTT_PARM_P (OVL_FIRST (ctors)));
 
       args = make_tree_vector_single (expr);
       if (BRACE_ENCLOSED_INITIALIZER_P (expr))
@@ -4166,7 +4166,7 @@ print_error_for_call_failure (tree fn, vec<tree, va_gc> *args,
       targs = TREE_OPERAND (fn, 1);
       fn = TREE_OPERAND (fn, 0);
     }
-  tree name = DECL_NAME (OVL_CURRENT (fn));
+  tree name = OVL_NAME (fn);
   location_t loc = location_of (name);
   if (targs)
     name = lookup_template_function (name, targs);
@@ -5384,13 +5384,12 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
   bool check_list_ctor;
   bool check_converting;
   unification_kind_t strict;
-  tree fn;
 
   if (!fns)
     return;
 
   /* Precalculate special handling of constructors and conversion ops.  */
-  fn = OVL_CURRENT (fns);
+  tree fn = OVL_FIRST (fns);
   if (DECL_CONV_FN_P (fn))
     {
       check_list_ctor = false;

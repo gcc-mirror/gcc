@@ -15810,7 +15810,6 @@ cp_parser_template_name (cp_parser* parser,
 {
   tree identifier;
   tree decl;
-  tree fns;
   cp_token *token = cp_lexer_peek_token (parser->lexer);
 
   /* If the next token is `operator', then we have either an

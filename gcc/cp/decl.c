@@ -754,20 +754,12 @@ poplevel (int keep, int reverse, int functionbody)
 	}
       else
 	{
-	  tree name;
-
 	  /* Remove the binding.  */
 	  decl = link;
 
 	  if (TREE_CODE (decl) == TREE_LIST)
 	    decl = TREE_VALUE (decl);
-	  name = decl;
-
-	  if (TREE_CODE (name) == OVERLOAD)
-	    name = OVL_FUNCTION (name);
-
-	  gcc_assert (DECL_P (name));
-	  pop_binding (DECL_NAME (name), decl);
+	  pop_binding (OVL_NAME (decl), decl);
 	}
     }
 

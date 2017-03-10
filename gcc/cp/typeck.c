@@ -5733,7 +5733,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
       /* Fall through.  */
 
     case OVERLOAD:
-      arg = OVL_CURRENT (arg);
+      arg = OVL_FIRST (arg);
       break;
 
     case OFFSET_REF:
