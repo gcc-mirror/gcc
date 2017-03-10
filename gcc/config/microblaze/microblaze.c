@@ -3323,7 +3323,7 @@ microblaze_expand_shift (rtx operands[])
 	      || (GET_CODE (operands[1]) == SUBREG));
 
   /* Shift by zero -- copy regs if necessary.  */
-  if (CONST_INT_P (operands[2]) && (operands[2] == const0_rtx)
+  if (operands[2] == const0_rtx
       && !rtx_equal_p (operands[0], operands[1]))
     {
       emit_insn (gen_movsi (operands[0], operands[1]));
