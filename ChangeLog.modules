@@ -1,5 +1,10 @@
 2017-03-10  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* gcc/cp/cp-tree.h (NAMESPACE_CHECK): Delete.
+	(MODULE_NAMESPACE_P, GLOBAL_MODULE_NAMESPACE,
+	NAMESPACE_INLINE_P): Adjust.
+
 	gcc/testsuite/
 	* g++.dg/modules/modules.exp: Protect DEFAULT_CXXFLAGS.
 

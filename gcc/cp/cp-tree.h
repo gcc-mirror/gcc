@@ -319,9 +319,6 @@ operator == (const cp_expr &lhs, tree rhs)
 #define BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK(NODE) \
   TREE_CHECK(NODE,BOUND_TEMPLATE_TEMPLATE_PARM)
 
-#define NAMESPACE_CHECK(NODE) \
-  TREE_CHECK(NODE,NAMESPACE_DECL)
-
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 #define THUNK_FUNCTION_CHECK(NODE) __extension__			\
 ({  __typeof (NODE) const __t = (NODE);					\
@@ -1044,11 +1041,11 @@ check_constraint_info (tree t)
 
 /* Whether the namespace contains module-linkage objects.  */
 #define MODULE_NAMESPACE_P(NODE) \
-  TREE_LANG_FLAG_1 (NAMESPACE_CHECK (NODE))
+  TREE_LANG_FLAG_1 (NAMESPACE_DECL_CHECK (NODE))
 
 /* A fragment of the global module.  */
 #define GLOBAL_MODULE_NAMESPACE_P(NODE) \
-  TREE_LANG_FLAG_2 (NAMESPACE_CHECK (NODE))
+  TREE_LANG_FLAG_2 (NAMESPACE_DECL_CHECK (NODE))
 
 #define CURRENT_MODULE_NAMESPACE_P(NODE) \
   (MODULE_NAMESPACE_P (NODE) && NAMESPACE_INLINE_P (NODE))
@@ -2250,7 +2247,7 @@ struct GTY(()) lang_type {
 
 /* Whether the namepace is an inline namespace.  */
 #define NAMESPACE_INLINE_P(NODE) \
-  TREE_LANG_FLAG_0 (NAMESPACE_CHECK (NODE))
+  TREE_LANG_FLAG_0 (NAMESPACE_DECL_CHECK (NODE))
 
 /* The binding level associated with the namespace.  */
 #define NAMESPACE_LEVEL(NODE) \
