@@ -1,5 +1,11 @@
 2017-03-10  Nathan Sidwell  <nathan@acm.org>
 
+	Makefile-supplied timestamp.
+	gcc/cp
+	* Make-lang.in: Provide MODULE_STAMP.
+	* module.c (cpm_stream::version): Use MODULE_STAMP, not __DATE__ &
+	__TIME__.
+
 	Add OVERLOAD iterator part 3
 	gcc/cp/
 	* name-lookup.c (pushdecl_maybe_friend_1,

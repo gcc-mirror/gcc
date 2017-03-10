@@ -25,8 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "dumpfile.h"
 
-#define EXPERIMENTAL 1 /* Shtop! This module is not ready yet! */
-
 /* Byte serializer base.  */
 class cpm_serial
 {
@@ -96,7 +94,7 @@ protected:
 cpm_serial::cpm_serial (FILE *s, const char *n)
   :stream (s), name (n), pos (0), len (0),
    /* Force testing of buffer extension. */
-   alloc (EXPERIMENTAL ? 1 : 32768),
+   alloc (MODULE_STAMP ? 1 : 32768),
    err (0), bit_val (0), bit_pos (0), crc (0)
 {
   buffer = XNEWVEC (char, alloc);
@@ -659,7 +657,7 @@ public:
   /* Version to date. */
   static unsigned v2d (int v)
   {
-    if (EXPERIMENTAL && v < 0)
+    if (MODULE_STAMP && v < 0)
       return -v / 10000 + 20000000;
     else
       return v;
@@ -668,65 +666,30 @@ public:
   /* Version to time. */
   static unsigned v2t (int v)
   {
-    if (EXPERIMENTAL && v < 0)
+    if (MODULE_STAMP && v < 0)
       return -v % 10000;
     else
       return 0;
   }
 };
 
-const char *cpm_stream::ident ()
+const char *
+cpm_stream::ident ()
 {
   return "g++m";
 }
 
-int cpm_stream::version ()
+int
+cpm_stream::version ()
 {
   /* If the on-disk format changes, update the version number.  */
   int version = 20170210;
 
-  if (EXPERIMENTAL)
-    {
-      /* Force the version to be very volatile.  */
-      static const char DATE[] = __DATE__;    /* "mon dd yyyy" */
-      int year = ((DATE[7] - '0') * 1000
-		  + (DATE[8] - '0') * 100
-		  + (DATE[9] - '0') * 10
-		  + (DATE[10] - '0') * 1);
-      /* JanFebMarAprMayJunJulAugSepOctNovDec */
-      int mon = (DATE[0] == 'J' // Jan Jun Jul
-		 ? (DATE[1] == 'a' ? 1 // Jan
-		    : DATE[2] == 'n' ? 6 // Jun
-		    : DATE[2] == 'l' ? 7 // Jul
-		    : 0) // oops
-		 : DATE[0] == 'F' ? 2 // Feb
-		 : DATE[0] == 'M' // Mar May
-		 ? (DATE[2] == 'r' ? 3 // Mar
-		    : DATE[2] == 'y' ? 5 // May
-		    : 0) // oops
-		 : DATE[0] == 'A' // Apr Aug
-		 ? (DATE[1] == 'p' ? 4 // Apr
-		    : DATE[1] == 'u' ? 8 // Aug
-		    : 0) // oops
-		 : DATE[0] == 'S' ? 9 // Sep
-		 : DATE[0] == 'O' ? 10 // Oct
-		 : DATE[0] == 'N' ? 11 // Nov
-		 : DATE[0] == 'D' ? 12 // Dec
-		 : 0); // oops
-      int day = ((DATE[4] == ' ' ? 0 : (DATE[4] - '0') * 10)
-		 + (DATE[5] - '0') * 1);
-      gcc_assert (year && mon && day);
-
-      static const char TIME[] = __TIME__;  /* "hh:mm:ss" */
-      int hour = ((TIME[0] - '0') * 10
-		  + (TIME[1] - '0') * 1);
-      int min =  ((TIME[3] - '0') * 10
-		  + (TIME[4] - '0') * 1);
-
-      int date = (((year % 100) * 100) + mon) * 100 + day; /* YYMMDD */
-      int time = (hour * 100) + min;		/* hhmm */
-      version = -((date * 10000) + time);       /* -YYMMDDhhmm */
-    }
+#if defined (MODULE_STAMP)
+  /* MODULE_STAMP is a decimal encoding YYMMDDhhmm in local timezone.
+     Using __TIME__ doesnt work very well with boostrapping!  */
+  version = -MODULE_STAMP;
+#endif
   return version;
 }
 
@@ -1501,7 +1464,7 @@ cpms_in::read_core_bools (FILE *, tree t)
 }
 
 void
-cpms_out::write_decl_lang_bools (FILE *d, tree t)
+cpms_out::write_decl_lang_bools (FILE *, tree t)
 {
 #define WB(X) (w.b (X))
   WB (DECL_LANGUAGE (t) == lang_cplusplus);
@@ -1509,7 +1472,7 @@ cpms_out::write_decl_lang_bools (FILE *d, tree t)
 }
 
 bool
-cpms_in::read_decl_lang_bools (FILE *d, tree t)
+cpms_in::read_decl_lang_bools (FILE *, tree t)
 {
 #define RB(X) ((X) = r.b ())
   SET_DECL_LANGUAGE (t, r.b () ? lang_cplusplus : lang_c);
