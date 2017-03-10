@@ -1,3 +1,8 @@
+2017-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/79967
+	* decl.c (grokdeclarator): Check ATTRLIST before dereferencing it.
+
 2017-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79899

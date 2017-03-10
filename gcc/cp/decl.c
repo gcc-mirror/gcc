@@ -11402,7 +11402,8 @@ grokdeclarator (const cp_declarator *declarator,
 
   if (declarator
       && declarator->kind == cdk_id
-      && declarator->std_attributes)
+      && declarator->std_attributes
+      && attrlist != NULL)
     /* [dcl.meaning]/1: The optional attribute-specifier-seq following
        a declarator-id appertains to the entity that is declared.  */
     *attrlist = chainon (*attrlist, declarator->std_attributes);
