@@ -3182,7 +3182,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       else
 	rs6000_constraints[RS6000_CONSTRAINT_ws] = FLOAT_REGS;
 
-      if (TARGET_UPPER_REGS_DF)					/* DImode  */
+      if (TARGET_UPPER_REGS_DI)					/* DImode  */
 	rs6000_constraints[RS6000_CONSTRAINT_wi] = VSX_REGS;
       else
 	rs6000_constraints[RS6000_CONSTRAINT_wi] = FLOAT_REGS;
