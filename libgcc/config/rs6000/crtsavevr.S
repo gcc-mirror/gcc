@@ -31,6 +31,7 @@
 
 /* Called with r0 pointing just beyond the end of the vector save area.  */
 
+	.machine altivec
 	.section ".text"
 CFI_STARTPROC
 HIDDEN_FUNC(_savevr_20)

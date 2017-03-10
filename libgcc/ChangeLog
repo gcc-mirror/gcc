@@ -1,5 +1,10 @@
 2017-03-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/crtrestvr.s: Use .machine altivec.
+	* config/rs6000/crtsavevr.s: Ditto.
+
+2017-03-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* configure.ac (test for libgcc_cv_powerpc_float128): Temporarily
 	modify CFLAGS.  Add -mabi=altivec -mvsx -mfloat128.
 	(test for libgcc_cv_powerpc_float128_hw): Add -mpower9-vector and
