@@ -2521,7 +2521,8 @@ chain_of_csts_start (struct loop *loop, tree x)
    * the derivation of X consists only from operations with constants
    * the initial value of the phi node is constant
    * the value of the phi node in the next iteration can be derived from the
-     value in the current iteration by a chain of operations with constants.
+     value in the current iteration by a chain of operations with constants,
+     or is also a constant
 
    If such phi node exists, it is returned, otherwise NULL is returned.  */
 
@@ -2541,13 +2542,11 @@ get_base_for (struct loop *loop, tree x)
   init = PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (loop));
   next = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop));
 
-  if (TREE_CODE (next) != SSA_NAME)
-    return NULL;
-
   if (!is_gimple_min_invariant (init))
     return NULL;
 
-  if (chain_of_csts_start (loop, next) != phi)
+  if (TREE_CODE (next) == SSA_NAME
+      && chain_of_csts_start (loop, next) != phi)
     return NULL;
 
   return phi;
@@ -2556,6 +2555,7 @@ get_base_for (struct loop *loop, tree x)
 /* Given an expression X, then
 
    * if X is NULL_TREE, we return the constant BASE.
+   * if X is a constant, we return the constant X.
    * otherwise X is a SSA name, whose value in the considered loop is derived
      by a chain of operations with constant from a result of a phi node in
      the header of the loop.  Then we return value of X when the value of the
@@ -2570,6 +2570,8 @@ get_val_for (tree x, tree base)
 
   if (!x)
     return base;
+  else if (is_gimple_min_invariant (x))
+    return x;
 
   stmt = SSA_NAME_DEF_STMT (x);
   if (gimple_code (stmt) == GIMPLE_PHI)
@@ -2584,11 +2586,9 @@ get_val_for (tree x, tree base)
     return get_val_for (gimple_assign_rhs1 (stmt), base);
   else if (gimple_assign_rhs_class (stmt) == GIMPLE_UNARY_RHS
 	   && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME)
-    {
-      return fold_build1 (gimple_assign_rhs_code (stmt),
-			  gimple_expr_type (stmt),
-			  get_val_for (gimple_assign_rhs1 (stmt), base));
-    }
+    return fold_build1 (gimple_assign_rhs_code (stmt),
+			gimple_expr_type (stmt),
+			get_val_for (gimple_assign_rhs1 (stmt), base));
   else if (gimple_assign_rhs_class (stmt) == GIMPLE_BINARY_RHS)
     {
       tree rhs1 = gimple_assign_rhs1 (stmt);
@@ -2687,6 +2687,7 @@ loop_niter_by_eval (struct loop *loop, edge exit)
 
       for (j = 0; j < 2; j++)
 	{
+	  aval[j] = val[j];
 	  val[j] = get_val_for (next[j], val[j]);
 	  if (!is_gimple_min_invariant (val[j]))
 	    {
@@ -2694,6 +2695,12 @@ loop_niter_by_eval (struct loop *loop, edge exit)
 	      return chrec_dont_know;
 	    }
 	}
+
+      /* If the next iteration would use the same base values
+	 as the current one, there is no point looping further,
+	 all following iterations will be the same as this one.  */
+      if (val[0] == aval[0] && val[1] == aval[1])
+	break;
     }
 
   fold_undefer_and_ignore_overflow_warnings ();

@@ -1,3 +1,8 @@
+2017-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/77975
+	* gcc.dg/pr77975.c: New test.
+
 2017-03-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/79962

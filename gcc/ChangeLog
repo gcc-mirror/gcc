@@ -1,3 +1,13 @@
+2017-03-10  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/77975
+	* tree-ssa-loop-niter.c (get_base_for): Allow phi argument from latch
+	edge to be constant.
+	(get_val_for): For constant x return it.  Formatting fix.
+	(loop_niter_by_eval): Avoid pointless looping if the next iteration
+	would use the same bases as the current one.
+
 2017-03-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_gen_le_vsx_permute): Use rotate
