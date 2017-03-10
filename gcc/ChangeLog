@@ -1,3 +1,11 @@
+2017-03-10  Martin Liska  <mliska@suse.cz>
+
+        PR target/65705
+        PR target/69804
+	* toplev.c (process_options): Enable MPX with LSAN and UBSAN.
+	* tree-chkp.c (chkp_walk_pointer_assignments): Verify that
+	FIELD != NULL.
+
 2017-03-10  Olivier Hainque  <hainque@adacore.com>
 
 	* tree-switch-conversion (array_value_type): Start by resetting
