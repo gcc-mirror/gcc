@@ -1,3 +1,13 @@
+2017-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/79952
+	* read-rtl-function.c (function_reader::read_rtx_operand): Update
+	x with result of extra_parsing_for_operand_code_0.
+	(function_reader::extra_parsing_for_operand_code_0): Convert
+	return type from void to rtx, returning x.  When reading
+	SYMBOL_REF with SYMBOL_FLAG_HAS_BLOCK_INFO, reallocate x to the
+	larger size containing struct block_symbol.
+
 2017-03-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Disallow
