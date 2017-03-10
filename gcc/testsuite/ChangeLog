@@ -1,5 +1,8 @@
 2017-03-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/79909
+	* gcc.target/powerpc/pr79909.c: New test.
+
 	PR tree-optimization/79972
 	* gcc.dg/pr79972.c: New test.
 

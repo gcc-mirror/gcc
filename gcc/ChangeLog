@@ -1,5 +1,10 @@
 2017-03-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/79909
+	* combine.c (try_combine): Use simplify_replace_rtx on individual
+	CALL_INSN_FUNCTION_USAGE elements instead of replace_rtx on copy_rtx
+	of the whole CALL_INSN_FUNCTION_USAGE.
+
 	PR tree-optimization/79972
 	* gimple-ssa-warn-alloca.c (alloca_call_type): Only call
 	get_range_info on SSA_NAMEs.  Formatting fixes.
