@@ -1,3 +1,10 @@
+2017-03-10  Will Schmidt <will_schmidt@vnet.ibm.com>
+ 
+	PR target/79941
+	* config/rs6000/rs6000.c (builtin_function_type): Add VMUL*U[HB]
+	entries to the case statement that marks unsigned arguments to
+	overloaded functions.
+
 2017-03-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Fix
