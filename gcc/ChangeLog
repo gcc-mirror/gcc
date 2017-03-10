@@ -1,3 +1,8 @@
+2017-03-10  Olivier Hainque  <hainque@adacore.com>
+
+	* tree-switch-conversion (array_value_type): Start by resetting
+	candidate type to it's main variant.
+
 2017-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/79909
