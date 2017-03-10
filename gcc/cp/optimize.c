@@ -262,7 +262,7 @@ maybe_thunk_body (tree fn, bool force)
   populate_clone_array (fn, fns);
 
   /* Don't use thunks if the base clone omits inherited parameters.  */
-  if (ctor_omit_inherited_parms (fns[0]))
+  if (fns[0] && ctor_omit_inherited_parms (fns[0]))
     return 0;
 
   DECL_ABSTRACT_P (fn) = false;
@@ -324,7 +324,7 @@ maybe_thunk_body (tree fn, bool force)
       if (length > max_parms)
         max_parms = length;
     }
-  args = (tree *) alloca (max_parms * sizeof (tree));
+  args = XALLOCAVEC (tree, max_parms);
 
   /* We know that any clones immediately follow FN in TYPE_METHODS.  */
   FOR_EACH_CLONE (clone, fn)

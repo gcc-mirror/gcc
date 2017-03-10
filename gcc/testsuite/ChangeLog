@@ -1,5 +1,8 @@
 2017-03-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/79899
+	* g++.dg/other/friend7.C: New test.
+
 	PR c++/79896
 	* g++.dg/ext/int128-5.C: New test.
 
