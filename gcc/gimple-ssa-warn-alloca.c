@@ -300,8 +300,9 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
       ret = alloca_type_and_limit (ALLOCA_OK);
     }
   // Check the range info if available.
-  else if (value_range_type range_type = get_range_info (len, &min, &max))
+  else if (TREE_CODE (len) == SSA_NAME)
     {
+      value_range_type range_type = get_range_info (len, &min, &max);
       if (range_type == VR_RANGE)
 	{
 	  if (wi::leu_p (max, max_size))
@@ -328,7 +329,6 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
 	      gimple *def = SSA_NAME_DEF_STMT (len);
 	      if (gimple_assign_cast_p (def)
 		  && TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (def))))
-
 		{
 		  len_casted = gimple_assign_rhs1 (def);
 		  range_type = get_range_info (len_casted, &min, &max);
@@ -344,8 +344,7 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
 	      else if (range_type == VR_ANTI_RANGE)
 		return alloca_type_and_limit (ALLOCA_UNBOUNDED);
 	      else if (range_type != VR_VARYING)
-		return
-		  alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE, max);
+		return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE, max);
 	    }
 	}
       else if (range_type == VR_ANTI_RANGE)

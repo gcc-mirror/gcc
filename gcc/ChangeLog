@@ -1,3 +1,9 @@
+2017-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79972
+	* gimple-ssa-warn-alloca.c (alloca_call_type): Only call
+	get_range_info on SSA_NAMEs.  Formatting fixes.
+
 2017-03-10  Richard Biener  <rguenther@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 
