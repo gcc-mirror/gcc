@@ -2626,7 +2626,7 @@ check_template_keyword (tree decl)
 	  bool found = false;
 
 	  for (ovl_iterator iter (MAYBE_BASELINK_FUNCTIONS (decl));
-	       iter && !found; ++iter)
+	       !found && iter; ++iter)
 	    {
 	      tree fn = *iter;
 	      if (TREE_CODE (fn) == TEMPLATE_DECL

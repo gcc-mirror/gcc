@@ -15938,7 +15938,7 @@ cp_parser_template_name (cp_parser* parser,
       bool found = false;
 
       for (ovl_iterator iter (MAYBE_BASELINK_FUNCTIONS (decl));
-	   iter && !found; ++iter)
+	   !found && iter; ++iter)
 	if (TREE_CODE (*iter) == TEMPLATE_DECL)
 	  found = true;
 

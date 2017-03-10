@@ -4374,10 +4374,10 @@ maybe_warn_sized_delete (enum tree_code code)
   tree sized = NULL_TREE;
   tree unsized = NULL_TREE;
 
-  for (tree ovl = IDENTIFIER_GLOBAL_VALUE (ansi_opname (code));
-       ovl; ovl = OVL_NEXT (ovl))
+  for (ovl_iterator iter (IDENTIFIER_GLOBAL_VALUE (ansi_opname (code)));
+       iter; ++iter)
     {
-      tree fn = OVL_CURRENT (ovl);
+      tree fn = *iter;
       /* We're only interested in usual deallocation functions.  */
       if (!usual_deallocation_fn_p (fn))
 	continue;

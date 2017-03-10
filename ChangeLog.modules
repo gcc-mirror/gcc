@@ -1,5 +1,25 @@
 2017-03-10  Nathan Sidwell  <nathan@acm.org>
 
+	Add OVERLOAD iterator part 2
+	gcc/cp/
+	* class.c (handle_using_decl,
+	maybe_warn_about_overly_private_class, modify_all_vtables,
+	get_basefndecls, warn_hidden, add_implicitly_declared_members,
+	adjust_clone_args, deduce_noexcept_on_destructors, default_ctor_p,
+	in_class_defaulted_default_constructor, user_provided_p,
+	type_has_user_provided_constructor,
+	type_has_user_provided_or_explicit_constructor,
+	type_has_virtual_destructor, type_has_move_constructor,
+	type_has_move_assign, type_has_user_declared_move_constructor,
+	type_build_ctor_call, type_build_dtor_call,
+	type_requires_array_cookie, explain_non_literal_class,
+	finish_struct, resolve_address_of_overloaded_function): Use new
+	iterator.
+	* decl2.c (maybe_warn_sized_delete): Likewise.
+	* parser.c (cp_parser_template_name): Tweak loop exit test.
+	* semantics.c (finish_call_expr): Likewise.
+	* typeck.c (check_template_keyword): Likewise.
+
 	Add OVERLOAD iterator, part 1
 	Add MAYBE_BASELINK_FUNCTIONS
 	gcc/cp/

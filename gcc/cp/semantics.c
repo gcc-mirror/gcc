@@ -2310,7 +2310,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	  if (cfun)
 	    {
 	      bool abnormal = true;
-	      for (ovl_iterator iter (fn); iter && abnormal; ++iter)
+	      for (ovl_iterator iter (fn); abnormal && iter; ++iter)
 		{
 		  tree fndecl = *iter;
 		  if (TREE_CODE (fndecl) != FUNCTION_DECL
