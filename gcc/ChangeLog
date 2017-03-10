@@ -1,3 +1,9 @@
+2017-03-10  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/78911
+	* lra-assigns.c (must_not_spill_p): New function.
+	(spill_for): Use it.
+
 2017-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/79981

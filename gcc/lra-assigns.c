@@ -889,6 +889,30 @@ assign_temporarily (int regno, int hard_regno)
   live_pseudos_reg_renumber[regno] = hard_regno;
 }
 
+/* Return true iff there is a reason why pseudo SPILL_REGNO should not
+   be spilled.  */
+static bool
+must_not_spill_p (unsigned spill_regno)
+{
+  if ((pic_offset_table_rtx != NULL
+       && spill_regno == REGNO (pic_offset_table_rtx))
+      || ((int) spill_regno >= lra_constraint_new_regno_start
+	  && ! bitmap_bit_p (&lra_inheritance_pseudos, spill_regno)
+	  && ! bitmap_bit_p (&lra_split_regs, spill_regno)
+	  && ! bitmap_bit_p (&lra_subreg_reload_pseudos, spill_regno)
+	  && ! bitmap_bit_p (&lra_optional_reload_pseudos, spill_regno)))
+    return true;
+  /* A reload pseudo that requires a singleton register class should
+     not be spilled.
+     FIXME: this mitigates the issue on certain i386 patterns, but
+     does not solve the general case where existing reloads fully
+     cover a limited register class.  */
+  if (!bitmap_bit_p (&non_reload_pseudos, spill_regno)
+      && reg_class_size [reg_preferred_class (spill_regno)] == 1)
+    return true;
+  return false;
+}
+
 /* Array used for sorting reload pseudos for subsequent allocation
    after spilling some pseudo.	*/
 static int *sorted_reload_pseudos;
@@ -960,13 +984,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
       /* Spill pseudos.	 */
       static_p = false;
       EXECUTE_IF_SET_IN_BITMAP (&spill_pseudos_bitmap, 0, spill_regno, bi)
-	if ((pic_offset_table_rtx != NULL
-	     && spill_regno == REGNO (pic_offset_table_rtx))
-	    || ((int) spill_regno >= lra_constraint_new_regno_start
-		&& ! bitmap_bit_p (&lra_inheritance_pseudos, spill_regno)
-		&& ! bitmap_bit_p (&lra_split_regs, spill_regno)
-		&& ! bitmap_bit_p (&lra_subreg_reload_pseudos, spill_regno)
-		&& ! bitmap_bit_p (&lra_optional_reload_pseudos, spill_regno)))
+	if (must_not_spill_p (spill_regno))
 	  goto fail;
 	else if (non_spilled_static_chain_regno_p (spill_regno))
 	  static_p = true;
