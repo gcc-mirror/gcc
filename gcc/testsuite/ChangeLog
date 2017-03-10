@@ -1,5 +1,11 @@
+2017-03-10  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/78911
+	* gcc.target/i386/pr78911-1.c: New test.
+	* gcc.target/i386/pr78911-2.c: New test.
+
 2017-03-10  Will Schmidt <will_schmidt@vnet.ibm.com>
-    
+
 	PR target/79941
 	* gcc.target/powerpc/fold-vec-mult-even_odd_misc.c: New test.
 	* gcc.target/powerpc/fold-vec-mult-even_odd_char.c: New test.
