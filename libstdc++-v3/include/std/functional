@@ -73,9 +73,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Invoke a callable object.
   template<typename _Callable, typename... _Args>
-    inline result_of_t<_Callable&&(_Args&&...)>
+    inline invoke_result_t<_Callable, _Args...>
     invoke(_Callable&& __fn, _Args&&... __args)
-    noexcept(is_nothrow_callable_v<_Callable&&(_Args&&...)>)
+    noexcept(is_nothrow_invocable_v<_Callable, _Args...>)
     {
       return std::__invoke(std::forward<_Callable>(__fn),
 			   std::forward<_Args>(__args)...);
@@ -903,7 +903,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     class _Not_fn
     {
       template<typename _Fn2, typename... _Args>
-	using __inv_res_t = result_of_t<_Fn2(_Args&&...)>;
+	using __inv_res_t = typename __invoke_result<_Fn2, _Args...>::type;
 
       template<typename _Tp>
 	static decltype(!std::declval<_Tp>())

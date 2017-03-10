@@ -85,13 +85,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Invoke a callable object.
   template<typename _Callable, typename... _Args>
-    constexpr typename result_of<_Callable&&(_Args&&...)>::type
+    constexpr typename __invoke_result<_Callable, _Args...>::type
     __invoke(_Callable&& __fn, _Args&&... __args)
-    noexcept(__is_nothrow_callable<_Callable&&(_Args&&...)>::value)
+    noexcept(__is_nothrow_invocable<_Callable, _Args...>::value)
     {
-      using __result_of = result_of<_Callable&&(_Args&&...)>;
-      using __type = typename __result_of::type;
-      using __tag = typename __result_of::__invoke_type;
+      using __result = __invoke_result<_Callable, _Args...>;
+      using __type = typename __result::type;
+      using __tag = typename __result::__invoke_type;
       return std::__invoke_impl<__type>(__tag{}, std::forward<_Callable>(__fn),
 					std::forward<_Args>(__args)...);
     }

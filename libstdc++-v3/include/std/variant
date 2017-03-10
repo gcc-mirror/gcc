@@ -1236,7 +1236,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       size_t
       operator()(const variant<_Types...>& __t) const
-      noexcept((is_nothrow_callable_v<hash<decay_t<_Types>>(_Types)> && ...))
+      noexcept((is_nothrow_invocable_v<hash<decay_t<_Types>>, _Types> && ...))
       {
 	if (!__t.valueless_by_exception())
 	  {

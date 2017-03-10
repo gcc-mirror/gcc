@@ -1,3 +1,5 @@
+// { dg-do compile { target c++11 } }
+
 // Copyright (C) 2016-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -15,12 +17,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile { target c++11 } }
+// NB: This file is for testing type_traits with NO OTHER INCLUDES.
 
 #include <type_traits>
 
-template<typename T, typename R = void>
-  constexpr bool is_callable() { return std::__is_callable<T, R>::value; }
-
-#define IS_CALLABLE_DEFINED
-#include "value.cc"
+namespace std
+{
+  struct test_type { };
+  template struct __is_nothrow_invocable<test_type>;
+}

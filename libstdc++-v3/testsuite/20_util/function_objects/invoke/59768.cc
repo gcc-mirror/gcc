@@ -35,9 +35,3 @@ test01()
   std::invoke(&A::foo, refc, 100);		// const lvalue
   std::invoke(&A::foo, std::move(refc), 100);	// const rvalue
 }
-
-int
-main()
-{
-  test01();
-}

@@ -24,5 +24,5 @@
 namespace std
 {
   struct test_type { };
-  template struct __is_callable<test_type(), int>;
+  template struct __is_invocable<test_type>;
 }

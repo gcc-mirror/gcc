@@ -1085,7 +1085,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__shared_ptr(_Yp* __p, _Deleter __d)
 	: _M_ptr(__p), _M_refcount(__p, __d)
 	{
-	  static_assert(__is_callable<_Deleter&(_Yp*&)>::value,
+	  static_assert(__is_invocable<_Deleter&, _Yp*&>::value,
 	      "deleter expression d(p) is well-formed");
 	  _M_enable_shared_from_this_with(__p);
 	}
@@ -1095,7 +1095,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__shared_ptr(_Yp* __p, _Deleter __d, _Alloc __a)
 	: _M_ptr(__p), _M_refcount(__p, __d, std::move(__a))
 	{
-	  static_assert(__is_callable<_Deleter&(_Yp*&)>::value,
+	  static_assert(__is_invocable<_Deleter&, _Yp*&>::value,
 	      "deleter expression d(p) is well-formed");
 	  _M_enable_shared_from_this_with(__p);
 	}

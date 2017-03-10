@@ -19,9 +19,25 @@
 
 #include <type_traits>
 
-template<typename T, typename R = void>
-  constexpr bool is_nt_callable()
-  { return std::__is_nothrow_callable<T, R>::value; }
+template<typename... T>
+  constexpr bool is_nt_invocable()
+  { return std::__is_nothrow_invocable<T...>::value; }
 
-#define IS_NT_CALLABLE_DEFINED
+  template<typename R, typename... T>
+  constexpr bool is_nt_invocable_conv(std::true_type)
+  {
+    using result_type = typename std::__invoke_result<T...>::type;
+    return std::is_void<R>::value || std::is_convertible<result_type, R>::value;
+  }
+
+template<typename R, typename... T>
+  constexpr bool is_nt_invocable_conv(std::false_type) { return false; }
+
+template<typename R, typename... T>
+  constexpr bool is_nt_invocable_r()
+  {
+    return is_nt_invocable_conv<R, T...>(std::__is_nothrow_invocable<T...>{});
+  }
+
+#define IS_NT_INVOCABLE_DEFINED
 #include "value.cc"
