@@ -1,3 +1,9 @@
+2017-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/79921
+	* c-indentation.c (warn_for_misleading_indentation): Remove parens
+	from inform's message, so that xgettext can locate it.
+
 2017-03-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/79962

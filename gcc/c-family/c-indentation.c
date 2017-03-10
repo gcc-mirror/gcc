@@ -607,8 +607,8 @@ warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
 		      "this %qs clause does not guard...",
 		      guard_tinfo_to_string (guard_tinfo)))
 	inform (next_tinfo.location,
-		("...this statement, but the latter is misleadingly indented"
-		 " as if it were guarded by the %qs"),
+		"...this statement, but the latter is misleadingly indented"
+		" as if it were guarded by the %qs",
 		guard_tinfo_to_string (guard_tinfo));
     }
 }
