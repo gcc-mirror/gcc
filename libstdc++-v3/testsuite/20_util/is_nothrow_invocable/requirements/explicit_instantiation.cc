@@ -1,4 +1,5 @@
-// { dg-do compile { target c++11 } }
+// { dg-options "-std=gnu++17" }
+// { dg-do compile }
 
 // Copyright (C) 2016-2017 Free Software Foundation, Inc.
 //
@@ -24,5 +25,6 @@
 namespace std
 {
   struct test_type { };
-  template struct __is_nothrow_callable<test_type(), int>;
+  template struct is_nothrow_invocable<test_type>;
+  template struct is_nothrow_invocable_r<int, test_type>;
 }

@@ -25,6 +25,13 @@
 void test01()
 {
   // Check for required typedefs
-  typedef std::is_nothrow_callable<int(), void>       test_type;
+  typedef std::is_nothrow_invocable<int>       test_type;
+  static_assert( std::is_base_of_v<std::false_type, test_type> );
+}
+
+void test02()
+{
+  // Check for required typedefs
+  typedef std::is_nothrow_invocable_r<void, int>       test_type;
   static_assert( std::is_base_of_v<std::false_type, test_type> );
 }

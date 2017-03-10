@@ -24,6 +24,6 @@
 void test01()
 {
   // Check for required typedefs
-  typedef std::__is_callable<int(), void>     test_type;
+  typedef std::__is_invocable<int>     test_type;
   static_assert( std::is_base_of<std::false_type, test_type>::value, "" );
 }

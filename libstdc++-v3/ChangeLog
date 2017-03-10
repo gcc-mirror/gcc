@@ -1,3 +1,39 @@
+2017-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/invoke.h (__invoke): Use __invoke_result instead of
+	result_of, and __is_nothrow_invocable instead of
+	__is_nothrow_callable.
+	* include/bits/shared_ptr_base.h (__shared_ptr): Use __is_invocable
+	instead of __is_callable.
+	* include/std/functional (invoke): use invoke_result_t instead of
+	result_of_t and is_nothrow_invocable instead of is_nothrow_callable.
+	(_Not_fn): Use __invoke_result instead of result_of.
+	* include/std/type_traits (__result_of_memobj, __result_of_memfun):
+	Remove partial specializations for reference_wrapper types.
+	(__result_of_impl): Use __inv_unwrap to strip reference_wrapper.
+	(__invoke_result): Define replacement for result_of and then use it to
+	define result_of.
+	(__is_callable_impl, __is_callable, __is_nothrow_callable): Replace
+	with __is_invocable_impl, __is_invocable, and __is_nothrow_invocable
+	respectively.
+	(invoke_result, invoke_result_t): Define for C++17.
+	(is_callable, is_nothrow_callable): Replace with is_invocable,
+	is_invocable_r, is_nothrow_invocable, and is_nothrow_invocable_r.
+	(is_callable_v, is_nothrow_callable_v): Replace with is_invocable_v,
+	is_invocable_r_v, is_nothrow_invocable_v, and is_nothrow_invocable_r_v.
+	* include/std/variant (hash<variant<T...>>): Use is_nothrow_invocable_v
+	instead of is_nothrow_callable_v.
+	* testsuite/20_util/function_objects/invoke/59768.cc: Remove unused
+	main function.
+	* testsuite/20_util/function_objects/not_fn/1.cc: Use is_invocable
+	instead of is_callable.
+	* testsuite/20_util/is_callable/*: Rename directory and adjust tests
+	to use new traits.
+	* testsuite/20_util/is_notjrow_callable/*: Likewise.
+	* testsuite/20_util/optional/hash.cc: Use is_invocable_v instead of
+	is_callable.
+	* testsuite/20_util/variant/hash.cc: Likewise.
+
 2017-03-10  George Lander  <george.lander@arm.com>
 
 	* acinclude.m4 (glibcxx_cv_obsolete_isnan): Define
