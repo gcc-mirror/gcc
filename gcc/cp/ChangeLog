@@ -1,3 +1,11 @@
+2017-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79960 - alias templates and partial ordering
+	* pt.c (comp_template_args): Add partial_order parm.
+	(template_args_equal): Likewise.
+	(comp_template_args_porder): New.
+	(get_partial_spec_bindings): Use it.
+
 2017-03-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/79967
