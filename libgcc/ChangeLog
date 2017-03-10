@@ -1,3 +1,8 @@
+2017-03-10  John Marino  <gnugcc@marino.st>
+
+	* config/aarch64/freebsd-unwind.h: New file.
+	* config.host: Add aarch64-*-freebsd unwinder.
+
 2017-03-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/crtrestvr.s: Use .machine altivec.
