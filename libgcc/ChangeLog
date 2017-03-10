@@ -1,3 +1,12 @@
+2017-03-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* configure.ac (test for libgcc_cv_powerpc_float128): Temporarily
+	modify CFLAGS.  Add -mabi=altivec -mvsx -mfloat128.
+	(test for libgcc_cv_powerpc_float128_hw): Add -mpower9-vector and
+	-mfloat128-hardware to the CFLAGS.  Fix syntax error in the C snippet.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2017-03-02  Jonathan Yong <10walls@gmail.com>
 
 	* config/i386/gthr-win32.h: Define NOGDI before

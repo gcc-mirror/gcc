@@ -4686,6 +4686,14 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
     }
 
+  if (TARGET_FLOAT128_HW && !TARGET_64BIT)
+    {
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_HW) != 0)
+	error ("-mfloat128-hardware requires -m64");
+
+      rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
+    }
+
   if (TARGET_FLOAT128_HW && !TARGET_FLOAT128_KEYWORD
       && (rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_HW) != 0
       && (rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_KEYWORD) == 0)

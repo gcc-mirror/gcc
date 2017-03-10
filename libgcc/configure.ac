@@ -379,23 +379,24 @@ case ${host} in
 # software libraries, and whether the assembler can handle xsaddqp
 # for hardware support.
 powerpc*-*-linux*)
+  saved_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -mabi=altivec -mvsx -mfloat128"
   AC_CACHE_CHECK([for PowerPC ISA 2.06 to build __float128 libraries],
 		 [libgcc_cv_powerpc_float128],
 		 [AC_COMPILE_IFELSE(
-    [#pragma GCC target ("vsx")
-     vector double dadd (vector double a, vector double b) { return a + b; }],
+    [vector double dadd (vector double a, vector double b) { return a + b; }],
     [libgcc_cv_powerpc_float128=yes],
     [libgcc_cv_powerpc_float128=no])])
 
+  CFLAGS="$CFLAGS -mpower9-vector -mfloat128-hardware"
   AC_CACHE_CHECK([for PowerPC ISA 3.0 to build hardware __float128 libraries],
 		 [libgcc_cv_powerpc_float128_hw],
 		 [AC_COMPILE_IFELSE(
-    [#pragma GCC target ("vsx,power9-vector")
-     #include <sys/auxv.h>
+    [#include <sys/auxv.h>
      #ifndef AT_PLATFORM
      #error "AT_PLATFORM is not defined"
      #endif
-     vector unsigned char (vector unsigned char a, vector unsigned char b)
+     vector unsigned char add (vector unsigned char a, vector unsigned char b)
      {
        vector unsigned char ret;
        __asm__ ("xsaddqp %0,%1,%2" : "=v" (ret) : "v" (a), "v" (b));
@@ -406,6 +407,7 @@ powerpc*-*-linux*)
 	__attribute__ ((__ifunc__ ("add_resolver")));],
     [libgcc_cv_powerpc_float128_hw=yes],
     [libgcc_cv_powerpc_float128_hw=no])])
+  CFLAGS="$saved_CFLAGS"
 esac
 
 # Collect host-machine-specific information.
