@@ -2935,7 +2935,7 @@ check_explicit_specialization (tree declarator,
 		     methods->iterate (idx, &ovl);
 		     ++idx)
 		  {
-		    if (!DECL_CONV_FN_P (OVL_CURRENT (ovl)))
+		    if (!DECL_CONV_FN_P (OVL_FIRST (ovl)))
 		      /* There are no more conversion functions.  */
 		      break;
 
@@ -3911,8 +3911,7 @@ check_template_shadow (tree decl)
     return true;
 
   /* Figure out what we're shadowing.  */
-  if (TREE_CODE (decl) == OVERLOAD)
-    decl = OVL_CURRENT (decl);
+  decl = OVL_FIRST (decl);
   olddecl = innermost_non_namespace_value (DECL_NAME (decl));
 
   /* If there's no previous binding for this name, we're not shadowing
@@ -14149,7 +14148,7 @@ tsubst_baselink (tree baselink, tree object_type,
     if (BASELINK_P (baselink))
       fns = BASELINK_FUNCTIONS (baselink);
     if (!template_id_p && !really_overloaded_fn (fns)
-	&& !mark_used (OVL_CURRENT (fns), complain) && !(complain & tf_error))
+	&& !mark_used (OVL_FIRST (fns), complain) && !(complain & tf_error))
       return error_mark_node;
 
     /* Add back the template arguments, if present.  */

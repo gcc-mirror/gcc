@@ -6030,7 +6030,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 		    {
 		      tree fns = get_fns (tid);
 		      if (!OVL_CHAIN (fns))
-			tmpl = OVL_CURRENT (fns);
+			tmpl = OVL_FIRST (fns);
 		      error_at (token->location, "function template-id %qD "
 				"in nested-name-specifier", tid);
 		    }
@@ -25765,7 +25765,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	  /* If we have a single function from a using decl, pull it out.  */
 	  if (TREE_CODE (decl) == OVERLOAD
 	      && !really_overloaded_fn (decl))
-	    decl = OVL_FUNCTION (decl);
+	    decl = OVL_FIRST (decl);
 
 	  if (pushed_scope)
 	    pop_scope (pushed_scope);

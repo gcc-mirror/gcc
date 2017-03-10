@@ -1,5 +1,17 @@
 2017-03-10  Nathan Sidwell  <nathan@acm.org>
 
+	Add OVERLOAD iterator part 5
+	gcc/cp/
+	* decl2.c (mark_used): Use new accessors.
+	* dump.c (cp_dump_tree): Likewise.
+	* error.c (dump_decl, dump_expr, location_of): Likewise.
+	* init.c (build_offset_ref): Likewise.
+	* parser.c (cp_parser_nested_name_specifier_opt,
+	cp_parser_lookup_name): Likewise.
+	* pt.c (check_explicit_specialization, check_template_shadow,
+	tsubst_baselink): Likewise.
+	* ptree.c (cxx_print_xnode): Likewise.
+
 	Add OVERLOAD iterator part 4
 	gcc/cp/
 	* cp-tree.h (OVL_FIRST, OVL_NAME): New accessors.
