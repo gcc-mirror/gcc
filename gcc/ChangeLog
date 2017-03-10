@@ -1,3 +1,11 @@
+2017-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79981
+	* tree-vrp.c (extract_range_basic): Handle IMAGPART_EXPR of
+	ATOMIC_COMPARE_EXCHANGE ifn result.
+	(stmt_interesting_for_vrp, vrp_visit_stmt): Handle
+	IFN_ATOMIC_COMPARE_EXCHANGE.
+
 2017-03-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR driver/79875

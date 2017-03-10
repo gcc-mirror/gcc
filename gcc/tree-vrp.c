@@ -4107,7 +4107,7 @@ extract_range_basic (value_range *vr, gimple *stmt)
     }
   /* Handle extraction of the two results (result of arithmetics and
      a flag whether arithmetics overflowed) from {ADD,SUB,MUL}_OVERFLOW
-     internal function.  */
+     internal function.  Similarly from ATOMIC_COMPARE_EXCHANGE.  */
   else if (is_gimple_assign (stmt)
 	   && (gimple_assign_rhs_code (stmt) == REALPART_EXPR
 	       || gimple_assign_rhs_code (stmt) == IMAGPART_EXPR)
@@ -4131,6 +4131,16 @@ extract_range_basic (value_range *vr, gimple *stmt)
 		  break;
 		case IFN_MUL_OVERFLOW:
 		  subcode = MULT_EXPR;
+		  break;
+		case IFN_ATOMIC_COMPARE_EXCHANGE:
+		  if (code == IMAGPART_EXPR)
+		    {
+		      /* This is the boolean return value whether compare and
+			 exchange changed anything or not.  */
+		      set_value_range (vr, VR_RANGE, build_int_cst (type, 0),
+				       build_int_cst (type, 1), NULL);
+		      return;
+		    }
 		  break;
 		default:
 		  break;
@@ -7283,6 +7293,7 @@ stmt_interesting_for_vrp (gimple *stmt)
 	  case IFN_ADD_OVERFLOW:
 	  case IFN_SUB_OVERFLOW:
 	  case IFN_MUL_OVERFLOW:
+	  case IFN_ATOMIC_COMPARE_EXCHANGE:
 	    /* These internal calls return _Complex integer type,
 	       but are interesting to VRP nevertheless.  */
 	    if (lhs && TREE_CODE (lhs) == SSA_NAME)
@@ -8308,6 +8319,7 @@ vrp_visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
       case IFN_ADD_OVERFLOW:
       case IFN_SUB_OVERFLOW:
       case IFN_MUL_OVERFLOW:
+      case IFN_ATOMIC_COMPARE_EXCHANGE:
 	/* These internal calls return _Complex integer type,
 	   which VRP does not track, but the immediate uses
 	   thereof might be interesting.  */
