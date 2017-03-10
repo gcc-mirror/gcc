@@ -1189,31 +1189,25 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
 
   if (optimize_specialization_lookup_p (tmpl))
     {
-      tree class_template;
-      tree class_specialization;
-      vec<tree, va_gc> *methods;
-      tree fns;
-      int idx;
-
       /* The template arguments actually apply to the containing
 	 class.  Find the class specialization with those
 	 arguments.  */
-      class_template = CLASSTYPE_TI_TEMPLATE (DECL_CONTEXT (tmpl));
-      class_specialization
+      tree class_template = CLASSTYPE_TI_TEMPLATE (DECL_CONTEXT (tmpl));
+      tree class_specialization
 	= retrieve_specialization (class_template, args, 0);
       if (!class_specialization)
 	return NULL_TREE;
       /* Now, find the appropriate entry in the CLASSTYPE_METHOD_VEC
 	 for the specialization.  */
-      idx = class_method_index_for_fn (class_specialization, tmpl);
+      int idx = class_method_index_for_fn (class_specialization, tmpl);
       if (idx == -1)
 	return NULL_TREE;
       /* Iterate through the methods with the indicated name, looking
 	 for the one that has an instance of TMPL.  */
-      methods = CLASSTYPE_METHOD_VEC (class_specialization);
-      for (fns = (*methods)[idx]; fns; fns = OVL_NEXT (fns))
+      vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (class_specialization);
+      for (ovl_iterator iter ((*methods)[idx]); iter; ++iter)
 	{
-	  tree fn = OVL_CURRENT (fns);
+	  tree fn = *iter;
 	  if (DECL_TEMPLATE_INFO (fn) && DECL_TI_TEMPLATE (fn) == tmpl
 	      /* using-declarations can add base methods to the method vec,
 		 and we don't want those here.  */
@@ -1743,8 +1737,8 @@ iterative_hash_template_arg (tree arg, hashval_t val)
       return val;
 
     case OVERLOAD:
-      for (; arg; arg = OVL_NEXT (arg))
-	val = iterative_hash_template_arg (OVL_CURRENT (arg), val);
+      for (ovl_iterator iter (arg); iter; ++iter)
+	val = iterative_hash_template_arg (*iter, val);
       return val;
 
     case CONSTRUCTOR:
@@ -2114,9 +2108,9 @@ determine_specialization (tree template_id,
       if (targs != error_mark_node)
         templates = tree_cons (targs, fns, templates);
     }
-  else for (; fns; fns = OVL_NEXT (fns))
+  else for (ovl_iterator iter (fns); iter; ++iter)
     {
-      tree fn = OVL_CURRENT (fns);
+      tree fn = *iter;
 
       if (TREE_CODE (fn) == TEMPLATE_DECL)
 	{
@@ -2947,8 +2941,8 @@ check_explicit_specialization (tree declarator,
 
 		    /* Glue all these conversion functions together
 		       with those we already have.  */
-		    for (; ovl; ovl = OVL_NEXT (ovl))
-		      fns = ovl_cons (OVL_CURRENT (ovl), fns);
+		    for (ovl_iterator iter (ovl); iter; ++iter)
+		      fns = ovl_cons (*iter, fns);
 		  }
 	    }
 
@@ -19356,9 +19350,9 @@ resolve_overloaded_unification (tree tparms,
       tree expl_subargs = TREE_OPERAND (arg, 1);
       arg = TREE_OPERAND (arg, 0);
 
-      for (; arg; arg = OVL_NEXT (arg))
+      for (ovl_iterator iter (arg); iter; ++iter)
 	{
-	  tree fn = OVL_CURRENT (arg);
+	  tree fn = *iter;
 	  tree subargs, elem;
 
 	  if (TREE_CODE (fn) != TEMPLATE_DECL)
@@ -19397,15 +19391,17 @@ resolve_overloaded_unification (tree tparms,
        not just the function on its own.  */
     return false;
   else
-    for (; arg; arg = OVL_NEXT (arg))
-      if (try_one_overload (tparms, targs, tempargs, parm,
-			    TREE_TYPE (OVL_CURRENT (arg)),
-			    strict, sub_strict, addr_p, explain_p)
-	  && (!goodfn || !decls_match (goodfn, OVL_CURRENT (arg))))
-	{
-	  goodfn = OVL_CURRENT (arg);
-	  ++good;
-	}
+    for (ovl_iterator iter (arg); iter; ++iter)
+      {
+	tree fn = *iter;
+	if (try_one_overload (tparms, targs, tempargs, parm, TREE_TYPE (fn),
+			      strict, sub_strict, addr_p, explain_p)
+	    && (!goodfn || !decls_match (goodfn, fn)))
+	  {
+	    goodfn = fn;
+	    ++good;
+	  }
+      }
 
   /* [temp.deduct.type] A template-argument can be deduced from a pointer
      to function or pointer to member function argument if the set of
@@ -19487,9 +19483,9 @@ resolve_nondeduced_context (tree orig_expr, tsubst_flags_t complain)
       tree badfn = NULL_TREE;
       tree badargs = NULL_TREE;
 
-      for (; arg; arg = OVL_NEXT (arg))
+      for (ovl_iterator iter (arg); iter; ++iter)
 	{
-	  tree fn = OVL_CURRENT (arg);
+	  tree fn = *iter;
 	  tree subargs, elem;
 
 	  if (TREE_CODE (fn) != TEMPLATE_DECL)
@@ -23879,12 +23875,10 @@ type_dependent_expression_p (tree expression)
       gcc_assert (TREE_CODE (expression) == OVERLOAD
 		  || TREE_CODE (expression) == FUNCTION_DECL);
 
-      while (expression)
-	{
-	  if (type_dependent_expression_p (OVL_CURRENT (expression)))
-	    return true;
-	  expression = OVL_NEXT (expression);
-	}
+      for (ovl_iterator iter (expression); iter; ++iter)
+	if (type_dependent_expression_p (*iter))
+	  return true;
+
       return false;
     }
 
@@ -24233,12 +24227,9 @@ dependent_template_p (tree tmpl)
 {
   if (TREE_CODE (tmpl) == OVERLOAD)
     {
-      while (tmpl)
-	{
-	  if (dependent_template_p (OVL_CURRENT (tmpl)))
-	    return true;
-	  tmpl = OVL_NEXT (tmpl);
-	}
+      for (ovl_iterator iter (tmpl); iter; ++iter)
+	if (dependent_template_p (*iter))
+	  return true;
       return false;
     }
 
@@ -25071,10 +25062,10 @@ do_class_deduction (tree ptype, tree tmpl, tree init, tsubst_flags_t complain)
 
   if (CLASSTYPE_METHOD_VEC (type))
     // FIXME cache artificial deduction guides
-    for (tree fns = CLASSTYPE_CONSTRUCTORS (type); fns; fns = OVL_NEXT (fns))
+    for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (type));
+	 iter; ++iter)
       {
-	tree fn = OVL_CURRENT (fns);
-	tree guide = build_deduction_guide (fn, outer_args, complain);
+	tree guide = build_deduction_guide (*iter, outer_args, complain);
 	cands = ovl_cons (guide, cands);
       }
 

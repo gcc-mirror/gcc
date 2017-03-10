@@ -742,22 +742,21 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	 previous declaration.)  */
       if (t && TREE_CODE (t) == OVERLOAD)
 	{
-	  tree match;
+	  tree match = NULL_TREE;
 
 	  if (TREE_CODE (x) == FUNCTION_DECL)
-	    for (match = t; match; match = OVL_NEXT (match))
+	    for (ovl_iterator iter (t); iter; ++iter)
 	      {
-		if (decls_match (OVL_CURRENT (match), x))
-		  break;
+		if (decls_match (*iter, x))
+		  {
+		    match = *iter;
+		    break;
+		  }
 	      }
 	  else
 	    /* Just choose one.  */
-	    match = t;
-
-	  if (match)
-	    t = OVL_CURRENT (match);
-	  else
-	    t = NULL_TREE;
+	    match = OVL_CURRENT (t);
+	  t = match;
 	}
 
       if (t && t != error_mark_node)
@@ -2216,17 +2215,13 @@ lookup_extern_c_fun_in_all_ns (tree function)
        iter;
        iter = iter->previous)
     {
-      tree ovl;
-      for (ovl = iter->value; ovl; ovl = OVL_NEXT (ovl))
+      for (ovl_iterator it (iter->value); it; ++it)
 	{
-	  tree decl = OVL_CURRENT (ovl);
-	  if (decl
-	      && TREE_CODE (decl) == FUNCTION_DECL
+	  tree decl = *it;
+	  if (TREE_CODE (decl) == FUNCTION_DECL
 	      && DECL_EXTERN_C_P (decl)
 	      && !DECL_ARTIFICIAL (decl))
-	    {
-	      return decl;
-	    }
+	    return decl;
 	}
     }
   return NULL;
@@ -2244,12 +2239,10 @@ c_linkage_bindings (tree name)
        iter;
        iter = iter->previous)
     {
-      tree ovl;
-      for (ovl = iter->value; ovl; ovl = OVL_NEXT (ovl))
+      for (ovl_iterator it (iter->value); it; ++it)
 	{
-	  tree decl = OVL_CURRENT (ovl);
-	  if (decl
-	      && DECL_EXTERN_C_P (decl)
+	  tree decl = *it;
+	  if (DECL_EXTERN_C_P (decl)
 	      && !DECL_ARTIFICIAL (decl))
 	    {
 	      if (decls == NULL_TREE)
@@ -3592,10 +3585,10 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
   if (is_overloaded_fn (old))
     {
       tree found = NULL_TREE;
-      tree elt = old;
-      for (; elt; elt = OVL_NEXT (elt))
+
+      for (ovl_iterator iter (old); iter; ++iter)
 	{
-	  tree ofn = OVL_CURRENT (elt);
+	  tree ofn = *iter;
 	  /* Adjust DECL_CONTEXT first so decls_match will return true
 	     if DECL will match a declaration in an inline namespace.  */
 	  DECL_CONTEXT (decl) = DECL_CONTEXT (ofn);
@@ -4229,14 +4222,14 @@ pushdecl_top_level_and_finish (tree x, tree init)
 static tree
 merge_functions (tree s1, tree s2)
 {
-  for (; s2; s2 = OVL_NEXT (s2))
+  for (ovl_iterator outer (s2); outer; ++outer)
     {
-      tree fn2 = OVL_CURRENT (s2);
-      tree fns1;
+      tree fn2 = *outer;
+      bool found = false;
 
-      for (fns1 = s1; fns1; fns1 = OVL_NEXT (fns1))
+      for (ovl_iterator inner (s1); !found && inner; ++inner)
 	{
-	  tree fn1 = OVL_CURRENT (fns1);
+	  tree fn1 = *inner;
 
 	  /* If the function from S2 is already in S1, there is no
 	     need to add it again.  For `extern "C"' functions, we
@@ -4244,11 +4237,11 @@ merge_functions (tree s1, tree s2)
 	     different namespaces, but let's leave them in case
 	     they have different default arguments.  */
 	  if (fn1 == fn2)
-	    break;
+	    found = true;
 	}
 
       /* If we exhausted all of the functions in S1, FN2 is new.  */
-      if (!fns1)
+      if (!found)
 	s1 = build_overload (fn2, s1);
     }
   return s1;
@@ -4448,18 +4441,18 @@ remove_hidden_names (tree fns)
     fns = NULL_TREE;
   else if (TREE_CODE (fns) == OVERLOAD)
     {
-      tree o;
+      bool hidden = false;
 
-      for (o = fns; o; o = OVL_NEXT (o))
-	if (hidden_name_p (OVL_CURRENT (o)))
-	  break;
-      if (o)
+      for (ovl_iterator iter (fns); !hidden && iter; ++iter)
+	if (hidden_name_p (*iter))
+	  hidden = true;
+      if (hidden)
 	{
 	  tree n = NULL_TREE;
 
-	  for (o = fns; o; o = OVL_NEXT (o))
-	    if (!hidden_name_p (OVL_CURRENT (o)))
-	      n = build_overload (OVL_CURRENT (o), n);
+	  for (ovl_iterator iter (fns); iter; ++iter)
+	    if (!hidden_name_p (*iter))
+	      n = build_overload (*iter, n);
 	  fns = n;
 	}
     }
@@ -5569,15 +5562,15 @@ arg_assoc_namespace (struct arg_lookup *k, tree scope)
   if (!value)
     return false;
 
-  for (; value; value = OVL_NEXT (value))
+  for (ovl_iterator iter (value); iter; ++iter)
     {
       /* We don't want to find arbitrary hidden functions via argument
 	 dependent lookup.  We only want to find friends of associated
 	 classes, which we'll do via arg_assoc_class.  */
-      if (hidden_name_p (OVL_CURRENT (value)))
+      if (hidden_name_p (*iter))
 	continue;
 
-      if (add_function (k, OVL_CURRENT (value)))
+      if (add_function (k, *iter))
 	return true;
     }
 
@@ -5905,8 +5898,8 @@ arg_assoc (struct arg_lookup *k, tree n)
     }
   else if (TREE_CODE (n) == OVERLOAD)
     {
-      for (; n; n = OVL_NEXT (n))
-	if (arg_assoc_type (k, TREE_TYPE (OVL_CURRENT (n))))
+      for (ovl_iterator iter (n); iter; ++iter)
+	if (arg_assoc_type (k, TREE_TYPE (*iter)))
 	  return true;
     }
 
@@ -5944,13 +5937,12 @@ lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
      of which ones we've seen.  */
   if (fns)
     {
-      tree ovl;
       /* We shouldn't be here if lookup found something other than
 	 namespace-scope functions.  */
       gcc_assert (DECL_NAMESPACE_SCOPE_P (OVL_CURRENT (fns)));
       k.fn_set = new hash_set<tree>;
-      for (ovl = fns; ovl; ovl = OVL_NEXT (ovl))
-	k.fn_set->add (OVL_CURRENT (ovl));
+      for (ovl_iterator iter (fns); iter; ++iter)
+	k.fn_set->add (*iter);
     }
   else
     k.fn_set = NULL;
@@ -6552,8 +6544,7 @@ cp_emit_debug_info_for_using (tree t, tree context)
   if (context == global_namespace)
     context = NULL_TREE;
 
-  if (BASELINK_P (t))
-    t = BASELINK_FUNCTIONS (t);
+  t = MAYBE_BASELINK_FUNCTIONS (t);
 
   /* FIXME: Handle TEMPLATE_DECLs.  */
   for (t = OVL_CURRENT (t); t; t = OVL_NEXT (t))

@@ -1,5 +1,19 @@
 2017-03-10  Nathan Sidwell  <nathan@acm.org>
 
+	Add OVERLOAD iterator part 3
+	gcc/cp/
+	* name-lookup.c (pushdecl_maybe_friend_1,
+	lookup_extern_c_fun_in_all_ns, c_linkage_bindings,
+	set_decl_namespace, pushdecl_top_level_and_finish (tree x,
+	merge_functions, remove_hidden_names, arg_assoc_namespace,
+	arg_assoc, lookup_arg_dependent_1, cp_emit_debug_info_for_using):
+	Use new iterator. 
+	* pt.c (retrieve_specialization, iterative_hash_template_arg,
+	determine_specialization, check_explicit_specialization,
+	resolve_overloaded_unification, resolve_nondeduced_context,
+	type_dependent_expression_p, dependent_template_p,
+	do_class_deduction): Likewise.
+
 	Add OVERLOAD iterator part 2
 	gcc/cp/
 	* class.c (handle_using_decl,
