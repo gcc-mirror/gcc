@@ -1,5 +1,10 @@
+2017-03-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Disallow
+	-mfloat128-hardware without -m64.
+
 2017-03-10  Will Schmidt <will_schmidt@vnet.ibm.com>
- 
+
 	PR target/79941
 	* config/rs6000/rs6000.c (builtin_function_type): Add VMUL*U[HB]
 	entries to the case statement that marks unsigned arguments to
