@@ -1,3 +1,9 @@
+2017-03-10  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/opt64.adb: New test.
+	* gnat.dg/opt64_pkg.ads: New helper.
+	* gnat.dg/opt64_pkg.adb: New helper.
+
 2017-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/79909
