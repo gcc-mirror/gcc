@@ -4320,9 +4320,9 @@ rs6000_option_override_internal (bool global_init_p)
 
   if (TARGET_UPPER_REGS_DI && !TARGET_VSX)
     {
-      if (rs6000_isa_flags_explicit & OPTION_MASK_UPPER_REGS_DF)
+      if (rs6000_isa_flags_explicit & OPTION_MASK_UPPER_REGS_DI)
 	error ("-mupper-regs-di requires -mvsx");
-      rs6000_isa_flags &= ~OPTION_MASK_UPPER_REGS_DF;
+      rs6000_isa_flags &= ~OPTION_MASK_UPPER_REGS_DI;
     }
 
   if (TARGET_UPPER_REGS_SF && !TARGET_P8_VECTOR)
