@@ -1,3 +1,9 @@
+2017-03-10  George Lander  <george.lander@arm.com>
+
+	* acinclude.m4 (glibcxx_cv_obsolete_isnan): Define
+	_GLIBCXX_INCLUDE_NEXT_C_HEADERS before including math.h.
+	* configure: Regenerate.
+
 2017-03-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/79789
