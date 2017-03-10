@@ -1,3 +1,8 @@
+2017-03-10  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp: Protect DEFAULT_CXXFLAGS.
+
 2017-03-06  Nathan Sidwell  <nathan@acm.org>
 
 	Add crc checkpointing.
