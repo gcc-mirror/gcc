@@ -98,4 +98,13 @@
 #define x (
 #define y (
 #define z (
+
+#ifdef _AIX
+// See https://gcc.gnu.org/ml/libstdc++/2017-03/msg00015.html
+#undef f
+#undef r
+#undef x
+#undef y
+#endif
+
 #include <bits/stdc++.h>

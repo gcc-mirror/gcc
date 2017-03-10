@@ -1,5 +1,8 @@
 2017-03-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/17_intro/names.cc: Undefine macros that clash with
+	identifiers in AIX system headers.
+
 	* include/bits/invoke.h (__invoke): Use __invoke_result instead of
 	result_of, and __is_nothrow_invocable instead of
 	__is_nothrow_callable.
