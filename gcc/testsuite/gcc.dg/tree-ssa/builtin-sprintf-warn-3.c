@@ -200,6 +200,10 @@ void test_sprintf_chk_range_schar (void)
   T ( 0, "%hhi", R (1024, 2035));   /* { dg-warning ".%hhi. directive writing between 1 and 4 bytes into a region of size 0" } */
   /* { dg-message "using the range \\\[-128, 127\\\] for directive argument" "note" { target *-*-* } .-1 } */
 
+  T ( 2, "%#hhx", R (1234, 12345));  /* { dg-warning "'%#hhx' directive writing between 1 and 4 bytes into a region of size 2 " } */
+  T ( 3, "%#hhx", R (1234, 12345));  /* { dg-warning "may write a terminating nul" } */
+  T ( 4, "%#hhx", R (1234, 12345));
+
 #undef R
 #define R(min, max) range_schar (min, max)
 
