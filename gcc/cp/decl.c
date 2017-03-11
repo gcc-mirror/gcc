@@ -8777,13 +8777,13 @@ grokfndecl (tree ctype,
 	  if (long_long_unsigned_p)
 	    {
 	      if (cpp_interpret_int_suffix (parse_in, suffix, strlen (suffix)))
-		warning (0, "integer suffix %<%s%>"
+		warning (0, "integer suffix %qs"
 			    " shadowed by implementation", suffix);
 	    }
 	  else if (long_double_p)
 	    {
 	      if (cpp_interpret_float_suffix (parse_in, suffix, strlen (suffix)))
-		warning (0, "floating point suffix %<%s%>"
+		warning (0, "floating point suffix %qs"
 			    " shadowed by implementation", suffix);
 	    }
 	}
@@ -11839,7 +11839,7 @@ grokdeclarator (const cp_declarator *declarator,
 		     headers because glibc uses them.  */;
 		else if (name)
 		  pedwarn (input_location, OPT_Wpedantic,
-			   "ISO C++ forbids flexible array member %<%s%>", name);
+			   "ISO C++ forbids flexible array member %qs", name);
 		else
 		  pedwarn (input_location, OPT_Wpedantic,
 			   "ISO C++ forbids flexible array members");

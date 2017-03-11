@@ -1,3 +1,8 @@
+2017-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR translation/79848
+	* decl.c (grokfndecl): Simplify uses of "%<%s%>" to "%qs".
+
 2017-03-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/79960 - alias templates and partial ordering

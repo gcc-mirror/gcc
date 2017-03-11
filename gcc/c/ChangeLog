@@ -1,3 +1,10 @@
+2017-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR translation/79848
+	* c-decl.c (declspecs_add_type): Simplify uses of "%<%s%>" to
+	"%qs".
+	* c-parser.c (c_parser_oacc_shape_clause): Likewise.
+
 2017-03-09  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/79757
