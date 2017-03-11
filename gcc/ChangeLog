@@ -1,3 +1,11 @@
+2017-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR target/79925
+	* config/aarch64/aarch64.c (aarch64_validate_mcpu): Quote the
+	full command-line argument, rather than just "str".
+	(aarch64_validate_march): Likewise.
+	(aarch64_validate_mtune): Likewise.
+
 2017-03-10  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/78911
