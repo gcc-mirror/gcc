@@ -5134,7 +5134,7 @@ were declared with the C++11 @code{final} specifier,
 or, if possible, its type were
 declared in an anonymous namespace or with the @code{final} specifier.
 This warning is
-more effective with link time optimization, where the information about the
+more effective with link-time optimization, where the information about the
 class hierarchy graph is more complete. It is recommended to first consider
 suggestions of @option{-Wsuggest-final-types} and then rebuild with new
 annotations.
@@ -8098,7 +8098,7 @@ is enabled.
 Perform Identical Code Folding for functions and read-only variables.
 The optimization reduces code size and may disturb unwind stacks by replacing
 a function by equivalent one with a different name. The optimization works
-more effectively with link time optimization enabled.
+more effectively with link-time optimization enabled.
 
 Nevertheless the behavior is similar to Gold Linker ICF optimization, GCC ICF
 works on different levels and thus the optimizations are not same - there are
@@ -8827,7 +8827,7 @@ should specify the optimization options to be used for link-time
 optimization though GCC tries to be clever at guessing an
 optimization level to use from the options used at compile time
 if you fail to specify one at link time.  You can always override
-the automatic decision to do link-time optimization at link time
+the automatic decision to do link-time optimization
 by passing @option{-fno-lto} to the link command.
 
 To make whole program optimization effective, it is necessary to make
