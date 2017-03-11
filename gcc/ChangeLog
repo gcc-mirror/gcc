@@ -1,5 +1,13 @@
 2017-03-10  David Malcolm  <dmalcolm@redhat.com>
 
+	PR translation/79848
+	* ipa-devirt.c (warn_types_mismatch): Simplify uses of "%<%s%>" to
+	"%qs".
+	* ipa-pure-const.c (suggest_attribute): Likewise.  Convert _
+	to G_ to avoid double translation.
+
+2017-03-10  David Malcolm  <dmalcolm@redhat.com>
+
 	PR translation/79923
 	* auto-profile.c (get_combined_location): Convert leading
 	character of diagnostics to lower case and remove trailing period.

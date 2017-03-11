@@ -184,9 +184,9 @@ suggest_attribute (int option, tree decl, bool known_finite,
   warning_at (DECL_SOURCE_LOCATION (decl),
 	      option,
 	      known_finite
-	      ? _("function might be candidate for attribute %<%s%>")
-	      : _("function might be candidate for attribute %<%s%>"
-		  " if it is known to return normally"), attrib_name);
+	      ? G_("function might be candidate for attribute %qs")
+	      : G_("function might be candidate for attribute %qs"
+		   " if it is known to return normally"), attrib_name);
   return warned_about;
 }
 

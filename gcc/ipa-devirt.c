@@ -1139,7 +1139,7 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
       if (name1 && name2 && strcmp (name1, name2))
 	{
 	  inform (loc_t1,
-		  "type name %<%s%> should match type name %<%s%>",
+		  "type name %qs should match type name %qs",
 		  name1, name2);
 	  if (loc_t2_useful)
 	    inform (loc_t2,

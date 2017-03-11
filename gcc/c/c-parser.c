@@ -11820,7 +11820,7 @@ c_parser_oacc_shape_clause (c_parser *parser, omp_clause_code kind,
 	  if (c == boolean_true_node)
 	    {
 	      warning_at (loc, 0,
-			  "%<%s%> value must be positive", str);
+			  "%qs value must be positive", str);
 	      expr = integer_one_node;
 	    }
 

@@ -10517,37 +10517,37 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		  str = "_Decimal128";
 		if (specs->long_long_p)
 		  error_at (loc,
-			    ("both %<long long%> and %<%s%> in "
+			    ("both %<long long%> and %qs in "
 			     "declaration specifiers"),
 			    str);
 		if (specs->long_p)
 		  error_at (loc,
-			    ("both %<long%> and %<%s%> in "
+			    ("both %<long%> and %qs in "
 			     "declaration specifiers"),
 			    str);
 		else if (specs->short_p)
 		  error_at (loc,
-			    ("both %<short%> and %<%s%> in "
+			    ("both %<short%> and %qs in "
 			     "declaration specifiers"),
 			    str);
 		else if (specs->signed_p)
 		  error_at (loc,
-			    ("both %<signed%> and %<%s%> in "
+			    ("both %<signed%> and %qs in "
 			     "declaration specifiers"),
 			    str);
 		else if (specs->unsigned_p)
 		  error_at (loc,
-			    ("both %<unsigned%> and %<%s%> in "
+			    ("both %<unsigned%> and %qs in "
 			     "declaration specifiers"),
 			    str);
                 else if (specs->complex_p)
                   error_at (loc,
-			    ("both %<complex%> and %<%s%> in "
+			    ("both %<complex%> and %qs in "
 			     "declaration specifiers"),
 			    str);
                 else if (specs->saturating_p)
                   error_at (loc,
-			    ("both %<_Sat%> and %<%s%> in "
+			    ("both %<_Sat%> and %qs in "
 			     "declaration specifiers"),
 			    str);
 		else if (i == RID_DFLOAT32)
@@ -10575,7 +10575,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		  str = "_Accum";
                 if (specs->complex_p)
                   error_at (loc,
-			    ("both %<complex%> and %<%s%> in "
+			    ("both %<complex%> and %qs in "
 			     "declaration specifiers"),
 			    str);
 		else if (i == RID_FRACT)
