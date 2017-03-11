@@ -1,3 +1,13 @@
+2017-03-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/78854
+	* io/list_read.c (nml_get_obj_data): Stash internal unit for
+	later use by child procedures.
+	* io/write.c (nml_write_obj): Likewise.
+	* io/tranfer.c (data_transfer_init): Minor whitespace.
+	* io/unit.c (set_internal_uit): Look for the stashed internal
+	unit and use it if found.
+
 2017-03-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/79956

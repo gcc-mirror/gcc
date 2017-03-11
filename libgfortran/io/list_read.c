@@ -3301,6 +3301,11 @@ get_name:
 	  child_iomsg_len = IOMSG_LEN;
 	}
 
+      /* If reading from an internal unit, stash it to allow
+	 the child procedure to access it.  */
+      if (is_internal_unit (dtp))
+	stash_internal_unit (dtp);
+
       /* Call the user defined formatted READ procedure.  */
       dtp->u.p.current_unit->child_dtio++;
       dtio_ptr ((void *)&list_obj, &unit, iotype, &vlist,

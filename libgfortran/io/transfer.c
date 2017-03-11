@@ -2822,6 +2822,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	  return;
 	}
     }
+
   /* Process the ADVANCE option.  */
 
   dtp->u.p.advance_status

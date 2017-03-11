@@ -1,3 +1,8 @@
+2017-03-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/78854
+	* gfortran.dg/dtio_25.f90: New test.
+
 2017-03-10  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c: Add a test case.
