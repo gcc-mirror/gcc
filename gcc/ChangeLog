@@ -1,3 +1,9 @@
+2017-03-11  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (Warning Options): Fix spelling of link-time
+	optimization.
+	(Optimize Options): Ditto.  Also remove redundancy.
+
 2017-03-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR translation/79848
