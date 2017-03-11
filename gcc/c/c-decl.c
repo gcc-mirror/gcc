@@ -3117,45 +3117,52 @@ pushdecl_top_level (tree x)
   return x;
 }
 
+
+/* Issue a warning about implicit function declaration.  ID is the function
+   identifier, OLDDECL is a declaration of the function in a different scope,
+   or NULL_TREE.  */
+
 static void
 implicit_decl_warning (location_t loc, tree id, tree olddecl)
 {
-  if (warn_implicit_function_declaration)
-    {
-      bool warned;
-      const char *hint = NULL;
-      if (!olddecl)
-	hint = lookup_name_fuzzy (id, FUZZY_LOOKUP_FUNCTION_NAME);
+  if (!warn_implicit_function_declaration)
+    return;
 
-      if (flag_isoc99)
-	if (hint)
-	  {
-	    gcc_rich_location richloc (loc);
-	    richloc.add_fixit_replace (hint);
-	    warned = pedwarn_at_rich_loc
-	      (&richloc, OPT_Wimplicit_function_declaration,
-	       "implicit declaration of function %qE; did you mean %qs?",
-	       id, hint);
-	  }
-	else
-	  warned = pedwarn (loc, OPT_Wimplicit_function_declaration,
-			    "implicit declaration of function %qE", id);
+  bool warned;
+  const char *hint = NULL;
+  if (!olddecl)
+    hint = lookup_name_fuzzy (id, FUZZY_LOOKUP_FUNCTION_NAME);
+
+  if (flag_isoc99)
+    {
+      if (hint)
+	{
+	  gcc_rich_location richloc (loc);
+	  richloc.add_fixit_replace (hint);
+	  warned = pedwarn_at_rich_loc
+	    (&richloc, OPT_Wimplicit_function_declaration,
+	     "implicit declaration of function %qE; did you mean %qs?",
+	     id, hint);
+	}
       else
-	if (hint)
-	  {
-	    gcc_rich_location richloc (loc);
-	    richloc.add_fixit_replace (hint);
-	    warned = warning_at_rich_loc
-	      (&richloc, OPT_Wimplicit_function_declaration,
-	       G_("implicit declaration of function %qE; did you mean %qs?"),
-	       id, hint);
-	  }
-	else
-	  warned = warning_at (loc, OPT_Wimplicit_function_declaration,
-			       G_("implicit declaration of function %qE"), id);
-      if (olddecl && warned)
-	locate_old_decl (olddecl);
+	warned = pedwarn (loc, OPT_Wimplicit_function_declaration,
+			  "implicit declaration of function %qE", id);
     }
+  else if (hint)
+    {
+      gcc_rich_location richloc (loc);
+      richloc.add_fixit_replace (hint);
+      warned = warning_at_rich_loc
+	(&richloc, OPT_Wimplicit_function_declaration,
+	 G_("implicit declaration of function %qE; did you mean %qs?"),
+	 id, hint);
+    }
+  else
+    warned = warning_at (loc, OPT_Wimplicit_function_declaration,
+			 G_("implicit declaration of function %qE"), id);
+
+  if (olddecl && warned)
+    locate_old_decl (olddecl);
 }
 
 /* This function represents mapping of a function code FCODE
