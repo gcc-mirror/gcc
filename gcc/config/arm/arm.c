@@ -3370,7 +3370,7 @@ arm_option_override (void)
   if (arm_fp16_inst)
     {
       if (arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
-	error ("selected fp16 options are incompatible.");
+	error ("selected fp16 options are incompatible");
       arm_fp16_format = ARM_FP16_FORMAT_IEEE;
     }
 

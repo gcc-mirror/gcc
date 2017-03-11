@@ -1,5 +1,16 @@
 2017-03-10  David Malcolm  <dmalcolm@redhat.com>
 
+	PR translation/79923
+	* auto-profile.c (get_combined_location): Convert leading
+	character of diagnostics to lower case and remove trailing period.
+	(read_profile): Likewise for various diagnostics.
+	* config/arm/arm.c (arm_option_override): Remove trailing period
+	from various diagnostics.
+	* config/msp430/msp430.c (msp430_expand_delay_cycles): Likewise.
+	(msp430_expand_delay_cycles): Likewise.
+
+2017-03-10  David Malcolm  <dmalcolm@redhat.com>
+
 	PR target/79925
 	* config/aarch64/aarch64.c (aarch64_validate_mcpu): Quote the
 	full command-line argument, rather than just "str".
