@@ -822,6 +822,13 @@
 
 2016-12-08  Martin Sebor  <msebor@redhat.com>
 
+	PR c/78165
+        * g++.dg/debug/dwarf2/integer-typedef.C: Remove redundant suffix.
+	* g++.dg/debug/dwarf2/typedef1.C: Same.
+	* g++.dg/inherit/covariant7.C: Same.
+
+2016-12-08  Martin Sebor  <msebor@redhat.com>
+
 	PR c/78284
 	* gcc.dg/attr-alloc_size-3.c: New test.
 	* gcc.dg/attr-alloc_size-4.c: New test.
