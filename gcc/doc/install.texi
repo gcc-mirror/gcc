@@ -3472,9 +3472,6 @@ A GNU/Linux port for the CRIS architecture, currently targeting
 @samp{ETRAX 100 LX} by default.
 @end table
 
-For @code{cris-axis-elf} you need binutils 2.11
-or newer.  For @code{cris-axis-linux-gnu} you need binutils 2.12 or newer.
-
 Pre-packaged tools can be obtained from
 @uref{ftp://ftp.axis.com/@/pub/@/axis/@/tools/@/cris/@/compiler-kit/}.  More
 information about this platform is available at
