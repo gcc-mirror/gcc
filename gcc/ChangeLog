@@ -1,3 +1,8 @@
+2017-03-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific) <powerpc-*-*>: Remove link to
+	ftp.kernel.org and simplify binutils requirement.
+
 2017-03-11  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi (Warning Options): Fix spelling of link-time

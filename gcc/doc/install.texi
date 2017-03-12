@@ -4207,9 +4207,7 @@ Use the @option{--disable-sjlj-exceptions} and
 You can specify a default version for the @option{-mcpu=@var{cpu_type}}
 switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 
-You will need
-@uref{ftp://ftp.kernel.org/pub/linux/devel/binutils,,binutils 2.15}
-or newer for a working GCC@.
+You will need GNU binutils 2.15 or newer.
 
 @html
 <hr />
