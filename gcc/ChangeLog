@@ -1,5 +1,10 @@
 2017-03-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/install.texi (Specific) <cris-axis-elf>: No longer
+	refer to binutils 2.11/2.12 minimum.
+
+2017-03-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
 	* doc/install.texi (Specific) <powerpc-*-*>: Remove link to
 	ftp.kernel.org and simplify binutils requirement.
 
