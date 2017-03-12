@@ -2210,36 +2210,34 @@ proc check_effective_target_powerpc64 { } {
 
 # GCC 3.4.0 for powerpc64-*-linux* included an ABI fix for passing
 # complex float arguments.  This affects gfortran tests that call cabsf
-# in libm built by an earlier compiler.  Return 1 if libm uses the same
-# argument passing as the compiler under test, 0 otherwise.
-#
-# When the target name changes, replace the cached result.
+# in libm built by an earlier compiler.  Return 0 if libm uses the same
+# argument passing as the compiler under test, 1 otherwise.
 
 proc check_effective_target_broken_cplxf_arg { } {
+    # Skip the work for targets known not to be affected.
+    if { ![istarget powerpc*-*-linux*] || ![is-effective-target lp64] } {
+	return 0
+    }
+
     return [check_cached_effective_target broken_cplxf_arg {
-	# Skip the work for targets known not to be affected.
-	if { ![istarget powerpc64-*-linux*] } {
-	    expr 0
-	} elseif { ![is-effective-target lp64] } {
-	    expr 0
-	} else {
-	    check_runtime_nocache broken_cplxf_arg {
-		#include <complex.h>
-		extern void abort (void);
-		float fabsf (float);
-		float cabsf (_Complex float);
-		int main ()
-		{
-		  _Complex float cf;
-		  float f;
-		  cf = 3 + 4.0fi;
-		  f = cabsf (cf);
-		  if (fabsf (f - 5.0) > 0.0001)
-		    abort ();
-		  return 0;
-		}
-	    } "-lm"
-	}
+	check_runtime_nocache broken_cplxf_arg {
+	    #include <complex.h>
+	    extern void abort (void);
+	    float fabsf (float);
+	    float cabsf (_Complex float);
+	    int main ()
+	    {
+	      _Complex float cf;
+	      float f;
+	      cf = 3 + 4.0fi;
+	      f = cabsf (cf);
+	      if (fabsf (f - 5.0) > 0.0001)
+		/* Yes, it's broken.  */
+		return 0;
+	      /* All fine, not broken.  */
+	      return 1;
+	    }
+	} "-lm"
     }]
 }
 
