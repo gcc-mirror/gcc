@@ -1,3 +1,45 @@
+2017-03-12  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement LWG 2934, optional<const T> doesn't compare with T.
+	* include/std/optional
+	(operator==(const optional<_Tp>&, const optional<_Tp>&)):
+	Turn into operator==(const optional<_Tp>&, const optional<_Up>&).
+	(operator!=(const optional<_Tp>&, const optional<_Tp>&)):
+	Turn into operator!=(const optional<_Tp>&, const optional<_Up>&).
+	(operator<(const optional<_Tp>&, const optional<_Tp>&)):
+	Turn into operator<(const optional<_Tp>&, const optional<_Up>&.
+	(operator>(const optional<_Tp>&, const optional<_Tp>&)):
+	Turn into operator>(const optional<_Tp>&, const optional<_Up>&.
+	(operator<=(const optional<_Tp>&, const optional<_Tp>&)):
+	Turn into operator<=(const optional<_Tp>&, const optional<_Up>&).
+	(operator>=(const optional<_Tp>&, const optional<_Tp>&)):
+	Turn into operator>=(const optional<_Tp>&, const optional<_Up>&).
+	(operator==(const optional<_Tp>&, const _Tp&)):
+	Turn into operator==(const optional<_Tp>&, const _Up&).
+	(operator==(const _Tp&, const optional<_Tp>&)):
+	Turn into operator==(const _Up&, const optional<_Tp>&).
+	(operator!=(const optional<_Tp>&, const _Tp&)):
+	Turn into operator!=(const optional<_Tp>&, const _Up&).
+	(operator!=(const _Tp&, const optional<_Tp>&)):
+	Turn into operator!=(const _Up&, const optional<_Tp>&).
+	(operator<(const optional<_Tp>&, const _Tp&)):
+	Turn into operator<(const optional<_Tp>&, const _Up&).
+	(operator<(const _Tp&, const optional<_Tp>&)):
+	Turn into operator<(const _Up&, const optional<_Tp>&).
+	(operator>(const optional<_Tp>&, const _Tp&)):
+	Turn into operator>(const optional<_Tp>&, const _Up&).
+	(operator>(const _Tp&, const optional<_Tp>&)):
+	Turn into operator>(const _Up&, const optional<_Tp>&).
+	(operator<=(const optional<_Tp>&, const _Tp&)):
+	Turn into operator<=(const optional<_Tp>&, const _Up&).
+	(operator<=(const _Tp&, const optional<_Tp>&)):
+	Turn into operator<=(const _Up&, const optional<_Tp>&).
+	(operator>=(const optional<_Tp>&, const _Tp&)):
+	Turn into operator>=(const optional<_Tp>&, const _Up&).
+	(operator>=(const _Tp&, const optional<_Tp>&)):
+	Turn into operator>=(const _Up&, const optional<_Tp>&).
+	* testsuite/20_util/optional/relops/7.cc: New.
+
 2017-03-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/17_intro/names.cc: Undefine macros that clash with
