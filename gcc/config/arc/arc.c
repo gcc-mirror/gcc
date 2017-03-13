@@ -676,6 +676,12 @@ make_pass_arc_predicate_delay_insns (gcc::context *ctxt)
 static void
 arc_init (void)
 {
+  if (TARGET_V2)
+    {
+      /* I have the multiplier, then use it*/
+      if (TARGET_MPYW || TARGET_MULTI)
+	  arc_multcost = COSTS_N_INSNS (1);
+    }
   /* Note: arc_multcost is only used in rtx_cost if speed is true.  */
   if (arc_multcost < 0)
     switch (arc_tune)
@@ -1374,20 +1380,42 @@ arc_conditional_register_usage (void)
     }
   if (TARGET_Q_CLASS)
     {
-      reg_alloc_order[2] = 12;
-      reg_alloc_order[3] = 13;
-      reg_alloc_order[4] = 14;
-      reg_alloc_order[5] = 15;
-      reg_alloc_order[6] = 1;
-      reg_alloc_order[7] = 0;
-      reg_alloc_order[8] = 4;
-      reg_alloc_order[9] = 5;
-      reg_alloc_order[10] = 6;
-      reg_alloc_order[11] = 7;
-      reg_alloc_order[12] = 8;
-      reg_alloc_order[13] = 9;
-      reg_alloc_order[14] = 10;
-      reg_alloc_order[15] = 11;
+      if (optimize_size)
+	{
+	  reg_alloc_order[0] = 0;
+	  reg_alloc_order[1] = 1;
+	  reg_alloc_order[2] = 2;
+	  reg_alloc_order[3] = 3;
+	  reg_alloc_order[4] = 12;
+	  reg_alloc_order[5] = 13;
+	  reg_alloc_order[6] = 14;
+	  reg_alloc_order[7] = 15;
+	  reg_alloc_order[8] = 4;
+	  reg_alloc_order[9] = 5;
+	  reg_alloc_order[10] = 6;
+	  reg_alloc_order[11] = 7;
+	  reg_alloc_order[12] = 8;
+	  reg_alloc_order[13] = 9;
+	  reg_alloc_order[14] = 10;
+	  reg_alloc_order[15] = 11;
+	}
+      else
+	{
+	  reg_alloc_order[2] = 12;
+	  reg_alloc_order[3] = 13;
+	  reg_alloc_order[4] = 14;
+	  reg_alloc_order[5] = 15;
+	  reg_alloc_order[6] = 1;
+	  reg_alloc_order[7] = 0;
+	  reg_alloc_order[8] = 4;
+	  reg_alloc_order[9] = 5;
+	  reg_alloc_order[10] = 6;
+	  reg_alloc_order[11] = 7;
+	  reg_alloc_order[12] = 8;
+	  reg_alloc_order[13] = 9;
+	  reg_alloc_order[14] = 10;
+	  reg_alloc_order[15] = 11;
+	}
     }
   if (TARGET_SIMD_SET)
     {

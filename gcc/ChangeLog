@@ -1,5 +1,13 @@
 2017-03-13  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (arc_init): Use multiplier whenever we have it.
+	(arc_conditional_register_usage): Use a different allocation order
+	when optimizing for size.
+	* common/config/arc/arc-common.c (arc_option_optimization_table):
+	Section anchors default on when optimizing for size.
+
+2017-03-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (*tst_bitfield_tst): Fix pattern.
 
 2017-03-13  Claudiu Zissulescu  <claziss@synopsys.com>
