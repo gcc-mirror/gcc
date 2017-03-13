@@ -1327,7 +1327,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
   if (rval && protect 
       && !really_overloaded_fn (rval))
     {
-      tree decl = is_overloaded_fn (rval) ? get_first_fn (rval) : rval;
+      tree decl = is_overloaded_fn (rval) ? get_ovl (rval, true) : rval;
       if (!DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
 	  && !perform_or_defer_access_check (basetype_path, decl, decl,
 					     complain))

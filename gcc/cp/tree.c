@@ -2092,7 +2092,7 @@ ovl_add (tree maybe_ovl, tree fn, int force)
 /* Get the overload set that an EXPR refers to.  */
 
 tree
-get_ovl (tree expr)
+get_ovl (tree expr, bool want_first)
 {
   if (TREE_CODE (expr) == OFFSET_REF
       || TREE_CODE (expr) == COMPONENT_REF)
@@ -2102,6 +2102,8 @@ get_ovl (tree expr)
     expr = TREE_OPERAND (expr, 0);
   gcc_assert (TREE_CODE (expr) == OVERLOAD
 	      || TREE_CODE (expr) == FUNCTION_DECL);
+  if (want_first)
+    expr = OVL_FIRST (expr);
   return expr;
 }
 

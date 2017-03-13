@@ -2231,15 +2231,10 @@ perform_koenig_lookup (cp_expr fn, vec<tree, va_gc> *args,
   /* Find the name of the overloaded function.  */
   if (identifier_p (fn))
     identifier = fn;
-  else if (is_overloaded_fn (fn))
+  else
     {
       functions = fn;
-      identifier = DECL_NAME (get_first_fn (functions));
-    }
-  else if (DECL_P (fn))
-    {
-      functions = fn;
-      identifier = DECL_NAME (fn);
+      identifier = OVL_NAME (functions);
     }
 
   /* A call to a namespace-scope function using an unqualified name.
@@ -2379,12 +2374,13 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	[class.access.base] says that we need to convert 'this' to B* as
 	part of the access, so we pass 'B' to maybe_dummy_object.  */
 
-      if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (get_first_fn (fn)))
+      if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (get_ovl (fn, true)))
 	{
 	  /* A constructor call always uses a dummy object.  (This constructor
 	     call which has the form A::A () is actually invalid and we are
 	     going to reject it later in build_new_method_call.)  */
-	  object = build_dummy_object (BINFO_TYPE (BASELINK_ACCESS_BINFO (fn)));
+	  object
+	    = build_dummy_object (BINFO_TYPE (BASELINK_ACCESS_BINFO (fn)));
 	}
       else
 	object = maybe_dummy_object (BINFO_TYPE (BASELINK_ACCESS_BINFO (fn)),
@@ -3727,9 +3723,8 @@ finish_id_expression (tree id_expression,
 	}
       else if (is_overloaded_fn (decl))
 	{
-	  tree first_fn;
+	  tree first_fn = get_ovl (decl, true);
 
-	  first_fn = get_first_fn (decl);
 	  if (TREE_CODE (first_fn) == TEMPLATE_DECL)
 	    first_fn = DECL_TEMPLATE_RESULT (first_fn);
 

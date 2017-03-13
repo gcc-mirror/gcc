@@ -3014,7 +3014,6 @@ set_inherited_value_binding_p (cxx_binding *binding, tree decl,
 bool
 pushdecl_class_level (tree x)
 {
-  tree name;
   bool is_valid = true;
   bool subtime;
 
@@ -3024,11 +3023,7 @@ pushdecl_class_level (tree x)
     return true;
 
   subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  /* Get the name of X.  */
-  if (TREE_CODE (x) == OVERLOAD)
-    name = DECL_NAME (get_first_fn (x));
-  else
-    name = DECL_NAME (x);
+  tree name = OVL_NAME (x);
 
   if (name)
     {

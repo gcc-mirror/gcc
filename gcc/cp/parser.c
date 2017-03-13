@@ -6906,7 +6906,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		else if (!args->is_empty ()
 			 && is_overloaded_fn (postfix_expression))
 		  {
-		    tree fn = get_first_fn (postfix_expression);
+		    tree fn = get_ovl (postfix_expression, true);
 		    fn = STRIP_TEMPLATE (fn);
 
 		    /* Do not do argument dependent lookup if regular
@@ -10916,10 +10916,10 @@ cp_parser_expression_statement (cp_parser* parser, tree in_statement_expr)
 		  "%qT is a dependent scope",
 		  statement, TREE_OPERAND (statement, 0));
       else if (is_overloaded_fn (statement)
-	       && DECL_CONSTRUCTOR_P (get_first_fn (statement)))
+	       && DECL_CONSTRUCTOR_P (get_ovl (statement, true)))
 	{
 	  /* A::A a; */
-	  tree fn = get_first_fn (statement);
+	  tree fn = get_ovl (statement, true);
 	  error_at (token->location,
 		    "%<%T::%D%> names the constructor, not the type",
 		    DECL_CONTEXT (fn), DECL_NAME (fn));
@@ -20212,8 +20212,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 			sfk = sfk_constructor;
 		      }
 		    else if (is_overloaded_fn (unqualified_name)
-			     && DECL_CONSTRUCTOR_P (get_first_fn
-						    (unqualified_name)))
+			     && DECL_CONSTRUCTOR_P (get_ovl
+						    (unqualified_name, true)))
 		      sfk = sfk_constructor;
 
 		    if (ctor_dtor_or_conv_p && sfk != sfk_none)
@@ -26140,7 +26140,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 					  /*declarator_p=*/true,
 					  /*optional_p=*/false);
       if (is_overloaded_fn (id))
-	id = DECL_NAME (get_first_fn (id));
+	id = DECL_NAME (get_ovl (id, true));
       if (!constructor_name_p (id, nested_name_specifier))
 	constructor_p = false;
     }

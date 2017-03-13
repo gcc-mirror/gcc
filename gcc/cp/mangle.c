@@ -3249,7 +3249,7 @@ write_expression (tree expr)
 	    if ((TREE_CODE (fn) == FUNCTION_DECL
 		 || TREE_CODE (fn) == OVERLOAD)
 		&& type_dependent_expression_p_push (expr))
-	      fn = DECL_NAME (get_first_fn (fn));
+	      fn = OVL_NAME (fn);
 
 	    write_expression (fn);
 	  }

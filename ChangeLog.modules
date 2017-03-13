@@ -1,5 +1,22 @@
 2017-03-13  Nathan Sidwell  <nathan@acm.org>
 
+	Kill get_first_fn part 2
+	gcc/cp/
+	* cp-tree.h (get_ovl): Add want_first parm, make pure.
+	* constexpr.c (potential_constant_expression_1): Adjust get_ovl.
+	* lambda.c (lambda_function): Likewise.
+	* error.c (dump_decl): Use identifier_p.
+	* mangle.c (write_expression): Use OVL_NAME.
+	* name-lookup.c (pushdecl_class_level): Likewise.
+	* parser.c (cp_parser_postfix_expression,
+	cp_parser_expression_statement, cp_parser_direct_declarator,
+	cp_parser_constructor_declarator_p): Use get_ovl.
+	* search.c (lookup_member0: Likewise.
+	* typeck2.c (cxx_incomplete_type_diagnostic): Likewise.
+	* semantics.c (perform_koenig_lookup): Use OVL_NAME.
+	(finish_call_expr, finish_id_expression): Use get_ovl.
+	* tree.c (get_ovl): Add want_first arg, adjust.
+
 	Kill get_first_fn part 1
 	gcc/cp/
 	* call.c (add_list_candidates, build_new_method_call_1): Use
