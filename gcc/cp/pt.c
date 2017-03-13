@@ -2942,7 +2942,7 @@ check_explicit_specialization (tree declarator,
 		    /* Glue all these conversion functions together
 		       with those we already have.  */
 		    for (ovl_iterator iter (ovl); iter; ++iter)
-		      fns = ovl_cons (*iter, fns);
+		      fns = ovl_add (fns, *iter);
 		  }
 	    }
 
@@ -25062,7 +25062,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, tsubst_flags_t complain)
 	 iter; ++iter)
       {
 	tree guide = build_deduction_guide (*iter, outer_args, complain);
-	cands = ovl_cons (guide, cands);
+	cands = ovl_add (cands, guide);
       }
 
   if (cands == NULL_TREE)

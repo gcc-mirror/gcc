@@ -2052,8 +2052,13 @@ build_ref_qualified_type (tree type, cp_ref_qualifier rqual)
   return t;
 }
 
+/* Add FN into the overload set MAYBE_OVL.  MAYBE_OVL can be NULL, or
+   a plain decl.  If MAYBE_OVL is NULL, and FN doesn't require
+   wrapping in an overload, we return plain FN.  FORCE is non-zero to
+   force wrapping, and >0 to indicate via a using declaration.  */
+
 tree
-ovl_add (tree maybe_ovl, tree fn, bool via_using)
+ovl_add (tree maybe_ovl, tree fn, int force)
 {
   tree result;
   if (maybe_ovl && TREE_CODE (maybe_ovl) != OVERLOAD)
@@ -2065,13 +2070,13 @@ ovl_add (tree maybe_ovl, tree fn, bool via_using)
       maybe_ovl = result;
     }
   result = fn;
-  if (maybe_ovl || via_using || TREE_CODE (fn) == TEMPLATE_DECL)
+  if (maybe_ovl || force || TREE_CODE (fn) == TEMPLATE_DECL)
     {
       result = make_node (OVERLOAD);
       TREE_TYPE (result) = unknown_type_node;
       if (maybe_ovl)
 	TREE_TYPE (maybe_ovl) = unknown_type_node;
-      if (via_using)
+      if (force > 0)
 	{
 	  OVL_VIA_USING (result) = true;
 	  if (!maybe_ovl)
@@ -2155,19 +2160,6 @@ tree // FIXME: Kill me
 get_first_fn (tree from)
 {
   return OVL_FIRST (get_fns (from));
-}
-
-/* Return a new OVL node, concatenating it with the old one.  */
-
-tree // FIXME: Kill me
-ovl_cons (tree decl, tree chain)
-{
-  tree result = make_node (OVERLOAD);
-  TREE_TYPE (result) = unknown_type_node;
-  OVL_FUNCTION (result) = decl;
-  TREE_CHAIN (result) = chain;
-
-  return result;
 }
 
 /* Return the scope where the overloaded functions OVL were found.  */

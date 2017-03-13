@@ -1195,8 +1195,8 @@ add_method (tree type, tree method, tree using_decl)
 			  /* Inheriting the same constructor along different
 			     paths, combine them.  */
 			  SET_DECL_INHERITED_CTOR
-			    (fn, ovl_cons (DECL_INHERITED_CTOR (method),
-					   DECL_INHERITED_CTOR (fn)));
+			    (fn, ovl_add (DECL_INHERITED_CTOR (fn),
+					  DECL_INHERITED_CTOR (method)));
 			  /* Adjust deletedness and such.  */
 			  deduce_inheriting_ctor (fn);
 			  /* And discard the new one.  */
@@ -1254,7 +1254,7 @@ add_method (tree type, tree method, tree using_decl)
     return false;
 
   /* Add the new binding.  */
-  overload = ovl_add (current_fns, method, using_decl);
+  overload = ovl_add (current_fns, method, using_decl != NULL_TREE);
 
   if (conv_p)
     TYPE_HAS_CONVERSION (type) = 1;

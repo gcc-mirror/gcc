@@ -1,5 +1,14 @@
 2017-03-13  Nathan Sidwell  <nathan@acm.org>
 
+	Kill ovl_cons
+	gcc/cp/
+	* cp-tree.h (ovl_cons): Delete.
+	* tree.c (ovl_cons): Delete.
+	* class.c (add_method): Use ovl_add.
+	* name-lookup.c (push_overloaded_decl_1): Likewise.
+	* pt.c (check_explicit_specialization, do_class_deduction): Likewise.
+	* typeck.c (build_x_unary_op): Likewise.
+
 	Kill build_overload
 	gcc/cp/
 	* cp-tree.h (ovl_add): Declare.

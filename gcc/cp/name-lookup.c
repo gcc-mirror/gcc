@@ -2444,24 +2444,7 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
 	}
     }
 
-  if (old || TREE_CODE (decl) == TEMPLATE_DECL
-      /* If it's a using declaration, we always need to build an OVERLOAD,
-	 because it's the only way to remember that the declaration comes
-	 from 'using', and have the lookup behave correctly.  */
-      || (flags & PUSH_USING))
-    {
-      if (old && TREE_CODE (old) != OVERLOAD)
-	/* Wrap the existing single decl in an overload.  */
-	new_binding = ovl_cons (old, NULL_TREE);
-      else
-	new_binding = old;
-      new_binding = ovl_cons (decl, new_binding);
-      if (flags & PUSH_USING)
-	OVL_VIA_USING (new_binding) = 1;
-    }
-  else
-    /* NAME is not ambiguous.  */
-    new_binding = decl;
+  new_binding = ovl_add (old, decl, (flags & PUSH_USING) != 0);
 
   if (doing_global)
     set_namespace_binding (name, current_namespace, new_binding);
