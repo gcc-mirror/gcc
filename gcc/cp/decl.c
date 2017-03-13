@@ -10062,10 +10062,7 @@ grokdeclarator (const cp_declarator *declarator,
 		      if (variable_template_p (dname))
 			dname = DECL_NAME (dname);
 		      else
-		        {
-		          gcc_assert (is_overloaded_fn (dname));
-		          dname = DECL_NAME (get_first_fn (dname));
-		        }
+			dname = OVL_NAME (dname);
 		    }
 		}
 		/* Fall through.  */

@@ -206,7 +206,7 @@ lambda_function (tree lambda)
 			  /*protect=*/0, /*want_type=*/false,
 			  tf_warning_or_error);
   if (lambda)
-    lambda = STRIP_TEMPLATE (get_first_fn (lambda));
+    lambda = STRIP_TEMPLATE (OVL_FIRST (get_ovl (lambda)));
   return lambda;
 }
 

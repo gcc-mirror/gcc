@@ -5092,7 +5092,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	      {
 		if (!RECUR (fun, true))
 		  return false;
-		fun = get_first_fn (fun);
+		fun = OVL_FIRST (get_ovl (fun));
 	      }
 	    /* Skip initial arguments to base constructors.  */
 	    if (DECL_BASE_CONSTRUCTOR_P (fun))

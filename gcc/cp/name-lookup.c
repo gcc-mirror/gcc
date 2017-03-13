@@ -2543,8 +2543,7 @@ validate_nonmember_using_decl (tree decl, tree scope, tree name)
       return NULL_TREE;
     }
 
-  if (is_overloaded_fn (decl))
-    decl = get_first_fn (decl);
+  decl = OVL_FIRST (decl);
 
   gcc_assert (DECL_P (decl));
 

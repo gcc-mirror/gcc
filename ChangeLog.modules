@@ -1,5 +1,19 @@
 2017-03-13  Nathan Sidwell  <nathan@acm.org>
 
+	Kill get_first_fn part 1
+	gcc/cp/
+	* call.c (add_list_candidates, build_new_method_call_1): Use
+	OVL_FIRST directly.
+	* constraint.cc (function_concept_check_p): Likewise.
+	* name-lookup.c (validate_nonmember_using_decl): Likewise.
+	* constexpr.c (potential_constant_expression_1): Use ovl_fns &
+	OVL_FIRST.
+	* lambda.c (lambda_function): Likewise.
+	* decl.c (grokdeclarator): Use OVL_NAME.
+	* error.c (dump_decl): Likewise.
+	* friend.c (do_friend): Likewise.
+	* mangle.c (write_expression): Likewise.
+
 	Kill get_fns
 	gcc/cp/
 	* cp-tree.h (get_ovl): New.
