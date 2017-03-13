@@ -1,5 +1,13 @@
 2017-03-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
+	PR libstdc++/80034
+	* include/bits/list.tcc (merge(list&&)): Use const for the size_t
+	in the catch-block.
+	(merge(list&&, _StrictWeakOrdering)): Likewise.
+	* testsuite/23_containers/list/operations/80034.cc: New.
+
+2017-03-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
 	Implement LWG 2806, Base class of bad_optional_access.
 	* include/std/optional (bad_optional_access):
 	Derive from std::exception.
