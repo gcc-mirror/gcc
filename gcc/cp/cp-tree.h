@@ -431,6 +431,26 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
     && MAIN_NAME_P (DECL_NAME (NODE))			\
     && flag_hosted)
 
+// ALLOC and LENGTH in clique & base for memrefs stuff
+#if 0 // New overloads
+#define OVERLOAD2_LENGTH(T) ((T)->typed.base.u.base)
+#define OVERLOAD2_ALLOC(T) ((T)->typed.base.u.clique)
+#define OVL_FIRST(T)
+#define OVL_NAME(T)
+
+struct ovl_iterator 
+{
+  tree ovl;
+  unsigned outer;
+  unsigned inner;
+};
+
+struct GTY(()) tree_overload_2 
+{
+  struct tree_typed typed;
+  tree GTY((length ("OVERLOAD2_LENGTH ((tree)&%h)"))) elts[1];
+};
+#else // old overloads
 /* The overloaded FUNCTION_DECL.  */
 #define OVL_FUNCTION(NODE) \
   (((struct tree_overload*)OVERLOAD_CHECK (NODE))->function)
@@ -447,29 +467,14 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 /* If set, this OVERLOAD was created for argument-dependent lookup
    and can be freed afterward.  */
 #define OVL_ARG_DEPENDENT(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
+#define OVL_FIRST(T) OVL_CURRENT (T)
+#define OVL_NAME(T) DECL_NAME (OVL_CURRENT (T))
 
 struct GTY(()) tree_overload {
   struct tree_common common;
   tree function;
 };
 
-// ALLOC and LENGTH in clique & base for memrefs stuff
-#if 0 // New overloads
-#define OVERLOAD2_LENGTH(T) ((T)->typed.base.u.base)
-#define OVERLOAD2_ALLOC(T) ((T)->typed.base.u.clique)
-struct ovl_iterator 
-{
-  tree ovl;
-  unsigned outer;
-  unsigned inner;
-};
-
-struct GTY(()) tree_overload_2 
-{
-  struct tree_typed typed;
-  tree GTY((length ("OVERLOAD2_LENGTH ((tree)&%h)"))) elts[1];
-};
-#else // old overloads
 struct ovl_iterator 
 {
   tree ovl;
@@ -490,10 +495,12 @@ struct ovl_iterator
   {
     return OVL_CURRENT (ovl);
   }
+  tree &ref ()
+  {
+    return OVL_FUNCTION (ovl);
+  }
 };
 tree ovl_append (tree, tree);
-#define OVL_FIRST(T) OVL_CURRENT (T)
-#define OVL_NAME(T) DECL_NAME (OVL_CURRENT (T))
 #endif
 /*
   ovl = ovl_append (ovl/NULL, decl);

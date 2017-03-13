@@ -1,12 +1,20 @@
+2017-03-13  Nathan Sidwell  <nathan@acm.org>
+
+	Vectorize OVERLOAD part 4
+	gcc/cp/
+	* cp-tree.h (ovl_iterator::ref): New.
+	* semantics.c (finish_omp_reduction_clause): Use OVL_FIRST.
+	* tree.c (is_overloaded_fn, get_fns): Likewise.
+
 2017-03-10  Nathan Sidwell  <nathan@acm.org>
 
-	Add OVERLOAD iterator part 6
+	Vectorize OVERLOAD part 3
 	gcc/cp/
 	* search.c (lookup_field_fuzzy_info::fuzzy_lookup_fn,
 	lookup_conversion_operator, lookup_fnfields_idx_nolazy,
 	lookup_conversions_r): Use new accessors.
 
-	Add OVERLOAD iterator part 5
+	Vectorize OVERLOAD part 2
 	gcc/cp/
 	* decl2.c (mark_used): Use new accessors.
 	* dump.c (cp_dump_tree): Likewise.
@@ -18,7 +26,7 @@
 	tsubst_baselink): Likewise.
 	* ptree.c (cxx_print_xnode): Likewise.
 
-	Add OVERLOAD iterator part 4
+	Vectorize OVERLOAD part 1
 	gcc/cp/
 	* cp-tree.h (OVL_FIRST, OVL_NAME): New accessors.
 	* call.c (build_user_type_conversion_1,

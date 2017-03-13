@@ -5586,7 +5586,7 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
     {
       if (id == error_mark_node)
 	return true;
-      id = OVL_CURRENT (id);
+      id = OVL_FIRST (id);
       mark_used (id);
       tree body = DECL_SAVED_TREE (id);
       if (!body)

@@ -2070,7 +2070,7 @@ is_overloaded_fn (tree x)
   if (TREE_CODE (x) == TEMPLATE_ID_EXPR)
     x = TREE_OPERAND (x, 0);
 
-  if (DECL_FUNCTION_TEMPLATE_P (OVL_CURRENT (x))
+  if (DECL_FUNCTION_TEMPLATE_P (OVL_FIRST (x))
       || (TREE_CODE (x) == OVERLOAD && OVL_CHAIN (x)))
     return 2;
 
@@ -2122,7 +2122,7 @@ get_fns (tree from)
 tree
 get_first_fn (tree from)
 {
-  return OVL_CURRENT (get_fns (from));
+  return OVL_FIRST (get_fns (from));
 }
 
 /* Return a new OVL node, concatenating it with the old one.  */
