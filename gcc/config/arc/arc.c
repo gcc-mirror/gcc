@@ -7336,6 +7336,17 @@ arc_output_addsi (rtx *operands, bool cond_p, bool output_p)
 	  || (REGNO (operands[0]) == STACK_POINTER_REGNUM
 	      && match && !(neg_intval & ~124)))
 	ADDSI_OUTPUT1 ("sub%? %0,%1,%n2");
+
+      if (REG_P(operands[0]) && REG_P(operands[1])
+	  && (REGNO(operands[0]) <= 31) && (REGNO(operands[0]) == REGNO(operands[1]))
+	  && CONST_INT_P (operands[2]) && ( (intval>= -1) && (intval <= 6)))
+	ADDSI_OUTPUT1 ("add%? %0,%1,%2");
+
+      if (TARGET_CODE_DENSITY && REG_P(operands[0]) && REG_P(operands[1])
+	  && ((REGNO(operands[0]) == 0) || (REGNO(operands[0]) == 1))
+	  && satisfies_constraint_Rcq (operands[1])
+	  && satisfies_constraint_L (operands[2]))
+	ADDSI_OUTPUT1 ("add%? %0,%1,%2 ;3");
     }
 
   /* Now try to emit a 32 bit insn without long immediate.  */

@@ -1,5 +1,15 @@
 2017-03-13  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (arc_output_addsi): Emit code density adds.
+	* config/arc/arc.md (cpu_facility): Add cd variant.
+	(*movqi_insn): Add code density variant.
+	(*movhi_insn): Likewise.
+	(*movqi_insn): Likewise.
+	(*addsi3_mixed): Likewise.
+	(subsi3_insn): Likewise.
+
+2017-03-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (movsi_cond_exec): Update constraint.
 
 2017-03-13  Claudiu Zissulescu  <claziss@synopsys.com>
