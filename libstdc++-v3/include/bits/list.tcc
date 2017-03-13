@@ -344,7 +344,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  iterator __last1 = end();
 	  iterator __first2 = __x.begin();
 	  iterator __last2 = __x.end();
-	  size_t __orig_size = __x.size();
+	  const size_t __orig_size = __x.size();
 	  __try {
 	    while (__first1 != __last1 && __first2 != __last2)
 	      if (*__first2 < *__first1)
@@ -363,7 +363,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  }
 	  __catch(...)
 	    {
-	      size_t __dist = distance(__first2, __last2);
+	      const size_t __dist = std::distance(__first2, __last2);
 	      this->_M_inc_size(__orig_size - __dist);
 	      __x._M_set_size(__dist);
 	      __throw_exception_again;
@@ -391,7 +391,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    iterator __last1 = end();
 	    iterator __first2 = __x.begin();
 	    iterator __last2 = __x.end();
-	    size_t __orig_size = __x.size();
+	    const size_t __orig_size = __x.size();
 	    __try
 	      {
 		while (__first1 != __last1 && __first2 != __last2)
@@ -411,7 +411,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      }
 	    __catch(...)
 	      {
-		size_t __dist = distance(__first2, __last2);
+		const size_t __dist = std::distance(__first2, __last2);
 		this->_M_inc_size(__orig_size - __dist);
 		__x._M_set_size(__dist);
 		__throw_exception_again;

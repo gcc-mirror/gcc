@@ -1,3 +1,11 @@
+2017-03-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/80034
+	* include/bits/list.tcc (merge(list&&)): Use const for the size_t
+	in the function and in the catch-block, qualify uses of std::distance.
+	(merge(list&&, _StrictWeakOrdering)): Likewise.
+	* testsuite/23_containers/list/operations/80034.cc: New.
+
 2017-03-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/79789
