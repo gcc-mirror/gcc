@@ -70,7 +70,7 @@ This file documents the internals of the GNU compilers.
 @contents
 @page
 
-@node Top, Contributing,, (DIR)
+@node Top, Contributing
 @top Introduction
 @cindex introduction
 
