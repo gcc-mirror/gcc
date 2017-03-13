@@ -2142,11 +2142,10 @@ dependent_name (tree x)
 {
   if (identifier_p (x))
     return x;
-  if (TREE_CODE (x) != COMPONENT_REF
-      && TREE_CODE (x) != OFFSET_REF
-      && TREE_CODE (x) != BASELINK
-      && is_overloaded_fn (x))
-    return DECL_NAME (get_first_fn (x));
+  if (TREE_CODE (x) == TEMPLATE_ID_EXPR)
+    x = TREE_OPERAND (x, 0);
+  if (TREE_CODE (x) == OVERLOAD || TREE_CODE (x) == FUNCTION_DECL)
+    return OVL_NAME (x);
   return NULL_TREE;
 }
 
@@ -2158,12 +2157,6 @@ bool
 really_overloaded_fn (tree x)
 {
   return is_overloaded_fn (x) == 2;
-}
-
-tree // FIXME: Kill me
-get_first_fn (tree from)
-{
-  return OVL_FIRST (get_ovl (from));
 }
 
 /* Return the scope where the overloaded functions OVL were found.  */

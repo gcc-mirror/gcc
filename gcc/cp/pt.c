@@ -1782,7 +1782,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
     case BASELINK:
       val = iterative_hash_template_arg (BINFO_TYPE (BASELINK_BINFO (arg)),
 					 val);
-      return iterative_hash_template_arg (DECL_NAME (get_first_fn (arg)),
+      return iterative_hash_template_arg (DECL_NAME (get_ovl (arg, true)),
 					  val);
 
     case MODOP_EXPR:
@@ -14126,7 +14126,7 @@ tsubst_baselink (tree baselink, tree object_type,
 	  template_args = tsubst_template_args (template_args, args,
 						complain, in_decl);
       }
-    name = DECL_NAME (get_first_fn (fns));
+    name = OVL_NAME (fns);
     if (IDENTIFIER_TYPENAME_P (name))
       name = mangle_conv_op_name_for_type (optype);
     baselink = lookup_fnfields (qualifying_scope, name, /*protect=*/1);
@@ -17117,7 +17117,7 @@ tsubst_copy_and_build (tree t,
 		 /* If lookup found a member function, the Koenig lookup is
 		    not appropriate, even if an unqualified-name was used
 		    to denote the function.  */
-		 && !DECL_FUNCTION_MEMBER_P (get_first_fn (function)))
+		 && !DECL_FUNCTION_MEMBER_P (get_ovl (function, true)))
 		|| identifier_p (function))
 	    /* Only do this when substitution turns a dependent call
 	       into a non-dependent call.  */
@@ -17166,12 +17166,11 @@ tsubst_copy_and_build (tree t,
 		    if (diag)
 		      {
 			tree fn = unq;
+
 			if (INDIRECT_REF_P (fn))
 			  fn = TREE_OPERAND (fn, 0);
-			if (TREE_CODE (fn) == COMPONENT_REF)
-			  fn = TREE_OPERAND (fn, 1);
 			if (is_overloaded_fn (fn))
-			  fn = get_first_fn (fn);
+			  fn = get_ovl (fn, true);
 
 			if (!DECL_P (fn))
 			  /* Can't say anything more.  */;

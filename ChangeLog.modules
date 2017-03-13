@@ -1,5 +1,17 @@
 2017-03-13  Nathan Sidwell  <nathan@acm.org>
 
+	Kill get_first_fn part 3
+	gcc/cp/
+	* cp-tree.h (get_first_fn): Delete.
+	* pt.c (iterative_hash_template_arg, tsubst_copy_and_build): Use
+	get_ovl.
+	(tsubst_baselink): Use OVL_NAME.
+	* typeck.c (invalid_nonstatic_memfn_p, build_x_unary_op,
+	cp_build_addr_expr_1): Use get_ovl.
+	(finish_class_member_access_expr): Use OVL_NAME.
+	* tree.c (dependent_name): Recode.
+	(get_first_fn): Delete.
+
 	Kill get_first_fn part 2
 	gcc/cp/
 	* cp-tree.h (get_ovl): Add want_first parm, make pure.
