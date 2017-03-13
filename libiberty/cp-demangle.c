@@ -854,6 +854,7 @@ cplus_demangle_fill_name (struct demangle_component *p, const char *s, int len)
 {
   if (p == NULL || s == NULL || len == 0)
     return 0;
+  p->d_printing = 0;
   p->type = DEMANGLE_COMPONENT_NAME;
   p->u.s_name.s = s;
   p->u.s_name.len = len;
@@ -869,6 +870,7 @@ cplus_demangle_fill_extended_operator (struct demangle_component *p, int args,
 {
   if (p == NULL || args < 0 || name == NULL)
     return 0;
+  p->d_printing = 0;
   p->type = DEMANGLE_COMPONENT_EXTENDED_OPERATOR;
   p->u.s_extended_operator.args = args;
   p->u.s_extended_operator.name = name;
@@ -888,6 +890,7 @@ cplus_demangle_fill_ctor (struct demangle_component *p,
       || (int) kind < gnu_v3_complete_object_ctor
       || (int) kind > gnu_v3_object_ctor_group)
     return 0;
+  p->d_printing = 0;
   p->type = DEMANGLE_COMPONENT_CTOR;
   p->u.s_ctor.kind = kind;
   p->u.s_ctor.name = name;
@@ -907,6 +910,7 @@ cplus_demangle_fill_dtor (struct demangle_component *p,
       || (int) kind < gnu_v3_deleting_dtor
       || (int) kind > gnu_v3_object_dtor_group)
     return 0;
+  p->d_printing = 0;
   p->type = DEMANGLE_COMPONENT_DTOR;
   p->u.s_dtor.kind = kind;
   p->u.s_dtor.name = name;
