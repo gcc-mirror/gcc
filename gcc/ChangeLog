@@ -1,5 +1,8 @@
 2017-03-13  Jeff Law  <law@redhat.com>
 
+	* config/riscv/riscv.c (riscv_emit_float_compare): Use fallthru
+	attribute rather than comments.
+
 	* config/pdp11/pdp11.md (movmemhi): Adjust operand numbers to
 	match_scratch operand is highest.
 
