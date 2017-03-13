@@ -1,3 +1,8 @@
+2017-03-13  Richard Biener  <rguenther@suse.de>
+
+	PR other/79991
+	* params.def (vect-max-peeling-for-alignment): Fix typo.
+
 2017-03-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific) <mips-*-*>: Remove description of
