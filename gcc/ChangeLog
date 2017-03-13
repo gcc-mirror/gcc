@@ -1,3 +1,8 @@
+2017-03-13  Jeff Law  <law@redhat.com>
+
+	* config/pdp11/pdp11.md (movmemhi): Adjust operand numbers to
+	match_scratch operand is highest.
+
 2017-03-13  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/78339
