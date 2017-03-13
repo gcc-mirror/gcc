@@ -1,3 +1,8 @@
+2017-03-13  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific) <avr>: Remove reference to
+	binutils 2.13.
+
 2017-03-13  Jeff Law  <law@redhat.com>
 
 	* config/riscv/riscv.c (riscv_emit_float_compare): Use fallthru
