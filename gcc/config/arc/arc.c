@@ -4900,8 +4900,55 @@ arc_legitimize_pic_address (rtx orig, rtx oldx)
 	      /* Check that the unspec is one of the ones we generate?  */
 	      return orig;
 	    }
+	  /* fwprop is placing in the REG_EQUIV notes constant pic
+	     unspecs expressions.  Then, loop may use these notes for
+	     optimizations resulting in complex patterns that are not
+	     supported by the current implementation. The following
+	     two if-cases are simplifying the complex patters to
+	     simpler ones.  */
+	  else if (GET_CODE (addr) == MINUS)
+	    {
+	      rtx op0 = XEXP (addr, 0);
+	      rtx op1 = XEXP (addr, 1);
+	      gcc_assert (oldx);
+	      gcc_assert (GET_CODE (op1) == UNSPEC);
+
+	      emit_move_insn (oldx,
+			      gen_rtx_CONST (SImode,
+					     arc_legitimize_pic_address (op1,
+									 NULL_RTX)));
+	      emit_insn (gen_rtx_SET (oldx, gen_rtx_MINUS (SImode, op0, oldx)));
+	      return oldx;
+
+	    }
+	  else if (GET_CODE (addr) != PLUS)
+	    {
+	      rtx tmp = XEXP (addr, 0);
+	      enum rtx_code code = GET_CODE (addr);
+
+	      /* It only works for UNARY operations.  */
+	      gcc_assert (UNARY_P (addr));
+	      gcc_assert (GET_CODE (tmp) == UNSPEC);
+	      gcc_assert (oldx);
+
+	      emit_move_insn
+		(oldx,
+		 gen_rtx_CONST (SImode,
+				arc_legitimize_pic_address (tmp,
+							    NULL_RTX)));
+
+	      emit_insn (gen_rtx_SET (oldx,
+				      gen_rtx_fmt_ee (code, SImode,
+						      oldx, const0_rtx)));
+
+	      return oldx;
+	    }
 	  else
-	    gcc_assert (GET_CODE (addr) == PLUS);
+	    {
+	      gcc_assert (GET_CODE (addr) == PLUS);
+	      if (GET_CODE (XEXP (addr, 0)) == UNSPEC)
+		return orig;
+	    }
 	}
 
       if (GET_CODE (addr) == PLUS)

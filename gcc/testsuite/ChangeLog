@@ -1,3 +1,7 @@
+2017-03-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* testsuite/gcc.target/arc/pr9001090948.c: New file.
+
 2017-03-11  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* lib/target-supports.exp (check_effective_target_broken_cplxf_arg):
