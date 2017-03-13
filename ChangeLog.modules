@@ -1,7 +1,19 @@
 2017-03-13  Nathan Sidwell  <nathan@acm.org>
 
+	Kill build_overload
+	gcc/cp/
+	* cp-tree.h (ovl_add): Declare.
+	(build_overload): Delete.
+	* tree.c (ovl_add): New.
+	(build_overload): Delete.
+	* class.c (add_method): Use ovl_add.
+	* constraint.cc (finish_shorthand_constraint): Likewise.
+	* name-lookup.c (do_nonmember_using_decl, merge_functions,
+	remove_hidden_names, add_function): Likewise.
+	* pt.c (make_constrained_auto): Likewise.
+
 	Rename OVL_USED
-	* gcc/cp/
+	gcc/cp/
 	* cp-tree.h (OVL_USED): Rename to ...
 	(OVL_VIA_USING): ... here.
 	* class.c (add_method): Update.

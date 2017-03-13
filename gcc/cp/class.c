@@ -1254,13 +1254,7 @@ add_method (tree type, tree method, tree using_decl)
     return false;
 
   /* Add the new binding.  */
-  if (using_decl)
-    {
-      overload = ovl_cons (method, current_fns);
-      OVL_VIA_USING (overload) = true;
-    }
-  else
-    overload = build_overload (method, current_fns);
+  overload = ovl_add (current_fns, method, using_decl);
 
   if (conv_p)
     TYPE_HAS_CONVERSION (type) = 1;

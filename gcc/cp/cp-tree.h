@@ -498,14 +498,8 @@ struct ovl_iterator
     return OVL_FUNCTION (ovl);
   }
 };
-tree ovl_append (tree, tree);
 #endif
-/*
-  ovl = ovl_append (ovl/NULL, decl);
-
-  for (ovl_iterator iter (ovl); iter; ++iter)
-    { tree fn = *iter}
- */
+tree ovl_add (tree maybe_ovl, tree fn, bool via_using = false);
 
 struct GTY(()) tree_template_decl {
   struct tree_decl_common common;
@@ -6729,7 +6723,6 @@ extern tree dependent_name			(tree);
 extern tree get_fns				(tree);
 extern tree get_first_fn			(tree);
 extern tree ovl_cons				(tree, tree);
-extern tree build_overload			(tree, tree);
 extern tree ovl_scope				(tree);
 extern const char *cxx_printable_name		(tree, int);
 extern const char *cxx_printable_name_translate	(tree, int);

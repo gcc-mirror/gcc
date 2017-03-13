@@ -2671,22 +2671,8 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 	      if (tmp1)
 		continue;
 
-	      /* If we are adding to an existing OVERLOAD, then we no
-		 longer know the type of the set of functions.  */
-	      if (*newval && TREE_CODE (*newval) == OVERLOAD)
-		TREE_TYPE (*newval) = unknown_type_node;
 	      /* Add this new function to the set.  */
-	      *newval = build_overload (OVL_CURRENT (tmp), *newval);
-	      /* If there is only one function, then we use its type.  (A
-		 using-declaration naming a single function can be used in
-		 contexts where overload resolution cannot be
-		 performed.)  */
-	      if (TREE_CODE (*newval) != OVERLOAD)
-		{
-		  *newval = ovl_cons (*newval, NULL_TREE);
-		  TREE_TYPE (*newval) = TREE_TYPE (OVL_CURRENT (tmp));
-		}
-	      OVL_VIA_USING (*newval) = 1;
+	      *newval = ovl_add (*newval, OVL_CURRENT (tmp), true);
 	    }
 	}
       else
@@ -4242,7 +4228,7 @@ merge_functions (tree s1, tree s2)
 
       /* If we exhausted all of the functions in S1, FN2 is new.  */
       if (!found)
-	s1 = build_overload (fn2, s1);
+	s1 = ovl_add (s1, fn2);
     }
   return s1;
 }
@@ -4452,7 +4438,7 @@ remove_hidden_names (tree fns)
 
 	  for (ovl_iterator iter (fns); iter; ++iter)
 	    if (!hidden_name_p (*iter))
-	      n = build_overload (*iter, n);
+	      n = ovl_add (n, *iter);
 	  fns = n;
 	}
     }
@@ -5483,7 +5469,7 @@ add_function (struct arg_lookup *k, tree fn)
     ;
   else
     {
-      k->functions = build_overload (fn, k->functions);
+      k->functions = ovl_add (k->functions, fn);
       if (TREE_CODE (k->functions) == OVERLOAD)
 	OVL_ARG_DEPENDENT (k->functions) = true;
     }

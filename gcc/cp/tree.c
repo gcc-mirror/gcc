@@ -2052,6 +2052,38 @@ build_ref_qualified_type (tree type, cp_ref_qualifier rqual)
   return t;
 }
 
+tree
+ovl_add (tree maybe_ovl, tree fn, bool via_using)
+{
+  tree result;
+  if (maybe_ovl && TREE_CODE (maybe_ovl) != OVERLOAD)
+    {
+      /* Don't chain to a non-overload.  */
+      result = make_node (OVERLOAD);
+      TREE_TYPE (result) = unknown_type_node;
+      OVL_FUNCTION (result) = maybe_ovl;
+      maybe_ovl = result;
+    }
+  result = fn;
+  if (maybe_ovl || via_using || TREE_CODE (fn) == TEMPLATE_DECL)
+    {
+      result = make_node (OVERLOAD);
+      TREE_TYPE (result) = unknown_type_node;
+      if (maybe_ovl)
+	TREE_TYPE (maybe_ovl) = unknown_type_node;
+      if (via_using)
+	{
+	  OVL_VIA_USING (result) = true;
+	  if (!maybe_ovl)
+	    /* A single decl brought in via using has a known type.  */
+	    TREE_TYPE (result) = TREE_TYPE (fn);
+	}
+      OVL_FUNCTION (result) = fn;
+      TREE_CHAIN (result) = maybe_ovl;
+    }
+  return result;
+}
+
 /* Returns nonzero if X is an expression for a (possibly overloaded)
    function.  If "f" is a function or function template, "f", "c->f",
    "c.f", "C::f", and "f<int>" will all be considered possibly
@@ -2105,7 +2137,7 @@ really_overloaded_fn (tree x)
   return is_overloaded_fn (x) == 2;
 }
 
-tree
+tree // FIXME: Breakout as helper
 get_fns (tree from)
 {
   gcc_assert (is_overloaded_fn (from));
@@ -2119,7 +2151,7 @@ get_fns (tree from)
   return from;
 }
 
-tree
+tree // FIXME: Kill me
 get_first_fn (tree from)
 {
   return OVL_FIRST (get_fns (from));
@@ -2127,7 +2159,7 @@ get_first_fn (tree from)
 
 /* Return a new OVL node, concatenating it with the old one.  */
 
-tree
+tree // FIXME: Kill me
 ovl_cons (tree decl, tree chain)
 {
   tree result = make_node (OVERLOAD);
@@ -2136,17 +2168,6 @@ ovl_cons (tree decl, tree chain)
   TREE_CHAIN (result) = chain;
 
   return result;
-}
-
-/* Build a new overloaded function. If this is the first one,
-   just return it; otherwise, ovl_cons the _DECLs */
-
-tree
-build_overload (tree decl, tree chain)
-{
-  if (! chain && TREE_CODE (decl) != TEMPLATE_DECL)
-    return decl;
-  return ovl_cons (decl, chain);
 }
 
 /* Return the scope where the overloaded functions OVL were found.  */

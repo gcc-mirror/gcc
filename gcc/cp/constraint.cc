@@ -1284,15 +1284,9 @@ finish_shorthand_constraint (tree decl, tree constr)
   /* Build the concept check. If it the constraint needs to be
      applied to all elements of the parameter pack, then make
      the constraint an expansion. */
-  tree check;
   tree tmpl = DECL_TI_TEMPLATE (con);
-  if (VAR_P (con))
-    check = build_concept_check (tmpl, arg, args);
-  else
-    {
-      tree ovl = build_overload (tmpl, NULL_TREE);
-      check = build_concept_check (ovl, arg, args);
-    }
+  tree check = VAR_P (con) ? tmpl : ovl_add (NULL_TREE, tmpl);
+  check = build_concept_check (check, arg, args);
 
   /* Make the check a pack expansion if needed.
 

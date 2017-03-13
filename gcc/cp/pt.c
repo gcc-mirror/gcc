@@ -24601,11 +24601,8 @@ make_constrained_auto (tree con, tree args)
 
   /* Build the constraint. */
   tree tmpl = DECL_TI_TEMPLATE (con);
-  tree expr;
-  if (VAR_P (con))
-    expr = build_concept_check (tmpl, type, args);
-  else
-    expr = build_concept_check (build_overload (tmpl, NULL_TREE), type, args);
+  tree expr = VAR_P (con) ? tmpl : ovl_add (NULL_TREE, tmpl);
+  expr = build_concept_check (expr, type, args);
 
   tree constr = normalize_expression (expr);
   PLACEHOLDER_TYPE_CONSTRAINTS (type) = constr;
