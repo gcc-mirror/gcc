@@ -500,6 +500,7 @@ struct ovl_iterator
 };
 #endif
 tree ovl_add (tree maybe_ovl, tree fn, int force = 0);
+tree get_ovl (tree expr);
 
 struct GTY(()) tree_template_decl {
   struct tree_decl_common common;
@@ -6720,7 +6721,6 @@ extern tree build_qualified_name		(tree, tree, tree, bool);
 extern tree build_ref_qualified_type		(tree, cp_ref_qualifier);
 extern int is_overloaded_fn			(tree);
 extern tree dependent_name			(tree);
-extern tree get_fns				(tree);
 extern tree get_first_fn			(tree);
 extern tree ovl_scope				(tree);
 extern const char *cxx_printable_name		(tree, int);

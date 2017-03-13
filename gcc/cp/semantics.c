@@ -5183,7 +5183,7 @@ omp_reduction_lookup (location_t loc, tree id, tree type, tree *baselinkp,
 				false, false);
   tree fns = id;
   if (id && is_overloaded_fn (id))
-    id = get_fns (id);
+    id = get_ovl (id);
   for (; id; id = OVL_NEXT (id))
     {
       tree fndecl = OVL_CURRENT (id);

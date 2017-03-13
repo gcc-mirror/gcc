@@ -1,5 +1,13 @@
 2017-03-13  Nathan Sidwell  <nathan@acm.org>
 
+	Kill get_fns
+	gcc/cp/
+	* cp-tree.h (get_ovl): New.
+	(get_fns): Delete.
+	* parser.c (cp_parser_nested_name_specifier_opt): Update.
+	* search.c (shared_member_p): Update.
+	* semantics.c (omp_reduction_lookup): Update.
+
 	Kill ovl_cons
 	gcc/cp/
 	* cp-tree.h (ovl_cons): Delete.

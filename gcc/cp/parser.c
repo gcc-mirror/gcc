@@ -6028,7 +6028,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 		  tree tmpl = NULL_TREE;
 		  if (is_overloaded_fn (tid))
 		    {
-		      tree fns = get_fns (tid);
+		      tree fns = get_ovl (tid);
 		      if (!OVL_CHAIN (fns))
 			tmpl = OVL_FIRST (fns);
 		      error_at (token->location, "function template-id %qD "

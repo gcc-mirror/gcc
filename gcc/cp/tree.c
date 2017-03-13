@@ -2089,6 +2089,22 @@ ovl_add (tree maybe_ovl, tree fn, int force)
   return result;
 }
 
+/* Get the overload set that an EXPR refers to.  */
+
+tree
+get_ovl (tree expr)
+{
+  if (TREE_CODE (expr) == OFFSET_REF
+      || TREE_CODE (expr) == COMPONENT_REF)
+    expr = TREE_OPERAND (expr, 1);
+  expr = MAYBE_BASELINK_FUNCTIONS (expr);
+  if (TREE_CODE (expr) == TEMPLATE_ID_EXPR)
+    expr = TREE_OPERAND (expr, 0);
+  gcc_assert (TREE_CODE (expr) == OVERLOAD
+	      || TREE_CODE (expr) == FUNCTION_DECL);
+  return expr;
+}
+
 /* Returns nonzero if X is an expression for a (possibly overloaded)
    function.  If "f" is a function or function template, "f", "c->f",
    "c.f", "C::f", and "f<int>" will all be considered possibly
@@ -2142,24 +2158,10 @@ really_overloaded_fn (tree x)
   return is_overloaded_fn (x) == 2;
 }
 
-tree // FIXME: Breakout as helper
-get_fns (tree from)
-{
-  gcc_assert (is_overloaded_fn (from));
-  /* A baselink is also considered an overloaded function.  */
-  if (TREE_CODE (from) == OFFSET_REF
-      || TREE_CODE (from) == COMPONENT_REF)
-    from = TREE_OPERAND (from, 1);
-  from = MAYBE_BASELINK_FUNCTIONS (from);
-  if (TREE_CODE (from) == TEMPLATE_ID_EXPR)
-    from = TREE_OPERAND (from, 0);
-  return from;
-}
-
 tree // FIXME: Kill me
 get_first_fn (tree from)
 {
-  return OVL_FIRST (get_fns (from));
+  return OVL_FIRST (get_ovl (from));
 }
 
 /* Return the scope where the overloaded functions OVL were found.  */

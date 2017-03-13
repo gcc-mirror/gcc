@@ -1044,7 +1044,7 @@ shared_member_p (tree t)
     return 1;
   if (is_overloaded_fn (t))
     {
-      for (ovl_iterator iter (get_fns (t)); iter; ++iter)
+      for (ovl_iterator iter (get_ovl (t)); iter; ++iter)
 	if (DECL_NONSTATIC_MEMBER_FUNCTION_P (*iter))
 	  return 0;
       return 1;
