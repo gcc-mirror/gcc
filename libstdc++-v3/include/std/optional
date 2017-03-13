@@ -76,25 +76,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  dereferenced.
    *  @ingroup exceptions
    */
-  class bad_optional_access : public logic_error
+  class bad_optional_access : public exception
   {
-    // XXX See LEWG 72, https://issues.isocpp.org/show_bug.cgi?id=72
   public:
-    bad_optional_access() : logic_error("bad optional access") { }
-    // XXX This constructor is non-standard. Should not be inline
-    explicit bad_optional_access(const char* __arg) : logic_error(__arg) { }
+    bad_optional_access() { }
+    virtual const char* what() const noexcept override
+    {return "bad optional access";}
 
     virtual ~bad_optional_access() noexcept = default;
   };
 
   void
-  __throw_bad_optional_access(const char*)
+  __throw_bad_optional_access()
   __attribute__((__noreturn__));
 
   // XXX Does not belong here.
   inline void
-  __throw_bad_optional_access(const char* __s)
-  { _GLIBCXX_THROW_OR_ABORT(bad_optional_access(__s)); }
+  __throw_bad_optional_access()
+  { _GLIBCXX_THROW_OR_ABORT(bad_optional_access()); }
 
   /**
     * @brief Class template that holds the necessary state for @ref optional
@@ -669,8 +668,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	return this->_M_is_engaged()
 	  ?  this->_M_get()
-	  : (__throw_bad_optional_access("Attempt to access value of a "
-		                         "disengaged optional object"),
+	  : (__throw_bad_optional_access(),
 	     this->_M_get());
       }
 
@@ -679,8 +677,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	return this->_M_is_engaged()
 	  ?  this->_M_get()
-	  : (__throw_bad_optional_access("Attempt to access value of a "
-		                         "disengaged optional object"),
+	  : (__throw_bad_optional_access(),
 	     this->_M_get());
       }
 
@@ -689,8 +686,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	return this->_M_is_engaged()
 	  ?  std::move(this->_M_get())
-	  : (__throw_bad_optional_access("Attempt to access value of a "
-		                         "disengaged optional object"),
+	  : (__throw_bad_optional_access(),
 	     std::move(this->_M_get()));
       }
 
@@ -699,8 +695,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	return this->_M_is_engaged()
 	  ?  std::move(this->_M_get())
-	  : (__throw_bad_optional_access("Attempt to access value of a "
-		                         "disengaged optional object"),
+	  : (__throw_bad_optional_access(),
 	     std::move(this->_M_get()));
       }
 
