@@ -1,5 +1,10 @@
 2017-03-13  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/gcc.texi: Remove "up" link to (DIR).
+	* doc/gccint.texi: Ditto.
+
+2017-03-13  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* doc/install.texi (Specific) <avr>: Remove reference to
 	binutils 2.13.
 
