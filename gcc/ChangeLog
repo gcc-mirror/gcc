@@ -1,3 +1,17 @@
+2017-03-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/79911
+	* config/arm/neon.md (vec_sel_widen_ssum_lo<VQI:mode><VW:mode>3):
+	Rename to...
+	(vec_sel_widen_ssum_lo<mode><V_half>3): ... This. Avoid mismatch
+	between vec_select and vector argument.
+	(vec_sel_widen_ssum_hi<VQI:mode><VW:mode>3): Rename to...
+	(vec_sel_widen_ssum_hi<mode><V_half>3): ... This. Likewise.
+	(vec_sel_widen_usum_lo<VQI:mode><VW:mode>3): Rename to...
+	(vec_sel_widen_usum_lo<mode><V_half>3): ... This.
+	(vec_sel_widen_usum_hi<VQI:mode><VW:mode>3): Rename to...
+	(vec_sel_widen_usum_hi<mode><V_half>3): ... This.
+
 2017-03-13  Richard Biener  <rguenther@suse.de>
 
 	PR other/79991
