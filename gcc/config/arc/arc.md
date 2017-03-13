@@ -3646,7 +3646,7 @@
      (match_operator 3 "proper_comparison_operator"
        [(match_operand 2 "cc_register" "Rcc,Rcc") (const_int 0)])
      (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
-	  (match_operand:SI 1 "nonmemory_operand" "Lc,?Cal")))]
+	  (match_operand:SI 1 "nonmemory_operand" "LRac,?Cal")))]
   ""
   "mov.%d3 %0,%S1"
   [(set_attr "type" "cmove")

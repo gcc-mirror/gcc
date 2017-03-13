@@ -1,5 +1,9 @@
 2017-03-13  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.md (movsi_cond_exec): Update constraint.
+
+2017-03-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.c (arc_legitimize_pic_address): Handle PIC
 	expressions with MINUS and UNARY ops.
 
