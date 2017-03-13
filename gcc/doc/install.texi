@@ -3396,8 +3396,6 @@ can also be obtained from:
 @uref{http://www.amelek.gda.pl/avr/,,http://www.amelek.gda.pl/avr/}
 @end itemize
 
-We @emph{strongly} recommend using binutils 2.13 or newer.
-
 The following error:
 @smallexample
 Error: register required
