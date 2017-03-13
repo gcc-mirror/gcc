@@ -1,3 +1,9 @@
+2017-03-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/79393 DR 1658 workaround
+	* method.c (synthesized_method_walk): Check vbases of abstract
+	classes for dtor walk.
+
 2017-03-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR translation/79848

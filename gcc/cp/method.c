@@ -1664,12 +1664,26 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     /* Already examined vbases above.  */;
   else if (vec_safe_is_empty (vbases))
     /* No virtual bases to worry about.  */;
-  else if (ABSTRACT_CLASS_TYPE_P (ctype) && cxx_dialect >= cxx14)
+  else if (ABSTRACT_CLASS_TYPE_P (ctype) && cxx_dialect >= cxx14
+	   /* DR 1658 specifies that vbases of abstract classes are
+	      ignored for both ctors and dtors.  However, that breaks
+	      virtual dtor overriding when the ignored base has a
+	      throwing destructor.  So, ignore that piece of 1658.  A
+	      defect has been filed (no number yet).  */
+	   && sfk != sfk_destructor)
     /* Vbase cdtors are not relevant.  */;
   else
     {
       if (constexpr_p)
 	*constexpr_p = false;
+
+      /* To be conservative, ignore access to the base dtor that
+	 DR1658 instructs us to ignore.  */
+      bool no_access_check = (cxx_dialect >= cxx14
+			      && ABSTRACT_CLASS_TYPE_P (ctype));
+
+      if (no_access_check)
+	push_deferring_access_checks (dk_no_check);
       FOR_EACH_VEC_ELT (*vbases, i, base_binfo)
 	synthesized_method_base_walk (binfo, base_binfo, quals,
 				      copy_arg_p, move_p, ctor_p,
@@ -1677,6 +1691,8 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 				      fnname, flags, diag,
 				      spec_p, trivial_p,
 				      deleted_p, constexpr_p);
+      if (no_access_check)
+	pop_deferring_access_checks ();
     }
 
   /* Now handle the non-static data members.  */
