@@ -2162,7 +2162,7 @@ ovl_scope (tree ovl)
   if (TREE_CODE (ovl) == TEMPLATE_ID_EXPR)
     ovl = TREE_OPERAND (ovl, 0);
   /* Skip using-declarations.  */
-  while (TREE_CODE (ovl) == OVERLOAD && OVL_USED (ovl) && OVL_CHAIN (ovl))
+  while (TREE_CODE (ovl) == OVERLOAD && OVL_VIA_USING (ovl) && OVL_CHAIN (ovl))
     ovl = OVL_CHAIN (ovl);
   return CP_DECL_CONTEXT (OVL_CURRENT (ovl));
 }

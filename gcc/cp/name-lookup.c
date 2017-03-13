@@ -2412,7 +2412,7 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
 	      tree fn = OVL_CURRENT (tmp);
 	      tree dup;
 
-	      if (TREE_CODE (tmp) == OVERLOAD && OVL_USED (tmp)
+	      if (TREE_CODE (tmp) == OVERLOAD && OVL_VIA_USING (tmp)
 		  && !(flags & PUSH_USING)
 		  && compparms_for_decl_and_using_decl (fn, decl)
 		  && ! decls_match (fn, decl))
@@ -2457,7 +2457,7 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
 	new_binding = old;
       new_binding = ovl_cons (decl, new_binding);
       if (flags & PUSH_USING)
-	OVL_USED (new_binding) = 1;
+	OVL_VIA_USING (new_binding) = 1;
     }
   else
     /* NAME is not ambiguous.  */
@@ -2645,7 +2645,7 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 		  if (new_fn == old_fn)
 		    /* The function already exists in the current namespace.  */
 		    break;
-		  else if (TREE_CODE (tmp1) == OVERLOAD && OVL_USED (tmp1))
+		  else if (TREE_CODE (tmp1) == OVERLOAD && OVL_VIA_USING (tmp1))
 		    continue; /* this is a using decl */
 		  else if (compparms_for_decl_and_using_decl (new_fn, old_fn))
 		    {
@@ -2686,7 +2686,7 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 		  *newval = ovl_cons (*newval, NULL_TREE);
 		  TREE_TYPE (*newval) = TREE_TYPE (OVL_CURRENT (tmp));
 		}
-	      OVL_USED (*newval) = 1;
+	      OVL_VIA_USING (*newval) = 1;
 	    }
 	}
       else

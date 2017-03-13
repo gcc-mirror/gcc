@@ -1096,7 +1096,7 @@ add_method (tree type, tree method, tree using_decl)
 
       /* Two using-declarations can coexist, we'll complain about ambiguity in
 	 overload resolution.  */
-      if (using_decl && TREE_CODE (fns) == OVERLOAD && OVL_USED (fns)
+      if (using_decl && TREE_CODE (fns) == OVERLOAD && OVL_VIA_USING (fns)
 	  /* Except handle inherited constructors specially.  */
 	  && ! DECL_CONSTRUCTOR_P (fn))
 	goto cont;
@@ -1257,7 +1257,7 @@ add_method (tree type, tree method, tree using_decl)
   if (using_decl)
     {
       overload = ovl_cons (method, current_fns);
-      OVL_USED (overload) = true;
+      OVL_VIA_USING (overload) = true;
     }
   else
     overload = build_overload (method, current_fns);

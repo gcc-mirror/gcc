@@ -460,10 +460,8 @@ struct GTY(()) tree_overload_2
   ((TREE_CODE (NODE) == OVERLOAD) ? OVL_FUNCTION (NODE) : (NODE))
 #define OVL_NEXT(NODE)		\
   ((TREE_CODE (NODE) == OVERLOAD) ? TREE_CHAIN (NODE) : NULL_TREE)
-/* If set, this was imported in a using declaration.
-   This is not to confuse with being used somewhere, which
-   is not important for this node.  */
-#define OVL_USED(NODE)		TREE_USED (OVERLOAD_CHECK (NODE))
+/* If set, this was imported in a using declaration.   */
+#define OVL_VIA_USING(NODE)	TREE_USED (OVERLOAD_CHECK (NODE))
 /* If set, this OVERLOAD was created for argument-dependent lookup
    and can be freed afterward.  */
 #define OVL_ARG_DEPENDENT(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))

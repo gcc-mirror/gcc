@@ -1,5 +1,15 @@
 2017-03-13  Nathan Sidwell  <nathan@acm.org>
 
+	Rename OVL_USED
+	* gcc/cp/
+	* cp-tree.h (OVL_USED): Rename to ...
+	(OVL_VIA_USING): ... here.
+	* class.c (add_method): Update.
+	* tree.c (ovl_scope): Update.
+	* search.c (lookup_field_r): Update.
+	* name-lookup.c (push_overloaded_decl_1,
+	do_nonmember_using_decl): Update.
+
 	Add OVERLOAD iterator part 4
 	gcc/cp/
 	* tree.c (cp_tree_equal): Use ovl_iterator.
