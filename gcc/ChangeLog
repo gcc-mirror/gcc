@@ -1,3 +1,9 @@
+2017-03-13  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/78339
+	* ipa-pure-const.c (warn_function_noreturn): If the declarations
+	is a CHKP clone, use original declaration.
+
 2017-03-13  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (arc_init): Use multiplier whenever we have it.
