@@ -1,5 +1,9 @@
 2017-03-13  Nathan Sidwell  <nathan@acm.org>
 
+	Add OVERLOAD iterator part 4
+	gcc/cp/
+	* tree.c (cp_tree_equal): Use ovl_iterator.
+
 	Vectorize OVERLOAD part 4
 	gcc/cp/
 	* cp-tree.h (ovl_iterator::ref): New.
