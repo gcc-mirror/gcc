@@ -565,7 +565,7 @@ DEFPARAM(PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS,
 
 DEFPARAM(PARAM_VECT_MAX_PEELING_FOR_ALIGNMENT,
          "vect-max-peeling-for-alignment",
-         "Max number of loop peels to enhancement alignment of data references in a loop.",
+         "Maximum number of loop peels to enhance alignment of data references in a loop.",
          -1, -1, 64)
 
 DEFPARAM(PARAM_MAX_CSELIB_MEMORY_LOCATIONS,
