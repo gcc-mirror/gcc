@@ -1,3 +1,15 @@
+2017-03-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement LWG 2806, Base class of bad_optional_access.
+	* include/std/optional (bad_optional_access):
+	Derive from std::exception.
+	(bad_optional_access::bad_optional_access): Adjust.
+	(bad_optional_access::what): New.
+	(__throw_bad_optional_access(const char*)):
+	Remove the parameter and adjust calls.
+	* testsuite/20_util/optional/cons/value_neg.cc: Adjust.
+	* testsuite/20_util/optional/typedefs.cc: Likewise.
+
 2017-03-12  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement LWG 2934, optional<const T> doesn't compare with T.
