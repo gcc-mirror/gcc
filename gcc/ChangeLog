@@ -1,5 +1,9 @@
 2017-03-13  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.md (*tst_bitfield_tst): Fix pattern.
+
+2017-03-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.c (arc_output_addsi): Emit code density adds.
 	* config/arc/arc.md (cpu_facility): Add cd variant.
 	(*movqi_insn): Add code density variant.

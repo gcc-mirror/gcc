@@ -901,7 +901,7 @@
    && (INTVAL (operands[3]) + INTVAL (operands[2]) <= 11
        || (INTVAL (operands[3]) <= 11
 	   && INTVAL (operands[3]) + INTVAL (operands[2]) == 32))"
-  "tst %1,(1<<%2)-1<<%3"
+  "tst %1,((1<<%2)-1)<<%3"
   [(set_attr "type" "compare")
    (set_attr "cond" "set_zn")
    (set_attr "length" "4")])
