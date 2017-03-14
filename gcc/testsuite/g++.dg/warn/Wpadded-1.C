@@ -4,8 +4,8 @@
 
 template <class> struct A;
 template <typename> struct B { // { dg-warning "padding struct size to alignment boundary" }
-  long _M_off;
-  int _M_state;
+  long long _M_off;
+  char _M_state;
 };
 template <> struct A<char> { typedef B<int> pos_type; };
 enum _Ios_Openmode {};
