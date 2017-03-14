@@ -1,5 +1,11 @@
 2017-03-14  Nathan Sidwell  <nathan@acm.org>
 
+	Add OVERLOAD iterator part 6
+	gcc/cp/
+	* decl2.c (check_class_fn): Use iterators.
+	* semantics.c (omp_reduction_lookup): Likewise.
+	(finish_omp_reduction_clause): Don't OVL_FIRST here.
+
 	Vectorize OVERLOAD part 5
 	gcc/cp/
 	* cp-tree.h (ovl_maybe_keep): Declare.

@@ -608,18 +608,12 @@ check_classfn (tree ctype, tree function, tree template_parms)
   if (ix >= 0)
     {
       vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (ctype);
-      tree fndecls, fndecl = 0;
-      bool is_conv_op;
-      const char *format = NULL;
 
-      for (fndecls = (*methods)[ix];
-	   fndecls; fndecls = OVL_NEXT (fndecls))
+      for (ovl_iterator iter ((*methods)[ix]); iter; ++iter)
 	{
-	  tree p1, p2;
-
-	  fndecl = OVL_CURRENT (fndecls);
-	  p1 = TYPE_ARG_TYPES (TREE_TYPE (function));
-	  p2 = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+	  tree fndecl = *iter;
+	  tree p1 = TYPE_ARG_TYPES (TREE_TYPE (function));
+	  tree p2 = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
 
 	  /* We cannot simply call decls_match because this doesn't
 	     work for static member functions that are pretending to
@@ -662,49 +656,47 @@ check_classfn (tree ctype, tree function, tree template_parms)
 	      && (!DECL_TEMPLATE_SPECIALIZATION (function)
 		  || (DECL_TI_TEMPLATE (function)
 		      == DECL_TI_TEMPLATE (fndecl))))
-	    break;
+	    {
+	      if (pushed_scope)
+		pop_scope (pushed_scope);
+	      return fndecl;
+	    }
 	}
-      if (fndecls)
-	{
-	  if (pushed_scope)
-	    pop_scope (pushed_scope);
-	  return OVL_CURRENT (fndecls);
-	}
-      
+
       error_at (DECL_SOURCE_LOCATION (function),
 		"prototype for %q#D does not match any in class %qT",
 		function, ctype);
-      is_conv_op = DECL_CONV_FN_P (fndecl);
+
+      const char *format = NULL;
+      tree first = OVL_FIRST ((*methods)[ix]);
+      bool is_conv_op = DECL_CONV_FN_P (first);
+      tree prev = NULL_TREE;
 
       if (is_conv_op)
 	ix = CLASSTYPE_FIRST_CONVERSION_SLOT;
-      fndecls = (*methods)[ix];
-      while (fndecls)
+      do
 	{
-	  fndecl = OVL_CURRENT (fndecls);
-	  fndecls = OVL_NEXT (fndecls);
-
-	  if (!fndecls && is_conv_op)
+	  ovl_iterator iter ((*methods)[ix++]);
+	  if (is_conv_op && !DECL_CONV_FN_P (*iter))
+	    break;
+	  for (; iter; ++iter)
 	    {
-	      if (methods->length () > (size_t) ++ix)
+	      if (prev)
 		{
-		  fndecls = (*methods)[ix];
-		  if (!DECL_CONV_FN_P (OVL_CURRENT (fndecls)))
-		    {
-		      fndecls = NULL_TREE;
-		      is_conv_op = false;
-		    }
+		  if (!format)
+		    format = N_("candidates are: %+#D");
+		  error (format, prev);
+		  format = "                %+#D";
 		}
-	      else
-		is_conv_op = false;
+	      prev = *iter;
 	    }
-	  if (format)
-	    format = "                %+#D";
-	  else if (fndecls)
-	    format = N_("candidates are: %+#D");
-	  else
+	}
+      while (is_conv_op && size_t (ix) < methods->length ());
+      if (prev)
+	{
+	  if (!format)
 	    format = N_("candidate is: %+#D");
-	  error (format, fndecl);
+	  error (format, prev);
 	}
     }
   else if (!COMPLETE_TYPE_P (ctype))
