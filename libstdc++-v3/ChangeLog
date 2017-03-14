@@ -1,3 +1,14 @@
+2017-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79162
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string<C,T,A>::operator=(basic_string_view<C,T>)): Replace
+	with a constrained template.
+	[!_GLIBCXX_USE_CXX11_ABI]
+	(basic_string<C,T,A>::operator=(basic_string_view<C,T>)): Likewise.
+	* testsuite/21_strings/basic_string/cons/char/79162.cc: New test.
+	* testsuite/21_strings/basic_string/cons/wchar_t/79162.cc: New test.
+
 2017-03-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/80034
