@@ -474,12 +474,12 @@ struct partition
   bitmap stmts;
   bitmap loops;
   bool reduction_p;
+  bool plus_one;
   enum partition_kind kind;
   /* data-references a kind != PKIND_NORMAL partition is about.  */
   data_reference_p main_dr;
   data_reference_p secondary_dr;
   tree niter;
-  bool plus_one;
 };
 
 

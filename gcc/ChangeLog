@@ -1,3 +1,24 @@
+2017-03-14  Richard Biener  <rguenther@suse.de>
+
+	* alias.c (struct alias_set_entry): Pack properly.
+	* cfgloop.h (struct loop): Likewise.
+	* cse.c (struct set): Likewise.
+	* ipa-utils.c (struct searchc_env): Likewise.
+	* loop-invariant.c (struct invariant): Likewise.
+	* lra-remat.c (struct cand): Likewise.
+	* recog.c (struct change_t): Likewise.
+	* rtl.h (struct address_info): Likewise.
+	* symbol-summary.h (function_summary): Likewise.
+	* tree-loop-distribution.c (struct partition): Likewise.
+	* tree-object-size.c (struct object_size_info): Likewise.
+	* tree-ssa-loop-ivopts.c (struct cost_pair): Likewise.
+	* tree-ssa-threadupdate.c (struct ssa_local_info_t): Likewise.
+	* tree-vect-data-refs.c (struct _vect_peel_info): Likewise.
+	* tree-vect-slp.c (struct _slp_oprnd_info): Likewise.
+	* tree-vect-stmts.c (struct simd_call_arg_info): Likewise.
+	* tree-vectorizer.h (struct _loop_vec_info): Likewise.
+	(struct _stmt_vec_info): Likewise.
+
 2017-03-14  Martin Liska  <mliska@suse.cz>
 
 	PR target/79892

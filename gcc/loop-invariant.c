@@ -108,13 +108,13 @@ struct invariant
   /* The number of invariants which eqto this.  */
   unsigned eqno;
 
-  /* If we moved the invariant out of the loop, the register that contains its
-     value.  */
-  rtx reg;
-
   /* If we moved the invariant out of the loop, the original regno
      that contained its value.  */
   int orig_regno;
+
+  /* If we moved the invariant out of the loop, the register that contains its
+     value.  */
+  rtx reg;
 
   /* The definition of the invariant.  */
   struct def *def;
@@ -134,12 +134,12 @@ struct invariant
   /* Cost of the invariant.  */
   unsigned cost;
 
-  /* The invariants it depends on.  */
-  bitmap depends_on;
-
   /* Used for detecting already visited invariants during determining
      costs of movements.  */
   unsigned stamp;
+
+  /* The invariants it depends on.  */
+  bitmap depends_on;
 };
 
 /* Currently processed loop.  */

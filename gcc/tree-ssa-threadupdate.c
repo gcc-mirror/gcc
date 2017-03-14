@@ -235,11 +235,11 @@ struct ssa_local_info_t
      and sharing a template for that block is considerably more difficult.  */
   basic_block template_block;
 
-  /* TRUE if we thread one or more jumps, FALSE otherwise.  */
-  bool jumps_threaded;
-
   /* Blocks duplicated for the thread.  */
   bitmap duplicate_blocks;
+
+  /* TRUE if we thread one or more jumps, FALSE otherwise.  */
+  bool jumps_threaded;
 
   /* When we have multiple paths through a joiner which reach different
      final destinations, then we may need to correct for potential

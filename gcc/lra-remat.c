@@ -94,10 +94,10 @@ struct cand
 {
   /* Index of the candidates in all_cands. */
   int index;
-  /* The candidate insn.  */
-  rtx_insn *insn;
   /* Insn pseudo regno for rematerialization.  */
   int regno;
+  /* The candidate insn.  */
+  rtx_insn *insn;
   /* Non-negative if a reload pseudo is in the insn instead of the
      pseudo for rematerialization.  */
   int reload_regno;

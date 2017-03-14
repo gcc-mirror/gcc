@@ -129,8 +129,8 @@ typedef struct _slp_oprnd_info
   /* Information about the first statement, its vector def-type, type, the
      operand itself in case it's constant, and an indication if it's a pattern
      stmt.  */
-  enum vect_def_type first_dt;
   tree first_op_type;
+  enum vect_def_type first_dt;
   bool first_pattern;
   bool second_pattern;
 } *slp_oprnd_info;
