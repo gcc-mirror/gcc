@@ -758,9 +758,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @brief  Set value to string constructed from a string_view.
        *  @param  __sv  A string_view.
        */
-      basic_string&
-      operator=(__sv_type __sv)
-      {	return this->assign(__sv); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	operator=(_Tp __sv)
+	{ return this->assign(__sv); }
 
       /**
        *  @brief  Convert to a string_view.
@@ -3560,9 +3561,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  @brief  Set value to string constructed from a string_view.
        *  @param  __sv  A string_view.
        */
-      basic_string&
-      operator=(__sv_type __sv)
-      { return this->assign(__sv); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	operator=(_Tp __sv)
+	{ return this->assign(__sv); }
 
       /**
        *  @brief  Convert to a string_view.
