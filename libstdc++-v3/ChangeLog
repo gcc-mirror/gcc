@@ -1,3 +1,8 @@
+2017-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc: Undefine macros that clash with
+	identifiers in AIX system headers.
+
 2017-03-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/80034
