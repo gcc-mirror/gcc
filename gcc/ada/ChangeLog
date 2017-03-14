@@ -1,3 +1,7 @@
+2017-03-14  James Cowgill  <James.Cowgill@imgtec.com>
+
+	* s-osinte-linux.ads (struct_sigaction): Use correct type for sa_flags.
+
 2017-03-08  Thanassis Tsiodras  <ttsiodras@gmail.com>
 
 	PR ada/79903
