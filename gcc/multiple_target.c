@@ -303,10 +303,7 @@ expand_target_clones (struct cgraph_node *node, bool definition)
       if (!targetm.target_option.valid_attribute_p (new_node->decl, NULL,
 						    TREE_VALUE (attributes),
 						    0))
-	{
-	  input_location = saved_loc;
-	  continue;
-	}
+	return false;
 
       input_location = saved_loc;
       decl2_v = new_node->function_version ();

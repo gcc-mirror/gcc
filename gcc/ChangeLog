@@ -1,3 +1,8 @@
+2017-03-14  Martin Liska  <mliska@suse.cz>
+
+	* multiple_target.c (expand_target_clones): Bail out for
+	an invalid attribute.
+
 2017-03-14  Richard Biener  <rguenther@suse.de>
 
 	* alias.c (struct alias_set_entry): Pack properly.
