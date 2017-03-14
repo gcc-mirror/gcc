@@ -240,9 +240,6 @@ typedef struct _loop_vec_info : public vec_info {
      PARAM_MIN_VECT_LOOP_BOUND.  */
   unsigned int th;
 
-  /* Is the loop vectorizable? */
-  bool vectorizable;
-
   /* Unrolling factor  */
   int vectorization_factor;
 
@@ -277,10 +274,6 @@ typedef struct _loop_vec_info : public vec_info {
      runtime (loop versioning) misalignment check.  */
   vec<gimple *> may_misalign_stmts;
 
-  /* The unrolling factor needed to SLP the loop. In case of that pure SLP is
-     applied to the loop, i.e., no unrolling is needed, this is 1.  */
-  unsigned slp_unrolling_factor;
-
   /* Reduction cycles detected in the loop. Used in loop-aware SLP.  */
   vec<gimple *> reductions;
 
@@ -291,8 +284,15 @@ typedef struct _loop_vec_info : public vec_info {
   /* Cost vector for a single scalar iteration.  */
   vec<stmt_info_for_cost> scalar_cost_vec;
 
+  /* The unrolling factor needed to SLP the loop. In case of that pure SLP is
+     applied to the loop, i.e., no unrolling is needed, this is 1.  */
+  unsigned slp_unrolling_factor;
+
   /* Cost of a single scalar iteration.  */
   int single_scalar_iteration_cost;
+
+  /* Is the loop vectorizable? */
+  bool vectorizable;
 
   /* When we have grouped data accesses with gaps, we may introduce invalid
      memory accesses.  We peel the last iteration of the loop to prevent
@@ -328,12 +328,12 @@ typedef struct _loop_vec_info : public vec_info {
      vectorize this, so this field would be false.  */
   bool no_data_dependencies;
 
+  /* Mark loops having masked stores.  */
+  bool has_mask_store;
+
   /* If if-conversion versioned this loop before conversion, this is the
      loop version without if-conversion.  */
   struct loop *scalar_loop;
-
-  /* Mark loops having masked stores.  */
-  bool has_mask_store;
 
   /* For loops being epilogues of already vectorized loops
      this points to the original vectorized loop.  Otherwise NULL.  */
@@ -555,6 +555,10 @@ typedef struct _stmt_vec_info {
   /* Stmt is part of some pattern (computation idiom)  */
   bool in_pattern_p;
 
+  /* Is this statement vectorizable or should it be skipped in (partial)
+     vectorization.  */
+  bool vectorizable;
+
   /* The stmt to which this info struct refers to.  */
   gimple *stmt;
 
@@ -648,22 +652,18 @@ typedef struct _stmt_vec_info {
      indicates whether the stmt needs to be vectorized.  */
   enum vect_relevant relevant;
 
-  /* Is this statement vectorizable or should it be skipped in (partial)
-     vectorization.  */
-  bool vectorizable;
-
   /* For loads if this is a gather, for stores if this is a scatter.  */
   bool gather_scatter_p;
 
   /* True if this is an access with loop-invariant stride.  */
   bool strided_p;
 
+  /* For both loads and stores.  */
+  bool simd_lane_access_p;
+
   /* Classifies how the load or store is going to be implemented
      for loop vectorization.  */
   vect_memory_access_type memory_access_type;
-
-  /* For both loads and stores.  */
-  bool simd_lane_access_p;
 
   /* For reduction loops, this is the type of reduction.  */
   enum vect_reduction_type v_reduc_type;

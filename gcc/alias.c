@@ -126,15 +126,6 @@ struct GTY(()) alias_set_entry {
   /* The alias set number, as stored in MEM_ALIAS_SET.  */
   alias_set_type alias_set;
 
-  /* The children of the alias set.  These are not just the immediate
-     children, but, in fact, all descendants.  So, if we have:
-
-       struct T { struct S s; float f; }
-
-     continuing our example above, the children here will be all of
-     `int', `double', `float', and `struct S'.  */
-  hash_map<alias_set_hash, int> *children;
-
   /* Nonzero if would have a child of zero: this effectively makes this
      alias set the same as alias set zero.  */
   bool has_zero_child;
@@ -145,6 +136,15 @@ struct GTY(()) alias_set_entry {
   bool is_pointer;
   /* Nonzero if is_pointer or if one of childs have has_pointer set.  */
   bool has_pointer;
+
+  /* The children of the alias set.  These are not just the immediate
+     children, but, in fact, all descendants.  So, if we have:
+
+       struct T { struct S s; float f; }
+
+     continuing our example above, the children here will be all of
+     `int', `double', `float', and `struct S'.  */
+  hash_map<alias_set_hash, int> *children;
 };
 
 static int rtx_equal_for_memref_p (const_rtx, const_rtx);

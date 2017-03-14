@@ -58,8 +58,8 @@ ipa_print_order (FILE* out,
 
 struct searchc_env {
   struct cgraph_node **stack;
-  int stack_size;
   struct cgraph_node **result;
+  int stack_size;
   int order_pos;
   splay_tree nodes_marked_new;
   bool reduce;

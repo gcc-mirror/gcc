@@ -2021,6 +2021,9 @@ struct address_info {
   /* The address space.  */
   addr_space_t as;
 
+  /* True if this is an RTX_AUTOINC address.  */
+  bool autoinc_p;
+
   /* A pointer to the top-level address.  */
   rtx *outer;
 
@@ -2076,9 +2079,6 @@ struct address_info {
 
   /* If BASE is nonnull, this is the code of the rtx that contains it.  */
   enum rtx_code base_outer_code;
-
-  /* True if this is an RTX_AUTOINC address.  */
-  bool autoinc_p;
 };
 
 /* This is used to bundle an rtx and a mode together so that the pair

@@ -36,9 +36,9 @@ along with GCC; see the file COPYING3.  If not see
 struct object_size_info
 {
   int object_size_type;
-  bitmap visited, reexamine;
-  int pass;
+  unsigned char pass;
   bool changed;
+  bitmap visited, reexamine;
   unsigned int *depths;
   unsigned int *stack, *tos;
 };

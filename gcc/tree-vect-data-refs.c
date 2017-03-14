@@ -1137,8 +1137,8 @@ vect_get_data_access_cost (struct data_reference *dr,
 
 typedef struct _vect_peel_info
 {
-  int npeel;
   struct data_reference *dr;
+  int npeel;
   unsigned int count;
 } *vect_peel_info;
 

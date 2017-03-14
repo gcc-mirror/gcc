@@ -37,7 +37,7 @@ class GTY((user)) function_summary <T *>
 public:
   /* Default construction takes SYMTAB as an argument.  */
   function_summary (symbol_table *symtab, bool ggc = false): m_ggc (ggc),
-    m_map (13, ggc), m_insertion_enabled (true), m_released (false),
+    m_insertion_enabled (true), m_released (false), m_map (13, ggc),
     m_symtab (symtab)
   {
     m_symtab_insertion_hook =
@@ -205,6 +205,10 @@ private:
     return *v;
   }
 
+  /* Indicates if insertion hook is enabled.  */
+  bool m_insertion_enabled;
+  /* Indicates if the summary is released.  */
+  bool m_released;
   /* Main summary store, where summary ID is used as key.  */
   hash_map <map_hash, T *> m_map;
   /* Internal summary insertion hook pointer.  */
@@ -213,10 +217,6 @@ private:
   cgraph_node_hook_list *m_symtab_removal_hook;
   /* Internal summary duplication hook pointer.  */
   cgraph_2node_hook_list *m_symtab_duplication_hook;
-  /* Indicates if insertion hook is enabled.  */
-  bool m_insertion_enabled;
-  /* Indicates if the summary is released.  */
-  bool m_released;
   /* Symbol table the summary is registered to.  */
   symbol_table *m_symtab;
 
