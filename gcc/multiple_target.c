@@ -68,6 +68,13 @@ create_dispatcher_calls (struct cgraph_node *node)
 		    " supported by this target");
 	  break;
 	}
+      else if (!targetm.get_function_versions_dispatcher)
+	{
+	  error_at (gimple_location (call),
+		    "target does not support function version dispatcher");
+	  break;
+	}
+
       e_next = e->next_caller;
       idecl = targetm.get_function_versions_dispatcher (decl);
       if (!idecl)
