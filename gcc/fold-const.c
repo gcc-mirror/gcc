@@ -143,6 +143,7 @@ static tree fold_relational_const (enum tree_code, tree, tree, tree);
 static tree fold_convert_const (enum tree_code, tree, tree);
 static tree fold_view_convert_expr (tree, tree);
 static bool vec_cst_ctor_to_array (tree, tree *);
+static tree fold_negate_expr (location_t, tree);
 
 
 /* Return EXPR_LOCATION of T if it is not UNKNOWN_LOCATION.
@@ -530,7 +531,7 @@ negate_expr_p (tree t)
    returned.  */
 
 static tree
-fold_negate_expr (location_t loc, tree t)
+fold_negate_expr_1 (location_t loc, tree t)
 {
   tree type = TREE_TYPE (t);
   tree tem;
@@ -541,7 +542,7 @@ fold_negate_expr (location_t loc, tree t)
     case BIT_NOT_EXPR:
       if (INTEGRAL_TYPE_P (type))
         return fold_build2_loc (loc, PLUS_EXPR, type, TREE_OPERAND (t, 0),
-                            build_one_cst (type));
+				build_one_cst (type));
       break;
 
     case INTEGER_CST:
@@ -589,14 +590,14 @@ fold_negate_expr (location_t loc, tree t)
     case COMPLEX_EXPR:
       if (negate_expr_p (t))
 	return fold_build2_loc (loc, COMPLEX_EXPR, type,
-			    fold_negate_expr (loc, TREE_OPERAND (t, 0)),
-			    fold_negate_expr (loc, TREE_OPERAND (t, 1)));
+				fold_negate_expr (loc, TREE_OPERAND (t, 0)),
+				fold_negate_expr (loc, TREE_OPERAND (t, 1)));
       break;
 
     case CONJ_EXPR:
       if (negate_expr_p (t))
 	return fold_build1_loc (loc, CONJ_EXPR, type,
-			    fold_negate_expr (loc, TREE_OPERAND (t, 0)));
+				fold_negate_expr (loc, TREE_OPERAND (t, 0)));
       break;
 
     case NEGATE_EXPR:
@@ -615,7 +616,7 @@ fold_negate_expr (location_t loc, tree t)
 	    {
 	      tem = negate_expr (TREE_OPERAND (t, 1));
 	      return fold_build2_loc (loc, MINUS_EXPR, type,
-				  tem, TREE_OPERAND (t, 0));
+				      tem, TREE_OPERAND (t, 0));
 	    }
 
 	  /* -(A + B) -> (-A) - B.  */
@@ -623,7 +624,7 @@ fold_negate_expr (location_t loc, tree t)
 	    {
 	      tem = negate_expr (TREE_OPERAND (t, 0));
 	      return fold_build2_loc (loc, MINUS_EXPR, type,
-				  tem, TREE_OPERAND (t, 1));
+				      tem, TREE_OPERAND (t, 1));
 	    }
 	}
       break;
@@ -634,7 +635,7 @@ fold_negate_expr (location_t loc, tree t)
 	  && !HONOR_SIGNED_ZEROS (element_mode (type))
 	  && reorder_operands_p (TREE_OPERAND (t, 0), TREE_OPERAND (t, 1)))
 	return fold_build2_loc (loc, MINUS_EXPR, type,
-			    TREE_OPERAND (t, 1), TREE_OPERAND (t, 0));
+				TREE_OPERAND (t, 1), TREE_OPERAND (t, 0));
       break;
 
     case MULT_EXPR:
@@ -649,11 +650,11 @@ fold_negate_expr (location_t loc, tree t)
 	  tem = TREE_OPERAND (t, 1);
 	  if (negate_expr_p (tem))
 	    return fold_build2_loc (loc, TREE_CODE (t), type,
-				TREE_OPERAND (t, 0), negate_expr (tem));
+				    TREE_OPERAND (t, 0), negate_expr (tem));
 	  tem = TREE_OPERAND (t, 0);
 	  if (negate_expr_p (tem))
 	    return fold_build2_loc (loc, TREE_CODE (t), type,
-				negate_expr (tem), TREE_OPERAND (t, 1));
+				    negate_expr (tem), TREE_OPERAND (t, 1));
 	}
       break;
 
@@ -724,6 +725,19 @@ fold_negate_expr (location_t loc, tree t)
     }
 
   return NULL_TREE;
+}
+
+/* A wrapper for fold_negate_expr_1.  */
+
+static tree
+fold_negate_expr (location_t loc, tree t)
+{
+  tree type = TREE_TYPE (t);
+  STRIP_SIGN_NOPS (t);
+  tree tem = fold_negate_expr_1 (loc, t);
+  if (tem == NULL_TREE)
+    return NULL_TREE;
+  return fold_convert_loc (loc, type, tem);
 }
 
 /* Like fold_negate_expr, but return a NEGATE_EXPR tree, if T can not be

@@ -3600,7 +3600,14 @@ return_value_ok_for_nrv_p (tree ret_obj, tree ret_val)
   if (TREE_ADDRESSABLE (ret_val))
     return false;
 
+  /* For the constrained case, test for overalignment.  */
   if (ret_obj && DECL_ALIGN (ret_val) > DECL_ALIGN (ret_obj))
+    return false;
+
+  /* For the unconstrained case, test for bogus initialization.  */
+  if (!ret_obj
+      && DECL_INITIAL (ret_val)
+      && TREE_CODE (DECL_INITIAL (ret_val)) == NULL_EXPR)
     return false;
 
   return true;
@@ -7696,7 +7703,6 @@ gnat_to_gnu (Node_Id gnat_node)
       && (kind == N_Identifier
 	  || kind == N_Expanded_Name
 	  || kind == N_Explicit_Dereference
-	  || kind == N_Function_Call
 	  || kind == N_Indexed_Component
 	  || kind == N_Selected_Component)
       && TREE_CODE (get_base_type (gnu_result_type)) == BOOLEAN_TYPE

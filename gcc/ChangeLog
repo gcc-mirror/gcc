@@ -1,3 +1,136 @@
+2017-03-14  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/80004
+	PR target/49244
+	* gimple.c (gimple_builtin_call_types_compatible_p): Allow
+	char/short arguments promoted to int because of promote_prototypes.
+
+	2017-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79977
+	* graphite-scop-detection.c (scop_detection::merge_sese):
+	Handle the case of extra exits to blocks dominating the entry.
+
+	2017-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/79971
+	* gimple-expr.c (useless_type_conversion_p): Preserve
+	TYPE_SATURATING for fixed-point types.
+
+	2017-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79666
+	* tree-vrp.c (extract_range_from_binary_expr_1): Make sure
+	to not symbolically negate if that may introduce undefined
+	overflow.
+
+	2017-02-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/79576
+	* params.def (max-ssa-name-query-depth): Limit to 10.
+
+2017-03-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2017-03-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/i386/i386.c (ix86_local_alignment): Align most aggregates
+	of 16 bytes and more to 16 bytes, not those of 16 bits and more.
+
+2017-03-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/77850
+	* config/pa/pa-64.h (PAD_VARARGS_DOWN): Don't pad down complex and
+	vector types.
+
+2017-03-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Back port from trunk
+	2017-03-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/79439
+	* config/rs6000/predicates.md (current_file_function_operand): Do
+	not allow self calls to be local if the function is replaceable.
+
+2017-03-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/79514
+	* config/i386/i386.md (*pushxf_rounded): New insn_and_split pattern.
+
+2017-03-01  Pat Haugen  <pthaugen@us.ibm.com>
+
+	Backport from mainline:
+	2017-02-27  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/79544
+	* rs6000/rs6000-c.c (struct altivec_builtin_types): Use VSRAD for
+	arithmetic shift of unsigned V2DI.
+
+2017-03-01  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2017-02-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/79579
+	* ipa-prop.c (ipa_prop_write_jump_functions): Bail out if no edges
+	have been analyzed.
+
+2017-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/79749
+	* config/sparc/sparc.c (sparc_frame_pointer_required): Add missing
+	condition on optimize for the leaf function test.
+
+2017-02-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2017-02-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/79261
+	* config/rs6000/rs6000.c (rs6000_expand_ternop_builtin): Add
+	support for CODE_FOR_vsx_xxpermdi_v2d[fi]_be.
+	* config/rs6000/rs6000.md (reload_gpr_from_vsx<mode>): Call
+	generator for vsx_xxpermdi_<mode>_be.
+	* config/rs6000/vsx.md (vsx_xxpermdi_<mode>): Remove logic to
+	force big-endian semantics.
+	(vsx_xxpermdi_<mode>_be): New define_expand with same
+	implementation as previous version of vsx_xxpermdi_<mode>.
+
+2017-02-20  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2017-02-20  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/79537
+	* gimplify.c (gimplify_expr): Handle unused *&&L;.
+
+	PR sanitizer/79558
+	* ubsan.c (ubsan_type_descriptor): Check if TYPE_MAX_VALUE is null.
+
+2017-02-20  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2017-02-17  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/79536
+	* fold-const.c (fold_negate_expr_1): Renamed from fold_negate_expr.
+	(fold_negate_expr): New wrapper.
+
+2017-02-17  Carl Love  <cel@us.ibm.com>
+
+	Backport from mainline commit r245460 on 2017-02-14
+
+	PR 79545
+	* config/rs6000/rs6000.c: Add case statement entry to make the xvcvuxdsp
+	built-in argument unsigned.
+	* config/rs6000/vsx.md: Fix the source and return operand types so they
+	match the instruction definitions from the ISA document.  Fix typo
+	in the instruction generation for the (define_insn "vsx_xvcvuxdsp"
+	statement.
+
 2017-01-17  Julia Koval  <julia.koval@intel.com>
 
 	PR target/76731
