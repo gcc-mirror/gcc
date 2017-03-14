@@ -2965,6 +2965,12 @@ finish_member_declaration (tree decl)
   /* We should see only one DECL at a time.  */
   gcc_assert (DECL_CHAIN (decl) == NULL_TREE);
 
+  /* Don't add decls after definition.  */
+  gcc_assert (TYPE_BEING_DEFINED (current_class_type)
+	      /* We can add lambda types when late parsing default
+		 arguments.  */
+	      || LAMBDA_TYPE_P (TREE_TYPE (decl)));
+
   /* Set up access control for DECL.  */
   TREE_PRIVATE (decl)
     = (current_access_specifier == access_private_node);
