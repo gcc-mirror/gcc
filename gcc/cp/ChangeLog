@@ -7,6 +7,10 @@
 	* tree.c (strip_typedefs): Skip the attribute handling if T is
 	a variant type which hasn't been updated yet.
 
+	PR c++/79687
+	* init.c (constant_value_1): Break if the variable has a dynamic
+	initializer.
+
 2017-03-07  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
