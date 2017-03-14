@@ -1420,10 +1420,10 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
     }
 }
 
-// Base walker helper for synthesized_method_walk.  Inspect a direct
-// or virtual base.  BINFO is the parent type's binfo.  BASE_BINFO is
-// the base binfo of interests.  All other parms are as for
-// synthesized_method_walk, or its local vars.
+/* Base walker helper for synthesized_method_walk.  Inspect a direct
+   or virtual base.  BINFO is the parent type's binfo.  BASE_BINFO is
+   the base binfo of interests.  All other parms are as for
+   synthesized_method_walk, or its local vars.  */
 
 static tree
 synthesized_method_base_walk (tree binfo, tree base_binfo, 
@@ -1436,7 +1436,8 @@ synthesized_method_base_walk (tree binfo, tree base_binfo,
 {
   bool inherited_binfo = false;
   tree argtype = NULL_TREE;
-  
+  deferring_kind defer = dk_no_deferred;
+
   if (copy_arg_p)
     argtype = build_stub_type (BINFO_TYPE (base_binfo), quals, move_p);
   else if ((inherited_binfo
@@ -1445,11 +1446,21 @@ synthesized_method_base_walk (tree binfo, tree base_binfo,
       argtype = inherited_parms;
       /* Don't check access on the inherited constructor.  */
       if (flag_new_inheriting_ctors)
-	push_deferring_access_checks (dk_deferred);
+	defer = dk_deferred;
     }
+  /* To be conservative, ignore access to the base dtor that
+     DR1658 instructs us to ignore.  See the comment in
+     synthesized_method_walk.  */
+  else if (cxx_dialect >= cxx14 && fnname == complete_dtor_identifier
+	   && BINFO_VIRTUAL_P (base_binfo)
+	   && ABSTRACT_CLASS_TYPE_P (BINFO_TYPE (binfo)))
+    defer = dk_no_check;
+
+  if (defer != dk_no_deferred)
+    push_deferring_access_checks (defer);
   tree rval = locate_fn_flags (base_binfo, fnname, argtype, flags,
 			       diag ? tf_warning_or_error : tf_none);
-  if (inherited_binfo && flag_new_inheriting_ctors)
+  if (defer != dk_no_deferred)
     pop_deferring_access_checks ();
 
   process_subob_fn (rval, spec_p, trivial_p, deleted_p,
@@ -1677,13 +1688,6 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
       if (constexpr_p)
 	*constexpr_p = false;
 
-      /* To be conservative, ignore access to the base dtor that
-	 DR1658 instructs us to ignore.  */
-      bool no_access_check = (cxx_dialect >= cxx14
-			      && ABSTRACT_CLASS_TYPE_P (ctype));
-
-      if (no_access_check)
-	push_deferring_access_checks (dk_no_check);
       FOR_EACH_VEC_ELT (*vbases, i, base_binfo)
 	synthesized_method_base_walk (binfo, base_binfo, quals,
 				      copy_arg_p, move_p, ctor_p,
@@ -1691,8 +1695,6 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 				      fnname, flags, diag,
 				      spec_p, trivial_p,
 				      deleted_p, constexpr_p);
-      if (no_access_check)
-	pop_deferring_access_checks ();
     }
 
   /* Now handle the non-static data members.  */
