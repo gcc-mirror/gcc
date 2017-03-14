@@ -1,5 +1,11 @@
 2017-03-14  Martin Liska  <mliska@suse.cz>
 
+	PR target/79892
+	* multiple_target.c (create_dispatcher_calls): Check that
+	a target can create a function dispatcher.
+
+2017-03-14  Martin Liska  <mliska@suse.cz>
+
 	PR lto/66295
 	* multiple_target.c (expand_target_clones): Drop local.local
 	flag for default implementation.
