@@ -182,7 +182,7 @@ package System.OS_Interface is
    type struct_sigaction is record
       sa_handler  : System.Address;
       sa_mask     : sigset_t;
-      sa_flags    : Interfaces.C.unsigned_long;
+      sa_flags    : int;
       sa_restorer : System.Address;
    end record;
    pragma Convention (C, struct_sigaction);
@@ -607,8 +607,7 @@ private
    for struct_sigaction use record
       sa_handler at Linux.sa_handler_pos range 0 .. Standard'Address_Size - 1;
       sa_mask    at Linux.sa_mask_pos    range 0 .. 1023;
-      sa_flags   at Linux.sa_flags_pos
-        range 0 .. Interfaces.C.unsigned_long'Size - 1;
+      sa_flags   at Linux.sa_flags_pos   range 0 .. int'Size - 1;
    end record;
    --  We intentionally leave sa_restorer unspecified and let the compiler
    --  append it after the last field, so disable corresponding warning.
