@@ -548,13 +548,13 @@ _m68k_function_arg (CUMULATIVE_ARGS *cump, machine_mode mode, const_tree type)
 		  }
 	      }
 
-//	  if (reg == AMIGAOS_MAX_REGPARM && altregbegin != -1)
-//	    {
-//	      DPRINTF(("look for alt reg\n"));
-//	      regbegin = altregbegin;
-//	      altregbegin = -1;
-//	      goto look_for_reg;
-//	    }
+	  if (reg == AMIGAOS_MAX_REGPARM && altregbegin != -1)
+	    {
+	      DPRINTF(("look for alt reg\n"));
+	      regbegin = altregbegin;
+	      altregbegin = -1;
+	      goto look_for_reg;
+	    }
 	}
 
       if (cum->last_arg_reg != -1)
@@ -775,9 +775,10 @@ amigaos_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno,
 		   int *total, bool speed)
 {
 //  DPRINTF(("outer: %d, opno: %d", outer_code, opno));
-//  debug_rtx(x);
   bool r = m68k_rtx_costs (x, mode, outer_code, opno, total, speed);
-  *total *= 4;
+//  *total *= 4;
+//  fprintf(stderr, "costs: %d, mode=%d, outer=%d, opno=%d, speed=%d, ok=%d\n", *total * 4, mode, outer_code, opno, speed, r);
+//  debug_rtx(x);
   return r;
 }
 
@@ -789,7 +790,37 @@ amiga_named_section (const char *name, unsigned int flags, tree decl ATTRIBUTE_U
 {
   if (0 == strncmp(".text", name, 5))
     name = ".text";
-//  fprintf (asm_out_file, "\t.section\t%s\n", name);
   fprintf (asm_out_file, "\t%s\n", name);
+}
+
+/* Baserel support.  */
+
+/**
+ * Does x reference the pic_reg and is const or plus?
+ */
+int amiga_is_const_pic_ref(const_rtx x)
+{
+  const_rtx y = x;
+  if (flag_pic < 3)
+    return false;
+  while (GET_CODE(y) == CONST || GET_CODE(y) == PLUS)
+    y = XEXP(y, 0);
+  return (x != y && REG_P(y) && REGNO(y) == PIC_REG);
+}
+
+
+/* Does operand (which is a symbolic_operand) live in text space? If
+   so SYMBOL_REF_FLAG, which is set by ENCODE_SECTION_INFO, will be true.
+
+   This function is used in base relative code generation. */
+
+int
+read_only_operand (rtx operand)
+{
+  if (GET_CODE (operand) == CONST)
+    operand = XEXP (XEXP (operand, 0), 0);
+  if (GET_CODE (operand) == SYMBOL_REF)
+    return SYMBOL_REF_FLAG (operand) || CONSTANT_POOL_ADDRESS_P (operand);
+  return 1;
 }
 

@@ -221,18 +221,6 @@ while (0)
 
 #if 0
 
-/* Baserel support.  */
-
-/* Given that symbolic_operand(X), return TRUE if no special
-   base relative relocation is necessary */
-
-#define LEGITIMATE_BASEREL_OPERAND_P(X)					\
-  (flag_pic >= 3 && read_only_operand (X))
-
-#undef LEGITIMATE_PIC_OPERAND_P
-#define LEGITIMATE_PIC_OPERAND_P(X)					\
-  (! symbolic_operand (X, VOIDmode) || LEGITIMATE_BASEREL_OPERAND_P (X))
-
 /* Define this macro if references to a symbol must be treated
    differently depending on something about the variable or
    function named by the symbol (such as what section it is in).
@@ -492,3 +480,12 @@ while (0)
 bool
 amigaos_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 
+/* SBF: macro to test for const via pic_reg. */
+#define CONST_PLUS_PIC_REG_CONST_UNSPEC_P(x) \
+     (GET_CODE(x) == CONST \
+    && GET_CODE(XEXP(x, 0)) == PLUS \
+    && REG_P(XEXP(XEXP(x, 0), 0)) \
+    && REGNO(XEXP(XEXP(x, 0), 0)) == PIC_REG \
+    && GET_CODE(XEXP(XEXP(x, 0), 1)) == CONST \
+    && GET_CODE(XEXP(XEXP(XEXP(x, 0), 1), 0)) == UNSPEC \
+    )

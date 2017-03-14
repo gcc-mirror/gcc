@@ -578,3 +578,26 @@ amigaos_prelink_hook((const char **)(LD1_ARGV), (STRIP))
 
 // this disables tree_loop_distribute_patterns
 #define C_COMMON_OVERRIDE_OPTIONS  flag_no_builtin = 1
+/* Baserel support.  */
+
+extern int amiga_is_const_pic_ref(const_rtx x);
+
+#undef CONSTANT_ADDRESS_P
+#define CONSTANT_ADDRESS_P(X) \
+((GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
+ || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
+ || GET_CODE (X) == HIGH \
+ ) && !amiga_is_const_pic_ref(X))
+
+
+/* Given that symbolic_operand(X), return TRUE if no special
+   base relative relocation is necessary */
+
+#define LEGITIMATE_BASEREL_OPERAND_P(X)					\
+  (flag_pic >= 3 && read_only_operand (X))
+
+#undef LEGITIMATE_PIC_OPERAND_P
+#define LEGITIMATE_PIC_OPERAND_P(X) (					\
+   ! symbolic_operand (X, VOIDmode) || LEGITIMATE_BASEREL_OPERAND_P (X))
+
+// (GET_CODE(X) == CONST && (GET_CODE(XEXP(X, 0)) == SYMBOL_REF || GET_CODE(XEXP(X, 0)) == LABEL_REF) && !CONSTANT_POOL_ADDRESS_P (XEXP(X, 0))) ||

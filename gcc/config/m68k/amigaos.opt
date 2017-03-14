@@ -12,11 +12,11 @@ Target RejectNegative Var(flag_smallcode,1)
 small code model
 
 fbaserel
-Target Common Report Var(flag_mybaserel,1)
+Target Report Var(flag_pic,3) 
 data is adressed relativ to a4
 
 fbaserel32
-Target Common Report Var(flag_mybaserel,2)
+Target Report Var(flag_pic,4)
 data is adressed relativ to a4 with 32 bit offsets
 
 resident

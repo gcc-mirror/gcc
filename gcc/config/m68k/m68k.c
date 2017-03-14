@@ -591,7 +591,8 @@ m68k_option_override (void)
   if (TARGET_PCREL && flag_pic == 0)
     flag_pic = 1;
 
-  if (!flag_pic)
+  /* SBF: use normal jumps/calls with baserel(32) modes. */
+  if (!flag_pic || flag_pic > 2)
     {
       m68k_symbolic_call_var = M68K_SYMBOLIC_CALL_JSR;
 
@@ -888,8 +889,9 @@ m68k_save_reg (unsigned int regno, bool interrupt_handler)
     {
       if (crtl->saves_all_registers)
 	return true;
+      /* SBF: do not save the PIC_REG with baserel(32) modes. */
       if (crtl->uses_pic_offset_table)
-	return true;
+	return flag_pic < 3;
       /* Reload may introduce constant pool references into a function
 	 that thitherto didn't need a PIC register.  Note that the test
 	 above will not catch that case because we will only set
@@ -1149,8 +1151,9 @@ m68k_expand_prologue (void)
 			    current_frame.reg_mask, true, true));
     }
 
+  /* SBF: do not load the PIC_REG with baserel(32) */
   if (!TARGET_SEP_DATA
-      && crtl->uses_pic_offset_table)
+      && crtl->uses_pic_offset_table && flag_pic < 3)
     emit_insn (gen_load_got (pic_offset_table_rtx));
 }
 
@@ -2135,6 +2138,12 @@ m68k_legitimate_address_p (machine_mode mode, rtx x, bool strict_p)
 {
   struct m68k_address address;
 
+#ifdef TARGET_AMIGA
+  /* SBF: the baserel(32) const plus pic_ref, symbol is an address. */
+  if (amiga_is_const_pic_ref(x))
+    return true;
+#endif
+
   return m68k_decompose_address (mode, x, strict_p, &address);
 }
 
@@ -2468,9 +2477,33 @@ legitimize_pic_address (rtx orig, machine_mode mode ATTRIBUTE_UNUSED,
   if (GET_CODE (orig) == SYMBOL_REF || GET_CODE (orig) == LABEL_REF)
     {
       gcc_assert (reg);
-      pic_ref = m68k_wrap_symbol_into_got_ref (orig, RELOC_GOT, reg);
-      pic_ref = m68k_move_to_reg (pic_ref, orig, reg);
-//      debug_rtx(pic_ref);
+      if (flag_pic < 3)
+	{
+	  pic_ref = m68k_wrap_symbol_into_got_ref (orig, RELOC_GOT, reg);
+	  pic_ref = m68k_move_to_reg (pic_ref, orig, reg);
+	}
+    #ifdef TARGET_AMIGA
+      else
+	{
+	  tree decl = SYMBOL_REF_DECL (orig);
+
+      /* SBF: Does the symbol use common or bss and qualifies for pic_reg?
+       * Do not ref to .text via pic_reg!
+       */
+	  if (!SYMBOL_REF_FUNCTION_P(orig) && decl && (DECL_COMMON (decl) || bss_initializer_p (decl)))
+	    {
+	      /* SBF: unfortunately using the wrapped symbol without MEM does not work.
+	       * The pic_ref reference gets decomposed and leads to no working code.
+	       */
+	      pic_ref = m68k_wrap_symbol (pic_ref, RELOC_GOT, m68k_get_gp (), reg);
+
+	      /* SBF: adding const avoids decomposing. */
+	      pic_ref = gen_rtx_CONST (Pmode, pic_ref);
+	    }
+	  else
+	    pic_ref = gen_rtx_CONST (Pmode, pic_ref);
+	}
+#endif	
     }
   else if (GET_CODE (orig) == CONST)
     {
@@ -2489,7 +2522,8 @@ legitimize_pic_address (rtx orig, machine_mode mode ATTRIBUTE_UNUSED,
       orig = legitimize_pic_address (XEXP (XEXP (orig, 0), 1), Pmode,
 				     base == reg ? 0 : reg);
 
-      if (GET_CODE (orig) == CONST_INT)
+      /* SBF: use normal plus and rely on optimizer with baserel(32). */
+      if (flag_pic < 3 && GET_CODE (orig) == CONST_INT)
 	pic_ref = plus_constant (Pmode, base, INTVAL (orig));
       else
 	pic_ref = gen_rtx_PLUS (Pmode, base, orig);
@@ -4453,7 +4487,6 @@ floating_exact_log2 (rtx x)
 void
 print_operand (FILE *file, rtx op, int letter)
 {
-//  printf("letter: %c\n", letter);
   if (letter == '.')
     {
       if (MOTOROLA)
@@ -4486,7 +4519,9 @@ print_operand (FILE *file, rtx op, int letter)
   else if (letter == 'p')
     {
       output_addr_const (file, op);
-      if (!(GET_CODE (op) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (op)))
+      /* SBF: do not add @PLTPC with baserel(32). */
+      if (flag_pic < 3
+          && !(GET_CODE (op) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (op)))
 	fprintf (file, "@PLTPC");
     }
   else if (GET_CODE (op) == REG)
@@ -4505,10 +4540,12 @@ print_operand (FILE *file, rtx op, int letter)
 	  && CONSTANT_ADDRESS_P (XEXP (op, 0))
 	  && !(GET_CODE (XEXP (op, 0)) == CONST_INT
 	       && INTVAL (XEXP (op, 0)) < 0x8000
-	       && INTVAL (XEXP (op, 0)) >= -0x8000))
+	       && INTVAL (XEXP (op, 0)) >= -0x8000)
 #ifdef TARGET_AMIGA
-	if (!flag_mybaserel)
+/* SBF: Do not append some 'l' with baserel(32). */
+	       && !CONST_PLUS_PIC_REG_CONST_UNSPEC_P(XEXP(op, 0))
 #endif
+	       )
 		fprintf (file, MOTOROLA ? ".l" : ":l");
     }
   else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == SFmode)
@@ -4554,9 +4591,18 @@ m68k_get_reloc_decoration (enum m68k_reloc reloc)
   switch (reloc)
     {
     case RELOC_GOT:
-//      if (TARGET_AMIGA)
-//	return "";
-//      else
+      /* SBF: add the proper extension for baserel relocs with baserel(32). */
+      if (TARGET_AMIGA)
+	{
+	  if (flag_pic == 1)
+	    return ".w";
+	  else if (flag_pic == 3)
+	    return ":W";
+	  else if (flag_pic == 4)
+	    return ":L";
+	  else
+	    return "";
+	}
 	if (MOTOROLA)
 	{
 	  if (flag_pic == 1 && TARGET_68020)
@@ -4707,6 +4753,22 @@ print_operand_address (FILE *file, rtx addr)
 {
   struct m68k_address address;
 
+#ifdef TARGET_AMIGA
+  /*
+   * SBF: remove the const wrapper.
+   */
+  if (CONST_PLUS_PIC_REG_CONST_UNSPEC_P(addr))
+    {
+      print_operand_address(file, XEXP(addr, 0));
+      return;
+    }
+  if (symbolic_operand(addr, VOIDmode))
+    {
+      memset (&address, 0, sizeof (address));
+      address.offset = addr;
+    }
+  else
+#endif
   if (!m68k_decompose_address (QImode, addr, true, &address))
     gcc_unreachable ();
 
@@ -4757,31 +4819,6 @@ print_operand_address (FILE *file, rtx addr)
 	      if (flag_smallcode)
 		asm_fprintf(file, ":w(pc)");
 	    }
-	  else if (flag_mybaserel)
-	    {
-	      /* search the decl. */
-	      tree decl = SYMBOL_REF_DECL (addr);
-	      if (!decl)
-		{
-		  rtx x = XEXP(addr, 0);
-		  if (CONSTANT_POOL_ADDRESS_P(x))
-		    decl = SYMBOL_REF_DECL (x);
-		  if (!decl)
-		    {
-		      x = XEXP(x, 0);
-		      decl = SYMBOL_REF_DECL (x);
-		    }
-	        }
-
-	     /* Qualifies for a4 if common or bss. Do not ref to .text! */
-	     if (decl && (DECL_COMMON (decl) || bss_initializer_p (decl)))
-	      {
-	        if (flag_mybaserel == 1)
-	          asm_fprintf (file, ":W(a4)");
-	        else if (flag_mybaserel == 2)
-	          asm_fprintf (file, ":L(a4)");
-	      }
-	  }
 #endif
 	}
     }
@@ -5224,7 +5261,9 @@ m68k_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
 
 /* Value is true if hard register REGNO can hold a value of machine-mode
    MODE.  On the 68000, we let the cpu registers can hold any mode, but
-   restrict the 68881 registers to floating-point modes.  */
+   restrict the 68881 registers to floating-point modes.  
+   SBF: Disallow the frame pointer register, if the frame pointer is used.
+   */
 
 bool
 m68k_regno_mode_ok (int regno, machine_mode mode)
@@ -5233,12 +5272,12 @@ m68k_regno_mode_ok (int regno, machine_mode mode)
     {
       /* Data Registers, can hold aggregate if fits in.  */
       if (regno + GET_MODE_SIZE (mode) / 4 <= 8)
-	return true;
+	return !flag_omit_frame_pointer || regno != FRAME_POINTER_REGNUM;
     }
   else if (ADDRESS_REGNO_P (regno))
     {
       if (regno + GET_MODE_SIZE (mode) / 4 <= 16)
-	return true;
+	return !flag_omit_frame_pointer || regno != FRAME_POINTER_REGNUM;
     }
   else if (FP_REGNO_P (regno))
     {
@@ -5259,6 +5298,13 @@ m68k_secondary_reload_class (enum reg_class rclass,
 			     machine_mode mode, rtx x)
 {
   int regno;
+#ifdef TARGET_AMIGA  
+  /* SBF: check for baserel's const pic_ref
+   * and return ADDR_REGS or NO_REGS
+   */
+  if (!MEM_P(x) && amiga_is_const_pic_ref(x))
+    return rclass == ADDR_REGS ? NO_REGS : ADDR_REGS;
+#endif
 
   regno = true_regnum (x);
 
