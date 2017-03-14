@@ -2089,13 +2089,13 @@ riscv_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
 
     case UNLT:
       std::swap (cmp_op0, cmp_op1);
-      __attribute__((fallthrough));
+      gcc_fallthrough ();
 
     UNORDERED_COMPARISON(UNGT, le)
 
     case UNLE:
       std::swap (cmp_op0, cmp_op1);
-      __attribute__((fallthrough));
+      gcc_fallthrough ();
 
     UNORDERED_COMPARISON(UNGE, lt)
 #undef UNORDERED_COMPARISON
