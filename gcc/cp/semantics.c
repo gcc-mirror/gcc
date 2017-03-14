@@ -2469,23 +2469,8 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
     }
 
   if (koenig_p)
-    {
-      /* Free garbage OVERLOADs from arg-dependent lookup.  */
-      tree next = NULL_TREE;
-      for (fn = orig_fn;
-	   fn && TREE_CODE (fn) == OVERLOAD && OVL_ARG_DEPENDENT (fn);
-	   fn = next)
-	{
-	  if (processing_template_decl)
-	    /* In a template, we'll re-use them at instantiation time.  */
-	    OVL_ARG_DEPENDENT (fn) = false;
-	  else
-	    {
-	      next = OVL_CHAIN (fn);
-	      ggc_free (fn);
-	    }
-	}
-    }
+    /* Free or retain OVERLOADs from arg-dependent lookup.  */
+    ovl_maybe_keep (orig_fn, processing_template_decl);
 
   return result;
 }
@@ -5196,6 +5181,7 @@ omp_reduction_lookup (location_t loc, tree id, tree type, tree *baselinkp,
       else
 	baselink = fns;
     }
+
   if (id == NULL_TREE && CLASS_TYPE_P (type) && TYPE_BINFO (type))
     {
       vec<tree> ambiguous = vNULL;
@@ -5241,6 +5227,7 @@ omp_reduction_lookup (location_t loc, tree id, tree type, tree *baselinkp,
 	}
       id = ret;
     }
+
   if (id && baselink)
     perform_or_defer_access_check (BASELINK_BINFO (baselink),
 				   id, id, tf_warning_or_error);
@@ -6890,13 +6877,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TO_DECLARE)
 		{
-		  if (TREE_CODE (t) == OVERLOAD && OVL_CHAIN (t))
-		    error_at (OMP_CLAUSE_LOCATION (c),
-			      "overloaded function name %qE in clause %qs", t,
-			      omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-		  else if (TREE_CODE (t) == TEMPLATE_ID_EXPR)
+		  if (TREE_CODE (t) == TEMPLATE_ID_EXPR)
 		    error_at (OMP_CLAUSE_LOCATION (c),
 			      "template %qE in clause %qs", t,
+			      omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  else if (really_overloaded_fn (t))
+		    error_at (OMP_CLAUSE_LOCATION (c),
+			      "overloaded function name %qE in clause %qs", t,
 			      omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 		  else
 		    error_at (OMP_CLAUSE_LOCATION (c),

@@ -1,6 +1,17 @@
 2017-03-14  Nathan Sidwell  <nathan@acm.org>
 
 	Vectorize OVERLOAD part 5
+	gcc/cp/
+	* cp-tree.h (ovl_maybe_keep): Declare.
+	* tree.c (ovl_maybe_keep): New.
+	* semantics.c (finish_call_expr): Call it.
+	(finish_omp_clauses): Use new accessrs.
+	* class.c (handle_using_decl): Use new accessors.
+	(resolve_address_of_overloaded_function): Likewise.
+	* pt.c (print_candidates_1, print_candidates): Reimplement.
+
+	Vectorize OVERLOAD part 5
+	gcc/cp/
 	* cp-tree.h (OVL_SINGLE): New.
 	* constraint.cc (resove_constraint_check): Use new iterator.
 	(normalize_template_id_expression): Use OVL_FIRST.

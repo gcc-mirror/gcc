@@ -2093,6 +2093,27 @@ ovl_add (tree maybe_ovl, tree fn, int force)
   return result;
 }
 
+void
+ovl_maybe_keep (tree ovl, bool keep)
+{
+  if (TREE_CODE (ovl) == OVERLOAD)
+    {
+#ifdef OVLNEW
+#error FIXME
+#else
+      while (ovl && OVL_ARG_DEPENDENT (ovl))
+	{
+	  tree next = OVL_CHAIN (ovl);
+	  if (keep)
+	    OVL_ARG_DEPENDENT (ovl) = false;
+	  else
+	    ggc_free (ovl);
+	  ovl = next;
+	}
+    }
+#endif
+}
+
 /* Replace the current slot with FN.  Also, the slot being replaced is
    changing from a using declaration to a regular declaration.  */
 

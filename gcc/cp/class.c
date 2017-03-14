@@ -1348,8 +1348,7 @@ handle_using_decl (tree using_decl, tree t)
 			     tf_warning_or_error);
   if (old_value)
     {
-      if (is_overloaded_fn (old_value))
-	old_value = OVL_CURRENT (old_value);
+      old_value = OVL_FIRST (old_value);
 
       if (DECL_P (old_value) && DECL_CONTEXT (old_value) == t)
 	/* OK */;
@@ -1373,7 +1372,7 @@ handle_using_decl (tree using_decl, tree t)
 	{
 	  error ("%q+D invalid in %q#T", using_decl, t);
 	  error ("  because of local method %q+#D with same name",
-		 OVL_CURRENT (old_value));
+		 old_value);
 	  return;
 	}
     }
@@ -1388,7 +1387,7 @@ handle_using_decl (tree using_decl, tree t)
   if (flist)
     for (ovl_iterator iter (flist); iter; ++iter)
       {
-	add_method (t, *iter, using_decl != NULL_TREE);
+	add_method (t, *iter, true);
 	alter_access (t, *iter, access);
       }
   else
@@ -8096,7 +8095,7 @@ resolve_address_of_overloaded_function (tree target_type,
       if (complain & tf_error)
 	error ("cannot resolve overloaded function %qD based on"
 	       " conversion to type %qT",
-	       DECL_NAME (OVL_FUNCTION (overload)), target_type);
+	       OVL_NAME (overload), target_type);
       return error_mark_node;
     }
 
@@ -8271,8 +8270,7 @@ resolve_address_of_overloaded_function (tree target_type,
 	  if (complain & tf_error)
 	    {
 	      error ("converting overloaded function %qD to type %q#T is ambiguous",
-		     DECL_NAME (OVL_FUNCTION (overload)),
-		     target_type);
+		     OVL_NAME (overload), target_type);
 
 	      /* Since print_candidates expects the functions in the
 		 TREE_VALUE slot, we flip them here.  */

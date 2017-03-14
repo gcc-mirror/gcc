@@ -431,6 +431,7 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
     && MAIN_NAME_P (DECL_NAME (NODE))			\
     && flag_hosted)
 
+#define OVL_ARG_DEPENDENT(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
 // #define OVLNEW
 #ifdef OVLNEW // New overloads
 // ALLOC and LENGTH in clique & base for memrefs stuff
@@ -516,6 +517,7 @@ struct ovl_iterator
 };
 #endif
 tree ovl_add (tree maybe_ovl, tree fn, int force = 0);
+void ovl_maybe_keep (tree ovl, bool keep);
 tree get_ovl (tree expr, bool want_first = false)
 #ifndef ENABLE_TREE_CHECKING
   ATTRIBUTE_PURE
