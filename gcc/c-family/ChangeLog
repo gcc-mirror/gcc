@@ -1,3 +1,10 @@
+2017-03-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/79962
+	PR c++/79984
+	* c-common.c (handle_nonnull_attribute): Save the result of default
+	conversion to the attribute list.
+
 2017-03-14  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
