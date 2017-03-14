@@ -1,3 +1,8 @@
+2017-03-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80030
+	* tree-vect-stmts.c (vectorizable_store): Plug memleak.
+
 2017-03-13  Kito Cheng  <kito.cheng@gmail.com>
 
 	* config/riscv/riscv.c (riscv_emit_float_compare>: Use
