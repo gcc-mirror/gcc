@@ -6125,6 +6125,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  if (slp)
 	    break;
 	}
+
+      vec_oprnds.release ();
       return true;
     }
 
