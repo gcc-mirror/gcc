@@ -1,5 +1,10 @@
 2017-03-14  Martin Liska  <mliska@suse.cz>
 
+	* doc/invoke.texi: Document options that can't be combined with
+	-fcheck-pointer-bounds.
+
+2017-03-14  Martin Liska  <mliska@suse.cz>
+
 	PR middle-end/79831
 	* doc/invoke.texi (-Wchkp): Document the option.
 
