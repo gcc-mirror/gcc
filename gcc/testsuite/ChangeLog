@@ -1,3 +1,8 @@
+2017-03-14  Martin Liska  <mliska@suse.cz>
+
+	PR lto/66295
+	* gcc.dg/tree-prof/pr66295.c: New test.
+
 2017-03-13  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/78339
