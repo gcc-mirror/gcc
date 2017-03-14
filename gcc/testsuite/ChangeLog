@@ -1,3 +1,12 @@
+2017-03-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/80020
+	* gcc.dg/attr-alloc_size-6.c: Correct aligned_alloc argument order.
+	* gcc.dg/attr-alloc_size-7.c: Same.
+	* gcc.dg/attr-alloc_size-9.c: Same.
+	* gcc.dg/builtin-alloc-size.c: Same.
+	* gcc.dg/pr80020.c: New test.
+
 2017-03-14  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/79728

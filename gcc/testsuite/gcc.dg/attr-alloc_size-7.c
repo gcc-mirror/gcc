@@ -22,8 +22,8 @@ void test_var (void *p)
 {
   size_t max = maxobjsize ();
 
-  sink (__builtin_aligned_alloc (max, 1));
-  sink (__builtin_aligned_alloc (max + 1, 1));   /* { dg-warning "argument 1 value .12346\[lu\]*. exceeds maximum object size 12345" } */
+  sink (__builtin_aligned_alloc (1, max));
+  sink (__builtin_aligned_alloc (1, max + 1));   /* { dg-warning "argument 2 value .12346\[lu\]*. exceeds maximum object size 12345" } */
 
   sink (__builtin_alloca (max));
   sink (__builtin_alloca (max + 2));   /* { dg-warning "argument 1 value .12347\[lu\]*. exceeds maximum object size 12345" } */
@@ -52,8 +52,8 @@ void test_range (void *p, size_t range)
   if (range < max || 2 * max <= range)
     range = maxobjsize ();
 
-  sink (__builtin_aligned_alloc (range, 1));
-  sink (__builtin_aligned_alloc (range + 1, 1));   /* { dg-warning "argument 1 range \\\[12346\[lu\]*, \[0-9\]+\[lu\]*\\\] exceeds maximum object size 12345" } */
+  sink (__builtin_aligned_alloc (1, range));
+  sink (__builtin_aligned_alloc (1, range + 1));   /* { dg-warning "argument 2 range \\\[12346\[lu\]*, \[0-9\]+\[lu\]*\\\] exceeds maximum object size 12345" } */
 
   sink (__builtin_alloca (range));
   sink (__builtin_alloca (range + 2));   /* { dg-warning "argument 1 range \\\[12347\[lu\]*, \[0-9\]+\[lu\]*\\\] exceeds maximum object size 12345" } */

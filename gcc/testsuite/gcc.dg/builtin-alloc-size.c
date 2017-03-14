@@ -16,7 +16,7 @@ void test_aligned_alloc (unsigned a)
 {
   unsigned n = size (7);
 
-  void *p = __builtin_aligned_alloc (n, a);
+  void *p = __builtin_aligned_alloc (a, n);
   if (__builtin_object_size (p, 0) != n)
     __builtin_abort ();
   sink (p);

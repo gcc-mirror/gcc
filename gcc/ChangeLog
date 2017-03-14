@@ -1,5 +1,10 @@
 2017-03-14  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/80020
+	* builtin-attrs.def (ATTR_ALLOC_SIZE_2_NOTHROW_LIST): New macro.
+	* builtins.def (aligned_alloc): Use it.
+
+
 	PR c/79936
 	* Makefile.in (GTFILES): Add calls.c.
 	* calls.c: Include "gt-calls.h".
