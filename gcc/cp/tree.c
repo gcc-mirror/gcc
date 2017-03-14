@@ -2061,6 +2061,9 @@ tree
 ovl_add (tree maybe_ovl, tree fn, int force)
 {
   tree result;
+#ifdef OVLNEW
+#error FIXME
+#else
   if (maybe_ovl && TREE_CODE (maybe_ovl) != OVERLOAD)
     {
       /* Don't chain to a non-overload.  */
@@ -2086,6 +2089,7 @@ ovl_add (tree maybe_ovl, tree fn, int force)
       OVL_FUNCTION (result) = fn;
       TREE_CHAIN (result) = maybe_ovl;
     }
+#endif
   return result;
 }
 
@@ -2147,13 +2151,9 @@ is_overloaded_fn (tree x)
   if (TREE_CODE (x) == TEMPLATE_ID_EXPR)
     x = TREE_OPERAND (x, 0);
 
-#ifdef OVLNEW
-#error FIXME
-#else
   if (DECL_FUNCTION_TEMPLATE_P (OVL_FIRST (x))
-      || (TREE_CODE (x) == OVERLOAD && OVL_CHAIN (x)))
+      || (TREE_CODE (x) == OVERLOAD && !OVL_SINGLE (x)))
     return 2;
-#endif
 
   return (TREE_CODE (x) == FUNCTION_DECL
 	  || TREE_CODE (x) == OVERLOAD);

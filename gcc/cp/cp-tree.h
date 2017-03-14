@@ -438,6 +438,7 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVERLOAD2_ALLOC(T) ((T)->typed.base.u.clique)
 #define OVL_FIRST(T) FIXME
 #define OVL_NAME(T) FIXME
+#define OVL_SINGLE(T) FIXME
 
 struct ovl_iterator 
 {
@@ -468,6 +469,7 @@ struct GTY(()) tree_overload_2
 #define OVL_ARG_DEPENDENT(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
 #define OVL_FIRST(T) OVL_CURRENT (T)
 #define OVL_NAME(T) DECL_NAME (OVL_CURRENT (T))
+#define OVL_SINGLE(T) (!OVL_CHAIN (T))
 
 struct GTY(()) tree_overload {
   struct tree_common common;

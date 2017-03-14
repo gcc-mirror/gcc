@@ -1,5 +1,14 @@
 2017-03-14  Nathan Sidwell  <nathan@acm.org>
 
+	Vectorize OVERLOAD part 5
+	* cp-tree.h (OVL_SINGLE): New.
+	* constraint.cc (resove_constraint_check): Use new iterator.
+	(normalize_template_id_expression): Use OVL_FIRST.
+	* cvt.c (build_expr_type_conversions): Likewise.
+	* error.c (dump_decl): Use OVL_SINGLE.
+	* parser.c (cp_parser_nested_name_specifier_opt): Likewise.
+	* tree.c (is_overloaded_fn): Likewise.
+
 	Add OVERLOAD iterator part 5
 	gcc/cp/
 	* cp-tree.h (ovl_iterator::via_using_p): New.
