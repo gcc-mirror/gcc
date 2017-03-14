@@ -1,3 +1,14 @@
+2017-03-14  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/79728
+	* regs.h (struct target_regs): New field
+	x_contains_allocatable_regs_of_mode.
+	(contains_allocatable_regs_of_mode): New macro.
+	* reginfo.c (init_reg_sets_1): Initialize it, and change
+	contains_reg_of_mode so it includes global regs as well.
+	* reload.c (push_reload): Use contains_allocatable_regs_of_mode
+	rather than contains_regs_of_mode.
+
 2017-03-14  Martin Liska  <mliska@suse.cz>
 
 	* doc/invoke.texi: Document options that can't be combined with

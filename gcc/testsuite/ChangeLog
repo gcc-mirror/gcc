@@ -1,3 +1,8 @@
+2017-03-14  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/79728
+	* gcc.target/i386/sse-globalreg.c: New test.
+
 2017-03-14  Martin Liska  <mliska@suse.cz>
 
 	PR lto/66295
