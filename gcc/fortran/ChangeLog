@@ -1,3 +1,11 @@
+2017-03-14  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR fortran/79894
+	* trans.c (gfc_add_modify_loc): Weaken assert.
+
 2017-02-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/78474
