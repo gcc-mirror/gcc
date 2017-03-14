@@ -327,6 +327,7 @@ expand_target_clones (struct cgraph_node *node, bool definition)
   tree attributes = make_attribute ("target", "default",
 				    DECL_ATTRIBUTES (node->decl));
   DECL_ATTRIBUTES (node->decl) = attributes;
+  node->local.local = false;
   location_t saved_loc = input_location;
   input_location = DECL_SOURCE_LOCATION (node->decl);
   bool ret
