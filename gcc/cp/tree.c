@@ -2089,6 +2089,28 @@ ovl_add (tree maybe_ovl, tree fn, int force)
   return result;
 }
 
+/* Replace the current slot with FN.  Also, the slot being replaced is
+   changing from a using declaration to a regular declaration.  */
+
+void
+ovl_iterator::replace (tree fn, unsigned count) const
+{
+#ifdef OVLNEW
+#error FIXME
+#else
+  OVL_FUNCTION (ovl) = fn;
+  TREE_TYPE (ovl) = unknown_type_node;
+  OVL_VIA_USING (ovl) = false;
+  /* Zap out any cleared slots.  */
+  for (tree *slot = &OVL_CHAIN (ovl); --count;)
+    {
+      while (OVL_CURRENT (*slot))
+	slot = &OVL_CHAIN (*slot);
+      *slot = OVL_CHAIN (*slot);
+    }
+#endif
+}
+
 /* Get the overload set that an EXPR refers to.  */
 
 tree
@@ -2125,9 +2147,13 @@ is_overloaded_fn (tree x)
   if (TREE_CODE (x) == TEMPLATE_ID_EXPR)
     x = TREE_OPERAND (x, 0);
 
+#ifdef OVLNEW
+#error FIXME
+#else
   if (DECL_FUNCTION_TEMPLATE_P (OVL_FIRST (x))
       || (TREE_CODE (x) == OVERLOAD && OVL_CHAIN (x)))
     return 2;
+#endif
 
   return (TREE_CODE (x) == FUNCTION_DECL
 	  || TREE_CODE (x) == OVERLOAD);
@@ -2171,10 +2197,14 @@ ovl_scope (tree ovl)
     return BINFO_TYPE (BASELINK_BINFO (ovl));
   if (TREE_CODE (ovl) == TEMPLATE_ID_EXPR)
     ovl = TREE_OPERAND (ovl, 0);
+#ifdef OVLNEW
+#error
+#else
   /* Skip using-declarations.  */
   while (TREE_CODE (ovl) == OVERLOAD && OVL_VIA_USING (ovl) && OVL_CHAIN (ovl))
     ovl = OVL_CHAIN (ovl);
   return CP_DECL_CONTEXT (OVL_CURRENT (ovl));
+#endif
 }
 
 #define PRINT_RING_SIZE 4
@@ -4222,8 +4252,12 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       break;
 
     case OVERLOAD:
+#ifdef OVLNEW
+#error
+#else
       WALK_SUBTREE (OVL_FUNCTION (*tp));
       WALK_SUBTREE (OVL_CHAIN (*tp));
+#endif
       *walk_subtrees_p = 0;
       break;
 

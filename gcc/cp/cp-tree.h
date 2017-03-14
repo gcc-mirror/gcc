@@ -431,12 +431,13 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
     && MAIN_NAME_P (DECL_NAME (NODE))			\
     && flag_hosted)
 
+// #define OVLNEW
+#ifdef OVLNEW // New overloads
 // ALLOC and LENGTH in clique & base for memrefs stuff
-#if 0 // New overloads
 #define OVERLOAD2_LENGTH(T) ((T)->typed.base.u.base)
 #define OVERLOAD2_ALLOC(T) ((T)->typed.base.u.clique)
-#define OVL_FIRST(T)
-#define OVL_NAME(T)
+#define OVL_FIRST(T) FIXME
+#define OVL_NAME(T) FIXME
 
 struct ovl_iterator 
 {
@@ -484,6 +485,10 @@ struct ovl_iterator
   {
     return ovl;
   }
+  bool via_using_p () const
+  {
+    return TREE_CODE (ovl) == OVERLOAD && OVL_VIA_USING (ovl);
+  }
   ovl_iterator *operator++ ()
   {
     ovl = OVL_NEXT (ovl);
@@ -497,6 +502,15 @@ struct ovl_iterator
   {
     return OVL_FUNCTION (ovl);
   }
+  unsigned replace (ovl_iterator &stash, unsigned count) const
+  {
+    if (count)
+      OVL_FUNCTION (ovl) = NULL_TREE;
+    else
+      stash = *this;
+    return count++;
+  }
+  void replace (tree fn, unsigned count) const;
 };
 #endif
 tree ovl_add (tree maybe_ovl, tree fn, int force = 0);
@@ -5839,7 +5853,7 @@ extern tree missing_abi_tags			(tree);
 extern void fixup_type_variants			(tree);
 extern void fixup_attribute_variants		(tree);
 extern tree* decl_cloned_function_p		(const_tree, bool);
-extern void clone_function_decl			(tree, int);
+extern void clone_function_decl			(tree, bool, bool = false);
 extern void adjust_clone_args			(tree);
 extern void deduce_noexcept_on_destructor       (tree);
 extern void insert_late_enum_def_into_classtype_sorted_fields (tree, tree);

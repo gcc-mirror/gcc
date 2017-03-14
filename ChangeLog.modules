@@ -1,5 +1,17 @@
 2017-03-14  Nathan Sidwell  <nathan@acm.org>
 
+	Add OVERLOAD iterator part 5
+	gcc/cp/
+	* cp-tree.h (ovl_iterator::via_using_p): New.
+	(ovl_iterator::replace): New.
+	(clone_function_decl): Add via_using parm.
+	* tree.c (ovl_iterator::replace): New.
+	* class.c (add_method): Use ovl_iterator.
+	(clone_function_decl): Add via_using parm.  Pass it to add_method.
+	(clone_costructors_and_destructors): Pass via_using.
+	* pt.c (tsubst_decl, instantiate_template_1): Update
+	clone_function_decl call.
+
 	Change add_method signature
 	gcc/cp/
 	* cp-tree.h (add_method): Change 3rd arg.
