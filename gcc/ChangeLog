@@ -1,3 +1,37 @@
+2017-03-14  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/80004
+	PR target/49244
+	* gimple.c (gimple_builtin_call_types_compatible_p): Allow
+	char/short arguments promoted to int because of promote_prototypes.
+
+	2017-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79977
+	* graphite-scop-detection.c (scop_detection::merge_sese):
+	Handle the case of extra exits to blocks dominating the entry.
+
+	2017-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/79971
+	* gimple-expr.c (useless_type_conversion_p): Preserve
+	TYPE_SATURATING for fixed-point types.
+
+	2017-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79666
+	* tree-vrp.c (extract_range_from_binary_expr_1): Make sure
+	to not symbolically negate if that may introduce undefined
+	overflow.
+
+	2017-02-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/79576
+	* params.def (max-ssa-name-query-depth): Limit to 10.
+
 2017-03-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
