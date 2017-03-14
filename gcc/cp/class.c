@@ -1001,12 +1001,12 @@ modify_vtable_entry (tree t,
 }
 
 
-/* Add method METHOD to class TYPE.  If USING_DECL is non-null, it is
-   the USING_DECL naming METHOD.  Returns true if the method could be
-   added to the method vec.  */
+/* Add method METHOD to class TYPE.  If VIA_USING indicates whether
+   METHOD is being injected via a using_decl.  Returns true if the
+   method could be added to the method vec.  */
 
 bool
-add_method (tree type, tree method, tree using_decl)
+add_method (tree type, tree method, bool via_using)
 {
   unsigned slot;
   tree overload;
@@ -1096,7 +1096,7 @@ add_method (tree type, tree method, tree using_decl)
 
       /* Two using-declarations can coexist, we'll complain about ambiguity in
 	 overload resolution.  */
-      if (using_decl && TREE_CODE (fns) == OVERLOAD && OVL_VIA_USING (fns)
+      if (via_using && TREE_CODE (fns) == OVERLOAD && OVL_VIA_USING (fns)
 	  /* Except handle inherited constructors specially.  */
 	  && ! DECL_CONSTRUCTOR_P (fn))
 	goto cont;
@@ -1216,7 +1216,8 @@ add_method (tree type, tree method, tree using_decl)
 	      /* Otherwise defer to the other function.  */
 	      return false;
 	    }
-	  if (using_decl)
+
+	  if (via_using)
 	    {
 	      if (DECL_CONTEXT (fn) == type)
 		/* Defer to the local function.  */
@@ -1254,7 +1255,7 @@ add_method (tree type, tree method, tree using_decl)
     return false;
 
   /* Add the new binding.  */
-  overload = ovl_add (current_fns, method, using_decl != NULL_TREE);
+  overload = ovl_add (current_fns, method, via_using);
 
   if (conv_p)
     TYPE_HAS_CONVERSION (type) = 1;
@@ -1394,7 +1395,7 @@ handle_using_decl (tree using_decl, tree t)
   if (flist)
     for (ovl_iterator iter (flist); iter; ++iter)
       {
-	add_method (t, *iter, using_decl);
+	add_method (t, *iter, using_decl != NULL_TREE);
 	alter_access (t, *iter, access);
       }
   else
@@ -3315,7 +3316,7 @@ one_inheriting_sig (tree t, tree ctor, tree *parms, int nparms)
   tree fn = implicitly_declare_fn (sfk_inheriting_constructor,
 				   t, false, ctor, parmlist);
   gcc_assert (TYPE_MAIN_VARIANT (t) == t);
-  if (add_method (t, fn, NULL_TREE))
+  if (add_method (t, fn, false))
     {
       DECL_CHAIN (fn) = TYPE_METHODS (t);
       TYPE_METHODS (t) = fn;
@@ -3334,7 +3335,7 @@ one_inherited_ctor (tree ctor, tree t, tree using_decl)
     {
       ctor = implicitly_declare_fn (sfk_inheriting_constructor,
 				    t, /*const*/false, ctor, parms);
-      add_method (t, ctor, using_decl);
+      add_method (t, ctor, using_decl != NULL_TREE);
       TYPE_HAS_USER_CONSTRUCTOR (t) = true;
       return;
     }
@@ -4875,10 +4876,10 @@ clone_function_decl (tree fn, int update_method_vec_p)
 	 and a not-in-charge version.  */
       clone = build_clone (fn, complete_ctor_identifier);
       if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
+	add_method (DECL_CONTEXT (clone), clone, false);
       clone = build_clone (fn, base_ctor_identifier);
       if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
+	add_method (DECL_CONTEXT (clone), clone, false);
     }
   else
     {
@@ -4897,14 +4898,14 @@ clone_function_decl (tree fn, int update_method_vec_p)
 	{
 	  clone = build_clone (fn, deleting_dtor_identifier);
 	  if (update_method_vec_p)
-	    add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
+	    add_method (DECL_CONTEXT (clone), clone, false);
 	}
       clone = build_clone (fn, complete_dtor_identifier);
       if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
+	add_method (DECL_CONTEXT (clone), clone, false);
       clone = build_clone (fn, base_dtor_identifier);
       if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
+	add_method (DECL_CONTEXT (clone), clone, false);
     }
 
   /* Note that this is an abstract function that is never emitted.  */
@@ -7445,7 +7446,7 @@ finish_struct (tree t, tree attributes)
 	    tree fn = strip_using_decl (x);
 	    if (is_overloaded_fn (fn))
 	      for (ovl_iterator iter (fn); iter; ++iter)
-		add_method (t, *iter, x);
+		add_method (t, *iter, true);
 	  }
 
       /* Remember current #pragma pack value.  */

@@ -1,3 +1,15 @@
+2017-03-14  Nathan Sidwell  <nathan@acm.org>
+
+	Change add_method signature
+	gcc/cp/
+	* cp-tree.h (add_method): Change 3rd arg.
+	* class.c (add_method): Change 3rd arg to bool. Update.
+	(handle_using_decl, one_inheriting_sig, one_inherited_ctor,
+	clone_function_decl, finish_struct): Update add_method calls.
+	* lambda.c (maybe_add_lambda_conv_op): Likewise.
+	* method.c (lazily_declare_fn): Likewise.
+	* semantics.c (finish_member_declaration): Likewise.
+
 2017-03-13  Nathan Sidwell  <nathan@acm.org>
 
 	Kill get_first_fn part 3
