@@ -1,3 +1,8 @@
+2017-03-13  Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/riscv/riscv.c (riscv_emit_float_compare>: Use
+	gcc_fallthrough() instead of __attribute__((fallthrough));
+
 2017-03-13  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/gcc.texi: Remove "up" link to (DIR).
