@@ -10733,12 +10733,14 @@ more details.  The run-time behavior can be influenced using the
 the available options are shown at startup of the instrumented program.  See
 @url{https://github.com/google/sanitizers/wiki/AddressSanitizerFlags#run-time-flags}
 for a list of supported options.
-The option can't be combined with @option{-fsanitize=thread}.
+The option can't be combined with @option{-fsanitize=thread}
+and/or @option{-fcheck-pointer-bounds}.
 
 @item -fsanitize=kernel-address
 @opindex fsanitize=kernel-address
 Enable AddressSanitizer for Linux kernel.
 See @uref{https://github.com/google/kasan/wiki} for more details.
+The option can't be combined with @option{-fcheck-pointer-bounds}.
 
 @item -fsanitize=thread
 @opindex fsanitize=thread
@@ -10749,8 +10751,8 @@ details. The run-time behavior can be influenced using the @env{TSAN_OPTIONS}
 environment variable; see
 @url{https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags} for a list of
 supported options.
-The option can't be combined with @option{-fsanitize=address}
-and/or @option{-fsanitize=leak}.
+The option can't be combined with @option{-fsanitize=address},
+@option{-fsanitize=leak} and/or @option{-fcheck-pointer-bounds}.
 
 @item -fsanitize=leak
 @opindex fsanitize=leak
@@ -10839,13 +10841,15 @@ a++;
 This option enables instrumentation of array bounds.  Various out of bounds
 accesses are detected.  Flexible array members, flexible array member-like
 arrays, and initializers of variables with static storage are not instrumented.
+The option can't be combined with @option{-fcheck-pointer-bounds}.
 
 @item -fsanitize=bounds-strict
 @opindex fsanitize=bounds-strict
 This option enables strict instrumentation of array bounds.  Most out of bounds
 accesses are detected, including flexible array members and flexible array
 member-like arrays.  Initializers of variables with static storage are not
-instrumented.
+instrumented.  The option can't be combined
+with @option{-fcheck-pointer-bounds}.
 
 @item -fsanitize=alignment
 @opindex fsanitize=alignment
