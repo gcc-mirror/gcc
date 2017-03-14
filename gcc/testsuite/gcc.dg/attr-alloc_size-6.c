@@ -15,8 +15,8 @@ void sink (void*);
 
 void test_lit (char *p, char *q)
 {
-  sink (__builtin_aligned_alloc (MAXOBJSZ, 1));
-  sink (__builtin_aligned_alloc (MAXOBJSZ + 1, 1));   /* { dg-warning "argument 1 value .12346\[lu\]*. exceeds maximum object size 12345" } */
+  sink (__builtin_aligned_alloc (1, MAXOBJSZ));
+  sink (__builtin_aligned_alloc (1, MAXOBJSZ + 1));   /* { dg-warning "argument 2 value .12346\[lu\]*. exceeds maximum object size 12345" } */
 
   sink (__builtin_alloca (MAXOBJSZ));
   sink (__builtin_alloca (MAXOBJSZ + 2));   /* { dg-warning "argument 1 value .12347\[lu\]*. exceeds maximum object size 12345" } */
@@ -46,8 +46,8 @@ enum { max = MAXOBJSZ };
 
 void test_cst (char *p, char *q)
 {
-  sink (__builtin_aligned_alloc (max, 1));
-  sink (__builtin_aligned_alloc (max + 1, 1));   /* { dg-warning "argument 1 value .12346\[lu\]*. exceeds maximum object size 12345" } */
+  sink (__builtin_aligned_alloc (1, max));
+  sink (__builtin_aligned_alloc (1, max + 1));   /* { dg-warning "argument 2 value .12346\[lu\]*. exceeds maximum object size 12345" } */
 
   sink (__builtin_alloca (max));
   sink (__builtin_alloca (max + 2));   /* { dg-warning "argument 1 value .12347\[lu\]*. exceeds maximum object size 12345" } */

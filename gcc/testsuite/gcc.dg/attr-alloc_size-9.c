@@ -20,7 +20,7 @@ extern int x;
 
 void test (void *p, unsigned n)
 {
-  TEST (__builtin_aligned_alloc (n, 8));
+  TEST (__builtin_aligned_alloc (8, n));
   TEST (__builtin_alloca (n));
   TEST (__builtin_calloc (4, n));
   TEST (__builtin_malloc (n));

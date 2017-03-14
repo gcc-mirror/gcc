@@ -156,9 +156,12 @@ DEF_ATTR_TREE_LIST (ATTR_COLD_CONST_NORETURN_NOTHROW_LEAF_LIST, ATTR_CONST,\
 			ATTR_NULL, ATTR_COLD_NORETURN_NOTHROW_LEAF_LIST)
 
 /* Allocation functions like malloc and realloc whose first argument
-   specifies the size of the allocated object.  */
+   with _SIZE_1, or second argument with _SIZE_2, specifies the size
+   of the allocated object.  */
 DEF_ATTR_TREE_LIST (ATTR_MALLOC_SIZE_1_NOTHROW_LIST, ATTR_ALLOC_SIZE,	\
 			ATTR_LIST_1, ATTR_MALLOC_NOTHROW_LIST)
+DEF_ATTR_TREE_LIST (ATTR_ALLOC_SIZE_2_NOTHROW_LIST, ATTR_ALLOC_SIZE,	\
+			ATTR_LIST_2, ATTR_MALLOC_NOTHROW_LIST)
 DEF_ATTR_TREE_LIST (ATTR_MALLOC_SIZE_1_NOTHROW_LEAF_LIST, ATTR_ALLOC_SIZE, \
 		        ATTR_LIST_1, ATTR_MALLOC_NOTHROW_LEAF_LIST)
 /* Alloca is just like malloc except that it never returns null.  */
