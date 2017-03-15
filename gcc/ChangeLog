@@ -1,3 +1,11 @@
+2017-03-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/79038
+	* config/rs6000/rs6000.md (float<QHI:mode><IEEE128:mode>2): Define
+	insns to convert from signed/unsigned char/short to IEEE 128-bit
+	floating point.
+	(floatuns<QHI:mode><IEEE128:mode>2): Likewise.
+
 2017-03-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/80019
