@@ -43989,10 +43989,16 @@ ix86_vector_duplicate_value (machine_mode mode, rtx target, rtx val)
   if (recog_memoized (insn) < 0)
     {
       rtx_insn *seq;
+      machine_mode innermode = GET_MODE_INNER (mode);
+      rtx reg;
+
       /* If that fails, force VAL into a register.  */
 
       start_sequence ();
-      XEXP (dup, 0) = force_reg (GET_MODE_INNER (mode), val);
+      reg = force_reg (innermode, val);
+      if (GET_MODE (reg) != innermode)
+	reg = gen_lowpart (innermode, reg);
+      XEXP (dup, 0) = reg;
       seq = get_insns ();
       end_sequence ();
       if (seq)
