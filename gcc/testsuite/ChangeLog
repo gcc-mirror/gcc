@@ -1,3 +1,7 @@
+2017-03-15  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-prof/pr66295.c: Removed unused dg-error.
+
 2017-03-14  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/79800
