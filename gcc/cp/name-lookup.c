@@ -2558,7 +2558,8 @@ validate_nonmember_using_decl (tree decl, tree scope, tree name)
 /* Process local and global using-declarations.  */
 
 static void
-do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
+do_nonmember_using_decl (tree scope, tree name, bool augment,
+			 tree oldval, tree oldtype,
 			 tree *newval, tree *newtype)
 {
   struct scope_binding decls = EMPTY_SCOPE_BINDING;
@@ -2578,7 +2579,7 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
      enumeration names to each other.  */
   if (oldval && DECL_IMPLICIT_TYPEDEF_P (oldval))
     {
-       oldtype = oldval;
+      oldtype = oldval;
       oldval = NULL_TREE;
     }
 
@@ -2588,7 +2589,7 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
       decls.value = NULL_TREE;
     }
 
-  if (decls.value)
+  if (decls.value && decls.value != oldval)
     {
       /* Check for using functions.  */
       if (is_overloaded_fn (decls.value))
@@ -2599,7 +2600,9 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 	      oldval = NULL_TREE;
 	    }
 
-	  *newval = oldval;
+	  if (augment)
+	    *newval = oldval;
+
 	  for (ovl_iterator usings (decls.value); usings; ++usings)
 	    {
 	      tree new_fn = *usings;
@@ -2665,7 +2668,7 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 	    error ("%qD is already declared in this scope", name);
 	}
     }
-  else
+  else if (augment)
     *newval = oldval;
 
   if (decls.type && TREE_CODE (decls.type) == TREE_LIST)
@@ -2707,29 +2710,15 @@ do_local_using_decl (tree decl, tree scope, tree name)
   oldval = lookup_name_innermost_nonclass_level (name);
   oldtype = lookup_type_current_level (name);
 
-  do_nonmember_using_decl (scope, name, oldval, oldtype, &newval, &newtype);
+  do_nonmember_using_decl (scope, name, false,
+			   oldval, oldtype, &newval, &newtype);
 
   if (newval)
     {
       if (is_overloaded_fn (newval))
-	{
-	  tree fn, term;
-
-	  /* We only need to push declarations for those functions
-	     that were not already bound in the current level.
-	     The old value might be NULL_TREE, it might be a single
-	     function, or an OVERLOAD.  */
-	  if (oldval && TREE_CODE (oldval) == OVERLOAD)
-	    term = OVL_FUNCTION (oldval);
-	  else
-	    term = oldval;
-	  // FIXME: This presumes a linked list
-	  for (fn = newval; fn && OVL_CURRENT (fn) != term;
-	       fn = OVL_NEXT (fn))
-	    push_overloaded_decl (OVL_CURRENT (fn),
-				  PUSH_LOCAL | PUSH_USING,
-				  false);
-	}
+	/* Push the new decls.  */
+	for (ovl_iterator iter (newval); iter; ++iter)
+	  push_overloaded_decl (*iter, PUSH_LOCAL | PUSH_USING, false);
       else
 	push_local_binding (name, newval, PUSH_USING);
     }
@@ -4022,7 +4011,8 @@ do_toplevel_using_decl (tree decl, tree scope, tree name)
   oldval = binding->value;
   oldtype = binding->type;
 
-  do_nonmember_using_decl (scope, name, oldval, oldtype, &newval, &newtype);
+  do_nonmember_using_decl (scope, name, true,
+			   oldval, oldtype, &newval, &newtype);
 
   /* Emit debug info.  */
   if (!processing_template_decl)
@@ -5357,36 +5347,25 @@ static bool arg_assoc (struct arg_lookup*, tree);
 static bool arg_assoc_args (struct arg_lookup*, tree);
 static bool arg_assoc_args_vec (struct arg_lookup*, vec<tree, va_gc> *);
 static bool arg_assoc_type (struct arg_lookup*, tree);
-static bool add_function (struct arg_lookup *, tree);
+static void add_function (struct arg_lookup *, tree);
 static bool arg_assoc_namespace (struct arg_lookup *, tree);
 static bool arg_assoc_class_only (struct arg_lookup *, tree);
 static bool arg_assoc_bases (struct arg_lookup *, tree);
 static bool arg_assoc_class (struct arg_lookup *, tree);
 static bool arg_assoc_template_arg (struct arg_lookup*, tree);
 
-/* Add a function to the lookup structure.
-   Returns true on error.  */
+/* Add a function to the lookup structure.  */
 
-static bool
+static void
 add_function (struct arg_lookup *k, tree fn)
 {
-  if (!is_overloaded_fn (fn))
+  if (TREE_CODE (fn) != FUNCTION_DECL && !DECL_FUNCTION_TEMPLATE_P (fn))
     /* All names except those of (possibly overloaded) functions and
        function templates are ignored.  */;
   else if (k->fn_set && k->fn_set->add (fn))
     /* It's already in the list.  */;
-  else if (!k->functions && TREE_CODE (fn) != TEMPLATE_DECL)
-    k->functions = fn;
-  else if (fn == k->functions)
-    ;
   else
-    {
-      k->functions = ovl_add (k->functions, fn);
-      if (TREE_CODE (k->functions) == OVERLOAD)
-	OVL_TRANSIENT (k->functions) = true;
-    }
-
-  return false;
+    k->functions = ovl_add_transient (k->functions, fn);
 }
 
 /* Returns true iff CURRENT has declared itself to be an associated
@@ -5461,16 +5440,11 @@ arg_assoc_namespace (struct arg_lookup *k, tree scope)
     return false;
 
   for (ovl_iterator iter (value); iter; ++iter)
-    {
-      /* We don't want to find arbitrary hidden functions via argument
-	 dependent lookup.  We only want to find friends of associated
-	 classes, which we'll do via arg_assoc_class.  */
-      if (hidden_name_p (*iter))
-	continue;
-
-      if (add_function (k, *iter))
-	return true;
-    }
+    /* We don't want to find arbitrary hidden functions via argument
+       dependent lookup.  We only want to find friends of associated
+       classes, which we'll do via arg_assoc_class.  */
+    if (!hidden_name_p (*iter))
+      add_function (k, *iter);
 
   return false;
 }
@@ -5559,13 +5533,14 @@ arg_assoc_class_only (struct arg_lookup *k, tree type)
 	     (i.e. unqualified) declarations.  */
 	  if (CP_DECL_CONTEXT (fn) != context)
 	    continue;
+
 	  /* Template specializations are never found by name lookup.
 	     (Templates themselves can be found, but not template
 	     specializations.)  */
 	  if (TREE_CODE (fn) == FUNCTION_DECL && DECL_USE_TEMPLATE (fn))
 	    continue;
-	  if (add_function (k, fn))
-	    return true;
+
+	  add_function (k, fn);
 	}
 
   return false;

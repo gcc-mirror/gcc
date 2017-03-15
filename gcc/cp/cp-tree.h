@@ -518,6 +518,7 @@ struct ovl_iterator
 bool hidden_name_p (tree);
 tree remove_hidden_names (tree);
 tree ovl_add (tree maybe_ovl, tree fn, int force = 0);
+tree ovl_add_transient (tree maybe_ovl, tree fn);
 void ovl_maybe_keep (tree ovl, bool keep);
 tree get_ovl (tree expr, bool want_first = false)
 #ifndef ENABLE_TREE_CHECKING

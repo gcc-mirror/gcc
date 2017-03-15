@@ -1,5 +1,19 @@
 2017-03-15  Nathan Sidwell  <nathan@acm.org>
 
+	Vectorize OVERLOAD part 8
+	gcc/cp/
+	* cp-tree.h (ovl_add_transient): Declare.
+	* tree.c (ovl_add_transient): New.
+	(remove_hidden_names): Build transient.
+	* name-lookup.c (do_nonmember_using_decl): Add AUGMENT parm,
+	adjust.
+	(do_local_using_decl): Ask for newvals from
+	do_nonmember_using_decl, iterate over that list.
+	(do_toplevel_using_decl): Ask for augmented vals.
+	(add_function): Return void.  Remove extraneous
+	checks.  Update callers.
+	* semantics.c (finish_call_expr): Always call ovl_maybe_keep.
+
 	Vectorize OVERLOAD part 7
 	gcc/cp/
 	* name-lookup.c (hidden_name_p, remove_hidden_names): Move

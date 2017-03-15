@@ -2468,9 +2468,9 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
       result = convert_from_reference (result);
     }
 
-  if (koenig_p)
-    /* Free or retain OVERLOADs from arg-dependent lookup.  */
-    ovl_maybe_keep (orig_fn, processing_template_decl);
+  /* Free or retain OVERLOADs from lookup.  */
+  if (is_overloaded_fn (orig_fn))
+    ovl_maybe_keep (get_ovl (orig_fn), processing_template_decl);
 
   return result;
 }

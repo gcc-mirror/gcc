@@ -2093,6 +2093,39 @@ ovl_add (tree maybe_ovl, tree fn, int force)
   return result;
 }
 
+/* Add FN into a transient overload set.  */
+
+tree
+ovl_add_transient (tree maybe_ovl, tree fn)
+{
+  tree result;
+#ifdef OVLNEW
+#error FIXME
+#else
+  if (maybe_ovl && TREE_CODE (maybe_ovl) != OVERLOAD)
+    {
+      /* Don't chain to a non-overload.  */
+      result = make_node (OVERLOAD);
+      OVL_TRANSIENT (result) = true;
+      TREE_TYPE (result) = unknown_type_node;
+      OVL_FUNCTION (result) = maybe_ovl;
+      maybe_ovl = result;
+    }
+  result = fn;
+  if (maybe_ovl || TREE_CODE (fn) == TEMPLATE_DECL)
+    {
+      result = make_node (OVERLOAD);
+      OVL_TRANSIENT (result) = true;
+      TREE_TYPE (result) = unknown_type_node;
+      if (maybe_ovl)
+	TREE_TYPE (maybe_ovl) = unknown_type_node;
+      OVL_FUNCTION (result) = fn;
+      TREE_CHAIN (result) = maybe_ovl;
+    }
+#endif
+  return result;
+}
+
 void
 ovl_maybe_keep (tree ovl, bool keep)
 {
@@ -2148,7 +2181,7 @@ remove_hidden_names (tree fns)
 
 	  for (ovl_iterator iter (fns); iter; ++iter)
 	    if (!hidden_name_p (*iter))
-	      n = ovl_add (n, *iter);
+	      n = ovl_add_transient (n, *iter);
 	  fns = n;
 	}
     }
