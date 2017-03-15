@@ -434,12 +434,15 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_TRANSIENT(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
 // #define OVLNEW
 #ifdef OVLNEW // New overloads
-// ALLOC and LENGTH in clique & base for memrefs stuff
-#define OVERLOAD2_LENGTH(T) ((T)->typed.base.u.base)
-#define OVERLOAD2_ALLOC(T) ((T)->typed.base.u.clique)
+/* base and clique store length and num usings.  Alloc is implicit
+   power of 2 >= LENGTH.  */
+#define OVL_LENGTH(T) ((T)->typed.base.u.base)
+#define OVL_USINGS(T) ((T)->typed.base.u.clique)
 #define OVL_FIRST(T) FIXME
 #define OVL_NAME(T) FIXME
 #define OVL_SINGLE(T) FIXME
+#define OVL_HAS_USING(T) TREE_USED (OVERLOAD_CHECK (NODE))
+#define OVL_HAS_HIDDEN(T) TREE_PRIVATE (OVERLOAD_CHECK (NODE))
 
 struct ovl_iterator 
 {
@@ -451,7 +454,8 @@ struct ovl_iterator
 struct GTY(()) tree_overload_2 
 {
   struct tree_typed typed;
-  tree GTY((length ("OVERLOAD2_LENGTH ((tree)&%h)"))) elts[1];
+  /* Decls via using are at the end of the vector.  */
+  tree GTY((length ("OVL_LENGTH ((tree)&%h)"))) elts[1];
 };
 #else // old overloads
 /* The overloaded FUNCTION_DECL.  */
@@ -470,6 +474,7 @@ struct GTY(()) tree_overload_2
 #define OVL_FIRST(T) OVL_CURRENT (T)
 #define OVL_NAME(T) DECL_NAME (OVL_CURRENT (T))
 #define OVL_SINGLE(T) (!OVL_CHAIN (T))
+#define OVL_HAS_USING(T) OVL_VIA_USING (T)
 
 struct GTY(()) tree_overload {
   struct tree_common common;
@@ -684,7 +689,7 @@ enum GTY(()) abstract_class_use {
   (LANG_IDENTIFIER_CAST (NODE)->class_template_info)
 
 /* The IDENTIFIER_BINDING is the innermost cxx_binding for the
-    identifier.  It's PREVIOUS is the next outermost binding.  Each
+    identifier.  Its PREVIOUS is the next outermost binding.  Each
     VALUE field is a DECL for the associated declaration.  Thus,
     name lookup consists simply of pulling off the node at the front
     of the list (modulo oddities for looking up the names of types,
@@ -5723,7 +5728,7 @@ extern tree type_decays_to			(tree);
 extern tree extract_call_expr			(tree);
 extern tree build_user_type_conversion		(tree, tree, int,
 						 tsubst_flags_t);
-extern tree build_new_function_call		(tree, vec<tree, va_gc> **, bool, 
+extern tree build_new_function_call		(tree, vec<tree, va_gc> **, 
 						 tsubst_flags_t);
 extern tree build_operator_new_call		(tree, vec<tree, va_gc> **, tree *,
 						 tree *, tree, tree, tree *,

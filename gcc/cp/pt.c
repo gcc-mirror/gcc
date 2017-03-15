@@ -25062,8 +25062,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, tsubst_flags_t complain)
     }
 
   ++cp_unevaluated_operand;
-  tree t = build_new_function_call (cands, &args, /*koenig*/false,
-				    complain|tf_decltype);
+  tree t = build_new_function_call (cands, &args, complain|tf_decltype);
   --cp_unevaluated_operand;
   release_tree_vector (args);
 

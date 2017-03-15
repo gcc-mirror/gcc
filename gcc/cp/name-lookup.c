@@ -1395,9 +1395,8 @@ push_local_binding (tree id, tree decl, int flags)
     push_binding (id, decl, b);
 
   if (TREE_CODE (decl) == OVERLOAD || (flags & PUSH_USING))
-    /* We must put the OVERLOAD into a TREE_LIST since the
-       TREE_CHAIN of an OVERLOAD is already used.  Similarly for
-       decls that got here through a using-declaration.  */
+    /* We must put the OVERLOAD or using into a TREE_LIST since we
+       cannot use the decl's chain itself.  */
     decl = build_tree_list (NULL_TREE, decl);
 
   /* And put DECL on the list of things declared by the current
@@ -2357,6 +2356,42 @@ compparms_for_decl_and_using_decl (tree decl1, tree decl2)
 			  TREE_TYPE (TREE_TYPE (decl2))));
 }
 
+/* NAME currently has a value binding of OLDVAL (which might be NULL).
+   Update it to be NEWVAL (which might or might not be different).  */
+
+static void
+augment_local_overload_binding (tree name, int flags, tree oldval, tree newval)
+{
+  if (oldval == newval)
+    /* Nothing to do.  */;
+  else if (oldval && TREE_CODE (newval) == OVERLOAD)
+    {
+      for (tree *d = &IDENTIFIER_BINDING (name)->scope->names;
+	   *d;
+	   d = &TREE_CHAIN (*d))
+	if (*d == oldval
+	    || (TREE_CODE (*d) == TREE_LIST
+		&& TREE_VALUE (*d) == oldval))
+	  {
+	    if (TREE_CODE (*d) == TREE_LIST)
+	      /* Just replace the old binding with the new.  */
+	      TREE_VALUE (*d) = newval;
+	    else
+	      /* Build a TREE_LIST to wrap the OVERLOAD.  */
+	      *d = tree_cons (NULL_TREE, newval, TREE_CHAIN (*d));
+
+	    /* And update the cxx_binding node.  */
+	    IDENTIFIER_BINDING (name)->value = newval;
+	    return;
+	  }
+      /* We should always find a previous binding in this case.  */
+      gcc_unreachable ();
+    }
+  else
+    /* Install the new binding.  */
+    push_local_binding (name, newval, flags);
+}
+
 /* DECL is a FUNCTION_DECL for a non-member function, which may have
    other definitions already in place.  We get around this by making
    the value of the identifier point to a list of all the things that
@@ -2385,6 +2420,10 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
   tree old;
   tree new_binding;
   int doing_global = (namespace_bindings_p () || !(flags & PUSH_LOCAL));
+
+  /* USING decls should go via augment_local_overload_binding or
+     directly updating the binding.  */
+  gcc_assert (!(flags & PUSH_USING));
 
   if (doing_global)
     old = namespace_binding (name, DECL_CONTEXT (decl));
@@ -2445,44 +2484,7 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
   if (doing_global)
     set_namespace_binding (name, current_namespace, new_binding);
   else
-    {
-      /* We only create an OVERLOAD if there was a previous binding at
-	 this level, or if decl is a template. In the former case, we
-	 need to remove the old binding and replace it with the new
-	 binding.  We must also run through the NAMES on the binding
-	 level where the name was bound to update the chain.  */
-
-      if (TREE_CODE (new_binding) == OVERLOAD && old)
-	{
-	  tree *d;
-
-	  for (d = &IDENTIFIER_BINDING (name)->scope->names;
-	       *d;
-	       d = &TREE_CHAIN (*d))
-	    if (*d == old
-		|| (TREE_CODE (*d) == TREE_LIST
-		    && TREE_VALUE (*d) == old))
-	      {
-		if (TREE_CODE (*d) == TREE_LIST)
-		  /* Just replace the old binding with the new.  */
-		  TREE_VALUE (*d) = new_binding;
-		else
-		  /* Build a TREE_LIST to wrap the OVERLOAD.  */
-		  *d = tree_cons (NULL_TREE, new_binding,
-				  TREE_CHAIN (*d));
-
-		/* And update the cxx_binding node.  */
-		IDENTIFIER_BINDING (name)->value = new_binding;
-		return decl;
-	      }
-
-	  /* We should always find a previous binding in this case.  */
-	  gcc_unreachable ();
-	}
-
-      /* Install the new binding.  */
-      push_local_binding (name, new_binding, flags);
-    }
+    augment_local_overload_binding (name, flags, old, new_binding);
 
   return decl;
 }
@@ -2558,8 +2560,7 @@ validate_nonmember_using_decl (tree decl, tree scope, tree name)
 /* Process local and global using-declarations.  */
 
 static void
-do_nonmember_using_decl (tree scope, tree name, bool augment,
-			 tree oldval, tree oldtype,
+do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 			 tree *newval, tree *newtype)
 {
   struct scope_binding decls = EMPTY_SCOPE_BINDING;
@@ -2600,8 +2601,7 @@ do_nonmember_using_decl (tree scope, tree name, bool augment,
 	      oldval = NULL_TREE;
 	    }
 
-	  if (augment)
-	    *newval = oldval;
+	  *newval = oldval;
 
 	  for (ovl_iterator usings (decls.value); usings; ++usings)
 	    {
@@ -2668,7 +2668,7 @@ do_nonmember_using_decl (tree scope, tree name, bool augment,
 	    error ("%qD is already declared in this scope", name);
 	}
     }
-  else if (augment)
+  else
     *newval = oldval;
 
   if (decls.type && TREE_CODE (decls.type) == TREE_LIST)
@@ -2710,18 +2710,11 @@ do_local_using_decl (tree decl, tree scope, tree name)
   oldval = lookup_name_innermost_nonclass_level (name);
   oldtype = lookup_type_current_level (name);
 
-  do_nonmember_using_decl (scope, name, false,
-			   oldval, oldtype, &newval, &newtype);
+  do_nonmember_using_decl (scope, name, oldval, oldtype, &newval, &newtype);
 
   if (newval)
-    {
-      if (is_overloaded_fn (newval))
-	/* Push the new decls.  */
-	for (ovl_iterator iter (newval); iter; ++iter)
-	  push_overloaded_decl (*iter, PUSH_LOCAL | PUSH_USING, false);
-      else
-	push_local_binding (name, newval, PUSH_USING);
-    }
+    augment_local_overload_binding (name, PUSH_USING, oldval, newval);
+
   if (newtype)
     {
       push_local_binding (name, newtype, PUSH_USING);
@@ -4011,8 +4004,7 @@ do_toplevel_using_decl (tree decl, tree scope, tree name)
   oldval = binding->value;
   oldtype = binding->type;
 
-  do_nonmember_using_decl (scope, name, true,
-			   oldval, oldtype, &newval, &newtype);
+  do_nonmember_using_decl (scope, name, oldval, oldtype, &newval, &newtype);
 
   /* Emit debug info.  */
   if (!processing_template_decl)

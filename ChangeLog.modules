@@ -1,5 +1,20 @@
 2017-03-15  Nathan Sidwell  <nathan@acm.org>
 
+	Vectorize OVERLOAD part 9
+	gcc/cp/
+	* cp-tree.h (build_new_function_call): Lose koenig_p arg.
+	(OVL_HAS_USING): New.
+	* call.c (build_new_function_call): Lose koenig_p arg.
+	* name-lookup.c (augment_local_overload_binding): New.  Broken out
+	of ...
+	(push_overloaded_decl_1): ... here.  Call it.
+	(do_nonmember_using_decl): Lose augment arg.
+	(do_local_using_decl): Use augment_local_overload_binding.
+	(do_toplevel_using_decl): Adjust do_nonmember_using_decl call.
+	* search.c (lookup_field_r): Use OVL_HAS_USING.
+	* pt.c (do_class_deduction): Adjust build_new_function_call call.
+	* semantics.c (finish_call_expr): Likewise.
+
 	Vectorize OVERLOAD part 8
 	gcc/cp/
 	* cp-tree.h (ovl_add_transient): Declare.
