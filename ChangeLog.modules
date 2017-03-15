@@ -1,3 +1,11 @@
+2017-03-15  Nathan Sidwell  <nathan@acm.org>
+
+	Add OVERLOAD iterator part 6
+	gcc/cp/
+	* name-lookup.c (pushdecl_maybe_friend_1): Use OVL_FIRST.
+	(push_overloaded_decl_1): Use iterators.
+	(consider_binding_level): Use OVL_FIRST.
+
 2017-03-14  Nathan Sidwell  <nathan@acm.org>
 
 	Add OVERLOAD iterator part 6

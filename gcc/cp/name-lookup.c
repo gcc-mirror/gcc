@@ -755,7 +755,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	      }
 	  else
 	    /* Just choose one.  */
-	    match = OVL_CURRENT (t);
+	    match = OVL_FIRST (t);
 	  t = match;
 	}
 
@@ -980,8 +980,8 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	  tree decl;
 
 	  decl = IDENTIFIER_NAMESPACE_VALUE (name);
-	  if (decl && TREE_CODE (decl) == OVERLOAD)
-	    decl = OVL_FUNCTION (decl);
+	  if (decl)
+	    decl = OVL_FIRST (decl);
 
 	  if (decl && decl != error_mark_node
 	      && (DECL_EXTERNAL (decl) || TREE_PUBLIC (decl))
@@ -1267,9 +1267,8 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 
 	      if (member && !TREE_STATIC (member))
 		{
-		  if (BASELINK_P (member))
-		    member = BASELINK_FUNCTIONS (member);
-		  member = OVL_CURRENT (member);
+		  member = MAYBE_BASELINK_FUNCTIONS (member);
+		  member = OVL_FIRST (member);
 	
 		  /* Do not warn if a variable shadows a function, unless
 		     the variable is a function or a pointer-to-function.  */
@@ -2405,20 +2404,17 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
 	}
       else if (is_overloaded_fn (old))
 	{
-	  tree tmp;
-
-	  for (tmp = old; tmp; tmp = OVL_NEXT (tmp))
+	  for (ovl_iterator iter (old); iter; ++iter)
 	    {
-	      tree fn = OVL_CURRENT (tmp);
-	      tree dup;
+	      tree fn = *iter;
 
-	      if (TREE_CODE (tmp) == OVERLOAD && OVL_VIA_USING (tmp)
+	      if (iter.via_using_p ()
 		  && !(flags & PUSH_USING)
 		  && compparms_for_decl_and_using_decl (fn, decl)
 		  && ! decls_match (fn, decl))
 		diagnose_name_conflict (decl, fn);
 
-	      dup = duplicate_decls (decl, fn, is_friend);
+	      tree dup = duplicate_decls (decl, fn, is_friend);
 	      /* If DECL was a redeclaration of FN -- even an invalid
 		 one -- pass that information along to our caller.  */
 	      if (dup == fn || dup == error_mark_node)
@@ -2582,7 +2578,7 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
      enumeration names to each other.  */
   if (oldval && DECL_IMPLICIT_TYPEDEF_P (oldval))
     {
-      oldtype = oldval;
+       oldtype = oldval;
       oldval = NULL_TREE;
     }
 
@@ -2730,6 +2726,7 @@ do_local_using_decl (tree decl, tree scope, tree name)
 	    term = OVL_FUNCTION (oldval);
 	  else
 	    term = oldval;
+	  // FIXME: This presumes a linked list
 	  for (fn = newval; fn && OVL_CURRENT (fn) != term;
 	       fn = OVL_NEXT (fn))
 	    push_overloaded_decl (OVL_CURRENT (fn),
@@ -3449,7 +3446,7 @@ namespace_binding (tree name, tree scope)
   return ret;
 }
 
-/* Set the binding value for name in scope.  */
+/* Set the for NAME in SCOPE to VAL.  */
 
 static void
 set_namespace_binding_1 (tree name, tree scope, tree val)
@@ -4780,10 +4777,7 @@ consider_binding_level (tree name, best_match <tree, tree> &bm,
       /* OVERLOADs or decls from using declaration are wrapped into
 	 TREE_LIST.  */
       if (TREE_CODE (d) == TREE_LIST)
-	{
-	  d = TREE_VALUE (d);
-	  d = OVL_CURRENT (d);
-	}
+	d = OVL_FIRST (TREE_VALUE (d));
 
       /* Don't use bindings from implicitly declared functions,
 	 as they were likely misspellings themselves.  */
@@ -5140,6 +5134,7 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
     val = remove_hidden_names (val);
 
   /* If we have a single function from a using decl, pull it out.  */
+  // FIXME: Can we elide this?
   if (val && TREE_CODE (val) == OVERLOAD && !really_overloaded_fn (val))
     val = OVL_FUNCTION (val);
 
