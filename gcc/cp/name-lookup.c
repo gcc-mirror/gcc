@@ -2593,8 +2593,6 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
       /* Check for using functions.  */
       if (is_overloaded_fn (decls.value))
 	{
-	  tree tmp, tmp1;
-
 	  if (oldval && !is_overloaded_fn (oldval))
 	    {
 	      error ("%qD is already declared in this scope", name);
@@ -2602,9 +2600,9 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 	    }
 
 	  *newval = oldval;
-	  for (tmp = decls.value; tmp; tmp = OVL_NEXT (tmp))
+	  for (ovl_iterator usings (decls.value); usings; ++usings)
 	    {
-	      tree new_fn = OVL_CURRENT (tmp);
+	      tree new_fn = *usings;
 
 	      /* Don't import functions that haven't been declared.  */
 	      if (DECL_ANTICIPATED (new_fn))
@@ -2616,14 +2614,16 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 		 scope has the same name and the same parameter types as a
 		 function introduced by a using declaration the program is
 		 ill-formed.  */
-	      for (tmp1 = oldval; tmp1; tmp1 = OVL_NEXT (tmp1))
+	      bool found = false;
+	      for (ovl_iterator old (oldval); !found && old; ++old)
 		{
-		  tree old_fn = OVL_CURRENT (tmp1);
+		  tree old_fn = *old;
 
 		  if (new_fn == old_fn)
-		    /* The function already exists in the current namespace.  */
-		    break;
-		  else if (TREE_CODE (tmp1) == OVERLOAD && OVL_VIA_USING (tmp1))
+		    /* The function already exists in the current
+		       namespace.  */
+		    found = true;
+		  else if (old.via_using_p ())
 		    continue; /* this is a using decl */
 		  else if (compparms_for_decl_and_using_decl (new_fn, old_fn))
 		    {
@@ -2634,23 +2634,20 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 			  && !DECL_HIDDEN_FRIEND_P (old_fn))
 			/* Ignore anticipated built-ins.  */;
 		      else if (decls_match (new_fn, old_fn))
-			break;
+			found = true;
 		      else
 			{
 			  diagnose_name_conflict (new_fn, old_fn);
-			  break;
+			  found = true;
 			}
 		    }
 		}
 
-	      /* If we broke out of the loop, there's no reason to add
-		 this function to the using declarations for this
-		 scope.  */
-	      if (tmp1)
-		continue;
-
-	      /* Add this new function to the set.  */
-	      *newval = ovl_add (*newval, OVL_CURRENT (tmp), true);
+	      if (!found)
+		{
+		  /* Add this new function to the set.  */
+		  *newval = ovl_add (*newval, new_fn, true);
+		}
 	    }
 	}
       else
