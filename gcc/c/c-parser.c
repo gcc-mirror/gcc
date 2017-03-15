@@ -2694,7 +2694,6 @@ c_parser_enum_specifier (c_parser *parser)
   location_t enum_loc;
   location_t ident_loc = UNKNOWN_LOCATION;  /* Quiet warning.  */
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_ENUM));
-  enum_loc = c_parser_peek_token (parser)->location;
   c_parser_consume_token (parser);
   attrs = c_parser_attributes (parser);
   enum_loc = c_parser_peek_token (parser)->location;
