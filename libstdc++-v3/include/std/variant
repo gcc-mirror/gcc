@@ -1007,25 +1007,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Tp, typename... _Args>
-	enable_if_t<is_constructible_v<_Tp, _Args...> && __exactly_once<_Tp>>
+	enable_if_t<is_constructible_v<_Tp, _Args...> && __exactly_once<_Tp>,
+		    _Tp&>
 	emplace(_Args&&... __args)
 	{
-	  this->emplace<__index_of<_Tp>>(std::forward<_Args>(__args)...);
+	  auto& ret =
+	    this->emplace<__index_of<_Tp>>(std::forward<_Args>(__args)...);
 	  __glibcxx_assert(holds_alternative<_Tp>(*this));
+	  return ret;
 	}
 
       template<typename _Tp, typename _Up, typename... _Args>
 	enable_if_t<is_constructible_v<_Tp, initializer_list<_Up>&, _Args...>
-		    && __exactly_once<_Tp>>
+		    && __exactly_once<_Tp>,
+		    _Tp&>
 	emplace(initializer_list<_Up> __il, _Args&&... __args)
 	{
-	  this->emplace<__index_of<_Tp>>(__il, std::forward<_Args>(__args)...);
+	  auto& ret =
+	    this->emplace<__index_of<_Tp>>(__il,
+					   std::forward<_Args>(__args)...);
 	  __glibcxx_assert(holds_alternative<_Tp>(*this));
+	  return ret;
 	}
 
       template<size_t _Np, typename... _Args>
 	enable_if_t<is_constructible_v<variant_alternative_t<_Np, variant>,
-				       _Args...>>
+				       _Args...>,
+		    variant_alternative_t<_Np, variant>&>
 	emplace(_Args&&... __args)
 	{
 	  static_assert(_Np < sizeof...(_Types),
@@ -1042,11 +1050,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __throw_exception_again;
 	    }
 	  __glibcxx_assert(index() == _Np);
+	  return std::get<_Np>(*this);
 	}
 
       template<size_t _Np, typename _Up, typename... _Args>
 	enable_if_t<is_constructible_v<variant_alternative_t<_Np, variant>,
-				       initializer_list<_Up>&, _Args...>>
+				       initializer_list<_Up>&, _Args...>,
+		    variant_alternative_t<_Np, variant>&>
 	emplace(initializer_list<_Up> __il, _Args&&... __args)
 	{
 	  static_assert(_Np < sizeof...(_Types),
@@ -1063,6 +1073,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __throw_exception_again;
 	    }
 	  __glibcxx_assert(index() == _Np);
+	  return std::get<_Np>(*this);
 	}
 
       constexpr bool valueless_by_exception() const noexcept

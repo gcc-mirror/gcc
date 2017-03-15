@@ -592,20 +592,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         }
 
       template<typename... _Args>
-	enable_if_t<is_constructible<_Tp, _Args&&...>::value>
+	enable_if_t<is_constructible<_Tp, _Args&&...>::value, _Tp&>
 	emplace(_Args&&... __args)
 	{
 	  this->_M_reset();
 	  this->_M_construct(std::forward<_Args>(__args)...);
+	  return this->_M_get();
 	}
 
       template<typename _Up, typename... _Args>
 	enable_if_t<is_constructible<_Tp, initializer_list<_Up>&,
-				     _Args&&...>::value>
+				     _Args&&...>::value, _Tp&>
 	emplace(initializer_list<_Up> __il, _Args&&... __args)
 	{
 	  this->_M_reset();
 	  this->_M_construct(__il, std::forward<_Args>(__args)...);
+	  return this->_M_get();
 	}
 
       // Destructor is implicit, implemented in _Optional_base.
