@@ -1,3 +1,14 @@
+2017-03-15  NightStrike  <nightstrike@gmail.com>
+	    Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/random.c (getosrandom): Remove check for __CYGWIN__
+	preprocessor flag.
+	* intrinsics/system_clock.c: Likewise.
+	(system_clock_4): Likewise.
+	(system_clock_8): Likewise.
+	* intrinsics/time_1.h: Don't include windows.h if __CYGWIN__ is
+	defined.
+
 2017-03-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/79956

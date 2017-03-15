@@ -29,7 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "time_1.h"
 
 
-#if !defined(__MINGW32__) && !defined(__CYGWIN__)
+#if !defined(__MINGW32__)
 
 /* POSIX states that CLOCK_REALTIME must be present if clock_gettime
    is available, others are optional.  */
@@ -99,7 +99,7 @@ gf_gettime_mono (time_t * secs, long * fracsecs, long * tck)
 #endif
 }
 
-#endif /* !__MINGW32 && !__CYGWIN__  */
+#endif /* !__MINGW32__  */
 
 extern void
 system_clock_4 (GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
@@ -121,7 +121,7 @@ void
 system_clock_4 (GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
 	       GFC_INTEGER_4 *count_max)
 {
-#if defined(__MINGW32__) || defined(__CYGWIN__)
+#if defined(__MINGW32__)
   if (count)
     {
       /* Use GetTickCount here as the resolution and range is
@@ -174,7 +174,7 @@ void
 system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
 		 GFC_INTEGER_8 *count_max)
 {
-#if defined(__MINGW32__) || defined(__CYGWIN__) 
+#if defined(__MINGW32__)
   LARGE_INTEGER cnt;
   LARGE_INTEGER freq;
   bool fail = false;
