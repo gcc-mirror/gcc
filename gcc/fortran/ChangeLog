@@ -1,3 +1,9 @@
+2017-03-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR fortran/79860
+	* resolve.c (resolve_contained_fntype): Make error messages more
+	amenable to translation.
+
 2017-03-06  Richard Biener  <rguenther@suse.de>
 
 	PR fortran/79894
