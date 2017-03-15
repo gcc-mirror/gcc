@@ -1,3 +1,8 @@
+2017-03-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/79947
+	* gcc.target/powerpc/pr79947.c: New test.
+
 2017-03-14  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/80020
