@@ -1,3 +1,8 @@
+2017-03-15  Jiong Wang  <jiong.wang@arm.com>
+
+	PR testsuite/79356
+	* gcc.dg/attr-alloc_size-11.c: Don't xfail on arm.
+
 2017-03-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/80019
