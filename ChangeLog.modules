@@ -1,5 +1,14 @@
 2017-03-15  Nathan Sidwell  <nathan@acm.org>
 
+	New OVERLOAD representation part 1
+	gcc/cp/
+	* cp-tree.h (OVL_LENGTH, OVL_USINGS, OVL_FIRST, OVL_NAME,
+	OVL_SINGLE, OVL_ELT, OVL_HAS_USING, OVL_HAS_HIDDEN): New.
+	(ovl_iterator): Implement new-style iterator.
+	* tree.c (tree_ovl_elt_check_failed): New.
+	(ovl_maybe_keep): Fixup bracing.
+	(ovl_scope): Add new smarts.
+
 	Vectorize OVERLOAD part 9
 	gcc/cp/
 	* cp-tree.h (build_new_function_call): Lose koenig_p arg.
