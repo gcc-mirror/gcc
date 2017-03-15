@@ -1,3 +1,23 @@
+2017-03-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement LWG 2857, {variant,optional,any}::emplace should
+	return the constructed value.
+	* include/std/any (emplace(_Args&&...)): Change the return type and
+	return a reference to the constructed value.
+	(emplace(initializer_list<_Up>, _Args&&...)): Likewise.
+	* include/std/optional (emplace(_Args&&...)): Likewise.
+	(emplace(initializer_list<_Up>, _Args&&...)): Likewise.
+	* include/std/variant (emplace<_Tp>(_Args&&...)): Likewise.
+	(emplace<_Tp>(initializer_list<_Up>, _Args&&...)): Likewise.
+	(emplace<_Np>(_Args&&...)): Likewise.
+	(emplace<_Np>(initializer_list<_Up>, _Args&&...)): Likewise.
+	* testsuite/20_util/any/assign/emplace.cc: Add tests for
+	checking the return value of emplace.
+	* testsuite/20_util/any/misc/any_cast_neg.cc: Adjust.
+	* testsuite/20_util/optional/assignment/6.cc: Add tests for
+	checking the return value of emplace.
+	* testsuite/20_util/variant/run.cc: Likewise.
+
 2017-03-15  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
 
 	PR libstdc++/62045

@@ -268,18 +268,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /// Emplace with an object created from @p __args as the contained object.
     template <typename _ValueType, typename... _Args>
-      typename __any_constructible<void,
+      typename __any_constructible<_Decay<_ValueType>&,
 				   _Decay<_ValueType>, _Args&&...>::type
       emplace(_Args&&... __args)
       {
 	__do_emplace<_Decay<_ValueType>>
 	  (std::forward<_Args>(__args)...);
+	any::_Arg __arg;
+	this->_M_manager(any::_Op_access, this, &__arg);
+	return *static_cast<_Decay<_ValueType>*>(__arg._M_obj);
       }
 
     /// Emplace with an object created from @p __il and @p __args as
     /// the contained object.
     template <typename _ValueType, typename _Up, typename... _Args>
-      typename __any_constructible<void,
+      typename __any_constructible<_Decay<_ValueType>&,
 				   _Decay<_ValueType>,
 				   initializer_list<_Up>,
 				   _Args&&...>::type
@@ -287,6 +290,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	__do_emplace<_Decay<_ValueType>, _Up>
 	  (__il, std::forward<_Args>(__args)...);
+	any::_Arg __arg;
+	this->_M_manager(any::_Op_access, this, &__arg);
+	return *static_cast<_Decay<_ValueType>*>(__arg._M_obj);
       }
 
     // modifiers
