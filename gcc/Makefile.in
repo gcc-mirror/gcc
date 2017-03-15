@@ -769,6 +769,7 @@ GCC_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcc|sed '$(progra
 CPP_INSTALL_NAME := $(shell echo cpp|sed '$(program_transform_name)')
 GCOV_INSTALL_NAME := $(shell echo gcov|sed '$(program_transform_name)')
 GCOV_TOOL_INSTALL_NAME := $(shell echo gcov-tool|sed '$(program_transform_name)')
+GCOV_DUMP_INSTALL_NAME := $(shell echo gcov-dump|sed '$(program_transform_name)')
 
 # Setup the testing framework, if you have one
 EXPECT = `if [ -f $${rootme}/../expect/expect ] ; then \
@@ -3319,6 +3320,15 @@ install-common: native lang.install-common installdirs
 	    rm -f $(DESTDIR)$(bindir)/$(GCOV_TOOL_INSTALL_NAME)$(exeext); \
 	    $(INSTALL_PROGRAM) \
 	    gcov-tool$(exeext) $(DESTDIR)$(bindir)/$(GCOV_TOOL_INSTALL_NAME)$(exeext); \
+	  fi; \
+	fi
+# Install gcov-dump if it was compiled.
+	-if test "$(enable_as_accelerator)" != "yes" ; then \
+	  if [ -f gcov-dump$(exeext) ]; \
+	  then \
+	    rm -f $(DESTDIR)$(bindir)/$(GCOV_DUMP_INSTALL_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) \
+	    gcov-dump$(exeext) $(DESTDIR)$(bindir)/$(GCOV_DUMP_INSTALL_NAME)$(exeext); \
 	  fi; \
 	fi
 

@@ -1,3 +1,10 @@
+2017-03-15  Matthias Klose  <doko@ubuntu.com>
+
+	Backport from mainline
+	2017-03-14  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Install gcov-dump.
+
 2017-03-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/80019
