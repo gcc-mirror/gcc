@@ -1,3 +1,8 @@
+2017-03-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR fortran/33271
+	* gfortran.dg/nint_2.f90: Do not xfail powerpc*-*-linux*.
+
 2017-03-15  Jiong Wang  <jiong.wang@arm.com>
 
 	PR testsuite/79356
