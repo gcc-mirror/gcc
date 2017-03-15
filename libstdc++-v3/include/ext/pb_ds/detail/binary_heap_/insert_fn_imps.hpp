@@ -103,7 +103,6 @@ modify(point_iterator it, const_reference r_new_val)
   swap_value_imp(it.m_p_e, r_new_val, s_no_throw_copies_ind);
   fix(it.m_p_e);
   PB_DS_ASSERT_VALID((*this))
-  _GLIBCXX_DEBUG_ASSERT(is_heap());
 }
 
 PB_DS_CLASS_T_DEC
