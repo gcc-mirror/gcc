@@ -137,7 +137,7 @@ operator == (const cp_expr &lhs, tree rhs)
       IMPLICIT_CONV_EXPR_DIRECT_INIT (in IMPLICIT_CONV_EXPR)
       TRANSACTION_EXPR_IS_STMT (in TRANSACTION_EXPR)
       CONVERT_EXPR_VBASE_PATH (in CONVERT_EXPR)
-      OVL_ARG_DEPENDENT (in OVERLOAD)
+      OVL_TRANSIENT (in OVERLOAD)
       PACK_EXPANSION_LOCAL_P (in *_PACK_EXPANSION)
       TINFO_HAS_ACCESS_ERRORS (in TEMPLATE_INFO)
       SIZEOF_EXPR_TYPE_P (in SIZEOF_EXPR)
@@ -431,7 +431,7 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
     && MAIN_NAME_P (DECL_NAME (NODE))			\
     && flag_hosted)
 
-#define OVL_ARG_DEPENDENT(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
+#define OVL_TRANSIENT(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
 // #define OVLNEW
 #ifdef OVLNEW // New overloads
 // ALLOC and LENGTH in clique & base for memrefs stuff
@@ -467,7 +467,6 @@ struct GTY(()) tree_overload_2
 #define OVL_VIA_USING(NODE)	TREE_USED (OVERLOAD_CHECK (NODE))
 /* If set, this OVERLOAD was created for argument-dependent lookup
    and can be freed afterward.  */
-#define OVL_ARG_DEPENDENT(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
 #define OVL_FIRST(T) OVL_CURRENT (T)
 #define OVL_NAME(T) DECL_NAME (OVL_CURRENT (T))
 #define OVL_SINGLE(T) (!OVL_CHAIN (T))

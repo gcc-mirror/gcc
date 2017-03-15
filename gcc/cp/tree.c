@@ -2101,11 +2101,11 @@ ovl_maybe_keep (tree ovl, bool keep)
 #ifdef OVLNEW
 #error FIXME
 #else
-      while (ovl && OVL_ARG_DEPENDENT (ovl))
+      while (ovl && OVL_TRANSIENT (ovl))
 	{
 	  tree next = OVL_CHAIN (ovl);
 	  if (keep)
-	    OVL_ARG_DEPENDENT (ovl) = false;
+	    OVL_TRANSIENT (ovl) = false;
 	  else
 	    ggc_free (ovl);
 	  ovl = next;

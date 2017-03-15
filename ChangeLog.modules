@@ -1,5 +1,15 @@
 2017-03-15  Nathan Sidwell  <nathan@acm.org>
 
+	Vectorize OVERLOAD part 6
+	gcc/cp/
+	* cp-tree.h (OVL_TRANSIENT): Rename from OVL_ARG_DEPENDENT.
+	* tree.c (ovl_maybe_keep): Adjust.
+	* name-lookup.c (set_namespace_binding_1): Use OVL_SINGLE.
+	(lookup_name_real_1): Use OVL_FIRST.
+	(add_function): Set OVL_TRANSIENT.
+	(lookup_arg_dependent_1): Use OVL_FIRST.
+	(cp_emit_debug_info_for_using): Use iterator.
+
 	Add OVERLOAD iterator part 8
 	gcc/cp/
 	* name-lookup.c (do_nonmember_using_decl): Use iterators

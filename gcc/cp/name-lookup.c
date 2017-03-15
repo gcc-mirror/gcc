@@ -3454,10 +3454,7 @@ set_namespace_binding_1 (tree name, tree scope, tree val)
     scope = global_namespace;
   b = binding_for_name (NAMESPACE_LEVEL (scope), name);
   if (!b->value
-      /* For templates and using we create a single element OVERLOAD.
-	 Look for the chain to know whether this is really augmenting
-	 an existing overload.  */
-      || (TREE_CODE (val) == OVERLOAD && OVL_CHAIN (val))
+      || (TREE_CODE (val) == OVERLOAD && !OVL_SINGLE (val))
       || val == error_mark_node)
     b->value = val;
   else
@@ -5133,7 +5130,7 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
   /* If we have a single function from a using decl, pull it out.  */
   // FIXME: Can we elide this?
   if (val && TREE_CODE (val) == OVERLOAD && !really_overloaded_fn (val))
-    val = OVL_FUNCTION (val);
+    val = OVL_FIRST (val);
 
   return val;
 }
@@ -5440,7 +5437,7 @@ add_function (struct arg_lookup *k, tree fn)
     {
       k->functions = ovl_add (k->functions, fn);
       if (TREE_CODE (k->functions) == OVERLOAD)
-	OVL_ARG_DEPENDENT (k->functions) = true;
+	OVL_TRANSIENT (k->functions) = true;
     }
 
   return false;
@@ -5894,7 +5891,7 @@ lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
     {
       /* We shouldn't be here if lookup found something other than
 	 namespace-scope functions.  */
-      gcc_assert (DECL_NAMESPACE_SCOPE_P (OVL_CURRENT (fns)));
+      gcc_assert (DECL_NAMESPACE_SCOPE_P (OVL_FIRST (fns)));
       k.fn_set = new hash_set<tree>;
       for (ovl_iterator iter (fns); iter; ++iter)
 	k.fn_set->add (*iter);
@@ -6502,14 +6499,18 @@ cp_emit_debug_info_for_using (tree t, tree context)
   t = MAYBE_BASELINK_FUNCTIONS (t);
 
   /* FIXME: Handle TEMPLATE_DECLs.  */
-  for (t = OVL_CURRENT (t); t; t = OVL_NEXT (t))
-    if (TREE_CODE (t) != TEMPLATE_DECL)
-      {
-	if (building_stmt_list_p ())
-	  add_stmt (build_stmt (input_location, USING_STMT, t));
-	else
-	  (*debug_hooks->imported_module_or_decl) (t, NULL_TREE, context, false);
-      }
+  for (ovl_iterator iter (t); iter; ++iter)
+    {
+      tree fn = *iter;
+      if (TREE_CODE (fn) != TEMPLATE_DECL)
+	{
+	  if (building_stmt_list_p ())
+	    add_stmt (build_stmt (input_location, USING_STMT, fn));
+	  else
+	    debug_hooks->imported_module_or_decl (fn,
+						  NULL_TREE, context, false);
+	}
+    }
 }
 
 #include "gt-cp-name-lookup.h"
