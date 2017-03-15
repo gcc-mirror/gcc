@@ -4361,59 +4361,6 @@ qualify_lookup (tree val, int flags)
   return true;
 }
 
-/* Given a lookup that returned VAL, decide if we want to ignore it or
-   not based on DECL_ANTICIPATED.  */
-
-bool
-hidden_name_p (tree val)
-{
-  if (DECL_P (val)
-      && DECL_LANG_SPECIFIC (val)
-      && TYPE_FUNCTION_OR_TEMPLATE_DECL_P (val)
-      && DECL_ANTICIPATED (val))
-    return true;
-  if (TREE_CODE (val) == OVERLOAD)
-    {
-      for (tree o = val; o; o = OVL_CHAIN (o))
-	if (!hidden_name_p (OVL_FUNCTION (o)))
-	  return false;
-      return true;
-    }
-  return false;
-}
-
-/* Remove any hidden declarations from a possibly overloaded set
-   of functions.  */
-
-tree
-remove_hidden_names (tree fns)
-{
-  if (!fns)
-    return fns;
-
-  if (DECL_P (fns) && hidden_name_p (fns))
-    fns = NULL_TREE;
-  else if (TREE_CODE (fns) == OVERLOAD)
-    {
-      bool hidden = false;
-
-      for (ovl_iterator iter (fns); !hidden && iter; ++iter)
-	if (hidden_name_p (*iter))
-	  hidden = true;
-      if (hidden)
-	{
-	  tree n = NULL_TREE;
-
-	  for (ovl_iterator iter (fns); iter; ++iter)
-	    if (!hidden_name_p (*iter))
-	      n = ovl_add (n, *iter);
-	  fns = n;
-	}
-    }
-
-  return fns;
-}
-
 /* Suggest alternatives for NAME, an IDENTIFIER_NODE for which name
    lookup failed.  Search through all available namespaces and print out
    possible candidates.  If no exact matches are found, and
@@ -5064,7 +5011,7 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
 
 	if (binding)
 	  {
-	    if (hidden_name_p (binding))
+	    if (TREE_CODE (binding) == TYPE_DECL && hidden_name_p (binding))
 	      {
 		/* A non namespace-scope binding can only be hidden in the
 		   presence of a local class, due to friend declarations.
@@ -5111,7 +5058,6 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
 
 		   So just keep looking for a non-hidden binding.
 		*/
-		gcc_assert (TREE_CODE (binding) == TYPE_DECL);
 		continue;
 	      }
 	    val = binding;
@@ -5869,7 +5815,8 @@ lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
   /* Remove any hidden friend functions from the list of functions
      found so far.  They will be added back by arg_assoc_class as
      appropriate.  */
-  fns = remove_hidden_names (fns);
+  if (fns)
+    fns = remove_hidden_names (fns);
 
   k.name = name;
   k.args = args;

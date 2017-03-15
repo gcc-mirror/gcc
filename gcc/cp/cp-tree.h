@@ -515,6 +515,8 @@ struct ovl_iterator
   void replace (tree fn, unsigned count) const;
 };
 #endif
+bool hidden_name_p (tree);
+tree remove_hidden_names (tree);
 tree ovl_add (tree maybe_ovl, tree fn, int force = 0);
 void ovl_maybe_keep (tree ovl, bool keep);
 tree get_ovl (tree expr, bool want_first = false)

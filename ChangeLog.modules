@@ -1,5 +1,18 @@
 2017-03-15  Nathan Sidwell  <nathan@acm.org>
 
+	Vectorize OVERLOAD part 7
+	gcc/cp/
+	* name-lookup.c (hidden_name_p, remove_hidden_names): Move
+	declarations to ...
+	* cp-tree.h (hidden_name_p, remove_hidden_names): ... here.
+	* call.c (build_new_function_call): Remove hidden pruning.
+	* name-lookup.c (hidden_name_p, remove_hidden_names): Move to
+	tree.c.
+	(lookup_name_real_1): Adjust hidden_name_p call.
+	(lookup_arg_dependent_1): Adjust remove_hidden_names call.
+	* tree.c (hidden_name_p, remove_hidden_names): Moved from
+	name-lookup.h.  Adjust.
+
 	Vectorize OVERLOAD part 6
 	gcc/cp/
 	* cp-tree.h (OVL_TRANSIENT): Rename from OVL_ARG_DEPENDENT.

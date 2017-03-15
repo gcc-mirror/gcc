@@ -2114,6 +2114,50 @@ ovl_maybe_keep (tree ovl, bool keep)
 #endif
 }
 
+/* Given a lookup that returned VAL, decide if we want to ignore it or
+   not based on DECL_ANTICIPATED.  */
+
+bool
+hidden_name_p (tree val)
+{
+  gcc_assert (DECL_P (val));
+  if (DECL_LANG_SPECIFIC (val)
+      && TYPE_FUNCTION_OR_TEMPLATE_DECL_P (val)
+      && DECL_ANTICIPATED (val))
+    return true;
+
+  return false;
+}
+
+/* Remove any hidden declarations from a possibly overloaded set
+   of functions.  */
+
+tree
+remove_hidden_names (tree fns)
+{
+  if (TREE_CODE (fns) == OVERLOAD)
+    {
+      bool hidden = false;
+
+      for (ovl_iterator iter (fns); !hidden && iter; ++iter)
+	if (hidden_name_p (*iter))
+	  hidden = true;
+      if (hidden)
+	{
+	  tree n = NULL_TREE;
+
+	  for (ovl_iterator iter (fns); iter; ++iter)
+	    if (!hidden_name_p (*iter))
+	      n = ovl_add (n, *iter);
+	  fns = n;
+	}
+    }
+  else if (DECL_P (fns) && hidden_name_p (fns))
+    fns = NULL_TREE;
+
+  return fns;
+}
+
 /* Replace the current slot with FN.  Also, the slot being replaced is
    changing from a using declaration to a regular declaration.  */
 
