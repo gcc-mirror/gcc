@@ -796,6 +796,14 @@ perform_member_init (tree member, tree init)
 	   in that case.  */
 	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
 						tf_warning_or_error);
+      if (TREE_CODE (type) == ARRAY_TYPE
+	  && TYPE_DOMAIN (type) == NULL_TREE
+	  && init != NULL_TREE)
+	{
+	  error_at (DECL_SOURCE_LOCATION (current_function_decl),
+		    "member initializer for flexible array member");
+	  inform (DECL_SOURCE_LOCATION (member), "%q#D initialized", member);
+	}
 
       if (init)
 	finish_expr_stmt (cp_build_modify_expr (decl, INIT_EXPR, init,
