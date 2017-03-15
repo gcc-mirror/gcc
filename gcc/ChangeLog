@@ -1,3 +1,10 @@
+2017-03-14  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/79800
+	* gimple-ssa-sprintf.c (format_floating: Add argument.  Handle
+	precision in negative-positive range.
+	(format_floating): Call non-const overload with adjusted precision.
+
 2017-03-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/79947
@@ -9,7 +16,6 @@
 	PR middle-end/80020
 	* builtin-attrs.def (ATTR_ALLOC_SIZE_2_NOTHROW_LIST): New macro.
 	* builtins.def (aligned_alloc): Use it.
-
 
 	PR c/79936
 	* Makefile.in (GTFILES): Add calls.c.
