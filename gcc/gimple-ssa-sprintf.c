@@ -1499,11 +1499,13 @@ format_floating_max (tree type, char spec, HOST_WIDE_INT prec)
 }
 
 /* Return a range representing the minimum and maximum number of bytes
-   that the directive DIR will output for any argument.  This function
-   is used when the directive argument or its value isn't known.  */
+   that the directive DIR will output for any argument.  PREC gives
+   the adjusted precision range to account for negative precisions
+   meaning the default 6.  This function is used when the directive
+   argument or its value isn't known.  */
 
 static fmtresult
-format_floating (const directive &dir)
+format_floating (const directive &dir, const HOST_WIDE_INT prec[2])
 {
   tree type;
 
@@ -1532,8 +1534,8 @@ format_floating (const directive &dir)
   /* The minimum output as determined by flags.  It's always at least 1.
      When plus or space are set the output is preceded by either a sign
      or a space.  */
-  int flagmin = (1 /* for the first digit */
-		 + (dir.get_flag ('+') | dir.get_flag (' ')));
+  unsigned flagmin = (1 /* for the first digit */
+		      + (dir.get_flag ('+') | dir.get_flag (' ')));
 
   /* When the pound flag is set the decimal point is included in output
      regardless of precision.  Whether or not a decimal point is included
@@ -1557,14 +1559,13 @@ format_floating (const directive &dir)
 			 + minprec
 			 + 3 /* p+0 */);
 
-	res.range.max = format_floating_max (type, 'a', dir.prec[1]);
+	res.range.max = format_floating_max (type, 'a', prec[1]);
 	res.range.likely = res.range.min;
 
 	/* The unlikely maximum accounts for the longest multibyte
 	   decimal point character.  */
 	res.range.unlikely = res.range.max;
-	if (dir.prec[0] != dir.prec[1]
-	    || dir.prec[0] == -1 || dir.prec[0] > 0)
+	if (dir.prec[1] > 0)
 	  res.range.unlikely += target_mb_len_max () - 1;
 
 	break;
@@ -1573,23 +1574,18 @@ format_floating (const directive &dir)
     case 'E':
     case 'e':
       {
+	/* Minimum output attributable to precision and, when it's
+	   non-zero, decimal point.  */
+	HOST_WIDE_INT minprec = prec[0] ? prec[0] + !radix : 0;
+
 	/* The minimum output is "[-+]1.234567e+00" regardless
 	   of the value of the actual argument.  */
-	HOST_WIDE_INT minprec = 6 + !radix /* decimal point */;
-	if ((dir.prec[0] < 0 && dir.prec[1] > -1) || dir.prec[0] == 0)
-	  minprec = 0;
-	else if (dir.prec[0] > 0)
-	  minprec = dir.prec[0] + !radix /* decimal point */;
-
 	res.range.min = (flagmin
 			 + radix
 			 + minprec
 			 + 2 /* e+ */ + 2);
-	/* MPFR uses a precision of 16 by default for some reason.
-	   Set it to the C default of 6.  */
-	int maxprec = dir.prec[1] < 0 ? 6 : dir.prec[1];
-	res.range.max = format_floating_max (type, 'e', maxprec);
 
+	res.range.max = format_floating_max (type, 'e', prec[1]);
 	res.range.likely = res.range.min;
 
 	/* The unlikely maximum accounts for the longest multibyte
@@ -1605,21 +1601,19 @@ format_floating (const directive &dir)
     case 'F':
     case 'f':
       {
+	/* Minimum output attributable to precision and, when it's non-zero,
+	   decimal point.  */
+	HOST_WIDE_INT minprec = prec[0] ? prec[0] + !radix : 0;
+
 	/* The lower bound when precision isn't specified is 8 bytes
 	   ("1.23456" since precision is taken to be 6).  When precision
 	   is zero, the lower bound is 1 byte (e.g., "1").  Otherwise,
 	   when precision is greater than zero, then the lower bound
 	   is 2 plus precision (plus flags).  */
-	HOST_WIDE_INT minprec = 0;
-	if (dir.prec[0] < 0)
-	  minprec = dir.prec[1] < 0 ? 6 + !radix /* decimal point */ : 0;
-	else if (dir.prec[0])
-	  minprec = dir.prec[0] + !radix /* decimal point */;
-
 	res.range.min = flagmin + radix + minprec;
 
 	/* Compute the upper bound for -TYPE_MAX.  */
-	res.range.max = format_floating_max (type, 'f', dir.prec[1]);
+	res.range.max = format_floating_max (type, 'f', prec[1]);
 
 	/* The minimum output with unknown precision is a single byte
 	   (e.g., "0") but the more likely output is 3 bytes ("0.0").  */
@@ -1659,6 +1653,8 @@ format_floating (const directive &dir)
 	    else if (maxprec < 0)
 	      maxprec = 5;
 	  }
+	else
+	  maxprec = prec[1];
 
 	res.range.max = format_floating_max (type, spec, maxprec);
 
@@ -1702,9 +1698,6 @@ format_floating (const directive &dir)
 static fmtresult
 format_floating (const directive &dir, tree arg)
 {
-  if (!arg || TREE_CODE (arg) != REAL_CST)
-    return format_floating (dir);
-
   HOST_WIDE_INT prec[] = { dir.prec[0], dir.prec[1] };
 
   /* For an indeterminate precision the lower bound must be assumed
@@ -1766,6 +1759,9 @@ format_floating (const directive &dir, tree arg)
 	  prec[1] = dir.prec[1] < 6 ? 6 : dir.prec[1];
 	}
     }
+
+  if (!arg || TREE_CODE (arg) != REAL_CST)
+    return format_floating (dir, prec);
 
   /* The minimum and maximum number of bytes produced by the directive.  */
   fmtresult res;
