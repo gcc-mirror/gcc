@@ -2713,6 +2713,15 @@ process_alt_operands (int only_alternative)
 
 	      if (MEM_P (op) && offmemok)
 		addr_losers++;
+	      else if (curr_static_id->operand[nop].type == OP_INOUT)
+		{
+		  if (lra_dump_file != NULL)
+		    fprintf
+		      (lra_dump_file,
+		       "            %d Input/Output reload: reject+=%d\n",
+		       nop, LRA_LOSER_COST_FACTOR);
+		  reject += LRA_LOSER_COST_FACTOR;
+		}
 	    }
 
 	  if (early_clobber_p && ! scratch_p)

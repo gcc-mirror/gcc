@@ -1,3 +1,9 @@
+2017-03-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/80017
+	* lra-constraints.c (process_alt_operands): Increase reject for
+	reloading an input/output operand.
+
 2017-03-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/79038
