@@ -1,3 +1,22 @@
+2017-03-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/79956
+	* libgfortran.h (GFC_ASSERT):  New macro.
+	* m4/reshape.m4 (reshape_'rtype_ccode`):  Use GFC_ASSERT
+	to specify that sdim > 0 and rdim > 0.
+	* intrinsic/reshape_generic.c (reshape_internal):  Likweise.
+	* generated/reshape_c10.c: Regenerated.
+	* generated/reshape_c16.c: Regenerated.
+	* generated/reshape_c4.c: Regenerated.
+	* generated/reshape_c8.c: Regenerated.
+	* generated/reshape_i16.c: Regenerated.
+	* generated/reshape_i4.c: Regenerated.
+	* generated/reshape_i8.c: Regenerated.
+	* generated/reshape_r10.c: Regenerated.
+	* generated/reshape_r16.c: Regenerated.
+	* generated/reshape_r4.c: Regenerated.
+	* generated/reshape_r8.c: Regenerated.
+
 2017-03-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/78854
