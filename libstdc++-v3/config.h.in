@@ -454,7 +454,7 @@
 /* Define if S_IFREG is available in <sys/stat.h>. */
 #undef HAVE_S_IFREG
 
-/* Define if S_IFREG is available in <sys/stat.h>. */
+/* Define if S_ISREG is available in <sys/stat.h>. */
 #undef HAVE_S_ISREG
 
 /* Define to 1 if you have the `tanf' function. */

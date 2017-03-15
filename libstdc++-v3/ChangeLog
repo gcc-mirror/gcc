@@ -1,3 +1,11 @@
+2017-03-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_S_ISREG_OR_S_IFREG): Fix typo in
+	comment.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* doc/Makefile.in: Regenerate.
+
 2017-03-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/79162
