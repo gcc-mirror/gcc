@@ -1,3 +1,8 @@
+2017-03-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80019
+	* gcc.target/i386/pr80019.c: New test.
+
 2017-03-15  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/tree-prof/pr66295.c: Removed unused dg-error.
