@@ -1,5 +1,13 @@
 2017-03-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/79511
+	* src/c++11/codecvt.cc (write_utf16_code_point): Don't write 0xffff
+	as a surrogate pair.
+	(__codecvt_utf8_utf16_base<char32_t>::do_in): Use native endianness
+	for internal representation.
+	(__codecvt_utf8_utf16_base<wchar_t>::do_in): Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf8_utf16/79511.cc: New test.
+
 	PR libstdc++/80064
 	* include/bits/stl_heap.h (__is_heap, push_heap, __adjust_heap)
 	(pop_heap, make_heap, sort_heap, is_heap_until, is_heap): Cope with
