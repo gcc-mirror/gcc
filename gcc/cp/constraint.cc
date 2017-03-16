@@ -1280,7 +1280,7 @@ finish_shorthand_constraint (tree decl, tree constr)
      applied to all elements of the parameter pack, then make
      the constraint an expansion. */
   tree tmpl = DECL_TI_TEMPLATE (con);
-  tree check = VAR_P (con) ? tmpl : ovl_add (NULL_TREE, tmpl);
+  tree check = VAR_P (con) ? tmpl : ovl_make (tmpl);
   check = build_concept_check (check, arg, args);
 
   /* Make the check a pack expansion if needed.

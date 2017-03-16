@@ -436,8 +436,6 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
   (((struct tree_overload*)OVERLOAD_CHECK (NODE))->function)
 #define OVL_CHAIN(NODE)      TREE_CHAIN (NODE)
 /* Polymorphic access to FUNCTION and CHAIN.  */
-#define OVL_CURRENT(NODE)	\
-  ((TREE_CODE (NODE) == OVERLOAD) ? OVL_FUNCTION (NODE) : (NODE))
 #define OVL_NEXT(NODE)		\
   ((TREE_CODE (NODE) == OVERLOAD) ? TREE_CHAIN (NODE) : NULL_TREE)
 
@@ -482,9 +480,9 @@ struct ovl_iterator
   }
   tree operator* () const
   {
-    return OVL_CURRENT (ovl);
+    return TREE_CODE (ovl) != OVERLOAD ? ovl : OVL_FUNCTION (ovl);
   }
-  tree &ref ()
+  tree &ref () const
   {
     return OVL_FUNCTION (ovl);
   }
@@ -501,6 +499,7 @@ struct ovl_iterator
 
 bool hidden_name_p (tree);
 tree remove_hidden_names (tree);
+tree ovl_make (tree fn, tree next = NULL_TREE);
 tree ovl_add (tree maybe_ovl, tree fn, int force = 0);
 tree ovl_add_transient (tree maybe_ovl, tree fn);
 void ovl_maybe_keep (tree ovl, bool keep);

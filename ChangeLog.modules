@@ -1,5 +1,13 @@
 2017-03-16  Nathan Sidwell  <nathan@acm.org>
 
+	New OVERLOAD representation part 4
+	gcc/cp/
+	* cp-tree.h (OVL_CURRRENT): Delete.
+	(ovl_make): Declare.
+	* tree.c (ovl_make): New.
+	* constraint.cc (finish_shorthand_constraint): Use ovl_make.
+	* typeck.c (build_x_unary_op): Likewise.
+
 	New OVERLOAD representation part 3
 	gcc/cp/
 	* cp-tree.h: Remove OVLNEW pieces.

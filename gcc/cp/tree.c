@@ -2052,6 +2052,19 @@ build_ref_qualified_type (tree type, cp_ref_qualifier rqual)
   return t;
 }
 
+/* Make a raw overload node containing FN.  */
+
+tree
+ovl_make (tree fn, tree next)
+{
+  tree result = make_node (OVERLOAD);
+  TREE_TYPE (result) = (next || TREE_CODE (fn) == TEMPLATE_DECL
+			? unknown_type_node : TREE_TYPE (fn));
+  OVL_FUNCTION (result) = fn;
+  OVL_CHAIN (result) = next;
+  return result;
+}
+
 /* Add FN into the overload set MAYBE_OVL.  MAYBE_OVL can be NULL, or
    a plain decl.  If MAYBE_OVL is NULL, and FN doesn't require
    wrapping in an overload, we return plain FN.  FORCE is non-zero to
@@ -2191,7 +2204,7 @@ ovl_iterator::replace (tree fn, unsigned count) const
   /* Zap out any cleared slots.  */
   for (tree *slot = &OVL_CHAIN (ovl); --count;)
     {
-      while (OVL_CURRENT (*slot))
+      while (OVL_FUNCTION (*slot))
 	slot = &OVL_CHAIN (*slot);
       *slot = OVL_CHAIN (*slot);
     }
