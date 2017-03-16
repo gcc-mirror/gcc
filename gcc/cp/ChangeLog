@@ -1,5 +1,7 @@
 2017-03-16  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (start_enum): std::byte aliases anything.
+
 	PR c++/79797
 	* constexpr.c (lookup_placeholder): Tweak.
 

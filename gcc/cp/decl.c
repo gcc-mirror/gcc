@@ -14079,6 +14079,12 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 	{
 	  enumtype = cxx_make_type (ENUMERAL_TYPE);
 	  enumtype = pushtag (name, enumtype, /*tag_scope=*/ts_current);
+
+	  /* std::byte aliases anything.  */
+	  if (enumtype != error_mark_node
+	      && TYPE_CONTEXT (enumtype) == std_node
+	      && !strcmp ("byte", TYPE_NAME_STRING (enumtype)))
+	    TYPE_ALIAS_SET (enumtype) = 0;
 	}
       else
 	  enumtype = xref_tag (enum_type, name, /*tag_scope=*/ts_current,
