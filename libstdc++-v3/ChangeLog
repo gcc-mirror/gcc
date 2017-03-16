@@ -1,3 +1,9 @@
+2017-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/67440
+	* python/libstdcxx/v6/printers.py (find_type): Avoid gdb.Type.name
+	for GDB 7.6 compatibility, use gdb.Type.unqualified instead.
+
 2017-03-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement LWG 2857, {variant,optional,any}::emplace should
