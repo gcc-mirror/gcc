@@ -1,3 +1,30 @@
+2017-03-15  Jeff Law  <law@redhat.com>
+	
+	PR tree-optimization/71437
+	* tree-ssa-dom.c (struct cond_equivalence): Moved from here into
+	tree-ssa-scopedtables.
+	(lookup_avail_expr, build_and_record_new_cond): Likewise.
+	(record_conditions, record_cond, vuse_eq): Likewise.
+	(record_edge_info): Adjust to API tweak of record_conditions.
+	(simplify_stmt_for_jump_threading): Similarly for lookup_avail_expr.
+	(record_temporary_equivalences, optimize_stmt): Likewise.
+	(eliminate_redundant_computations): Likewise.
+	(record_equivalences_from_stmt): Likewise.
+	* tree-ssa-scopedtables.c: Include options.h and params.h.
+	(vuse_eq): New function, moved from tree-ssa-dom.c
+	(build_and_record_new_cond): Likewise.
+	(record_conditions): Likewise.  Accept vector of conditions rather
+	than edge_equivalence structure for first argument.
+	for the first argument.
+	(avail_exprs_stack::lookup_avail_expr): New member function, moved
+	from tree-ssa-dom.c.
+	(avail_exprs_stack::record_cond): Likewise.
+	* tree-ssa-scopedtables.h (struct cond_equivalence): Moved here
+	from tree-ssa-dom.c.
+	(avail_exprs_stack): Add new member functions lookup_avail_expr
+	and record_cond.
+	(record_conditions): Declare.
+
 2017-03-15  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/80017
