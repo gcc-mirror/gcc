@@ -1,3 +1,8 @@
+2017-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79797
+	* constexpr.c (lookup_placeholder): Tweak.
+
 2017-03-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80043 - ICE with -fpermissive

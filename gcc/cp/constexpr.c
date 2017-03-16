@@ -3832,13 +3832,16 @@ cxx_eval_switch_expr (const constexpr_ctx *ctx, tree t,
 static tree
 lookup_placeholder (const constexpr_ctx *ctx, bool lval, tree type)
 {
-  if (!ctx || !ctx->ctor || (lval && !ctx->object))
+  if (!ctx)
     return NULL_TREE;
 
   /* We could use ctx->object unconditionally, but using ctx->ctor when we
      can is a minor optimization.  */
-  if (!lval && same_type_p (TREE_TYPE (ctx->ctor), type))
+  if (!lval && ctx->ctor && same_type_p (TREE_TYPE (ctx->ctor), type))
     return ctx->ctor;
+
+  if (!ctx->object)
+    return NULL_TREE;
 
   /* Since an object cannot have a field of its own type, we can search outward
      from ctx->object to find the unique containing object of TYPE.  */
