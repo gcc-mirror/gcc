@@ -916,10 +916,8 @@ gfc_notify_std (int std, const char *gmsgid, ...)
    %L  Takes locus argument
 */
 static bool
-gfc_format_decoder (pretty_printer *pp,
-		    text_info *text, const char *spec,
-		    int precision ATTRIBUTE_UNUSED, bool wide ATTRIBUTE_UNUSED,
-		    bool plus ATTRIBUTE_UNUSED, bool hash ATTRIBUTE_UNUSED)
+gfc_format_decoder (pretty_printer *pp, text_info *text, const char *spec,
+		    int precision, bool wide, bool set_locus, bool hash)
 {
   switch (*spec)
     {
@@ -946,7 +944,11 @@ gfc_format_decoder (pretty_printer *pp,
 	return true;
       }
     default:
-      return false;
+      /* Fall through info the middle-end decoder, as e.g. stor-layout.c
+	 etc. diagnostics can use the FE printer while the FE is still
+	 active.  */
+      return default_tree_printer (pp, text, spec, precision, wide,
+				   set_locus, hash);
     }
 }
 

@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-array.h"
 #include "trans-types.h"
 #include "trans-const.h"
+#include "options.h"
 
 /* Members of the ioparm structure.  */
 
@@ -219,7 +220,12 @@ gfc_build_st_parameter (enum ioparam_type ptype, tree *types)
 	  gcc_unreachable ();
 	}
 
+  /* -Wpadded warnings on these artificially created structures are not
+     helpful; suppress them. */
+  int save_warn_padded = warn_padded;
+  warn_padded = 0;
   gfc_finish_type (t);
+  warn_padded = save_warn_padded;
   st_parameter[ptype].type = t;
 }
 
