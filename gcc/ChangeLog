@@ -1,3 +1,10 @@
+2017-03-16  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/71294
+	* config/rs6000/vsx.md (vsx_splat_<mode>, VSX_D iterator): Allow a
+	SPLAT operation on ISA 2.07 64-bit systems that have direct move,
+	but no MTVSRDD support, by doing MTVSRD and XXPERMDI.
+
 2017-03-16  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/71437
@@ -23,14 +30,14 @@
 	(vrp_finalize): Do not call identify_jump_threads here.
 	(execute_vrp): Do it here instead and call thread_through_all_blocks
 	here too.
-	
+
 	PR tree-optimization/71437
 	* tree-ssa-dom.c (pfn_simplify): Add basic_block argument.  All
 	callers changed.
 	(simplify_stmt_for_jump_threading): Add basic_block argument.  All
 	callers changed.
 	(lhs_of_dominating_assert): Moved from here into tree-vrp.c.
-	(dom_opt_dom_walker::thread_across_edge): Remove 
+	(dom_opt_dom_walker::thread_across_edge): Remove
 	handle_dominating_asserts argument.  All callers changed.
 	(record_temporary_equivalences_from_stmts_at_dest): Corresponding
 	changes.  Remove calls to lhs_of_dominating_assert.  Other
