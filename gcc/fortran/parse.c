@@ -2128,10 +2128,10 @@ gfc_ascii_statement (gfc_statement st)
       p = "!$ACC ROUTINE";
       break;
     case ST_OACC_ATOMIC:
-      p = "!ACC ATOMIC";
+      p = "!$ACC ATOMIC";
       break;
     case ST_OACC_END_ATOMIC:
-      p = "!ACC END ATOMIC";
+      p = "!$ACC END ATOMIC";
       break;
     case ST_OMP_ATOMIC:
       p = "!$OMP ATOMIC";

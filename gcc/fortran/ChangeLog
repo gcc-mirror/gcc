@@ -1,5 +1,12 @@
 2017-03-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/80010
+	* parse.c (gfc_ascii_statement): Use !$ACC for ST_OACC_ATOMIC
+	and ST_OACC_END_ATOMIC, instead of !ACC.
+	* trans-decl.c (finish_oacc_declare): Use !$ACC instead of $!ACC.
+	* openmp.c (gfc_match_oacc_declare, gfc_match_oacc_wait,
+	gfc_resolve_oacc_declare): Likewise.
+
 	PR fortran/79886
 	* error.c (gfc_format_decoder): Rename plus argument to set_locus,
 	remove ATTRIBUTE_UNUSED from all arguments, call default_tree_printer
