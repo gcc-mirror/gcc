@@ -749,11 +749,11 @@
 				    (DF   "to_128") (V2DF  "to_64")])
 
 ;; For certain vector-by-element multiplication instructions we must
-;; constrain the HI cases to use only V0-V15.  This is covered by
+;; constrain the 16-bit cases to use only V0-V15.  This is covered by
 ;; the 'x' constraint.  All other modes may use the 'w' constraint.
 (define_mode_attr h_con [(V2SI "w") (V4SI "w")
 			 (V4HI "x") (V8HI "x")
-			 (V4HF "w") (V8HF "w")
+			 (V4HF "x") (V8HF "x")
 			 (V2SF "w") (V4SF "w")
 			 (V2DF "w") (DF "w")])
 

@@ -1,3 +1,11 @@
+2017-03-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/iterators.md (h_con): Return "x" for V4HF and V8HF.
+	* config/aarch64/aarch64-simd.md (*aarch64_fma4_elt_from_dup<mode>):
+	Use h_con constraint for operand 1.
+	(*aarch64_fnma4_elt_from_dup<mode>): Likewise.
+	(*aarch64_mulx_elt_from_dup<mode>): Likewise for operand 2.
+
 2017-03-15  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/71437
