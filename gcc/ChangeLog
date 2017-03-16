@@ -1,5 +1,9 @@
 2017-03-15  Jeff Law  <law@redhat.com>
-	
+
+	PR tree-optimization/71437
+	* tree-ssa-dom.c (derive_equivalences_from_bit_ior): New function.
+	(record_temporary_equivalences): Use it.
+
 	PR tree-optimization/71437
 	* tree-ssa-dom.c (struct cond_equivalence): Moved from here into
 	tree-ssa-scopedtables.

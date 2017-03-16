@@ -691,6 +691,33 @@ back_propagate_equivalences (tree lhs, edge e,
     BITMAP_FREE (domby);
 }
 
+/* Record NAME has the value zero and if NAME was set from a BIT_IOR_EXPR
+   recurse into both operands recording their values as zero too.  */
+
+static void
+derive_equivalencs_from_bit_ior (tree name, const_and_copies *const_and_copies)
+{
+  if (TREE_CODE (name) == SSA_NAME)
+    {
+      tree value = fold_convert (TREE_TYPE (name), integer_zero_node);
+
+      /* This records the equivalence for the toplevel object.  */
+      record_equality (name, value, const_and_copies);
+
+      /* And we can recurse into each operand to potentially find more
+	 equivalences.  */
+      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+      if (is_gimple_assign (def_stmt)
+	  && gimple_assign_rhs_code (def_stmt) == BIT_IOR_EXPR)
+	{
+	  derive_equivalencs_from_bit_ior (gimple_assign_rhs1 (def_stmt),
+					   const_and_copies);
+	  derive_equivalencs_from_bit_ior (gimple_assign_rhs2 (def_stmt),
+					   const_and_copies);
+	}
+    }
+}
+
 /* Record into CONST_AND_COPIES and AVAIL_EXPRS_STACK any equivalences implied
    by traversing edge E (which are cached in E->aux).
 
@@ -711,7 +738,28 @@ record_temporary_equivalences (edge e,
       /* If we have 0 = COND or 1 = COND equivalences, record them
 	 into our expression hash tables.  */
       for (i = 0; edge_info->cond_equivalences.iterate (i, &eq); ++i)
-	avail_exprs_stack->record_cond (eq);
+	{
+	  avail_exprs_stack->record_cond (eq);
+
+	  /* If the condition is testing that X == 0 is true or X != 0 is false
+	     and X is set from a BIT_IOR_EXPR, then we can record equivalences
+	     for the operands of the BIT_IOR_EXPR (and recurse on those).  */
+	  tree op0 = eq->cond.ops.binary.opnd0;
+	  tree op1 = eq->cond.ops.binary.opnd1;
+	  if (TREE_CODE (op0) == SSA_NAME && integer_zerop (op1))
+	    {
+	      enum tree_code code = eq->cond.ops.binary.op;
+	      if ((code == EQ_EXPR && eq->value == boolean_true_node)
+		  || (code == NE_EXPR && eq->value == boolean_false_node))
+		derive_equivalencs_from_bit_ior (op0, const_and_copies);
+
+	      /* TODO: We could handle BIT_AND_EXPR in a similar fashion
+		 recording that the operands have a nonzero value.  */
+
+	      /* TODO: We can handle more cases here, particularly when OP0 is
+		 known to have a boolean range.  */
+	    }
+	}
 
       tree lhs = edge_info->lhs;
       if (!lhs || TREE_CODE (lhs) != SSA_NAME)
