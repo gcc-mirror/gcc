@@ -1,3 +1,7 @@
+2017-03-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.dg/tree-prof/pr66295.c: Skip unless on an x86 target.
+
 2017-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/80010
