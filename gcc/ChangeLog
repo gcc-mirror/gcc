@@ -1,3 +1,27 @@
+2017-03-16  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/71437
+	* tree-ssa-dom.c (pfn_simplify): Add basic_block argument.  All
+	callers changed.
+	(simplify_stmt_for_jump_threading): Add basic_block argument.  All
+	callers changed.
+	(lhs_of_dominating_assert): Moved from here into tree-vrp.c.
+	(dom_opt_dom_walker::thread_across_edge): Remove 
+	handle_dominating_asserts argument.  All callers changed.
+	(record_temporary_equivalences_from_stmts_at_dest): Corresponding
+	changes.  Remove calls to lhs_of_dominating_assert.  Other
+	uses of handle_dominating_asserts turn into unconditional code
+	(simplify_control_stmt_condition_1): Likewise.
+	(simplify_control_stmt_condition): Likewise.
+	(thread_through_normal_block, thread_across_edge): Likewise.
+	* tree-ssa-threadedge.h (thread_across_edge): Corresponding changes.
+	* tree-vrp.c (lhs_of_dominating_assert): Move here.  Return original
+	object if it is not an SSA_NAME.
+	(simplify_stmt_for_jump_threading): Call lhs_of_dominating_assert
+	before calling into the VRP specific simplifiers.
+	(identify_jump_threads): Remove handle_dominating_asserts
+	argument.
+
 2017-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/79886

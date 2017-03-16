@@ -604,7 +604,8 @@ make_pass_dominator (gcc::context *ctxt)
 static tree
 simplify_stmt_for_jump_threading (gimple *stmt,
 				  gimple *within_stmt ATTRIBUTE_UNUSED,
-				  class avail_exprs_stack *avail_exprs_stack)
+				  class avail_exprs_stack *avail_exprs_stack,
+				  basic_block bb ATTRIBUTE_UNUSED)
 {
   return avail_exprs_stack->lookup_avail_expr (stmt, false, true);
 }
@@ -835,7 +836,7 @@ dom_opt_dom_walker::thread_across_edge (edge e)
 
   /* With all the edge equivalences in the tables, go ahead and attempt
      to thread through E->dest.  */
-  ::thread_across_edge (m_dummy_cond, e, false,
+  ::thread_across_edge (m_dummy_cond, e,
 		        m_const_and_copies, m_avail_exprs_stack,
 		        simplify_stmt_for_jump_threading);
 
