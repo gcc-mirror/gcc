@@ -1,3 +1,8 @@
+2017-03-16  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/71294
+	* g++.dg/pr71294.C: New test.
+
 2017-03-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.dg/tree-prof/pr66295.c: Skip unless on an x86 target.
