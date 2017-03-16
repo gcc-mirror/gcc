@@ -1,5 +1,11 @@
 2017-03-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/80064
+	* include/bits/stl_heap.h (__is_heap, push_heap, __adjust_heap)
+	(pop_heap, make_heap, sort_heap, is_heap_until, is_heap): Cope with
+	invalid instantiations using function types for _Compare argument.
+	* testsuite/25_algorithms/make_heap/80064.cc: New test.
+
 	PR libstdc++/67440
 	* python/libstdcxx/v6/printers.py (find_type): Avoid gdb.Type.name
 	for GDB 7.6 compatibility, use gdb.Type.unqualified instead.
