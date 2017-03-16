@@ -18,7 +18,7 @@
 	checking the return value of emplace.
 	* testsuite/20_util/variant/run.cc: Likewise.
 
-2017-03-15  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
+2017-03-15  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
 
 	PR libstdc++/62045
 	* include/ext/pb_ds/qdetail/binary_heap_/binary_heap_.hpp
@@ -153,7 +153,7 @@
 	instead of is_callable.
 	* testsuite/20_util/is_callable/*: Rename directory and adjust tests
 	to use new traits.
-	* testsuite/20_util/is_notjrow_callable/*: Likewise.
+	* testsuite/20_util/is_nothrow_callable/*: Likewise.
 	* testsuite/20_util/optional/hash.cc: Use is_invocable_v instead of
 	is_callable.
 	* testsuite/20_util/variant/hash.cc: Likewise.
