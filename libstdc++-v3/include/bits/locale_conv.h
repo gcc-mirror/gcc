@@ -81,7 +81,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     && (__outstr.size() - __outchars) < __maxlen);
 
       if (__result == codecvt_base::error)
-	return false;
+	{
+	  __count = __next - __first;
+	  return false;
+	}
 
       if (__result == codecvt_base::noconv)
 	{
