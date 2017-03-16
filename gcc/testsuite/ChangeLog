@@ -1,5 +1,8 @@
 2017-03-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/80010
+	* gfortran.dg/goacc/asyncwait-3.f95: Adjust expected diagnostic.
+
 	PR fortran/79886
 	* gfortran.dg/pr79886.f90: New test.
 

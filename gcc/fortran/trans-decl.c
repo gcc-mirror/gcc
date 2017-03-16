@@ -6133,7 +6133,7 @@ finish_oacc_declare (gfc_namespace *ns, gfc_symbol *sym, bool block)
 	continue;
 
       if (block)
-	gfc_error ("Sorry, $!ACC DECLARE at %L is not allowed "
+	gfc_error ("Sorry, !$ACC DECLARE at %L is not allowed "
 		   "in BLOCK construct", &oc->loc);
 
 

@@ -2059,7 +2059,7 @@ gfc_match_oacc_declare (void)
 	  if (n->u.map_op != OMP_MAP_FORCE_ALLOC
 	      && n->u.map_op != OMP_MAP_FORCE_TO)
 	    {
-	      gfc_error ("Invalid clause in module with $!ACC DECLARE at %L",
+	      gfc_error ("Invalid clause in module with !$ACC DECLARE at %L",
 			 &where);
 	      return MATCH_ERROR;
 	    }
@@ -2069,7 +2069,7 @@ gfc_match_oacc_declare (void)
 
       if (s->attr.use_assoc)
 	{
-	  gfc_error ("Variable is USE-associated with $!ACC DECLARE at %L",
+	  gfc_error ("Variable is USE-associated with !$ACC DECLARE at %L",
 		     &where);
 	  return MATCH_ERROR;
 	}
@@ -2077,7 +2077,7 @@ gfc_match_oacc_declare (void)
       if ((s->attr.dimension || s->attr.codimension)
 	  && s->attr.dummy && s->as->type != AS_EXPLICIT)
 	{
-	  gfc_error ("Assumed-size dummy array with $!ACC DECLARE at %L",
+	  gfc_error ("Assumed-size dummy array with !$ACC DECLARE at %L",
 		     &where);
 	  return MATCH_ERROR;
 	}
@@ -2172,7 +2172,7 @@ gfc_match_oacc_wait (void)
       {
 	if (el->expr == NULL)
 	  {
-	    gfc_error ("Invalid argument to $!ACC WAIT at %L",
+	    gfc_error ("Invalid argument to !$ACC WAIT at %L",
 		       &wait_list->expr->where);
 	    return MATCH_ERROR;
 	  }
@@ -5985,7 +5985,7 @@ gfc_resolve_oacc_declare (gfc_namespace *ns)
 	    if (n->expr && n->expr->ref->type == REF_ARRAY)
 	      {
 		gfc_error ("Array sections: %qs not allowed in"
-			   " $!ACC DECLARE at %L", n->sym->name, &oc->loc);
+			   " !$ACC DECLARE at %L", n->sym->name, &oc->loc);
 		continue;
 	      }
 	  }
