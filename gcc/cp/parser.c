@@ -6029,7 +6029,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 		  if (is_overloaded_fn (tid))
 		    {
 		      tree fns = get_ovl (tid);
-		      if (OVL_SINGLE (fns))
+		      if (OVL_SINGLE_P (fns))
 			tmpl = OVL_FIRST (fns);
 		      error_at (token->location, "function template-id %qD "
 				"in nested-name-specifier", tid);

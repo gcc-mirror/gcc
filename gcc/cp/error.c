@@ -1189,7 +1189,7 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case OVERLOAD:
-      if (!OVL_SINGLE (t))
+      if (!OVL_SINGLE_P (t))
 	{
 	  t = OVL_FIRST (t);
 	  tree scope = ovl_scope (t);

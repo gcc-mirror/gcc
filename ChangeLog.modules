@@ -1,3 +1,11 @@
+2017-03-16  Nathan Sidwell  <nathan@acm.org>
+
+	New OVERLOAD representation part 2
+	gcc/cp/
+	* cp-tree.h (OVL_VIA_USING_P, OVL_TRANSIENT_P, OVL_SINGLE_P): New
+	names.
+	* error.c, name-lookup.c, parser.c, search.c, tree.c: Adjust uses.
+
 2017-03-15  Nathan Sidwell  <nathan@acm.org>
 
 	New OVERLOAD representation part 1

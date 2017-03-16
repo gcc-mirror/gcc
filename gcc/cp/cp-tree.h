@@ -529,14 +529,20 @@ struct ovl_iterator
   ((TREE_CODE (NODE) == OVERLOAD) ? OVL_FUNCTION (NODE) : (NODE))
 #define OVL_NEXT(NODE)		\
   ((TREE_CODE (NODE) == OVERLOAD) ? TREE_CHAIN (NODE) : NULL_TREE)
+
 /* If set, this was imported in a using declaration.   */
-#define OVL_VIA_USING(NODE)	TREE_USED (OVERLOAD_CHECK (NODE))
-/* If set, this OVERLOAD was created for argument-dependent lookup
-   and can be freed afterward.  */
-#define OVL_FIRST(T) OVL_CURRENT (T)
-#define OVL_NAME(T) DECL_NAME (OVL_CURRENT (T))
-#define OVL_SINGLE(T) (!OVL_CHAIN (T))
-#define OVL_HAS_USING(T) OVL_VIA_USING (T)
+#define OVL_VIA_USING_P(NODE)	TREE_USED (OVERLOAD_CHECK (NODE))
+/* If set, this is a transient overload created during lookup (koenig
+   or otherwise).  */
+#define OVL_TRANSIENT_P(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
+
+/* The first function decl of an overload.  */
+#define OVL_FIRST(NODE)						\
+  (TREE_CODE (NODE) != OVERLOAD ? (NODE) : OVL_FUNCTION (NODE))
+/* The name of the overload set.  */
+#define OVL_NAME(NODE) DECL_NAME (OVL_FIRST (NODE))
+/* Whether this overload has a single member.  */
+#define OVL_SINGLE_P(NODE) (!OVL_NEXT (NODE))
 
 struct GTY(()) tree_overload {
   struct tree_common common;
@@ -556,7 +562,7 @@ struct ovl_iterator
   }
   bool via_using_p () const
   {
-    return TREE_CODE (ovl) == OVERLOAD && OVL_VIA_USING (ovl);
+    return TREE_CODE (ovl) == OVERLOAD && OVL_VIA_USING_P (ovl);
   }
   ovl_iterator *operator++ ()
   {

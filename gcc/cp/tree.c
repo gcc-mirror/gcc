@@ -2092,7 +2092,7 @@ ovl_add (tree maybe_ovl, tree fn, int force)
 	TREE_TYPE (maybe_ovl) = unknown_type_node;
       if (force > 0)
 	{
-	  OVL_VIA_USING (result) = true;
+	  OVL_VIA_USING_P (result) = true;
 	  if (!maybe_ovl)
 	    /* A single decl brought in via using has a known type.  */
 	    TREE_TYPE (result) = TREE_TYPE (fn);
@@ -2213,7 +2213,7 @@ ovl_iterator::replace (tree fn, unsigned count) const
 #else
   OVL_FUNCTION (ovl) = fn;
   TREE_TYPE (ovl) = unknown_type_node;
-  OVL_VIA_USING (ovl) = false;
+  OVL_VIA_USING_P (ovl) = false;
   /* Zap out any cleared slots.  */
   for (tree *slot = &OVL_CHAIN (ovl); --count;)
     {
@@ -2261,7 +2261,7 @@ is_overloaded_fn (tree x)
     x = TREE_OPERAND (x, 0);
 
   if (DECL_FUNCTION_TEMPLATE_P (OVL_FIRST (x))
-      || (TREE_CODE (x) == OVERLOAD && !OVL_SINGLE (x)))
+      || (TREE_CODE (x) == OVERLOAD && !OVL_SINGLE_P (x)))
     return 2;
 
   return (TREE_CODE (x) == FUNCTION_DECL
@@ -2313,7 +2313,7 @@ ovl_scope (tree ovl)
   /* Skip using-declarations.  */
   if (TREE_CODE (ovl) == OVERLOAD)
     {
-      while (OVL_VIA_USING (ovl) && OVL_CHAIN (ovl))
+      while (OVL_VIA_USING_P (ovl) && OVL_CHAIN (ovl))
 	ovl = OVL_CHAIN (ovl);
       ovl = OVL_FUNCTION (ovl);
     }

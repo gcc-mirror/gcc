@@ -3436,7 +3436,7 @@ set_namespace_binding_1 (tree name, tree scope, tree val)
     scope = global_namespace;
   b = binding_for_name (NAMESPACE_LEVEL (scope), name);
   if (!b->value
-      || (TREE_CODE (val) == OVERLOAD && !OVL_SINGLE (val))
+      || (TREE_CODE (val) == OVERLOAD && !OVL_SINGLE_P (val))
       || val == error_mark_node)
     b->value = val;
   else
