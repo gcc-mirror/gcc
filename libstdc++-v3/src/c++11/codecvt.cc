@@ -315,7 +315,7 @@ namespace
   {
     static_assert(sizeof(C) >= 2, "a code unit must be at least 16-bit");
 
-    if (codepoint < max_single_utf16_unit)
+    if (codepoint <= max_single_utf16_unit)
       {
 	if (to.size() > 0)
 	  {
@@ -1341,7 +1341,11 @@ do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
 {
   range<const char> from{ __from, __from_end };
   range<char32_t> to{ __to, __to_end };
-  auto res = utf16_in(from, to, _M_maxcode, _M_mode);
+  codecvt_mode mode = codecvt_mode(_M_mode & (consume_header|generate_header));
+#if __BYTE_ORDER__ != __ORDER_BIG_ENDIAN__
+  mode = codecvt_mode(mode | little_endian);
+#endif
+  auto res = utf16_in(from, to, _M_maxcode, mode);
   __from_next = from.next;
   __to_next = to.next;
   return res;
@@ -1411,7 +1415,11 @@ do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
 {
   range<const char> from{ __from, __from_end };
   range<wchar_t> to{ __to, __to_end };
-  auto res = utf16_in(from, to, _M_maxcode, _M_mode);
+  codecvt_mode mode = codecvt_mode(_M_mode & (consume_header|generate_header));
+#if __BYTE_ORDER__ != __ORDER_BIG_ENDIAN__
+  mode = codecvt_mode(mode | little_endian);
+#endif
+  auto res = utf16_in(from, to, _M_maxcode, mode);
   __from_next = from.next;
   __to_next = to.next;
   return res;
