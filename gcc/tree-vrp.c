@@ -10749,6 +10749,33 @@ vrp_fold_stmt (gimple_stmt_iterator *si)
 /* Unwindable const/copy equivalences.  */
 const_and_copies *equiv_stack;
 
+/* Return the LHS of any ASSERT_EXPR where OP appears as the first
+   argument to the ASSERT_EXPR and in which the ASSERT_EXPR dominates
+   BB.  If no such ASSERT_EXPR is found, return OP.  */
+
+static tree
+lhs_of_dominating_assert (tree op, basic_block bb, gimple *stmt)
+{
+  imm_use_iterator imm_iter;
+  gimple *use_stmt;
+  use_operand_p use_p;
+
+  if (TREE_CODE (op) == SSA_NAME)
+    {
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, op)
+	{
+	  use_stmt = USE_STMT (use_p);
+	  if (use_stmt != stmt
+	      && gimple_assign_single_p (use_stmt)
+	      && TREE_CODE (gimple_assign_rhs1 (use_stmt)) == ASSERT_EXPR
+	      && TREE_OPERAND (gimple_assign_rhs1 (use_stmt), 0) == op
+	      && dominated_by_p (CDI_DOMINATORS, bb, gimple_bb (use_stmt)))
+	    return gimple_assign_lhs (use_stmt);
+	}
+    }
+  return op;
+}
+
 /* A trivial wrapper so that we can present the generic jump threading
    code with a simple API for simplifying statements.  STMT is the
    statement we want to simplify, WITHIN_STMT provides the location
@@ -10756,13 +10783,20 @@ const_and_copies *equiv_stack;
 
 static tree
 simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
-    class avail_exprs_stack *avail_exprs_stack ATTRIBUTE_UNUSED)
+    class avail_exprs_stack *avail_exprs_stack ATTRIBUTE_UNUSED,
+    basic_block bb)
 {
   if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
-    return vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
-				     gimple_cond_lhs (cond_stmt),
-				     gimple_cond_rhs (cond_stmt),
-				     within_stmt);
+    {
+      tree op0 = gimple_cond_lhs (cond_stmt);
+      op0 = lhs_of_dominating_assert (op0, bb, stmt);
+
+      tree op1 = gimple_cond_rhs (cond_stmt);
+      op1 = lhs_of_dominating_assert (op1, bb, stmt);
+
+      return vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
+				       op0, op1, within_stmt);
+    }
 
   /* We simplify a switch statement by trying to determine which case label
      will be taken.  If we are successful then we return the corresponding
@@ -10772,6 +10806,8 @@ simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
       tree op = gimple_switch_index (switch_stmt);
       if (TREE_CODE (op) != SSA_NAME)
 	return NULL_TREE;
+
+      op = lhs_of_dominating_assert (op, bb, stmt);
 
       value_range *vr = get_value_range (op);
       if ((vr->type != VR_RANGE && vr->type != VR_ANTI_RANGE)
@@ -10948,7 +10984,7 @@ identify_jump_threads (void)
 	      if (e->flags & (EDGE_IGNORE | EDGE_COMPLEX))
 		continue;
 
-	      thread_across_edge (dummy, e, true, equiv_stack, NULL,
+	      thread_across_edge (dummy, e, equiv_stack, NULL,
 				  simplify_stmt_for_jump_threading);
 	    }
 	}
