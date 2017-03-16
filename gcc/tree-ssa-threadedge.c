@@ -1100,15 +1100,17 @@ thread_through_normal_block (edge e,
 
    SIMPLIFY is a pass-specific function used to simplify statements.  */
 
-void
+static void
 thread_across_edge (gcond *dummy_cond,
 		    edge e,
 		    class const_and_copies *const_and_copies,
 		    class avail_exprs_stack *avail_exprs_stack,
-		    tree (*simplify) (gimple *, gimple *,
-				      class avail_exprs_stack *, basic_block))
+		    pfn_simplify simplify)
 {
   bitmap visited = BITMAP_ALLOC (NULL);
+
+  const_and_copies->push_marker ();
+  avail_exprs_stack->push_marker ();
 
   stmt_count = 0;
 
@@ -1132,6 +1134,7 @@ thread_across_edge (gcond *dummy_cond,
       propagate_threaded_block_debug_into (path->last ()->e->dest,
 					   e->dest);
       const_and_copies->pop_to_marker ();
+      avail_exprs_stack->pop_to_marker ();
       BITMAP_FREE (visited);
       register_jump_thread (path);
       return;
@@ -1156,6 +1159,7 @@ thread_across_edge (gcond *dummy_cond,
 	{
 	  BITMAP_FREE (visited);
 	  const_and_copies->pop_to_marker ();
+          avail_exprs_stack->pop_to_marker ();
 	  return;
 	}
     }
@@ -1182,6 +1186,7 @@ thread_across_edge (gcond *dummy_cond,
       if (taken_edge->flags & EDGE_ABNORMAL)
 	{
 	  const_and_copies->pop_to_marker ();
+          avail_exprs_stack->pop_to_marker ();
 	  BITMAP_FREE (visited);
 	  return;
 	}
@@ -1196,8 +1201,7 @@ thread_across_edge (gcond *dummy_cond,
 	/* Push a fresh marker so we can unwind the equivalences created
 	   for each of E->dest's successors.  */
 	const_and_copies->push_marker ();
-	if (avail_exprs_stack)
-	  avail_exprs_stack->push_marker ();
+	avail_exprs_stack->push_marker ();
 
 	/* Avoid threading to any block we have already visited.  */
 	bitmap_clear (visited);
@@ -1240,12 +1244,71 @@ thread_across_edge (gcond *dummy_cond,
 	  delete_jump_thread_path (path);
 
 	/* And unwind the equivalence table.  */
-	if (avail_exprs_stack)
-	  avail_exprs_stack->pop_to_marker ();
+	avail_exprs_stack->pop_to_marker ();
 	const_and_copies->pop_to_marker ();
       }
     BITMAP_FREE (visited);
   }
 
   const_and_copies->pop_to_marker ();
+  avail_exprs_stack->pop_to_marker ();
+}
+
+/* Examine the outgoing edges from BB and conditionally
+   try to thread them.
+
+   DUMMY_COND is a shared cond_expr used by condition simplification as scratch,
+   to avoid allocating memory.
+
+   CONST_AND_COPIES is used to undo temporary equivalences created during the
+   walk of E->dest.
+
+   The available expression table is referenced vai AVAIL_EXPRS_STACK.
+
+   SIMPLIFY is a pass-specific function used to simplify statements.  */
+
+void
+thread_outgoing_edges (basic_block bb, gcond *dummy_cond,
+		       class const_and_copies *const_and_copies,
+		       class avail_exprs_stack *avail_exprs_stack,
+		       tree (*simplify) (gimple *, gimple *,
+					 class avail_exprs_stack *,
+					 basic_block))
+{
+  int flags = (EDGE_IGNORE | EDGE_COMPLEX | EDGE_ABNORMAL);
+  gimple *last;
+
+  /* If we have an outgoing edge to a block with multiple incoming and
+     outgoing edges, then we may be able to thread the edge, i.e., we
+     may be able to statically determine which of the outgoing edges
+     will be traversed when the incoming edge from BB is traversed.  */
+  if (single_succ_p (bb)
+      && (single_succ_edge (bb)->flags & flags) == 0
+      && potentially_threadable_block (single_succ (bb)))
+    {
+      thread_across_edge (dummy_cond, single_succ_edge (bb),
+			  const_and_copies, avail_exprs_stack,
+			  simplify);
+    }
+  else if ((last = last_stmt (bb))
+	   && gimple_code (last) == GIMPLE_COND
+	   && EDGE_COUNT (bb->succs) == 2
+	   && (EDGE_SUCC (bb, 0)->flags & flags) == 0
+	   && (EDGE_SUCC (bb, 1)->flags & flags) == 0)
+    {
+      edge true_edge, false_edge;
+
+      extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
+
+      /* Only try to thread the edge if it reaches a target block with
+	 more than one predecessor and more than one successor.  */
+      if (potentially_threadable_block (true_edge->dest))
+	thread_across_edge (dummy_cond, true_edge,
+			    const_and_copies, avail_exprs_stack, simplify);
+
+      /* Similarly for the ELSE arm.  */
+      if (potentially_threadable_block (false_edge->dest))
+	thread_across_edge (dummy_cond, false_edge,
+			    const_and_copies, avail_exprs_stack, simplify);
+    }
 }

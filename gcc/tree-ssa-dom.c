@@ -350,7 +350,6 @@ public:
   virtual void after_dom_children (basic_block);
 
 private:
-  void thread_across_edge (edge);
 
   /* Unwindable equivalences, both const/copy and expression varieties.  */
   class const_and_copies *m_const_and_copies;
@@ -816,39 +815,6 @@ record_temporary_equivalences (edge e,
     }
 }
 
-/* Wrapper for common code to attempt to thread an edge.  For example,
-   it handles lazily building the dummy condition and the bookkeeping
-   when jump threading is successful.  */
-
-void
-dom_opt_dom_walker::thread_across_edge (edge e)
-{
-  if (! m_dummy_cond)
-    m_dummy_cond =
-        gimple_build_cond (NE_EXPR,
-                           integer_zero_node, integer_zero_node,
-                           NULL, NULL);
-
-  /* Push a marker on both stacks so we can unwind the tables back to their
-     current state.  */
-  m_avail_exprs_stack->push_marker ();
-  m_const_and_copies->push_marker ();
-
-  /* With all the edge equivalences in the tables, go ahead and attempt
-     to thread through E->dest.  */
-  ::thread_across_edge (m_dummy_cond, e,
-		        m_const_and_copies, m_avail_exprs_stack,
-		        simplify_stmt_for_jump_threading);
-
-  /* And restore the various tables to their state before
-     we threaded this edge.
-
-     XXX The code in tree-ssa-threadedge.c will restore the state of
-     the const_and_copies table.  We we just have to restore the expression
-     table.  */
-  m_avail_exprs_stack->pop_to_marker ();
-}
-
 /* PHI nodes can create equivalences too.
 
    Ignoring any alternatives which are the same as the result, if
@@ -1224,38 +1190,13 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
 void
 dom_opt_dom_walker::after_dom_children (basic_block bb)
 {
-  gimple *last;
+  if (! m_dummy_cond)
+    m_dummy_cond = gimple_build_cond (NE_EXPR, integer_zero_node,
+				      integer_zero_node, NULL, NULL);
 
-  /* If we have an outgoing edge to a block with multiple incoming and
-     outgoing edges, then we may be able to thread the edge, i.e., we
-     may be able to statically determine which of the outgoing edges
-     will be traversed when the incoming edge from BB is traversed.  */
-  if (single_succ_p (bb)
-      && (single_succ_edge (bb)->flags & EDGE_ABNORMAL) == 0
-      && potentially_threadable_block (single_succ (bb)))
-    {
-      thread_across_edge (single_succ_edge (bb));
-    }
-  else if ((last = last_stmt (bb))
-	   && gimple_code (last) == GIMPLE_COND
-	   && EDGE_COUNT (bb->succs) == 2
-	   && (EDGE_SUCC (bb, 0)->flags & EDGE_ABNORMAL) == 0
-	   && (EDGE_SUCC (bb, 1)->flags & EDGE_ABNORMAL) == 0)
-    {
-      edge true_edge, false_edge;
-
-      extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
-
-      /* Only try to thread the edge if it reaches a target block with
-	 more than one predecessor and more than one successor.  */
-      if (potentially_threadable_block (true_edge->dest))
-	thread_across_edge (true_edge);
-
-      /* Similarly for the ELSE arm.  */
-      if (potentially_threadable_block (false_edge->dest))
-	thread_across_edge (false_edge);
-
-    }
+  thread_outgoing_edges (bb, m_dummy_cond, m_const_and_copies,
+			 m_avail_exprs_stack,
+			 simplify_stmt_for_jump_threading);
 
   /* These remove expressions local to BB from the tables.  */
   m_avail_exprs_stack->pop_to_marker ();
