@@ -1,3 +1,13 @@
+2017-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/79886
+	* error.c (gfc_format_decoder): Rename plus argument to set_locus,
+	remove ATTRIBUTE_UNUSED from all arguments, call default_tree_printer
+	if not a Fortran specific spec.
+	* trans-io.c: Include options.h.
+	(gfc_build_st_parameter): Temporarily disable -Wpadded around layout
+	of artificial IO data structures.
+
 2017-03-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR fortran/79860

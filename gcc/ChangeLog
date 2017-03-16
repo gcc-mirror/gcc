@@ -1,3 +1,9 @@
+2017-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/79886
+	* tree-diagnostic.c (default_tree_printer): No longer static.
+	* tree-diagnostic.h (default_tree_printer): New prototype.
+
 2017-03-16  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov<mode>)
