@@ -2071,63 +2071,31 @@ ovl_make (tree fn, tree next)
    force wrapping, and >0 to indicate via a using declaration.  */
 
 tree
-ovl_add (tree maybe_ovl, tree fn, int force)
+ovl_add (tree maybe_ovl, tree fn, int using_p)
 {
   tree result;
   if (maybe_ovl && TREE_CODE (maybe_ovl) != OVERLOAD)
-    {
-      /* Don't chain to a non-overload.  */
-      result = make_node (OVERLOAD);
-      TREE_TYPE (result) = unknown_type_node;
-      OVL_FUNCTION (result) = maybe_ovl;
-      maybe_ovl = result;
-    }
+    /* Don't chain to a non-overload.  */
+    maybe_ovl = ovl_make (maybe_ovl);
+
   result = fn;
-  if (maybe_ovl || force || TREE_CODE (fn) == TEMPLATE_DECL)
+  if (maybe_ovl || using_p || TREE_CODE (fn) == TEMPLATE_DECL)
     {
-      result = make_node (OVERLOAD);
-      TREE_TYPE (result) = unknown_type_node;
-      if (maybe_ovl)
-	TREE_TYPE (maybe_ovl) = unknown_type_node;
-      if (force > 0)
-	{
-	  OVL_VIA_USING_P (result) = true;
-	  if (!maybe_ovl)
-	    /* A single decl brought in via using has a known type.  */
-	    TREE_TYPE (result) = TREE_TYPE (fn);
-	}
-      OVL_FUNCTION (result) = fn;
-      TREE_CHAIN (result) = maybe_ovl;
+      result = ovl_make (fn, maybe_ovl);
+      OVL_VIA_USING_P (result) = using_p > 0;
     }
   return result;
 }
 
-/* Add FN into a transient overload set.  */
+/* Add FN into a transient overload set.  The existing set need not
+   be transient.  */
 
 tree
 ovl_add_transient (tree maybe_ovl, tree fn)
 {
-  tree result;
-  if (maybe_ovl && TREE_CODE (maybe_ovl) != OVERLOAD)
-    {
-      /* Don't chain to a non-overload.  */
-      result = make_node (OVERLOAD);
-      OVL_TRANSIENT_P (result) = true;
-      TREE_TYPE (result) = unknown_type_node;
-      OVL_FUNCTION (result) = maybe_ovl;
-      maybe_ovl = result;
-    }
-  result = fn;
-  if (maybe_ovl || TREE_CODE (fn) == TEMPLATE_DECL)
-    {
-      result = make_node (OVERLOAD);
-      OVL_TRANSIENT_P (result) = true;
-      TREE_TYPE (result) = unknown_type_node;
-      if (maybe_ovl)
-	TREE_TYPE (maybe_ovl) = unknown_type_node;
-      OVL_FUNCTION (result) = fn;
-      TREE_CHAIN (result) = maybe_ovl;
-    }
+  tree result = ovl_add (maybe_ovl, fn, false);
+  if (TREE_CODE (result) == OVERLOAD)
+    OVL_TRANSIENT_P (result) = true;
   return result;
 }
 

@@ -495,18 +495,6 @@ struct ovl_iterator
   void replace (tree fn, unsigned count) const;
 };
 
-bool hidden_name_p (tree);
-tree remove_hidden_names (tree);
-tree ovl_make (tree fn, tree next = NULL_TREE);
-tree ovl_add (tree maybe_ovl, tree fn, int force = 0);
-tree ovl_add_transient (tree maybe_ovl, tree fn);
-void ovl_maybe_keep (tree ovl, bool keep);
-tree get_ovl (tree expr, bool want_first = false)
-#ifndef ENABLE_TREE_CHECKING
-  ATTRIBUTE_PURE
-#endif
-  ;
-
 struct GTY(()) tree_template_decl {
   struct tree_decl_common common;
   tree arguments;
@@ -6724,7 +6712,19 @@ extern tree hash_tree_cons			(tree, tree, tree);
 extern tree hash_tree_chain			(tree, tree);
 extern tree build_qualified_name		(tree, tree, tree, bool);
 extern tree build_ref_qualified_type		(tree, cp_ref_qualifier);
+extern bool hidden_name_p (tree);
+extern tree remove_hidden_names (tree);
+extern tree ovl_make (tree fn, tree next = NULL_TREE);
+extern tree ovl_add (tree maybe_ovl, tree fn, int force = 0);
+extern tree ovl_add_transient (tree maybe_ovl, tree fn);
+extern void ovl_maybe_keep (tree ovl, bool keep);
+extern tree get_ovl (tree expr, bool want_first = false)
+#ifndef ENABLE_TREE_CHECKING
+  ATTRIBUTE_PURE
+#endif
+  ;
 extern int is_overloaded_fn			(tree);
+extern bool really_overloaded_fn		(tree);
 extern tree dependent_name			(tree);
 extern tree ovl_scope				(tree);
 extern const char *cxx_printable_name		(tree, int);
@@ -6743,7 +6743,6 @@ extern bool decl_anon_ns_mem_p			(const_tree);
 extern tree lvalue_type				(tree);
 extern tree error_type				(tree);
 extern int varargs_function_p			(const_tree);
-extern bool really_overloaded_fn		(tree);
 extern bool cp_tree_equal			(tree, tree);
 extern tree no_linkage_check			(tree, bool);
 extern void debug_binfo				(tree);

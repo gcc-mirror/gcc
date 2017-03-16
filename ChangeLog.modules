@@ -1,5 +1,11 @@
 2017-03-16  Nathan Sidwell  <nathan@acm.org>
 
+	New OVERLOAD representation part 6
+	gcc/cp/
+	* cp-tree.h: Move ovl handling fns to original location.
+	* tree.c (ovl_add): Use ovl_make.
+	(ovl_add_transient): Use ovl_add.
+
 	New OVERLOAD representation part 5
 	gcc/cp/
 	* cp-tree.h (OVL_NEXT): Delete. Update uses.
