@@ -1217,7 +1217,10 @@ do_out(state_type&, const intern_type* __from, const intern_type* __from_end,
        extern_type* __to, extern_type* __to_end,
        extern_type*& __to_next) const
 {
-  range<char> to{ __to, __to_end };
+  range<char16_t> to{
+    reinterpret_cast<char16_t*>(__to),
+    reinterpret_cast<char16_t*>(__to_end)
+  };
 #if __SIZEOF_WCHAR_T__ == 2
   range<const char16_t> from{
     reinterpret_cast<const char16_t*>(__from),
@@ -1234,7 +1237,7 @@ do_out(state_type&, const intern_type* __from, const intern_type* __from_end,
   return codecvt_base::error;
 #endif
   __from_next = reinterpret_cast<const wchar_t*>(from.next);
-  __to_next = to.next;
+  __to_next = reinterpret_cast<char*>(to.next);
   return res;
 }
 
@@ -1254,7 +1257,10 @@ do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
       intern_type* __to, intern_type* __to_end,
       intern_type*& __to_next) const
 {
-  range<const char> from{ __from, __from_end };
+  range<const char16_t> from{
+    reinterpret_cast<const char16_t*>(__from),
+    reinterpret_cast<const char16_t*>(__from_end)
+  };
 #if __SIZEOF_WCHAR_T__ == 2
   range<char16_t> to{
     reinterpret_cast<char16_t*>(__to),
@@ -1270,7 +1276,7 @@ do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
 #else
   return codecvt_base::error;
 #endif
-  __from_next = from.next;
+  __from_next = reinterpret_cast<const char*>(from.next);
   __to_next = reinterpret_cast<wchar_t*>(to.next);
   return res;
 }
