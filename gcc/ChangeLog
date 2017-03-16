@@ -1,6 +1,30 @@
 2017-03-16  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/71437
+	* tree-ssa-dom.c (dom_opt_dom_walker): Remove thread_across_edge
+	member function.  Implementation moved into after_dom_children
+	member function and into the threader's thread_outgoing_edges
+	function.
+	(dom_opt_dom_walker::after_dom_children): Simplify by moving
+	some code into new thread_outgoing_edges.
+	* tree-ssa-threadedge.c (thread_across_edge): Make static and simplify
+	definition.  Simplify marker handling (do it here).   Assume we always
+	have the available expression and the const/copies tables.
+	(thread_outgoing_edges): New function extracted from tree-ssa-dom.c
+	and tree-vrp.c
+	* tree-ssa-threadedge.h (thread_outgoing_edges): Declare.
+	* tree-vrp.c (equiv_stack): No longer file scoped.
+	(vrp_dom_walker): New class.
+	(vrp_dom_walker::before_dom_children): New member function.
+	(vrp_dom_walker::after_dom_children): Likewise.
+	(identify_jump_threads):  Setup domwalker.  Use it rather than
+	walking edges in a random order by hand.  Simplify setup/finalization.
+	(finalize_jump_threads): Remove.
+	(vrp_finalize): Do not call identify_jump_threads here.
+	(execute_vrp): Do it here instead and call thread_through_all_blocks
+	here too.
+	
+	PR tree-optimization/71437
 	* tree-ssa-dom.c (pfn_simplify): Add basic_block argument.  All
 	callers changed.
 	(simplify_stmt_for_jump_threading): Add basic_block argument.  All
