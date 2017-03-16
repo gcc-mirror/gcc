@@ -1,5 +1,17 @@
 2017-03-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++11/codecvt.cc (codecvt<char16_t, char, mbstate_t>)
+	(codecvt<char32_t, char, mbstate_t>, __codecvt_utf8_base<char16_t>)
+	(__codecvt_utf8_base<char32_t>, __codecvt_utf8_base<wchar_t>)
+	(__codecvt_utf16_base<char16_t>, __codecvt_utf16_base<char32_t>)
+	(__codecvt_utf16_base<wchar_t>, __codecvt_utf8_utf16_base<char16_t>)
+	(__codecvt_utf8_utf16_base<char32_t>)
+	(__codecvt_utf8_utf16_base<wchar_t>): Fix do_encoding() and
+	do_max_length() return values.
+	* testsuite/22_locale/codecvt/codecvt_utf16/members.cc: New test.
+	* testsuite/22_locale/codecvt/codecvt_utf8/members.cc: New test.
+	* testsuite/22_locale/codecvt/codecvt_utf8_utf16/members.cc: New test.
+
 	PR libstdc++/79980
 	* include/bits/locale_conv.h (__do_str_codecvt): Set __count on
 	error path.
