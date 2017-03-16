@@ -34,7 +34,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // The standard doesn't define these operators, which is annoying.
   static underlying_type<codecvt_mode>::type
   to_integer(codecvt_mode m)
-  { return static_cast<mode_t>(m); }
+  { return static_cast<underlying_type<codecvt_mode>::type>(m); }
 
   static codecvt_mode& operator&=(codecvt_mode& m, codecvt_mode n)
   { return m = codecvt_mode(to_integer(m) & to_integer(n)); }

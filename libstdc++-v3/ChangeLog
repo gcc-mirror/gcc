@@ -1,5 +1,8 @@
 2017-03-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/79980
+	* src/c++11/codecvt.cc (to_integer(codecvt_mode)): Fix target type.
+
 	PR libstdc++/80041
 	* src/c++11/codecvt.cc (__codecvt_utf16_base<wchar_t>::do_out)
 	(__codecvt_utf16_base<wchar_t>::do_in): Convert char arguments to
