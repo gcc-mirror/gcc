@@ -431,95 +431,6 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
     && MAIN_NAME_P (DECL_NAME (NODE))			\
     && flag_hosted)
 
-#define OVL_TRANSIENT(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
-//#define OVLNEW 1
-#ifdef OVLNEW // New overloads
-struct GTY(()) tree_overload_new
-{
-  struct tree_typed typed;
-  /* Decls via using are at the end of the vector.  */
-  tree GTY((length ("OVL_LENGTH ((tree)&%h)"))) elts[1];
-};
-/* base and clique store length and num usings.  Alloc is implicit
-   power of 2 >= LENGTH.  */
-#define OVL_LENGTH(NODE) (OVERLOAD_CHECK(NODE)->base.u.dependence_info.base)
-#define OVL_USINGS(NODE) (OVERLOAD_CHECK(NODE)->base.u.dependence_info.clique)
-#if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
-void tree_ovl_elt_check_failed (int, int,
-		    const char *__f, int __l, const char *__g)
-    ATTRIBUTE_NORETURN;
-inline tree &
-tree_ovl_elt_check (tree __n, int __i,
-		    const char *__f, int __l, const char *__g)
-{
-  if (TREE_CODE (__n) != OVERLOAD)
-    tree_check_failed (__n, __f, __l, __g, OVERLOAD, 0);
-  if (__i < 0 || __i >= __n->base.u.dependence_info.base)
-    tree_ovl_elt_check_failed (__i, __n->base.u.dependence_info.base,
-			       __f, __l, __g);
-  return ((struct tree_overload*)__n)->elts[__i];
-}
-#define OVL_ELT(NODE, I) \
-  (tree_ovl_elt_check (NODE, I, __FILE__, __LINE__, __FUNCTION__))
-#else
-#define OVL_ELT(NODE, I) \
-  (((struct tree_overload*)OVERLOAD_CHECK (NODE))->elts[I])
-#endif
-#define OVL_FIRST(NODE) \
-  (TREE_CODE (NODE) != OVERLOAD ? NODE : OVL_ELT ((NODE), 0))
-#define OVL_NAME(NODE) DECL_NAME (OVL_FIRST (NODE))
-#define OVL_SINGLE(NODE) \
-  (TREE_CODE (NODE) != OVERLOAD || OVL_LENGTH (NODE) == 1)
-#define OVL_HAS_USING(NODE) TREE_USED (OVERLOAD_CHECK (NODE))
-#define OVL_HAS_HIDDEN(NODE) TREE_PRIVATE (OVERLOAD_CHECK (NODE))
-
-/* Iterator for a one-dimensional overload set.  We'll add a different
-   one for potentially 2 dimensionl sets. */
-struct ovl_iterator 
-{
-  tree ovl;
-  int inner;
-
-  ovl_iterator (tree o)
-  :ovl (o), inner (0) {}
-
-  operator bool () const
-  {
-    return ovl;
-  }
-  bool via_using_p () const
-  {
-    return (TREE_CODE (ovl) == OVERLOAD
-	    && OVL_LENGTH (ovl) - OVL_USINGS (ovl) <= inner);
-  }
-  ovl_iterator *operator++ ()
-  {
-    if (TREE_CODE (ovl) != OVERLOAD)
-      ovl = NULL_TREE;
-    else if (++inner == OVL_LENGTH (ovl))
-      ovl = NULL_TREE;
-    return this;
-  }
-  tree operator* () const
-  {
-    return TREE_CODE (ovl) != OVERLOAD ? ovl : ref ();
-  }
-  tree &ref () const
-  {
-    return OVL_ELT (ovl, inner);
-  }
-  unsigned replace (ovl_iterator &stash, unsigned count) const
-  {
-    if (count)
-      ref () = NULL_TREE;
-    else
-      stash = *this;
-    return count++;
-  }
-  void replace (tree fn, unsigned count) const;
-};
-
-#else // old overloads
 /* The overloaded FUNCTION_DECL.  */
 #define OVL_FUNCTION(NODE) \
   (((struct tree_overload*)OVERLOAD_CHECK (NODE))->function)
@@ -587,7 +498,7 @@ struct ovl_iterator
   }
   void replace (tree fn, unsigned count) const;
 };
-#endif
+
 bool hidden_name_p (tree);
 tree remove_hidden_names (tree);
 tree ovl_add (tree maybe_ovl, tree fn, int force = 0);

@@ -1,5 +1,10 @@
 2017-03-16  Nathan Sidwell  <nathan@acm.org>
 
+	New OVERLOAD representation part 3
+	gcc/cp/
+	* cp-tree.h: Remove OVLNEW pieces.
+	* tree.c: Likewise.
+
 	New OVERLOAD representation part 2
 	gcc/cp/
 	* cp-tree.h (OVL_VIA_USING_P, OVL_TRANSIENT_P, OVL_SINGLE_P): New

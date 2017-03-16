@@ -2052,17 +2052,6 @@ build_ref_qualified_type (tree type, cp_ref_qualifier rqual)
   return t;
 }
 
-#if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
-void
-tree_ovl_elt_check_failed (int i, int len,
-			   const char *file, int line, const char *func)
-{
-  internal_error
-    ("tree check: accessed elt %d of overload with %d elts in %s, at %s:%d",
-     i, len, func, trim_filename (file), line);
-}
-#endif
-
 /* Add FN into the overload set MAYBE_OVL.  MAYBE_OVL can be NULL, or
    a plain decl.  If MAYBE_OVL is NULL, and FN doesn't require
    wrapping in an overload, we return plain FN.  FORCE is non-zero to
@@ -2072,9 +2061,6 @@ tree
 ovl_add (tree maybe_ovl, tree fn, int force)
 {
   tree result;
-#ifdef OVLNEW
-#error FIXME
-#else
   if (maybe_ovl && TREE_CODE (maybe_ovl) != OVERLOAD)
     {
       /* Don't chain to a non-overload.  */
@@ -2100,7 +2086,6 @@ ovl_add (tree maybe_ovl, tree fn, int force)
       OVL_FUNCTION (result) = fn;
       TREE_CHAIN (result) = maybe_ovl;
     }
-#endif
   return result;
 }
 
@@ -2110,14 +2095,11 @@ tree
 ovl_add_transient (tree maybe_ovl, tree fn)
 {
   tree result;
-#ifdef OVLNEW
-#error FIXME
-#else
   if (maybe_ovl && TREE_CODE (maybe_ovl) != OVERLOAD)
     {
       /* Don't chain to a non-overload.  */
       result = make_node (OVERLOAD);
-      OVL_TRANSIENT (result) = true;
+      OVL_TRANSIENT_P (result) = true;
       TREE_TYPE (result) = unknown_type_node;
       OVL_FUNCTION (result) = maybe_ovl;
       maybe_ovl = result;
@@ -2126,14 +2108,13 @@ ovl_add_transient (tree maybe_ovl, tree fn)
   if (maybe_ovl || TREE_CODE (fn) == TEMPLATE_DECL)
     {
       result = make_node (OVERLOAD);
-      OVL_TRANSIENT (result) = true;
+      OVL_TRANSIENT_P (result) = true;
       TREE_TYPE (result) = unknown_type_node;
       if (maybe_ovl)
 	TREE_TYPE (maybe_ovl) = unknown_type_node;
       OVL_FUNCTION (result) = fn;
       TREE_CHAIN (result) = maybe_ovl;
     }
-#endif
   return result;
 }
 
@@ -2142,19 +2123,15 @@ ovl_maybe_keep (tree ovl, bool keep)
 {
   if (TREE_CODE (ovl) == OVERLOAD)
     {
-#ifdef OVLNEW
-#error FIXME
-#else
-      while (ovl && OVL_TRANSIENT (ovl))
+      while (ovl && OVL_TRANSIENT_P (ovl))
 	{
 	  tree next = OVL_CHAIN (ovl);
 	  if (keep)
-	    OVL_TRANSIENT (ovl) = false;
+	    OVL_TRANSIENT_P (ovl) = false;
 	  else
 	    ggc_free (ovl);
 	  ovl = next;
 	}
-#endif
     }
 }
 
@@ -2208,9 +2185,6 @@ remove_hidden_names (tree fns)
 void
 ovl_iterator::replace (tree fn, unsigned count) const
 {
-#ifdef OVLNEW
-#error FIXME
-#else
   OVL_FUNCTION (ovl) = fn;
   TREE_TYPE (ovl) = unknown_type_node;
   OVL_VIA_USING_P (ovl) = false;
@@ -2221,7 +2195,6 @@ ovl_iterator::replace (tree fn, unsigned count) const
 	slot = &OVL_CHAIN (*slot);
       *slot = OVL_CHAIN (*slot);
     }
-#endif
 }
 
 /* Get the overload set that an EXPR refers to.  */
@@ -2307,9 +2280,6 @@ ovl_scope (tree ovl)
   if (TREE_CODE (ovl) == TEMPLATE_ID_EXPR)
     ovl = TREE_OPERAND (ovl, 0);
   /* FIXME: What if it's all using declarations?  */
-#ifdef OVLNEW
-  ovl = OVL_FIRST (ovl);
-#else
   /* Skip using-declarations.  */
   if (TREE_CODE (ovl) == OVERLOAD)
     {
@@ -2317,7 +2287,6 @@ ovl_scope (tree ovl)
 	ovl = OVL_CHAIN (ovl);
       ovl = OVL_FUNCTION (ovl);
     }
-#endif
   return CP_DECL_CONTEXT (ovl);
 }
 
@@ -4366,12 +4335,8 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       break;
 
     case OVERLOAD:
-#ifdef OVLNEW
-#error FIXME
-#else
       WALK_SUBTREE (OVL_FUNCTION (*tp));
       WALK_SUBTREE (OVL_CHAIN (*tp));
-#endif
       *walk_subtrees_p = 0;
       break;
 
