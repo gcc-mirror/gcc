@@ -24,12 +24,26 @@
 
 #include <codecvt>
 #include <cstring>		// std::memcpy, std::memcmp
-#include <bits/stl_algobase.h>	// std::max
+#include <bits/stl_algobase.h>	// std::min
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  // The standard doesn't define these operators, which is annoying.
+  static underlying_type<codecvt_mode>::type
+  to_integer(codecvt_mode m)
+  { return static_cast<mode_t>(m); }
+
+  static codecvt_mode& operator&=(codecvt_mode& m, codecvt_mode n)
+  { return m = codecvt_mode(to_integer(m) & to_integer(n)); }
+
+  static codecvt_mode& operator|=(codecvt_mode& m, codecvt_mode n)
+  { return m = codecvt_mode(to_integer(m) | to_integer(n)); }
+
+  static codecvt_mode operator~(codecvt_mode m)
+  { return codecvt_mode(~to_integer(m)); }
 
 namespace
 {
@@ -117,22 +131,26 @@ namespace
       read_bom(from, utf8_bom);
   }
 
-  // If consume_header is set in mode update from.next to after any BOM.
-  // Return little_endian iff the UTF-16LE BOM was present.
-  codecvt_mode
-  read_utf16_bom(range<const char16_t>& from, codecvt_mode mode)
+  // If consume_header is not set in mode, no effects.
+  // Otherwise, if *from.next is a UTF-16 BOM increment from.next and then:
+  // - if the UTF-16BE BOM was found unset little_endian in mode, or
+  // - if the UTF-16LE BOM was found set little_endian in mode.
+  void
+  read_utf16_bom(range<const char16_t>& from, codecvt_mode& mode)
   {
     if (mode & consume_header && from.size())
       {
-	if (*from.next == 0xFEFF)
-	  ++from.next;
-	else if (*from.next == 0xFFFE)
+	if (!memcmp(from.next, utf16_bom, 2))
 	  {
 	    ++from.next;
-	    return little_endian;
+	    mode &= ~little_endian;
+	  }
+	else if (!memcmp(from.next, utf16le_bom, 2))
+	  {
+	    ++from.next;
+	    mode |= little_endian;
 	  }
       }
-    return {};
   }
 
   // Read a codepoint from a UTF-8 multibyte sequence.
@@ -380,8 +398,7 @@ namespace
   ucs4_in(range<const char16_t>& from, range<char32_t>& to,
           unsigned long maxcode = max_code_point, codecvt_mode mode = {})
   {
-    if (read_utf16_bom(from, mode) == little_endian)
-      mode = codecvt_mode(mode & little_endian);
+    read_utf16_bom(from, mode);
     while (from.size() && to.size())
       {
 	const char32_t codepoint = read_utf16_code_point(from, maxcode, mode);
@@ -413,11 +430,15 @@ namespace
     return codecvt_base::ok;
   }
 
-  // utf8 -> utf16
+  // Flag indicating whether to process UTF-16 or UCS2
+  enum class surrogates { allowed, disallowed };
+
+  // utf8 -> utf16 (or utf8 -> ucs2 if s == surrogates::disallowed)
   template<typename C>
   codecvt_base::result
   utf16_in(range<const char>& from, range<C>& to,
-           unsigned long maxcode = max_code_point, codecvt_mode mode = {})
+	   unsigned long maxcode = max_code_point, codecvt_mode mode = {},
+	   surrogates s = surrogates::allowed)
   {
     read_utf8_bom(from, mode);
     while (from.size() && to.size())
@@ -425,7 +446,12 @@ namespace
 	const char* const first = from.next;
 	const char32_t codepoint = read_utf8_code_point(from, maxcode);
 	if (codepoint == incomplete_mb_character)
-	  return codecvt_base::partial;
+	  {
+	    if (s == surrogates::allowed)
+	      return codecvt_base::partial;
+	    else
+	      return codecvt_base::error; // No surrogates in UCS2
+	  }
 	if (codepoint > maxcode)
 	  return codecvt_base::error;
 	if (!write_utf16_code_point(to, codepoint, mode))
@@ -437,11 +463,12 @@ namespace
     return codecvt_base::ok;
   }
 
-  // utf16 -> utf8
+  // utf16 -> utf8 (or ucs2 -> utf8 if s == surrogates::disallowed)
   template<typename C>
   codecvt_base::result
   utf16_out(range<const C>& from, range<char>& to,
-            unsigned long maxcode = max_code_point, codecvt_mode mode = {})
+	    unsigned long maxcode = max_code_point, codecvt_mode mode = {},
+	    surrogates s = surrogates::allowed)
   {
     if (!write_utf8_bom(to, mode))
       return codecvt_base::partial;
@@ -451,6 +478,9 @@ namespace
 	int inc = 1;
 	if (is_high_surrogate(c))
 	  {
+	    if (s == surrogates::disallowed)
+	      return codecvt_base::error; // No surrogates in UCS-2
+
 	    if (from.size() < 2)
 	      return codecvt_base::ok; // stop converting at this point
 
@@ -492,7 +522,7 @@ namespace
 	++count;
       }
     if (count+1 == max) // take one more character if it fits in a single unit
-      read_utf8_code_point(from, std::max(max_single_utf16_unit, maxcode));
+      read_utf8_code_point(from, std::min(max_single_utf16_unit, maxcode));
     return from.next;
   }
 
@@ -501,7 +531,9 @@ namespace
   ucs2_in(range<const char>& from, range<char16_t>& to,
 	  char32_t maxcode = max_code_point, codecvt_mode mode = {})
   {
-    return utf16_in(from, to, std::max(max_single_utf16_unit, maxcode), mode);
+    // UCS-2 only supports characters in the BMP, i.e. one UTF-16 code unit:
+    maxcode = std::min(max_single_utf16_unit, maxcode);
+    return utf16_in(from, to, maxcode, mode, surrogates::disallowed);
   }
 
   // ucs2 -> utf8
@@ -509,7 +541,9 @@ namespace
   ucs2_out(range<const char16_t>& from, range<char>& to,
 	   char32_t maxcode = max_code_point, codecvt_mode mode = {})
   {
-    return utf16_out(from, to, std::max(max_single_utf16_unit, maxcode), mode);
+    // UCS-2 only supports characters in the BMP, i.e. one UTF-16 code unit:
+    maxcode = std::min(max_single_utf16_unit, maxcode);
+    return utf16_out(from, to, maxcode, mode, surrogates::disallowed);
   }
 
   // ucs2 -> utf16
@@ -537,14 +571,14 @@ namespace
   ucs2_in(range<const char16_t>& from, range<char16_t>& to,
 	  char32_t maxcode = max_code_point, codecvt_mode mode = {})
   {
-    if (read_utf16_bom(from, mode) == little_endian)
-      mode = codecvt_mode(mode & little_endian);
-    maxcode = std::max(max_single_utf16_unit, maxcode);
+    read_utf16_bom(from, mode);
+    // UCS-2 only supports characters in the BMP, i.e. one UTF-16 code unit:
+    maxcode = std::min(max_single_utf16_unit, maxcode);
     while (from.size() && to.size())
       {
 	const char32_t c = read_utf16_code_point(from, maxcode, mode);
 	if (c == incomplete_mb_character)
-	  return codecvt_base::partial;
+	  return codecvt_base::error; // UCS-2 only supports single units.
 	if (c > maxcode)
 	  return codecvt_base::error;
 	*to.next++ = c;
@@ -557,9 +591,9 @@ namespace
             char32_t maxcode, codecvt_mode mode)
   {
     range<const char16_t> from{ begin, end };
-    if (read_utf16_bom(from, mode) == little_endian)
-      mode = codecvt_mode(mode & little_endian);
-    maxcode = std::max(max_single_utf16_unit, maxcode);
+    read_utf16_bom(from, mode);
+    // UCS-2 only supports characters in the BMP, i.e. one UTF-16 code unit:
+    maxcode = std::min(max_single_utf16_unit, maxcode);
     char32_t c = 0;
     while (max-- && c <= maxcode)
       c = read_utf16_code_point(from, maxcode, mode);
@@ -572,7 +606,8 @@ namespace
   {
     range<const char> from{ begin, end };
     read_utf8_bom(from, mode);
-    maxcode = std::max(max_single_utf16_unit, maxcode);
+    // UCS-2 only supports characters in the BMP, i.e. one UTF-16 code unit:
+    maxcode = std::min(max_single_utf16_unit, maxcode);
     char32_t c = 0;
     while (max-- && c <= maxcode)
       c = read_utf8_code_point(from, maxcode);
@@ -598,8 +633,7 @@ namespace
             char32_t maxcode = max_code_point, codecvt_mode mode = {})
   {
     range<const char16_t> from{ begin, end };
-    if (read_utf16_bom(from, mode) == little_endian)
-      mode = codecvt_mode(mode & little_endian);
+    read_utf16_bom(from, mode);
     char32_t c = 0;
     while (max-- && c <= maxcode)
       c = read_utf16_code_point(from, maxcode, mode);
