@@ -137,7 +137,7 @@ operator == (const cp_expr &lhs, tree rhs)
       IMPLICIT_CONV_EXPR_DIRECT_INIT (in IMPLICIT_CONV_EXPR)
       TRANSACTION_EXPR_IS_STMT (in TRANSACTION_EXPR)
       CONVERT_EXPR_VBASE_PATH (in CONVERT_EXPR)
-      OVL_TRANSIENT (in OVERLOAD)
+      OVL_TRANSIENT_P (in OVERLOAD)
       PACK_EXPANSION_LOCAL_P (in *_PACK_EXPANSION)
       TINFO_HAS_ACCESS_ERRORS (in TEMPLATE_INFO)
       SIZEOF_EXPR_TYPE_P (in SIZEOF_EXPR)
@@ -434,10 +434,8 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 /* The overloaded FUNCTION_DECL.  */
 #define OVL_FUNCTION(NODE) \
   (((struct tree_overload*)OVERLOAD_CHECK (NODE))->function)
-#define OVL_CHAIN(NODE)      TREE_CHAIN (NODE)
-/* Polymorphic access to FUNCTION and CHAIN.  */
-#define OVL_NEXT(NODE)		\
-  ((TREE_CODE (NODE) == OVERLOAD) ? TREE_CHAIN (NODE) : NULL_TREE)
+#define OVL_CHAIN(NODE) \
+  (((struct tree_overload*)OVERLOAD_CHECK (NODE))->common.chain)
 
 /* If set, this was imported in a using declaration.   */
 #define OVL_VIA_USING_P(NODE)	TREE_USED (OVERLOAD_CHECK (NODE))
@@ -451,7 +449,7 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 /* The name of the overload set.  */
 #define OVL_NAME(NODE) DECL_NAME (OVL_FIRST (NODE))
 /* Whether this overload has a single member.  */
-#define OVL_SINGLE_P(NODE) (!OVL_NEXT (NODE))
+#define OVL_SINGLE_P(NODE) (TREE_CODE (NODE) != OVERLOAD || !OVL_CHAIN (NODE))
 
 struct GTY(()) tree_overload {
   struct tree_common common;
@@ -473,10 +471,10 @@ struct ovl_iterator
   {
     return TREE_CODE (ovl) == OVERLOAD && OVL_VIA_USING_P (ovl);
   }
-  ovl_iterator *operator++ ()
+  ovl_iterator &operator++ ()
   {
-    ovl = OVL_NEXT (ovl);
-    return this;
+    ovl = TREE_CODE (ovl) != OVERLOAD ? NULL_TREE : OVL_CHAIN (ovl);
+    return *this;
   }
   tree operator* () const
   {

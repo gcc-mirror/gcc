@@ -1,5 +1,10 @@
 2017-03-16  Nathan Sidwell  <nathan@acm.org>
 
+	New OVERLOAD representation part 5
+	gcc/cp/
+	* cp-tree.h (OVL_NEXT): Delete. Update uses.
+	(OVL_CHAIN): Check for overload.
+
 	New OVERLOAD representation part 4
 	gcc/cp/
 	* cp-tree.h (OVL_CURRRENT): Delete.
