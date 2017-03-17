@@ -1,3 +1,7 @@
+2017-03-17  Marek Polacek  <polacek@redhat.com>
+
+	* c-parser.c: Add C11 references.
+
 2017-03-15  Marek Polacek  <polacek@redhat.com>
 
 	* c-parser.c (c_parser_enum_specifier): Remove redundant line.
