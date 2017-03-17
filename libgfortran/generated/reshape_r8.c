@@ -80,7 +80,7 @@ reshape_r8 (gfc_array_r8 * const restrict ret,
   rdim = GFC_DESCRIPTOR_EXTENT(shape,0);
   /* rdim is always > 0; this lets the compiler optimize more and
    avoids a potential warning.  */
-  GFC_ASSERT(sdim>0);
+  GFC_ASSERT(rdim>0);
 
   if (rdim != GFC_DESCRIPTOR_RANK(ret))
     runtime_error("rank of return array incorrect in RESHAPE intrinsic");
