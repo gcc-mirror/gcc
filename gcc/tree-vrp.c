@@ -10783,6 +10783,11 @@ simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
     class avail_exprs_stack *avail_exprs_stack ATTRIBUTE_UNUSED,
     basic_block bb)
 {
+  /* First see if the conditional is in the hash table.  */
+  tree cached_lhs = avail_exprs_stack->lookup_avail_expr (stmt, false, true);
+  if (cached_lhs && is_gimple_min_invariant (cached_lhs))
+    return cached_lhs;
+
   if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
     {
       tree op0 = gimple_cond_lhs (cond_stmt);
@@ -10915,10 +10920,19 @@ vrp_dom_walker::before_dom_children (basic_block bb)
       if (gimple_assign_single_p (stmt)
          && TREE_CODE (gimple_assign_rhs1 (stmt)) == ASSERT_EXPR)
 	{
-	  tree lhs = gimple_assign_lhs (stmt);
 	  tree rhs1 = gimple_assign_rhs1 (stmt);
+	  tree cond = TREE_OPERAND (rhs1, 1);
+	  tree inverted = invert_truthvalue (cond);
+	  vec<cond_equivalence> p;
+	  p.create (3);
+	  record_conditions (&p, cond, inverted);
+	  for (unsigned int i = 0; i < p.length (); i++)
+	    m_avail_exprs_stack->record_cond (&p[i]);
+
+	  tree lhs = gimple_assign_lhs (stmt);
 	  m_const_and_copies->record_const_or_copy (lhs,
 						    TREE_OPERAND (rhs1, 0));
+	  p.release ();
 	  continue;
 	}
       break;
