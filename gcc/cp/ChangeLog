@@ -1,3 +1,8 @@
+2017-03-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80073 - C++17 ICE with virtual base.
+	* decl.c (xref_basetypes): Also check for indirect vbases.
+
 2017-03-16  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (start_enum): std::byte aliases anything.
