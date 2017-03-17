@@ -2559,6 +2559,57 @@ can_split_parallel_of_n_reg_sets (rtx_insn *insn, int n)
   return true;
 }
 
+/* Set up a set of registers used in an insn.  Called through note_uses,
+   arguments as described for that function.  */
+
+static void
+record_used_regs (rtx *xptr, void *data)
+{
+  bitmap set = (bitmap)data;
+  int i, j;
+  enum rtx_code code;
+  const char *fmt;
+  rtx x = *xptr;
+
+  /* repeat is used to turn tail-recursion into iteration since GCC
+     can't do it when there's no return value.  */
+ repeat:
+  if (x == 0)
+    return;
+
+  code = GET_CODE (x);
+  if (REG_P (x))
+    {
+      unsigned regno = REGNO (x);
+      unsigned end_regno = END_REGNO (x);
+      while (regno < end_regno)
+	bitmap_set_bit (set, regno++);
+      return;
+    }
+
+  /* Recursively scan the operands of this expression.  */
+
+  for (i = GET_RTX_LENGTH (code) - 1, fmt = GET_RTX_FORMAT (code); i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  /* If we are about to do the last recursive call
+	     needed at this level, change it into iteration.
+	     This function is called enough to be worth it.  */
+	  if (i == 0)
+	    {
+	      x = XEXP (x, 0);
+	      goto repeat;
+	    }
+
+	  record_used_regs (&XEXP (x, i), data);
+	}
+      else if (fmt[i] == 'E')
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  record_used_regs (&XVECEXP (x, i, j), data);
+    }
+}
+
 /* Try to combine the insns I0, I1 and I2 into I3.
    Here I0, I1 and I2 appear earlier than I3.
    I0 and I1 can be zero; then we combine just I2 into I3, or I1 and I2 into
@@ -2741,6 +2792,27 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
     std::swap (i1, i2);
 
   added_links_insn = 0;
+
+  /* For combinations that may result in two insns, we have to gather
+     some extra information about registers used, so that we can
+     update all relevant LOG_LINKS later.  */
+  auto_bitmap i2_regset, i3_regset, links_regset;
+  if (i1)
+    {
+      note_uses (&PATTERN (i2), record_used_regs, (bitmap)i2_regset);
+      note_uses (&PATTERN (i3), record_used_regs, (bitmap)i3_regset);
+      insn_link *ll;
+      FOR_EACH_LOG_LINK (ll, i3)
+	bitmap_set_bit (links_regset, ll->regno);
+      FOR_EACH_LOG_LINK (ll, i2)
+	bitmap_set_bit (links_regset, ll->regno);
+      if (i1)
+	FOR_EACH_LOG_LINK (ll, i1)
+	  bitmap_set_bit (links_regset, ll->regno);
+      if (i0)
+	FOR_EACH_LOG_LINK (ll, i0)
+	  bitmap_set_bit (links_regset, ll->regno);
+    }
 
   /* First check for one important special case that the code below will
      not handle.  Namely, the case where I1 is zero, I2 is a PARALLEL
@@ -4051,6 +4123,33 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       return 0;
     }
 
+  auto_bitmap new_regs_in_i2;
+  if (newi2pat)
+    {
+      /* We need to discover situations where we introduce a use of a
+	 register into I2, where none of the existing LOG_LINKS contain
+	 a reference to it.  This can happen if previously I3 referenced
+	 the reg, and there is an additional use between I2 and I3.  We
+	 must remove the LOG_LINKS entry from that additional use and
+	 distribute it along with our own ones.  */
+	note_uses (&newi2pat, record_used_regs, (bitmap)new_regs_in_i2);
+	bitmap_and_compl_into (new_regs_in_i2, i2_regset);
+	bitmap_and_compl_into (new_regs_in_i2, links_regset);
+
+	/* Here, we first look for situations where a hard register use
+	   moved, and just give up.  This should happen approximately
+	   never, and it's not worth it to deal with possibilities like
+	   multi-word registers.  Later, when fixing up LOG_LINKS, we
+	   deal with the case where a pseudo use moved.  */
+	if (!bitmap_empty_p (new_regs_in_i2)
+	    && prev_nonnote_insn (i3) != i2
+	    && bitmap_first_set_bit (new_regs_in_i2) < FIRST_PSEUDO_REGISTER)
+	  {
+	    undo_all ();
+	    return 0;
+	  }
+    }
+
   if (MAY_HAVE_DEBUG_INSNS)
     {
       struct undo *undo;
@@ -4491,6 +4590,45 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	else
 	  distribute_notes (new_note, NULL, i3, newi2pat ? i2 : NULL,
 			    NULL_RTX, NULL_RTX, NULL_RTX);
+      }
+
+    if (newi2pat)
+      {
+	bitmap_iterator iter;
+	unsigned int i;
+
+	/* See comments above where we calculate the bitmap.  */
+	EXECUTE_IF_SET_IN_BITMAP ((bitmap)new_regs_in_i2,
+				  LAST_VIRTUAL_REGISTER, i, iter)
+	  {
+	    rtx reg = regno_reg_rtx[i];
+	    rtx_insn *other;
+	    for (other = NEXT_INSN (i2); other != i3; other = NEXT_INSN (other))
+	      if (NONDEBUG_INSN_P (other)
+		  && (reg_overlap_mentioned_p (reg, PATTERN (other))
+		      || (CALL_P (other) && find_reg_fusage (other, USE, reg))))
+		{
+		  if (dump_file)
+		    fprintf (dump_file,
+			     "found extra use of reg %d at insn %d\n", i,
+			     INSN_UID (other));
+		  insn_link **plink;
+		  for (plink = &LOG_LINKS (other);
+		       *plink;
+		       plink = &(*plink)->next)
+		    {
+		      insn_link *link = *plink;
+		      if (link->regno == i)
+			{
+			  *plink = link->next;
+			  link->next = i3links;
+			  i3links = link;
+			  break;
+			}
+		    }
+		  break;
+		}
+	  }
       }
 
     distribute_links (i3links);
