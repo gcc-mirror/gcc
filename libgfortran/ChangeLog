@@ -1,3 +1,20 @@
+2017-03-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/79956
+	* m4/reshape.m4 (reshape_'rtype_ccode`):  Correct use
+	of GFC_ASSERT.
+	* generated/reshape_c10.c: Regenerated.
+	* generated/reshape_c16.c: Regenerated.
+	* generated/reshape_c4.c: Regenerated.
+	* generated/reshape_c8.c: Regenerated.
+	* generated/reshape_i16.c: Regenerated.
+	* generated/reshape_i4.c: Regenerated.
+	* generated/reshape_i8.c: Regenerated.
+	* generated/reshape_r10.c: Regenerated.
+	* generated/reshape_r16.c: Regenerated.
+	* generated/reshape_r4.c: Regenerated.
+	* generated/reshape_r8.c: Regenerated.
+
 2017-03-15  NightStrike  <nightstrike@gmail.com>
 	    Janne Blomqvist  <jb@gcc.gnu.org>
 
