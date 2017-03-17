@@ -1,3 +1,10 @@
+2017-03-17  Martin Jambor  <mjambor@suse.cz>
+
+	* doc/invoke.texi (Option Options): Include -fipa-vrp in the list.
+	(List of -O2 options): Likewise.
+	(-fipa-bit-cp): Replace "ipa" with "interprocedural."
+	(-fipa-vrp) New.
+
 2017-03-17  Tom de Vries  <tom@codesourcery.com>
 
 	* gcov-dump.c (print_usage): Print bug_report_url.

@@ -373,7 +373,7 @@ Objective-C and Objective-C++ Dialects}.
 -fif-conversion2  -findirect-inlining @gol
 -finline-functions  -finline-functions-called-once  -finline-limit=@var{n} @gol
 -finline-small-functions  -fipa-cp  -fipa-cp-clone @gol
--fipa-bit-cp @gol
+-fipa-bit-cp -fipa-vrp @gol
 -fipa-pta  -fipa-profile  -fipa-pure-const  -fipa-reference  -fipa-icf @gol
 -fira-algorithm=@var{algorithm} @gol
 -fira-region=@var{region}  -fira-hoist-pressure @gol
@@ -7085,6 +7085,7 @@ also turns on the following optimization flags:
 -findirect-inlining @gol
 -fipa-cp @gol
 -fipa-bit-cp @gol
+-fipa-vrp @gol
 -fipa-sra @gol
 -fipa-icf @gol
 -fisolate-erroneous-paths-dereference @gol
@@ -8095,9 +8096,15 @@ This flag is enabled by default at @option{-O3}.
 
 @item -fipa-bit-cp
 @opindex -fipa-bit-cp
-When enabled, perform ipa bitwise constant propagation. This flag is
-enabled by default at @option{-O2}. It requires that @option{-fipa-cp}
-is enabled.
+When enabled, perform interprocedural bitwise constant
+propagation. This flag is enabled by default at @option{-O2}. It
+requires that @option{-fipa-cp} is enabled.
+
+@item -fipa-vrp
+@opindex -fipa-vrp
+When enabled, perform interprocedural propagation of value
+ranges. This flag is enabled by default at @option{-O2}. It requires
+that @option{-fipa-cp} is enabled.
 
 @item -fipa-icf
 @opindex fipa-icf
