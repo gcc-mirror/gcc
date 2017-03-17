@@ -1,3 +1,12 @@
+2017-03-17  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/71437
+	* tree-vrp.c (simplify_stmt_for_jump_threading): Lookup the
+	conditional in the hash table first.
+	(vrp_dom_walker::before_dom_children): Extract condition from
+	ASSERT_EXPR.  Record condition, its inverion and any implied
+	conditions as well.
+
 2017-03-17  Marek Polacek  <polacek@redhat.com>
 	    Markus Trippelsdorf  <markus@trippelsdorf.de>
 

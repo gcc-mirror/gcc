@@ -1,3 +1,11 @@
+2017-03-17  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/71437
+	* gcc.dg/tree-ssa/pr71437.c: New test.
+	* gcc.dg/tree-ssa/20040305-1.c: Test earlier dump.
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Adjust for jump threads
+	now caught by VRP, but which were previously caught by DOM.
+
 2017-03-17  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/80075
