@@ -1,3 +1,14 @@
+2017-03-17  Palmer Dabbelt  <palmer@dabbelt.com
+
+	* doc/install.texi (Specific) <riscv32-*-elf>: Add riscv32-*-elf,
+	riscv32-*-linux, riscv64-*-elf, riscv64-*-linux to the table of
+	contents.
+	<riscv64-*-elf>: Re-arrange section
+	<riscv32-*-elf>: Add a note about requiring binutils 2.28.
+	<riscv32-*-linux>: Likewise.
+	<riscv64-*-elf>: Likewise
+	<riscv64-*-linux>: Likewise.
+
 2017-03-17  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/80052
