@@ -57,17 +57,104 @@ namespace
   const char32_t incomplete_mb_character = char32_t(-2);
   const char32_t invalid_mb_sequence = char32_t(-1);
 
-  template<typename Elem>
+  // Utility type for reading and writing code units of type Elem from
+  // a range defined by a pair of pointers.
+  template<typename Elem, bool Aligned = true>
     struct range
     {
       Elem* next;
       Elem* end;
 
+      // Write a code unit.
+      range& operator=(Elem e)
+      {
+	*next++ = e;
+	return *this;
+      }
+
+      // Read the next code unit.
       Elem operator*() const { return *next; }
 
-      range& operator++() { ++next; return *this; }
+      // Read the Nth code unit.
+      Elem operator[](size_t n) const { return next[n]; }
 
+      // Move to the next code unit.
+      range& operator++()
+      {
+	++next;
+	return *this;
+      }
+
+      // Move to the Nth code unit.
+      range& operator+=(size_t n)
+      {
+	next += n;
+	return *this;
+      }
+
+      // The number of code units remaining.
       size_t size() const { return end - next; }
+
+      // The number of bytes remaining.
+      size_t nbytes() const { return (const char*)end - (const char*)next; }
+    };
+
+  // This specialization is used when accessing char16_t values through
+  // pointers to char, which might not be correctly aligned for char16_t.
+  template<typename Elem>
+    struct range<Elem, false>
+    {
+      using value_type = typename remove_const<Elem>::type;
+
+      using char_pointer = typename
+	conditional<is_const<Elem>::value, const char*, char*>::type;
+
+      char_pointer next;
+      char_pointer end;
+
+      // Write a code unit.
+      range& operator=(Elem e)
+      {
+	memcpy(next, &e, sizeof(Elem));
+	++*this;
+	return *this;
+      }
+
+      // Read the next code unit.
+      Elem operator*() const
+      {
+	value_type e;
+	memcpy(&e, next, sizeof(Elem));
+	return e;
+      }
+
+      // Read the Nth code unit.
+      Elem operator[](size_t n) const
+      {
+	value_type e;
+	memcpy(&e, next + n * sizeof(Elem), sizeof(Elem));
+	return e;
+      }
+
+      // Move to the next code unit.
+      range& operator++()
+      {
+	next += sizeof(Elem);
+	return *this;
+      }
+
+      // Move to the Nth code unit.
+      range& operator+=(size_t n)
+      {
+	next += n * sizeof(Elem);
+	return *this;
+      }
+
+      // The number of code units remaining.
+      size_t size() const { return nbytes() / sizeof(Elem); }
+
+      // The number of bytes remaining.
+      size_t nbytes() const { return end - next; }
     };
 
   // Multibyte sequences can have "header" consisting of Byte Order Mark
@@ -75,15 +162,35 @@ namespace
   const unsigned char utf16_bom[2] = { 0xFE, 0xFF };
   const unsigned char utf16le_bom[2] = { 0xFF, 0xFE };
 
-  template<size_t N>
-    inline bool
-    write_bom(range<char>& to, const unsigned char (&bom)[N])
+  // Write a BOM (space permitting).
+  template<typename C, bool A, size_t N>
+    bool
+    write_bom(range<C, A>& to, const unsigned char (&bom)[N])
     {
-      if (to.size() < N)
+      static_assert( (N / sizeof(C)) != 0, "" );
+      static_assert( (N % sizeof(C)) == 0, "" );
+
+      if (to.nbytes() < N)
 	return false;
       memcpy(to.next, bom, N);
-      to.next += N;
+      to += (N / sizeof(C));
       return true;
+    }
+
+  // Try to read a BOM.
+  template<typename C, bool A, size_t N>
+    bool
+    read_bom(range<C, A>& from, const unsigned char (&bom)[N])
+    {
+      static_assert( (N / sizeof(C)) != 0, "" );
+      static_assert( (N % sizeof(C)) == 0, "" );
+
+      if (from.nbytes() >= N && !memcmp(from.next, bom, N))
+	{
+	  from += (N / sizeof(C));
+	  return true;
+	}
+      return false;
     }
 
   // If generate_header is set in mode write out UTF-8 BOM.
@@ -97,31 +204,19 @@ namespace
 
   // If generate_header is set in mode write out the UTF-16 BOM indicated
   // by whether little_endian is set in mode.
+  template<bool Aligned>
   bool
-  write_utf16_bom(range<char16_t>& to, codecvt_mode mode)
+  write_utf16_bom(range<char16_t, Aligned>& to, codecvt_mode mode)
   {
     if (mode & generate_header)
     {
-      if (!to.size())
-	return false;
-      auto* bom = (mode & little_endian) ? utf16le_bom : utf16_bom;
-      std::memcpy(to.next, bom, 2);
-      ++to.next;
+      if (mode & little_endian)
+	return write_bom(to, utf16le_bom);
+      else
+	return write_bom(to, utf16_bom);
     }
     return true;
   }
-
-  template<size_t N>
-    inline bool
-    read_bom(range<const char>& from, const unsigned char (&bom)[N])
-    {
-      if (from.size() >= N && !memcmp(from.next, bom, N))
-	{
-	  from.next += N;
-	  return true;
-	}
-      return false;
-    }
 
   // If consume_header is set in mode update from.next to after any BOM.
   void
@@ -135,21 +230,16 @@ namespace
   // Otherwise, if *from.next is a UTF-16 BOM increment from.next and then:
   // - if the UTF-16BE BOM was found unset little_endian in mode, or
   // - if the UTF-16LE BOM was found set little_endian in mode.
+  template<bool Aligned>
   void
-  read_utf16_bom(range<const char16_t>& from, codecvt_mode& mode)
+  read_utf16_bom(range<const char16_t, Aligned>& from, codecvt_mode& mode)
   {
-    if (mode & consume_header && from.size())
+    if (mode & consume_header)
       {
-	if (!memcmp(from.next, utf16_bom, 2))
-	  {
-	    ++from.next;
-	    mode &= ~little_endian;
-	  }
-	else if (!memcmp(from.next, utf16le_bom, 2))
-	  {
-	    ++from.next;
-	    mode |= little_endian;
-	  }
+	if (read_bom(from, utf16_bom))
+	  mode &= ~little_endian;
+	else if (read_bom(from, utf16le_bom))
+	  mode |= little_endian;
       }
   }
 
@@ -162,11 +252,11 @@ namespace
     const size_t avail = from.size();
     if (avail == 0)
       return incomplete_mb_character;
-    unsigned char c1 = from.next[0];
+    unsigned char c1 = from[0];
     // https://en.wikipedia.org/wiki/UTF-8#Sample_code
     if (c1 < 0x80)
     {
-      ++from.next;
+      ++from;
       return c1;
     }
     else if (c1 < 0xC2) // continuation or overlong 2-byte sequence
@@ -175,51 +265,51 @@ namespace
     {
       if (avail < 2)
 	return incomplete_mb_character;
-      unsigned char c2 = from.next[1];
+      unsigned char c2 = from[1];
       if ((c2 & 0xC0) != 0x80)
 	return invalid_mb_sequence;
       char32_t c = (c1 << 6) + c2 - 0x3080;
       if (c <= maxcode)
-	from.next += 2;
+	from += 2;
       return c;
     }
     else if (c1 < 0xF0) // 3-byte sequence
     {
       if (avail < 3)
 	return incomplete_mb_character;
-      unsigned char c2 = from.next[1];
+      unsigned char c2 = from[1];
       if ((c2 & 0xC0) != 0x80)
 	return invalid_mb_sequence;
       if (c1 == 0xE0 && c2 < 0xA0) // overlong
 	return invalid_mb_sequence;
-      unsigned char c3 = from.next[2];
+      unsigned char c3 = from[2];
       if ((c3 & 0xC0) != 0x80)
 	return invalid_mb_sequence;
       char32_t c = (c1 << 12) + (c2 << 6) + c3 - 0xE2080;
       if (c <= maxcode)
-	from.next += 3;
+	from += 3;
       return c;
     }
     else if (c1 < 0xF5) // 4-byte sequence
     {
       if (avail < 4)
 	return incomplete_mb_character;
-      unsigned char c2 = from.next[1];
+      unsigned char c2 = from[1];
       if ((c2 & 0xC0) != 0x80)
 	return invalid_mb_sequence;
       if (c1 == 0xF0 && c2 < 0x90) // overlong
 	return invalid_mb_sequence;
       if (c1 == 0xF4 && c2 >= 0x90) // > U+10FFFF
       return invalid_mb_sequence;
-      unsigned char c3 = from.next[2];
+      unsigned char c3 = from[2];
       if ((c3 & 0xC0) != 0x80)
 	return invalid_mb_sequence;
-      unsigned char c4 = from.next[3];
+      unsigned char c4 = from[3];
       if ((c4 & 0xC0) != 0x80)
 	return invalid_mb_sequence;
       char32_t c = (c1 << 18) + (c2 << 12) + (c3 << 6) + c4 - 0x3C82080;
       if (c <= maxcode)
-	from.next += 4;
+	from += 4;
       return c;
     }
     else // > U+10FFFF
@@ -233,31 +323,31 @@ namespace
       {
 	if (to.size() < 1)
 	  return false;
-	*to.next++ = code_point;
+	to = code_point;
       }
     else if (code_point <= 0x7FF)
       {
 	if (to.size() < 2)
 	  return false;
-	*to.next++ = (code_point >> 6) + 0xC0;
-	*to.next++ = (code_point & 0x3F) + 0x80;
+	to = (code_point >> 6) + 0xC0;
+	to = (code_point & 0x3F) + 0x80;
       }
     else if (code_point <= 0xFFFF)
       {
 	if (to.size() < 3)
 	  return false;
-	*to.next++ = (code_point >> 12) + 0xE0;
-	*to.next++ = ((code_point >> 6) & 0x3F) + 0x80;
-	*to.next++ = (code_point & 0x3F) + 0x80;
+	to = (code_point >> 12) + 0xE0;
+	to = ((code_point >> 6) & 0x3F) + 0x80;
+	to = (code_point & 0x3F) + 0x80;
       }
     else if (code_point <= 0x10FFFF)
       {
 	if (to.size() < 4)
 	  return false;
-	*to.next++ = (code_point >> 18) + 0xF0;
-	*to.next++ = ((code_point >> 12) & 0x3F) + 0x80;
-	*to.next++ = ((code_point >> 6) & 0x3F) + 0x80;
-	*to.next++ = (code_point & 0x3F) + 0x80;
+	to = (code_point >> 18) + 0xF0;
+	to = ((code_point >> 12) & 0x3F) + 0x80;
+	to = ((code_point >> 6) & 0x3F) + 0x80;
+	to = (code_point & 0x3F) + 0x80;
       }
     else
       return false;
@@ -298,38 +388,39 @@ namespace
   // The sequence's endianness is indicated by (mode & little_endian).
   // Updates from.next if the codepoint is not greater than maxcode.
   // Returns invalid_mb_sequence, incomplete_mb_character or the code point.
-  char32_t
-  read_utf16_code_point(range<const char16_t>& from, unsigned long maxcode,
-			codecvt_mode mode)
-  {
-    const size_t avail = from.size();
-    if (avail == 0)
-      return incomplete_mb_character;
-    int inc = 1;
-    char32_t c = adjust_byte_order(from.next[0], mode);
-    if (is_high_surrogate(c))
-      {
-	if (avail < 2)
-	  return incomplete_mb_character;
-	const char16_t c2 = adjust_byte_order(from.next[1], mode);
-	if (is_low_surrogate(c2))
-	  {
-	    c = surrogate_pair_to_code_point(c, c2);
-	    inc = 2;
-	  }
-	else
-	  return invalid_mb_sequence;
-      }
-    else if (is_low_surrogate(c))
-      return invalid_mb_sequence;
-    if (c <= maxcode)
-      from.next += inc;
-    return c;
-  }
+  template<bool Aligned>
+    char32_t
+    read_utf16_code_point(range<const char16_t, Aligned>& from,
+			  unsigned long maxcode, codecvt_mode mode)
+    {
+      const size_t avail = from.size();
+      if (avail == 0)
+	return incomplete_mb_character;
+      int inc = 1;
+      char32_t c = adjust_byte_order(from[0], mode);
+      if (is_high_surrogate(c))
+	{
+	  if (avail < 2)
+	    return incomplete_mb_character;
+	  const char16_t c2 = adjust_byte_order(from[1], mode);
+	  if (is_low_surrogate(c2))
+	    {
+	      c = surrogate_pair_to_code_point(c, c2);
+	      inc = 2;
+	    }
+	  else
+	    return invalid_mb_sequence;
+	}
+      else if (is_low_surrogate(c))
+	return invalid_mb_sequence;
+      if (c <= maxcode)
+	from += inc;
+      return c;
+    }
 
-  template<typename C>
+  template<typename C, bool A>
   bool
-  write_utf16_code_point(range<C>& to, char32_t codepoint, codecvt_mode mode)
+  write_utf16_code_point(range<C, A>& to, char32_t codepoint, codecvt_mode mode)
   {
     static_assert(sizeof(C) >= 2, "a code unit must be at least 16-bit");
 
@@ -337,8 +428,7 @@ namespace
       {
 	if (to.size() > 0)
 	  {
-	    *to.next = adjust_byte_order(codepoint, mode);
-	    ++to.next;
+	    to = adjust_byte_order(codepoint, mode);
 	    return true;
 	  }
       }
@@ -348,9 +438,8 @@ namespace
 	const char32_t LEAD_OFFSET = 0xD800 - (0x10000 >> 10);
 	char16_t lead = LEAD_OFFSET + (codepoint >> 10);
 	char16_t trail = 0xDC00 + (codepoint & 0x3FF);
-	to.next[0] = adjust_byte_order(lead, mode);
-	to.next[1] = adjust_byte_order(trail, mode);
-	to.next += 2;
+	to = adjust_byte_order(lead, mode);
+	to = adjust_byte_order(trail, mode);
 	return true;
       }
     return false;
@@ -369,7 +458,7 @@ namespace
 	  return codecvt_base::partial;
 	if (codepoint > maxcode)
 	  return codecvt_base::error;
-	*to.next++ = codepoint;
+	to = codepoint;
       }
     return from.size() ? codecvt_base::partial : codecvt_base::ok;
   }
@@ -383,19 +472,19 @@ namespace
       return codecvt_base::partial;
     while (from.size())
       {
-	const char32_t c = from.next[0];
+	const char32_t c = from[0];
 	if (c > maxcode)
 	  return codecvt_base::error;
 	if (!write_utf8_code_point(to, c))
 	  return codecvt_base::partial;
-	++from.next;
+	++from;
       }
     return codecvt_base::ok;
   }
 
   // utf16 -> ucs4
   codecvt_base::result
-  ucs4_in(range<const char16_t>& from, range<char32_t>& to,
+  ucs4_in(range<const char16_t, false>& from, range<char32_t>& to,
           unsigned long maxcode = max_code_point, codecvt_mode mode = {})
   {
     read_utf16_bom(from, mode);
@@ -406,26 +495,26 @@ namespace
 	  return codecvt_base::partial;
 	if (codepoint > maxcode)
 	  return codecvt_base::error;
-	*to.next++ = codepoint;
+	to = codepoint;
       }
     return from.size() ? codecvt_base::partial : codecvt_base::ok;
   }
 
   // ucs4 -> utf16
   codecvt_base::result
-  ucs4_out(range<const char32_t>& from, range<char16_t>& to,
+  ucs4_out(range<const char32_t>& from, range<char16_t, false>& to,
            unsigned long maxcode = max_code_point, codecvt_mode mode = {})
   {
     if (!write_utf16_bom(to, mode))
       return codecvt_base::partial;
     while (from.size())
       {
-	const char32_t c = from.next[0];
+	const char32_t c = from[0];
 	if (c > maxcode)
 	  return codecvt_base::error;
 	if (!write_utf16_code_point(to, c, mode))
 	  return codecvt_base::partial;
-	++from.next;
+	++from;
       }
     return codecvt_base::ok;
   }
@@ -443,7 +532,7 @@ namespace
     read_utf8_bom(from, mode);
     while (from.size() && to.size())
       {
-	const char* const first = from.next;
+	auto orig = from;
 	const char32_t codepoint = read_utf8_code_point(from, maxcode);
 	if (codepoint == incomplete_mb_character)
 	  {
@@ -456,7 +545,7 @@ namespace
 	  return codecvt_base::error;
 	if (!write_utf16_code_point(to, codepoint, mode))
 	  {
-	    from.next = first;
+	    from = orig; // rewind to previous position
 	    return codecvt_base::partial;
 	  }
       }
@@ -474,7 +563,7 @@ namespace
       return codecvt_base::partial;
     while (from.size())
       {
-	char32_t c = from.next[0];
+	char32_t c = from[0];
 	int inc = 1;
 	if (is_high_surrogate(c))
 	  {
@@ -484,7 +573,7 @@ namespace
 	    if (from.size() < 2)
 	      return codecvt_base::ok; // stop converting at this point
 
-	    const char32_t c2 = from.next[1];
+	    const char32_t c2 = from[1];
 	    if (is_low_surrogate(c2))
 	      {
 		c = surrogate_pair_to_code_point(c, c2);
@@ -499,7 +588,7 @@ namespace
 	  return codecvt_base::error;
 	if (!write_utf8_code_point(to, c))
 	  return codecvt_base::partial;
-	from.next += inc;
+	from += inc;
       }
     return codecvt_base::ok;
   }
@@ -548,27 +637,27 @@ namespace
 
   // ucs2 -> utf16
   codecvt_base::result
-  ucs2_out(range<const char16_t>& from, range<char16_t>& to,
+  ucs2_out(range<const char16_t>& from, range<char16_t, false>& to,
 	   char32_t maxcode = max_code_point, codecvt_mode mode = {})
   {
     if (!write_utf16_bom(to, mode))
       return codecvt_base::partial;
     while (from.size() && to.size())
       {
-	char16_t c = from.next[0];
+	char16_t c = from[0];
 	if (is_high_surrogate(c))
 	  return codecvt_base::error;
 	if (c > maxcode)
 	  return codecvt_base::error;
-	*to.next++ = adjust_byte_order(c, mode);
-	++from.next;
+	to = adjust_byte_order(c, mode);
+	++from;
       }
     return from.size() == 0 ? codecvt_base::ok : codecvt_base::partial;
   }
 
   // utf16 -> ucs2
   codecvt_base::result
-  ucs2_in(range<const char16_t>& from, range<char16_t>& to,
+  ucs2_in(range<const char16_t, false>& from, range<char16_t>& to,
 	  char32_t maxcode = max_code_point, codecvt_mode mode = {})
   {
     read_utf16_bom(from, mode);
@@ -581,23 +670,22 @@ namespace
 	  return codecvt_base::error; // UCS-2 only supports single units.
 	if (c > maxcode)
 	  return codecvt_base::error;
-	*to.next++ = c;
+	to = c;
       }
     return from.size() == 0 ? codecvt_base::ok : codecvt_base::partial;
   }
 
   const char16_t*
-  ucs2_span(const char16_t* begin, const char16_t* end, size_t max,
+  ucs2_span(range<const char16_t, false>& from, size_t max,
             char32_t maxcode, codecvt_mode mode)
   {
-    range<const char16_t> from{ begin, end };
     read_utf16_bom(from, mode);
     // UCS-2 only supports characters in the BMP, i.e. one UTF-16 code unit:
     maxcode = std::min(max_single_utf16_unit, maxcode);
     char32_t c = 0;
     while (max-- && c <= maxcode)
       c = read_utf16_code_point(from, maxcode, mode);
-    return from.next;
+    return reinterpret_cast<const char16_t*>(from.next);
   }
 
   const char*
@@ -629,15 +717,14 @@ namespace
 
   // return pos such that [begin,pos) is valid UCS-4 string no longer than max
   const char16_t*
-  ucs4_span(const char16_t* begin, const char16_t* end, size_t max,
+  ucs4_span(range<const char16_t, false>& from, size_t max,
             char32_t maxcode = max_code_point, codecvt_mode mode = {})
   {
-    range<const char16_t> from{ begin, end };
     read_utf16_bom(from, mode);
     char32_t c = 0;
     while (max-- && c <= maxcode)
       c = read_utf16_code_point(from, maxcode, mode);
-    return from.next;
+    return reinterpret_cast<const char16_t*>(from.next);
   }
 }
 
@@ -937,6 +1024,13 @@ __codecvt_utf8_base<char32_t>::do_max_length() const throw()
 }
 
 #ifdef _GLIBCXX_USE_WCHAR_T
+
+#if __SIZEOF_WCHAR_T__ == 2
+static_assert(sizeof(wchar_t) == sizeof(char16_t), "");
+#elif __SIZEOF_WCHAR_T__ == 4
+static_assert(sizeof(wchar_t) == sizeof(char32_t), "");
+#endif
+
 // Define members of codecvt_utf8<wchar_t> base class implementation.
 // Converts from UTF-8 to UCS-2 or UCS-4 depending on sizeof(wchar_t).
 
@@ -1057,10 +1151,7 @@ do_out(state_type&, const intern_type* __from, const intern_type* __from_end,
        extern_type*& __to_next) const
 {
   range<const char16_t> from{ __from, __from_end };
-  range<char16_t> to{
-    reinterpret_cast<char16_t*>(__to),
-    reinterpret_cast<char16_t*>(__to_end)
-  };
+  range<char16_t, false> to{ __to, __to_end };
   auto res = ucs2_out(from, to, _M_maxcode, _M_mode);
   __from_next = from.next;
   __to_next = reinterpret_cast<char*>(to.next);
@@ -1083,14 +1174,13 @@ do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
       intern_type* __to, intern_type* __to_end,
       intern_type*& __to_next) const
 {
-  range<const char16_t> from{
-    reinterpret_cast<const char16_t*>(__from),
-    reinterpret_cast<const char16_t*>(__from_end)
-  };
+  range<const char16_t, false> from{ __from, __from_end };
   range<char16_t> to{ __to, __to_end };
   auto res = ucs2_in(from, to, _M_maxcode, _M_mode);
   __from_next = reinterpret_cast<const char*>(from.next);
   __to_next = to.next;
+  if (res == codecvt_base::ok && __from_next != __from_end)
+    res = codecvt_base::error;
   return res;
 }
 
@@ -1107,9 +1197,8 @@ __codecvt_utf16_base<char16_t>::
 do_length(state_type&, const extern_type* __from,
 	  const extern_type* __end, size_t __max) const
 {
-  auto next = reinterpret_cast<const char16_t*>(__from);
-  next = ucs2_span(next, reinterpret_cast<const char16_t*>(__end), __max,
-		   _M_maxcode, _M_mode);
+  range<const char16_t, false> from{ __from, __end };
+  const char16_t* next = ucs2_span(from, __max, _M_maxcode, _M_mode);
   return reinterpret_cast<const char*>(next) - __from;
 }
 
@@ -1137,10 +1226,7 @@ do_out(state_type&, const intern_type* __from, const intern_type* __from_end,
        extern_type*& __to_next) const
 {
   range<const char32_t> from{ __from, __from_end };
-  range<char16_t> to{
-    reinterpret_cast<char16_t*>(__to),
-    reinterpret_cast<char16_t*>(__to_end)
-  };
+  range<char16_t, false> to{ __to, __to_end };
   auto res = ucs4_out(from, to, _M_maxcode, _M_mode);
   __from_next = from.next;
   __to_next = reinterpret_cast<char*>(to.next);
@@ -1163,14 +1249,13 @@ do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
       intern_type* __to, intern_type* __to_end,
       intern_type*& __to_next) const
 {
-  range<const char16_t> from{
-    reinterpret_cast<const char16_t*>(__from),
-    reinterpret_cast<const char16_t*>(__from_end)
-  };
+  range<const char16_t, false> from{ __from, __from_end };
   range<char32_t> to{ __to, __to_end };
   auto res = ucs4_in(from, to, _M_maxcode, _M_mode);
   __from_next = reinterpret_cast<const char*>(from.next);
   __to_next = to.next;
+  if (res == codecvt_base::ok && __from_next != __from_end)
+    res = codecvt_base::error;
   return res;
 }
 
@@ -1187,9 +1272,8 @@ __codecvt_utf16_base<char32_t>::
 do_length(state_type&, const extern_type* __from,
 	  const extern_type* __end, size_t __max) const
 {
-  auto next = reinterpret_cast<const char16_t*>(__from);
-  next = ucs4_span(next, reinterpret_cast<const char16_t*>(__end), __max,
-		   _M_maxcode, _M_mode);
+  range<const char16_t, false> from{ __from, __end };
+  const char16_t* next = ucs4_span(from, __max, _M_maxcode, _M_mode);
   return reinterpret_cast<const char*>(next) - __from;
 }
 
@@ -1217,20 +1301,17 @@ do_out(state_type&, const intern_type* __from, const intern_type* __from_end,
        extern_type* __to, extern_type* __to_end,
        extern_type*& __to_next) const
 {
-  range<char16_t> to{
-    reinterpret_cast<char16_t*>(__to),
-    reinterpret_cast<char16_t*>(__to_end)
-  };
+  range<char16_t, false> to{ __to, __to_end };
 #if __SIZEOF_WCHAR_T__ == 2
   range<const char16_t> from{
     reinterpret_cast<const char16_t*>(__from),
-    reinterpret_cast<const char16_t*>(__from_end)
+    reinterpret_cast<const char16_t*>(__from_end),
   };
   auto res = ucs2_out(from, to, _M_maxcode, _M_mode);
 #elif __SIZEOF_WCHAR_T__ == 4
   range<const char32_t> from{
     reinterpret_cast<const char32_t*>(__from),
-    reinterpret_cast<const char32_t*>(__from_end)
+    reinterpret_cast<const char32_t*>(__from_end),
   };
   auto res = ucs4_out(from, to, _M_maxcode, _M_mode);
 #else
@@ -1257,20 +1338,17 @@ do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
       intern_type* __to, intern_type* __to_end,
       intern_type*& __to_next) const
 {
-  range<const char16_t> from{
-    reinterpret_cast<const char16_t*>(__from),
-    reinterpret_cast<const char16_t*>(__from_end)
-  };
+  range<const char16_t, false> from{ __from, __from_end };
 #if __SIZEOF_WCHAR_T__ == 2
   range<char16_t> to{
     reinterpret_cast<char16_t*>(__to),
-    reinterpret_cast<char16_t*>(__to_end)
+    reinterpret_cast<char16_t*>(__to_end),
   };
   auto res = ucs2_in(from, to, _M_maxcode, _M_mode);
 #elif __SIZEOF_WCHAR_T__ == 4
   range<char32_t> to{
     reinterpret_cast<char32_t*>(__to),
-    reinterpret_cast<char32_t*>(__to_end)
+    reinterpret_cast<char32_t*>(__to_end),
   };
   auto res = ucs4_in(from, to, _M_maxcode, _M_mode);
 #else
@@ -1278,6 +1356,8 @@ do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
 #endif
   __from_next = reinterpret_cast<const char*>(from.next);
   __to_next = reinterpret_cast<wchar_t*>(to.next);
+  if (res == codecvt_base::ok && __from_next != __from_end)
+    res = codecvt_base::error;
   return res;
 }
 
@@ -1294,13 +1374,11 @@ __codecvt_utf16_base<wchar_t>::
 do_length(state_type&, const extern_type* __from,
 	  const extern_type* __end, size_t __max) const
 {
-  auto next = reinterpret_cast<const char16_t*>(__from);
+  range<const char16_t, false> from{ __from, __end };
 #if __SIZEOF_WCHAR_T__ == 2
-  next = ucs2_span(next, reinterpret_cast<const char16_t*>(__end), __max,
-		   _M_maxcode, _M_mode);
+  const char16_t* next = ucs2_span(from, __max, _M_maxcode, _M_mode);
 #elif __SIZEOF_WCHAR_T__ == 4
-  next = ucs4_span(next, reinterpret_cast<const char16_t*>(__end), __max,
-		   _M_maxcode, _M_mode);
+  const char16_t* next = ucs4_span(from, __max, _M_maxcode, _M_mode);
 #endif
   return reinterpret_cast<const char*>(next) - __from;
 }

@@ -103,6 +103,31 @@ test07()
   VERIFY( conv.converted() == 5 );
 }
 
+void
+test08()
+{
+  // Read/write UTF-16 code units from data not correctly aligned for char16_t
+  Conv<char16_t, 0x10FFFF, std::generate_header> conv;
+  const char src[] = "-\xFE\xFF\0\x61\xAB\xCD";
+  auto out = conv.from_bytes(src + 1, src + 7);
+  VERIFY( out[0] == 0x0061 );
+  VERIFY( out[1] == 0xabcd );
+  auto bytes = conv.to_bytes(out);
+  VERIFY( bytes == std::string(src + 1, 6) );
+}
+
+void
+test09()
+{
+  // Read/write UTF-16 code units from data not correctly aligned for char16_t
+  Conv<char32_t, 0x10FFFF, std::generate_header> conv;
+  const char src[] = "-\xFE\xFF\xD8\x08\xDF\x45";
+  auto out = conv.from_bytes(src + 1, src + 7);
+  VERIFY( out == U"\U00012345" );
+  auto bytes = conv.to_bytes(out);
+  VERIFY( bytes == std::string(src + 1, 6) );
+}
+
 int main()
 {
   test01();
@@ -112,4 +137,6 @@ int main()
   test05();
   test06();
   test07();
+  test08();
+  test09();
 }
