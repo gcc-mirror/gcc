@@ -3826,8 +3826,7 @@ parser::next ()
     {
       token = cpp_get_token (r);
     }
-  while (token->type == CPP_PADDING
-	 && token->type != CPP_EOF);
+  while (token->type == CPP_PADDING);
   return token;
 }
 
@@ -3842,8 +3841,7 @@ parser::peek (unsigned num)
     {
       token = cpp_peek_token (r, i++);
     }
-  while ((token->type == CPP_PADDING
-	  && token->type != CPP_EOF)
+  while (token->type == CPP_PADDING
 	 || (--num > 0));
   /* If we peek at EOF this is a fatal error as it leaves the
      cpp_reader in unusable state.  Assume we really wanted a
