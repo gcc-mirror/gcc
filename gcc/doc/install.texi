@@ -3211,6 +3211,14 @@ information have to.
 @item
 @uref{#powerpcle-x-eabi,,powerpcle-*-eabi}
 @item
+@uref{#riscv32-x-elf,,riscv32-*-elf}
+@item
+@uref{#riscv32-x-linux,,riscv32-*-linux}
+@item
+@uref{#riscv64-x-elf,,riscv64-*-elf}
+@item
+@uref{#riscv64-x-linux,,riscv64-*-linux}
+@item
 @uref{#s390-x-linux,,s390-*-linux*}
 @item
 @uref{#s390x-x-linux,,s390x-*-linux*}
@@ -4286,6 +4294,17 @@ This configuration is intended for embedded systems.
 @heading riscv32-*-elf
 The RISC-V RV32 instruction set.
 This configuration is intended for embedded systems.
+This (and all other RISC-V) targets are supported upstream as of the
+binutils 2.28 release.
+
+@html
+<hr />
+@end html
+@anchor{riscv32-x-linux}
+@heading riscv32-*-linux
+The RISC-V RV32 instruction set running GNU/Linux.
+This (and all other RISC-V) targets are supported upstream as of the
+binutils 2.28 release.
 
 @html
 <hr />
@@ -4294,13 +4313,8 @@ This configuration is intended for embedded systems.
 @heading riscv64-*-elf
 The RISC-V RV64 instruction set.
 This configuration is intended for embedded systems.
-
-@html
-<hr />
-@end html
-@anchor{riscv32-x-linux}
-@heading riscv32-*-linux
-The RISC-V RV32 instruction set running GNU/Linux.
+This (and all other RISC-V) targets are supported upstream as of the
+binutils 2.28 release.
 
 @html
 <hr />
@@ -4308,6 +4322,8 @@ The RISC-V RV32 instruction set running GNU/Linux.
 @anchor{riscv64-x-linux}
 @heading riscv64-*-linux
 The RISC-V RV64 instruction set running GNU/Linux.
+This (and all other RISC-V) targets are supported upstream as of the
+binutils 2.28 release.
 
 @html
 <hr />
