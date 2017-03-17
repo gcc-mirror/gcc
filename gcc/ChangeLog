@@ -1,3 +1,9 @@
+2017-03-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80048
+	* sese.c (free_sese_info): Properly release rename_map and
+	copied_bb_map elements.
+
 2017-03-16  Alexandre Oliva <aoliva@redhat.com>
 
 	* gimple-ssa-store-merging.c (struct imm_store_chain_info):
