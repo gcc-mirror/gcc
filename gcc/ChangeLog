@@ -1,3 +1,10 @@
+2017-03-17  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
+	2017-03-17  Tom de Vries  <tom@codesourcery.com>
+
+	* gcov-dump.c (print_usage): Print bug_report_url.
+
 2017-03-15  Matthias Klose  <doko@ubuntu.com>
 
 	Backport from mainline
