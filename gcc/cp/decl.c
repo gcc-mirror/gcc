@@ -13812,6 +13812,9 @@ xref_basetypes (tree ref, tree base_list)
 
   if (max_vbases)
     {
+      /* An aggregate can't have virtual base classes.  */
+      CLASSTYPE_NON_AGGREGATE (ref) = true;
+
       vec_alloc (CLASSTYPE_VBASECLASSES (ref), max_vbases);
 
       if (max_dvbases)
