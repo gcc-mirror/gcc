@@ -1,5 +1,8 @@
 2017-03-17  Bernd Schmidt  <bschmidt@redhat.com>
 
+	* reload.c (find_reloads): When reloading a nonoffsettable address,
+	use RELOAD_OTHER for it and its address reloads.
+
 	PR rtl-optimization/79910
 	* combine.c (record_used_regs): New static function.
 	(try_combine): Handle situations where there is an additional
