@@ -136,6 +136,8 @@ print_usage (void)
   printf ("  -l, --long           Dump record contents too\n");
   printf ("  -p, --positions      Dump record positions\n");
   printf ("  -w, --working-sets   Dump working set computed from summary\n");
+  printf ("\nFor bug reporting instructions, please see:\n%s.\n",
+	   bug_report_url);
 }
 
 static void
