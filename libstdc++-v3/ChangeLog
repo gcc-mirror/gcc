@@ -1,3 +1,80 @@
+2017-03-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2017-03-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/codecvt.cc (range): Add non-type template parameter and
+	define oerloaded operators for reading and writing code units.
+	(range<Elem, false>): Define partial specialization for accessing
+	wide characters in potentially unaligned byte ranges.
+	(ucs2_span(const char16_t*, const char16_t*, ...))
+	(ucs4_span(const char16_t*, const char16_t*, ...)): Change parameters
+	to range<const char16_t, false> in order to avoid unaligned reads.
+	(__codecvt_utf16_base<char16_t>::do_out)
+	(__codecvt_utf16_base<char32_t>::do_out)
+	(__codecvt_utf16_base<wchar_t>::do_out): Use range specialization for
+	unaligned data to avoid unaligned writes.
+	(__codecvt_utf16_base<char16_t>::do_in)
+	(__codecvt_utf16_base<char32_t>::do_in)
+	(__codecvt_utf16_base<wchar_t>::do_in): Likewise for writes. Return
+	error if there are unprocessable trailing bytes.
+	(__codecvt_utf16_base<char16_t>::do_length)
+	(__codecvt_utf16_base<char32_t>::do_length)
+	(__codecvt_utf16_base<wchar_t>::do_length): Pass arguments of type
+	range<const char16_t, false> to span functions.
+	* testsuite/22_locale/codecvt/codecvt_utf16/misaligned.cc: New test.
+
+	Backport from mainline
+	2017-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79980
+	* src/c++11/codecvt.cc (to_integer(codecvt_mode)): Fix target type.
+
+	PR libstdc++/80041
+	* src/c++11/codecvt.cc (__codecvt_utf16_base<wchar_t>::do_out)
+	(__codecvt_utf16_base<wchar_t>::do_in): Convert char arguments to
+	char16_t to work with UTF-16 instead of UTF-8.
+	* testsuite/22_locale/codecvt/codecvt_utf16/80041.cc: New test.
+
+	* src/c++11/codecvt.cc (codecvt<char16_t, char, mbstate_t>)
+	(codecvt<char32_t, char, mbstate_t>, __codecvt_utf8_base<char16_t>)
+	(__codecvt_utf8_base<char32_t>, __codecvt_utf8_base<wchar_t>)
+	(__codecvt_utf16_base<char16_t>, __codecvt_utf16_base<char32_t>)
+	(__codecvt_utf16_base<wchar_t>, __codecvt_utf8_utf16_base<char16_t>)
+	(__codecvt_utf8_utf16_base<char32_t>)
+	(__codecvt_utf8_utf16_base<wchar_t>): Fix do_encoding() and
+	do_max_length() return values.
+	* testsuite/22_locale/codecvt/codecvt_utf16/members.cc: New test.
+	* testsuite/22_locale/codecvt/codecvt_utf8/members.cc: New test.
+	* testsuite/22_locale/codecvt/codecvt_utf8_utf16/members.cc: New test.
+
+	PR libstdc++/79980
+	* include/bits/locale_conv.h (__do_str_codecvt): Set __count on
+	error path.
+	* src/c++11/codecvt.cc (operator&=, operator|=, operator~): Overloads
+	for manipulating codecvt_mode values.
+	(read_utf16_bom): Compare input to BOM constants instead of integral
+	constants that depend on endianness.  Take mode parameter by
+	reference and adjust it, to distinguish between no BOM present and
+	UTF-16BE BOM present.
+	(ucs4_in, ucs2_span, ucs4_span): Adjust calls to read_utf16_bom.
+	(surrogates): New enumeration type.
+	(utf16_in, utf16_out): Add surrogates parameter to choose between
+	UTF-16 and UCS2 behaviour.
+	(utf16_span, ucs2_span): Use std::min not std::max.
+	(ucs2_out): Use std::min not std::max.  Disallow surrogate pairs.
+	(ucs2_in): Likewise. Adjust calls to read_utf16_bom.
+	* testsuite/22_locale/codecvt/codecvt_utf16/79980.cc: New test.
+	* testsuite/22_locale/codecvt/codecvt_utf8/79980.cc: New test.
+
+	PR libstdc++/79511
+	* src/c++11/codecvt.cc (write_utf16_code_point): Don't write 0xffff
+	as a surrogate pair.
+	(__codecvt_utf8_utf16_base<char32_t>::do_in): Use native endianness
+	for internal representation.
+	(__codecvt_utf8_utf16_base<wchar_t>::do_in): Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf8_utf16/79511.cc: New test.
+
 2017-03-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/17_intro/names.cc: Undefine macros that clash with
