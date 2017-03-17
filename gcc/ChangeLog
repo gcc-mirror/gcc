@@ -1,3 +1,8 @@
+2017-03-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/80052
+	* aarch64.opt(verbose-cost-dump): Fix typo.
+
 2017-03-17  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR target/79951
