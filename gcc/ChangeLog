@@ -1,3 +1,11 @@
+2017-03-17  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/79910
+	* combine.c (record_used_regs): New static function.
+	(try_combine): Handle situations where there is an additional
+	instruction between I2 and I3 which needs to have a LOG_LINK
+	updated.
+
 2017-03-17  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/71437
