@@ -1,3 +1,9 @@
+2017-03-17  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/79951
+	* config/rs6000/rs6000.md (copysign<mode>3_fcpsgn): Test
+	for VECTOR_UNIT_VSX_P (<MODE>mode) too.
+
 2017-03-17  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* reload.c (find_reloads): When reloading a nonoffsettable address,

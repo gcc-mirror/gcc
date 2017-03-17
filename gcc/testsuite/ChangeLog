@@ -1,3 +1,8 @@
+2017-03-17  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/79951
+	* gcc.target/powerpc/pr79951.c: New.
+
 2017-03-17  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/79910
