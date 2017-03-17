@@ -725,7 +725,7 @@ class pass_store_merging : public gimple_opt_pass
 {
 public:
   pass_store_merging (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_tree_store_merging, ctxt)
+    : gimple_opt_pass (pass_data_tree_store_merging, ctxt), m_stores_head ()
   {
   }
 

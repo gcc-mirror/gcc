@@ -1,3 +1,10 @@
+2017-03-17  Marek Polacek  <polacek@redhat.com>
+	    Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR tree-optimization/80079
+	* gimple-ssa-store-merging.c (class pass_store_merging): Initialize
+	m_stores_head.
+
 2017-03-17  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/80075
