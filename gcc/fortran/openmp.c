@@ -3735,7 +3735,7 @@ check_symbol_not_pointer (gfc_symbol *sym, locus loc, const char *name)
     gfc_error ("Cray pointer object %qs of derived type in %s clause at %L",
 	       sym->name, name, &loc);
   if (sym->ts.type == BT_DERIVED && sym->attr.cray_pointee)
-    gfc_error ("Cray pointee object of derived type %qs in %s clause at %L",
+    gfc_error ("Cray pointee object %qs of derived type in %s clause at %L",
 	       sym->name, name, &loc);
 
   if ((sym->ts.type == BT_ASSUMED && sym->attr.pointer)
@@ -3746,12 +3746,12 @@ check_symbol_not_pointer (gfc_symbol *sym, locus loc, const char *name)
   if ((sym->ts.type == BT_ASSUMED && sym->attr.cray_pointer)
       || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
 	  && CLASS_DATA (sym)->attr.cray_pointer))
-    gfc_error ("Cray pointer object of polymorphic type %qs in %s clause at %L",
+    gfc_error ("Cray pointer object %qs of polymorphic type in %s clause at %L",
 	       sym->name, name, &loc);
   if ((sym->ts.type == BT_ASSUMED && sym->attr.cray_pointee)
       || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)
 	  && CLASS_DATA (sym)->attr.cray_pointee))
-    gfc_error ("Cray pointee object of polymorphic type %qs in %s clause at %L",
+    gfc_error ("Cray pointee object %qs of polymorphic type in %s clause at %L",
 	       sym->name, name, &loc);
 }
 

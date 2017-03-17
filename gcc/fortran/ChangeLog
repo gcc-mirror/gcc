@@ -1,3 +1,8 @@
+2017-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/79841
+	* openmp.c (check_symbol_not_pointer): Adjust diagnostics.
+
 2017-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/80010
