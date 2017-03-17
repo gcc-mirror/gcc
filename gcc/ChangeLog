@@ -1,3 +1,12 @@
+2017-03-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80075
+	* tree-eh.c (stmt_could_throw_1_p): Only handle gimple assigns.
+	Properly verify the LHS before the RHS possibly claims to be
+	handled.
+	(stmt_could_throw_p): Hande gimple conds fully here.  Clobbers
+	do not throw.
+
 2017-03-17  Martin Jambor  <mjambor@suse.cz>
 
 	* doc/invoke.texi (Option Options): Include -fipa-vrp in the list.
