@@ -1,3 +1,8 @@
+2017-03-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80075
+	* g++.dg/torture/pr80075.C: New testcase.
+
 2017-03-16  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/71294
