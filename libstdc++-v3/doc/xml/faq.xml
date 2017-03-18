@@ -1177,25 +1177,7 @@
   </question>
   <answer xml:id="a-get_iso_cxx">
     <para>
-    Copies of the full ISO 14882 standard are available on line via
-    the ISO mirror site for committee members.  Non-members, or those
-    who have not paid for the privilege of sitting on the committee
-    and sustained their two-meeting commitment for voting rights, may
-    get a copy of the standard from their respective national
-    standards organization.  In the USA, this national standards
-    organization is ANSI and their website is
-    right <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.ansi.org">here</link>.  (And if
-    you've already registered with them, clicking this link will take
-    you to directly to the place where you can
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://webstore.ansi.org/RecordDetail.aspx?sku=ISO%2FIEC+14882:2003">buy the standard on-line</link>.
-    </para>
-    <para>
-    Who is your country's member body?  Visit the
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.iso.ch/">ISO homepage</link> and find out!
-    </para>
-    <para>
-    The 2003 version of the standard (the 1998 version plus TC1) is
-    available in print, ISBN 0-470-84674-7.
+    Please refer to the Contributing section in our manual.
     </para> 
   </answer>
 </qandaentry>
