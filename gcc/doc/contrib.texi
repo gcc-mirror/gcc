@@ -89,6 +89,10 @@ Hans-J. Boehm for his garbage collector, IA-64 libffi port, and other
 Java work.
 
 @item
+Segher Boessenkool for helping maintain the PowerPC port and the
+instruction combiner plus various contributions to the middle end.
+
+@item
 Neil Booth for work on cpplib, lang hooks, debug hooks and other
 miscellaneous clean-ups.
 
