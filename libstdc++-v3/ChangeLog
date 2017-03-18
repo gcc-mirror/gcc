@@ -1,3 +1,12 @@
+2017-03-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Convert link to
+	ansi.org to https.
+	Update link to the C++ standard at ansi.org.
+
+	* doc/xml/faq.xml: Remove information redundant with the above;
+	instead add a reference.
+
 2017-03-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++11/codecvt.cc (range): Add non-type template parameter and
