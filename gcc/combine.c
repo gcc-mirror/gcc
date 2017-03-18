@@ -2806,9 +2806,8 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	bitmap_set_bit (links_regset, ll->regno);
       FOR_EACH_LOG_LINK (ll, i2)
 	bitmap_set_bit (links_regset, ll->regno);
-      if (i1)
-	FOR_EACH_LOG_LINK (ll, i1)
-	  bitmap_set_bit (links_regset, ll->regno);
+      FOR_EACH_LOG_LINK (ll, i1)
+	bitmap_set_bit (links_regset, ll->regno);
       if (i0)
 	FOR_EACH_LOG_LINK (ll, i0)
 	  bitmap_set_bit (links_regset, ll->regno);
@@ -4142,7 +4141,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	   multi-word registers.  Later, when fixing up LOG_LINKS, we
 	   deal with the case where a pseudo use moved.  */
 	if (!bitmap_empty_p (new_regs_in_i2)
-	    && prev_nonnote_insn (i3) != i2
+	    && prev_nonnote_nondebug_insn (i3) != i2
 	    && bitmap_first_set_bit (new_regs_in_i2) < FIRST_PSEUDO_REGISTER)
 	  {
 	    undo_all ();
