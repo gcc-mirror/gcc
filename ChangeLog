@@ -1,5 +1,9 @@
 2017-03-18  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* config.guess: Import latest from upstream.
+
+2017-03-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
 	* MAINTAINERS (Write After Approval): Remove entries that are
 	already covered under Reviewers.
 
