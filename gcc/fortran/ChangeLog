@@ -1,5 +1,14 @@
 2017-03-18  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/79676
+	* module.c (mio_symbol_attribute): Remove reset of the flag
+	'no_module_procedures'.
+	(check_for_module_procedures): New function. Move declaration
+	of 'no_module_procedures' to above it.
+	(gfc_dump_module): Traverse namespace calling new function.
+
+2017-03-18  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/71838
 	* symbol.c (check_conflict): A dummy procedure in a submodule,
 	module procedure is not an error.
