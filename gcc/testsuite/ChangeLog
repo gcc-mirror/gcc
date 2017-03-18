@@ -1,3 +1,9 @@
+2017-03-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/71838
+	* gfortran.dg/submodule_26.f08 : New test.
+	* gfortran.dg/submodule_27.f08 : New test.
+
 2017-03-17  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR target/79951

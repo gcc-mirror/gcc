@@ -1,3 +1,10 @@
+2017-03-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/71838
+	* symbol.c (check_conflict): A dummy procedure in a submodule,
+	module procedure is not an error.
+	(gfc_add_flavor): Ditto.
+
 2017-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/79841
@@ -46,7 +53,7 @@
 	* gfortran.texi: Added description for the new API functions. Updated
 	coverage of gfortran of TS18508.
 	* intrinsic.c (add_functions): Added symbols to resolve new intrinsic
-	functions. 
+	functions.
 	* intrinsic.h: Added prototypes.
 	* iresolve.c (gfc_resolve_failed_images): Resolve the failed_images
 	intrinsic.
