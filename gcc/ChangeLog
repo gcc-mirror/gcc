@@ -1,3 +1,8 @@
+2017-03-17  Jim Wilson  <jim.wilson@linaro.org>
+
+	* combine.c (try_combine): Delete redundant i1 test.  Call
+	prev_nonnote_nondebug_insn instead of prev_nonnote_insn.
+
 2017-03-17  Palmer Dabbelt  <palmer@dabbelt.com
 
 	* doc/install.texi (Specific) <riscv32-*-elf>: Add riscv32-*-elf,
