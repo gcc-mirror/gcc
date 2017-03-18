@@ -1,3 +1,8 @@
+2017-03-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific) <arm-*-eabi>: Remove old
+	requirement for binutils 2.13.
+
 2017-03-17  Jim Wilson  <jim.wilson@linaro.org>
 
 	* combine.c (try_combine): Delete redundant i1 test.  Call
