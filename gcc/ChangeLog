@@ -1,3 +1,8 @@
+2017-03-19  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific) <sparc-*-linux*>: No longer refer 
+	to age-old versions of binutils and glibc.
+
 2017-03-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* doc/contrib.texi (Contributors): Remove duplicate entry for myself.
