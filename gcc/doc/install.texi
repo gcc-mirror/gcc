@@ -4510,11 +4510,6 @@ This bug is fixed in Sun patch 118683-03 or later.
 @anchor{sparc-x-linux}
 @heading sparc-*-linux*
 
-GCC versions 3.0 and higher require binutils 2.11.2 and glibc 2.2.4
-or newer on this platform.  All earlier binutils and glibc
-releases mishandled unaligned relocations on @code{sparc-*-*} targets.
-
-
 @html
 <hr />
 @end html
