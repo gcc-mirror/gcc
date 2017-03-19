@@ -1,3 +1,8 @@
+2017-03-19  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR target/71017
+	* config/i386/cpuid.h: Fix another undefined behavior.
+
 2017-03-17  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:

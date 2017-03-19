@@ -63,7 +63,7 @@
 #define bit_MMXEXT	(1 << 22)
 #define bit_LM		(1 << 29)
 #define bit_3DNOWP	(1 << 30)
-#define bit_3DNOW	(1 << 31)
+#define bit_3DNOW	(1u << 31)
 
 /* Extended Features (%eax == 7) */
 /* %ebx */
