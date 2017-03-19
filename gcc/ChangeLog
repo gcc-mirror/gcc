@@ -1,3 +1,7 @@
+2017-03-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* doc/contrib.texi (Contributors): Remove duplicate entry for myself.
+
 2017-03-18  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/contrib.texi (Contributors): Add Segher Boessenkool.

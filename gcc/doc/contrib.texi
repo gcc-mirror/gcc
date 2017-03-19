@@ -82,9 +82,6 @@ specifications.
 Janne Blomqvist for contributions to GNU Fortran.
 
 @item
-Segher Boessenkool for various fixes.
-
-@item
 Hans-J. Boehm for his garbage collector, IA-64 libffi port, and other
 Java work.
 
