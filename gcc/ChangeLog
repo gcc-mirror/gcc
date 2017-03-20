@@ -1,3 +1,19 @@
+2017-03-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Revert:
+	2017-03-17  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* combine.c (record_used_regs): New static function.
+	(try_combine): Handle situations where there is an additional
+	instruction between I2 and I3 which needs to have a LOG_LINK
+	updated.
+
+	Revert:
+	2017-03-17  Jim Wilson  <jim.wilson@linaro.org>
+
+	* combine.c (try_combine): Delete redundant i1 test.  Call
+	prev_nonnote_nondebug_insn instead of prev_nonnote_insn.
+
 2017-03-20  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	PR target/80083
