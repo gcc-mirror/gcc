@@ -7439,9 +7439,6 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 
   if (TREE_CODE (type) == REFERENCE_TYPE)
     {
-      /* If e is a constant reference, use the referent directly.  */
-      if (DECL_INITIAL (decl))
-	dexp = DECL_INITIAL (decl);
       dexp = convert_from_reference (dexp);
       type = TREE_TYPE (type);
     }
