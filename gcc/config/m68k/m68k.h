@@ -440,8 +440,8 @@ along with GCC; see the file COPYING3.  If not see
 /* The m68k has three kinds of registers, so eight classes would be
    a complete set.  One of them is not needed.  */
 enum reg_class {
-  NO_REGS, DATA_REGS,
-  ADDR_REGS, FP_REGS,
+  NO_REGS, DATA_REGS, D0_REGS,
+  ADDR_REGS, A0_REGS, FP_REGS,
   GENERAL_REGS, DATA_OR_FP_REGS,
   ADDR_OR_FP_REGS, ALL_REGS,
   LIM_REG_CLASSES };
@@ -449,8 +449,8 @@ enum reg_class {
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
 #define REG_CLASS_NAMES \
- { "NO_REGS", "DATA_REGS",              \
-   "ADDR_REGS", "FP_REGS",              \
+ { "NO_REGS", "DATA_REGS", "D0_REGS"              \
+   "ADDR_REGS", "A0_REGS", "FP_REGS",              \
    "GENERAL_REGS", "DATA_OR_FP_REGS",   \
    "ADDR_OR_FP_REGS", "ALL_REGS" }
 
@@ -458,7 +458,9 @@ enum reg_class {
 {					\
   {0x00000000},  /* NO_REGS */		\
   {0x000000ff},  /* DATA_REGS */	\
+  {0x00000001},  /* D0_REGS */	\
   {0x0100ff00},  /* ADDR_REGS */	\
+  {0x00000100},  /* A0_REGS */	\
   {0x00ff0000},  /* FP_REGS */		\
   {0x0100ffff},  /* GENERAL_REGS */	\
   {0x00ff00ff},  /* DATA_OR_FP_REGS */	\

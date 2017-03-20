@@ -801,9 +801,11 @@ m68k_compute_frame_layout (void)
 
   /* Only compute the frame once per function.
      Don't cache information until reload has been completed.  */
-  if (current_frame.funcdef_no == current_function_funcdef_no
-      && reload_completed)
-    return;
+  /* SBF: No. Register renaming may free some variables,
+   * => compute it again and again... */
+//  if (current_frame.funcdef_no == current_function_funcdef_no
+//      && reload_completed)
+//    return;
 
   current_frame.size = (get_frame_size () + 3) & -4;
 
@@ -5272,12 +5274,12 @@ m68k_regno_mode_ok (int regno, machine_mode mode)
     {
       /* Data Registers, can hold aggregate if fits in.  */
       if (regno + GET_MODE_SIZE (mode) / 4 <= 8)
-	return !flag_omit_frame_pointer || regno != FRAME_POINTER_REGNUM;
+	return true;
     }
   else if (ADDRESS_REGNO_P (regno))
     {
       if (regno + GET_MODE_SIZE (mode) / 4 <= 16)
-	return !flag_omit_frame_pointer || regno != FRAME_POINTER_REGNUM;
+	return !frame_pointer_needed || regno != FRAME_POINTER_REGNUM;
     }
   else if (FP_REGNO_P (regno))
     {

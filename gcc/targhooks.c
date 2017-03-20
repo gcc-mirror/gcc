@@ -1542,6 +1542,13 @@ default_preferred_rename_class (reg_class_t rclass ATTRIBUTE_UNUSED)
   return NO_REGS;
 }
 
+/* The default implementation of TARGET_PREFERRED_RENAME_CLASS2.  */
+reg_class_t
+default_preferred_rename_class2 (reg_class_t rclass, int regno ATTRIBUTE_UNUSED)
+{
+  return targetm.preferred_rename_class(rclass);
+}
+
 /* The default implementation of TARGET_CLASS_LIKELY_SPILLED_P.  */
 
 bool
