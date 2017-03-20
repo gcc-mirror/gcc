@@ -1,3 +1,13 @@
+2017-03-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/80054
+	* gimple-ssa-strength-reduction.c (all_phi_incrs_profitable): Fail
+	the optimization if a PHI or any of its arguments is not dominated
+	by the candidate's basis.  Use gphi* rather than gimple* as
+	appropriate.
+	(replace_profitable_candidates): Clean up a gimple* variable that
+	should be a gphi* variable.
+
 2017-03-20  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/52477
