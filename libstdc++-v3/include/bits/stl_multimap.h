@@ -77,7 +77,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  @tparam _Key  Type of key objects.
    *  @tparam  _Tp  Type of mapped objects.
    *  @tparam _Compare  Comparison function object type, defaults to less<_Key>.
-   *  @tparam _Alloc  Allocator type, defaults to 
+   *  @tparam _Alloc  Allocator type, defaults to
    *                  allocator<pair<const _Key, _Tp>.
    *
    *  Meets the requirements of a <a href="tables.html#65">container</a>, a
@@ -98,19 +98,23 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     class multimap
     {
     public:
-      typedef _Key                                          key_type;
-      typedef _Tp                                           mapped_type;
-      typedef std::pair<const _Key, _Tp>                    value_type;
-      typedef _Compare                                      key_compare;
-      typedef _Alloc                                        allocator_type;
+      typedef _Key					key_type;
+      typedef _Tp					mapped_type;
+      typedef std::pair<const _Key, _Tp>		value_type;
+      typedef _Compare					key_compare;
+      typedef _Alloc					allocator_type;
 
     private:
+#ifdef _GLIBCXX_CONCEPT_CHECKS
       // concept requirements
-      typedef typename _Alloc::value_type                   _Alloc_value_type;
+      typedef typename _Alloc::value_type		_Alloc_value_type;
+# if __cplusplus < 201103L
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
+# endif
       __glibcxx_class_requires4(_Compare, bool, _Key, _Key,
 				_BinaryFunctionConcept)
       __glibcxx_class_requires2(value_type, _Alloc_value_type, _SameTypeConcept)
+#endif
 
     public:
       class value_compare
@@ -143,15 +147,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     public:
       // many of these are specified differently in ISO, but the following are
       // "functionally equivalent"
-      typedef typename _Alloc_traits::pointer            pointer;
-      typedef typename _Alloc_traits::const_pointer      const_pointer;
-      typedef typename _Alloc_traits::reference          reference;
-      typedef typename _Alloc_traits::const_reference    const_reference;
-      typedef typename _Rep_type::iterator               iterator;
-      typedef typename _Rep_type::const_iterator         const_iterator;
-      typedef typename _Rep_type::size_type              size_type;
-      typedef typename _Rep_type::difference_type        difference_type;
-      typedef typename _Rep_type::reverse_iterator       reverse_iterator;
+      typedef typename _Alloc_traits::pointer		 pointer;
+      typedef typename _Alloc_traits::const_pointer	 const_pointer;
+      typedef typename _Alloc_traits::reference		 reference;
+      typedef typename _Alloc_traits::const_reference	 const_reference;
+      typedef typename _Rep_type::iterator		 iterator;
+      typedef typename _Rep_type::const_iterator	 const_iterator;
+      typedef typename _Rep_type::size_type		 size_type;
+      typedef typename _Rep_type::difference_type	 difference_type;
+      typedef typename _Rep_type::reverse_iterator	 reverse_iterator;
       typedef typename _Rep_type::const_reverse_iterator const_reverse_iterator;
 
 #if __cplusplus > 201402L
@@ -238,10 +242,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /// Allocator-extended range constructor.
       template<typename _InputIterator>
-        multimap(_InputIterator __first, _InputIterator __last,
+	multimap(_InputIterator __first, _InputIterator __last,
 		 const allocator_type& __a)
 	: _M_t(_Compare(), _Pair_alloc_type(__a))
-        { _M_t._M_insert_equal(__first, __last); }
+	{ _M_t._M_insert_equal(__first, __last); }
 #endif
 
       /**
@@ -254,9 +258,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  and NlogN otherwise (where N is distance(__first,__last)).
        */
       template<typename _InputIterator>
-        multimap(_InputIterator __first, _InputIterator __last)
+	multimap(_InputIterator __first, _InputIterator __last)
 	: _M_t()
-        { _M_t._M_insert_equal(__first, __last); }
+	{ _M_t._M_insert_equal(__first, __last); }
 
       /**
        *  @brief  Builds a %multimap from a range.
@@ -270,11 +274,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  and NlogN otherwise (where N is distance(__first,__last)).
        */
       template<typename _InputIterator>
-        multimap(_InputIterator __first, _InputIterator __last,
+	multimap(_InputIterator __first, _InputIterator __last,
 		 const _Compare& __comp,
 		 const allocator_type& __a = allocator_type())
 	: _M_t(__comp, _Pair_alloc_type(__a))
-        { _M_t._M_insert_equal(__first, __last); }
+	{ _M_t._M_insert_equal(__first, __last); }
 
 #if __cplusplus >= 201103L
       /**
@@ -326,7 +330,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /// Get a copy of the memory allocation object.
       allocator_type
-      get_allocator() const _GLIBCXX_NOEXCEPT 
+      get_allocator() const _GLIBCXX_NOEXCEPT
       { return allocator_type(_M_t.get_allocator()); }
 
       // iterators
@@ -530,9 +534,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Pair, typename = typename
 	       std::enable_if<std::is_constructible<value_type,
 						    _Pair&&>::value>::type>
-        iterator
-        insert(_Pair&& __x)
-        { return _M_t._M_insert_equal(std::forward<_Pair>(__x)); }
+	iterator
+	insert(_Pair&& __x)
+	{ return _M_t._M_insert_equal(std::forward<_Pair>(__x)); }
 #endif
 
       /**
@@ -567,9 +571,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Pair, typename = typename
 	       std::enable_if<std::is_constructible<value_type,
 						    _Pair&&>::value>::type>
-        iterator
-        insert(const_iterator __position, _Pair&& __x)
-        { return _M_t._M_insert_equal_(__position,
+	iterator
+	insert(const_iterator __position, _Pair&& __x)
+	{ return _M_t._M_insert_equal_(__position,
 				       std::forward<_Pair>(__x)); }
 #endif
 
@@ -583,9 +587,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Complexity similar to that of the range constructor.
        */
       template<typename _InputIterator>
-        void
-        insert(_InputIterator __first, _InputIterator __last)
-        { _M_t._M_insert_equal(__first, __last); }
+	void
+	insert(_InputIterator __first, _InputIterator __last)
+	{ _M_t._M_insert_equal(__first, __last); }
 
 #if __cplusplus >= 201103L
       /**
@@ -661,7 +665,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief Erases an element from a %multimap.
        *  @param  __position  An iterator pointing to the element to be erased.
        *  @return An iterator pointing to the element immediately following
-       *          @a position prior to the element being erased. If no such 
+       *          @a position prior to the element being erased. If no such
        *          element exists, end() is returned.
        *
        *  This function erases an element, pointed to by the given iterator,
@@ -1016,13 +1020,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       //@}
 
       template<typename _K1, typename _T1, typename _C1, typename _A1>
-        friend bool
-        operator==(const multimap<_K1, _T1, _C1, _A1>&,
+	friend bool
+	operator==(const multimap<_K1, _T1, _C1, _A1>&,
 		   const multimap<_K1, _T1, _C1, _A1>&);
 
       template<typename _K1, typename _T1, typename _C1, typename _A1>
-        friend bool
-        operator<(const multimap<_K1, _T1, _C1, _A1>&,
+	friend bool
+	operator<(const multimap<_K1, _T1, _C1, _A1>&,
 		  const multimap<_K1, _T1, _C1, _A1>&);
   };
 
@@ -1039,7 +1043,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator==(const multimap<_Key, _Tp, _Compare, _Alloc>& __x,
-               const multimap<_Key, _Tp, _Compare, _Alloc>& __y)
+	       const multimap<_Key, _Tp, _Compare, _Alloc>& __y)
     { return __x._M_t == __y._M_t; }
 
   /**
@@ -1056,42 +1060,42 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator<(const multimap<_Key, _Tp, _Compare, _Alloc>& __x,
-              const multimap<_Key, _Tp, _Compare, _Alloc>& __y)
+	      const multimap<_Key, _Tp, _Compare, _Alloc>& __y)
     { return __x._M_t < __y._M_t; }
 
   /// Based on operator==
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator!=(const multimap<_Key, _Tp, _Compare, _Alloc>& __x,
-               const multimap<_Key, _Tp, _Compare, _Alloc>& __y)
+	       const multimap<_Key, _Tp, _Compare, _Alloc>& __y)
     { return !(__x == __y); }
 
   /// Based on operator<
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator>(const multimap<_Key, _Tp, _Compare, _Alloc>& __x,
-              const multimap<_Key, _Tp, _Compare, _Alloc>& __y)
+	      const multimap<_Key, _Tp, _Compare, _Alloc>& __y)
     { return __y < __x; }
 
   /// Based on operator<
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator<=(const multimap<_Key, _Tp, _Compare, _Alloc>& __x,
-               const multimap<_Key, _Tp, _Compare, _Alloc>& __y)
+	       const multimap<_Key, _Tp, _Compare, _Alloc>& __y)
     { return !(__y < __x); }
 
   /// Based on operator<
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator>=(const multimap<_Key, _Tp, _Compare, _Alloc>& __x,
-               const multimap<_Key, _Tp, _Compare, _Alloc>& __y)
+	       const multimap<_Key, _Tp, _Compare, _Alloc>& __y)
     { return !(__x < __y); }
 
   /// See std::multimap::swap().
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline void
     swap(multimap<_Key, _Tp, _Compare, _Alloc>& __x,
-         multimap<_Key, _Tp, _Compare, _Alloc>& __y)
+	 multimap<_Key, _Tp, _Compare, _Alloc>& __y)
     _GLIBCXX_NOEXCEPT_IF(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
