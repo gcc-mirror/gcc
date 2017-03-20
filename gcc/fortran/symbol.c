@@ -544,6 +544,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (in_equivalence, oacc_declare_copyin);
   conf (in_equivalence, oacc_declare_deviceptr);
   conf (in_equivalence, oacc_declare_device_resident);
+  conf (in_equivalence, is_bind_c);
 
   conf (dummy, result);
   conf (entry, result);
