@@ -1,3 +1,10 @@
+2017-03-20  Martin Liska  <mliska@suse.cz>
+
+	PR target/79769
+	PR target/79770
+	* g++.dg/pr79769.C: New test.
+	* gcc.target/i386/mpx/pr79770.c: New test.
+
 2017-03-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/78857
