@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.1-b20170226\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-02-25 19:14+0000\n"
-"PO-Revision-Date: 2017-03-15 21:51+0100\n"
+"PO-Revision-Date: 2017-03-18 14:47+0100\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -81,7 +81,7 @@ msgid ""
 "write_c_file - output name is %s, prefix is %s\n"
 msgstr ""
 "\n"
-"write_c_file - Ausgabename ist %s, Präfix ist %s\n"
+"write_c_file: Ausgabename ist %s, Präfix ist %s\n"
 
 #: collect2.c:2584
 #, c-format
@@ -114,12 +114,12 @@ msgstr "<eingebaut>"
 #: diagnostic.c:466
 #, c-format
 msgid "compilation terminated due to -fmax-errors=%u.\n"
-msgstr "Kompilierung wegen -fmax-errors=%u beendet.\n"
+msgstr "Kompilierung wegen »-fmax-errors=%u« beendet.\n"
 
 #: diagnostic.c:494
 #, c-format
 msgid "compilation terminated due to -Wfatal-errors.\n"
-msgstr "Kompilierung wegen -Wfatal-errors beendet.\n"
+msgstr "Kompilierung wegen »-Wfatal-errors« beendet.\n"
 
 #: diagnostic.c:514
 #, c-format
@@ -175,12 +175,12 @@ msgstr "unbeendete Assemblerdialekt-Alternative"
 #: final.c:3761
 #, c-format
 msgid "operand number missing after %%-letter"
-msgstr "Operandenzahl fehlt hinter %%-Buchstabe"
+msgstr "Operandennummer fehlt hinter %%-Buchstabe"
 
 #: final.c:3764 final.c:3805
 #, c-format
 msgid "operand number out of range"
-msgstr "Operandenzahl außerhalb des Wertebereiches"
+msgstr "Operandennummer außerhalb des Wertebereiches"
 
 #: final.c:3822
 #, c-format
@@ -202,7 +202,7 @@ msgstr "»%%l«-Operand ist keine Marke"
 #: config/pdp11/pdp11.c:1698
 #, c-format
 msgid "floating constant misused"
-msgstr "Gleitkommakonstante falsch benutzt"
+msgstr "Gleitkommakonstante falsch verwendet"
 
 #: final.c:4046 config/arc/arc.c:5090 config/i386/i386.c:17150
 #: config/pdp11/pdp11.c:1739
@@ -300,7 +300,7 @@ msgstr "                           Spezifische Typen der Kommandozeilenoptionen 
 
 #: gcc.c:3410
 msgid "  (Use '-v --help' to display command line options of sub-processes).\n"
-msgstr "  (Verwenden Sie „-v --help“ zum Anzeigen der Kommandozeilenoptionen von Subprozessen).\n"
+msgstr "  (Verwenden Sie »-v --help« zum Anzeigen der Kommandozeilenoptionen von Subprozessen).\n"
 
 #: gcc.c:3411
 msgid "  --version                Display compiler version information.\n"
@@ -356,9 +356,7 @@ msgstr ""
 
 #: gcc.c:3426
 msgid "  -print-multi-os-directory Display the relative path to OS libraries.\n"
-msgstr ""
-"  -print-multi-os-directory Relativen Pfad zu Betriebssystembibliotheken\n"
-"                            anzeigen.\n"
+msgstr "  -print-multi-os-directory Relativen Pfad zu Betriebssystembibliotheken anzeigen.\n"
 
 #: gcc.c:3427
 msgid "  -print-sysroot           Display the target libraries directory.\n"
@@ -374,7 +372,7 @@ msgstr "  -Wa,<Optionen>           Die durch Kommata getrennten <Optionen> an de
 
 #: gcc.c:3430
 msgid "  -Wp,<options>            Pass comma-separated <options> on to the preprocessor.\n"
-msgstr "  -Wp,<Optionen>           Die durch Kommata getrennten getrennten <Optionen> an den Präprozessor übergeben.\n"
+msgstr "  -Wp,<Optionen>           Die durch Kommata getrennten <Optionen> an den Präprozessor übergeben.\n"
 
 #: gcc.c:3431
 msgid "  -Wl,<options>            Pass comma-separated <options> on to the linker.\n"
@@ -483,7 +481,7 @@ msgid ""
 msgstr ""
 "  -x <Sprache>             Sprache der folgenden Eingabedateien angeben\n"
 "                           Zulässige Sprachen sind: c c++ assembler none\n"
-"                           „none“ bedeutet den Rückfall auf das Standardverhalten,\n"
+"                           »none« bedeutet den Rückfall auf das Standardverhalten,\n"
 "                           die Sprache aufgrund der Dateiendung zu erraten.\n"
 
 #: gcc.c:3463
@@ -497,7 +495,7 @@ msgstr ""
 "\n"
 "Optionen, die mit -g, -f, -m, -O, -W, oder --param beginnen, werden automatisch\n"
 " an die verschiedenen Subprozesse, die von %s aufgerufen werden, übergeben.\n"
-" Um andere Optionen an diese Prozesse zu übergeben, müssen die Optionen\n"
+" Um weitere Optionen an diese Prozesse zu übergeben, müssen die Optionen\n"
 " -W<Buchstabe> verwendet werden.\n"
 
 #: gcc.c:5934
@@ -680,7 +678,7 @@ msgstr "Skalierung und Normalisierung können nicht gleichzeitig aktiv sein; wir
 #: gcov-tool.c:333 gcov-tool.c:343
 #, c-format
 msgid "incorrect format in scaling, using 1/1\n"
-msgstr "Falsches Format der Skalierung; 1/1 wird benutzt\n"
+msgstr "Falsches Format der Skalierung; 1/1 wird verwendet\n"
 
 #: gcov-tool.c:353
 #, c-format
@@ -1138,12 +1136,12 @@ msgstr "nicht vorhandenes Verzeichnis »%s« wird ignoriert\n"
 #: incpath.c:374
 #, c-format
 msgid "#include \"...\" search starts here:\n"
-msgstr "#include \"...\" - Suche beginnt hier:\n"
+msgstr "Suche für »#include \"...\"« beginnt hier:\n"
 
 #: incpath.c:378
 #, c-format
 msgid "#include <...> search starts here:\n"
-msgstr "#include <...> - Suche beginnt hier:\n"
+msgstr "Suche für »#include <...>« beginnt hier:\n"
 
 #: incpath.c:383
 #, c-format
@@ -1220,7 +1218,7 @@ msgstr "Standard %d Minimum %d Maximum %d"
 #: opts.c:1163
 #, c-format
 msgid "Same as %s.  Use the latter option instead."
-msgstr "Identisch mit %s. Benutzen Sie daher bitte dise Option."
+msgstr "Identisch mit %s. Verwenden Sie daher bitte diese Option."
 
 #: opts.c:1171
 #, c-format
@@ -1247,7 +1245,7 @@ msgstr " Keine Optionen mit den gewünschten Eigenschaften gefunden\n"
 #: opts.c:1281
 #, c-format
 msgid " None found.  Use --help=%s to show *all* the options supported by the %s front-end.\n"
-msgstr " Nichts gefunden. Bitte verwenden Sie --help=%s, um *alle* vom Frontend %s unterstützten Optionen anzuzeigen\n"
+msgstr " Nichts gefunden. Bitte verwenden Sie »--help=%s«, um *alle* vom Frontend %s unterstützten Optionen anzuzeigen\n"
 
 #: opts.c:1287
 #, c-format
@@ -1309,7 +1307,7 @@ msgstr "Plugins"
 #: plugin.c:836
 #, c-format
 msgid "*** WARNING *** there are active plugins, do not report this as a bug unless you can reproduce it without enabling any plugins.\n"
-msgstr "*** WARNUNG *** es gibt aktive Plugins - bitte keine Fehler melden, wenn diese nicht ohne Plugins reproduziert werden können.\n"
+msgstr "*** WARNUNG *** es gibt aktive Plugins – bitte Fehler nur dann melden, wenn diese auch ohne alle Plugins reproduziert werden können.\n"
 
 #. It's the compiler's fault.
 #: reload1.c:6080
@@ -1340,11 +1338,11 @@ msgstr "erzeugt und mit anderen Einstellungen von »%s« verwendet"
 
 #: targhooks.c:1800
 msgid "created and used with different settings of -fpic"
-msgstr "erzeugt und mit anderen Einstellungen von -fpic verwendet"
+msgstr "erzeugt und mit anderen Einstellungen von »-fpic« verwendet"
 
 #: targhooks.c:1802
 msgid "created and used with different settings of -fpie"
-msgstr "erzeugt und mit anderen Einstellungen von -fpie verwendet"
+msgstr "erzeugt und mit anderen Einstellungen von »-fpie« verwendet"
 
 #: tlink.c:387
 #, c-format
@@ -1406,7 +1404,7 @@ msgstr "angegebene Optionen: "
 
 #: toplev.c:852
 msgid "options enabled: "
-msgstr "angeschaltete Optionen: "
+msgstr "eingeschaltete Optionen: "
 
 #: tree-diagnostic.c:293 c/c-decl.c:5366 c/c-typeck.c:6993 cp/error.c:996
 #: c-family/c-pretty-print.c:411
@@ -1636,12 +1634,12 @@ msgstr "Größte Wahrscheinlichkeit des Einsprung-BB der geteilten Region (in Pr
 #: params.def:135
 #, no-c-format
 msgid "If -fvariable-expansion-in-unroller is used, the maximum number of times that an individual variable will be expanded during loop unrolling."
-msgstr "Wenn -fvariable-expansion-in-unroller verwendet wird, die Höchstzahl der Fälle, dass eine einzelne Variable während Loop-Unrolling expandiert wird"
+msgstr "Wenn »-fvariable-expansion-in-unroller« verwendet wird, die Höchstzahl der Fälle, dass eine einzelne Variable während Loop-Unrolling expandiert wird"
 
 #: params.def:141
 #, no-c-format
 msgid "If -ftree-vectorize is used, the minimal loop bound of a loop to be considered for vectorization."
-msgstr "Wenn -ftree-vectorize verwendet wird, die minimale Schleifengrenze einer für Vektorisierung zu betrachtenden Schleife."
+msgstr "Wenn »-ftree-vectorize« verwendet wird, die minimale Schleifengrenze einer für Vektorisierung zu betrachtenden Schleife."
 
 #: params.def:152
 #, no-c-format
@@ -2086,7 +2084,7 @@ msgstr "Höchstzahl der RTL-Knoten, die als letzte Werte des Kombinierers aufgez
 #: params.def:684
 #, no-c-format
 msgid "The maximum number of insns combine tries to combine."
-msgstr "Maximale Anzahl von Befehlen, die »combine« zu kombinieren versucht."
+msgstr "Höchstzahl von Befehlen, die »combine« zu kombinieren versucht."
 
 #: params.def:693
 #, no-c-format
@@ -2216,12 +2214,12 @@ msgstr "Höchstzahl der Basis-Blöcke pro Funktion, die von Graphite analysiert 
 #: params.def:879
 #, no-c-format
 msgid "maximum number of arrays per scop."
-msgstr "Höchstzahl der Parameter in einem SCoP."
+msgstr "Höchstzahl der Arrays in einem SCoP."
 
 #: params.def:886
 #, no-c-format
 msgid "minimal number of loops per function to be analyzed by Graphite."
-msgstr "Höchstzahl der Basis-Blöcke pro Funktion, die von Graphite analysiert werden."
+msgstr "Mindestzahl der Basis-Blöcke pro Funktion, die von Graphite analysiert werden."
 
 #: params.def:891
 #, no-c-format
@@ -2241,7 +2239,7 @@ msgstr "Höchstzahl der Basis-Blöcke in Schleife für Schleifeninvariantenbeweg
 #: params.def:912
 #, no-c-format
 msgid "use internal function id in profile lookup."
-msgstr "Interne Funktions-ID bei Profilnachschlagen benutzen."
+msgstr "Interne Funktions-ID bei Profilnachschlagen verwenden."
 
 #: params.def:920
 #, no-c-format
@@ -2256,12 +2254,12 @@ msgstr "Höchstzahl der in Basis-Block zu betrachtenden Anweisungen für SLP-Vek
 #: params.def:931
 #, no-c-format
 msgid "Min. ratio of insns to prefetches to enable prefetching for a loop with an unknown trip count."
-msgstr "Kleinstes Verhältnis von Befehlen zu Prefetches, um Prefetching für eine Schleife mit unbekannter Frequentierung zu aktivieren."
+msgstr "Kleinstes Verhältnis von Befehlen zu Prefetches, um Prefetching für eine Schleife mit unbekannter Frequentierung einzuschalten."
 
 #: params.def:937
 #, no-c-format
 msgid "Min. ratio of insns to mem ops to enable prefetching in a loop."
-msgstr "Kleinstes Verhältnis von Befehlen zu Speicheroperationen, um Prefetching in einer Schleife zu aktivieren."
+msgstr "Kleinstes Verhältnis von Befehlen zu Speicheroperationen, um Prefetching in einer Schleife einzuschalten."
 
 #: params.def:944
 #, no-c-format
@@ -2411,7 +2409,7 @@ msgstr "Höchstzahl der Zeichenketten, für die der strlen-Optimierungsdurchgang
 #: params.def:1130
 #, no-c-format
 msgid "Which -fsched-pressure algorithm to apply."
-msgstr "Anzuwendender Algorithmus für -fsched-pressure."
+msgstr "Anzuwendender Algorithmus für »-fsched-pressure«."
 
 #: params.def:1136
 #, no-c-format
@@ -2446,7 +2444,7 @@ msgstr "ASan-Schutz für eingebaute Funktionen einschalten."
 #: params.def:1167
 #, no-c-format
 msgid "Enable asan detection of use-after-return bugs."
-msgstr "ASan-Schutz für Benutzung-nach-Rückkehr-Fehler einschalten."
+msgstr "ASan-Schutz für Verwendung-nach-Rückkehr-Fehler einschalten."
 
 #: params.def:1172
 #, no-c-format
@@ -2456,7 +2454,7 @@ msgstr "Rückruffunktionen statt inline-Code generieren, wenn innerhalb der Funk
 #: params.def:1178
 #, no-c-format
 msgid "Use direct poisoning/unpoisoning instructions for variables smaller or equal to this number."
-msgstr "Direkt vergiftende/entgiftende Befehle für Variablen benutzen, die maximal die angegebene Größe haben."
+msgstr "Direkt vergiftende/entgiftende Befehle für Variablen verwenden, die maximal die angegebene Größe haben."
 
 #: params.def:1184
 #, no-c-format
@@ -2979,22 +2977,22 @@ msgstr "ungültiger Operand für Code %%s"
 #: config/arc/arc.c:3260 config/m32r/m32r.c:2109
 #, c-format
 msgid "invalid operand to %%R code"
-msgstr "Ungültiger Operand für %%R-Code"
+msgstr "ungültiger Operand für %%R-Code"
 
 #: config/arc/arc.c:3297 config/m32r/m32r.c:2132
 #, c-format
 msgid "invalid operand to %%H/%%L code"
-msgstr "Ungültiger Operand für %%H/%%L-Code"
+msgstr "ungültiger Operand für %%H/%%L-Code"
 
 #: config/arc/arc.c:3345 config/m32r/m32r.c:2203
 #, c-format
 msgid "invalid operand to %%U code"
-msgstr "Ungültiger Operand für %%U-Code"
+msgstr "ungültiger Operand für %%U-Code"
 
 #: config/arc/arc.c:3356
 #, c-format
 msgid "invalid operand to %%V code"
-msgstr "Ungültiger Operand für %%V-Code"
+msgstr "ungültiger Operand für %%V-Code"
 
 #: config/arc/arc.c:3413
 #, c-format
@@ -3007,7 +3005,7 @@ msgstr "ungültiger Operand für Code %%O"
 #: config/m32r/m32r.c:2230 config/nds32/nds32.c:2292 config/sparc/sparc.c:9134
 #, c-format
 msgid "invalid operand output code"
-msgstr "Ungültiger Operanden-Ausgabecode"
+msgstr "ungültiger Operanden-Ausgabecode"
 
 #: config/arc/arc.c:5078
 #, c-format
@@ -3372,7 +3370,7 @@ msgstr "ungültiges UNSPEC als Operand"
 #: config/i386/i386.c:17635
 #, c-format
 msgid "invalid use of asm flag output"
-msgstr "ungültige Benutzung der asm-Schalter-Ausgabe"
+msgstr "ungültige Verwendung der asm-Schalter-Ausgabe"
 
 #: config/i386/i386.c:17852
 #, c-format
@@ -3493,7 +3491,7 @@ msgstr "nur 0.0 kann als Immediate geladen werden"
 
 #: config/lm32/lm32.c:580
 msgid "bad operand"
-msgstr "Ungültiger Operand"
+msgstr "ungültiger Operand"
 
 #: config/lm32/lm32.c:592
 msgid "can't use non gp relative absolute address"
@@ -3660,11 +3658,11 @@ msgstr "-maltivec=le ist nicht für Big-Endian-Zielsysteme erlaubt"
 
 #: config/rs6000/rs6000.c:4163
 msgid "-mvsx requires hardware floating point"
-msgstr "-mvsx benötigt Hardware-Gleitkomma"
+msgstr "-mvsx benötigt Hardware-Gleitkommabefehle"
 
 #: config/rs6000/rs6000.c:4171
 msgid "-mvsx and -mpaired are incompatible"
-msgstr "-mvsx und -mpaired sind unverträglich"
+msgstr "»-mvsx« und »-mpaired« sind unverträglich"
 
 #: config/rs6000/rs6000.c:4173
 msgid "-mvsx needs indexed addressing"
@@ -3672,7 +3670,7 @@ msgstr "-mvsx benötigt indizierte Adressierung"
 
 #: config/rs6000/rs6000.c:4178
 msgid "-mvsx and -mno-altivec are incompatible"
-msgstr "-mvsx und -mno-altivec sind unverträglich"
+msgstr "»-mvsx« und »-mno-altivec« sind unverträglich"
 
 #: config/rs6000/rs6000.c:4180
 msgid "-mno-altivec disables vsx"
@@ -3891,7 +3889,7 @@ msgstr "ungültige Konstante für Ausgabemodifizierer »%c«"
 #: config/s390/s390.c:7661
 #, c-format
 msgid "invalid constant - try using an output modifier"
-msgstr "Ungültige Konstante - anderen Ausgabemodifizierer probieren"
+msgstr "Ungültige Konstante – anderen Ausgabemodifizierer probieren"
 
 #: config/s390/s390.c:7698
 #, c-format
@@ -3901,7 +3899,7 @@ msgstr "ungültiger konstanter Vektor für Ausgabemodifizierer »%c«"
 #: config/s390/s390.c:7705
 #, c-format
 msgid "invalid expression - try using an output modifier"
-msgstr "ungültiger Ausdruck - anderen Ausgabemodifizierer probieren"
+msgstr "ungültiger Ausdruck – anderen Ausgabemodifizierer probieren"
 
 #: config/s390/s390.c:7708
 #, c-format
@@ -4582,11 +4580,11 @@ msgstr "von hier erfordert\n"
 
 #: cp/error.c:3489
 msgid "%r%s:%d:%d:%R   [ skipping %d instantiation contexts, use -ftemplate-backtrace-limit=0 to disable ]\n"
-msgstr "%r%s:%d:%d:%R   [ %d Instanziierungskontexte werden übersprungen, -ftemplate-backtrace-limit=0 zum Deaktivieren verwenden ]\n"
+msgstr "%r%s:%d:%d:%R   [ %d Instanziierungskontexte werden übersprungen, »-ftemplate-backtrace-limit=0« zum Ausschalten verwenden ]\n"
 
 #: cp/error.c:3495
 msgid "%r%s:%d:%R   [ skipping %d instantiation contexts, use -ftemplate-backtrace-limit=0 to disable ]\n"
-msgstr "%r%s:%d:%R   [ %d Instanziierungskontexte werden übersprungen, -ftemplate-backtrace-limit=0 zum Deaktivieren verwenden ]\n"
+msgstr "%r%s:%d:%R   [ %d Instanziierungskontexte werden übersprungen, »-ftemplate-backtrace-limit=0« zum Ausschalten verwenden ]\n"
 
 #: cp/error.c:3549
 msgid "%r%s:%d:%d:%R   in constexpr expansion of %qs"
@@ -5338,11 +5336,11 @@ msgstr "-fuse-linker-plugin wird in dieser Konfiguration nicht unterstützt"
 
 #: gcc.c:979
 msgid "cannot specify -static with -fsanitize=address"
-msgstr "-static kann nicht mit -fsanitize=Adresse angegeben werden"
+msgstr "»-static« kann nicht mit »-fsanitize=Adresse« angegeben werden"
 
 #: gcc.c:981
 msgid "cannot specify -static with -fsanitize=thread"
-msgstr "-static kann nicht mit -fsanitize=thread angegeben werden"
+msgstr "»-static« kann nicht mit »-fsanitize=thread« angegeben werden"
 
 #: gcc.c:1003
 msgid "-fvtable-verify=std is not supported in this configuration"
@@ -5354,15 +5352,15 @@ msgstr "-fvtable-verify=preinit wird in dieser Konfiguration nicht unterstützt"
 
 #: gcc.c:1135 ada/gcc-interface/lang-specs.h:33
 msgid "-pg and -fomit-frame-pointer are incompatible"
-msgstr "-pg und -fomit-frame-pointer sind unverträglich"
+msgstr "»-pg« und »-fomit-frame-pointer« sind unverträglich"
 
 #: gcc.c:1314
 msgid "GNU C no longer supports -traditional without -E"
-msgstr "GNU C unterstützt nicht mehr -traditional ohne -E"
+msgstr "GNU C unterstützt »-traditional« ohne »-E« nicht mehr"
 
 #: gcc.c:1323
 msgid "-E or -x required when input is from standard input"
-msgstr "-E oder -x benötigt, wenn die Eingabe von der Standardeingabe kommt"
+msgstr "»-E« oder »-x« benötigt, wenn die Eingabe von der Standardeingabe kommt"
 
 #: config/darwin.h:171
 msgid "rdynamic is not supported"
@@ -5370,35 +5368,35 @@ msgstr "rdynamic wird nicht unterstützt"
 
 #: config/darwin.h:260
 msgid "-current_version only allowed with -dynamiclib"
-msgstr "-current_version ist nur mit -dynamiclib erlaubt"
+msgstr "»-current_version« ist nur mit »-dynamiclib« erlaubt"
 
 #: config/darwin.h:262
 msgid "-install_name only allowed with -dynamiclib"
-msgstr "-install_name ist nur mit -dynamiclib erlaubt"
+msgstr "»-install_name« ist nur mit »-dynamiclib« erlaubt"
 
 #: config/darwin.h:267
 msgid "-bundle not allowed with -dynamiclib"
-msgstr "-bundle ist nicht mit -dynamiclib erlaubt"
+msgstr "»-bundle« ist nicht mit »-dynamiclib« erlaubt"
 
 #: config/darwin.h:268
 msgid "-bundle_loader not allowed with -dynamiclib"
-msgstr "-bundle_loader ist nicht mit -dynamiclib erlaubt"
+msgstr "»-bundle_loader« ist nicht mit »-dynamiclib« erlaubt"
 
 #: config/darwin.h:269
 msgid "-client_name not allowed with -dynamiclib"
-msgstr "-client_name ist nicht mit -dynamiclib erlaubt"
+msgstr "»-client_name« ist nicht mit »-dynamiclib« erlaubt"
 
 #: config/darwin.h:274
 msgid "-force_flat_namespace not allowed with -dynamiclib"
-msgstr "-force_flat_namespace ist nicht mit -dynamiclib erlaubt"
+msgstr "»-force_flat_namespace« ist nicht mit »-dynamiclib« erlaubt"
 
 #: config/darwin.h:276
 msgid "-keep_private_externs not allowed with -dynamiclib"
-msgstr "-keep_private_externs ist mit -dynamiclib nicht erlaubt"
+msgstr "»-keep_private_externs« ist mit »-dynamiclib« nicht erlaubt"
 
 #: config/darwin.h:277
 msgid "-private_bundle not allowed with -dynamiclib"
-msgstr "-private_bundle ist mit -dynamiclib nicht erlaubt"
+msgstr "»-private_bundle« ist mit »-dynamiclib« nicht erlaubt"
 
 #: config/dragonfly.h:76 config/alpha/freebsd.h:33 config/i386/freebsd.h:82
 #: config/i386/freebsd64.h:35 config/ia64/freebsd.h:26
@@ -5424,7 +5422,7 @@ msgstr "-pie wird in dieser Konfiguration nicht unterstützt"
 
 #: config/vxworks.h:70
 msgid "-Xbind-now and -Xbind-lazy are incompatible"
-msgstr "-Xbind-now und -Xbind-lazy sind unverträglich"
+msgstr "»-Xbind-now« und »-Xbind-lazy« sind unverträglich"
 
 #: config/aarch64/aarch64-freebsd.h:37 config/arm/freebsd.h:49
 msgid "consider using `-pg' instead of `-p' with gprof (1) "
@@ -5432,15 +5430,15 @@ msgstr "evtl. »-pg« statt »-p« mit gprof(1) verwenden"
 
 #: config/arc/arc.h:98 config/mips/mips.h:1399
 msgid "may not use both -EB and -EL"
-msgstr "-EB und -EL können nicht gleichzeitig verwendet werden"
+msgstr "»-EB« und »-EL« können nicht gleichzeitig verwendet werden"
 
 #: config/arm/arm.h:85
 msgid "-mfloat-abi=soft and -mfloat-abi=hard may not be used together"
-msgstr "-mfloat-abi=soft und -mfloat-abi=hard dürfen nicht zusammen verwendet werden"
+msgstr "»-mfloat-abi=soft« und »-mfloat-abi=hard« dürfen nicht zusammen verwendet werden"
 
 #: config/arm/arm.h:87 config/tilegx/tilegx.h:546 config/tilegx/tilegx.h:551
 msgid "-mbig-endian and -mlittle-endian may not be used together"
-msgstr "-mbig-endian und -mlittle-endian dürfen nicht zusammen verwendet werden"
+msgstr "»-mbig-endian« und »-mlittle-endian« dürfen nicht zusammen verwendet werden"
 
 #: config/avr/specs.h:70
 msgid "shared is not supported"
@@ -5452,7 +5450,7 @@ msgstr "kein Prozessortyp zum Binden angegeben"
 
 #: config/cris/cris.h:184
 msgid "do not specify both -march=... and -mcpu=..."
-msgstr "nicht gleichzeitig -march=... und -mcpu=... angeben"
+msgstr "»-march=« und »-mcpu=« dürfen nicht zusammen verwendet werden"
 
 #: config/i386/cygwin-w64.h:64 config/i386/cygwin.h:129
 #: config/i386/mingw-w64.h:87 config/i386/mingw32.h:119
@@ -5469,7 +5467,7 @@ msgstr "-mhard-float wird nicht unterstützt"
 
 #: config/mips/r3900.h:39
 msgid "-msingle-float and -msoft-float cannot both be specified"
-msgstr "-msingle-float und -msoft-float können nicht zusammen angegeben werden"
+msgstr "»-msingle-float« und »-msoft-float« dürfen nicht zusammen angegeben werden"
 
 #: config/moxie/moxiebox.h:43
 msgid "this target is little-endian"
@@ -5505,7 +5503,7 @@ msgstr "evtl. »-pg« statt »-p« mit gprof(1) verwenden"
 
 #: config/rx/rx.h:80
 msgid "-mas100-syntax is incompatible with -gdwarf"
-msgstr "-mas100-syntax ist unverträglich mit -gdwarf"
+msgstr "»-mas100-syntax« ist unverträglich mit »-gdwarf«"
 
 #: config/rx/rx.h:81
 msgid "rx100 cpu does not have FPU hardware"
@@ -5513,7 +5511,7 @@ msgstr "CPU rx100 hat keine FPU-Hardware"
 
 #: config/rx/rx.h:82
 msgid "rx200 cpu does not have FPU hardware"
-msgstr "CPU RX200 hat keine FPU-Hardware"
+msgstr "CPU rx200 hat keine FPU-Hardware"
 
 #: config/s390/tpf.h:121
 msgid "static is not supported on TPF-OS"
@@ -5527,23 +5525,23 @@ msgstr "SH2a unterstützt nicht Little-Endian"
 #: config/sparc/netbsd-elf.h:108 config/sparc/netbsd-elf.h:117
 #: config/sparc/sol2.h:228 config/sparc/sol2.h:234
 msgid "may not use both -m32 and -m64"
-msgstr "-m32 und -m64 können nicht zusammen angegeben werden"
+msgstr "»-m32« und »-m64« können nicht zusammen angegeben werden"
 
 #: config/vax/netbsd-elf.h:51
 msgid "the -shared option is not currently supported for VAX ELF"
-msgstr "Die Option -shared wird derzeit nicht für VAX ELF unterstützt"
+msgstr "Die Option »-shared« wird derzeit nicht für VAX ELF unterstützt"
 
 #: config/vax/vax.h:46 config/vax/vax.h:47
 msgid "profiling not supported with -mg"
-msgstr "Profiling wird mit -mg nicht unterstützt"
+msgstr "Profiling wird mit »-mg« nicht unterstützt"
 
 #: ada/gcc-interface/lang-specs.h:34
 msgid "-c or -S required for Ada"
-msgstr "Für Ada wird -c oder -S benötigt"
+msgstr "Für Ada wird »-c« oder »-S« benötigt"
 
 #: ada/gcc-interface/lang-specs.h:52
 msgid "-c required for gnat2why"
-msgstr "Für gnat2why wird -c benötigt"
+msgstr "Für gnat2why wird »-c« benötigt"
 
 #: ada/gcc-interface/lang-specs.h:65
 msgid "-c required for gnat2scil"
@@ -5675,7 +5673,7 @@ msgstr "Bei nicht verwendeten Dummy-Argumenten warnen"
 
 #: fortran/lang.opt:342
 msgid "Warn about zero-trip DO loops."
-msgstr "Bei Schleifen mit 0 Durchläufen warnen."
+msgstr "Bei DO-Schleifen mit null Durchläufen warnen."
 
 #: fortran/lang.opt:346
 msgid "Enable preprocessing."
@@ -5695,7 +5693,7 @@ msgstr "Ausrichtung von COMMON-Blöcken einschalten."
 
 #: fortran/lang.opt:370
 msgid "All intrinsics procedures are available regardless of selected standard."
-msgstr "Alle eingebauten Prozeduren sind ungeachtet des gewählten Standards verfügbar."
+msgstr "Alle intrinsischen Prozeduren sind ungeachtet des gewählten Standards verfügbar."
 
 #: fortran/lang.opt:378
 msgid "Do not treat local variables and COMMON blocks as if they were named in SAVE statements."
@@ -5772,7 +5770,7 @@ msgstr "Standard-Realzahlart auf einen 8 Bytes breiten Typen setzen."
 
 #: fortran/lang.opt:461
 msgid "Allow dollar signs in entity names."
-msgstr "Dollarzeichen in Entity-Namen erlauben."
+msgstr "Dollarzeichen in Entitätsnamen erlauben."
 
 #: fortran/lang.opt:465 config/alpha/alpha.opt:31 common.opt:758
 #: common.opt:956 common.opt:960 common.opt:964 common.opt:968 common.opt:1495
@@ -5968,7 +5966,7 @@ msgstr "Feldabschnitte bei Prozedureintritt in einen zusammenhängenden Block ko
 
 #: fortran/lang.opt:691
 msgid "-fcoarray=<none|single|lib>\tSpecify which coarray parallelization should be used."
-msgstr "-fcoarray=<none|single|lib>\tAngeben, welche Koarray-Parallelisierung benutzt wird."
+msgstr "-fcoarray=<none|single|lib>\tAngeben, welche Koarray-Parallelisierung verwendet wird."
 
 #: fortran/lang.opt:694
 #, c-format
@@ -6169,7 +6167,7 @@ msgstr "Die meisten Warnungen einschalten."
 
 #: c-family/c.opt:304
 msgid "Warn on any use of alloca."
-msgstr "Bei jeglicher Benutzung von alloca warnen."
+msgstr "Bei jeglicher Verwendung von alloca warnen."
 
 #: c-family/c.opt:308
 msgid "-Walloc-size-larger-than=<bytes> Warn for calls to allocation functions that attempt to allocate objects larger than the specified number of bytes."
@@ -6201,7 +6199,7 @@ msgstr "Bei bestimmten Operationen auf booleschen Ausdrücken warnen."
 
 #: c-family/c.opt:347
 msgid "Warn when __builtin_frame_address or __builtin_return_address is used unsafely."
-msgstr "Warnen, wenn __builtin_frame_address oder __builtin_return_address auf unsichere Weise benutzt werden."
+msgstr "Warnen, wenn __builtin_frame_address oder __builtin_return_address auf unsichere Weise verwendet werden."
 
 #: c-family/c.opt:351
 msgid "Warn when a built-in function is declared with the wrong signature."
@@ -6229,7 +6227,7 @@ msgstr "Bei C++-Konstrukten, deren Bedeutung sich zwischen ISO C++ 1998 und ISO 
 
 #: c-family/c.opt:378
 msgid "Warn about C++ constructs whose meaning differs between ISO C++ 2011 and ISO C++ 2014."
-msgstr "Bei C++-Konstrukten, deren Bedeutung sich zwischen ISO C++ 1998 und ISO C++ 2011 unterscheidet, warnen."
+msgstr "Bei C++-Konstrukten, deren Bedeutung sich zwischen ISO C++ 2011 und ISO C++ 2014 unterscheidet, warnen."
 
 #: c-family/c.opt:382
 msgid "Warn about C++ constructs whose meaning differs between ISO C++ 2014 and (forthcoming) ISO C++ 201z(7?)."
@@ -6421,7 +6419,7 @@ msgstr "Bei impliziten Deklarationen warnen."
 
 #: c-family/c.opt:596
 msgid "Warn about implicit conversions from \"float\" to \"double\"."
-msgstr "Bei impliziten Umwandlungen von \"float\" nach \"double\" warnen."
+msgstr "Bei impliziten Umwandlungen von »float« nach »double« warnen."
 
 #: c-family/c.opt:600
 msgid "Warn if \"defined\" is used outside #if."
@@ -6453,11 +6451,11 @@ msgstr "Bei Typumwandlung in Zeiger von Ganzzahl anderer Größe warnen."
 
 #: c-family/c.opt:631
 msgid "Warn about invalid uses of the \"offsetof\" macro."
-msgstr "Bei ungültigen Benutzungen des Makros »offsetof« warnen."
+msgstr "Bei ungültigen Verwendungen des Makros »offsetof« warnen."
 
 #: c-family/c.opt:635
 msgid "Warn about PCH files that are found but not used."
-msgstr "Bei PCH-Dateien, die gefunden, aber nicht benutzt werden, warnen."
+msgstr "Bei PCH-Dateien, die gefunden, aber nicht verwendet werden, warnen."
 
 #: c-family/c.opt:639
 msgid "Warn when a jump misses a variable initialization."
@@ -6473,7 +6471,7 @@ msgstr "Warnen, wenn ein logischer Operator verdächtigerweise immer zu »wahr«
 
 #: c-family/c.opt:651
 msgid "Warn when logical not is used on the left hand side operand of a comparison."
-msgstr "Warnen, wenn ein logisches Nicht im linken Operanden eines Vergleichs benutzt wird."
+msgstr "Warnen, wenn ein logisches Nicht im linken Operanden eines Vergleichs verwendet wird."
 
 #: c-family/c.opt:655
 msgid "Do not warn about using \"long long\" when -pedantic."
@@ -6557,7 +6555,7 @@ msgstr "Bei »switch«-Anweisungen auf Aufzählungen, denen ein Fall fehlt, warn
 
 #: c-family/c.opt:742
 msgid "Warn about switches with boolean controlling expression."
-msgstr "Bei switch-Anweisungen mit boolescher Bedingung warnen."
+msgstr "Bei switch-Anweisungen mit booleschem Steuerausdruck warnen."
 
 #: c-family/c.opt:746
 msgid "Warn on primary template declaration."
@@ -6621,7 +6619,7 @@ msgstr "-Wnormalized=[none|id|nfc|nfkc]\tBei nicht-normalisierten Unicode-Zeiche
 
 #: c-family/c.opt:816
 msgid "argument %qs to %<-Wnormalized%> not recognized"
-msgstr "Argument %qs für  %<-Wnormalized%> nicht erkannt"
+msgstr "Argument %qs für %<-Wnormalized%> nicht erkannt"
 
 #: c-family/c.opt:832
 msgid "Warn if a C-style cast is used in a program."
@@ -7212,7 +7210,7 @@ msgstr "Standard-OpenACC-Berechnungsdimensionen angeben."
 
 #: c-family/c.opt:1561
 msgid "Enable OpenMP (implies -frecursive in Fortran)."
-msgstr "OpenMP einschalten (impliziert »-frecursive« in Fortran)."
+msgstr "OpenMP einschalten (bringt »-frecursive« in Fortran mit sich)."
 
 #: c-family/c.opt:1565
 msgid "Enable OpenMP's SIMD directives."
@@ -7232,7 +7230,7 @@ msgstr "Übereinstimmungsfehler zu Warnungen degradieren."
 
 #: c-family/c.opt:1588
 msgid "Enable Plan 9 language extensions."
-msgstr "Plan-9-Spracherweiterungen aktivieren."
+msgstr "Plan-9-Spracherweiterungen einschalten."
 
 #: c-family/c.opt:1592
 msgid "Treat the input file as already preprocessed."
@@ -7301,7 +7299,7 @@ msgstr "Annehmen, dass die Werte einer Aufzählung immer im kleinsten Bereich de
 
 #: c-family/c.opt:1674 c-family/c.opt:1679
 msgid "Follow the C++17 evaluation order requirements for assignment expressions, shift, member function calls, etc."
-msgstr "Die C++17-Anforderungen für die Auswertungsreihenfolge von Zuweisungsanweisungen, Bitverschiebungen, Elementfunktionsaufrufe, etc. befolgen."
+msgstr "Die C++17-Anforderungen für die Auswertungsreihenfolge von Zuweisungsausdrücken, Bitverschiebungen, Elementfunktionsaufrufe, etc. befolgen."
 
 #: c-family/c.opt:1696
 msgid "-ftabstop=<number>\tDistance between tab stops for column reporting."
@@ -7457,11 +7455,11 @@ msgstr "Mit dem Standard ISO 2014 C++ übereinstimmen."
 
 #: c-family/c.opt:1885
 msgid "Conform to the ISO 2017(?) C++ draft standard (experimental and incomplete support)."
-msgstr "Mit dem Standardentwurf ISO 201y(7?) C++ (experimentelle und unvollständige Unterstützung) übereinstimmen."
+msgstr "Mit dem ISO-C++-Standardentwurf 2017(?) übereinstimmen (experimentelle und unvollständige Unterstützung)."
 
 #: c-family/c.opt:1892 c-family/c.opt:1989
 msgid "Conform to the ISO 2011 C standard."
-msgstr "Mit dem Standard ISO 2011 C++ übereinstimmen."
+msgstr "Mit dem Standard ISO 2011 C übereinstimmen."
 
 #: c-family/c.opt:1896
 msgid "Deprecated in favor of -std=c11."
@@ -7501,7 +7499,7 @@ msgstr "Mit dem Standard ISO 2014 C++ mit GNU-Erweiterungen übereinstimmen."
 
 #: c-family/c.opt:1942
 msgid "Conform to the ISO 201z(7?) C++ draft standard with GNU extensions (experimental and incomplete support)."
-msgstr "Mit dem Standardentwurf ISO 201y(7?) C++ mit GNU-Erweiterungen (experimentelle und unvollständige Unterstützung) übereinstimmen."
+msgstr "Mit dem Standardentwurf ISO 201z(7?) C++ mit GNU-Erweiterungen (experimentelle und unvollständige Unterstützung) übereinstimmen."
 
 #: c-family/c.opt:1949
 msgid "Conform to the ISO 2011 C standard with GNU extensions."
@@ -7525,7 +7523,7 @@ msgstr "Veraltet zugunsten von -std=gnu99."
 
 #: c-family/c.opt:1977
 msgid "Conform to the ISO 1990 C standard as amended in 1994."
-msgstr "Mit dem Standard ISO 1990 C, wie 1994 erweitert, übereinstimmen."
+msgstr "Mit dem Standard ISO 1990 C, wie 1994 ergänzt, übereinstimmen."
 
 #: c-family/c.opt:1985
 msgid "Deprecated in favor of -std=iso9899:1999."
@@ -7726,7 +7724,7 @@ msgstr "Keine Standard-Start-Adresse 0x100 des Programmes bereitstellen."
 
 #: config/mmix/mmix.opt:57
 msgid "Link to emit program in ELF format (rather than mmo)."
-msgstr "Binden, um Programm im ELF-Format auszugeben (statt mmo)."
+msgstr "Binden, um Programm im ELF-Format zu erzeugen (statt mmo)."
 
 #: config/mmix/mmix.opt:61
 msgid "Use P-mnemonics for branches statically predicted as taken."
@@ -7834,7 +7832,7 @@ msgstr "ID-basierte Shared Library einschalten."
 
 #: config/bfin/bfin.opt:69
 msgid "Generate code that won't be linked against any other ID shared libraries, but may be used as a shared library."
-msgstr "Code erzeugen, der nicht mit anderen ID-shared Libraries gelinkt werden würde, aber als Shared Library benutzt werden kann."
+msgstr "Code erzeugen, der nicht mit anderen ID-shared Libraries gelinkt werden würde, aber als Shared Library verwendet werden kann."
 
 #: config/bfin/bfin.opt:74 config/m68k/m68k.opt:175
 msgid "ID of shared library to build."
@@ -7882,7 +7880,7 @@ msgstr "Für SDRAM bauen."
 
 #: config/bfin/bfin.opt:118
 msgid "Assume ICPLBs are enabled at runtime."
-msgstr "Annahme, dass ICPLBs zur Laufzeit aktiviert sind."
+msgstr "Annahme, dass ICPLBs zur Laufzeit eingeschaltet sind."
 
 #: config/m68k/m68k-tables.opt:25
 msgid "Known M68K CPUs (for use with the -mcpu= option):"
@@ -8075,7 +8073,7 @@ msgstr "Unterstützte ABIs (für Verwendung mit Option »-mabi=«):"
 
 #: config/riscv/riscv.opt:60
 msgid "Use hardware floating-point divide and square root instructions."
-msgstr "Hardware-Gleitkomma-Befehle für Division und Quadratwurzel verwenden."
+msgstr "Hardware-Gleitkommabefehle für Division und Quadratwurzel verwenden."
 
 #: config/riscv/riscv.opt:64
 msgid "Use hardware instructions for integer division."
@@ -8137,7 +8135,7 @@ msgstr "-memregs=\tAnzahl der Memreg-Bytes (Standard: 16, Bereich: 0..16)."
 
 #: config/msp430/msp430.opt:7
 msgid "Force assembly output to always use hex constants."
-msgstr "Erzwingen, dass die Assembler-Ausgabe immer Hexadezimalkonstanten benutzt."
+msgstr "Erzwingen, dass die Assembler-Ausgabe immer Hexadezimalkonstanten verwendet."
 
 #: config/msp430/msp430.opt:11
 msgid "Specify the MCU to build for."
@@ -8165,7 +8163,7 @@ msgstr "Opcodegrößen zur Linkzeit optimieren."
 
 #: config/msp430/msp430.opt:38
 msgid "Use a minimum runtime (no static initializers or ctors) for memory-constrained devices."
-msgstr "Minimale Laufzeitumgebung (keine statischen Initialisierer oder Konstruktoren) für speicherarme Geräte benutzen"
+msgstr "Minimale Laufzeitumgebung (keine statischen Initialisierer oder Konstruktoren) für speicherarme Geräte verwenden"
 
 #: config/msp430/msp430.opt:45
 msgid "Specify the type of hardware multiply to support."
@@ -8275,7 +8273,7 @@ msgstr "Annäherung der reziproken Quadratwurzel einschalten. Dies reduziert die
 
 #: config/aarch64/aarch64.opt:177
 msgid "Enable the square root approximation.  Enabling this reduces precision of square root results to about 16 bits for single precision and to 32 bits for double precision. If enabled, it implies -mlow-precision-recip-sqrt."
-msgstr "Annäherung der Quadratwurzel einschalten. Dies reduziert die Genauigkeit der Quadratwurzelergebnisse auf etwa 16 Bits für einfache Genauigkeit und 32 Bits für doppelte Genauigkeit. Wenn eingeschaltet, bewirkt es -mlow-precition-recip-sqrt."
+msgstr "Annäherung der Quadratwurzel einschalten. Dies reduziert die Genauigkeit der Quadratwurzelergebnisse auf etwa 16 Bits für einfache Genauigkeit und 32 Bits für doppelte Genauigkeit. Wenn eingeschaltet, bringt es »-mlow-precition-recip-sqrt« mit sich."
 
 #: config/aarch64/aarch64.opt:184
 msgid "Enable the division approximation.  Enabling this reduces precision of division results to about 16 bits for single precision and to 32 bits for double precision."
@@ -8383,7 +8381,7 @@ msgstr "Quadratwurzel nicht »inline« generieren."
 
 #: config/ia64/ia64.opt:106
 msgid "Enable DWARF line debug info via GNU as."
-msgstr "Dwarf-2-Zeilenfehlersuchinfo über GNU as einschalten."
+msgstr "Dwarf-Zeilenfehlersuchinfo über GNU as einschalten."
 
 #: config/ia64/ia64.opt:110
 msgid "Enable earlier placing stop bits for better scheduling."
@@ -8724,7 +8722,7 @@ msgstr "64-Bit float verwenden."
 #: config/pdp11/pdp11.opt:67 config/rs6000/rs6000.opt:177
 #: config/frv/frv.opt:158
 msgid "Use hardware floating point."
-msgstr "Hardware-Gleitkomma verwenden."
+msgstr "Hardware-Gleitkommabefehle verwenden."
 
 #: config/pdp11/pdp11.opt:71
 msgid "Use 16 bit int."
@@ -8736,7 +8734,7 @@ msgstr "32-Bit int verwenden."
 
 #: config/pdp11/pdp11.opt:79 config/rs6000/rs6000.opt:173
 msgid "Do not use hardware floating point."
-msgstr "Hardware-Gleitkomma nicht verwenden."
+msgstr "Hardware-Gleitkommabefehle nicht verwenden."
 
 #: config/pdp11/pdp11.opt:83
 msgid "Target has split I&D."
@@ -8828,7 +8826,7 @@ msgstr "sizeof(long double) ist 16."
 
 #: config/i386/i386.opt:192 config/i386/i386.opt:360
 msgid "Use hardware fp."
-msgstr "Hardware-Gleitkomma verwenden."
+msgstr "Hardware-Gleitkommabefehle verwenden."
 
 #: config/i386/i386.opt:196
 msgid "sizeof(long double) is 12."
@@ -8986,7 +8984,7 @@ msgstr "Alternative Aufrufkonvention."
 
 #: config/i386/i386.opt:436 config/alpha/alpha.opt:23
 msgid "Do not use hardware fp."
-msgstr "Hardware-Gleitkomma nicht verwenden."
+msgstr "Hardware-Gleitkommabefehle nicht verwenden."
 
 #: config/i386/i386.opt:440
 msgid "Use SSE register passing conventions for SF and DF mode."
@@ -9363,7 +9361,7 @@ msgstr "Separaten »__mcount_loc«-Abschnitt erzeugen, der alle Aufrufe von »mc
 
 #: config/i386/i386.opt:870
 msgid "Generate mcount/__fentry__ calls as nops. To activate they need to be patched in."
-msgstr "Aufrufe von »mcount«/»__fentry__« als NOPs erzeugen. Um sie zu aktivieren, müssen sie hineingepatcht werden."
+msgstr "Aufrufe von »mcount«/»__fentry__« als NOPs erzeugen. Um sie einzuschalten, müssen sie hineingepatcht werden."
 
 #: config/i386/i386.opt:875
 msgid "Skip setting up RAX register when passing variable arguments."
@@ -9688,7 +9686,7 @@ msgstr "Code für CR16C-Architektur erzeugen."
 
 #: config/cr16/cr16.opt:46
 msgid "Generate code for CR16C+ architecture (Default)."
-msgstr "Code für CR16+-Architektur erzeugen (Standard)."
+msgstr "Code für CR16C+-Architektur erzeugen (Standard)."
 
 #: config/cr16/cr16.opt:50
 msgid "Treat integers as 32-bit."
@@ -9869,7 +9867,7 @@ msgstr "Hardwareunterstützung für dezimales Gleitkomma einschalten."
 
 #: config/s390/s390.opt:136
 msgid "Enable hardware floating point."
-msgstr "Hardware-Gleitkomma einschalten."
+msgstr "Hardware-Gleitkommabefehle einschalten."
 
 #: config/s390/s390.opt:140
 msgid "Takes two non-negative integer numbers separated by a comma. Prepend the function label with the number of two-byte Nop instructions indicated by the first.  Append Nop instructions covering the number of halfwords indicated by the second after the label.  Nop instructions of the largest possible size are used (six, four or two bytes), beginning with the largest possible size.  Using 0 for both values disables hotpatching."
@@ -9893,7 +9891,7 @@ msgstr "bras für ausführbare Datei < 64k verwenden."
 
 #: config/s390/s390.opt:174
 msgid "Disable hardware floating point."
-msgstr "Hardware-Gleitkomma ausschalten."
+msgstr "Hardware-Gleitkommabefehle ausschalten."
 
 #: config/s390/s390.opt:178
 msgid "Set the max. number of bytes which has to be left to stack size before a trap instruction is triggered."
@@ -9913,7 +9911,7 @@ msgstr "Die Option »-mstack-size« ausschalten."
 
 #: config/s390/s390.opt:198
 msgid "Use the mvcle instruction for block moves."
-msgstr "mvcle-Befehl für Blockkopieroperationen benutzen."
+msgstr "mvcle-Befehl für Blockkopieroperationen verwenden."
 
 #: config/s390/s390.opt:202
 msgid "Enable the z vector language extension providing the context-sensitive vector macro and enable the Altivec-style builtins in vecintrin.h."
@@ -9945,11 +9943,11 @@ msgstr "Wählt die zu verwendende Art der Hardware-Multiplikation und -division 
 
 #: config/rl78/rl78.opt:50
 msgid "Use all registers, reserving none for interrupt handlers."
-msgstr "Alle Register benutzen, dadurch keine für Interrupthandler reservieren."
+msgstr "Alle Register verwenden, dadurch keine für Interrupthandler reservieren."
 
 #: config/rl78/rl78.opt:54
 msgid "Enable assembler and linker relaxation.  Enabled by default at -Os."
-msgstr "Lockerung des Assemblers und Linkers einschalten. Per Vorgabe aktiviert bei -Os."
+msgstr "Lockerung des Assemblers und Linkers einschalten. Per Vorgabe eingeschaltet bei -Os."
 
 #: config/rl78/rl78.opt:58
 msgid "Selects the type of RL78 core being targeted (g10/g13/g14).  The default is the G14.  If set, also selects the hardware multiply support to be used."
@@ -10282,7 +10280,7 @@ msgstr "Workaround für einzelnes Erratum des AT697F-Prozessors einschalten (ent
 
 #: config/sparc/sparc.opt:231
 msgid "Enable workarounds for the errata of the UT699 processor."
-msgstr "Workaround für Errata des UT669-Prozessors einschalten."
+msgstr "Workaround für Errata des UT699-Prozessors einschalten."
 
 #: config/sparc/sparc.opt:260
 msgid "Specify the memory model in effect for the program."
@@ -10634,7 +10632,7 @@ msgstr "Gleitkommaeinheit unterstützt nicht Division und Quadratwurzel."
 
 #: config/rs6000/rs6000.opt:524
 msgid "-mfpu=\tSpecify FP (sp, dp, sp-lite, dp-lite) (implies -mxilinx-fpu)."
-msgstr "-mfpu=\tFP angeben (sp, dp, sp-lite, dp-lite) (schließt -mxilinx-fpu ein)."
+msgstr "-mfpu=\tFP angeben (sp, dp, sp-lite, dp-lite) (bringt »-mxilinx-fpu« mit sich)."
 
 #: config/rs6000/rs6000.opt:546
 msgid "Specify Xilinx FPU."
@@ -11000,7 +10998,7 @@ msgstr "Mit HAL BSP verlinken."
 
 #: config/nios2/nios2.opt:35
 msgid "Enable DIV, DIVU."
-msgstr "DIV und DIVU aktivieren."
+msgstr "DIV und DIVU einschalten."
 
 #: config/nios2/nios2.opt:39
 msgid "Enable MUL instructions."
@@ -11622,7 +11620,7 @@ msgstr "Mit libc.a und libsim.a binden."
 
 #: config/visium/visium.opt:33
 msgid "Use hardware FP (default)."
-msgstr "Hardware-Gleitkomma verwenden (Standard)."
+msgstr "Hardware-Gleitkommabefehle verwenden (Standard)."
 
 #: config/visium/visium.opt:65
 msgid "Generate code for the supervisor mode (default)."
@@ -12068,7 +12066,7 @@ msgstr "Keine Bedingungscodes normaler Befehle verwenden."
 
 #: config/cris/cris.opt:80
 msgid "Do not emit addressing modes with side-effect assignment."
-msgstr "Keine Adressierungsmodi mit Seiteneffektzuweisungen ausgeben."
+msgstr "Keine Adressierungsmodi mit Seiteneffektzuweisungen erzeugen."
 
 #: config/cris/cris.opt:89
 msgid "Do not tune stack alignment."
@@ -12092,7 +12090,7 @@ msgstr "Code- und Datenelemente nicht ausrichten."
 
 #: config/cris/cris.opt:142
 msgid "Do not emit function prologue or epilogue."
-msgstr "Keinen Funktionsprolog oder -epilog ausgeben."
+msgstr "Keinen Funktionsprolog oder -epilog erzeugen."
 
 #: config/cris/cris.opt:149
 msgid "Use the most feature-enabling options allowed by other options."
@@ -12308,7 +12306,7 @@ msgstr "ELF-FDPIC-Code erzeugen."
 
 #: config/sh/sh.opt:223
 msgid "Enable the use of 64-bit floating point registers in fmov instructions.  See -mdalign if 64-bit alignment is required."
-msgstr "Verwendung von 64-Bit Gleitkommaregistern in FMOV-Befehlen aktivieren. Siehe auch -mdalign, wenn 64-Bit-Ausrichtung benötigt wird."
+msgstr "Verwendung von 64-Bit Gleitkommaregistern in FMOV-Befehlen einschalten. Siehe auch -mdalign, wenn 64-Bit-Ausrichtung benötigt wird."
 
 #: config/sh/sh.opt:231 config/sh/sh.opt:269
 msgid "Follow Renesas (formerly Hitachi) / SuperH calling conventions."
@@ -12360,7 +12358,7 @@ msgstr "Für einen Multiplikationsbefehl anzunehmende Kosten."
 
 #: config/sh/sh.opt:285
 msgid "Don't generate privileged-mode only code; implies -mno-inline-ic_invalidate if the inline code would not work in user mode."
-msgstr "Keinen Code nur für privilegierten Modus erzeugen; impliziert -mno-inline-ic_invalidate, wenn der »inline«-Code nicht im Usermodus funktionieren würde"
+msgstr "Keinen Code nur für privilegierten Modus erzeugen; bringt »-mno-inline-ic_invalidate« mit sich, wenn der »inline«-Code nicht im Usermodus funktionieren würde"
 
 #: config/sh/sh.opt:291
 msgid "Pretend a branch-around-a-move is a conditional move."
@@ -12644,7 +12642,7 @@ msgstr "Paarweise-single Gleitkommabefehle verwenden."
 
 #: config/mips/mips.opt:340
 msgid "-mr10k-cache-barrier=SETTING\tSpecify when r10k cache barriers should be inserted."
-msgstr "-mr10k-cache-barrier=EINSTELLUNG\tAngabe, wann R10k-Cachegrenzen eingefügt werden sollen."
+msgstr "-mr10k-cache-barrier=EINSTELLUNG\tAngabe, wann r10k-Cachegrenzen eingefügt werden sollen."
 
 #: config/mips/mips.opt:344
 msgid "Valid arguments to -mr10k-cache-barrier=:"
@@ -12693,7 +12691,7 @@ msgstr "Die 4-Operanden-Befehle madd.s/madd.d und ähnliche verwenden, wo mögli
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80057
 #: config/mips/mips.opt:409
 msgid "Use Virtualization Application Specific instructions."
-msgstr "Anwendungsspezifische Befehle für Virtualisierung verwenden."
+msgstr "Virtualisierungsbefehle verwenden."
 
 #: config/mips/mips.opt:413
 msgid "Use eXtended Physical Address (XPA) instructions."
@@ -12709,7 +12707,7 @@ msgstr "Beschränkungen für GOT-Größe aufheben."
 
 #: config/mips/mips.opt:425
 msgid "Enable use of odd-numbered single-precision registers."
-msgstr "Benutzung der ungeraden Register für Gleitkomma einfacher Genauigkeit erlauben."
+msgstr "Verwendung der ungeraden Register für Gleitkomma einfacher Genauigkeit erlauben."
 
 #: config/mips/mips.opt:429
 msgid "Optimize frame header."
@@ -13305,7 +13303,7 @@ msgstr "Bei virtuellen Methoden in C++ warnen, bei denen das Schlüsselwort »fi
 
 #: common.opt:733
 msgid "Warn about statements between switch's controlling expression and the first case."
-msgstr "Bei Anweisungen warnen, die zwischen »switch (...) {« und dem ersten »case:« stehen."
+msgstr "Bei Anweisungen warnen, die zwischen »switch (...)« und dem ersten »case:« stehen."
 
 #: common.opt:738
 msgid "Do not suppress warnings from system headers."
@@ -13333,7 +13331,7 @@ msgstr "Alle -Wunused- Warnungen einschalten."
 
 #: common.opt:766
 msgid "Warn when a function parameter is only set, otherwise unused."
-msgstr "Warnen, wenn ein Funktionsparameter zwar gesetzt aber nicht verwendet wird."
+msgstr "Warnen, wenn ein Funktionsparameter zwar gesetzt, aber nicht verwendet wird."
 
 #: common.opt:770
 msgid "Warn when a variable is only set, otherwise unused."
@@ -13858,7 +13856,7 @@ msgstr "Indirektes Inlining durchführen."
 
 #: common.opt:1569
 msgid "Enable inlining of function declared \"inline\", disabling disables all inlining."
-msgstr "Aktivieren des Inlining von »inline«-Funktionen, ansonsten wird jegliches Inlining deaktiviert."
+msgstr "Einschalten des Inlining von »inline«-Funktionen, ansonsten wird jegliches Inlining ausgeschaltet."
 
 #: common.opt:1573
 msgid "Integrate functions into their callers when code size is known not to grow."
@@ -14413,7 +14411,7 @@ msgstr "Heuristik für Abhängigkeits-Zähler bei Planung einschalten."
 
 #: common.opt:2226
 msgid "Access data in the same section from shared anchor points."
-msgstr "Auf Daten im gleichen Abschnitt von gemeinsam benutzten Ankerpunkten zugreifen."
+msgstr "Auf Daten im gleichen Abschnitt von gemeinsam verwendeten Ankerpunkten zugreifen."
 
 #: common.opt:2238
 msgid "Turn on Redundant Extensions Elimination pass."
@@ -14505,7 +14503,7 @@ msgstr "Stapelschutzmethode nur für Funktionen mit dem Attribut »stack_protect
 
 #: common.opt:2330
 msgid "Output stack usage information on a per-function basis."
-msgstr "Information über Stapelbenutzung auf Funktionsbasis ausgeben."
+msgstr "Information über Stapelverwendung auf Funktionsbasis ausgeben."
 
 #: common.opt:2342
 msgid "Assume strict aliasing rules apply."
@@ -14786,7 +14784,7 @@ msgstr "Kostenmodell für Vektorisierung angeben."
 
 #: common.opt:2697
 msgid "Specifies the vectorization cost model for code marked with a simd directive."
-msgstr "Vektorisierungs-Kostenmodell angeben, das für mit einer SIMD-Direktive markierten Code benutzt wird."
+msgstr "Vektorisierungs-Kostenmodell angeben, das für mit einer SIMD-Direktive markierten Code verwendet wird."
 
 #: common.opt:2700
 #, c-format
@@ -14816,7 +14814,7 @@ msgstr "unbekannter Sichtbarkeitswert %qs"
 
 #: common.opt:2754
 msgid "Validate vtable pointers before using them."
-msgstr "VTable-Zeiger validieren, bevor sie benutzt werden."
+msgstr "VTable-Zeiger validieren, bevor sie verwendet werden."
 
 #: common.opt:2757
 #, c-format
@@ -14877,7 +14875,7 @@ msgstr "Fehlersuchinformationen im Standardversion des DWARF-Formats erzeugen."
 
 #: common.opt:2822
 msgid "Generate debug information in DWARF v2 (or later) format."
-msgstr "Fehlersuchinformationen im DWARFv2-Format (oder neuer) erzeugen."
+msgstr "Fehlersuchinformationen im DWARF-v2-Format (oder neuer) erzeugen."
 
 #: common.opt:2826
 msgid "Generate debug information in default extended format."
@@ -14925,7 +14923,7 @@ msgstr "DWARF-Ergänzungen über gewählte Version hinaus ausgeben."
 
 #: common.opt:2870
 msgid "Don't emit DWARF additions beyond selected version."
-msgstr "Keine DWARF-Ergänzungen über gewählte Version hinaus ausgeben."
+msgstr "Keine DWARF-Ergänzungen über gewählte Version hinaus erzeugen."
 
 #: common.opt:2874
 msgid "Toggle debug information generation."
@@ -15079,7 +15077,7 @@ msgstr "ungültige Verwendung eines Methodenwerts als Argument von Offsetof"
 
 #: go/gofrontend/expressions.cc:7246
 msgid "argument of Offsetof implies indirection of an embedded field"
-msgstr "Argument von Offsetof impliziert Indirektion eines eingebetteten Feldes"
+msgstr "Argument von Offsetof bringt Indirektion eines eingebetteten Feldes mit sich"
 
 #: go/gofrontend/expressions.cc:7271 go/gofrontend/expressions.cc:7308
 #: go/gofrontend/expressions.cc:7450 go/gofrontend/expressions.cc:8485
@@ -15113,7 +15111,7 @@ msgstr "Bei Reservierung einer Scheibe wird Länge benötigt"
 
 #: go/gofrontend/expressions.cc:7522
 msgid "len larger than cap"
-msgstr "Länge größer als Cap"
+msgstr "Länge größer als Kapazität"
 
 #: go/gofrontend/expressions.cc:7531
 msgid "too many arguments to make"
@@ -16180,17 +16178,17 @@ msgstr "Basisblock %d sollte als irreduzibel markiert werden"
 #: cfgloop.c:1511
 #, gcc-internal-format, gfc-internal-format
 msgid "basic block %d should not be marked irreducible"
-msgstr "Basisblock %d sollte nicht als irreduzibel markiert werden"
+msgstr "Basisblock %d sollte nicht als irreduzibel markiert sein"
 
 #: cfgloop.c:1519
 #, gcc-internal-format, gfc-internal-format
 msgid "edge from %d to %d should be marked irreducible"
-msgstr "Kante von %d nach %d sollte als irreduzibel markiert werden"
+msgstr "Kante von %d nach %d sollte als irreduzibel markiert sein"
 
 #: cfgloop.c:1526
 #, gcc-internal-format, gfc-internal-format
 msgid "edge from %d to %d should not be marked irreducible"
-msgstr "Kante von %d nach %d sollte nicht als irreduzibel markiert werden"
+msgstr "Kante von %d nach %d sollte nicht als irreduzibel markiert sein"
 
 #: cfgloop.c:1540
 #, gcc-internal-format, gfc-internal-format
@@ -16802,7 +16800,7 @@ msgstr "Keine Argumente"
 #: collect2.c:1303 opts.c:904
 #, gcc-internal-format
 msgid "LTO support has not been enabled in this configuration"
-msgstr "LTO-Unterstützung wurde in dieser Konfiguration nicht aktiviert"
+msgstr "LTO-Unterstützung wurde in dieser Konfiguration nicht eingeschaltet"
 
 #: collect2.c:1344
 #, gcc-internal-format
@@ -16997,7 +16995,7 @@ msgstr "Fehler beim Schreiben von %qs"
 #: coverage.c:1243
 #, gcc-internal-format, gfc-internal-format
 msgid "cannot open %s"
-msgstr "Es ist nicht möglich, »%s« zu öffnen"
+msgstr "»%s« kann nicht geöffnet werden"
 
 #: data-streamer-in.c:53
 #, gcc-internal-format
@@ -17092,7 +17090,7 @@ msgstr "-feliminate-dwarf2-dups ist in C++ kaputt, wird ignoriert"
 #: emit-rtl.c:2770
 #, gcc-internal-format
 msgid "invalid rtl sharing found in the insn"
-msgstr "ungültige gemeinsame rtl-Benutzung in Befehl gefunden"
+msgstr "ungültige gemeinsame rtl-Verwendung in Befehl gefunden"
 
 #: emit-rtl.c:2772
 #, gcc-internal-format
@@ -17692,7 +17690,7 @@ msgstr "Gewichte müssen nichtnegativ sein\n"
 #: gcov-tool.c:349
 #, gcc-internal-format
 msgid "scale needs to be non-negative\n"
-msgstr "Skalierung muss muss nichtnegativ sein\n"
+msgstr "Skalierung muss nichtnegativ sein\n"
 
 #: gcse.c:3980
 #, gcc-internal-format, gfc-internal-format
@@ -18284,7 +18282,7 @@ msgstr "%qE mit %<link%>-Klausel wird in %<routine%>-Funktion verwendet"
 #: gimplify.c:6997
 #, gcc-internal-format
 msgid "%qE requires a %<declare%> directive for use in a %<routine%> function"
-msgstr "%qE erfordert eine %<declare%>-Direktive, um in einer %<routine%>-Funktion benutzt zu werden"
+msgstr "%qE erfordert eine %<declare%>-Direktive, um in einer %<routine%>-Funktion verwendet zu werden"
 
 #: gimplify.c:7063 gimplify.c:7662
 #, gcc-internal-format
@@ -18530,7 +18528,7 @@ msgstr "Funktion kann nicht instrumentiert werden"
 #: ipa-devirt.c:752 ipa-devirt.c:903
 #, gcc-internal-format
 msgid "virtual table of type %qD violates one definition rule"
-msgstr "virtuelle Tabelle von Typ %qD verletzt die One-Definition-Rule"
+msgstr "virtuelle Tabelle des Typs %qD verletzt die One-Definition-Rule"
 
 #: ipa-devirt.c:755
 #, gcc-internal-format
@@ -18555,7 +18553,7 @@ msgstr "RTTI wird für diesen Typ nicht funktionieren"
 #: ipa-devirt.c:834 ipa-devirt.c:862 ipa-devirt.c:933
 #, gcc-internal-format
 msgid "virtual table of type %qD violates one definition rule  "
-msgstr "virtuelle Tabelle des Typs %qD verletzt One-Definition-Rule"
+msgstr "virtuelle Tabelle des Typs %qD verletzt die One-Definition-Rule"
 
 #: ipa-devirt.c:840
 #, gcc-internal-format
@@ -18600,7 +18598,7 @@ msgstr "der in Konflikt stehende Typ aus der anderen Übersetzungseinheit hat vi
 #: ipa-devirt.c:987
 #, gcc-internal-format
 msgid "type %qT violates the C++ One Definition Rule"
-msgstr "Typ %qT verletzt die One Definition Rule von C++"
+msgstr "Typ %qT verletzt die One-Definition-Rule von C++"
 
 #: ipa-devirt.c:998 ipa-devirt.c:1013 ipa-devirt.c:1263 ipa-devirt.c:1355
 #: ipa-devirt.c:1394 ipa-devirt.c:1412
@@ -18671,7 +18669,7 @@ msgstr "Typen haben unterschiedliche Anzahl von Parametern"
 #: ipa-devirt.c:1229
 #, gcc-internal-format
 msgid "type %qT itself violate the C++ One Definition Rule"
-msgstr "Typ %qT verletzt für sich genommen die One Definition Rule von C++"
+msgstr "Typ %qT verletzt für sich genommen die One-Definition-Rule von C++"
 
 #: ipa-devirt.c:1235
 #, gcc-internal-format
@@ -18863,7 +18861,7 @@ msgstr[1] "wenn die Methode %qD als »final« deklariert wäre, würde das die D
 #: ipa-hsa.c:57
 #, gcc-internal-format, gfc-internal-format
 msgid "could not emit HSAIL for function %s: function cannot be cloned"
-msgstr "HSAIL konnte für Funktion %s nicht generiert werden: Funktion kann nicht geklont werden"
+msgstr "HSAIL konnte für Funktion %s nicht erzeugt werden: Funktion kann nicht geklont werden"
 
 #: ipa-inline-analysis.c:4400
 #, gcc-internal-format
@@ -19474,7 +19472,7 @@ msgstr "unerkannter Schatten-Adressoffset %qs"
 #: opts.c:90
 #, gcc-internal-format
 msgid "argument %qs to %<-femit-struct-debug-detailed%> not recognized"
-msgstr "Argument %qs für  %<-femit-struct-debug-detailed%> nicht erkannt"
+msgstr "Argument %qs für %<-femit-struct-debug-detailed%> nicht erkannt"
 
 #: opts.c:126
 #, gcc-internal-format
@@ -19594,7 +19592,7 @@ msgstr "Argument %q.*s für Option --help= nicht erkannt"
 #: opts.c:2078
 #, gcc-internal-format
 msgid "HSA has not been enabled during configuration"
-msgstr "HSA wurde in dieser Konfiguration nicht aktiviert"
+msgstr "HSA wurde in dieser Konfiguration nicht eingeschaltet"
 
 #: opts.c:2090
 #, gcc-internal-format
@@ -20569,7 +20567,7 @@ msgstr "Abzugsdatei %qs genullter Befehle konnte nicht geschlossen werden: %m"
 #: toplev.c:1432
 #, gcc-internal-format
 msgid "target system does not support the %qs debug format"
-msgstr "Zielsystem unterstützt nicht das Testformat \"%s\""
+msgstr "Zielsystem unterstützt nicht das Testformat %qs"
 
 #: toplev.c:1445
 #, gcc-internal-format
@@ -21704,7 +21702,7 @@ msgstr "»inline« beim Aufruf von %q+F gescheitert: %s"
 #: tree-into-ssa.c:3287
 #, gcc-internal-format
 msgid "statement uses released SSA name:"
-msgstr "Anweisung benutzt freigegebenen SSA-Namen:"
+msgstr "Anweisung verwendet freigegebenen SSA-Namen:"
 
 #: tree-into-ssa.c:3299
 #, gcc-internal-format
@@ -22145,7 +22143,7 @@ msgstr "für Symbol %q+D wird wegen des Attributes %qE externe Bindung benötigt
 #: tree.c:6477
 #, gcc-internal-format
 msgid "%qE implies default visibility, but %qD has already been declared with a different visibility"
-msgstr "%qE impliziert Standardsichtbarkeit, aber %qD wurde bereits mit anderer Sichtbarkeit deklariert"
+msgstr "%qE bringt Standardsichtbarkeit mit sich, aber %qD wurde bereits mit anderer Sichtbarkeit deklariert"
 
 #: tree.c:8358
 #, gcc-internal-format
@@ -22498,7 +22496,7 @@ msgstr "TYPE_VALUES_RAW field is non-NULL"
 #: tree.c:14166
 #, gcc-internal-format
 msgid "TYPE_CACHED_VALUES_P is set while it should not"
-msgstr "TYPE_CACHED_VALUES_P is set while it should not"
+msgstr "Interner Fehler: TYPE_CACHED_VALUES_P is set while it should not"
 
 #: tree.c:14172
 #, gcc-internal-format
@@ -22658,7 +22656,7 @@ msgstr "ungültiger Anfangswert für Element %qE"
 #: varasm.c:5379
 #, gcc-internal-format
 msgid "%+D declared weak after being used"
-msgstr "%+D als schwach deklariert, nachdem es benutzt wurde"
+msgstr "%+D als schwach deklariert, nachdem es verwendet wurde"
 
 #: varasm.c:5431
 #, gcc-internal-format
@@ -22756,7 +22754,7 @@ msgstr "unpassende Ränge zwischen %qE und %qE"
 #: c-family/array-notation-common.c:291
 #, gcc-internal-format
 msgid "rank mismatch in expression %qE"
-msgstr "unpassende Ränge in %qE"
+msgstr "unpassende Ränge in Ausdruck %qE"
 
 #: c-family/array-notation-common.c:669
 #, gcc-internal-format
@@ -23019,7 +23017,7 @@ msgstr "%qD mit anderer Sichtbarkeit redeklariert"
 #: c-family/c-attribs.c:1955 c-family/c-attribs.c:1959
 #, gcc-internal-format
 msgid "%qD was declared %qs which implies default visibility"
-msgstr "%qD wurde als %qs deklariert, was Standardsichtbarkeit bedeutet"
+msgstr "%qD wurde als %qs deklariert, was Standardsichtbarkeit mit sich bringt"
 
 #: c-family/c-attribs.c:1997
 #, gcc-internal-format
@@ -23140,12 +23138,12 @@ msgstr "Nicht-Null-Attribut ohne Argumente für einen Nicht-Prototyp"
 #: c-family/c-attribs.c:2820 ada/gcc-interface/utils.c:5986
 #, gcc-internal-format, gfc-internal-format
 msgid "nonnull argument has invalid operand number (argument %lu)"
-msgstr "Nicht-Null-Argument hat ungültige Operandenzahl (Argument %lu)"
+msgstr "Nicht-Null-Argument hat ungültige Operandennummer (Argument %lu)"
 
 #: c-family/c-attribs.c:2842 ada/gcc-interface/utils.c:6008
 #, gcc-internal-format, gfc-internal-format
 msgid "nonnull argument with out-of-range operand number (argument %lu, operand %lu)"
-msgstr "Nicht-Null-Argument mit Operandenzahl außerhalb des Wertebereiches (Argument %lu, Operand %lu)"
+msgstr "Nicht-Null-Argument mit Operandennummer außerhalb des Wertebereiches (Argument %lu, Operand %lu)"
 
 #: c-family/c-attribs.c:2851 ada/gcc-interface/utils.c:6017
 #, gcc-internal-format, gfc-internal-format
@@ -23500,7 +23498,7 @@ msgstr "schlechte Option %qs für Attribut %<optimize%>"
 #: c-family/c-common.c:5550 c-family/c-common.c:5598
 #, gcc-internal-format
 msgid "bad option %qs to pragma %<optimize%>"
-msgstr "schlechte Option %s für Pragma %<optimize%>"
+msgstr "schlechte Option %qs für Pragma %<optimize%>"
 
 #: c-family/c-common.c:5630
 #, gcc-internal-format
@@ -23699,7 +23697,7 @@ msgstr "Umgebungsvariable SOURCE_DATE_EPOCH muss ganzzahlig sein und zwischen 0 
 #: c-family/c-format.c:134 c-family/c-format.c:321
 #, gcc-internal-format
 msgid "format string has invalid operand number"
-msgstr "Formatzeichenkette hat ungültige Operandenzahl"
+msgstr "Formatzeichenkette hat ungültige Operandennummer"
 
 #: c-family/c-format.c:150
 #, gcc-internal-format
@@ -23749,7 +23747,7 @@ msgstr "%qE ist ein nicht erkannter Formatfunktionstyp"
 #: c-family/c-format.c:327
 #, gcc-internal-format
 msgid "%<...%> has invalid operand number"
-msgstr "%<...%> hat ungültige Operandenzahl"
+msgstr "%<...%> hat ungültige Operandennummer"
 
 #: c-family/c-format.c:334
 #, gcc-internal-format
@@ -23789,7 +23787,7 @@ msgstr "$-Operandennummer nach Format ohne Operandennummer angegeben"
 #: c-family/c-format.c:1320
 #, gcc-internal-format, gfc-internal-format
 msgid "format argument %d unused before used argument %d in $-style format"
-msgstr "Formatargument %d nicht verwendet vor benutztem Argument %d im $-Stil-Format"
+msgstr "Formatargument %d nicht verwendet vor verwendetem Argument %d im $-Stil-Format"
 
 #: c-family/c-format.c:1419
 #, gcc-internal-format
@@ -23814,7 +23812,7 @@ msgstr "zu viele Argumente für Format"
 #: c-family/c-format.c:1461
 #, gcc-internal-format
 msgid "unused arguments in $-style format"
-msgstr "unbenutzte Argumente in $-Stil-Format"
+msgstr "unverwendete Argumente in $-Stil-Format"
 
 #: c-family/c-format.c:1464
 #, gcc-internal-format, gfc-internal-format
@@ -24456,7 +24454,7 @@ msgstr "Ausrichtung muss eine kleine Zweierpotenz sein, nicht %d"
 #: c-family/c-pragma.c:259
 #, gcc-internal-format
 msgid "applying #pragma weak %q+D after first use results in unspecified behavior"
-msgstr "Anwendung von #pragma weak %q+D nach erster Benutzung führt zu nicht spezifiziertem Verhalten"
+msgstr "Anwendung von #pragma weak %q+D nach erster Verwendung führt zu nicht spezifiziertem Verhalten"
 
 #: c-family/c-pragma.c:356 c-family/c-pragma.c:361
 #, gcc-internal-format
@@ -25343,7 +25341,7 @@ msgstr "Vergleich von weitergegebenem ~unsigned mit unsigned"
 #: c-family/c-warn.c:1897
 #, gcc-internal-format
 msgid "unused parameter %qD"
-msgstr "unbenutzter Parameter %qD"
+msgstr "unverwendeter Parameter %qD"
 
 #: c-family/c-warn.c:1959
 #, gcc-internal-format
@@ -25395,7 +25393,7 @@ msgstr "Vergleich der Konstanten %qE mit booleschem Ausdruck ist stets »true«"
 msgid "passing argument %i to restrict-qualified parameter aliases with argument %Z"
 msgid_plural "passing argument %i to restrict-qualified parameter aliases with arguments %Z"
 msgstr[0] "Argument %i ist als »restrict« markiert, wird aber auch in Argument %Z übergeben"
-msgstr[1] "Argument %i ist als »restrict« markiert, wird aber auch in Argument %Z übergeben"
+msgstr[1] "Argument %i ist als »restrict« markiert, wird aber auch in Argumenten %Z übergeben"
 
 #: c-family/c-warn.c:2275 c/c-typeck.c:5207 cp/call.c:5316
 #, gcc-internal-format
@@ -25757,7 +25755,7 @@ msgstr "temporäre Datei %s konnte nicht mit LTO-Ausgabe geöffnet werden"
 #: config/darwin.c:3126
 #, gcc-internal-format
 msgid "%<-fobjc-abi-version%> >= 2 must be used for %<-m64%> targets with %<-fnext-runtime%>"
-msgstr "für %<-m64%>-Ziele mit %<-fnext-runtime%> muss %<-fobjc-abi-version%> verwendet werden"
+msgstr "für %<-m64%>-Ziele mit %<-fnext-runtime%> muss %<-fobjc-abi-version%> >= 2 verwendet werden"
 
 #: config/darwin.c:3130
 #, gcc-internal-format
@@ -25767,7 +25765,7 @@ msgstr "auf %<-m32%>-Zielen mit %<-fnext-runtime%> wird %<-fobjc-abi-version%> >
 #: config/darwin.c:3215
 #, gcc-internal-format
 msgid "%<-mdynamic-no-pic%> overrides %<-fpic%>, %<-fPIC%>, %<-fpie%> or %<-fPIE%>"
-msgstr "%<-mdynamic-no-pic%> hebt %<-fpic%>, %<-fPIC%>, %<-fpie%> oder %<-fPIE%> auf"
+msgstr "%<-mdynamic-no-pic%> übersteuert %<-fpic%>, %<-fPIC%>, %<-fpie%> oder %<-fPIE%>"
 
 #: config/darwin.c:3403
 #, gcc-internal-format
@@ -26089,7 +26087,7 @@ msgstr "falsch geformte Ziel-»%s«-Liste %qs"
 #: config/aarch64/aarch64.c:11419
 #, gcc-internal-format
 msgid "%Klane %wd out of range %wd - %wd"
-msgstr "Spur %2$wd für %1$K ist außerhalb des Wertebereiches %3$wd bis %4$wd"
+msgstr "%KSpur %wd außerhalb des Wertebereiches %wd bis %wd"
 
 #: config/aarch64/aarch64.c:11421
 #, gcc-internal-format
@@ -26205,7 +26203,7 @@ msgstr "compact-casesi ist für ARCv2 keine gültige Option"
 #: config/arc/arc.c:1372
 #, gcc-internal-format, gfc-internal-format
 msgid "multiply option implies r%d is fixed"
-msgstr "Multiplizieroption bewirkt, dass r%d festgelegt ist"
+msgstr "Multiplizieroption bringt mit sich, dass r%d festgelegt ist"
 
 #: config/arc/arc.c:1573 config/epiphany/epiphany.c:492
 #: config/epiphany/epiphany.c:532
@@ -26216,12 +26214,12 @@ msgstr "Argument des Attributes %qE ist keine Zeichenkettenkonstante"
 #: config/arc/arc.c:1582
 #, gcc-internal-format
 msgid "argument of %qE attribute is not \"ilink1\" or \"ilink2\""
-msgstr "Argument des Attributes %qE ist nicht \"ilink1\" oder \"ilink2\""
+msgstr "Argument des Attributes %qE ist weder »ilink1« oder »ilink2«"
 
 #: config/arc/arc.c:1590
 #, gcc-internal-format
 msgid "argument of %qE attribute is not \"ilink\""
-msgstr "Argument des Attributes %qE ist nicht \"ilink1\""
+msgstr "Argument des Attributes %qE ist nicht »ilink«"
 
 #: config/arc/arc.c:5644
 #, gcc-internal-format
@@ -26383,122 +26381,122 @@ msgstr "der Wertebereich der Maske ist 0 bis 255"
 #: config/arm/arm-builtins.c:2993
 #, gcc-internal-format
 msgid "the range of count should be in 0 to 32.  please check the intrinsic _mm_rori_pi16 in code."
-msgstr "der Wertebereich des Zählers ist 0 bis 32. Bitte eingebautes _mm_rori_pi16 im Code prüfen."
+msgstr "der Wertebereich des Zählers ist 0 bis 32. Bitte intrinsisches _mm_rori_pi16 im Code prüfen."
 
 #: config/arm/arm-builtins.c:2995
 #, gcc-internal-format
 msgid "the range of count should be in 0 to 32.  please check the intrinsic _mm_rori_pi32 in code."
-msgstr "der Wertebereich des Zählers ist 0 bis 32. Bitte eingebautes _mm_rori_pi32 im Code prüfen."
+msgstr "der Wertebereich des Zählers ist 0 bis 32. Bitte intrinsisches _mm_rori_pi32 im Code prüfen."
 
 #: config/arm/arm-builtins.c:2997
 #, gcc-internal-format
 msgid "the range of count should be in 0 to 32.  please check the intrinsic _mm_ror_pi16 in code."
-msgstr "der Wertebereich des Zählers ist 0 bis 32. Bitte eingebautes _mm_ror_pi16 im Code prüfen."
+msgstr "der Wertebereich des Zählers ist 0 bis 32. Bitte intrinsisches _mm_ror_pi16 im Code prüfen."
 
 #: config/arm/arm-builtins.c:2999
 #, gcc-internal-format
 msgid "the range of count should be in 0 to 32.  please check the intrinsic _mm_ror_pi32 in code."
-msgstr "der Wertebereich des Zählers ist 0 bis 32. Bitte eingebautes _mm_ror_pi32 im Code prüfen."
+msgstr "der Wertebereich des Zählers ist 0 bis 32. Bitte intrinsisches _mm_ror_pi32 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3005
 #, gcc-internal-format
 msgid "the range of count should be in 0 to 64.  please check the intrinsic _mm_rori_si64 in code."
-msgstr "der Wertebereich des Zählers ist 0 bis 64. Bitte eingebautes _mm_rori_si64 im Code prüfen."
+msgstr "der Wertebereich des Zählers ist 0 bis 64. Bitte intrinsisches _mm_rori_si64 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3007
 #, gcc-internal-format
 msgid "the range of count should be in 0 to 64.  please check the intrinsic _mm_ror_si64 in code."
-msgstr "der Wertebereich des Zählers ist 0 bis 64. Bitte eingebautes _mm_ror_si64 im Code prüfen."
+msgstr "der Wertebereich des Zählers ist 0 bis 64. Bitte intrinsisches _mm_ror_si64 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3012
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_srli_pi16 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_srli_pi16 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_srli_pi16 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3014
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_srli_pi32 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_srli_pi32 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_srli_pi32 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3016
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_srli_si64 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_srli_si64 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_srli_si64 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3018
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_slli_pi16 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_slli_pi16 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_slli_pi16 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3020
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_slli_pi32 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_slli_pi32 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_slli_pi32 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3022
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_slli_si64 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_slli_si64 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_slli_si64 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3024
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_srai_pi16 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_srai_pi16 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_srai_pi16 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3026
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_srai_pi32 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_srai_pi32 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_srai_pi32 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3028
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_srai_si64 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_srai_si64 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_srai_si64 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3030
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_srl_pi16 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_srl_pi16 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_srl_pi16 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3032
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_srl_pi32 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_srl_pi32 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_srl_pi32 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3034
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_srl_si64 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_srl_si64 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_srl_si64 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3036
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_sll_pi16 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_sll_pi16 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_sll_pi16 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3038
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_sll_pi32 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_sll_pi32 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_sll_pi32 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3040
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_sll_si64 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_sll_si64 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_sll_si64 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3042
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_sra_pi16 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_sra_pi16 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_sra_pi16 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3044
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_sra_pi32 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_sra_pi32 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_sra_pi32 im Code prüfen."
 
 #: config/arm/arm-builtins.c:3046
 #, gcc-internal-format
 msgid "the count should be no less than 0.  please check the intrinsic _mm_sra_si64 in code."
-msgstr "der Zähler sollte nicht kleiner als 0 sein. Bitte das eingebaute _mm_sra_si64 im Code prüfen."
+msgstr "der Zähler darf nicht kleiner als 0 sein. Bitte das intrinsische _mm_sra_si64 im Code prüfen."
 
 #: config/arm/arm.c:2799
 #, gcc-internal-format
@@ -26513,12 +26511,12 @@ msgstr "Ziel-CPU unterstützt nicht ARM-Modus"
 #: config/arm/arm.c:2809
 #, gcc-internal-format
 msgid "enabling backtrace support is only meaningful when compiling for the Thumb"
-msgstr "Das Aktivieren der Ablaufverfolgung ist nur bei der Übersetzung für THUMB sinnvoll"
+msgstr "Das Einschalten der Ablaufverfolgung ist nur bei der Übersetzung für THUMB sinnvoll"
 
 #: config/arm/arm.c:2812
 #, gcc-internal-format
 msgid "enabling callee interworking support is only meaningful when compiling for the Thumb"
-msgstr "Das Aktivieren der Unterstützung der Aufgerufenen-Zusammenarbeit ist nur bei der Übersetzung für THUMB sinnvoll"
+msgstr "Das Einschalten der Unterstützung der Aufgerufenen-Zusammenarbeit ist nur bei der Übersetzung für THUMB sinnvoll"
 
 #: config/arm/arm.c:2820
 #, gcc-internal-format
@@ -27043,7 +27041,7 @@ msgstr "Rundungsergebnis wird immer 0 sein"
 #: config/avr/driver-avr.c:56
 #, gcc-internal-format
 msgid "bad usage of spec function %qs"
-msgstr "falsche Benutzung der spec-Funktion %qs"
+msgstr "falsche Verwendung der spec-Funktion %qs"
 
 #: config/avr/driver-avr.c:84
 #, gcc-internal-format
@@ -27724,17 +27722,17 @@ msgstr "Attribute cdecl und thiscall sind nicht verträglich"
 #: config/i386/i386.c:7780
 #, gcc-internal-format
 msgid "%qE attribute is used for non-class method"
-msgstr "Attribut %qE wird für für Nicht-Klassen-Methode verwendet"
+msgstr "Attribut %qE wird für Nicht-Klassen-Methode verwendet"
 
 #: config/i386/i386.c:8018
 #, gcc-internal-format
 msgid "calling %qD with attribute sseregparm without SSE/SSE2 enabled"
-msgstr "Aufruf von %qD mit Attribut sseregparam ohne SSE/SSE2 aktiviert"
+msgstr "Aufruf von %qD mit Attribut sseregparam, ohne dass SSE/SSE2 eingeschaltet ist"
 
 #: config/i386/i386.c:8021
 #, gcc-internal-format
 msgid "calling %qT with attribute sseregparm without SSE/SSE2 enabled"
-msgstr "Aufruf von %qT mit Attribut sseregparam ohne SSE/SSE2 aktiviert"
+msgstr "Aufruf von %qT mit Attribut sseregparam, ohne dass SSE/SSE2 eingeschaltet ist"
 
 #: config/i386/i386.c:8337
 #, gcc-internal-format
@@ -27819,7 +27817,7 @@ msgstr "x87-Registerrückgabe mit ausgeschaltetem x87"
 #: config/i386/i386.c:9650 config/i386/i386.c:9921 config/i386/i386.c:10444
 #, gcc-internal-format
 msgid "calling %qD with SSE calling convention without SSE/SSE2 enabled"
-msgstr "Aufruf von %qD mit SSE-Aufrufkonvention, ohne dass SSE/SSE2 aktiviert ist"
+msgstr "Aufruf von %qD mit SSE-Aufrufkonvention, ohne dass SSE/SSE2 eingeschaltet ist"
 
 #: config/i386/i386.c:9652 config/i386/i386.c:9923 config/i386/i386.c:10446
 #, gcc-internal-format
@@ -28504,7 +28502,7 @@ msgstr "MIPS16 -mxgot Code"
 #: config/mips/mips.c:19436
 #, gcc-internal-format
 msgid "hard-float MIPS16 code for ABIs other than o32 and o64"
-msgstr "Hardware-Gleitkommacode für MIPS16 für ABIs außer o32 und o64"
+msgstr "Hardware-Gleitkommabefehle für MIPS16 für ABIs außer o32 und o64"
 
 #: config/mips/mips.c:19439
 #, gcc-internal-format
@@ -29122,7 +29120,7 @@ msgstr "statische Initialisierung der Variablen %q+D in %<.shared%>-Speicher wir
 #: config/nvptx/nvptx.c:1812
 #, gcc-internal-format
 msgid "cannot emit unaligned pointers in ptx assembly"
-msgstr "in PTX-Assembler können keine unausgerichteten Zeiger ausgegeben werden"
+msgstr "in PTX-Assembler können keine unausgerichteten Zeiger erzeugt werden"
 
 #: config/nvptx/nvptx.c:2002
 #, gcc-internal-format
@@ -29198,7 +29196,7 @@ msgstr "ABI erfordert -march=rv%d"
 #: config/rl78/rl78.c:367
 #, gcc-internal-format
 msgid "-mes0 can only be used with C"
-msgstr "-mes0 kann nur zusammen mit C benutzt werden"
+msgstr "-mes0 kann nur zusammen mit C verwendet werden"
 
 #: config/rl78/rl78.c:370
 #, gcc-internal-format
@@ -29208,25 +29206,25 @@ msgstr "mdoc-Register werden nur für G13-Ziel gesichert"
 #: config/rl78/rl78.c:385
 #, gcc-internal-format
 msgid "-mmul=g13 cannot be used with -mcpu=g10"
-msgstr "-mmul=g13 kann nicht zusammen mit -mcpu=g10 benutzt werden"
+msgstr "-mmul=g13 kann nicht zusammen mit -mcpu=g10 verwendet werden"
 
 #: config/rl78/rl78.c:386
 #, gcc-internal-format
 msgid "-mmul=g14 cannot be used with -mcpu=g10"
-msgstr "-mmul=g14 kann nicht zusammen mit -mcpu=g10 benutzt werden"
+msgstr "-mmul=g14 kann nicht zusammen mit -mcpu=g10 verwendet werden"
 
 #. The S2 core does not have mul/div instructions.
 #: config/rl78/rl78.c:397
 #, gcc-internal-format
 msgid "-mmul=g14 cannot be used with -mcpu=g13"
-msgstr "-mmul=g14 kann nicht zusammen mit -mcpu=g13 benutzt werden"
+msgstr "-mmul=g14 kann nicht zusammen mit -mcpu=g13 verwendet werden"
 
 #. The G14 core does not have the hardware multiply peripheral used by the
 #. G13 core, hence you cannot use G13 multipliy routines on G14 hardware.
 #: config/rl78/rl78.c:409
 #, gcc-internal-format
 msgid "-mmul=g13 cannot be used with -mcpu=g14"
-msgstr "-mmul=g13 kann nicht zusammen mit -mcpu=g14 benutzt werden"
+msgstr "-mmul=g13 kann nicht zusammen mit -mcpu=g14 verwendet werden"
 
 #: config/rl78/rl78.c:804
 #, gcc-internal-format
@@ -29686,7 +29684,7 @@ msgstr "interner Fehler: Eingebaute Funktion %s bereits verarbeitet"
 #: config/rs6000/rs6000.c:14359
 #, gcc-internal-format
 msgid "argument 1 must be an 8-bit field value"
-msgstr "Argument 1 muss ein 5-Bit-Feldwert sein"
+msgstr "Argument 1 muss ein 8-Bit-Feldwert sein"
 
 #: config/rs6000/rs6000.c:14405
 #, gcc-internal-format
@@ -29701,7 +29699,7 @@ msgstr "Argument 2 muss ein vorzeichenloses 5-Bit-Symbol sein"
 #: config/rs6000/rs6000.c:14526
 #, gcc-internal-format
 msgid "argument 1 must be a 6-bit unsigned literal"
-msgstr "Argument 3 muss ein vorzeichenloses 6-Bit-Literal sein"
+msgstr "Argument 1 muss ein vorzeichenloses 6-Bit-Literal sein"
 
 #: config/rs6000/rs6000.c:14540
 #, gcc-internal-format
@@ -29928,7 +29926,7 @@ msgstr "Stapelrahmen zu groß"
 #: config/rs6000/rs6000.c:31614
 #, gcc-internal-format
 msgid "-fsplit-stack uses register r29"
-msgstr "-fsplit-stack benutzt Register r29"
+msgstr "-fsplit-stack verwendet Register r29"
 
 #: config/rs6000/rs6000.c:31622
 #, gcc-internal-format
@@ -30394,12 +30392,12 @@ msgstr "CPUs älter als z900 werden für -fsplit-stack nicht unterstützt"
 #: config/s390/s390.c:14521
 #, gcc-internal-format, gfc-internal-format
 msgid "%sarch=%s%s is deprecated and will be removed in future releases; use at least %sarch=z900%s"
-msgstr "%sarch=%s%s ist veraltet und wird in einer zukünftigen Version entfernt; benutzen Sie mindestens %sarch=z900%s"
+msgstr "%sarch=%s%s ist veraltet und wird in einer zukünftigen Version entfernt; verwenden Sie mindestens %sarch=z900%s"
 
 #: config/s390/s390.c:14533
 #, gcc-internal-format, gfc-internal-format
 msgid "%stune=%s%s is deprecated and will be removed in future releases; use at least %stune=z900%s"
-msgstr "%stune=%s%s ist veraltet und wird in einer zukünftigen Version entfernt; benutzen Sie mindestens %stune=z900%s"
+msgstr "%stune=%s%s ist veraltet und wird in einer zukünftigen Version entfernt; verwenden Sie mindestens %stune=z900%s"
 
 #: config/s390/s390.c:14545
 #, gcc-internal-format, gfc-internal-format
@@ -30424,12 +30422,12 @@ msgstr "Hardware-Vektorunterstützung ist mit -msoft-float nicht verfügbar"
 #: config/s390/s390.c:14596
 #, gcc-internal-format, gfc-internal-format
 msgid "hardware decimal floating point instructions not available on %s"
-msgstr "Dezimale Hardware-Gleitkomma-Befehle sind auf %s nicht verfügbar"
+msgstr "Dezimale Hardware-Gleitkommabefehle sind auf %s nicht verfügbar"
 
 #: config/s390/s390.c:14600
 #, gcc-internal-format
 msgid "hardware decimal floating point instructions not available in ESA/390 mode"
-msgstr "Dezimale Hardware-Gleitkomma-Befehle sind im ESA/390-Modus nicht verfügbar"
+msgstr "Dezimale Hardware-Gleitkommabefehle sind im ESA/390-Modus nicht verfügbar"
 
 #: config/s390/s390.c:14612
 #, gcc-internal-format
@@ -31305,12 +31303,12 @@ msgstr "%qE ist hier nicht deklariert (nicht in einer Funktion)"
 #: c/c-decl.c:3496
 #, gcc-internal-format
 msgid "%qE undeclared (first use in this function); did you mean %qs?"
-msgstr "%qE nicht deklariert (erstmalige Benutzung in dieser Funktion); meinten Sie %qs?"
+msgstr "%qE nicht deklariert (erstmalige Verwendung in dieser Funktion); meinten Sie %qs?"
 
 #: c/c-decl.c:3501
 #, gcc-internal-format
 msgid "%qE undeclared (first use in this function)"
-msgstr "%qE nicht deklariert (erste Benutzung in dieser Funktion)"
+msgstr "%qE nicht deklariert (erste Verwendung in dieser Funktion)"
 
 #: c/c-decl.c:3505
 #, gcc-internal-format
@@ -32506,7 +32504,7 @@ msgstr "Deklaration der Nicht-Variablen %qD in Anfangsdeklaration einer %<for%>-
 #: c/c-decl.c:9735
 #, gcc-internal-format
 msgid "incompatible address space qualifiers %qs and %qs"
-msgstr "Inkompatible Adressraumkennzeichen %s und %s"
+msgstr "Inkompatible Adressraumkennzeichen %qs und %qs"
 
 #: c/c-decl.c:9793 c/c-decl.c:9800
 #, gcc-internal-format
@@ -32816,7 +32814,7 @@ msgstr "Attribute sollten in einer Funktionsdefinition vor dem Deklarator angege
 #: c/c-parser.c:1865
 #, gcc-internal-format
 msgid "%<__auto_type%> used with a bit-field initializer"
-msgstr "%<__auto_type%> wird mit einem Bitfeld-Initialisierer benutzt"
+msgstr "%<__auto_type%> wird mit einem Bitfeld-Initialisierer verwendet"
 
 #: c/c-parser.c:1936 c/c-parser.c:2023
 #, gcc-internal-format
@@ -33179,7 +33177,7 @@ msgstr "%<sizeof%> auf ein Bitfeld angewandt"
 #: c/c-parser.c:7206
 #, gcc-internal-format
 msgid "ISO C does not allow %<%E (expression)%>"
-msgstr "ISO-C erlaubt kein %<%E (expression)%>"
+msgstr "ISO-C erlaubt kein %<%E (Ausdruck)%>"
 
 #: c/c-parser.c:7237
 #, gcc-internal-format
@@ -33265,7 +33263,7 @@ msgstr "ISO-C verbietet geklammerte Gruppen innerhalb von Ausdrücken"
 #: c/c-parser.c:7718
 #, gcc-internal-format
 msgid "ISO C does not support %<__FUNCTION__%> predefined identifier"
-msgstr "ISO-C unterstützt nicht den vordefinierten Bezeichner %<__FUNCTION__%>"
+msgstr "ISO-C unterstützt den vordefinierten Bezeichner %<__FUNCTION__%> nicht"
 
 #: c/c-parser.c:7727
 #, gcc-internal-format
@@ -33275,7 +33273,7 @@ msgstr "ISO-C unterstützt den vordefinierten Bezeichner %<__PRETTY_FUNCTION__%>
 #: c/c-parser.c:7736
 #, gcc-internal-format
 msgid "ISO C90 does not support %<__func__%> predefined identifier"
-msgstr "ISO-C unterstützt nicht den vordefinierten Bezeichner %<__func__%>"
+msgstr "ISO-C90 unterstützt den vordefinierten Bezeichner %<__func__%> nicht"
 
 #: c/c-parser.c:7899
 #, gcc-internal-format
@@ -33465,7 +33463,7 @@ msgstr "%<#pragma omp section%> darf nur in %<#pragma omp sections%>-Konstrukt v
 #: c/c-parser.c:10304 cp/parser.c:38319
 #, gcc-internal-format
 msgid "for, while or do statement expected"
-msgstr "for-, while- oder do-Anweidung erwartet"
+msgstr "for-, while- oder do-Anweisung erwartet"
 
 #: c/c-parser.c:10316 cp/parser.c:38096
 #, gcc-internal-format
@@ -33759,12 +33757,12 @@ msgstr "ungültige OpenACC-Klausel im Datei-Gültigkeitsbereich"
 #: c/c-parser.c:13816 cp/parser.c:36190
 #, gcc-internal-format
 msgid "invalid use of %<extern%> variable %qD in %<#pragma acc declare%>"
-msgstr "ungültige Benutzung der %<extern%>-Variable %qD in %<#pragma acc declare%>"
+msgstr "ungültige Verwendung der %<extern%>-Variable %qD in %<#pragma acc declare%>"
 
 #: c/c-parser.c:13824 cp/parser.c:36198
 #, gcc-internal-format
 msgid "invalid use of %<global%> variable %qD in %<#pragma acc declare%>"
-msgstr "ungültige Benutzung der %<global%>-Variable %qD in %<#pragma acc declare%>"
+msgstr "ungültige Verwendung der %<global%>-Variable %qD in %<#pragma acc declare%>"
 
 #: c/c-parser.c:13836 cp/parser.c:36210
 #, gcc-internal-format
@@ -33834,7 +33832,7 @@ msgstr "ungültiger Operator für %<#pragma omp atomic%>"
 #: c/c-parser.c:14777 cp/semantics.c:8524 cp/semantics.c:8534
 #, gcc-internal-format
 msgid "%<#pragma omp atomic capture%> uses two different expressions for memory"
-msgstr "%<#pragma omp atomic capture%> verwendet zwei unterschiedliche Variablen für Speicher"
+msgstr "%<#pragma omp atomic capture%> verwendet zwei unterschiedliche Audrücke für Speicher"
 
 #: c/c-parser.c:14842 c/c-parser.c:14864
 #, gcc-internal-format
@@ -34074,7 +34072,7 @@ msgstr "%<simd%> oder %<reduction%> oder %<target%> erwartet"
 #: c/c-parser.c:17498 cp/semantics.c:7538
 #, gcc-internal-format
 msgid "%qE declared %<threadprivate%> after first use"
-msgstr "%qE nach erster Benutzung als %<threadprivate%> deklariert"
+msgstr "%qE nach erster Verwendung als %<threadprivate%> deklariert"
 
 #: c/c-parser.c:17500 cp/semantics.c:7540
 #, gcc-internal-format
@@ -34109,7 +34107,7 @@ msgstr "»vectorlength« muss eine Zweierpotenz sein"
 #: c/c-parser.c:17670 cp/parser.c:38567
 #, gcc-internal-format
 msgid "step size must be an integer constant expression or an integer variable"
-msgstr "Schrittweite muss eine Ganzzahlkonstante oder eine Ganzzahlvariable sein"
+msgstr "Schrittweite muss eine ganzzahliger Konstantenausdruck oder eine Ganzzahlvariable sein"
 
 #: c/c-parser.c:17769 cp/parser.c:38660
 #, gcc-internal-format
@@ -34194,28 +34192,28 @@ msgstr "%qD hat unvollständigen Typ %qT"
 #: c/c-typeck.c:234 c/c-typeck.c:9731 c/c-typeck.c:9773 cp/call.c:4090
 #, gcc-internal-format
 msgid "invalid use of void expression"
-msgstr "falsche Benutzung eines void-Ausdruckes"
+msgstr "falsche Verwendung eines void-Ausdruckes"
 
 #: c/c-typeck.c:242
 #, gcc-internal-format
 msgid "invalid use of flexible array member"
-msgstr "falsche Benutzung eines flexiblen Feldelements"
+msgstr "falsche Verwendung eines flexiblen Feldelements"
 
 #: c/c-typeck.c:248 cp/typeck2.c:503
 #, gcc-internal-format
 msgid "invalid use of array with unspecified bounds"
-msgstr "falsche Benutzung eines Feldes mit unbekannten Grenzen"
+msgstr "falsche Verwendung eines Feldes mit unbekannten Grenzen"
 
 #: c/c-typeck.c:256
 #, gcc-internal-format
 msgid "invalid use of undefined type %qT"
-msgstr "falsche Benutzung des undefinierten Typs %qT"
+msgstr "falsche Verwendung des undefinierten Typs %qT"
 
 #. If this type has a typedef-name, the TYPE_NAME is a TYPE_DECL.
 #: c/c-typeck.c:259
 #, gcc-internal-format
 msgid "invalid use of incomplete typedef %qT"
-msgstr "falsche Benutzung des unvollständigen typedef %qT"
+msgstr "falsche Verwendung des unvollständigen typedef %qT"
 
 #: c/c-typeck.c:332
 #, gcc-internal-format
@@ -35043,7 +35041,7 @@ msgstr "Feld mit nicht konstantem Feldausdruck initialisiert"
 #: c/c-typeck.c:7309 c/c-typeck.c:7357 c/c-typeck.c:8929
 #, gcc-internal-format
 msgid "initializer element is not a constant expression"
-msgstr "Initialisierungselement ist nicht konstant"
+msgstr "Initialisierungselement ist kein konstanter Ausdruck"
 
 #: c/c-typeck.c:7351 c/c-typeck.c:8924
 #, gcc-internal-format
@@ -37243,7 +37241,7 @@ msgstr "Umwandlung in Nicht-Ganzzahltyp %qT in konstantem Ausdruck"
 #: cp/constexpr.c:5504 cp/decl.c:5163
 #, gcc-internal-format
 msgid "%qD declared %<static%> in %<constexpr%> function"
-msgstr "%qD in Konstantenausdruck als %<static%> deklariert"
+msgstr "%qD in %<constexpr%>-Funktion als %<static%> deklariert"
 
 #: cp/constexpr.c:5511 cp/decl.c:5160
 #, gcc-internal-format
@@ -37344,7 +37342,7 @@ msgstr "throw-Ausdrücke sind innerhalb von »#pragma simd«-Schleifen nicht erl
 #: cp/cp-cilkplus.c:160
 #, gcc-internal-format
 msgid "try statements are not allowed inside loops marked with #pragma simd"
-msgstr "try-Ausdrücke sind innerhalb von »#pragma simd«-Schleifen nicht erlaubt"
+msgstr "try-Anweisungen sind innerhalb von »#pragma simd«-Schleifen nicht erlaubt"
 
 #: cp/cp-gimplify.c:1429
 #, gcc-internal-format
@@ -37374,7 +37372,7 @@ msgstr "Umwandlung von %qE von %qT nach %qT ist mehrdeutig"
 #: cp/cvt.c:382
 #, gcc-internal-format
 msgid "initialization of volatile reference type %q#T from rvalue of type %qT"
-msgstr "Initialisierung des »volatile« Referenztyps %q#T von R-Wert des Typs %qT"
+msgstr "Initialisierung des %<volatile%>-Referenztyps %q#T von R-Wert des Typs %qT"
 
 #: cp/cvt.c:385
 #, gcc-internal-format
@@ -37729,7 +37727,7 @@ msgstr "%qF als %<static%> deklariert, aber nirgendwo definiert"
 #: cp/decl.c:963
 #, gcc-internal-format
 msgid "odr-used inline variable %qD is not defined"
-msgstr "odr-benutzte Inline-Variable %qD ist nicht definiert"
+msgstr "odr-verwendete Inline-Variable %qD ist nicht definiert"
 
 #: cp/decl.c:1241
 #, gcc-internal-format
@@ -37949,7 +37947,7 @@ msgstr "Definition von %q+D gelöscht"
 #: cp/decl.c:2409
 #, gcc-internal-format
 msgid "explicit specialization of %qD after first use"
-msgstr "explizite Spezialisierung von %qD nach erster Benutzung"
+msgstr "explizite Spezialisierung von %qD nach erster Verwendung"
 
 #: cp/decl.c:2549
 #, gcc-internal-format
@@ -40395,7 +40393,7 @@ msgstr "Prototyp für %q#D passt zu nichts in Klasse %qT"
 #: cp/decl2.c:761
 #, gcc-internal-format
 msgid "local class %q#T shall not have static data member %q#D"
-msgstr "lokale Klasse %q#T sollte nicht statisches Datenelement %q#D haben"
+msgstr "lokale Klasse %q#T darf kein statisches Datenelement %q#D haben"
 
 #: cp/decl2.c:769
 #, gcc-internal-format
@@ -40564,7 +40562,7 @@ msgstr "%qT mit bedeutenderer Sichtbarkeit als seine Basis %qT deklariert"
 #: cp/decl2.c:4187
 #, gcc-internal-format
 msgid "%q#D, declared using unnamed type, is used but never defined"
-msgstr "%q#D (durch einen unbenannten Typen deklariert) wird benutzt, aber nirgends definiert"
+msgstr "%q#D (durch einen unbenannten Typen deklariert) wird verwendet, aber nirgends definiert"
 
 #. DRs 132, 319 and 389 seem to indicate types with
 #. no linkage can only be used to declare extern "C"
@@ -40573,12 +40571,12 @@ msgstr "%q#D (durch einen unbenannten Typen deklariert) wird benutzt, aber nirge
 #: cp/decl2.c:4196
 #, gcc-internal-format
 msgid "unnamed type with no linkage used to declare variable %q#D with linkage"
-msgstr "unbenannter Typ ohne Bindung wird benutzt, um Variable %q#D mit Bindung zu deklarieren"
+msgstr "unbenannter Typ ohne Bindung wird verwendet, um Variable %q#D mit Bindung zu deklarieren"
 
 #: cp/decl2.c:4200
 #, gcc-internal-format
 msgid "unnamed type with no linkage used to declare function %q#D with linkage"
-msgstr "unbenannter Typ ohne Bindung wird benutzt, um Funktion %q#D mit Bindung zu deklarieren"
+msgstr "unbenannter Typ ohne Bindung wird verwendet, um Funktion %q#D mit Bindung zu deklarieren"
 
 #: cp/decl2.c:4204
 #, gcc-internal-format
@@ -40588,7 +40586,7 @@ msgstr "%q#D verweist nicht auf den unqualifizierten Typen und wird daher nicht 
 #: cp/decl2.c:4212
 #, gcc-internal-format
 msgid "%q#D, declared using local type %qT, is used but never defined"
-msgstr "%q#D (durch lokalen Typen %qT deklariert) wird benutzt, aber nirgends definiert"
+msgstr "%q#D (durch lokalen Typen %qT deklariert) wird verwendet, aber nirgends definiert"
 
 #: cp/decl2.c:4216
 #, gcc-internal-format
@@ -40735,7 +40733,7 @@ msgstr "%<::%D%> wurde nicht deklariert"
 #: cp/except.c:351
 #, gcc-internal-format
 msgid "exception handling disabled, use -fexceptions to enable"
-msgstr "Ausnahmebehandlung ausgeschaltet, verwenden Sie -fexeptions zum Einschalten"
+msgstr "Ausnahmebehandlung ausgeschaltet, »-fexeptions« schaltet sie ein"
 
 #: cp/except.c:602
 #, gcc-internal-format
@@ -40755,7 +40753,7 @@ msgstr "Catch-Parameter kann nicht mit R-Wert-Referenztyp %qT deklariert werden"
 #: cp/except.c:856
 #, gcc-internal-format
 msgid "cannot throw expression of type %qT because it involves types of variable size"
-msgstr "Exception vom Typ %qT kann nicht geworfen werden, da Typen mit variabler Größe beteiligt sind"
+msgstr "Audruck vom Typ %qT kann nicht geworfen werden, da Typen mit variabler Größe beteiligt sind"
 
 #: cp/except.c:859
 #, gcc-internal-format
@@ -41150,7 +41148,7 @@ msgstr "%<new%> für Typ %qT mit erweiterter Ausrichtung %d"
 #: cp/init.c:3074
 #, gcc-internal-format
 msgid "uses %qD, which does not have an alignment parameter"
-msgstr "benutzt %qD, das jedoch keinen Ausrichtungsparameter hat"
+msgstr "verwendet %qD, das jedoch keinen Ausrichtungsparameter hat"
 
 #: cp/init.c:3077
 #, gcc-internal-format
@@ -41751,7 +41749,7 @@ msgstr "Namensbereich-Alias %qD ist hier nicht erlaubt, %qD angenommen"
 #: cp/name-lookup.c:4150
 #, gcc-internal-format
 msgid "strong using is deprecated; use inline namespaces instead"
-msgstr "»using« mit Attribut »strong« ist veraltet; benutzen Sie stattdessen inline-Namensräume"
+msgstr "»using« mit Attribut »strong« ist veraltet; verwenden Sie stattdessen inline-Namensräume"
 
 #: cp/name-lookup.c:4153
 #, gcc-internal-format
@@ -41998,7 +41996,7 @@ msgstr "Argumentherleitung von Klassentemplates ist nur mit -std=c++1z oder -std
 #: cp/parser.c:3169
 #, gcc-internal-format
 msgid "invalid use of destructor %qD as a type"
-msgstr "ungültige Benutzung des Destruktors %qD als Typ"
+msgstr "ungültige Verwendung des Destruktors %qD als Typ"
 
 #. Something like 'unsigned A a;'
 #: cp/parser.c:3172
@@ -42295,7 +42293,7 @@ msgstr "ISO-C++ verbietet zusammengesetzte Literale"
 #: cp/parser.c:6809
 #, gcc-internal-format
 msgid "two consecutive %<[%> shall only introduce an attribute"
-msgstr "zwei aufeinander folgende %<[%> sollten nur ein Attribut einführen"
+msgstr "zwei aufeinander folgende %<[%> dürfen nur ein Attribut einführen"
 
 #: cp/parser.c:7209
 #, gcc-internal-format
@@ -42831,12 +42829,12 @@ msgstr "ungültiges Templateargument ohne Typ"
 #: cp/parser.c:16219
 #, gcc-internal-format
 msgid "explicit instantiation shall not use %<inline%> specifier"
-msgstr "explizite Instanziierung sollte nicht %<inline%> verwenden"
+msgstr "explizite Instanziierung darf kein %<inline%> verwenden"
 
 #: cp/parser.c:16223
 #, gcc-internal-format
 msgid "explicit instantiation shall not use %<constexpr%> specifier"
-msgstr "explizite Instanziierung sollte nicht %<constexpr%> verwenden"
+msgstr "explizite Instanziierung darf kein %<constexpr%> verwenden"
 
 #: cp/parser.c:16282
 #, gcc-internal-format
@@ -42851,12 +42849,12 @@ msgstr "Typspezifizierer erwartet"
 #: cp/parser.c:16686
 #, gcc-internal-format
 msgid "use of %<auto%> in lambda parameter declaration only available with -std=c++14 or -std=gnu++14"
-msgstr "Benutzung von %<auto%> in Lambda-Parameterdeklaration benötigt -std=c++14 oder -std=gnu++14"
+msgstr "Verwendung von %<auto%> in Lambda-Parameterdeklaration benötigt -std=c++14 oder -std=gnu++14"
 
 #: cp/parser.c:16692
 #, gcc-internal-format
 msgid "use of %<auto%> in parameter declaration only available with -std=c++14 or -std=gnu++14"
-msgstr "Benutzung von %<auto%> in Parameterdeklaration benötigt -std=c++14 oder -std=gnu++14"
+msgstr "Verwendung von %<auto%> in Parameterdeklaration benötigt -std=c++14 oder -std=gnu++14"
 
 #: cp/parser.c:16697
 #, gcc-internal-format
@@ -43092,7 +43090,7 @@ msgstr "%<%T::%E%> ist kein Typ"
 #: cp/parser.c:19957
 #, gcc-internal-format
 msgid "invalid use of constructor as a template"
-msgstr "ungültige Benutzung des Konstruktors als Template"
+msgstr "ungültige Verwendung des Konstruktors als Template"
 
 #: cp/parser.c:19959
 #, gcc-internal-format
@@ -43393,7 +43391,7 @@ msgstr "Typen dürfen nicht in Ausnahmedeklarationen definiert werden"
 #: cp/parser.c:24706
 #, gcc-internal-format
 msgid "attribute using prefix used together with scoped attribute token"
-msgstr "Attribut, das Präfix benutzt, wird zusammen mit Gültigkeitsbereich-Attribut-Token benutzt"
+msgstr "Attribut, das Präfix verwendet, wird zusammen mit Gültigkeitsbereich-Attribut-Token verwendet"
 
 #: cp/parser.c:24720
 #, gcc-internal-format
@@ -43438,7 +43436,7 @@ msgstr "spezialisierendes Element %<%T::%E%> erfordert Syntax %<template<>%>"
 #: cp/parser.c:25852
 #, gcc-internal-format
 msgid "invalid declaration of %<%T::%E%>"
-msgstr "ungültige Deklaration von  %<%T::%E%>"
+msgstr "ungültige Deklaration von %<%T::%E%>"
 
 #: cp/parser.c:25856
 #, gcc-internal-format
@@ -43807,7 +43805,7 @@ msgstr "%<_Cilk_for%> erlaubt nur in C einen Ausdruck statt einer Deklaration, n
 #: cp/parser.c:34578 cp/pt.c:15486
 #, gcc-internal-format
 msgid "iteration variable %qD should not be reduction"
-msgstr "Schleifenvariable %qD sollte nicht Reduktion sein"
+msgstr "Schleifenvariable %qD sollte keine Reduktion sein"
 
 #: cp/parser.c:34663
 #, gcc-internal-format
@@ -44095,13 +44093,13 @@ msgstr "Elemente einer explizit spezialisierten Klasse sind ohne Templateheader 
 #: cp/pt.c:2615
 #, gcc-internal-format
 msgid "explicit specialization of %qD outside its namespace must use a nested-name-specifier"
-msgstr "explizite Spezialisierung von %qD außerhalb seines Namensraums muss einen nested-name-specifier benutzen"
+msgstr "explizite Spezialisierung von %qD außerhalb seines Namensraums muss einen nested-name-specifier verwenden"
 
 #. This was allowed in C++98, so only pedwarn.
 #: cp/pt.c:2620
 #, gcc-internal-format
 msgid "explicit instantiation of %qD outside its namespace must use a nested-name-specifier"
-msgstr "explizite Instanziierung von %qD außerhalb seines Namensraums muss einen nested-name-specifier benutzen"
+msgstr "explizite Instanziierung von %qD außerhalb seines Namensraums muss einen nested-name-specifier verwenden"
 
 #. This case handles bogus declarations like template <>
 #. template <class T> void f<int>();
@@ -44691,7 +44689,7 @@ msgstr "eingegebener Klassenname %qD als Template-Templateargument verwendet"
 #: cp/pt.c:7487
 #, gcc-internal-format
 msgid "invalid use of destructor %qE as a type"
-msgstr "ungültige Benutzung des Destruktors %qE als Typ"
+msgstr "ungültige Verwendung des Destruktors %qE als Typ"
 
 #: cp/pt.c:7492
 #, gcc-internal-format
@@ -44981,7 +44979,7 @@ msgstr "ungültiges Feld %qD wird verwendet"
 #: cp/pt.c:14984 cp/pt.c:16403
 #, gcc-internal-format
 msgid "invalid use of pack expansion expression"
-msgstr "falsche Benutzung eines Packauflösungs-Ausdruckes"
+msgstr "falsche Verwendung eines Packauflösungs-Ausdruckes"
 
 #: cp/pt.c:14988 cp/pt.c:16407
 #, gcc-internal-format
@@ -45157,7 +45155,7 @@ msgstr "Ermittlung aus geschweift geklammerter Initialisierungsliste erfordert #
 #: cp/pt.c:25080
 #, gcc-internal-format
 msgid "non-class template %qT used without template arguments"
-msgstr "Nicht-Klassen-Template %qT ohne Template-Argumente benutzt"
+msgstr "Nicht-Klassen-Template %qT ohne Template-Argumente verwendet"
 
 #: cp/pt.c:25142
 #, gcc-internal-format
@@ -46068,7 +46066,7 @@ msgstr "Abfrage des Elementes %qD in %qE, das vom Nicht-Klassentyp %qT ist"
 #: cp/typeck.c:2353
 #, gcc-internal-format
 msgid "invalid use of nonstatic data member %qE"
-msgstr "ungültige Benutzung des nicht-statischen Datenelements %qE"
+msgstr "ungültige Verwendung des nicht-statischen Datenelements %qE"
 
 #: cp/typeck.c:2412
 #, gcc-internal-format
@@ -46123,7 +46121,7 @@ msgstr "ungültige Verwendung von Feldindizierung bei Zeiger auf Element"
 #: cp/typeck.c:3095
 #, gcc-internal-format
 msgid "invalid use of unary %<*%> on pointer to member"
-msgstr "ungültige Verwendung des unären  %<*%> bei Zeiger auf Element"
+msgstr "ungültige Verwendung des unären %<*%> bei Zeiger auf Element"
 
 #: cp/typeck.c:3098
 #, gcc-internal-format
@@ -46941,7 +46939,7 @@ msgstr "%qD hat unvollständigen Typ"
 #: cp/typeck2.c:485
 #, gcc-internal-format
 msgid "invalid use of incomplete type %q#T"
-msgstr "falsche Benutzung des unvollständigen Typs %q#T"
+msgstr "falsche Verwendung des unvollständigen Typs %q#T"
 
 #: cp/typeck2.c:515
 #, gcc-internal-format
@@ -47011,7 +47009,7 @@ msgstr "verengende Umwandlung von %qE von %qT nach %qT in { }"
 #: cp/typeck2.c:962
 #, gcc-internal-format
 msgid " the expression has a constant value but is not a C++ constant-expression"
-msgstr " der Ausdruck hat einen konstanten Wert aber ist kein konstanter Ausdruck im Sinne von C++"
+msgstr " der Ausdruck hat einen konstanten Wert, ist aber kein konstanter Ausdruck im Sinne von C++"
 
 #: cp/typeck2.c:1051
 #, gcc-internal-format
@@ -47356,7 +47354,7 @@ msgstr "Feldreferenz bei %C kann nicht mehr als %d Dimensionen haben"
 #: fortran/match.c:3295 fortran/match.c:3491 fortran/simplify.c:4892
 #, gcc-internal-format
 msgid "Coarrays disabled at %C, use %<-fcoarray=%> to enable"
-msgstr "Coarray bei %C ausgeschaltet, %<-fcoarray=%> zum Einschalten verwenden"
+msgstr "Coarrays bei %C ausgeschaltet, %<-fcoarray=%> schaltet sie ein"
 
 #: fortran/array.c:221
 #, gcc-internal-format, gfc-internal-format
@@ -47471,7 +47469,7 @@ msgstr "Obere Grenze der letzten Coarray-Dimension muss %<*%> sein, bei %C"
 #: fortran/array.c:802
 #, gcc-internal-format
 msgid "The assumed-rank array %qs at %L shall not have a codimension"
-msgstr "Das Feld %qs bei %L mit vermutetem Rang sollte keine Kodimension haben"
+msgstr "Das Feld %qs bei %L mit vermutetem Rang darf keine Kodimension haben"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79596
 #: fortran/array.c:886
@@ -47552,7 +47550,7 @@ msgstr "Schrittausdruck von AC-IMPLIED-DO referenziert Steuervariable bei %L"
 #: fortran/array.c:1947
 #, gcc-internal-format, gfc-internal-format
 msgid "Array constructor value at %L shall not be unlimited polymorphic [F2008: C4106]"
-msgstr "Wert für Feldkonstruktor bei %L sollte nicht unbegrenzt polymorph sein [F2008: C4106]"
+msgstr "Wert für Feldkonstruktor bei %L darf nicht unbegrenzt polymorph sein [F2008: C4106]"
 
 #: fortran/array.c:2030
 #, gcc-internal-format, gfc-internal-format
@@ -47776,7 +47774,7 @@ msgstr "Argument %qs des intrinsischen %qs bei %L muss ein POINTER oder ein TARG
 #: fortran/check.c:991
 #, gcc-internal-format, gfc-internal-format
 msgid "Array section with a vector subscript at %L shall not be the target of a pointer"
-msgstr "Feldabschnitt mit Vektorindex bei %L sollte nicht das Ziel eines Zeigers sein"
+msgstr "Feldabschnitt mit Vektorindex bei %L darf nicht das Ziel eines Zeigers sein"
 
 #: fortran/check.c:1002
 #, gcc-internal-format
@@ -47786,12 +47784,12 @@ msgstr "NULL-Zeiger bei %L ist nicht als effektives Argument der intrinsischen F
 #: fortran/check.c:1045
 #, gcc-internal-format, gfc-internal-format
 msgid "ATOM argument at %L to intrinsic function %s shall be an integer of ATOMIC_INT_KIND or a logical of ATOMIC_LOGICAL_KIND"
-msgstr "ATOM-Argument bei %L für intrinsische Funktion %s sollte eine ATOMIC_INT_KIND-Ganzzahl oder ein ATOMIC_LOGICAL_KIND-Logikwert sein"
+msgstr "ATOM-Argument bei %L für intrinsische Funktion %s muss eine ATOMIC_INT_KIND-Ganzzahl oder ein ATOMIC_LOGICAL_KIND-Logikwert sein"
 
 #: fortran/check.c:1053
 #, gcc-internal-format, gfc-internal-format
 msgid "ATOM argument at %L of the %s intrinsic function shall be a coarray or coindexed"
-msgstr "ATOM-Argument bei %L der intrinsischen Funktion %s sollte Koarray oder koindiziert sein"
+msgstr "ATOM-Argument bei %L der intrinsischen Funktion %s muss Koarray oder koindiziert sein"
 
 #: fortran/check.c:1060
 #, gcc-internal-format
@@ -47806,7 +47804,7 @@ msgstr "STAT=-Argument zu %s bei %L"
 #: fortran/check.c:1097 fortran/check.c:1163 fortran/check.c:1260
 #, gcc-internal-format, gfc-internal-format
 msgid "ATOM argument of the %s intrinsic function at %L shall be definable"
-msgstr "ATOM-Argument der intrinsischen Funktion »%s« bei %L sollte definierbar sein"
+msgstr "ATOM-Argument der intrinsischen Funktion »%s« bei %L muss definierbar sein"
 
 #: fortran/check.c:1111 fortran/check.c:1243
 #, gcc-internal-format, gfc-internal-format
@@ -47816,7 +47814,7 @@ msgstr "ATOM-Argument bei %L für intrinsische Funktion %s muss eine ATOMIC_INT_
 #: fortran/check.c:1131
 #, gcc-internal-format, gfc-internal-format
 msgid "VALUE argument of the %s intrinsic function at %L shall be definable"
-msgstr "VALUE-Argument der intrinsischen Funktion »%s« bei %L sollte definierbar sein"
+msgstr "VALUE-Argument der intrinsischen Funktion »%s« bei %L muss definierbar sein"
 
 #: fortran/check.c:1170 fortran/check.c:1267
 #, gcc-internal-format, gfc-internal-format
@@ -47866,7 +47864,7 @@ msgstr "Argument %<A%> mit INTENT(OUT) bei %L des intrinsischen Unterprogramms %
 #: fortran/check.c:1518
 #, gcc-internal-format, gfc-internal-format
 msgid "The A argument at %L to the intrinsic %s shall not be coindexed"
-msgstr "Argument A bei %L des intrinsischen %s sollte keinen Koindex haben"
+msgstr "Argument A bei %L des intrinsischen %s darf keinen Koindex haben"
 
 #: fortran/check.c:1541
 #, gcc-internal-format, gfc-internal-format
@@ -47881,7 +47879,7 @@ msgstr "Das Argument »errmsg=« bei %L muss eine standardartige Zeichenvariable
 #: fortran/check.c:1565
 #, gcc-internal-format
 msgid "Coarrays disabled at %L, use %<-fcoarray=%> to enable"
-msgstr "Koarrays bei %L ausgeschaltet, %<-fcoarray=%> zum Einschalten verwenden"
+msgstr "Koarrays bei %L ausgeschaltet, %<-fcoarray=%> schaltet sie ein"
 
 #: fortran/check.c:1580
 #, gcc-internal-format, gfc-internal-format
@@ -48107,12 +48105,12 @@ msgstr "Argument %qs des intrinsischen %qs bei %L muss ein INTEGER sein"
 #: fortran/check.c:3312
 #, gcc-internal-format, gfc-internal-format
 msgid "The FROM argument to MOVE_ALLOC at %L shall not be coindexed"
-msgstr "Das FROM-Argument für MOVE_ALLOC bei %L sollte keinen Koindex haben"
+msgstr "Das FROM-Argument für MOVE_ALLOC bei %L darf keinen Koindex haben"
 
 #: fortran/check.c:3323
 #, gcc-internal-format, gfc-internal-format
 msgid "The TO argument to MOVE_ALLOC at %L shall not be coindexed"
-msgstr "Das TO-Argument für MOVE_ALLOC bei %L sollte keinen Koindex haben"
+msgstr "Das TO-Argument für MOVE_ALLOC bei %L darf keinen Koindex haben"
 
 #: fortran/check.c:3330
 #, gcc-internal-format, gfc-internal-format
@@ -48137,7 +48135,7 @@ msgstr "Die FROM- und TO-Argumente bei %L verletzen die Aliasing-Beschränkungen
 #: fortran/check.c:3417
 #, gcc-internal-format
 msgid "Argument %<S%> of NEAREST at %L shall not be zero"
-msgstr "Argument 'S' von NEAREST bei %L sollte nicht Null sein"
+msgstr "Argument 'S' von NEAREST bei %L darf nicht Null sein"
 
 #: fortran/check.c:3467
 #, gcc-internal-format
@@ -48217,7 +48215,7 @@ msgstr "Argument %qs des intrinsischen %qs bei %L hat ungültige Permutation der
 #: fortran/check.c:3958
 #, gcc-internal-format, gfc-internal-format
 msgid "Without padding, there are not enough elements in the intrinsic RESHAPE source at %L to match the shape"
-msgstr "Ohne Auffüllen gibt es nicht genügend Elemente in eingebauter RESHAPE-Quelle bei %L um zur Form zu passen"
+msgstr "Ohne Auffüllen gibt es nicht genügend Elemente in intrinsischer RESHAPE-Quelle bei %L, um zur Form zu passen"
 
 #: fortran/check.c:3975 fortran/check.c:3994
 #, gcc-internal-format
@@ -48388,7 +48386,7 @@ msgstr "Argument X bei %L für C_LOC darf keine Zeichenkette der Länge 0 sein"
 #: fortran/check.c:4671
 #, gcc-internal-format, gfc-internal-format
 msgid "Argument at %L to C_LOC shall not be polymorphic"
-msgstr "Argument bei %L für C_LOC darf nich polymorph sein"
+msgstr "Argument bei %L für C_LOC darf nicht polymorph sein"
 
 #: fortran/check.c:4678
 #, gcc-internal-format, gfc-internal-format
@@ -48428,7 +48426,7 @@ msgstr "Argument »%s« für IMAGE_INDEX muss Feld mit Rang 1 bei %L sein"
 #: fortran/check.c:5028
 #, gcc-internal-format, gfc-internal-format
 msgid "The number of array elements of the SUB argument to IMAGE_INDEX at %L shall be %d (corank) not %d"
-msgstr "Die Anzahl der Feldelemente des SUB-Arguments für IMAGE_INDEX bei %L sollte %d (Korang) sein, nicht %d"
+msgstr "Die Anzahl der Feldelemente des SUB-Arguments für IMAGE_INDEX bei %L muss %d (Korang) sein, nicht %d"
 
 #: fortran/check.c:5061
 #, gcc-internal-format, gfc-internal-format
@@ -48687,7 +48685,7 @@ msgstr "Syntaxfehler in Initialisierungsliste im alten Stil bei %C"
 #: fortran/decl.c:775
 #, gcc-internal-format, gfc-internal-format
 msgid "The assumed-rank array at %C shall not have a codimension"
-msgstr "Das Feld vermuteten Ranges bei %C sollte keine Kodimension haben"
+msgstr "Das Feld vermuteten Ranges bei %C darf keine Kodimension haben"
 
 #: fortran/decl.c:843
 #, gcc-internal-format, gfc-internal-format
@@ -49283,12 +49281,12 @@ msgstr "Symbol %qs bei %L ist als PRIVATE markiert, aber wurde mit Bindung %qs m
 #: fortran/decl.c:4704
 #, gcc-internal-format, gfc-internal-format
 msgid "Need either entity or common block name for attribute specification statement at %C"
-msgstr "Entweder Eintrag oder gemeinsamer Blockname für Attribut-Spezifikationsanweisung bei %C erforderlich"
+msgstr "Entweder Entität oder Name eines gemeinsamen Blocks für Attribut-Spezifikationsanweisung bei %C erforderlich"
 
 #: fortran/decl.c:4749
 #, gcc-internal-format, gfc-internal-format
 msgid "Missing entity or common block name for attribute specification statement at %C"
-msgstr "Eintrag oder gemeinsamer Blockname für Attribut-Spezifikationsanweisung bei %C fehlt"
+msgstr "Entität oder Name eines gemeinsamen Blocks für Attribut-Spezifikationsanweisung bei %C fehlt"
 
 #: fortran/decl.c:4756
 #, gcc-internal-format
@@ -49560,7 +49558,7 @@ msgstr "Syntaxfehler in NAME=-Spezifikation für Bindungsmarke bei %C"
 #: fortran/decl.c:6618
 #, gcc-internal-format, gfc-internal-format
 msgid "NAME= specifier at %C should be a constant expression"
-msgstr "Spezifikation NAME= bei %C muss ein konstanter Ausdruck sein"
+msgstr "Spezifikation NAME= bei %C sollte ein konstanter Ausdruck sein"
 
 #: fortran/decl.c:6626
 #, gcc-internal-format, gfc-internal-format
@@ -50613,7 +50611,7 @@ msgstr "Bei %L müssen entweder alle oberen Grenzen oder keine obere Grenze ange
 #: fortran/expr.c:3432
 #, gcc-internal-format, gfc-internal-format
 msgid "Pointer object at %L shall not have a coindex"
-msgstr "Zeigerobjekt bei %L sollte keinen Koindex haben"
+msgstr "Zeigerobjekt bei %L darf keinen Koindex haben"
 
 #: fortran/expr.c:3453
 #, gcc-internal-format, gfc-internal-format
@@ -50716,7 +50714,7 @@ msgstr "Ziel der Rang-Neuzuordnung ist nicht Rang 1 bei %L"
 #: fortran/expr.c:3735 fortran/expr.c:3783
 #, gcc-internal-format, gfc-internal-format
 msgid "Data target at %L shall not have a coindex"
-msgstr "Datenziel bei %L sollte keinen Koindex haben"
+msgstr "Datenziel bei %L darf keinen Koindex haben"
 
 #: fortran/expr.c:3738
 #, gcc-internal-format, gfc-internal-format
@@ -51188,7 +51186,7 @@ msgstr "Effektives Argument für Nicht-INTENT(INOUT)-Platzhalter %qs bei %L mit 
 #: fortran/interface.c:2375
 #, gcc-internal-format
 msgid "Actual argument to non-INTENT(INOUT) dummy %qs at %L, which is EVENT_TYPE or has a EVENT_TYPE component"
-msgstr "Effektives Argument für Nicht-INTENT(INOUT)-Platzhalter %qs bei %L mit Typ EVENT_TYPE oder einer Komponente EVENT_TYPE"
+msgstr "Effektives Argument für Nicht-INTENT(INOUT)-Platzhalter %qs bei %L mit Typ EVENT_TYPE oder einer EVENT_TYPE-Komponente"
 
 #: fortran/interface.c:2394
 #, gcc-internal-format
@@ -51794,12 +51792,12 @@ msgstr "Can't convert %qs to %qs at %L"
 #: fortran/intrinsic.c:5140
 #, gcc-internal-format
 msgid "%qs declared at %L may shadow the intrinsic of the same name.  In order to call the intrinsic, explicit INTRINSIC declarations may be required."
-msgstr "Bei %2$L deklariertes %1$qs überdeckt eingebaute Funktion mit gleichem Namen. Um die aufzurufen, sind explizite INTRINSIC-Deklarationen erforderlich."
+msgstr "Bei %2$L deklariertes %1$qs überdeckt intrinsische Funktion mit gleichem Namen. Um die aufzurufen, sind explizite INTRINSIC-Deklarationen erforderlich."
 
 #: fortran/intrinsic.c:5146
 #, gcc-internal-format
 msgid "%qs declared at %L is also the name of an intrinsic.  It can only be called via an explicit interface or if declared EXTERNAL."
-msgstr "Bei %2$L deklariertes %1$qs ist auch der Name einer eingebauten Funktion. Sie kann nur über eine explizite Schnittstelle oder als EXTERNAL deklariert aufgerufen werden."
+msgstr "Bei %2$L deklariertes %1$qs ist auch der Name einer intrinsischen Funktion. Sie kann nur über eine explizite Schnittstelle oder als EXTERNAL deklariert aufgerufen werden."
 
 #: fortran/io.c:176 fortran/primary.c:922
 #, gcc-internal-format, gfc-internal-format
@@ -52911,7 +52909,7 @@ msgstr "Unbeschränkt polymorphes ALLOCATE-Objekt bei %L erfordert entweder eine
 #: fortran/match.c:4261
 #, gcc-internal-format, gfc-internal-format
 msgid "Pointer object at %C shall not be coindexed"
-msgstr "Zeigerobjekt bei %C sollte nicht koindiziert sein"
+msgstr "Zeigerobjekt bei %C darf nicht koindiziert sein"
 
 #: fortran/match.c:4347
 #, gcc-internal-format, gfc-internal-format
@@ -53114,7 +53112,7 @@ msgstr "Unerwartete TYPE IS-Anweisung bei %C"
 #: fortran/match.c:6088
 #, gcc-internal-format, gfc-internal-format
 msgid "The type-spec shall not specify a sequence derived type or a type with the BIND attribute in SELECT TYPE at %C [F2003:C815]"
-msgstr "Typspezifikation sollte keinen Sequenz-abgeleiteten Typ oder Typ mit BIND-Attribut in SELECT TYPE bei %C beschreiben [F2003:C815]"
+msgstr "Typspezifikation darf keinen Sequenz-abgeleiteten Typ oder Typ mit BIND-Attribut in SELECT TYPE bei %C beschreiben [F2003:C815]"
 
 #: fortran/match.c:6100
 #, gcc-internal-format, gfc-internal-format
@@ -53206,7 +53204,7 @@ msgstr "Modul-Eigenschaft in USE-Anweisung bei %C"
 #: fortran/module.c:551
 #, gcc-internal-format, gfc-internal-format
 msgid "Module nature in USE statement at %C shall be either INTRINSIC or NON_INTRINSIC"
-msgstr "Modul-Eigenschaft in USE-Anweisung bei %C sollte entweder INTRINSIC oder NON_INTRINSIC sein"
+msgstr "Modul-Eigenschaft in USE-Anweisung bei %C muss entweder INTRINSIC oder NON_INTRINSIC sein"
 
 #: fortran/module.c:564
 #, gcc-internal-format, gfc-internal-format
@@ -53846,12 +53844,12 @@ msgstr "VALUE-Objekt %qs in Klausel %s bei %L"
 #: fortran/openmp.c:3857
 #, gcc-internal-format, gfc-internal-format
 msgid "Implicitly declared function %s used in !$OMP DECLARE REDUCTION at %L "
-msgstr "Implizit deklarierte Funktion %s wird in !$OMP DECLARE REDUCTION bei %L benutzt"
+msgstr "Implizit deklarierte Funktion %s wird in !$OMP DECLARE REDUCTION bei %L verwendet"
 
 #: fortran/openmp.c:3906
 #, gcc-internal-format, gfc-internal-format
 msgid "Implicitly declared subroutine %s used in !$OMP DECLARE REDUCTION at %L "
-msgstr "Implizit deklariertes Unterprogramm %s wird in !$OMP DECLARE REDUCTION bei %L benutzt"
+msgstr "Implizit deklariertes Unterprogramm %s wird in !$OMP DECLARE REDUCTION bei %L verwendet"
 
 #: fortran/openmp.c:3939
 #, gcc-internal-format, gfc-internal-format
@@ -54095,7 +54093,7 @@ msgstr "Die chunk_size der DIST_SCHEDULE-Klausel bei %L erfordert einen skalaren
 #: fortran/openmp.c:4758
 #, gcc-internal-format, gfc-internal-format
 msgid "Incompatible use of TILE and COLLAPSE at %L"
-msgstr "Unverträgliche Benutzung von TILE und COLLAPSE bei %L"
+msgstr "Unverträgliche Verwendung von TILE und COLLAPSE bei %L"
 
 #: fortran/openmp.c:4760
 #, gcc-internal-format, gfc-internal-format
@@ -55618,7 +55616,7 @@ msgstr "Variable %qs bei %L ist in COMMON, aber Initialisierung ist nur in BLOCK
 #: fortran/resolve.c:947
 #, gcc-internal-format
 msgid "Initialized variable %qs at %L is in a blank COMMON but initialization is only allowed in named common blocks"
-msgstr "Initialisierte Variable %qs bei %L ist in leerem COMMON, aber Initialisierung ist nur in in benannten COMMON-Blöcken erlaubt"
+msgstr "Initialisierte Variable %qs bei %L ist in leerem COMMON, aber Initialisierung ist nur in benannten COMMON-Blöcken erlaubt"
 
 #: fortran/resolve.c:954
 #, gcc-internal-format
@@ -55658,7 +55656,7 @@ msgstr "Fortran 2008: COMMON-Block %qs mit Binde-Marke bei %L teilt sich Bezeich
 #: fortran/resolve.c:1058
 #, gcc-internal-format, gfc-internal-format
 msgid "COMMON block at %L with binding label %s uses the same global identifier as entity at %L"
-msgstr "COMMON-Block bei %L mit Bindungsmarke %s verwendet denselben globalen Bezeichner wie Entity bei %L"
+msgstr "COMMON-Block bei %L mit Bindungsmarke %s verwendet denselben globalen Bezeichner wie Entität bei %L"
 
 #: fortran/resolve.c:1079
 #, gcc-internal-format
@@ -55763,7 +55761,7 @@ msgstr "Nicht-RECURSIVE Prozedur %qs bei %L ruft sich möglicherweise rekursiv s
 #: fortran/resolve.c:1784 fortran/resolve.c:9309 fortran/resolve.c:10967
 #, gcc-internal-format, gfc-internal-format
 msgid "Label %d referenced at %L is never defined"
-msgstr "Marke %d wird bei %L referenziert aber nirgendwo definiert"
+msgstr "Marke %d wird bei %L referenziert, aber nirgendwo definiert"
 
 #: fortran/resolve.c:1827
 #, gcc-internal-format
@@ -55858,7 +55856,7 @@ msgstr "Generische Funktion %qs bei %L ist nicht mit spezifischer intrinsischer 
 #: fortran/resolve.c:2639
 #, gcc-internal-format
 msgid "Function %qs at %L is INTRINSIC but is not compatible with an intrinsic"
-msgstr "Funktion %qs bei %L ist INTRINSIC, aber nicht mit eingebauter Funktion verträglich"
+msgstr "Funktion %qs bei %L ist INTRINSIC, aber nicht mit einer intrinsischen Funktion verträglich"
 
 #: fortran/resolve.c:2694
 #, gcc-internal-format
@@ -55950,7 +55948,7 @@ msgstr "Generisches Unterprogramm %qs bei %L ist nicht mit intrinsischer Unterpr
 #: fortran/resolve.c:3289
 #, gcc-internal-format
 msgid "Subroutine %qs at %L is INTRINSIC but is not compatible with an intrinsic"
-msgstr "Unterprogramm %qs bei %L ist INTRINSIC aber nicht mit eingebauter Funktion verträglich"
+msgstr "Unterprogramm %qs bei %L ist INTRINSIC, aber nicht mit intrinsischer Funktion verträglich"
 
 #: fortran/resolve.c:3334
 #, gcc-internal-format
@@ -56199,7 +56197,7 @@ msgstr "Variable %s vermuteten Typs bei %L kann nur als effektives Argument verw
 #: fortran/resolve.c:5053
 #, gcc-internal-format, gfc-internal-format
 msgid "Assumed-type variable %s at %L as actual argument to an inquiry function shall be the first argument"
-msgstr "Variable %s vermuteten Typs bei %L als effektives Argument für Abfragefunktion sollte das erste Argument sein"
+msgstr "Variable %s vermuteten Typs bei %L als effektives Argument für Abfragefunktion muss das erste Argument sein"
 
 #: fortran/resolve.c:5068
 #, gcc-internal-format, gfc-internal-format
@@ -56213,7 +56211,7 @@ msgstr "Variable %s vermuteten Ranges bei %L kann nur als effektives Argument ve
 #: fortran/resolve.c:5078
 #, gcc-internal-format, gfc-internal-format
 msgid "Assumed-rank variable %s at %L as actual argument to an inquiry function shall be the first argument"
-msgstr "Variable %s vermuteten Ranges bei %L als effektives Argument für Abfragefunktion sollte das erste Argument sein"
+msgstr "Variable %s vermuteten Ranges bei %L als effektives Argument für Abfragefunktion muss das erste Argument sein"
 
 #: fortran/resolve.c:5089
 #, gcc-internal-format, gfc-internal-format
@@ -56223,12 +56221,12 @@ msgstr "Variable %s bei %L mit NO_ARG_CHECK-Attribut darf keine Referenz auf Sub
 #: fortran/resolve.c:5098
 #, gcc-internal-format, gfc-internal-format
 msgid "Assumed-type variable %s at %L shall not have a subobject reference"
-msgstr "Variable %s vermuteten Typs bei %L sollte keine Referenz auf Subobjekt haben"
+msgstr "Variable %s vermuteten Typs bei %L darf keine Referenz auf Subobjekt haben"
 
 #: fortran/resolve.c:5113
 #, gcc-internal-format, gfc-internal-format
 msgid "Assumed-rank variable %s at %L shall not have a subobject reference"
-msgstr "Variable »%s« vermuteten Ranges bei %L sollte keine Referenz auf Subobjekt haben"
+msgstr "Variable »%s« vermuteten Ranges bei %L darf keine Referenz auf Subobjekt haben"
 
 #: fortran/resolve.c:5275
 #, gcc-internal-format
@@ -56385,12 +56383,12 @@ msgstr "Typ der Entität bei %L ist mit Quellausdruck bei %L typunverträglich"
 #: fortran/resolve.c:7236
 #, gcc-internal-format, gfc-internal-format
 msgid "The allocate-object at %L and the source-expr at %L shall have the same kind type parameter"
-msgstr "Das ALLOCATE-Objekt bei %L und der Quellausdruck bei %L sollten Typparameter der gleichen Art haben"
+msgstr "Das ALLOCATE-Objekt bei %L und der Quellausdruck bei %L müssen Typparameter der gleichen Art haben"
 
 #: fortran/resolve.c:7250
 #, gcc-internal-format, gfc-internal-format
 msgid "The source-expr at %L shall neither be of type LOCK_TYPE nor have a LOCK_TYPE component if allocate-object at %L is a coarray"
-msgstr "Der Quellausdruck bei %L sollte weder LOCK_TYPE noch LOCK_TYPE-Komponente haben, wenn ALLOCATE-Objekt bei %L ein Koarray ist"
+msgstr "Der Quellausdruck bei %L darf weder vom Typ LOCK_TYPE sein noch eine LOCK_TYPE-Komponente haben, wenn ALLOCATE-Objekt bei %L ein Koarray ist"
 
 #: fortran/resolve.c:7265
 #, gcc-internal-format, gfc-internal-format
@@ -56450,7 +56448,7 @@ msgstr "Stat-Variable bei %L muss skalare INTEGER-Variable sein"
 #: fortran/resolve.c:7529
 #, gcc-internal-format, gfc-internal-format
 msgid "Stat-variable at %L shall not be %sd within the same %s statement"
-msgstr "Stat-Variable bei %L sollte nicht %s innerhalb der gleichen %s-Anweisung sein"
+msgstr "Stat-Variable bei %L darf nicht %s innerhalb der gleichen %s-Anweisung sein"
 
 #: fortran/resolve.c:7540
 #, gcc-internal-format, gfc-internal-format
@@ -56465,7 +56463,7 @@ msgstr "ERRMSG-Variable bei %L muss skalare CHARACTER-Variable sein"
 #: fortran/resolve.c:7574
 #, gcc-internal-format, gfc-internal-format
 msgid "Errmsg-variable at %L shall not be %sd within the same %s statement"
-msgstr "ERRMSG-Variable bei %L sollte nicht »%s« innerhalb der selben »%s«-Anweisung sein"
+msgstr "ERRMSG-Variable bei %L darf nicht »%s« innerhalb der selben »%s«-Anweisung sein"
 
 #: fortran/resolve.c:7604
 #, gcc-internal-format, gfc-internal-format
@@ -56559,7 +56557,7 @@ msgstr "CLASS-Selektor bei %L erfordert Zwischenspeicher, was noch nicht impleme
 #: fortran/resolve.c:8517
 #, gcc-internal-format, gfc-internal-format
 msgid "Selector shall be polymorphic in SELECT TYPE statement at %L"
-msgstr "Selektor sollte in SELECT TYPE-Anweisung bei %L polymorph sein"
+msgstr "Selektor muss in SELECT TYPE-Anweisung bei %L polymorph sein"
 
 #: fortran/resolve.c:8534 fortran/resolve.c:8546
 #, gcc-internal-format, gfc-internal-format
@@ -56589,7 +56587,7 @@ msgstr "Unerwarteter intrinsischer Typ %qs bei %L"
 #: fortran/resolve.c:8612
 #, gcc-internal-format, gfc-internal-format
 msgid "The type-spec at %L shall specify that each length type parameter is assumed"
-msgstr "In Typspezifikation bei %L sollten alle Parameter mit Längentyp vermutet sein"
+msgstr "Die Typspezifikation bei %L muss angeben, dass jeder Parameter mit Längentyp vermutet ist"
 
 #: fortran/resolve.c:8850
 #, gcc-internal-format, gfc-internal-format
@@ -56820,7 +56818,7 @@ msgstr "Koindizierte Variable darf keine reservierbare endgültige Komponente in
 #: fortran/resolve.c:10412
 #, gcc-internal-format, gfc-internal-format
 msgid "TODO: type-bound defined assignment(s) at %L not done because multiple part array references would occur in intermediate expressions."
-msgstr "TODO: als typgebunden definierte Zuweisung(en) bei %L nicht durchgeführt, da Feldreferenzen mit mehreren Teilen in Audrücken als Zwischenergebnisse auftreten würden"
+msgstr "TODO: als typgebunden definierte Zuweisung(en) bei %L nicht durchgeführt, da Feldreferenzen mit mehreren Teilen in Ausdrücken als Zwischenergebnisse auftreten würden"
 
 #. Even if standard does not support this feature, continue to build
 #. the two statements to avoid upsetting frontend_passes.c.
@@ -56889,14 +56887,14 @@ msgstr "gfc_resolve_code(): Bad statement code"
 #: fortran/resolve.c:11361
 #, gcc-internal-format, gfc-internal-format
 msgid "Variable %s with binding label %s at %L uses the same global identifier as entity at %L"
-msgstr "Variable %1$s bei %3$L mit Binde-Marke %2$s benutzten denselben globalen Bezeichner wie der Eintrag bei %4$L"
+msgstr "Variable %1$s bei %3$L mit Binde-Marke %2$s verwenden denselben globalen Bezeichner wie die Entität bei %4$L"
 
 #. This can only happen if the variable is defined in a module - if it
 #. isn't the same module, reject it.
 #: fortran/resolve.c:11374
 #, gcc-internal-format, gfc-internal-format
 msgid "Variable %s from module %s with binding label %s at %L uses the same global identifier as entity at %L from module %s"
-msgstr "Variable %s von Modul %s mit Bindungsmarke %s bei %L verwendet denselben globalen Bezeichner wie Entity bei %L aus Modul %s"
+msgstr "Variable %s von Modul %s mit Bindungsmarke %s bei %L verwendet denselben globalen Bezeichner wie Entität bei %L aus Modul %s"
 
 #. Print an error if the procedure is defined multiple times; we have to
 #. exclude references to the same procedure via module association or
@@ -56904,7 +56902,7 @@ msgstr "Variable %s von Modul %s mit Bindungsmarke %s bei %L verwendet denselben
 #: fortran/resolve.c:11391
 #, gcc-internal-format, gfc-internal-format
 msgid "Procedure %s with binding label %s at %L uses the same global identifier as entity at %L"
-msgstr "Prozedur %1$s bei %3$L mit Binde-Marke %2$s benutzten denselben globalen Bezeichner wie der Eintrag bei %4$L"
+msgstr "Prozedur %1$s bei %3$L mit Binde-Marke %2$s verwenden denselben globalen Bezeichner wie die Entität bei %4$L"
 
 #: fortran/resolve.c:11468
 #, gcc-internal-format, gfc-internal-format
@@ -57226,7 +57224,7 @@ msgstr "Prozedur %qs mit PASS bei %L muss mindestens ein Argument haben"
 #: fortran/resolve.c:13036 fortran/resolve.c:13484
 #, gcc-internal-format
 msgid "Non-polymorphic passed-object dummy argument of %qs at %L"
-msgstr "Nicht-polymorphes Scheinargument von %s für weitergegebenes Objekt bei %L"
+msgstr "Nicht-polymorphes Scheinargument von %qs für weitergegebenes Objekt bei %L"
 
 #: fortran/resolve.c:13044
 #, gcc-internal-format
@@ -57236,17 +57234,17 @@ msgstr "Argument %qs von %qs mit PASS(%s) bei %L muss abgeleiteten Typ %qs haben
 #: fortran/resolve.c:13053
 #, gcc-internal-format
 msgid "Passed-object dummy argument of %qs at %L must be scalar"
-msgstr "Scheinargument von %s für weitergegebenes Objekt bei %L muss ein Skalar sein"
+msgstr "Scheinargument von %qs für weitergegebenes Objekt bei %L muss ein Skalar sein"
 
 #: fortran/resolve.c:13059
 #, gcc-internal-format
 msgid "Passed-object dummy argument of %qs at %L must not be ALLOCATABLE"
-msgstr "Scheinargument von %s für weitergegebenes Objekt bei %L darf nicht ALLOCATABLE sein"
+msgstr "Scheinargument von %qs für weitergegebenes Objekt bei %L darf nicht ALLOCATABLE sein"
 
 #: fortran/resolve.c:13065
 #, gcc-internal-format
 msgid "Passed-object dummy argument of %qs at %L must not be POINTER"
-msgstr "Scheinargument von %s für weitergegebenes Objekt bei %L darf nicht POINTER sein"
+msgstr "Scheinargument von %qs für weitergegebenes Objekt bei %L darf nicht POINTER sein"
 
 #: fortran/resolve.c:13094
 #, gcc-internal-format
@@ -57271,12 +57269,12 @@ msgstr "Koarray-Komponente %qs bei %L muss reservierbar mit aufgeschobener Form 
 #: fortran/resolve.c:13300
 #, gcc-internal-format
 msgid "Component %qs at %L of TYPE(C_PTR) or TYPE(C_FUNPTR) shall not be a coarray"
-msgstr "Komponente %qs bei %L mit TYPE(C_PTR) oder TYPE(C_FUNPTR) sollte kein Koarray sein"
+msgstr "Komponente %qs bei %L mit TYPE(C_PTR) oder TYPE(C_FUNPTR) darf kein Koarray sein"
 
 #: fortran/resolve.c:13310
 #, gcc-internal-format
 msgid "Component %qs at %L with coarray component shall be a nonpointer, nonallocatable scalar"
-msgstr "Komponente %qs bei %L mit Koarray-Komponente sollte ein Nicht-Zeiger und nicht-reservierbares Skalar sein"
+msgstr "Komponente %qs bei %L mit Koarray-Komponente darf ein Nicht-Zeiger und nicht-reservierbares Skalar sein"
 
 #: fortran/resolve.c:13319
 #, gcc-internal-format
@@ -57356,7 +57354,7 @@ msgstr "In Konflikt stehende Initialisierungen in Union bei %L und %L"
 #: fortran/resolve.c:13736
 #, gcc-internal-format
 msgid "As extending type %qs at %L has a coarray component, parent type %qs shall also have one"
-msgstr "Da der erweiterte Typ %qs bei %L eine Koarray-Komponente hat, sollte der Elterntyp %qs auch eine haben"
+msgstr "Da der erweiterte Typ %qs bei %L eine Koarray-Komponente hat, muss der Elterntyp %qs auch eine haben"
 
 #: fortran/resolve.c:13749
 #, gcc-internal-format
@@ -57406,7 +57404,7 @@ msgstr "NAMELIST-Objekt %qs wurde als PRIVATE deklariert und kann kein Element d
 #: fortran/resolve.c:13952
 #, gcc-internal-format
 msgid "NAMELIST object %qs has use-associated PRIVATE components and cannot be member of namelist %qs at %L"
-msgstr "NAMELIST-Objekt %qs hat benutzungs-verbundene PRIVATE-Komponenten und kann kein Element der Namensliste %qs bei %L sein"
+msgstr "NAMELIST-Objekt %qs hat Verwendungs-verbundene PRIVATE-Komponenten und kann kein Element der Namensliste %qs bei %L sein"
 
 #: fortran/resolve.c:13963
 #, gcc-internal-format
@@ -57546,7 +57544,7 @@ msgstr "Variable %s vermuteten Typs bei %L darf nicht das Attribut INTENT(OUT) h
 #: fortran/resolve.c:14424
 #, gcc-internal-format, gfc-internal-format
 msgid "Assumed-type variable %s at %L shall not be an explicit-shape array"
-msgstr "Variable %s vermuteten Typs bei %L sollte kein Feld mit ausdrücklicher Form sein"
+msgstr "Variable %s vermuteten Typs bei %L darf kein Feld mit ausdrücklicher Form sein"
 
 #: fortran/resolve.c:14449
 #, gcc-internal-format
@@ -57567,7 +57565,7 @@ msgstr "Variable %s bei %L mit LOCK_TYPE oder mit Subkomponente mit LOCK_TYPE mu
 #: fortran/resolve.c:14557
 #, gcc-internal-format, gfc-internal-format
 msgid "Variable %s at %L of type EVENT_TYPE or with subcomponent of type LOCK_TYPE must be a coarray"
-msgstr "Variable %s bei %L mit EVENT_TYPE oder mit Subkomponente mit EVENT_TYPE muss ein Koarray sein"
+msgstr "Variable %s bei %L mit EVENT_TYPE oder mit Subkomponente mit LOCK_TYPE muss ein Koarray sein"
 
 #: fortran/resolve.c:14575
 #, gcc-internal-format
@@ -57577,17 +57575,17 @@ msgstr "Das INTENT(OUT)-Scheinargument %qs bei %L hat ASSUMED SIZE und kann dami
 #: fortran/resolve.c:14587
 #, gcc-internal-format
 msgid "Dummy argument %qs at %L of LOCK_TYPE shall not be INTENT(OUT)"
-msgstr "Scheinargument %qs bei %L mit LOCK_TYPE sollte nicht INTENT(OUT) sein"
+msgstr "Scheinargument %qs bei %L mit LOCK_TYPE darf nicht INTENT(OUT) sein"
 
 #: fortran/resolve.c:14596
 #, gcc-internal-format
 msgid "Dummy argument %qs at %L of EVENT_TYPE shall not be INTENT(OUT)"
-msgstr "Scheinargument %qs bei %L mit EVENT_TYPE sollte nicht INTENT(OUT) sein"
+msgstr "Scheinargument %qs bei %L mit EVENT_TYPE darf nicht INTENT(OUT) sein"
 
 #: fortran/resolve.c:14608
 #, gcc-internal-format
 msgid "Function result %qs at %L shall not be a coarray or have a coarray component"
-msgstr "Funktionsergebnis %qs bei %L sollte kein Koarray sein oder Koarray-Komponente haben"
+msgstr "Funktionsergebnis %qs bei %L darf weder Koarray sein noch eine Koarray-Komponente haben"
 
 #: fortran/resolve.c:14617
 #, gcc-internal-format
@@ -57597,7 +57595,7 @@ msgstr "Variable %qs bei %L mit TYPE(C_PTR) oder TYPE(C_FUNPTR) darf kein Koarra
 #: fortran/resolve.c:14629
 #, gcc-internal-format
 msgid "Variable %qs at %L with coarray component shall be a nonpointer, nonallocatable scalar, which is not a coarray"
-msgstr "Variable %qs bei %L mit Koarraykomponente sollte ein Nichtzeiger, nichtallozierbares Skalar und damit kein Koarray sein"
+msgstr "Variable %qs bei %L mit Koarraykomponente muss ein Nichtzeiger, nichtallozierbares Skalar und damit kein Koarray sein"
 
 #: fortran/resolve.c:14644
 #, gcc-internal-format
@@ -57607,7 +57605,7 @@ msgstr "Variable %qs bei %L ist ein Koarray und ist weder ALLOCATABLE, SAVE, noc
 #: fortran/resolve.c:14652
 #, gcc-internal-format
 msgid "Coarray variable %qs at %L shall not have codimensions with deferred shape"
-msgstr "Koarray-Variable %qs bei %L sollte keine Kodimensionen mit aufgeschobener Form haben"
+msgstr "Koarray-Variable %qs bei %L darf keine Kodimensionen mit aufgeschobener Form haben"
 
 #: fortran/resolve.c:14659
 #, gcc-internal-format
@@ -57617,7 +57615,7 @@ msgstr "Zuordnungsfähige Koarray-Variable %qs bei %L muss aufgeschobene Form ha
 #: fortran/resolve.c:14671
 #, gcc-internal-format
 msgid "Variable %qs at %L is INTENT(OUT) and can thus not be an allocatable coarray or have coarray components"
-msgstr "Variable '%s' bei %L ist INTENT(OUT) und kann daher kein reservierbares Coarray sein oder Coarray-Komponenten haben"
+msgstr "Variable %qs bei %L ist INTENT(OUT) und kann daher kein reservierbares Coarray sein oder Coarray-Komponenten haben"
 
 #: fortran/resolve.c:14680
 #, gcc-internal-format
@@ -57743,7 +57741,7 @@ msgstr "Syntaxfehler in EQUIVALENCE-Anweisung bei %L"
 #: fortran/resolve.c:15644
 #, gcc-internal-format, gfc-internal-format
 msgid "Either all or none of the objects in the EQUIVALENCE set at %L shall have the PROTECTED attribute"
-msgstr "Entweder alle oder keines der Objekte in bei %L gesetztem EQUIVALENCE sollte das Attribut PROTECTED haben"
+msgstr "Entweder alle oder keines der Objekte in bei %L gesetztem EQUIVALENCE muss das Attribut PROTECTED haben"
 
 #: fortran/resolve.c:15656
 #, gcc-internal-format
@@ -58541,7 +58539,7 @@ msgstr "Symbol %qs bei %C ist mehrdeutig"
 #: fortran/symbol.c:2256
 #, gcc-internal-format
 msgid "Derived type %qs at %C is being used before it is defined"
-msgstr "Abgeleiteter Typ %qs bei %C wird benutzt, bevor er definiert wird"
+msgstr "Abgeleiteter Typ %qs bei %C wird verwendet, bevor er definiert wird"
 
 #: fortran/symbol.c:2379
 #, gcc-internal-format
@@ -58716,7 +58714,7 @@ msgstr "Falscher Ausdruckstyp beim Durchlaufen (%d)"
 #: fortran/trans-common.c:401
 #, gcc-internal-format
 msgid "Named COMMON block %qs at %L shall be of the same size as elsewhere (%lu vs %lu bytes)"
-msgstr "Benannter COMMON-Block %qs bei %L sollte die gleiche Größe wie anderswo haben (vgl. %lu Bytes u. %lu Bytes)"
+msgstr "Benannter COMMON-Block %qs bei %L muss die gleiche Größe wie anderswo haben (%lu Bytes gegenüber %lu Bytes)"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79596
 #: fortran/trans-common.c:782
@@ -58922,7 +58920,7 @@ msgstr "Sorry, die Event-Komponente des abgeleiteten Typs bei %L wird noch nicht
 #: fortran/trans-intrinsic.c:10190
 #, gcc-internal-format, gfc-internal-format
 msgid "The event variable at %L shall not be coindexed "
-msgstr "Event-Variable bei %L sollte nicht koindiziert sein"
+msgstr "Event-Variable bei %L darf nicht koindiziert sein"
 
 #: fortran/trans-io.c:1920
 #, gcc-internal-format
@@ -59118,7 +59116,7 @@ msgstr "vorher hier definiert"
 #: lto/lto-symtab.c:675
 #, gcc-internal-format
 msgid "%qD violates the C++ One Definition Rule "
-msgstr "%qD verletzt die One Definition Rule von C++"
+msgstr "%qD verletzt die One-Definition-Rule von C++"
 
 #: lto/lto-symtab.c:680
 #, gcc-internal-format
@@ -59896,7 +59894,7 @@ msgstr "Typ %qE hat keinen aufrufbaren Standard-Konstruktor"
 #: objc/objc-act.c:6262
 #, gcc-internal-format
 msgid "destructor for %qE shall not be run either"
-msgstr "Destruktor für %qE sollte auch nicht abgearbeitet werden"
+msgstr "Destruktor für %qE darf auch nicht abgearbeitet werden"
 
 #. Vtable pointers are Real Bad(tm), since Obj-C cannot
 #. initialize them.
