@@ -1,3 +1,10 @@
+2017-03-20  Marek Polacek  <polacek@redhat.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80059 - ICE with noexcept and __transaction_atomic
+	* except.c (build_must_not_throw_expr): Call
+	instantiate_non_dependent_expr_sfinae.
+
 2017-03-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80084 - wrong C++17 decomposition by reference of parameter.
