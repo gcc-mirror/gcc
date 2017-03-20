@@ -53,7 +53,7 @@
 	(unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))
    (match_operand:SI 1 "const_int_operand" "")] ;; model
   ""
-  "fence\trw,rw")
+  "fence\tiorw,iorw")
 
 ;; Atomic memory operations.
 

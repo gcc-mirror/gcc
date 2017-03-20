@@ -2794,7 +2794,7 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 
     case 'F':
       if (riscv_memmodel_needs_release_fence ((enum memmodel) INTVAL (op)))
-	fputs ("fence rw,w; ", file);
+	fputs ("fence iorw,ow; ", file);
       break;
 
     default:
