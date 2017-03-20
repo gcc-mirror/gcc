@@ -3279,17 +3279,34 @@ insert_initializers (slsr_cand_t c)
 }
 
 /* Return TRUE iff all required increments for candidates feeding PHI
-   are profitable to replace on behalf of candidate C.  */
+   are profitable (and legal!) to replace on behalf of candidate C.  */
 
 static bool
-all_phi_incrs_profitable (slsr_cand_t c, gimple *phi)
+all_phi_incrs_profitable (slsr_cand_t c, gphi *phi)
 {
   unsigned i;
   slsr_cand_t basis = lookup_cand (c->basis);
   slsr_cand_t phi_cand = *stmt_cand_map->get (phi);
 
+  /* If the basis doesn't dominate the PHI (including when the PHI is
+     in the same block as the basis), we won't be able to create a PHI
+     using the basis here.  */
+  basic_block basis_bb = gimple_bb (basis->cand_stmt);
+  basic_block phi_bb = gimple_bb (phi);
+
+  if (phi_bb == basis_bb
+      || !dominated_by_p (CDI_DOMINATORS, phi_bb, basis_bb))
+    return false;
+
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
+      /* If the PHI arg resides in a block not dominated by the basis,
+	 we won't be able to create a PHI using the basis here.  */
+      basic_block pred_bb = gimple_phi_arg_edge (phi, i)->src;
+
+      if (!dominated_by_p (CDI_DOMINATORS, pred_bb, basis_bb))
+	return false;
+
       tree arg = gimple_phi_arg_def (phi, i);
 
       if (!operand_equal_p (arg, phi_cand->base_expr, 0))
@@ -3298,7 +3315,7 @@ all_phi_incrs_profitable (slsr_cand_t c, gimple *phi)
 
 	  if (gimple_code (arg_def) == GIMPLE_PHI)
 	    {
-	      if (!all_phi_incrs_profitable (c, arg_def))
+	      if (!all_phi_incrs_profitable (c, as_a <gphi *> (arg_def)))
 		return false;
 	    }
 	  else
@@ -3565,7 +3582,7 @@ replace_profitable_candidates (slsr_cand_t c)
 	{
 	  if (phi_dependent_cand_p (c))
 	    {
-	      gimple *phi = lookup_cand (c->def_phi)->cand_stmt;
+	      gphi *phi = as_a <gphi *> (lookup_cand (c->def_phi)->cand_stmt);
 
 	      if (all_phi_incrs_profitable (c, phi))
 		{
