@@ -1,3 +1,9 @@
+2017-03-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/79640 - infinite recursion with generic lambda.
+	* pt.c (tsubst_copy) [VAR_DECL]: Register the dummy instantiation
+	before substituting its initializer.
+
 2017-03-20  Marek Polacek  <polacek@redhat.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

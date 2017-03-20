@@ -14581,6 +14581,9 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		     local static or constant.  Building a new VAR_DECL
 		     should be OK in all those cases.  */
 		  r = tsubst_decl (t, args, complain);
+		  if (local_specializations)
+		    /* Avoid infinite recursion (79640).  */
+		    register_local_specialization (r, t);
 		  if (decl_maybe_constant_var_p (r))
 		    {
 		      /* We can't call cp_finish_decl, so handle the
