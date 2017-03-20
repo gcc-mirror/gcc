@@ -986,15 +986,18 @@ regrename_do_replace (struct du_head *head, int regno)
   head->nregs = hard_regno_nregs[regno][mode];
 
   /* SBF: also update the current df info, move from base_regno -> regno. */
-  for (chain = head->first; chain; chain = chain->next_use)
-    {
-      /* undo regno patch - will be patched again */
-      if (REGNO (*chain->loc) == regno)
-	SET_REGNO(*chain->loc, base_regno);
-      df_ref_change_reg_with_loc (*chain->loc, regno);
+  if (base_regno < FIRST_PSEUDO_REGISTER && regno < FIRST_PSEUDO_REGISTER)
+    for (chain = head->first; chain; chain = chain->next_use)
+      {
+	if (DEBUG_INSN_P (chain->insn))
+	  continue;
+	/* undo regno patch - will be patched again */
+	if (REGNO (*chain->loc) == regno)
+	  SET_REGNO(*chain->loc, base_regno);
+	df_ref_change_reg_with_loc (*chain->loc, regno);
 
-      SET_REGNO(*chain->loc, regno);
-    }
+	SET_REGNO(*chain->loc, regno);
+      }
 
   /* Mark the old regno as no longer used. */
   if (!df->hard_regs_live_count[base_regno])
