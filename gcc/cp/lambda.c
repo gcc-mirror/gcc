@@ -746,16 +746,14 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
   return result;
 }
 
-/* We don't want to capture 'this' until we know we need it, i.e. after
-   overload resolution has chosen a non-static member function.  At that
-   point we call this function to turn a dummy object into a use of the
-   'this' capture.  */
+/* Return the current LAMBDA_EXPR, if this is a resolvable dummy
+   object.  NULL otherwise..  */
 
-tree
-maybe_resolve_dummy (tree object, bool add_capture_p)
+static tree
+resolvable_dummy_lambda (tree object)
 {
   if (!is_dummy_object (object))
-    return object;
+    return NULL_TREE;
 
   tree type = TYPE_MAIN_VARIANT (TREE_TYPE (object));
   gcc_assert (!TYPE_PTR_P (type));
@@ -765,16 +763,61 @@ maybe_resolve_dummy (tree object, bool add_capture_p)
       && LAMBDA_TYPE_P (current_class_type)
       && lambda_function (current_class_type)
       && DERIVED_FROM_P (type, current_nonlambda_class_type ()))
-    {
-      /* In a lambda, need to go through 'this' capture.  */
-      tree lam = CLASSTYPE_LAMBDA_EXPR (current_class_type);
-      tree cap = lambda_expr_this_capture (lam, add_capture_p);
-      if (cap && cap != error_mark_node)
+    return CLASSTYPE_LAMBDA_EXPR (current_class_type);
+
+  return NULL_TREE;
+}
+
+/* We don't want to capture 'this' until we know we need it, i.e. after
+   overload resolution has chosen a non-static member function.  At that
+   point we call this function to turn a dummy object into a use of the
+   'this' capture.  */
+
+tree
+maybe_resolve_dummy (tree object, bool add_capture_p)
+{
+  if (tree lam = resolvable_dummy_lambda (object))
+    if (tree cap = lambda_expr_this_capture (lam, add_capture_p))
+      if (cap != error_mark_node)
 	object = build_x_indirect_ref (EXPR_LOCATION (object), cap,
 				       RO_NULL, tf_warning_or_error);
-    }
 
   return object;
+}
+
+/* When parsing a generic lambda containing an argument-dependent
+   member function call we defer overload resolution to instantiation
+   time.  But we have to know now whether to capture this or not.
+   Do that if FNS contains any non-static fns.
+   The std doesn't anticipate this case, but I expect this to be the
+   outcome of discussion.  */
+
+void
+maybe_generic_this_capture (tree object, tree fns)
+{
+  if (tree lam = resolvable_dummy_lambda (object))
+    if (!LAMBDA_EXPR_THIS_CAPTURE (lam))
+      {
+	/* We've not yet captured, so look at the function set of
+	   interest.  */
+	if (BASELINK_P (fns))
+	  fns = BASELINK_FUNCTIONS (fns);
+	bool id_expr = TREE_CODE (fns) == TEMPLATE_ID_EXPR;
+	if (id_expr)
+	  fns = TREE_OPERAND (fns, 0);
+	for (; fns; fns = OVL_NEXT (fns))
+	  {
+	    tree fn = OVL_CURRENT (fns);
+
+	    if ((!id_expr || TREE_CODE (fn) == TEMPLATE_DECL)
+		&& DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+	      {
+		/* Found a non-static member.  Capture this.  */
+		lambda_expr_this_capture (lam, true);
+		break;
+	      }
+	  }
+      }
 }
 
 /* Returns the innermost non-lambda function.  */

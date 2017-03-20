@@ -796,6 +796,14 @@ perform_member_init (tree member, tree init)
 	   in that case.  */
 	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT,
 						tf_warning_or_error);
+      if (TREE_CODE (type) == ARRAY_TYPE
+	  && TYPE_DOMAIN (type) == NULL_TREE
+	  && init != NULL_TREE)
+	{
+	  error_at (DECL_SOURCE_LOCATION (current_function_decl),
+		    "member initializer for flexible array member");
+	  inform (DECL_SOURCE_LOCATION (member), "%q#D initialized", member);
+	}
 
       if (init)
 	finish_expr_stmt (cp_build_modify_expr (decl, INIT_EXPR, init,
@@ -2109,6 +2117,13 @@ constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p)
 	 initialization, since it doesn't represent the entire value.  */
       if (TREE_CODE (init) == CONSTRUCTOR
 	  && !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
+	break;
+      /* If the variable has a dynamic initializer, don't use its
+	 DECL_INITIAL which doesn't reflect the real value.  */
+      if (VAR_P (decl)
+	  && TREE_STATIC (decl)
+	  && !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl)
+	  && DECL_NONTRIVIALLY_INITIALIZED_P (decl))
 	break;
       decl = unshare_expr (init);
     }

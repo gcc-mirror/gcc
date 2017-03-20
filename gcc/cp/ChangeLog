@@ -1,3 +1,46 @@
+2017-03-15  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2016-12-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/72775
+	* init.c (perform_member_init): Diagnose member initializer for
+	flexible array member. 
+
+2017-03-14  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2017-03-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/79900 - ICE in strip_typedefs
+	* tree.c (strip_typedefs): Skip the attribute handling if T is
+	a variant type which hasn't been updated yet.
+
+	PR c++/79687
+	* init.c (constant_value_1): Break if the variable has a dynamic
+	initializer.
+
+	Backported from mainline
+	2017-01-31  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/79264
+	* lambda.c (maybe_generic_this_capture): Deal with template-id-exprs.
+	* semantics.c (finish_member_declaration): Assert class is being
+	defined.
+
+	Backported from mainline
+	2017-01-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/61636
+	* cp-tree.h (maybe_generic_this_capture): Declare.
+	* lambda.c (resolvable_dummy_lambda): New, broken out of ...
+	(maybe_resolve_dummy): ... here.  Call it.
+	(maybe_generic_this_capture): New.
+	* parser.c (cp_parser_postfix_expression): Speculatively capture
+	this in generic lambda in unresolved member function call.
+	* pt.c (tsubst_copy_and_build): Force hard error from failed
+	member function lookup in generic lambda.
+
 2017-03-07  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline

@@ -6867,6 +6867,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 			|| type_dependent_expression_p (fn)
 			|| any_type_dependent_arguments_p (args)))
 		  {
+		    maybe_generic_this_capture (instance, fn);
 		    postfix_expression
 		      = build_nt_call_vec (postfix_expression, args);
 		    release_tree_vector (args);

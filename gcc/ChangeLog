@@ -1,3 +1,47 @@
+2017-03-19  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR target/71017
+	* config/i386/cpuid.h: Fix another undefined behavior.
+
+2017-03-17  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
+	2017-03-17  Tom de Vries  <tom@codesourcery.com>
+
+	* gcov-dump.c (print_usage): Print bug_report_url.
+
+2017-03-16  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79732
+	* tree-inline.c (expand_call_inline): Handle anonymous
+	SSA lhs properly when inlining a function without return
+	value.
+
+2017-03-15  Matthias Klose  <doko@ubuntu.com>
+
+	Backport from mainline
+	2017-03-14  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Install gcov-dump.
+
+2017-03-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80019
+	* config/i386/i386.c (ix86_vector_duplicate_value): Create
+	subreg of inner mode for values already in registers.
+
+2017-03-14  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2017-02-28  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	PR target/79752
+        * config/rs6000/rs6000.md (peephole2 for udiv/umod): Should emit
+        udiv rather than div since input pattern is unsigned.
+
 2017-03-14  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
