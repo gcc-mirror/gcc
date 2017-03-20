@@ -1,5 +1,9 @@
 2017-03-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80084 - wrong C++17 decomposition by reference of parameter.
+	* decl.c (cp_finish_decomp): Don't pull out the DECL_INITIAL of a
+	reference decomposition.
+
 	PR c++/80077 - error with constexpr and -fno-elide-constructors.
 	* constexpr.c (cxx_eval_call_expression): Set ctx->call while
 	expanding trivial constructor.
