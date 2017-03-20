@@ -1,3 +1,10 @@
+2017-03-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/78857
+	* config/s390/s390.md ("cmp<mode>_ccs_0"): Add a clobber of the
+	target operand.  A new splitter adds the clobber statement in case
+	the target operand is dead anyway.
+
 2017-03-19  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific) <sparc-*-linux*>: No longer refer 
