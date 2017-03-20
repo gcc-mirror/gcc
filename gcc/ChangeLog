@@ -1,5 +1,12 @@
 2017-03-20  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	PR rtl-optimization/79910
+	* combine.c (can_combine_p): Do not allow combining an I0 or I1
+	if its dest is used by an insn before I2 (other than the combined
+	insns themselves, which are properly handled already).
+
+2017-03-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	Revert:
 	2017-03-17  Bernd Schmidt  <bschmidt@redhat.com>
 
