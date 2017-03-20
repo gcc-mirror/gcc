@@ -7975,8 +7975,14 @@ ix86_function_regparm (const_tree type, const_tree decl)
 		local_regparm = 2;
 
 	      /* Save a register for the split stack.  */
-	      if (local_regparm == 3 && flag_split_stack)
-		local_regparm = 2;
+	      if (flag_split_stack)
+		{
+		  if (local_regparm == 3)
+		    local_regparm = 2;
+		  else if (local_regparm == 2
+			   && DECL_STATIC_CHAIN (target->decl))
+		    local_regparm = 1;
+		}
 
 	      /* Each fixed register usage increases register pressure,
 		 so less registers should be used for argument passing.

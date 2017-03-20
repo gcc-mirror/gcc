@@ -1,3 +1,8 @@
+2017-03-20  Ian Lance Taylor  <iant@google.com>
+
+	* config/i386/i386.c (ix86_function_regparm): Save an extra
+	register for -fsplit-stack with DECL_STATIC_CHAIN.
+
 2017-03-17  Palmer Dabbelt  <palmer@dabbelt.com>
 
 	PR target/79912
