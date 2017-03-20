@@ -1478,7 +1478,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  else
 	    op = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (op)), op);
 	  tree set = build2 (MODIFY_EXPR, TREE_TYPE (op), op, init);
-	  return cxx_eval_constant_expression (ctx, set, lval,
+	  new_ctx.call = &new_call;
+	  return cxx_eval_constant_expression (&new_ctx, set, lval,
 					       non_constant_p, overflow_p);
 	}
     }
@@ -1496,7 +1497,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     }
 
   /* If in direct recursive call, optimize definition search.  */
-  if (ctx && ctx->call && ctx->call->fundef->decl == fun)
+  if (ctx && ctx->call && ctx->call->fundef && ctx->call->fundef->decl == fun)
     new_call.fundef = ctx->call->fundef;
   else
     {

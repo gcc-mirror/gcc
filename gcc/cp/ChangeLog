@@ -1,3 +1,9 @@
+2017-03-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80077 - error with constexpr and -fno-elide-constructors.
+	* constexpr.c (cxx_eval_call_expression): Set ctx->call while
+	expanding trivial constructor.
+
 2017-03-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/78345 - ICE initializing array from lambda.
