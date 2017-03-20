@@ -1953,6 +1953,10 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
       || (succ2 && FIND_REG_INC_NOTE (succ2, dest))
       /* Don't substitute into a non-local goto, this confuses CFG.  */
       || (JUMP_P (i3) && find_reg_note (i3, REG_NON_LOCAL_GOTO, NULL_RTX))
+      /* Make sure that DEST is not used after INSN but before SUCC, or
+	 between SUCC and SUCC2.  */
+      || (succ && reg_used_between_p (dest, insn, succ))
+      || (succ2 && reg_used_between_p (dest, succ, succ2))
       /* Make sure that DEST is not used after SUCC but before I3.  */
       || (!all_adjacent
 	  && ((succ2
