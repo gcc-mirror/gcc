@@ -13388,6 +13388,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   if (type
       && code != TYPENAME_TYPE
       && code != TEMPLATE_TYPE_PARM
+      && code != TEMPLATE_PARM_INDEX
       && code != IDENTIFIER_NODE
       && code != FUNCTION_TYPE
       && code != METHOD_TYPE)
@@ -13690,6 +13691,10 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    break;
 
 	  case TEMPLATE_PARM_INDEX:
+	    /* OK, now substitute the type of the non-type parameter.  We
+	       couldn't do it earlier because it might be an auto parameter,
+	       and we wouldn't need to if we had an argument.  */
+	    type = tsubst (type, args, complain, in_decl);
 	    r = reduce_template_parm_level (t, type, levels, args, complain);
 	    break;
 

@@ -1,5 +1,9 @@
 2017-03-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80096 - ICE with C++17 non-type auto.
+	* pt.c (tsubst): Delay tsubst of type of template non-type
+	parameter.
+
 	PR c++/79519 - ICE with deleted template friend.
 	* decl.c (grokdeclarator): Complain about misplaced function
 	definition using =, as well.
