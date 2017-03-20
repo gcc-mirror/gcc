@@ -76,7 +76,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     // "needless" static_cast'ing later on, but it's all safe
     // downcasting.
 
-    /// Common part of a node in the %list. 
+    /// Common part of a node in the %list.
     struct _List_node_base
     {
       _List_node_base* _M_next;
@@ -127,14 +127,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp>
     struct _List_iterator
     {
-      typedef _List_iterator<_Tp>                _Self;
-      typedef _List_node<_Tp>                    _Node;
+      typedef _List_iterator<_Tp>		_Self;
+      typedef _List_node<_Tp>			_Node;
 
-      typedef ptrdiff_t                          difference_type;
-      typedef std::bidirectional_iterator_tag    iterator_category;
-      typedef _Tp                                value_type;
-      typedef _Tp*                               pointer;
-      typedef _Tp&                               reference;
+      typedef ptrdiff_t				difference_type;
+      typedef std::bidirectional_iterator_tag	iterator_category;
+      typedef _Tp				value_type;
+      typedef _Tp*				pointer;
+      typedef _Tp&				reference;
 
       _List_iterator() _GLIBCXX_NOEXCEPT
       : _M_node() { }
@@ -206,15 +206,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp>
     struct _List_const_iterator
     {
-      typedef _List_const_iterator<_Tp>          _Self;
-      typedef const _List_node<_Tp>              _Node;
-      typedef _List_iterator<_Tp>                iterator;
+      typedef _List_const_iterator<_Tp>		_Self;
+      typedef const _List_node<_Tp>		_Node;
+      typedef _List_iterator<_Tp>		iterator;
 
-      typedef ptrdiff_t                          difference_type;
-      typedef std::bidirectional_iterator_tag    iterator_category;
-      typedef _Tp                                value_type;
-      typedef const _Tp*                         pointer;
-      typedef const _Tp&                         reference;
+      typedef ptrdiff_t				difference_type;
+      typedef std::bidirectional_iterator_tag	iterator_category;
+      typedef _Tp				value_type;
+      typedef const _Tp*			pointer;
+      typedef const _Tp&			reference;
 
       _List_const_iterator() _GLIBCXX_NOEXCEPT
       : _M_node() { }
@@ -291,7 +291,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Val>
     inline bool
     operator!=(const _List_iterator<_Val>& __x,
-               const _List_const_iterator<_Val>& __y) _GLIBCXX_NOEXCEPT
+	       const _List_const_iterator<_Val>& __y) _GLIBCXX_NOEXCEPT
     { return __x._M_node != __y._M_node; }
 
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
@@ -447,8 +447,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       void
       _M_init() _GLIBCXX_NOEXCEPT
       {
-        this->_M_impl._M_node._M_next = &this->_M_impl._M_node;
-        this->_M_impl._M_node._M_prev = &this->_M_impl._M_node;
+	this->_M_impl._M_node._M_next = &this->_M_impl._M_node;
+	this->_M_impl._M_node._M_prev = &this->_M_impl._M_node;
 	_M_set_size(0);
       }
     };
@@ -497,35 +497,39 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
    *  pointing to @e D, not to @e A!  To get to the head of the %list,
    *  we start at the tail and move forward by one.  When this member
    *  iterator's next/previous pointers refer to itself, the %list is
-   *  %empty. 
+   *  %empty.
   */
   template<typename _Tp, typename _Alloc = std::allocator<_Tp> >
     class list : protected _List_base<_Tp, _Alloc>
     {
+#ifdef _GLIBCXX_CONCEPT_CHECKS
       // concept requirements
-      typedef typename _Alloc::value_type                _Alloc_value_type;
+      typedef typename _Alloc::value_type		_Alloc_value_type;
+# if __cplusplus < 201103L
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
+# endif
       __glibcxx_class_requires2(_Tp, _Alloc_value_type, _SameTypeConcept)
+#endif
 
-      typedef _List_base<_Tp, _Alloc>                    _Base;
-      typedef typename _Base::_Tp_alloc_type		 _Tp_alloc_type;
-      typedef typename _Base::_Tp_alloc_traits		 _Tp_alloc_traits;
-      typedef typename _Base::_Node_alloc_type		 _Node_alloc_type;
-      typedef typename _Base::_Node_alloc_traits	 _Node_alloc_traits;
+      typedef _List_base<_Tp, _Alloc>			_Base;
+      typedef typename _Base::_Tp_alloc_type		_Tp_alloc_type;
+      typedef typename _Base::_Tp_alloc_traits		_Tp_alloc_traits;
+      typedef typename _Base::_Node_alloc_type		_Node_alloc_type;
+      typedef typename _Base::_Node_alloc_traits	_Node_alloc_traits;
 
     public:
-      typedef _Tp                                        value_type;
+      typedef _Tp					 value_type;
       typedef typename _Tp_alloc_traits::pointer	 pointer;
       typedef typename _Tp_alloc_traits::const_pointer	 const_pointer;
       typedef typename _Tp_alloc_traits::reference	 reference;
       typedef typename _Tp_alloc_traits::const_reference const_reference;
       typedef _List_iterator<_Tp>			 iterator;
       typedef _List_const_iterator<_Tp>			 const_iterator;
-      typedef std::reverse_iterator<const_iterator>      const_reverse_iterator;
-      typedef std::reverse_iterator<iterator>            reverse_iterator;
-      typedef size_t                                     size_type;
-      typedef ptrdiff_t                                  difference_type;
-      typedef _Alloc                                     allocator_type;
+      typedef std::reverse_iterator<const_iterator>	 const_reverse_iterator;
+      typedef std::reverse_iterator<iterator>		 reverse_iterator;
+      typedef size_t					 size_type;
+      typedef ptrdiff_t					 difference_type;
+      typedef _Alloc					 allocator_type;
 
     protected:
       // Note that pointers-to-_Node's can be ctor-converted to
@@ -562,8 +566,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 #else
       template<typename... _Args>
-        _Node*
-        _M_create_node(_Args&&... __args)
+	_Node*
+	_M_create_node(_Args&&... __args)
 	{
 	  auto __p = this->_M_get_node();
 	  auto& __alloc = _M_get_Node_allocator();
@@ -670,7 +674,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  initializer_list @a __l.  This is linear in __l.size().
        */
       list(initializer_list<value_type> __l,
-           const allocator_type& __a = allocator_type())
+	   const allocator_type& __a = allocator_type())
       : _Base(_Node_alloc_type(__a))
       { _M_initialize_dispatch(__l.begin(), __l.end(), __false_type()); }
 
@@ -702,16 +706,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus >= 201103L
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
-        list(_InputIterator __first, _InputIterator __last,
+	list(_InputIterator __first, _InputIterator __last,
 	     const allocator_type& __a = allocator_type())
 	: _Base(_Node_alloc_type(__a))
-        { _M_initialize_dispatch(__first, __last, __false_type()); }
+	{ _M_initialize_dispatch(__first, __last, __false_type()); }
 #else
       template<typename _InputIterator>
-        list(_InputIterator __first, _InputIterator __last,
+	list(_InputIterator __first, _InputIterator __last,
 	     const allocator_type& __a = allocator_type())
 	: _Base(_Node_alloc_type(__a))
-        { 
+	{
 	  // Check whether it's an integral type.  If so, it's not an iterator.
 	  typedef typename std::__is_integer<_InputIterator>::__type _Integral;
 	  _M_initialize_dispatch(__first, __last, _Integral());
@@ -756,9 +760,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       noexcept(_Node_alloc_traits::_S_nothrow_move())
       {
 	constexpr bool __move_storage =
-          _Node_alloc_traits::_S_propagate_on_move_assign()
-          || _Node_alloc_traits::_S_always_equal();
-        _M_move_assign(std::move(__x), __bool_constant<__move_storage>());
+	  _Node_alloc_traits::_S_propagate_on_move_assign()
+	  || _Node_alloc_traits::_S_always_equal();
+	_M_move_assign(std::move(__x), __bool_constant<__move_storage>());
 	return *this;
       }
 
@@ -806,14 +810,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus >= 201103L
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
-        void
-        assign(_InputIterator __first, _InputIterator __last)
-        { _M_assign_dispatch(__first, __last, __false_type()); }
+	void
+	assign(_InputIterator __first, _InputIterator __last)
+	{ _M_assign_dispatch(__first, __last, __false_type()); }
 #else
       template<typename _InputIterator>
-        void
-        assign(_InputIterator __first, _InputIterator __last)
-        {
+	void
+	assign(_InputIterator __first, _InputIterator __last)
+	{
 	  // Check whether it's an integral type.  If so, it's not an iterator.
 	  typedef typename std::__is_integer<_InputIterator>::__type _Integral;
 	  _M_assign_dispatch(__first, __last, _Integral());
@@ -1030,7 +1034,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       reference
       back() _GLIBCXX_NOEXCEPT
-      { 
+      {
 	iterator __tmp = end();
 	--__tmp;
 	return *__tmp;
@@ -1042,7 +1046,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       const_reference
       back() const _GLIBCXX_NOEXCEPT
-      { 
+      {
 	const_iterator __tmp = end();
 	--__tmp;
 	return *__tmp;
@@ -1070,12 +1074,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       template<typename... _Args>
 #if __cplusplus > 201402L
-        reference
+	reference
 #else
 	void
 #endif
-        emplace_front(_Args&&... __args)
-        {
+	emplace_front(_Args&&... __args)
+	{
 	  this->_M_insert(begin(), std::forward<_Args>(__args)...);
 #if __cplusplus > 201402L
 	  return front();
@@ -1120,15 +1124,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       template<typename... _Args>
 #if __cplusplus > 201402L
-        reference
+	reference
 #else
 	void
 #endif
-        emplace_back(_Args&&... __args)
-        {
+	emplace_back(_Args&&... __args)
+	{
 	  this->_M_insert(end(), std::forward<_Args>(__args)...);
 #if __cplusplus > 201402L
-        return back();
+	return back();
 #endif
 	}
 #endif
@@ -1162,8 +1166,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  and references.
        */
       template<typename... _Args>
-        iterator
-        emplace(const_iterator __position, _Args&&... __args);
+	iterator
+	emplace(const_iterator __position, _Args&&... __args);
 
       /**
        *  @brief  Inserts given value into %list before specified iterator.
@@ -1205,7 +1209,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  the specified location.  Due to the nature of a %list this
        *  operation can be done in constant time, and does not
        *  invalidate iterators and references.
-        */
+	*/
       iterator
       insert(const_iterator __position, value_type&& __x)
       { return emplace(__position, std::move(__x)); }
@@ -1304,10 +1308,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  does not invalidate iterators and references.
        */
       template<typename _InputIterator>
-        void
-        insert(iterator __position, _InputIterator __first,
+	void
+	insert(iterator __position, _InputIterator __first,
 	       _InputIterator __last)
-        {
+	{
 	  list __tmp(__first, __last, get_allocator());
 	  splice(__position, __tmp);
 	}
@@ -1380,14 +1384,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       swap(list& __x) _GLIBCXX_NOEXCEPT
       {
 	__detail::_List_node_base::swap(this->_M_impl._M_node,
-				        __x._M_impl._M_node);
+					__x._M_impl._M_node);
 
 	size_t __xsize = __x._M_get_size();
 	__x._M_set_size(this->_M_get_size());
 	this->_M_set_size(__xsize);
 
 	_Node_alloc_traits::_S_on_swap(this->_M_get_Node_allocator(),
-                                       __x._M_get_Node_allocator());
+				       __x._M_get_Node_allocator());
       }
 
       /**
@@ -1399,8 +1403,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       void
       clear() _GLIBCXX_NOEXCEPT
       {
-        _Base::_M_clear();
-        _Base::_M_init();
+	_Base::_M_clear();
+	_Base::_M_init();
       }
 
       // [23.2.2.4] list operations
@@ -1594,8 +1598,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  responsibility.
        */
       template<typename _Predicate>
-        void
-        remove_if(_Predicate);
+	void
+	remove_if(_Predicate);
 
       /**
        *  @brief  Remove consecutive duplicate elements.
@@ -1623,8 +1627,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  Managing the pointer is the user's responsibility.
        */
       template<typename _BinaryPredicate>
-        void
-        unique(_BinaryPredicate);
+	void
+	unique(_BinaryPredicate);
 
       /**
        *  @brief  Merge sorted lists.
@@ -1662,17 +1666,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
 #if __cplusplus >= 201103L
       template<typename _StrictWeakOrdering>
-        void
-        merge(list&& __x, _StrictWeakOrdering __comp);
+	void
+	merge(list&& __x, _StrictWeakOrdering __comp);
 
       template<typename _StrictWeakOrdering>
-        void
-        merge(list& __x, _StrictWeakOrdering __comp)
-        { merge(std::move(__x), __comp); }
+	void
+	merge(list& __x, _StrictWeakOrdering __comp)
+	{ merge(std::move(__x), __comp); }
 #else
       template<typename _StrictWeakOrdering>
-        void
-        merge(list& __x, _StrictWeakOrdering __comp);
+	void
+	merge(list& __x, _StrictWeakOrdering __comp);
 #endif
 
       /**
@@ -1700,8 +1704,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  elements remain in list order.
        */
       template<typename _StrictWeakOrdering>
-        void
-        sort(_StrictWeakOrdering);
+	void
+	sort(_StrictWeakOrdering);
 
     protected:
       // Internal constructor functions follow.
@@ -1711,16 +1715,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 438. Ambiguity in the "do the right thing" clause
       template<typename _Integer>
-        void
-        _M_initialize_dispatch(_Integer __n, _Integer __x, __true_type)
-        { _M_fill_initialize(static_cast<size_type>(__n), __x); }
+	void
+	_M_initialize_dispatch(_Integer __n, _Integer __x, __true_type)
+	{ _M_fill_initialize(static_cast<size_type>(__n), __x); }
 
       // Called by the range constructor to implement [23.1.1]/9
       template<typename _InputIterator>
-        void
-        _M_initialize_dispatch(_InputIterator __first, _InputIterator __last,
+	void
+	_M_initialize_dispatch(_InputIterator __first, _InputIterator __last,
 			       __false_type)
-        {
+	{
 	  for (; __first != __last; ++__first)
 #if __cplusplus >= 201103L
 	    emplace_back(*__first);
@@ -1759,14 +1763,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 438. Ambiguity in the "do the right thing" clause
       template<typename _Integer>
-        void
-        _M_assign_dispatch(_Integer __n, _Integer __val, __true_type)
-        { _M_fill_assign(__n, __val); }
+	void
+	_M_assign_dispatch(_Integer __n, _Integer __val, __true_type)
+	{ _M_fill_assign(__n, __val); }
 
       // Called by the range assign to implement [23.1.1]/9
       template<typename _InputIterator>
-        void
-        _M_assign_dispatch(_InputIterator __first, _InputIterator __last,
+	void
+	_M_assign_dispatch(_InputIterator __first, _InputIterator __last,
 			   __false_type);
 
       // Called by assign(n,t), and the range assign when it turns out
@@ -1785,8 +1789,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       void
       _M_insert(iterator __position, const value_type& __x)
       {
-        _Node* __tmp = _M_create_node(__x);
-        __tmp->_M_hook(__position._M_node);
+	_Node* __tmp = _M_create_node(__x);
+	__tmp->_M_hook(__position._M_node);
 	this->_M_inc_size(1);
       }
 #else
@@ -1805,15 +1809,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _M_erase(iterator __position) _GLIBCXX_NOEXCEPT
       {
 	this->_M_dec_size(1);
-        __position._M_node->_M_unhook();
-        _Node* __n = static_cast<_Node*>(__position._M_node);
+	__position._M_node->_M_unhook();
+	_Node* __n = static_cast<_Node*>(__position._M_node);
 #if __cplusplus >= 201103L
 	_Node_alloc_traits::destroy(_M_get_Node_allocator(), __n->_M_valptr());
 #else
 	_Tp_alloc_type(_M_get_Node_allocator()).destroy(__n->_M_valptr());
 #endif
 
-        _M_put_node(__n);
+	_M_put_node(__n);
       }
 
       // To implement the splice (and merge) bits of N1599.
@@ -1845,16 +1849,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	    this->_M_set_size(__x._M_get_size());
 	    __x._M_init();
 	  }
-        std::__alloc_on_move(this->_M_get_Node_allocator(),
-                             __x._M_get_Node_allocator());
+	std::__alloc_on_move(this->_M_get_Node_allocator(),
+			     __x._M_get_Node_allocator());
       }
 
       void
       _M_move_assign(list&& __x, false_type)
       {
 	if (__x._M_get_Node_allocator() == this->_M_get_Node_allocator())
-          _M_move_assign(std::move(__x), true_type{});
-        else
+	  _M_move_assign(std::move(__x), true_type{});
+	else
 	  // The rvalue's allocator cannot be moved, or is not equal,
 	  // so we need to individually move each element.
 	  _M_assign_dispatch(std::__make_move_if_noexcept_iterator(__x.begin()),

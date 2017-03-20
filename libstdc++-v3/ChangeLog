@@ -1,3 +1,17 @@
+2017-03-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_deque.h (deque): Access allocator value_type only if
+	concept checks are enabled.
+	* include/bits/stl_stack.h (stack): Likewise.
+	* include/bits/stl_vector.h (vector): Likewise.
+	* include/bits/stl_list.h (list): Likewise and check
+	_SGIAssignableConcept only in C++03.
+	* include/bits/stl_map.h (map): Likewise.
+	* include/bits/stl_set.h (set): Likewise.
+	* include/bits/stl_multimap.h (multimap): Likewise.
+	* include/bits/stl_multiset.h (multiset): Likewise.
+	* include/bits/stl_queue.h (queue, priority_queue): Likewise.
+
 2017-03-18  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/appendix_contributing.xml: Convert link to
@@ -351,7 +365,7 @@
 	Tweak link description.
 
 2017-02-18  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/xml/manual/profile_mode.xml: Fix link.
 
 2017-02-16  Gerald Pfeifer  <gerald@pfeifer.com>
@@ -418,9 +432,9 @@
 
 	* include/bits/atomic_base.h: Re-indent.
 
-2017-02-10  Gerald Pfeifer  <gerald@pfeifer.com> 
+2017-02-10  Gerald Pfeifer  <gerald@pfeifer.com>
 
-	* doc/xml/manual/profile_mode.xml: Update a paper reference. 
+	* doc/xml/manual/profile_mode.xml: Update a paper reference.
 
 2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
 
@@ -440,16 +454,16 @@
 	* doc/html/*: Regenerate.
 
 2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/xml/manual/profile_mode.xml: Unbreak link to
 	"Optimizing Sorting with Machine Learning Algorithms".
 
 2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* src/c++11/snprintf_lite.cc (__err): Update bug reporting URL.
 
 2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/xml/manual/abi.xml: Update link to "Sun Studio 11: C++
 	Migration Guide".
 
@@ -714,7 +728,7 @@
 	* doc/xml/manual/debug.xml: code.google.com uses https now.
 
 2017-01-22  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/xml/manual/test.xml: Fix link into gccint online manual.
 
 2017-01-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
@@ -935,7 +949,7 @@
 2017-01-17  Joshua Conner  <joshconner@google.com>
 
 	* crossconfig.m4: Add fuchsia OS.
-	* configure: Regenerate. 
+	* configure: Regenerate.
 
 2017-01-17  Jonathan Wakely  <jwakely@redhat.com>
 
@@ -1415,7 +1429,7 @@
 
 	* doc/xml/faq.xml: Update address of C++ ABI link.
 	* doc/xml/manual/abi.xml: Ditto.
-	
+
 2017-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
