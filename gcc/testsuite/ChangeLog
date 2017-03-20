@@ -1,3 +1,13 @@
+2017-03-20  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/79963
+	* gcc.target/powerpc/vsu/vec-any-eq-10.c: Add scan-assembler
+	directive to assure selection of proper bit using rlwinm insn.
+	* gcc.target/powerpc/vsu/vec-any-eq-14.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-7.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-8.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eq-9.c: Likewise.
+
 2017-03-20  Marek Polacek  <polacek@redhat.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

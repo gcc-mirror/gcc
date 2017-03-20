@@ -15,3 +15,4 @@ test_any_equal (vector double *arg1_p, vector double *arg2_p)
 }
 
 /* { dg-final { scan-assembler "xvcmpeqdp." } } */
+/* { dg-final { scan-assembler "rlwinm r?\[0-9\]+,r?\[0-9\]+,27,1" } } */
