@@ -1,3 +1,8 @@
+2017-03-20  Palmer Dabbelt  <palmer@dabbelt.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add Kito Cheng, Palmer Dabbelt,
+	and Andrew Waterman as the RISC-V maintainers.
+
 2017-03-18  Nicolas Koenig  <koenigni@gcc.gnu.org>
 
 	* MAINTAINERS: Add self to Write After Approval

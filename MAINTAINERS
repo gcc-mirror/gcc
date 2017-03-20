@@ -88,6 +88,9 @@ nios2 port		Sandra Loosemore	<sandra@codesourcery.com>
 nvptx port		Bernd Schmidt		<bschmidt@redhat.com>
 pdp11 port		Paul Koning		<ni1d@arrl.net>
 picochip port		Daniel Towner		<dant@picochip.com>
+riscv port		Kito Cheng		<kito.cheng@gmail.com>
+riscv port		Palmer Dabbelt		<palmer@dabbelt.com>
+riscv port		Andrew Waterman		<andrew@sifive.com>
 rl78 port		DJ Delorie		<dj@redhat.com>
 rs6000/powerpc port	David Edelsohn		<dje.gcc@gmail.com>
 rs6000/powerpc port	Segher Boessenkool	<segher@kernel.crashing.org>
