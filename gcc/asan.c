@@ -2567,10 +2567,12 @@ initialize_sanitizer_builtins (void)
 #define DEF_BUILTIN_STUB(ENUM, NAME)
 #undef DEF_SANITIZER_BUILTIN
 #define DEF_SANITIZER_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
-  decl = add_builtin_function ("__builtin_" NAME, TYPE, ENUM,		\
-			       BUILT_IN_NORMAL, NAME, NULL_TREE);	\
-  set_call_expr_flags (decl, ATTRS);					\
-  set_builtin_decl (ENUM, decl, true);
+  do {									\
+    decl = add_builtin_function ("__builtin_" NAME, TYPE, ENUM,		\
+				 BUILT_IN_NORMAL, NAME, NULL_TREE);	\
+    set_call_expr_flags (decl, ATTRS);					\
+    set_builtin_decl (ENUM, decl, true);				\
+  } while (0);
 
 #include "sanitizer.def"
 

@@ -1,3 +1,8 @@
+2017-03-20  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80063
+	* asan.c (DEF_SANITIZER_BUILTIN): Use do { } while (0).
+
 2017-03-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80113
