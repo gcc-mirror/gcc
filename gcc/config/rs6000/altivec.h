@@ -521,9 +521,9 @@ __altivec_scalar_pred(vec_all_nez,
 __altivec_scalar_pred(vec_any_eqz,
   __builtin_vec_vcmpnez_p (__CR6_LT_REV, a1, a2))
 __altivec_scalar_pred(vec_all_ne,
-  __builtin_vec_allne_p (a1, a2))
+  __builtin_vec_vcmpne_p (a1, a2))
 __altivec_scalar_pred(vec_any_eq,
-  __builtin_vec_anyeq_p (a1, a2))
+  __builtin_vec_vcmpae_p (a1, a2))
 #endif
 
 __altivec_scalar_pred(vec_any_ne,
