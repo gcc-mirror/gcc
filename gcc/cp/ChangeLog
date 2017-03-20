@@ -1,5 +1,9 @@
 2017-03-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/79519 - ICE with deleted template friend.
+	* decl.c (grokdeclarator): Complain about misplaced function
+	definition using =, as well.
+
 	PR c++/79640 - infinite recursion with generic lambda.
 	* pt.c (tsubst_copy) [VAR_DECL]: Register the dummy instantiation
 	before substituting its initializer.
