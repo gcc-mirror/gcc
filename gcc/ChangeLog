@@ -1,3 +1,10 @@
+2017-03-17  Palmer Dabbelt  <palmer@dabbelt.com>
+
+	* config/riscv/riscv.c (riscv_print_operand): Use "fence
+	iorw,ow".
+	* config/riscv/sync.mc (mem_thread_fence_1): Use "fence
+	iorw,iorw".
+
 2017-03-20  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80063
