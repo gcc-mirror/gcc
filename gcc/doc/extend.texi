@@ -2510,7 +2510,11 @@ if you have a constructor that allocates a resource and a destructor
 that deallocates the same resource, both functions typically have the
 same priority.  The priorities for constructor and destructor
 functions are the same as those specified for namespace-scope C++
-objects (@pxref{C++ Attributes}).
+objects (@pxref{C++ Attributes}).  However, at present, the order in which
+constructors for C++ objects with static storage duration and functions
+decorated with attribute @code{constructor} are invoked is unspecified.
+In mixed declarations, attribute @code{init_priority} can be used to
+impose a specific ordering.
 
 @item deprecated
 @itemx deprecated (@var{msg})
