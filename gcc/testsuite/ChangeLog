@@ -1,3 +1,9 @@
+2017-03-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+            Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79908
+	* gcc.dg/torture/pr79908.c: New file.
+
 2017-03-21  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.dg/tree-ssa/overflow-1.c: Use __UINT32_TYPE__ for targets
