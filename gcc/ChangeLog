@@ -1,3 +1,12 @@
+2017-03-21  Pat Haugen  <pthaugen@us.ibm.com>
+
+	Backport from mainline:
+	2017-03-17  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/79951
+	* config/rs6000/rs6000.md (copysign<mode>3_fcpsgn): Test
+	for VECTOR_UNIT_VSX_P (<MODE>mode) too.
+
 2017-03-21  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov<mode>)
