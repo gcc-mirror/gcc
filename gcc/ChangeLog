@@ -1,3 +1,10 @@
+2017-03-21  Marek Polacek  <polacek@redhat.com>
+	    Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/80109
+	* gimple-ssa-warn-alloca.c (alloca_call_type): Only call get_range_info
+	on INTEGRAL_TYPE_P.
+
 2017-03-21  Jakub Jelinek  <jakub@redhat.com>
 	    Segher Boessenkool  <segher@kernel.crashing.org>
 
