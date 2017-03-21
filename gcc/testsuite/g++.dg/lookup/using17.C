@@ -7,7 +7,7 @@ namespace M {
 }
 
 int S;
-struct S {}; // { dg-message "candidates are: struct S" "candidate 1" }
+struct S {}; // { dg-message "struct S" "candidate 1" }
 
 using namespace M;
 

@@ -1,3 +1,59 @@
+2017-03-21  Nathan Sidwell  <nathan@acm.org>
+
+	Refactor lookup part 1
+	gcc/cp/
+	* name-lookup.c (struct name_lookup): New.
+	(struct scope_binding): Delete.
+	(EMPTY_SCOPE_BINDING): Delete.
+	(build_ambigious): New.
+	(name_lookup::add): New.
+	(do_nonmember_using_decl): Take pointer to cxx_binding.  Adjust.
+	(do_local_using_decl, do_toplevel_using_decl): Adjust.
+	(merge_functions, same_entity_p, ambiguous_decl): Delete.
+	(suggest_alternatives_for): Adjust lookup functions.
+	(unqualified_namespace_lookup_1): Use name_lookup.
+	(lookup_qualified_name): Likewise.
+	(lookup_using_namespace, qualified_lookup_using_namespace): Take a
+	name_lookup.
+	gcc/testsuite/
+	* g++.dg/lookup/using17.C: Adjust error message.
+
+	Keep hidden overloads at start of OVERLOAD list
+	gcc/cp/
+	* cp-tree.h (OVL_HIDDEN_P): New.
+	(ovl_iterator::hidden_p, unhide): New.
+	(DECL_HIDDEN_P): New.
+	(hidden_name_p, remove_hidden_names): Delete.
+	(ovl_skip_hidden): Declare.
+	* decl.c (builtin_function_1): Set DECL_ANTICIPATED before
+	pushing.
+	(xref_tag_1): Replace hidden_name_p with DECL_HIDDEN_P.
+	* name-lookup.c (anticipated_builtin_p,
+	skip_anticipated_buitins): New.
+	(supplement_binding_1): Use anticipated_builtin_p.
+	(replace_local_overload_binding): New. Broken out of
+	augment_local_overload_binding.
+	(fixup_unhidden_decl): New.
+	(pushdecl_maybe_friend_1): Deal with unhiding decl.  Set
+	DECL_ANTICIPATED before really pushing.
+	(augment_local_overload_binding): Call replace_local_overload_binding.
+	(push_overloaded_decl_1): Deal with unhiding decl.
+	(do_nonmember_using_decl): Use anticipated_builtin_p.
+	(ambiguous_decls): Use ovl_skip_hidden.
+	(lookup_name_real_1): Use DECL_HIDDEN_P, ovl_skip_hidden.
+	(arg_assoc_namespace): Use DECL_HIDDEN_P.
+	(lookup_arg_dependent_1): Use ovl_skip_hidden.
+	* pt.c (instantiate_class_template): Use DECL_HIDDEN_P.
+	* tree.c (ovl_move_unhidden): New.
+	(ovl_add): Deal with hiddenness.
+	(ovl_add_transient): Adjust.
+	(hidden_name_p, remove_hidden_names): Delete.
+	(ovl_skip_hidden): New.
+	(ovl_iterator::ovl_unhide): New.
+	gcc/testsuite/
+	* g++.dg/lookup/friend19.C: New.
+	* g++.dg/lookup/using56.C: New.
+
 2017-03-16  Nathan Sidwell  <nathan@acm.org>
 
 	New OVERLOAD representation part 6
