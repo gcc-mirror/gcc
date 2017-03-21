@@ -1,7 +1,12 @@
+2017-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35878
+	* init.c (std_placement_new_fn_p, build_new_1): Formatting fixes.
+
 2017-03-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/35878
-	* cp/init.c (std_placement_new_fn_p): New.
+	* init.c (std_placement_new_fn_p): New.
 	(build_new_1): Call it.
 
 2017-03-20  Jason Merrill  <jason@redhat.com>
