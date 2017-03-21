@@ -809,8 +809,9 @@ maybe_generic_this_capture (tree object, tree fns)
 	  {
 	    tree fn = OVL_CURRENT (fns);
 
-	    if ((!id_expr || TREE_CODE (fn) == TEMPLATE_DECL)
-		&& DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+	    if (identifier_p (fns)
+		|| ((!id_expr || TREE_CODE (fn) == TEMPLATE_DECL)
+		    && DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)))
 	      {
 		/* Found a non-static member.  Capture this.  */
 		lambda_expr_this_capture (lam, true);
