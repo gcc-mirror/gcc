@@ -1,3 +1,11 @@
+2017-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80122
+	* tree-inline.c (copy_bb): Do not expans va-arg packs or
+	va_arg_pack_len when the inlined call stmt requires pack
+	expansion itself.
+	* tree-inline.h (struct copy_body_data): Make call_stmt a gcall *.
+
 2017-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/78158
