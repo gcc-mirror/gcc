@@ -1,3 +1,10 @@
+2017-03-21  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/80081
+	* Makefile.in: Add gcov-dump and fix installation of gcov-tool.
+	* doc/gcc.texi: Include gcov-dump stuff.
+	* doc/gcov-dump.texi: New file.
+
 2017-03-21  Toma Tabacu  <toma.tabacu@imgtec.com>
 
 	PR rtl-optimization/79150
