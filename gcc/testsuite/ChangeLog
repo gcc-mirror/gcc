@@ -1,3 +1,8 @@
+2017-03-21  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/79548
+	* g++.dg/warn/Wunused-var-26.C: New test.
+
 2017-03-21  Pat Haugen  <pthaugen@us.ibm.com>
 
 	Backport from mainline:
