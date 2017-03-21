@@ -1,6 +1,8 @@
-// { dg-options "-O2 --std=gnu++11" }
+// PR c++/35878
 // { dg-do compile }
-// { dg-final { scan-assembler "test.*%rdi, %rdi" { target i?86-*-* x86_64-*-* } } }
+// { dg-options "-O2 -std=gnu++11 -fdump-tree-optimized" }
+// { dg-final { scan-tree-dump-times "v_\[0-9]+\\(D\\) \[=!]= 0" 1 "optimized" } }
+
 #include <new>
 #include <utility>
 

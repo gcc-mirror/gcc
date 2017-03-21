@@ -2710,7 +2710,8 @@ malloc_alignment ()
 /* Determine whether an allocation function is a namespace-scope
    non-replaceable placement new function. See DR 1748.
    TODO: Enable in all standard modes.  */
-static bool std_placement_new_fn_p (tree alloc_fn)
+static bool
+std_placement_new_fn_p (tree alloc_fn)
 {
   if ((cxx_dialect > cxx14) && DECL_NAMESPACE_SCOPE_P (alloc_fn))
     {
@@ -3200,8 +3201,8 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
      So check for a null exception spec on the op new we just called.  */
 
   nothrow = TYPE_NOTHROW_P (TREE_TYPE (alloc_fn));
-  check_new = flag_check_new
-    || (nothrow && !std_placement_new_fn_p (alloc_fn));
+  check_new
+    = flag_check_new || (nothrow && !std_placement_new_fn_p (alloc_fn));
 
   if (cookie_size)
     {
