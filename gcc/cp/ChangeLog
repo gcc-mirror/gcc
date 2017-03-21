@@ -28,7 +28,7 @@
 
 	PR c++/80059 - ICE with noexcept and __transaction_atomic
 	* except.c (build_must_not_throw_expr): Call
-	instantiate_non_dependent_expr_sfinae.
+	instantiate_non_dependent_expr.
 
 2017-03-19  Jason Merrill  <jason@redhat.com>
 
