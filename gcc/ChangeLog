@@ -1,3 +1,9 @@
+2017-03-21  Toma Tabacu  <toma.tabacu@imgtec.com>
+
+	PR rtl-optimization/79150
+	* config/mips/mips.c (mips_block_move_loop): Emit a NOP after the
+	conditional jump, if the jump is the last insn of the loop.
+
 2017-03-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
             Richard Biener  <rguenth@suse.com>
 
