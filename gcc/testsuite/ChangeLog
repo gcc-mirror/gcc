@@ -1,3 +1,8 @@
+2017-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/80097
+	* gcc.dg/ubsan/pr80097.c: New test.
+
 2017-03-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/80054
