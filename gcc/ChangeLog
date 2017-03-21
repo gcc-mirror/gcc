@@ -1,3 +1,8 @@
+2017-03-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov<mode>)
+	Change ins into fmov.
+
 2017-03-19  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR target/71017
