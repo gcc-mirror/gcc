@@ -1,3 +1,8 @@
+2017-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80122
+	* gcc.dg/torture/pr80122.c: New testcase.
+
 2017-03-21  Toma Tabacu  <toma.tabacu@imgtec.com>
 
 	* gcc.dg/pic-2.c: Skip for MIPS.
