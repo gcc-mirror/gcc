@@ -1,3 +1,8 @@
+2017-03-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/79908
+	* gcc.dg/torture/pr79908.c: Revert addition of new file.
+
 2017-03-21  Marek Polacek  <polacek@redhat.com>
 	    Martin Sebor  <msebor@redhat.com>
 

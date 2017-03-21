@@ -1,3 +1,10 @@
+2017-03-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/79908
+	* tree-stdarg.c (expand_ifn_va_arg_1): Revert the following
+	change: For a VA_ARG whose LHS has been cast away, use
+	force_gimple_operand to construct the side effects.
+
 2017-03-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR translation/80001

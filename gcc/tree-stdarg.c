@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "gimplify.h"
-#include "gimplify-me.h"
 #include "tree-into-ssa.h"
 #include "tree-cfg.h"
 #include "tree-stdarg.h"
@@ -1059,16 +1058,12 @@ expand_ifn_va_arg_1 (function *fun)
 	    gimplify_assign (lhs, expr, &pre);
 	  }
 	else
-	  {
-	    gimple_seq tmp_seq;
-	    force_gimple_operand (expr, &tmp_seq, false, NULL_TREE);
-	    gimple_seq_add_seq_without_update (&pre, tmp_seq);
-	  }
+	  gimplify_expr (&expr, &pre, &post, is_gimple_lvalue, fb_lvalue);
 
 	input_location = saved_location;
 	pop_gimplify_context (NULL);
 
-	gimple_seq_add_seq_without_update (&pre, post);
+	gimple_seq_add_seq (&pre, post);
 	update_modified_stmts (pre);
 
 	/* Add the sequence after IFN_VA_ARG.  This splits the bb right
@@ -1077,10 +1072,11 @@ expand_ifn_va_arg_1 (function *fun)
 	gimple_find_sub_bbs (pre, &i);
 
 	/* Remove the IFN_VA_ARG gimple_call.  It's the last stmt in the
-	   bb if we added any stmts.  */
+	   bb.  */
 	unlink_stmt_vdef (stmt);
 	release_ssa_name_fn (fun, gimple_vdef (stmt));
 	gsi_remove (&i, true);
+	gcc_assert (gsi_end_p (i));
 
 	/* We're walking here into the bbs which contain the expansion of
 	   IFN_VA_ARG, and will not contain another IFN_VA_ARG that needs
