@@ -106,7 +106,7 @@
      case 1: return "str\\t%d1, %0";
      case 2: return "orr\t%0.<Vbtype>, %1.<Vbtype>, %1.<Vbtype>";
      case 3: return "umov\t%0, %1.d[0]";
-     case 4: return "ins\t%0.d[0], %1";
+     case 4: return "fmov\t%d0, %1";
      case 5: return "mov\t%0, %1";
      case 6:
 	return aarch64_output_simd_mov_immediate (operands[1],
@@ -115,8 +115,8 @@
      }
 }
   [(set_attr "type" "neon_load1_1reg<q>, neon_store1_1reg<q>,\
-                     neon_logic<q>, neon_to_gp<q>, neon_from_gp<q>,\
-                     mov_reg, neon_move<q>")]
+		     neon_logic<q>, neon_to_gp<q>, f_mcr,\
+		     mov_reg, neon_move<q>")]
 )
 
 (define_insn "*aarch64_simd_mov<mode>"
