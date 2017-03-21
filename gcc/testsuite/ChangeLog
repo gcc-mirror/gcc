@@ -1,3 +1,8 @@
+2017-03-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/pr65044.c: Add '.' in order to catch
+	apostrophes.
+
 2017-03-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80032
