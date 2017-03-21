@@ -7513,7 +7513,7 @@ In this case, GCC does not actually output assembler code for the
 function, unless you specify the option @option{-fkeep-inline-functions}.
 If there is a nonintegrated call, then the function is compiled to
 assembler code as usual.  The function must also be compiled as usual if
-the program refers to its address, because that can't be inlined.
+the program refers to its address, because that cannot be inlined.
 
 @opindex Winline
 Note that certain usages in a function definition can make it unsuitable
@@ -9180,7 +9180,7 @@ This results in an incomplete type, much like what you get if you write
 @code{struct foo} without describing the elements.  A later declaration
 that does specify the possible values completes the type.
 
-You can't allocate variables or storage using the type while it is
+You cannot allocate variables or storage using the type while it is
 incomplete.  However, you can work with pointers to that type.
 
 This extension may not be very useful, but it makes the handling of

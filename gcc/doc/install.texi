@@ -3638,7 +3638,7 @@ The libffi library haven't been ported to 64-bit HP-UX@ and doesn't build.
 
 Refer to @uref{binaries.html,,binaries} for information about obtaining
 precompiled GCC binaries for HP-UX@.  Precompiled binaries must be obtained
-to build the Ada language as it can't be bootstrapped using C@.  Ada is
+to build the Ada language as it cannot be bootstrapped using C@.  Ada is
 only available for the 32-bit PA-RISC runtime.
 
 Starting with GCC 3.4 an ISO C compiler is required to bootstrap.  The
@@ -3718,12 +3718,12 @@ Although the HP and GNU linkers are both supported for the
 HP linker be used for link editing on this target.
 
 At this time, the GNU linker does not support the creation of long
-branch stubs.  As a result, it can't successfully link binaries
+branch stubs.  As a result, it cannot successfully link binaries
 containing branch offsets larger than 8 megabytes.  In addition,
 there are problems linking shared libraries, linking executables
 with @option{-static}, and with dwarf2 unwind and exception support.
 It also doesn't provide stubs for internal calls to global functions
-in shared libraries, so these calls can't be overloaded.
+in shared libraries, so these calls cannot be overloaded.
 
 The HP dynamic loader does not support GNU symbol versioning, so symbol
 versioning is not supported.  It may be necessary to disable symbol

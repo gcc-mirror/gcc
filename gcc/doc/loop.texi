@@ -567,7 +567,7 @@ relative to @code{p + i}. The access functions of the array are
 @code{@{i_init, + i_step@}_for1} and @code{@{j_init, +, j_step@}_for2}
 relative to @code{a}.
 
-Usually, the object the pointer refers to is either unknown, or we can't
+Usually, the object the pointer refers to is either unknown, or we cannot
 prove that the access is confined to the boundaries of a certain object.
 
 Two data references can be compared only if at least one of these two
