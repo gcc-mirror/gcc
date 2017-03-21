@@ -2065,13 +2065,37 @@ ovl_make (tree fn, tree next)
   return result;
 }
 
+/* OVL is an unhidden node that preceeds a hidden one.  Move it down
+   to after the hidden nodes.  Return the new OVL head.  */
+
+static tree
+ovl_move_unhidden (tree ovl)
+{
+  tree prev, probe = ovl;
+
+  do
+    {
+      prev = probe;
+      probe = OVL_CHAIN (prev);
+    }
+  while (probe && OVL_HIDDEN_P (probe));
+
+  tree result = OVL_CHAIN (ovl);
+  TREE_TYPE (prev) = unknown_type_node;
+  if (!probe && TREE_CODE (OVL_FUNCTION (ovl)) != TEMPLATE_DECL)
+    TREE_TYPE (ovl) = TREE_TYPE (OVL_FUNCTION (ovl));
+  OVL_CHAIN (ovl) = probe;
+  OVL_CHAIN (prev) = ovl;
+  return result;
+}
+
 /* Add FN into the overload set MAYBE_OVL.  MAYBE_OVL can be NULL, or
    a plain decl.  If MAYBE_OVL is NULL, and FN doesn't require
-   wrapping in an overload, we return plain FN.  FORCE is non-zero to
-   force wrapping, and >0 to indicate via a using declaration.  */
+   wrapping in an overload, we return plain FN.  NOT_HIDDEN_OR_USING
+   encodes !hiddenness or usingness .  */
 
 tree
-ovl_add (tree maybe_ovl, tree fn, int using_p)
+ovl_add (tree maybe_ovl, tree fn, int not_hidden_or_using)
 {
   tree result;
   if (maybe_ovl && TREE_CODE (maybe_ovl) != OVERLOAD)
@@ -2079,10 +2103,21 @@ ovl_add (tree maybe_ovl, tree fn, int using_p)
     maybe_ovl = ovl_make (maybe_ovl);
 
   result = fn;
-  if (maybe_ovl || using_p || TREE_CODE (fn) == TEMPLATE_DECL)
+  bool using_p = not_hidden_or_using > 0;
+  bool hidden_p = !not_hidden_or_using && DECL_HIDDEN_P (fn);
+
+  if (maybe_ovl || using_p || hidden_p || TREE_CODE (fn) == TEMPLATE_DECL)
     {
       result = ovl_make (fn, maybe_ovl);
-      OVL_VIA_USING_P (result) = using_p > 0;
+      if (hidden_p)
+	OVL_HIDDEN_P (result) = true;
+      if (using_p)
+	OVL_VIA_USING_P (result) = true;
+
+      if (!hidden_p && maybe_ovl && OVL_HIDDEN_P (maybe_ovl))
+	/* We inserted a non-hidden before a hidden.  Fix that up
+	   now.  */
+	result = ovl_move_unhidden (result);
     }
   return result;
 }
@@ -2093,7 +2128,7 @@ ovl_add (tree maybe_ovl, tree fn, int using_p)
 tree
 ovl_add_transient (tree maybe_ovl, tree fn)
 {
-  tree result = ovl_add (maybe_ovl, fn, false);
+  tree result = ovl_add (maybe_ovl, fn, /*not_hidden_or_using=*/-1);
   if (TREE_CODE (result) == OVERLOAD)
     OVL_TRANSIENT_P (result) = true;
   return result;
@@ -2116,48 +2151,51 @@ ovl_maybe_keep (tree ovl, bool keep)
     }
 }
 
-/* Given a lookup that returned VAL, decide if we want to ignore it or
-   not based on DECL_ANTICIPATED.  */
-
-bool
-hidden_name_p (tree val)
-{
-  gcc_assert (DECL_P (val));
-  if (DECL_LANG_SPECIFIC (val)
-      && TYPE_FUNCTION_OR_TEMPLATE_DECL_P (val)
-      && DECL_ANTICIPATED (val))
-    return true;
-
-  return false;
-}
-
-/* Remove any hidden declarations from a possibly overloaded set
-   of functions.  */
+/* Skip any hidden names at the beginning of OVL.   */
 
 tree
-remove_hidden_names (tree fns)
+ovl_skip_hidden (tree ovl)
 {
-  if (TREE_CODE (fns) == OVERLOAD)
+  if (TREE_CODE (ovl) == OVERLOAD)
     {
-      bool hidden = false;
-
-      for (ovl_iterator iter (fns); !hidden && iter; ++iter)
-	if (hidden_name_p (*iter))
-	  hidden = true;
-      if (hidden)
+      /* Skip over the hidden ones.  */
+      while (ovl && OVL_HIDDEN_P (ovl))
 	{
-	  tree n = NULL_TREE;
-
-	  for (ovl_iterator iter (fns); iter; ++iter)
-	    if (!hidden_name_p (*iter))
-	      n = ovl_add_transient (n, *iter);
-	  fns = n;
+	  gcc_checking_assert (DECL_HIDDEN_P (OVL_FUNCTION (ovl)));
+	  ovl = OVL_CHAIN (ovl);
 	}
-    }
-  else if (DECL_P (fns) && hidden_name_p (fns))
-    fns = NULL_TREE;
 
-  return fns;
+      /* Make sure there are no disagreements after this.  */
+      for (tree probe = ovl; probe; probe = OVL_CHAIN (probe))
+	gcc_checking_assert (!OVL_HIDDEN_P (probe)
+			     && !DECL_HIDDEN_P (OVL_FUNCTION (probe)));
+    }
+  else if (DECL_P (ovl) && DECL_HIDDEN_P (ovl))
+    {
+      /* Any hidden functions should have been wrapped in an
+	 overload.  */
+      gcc_checking_assert (!DECL_DECLARES_FUNCTION_P (ovl));
+      ovl = NULL_TREE;
+    }
+
+  return ovl;
+}
+
+/* NODE is a newly unhidden decl in OVL that has following hidden decls.
+   Reorder the overload.  Returns its new head, which will be
+   different if NODE was the first decl in the overload.  */
+
+tree
+ovl_iterator::ovl_unhide (tree ovl, tree node)
+{
+  tree prev, probe;
+  
+  for (prev = NULL, probe = ovl; probe != node; probe = OVL_CHAIN (prev))
+    prev = probe;
+
+  (prev ? OVL_CHAIN (prev) : ovl) = ovl_move_unhidden (node);
+  
+  return ovl;
 }
 
 /* Replace the current slot with FN.  Also, the slot being replaced is

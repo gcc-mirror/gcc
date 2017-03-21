@@ -165,6 +165,7 @@ operator == (const cp_expr &lhs, tree rhs)
       CONSTRUCTOR_NO_IMPLICIT_ZERO (in CONSTRUCTOR)
       TINFO_USED_TEMPLATE_ID (in TEMPLATE_INFO)
       PACK_EXPANSION_SIZEOF_P (in *_PACK_EXPANSION)
+      OVL_VIA_USING (in OVERLOAD)
       MODULE_NAMESPACE_P (in NAMESPACE_DECL)
    2: IDENTIFIER_OPNAME_P (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
@@ -177,6 +178,7 @@ operator == (const cp_expr &lhs, tree rhs)
       REF_PARENTHESIZED_P (in COMPONENT_REF, INDIRECT_REF, SCOPE_REF)
       AGGR_INIT_ZERO_FIRST (in AGGR_INIT_EXPR)
       CONSTRUCTOR_MUTABLE_POISON (in CONSTRUCTOR)
+      OVL_HIDDEN_P (in OVERLOAD)
       GLOBAL_MODULE_NAMESPACE_P (in NAMESPACE_DECL)
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
@@ -431,25 +433,31 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
     && MAIN_NAME_P (DECL_NAME (NODE))			\
     && flag_hosted)
 
-/* The overloaded FUNCTION_DECL.  */
+/* These two accessors should only be used by OVL manipulators.
+   Other users should use iterators and convenience functions.  */
 #define OVL_FUNCTION(NODE) \
   (((struct tree_overload*)OVERLOAD_CHECK (NODE))->function)
 #define OVL_CHAIN(NODE) \
   (((struct tree_overload*)OVERLOAD_CHECK (NODE))->common.chain)
 
 /* If set, this was imported in a using declaration.   */
-#define OVL_VIA_USING_P(NODE)	TREE_USED (OVERLOAD_CHECK (NODE))
+#define OVL_VIA_USING_P(NODE)	TREE_LANG_FLAG_1 (OVERLOAD_CHECK (NODE))
 /* If set, this is a transient overload created during lookup (koenig
    or otherwise).  */
 #define OVL_TRANSIENT_P(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
+/* If set, this overload is a hidden decl.  */
+#define OVL_HIDDEN_P(NODE) TREE_LANG_FLAG_2 (OVERLOAD_CHECK (NODE))
 
-/* The first function decl of an overload.  */
+/* The first decl of an overload.  */
 #define OVL_FIRST(NODE)						\
   (TREE_CODE (NODE) != OVERLOAD ? (NODE) : OVL_FUNCTION (NODE))
 /* The name of the overload set.  */
 #define OVL_NAME(NODE) DECL_NAME (OVL_FIRST (NODE))
-/* Whether this overload has a single member.  */
-#define OVL_SINGLE_P(NODE) (TREE_CODE (NODE) != OVERLOAD || !OVL_CHAIN (NODE))
+/* Whether this is a single member overload.  */
+#define OVL_SINGLE_P(NODE) \
+  (TREE_CODE (NODE) != OVERLOAD || !OVL_CHAIN (NODE))
+
+/* By construction we keep HIDDEN_P nodes at the front of the list.  */
 
 struct GTY(()) tree_overload {
   struct tree_common common;
@@ -470,6 +478,18 @@ struct ovl_iterator
   bool via_using_p () const
   {
     return TREE_CODE (ovl) == OVERLOAD && OVL_VIA_USING_P (ovl);
+  }
+  bool hidden_p () const
+  {
+    return TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
+  }
+  tree unhide (tree overload)
+  {
+    OVL_HIDDEN_P (ovl) = false;
+    if (OVL_CHAIN (ovl) && OVL_HIDDEN_P (OVL_CHAIN (ovl)))
+      /* There's a following still-hidden decl.  */
+      return ovl_unhide (overload, ovl);
+    return overload;
   }
   ovl_iterator &operator++ ()
   {
@@ -493,6 +513,8 @@ struct ovl_iterator
     return count++;
   }
   void replace (tree fn, unsigned count) const;
+private:
+  static tree ovl_unhide (tree ovl, tree fn);
 };
 
 struct GTY(()) tree_template_decl {
@@ -3690,6 +3712,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   (DECL_LANG_SPECIFIC (TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK (NODE)) \
    ->u.base.anticipated_p)
 
+/* Is DECL NODE a hidden name?  */
+#define DECL_HIDDEN_P(NODE) \
+  (DECL_LANG_SPECIFIC (NODE) && TYPE_FUNCTION_OR_TEMPLATE_DECL_P (NODE) \
+   && DECL_ANTICIPATED (NODE))
+
 /* True for artificial decls added for OpenMP privatized non-static
    data members.  */
 #define DECL_OMP_PRIVATIZED_MEMBER(NODE) \
@@ -6712,13 +6739,15 @@ extern tree hash_tree_cons			(tree, tree, tree);
 extern tree hash_tree_chain			(tree, tree);
 extern tree build_qualified_name		(tree, tree, tree, bool);
 extern tree build_ref_qualified_type		(tree, cp_ref_qualifier);
-extern bool hidden_name_p (tree);
-extern tree remove_hidden_names (tree);
-extern tree ovl_make (tree fn, tree next = NULL_TREE);
-extern tree ovl_add (tree maybe_ovl, tree fn, int force = 0);
-extern tree ovl_add_transient (tree maybe_ovl, tree fn);
-extern void ovl_maybe_keep (tree ovl, bool keep);
-extern tree get_ovl (tree expr, bool want_first = false)
+extern tree ovl_skip_hidden			(tree);
+extern tree ovl_make				(tree fn,
+						 tree next = NULL_TREE);
+extern tree ovl_add				(tree maybe_ovl, tree fn,
+						 int force = 0);
+extern tree ovl_add_transient			(tree maybe_ovl, tree fn);
+extern void ovl_maybe_keep			(tree ovl, bool keep);
+extern tree get_ovl				(tree expr,
+						 bool want_first = false)
 #ifndef ENABLE_TREE_CHECKING
   ATTRIBUTE_PURE
 #endif

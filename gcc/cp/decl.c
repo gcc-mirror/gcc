@@ -4407,11 +4407,6 @@ builtin_function_1 (tree decl, tree context, bool is_global)
 
   DECL_CONTEXT (decl) = context;
 
-  if (is_global)
-    pushdecl_top_level (decl);
-  else
-    pushdecl (decl);
-
   /* A function in the user's namespace should have an explicit
      declaration before it is used.  Mark the built-in function as
      anticipated but not actually declared.  */
@@ -4428,6 +4423,11 @@ builtin_function_1 (tree decl, tree context, bool is_global)
 		     "_chk", strlen ("_chk") + 1) == 0)
 	DECL_ANTICIPATED (decl) = 1;
     }
+
+  if (is_global)
+    pushdecl_top_level (decl);
+  else
+    pushdecl (decl);
 
   return decl;
 }
@@ -13617,7 +13617,7 @@ xref_tag_1 (enum tag_types tag_code, tree name,
 
       /* Make injected friend class visible.  */
       if (scope != ts_within_enclosing_non_class
-	  && hidden_name_p (TYPE_NAME (t)))
+	  && DECL_HIDDEN_P (TYPE_NAME (t)))
 	{
 	  DECL_ANTICIPATED (TYPE_NAME (t)) = 0;
 	  DECL_FRIEND_P (TYPE_NAME (t)) = 0;
