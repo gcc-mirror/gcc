@@ -1954,15 +1954,20 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
       /* Don't substitute into a non-local goto, this confuses CFG.  */
       || (JUMP_P (i3) && find_reg_note (i3, REG_NON_LOCAL_GOTO, NULL_RTX))
       /* Make sure that DEST is not used after INSN but before SUCC, or
-	 between SUCC and SUCC2.  */
-      || (succ && reg_used_between_p (dest, insn, succ))
-      || (succ2 && reg_used_between_p (dest, succ, succ2))
-      /* Make sure that DEST is not used after SUCC but before I3.  */
+	 after SUCC and before SUCC2, or after SUCC2 but before I3.  */
       || (!all_adjacent
 	  && ((succ2
 	       && (reg_used_between_p (dest, succ2, i3)
 		   || reg_used_between_p (dest, succ, succ2)))
-	      || (!succ2 && succ && reg_used_between_p (dest, succ, i3))))
+	      || (!succ2 && succ && reg_used_between_p (dest, succ, i3))
+	      || (succ
+		  /* SUCC and SUCC2 can be split halves from a PARALLEL; in
+		     that case SUCC is not in the insn stream, so use SUCC2
+		     instead for this test.  */
+		  && reg_used_between_p (dest, insn,
+					 succ2
+					 && INSN_UID (succ) == INSN_UID (succ2)
+					 ? succ2 : succ))))
       /* Make sure that the value that is to be substituted for the register
 	 does not use any registers whose values alter in between.  However,
 	 If the insns are adjacent, a use can't cross a set even though we

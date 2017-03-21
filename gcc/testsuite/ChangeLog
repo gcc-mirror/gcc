@@ -1,3 +1,8 @@
+2017-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80125
+	* gcc.target/powerpc/pr80125.c: New test.
+
 2017-03-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
             Richard Biener  <rguenther@suse.de>
 
