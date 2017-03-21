@@ -1,3 +1,9 @@
+2017-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/80097
+	* c-typeck.c (build_binary_op): Add EXCESS_PRECISION_EXPR only around
+	optional COMPOUND_EXPR with ubsan instrumentation.
+
 2017-03-17  Marek Polacek  <polacek@redhat.com>
 
 	* c-parser.c: Add C11 references.
