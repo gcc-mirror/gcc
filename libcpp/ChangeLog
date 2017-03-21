@@ -1,3 +1,9 @@
+2017-03-21  Andreas Schwab  <schwab@suse.de>
+
+	* lex.c (search_line_fast) [__ARM_NEON && __ARM_64BIT_STATE]:
+	Convert 64-bit value to boolean before passing to
+	__builtin_expect.
+
 2017-03-16  Jason Merrill  <jason@redhat.com>
 
 	* init.c (cpp_init_builtins): Update __cplusplus for C++17.
