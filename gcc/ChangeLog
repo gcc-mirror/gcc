@@ -1,3 +1,10 @@
+2017-03-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR translation/80001
+	* omp-offload.c (oacc_loop_fixed_partitions): Make diagnostics
+	more amenable to translation.
+	(oacc_loop_auto_partitions): Likewise.
+
 2017-03-21  Marek Polacek  <polacek@redhat.com>
 	    Martin Sebor  <msebor@redhat.com>
 
