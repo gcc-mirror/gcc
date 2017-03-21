@@ -1,3 +1,11 @@
+2017-03-21  Brad Spengler <spender@grsecurity.net>
+
+	PR plugins/80094
+	* plugin.c (htab_hash_plugin): New function.
+	(add_new_plugin): Use it and adjust.
+	(parse_plugin_arg_opt): Adjust.
+	(init_one_plugin): Likewise.
+
 2017-03-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80032
