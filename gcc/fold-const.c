@@ -14250,7 +14250,7 @@ round_up_loc (location_t loc, tree value, unsigned int divisor)
 
 	  overflow_p = TREE_OVERFLOW (value);
 	  val += divisor - 1;
-	  val &= - (int) divisor;
+	  val &= (int) -divisor;
 	  if (val == 0)
 	    overflow_p = true;
 
