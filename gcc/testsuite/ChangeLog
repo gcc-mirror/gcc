@@ -1,3 +1,9 @@
+2017-03-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/77752
+	* g++.dg/cpp0x/initlist97.C: New.
+	* g++.dg/cpp0x/initlist85.C: Update.
+
 2017-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/67338

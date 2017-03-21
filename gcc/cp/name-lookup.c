@@ -6207,6 +6207,15 @@ pushtag_1 (tree name, tree type, tag_scope scope)
 	  decl = pushdecl_with_scope_1 (decl, b, /*is_friend=*/false);
 	  if (decl == error_mark_node)
 	    return decl;
+
+	  if (DECL_CONTEXT (decl) == std_node
+	      && strcmp (TYPE_NAME_STRING (type), "initializer_list") == 0
+	      && !CLASSTYPE_TEMPLATE_INFO (type))
+	    {
+	      error ("declaration of std::initializer_list does not match "
+		     "#include <initializer_list>, isn't a template");
+	      return error_mark_node;
+	    }
 	}
 
       if (! in_class)
