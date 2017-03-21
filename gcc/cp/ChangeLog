@@ -1,3 +1,9 @@
+2017-03-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/35878
+	* cp/init.c (std_placement_new_fn_p): New.
+	(build_new_1): Call it.
+
 2017-03-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80096 - ICE with C++17 non-type auto.
