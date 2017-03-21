@@ -1,5 +1,9 @@
 2017-03-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/78158
+	* tsan.c (instrument_builtin_call): If the memory model argument
+	is not a constant, assume it is valid.
+
 	PR c/67338
 	* fold-const.c (round_up_loc): Negate divisor in unsigned type to
 	avoid UB.
