@@ -1,3 +1,12 @@
+2017-03-21  Jakub Jelinek  <jakub@redhat.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/80125
+	* combine.c (can_combine_p): Revert the 2017-03-20 change, only
+	check reg_used_between_p between insn and one of succ or succ2
+	depending on if succ is artificial insn not inserted into insn
+	stream.
+
 2017-03-21  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/80081
