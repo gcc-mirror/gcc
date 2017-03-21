@@ -499,8 +499,8 @@ instrument_builtin_call (gimple_stmt_iterator *gsi)
 	  case check_last:
 	  case fetch_op:
 	    last_arg = gimple_call_arg (stmt, num - 1);
-	    if (!tree_fits_uhwi_p (last_arg)
-		|| memmodel_base (tree_to_uhwi (last_arg)) >= MEMMODEL_LAST)
+	    if (tree_fits_uhwi_p (last_arg)
+		&& memmodel_base (tree_to_uhwi (last_arg)) >= MEMMODEL_LAST)
 	      return;
 	    gimple_call_set_fndecl (stmt, decl);
 	    update_stmt (stmt);
@@ -564,11 +564,11 @@ instrument_builtin_call (gimple_stmt_iterator *gsi)
 	    gcc_assert (num == 6);
 	    for (j = 0; j < 6; j++)
 	      args[j] = gimple_call_arg (stmt, j);
-	    if (!tree_fits_uhwi_p (args[4])
-		|| memmodel_base (tree_to_uhwi (args[4])) >= MEMMODEL_LAST)
+	    if (tree_fits_uhwi_p (args[4])
+		&& memmodel_base (tree_to_uhwi (args[4])) >= MEMMODEL_LAST)
 	      return;
-	    if (!tree_fits_uhwi_p (args[5])
-		|| memmodel_base (tree_to_uhwi (args[5])) >= MEMMODEL_LAST)
+	    if (tree_fits_uhwi_p (args[5])
+		&& memmodel_base (tree_to_uhwi (args[5])) >= MEMMODEL_LAST)
 	      return;
 	    update_gimple_call (gsi, decl, 5, args[0], args[1], args[2],
 				args[4], args[5]);
@@ -642,8 +642,8 @@ instrument_builtin_call (gimple_stmt_iterator *gsi)
 		  return;
 	      }
 	    last_arg = gimple_call_arg (stmt, num - 1);
-	    if (!tree_fits_uhwi_p (last_arg)
-		|| memmodel_base (tree_to_uhwi (last_arg)) >= MEMMODEL_LAST)
+	    if (tree_fits_uhwi_p (last_arg)
+		&& memmodel_base (tree_to_uhwi (last_arg)) >= MEMMODEL_LAST)
 	      return;
 	    t = TYPE_ARG_TYPES (TREE_TYPE (decl));
 	    t = TREE_VALUE (TREE_CHAIN (t));
