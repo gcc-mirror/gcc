@@ -1,5 +1,13 @@
 2017-03-21  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/80032
+	* gimplify.c (gimple_push_cleanup): Add force_uncond parameter,
+	if set force the cleanup to happen unconditionally.
+	(gimplify_target_expr): Push inserted clobbers with force_uncond
+	to avoid them being removed by control-dependent DCE.
+
+2017-03-21  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/80122
 	* tree-inline.c (copy_bb): Do not expans va-arg packs or
 	va_arg_pack_len when the inlined call stmt requires pack

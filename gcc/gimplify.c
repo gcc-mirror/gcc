@@ -6288,10 +6288,13 @@ gimplify_cleanup_point_expr (tree *expr_p, gimple_seq *pre_p)
 
 /* Insert a cleanup marker for gimplify_cleanup_point_expr.  CLEANUP
    is the cleanup action required.  EH_ONLY is true if the cleanup should
-   only be executed if an exception is thrown, not on normal exit.  */
+   only be executed if an exception is thrown, not on normal exit.
+   If FORCE_UNCOND is true perform the cleanup unconditionally;  this is
+   only valid for clobbers.  */
 
 static void
-gimple_push_cleanup (tree var, tree cleanup, bool eh_only, gimple_seq *pre_p)
+gimple_push_cleanup (tree var, tree cleanup, bool eh_only, gimple_seq *pre_p,
+		     bool force_uncond = false)
 {
   gimple *wce;
   gimple_seq cleanup_stmts = NULL;
@@ -6301,7 +6304,7 @@ gimple_push_cleanup (tree var, tree cleanup, bool eh_only, gimple_seq *pre_p)
   if (seen_error ())
     return;
 
-  if (gimple_conditional_context ())
+  if (gimple_conditional_context () && ! force_uncond)
     {
       /* If we're in a conditional context, this is more complex.  We only
 	 want to run the cleanup if we actually ran the initialization that
@@ -6426,11 +6429,7 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 						NULL);
 	      TREE_THIS_VOLATILE (clobber) = true;
 	      clobber = build2 (MODIFY_EXPR, TREE_TYPE (temp), temp, clobber);
-	      if (cleanup)
-		cleanup = build2 (COMPOUND_EXPR, void_type_node, cleanup,
-				  clobber);
-	      else
-		cleanup = clobber;
+	      gimple_push_cleanup (temp, clobber, false, pre_p, true);
 	    }
 	  if (asan_poisoned_variables && dbg_cnt (asan_use_after_scope))
 	    {
