@@ -22,7 +22,7 @@ header.  @xref{System Config}.
 
 @menu
 * Host Common::         Things every host probably needs implemented.
-* Filesystem::          Your host can't have the letter `a' in filenames?
+* Filesystem::          Your host cannot have the letter `a' in filenames?
 * Host Misc::           Rare configuration options for hosts.
 @end menu
 

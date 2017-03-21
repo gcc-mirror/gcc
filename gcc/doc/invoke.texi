@@ -6471,7 +6471,7 @@ different size.
 @opindex Winvalid-pch
 @opindex Wno-invalid-pch
 Warn if a precompiled header (@pxref{Precompiled Headers}) is found in
-the search path but can't be used.
+the search path but cannot be used.
 
 @item -Wlong-long
 @opindex Wlong-long
@@ -10740,14 +10740,14 @@ more details.  The run-time behavior can be influenced using the
 the available options are shown at startup of the instrumented program.  See
 @url{https://github.com/google/sanitizers/wiki/AddressSanitizerFlags#run-time-flags}
 for a list of supported options.
-The option can't be combined with @option{-fsanitize=thread}
+The option cannot be combined with @option{-fsanitize=thread}
 and/or @option{-fcheck-pointer-bounds}.
 
 @item -fsanitize=kernel-address
 @opindex fsanitize=kernel-address
 Enable AddressSanitizer for Linux kernel.
 See @uref{https://github.com/google/kasan/wiki} for more details.
-The option can't be combined with @option{-fcheck-pointer-bounds}.
+The option cannot be combined with @option{-fcheck-pointer-bounds}.
 
 @item -fsanitize=thread
 @opindex fsanitize=thread
@@ -10758,7 +10758,7 @@ details. The run-time behavior can be influenced using the @env{TSAN_OPTIONS}
 environment variable; see
 @url{https://github.com/google/sanitizers/wiki/ThreadSanitizerFlags} for a list of
 supported options.
-The option can't be combined with @option{-fsanitize=address},
+The option cannot be combined with @option{-fsanitize=address},
 @option{-fsanitize=leak} and/or @option{-fcheck-pointer-bounds}.
 
 @item -fsanitize=leak
@@ -10770,7 +10770,7 @@ and other allocator functions.  See
 @uref{https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer} for more
 details.  The run-time behavior can be influenced using the
 @env{LSAN_OPTIONS} environment variable.
-The option can't be combined with @option{-fsanitize=thread}.
+The option cannot be combined with @option{-fsanitize=thread}.
 
 @item -fsanitize=undefined
 @opindex fsanitize=undefined
@@ -10848,14 +10848,14 @@ a++;
 This option enables instrumentation of array bounds.  Various out of bounds
 accesses are detected.  Flexible array members, flexible array member-like
 arrays, and initializers of variables with static storage are not instrumented.
-The option can't be combined with @option{-fcheck-pointer-bounds}.
+The option cannot be combined with @option{-fcheck-pointer-bounds}.
 
 @item -fsanitize=bounds-strict
 @opindex fsanitize=bounds-strict
 This option enables strict instrumentation of array bounds.  Most out of bounds
 accesses are detected, including flexible array members and flexible array
 member-like arrays.  Initializers of variables with static storage are not
-instrumented.  The option can't be combined
+instrumented.  The option cannot be combined
 with @option{-fcheck-pointer-bounds}.
 
 @item -fsanitize=alignment
@@ -23171,7 +23171,7 @@ disabled by specifying @option{-mno-zdcbranch}.
 @item -mcbranch-force-delay-slot
 @opindex mcbranch-force-delay-slot
 Force the usage of delay slots for conditional branches, which stuffs the delay
-slot with a @code{nop} if a suitable instruction can't be found.  By default
+slot with a @code{nop} if a suitable instruction cannot be found.  By default
 this option is disabled.  It can be enabled to work around hardware bugs as
 found in the original SH7055.
 
@@ -24696,7 +24696,7 @@ Generate output containing library calls for floating point.
 
 @strong{Warning:} the requisite libraries are not part of GCC@.
 Normally the facilities of the machine's usual C compiler are used, but
-this can't be done directly in cross-compilation.  You must make your
+this cannot be done directly in cross-compilation.  You must make your
 own arrangements to provide suitable library functions for
 cross-compilation.
 
@@ -26600,7 +26600,7 @@ If a standard directory begins with the configured
 @findex COMPILER_PATH
 The value of @env{COMPILER_PATH} is a colon-separated list of
 directories, much like @env{PATH}.  GCC tries the directories thus
-specified when searching for subprograms, if it can't find the
+specified when searching for subprograms, if it cannot find the
 subprograms using @env{GCC_EXEC_PREFIX}.
 
 @item LIBRARY_PATH
@@ -26608,7 +26608,7 @@ subprograms using @env{GCC_EXEC_PREFIX}.
 The value of @env{LIBRARY_PATH} is a colon-separated list of
 directories, much like @env{PATH}.  When configured as a native compiler,
 GCC tries the directories thus specified when searching for special
-linker files, if it can't find them using @env{GCC_EXEC_PREFIX}.  Linking
+linker files, if it cannot find them using @env{GCC_EXEC_PREFIX}.  Linking
 using GCC also uses these directories when searching for ordinary
 libraries for the @option{-l} option (but directories specified with
 @option{-L} come first).
@@ -26667,7 +26667,7 @@ seen in the compilation.  As it searches for the included file
 compiler looks for a precompiled header in each directory just before it
 looks for the include file in that directory.  The name searched for is
 the name specified in the @code{#include} with @samp{.gch} appended.  If
-the precompiled header file can't be used, it is ignored.
+the precompiled header file cannot be used, it is ignored.
 
 For instance, if you have @code{#include "all.h"}, and you have
 @file{all.h.gch} in the same directory as @file{all.h}, then the
@@ -26708,13 +26708,13 @@ A precompiled header file can be used only when these conditions apply:
 Only one precompiled header can be used in a particular compilation.
 
 @item
-A precompiled header can't be used once the first C token is seen.  You
+A precompiled header cannot be used once the first C token is seen.  You
 can have preprocessor directives before a precompiled header; you cannot
 include a precompiled header from inside another header.
 
 @item
 The precompiled header file must be produced for the same language as
-the current compilation.  You can't use a C precompiled header for a C++
+the current compilation.  You cannot use a C precompiled header for a C++
 compilation.
 
 @item

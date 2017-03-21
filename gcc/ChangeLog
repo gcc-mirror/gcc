@@ -1,3 +1,17 @@
+2017-03-21  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi: Use "cannot" instead of "can't."
+	* doc/hostconfig.texi: Same.
+	* doc/install.texi: Same.
+	* doc/invoke.texi: Same.
+	* doc/loop.texi: Same.
+	* doc/md.texi: Same.
+	* doc/objc.texi: Same.
+	* doc/rtl.texi: Same.
+	* doc/tm.texi: Same.
+	* doc/tm.texi.in: Same.
+	* doc/trouble.texi: Same.
+
 2017-03-21  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/63238
