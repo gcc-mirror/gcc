@@ -327,11 +327,20 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
 	      // away with better range information.  But it gets
 	      // most of the cases.
 	      gimple *def = SSA_NAME_DEF_STMT (len);
-	      if (gimple_assign_cast_p (def)
-		  && TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (def))))
+	      if (gimple_assign_cast_p (def))
 		{
-		  len_casted = gimple_assign_rhs1 (def);
-		  range_type = get_range_info (len_casted, &min, &max);
+		  tree rhs1 = gimple_assign_rhs1 (def);
+		  tree rhs1type = TREE_TYPE (rhs1);
+
+		  // Bail if the argument type is not valid.
+		  if (!INTEGRAL_TYPE_P (rhs1type))
+		    return alloca_type_and_limit (ALLOCA_OK);
+
+		  if (TYPE_UNSIGNED (rhs1type))
+		    {
+		      len_casted = rhs1;
+		      range_type = get_range_info (len_casted, &min, &max);
+		    }
 		}
 	      // An unknown range or a range of the entire domain is
 	      // really no range at all.
