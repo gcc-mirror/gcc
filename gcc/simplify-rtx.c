@@ -5711,7 +5711,7 @@ simplify_immed_subreg (machine_mode outermode, rtx op,
   int num_elem;
   rtx * elems;
   int elem_bitsize;
-  rtx result_s;
+  rtx result_s = NULL;
   rtvec result_v = NULL;
   enum mode_class outer_class;
   machine_mode outer_submode;
