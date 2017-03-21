@@ -1,3 +1,9 @@
+2017-03-21  Martin Liska  <mliska@suse.cz>
+
+	PR libfortran/79956
+	* simplify-rtx.c (simplify_immed_subreg): Initialize a variable
+	to NULL.
+
 2017-03-21  Brad Spengler <spender@grsecurity.net>
 
 	PR plugins/80094
