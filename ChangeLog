@@ -1,3 +1,8 @@
+2017-03-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* configure.ac: Enable LTO by default on darwin >= 9.
+	* configure: Regenerate.
+
 2017-03-20  Palmer Dabbelt  <palmer@dabbelt.com>
 
 	* MAINTAINERS (CPU Port Maintainers): Add Kito Cheng, Palmer Dabbelt,
