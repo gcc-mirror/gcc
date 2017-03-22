@@ -1809,8 +1809,7 @@ df_ref_change_reg_with_loc_1 (struct df_reg_info *old_df,
 
 	  if (DF_REF_FLAGS_IS_SET(the_ref, DF_HARD_REG_LIVE))
 	    {
-	      if (DF_REF_REGNO(the_ref) < FIRST_PSEUDO_REGISTER)
-		--df->hard_regs_live_count[DF_REF_REGNO(the_ref)];
+	      --df->hard_regs_live_count[DF_REF_REGNO(the_ref)];
 	      ++df->hard_regs_live_count[new_regno];
 	    }
 
