@@ -85,7 +85,7 @@ macro_length (const cpp_macro *macro, int *supported, int *buffer_len,
 
   if (macro->fun_like)
     {
-      param_len++;
+      (*param_len)++;
       for (i = 0; i < macro->paramc; i++)
 	{
 	  cpp_hashnode *param = macro->params[i];
