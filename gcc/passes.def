@@ -132,6 +132,7 @@ along with GCC; see the file COPYING3.  If not see
       POP_INSERT_PASSES ()
   POP_INSERT_PASSES ()
 
+  NEXT_PASS (pass_target_clone);
   NEXT_PASS (pass_ipa_chkp_produce_thunks);
   NEXT_PASS (pass_ipa_auto_profile);
   NEXT_PASS (pass_ipa_free_inline_summary);
@@ -151,7 +152,6 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_devirt);
   NEXT_PASS (pass_ipa_cp);
   NEXT_PASS (pass_ipa_cdtor_merge);
-  NEXT_PASS (pass_target_clone);
   NEXT_PASS (pass_ipa_hsa);
   NEXT_PASS (pass_ipa_inline);
   NEXT_PASS (pass_ipa_pure_const);
@@ -169,7 +169,6 @@ along with GCC; see the file COPYING3.  If not see
      compiled unit.  */
   INSERT_PASSES_AFTER (all_late_ipa_passes)
   NEXT_PASS (pass_ipa_pta);
-  NEXT_PASS (pass_dispatcher_calls);
   NEXT_PASS (pass_omp_simd_clone);
   TERMINATE_PASS_LIST ()
 
