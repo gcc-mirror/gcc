@@ -2312,7 +2312,11 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 		      || !TREE_THIS_VOLATILE (fndecl))
 		    abnormal = false;
 		}
-	      // FIXME: Why?
+	      /* FIXME: Stop warning about falling off end of non-void
+		 function.   But this is wrong.  Even if we only see
+		 no-return fns at this point, we could select a
+		 future-defined return fn during instantiation.  Or
+		 vice-versa.  */
 	      if (abnormal)
 		current_function_returns_abnormally = 1;
 	    }
