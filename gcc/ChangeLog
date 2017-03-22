@@ -1,6 +1,16 @@
 2017-03-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-03-20  Martin Liska  <mliska@suse.cz>
+
+	PR target/79769
+	PR target/79770
+	* tree-chkp.c (chkp_find_bounds_1): Handle REAL_CST,
+	COMPLEX_CST and VECTOR_CST.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-03-14  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/79831
