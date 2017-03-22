@@ -3837,7 +3837,7 @@ if (condition) \
 
 	  io_constraint (unformatted && dt->namelist == NULL,
 			 "DELIM= specifier at %L must be with FMT=* or "
-			 "NML= specifier ", &dt->delim->where);
+			 "NML= specifier", &dt->delim->where);
 	}
     }
   

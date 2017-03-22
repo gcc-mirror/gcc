@@ -10229,7 +10229,7 @@ conv_intrinsic_event_query (gfc_code *code)
 
       if (gfc_is_coindexed (event_expr))
 	{
-	  gfc_error ("The event variable at %L shall not be coindexed ",
+	  gfc_error ("The event variable at %L shall not be coindexed",
 		     &event_expr->where);
           return NULL_TREE;
 	}

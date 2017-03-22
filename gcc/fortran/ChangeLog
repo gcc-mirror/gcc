@@ -1,3 +1,27 @@
+2017-03-22  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/79602
+	* decl.c: Replace '%s' with %qs.
+	* expr.c: Likewise.
+	* interface.c: Likewise.
+	* match.c: Likewise.
+	* primary.c: Likewise.
+	* resolve.c: Likewise.
+
+	PR fortran/79844
+	PR fortran/80011
+	* io.c: Remove trailing spaces.
+	* match.c: Likewise.
+	* openmp.c: Likewise.
+	* resolve.c: Likewise.
+	* trans-intrinsic.c: Likewise.
+
+	PR fortran/79853
+	* expr.c: Remove a double spaces.
+
+	PR fortran/79859
+	* primary.c: Remove spurious quotes around %qs.
+
 2017-03-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/80142

@@ -2321,7 +2321,7 @@ check_inquiry (gfc_expr *e, int not_restricted)
 		|| ap->expr->symtree->n.sym->ts.deferred))
 	  {
 	    gfc_error ("Assumed or deferred character length variable %qs "
-			" in constant expression at %L",
+			"in constant expression at %L",
 			ap->expr->symtree->n.sym->name,
 			&ap->expr->where);
 	      return MATCH_ERROR;
@@ -2792,7 +2792,7 @@ external_spec_function (gfc_expr *e)
   /* F08:7.1.11.6. */
   if (f->attr.recursive
       && !gfc_notify_std (GFC_STD_F2003,
-			  "Specification function '%s' "
+			  "Specification function %qs "
 			  "at %L cannot be RECURSIVE",  f->name, &e->where))
       return false;
 
@@ -3591,7 +3591,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       if (!s1 && comp1 && comp1->attr.subroutine && s2 && s2->attr.function)
 	{
 	  gfc_error ("Interface mismatch in procedure pointer assignment "
-		     "at %L: '%s' is not a subroutine", &rvalue->where, name);
+		     "at %L: %qs is not a subroutine", &rvalue->where, name);
 	  return false;
 	}
 

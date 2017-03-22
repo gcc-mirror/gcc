@@ -3855,7 +3855,7 @@ resolve_omp_udr_callback2 (gfc_expr **e, int *, void *)
       if (!sym->attr.intrinsic
 	  && sym->attr.if_source == IFSRC_UNKNOWN)
 	gfc_error ("Implicitly declared function %s used in "
-		   "!$OMP DECLARE REDUCTION at %L ", sym->name, &(*e)->where);
+		   "!$OMP DECLARE REDUCTION at %L", sym->name, &(*e)->where);
     }
   return 0;
 }
@@ -3904,7 +3904,7 @@ resolve_omp_udr_clause (gfc_omp_namelist *n, gfc_namespace *ns,
 	  && !sym->attr.intrinsic
 	  && sym->attr.if_source == IFSRC_UNKNOWN)
 	gfc_error ("Implicitly declared subroutine %s used in "
-		   "!$OMP DECLARE REDUCTION at %L ", sym->name,
+		   "!$OMP DECLARE REDUCTION at %L", sym->name,
 		   &copy->loc);
     }
   gfc_code_walker (&copy, gfc_dummy_code_callback,

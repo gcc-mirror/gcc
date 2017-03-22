@@ -676,7 +676,7 @@ gfc_match_use (void)
 	      || strcmp (new_use->local_name, use_list->module_name) == 0)
 	    {
 	      gfc_error ("The name %qs at %C has already been used as "
-			 "an external module name.", use_list->module_name);
+			 "an external module name", use_list->module_name);
 	      goto cleanup;
 	    }
 	  break;

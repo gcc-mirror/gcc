@@ -1555,7 +1555,7 @@ match_actual_arg (gfc_expr **result)
 	  gfc_set_sym_referenced (sym);
 	  if (sym->attr.flavor == FL_NAMELIST)
 	    {
-	      gfc_error ("Namelist '%s' can not be an argument at %L",
+	      gfc_error ("Namelist %qs can not be an argument at %L",
 	      sym->name, &where);
 	      break;
 	    }
@@ -2670,7 +2670,7 @@ build_actual_constructor (gfc_structure_ctor_component **comp_head,
 		       && CLASS_DATA (comp)->attr.allocatable))
 	    {
 	      if (!gfc_notify_std (GFC_STD_F2008, "No initializer for "
-				   "allocatable component '%qs' given in the "
+				   "allocatable component %qs given in the "
 				   "structure constructor at %C", comp->name))
 		return false;
 	    }
@@ -3571,7 +3571,7 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
       && (dt_sym = gfc_find_dt_in_generic (sym)))
     {
       if (dt_sym->attr.flavor == FL_DERIVED)
-        gfc_error ("Derived type '%s' cannot be used as a variable at %C",
+        gfc_error ("Derived type %qs cannot be used as a variable at %C",
                    sym->name);
       return MATCH_ERROR;
     }
