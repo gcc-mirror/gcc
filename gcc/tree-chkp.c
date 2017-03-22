@@ -3618,6 +3618,8 @@ chkp_find_bounds_1 (tree ptr, tree ptr_src, gimple_stmt_iterator *iter)
       break;
 
     case INTEGER_CST:
+    case COMPLEX_CST:
+    case VECTOR_CST:
       if (integer_zerop (ptr_src))
 	bounds = chkp_get_none_bounds ();
       else
