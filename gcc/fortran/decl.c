@@ -1908,7 +1908,7 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
           c = gfc_find_component (s->sym, name, true, true, NULL);
           if (c != NULL)
             {
-              gfc_error_now ("Component '%s' at %C already declared at %L",
+              gfc_error_now ("Component %qs at %C already declared at %L",
                              name, &c->loc);
               return false;
             }
@@ -3138,7 +3138,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
        * don't need all the extra derived-type stuff for structures.  */
       if (gfc_find_symbol (gfc_dt_upper_string (name), NULL, 1, &sym))
         {
-          gfc_error ("Type name '%s' at %C is ambiguous", name);
+          gfc_error ("Type name %qs at %C is ambiguous", name);
           return MATCH_ERROR;
         }
       if (sym && sym->attr.flavor == FL_STRUCT)
@@ -7578,7 +7578,7 @@ access_attr_decl (gfc_statement st)
 	      if (sym == NULL)
 		{
 		  gfc_error ("The GENERIC DTIO INTERFACE at %C is not "
-			     "present in the MODULE '%s'",
+			     "present in the MODULE %qs",
 			     gfc_current_ns->proc_name->name);
 		  return MATCH_ERROR;
 		}
@@ -8595,7 +8595,7 @@ get_struct_decl (const char *name, sym_flavor fl, locus *decl,
 
   if (sym->components != NULL || sym->attr.zero_comp)
     {
-      gfc_error ("Type definition of '%s' at %C was already defined at %L",
+      gfc_error ("Type definition of %qs at %C was already defined at %L",
                  sym->name, &sym->declared_at);
       return false;
     }
@@ -8748,7 +8748,7 @@ gfc_match_structure_decl (void)
   /* Make sure the name is not the name of an intrinsic type.  */
   if (gfc_is_intrinsic_typename (name))
     {
-      gfc_error ("Structure name '%s' at %C cannot be the same as an"
+      gfc_error ("Structure name %qs at %C cannot be the same as an"
 		 " intrinsic type", name);
       return MATCH_ERROR;
     }

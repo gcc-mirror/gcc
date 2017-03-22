@@ -221,7 +221,7 @@ gfc_match_member_sep(gfc_symbol *sym)
       if (c)
         goto yes;
 
-      gfc_error ("'%s' is neither a defined operator nor a "
+      gfc_error ("%qs is neither a defined operator nor a "
                  "structure component in dotted string at %C", name);
       goto error;
     }
@@ -3141,7 +3141,7 @@ event_statement (gfc_statement st)
 	{
 	  if (saw_stat)
 	    {
-	      gfc_error ("Redundant STAT tag found at %L ", &tmp->where);
+	      gfc_error ("Redundant STAT tag found at %L", &tmp->where);
 	      goto cleanup;
 	    }
 	  stat = tmp;
@@ -3162,7 +3162,7 @@ event_statement (gfc_statement st)
 	{
 	  if (saw_errmsg)
 	    {
-	      gfc_error ("Redundant ERRMSG tag found at %L ", &tmp->where);
+	      gfc_error ("Redundant ERRMSG tag found at %L", &tmp->where);
 	      goto cleanup;
 	    }
 	  errmsg = tmp;
@@ -3183,7 +3183,7 @@ event_statement (gfc_statement st)
 	{
 	  if (saw_until_count)
 	    {
-	      gfc_error ("Redundant UNTIL_COUNT tag found at %L ",
+	      gfc_error ("Redundant UNTIL_COUNT tag found at %L",
 			 &tmp->where);
 	      goto cleanup;
 	    }
@@ -3358,7 +3358,7 @@ lock_unlock_statement (gfc_statement st)
 	{
 	  if (saw_stat)
 	    {
-	      gfc_error ("Redundant STAT tag found at %L ", &tmp->where);
+	      gfc_error ("Redundant STAT tag found at %L", &tmp->where);
 	      goto cleanup;
 	    }
 	  stat = tmp;
@@ -3379,7 +3379,7 @@ lock_unlock_statement (gfc_statement st)
 	{
 	  if (saw_errmsg)
 	    {
-	      gfc_error ("Redundant ERRMSG tag found at %L ", &tmp->where);
+	      gfc_error ("Redundant ERRMSG tag found at %L", &tmp->where);
 	      goto cleanup;
 	    }
 	  errmsg = tmp;
@@ -3400,7 +3400,7 @@ lock_unlock_statement (gfc_statement st)
 	{
 	  if (saw_acq_lock)
 	    {
-	      gfc_error ("Redundant ACQUIRED_LOCK tag found at %L ",
+	      gfc_error ("Redundant ACQUIRED_LOCK tag found at %L",
 			 &tmp->where);
 	      goto cleanup;
 	    }
@@ -3570,7 +3570,7 @@ sync_statement (gfc_statement st)
 	{
 	  if (saw_stat)
 	    {
-	      gfc_error ("Redundant STAT tag found at %L ", &tmp->where);
+	      gfc_error ("Redundant STAT tag found at %L", &tmp->where);
 	      goto cleanup;
 	    }
 	  stat = tmp;
@@ -3590,7 +3590,7 @@ sync_statement (gfc_statement st)
 	{
 	  if (saw_errmsg)
 	    {
-	      gfc_error ("Redundant ERRMSG tag found at %L ", &tmp->where);
+	      gfc_error ("Redundant ERRMSG tag found at %L", &tmp->where);
 	      goto cleanup;
 	    }
 	  errmsg = tmp;
@@ -4080,7 +4080,7 @@ alloc_opt_list:
 	  /* Enforce C630.  */
 	  if (saw_stat)
 	    {
-	      gfc_error ("Redundant STAT tag found at %L ", &tmp->where);
+	      gfc_error ("Redundant STAT tag found at %L", &tmp->where);
 	      goto cleanup;
 	    }
 
@@ -4106,7 +4106,7 @@ alloc_opt_list:
 	  /* Enforce C630.  */
 	  if (saw_errmsg)
 	    {
-	      gfc_error ("Redundant ERRMSG tag found at %L ", &tmp->where);
+	      gfc_error ("Redundant ERRMSG tag found at %L", &tmp->where);
 	      goto cleanup;
 	    }
 
@@ -4129,7 +4129,7 @@ alloc_opt_list:
 	  /* Enforce C630.  */
 	  if (saw_source)
 	    {
-	      gfc_error ("Redundant SOURCE tag found at %L ", &tmp->where);
+	      gfc_error ("Redundant SOURCE tag found at %L", &tmp->where);
 	      goto cleanup;
 	    }
 
@@ -4166,7 +4166,7 @@ alloc_opt_list:
 	  /* Check F08:C636.  */
 	  if (saw_mold)
 	    {
-	      gfc_error ("Redundant MOLD tag found at %L ", &tmp->where);
+	      gfc_error ("Redundant MOLD tag found at %L", &tmp->where);
 	      goto cleanup;
 	    }
 
@@ -4417,7 +4417,7 @@ dealloc_opt_list:
 	{
 	  if (saw_stat)
 	    {
-	      gfc_error ("Redundant STAT tag found at %L ", &tmp->where);
+	      gfc_error ("Redundant STAT tag found at %L", &tmp->where);
 	      gfc_free_expr (tmp);
 	      goto cleanup;
 	    }
@@ -4442,7 +4442,7 @@ dealloc_opt_list:
 
 	  if (saw_errmsg)
 	    {
-	      gfc_error ("Redundant ERRMSG tag found at %L ", &tmp->where);
+	      gfc_error ("Redundant ERRMSG tag found at %L", &tmp->where);
 	      gfc_free_expr (tmp);
 	      goto cleanup;
 	    }
