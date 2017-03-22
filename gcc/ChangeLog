@@ -1,6 +1,14 @@
 2017-03-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-03-14  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/79831
+	* doc/invoke.texi (-Wchkp): Document the option.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-03-13  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/78339
