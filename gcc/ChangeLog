@@ -1,6 +1,15 @@
 2017-03-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-03-09  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/79761
+	* tree-chkp.c (chkp_get_bound_for_parm): Get bounds for a param.
+	(chkp_find_bounds_1): Remove gcc_unreachable.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-03-03  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/79803

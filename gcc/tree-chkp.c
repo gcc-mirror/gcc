@@ -3556,8 +3556,8 @@ chkp_find_bounds_1 (tree ptr, tree ptr_src, gimple_stmt_iterator *iter)
       break;
 
     case PARM_DECL:
-      gcc_unreachable ();
-      bounds = chkp_get_bound_for_parm (ptr_src);
+      /* Handled above but failed.  */
+      bounds = chkp_get_invalid_op_bounds ();
       break;
 
     case TARGET_MEM_REF:
