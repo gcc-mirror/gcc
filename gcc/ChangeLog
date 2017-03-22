@@ -1,3 +1,13 @@
+2017-03-21  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	PR target/80123
+	* doc/md.texi (Constraints): Document wA constraint.
+	* config/rs6000/constraints.md (wA): New.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Add wA reg_class.
+	(rs6000_init_hard_regno_mode_ok): Init wA constraint.
+	* config/rs6000/rs6000.h (RS6000_CONSTRAINT_wA): New.
+	* config/rs6000/vsx.md (vsx_splat_<mode>): Use wA constraint.
+
 2017-03-22  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR c++/80029

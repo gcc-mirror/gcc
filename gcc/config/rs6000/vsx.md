@@ -3072,7 +3072,7 @@
 					"=<VSa>,    <VSa>,we,<VS_64dm>")
 	(vec_duplicate:VSX_D
 	 (match_operand:<VS_scalar> 1 "splat_input_operand"
-					"<VS_64reg>,Z,    b, wr")))]
+					"<VS_64reg>,Z,    b, wA")))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "@
    xxpermdi %x0,%x1,%x1,0

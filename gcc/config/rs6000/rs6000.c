@@ -2468,6 +2468,7 @@ rs6000_debug_reg_global (void)
 	   "wx reg_class = %s\n"
 	   "wy reg_class = %s\n"
 	   "wz reg_class = %s\n"
+	   "wA reg_class = %s\n"
 	   "wH reg_class = %s\n"
 	   "wI reg_class = %s\n"
 	   "wJ reg_class = %s\n"
@@ -2500,6 +2501,7 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wx]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wy]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wz]],
+	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wA]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wH]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wI]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wJ]],
@@ -3210,7 +3212,10 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
     }
 
   if (TARGET_POWERPC64)
-    rs6000_constraints[RS6000_CONSTRAINT_wr] = GENERAL_REGS;
+    {
+      rs6000_constraints[RS6000_CONSTRAINT_wr] = GENERAL_REGS;
+      rs6000_constraints[RS6000_CONSTRAINT_wA] = BASE_REGS;
+    }
 
   if (TARGET_P8_VECTOR && TARGET_UPPER_REGS_SF)			/* SFmode  */
     {
