@@ -1,3 +1,15 @@
+t2017-03-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/80082
+	* config/arm/arm-isa.h (isa_bit_lpae): New feature bit.
+	(ISA_ARMv7ve): Add isa_bit_lpae to the definition.
+	* config/arm/arm-protos.h (arm_arch7ve): Rename into ...
+	(arm_arch_lpae): This.
+	* config/arm/arm.c (arm_arch7ve): Rename into ...
+	(arm_arch_lpae): This.  Define it in term of isa_bit_lpae.
+	* config/arm/arm.h (TARGET_HAVE_LPAE): Redefine in term of
+	arm_arch_lpae.
+
 2017-03-22  Martin Liska  <mliska@suse.cz>
 
 	PR target/79906

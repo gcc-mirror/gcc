@@ -1,3 +1,9 @@
+2017-03-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/80082
+	* gcc.target/arm/atomic_loaddi_10.c: New testcase.
+	* gcc.target/arm/atomic_loaddi_11.c: Likewise.
+
 2017-03-22  Martin Liska  <mliska@suse.cz>
 
 	PR target/79906
