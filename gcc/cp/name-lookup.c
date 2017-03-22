@@ -4550,6 +4550,11 @@ lookup_qualified_name (tree scope, tree name, int prefer_type, bool complain,
 	flags |= LOOKUP_HIDDEN;
       if (qualified_lookup_using_namespace (name, scope, &lookup, flags))
 	t = lookup.value;
+      /* If we have a known type overload, pull it out.  This can happen
+	 for both using decls and unhidden functions.  */
+      if (t && TREE_CODE (t) == OVERLOAD
+	  && TREE_TYPE (t) != unknown_type_node)
+	t = OVL_FIRST (t);
     }
   else if (cxx_dialect != cxx98 && TREE_CODE (scope) == ENUMERAL_TYPE)
     t = lookup_enumerator (scope, name);
@@ -5059,10 +5064,6 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
   /* Now lookup in namespace scopes.  */
   if (!val)
     val = unqualified_namespace_lookup (name, flags);
-
-  /* We should have already skipped any hidden decls.  */
-  gcc_checking_assert (!val || (flags & LOOKUP_HIDDEN)
-		       || val == ovl_skip_hidden (val));
 
   /* If we have a known type overload, pull it out.  This can happen
      for both using decls and unhidden functions.  */
@@ -5790,12 +5791,6 @@ static cp_expr
 lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
 {
   struct arg_lookup k;
-
-  /* Remove any hidden friend functions from the list of functions
-     found so far.  They will be added back by arg_assoc_class as
-     appropriate.  */
-  if (fns)
-    fns = ovl_skip_hidden (fns);
 
   k.name = name;
   k.args = args;

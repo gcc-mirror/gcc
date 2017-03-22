@@ -1,3 +1,13 @@
+2017-03-22  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* name-lookup.c (lookup_qualified_name): Unwrap singleton
+	overload.
+	(lookup_name_real_1): Remove ovl_hidden assert.
+	(lookup_arg_dependent_1): Don't skip hidden here.
+	* parser.c (cp_parser_lookup_name): Don't unwrap singleton
+	overload here.
+
 2017-03-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
