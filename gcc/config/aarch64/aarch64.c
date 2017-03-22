@@ -484,8 +484,8 @@ static const struct cpu_vector_cost thunderx2t99_vector_cost =
 /* Generic costs for branch instructions.  */
 static const struct cpu_branch_cost generic_branch_cost =
 {
-  2,  /* Predictable.  */
-  2   /* Unpredictable.  */
+  1,  /* Predictable.  */
+  3   /* Unpredictable.  */
 };
 
 /* Branch costs for Cortex-A57.  */
