@@ -10761,6 +10761,10 @@ supported options.
 The option cannot be combined with @option{-fsanitize=address},
 @option{-fsanitize=leak} and/or @option{-fcheck-pointer-bounds}.
 
+Note that sanitized atomic builtins cannot throw exceptions when
+operating on invalid memory addresses with non-call exceptions
+(@option{-fnon-call-exceptions}).
+
 @item -fsanitize=leak
 @opindex fsanitize=leak
 Enable LeakSanitizer, a memory leak detector.
