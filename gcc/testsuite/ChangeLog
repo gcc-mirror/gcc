@@ -1,3 +1,8 @@
+2017-03-22 Nicolas Koenig <koenigni@student.ethz.ch>
+
+	PR fortran/39239	
+	* gfortran.dg/equiv_constraint_bind_c.f90: New test.
+
 2017-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/80141
