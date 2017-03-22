@@ -1,3 +1,9 @@
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	PR target/79906
+	* config/rs6000/rs6000.c (rs6000_inner_target_options): Show
+	error message instead of an ICE.
+
 2017-03-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* doc/extend.texi (6.11 Additional Floating Types): Revise.
