@@ -3,6 +3,14 @@
 	Backport from mainline
 	2017-03-20  Martin Liska  <mliska@suse.cz>
 
+	PR middle-end/79753
+	* gcc.target/i386/mpx/pr79753.c: New test.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-20  Martin Liska  <mliska@suse.cz>
+
 	PR target/79769
 	PR target/79770
 	* g++.dg/pr79769.C: New test.
