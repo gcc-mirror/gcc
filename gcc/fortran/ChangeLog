@@ -1,5 +1,10 @@
 2017-03-22  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
+	PR fortran/79838
+	* module.c: Remove trailing period.
+
+2017-03-22  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
 	PR fortran/79602
 	* decl.c: Replace '%s' with %qs.
 	* expr.c: Likewise.
