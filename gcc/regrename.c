@@ -356,8 +356,8 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
 {
   bool has_preferred_class;
   enum reg_class preferred_class;
-  int pass;
   int best_new_reg = old_reg;
+  int new_reg;
 
   /* Further narrow the set of registers we can use for renaming.
      If the chain needs a call-saved register, mark the call-used
@@ -387,30 +387,26 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
    If PREFERRED_CLASS is NO_REGS, we iterate over all registers in
    ascending order without any preference.  */
   has_preferred_class = (preferred_class != NO_REGS);
+  for (new_reg = 0; new_reg < FIRST_PSEUDO_REGISTER; new_reg++)
     {
-      int new_reg;
-      for (new_reg = 0; new_reg < FIRST_PSEUDO_REGISTER; new_reg++)
-	{
-	  if (has_preferred_class
-	      && 0
-		  == TEST_HARD_REG_BIT(reg_class_contents[preferred_class],
-				       new_reg))
-	    continue;
+      if (has_preferred_class
+	  && !TEST_HARD_REG_BIT(reg_class_contents[preferred_class],
+				   new_reg))
+	continue;
 
-	  if (!check_new_reg_p (old_reg, new_reg, this_head, *unavailable))
-	    continue;
+      if (!check_new_reg_p (old_reg, new_reg, this_head, *unavailable))
+	continue;
 
-	  if (!best_rename)
-	    return new_reg;
+      if (!best_rename)
+	return new_reg;
 
-	  /* In the first pass, we force the renaming of registers that
-	   don't belong to PREFERRED_CLASS to registers that do, even
-	   though the latters were used not very long ago.
-	   Also use a register if no best_new_reg was found till now  */
-	  if ((tick[best_new_reg] > tick[new_reg]
-	      || (old_reg == best_new_reg && new_reg < old_reg)))
-	    best_new_reg = new_reg;
-	}
+      /* In the first pass, we force the renaming of registers that
+       don't belong to PREFERRED_CLASS to registers that do, even
+       though the latters were used not very long ago.
+       Also use a register if no best_new_reg was found till now  */
+      if ((tick[best_new_reg] > tick[new_reg]
+	  || (old_reg == best_new_reg && new_reg < old_reg)))
+	best_new_reg = new_reg;
     }
   return best_new_reg;
 }
@@ -989,7 +985,7 @@ regrename_do_replace (struct du_head *head, int regno)
   if (base_regno < FIRST_PSEUDO_REGISTER && regno < FIRST_PSEUDO_REGISTER)
     for (chain = head->first; chain; chain = chain->next_use)
       {
-	if (DEBUG_INSN_P (chain->insn))
+	if (DEBUG_INSN_P (chain->insn) && VAR_LOC_UNKNOWN_P(INSN_VAR_LOCATION_LOC(chain->insn)))
 	  continue;
 	/* undo regno patch - will be patched again */
 	if (REGNO (*chain->loc) == regno)
