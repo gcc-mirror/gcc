@@ -993,6 +993,9 @@ class Type
 				const std::string& equal_name,
 				Function_type* equal_fntype);
 
+  // Return the alignment required by the memequalN function.
+  static int64_t memequal_align(Gogo*, int size);
+
   // Export the type.
   void
   export_type(Export* exp) const
