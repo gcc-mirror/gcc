@@ -1,6 +1,11 @@
 2017-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/80110
+	* doc/invoke.texi (-fsanitize=thread): Document that with
+	-fnon-call-exceptions atomics are not able to throw
+	exceptions.
+
+	PR sanitizer/80110
 	* tsan.c: Include tree-eh.h.
 	(instrument_builtin_call): Call maybe_clean_eh_stmt or
 	maybe_clean_or_replace_eh_stmt where needed.
