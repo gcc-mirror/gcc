@@ -1,4 +1,15 @@
-t2017-03-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+2017-03-22  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR c++/80029
+	* gimplify.c (is_oacc_declared): New function.
+	(oacc_default_clause): Use it to set default flags for acc declared
+	variables inside parallel regions.
+	(gimplify_scan_omp_clauses): Strip firstprivate pointers for acc
+	declared variables.
+	(gimplify_oacc_declare): Gimplify the declare clauses.  Add the
+	declare attribute to any decl as necessary.
+
+2017-03-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR target/80082
 	* config/arm/arm-isa.h (isa_bit_lpae): New feature bit.
