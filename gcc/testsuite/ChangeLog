@@ -1,6 +1,13 @@
 2017-03-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-03-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.dg/tree-prof/pr66295.c: Skip unless on an x86 target.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-03-14  Martin Liska  <mliska@suse.cz>
 
 	PR lto/66295
