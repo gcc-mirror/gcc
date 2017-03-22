@@ -425,6 +425,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     };
 
+#if __cpp_deduction_guides >= 201606
+  template<typename _T1, typename _T2> pair(_T1, _T2) -> pair<_T1, _T2>;
+#endif
+
   /// Two pairs of the same type are equal iff their members are equal.
   template<typename _T1, typename _T2>
     inline _GLIBCXX_CONSTEXPR bool

@@ -31,9 +31,9 @@
 # error "Feature-test macro for searchers has wrong value"
 #endif
 
-using std::make_default_searcher;
-using std::make_boyer_moore_searcher;
-using std::make_boyer_moore_horspool_searcher;
+using std::default_searcher;
+using std::boyer_moore_searcher;
+using std::boyer_moore_horspool_searcher;
 
 void
 test01()
@@ -50,9 +50,9 @@ test01()
   for (auto n : needles)
   {
     auto ne = n + std::strlen(n);
-    auto d = make_default_searcher(n, ne);
-    auto bm = make_boyer_moore_searcher(n, ne);
-    auto bmh = make_boyer_moore_horspool_searcher(n, ne);
+    default_searcher d(n, ne);
+    boyer_moore_searcher bm(n, ne);
+    boyer_moore_horspool_searcher bmh(n, ne);
     for (auto h : haystacks)
     {
       auto he = h + std::strlen(h);
@@ -83,9 +83,9 @@ test02()
   for (auto n : needles)
   {
     auto ne = n + std::wcslen(n);
-    auto d = make_default_searcher(n, ne);
-    auto bm = make_boyer_moore_searcher(n, ne);
-    auto bmh = make_boyer_moore_horspool_searcher(n, ne);
+    default_searcher d(n, ne);
+    boyer_moore_searcher bm(n, ne);
+    boyer_moore_horspool_searcher bmh(n, ne);
     for (auto h : haystacks)
     {
       auto he = h + std::wcslen(h);
@@ -122,9 +122,9 @@ test03()
   const char* ne = needle + std::strlen(needle);
   const char* he = haystack + std::strlen(haystack);
 
-  auto d = make_default_searcher(needle, ne, eq);
-  auto bm = make_boyer_moore_searcher(needle, ne, eq, eq);
-  auto bmh = make_boyer_moore_horspool_searcher(needle, ne, eq, eq);
+  default_searcher d(needle, ne, eq);
+  boyer_moore_searcher bm(needle, ne, eq, eq);
+  boyer_moore_horspool_searcher bmh(needle, ne, eq, eq);
 
   auto res = std::search(haystack, he, needle, ne, eq);
   auto d_res = d(haystack, he);

@@ -872,6 +872,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { _Inherited::_M_swap(__in); }
     };
 
+#if __cpp_deduction_guides >= 201606
+  template<typename... _UTypes>
+    tuple(_UTypes...) -> tuple<_UTypes...>;
+  template<typename _T1, typename _T2>
+    tuple(pair<_T1, _T2>) -> tuple<_T1, _T2>;
+  template<typename _Alloc, typename... _UTypes>
+    tuple(allocator_arg_t, _Alloc, _UTypes...) -> tuple<_UTypes...>;
+  template<typename _Alloc, typename _T1, typename _T2>
+    tuple(allocator_arg_t, _Alloc, pair<_T1, _T2>) -> tuple<_T1, _T2>;
+  template<typename _Alloc, typename... _UTypes>
+    tuple(allocator_arg_t, _Alloc, tuple<_UTypes...>) -> tuple<_UTypes...>;
+#endif
+
   // Explicit specialization, zero-element tuple.
   template<>
     class tuple<>
