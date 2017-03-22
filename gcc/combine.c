@@ -102,6 +102,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "valtrack.h"
 #include "rtl-iter.h"
 #include "print-rtl.h"
+#include "conditions.h"
 
 #ifndef LOAD_EXTEND_OP
 #define LOAD_EXTEND_OP(M) UNKNOWN
@@ -2578,6 +2579,7 @@ static rtx_insn *
 try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	     int *new_direct_jump_p, rtx_insn *last_combined_insn)
 {
+  rtx_insn * del4 = 0;
   /* New patterns for I3 and I2, respectively.  */
   rtx newpat, newi2pat = 0;
   rtvec newpat_vec_with_clobbers = 0;
@@ -3349,6 +3351,52 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       newpat = subst (newpat, i0dest, i0src, 0, 0, 0);
       substed_i0 = 1;
     }
+
+#if HAVE_cc0
+  /* SBF: This is an attempt to combine
+   *   i2 something -> reg
+   *   i3 reg -> somewhere
+   * with the next insn i4
+   *   i4 compare reg, 0
+   * 
+   * then 
+   *   newpat = something -> somewhere
+   * 
+   * If the comparison with 0 is already done in the insn newpat
+   * and the reg is dead at the compare insn
+   * then perform the combine and mark the compare as deleted.
+   */
+  if (i2dest_killed && !i0 && !i1 && i2pat && i2_is_used + added_sets_2 > 1
+      && NEXT_INSN(i3))
+    {
+      rtx_insn *next = NEXT_INSN(i3);
+      rtx setn = single_set(next);
+      if (setn)
+	{
+	  rtx srcn = SET_SRC(setn);
+	  if (GET_CODE(srcn) == COMPARE)
+	    {
+	      rtx dstn = XEXP(srcn, 0);
+	      srcn = XEXP(srcn, 1);
+
+	      if (CONST_INT_P(srcn) && INTVAL(srcn) == 0
+		  && find_reg_note(next, REG_DEAD, dstn))
+		{
+		  /* now check via NOTICE_UPDATE_CC*/
+		  NOTICE_UPDATE_CC(PATTERN(i2), i2);
+		  if (cc_status.flags == 0 && rtx_equal_p(dstn, cc_status.value1))
+		    {
+		      added_sets_2 = 0;
+		      i2_is_used = 0;
+
+		      /* perform deletion later, if all other checks are ok. */
+		      del4 = next;
+		    }
+		}
+	    }
+	}
+    }
+#endif
 
   /* Fail if an autoincrement side-effect has been duplicated.  Be careful
      to count all the ways that I2SRC and I1SRC can be used.  */
@@ -4386,6 +4434,18 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
     if (newi2pat)
       move_deaths (newi2pat, NULL_RTX, from_luid, i2, &midnotes);
     move_deaths (newpat, newi2pat, from_luid, i3, &midnotes);
+
+    /* SBF: perform the deletion of the next insn, if marked. */
+    if (del4)
+      {
+	int del_from_luid = DF_INSN_LUID(del4);
+	LOG_LINKS(del4) = NULL;
+	REG_NOTES(del4) = 0;
+	SET_INSN_DELETED(del4);
+	if (newi2pat)
+	move_deaths(newi2pat, NULL_RTX, del_from_luid, del4, &midnotes);
+	move_deaths(newpat, NULL_RTX, del_from_luid, del4, &midnotes);
+      }
 
     /* Distribute all the LOG_LINKS and REG_NOTES from I1, I2, and I3.  */
     if (i3notes)
