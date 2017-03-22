@@ -343,6 +343,71 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
 	     (define_p) ? "define" : "undef",
 	     flags, bu_mask);
 
+  /* Each of the flags mentioned below controls whether certain
+     preprocessor macros will be automatically defined when
+     preprocessing source files for compilation by this compiler.
+     While most of these flags can be enabled or disabled
+     explicitly by specifying certain command-line options when
+     invoking the compiler, there are also many ways in which these
+     flags are enabled or disabled implicitly, based on compiler
+     defaults, configuration choices, and on the presence of certain
+     related command-line options.  Many, but not all, of these
+     implicit behaviors can be found in file "rs6000.c", the
+     rs6000_option_override_internal() function.
+
+     In general, each of the flags may be automatically enabled in
+     any of the following conditions:
+
+     1. If no -mcpu target is specified on the command line and no
+	--with-cpu target is specified to the configure command line
+	and the TARGET_DEFAULT macro for this default cpu host
+	includes the flag, and the flag has not been explicitly disabled
+	by command-line options.
+
+     2. If the target specified with -mcpu=target on the command line, or
+	in the absence of a -mcpu=target command-line option, if the
+	target specified using --with-cpu=target on the configure
+	command line, is disqualified because the associated binary
+	tools (e.g. the assembler) lack support for the requested cpu,
+	and the TARGET_DEFAULT macro for this default cpu host
+	includes the flag, and the flag has not been explicitly disabled
+	by command-line options.
+
+     3. If either of the above two conditions apply except that the
+	TARGET_DEFAULT macro is defined to equal zero, and
+	TARGET_POWERPC64 and
+	a) BYTES_BIG_ENDIAN and the flag to be enabled is either
+	   MASK_PPC_GFXOPT or MASK_POWERPC64 (flags for "powerpc64"
+	   target), or
+	b) !BYTES_BIG_ENDIAN and the flag to be enabled is either
+	   MASK_POWERPC64 or it is one of the flags included in
+	   ISA_2_7_MASKS_SERVER (flags for "powerpc64le" target).
+
+     4. If a cpu has been requested with a -mcpu=target command-line option
+	and this cpu has not been disqualified due to shortcomings of the
+	binary tools, and the set of flags associated with the requested cpu
+	include the flag to be enabled.  See rs6000-cpus.def for macro
+	definitions that represent various ABI standards
+	(e.g. ISA_2_1_MASKS, ISA_3_0_MASKS_SERVER) and for a list of
+	the specific flags that are associated with each of the cpu
+	choices that can be specified as the target of a -mcpu=target
+	compile option, or as the the target of a --with-cpu=target
+	configure option.  Target flags that are specified in either
+	of these two ways are considered "implicit" since the flags
+	are not mentioned specifically by name.
+
+	Additional documentation describing behavior specific to
+	particular flags is provided below, immediately preceding the
+	use of each relevant flag.
+
+     5. If there is no -mcpu=target command-line option, and the cpu
+	requested by a --with-cpu=target command-line option has not
+	been disqualified due to shortcomings of the binary tools, and
+	the set of flags associated with the specified target include
+	the flag to be enabled.  See the notes immediately above for a
+	summary of the flags associated with particular cpu
+	definitions.  */
+
   /* rs6000_isa_flags based options.  */
   rs6000_define_or_undefine_macro (define_p, "_ARCH_PPC");
   if ((flags & OPTION_MASK_PPC_GPOPT) != 0)
@@ -363,6 +428,12 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR6X");
   if ((flags & OPTION_MASK_POPCNTD) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR7");
+  /* Note that the OPTION_MASK_DIRECT_MOVE flag is automatically
+     turned off in any of the following conditions:
+     1. TARGET_HARD_FLOAT, TARGET_ALTIVEC, or TARGET_VSX is explicitly
+	disabled and OPTION_MASK_DIRECT_MOVE was not explicitly
+	enabled.
+     2. TARGET_VSX is off.  */
   if ((flags & OPTION_MASK_DIRECT_MOVE) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR8");
   if ((flags & OPTION_MASK_MODULO) != 0)
@@ -371,6 +442,27 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
     rs6000_define_or_undefine_macro (define_p, "_SOFT_FLOAT");
   if ((flags & OPTION_MASK_RECIP_PRECISION) != 0)
     rs6000_define_or_undefine_macro (define_p, "__RECIP_PRECISION__");
+  /* Note that the OPTION_MASK_ALTIVEC flag is automatically turned on
+     in any of the following conditions:
+     1. The command line specifies either -maltivec=le or -maltivec=be.
+     2. The operating system is Darwin and it is configured for 64
+	bit.  (See darwin_rs6000_override_options.)
+     3. The operating system is Darwin and the operating system
+	version is 10.5 or higher and the user has not explicitly
+	disabled ALTIVEC by specifying -mcpu=G3 or -mno-altivec and
+	the compiler is not producing code for integration within the
+	kernel.  (See darwin_rs6000_override_options.)
+     Note that the OPTION_MASK_ALTIVEC flag is automatically turned
+     off in any of the following conditions:
+     1. The operating system does not support saving of AltiVec
+	registers (OS_MISSING_ALTIVEC).
+     2. If an inner context (as introduced by
+	__attribute__((__target__())) or #pragma GCC target()
+	requests a target that normally enables the
+	OPTION_MASK_ALTIVEC flag but the outer-most "main target"
+	does not support the rs6000_altivec_abi, this flag is
+	turned off for the inner context unless OPTION_MASK_ALTIVEC
+	was explicitly enabled for the inner context.  */
   if ((flags & OPTION_MASK_ALTIVEC) != 0)
     {
       const char *vec_str = (define_p) ? "__VEC__=10206" : "__VEC__";
@@ -381,6 +473,31 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
       if (!flag_iso)
 	rs6000_define_or_undefine_macro (define_p, "__APPLE_ALTIVEC__");
     }
+  /* Note that the OPTION_MASK_VSX flag is automatically turned off in
+     the following conditions:
+     1. The operating system does not support saving of AltiVec
+	registers (OS_MISSING_ALTIVEC).
+     2. If any of the options TARGET_HARD_FLOAT, TARGET_FPRS,
+	TARGET_SINGLE_FLOAT, or TARGET_DOUBLE_FLOAT are turned off.
+	Hereafter, the OPTION_MASK_VSX flag is considered to have been
+	turned off explicitly.
+     3. If TARGET_PAIRED_FLOAT was enabled.  Hereafter, the
+	OPTION_MASK_VSX flag is considered to have been turned off
+	explicitly.
+     4. If TARGET_AVOID_XFORM is turned on explicitly at the outermost
+	compilation context, or if it is turned on by any means in an
+	inner compilation context.  Hereafter, the OPTION_MASK_VSX
+	flag is considered to have been turned off explicitly.
+     5. If TARGET_ALTIVEC was explicitly disabled.  Hereafter, the
+	OPTION_MASK_VSX flag is considered to have been turned off
+	explicitly.
+     6. If an inner context (as introduced by
+	__attribute__((__target__())) or #pragma GCC target()
+	requests a target that normally enables the
+	OPTION_MASK_VSX flag but the outer-most "main target"
+	does not support the rs6000_altivec_abi, this flag is
+	turned off for the inner context unless OPTION_MASK_VSX
+	was explicitly enabled for the inner context.  */
   if ((flags & OPTION_MASK_VSX) != 0)
     rs6000_define_or_undefine_macro (define_p, "__VSX__");
   if ((flags & OPTION_MASK_HTM) != 0)
@@ -389,26 +506,95 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
       /* Tell the user that our HTM insn patterns act as memory barriers.  */
       rs6000_define_or_undefine_macro (define_p, "__TM_FENCE__");
     }
+  /* Note that the OPTION_MASK_P8_VECTOR flag is automatically turned
+     off in the following conditions:
+     1. If any of TARGET_HARD_FLOAT, TARGET_ALTIVEC, or TARGET_VSX
+	were turned off explicitly and OPTION_MASK_P8_VECTOR flag was
+	not turned on explicitly.
+     2. If TARGET_ALTIVEC is turned off.  Hereafter, the
+	OPTION_MASK_P8_VECTOR flag is considered to have been turned off
+	explicitly.
+     3. If TARGET_VSX is turned off.  Hereafter, the OPTION_MASK_P8_VECTOR
+	flag is considered to have been turned off explicitly.  */
   if ((flags & OPTION_MASK_P8_VECTOR) != 0)
     rs6000_define_or_undefine_macro (define_p, "__POWER8_VECTOR__");
+  /* Note that the OPTION_MASK_P9_VECTOR flag is automatically turned
+     off in the following conditions:
+     1. If TARGET_P8_VECTOR is turned off. Hereafter, the
+	OPTION_MASK_P9_VECTOR flag is considered to have been turned off
+	explicitly.  */
   if ((flags & OPTION_MASK_P9_VECTOR) != 0)
     rs6000_define_or_undefine_macro (define_p, "__POWER9_VECTOR__");
+  /* Note that the OPTION_MASK_QUAD_MEMORY flag is automatically
+     turned off in the following conditions:
+     1. If TARGET_POWERPC64 is turned off.
+     2. If WORDS_BIG_ENDIAN is false (non-atomic quad memory
+	load/store are disabled on little endian).  */
   if ((flags & OPTION_MASK_QUAD_MEMORY) != 0)
     rs6000_define_or_undefine_macro (define_p, "__QUAD_MEMORY__");
+  /* Note that the OPTION_MASK_QUAD_MEMORY_ATOMIC flag is automatically
+     turned off in the following conditions:
+     1. If TARGET_POWERPC64 is turned off.
+     Note that the OPTION_MASK_QUAD_MEMORY_ATOMIC flag is
+     automatically turned on in the following conditions:
+     1. If TARGET_QUAD_MEMORY and this flag was not explicitly
+	disabled.  */
   if ((flags & OPTION_MASK_QUAD_MEMORY_ATOMIC) != 0)
     rs6000_define_or_undefine_macro (define_p, "__QUAD_MEMORY_ATOMIC__");
+  /* Note that the OPTION_MASK_CRYPTO flag is automatically turned off
+     in the following conditions:
+     1. If any of TARGET_HARD_FLOAT or TARGET_ALTIVEC or TARGET_VSX
+	are turned off explicitly and OPTION_MASK_CRYPTO is not turned
+	on explicitly.
+     2. If TARGET_ALTIVEC is turned off.  */
   if ((flags & OPTION_MASK_CRYPTO) != 0)
     rs6000_define_or_undefine_macro (define_p, "__CRYPTO__");
+  /* Note that the OPTION_MASK_UPPER_REGS_DF flag is automatically
+     turned on in the following conditions:
+     1. If TARGET_UPPER_REGS is explicitly turned on and
+	TARGET_VSX is turned on and OPTION_MASK_UPPER_REGS_DF is not
+	explicitly turned off.  Hereafter, the
+	OPTION_MASK_UPPER_REGS_DF flag is considered to have been
+	explicitly set.
+     Note that the OPTION_MASK_UPPER_REGS_DF flag is automatically
+     turned off in the following conditions:
+     1. If TARGET_UPPER_REGS is explicitly turned off and TARGET_VSX
+	is turned on and OPTION_MASK_UPPER_REGS_DF is not explicitly
+	turned on.  Hereafter, the OPTION_MASK_UPPER_REGS_DF flag is
+	considered to have been explicitly cleared.
+     2. If TARGET_UPPER_REGS_DF is turned on but TARGET_VSX is turned
+	off.  */
   if ((flags & OPTION_MASK_UPPER_REGS_DF) != 0)
     rs6000_define_or_undefine_macro (define_p, "__UPPER_REGS_DF__");
+  /* Note that the OPTION_MASK_UPPER_REGS_SF flag is automatically
+     turned on in the following conditions:
+     1. If TARGET_UPPER_REGS is explicitly turned on and
+	TARGET_P8_VECTOR is on and OPTION_MASK_UPPER_REGS_SF is not
+	turned off explicitly.  Hereafter, the
+	OPTION_MASK_UPPER_REGS_SF flag is considered to have been
+	explicitly set.
+     Note that the OPTION_MASK_UPPER_REGS_SF flag is automatically
+     turned off in the following conditions:
+     1. If TARGET_UPPER_REGS is explicitly turned off and
+	TARGET_P8_VECTOR is on and OPTION_MASK_UPPER_REGS_SF is not
+	turned off explicitly.  Hereafter, the
+	OPTION_MASK_UPPER_REGS_SF flag is considered to have been
+	explicitly cleared.
+     2. If TARGET_P8_VECTOR is off.  */
   if ((flags & OPTION_MASK_UPPER_REGS_SF) != 0)
     rs6000_define_or_undefine_macro (define_p, "__UPPER_REGS_SF__");
 
   /* options from the builtin masks.  */
+  /* Note that RS6000_BTM_SPE is enabled only if TARGET_SPE
+     (e.g. -mspe).  */
   if ((bu_mask & RS6000_BTM_SPE) != 0)
     rs6000_define_or_undefine_macro (define_p, "__SPE__");
+  /* Note that RS6000_BTM_PAIRED is enabled only if
+     TARGET_PAIRED_FLOAT is enabled (e.g. -mpaired).  */
   if ((bu_mask & RS6000_BTM_PAIRED) != 0)
     rs6000_define_or_undefine_macro (define_p, "__PAIRED__");
+  /* Note that RS6000_BTM_CELL is enabled only if (rs6000_cpu ==
+     PROCESSOR_CELL) (e.g. -mcpu=cell).  */
   if ((bu_mask & RS6000_BTM_CELL) != 0)
     rs6000_define_or_undefine_macro (define_p, "__PPU__");
 }
