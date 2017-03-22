@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-inline.h"
 #include "tree-data-ref.h"
+#include "diagnostic-core.h"
 
 
 /* FIXME: Needed for optabs, but this should all be moved to a TBD interface
@@ -2005,10 +2006,6 @@ tree_ssa_prefetch_arrays (void)
       set_builtin_decl (BUILT_IN_PREFETCH, decl, false);
     }
 
-  /* We assume that size of cache line is a power of two, so verify this
-     here.  */
-  gcc_assert ((PREFETCH_BLOCK & (PREFETCH_BLOCK - 1)) == 0);
-
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2065,6 +2062,20 @@ pass_loop_prefetch::execute (function *fun)
 {
   if (number_of_loops (fun) <= 1)
     return 0;
+
+  if ((PREFETCH_BLOCK & (PREFETCH_BLOCK - 1)) != 0)
+    {
+      static bool warned = false;
+
+      if (!warned)
+	{
+	  warning (OPT_Wdisabled_optimization,
+		   "%<l1-cache-size%> parameter is not a power of two %d",
+		   PREFETCH_BLOCK);
+	  warned = true;
+	}
+      return 0;
+    }
 
   return tree_ssa_prefetch_arrays ();
 }

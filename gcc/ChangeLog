@@ -3,6 +3,17 @@
 	Backport from mainline
 	2017-03-03  Martin Liska  <mliska@suse.cz>
 
+	PR tree-optimization/79803
+	* tree-ssa-loop-prefetch.c (tree_ssa_prefetch_arrays): Remove
+	assert.
+	(pass_loop_prefetch::execute): Disabled optimization if an
+	assumption about L1 cache size is not met.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-03  Martin Liska  <mliska@suse.cz>
+
 	PR rtl-optimization/79574
 	* gcse.c (struct gcse_expr): Use HOST_WIDE_INT instead of int.
 	(hash_scan_set): Likewise.
