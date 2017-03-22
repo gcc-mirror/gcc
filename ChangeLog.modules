@@ -1,5 +1,13 @@
 2017-03-21  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* name-lookup.c (lookup_name_real_1): Don's skip hidden here.
+	Simplify singleton overload extraction.
+	* tree.c (ovl_add): Assert no unexpected 2 dimensional overloads.
+	gcc/
+	* system.h (ATTRIBUTE_NTC_PURE): Define.
+	* tree.h (tree_fits_shwi_p, tree_fits_uhwi_p): Use it.
+
 	Refactor lookup part 1
 	gcc/cp/
 	* name-lookup.c (struct name_lookup): New.

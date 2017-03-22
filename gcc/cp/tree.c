@@ -2095,16 +2095,20 @@ ovl_move_unhidden (tree ovl)
    encodes !hiddenness or usingness .  */
 
 tree
-ovl_add (tree maybe_ovl, tree fn, int not_hidden_or_using)
+ovl_add (tree maybe_ovl, tree fn, int transient_or_using)
 {
   tree result;
+
+  /* 2d overloads only creatable via ovl_add_transient.  */
+  gcc_checking_assert (transient_or_using < 0 || TREE_CODE (fn) != OVERLOAD);
+
   if (maybe_ovl && TREE_CODE (maybe_ovl) != OVERLOAD)
     /* Don't chain to a non-overload.  */
     maybe_ovl = ovl_make (maybe_ovl);
 
   result = fn;
-  bool using_p = not_hidden_or_using > 0;
-  bool hidden_p = !not_hidden_or_using && DECL_HIDDEN_P (fn);
+  bool using_p = transient_or_using > 0;
+  bool hidden_p = !transient_or_using && DECL_HIDDEN_P (fn);
 
   if (maybe_ovl || using_p || hidden_p || TREE_CODE (fn) == TEMPLATE_DECL)
     {
@@ -2128,7 +2132,7 @@ ovl_add (tree maybe_ovl, tree fn, int not_hidden_or_using)
 tree
 ovl_add_transient (tree maybe_ovl, tree fn)
 {
-  tree result = ovl_add (maybe_ovl, fn, /*not_hidden_or_using=*/-1);
+  tree result = ovl_add (maybe_ovl, fn, /*transient_or_using=*/-1);
   if (TREE_CODE (result) == OVERLOAD)
     OVL_TRANSIENT_P (result) = true;
   return result;

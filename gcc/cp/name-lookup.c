@@ -2720,8 +2720,6 @@ validate_nonmember_using_decl (tree decl, tree scope, tree name)
 
   decl = OVL_FIRST (decl);
 
-  gcc_assert (DECL_P (decl));
-
   /* Make a USING_DECL.  */
   tree using_decl = push_using_decl (scope, name);
 
@@ -4168,6 +4166,7 @@ do_toplevel_using_decl (tree decl, tree scope, tree name)
   cxx_binding *binding
     = binding_for_name (NAMESPACE_LEVEL (current_namespace), name);
 
+  /* This will update *binding directly.  */
   do_nonmember_using_decl (scope, name, binding);
 
   /* Emit debug info.  */
@@ -5061,13 +5060,14 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
   if (!val)
     val = unqualified_namespace_lookup (name, flags);
 
-  /* Anticipated built-ins and friends aren't found by normal lookup.  */
-  if (val && !(flags & LOOKUP_HIDDEN))
-    val = ovl_skip_hidden (val);
+  /* We should have already skipped any hidden decls.  */
+  gcc_checking_assert (!val || (flags & LOOKUP_HIDDEN)
+		       || val == ovl_skip_hidden (val));
 
-  /* If we have a single function from a using decl, pull it out.  */
-  // FIXME: Can we elide this?
-  if (val && TREE_CODE (val) == OVERLOAD && !really_overloaded_fn (val))
+  /* If we have a known type overload, pull it out.  This can happen
+     for both using decls and unhidden functions.  */
+  if (val && TREE_CODE (val) == OVERLOAD
+      && TREE_TYPE (val) != unknown_type_node)
     val = OVL_FIRST (val);
 
   return val;

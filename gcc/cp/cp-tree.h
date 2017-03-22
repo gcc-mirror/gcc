@@ -514,6 +514,8 @@ struct ovl_iterator
   }
   void replace (tree fn, unsigned count) const;
 private:
+  /* We make this a static fn, to prevent the iterator object becoming
+     sra-opaque.  */
   static tree ovl_unhide (tree ovl, tree fn);
 };
 
@@ -6748,10 +6750,7 @@ extern tree ovl_add_transient			(tree maybe_ovl, tree fn);
 extern void ovl_maybe_keep			(tree ovl, bool keep);
 extern tree get_ovl				(tree expr,
 						 bool want_first = false)
-#ifndef ENABLE_TREE_CHECKING
-  ATTRIBUTE_PURE
-#endif
-  ;
+  ATTRIBUTE_NTC_PURE;
 extern int is_overloaded_fn			(tree);
 extern bool really_overloaded_fn		(tree);
 extern tree dependent_name			(tree);
