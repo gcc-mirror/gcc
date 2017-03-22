@@ -282,9 +282,11 @@ chkp_is_constant_addr (const address_t &addr, int *sign)
     return false;
   else if (addr.pol[0].var)
     return false;
+  else if (TREE_CODE (addr.pol[0].cst) != INTEGER_CST)
+    return false;
   else if (integer_zerop (addr.pol[0].cst))
     *sign = 0;
-  else if  (tree_int_cst_sign_bit (addr.pol[0].cst))
+  else if (tree_int_cst_sign_bit (addr.pol[0].cst))
     *sign = -1;
   else
     *sign = 1;

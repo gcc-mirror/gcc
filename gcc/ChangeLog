@@ -3,6 +3,15 @@
 	Backport from mainline
 	2017-03-09  Martin Liska  <mliska@suse.cz>
 
+	PR tree-optimization/79631
+	* tree-chkp-opt.c (chkp_is_constant_addr): Call
+	tree_int_cst_sign_bit just for INTEGER constants.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-09  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/79761
 	* tree-chkp.c (chkp_get_bound_for_parm): Get bounds for a param.
 	(chkp_find_bounds_1): Remove gcc_unreachable.

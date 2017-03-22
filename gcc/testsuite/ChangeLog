@@ -3,6 +3,14 @@
 	Backport from mainline
 	2017-03-09  Martin Liska  <mliska@suse.cz>
 
+	PR tree-optimization/79631
+	* gcc.target/i386/mpx/pr79631.c: New test.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-09  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/79761
 	* g++.dg/pr79761.C: New test.
 
