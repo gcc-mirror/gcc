@@ -36168,7 +36168,10 @@ rs6000_inner_target_options (tree args, bool attr_p)
     }
 
   else
-    gcc_unreachable ();
+    {
+      error ("attribute %<target%> argument not a string");
+      return false;
+    }
 
   return ret;
 }
