@@ -29,6 +29,13 @@
 	location of new expression from constructor expression instead
 	of constructor.
 
+
+2017-03-18  Nicolas Koenig  <koenigni@student.ethz.ch>
+
+	PR fortran/69498
+	* decl.c (add_hidden_procptr_result): Fixed Refs count of the
+	created "ppr@" symbol.
+
 2017-03-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/79676
