@@ -1,5 +1,8 @@
 2017-03-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/80129
+	* g++.dg/torture/pr80129.C: New test.
+
 	PR sanitizer/80110
 	* g++.dg/tsan/pr80110.C: New test.
 
