@@ -1,3 +1,7 @@
+2017-03-22  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (generic_tunings): Add AES fusion.
+
 2017-03-21  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	PR target/80123
