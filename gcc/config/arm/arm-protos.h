@@ -391,8 +391,8 @@ extern int arm_arch6m;
 /* Nonzero if this chip supports the ARM 7 extensions.  */
 extern int arm_arch7;
 
-/* Nonzero if this chip supports the ARM 7ve extensions.  */
-extern int arm_arch7ve;
+/* Nonzero if this chip supports the Large Physical Address Extension.  */
+extern int arm_arch_lpae;
 
 /* Nonzero if instructions not present in the 'M' profile can be used.  */
 extern int arm_arch_notm;

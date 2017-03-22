@@ -251,7 +251,7 @@ extern tree arm_fp16_type_node;
 				  || (arm_arch8 && !arm_arch_notm))
 
 /* Nonzero if this chip supports LPAE.  */
-#define TARGET_HAVE_LPAE (arm_arch7ve)
+#define TARGET_HAVE_LPAE (arm_arch_lpae)
 
 /* Nonzero if this chip supports ldrex{bh} and strex{bh}.  */
 #define TARGET_HAVE_LDREXBH ((arm_arch6k && TARGET_ARM)		\
