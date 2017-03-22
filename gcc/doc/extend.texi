@@ -948,15 +948,49 @@ names can be used together with @code{_Complex} to declare complex
 types.
 
 As an extension, GNU C and GNU C++ support additional floating
-types, @code{__float80} and @code{__float128} to support 80-bit
-(@code{XFmode}) and 128-bit (@code{TFmode}) floating types; these are
-aliases for the type names @code{_Float64x} and @code{_Float128}.
-Support for additional types includes the arithmetic operators:
+types, which are not supported by all targets.
+@itemize @bullet
+@item @code{__float128} is available on i386, x86_64, IA-64, and
+hppa HP-UX, as well as on PowerPC GNU/Linux targets that enable
+the vector scalar (VSX) instruction set.  @code{__float128} supports
+the 128-bit floating type.  On i386, x86_64, PowerPC, and IA-64
+other than HP-UX, @code{__float128} is an alias for @code{_Float128}.
+On hppa and IA-64 HP-UX, @code{__float128} is an alias for @code{long
+double}.
+
+@item @code{__float80} is available on the i386, x86_64, and IA-64
+targets, and supports the 80-bit (@code{XFmode}) floating type.  It is
+an alias for the type name @code{_Float64x} on these targets.
+
+@item @code{__ibm128} is available on PowerPC targets, and provides
+access to the IBM extended double format which is the current format
+used for @code{long double}.  When @code{long double} transitions to
+@code{__float128} on PowerPC in the future, @code{__ibm128} will remain
+for use in conversions between the two types.
+@end itemize
+
+Support for these additional types includes the arithmetic operators:
 add, subtract, multiply, divide; unary arithmetic operators;
 relational operators; equality operators; and conversions to and from
 integer and other floating types.  Use a suffix @samp{w} or @samp{W}
 in a literal constant of type @code{__float80} or type
 @code{__ibm128}.  Use a suffix @samp{q} or @samp{Q} for @code{_float128}.
+
+In order to use @code{_Float128}, @code{__float128}, and @code{__ibm128}
+on PowerPC Linux systems, you must use the @option{-mfloat128} option. It is
+expected in future versions of GCC that @code{_Float128} and @code{__float128}
+will be enabled automatically.
+
+The @code{_Float128} type is supported on all systems where
+@code{__float128} is supported or where @code{long double} has the
+IEEE binary128 format.  The @code{_Float64x} type is supported on all
+systems where @code{__float128} is supported.  The @code{_Float32}
+type is supported on all systems supporting IEEE binary32; the
+@code{_Float64} and @code{_Float32x} types are supported on all systems
+supporting IEEE binary64.  The @code{_Float16} type is supported on AArch64
+systems by default, and on ARM systems when the IEEE format for 16-bit
+floating-point types is selected with @option{-mfp16-format=ieee}.
+GCC does not currently support @code{_Float128x} on any systems.
 
 On the i386, x86_64, IA-64, and HP-UX targets, you can declare complex
 types using the corresponding internal complex type, @code{XCmode} for
@@ -967,16 +1001,6 @@ typedef _Complex float __attribute__((mode(TC))) _Complex128;
 typedef _Complex float __attribute__((mode(XC))) _Complex80;
 @end smallexample
 
-In order to use @code{_Float128}, @code{__float128} and
-@code{__ibm128} on PowerPC Linux
-systems, you must use the @option{-mfloat128}. It is expected in
-future versions of GCC that @code{_Float128} and @code{__float128}
-will be enabled
-automatically.  In addition, there are currently problems in using the
-complex @code{__float128} type.  When these problems are fixed, you
-would use the following syntax to declare @code{_Complex128} to be a
-complex @code{__float128} type:
-
 On the PowerPC Linux VSX targets, you can declare complex types using
 the corresponding internal complex type, @code{KCmode} for
 @code{__float128} type and @code{ICmode} for @code{__ibm128} type:
@@ -985,27 +1009,6 @@ the corresponding internal complex type, @code{KCmode} for
 typedef _Complex float __attribute__((mode(KC))) _Complex_float128;
 typedef _Complex float __attribute__((mode(IC))) _Complex_ibm128;
 @end smallexample
-
-Not all targets support additional floating-point types.
-@code{__float80} and @code{__float128} types are supported on x86 and
-IA-64 targets.  The @code{__float128} type is supported on hppa HP-UX.
-The @code{__float128} type is supported on PowerPC 64-bit Linux
-systems by default if the vector scalar instruction set (VSX) is
-enabled.  The @code{_Float128} type is supported on all systems where
-@code{__float128} is supported or where @code{long double} has the
-IEEE binary128 format.  The @code{_Float64x} type is supported on all
-systems where @code{__float128} is supported.  The @code{_Float32}
-type is supported on all systems supporting IEEE binary32; the
-@code{_Float64} and @code{Float32x} types are supported on all systems
-supporting IEEE binary64.  The @code{_Float16} type is supported on AArch64
-systems by default, and on ARM systems when the IEEE format for 16-bit
-floating-point types is selected with @option{-mfp16-format=ieee}.
-GCC does not currently support @code{_Float128x} on any systems.
-
-On the PowerPC, @code{__ibm128} provides access to the IBM extended
-double format, and it is intended to be used by the library functions
-that handle conversions if/when long double is changed to be IEEE
-128-bit floating point.
 
 @node Half-Precision
 @section Half-Precision Floating Point

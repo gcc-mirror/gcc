@@ -1,3 +1,7 @@
+2017-03-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* doc/extend.texi (6.11 Additional Floating Types): Revise.
+
 2017-03-21  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Add
