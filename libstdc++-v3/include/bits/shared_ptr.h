@@ -355,6 +355,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend class weak_ptr<_Tp>;
     };
 
+#if __cpp_deduction_guides >= 201606
+  template<typename _Tp>
+    shared_ptr(weak_ptr<_Tp>) ->  shared_ptr<_Tp>;
+  template<typename _Tp, typename _Del>
+    shared_ptr(unique_ptr<_Tp, _Del>) ->  shared_ptr<_Tp>;
+#endif
+
   // 20.7.2.2.7 shared_ptr comparisons
   template<typename _Tp, typename _Up>
     inline bool
@@ -576,6 +583,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       lock() const noexcept
       { return shared_ptr<_Tp>(*this, std::nothrow); }
     };
+
+#if __cpp_deduction_guides >= 201606
+  template<typename _Tp>
+    weak_ptr(shared_ptr<_Tp>) ->  weak_ptr<_Tp>;
+#endif
 
   // 20.7.2.3.6 weak_ptr specialized algorithms.
   template<typename _Tp>

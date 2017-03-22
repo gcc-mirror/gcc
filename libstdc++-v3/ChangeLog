@@ -1,3 +1,39 @@
+2017-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr.h (shared_ptr, weak_ptr): Add deduction
+	guides for C++17.
+	* include/bits/std_function.h (function): Likewise.
+	* include/bits/stl_pair.h (pair): Likewise.
+	* include/debug/array (__gnu_debug::array): Likewise.
+	* include/std/array (array): Likewise.
+	* include/std/functional (make_default_searcher)
+	(make_boyer_moore_searcher, make_boyer_moore_horspool_searcher):
+	Remove generator functions.
+	* include/std/tuple (tuple): Add deduction guides.
+	* include/std/valarray (valarray): Likewise.
+	* testsuite/20_util/function_objects/searchers.cc: Adjust to use
+	class template argument deduction instead of generator functions.
+	* testsuite/20_util/function/cons/deduction.cc: New test.
+	* testsuite/20_util/optional/cons/deduction_guide.cc: Rename to ...
+	* testsuite/20_util/optional/cons/deduction.cc: ... here.
+	* testsuite/20_util/pair/cons/deduction.cc: New test.
+	* testsuite/20_util/shared_ptr/cons/deduction.cc: New test.
+	* testsuite/20_util/tuple/cons/deduction.cc: New test.
+	* testsuite/20_util/tuple/element_access/get_neg.cc: Adjust dg-error.
+	* testsuite/20_util/unique_ptr/cons/deduction_neg.cc: New test.
+	* testsuite/20_util/weak_ptr/cons/deduction.cc: New test.
+	* testsuite/23_containers/array/cons/deduction.cc: New test.
+	* testsuite/23_containers/array/cons/deduction_neg.cc: New test.
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc:
+	Adjust dg-error.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Likewise.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Likewise.
+	* testsuite/26_numerics/valarray/deduction.cc: New test.
+	* testsuite/30_threads/lock_guard/cons/deduction.cc: New test.
+	* testsuite/30_threads/scoped_lock/cons/deduction.cc: New test.
+	* testsuite/30_threads/unique_lock/cons/deduction.cc: New test.
+
 2017-03-20  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_deque.h (deque): Access allocator value_type only if

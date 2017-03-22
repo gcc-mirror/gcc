@@ -1175,36 +1175,6 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       _RAIter _M_pat_end;
     };
 
-  /// Generator function for default_searcher
-  template<typename _ForwardIterator,
-	   typename _BinaryPredicate = std::equal_to<>>
-    inline default_searcher<_ForwardIterator, _BinaryPredicate>
-    make_default_searcher(_ForwardIterator __pat_first,
-			  _ForwardIterator __pat_last,
-			  _BinaryPredicate __pred = _BinaryPredicate())
-    { return { __pat_first, __pat_last, __pred }; }
-
-  /// Generator function for boyer_moore_searcher
-  template<typename _RAIter, typename _Hash
-	     = std::hash<typename std::iterator_traits<_RAIter>::value_type>,
-	   typename _BinaryPredicate = equal_to<>>
-    inline boyer_moore_searcher<_RAIter, _Hash, _BinaryPredicate>
-    make_boyer_moore_searcher(_RAIter __pat_first, _RAIter __pat_last,
-			      _Hash __hf = _Hash(),
-			      _BinaryPredicate __pred = _BinaryPredicate())
-    { return { __pat_first, __pat_last, std::move(__hf), std::move(__pred) }; }
-
-  /// Generator function for boyer_moore_horspool_searcher
-  template<typename _RAIter, typename _Hash
-	     = std::hash<typename std::iterator_traits<_RAIter>::value_type>,
-	   typename _BinaryPredicate = equal_to<>>
-    inline boyer_moore_horspool_searcher<_RAIter, _Hash, _BinaryPredicate>
-    make_boyer_moore_horspool_searcher(_RAIter __pat_first, _RAIter __pat_last,
-				       _Hash __hf = _Hash(),
-				       _BinaryPredicate __pred
-				       = _BinaryPredicate())
-    { return { __pat_first, __pat_last, std::move(__hf), std::move(__pred) }; }
-
   template<typename _RAIter, typename _Hash, typename _BinaryPredicate>
     boyer_moore_searcher<_RAIter, _Hash, _BinaryPredicate>::
     boyer_moore_searcher(_RAIter __pat, _RAIter __pat_end,
