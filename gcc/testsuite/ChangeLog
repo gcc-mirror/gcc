@@ -1,6 +1,14 @@
 2017-03-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-03-13  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/78339
+	* gcc.target/i386/mpx/pr78339.c: New test.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2016-06-13  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/71458
