@@ -363,7 +363,6 @@ streamer_write_hwi_stream (struct lto_output_stream *obs, HOST_WIDE_INT work)
 void
 streamer_write_gcov_count_stream (struct lto_output_stream *obs, gcov_type work)
 {
-  gcc_assert (work >= 0);
   gcc_assert ((HOST_WIDE_INT) work == work);
   streamer_write_hwi_stream (obs, work);
 }

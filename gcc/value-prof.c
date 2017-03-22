@@ -431,7 +431,17 @@ stream_out_histogram_value (struct output_block *ob, histogram_value hist)
       break;
     }
   for (i = 0; i < hist->n_counters; i++)
-    streamer_write_gcov_count (ob, hist->hvalue.counters[i]);
+    {
+      /* When user uses an unsigned type with a big value, constant converted
+	 to gcov_type (a signed type) can be negative.  */
+      gcov_type value = hist->hvalue.counters[i];
+      if (hist->type == HIST_TYPE_SINGLE_VALUE && i == 0)
+	;
+      else
+	gcc_assert (value >= 0);
+
+      streamer_write_gcov_count (ob, value);
+    }
   if (hist->hvalue.next)
     stream_out_histogram_value (ob, hist->hvalue.next);
 }

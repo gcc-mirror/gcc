@@ -206,6 +206,5 @@ gcov_type
 streamer_read_gcov_count (struct lto_input_block *ib)
 {
   gcov_type ret = streamer_read_hwi (ib);
-  gcc_assert (ret >= 0);
   return ret;
 }
