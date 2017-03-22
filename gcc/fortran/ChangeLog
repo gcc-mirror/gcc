@@ -29,6 +29,11 @@
 	location of new expression from constructor expression instead
 	of constructor.
 
+2017-03-20  Nicolas Koenig  <koenigni@student.ethz.ch>
+
+	PR fortran/39239
+	* symbol.c (check_conflict): Report an error if an EQUIVALENCE
+	object is BIND(C)
 
 2017-03-18  Nicolas Koenig  <koenigni@student.ethz.ch>
 
