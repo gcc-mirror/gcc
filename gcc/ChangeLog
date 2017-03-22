@@ -1,6 +1,19 @@
 2017-03-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2016-06-13  Martin Liska  <mliska@suse.cz>
+
+	PR target/65705
+	PR target/69804
+	PR sanitizer/71458
+
+	* toplev.c (process_options): Enable MPX with LSAN and UBSAN.
+	* tree-chkp.c (chkp_walk_pointer_assignments): Verify that
+	FIELD != NULL.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-03-09  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/79631

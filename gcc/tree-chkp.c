@@ -3690,7 +3690,7 @@ chkp_walk_pointer_assignments (tree lhs, tree rhs, void *arg,
 
 	  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (rhs), cnt, field, val)
 	    {
-	      if (chkp_type_has_pointer (TREE_TYPE (field)))
+	      if (field && chkp_type_has_pointer (TREE_TYPE (field)))
 		{
 		  tree lhs_field = chkp_build_component_ref (lhs, field);
 		  chkp_walk_pointer_assignments (lhs_field, val, arg, handler);
