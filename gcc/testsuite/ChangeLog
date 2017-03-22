@@ -3,6 +3,15 @@
 	Backport from mainline
 	2017-03-09  Martin Liska  <mliska@suse.cz>
 
+	PR target/65705
+	PR target/69804
+	* gcc.target/i386/pr71458.c: Update scanned pattern.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-09  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/79761
 	* g++.dg/pr79761.C: New test.
 
