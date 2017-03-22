@@ -1,6 +1,14 @@
 2017-03-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	PR target/79906
+	* g++.dg/ext/mv8.C: Add power* targets.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-03-21  Martin Liska  <mliska@suse.cz>
 
 	* gcc.target/i386/pr65044.c: Add '.' in order to catch
