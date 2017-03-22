@@ -193,7 +193,7 @@ static struct
 struct operand_entry
 {
   unsigned int rank;
-  int id;
+  unsigned int id;
   tree op;
   unsigned int count;
   gimple *stmt_to_insert;
@@ -204,7 +204,7 @@ static object_allocator<operand_entry> operand_entry_pool
 
 /* This is used to assign a unique ID to each struct operand_entry
    so that qsort results are identical on different hosts.  */
-static int next_operand_entry_id;
+static unsigned int next_operand_entry_id;
 
 /* Starting rank number for a given basic block, so that we can rank
    operations using unmovable instructions in that BB based on the bb
@@ -505,12 +505,12 @@ sort_by_operand_rank (const void *pa, const void *pb)
       else
 	/* To make sorting result stable, we use unique IDs to determine
 	   order.  */
-        return oeb->id - oea->id;
+	return oeb->id > oea->id ? 1 : -1;
     }
 
   /* Lastly, make sure the versions that are the same go next to each
      other.  */
-  if ((oeb->rank - oea->rank == 0)
+  if (oeb->rank == oea->rank
       && TREE_CODE (oea->op) == SSA_NAME
       && TREE_CODE (oeb->op) == SSA_NAME)
     {
@@ -543,15 +543,15 @@ sort_by_operand_rank (const void *pa, const void *pb)
 	}
 
       if (SSA_NAME_VERSION (oeb->op) != SSA_NAME_VERSION (oea->op))
-	return SSA_NAME_VERSION (oeb->op) - SSA_NAME_VERSION (oea->op);
+	return SSA_NAME_VERSION (oeb->op) > SSA_NAME_VERSION (oea->op) ? 1 : -1;
       else
-	return oeb->id - oea->id;
+	return oeb->id > oea->id ? 1 : -1;
     }
 
   if (oeb->rank != oea->rank)
-    return oeb->rank - oea->rank;
+    return oeb->rank > oea->rank ? 1 : -1;
   else
-    return oeb->id - oea->id;
+    return oeb->id > oea->id ? 1 : -1;
 }
 
 /* Add an operand entry to *OPS for the tree operand OP.  */
@@ -1055,8 +1055,8 @@ static void linearize_expr_tree (vec<operand_entry *> *, gimple *,
 
 /* Structure for tracking and counting operands.  */
 struct oecount {
-  int cnt;
-  int id;
+  unsigned int cnt;
+  unsigned int id;
   enum tree_code oecode;
   tree op;
 };
@@ -1090,8 +1090,7 @@ oecount_hasher::equal (int p1, int p2)
 {
   const oecount *c1 = &cvec[p1 - 42];
   const oecount *c2 = &cvec[p2 - 42];
-  return (c1->oecode == c2->oecode
-	  && c1->op == c2->op);
+  return c1->oecode == c2->oecode && c1->op == c2->op;
 }
 
 /* Comparison function for qsort sorting oecount elements by count.  */
@@ -1102,10 +1101,10 @@ oecount_cmp (const void *p1, const void *p2)
   const oecount *c1 = (const oecount *)p1;
   const oecount *c2 = (const oecount *)p2;
   if (c1->cnt != c2->cnt)
-    return c1->cnt - c2->cnt;
+    return c1->cnt > c2->cnt ? 1 : -1;
   else
     /* If counts are identical, use unique IDs to stabilize qsort.  */
-    return c1->id - c2->id;
+    return c1->id > c2->id ? 1 : -1;
 }
 
 /* Return TRUE iff STMT represents a builtin call that raises OP
@@ -1559,7 +1558,7 @@ undistribute_ops_list (enum tree_code opcode,
   sbitmap_iterator sbi0;
   vec<operand_entry *> *subops;
   bool changed = false;
-  int next_oecount_id = 0;
+  unsigned int next_oecount_id = 0;
 
   if (length <= 1
       || opcode != PLUS_EXPR)

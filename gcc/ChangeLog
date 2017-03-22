@@ -1,5 +1,17 @@
 2017-03-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/80072
+	* tree-ssa-reassoc.c (struct operand_entry): Change id field type
+	to unsigned int.
+	(next_operand_entry_id): Change type to unsigned int.
+	(sort_by_operand_rank): Make sure to return the right return value
+	even if unsigned fields are bigger than INT_MAX.
+	(struct oecount): Change cnt and id type to unsigned int.
+	(oecount_hasher::equal): Formatting fix.
+	(oecount_cmp): Make sure to return the right return value
+	even if unsigned fields are bigger than INT_MAX.
+	(undistribute_ops_list): Change next_oecount_id type to unsigned int.
+
 	PR c++/80129
 	* gimplify.c (gimplify_modify_expr_rhs) <case COND_EXPR>: Clear
 	TREE_READONLY on result if writing it more than once.
