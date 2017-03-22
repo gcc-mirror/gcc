@@ -1381,7 +1381,7 @@ combine_array_constructor (gfc_expr *e)
       new_expr->ts = e->ts;
       new_expr->expr_type = EXPR_OP;
       new_expr->rank = c->expr->rank;
-      new_expr->where = c->where;
+      new_expr->where = c->expr->where;
       new_expr->value.op.op = e->value.op.op;
 
       if (scalar_first)

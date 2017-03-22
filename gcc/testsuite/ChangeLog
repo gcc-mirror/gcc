@@ -1,3 +1,8 @@
+2017-03-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/80142
+	* gfortran.dg/any_loc.f90: New test case.
+
 2017-03-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR target/80082

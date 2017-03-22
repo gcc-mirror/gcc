@@ -1,3 +1,10 @@
+2017-03-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/80142
+	* frontend-passes.c (combine_array_constructor): Take
+	location of new expression from constructor expression instead
+	of constructor.
+
 2017-03-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/79676
