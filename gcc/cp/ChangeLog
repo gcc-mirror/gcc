@@ -1,3 +1,7 @@
+2017-03-23  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h: Remove a C_RID_YYCODE reference.
+
 2017-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/80141
