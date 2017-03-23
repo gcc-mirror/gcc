@@ -19694,9 +19694,10 @@ try_one_overload (tree tparms,
 	     is equivalent to the corresponding explicitly specified argument.
 	     We may have deduced more arguments than were explicitly specified,
 	     and that's OK.  */
-	  gcc_assert (ARGUMENT_PACK_INCOMPLETE_P (oldelt));
-	  gcc_assert (ARGUMENT_PACK_ARGS (oldelt)
-		      == ARGUMENT_PACK_EXPLICIT_ARGS (oldelt));
+
+	  /* We used to assert ARGUMENT_PACK_INCOMPLETE_P (oldelt) here, but
+	     that's wrong if we deduce the same argument pack from multiple
+	     function arguments: it's only incomplete the first time.  */
 
 	  tree explicit_pack = ARGUMENT_PACK_ARGS (oldelt);
 	  tree deduced_pack = ARGUMENT_PACK_ARGS (elt);

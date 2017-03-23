@@ -1,5 +1,8 @@
 2017-03-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80150 - ICE with overloaded variadic deduction.
+	* pt.c (try_one_overload): Remove asserts.
+
 	PR c++/77563 - missing ambiguous conversion error.
 	* call.c (convert_like_real): Use LOOKUP_IMPLICIT.
 
