@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do run }
+// { dg-require-normal-mode "" }
 
 #include <ext/pb_ds/priority_queue.hpp>
 #include <testsuite_hooks.h>

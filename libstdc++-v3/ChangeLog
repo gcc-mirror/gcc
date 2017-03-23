@@ -1,5 +1,14 @@
 2017-03-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Adjust dg-error.
+	* testsuite/23_containers/list/operations/78389.cc: Fix less-than to
+	define a valid strict weak ordering.
+	* testsuite/23_containers/priority_queue/67085.cc: Disable test for
+	Debug Mode, due to debug checks making extra copies of predicate.
+	* testsuite/ext/pb_ds/regression/priority_queue_binary_heap-62045.cc:
+	Likewise.
+
 	* doc/xml/faq.xml: Add link.
 	* doc/xml/manual/backwards_compatibility.xml: Remove outdated
 	information on pre-ISO headers. Replace broken link to C++ FAQ Lite.
