@@ -1,3 +1,8 @@
+2017-03-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/77563 - missing ambiguous conversion error.
+	* call.c (convert_like_real): Use LOOKUP_IMPLICIT.
+
 2017-03-23  Marek Polacek  <polacek@redhat.com>
 
 	* cp-tree.h: Remove a C_RID_YYCODE reference.
