@@ -459,6 +459,13 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_SINGLE_P(NODE) \
   (TREE_CODE (NODE) != OVERLOAD || !OVL_CHAIN (NODE))
 
+/* Whether this is a set of overloaded functions.  */
+#define OVL_P(NODE) \
+  (TREE_CODE (NODE) == FUNCTION_DECL || TREE_CODE (NODE) == OVERLOAD)
+/* Whether this is a plurality of overloaded functions.  */
+#define OVL_PLURAL_P(NODE) \
+  (TREE_CODE (NODE) == OVERLOAD && TREE_TYPE (NODE) == unknown_type_node)
+
 /* We keep HIDDEN_P nodes at the front of the list.  */
 
 struct GTY(()) tree_overload {

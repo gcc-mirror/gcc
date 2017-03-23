@@ -1,5 +1,12 @@
 2017-03-23  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (OVL_P, OVL_PLURAL_P): New.
+	* name-lookup.c (name_lookup::add, diagnose_name_conflict,
+	pushdecl_maybe_friend_1, push_overloaded_decl_1,
+	do_nonmember_using_decl, push_class_level_binding_1,
+	set_decl_namespace, lookup_arg_dependent_1): Use OVL_P.
+
 	Two dimensional OVERLOADs
 	gcc/cp/
 	* cp-tree.h (OVL_FIRST): Call ovl_first.

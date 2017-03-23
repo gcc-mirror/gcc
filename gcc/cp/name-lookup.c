@@ -116,7 +116,7 @@ name_lookup::add (const cxx_binding *binding, int flags)
 		&& TREE_CODE (new_val) == TYPE_DECL
 		&& same_type_p (TREE_TYPE (value), TREE_TYPE (new_val))))
     {
-      if (is_overloaded_fn (value) && is_overloaded_fn (new_val))
+      if (OVL_P (value) && OVL_P (new_val))
 	value = ovl_add_transient (value, new_val);
       else
 	value = build_ambiguous (value, new_val);
@@ -704,7 +704,7 @@ diagnose_name_conflict (tree decl, tree bval)
       && (TREE_CODE (decl) != TYPE_DECL
 	  || (DECL_ARTIFICIAL (decl) && DECL_ARTIFICIAL (bval))
 	  || (!DECL_ARTIFICIAL (decl) && !DECL_ARTIFICIAL (bval)))
-      && !is_overloaded_fn (decl))
+      && !DECL_DECLARES_FUNCTION_P (decl))
     error ("redeclaration of %q#D", decl);
   else
     error ("%q#D conflicts with a previous declaration", decl);
@@ -952,7 +952,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	    }
 	  else if ((DECL_EXTERN_C_FUNCTION_P (x)
 		    || DECL_FUNCTION_TEMPLATE_P (x))
-		   && is_overloaded_fn (t))
+		   && DECL_DECLARES_FUNCTION_P (t))
 	    /* Don't do anything just yet.  */;
 	  else if (t == wchar_decl_node)
 	    {
@@ -2584,7 +2584,7 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
 	    warning (OPT_Wshadow, "%q#D hides constructor for %q#T", decl, t);
 	  old = NULL_TREE;
 	}
-      else if (is_overloaded_fn (old))
+      else if (OVL_P (old))
 	{
 	  for (ovl_iterator iter (old); iter; ++iter)
 	    {
@@ -2747,9 +2747,9 @@ do_nonmember_using_decl (tree scope, tree name, cxx_binding *bind)
   if (lookup.value && lookup.value != bind->value)
     {
       /* Check for using functions.  */
-      if (is_overloaded_fn (lookup.value))
+      if (OVL_P (lookup.value))
 	{
-	  if (bind->value && !is_overloaded_fn (bind->value))
+	  if (bind->value && !OVL_P (bind->value))
 	    {
 	      error ("%qD is already declared in this scope", name);
 	      bind->value= NULL_TREE;
@@ -3365,7 +3365,7 @@ push_class_level_binding_1 (tree name, tree x)
 	    }
 	}
       else if (TREE_CODE (target_decl) == OVERLOAD
-	       && is_overloaded_fn (target_bval))
+	       && OVL_P (target_bval))
 	old_decl = bval;
       else if (TREE_CODE (decl) == USING_DECL
 	       && TREE_CODE (bval) == USING_DECL
@@ -3380,10 +3380,10 @@ push_class_level_binding_1 (tree name, tree x)
 	       && DECL_DEPENDENT_P (bval))
 	return true;
       else if (TREE_CODE (decl) == USING_DECL
-	       && is_overloaded_fn (target_bval))
+	       && OVL_P (target_bval))
 	old_decl = bval;
       else if (TREE_CODE (bval) == USING_DECL
-	       && is_overloaded_fn (target_decl))
+	       && OVL_P (target_decl))
 	return true;
 
       if (old_decl && binding->scope == class_binding_level)
@@ -3639,7 +3639,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
       print_candidates (old);
       return;
     }
-  if (!is_overloaded_fn (decl))
+  if (!OVL_P (decl))
     {
       /* We might have found OLD in an inline namespace inside SCOPE.  */
       if (TREE_CODE (decl) == TREE_CODE (old))
@@ -3650,7 +3650,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
       return;
     }
   /* Since decl is a function, old should contain a function decl.  */
-  if (!is_overloaded_fn (old))
+  if (!OVL_P (old))
     goto complain;
   /* We handle these in check_explicit_instantiation_namespace.  */
   if (processing_explicit_instantiation)
@@ -3665,7 +3665,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
      friends in any namespace.  */
   if (friendp && DECL_USE_TEMPLATE (decl))
     return;
-  if (is_overloaded_fn (old))
+  if (OVL_P (old))
     {
       tree found = NULL_TREE;
 
@@ -5806,9 +5806,7 @@ lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
 
   fns = k.functions;
   
-  if (fns
-      && !VAR_P (fns)
-      && !is_overloaded_fn (fns))
+  if (fns && !VAR_P (fns) && !OVL_P (fns))
     {
       error ("argument dependent lookup finds %q+D", fns);
       error ("  in call to %qD", name);
