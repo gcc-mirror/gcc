@@ -30,8 +30,10 @@ namespace std {
 
 #if __cplusplus > 201402L
   enum class align_val_t : size_t;
-  // static constexpr size_t hardware_destructive_interference_size;
-  // static constexpr size_t hardware_constructive_interference_size;
+  // _GLIBCXX17_INLINE constexpr size_t
+  //    hardware_destructive_interference_size;
+  // _GLIBCXX17_INLINE constexpr size_t
+  //    hardware_constructive_interference_size;
 #endif
 }
 

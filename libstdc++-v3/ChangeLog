@@ -1,3 +1,38 @@
+2017-03-23  Daniel Kruegler  <daniel.kruegler@gmail.com>
+
+	* include/bits/c++config (_GLIBCXX17_INLINE): Define.
+	* include/bits/regex_constants.h (All std::regex_constants constants):
+	Add _GLIBCXX17_INLINE as per P0607R0.
+	* include/bits/std_mutex.h (defer_lock, try_to_lock, adopt_lock):
+	Likewise.
+	* include/bits/stl_pair.h (piecewise_construct): Likewise.
+	* include/bits/uses_allocator.h (allocator_arg, uses_allocator_v)
+	(__is_uses_allocator_constructible_v)
+	(__is_nothrow_uses_allocator_constructible_v): Likewise.
+	* include/std/chrono (treat_as_floating_point_v): Likewise.
+	* include/std/functional (is_bind_expression_v, is_placeholder_v):
+	Likewise.
+	* include/std/optional (nullopt): Likewise.
+	* include/std/ratio (ratio_equal_v, ratio_not_equal_v, ratio_less_v)
+	ratio_less_equal_v, ratio_greater_v, ratio_greater_equal_v): Likewise.
+	* include/std/system_error (is_error_code_enum_v)
+	(is_error_condition_enum_v): Likewise.
+	* include/std/tuple (tuple_size_v, ignore): Likewise.
+	(ignore): Declare ignore constexpr as per LWG 2773, declare assignment
+	constexpr as per LWG 2933.
+	* include/std/type_traits (All variable templates): Add
+	_GLIBCXX17_INLINE as per P0607R0.
+	* include/std/variant (variant_size_v, variant_npos, __index_of_v)
+	(__tuple_count_v, __exactly_once): Likewise.
+	* testsuite/18_support/headers/new/synopsis.cc
+	(hardware_destructive_interference_size)
+	(hardware_constructive_interference_size): Likewise for commented-out
+	variables.
+	* testsuite/20_util/tuple/creation_functions/constexpr.cc: Add new
+	test function for constexpr std::ignore (LWG 2773).
+	* testsuite/20_util/tuple/creation_functions/constexpr_cpp14.cc: New
+	test for LWG 2933.
+
 2017-03-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr.h (shared_ptr, weak_ptr): Add deduction
