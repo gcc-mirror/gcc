@@ -40,6 +40,9 @@ template class std::hash<long double>;
 template class std::hash<void*>;
 template class std::hash<std::string>;
 template class std::hash<std::error_code>;
+#if __cplusplus > 201402L
+template class std::hash<std::error_condition>;
+#endif
 
 #ifdef _GLIBCXX_USE_WCHAR_T
 template class std::hash<wchar_t>;

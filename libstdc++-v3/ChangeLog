@@ -1,5 +1,13 @@
 2017-03-23  Daniel Kruegler  <daniel.kruegler@gmail.com>
 
+	Implement LWG 2686, Why is std::hash specialized for error_code,
+	but not error_condition?
+	* include/std/system_error (hash<error_condition>): Define for C++17.
+	* testsuite/20_util/hash/operators/size_t.cc (hash<error_condition>):
+	Instantiate test for error_condition.
+	* testsuite/20_util/hash/requirements/explicit_instantiation.cc
+	(hash<error_condition>): Instantiate hash<error_condition>.
+
 	* include/bits/c++config (_GLIBCXX17_INLINE): Define.
 	* include/bits/regex_constants.h (All std::regex_constants constants):
 	Add _GLIBCXX17_INLINE as per P0607R0.
