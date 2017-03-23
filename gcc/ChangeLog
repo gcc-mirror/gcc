@@ -1,3 +1,9 @@
+2017-03-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71436
+	* config/arm/arm.md (*load_multiple): Add reload_completed to
+	matching condition.
+
 2017-03-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
             Richard Biener  <rguenth@suse.com>
 
