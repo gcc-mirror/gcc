@@ -2598,7 +2598,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
      I2 and not in I3, a REG_DEAD note must be made.  */
   rtx i3dest_killed = 0;
   /* SET_DEST and SET_SRC of I2, I1 and I0.  */
-  rtx i2dest = 0, i2src = 0, i1dest = 0, i1src = 0, i0dest = 0, i0src = 0;
+  rtx i3src = 0, i2dest = 0, i2src = 0, i1dest = 0, i1src = 0, i0dest = 0, i0src = 0;
   /* Copy of SET_SRC of I1 and I0, if needed.  */
   rtx i1src_copy = 0, i0src_copy = 0, i0src_copy2 = 0;
   /* Set if I2DEST was reused as a scratch register.  */
@@ -2631,6 +2631,9 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
      never be).  */
   if (i1 == i2 || i0 == i2 || (i0 && i0 == i1))
     return 0;
+
+  if (single_set(i3))
+	i3src = SET_SRC(single_set(i3));
 
   /* Only try four-insn combinations when there's high likelihood of
      success.  Look for simple insns, such as loads of constants or
@@ -3367,6 +3370,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
    * then perform the combine and mark the compare as deleted.
    */
   if (i2dest_killed && !i0 && !i1 && i2pat && i2_is_used + added_sets_2 > 1
+	  && rtx_equal_p(i2dest, i3src)
       && NEXT_INSN(i3))
     {
       rtx_insn *next = NEXT_INSN(i3);
@@ -3391,7 +3395,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
 		      /* perform deletion later, if all other checks are ok. */
 		      del4 = next;
-		    }
+			}
 		}
 	    }
 	}
@@ -4438,10 +4442,13 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
     /* SBF: perform the deletion of the next insn, if marked. */
     if (del4)
       {
+//		  rtx set = SET_SRC(single_set(del4));
+
 	int del_from_luid = DF_INSN_LUID(del4);
 	LOG_LINKS(del4) = NULL;
 	REG_NOTES(del4) = 0;
-	SET_INSN_DELETED(del4);
+	SET_INSN_DELETED(del4); 
+//	XEXP(set, 0) = XEXP(set, 1);
 	if (newi2pat)
 	move_deaths(newi2pat, NULL_RTX, del_from_luid, del4, &midnotes);
 	move_deaths(newpat, NULL_RTX, del_from_luid, del4, &midnotes);
