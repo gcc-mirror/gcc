@@ -1,3 +1,11 @@
+2017-03-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+            Richard Biener  <rguenth@suse.com>
+
+	PR tree-optimization/79908
+	PR tree-optimization/80136
+	* tree-stdarg.c (expand_ifn_va_arg_1): For a VA_ARG whose LHS has
+	been cast away, gimplify_and_add suffices.
+
 2017-03-23  Markus Trippelsdorf  <markus@trippelsdorf.de> 
 
 	* tree-vrp.c (identify_jump_threads): Delete avail_exprs.

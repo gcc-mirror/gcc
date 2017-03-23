@@ -1,6 +1,13 @@
+2017-03-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+            Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79908
+	PR tree-optimization/80136
+	* gcc.dg/torture/pr79908.c: New file.
+
 2017-03-22 Nicolas Koenig <koenigni@student.ethz.ch>
 
-	PR fortran/39239	
+	PR fortran/39239
 	* gfortran.dg/equiv_constraint_bind_c.f90: New test.
 
 2017-03-22  Jakub Jelinek  <jakub@redhat.com>
