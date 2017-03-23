@@ -1,3 +1,8 @@
+2017-03-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/71436
+	* gcc.c-torture/compile/pr71436.c: New test.
+
 2017-03-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
             Richard Biener  <rguenther@suse.de>
 
