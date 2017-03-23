@@ -15936,7 +15936,7 @@ cp_parser_template_name (cp_parser* parser,
 	 template-id for the overloaded templates.  */
       bool found = false;
 
-      for (ovl_iterator iter (MAYBE_BASELINK_FUNCTIONS (decl));
+      for (ovl2_iterator iter (MAYBE_BASELINK_FUNCTIONS (decl));
 	   !found && iter; ++iter)
 	if (TREE_CODE (*iter) == TEMPLATE_DECL)
 	  found = true;

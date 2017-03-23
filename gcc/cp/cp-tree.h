@@ -187,6 +187,7 @@ operator == (const cp_expr &lhs, tree rhs)
       BIND_EXPR_BODY_BLOCK (in BIND_EXPR)
       CALL_EXPR_ORDERED_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       DECLTYPE_FOR_REF_CAPTURE (in DECLTYPE_TYPE)
+      OVL_NESTED_P (in OVERLOAD)
       MODULE_EXPORT_P (in DECL_)
    4: TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  CALL_EXPR, or FIELD_DECL).
@@ -447,49 +448,49 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_TRANSIENT_P(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
 /* If set, this overload is a hidden decl.  */
 #define OVL_HIDDEN_P(NODE) TREE_LANG_FLAG_2 (OVERLOAD_CHECK (NODE))
+/* If set, this overload contains a nested overload.  */
+#define OVL_NESTED_P(NODE) TREE_LANG_FLAG_3 (OVERLOAD_CHECK (NODE))
 
 /* The first decl of an overload.  */
-#define OVL_FIRST(NODE)						\
-  (TREE_CODE (NODE) != OVERLOAD ? (NODE) : OVL_FUNCTION (NODE))
+#define OVL_FIRST(NODE)	ovl_first (NODE)
 /* The name of the overload set.  */
 #define OVL_NAME(NODE) DECL_NAME (OVL_FIRST (NODE))
 /* Whether this is a single member overload.  */
 #define OVL_SINGLE_P(NODE) \
   (TREE_CODE (NODE) != OVERLOAD || !OVL_CHAIN (NODE))
 
-/* By construction we keep HIDDEN_P nodes at the front of the list.  */
+/* We keep HIDDEN_P nodes at the front of the list.  */
 
 struct GTY(()) tree_overload {
   struct tree_common common;
   tree function;
 };
 
-struct ovl_iterator 
+/* Iterator for a 1 dimensional overload.  Permits iterating over the
+   outer level of a 2-d overload when explicitly enabled.  */
+
+class ovl_iterator 
 {
   tree ovl;
+  const bool allow_inner;
 
-  ovl_iterator (tree o)
-  :ovl (o) {}
+ public:
+  ovl_iterator (tree o, bool allow = false)
+  :ovl (o),
+    allow_inner (allow) {}
 
+  ovl_iterator &operator= (const ovl_iterator &from)
+  {
+    ovl = from.ovl;
+    gcc_checking_assert (allow_inner == from.allow_inner);
+
+    return *this;
+  }
+
+ public:
   operator bool () const
   {
     return ovl;
-  }
-  bool via_using_p () const
-  {
-    return TREE_CODE (ovl) == OVERLOAD && OVL_VIA_USING_P (ovl);
-  }
-  bool hidden_p () const
-  {
-    return TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
-  }
-  tree unhide (tree overload)
-  {
-    OVL_HIDDEN_P (ovl) = false;
-    if (OVL_CHAIN (ovl) && OVL_HIDDEN_P (OVL_CHAIN (ovl)))
-      /* There's a following still-hidden decl.  */
-      return ovl_unhide (overload, ovl);
-    return overload;
   }
   ovl_iterator &operator++ ()
   {
@@ -498,8 +499,34 @@ struct ovl_iterator
   }
   tree operator* () const
   {
-    return TREE_CODE (ovl) != OVERLOAD ? ovl : OVL_FUNCTION (ovl);
+    tree fn = TREE_CODE (ovl) != OVERLOAD ? ovl : OVL_FUNCTION (ovl);
+
+    /* Check this is not an unexpected 2-dimensional overload.  */
+    gcc_checking_assert (allow_inner || TREE_CODE (fn) != OVERLOAD);
+
+    return fn;
   }
+
+ public:
+  bool via_using_p () const
+  {
+    return TREE_CODE (ovl) == OVERLOAD && OVL_VIA_USING_P (ovl);
+  }
+  bool hidden_p () const
+  {
+    return TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
+  }
+
+ public:
+  tree unhide (tree overload)
+  {
+    OVL_HIDDEN_P (ovl) = false;
+    if (OVL_CHAIN (ovl) && OVL_HIDDEN_P (OVL_CHAIN (ovl)))
+      /* There's a following still-hidden decl.  */
+      return ovl_unhide (overload, ovl);
+    return overload;
+  }
+
   tree &ref () const
   {
     return OVL_FUNCTION (ovl);
@@ -513,10 +540,53 @@ struct ovl_iterator
     return count++;
   }
   void replace (tree fn, unsigned count) const;
+
 private:
   /* We make this a static fn, to prevent the iterator object becoming
      sra-opaque.  */
   static tree ovl_unhide (tree ovl, tree fn);
+
+protected:
+  tree maybe_push ()
+  {
+    tree r = NULL_TREE;
+
+    if (ovl && TREE_CODE (ovl) == OVERLOAD && OVL_NESTED_P (ovl))
+      {
+	r = ovl;
+	ovl = OVL_FUNCTION (ovl);
+      }
+    return r;
+  }
+};
+
+/* Iterator over a (potentially) 2 dimensional overload.  */
+
+class ovl2_iterator : public ovl_iterator
+{
+  typedef ovl_iterator parent;
+
+  tree outer;
+
+ public:
+  ovl2_iterator (tree o)
+    : parent (o), outer (maybe_push ())
+  {
+  }
+
+  ovl2_iterator &operator++ ()
+  {
+    if (!parent::operator++ () && outer)
+      {
+	parent::operator= (OVL_CHAIN (outer));
+	outer = NULL_TREE;
+      }
+
+    if (!outer)
+      outer = maybe_push ();
+
+    return *this;
+  }
 };
 
 struct GTY(()) tree_template_decl {
@@ -6741,6 +6811,13 @@ extern tree hash_tree_cons			(tree, tree, tree);
 extern tree hash_tree_chain			(tree, tree);
 extern tree build_qualified_name		(tree, tree, tree, bool);
 extern tree build_ref_qualified_type		(tree, cp_ref_qualifier);
+inline tree
+ovl_first (tree node)
+{
+  while (TREE_CODE (node) == OVERLOAD)
+    node = OVL_FUNCTION (node);
+  return node;
+}
 extern tree ovl_skip_hidden			(tree);
 extern tree ovl_make				(tree fn,
 						 tree next = NULL_TREE);

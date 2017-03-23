@@ -1,3 +1,25 @@
+2017-03-23  Nathan Sidwell  <nathan@acm.org>
+
+	Two dimensional OVERLOADs
+	gcc/cp/
+	* cp-tree.h (OVL_FIRST): Call ovl_first.
+	(ovl_iterator): Add allow_inner, adjust.
+	(ovl2_iterator): New.
+	(ovl_first): New.
+	* name-lookup.c (name_lookup::add): Create 2d overload.
+	(do_nonmember_using_decl): 2D overload.
+	(lookup_arg_dependent_1, cp_emit_debug_info_for_using): Likewise.
+	* call.c (add_candidates): Likewise.
+	* class.c (resolve_address_of_overloaded_function): Likewise.
+	* parser.c (cp_parser_template_name): Likewise.
+	* pt.c (type_dependent_expression_p): Likewise.
+	(print_candidates_1): Likewise.
+	* ptree.c (cxx_print_xnode): Allow inner overload.
+	* semantics.c (finish_call_expr): Keep overload, 2D overload.
+	* tree.c (ovl_scope): Allow inner overload.
+	gcc/testsuite/
+	* g++.dg/lookup/using57.C: New.
+
 2017-03-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

@@ -5416,7 +5416,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
     /* Delay creating the implicit this parameter until it is needed.  */
     non_static_args = NULL;
 
-  for (ovl_iterator iter (fns); iter; ++iter)
+  for (ovl2_iterator iter (fns); iter; ++iter)
     {
       tree fn_first_arg;
       const vec<tree, va_gc> *fn_args;

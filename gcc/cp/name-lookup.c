@@ -117,26 +117,7 @@ name_lookup::add (const cxx_binding *binding, int flags)
 		&& same_type_p (TREE_TYPE (value), TREE_TYPE (new_val))))
     {
       if (is_overloaded_fn (value) && is_overloaded_fn (new_val))
-	{
-	  // FIXME: Create OVL of OVL, not this O^2 rubbish
-	  for (ovl_iterator outer (new_val); outer; ++outer)
-	    {
-	      tree fn2 = *outer;
-	      bool found = false;
-
-	      for (ovl_iterator inner (value); !found && inner; ++inner)
-		{
-		  tree fn1 = *inner;
-
-		  if (fn1 == fn2)
-		    found = true;
-		}
-
-	      /* If we exhausted all of the functions in S1, FN2 is new.  */
-	      if (!found)
-		value = ovl_add (value, fn2);
-	    }
-	}
+	value = ovl_add_transient (value, new_val);
       else
 	value = build_ambiguous (value, new_val);
     }
@@ -2774,7 +2755,7 @@ do_nonmember_using_decl (tree scope, tree name, cxx_binding *bind)
 	      bind->value= NULL_TREE;
 	    }
 
-	  for (ovl_iterator usings (lookup.value); usings; ++usings)
+	  for (ovl2_iterator usings (lookup.value); usings; ++usings)
 	    {
 	      tree new_fn = *usings;
 
@@ -5814,7 +5795,8 @@ lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
 	 namespace-scope functions.  */
       gcc_assert (DECL_NAMESPACE_SCOPE_P (OVL_FIRST (fns)));
       k.fn_set = new hash_set<tree>;
-      for (ovl_iterator iter (fns); iter; ++iter)
+      // FIXME: mark overloads, not each function
+      for (ovl2_iterator iter (fns); iter; ++iter)
 	k.fn_set->add (*iter);
     }
   else
@@ -6420,7 +6402,7 @@ cp_emit_debug_info_for_using (tree t, tree context)
   t = MAYBE_BASELINK_FUNCTIONS (t);
 
   /* FIXME: Handle TEMPLATE_DECLs.  */
-  for (ovl_iterator iter (t); iter; ++iter)
+  for (ovl2_iterator iter (t); iter; ++iter)
     {
       tree fn = *iter;
       if (TREE_CODE (fn) != TEMPLATE_DECL)

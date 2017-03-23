@@ -8113,7 +8113,7 @@ resolve_address_of_overloaded_function (tree target_type,
      if we're just going to throw them out anyhow.  But, of course, we
      can only do this when we don't *need* a template function.  */
   if (!template_only)
-    for (ovl_iterator iter (overload); iter; ++iter)
+    for (ovl2_iterator iter (overload); iter; ++iter)
       {
 	tree fn = *iter;
 
@@ -8164,7 +8164,7 @@ resolve_address_of_overloaded_function (tree target_type,
 	args[ia] = TREE_VALUE (arg);
       nargs = ia;
 
-      for (ovl_iterator iter (overload); iter; ++iter)
+      for (ovl2_iterator iter (overload); iter; ++iter)
 	{
 	  tree fn = *iter;
 	  tree instantiation;

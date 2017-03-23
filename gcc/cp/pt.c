@@ -1918,7 +1918,7 @@ print_candidates_1 (tree fns, char **str, bool more = false)
       print_candidates_1 (TREE_VALUE (fns), str, more || TREE_CHAIN (fns));
   else
     {
-      ovl_iterator iter (fns);
+      ovl2_iterator iter (fns);
 
       do
 	{
@@ -23863,7 +23863,7 @@ type_dependent_expression_p (tree expression)
       gcc_assert (TREE_CODE (expression) == OVERLOAD
 		  || TREE_CODE (expression) == FUNCTION_DECL);
 
-      for (ovl_iterator iter (expression); iter; ++iter)
+      for (ovl2_iterator iter (expression); iter; ++iter)
 	if (type_dependent_expression_p (*iter))
 	  return true;
 

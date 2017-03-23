@@ -2060,6 +2060,9 @@ ovl_make (tree fn, tree next)
   tree result = make_node (OVERLOAD);
   TREE_TYPE (result) = (next || TREE_CODE (fn) == TEMPLATE_DECL
 			? unknown_type_node : TREE_TYPE (fn));
+  if (TREE_CODE (fn) == OVERLOAD)
+    OVL_NESTED_P (result) = true;
+
   OVL_FUNCTION (result) = fn;
   OVL_CHAIN (result) = next;
   return result;
@@ -2302,14 +2305,14 @@ ovl_scope (tree ovl)
     return BINFO_TYPE (BASELINK_BINFO (ovl));
   if (TREE_CODE (ovl) == TEMPLATE_ID_EXPR)
     ovl = TREE_OPERAND (ovl, 0);
-  /* FIXME: What if it's all using declarations?  */
+  /* FIXME: What if it's all using declarations?  Prepend some kind
+     of context? */
   /* Skip using-declarations.  */
-  if (TREE_CODE (ovl) == OVERLOAD)
-    {
-      while (OVL_VIA_USING_P (ovl) && OVL_CHAIN (ovl))
-	ovl = OVL_CHAIN (ovl);
-      ovl = OVL_FUNCTION (ovl);
-    }
+  ovl2_iterator iter (ovl);
+  do
+    ovl = *iter;
+  while (iter.via_using_p () && ++iter);
+
   return CP_DECL_CONTEXT (ovl);
 }
 

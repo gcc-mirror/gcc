@@ -2302,10 +2302,16 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	  result = build_nt_call_vec (fn, *args);
 	  SET_EXPR_LOCATION (result, EXPR_LOC_OR_LOC (fn, input_location));
 	  KOENIG_LOOKUP_P (result) = koenig_p;
+	  if (is_overloaded_fn (fn))
+	    {
+	      fn = get_ovl (fn);
+	      ovl_maybe_keep (fn, true);
+	    }
+
 	  if (cfun)
 	    {
 	      bool abnormal = true;
-	      for (ovl_iterator iter (fn); abnormal && iter; ++iter)
+	      for (ovl2_iterator iter (fn); abnormal && iter; ++iter)
 		{
 		  tree fndecl = *iter;
 		  if (TREE_CODE (fndecl) != FUNCTION_DECL
