@@ -122,6 +122,14 @@
 # endif
 #endif
 
+#ifndef _GLIBCXX17_INLINE
+# if __cplusplus > 201402L
+#  define _GLIBCXX17_INLINE inline
+# else
+#  define _GLIBCXX17_INLINE
+# endif
+#endif
+
 // Macro for noexcept, to support in mixed 03/0x mode.
 #ifndef _GLIBCXX_NOEXCEPT
 # if __cplusplus >= 201103L

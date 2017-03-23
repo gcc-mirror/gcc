@@ -76,7 +76,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct piecewise_construct_t { explicit piecewise_construct_t() = default; };
 
   /// piecewise_construct
-  constexpr piecewise_construct_t piecewise_construct = piecewise_construct_t();
+  _GLIBCXX17_INLINE constexpr piecewise_construct_t piecewise_construct =
+    piecewise_construct_t();
 
   // Forward declarations.
   template<typename...>
