@@ -1,3 +1,10 @@
+2017-03-23  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Change
+	handling of certain combinations of target options, including the
+	combinations -mpower8-vector vs. -mno-vsx, -mpower9-vector vs.
+	-mno-power8-vector, and -mpower9_dform vs. -mno-power9-vector.
+
 2017-03-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/71436
