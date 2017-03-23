@@ -364,75 +364,15 @@ libstdc++-v3.
 	 of the SGI STL (version 3.3), with extensive changes.
       </p><p>A more formal description of the V3 goals can be found in the
 	 official <a class="link" href="source_design_notes.html" title="Design Notes">design document</a>.
-      </p><p>Portability notes and known implementation limitations are as follows.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="backwards.third.headers"></a>Pre-ISO headers moved to backwards or removed</h4></div></div></div><p> The pre-ISO C++ headers
+      </p><p>Portability notes and known implementation limitations are as follows.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="backwards.third.headers"></a>Pre-ISO headers removed</h4></div></div></div><p> The pre-ISO C++ headers
       (<code class="filename">&lt;iostream.h&gt;</code>,
       <code class="filename">&lt;defalloc.h&gt;</code> etc.) are
-      available, unlike previous libstdc++ versions, but inclusion
-      generates a warning that you are using deprecated headers.
-</p><p>This compatibility layer is constructed by including the
-    standard C++ headers, and injecting any items in
-    <code class="code">std::</code> into the global namespace.
-   </p><p>For those of you new to ISO C++ (welcome, time travelers!), no,
-      that isn't a typo. Yes, the headers really have new names.
-      Marshall Cline's C++ FAQ Lite has a good explanation in <a class="link" href="http://www.parashift.com/c++-faq-lite/std-headers.html" target="_top">What's
+      not supported.
+</p><p>For those of you new to ISO C++ (welcome, time travelers!), the
+      ancient pre-ISO headers have new names.
+      The C++ FAQ has a good explanation in <a class="link" href="https://isocpp.org/wiki/faq/coding-standards#std-headers" target="_top">What's
       the difference between &lt;xxx&gt; and &lt;xxx.h&gt; headers?</a>.
-   </p><p> Some include adjustment may be required. What follows is an
-autoconf test that defines <code class="code">PRE_STDCXX_HEADERS</code> when they
-exist.</p><pre class="programlisting">
-# AC_HEADER_PRE_STDCXX
-AC_DEFUN([AC_HEADER_PRE_STDCXX], [
-  AC_CACHE_CHECK(for pre-ISO C++ include files,
-  ac_cv_cxx_pre_stdcxx,
-  [AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -Wno-deprecated"
-
-  # Omit defalloc.h, as compilation with newer compilers is problematic.
-  AC_TRY_COMPILE([
-  #include &lt;new.h&gt;
-  #include &lt;iterator.h&gt;
-  #include &lt;alloc.h&gt;
-  #include &lt;set.h&gt;
-  #include &lt;hashtable.h&gt;
-  #include &lt;hash_set.h&gt;
-  #include &lt;fstream.h&gt;
-  #include &lt;tempbuf.h&gt;
-  #include &lt;istream.h&gt;
-  #include &lt;bvector.h&gt;
-  #include &lt;stack.h&gt;
-  #include &lt;rope.h&gt;
-  #include &lt;complex.h&gt;
-  #include &lt;ostream.h&gt;
-  #include &lt;heap.h&gt;
-  #include &lt;iostream.h&gt;
-  #include &lt;function.h&gt;
-  #include &lt;multimap.h&gt;
-  #include &lt;pair.h&gt;
-  #include &lt;stream.h&gt;
-  #include &lt;iomanip.h&gt;
-  #include &lt;slist.h&gt;
-  #include &lt;tree.h&gt;
-  #include &lt;vector.h&gt;
-  #include &lt;deque.h&gt;
-  #include &lt;multiset.h&gt;
-  #include &lt;list.h&gt;
-  #include &lt;map.h&gt;
-  #include &lt;algobase.h&gt;
-  #include &lt;hash_map.h&gt;
-  #include &lt;algo.h&gt;
-  #include &lt;queue.h&gt;
-  #include &lt;streambuf.h&gt;
-  ],,
-  ac_cv_cxx_pre_stdcxx=yes, ac_cv_cxx_pre_stdcxx=no)
-  CXXFLAGS="$ac_save_CXXFLAGS"
-  AC_LANG_RESTORE
-  ])
-  if test "$ac_cv_cxx_pre_stdcxx" = yes; then
-    AC_DEFINE(PRE_STDCXX_HEADERS,,[Define if pre-ISO C++ header files are present. ])
-  fi
-])
-</pre><p>Porting between pre-ISO headers and ISO headers is simple: headers
+   </p><p>Porting between pre-ISO headers and ISO headers is simple: headers
 like <code class="filename">&lt;vector.h&gt;</code> can be replaced with <code class="filename">&lt;vector&gt;</code> and a using
 directive <code class="code">using namespace std;</code> can be put at the global
 scope. This should be enough to get this code compiling, assuming the

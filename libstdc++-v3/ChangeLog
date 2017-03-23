@@ -1,3 +1,11 @@
+2017-03-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml: Add link.
+	* doc/xml/manual/backwards_compatibility.xml: Remove outdated
+	information on pre-ISO headers. Replace broken link to C++ FAQ Lite.
+	* doc/xml/manual/io.xml: Update broken link.
+	* doc/html/*: Regenerate.
+
 2017-03-23  Daniel Kruegler  <daniel.kruegler@gmail.com>
 
 	Implement LWG 2686, Why is std::hash specialized for error_code,

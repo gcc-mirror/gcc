@@ -1177,7 +1177,8 @@
   </question>
   <answer xml:id="a-get_iso_cxx">
     <para>
-    Please refer to the Contributing section in our manual.
+    Please refer to the <link linkend="appendix.contrib">Contributing</link>
+    section in our manual.
     </para> 
   </answer>
 </qandaentry>
