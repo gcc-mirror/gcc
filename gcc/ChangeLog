@@ -1,3 +1,7 @@
+2017-03-23  Markus Trippelsdorf  <markus@trippelsdorf.de> 
+
+	* tree-vrp.c (identify_jump_threads): Delete avail_exprs.
+
 2017-03-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80032

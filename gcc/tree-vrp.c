@@ -11021,6 +11021,7 @@ identify_jump_threads (void)
      ASSERT_EXPRs are still in the IL and cfg cleanup code does not yet
      handle ASSERT_EXPRs gracefully.  */
   delete equiv_stack;
+  delete avail_exprs;
   delete avail_exprs_stack;
 }
 
