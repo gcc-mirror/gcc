@@ -1,6 +1,12 @@
 2017-03-24  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/80092
+	* c-c++-common/Wimplicit-fallthrough-34.c: Add
+	dg-require-effective-target indirect_jumps.
+
+2017-03-24  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80092
 	* gcc.dg/torture/pr79244.c: Add dg-require-effective-target
 	nonlocal_goto.
 
