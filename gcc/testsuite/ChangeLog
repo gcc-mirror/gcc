@@ -1,3 +1,8 @@
+2017-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/79904
+	* gcc.dg/ubsan/pr79904-2.c: Add -Wno-psabi to dg-options.
+
 2017-03-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/80119
