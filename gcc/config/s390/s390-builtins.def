@@ -2496,7 +2496,7 @@ B_DEF      (s390_vec_ctsl,              vec_ctsl,           0,                  
 B_DEF      (s390_vec_ctul,              vec_ctul,           0,                  B_VX,               O2_U3,              BT_FN_UV2DI_V2DF_INT)                    /* vclgdb */
 B_DEF      (s390_vcgdb,                 vec_df_to_di_s64,   0,                  B_VX,               O2_U3,              BT_FN_V2DI_V2DF_INT)                     /* vcgdb */
 B_DEF      (s390_vclgdb,                vec_df_to_di_u64,   0,                  B_VX,               O2_U3,              BT_FN_UV2DI_V2DF_INT)                    /* vclgdb */
-B_DEF      (s390_vfidb,                 vfidb,              0,                  B_VX,               O2_U4 | O3_U3,      BT_FN_V2DF_V2DF_UCHAR_UCHAR)
+B_DEF      (s390_vfidb,                 vfiv2df,            0,                  B_VX,               O2_U4 | O3_U3,      BT_FN_V2DF_V2DF_UCHAR_UCHAR)
 B_DEF      (s390_vec_ld2f,              vec_ld2f,           0,                  B_VX,               0,                  BT_FN_V2DF_FLTCONSTPTR)                  /* vldeb */
 B_DEF      (s390_vec_st2f,              vec_st2f,           0,                  B_VX,               0,                  BT_FN_VOID_V2DF_FLTPTR)                  /* vledb */
 B_DEF      (s390_vfmadb,                fmav2df4,           0,                  B_VX,               0,                  BT_FN_V2DF_V2DF_V2DF_V2DF)

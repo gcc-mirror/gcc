@@ -6201,7 +6201,7 @@ s390_expand_vec_compare (rtx target, enum rtx_code cond,
   bool neg_p = false, swap_p = false;
   rtx tmp;
 
-  if (GET_MODE (cmp_op1) == V2DFmode)
+  if (GET_MODE_CLASS (GET_MODE (cmp_op1)) == MODE_VECTOR_FLOAT)
     {
       switch (cond)
 	{
@@ -6447,7 +6447,8 @@ s390_expand_vcond (rtx target, rtx then, rtx els,
 
   /* We always use an integral type vector to hold the comparison
      result.  */
-  result_mode = cmp_mode == V2DFmode ? V2DImode : cmp_mode;
+  result_mode = mode_for_vector (int_mode_for_mode (GET_MODE_INNER (cmp_mode)),
+				 GET_MODE_NUNITS (cmp_mode));
   result_target = gen_reg_rtx (result_mode);
 
   /* We allow vector immediates as comparison operands that
@@ -10112,6 +10113,7 @@ s390_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       return ((GET_MODE_CLASS (mode) == MODE_INT
 	       && s390_class_max_nregs (VEC_REGS, mode) == 1)
 	      || mode == DFmode
+	      || (TARGET_VXE && mode == SFmode)
 	      || s390_vector_mode_supported_p (mode));
       break;
     case FP_REGS:
@@ -10255,6 +10257,13 @@ s390_cannot_change_mode_class (machine_mode from_mode,
 {
   machine_mode small_mode;
   machine_mode big_mode;
+
+  /* V1TF and TF have different representations in vector
+     registers.  */
+  if (reg_classes_intersect_p (VEC_REGS, rclass)
+      && ((from_mode == V1TFmode && to_mode == TFmode)
+	  || (from_mode == TFmode && to_mode == V1TFmode)))
+    return 1;
 
   if (GET_MODE_SIZE (from_mode) == GET_MODE_SIZE (to_mode))
     return 0;

@@ -1,5 +1,39 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_expand_vec_compare): Support other
+	vector floating point modes than just V2DF.
+	(s390_expand_vcond): Likewise.
+	(s390_hard_regno_mode_ok): Allow SFmode values in VRs.
+	(s390_cannot_change_mode_class): Prevent mode changes between TF
+	and V1TF in vector registers.
+	* config/s390/s390.md (DF, SF): New mode attributes.
+	("*cmp<mode>_ccs", "add<mode>3", "sub<mode>3", "mul<mode>3")
+	("fma<mode>4", "fms<mode>4", "div<mode>3", "*neg<mode>2"): Add
+	SFmode support for VRs.
+	* config/s390/vector.md (V_HW, V_HW2, VT_HW, ti*, nonvec): Add new
+	vector fp modes.
+	(VFT, VF_HW): New mode iterators.
+	(vw, sdx): New mode attributes.
+	("addv2df3", "subv2df3", "mulv2df3", "divv2df3", "sqrtv2df2")
+	("fmav2df4","fmsv2df4", "negv2df2", "absv2df2", "*negabsv2df2")
+	("smaxv2df3", "sminv2df3", "*vec_cmp<VFCMP_HW_OP:code>v2df_nocc")
+	("vec_cmpuneqv2df", "vec_cmpltgtv2df", "vec_orderedv2df")
+	("vec_unorderedv2df"): Adjust the v2df only patterns to support
+	also the new vector floating point modes.  Renaming to ...
+
+	("add<mode>3", "sub<mode>3", "mul<mode>3", "div<mode>3")
+	("sqrt<mode>2", "fma<mode>4", "fms<mode>4", "neg<mode>2")
+	("abs<mode>2", "negabs<mode>2", "smax<mode>3")
+	("smin<mode>3", "*vec_cmp<VFCMP_HW_OP:code><mode>_nocc")
+	("vec_cmpuneq<mode>", "vec_cmpltgt<mode>", "vec_ordered<mode>")
+	("vec_unordered<mode>"): ... these.
+
+	("neg_fma<mode>4", "neg_fms<mode>4", "*smax<mode>3_vxe")
+	("*smin<mode>3_vxe", "*sminv2df3_vx", "*vec_extendv4sf")
+	("*vec_extendv2df"): New insn definitions.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.md ("*adddi3_sign", "*subdi3_sign", "mulditi3")
 	("mulditi3_2", "*muldi3_sign"): New patterns.
 	("muldi3", "*muldi3", "mulsi3", "*mulsi3"): Add an expander and
