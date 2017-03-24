@@ -1123,6 +1123,9 @@ bool translate_isl_ast_to_gimple::
 is_valid_rename (tree rename, basic_block def_bb, basic_block use_bb,
 		 phi_node_kind phi_kind, tree old_name, basic_block old_bb) const
 {
+  if (SSA_NAME_IS_DEFAULT_DEF (rename))
+    return true;
+
   /* The def of the rename must either dominate the uses or come from a
      back-edge.  Also the def must respect the loop closed ssa form.  */
   if (!is_loop_closed_ssa_use (use_bb, rename))
@@ -1178,6 +1181,7 @@ get_rename (basic_block new_bb, tree old_name, basic_block old_bb,
 	  basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (rename));
 	  if (is_valid_rename (rename, bb, new_bb, phi_kind, old_name, old_bb)
 	      && (phi_kind == close_phi
+		  || ! bb
 		  || flow_bb_inside_loop_p (bb->loop_father, new_bb)))
 	    return rename;
 	  return NULL_TREE;

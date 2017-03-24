@@ -1,3 +1,8 @@
+2017-03-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80167
+	* gcc.dg/graphite/pr80167.c: New testcase.
+
 2017-03-24  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/80092
