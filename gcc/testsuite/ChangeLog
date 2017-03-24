@@ -1,5 +1,10 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.target/s390/vector/vec-scalar-cmp-1.c: Adjust for the
+	comparison instructions used from now on.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.target/s390/s390.exp (check_effective_target_vector):
 	Include target-supports.exp and move target_vector check routine
 	...

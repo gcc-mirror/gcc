@@ -1402,29 +1402,6 @@ s390_tm_ccmode (rtx op1, rtx op2, bool mixed)
 machine_mode
 s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
 {
-  if (TARGET_VX
-      && register_operand (op0, DFmode)
-      && register_operand (op1, DFmode))
-    {
-      /* LT, LE, UNGT, UNGE require swapping OP0 and OP1.  Either
-	 s390_emit_compare or s390_canonicalize_comparison will take
-	 care of it.  */
-      switch (code)
-	{
-	case EQ:
-	case NE:
-	  return CCVEQmode;
-	case GT:
-	case UNLE:
-	  return CCVFHmode;
-	case GE:
-	case UNLT:
-	  return CCVFHEmode;
-	default:
-	  ;
-	}
-    }
-
   switch (code)
     {
       case EQ:
@@ -1703,26 +1680,6 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
       *code = (int)swap_condition ((enum rtx_code)*code);
     }
 
-  /* Using the scalar variants of vector instructions for 64 bit FP
-     comparisons might require swapping the operands.  */
-  if (TARGET_VX
-      && register_operand (*op0, DFmode)
-      && register_operand (*op1, DFmode)
-      && (*code == LT || *code == LE || *code == UNGT || *code == UNGE))
-    {
-      rtx tmp;
-
-      switch (*code)
-	{
-	case LT:   *code = GT; break;
-	case LE:   *code = GE; break;
-	case UNGT: *code = UNLE; break;
-	case UNGE: *code = UNLT; break;
-	default: ;
-	}
-      tmp = *op0; *op0 = *op1; *op1 = tmp;
-    }
-
   /* A comparison result is compared against zero.  Replace it with
      the (perhaps inverted) original comparison.
      This probably should be done by simplify_relational_operation.  */
@@ -1749,56 +1706,6 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
     }
 }
 
-/* Helper function for s390_emit_compare.  If possible emit a 64 bit
-   FP compare using the single element variant of vector instructions.
-   Replace CODE with the comparison code to be used in the CC reg
-   compare and return the condition code register RTX in CC.  */
-
-static bool
-s390_expand_vec_compare_scalar (enum rtx_code *code, rtx cmp1, rtx cmp2,
-				rtx *cc)
-{
-  machine_mode cmp_mode;
-  bool swap_p = false;
-
-  switch (*code)
-    {
-    case EQ:   cmp_mode = CCVEQmode;  break;
-    case NE:   cmp_mode = CCVEQmode;  break;
-    case GT:   cmp_mode = CCVFHmode;  break;
-    case GE:   cmp_mode = CCVFHEmode; break;
-    case UNLE: cmp_mode = CCVFHmode;  break;
-    case UNLT: cmp_mode = CCVFHEmode; break;
-    case LT:   cmp_mode = CCVFHmode;  *code = GT;   swap_p = true; break;
-    case LE:   cmp_mode = CCVFHEmode; *code = GE;   swap_p = true; break;
-    case UNGE: cmp_mode = CCVFHmode;  *code = UNLE; swap_p = true; break;
-    case UNGT: cmp_mode = CCVFHEmode; *code = UNLT; swap_p = true; break;
-    default: return false;
-    }
-
-  if (swap_p)
-    {
-      rtx tmp = cmp2;
-      cmp2 = cmp1;
-      cmp1 = tmp;
-    }
-
-  emit_insn (gen_rtx_PARALLEL (VOIDmode,
-	       gen_rtvec (2,
-			  gen_rtx_SET (gen_rtx_REG (cmp_mode, CC_REGNUM),
-				       gen_rtx_COMPARE (cmp_mode, cmp1,
-							cmp2)),
-			  gen_rtx_CLOBBER (VOIDmode,
-					   gen_rtx_SCRATCH (V2DImode)))));
-
-  /* This is the cc reg how it will be used in the cc mode consumer.
-     It either needs to be CCVFALL or CCVFANY.  However, CC1 will
-     never be set by the scalar variants.  So it actually doesn't
-     matter which one we choose here.  */
-  *cc = gen_rtx_REG (CCVFALLmode, CC_REGNUM);
-  return true;
-}
-
 
 /* Emit a compare instruction suitable to implement the comparison
    OP0 CODE OP1.  Return the correct condition RTL to be placed in
@@ -1810,14 +1717,7 @@ s390_emit_compare (enum rtx_code code, rtx op0, rtx op1)
   machine_mode mode = s390_select_ccmode (code, op0, op1);
   rtx cc;
 
-  if (TARGET_VX
-      && register_operand (op0, DFmode)
-      && register_operand (op1, DFmode)
-      && s390_expand_vec_compare_scalar (&code, op0, op1, &cc))
-    {
-      /* Work has been done by s390_expand_vec_compare_scalar already.  */
-    }
-  else if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC)
+  if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC)
     {
       /* Do not output a redundant compare instruction if a
 	 compare_and_swap pattern already computed the result and the
