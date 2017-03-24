@@ -5321,8 +5321,7 @@ lookup_type_current_level (tree name)
 struct arg_lookup
 {
   tree name;
-  vec<tree, va_gc> *namespaces;
-  vec<tree, va_gc> *classes;
+  vec<tree, va_gc> *visited;
   tree functions;
 };
 
@@ -5401,9 +5400,10 @@ arg_assoc_namespace (struct arg_lookup *k, tree scope)
 {
   tree value;
 
-  if (vec_member (scope, k->namespaces))
+  if (NAME_MARKED_P (scope))
     return false;
-  vec_safe_push (k->namespaces, scope);
+  NAME_MARKED_P (scope) = true;
+  vec_safe_push (k->visited, scope);
 
   /* Check out our super-users.  */
   for (value = DECL_NAMESPACE_ASSOCIATIONS (scope); value;
@@ -5576,9 +5576,10 @@ arg_assoc_class (struct arg_lookup *k, tree type)
   if (!CLASS_TYPE_P (type))
     return false;
 
-  if (vec_member (type, k->classes))
+  if (NAME_MARKED_P (type))
     return false;
-  vec_safe_push (k->classes, type);
+  NAME_MARKED_P (type) = true;
+  vec_safe_push (k->visited, type);
 
   if (TYPE_CLASS_SCOPE_P (type)
       && arg_assoc_class_only (k, TYPE_CONTEXT (type)))
@@ -5767,22 +5768,19 @@ lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
   k.name = name;
   k.functions = ovl_lookup_mark (fns, true);
 
-  k.classes = make_tree_vector ();
-
-  /* We previously performed an optimization here by setting
-     NAMESPACES to the current namespace when it was safe. However, DR
-     164 says that namespaces that were already searched in the first
-     stage of template processing are searched again (potentially
-     picking up later definitions) in the second stage. */
-  k.namespaces = make_tree_vector ();
+  k.visited = make_tree_vector ();
 
   arg_assoc_args_vec (&k, args);
 
   fns = ovl_lookup_mark (k.functions, false);
 
-  release_tree_vector (k.classes);
-  release_tree_vector (k.namespaces);
-    
+  tree decl;
+  unsigned ix;
+
+  FOR_EACH_VEC_ELT_REVERSE (*k.visited, ix, decl)
+    NAME_MARKED_P (decl) = false;
+  release_tree_vector (k.visited);
+
   return fns;
 }
 

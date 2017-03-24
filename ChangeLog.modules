@@ -1,5 +1,15 @@
 2017-03-24  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* tree.h (TREE_CHECK6): New.
+	(tree_check6): New.
+	gcc/cp/
+	* cp-tree.h (NAME_MARKED_P): Add UNION_TYPE.
+	* name-lookup.c (arg_lookup): Replace namespace & class vectors
+	with visited.
+	(arg_assoc_namespace, arg_assoc_class): Use NAME_MARKED_P.
+	(lookup_arg_dependent_1): Unmark namespaces and classes.
+
 	gcc/cp/
 	* cp-tree.h (ovl2_iterator::operator++): Tweak.
 

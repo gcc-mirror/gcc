@@ -195,7 +195,7 @@ operator == (const cp_expr &lhs, tree rhs)
       DECL_TINFO_P (in VAR_DECL)
       FUNCTION_REF_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       NAME_MARKED_P (in NAMESPACE_DECL, TEMPLATE_DECL,
-      	FUNCTION_DECL, RECORD_TYPE)
+      	FUNCTION_DECL, RECORD_TYPE, UNION_TYPE)
    5: C_IS_RESERVED_WORD (in IDENTIFIER_NODE)
       DECL_VTABLE_OR_VTT_P (in VAR_DECL)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
@@ -438,8 +438,8 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 
 /* Name lookup walker marking.  */
 #define NAME_MARKED_P(NODE) \
-  TREE_LANG_FLAG_4 (TREE_CHECK5(NODE, NAMESPACE_DECL, TEMPLATE_DECL,	\
-				FUNCTION_DECL, RECORD_TYPE, OVERLOAD))
+  TREE_LANG_FLAG_4 (TREE_CHECK6(NODE, OVERLOAD,NAMESPACE_DECL,TEMPLATE_DECL,\
+				FUNCTION_DECL,RECORD_TYPE,UNION_TYPE))
 
 /* These two accessors should only be used by OVL manipulators.
    Other users should use iterators and convenience functions.  */
