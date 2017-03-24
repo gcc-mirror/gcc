@@ -1507,6 +1507,14 @@ assign_by_spills (void)
 	      sorted_pseudos[nfails++] = conflict_regno;
 	      former_reload_pseudo_spill_p = true;
 	    }
+	  else
+	    /* It is better to do reloads before spilling as after the
+	       spill-subpass we will reload memory instead of pseudos
+	       and this will make reusing reload pseudos more
+	       complicated.  Going directly to the spill pass in such
+	       case might result in worse code performance or even LRA
+	       cycling if we have few registers.  */
+	    bitmap_set_bit (&all_spilled_pseudos, conflict_regno);
 	  if (lra_dump_file != NULL)
 	    fprintf (lra_dump_file, "	  Spill %s r%d(hr=%d, freq=%d)\n",
 		     pseudo_prefix_title (conflict_regno), conflict_regno,

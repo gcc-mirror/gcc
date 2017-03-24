@@ -1,3 +1,9 @@
+2017-03-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/80148
+	* lra-assigns.c (assign_by_spills): Add spilled non-reload pseudos
+	to consider in curr_insn_transform.
+
 2017-03-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* genrecog.c (validate_pattern): Add VEC_SELECT validation.
