@@ -1,5 +1,9 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.target/s390/vxe/negfma-1.c: New test.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.target/s390/arch12/aghsghmgh-1.c: New test.
 	* gcc.target/s390/arch12/mul-1.c: New test.
 	* gcc.target/s390/arch12/mul-2.c: New test.
