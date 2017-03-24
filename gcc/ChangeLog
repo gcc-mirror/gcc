@@ -1,5 +1,12 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.md ("*adddi3_sign", "*subdi3_sign", "mulditi3")
+	("mulditi3_2", "*muldi3_sign"): New patterns.
+	("muldi3", "*muldi3", "mulsi3", "*mulsi3"): Add an expander and
+	rename the pattern definition.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.md ("indirect_jump"): Turn insn definition into
 	expander.
 	("*indirect_jump", "*indirect2_jump"): New pattern definitions.
