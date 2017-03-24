@@ -144,11 +144,18 @@
 (include "vx-builtins.md")
 
 ; Full HW vector size moves
+
+; We don't use lm/stm for 128 bit moves since these are slower than
+; splitting it into separate moves.
+
+; FIXME: More constants are possible by enabling jxx, jyy constraints
+; for TImode (use double-int for the calculations)
+
 ; vgmb, vgmh, vgmf, vgmg, vrepib, vrepih, vrepif, vrepig
 (define_insn "mov<mode>"
-  [(set (match_operand:V_128 0 "nonimmediate_operand" "=v,v,R,  v,  v,  v,  v,  v,v,d")
-	(match_operand:V_128 1 "general_operand"      " v,R,v,j00,jm1,jyy,jxx,jKK,d,v"))]
-  "TARGET_VX"
+  [(set (match_operand:V_128 0 "nonimmediate_operand" "=v,v,R,  v,  v,  v,  v,  v,v,*d,*d,?o")
+	(match_operand:V_128 1 "general_operand"      " v,R,v,j00,jm1,jyy,jxx,jKK,d, v,dT,*d"))]
+  ""
   "@
    vlr\t%v0,%v1
    vl\t%v0,%1
@@ -159,9 +166,13 @@
    vgm<bhfgq>\t%v0,%s1,%e1
    vrepi<bhfgq>\t%v0,%h1
    vlvgp\t%v0,%1,%N1
+   #
+   #
    #"
-  [(set_attr "op_type" "VRR,VRX,VRX,VRI,VRI,VRI,VRI,VRI,VRR,*")])
+  [(set_attr "cpu_facility" "vx,vx,vx,vx,vx,vx,vx,vx,vx,vx,*,*")
+   (set_attr "op_type"      "VRR,VRX,VRX,VRI,VRI,VRI,VRI,VRI,VRR,*,*,*")])
 
+; VR -> GPR, no instruction so split it into 64 element sets.
 (define_split
   [(set (match_operand:V_128 0 "register_operand" "")
 	(match_operand:V_128 1 "register_operand" ""))]
@@ -176,6 +187,38 @@
   operands[2] = operand_subword (operands[0], 0, 0, <MODE>mode);
   operands[3] = operand_subword (operands[0], 1, 0, <MODE>mode);
 })
+
+; Split the 128 bit GPR move into two word mode moves
+; s390_split_ok_p decides which part needs to be moved first.
+
+(define_split
+  [(set (match_operand:V_128 0 "nonimmediate_operand" "")
+        (match_operand:V_128 1 "general_operand" ""))]
+  "reload_completed
+   && s390_split_ok_p (operands[0], operands[1], <MODE>mode, 0)"
+  [(set (match_dup 2) (match_dup 4))
+   (set (match_dup 3) (match_dup 5))]
+{
+  operands[2] = operand_subword (operands[0], 0, 0, <MODE>mode);
+  operands[3] = operand_subword (operands[0], 1, 0, <MODE>mode);
+  operands[4] = operand_subword (operands[1], 0, 0, <MODE>mode);
+  operands[5] = operand_subword (operands[1], 1, 0, <MODE>mode);
+})
+
+(define_split
+  [(set (match_operand:V_128 0 "nonimmediate_operand" "")
+        (match_operand:V_128 1 "general_operand" ""))]
+  "reload_completed
+   && s390_split_ok_p (operands[0], operands[1], <MODE>mode, 1)"
+  [(set (match_dup 2) (match_dup 4))
+   (set (match_dup 3) (match_dup 5))]
+{
+  operands[2] = operand_subword (operands[0], 1, 0, <MODE>mode);
+  operands[3] = operand_subword (operands[0], 0, 0, <MODE>mode);
+  operands[4] = operand_subword (operands[1], 1, 0, <MODE>mode);
+  operands[5] = operand_subword (operands[1], 0, 0, <MODE>mode);
+})
+
 
 ; Moves for smaller vector modes.
 
