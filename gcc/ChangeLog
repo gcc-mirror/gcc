@@ -1,3 +1,12 @@
+2017-03-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/80158
+	* gimple-ssa-strength-reduction.c (replace_mult_candidate): When
+	replacing a candidate statement, also replace it for the
+	candidate's alternate interpretation.
+	(replace_rhs_if_not_dup): Likewise.
+	(replace_one_candidate): Likewise.
+
 2017-03-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80167

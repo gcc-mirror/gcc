@@ -1,3 +1,8 @@
+2017-03-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/80158
+	* gfortran.fortran-torture/compile/pr80158.f: New file.
+
 2017-03-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80167
