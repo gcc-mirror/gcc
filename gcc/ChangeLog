@@ -1,5 +1,13 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_expand_vec_init): Use vllezl
+	instruction if possible.
+	* config/s390/vector.md (vec_halfnumelts): New mode
+	attribute.
+	("*vec_vllezlf<mode>"): New pattern.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/vector.md ("popcountv16qi2", "popcountv8hi2")
 	("popcountv4si2", "popcountv2di2"): Rename to ...
 	("popcount<mode>2", "popcountv8hi2_vx", "popcountv4si2_vx")

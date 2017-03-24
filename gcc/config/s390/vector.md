@@ -44,6 +44,7 @@
 (define_mode_iterator VI_HW_HSD [V8HI  V4SI V2DI])
 (define_mode_iterator VI_HW_HS  [V8HI  V4SI])
 (define_mode_iterator VI_HW_QH  [V16QI V8HI])
+(define_mode_iterator VI_HW_4   [V4SI V4SF])
 
 ; All integer vector modes supported in a vector register + TImode
 (define_mode_iterator VIT [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI V2DI V1TI TI])
@@ -126,6 +127,9 @@
    (V2SI "V2HI") (V4SI "V4HI")
    (V2DI "V2SI")
    (V2DF "V2SF")])
+
+(define_mode_attr vec_halfnumelts
+  [(V4SF "V2SF") (V4SI "V2SI")])
 
 ; The comparisons not setting CC iterate over the rtx code.
 (define_code_iterator VFCMP_HW_OP [eq gt ge])
@@ -450,6 +454,19 @@
   s390_expand_vec_init (operands[0], operands[1]);
   DONE;
 })
+
+(define_insn "*vec_vllezlf<mode>"
+  [(set (match_operand:VI_HW_4              0 "register_operand" "=v")
+	(vec_concat:VI_HW_4
+	 (vec_concat:<vec_halfnumelts>
+	  (match_operand:<non_vec> 1 "memory_operand"    "R")
+	  (const_int 0))
+	 (vec_concat:<vec_halfnumelts>
+	  (const_int 0)
+	  (const_int 0))))]
+  "TARGET_VXE"
+  "vllezlf\t%v0,%1"
+  [(set_attr "op_type" "VRX")])
 
 ; Replicate from vector element
 ; vrepb, vreph, vrepf, vrepg

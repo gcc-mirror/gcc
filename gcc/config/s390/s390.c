@@ -6552,6 +6552,34 @@ s390_expand_vec_init (rtx target, rtx vals)
       return;
     }
 
+  /* Use vector load logical element and zero.  */
+  if (TARGET_VXE && (mode == V4SImode || mode == V4SFmode))
+    {
+      bool found = true;
+
+      x = XVECEXP (vals, 0, 0);
+      if (memory_operand (x, inner_mode))
+	{
+	  for (i = 1; i < n_elts; ++i)
+	    found = found && XVECEXP (vals, 0, i) == const0_rtx;
+
+	  if (found)
+	    {
+	      machine_mode half_mode = (inner_mode == SFmode
+					? V2SFmode : V2SImode);
+	      emit_insn (gen_rtx_SET (target,
+			      gen_rtx_VEC_CONCAT (mode,
+						  gen_rtx_VEC_CONCAT (half_mode,
+								      x,
+								      const0_rtx),
+						  gen_rtx_VEC_CONCAT (half_mode,
+								      const0_rtx,
+								      const0_rtx))));
+	      return;
+	    }
+	}
+    }
+
   /* We are about to set the vector elements one by one.  Zero out the
      full register first in order to help the data flow framework to
      detect it as full VR set.  */
