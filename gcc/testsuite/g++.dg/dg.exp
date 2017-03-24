@@ -29,22 +29,19 @@ if ![info exists DEFAULT_CXXFLAGS] then {
 # Initialize `dg'.
 dg-init
 
-# Recursively find the .C files in $dir and subdirs, do not walk into subdirs
+# Recursively find files in $dir and subdirs, do not walk into subdirs
 # that contain their own .exp file.
-proc find-cxx-tests { dir } {
-    set tests [lsort [glob -nocomplain -directory $dir *.C ]]
+proc find-cxx-tests { dir suffix } {
+    set tests [lsort [glob -nocomplain -directory $dir "*.$suffix" ]]
     foreach subdir [lsort [glob -nocomplain -type d -directory $dir *]] {
 	if { [glob -nocomplain -directory $subdir *.exp] eq "" } {
-	    lappend tests {*}[find-cxx-tests $subdir]
+	    lappend tests {*}[find-cxx-tests $subdir $suffix]
 	}
     }
     return $tests
 }
 
-# Gather a list of all tests, with the exception of those in directories
-# that are handled specially.
-
-set tests [find-cxx-tests $srcdir/$subdir]
+set tests [find-cxx-tests $srcdir/$subdir {C}]
 
 # Main loop.
 g++-dg-runtest $tests "" $DEFAULT_CXXFLAGS
