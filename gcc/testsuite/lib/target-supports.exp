@@ -8227,6 +8227,23 @@ proc check_effective_target_s390_vx { } {
 	}
     } "-march=z13 -mzarch" ]
 }
+
+# Same as above but for the arch12 vector enhancement facility. Test
+# is performed with the vector nand instruction.
+proc check_effective_target_s390_vxe { } {
+    if ![istarget s390*-*-*] then {
+	return 0;
+    }
+
+    return [check_runtime s390_check_vxe {
+	int main (void)
+	{
+	    asm ("vnn %%v24, %%v26, %%v28" : : : "v24", "v26", "v28");
+	    return 0;
+	}
+    } "-march=arch12 -mzarch" ]
+}
+
 #For versions of ARM architectures that have hardware div insn,
 #disable the divmod transform
 

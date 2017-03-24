@@ -209,6 +209,12 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.{c,S,C}]] \
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/target-attribute/*.{c,S,C}]] \
 	"" $DEFAULT_CFLAGS
 
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/arch12/*.{c,S,C}]] \
+	"" "-O3 -march=arch12 -mzarch"
+
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vxe/*.{c,S}]] \
+	"" "-O3 -march=arch12 -mzarch"
+
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/md/*.{c,S,C}]] \
 	"" $DEFAULT_CFLAGS
 
