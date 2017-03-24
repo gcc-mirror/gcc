@@ -1,5 +1,9 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.target/s390/vector/vec-init-2.c: New test.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.dg/ubsan/pr79904-2.c: New test.
 
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>

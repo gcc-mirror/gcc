@@ -1,5 +1,18 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_expand_vec_init): Enable vector load
+	pair for all vector types with 64 bit elements.
+	* config/s390/vx-builtins.md (V_HW_64): Move mode iterator to ...
+	* config/s390/vector.md (V_HW_64): ... here.
+	(V_128_NOSINGLE): New mode iterator.
+	("vec_init<V_HW:mode>"): Use V_128 as mode iterator.
+	("*vec_splat<mode>"): Use V_128_NOSINGLE mode iterator.
+	("*vec_tf_to_v1tf", "*vec_ti_to_v1ti"): New pattern definitions.
+	("*vec_load_pairv2di"): Change to ...
+	("*vec_load_pair<mode>"): ... this one.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/constraints.md: Add comments.
 	(jKK): Reject element sizes > 8 bytes.
 	* config/s390/s390.c (s390_split_ok_p): Enable splitting also for
