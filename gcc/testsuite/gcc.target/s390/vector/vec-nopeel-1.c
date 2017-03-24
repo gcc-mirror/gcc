@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -mzarch -march=z13" } */
-/* { dg-require-effective-target vector } */
+/* { dg-require-effective-target s390_vx } */
 
 int
 foo (int * restrict a, int n)
