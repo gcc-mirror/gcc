@@ -1,5 +1,17 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/constraints.md: Add comments.
+	(jKK): Reject element sizes > 8 bytes.
+	* config/s390/s390.c (s390_split_ok_p): Enable splitting also for
+	s_operands.
+	* config/s390/s390.md: Add the s_operand checks formerly in
+	s390_split_ok_p to various splitters where they are still
+	required.
+	* config/s390/vector.md ("mov<mode>" V_128): Add GPR alternatives
+	for 128 bit vectors.  Plus two splitters.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.md: Rename the cpu facilty vec to vx throughout
 	the file.
 

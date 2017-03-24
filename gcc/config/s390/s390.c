@@ -2494,10 +2494,6 @@ s390_split_ok_p (rtx dst, rtx src, machine_mode mode, int first_subword)
   if (FP_REG_P (src) || FP_REG_P (dst) || VECTOR_REG_P (src) || VECTOR_REG_P (dst))
     return false;
 
-  /* We don't need to split if operands are directly accessible.  */
-  if (s_operand (src, mode) || s_operand (dst, mode))
-    return false;
-
   /* Non-offsettable memory references cannot be split.  */
   if ((GET_CODE (src) == MEM && !offsettable_memref_p (src))
       || (GET_CODE (dst) == MEM && !offsettable_memref_p (dst)))
