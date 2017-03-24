@@ -2098,24 +2098,24 @@ ovl_move_unhidden (tree ovl)
    encodes !hiddenness or usingness .  */
 
 tree
-ovl_add (tree maybe_ovl, tree fn, int transient_or_using)
+ovl_add (tree maybe_ovl, tree fn, int look_or_using)
 {
   tree result;
 
-  /* 2d overloads only creatable via ovl_add_transient.  */
-  gcc_checking_assert (transient_or_using < 0 || TREE_CODE (fn) != OVERLOAD);
+  /* 2d overloads only creatable via ovl_add_lookup.  */
+  gcc_checking_assert (look_or_using < 0 || TREE_CODE (fn) != OVERLOAD);
 
   if (maybe_ovl && TREE_CODE (maybe_ovl) != OVERLOAD)
     {
       /* Don't chain to a non-overload.  */
       maybe_ovl = ovl_make (maybe_ovl);
-      if (transient_or_using < 0)
-	OVL_TRANSIENT_P (maybe_ovl) = true;
+      if (look_or_using < 0)
+	OVL_LOOKUP_P (maybe_ovl) = true;
     }
 
   result = fn;
-  bool using_p = transient_or_using > 0;
-  bool hidden_p = !transient_or_using && DECL_HIDDEN_P (fn);
+  bool using_p = look_or_using > 0;
+  bool hidden_p = !look_or_using && DECL_HIDDEN_P (fn);
 
   if (maybe_ovl || using_p || hidden_p || TREE_CODE (fn) == TEMPLATE_DECL)
     {
@@ -2124,8 +2124,8 @@ ovl_add (tree maybe_ovl, tree fn, int transient_or_using)
 	OVL_HIDDEN_P (result) = true;
       if (using_p)
 	OVL_VIA_USING_P (result) = true;
-      if (transient_or_using < 0)
-	OVL_TRANSIENT_P (result) = true;
+      if (look_or_using < 0)
+	OVL_LOOKUP_P (result) = true;
 
       if (!hidden_p && maybe_ovl && OVL_HIDDEN_P (maybe_ovl))
 	/* We inserted a non-hidden before a hidden.  Fix that up
@@ -2135,30 +2135,120 @@ ovl_add (tree maybe_ovl, tree fn, int transient_or_using)
   return result;
 }
 
-/* Add FN into a transient overload set.  The existing set need not
-   be transient.  */
+/* Mark or unmark a lookup set. */
 
 tree
-ovl_add_transient (tree maybe_ovl, tree fn)
+ovl_lookup_mark (tree ovl, bool val)
 {
-  return ovl_add (maybe_ovl, fn, /*transient_or_using=*/-1);
+  if (!ovl)
+    ;
+  else if (TREE_CODE (ovl) == FUNCTION_DECL
+	   || !OVL_LOOKUP_P (ovl))
+    NAME_MARKED_P (ovl) = val;
+  else
+    for (tree probe = ovl; probe; probe = OVL_CHAIN (probe))
+      if (!OVL_LOOKUP_P (probe))
+	{
+	  NAME_MARKED_P (probe) = val;
+	  break;
+	}
+      else
+	NAME_MARKED_P (OVL_FUNCTION (probe)) = val;
+
+  return ovl;
 }
 
-void
-ovl_maybe_keep (tree ovl, bool keep)
+/* Add a potential overload into a lookup set.  */
+
+tree
+ovl_lookup_add (tree lookup, tree ovl)
 {
+  if (NAME_MARKED_P (ovl))
+    return lookup;
+
   if (TREE_CODE (ovl) == OVERLOAD)
     {
-      while (ovl && OVL_TRANSIENT_P (ovl))
+      /* Determine if we already have some part of this overload in
+	 the overload set.  If so fix things up so we only have the
+	 overload set once.  */
+      tree marked = NULL_TREE;
+
+      for (tree probe = ovl; !marked && probe; probe = OVL_CHAIN (probe))
+	if (NAME_MARKED_P (probe))
+	  marked = probe;
+	else if (!OVL_CHAIN (probe) && NAME_MARKED_P (OVL_FUNCTION (probe)))
+	  marked = OVL_FUNCTION (probe);
+
+      if (marked)
+	NAME_MARKED_P (marked) = false;
+
+      if (!marked)
+	;
+      else if (TREE_CODE (lookup) == FUNCTION_DECL
+	       || !OVL_LOOKUP_P (lookup))
 	{
-	  tree next = OVL_CHAIN (ovl);
-	  if (keep)
-	    OVL_TRANSIENT_P (ovl) = false;
-	  else
-	    ggc_free (ovl);
-	  ovl = next;
+	  gcc_checking_assert (marked == lookup);
+	  lookup = NULL_TREE;
+	}
+      else
+	{
+	  /* The tail of this overload is already in the lookup set.
+	     Stitch out the tail case, which might involve copying.  */
+	  bool rewrite = false;
+
+	  for (tree probe = lookup, prev = NULL; ;
+	       prev = probe, probe = OVL_CHAIN (probe))
+	    {
+	      if (!OVL_LOOKUP_P (probe))
+		{
+		  gcc_checking_assert (marked == probe);
+		  OVL_CHAIN (prev) = NULL_TREE;
+		  break;
+		}
+	      else if (marked == OVL_FUNCTION (probe))
+		{
+		  (prev ? OVL_CHAIN (prev) : lookup) = OVL_CHAIN (probe);
+		  break;
+		}
+
+	      /* If we're in a used part of the lookup set, copy the
+		 node.  */
+	      gcc_checking_assert (!rewrite || OVL_USED_P (probe));
+	      if (OVL_USED_P (probe))
+		{
+		  rewrite = TRUE;
+		  probe = copy_node (probe);
+		  (prev ? OVL_CHAIN (prev) : lookup) = probe;
+		  OVL_USED_P (probe) = false;
+		}
+	    }
 	}
     }
+
+  /* Finally mark the new overload and prepend it to the current
+     lookup.  */
+  NAME_MARKED_P (ovl) = true;
+  lookup = ovl_add (lookup, ovl, -1);
+
+  return lookup;
+}
+
+/* Preserve the contents of a lookup so that it is available for a
+   later instantiation.  */
+
+void
+ovl_lookup_keep (tree lookup, bool keep)
+{
+  if (TREE_CODE (lookup) == OVERLOAD)
+    for (tree next; lookup && OVL_LOOKUP_P (lookup) && !OVL_USED_P (lookup);
+	 lookup = next)
+      {
+	next = OVL_CHAIN (lookup);
+	if (keep)
+	  OVL_USED_P (lookup) = true;
+	else
+	  ggc_free (lookup);
+      }
 }
 
 /* Skip any hidden names at the beginning of OVL.   */

@@ -137,7 +137,7 @@ operator == (const cp_expr &lhs, tree rhs)
       IMPLICIT_CONV_EXPR_DIRECT_INIT (in IMPLICIT_CONV_EXPR)
       TRANSACTION_EXPR_IS_STMT (in TRANSACTION_EXPR)
       CONVERT_EXPR_VBASE_PATH (in CONVERT_EXPR)
-      OVL_TRANSIENT_P (in OVERLOAD)
+      OVL_LOOKUP_P (in OVERLOAD)
       PACK_EXPANSION_LOCAL_P (in *_PACK_EXPANSION)
       TINFO_HAS_ACCESS_ERRORS (in TEMPLATE_INFO)
       SIZEOF_EXPR_TYPE_P (in SIZEOF_EXPR)
@@ -194,6 +194,8 @@ operator == (const cp_expr &lhs, tree rhs)
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
       DECL_TINFO_P (in VAR_DECL)
       FUNCTION_REF_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
+      NAME_MARKED_P (in NAMESPACE_DECL, TEMPLATE_DECL,
+      	FUNCTION_DECL, RECORD_TYPE)
    5: C_IS_RESERVED_WORD (in IDENTIFIER_NODE)
       DECL_VTABLE_OR_VTT_P (in VAR_DECL)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
@@ -434,6 +436,11 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
     && MAIN_NAME_P (DECL_NAME (NODE))			\
     && flag_hosted)
 
+/* Name lookup walker marking.  */
+#define NAME_MARKED_P(NODE) \
+  TREE_LANG_FLAG_4 (TREE_CHECK5(NODE, NAMESPACE_DECL, TEMPLATE_DECL,	\
+				FUNCTION_DECL, RECORD_TYPE, OVERLOAD))
+
 /* These two accessors should only be used by OVL manipulators.
    Other users should use iterators and convenience functions.  */
 #define OVL_FUNCTION(NODE) \
@@ -443,13 +450,14 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 
 /* If set, this was imported in a using declaration.   */
 #define OVL_VIA_USING_P(NODE)	TREE_LANG_FLAG_1 (OVERLOAD_CHECK (NODE))
-/* If set, this is a transient overload created during lookup (koenig
-   or otherwise).  */
-#define OVL_TRANSIENT_P(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
+/* If set, this overload was constructed during lookup.  */
+#define OVL_LOOKUP_P(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
 /* If set, this overload is a hidden decl.  */
 #define OVL_HIDDEN_P(NODE) TREE_LANG_FLAG_2 (OVERLOAD_CHECK (NODE))
 /* If set, this overload contains a nested overload.  */
 #define OVL_NESTED_P(NODE) TREE_LANG_FLAG_3 (OVERLOAD_CHECK (NODE))
+/* If set, this is a persistant lookup. */
+#define OVL_USED_P(NODE) TREE_USED (OVERLOAD_CHECK (NODE))
 
 /* The first decl of an overload.  */
 #define OVL_FIRST(NODE)	ovl_first (NODE)
@@ -534,6 +542,7 @@ class ovl_iterator
     return overload;
   }
 
+ public:
   tree &ref () const
   {
     return OVL_FUNCTION (ovl);
@@ -6829,9 +6838,10 @@ extern tree ovl_skip_hidden			(tree);
 extern tree ovl_make				(tree fn,
 						 tree next = NULL_TREE);
 extern tree ovl_add				(tree maybe_ovl, tree fn,
-						 int force = 0);
-extern tree ovl_add_transient			(tree maybe_ovl, tree fn);
-extern void ovl_maybe_keep			(tree ovl, bool keep);
+						 int look_or_using = 0);
+extern void ovl_lookup_keep			(tree lookup, bool keep);
+extern tree ovl_lookup_mark			(tree lookup, bool val);
+extern tree ovl_lookup_add			(tree lookup, tree ovl);
 extern tree get_ovl				(tree expr,
 						 bool want_first = false)
   ATTRIBUTE_NTC_PURE;

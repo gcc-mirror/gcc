@@ -1,3 +1,28 @@
+2017-03-24  Nathan Sidwell  <nathan@acm.org>
+
+	Simplify ADL part 1
+	gcc/cp/
+	* cp-tree.h (OVL_LOOKUP_P, NAME_MARKED_P): New.
+	(OVL_TRANSIENT_P): Morph into ...
+	(OVL_USED_P): ... this.
+	(ovl_add_transient): Kill.
+	(ovl_maybe_keep): Replace with ...
+	(ovl_lookup_keep): ... this.
+	(ovl_lookup_mark, ovl_lookup_add): Declare.
+	* tree.c (ovl_add): Rename arg.  Set OVL_LOOKUP_P.
+	(ovl_add_transient): Kill.
+	(ovl_lookup_mark, ovl_lookup_add): New.
+	(ovl_maybe_keep): Rename to ...
+	(ovl_lookup_keep): ... this.  Adjust.
+	* name-lookup.c (name_lookup::add): Use ovl_add directly.
+	(struct arg_lookup): Kill args and fn_set.
+	(add_function): Replace with ...
+	(add_functions): ... this.
+	(arg_assoc_namespace, arg_assoc_class_only): Use it.
+	(lookup_arg_dependent_1): Use new API.
+	* pt.c (tsubst_copy): Assert OVERLOAD is marked used.
+	* semantics.c (finish_call_expr): Adjust.
+
 2017-03-23  Nathan Sidwell  <nathan@acm.org>
 
 	Fixup transient_p bug

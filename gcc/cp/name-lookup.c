@@ -117,7 +117,7 @@ name_lookup::add (const cxx_binding *binding, int flags)
 		&& same_type_p (TREE_TYPE (value), TREE_TYPE (new_val))))
     {
       if (OVL_P (value) && OVL_P (new_val))
-	value = ovl_add_transient (value, new_val);
+	value = ovl_add (value, new_val, -1);
       else
 	value = build_ambiguous (value, new_val);
     }
@@ -4531,11 +4531,12 @@ lookup_qualified_name (tree scope, tree name, int prefer_type, bool complain,
 	flags |= LOOKUP_HIDDEN;
       if (qualified_lookup_using_namespace (name, scope, &lookup, flags))
 	t = lookup.value;
+
       /* If we have a known type overload, pull it out.  This can happen
 	 for both using decls and unhidden functions.  */
       if (t && TREE_CODE (t) == OVERLOAD
 	  && TREE_TYPE (t) != unknown_type_node)
-	t = OVL_FIRST (t);
+	t = OVL_FUNCTION (t);
     }
   else if (cxx_dialect != cxx98 && TREE_CODE (scope) == ENUMERAL_TYPE)
     t = lookup_enumerator (scope, name);
@@ -5320,38 +5321,35 @@ lookup_type_current_level (tree name)
 struct arg_lookup
 {
   tree name;
-  vec<tree, va_gc> *args;
   vec<tree, va_gc> *namespaces;
   vec<tree, va_gc> *classes;
   tree functions;
-  hash_set<tree> *fn_set;
-
-  
 };
 
 static bool arg_assoc (struct arg_lookup*, tree);
 static bool arg_assoc_args (struct arg_lookup*, tree);
 static bool arg_assoc_args_vec (struct arg_lookup*, vec<tree, va_gc> *);
 static bool arg_assoc_type (struct arg_lookup*, tree);
-static void add_function (struct arg_lookup *, tree);
 static bool arg_assoc_namespace (struct arg_lookup *, tree);
 static bool arg_assoc_class_only (struct arg_lookup *, tree);
 static bool arg_assoc_bases (struct arg_lookup *, tree);
 static bool arg_assoc_class (struct arg_lookup *, tree);
 static bool arg_assoc_template_arg (struct arg_lookup*, tree);
 
-/* Add a function to the lookup structure.  */
-
 static void
-add_function (struct arg_lookup *k, tree fn)
+add_functions (struct arg_lookup *k, tree ovl)
 {
-  if (TREE_CODE (fn) != FUNCTION_DECL && !DECL_FUNCTION_TEMPLATE_P (fn))
-    /* All names except those of (possibly overloaded) functions and
-       function templates are ignored.  */;
-  else if (k->fn_set && k->fn_set->add (fn))
-    /* It's already in the list.  */;
-  else
-    k->functions = ovl_add_transient (k->functions, fn);
+  if (!ovl)
+    return;
+  else if (TREE_CODE (ovl) == OVERLOAD)
+    {
+      if (TREE_TYPE (ovl) != unknown_type_node)
+	ovl = OVL_FUNCTION (ovl);
+    }
+  else if (!DECL_DECLARES_FUNCTION_P (ovl))
+    return;
+
+  k->functions = ovl_lookup_add (k->functions, ovl);
 }
 
 /* Returns true iff CURRENT has declared itself to be an associated
@@ -5425,12 +5423,7 @@ arg_assoc_namespace (struct arg_lookup *k, tree scope)
   if (!value)
     return false;
 
-  for (ovl_iterator iter (value); iter; ++iter)
-    /* We don't want to find arbitrary hidden functions via argument
-       dependent lookup.  We only want to find friends of associated
-       classes, which we'll do via arg_assoc_class.  */
-    if (!DECL_HIDDEN_P (*iter))
-      add_function (k, *iter);
+  add_functions (k, ovl_skip_hidden (value));
 
   return false;
 }
@@ -5526,7 +5519,7 @@ arg_assoc_class_only (struct arg_lookup *k, tree type)
 	  if (TREE_CODE (fn) == FUNCTION_DECL && DECL_USE_TEMPLATE (fn))
 	    continue;
 
-	  add_function (k, fn);
+	  add_functions (k, fn);
 	}
 
   return false;
@@ -5772,8 +5765,8 @@ lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
   struct arg_lookup k;
 
   k.name = name;
-  k.args = args;
-  k.functions = fns;
+  k.functions = ovl_lookup_mark (fns, true);
+
   k.classes = make_tree_vector ();
 
   /* We previously performed an optimization here by setting
@@ -5783,37 +5776,12 @@ lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
      picking up later definitions) in the second stage. */
   k.namespaces = make_tree_vector ();
 
-  /* We used to allow duplicates and let joust discard them, but
-     since the above change for DR 164 we end up with duplicates of
-     all the functions found by unqualified lookup.  So keep track
-     of which ones we've seen.  */
-  if (fns)
-    {
-      /* We shouldn't be here if lookup found something other than
-	 namespace-scope functions.  */
-      gcc_assert (DECL_NAMESPACE_SCOPE_P (OVL_FIRST (fns)));
-      k.fn_set = new hash_set<tree>;
-      // FIXME: mark overloads, not each function
-      for (ovl2_iterator iter (fns); iter; ++iter)
-	k.fn_set->add (*iter);
-    }
-  else
-    k.fn_set = NULL;
-
   arg_assoc_args_vec (&k, args);
 
-  fns = k.functions;
-  
-  if (fns && !VAR_P (fns) && !OVL_P (fns))
-    {
-      error ("argument dependent lookup finds %q+D", fns);
-      error ("  in call to %qD", name);
-      fns = error_mark_node;
-    }
+  fns = ovl_lookup_mark (k.functions, false);
 
   release_tree_vector (k.classes);
   release_tree_vector (k.namespaces);
-  delete k.fn_set;
     
   return fns;
 }

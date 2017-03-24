@@ -2305,7 +2305,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	  if (is_overloaded_fn (fn))
 	    {
 	      fn = get_ovl (fn);
-	      ovl_maybe_keep (fn, true);
+	      ovl_lookup_keep (fn, true);
 	    }
 
 	  if (cfun)
@@ -2480,7 +2480,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 
   /* Free or retain OVERLOADs from lookup.  */
   if (is_overloaded_fn (orig_fn))
-    ovl_maybe_keep (get_ovl (orig_fn), processing_template_decl);
+    ovl_lookup_keep (get_ovl (orig_fn), processing_template_decl);
 
   return result;
 }
