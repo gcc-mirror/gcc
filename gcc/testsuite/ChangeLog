@@ -1,3 +1,8 @@
+2017-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/80112
+	* gcc.dg/pr80112.c: New test.
+
 2017-03-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* c-c++-common/Wimplicit-fallthrough-7.c: Adjust dg-warning
