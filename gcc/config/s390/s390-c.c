@@ -673,10 +673,18 @@ s390_adjust_builtin_arglist (unsigned int ob_fcode, tree decl,
 	case S390_OVERLOADED_BUILTIN_s390_vec_load_bndry:
 	  {
 	    int code;
-
 	    if (dest_arg_index == 1)
 	      {
-		switch (tree_to_uhwi ((**arglist)[src_arg_index]))
+		tree arg = (**arglist)[src_arg_index];
+
+		if (TREE_CODE (arg) != INTEGER_CST)
+		  {
+		    error ("constant value required for builtin %qF argument %d",
+			   decl, src_arg_index + 1);
+		    return;
+		  }
+
+		switch (tree_to_uhwi (arg))
 		  {
 		  case 64: code = 0; break;
 		  case 128: code = 1; break;
