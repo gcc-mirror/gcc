@@ -1,5 +1,12 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.md ("mov<mode>_64dfp" DD_DF): Use vleig for loading a
+	FP zero.
+	("*mov<mode>_64" DD_DF): Remove the vector instructions. These
+	will anyway by matched by mov<mode>_64dfp.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.md ("mov<mode>" SD_SF): Change vleg/vsteg to
 	vlef/vstef.  Add missing operand to vleif.
 
