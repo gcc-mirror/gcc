@@ -1,3 +1,8 @@
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/79893
+	* gcc.target/s390/zvector/pr79893.c: New test.
+
 2017-03-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/80112
