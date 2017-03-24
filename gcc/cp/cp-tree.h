@@ -569,7 +569,7 @@ protected:
 
     if (ovl && TREE_CODE (ovl) == OVERLOAD && OVL_NESTED_P (ovl))
       {
-	r = ovl;
+	r = OVL_CHAIN (ovl);
 	ovl = OVL_FUNCTION (ovl);
       }
     return r;
@@ -592,13 +592,15 @@ class ovl2_iterator : public ovl_iterator
 
   ovl2_iterator &operator++ ()
   {
-    if (!parent::operator++ () && outer)
+    bool repush = !outer;
+
+    if (!parent::operator++ () && !repush)
       {
-	parent::operator= (OVL_CHAIN (outer));
-	outer = NULL_TREE;
+	parent::operator= (outer);
+	repush = true;
       }
 
-    if (!outer)
+    if (repush)
       outer = maybe_push ();
 
     return *this;

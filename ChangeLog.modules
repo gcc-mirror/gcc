@@ -1,5 +1,8 @@
 2017-03-24  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (ovl2_iterator::operator++): Tweak.
+
 	Simplify ADL part 1
 	gcc/cp/
 	* cp-tree.h (OVL_LOOKUP_P, NAME_MARKED_P): New.
