@@ -2089,6 +2089,8 @@ replace_mult_candidate (slsr_cand_t c, tree basis_name, widest_int bump)
 	  gimple_set_location (copy_stmt, gimple_location (c->cand_stmt));
 	  gsi_replace (&gsi, copy_stmt, false);
 	  c->cand_stmt = copy_stmt;
+	  if (c->next_interp)
+	    lookup_cand (c->next_interp)->cand_stmt = copy_stmt;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    stmt_to_print = copy_stmt;
 	}
@@ -2118,6 +2120,8 @@ replace_mult_candidate (slsr_cand_t c, tree basis_name, widest_int bump)
 					      basis_name, bump_tree);
 	      update_stmt (gsi_stmt (gsi));
               c->cand_stmt = gsi_stmt (gsi);
+	      if (c->next_interp)
+		lookup_cand (c->next_interp)->cand_stmt = gsi_stmt (gsi);
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		stmt_to_print = gsi_stmt (gsi);
 	    }
@@ -3405,6 +3409,8 @@ replace_rhs_if_not_dup (enum tree_code new_code, tree new_rhs1, tree new_rhs2,
       gimple_assign_set_rhs_with_ops (&gsi, new_code, new_rhs1, new_rhs2);
       update_stmt (gsi_stmt (gsi));
       c->cand_stmt = gsi_stmt (gsi);
+      if (c->next_interp)
+	lookup_cand (c->next_interp)->cand_stmt = gsi_stmt (gsi);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	return gsi_stmt (gsi);
@@ -3511,6 +3517,8 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
 	  gimple_assign_set_rhs_with_ops (&gsi, MINUS_EXPR, basis_name, rhs2);
 	  update_stmt (gsi_stmt (gsi));
           c->cand_stmt = gsi_stmt (gsi);
+	  if (c->next_interp)
+	    lookup_cand (c->next_interp)->cand_stmt = gsi_stmt (gsi);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    stmt_to_print = gsi_stmt (gsi);
@@ -3532,6 +3540,8 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
 	  gimple_set_location (copy_stmt, gimple_location (c->cand_stmt));
 	  gsi_replace (&gsi, copy_stmt, false);
 	  c->cand_stmt = copy_stmt;
+	  if (c->next_interp)
+	    lookup_cand (c->next_interp)->cand_stmt = copy_stmt;
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    stmt_to_print = copy_stmt;
@@ -3543,6 +3553,8 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
 	  gimple_set_location (cast_stmt, gimple_location (c->cand_stmt));
 	  gsi_replace (&gsi, cast_stmt, false);
 	  c->cand_stmt = cast_stmt;
+	  if (c->next_interp)
+	    lookup_cand (c->next_interp)->cand_stmt = cast_stmt;
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    stmt_to_print = cast_stmt;
