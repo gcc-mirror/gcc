@@ -31,6 +31,9 @@
 ; independently e.g. vcond
 (define_mode_iterator V_HW  [V16QI V8HI V4SI V2DI V2DF])
 (define_mode_iterator V_HW2 [V16QI V8HI V4SI V2DI V2DF])
+
+(define_mode_iterator V_HW_64 [V2DI V2DF])
+
 ; Including TI for instructions that support it (va, vn, ...)
 (define_mode_iterator VT_HW [V16QI V8HI V4SI V2DI V2DF V1TI TI])
 
@@ -52,6 +55,8 @@
 (define_mode_iterator V_32  [V4QI  V2HI V1SI V1SF])
 (define_mode_iterator V_64  [V8QI  V4HI V2SI V2SF V1DI V1DF])
 (define_mode_iterator V_128 [V16QI V8HI V4SI V4SF V2DI V2DF V1TI V1TF])
+
+(define_mode_iterator V_128_NOSINGLE [V16QI V8HI V4SI V4SF V2DI V2DF])
 
 ; A blank for vector modes and a * for TImode.  This is used to hide
 ; the TImode expander name in case it is defined already.  See addti3
@@ -437,9 +442,9 @@
   "vlgv<bhfgq>\t%0,%v1,%Y3(%2)"
   [(set_attr "op_type" "VRS")])
 
-(define_expand "vec_init<V_HW:mode>"
-  [(match_operand:V_HW 0 "register_operand" "")
-   (match_operand:V_HW 1 "nonmemory_operand" "")]
+(define_expand "vec_init<mode>"
+  [(match_operand:V_128 0 "register_operand" "")
+   (match_operand:V_128 1 "nonmemory_operand" "")]
   "TARGET_VX"
 {
   s390_expand_vec_init (operands[0], operands[1]);
@@ -449,20 +454,20 @@
 ; Replicate from vector element
 ; vrepb, vreph, vrepf, vrepg
 (define_insn "*vec_splat<mode>"
-  [(set (match_operand:V_HW   0 "register_operand" "=v")
-	(vec_duplicate:V_HW
+  [(set (match_operand:V_128_NOSINGLE   0 "register_operand" "=v")
+	(vec_duplicate:V_128_NOSINGLE
 	 (vec_select:<non_vec>
-	  (match_operand:V_HW 1 "register_operand"  "v")
+	  (match_operand:V_128_NOSINGLE 1 "register_operand"  "v")
 	  (parallel
 	   [(match_operand:QI 2 "const_mask_operand" "C")]))))]
-  "TARGET_VX && UINTVAL (operands[2]) < GET_MODE_NUNITS (<V_HW:MODE>mode)"
+  "TARGET_VX && UINTVAL (operands[2]) < GET_MODE_NUNITS (<MODE>mode)"
   "vrep<bhfgq>\t%v0,%v1,%2"
   [(set_attr "op_type" "VRI")])
 
 ; vlrepb, vlreph, vlrepf, vlrepg, vrepib, vrepih, vrepif, vrepig, vrepb, vreph, vrepf, vrepg
 (define_insn "*vec_splats<mode>"
-  [(set (match_operand:V_HW                          0 "register_operand" "=v,v,v,v")
-	(vec_duplicate:V_HW (match_operand:<non_vec> 1 "general_operand"  " R,K,v,d")))]
+  [(set (match_operand:V_128_NOSINGLE                          0 "register_operand" "=v,v,v,v")
+	(vec_duplicate:V_128_NOSINGLE (match_operand:<non_vec> 1 "general_operand"  " R,K,v,d")))]
   "TARGET_VX"
   "@
    vlrep<bhfgq>\t%v0,%1
@@ -471,18 +476,45 @@
    #"
   [(set_attr "op_type" "VRX,VRI,VRI,*")])
 
+; A TFmode operand resides in FPR register pairs while V1TF is in a
+; single vector register.
+(define_insn "*vec_tf_to_v1tf"
+  [(set (match_operand:V1TF                   0 "nonimmediate_operand" "=v,v,R,v,v")
+	(vec_duplicate:V1TF (match_operand:TF 1 "general_operand"       "v,R,v,G,d")))]
+  "TARGET_VX"
+  "@
+   vmrhg\t%v0,%1,%N1
+   vl\t%v0,%1
+   vst\t%v1,%0
+   vzero\t%v0
+   vlvgp\t%v0,%1,%N1"
+  [(set_attr "op_type" "VRR,VRX,VRX,VRI,VRR")])
+
+(define_insn "*vec_ti_to_v1ti"
+  [(set (match_operand:V1TI                   0 "nonimmediate_operand" "=v,v,R,  v,  v,v")
+	(vec_duplicate:V1TI (match_operand:TI 1 "general_operand"       "v,R,v,j00,jm1,d")))]
+  "TARGET_VX"
+  "@
+   vlr\t%v0,%v1
+   vl\t%v0,%1
+   vst\t%v1,%0
+   vzero\t%v0
+   vone\t%v0
+   vlvgp\t%v0,%1,%N1"
+  [(set_attr "op_type" "VRR,VRX,VRX,VRI,VRI,VRR")])
+
 ; vec_splats is supposed to replicate op1 into all elements of op0
 ; This splitter first sets the rightmost element of op0 to op1 and
 ; then does a vec_splat to replicate that element into all other
 ; elements.
 (define_split
-  [(set (match_operand:V_HW                          0 "register_operand" "")
-	(vec_duplicate:V_HW (match_operand:<non_vec> 1 "register_operand" "")))]
+  [(set (match_operand:V_128_NOSINGLE                          0 "register_operand" "")
+	(vec_duplicate:V_128_NOSINGLE (match_operand:<non_vec> 1 "register_operand" "")))]
   "TARGET_VX && GENERAL_REG_P (operands[1])"
   [(set (match_dup 0)
-	(unspec:V_HW [(match_dup 1) (match_dup 2) (match_dup 0)] UNSPEC_VEC_SET))
+	(unspec:V_128_NOSINGLE [(match_dup 1) (match_dup 2) (match_dup 0)] UNSPEC_VEC_SET))
    (set (match_dup 0)
-	(vec_duplicate:V_HW
+	(vec_duplicate:V_128_NOSINGLE
 	 (vec_select:<non_vec>
 	  (match_dup 0) (parallel [(match_dup 2)]))))]
 {
@@ -1129,13 +1161,15 @@
   operands[3] = gen_reg_rtx (V2DImode);
 })
 
-(define_insn "*vec_load_pairv2di"
-  [(set (match_operand:V2DI                0 "register_operand" "=v")
-	(vec_concat:V2DI (match_operand:DI 1 "register_operand"  "d")
-			 (match_operand:DI 2 "register_operand"  "d")))]
+(define_insn "*vec_load_pair<mode>"
+  [(set (match_operand:V_HW_64                       0 "register_operand" "=v,v")
+	(vec_concat:V_HW_64 (match_operand:<non_vec> 1 "register_operand"  "d,v")
+			    (match_operand:<non_vec> 2 "register_operand"  "d,v")))]
   "TARGET_VX"
-  "vlvgp\t%v0,%1,%2"
-  [(set_attr "op_type" "VRR")])
+  "@
+   vlvgp\t%v0,%1,%2
+   vmrhg\t%v0,%v1,%v2"
+  [(set_attr "op_type" "VRR,VRR")])
 
 (define_insn "vllv16qi"
   [(set (match_operand:V16QI              0 "register_operand" "=v")

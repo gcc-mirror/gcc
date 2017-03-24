@@ -6617,7 +6617,10 @@ s390_expand_vec_init (rtx target, rtx vals)
       return;
     }
 
-  if (all_regs && REG_P (target) && n_elts == 2 && inner_mode == DImode)
+  if (all_regs
+      && REG_P (target)
+      && n_elts == 2
+      && GET_MODE_SIZE (inner_mode) == 8)
     {
       /* Use vector load pair.  */
       emit_insn (gen_rtx_SET (target,

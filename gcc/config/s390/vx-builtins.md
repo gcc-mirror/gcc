@@ -20,7 +20,6 @@
 
 ; The patterns in this file are enabled with -mzvector
 
-(define_mode_iterator V_HW_64 [V2DI V2DF])
 (define_mode_iterator V_HW_32_64 [V4SI V2DI V2DF])
 (define_mode_iterator VI_HW_SD [V4SI V2DI])
 (define_mode_iterator V_HW_HSD [V8HI V4SI V2DI V2DF])
