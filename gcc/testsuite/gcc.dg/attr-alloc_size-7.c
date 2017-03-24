@@ -3,6 +3,7 @@
    detect and diagnose calls that attemnpt to allocate objects in excess
    of the maximum specified by -Walloc-size-larger-than=maximum.  */
 /* { dg-do compile } */
+/* { dg-require-effective-target alloca } */
 /* { dg-options "-O2 -Wall -Walloc-size-larger-than=12345" } */
 
 #define SIZE_MAX   __SIZE_MAX__

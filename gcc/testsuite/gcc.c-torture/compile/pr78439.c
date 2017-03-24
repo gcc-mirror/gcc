@@ -1,3 +1,4 @@
+/* { dg-require-effective-target alloca } */
 /* PR target/78439.  */
 
 enum demangle_component_type

@@ -1,3 +1,4 @@
+/* { dg-require-effective-target alloca } */
 /* PR c/79413 */
 
 void
