@@ -655,6 +655,15 @@
   "vn\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
+; Vector not and
+
+(define_insn "notand<mode>3"
+  [(set (match_operand:VT                 0 "register_operand" "=v")
+	(ior:VT (not:VT (match_operand:VT 1 "register_operand" "%v"))
+		(not:VT	(match_operand:VT 2 "register_operand"  "v"))))]
+  "TARGET_VXE"
+  "vnn\t%v0,%v1,%v2"
+  [(set_attr "op_type" "VRR")])
 
 ; Vector or
 
@@ -666,6 +675,15 @@
   "vo\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
+; Vector or with complement
+
+(define_insn "ior_not<mode>3"
+  [(set (match_operand:VT                 0 "register_operand" "=v")
+	(ior:VT (not:VT (match_operand:VT 2 "register_operand"  "v"))
+		(match_operand:VT         1 "register_operand" "%v")))]
+  "TARGET_VXE"
+  "voc\t%v0,%v1,%v2"
+  [(set_attr "op_type" "VRR")])
 
 ; Vector xor
 
@@ -677,9 +695,18 @@
   "vx\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
+; Vector not xor
 
-; Bitwise inversion of a vector - used for vec_cmpne
-(define_insn "*not<mode>"
+(define_insn "notxor<mode>3"
+  [(set (match_operand:VT                 0 "register_operand" "=v")
+	(not:VT (xor:VT (match_operand:VT 1 "register_operand" "%v")
+			(match_operand:VT 2 "register_operand"  "v"))))]
+  "TARGET_VXE"
+  "vnx\t%v0,%v1,%v2"
+  [(set_attr "op_type" "VRR")])
+
+; Bitwise inversion of a vector
+(define_insn "one_cmpl<mode>2"
   [(set (match_operand:VT         0 "register_operand" "=v")
 	(not:VT (match_operand:VT 1 "register_operand"  "v")))]
   "TARGET_VX"

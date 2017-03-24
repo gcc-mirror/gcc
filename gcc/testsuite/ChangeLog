@@ -1,5 +1,9 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.target/s390/vxe/bitops-1.c: New test.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.target/s390/s390.exp: Run tests in arch12 and vxe dirs.
 	* lib/target-supports.exp: Add effective target check s390_vxe.
 

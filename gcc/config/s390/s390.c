@@ -3373,6 +3373,21 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  *total = COSTS_N_INSNS (2);
 	  return true;
 	}
+
+      /* ~AND on a 128 bit mode.  This can be done using a vector
+	 instruction.  */
+      if (TARGET_VXE
+	  && GET_CODE (XEXP (x, 0)) == NOT
+	  && GET_CODE (XEXP (x, 1)) == NOT
+	  && REG_P (XEXP (XEXP (x, 0), 0))
+	  && REG_P (XEXP (XEXP (x, 1), 0))
+	  && GET_MODE_SIZE (GET_MODE (XEXP (XEXP (x, 0), 0))) == 16
+	  && s390_hard_regno_mode_ok (VR0_REGNUM,
+				      GET_MODE (XEXP (XEXP (x, 0), 0))))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
       /* fallthrough */
     case ASHIFT:
     case ASHIFTRT:
