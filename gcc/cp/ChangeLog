@@ -1,3 +1,9 @@
+2017-03-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/77339 - ICE with invalid use of alias template.
+	* pt.c (lookup_template_class_1): Don't try to enter the scope of an
+	alias template.
+
 2017-03-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/80119

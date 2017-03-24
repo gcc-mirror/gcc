@@ -8682,9 +8682,9 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	  || !PRIMARY_TEMPLATE_P (gen_tmpl)
 	  || currently_open_class (template_type))
 	{
-	  tree tinfo = TYPE_TEMPLATE_INFO_MAYBE_ALIAS (template_type);
+	  tree tinfo = TYPE_TEMPLATE_INFO (template_type);
 
-	  if (comp_template_args (TI_ARGS (tinfo), arglist))
+	  if (tinfo && comp_template_args (TI_ARGS (tinfo), arglist))
 	    return template_type;
 	}
 
