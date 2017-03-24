@@ -1,5 +1,10 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.md: Rename the cpu facilty vec to vx throughout
+	the file.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	PR target/79893
 	* config/s390/s390-c.c (s390_adjust_builtin_arglist): Issue an
 	error if the boundary argument is not constant.
