@@ -1,3 +1,9 @@
+2017-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* genrecog.c (validate_pattern): Add VEC_SELECT validation.
+	* genmodes.c (emit_min_insn_modes_c): Call emit_mode_nunits
+	and emit_mode_inner.
+
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390-builtins.def: Add VXE builtins.  Add a flags

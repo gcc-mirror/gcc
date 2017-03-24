@@ -737,6 +737,32 @@ validate_pattern (rtx pattern, md_rtx_info *info, rtx set, int set_code)
 		  GET_MODE_NAME (GET_MODE (XEXP (pattern, 0))));
       break;
 
+    case VEC_SELECT:
+      if (GET_MODE (pattern) != VOIDmode)
+	{
+	  enum machine_mode mode = GET_MODE (pattern);
+	  enum machine_mode imode = GET_MODE (XEXP (pattern, 0));
+	  enum machine_mode emode
+	    = VECTOR_MODE_P (mode) ? GET_MODE_INNER (mode) : mode;
+	  if (GET_CODE (XEXP (pattern, 1)) == PARALLEL)
+	    {
+	      int expected = VECTOR_MODE_P (mode) ? GET_MODE_NUNITS (mode) : 1;
+	      if (XVECLEN (XEXP (pattern, 1), 0) != expected)
+		error_at (info->loc,
+			  "vec_select parallel with %d elements, expected %d",
+			  XVECLEN (XEXP (pattern, 1), 0), expected);
+	    }
+	  if (imode != VOIDmode && !VECTOR_MODE_P (imode))
+	    error_at (info->loc, "%smode of first vec_select operand is not a "
+				 "vector mode", GET_MODE_NAME (imode));
+	  else if (imode != VOIDmode && GET_MODE_INNER (imode) != emode)
+	    error_at (info->loc, "element mode mismatch between vec_select "
+				 "%smode and its operand %smode",
+		      GET_MODE_NAME (emode),
+		      GET_MODE_NAME (GET_MODE_INNER (imode)));
+	}
+      break;
+
     default:
       break;
     }
