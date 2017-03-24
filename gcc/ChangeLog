@@ -1,5 +1,35 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* common/config/s390/s390-common.c (processor_flags_table): Add
+	arch12.
+	* config.gcc: Add arch12.
+	* config/s390/driver-native.c (s390_host_detect_local_cpu):
+	Default to arch12 for unknown CPU model numbers.
+	* config/s390/s390-builtins.def: Add B_VXE builtin flag.
+	* config/s390/s390-c.c (s390_cpu_cpp_builtins_internal): Adjust
+	PROCESSOR_max sanity check.
+	* config/s390/s390-opts.h (enum processor_type): Add
+	PROCESSOR_ARCH12.
+	* config/s390/s390.c (processor_table): Add arch12.
+	(s390_expand_builtin): Add check for B_VXE flag.
+	(s390_issue_rate): Add PROCESSOR_ARCH12.
+	(s390_get_sched_attrmask): Likewise.
+	(s390_get_unit_mask): Likewise.
+	(s390_sched_score): Enable z13 scheduling for arch12.
+	(s390_sched_reorder): Likewise.
+	(s390_sched_variable_issue): Likewise.
+	* config/s390/s390.h (enum processor_flags): Add PF_ARCH12 and
+	PF_VXE.
+	(s390_tune_attr): Use z13 scheduling also for arch12.
+	(TARGET_CPU_ARCH12, TARGET_CPU_ARCH12_P, TARGET_CPU_VXE)
+	(TARGET_CPU_VXE_P, TARGET_ARCH12, TARGET_ARCH12_P, TARGET_VXE)
+	(TARGET_VXE_P): New macros.
+	* config/s390/s390.md: Add arch12 to cpu attribute.  Add arch12
+	and vxe to cpu_facility.  Add arch12 and vxe to enabled attribute.
+	* config/s390/s390.opt: Add arch12 as processor_type.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.md
 	("fixuns_truncdddi2", "fixuns_trunctddi2")
 	("fixuns_trunc<BFP:mode><GPR:mode>2"): Merge into ...

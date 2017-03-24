@@ -339,7 +339,7 @@ s390_cpu_cpp_builtins_internal (cpp_reader *pfile,
       /* Z9_EC has the same level as Z9_109.  */
       arch_level--;
     /* Review when a new arch is added and increase the value.  */
-    char dummy[23 - 2 * PROCESSOR_max] __attribute__((unused));
+    char dummy[(PROCESSOR_max > 12) ? -1 : 1] __attribute__((unused));
     sprintf (macro_def, "__ARCH__=%d", arch_level);
     cpp_undef (pfile, "__ARCH__");
     cpp_define (pfile, macro_def);

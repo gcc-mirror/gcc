@@ -270,6 +270,7 @@
 #undef B_INT
 #undef B_HTM
 #undef B_VX
+#undef B_VXE
 
 #undef BFLAGS_MASK_INIT
 #define BFLAGS_MASK_INIT (B_INT)
@@ -277,7 +278,7 @@
 #define B_INT   (1 << 0)  /* Internal builtins.  This builtin cannot be used in user programs.  */
 #define B_HTM   (1 << 1)  /* Builtins requiring the transactional execution facility.  */
 #define B_VX    (1 << 2)  /* Builtins requiring the z13 vector extensions.  */
-
+#define B_VXE   (1 << 3)  /* Builtins requiring the arch12 vector extensions.  */
 
 /* B_DEF defines a standard (not overloaded) builtin
    B_DEF (<builtin name>, <RTL expander name>, <function attributes>, <builtin flags>, <operand flags, see above>, <fntype>)

@@ -334,6 +334,7 @@ const processor_table[] =
   { "z196",   PROCESSOR_2817_Z196,   &z196_cost },
   { "zEC12",  PROCESSOR_2827_ZEC12,  &zEC12_cost },
   { "z13",    PROCESSOR_2964_Z13,    &zEC12_cost },
+  { "arch12", PROCESSOR_ARCH12,      &zEC12_cost },
   { "native", PROCESSOR_NATIVE,      NULL }
 };
 
@@ -824,10 +825,16 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 		 "(default with -march=zEC12 and higher).", fndecl);
 	  return const0_rtx;
 	}
-      if ((bflags & B_VX) && !TARGET_VX)
+      if (((bflags & B_VX) || (bflags & B_VXE)) && !TARGET_VX)
 	{
 	  error ("builtin %qF is not supported without -mvx "
 		 "(default with -march=z13 and higher).", fndecl);
+	  return const0_rtx;
+	}
+
+      if ((bflags & B_VXE) && !TARGET_VXE)
+	{
+	  error ("Builtin %qF requires arch12 or higher.", fndecl);
 	  return const0_rtx;
 	}
     }
@@ -7781,6 +7788,7 @@ s390_issue_rate (void)
 	 instruction gets issued per cycle.  */
     case PROCESSOR_2827_ZEC12:
     case PROCESSOR_2964_Z13:
+    case PROCESSOR_ARCH12:
     default:
       return 1;
     }
@@ -13987,6 +13995,7 @@ s390_get_sched_attrmask (rtx_insn *insn)
 	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
       break;
     case PROCESSOR_2964_Z13:
+    case PROCESSOR_ARCH12:
       if (get_attr_z13_cracked (insn))
 	mask |= S390_SCHED_ATTR_MASK_CRACKED;
       if (get_attr_z13_expanded (insn))
@@ -14010,6 +14019,7 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
   switch (s390_tune)
     {
     case PROCESSOR_2964_Z13:
+    case PROCESSOR_ARCH12:
       *units = 3;
       if (get_attr_z13_unit_lsu (insn))
 	mask |= 1 << 0;
@@ -14082,7 +14092,7 @@ s390_sched_score (rtx_insn *insn)
       break;
     }
 
-  if (s390_tune == PROCESSOR_2964_Z13)
+  if (s390_tune >= PROCESSOR_2964_Z13)
     {
       int units, i;
       unsigned unit_mask, m = 1;
@@ -14187,7 +14197,7 @@ s390_sched_reorder (FILE *file, int verbose,
 	      PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_ENDGROUP, endgroup);
 	      PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_GROUPALONE, groupalone);
 #undef PRINT_SCHED_ATTR
-	      if (s390_tune == PROCESSOR_2964_Z13)
+	      if (s390_tune >= PROCESSOR_2964_Z13)
 		{
 		  unsigned int unit_mask, m = 1;
 		  int units, j;
@@ -14250,7 +14260,7 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 	    }
 	}
 
-      if (s390_tune == PROCESSOR_2964_Z13)
+      if (s390_tune >= PROCESSOR_2964_Z13)
 	{
 	  int units, i;
 	  unsigned unit_mask, m = 1;
@@ -14279,7 +14289,7 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 	  PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_GROUPALONE, groupalone);
 #undef PRINT_SCHED_ATTR
 
-	  if (s390_tune == PROCESSOR_2964_Z13)
+	  if (s390_tune >= PROCESSOR_2964_Z13)
 	    {
 	      unsigned int unit_mask, m = 1;
 	      int units, j;
@@ -14293,7 +14303,7 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 	    }
 	  fprintf (file, " sched state: %d\n", s390_sched_state);
 
-	  if (s390_tune == PROCESSOR_2964_Z13)
+	  if (s390_tune >= PROCESSOR_2964_Z13)
 	    {
 	      int units, j;
 
