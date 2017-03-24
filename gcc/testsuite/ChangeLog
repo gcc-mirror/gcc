@@ -1,5 +1,12 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.target/s390/target-attribute/tattr-3.c: Adjust error message
+	and remove the high-level builtin.  The error message for the
+	would prevent compilation from reaching the second.
+	* gcc.target/s390/target-attribute/tattr-4.c: Likewise.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.target/s390/vxe/negfma-1.c: New test.
 
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>

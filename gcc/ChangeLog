@@ -1,5 +1,65 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390-builtins.def: Add VXE builtins.  Add a flags
+	argument to the overloaded builtin variants.  Use the new flag to
+	deprecate certain builtin variants.
+	* config/s390/s390-builtin-types.def: Add new builtin types.
+	* config/s390/s390-builtins.h: Support new flags field for
+	overloaded builtins.
+	* config/s390/s390-c.c (OB_DEF_VAR): New flags field.
+	(s390_macro_to_expand): Enable vector float data type.
+	(s390_cpu_cpp_builtins_internal): Indicate support of the new
+	builtins by incrementing the __VEC__ version number.
+	(s390_expand_overloaded_builtin): Support expansion of vec_xl and
+	vec_xst.
+	(s390_resolve_overloaded_builtin): Emit error messages depending
+	on the builtin flags.
+	* config/s390/s390.c (s390_expand_builtin): Support additional
+	flags argument.  Change error message to match the messages
+	emitted in s390-c.c.
+	* config/s390/s390.md: New UNSPEC_* constants.
+	(op_type): Add new instruction types.
+	* config/s390/vecintrin.h: Add new builtins and test data class
+	constants.
+	* config/s390/vx-builtins.md (V_HW_32_64): Add V4SF.
+	(V_HW_4, VEC_HW, VECF_HW): New mode iterators.
+	(VEC_INEXACT, VEC_NOINEXACT): New constants.
+	("vec_splats<mode>", "vec_insert<mode>", "vec_promote<mode>")
+	("vec_insert_and_zero<mode>", "vec_mergeh<mode>")
+	("vec_mergel<mode>"): V_HW -> VEC_HW.
+
+	("vlrlrv16qi", "vstrlrv16qi", "vbpermv16qi", "vec_msumv2di")
+	("vmslg", "*vftci<mode>_cconly", "vftci<mode>_intcconly")
+	("*vftci<mode>", "vftci<mode>_intcc", "vec_double_s64")
+	("vec_double_u64", "vfmin<mode>", "vfmax<mode>"): New definition.
+
+	("and_av2df3", "and_cv2df3", "vec_andc_av2df3")
+	("vec_andc_cv2df3", "xor_av2df3", "xor_cv2df3", "vec_nor_av2df3")
+	("vec_nor_cv2df3", "ior_av2df3", "ior_cv2df3", "vec_nabs")
+	("*vftcidb", "*vftcidb_cconly", "vftcidb"): Remove definition.
+
+	("vec_all_<fpcmpcc:code>v2df", "vec_any_<fpcmpcc:code>v2df")
+	("vec_scatter_elementv4si_DI", "vec_cmp<fpcmp:code>v2df")
+	("vec_di_to_df_s64", "vec_di_to_df_u64", "vec_df_to_di_u64")
+	("vfidb", "*vldeb", "*vledb", "*vec_cmp<insn_cmp>v2df_cconly")
+	("vec_cmpeqv2df_cc", "vec_cmpeqv2df_cc", "vec_cmphv2df_cc")
+	("vec_cmphev2df_cc", "*vec_cmpeqv2df_cc")
+	("*vec_cmphv2df_cc", "*vec_cmphev2df_cc"): Enable new modes as ...
+
+	("vec_all_<fpcmpcc:code><mode>", "vec_any_<fpcmpcc:code><mode>")
+	("vec_scatter_element<V_HW_4:mode>_DI")
+	("vec_cmp<fpcmp:code><mode>", "vcdgb", "vcdlgb", "vclgdb")
+	("vec_fpint<mode>", "vflls")
+	("vflrd", "*vec_cmp<insn_cmp><mode>_cconly", "vec_cmpeq<mode>_cc")
+	("vec_cmpeq<mode>_cc", "vec_cmph<mode>_cc", "vec_cmphe<mode>_cc")
+	("*vec_cmpeq<mode>_cc", "*vec_cmph<mode>_cc")
+	("*vec_cmphe<mode>_cc"): ... these.
+
+	("vec_ctd_s64", "vec_ctsl", "vec_ctul", "vec_st2f"): Use rounding
+	mode constant instead of magic value.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.c (s390_expand_vec_compare): Support other
 	vector floating point modes than just V2DF.
 	(s390_expand_vcond): Likewise.
