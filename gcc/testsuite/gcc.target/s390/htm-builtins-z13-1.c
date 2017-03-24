@@ -1,7 +1,7 @@
 /* Verify if VRs are saved and restored.  */
 
 /* { dg-do run } */
-/* { dg-require-effective-target vector } */
+/* { dg-require-effective-target s390_vx } */
 /* { dg-options "-O3 -march=z13 -mzarch" } */
 
 typedef int __attribute__((vector_size(16))) v4si;

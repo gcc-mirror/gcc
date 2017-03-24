@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O3 -mzarch -march=z13 --save-temps" } */
-/* { dg-require-effective-target vector } */
+/* { dg-require-effective-target s390_vx } */
 /* { dg-require-effective-target int128 } */
 
 typedef unsigned char     uv16qi __attribute__((vector_size(16)));

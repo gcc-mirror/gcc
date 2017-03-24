@@ -8209,6 +8209,24 @@ proc check_effective_target_profile_update_atomic {} {
     } "-fprofile-update=atomic -fprofile-generate"]
 }
 
+# Return 1 if vector (va - vector add) instructions are understood by
+# the assembler and can be executed.  This also covers checking for
+# the VX kernel feature.  A kernel without that feature does not
+# enable the vector facility and the following check will die with a
+# signal.
+proc check_effective_target_s390_vx { } {
+    if ![istarget s390*-*-*] then {
+	return 0;
+    }
+
+    return [check_runtime s390_check_vx {
+	int main (void)
+	{
+	    asm ("va %%v24, %%v26, %%v28, 3" : : : "v24", "v26", "v28");
+	    return 0;
+	}
+    } "-march=z13 -mzarch" ]
+}
 #For versions of ARM architectures that have hardware div insn,
 #disable the divmod transform
 

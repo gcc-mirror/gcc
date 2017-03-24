@@ -1,5 +1,24 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.target/s390/s390.exp (check_effective_target_vector):
+	Include target-supports.exp and move target_vector check routine
+	...
+	* lib/target-supports.exp (check_effective_target_s390_vx): ... to
+	here and rename it.
+	* gcc.target/s390/htm-builtins-z13-1.c: Rename effective target
+	check from vector to s390_vx.
+	* gcc.target/s390/target-attribute/tpragma-struct-vx-1.c: Likewise.
+	* gcc.target/s390/target-attribute/tpragma-struct-vx-2.c: Likewise.
+	* gcc.target/s390/vector/stpcpy-1.c: Likewise.
+	* gcc.target/s390/vector/vec-abi-vararg-1.c: Likewise.
+	* gcc.target/s390/vector/vec-clobber-1.c: Likewise.
+	* gcc.target/s390/vector/vec-genbytemask-1.c: Likewise.
+	* gcc.target/s390/vector/vec-genmask-1.c: Likewise.
+	* gcc.target/s390/vector/vec-nopeel-1.c: Likewise.
+	* gcc.target/s390/vector/vec-vrepi-1.c: Likewise.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.target/s390/vector/vec-init-2.c: New test.
 
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
