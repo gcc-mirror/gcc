@@ -1,5 +1,6 @@
 /* PR c/7652 */
 /* { dg-do compile } */
+/* { dg-require-effective-target alloca } */
 /* { dg-options "-Wimplicit-fallthrough" } */
 
 extern void bar (int);

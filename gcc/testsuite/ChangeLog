@@ -1,3 +1,35 @@
+2017-03-24  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80092
+	* gcc.dg/Walloca-7.c: Add dg-require-effective-target alloca.
+	* gcc.dg/Walloca-12.c: Same.
+	* gcc.dg/attr-alloc_size-8.c: Same.
+	* gcc.dg/Walloca-4.c: Same.
+	* gcc.dg/Walloca-8.c: Same.
+	* gcc.dg/Walloca-13.c: Same.
+	* gcc.dg/Walloca-14.c: Same.
+	* gcc.dg/attr-alloc_size-9.c: Same.
+	* gcc.dg/Walloca-1.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c: Same.
+	* gcc.dg/Walloca-5.c: Same.
+	* gcc.dg/Walloca-10.c: Same.
+	* gcc.dg/Walloca-9.c: Same.
+	* gcc.dg/attr-alloc_size-6.c: Same.
+	* gcc.dg/Wvla-larger-than-1.c: Same.
+	* gcc.dg/torture/pr71881.c: Same.
+	* gcc.dg/torture/pr71901.c: Same.
+	* gcc.dg/torture/pr78742.c: Same.
+	* gcc.dg/builtin-alloc-size.c: Same.
+	* gcc.dg/Walloca-2.c: Same.
+	* gcc.dg/Walloca-6.c: Same.
+	* gcc.dg/Walloca-11.c: Same.
+	* gcc.dg/attr-alloc_size-7.c: Same.
+	* gcc.dg/Wvla-larger-than-2.c: Same.
+	* gcc.dg/Walloca-3.c: Same.
+	* c-c++-common/Wimplicit-fallthrough-7.c: Same.
+	* gcc.c-torture/compile/pr79413.c: Same.
+	* gcc.c-torture/compile/pr78439.c: Same.
+
 2017-03-23  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/p9-options-1.c: New test.

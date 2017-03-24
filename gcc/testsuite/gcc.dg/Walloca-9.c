@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target alloca } */
 /* { dg-options "-Walloca-larger-than=5000 -O2" } */
 
 extern void useit(char *);
