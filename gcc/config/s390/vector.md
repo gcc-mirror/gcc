@@ -715,11 +715,33 @@
 
 ; Vector population count
 
-(define_insn "popcountv16qi2"
+(define_expand "popcount<mode>2"
+  [(set (match_operand:VI_HW                0 "register_operand" "=v")
+	(unspec:VI_HW [(match_operand:VI_HW 1 "register_operand"  "v")]
+		      UNSPEC_POPCNT))]
+  "TARGET_VX"
+{
+  if (TARGET_VXE)
+    emit_insn (gen_popcount<mode>2_vxe (operands[0], operands[1]));
+  else
+    emit_insn (gen_popcount<mode>2_vx (operands[0], operands[1]));
+  DONE;
+})
+
+; vpopctb, vpopcth, vpopctf, vpopctg
+(define_insn "popcount<mode>2_vxe"
+  [(set (match_operand:VI_HW                0 "register_operand" "=v")
+	(unspec:VI_HW [(match_operand:VI_HW 1 "register_operand"  "v")]
+		      UNSPEC_POPCNT))]
+  "TARGET_VXE"
+  "vpopct<bhfgq>\t%v0,%v1"
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "popcountv16qi2_vx"
   [(set (match_operand:V16QI                0 "register_operand" "=v")
 	(unspec:V16QI [(match_operand:V16QI 1 "register_operand"  "v")]
 		      UNSPEC_POPCNT))]
-  "TARGET_VX"
+  "TARGET_VX && !TARGET_VXE"
   "vpopct\t%v0,%v1,0"
   [(set_attr "op_type" "VRR")])
 
@@ -729,7 +751,7 @@
 ; of the result, add it to the result and extend it to halfword
 ; element size (unpack).
 
-(define_expand "popcountv8hi2"
+(define_expand "popcountv8hi2_vx"
   [(set (match_dup 2)
 	(unspec:V16QI [(subreg:V16QI (match_operand:V8HI 1 "register_operand" "v") 0)]
 		      UNSPEC_POPCNT))
@@ -761,7 +783,7 @@
 	(and:V8HI (subreg:V8HI (match_dup 2) 0)
 		  (subreg:V8HI (match_dup 3) 0)))
 ]
-  "TARGET_VX"
+  "TARGET_VX && !TARGET_VXE"
 {
   operands[2] = gen_reg_rtx (V16QImode);
   operands[3] = gen_reg_rtx (V16QImode);
@@ -769,20 +791,20 @@
   operands[5] = CONST0_RTX (V16QImode);
 })
 
-(define_expand "popcountv4si2"
+(define_expand "popcountv4si2_vx"
   [(set (match_dup 2)
 	(unspec:V16QI [(subreg:V16QI (match_operand:V4SI 1 "register_operand" "v") 0)]
 		      UNSPEC_POPCNT))
    (set (match_operand:V4SI 0 "register_operand" "=v")
 	(unspec:V4SI [(match_dup 2) (match_dup 3)]
 		     UNSPEC_VEC_VSUM))]
-  "TARGET_VX"
+  "TARGET_VX && !TARGET_VXE"
 {
   operands[2] = gen_reg_rtx (V16QImode);
   operands[3] = force_reg (V16QImode, CONST0_RTX (V16QImode));
 })
 
-(define_expand "popcountv2di2"
+(define_expand "popcountv2di2_vx"
   [(set (match_dup 2)
 	(unspec:V16QI [(subreg:V16QI (match_operand:V2DI 1 "register_operand" "v") 0)]
 		      UNSPEC_POPCNT))
@@ -792,7 +814,7 @@
    (set (match_operand:V2DI 0 "register_operand" "=v")
 	(unspec:V2DI [(match_dup 3) (match_dup 5)]
 		     UNSPEC_VEC_VSUMG))]
-  "TARGET_VX"
+  "TARGET_VX && !TARGET_VXE"
 {
   operands[2] = gen_reg_rtx (V16QImode);
   operands[3] = gen_reg_rtx (V4SImode);
