@@ -1,3 +1,9 @@
+2017-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/80112
+	* loop-doloop.c (doloop_condition_get): Don't check condition
+	if cmp isn't SET with IF_THEN_ELSE src.
+
 2017-03-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/80158
