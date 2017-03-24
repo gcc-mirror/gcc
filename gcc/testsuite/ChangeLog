@@ -1,3 +1,8 @@
+2017-03-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/80119
+	* g++.dg/warn/Wuninitialized-9.C: New test.
+
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.target/s390/target-attribute/tattr-3.c: Adjust error message

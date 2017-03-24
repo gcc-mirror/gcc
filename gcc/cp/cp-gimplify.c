@@ -2056,6 +2056,14 @@ cp_fold (tree x)
   code = TREE_CODE (x);
   switch (code)
     {
+    case CLEANUP_POINT_EXPR:
+      /* Strip CLEANUP_POINT_EXPR if the expression doesn't have side
+	 effects.  */
+      r = cp_fold_rvalue (TREE_OPERAND (x, 0));
+      if (!TREE_SIDE_EFFECTS (r))
+	x = r;
+      break;
+
     case SIZEOF_EXPR:
       x = fold_sizeof_expr (x);
       break;
