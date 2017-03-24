@@ -1,5 +1,23 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.md
+	("fixuns_truncdddi2", "fixuns_trunctddi2")
+	("fixuns_trunc<BFP:mode><GPR:mode>2"): Merge into ...
+	("fixuns_trunc<FP:mode><GPR:mode>2"): New expander.
+
+	("fixuns_trunc<BFP:mode><GPR:mode>2", "fixuns_trunc<mode>si2"):
+	Rename expanders to ...
+
+	("fixuns_trunc<BFP:mode><GPR:mode>2_emu")
+	("fixuns_truncdddi2_emu"): ... these.
+
+	("fixuns_trunc<mode>si2_emu"): New expander.
+
+	("*fixuns_truncdfdi2_z13"): Rename to ...
+	("*fixuns_truncdfdi2_vx"): ... this.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/2964.md: Remove the single element vector compare
 	instructions which are no longer used.
 	* config/s390/s390.c (s390_select_ccmode): Remove handling of
