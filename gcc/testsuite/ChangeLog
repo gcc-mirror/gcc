@@ -1,6 +1,13 @@
 2017-03-24  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/80092
+	* gcc.dg/no_profile_instrument_function-attr-1.c: Add
+	dg-require-effective-target global_constructor.
+	* gcc.dg/tls/emutls-2.c: Same.
+
+2017-03-24  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80092
 	* c-c++-common/Wimplicit-fallthrough-34.c: Add
 	dg-require-effective-target indirect_jumps.
 
