@@ -1,5 +1,10 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.md ("mov<mode>" SD_SF): Change vleg/vsteg to
+	vlef/vstef.  Add missing operand to vleif.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.c (s390_expand_vec_init): Enable vector load
 	pair for all vector types with 64 bit elements.
 	* config/s390/vx-builtins.md (V_HW_64): Move mode iterator to ...
