@@ -1,5 +1,14 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/vector.md ("popcountv16qi2", "popcountv8hi2")
+	("popcountv4si2", "popcountv2di2"): Rename to ...
+	("popcount<mode>2", "popcountv8hi2_vx", "popcountv4si2_vx")
+	("popcountv2di2_vx"): ... these and add !TARGET_VXE to the
+	condition.
+	("popcount<mode>2_vxe"): New pattern.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* common/config/s390/s390-common.c (processor_flags_table): Add
 	arch12.
 	* config.gcc: Add arch12.
