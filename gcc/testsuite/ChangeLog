@@ -1,3 +1,12 @@
+2017-03-24  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
+	2017-03-24  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80092
+	* gcc.dg/torture/pr71881.c: Add dg-require-effective-target alloca.
+	* gcc.dg/torture/pr78742.c: Same.
+
 2017-03-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
