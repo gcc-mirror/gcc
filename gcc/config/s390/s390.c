@@ -625,6 +625,19 @@ const unsigned int bflags_overloaded_builtin[S390_OVERLOADED_BUILTIN_MAX + 1] =
   };
 
 const unsigned int
+bflags_overloaded_builtin_var[S390_OVERLOADED_BUILTIN_VAR_MAX + 1] =
+  {
+#undef B_DEF
+#undef OB_DEF
+#undef OB_DEF_VAR
+#define B_DEF(...)
+#define OB_DEF(...)
+#define OB_DEF_VAR(NAME, PATTERN, FLAGS, OPFLAGS, FNTYPE) FLAGS,
+#include "s390-builtins.def"
+    0
+  };
+
+const unsigned int
 opflags_overloaded_builtin_var[S390_OVERLOADED_BUILTIN_VAR_MAX + 1] =
   {
 #undef B_DEF
@@ -632,7 +645,7 @@ opflags_overloaded_builtin_var[S390_OVERLOADED_BUILTIN_VAR_MAX + 1] =
 #undef OB_DEF_VAR
 #define B_DEF(...)
 #define OB_DEF(...)
-#define OB_DEF_VAR(NAME, PATTERN, FLAGS, FNTYPE) FLAGS,
+#define OB_DEF_VAR(NAME, PATTERN, FLAGS, OPFLAGS, FNTYPE) OPFLAGS,
 #include "s390-builtins.def"
     0
   };
@@ -827,7 +840,7 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	}
       if (((bflags & B_VX) || (bflags & B_VXE)) && !TARGET_VX)
 	{
-	  error ("builtin %qF is not supported without -mvx "
+	  error ("builtin %qF requires -mvx "
 		 "(default with -march=z13 and higher).", fndecl);
 	  return const0_rtx;
 	}
