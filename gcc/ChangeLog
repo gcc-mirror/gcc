@@ -1,5 +1,11 @@
 2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.md ("indirect_jump"): Turn insn definition into
+	expander.
+	("*indirect_jump", "*indirect2_jump"): New pattern definitions.
+
+2017-03-24  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.c (s390_expand_vec_init): Use vllezl
 	instruction if possible.
 	* config/s390/vector.md (vec_halfnumelts): New mode
