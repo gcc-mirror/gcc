@@ -1,3 +1,11 @@
+2017-03-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* c-c++-common/Wimplicit-fallthrough-7.c: Adjust dg-warning
+	etc. line numbers.
+	* gcc.dg/Walloca-1.c: Likewise.
+	* gcc.dg/Walloca-2.c: Likewise.
+	* gcc.dg/Wvla-larger-than-2.c: Likewise.
+
 2017-03-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/80158
