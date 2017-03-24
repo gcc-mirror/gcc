@@ -1,6 +1,12 @@
 2017-03-24  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/80092
+	* gcc.dg/torture/pr79244.c: Add dg-require-effective-target
+	nonlocal_goto.
+
+2017-03-24  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80092
 	* gcc.dg/Walloca-7.c: Add dg-require-effective-target alloca.
 	* gcc.dg/Walloca-12.c: Same.
 	* gcc.dg/attr-alloc_size-8.c: Same.
