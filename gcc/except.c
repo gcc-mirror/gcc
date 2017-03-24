@@ -2850,14 +2850,14 @@ switch_to_exception_section (const char * ARG_UNUSED (fnname))
 		 it linkonce if we have COMDAT groups to tie them together.  */
 	      if (DECL_COMDAT_GROUP (current_function_decl) && HAVE_COMDAT_GROUP)
 		flags |= SECTION_LINKONCE;
-	      sprintf (section_name, ".gcc_except_table.%s", fnname);
+	      sprintf (section_name, TARGET_GCC_EXCEPT_TABLE_S, fnname);
 	      s = get_section (section_name, flags, current_function_decl);
 	      free (section_name);
 	    }
 	  else
 #endif
 	    exception_section
-	      = s = get_section (".gcc_except_table", flags, NULL);
+	      = s = get_section (TARGET_GCC_EXCEPT_TABLE, flags, NULL);
 	}
       else
 	exception_section

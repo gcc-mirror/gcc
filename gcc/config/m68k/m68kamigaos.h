@@ -601,3 +601,9 @@ extern int amiga_is_const_pic_ref(const_rtx x);
    ! symbolic_operand (X, VOIDmode) || LEGITIMATE_BASEREL_OPERAND_P (X))
 
 // (GET_CODE(X) == CONST && (GET_CODE(XEXP(X, 0)) == SYMBOL_REF || GET_CODE(XEXP(X, 0)) == LABEL_REF) && !CONSTANT_POOL_ADDRESS_P (XEXP(X, 0))) ||
+
+#undef TARGET_GCC_EXCEPT_TABLE
+#define TARGET_GCC_EXCEPT_TABLE ".data"
+
+#undef TARGET_GCC_EXCEPT_TABLE_S
+#define TARGET_GCC_EXCEPT_TABLE_S ".data"
