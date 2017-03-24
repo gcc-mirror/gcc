@@ -2842,13 +2842,10 @@ s390_decompose_address (rtx addr, struct s390_address *out)
      displacements by basing them off the base register.  */
   if (disp && GET_CODE (disp) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (disp))
     {
-      /* Either base or index must be free to hold the base register.  */
-      if (!base)
-        base = fake_pool_base, literal_pool = true;
-      else if (!indx)
-        indx = fake_pool_base, literal_pool = true;
-      else
-        return false;
+      if (base || indx)
+	return false;
+
+      base = fake_pool_base, literal_pool = true;
 
       /* Mark up the displacement.  */
       disp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, disp),
