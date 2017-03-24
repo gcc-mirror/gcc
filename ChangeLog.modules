@@ -1,5 +1,10 @@
 2017-03-23  Nathan Sidwell  <nathan@acm.org>
 
+	Fixup transient_p bug
+	gcc/cp/
+	* tree.c (ovl_add): Set TRANSIENT_P here.
+	(ovl_add_transient): Not here.
+
 	gcc/cp/
 	* cp-tree.h (type_unknown_p): Make inline.  Lose TREE_LIST case.
 	* tree.c (type_unknown_p): Delete.

@@ -2106,8 +2106,12 @@ ovl_add (tree maybe_ovl, tree fn, int transient_or_using)
   gcc_checking_assert (transient_or_using < 0 || TREE_CODE (fn) != OVERLOAD);
 
   if (maybe_ovl && TREE_CODE (maybe_ovl) != OVERLOAD)
-    /* Don't chain to a non-overload.  */
-    maybe_ovl = ovl_make (maybe_ovl);
+    {
+      /* Don't chain to a non-overload.  */
+      maybe_ovl = ovl_make (maybe_ovl);
+      if (transient_or_using < 0)
+	OVL_TRANSIENT_P (maybe_ovl) = true;
+    }
 
   result = fn;
   bool using_p = transient_or_using > 0;
@@ -2120,6 +2124,8 @@ ovl_add (tree maybe_ovl, tree fn, int transient_or_using)
 	OVL_HIDDEN_P (result) = true;
       if (using_p)
 	OVL_VIA_USING_P (result) = true;
+      if (transient_or_using < 0)
+	OVL_TRANSIENT_P (result) = true;
 
       if (!hidden_p && maybe_ovl && OVL_HIDDEN_P (maybe_ovl))
 	/* We inserted a non-hidden before a hidden.  Fix that up
@@ -2135,10 +2141,7 @@ ovl_add (tree maybe_ovl, tree fn, int transient_or_using)
 tree
 ovl_add_transient (tree maybe_ovl, tree fn)
 {
-  tree result = ovl_add (maybe_ovl, fn, /*transient_or_using=*/-1);
-  if (TREE_CODE (result) == OVERLOAD)
-    OVL_TRANSIENT_P (result) = true;
-  return result;
+  return ovl_add (maybe_ovl, fn, /*transient_or_using=*/-1);
 }
 
 void
