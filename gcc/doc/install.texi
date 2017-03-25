@@ -1512,7 +1512,7 @@ linker does search for @samp{libNAME.so} before @samp{libNAME.a} library
 filenames with the @samp{-lNAME} linker flag.
 
 @anchor{AixLdCommand}For detailed information please refer to the AIX
-@uref{http://www-01.ibm.com/support/knowledgecenter/search/%22the%20ld%20command%2C%20also%20called%20the%20linkage%20editor%20or%20binder%22,,ld
+@uref{https://www.ibm.com/support/knowledgecenter/search/%22the%20ld%20command%2C%20also%20called%20the%20linkage%20editor%20or%20binder%22,,ld
 Command} reference.
 
 As long as shared library creation is enabled, upon:
