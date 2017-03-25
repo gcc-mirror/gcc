@@ -534,10 +534,7 @@ typedef struct st_parameter_dt
 	  unsigned expanded_read : 1;
 	  /* 13 unused bits.  */
 
-	  /* Used for ungetc() style functionality. Possible values
-	     are an unsigned char, EOF, or EOF - 1 used to mark the
-	     field as not valid.  */
-	  int last_char; /* No longer used, moved to gfc_unit.  */
+	  int child_saved_iostat;
 	  int nml_delim;
 	  int repeat_count;
 	  int saved_length;
@@ -701,6 +698,10 @@ typedef struct gfc_unit
 
   /* DTIO Parent/Child procedure, 0 = parent, >0 = child level.  */
   int child_dtio;
+
+  /* Used for ungetc() style functionality. Possible values
+     are an unsigned char, EOF, or EOF - 1 used to mark the
+     field as not valid.  */
   int last_char;
   bool has_size;
   GFC_IO_INT size_used;

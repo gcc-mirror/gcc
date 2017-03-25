@@ -1,3 +1,21 @@
+2017-03-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/78881
+	* io/io.h (st_parameter_dt): Rename unused component last_char to
+	child_saved_iostat. Move comment to gfc_unit.
+	* io/list_read.c (list_formatted_read_scalar): After call to
+	child READ procedure, save the returned iostat value for later
+	check. (finish_list_read): Only finish READ if child_saved_iostat
+	was OK.
+	* io/transfer.c (read_sf_internal): If there is a saved character
+	in last character, seek back one. Add a new check for EOR
+	condition. (read_sf): If there is a saved character
+	in last character, seek back one. (formatted_transfer_scalar_read):
+	Initialize last character before invoking child procedure.
+	(data_transfer_init): If child dtio, set advance
+	status to nonadvancing. Move update of size and check for EOR
+	condition to before child dtio return.
+
 2017-03-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/79956

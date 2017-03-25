@@ -226,7 +226,7 @@ static char *
 read_sf_internal (st_parameter_dt *dtp, int * length)
 {
   static char *empty_string[0];
-  char *base;
+  char *base = NULL;
   int lorig;
 
   /* Zero size array gives internal unit len of 0.  Nothing to read. */
@@ -242,6 +242,15 @@ read_sf_internal (st_parameter_dt *dtp, int * length)
       /* Just return something that isn't a NULL pointer, otherwise the
          caller thinks an error occurred.  */
       return (char*) empty_string;
+    }
+
+  /* There are some cases with mixed DTIO where we have read a character
+     and saved it in the last character buffer, so we need to backup.  */
+  if (unlikely (dtp->u.p.current_unit->child_dtio > 0 &&
+		dtp->u.p.current_unit->last_char != EOF - 1))
+    {
+      dtp->u.p.current_unit->last_char = EOF - 1;
+      sseek (dtp->u.p.current_unit->s, -1, SEEK_CUR);
     }
 
   lorig = *length;
@@ -260,6 +269,12 @@ read_sf_internal (st_parameter_dt *dtp, int * length)
   if (unlikely (lorig > *length))
     {
       hit_eof (dtp);
+      return NULL;
+    }
+
+  if (base && *base == 0)
+    {
+      generate_error (&dtp->common, LIBERROR_EOR, NULL);
       return NULL;
     }
 
@@ -302,6 +317,15 @@ read_sf (st_parameter_dt *dtp, int * length)
       /* Just return something that isn't a NULL pointer, otherwise the
          caller thinks an error occurred.  */
       return (char*) empty_string;
+    }
+
+  /* There are some cases with mixed DTIO where we have read a character
+     and saved it in the last character buffer, so we need to backup.  */
+  if (unlikely (dtp->u.p.current_unit->child_dtio > 0 &&
+		dtp->u.p.current_unit->last_char != EOF - 1))
+    {
+      dtp->u.p.current_unit->last_char = EOF - 1;
+      fbuf_seek (dtp->u.p.current_unit, -1, SEEK_CUR);
     }
 
   n = seen_comma = 0;
@@ -1499,6 +1523,7 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 
 	  /* Call the user defined formatted READ procedure.  */
 	  dtp->u.p.current_unit->child_dtio++;
+	  dtp->u.p.current_unit->last_char = EOF - 1;
 	  dtp->u.p.fdtio_ptr (p, &unit, iotype, f->u.udf.vlist,
 			      child_iostat, child_iomsg,
 			      iotype_len, child_iomsg_len);
@@ -2856,6 +2881,11 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	}
     }
 
+  /* Child IO is non-advancing and any ADVANCE= specifier is ignored.
+     F2008 9.6.2.4  */
+  if (dtp->u.p.current_unit->child_dtio  > 0)
+    dtp->u.p.advance_status = ADVANCE_NO;
+
   if (read_flag)
     {
       dtp->u.p.current_unit->previous_nonadvancing_write = 0;
@@ -3856,6 +3886,15 @@ finalize_transfer (st_parameter_dt *dtp)
 	 namelist_write (dtp);
     }
 
+  if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
+    *dtp->size = dtp->u.p.current_unit->size_used;
+
+  if (dtp->u.p.eor_condition)
+    {
+      generate_error (&dtp->common, LIBERROR_EOR, NULL);
+      goto done;
+    }
+
   if (dtp->u.p.current_unit && (dtp->u.p.current_unit->child_dtio  > 0))
     {
       if (cf & IOPARM_DT_HAS_FORMAT)
@@ -3864,15 +3903,6 @@ finalize_transfer (st_parameter_dt *dtp)
 	  free (dtp->format);
 	}
       return;
-    }
-
-  if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    *dtp->size = dtp->u.p.current_unit->size_used;
-
-  if (dtp->u.p.eor_condition)
-    {
-      generate_error (&dtp->common, LIBERROR_EOR, NULL);
-      goto done;
     }
 
   if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)

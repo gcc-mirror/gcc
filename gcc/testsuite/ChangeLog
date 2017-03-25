@@ -1,3 +1,8 @@
+2017-03-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/78881
+	* gfortran.dg/dtio_26.f90: New test.
+
 2017-03-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/80156
