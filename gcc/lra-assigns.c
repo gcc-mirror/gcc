@@ -908,7 +908,8 @@ must_not_spill_p (unsigned spill_regno)
      does not solve the general case where existing reloads fully
      cover a limited register class.  */
   if (!bitmap_bit_p (&non_reload_pseudos, spill_regno)
-      && reg_class_size [reg_preferred_class (spill_regno)] == 1)
+      && reg_class_size [reg_preferred_class (spill_regno)] == 1
+      && reg_alternate_class (spill_regno) == NO_REGS)
     return true;
   return false;
 }
