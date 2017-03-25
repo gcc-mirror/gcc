@@ -1,3 +1,11 @@
+2017-03-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80156
+	PR fortran/79382
+	* decl.c (access_attr_decl): Remove the error for an absent
+	generic DTIO interface and ensure that symbol has the flavor
+	FL_PROCEDURE.
+
 2017-03-22  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/79838
