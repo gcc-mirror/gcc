@@ -2221,6 +2221,7 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 	  dtp->u.p.fdtio_ptr (p, &unit, iotype, &vlist,
 			      child_iostat, child_iomsg,
 			      iotype_len, child_iomsg_len);
+	  dtp->u.p.child_saved_iostat = *child_iostat;
 	  dtp->u.p.current_unit->child_dtio--;
       }
       break;
@@ -2352,15 +2353,18 @@ finish_list_read (st_parameter_dt *dtp)
       /* Set the next_char and push_char worker functions.  */
       set_workers (dtp);
 
-      c = next_char (dtp);
-      if (c == EOF)
+      if (likely (dtp->u.p.child_saved_iostat == LIBERROR_OK))
 	{
-	  free_line (dtp);
-	  hit_eof (dtp);
-	  return;
+	  c = next_char (dtp);
+	  if (c == EOF)
+	    {
+	      free_line (dtp);
+	      hit_eof (dtp);
+	      return;
+	    }
+	  if (c != '\n')
+	    eat_line (dtp);
 	}
-      if (c != '\n')
-	eat_line (dtp);
     }
 
   free_line (dtp);
