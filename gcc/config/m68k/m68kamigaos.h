@@ -603,7 +603,10 @@ extern int amiga_is_const_pic_ref(const_rtx x);
 // (GET_CODE(X) == CONST && (GET_CODE(XEXP(X, 0)) == SYMBOL_REF || GET_CODE(XEXP(X, 0)) == LABEL_REF) && !CONSTANT_POOL_ADDRESS_P (XEXP(X, 0))) ||
 
 #undef TARGET_GCC_EXCEPT_TABLE
-#define TARGET_GCC_EXCEPT_TABLE ".data"
+#define TARGET_GCC_EXCEPT_TABLE ".text"
 
 #undef TARGET_GCC_EXCEPT_TABLE_S
-#define TARGET_GCC_EXCEPT_TABLE_S ".data"
+#define TARGET_GCC_EXCEPT_TABLE_S ".text"
+
+#define EH_TABLES_CAN_BE_READ_ONLY 1
+
