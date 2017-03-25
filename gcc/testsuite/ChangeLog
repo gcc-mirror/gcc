@@ -1,3 +1,11 @@
+2017-03-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80156
+	PR fortran/79382
+	* gfortran.dg/dtio_23.f90 : Remove the dg-error and add the
+	testcase for PR80156. Add a main programme that tests that
+	the typebound generic is accessible.
+
 2017-03-25  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/80160
