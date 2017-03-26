@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fcoarray=lib -lcaf_single -fdump-tree-original" }
+! { dg-additional-options "-latomic" { target libatomic_available } }
 
 program test_image_status_1
   use iso_fortran_env , only : STAT_STOPPED_IMAGE
