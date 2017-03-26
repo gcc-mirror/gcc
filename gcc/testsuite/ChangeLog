@@ -1,5 +1,8 @@
 2017-03-26  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gcc.dg/torture/pr79732.c: Require alias support.
+	* gcc.dg/tree-ssa/pr56727.c: Move dg-require-alias after dg-do compile.
+
 	* gfortran.dg/coarray_failed_images_1.f08: Add "-latomic" option if
 	libatomic_available.
 	* gfortran.dg/coarray_image_status_1.f08: Likewise.
