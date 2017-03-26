@@ -1,3 +1,10 @@
+2017-03-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gfortran.dg/coarray_failed_images_1.f08: Add "-latomic" option if
+	libatomic_available.
+	* gfortran.dg/coarray_image_status_1.f08: Likewise.
+	* gfortran.dg/coarray_stopped_images_1.f08: Likewise.
+
 2017-03-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/78881
