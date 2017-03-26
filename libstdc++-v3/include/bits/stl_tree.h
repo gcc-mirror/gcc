@@ -192,6 +192,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     _M_move_data(_Rb_tree_header& __from)
     {
+      _M_header._M_color = __from._M_header._M_color;
       _M_header._M_parent = __from._M_header._M_parent;
       _M_header._M_left = __from._M_header._M_left;
       _M_header._M_right = __from._M_header._M_right;
