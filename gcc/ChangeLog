@@ -1,3 +1,10 @@
+2017-03-27  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_epilogue_uses): BLINK should be also
+	restored when in interrupt.
+	* config/arc/arc.md (simple_return): ARCv2 rtie instruction
+	doesn't have delay slot.
+
 2017-03-27  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/79776

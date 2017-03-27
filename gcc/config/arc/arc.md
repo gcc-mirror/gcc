@@ -4748,7 +4748,12 @@
   output_asm_insn (\"j%!%* [%0]%&\", &reg);
   return \"\";
 }
-  [(set_attr "type" "return")
+  [(set (attr "type")
+	(cond [(and (eq (symbol_ref "arc_compute_function_type (cfun)")
+			(symbol_ref "ARC_FUNCTION_ILINK1"))
+		    (match_test "TARGET_V2"))
+	       (const_string "brcc_no_delay_slot")]
+	      (const_string "return")))
    ; predicable won't help here since the canonical rtl looks different
    ; for branches.
    (set (attr "cond")
