@@ -1,5 +1,12 @@
 2017-03-27  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/80170
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Make
+	sure DR/SCEV didnt fold in constants we do not see when looking
+	at the reference base alignment.
+
+2017-03-27  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/80171
 	* gimple-fold.c (fold_ctor_reference): Properly guard against
 	NULL return value from canonicalize_constructor_val.

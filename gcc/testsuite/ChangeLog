@@ -1,5 +1,10 @@
 2017-03-27  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/80170
+	* gcc.dg/pr80170.c: New testcase.
+
+2017-03-27  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/80171
 	* g++.dg/torture/pr80171.C: New testcase.
 
