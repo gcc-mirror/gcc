@@ -1,3 +1,8 @@
+2017-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/79776
+	* g++.dg/ipa/pr79776.C: New testcase.
+
 2017-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/80168

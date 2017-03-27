@@ -7615,7 +7615,9 @@ struct pt_solution ipa_escaped_pt
 static bool
 associate_varinfo_to_alias (struct cgraph_node *node, void *data)
 {
-  if ((node->alias || node->thunk.thunk_p)
+  if ((node->alias
+       || (node->thunk.thunk_p
+	   && ! node->global.inlined_to))
       && node->analyzed)
     insert_vi_for_tree (node->decl, (varinfo_t)data);
   return false;
