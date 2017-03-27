@@ -1,3 +1,7 @@
+2017-03-27  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/ieee-754/divdf3.S (__divdf3): Use __ARCEM__.
+
 2017-03-10  John Marino  <gnugcc@marino.st>
 
 	* config/aarch64/freebsd-unwind.h: New file.
