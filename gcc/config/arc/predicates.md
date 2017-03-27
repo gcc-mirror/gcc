@@ -148,6 +148,11 @@
       {
 	rtx x = XEXP (op, 1);
 
+	if ((GET_CODE (XEXP (op, 0)) == MULT)
+	    && REG_P (XEXP (XEXP (op, 0), 0))
+	    && CONSTANT_P (x))
+	  return 1;
+
 	if (GET_CODE (x) == CONST)
 	  {
 	    x = XEXP (x, 0);
