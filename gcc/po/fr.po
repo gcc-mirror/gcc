@@ -133,7 +133,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.1-b20170226\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-02-25 19:14+0000\n"
-"PO-Revision-Date: 2017-03-18 19:21+0100\n"
+"PO-Revision-Date: 2017-03-25 20:01+0100\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -5859,7 +5859,7 @@ msgstr "Activer toutes les extensions du langage DEC."
 
 #: fortran/lang.opt:433
 msgid "Enable kind-specific variants of integer intrinsic functions."
-msgstr "Activer les variantes spécifiques au genre pour les fonctions intrinsèques entières."
+msgstr "Activer les variantes spécifiques au sous-type pour les fonctions intrinsèques entières."
 
 #: fortran/lang.opt:437
 msgid "Enable legacy math intrinsics for compatibility."
@@ -19389,7 +19389,7 @@ msgstr "une construction %<ordered%> avec une clause %<depend%> doit être nich�
 #: omp-low.c:2821
 #, gcc-internal-format
 msgid "invalid depend kind in omp %<ordered%> %<depend%>"
-msgstr "genre de dépendance invalide dans omp %<ordered%> %<depend%>"
+msgstr "sous-type dépendant invalide dans omp %<ordered%> %<depend%>"
 
 #: omp-low.c:2836
 #, gcc-internal-format
@@ -37244,7 +37244,7 @@ msgstr "l'instruction n'est pas une expression constante"
 #: cp/constexpr.c:4557
 #, gcc-internal-format
 msgid "unexpected expression %qE of kind %s"
-msgstr "l'expression %qE du genre %s est inattendue"
+msgstr "l'expression %qE du sous-type %s est inattendue"
 
 #: cp/constexpr.c:4627
 #, gcc-internal-format
@@ -47678,7 +47678,7 @@ msgstr "L'argument %qs de l'intrinsèque %qs à %L doit être une constante"
 #: fortran/check.c:183
 #, gcc-internal-format, gfc-internal-format
 msgid "Invalid kind for %s at %L"
-msgstr "Genre invalide pour %s à %L"
+msgstr "Sous-type invalide pour %s à %L"
 
 #: fortran/check.c:202
 #, gcc-internal-format
@@ -47733,7 +47733,7 @@ msgstr "%<%s + %s%> à %L doit être plus petit ou égal à BIT_SIZE(%qs)"
 #: fortran/check.c:420
 #, gcc-internal-format
 msgid "%qs argument of %qs intrinsic at %L must be the same type and kind as %qs"
-msgstr "L'argument %qs de l'intrinsèque %qs à %L doit être du même type et du même genre que %qs"
+msgstr "L'argument %qs de l'intrinsèque %qs à %L doit être du même type et du même sous-type que %qs"
 
 #: fortran/check.c:437
 #, gcc-internal-format
@@ -47753,7 +47753,7 @@ msgstr "L'argument %qs de l'intrinsèque %qs à %L doit être ALLOCATABLE"
 #: fortran/check.c:491
 #, gcc-internal-format
 msgid "%qs argument of %qs intrinsic at %L must be of kind %d"
-msgstr "L'argument %qs de l'intrinsèque %qs à %L doit être du genre %d"
+msgstr "L'argument %qs de l'intrinsèque %qs à %L doit être du sous-type %d"
 
 #: fortran/check.c:529
 #, gcc-internal-format
@@ -47789,7 +47789,7 @@ msgstr "Les arguments %qs et %qs de l'intrinsèque %qs à %L doivent avoir le m�
 #: fortran/check.c:2497 fortran/check.c:2924
 #, gcc-internal-format, gfc-internal-format
 msgid "Different type kinds at %L"
-msgstr "Genres de types différents à %L"
+msgstr "Sous-types différents à %L"
 
 #: fortran/check.c:930
 #, gcc-internal-format
@@ -47824,7 +47824,7 @@ msgstr "Le pointeur NULL à %L n'est pas permis comme argument effectif de la fo
 #: fortran/check.c:1045
 #, gcc-internal-format, gfc-internal-format
 msgid "ATOM argument at %L to intrinsic function %s shall be an integer of ATOMIC_INT_KIND or a logical of ATOMIC_LOGICAL_KIND"
-msgstr "L'argument ATOM à %L pour la fonction intrinsèque %s sera un entier du genre ATOMIC_INT_KIND ou un logique du genre ATOMIC_LOGICAL_KIND"
+msgstr "L'argument ATOM à %L pour la fonction intrinsèque %s sera un entier du sous-type ATOMIC_INT_KIND ou un logique du sous-type ATOMIC_LOGICAL_KIND"
 
 #: fortran/check.c:1053
 #, gcc-internal-format, gfc-internal-format
@@ -47849,7 +47849,7 @@ msgstr "L'argument ATOM de la fonction intrinsèque %s à %L sera définissable"
 #: fortran/check.c:1111 fortran/check.c:1243
 #, gcc-internal-format, gfc-internal-format
 msgid "ATOM argument at %L to intrinsic function %s shall be an integer of ATOMIC_INT_KIND"
-msgstr "L'argument ATOM à %L pour la fonction intrinsèque %s sera un entier du genre ATOMIC_INT_KIND"
+msgstr "L'argument ATOM à %L pour la fonction intrinsèque %s sera un entier du sous-type ATOMIC_INT_KIND"
 
 #: fortran/check.c:1131
 #, gcc-internal-format, gfc-internal-format
@@ -47894,7 +47894,7 @@ msgstr "L'argument %qs de l'intrinsèque %qs à %L doit avoir un type soit REAL 
 #: fortran/check.c:1482 fortran/check.c:1488
 #, gcc-internal-format, gfc-internal-format
 msgid "Conversion from %s to default-kind COMPLEX(%d) at %L might lose precision, consider using the KIND argument"
-msgstr "La conversion depuis %s vers le genre par défaut COMPLEX(%d) à %L pourrait perdre en précision, envisagez d'utiliser l'argument KIND"
+msgstr "La conversion depuis %s vers le sous-type par défaut COMPLEX(%d) à %L pourrait perdre en précision, envisagez d'utiliser l'argument KIND"
 
 #: fortran/check.c:1510
 #, gcc-internal-format
@@ -47914,7 +47914,7 @@ msgstr "L'argument stat= à %L doit être une variable entière avec kind=4"
 #: fortran/check.c:1557
 #, gcc-internal-format, gfc-internal-format
 msgid "The errmsg= argument at %L must be a default-kind character variable"
-msgstr "L'argument errmsg= à %L doit être une variable caractère du genre par défaut"
+msgstr "L'argument errmsg= à %L doit être une variable caractère du sous-type par défaut"
 
 #: fortran/check.c:1565
 #, gcc-internal-format
@@ -48045,7 +48045,7 @@ msgstr "%<I%> à %L et %<J%> à %L ne peuvent pas être tous les deux des consta
 #: fortran/check.c:2169
 #, gcc-internal-format, gfc-internal-format
 msgid "non-default INTEGER kind argument to %s intrinsic at %L"
-msgstr "Argument du genre INTEGER pas par défaut passé à l'intrinsèque %s à %L"
+msgstr "Argument INTEGER du sous-type pas par défaut passé à l'intrinsèque %s à %L"
 
 #: fortran/check.c:2229
 #, gcc-internal-format
@@ -48060,7 +48060,7 @@ msgstr "L'argument de %s à %L doit être de longueur un"
 #: fortran/check.c:2452
 #, gcc-internal-format
 msgid "%qs argument of %qs intrinsic at %L must be the same kind as %qs"
-msgstr "L'argument %qs de l'intrinsèque %qs à %L doit être du même genre que %qs"
+msgstr "L'argument %qs de l'intrinsèque %qs à %L doit être du même sous-type que %qs"
 
 #: fortran/check.c:2542
 #, gcc-internal-format, gfc-internal-format
@@ -48540,7 +48540,7 @@ msgstr "fe_runtime_error: Mauvais nombre d'arguments (%d au lieu de %d)"
 #: fortran/check.c:5743
 #, gcc-internal-format, gfc-internal-format
 msgid "COUNT argument to SYSTEM_CLOCK at %L has non-default kind"
-msgstr "L'argument COUNT de SYSTEM_CLOCK à %L a un genre pas par défaut"
+msgstr "L'argument COUNT de SYSTEM_CLOCK à %L a un sous-type pas par défaut"
 
 #: fortran/check.c:5762
 #, gcc-internal-format, gfc-internal-format
@@ -48550,17 +48550,17 @@ msgstr "Argument réel COUNT_RATE de SYSTEM_CLOCK à %L"
 #: fortran/check.c:5772
 #, gcc-internal-format, gfc-internal-format
 msgid "COUNT_RATE argument to SYSTEM_CLOCK at %L has non-default kind"
-msgstr "L'argument COUNT_RATE de SYSTEM_CLOCK à %L a un genre pas par défaut"
+msgstr "L'argument COUNT_RATE de SYSTEM_CLOCK à %L a un sous-type pas par défaut"
 
 #: fortran/check.c:5789
 #, gcc-internal-format, gfc-internal-format
 msgid "COUNT_MAX argument to SYSTEM_CLOCK at %L has non-default kind"
-msgstr "L'argument COUNT_MAX de SYSTEM_CLOCK à %L a un genre pas par défaut"
+msgstr "L'argument COUNT_MAX de SYSTEM_CLOCK à %L a un sous-type pas par défaut"
 
 #: fortran/check.c:6006
 #, gcc-internal-format
 msgid "%qs argument of %qs intrinsic at %L must be of a kind not wider than the default kind (%d)"
-msgstr "L'argument %qs de l'intrinsèque %qs à %L doit être d'un genre pas plus large que le genre par défaut (%d)"
+msgstr "L'argument %qs de l'intrinsèque %qs à %L doit être d'un sous-type pas plus large que le sous-type par défaut (%d)"
 
 #: fortran/check.c:6358 fortran/check.c:6366
 #, gcc-internal-format
@@ -48827,7 +48827,7 @@ msgstr "Le symbole %qs à %C est aussi déclaré comme un type à %L"
 #: fortran/decl.c:1471
 #, gcc-internal-format
 msgid "Variable %qs in common block %qs at %C must be declared with a C interoperable kind since common block %qs is BIND(C)"
-msgstr "La variable %qs dans le bloc commun %qs à %C doit être déclarée avec un genre interopérable avec le C puisque le bloc commun %qs est BIND(C)"
+msgstr "La variable %qs dans le bloc commun %qs à %C doit être déclarée avec un sous-type interopérable avec le C puisque le bloc commun %qs est BIND(C)"
 
 #: fortran/decl.c:1505
 #, gcc-internal-format, gfc-internal-format
@@ -49032,12 +49032,12 @@ msgstr "Expression d'initialisation d'un scalaire attendue à %C"
 #: fortran/decl.c:2623
 #, gcc-internal-format, gfc-internal-format
 msgid "Kind %d not supported for type %s at %C"
-msgstr "Le genre %d n'est pas supporté pour le type %s à %C"
+msgstr "Le sous-type %d n'est pas supporté pour le type %s à %C"
 
 #: fortran/decl.c:2636
 #, gcc-internal-format, gfc-internal-format
 msgid "C kind type parameter is for type %s but type at %L is %s"
-msgstr "Le paramètre d'un type du genre C est pour le type %s mais le type à %L est %s"
+msgstr "Le paramètre d'un type du sous-type C est pour le type %s mais le type à %L est %s"
 
 #: fortran/decl.c:2645
 #, gcc-internal-format, gfc-internal-format
@@ -49047,7 +49047,7 @@ msgstr "Parenthèse droite ou virgule manquante à %C"
 #: fortran/decl.c:2743
 #, gcc-internal-format, gfc-internal-format
 msgid "Kind %d is not supported for CHARACTER at %C"
-msgstr "Le genre %d n'est pas supporté pour CHARACTER à %C"
+msgstr "Le sous-type %d n'est pas supporté pour CHARACTER à %C"
 
 #: fortran/decl.c:2875
 #, gcc-internal-format, gfc-internal-format
@@ -49269,7 +49269,7 @@ msgstr "La déclaration implicite de la fonction BIND(C) %qs à %L pourrait ne p
 #: fortran/decl.c:4552
 #, gcc-internal-format
 msgid "Variable %qs in common block %qs at %L may not be a C interoperable kind though common block %qs is BIND(C)"
-msgstr "La variable %qs dans le bloc commun %qs à %L ne peut pas être un genre interopérable avec le C bien que le bloc commun %qs est BIND(C)"
+msgstr "La variable %qs dans le bloc commun %qs à %L ne peut pas être un sous-type interopérable avec le C bien que le bloc commun %qs est BIND(C)"
 
 #: fortran/decl.c:4561
 #, gcc-internal-format
@@ -49279,7 +49279,7 @@ msgstr "La déclaration de type %qs à %L n'est pas interopérable avec le C mai
 #: fortran/decl.c:4565
 #, gcc-internal-format
 msgid "Variable %qs at %L may not be a C interoperable kind but it is BIND(C)"
-msgstr "La variable %qs à %L peut ne pas être d'un genre interopérable avec le C mais elle est BIND(C)"
+msgstr "La variable %qs à %L peut ne pas être d'un sous-type interopérable avec le C mais elle est BIND(C)"
 
 #: fortran/decl.c:4577
 #, gcc-internal-format
@@ -49598,7 +49598,7 @@ msgstr "Le spécificateur NAME= à %C devrait être une expression constante"
 #: fortran/decl.c:6626
 #, gcc-internal-format, gfc-internal-format
 msgid "NAME= specifier at %C should be a scalar of default character kind"
-msgstr "Le spécificateur NAME= à %C devrait être un scalaire du genre de caractère par défaut"
+msgstr "Le spécificateur NAME= à %C devrait être un scalaire du sous-type de caractère par défaut"
 
 #: fortran/decl.c:6645
 #, gcc-internal-format, gfc-internal-format
@@ -50375,7 +50375,7 @@ msgstr "L'opérateur de concaténation dans l'expression à %L doit avoir deux o
 #: fortran/expr.c:2144
 #, gcc-internal-format, gfc-internal-format
 msgid "Concat operator at %L must concatenate strings of the same kind"
-msgstr "L'opérateur de concaténation à %L doit concaténer des chaînes du même genre"
+msgstr "L'opérateur de concaténation à %L doit concaténer des chaînes du même sous-type"
 
 #: fortran/expr.c:2154
 #, gcc-internal-format, gfc-internal-format
@@ -50705,7 +50705,7 @@ msgstr "Types différents dans une affectation de pointeur à %L; tentative d'af
 #: fortran/expr.c:3660
 #, gcc-internal-format, gfc-internal-format
 msgid "Different kind type parameters in pointer assignment at %L"
-msgstr "Paramètres de type de genre différents dans l'affectation de pointeur à %L"
+msgstr "Paramètres de type de sous-type différents dans l'affectation de pointeur à %L"
 
 #: fortran/expr.c:3667
 #, gcc-internal-format, gfc-internal-format
@@ -51235,7 +51235,7 @@ msgstr "Un élément d'un tableau de forme tacite ou pointeur est passé à l'ar
 #: fortran/interface.c:2498
 #, gcc-internal-format
 msgid "Extension: Scalar non-default-kind, non-C_CHAR-kind CHARACTER actual argument with array dummy argument %qs at %L"
-msgstr "Extension: Argument effectif scalaire du genre pas par défaut, du genre non C_CHAR avec un argument muet tableau %qs à %L"
+msgstr "Extension: Argument effectif scalaire du sous-type pas par défaut, du sous-type non C_CHAR avec un argument muet tableau %qs à %L"
 
 #: fortran/interface.c:2506
 #, gcc-internal-format
@@ -51960,7 +51960,7 @@ msgstr "L'expression constante dans l'étiquette du FORMAT à %L doit être de t
 #: fortran/io.c:1617
 #, gcc-internal-format, gfc-internal-format
 msgid "FORMAT tag at %L must be of type default-kind CHARACTER or of INTEGER"
-msgstr "L'étiquette du FORMAT à %L doit être du type CHARACTER ou INTEGER du genre par défaut"
+msgstr "L'étiquette du FORMAT à %L doit être du type CHARACTER ou INTEGER du sous-type par défaut"
 
 #: fortran/io.c:1623
 #, gcc-internal-format, gfc-internal-format
@@ -52005,7 +52005,7 @@ msgstr "La balise %s à %L doit être du type %s"
 #: fortran/io.c:1700
 #, gcc-internal-format, gfc-internal-format
 msgid "%s tag at %L must be a character string of default kind"
-msgstr "La balise %s à %L doit être une chaîne de caractères du genre par défaut"
+msgstr "La balise %s à %L doit être une chaîne de caractères du sous-type par défaut"
 
 #: fortran/io.c:1707
 #, gcc-internal-format, gfc-internal-format
@@ -52025,7 +52025,7 @@ msgstr "Le Fortran 95 exige un INTEGER par défaut dans la balise %s à %L"
 #: fortran/io.c:1730
 #, gcc-internal-format, gfc-internal-format
 msgid "Non-default LOGICAL kind in %s tag at %L"
-msgstr "Genre LOGICAL pas par défaut dans la balise %s à %L"
+msgstr "Sous-type LOGICAL pas par défaut dans la balise %s à %L"
 
 #: fortran/io.c:1737
 #, gcc-internal-format, gfc-internal-format
@@ -52849,7 +52849,7 @@ msgstr "Le type de l'entité à %L est incompatible sur le type avec typespec"
 #: fortran/match.c:4029
 #, gcc-internal-format, gfc-internal-format
 msgid "Kind type parameter for entity at %L differs from the kind type parameter of the typespec"
-msgstr "Le paramètre de type de genre pour l'entité à %L diffère du paramètre de type de genre du typespec"
+msgstr "Le paramètre de sous-type pour l'entité à %L diffère du paramètre de sous-type du typespec"
 
 #: fortran/match.c:4043
 #, gcc-internal-format, gfc-internal-format
@@ -52987,7 +52987,7 @@ msgstr "Erreur de syntaxe dans le nom du bloc commun à %C"
 #: fortran/match.c:4856
 #, gcc-internal-format
 msgid "Variable %qs at %L in common block %qs at %C must be declared with a C interoperable kind since common block %qs is bind(c)"
-msgstr "La variable %qs à %L dans le bloc commun %qs à %C doit être déclarée avec un genre interopérable avec le C puisque le bloc commun %qs est bind(c)"
+msgstr "La variable %qs à %L dans le bloc commun %qs à %C doit être déclarée avec un sous-type interopérable avec le C puisque le bloc commun %qs est bind(c)"
 
 #: fortran/match.c:4865
 #, gcc-internal-format
@@ -54723,284 +54723,271 @@ msgid "failed to create union component '%s'"
 msgstr "échec lors de la création du composant d'union « %s »"
 
 #: fortran/parse.c:3172
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "syntax error in action"
+#, gcc-internal-format, gfc-internal-format
 msgid "Syntax error in nested structure declaration at %C"
-msgstr "erreur de syntaxe dans l,action"
+msgstr "Erreur de syntaxe dans la déclaration d'une structure imbriquée à %C"
 
 #: fortran/parse.c:3259
 #, gcc-internal-format, gfc-internal-format
 msgid "FINAL declaration at %C must be inside CONTAINS"
-msgstr ""
+msgstr "La déclaration FINAL à %C doit être à l'intérieur de CONTAINS"
 
 #: fortran/parse.c:3267
 #, gcc-internal-format, gfc-internal-format
 msgid "Derived type definition at %C without components"
-msgstr ""
+msgstr "Définition du type dérivé à %C sans composants"
 
 #: fortran/parse.c:3283
 #, gcc-internal-format, gfc-internal-format
 msgid "PRIVATE statement at %C must precede structure components"
-msgstr ""
+msgstr "L'instruction PRIVATE à %C doit précéder les composants de la structure"
 
 #: fortran/parse.c:3300
 #, gcc-internal-format, gfc-internal-format
 msgid "SEQUENCE statement at %C must precede structure components"
-msgstr ""
+msgstr "L'instruction SEQUENCE à %C doit précéder les composants de la structure"
 
 #: fortran/parse.c:3306
 #, gcc-internal-format, gfc-internal-format
 msgid "SEQUENCE attribute at %C already specified in TYPE statement"
-msgstr ""
+msgstr "L'attribut SEQUENCE à %C est déjà spécifié dans l'instruction TYPE"
 
 #: fortran/parse.c:3311
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unsupported VXT statement at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "Duplicate SEQUENCE statement at %C"
-msgstr "déclaration VXT non supporté à %0"
+msgstr "Instruction SEQENCE dupliquée à %C"
 
 #: fortran/parse.c:3321
 #, gcc-internal-format, gfc-internal-format
 msgid "CONTAINS block in derived type definition at %C"
-msgstr ""
+msgstr "Bloc CONTAINS dans une définition de type dérivé à %C"
 
 #: fortran/parse.c:3379
 #, gcc-internal-format, gfc-internal-format
 msgid "ENUM declaration at %C has no ENUMERATORS"
-msgstr ""
+msgstr "La déclaration ENUM à %C n'a aucun ENUMERATOR"
 
 #: fortran/parse.c:3466
 #, gcc-internal-format, gfc-internal-format
 msgid "Unexpected %s statement in INTERFACE block at %C"
-msgstr ""
+msgstr "Instruction %s inattendue dans le bloc INTERFACE à %C"
 
 #: fortran/parse.c:3490
 #, gcc-internal-format
 msgid "Name %qs of ABSTRACT INTERFACE at %C cannot be the same as an intrinsic type"
-msgstr ""
+msgstr "Le nom %qs de ABSTRACT INTERFACE à %C ne peut pas être le même qu'un type intrinsèque"
 
 #: fortran/parse.c:3524
 #, gcc-internal-format, gfc-internal-format
 msgid "Unexpected %s statement at %C in INTERFACE body"
-msgstr ""
+msgstr "Instruction %s inattendue à %C dans le corps de INTERFACE"
 
 #: fortran/parse.c:3542
 #, gcc-internal-format
 msgid "INTERFACE procedure %qs at %L has the same name as the enclosing procedure"
-msgstr ""
+msgstr "La procédure %qs de INTERFACE à %L a le même nom que la procédure englobante"
 
 #: fortran/parse.c:3672
 #, gcc-internal-format, gfc-internal-format
 msgid "%s statement is not allowed inside of BLOCK at %C"
-msgstr ""
+msgstr "L'instruction %s n'est pas permise à l'intérieur de BLOCK à %C"
 
 #: fortran/parse.c:3703
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Statement at %0 invalid in BLOCK DATA program unit at %1"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s statement is not allowed inside of BLOCK DATA at %C"
-msgstr "Déclaration à %0 invalide dans le bloc de donnée de l'unité programme à %1"
+msgstr "L'instruction %s n'est pas permise à l'intérieur de BLOCK DATA à %C"
 
 #: fortran/parse.c:3793
 #, gcc-internal-format, gfc-internal-format
 msgid "%s statement must appear in a MODULE"
-msgstr ""
+msgstr "L'instruction %s doit apparaître dans un MODULE"
 
 #: fortran/parse.c:3801
 #, gcc-internal-format, gfc-internal-format
 msgid "%s statement at %C follows another accessibility specification"
-msgstr ""
+msgstr "L'instruction %s à %C suit un autre spécificateur d'accessibilité"
 
 #: fortran/parse.c:3853
-#, fuzzy, gcc-internal-format
-#| msgid "Invalid token at %0 in expression or subexpression at %1"
+#, gcc-internal-format
 msgid "Bad kind expression for function %qs at %L"
-msgstr "élément lexical invalide à %0 dans l'expression ou la sous-expression à %1"
+msgstr "Mauvaise expression « kind » pour la fonction %qs à %L"
 
 #: fortran/parse.c:3857
 #, gcc-internal-format
 msgid "The type for function %qs at %L is not accessible"
-msgstr ""
+msgstr "Le type pour la fonction %qs à %L n'est pas accessible"
 
 #: fortran/parse.c:3917
 #, gcc-internal-format, gfc-internal-format
 msgid "ELSEWHERE statement at %C follows previous unmasked ELSEWHERE"
-msgstr ""
+msgstr "L'instruction ELSEWHERE à %C suit un ELSEWHERE précédent qui n'est pas masqué"
 
 #: fortran/parse.c:3939
 #, gcc-internal-format, gfc-internal-format
 msgid "Unexpected %s statement in WHERE block at %C"
-msgstr ""
+msgstr "Instruction %s inattendue dans le bloc WHERE à %C"
 
 #: fortran/parse.c:3998
 #, gcc-internal-format, gfc-internal-format
 msgid "Unexpected %s statement in FORALL block at %C"
-msgstr ""
+msgstr "Instruction %s inattendue dans le bloc FORALL à %C"
 
 #: fortran/parse.c:4049
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "PUBLIC or PRIVATE statement at %1 cannot be specified along with PUBLIC or PRIVATE statement at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "ELSE IF statement at %C cannot follow ELSE statement at %L"
-msgstr "déclaration PUBLIC ou PRIVATE à %1 ne peut être spécifié en même temps avec la déclaration PUBLIC ou PRIVATE à %0"
+msgstr "L'instruction ELSE IF à %C ne peut pas suivre une instruction ELSE à %L"
 
 #: fortran/parse.c:4067
 #, gcc-internal-format, gfc-internal-format
 msgid "Duplicate ELSE statements at %L and %C"
-msgstr ""
+msgstr "Instructions ELSE dupliquées à %L et %C"
 
 #: fortran/parse.c:4128
 #, gcc-internal-format, gfc-internal-format
 msgid "Expected a CASE or END SELECT statement following SELECT CASE at %C"
-msgstr ""
+msgstr "Une instruction CASE ou END SELECT est attendue à la suite de SELECT CASE à %C"
 
 #: fortran/parse.c:4212
 #, gcc-internal-format, gfc-internal-format
 msgid "Expected TYPE IS, CLASS IS or END SELECT statement following SELECT TYPE at %C"
-msgstr ""
+msgstr "Une instruction TYPE IS, CLASS IS ou END SELECT est attendue à la suite de SELECT TYPE à %C"
 
 #: fortran/parse.c:4274
-#, fuzzy, gcc-internal-format
-#| msgid "%s cannot appear in a constant-expression"
+#, gcc-internal-format
 msgid "Variable %qs at %C cannot be redefined inside loop beginning at %L"
-msgstr "%s ne peut apparaître dans une expression de constante"
+msgstr "La variable %qs à %C ne peut pas être redéfinie à l'intérieur de la boucle commençant à %L"
 
 #: fortran/parse.c:4307
 #, gcc-internal-format, gfc-internal-format
 msgid "End of nonblock DO statement at %C is within another block"
-msgstr ""
+msgstr "La fin de l'instruction DO non bloc à %C est à l'intérieur d'un autre bloc"
 
 #: fortran/parse.c:4317
 #, gcc-internal-format, gfc-internal-format
 msgid "End of nonblock DO statement at %C is interwoven with another DO loop"
-msgstr ""
+msgstr "La fin de l'instruction DO non bloc à %C est enchevêtrée dans une autre boucle DO"
 
 #: fortran/parse.c:4343
 #, gcc-internal-format, gfc-internal-format
 msgid "CRITICAL block inside of OpenACC region at %C"
-msgstr ""
+msgstr "Bloc CRITICAL à l'intérieur d'une région OpenACC à %C"
 
 #: fortran/parse.c:4370
 #, gcc-internal-format, gfc-internal-format
 msgid "Statement label in END CRITICAL at %C does not match CRITICAL label"
-msgstr ""
+msgstr "L'étiquette d'instruction dans END CRITICAL à %C ne correspond pas à l'étiquette de CRITICAL"
 
 #: fortran/parse.c:4439
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "In construct"
+#, gcc-internal-format, gfc-internal-format
 msgid "BLOCK construct at %C"
-msgstr "Dans le construit"
+msgstr "Construction BLOCK à %C"
 
 #: fortran/parse.c:4473
 #, gcc-internal-format, gfc-internal-format
 msgid "ASSOCIATE construct at %C"
-msgstr ""
+msgstr "Construction ASSOCIATE à %C"
 
 #: fortran/parse.c:4654
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "start label '%s' does not match end label '%s'"
+#, gcc-internal-format, gfc-internal-format
 msgid "Statement label in ENDDO at %C doesn't match DO label"
-msgstr "étiquette de départ « %s » ne concorde pas avec l'étiquette de fin « %s »"
+msgstr "L'étiquette d'instruction dans ENDDO à %C ne correspond pas à l'étiquette de DO"
 
 #: fortran/parse.c:4670
 #, gcc-internal-format, gfc-internal-format
 msgid "Named block DO at %L requires matching ENDDO name"
-msgstr ""
+msgstr "Le bloc DO nommé à %L requiert un nom ENDDO correspondant"
 
 #: fortran/parse.c:4861
 #, gcc-internal-format, gfc-internal-format
 msgid "Missing !$OMP END ATOMIC after !$OMP ATOMIC CAPTURE at %C"
-msgstr ""
+msgstr "!$OMP END ATOMIC requis après !$OMP ATOMIC CAPTURE à %C"
 
 #: fortran/parse.c:4877 fortran/parse.c:4936
 #, gcc-internal-format, gfc-internal-format
 msgid "OpenACC directive inside of CRITICAL block at %C"
-msgstr ""
+msgstr "Directive OpenACC à l'intérieur du bloc CRITICAL à %C"
 
 #: fortran/parse.c:4911
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "in %s, at %s:%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expecting %s at %C"
-msgstr "dans %s, à %s:%d"
+msgstr "%s attendu à %C"
 
 #: fortran/parse.c:4955
 #, gcc-internal-format, gfc-internal-format
 msgid "Expected DO loop at %C"
-msgstr ""
+msgstr "Boucle DO attendue à %C"
 
 #: fortran/parse.c:4975
 #, gcc-internal-format, gfc-internal-format
 msgid "Redundant !$ACC END LOOP at %C"
-msgstr ""
+msgstr "!$ACC END LOOP redondant à %C"
 
 #: fortran/parse.c:5189
 #, gcc-internal-format, gfc-internal-format
 msgid "Name after !$omp critical and !$omp end critical does not match at %C"
-msgstr ""
+msgstr "Les noms après !$omp critical et !$omp end critical ne correspondent pas à %C"
 
 #: fortran/parse.c:5247
 #, gcc-internal-format, gfc-internal-format
 msgid "%s statement at %C cannot terminate a non-block DO loop"
-msgstr ""
+msgstr "L'instruction %s à %C ne peut pas terminer une boucle DO non bloc"
 
 #: fortran/parse.c:5261
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "FORMAT at %0 with run-time expression must follow first executable statement"
+#, gcc-internal-format, gfc-internal-format
 msgid "DATA statement at %C after the first executable statement"
-msgstr "FORMAT à %0 dans l'expression lors de l'exécution doit suivre la première déclaration exécutable"
+msgstr "Instruction DATA à %C après la première instruction exécutable"
 
 #: fortran/parse.c:5499
 #, gcc-internal-format
 msgid "Contained procedure %qs at %C is already ambiguous"
-msgstr ""
+msgstr "La procédure contenue %qs à %C est déjà ambigüe"
 
 #: fortran/parse.c:5556
 #, gcc-internal-format, gfc-internal-format
 msgid "Unexpected %s statement in CONTAINS section at %C"
-msgstr ""
+msgstr "Instruction %s inattendue dans la section CONTAINS à %C"
 
 #: fortran/parse.c:5581
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "No label definition for FORMAT statement at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "CONTAINS statement without FUNCTION or SUBROUTINE statement at %L"
-msgstr "pas de définition d'étiquette pour la déclaration de FORMAT à %0"
+msgstr "Instruction CONTAINS sans instruction FUNCTION ou SUBROUTINE à %L"
 
 #: fortran/parse.c:5693
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "RETURN statement at %0 invalid within a main program unit"
+#, gcc-internal-format, gfc-internal-format
 msgid "CONTAINS statement at %C is already in a contained program unit"
-msgstr "déclaration RETURN à %0 invalide à l'intérieur de l'unité du programme principal"
+msgstr "L'instruction CONTAINS à %C est déjà dans une unité de programme contenue"
 
 #: fortran/parse.c:5739
 #, gcc-internal-format
 msgid "gfc_global_used(): Bad type"
-msgstr ""
+msgstr "gfc_global_used(): Mauvais type"
 
+# Le dernier %s est un mot clé tel que « FUNCTION », « PROGRAM », « MODULE » etc, d'où le « un(e) »
 #: fortran/parse.c:5744
-#, fuzzy, gcc-internal-format
-#| msgid "Label %A already defined at %1 when redefined at %0"
+#, gcc-internal-format
 msgid "Global binding name %qs at %L is already being used as a %s at %L"
-msgstr "Étiquette %A déjà définie à %1 et redéfinie à %0"
+msgstr "Le nom de liaison globale %qs à %L est déjà utilisé comme un(e) %s à %L"
 
+# Le dernier %s est un mot clé tel que « FUNCTION », « PROGRAM », « MODULE » etc, d'où le « un(e) »
 #: fortran/parse.c:5747
-#, fuzzy, gcc-internal-format
-#| msgid "Label %A already defined at %1 when redefined at %0"
+#, gcc-internal-format
 msgid "Global name %qs at %L is already being used as a %s at %L"
-msgstr "Étiquette %A déjà définie à %1 et redéfinie à %0"
+msgstr "Le nom global %qs à %L est déjà utilisé comme un(e) %s à %L"
 
 #: fortran/parse.c:5768
 #, gcc-internal-format, gfc-internal-format
 msgid "Blank BLOCK DATA at %C conflicts with prior BLOCK DATA at %L"
-msgstr ""
+msgstr "Le BLOCK DATA blanc à %C est en conflit avec le BLOCK DATA précédent à %L"
 
 #: fortran/parse.c:5794
 #, gcc-internal-format, gfc-internal-format
 msgid "Unexpected %s statement in BLOCK DATA at %C"
-msgstr ""
+msgstr "Instruction %s inattendue dans BLOCK DATA à %C"
 
 #: fortran/parse.c:5898
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unsupported VXT statement at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "Unexpected %s statement in MODULE at %C"
-msgstr "déclaration VXT non supporté à %0"
+msgstr "Instruction %s inattendue dans MODULE à %C"
 
 #. If we see a duplicate main program, shut down.  If the second
 #. instance is an implied main program, i.e. data decls or executable
@@ -55008,1218 +54995,1169 @@ msgstr "déclaration VXT non supporté à %0"
 #: fortran/parse.c:6279
 #, gcc-internal-format, gfc-internal-format
 msgid "Two main PROGRAMs at %L and %C"
-msgstr ""
+msgstr "Deux PROGRAM principaux à %L et %C"
 
 #: fortran/primary.c:103
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Missing formal parameter term"
+#, gcc-internal-format, gfc-internal-format
 msgid "Missing kind-parameter at %C"
-msgstr "Paramètre term formel manquant"
+msgstr "Paramètre « kind » manquant à %C"
 
 #: fortran/primary.c:136
 #, gcc-internal-format
 msgid "gfc_check_digit(): bad radix"
-msgstr ""
+msgstr "gfc_check_digit(): mauvais radical"
 
 #: fortran/primary.c:230
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "function body not available"
+#, gcc-internal-format, gfc-internal-format
 msgid "Integer kind %d at %C not available"
-msgstr "corps de la fonction n'est pas disponible"
+msgstr "Le sous-type %d à %C n'est pas disponible pour un entier"
 
 #: fortran/primary.c:239
 #, gcc-internal-format, gfc-internal-format
 msgid "Integer too big for its kind at %C. This check can be disabled with the option -fno-range-check"
-msgstr ""
+msgstr "L'entier est trop grand pour son sous-type à %C. Cette vérification peut être désactivée avec l'option -fno-range-check"
 
 #: fortran/primary.c:267
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Invalid octal constant at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "Hollerith constant at %C"
-msgstr "constante octale invalide à %0"
+msgstr "Constante Hollerith à %C"
 
 #: fortran/primary.c:274
 #, gcc-internal-format, gfc-internal-format
 msgid "Invalid Hollerith constant: %L must contain at least one character"
-msgstr ""
+msgstr "Constante Hollerith invalide: %L doit contenir au moins un caractère"
 
 #: fortran/primary.c:280
 #, gcc-internal-format, gfc-internal-format
 msgid "Invalid Hollerith constant: Integer kind at %L should be default"
-msgstr ""
+msgstr "Constante Hollerith invalide: L'entier à %L devrait avoir le sous-type par défaut"
 
 #: fortran/primary.c:300
 #, gcc-internal-format, gfc-internal-format
 msgid "Invalid Hollerith constant at %L contains a wide character"
-msgstr ""
+msgstr "Constante Hollerith invalide à %L car elle contient un caractère large"
 
 #: fortran/primary.c:386
 #, gcc-internal-format, gfc-internal-format
 msgid "Hexadecimal constant at %C uses non-standard syntax"
-msgstr ""
+msgstr "La constante hexadécimale à %C utilise une syntaxe non standard"
 
 #: fortran/primary.c:395
 #, gcc-internal-format, gfc-internal-format
 msgid "Empty set of digits in BOZ constant at %C"
-msgstr ""
+msgstr "Ensemble de chiffres vide dans la constante BOZ à %C"
 
 #: fortran/primary.c:401
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Zero-length character constant at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "Illegal character in BOZ constant at %C"
-msgstr "constante caractère de longueur zéro à %0"
+msgstr "Caractère illégal dans la constante BOZ à %C"
 
 #: fortran/primary.c:424
 #, gcc-internal-format, gfc-internal-format
 msgid "BOZ constant at %C uses non-standard postfix syntax"
-msgstr ""
+msgstr "La constante BOZ à %C utilise une syntaxe suffixée non standard"
 
 #: fortran/primary.c:454
 #, gcc-internal-format, gfc-internal-format
 msgid "Integer too big for integer kind %i at %C"
-msgstr ""
+msgstr "Entier trop grand pour l'entier du sous-type %i à %C"
 
 #: fortran/primary.c:460
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "label found outside of CASE statement"
+#, gcc-internal-format, gfc-internal-format
 msgid "BOZ used outside a DATA statement at %C"
-msgstr "étiquette trouvée en dehors de la déclaration du CASE"
+msgstr "BOZ utilisée en dehors d'une instruction DATA à %C"
 
 #: fortran/primary.c:551
 #, gcc-internal-format, gfc-internal-format
 msgid "exponent-letter 'q' in real-literal-constant at %C"
-msgstr ""
+msgstr "Lettre d'exposant « q » dans une constante littérale réelle à %C"
 
 #: fortran/primary.c:556
 #, gcc-internal-format
 msgid "Extension: exponent-letter %<q%> in real-literal-constant at %C"
-msgstr ""
+msgstr "Extension: lettre d'exposant %<q%> dans une constante littérale réelle à %C"
 
 #: fortran/primary.c:577
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Missing value at %1 for real-number exponent at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "Missing exponent in real number at %C"
-msgstr "Valeur manquante à %1 pour l'exposant d'un nombre réel à %0"
+msgstr "Exposant manquant dans le nombre réel à %C"
 
 #: fortran/primary.c:636
 #, gcc-internal-format
 msgid "Real number at %C has a %<d%> exponent and an explicit kind"
-msgstr ""
+msgstr "Le nombre réel à %C a un exposant %<d%> et un sous-type explicite"
 
 #: fortran/primary.c:666
 #, gcc-internal-format
 msgid "Real number at %C has a %<q%> exponent and an explicit kind"
-msgstr ""
+msgstr "Le nombre réel à %C a un exposant %<q%> et un sous-type explicite"
 
 #: fortran/primary.c:680
 #, gcc-internal-format
 msgid "Invalid exponent-letter %<q%> in real-literal-constant at %C"
-msgstr ""
+msgstr "Lettre d'exposant %<q%> invalide dans une constante littérale réelle à %C"
 
 #: fortran/primary.c:713
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Invalid label definition %A (at %0)"
+#, gcc-internal-format, gfc-internal-format
 msgid "Invalid real kind %d at %C"
-msgstr "définition d'étiquette invalide %A (à %0)"
+msgstr "Sous-type %d invalide pour un réel à %C"
 
 #: fortran/primary.c:728
 #, gcc-internal-format, gfc-internal-format
 msgid "Real constant overflows its kind at %C"
-msgstr ""
+msgstr "La constante réelle déborde de son sous-type à %C"
 
 #: fortran/primary.c:733
 #, gcc-internal-format, gfc-internal-format
 msgid "Real constant underflows its kind at %C"
-msgstr ""
+msgstr "La constante réelle déborde vers le bas hors de son sous-type à %C"
 
 #: fortran/primary.c:738
 #, gcc-internal-format
 msgid "gfc_range_check() returned bad value"
-msgstr ""
+msgstr "gfc_range_check() a retourné une mauvaise valeur"
 
 #: fortran/primary.c:785
 #, gcc-internal-format
 msgid "Non-significant digits in %qs number at %C, maybe incorrect KIND"
-msgstr ""
+msgstr "Chiffres non significatifs dans le nombre %qs à %C, KIND est peut-être incorrect"
 
 #: fortran/primary.c:877
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "parse error in method specification"
+#, gcc-internal-format, gfc-internal-format
 msgid "Syntax error in SUBSTRING specification at %C"
-msgstr "erreur d'analyse syntaxique dans la spécification de fonction"
+msgstr "Erreur de syntaxe dans la spécification SUBSTRING à %C"
 
 #: fortran/primary.c:1084
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Invalid binary constant at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "Invalid kind %d for CHARACTER constant at %C"
-msgstr "constante binaire invalide à %0"
+msgstr "Sous-type %d invalide pour la constante CHARACTER à %C"
 
 #: fortran/primary.c:1105
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unterminated character constant at %0 [info -f g77 M LEX]"
+#, gcc-internal-format, gfc-internal-format
 msgid "Unterminated character constant beginning at %C"
-msgstr "constante de caractères non terminée à %0 [info -f g77 M LEX]"
+msgstr "La constante caractère qui commence à %C n'est pas terminée"
 
 #: fortran/primary.c:1135
 #, gcc-internal-format
 msgid "Character %qs in string at %C is not representable in character kind %d"
-msgstr ""
+msgstr "Le caractère %qs dans la chaîne à %C n'a pas de représentation dans le caractère du sous-type %d"
 
 #: fortran/primary.c:1148
 #, gcc-internal-format
 msgid "match_string_constant(): Delimiter not found"
-msgstr ""
+msgstr "match_string_constant(): Délimiteur pas trouvé"
 
 #: fortran/primary.c:1218
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Invalid octal constant at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "Bad kind for logical constant at %C"
-msgstr "constante octale invalide à %0"
+msgstr "Mauvais sous-type pour la constante logique à %C"
 
 #: fortran/primary.c:1250
 #, gcc-internal-format, gfc-internal-format
 msgid "Expected PARAMETER symbol in complex constant at %C"
-msgstr ""
+msgstr "Symbole PARAMETER attendu dans la constante complexe à %C"
 
 #: fortran/primary.c:1259
 #, gcc-internal-format, gfc-internal-format
 msgid "Numeric PARAMETER required in complex constant at %C"
-msgstr ""
+msgstr "PARAMETER numérique requis dans la constante complexe à %C"
 
 #: fortran/primary.c:1265
 #, gcc-internal-format, gfc-internal-format
 msgid "Scalar PARAMETER required in complex constant at %C"
-msgstr ""
+msgstr "PARAMETER scalaire requis dans la constante complexe à %C"
 
 #: fortran/primary.c:1269
 #, gcc-internal-format, gfc-internal-format
 msgid "PARAMETER symbol in complex constant at %C"
-msgstr ""
+msgstr "Symbole PARAMETER dans la constante complexe à %C"
 
 #: fortran/primary.c:1292
 #, gcc-internal-format
 msgid "gfc_match_sym_complex_part(): Bad type"
-msgstr ""
+msgstr "gfc_match_sym_complex_part(): Mauvais type"
 
 #: fortran/primary.c:1299
 #, gcc-internal-format, gfc-internal-format
 msgid "Error converting PARAMETER constant in complex constant at %C"
-msgstr ""
+msgstr "Erreur lors de la conversion de la constante PARAMETER dans la constante complexe à %C"
 
 #: fortran/primary.c:1431
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "syntax error in action"
+#, gcc-internal-format, gfc-internal-format
 msgid "Syntax error in COMPLEX constant at %C"
-msgstr "erreur de syntaxe dans l’action"
+msgstr "Erreur de syntaxe dans la constante COMPLEX à %C"
 
 #: fortran/primary.c:1558
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "data member `%D' cannot be a member template"
+#, gcc-internal-format, gfc-internal-format
 msgid "Namelist '%s' can not be an argument at %L"
-msgstr "membre de données « %D » ne peut être membre du patron"
+msgstr "La liste de noms « %s » ne peut pas être un argument à %L"
 
 #: fortran/primary.c:1644
 #, gcc-internal-format
 msgid "Keyword %qs at %C has already appeared in the current argument list"
-msgstr ""
+msgstr "Le mot-clé %qs à %C est déjà apparu dans la liste des arguments actuelle"
 
 #: fortran/primary.c:1711
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument missing after %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "argument list function at %C"
-msgstr "argument manquant après %s"
+msgstr "Fonction de liste d'arguments à %C"
 
 #: fortran/primary.c:1779
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected to return to file \"%s\""
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected alternate return label at %C"
-msgstr "attendait retourner au fichier \"%s\""
+msgstr "Étiquette de retour alternatif attendue à %C"
 
 #: fortran/primary.c:1801
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Invalid actual argument at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "Missing keyword name in actual argument list at %C"
-msgstr "argument actuel invalide à %0"
+msgstr "Nom de mot-clé manquant dans la liste des arguments effectifs à %C"
 
 #: fortran/primary.c:1847
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "syntax error in macro parameter list"
+#, gcc-internal-format, gfc-internal-format
 msgid "Syntax error in argument list at %C"
-msgstr "erreur de syntaxe dans la liste de paramètres macro"
+msgstr "Erreur de syntaxe dans la liste des arguments à %C"
 
 #: fortran/primary.c:1868
 #, gcc-internal-format
 msgid "extend_ref(): Bad tail"
-msgstr ""
+msgstr "extend_ref(): Variable « tail » invalide"
 
 #: fortran/primary.c:1907
 #, gcc-internal-format, gfc-internal-format
 msgid "Array section designator, e.g. '(:)', is required besides the coarray designator '[...]' at %C"
-msgstr ""
+msgstr "Un désignateur de section de tableau (c-à-d. « (:) ») est requis en plus du désignateur de co-tableau « [...] » à %C"
 
 #: fortran/primary.c:1915
 #, gcc-internal-format
 msgid "Coarray designator at %C but %qs is not a coarray"
-msgstr ""
+msgstr "Un désignateur de co-tableau est rencontré à %C mais %qs n'est pas un co-tableau"
 
 #: fortran/primary.c:2013
 #, gcc-internal-format
 msgid "Symbol %qs at %C has no IMPLICIT type"
-msgstr ""
+msgstr "Le symbole %qs à %C n'est pas du type IMPLICIT"
 
 #: fortran/primary.c:2019
 #, gcc-internal-format
 msgid "Unexpected %<%c%> for nonderived-type variable %qs at %C"
-msgstr ""
+msgstr "%<%c%> inattendu pour la variable %qs du type non dérivé à %C"
 
 #: fortran/primary.c:2037
 #, gcc-internal-format, gfc-internal-format
 msgid "Expected structure component name at %C"
-msgstr ""
+msgstr "Nom de composant de structure attendu à %C"
 
 #: fortran/primary.c:2088
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument missing after %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected argument list at %C"
-msgstr "argument manquant après %s"
+msgstr "Liste d'arguments attendue à %C"
 
 #: fortran/primary.c:2128
 #, gcc-internal-format
 msgid "Procedure pointer component %qs requires an argument list at %C"
-msgstr ""
+msgstr "Le composant pointeur de procédure %qs requiert une liste d'arguments à %C"
 
 #: fortran/primary.c:2217
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "forming %s to reference type `%T'"
+#, gcc-internal-format, gfc-internal-format
 msgid "Nonpolymorphic reference to abstract type at %C"
-msgstr "formant %s pour référencer le type « %T »"
+msgstr "Référence non polymorphique au type abstrait à %C"
 
 #: fortran/primary.c:2224
 #, gcc-internal-format, gfc-internal-format
 msgid "Coindexed procedure-pointer component at %C"
-msgstr ""
+msgstr "Composant pointeur de procédure co-indexé à %C"
 
 #: fortran/primary.c:2259
 #, gcc-internal-format
 msgid "gfc_variable_attr(): Expression isn't a variable"
-msgstr ""
+msgstr "gfc_variable_attr(): L'expression n'est pas une variable"
 
 #: fortran/primary.c:2314
 #, gcc-internal-format
 msgid "gfc_variable_attr(): Bad array reference"
-msgstr ""
+msgstr "gfc_variable_attr(): Mauvaise référence à un tableau"
 
 #: fortran/primary.c:2434
 #, gcc-internal-format
 msgid "gfc_caf_attr(): Expression isn't a variable"
-msgstr ""
+msgstr "gfc_caf_attr(): L'expression n'est pas une variable"
 
 #: fortran/primary.c:2491
-#, fuzzy, gcc-internal-format
-#| msgid "subscript missing in array reference"
+#, gcc-internal-format
 msgid "gfc_caf_attr(): Bad array reference"
-msgstr "indice manquant dans la référence du tableau"
+msgstr "gfc_caf_attr(): Mauvaise référence à un tableau"
 
 #: fortran/primary.c:2663
 #, gcc-internal-format, gfc-internal-format
 msgid "Structure constructor with missing optional arguments at %C"
-msgstr ""
+msgstr "Constructeur de structure avec des arguments optionnels manquants à %C"
 
 #: fortran/primary.c:2672
 #, gcc-internal-format
 msgid "No initializer for allocatable component '%qs' given in the structure constructor at %C"
-msgstr ""
+msgstr "Aucune initialisation pour le composant allouable %qs donné dans le constructeur de structure à %C"
 
 #: fortran/primary.c:2679
 #, gcc-internal-format
 msgid "No initializer for component %qs given in the structure constructor at %C!"
-msgstr ""
+msgstr "Pas d'initialisation donnée pour le composant %qs dans le constructeur de structure à %C !"
 
 #: fortran/primary.c:2727
 #, gcc-internal-format
 msgid "Can't construct ABSTRACT type %qs at %L"
-msgstr ""
+msgstr "Impossible de construire le type ABSTRACT %qs à %L"
 
 #: fortran/primary.c:2747
 #, gcc-internal-format, gfc-internal-format
 msgid "Structure constructor with named arguments at %C"
-msgstr ""
+msgstr "Constructeur de structure avec des arguments nommés à %C"
 
 #: fortran/primary.c:2762
 #, gcc-internal-format, gfc-internal-format
 msgid "Component initializer without name after component named %s at %L!"
-msgstr ""
+msgstr "Initialisation de composant sans nom après le composant nommé %s à %L !"
 
 #: fortran/primary.c:2767
 #, gcc-internal-format, gfc-internal-format
 msgid "Too many components in structure constructor at %L!"
-msgstr ""
+msgstr "Trop de composants dans le constructeur de structure à %L !"
 
 #: fortran/primary.c:2804
 #, gcc-internal-format
 msgid "Component %qs is initialized twice in the structure constructor at %L!"
-msgstr ""
+msgstr "Le composant %qs est initialisé deux fois dans le constructeur de structure à %L !"
 
 #: fortran/primary.c:2816
 #, gcc-internal-format
 msgid "Coindexed expression to pointer component %qs in structure constructor at %L!"
-msgstr ""
+msgstr "Expression co-indexée vers le composant pointeur %qs dans le constructeur de structure à %L !"
 
 #: fortran/primary.c:2870
 #, gcc-internal-format
 msgid "component %qs at %L has already been set by a parent derived type constructor"
-msgstr ""
+msgstr "Le composant %qs à %L a déjà été défini par le constructeur d'un type parent dérivé"
 
 #: fortran/primary.c:3025
 #, gcc-internal-format, gfc-internal-format
 msgid "%%LOC() as an rvalue at %C"
-msgstr ""
+msgstr "%%LOC() a une r-valeur à %C"
 
 #: fortran/primary.c:3084
 #, gcc-internal-format
 msgid "%qs at %C is the name of a recursive function and so refers to the result variable. Use an explicit RESULT variable for direct recursion (12.5.2.1)"
-msgstr ""
+msgstr "%qs à %C est le nom d'une fonction récursive et, par conséquent, il fait référence à la variable résultat. Utilisez une variable RESULT explicite pour diriger la récursion (12.5.2.1)"
 
 #: fortran/primary.c:3208
 #, gcc-internal-format
 msgid "Unexpected use of subroutine name %qs at %C"
-msgstr ""
+msgstr "Utilisation inattendue du nom de sous-routine %qs à %C"
 
 #: fortran/primary.c:3240
-#, fuzzy, gcc-internal-format
-#| msgid "Statement function `%A' defined at %0 is not used"
+#, gcc-internal-format
 msgid "Statement function %qs requires argument list at %C"
-msgstr "déclaration de fonction « %A » définie à %0 n'est pas utilisée"
+msgstr "La fonction-instruction %qs requiert une liste d'arguments à %C"
 
 #: fortran/primary.c:3243
-#, fuzzy, gcc-internal-format
-#| msgid "macro \"%s\" requires %u arguments, but only %u given"
+#, gcc-internal-format
 msgid "Function %qs requires an argument list at %C"
-msgstr "macro « %s » requiert %u arguments, mais seulement %u ont été passés"
+msgstr "La fonction %qs requiert une liste d'arguments à %C"
 
 #: fortran/primary.c:3293
-#, fuzzy, gcc-internal-format
-#| msgid "missing argument to \"%s\""
+#, gcc-internal-format
 msgid "Missing argument to %qs at %C"
-msgstr "argument manquant à \"%s\""
+msgstr "Argument manquant pour %qs à %C"
 
 #: fortran/primary.c:3306
 #, gcc-internal-format, gfc-internal-format
 msgid "The leftmost part-ref in a data-ref can not be a function reference at %C"
-msgstr ""
+msgstr "Le part-ref le plus à gauche dans le data-ref ne peut pas être une référence à une fonction à %C"
 
 #: fortran/primary.c:3460
-#, fuzzy, gcc-internal-format
-#| msgid "missing argument to \"%s\""
+#, gcc-internal-format
 msgid "Missing argument list in function %qs at %C"
-msgstr "argument manquant à \"%s\""
+msgstr "Liste d'arguments manquante dans la fonction %qs à %C"
 
 #: fortran/primary.c:3504
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "floating point overflow in expression"
+#, gcc-internal-format, gfc-internal-format
 msgid "Symbol at %C is not appropriate for an expression"
-msgstr "débordement d'un nombre en virgule flottante dans l'expression"
+msgstr "Le symbole à %C ne convient pas pour une expression"
 
 #: fortran/primary.c:3574
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "\"%s\" cannot be used as a macro name as it is an operator in C++"
+#, gcc-internal-format, gfc-internal-format
 msgid "Derived type '%s' cannot be used as a variable at %C"
-msgstr "« %s » ne peut être utilisé comme nom de macro car c'est un opérateur en C++"
+msgstr "Le type dérivé « %s » ne peut pas être utilisé comme une variable à %C"
 
 #: fortran/primary.c:3615
 #, gcc-internal-format, gfc-internal-format
 msgid "Named constant at %C in an EQUIVALENCE"
-msgstr ""
+msgstr "La constante nommée à %C est une EQUIVALENCE"
 
 #: fortran/primary.c:3650
-#, fuzzy, gcc-internal-format
-#| msgid "%s is not addressable"
+#, gcc-internal-format
 msgid "%qs at %C is not a variable"
-msgstr "%s n'est pas addressable"
+msgstr "%qs à %C n'est pas une variable"
 
 #: fortran/resolve.c:123
 #, gcc-internal-format
 msgid "%qs at %L is of the ABSTRACT type %qs"
-msgstr ""
+msgstr "%qs à %L est du type ABSTRACT %qs"
 
 #: fortran/resolve.c:126
 #, gcc-internal-format
 msgid "ABSTRACT type %qs used at %L"
-msgstr ""
+msgstr "Type ABSTRACT %qs utilisé à %L"
 
 #: fortran/resolve.c:143
 #, gcc-internal-format
 msgid "Interface %qs at %L is declared in a later PROCEDURE statement"
-msgstr ""
+msgstr "L'interface %qs à %L est déclarée dans une instruction PROCEDURE ultérieure"
 
 #: fortran/resolve.c:156
 #, gcc-internal-format
 msgid "Interface %qs at %L may not be generic"
-msgstr ""
+msgstr "L'interface %qs à %L ne peut pas être générique"
 
 #: fortran/resolve.c:163
-#, fuzzy, gcc-internal-format
-#| msgid "constructor cannot be static member function"
+#, gcc-internal-format
 msgid "Interface %qs at %L may not be a statement function"
-msgstr "le constructeur ne peut être une fonction membre statique"
+msgstr "L'interface %qs à %L ne peut pas être une fonction-instruction"
 
 #: fortran/resolve.c:172
 #, gcc-internal-format
 msgid "Intrinsic procedure %qs not allowed in PROCEDURE statement at %L"
-msgstr ""
+msgstr "La procédure intrinsèque %qs n'est pas permise dans une instruction PROCEDURE à %L"
 
 #: fortran/resolve.c:178
 #, gcc-internal-format
 msgid "Interface %qs at %L must be explicit"
-msgstr ""
+msgstr "L'interface %qs à %L doit être explicite"
 
 #: fortran/resolve.c:200
 #, gcc-internal-format
 msgid "PROCEDURE %qs at %L may not be used as its own interface"
-msgstr ""
+msgstr "La PROCEDURE %qs à %L ne peut pas être utilisée comme sa propre interface"
 
 #: fortran/resolve.c:300
-#, fuzzy, gcc-internal-format
-#| msgid "Alternate return specifier at %0 invalid within a function"
+#, gcc-internal-format
 msgid "Alternate return specifier in elemental subroutine %qs at %L is not allowed"
-msgstr "spécificateur alternatif de retour à %0 invalide à l'intérieur de la fonction"
+msgstr "Le spécificateur de retour alternatif dans la sous-routine élémentale %qs à %L n'est pas permis"
 
 #: fortran/resolve.c:304
-#, fuzzy, gcc-internal-format
-#| msgid "Alternate return specifier at %0 invalid within a function"
+#, gcc-internal-format
 msgid "Alternate return specifier in function %qs at %L is not allowed"
-msgstr "spécificateur alternatif de retour à %0 invalide à l'intérieur de la fonction"
+msgstr "Le spécificateur de retour alternatif dans la fonction %qs à %L n'est pas permis"
 
 #: fortran/resolve.c:315
 #, gcc-internal-format
 msgid "Self-referential argument %qs at %L is not allowed"
-msgstr ""
+msgstr "L'argument %qs qui fait référence à lui-même à %L n'est pas permis"
 
 #: fortran/resolve.c:387
 #, gcc-internal-format
 msgid "Dummy procedure %qs of PURE procedure at %L must also be PURE"
-msgstr ""
+msgstr "La procédure muette %qs d'une procédure PURE à %L doit aussi être PURE"
 
 #: fortran/resolve.c:397
 #, gcc-internal-format
 msgid "Argument %qs of pure function %qs at %L with VALUE attribute but without INTENT(IN)"
-msgstr ""
+msgstr "Argument %qs de la fonction pure %qs à %L avec l'attribut VALUE mais sans INTENT(IN)"
 
 #: fortran/resolve.c:402
 #, gcc-internal-format
 msgid "Argument %qs of pure function %qs at %L must be INTENT(IN) or VALUE"
-msgstr ""
+msgstr "L'argument %qs de la fonction pure %qs à %L doit être INTENT(IN) ou VALUE"
 
 #: fortran/resolve.c:410
 #, gcc-internal-format
 msgid "Argument %qs of pure subroutine %qs at %L with VALUE attribute but without INTENT"
-msgstr ""
+msgstr "Argument %qs de la sous-routine pure %qs à %L avec l'attribut VALUE mais sans INTENT"
 
 #: fortran/resolve.c:415
 #, gcc-internal-format
 msgid "Argument %qs of pure subroutine %qs at %L must have its INTENT specified or have the VALUE attribute"
-msgstr ""
+msgstr "L'argument %qs de la sous-routine pure %qs à %L doit avoir un INTENT spécifié ou avoir l'attribut VALUE"
 
 #: fortran/resolve.c:425
-#, fuzzy, gcc-internal-format
-#| msgid "first argument to `%s' must be a mode"
+#, gcc-internal-format
 msgid "INTENT(OUT) argument %qs of pure procedure %qs at %L may not be polymorphic"
-msgstr "premier argument de « %s » doit être un mode"
+msgstr "L'argument INTENT(OUT) %qs de la procédure pure %qs à %L ne peut pas être polymorphique"
 
 #: fortran/resolve.c:458
-#, fuzzy, gcc-internal-format
-#| msgid "too many arguments to procedure"
+#, gcc-internal-format
 msgid "Coarray dummy argument %qs at %L to elemental procedure"
-msgstr "trop d'arguments pour la procédure"
+msgstr "Argument muet co-tableau %qs à %L pour une procédure élémentale"
 
 #: fortran/resolve.c:466
 #, gcc-internal-format
 msgid "Argument %qs of elemental procedure at %L must be scalar"
-msgstr ""
+msgstr "L'argument %qs de la procédure élémentale à %L doit être scalaire"
 
 #: fortran/resolve.c:475
 #, gcc-internal-format
 msgid "Argument %qs of elemental procedure at %L cannot have the ALLOCATABLE attribute"
-msgstr ""
+msgstr "L'argument %qs de la procédure élémentale à %L ne peut pas avoir l'attribut ALLOCATABLE"
 
 #: fortran/resolve.c:485
 #, gcc-internal-format
 msgid "Argument %qs of elemental procedure at %L cannot have the POINTER attribute"
-msgstr ""
+msgstr "L'argument %qs de la procédure élémentale à %L ne peut pas avoir l'attribut POINTER"
 
 #: fortran/resolve.c:493
 #, gcc-internal-format
 msgid "Dummy procedure %qs not allowed in elemental procedure %qs at %L"
-msgstr ""
+msgstr "La procédure muette %qs n'est pas permise dans la procédure élémentale %qs à %L"
 
 #: fortran/resolve.c:502
 #, gcc-internal-format
 msgid "Argument %qs of elemental procedure %qs at %L must have its INTENT specified or have the VALUE attribute"
-msgstr ""
+msgstr "L'argument %qs de la procédure élémentale %qs à %L doit avoir un INTENT spécifié ou avoir l'attribut VALUE"
 
 #: fortran/resolve.c:515
-#, fuzzy, gcc-internal-format
-#| msgid "Null argument at %0 for statement function reference at %1"
+#, gcc-internal-format
 msgid "Argument %qs of statement function at %L must be scalar"
-msgstr "argument nul à %0 pour la déclaration de la référence de fonction à %1"
+msgstr "L'argument %qs de la fonction-instruction à %L doit être scalaire"
 
 #: fortran/resolve.c:525
 #, gcc-internal-format
 msgid "Character-valued argument %qs of statement function at %L must have constant length"
-msgstr ""
+msgstr "L'argument %qs avec une valeur de caractère pour la fonction-instruction à %L doit avoir une longueur constante"
 
 #: fortran/resolve.c:574
-#, fuzzy, gcc-internal-format
-#| msgid "Do not schedule the start and end of the procedure"
+#, gcc-internal-format
 msgid "Contained procedure %qs at %L has the same name as its encompassing procedure"
-msgstr "Ne pas ordonnancer le début et la fin de la procédure"
+msgstr "La procédure contenue %qs à %L a le même nom que sa procédure contenante"
 
 #: fortran/resolve.c:591
 #, gcc-internal-format
 msgid "Contained function %qs at %L has no IMPLICIT type"
-msgstr ""
+msgstr "La fonction contenue %qs à %L n'a pas le type IMPLICIT"
 
 #: fortran/resolve.c:594
 #, gcc-internal-format
 msgid "Result %qs of contained function %qs at %L has no IMPLICIT type"
-msgstr ""
+msgstr "Le résultat %qs de la fonction contenue %qs à %L n'a pas le type IMPLICIT"
 
+# %s peut être le texte traduit "module procedure" ou "internal function" d'où le féminin
 #: fortran/resolve.c:618
 #, gcc-internal-format
 msgid "Character-valued %s %qs at %L must not be assumed length"
-msgstr ""
+msgstr "La %s %qs avec une valeur de caractère à %L ne peut pas avoir une longueur tacite"
 
 #: fortran/resolve.c:792
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "inconsistent instance variable specification"
+#, gcc-internal-format, gfc-internal-format
 msgid "Function %s at %L has entries with mismatched array specifications"
-msgstr "spécification inconsistante avec l'instance de la variable"
+msgstr "La fonction %s à %L a des entrées avec des spécifications de tableau non concordantes"
 
 #: fortran/resolve.c:809
 #, gcc-internal-format, gfc-internal-format
 msgid "Function %s at %L with entries returning variables of different string lengths"
-msgstr ""
+msgstr "La fonction %s à %L a des entrées qui retournent des variables de longueurs de chaînes différentes"
 
 #: fortran/resolve.c:836
 #, gcc-internal-format, gfc-internal-format
 msgid "FUNCTION result %s can't be an array in FUNCTION %s at %L"
-msgstr ""
+msgstr "Le résultat de FUNCTION %s ne peut pas être un tableau dans FUNCTION %s à %L"
 
 #: fortran/resolve.c:840
 #, gcc-internal-format, gfc-internal-format
 msgid "ENTRY result %s can't be an array in FUNCTION %s at %L"
-msgstr ""
+msgstr "Le résultat de ENTRY %s ne peut pas être un tableau dans FUNCTION %s à %L"
 
 #: fortran/resolve.c:847
 #, gcc-internal-format, gfc-internal-format
 msgid "FUNCTION result %s can't be a POINTER in FUNCTION %s at %L"
-msgstr ""
+msgstr "Le résultat de FUNCTION %s ne peut pas être un POINTER dans FUNCTION %s à %L"
 
 #: fortran/resolve.c:851
 #, gcc-internal-format, gfc-internal-format
 msgid "ENTRY result %s can't be a POINTER in FUNCTION %s at %L"
-msgstr ""
+msgstr "Le résultat de ENTRY %s ne peut pas être un POINTER dans FUNCTION %s à %L"
 
 #: fortran/resolve.c:889
 #, gcc-internal-format, gfc-internal-format
 msgid "FUNCTION result %s can't be of type %s in FUNCTION %s at %L"
-msgstr ""
+msgstr "Le résultat de FUNCTION %s ne peut pas être du type %s dans FUNCTION %s à %L"
 
 #: fortran/resolve.c:894
 #, gcc-internal-format, gfc-internal-format
 msgid "ENTRY result %s can't be of type %s in FUNCTION %s at %L"
-msgstr ""
+msgstr "Le résultat de ENTRY %s ne peut pas être du type %s dans FUNCTION %s à %L"
 
 #: fortran/resolve.c:943
 #, gcc-internal-format
 msgid "Variable %qs at %L is in COMMON but only in BLOCK DATA initialization is allowed"
-msgstr ""
+msgstr "La variable %qs à %L est dans COMMON mais seule l'initialisation dans BLOCK DATA est permise"
 
 #: fortran/resolve.c:947
 #, gcc-internal-format
 msgid "Initialized variable %qs at %L is in a blank COMMON but initialization is only allowed in named common blocks"
-msgstr ""
+msgstr "La variable %qs à %L est initialisée dans un COMMON blanc mais l'initialisation est uniquement permise dans des communs nommés"
 
 #: fortran/resolve.c:954
 #, gcc-internal-format
 msgid "%qs in cannot appear in COMMON at %L [F2008:C5100]"
-msgstr ""
+msgstr "%qs ne peut pas apparaître dans COMMON à %L [F2008:C5100]"
 
 #: fortran/resolve.c:962
 #, gcc-internal-format
 msgid "Derived type variable %qs in COMMON at %L has neither the SEQUENCE nor the BIND(C) attribute"
-msgstr ""
+msgstr "La variable %qs, d'un type dérivé, dans COMMON à %L n'a ni l'attribut SEQUENCE ni l'attribut BIND(C)"
 
 #: fortran/resolve.c:966
 #, gcc-internal-format
 msgid "Derived type variable %qs in COMMON at %L has an ultimate component that is allocatable"
-msgstr ""
+msgstr "La variable %qs, d'un type dérivé, dans COMMON à %L a un composant ultime qui est allouable"
 
 #: fortran/resolve.c:970
 #, gcc-internal-format
 msgid "Derived type variable %qs in COMMON at %L may not have default initializer"
-msgstr ""
+msgstr "La variable %qs, d'un type dérivé, dans COMMON à %L ne peut pas avoir une initialisation par défaut"
 
 #: fortran/resolve.c:1014
 #, gcc-internal-format
 msgid "In Fortran 2003 COMMON %qs block at %L is a global identifier and must thus have the same binding name as the same-named COMMON block at %L: %s vs %s"
-msgstr ""
+msgstr "En Fortran 2003, le bloc COMMON %qs à %L est un identificateur global et doit donc avoir le même nom de liaison que le bloc COMMON similairement nommé à %L: %s vs %s"
 
 #: fortran/resolve.c:1028
 #, gcc-internal-format
 msgid "COMMON block %qs at %L uses the same global identifier as entity at %L"
-msgstr ""
+msgstr "Le bloc COMMON %qs à %L utilise le même identificateur global que l'entité à %L"
 
 #: fortran/resolve.c:1036
 #, gcc-internal-format
 msgid "Fortran 2008: COMMON block %qs with binding label at %L sharing the identifier with global non-COMMON-block entity at %L"
-msgstr ""
+msgstr "Fortran 2008: Le bloc COMMON %qs avec l'étiquette de liaison à %L partage l'identificateur avec l'entité de bloc non COMMON globale à %L"
 
 #: fortran/resolve.c:1058
 #, gcc-internal-format, gfc-internal-format
 msgid "COMMON block at %L with binding label %s uses the same global identifier as entity at %L"
-msgstr ""
+msgstr "Le bloc COMMON à %L avec le label de liaison %s utilise le même identificateur global que l'entité à %L"
 
 #: fortran/resolve.c:1079
 #, gcc-internal-format
 msgid "COMMON block %qs at %L is used as PARAMETER at %L"
-msgstr ""
+msgstr "Le bloc COMMON %qs à %L est utilisé comme PARAMETER à %L"
 
 #: fortran/resolve.c:1083
 #, gcc-internal-format
 msgid "COMMON block %qs at %L can not have the EXTERNAL attribute"
-msgstr ""
+msgstr "Le bloc COMMON %qs à %L ne peut pas avoir d'attribut EXTERNAL"
 
 #: fortran/resolve.c:1087
 #, gcc-internal-format
 msgid "COMMON block %qs at %L is also an intrinsic procedure"
-msgstr ""
+msgstr "Le bloc COMMON %qs à %L est aussi une procédure intrinsèque"
 
 #: fortran/resolve.c:1091
 #, gcc-internal-format
 msgid "COMMON block %qs at %L that is also a function result"
-msgstr ""
+msgstr "Le bloc COMMON %qs à %L qui est aussi un résultat de fonction"
 
 #: fortran/resolve.c:1096
 #, gcc-internal-format
 msgid "COMMON block %qs at %L that is also a global procedure"
-msgstr ""
+msgstr "Le bloc COMMON %qs à %L qui est aussi une procédure globale"
 
 #: fortran/resolve.c:1194
 #, gcc-internal-format, gfc-internal-format
 msgid "The rank of the element in the structure constructor at %L does not match that of the component (%d/%d)"
-msgstr ""
+msgstr "Le rang de l'élément dans le constructeur de structure à %L ne correspond pas à celui du composant (%d/%d)"
 
 #: fortran/resolve.c:1215
 #, gcc-internal-format
 msgid "The element in the structure constructor at %L, for pointer component %qs, is %s but should be %s"
-msgstr ""
+msgstr "L'élément dans le constructeur de structure à %L, pour le composant pointeur %qs, est %s mais il devrait être %s"
 
 #: fortran/resolve.c:1281
 #, gcc-internal-format
 msgid "The NULL in the structure constructor at %L is being applied to component %qs, which is neither a POINTER nor ALLOCATABLE"
-msgstr ""
+msgstr "Le NULL dans le constructeur de structure à %L est appliqué au composant %qs qui n'est ni un POINTER ni ALLOCATABLE"
 
 #: fortran/resolve.c:1316
 #, gcc-internal-format
 msgid "Interface mismatch for procedure-pointer component %qs in structure constructor at %L: %s"
-msgstr ""
+msgstr "Désaccord d'interface pour le composant pointeur de procédure %qs dans le constructeur de structure à %L: %s"
 
 #: fortran/resolve.c:1332
 #, gcc-internal-format
 msgid "The element in the structure constructor at %L, for pointer component %qs should be a POINTER or a TARGET"
-msgstr ""
+msgstr "L'élément dans le constructeur de structure à %L pour le composant pointeur %qs devrait être un POINTER ou un TARGET"
 
 #: fortran/resolve.c:1343
 #, gcc-internal-format, gfc-internal-format
 msgid "Pointer initialization target at %L must not be ALLOCATABLE "
-msgstr ""
+msgstr "La cible de l'initialisation du pointeur à %L ne doit pas être ALLOCATABLE"
 
 #: fortran/resolve.c:1361
 #, gcc-internal-format
 msgid "Invalid expression in the structure constructor for pointer component %qs at %L in PURE procedure"
-msgstr ""
+msgstr "Expression invalide dans le constructeur de structure pour le composant pointeur %qs à %L dans une procédure PURE"
 
 #: fortran/resolve.c:1485
 #, gcc-internal-format
 msgid "The upper bound in the last dimension must appear in the reference to the assumed size array %qs at %L"
-msgstr ""
+msgstr "La limite supérieure dans la dernière dimension doit apparaître dans la référence du tableau de taille tacite %qs à %L"
 
+# %qs est le nom d'une procédure d'où le féminin
 #: fortran/resolve.c:1547
-#, fuzzy, gcc-internal-format
-#| msgid "use of `%D' is ambiguous"
+#, gcc-internal-format
 msgid "%qs at %L is ambiguous"
-msgstr "utilisation de « %D » est ambiguë"
+msgstr "%qs à %L est ambigüe"
 
 #: fortran/resolve.c:1551
 #, gcc-internal-format
 msgid "GENERIC procedure %qs is not allowed as an actual argument at %L"
-msgstr ""
+msgstr "La procédure GENERIC %qs n'est pas permise comme argument effectif à %L"
 
 #: fortran/resolve.c:1672
 #, gcc-internal-format
 msgid "Type specified for intrinsic function %qs at %L is ignored"
-msgstr ""
+msgstr "Le type spécifié pour la fonction intrinsèque %qs à %L est ignoré"
 
 #: fortran/resolve.c:1685
 #, gcc-internal-format
 msgid "Intrinsic subroutine %qs at %L shall not have a type specifier"
-msgstr ""
+msgstr "La sous-routine intrinsèque %qs à %L n'aura point de spécificateur de type"
 
 #: fortran/resolve.c:1696
 #, gcc-internal-format
 msgid "%qs declared INTRINSIC at %L does not exist"
-msgstr ""
+msgstr "%qs déclaré INTRINSIC à %L n'existe pas"
 
+# %s est une chaîne non traduite telle que "available since Fortran 77".
+# voir bugs #38573 et #52279 à ce sujet.
 #: fortran/resolve.c:1709
 #, gcc-internal-format
 msgid "The intrinsic %qs declared INTRINSIC at %L is not available in the current standard settings but %s. Use an appropriate %<-std=*%> option or enable %<-fall-intrinsics%> in order to use it."
-msgstr ""
+msgstr "L'intrinsèque %qs déclaré INTRINSIC à %L n'est pas disponible avec les paramètres standard actuels mais est %s. Utilisez l'option %<-std=*%> appropriée ou activez %<-fall-intrinsic%> de manière à pouvoir l'utiliser."
 
 #: fortran/resolve.c:1745
 #, gcc-internal-format
 msgid "Non-RECURSIVE procedure %qs at %L is possibly calling itself recursively.  Declare it RECURSIVE or use %<-frecursive%>"
-msgstr ""
+msgstr "La procédure non RECURSIVE %qs à %L semble s'appeler elle-même récursivement. Déclarez là RECURSIVE ou utilisez %<-frecursive%>"
 
 #: fortran/resolve.c:1784 fortran/resolve.c:9309 fortran/resolve.c:10967
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Label %A already defined at %1 when redefined at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "Label %d referenced at %L is never defined"
-msgstr "Étiquette %A déjà définie à %1 et redéfinie à %0"
+msgstr "L'étiquette %d référencée à %L n'est jamais définie"
 
 #: fortran/resolve.c:1827
-#, fuzzy, gcc-internal-format
-#| msgid "Statement function `%A' defined at %0 is not used"
+#, gcc-internal-format
 msgid "Statement function %qs at %L is not allowed as an actual argument"
-msgstr "déclaration de fonction « %A » définie à %0 n'est pas utilisée"
+msgstr "La fonction-instruction %qs à %L n'est pas permise comme argument effectif"
 
 #: fortran/resolve.c:1835
 #, gcc-internal-format
 msgid "Intrinsic %qs at %L is not allowed as an actual argument"
-msgstr ""
+msgstr "L'intrinsèque %qs à %L n'est pas permis comme argument effectif"
 
 #: fortran/resolve.c:1842
-#, fuzzy, gcc-internal-format
-#| msgid "External procedure `%A' is passed as actual argument at %0 but not explicitly declared EXTERNAL"
+#, gcc-internal-format
 msgid "Internal procedure %qs is used as actual argument at %L"
-msgstr "procédure externe « %A » est pass comme argument actuel à %0 mais non pas déclaré explicitement déclaré EXTERNAL"
+msgstr "Procédure interne %qs utilisée comme argument effectif à %L"
 
 #: fortran/resolve.c:1850
 #, gcc-internal-format
 msgid "ELEMENTAL non-INTRINSIC procedure %qs is not allowed as an actual argument at %L"
-msgstr ""
+msgstr "La procédure ELEMENTAL non INTRINSIC %qs n'est pas permise comme argument effectif à %L"
 
 #: fortran/resolve.c:1877
 #, gcc-internal-format
 msgid "Unable to find a specific INTRINSIC procedure for the reference %qs at %L"
-msgstr ""
+msgstr "Impossible de trouver une procédure INTRINSIC spécifique pour la référence %qs à %L"
 
 #: fortran/resolve.c:1899
-#, fuzzy, gcc-internal-format
-#| msgid "use of `%D' is ambiguous"
+#, gcc-internal-format
 msgid "Symbol %qs at %L is ambiguous"
-msgstr "utilisation de « %D » est ambiguë"
+msgstr "Le symbole %qs à %L est ambigu"
 
 #: fortran/resolve.c:1954
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument to `%s' must be of integer type"
+#, gcc-internal-format, gfc-internal-format
 msgid "By-value argument at %L is not of numeric type"
-msgstr "argument de « %s » doit être de type entier"
+msgstr "L'argument par valeur à %L n'est pas un type numérique"
 
 #: fortran/resolve.c:1961
 #, gcc-internal-format, gfc-internal-format
 msgid "By-value argument at %L cannot be an array or an array section"
-msgstr ""
+msgstr "L'argument par valeur à %L ne peut pas être un tableau ou une section de tableau"
 
 #: fortran/resolve.c:1975
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Statement at %0 invalid in this context"
+#, gcc-internal-format, gfc-internal-format
 msgid "By-value argument at %L is not allowed in this context"
-msgstr "déclaration à %0 invalide dans ce contexte"
+msgstr "L'argument par valeur à %L n'est pas permis dans ce contexte"
 
 #: fortran/resolve.c:1987
 #, gcc-internal-format, gfc-internal-format
 msgid "Passing internal procedure at %L by location not allowed"
-msgstr ""
+msgstr "Passer la procédure interne à %L par position n'est pas permis"
 
 #: fortran/resolve.c:1998
 #, gcc-internal-format
 msgid "ELEMENTAL procedure pointer component %qs is not allowed as an actual argument at %L"
-msgstr ""
+msgstr "Le composant pointeur de procédure ELEMENTAL %qs n'est pas permis comme argument effectif à %L"
 
 #: fortran/resolve.c:2007
 #, gcc-internal-format, gfc-internal-format
 msgid "Coindexed actual argument at %L with ultimate pointer component"
-msgstr ""
+msgstr "Argument effectif co-indexé à %L avec un composant pointeur ultime"
 
 #: fortran/resolve.c:2139
 #, gcc-internal-format
 msgid "%qs at %L is an array and OPTIONAL; IF IT IS MISSING, it cannot be the actual argument of an ELEMENTAL procedure unless there is a non-optional argument with the same rank (12.4.1.5)"
-msgstr ""
+msgstr "%qs à %L est un tableau et est OPTIONAL; SI IL EST MANQUANT, il ne peut pas être l'argument effectif d'une procédure ELEMENTAL à moins qu'il y ait un argument non optionnel avec le même rang (12.4.1.5)"
 
 #: fortran/resolve.c:2176
 #, gcc-internal-format
 msgid "Actual argument at %L for INTENT(%s) dummy %qs of ELEMENTAL subroutine %qs is a scalar, but another actual argument is an array"
-msgstr ""
+msgstr "L'argument effectif à %L pour le muet INTENT(%s) %qs de la sous-routine ELEMENTAL %qs est un scalaire mais un autre argument effectif est un tableau"
 
 #: fortran/resolve.c:2448
 #, gcc-internal-format
 msgid "Return type mismatch of function %qs at %L (%s/%s)"
-msgstr ""
+msgstr "Désaccord dans le type de retour de la fonction %qs à %L (%s/%s)"
 
 #: fortran/resolve.c:2470
 #, gcc-internal-format
 msgid "Interface mismatch in global procedure %qs at %L: %s "
-msgstr ""
+msgstr "Non concordance de l'interface dans la procédure globale %qs à %L: %s "
 
 #: fortran/resolve.c:2583
 #, gcc-internal-format
 msgid "There is no specific function for the generic %qs at %L"
-msgstr ""
+msgstr "Il n'y a pas de fonction spécifique pour la fonction générique %qs à %L"
 
 #: fortran/resolve.c:2601
 #, gcc-internal-format
 msgid "Generic function %qs at %L is not consistent with a specific intrinsic interface"
-msgstr ""
+msgstr "La fonction générique %qs à %L n'est pas cohérente avec l'interface intrinsèque spécifique"
 
 #: fortran/resolve.c:2639
 #, gcc-internal-format
 msgid "Function %qs at %L is INTRINSIC but is not compatible with an intrinsic"
-msgstr ""
+msgstr "La fonction %qs à %L est INTRINSIC mais elle est incompatible avec un intrinsèque"
 
 #: fortran/resolve.c:2694
 #, gcc-internal-format
 msgid "Unable to resolve the specific function %qs at %L"
-msgstr ""
+msgstr "Impossible de résoudre la fonction spécifique %qs à %L"
 
 #: fortran/resolve.c:2750 fortran/resolve.c:15841
 #, gcc-internal-format
 msgid "Function %qs at %L has no IMPLICIT type"
-msgstr ""
+msgstr "La fonction %qs à %L n'a pas de type IMPLICIT"
 
+# %s à la fin est le texte non traduit "mask" ou "block"
 #: fortran/resolve.c:2859
-#, fuzzy, gcc-internal-format
-#| msgid "Reference to intrinsic function `%A' as if it were a subroutine at %0"
+#, gcc-internal-format
 msgid "Reference to impure function %qs at %L inside a FORALL %s"
-msgstr "référence à une fonction intrinsèque «%A» comme s'il est une sous-routine à %0"
+msgstr "Référence à la fonction impure %qs à %L à l'intérieur d'un FORALL %s"
 
+# %s à la fin est le texte non traduit "mask" ou "block"
 #: fortran/resolve.c:2866
 #, gcc-internal-format
 msgid "Reference to impure function %qs at %L inside a DO CONCURRENT %s"
-msgstr ""
+msgstr "Référence à la fonction impure %qs à %L à l'intérieur d'un DO CONCURRENT %s"
 
 #: fortran/resolve.c:2873
 #, gcc-internal-format
 msgid "Reference to impure function %qs at %L within a PURE procedure"
-msgstr ""
+msgstr "Référence à la fonction impure %qs à %L dans une procédure PURE"
 
 #: fortran/resolve.c:2943
-#, fuzzy, gcc-internal-format
-#| msgid "`%D' is not a function,"
+#, gcc-internal-format
 msgid "%qs at %L is not a function"
-msgstr "« %D » n'est pas une fonction"
+msgstr "%qs à %L n'est pas une fonction"
 
 #: fortran/resolve.c:2951 fortran/resolve.c:3421
 #, gcc-internal-format
 msgid "ABSTRACT INTERFACE %qs must not be referenced at %L"
-msgstr ""
+msgstr "ABSTRACT INTERFACE %qs ne doit pas être référencée à %L"
 
 #. Internal procedures are taken care of in resolve_contained_fntype.
 #: fortran/resolve.c:2994
 #, gcc-internal-format
 msgid "Function %qs is declared CHARACTER(*) and cannot be used at %L since it is not a dummy argument"
-msgstr ""
+msgstr "La fonction %qs est déclarée CHARACTER(*) et ne peut pas être utilisée à %L car elle n'est pas un argument muet"
 
 #: fortran/resolve.c:3028
-#, fuzzy, gcc-internal-format
-#| msgid "sizeof applied to a function type"
+#, gcc-internal-format
 msgid "resolve_function(): bad function type"
-msgstr "sizeof appliqué sur un type de fonction"
+msgstr "resolve_function(): mauvais type de fonction"
 
 #: fortran/resolve.c:3048
 #, gcc-internal-format
 msgid "User defined non-ELEMENTAL function %qs at %L not allowed in WORKSHARE construct"
-msgstr ""
+msgstr "La fonction %qs non ELEMENTAL définie par l'utilisateur à %L n'est pas permise dans la construction WORKSHARE"
 
 #: fortran/resolve.c:3110
 #, gcc-internal-format
 msgid "ENTRY %qs at %L cannot be called recursively, as function %qs is not RECURSIVE"
-msgstr ""
+msgstr "ENTRY %qs à %L ne peut pas être appelé récursivement car la fonction %qs n'est pas RECURSIVE"
 
 #: fortran/resolve.c:3114
 #, gcc-internal-format
 msgid "Function %qs at %L cannot be called recursively, as it is not RECURSIVE"
-msgstr ""
+msgstr "La fonction %qs à %L ne peut pas être appelée récursivement car elle n'est pas RECURSIVE"
 
 #: fortran/resolve.c:3165
 #, gcc-internal-format
 msgid "Subroutine call to %qs in FORALL block at %L is not PURE"
-msgstr ""
+msgstr "L'appel de sous-routine à %qs dans le bloc FORALL à %L n'est pas PURE"
 
 #: fortran/resolve.c:3171
 #, gcc-internal-format
 msgid "Subroutine call to %qs in DO CONCURRENT block at %L is not PURE"
-msgstr ""
+msgstr "L'appel de sous-routine à %qs dans le bloc DO CONCURRENT à %L n'est pas PURE"
 
 #: fortran/resolve.c:3177
 #, gcc-internal-format
 msgid "Subroutine call to %qs at %L is not PURE"
-msgstr ""
+msgstr "L'appel de sous-routine à %qs à %L n'est pas PURE"
 
 #: fortran/resolve.c:3245
 #, gcc-internal-format
 msgid "There is no specific subroutine for the generic %qs at %L"
-msgstr ""
+msgstr "Il n'y a pas de sous-routine spécifique pour le générique %qs à %L"
 
 #: fortran/resolve.c:3254
 #, gcc-internal-format
 msgid "Generic subroutine %qs at %L is not consistent with an intrinsic subroutine interface"
-msgstr ""
+msgstr "La sous-routine générique %qs à %L n'est pas cohérente avec l'interface de sous-routine intrinsèque"
 
 #: fortran/resolve.c:3289
 #, gcc-internal-format
 msgid "Subroutine %qs at %L is INTRINSIC but is not compatible with an intrinsic"
-msgstr ""
+msgstr "La sous-routine %qs à %L est INTRINSIC mais elle n'est pas compatible avec un intrinsèque"
 
 #: fortran/resolve.c:3334
 #, gcc-internal-format
 msgid "Unable to resolve the specific subroutine %qs at %L"
-msgstr ""
+msgstr "Impossible de résoudre la sous-routine spécifique %qs à %L"
 
 #: fortran/resolve.c:3392
 #, gcc-internal-format
 msgid "%qs at %L has a type, which is not consistent with the CALL at %L"
-msgstr ""
+msgstr "%qs à %L a un type, ce qui n'est pas cohérent avec l'appel CALL à %L"
 
 #: fortran/resolve.c:3431
 #, gcc-internal-format
 msgid "ENTRY %qs at %L cannot be called recursively, as subroutine %qs is not RECURSIVE"
-msgstr ""
+msgstr "ENTRY %qs à %L ne peut pas être appelé récursivement car la sous-routine %qs n'est pas RECURSIVE"
 
 #: fortran/resolve.c:3435
 #, gcc-internal-format
 msgid "SUBROUTINE %qs at %L cannot be called recursively, as it is not RECURSIVE"
-msgstr ""
+msgstr "SUBROUTINE %qs à %L ne peut pas être appelée récursivement car elle n'est pas RECURSIVE"
 
 #: fortran/resolve.c:3480
-#, fuzzy, gcc-internal-format
-#| msgid "cast does not match function type"
+#, gcc-internal-format
 msgid "resolve_subroutine(): bad function type"
-msgstr "le transtypage ne concorde pas avec le type de la fonction"
+msgstr "resolve_subroutine(): mauvais type de fonction"
 
 #: fortran/resolve.c:3518
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "shared and mdll are not compatible"
+#, gcc-internal-format, gfc-internal-format
 msgid "Shapes for operands at %L and %L are not conformable"
-msgstr "shared et mdll ne sont pas compatibles"
+msgstr "Les formes pour les opérandes à %L et %L ne sont pas conformes"
 
 #: fortran/resolve.c:3570
 #, gcc-internal-format
 msgid "logical_to_bitwise(): Bad intrinsic"
-msgstr ""
+msgstr "logical_to_bitwise(): Mauvais intrinsèque"
 
 #: fortran/resolve.c:3856
 #, gcc-internal-format
 msgid "resolve_operator(): Bad intrinsic"
-msgstr ""
+msgstr "resolve_operator(): Mauvais intrinsèque"
 
 #: fortran/resolve.c:4026 fortran/resolve.c:4049
-#, fuzzy, gcc-internal-format
-#| msgid "incompatible modes in concat expression"
+#, gcc-internal-format
 msgid "compare_bound_int(): Bad expression"
-msgstr "modes incompatibles dans l'expression de concaténation"
+msgstr "compare_bound_int(): Mauvaise expression"
 
 #: fortran/resolve.c:4144
 #, gcc-internal-format, gfc-internal-format
 msgid "Array reference at %L is out of bounds (%ld < %ld) in dimension %d"
-msgstr ""
+msgstr "La référence au tableau à %L est en dehors des limites (%ld < %ld) dans la dimension %d"
 
 #: fortran/resolve.c:4149
 #, gcc-internal-format, gfc-internal-format
 msgid "Array reference at %L is out of bounds (%ld < %ld) in codimension %d"
-msgstr ""
+msgstr "La référence au tableau à %L est en dehors des limites (%ld < %ld) dans la co-dimension %d"
 
 #: fortran/resolve.c:4159
 #, gcc-internal-format, gfc-internal-format
 msgid "Array reference at %L is out of bounds (%ld > %ld) in dimension %d"
-msgstr ""
+msgstr "La référence au tableau à %L est en dehors des limites (%ld > %ld) dans la dimension %d"
 
 #: fortran/resolve.c:4164
 #, gcc-internal-format, gfc-internal-format
 msgid "Array reference at %L is out of bounds (%ld > %ld) in codimension %d"
-msgstr ""
+msgstr "La référence au tableau à %L est en dehors des limites (%ld > %ld) dans la co-dimension %d"
 
 #: fortran/resolve.c:4184
 #, gcc-internal-format, gfc-internal-format
 msgid "Illegal stride of zero at %L"
-msgstr ""
+msgstr "Pas nul illégal à %L"
 
 #: fortran/resolve.c:4201
 #, gcc-internal-format, gfc-internal-format
 msgid "Lower array reference at %L is out of bounds (%ld < %ld) in dimension %d"
-msgstr ""
+msgstr "La référence inférieure au tableau à %L est hors des limites (%ld < %ld) dans la dimension %d"
 
 #: fortran/resolve.c:4209
 #, gcc-internal-format, gfc-internal-format
 msgid "Lower array reference at %L is out of bounds (%ld > %ld) in dimension %d"
-msgstr ""
+msgstr "La référence inférieure au tableau à %L est en dehors des limites (%ld > %ld) dans la dimension %d"
 
 #: fortran/resolve.c:4225
 #, gcc-internal-format, gfc-internal-format
 msgid "Upper array reference at %L is out of bounds (%ld < %ld) in dimension %d"
-msgstr ""
+msgstr "La référence supérieure au tableau à %L est hors des limites (%ld < %ld) dans la dimension %d"
 
 #: fortran/resolve.c:4234
 #, gcc-internal-format, gfc-internal-format
 msgid "Upper array reference at %L is out of bounds (%ld > %ld) in dimension %d"
-msgstr ""
+msgstr "La référence supérieure au tableau à %L est hors des limites (%ld > %ld) dans la dimension %d"
 
 #: fortran/resolve.c:4250
-#, fuzzy, gcc-internal-format
-#| msgid "subscript missing in array reference"
+#, gcc-internal-format
 msgid "check_dimension(): Bad array reference"
-msgstr "indice manquant dans la référence du tableau"
+msgstr "check_dimension(): Mauvaise référence de tableau"
 
 #: fortran/resolve.c:4273
 #, gcc-internal-format, gfc-internal-format
 msgid "Rightmost upper bound of assumed size array section not specified at %L"
-msgstr ""
+msgstr "La limite supérieure la plus à droite de la section du tableau de taille tacite n'est pas spécifiée à %L"
 
 #: fortran/resolve.c:4283
 #, gcc-internal-format, gfc-internal-format
 msgid "Rank mismatch in array reference at %L (%d/%d)"
-msgstr ""
+msgstr "Désaccord de rang dans la référence au tableau à %L (%d/%d)"
 
 #: fortran/resolve.c:4291
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "mode mismatch in parameter %d"
+#, gcc-internal-format, gfc-internal-format
 msgid "Coindex rank mismatch in array reference at %L (%d/%d)"
-msgstr "non concordance du mode dans le paramètre %d"
+msgstr "Désaccord du rang du co-index dans la référence au tableau à %L (%d/%d)"
 
 #: fortran/resolve.c:4307
 #, gcc-internal-format, gfc-internal-format
 msgid "Coindex of codimension %d must be a scalar at %L"
-msgstr ""
+msgstr "Le co-index de la co-dimension %d doit être un scalaire à %L"
 
 #: fortran/resolve.c:4335
 #, gcc-internal-format, gfc-internal-format
 msgid "Array index at %L must be scalar"
-msgstr ""
+msgstr "L'index de tableau à %L doit être scalaire"
 
 #: fortran/resolve.c:4341
 #, gcc-internal-format, gfc-internal-format
 msgid "Array index at %L must be of INTEGER type, found %s"
-msgstr ""
+msgstr "L'index de tableau à %L doit être du type INTEGER, on a trouvé %s"
 
 #: fortran/resolve.c:4347
 #, gcc-internal-format, gfc-internal-format
 msgid "REAL array index at %L"
-msgstr ""
+msgstr "Index de tableau REAL à %L"
 
 #: fortran/resolve.c:4386
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument %d of %s must be a location"
+#, gcc-internal-format, gfc-internal-format
 msgid "Argument dim at %L must be scalar"
-msgstr "argument %d de %s doit être une localisation"
+msgstr "L'argument dim à %L doit être scalaire"
 
 #: fortran/resolve.c:4393
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument to `%s' must be of integer type"
+#, gcc-internal-format, gfc-internal-format
 msgid "Argument dim at %L must be of INTEGER type"
-msgstr "argument de « %s » doit être de type entier"
+msgstr "L'argument dim à %L doit être du type INTEGER"
 
 #: fortran/resolve.c:4438
 #, gcc-internal-format
 msgid "find_array_spec(): Missing spec"
-msgstr ""
+msgstr "find_array_spec(): Spec manquante"
 
 #: fortran/resolve.c:4449
 #, gcc-internal-format
 msgid "find_array_spec(): unused as(1)"
-msgstr ""
+msgstr "find_array_spec(): « as » inutilisé(1)"
 
 #: fortran/resolve.c:4460
 #, gcc-internal-format
 msgid "find_array_spec(): unused as(2)"
-msgstr ""
+msgstr "find_array_spec(): « as » inutilisé(2)"
 
 #: fortran/resolve.c:4503
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Array `%A' at %0 is too large to handle"
+#, gcc-internal-format, gfc-internal-format
 msgid "Array index at %L is an array of rank %d"
-msgstr "tableau « %A » à %0 est trop grand pour être traité"
+msgstr "L'index de tableau à %L est un tableau de rang %d"
 
 #: fortran/resolve.c:4601
 #, gcc-internal-format, gfc-internal-format
 msgid "Substring start index at %L must be of type INTEGER"
-msgstr ""
+msgstr "L'index de départ de la sous-chaîne à %L doit être du type INTEGER"
 
 #: fortran/resolve.c:4608
 #, gcc-internal-format, gfc-internal-format
 msgid "Substring start index at %L must be scalar"
-msgstr ""
+msgstr "L'index de départ de la sous-chaîne à %L doit être scalaire"
 
 #: fortran/resolve.c:4617
 #, gcc-internal-format, gfc-internal-format
 msgid "Substring start index at %L is less than one"
-msgstr ""
+msgstr "L'index de départ de la sous-chaîne à %L est plus petit que un"
 
 #: fortran/resolve.c:4630
 #, gcc-internal-format, gfc-internal-format
 msgid "Substring end index at %L must be of type INTEGER"
-msgstr ""
+msgstr "L'index de fin de la sous-chaîne à %L doit être du type INTEGER"
 
 #: fortran/resolve.c:4637
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Substring begin/end point at %0 out of defined range"
+#, gcc-internal-format, gfc-internal-format
 msgid "Substring end index at %L must be scalar"
-msgstr "point begin/end de la sous-chaîne à %0 en dehors de la plage définie"
+msgstr "L'index de fin de la sous-chaîne à %L doit être scalaire"
 
 #: fortran/resolve.c:4647
 #, gcc-internal-format, gfc-internal-format
 msgid "Substring end index at %L exceeds the string length"
-msgstr ""
+msgstr "L'index de fin de la sous-chaîne à %L excède la longueur de la chaîne"
 
 #: fortran/resolve.c:4657
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "requested alignment is too large"
+#, gcc-internal-format, gfc-internal-format
 msgid "Substring end index at %L is too large"
-msgstr "l'alignement demandé est trop grand"
+msgstr "L'index de fin de la sous-chaîne à %L est trop grand"
 
 #: fortran/resolve.c:4810
 #, gcc-internal-format
 msgid "resolve_ref(): Bad array reference"
-msgstr ""
+msgstr "resolve_ref(): Mauvaise référence de tableau"
 
 #: fortran/resolve.c:4824
 #, gcc-internal-format, gfc-internal-format
 msgid "Component to the right of a part reference with nonzero rank must not have the POINTER attribute at %L"
-msgstr ""
+msgstr "Le composant à droite d'une référence de partie avec un rang non nul ne doit pas avoir l'attribut POINTER à %L"
 
 #: fortran/resolve.c:4834
 #, gcc-internal-format, gfc-internal-format
 msgid "Component to the right of a part reference with nonzero rank must not have the ALLOCATABLE attribute at %L"
-msgstr ""
+msgstr "Le composant à droite d'une référence de partie avec un rang non nul ne doit pas avoir l'attribut ALLOCATABLE à %L"
 
 #: fortran/resolve.c:4853
 #, gcc-internal-format, gfc-internal-format
 msgid "Two or more part references with nonzero rank must not be specified at %L"
-msgstr ""
+msgstr "Deux références de parties (ou plus) avec un rang non nul ne peuvent pas être spécifiées à %L"
 
 #: fortran/resolve.c:4951
 #, gcc-internal-format
 msgid "expression_rank(): Two array specs"
-msgstr ""
+msgstr "expression_rank(): Deux specs de tableau"
 
 #: fortran/resolve.c:5033
 #, gcc-internal-format, gfc-internal-format
 msgid "Variable %s at %L with NO_ARG_CHECK attribute may only be used as actual argument"
-msgstr ""
+msgstr "La variable %s à %L avec l'attribut NO_ARG_CHECK peut uniquement être utilisée comme argument effectif"
 
 #: fortran/resolve.c:5043
 #, gcc-internal-format, gfc-internal-format
 msgid "Assumed-type variable %s at %L may only be used as actual argument"
-msgstr ""
+msgstr "La variable de type tacite %s à %L peut uniquement être utilisée comme argument effectif"
 
 #. FIXME: It doesn't work reliably as inquiry_argument is not set
 #. for all inquiry functions in resolve_function; the reason is
@@ -56228,12 +56166,12 @@ msgstr ""
 #: fortran/resolve.c:5053
 #, gcc-internal-format, gfc-internal-format
 msgid "Assumed-type variable %s at %L as actual argument to an inquiry function shall be the first argument"
-msgstr ""
+msgstr "La variable de type tacite %s à %L comme argument effectif à une fonction de requête sera le premier argument"
 
 #: fortran/resolve.c:5068
 #, gcc-internal-format, gfc-internal-format
 msgid "Assumed-rank variable %s at %L may only be used as actual argument"
-msgstr ""
+msgstr "La variable de rang tacite %s à %L peut uniquement être utilisée comme argument effectif"
 
 #. FIXME: It doesn't work reliably as inquiry_argument is not set
 #. for all inquiry functions in resolve_function; the reason is
@@ -56242,277 +56180,271 @@ msgstr ""
 #: fortran/resolve.c:5078
 #, gcc-internal-format, gfc-internal-format
 msgid "Assumed-rank variable %s at %L as actual argument to an inquiry function shall be the first argument"
-msgstr ""
+msgstr "La variable de rang tacite %s à %L comme argument effectif à une fonction intrinsèque sera le premier argument"
 
 #: fortran/resolve.c:5089
 #, gcc-internal-format, gfc-internal-format
 msgid "Variable %s at %L with NO_ARG_CHECK attribute shall not have a subobject reference"
-msgstr ""
+msgstr "La variable %s à %L avec l'attribut NO_ARG_CHECK n'aura point de référence à un sous-objet"
 
 #: fortran/resolve.c:5098
 #, gcc-internal-format, gfc-internal-format
 msgid "Assumed-type variable %s at %L shall not have a subobject reference"
-msgstr ""
+msgstr "La variable de type tacite %s à %L n'aura point de référence à un sous-objet"
 
 #: fortran/resolve.c:5113
 #, gcc-internal-format, gfc-internal-format
 msgid "Assumed-rank variable %s at %L shall not have a subobject reference"
-msgstr ""
+msgstr "La variable de rang tacite %s à %L n'aura point de référence à un sous-objet"
 
 #: fortran/resolve.c:5275
 #, gcc-internal-format
 msgid "Variable %qs, used in a specification expression, is referenced at %L before the ENTRY statement in which it is a parameter"
-msgstr ""
+msgstr "La variable %qs, utilisée dans une expression de spécification, est référencée à %L avant l'instruction ENTRY dans laquelle elle est un paramètre"
 
 #: fortran/resolve.c:5280
 #, gcc-internal-format
 msgid "Variable %qs is used at %L before the ENTRY statement in which it is a parameter"
-msgstr ""
+msgstr "La variable %qs est utilisée à %L avant l'instruction ENTRY dans laquelle elle est un paramètre"
 
 #: fortran/resolve.c:5350
 #, gcc-internal-format, gfc-internal-format
 msgid "Polymorphic subobject of coindexed object at %L"
-msgstr ""
+msgstr "Sous-objet polymorphique d'un objet co-indexé à %L"
 
 #: fortran/resolve.c:5363
 #, gcc-internal-format, gfc-internal-format
 msgid "Coindexed object with polymorphic allocatable subcomponent at %L"
-msgstr ""
+msgstr "Objet co-indexé avec un sous-composant allouable polymorphique à %L"
 
 #: fortran/resolve.c:5704
 #, gcc-internal-format, gfc-internal-format
 msgid "Passed-object at %L must be scalar"
-msgstr ""
+msgstr "L'objet passé à %L doit être scalaire"
 
 #: fortran/resolve.c:5711
 #, gcc-internal-format
 msgid "Base object for procedure-pointer component call at %L is of ABSTRACT type %qs"
-msgstr ""
+msgstr "L'objet de base pour l'appel de composant pointeur de procédure à %L est du type ABSTRACT %qs"
 
 #: fortran/resolve.c:5746
 #, gcc-internal-format
 msgid "Base object for type-bound procedure call at %L is of ABSTRACT type %qs"
-msgstr ""
+msgstr "L'objet de base pour l'appel de procédure liée au type à %L est du type ABSTRACT %qs"
 
 #: fortran/resolve.c:5755
 #, gcc-internal-format, gfc-internal-format
 msgid "Base object for NOPASS type-bound procedure call at %L must be scalar"
-msgstr ""
+msgstr "L'objet de base pour l'appel de procédure liée au type NOPASS à %L doit être scalaire"
 
 #. Nothing matching found!
 #: fortran/resolve.c:5943
 #, gcc-internal-format
 msgid "Found no matching specific binding for the call to the GENERIC %qs at %L"
-msgstr ""
+msgstr "Aucune liaison spécifique correspondante pour l'appel à GENERIC %qs à %L"
 
 #: fortran/resolve.c:5970
 #, gcc-internal-format
 msgid "%qs at %L should be a SUBROUTINE"
-msgstr ""
+msgstr "%qs à %L devrait être une SUBROUTINE"
 
 #: fortran/resolve.c:6021
 #, gcc-internal-format
 msgid "%qs at %L should be a FUNCTION"
-msgstr ""
+msgstr "%qs à %L devrait être une FUNCTION"
 
 #: fortran/resolve.c:6571
 #, gcc-internal-format
 msgid "gfc_resolve_expr(): Bad expression type"
-msgstr ""
+msgstr "gfc_resolve_expr(): Mauvais type d'expression"
 
 #: fortran/resolve.c:6597
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s parameter %d must be a location"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s at %L must be a scalar"
-msgstr "%s paramètre %d doit être une localisation"
+msgstr "%s à %L doit être un scalaire"
 
 #: fortran/resolve.c:6607
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument to `%s' must be of integer type"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s at %L must be integer"
-msgstr "argument de « %s » doit être de type entier"
+msgstr "%s à %L doit être un entier"
 
 #: fortran/resolve.c:6611 fortran/resolve.c:6618
 #, gcc-internal-format, gfc-internal-format
 msgid "%s at %L must be INTEGER"
-msgstr ""
+msgstr "%s à %L doit être INTEGER"
 
 #: fortran/resolve.c:6660
 #, gcc-internal-format, gfc-internal-format
 msgid "Step expression in DO loop at %L cannot be zero"
-msgstr ""
+msgstr "L'expression de pas dans la boucle DO à %L ne peut pas être zéro"
 
 #: fortran/resolve.c:6696
 #, gcc-internal-format, gfc-internal-format
 msgid "DO loop at %L will be executed zero times"
-msgstr ""
+msgstr "La boucle DO à %L sera exécutée zéro fois"
 
 #: fortran/resolve.c:6713
 #, gcc-internal-format, gfc-internal-format
 msgid "DO loop at %L is undefined as it overflows"
-msgstr ""
+msgstr "La boucle DO à %L est indéfinie car elle déborde"
 
 #: fortran/resolve.c:6719
 #, gcc-internal-format, gfc-internal-format
 msgid "DO loop at %L is undefined as it underflows"
-msgstr ""
+msgstr "La boucle DO à %L est indéfinie car elle déborde vers le bas"
 
 #: fortran/resolve.c:6780
 #, gcc-internal-format, gfc-internal-format
 msgid "FORALL index-name at %L must be a scalar INTEGER"
-msgstr ""
+msgstr "Le nom d'index FORALL à %L doit être un INTEGER scalaire"
 
 #: fortran/resolve.c:6785
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "DO FOR start expression is a numbered SET"
+#, gcc-internal-format, gfc-internal-format
 msgid "FORALL start expression at %L must be a scalar INTEGER"
-msgstr "expression de départ de DO FOR est un SET énuméré"
+msgstr "L'expression de départ de FORALL à %L doit être un INTEGER scalaire"
 
 #: fortran/resolve.c:6792
 #, gcc-internal-format, gfc-internal-format
 msgid "FORALL end expression at %L must be a scalar INTEGER"
-msgstr ""
+msgstr "L'expression de fin de FORALL à %L doit être un INTEGER scalaire"
 
+# %s est toujours « INTEGER » et rien d'autre
 #: fortran/resolve.c:6800
 #, gcc-internal-format, gfc-internal-format
 msgid "FORALL stride expression at %L must be a scalar %s"
-msgstr ""
+msgstr "L'expression de pas de FORALL à %L doit être un %s scalaire"
 
 #: fortran/resolve.c:6805
 #, gcc-internal-format, gfc-internal-format
 msgid "FORALL stride expression at %L cannot be zero"
-msgstr ""
+msgstr "L'expression de pas de FORALL à %L ne peut pas être zéro"
 
 #: fortran/resolve.c:6818
 #, gcc-internal-format
 msgid "FORALL index %qs may not appear in triplet specification at %L"
-msgstr ""
+msgstr "L'index %qs de FORALL ne peut pas apparaître dans une spécification de triplet à %L"
 
 #: fortran/resolve.c:6921 fortran/resolve.c:7213
 #, gcc-internal-format, gfc-internal-format
 msgid "Allocate-object at %L must be ALLOCATABLE or a POINTER"
-msgstr ""
+msgstr "L'objet allouable à %L doit être ALLOCATABLE ou un POINTER"
 
 #: fortran/resolve.c:6929 fortran/resolve.c:7178
 #, gcc-internal-format, gfc-internal-format
 msgid "Coindexed allocatable object at %L"
-msgstr ""
+msgstr "Objet allouable co-indexé à %L"
 
 #: fortran/resolve.c:7035
 #, gcc-internal-format, gfc-internal-format
 msgid "Source-expr at %L must be scalar or have the same rank as the allocate-object at %L"
-msgstr ""
+msgstr "L'expression source à %L doit être scalaire ou avoir le même rang que l'objet allouable à %L"
 
 #: fortran/resolve.c:7066
 #, gcc-internal-format, gfc-internal-format
 msgid "Source-expr at %L and allocate-object at %L must have the same shape"
-msgstr ""
+msgstr "L'expression source à %L et l'objet allouable à %L doivent avoir la même forme"
 
 #: fortran/resolve.c:7224
 #, gcc-internal-format, gfc-internal-format
 msgid "Type of entity at %L is type incompatible with source-expr at %L"
-msgstr ""
+msgstr "Le type de l'entité à %L a un type incompatible avec l'expression source à %L"
 
 #: fortran/resolve.c:7236
 #, gcc-internal-format, gfc-internal-format
 msgid "The allocate-object at %L and the source-expr at %L shall have the same kind type parameter"
-msgstr ""
+msgstr "L'objet allouable à %L et l'expression source à %L auront le même paramètre de sous-type"
 
 #: fortran/resolve.c:7250
 #, gcc-internal-format, gfc-internal-format
 msgid "The source-expr at %L shall neither be of type LOCK_TYPE nor have a LOCK_TYPE component if allocate-object at %L is a coarray"
-msgstr ""
+msgstr "L'expression source à %L n'aura ni le type LOCK_TYPE ni un composant LOCK_TYPE si l'objet allouable à %L est un co-tableau"
 
 #: fortran/resolve.c:7265
 #, gcc-internal-format, gfc-internal-format
 msgid "The source-expr at %L shall neither be of type EVENT_TYPE nor have a EVENT_TYPE component if allocate-object at %L is a coarray"
-msgstr ""
+msgstr "L'expression source à %L n'aura ni le type EVENT_TYPE ni un composant EVENT_TYPE si l'objet allouable à %L est un co-tableau"
 
 #: fortran/resolve.c:7278
 #, gcc-internal-format, gfc-internal-format
 msgid "Allocating %s of ABSTRACT base type at %L requires a type-spec or source-expr"
-msgstr ""
+msgstr "L'allocation de %s du type de base ABSTRACT à %L requiert une spécification de type ou une expression source"
 
 #: fortran/resolve.c:7291
 #, gcc-internal-format, gfc-internal-format
 msgid "Allocating %s at %L with type-spec requires the same character-length parameter as in the declaration"
-msgstr ""
+msgstr "L'allocation de %s à %L avec la spécification de type requiert la même longueur de caractères dans le paramètre que dans la déclaration"
 
 #: fortran/resolve.c:7372 fortran/resolve.c:7387
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Invalid I specifier in FORMAT statement at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "Array specification required in ALLOCATE statement at %L"
-msgstr "spécificateur I invalide dans la déclaration de FORMAT à %0"
+msgstr "Spécification de tableau requise dans l'instruction ALLOCATE à %L"
 
 #: fortran/resolve.c:7379
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Invalid I specifier in FORMAT statement at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "Array specification or array-valued SOURCE= expression required in ALLOCATE statement at %L"
-msgstr "spécificateur I invalide dans la déclaration de FORMAT à %0"
+msgstr "Une spécification de tableau ou une expression SOURCE= avec une valeur tableau est requise dans l'instruction ALLOCATE à %L"
 
 #: fortran/resolve.c:7402
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Invalid I specifier in FORMAT statement at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "Coarray specification required in ALLOCATE statement at %L"
-msgstr "spécificateur I invalide dans la déclaration de FORMAT à %0"
+msgstr "Spécification de co-tableau requise dans l'instruction ALLOCATE à %L"
 
 #: fortran/resolve.c:7429
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Invalid I specifier in FORMAT statement at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "Bad array specification in ALLOCATE statement at %L"
-msgstr "spécificateur I invalide dans la déclaration de FORMAT à %0"
+msgstr "Mauvaise spécification de tableau dans l'instruction ALLOCATE à %L"
 
 #: fortran/resolve.c:7448
 #, gcc-internal-format
 msgid "%qs must not appear in the array specification at %L in the same ALLOCATE statement where it is itself allocated"
-msgstr ""
+msgstr "%qs ne doit pas apparaître dans la spécification de tableau à %L dans la même instruction ALLOCATE où il est lui-même alloué"
 
 #: fortran/resolve.c:7463
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Invalid I specifier in FORMAT statement at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected '*' in coindex specification in ALLOCATE statement at %L"
-msgstr "spécificateur I invalide dans la déclaration de FORMAT à %0"
+msgstr "« * » attendu dans la spécification du co-index dans l'instruction ALLOCATE à %L"
 
 #: fortran/resolve.c:7474
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Invalid I specifier in FORMAT statement at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "Bad coarray specification in ALLOCATE statement at %L"
-msgstr "spécificateur I invalide dans la déclaration de FORMAT à %0"
+msgstr "Mauvaise spécification de co-tableau dans l'instruction ALLOCATE à %L"
 
 #: fortran/resolve.c:7506
 #, gcc-internal-format, gfc-internal-format
 msgid "Stat-variable at %L must be a scalar INTEGER variable"
-msgstr ""
+msgstr "La variable stat à %L doit être une variable INTEGER scalaire"
 
+# les deux %s sont le même mot-clé "ALLOCATE" ou "DEALLOCATE" utilisés une fois comme mot et comme instruction, merde les mecs, ils pourraient faire attention aux traducteurs…
 #: fortran/resolve.c:7529
 #, gcc-internal-format, gfc-internal-format
 msgid "Stat-variable at %L shall not be %sd within the same %s statement"
-msgstr ""
+msgstr "La variable stat à %L ne sera point qualifiée par %s dans la même instruction %s"
 
 #: fortran/resolve.c:7540
 #, gcc-internal-format, gfc-internal-format
 msgid "ERRMSG at %L is useless without a STAT tag"
-msgstr ""
+msgstr "ERRMSG à %L est inutile sans la balise STAT"
 
 #: fortran/resolve.c:7551
 #, gcc-internal-format, gfc-internal-format
 msgid "Errmsg-variable at %L must be a scalar CHARACTER variable"
-msgstr ""
+msgstr "La variable errmsg à %L doit être une variable CHARACTER scalaire"
 
+# les deux %s sont le même mot-clé "ALLOCATE" ou "DEALLOCATE" utilisés une fois comme mot et comme instruction, merde les mecs, ils pourraient faire attention aux traducteurs…
 #: fortran/resolve.c:7574
 #, gcc-internal-format, gfc-internal-format
 msgid "Errmsg-variable at %L shall not be %sd within the same %s statement"
-msgstr ""
+msgstr "La variable errmsg à %L ne sera point qualifiée par %s dans la même instruction %s"
 
 #: fortran/resolve.c:7604
 #, gcc-internal-format, gfc-internal-format
 msgid "Allocate-object at %L also appears at %L"
-msgstr ""
+msgstr "L'objet alloué à %L apparaît aussi à %L"
 
 #: fortran/resolve.c:7610 fortran/resolve.c:7616
 #, gcc-internal-format, gfc-internal-format
 msgid "Allocate-object at %L is subobject of object at %L"
-msgstr ""
+msgstr "L'objet alloué à %L est un sous-objet d'un objet à %L"
 
 #. The cases overlap, or they are the same
 #. element in the list.  Either way, we must
@@ -56521,432 +56453,416 @@ msgstr ""
 #: fortran/resolve.c:7844
 #, gcc-internal-format, gfc-internal-format
 msgid "CASE label at %L overlaps with CASE label at %L"
-msgstr ""
+msgstr "L'étiquette CASE à %L chevauche l'étiquette CASE à %L"
 
 #: fortran/resolve.c:7895
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expression statement has incomplete type"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expression in CASE statement at %L must be of type %s"
-msgstr "la déclaration de l'expression a un type incomplet"
+msgstr "L'expression dans l'instruction CASE à %L doit être du type %s"
 
 #: fortran/resolve.c:7906
 #, gcc-internal-format, gfc-internal-format
 msgid "Expression in CASE statement at %L must be of kind %d"
-msgstr ""
+msgstr "L'expression dans l'instruction CASE à %L doit être du sous-type %d"
 
 #: fortran/resolve.c:7919
 #, gcc-internal-format, gfc-internal-format
 msgid "Expression in CASE statement at %L must be scalar"
-msgstr ""
+msgstr "L'expression dans l'instruction CASE à %L doit être scalaire"
 
 #: fortran/resolve.c:7965
 #, gcc-internal-format, gfc-internal-format
 msgid "Selection expression in computed GOTO statement at %L must be a scalar integer expression"
-msgstr ""
+msgstr "L'expression de sélection dans le GOTO calculé à %L doit être une expression entière scalaire"
 
 #: fortran/resolve.c:7984
 #, gcc-internal-format, gfc-internal-format
 msgid "Argument of SELECT statement at %L cannot be %s"
-msgstr ""
+msgstr "L'argument de l'instruction SELECT à %L ne peut pas être %s"
 
 #: fortran/resolve.c:7994
 #, gcc-internal-format, gfc-internal-format
 msgid "Argument of SELECT statement at %L must be a scalar expression"
-msgstr ""
+msgstr "L'argument de l'expression SELECT à %L doit être une expression scalaire"
 
 #: fortran/resolve.c:8012 fortran/resolve.c:8020
 #, gcc-internal-format, gfc-internal-format
 msgid "Expression in CASE statement at %L is not in the range of %s"
-msgstr ""
+msgstr "L'expression dans l'instruction CASE à %L n'est pas dans la plage de %s"
 
 #: fortran/resolve.c:8082 fortran/resolve.c:8624
 #, gcc-internal-format, gfc-internal-format
 msgid "The DEFAULT CASE at %L cannot be followed by a second DEFAULT CASE at %L"
-msgstr ""
+msgstr "Le DEFAULT CASE à %L ne peut pas être suivi par un second DEFAULT CASE à %L"
 
 #: fortran/resolve.c:8108
 #, gcc-internal-format, gfc-internal-format
 msgid "Logical range in CASE statement at %L is not allowed"
-msgstr ""
+msgstr "Une plage logique n'est pas permise dans l'instruction CASE à %L"
 
 #: fortran/resolve.c:8120
 #, gcc-internal-format, gfc-internal-format
 msgid "Constant logical value in CASE statement is repeated at %L"
-msgstr ""
+msgstr "La valeur logique constante est répétée dans l'instruction CASE à %L"
 
 #: fortran/resolve.c:8135
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Range specification at %0 invalid"
+#, gcc-internal-format, gfc-internal-format
 msgid "Range specification at %L can never be matched"
-msgstr "spécification d'étendue à %0 invalide"
+msgstr "La spécification d'étendue à %L ne peut jamais correspondre à quoi que ce soit"
 
 #: fortran/resolve.c:8238
 #, gcc-internal-format, gfc-internal-format
 msgid "Logical SELECT CASE block at %L has more that two cases"
-msgstr ""
+msgstr "Le bloc SELECT CASE logique à %L a plus de deux cas"
 
 #: fortran/resolve.c:8313
 #, gcc-internal-format
 msgid "Associate-name %qs at %L is used as array"
-msgstr ""
+msgstr "Le nom associé %qs à %L est utilisé comme tableau"
 
 #: fortran/resolve.c:8324
 #, gcc-internal-format, gfc-internal-format
 msgid "CLASS selector at %L needs a temporary which is not yet implemented"
-msgstr ""
+msgstr "Le sélecteur CLASS à %L a besoin d'un temporaire qui n'est pas encore implémenté"
 
 #: fortran/resolve.c:8517
 #, gcc-internal-format, gfc-internal-format
 msgid "Selector shall be polymorphic in SELECT TYPE statement at %L"
-msgstr ""
+msgstr "Le sélecteur sera polymorphique dans l'instruction SELECT TYPE à %L"
 
 #: fortran/resolve.c:8534 fortran/resolve.c:8546
 #, gcc-internal-format, gfc-internal-format
 msgid "Selector at %L must not be coindexed"
-msgstr ""
+msgstr "Le sélecteur à %L ne doit pas être co-indexé"
 
 #: fortran/resolve.c:8575
 #, gcc-internal-format, gfc-internal-format
 msgid "TYPE IS at %L overlaps with TYPE IS at %L"
-msgstr ""
+msgstr "TYPE IS à %L chevauche TYPE IS à %L"
 
 #: fortran/resolve.c:8587
 #, gcc-internal-format
 msgid "Derived type %qs at %L must be extensible"
-msgstr ""
+msgstr "Le type dérivé %qs à %L doit être extensible"
 
 #: fortran/resolve.c:8599
 #, gcc-internal-format
 msgid "Derived type %qs at %L must be an extension of %qs"
-msgstr ""
+msgstr "Le type dérivé %qs à %L doit être une extension de %qs"
 
 #: fortran/resolve.c:8602
-#, fuzzy, gcc-internal-format
-#| msgid "Unimplemented intrinsic `%A' at %0"
+#, gcc-internal-format
 msgid "Unexpected intrinsic type %qs at %L"
-msgstr "intrinsèque «%A» non implanté à %0"
+msgstr "Type intrinsèque %qs inattendu à %L"
 
 #: fortran/resolve.c:8612
 #, gcc-internal-format, gfc-internal-format
 msgid "The type-spec at %L shall specify that each length type parameter is assumed"
-msgstr ""
+msgstr "La spécification de type à %L doit spécifier que chaque paramètre de type de longueur est tacite"
 
 #: fortran/resolve.c:8850
 #, gcc-internal-format, gfc-internal-format
 msgid "Double CLASS IS block in SELECT TYPE statement at %L"
-msgstr ""
+msgstr "Bloc CLASS IS en double dans l'instruction SELECT TYPE à %L"
 
 #: fortran/resolve.c:8946
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Invalid reference to intrinsic `%A' at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "Invalid context for NULL () intrinsic at %L"
-msgstr "référence invalide vers l'intrinsèque «%A» à %0"
+msgstr "Contexte invalide pour l'intrinsèque NULL () à %L"
 
 #: fortran/resolve.c:9009
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "`%D' must take exactly one argument"
+#, gcc-internal-format, gfc-internal-format
 msgid "DTIO %s procedure at %L must be recursive"
-msgstr "« %D » doit prendre exactement un argument"
+msgstr "La procédure DTIO %s à %L doit être récursive"
 
 #: fortran/resolve.c:9019
 #, gcc-internal-format, gfc-internal-format
 msgid "Data transfer element at %L cannot be polymorphic unless it is processed by a defined input/output procedure"
-msgstr ""
+msgstr "L'élément de transfert de données à %L ne peut pas être polymorphique à moins qu'il soit traité par une procédure d'entrée/sortie définie"
 
 #: fortran/resolve.c:9032
 #, gcc-internal-format, gfc-internal-format
 msgid "Data transfer element at %L cannot have POINTER components unless it is processed by a defined input/output procedure"
-msgstr ""
+msgstr "L'élément de transfert de données à %L ne peut pas avoir de composants POINTER à moins qu'il soit traité par une procédure d'entrée/sortie définie"
 
 #: fortran/resolve.c:9041
 #, gcc-internal-format, gfc-internal-format
 msgid "Data transfer element at %L cannot have procedure pointer components"
-msgstr ""
+msgstr "L'élément de transfert de données à %L ne peut pas avoir de composants de pointeur de procédure"
 
 #: fortran/resolve.c:9048
 #, gcc-internal-format, gfc-internal-format
 msgid "Data transfer element at %L cannot have ALLOCATABLE components unless it is processed by a defined input/output procedure"
-msgstr ""
+msgstr "L'élément de transfert de données à %L ne peut pas avoir de composants ALLOCATABLE à moins qu'il soit traité par une procédure d'entrée/sortie définie"
 
 #: fortran/resolve.c:9059
 #, gcc-internal-format, gfc-internal-format
 msgid "Data transfer element at %L cannot have PRIVATE components"
-msgstr ""
+msgstr "L'élément de transfert de données à %L ne peut pas avoir de composants PRIVATE"
 
 #: fortran/resolve.c:9065
 #, gcc-internal-format, gfc-internal-format
 msgid "Data transfer element at %L cannot have PRIVATE components unless it is processed by a defined input/output procedure"
-msgstr ""
+msgstr "L'élément de transfert de données à %L ne peut pas avoir de composants PRIVATE à moins qu'il soit traité par une procédure d'entrée/sortie définie"
 
 #: fortran/resolve.c:9080
 #, gcc-internal-format, gfc-internal-format
 msgid "Data transfer element at %L cannot be a full reference to an assumed-size array"
-msgstr ""
+msgstr "L'élément de transfert de données à %L ne peut pas être une référence complète à un tableau de taille tacite"
 
 #: fortran/resolve.c:9137
 #, gcc-internal-format, gfc-internal-format
 msgid "Lock variable at %L must be a scalar of type LOCK_TYPE"
-msgstr ""
+msgstr "La variable verrou à %L doit être un scalaire de type LOCK_TYPE"
 
 #: fortran/resolve.c:9147
 #, gcc-internal-format, gfc-internal-format
 msgid "Event variable at %L must be a scalar of type EVENT_TYPE"
-msgstr ""
+msgstr "La variable d'événement à %L doit être un scalaire de type EVENT_TYPE"
 
 #: fortran/resolve.c:9151
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "first argument to `%s' must be a mode"
+#, gcc-internal-format, gfc-internal-format
 msgid "Event variable argument at %L must be a coarray or coindexed"
-msgstr "premier argument de « %s » doit être un mode"
+msgstr "L'argument variable d'événement à %L doit être un co-tableau ou co-indexé"
 
 #: fortran/resolve.c:9154
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "first argument to `%s' must be a mode"
+#, gcc-internal-format, gfc-internal-format
 msgid "Event variable argument at %L must be a coarray but not coindexed"
-msgstr "premier argument de « %s » doit être un mode"
+msgstr "L'argument variable d'événement à %L doit être un co-tableau mais pas co-indexé"
 
 #: fortran/resolve.c:9161 fortran/resolve.c:9282
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument %d must be referable"
+#, gcc-internal-format, gfc-internal-format
 msgid "STAT= argument at %L must be a scalar INTEGER variable"
-msgstr "argument %d doit pouvoir être référencé"
+msgstr "L'argument STAT= à %L doit être une variable INTEGER scalaire"
 
 #: fortran/resolve.c:9173 fortran/resolve.c:9289
 #, gcc-internal-format, gfc-internal-format
 msgid "ERRMSG= argument at %L must be a scalar CHARACTER variable"
-msgstr ""
+msgstr "L'argument ERRMSG= à %L doit être une variable CHARACTER scalaire"
 
 #: fortran/resolve.c:9185
 #, gcc-internal-format, gfc-internal-format
 msgid "ACQUIRED_LOCK= argument at %L must be a scalar LOGICAL variable"
-msgstr ""
+msgstr "L'argument ACQUIRED_LOCK= à %L doit être une variable LOGICAL scalaire"
 
 #: fortran/resolve.c:9198
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument %d must be referable"
+#, gcc-internal-format, gfc-internal-format
 msgid "UNTIL_COUNT= argument at %L must be a scalar INTEGER expression"
-msgstr "argument %d doit pouvoir être référencé"
+msgstr "L'argument UNTIL_COUNT= à %L doit être une expression INTEGER scalaire"
 
 #: fortran/resolve.c:9259
 #, gcc-internal-format, gfc-internal-format
 msgid "Imageset argument at %L must be a scalar or rank-1 INTEGER expression"
-msgstr ""
+msgstr "L'argument imageset à %L doit être une expression scalaire ou INTEGER de rang 1"
 
 #: fortran/resolve.c:9263 fortran/resolve.c:9273
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "first argument to `%s' must be a mode"
+#, gcc-internal-format, gfc-internal-format
 msgid "Imageset argument at %L must between 1 and num_images()"
-msgstr "premier argument de « %s » doit être un mode"
+msgstr "L'argument imageset à %L doit être entre 1 et num_images()"
 
 #: fortran/resolve.c:9316
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Statement at %0 invalid in context established by statement at %1"
+#, gcc-internal-format, gfc-internal-format
 msgid "Statement at %L is not a valid branch target statement for the branch statement at %L"
-msgstr "déclaration à %0 invalide dans le contexte établi par la déclaration à %1"
+msgstr "L'instruction à %L n'est pas une instruction cible valable pour l'instruction de branchement à %L"
 
 #: fortran/resolve.c:9326
 #, gcc-internal-format, gfc-internal-format
 msgid "Branch at %L may result in an infinite loop"
-msgstr ""
+msgstr "Le branchement à %L peut conduire à une boucle infinie"
 
 #. Note: A label at END CRITICAL does not leave the CRITICAL
 #. construct as END CRITICAL is still part of it.
 #: fortran/resolve.c:9343 fortran/resolve.c:9366
 #, gcc-internal-format, gfc-internal-format
 msgid "GOTO statement at %L leaves CRITICAL construct for label at %L"
-msgstr ""
+msgstr "L'instruction GOTO à %L quitte une construction CRITICAL pour l'étiquette à %L"
 
 #: fortran/resolve.c:9347 fortran/resolve.c:9372
 #, gcc-internal-format, gfc-internal-format
 msgid "GOTO statement at %L leaves DO CONCURRENT construct for label at %L"
-msgstr ""
+msgstr "L'instruction GOTO à %L quitte une construction DO CONCURRENT pour l'étiquette à %L"
 
 #. The label is not in an enclosing block, so illegal.  This was
 #. allowed in Fortran 66, so we allow it as extension.  No
 #. further checks are necessary in this case.
 #: fortran/resolve.c:9387
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Statement at %0 invalid in context established by statement at %1"
+#, gcc-internal-format, gfc-internal-format
 msgid "Label at %L is not in the same block as the GOTO statement at %L"
-msgstr "déclaration à %0 invalide dans le contexte établi par la déclaration à %1"
+msgstr "L'étiquette à %L n'est pas dans le même bloc que l'instruction GOTO à %L"
 
 #: fortran/resolve.c:9459
 #, gcc-internal-format, gfc-internal-format
 msgid "WHERE mask at %L has inconsistent shape"
-msgstr ""
+msgstr "Le masque WHERE à %L a une forme inconsistante"
 
 #: fortran/resolve.c:9475
 #, gcc-internal-format, gfc-internal-format
 msgid "WHERE assignment target at %L has inconsistent shape"
-msgstr ""
+msgstr "La cible de l'affectation WHERE à %L a une forme inconsistante"
 
 #: fortran/resolve.c:9483 fortran/resolve.c:9570
 #, gcc-internal-format, gfc-internal-format
 msgid "Non-ELEMENTAL user-defined assignment in WHERE at %L"
-msgstr ""
+msgstr "Affectation définie par l'utilisateur non ELEMENTAL dans WHERE à %L"
 
 #: fortran/resolve.c:9493 fortran/resolve.c:9580
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unsupported VXT statement at %0"
+#, gcc-internal-format, gfc-internal-format
 msgid "Unsupported statement inside WHERE at %L"
-msgstr "déclaration VXT non supporté à %0"
+msgstr "Instruction non supportée à l'intérieur de WHERE à %L"
 
 #: fortran/resolve.c:9524
 #, gcc-internal-format, gfc-internal-format
 msgid "Assignment to a FORALL index variable at %L"
-msgstr ""
+msgstr "Affectation à une variable d'index FORALL à %L"
 
 #: fortran/resolve.c:9533
 #, gcc-internal-format
 msgid "The FORALL with index %qs is not used on the left side of the assignment at %L and so might cause multiple assignment to this object"
-msgstr ""
+msgstr "Le FORALL avec l'index %qs n'est pas utilisé dans le membre de gauche de l'affectation à %L et, par conséquent, pourrait causer de multiples affectations à cet objet"
 
 #: fortran/resolve.c:9698
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument %d must be referable"
+#, gcc-internal-format, gfc-internal-format
 msgid "FORALL index-name at %L must be a scalar variable of type integer"
-msgstr "argument %d doit pouvoir être référencé"
+msgstr "Le nom d'index de FORALL à %L doit être une variable scalaire de type entier"
 
 #: fortran/resolve.c:9708
 #, gcc-internal-format, gfc-internal-format
 msgid "An outer FORALL construct already has an index with this name %L"
-msgstr ""
+msgstr "Une construction de boucle FORALL extérieure a déjà un index avec ce nom à %L"
 
 #: fortran/resolve.c:9785
 #, gcc-internal-format, gfc-internal-format
 msgid "WHERE/ELSEWHERE clause at %L requires a LOGICAL array"
-msgstr ""
+msgstr "La clause WHERE/ELSEWHERE à %L requiert un tableau LOGICAL"
 
 #: fortran/resolve.c:9887
 #, gcc-internal-format
 msgid "gfc_resolve_blocks(): Bad block type"
-msgstr ""
+msgstr "gfc_resolve_blocks(): Mauvais type de bloc"
 
 #: fortran/resolve.c:10001
 #, gcc-internal-format, gfc-internal-format
 msgid "CHARACTER expression will be truncated in assignment (%d/%d) at %L"
-msgstr ""
+msgstr "L'expression CHARACTER sera tronquée dans l'affectation (%d/%d) à %L"
 
 #: fortran/resolve.c:10033
 #, gcc-internal-format, gfc-internal-format
 msgid "Coindexed expression at %L is assigned to a derived type variable with a POINTER component in a PURE procedure"
-msgstr ""
+msgstr "L'expression co-indexée à %L est affectée à une variable de type dérivé avec un composant POINTER dans une procédure PURE"
 
 #: fortran/resolve.c:10038
 #, gcc-internal-format, gfc-internal-format
 msgid "The impure variable at %L is assigned to a derived type variable with a POINTER component in a PURE procedure (12.6)"
-msgstr ""
+msgstr "La variable impure à %L est affectée à une variable de type dérivé avec un composant POINTER dans une procédure PURE (12.6)"
 
 #: fortran/resolve.c:10048
 #, gcc-internal-format, gfc-internal-format
 msgid "Assignment to coindexed variable at %L in a PURE procedure"
-msgstr ""
+msgstr "Affectation à une variable co-indexée à %L dans une procédure PURE"
 
 #: fortran/resolve.c:10080
 #, gcc-internal-format, gfc-internal-format
 msgid "Assignment to polymorphic coarray at %L is not permitted"
-msgstr ""
+msgstr "L'affectation à un co-tableau polymorphique à %L n'est pas permise"
 
 #: fortran/resolve.c:10084
 #, gcc-internal-format, gfc-internal-format
 msgid "Assignment to an allocatable polymorphic variable at %L"
-msgstr ""
+msgstr "Affectation à une variable polymorphique allouable à %L"
 
 #: fortran/resolve.c:10089
 #, gcc-internal-format
 msgid "Assignment to an allocatable polymorphic variable at %L requires %<-frealloc-lhs%>"
-msgstr ""
+msgstr "L'affectation à une variable polymorphique allouable à %L requiert %<-frealloc-lhs%>"
 
 #: fortran/resolve.c:10096
 #, gcc-internal-format, gfc-internal-format
 msgid "Nonallocatable variable must not be polymorphic in intrinsic assignment at %L - check that there is a matching specific subroutine for '=' operator"
-msgstr ""
+msgstr "La variable non allouable ne doit pas être polymorphique dans l'affectation intrinsèque à %L – vérifiez qu'il existe une sous-routine spécifique correspondante pour l'opérateur « = »"
 
 #: fortran/resolve.c:10107
 #, gcc-internal-format, gfc-internal-format
 msgid "Coindexed variable must not have an allocatable ultimate component in assignment at %L"
-msgstr ""
+msgstr "La variable co-indexée ne doit pas avoir un composant ultimement allouable dans l'affectation à %L"
 
 #: fortran/resolve.c:10412
 #, gcc-internal-format, gfc-internal-format
 msgid "TODO: type-bound defined assignment(s) at %L not done because multiple part array references would occur in intermediate expressions."
-msgstr ""
+msgstr "À FAIRE: la/les affectation(s) liée(s) au type à %L n'ont pas été réalisées car des références multiples à des parties de tableaux apparaîtraient dans des expressions intermédiaires."
 
 #. Even if standard does not support this feature, continue to build
 #. the two statements to avoid upsetting frontend_passes.c.
 #: fortran/resolve.c:10654
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid lvalue in assignment"
+#, gcc-internal-format, gfc-internal-format
 msgid "Pointer procedure assignment at %L"
-msgstr "membre gauche de l'affectation invalide"
+msgstr "Affectation à une procédure pointeur à %L"
 
 #: fortran/resolve.c:10666
 #, gcc-internal-format, gfc-internal-format
 msgid "The function result on the lhs of the assignment at %L must have the pointer attribute."
-msgstr ""
+msgstr "Le résultat de la fonction dans le membre de gauche de l'affectation à %L doit avoir l'attribut pointeur."
 
 #: fortran/resolve.c:10899
 #, gcc-internal-format, gfc-internal-format
 msgid "ASSIGNED GOTO statement at %L requires an INTEGER variable"
-msgstr ""
+msgstr "L'instruction ASSIGNED GOTO à %L requiert une variable INTEGER"
 
 #: fortran/resolve.c:10902
 #, gcc-internal-format
 msgid "Variable %qs has not been assigned a target label at %L"
-msgstr ""
+msgstr "Une étiquette cible n'a pas été affectée à la variable %qs à %L"
 
 #: fortran/resolve.c:10913
 #, gcc-internal-format, gfc-internal-format
 msgid "Alternate RETURN statement at %L requires a SCALAR-INTEGER return specifier"
-msgstr ""
+msgstr "L'instruction RETURN alternatif à %L requiert un spécificateur de retour SCALAR-INTEGER"
 
 #: fortran/resolve.c:10975
 #, gcc-internal-format, gfc-internal-format
 msgid "ASSIGN statement at %L requires a scalar default INTEGER variable"
-msgstr ""
+msgstr "L'instruction ASSIGN à %L requiert une variable scalaire INTEGER par défaut"
 
 #: fortran/resolve.c:11023
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Invalid kind at %0 for type at %1"
+#, gcc-internal-format, gfc-internal-format
 msgid "Invalid NULL at %L"
-msgstr "sorte invalide à %0 pour le type à %1"
+msgstr "NULL invalide à %L"
 
 #: fortran/resolve.c:11027
 #, gcc-internal-format, gfc-internal-format
 msgid "Arithmetic IF statement at %L requires a scalar REAL or INTEGER expression"
-msgstr ""
+msgstr "L'instruction IF arithmétique à %L requiert une expression scalaire REAL ou INTEGER"
 
 #: fortran/resolve.c:11083
 #, gcc-internal-format
 msgid "gfc_resolve_code(): No expression on DO WHILE"
-msgstr ""
+msgstr "gfc_resolve_code(): Pas d'expression dans le DO WHILE"
 
 #: fortran/resolve.c:11088
 #, gcc-internal-format, gfc-internal-format
 msgid "Exit condition of DO WHILE loop at %L must be a scalar LOGICAL expression"
-msgstr ""
+msgstr "La condition de sortie de la boucle DO WHILE à %L doit être une expression LOGICAL scalaire"
 
 #: fortran/resolve.c:11172
 #, gcc-internal-format, gfc-internal-format
 msgid "FORALL mask clause at %L requires a scalar LOGICAL expression"
-msgstr ""
+msgstr "La clause de masque FORALL à %L requiert une expression scalaire LOGICAL"
 
 #: fortran/resolve.c:11251
 #, gcc-internal-format
 msgid "gfc_resolve_code(): Bad statement code"
-msgstr ""
+msgstr "gfc_resolve_code(): Mauvais code d'instruction"
 
 #: fortran/resolve.c:11361
 #, gcc-internal-format, gfc-internal-format
 msgid "Variable %s with binding label %s at %L uses the same global identifier as entity at %L"
-msgstr ""
+msgstr "La variable %s avec l'étiquette de liaison %s à %L utilise le même identificateur global que l'entité à %L"
 
 #. This can only happen if the variable is defined in a module - if it
 #. isn't the same module, reject it.
 #: fortran/resolve.c:11374
 #, gcc-internal-format, gfc-internal-format
 msgid "Variable %s from module %s with binding label %s at %L uses the same global identifier as entity at %L from module %s"
-msgstr ""
+msgstr "La variable %s du module %s avec l'étiquette de liaison %s à %L utilise le même identificateur global que l'entité à %L du module %s"
 
 #. Print an error if the procedure is defined multiple times; we have to
 #. exclude references to the same procedure via module association or
@@ -56954,548 +56870,536 @@ msgstr ""
 #: fortran/resolve.c:11391
 #, gcc-internal-format, gfc-internal-format
 msgid "Procedure %s with binding label %s at %L uses the same global identifier as entity at %L"
-msgstr ""
+msgstr "La procédure %s avec l'étiquette de liaison %s à %L utilise le même identificateur global que l'entité à %L"
 
 #: fortran/resolve.c:11468
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Integer at %0 too large"
+#, gcc-internal-format, gfc-internal-format
 msgid "String length at %L is too large"
-msgstr "entier à %0 est trop grand"
+msgstr "La longueur de chaîne à %L est trop grande"
 
 #: fortran/resolve.c:11697
 #, gcc-internal-format
 msgid "Allocatable array %qs at %L must have a deferred shape or assumed rank"
-msgstr ""
+msgstr "Le tableau allouable %qs à %L doit avoir une forme différée ou un rang tacite"
 
 #: fortran/resolve.c:11701
 #, gcc-internal-format
 msgid "Scalar object %qs at %L may not be ALLOCATABLE"
-msgstr ""
+msgstr "L'objet scalaire %qs à %L ne peut pas être ALLOCATABLE"
 
 #: fortran/resolve.c:11709
 #, gcc-internal-format
 msgid "Array pointer %qs at %L must have a deferred shape or assumed rank"
-msgstr ""
+msgstr "Le pointeur tableau %qs à %L doit avoir une forme différée ou un rang tacite"
 
 #: fortran/resolve.c:11719
 #, gcc-internal-format
 msgid "Array %qs at %L cannot have a deferred shape"
-msgstr ""
+msgstr "Le tableau %qs à %L ne peut pas avoir une forme différée"
 
 #: fortran/resolve.c:11734
 #, gcc-internal-format
 msgid "Type %qs of CLASS variable %qs at %L is not extensible"
-msgstr ""
+msgstr "Le type %qs de la variable CLASS %qs à %L n'est pas extensible"
 
 #: fortran/resolve.c:11746
 #, gcc-internal-format
 msgid "CLASS variable %qs at %L must be dummy, allocatable or pointer"
-msgstr ""
+msgstr "La variable CLASS %qs à %L doit être muette, allouable ou pointeur"
 
 #: fortran/resolve.c:11777
 #, gcc-internal-format
 msgid "The type %qs cannot be host associated at %L because it is blocked by an incompatible object of the same name declared at %L"
-msgstr ""
+msgstr "Le type %qs ne peut pas être associé à un hôte à %L car il est bloqué par un objet incompatible du même nom déclaré à %L"
 
 #: fortran/resolve.c:11799
 #, gcc-internal-format
 msgid "Implied SAVE for module variable %qs at %L, needed due to the default initialization"
-msgstr ""
+msgstr "SAVE implicite pour la variable module %qs à %L, nécessaire à cause de l'initialisation par défaut"
 
 #: fortran/resolve.c:11825
 #, gcc-internal-format
 msgid "Entity %qs at %L has a deferred type parameter and requires either the POINTER or ALLOCATABLE attribute"
-msgstr ""
+msgstr "L'entité %qs à %L a un paramètre de type différé et requiert soit l'attribut POINTER ou ALLOCATABLE"
 
 #. F08:C541. The shape of an array defined in a main program or module
 #. * needs to be constant.
 #: fortran/resolve.c:11866
 #, gcc-internal-format
 msgid "The module or main program array %qs at %L must have constant shape"
-msgstr ""
+msgstr "Le tableau %qs à %L du module ou du programme principal doit avoir une forme constante"
 
 #: fortran/resolve.c:11885
 #, gcc-internal-format, gfc-internal-format
 msgid "Entity with assumed character length at %L must be a dummy argument or a PARAMETER"
-msgstr ""
+msgstr "L'entité avec une longueur de caractère tacite à %L doit être un argument muet ou un PARAMETER"
 
 #: fortran/resolve.c:11906
-#, fuzzy, gcc-internal-format
-#| msgid "bit array slice with non-constant length"
+#, gcc-internal-format
 msgid "%qs at %L must have constant character length in this context"
-msgstr "découpage de tableau de bits avec une longueur non constante"
+msgstr "%qs à %L doit avoir une longueur de caractère constante dans ce contexte"
 
 #: fortran/resolve.c:11913
 #, gcc-internal-format
 msgid "COMMON variable %qs at %L must have constant character length"
-msgstr ""
+msgstr "La variable COMMON %qs à %L doit avoir une longueur de caractère constante"
 
 #: fortran/resolve.c:11960
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfinal field '%D' may not have been initialized"
+#, gcc-internal-format
 msgid "Allocatable %qs at %L cannot have an initializer"
-msgstr "champ final « %D » peut ne pas avoir été initialisé"
+msgstr "L'allouable %qs à %L ne peut pas avoir une initialisation"
 
 #: fortran/resolve.c:11963
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfinal field '%D' may not have been initialized"
+#, gcc-internal-format
 msgid "External %qs at %L cannot have an initializer"
-msgstr "champ final « %D » peut ne pas avoir été initialisé"
+msgstr "L'externe %qs à %L ne peut pas avoir une initialisation"
 
 #: fortran/resolve.c:11967
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfinal field '%D' may not have been initialized"
+#, gcc-internal-format
 msgid "Dummy %qs at %L cannot have an initializer"
-msgstr "champ final « %D » peut ne pas avoir été initialisé"
+msgstr "Le muet %qs à %L ne peut pas avoir une initialisation"
 
 #: fortran/resolve.c:11970
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfinal field '%D' may not have been initialized"
+#, gcc-internal-format
 msgid "Intrinsic %qs at %L cannot have an initializer"
-msgstr "champ final « %D » peut ne pas avoir été initialisé"
+msgstr "L'intrinsèque %qs à %L ne peut pas avoir une initialisation"
 
 #: fortran/resolve.c:11973
-#, fuzzy, gcc-internal-format
-#| msgid "%Jfinal field '%D' may not have been initialized"
+#, gcc-internal-format
 msgid "Function result %qs at %L cannot have an initializer"
-msgstr "champ final « %D » peut ne pas avoir été initialisé"
+msgstr "Le résultat de fonction %qs à %L ne peut pas avoir une initialisation"
 
 #: fortran/resolve.c:11976
 #, gcc-internal-format
 msgid "Automatic array %qs at %L cannot have an initializer"
-msgstr ""
+msgstr "Le tableau automatique %qs à %L ne peut pas avoir une initialisation"
 
 #: fortran/resolve.c:12018
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "in %s, at %s:%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s at %L"
-msgstr "dans %s, à %s:%d"
+msgstr "%s à %L"
 
 #: fortran/resolve.c:12045
 #, gcc-internal-format
 msgid "Character-valued statement function %qs at %L must have constant length"
-msgstr ""
+msgstr "La fonction-instruction %qs avec une valeur de caractère à %L doit avoir une longueur constante"
 
 #: fortran/resolve.c:12067
 #, gcc-internal-format
 msgid "%qs is of a PRIVATE type and cannot be a dummy argument of %qs, which is PUBLIC at %L"
-msgstr ""
+msgstr "%qs est d'un type PRIVATE et ne peut pas être un argument muet de %qs, qui est PUBLIC à %L"
 
 #: fortran/resolve.c:12089
 #, gcc-internal-format
 msgid "Procedure %qs in PUBLIC interface %qs at %L takes dummy arguments of %qs which is PRIVATE"
-msgstr ""
+msgstr "La procédure %qs dans l'interface PUBLIC %qs à %L prend des arguments muets de %qs qui est PRIVATE"
 
 #: fortran/resolve.c:12107
-#, fuzzy, gcc-internal-format
-#| msgid "function cannot be inline"
+#, gcc-internal-format
 msgid "Function %qs at %L cannot have an initializer"
-msgstr "fonction ne pas pas être enligne"
+msgstr "La fonction %qs à %L ne peut pas avoir une initialisation"
 
 #: fortran/resolve.c:12116
-#, fuzzy, gcc-internal-format
-#| msgid "variable-sized object of type `%T' may not be initialized"
+#, gcc-internal-format
 msgid "External object %qs at %L may not have an initializer"
-msgstr "un objet de taille variable de type « %T » peut ne pas être initialisé"
+msgstr "L'objet externe %qs à %L ne peut pas avoir d'initialisation"
 
 #: fortran/resolve.c:12124
 #, gcc-internal-format
 msgid "ELEMENTAL function %qs at %L must have a scalar result"
-msgstr ""
+msgstr "La fonction ELEMENTAL %qs à %L doit avoir un résultat scalaire"
 
 #: fortran/resolve.c:12134
 #, gcc-internal-format
 msgid "Statement function %qs at %L may not have pointer or allocatable attribute"
-msgstr ""
+msgstr "La fonction-instruction %qs à %L ne peut pas avoir l'attribut pointeur ou allouable"
 
 #: fortran/resolve.c:12153
 #, gcc-internal-format
 msgid "CHARACTER(*) function %qs at %L cannot be array-valued"
-msgstr ""
+msgstr "La fonction CHARACTER(*) %qs à %L ne peut pas avoir la valeur d'un tableau"
 
 #: fortran/resolve.c:12157
 #, gcc-internal-format
 msgid "CHARACTER(*) function %qs at %L cannot be pointer-valued"
-msgstr ""
+msgstr "La fonction CHARACTER(*) %qs à %L ne peut pas avoir la valeur d'un pointeur"
 
 #: fortran/resolve.c:12161
 #, gcc-internal-format
 msgid "CHARACTER(*) function %qs at %L cannot be pure"
-msgstr ""
+msgstr "La fonction CHARACTER(*) %qs à %L ne peut pas être pure"
 
 #: fortran/resolve.c:12165
 #, gcc-internal-format
 msgid "CHARACTER(*) function %qs at %L cannot be recursive"
-msgstr ""
+msgstr "La fonction CHARACTER(*) %qs à %L ne peut pas être récursive"
 
 #: fortran/resolve.c:12178
 #, gcc-internal-format
 msgid "CHARACTER(*) function %qs at %L"
-msgstr ""
+msgstr "Fonction CHARACTER(*) %qs à %L"
 
 #: fortran/resolve.c:12187
 #, gcc-internal-format
 msgid "Procedure pointer %qs at %L shall not be elemental"
-msgstr ""
+msgstr "Le pointeur de procédure %qs à %L ne sera point élémental"
 
 #: fortran/resolve.c:12193
 #, gcc-internal-format
 msgid "Dummy procedure %qs at %L shall not be elemental"
-msgstr ""
+msgstr "La procédure muette %qs à %L ne sera point élémentale"
 
 #: fortran/resolve.c:12249
 #, gcc-internal-format
 msgid "PROCEDURE attribute conflicts with SAVE attribute in %qs at %L"
-msgstr ""
+msgstr "L'attribut PROCEDURE est en conflit avec l'attribut SAVE dans %qs à %L"
 
 #: fortran/resolve.c:12255
 #, gcc-internal-format
 msgid "PROCEDURE attribute conflicts with INTENT attribute in %qs at %L"
-msgstr ""
+msgstr "L'attribut PROCEDURE est en conflit avec l'attribut INTENT dans %qs à %L"
 
 #: fortran/resolve.c:12261
 #, gcc-internal-format
 msgid "PROCEDURE attribute conflicts with RESULT attribute in %qs at %L"
-msgstr ""
+msgstr "L'attribut PROCEDURE est en conflit avec l'attribut RESULT dans %qs à %L"
 
 #: fortran/resolve.c:12269
 #, gcc-internal-format
 msgid "EXTERNAL attribute conflicts with FUNCTION attribute in %qs at %L"
-msgstr ""
+msgstr "L'attribut EXTERNAL est en conflit avec l'attribut FUNCTION dans %qs à %L"
 
 #: fortran/resolve.c:12275
 #, gcc-internal-format
 msgid "Procedure pointer result %qs at %L is missing the pointer attribute"
-msgstr ""
+msgstr "Le résultat du pointeur de procédure %qs à %L n'a pas d'attribut pointeur"
 
 #: fortran/resolve.c:12318
 #, gcc-internal-format, gfc-internal-format
 msgid "Mismatch in ELEMENTAL attribute between MODULE PROCEDURE at %L and its interface in %s"
-msgstr ""
+msgstr "Désaccord sur l'attribut ELEMENTAL entre MODULE PROCEDURE à %L et son interface dans %s"
 
 #: fortran/resolve.c:12326
 #, gcc-internal-format, gfc-internal-format
 msgid "Mismatch in PURE attribute between MODULE PROCEDURE at %L and its interface in %s"
-msgstr ""
+msgstr "Désaccord sur l'attribut PURE entre MODULE PROCEDURE à %L et son interface dans %s"
 
 #: fortran/resolve.c:12334
 #, gcc-internal-format, gfc-internal-format
 msgid "Mismatch in RECURSIVE attribute between MODULE PROCEDURE at %L and its interface in %s"
-msgstr ""
+msgstr "Désaccord sur l'attribut RECURSIVE entre MODULE PROCEDURE à %L et son interface dans %s"
 
+# et hop, encore un %s (le premier) qui est un bout de phrase non traduit et inséré de force dans le texte
+# voir bug #80185
 #: fortran/resolve.c:12343
 #, gcc-internal-format, gfc-internal-format
 msgid "%s between the MODULE PROCEDURE declaration in module %s and the declaration at %L in SUBMODULE %s"
-msgstr ""
+msgstr "%s entre la déclaration MODULE PROCEDURE dans le module %s et la déclaration à %L dans SUBMODULE %s"
 
 #: fortran/resolve.c:12429
 #, gcc-internal-format
 msgid "FINAL procedure %qs at %L is not a SUBROUTINE"
-msgstr ""
+msgstr "La procédure FINAL %qs à %L n'est pas une SUBROUTINE"
 
 #: fortran/resolve.c:12438
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "`%D' must take exactly one argument"
+#, gcc-internal-format, gfc-internal-format
 msgid "FINAL procedure at %L must have exactly one argument"
-msgstr "« %D » doit prendre exactement un argument"
+msgstr "La procédure FINAL à %L doit avoir exactement un argument"
 
 #: fortran/resolve.c:12447
 #, gcc-internal-format
 msgid "Argument of FINAL procedure at %L must be of type %qs"
-msgstr ""
+msgstr "L'argument de la procédure FINAL à %L doit être du type %qs"
 
 #: fortran/resolve.c:12455
 #, gcc-internal-format, gfc-internal-format
 msgid "Argument of FINAL procedure at %L must not be a POINTER"
-msgstr ""
+msgstr "L'argument de la procédure FINAL à %L ne peut pas être un POINTER"
 
 #: fortran/resolve.c:12461
 #, gcc-internal-format, gfc-internal-format
 msgid "Argument of FINAL procedure at %L must not be ALLOCATABLE"
-msgstr ""
+msgstr "L'argument de la procédure FINAL à %L ne peut pas être ALLOCATABLE"
 
 #: fortran/resolve.c:12467
 #, gcc-internal-format, gfc-internal-format
 msgid "Argument of FINAL procedure at %L must not be OPTIONAL"
-msgstr ""
+msgstr "L'argument de la procédure FINAL à %L ne peut pas être OPTIONAL"
 
 #: fortran/resolve.c:12475
 #, gcc-internal-format, gfc-internal-format
 msgid "Argument of FINAL procedure at %L must not be INTENT(OUT)"
-msgstr ""
+msgstr "L'argument de la procédure FINAL à %L ne peut pas être INTENT(OUT)"
 
 #: fortran/resolve.c:12484
 #, gcc-internal-format, gfc-internal-format
 msgid "Non-scalar FINAL procedure at %L should have assumed shape argument"
-msgstr ""
+msgstr "La procédure FINAL non scalaire à %L devrait avoir un argument de forme tacite"
 
 #: fortran/resolve.c:12506
 #, gcc-internal-format
 msgid "FINAL procedure %qs declared at %L has the same rank (%d) as %qs"
-msgstr ""
+msgstr "La procédure FINAL %qs déclarée à %L a le même rang (%d) que %qs"
 
 #: fortran/resolve.c:12543
 #, gcc-internal-format
 msgid "Only array FINAL procedures declared for derived type %qs defined at %L, suggest also scalar one"
-msgstr ""
+msgstr "Seules des procédures FINAL tableaux déclarées pour le type dérivé %qs à %L, une scalaire est également suggérée"
 
 #: fortran/resolve.c:12583
 #, gcc-internal-format
 msgid "%qs and %qs can't be mixed FUNCTION/SUBROUTINE for GENERIC %qs at %L"
-msgstr ""
+msgstr "%qs et %qs ne peuvent pas être FUNCTION/SUBROUTINE mixte pour GENERIC %qs à %L"
 
 #: fortran/resolve.c:12619
 #, gcc-internal-format
 msgid "%qs and %qs for GENERIC %qs at %L are ambiguous"
-msgstr ""
+msgstr "%qs et %qs pour GENERIC %qs à %L sont ambigus"
 
 #: fortran/resolve.c:12678
 #, gcc-internal-format
 msgid "Undefined specific binding %qs as target of GENERIC %qs at %L"
-msgstr ""
+msgstr "Liaison spécifique %qs non définie comme cible du GENERIC %qs à %L"
 
 #: fortran/resolve.c:12690
 #, gcc-internal-format
 msgid "GENERIC %qs at %L must target a specific binding, %qs is GENERIC, too"
-msgstr ""
+msgstr "GENERIC %qs à %L doit cibler une liaison spécifique, %qs est GENERIC aussi"
 
 #: fortran/resolve.c:12718
 #, gcc-internal-format
 msgid "GENERIC %qs at %L can't overwrite specific binding with the same name"
-msgstr ""
+msgstr "GENERIC %qs à %L ne peut écraser la liaison spécifique avec le même nom"
 
 #: fortran/resolve.c:12774
 #, gcc-internal-format, gfc-internal-format
 msgid "Type-bound operator at %L can't be NOPASS"
-msgstr ""
+msgstr "L'opérateur lié au type à %L ne peut pas être NOPASS"
 
 #: fortran/resolve.c:12966
 #, gcc-internal-format
 msgid "%qs must be a module procedure or an external procedure with an explicit interface at %L"
-msgstr ""
+msgstr "%qs doit être une procédure de module ou une procédure externe avec une interface explicite à %L"
 
 #: fortran/resolve.c:13008
 #, gcc-internal-format
 msgid "Procedure %qs with PASS(%s) at %L has no argument %qs"
-msgstr ""
+msgstr "La procédure %qs avec PASS(%s) à %L n'a pas d'argument %qs"
 
 #: fortran/resolve.c:13022
 #, gcc-internal-format
 msgid "Procedure %qs with PASS at %L must have at least one argument"
-msgstr ""
+msgstr "La procédure %qs avec PASS à %L doit avoir au moins un argument"
 
 #: fortran/resolve.c:13036 fortran/resolve.c:13484
 #, gcc-internal-format
 msgid "Non-polymorphic passed-object dummy argument of %qs at %L"
-msgstr ""
+msgstr "Argument muet passé comme objet non polymorphique de %qs à %L"
 
 #: fortran/resolve.c:13044
 #, gcc-internal-format
 msgid "Argument %qs of %qs with PASS(%s) at %L must be of the derived-type %qs"
-msgstr ""
+msgstr "L'argument %qs de %qs avec PASS(%s) à %L doit être du type dérivé %qs"
 
 #: fortran/resolve.c:13053
 #, gcc-internal-format
 msgid "Passed-object dummy argument of %qs at %L must be scalar"
-msgstr ""
+msgstr "L'argument muet de type objet passé de %qs à %L doit être scalaire"
 
 #: fortran/resolve.c:13059
 #, gcc-internal-format
 msgid "Passed-object dummy argument of %qs at %L must not be ALLOCATABLE"
-msgstr ""
+msgstr "L'argument muet de type objet passé de %qs à %L ne peut pas être ALLOCATABLE"
 
 #: fortran/resolve.c:13065
 #, gcc-internal-format
 msgid "Passed-object dummy argument of %qs at %L must not be POINTER"
-msgstr ""
+msgstr "L'argument muet de type objet passé de %qs à %L ne peut pas être POINTER"
 
 #: fortran/resolve.c:13094
 #, gcc-internal-format
 msgid "Procedure %qs at %L has the same name as a component of %qs"
-msgstr ""
+msgstr "La procédure %qs à %L a le même nom qu'un composant de %qs"
 
 #: fortran/resolve.c:13104
 #, gcc-internal-format
 msgid "Procedure %qs at %L has the same name as an inherited component of %qs"
-msgstr ""
+msgstr "La procédure %qs à %L a le même nom qu'un composant hérité de %qs"
 
 #: fortran/resolve.c:13196
 #, gcc-internal-format
 msgid "Derived-type %qs declared at %L must be ABSTRACT because %qs is DEFERRED and not overridden"
-msgstr ""
+msgstr "Le type dérivé %qs déclaré à %L doit être ABSTRACT car %qs est DEFERRED et pas surchargé"
 
 #: fortran/resolve.c:13291
 #, gcc-internal-format
 msgid "Coarray component %qs at %L must be allocatable with deferred shape"
-msgstr ""
+msgstr "Le composant co-tableau %qs à %L doit être allouable avec une forme différée"
 
 #: fortran/resolve.c:13300
 #, gcc-internal-format
 msgid "Component %qs at %L of TYPE(C_PTR) or TYPE(C_FUNPTR) shall not be a coarray"
-msgstr ""
+msgstr "Le composant %qs à %L ayant TYPE(C_PTR) ou TYPE(C_FUNPTR) ne sera point un co-tableau"
 
 #: fortran/resolve.c:13310
 #, gcc-internal-format
 msgid "Component %qs at %L with coarray component shall be a nonpointer, nonallocatable scalar"
-msgstr ""
+msgstr "Le composant %qs à %L avec le composant co-tableau sera un scalaire non pointeur, non allouable"
 
 #: fortran/resolve.c:13319
 #, gcc-internal-format
 msgid "Component %qs at %L has the CONTIGUOUS attribute but is not an array pointer"
-msgstr ""
+msgstr "Le composant %qs à %L a l'attribut CONTIGUOUS mais n'est pas un pointeur de tableau"
 
 #: fortran/resolve.c:13417
 #, gcc-internal-format
 msgid "Procedure pointer component %qs with PASS(%s) at %L has no argument %qs"
-msgstr ""
+msgstr "Le composant pointeur de procédure %qs avec PASS(%s) à %L n'a pas d'argument %qs"
 
 #: fortran/resolve.c:13431
 #, gcc-internal-format
 msgid "Procedure pointer component %qs with PASS at %L must have at least one argument"
-msgstr ""
+msgstr "Le composant pointeur de procédure %qs avec PASS à %L doit avoir au moins un argument"
 
 #: fortran/resolve.c:13447
 #, gcc-internal-format
 msgid "Argument %qs of %qs with PASS(%s) at %L must be of the derived type %qs"
-msgstr ""
+msgstr "L'argument %qs de %qs avec PASS(%s) à %L doit être du type dérivé %qs"
 
 #: fortran/resolve.c:13457
-#, fuzzy, gcc-internal-format
-#| msgid "argument %d of %s must be a location"
+#, gcc-internal-format
 msgid "Argument %qs of %qs with PASS(%s) at %L must be scalar"
-msgstr "argument %d de %s doit être une localisation"
+msgstr "L'argument %qs de %qs avec PASS(%s) à %L doit être scalaire"
 
 #: fortran/resolve.c:13466
 #, gcc-internal-format
 msgid "Argument %qs of %qs with PASS(%s) at %L may not have the POINTER attribute"
-msgstr ""
+msgstr "L'argument %qs de %qs avec PASS(%s) à %L ne peut pas avoir l'attribut POINTER"
 
 #: fortran/resolve.c:13475
 #, gcc-internal-format
 msgid "Argument %qs of %qs with PASS(%s) at %L may not be ALLOCATABLE"
-msgstr ""
+msgstr "L'argument %qs de %qs avec PASS(%s) à %L ne peut pas être ALLOCATABLE"
 
 #: fortran/resolve.c:13517
 #, gcc-internal-format
 msgid "Component %qs of %qs at %L has the same name as an inherited type-bound procedure"
-msgstr ""
+msgstr "Le composant %qs de %qs à %L a le même nom qu'une procédure liée au type héritée"
 
 #: fortran/resolve.c:13530
 #, gcc-internal-format
 msgid "Character length of component %qs needs to be a constant specification expression at %L"
-msgstr ""
+msgstr "La longueur de caractère du composant %qs doit être une expression de spécification constante à %L"
 
 #: fortran/resolve.c:13541
 #, gcc-internal-format
 msgid "Character component %qs of %qs at %L with deferred length must be a POINTER or ALLOCATABLE"
-msgstr ""
+msgstr "Le composant caractère %qs de %qs à %L avec une longueur différée doit être POINTER ou ALLOCATABLE"
 
 #: fortran/resolve.c:13572
 #, gcc-internal-format
 msgid "the component %qs is a PRIVATE type and cannot be a component of %qs, which is PUBLIC at %L"
-msgstr ""
+msgstr "le composant %qs est un type PRIVATE et ne peut pas être un composant de %qs, qui est PUBLIC à %L"
 
 #: fortran/resolve.c:13580
 #, gcc-internal-format, gfc-internal-format
 msgid "Polymorphic component %s at %L in SEQUENCE or BIND(C) type %s"
-msgstr ""
+msgstr "Le composant polymorphique %s à %L dans le type %s SEQUENCE ou BIND(C)"
 
 #: fortran/resolve.c:13589
 #, gcc-internal-format, gfc-internal-format
 msgid "Component %s of SEQUENCE type declared at %L does not have the SEQUENCE attribute"
-msgstr ""
+msgstr "Le composant %s du type SEQUENCE déclaré à %L n'a pas l'attribut SEQUENCE"
 
 #: fortran/resolve.c:13607 fortran/resolve.c:13619
 #, gcc-internal-format
 msgid "The pointer component %qs of %qs at %L is a type that has not been declared"
-msgstr ""
+msgstr "Le composant pointeur %qs de %qs à %L est un type qui n'a pas été déclaré"
 
 #: fortran/resolve.c:13692
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "non-constant expression"
+#, gcc-internal-format, gfc-internal-format
 msgid "Conflicting initializers in union at %L and %L"
-msgstr "expression n'est pas une constante"
+msgstr "Initialisations conflictuelles dans l'union à %L et %L"
 
 #: fortran/resolve.c:13736
 #, gcc-internal-format
 msgid "As extending type %qs at %L has a coarray component, parent type %qs shall also have one"
-msgstr ""
+msgstr "Puisque l'extension du type %qs à %L a un composant co-tableau, le type parent %qs en aura un aussi"
 
 #: fortran/resolve.c:13749
 #, gcc-internal-format
 msgid "Non-extensible derived-type %qs at %L must not be ABSTRACT"
-msgstr ""
+msgstr "Le type dérivé non extensible %qs à %L ne peut pas être ABSTRACT"
 
 #: fortran/resolve.c:13803
 #, gcc-internal-format
 msgid "Generic name %qs of function %qs at %L being the same name as derived type at %L"
-msgstr ""
+msgstr "Nom générique %qs de la fonction %qs à %L étant le même nom que le type dérivé à %L"
 
 #: fortran/resolve.c:13879
 #, gcc-internal-format
 msgid "Assumed size array %qs in namelist %qs at %L is not allowed"
-msgstr ""
+msgstr "Le tableau de taille tacite %qs dans la liste de noms %qs à %L n'est pas permis"
 
 #: fortran/resolve.c:13885
 #, gcc-internal-format
 msgid "NAMELIST array object %qs with assumed shape in namelist %qs at %L"
-msgstr ""
+msgstr "Objet tableau NAMELIST %qs avec la forme tacite dans la liste de noms %qs à %L"
 
 #: fortran/resolve.c:13891
 #, gcc-internal-format
 msgid "NAMELIST array object %qs with nonconstant shape in namelist %qs at %L"
-msgstr ""
+msgstr "Objet tableau NAMELIST %qs avec la forme non constante dans la liste de noms %qs à %L"
 
 #: fortran/resolve.c:13899
 #, gcc-internal-format
 msgid "NAMELIST object %qs with nonconstant character length in namelist %qs at %L"
-msgstr ""
+msgstr "Objet NAMELIST %qs avec une longueur de caractère non constante dans la liste de noms %qs à %L"
 
 #: fortran/resolve.c:13909
 #, gcc-internal-format
 msgid "NAMELIST object %qs in namelist %qs at %L is polymorphic and requires a defined input/output procedure"
-msgstr ""
+msgstr "L'objet NAMELIST %qs dans la liste de noms %qs à %L est polymorphique et requiert une procédure d'entrée/sortie définie"
 
 #: fortran/resolve.c:13919
 #, gcc-internal-format
 msgid "NAMELIST object %qs in namelist %qs at %L with ALLOCATABLE or POINTER components"
-msgstr ""
+msgstr "Objet NAMELIST %qs dans la liste de noms %qs à %L avec des composants ALLOCATABLE ou POINTER"
 
 #: fortran/resolve.c:13937
 #, gcc-internal-format
 msgid "NAMELIST object %qs was declared PRIVATE and cannot be member of PUBLIC namelist %qs at %L"
-msgstr ""
+msgstr "L'objet NAMELIST %qs a été déclaré PRIVATE et ne peut pas être membre de la liste de noms PUBLIC %qs à %L"
 
 #: fortran/resolve.c:13952
 #, gcc-internal-format
 msgid "NAMELIST object %qs has use-associated PRIVATE components and cannot be member of namelist %qs at %L"
-msgstr ""
+msgstr "L'objet NAMELIST %qs a des composants PRIVATE associés à USE et ne peut pas être membre de la liste de noms %qs à %L"
 
 #: fortran/resolve.c:13963
 #, gcc-internal-format
 msgid "NAMELIST object %qs has PRIVATE components and cannot be a member of PUBLIC namelist %qs at %L"
-msgstr ""
+msgstr "L'objet NAMELIST %qs a des composants PRIVATE et ne peut pas être un membre de la liste de noms PUBLIC %qs à %L"
 
 #: fortran/resolve.c:13990
 #, gcc-internal-format
 msgid "PROCEDURE attribute conflicts with NAMELIST attribute in %qs at %L"
-msgstr ""
+msgstr "L'attribut PROCEDURE est en conflit avec l'attribut NAMELIST dans %qs à %L"
 
 #: fortran/resolve.c:14009
 #, gcc-internal-format
 msgid "Parameter array %qs at %L cannot be automatic or of deferred shape"
-msgstr ""
+msgstr "Le tableau paramètre %qs à %L ne peut pas être automatique ou de forme différée"
 
 #: fortran/resolve.c:14025
 #, gcc-internal-format
 msgid "Implicitly typed PARAMETER %qs at %L doesn't match a later IMPLICIT type"
-msgstr ""
+msgstr "Le PARAMETER %qs implicitement typé à %L ne concorde pas avec le type IMPLICIT ultérieur"
 
 #: fortran/resolve.c:14036
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "incompatible types in %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "Incompatible derived type in PARAMETER at %L"
-msgstr "type incompatibles dans %s"
+msgstr "Type dérivé incompatible dans PARAMETER à %L"
 
 #: fortran/resolve.c:14044
 #, fuzzy, gcc-internal-format
