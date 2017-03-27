@@ -1,3 +1,8 @@
+2017-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80181
+	* tree-ssa-ccp.c (likely_value): UNDEFINED ^ X is UNDEFINED.
+
 2017-03-27  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/predicates.md (move_double_src_operand): Replace the

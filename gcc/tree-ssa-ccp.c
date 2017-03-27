@@ -741,9 +741,11 @@ likely_value (gimple *stmt)
 	case PLUS_EXPR:
 	case MINUS_EXPR:
 	case POINTER_PLUS_EXPR:
+	case BIT_XOR_EXPR:
 	  /* Not MIN_EXPR, MAX_EXPR.  One VARYING operand may be selected.
 	     Not bitwise operators, one VARYING operand may specify the
-	     result completely.  Not logical operators for the same reason.
+	     result completely.
+	     Not logical operators for the same reason, apart from XOR.
 	     Not COMPLEX_EXPR as one VARYING operand makes the result partly
 	     not UNDEFINED.  Not *DIV_EXPR, comparisons and shifts because
 	     the undefined operand may be promoted.  */
