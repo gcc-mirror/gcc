@@ -429,6 +429,12 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
   if ((flags & OPTION_MASK_POPCNTD) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR7");
   /* Note that the OPTION_MASK_DIRECT_MOVE flag is automatically
+     turned on in the following condition:
+     1. TARGET_P9_DFORM_SCALAR or TARGET_P9_DFORM_VECTOR are enabled
+        and OPTION_MASK_DIRECT_MOVE is not explicitly disabled.
+        Hereafter, the OPTION_MASK_DIRECT_MOVE flag is considered to
+        have been turned on explicitly.
+     Note that the OPTION_MASK_DIRECT_MOVE flag is automatically
      turned off in any of the following conditions:
      1. TARGET_HARD_FLOAT, TARGET_ALTIVEC, or TARGET_VSX is explicitly
 	disabled and OPTION_MASK_DIRECT_MOVE was not explicitly
@@ -473,7 +479,12 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
       if (!flag_iso)
 	rs6000_define_or_undefine_macro (define_p, "__APPLE_ALTIVEC__");
     }
-  /* Note that the OPTION_MASK_VSX flag is automatically turned off in
+  /* Note that the OPTION_MASK_VSX flag is automatically turned on in
+     the following conditions:
+     1. TARGET_P8_VECTOR is explicitly turned on and the OPTION_MASK_VSX
+        was not explicitly turned off.  Hereafter, the OPTION_MASK_VSX
+        flag is considered to have been explicitly turned on.
+     Note that the OPTION_MASK_VSX flag is automatically turned off in
      the following conditions:
      1. The operating system does not support saving of AltiVec
 	registers (OS_MISSING_ALTIVEC).
@@ -507,6 +518,12 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
       rs6000_define_or_undefine_macro (define_p, "__TM_FENCE__");
     }
   /* Note that the OPTION_MASK_P8_VECTOR flag is automatically turned
+     on in the following conditions:
+     1. TARGET_P9_VECTOR is explicitly turned on and
+        OPTION_MASK_P8_VECTOR is not explicitly turned off.
+        Hereafter, the OPTION_MASK_P8_VECTOR flag is considered to
+        have been turned off explicitly.
+     Note that the OPTION_MASK_P8_VECTOR flag is automatically turned
      off in the following conditions:
      1. If any of TARGET_HARD_FLOAT, TARGET_ALTIVEC, or TARGET_VSX
 	were turned off explicitly and OPTION_MASK_P8_VECTOR flag was
@@ -514,15 +531,24 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
      2. If TARGET_ALTIVEC is turned off.  Hereafter, the
 	OPTION_MASK_P8_VECTOR flag is considered to have been turned off
 	explicitly.
-     3. If TARGET_VSX is turned off.  Hereafter, the OPTION_MASK_P8_VECTOR
-	flag is considered to have been turned off explicitly.  */
+     3. If TARGET_VSX is turned off and OPTION_MASK_P8_VECTOR was not
+        explicitly enabled.  If TARGET_VSX is explicitly enabled, the
+        OPTION_MASK_P8_VECTOR flag is hereafter also considered to
+	have been turned off explicitly.  */
   if ((flags & OPTION_MASK_P8_VECTOR) != 0)
     rs6000_define_or_undefine_macro (define_p, "__POWER8_VECTOR__");
   /* Note that the OPTION_MASK_P9_VECTOR flag is automatically turned
      off in the following conditions:
-     1. If TARGET_P8_VECTOR is turned off. Hereafter, the
-	OPTION_MASK_P9_VECTOR flag is considered to have been turned off
-	explicitly.  */
+     1. If TARGET_P8_VECTOR is turned off and OPTION_MASK_P9_VECTOR is
+        not turned on explicitly. Hereafter, if OPTION_MASK_P8_VECTOR
+        was turned on explicitly, the OPTION_MASK_P9_VECTOR flag is
+        also considered to have been turned off explicitly.
+     Note that the OPTION_MASK_P9_VECTOR is automatically turned on
+     in the following conditions:
+     1. If TARGET_P9_DFORM_SCALAR or TARGET_P9_DFORM_VECTOR and
+        OPTION_MASK_P9_VECTOR was not turned off explicitly.
+        Hereafter, THE OPTION_MASK_P9_VECTOR flag is considered to
+        have been turned on explicitly.  */
   if ((flags & OPTION_MASK_P9_VECTOR) != 0)
     rs6000_define_or_undefine_macro (define_p, "__POWER9_VECTOR__");
   /* Note that the OPTION_MASK_QUAD_MEMORY flag is automatically

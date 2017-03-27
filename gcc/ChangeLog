@@ -1,3 +1,13 @@
+2017-03-27  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/80103
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Edit and
+	add comments.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Add
+	special handling for target option conflicts between dform
+	options (-mpower9-dform, -mpower9-dform-vector,
+	-mpower9-dform-scalar) and -mno-direct-move.
+
 2017-03-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80181
