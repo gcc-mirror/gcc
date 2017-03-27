@@ -1,3 +1,8 @@
+2017-03-27  Pedro Alves  <palves@redhat.com>
+
+	* cp-demint.c (cplus_demangle_fill_component): Handle
+	DEMANGLE_COMPONENT_RVALUE_REFERENCE.
+
 2017-03-12  Mark Wielaard  <mark@klomp.org>
 
 	* cp-demangle.c (cplus_demangle_fill_name): Initialize
