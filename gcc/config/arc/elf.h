@@ -53,3 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #  define MULTILIB_DEFAULTS { "mcpu=" ARC_MULTILIB_CPU_DEFAULT }
 # endif
 #endif
+
+/* Bare-metal toolchains do not need a thread pointer register.  */
+#undef TARGET_ARC_TP_REGNO_DEFAULT
+#define TARGET_ARC_TP_REGNO_DEFAULT -1
