@@ -1,3 +1,8 @@
+2017-03-27  Gunther Nikl  <gnikl@users.sourceforge.net>
+
+	* system.h (HAVE_DESIGNATED_INITIALIZERS): Fix non C++ case.
+	(HAVE_DESIGNATED_UNION_INITIALIZERS): Likewise.
+
 2017-03-27  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/80103
