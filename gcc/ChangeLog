@@ -1,5 +1,10 @@
 2017-03-27  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/predicates.md (move_double_src_operand): Replace the
+	call to move_double_src_operand with a call to address_operand.
+
+2017-03-27  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/elf.h (ARGET_ARC_TP_REGNO_DEFAULT): Define.
 	* config/arc/linux.h (ARGET_ARC_TP_REGNO_DEFAULT): Likewise.
 	* config/arc/arc.opt (mtp-regno): Use ARGET_ARC_TP_REGNO_DEFAULT.
