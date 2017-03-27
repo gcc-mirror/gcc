@@ -1,3 +1,31 @@
+2017-03-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/78543
+	* config/rs6000/rs6000.md (bswaphi2_extenddi): Combine bswap
+	HImode and SImode with zero extend to DImode to one insn.
+	(bswap<mode>2_extenddi): Likewise.
+	(bswapsi2_extenddi): Likewise.
+	(bswaphi2_extendsi): Likewise.
+	(bswaphi2): Combine bswap HImode and SImode into one insn.
+	Separate memory insns from swapping register.
+	(bswapsi2): Likewise.
+	(bswap<mode>2): Likewise.
+	(bswaphi2_internal): Delete, no longer used.
+	(bswapsi2_internal): Likewise.
+	(bswap<mode>2_load): Split bswap HImode/SImode into separate load,
+	store, and gpr<-gpr swap insns.
+	(bswap<mode>2_store): Likewise.
+	(bswaphi2_reg): Register only splitter, combine with the splitter.
+	(bswaphi2 splitter): Likewise.
+	(bswapsi2_reg): Likewise.
+	(bswapsi2 splitter): Likewise.
+	(bswapdi2): If we have the LDBRX and STDBRX instructions, split
+	the insns into load, store, and register/register insns.
+	(bswapdi2_ldbrx): Likewise.
+	(bswapdi2_load): Likewise.
+	(bswapdi2_store): Likewise.
+	(bswapdi2_reg): Likewise.
+
 2017-03-27  Gunther Nikl  <gnikl@users.sourceforge.net>
 
 	* system.h (HAVE_DESIGNATED_INITIALIZERS): Fix non C++ case.
