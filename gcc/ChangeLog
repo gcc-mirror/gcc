@@ -1,5 +1,11 @@
 2017-03-27  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/elf.h (ARGET_ARC_TP_REGNO_DEFAULT): Define.
+	* config/arc/linux.h (ARGET_ARC_TP_REGNO_DEFAULT): Likewise.
+	* config/arc/arc.opt (mtp-regno): Use ARGET_ARC_TP_REGNO_DEFAULT.
+
+2017-03-27  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/predicates.md (long_immediate_loadstore_operand):
 	Consider scaled addresses cases.
 

@@ -74,3 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 /* We do not have any MULTILIB_OPTIONS specified, so there are no
    MULTILIB_DEFAULTS.  */
 #undef  MULTILIB_DEFAULTS
+
+/* Linux toolchains use r25 as the thread pointer register.  */
+#undef TARGET_ARC_TP_REGNO_DEFAULT
+#define TARGET_ARC_TP_REGNO_DEFAULT 25
