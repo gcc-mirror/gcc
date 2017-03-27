@@ -1,3 +1,9 @@
+2017-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80171
+	* gimple-fold.c (fold_ctor_reference): Properly guard against
+	NULL return value from canonicalize_constructor_val.
+
 2017-03-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/80180
