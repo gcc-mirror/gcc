@@ -1,3 +1,12 @@
+2017-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/80162
+	* c-tree.h (c_mark_addressable): Add array_ref_p argument.
+	* c-typeck.c (c_mark_addressable): Likewise.  Look through
+	VIEW_CONVERT_EXPR unless array_ref_p and VCE is from VECTOR_TYPE
+	to ARRAY_TYPE.
+	(build_array_ref): Pass true as array_ref_p to c_mark_addressable.
+
 2017-03-23  Marek Polacek  <polacek@redhat.com>
 
 	* c-tree.h: Remove a C_RID_YYCODE reference.

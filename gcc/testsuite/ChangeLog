@@ -1,5 +1,10 @@
 2017-03-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/80162
+	* c-c++-common/pr80162-1.c: New test.
+	* c-c++-common/pr80162-2.c: New test.
+	* c-c++-common/pr80162-3.c: New test.
+
 	PR target/80102
 	* g++.dg/opt/pr80102.C: New test.
 

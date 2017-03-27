@@ -6542,7 +6542,8 @@ c_common_mark_addressable_vec (tree t)
       && TREE_CODE (t) != PARM_DECL
       && TREE_CODE (t) != COMPOUND_LITERAL_EXPR)
     return;
-  TREE_ADDRESSABLE (t) = 1;
+  if (!VAR_P (t) || !DECL_HARD_REGISTER (t))
+    TREE_ADDRESSABLE (t) = 1;
 }
 
 
