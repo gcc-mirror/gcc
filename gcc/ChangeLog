@@ -1,3 +1,14 @@
+2017-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80102
+	* reg-notes.def (REG_CFA_NOTE): Define.  Use it for CFA related
+	notes.
+	* cfgcleanup.c (reg_note_cfa_p): New array.
+	(insns_have_identical_cfa_notes): New function.
+	(old_insns_match_p): Don't cross-jump in between /f
+	and non-/f instructions.  If both i1 and i2 are frame related,
+	verify all CFA notes, their order and content.
+
 2017-03-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/78543
