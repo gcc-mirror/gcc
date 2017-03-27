@@ -1,3 +1,9 @@
+2017-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/79776
+	* tree-ssa-structalias.c (associate_varinfo_to_alias): Skip
+	inlined thunk clones.
+
 2017-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/80168
