@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.1-b20170226\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-02-25 19:14+0000\n"
-"PO-Revision-Date: 2017-03-18 14:47+0100\n"
+"PO-Revision-Date: 2017-03-26 01:34+0100\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.0beta4\n"
+"X-Generator: Poedit 2.0beta5\n"
 
 #: cfgrtl.c:2661
 msgid "flow control insn inside a basic block"
@@ -133,7 +133,7 @@ msgstr ""
 #: diagnostic.c:520
 #, c-format
 msgid "See %s for instructions.\n"
-msgstr "Siehe %s für nähere Anweisungen.\n"
+msgstr "Weitere Hinweise finden Sie unter »%s«.\n"
 
 #: diagnostic.c:529
 #, c-format
@@ -1223,7 +1223,7 @@ msgstr "Identisch mit %s. Verwenden Sie daher bitte diese Option."
 #: opts.c:1171
 #, c-format
 msgid "%s  Same as %s."
-msgstr "%s is identisch mit %s."
+msgstr "%s ist identisch mit %s."
 
 #: opts.c:1242
 msgid "[default]"
@@ -1347,22 +1347,22 @@ msgstr "erzeugt und mit anderen Einstellungen von »-fpie« verwendet"
 #: tlink.c:387
 #, c-format
 msgid "collect: reading %s\n"
-msgstr "sammeln: %s wird gelesen\n"
+msgstr "collect: %s wird gelesen\n"
 
 #: tlink.c:543
 #, c-format
 msgid "collect: recompiling %s\n"
-msgstr "sammeln: %s wird neu kompiliert\n"
+msgstr "collect: %s wird neu kompiliert\n"
 
 #: tlink.c:627
 #, c-format
 msgid "collect: tweaking %s in %s\n"
-msgstr "sammeln: %s wird in %s eingestellt\n"
+msgstr "collect: %s wird in %s eingestellt\n"
 
 #: tlink.c:844
 #, c-format
 msgid "collect: relinking\n"
-msgstr "sammeln: neu binden\n"
+msgstr "collect: neu binden\n"
 
 #: toplev.c:333
 #, c-format
@@ -1584,22 +1584,22 @@ msgstr "Kleinste voraussichtliche Beschleunigung, die dem Inliner erlaubt, inlin
 #: params.def:71
 #, no-c-format
 msgid "The maximum number of instructions in a single function eligible for inlining."
-msgstr "Die Höchstzahl der Anweisungen in einer einzelnen für »inline« geeigneten Funktion."
+msgstr "Die Höchstzahl der Befehle in einer einzelnen für »inline« geeigneten Funktion."
 
 #: params.def:83
 #, no-c-format
 msgid "The maximum number of instructions when automatically inlining."
-msgstr "Die Höchstzahl der Anweisungen für automatisches inlinen."
+msgstr "Die Höchstzahl der Befehle für automatisches Inlinen."
 
 #: params.def:88
 #, no-c-format
 msgid "The maximum number of instructions inline function can grow to via recursive inlining."
-msgstr "Die Höchstzahl der Anweisungen, bis zu der eine Inline-Funktion per Rekursion wachsen kann."
+msgstr "Die Höchstzahl der Befehle, bis zu der eine Inline-Funktion per Rekursion wachsen kann."
 
 #: params.def:93
 #, no-c-format
 msgid "The maximum number of instructions non-inline function can grow to via recursive inlining."
-msgstr "Die Höchstzahl der Anweisungen, bis zu der eine Nicht-Inline-Funktion per Rekursion wachsen kann."
+msgstr "Die Höchstzahl der Befehle, bis zu der eine Nicht-Inline-Funktion per Rekursion wachsen kann."
 
 #: params.def:98
 #, no-c-format
@@ -1644,12 +1644,12 @@ msgstr "Wenn »-ftree-vectorize« verwendet wird, die minimale Schleifengrenze e
 #: params.def:152
 #, no-c-format
 msgid "The maximum number of instructions to consider to fill a delay slot."
-msgstr "Die Höchstzahl der zu betrachtenden Anweisungen um einen Verzögerungsschlitz zu füllen."
+msgstr "Die Höchstzahl der zu betrachtenden Befehle, um einen Verzögerungsschlitz zu füllen."
 
 #: params.def:163
 #, no-c-format
 msgid "The maximum number of instructions to consider to find accurate live register information."
-msgstr "Die Höchstzahl der zu betrachtenden Anweisungen um richtige aktive Registerinformationen zu finden."
+msgstr "Die Höchstzahl der zu betrachtenden Befehle, um richtige aktive Registerinformationen zu finden."
 
 #: params.def:173
 #, no-c-format
@@ -1744,12 +1744,12 @@ msgstr "Maximale Verschachtelung von Quadratwurzeln, um Potenzierung mit Gleitko
 #: params.def:287
 #, no-c-format
 msgid "The maximum number of instructions to consider to unroll in a loop."
-msgstr "Die Höchstzahl der zum Abrollen von Schleifen zu betrachtenden Anweisungen."
+msgstr "Die Höchstzahl der zum Abrollen von Schleifen zu betrachtenden Befehle."
 
 #: params.def:293
 #, no-c-format
 msgid "The maximum number of instructions to consider to unroll in a loop on average."
-msgstr "Die Höchstzahl der zum Abrollen von Schleifen im Mittel zu betrachtenden Anweisungen."
+msgstr "Die Höchstzahl der zum Abrollen von Schleifen im Mittel zu betrachtenden Befehle."
 
 #: params.def:298
 #, no-c-format
@@ -1909,7 +1909,7 @@ msgstr "Höchstzahl der zu betrachtenden eingehenden Kanten für Kreuzsprung."
 #: params.def:473
 #, no-c-format
 msgid "The minimum number of matching instructions to consider for crossjumping."
-msgstr "Mindestanzahl der passenden zu betrachtenden Anweisungen für Kreuzsprung."
+msgstr "Mindestanzahl der passenden zu betrachtenden Befehle für Kreuzsprung."
 
 #: params.def:479
 #, no-c-format
@@ -1919,7 +1919,7 @@ msgstr "Der höchste Erweiterungsfaktor beim Kopieren von Basisblöcken."
 #: params.def:485
 #, no-c-format
 msgid "The maximum number of insns to duplicate when unfactoring computed gotos."
-msgstr "Die Höchstzahl der zu vervielfältigenden Anweisungen, wenn berechnete Gotos expandiert werden."
+msgstr "Die Höchstzahl der zu vervielfältigenden Befehle, wenn berechnete Gotos expandiert werden."
 
 #: params.def:491
 #, no-c-format
@@ -1929,7 +1929,7 @@ msgstr "Größte Länge des betrachteten Pfades in CSE."
 #: params.def:495
 #, no-c-format
 msgid "The maximum instructions CSE process before flushing."
-msgstr "Die Höchstzahl der von CSE verarbeiteten Anweisungen vor dem Rücksetzen."
+msgstr "Die Höchstzahl der von CSE verarbeiteten Befehle vor dem Rücksetzen."
 
 #: params.def:502
 #, no-c-format
@@ -2009,7 +2009,7 @@ msgstr "Kleinste Heapgröße vor Speicherbereinigungsbeginn, in Kilobytes."
 #: params.def:599
 #, no-c-format
 msgid "The maximum number of instructions to search backward when looking for equivalent reload."
-msgstr "Höchstzahl der rückwärts zu suchenden Anweisungen, wenn nach äquivalentem Neuladen gesucht wird."
+msgstr "Höchstzahl der rückwärts zu suchenden Befehle, wenn nach äquivalentem Neuladen gesucht wird."
 
 #: params.def:604
 #, no-c-format
@@ -2024,7 +2024,7 @@ msgstr "Höchstzahl der für Zwischen-Block-Scheduling zu betrachtenden Blöcke 
 #: params.def:614 params.def:624
 #, no-c-format
 msgid "The maximum number of insns in a region to be considered for interblock scheduling."
-msgstr "Höchstzahl der für Zwischen-Block-Scheduling zu betrachtenden Anweisungen in einer Region."
+msgstr "Höchstzahl der für Zwischen-Block-Scheduling zu betrachtenden Befehle in einer Region."
 
 #: params.def:629
 #, no-c-format
@@ -2064,7 +2064,7 @@ msgstr "Höchstzahl, wie oft ein Befehl geplant werden könnte."
 #: params.def:664
 #, no-c-format
 msgid "Maximum number of instructions in the ready list that are considered eligible for renaming."
-msgstr "Die Höchstzahl der Anweisungen in der ausführungsbereiten Liste, die zur Umbenennung in Frage kommen."
+msgstr "Die Höchstzahl der Befehle in der ausführungsbereiten Liste, die zur Umbenennung in Frage kommen."
 
 #: params.def:669
 #, no-c-format
@@ -2114,7 +2114,7 @@ msgstr "Die Höchstzahl der Felder in einer Struktur, bevor Zeigeranalyse sie al
 #: params.def:736
 #, no-c-format
 msgid "The maximum number of instructions ready to be issued to be considered by the scheduler during the first scheduling pass."
-msgstr "Höchstzahl der vom Scheduler während der ersten Planphase fertig zur Ausführung zu betrachtenden Anweisungen."
+msgstr "Höchstzahl der vom Scheduler während der ersten Planphase fertig zur Ausführung zu betrachtenden Befehle."
 
 #: params.def:742
 #, no-c-format
@@ -2249,7 +2249,7 @@ msgstr "Top-n-Zieladressen in Profil für indirekte Aufrufe verfolgen."
 #: params.def:926
 #, no-c-format
 msgid "Maximum number of instructions in basic block to be considered for SLP vectorization."
-msgstr "Höchstzahl der in Basis-Block zu betrachtenden Anweisungen für SLP-Vektorisierung."
+msgstr "Höchstzahl der in Basis-Block zu betrachtenden Befehle für SLP-Vektorisierung."
 
 #: params.def:931
 #, no-c-format
@@ -2514,7 +2514,7 @@ msgstr "Maximal erlaubte Rekursionstiefe beim Abfragen von Eigenschaften eines S
 #: params.def:1244
 #, no-c-format
 msgid "Maximum number of insns in a basic block to consider for RTL if-conversion."
-msgstr "Höchstzahl der in Basis-Block zu betrachtenden Anweisungen für RTL-if-Umwandlung."
+msgstr "Höchstzahl der in Basis-Block zu betrachtenden Befehle für RTL-if-Umwandlung."
 
 #: params.def:1250
 #, no-c-format
@@ -3021,12 +3021,12 @@ msgstr "ungültiger Schiebeoperand"
 #: config/arm/arm.c:21669 config/arm/arm.c:21687
 #, c-format
 msgid "predicated Thumb instruction"
-msgstr "angegebene Thumb-Anweisung"
+msgstr "bedingter Thumb-Befehl"
 
 #: config/arm/arm.c:21675
 #, c-format
 msgid "predicated instruction in conditional sequence"
-msgstr "angegebene Anweisung in bedingter Sequenz"
+msgstr "bedingter Befehl in bedingter Sequenz"
 
 #: config/arm/arm.c:21908 config/arm/arm.c:21930 config/arm/arm.c:21940
 #: config/arm/arm.c:21950 config/arm/arm.c:21960 config/arm/arm.c:21999
@@ -3045,7 +3045,7 @@ msgstr "ungültiger Operand für Code »%c«"
 #: config/arm/arm.c:22012
 #, c-format
 msgid "instruction never executed"
-msgstr "Anweisung wird niemals ausgeführt"
+msgstr "Befehl wird niemals ausgeführt"
 
 #. Former Maverick support, removed after GCC-4.7.
 #: config/arm/arm.c:22033
@@ -4834,7 +4834,7 @@ msgstr "Punkt in Formatspezifikation erforderlich"
 #: fortran/io.c:1748
 #, c-format
 msgid "%s tag"
-msgstr "%s Symbol"
+msgstr "%s-Symbol"
 
 #: fortran/io.c:3217
 msgid "internal unit in WRITE"
@@ -8441,7 +8441,7 @@ msgstr "Einfachen Datenspekulationstest für Steuerungsspekulation verwenden."
 
 #: config/ia64/ia64.opt:174
 msgid "Count speculative dependencies while calculating priority of instructions."
-msgstr "Spekulative Abhängigkeiten während Prioritätsberechnung der Anweisungen zählen."
+msgstr "Spekulative Abhängigkeiten während Prioritätsberechnung der Befehle zählen."
 
 #: config/ia64/ia64.opt:178
 msgid "Place a stop bit after every cycle when scheduling."
@@ -8501,7 +8501,7 @@ msgstr "Höchstzahl der für einen Hinweis einzufügenden NOPs (Standard: 2)."
 
 #: config/spu/spu.opt:60
 msgid "Approximate maximum number of instructions to allow between a hint and its branch [125]."
-msgstr "Ungefähre Höchstzahl der zwischen einem Hinweis und seinem Zweig erlaubten Anweisungen [125]."
+msgstr "Ungefähre Höchstzahl der zwischen einem Hinweis und seinem Zweig erlaubten Befehlen [125]."
 
 #: config/spu/spu.opt:64
 msgid "Generate code for 18 bit addressing."
@@ -9257,23 +9257,23 @@ msgstr "Präfixe für Hardware-Lock-Auslassung unterstützen."
 
 #: config/i386/i386.opt:766
 msgid "Support RDSEED instruction."
-msgstr "Anweisung RDSEED unterstützen."
+msgstr "RDSEED-Befehl unterstützen."
 
 #: config/i386/i386.opt:770
 msgid "Support PREFETCHW instruction."
-msgstr "Anweisung PREFETCHW unterstützen."
+msgstr "PREFETCHW-Befehl unterstützen."
 
 #: config/i386/i386.opt:774
 msgid "Support flag-preserving add-carry instructions."
-msgstr "Flag-erhaltende Add-Carry-Anweisungen unterstützen."
+msgstr "Flag-erhaltende Add-Carry-Befehle unterstützen."
 
 #: config/i386/i386.opt:778
 msgid "Support CLFLUSHOPT instructions."
-msgstr "CLFLUSHOPT-Anweisungen unterstützen."
+msgstr "CLFLUSHOPT-Befehle unterstützen."
 
 #: config/i386/i386.opt:782
 msgid "Support CLWB instruction."
-msgstr "Anweisung CLWB unterstützen."
+msgstr "CLWB-Befehl unterstützen."
 
 #: config/i386/i386.opt:785
 msgid "%<-mpcommit%> was deprecated"
@@ -9281,23 +9281,23 @@ msgstr "%<-mpcommit%> ist veraltet"
 
 #: config/i386/i386.opt:790
 msgid "Support FXSAVE and FXRSTOR instructions."
-msgstr "Anweisungen FXSAVE und FXRSTOR unterstützen."
+msgstr "FXSAVE- und FXRSTOR-Befehle unterstützen."
 
 #: config/i386/i386.opt:794
 msgid "Support XSAVE and XRSTOR instructions."
-msgstr "Anweisungen XSAVE und XRSTOR unterstützen."
+msgstr "XSAVE- und XRSTOR-Befehle unterstützen."
 
 #: config/i386/i386.opt:798
 msgid "Support XSAVEOPT instruction."
-msgstr "Anweisung XSAVEOPT unterstützen."
+msgstr "XSAVEOPT-Befehl unterstützen."
 
 #: config/i386/i386.opt:802
 msgid "Support XSAVEC instructions."
-msgstr "Anweisung XSAVEC unterstützen."
+msgstr "XSAVEC-Befehle unterstützen."
 
 #: config/i386/i386.opt:806
 msgid "Support XSAVES and XRSTORS instructions."
-msgstr "Anweisungen XSAVES und XRSTORS unterstützen."
+msgstr "XSAVES- und XRSTORS-Befehle unterstützen."
 
 #: config/i386/i386.opt:810
 msgid "Support TBM built-in functions and code generation."
@@ -12118,7 +12118,7 @@ msgstr "Traps als »break 8« ausgeben, voreingestellt für CRIS v3 und aufwärt
 
 #: config/cris/cris.opt:184
 msgid "Emit checks causing \"break 8\" instructions to execute when applying atomic builtins on misaligned memory."
-msgstr "Prüfungen generieren, die bei Anwendung atomarer eingebauter Operationen auf unausgerichtetem Speicher zu »break 8«-Anweisungen führen."
+msgstr "Prüfungen generieren, die bei Anwendung atomarer eingebauter Operationen auf unausgerichtetem Speicher zu »break 8«-Befehlen führen."
 
 #: config/cris/cris.opt:188
 msgid "Handle atomic builtins that may be applied to unaligned data by calling library functions. Overrides -mtrap-unaligned-atomic."
@@ -12350,7 +12350,7 @@ msgstr "Das Modell für atomare Operationen angeben."
 
 #: config/sh/sh.opt:277
 msgid "Use tas.b instruction for __atomic_test_and_set."
-msgstr "Anweisung tas.b für __atomic_test_and_set verwenden."
+msgstr "Befehl tas.b für __atomic_test_and_set verwenden."
 
 #: config/sh/sh.opt:281
 msgid "Cost to assume for a multiply insn."
@@ -12366,11 +12366,11 @@ msgstr "Vorgeben, dass Sprung-um-Sprung ein bedingter Sprung ist"
 
 #: config/sh/sh.opt:295
 msgid "Enable the use of the fsca instruction."
-msgstr "Verwendung der Anweisung fsca einschalten."
+msgstr "Verwendung des fsca-Befehls einschalten."
 
 #: config/sh/sh.opt:299
 msgid "Enable the use of the fsrra instruction."
-msgstr "Verwendung der Anweisung fsrra einschalten."
+msgstr "Verwendung des fsrra-Befehls einschalten."
 
 #: config/sh/sh.opt:303
 msgid "Use LRA instead of reload (transitional)."
@@ -12618,7 +12618,7 @@ msgstr "Verwendung aller Gleitkommaoperationen verhindern."
 
 #: config/mips/mips.opt:316
 msgid "Use MCU instructions."
-msgstr "MCU-Anweisungen verwenden."
+msgstr "MCU-Befehle verwenden."
 
 #: config/mips/mips.opt:320
 msgid "Do not use a cache-flushing function before calling stack trampolines."
@@ -13155,7 +13155,7 @@ msgstr "Warnen, wenn Zeigerumwandlungen die Ausrichtung vergrößern."
 
 #: common.opt:562
 msgid "Warn when a #warning directive is encountered."
-msgstr "Warnen, wenn eine #warning-Anweisung verwendet wird."
+msgstr "Warnen, wenn eine #warning-Direktive verwendet wird."
 
 #: common.opt:566
 msgid "Warn about uses of __attribute__((deprecated)) declarations."
@@ -13659,7 +13659,7 @@ msgstr "Ausgabe der vorigen und nächsten Befehlsnummern in Fehlersuch-Auszügen
 
 #: common.opt:1288
 msgid "Enable CFI tables via GAS assembler directives."
-msgstr "CFI-Tabellen über GAS-Assembler-Anweisungen einschalten"
+msgstr "CFI-Tabellen über GAS-Assembler-Direktiven einschalten"
 
 #: common.opt:1292
 msgid "Perform early inlining."
@@ -13823,7 +13823,7 @@ msgstr "Erraten der Sprungwahrscheinlichkeiten einschalten."
 
 #: common.opt:1519
 msgid "Process #ident directives."
-msgstr "#ident-Anweisungen verarbeiten."
+msgstr "#ident-Direktiven verarbeiten."
 
 #: common.opt:1523
 msgid "Perform conversion of conditional jumps to branchless equivalents."
@@ -15435,12 +15435,12 @@ msgstr "Methode %s%s%s ist als go:nointerface gekennzeichnet"
 #: objc/objc-act.c:6926 objc/objc-act.c:8113 objc/objc-act.c:8164
 #, gcc-internal-format
 msgid "%qE attribute directive ignored"
-msgstr "Attribut-Anweisung %qE ignoriert"
+msgstr "Attribut-Direktive %qE ignoriert"
 
 #: attribs.c:440
 #, gcc-internal-format
 msgid "%<%E::%E%> scoped attribute directive ignored"
-msgstr "Attribut-Anweisung im Bereich %<%E::%E%> ignoriert"
+msgstr "Attribut-Direktive im Bereich %<%E::%E%> ignoriert"
 
 #: attribs.c:449
 #, gcc-internal-format
@@ -15818,6 +15818,7 @@ msgstr "in einem Aufruf der eingebauten Allokationsfunktion %qD"
 msgid "in a call to allocation function %qD declared here"
 msgstr "in einem Aufruf der hier deklarierten Allokationsfunktion %qD"
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80188
 #: calls.c:1505
 #, gcc-internal-format, gfc-internal-format
 msgid "cannot tail-call: %s"
@@ -15988,97 +15989,97 @@ msgstr "%s unterstützt nicht dump_bb_for_graph"
 #: cfghooks.c:353
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support redirect_edge_and_branch"
-msgstr "%s unterstützt nicht redirect_edge_and_branch"
+msgstr "%s does not support redirect_edge_and_branch"
 
 #: cfghooks.c:373
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support can_remove_branch_p"
-msgstr "%s unterstützt nicht can_remove_branch_p"
+msgstr "%s does not support can_remove_branch_p"
 
 #: cfghooks.c:470
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support redirect_edge_and_branch_force"
-msgstr "%s unterstützt nicht redirect_edge_and_branch_force"
+msgstr "%s does not support redirect_edge_and_branch_force"
 
 #: cfghooks.c:508
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support split_block"
-msgstr "%s unterstützt nicht split_block"
+msgstr "%s does not support split_block"
 
 #: cfghooks.c:575
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support move_block_after"
-msgstr "%s unterstützt nicht move_block_after"
+msgstr "%s does not support move_block_after"
 
 #: cfghooks.c:588
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support delete_basic_block"
-msgstr "%s unterstützt nicht delete_basic_block"
+msgstr "%s does not support delete_basic_block"
 
 #: cfghooks.c:635
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support split_edge"
-msgstr "%s unterstützt nicht split_edge"
+msgstr "%s does not support split_edge"
 
 #: cfghooks.c:710
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support create_basic_block"
-msgstr "%s unterstützt nicht create_basic_block"
+msgstr "%s does not support create_basic_block"
 
 #: cfghooks.c:751
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support can_merge_blocks_p"
-msgstr "%s unterstützt nicht can_merge_blocks_p"
+msgstr "%s does not support can_merge_blocks_p"
 
 #: cfghooks.c:762
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support predict_edge"
-msgstr "%s unterstützt nicht predict_edge"
+msgstr "%s does not support predict_edge"
 
 #: cfghooks.c:771
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support predicted_by_p"
-msgstr "%s unterstützt nicht predicted_by_p"
+msgstr "%s does not support predicted_by_p"
 
 #: cfghooks.c:785
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support merge_blocks"
-msgstr "%s unterstützt nicht merge_blocks"
+msgstr "%s does not support merge_blocks"
 
 #: cfghooks.c:866
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support make_forwarder_block"
-msgstr "%s unterstützt nicht make_forwarder_block"
+msgstr "%s does not support make_forwarder_block"
 
 #: cfghooks.c:1022
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support force_nonfallthru"
-msgstr "%s unterstützt nicht force_nonfallthru"
+msgstr "%s does not support force_nonfallthru"
 
 #: cfghooks.c:1056
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support can_duplicate_block_p"
-msgstr "%s unterstützt nicht can_duplicate_block_p"
+msgstr "%s does not support can_duplicate_block_p"
 
 #: cfghooks.c:1078
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support duplicate_block"
-msgstr "%s unterstützt nicht duplicate_block"
+msgstr "%s does not support duplicate_block"
 
 #: cfghooks.c:1172
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support block_ends_with_call_p"
-msgstr "%s unterstützt nicht block_ends_with_call_p"
+msgstr "%s does not support block_ends_with_call_p"
 
 #: cfghooks.c:1183
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support block_ends_with_condjump_p"
-msgstr "%s unterstützt nicht block_ends_with_condjump_p"
+msgstr "%s does not support block_ends_with_condjump_p"
 
 #: cfghooks.c:1201
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support flow_call_edges_add"
-msgstr "%s unterstützt nicht flow_call_edges_add"
+msgstr "%s does not support flow_call_edges_add"
 
 #: cfgloop.c:1326
 #, gcc-internal-format
@@ -16308,7 +16309,7 @@ msgstr "falsche Anzahl der Zweig-Kanten nach bedingtem Sprung in BB %i"
 #: cfgrtl.c:2574
 #, gcc-internal-format, gfc-internal-format
 msgid "abnormal call edges for non-call insn in bb %i"
-msgstr "unpassende Ruf-Kanten für Nicht-Aufruf-Anweisung in BB %i"
+msgstr "unpassende Ruf-Kanten für Nicht-Aufruf-Befehl in BB %i"
 
 #: cfgrtl.c:2579
 #, gcc-internal-format, gfc-internal-format
@@ -16418,7 +16419,7 @@ msgstr "Rufer-Kantenhäufigkeit ist zu groß"
 #: cgraph.c:3078
 #, gcc-internal-format, gfc-internal-format
 msgid "aux field set for edge %s->%s"
-msgstr "Aux-Feld für Kante %s->%s gesetzt"
+msgstr "aux field set for edge %s->%s"
 
 #: cgraph.c:3085
 #, gcc-internal-format
@@ -16453,17 +16454,17 @@ msgstr "Ausgabe für Inline-Kopie erzwungen"
 #: cgraph.c:3117
 #, gcc-internal-format, gfc-internal-format
 msgid "aux field set for indirect edge from %s"
-msgstr "Aux-Feld für indirekte Kante %s von gesetzt"
+msgstr "aux field set for indirect edge from %s"
 
 #: cgraph.c:3124
 #, gcc-internal-format, gfc-internal-format
 msgid "An indirect edge from %s is not marked as indirect or has associated indirect_info, the corresponding statement is: "
-msgstr "Eine indirekte Kante von %s ist nicht als indirekt markiert und hat keine zugeordnete indirect_info, die zugehörige Anweisung ist:"
+msgstr "An indirect edge from %s is not marked as indirect or has associated indirect_info, the corresponding statement is: "
 
 #: cgraph.c:3139
 #, gcc-internal-format, gfc-internal-format
 msgid "comdat-local function called by %s outside its comdat"
-msgstr "comdat-lokale Funktion wird von %s außerhalb ihres Comdats aufgerufen"
+msgstr "comdat-local function called by %s outside its comdat"
 
 #: cgraph.c:3149
 #, gcc-internal-format
@@ -16628,12 +16629,12 @@ msgstr "Interner Fehler: reference to dead statement"
 #: cgraph.c:3467
 #, gcc-internal-format, gfc-internal-format
 msgid "edge %s->%s has no corresponding call_stmt"
-msgstr "Kante %s->%s hat keine passende call_stmt"
+msgstr "edge %s->%s has no corresponding call_stmt"
 
 #: cgraph.c:3479
 #, gcc-internal-format, gfc-internal-format
 msgid "an indirect edge from %s has no corresponding call_stmt"
-msgstr "eine indirekte Kante von %s hat kein passendes call_stmt"
+msgstr "an indirect edge from %s has no corresponding call_stmt"
 
 #: cgraph.c:3490
 #, gcc-internal-format
@@ -16810,7 +16811,7 @@ msgstr "%s kann nicht geöffnet werden: %m"
 #: collect2.c:1450
 #, gcc-internal-format, gfc-internal-format
 msgid "unknown demangling style '%s'"
-msgstr "unbekannter Aufbereitungszustand »%s«"
+msgstr "unbekannter Mangelstil »%s«"
 
 #: collect2.c:1546 collect2.c:1729 collect2.c:1769
 #, gcc-internal-format
@@ -16855,7 +16856,7 @@ msgstr "ldd-Ausgabe kann nicht geöffnet werden: %m"
 #: collect2.c:2599
 #, gcc-internal-format, gfc-internal-format
 msgid "dynamic dependency %s not found"
-msgstr "dynamische Abhängigkeit %s nicht gefunden"
+msgstr "dynamische Abhängigkeit »%s« nicht gefunden"
 
 #: collect2.c:2611
 #, gcc-internal-format, gfc-internal-format
@@ -16960,7 +16961,7 @@ msgstr "Zahl der Zähler ist %d statt %d"
 #: coverage.c:311
 #, gcc-internal-format, gfc-internal-format
 msgid "cannot merge separate %s counters for function %u"
-msgstr "separate %s Zähler für die Funktion %u können nicht verschmolzen werden"
+msgstr "separate »%s«-Zähler für die Funktion %u können nicht verschmolzen werden"
 
 #: coverage.c:330
 #, gcc-internal-format
@@ -17216,12 +17217,12 @@ msgstr "die Rahmengröße von %wd Bytes überschreitet %wd Bytes"
 #: final.c:4635 toplev.c:1388 tree-cfgcleanup.c:1148
 #, gcc-internal-format
 msgid "could not open final insn dump file %qs: %m"
-msgstr "endgültige Abzugsdatei %qs der Anweisungen konnte nicht geöffnet werden: %m"
+msgstr "endgültige Abzugsdatei %qs der Befehle konnte nicht geöffnet werden: %m"
 
 #: final.c:4688 tree-cfgcleanup.c:1164
 #, gcc-internal-format
 msgid "could not close final insn dump file %qs: %m"
-msgstr "endgültige Abzugsdatei %qs der Anweisungen konnte nicht geschlossen werden: %m"
+msgstr "endgültige Abzugsdatei %qs der Befehle konnte nicht geschlossen werden: %m"
 
 #: fixed-value.c:128
 #, gcc-internal-format
@@ -17381,7 +17382,7 @@ msgstr "-pipe ignoriert, da -save-temps angegeben"
 #: gcc.c:4586
 #, gcc-internal-format
 msgid "%<-x %s%> after last input file has no effect"
-msgstr "%<-x %s%> hinter letzter Eingabedatei hat keine Wirkung"
+msgstr "%<-x %s%> hinter letzter Eingabedatei hat keine Auswirkung"
 
 #: gcc.c:4768
 #, gcc-internal-format
@@ -17490,7 +17491,7 @@ msgstr "%s: Größe der Vergleichs-Prüfdatei %s konnte nicht ermittelt werden"
 #: gcc.c:7108
 #, gcc-internal-format, gfc-internal-format
 msgid "%s: -fcompare-debug failure (length)"
-msgstr "%s: Fehlschlag von -fcompare-debug (Länge)"
+msgstr "%s: -fcompare-debug ist fehlgeschlagen (Länge)"
 
 #: gcc.c:7118 gcc.c:7159
 #, gcc-internal-format, gfc-internal-format
@@ -17500,7 +17501,7 @@ msgstr "%s: Vergleichs-Prüfdatei %s konnte nicht geöffnet werden"
 #: gcc.c:7138 gcc.c:7175
 #, gcc-internal-format, gfc-internal-format
 msgid "%s: -fcompare-debug failure"
-msgstr "%s: Fehlschlag von -fcompare-debug"
+msgstr "%s: -fcompare-debug ist fehlgeschlagen"
 
 #: gcc.c:7483
 #, gcc-internal-format
@@ -17515,12 +17516,12 @@ msgstr "Spezifikationsfehler: mehr als ein Argument für SYSROOT_HEADERS_SUFFIX_
 #: gcc.c:7812
 #, gcc-internal-format
 msgid "unrecognized command line option %<-%s%>; did you mean %<-%s%>?"
-msgstr "nicht erkannte Kommandozeilenoption %<-%s%>; meinten Sie %<-%s%>?"
+msgstr "unbekannte Kommandozeilenoption %<-%s%>; meinten Sie %<-%s%>?"
 
 #: gcc.c:7816
 #, gcc-internal-format
 msgid "unrecognized command line option %<-%s%>"
-msgstr "nicht erkannte Kommandozeilenoption %<-%s%>"
+msgstr "unbekannte Kommandozeilenoption %<-%s%>"
 
 #: gcc.c:7942
 #, gcc-internal-format
@@ -17555,7 +17556,7 @@ msgstr "während Neuübersetzung mit -fcompare-debug"
 #: gcc.c:8144
 #, gcc-internal-format
 msgid "comparing final insns dumps"
-msgstr "Vergleich der endgültigen Anweisungslisten"
+msgstr "Vergleich der endgültigen Befehlslisten"
 
 #: gcc.c:8261
 #, gcc-internal-format, gfc-internal-format
@@ -17565,7 +17566,7 @@ msgstr "-fuse-linker-plugin, aber %s nicht gefunden"
 #: gcc.c:8294
 #, gcc-internal-format, gfc-internal-format
 msgid "%s: linker input file unused because linking not done"
-msgstr "%s: Eingabedateien des Binders unbenutzt, da keine Bindung geschieht"
+msgstr "%s: Eingabedatei des Linkers unbenutzt, da das Linken nicht durchgeführt wird"
 
 #: gcc.c:8350 c-family/c-opts.c:749
 #, gcc-internal-format
@@ -17665,7 +17666,7 @@ msgstr "falsche Anzahl der Argumente für %%:debug-level-gt"
 #: gcov-tool.c:72
 #, gcc-internal-format, gfc-internal-format
 msgid "error in removing %s\n"
-msgstr "Fehler beim Entfernen von %s\n"
+msgstr "Fehler beim Löschen von %s\n"
 
 #: gcov-tool.c:103
 #, gcc-internal-format, gfc-internal-format
@@ -17777,7 +17778,7 @@ msgstr "PCH musste verschoben werden"
 #: ggc-page.c:1726
 #, gcc-internal-format
 msgid "open /dev/zero: %m"
-msgstr "/dev/zero öffnen: %m"
+msgstr "/dev/zero kann nicht geöffnet werden: %m"
 
 #: ggc-page.c:2474 ggc-page.c:2480
 #, gcc-internal-format
@@ -18187,12 +18188,12 @@ msgstr "Argument für %<alloca%> ist null"
 #: gimple-streamer-in.c:210
 #, gcc-internal-format, gfc-internal-format
 msgid "bytecode stream: unknown GIMPLE statement tag %s"
-msgstr "Bytecode-Strom: unbekannte GIMPLE-Anweisungsmarke %s"
+msgstr "bytecode stream: unknown GIMPLE statement tag %s"
 
 #: gimple.c:1172
 #, gcc-internal-format, gfc-internal-format
 msgid "gimple check: expected %s(%s), have %s(%s) in %s, at %s:%d"
-msgstr "GIMPLE-Prüfung: %s(%s) erwartet, haben %s(%s) in %s, bei %s:%d"
+msgstr "gimple check: expected %s(%s), have %s(%s) in %s, at %s:%d"
 
 #: gimplify.c:1799
 #, gcc-internal-format
@@ -18254,15 +18255,17 @@ msgstr "threadprivate Variable %qE in unverknüpfter Task verwendet"
 msgid "enclosing task"
 msgstr "umgebende Task"
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80189
 #: gimplify.c:6824
 #, gcc-internal-format
 msgid "%qE not specified in enclosing %s"
-msgstr "%qE in umgebendem %s nicht angegeben"
+msgstr "%qE in umgebendem »%s« nicht angegeben"
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80189
 #: gimplify.c:6826
 #, gcc-internal-format, gfc-internal-format
 msgid "enclosing %s"
-msgstr "umgebendes %s"
+msgstr "umgebendes »%s«"
 
 #: gimplify.c:6936
 #, gcc-internal-format
@@ -18352,7 +18355,7 @@ msgstr "»copyprivate«-Variable %qE ist im äußeren Kontext weder »threadpriv
 #: gimplify.c:8274
 #, gcc-internal-format
 msgid "%s variable %qE is private in outer context"
-msgstr "%s Variable %qE ist im äußeren Kontext »private«"
+msgstr "»%s«-Variable %qE ist im äußeren Kontext »private«"
 
 #: gimplify.c:8300
 #, gcc-internal-format
@@ -18876,7 +18879,7 @@ msgstr "IPA-Referenzzusammenfassung fehlt in ltrans-Einheit"
 #: ira.c:2322 ira.c:2336
 #, gcc-internal-format, gfc-internal-format
 msgid "%s cannot be used in asm here"
-msgstr "%s kann nicht hier in »asm« verwendet werden"
+msgstr "»%s« kann nicht hier in »asm« verwendet werden"
 
 #: ira.c:5537
 #, gcc-internal-format
@@ -18916,7 +18919,7 @@ msgstr "inkonsistente Operandenbedingungen in einem %<asm%>"
 #: lra-constraints.c:4677
 #, gcc-internal-format, gfc-internal-format
 msgid "Max. number of generated reload insns per insn is achieved (%d)\n"
-msgstr "Höchstzahl der erzeugten Neuladeanweisungen pro Anweisung ist erreicht (%d)\n"
+msgstr "Höchstzahl der erzeugten Neuladebefehle pro Befehl ist erreicht (%d)\n"
 
 #: lto-cgraph.c:1293
 #, gcc-internal-format, gfc-internal-format
@@ -18951,12 +18954,12 @@ msgstr "Profilinformation in %s ist beschädigt"
 #: lto-cgraph.c:1851
 #, gcc-internal-format, gfc-internal-format
 msgid "cannot find LTO cgraph in %s"
-msgstr "LTO cgraph kann nicht in %s gefunden werden"
+msgstr "LTO cgraph kann in %s nicht gefunden werden"
 
 #: lto-cgraph.c:1861
 #, gcc-internal-format, gfc-internal-format
 msgid "cannot find LTO section refs in %s"
-msgstr "LTO-Abschnittsreferenzen können nicht in %s gefunden werden"
+msgstr "LTO-Abschnittsreferenzen können in %s nicht gefunden werden"
 
 #: lto-cgraph.c:1942
 #, gcc-internal-format, gfc-internal-format
@@ -19032,7 +19035,7 @@ msgstr "Bytecode-Strom in Datei »%s« mit LTO-Version %d.%d statt des erwartete
 #: lto-wrapper.c:114
 #, gcc-internal-format
 msgid "deleting LTRANS file %s: %m"
-msgstr "LTRANS-Datei %s wird gelöscht: %m"
+msgstr "LTRANS-Datei %s kann nicht gelöscht werden: %m"
 
 #: lto-wrapper.c:151
 #, gcc-internal-format
@@ -19212,7 +19215,7 @@ msgstr "%<#pragma omp cancel sections%> innerhalb %<nowait%>-Abschnittskonstrukt
 #: omp-low.c:2668
 #, gcc-internal-format
 msgid "%<%s taskgroup%> construct not closely nested inside of %<taskgroup%> region"
-msgstr "%<%s taskgroup%>-Konstruk nicht eng geschachtelt innerhalb von %<taskgroup%>-Region"
+msgstr "%<%s taskgroup%>-Konstrukt nicht eng geschachtelt innerhalb von %<taskgroup%>-Region"
 
 #: omp-low.c:2682
 #, gcc-internal-format
@@ -19317,7 +19320,7 @@ msgstr "erster Offset muss in umgedrehter Richtung der Schleifeniterationen sein
 #: omp-low.c:9027
 #, gcc-internal-format, gfc-internal-format
 msgid "invalid exit from %s structured block"
-msgstr "ungültiger Ausgang von strukturiertem %s-Block"
+msgstr "ungültiger Austritt aus strukturiertem %s-Block"
 
 #: omp-low.c:9029 omp-low.c:9034
 #, gcc-internal-format, gfc-internal-format
@@ -19662,12 +19665,12 @@ msgstr "Debugausgabestufe %qs ist zu groß"
 #: opts.c:2553
 #, gcc-internal-format
 msgid "getting core file size maximum limit: %m"
-msgstr "Kern-Dateigrößenlimit wird geholt: %m"
+msgstr "Kern-Dateigrößenlimit kann nicht geholt werden: %m"
 
 #: opts.c:2557
 #, gcc-internal-format
 msgid "setting core file size limit to maximum: %m"
-msgstr "Kern-Dateigrößenlimit wird gesetzt: %m"
+msgstr "Kern-Dateigrößenlimit kann nicht gesetzt werden: %m"
 
 #: opts.c:2602
 #, gcc-internal-format, gfc-internal-format
@@ -19703,7 +19706,7 @@ msgstr "maximaler Wert des Parameters %qs ist %u"
 #: passes.c:81
 #, gcc-internal-format, gfc-internal-format
 msgid "pass %s does not support cloning"
-msgstr "Durchlauf %s unterstützt kein Klonen"
+msgstr "pass %s does not support cloning"
 
 #: passes.c:87
 #, gcc-internal-format, gfc-internal-format
@@ -19783,7 +19786,7 @@ msgstr "Durchlauf %qs nicht gefunden, wird jedoch von neuem Durchlauf %qs refere
 #: plugin.c:177
 #, gcc-internal-format
 msgid "inaccessible plugin file %s expanded from short plugin name %s: %m"
-msgstr "nicht zugreifbare Plugin-Datei %s aus kurzem Plugin-Namen %s erzeugt: %m"
+msgstr "Zugriff auf nicht zugreifbare Plugin-Datei %s (aus kurzem Plugin-Namen %s erzeugt) nicht möglich: %m"
 
 #: plugin.c:198
 #, gcc-internal-format, gfc-internal-format
@@ -20075,32 +20078,32 @@ msgstr "Ausgabeoperand ist in %<asm%> konstant"
 #: rtl.c:798
 #, gcc-internal-format, gfc-internal-format
 msgid "RTL check: access of elt %d of '%s' with last elt %d in %s, at %s:%d"
-msgstr "RTL-Überprüfung: Zugriff von Elt %d von »%s« mit letztem Elt %d in %s, bei %s:%d"
+msgstr "RTL check: access of elt %d of '%s' with last elt %d in %s, at %s:%d"
 
 #: rtl.c:808
 #, gcc-internal-format, gfc-internal-format
 msgid "RTL check: expected elt %d type '%c', have '%c' (rtx %s) in %s, at %s:%d"
-msgstr "RTL-Überprüfung: Elt-%d-Typ %c erwartet, haben Typ %c (rtx %s) in %s, bei %s:%d"
+msgstr "RTL check: expected elt %d type '%c', have '%c' (rtx %s) in %s, at %s:%d"
 
 #: rtl.c:818
 #, gcc-internal-format, gfc-internal-format
 msgid "RTL check: expected elt %d type '%c' or '%c', have '%c' (rtx %s) in %s, at %s:%d"
-msgstr "RTL-Überprüfung: Elt-%d-Typ %c oder %c erwartet, haben Typ %c (rtx %s) in %s, bei %s:%d"
+msgstr "RTL check: expected elt %d type '%c' or '%c', have '%c' (rtx %s) in %s, at %s:%d"
 
 #: rtl.c:827
 #, gcc-internal-format, gfc-internal-format
 msgid "RTL check: expected code '%s', have '%s' in %s, at %s:%d"
-msgstr "RTL-Überprüfung: Code »%s« erwartet, haben »%s« in %s, bei %s:%d"
+msgstr "RTL check: expected code '%s', have '%s' in %s, at %s:%d"
 
 #: rtl.c:837
 #, gcc-internal-format, gfc-internal-format
 msgid "RTL check: expected code '%s' or '%s', have '%s' in %s, at %s:%d"
-msgstr "RTL-Überprüfung: Code »%s« oder »%s« erwartet, haben »%s« in %s, bei %s:%d"
+msgstr "RTL check: expected code '%s' or '%s', have '%s' in %s, at %s:%d"
 
 #: rtl.c:864
 #, gcc-internal-format, gfc-internal-format
 msgid "RTL check: attempt to treat non-block symbol as a block symbol in %s, at %s:%d"
-msgstr "RTL-Überprüfung: Versuch, Nicht-Blocksymbol als Blocksymbol in %s bei %s:%d zu verwenden"
+msgstr "RTL check: attempt to treat non-block symbol as a block symbol in %s, at %s:%d"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79596
 #: rtl.c:874
@@ -20111,12 +20114,12 @@ msgstr "RTL check: access of hwi elt %d of vector with last elt %d in %s, at %s:
 #: rtl.c:884
 #, gcc-internal-format, gfc-internal-format
 msgid "RTL check: access of elt %d of vector with last elt %d in %s, at %s:%d"
-msgstr "RTL-Überprüfung: Zugriff von Elt %d von Vektor mit letztem Elt %d in %s, bei %s:%d"
+msgstr "RTL check: access of elt %d of vector with last elt %d in %s, at %s:%d"
 
 #: rtl.c:895
 #, gcc-internal-format, gfc-internal-format
 msgid "RTL flag check: %s used with unexpected rtx code '%s' in %s, at %s:%d"
-msgstr "RTL-Kennzeichenüberprüfung: %s mit unerwartetem RTX-Code »%s« in %s bei %s:%d verwendet"
+msgstr "RTL flag check: %s used with unexpected rtx code '%s' in %s, at %s:%d"
 
 #: stmt.c:238
 #, gcc-internal-format
@@ -20457,12 +20460,12 @@ msgstr "#pragma GCC target wird für diese Maschine nicht unterstützt"
 #: tlink.c:487
 #, gcc-internal-format
 msgid "removing .rpo file: %m"
-msgstr ".rpo-Datei wird gelöscht: %m"
+msgstr ".rpo-Datei kann nicht gelöscht werden: %m"
 
 #: tlink.c:489
 #, gcc-internal-format
 msgid "renaming .rpo file: %m"
-msgstr ".rpo-Datei wird umbenannt: %m"
+msgstr ".rpo-Datei kann nicht umbenannt werden: %m"
 
 #: tlink.c:493
 #, gcc-internal-format, gfc-internal-format
@@ -21413,7 +21416,7 @@ msgstr "in Anweisung"
 #: tree-cfg.c:5242
 #, gcc-internal-format
 msgid "statement marked for throw, but doesn%'t"
-msgstr "Anweisung für throw markiert, tut es jedoch nicht"
+msgstr "Anweisung für throw markiert, wirft jedoch nichts"
 
 #: tree-cfg.c:5248
 #, gcc-internal-format
@@ -22158,52 +22161,52 @@ msgstr "Rückgabetyp der Funktion kann keine Funktion sein"
 #: tree.c:9813 tree.c:9898 tree.c:9959
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: %s, have %s in %s, at %s:%d"
-msgstr "Baumprüfung: %s, haben %s in %s, bei %s:%d"
+msgstr "tree check: %s, have %s in %s, at %s:%d"
 
 #: tree.c:9850
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: expected none of %s, have %s in %s, at %s:%d"
-msgstr "Baumprüfung: nichts von %s erwartet, haben %s in %s, bei %s:%d"
+msgstr "tree check: expected none of %s, have %s in %s, at %s:%d"
 
 #: tree.c:9863
 #, gcc-internal-format
 msgid "tree check: expected class %qs, have %qs (%s) in %s, at %s:%d"
-msgstr "Baumprüfung: Klasse %qs erwartet, haben %qs (%s) in %s, bei %s:%d"
+msgstr "tree check: expected class %qs, have %qs (%s) in %s, at %s:%d"
 
 #: tree.c:9912
 #, gcc-internal-format
 msgid "tree check: did not expect class %qs, have %qs (%s) in %s, at %s:%d"
-msgstr "Baumprüfung: Klasse %qs nicht erwartet, haben %qs (%s) in %s, bei %s:%d"
+msgstr "tree check: did not expect class %qs, have %qs (%s) in %s, at %s:%d"
 
 #: tree.c:9925
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: expected omp_clause %s, have %s in %s, at %s:%d"
-msgstr "Baumprüfung: omp_clause %s erwartet, haben %s in %s, bei %s:%d"
+msgstr "tree check: expected omp_clause %s, have %s in %s, at %s:%d"
 
 #: tree.c:9985
 #, gcc-internal-format
 msgid "tree check: expected tree that contains %qs structure, have %qs in %s, at %s:%d"
-msgstr "Baumprüfung: Baum mit enthaltener Struktur %qs erwartet, haben %qs in %s, bei %s:%d"
+msgstr "tree check: expected tree that contains %qs structure, have %qs in %s, at %s:%d"
 
 #: tree.c:9999
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed elt %d of tree_int_cst with %d elts in %s, at %s:%d"
-msgstr "Interner Fehler: tree check: accessed elt %d of tree_int_cst with %d elts in %s, at %s:%d"
+msgstr "tree check: accessed elt %d of tree_int_cst with %d elts in %s, at %s:%d"
 
 #: tree.c:10011
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
-msgstr "Baumprüfung: auf Elt %d von tree_vec mit %d Elts in %s bei %s:%d zugegriffen"
+msgstr "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
 
 #: tree.c:10024
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed operand %d of %s with %d operands in %s, at %s:%d"
-msgstr "Baumprüfung: auf Operand %d von %s mit %d Operanden in %s bei %s:%d zugegriffen"
+msgstr "tree check: accessed operand %d of %s with %d operands in %s, at %s:%d"
 
 #: tree.c:10037
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed operand %d of omp_clause %s with %d operands in %s, at %s:%d"
-msgstr "Baumprüfung: auf Operand %d von omp_clause %s mit %d Operanden in %s bei %s:%d zugegriffen"
+msgstr "tree check: accessed operand %d of omp_clause %s with %d operands in %s, at %s:%d"
 
 #: tree.c:12849
 #, gcc-internal-format
@@ -22536,7 +22539,7 @@ msgstr "verify_histograms failed"
 #: value-prof.c:613
 #, gcc-internal-format, gfc-internal-format
 msgid "corrupted value profile: %s profile counter (%d out of %d) inconsistent with basic-block count (%d)"
-msgstr "corrupted value profile: %s profile counter (%d out of %d) inconsistent with basic-block count (%d)"
+msgstr "kaputtes Werteprofil: %s-Profilzähler (%d von %d) ist inkonsistent zu Basisblock-Zähler (%d)"
 
 #: var-tracking.c:7125
 #, gcc-internal-format
@@ -22717,7 +22720,7 @@ msgstr "Sichtbarkeitsattribute werden in dieser Konfiguration nicht unterstützt
 #: xcoffout.c:193
 #, gcc-internal-format
 msgid "no sclass for %s stab (0x%x)"
-msgstr "kein »sclass« für %s Stab (0x%x)"
+msgstr "no sclass for %s stab (0x%x)"
 
 #: lto-streamer.h:1014
 #, gcc-internal-format, gfc-internal-format
@@ -22727,7 +22730,7 @@ msgstr "Bytecode-Strom: Marke %s statt %s erwartet"
 #: lto-streamer.h:1024
 #, gcc-internal-format, gfc-internal-format
 msgid "bytecode stream: tag %s is not in the expected range [%s, %s]"
-msgstr "Bytecode-Strom: Marke %s ist nicht im erwarteten Wertebereich [%s, %s]"
+msgstr "bytecode stream: tag %s is not in the expected range [%s, %s]"
 
 #: c-family/array-notation-common.c:71
 #, gcc-internal-format
@@ -23767,7 +23770,7 @@ msgstr "fehlende $-Operandennummer im Format"
 #: c-family/c-format.c:1227
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support %%n$ operand number formats"
-msgstr "%s unterstützt nicht %%n$-Operandennummerformate"
+msgstr "%s unterstützt %%n$-Operandennummerformate nicht"
 
 #: c-family/c-format.c:1234
 #, gcc-internal-format
@@ -23837,12 +23840,12 @@ msgstr "%s verwendet mit Format %<%%%c%> %s"
 #: c-family/c-format.c:1878
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support %s"
-msgstr "%s unterstützt nicht %s"
+msgstr "%s unterstützt %s nicht"
 
 #: c-family/c-format.c:1888
 #, gcc-internal-format
 msgid "%s does not support %s with the %<%%%c%> %s format"
-msgstr "%s unterstützt nicht %s mit dem Format %<%%%c%> %s"
+msgstr "%s unterstützt %s mit dem Format %<%%%c%> %s nicht"
 
 #: c-family/c-format.c:2009 c-family/c-format.c:2340
 #, gcc-internal-format, gfc-internal-format
@@ -23872,7 +23875,7 @@ msgstr "fehlende Präzision im Format %s"
 #: c-family/c-format.c:2314
 #, gcc-internal-format
 msgid "%s does not support the %qs %s length modifier"
-msgstr "%s unterstützt nicht den Längenmodifizierer %qs %s"
+msgstr "%s unterstützt den Längenmodifizierer %qs für %s nicht"
 
 #: c-family/c-format.c:2370
 #, gcc-internal-format
@@ -23882,22 +23885,22 @@ msgstr "unbekanntes Konvertierungstyp-Zeichen %qc im Format"
 #: c-family/c-format.c:2382
 #, gcc-internal-format
 msgid "%s does not support the %<%%%c%> %s format"
-msgstr "%s unterstützt nicht das Format %<%%%c%> %s"
+msgstr "%s unterstützt das Format %<%%%c%> für %s nicht"
 
 #: c-family/c-format.c:2414
 #, gcc-internal-format
 msgid "%s ignored with %s and %<%%%c%> %s format"
-msgstr "%s ignoriert mit %s und Format %<%%%c%> %s"
+msgstr "%s ignoriert mit %s und Format %<%%%c%> für %s"
 
 #: c-family/c-format.c:2419
 #, gcc-internal-format, gfc-internal-format
 msgid "%s ignored with %s in %s format"
-msgstr "%s ignoriert mit %s im Format %s"
+msgstr "%s ignoriert mit %s im Format für %s"
 
 #: c-family/c-format.c:2426
 #, gcc-internal-format
 msgid "use of %s and %s together with %<%%%c%> %s format"
-msgstr "Verwendung von %s und %s zusammen mit Format %<%%%c%> %s"
+msgstr "Verwendung von %s und %s zusammen mit Format %<%%%c%> für %s"
 
 #: c-family/c-format.c:2431
 #, gcc-internal-format, gfc-internal-format
@@ -23927,7 +23930,7 @@ msgstr "Verwendung des %qs-Längenmodifizierers mit %qc-Typ-Zeichen hat entweder
 #: c-family/c-format.c:2540
 #, gcc-internal-format
 msgid "%s does not support the %<%%%s%c%> %s format"
-msgstr "%s unterstützt nicht das Format %<%%%s%c%> %s"
+msgstr "%s unterstützt das Format %<%%%s%c%> für %s nicht"
 
 #: c-family/c-format.c:2578
 #, gcc-internal-format
@@ -24053,7 +24056,7 @@ msgstr "schlecht geschachtelte C-Header vom Präprozessor"
 #: c-family/c-lex.c:259
 #, gcc-internal-format, gfc-internal-format
 msgid "ignoring #pragma %s %s"
-msgstr "#pragma %s %s wird ignoriert"
+msgstr "»#pragma %s %s« wird ignoriert"
 
 #. ... or not.
 #: c-family/c-lex.c:501 c-family/c-lex.c:1215
@@ -24299,7 +24302,7 @@ msgstr "externe Funktionen zur TLS-Initialisierung werden auf diesem Ziel nicht 
 #: c-family/c-opts.c:986
 #, gcc-internal-format
 msgid "opening output file %s: %m"
-msgstr "Ausgabedatei »%s« wird geöffnet: %m"
+msgstr "Ausgabedatei »%s« kann nicht geöffnet werden: %m"
 
 #: c-family/c-opts.c:991
 #, gcc-internal-format, gfc-internal-format
@@ -24314,12 +24317,12 @@ msgstr "Das Debug-Format »%s« kann nicht mit vorkompilierten Headers verwendet
 #: c-family/c-opts.c:1171
 #, gcc-internal-format
 msgid "opening dependency file %s: %m"
-msgstr "Abhängigkeitsdatei »%s« wird geöffnet: %m"
+msgstr "Abhängigkeitsdatei »%s« kann nicht geöffnet werden: %m"
 
 #: c-family/c-opts.c:1182
 #, gcc-internal-format
 msgid "closing dependency file %s: %m"
-msgstr "Abhängigkeitsdatei »%s« wird geschlossen: %m"
+msgstr "Abhängigkeitsdatei »%s« kann nicht geschlossen werden: %m"
 
 #: c-family/c-opts.c:1185
 #, gcc-internal-format
@@ -25523,7 +25526,7 @@ msgstr "%<-fsplit-stack%> wird derzeit nur auf GNU/Linux unterstützt"
 #: common/config/i386/i386-common.c:1183
 #, gcc-internal-format
 msgid "%<-fsplit-stack%> requires assembler support for CFI directives"
-msgstr "%<-fsplit-stack%> erfordert Assemblerunterstützung für CFI-Anweisungen"
+msgstr "%<-fsplit-stack%> erfordert Assemblerunterstützung für CFI-Direktiven"
 
 #: common/config/ia64/ia64-common.c:59
 #, gcc-internal-format
@@ -25787,10 +25790,11 @@ msgstr "CFString-Literal fehlt"
 msgid "CFString literal expression is not a string constant"
 msgstr "CFString-Literalausdruck ist keine Zeichenkettenkonstante"
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80190
 #: config/darwin.c:3530
 #, gcc-internal-format, gfc-internal-format
 msgid "%s in CFString literal"
-msgstr "%s in CFString-Literal"
+msgstr "»%s« in CFString-Literal"
 
 #: config/host-darwin.c:61
 #, gcc-internal-format
@@ -27186,12 +27190,12 @@ msgstr "-max-stackframe=%d ist nicht verwendbar, nicht zwischen 0 und %d"
 #: config/cris/cris.c:2661
 #, gcc-internal-format, gfc-internal-format
 msgid "unknown CRIS version specification in -march= or -mcpu= : %s"
-msgstr "unbekannte CRIS-Versionsangabe in -march= oder -mcpu= : %s"
+msgstr "unbekannte CRIS-Versionsangabe in »-march=« oder »-mcpu=«: %s"
 
 #: config/cris/cris.c:2697
 #, gcc-internal-format, gfc-internal-format
 msgid "unknown CRIS cpu version specification in -mtune= : %s"
-msgstr "unbekannte CRIS-CPU-Versionsangabe in -mtune= : %s"
+msgstr "unbekannte CRIS-CPU-Versionsangabe in »-mtune=«: %s"
 
 #: config/cris/cris.c:2718
 #, gcc-internal-format
@@ -28144,7 +28148,7 @@ msgstr "Zeigerprüfer benötigt MPX-Unterstützung auf diesem Ziel. Verwenden Si
 #: config/i386/intelmic-mkoffload.c:71 config/nvptx/mkoffload.c:85
 #, gcc-internal-format
 msgid "deleting file %s: %m"
-msgstr "Datei %s wird gelöscht: %m"
+msgstr "Datei %s kann nicht gelöscht werden: %m"
 
 #: config/i386/intelmic-mkoffload.c:253 config/i386/intelmic-mkoffload.c:317
 #: config/i386/intelmic-mkoffload.c:358 config/nvptx/mkoffload.c:524
@@ -28699,7 +28703,7 @@ msgstr "Unterstützung für Modus %qs"
 #: config/mmix/mmix.c:744
 #, gcc-internal-format, gfc-internal-format
 msgid "too large function value type, needs %d registers, have only %d registers for this"
-msgstr "zu großer Funktionswerttyp, benötigt %d Register, aber nur %d stehen zur Verfügung"
+msgstr "too large function value type, needs %d registers, have only %d registers for this"
 
 #: config/mmix/mmix.c:923
 #, gcc-internal-format
@@ -28709,33 +28713,33 @@ msgstr "function_profiler-Unterstützung für MMIX"
 #: config/mmix/mmix.c:947
 #, gcc-internal-format
 msgid "MMIX Internal: Last named vararg would not fit in a register"
-msgstr "MMIX-intern: Letzte benannte Vararg würde nicht in ein Register passen"
+msgstr "MMIX Internal: Last named vararg would not fit in a register"
 
 #: config/mmix/mmix.c:1559 config/mmix/mmix.c:1583 config/mmix/mmix.c:1699
 #, gcc-internal-format, gfc-internal-format
 msgid "MMIX Internal: Bad register: %d"
-msgstr "MMIX-intern: Falsches Register: %d"
+msgstr "MMIX Internal: Bad register: %d"
 
 #. Presumably there's a missing case above if we get here.
 #: config/mmix/mmix.c:1691
 #, gcc-internal-format
 msgid "MMIX Internal: Missing %qc case in mmix_print_operand"
-msgstr "MMIX-intern: Fall %qc fehlt in mmix_print_operand"
+msgstr "MMIX Internal: Missing %qc case in mmix_print_operand"
 
 #: config/mmix/mmix.c:1976
 #, gcc-internal-format
 msgid "stack frame not a multiple of 8 bytes: %wd"
-msgstr "Stapelrahmen ist kein Vielfaches von 8 Bytes: %wd"
+msgstr "stack frame not a multiple of 8 bytes: %wd"
 
 #: config/mmix/mmix.c:2214
 #, gcc-internal-format
 msgid "stack frame not a multiple of octabyte: %wd"
-msgstr "Stapelrahmen ist kein Vielfaches eines Octabytes: %wd"
+msgstr "stack frame not a multiple of octabyte: %wd"
 
 #: config/mmix/mmix.c:2500 config/mmix/mmix.c:2559
 #, gcc-internal-format, gfc-internal-format
 msgid "MMIX Internal: %s is not a shiftable int"
-msgstr "MMIX-intern: %s ist kein schiebbares int"
+msgstr "MMIX Internal: %s is not a shiftable int"
 
 #: config/mn10300/mn10300.c:103
 #, gcc-internal-format
@@ -29020,7 +29024,7 @@ msgstr "ungültiges Argument für eingebaute Funktion »%s«"
 #: config/nios2/nios2.c:3443
 #, gcc-internal-format, gfc-internal-format
 msgid "Control register number must be in range 0-31 for %s"
-msgstr "Steuerregisternummer muss für %s im Bereich von 0 bis 31 liegen"
+msgstr "Steuerregisternummer muss für »%s« im Bereich von 0 bis 31 liegen"
 
 #: config/nios2/nios2.c:3471
 #, gcc-internal-format, gfc-internal-format
@@ -29170,7 +29174,7 @@ msgstr "Option -g ausgeschaltet"
 #: config/pa/pa.c:8769
 #, gcc-internal-format, gfc-internal-format
 msgid "alignment (%u) for %s exceeds maximum alignment for global common data.  Using %u"
-msgstr "Ausrichtung (%u) für %s überschreitet maximale Ausrichtung für globale gemeinsame Daten. Es wird %u verwendet"
+msgstr "Ausrichtung (%u) für »%s« überschreitet maximale Ausrichtung für globale gemeinsame Daten. Es wird %u verwendet"
 
 #: config/riscv/riscv.c:333
 #, gcc-internal-format
@@ -29679,7 +29683,7 @@ msgstr "GCC-Vektor per Referenz übergegeben: Nicht-Standard-ABI-Erweiterung ohn
 #: config/rs6000/rs6000.c:13855
 #, gcc-internal-format, gfc-internal-format
 msgid "internal error: builtin function %s already processed"
-msgstr "interner Fehler: Eingebaute Funktion %s bereits verarbeitet"
+msgstr "internal error: builtin function %s already processed"
 
 #: config/rs6000/rs6000.c:14359
 #, gcc-internal-format
@@ -29911,12 +29915,12 @@ msgstr "Eingebaute Funktion %s wird mit den aktuellen Optionen nicht unterstütz
 #: config/rs6000/rs6000.c:18635
 #, gcc-internal-format, gfc-internal-format
 msgid "internal error: builtin function %s had an unexpected return type %s"
-msgstr "interner Fehler: eingebaute Funktion %s hatte unerwarteten Rückgabetyp %s"
+msgstr "internal error: builtin function %s had an unexpected return type %s"
 
 #: config/rs6000/rs6000.c:18652
 #, gcc-internal-format, gfc-internal-format
 msgid "internal error: builtin function %s, argument %d had unexpected argument type %s"
-msgstr "interner Fehler: Eingebaute Funktion %s, Argument %d hatte unerwarteten Argumenttypen %s"
+msgstr "internal error: builtin function %s, argument %d had unexpected argument type %s"
 
 #: config/rs6000/rs6000.c:27936
 #, gcc-internal-format
@@ -29986,12 +29990,12 @@ msgstr "Verwendung von %<double%> in AltiVec-Typen ist ohne -mvsx ungültig"
 #: config/rs6000/rs6000.c:38855
 #, gcc-internal-format, gfc-internal-format
 msgid "emitting microcode insn %s\t[%s] #%d"
-msgstr "Ausgabe der Mikrocode-Anweisung %s\t[%s] #%d"
+msgstr "Ausgabe des Mikrocode-Befehls %s\t[%s] #%d"
 
 #: config/rs6000/rs6000.c:38859
 #, gcc-internal-format, gfc-internal-format
 msgid "emitting conditional microcode insn %s\t[%s] #%d"
-msgstr "Ausgabe der bedingten Mikrocode-Anweisung %s\t[%s] #%d"
+msgstr "Ausgabe des bedingten Mikrocode-Befehls %s\t[%s] #%d"
 
 #: config/rs6000/rs6000.c:39167
 #, gcc-internal-format, gfc-internal-format
@@ -30616,7 +30620,7 @@ msgstr "va_start in Unterbrechungsfunktion kann nicht verwendet werden"
 #: config/stormy16/stormy16.c:1863
 #, gcc-internal-format, gfc-internal-format
 msgid "switch statement of size %lu entries too large"
-msgstr "switch-Anweisung der Größe %lu Einträge zu groß"
+msgstr "switch-Anweisung der Größe %lu Einträge ist zu groß"
 
 #: config/stormy16/stormy16.c:2235
 #, gcc-internal-format
@@ -30816,12 +30820,12 @@ msgstr "vms »#pragma __message« wird ignoriert"
 #: config/vms/vms-c.c:271 config/vms/vms-c.c:277
 #, gcc-internal-format
 msgid "malformed '#pragma __extern_prefix', ignoring"
-msgstr "falsch geformtes »#pragma __extern_prefix«, ignoriert"
+msgstr "falsch geformtes »#pragma __extern_prefix«, wird ignoriert"
 
 #: config/vms/vms-c.c:310 config/vms/vms-c.c:330
 #, gcc-internal-format
 msgid "malformed %<#pragma %s%>, ignoring"
-msgstr "falsch geformtes %<#pragma %s%>, ignoriert"
+msgstr "falsch geformtes %<#pragma %s%>, wird ignoriert"
 
 #: config/vms/vms-c.c:326
 #, gcc-internal-format
@@ -37191,7 +37195,7 @@ msgstr "Anweisung ist kein Konstantenausdruck"
 #: cp/constexpr.c:4557
 #, gcc-internal-format
 msgid "unexpected expression %qE of kind %s"
-msgstr "unerwarteter Ausdruck %qE der Art %s"
+msgstr "unexpected expression %qE of kind %s"
 
 #: cp/constexpr.c:4627
 #, gcc-internal-format
@@ -45946,7 +45950,7 @@ msgstr "Null als Nullzeigerkonstante"
 #: cp/tree.c:4853
 #, gcc-internal-format, gfc-internal-format
 msgid "lang_* check: failed in %s, at %s:%d"
-msgstr "Überprüfung von lang_*: in %s, bei %s:%d gescheitert"
+msgstr "lang_* check: failed in %s, at %s:%d"
 
 #: cp/typeck.c:463
 #, gcc-internal-format
@@ -46485,10 +46489,11 @@ msgstr "Ausdrucksliste als zusammengesetzten Ausdruck in Speicherinitialisierung
 msgid "expression list treated as compound expression in functional cast"
 msgstr "Ausdrucksliste als zusammengesetzten Ausdruck in funktionaler Umwandlung behandelt"
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80191
 #: cp/typeck.c:6459
 #, gcc-internal-format, gfc-internal-format
 msgid "%s expression list treated as compound expression"
-msgstr "%s Ausdrucksliste als zusammengesetzten Ausdruck behandelt"
+msgstr "Ausdrucksliste für »%s« wird als zusammengesetzten Ausdruck behandelt"
 
 #: cp/typeck.c:6556
 #, gcc-internal-format
@@ -47799,7 +47804,7 @@ msgstr "Argument %qs des intrinsischen %qs bei %L muss vom gleichen Typ und glei
 #: fortran/check.c:1078 fortran/check.c:1223
 #, gcc-internal-format, gfc-internal-format
 msgid "STAT= argument to %s at %L"
-msgstr "STAT=-Argument zu %s bei %L"
+msgstr "STAT=-Argument für %s bei %L"
 
 #: fortran/check.c:1097 fortran/check.c:1163 fortran/check.c:1260
 #, gcc-internal-format, gfc-internal-format
@@ -49604,12 +49609,12 @@ msgstr "%s-Anweisung bei %L erwartet"
 #: fortran/decl.c:6960
 #, gcc-internal-format, gfc-internal-format
 msgid "Expecting %s statement at %L"
-msgstr "%s-Anweisung bei %L erwartet"
+msgstr "»%s«-Anweisung bei %L erwartet"
 
 #: fortran/decl.c:6980
 #, gcc-internal-format
 msgid "Expected block name of %qs in %s statement at %L"
-msgstr "Blocknamen von %qs in %s-Anweisung bei %L erwartet"
+msgstr "Blocknamen von %qs in »%s«-Anweisung bei %L erwartet"
 
 #: fortran/decl.c:6997
 #, gcc-internal-format, gfc-internal-format
@@ -49619,7 +49624,7 @@ msgstr "Beendenden Namen bei %C erwartet"
 #: fortran/decl.c:7011 fortran/decl.c:7019
 #, gcc-internal-format
 msgid "Expected label %qs for %s statement at %C"
-msgstr "Marke %qs für %s-Anweisung bei %C erwartet"
+msgstr "Marke %qs für »%s«-Anweisung bei %C erwartet"
 
 #: fortran/decl.c:7118
 #, gcc-internal-format, gfc-internal-format
@@ -58447,6 +58452,7 @@ msgstr "Doppeltes ASYNCHRONOUS-Attribut bei %L angegeben"
 msgid "%s attribute of %qs conflicts with %s attribute at %L"
 msgstr "Attribut %s von %qs steht mit Attribut %s bei %L in Konflikt"
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80012
 #: fortran/symbol.c:1691
 #, gcc-internal-format, gfc-internal-format
 msgid ""
@@ -59076,7 +59082,7 @@ msgstr "%s: %s: %s"
 #: lto/lto-object.c:195
 #, gcc-internal-format, gfc-internal-format
 msgid "close: %s"
-msgstr "schließen: %s"
+msgstr "close: %s"
 
 #: lto/lto-object.c:251
 #, gcc-internal-format, gfc-internal-format
@@ -59211,7 +59217,7 @@ msgstr "»%s« kann nicht geöffnet werden"
 #: lto/lto.c:2161
 #, gcc-internal-format, gfc-internal-format
 msgid "Cannot map %s"
-msgstr "»%s« kann nicht abgebildet werden"
+msgstr "»%s« kann nicht in den Speicher geladen werden"
 
 #: lto/lto.c:2172
 #, gcc-internal-format, gfc-internal-format
@@ -59246,7 +59252,7 @@ msgstr "kein Dateiname für LTRANS-Ausgabeliste angegeben"
 #: lto/lto.c:2481
 #, gcc-internal-format
 msgid "opening LTRANS output list %s: %m"
-msgstr "LTRANS-Ausgabeliste »%s« wird geöffnet: %m"
+msgstr "LTRANS-Ausgabeliste »%s« kann nicht geöffnet werden: %m"
 
 #: lto/lto.c:2487
 #, gcc-internal-format
@@ -59256,7 +59262,7 @@ msgstr "beim Schreiben in LTRANS-Ausgabeliste %s: %m"
 #: lto/lto.c:2498
 #, gcc-internal-format
 msgid "closing LTRANS output list %s: %m"
-msgstr "LTRANS-Ausgabeliste »%s« wird geschlossen: %m"
+msgstr "LTRANS-Ausgabeliste »%s« kann nicht geschlossen werden: %m"
 
 #: lto/lto.c:2750
 #, gcc-internal-format
@@ -59931,7 +59937,7 @@ msgstr "Instanzvariable %qE ist als »private« deklariert"
 #: objc/objc-act.c:6433
 #, gcc-internal-format
 msgid "instance variable %qE is %s; this will be a hard error in the future"
-msgstr "Instanzvariable %qE ist %s; dies wird zukünftig ein schwerer Fehler sein"
+msgstr "Instanzvariable %qE ist »%s«; dies wird zukünftig ein schwerer Fehler sein"
 
 #: objc/objc-act.c:6440
 #, gcc-internal-format
@@ -59953,10 +59959,11 @@ msgstr "unvollständige Implementierung der Kategorie %qE"
 msgid "method definition for %<%c%E%> not found"
 msgstr "Methodendefinition für %<%c%E%> nicht gefunden"
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80192
 #: objc/objc-act.c:6719
 #, gcc-internal-format
 msgid "%s %qE does not fully implement the %qE protocol"
-msgstr "%s %qE implementiert das %qE-Protokoll nicht vollständig"
+msgstr "»%s %E« implementiert das Protokoll %qE nicht vollständig"
 
 #: objc/objc-act.c:6809
 #, gcc-internal-format
