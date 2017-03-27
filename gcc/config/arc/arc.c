@@ -9381,9 +9381,10 @@ arc_can_follow_jump (const rtx_insn *follower, const rtx_insn *followee)
    Return true if REGNO should be added to the deemed uses of the epilogue.
 
    We use the return address
-   arc_return_address_regs[arc_compute_function_type (cfun)] .
-   But also, we have to make sure all the register restore instructions
-   are known to be live in interrupt functions.  */
+   arc_return_address_regs[arc_compute_function_type (cfun)].  But
+   also, we have to make sure all the register restore instructions
+   are known to be live in interrupt functions, plus the blink
+   register if it is clobbered by the isr.  */
 
 bool
 arc_epilogue_uses (int regno)
@@ -9396,7 +9397,8 @@ arc_epilogue_uses (int regno)
 	{
 	  if (!fixed_regs[regno])
 	    return true;
-	  return regno == arc_return_address_regs[cfun->machine->fn_type];
+	  return ((regno == arc_return_address_regs[cfun->machine->fn_type])
+		  || (regno == RETURN_ADDR_REGNUM));
 	}
       else
 	return regno == RETURN_ADDR_REGNUM;
