@@ -2654,7 +2654,7 @@ build_array_ref (location_t loc, tree array, tree index)
 	  || (COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (array)))
 	      && TREE_CODE (TYPE_SIZE (TREE_TYPE (TREE_TYPE (array)))) != INTEGER_CST))
 	{
-	  if (!c_mark_addressable (array))
+	  if (!c_mark_addressable (array, true))
 	    return error_mark_node;
 	}
       /* An array that is indexed by a constant value which is not within
@@ -4755,16 +4755,26 @@ lvalue_or_else (location_t loc, const_tree ref, enum lvalue_use use)
 
 /* Mark EXP saying that we need to be able to take the
    address of it; it should not be allocated in a register.
-   Returns true if successful.  */
+   Returns true if successful.  ARRAY_REF_P is true if this
+   is for ARRAY_REF construction - in that case we don't want
+   to look through VIEW_CONVERT_EXPR from VECTOR_TYPE to ARRAY_TYPE,
+   it is fine to use ARRAY_REFs for vector subscripts on vector
+   register variables.  */
 
 bool
-c_mark_addressable (tree exp)
+c_mark_addressable (tree exp, bool array_ref_p)
 {
   tree x = exp;
 
   while (1)
     switch (TREE_CODE (x))
       {
+      case VIEW_CONVERT_EXPR:
+	if (array_ref_p
+	    && TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE
+	    && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (x, 0))))
+	  return true;
+	/* FALLTHRU */
       case COMPONENT_REF:
       case ADDR_EXPR:
       case ARRAY_REF:

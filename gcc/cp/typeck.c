@@ -3217,7 +3217,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 	      && (TREE_CODE (TYPE_SIZE (TREE_TYPE (TREE_TYPE (array))))
 		  != INTEGER_CST)))
 	{
-	  if (!cxx_mark_addressable (array))
+	  if (!cxx_mark_addressable (array, true))
 	    return error_mark_node;
 	}
 
@@ -6269,18 +6269,28 @@ unary_complex_lvalue (enum tree_code code, tree arg)
 
 /* Mark EXP saying that we need to be able to take the
    address of it; it should not be allocated in a register.
-   Value is true if successful.
+   Value is true if successful.  ARRAY_REF_P is true if this
+   is for ARRAY_REF construction - in that case we don't want
+   to look through VIEW_CONVERT_EXPR from VECTOR_TYPE to ARRAY_TYPE,
+   it is fine to use ARRAY_REFs for vector subscripts on vector
+   register variables.
 
    C++: we do not allow `current_class_ptr' to be addressable.  */
 
 bool
-cxx_mark_addressable (tree exp)
+cxx_mark_addressable (tree exp, bool array_ref_p)
 {
   tree x = exp;
 
   while (1)
     switch (TREE_CODE (x))
       {
+      case VIEW_CONVERT_EXPR:
+	if (array_ref_p
+	    && TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE
+	    && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (x, 0))))
+	  return true;
+	/* FALLTHRU */
       case ADDR_EXPR:
       case COMPONENT_REF:
       case ARRAY_REF:
