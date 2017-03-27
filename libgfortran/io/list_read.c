@@ -51,7 +51,8 @@ typedef unsigned char uchar;
 #define CASE_DIGITS   case '0': case '1': case '2': case '3': case '4': \
                       case '5': case '6': case '7': case '8': case '9'
 
-#define CASE_SEPARATORS case ' ': case ',': case '/': case '\n': \
+#define CASE_SEPARATORS /* Fall through. */ \
+			case ' ': case ',': case '/': case '\n': \
 			case '\t': case '\r': case ';'
 
 /* This macro assumes that we're operating on a variable.  */

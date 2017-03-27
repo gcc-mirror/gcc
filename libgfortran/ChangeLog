@@ -1,3 +1,8 @@
+2017-03-27  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* io/list_read.c: Insert /* Fall through. */ in the macro
+	CASE_SEPARATORS in order to silence warnings.
+
 2017-03-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/78881
