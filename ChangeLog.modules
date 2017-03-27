@@ -1,3 +1,12 @@
+2017-03-27  Nathan Sidwell  <nathan@acm.org>
+
+	Simplify ADL part 2
+	gcc/cp
+	* cp-tree.h (RECORD_MARKED_P): New.
+	* tree.c (ovl_lookup_keep): Allow NULL.
+	* name-lookup.c (struct adl_lookup): New.
+	(struct arg_lookup): Delete.
+
 2017-03-24  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/

@@ -2256,7 +2256,9 @@ ovl_lookup_keep (tree lookup, bool keep)
 tree
 ovl_skip_hidden (tree ovl)
 {
-  if (TREE_CODE (ovl) == OVERLOAD)
+  if (!ovl)
+    ;
+  else if (TREE_CODE (ovl) == OVERLOAD)
     {
       /* Skip over the hidden ones.  */
       while (ovl && OVL_HIDDEN_P (ovl))

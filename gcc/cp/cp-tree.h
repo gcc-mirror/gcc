@@ -200,6 +200,7 @@ operator == (const cp_expr &lhs, tree rhs)
       DECL_VTABLE_OR_VTT_P (in VAR_DECL)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
+      RECORD_MARKED_P (in RECORD_TYPE, UNION_TYPE)
    6: IDENTIFIER_REPO_CHOSEN (in IDENTIFIER_NODE)
       TYPE_MARKED_P (in _TYPE)
       DECL_NON_TRIVIALLY_INITIALIZED_P (in VAR_DECL)
@@ -440,6 +441,9 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define NAME_MARKED_P(NODE) \
   TREE_LANG_FLAG_4 (TREE_CHECK6(NODE, OVERLOAD,NAMESPACE_DECL,TEMPLATE_DECL,\
 				FUNCTION_DECL,RECORD_TYPE,UNION_TYPE))
+/* Records need an additional ADL walking flag.  */
+#define RECORD_MARKED_P(NODE)			\
+  TREE_LANG_FLAG_5 (RECORD_OR_UNION_CHECK (NODE))
 
 /* These two accessors should only be used by OVL manipulators.
    Other users should use iterators and convenience functions.  */
