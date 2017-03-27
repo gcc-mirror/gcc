@@ -1,3 +1,11 @@
+2017-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/80168
+	* asan.c (instrument_derefs): Copy over last operand from
+	original COMPONENT_REF to the new COMPONENT_REF with
+	DECL_BIT_FIELD_REPRESENTATIVE.
+	* ubsan.c (instrument_object_size): Likewise.
+
 2017-03-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80170
