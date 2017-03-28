@@ -1,5 +1,20 @@
 2017-03-28  Nathan Sidwell  <nathan@acm.org>
 
+	Cleanup pushdecl_top_level
+	gcc/cp/
+	* cp-tree.h (pushdecl_top_level_maybe_friend,
+	pushdecl_top_level_and_finish): Delete.
+	* decl.c (cp_make_fname_decl): Adjust.
+	* decl2.c (get_guard, handle_tls_init): Likewise.
+	* pt.c (tsubst_friend_class): Likewise.
+	* rtti.c (get_tinfo_decl, tinfo_base_init): Likewise.
+	* name-lookup.h (pushdecl_top_level, pushdecl_top_level_init): Declare.
+	* name-lookup.c (pushdecl_top_level_1): Rename to ...
+	(push_decl_top_level): ... here.
+	(pushdecl_top_level_init): New.
+	(pushdecl_top_level_maybe_friend): Delete.
+	(pushdecl_top_level_and_finish): Delete.
+
 	Cleanup pushdecl
 	gcc/cp/
 	* cp-tree.h (pushdecl, pushdecl_maybe_friend): Delete.

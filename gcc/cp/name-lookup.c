@@ -1864,11 +1864,10 @@ do_pushdecl (tree x, bool is_friend)
 tree
 pushdecl (tree x, bool is_friend)
 {
-  tree ret;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = do_pushdecl (x, is_friend);
+  x = do_pushdecl (x, is_friend);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return ret;
+  return x;
 }
 
 /* We need a friendless wrapper, rather than use a default argument,
@@ -4386,49 +4385,6 @@ do_toplevel_using_decl (tree decl, tree scope, tree name)
     cp_emit_debug_info_for_using (orig_decl, current_namespace);
 }
 
-/* Like pushdecl, only it places X in the global scope if appropriate.
-   Calls cp_finish_decl to register the variable, initializing it with
-   *INIT, if INIT is non-NULL.  */
-
-static tree
-pushdecl_top_level_1 (tree x, tree *init, bool is_friend)
-{
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  push_to_top_level ();
-  x = pushdecl_namespace_level (x, is_friend);
-  if (init)
-    cp_finish_decl (x, *init, false, NULL_TREE, 0);
-  pop_from_top_level ();
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return x;
-}
-
-/* Like pushdecl, only it places X in the global scope if appropriate.  */
-
-tree
-pushdecl_top_level (tree x)
-{
-  return pushdecl_top_level_1 (x, NULL, false);
-}
-
-/* Like pushdecl_top_level, but adding the IS_FRIEND parameter.  */
-
-tree
-pushdecl_top_level_maybe_friend (tree x, bool is_friend)
-{
-  return pushdecl_top_level_1 (x, NULL, is_friend);
-}
-
-/* Like pushdecl, only it places X in the global scope if
-   appropriate.  Calls cp_finish_decl to register the variable,
-   initializing it with INIT.  */
-
-tree
-pushdecl_top_level_and_finish (tree x, tree init)
-{
-  return pushdecl_top_level_1 (x, &init, false);
-}
-
 /* Return the declarations that are members of the namespace NS.  */
 
 tree
@@ -6109,6 +6065,44 @@ do_pop_nested_namespace (tree ns)
     }
 
   do_pop_from_top_level ();
+}
+
+/* Like pushdecl, only it places X in the global scope if appropriate.
+   Calls cp_finish_decl to register the variable, initializing it with
+   *INIT, if INIT is non-NULL.  */
+
+tree
+pushdecl_top_level (tree x, bool is_friend)
+{
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  do_push_to_top_level ();
+  x = pushdecl_namespace_level (x, is_friend);
+  do_pop_from_top_level ();
+  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+  return x;
+}
+
+/* We need a friendless wrappper, as common code expects this to
+   exist.  */
+
+tree
+pushdecl_top_level (tree x)
+{
+  return pushdecl_top_level (x, false);
+}
+
+/* Like pushdecl, only it places X in the global scope if
+   appropriate.  Calls cp_finish_decl to register the variable,
+   initializing it with INIT.  */
+
+tree
+pushdecl_top_level_init (tree x, tree init)
+{
+  push_to_top_level ();
+  x = pushdecl_namespace_level (x, false);
+  cp_finish_decl (x, init, false, NULL_TREE, 0);
+  pop_from_top_level ();
+  return x;
 }
 
 /* Push into the scope of the NAME namespace.  If NAME is NULL_TREE,
