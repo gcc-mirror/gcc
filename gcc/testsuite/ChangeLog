@@ -1,3 +1,8 @@
+2017-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80222
+	* g++.dg/pr80222.C: New testcase.
+
 2017-03-28  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/80104

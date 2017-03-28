@@ -6539,8 +6539,8 @@ gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo,
   return gimple_get_virt_method_for_vtable (token, v, offset, can_refer);
 }
 
-/* Given a pointer value OP0, return a simplified version of an
-   indirection through OP0, or NULL_TREE if no simplification is
+/* Given a pointer value T, return a simplified version of an
+   indirection through T, or NULL_TREE if no simplification is
    possible.  Note that the resulting type may be different from
    the type pointed to in the sense that it is still compatible
    from the langhooks point of view. */
@@ -6554,7 +6554,8 @@ gimple_fold_indirect_ref (tree t)
 
   STRIP_NOPS (sub);
   subtype = TREE_TYPE (sub);
-  if (!POINTER_TYPE_P (subtype))
+  if (!POINTER_TYPE_P (subtype)
+      || TYPE_REF_CAN_ALIAS_ALL (ptype))
     return NULL_TREE;
 
   if (TREE_CODE (sub) == ADDR_EXPR)
