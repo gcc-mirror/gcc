@@ -1,3 +1,9 @@
+2017-03-28  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78661
+	* trans-io.c (transfer_namelist_element): Perform a polymorphic call
+	to a DTIO procedure if necessary.
+
 2017-03-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/80156

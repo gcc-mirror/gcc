@@ -1701,22 +1701,53 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
   /* Check if the derived type has a specific DTIO for the mode.
      Note that although namelist io is forbidden to have a format
      list, the specific subroutine is of the formatted kind.  */
-  if (ts->type == BT_DERIVED)
+  if (ts->type == BT_DERIVED || ts->type == BT_CLASS)
     {
-      gfc_symbol *dtio_sub = NULL;
-      gfc_symbol *vtab;
-      dtio_sub = gfc_find_specific_dtio_proc (ts->u.derived,
-					      last_dt == WRITE,
-					      true);
-      if (dtio_sub != NULL)
+      gfc_symbol *derived;
+      if (ts->type==BT_CLASS)
+	derived = ts->u.derived->components->ts.u.derived;
+      else
+	derived = ts->u.derived;
+
+      gfc_symtree *tb_io_st = gfc_find_typebound_dtio_proc (derived,
+							last_dt == WRITE, true);
+
+      if (ts->type == BT_CLASS && tb_io_st)
 	{
-	  dtio_proc = gfc_get_symbol_decl (dtio_sub);
-	  dtio_proc = gfc_build_addr_expr (NULL, dtio_proc);
-	  vtab = gfc_find_derived_vtab (ts->u.derived);
-	  vtable = vtab->backend_decl;
-	  if (vtable == NULL_TREE)
-	    vtable = gfc_get_symbol_decl (vtab);
-	  vtable = gfc_build_addr_expr (pvoid_type_node, vtable);
+	  // polymorphic DTIO call  (based on the dynamic type)
+	  gfc_se se;
+	  gfc_symtree *st = gfc_find_symtree (sym->ns->sym_root, sym->name);
+	  // build vtable expr
+	  gfc_expr *expr = gfc_get_variable_expr (st);
+	  gfc_add_vptr_component (expr);
+	  gfc_init_se (&se, NULL);
+	  se.want_pointer = 1;
+	  gfc_conv_expr (&se, expr);
+	  vtable = se.expr;
+	  // build dtio expr
+	  gfc_add_component_ref (expr,
+				tb_io_st->n.tb->u.generic->specific_st->name);
+	  gfc_init_se (&se, NULL);
+	  se.want_pointer = 1;
+	  gfc_conv_expr (&se, expr);
+	  gfc_free_expr (expr);
+	  dtio_proc = se.expr;
+	}
+      else
+	{
+	  // non-polymorphic DTIO call (based on the declared type)
+	  gfc_symbol *dtio_sub = gfc_find_specific_dtio_proc (derived,
+							last_dt == WRITE, true);
+	  if (dtio_sub != NULL)
+	    {
+	      dtio_proc = gfc_get_symbol_decl (dtio_sub);
+	      dtio_proc = gfc_build_addr_expr (NULL, dtio_proc);
+	      gfc_symbol *vtab = gfc_find_derived_vtab (derived);
+	      vtable = vtab->backend_decl;
+	      if (vtable == NULL_TREE)
+		vtable = gfc_get_symbol_decl (vtab);
+	      vtable = gfc_build_addr_expr (pvoid_type_node, vtable);
+	    }
 	}
     }
 
