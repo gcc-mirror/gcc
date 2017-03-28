@@ -5334,7 +5334,6 @@ ira (FILE *f)
                                        reg_alternate_class (old_regno),
                                        reg_allocno_class (old_regno));
                 }
-
 	    }
 	  else
 	    {
@@ -5370,7 +5369,14 @@ ira (FILE *f)
   calculate_allocation_cost ();
 
 #ifdef ENABLE_IRA_CHECKING
-  if (ira_conflicts_p)
+  if (ira_conflicts_p && ! ira_use_lra_p)
+    /* Opposite to reload pass, LRA does not use any conflict info
+       from IRA.  We don't rebuild conflict info for LRA (through
+       ira_flattening call) and can not use the check here.  We could
+       rebuild this info for LRA in the check mode but there is a risk
+       that code generated with the check and without it will be a bit
+       different.  Calling ira_flattening in any mode would be a
+       wasting CPU time.  So do not check the allocation for LRA.  */
     check_allocation ();
 #endif
 
