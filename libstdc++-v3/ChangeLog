@@ -1,5 +1,11 @@
 2017-03-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/80137
+	* include/bits/random.tcc (generate_canonical): Use std::nextafter
+	or numeric_limits::epsilon() to reduce out-of-range values.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/
+	64351.cc: Verify complexity requirement is met.
+
 	Backport from mainline
 	2017-03-15  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
 
