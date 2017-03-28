@@ -1,3 +1,9 @@
+2017-03-28  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/80104
+	* cgraphunit.c (cgraph_node::expand_thunk): Mark argument of a
+	thunk call as DECL_GIMPLE_REG_P when vector or complex type.
+
 2017-03-28  Claudiu Zissulescu  <claziss@synopsys.com>
 	    Thomas Petazzoni  <thomas.petazzoni@free-electrons.com>
 
