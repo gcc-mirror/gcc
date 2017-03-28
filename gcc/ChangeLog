@@ -1,5 +1,10 @@
 2017-03-28  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-vect-loop.c (optimize_mask_stores): Add bb to the right
+	loop.
+
+2017-03-28  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-vect-loop-manip.c (slpeel_add_loop_guard): New param and
 	mark new edge's irreducible flag accordign to it.
 	(vect_do_peeling): Check loop preheader edge's irreducible flag
