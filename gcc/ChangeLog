@@ -1,3 +1,9 @@
+2017-03-28  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80067
+	* fold-const.c (fold_comparison): Use protected_set_expr_location
+	instead of SET_EXPR_LOCATION.
+
 2017-03-28  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* tree.c (add_expr): Avoid name lookup warning.
