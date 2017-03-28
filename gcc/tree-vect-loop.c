@@ -7229,6 +7229,7 @@ optimize_mask_stores (struct loop *loop)
   unsigned nbbs = loop->num_nodes;
   unsigned i;
   basic_block bb;
+  struct loop *bb_loop;
   gimple_stmt_iterator gsi;
   gimple *stmt;
   auto_vec<gimple *> worklist;
@@ -7267,11 +7268,16 @@ optimize_mask_stores (struct loop *loop)
       last = worklist.pop ();
       mask = gimple_call_arg (last, 2);
       bb = gimple_bb (last);
-      /* Create new bb.  */
+      /* Create then_bb and if-then structure in CFG, then_bb belongs to
+	 the same loop as if_bb.  It could be different to LOOP when two
+	 level loop-nest is vectorized and mask_store belongs to the inner
+	 one.  */
       e = split_block (bb, last);
+      bb_loop = bb->loop_father;
+      gcc_assert (loop == bb_loop || flow_loop_nested_p (loop, bb_loop));
       join_bb = e->dest;
       store_bb = create_empty_bb (bb);
-      add_bb_to_loop (store_bb, loop);
+      add_bb_to_loop (store_bb, bb_loop);
       e->flags = EDGE_TRUE_VALUE;
       efalse = make_edge (bb, store_bb, EDGE_FALSE_VALUE);
       /* Put STORE_BB to likely part.  */
