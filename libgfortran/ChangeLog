@@ -1,3 +1,8 @@
+2017-03-28  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/78661
+	* io/write.c (nml_write_obj): Build a class container only if necessary.
+
 2017-03-27  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	* io/list_read.c: Insert /* Fall through. */ in the macro
