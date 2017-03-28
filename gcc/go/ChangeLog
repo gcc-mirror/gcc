@@ -1,3 +1,9 @@
+2017-03-28  Than McIntosh  <thanm@google.com>
+
+	PR go/80226
+	* go-gcc.cc (Gcc_backend::return_statement): Check for
+	void_type_node when checking result size.
+
 2017-02-20  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/79642
