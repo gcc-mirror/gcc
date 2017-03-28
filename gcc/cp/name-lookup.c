@@ -1181,7 +1181,7 @@ fixup_unhidden_decl (tree name, tree context, tree old, tree head)
    to agree with what X says.  */
 
 static tree
-pushdecl_maybe_friend_1 (tree x, bool is_friend)
+do_pushdecl (tree x, bool is_friend)
 {
   tree t;
   tree name;
@@ -1332,7 +1332,8 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	  else if (t == wchar_decl_node)
 	    {
 	      if (! DECL_IN_SYSTEM_HEADER (x))
-		pedwarn (input_location, OPT_Wpedantic, "redeclaration of %<wchar_t%> as %qT",
+		pedwarn (input_location, OPT_Wpedantic,
+			 "redeclaration of %<wchar_t%> as %qT",
 			 TREE_TYPE (x));
 	      
 	      /* Throw away the redeclaration.  */
@@ -1857,24 +1858,26 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
   return x;
 }
 
-/* Wrapper for pushdecl_maybe_friend_1.  */
+/* Record a decl-node X as belonging to the current lexical scope (or
+   the namespace containing it in the case of being friendly).  */
 
 tree
-pushdecl_maybe_friend (tree x, bool is_friend)
+pushdecl (tree x, bool is_friend)
 {
   tree ret;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = pushdecl_maybe_friend_1 (x, is_friend);
+  ret = do_pushdecl (x, is_friend);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
 
-/* Record a decl-node X as belonging to the current lexical scope.  */
+/* We need a friendless wrapper, rather than use a default argument,
+   as common code expects this to exist.  */
 
 tree
 pushdecl (tree x)
 {
-  return pushdecl_maybe_friend (x, false);
+  return pushdecl (x, false);
 }
 
 /* Enter DECL into the symbol table, if that's appropriate.  Returns
@@ -2837,7 +2840,7 @@ push_using_decl (tree scope, tree name)
    closer binding level than LEVEL.  */
 
 static tree
-pushdecl_with_scope_1 (tree x, cp_binding_level *level, bool is_friend)
+do_pushdecl_with_scope (tree x, cp_binding_level *level, bool is_friend)
 {
   cp_binding_level *b;
   tree function_decl = current_function_decl;
@@ -2854,21 +2857,30 @@ pushdecl_with_scope_1 (tree x, cp_binding_level *level, bool is_friend)
     {
       b = current_binding_level;
       current_binding_level = level;
-      x = pushdecl_maybe_friend (x, is_friend);
+      x = pushdecl (x, is_friend);
       current_binding_level = b;
     }
   current_function_decl = function_decl;
   return x;
 }
  
-/* Wrapper for pushdecl_with_scope_1.  */
+/* Inject X into the local scope just before the function parms.  */
 
 tree
-pushdecl_with_scope (tree x, cp_binding_level *level, bool is_friend)
+pushdecl_outermost_localscope (tree x)
 {
-  tree ret;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = pushdecl_with_scope_1 (x, level, is_friend);
+  cp_binding_level *b  = NULL, *n = current_binding_level;
+
+  if (n->kind == sk_function_parms)
+    return error_mark_node;
+  do
+    {
+      b = n;
+      n = b->level_chain;
+    }
+  while (n->kind != sk_function_parms);
+  tree ret = do_pushdecl_with_scope (x, b, false);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
@@ -4260,7 +4272,8 @@ pushdecl_namespace_level (tree x, bool is_friend)
   tree t;
 
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  t = pushdecl_with_scope (x, NAMESPACE_LEVEL (current_namespace), is_friend);
+  t = do_pushdecl_with_scope
+    (x, NAMESPACE_LEVEL (current_namespace), is_friend);
 
   /* Now, the type_shadowed stack may screw us.  Munge it so it does
      what we want.  */
@@ -5638,7 +5651,7 @@ maybe_process_template_type_declaration (tree type, int is_friend,
    Returns TYPE upon success and ERROR_MARK_NODE otherwise.  */
 
 static tree
-pushtag_1 (tree name, tree type, tag_scope scope)
+do_pushtag (tree name, tree type, tag_scope scope)
 {
   cp_binding_level *b;
   tree decl;
@@ -5728,7 +5741,7 @@ pushtag_1 (tree name, tree type, tag_scope scope)
 	}
       else if (b->kind != sk_template_parms)
 	{
-	  decl = pushdecl_with_scope_1 (decl, b, /*is_friend=*/false);
+	  decl = do_pushdecl_with_scope (decl, b, /*is_friend=*/false);
 	  if (decl == error_mark_node)
 	    return decl;
 	}
@@ -5780,14 +5793,14 @@ pushtag_1 (tree name, tree type, tag_scope scope)
   return type;
 }
 
-/* Wrapper for pushtag_1.  */
+/* Wrapper for do_pushtag.  */
 
 tree
 pushtag (tree name, tree type, tag_scope scope)
 {
   tree ret;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = pushtag_1 (name, type, scope);
+  ret = do_pushtag (name, type, scope);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
@@ -5875,7 +5888,6 @@ store_class_bindings (vec<cp_class_binding, va_gc> *names,
   size_t i;
   cp_class_binding *cb;
 
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   for (i = 0; vec_safe_iterate (names, i, &cb); ++i)
     if (store_binding_p (cb->identifier))
       bindings_need_stored.safe_push (cb->identifier);
@@ -5887,7 +5899,6 @@ store_class_bindings (vec<cp_class_binding, va_gc> *names,
 	store_binding (id, old_bindings);
       bindings_need_stored.truncate (0);
     }
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
 /* Process a namespace-scope using directive.  */

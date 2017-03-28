@@ -1,5 +1,25 @@
 2017-03-28  Nathan Sidwell  <nathan@acm.org>
 
+	Cleanup pushdecl
+	gcc/cp/
+	* cp-tree.h (pushdecl, pushdecl_maybe_friend): Delete.
+	(pushtag): Delete.
+	* decl.c (cp_make_fname_decl): Call pushdecl_outermost_localscope.
+	* lambda.c (insert_capture_proxy): Likewise.
+	* friend.c (do_friend): Call overloaded pushdecl.
+	* name-lookup.h (pushdecl_with_scope): Delete.
+	(pushdecl, pushtag, pushdecl_outermost_localscope): Declare.
+	* name-lookup.c (pushdecl_maybe_friend_1): Rename to ...
+	(do_pushdecl): ... here.
+	(pushdecl_maybe_friend): Replace with overloaded pushdecl.
+	(pushdecl): Adjust.
+	(pushdecl_with_scope_1): Rename to do_pushdecl_with_scope. Adjust.
+	(pushdecl_with_scope): Delete.
+	(pushdecl_outermost_localscope): New.
+	(pushdecl_namespace_level): Adjust.
+	(do_pushtag): Renamed from pushtag_1.
+	(pushtag): Adjust.
+
 	Cleanup namespace push/pop part 2
 	gcc/cp/
 	* module.c (cpms_in::finish_namespace): Adjust.

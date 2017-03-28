@@ -304,7 +304,6 @@ extern void push_binding_level (cp_binding_level *);
 extern bool handle_namespace_attrs (tree, tree);
 extern void pushlevel_class (void);
 extern void poplevel_class (void);
-extern tree pushdecl_with_scope (tree, cp_binding_level *, bool);
 extern tree lookup_name_prefer_type (tree, int);
 extern tree lookup_name_real (tree, int, int, bool, int, int);
 extern tree lookup_type_scope (tree, tag_scope);
@@ -337,6 +336,10 @@ extern void cp_emit_debug_info_for_using (tree, tree);
 
 extern void finish_toplevel_using_directive (tree, tree);
 extern void finish_local_using_directive (tree, tree);
+extern tree pushdecl (tree);
+extern tree pushdecl (tree, bool is_friend);
+extern tree pushdecl_outermost_localscope (tree);
+extern tree pushtag (tree, tree, tag_scope);
 extern bool push_namespace (tree, bool make_inline = false);
 extern void pop_namespace (void);
 extern void push_nested_namespace (tree);
