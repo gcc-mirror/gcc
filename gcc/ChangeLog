@@ -1,4 +1,15 @@
 2017-03-28  Claudiu Zissulescu  <claziss@synopsys.com>
+	    Thomas Petazzoni  <thomas.petazzoni@free-electrons.com>
+
+	* config/arc/arc.h (CPP_SPEC): Add subtarget_cpp_spec.
+	(EXTRA_SPECS): Define.
+	(SUBTARGET_EXTRA_SPECS): Likewise.
+	(SUBTARGET_CPP_SPEC): Likewise.
+	* config/arc/elf.h (EXTRA_SPECS): Renamed to
+	SUBTARGET_EXTRA_SPECS.
+	* config/arc/linux.h (SUBTARGET_CPP_SPEC): Define.
+
+2017-03-28  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/simdext.md (vst64_insn): Update pattern.
 	(vld32wh_insn): Likewise.

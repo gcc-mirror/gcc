@@ -78,3 +78,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Linux toolchains use r25 as the thread pointer register.  */
 #undef TARGET_ARC_TP_REGNO_DEFAULT
 #define TARGET_ARC_TP_REGNO_DEFAULT 25
+
+#undef SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC "\
+   %{pthread:-D_REENTRANT} \
+"
