@@ -534,12 +534,13 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop,
 /* Given the condition expression COND, put it as the last statement of
    GUARD_BB; set both edges' probability; set dominator of GUARD_TO to
    DOM_BB; return the skip edge.  GUARD_TO is the target basic block to
-   skip the loop.  PROBABILITY is the skip edge's probability.  */
+   skip the loop.  PROBABILITY is the skip edge's probability.  Mark the
+   new edge as irreducible if IRREDUCIBLE_P is true.  */
 
 static edge
 slpeel_add_loop_guard (basic_block guard_bb, tree cond,
 		       basic_block guard_to, basic_block dom_bb,
-		       int probability)
+		       int probability, bool irreducible_p)
 {
   gimple_stmt_iterator gsi;
   edge new_e, enter_e;
@@ -566,6 +567,9 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond,
   new_e->count = guard_bb->count;
   new_e->probability = probability;
   new_e->count = apply_probability (enter_e->count, probability);
+  if (irreducible_p)
+    new_e->flags |= EDGE_IRREDUCIBLE_LOOP;
+
   enter_e->count -= new_e->count;
   enter_e->probability = inverse_probability (probability);
   set_immediate_dominator (CDI_DOMINATORS, guard_to, dom_bb);
@@ -1667,6 +1671,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 
   struct loop *prolog, *epilog = NULL, *loop = LOOP_VINFO_LOOP (loop_vinfo);
   struct loop *first_loop = loop;
+  bool irred_flag = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
   create_lcssa_for_virtual_phi (loop);
   update_ssa (TODO_update_ssa_only_virtuals);
 
@@ -1748,7 +1753,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  guard_to = split_edge (loop_preheader_edge (loop));
 	  guard_e = slpeel_add_loop_guard (guard_bb, guard_cond,
 					   guard_to, guard_bb,
-					   inverse_probability (prob_prolog));
+					   inverse_probability (prob_prolog),
+					   irred_flag);
 	  e = EDGE_PRED (guard_to, 0);
 	  e = (e != guard_e ? e : EDGE_PRED (guard_to, 1));
 	  slpeel_update_phi_nodes_for_guard1 (prolog, loop, guard_e, e);
@@ -1813,7 +1819,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  guard_to = split_edge (loop_preheader_edge (epilog));
 	  guard_e = slpeel_add_loop_guard (guard_bb, guard_cond,
 					   guard_to, guard_bb,
-					   inverse_probability (prob_vector));
+					   inverse_probability (prob_vector),
+					   irred_flag);
 	  e = EDGE_PRED (guard_to, 0);
 	  e = (e != guard_e ? e : EDGE_PRED (guard_to, 1));
 	  slpeel_update_phi_nodes_for_guard1 (first_loop, epilog, guard_e, e);
@@ -1853,7 +1860,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  guard_to = split_edge (single_exit (epilog));
 	  guard_e = slpeel_add_loop_guard (guard_bb, guard_cond, guard_to,
 					   skip_vector ? anchor : guard_bb,
-					   inverse_probability (prob_epilog));
+					   inverse_probability (prob_epilog),
+					   irred_flag);
 	  slpeel_update_phi_nodes_for_guard2 (loop, epilog, guard_e,
 					      single_exit (epilog));
 	  /* Only need to handle basic block before epilog loop if it's not
