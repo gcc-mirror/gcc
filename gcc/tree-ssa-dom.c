@@ -692,11 +692,18 @@ back_propagate_equivalences (tree lhs, edge e,
 }
 
 /* Record NAME has the value zero and if NAME was set from a BIT_IOR_EXPR
-   recurse into both operands recording their values as zero too.  */
+   recurse into both operands recording their values as zero too. 
+   RECURSION_DEPTH controls how far back we recurse through the operands
+   of the BIT_IOR_EXPR.  */
 
 static void
-derive_equivalencs_from_bit_ior (tree name, const_and_copies *const_and_copies)
+derive_equivalences_from_bit_ior (tree name,
+				  const_and_copies *const_and_copies,
+				  int recursion_limit)
 {
+  if (recursion_limit == 0)
+    return;
+
   if (TREE_CODE (name) == SSA_NAME)
     {
       tree value = fold_convert (TREE_TYPE (name), integer_zero_node);
@@ -710,10 +717,12 @@ derive_equivalencs_from_bit_ior (tree name, const_and_copies *const_and_copies)
       if (is_gimple_assign (def_stmt)
 	  && gimple_assign_rhs_code (def_stmt) == BIT_IOR_EXPR)
 	{
-	  derive_equivalencs_from_bit_ior (gimple_assign_rhs1 (def_stmt),
-					   const_and_copies);
-	  derive_equivalencs_from_bit_ior (gimple_assign_rhs2 (def_stmt),
-					   const_and_copies);
+	  derive_equivalences_from_bit_ior (gimple_assign_rhs1 (def_stmt),
+					    const_and_copies,
+					    recursion_limit - 1);
+	  derive_equivalences_from_bit_ior (gimple_assign_rhs2 (def_stmt),
+					    const_and_copies,
+					    recursion_limit - 1);
 	}
     }
 }
@@ -751,7 +760,7 @@ record_temporary_equivalences (edge e,
 	      enum tree_code code = eq->cond.ops.binary.op;
 	      if ((code == EQ_EXPR && eq->value == boolean_true_node)
 		  || (code == NE_EXPR && eq->value == boolean_false_node))
-		derive_equivalencs_from_bit_ior (op0, const_and_copies);
+		derive_equivalences_from_bit_ior (op0, const_and_copies, 4);
 
 	      /* TODO: We could handle BIT_AND_EXPR in a similar fashion
 		 recording that the operands have a nonzero value.  */

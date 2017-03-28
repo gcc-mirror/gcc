@@ -1,3 +1,8 @@
+2017-03-27  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/80162
+	* gcc.c-torture/compile/pr80216.c: New test.
+
 2017-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/80162
