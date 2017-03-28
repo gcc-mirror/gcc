@@ -4182,131 +4182,6 @@ handle_namespace_attrs (tree ns, tree attributes)
   return saw_vis;
 }
 
-/* Push into the scope of the NAME namespace.  If create_ok is true, a
-   new namespace can be created.  If NAME is NULL_TREE, then we
-   select a name that is unique to this compilation unit.  Returns 0 if
-   pushdecl fails, +1 if we pushed an existing namespace and -1 if we
-   created a new namespace.  */
-
-int
-push_namespace (tree name)
-{
-  tree d = NULL_TREE;
-  bool need_new = true;
-  bool implicit_use = false;
-  bool anon = !name;
-  int ret = 0;
-
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-
-  /* We should not get here if the global_namespace is not yet constructed
-     nor if NAME designates the global namespace:  The global scope is
-     constructed elsewhere.  */
-  gcc_assert (global_namespace != NULL && name != global_identifier);
-
-  if (anon)
-    {
-      name = anon_identifier;
-      d = IDENTIFIER_NAMESPACE_VALUE (name);
-      if (d)
-	/* Reopening anonymous namespace.  */
-	need_new = false;
-      implicit_use = true;
-    }
-  else
-    {
-      /* Check whether this is an extended namespace definition.  */
-      d = IDENTIFIER_NAMESPACE_VALUE (name);
-      if (d != NULL_TREE && TREE_CODE (d) == NAMESPACE_DECL)
-	{
-	  tree dna = DECL_NAMESPACE_ALIAS (d);
-	  if (dna)
- 	    {
-	      /* We do some error recovery for, eg, the redeclaration
-		 of M here:
-
-		 namespace N {}
-		 namespace M = N;
-		 namespace M {}
-
-		 However, in nasty cases like:
-
-		 namespace N
-		 {
-		   namespace M = N;
-		   namespace M {}
-		 }
-
-		 we just error out below, in duplicate_decls.  */
-	      if (NAMESPACE_LEVEL (dna)->level_chain
-		  == current_binding_level)
-		{
-		  error ("namespace alias %qD not allowed here, "
-			 "assuming %qD", d, dna);
-		  d = dna;
-		  need_new = false;
-		}
-	    }
-	  else
-	    need_new = false;
-	}
-    }
-
-  if (!need_new)
-    {
-      resume_scope (NAMESPACE_LEVEL (d));
-      ret = 1;
-    }
-  else
-    {
-      /* Make a new namespace, binding the name to it.  */
-      d = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
-      DECL_CONTEXT (d) = FROB_CONTEXT (current_namespace);
-
-      /* The name of this namespace is not visible to other translation
-	 units if it is an anonymous namespace or member thereof.  */
-      if (anon || decl_anon_ns_mem_p (current_namespace))
-	TREE_PUBLIC (d) = 0;
-      else
-	TREE_PUBLIC (d) = 1;
-
-      if (pushdecl (d) != error_mark_node)
-	{
-	  ret = -1;
-	  if (anon)
-	    {
-	      /* Clear DECL_NAME for the benefit of debugging back ends.  */
-	      SET_DECL_ASSEMBLER_NAME (d, name);
-	      DECL_NAME (d) = NULL_TREE;
-	    }
-	  begin_scope (sk_namespace, d);
-	}
-    }
-
-  if (ret)
-    {
-      if (implicit_use)
-	do_toplevel_using_directive (current_namespace, d);
-
-      /* Enter the name space.  */
-      current_namespace = d;
-    }
-
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return ret;
-}
-
-/* Pop from the scope of the current namespace.  */
-
-void
-pop_namespace (void)
-{
-  gcc_assert (current_namespace != global_namespace);
-  current_namespace = CP_DECL_CONTEXT (current_namespace);
-  /* The binding level is not popped, as it might be re-opened later.  */
-  leave_scope ();
-}
-
 /* Temporarily set the namespace for the current declaration.  */
 
 void
@@ -4496,27 +4371,6 @@ do_toplevel_using_decl (tree decl, tree scope, tree name)
   /* Emit debug info.  */
   if (!processing_template_decl)
     cp_emit_debug_info_for_using (orig_decl, current_namespace);
-}
-
-/* Make the current namespace an inline namespace.  
-
-   An inline namespace is equivalent to a stub namespace definition
-   followed by a strong using directive.  */
-
-void
-make_namespace_inline ()
-{
-  tree name_space = current_namespace;
-  tree parent = CP_DECL_CONTEXT (name_space);
-
-  NAMESPACE_INLINE_P (name_space) = true;
-
-  /* Set up namespace association.  */
-  DECL_NAMESPACE_ASSOCIATIONS (name_space)
-    = tree_cons (parent, NULL_TREE, DECL_NAMESPACE_ASSOCIATIONS (name_space));
-
-  /* Import the contents of the inline namespace.  */
-  do_toplevel_using_directive (parent, name_space);
 }
 
 /* Like pushdecl, only it places X in the global scope if appropriate.
@@ -6244,6 +6098,124 @@ do_pop_nested_namespace (tree ns)
     }
 
   do_pop_from_top_level ();
+}
+
+/* Push into the scope of the NAME namespace.  If NAME is NULL_TREE,
+   then we enter an anonymous namespace.  If MAKE_INLINE is true, then
+   we create an inline namespace (it is up to the caller to check upon
+   redefinition). Return true on successful entry  */
+
+bool
+push_namespace (tree name, bool make_inline)
+{
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+
+  /* We should not get here if the global_namespace is not yet constructed
+     nor if NAME designates the global namespace:  The global scope is
+     constructed elsewhere.  */
+  gcc_assert (global_namespace != NULL && name != global_identifier);
+
+  if (!name)
+    name = anon_identifier;
+
+  tree ns = IDENTIFIER_NAMESPACE_VALUE (name);
+  /* Check whether this is an extended namespace definition.  */
+  if (ns && TREE_CODE (ns) == NAMESPACE_DECL)
+    {
+      if (tree dna = DECL_NAMESPACE_ALIAS (ns))
+	{
+	  /* We do some error recovery for, eg, the redeclaration of M
+	     here:
+
+	     namespace N {}
+	     namespace M = N;
+	     namespace M {}
+
+	     However, in nasty cases like:
+
+	     namespace N
+	     {
+	       namespace M = N;
+	       namespace M {}
+	     }
+
+	     we just error out below, in duplicate_decls.  */
+	  if (NAMESPACE_LEVEL (dna)->level_chain == current_binding_level)
+	    {
+	      error ("namespace alias %qD not allowed here, "
+		     "assuming %qD", ns, dna);
+	      ns = dna;
+	    }
+	  else
+	    ns = NULL_TREE;
+	}
+    }
+  else
+    ns = NULL_TREE;
+
+  if (ns)
+    resume_scope (NAMESPACE_LEVEL (ns));
+  else
+    {
+      /* Make a new namespace, binding the name to it.  */
+      ns = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
+      DECL_CONTEXT (ns) = FROB_CONTEXT (current_namespace);
+
+      /* The name of this namespace is not visible to other translation
+	 units if it is an anonymous namespace or member thereof.  */
+      if (name == anon_identifier || decl_anon_ns_mem_p (current_namespace))
+	TREE_PUBLIC (ns) = 0;
+      else
+	TREE_PUBLIC (ns) = 1;
+
+      if (pushdecl (ns) == error_mark_node)
+	ns = NULL_TREE;
+      else
+	{
+	  if (name == anon_identifier)
+	    {
+	      /* Clear DECL_NAME for the benefit of debugging back ends.  */
+	      SET_DECL_ASSEMBLER_NAME (ns, name);
+	      DECL_NAME (ns) = NULL_TREE;
+	    }
+
+	  if (make_inline)
+	    {
+	      NAMESPACE_INLINE_P (ns) = true;
+
+	      /* Set up namespace association.  */
+	      DECL_NAMESPACE_ASSOCIATIONS (ns)
+		= tree_cons (current_namespace, NULL_TREE, NULL_TREE);
+	    }
+
+	  if (make_inline || name == anon_identifier)
+	      /* Import the contents of the namespace.  */
+	    do_toplevel_using_directive (current_namespace, ns);
+
+	  begin_scope (sk_namespace, ns);
+	}
+    }
+
+  if (ns)
+    current_namespace = ns;
+
+  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+  return ns != NULL_TREE;
+}
+
+/* Pop from the scope of the current namespace.  */
+
+void
+pop_namespace (void)
+{
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+
+  gcc_assert (current_namespace != global_namespace);
+  current_namespace = CP_DECL_CONTEXT (current_namespace);
+  /* The binding level is not popped, as it might be re-opened later.  */
+  leave_scope ();
+
+  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
 /* External entry points for do_{push_to/pop_from}_top_level.  */

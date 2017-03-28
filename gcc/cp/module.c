@@ -2016,37 +2016,21 @@ cpms_in::finish_namespace (FILE *d, tree ns)
 
   /* We will not have frobbed the namespace yet.  */
   set_scope (DECL_CONTEXT (ns));
-  if (int push = push_namespace (DECL_NAME (ns)))
+  bool inline_p = NAMESPACE_INLINE_P (ns);
+  bool module_p = MODULE_NAMESPACE_P (ns);
+  if (module_p && (!impl || DECL_NAME (ns) != module_name))
+    inline_p = false;
+  if (push_namespace (DECL_NAME (ns), inline_p))
     {
-      bool inline_p = NAMESPACE_INLINE_P (ns);
-      bool module_p = MODULE_NAMESPACE_P (ns);
-
       res = current_namespace;
-      if (module_p && (!impl || DECL_NAME (ns) != module_name))
-	inline_p = false;
 
-      if (push < 0)
-	{
-	  if (module_p)
-	    MODULE_NAMESPACE_P (res) = true;
-	  if (inline_p)
-	    make_namespace_inline ();
-	  if (d)
-	    fprintf (d, "Creating%s namespace %s (%p)\n",
-		     inline_p ? " inline" : "",
-		     IDENTIFIER_POINTER (DECL_NAME (ns)), (void *)res);
-	}
-      else
-	{
-	  /* Existing namespace.  Make sure it matches.  */
-	  if (inline_p != NAMESPACE_INLINE_P (ns)
-	      || module_p != MODULE_NAMESPACE_P (ns))
-	    {
-	      error ("mismatched namespace %qD", res);
-	      res = NULL_TREE;
-	    }
-	}
-      /* Pop cpms_out of the namespace so our scope cache is correct.  */
+      if (module_p)
+	MODULE_NAMESPACE_P (res) = true;
+      if (d)
+	fprintf (d, "Creating%s namespace %s (%p)\n",
+		 inline_p ? " inline" : "",
+		 IDENTIFIER_POINTER (DECL_NAME (ns)), (void *)res);
+      /* Pop out of the namespace so our scope cache is correct.  */
       pop_namespace ();
     }
   free_node (ns);
@@ -2087,11 +2071,8 @@ push_module_namespace (bool do_it)
 {
   gcc_assert (TREE_CODE (current_scope ()) == NAMESPACE_DECL
 	      && (!do_it || module_name));
-  if (do_it && push_namespace (module_name) < 0)
-    {
-      MODULE_NAMESPACE_P (current_namespace) = true;
-      make_namespace_inline ();
-    }
+  if (do_it && push_namespace (module_name, true))
+    MODULE_NAMESPACE_P (current_namespace) = true;
 }
 
 /* If we're in the current module's local namespace, pop cpms_out of it.  */

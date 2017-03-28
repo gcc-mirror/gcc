@@ -301,11 +301,6 @@ extern tree push_inner_scope (tree);
 extern void pop_inner_scope (tree, tree);
 extern void push_binding_level (cp_binding_level *);
 
-extern int push_namespace (tree);
-extern void pop_namespace (void);
-extern void make_namespace_inline ();
-extern void push_nested_namespace (tree);
-extern void pop_nested_namespace (tree);
 extern bool handle_namespace_attrs (tree, tree);
 extern void pushlevel_class (void);
 extern void poplevel_class (void);
@@ -342,6 +337,10 @@ extern void cp_emit_debug_info_for_using (tree, tree);
 
 extern void finish_toplevel_using_directive (tree, tree);
 extern void finish_local_using_directive (tree, tree);
+extern bool push_namespace (tree, bool make_inline = false);
+extern void pop_namespace (void);
+extern void push_nested_namespace (tree);
+extern void pop_nested_namespace (tree);
 extern void push_to_top_level (void);
 extern void pop_from_top_level (void);
 

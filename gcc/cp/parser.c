@@ -18352,7 +18352,6 @@ cp_parser_namespace_definition (cp_parser* parser)
   if (is_inline)
     {
       maybe_warn_cpp0x (CPP0X_INLINE_NAMESPACES);
-      is_inline = true;
       cp_lexer_consume_token (parser->lexer);
     }
 
@@ -18404,13 +18403,8 @@ cp_parser_namespace_definition (cp_parser* parser)
 	      "a nested namespace definition cannot be inline");
 
   /* Start the namespace.  */
-  int push = push_namespace (identifier);
-
-  if (!is_inline)
-    ;
-  else if (push < 0)
-    make_namespace_inline ();
-  else if (push > 0 && !NAMESPACE_INLINE_P (current_namespace))
+  bool pushed = push_namespace (identifier, is_inline);
+  if (pushed && is_inline && !NAMESPACE_INLINE_P (current_namespace))
     {
       error_at (token->location,
 		"an inline namespace must be specified at initial definition");
@@ -18439,7 +18433,7 @@ cp_parser_namespace_definition (cp_parser* parser)
     pop_visibility (1);
 
   /* Finish the namespace.  */
-  if (push)
+  if (pushed)
     pop_namespace ();
 
   /* Pop the nested namespace definitions.  */

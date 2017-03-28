@@ -1,6 +1,15 @@
 2017-03-28  Nathan Sidwell  <nathan@acm.org>
 
-	Cleanup namespace push/pop
+	Cleanup namespace push/pop part 2
+	gcc/cp/
+	* module.c (cpms_in::finish_namespace): Adjust.
+	(push_module_namespace): Adjust.
+	* name-lookup.c (push_namespace, pop_namespace): Reimplement.
+	(make_namespace_inline): Delete.
+	* name-lookup.h (push_namespace): Change prototype.
+	* parser.c (cp_parser_namespace_definition): Adjust.
+
+	Cleanup namespace push/pop part 1
 	gcc/cp/
 	* cp-tree.h (CPTI_GLOBAL, CPTI_GLOBAL_IDENTIFIER, CPTI_GLOBAL_TYPE,
 	CPTI_ANON_IDENTIFIER): New.
