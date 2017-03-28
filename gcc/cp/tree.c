@@ -2144,16 +2144,16 @@ ovl_lookup_mark (tree ovl, bool val)
     ;
   else if (TREE_CODE (ovl) == FUNCTION_DECL
 	   || !OVL_LOOKUP_P (ovl))
-    NAME_MARKED_P (ovl) = val;
+    LOOKUP_MARKED_P (ovl) = val;
   else
     for (tree probe = ovl; probe; probe = OVL_CHAIN (probe))
       if (!OVL_LOOKUP_P (probe))
 	{
-	  NAME_MARKED_P (probe) = val;
+	  LOOKUP_MARKED_P (probe) = val;
 	  break;
 	}
       else
-	NAME_MARKED_P (OVL_FUNCTION (probe)) = val;
+	LOOKUP_MARKED_P (OVL_FUNCTION (probe)) = val;
 
   return ovl;
 }
@@ -2163,7 +2163,7 @@ ovl_lookup_mark (tree ovl, bool val)
 tree
 ovl_lookup_add (tree lookup, tree ovl)
 {
-  if (NAME_MARKED_P (ovl))
+  if (LOOKUP_MARKED_P (ovl))
     return lookup;
 
   if (TREE_CODE (ovl) == OVERLOAD)
@@ -2174,13 +2174,13 @@ ovl_lookup_add (tree lookup, tree ovl)
       tree marked = NULL_TREE;
 
       for (tree probe = ovl; !marked && probe; probe = OVL_CHAIN (probe))
-	if (NAME_MARKED_P (probe))
+	if (LOOKUP_MARKED_P (probe))
 	  marked = probe;
-	else if (!OVL_CHAIN (probe) && NAME_MARKED_P (OVL_FUNCTION (probe)))
+	else if (!OVL_CHAIN (probe) && LOOKUP_MARKED_P (OVL_FUNCTION (probe)))
 	  marked = OVL_FUNCTION (probe);
 
       if (marked)
-	NAME_MARKED_P (marked) = false;
+	LOOKUP_MARKED_P (marked) = false;
 
       if (!marked)
 	;
@@ -2227,7 +2227,7 @@ ovl_lookup_add (tree lookup, tree ovl)
 
   /* Finally mark the new overload and prepend it to the current
      lookup.  */
-  NAME_MARKED_P (ovl) = true;
+  LOOKUP_MARKED_P (ovl) = true;
   lookup = ovl_add (lookup, ovl, -1);
 
   return lookup;

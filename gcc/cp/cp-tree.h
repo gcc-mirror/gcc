@@ -194,7 +194,7 @@ operator == (const cp_expr &lhs, tree rhs)
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
       DECL_TINFO_P (in VAR_DECL)
       FUNCTION_REF_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
-      NAME_MARKED_P (in NAMESPACE_DECL, TEMPLATE_DECL,
+      LOOKUP_MARKED_P (in NAMESPACE_DECL, TEMPLATE_DECL,
       	FUNCTION_DECL, RECORD_TYPE, UNION_TYPE)
    5: C_IS_RESERVED_WORD (in IDENTIFIER_NODE)
       DECL_VTABLE_OR_VTT_P (in VAR_DECL)
@@ -437,8 +437,8 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
     && MAIN_NAME_P (DECL_NAME (NODE))			\
     && flag_hosted)
 
-/* Name lookup walker marking.  */
-#define NAME_MARKED_P(NODE) \
+/* Lookup walker marking.  */
+#define LOOKUP_MARKED_P(NODE) \
   TREE_LANG_FLAG_4 (TREE_CHECK6(NODE, OVERLOAD,NAMESPACE_DECL,TEMPLATE_DECL,\
 				FUNCTION_DECL,RECORD_TYPE,UNION_TYPE))
 /* Records need an additional ADL walking flag.  */

@@ -1,5 +1,20 @@
 2017-03-28  Nathan Sidwell  <nathan@acm.org>
 
+	Cleanup using-directives
+	gcc/cp/
+	* cp-tree.h (LOOKUP_MARKED_P): Rename from NAME_MARKED_P, update all.
+	* name-lookup.h (finish_toplevel_using_directive,
+	finish_local_using_directive): Declare.
+	(do_using_directive, parse_using_directive): Delete.
+	* name-lookup.c (do_using_directive): Delete.
+	(do_toplevel_using_directive): Reimplement.
+	(do_local_using_directive, do_local_using_directive_1): New.
+	(parse_using_directive): Delete.
+	(push_using_directive, push_using_directive_1): Delete.
+	(finish_toplevel_using_directive, finish_local_using_directive): New.
+	* pt.c (tsubst_expr): Adjust.
+	* parser.c (cp_parser_using_directive): Adjust.
+
 	Kill strong using
 	gcc/
 	* doc/extend.texi (Namespace Association): Document removal.

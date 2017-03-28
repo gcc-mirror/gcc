@@ -301,8 +301,6 @@ extern bool template_parm_scope_p (void);
 extern scope_kind innermost_scope_kind (void);
 extern cp_binding_level *begin_scope (scope_kind, tree);
 extern void print_binding_stack	(void);
-extern void push_to_top_level (void);
-extern void pop_from_top_level (void);
 extern void pop_everything (void);
 extern void keep_next_level (bool);
 extern bool is_ancestor (tree, tree);
@@ -345,13 +343,16 @@ extern void do_namespace_alias (tree, tree);
 extern void do_toplevel_using_decl (tree, tree, tree);
 extern void do_local_using_decl (tree, tree, tree);
 extern tree do_class_using_decl (tree, tree);
-extern void do_using_directive (tree);
 extern cp_expr lookup_arg_dependent (tree, tree, vec<tree, va_gc> *);
 extern bool is_associated_namespace (tree, tree);
-extern void parse_using_directive (tree, tree);
 extern tree innermost_non_namespace_value (tree);
 extern cxx_binding *outer_binding (tree, cxx_binding *, bool);
 extern void cp_emit_debug_info_for_using (tree, tree);
+
+extern void finish_toplevel_using_directive (tree, tree);
+extern void finish_local_using_directive (tree, tree);
+extern void push_to_top_level (void);
+extern void pop_from_top_level (void);
 
 /* Set *DECL to the (non-hidden) declaration for ID at global scope,
    if present and return true; otherwise return false.  */

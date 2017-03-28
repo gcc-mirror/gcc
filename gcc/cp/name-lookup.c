@@ -138,8 +138,12 @@ struct adl_lookup : name_lookup
 
   vec<tree, va_gc> *scopes;
 
-  bool visited (tree);
-  bool visited_all (tree);
+  bool visit_and_mark (tree);
+  bool visit_and_mark_all (tree);
+  bool visited_p (tree scope)
+  {
+    return LOOKUP_MARKED_P (scope);
+  }
 
   void add_functions (tree);
 
@@ -168,7 +172,7 @@ adl_lookup::~adl_lookup ()
 
   FOR_EACH_VEC_ELT_REVERSE (*scopes, ix, decl)
     {
-      NAME_MARKED_P (decl) = false;
+      LOOKUP_MARKED_P (decl) = false;
       if (TREE_CODE (decl) != NAMESPACE_DECL)
 	RECORD_MARKED_P (decl) = false;
     }
@@ -176,12 +180,12 @@ adl_lookup::~adl_lookup ()
 }
 
 bool
-adl_lookup::visited (tree scope)
+adl_lookup::visit_and_mark (tree scope)
 {
-  bool result = NAME_MARKED_P (scope);
+  bool result = LOOKUP_MARKED_P (scope);
   if (!result)
     {
-      NAME_MARKED_P (scope) = true;
+      LOOKUP_MARKED_P (scope) = true;
       if (TREE_CODE (scope) == NAMESPACE_DECL
 	  || !RECORD_MARKED_P (scope))
 	vec_safe_push (scopes, scope);
@@ -191,13 +195,13 @@ adl_lookup::visited (tree scope)
 }
 
 bool
-adl_lookup::visited_all (tree scope)
+adl_lookup::visit_and_mark_all (tree scope)
 {
   bool result = RECORD_MARKED_P (scope);
   if (!result)
     {
       RECORD_MARKED_P (scope) = true;
-      if (!NAME_MARKED_P (scope))
+      if (!LOOKUP_MARKED_P (scope))
 	vec_safe_push (scopes, scope);
     }
 
@@ -225,7 +229,7 @@ adl_lookup::add_functions (tree ovl)
 void
 adl_lookup::assoc_namespace (tree scope)
 {
-  if (visited (scope))
+  if (visit_and_mark (scope))
     return;
 
   /* Check out our super-users.  */
@@ -257,7 +261,7 @@ adl_lookup::assoc_class_only (tree type)
 
   type = TYPE_MAIN_VARIANT (type);
 
-  if (visited (type))
+  if (visit_and_mark (type))
     return;
 
   tree context = decl_namespace_context (type);
@@ -333,7 +337,7 @@ adl_lookup::assoc_class (tree type)
     return;
 
   type = TYPE_MAIN_VARIANT (type);
-  if (visited_all (type))
+  if (visit_and_mark_all (type))
     return;
 
   if (TYPE_CLASS_SCOPE_P (type))
@@ -537,7 +541,8 @@ static void consider_binding_level (tree name, best_match <tree, tree> &bm,
 				    bool look_within_fields,
 				    enum lookup_name_fuzzy_kind kind);
 static tree lookup_type_current_level (tree);
-static tree push_using_directive (tree);
+static void do_local_using_directive (tree);
+static void do_toplevel_using_directive (tree, tree);
 static tree lookup_extern_c_fun_in_all_ns (tree);
 static void diagnose_name_conflict (tree, tree);
 
@@ -4226,7 +4231,7 @@ push_namespace (tree name)
 
   if (anon)
     {
-      name = get_anonymous_namespace_name();
+      name = get_anonymous_namespace_name ();
       d = IDENTIFIER_NAMESPACE_VALUE (name);
       if (d)
 	/* Reopening anonymous namespace.  */
@@ -4306,7 +4311,8 @@ push_namespace (tree name)
   if (ret)
     {
       if (implicit_use)
-	do_using_directive (d);
+	do_toplevel_using_directive (current_namespace, d);
+
       /* Enter the name space.  */
       current_namespace = d;
     }
@@ -4548,67 +4554,6 @@ do_toplevel_using_decl (tree decl, tree scope, tree name)
   /* Emit debug info.  */
   if (!processing_template_decl)
     cp_emit_debug_info_for_using (orig_decl, current_namespace);
-}
-
-/* A using directive in namespace USER_NS for namespace USING_NS.  */
-
-static void
-do_toplevel_using_directive (tree user_ns, tree using_ns)
-{
-  add_using_namespace (user_ns, using_ns, 0);
-
-  gcc_assert (!processing_template_decl);
-  
-  /* Emit debugging info.  */
-  tree context = user_ns != global_namespace ? user_ns : NULL_TREE;
-  debug_hooks->imported_module_or_decl (using_ns, NULL_TREE, context, false);
-}
-
-/* Process a using-directive.  */
-
-void
-do_using_directive (tree name_space)
-{
-  if (name_space == error_mark_node)
-    return;
-
-  gcc_assert (TREE_CODE (name_space) == NAMESPACE_DECL);
-
-  if (building_stmt_list_p ())
-    add_stmt (build_stmt (input_location, USING_STMT, name_space));
-  name_space = ORIGINAL_NAMESPACE (name_space);
-
-  if (toplevel_bindings_p ())
-    do_toplevel_using_directive (current_namespace, name_space);
-  else
-    push_using_directive (name_space);
-}
-
-/* Deal with a using-directive seen by the parser.  Currently we only
-   handle attributes here, since they cannot appear inside a template.  */
-
-void
-parse_using_directive (tree name_space, tree attribs)
-{
-  do_using_directive (name_space);
-
-  if (attribs == error_mark_node)
-    return;
-
-  for (tree a = attribs; a; a = TREE_CHAIN (a))
-    {
-      tree name = get_attribute_name (a);
-      if (!is_attribute_p ("strong", name))
-	warning (OPT_Wattributes, "%qD attribute directive ignored", name);
-      else if (name_space != error_mark_node)
-	{
-	  warning (0, "strong using directive no longer supported");
-	  if (toplevel_bindings_p ()
-	      && CP_DECL_CONTEXT (name_space) == current_namespace)
-	    inform (DECL_SOURCE_LOCATION (name_space),
-		    "you may use an inline namespace instead");
-	}
-    }
 }
 
 /* Make the current namespace an inline namespace.  
@@ -5756,42 +5701,54 @@ lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
   return ret;
 }
 
-/* Add namespace to using_directives. Return NULL_TREE if nothing was
-   changed (i.e. there was already a directive), or the fresh
-   TREE_LIST otherwise.  */
+/* A using directive in namespace USER_NS for namespace USING_NS.  */
 
-static tree
-push_using_directive_1 (tree used)
+static void
+do_toplevel_using_directive (tree user_ns, tree using_ns)
 {
-  tree ud = current_binding_level->using_directives;
-  tree iter, ancestor;
+  add_using_namespace (user_ns, using_ns, 0);
 
-  /* Check if we already have this.  */
-  if (purpose_member (used, ud) != NULL_TREE)
-    return NULL_TREE;
-
-  ancestor = namespace_ancestor (current_decl_namespace (), used);
-  ud = current_binding_level->using_directives;
-  ud = tree_cons (used, ancestor, ud);
-  current_binding_level->using_directives = ud;
-
-  /* Recursively add all namespaces used.  */
-  for (iter = DECL_NAMESPACE_USING (used); iter; iter = TREE_CHAIN (iter))
-    push_using_directive (TREE_PURPOSE (iter));
-
-  return ud;
+  gcc_assert (!processing_template_decl);
+  
+  /* Emit debugging info.  */
+  tree context = user_ns != global_namespace ? user_ns : NULL_TREE;
+  debug_hooks->imported_module_or_decl (using_ns, NULL_TREE, context, false);
 }
 
-/* Wrapper for push_using_directive_1.  */
+/* Worker for do_local_using_directive.  */
 
 static tree
-push_using_directive (tree used)
+do_local_using_directive_1 (tree usings, tree used)
 {
-  tree ret;
+  if (!LOOKUP_MARKED_P (used))
+    {
+      LOOKUP_MARKED_P (used) = true;
+      tree ancestor = namespace_ancestor (current_decl_namespace (), used);
+      usings = tree_cons (used, ancestor, usings);
+
+      /* Recursively add all namespaces used.  */
+      for (tree iter = DECL_NAMESPACE_USING (used); iter;
+	   iter = TREE_CHAIN (iter))
+	usings = do_local_using_directive_1 (usings, TREE_PURPOSE (iter));
+    }
+
+  return usings;
+}
+
+/* Add namespace to using_directives.  */
+
+static void
+do_local_using_directive (tree used)
+{
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = push_using_directive_1 (used);
+  tree usings = current_binding_level->using_directives;
+  for (tree p = usings; p; p = TREE_CHAIN (p))
+    LOOKUP_MARKED_P (TREE_PURPOSE (p)) = true;
+  usings = do_local_using_directive_1 (usings, used);
+  for (tree p = usings; p; p = TREE_CHAIN (p))
+    LOOKUP_MARKED_P (TREE_PURPOSE (p)) = false;
+  current_binding_level->using_directives = usings;
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return ret;
 }
 
 /* The type TYPE is being declared.  If it is a class template, or a
@@ -6135,6 +6092,55 @@ store_class_bindings (vec<cp_class_binding, va_gc> *names,
       bindings_need_stored.truncate (0);
     }
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+}
+
+/* Process a namespace-scope using directive.  */
+
+void
+finish_toplevel_using_directive (tree name_space, tree attribs)
+{
+  gcc_checking_assert (toplevel_bindings_p ());
+  if (name_space == error_mark_node)
+    return;
+
+  do_toplevel_using_directive (current_namespace,
+			       ORIGINAL_NAMESPACE (name_space));
+
+  if (attribs == error_mark_node)
+    return;
+
+  for (tree a = attribs; a; a = TREE_CHAIN (a))
+    {
+      tree name = get_attribute_name (a);
+      if (!is_attribute_p ("strong", name))
+	warning (OPT_Wattributes, "%qD attribute directive ignored", name);
+      else if (name_space != error_mark_node)
+	{
+	  warning (0, "strong using directive no longer supported");
+	  if (toplevel_bindings_p ()
+	      && CP_DECL_CONTEXT (name_space) == current_namespace)
+	    inform (DECL_SOURCE_LOCATION (name_space),
+		    "you may use an inline namespace instead");
+	}
+    }
+}
+
+/* Process a function-scope using-directive.  */
+
+void
+finish_local_using_directive (tree name_space, tree attribs)
+{
+  gcc_checking_assert (!toplevel_bindings_p ());
+  if (name_space == error_mark_node)
+    return;
+
+  if (attribs && attribs != error_mark_node)
+    warning (OPT_Wattributes, "attributes ignored on local using directive");
+  
+  if (building_stmt_list_p ())
+    add_stmt (build_stmt (input_location, USING_STMT, name_space));
+
+  do_local_using_directive (ORIGINAL_NAMESPACE (name_space));
 }
 
 /* A chain of saved_scope structures awaiting reuse.  */

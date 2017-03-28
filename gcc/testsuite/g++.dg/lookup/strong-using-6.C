@@ -1,4 +1,4 @@
-// { dg-do compile target c++11 } }
+// { dg-do compile { target c++11 } }
 
 namespace A
 {
@@ -6,5 +6,5 @@ namespace A
   {
   }
 
-  using namespace B __attribute__ ((strong)); // { dg-warning "not supported" }
+  using namespace B __attribute__ ((strong)); // { dg-warning "no longer supported" "" }
 }
