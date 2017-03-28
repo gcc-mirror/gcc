@@ -1,6 +1,6 @@
 017-03-27  Jeff Law  <law@redhat.com>
 
-        PR tree-optimization/80162
+        PR tree-optimization/880216
 	* tree-ssa-dom.c (derive_equivalences_from_bit_ior): Fix typo in
 	function name.  Limit recursion depth.
 	(record_temporary_equivalences): Corresponding changes.
