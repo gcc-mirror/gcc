@@ -33,12 +33,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "fold-const.h"
 #include "internal-fn.h"
+#include "langhooks.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "gimple-walk.h"
 #include "tree-cfg.h"
 #include "tree-into-ssa.h"
+#include "tree-nested.h"
+#include "stor-layout.h"
 #include "common/common-target.h"
 #include "omp-general.h"
 #include "omp-offload.h"
@@ -1669,6 +1672,92 @@ make_pass_oacc_device_lower (gcc::context *ctxt)
   return new pass_oacc_device_lower (ctxt);
 }
 
+
+/* Rewrite GOMP_SIMT_ENTER_ALLOC call given by GSI and remove the preceding
+   GOMP_SIMT_ENTER call identifying the privatized variables, which are
+   turned to structure fields and receive a DECL_VALUE_EXPR accordingly.
+   Set *REGIMPLIFY to true, except if no privatized variables were seen.  */
+
+static void
+ompdevlow_adjust_simt_enter (gimple_stmt_iterator *gsi, bool *regimplify)
+{
+  gimple *alloc_stmt = gsi_stmt (*gsi);
+  tree simtrec = gimple_call_lhs (alloc_stmt);
+  tree simduid = gimple_call_arg (alloc_stmt, 0);
+  gimple *enter_stmt = SSA_NAME_DEF_STMT (simduid);
+  gcc_assert (gimple_call_internal_p (enter_stmt, IFN_GOMP_SIMT_ENTER));
+  tree rectype = lang_hooks.types.make_type (RECORD_TYPE);
+  TYPE_ARTIFICIAL (rectype) = TYPE_NAMELESS (rectype) = 1;
+  TREE_ADDRESSABLE (rectype) = 1;
+  TREE_TYPE (simtrec) = build_pointer_type (rectype);
+  for (unsigned i = 1; i < gimple_call_num_args (enter_stmt); i++)
+    {
+      tree *argp = gimple_call_arg_ptr (enter_stmt, i);
+      if (*argp == null_pointer_node)
+	continue;
+      gcc_assert (TREE_CODE (*argp) == ADDR_EXPR
+		  && VAR_P (TREE_OPERAND (*argp, 0)));
+      tree var = TREE_OPERAND (*argp, 0);
+
+      tree field = build_decl (DECL_SOURCE_LOCATION (var), FIELD_DECL,
+			       DECL_NAME (var), TREE_TYPE (var));
+      SET_DECL_ALIGN (field, DECL_ALIGN (var));
+      DECL_USER_ALIGN (field) = DECL_USER_ALIGN (var);
+      TREE_THIS_VOLATILE (field) = TREE_THIS_VOLATILE (var);
+
+      insert_field_into_struct (rectype, field);
+
+      tree t = build_simple_mem_ref (simtrec);
+      t = build3 (COMPONENT_REF, TREE_TYPE (var), t, field, NULL);
+      TREE_THIS_VOLATILE (t) = TREE_THIS_VOLATILE (var);
+      SET_DECL_VALUE_EXPR (var, t);
+      DECL_HAS_VALUE_EXPR_P (var) = 1;
+      *regimplify = true;
+    }
+  layout_type (rectype);
+  tree size = TYPE_SIZE_UNIT (rectype);
+  tree align = build_int_cst (TREE_TYPE (size), TYPE_ALIGN_UNIT (rectype));
+
+  alloc_stmt
+    = gimple_build_call_internal (IFN_GOMP_SIMT_ENTER_ALLOC, 2, size, align);
+  gimple_call_set_lhs (alloc_stmt, simtrec);
+  gsi_replace (gsi, alloc_stmt, false);
+  gimple_stmt_iterator enter_gsi = gsi_for_stmt (enter_stmt);
+  enter_stmt = gimple_build_assign (simduid, gimple_call_arg (enter_stmt, 0));
+  gsi_replace (&enter_gsi, enter_stmt, false);
+
+  use_operand_p use;
+  gimple *exit_stmt;
+  if (single_imm_use (simtrec, &use, &exit_stmt))
+    {
+      gcc_assert (gimple_call_internal_p (exit_stmt, IFN_GOMP_SIMT_EXIT));
+      gimple_stmt_iterator exit_gsi = gsi_for_stmt (exit_stmt);
+      tree clobber = build_constructor (rectype, NULL);
+      TREE_THIS_VOLATILE (clobber) = 1;
+      exit_stmt = gimple_build_assign (build_simple_mem_ref (simtrec), clobber);
+      gsi_insert_before (&exit_gsi, exit_stmt, GSI_SAME_STMT);
+    }
+  else
+    gcc_checking_assert (has_zero_uses (simtrec));
+}
+
+/* Callback for walk_gimple_stmt used to scan for SIMT-privatized variables.  */
+
+static tree
+find_simtpriv_var_op (tree *tp, int *walk_subtrees, void *)
+{
+  tree t = *tp;
+
+  if (VAR_P (t)
+      && DECL_HAS_VALUE_EXPR_P (t)
+      && lookup_attribute ("omp simt private", DECL_ATTRIBUTES (t)))
+    {
+      *walk_subtrees = 0;
+      return t;
+    }
+  return NULL_TREE;
+}
+
 /* Cleanup uses of SIMT placeholder internal functions: on non-SIMT targets,
    VF is 1 and LANE is 0; on SIMT targets, VF is folded to a constant, and
    LANE is kept to be expanded to RTL later on.  Also cleanup all other SIMT
@@ -1679,6 +1768,7 @@ static unsigned int
 execute_omp_device_lower ()
 {
   int vf = targetm.simt.vf ? targetm.simt.vf () : 1;
+  bool regimplify = false;
   basic_block bb;
   gimple_stmt_iterator gsi;
   FOR_EACH_BB_FN (bb, cfun)
@@ -1693,6 +1783,20 @@ execute_omp_device_lower ()
 	  {
 	  case IFN_GOMP_USE_SIMT:
 	    rhs = vf == 1 ? integer_zero_node : integer_one_node;
+	    break;
+	  case IFN_GOMP_SIMT_ENTER:
+	    rhs = vf == 1 ? gimple_call_arg (stmt, 0) : NULL_TREE;
+	    goto simtreg_enter_exit;
+	  case IFN_GOMP_SIMT_ENTER_ALLOC:
+	    if (vf != 1)
+	      ompdevlow_adjust_simt_enter (&gsi, &regimplify);
+	    rhs = vf == 1 ? null_pointer_node : NULL_TREE;
+	    goto simtreg_enter_exit;
+	  case IFN_GOMP_SIMT_EXIT:
+	  simtreg_enter_exit:
+	    if (vf != 1)
+	      continue;
+	    unlink_stmt_vdef (stmt);
 	    break;
 	  case IFN_GOMP_SIMT_LANE:
 	  case IFN_GOMP_SIMT_LAST_LANE:
@@ -1726,6 +1830,16 @@ execute_omp_device_lower ()
 	stmt = lhs ? gimple_build_assign (lhs, rhs) : gimple_build_nop ();
 	gsi_replace (&gsi, stmt, false);
       }
+  if (regimplify)
+    FOR_EACH_BB_REVERSE_FN (bb, cfun)
+      for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+	if (walk_gimple_stmt (&gsi, NULL, find_simtpriv_var_op, NULL))
+	  {
+	    if (gimple_clobber_p (gsi_stmt (gsi)))
+	      gsi_remove (&gsi, true);
+	    else
+	      gimple_regimplify_operands (gsi_stmt (gsi), &gsi);
+	  }
   if (vf != 1)
     cfun->has_force_vectorize_loops = false;
   return 0;

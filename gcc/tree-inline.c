@@ -4395,6 +4395,11 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   gcall *call_stmt;
   unsigned int i;
   unsigned int prop_mask, src_properties;
+  struct function *dst_cfun;
+  tree simduid;
+  use_operand_p use;
+  gimple *simtenter_stmt = NULL;
+  vec<tree> *simtvars_save;
 
   /* The gimplifier uses input_location in too many places, such as
      internal_get_tmp_var ().  */
@@ -4598,15 +4603,26 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   id->src_cfun = DECL_STRUCT_FUNCTION (fn);
   id->call_stmt = call_stmt;
 
+  /* When inlining into an OpenMP SIMD-on-SIMT loop, arrange for new automatic
+     variables to be added to IFN_GOMP_SIMT_ENTER argument list.  */
+  dst_cfun = DECL_STRUCT_FUNCTION (id->dst_fn);
+  simtvars_save = id->dst_simt_vars;
+  if (!(dst_cfun->curr_properties & PROP_gimple_lomp_dev)
+      && (simduid = bb->loop_father->simduid) != NULL_TREE
+      && (simduid = ssa_default_def (dst_cfun, simduid)) != NULL_TREE
+      && single_imm_use (simduid, &use, &simtenter_stmt)
+      && is_gimple_call (simtenter_stmt)
+      && gimple_call_internal_p (simtenter_stmt, IFN_GOMP_SIMT_ENTER))
+    vec_alloc (id->dst_simt_vars, 0);
+  else
+    id->dst_simt_vars = NULL;
+
   /* If the src function contains an IFN_VA_ARG, then so will the dst
      function after inlining.  Likewise for IFN_GOMP_USE_SIMT.  */
   prop_mask = PROP_gimple_lva | PROP_gimple_lomp_dev;
   src_properties = id->src_cfun->curr_properties & prop_mask;
   if (src_properties != prop_mask)
-    {
-      struct function *dst_cfun = DECL_STRUCT_FUNCTION (id->dst_fn);
-      dst_cfun->curr_properties &= src_properties | ~prop_mask;
-    }
+    dst_cfun->curr_properties &= src_properties | ~prop_mask;
 
   gcc_assert (!id->src_cfun->after_inlining);
 
@@ -4739,6 +4755,27 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   /* Reset the escaped solution.  */
   if (cfun->gimple_df)
     pt_solution_reset (&cfun->gimple_df->escaped);
+
+  /* Add new automatic variables to IFN_GOMP_SIMT_ENTER arguments.  */
+  if (id->dst_simt_vars && id->dst_simt_vars->length () > 0)
+    {
+      size_t nargs = gimple_call_num_args (simtenter_stmt);
+      vec<tree> *vars = id->dst_simt_vars;
+      auto_vec<tree> newargs (nargs + vars->length ());
+      for (size_t i = 0; i < nargs; i++)
+	newargs.quick_push (gimple_call_arg (simtenter_stmt, i));
+      for (tree *pvar = vars->begin (); pvar != vars->end (); pvar++)
+	{
+	  tree ptrtype = build_pointer_type (TREE_TYPE (*pvar));
+	  newargs.quick_push (build1 (ADDR_EXPR, ptrtype, *pvar));
+	}
+      gcall *g = gimple_build_call_internal_vec (IFN_GOMP_SIMT_ENTER, newargs);
+      gimple_call_set_lhs (g, gimple_call_lhs (simtenter_stmt));
+      gimple_stmt_iterator gsi = gsi_for_stmt (simtenter_stmt);
+      gsi_replace (&gsi, g, false);
+    }
+  vec_free (id->dst_simt_vars);
+  id->dst_simt_vars = simtvars_save;
 
   /* Clean up.  */
   if (id->debug_map)
@@ -5463,9 +5500,19 @@ copy_decl_for_dup_finish (copy_body_data *id, tree decl, tree copy)
        function.  */
     ;
   else
-    /* Ordinary automatic local variables are now in the scope of the
-       new function.  */
-    DECL_CONTEXT (copy) = id->dst_fn;
+    {
+      /* Ordinary automatic local variables are now in the scope of the
+	 new function.  */
+      DECL_CONTEXT (copy) = id->dst_fn;
+      if (VAR_P (copy) && id->dst_simt_vars && !is_gimple_reg (copy))
+	{
+	  if (!lookup_attribute ("omp simt private", DECL_ATTRIBUTES (copy)))
+	    DECL_ATTRIBUTES (copy)
+	      = tree_cons (get_identifier ("omp simt private"), NULL,
+			   DECL_ATTRIBUTES (copy));
+	  id->dst_simt_vars->safe_push (copy);
+	}
+    }
 
   return copy;
 }

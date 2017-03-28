@@ -1654,7 +1654,8 @@ execute_update_addresses_taken (void)
 		  gimple_ior_addresses_taken (addresses_taken, stmt);
 		  gimple_call_set_arg (stmt, 1, arg);
 		}
-	      else if (is_asan_mark_p (stmt))
+	      else if (is_asan_mark_p (stmt)
+		       || gimple_call_internal_p (stmt, IFN_GOMP_SIMT_ENTER))
 		;
 	      else
 		gimple_ior_addresses_taken (addresses_taken, stmt);
@@ -1940,6 +1941,18 @@ execute_update_addresses_taken (void)
 			continue;
 		      }
 		  }
+		else if (gimple_call_internal_p (stmt, IFN_GOMP_SIMT_ENTER))
+		  for (i = 1; i < gimple_call_num_args (stmt); i++)
+		    {
+		      tree *argp = gimple_call_arg_ptr (stmt, i);
+		      if (*argp == null_pointer_node)
+			continue;
+		      gcc_assert (TREE_CODE (*argp) == ADDR_EXPR
+				  && VAR_P (TREE_OPERAND (*argp, 0)));
+		      tree var = TREE_OPERAND (*argp, 0);
+		      if (bitmap_bit_p (suitable_for_renaming, DECL_UID (var)))
+			*argp = null_pointer_node;
+		    }
 		for (i = 0; i < gimple_call_num_args (stmt); ++i)
 		  {
 		    tree *argp = gimple_call_arg_ptr (stmt, i);
