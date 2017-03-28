@@ -38,7 +38,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.1-b20170226\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-02-25 19:14+0000\n"
-"PO-Revision-Date: 2017-03-13 22:56+0100\n"
+"PO-Revision-Date: 2017-03-29 00:08+0200\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -18653,41 +18653,37 @@ msgstr "la primera diferencia de las definiciones correspondientes es el método
 #: ipa-devirt.c:1109
 #, gcc-internal-format
 msgid "type %qT defined in anonymous namespace can not match type %qT across the translation unit boundary"
-msgstr ""
+msgstr "el tipo %qT definido en el espacio de nombres anónimo no puede coincidir con el tipo %qT a través del contorno de la unidad de traducción"
 
 #: ipa-devirt.c:1114
 #, gcc-internal-format
 msgid "type %qT defined in anonymous namespace can not match across the translation unit boundary"
-msgstr ""
+msgstr "el tipo %qT definido en el espacio de nombres anónimo no puede coincidir a través del contorno de la unidad de traducción"
 
 #: ipa-devirt.c:1119
-#, fuzzy, gcc-internal-format
-#| msgid "incompatible types in binary expression"
+#, gcc-internal-format
 msgid "the incompatible type defined in another translation unit"
-msgstr "tipos incompatibles en la expresión binaria"
+msgstr "el tipo incompatible definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1142
 #, gcc-internal-format
 msgid "type name %<%s%> should match type name %<%s%>"
-msgstr ""
+msgstr "el nombre de tipo %<%s%> debería concordar con el nombre de tipo %<%s%>"
 
 #: ipa-devirt.c:1146 ipa-devirt.c:1238
-#, fuzzy, gcc-internal-format
-#| msgid "incompatible types in send"
+#, gcc-internal-format
 msgid "the incompatible type is defined here"
-msgstr "tipos incompatibles en send"
+msgstr "el tipo incompatible está definido aquí"
 
 #: ipa-devirt.c:1174
-#, fuzzy, gcc-internal-format
-#| msgid "Array reference out of bounds"
+#, gcc-internal-format
 msgid "array types have different bounds"
-msgstr "La referencia de la matriz está fuera de los límites"
+msgstr "Los tipos de array tienen límites diferentes"
 
 #: ipa-devirt.c:1189
-#, fuzzy, gcc-internal-format
-#| msgid "field initializer type mismatch"
+#, gcc-internal-format
 msgid "return value type mismatch"
-msgstr "no coincide el tipo del inicializador del campo"
+msgstr "no coincide el tipo del valor de retorno"
 
 #: ipa-devirt.c:1204
 #, fuzzy, gcc-internal-format
@@ -18696,222 +18692,211 @@ msgid "implicit this pointer type mismatch"
 msgstr "no coincide el tipo del inicializador del campo"
 
 #: ipa-devirt.c:1207
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "type mismatch in nontype parameter pack"
+#, gcc-internal-format, gfc-internal-format
 msgid "type mismatch in parameter %i"
-msgstr "los tipos no coinciden en el parámetro pack que no es de tipo"
+msgstr "los tipos no coinciden en el parámetro %i"
 
 #: ipa-devirt.c:1218
-#, fuzzy, gcc-internal-format
-#| msgid "different parameter types"
+#, gcc-internal-format
 msgid "types have different parameter counts"
-msgstr "tipos de parámetro diferentes"
+msgstr "tipos con número de parámetros diferentes"
 
 #: ipa-devirt.c:1229
 #, gcc-internal-format
 msgid "type %qT itself violate the C++ One Definition Rule"
-msgstr ""
+msgstr "el propio tipo %qT viola la regla de una sola definición de C++"
 
 #: ipa-devirt.c:1235
-#, fuzzy, gcc-internal-format
-#| msgid "type %qT is not derived from type %qT"
+#, gcc-internal-format
 msgid "type %qT should match type %qT"
-msgstr "el tipo %qT no es derivado del tipo %T"
+msgstr "el tipo %qT debería coincidir con el tipo %T"
 
 #: ipa-devirt.c:1270
 #, gcc-internal-format
 msgid "a type with different qualifiers is defined in another translation unit"
-msgstr ""
+msgstr "hay un tipo con cualificadores distintos definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1288
 #, gcc-internal-format
 msgid "a type with different attributes is defined in another translation unit"
-msgstr ""
+msgstr "hay un tipo con atributos distintos definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1303
 #, gcc-internal-format
 msgid "an enum with different value name is defined in another translation unit"
-msgstr ""
+msgstr "hay un enum con nombre de valor distinto definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1312
 #, gcc-internal-format
 msgid "an enum with different values is defined in another translation unit"
-msgstr ""
+msgstr "hay un enum con valores distintos definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1320
 #, gcc-internal-format
 msgid "an enum with mismatching number of values is defined in another translation unit"
-msgstr ""
+msgstr "hay un enum con distinto número de valores definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1338
 #, gcc-internal-format
 msgid "a type with different precision is defined in another translation unit"
-msgstr ""
+msgstr "hay un tipo con distinta precisión definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1345
 #, gcc-internal-format
 msgid "a type with different signedness is defined in another translation unit"
-msgstr ""
+msgstr "hay un tipo con diferente tipo de signo definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1370
 #, gcc-internal-format
 msgid "it is defined as a pointer in different address space in another translation unit"
-msgstr ""
+msgstr "está definido como puntero en un espacio de direcciones diferente en otra unidad de traducción"
 
 #: ipa-devirt.c:1379
 #, gcc-internal-format
 msgid "it is defined as a pointer to different type in another translation unit"
-msgstr ""
+msgstr "está definido como puntero a un tipo diferente en otra unidad de traducción"
 
 #: ipa-devirt.c:1439
 #, gcc-internal-format
 msgid "an array of different size is defined in another translation unit"
-msgstr ""
+msgstr "hay un array de distinto tamaño definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1454
-#, fuzzy, gcc-internal-format
-#| msgid "%q+D declared here, later in the translation unit"
+#, gcc-internal-format
 msgid "has different return value in another translation unit"
-msgstr "%q+D se declaró aquí, después en la unidad de translación"
+msgstr "tiene distinto valor de retorno en otra unidad de translación"
 
 #: ipa-devirt.c:1477 ipa-devirt.c:1489
-#, fuzzy, gcc-internal-format
-#| msgid "%q+D declared here, later in the translation unit"
+#, gcc-internal-format
 msgid "has different parameters in another translation unit"
-msgstr "%q+D se declaró aquí, después en la unidad de translación"
+msgstr "tiene parámetros distintos en otra unidad de translación"
 
 #: ipa-devirt.c:1512
 #, gcc-internal-format
 msgid "a type defined in another translation unit is not polymorphic"
-msgstr ""
+msgstr "un tipo definido en otra unidad de traducción no es polimórfico"
 
 #: ipa-devirt.c:1516
 #, gcc-internal-format
 msgid "a type defined in another translation unit is polymorphic"
-msgstr ""
+msgstr "un tipo definido en otra unidad de traducción es polimórfico"
 
 #: ipa-devirt.c:1534 ipa-devirt.c:1590
 #, gcc-internal-format
 msgid "a type with different virtual table pointers is defined in another translation unit"
-msgstr ""
+msgstr "hay un tipo con punteros de tabla virtual distinta definidos en otra unidad de traducción"
 
 #: ipa-devirt.c:1541 ipa-devirt.c:1595
 #, gcc-internal-format
 msgid "a type with different bases is defined in another translation unit"
-msgstr ""
+msgstr "hay un tipo con bases distintas definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1549
-#, fuzzy, gcc-internal-format
-#| msgid "%q+D declared here, later in the translation unit"
+#, gcc-internal-format
 msgid "a field with different name is defined in another translation unit"
-msgstr "%q+D se declaró aquí, después en la unidad de translación"
+msgstr "hay un campo con un nombre distinto definido en otra unidad de translación"
 
 #: ipa-devirt.c:1563
 #, gcc-internal-format
 msgid "a field of same name but different type is defined in another translation unit"
-msgstr ""
+msgstr "hay un campo con el mismo nombre pero distinto tipo definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1576
-#, fuzzy, gcc-internal-format
-#| msgid "%q+D declared here, later in the translation unit"
+#, gcc-internal-format
 msgid "fields has different layout in another translation unit"
-msgstr "%q+D se declaró aquí, después en la unidad de translación"
+msgstr "los campos tienen distinta disposición en otra unidad de translación"
 
 #: ipa-devirt.c:1599
 #, gcc-internal-format
 msgid "a type with different number of fields is defined in another translation unit"
-msgstr ""
+msgstr "hay un tipo con distinto número de campos definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1623
 #, gcc-internal-format
 msgid "a different method of same type is defined in another translation unit"
-msgstr ""
+msgstr "hay un método distinto del mismo tipo definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1631
-#, fuzzy, gcc-internal-format
-#| msgid "%q+D declared here, later in the translation unit"
+#, gcc-internal-format
 msgid "a definition that differs by virtual keyword in another translation unit"
-msgstr "%q+D se declaró aquí, después en la unidad de translación"
+msgstr "hay una definición que difiere en la palabra clave virtual en otra unidad de translación"
 
 #: ipa-devirt.c:1638
-#, fuzzy, gcc-internal-format
-#| msgid "%q+D declared here, later in the translation unit"
+#, gcc-internal-format
 msgid "virtual table layout differs in another translation unit"
-msgstr "%q+D se declaró aquí, después en la unidad de translación"
+msgstr "la disposición de la tabla virtual es distinta en otra unidad de translación"
 
 #: ipa-devirt.c:1647
 #, gcc-internal-format
 msgid "method with incompatible type is defined in another translation unit"
-msgstr ""
+msgstr "método con tipo incompatible definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1655
 #, gcc-internal-format
 msgid "a type with different number of methods is defined in another translation unit"
-msgstr ""
+msgstr "hay un tipo con distinto número de métodos definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1677
 #, gcc-internal-format
 msgid "a type with different size is defined in another translation unit"
-msgstr ""
+msgstr "hay un tipo con distinto tamaño definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1685
 #, gcc-internal-format
 msgid "a type with different alignment is defined in another translation unit"
-msgstr ""
+msgstr "hay un tipo con distinto alineamiento definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1808
-#, fuzzy, gcc-internal-format
-#| msgid "label %qD defined here"
+#, gcc-internal-format
 msgid "the extra base is defined here"
-msgstr "la etiqueta %qD se define aquí"
+msgstr "la base extra se define aquí"
 
 #: ipa-devirt.c:3777
 #, gcc-internal-format
 msgid "Declaring type %qD final would enable devirtualization of %i call"
 msgid_plural "Declaring type %qD final would enable devirtualization of %i calls"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Declarar el tipo %qD final permitiría desvirtualizar %i llamada"
+msgstr[1] "Declarar el tipo %qD final permitiría desvirtualizar %i llamadas"
 
 #: ipa-devirt.c:3786
 #, gcc-internal-format
 msgid "Declaring type %qD final would enable devirtualization of %i call executed %lli times"
 msgid_plural "Declaring type %qD final would enable devirtualization of %i calls executed %lli times"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Declarar el tipo %qD final permitiría desvirtualizar %i llamada ejecutada %lli veces"
+msgstr[1] "Declarar el tipo %qD final permitiría desvirtualizar %i llamadas ejecutadas %lli veces"
 
 #: ipa-devirt.c:3815
 #, gcc-internal-format
 msgid "Declaring virtual destructor of %qD final would enable devirtualization of %i call"
 msgid_plural "Declaring virtual destructor of %qD final would enable devirtualization of %i calls"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Declarar el destructor virtual de %qD final permitiría desvirtualizar %i llamada"
+msgstr[1] "Declarar el destructor virtual de %qD final permitiría desvirtualizar %i llamadas"
 
 #: ipa-devirt.c:3823
 #, gcc-internal-format
 msgid "Declaring method %qD final would enable devirtualization of %i call"
 msgid_plural "Declaring method %qD final would enable devirtualization of %i calls"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Declarar el método %qD final permitiría desvirtualizar %i llamada"
+msgstr[1] "Declarar el método %qD final permitiría desvirtualizar %i llamadas"
 
 #: ipa-devirt.c:3831
 #, gcc-internal-format
 msgid "Declaring virtual destructor of %qD final would enable devirtualization of %i call executed %lli times"
 msgid_plural "Declaring virtual destructor of %qD final would enable devirtualization of %i calls executed %lli times"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Declarar el destructor virtual de %qD final permitiría desvirtualizar %i llamada ejecutada %lli veces"
+msgstr[1] "Declarar el destructor virtual de %qD final permitiría desvirtualizar %i llamadas ejecutadas %lli veces"
 
 #: ipa-devirt.c:3841
 #, gcc-internal-format
 msgid "Declaring method %qD final would enable devirtualization of %i call executed %lli times"
 msgid_plural "Declaring method %qD final would enable devirtualization of %i calls executed %lli times"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Declarar el método %qD final permitiría desvirtualizar %i llamada ejecutada %lli veces"
+msgstr[1] "Declarar el método %qD final permitiría desvirtualizar %i llamadas ejecutadas %lli veces"
 
 #: ipa-hsa.c:57
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qE is neither function nor member function; cannot be declared friend"
+#, gcc-internal-format, gfc-internal-format
 msgid "could not emit HSAIL for function %s: function cannot be cloned"
-msgstr "%qE no es ni función ni función miembro; no se puede declarar friend"
+msgstr "no se ha podido emitir HSAIL para la función %s: la función no se puede clonar"
 
 #: ipa-inline-analysis.c:4400
 #, gcc-internal-format
@@ -18931,13 +18916,12 @@ msgstr "no se puede usar %s en asm aquí"
 #: ira.c:5537
 #, gcc-internal-format
 msgid "frame pointer required, but reserved"
-msgstr ""
+msgstr "se requiere puntero de marco, mas reservado"
 
 #: ira.c:5538
-#, fuzzy, gcc-internal-format
-#| msgid "as %qD"
+#, gcc-internal-format
 msgid "for %qD"
-msgstr "como %qD"
+msgstr "para %qD"
 
 #: ira.c:5552
 #, gcc-internal-format
@@ -18950,15 +18934,14 @@ msgid "%<asm%> operand has impossible constraints"
 msgstr "el operando %<asm%> tiene restricciones imposibles"
 
 #: lra-assigns.c:1456
-#, fuzzy, gcc-internal-format
-#| msgid "unable to find a register to spill in class %qs"
+#, gcc-internal-format
 msgid "unable to find a register to spill"
-msgstr "no se puede encontrar un registro para vaciar la clase %qs"
+msgstr "no se puede encontrar un registro para vaciar"
 
 #: lra-assigns.c:1684
 #, gcc-internal-format, gfc-internal-format
 msgid "Maximum number of LRA assignment passes is achieved (%d)\n"
-msgstr ""
+msgstr "Se ha alcanzado el número máximo de pasos de asignación de LRA (%d)\n"
 
 #: lra-constraints.c:3787 reload.c:3823 reload.c:4078
 #, gcc-internal-format
@@ -18968,13 +18951,12 @@ msgstr "restricciones de operandos inconsistentes en un %<asm%>"
 #: lra-constraints.c:4677
 #, gcc-internal-format, gfc-internal-format
 msgid "Max. number of generated reload insns per insn is achieved (%d)\n"
-msgstr ""
+msgstr "Se ha alcanzado el número máximo de insns de recarga generadas (%d)\n"
 
 #: lto-cgraph.c:1293
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "bytecode stream: found multiple instances of cgraph node %d"
+#, gcc-internal-format, gfc-internal-format
 msgid "bytecode stream: found multiple instances of cgraph node with uid %d"
-msgstr "flujo de bytecode: se encontraron instancias múltiples del nodo cgraph %d"
+msgstr "flujo de bytecode: se encontraron instancias múltiples del nodo cgraph con uid %d"
 
 #: lto-cgraph.c:1472
 #, gcc-internal-format
@@ -19012,10 +18994,9 @@ msgid "cannot find LTO section refs in %s"
 msgstr "no se pueden encontrar las referencias de sección LTO en %s"
 
 #: lto-cgraph.c:1942
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid rotate insn"
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid offload table in %s"
-msgstr "insn rotate no válida"
+msgstr "tabla de descarga no válida en %s"
 
 #: lto-compress.c:193 lto-compress.c:201 lto-compress.c:222 lto-compress.c:285
 #: lto-compress.c:293 lto-compress.c:314
@@ -19039,39 +19020,34 @@ msgid "bytecode stream: unexpected tag %s"
 msgstr "flujo de bytecode: etiqueta %s inesperada"
 
 #: lto-streamer-in.c:903 lto-streamer-in.c:913
-#, fuzzy, gcc-internal-format
-#| msgid "array tuple index out of range"
+#, gcc-internal-format
 msgid "Cgraph edge statement index out of range"
-msgstr "índice de la tupla matriz fuera de rango"
+msgstr "Índice de sentencia de borde de cgraph fuera de rango"
 
 #: lto-streamer-in.c:907 lto-streamer-in.c:916
 #, gcc-internal-format
 msgid "Cgraph edge statement index not found"
-msgstr ""
+msgstr "Índice de sentencia de borde de cgraph no encontrado"
 
 #: lto-streamer-in.c:923
-#, fuzzy, gcc-internal-format
-#| msgid "array tuple index out of range"
+#, gcc-internal-format
 msgid "Reference statement index out of range"
-msgstr "índice de la tupla matriz fuera de rango"
+msgstr "Índice de sentencia de referencia fuera de rango"
 
 #: lto-streamer-in.c:926
-#, fuzzy, gcc-internal-format
-#| msgid "Warn if deprecated empty statements are found"
+#, gcc-internal-format
 msgid "Reference statement index not found"
-msgstr "Avisa si se encuentran declaraciones vacías obsoletas"
+msgstr "Índice de sentencia de referencia no encontrado"
 
 #: lto-streamer-in.c:1545
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot read LTO decls from %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot read LTO mode table from %s"
-msgstr "no se pueden leer las decls LTO de %s"
+msgstr "no se pueden leer la tabla de modo LTO de %s"
 
 #: lto-streamer-in.c:1643
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "support for mode %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "unsupported mode %s\n"
-msgstr "se admite el modo %qs"
+msgstr "no se admite el modo %s\n"
 
 #: lto-streamer-out.c:420 lto-streamer-out.c:664
 #, gcc-internal-format
@@ -19084,16 +19060,14 @@ msgid "bytecode stream: unexpected LTO section %s"
 msgstr "flujo de bytecode: sección LTO %s inesperada"
 
 #: lto-streamer.c:383
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "bytecode stream generated with LTO version %d.%d instead of the expected %d.%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "bytecode stream in file '%s' generated with LTO version %d.%d instead of the expected %d.%d"
-msgstr "flujo de bytecode generado con LTO versión %d.%d en lugar de la versión esperada %d.%d"
+msgstr "flujo de bytecode en el fichero '%s' generado con LTO versión %d.%d en lugar de la versión esperada %d.%d"
 
 #: lto-wrapper.c:114
-#, fuzzy, gcc-internal-format
-#| msgid "deleting LTRANS file %s"
+#, gcc-internal-format
 msgid "deleting LTRANS file %s: %m"
-msgstr "se borra el fichero LTRANS %s"
+msgstr "se borra el fichero LTRANS %s: %m"
 
 #: lto-wrapper.c:151
 #, gcc-internal-format
@@ -19101,37 +19075,34 @@ msgid "malformed COLLECT_GCC_OPTIONS"
 msgstr "COLLECT_GCC_OPTIONS malformado"
 
 #: lto-wrapper.c:307
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "created and used with different endianness"
+#, gcc-internal-format, gfc-internal-format
 msgid "Option %s with different values"
-msgstr "creado y usado con diferente orden de bits"
+msgstr "Opción %s con valores diferentes"
 
 #: lto-wrapper.c:318 lto-wrapper.c:330
 #, gcc-internal-format, gfc-internal-format
 msgid "Option %s not used consistently in all LTO input files"
-msgstr ""
+msgstr "Opción %s no usada con coherencia en todos los ficheros de entrada LTO"
 
 #: lto-wrapper.c:815
 #, gcc-internal-format, gfc-internal-format
 msgid "problem with building target image for %s\n"
-msgstr ""
+msgstr "problema al construir la imagen de destino para %s\n"
 
 #: lto-wrapper.c:835
-#, fuzzy, gcc-internal-format
-#| msgid "no input files"
+#, gcc-internal-format
 msgid "reading input file"
-msgstr "no hay ficheros de entrada"
+msgstr "leyendo fichero de entrada"
 
 #: lto-wrapper.c:840
-#, fuzzy, gcc-internal-format
-#| msgid "Error writing output file '%s'\n"
+#, gcc-internal-format
 msgid "writing output file"
-msgstr "Error al escribir el fichero de salida '%s'\n"
+msgstr "escribiendo fichero de salida"
 
 #: lto-wrapper.c:870
 #, gcc-internal-format
 msgid "installation error, can't find crtoffloadtable.o"
-msgstr ""
+msgstr "error de instalación, no se puede encontrar crtoffloadtable.o"
 
 #: lto-wrapper.c:974
 #, gcc-internal-format
@@ -19144,114 +19115,104 @@ msgid "environment variable COLLECT_GCC_OPTIONS must be set"
 msgstr "se debe establecer la variable de entorno COLLECT_GCC_OPTIONS"
 
 #: lto-wrapper.c:1135 lto-wrapper.c:1191
-#, fuzzy, gcc-internal-format
-#| msgid "can't open %s: %m"
+#, gcc-internal-format
 msgid "cannot open %s: %m"
 msgstr "no se puede abrir %s: %m"
 
 #: lto-wrapper.c:1138 lto-wrapper.c:1197
-#, fuzzy, gcc-internal-format
-#| msgid "can%'t read %s: %m"
+#, gcc-internal-format
 msgid "cannot read %s: %m"
 msgstr "no se puede leer %s: %m"
 
 #: lto-wrapper.c:1165
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid operation (%s)"
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid format of %s"
-msgstr "operación no válida (%s)"
+msgstr "formato no válido de %s"
 
 #: lto-wrapper.c:1301
-#, fuzzy, gcc-internal-format
-#| msgid "fopen %s: %m"
+#, gcc-internal-format
 msgid "fopen: %s: %m"
-msgstr "fopen %s: %m"
+msgstr "fopen: %s: %m"
 
 #: multiple_target.c:67
-#, fuzzy, gcc-internal-format
-#| msgid "nested functions not supported on this target"
+#, gcc-internal-format
 msgid "the call requires ifunc, which is not supported by this target"
-msgstr "no se admiten funciones anidadas en este objetivo"
+msgstr "la llamada requiere ifunc, que no se admite en este objetivo"
 
 #: multiple_target.c:76
-#, fuzzy, gcc-internal-format
-#| msgid "version attribute is not a string"
+#, gcc-internal-format
 msgid "default target_clones attribute was not set"
-msgstr "el atributo version no es una cadena"
+msgstr "no se ha especificado el atributo target_clones predefinido"
 
 #: multiple_target.c:251
-#, fuzzy, gcc-internal-format
-#| msgid "%qE incompatible attribute ignored"
+#, gcc-internal-format
 msgid "single target_clones attribute is ignored"
-msgstr "se descarta el atributo incompatible %qE"
+msgstr "se descarta el atributo sencillo target_clones"
 
 #: multiple_target.c:263
-#, fuzzy, gcc-internal-format
-#| msgid "default argument %qE uses %qD"
+#, gcc-internal-format
 msgid "default target was not set"
-msgstr "el argumento por defecto %qE usa %qD"
+msgstr "no se ha especificado el objetivo predefinido"
 
 #: omp-expand.c:2029
 #, gcc-internal-format
 msgid "%<depend(sink)%> clause waiting for lexically later iteration"
-msgstr ""
+msgstr "cláusula %<depend(sink)%> esperando iteración léxica posterior"
 
 #: omp-expand.c:2166
 #, gcc-internal-format
 msgid "%<depend(sink)%> refers to iteration never in the iteration space"
-msgstr ""
+msgstr "%<depend(sink)%> se refiere a una iteración ajena al espacio de iteración"
 
 #: omp-general.c:592
-#, fuzzy, gcc-internal-format
-#| msgid "storage class specified for typename"
+#, gcc-internal-format
 msgid "multiple loop axes specified for routine"
-msgstr "se especificó una clase de almacenamiento para el nombre de tipo"
+msgstr "se especificaron múltiples ejes de bucle para la rutina"
 
 #: omp-low.c:2118 omp-offload.c:1120
 #, gcc-internal-format
 msgid "%<seq%> overrides other OpenACC loop specifiers"
-msgstr ""
+msgstr "%<seq%> ignora otros especificadores de bucle OpenACC"
 
 #: omp-low.c:2121
 #, gcc-internal-format
 msgid "%<auto%> conflicts with other OpenACC loop specifiers"
-msgstr ""
+msgstr "%<auto%> está en conflicto con otros especificadores de bucle OpenACC"
 
 #: omp-low.c:2125
 #, gcc-internal-format
 msgid "inner loop uses same OpenACC parallelism as containing loop"
-msgstr ""
+msgstr "el bucle interno usa el mismo paralelismo OpenACC que el bucle que lo contiene"
 
 #: omp-low.c:2172
 #, gcc-internal-format
 msgid "argument not permitted on %qs clause in OpenACC %<parallel%>"
-msgstr ""
+msgstr "argumento no permitido en la cláusula %qs en OpenACC %<parallel%>"
 
 #: omp-low.c:2441
 #, gcc-internal-format
 msgid "non-OpenACC construct inside of OpenACC routine"
-msgstr ""
+msgstr "construcción no OpenACC dentro de rutina OpenACC"
 
 #: omp-low.c:2450
 #, gcc-internal-format
 msgid "non-OpenACC construct inside of OpenACC region"
-msgstr ""
+msgstr "construcción no OpenACC dentro de región OpenACC"
 
 #: omp-low.c:2475
-#, fuzzy, gcc-internal-format
-#| msgid "ordered region may not be closely nested inside of critical or explicit task region"
+#, gcc-internal-format
 msgid "%<ordered simd threads%> must be closely nested inside of %<for simd%> region"
-msgstr "la región ordenada puede no estar bien anidada dentro de la región crítica o de tarea explícita"
+msgstr "%<ordered simd threads%> debe estar estar bien anidada dentro de la región %<for simd%>"
 
 #: omp-low.c:2483
 #, gcc-internal-format
 msgid "OpenMP constructs other than %<#pragma omp ordered simd%> may not be nested inside %<simd%> region"
-msgstr ""
+msgstr "Las construcciones OpenACC distintas de %<#pragma omp ordered simd%> pueden no estar anidadas dentro de la región %<simd%>"
 
 #: omp-low.c:2495
 #, gcc-internal-format
 msgid "only %<distribute%> or %<parallel%> regions are allowed to be strictly nested inside %<teams%> region"
-msgstr ""
+msgstr "solamente a las regiones %<distribute%> o %<parallel%> se les permite estar estrictamente anidadas dentro de la región %<teams%>"
 
 #: omp-low.c:2512
 #, gcc-internal-format
