@@ -1,3 +1,51 @@
+2017-03-28  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config/nvptx/nvptx-protos.h (nvptx_output_simt_enter): Declare.
+	(nvptx_output_simt_exit): Declare.
+	* config/nvptx/nvptx.c (nvptx_init_unisimt_predicate): Use
+	cfun->machine->unisimt_location.  Handle NULL unisimt_predicate.
+	(init_softstack_frame): Move initialization of crtl->is_leaf to...
+	(nvptx_declare_function_name): ...here.  Emit declaration of local
+	memory space buffer for omp_simt_enter insn.
+	(nvptx_output_unisimt_switch): New.
+	(nvptx_output_softstack_switch): New.
+	(nvptx_output_simt_enter): New.
+	(nvptx_output_simt_exit): New.
+	* config/nvptx/nvptx.h (struct machine_function): New fields
+	has_simtreg, unisimt_location, simt_stack_size, simt_stack_align.
+	* config/nvptx/nvptx.md (UNSPECV_SIMT_ENTER): New unspec.
+	(UNSPECV_SIMT_EXIT): Ditto.
+	(omp_simt_enter_insn): New insn.
+	(omp_simt_enter): New expansion.
+	(omp_simt_exit): New insn.
+	* config/nvptx/nvptx.opt (msoft-stack-reserve-local): New option.
+
+	* internal-fn.c (expand_GOMP_SIMT_ENTER): New.
+	(expand_GOMP_SIMT_ENTER_ALLOC): New.
+	(expand_GOMP_SIMT_EXIT): New.
+	* internal-fn.def (GOMP_SIMT_ENTER): New internal function.
+	(GOMP_SIMT_ENTER_ALLOC): Ditto.
+	(GOMP_SIMT_EXIT): Ditto.
+	* target-insns.def (omp_simt_enter): New insn.
+	(omp_simt_exit): Ditto.
+	* omp-low.c (struct omplow_simd_context): New fields simt_eargs,
+	simt_dlist.
+	(lower_rec_simd_input_clauses): Implement SIMT privatization.
+	(lower_rec_input_clauses): Likewise.
+	(lower_lastprivate_clauses): Handle SIMT privatization.
+
+	* omp-offload.c: Include langhooks.h, tree-nested.h, stor-layout.h.
+	(ompdevlow_adjust_simt_enter): New.
+	(find_simtpriv_var_op): New.
+	(execute_omp_device_lower): Handle IFN_GOMP_SIMT_ENTER,
+	IFN_GOMP_SIMT_ENTER_ALLOC, IFN_GOMP_SIMT_EXIT.
+
+	* tree-inline.h (struct copy_body_data): New field dst_simt_vars.
+	* tree-inline.c (expand_call_inline): Handle SIMT privatization.
+	(copy_decl_for_dup_finish): Ditto.
+
+	* tree-ssa.c (execute_update_addresses_taken): Handle GOMP_SIMT_ENTER.
+
 2017-03-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/53383

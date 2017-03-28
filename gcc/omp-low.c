@@ -3457,6 +3457,8 @@ omp_clause_aligned_alignment (tree clause)
 struct omplow_simd_context {
   tree idx;
   tree lane;
+  vec<tree, va_heap> simt_eargs;
+  gimple_seq simt_dlist;
   int max_vf;
   bool is_simt;
 };
@@ -3492,18 +3494,39 @@ lower_rec_simd_input_clauses (tree new_var, omp_context *ctx,
   if (sctx->max_vf == 1)
     return false;
 
-  tree atype = build_array_type_nelts (TREE_TYPE (new_var), sctx->max_vf);
-  tree avar = create_tmp_var_raw (atype);
-  if (TREE_ADDRESSABLE (new_var))
-    TREE_ADDRESSABLE (avar) = 1;
-  DECL_ATTRIBUTES (avar)
-    = tree_cons (get_identifier ("omp simd array"), NULL,
-		 DECL_ATTRIBUTES (avar));
-  gimple_add_tmp_var (avar);
-  ivar = build4 (ARRAY_REF, TREE_TYPE (new_var), avar, sctx->idx,
-		 NULL_TREE, NULL_TREE);
-  lvar = build4 (ARRAY_REF, TREE_TYPE (new_var), avar, sctx->lane,
-		 NULL_TREE, NULL_TREE);
+  if (sctx->is_simt)
+    {
+      if (is_gimple_reg (new_var))
+	{
+	  ivar = lvar = new_var;
+	  return true;
+	}
+      tree type = TREE_TYPE (new_var), ptype = build_pointer_type (type);
+      ivar = lvar = create_tmp_var (type);
+      TREE_ADDRESSABLE (ivar) = 1;
+      DECL_ATTRIBUTES (ivar) = tree_cons (get_identifier ("omp simt private"),
+					  NULL, DECL_ATTRIBUTES (ivar));
+      sctx->simt_eargs.safe_push (build1 (ADDR_EXPR, ptype, ivar));
+      tree clobber = build_constructor (type, NULL);
+      TREE_THIS_VOLATILE (clobber) = 1;
+      gimple *g = gimple_build_assign (ivar, clobber);
+      gimple_seq_add_stmt (&sctx->simt_dlist, g);
+    }
+  else
+    {
+      tree atype = build_array_type_nelts (TREE_TYPE (new_var), sctx->max_vf);
+      tree avar = create_tmp_var_raw (atype);
+      if (TREE_ADDRESSABLE (new_var))
+	TREE_ADDRESSABLE (avar) = 1;
+      DECL_ATTRIBUTES (avar)
+	= tree_cons (get_identifier ("omp simd array"), NULL,
+		     DECL_ATTRIBUTES (avar));
+      gimple_add_tmp_var (avar);
+      ivar = build4 (ARRAY_REF, TREE_TYPE (new_var), avar, sctx->idx,
+		     NULL_TREE, NULL_TREE);
+      lvar = build4 (ARRAY_REF, TREE_TYPE (new_var), avar, sctx->lane,
+		     NULL_TREE, NULL_TREE);
+    }
   if (DECL_P (new_var))
     {
       SET_DECL_VALUE_EXPR (new_var, lvar);
@@ -3547,8 +3570,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
   bool is_simd = (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
 		  && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD);
   omplow_simd_context sctx = omplow_simd_context ();
-  tree simt_lane = NULL_TREE;
-  tree ivar = NULL_TREE, lvar = NULL_TREE;
+  tree simt_lane = NULL_TREE, simtrec = NULL_TREE;
+  tree ivar = NULL_TREE, lvar = NULL_TREE, uid = NULL_TREE;
   gimple_seq llist[3] = { };
 
   copyin_seq = NULL;
@@ -3580,6 +3603,10 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	default:
 	  continue;
 	}
+
+  /* Add a placeholder for simduid.  */
+  if (sctx.is_simt && sctx.max_vf != 1)
+    sctx.simt_eargs.safe_push (NULL_TREE);
 
   /* Do all the fixed sized types in the first pass, and the variable sized
      types in the second pass.  This makes sure that the scalar arguments to
@@ -4468,21 +4495,43 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	}
     }
 
-  if (sctx.lane)
+  if (sctx.max_vf == 1)
+    sctx.is_simt = false;
+
+  if (sctx.lane || sctx.is_simt)
     {
-      tree uid = create_tmp_var (ptr_type_node, "simduid");
+      uid = create_tmp_var (ptr_type_node, "simduid");
       /* Don't want uninit warnings on simduid, it is always uninitialized,
 	 but we use it not for the value, but for the DECL_UID only.  */
       TREE_NO_WARNING (uid) = 1;
+      c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE__SIMDUID_);
+      OMP_CLAUSE__SIMDUID__DECL (c) = uid;
+      OMP_CLAUSE_CHAIN (c) = gimple_omp_for_clauses (ctx->stmt);
+      gimple_omp_for_set_clauses (ctx->stmt, c);
+    }
+  /* Emit calls denoting privatized variables and initializing a pointer to
+     structure that holds private variables as fields after ompdevlow pass.  */
+  if (sctx.is_simt)
+    {
+      sctx.simt_eargs[0] = uid;
+      gimple *g
+	= gimple_build_call_internal_vec (IFN_GOMP_SIMT_ENTER, sctx.simt_eargs);
+      gimple_call_set_lhs (g, uid);
+      gimple_seq_add_stmt (ilist, g);
+      sctx.simt_eargs.release ();
+
+      simtrec = create_tmp_var (ptr_type_node, ".omp_simt");
+      g = gimple_build_call_internal (IFN_GOMP_SIMT_ENTER_ALLOC, 1, uid);
+      gimple_call_set_lhs (g, simtrec);
+      gimple_seq_add_stmt (ilist, g);
+    }
+  if (sctx.lane)
+    {
       gimple *g
 	= gimple_build_call_internal (IFN_GOMP_SIMD_LANE, 1, uid);
       gimple_call_set_lhs (g, sctx.lane);
       gimple_stmt_iterator gsi = gsi_start_1 (gimple_omp_body_ptr (ctx->stmt));
       gsi_insert_before_without_update (&gsi, g, GSI_SAME_STMT);
-      c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE__SIMDUID_);
-      OMP_CLAUSE__SIMDUID__DECL (c) = uid;
-      OMP_CLAUSE_CHAIN (c) = gimple_omp_for_clauses (ctx->stmt);
-      gimple_omp_for_set_clauses (ctx->stmt, c);
       g = gimple_build_assign (sctx.lane, INTEGER_CST,
 			       build_int_cst (unsigned_type_node, 0));
       gimple_seq_add_stmt (ilist, g);
@@ -4544,6 +4593,13 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	    gimple_seq_add_stmt (seq, g);
 	    gimple_seq_add_stmt (seq, gimple_build_label (end));
 	  }
+    }
+  if (sctx.is_simt)
+    {
+      gimple_seq_add_seq (dlist, sctx.simt_dlist);
+      gimple *g
+	= gimple_build_call_internal (IFN_GOMP_SIMT_EXIT, 1, simtrec);
+      gimple_seq_add_stmt (dlist, g);
     }
 
   /* The copyin sequence is not to be executed by the main thread, since
@@ -4715,7 +4771,8 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *stmt_list,
 	  if (simduid && DECL_HAS_VALUE_EXPR_P (new_var))
 	    {
 	      tree val = DECL_VALUE_EXPR (new_var);
-	      if (TREE_CODE (val) == ARRAY_REF
+	      if (!maybe_simt
+		  && TREE_CODE (val) == ARRAY_REF
 		  && VAR_P (TREE_OPERAND (val, 0))
 		  && lookup_attribute ("omp simd array",
 				       DECL_ATTRIBUTES (TREE_OPERAND (val,
@@ -4734,24 +4791,26 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *stmt_list,
 		  new_var = build4 (ARRAY_REF, TREE_TYPE (val),
 				    TREE_OPERAND (val, 0), lastlane,
 				    NULL_TREE, NULL_TREE);
-		  if (maybe_simt)
+		}
+	      else if (maybe_simt
+		       && VAR_P (val)
+		       && lookup_attribute ("omp simt private",
+					    DECL_ATTRIBUTES (val)))
+		{
+		  if (simtlast == NULL)
 		    {
-		      gcall *g;
-		      if (simtlast == NULL)
-			{
-			  simtlast = create_tmp_var (unsigned_type_node);
-			  g = gimple_build_call_internal
-			    (IFN_GOMP_SIMT_LAST_LANE, 1, simtcond);
-			  gimple_call_set_lhs (g, simtlast);
-			  gimple_seq_add_stmt (stmt_list, g);
-			}
-		      x = build_call_expr_internal_loc
-			(UNKNOWN_LOCATION, IFN_GOMP_SIMT_XCHG_IDX,
-			 TREE_TYPE (new_var), 2, new_var, simtlast);
-		      new_var = unshare_expr (new_var);
-		      gimplify_assign (new_var, x, stmt_list);
-		      new_var = unshare_expr (new_var);
+		      simtlast = create_tmp_var (unsigned_type_node);
+		      gcall *g = gimple_build_call_internal
+			(IFN_GOMP_SIMT_LAST_LANE, 1, simtcond);
+		      gimple_call_set_lhs (g, simtlast);
+		      gimple_seq_add_stmt (stmt_list, g);
 		    }
+		  x = build_call_expr_internal_loc
+		    (UNKNOWN_LOCATION, IFN_GOMP_SIMT_XCHG_IDX,
+		     TREE_TYPE (val), 2, val, simtlast);
+		  new_var = unshare_expr (new_var);
+		  gimplify_assign (new_var, x, stmt_list);
+		  new_var = unshare_expr (new_var);
 		}
 	    }
 

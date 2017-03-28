@@ -145,6 +145,10 @@ struct copy_body_data
      equivalents in the function into which it is being inlined.  */
   hash_map<dependence_hash, unsigned short> *dependence_map;
 
+  /* A list of addressable local variables remapped into the caller
+     when inlining a call within an OpenMP SIMD-on-SIMT loop.  */
+  vec<tree> *dst_simt_vars;
+
   /* Cilk keywords currently need to replace some variables that
      ordinary nested functions do not.  */
   bool remap_var_for_cilk;
