@@ -108,7 +108,7 @@ priority_queue_link_regression_test_0()
 
   {
     /*
-     *  Perform operations on a binomial-heap queue.
+     *  Perform operations on a binary-heap queue.
      */
     cout << "Binary heap" << endl;
     __gnu_pbds::priority_queue<int, less<int>, binary_heap_tag> c;
