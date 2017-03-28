@@ -383,7 +383,7 @@ compatible.
     <para/>
     </listitem>
 
-   <listitem>
+   <listitem xml:id="abi.versioning.__GLIBCXX__">
     <para>Incremental bumping of a library pre-defined macro. For releases
     before 3.4.0, the macro is <symbol>__GLIBCPP__</symbol>. For later
     releases, it's <symbol>__GLIBCXX__</symbol>. (The libstdc++ project

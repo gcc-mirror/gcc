@@ -1,5 +1,11 @@
 2017-03-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/abi.xml: Add xml:id anchor.
+	* doc/xml/manual/using.xml (manual.intro.using.macros): Document
+	_GLIBCXX_RELEASE. Link to new anchor for __GLIBCXX__ notes.
+	(concurrency.io.structure): Add markup.
+	* doc/html/*: Regenerate.
+
 	PR libstdc++/80229
 	* include/bits/shared_ptr_base.h
 	(__shared_ptr::_M_enable_shared_from_this_with): Change parameters to
