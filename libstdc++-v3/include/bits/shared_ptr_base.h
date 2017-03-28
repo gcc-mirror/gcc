@@ -1363,17 +1363,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	struct __has_esft_base<_Yp, __void_t<__esft_base_t<_Yp>>>
 	: __not_<is_array<_Tp>> { }; // No enable shared_from_this for arrays
 
-      template<typename _Yp>
-	typename enable_if<__has_esft_base<_Yp>::value>::type
-	_M_enable_shared_from_this_with(const _Yp* __p) noexcept
+      template<typename _Yp, typename _Yp2 = typename remove_cv<_Yp>::type>
+	typename enable_if<__has_esft_base<_Yp2>::value>::type
+	_M_enable_shared_from_this_with(_Yp* __p) noexcept
 	{
 	  if (auto __base = __enable_shared_from_this_base(_M_refcount, __p))
-	    __base->_M_weak_assign(const_cast<_Yp*>(__p), _M_refcount);
+	    __base->_M_weak_assign(const_cast<_Yp2*>(__p), _M_refcount);
 	}
 
-      template<typename _Yp>
-	typename enable_if<!__has_esft_base<_Yp>::value>::type
-	_M_enable_shared_from_this_with(const _Yp*) noexcept
+      template<typename _Yp, typename _Yp2 = typename remove_cv<_Yp>::type>
+	typename enable_if<!__has_esft_base<_Yp2>::value>::type
+	_M_enable_shared_from_this_with(_Yp*) noexcept
 	{ }
 
       void*
