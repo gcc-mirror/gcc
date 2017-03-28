@@ -1,6 +1,10 @@
+2017-03-28  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.c-torture/compile/irreducible-loop.c: New.
+
 2017-03-28  Richard Sandiford  <richard.sandiford@arm.com>
 
-        PR tree-optimization/80218
+	PR tree-optimization/80218
 	* gcc.dg/pr80218.c: New test.
 
 2017-03-28  Richard Biener  <rguenther@suse.de>

@@ -1,3 +1,10 @@
+2017-03-28  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-loop-manip.c (slpeel_add_loop_guard): New param and
+	mark new edge's irreducible flag accordign to it.
+	(vect_do_peeling): Check loop preheader edge's irreducible flag
+	and pass it to function slpeel_add_loop_guard.
+
 2017-03-28  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/80218
