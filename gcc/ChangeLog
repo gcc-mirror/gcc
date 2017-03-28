@@ -1,3 +1,8 @@
+2017-03-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/80193
+	* ira.c (ira): Do not check allocation for LRA.
+
 2017-03-28  Alexander Monakov  <amonakov@ispras.ru>
 
 	* config/nvptx/nvptx-protos.h (nvptx_output_simt_enter): Declare.

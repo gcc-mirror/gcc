@@ -1,3 +1,8 @@
+2017-03-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/80193
+	* gcc.target/i386/pr80193.c: New.
+
 2017-03-28  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/78661
