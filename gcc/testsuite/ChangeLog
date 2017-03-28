@@ -1,3 +1,9 @@
+2017-03-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR testsuite/43496
+	* gcc.target/powerpc/gcse-1.c: Skip scan-assembler-times "@ha" if
+	generating PIC code.
+
 2017-03-28  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/80193
