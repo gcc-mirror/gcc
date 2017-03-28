@@ -1,5 +1,11 @@
 2017-03-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/80137
+	* include/bits/random.tcc (generate_canonical): Use std::nextafter
+	or numeric_limits::epsilon() to reduce out-of-range values.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/
+	64351.cc: Verify complexity requirement is met.
+
 	* doc/xml/manual/abi.xml: Add xml:id anchor.
 	* doc/xml/manual/using.xml (manual.intro.using.macros): Document
 	_GLIBCXX_RELEASE. Link to new anchor for __GLIBCXX__ notes.
