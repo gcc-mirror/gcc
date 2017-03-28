@@ -1,9 +1,14 @@
 /* { dg-do compile } */
 
 typedef unsigned short __u16;
-typedef unsigned int __u32;
+#if __SIZEOF_INT__ < 4
+  __extension__ typedef __UINT32_TYPE__ __u32;
+  __extension__ typedef __UINT32_TYPE__ u32;
+#else
+  typedef unsigned int __u32;
+  typedef unsigned int u32;
+#endif
 typedef unsigned char u8;
-typedef unsigned int u32;
 typedef __u16 __le16;
 typedef __u32 __le32;
 typedef u32 secno;

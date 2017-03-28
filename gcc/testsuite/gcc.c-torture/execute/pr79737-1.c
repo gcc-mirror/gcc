@@ -1,13 +1,19 @@
 /* PR tree-optimization/79737 */
 
+#if __SIZEOF_INT__ < 4
+  __extension__ typedef __INT32_TYPE__ int32_t;
+#else
+  typedef int int32_t;
+#endif
+
 #pragma pack(1)
 struct S
 {
-  int b:18;
-  int c:1;
-  int d:24;
-  int e:15;
-  int f:14;
+  int32_t b:18;
+  int32_t c:1;
+  int32_t d:24;
+  int32_t e:15;
+  int32_t f:14;
 } i;
 int g, j, k;
 static struct S h;
