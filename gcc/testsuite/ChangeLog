@@ -1,3 +1,11 @@
+2017-03-28  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2017-03-28  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80067
+	* c-c++-common/ubsan/shift-10.c: New test.
+
 2017-03-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from trunk
