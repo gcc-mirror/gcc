@@ -1,3 +1,9 @@
+2017-03-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/80218
+	* tree-call-cdce.c (shrink_wrap_one_built_in_call_with_conds):
+	Update block frequencies and counts.
+
 2017-03-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/78644
