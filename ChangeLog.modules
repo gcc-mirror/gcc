@@ -1,5 +1,21 @@
 2017-03-28  Nathan Sidwell  <nathan@acm.org>
 
+	Cleanup namespace push/pop
+	gcc/cp/
+	* cp-tree.h (CPTI_GLOBAL, CPTI_GLOBAL_IDENTIFIER, CPTI_GLOBAL_TYPE,
+	CPTI_ANON_IDENTIFIER): New.
+	(global_namespace, global_identifier, global_type_node,
+	anon_identifier): New.
+	* decl.c (global_type_node, global_scope_name): Delete.
+	(initialize_predefined_identifiers): Add new idents.
+	(cxx_init_decl_processing): Adjust.
+	* name-lookup.h (global_namespace, global_scope_name,
+	global_type_node): Delete.
+	* name-lookup (global_namespace, anonymous_namespace_name,
+	get_anonomous_namespace_name): Delete.
+	(do_push_nested_namespace, do_pop_nested_namespace): New.
+	(push_nested_namespace, pop_nested_namespace): Reimplement.
+
 	Cleanup using-directives
 	gcc/cp/
 	* cp-tree.h (LOOKUP_MARKED_P): Rename from NAME_MARKED_P, update all.

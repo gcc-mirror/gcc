@@ -546,31 +546,6 @@ static void do_toplevel_using_directive (tree, tree);
 static tree lookup_extern_c_fun_in_all_ns (tree);
 static void diagnose_name_conflict (tree, tree);
 
-/* The :: namespace.  */
-
-tree global_namespace;
-
-/* The name of the anonymous namespace, throughout this translation
-   unit.  */
-static GTY(()) tree anonymous_namespace_name;
-
-/* Initialize anonymous_namespace_name if necessary, and return it.  */
-
-static tree
-get_anonymous_namespace_name (void)
-{
-  if (!anonymous_namespace_name)
-    {
-      /* We used to use get_file_function_name here, but that isn't
-	 necessary now that anonymous namespace typeinfos
-	 are !TREE_PUBLIC, and thus compared by address.  */
-      /* The demangler expects anonymous namespaces to be called
-	 something starting with '_GLOBAL__N_'.  */
-      anonymous_namespace_name = get_identifier ("_GLOBAL__N_1");
-    }
-  return anonymous_namespace_name;
-}
-
 /* Compute the chain index of a binding_entry given the HASH value of its
    name and the total COUNT of chains.  COUNT is assumed to be a power
    of 2.  */
@@ -2108,7 +2083,7 @@ namespace_scope_ht_size (tree ns)
 
   return name == std_identifier
     ? NAMESPACE_STD_HT_SIZE
-    : (name == global_scope_name
+    : (name == global_identifier
        ? GLOBAL_SCOPE_HT_SIZE
        : NAMESPACE_ORDINARY_HT_SIZE);
 }
@@ -2186,7 +2161,7 @@ begin_scope (scope_kind kind, tree entity)
       NAMESPACE_LEVEL (entity) = scope;
       vec_alloc (scope->static_decls,
 		 (DECL_NAME (entity) == std_identifier
-		  || DECL_NAME (entity) == global_scope_name) ? 200 : 10);
+		  || DECL_NAME (entity) == global_identifier) ? 200 : 10);
       break;
 
     default:
@@ -4227,11 +4202,11 @@ push_namespace (tree name)
   /* We should not get here if the global_namespace is not yet constructed
      nor if NAME designates the global namespace:  The global scope is
      constructed elsewhere.  */
-  gcc_assert (global_namespace != NULL && name != global_scope_name);
+  gcc_assert (global_namespace != NULL && name != global_identifier);
 
   if (anon)
     {
-      name = get_anonymous_namespace_name ();
+      name = anon_identifier;
       d = IDENTIFIER_NAMESPACE_VALUE (name);
       if (d)
 	/* Reopening anonymous namespace.  */
@@ -4330,39 +4305,6 @@ pop_namespace (void)
   current_namespace = CP_DECL_CONTEXT (current_namespace);
   /* The binding level is not popped, as it might be re-opened later.  */
   leave_scope ();
-}
-
-/* Push into the scope of the namespace NS, even if it is deeply
-   nested within another namespace.  */
-
-void
-push_nested_namespace (tree ns)
-{
-  if (ns == global_namespace)
-    push_to_top_level ();
-  else
-    {
-      push_nested_namespace (CP_DECL_CONTEXT (ns));
-      push_namespace (DECL_NAME (ns));
-    }
-}
-
-/* Pop back from the scope of the namespace NS, which was previously
-   entered with push_nested_namespace.  */
-
-void
-pop_nested_namespace (tree ns)
-{
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  gcc_assert (current_namespace == ns);
-  while (ns != global_namespace)
-    {
-      pop_namespace ();
-      ns = CP_DECL_CONTEXT (ns);
-    }
-
-  pop_from_top_level ();
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
 /* Temporarily set the namespace for the current declaration.  */
@@ -5718,7 +5660,7 @@ do_toplevel_using_directive (tree user_ns, tree using_ns)
 /* Worker for do_local_using_directive.  */
 
 static tree
-do_local_using_directive_1 (tree usings, tree used)
+do_local_using_directive_r (tree usings, tree used)
 {
   if (!LOOKUP_MARKED_P (used))
     {
@@ -5729,7 +5671,7 @@ do_local_using_directive_1 (tree usings, tree used)
       /* Recursively add all namespaces used.  */
       for (tree iter = DECL_NAMESPACE_USING (used); iter;
 	   iter = TREE_CHAIN (iter))
-	usings = do_local_using_directive_1 (usings, TREE_PURPOSE (iter));
+	usings = do_local_using_directive_r (usings, TREE_PURPOSE (iter));
     }
 
   return usings;
@@ -5744,7 +5686,7 @@ do_local_using_directive (tree used)
   tree usings = current_binding_level->using_directives;
   for (tree p = usings; p; p = TREE_CHAIN (p))
     LOOKUP_MARKED_P (TREE_PURPOSE (p)) = true;
-  usings = do_local_using_directive_1 (usings, used);
+  usings = do_local_using_directive_r (usings, used);
   for (tree p = usings; p; p = TREE_CHAIN (p))
     LOOKUP_MARKED_P (TREE_PURPOSE (p)) = false;
   current_binding_level->using_directives = usings;
@@ -6268,7 +6210,43 @@ do_pop_from_top_level (void)
   free_saved_scope = s;
 }
 
-/* Wrappers for do_{push_to/pop_from}_top_level.  */
+/* Push into the scope of the namespace NS, even if it is deeply
+   nested within another namespace.  */
+
+static void
+do_push_nested_namespace (tree ns)
+{
+  if (ns == global_namespace)
+    do_push_to_top_level ();
+  else
+    {
+      do_push_nested_namespace (CP_DECL_CONTEXT (ns));
+      tree name = DECL_NAME (ns);
+      if (!name)
+	name = anon_identifier;
+      gcc_assert (IDENTIFIER_NAMESPACE_VALUE (name) == ns);
+      resume_scope (NAMESPACE_LEVEL (ns));
+      current_namespace = ns;
+    }
+}
+
+/* Pop back from the scope of the namespace NS, which was previously
+   entered with push_nested_namespace.  */
+
+static void
+do_pop_nested_namespace (tree ns)
+{
+  while (ns != global_namespace)
+    {
+      ns = CP_DECL_CONTEXT (ns);
+      current_namespace = ns;
+      leave_scope ();
+    }
+
+  do_pop_from_top_level ();
+}
+
+/* External entry points for do_{push_to/pop_from}_top_level.  */
 
 void
 push_to_top_level (void)
@@ -6286,9 +6264,26 @@ pop_from_top_level (void)
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
+/* External entry points for do_{push,pop}_nested_namespace.  */
+
+void
+push_nested_namespace (tree ns)
+{
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  do_push_nested_namespace (ns);
+  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+}
+
+void
+pop_nested_namespace (tree ns)
+{
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  gcc_assert (current_namespace == ns);
+  do_pop_nested_namespace (ns);
+  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+}
 
 /* Pop off extraneous binding levels left over due to syntax errors.
-
    We don't pop past namespaces, as they might be valid.  */
 
 void
