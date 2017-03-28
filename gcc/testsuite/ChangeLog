@@ -1,3 +1,10 @@
+2017-03-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53383
+	* gcc.target/i386/pr53383-1.c (dg-options): Remove -mno-sse.
+	* gcc.target/i386/pr53383-2.c (dg-options): Ditto.
+	* gcc.target/i386/pr53383-3.c (dg-options): Ditto.
+
 2017-03-28  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.c-torture/compile/irreducible-loop.c: New.
