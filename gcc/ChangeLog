@@ -2,7 +2,7 @@
 
 	PR target/53383
 	* config/i386/i386.c (ix86_option_override_internal): Always
-	allow -mincoming-stack-boundary=3 for 64-bit targets.
+	allow -mpreferred-stack-boundary=3 for 64-bit targets.
 
 2017-03-28  Bin Cheng  <bin.cheng@arm.com>
 
