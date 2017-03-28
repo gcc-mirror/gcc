@@ -1,3 +1,9 @@
+2017-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78644
+	* gcc.dg/pr78644-1.c: New testcase.
+	* gcc.dg/pr78644-2.c: Likewise.
+
 2017-03-28  Toma Tabacu  <toma.tabacu@imgtec.com>
 
 	* gcc.dg/pic-3.c: Skip for mips*-*-linux-*.

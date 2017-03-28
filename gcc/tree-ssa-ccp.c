@@ -1749,18 +1749,24 @@ evaluate_stmt (gimple *stmt)
       fold_defer_overflow_warnings ();
       simplified = ccp_fold (stmt);
       if (simplified
-	  && TREE_CODE (simplified) == SSA_NAME
+	  && TREE_CODE (simplified) == SSA_NAME)
+	{
 	  /* We may not use values of something that may be simulated again,
 	     see valueize_op_1.  */
-	  && (SSA_NAME_IS_DEFAULT_DEF (simplified)
-	      || ! prop_simulate_again_p (SSA_NAME_DEF_STMT (simplified))))
-	{
-	  ccp_prop_value_t *val = get_value (simplified);
-	  if (val && val->lattice_val != VARYING)
+	  if (SSA_NAME_IS_DEFAULT_DEF (simplified)
+	      || ! prop_simulate_again_p (SSA_NAME_DEF_STMT (simplified)))
 	    {
-	      fold_undefer_overflow_warnings (true, stmt, 0);
-	      return *val;
+	      ccp_prop_value_t *val = get_value (simplified);
+	      if (val && val->lattice_val != VARYING)
+		{
+		  fold_undefer_overflow_warnings (true, stmt, 0);
+		  return *val;
+		}
 	    }
+	  else
+	    /* We may also not place a non-valueized copy in the lattice
+	       as that might become stale if we never re-visit this stmt.  */
+	    simplified = NULL_TREE;
 	}
       is_constant = simplified && is_gimple_min_invariant (simplified);
       fold_undefer_overflow_warnings (is_constant, stmt, 0);
