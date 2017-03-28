@@ -1,3 +1,10 @@
+2017-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80222
+	* gimple-fold.c (gimple_fold_indirect_ref): Do not touch
+	TYPE_REF_CAN_ALIAS_ALL references.
+	* fold-const.c (fold_indirect_ref_1): Likewise.
+
 2017-03-28  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/80104
