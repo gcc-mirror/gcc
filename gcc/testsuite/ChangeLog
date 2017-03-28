@@ -1,3 +1,8 @@
+2017-03-28  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80067
+	* c-c++-common/ubsan/shift-10.c: New test.
+
 2017-03-27  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/80216
