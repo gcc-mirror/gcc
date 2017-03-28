@@ -1,3 +1,12 @@
+2017-03-28  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.c-torture/execute/pr79121.c:Use __{U}INT32_TYPE__ for targets
+	with sizeof(int) < 4.
+	* gcc.c-torture/execute/pr79737-1.c (struct S): Likewise.
+	* gcc.c-torture/execute/pr79737-2.c: Likewise.
+	* gcc.dg/torture/pr79777.c: Likewise.
+	* gcc.dg/torture/pr79910.c: Likewise.
+
 2017-03-28  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/80222

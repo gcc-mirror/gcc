@@ -1,21 +1,29 @@
+#if __SIZEOF_INT__ < 4
+  __extension__ typedef __UINT32_TYPE__ uint32_t;
+  __extension__ typedef __INT32_TYPE__ int32_t;
+#else
+  typedef unsigned uint32_t;
+  typedef int int32_t;
+#endif
+
 extern void abort (void);
 
-__attribute__ ((noinline, noclone)) unsigned long long f1 (int x)
+__attribute__ ((noinline, noclone)) unsigned long long f1 (int32_t x)
 {
   return ((unsigned long long) x) << 4;
 }
 
-__attribute__ ((noinline, noclone)) long long f2 (unsigned x)
+__attribute__ ((noinline, noclone)) long long f2 (uint32_t x)
 {
   return ((long long) x) << 4;
 }
 
-__attribute__ ((noinline, noclone)) unsigned long long f3 (unsigned x)
+__attribute__ ((noinline, noclone)) unsigned long long f3 (uint32_t x)
 {
   return ((unsigned long long) x) << 4;
 }
 
-__attribute__ ((noinline, noclone)) long long f4 (int x)
+__attribute__ ((noinline, noclone)) long long f4 (int32_t x)
 {
   return ((long long) x) << 4;
 }
