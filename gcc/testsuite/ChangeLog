@@ -1,3 +1,8 @@
+2017-03-28  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/80205
+	* g++.dg/ipa/pr80205.C: New test.
+
 2017-03-28  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.c-torture/execute/pr79121.c:Use __{U}INT32_TYPE__ for targets
