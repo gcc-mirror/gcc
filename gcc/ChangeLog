@@ -1,3 +1,11 @@
+2017-03-28  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/simdext.md (vst64_insn): Update pattern.
+	(vld32wh_insn): Likewise.
+	(vld32wl_insn): Likewise.
+	(vld64_insn): Likewise.
+	(vld32_insn): Likewise.
+
 2017-03-28  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80067
