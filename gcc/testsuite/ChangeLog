@@ -1,3 +1,10 @@
+2017-03-28  Toma Tabacu  <toma.tabacu@imgtec.com>
+
+	* gcc.dg/pic-3.c: Skip for mips*-*-linux-*.
+	* gcc.dg/pic-4.c: Likewise.
+	* gcc.dg/pie-3.c: Likewise.
+	* gcc.dg/pie-4.c: Likewise.
+
 2017-03-28  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/80205
