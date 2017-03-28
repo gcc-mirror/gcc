@@ -1,3 +1,31 @@
+2017-03-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement LWG 2900, The copy and move constructors
+	of optional are not constexpr.
+	* include/std/optional (_Optional_payload): New.
+	(_Optional_base): Remove the bool parameter.
+	(_Optional_base<_Tp, false>): Remove.
+	(_Optional_base()): Adjust.
+	(_Optional_base(nullopt_t)): Likewise.
+	(_Optional_base(in_place_t, _Args&&...)): Likewise.
+	(_Optional_base(in_place_t, initializer_list<_Up>, _Args&&...)):
+	Likewise.
+	(_Optional_base(const _Optional_base&)): Likewise.
+	(_Optional_base(_Optional_base&&)): Likewise.
+	(operator=(const _Optional_base&)): Likewise.
+	(operator=(_Optional_base&&)): Likewise.
+	(~_Optional_base()): Remove.
+	(_M_is_engaged()): Adjust.
+	(_M_get()): Likewise.
+	(_M_construct(_Args&&...)): Likewise.
+	(_M_destruct()): Likewise.
+	(_M_reset()): Likewise.
+	(_Optional_base::_Empty_byte): Remove.
+	(_Optional_base::_M_empty): Remove.
+	(_Optional_base::_M_payload): Adjust.
+	* testsuite/20_util/optional/cons/value_neg.cc: Adjust.
+	* testsuite/20_util/optional/constexpr/cons/value.cc: Add tests.
+
 2017-03-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80137
