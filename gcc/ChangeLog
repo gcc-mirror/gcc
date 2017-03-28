@@ -1,6 +1,10 @@
-017-03-27  Jeff Law  <law@redhat.com>
+2017-03-28  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
-        PR tree-optimization/880216
+	* tree.c (add_expr): Avoid name lookup warning.
+
+2017-03-27  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/80216
 	* tree-ssa-dom.c (derive_equivalences_from_bit_ior): Fix typo in
 	function name.  Limit recursion depth.
 	(record_temporary_equivalences): Corresponding changes.

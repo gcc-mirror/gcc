@@ -7866,7 +7866,7 @@ add_expr (const_tree t, inchash::hash &hstate, unsigned int flags)
 	return;
       }
     case TREE_VEC:
-      for (int i = 0; i < TREE_VEC_LENGTH (t); ++i)
+      for (i = 0; i < TREE_VEC_LENGTH (t); ++i)
 	inchash::add_expr (TREE_VEC_ELT (t, i), hstate, flags);
       return;
     case FUNCTION_DECL:
