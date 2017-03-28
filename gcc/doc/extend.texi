@@ -22393,47 +22393,13 @@ Function Multiversioning} for more details.
 @node Namespace Association
 @section Namespace Association
 
-@strong{Caution:} The semantics of this extension are equivalent
-to C++ 2011 inline namespaces.  Users should use inline namespaces
-instead as this extension will be removed in future versions of G++.
+G++ used to support a @code{__attribute ((strong))} attribute, which was
+stronger than a normal using-directive.  This extension has been
+removed, as C++11 inline namespaces provide the required functionality.
 
-A using-directive with @code{__attribute ((strong))} is stronger
-than a normal using-directive in two ways:
-
-@itemize @bullet
-@item
-Templates from the used namespace can be specialized and explicitly
-instantiated as though they were members of the using namespace.
-
-@item
-The using namespace is considered an associated namespace of all
-templates in the used namespace for purposes of argument-dependent
-name lookup.
-@end itemize
-
-The used namespace must be nested within the using namespace so that
-normal unqualified lookup works properly.
-
-This is useful for composing a namespace transparently from
-implementation namespaces.  For example:
-
-@smallexample
-namespace std @{
-  namespace debug @{
-    template <class T> struct A @{ @};
-  @}
-  using namespace debug __attribute ((__strong__));
-  template <> struct A<int> @{ @};   // @r{OK to specialize}
-
-  template <class T> void f (A<T>);
-@}
-
-int main()
-@{
-  f (std::A<float>());             // @r{lookup finds} std::f
-  f (std::A<int>());
-@}
-@end smallexample
+Strong using directives had some implementation complexity and did not
+check the additional semantic constraints that could lead to confusing
+errors.
 
 @node Type Traits
 @section Type Traits

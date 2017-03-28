@@ -4598,22 +4598,16 @@ parse_using_directive (tree name_space, tree attribs)
   for (tree a = attribs; a; a = TREE_CHAIN (a))
     {
       tree name = get_attribute_name (a);
-      if (is_attribute_p ("strong", name))
-	{
-	  if (!toplevel_bindings_p ())
-	    error ("strong using only meaningful at namespace scope");
-	  else if (name_space != error_mark_node)
-	    {
-	      if (!is_ancestor (current_namespace, name_space))
-		error ("current namespace %qD does not enclose strongly used namespace %qD",
-		       current_namespace, name_space);
-	      DECL_NAMESPACE_ASSOCIATIONS (name_space)
-		= tree_cons (current_namespace, 0,
-			     DECL_NAMESPACE_ASSOCIATIONS (name_space));
-	    }
-	}
-      else
+      if (!is_attribute_p ("strong", name))
 	warning (OPT_Wattributes, "%qD attribute directive ignored", name);
+      else if (name_space != error_mark_node)
+	{
+	  warning (0, "strong using directive no longer supported");
+	  if (toplevel_bindings_p ()
+	      && CP_DECL_CONTEXT (name_space) == current_namespace)
+	    inform (DECL_SOURCE_LOCATION (name_space),
+		    "you may use an inline namespace instead");
+	}
     }
 }
 
@@ -6147,16 +6141,14 @@ store_class_bindings (vec<cp_class_binding, va_gc> *names,
 
 static GTY((deletable)) struct saved_scope *free_saved_scope;
 
-void
-push_to_top_level (void)
+static void
+do_push_to_top_level (void)
 {
   struct saved_scope *s;
   cp_binding_level *b;
   cxx_saved_binding *sb;
   size_t i;
   bool need_pop;
-
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
 
   /* Reuse or create a new structure for this saved scope.  */
   if (free_saved_scope != NULL)
@@ -6231,11 +6223,10 @@ push_to_top_level (void)
   push_class_stack ();
   cp_unevaluated_operand = 0;
   c_inhibit_evaluation_warnings = 0;
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
 static void
-pop_from_top_level_1 (void)
+do_pop_from_top_level (void)
 {
   struct saved_scope *s = scope_chain;
   cxx_saved_binding *saved;
@@ -6271,13 +6262,21 @@ pop_from_top_level_1 (void)
   free_saved_scope = s;
 }
 
-/* Wrapper for pop_from_top_level_1.  */
+/* Wrappers for do_{push_to/pop_from}_top_level.  */
+
+void
+push_to_top_level (void)
+{
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  do_push_to_top_level ();
+  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+}
 
 void
 pop_from_top_level (void)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  pop_from_top_level_1 ();
+  do_pop_from_top_level ();
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 

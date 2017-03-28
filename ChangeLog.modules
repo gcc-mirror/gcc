@@ -1,3 +1,13 @@
+2017-03-28  Nathan Sidwell  <nathan@acm.org>
+
+	Kill strong using
+	gcc/
+	* doc/extend.texi (Namespace Association): Document removal.
+	gcc/cp/
+	* name-lookup (parse_using_directive): Remove strong handling.
+	gcc/testsuite/
+	* g++.dg/lookup/strong-using-6.C: New.
+
 2017-03-27  Nathan Sidwell  <nathan@acm.org>
 
 	Simplify ADL part 2
