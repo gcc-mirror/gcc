@@ -180,10 +180,11 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       implementations of the C library with varying tradeoffs of threadsafety
       and efficiency.  You, the programmer, are always required to take care
       with multiple threads.
-   </p><p>(As an example, the POSIX standard requires that C stdio FILE*
-       operations are atomic.  POSIX-conforming C libraries (e.g, on Solaris
-       and GNU/Linux) have an internal mutex to serialize operations on
-       FILE*s.  However, you still need to not do stupid things like calling
+   </p><p>(As an example, the POSIX standard requires that C stdio
+       <code class="code">FILE*</code> operations are atomic.  POSIX-conforming C libraries
+       (e.g, on Solaris and GNU/Linux) have an internal mutex to serialize
+       operations on <code class="code">FILE*</code>s.
+       However, you still need to not do stupid things like calling
        <code class="code">fclose(fs)</code> in one thread followed by an access of
        <code class="code">fs</code> in another.)
    </p><p>So, if your platform's C library is threadsafe, then your
