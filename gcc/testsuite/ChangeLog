@@ -1,3 +1,12 @@
+2017-03-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/78670
+	* gfortran.dg/dtio_25.f90: Use 'a1' format when trying to read
+	a character of length 1. Update test for success.
+	* gfortran.dg/dtio_28.f03: New test.
+	* gfortran.dg/dtio_4.f90: Update to open test file with status =
+	'scratch' to delete the file when done.
+
 2017-03-29  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/80233

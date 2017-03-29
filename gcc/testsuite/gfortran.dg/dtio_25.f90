@@ -20,7 +20,7 @@ contains
     integer, intent(out) :: iostat
     character(*), intent(inout) :: iomsg
     if (iotype.eq."NAMELIST") then
-      write (unit, '(a3,a1,i3)') dtv%c,',', dtv%k
+      write (unit, '(a1,a1,i3)') dtv%c,',', dtv%k
     else
       write (unit,*) dtv%c, dtv%k
     end if
@@ -34,7 +34,7 @@ contains
     character(*), intent(inout) :: iomsg
     character :: comma
     if (iotype.eq."NAMELIST") then
-      read (unit, '(a4,a1,i3)') dtv%c, comma, dtv%k    ! FIXME: need a4 here, with a3 above
+      read (unit, '(a1,a1,i3)') dtv%c, comma, dtv%k
     else
       read (unit,*) dtv%c, comma, dtv%k
     end if
@@ -50,7 +50,7 @@ program p
   namelist /nml/ x
   x = t('a', 5)
   write (buffer, nml)
-  if (buffer.ne.'&NML  X=  a,  5  /') call abort
+  if (buffer.ne.'&NML  X=a,  5  /') call abort
   x = t('x', 0)
   read (buffer, nml)
   if (x%c.ne.'a'.or. x%k.ne.5) call abort
