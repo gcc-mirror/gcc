@@ -1,6 +1,10 @@
 2017-03-29  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (LOOKUP_MARKED_P, RECORD_MARKED_P): Rename to ...
+	(LOOKUP_SEEN_P, LOOKUP_FOUND_P): ... here.  Update everywhere.
+
+	gcc/cp/
 	* name-lookup.c (arg_assoc::assoc_expr): Refactor.
 	(do_lookup_arg_dependent): Renamed from lookup_arg_dependent_1.
 	(lookup_arg_dependent): Adjust.

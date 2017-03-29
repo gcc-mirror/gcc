@@ -138,13 +138,13 @@ struct adl_lookup : name_lookup
 
   vec<tree, va_gc> *scopes;
 
-  bool visited_p (tree scope)
+  bool seen_p (tree scope)
   {
-    return LOOKUP_MARKED_P (scope);
+    return LOOKUP_SEEN_P (scope);
   }
   void mark (tree scope);
-  bool visit_and_mark (tree);
-  bool visit_and_mark_class (tree);
+  bool see_and_mark (tree);
+  bool find_and_mark (tree);
 
   void add_functions (tree);
 
@@ -174,9 +174,8 @@ adl_lookup::~adl_lookup ()
 
   FOR_EACH_VEC_ELT_REVERSE (*scopes, ix, decl)
     {
-      LOOKUP_MARKED_P (decl) = false;
-      if (TREE_CODE (decl) != NAMESPACE_DECL)
-	RECORD_MARKED_P (decl) = false;
+      LOOKUP_SEEN_P (decl) = false;
+      LOOKUP_FOUND_P (decl) = false;
     }
   release_tree_vector (scopes);
 }
@@ -184,17 +183,16 @@ adl_lookup::~adl_lookup ()
 void
 adl_lookup::mark (tree scope)
 {
-  gcc_checking_assert (!visited_p (scope));
-  LOOKUP_MARKED_P (scope) = true;
-  if (TREE_CODE (scope) == NAMESPACE_DECL
-      || !RECORD_MARKED_P (scope))
+  gcc_checking_assert (!seen_p (scope));
+  LOOKUP_SEEN_P (scope) = true;
+  if (!LOOKUP_FOUND_P (scope))
     vec_safe_push (scopes, scope);
 }
 
 bool
-adl_lookup::visit_and_mark (tree scope)
+adl_lookup::see_and_mark (tree scope)
 {
-  bool result = visited_p (scope);
+  bool result = seen_p (scope);
   if (!result)
     mark (scope);
 
@@ -202,13 +200,13 @@ adl_lookup::visit_and_mark (tree scope)
 }
 
 bool
-adl_lookup::visit_and_mark_class (tree scope)
+adl_lookup::find_and_mark (tree scope)
 {
-  bool result = RECORD_MARKED_P (scope);
+  bool result = LOOKUP_FOUND_P (scope);
   if (!result)
     {
-      RECORD_MARKED_P (scope) = true;
-      if (!LOOKUP_MARKED_P (scope))
+      LOOKUP_FOUND_P (scope) = true;
+      if (!LOOKUP_SEEN_P (scope))
 	vec_safe_push (scopes, scope);
     }
 
@@ -254,7 +252,7 @@ adl_lookup::assoc_namespace_only (tree scope)
 void
 adl_lookup::assoc_namespace (tree scope)
 {
-  if (visited_p (scope))
+  if (seen_p (scope))
     return;
 
   /* Find the containing non-inline namespace.  */
@@ -276,7 +274,7 @@ adl_lookup::assoc_class_only (tree type)
 
   type = TYPE_MAIN_VARIANT (type);
 
-  if (visit_and_mark (type))
+  if (see_and_mark (type))
     return;
 
   tree context = decl_namespace_context (type);
@@ -352,7 +350,7 @@ adl_lookup::assoc_class (tree type)
     return;
 
   type = TYPE_MAIN_VARIANT (type);
-  if (visit_and_mark_class (type))
+  if (find_and_mark (type))
     return;
 
   if (TYPE_CLASS_SCOPE_P (type))
@@ -5464,9 +5462,9 @@ do_toplevel_using_directive (tree user_ns, tree using_ns)
 static tree
 do_local_using_directive_r (tree usings, tree used)
 {
-  if (!LOOKUP_MARKED_P (used))
+  if (!LOOKUP_SEEN_P (used))
     {
-      LOOKUP_MARKED_P (used) = true;
+      LOOKUP_SEEN_P (used) = true;
       tree ancestor = namespace_ancestor (current_decl_namespace (), used);
       usings = tree_cons (used, ancestor, usings);
 
@@ -5487,10 +5485,10 @@ do_local_using_directive (tree used)
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   tree usings = current_binding_level->using_directives;
   for (tree p = usings; p; p = TREE_CHAIN (p))
-    LOOKUP_MARKED_P (TREE_PURPOSE (p)) = true;
+    LOOKUP_SEEN_P (TREE_PURPOSE (p)) = true;
   usings = do_local_using_directive_r (usings, used);
   for (tree p = usings; p; p = TREE_CHAIN (p))
-    LOOKUP_MARKED_P (TREE_PURPOSE (p)) = false;
+    LOOKUP_SEEN_P (TREE_PURPOSE (p)) = false;
   current_binding_level->using_directives = usings;
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
