@@ -1,3 +1,23 @@
+2017-03-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Back port from trunk
+	2017-03-21  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	PR target/80123
+	* doc/md.texi (Constraints): Document wA constraint.
+	* config/rs6000/constraints.md (wA): New.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Add wA reg_class.
+	(rs6000_init_hard_regno_mode_ok): Init wA constraint.
+	* config/rs6000/rs6000.h (RS6000_CONSTRAINT_wA): New.
+	* config/rs6000/vsx.md (vsx_splat_<mode>): Use wA constraint.
+
+	2017-03-16  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/71294
+	* config/rs6000/vsx.md (vsx_splat_<mode>, VSX_D iterator): Allow a
+	SPLAT operation on ISA 2.07 64-bit systems that have direct move,
+	but no MTVSRDD support, by doing MTVSRD and XXPERMDI.
+
 2017-03-29  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
