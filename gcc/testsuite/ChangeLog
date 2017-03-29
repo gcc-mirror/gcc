@@ -1,3 +1,9 @@
+2017-03-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/80254
+	* gfortran.dg/dec_io_2.f90:  Do not run on MINGW, run
+	* gfortran.dg/dec_io_2a.f90:  instead (new test).
+
 2017-03-28  Jiong Wang  <jiong.wang@arm.com>
 
 	* g++.dg/tls/thread_local-order2.C: XFAIL on newlib.
