@@ -1,3 +1,8 @@
+2017-03-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/80233
+	* gcc.c-torture/compile/pr80233.c: New testcase.
+
 2017-03-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/80254

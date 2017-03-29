@@ -1250,10 +1250,10 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 	    continue;
 
 	  while (last_combined_insn
-		 && last_combined_insn->deleted ())
+		 && (!NONDEBUG_INSN_P (last_combined_insn)
+		     || last_combined_insn->deleted ()))
 	    last_combined_insn = PREV_INSN (last_combined_insn);
 	  if (last_combined_insn == NULL_RTX
-	      || BARRIER_P (last_combined_insn)
 	      || BLOCK_FOR_INSN (last_combined_insn) != this_basic_block
 	      || DF_INSN_LUID (last_combined_insn) <= DF_INSN_LUID (insn))
 	    last_combined_insn = insn;
