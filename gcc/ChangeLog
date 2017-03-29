@@ -1,3 +1,12 @@
+2017-03-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/80158
+	* gimple-ssa-strength-reduction.c (replace_mult_candidate):
+	Handle possible future case of more than one alternate
+	interpretation.
+	(replace_rhs_if_not_dup): Likewise.
+	(replace_one_candidate): Likewise.
+
 2017-03-28  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/80193
@@ -553,7 +562,7 @@
 	matching condition.
 
 2017-03-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
-            Richard Biener  <rguenth@suse.com>
+            Richard Biener  <rguenth@suse.de>
 
 	PR tree-optimization/79908
 	PR tree-optimization/80136

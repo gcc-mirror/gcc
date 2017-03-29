@@ -2086,11 +2086,15 @@ replace_mult_candidate (slsr_cand_t c, tree basis_name, widest_int bump)
 	  tree lhs = gimple_assign_lhs (c->cand_stmt);
 	  gassign *copy_stmt = gimple_build_assign (lhs, basis_name);
 	  gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
+	  slsr_cand_t cc = c;
 	  gimple_set_location (copy_stmt, gimple_location (c->cand_stmt));
 	  gsi_replace (&gsi, copy_stmt, false);
 	  c->cand_stmt = copy_stmt;
-	  if (c->next_interp)
-	    lookup_cand (c->next_interp)->cand_stmt = copy_stmt;
+	  while (cc->next_interp)
+	    {
+	      cc = lookup_cand (cc->next_interp);
+	      cc->cand_stmt = copy_stmt;
+	    }
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    stmt_to_print = copy_stmt;
 	}
@@ -2116,12 +2120,16 @@ replace_mult_candidate (slsr_cand_t c, tree basis_name, widest_int bump)
 	  else
 	    {
 	      gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
+	      slsr_cand_t cc = c;
 	      gimple_assign_set_rhs_with_ops (&gsi, code,
 					      basis_name, bump_tree);
 	      update_stmt (gsi_stmt (gsi));
               c->cand_stmt = gsi_stmt (gsi);
-	      if (c->next_interp)
-		lookup_cand (c->next_interp)->cand_stmt = gsi_stmt (gsi);
+	      while (cc->next_interp)
+		{
+		  cc = lookup_cand (cc->next_interp);
+		  cc->cand_stmt = gsi_stmt (gsi);
+		}
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		stmt_to_print = gsi_stmt (gsi);
 	    }
@@ -3406,11 +3414,15 @@ replace_rhs_if_not_dup (enum tree_code new_code, tree new_rhs1, tree new_rhs2,
 	      || !operand_equal_p (new_rhs2, old_rhs1, 0))))
     {
       gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
+      slsr_cand_t cc = c;
       gimple_assign_set_rhs_with_ops (&gsi, new_code, new_rhs1, new_rhs2);
       update_stmt (gsi_stmt (gsi));
       c->cand_stmt = gsi_stmt (gsi);
-      if (c->next_interp)
-	lookup_cand (c->next_interp)->cand_stmt = gsi_stmt (gsi);
+      while (cc->next_interp)
+	{
+	  cc = lookup_cand (cc->next_interp);
+	  cc->cand_stmt = gsi_stmt (gsi);
+	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	return gsi_stmt (gsi);
@@ -3514,11 +3526,15 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
 	  || !operand_equal_p (rhs2, orig_rhs2, 0))
 	{
 	  gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
+	  slsr_cand_t cc = c;
 	  gimple_assign_set_rhs_with_ops (&gsi, MINUS_EXPR, basis_name, rhs2);
 	  update_stmt (gsi_stmt (gsi));
           c->cand_stmt = gsi_stmt (gsi);
-	  if (c->next_interp)
-	    lookup_cand (c->next_interp)->cand_stmt = gsi_stmt (gsi);
+	  while (cc->next_interp)
+	    {
+	      cc = lookup_cand (cc->next_interp);
+	      cc->cand_stmt = gsi_stmt (gsi);
+	    }
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    stmt_to_print = gsi_stmt (gsi);
@@ -3537,11 +3553,15 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
 	{
 	  gassign *copy_stmt = gimple_build_assign (lhs, basis_name);
 	  gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
+	  slsr_cand_t cc = c;
 	  gimple_set_location (copy_stmt, gimple_location (c->cand_stmt));
 	  gsi_replace (&gsi, copy_stmt, false);
 	  c->cand_stmt = copy_stmt;
-	  if (c->next_interp)
-	    lookup_cand (c->next_interp)->cand_stmt = copy_stmt;
+	  while (cc->next_interp)
+	    {
+	      cc = lookup_cand (cc->next_interp);
+	      cc->cand_stmt = copy_stmt;
+	    }
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    stmt_to_print = copy_stmt;
@@ -3550,11 +3570,15 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
 	{
 	  gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
 	  gassign *cast_stmt = gimple_build_assign (lhs, NOP_EXPR, basis_name);
+	  slsr_cand_t cc = c;
 	  gimple_set_location (cast_stmt, gimple_location (c->cand_stmt));
 	  gsi_replace (&gsi, cast_stmt, false);
 	  c->cand_stmt = cast_stmt;
-	  if (c->next_interp)
-	    lookup_cand (c->next_interp)->cand_stmt = cast_stmt;
+	  while (cc->next_interp)
+	    {
+	      cc = lookup_cand (cc->next_interp);
+	      cc->cand_stmt = cast_stmt;
+	    }
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    stmt_to_print = cast_stmt;
