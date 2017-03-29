@@ -743,7 +743,7 @@
 	conditional jump, if the jump is the last insn of the loop.
 
 2017-03-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
-            Richard Biener  <rguenth@suse.com>
+            Richard Biener  <rguenth@suse.de>
 
 	PR tree-optimization/79908
 	* tree-stdarg.c (expand_ifn_va_arg_1): For a VA_ARG whose LHS has
