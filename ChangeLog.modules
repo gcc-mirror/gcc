@@ -1,5 +1,12 @@
 2017-03-29  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* name-lookup.c (arg_assoc::assoc_expr): Refactor.
+	(do_lookup_arg_dependent): Renamed from lookup_arg_dependent_1.
+	(lookup_arg_dependent): Adjust.
+	(qualified_namespace_lookup): Renamed from
+	qualified_lookup_using_namespace.
+
 	Kill DECL_NAMESPACE_ASSOCATIONS
 	gcc/cp/
 	* cp-tree.h (DECL_NAMESPACE_INLINE_P): Renamed.

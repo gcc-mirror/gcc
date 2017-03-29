@@ -148,7 +148,7 @@ struct adl_lookup : name_lookup
 
   void add_functions (tree);
 
-  void assoc (tree);
+  void assoc_expr (tree);
   void assoc_type (tree);
   void assoc_template_arg (tree);
   void assoc_class (tree);
@@ -371,42 +371,44 @@ adl_lookup::assoc_class (tree type)
 }
 
 void
-adl_lookup::assoc (tree expr)
+adl_lookup::assoc_expr (tree expr)
 {
   if (!expr)
-    ;
-  else if (TYPE_P (expr))
-    assoc_type (expr);
-  else if (TREE_TYPE (expr) != unknown_type_node)
-    assoc_type (TREE_TYPE (expr));
-  else
+    return;
+
+  gcc_assert (!TYPE_P (expr));
+
+  if (TREE_TYPE (expr) != unknown_type_node)
     {
-      if (TREE_CODE (expr) == ADDR_EXPR)
-	expr = TREE_OPERAND (expr, 0);
-      if (TREE_CODE (expr) == COMPONENT_REF
-	  || TREE_CODE (expr) == OFFSET_REF)
-	expr = TREE_OPERAND (expr, 1);
-      expr = MAYBE_BASELINK_FUNCTIONS (expr);
+      assoc_type (TREE_TYPE (expr));
+      return;
+    }
 
-      if (OVL_P (expr))
-	for (ovl2_iterator iter (expr); iter; ++iter)
-	  assoc_type (TREE_TYPE (*iter));
-      else if (TREE_CODE (expr) == TEMPLATE_ID_EXPR)
-	{
-	  /* The working paper doesn't currently say how to handle
-	     template-id arguments.  The sensible thing would seem to
-	     be to handle the list of template candidates like a
-	     normal overload set, and handle the template arguments
-	     like we do for class template specializations.  */
+  if (TREE_CODE (expr) == ADDR_EXPR)
+    expr = TREE_OPERAND (expr, 0);
+  if (TREE_CODE (expr) == COMPONENT_REF
+      || TREE_CODE (expr) == OFFSET_REF)
+    expr = TREE_OPERAND (expr, 1);
+  expr = MAYBE_BASELINK_FUNCTIONS (expr);
 
-	  /* First the templates.  */
-	  assoc (TREE_OPERAND (expr, 0));
+  if (OVL_P (expr))
+    for (ovl2_iterator iter (expr); iter; ++iter)
+      assoc_type (TREE_TYPE (*iter));
+  else if (TREE_CODE (expr) == TEMPLATE_ID_EXPR)
+    {
+      /* The working paper doesn't currently say how to handle
+	 template-id arguments.  The sensible thing would seem to be
+	 to handle the list of template candidates like a normal
+	 overload set, and handle the template arguments like we do
+	 for class template specializations.  */
 
-	  /* Now the arguments.  */
-	  if (tree args = TREE_OPERAND (expr, 1))
-	    for (int ix = TREE_VEC_LENGTH (args); ix--;)
-	      assoc_template_arg (TREE_VEC_ELT (args, ix));
-	}
+      /* First the templates.  */
+      assoc_expr (TREE_OPERAND (expr, 0));
+
+      /* Now the arguments.  */
+      if (tree args = TREE_OPERAND (expr, 1))
+	for (int ix = TREE_VEC_LENGTH (args); ix--;)
+	  assoc_template_arg (TREE_VEC_ELT (args, ix));
     }
 }
 
@@ -414,15 +416,17 @@ void
 adl_lookup::assoc_type (tree type)
 {
   if (!type)
-    ;
-  else if (TYPE_PTRDATAMEM_P (type))
+    return;
+
+  if (TYPE_PTRDATAMEM_P (type))
     {
       /* Pointer to member: associate class type and value type.  */
       assoc_type (TYPE_PTRMEM_CLASS_TYPE (type));
       assoc_type (TYPE_PTRMEM_POINTED_TO_TYPE (type));
       return;
     }
-  else switch (TREE_CODE (type))
+
+  switch (TREE_CODE (type))
     {
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (type))
@@ -433,7 +437,7 @@ adl_lookup::assoc_type (tree type)
       /* FALLTHRU */
     case UNION_TYPE:
       assoc_class (type);
-      break;
+      return;
 
     case METHOD_TYPE:
       /* The basetype is referenced in the first arg type, so just
@@ -448,40 +452,25 @@ adl_lookup::assoc_type (tree type)
     case REFERENCE_TYPE:
     case ARRAY_TYPE:
       assoc_type (TREE_TYPE (type));
-      break;
+      return;
 
     case ENUMERAL_TYPE:
       if (TYPE_CLASS_SCOPE_P (type))
 	assoc_class_only (TYPE_CONTEXT (type));
       assoc_namespace (decl_namespace_context (type));
-      break;
+      return;
 
     case LANG_TYPE:
       gcc_assert (type == unknown_type_node
 		  || type == init_list_type_node);
-      break;
+      return;
 
     case TYPE_PACK_EXPANSION:
       assoc_type (PACK_EXPANSION_PATTERN (type));
-      break;
-
-    case ERROR_MARK:
-    case VOID_TYPE:
-    case INTEGER_TYPE:
-    case REAL_TYPE:
-    case COMPLEX_TYPE:
-    case VECTOR_TYPE:
-    case BOOLEAN_TYPE:
-    case FIXED_POINT_TYPE:
-    case DECLTYPE_TYPE:
-    case NULLPTR_TYPE:
-    case TEMPLATE_TYPE_PARM:
-    case BOUND_TEMPLATE_TEMPLATE_PARM:
-    case TYPENAME_TYPE:
-      break;
+      return;
 
     default:
-      gcc_unreachable ();
+      break;
     }
 }
 
@@ -532,14 +521,17 @@ adl_lookup::assoc_template_arg (tree arg)
 }
 
 static tree
-lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
+do_lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
 {
   adl_lookup lookup (name, ovl_lookup_mark (fns, true));
   unsigned ix;
   tree arg;
 
   FOR_EACH_VEC_ELT_REVERSE (*args, ix, arg)
-    lookup.assoc (arg);
+    /* OMP reduction operators put a type as the first arg.  I don't
+       suppose we should ADL on that?  */
+    if (!TYPE_P (arg))
+      lookup.assoc_expr (arg);
 
   fns = ovl_lookup_mark (lookup.value, false);
 
@@ -550,7 +542,7 @@ static cp_binding_level *innermost_nonclass_level (void);
 static cxx_binding *binding_for_name (cp_binding_level *, tree);
 static tree push_overloaded_decl (tree, int, bool);
 static bool lookup_using_namespace (tree, name_lookup *, tree, tree, int);
-static bool qualified_lookup_using_namespace (tree, tree, name_lookup *, int);
+static bool qualified_namespace_lookup (tree, tree, name_lookup *, int);
 static void consider_binding_level (tree name, best_match <tree, tree> &bm,
 				    cp_binding_level *lvl,
 				    bool look_within_fields,
@@ -3121,7 +3113,7 @@ do_nonmember_using_decl (tree scope, tree name, cxx_binding *bind)
 {
   name_lookup lookup (name);
 
-  if (!qualified_lookup_using_namespace (name, scope, &lookup, 0))
+  if (!qualified_namespace_lookup (name, scope, &lookup, 0))
     /* Lookup error */
     return;
 
@@ -4475,7 +4467,7 @@ suggest_alternatives_for (location_t location, tree name,
       cp_binding_level *level = NAMESPACE_LEVEL (scope);
 
       /* Look in this namespace.  */
-      qualified_lookup_using_namespace (name, scope, &lookup, 0);
+      qualified_namespace_lookup (name, scope, &lookup, 0);
 
       n_searched++;
 
@@ -4643,7 +4635,7 @@ lookup_qualified_name (tree scope, tree name, int prefer_type, bool complain,
       int flags = lookup_flags (prefer_type, /*namespaces_only*/false);
       if (find_hidden)
 	flags |= LOOKUP_HIDDEN;
-      if (qualified_lookup_using_namespace (name, scope, &lookup, flags))
+      if (qualified_namespace_lookup (name, scope, &lookup, flags))
 	t = lookup.value;
 
       /* If we have a known type overload, pull it out.  This can happen
@@ -4709,8 +4701,8 @@ tree_vec_contains (vec<tree, va_gc> *vec, tree target)
    or false on error.  */
 
 static bool
-qualified_lookup_using_namespace (tree name, tree scope,
-				  name_lookup *lookup, int flags)
+qualified_namespace_lookup (tree name, tree scope,
+			    name_lookup *lookup, int flags)
 {
   /* Maintain a list of namespaces visited...  */
   vec<tree, va_gc> *seen = NULL;
@@ -5430,7 +5422,7 @@ lookup_type_current_level (tree name)
 }
 
 /* Returns true iff SCOPE is a direct or indirect inline namespace of
-   PARENT.  */
+   PARENT (including itself).  */
 
 bool
 is_associated_namespace (tree parent, tree scope)
@@ -5442,13 +5434,13 @@ is_associated_namespace (tree parent, tree scope)
   return parent == scope;
 }
 
-/* Wrapper for lookup_arg_dependent_1.  */
+/* Wrapper for do_lookup_arg_dependent.  */
 
 cp_expr
 lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  cp_expr ret = lookup_arg_dependent_1 (name, fns, args);
+  cp_expr ret = do_lookup_arg_dependent (name, fns, args);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
