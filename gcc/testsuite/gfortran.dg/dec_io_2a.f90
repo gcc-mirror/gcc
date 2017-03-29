@@ -1,4 +1,4 @@
-! { dg-do run { target { ! { *-*-mingw* } } } }
+! { dg-do run { target {  *-*-mingw* } } }
 ! { dg-options "-fdec" }
 !
 ! Run-time tests for various carriagecontrol parameters with DEC I/O.
@@ -71,13 +71,13 @@ character(*), parameter :: output_ccnone = &
 
 !! In LIST mode, each record is terminated with a newline.
 character(*), parameter :: output_cclist = &
-  "+ first"//CHAR(10)//&
-  "-second line"//CHAR(10)//&
-  "0now you know"//CHAR(10)//&
-  "1this is the fourth line"//CHAR(10)//&
-  "$finally we have a new challenger for the final line"//CHAR(10)//&
-  CHAR(0)//"this is the end"//CHAR(10)//&
-  " this is a plain old line"//CHAR(10)
+  "+ first"//CHAR(13)//CHAR(10)//&
+  "-second line"//CHAR(13)//CHAR(10)//&
+  "0now you know"//CHAR(13)//CHAR(10)//&
+  "1this is the fourth line"//CHAR(13)//CHAR(10)//&
+  "$finally we have a new challenger for the final line"//CHAR(13)//CHAR(10)//&
+  CHAR(0)//"this is the end"//CHAR(13)//CHAR(10)//&
+  " this is a plain old line"//CHAR(13)//CHAR(10)
 
 !! In FORTRAN mode, the default record break is CR, and the first character
 !! implies the start- and end-of-record formatting.
