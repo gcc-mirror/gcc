@@ -1,5 +1,11 @@
 2017-03-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
+	Adjust optional's pretty printer for LWG 2900.
+	* python/libstdcxx/v6/printers.py (StdExpOptionalPrinter.__init__):
+	Look at the nested payload in case of non-experimental optional.
+
+2017-03-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
 	Implement LWG 2900, The copy and move constructors
 	of optional are not constexpr.
 	* include/std/optional (_Optional_payload): New.
