@@ -1,3 +1,9 @@
+2017-03-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/80233
+	* combine.c (combine_instructions): Only take NONDEBUG_INSN_P insns
+	as last_combined_insn.  Do not test for BARRIER_P separately.
+
 2017-03-29  Andreas Schwab  <schwab@suse.de>
 
 	PR ada/80146
