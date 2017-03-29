@@ -1,5 +1,15 @@
 2017-03-29  Nathan Sidwell  <nathan@acm.org>
 
+	Kill DECL_NAMESPACE_ASSOCATIONS
+	gcc/cp/
+	* cp-tree.h (DECL_NAMESPACE_INLINE_P): Renamed.
+	(DECL_NAMESPACE_ASSCIATIONS): Delete.
+	(DECL_NAMESPACE_INLINEES): New.
+	* name-lookup.c (adl_lookup::assoc_namespace_only): New.
+	(adl_lookup::assoc_namespace): Find parent, walk from there.
+	(is_associated_namespace): Walk inline namespace tree.
+	(push_namepace): Add to INLINEES not ASSOCIATIONS.
+
 	gcc/cp/
 	* lambda.c (maybe_add_lambda_conv_op): Use namespace_bindings_p.
 	* method.c (implicitly_declare_fn): Likewise.

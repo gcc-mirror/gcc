@@ -18404,7 +18404,7 @@ cp_parser_namespace_definition (cp_parser* parser)
 
   /* Start the namespace.  */
   bool pushed = push_namespace (identifier, is_inline);
-  if (pushed && is_inline && !NAMESPACE_INLINE_P (current_namespace))
+  if (pushed && is_inline && !DECL_NAMESPACE_INLINE_P (current_namespace))
     {
       error_at (token->location,
 		"an inline namespace must be specified at initial definition");

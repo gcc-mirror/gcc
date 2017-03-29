@@ -138,12 +138,13 @@ struct adl_lookup : name_lookup
 
   vec<tree, va_gc> *scopes;
 
-  bool visit_and_mark (tree);
-  bool visit_and_mark_all (tree);
   bool visited_p (tree scope)
   {
     return LOOKUP_MARKED_P (scope);
   }
+  void mark (tree scope);
+  bool visit_and_mark (tree);
+  bool visit_and_mark_class (tree);
 
   void add_functions (tree);
 
@@ -154,6 +155,7 @@ struct adl_lookup : name_lookup
   void assoc_bases (tree);
   void assoc_class_only (tree);
   void assoc_namespace (tree);
+  void assoc_namespace_only (tree);
 
   adl_lookup (tree name, tree fns);
   ~adl_lookup ();
@@ -179,23 +181,28 @@ adl_lookup::~adl_lookup ()
   release_tree_vector (scopes);
 }
 
+void
+adl_lookup::mark (tree scope)
+{
+  gcc_checking_assert (!visited_p (scope));
+  LOOKUP_MARKED_P (scope) = true;
+  if (TREE_CODE (scope) == NAMESPACE_DECL
+      || !RECORD_MARKED_P (scope))
+    vec_safe_push (scopes, scope);
+}
+
 bool
 adl_lookup::visit_and_mark (tree scope)
 {
-  bool result = LOOKUP_MARKED_P (scope);
+  bool result = visited_p (scope);
   if (!result)
-    {
-      LOOKUP_MARKED_P (scope) = true;
-      if (TREE_CODE (scope) == NAMESPACE_DECL
-	  || !RECORD_MARKED_P (scope))
-	vec_safe_push (scopes, scope);
-    }
+    mark (scope);
 
   return result;
 }
 
 bool
-adl_lookup::visit_and_mark_all (tree scope)
+adl_lookup::visit_and_mark_class (tree scope)
 {
   bool result = RECORD_MARKED_P (scope);
   if (!result)
@@ -227,26 +234,34 @@ adl_lookup::add_functions (tree ovl)
 /* Add functions of a namespace to the lookup structure.  */
 
 void
-adl_lookup::assoc_namespace (tree scope)
+adl_lookup::assoc_namespace_only (tree scope)
 {
-  if (visit_and_mark (scope))
-    return;
-
-  /* Check out our super-users.  */
-  for (tree super = DECL_NAMESPACE_ASSOCIATIONS (scope); super;
-       super = TREE_CHAIN (super))
-    assoc_namespace (TREE_PURPOSE (super));
-
-  /* Also look down into inline namespaces.  */
-  for (tree inner = DECL_NAMESPACE_USING (scope); inner;
-       inner = TREE_CHAIN (inner))
-    // FIXME:Just use NAMESPACE_INLINE_P?
-    if (is_associated_namespace (scope, TREE_PURPOSE (inner)))
-      assoc_namespace (TREE_PURPOSE (inner));
+  mark (scope);
 
   tree value = namespace_binding (name, scope);
 
   add_functions (ovl_skip_hidden (value));
+
+  /* Look down into inline namespaces.  */
+  for (tree inner = DECL_NAMESPACE_INLINEES (scope); inner;
+       inner = TREE_CHAIN (inner))
+    assoc_namespace_only (TREE_PURPOSE (inner));
+}
+
+/* Find the containing non-inlined namespace, add it and all its
+   inlinees.  */
+
+void
+adl_lookup::assoc_namespace (tree scope)
+{
+  if (visited_p (scope))
+    return;
+
+  /* Find the containing non-inline namespace.  */
+  while (DECL_NAMESPACE_INLINE_P (scope))
+    scope = CP_DECL_CONTEXT (scope);
+
+  assoc_namespace_only (scope);
 }
 
 /* Adds the class and its friends to the lookup structure.  */
@@ -337,7 +352,7 @@ adl_lookup::assoc_class (tree type)
     return;
 
   type = TYPE_MAIN_VARIANT (type);
-  if (visit_and_mark_all (type))
+  if (visit_and_mark_class (type))
     return;
 
   if (TYPE_CLASS_SCOPE_P (type))
@@ -4157,7 +4172,7 @@ handle_namespace_attrs (tree ns, tree attributes)
 	}
       else if (is_attribute_p ("abi_tag", name))
 	{
-	  if (!DECL_NAMESPACE_ASSOCIATIONS (ns))
+	  if (!DECL_NAMESPACE_INLINE_P (ns))
 	    {
 	      warning (OPT_Wattributes, "ignoring %qD attribute on non-inline "
 		       "namespace", name);
@@ -5414,45 +5429,17 @@ lookup_type_current_level (tree name)
   return t;
 }
 
-/* Returns true iff CURRENT has declared itself to be an associated
-   namespace of SCOPE via a strong using-directive (or transitive chain
-   thereof).  Both are namespaces.  */
+/* Returns true iff SCOPE is a direct or indirect inline namespace of
+   PARENT.  */
 
 bool
-is_associated_namespace (tree current, tree scope)
+is_associated_namespace (tree parent, tree scope)
 {
-  vec<tree, va_gc> *seen = make_tree_vector ();
-  vec<tree, va_gc> *todo = make_tree_vector ();
-  tree t;
-  bool ret;
+  for (; parent != scope && DECL_NAMESPACE_INLINE_P (scope);
+       scope = CP_DECL_CONTEXT (scope))
+    continue;
 
-  while (1)
-    {
-      if (scope == current)
-	{
-	  ret = true;
-	  break;
-	}
-      vec_safe_push (seen, scope);
-      for (t = DECL_NAMESPACE_ASSOCIATIONS (scope); t; t = TREE_CHAIN (t))
-	if (!vec_member (TREE_PURPOSE (t), seen))
-	  vec_safe_push (todo, TREE_PURPOSE (t));
-      if (!todo->is_empty ())
-	{
-	  scope = todo->last ();
-	  todo->pop ();
-	}
-      else
-	{
-	  ret = false;
-	  break;
-	}
-    }
-
-  release_tree_vector (seen);
-  release_tree_vector (todo);
-
-  return ret;
+  return parent == scope;
 }
 
 /* Wrapper for lookup_arg_dependent_1.  */
@@ -6185,15 +6172,14 @@ push_namespace (tree name, bool make_inline)
 
 	  if (make_inline)
 	    {
-	      NAMESPACE_INLINE_P (ns) = true;
-
-	      /* Set up namespace association.  */
-	      DECL_NAMESPACE_ASSOCIATIONS (ns)
-		= tree_cons (current_namespace, NULL_TREE, NULL_TREE);
+	      DECL_NAMESPACE_INLINE_P (ns) = true;
+	      DECL_NAMESPACE_INLINEES (current_namespace)
+		= tree_cons (ns, NULL_TREE,
+			     DECL_NAMESPACE_INLINEES (current_namespace));
 	    }
 
 	  if (make_inline || name == anon_identifier)
-	      /* Import the contents of the namespace.  */
+	    /* Import the contents of the namespace.  */
 	    do_toplevel_using_directive (current_namespace, ns);
 
 	  begin_scope (sk_namespace, ns);

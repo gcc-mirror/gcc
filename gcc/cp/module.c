@@ -2016,7 +2016,7 @@ cpms_in::finish_namespace (FILE *d, tree ns)
 
   /* We will not have frobbed the namespace yet.  */
   set_scope (DECL_CONTEXT (ns));
-  bool inline_p = NAMESPACE_INLINE_P (ns);
+  bool inline_p = DECL_NAMESPACE_INLINE_P (ns);
   bool module_p = MODULE_NAMESPACE_P (ns);
   if (module_p && (!impl || DECL_NAME (ns) != module_name))
     inline_p = false;

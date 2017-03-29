@@ -330,7 +330,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       FOLD_EXPR_MODOP_P (*_FOLD_EXPR)
       IF_STMT_CONSTEXPR_P (IF_STMT)
       TEMPLATE_TYPE_PARM_FOR_CLASS (TEMPLATE_TYPE_PARM)
-      NAMESPACE_INLINE_P (in NAMESPACE_DECL)
+      DECL_NAMESPACE_INLINE_P (in NAMESPACE_DECL)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -1393,7 +1393,7 @@ check_constraint_info (tree t)
   TREE_LANG_FLAG_2 (NAMESPACE_DECL_CHECK (NODE))
 
 #define CURRENT_MODULE_NAMESPACE_P(NODE) \
-  (MODULE_NAMESPACE_P (NODE) && NAMESPACE_INLINE_P (NODE))
+  (MODULE_NAMESPACE_P (NODE) && DECL_NAMESPACE_INLINE_P (NODE))
 
 /* Whether this is an exported DECL.  */
 #define MODULE_EXPORT_P(NODE) \
@@ -2415,10 +2415,6 @@ struct GTY(()) lang_type {
    throw() functions.  */
 #define TYPE_NOEXCEPT_P(NODE) type_noexcept_p (NODE)
 
-/* Whether the namepace is an inline namespace.  */
-#define NAMESPACE_INLINE_P(NODE) \
-  TREE_LANG_FLAG_0 (NAMESPACE_DECL_CHECK (NODE))
-
 /* The binding level associated with the namespace.  */
 #define NAMESPACE_LEVEL(NODE) \
   (LANG_DECL_NS_CHECK (NODE)->level)
@@ -3097,6 +3093,10 @@ struct GTY(()) lang_decl {
 #define LOCAL_CLASS_P(NODE)				\
   (decl_function_context (TYPE_MAIN_DECL (NODE)) != NULL_TREE)
 
+/* Whether the namepace is an inline namespace.  */
+#define DECL_NAMESPACE_INLINE_P(NODE) \
+  TREE_LANG_FLAG_0 (NAMESPACE_DECL_CHECK (NODE))
+
 /* For a NAMESPACE_DECL: the list of using namespace directives
    The PURPOSE is the used namespace, the value is the namespace
    that is the common ancestor.  */
@@ -3106,9 +3106,8 @@ struct GTY(()) lang_decl {
    of a namespace, to record the transitive closure of using namespace.  */
 #define DECL_NAMESPACE_USERS(NODE) (LANG_DECL_NS_CHECK (NODE)->ns_users)
 
-/* In a NAMESPACE_DECL, the list of namespaces which have associated
-   themselves with this one.  */
-#define DECL_NAMESPACE_ASSOCIATIONS(NODE) \
+/* In a NAMESPACE_DECL, the list of direct inline namespaces.  */
+#define DECL_NAMESPACE_INLINEES(NODE) \
   DECL_INITIAL (NAMESPACE_DECL_CHECK (NODE))
 
 /* In a NAMESPACE_DECL, points to the original namespace if this is
