@@ -1,6 +1,11 @@
 2017-03-29  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* lambda.c (maybe_add_lambda_conv_op): Use namespace_bindings_p.
+	* method.c (implicitly_declare_fn): Likewise.
+	* search.c (node_debug_info_needed): Likewise.
+
+	gcc/cp/
 	* name-lookup.h (finish_namespace_using_directive): Rename from
 	...
 	(finish_toplevel_using_directive): ... here.
