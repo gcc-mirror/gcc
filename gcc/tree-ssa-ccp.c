@@ -729,9 +729,11 @@ likely_value (gimple *stmt)
 	case PLUS_EXPR:
 	case MINUS_EXPR:
 	case POINTER_PLUS_EXPR:
+	case BIT_XOR_EXPR:
 	  /* Not MIN_EXPR, MAX_EXPR.  One VARYING operand may be selected.
 	     Not bitwise operators, one VARYING operand may specify the
-	     result completely.  Not logical operators for the same reason.
+	     result completely.
+	     Not logical operators for the same reason, apart from XOR.
 	     Not COMPLEX_EXPR as one VARYING operand makes the result partly
 	     not UNDEFINED.  Not *DIV_EXPR, comparisons and shifts because
 	     the undefined operand may be promoted.  */
@@ -1733,18 +1735,24 @@ evaluate_stmt (gimple *stmt)
       fold_defer_overflow_warnings ();
       simplified = ccp_fold (stmt);
       if (simplified
-	  && TREE_CODE (simplified) == SSA_NAME
+	  && TREE_CODE (simplified) == SSA_NAME)
+	{
 	  /* We may not use values of something that may be simulated again,
 	     see valueize_op_1.  */
-	  && (SSA_NAME_IS_DEFAULT_DEF (simplified)
-	      || ! prop_simulate_again_p (SSA_NAME_DEF_STMT (simplified))))
-	{
-	  val = *get_value (simplified);
-	  if (val.lattice_val != VARYING)
+	  if (SSA_NAME_IS_DEFAULT_DEF (simplified)
+	      || ! prop_simulate_again_p (SSA_NAME_DEF_STMT (simplified)))
 	    {
-	      fold_undefer_overflow_warnings (true, stmt, 0);
-	      return val;
+	      val = *get_value (simplified);
+	      if (val.lattice_val != VARYING)
+		{
+		  fold_undefer_overflow_warnings (true, stmt, 0);
+		  return val;
+		}
 	    }
+	  else
+	    /* We may also not place a non-valueized copy in the lattice
+	       as that might become stale if we never re-visit this stmt.  */
+	    simplified = NULL_TREE;
 	}
       is_constant = simplified && is_gimple_min_invariant (simplified);
       fold_undefer_overflow_warnings (is_constant, stmt, 0);

@@ -1,3 +1,17 @@
+2017-03-29  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78644
+	* gcc.dg/pr78644-1.c: New testcase.
+	* gcc.dg/pr78644-2.c: Likewise.
+
+	2017-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80181
+	* gcc.dg/torture/pr80181.c: New testcase.
+
 2017-03-28  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
