@@ -1023,6 +1023,8 @@ class StdExpOptionalPrinter(SingleObjContainerPrinter):
         valtype = self._recognize (val.type.template_argument(0))
         self.typename = re.sub('^std::(experimental::|)(fundamentals_v\d::|)(.*)', r'std::\1\3<%s>' % valtype, typename, 1)
         self.typename = strip_versioned_namespace(self.typename)
+        if not self.typename.startswith('std::experimental'):
+            val = val['_M_payload']
         self.val = val
         contained_value = val['_M_payload'] if self.val['_M_engaged'] else None
         visualizer = gdb.default_visualizer (val['_M_payload'])
