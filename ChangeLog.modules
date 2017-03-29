@@ -1,3 +1,12 @@
+2017-03-29  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* name-lookup.h (finish_namespace_using_directive): Rename from
+	...
+	(finish_toplevel_using_directive): ... here.
+	* name-lookup.c: Likewise.
+	* parser.c (cp_parser_using_directive): Adjust.
+
 2017-03-28  Nathan Sidwell  <nathan@acm.org>
 
 	Cleanup pushdecl_top_level

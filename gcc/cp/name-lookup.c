@@ -5860,9 +5860,9 @@ store_class_bindings (vec<cp_class_binding, va_gc> *names,
 /* Process a namespace-scope using directive.  */
 
 void
-finish_toplevel_using_directive (tree name_space, tree attribs)
+finish_namespace_using_directive (tree name_space, tree attribs)
 {
-  gcc_checking_assert (toplevel_bindings_p ());
+  gcc_checking_assert (namespace_bindings_p ());
   if (name_space == error_mark_node)
     return;
 
@@ -5880,8 +5880,7 @@ finish_toplevel_using_directive (tree name_space, tree attribs)
       else if (name_space != error_mark_node)
 	{
 	  warning (0, "strong using directive no longer supported");
-	  if (toplevel_bindings_p ()
-	      && CP_DECL_CONTEXT (name_space) == current_namespace)
+	  if (CP_DECL_CONTEXT (name_space) == current_namespace)
 	    inform (DECL_SOURCE_LOCATION (name_space),
 		    "you may use an inline namespace instead");
 	}
@@ -5893,7 +5892,7 @@ finish_toplevel_using_directive (tree name_space, tree attribs)
 void
 finish_local_using_directive (tree name_space, tree attribs)
 {
-  gcc_checking_assert (!toplevel_bindings_p ());
+  gcc_checking_assert (local_bindings_p ());
   if (name_space == error_mark_node)
     return;
 
@@ -6268,7 +6267,7 @@ pop_everything (void)
 {
   if (ENABLE_SCOPE_CHECKING)
     verbatim ("XXX entering pop_everything ()\n");
-  while (!toplevel_bindings_p ())
+  while (!namespace_bindings_p ())
     {
       if (current_binding_level->kind == sk_class)
 	pop_nested_class ();
