@@ -1,3 +1,8 @@
+2017-03-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/79730
+	* gcc.dg/pr79730.c: New test.
+
 2017-03-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/78670
