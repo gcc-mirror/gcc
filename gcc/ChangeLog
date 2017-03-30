@@ -1,3 +1,9 @@
+2017-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/80189
+	* gimplify.c (omp_default_clause): Use %qs instead of %s in
+	diagnostic messages.
+
 2017-03-30  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/80246

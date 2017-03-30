@@ -1,3 +1,19 @@
+2017-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/80189
+	* g++.dg/gomp/predetermined-1.C: Adjust expected diagnostics.
+	* g++.dg/gomp/sharing-1.C: Likewise.
+	* gfortran.dg/gomp/pr44536.f90: Likewise.
+	* gfortran.dg/gomp/pr44036-1.f90: Likewise.
+	* gfortran.dg/gomp/sharing-3.f90: Likewise.
+	* gfortran.dg/gomp/crayptr3.f90: Likewise.
+	* gfortran.dg/gomp/pr33439.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.24.1.f90: Likewise.
+	* gfortran.dg/gomp/sharing-1.f90: Likewise.
+	* gfortran.dg/gomp/sharing-2.f90: Likewise.
+	* gcc.dg/gomp/appendix-a/a.24.1.c: Likewise.
+	* gcc.dg/gomp/sharing-1.c: Likewise.
+
 2017-03-30  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/80246
