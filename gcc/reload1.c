@@ -7943,8 +7943,7 @@ do_input_reload (struct insn_chain *chain, struct reload *rl, int j)
 	 AUTO_INC reload if reload_out is set but reload_out_reg isn't.  */
       && (! reload_inherited[j] || (rl->out && ! rl->out_reg))
       && ! rtx_equal_p (reg_rtx, old)
-      && reg_rtx != 0
-      && rl->in_reg != rl->out_reg)
+      && reg_rtx != 0)
     emit_input_reload_insns (chain, rld + j, old, j);
 
   /* When inheriting a wider reload, we have a MEM in rl->in,
