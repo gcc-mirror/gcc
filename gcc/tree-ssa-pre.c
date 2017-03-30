@@ -1468,10 +1468,20 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		   leader for it.  */
 		if (constant->kind != CONSTANT)
 		  {
-		    unsigned value_id = get_expr_value_id (constant);
-		    constant = find_leader_in_sets (value_id, set1, set2);
-		    if (constant)
-		      return constant;
+		    /* Do not allow simplifications to non-constants over
+		       backedges as this will likely result in a loop PHI node
+		       to be inserted and increased register pressure.
+		       See PR77498 - this avoids doing predcoms work in
+		       a less efficient way.  */
+		    if (find_edge (pred, phiblock)->flags & EDGE_DFS_BACK)
+		      ;
+		    else
+		      {
+			unsigned value_id = get_expr_value_id (constant);
+			constant = find_leader_in_sets (value_id, set1, set2);
+			if (constant)
+			  return constant;
+		      }
 		  }
 		else
 		  return constant;

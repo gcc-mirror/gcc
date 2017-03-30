@@ -1,3 +1,9 @@
+2017-03-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77498
+	* tree-ssa-pre.c (phi_translate_1): Do not allow simplifications
+	to non-constants over backedges.
+
 2017-03-29  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/80233
