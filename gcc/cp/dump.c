@@ -366,8 +366,8 @@ cp_dump_tree (void* dump_info, tree t)
     case OVERLOAD:
       dump_child ("name", OVL_NAME (t));
       if (!dump_flag (di, TDF_SLIM, t))
-	for (ovl_iterator iter (t); iter; ++iter)
-	  dump_child ("chan", *iter);
+	for (ovl_iterator iter (t, true); iter; ++iter)
+	  dump_child ("chld", *iter);
       break;
 
     case TRY_BLOCK:

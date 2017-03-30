@@ -1,5 +1,8 @@
 2017-03-30  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* dump.c (cp_dump_tree): Allow nested overloads.
+
 	Add SCOPE_DEPTH
 	gcc/cp/
 	* cp-tree.h (SCOPE_DEPTH): New.
