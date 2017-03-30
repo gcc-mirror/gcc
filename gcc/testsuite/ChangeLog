@@ -1,3 +1,8 @@
+2017-03-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/77333
+	* g++.dg/ipa/pr77333.C: New test.
+
 2017-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/80206
