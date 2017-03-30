@@ -1,3 +1,7 @@
+2017-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* env.c (initialize_env): Initialize stacksize to 0.
+
 2017-03-22  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR c++/80029
