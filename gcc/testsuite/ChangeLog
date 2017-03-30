@@ -1,3 +1,15 @@
+2017-03-30  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2017-03-30  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/80246
+	* gcc.target/powerpc/dfp-builtin-1.c: Remove unneeded dg-skip-if for
+	Darwin and SPE.
+	(dxex, dxexq): Update return type.
+	(diex, diexq): Update argument type.
+	* gcc.target/powerpc/pr80246.c: New test.
+
 2017-03-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline

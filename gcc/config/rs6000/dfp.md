@@ -344,16 +344,16 @@
   [(set_attr "type" "fp")])
 
 (define_insn "dfp_dxex_<mode>"
-  [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
-	(unspec:D64_D128 [(match_operand:D64_D128 1 "gpc_reg_operand" "d")]
-			 UNSPEC_DXEX))]
+  [(set (match_operand:DI 0 "gpc_reg_operand" "=d")
+	(unspec:DI [(match_operand:D64_D128 1 "gpc_reg_operand" "d")]
+		   UNSPEC_DXEX))]
   "TARGET_DFP"
   "dxex<dfp_suffix> %0,%1"
   [(set_attr "type" "fp")])
 
 (define_insn "dfp_diex_<mode>"
   [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
-	(unspec:D64_D128 [(match_operand:D64_D128 1 "gpc_reg_operand" "d")
+	(unspec:D64_D128 [(match_operand:DI 1 "gpc_reg_operand" "d")
 			  (match_operand:D64_D128 2 "gpc_reg_operand" "d")]
 			 UNSPEC_DXEX))]
   "TARGET_DFP"
