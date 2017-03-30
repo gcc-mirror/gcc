@@ -3352,16 +3352,35 @@ do_local_using_decl (tree decl, tree scope, tree name)
     cp_emit_debug_info_for_using (orig_decl, current_scope());
 }
 
+/* Returns true if ANCESTOR encloses DESCENDANT, including matching.
+   Both are namespaces.  */
+
+bool
+is_nested_namespace (tree ancestor, tree descendant, bool inline_only)
+{
+  /* Strip current module's local namespace from root.  */
+  if (CURRENT_MODULE_NAMESPACE_P (ancestor))
+    ancestor = CP_DECL_CONTEXT (ancestor);
+
+  int depth = SCOPE_DEPTH (ancestor);
+
+  if (!depth && !inline_only)
+    /* The global namespace encloses everything.  */
+    return true;
+
+  while (SCOPE_DEPTH (descendant) > depth
+	 && (!inline_only || DECL_NAMESPACE_INLINE_P (descendant)))
+    descendant = CP_DECL_CONTEXT (descendant);
+
+  return ancestor == descendant;
+}
+
 /* Returns true if ROOT (a namespace, class, or function) encloses
    CHILD.  CHILD may be either a class type or a namespace.  */
 
 bool
 is_ancestor (tree root, tree child)
 {
-  /* Strip current module's local namespace from root.  */
-  if (TREE_CODE (root) == NAMESPACE_DECL && CURRENT_MODULE_NAMESPACE_P (root))
-    root = CP_DECL_CONTEXT (root);
-
   gcc_assert ((TREE_CODE (root) == NAMESPACE_DECL
 	       || TREE_CODE (root) == FUNCTION_DECL
 	       || CLASS_TYPE_P (root)));
@@ -3369,10 +3388,14 @@ is_ancestor (tree root, tree child)
 	       || CLASS_TYPE_P (child)));
 
   /* The global namespace encloses everything.  */
-  if (root == global_namespace)
+  if (root == global_namespace
+      || (TREE_CODE (root) == NAMESPACE_DECL
+	  && CURRENT_MODULE_NAMESPACE_P (root)
+	  && CP_DECL_CONTEXT (root) == global_namespace))
     return true;
 
-  for (; child; child = DECL_CONTEXT (child))
+  /* Search until we reach namespace scope.  */
+  while (TREE_CODE (child) != NAMESPACE_DECL)
     {
       /* If we've reached the ROOT, it encloses CHILD.  */
       if (root == child)
@@ -3380,9 +3403,12 @@ is_ancestor (tree root, tree child)
       /* Go out one level.  */
       if (TYPE_P (child))
 	child = TYPE_NAME (child);
+      child = CP_DECL_CONTEXT (child);
     }
 
-  /* We failed to find root as an ancestor of chid.  */
+  if (TREE_CODE (root) == NAMESPACE_DECL)
+    return is_nested_namespace (root, child);
+
   return false;
 }
 
@@ -4091,7 +4117,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
   scope = ORIGINAL_NAMESPACE (scope);
 
   /* It is ok for friends to be qualified in parallel space.  */
-  if (!friendp && !is_ancestor (current_namespace, scope))
+  if (!friendp && !is_nested_namespace (current_namespace, scope))
     error ("declaration of %qD not in a namespace surrounding %qD",
 	   decl, scope);
   DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
@@ -4168,7 +4194,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 	}
       if (found)
 	{
-	  if (!is_associated_namespace (scope, CP_DECL_CONTEXT (found)))
+	  if (!is_nested_namespace (scope, CP_DECL_CONTEXT (found), true))
 	    goto complain;
 	  if (DECL_HIDDEN_FRIEND_P (found))
 	    {
@@ -4311,7 +4337,7 @@ static tree
 namespace_ancestor_1 (tree ns1, tree ns2)
 {
   tree nsr;
-  if (is_ancestor (ns1, ns2))
+  if (is_nested_namespace (ns1, ns2))
     nsr = ns1;
   else
     nsr = namespace_ancestor_1 (CP_DECL_CONTEXT (ns1), ns2);
@@ -5430,19 +5456,6 @@ lookup_type_current_level (tree name)
   return t;
 }
 
-/* Returns true iff SCOPE is a direct or indirect inline namespace of
-   PARENT (including itself).  */
-
-bool
-is_associated_namespace (tree parent, tree scope)
-{
-  for (; parent != scope && DECL_NAMESPACE_INLINE_P (scope);
-       scope = CP_DECL_CONTEXT (scope))
-    continue;
-
-  return parent == scope;
-}
-
 /* Wrapper for do_lookup_arg_dependent.  */
 
 cp_expr
@@ -6151,6 +6164,11 @@ push_namespace (tree name, bool make_inline)
     {
       /* Make a new namespace, binding the name to it.  */
       ns = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
+      SCOPE_DEPTH (ns) = SCOPE_DEPTH (current_namespace) + 1;
+      if (!SCOPE_DEPTH (ns))
+	/* We only allow depth 255. */
+	sorry ("cannot nest more than %d namespaces",
+	       SCOPE_DEPTH (current_namespace));
       DECL_CONTEXT (ns) = FROB_CONTEXT (current_namespace);
 
       /* The name of this namespace is not visible to other translation

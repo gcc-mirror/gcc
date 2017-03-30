@@ -1,5 +1,20 @@
 2017-03-30  Nathan Sidwell  <nathan@acm.org>
 
+	Add SCOPE_DEPTH
+	gcc/cp/
+	* cp-tree.h (SCOPE_DEPTH): New.
+	* decl.c (cxx_init_decl_processing): Set current_namespace.
+	* name-lookup.h (is_nested_namespace): Declare.
+	(is_associated_namespace): Delete.
+	* name-lookup.c (is_nested_namespace): New.
+	(is_ancestor): Use is_nested_namespace for namespaces.
+	(set_decl_namespace): Use is_nested_namespace.
+	(namespace_ancestor_1): Likewise.
+	(is_associated_namespace): Delete.
+	(push_namespace): Set SCOPE_DEPTH.
+	* pt.c (check_specialization_namespace): Use is_nested_namespace.
+	(check_unqualified_spec_or_inst): Likewise.
+
 	Reimplement qualified namespace lookup
 	gcc/cp/
 	* name-lookup.c (cp_binding_level_find_binding_for_name): Remove

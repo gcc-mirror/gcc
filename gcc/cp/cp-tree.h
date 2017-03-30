@@ -3092,6 +3092,13 @@ struct GTY(()) lang_decl {
 #define LOCAL_CLASS_P(NODE)				\
   (decl_function_context (TYPE_MAIN_DECL (NODE)) != NULL_TREE)
 
+/* The nesting depth of namespace, class or function.  Makes is_ancestor much
+   simpler.  Only 8 bits available.
+   FIXME: Only valid for namespaces.  */
+#define SCOPE_DEPTH(NODE) \
+  (TREE_CHECK5(NODE, NAMESPACE_DECL, RECORD_TYPE, UNION_TYPE, FUNCTION_DECL, \
+	       TEMPLATE_DECL)->base.u.bits.address_space)
+
 /* Whether the namepace is an inline namespace.  */
 #define DECL_NAMESPACE_INLINE_P(NODE) \
   TREE_LANG_FLAG_0 (NAMESPACE_DECL_CHECK (NODE))
