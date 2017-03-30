@@ -1,3 +1,30 @@
+2017-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80206
+	* config/i386/sse.md
+	(<extract_type>_vextract<shuffletype><extract_suf>_mask): Use
+	register as dest whenever it is a MEM not rtx_equal_p to the
+	corresponding dup operand, and when forcing into reg move the
+	reg into the memory afterwards.
+	(<extract_type_2>_vextract<shuffletype><extract_suf_2>_mask):
+	Likewise.  Use <ssehalfvecmode> instead of <ssequartermode>
+	for the force_reg mode.
+	(avx512vl_vextractf128<mode>): Use register as dest either
+	always when a MEM, or when it is a MEM not rtx_equal_p to the
+	corresponding dup operand, or even not when it is a CONST_VECTOR
+	depending on the mode and lo vs. hi.
+	(avx512dq_vextract<shuffletype>64x2_1_maskm): Remove extraneous
+	parens.
+	(avx512f_vextract<shuffletype>32x4_1_maskm): Likewise.
+	(<mask_codefor>avx512dq_vextract<shuffletype>64x2_1<mask_name>):
+	Likewise.  Require that operands[2] is even.
+	(<mask_codefor>avx512f_vextract<shuffletype>32x4_1<mask_name>):
+	Remove extraneous parens.  Require that operands[2] is a multiple
+	of 4.
+	(vec_extract_lo_<mode><mask_name>): Don't bother testing if
+	operands[0] is a MEM if <mask_applied>, the predicates/constraints
+	disallow memory then.
+
 2017-03-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77498
