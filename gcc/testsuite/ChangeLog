@@ -1,3 +1,8 @@
+2017-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80206
+	* gcc.target/i386/pr80206.c: New test.
+
 2017-03-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77498
