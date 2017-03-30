@@ -1,3 +1,9 @@
+2017-03-30  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/mips.c (mips_expand_vector_init): Create a const_vector
+	to initialise a vector register instead
+	of using a const_int.
+
 2017-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/80189
