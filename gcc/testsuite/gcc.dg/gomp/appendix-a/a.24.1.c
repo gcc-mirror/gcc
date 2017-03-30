@@ -20,7 +20,7 @@ a24 (int a)
     				/*       -  c has const-qualified type */
     z[i] = y;
     /* { dg-error "'i' not specified" "" { target *-*-* } 21 } */
-    /* { dg-error "enclosing parallel" "" { target *-*-* } 13 } */
+    /* { dg-error "enclosing 'parallel'" "" { target *-*-* } 13 } */
     /* { dg-error "'y' not specified" "" { target *-*-* } 21 }  */
 #pragma omp for firstprivate(y)
     for (i = 0; i < 10; i++)

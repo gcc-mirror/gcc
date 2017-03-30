@@ -6847,9 +6847,9 @@ omp_default_clause (struct gimplify_omp_ctx *ctx, tree decl,
 	else
 	  gcc_unreachable ();
 	
-	error ("%qE not specified in enclosing %s",
+	error ("%qE not specified in enclosing %qs",
 	       DECL_NAME (lang_hooks.decls.omp_report_decl (decl)), rtype);
-	error_at (ctx->location, "enclosing %s", rtype);
+	error_at (ctx->location, "enclosing %qs", rtype);
       }
       /* FALLTHRU */
     case OMP_CLAUSE_DEFAULT_SHARED:

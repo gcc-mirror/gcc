@@ -9,7 +9,7 @@
 !$omp threadprivate (/thrblk/, thrpriv)
   s = 1
 !$omp parallel do default (none) &
-!$omp & private (p) shared (s) ! { dg-error "enclosing parallel" }
+!$omp & private (p) shared (s) ! { dg-error "enclosing 'parallel'" }
   do i = 1, 64
     call foo (thrpriv)	! Predetermined - threadprivate
     call foo (thr)	! Predetermined - threadprivate
