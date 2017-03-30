@@ -2098,7 +2098,7 @@ determine_specialization (tree template_id,
       if (targs != error_mark_node)
         templates = tree_cons (targs, fns, templates);
     }
-  else for (ovl_iterator iter (fns); iter; ++iter)
+  else for (ovl2_iterator iter (fns); iter; ++iter)
     {
       tree fn = *iter;
 

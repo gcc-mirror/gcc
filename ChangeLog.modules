@@ -1,3 +1,8 @@
+2017-03-30  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* pt.c (determine_specialization): Use 2-d iterator
+
 2017-03-29  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
@@ -1036,7 +1041,7 @@
 
 2017-01-23  Nathan Sidwell  <nathan@acm.org>
 
-	Branch creation.
+	Branch creation from trunk:244828
 	Use this Changelog for all branch changes, including merges.
 
 Local Variables:
