@@ -1,5 +1,15 @@
 2017-03-30  Nathan Sidwell  <nathan@acm.org>
 
+	Reimplement qualified namespace lookup
+	gcc/cp/
+	* name-lookup.c (cp_binding_level_find_binding_for_name): Remove
+	premature optimiation.
+	(find_binding): Delete.
+	(name_lookup): Add flags, move scopes from adl_lookup.
+	(name_lookup::search_namespace, search_usings, search_qualified): New.
+	(tree_vec_contains): Kill.
+	(qualified_namespace_lookup): Kill old O(N^2) code.
+
 	gcc/cp/
 	* pt.c (determine_specialization): Use 2-d iterator
 
