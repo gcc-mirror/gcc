@@ -358,6 +358,7 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
   enum reg_class preferred_class;
   int best_new_reg = old_reg;
   int new_reg;
+  int hit = 0;
 
   /* Further narrow the set of registers we can use for renaming.
      If the chain needs a call-saved register, mark the call-used
@@ -404,9 +405,11 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
        don't belong to PREFERRED_CLASS to registers that do, even
        though the latters were used not very long ago.
        Also use a register if no best_new_reg was found till now  */
-      if ((tick[best_new_reg] > tick[new_reg]
-	  || (old_reg == best_new_reg && new_reg < old_reg)))
-	best_new_reg = new_reg;
+      if (new_reg < old_reg || !hit)
+	{
+	  hit = 1;
+	  best_new_reg = new_reg;
+	}
     }
   return best_new_reg;
 }

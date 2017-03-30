@@ -446,6 +446,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_split_after_reload);
 	  NEXT_PASS (pass_ree);
 	  NEXT_PASS (pass_compare_elim_after_reload);
+	  NEXT_PASS (pass_bbb_optimizations);
 	  NEXT_PASS (pass_branch_target_load_optimize1);
 	  NEXT_PASS (pass_jump2);
 	  NEXT_PASS (pass_duplicate_computed_gotos);

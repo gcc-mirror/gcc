@@ -590,6 +590,7 @@ extern rtl_opt_pass *make_pass_branch_target_load_optimize2 (gcc::context
 							     *ctxt);
 extern rtl_opt_pass *make_pass_leaf_regs (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_split_before_sched2 (gcc::context *ctxt);
+extern rtl_opt_pass *make_pass_bbb_optimizations (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_compare_elim_after_reload (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_sched2 (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_stack_regs (gcc::context *ctxt);

@@ -2269,6 +2269,31 @@ override_gate_status (opt_pass *pass, tree func, bool gate_status)
 }
 
 
+void dump_insns(char const * name)
+{
+  rtx_insn *insn, *next;
+  fprintf(stderr, "====================================\npass: %s\n", name);
+  for (insn = get_insns(); insn; insn = next)
+    {
+      next = NEXT_INSN(insn);
+      debug_rtx(insn);
+#if 0
+      if (NONJUMP_INSN_P (insn))
+	{
+	  rtx x, y, set= single_set (insn);
+	  if (!set)
+	    continue;
+	  x = y = SET_SRC(set);
+
+	  while (GET_CODE(y) == CONST || GET_CODE(y) == PLUS)
+	    y = XEXP(y, 0);
+	  if (x != y && REG_P(y) && REGNO(y) == PIC_REG)
+	    debug_rtx(insn);
+	}
+#endif
+    }
+}
+
 /* Execute PASS. */
 
 bool
@@ -2277,6 +2302,8 @@ execute_one_pass (opt_pass *pass)
   unsigned int todo_after = 0;
 
   bool gate_status;
+
+//  dump_insns(pass->name);
 
   /* IPA passes are executed on whole program, so cfun should be NULL.
      Other passes need function context set.  */
