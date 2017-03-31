@@ -1,3 +1,10 @@
+2017-03-31  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcov.c (md5sum_to_hex): Fix output of MD5 hex bytes.
+	(make_gcov_file_name): Use the canonical path name for generating
+	the MD5 value.
+	(read_line): Fix handling of files with ascii null bytes.
+
 2017-03-30  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* config/mips/mips.c (mips_expand_vector_init): Create a const_vector
