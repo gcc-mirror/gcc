@@ -1,3 +1,8 @@
+2017-03-31  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/mips-msa.md (msa_vec_extract_<msafmt_f>): Update
+	extraction from odd-numbered MSA register.
+
 2017-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/80173
