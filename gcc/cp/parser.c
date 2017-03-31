@@ -5121,6 +5121,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_HAS_UNIQUE_OBJ_REPRESENTATIONS:
 	case RID_HAS_VIRTUAL_DESTRUCTOR:
 	case RID_IS_ABSTRACT:
+	case RID_IS_AGGREGATE:
 	case RID_IS_BASE_OF:
 	case RID_IS_CLASS:
 	case RID_IS_EMPTY:
@@ -9610,6 +9611,9 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
       break;
     case RID_IS_ABSTRACT:
       kind = CPTK_IS_ABSTRACT;
+      break;
+    case RID_IS_AGGREGATE:
+      kind = CPTK_IS_AGGREGATE;
       break;
     case RID_IS_BASE_OF:
       kind = CPTK_IS_BASE_OF;

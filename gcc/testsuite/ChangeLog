@@ -1,5 +1,8 @@
 2017-03-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR libstdc++/80251
+	* g++.dg/ext/is_aggregate.C: New test.
+
 	PR middle-end/80173
 	* gcc.target/i386/pr80173.c: New test.
 
