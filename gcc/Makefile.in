@@ -1557,7 +1557,9 @@ OBJS = \
 	tree-vect-loop-manip.o \
 	tree-vect-slp.o \
 	tree-vectorizer.o \
+	tree-vect-unified-common.o \
 	tree-vect-unified.o \
+	tree-vect-unified-opts.o \
 	tree-vrp.o \
 	tree.o \
 	typed-splay-tree.o \

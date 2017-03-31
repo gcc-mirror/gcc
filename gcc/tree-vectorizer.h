@@ -852,8 +852,8 @@ get_earlier_stmt (gimple *stmt1, gimple *stmt2)
   if (uid1 == 0 || uid2 == 0)
     return NULL;
 
-  gcc_checking_assert (uid1 <= stmt_vec_info_vec.length ()
-		       && uid2 <= stmt_vec_info_vec.length ());
+/*  gcc_checking_assert (uid1 <= stmt_vec_info_vec.length ()
+		       && uid2 <= stmt_vec_info_vec.length ());*/
 
   if (uid1 < uid2)
     return stmt1;

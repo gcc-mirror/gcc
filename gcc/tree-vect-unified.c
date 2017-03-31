@@ -1,4 +1,10 @@
-/* lOOP Vectorization using unified representation
+/* lOOP Vectorization using unified representation for permute instructions.
+   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Contributed by Sameera Deshpande <sameera.deshpande@imgtec.com>
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
 Software Foundation; either version 3, or (at your option) any later
 version.
@@ -195,6 +201,52 @@ destroy_iter_node_info (struct ITER_node *inode)
   free (inode);
 }
 
+vec<struct stmt_attr *> stmt_attr_vec;
+
+void
+init_stmt_attr_vec (void)
+{
+  gcc_assert (!stmt_attr_vec.exists ());
+  stmt_attr_vec.create (50);
+}
+
+void
+free_stmt_attr_vec (void)
+{
+  gcc_assert (stmt_attr_vec.exists ());
+  stmt_attr_vec.release ();
+}
+
+inline void
+set_stmt_attr (gimple *stmt, struct stmt_attr *info)
+{
+  unsigned int uid = gimple_uid (stmt);
+  if (uid == 0)
+    {
+      gcc_checking_assert (info);
+      uid = stmt_attr_vec.length () + 1;
+      gimple_set_uid (stmt, uid);
+      stmt_attr_vec.safe_push (info);
+    }
+  else
+    {
+      gcc_checking_assert (info == NULL);
+      stmt_attr_vec[uid - 1] = info;
+    }
+}
+
+inline struct stmt_attr *
+get_stmt_attr (gimple *stmt)
+{
+  unsigned int uid = gimple_uid (stmt);
+  if (uid == 0)
+    return NULL;
+
+  return stmt_attr_vec[uid - 1];
+}
+
+
+
 /* Function new_stmt_attr.
 
    Create statement attribute information, and return the pointer for the
@@ -214,6 +266,7 @@ new_stmt_attr ()
   return info;
 }
 
+
 /* Function vect_populate_iter_node_from_loop.
 
    Create new ITER_node corresponding to loop LOOP, and fill all fields in
@@ -228,7 +281,8 @@ vect_populate_iter_node_from_loop (struct loop *loop)
   int i;
   gimple_stmt_iterator si;
 
-  if (! vect_analyze_loop_form_1 (loop, &loop_cond, &assumptions, &number_of_iterationsm1, &number_of_iterations, &inner_loop_cond))
+  if (! vect_analyze_loop_form_1 (loop, &loop_cond, &assumptions,
+	      &number_of_iterationsm1, &number_of_iterations, &inner_loop_cond))
     return NULL;
 
   struct ITER_node * t_iter_node = new_iter_node (loop);
@@ -293,7 +347,7 @@ vect_analyze_dataref_access (struct data_reference *dr, struct loop * loop)
 
   if (integer_zerop (step))
     {
-      /* Stride is 0, i.e. the data_ref is loop invariant.  So, writes cannot be
+      /* Stride is 0, i.e.  the data_ref is loop invariant.  So, writes cannot be
 	 vectorized.  */
       if (nested_in_vect_loop_p (loop, stmt))
 	{
@@ -1457,66 +1511,6 @@ normalize_base_addr (gimple *stmt, struct loop *loop, tree *offset)
   return retval;
 }
 
-/***** Helper functions for prim-tree creation *****/
-
-/* Function init_primop_node.
-
-   This function creates PRIMOP_TREE node and initializes all its fields to 0.
-*/
-
-struct primop_tree *
-init_primop_node (void)
-{
-  static int pid = 0;
-  struct primop_tree *ptree;
-  ptree = (struct primop_tree *) xcalloc (1, sizeof (struct primop_tree));
-
-  PT_PID (ptree) = pid++;
-  PT_NODE_OP (ptree) = 0;
-  PT_ARITY (ptree) = 0;
-  ptree->children = vNULL;
-  PT_PARENT (ptree) = NULL;
-  PT_ITER_COUNT (ptree) = NULL;
-  PT_VEC_SIZE (ptree) = 0;
-  PT_VEC_TYPE (ptree) = NULL;
-  PT_VEC_INST (ptree) = vNULL;
-  PT_TARGET_COST (ptree) = 0;
-  PT_NUM_INSTANCES (ptree) = 0;
-  PT_LOOP_DEPENDENCES (ptree) = vNULL;
-  PT_DEP (ptree) =vNULL;
-  PT_DEPTH (ptree) = 0;
-  PT_ATTR_NO (ptree) = 0;
-  PT_AUX (ptree) = NULL;
-  memset (&ptree->u, 0, sizeof (ptree->u));
-  return ptree;
-}
-
-/* Function populate_prim_node.
-
-   This function returns PRIMOP_TREE node initialized with given information.
-*/
-
-struct primop_tree *
-populate_prim_node (enum primop_code pcode, struct ITER_node *inode,
-		    struct primop_tree *parent, gimple *stmt)
-{
-  struct primop_tree *ptree;
-  ptree = init_primop_node ();
-
-  PT_NODE_OP (ptree) = (int) pcode;
-  PT_PARENT (ptree) = parent;
-  PT_ITER_COUNT (ptree) = ITER_NODE_NITERS (inode);
-
-  if (stmt)
-    {
-      PT_VEC_TYPE (ptree) = STMT_ATTR_VECTYPE (stmt);
-      PT_ATTR_NO (ptree) = gimple_uid (stmt);
-      STMT_ATTR_TREE (stmt) = ptree;
-    }
-
-  return ptree;
-}
-
 /* Function exists_primTree_with_memref.
 
     This function checks if PRIMOP_TREE node corresponding to MEMREF already
@@ -1541,7 +1535,7 @@ exists_primTree_with_memref (tree base, tree step, bool is_read,
 	continue;
 
       if (is_read != PT_MEMVAL_IS_READ (ptree))
-        continue;
+	continue;
 
       if (dump_enabled_p ())
 	{
@@ -1565,11 +1559,11 @@ exists_primTree_with_memref (tree base, tree step, bool is_read,
 
 struct primop_tree *
 create_primTree_memref (tree base, tree step, bool is_read, int num,
-                        struct ITER_node *inode, struct primop_tree *parent)
+			tree iter_count, struct primop_tree *parent)
 {
   struct primop_tree * ptree;
 
-  ptree = populate_prim_node (POP_MEMREF, inode, parent, NULL);
+  ptree = populate_prim_node (POP_MEMREF, iter_count, parent, NULL);
 
   PT_MEMVAL_BASE (ptree) = unshare_expr (base);
   PT_MEMVAL_MULT_IDX (ptree) = unshare_expr (step);
@@ -1578,87 +1572,11 @@ create_primTree_memref (tree base, tree step, bool is_read, int num,
   if (dump_enabled_p ())
     {
       dump_printf_loc (MSG_NOTE, vect_location,
-		       " create_primTree_memref : stride - %d\n ",
-		       tree_to_uhwi (step) / num);
+		       " create_primTree_memref %d : stride - %d\n ",
+		       PT_PID (ptree), tree_to_uhwi (step) / num);
      }
   return ptree;
 }
-
-/* Function create_primTree_combine.
-
-   Create primtree with PCODE as interleave or concat.  STMT is statement for
-   which primtree is being created.  */
-struct primop_tree *
-create_primTree_combine (enum primop_code pcode, gimple *stmt, int parts,
-			 struct ITER_node *inode, struct primop_tree *parent)
-{
-  struct primop_tree * ptree;
-
-  ptree = populate_prim_node (pcode, inode, parent, stmt);
-  PT_OPERAND_SELECTOR (ptree) = -1;
-  PT_DIVISION (ptree) = parts;
-  PT_VAR_STRIDE (ptree) = NULL;
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       " create_primTree_combine: parts - %d\n", parts);
-    }
-
-  return ptree;
-}
-
-/* Function create_primTree_partition.
-
-   Create primtree with PCODE as split or extract.  STMT is statement for which
-   primtree is being created.  PARTS is number of partitions to be created.
-   SELECTOR is the part being selected.  */
-struct primop_tree *
-create_primTree_partition (enum primop_code pcode, gimple *stmt, int parts,
-			   int selector, struct ITER_node *inode,
-			   struct primop_tree *parent)
-{
-  struct primop_tree * ptree;
-
-  ptree = populate_prim_node (pcode, inode, parent, stmt);
-  PT_OPERAND_SELECTOR (ptree) = selector;
-  PT_DIVISION (ptree) = parts;
-  PT_VAR_STRIDE (ptree) = NULL;
-
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-		   " create_primTree_partition : parts - %d selector - %d\n",
-		   parts, selector);
-    }
-
-  return ptree;
-}
-
-/* Function add_child_at_index.
-
-   Attach PCHILD node as idx^th child of PNODE.  */
-void
-add_child_at_index (struct primop_tree *ptree,
-		    struct primop_tree *pchild, int idx)
-{
-  (PT_ARITY (ptree))++;
-  while (idx >= ptree->children.length ())
-    {
-      ptree->children.safe_push (NULL);
-    }
-  PT_CHILD (ptree, idx) = pchild;
-}
-
-/* Function get_child_at_index.
-
-   Get idx^th child of PNODE.  */
-struct primop_tree *
-get_child_at_index (struct primop_tree *ptree, int idx)
-{
-  gcc_assert (idx < PT_ARITY (ptree));
-  return PT_CHILD (ptree, idx);
-}
-
 
 /* Function vectorizable_store.
 
@@ -1699,7 +1617,7 @@ get_child_at_index (struct primop_tree *ptree, int idx)
      eg:
       j = op (v1, v2)
       for (i = 0; i < 2048; i++)
-        a[i] = b[i*j]
+	a[i] = b[i*j]
     So, we should extract multiples of j from array b : for which instruction
     generation is very difficult as we don't know what permute order to use.
 
@@ -1807,10 +1725,14 @@ vectorizable_store (gimple *stmt, struct ITER_node *inode,
   pnode = exists_primTree_with_memref (base, step, false, inode);
   if (pnode == NULL)
     {
-      pnode = create_primTree_memref (base, step, false, num, inode, NULL);
-      ITER_NODE_LOOP_BODY (inode).safe_push (pnode);
+      pnode = create_primTree_memref (base, step, false, num,
+		ITER_NODE_NITERS (inode), NULL);
+      ITER_NODE_LOOP_BODY (inode).safe_insert (
+			ITER_NODE_LOOP_BODY (inode).length (),
+			pnode);
       pchild1 =  create_primTree_combine (POP_ILV, stmt,
-			tree_to_uhwi (step) / num, inode, pnode);
+			tree_to_uhwi (step) / num, ITER_NODE_NITERS (inode),
+			pnode);
       add_child_at_index (pnode, pchild1, 0);
     }
   else
@@ -1921,8 +1843,9 @@ vectorizable_load (gimple *stmt, struct ITER_node *inode,
 
   pnode = create_primTree_partition (POP_EXTR, stmt,
 		tree_to_uhwi (step) / num,
-		tree_to_uhwi (offset) / num, inode, parent);
-  pchild1 = create_primTree_memref (base, step, true, num, inode, pnode);
+		tree_to_uhwi (offset) / num, ITER_NODE_NITERS (inode), parent);
+  pchild1 = create_primTree_memref (base, step, true, num,
+		 ITER_NODE_NITERS (inode), pnode);
   add_child_at_index (pnode, pchild1, 0);
   return pnode;
 }
@@ -1983,7 +1906,7 @@ analyze_and_create_ptree (struct primop_tree *parent, gimple *stmt,
   if (!flow_bb_inside_loop_p (ITER_NODE_LOOP (inode), gimple_bb (stmt)))
     {
       if (dump_enabled_p ())
-        {
+	{
 	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			   "Not vectorized: Loop invariant not handled.\n");
 	}
@@ -2039,7 +1962,7 @@ is_ptree_complete (struct ITER_node *inode)
       chlist = ptree->children.copy ();
 
       while (chlist.length () > 0)
-        {
+	{
 	  if (chlist.pop () == NULL)
 	    {
 	      if (dump_enabled_p ())
@@ -2049,7 +1972,7 @@ is_ptree_complete (struct ITER_node *inode)
 		}
 	      return false;
 	    }
-        }
+	}
     }
   return true;
 }
@@ -2104,10 +2027,10 @@ create_ptree (struct ITER_node *inode)
   if (is_ptree_complete (inode))
     {
       if (dump_enabled_p ())
-        {
-          dump_printf (MSG_NOTE,
-                       "Vectorized: ptree complete.\n");
-        }
+	{
+	  dump_printf (MSG_NOTE,
+		       "Vectorized: ptree complete.\n");
+	}
       return true;
     }
   else
@@ -2229,6 +2152,54 @@ vect_analyze_loop_with_prim_tree_2 (struct ITER_node *inode)
   return create_ptree (inode);
 }
 
+void
+print_primtree (FILE *fp, struct primop_tree *t)
+{
+  switch (PT_NODE_OP (t))
+    {
+      case POP_ILV:
+      case POP_CONCAT:
+	dump_printf (MSG_NOTE, "%s:%d_%d\n", tree_code_name[PT_NODE_OP (t)],
+			PT_PID (t), PT_DIVISION (t));
+	break;
+
+      case POP_EXTR:
+      case POP_SPLT:
+	dump_printf (MSG_NOTE, "%s:%d_%d,%d\n", tree_code_name[PT_NODE_OP (t)],
+			PT_PID (t), PT_DIVISION (t), PT_OPERAND_SELECTOR (t));
+	break;
+
+      case POP_MEMREF:
+	dump_printf (MSG_NOTE, "%s:%d\n", tree_code_name[PT_NODE_OP (t)],
+			PT_PID (t));
+	print_generic_expr (fp, PT_MEMVAL_BASE (t), TDF_SLIM);
+	break;
+
+      case POP_CONST:
+      case POP_INV:
+      case POP_COLLAPSE:
+    	break;
+
+      case POP_ITER:
+	break;
+
+      default:
+	dump_gimple_stmt (MSG_NOTE, TDF_SLIM, PT_COMPUTE_STMT (t), 0);
+	break;
+
+    }
+}
+
+void
+dump_primtree_node (int dump_kind, struct primop_tree *t)
+{
+    if (dump_file)
+      print_primtree (dump_file, t);
+
+    else if (alt_dump_file)
+      print_primtree (alt_dump_file, t);
+}
+
 /* Function pretty_print_gimple_vec.
 
    Function to pretty print all the gimple statements in LIST.  */
@@ -2249,25 +2220,6 @@ pretty_print_gimple_vec (pretty_printer *pp, vec<gimple *> list)
     }
 }
 
-#define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
-#define END_OF_BASE_TREE_CODES "@dummy",
-
-static const char *const tree_code_name[] = {
-#include "all-tree.def"
-"ILV",
-"CONCAT",
-"EXTR",
-"SPLT",
-"COLLAPSE",
-"MEMREF",
-"CONST",
-"INVAR",
-"ITER"
-};
-
-#undef DEFTREECODE
-#undef END_OF_BASE_TREE_CODES
-
 /* Function pp_primop_tree.
 
    Function to pretty print primop_tree PTREE.  */
@@ -2275,6 +2227,7 @@ static const char *const tree_code_name[] = {
 void
 pp_primop_tree (pretty_printer *pp, struct primop_tree * ptree)
 {
+  int i;
   pp_newline_and_indent (pp, 0);
   pp_indent (pp);
   pp_printf (pp,"node [shape=record];");
@@ -2288,29 +2241,29 @@ switch (PT_NODE_OP (ptree))
     {
       case POP_ILV:
       case POP_CONCAT:
-        pp_printf (pp, "|%d", PT_DIVISION (ptree));
-        break;
+	pp_printf (pp, "|%d", PT_DIVISION (ptree));
+	break;
       case POP_EXTR:
       case POP_SPLT:
-        pp_printf (pp, "|div:%d", PT_DIVISION (ptree));
-        pp_printf (pp, "|sel:%d", PT_OPERAND_SELECTOR (ptree));
-        break;
+	pp_printf (pp, "|div:%d", PT_DIVISION (ptree));
+	pp_printf (pp, "|sel:%d", PT_OPERAND_SELECTOR (ptree));
+	break;
       case POP_COLLAPSE:
-        break;
+	break;
       case POP_MEMREF:
-        pp_printf (pp, "|");
-        dump_generic_node (pp, PT_MEMVAL_BASE (ptree), 0, TDF_SLIM, false);
-        pp_printf (pp, "|stride:");
-        dump_generic_node (pp, PT_MEMVAL_MULT_IDX (ptree), 0, TDF_SLIM, false);
-        break;
+	pp_printf (pp, "|");
+	dump_generic_node (pp, PT_MEMVAL_BASE (ptree), 0, TDF_SLIM, false);
+	pp_printf (pp, "|stride:");
+	dump_generic_node (pp, PT_MEMVAL_MULT_IDX (ptree), 0, TDF_SLIM, false);
+	break;
       case POP_CONST:
-        break;
+	break;
       case POP_INV:
-        break;
+	break;
       case POP_ITER:
-        break;
+	break;
       default:
-        break;
+	break;
     }
 
   pp_printf (pp, "}|{%d}\"];", PT_ARITY (ptree));
@@ -2329,12 +2282,14 @@ switch (PT_NODE_OP (ptree))
 
       worklist = ptree->children.copy ();
 
-      while (worklist.length () > 0)
+      for (i = 0; i < worklist.length (); i++)
 	{
-	  struct primop_tree *child = worklist.pop ();
+	  struct primop_tree *child;
+	  worklist.iterate (i, &child);
  	  pp_newline_and_indent (pp, 0);
-          pp_indent (pp);
-	  pp_printf (pp, "%d -> %d;", PT_PID (ptree), PT_PID (child));
+	  pp_indent (pp);
+	  pp_printf (pp, "%d -> %d [label = %d];", PT_PID (ptree),
+		 PT_PID (child), i);
 	}
     }
 
@@ -2348,13 +2303,16 @@ void
 pretty_print_ptree_vec (pretty_printer *pp, vec<struct primop_tree *> list)
 {
   vec<struct primop_tree *> worklist;
+  struct primop_tree *tmp;
+  int i;
 
   worklist = list.copy ();
 
-  while (worklist.length () > 0)
+  for (i = 0; i < worklist.length (); i++)
     {
       pp_newline_and_indent (pp, 0);
-      pp_primop_tree (pp, worklist.pop ());
+      worklist.iterate (i, &tmp);
+      pp_primop_tree (pp, tmp);
     }
 }
 
@@ -2448,6 +2406,8 @@ vectorize_loops_using_uniop (void)
   unsigned int num_vectorized_loops = 0;
   unsigned int ret = 0;
   unsigned int i;
+  unsigned int vector_sizes, max_vec_size;
+
   vect_loops_num = number_of_loops (cfun);
 
   /* Bail out if there are no loops.  */
@@ -2472,7 +2432,10 @@ vectorize_loops_using_uniop (void)
       {
 	/* Vectorization should be possible.  Let us find if all statements are
 	   vectorizable, and if yes, create p-tree.  */
-        struct ITER_node * tmp_iter_node;
+	struct ITER_node * tmp_iter_node;
+	struct primop_tree *tmp_tree;
+	bool failed;
+	vec<struct primop_tree *> worklist;
 
 	vect_location = find_loop_location (loop);
 	if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOCATION
@@ -2483,7 +2446,7 @@ vectorize_loops_using_uniop (void)
 
 	tmp_iter_node = vect_populate_iter_node_from_loop (loop);
 
-        if (!tmp_iter_node)
+	if (!tmp_iter_node)
 	  {
 	    if (dump_enabled_p ())
 	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -2491,9 +2454,9 @@ vectorize_loops_using_uniop (void)
 	    continue;
 	  }
 
-        if (!vect_analyze_loop_with_prim_tree_2 (tmp_iter_node))
+	if (!vect_analyze_loop_with_prim_tree_2 (tmp_iter_node))
 	  {
-            destroy_iter_node_info (tmp_iter_node);
+	    destroy_iter_node_info (tmp_iter_node);
 	    loop->aux = NULL;
 	    continue;
 	  }
@@ -2509,6 +2472,55 @@ vectorize_loops_using_uniop (void)
 	if (dump_enabled_p ())
 	  {
 	    dump_printf (MSG_NOTE, "\nLoop is vectorizable.\n");
+	    if (dump_file)
+	      dump_iter_node (tmp_iter_node, dump_file);
+	    if (alt_dump_file)
+	      dump_iter_node (tmp_iter_node, alt_dump_file);
+	  }
+
+	/* To enable best possible instruction selection, the tree should be
+	   promoted to MAX_VEC_SIZE first, and then reduced to arity supported
+	   by architecture.  The macro TARGET_VECTORIZATION_ARITY provides list
+  	   of arities supported by architecture.  */
+
+	vector_sizes = targetm.vectorize.autovectorize_vector_sizes ();
+
+	max_vec_size = 1 << floor_log2 (vector_sizes);
+
+	failed =false;
+	i = 0;
+	worklist = vNULL;
+	worklist = (ITER_NODE_LOOP_BODY (tmp_iter_node)).copy ();
+	for (i = 0;  i < worklist.length (); i++)
+	  {
+	    gcc_assert (worklist.iterate (i, &tmp_tree));
+	    tmp_tree = k_arity_promotion_reduction (tmp_tree, max_vec_size);
+	    if (tmp_tree == NULL)
+	      {
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "%d_promotion failed.\n", max_vec_size);
+		failed = true;
+		break;
+	      }
+
+	    tmp_tree = k_arity_promotion_reduction (tmp_tree, 2);
+	    if (tmp_tree == NULL)
+	      {
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "arity_promotion_reduction failed.\n");
+		failed = true;
+		break;
+	      }
+
+	    ITER_NODE_LOOP_BODY (tmp_iter_node)[i] = tmp_tree;
+	  }
+
+	if (failed)
+	  continue;
+
+	if (dump_enabled_p ())
+	  {
+	    dump_printf (MSG_NOTE, "\nk-arity promotion/reduction applied.\n");
 	    if (dump_file)
 	      dump_iter_node (tmp_iter_node, dump_file);
 	    if (alt_dump_file)

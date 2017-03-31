@@ -3467,3 +3467,5 @@ struct GTY(())  machine_function {
 #define ENABLE_LD_ST_PAIRS \
   (TARGET_LOAD_STORE_PAIRS && (TUNE_P5600 || TUNE_I6400) \
    && !TARGET_MICROMIPS && !TARGET_FIX_24K)
+
+#define MAX_VECTOR_SIZE 16

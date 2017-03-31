@@ -18,6 +18,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_TREE_VECT_UNIFIED_H
+
+#define GCC_TREE_VECT_UNIFIED_H
 
 /* Prim-op ITER : ITER node has 3 main objectives in loop representation using
    primitive-ops for reordering -
@@ -67,11 +70,13 @@ struct ITER_node {
      on temporary vectors.  */
   vec<gimple *> finish_stmts;
 
+#ifndef GENERATOR_FILE
   /* All data references within the loop.  */
   vec<data_reference_p> datarefs;
 
   /* All data dependences within the loop.  */
   vec<ddr_p> ddrs;
+#endif
 
   /* List of all statements within the loop which have side effects beyond loop
      body.  probable root nodes are accumulated for loop by
@@ -105,12 +110,16 @@ enum stmt_use_type {
 };
 
 struct stmt_attr {
+#ifndef GENERATOR_FILE
   enum stmt_vec_info_type type;
+#endif
   enum stmt_use_type use_type;
   tree access_fn;
   struct primop_tree *ptree;
   bool probable_root;
+#ifndef GENERATOR_FILE
   struct data_reference *dr;
+#endif
   tree vectype;
 };
 
@@ -121,49 +130,7 @@ struct stmt_attr {
 #define STMT_ATTR_DR(s) (get_stmt_attr (s))->dr
 #define STMT_ATTR_VECTYPE(s) (get_stmt_attr (s))->vectype
 
-vec<struct stmt_attr *> stmt_attr_vec;
-
-void
-init_stmt_attr_vec (void)
-{ 
-  gcc_assert (!stmt_attr_vec.exists ());
-  stmt_attr_vec.create (50);
-}
-
-void
-free_stmt_attr_vec (void)
-{ 
-  gcc_assert (stmt_attr_vec.exists ());
-  stmt_attr_vec.release ();
-}
-
-inline void
-set_stmt_attr (gimple *stmt, struct stmt_attr *info)
-{ 
-  unsigned int uid = gimple_uid (stmt);
-  if (uid == 0)
-    { 
-      gcc_checking_assert (info);
-      uid = stmt_attr_vec.length () + 1;
-      gimple_set_uid (stmt, uid);
-      stmt_attr_vec.safe_push (info);
-    }
-  else
-    {
-      gcc_checking_assert (info == NULL);
-      stmt_attr_vec[uid - 1] = info;
-    }
-}
-
-inline struct stmt_attr *
-get_stmt_attr (gimple *stmt)
-{ 
-  unsigned int uid = gimple_uid (stmt);
-  if (uid == 0)
-    return NULL;
-
-  return stmt_attr_vec[uid - 1];
-}
+extern vec<struct stmt_attr *> stmt_attr_vec;
 
 /* PRIMOP_TREE : Memory accesses within a loop have definite repetative pattern
    which can be captured using primitive permute operators which can be used to
@@ -216,8 +183,10 @@ struct primop_tree {
      most to outer-most.  */
   vec<struct ITER_node *> loop_dependences;
 
+#ifndef GENERATOR_FILE
   /* Dependence links if any to other statements.  */
   vec<ddr_p> dependences;
+#endif
 
   /* Depth within sub-tree of same type.  */
   int depth;
@@ -247,8 +216,14 @@ struct primop_tree {
       tree mult_idx;
       bool is_read;
     } memval;
+
+    /* Placeholder for terminals in  instruction tiles.  */
+    struct placeholder {
+      int index;
+      char type;
+    } phval;
   } u;
-  void *aux;
+  int aux;
 };
 
 #define PT_PID(x) (x)->pid
@@ -275,16 +250,9 @@ struct primop_tree {
 #define PT_MEMVAL_MULT_IDX(x) (x)->u.memval.mult_idx
 #define PT_MEMVAL_IS_READ(x) (x)->u.memval.is_read
 #define PT_AUX(x) (x)->aux
-
+#define PT_PH_IDX(x) (x)->u.phval.index
+#define PT_PH_TYPE(x) (x)->u.phval.type
 //struct ITER_node *iter_node;
-
-extern unsigned int vectorize_loops_using_uniop (void);
-extern struct primop_tree * analyze_and_create_ptree (struct primop_tree *,
-		 gimple *, struct ITER_node *);
-extern void pretty_print_ptree_vec (pretty_printer *,
-				    vec<struct primop_tree*>);
-extern void pretty_print_iter_node (pretty_printer *, struct ITER_node *, int);
-
 enum primop_code {
   POP_ILV=MAX_TREE_CODES,
   POP_CONCAT,
@@ -294,4 +262,60 @@ enum primop_code {
   POP_MEMREF,
   POP_CONST,
   POP_INV,
-  POP_ITER};
+  POP_ITER,
+  POP_PH};
+
+#define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
+#define END_OF_BASE_TREE_CODES "@dummy",
+
+static const char *const tree_code_name[] = {
+#include "all-tree.def"
+"ILV",
+"CONCAT",
+"EXTR",
+"SPLT",
+"COLLAPSE",
+"MEMREF",
+"CONST",
+"INVAR",
+"ITER",
+"PLACEHOLDER"
+};
+
+#undef DEFTREECODE
+#undef END_OF_BASE_TREE_CODES
+
+extern unsigned int vectorize_loops_using_uniop (void);
+extern struct primop_tree * analyze_and_create_ptree (struct primop_tree *,
+		 		gimple *, struct ITER_node *);
+extern void pretty_print_ptree_vec (pretty_printer *,
+				vec<struct primop_tree*>);
+extern void pretty_print_iter_node (pretty_printer *, struct ITER_node *, int);
+extern struct primop_tree * k_arity_promotion_reduction (struct primop_tree *,
+				int);
+extern struct primop_tree * init_primop_node (void);
+extern struct primop_tree * populate_prim_node (enum primop_code, tree,
+				struct primop_tree *, gimple *);
+extern struct primop_tree * exists_primTree_with_memref (tree, tree, bool,
+				struct ITER_node *);
+extern struct primop_tree * create_primTree_memref (tree, tree, bool, int, tree,
+				 struct primop_tree *);
+extern struct primop_tree * create_primTree_combine (enum primop_code, gimple *,
+				 int, tree, struct primop_tree *);
+extern struct primop_tree * create_primTree_partition (enum primop_code,
+				 gimple *, int, int, tree,
+				 struct primop_tree *);
+extern void add_child_at_index (struct primop_tree *, struct primop_tree *,
+				int);
+extern struct primop_tree * get_child_at_index (struct primop_tree *, int);
+extern struct primop_tree * duplicate_prim_node (struct primop_tree *);
+extern void pp_primop_tree (pretty_printer *, struct primop_tree *);
+extern void dump_primtree_node (int, struct primop_tree *);
+extern void init_stmt_attr_vec (void);
+extern void free_stmt_attr_vec (void);
+extern inline void set_stmt_attr (gimple *, struct stmt_attr *);
+extern inline struct stmt_attr *get_stmt_attr (gimple *);
+extern struct primop_tree * unity_redundancy_elimination (struct primop_tree *);
+
+#endif
+

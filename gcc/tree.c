@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 
    It is intended to be language-independent but can occasionally
    calls language-dependent routines.  */
-
+#ifndef GENERATOR_FILE
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -62,6 +62,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-tree.h"
 #include "ipa-utils.h"
 #include "selftest.h"
+#else
+#include "bconfig.h"
+#include "system.h"
+#include "coretypes.h"
+#include "tm.h"
+#include "errors.h"
+#include "tree.h"
+#include "gimple.h"
+#include "vec.h"
+#include "hash-table.h"
+#include "hash-set.h"
+#endif
 
 /* Tree code classes.  */
 
