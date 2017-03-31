@@ -1,5 +1,18 @@
 2017-03-31  Nathan Sidwell  <nathan@acm.org>
 
+	Reimplement unqualified namespace lookup
+	gcc/cp/
+	* name-lookup.c (name_lookup::state, name_lookup::preserve_state,
+	name_lookup::restore_state): New.
+	(name_lookup::queue_namespace,
+	name_lookup::do_queue_usings, name_lookup::queue_usings,
+	name_lookup::search_unqualified): New.
+	(unqualified_namespace_lookup_1): Kill.
+	(unqualified_namespace_lookup): Adjust.
+	(lookup_using_namespace): Kill.
+	gcc/testsuite/
+	* g++.dg/lookup/lambda1.C: New.
+
 	gcc/cp/
 	* name-lookup.c (name_lookup::scopes): Make static. Adjust uses.
 	(name_lookup::search_namespace_only): Broken out of ...

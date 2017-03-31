@@ -51,54 +51,66 @@ cp_binding_level_find_binding_for_name (cp_binding_level *scope, tree name)
 struct name_lookup
 {
 public:
+  typedef std::pair<tree, tree> using_pair;
+  typedef vec<using_pair, va_heap, vl_embed> using_queue;
+
+public:
   tree name; /* The identifier being looked for.  */
   tree value; /* A (possibly ambiguous) set of things found.  */
   tree type; /* A type that has been found.  */
   int flags;
+  unsigned cookie;
 
 protected:
-  /* Scopes to unmark.  At most one object is live, and this avoids
-     continual reallocation.  We do not need to GTY it, because it is
-     always empty at GC time.  */
+  /* Marked scopes to unmark.   */
   static vec<tree, va_heap, vl_ptr> scopes;
+  /* Stack of preserved marking state.  Name lookup can recurse via
+     ADL causing instantiation of an incomplete type.  But this is
+     not at all common.  */
+  static vec<unsigned, va_heap, vl_ptr> state;
 
 public:
   name_lookup (tree n, int f, tree v = NULL_TREE)
   : name (n), value (v), type (NULL_TREE), flags (f)
   {
-    gcc_checking_assert (scopes.is_empty ());
+    cookie = preserve_state ();
   }
-  ~name_lookup ();
+  ~name_lookup ()
+  {
+    restore_state (cookie);
+  }
 
 private: /* Uncopyable, unmovable, unassignable. I am a rock. */
   name_lookup (const name_lookup &);
   name_lookup &operator= (const name_lookup &);
 
 protected:
-  bool seen_p (tree scope)
+  static bool seen_p (tree scope)
   {
     return LOOKUP_SEEN_P (scope);
   }
-  bool found_p (tree scope)
+  static bool found_p (tree scope)
   {
     return LOOKUP_FOUND_P (scope);
   }
   
-  void mark_seen (tree scope); /* Mark and add to scope vector. */
-  void mark_found (tree scope)
+  static void mark_seen (tree scope); /* Mark and add to scope vector. */
+  static void mark_found (tree scope)
   {
     gcc_checking_assert (seen_p (scope));
     LOOKUP_FOUND_P (scope) = true;
   }
-  bool see_and_mark (tree scope)
+  static bool see_and_mark (tree scope)
   {
     bool ret = seen_p (scope);
     if (!ret)
       mark_seen (scope);
     return ret;
   }
-public:
-  void unmark (); /* Unmark the scope vector.  */
+
+private:
+  static unsigned preserve_state ();
+  static void restore_state (unsigned);
 
 private:
   /* Look in only namespace.  */
@@ -110,21 +122,81 @@ private:
      qualified lookup rules.  */
   bool search_usings (tree scope);
 
+private:
+  using_queue *queue_namespace (using_queue *queue, int depth, tree scope);
+  using_queue *do_queue_usings (using_queue *queue, int depth,
+				tree scope, tree usings);
+  using_queue *queue_usings (using_queue *queue, int depth,
+			     tree scope, tree usings)
+  {
+    if (usings)
+      queue = do_queue_usings (queue, depth, scope, usings);
+    return queue;
+  }
+
 public:
   /* Search namespace + inlines + usings as qualified lookup.  */
   bool search_qualified (tree scope);
+  /* Search namespace + inlines + usings as unqualified lookup.  */
+  bool search_unqualified (tree scope, cp_binding_level *);
 
-public:// for now
+public:// FIXME for now
   /* Add new bindings in.  */
   bool add (const cxx_binding *scope, int flags);
 };
 
-/* Stack of scopes to unmark.  */
+/* Scopes to unmark.  */
 vec<tree, va_heap, vl_ptr> name_lookup::scopes;
+/* Preserved state.  */
+vec<unsigned, va_heap, vl_ptr> name_lookup::state;
 
-name_lookup::~name_lookup ()
+/* Save marking state of an in-progress lookup that we've
+   interrupted.  */
+
+unsigned
+name_lookup::preserve_state ()
 {
-  unmark ();
+  unsigned cookie = scopes.length ();
+  unsigned length = state.length ();
+  unsigned prev_cookie = length ? state[length - 1] : 0;
+  if (cookie)
+    {
+      state.reserve (length + cookie - prev_cookie + 1);
+      for (unsigned ix = prev_cookie; ix != cookie; ix++)
+	{
+	  tree decl = scopes[ix];
+	  gcc_checking_assert (LOOKUP_SEEN_P (decl));
+	  state.quick_push (LOOKUP_FOUND_P (decl));
+	  LOOKUP_SEEN_P (decl) = LOOKUP_FOUND_P (decl) = false;
+	}
+      state.quick_push (cookie);
+    }
+  return prev_cookie;
+}
+
+/* Restore the marking state of a lookup we interrupted.  */
+
+void
+name_lookup::restore_state (unsigned prev_cookie)
+{
+  unsigned cookie = state.is_empty () ? 0 : state.pop ();
+
+  while (scopes.length () != cookie)
+    {
+      tree decl = scopes.pop ();
+      gcc_checking_assert (LOOKUP_SEEN_P (decl));
+      LOOKUP_SEEN_P (decl) = LOOKUP_FOUND_P (decl) = false;
+    }
+
+  for (unsigned ix = cookie; ix-- != prev_cookie;)
+    {
+      tree decl = scopes[ix];
+
+      gcc_checking_assert (!LOOKUP_SEEN_P (decl) && !LOOKUP_FOUND_P (decl));
+      LOOKUP_SEEN_P (decl) = true;
+      if (state.pop ())
+	LOOKUP_FOUND_P (decl) = true;
+    }
 }
 
 void
@@ -133,17 +205,6 @@ name_lookup::mark_seen (tree scope)
   gcc_checking_assert (!seen_p (scope));
   LOOKUP_SEEN_P (scope) = true;
   scopes.safe_push (scope);
-}
-
-void
-name_lookup::unmark ()
-{
-  while (!scopes.is_empty ())
-    {
-      tree decl = scopes.pop ();
-      LOOKUP_SEEN_P (decl) = false;
-      LOOKUP_FOUND_P (decl) = false;
-    }
 }
 
 /* Look in exactly namespace SCOPE.  */
@@ -199,7 +260,8 @@ name_lookup::search_usings (tree scope)
        iter = TREE_CHAIN (iter))
     // FIXME: remove once using directives converted
     if (!TREE_INDIRECT_USING (iter)
-	&& !DECL_NAMESPACE_INLINE_P (TREE_PURPOSE (iter)))
+	&& !(DECL_NAMESPACE_INLINE_P (TREE_PURPOSE (iter))
+	     && CP_DECL_CONTEXT (TREE_PURPOSE (iter)) == scope))
       found |= search_qualified (TREE_PURPOSE (iter));
 
   /* Look in its inline children.  */
@@ -235,6 +297,113 @@ name_lookup::search_qualified (tree scope)
 	found = search_usings (scope);
     }
 
+  return found;
+}
+
+/* Add SCOPE to the unqualified search queue, recursively add its
+   inlines and those via using directives.  */
+
+name_lookup::using_queue *
+name_lookup::queue_namespace (using_queue *queue, int depth, tree scope)
+{
+  if (see_and_mark (scope))
+    return queue;
+
+  /* Record it.  */
+  tree common = scope;
+  while (SCOPE_DEPTH (common) > depth)
+    common = CP_DECL_CONTEXT (common);
+  vec_safe_push (queue, using_pair (common, scope));
+
+  /* Queue its using targets.  */
+  queue = queue_usings (queue, depth, scope, DECL_NAMESPACE_USING (scope));
+
+  /* Queue in its inline children.  */
+  for (tree inner = DECL_NAMESPACE_INLINEES (scope); inner;
+       inner = TREE_CHAIN (inner))
+    queue = queue_namespace (queue, depth, TREE_PURPOSE (inner));
+
+  return queue;
+}
+
+/* Add the namespaces in USINGS to the unqualified search queue.  */
+
+name_lookup::using_queue *
+name_lookup::do_queue_usings (using_queue *queue, int depth, tree scope,
+			      tree usings)
+{
+  do
+    {
+      // FIXME: remove once using directives converted
+      if (!TREE_INDIRECT_USING (usings)
+	  && !(DECL_NAMESPACE_INLINE_P (TREE_PURPOSE (usings))
+	       && CP_DECL_CONTEXT (TREE_PURPOSE (usings)) == scope))
+	queue = queue_namespace (queue, depth,
+				 // FIXME: make using original
+				 ORIGINAL_NAMESPACE (TREE_PURPOSE (usings)));
+      usings = TREE_CHAIN (usings);
+    }
+  while (usings);
+
+  return queue;
+}
+
+/* Unqualified namespace lookup in SCOPE.
+   1) add scope+inlins to worklist.
+   2) recursively add target of every using directive
+   3) for each worklist item where SCOPE is common ancestor, search it
+   4) if nothing find, scope=parent, goto 1.
+   
+    */
+bool
+name_lookup::search_unqualified (tree scope, cp_binding_level *level)
+{
+  /* Make static to avoid continual reallocation.  We're not
+     recursive.  */
+  static using_queue *queue = NULL;
+  bool found = false;
+  int length = vec_safe_length (queue);
+
+  scope = ORIGINAL_NAMESPACE (scope);
+
+  /* Queue local using-directives.  */
+  for (; level->kind != sk_namespace; level = level->level_chain)
+    queue = queue_usings (queue, SCOPE_DEPTH (scope),
+			  NULL_TREE, level->using_directives);
+
+  for (; !found; scope = CP_DECL_CONTEXT (scope))
+    {
+      gcc_assert (!DECL_NAMESPACE_ALIAS (scope));
+      int depth = SCOPE_DEPTH (scope);
+
+      /* Queue namespace reachable from SCOPE. */
+      queue = queue_namespace (queue, depth, scope);
+
+      /* Search every queued namespace where SCOPE is the common
+	 ancestor.  Adjust the others.  */
+      unsigned ix = length;
+      do
+	{
+	  using_pair &pair = (*queue)[ix];
+	  while (pair.first == scope)
+	    {
+	      found |= search_namespace_only (pair.second);
+	      pair = queue->pop ();
+	      if (ix == queue->length ())
+		goto done;
+	    }
+	  /* The depth is the same as SCOPE, find the parent scope.  */
+	  if (SCOPE_DEPTH (pair.first) == depth)
+	    pair.first = CP_DECL_CONTEXT (pair.first);
+	  ix++;
+	}
+      while (ix < queue->length ());
+    done:;
+      if (scope == global_namespace)
+	break;
+    }
+  
+  vec_safe_truncate (queue, length);
   return found;
 }
 
@@ -691,7 +860,6 @@ do_lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
 static cp_binding_level *innermost_nonclass_level (void);
 static cxx_binding *binding_for_name (cp_binding_level *, tree);
 static tree push_overloaded_decl (tree, int, bool);
-static bool lookup_using_namespace (tree, name_lookup *, tree, tree, int);
 static bool qualified_namespace_lookup (tree, name_lookup *);
 static void consider_binding_level (tree name, best_match <tree, tree> &bm,
 				    cp_binding_level *lvl,
@@ -4700,63 +4868,13 @@ suggest_alternative_in_explicit_scope (location_t location, tree name,
    considering using-directives.  */
 
 static tree
-unqualified_namespace_lookup_1 (tree name, int flags)
-{
-  tree initial = current_decl_namespace ();
-  tree scope = initial;
-  tree siter;
-  cp_binding_level *level;
-  tree val = NULL_TREE;
-  name_lookup lookup (name, flags);
-
-  for (; !val; scope = CP_DECL_CONTEXT (scope))
-    {
-      cxx_binding *b =
-	 cp_binding_level_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
-
-      if (b)
-	lookup.add (b, flags);
-
-      /* Add all _DECLs seen through local using-directives.  */
-      for (level = current_binding_level;
-	   level->kind != sk_namespace;
-	   level = level->level_chain)
-	if (!lookup_using_namespace (name, &lookup, level->using_directives,
-				     scope, flags))
-	  /* Give up because of error.  */
-	  return error_mark_node;
-
-      /* Add all _DECLs seen through global using-directives.  */
-      /* XXX local and global using lists should work equally.  */
-      siter = initial;
-      while (1)
-	{
-	  if (!lookup_using_namespace (name, &lookup,
-				       DECL_NAMESPACE_USING (siter),
-				       scope, flags))
-	    /* Give up because of error.  */
-	    return error_mark_node;
-	  if (siter == scope) break;
-	  siter = CP_DECL_CONTEXT (siter);
-	}
-
-      val = lookup.value;
-      if (scope == global_namespace)
-	break;
-    }
-  return val;
-}
-
-/* Wrapper for unqualified_namespace_lookup_1.  */
-
-static tree
 unqualified_namespace_lookup (tree name, int flags)
 {
-  tree ret;
+  name_lookup lookup (name, flags);
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = unqualified_namespace_lookup_1 (name, flags);
+  lookup.search_unqualified (current_decl_namespace (), current_binding_level);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return ret;
+  return lookup.value;
 }
 
 /* Look up NAME (an IDENTIFIER_NODE) in SCOPE (either a NAMESPACE_DECL
@@ -4802,34 +4920,6 @@ lookup_qualified_name (tree scope, tree name, int prefer_type, bool complain,
   return t;
 }
 
-/* Subroutine of unqualified_namespace_lookup:
-   Add the bindings of NAME in used namespaces to VAL.
-   We are currently looking for names in namespace SCOPE, so we
-   look through USINGS for using-directives of namespaces
-   which have SCOPE as a common ancestor with the current scope.
-   Returns false on errors.  */
-
-static bool
-lookup_using_namespace (tree name, name_lookup *lookup,
-			tree usings, tree scope, int flags)
-{
-  tree iter;
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  /* Iterate over all used namespaces in current, searching for using
-     directives of scope.  */
-  for (iter = usings; iter; iter = TREE_CHAIN (iter))
-    if (TREE_VALUE (iter) == scope)
-      {
-	tree used = ORIGINAL_NAMESPACE (TREE_PURPOSE (iter));
-	cxx_binding *val1 =
-	  cp_binding_level_find_binding_for_name (NAMESPACE_LEVEL (used), name);
-	if (val1)
-	  lookup->add (val1, flags);
-      }
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return lookup->value != error_mark_node;
-}
-
 /* [namespace.qual]
    Accepts the NAME to lookup and its qualifying SCOPE.
    Returns the name/type pair found into the cxx_binding *RESULT,
@@ -4842,7 +4932,6 @@ qualified_namespace_lookup (tree scope, name_lookup *lookup)
   /* Look through namespace aliases.  */
   scope = ORIGINAL_NAMESPACE (scope);
   lookup->search_qualified (scope);
-  lookup->unmark ();
   timevar_stop (TV_NAME_LOOKUP);
   return lookup->value != error_mark_node;
 }
