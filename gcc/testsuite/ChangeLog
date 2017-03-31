@@ -1,3 +1,8 @@
+2017-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/80218
+	* gcc.dg/pr80218.c: New test.
+
 2017-03-30  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline
