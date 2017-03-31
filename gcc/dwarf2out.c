@@ -24861,8 +24861,13 @@ decls_for_scope (tree stmt, dw_die_ref context_die)
 	 if we've done it once already.  */
       if (! early_dwarf)
 	for (i = 0; i < BLOCK_NUM_NONLOCALIZED_VARS (stmt); i++)
-	  process_scope_var (stmt, NULL, BLOCK_NONLOCALIZED_VAR (stmt, i),
-			     context_die);
+	  {
+	    decl = BLOCK_NONLOCALIZED_VAR (stmt, i);
+	    if (TREE_CODE (decl) == FUNCTION_DECL)
+	      process_scope_var (stmt, decl, NULL_TREE, context_die);
+	    else
+	      process_scope_var (stmt, NULL_TREE, decl, context_die);
+	  }
     }
 
   /* Even if we're at -g1, we need to process the subblocks in order to get
