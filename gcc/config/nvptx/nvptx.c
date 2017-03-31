@@ -1353,7 +1353,8 @@ nvptx_output_softstack_switch (FILE *file, bool entering,
 	output_reg (file, REGNO (size), VOIDmode);
       fputs (";\n", file);
       if (!CONST_INT_P (size) || UINTVAL (align) > GET_MODE_SIZE (DImode))
-	fprintf (file, "\t\tand.u%d %%r%d, %%r%d, -%d;\n",
+	fprintf (file,
+		 "\t\tand.u%d %%r%d, %%r%d, -" HOST_WIDE_INT_PRINT_DEC ";\n",
 		 bits, regno, regno, UINTVAL (align));
     }
   if (cfun->machine->has_softstack)
