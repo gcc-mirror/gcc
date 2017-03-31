@@ -1,5 +1,10 @@
 2017-03-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/80173
+	* expmed.c (store_bit_field_1): Don't attempt to create
+	a word subreg out of hard registers wider than word if they
+	have HARD_REGNO_NREGS of 1 for their mode.
+
 	PR middle-end/80163
 	* varasm.c (initializer_constant_valid_p_1): Disallow sign-extending
 	conversions to integer types wider than word and pointer.
