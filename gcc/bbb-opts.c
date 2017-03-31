@@ -107,11 +107,10 @@ dump_insns (char const * name);
 static int
 propagate_moves ()
 {
+  int change_count = 0;
   rtx_insn *insn, *next;
   rtx_insn * current_label = 0;
-  int change_count = 0;
-  std
-  ::vector<rtx_insn *> reg_reg;
+  std::vector<rtx_insn *> reg_reg;
 
   for (insn = get_insns (); insn; insn = next)
     {
@@ -153,11 +152,11 @@ propagate_moves ()
 	  if (JUMP_LABEL (insn) == current_label && reg_reg.size () > 1)
 	    {
 	      /* Search for reg/reg pairs. */
-	      for (auto i = reg_reg.begin ();
+	      for (std::vector<rtx_insn *>::iterator i = reg_reg.begin ();
 		  i != reg_reg.end () && i + 1 != reg_reg.end ();)
 		{
 		  bool inc = true;
-		  for (auto j = i + 1; j != reg_reg.end ();)
+		  for (std::vector<rtx_insn *>::iterator j = i + 1; j != reg_reg.end ();)
 		    {
 		      rtx seti = single_set (*i);
 		      rtx srci = SET_SRC(seti);
@@ -208,7 +207,6 @@ propagate_moves ()
 	  current_label = 0;
 	}
     }
-
   return change_count;
 }
 
@@ -224,9 +222,11 @@ propagate_moves ()
  *
  * Use a simple state machine to find the patterns.
  */
-static void
+static int
 opt_strcpy ()
 {
+  int change_count = 0;
+#if HAVE_cc0
   rtx_insn *insn, *next;
   rtx_insn * x2reg = 0;
   rtx_insn * reg2x;
@@ -234,106 +234,145 @@ opt_strcpy ()
 
   for (insn = get_insns (); insn; insn = next)
     {
-      rtx src;
-
       next = NEXT_INSN (insn);
 
-      if (NONJUMP_INSN_P(insn))
+      if (!NONJUMP_INSN_P(insn))
+	continue;
+
+      rtx set = single_set (insn);
+      if (!set)
+	continue;
+
+      if (x2reg && reg2x)
 	{
-	  rtx set = single_set (insn);
-	  if (!set)
-	    continue;
-
-	  if (x2reg && reg2x)
+	  rtx src = SET_SRC(set);
+	  if (GET_CODE(src) == COMPARE)
 	    {
-	      src = SET_SRC(set);
-	      if (GET_CODE(src) == COMPARE)
+	      rtx dst = XEXP(src, 0);
+	      src = XEXP(src, 1);
+
+	      if (CONST_INT_P(src) && INTVAL(src) == 0
+		  && find_reg_note (insn, REG_DEAD, dst))
 		{
-		  rtx dst = XEXP(src, 0);
-		  src = XEXP(src, 1);
-
-		  if (CONST_INT_P(src) && INTVAL(src) == 0
-		      && find_reg_note (insn, REG_DEAD, dst))
+		  /* now check via NOTICE_UPDATE_CC*/
+		  NOTICE_UPDATE_CC (PATTERN (reg2x), reg2x);
+		  if (cc_status.flags == 0
+		      && rtx_equal_p (dst, cc_status.value2))
 		    {
-		      /* now check via NOTICE_UPDATE_CC*/
-		      NOTICE_UPDATE_CC (PATTERN (reg2x), reg2x);
-		      if (cc_status.flags == 0
-			  && rtx_equal_p (dst, cc_status.value2))
+		      int num_clobbers_to_add = 0;
+		      int insn_code_number;
+
+		      SET_SRC(single_set(reg2x)) = SET_SRC(single_set (x2reg));
+		      insn_code_number = recog (PATTERN (reg2x), reg2x,
+						&num_clobbers_to_add);
+
+		      if (insn_code_number < 0)
 			{
-			  int num_clobbers_to_add = 0;
-			  int insn_code_number;
-
-			  SET_SRC(single_set(reg2x)) = SET_SRC(
+			  /* restore register. */
+			  SET_SRC(single_set(reg2x)) = SET_DEST(
 			      single_set (x2reg));
-			  insn_code_number = recog (PATTERN (reg2x), reg2x,
-						    &num_clobbers_to_add);
+			}
+		      else
+			{
 
-			  if (insn_code_number < 0)
-			    {
-			      /* restore register. */
-			      SET_SRC(single_set(reg2x)) = SET_DEST(
-				  single_set (x2reg));
-			    }
-			  else
-			    {
+			  rtx link;
 
-			      rtx link;
+			  fprintf (
+			      stderr,
+			      "condition met, removing compare and joining insns - omit reg %d\n",
+			      REGNO(dst));
 
-			      fprintf (
-				  stderr,
-				  "condition met, removing compare and joining insns - omit reg %d\n",
-				  REGNO(dst));
+			  for (link = REG_NOTES(x2reg); link;
+			      link = XEXP(link, 1))
+			    if (REG_NOTE_KIND (link) != REG_LABEL_OPERAND)
+			      {
+				if (GET_CODE (link) == EXPR_LIST)
+				  add_reg_note (reg2x, REG_NOTE_KIND(link),
+						copy_insn_1 (XEXP(link, 0)));
+				else
+				  add_shallow_copy_of_reg_note (reg2x, link);
+			      }
 
-			      for (link = REG_NOTES(x2reg); link;
-				  link = XEXP(link, 1))
-				if (REG_NOTE_KIND (link) != REG_LABEL_OPERAND)
-				  {
-				    if (GET_CODE (link) == EXPR_LIST)
-				      add_reg_note (
-					  reg2x, REG_NOTE_KIND(link),
-					  copy_insn_1 (XEXP(link, 0)));
-				    else
-				      add_shallow_copy_of_reg_note (reg2x,
-								    link);
-				  }
+			  SET_INSN_DELETED(x2reg);
+			  SET_INSN_DELETED(insn);
 
-			      SET_INSN_DELETED(x2reg);
-			      SET_INSN_DELETED(insn);
+			  df_insn_rescan (reg2x);
 
-			      df_insn_rescan (reg2x);
-
-			    }
+			  ++change_count;
 			}
 		    }
-		  x2reg = 0;
-		  continue;
-		}
-	      reg2x = 0;
-	    }
-
-	  /* check for reg2x first, maybe fallback to x2reg. */
-	  if (x2reg && reg2x == 0)
-	    {
-	      if (REG_P(SET_SRC(set)) && REGNO(SET_SRC(set)) == regno)
-		{
-		  reg2x = insn;
-		  continue;
 		}
 	      x2reg = 0;
+	      continue;
 	    }
+	  reg2x = 0;
+	}
 
-	  /* check for a match for x2reg. */
-	  if (x2reg == 0)
+      /* check for reg2x first, maybe fallback to x2reg. */
+      if (x2reg && reg2x == 0)
+	{
+	  if (REG_P(SET_SRC(set)) && REGNO(SET_SRC(set)) == regno)
 	    {
-	      if (REG_P(SET_DEST(set)))
-		{
-		  x2reg = insn;
-		  reg2x = 0;
-		  regno = REGNO(SET_DEST(set));
-		}
+	      reg2x = insn;
+	      continue;
+	    }
+	  x2reg = 0;
+	}
+
+      /* check for a match for x2reg. */
+      if (x2reg == 0)
+	{
+	  if (REG_P(SET_DEST(set)))
+	    {
+	      x2reg = insn;
+	      reg2x = 0;
+	      regno = REGNO(SET_DEST(set));
 	    }
 	}
     }
+#endif
+  return change_count;
+}
+
+/*
+ * Convert loops using a counting reg as offset with an address reg
+ * into a loop with auto inc address regs.
+ */
+static int
+offset_2_autoinc (void)
+{
+  rtx_insn *insn, *next;
+  rtx_insn * reg_const = 0;
+  int change_count = 0;
+
+  for (insn = get_insns (); insn; insn = next)
+    {
+      next = NEXT_INSN (insn);
+
+      if (!next || !LABEL_P(next) || LABEL_NUSES(next) != 1)
+	continue;
+
+      if (!NONJUMP_INSN_P(insn))
+	continue;
+
+      rtx set = single_set (insn);
+      if (!set)
+	continue;
+
+      rtx reg = SET_DEST(set);
+      if (!REG_P(reg))
+	continue;
+
+      rtx val = SET_SRC(set);
+
+
+//      fprintf(stderr, "possible start for offset_2_autoinc\n");
+//      debug_rtx(insn);
+//      debug_rtx(next);
+
+    }
+
+  return change_count;
 }
 
 /* Main entry point to the pass.  */
@@ -349,9 +388,11 @@ execute_bbb_optimizations (void)
 
   propagate_moves ();
 
+  offset_2_autoinc ();
+
   opt_strcpy ();
 
-  dump_insns ("bbb 1");
+//  dump_insns ("bbb 1");
 
   return 0;
 }
