@@ -1,3 +1,9 @@
+2017-03-31  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/80107
+	* config/rs6000/rs6000.md (extendhi<mode>2): Add test for
+	TARGET_VSX_SMALL_INTEGER.
+
 2017-03-31  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* doc/extend.texi (PowerPC AltiVec Built-in Functions):	Add

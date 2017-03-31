@@ -1,3 +1,8 @@
+2017-03-31  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/80107
+	* gfortran.dg/pr80107.f: New.
+
 2017-03-31  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/49498
