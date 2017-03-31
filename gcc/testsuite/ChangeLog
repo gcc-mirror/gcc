@@ -1,3 +1,8 @@
+2017-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/80025
+	* gcc.dg/torture/pr80025.c: New test.
+
 2017-03-30  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* gcc.target/mips/pr52125.c: Add -msym32.
