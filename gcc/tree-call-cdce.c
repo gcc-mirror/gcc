@@ -841,9 +841,11 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
       gsi_insert_before (&bi_call_bsi, c, GSI_SAME_STMT);
       cond_expr = c;
     }
-  nconds--;
   ci++;
   gcc_assert (cond_expr && gimple_code (cond_expr) == GIMPLE_COND);
+
+  typedef std::pair<edge, edge> edge_pair;
+  auto_vec<edge_pair, 8> edges;
 
   bi_call_in_edge0 = split_block (bi_call_bb, cond_expr);
   bi_call_in_edge0->flags &= ~EDGE_FALLTHRU;
@@ -853,17 +855,11 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
   join_tgt_in_edge_fall_thru = make_edge (guard_bb, join_tgt_bb,
                                           EDGE_TRUE_VALUE);
 
-  bi_call_in_edge0->probability = REG_BR_PROB_BASE * ERR_PROB;
-  bi_call_in_edge0->count =
-      apply_probability (guard_bb->count,
-			 bi_call_in_edge0->probability);
-  join_tgt_in_edge_fall_thru->probability =
-      inverse_probability (bi_call_in_edge0->probability);
-  join_tgt_in_edge_fall_thru->count =
-      guard_bb->count - bi_call_in_edge0->count;
+  edges.reserve (nconds);
+  edges.quick_push (edge_pair (bi_call_in_edge0, join_tgt_in_edge_fall_thru));
 
   /* Code generation for the rest of the conditions  */
-  while (nconds > 0)
+  for (unsigned int i = 1; i < nconds; ++i)
     {
       unsigned ci0;
       edge bi_call_in_edge;
@@ -879,7 +875,6 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
           gsi_insert_before (&guard_bsi, c, GSI_SAME_STMT);
           cond_expr = c;
         }
-      nconds--;
       ci++;
       gcc_assert (cond_expr && gimple_code (cond_expr) == GIMPLE_COND);
       guard_bb_in_edge = split_block (guard_bb, cond_expr);
@@ -887,14 +882,51 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
       guard_bb_in_edge->flags |= EDGE_TRUE_VALUE;
 
       bi_call_in_edge = make_edge (guard_bb, bi_call_bb, EDGE_FALSE_VALUE);
+      edges.quick_push (edge_pair (bi_call_in_edge, guard_bb_in_edge));
+    }
 
-      bi_call_in_edge->probability = REG_BR_PROB_BASE * ERR_PROB;
-      bi_call_in_edge->count =
-	  apply_probability (guard_bb->count,
-			     bi_call_in_edge->probability);
-      guard_bb_in_edge->probability =
-          inverse_probability (bi_call_in_edge->probability);
-      guard_bb_in_edge->count = guard_bb->count - bi_call_in_edge->count;
+  /* Now update the probability and profile information, processing the
+     guards in order of execution.
+
+     There are two approaches we could take here.  On the one hand we
+     could assign a probability of X to the call block and distribute
+     that probability among its incoming edges.  On the other hand we
+     could assign a probability of X to each individual call edge.
+
+     The choice only affects calls that have more than one condition.
+     In those cases, the second approach would give the call block
+     a greater probability than the first.  However, the difference
+     is only small, and our chosen X is a pure guess anyway.
+
+     Here we take the second approach because it's slightly simpler
+     and because it's easy to see that it doesn't lose profile counts.  */
+  bi_call_bb->count = 0;
+  bi_call_bb->frequency = 0;
+  while (!edges.is_empty ())
+    {
+      edge_pair e = edges.pop ();
+      edge call_edge = e.first;
+      edge nocall_edge = e.second;
+      basic_block src_bb = call_edge->src;
+      gcc_assert (src_bb == nocall_edge->src);
+
+      call_edge->probability = REG_BR_PROB_BASE * ERR_PROB;
+      call_edge->count = apply_probability (src_bb->count,
+					    call_edge->probability);
+      nocall_edge->probability = inverse_probability (call_edge->probability);
+      nocall_edge->count = src_bb->count - call_edge->count;
+
+      unsigned int call_frequency = apply_probability (src_bb->frequency,
+						       call_edge->probability);
+
+      bi_call_bb->count += call_edge->count;
+      bi_call_bb->frequency += call_frequency;
+
+      if (nocall_edge->dest != join_tgt_bb)
+	{
+	  nocall_edge->dest->count = nocall_edge->count;
+	  nocall_edge->dest->frequency = src_bb->frequency - call_frequency;
+	}
     }
 
   if (dom_info_available_p (CDI_DOMINATORS))
