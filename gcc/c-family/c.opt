@@ -486,7 +486,7 @@ Warn about an empty body in an if or else statement.
 
 Wendif-labels
 C ObjC C++ ObjC++ CPP(warn_endif_labels) CppReason(CPP_W_ENDIF_LABELS) Var(cpp_warn_endif_labels) Init(1) Warning LangEnabledBy(C ObjC C++ ObjC++,Wpedantic)
-Warn about stray tokens after #elif and #endif.
+Warn about stray tokens after #else and #endif.
 
 Wenum-compare
 C ObjC C++ ObjC++ Var(warn_enum_compare) Init(-1) Warning LangEnabledBy(C ObjC,Wall || Wc++-compat)

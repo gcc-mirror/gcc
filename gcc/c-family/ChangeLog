@@ -1,3 +1,9 @@
+2017-03-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR documentation/78732
+	* c.opt (Wendif-labels): Fix description to refer to
+	#else rather than #elif.
+
 2017-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/80251
