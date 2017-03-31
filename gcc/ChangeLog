@@ -1,3 +1,10 @@
+2017-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/79255
+	* dwarf2out.c (decls_for_scope): If BLOCK_NONLOCALIZED_VAR is
+	a FUNCTION_DECL, pass it as decl instead of origin to
+	process_scope_var.
+
 2017-03-31  Alexander Monakov  <amonakov@ispras.ru>
 
 	* config/nvptx/nvptx.c (nvptx_output_softstack_switch): Correct format

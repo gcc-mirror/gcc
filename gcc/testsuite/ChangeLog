@@ -1,5 +1,8 @@
 2017-03-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/79255
+	* gcc.dg/pr79255.c: New test.
+
 	PR c++/79572
 	* g++.dg/ubsan/null-8.C: New test.
 
