@@ -366,7 +366,20 @@
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (match_dup 1))]
-  "operands[1] = gen_rtx_REG (<UNITMODE>mode, REGNO (operands[1]));"
+{
+  /* An MSA register cannot be reinterpreted as a single precision
+     register when using -mno-odd-spreg and the MSA register is
+     an odd number.  */
+  if (<UNITMODE>mode == SFmode && !TARGET_ODD_SPREG
+      && (REGNO (operands[1]) & 1))
+    {
+      emit_move_insn (gen_rtx_REG (<MODE>mode, REGNO (operands[0])),
+		      operands[1]);
+      operands[1] = operands[0];
+    }
+  else
+    operands[1] = gen_rtx_REG (<UNITMODE>mode, REGNO (operands[1]));
+}
   [(set_attr "move_type" "fmove")
    (set_attr "mode" "<UNITMODE>")])
 
