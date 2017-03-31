@@ -1,3 +1,13 @@
+2017-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/80025
+	* cselib.h (rtx_equal_for_cselib_1): Add depth argument.
+	(rtx_equal_for_cselib_p): Pass 0 to it.
+	* cselib.c (cselib_hasher::equal): Likewise.
+	(rtx_equal_for_cselib_1): Add depth argument.  If depth
+	is 128, don't look up VALUE locs and punt.  Increment
+	depth in recursive calls when walking VALUE locs.
+
 2017-03-31  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* gcov.c (md5sum_to_hex): Fix output of MD5 hex bytes.
