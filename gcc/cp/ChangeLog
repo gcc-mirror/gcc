@@ -1,3 +1,15 @@
+2017-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/80251
+	* cp-tree.h (enum cp_trait_kind): Add CPTK_IS_AGGREGATE.
+	* cxx-pretty-print.c (pp_cxx_trait_expression): Handle
+	CPTK_IS_AGGREGATE.
+	* semantics.c (trait_expr_value): Handle CPTK_IS_AGGREGATE.
+	Remove extraneous parens.
+	(finish_trait_expr): Handle CPTK_IS_AGGREGATE.
+	* parser.c (cp_parser_primary_expression): Handle RID_IS_AGGREGATE.
+	(cp_parser_trait_expr): Likewise.
+
 2017-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/80162

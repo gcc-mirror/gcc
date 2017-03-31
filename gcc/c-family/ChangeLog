@@ -1,3 +1,9 @@
+2017-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/80251
+	* c-common.h (enum rid): Add RID_IS_AGGREGATE.
+	* c-common.c (c_common_reswords): Add __is_aggregate trait.
+
 2017-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/80162
