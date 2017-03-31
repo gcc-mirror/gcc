@@ -1,3 +1,8 @@
+2017-03-31  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/49498
+	* gcc.dg/uninit-pred-8_b.c: Reenable DOM.
+
 2017-03-31  Richard Biener  <rguenther@suse.de>
  
 	* gcc.dg/tree-ssa/pr71347.c: Put back XFAIL on sparc.
