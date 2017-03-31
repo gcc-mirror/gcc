@@ -50,15 +50,23 @@ cp_binding_level_find_binding_for_name (cp_binding_level *scope, tree name)
 
 struct name_lookup
 {
+public:
   tree name; /* The identifier being looked for.  */
   tree value; /* A (possibly ambiguous) set of things found.  */
   tree type; /* A type that has been found.  */
-  vec<tree, va_gc> *scopes;  /* Scopes to unmark.  */
   int flags;
 
+protected:
+  /* Scopes to unmark.  At most one object is live, and this avoids
+     continual reallocation.  We do not need to GTY it, because it is
+     always empty at GC time.  */
+  static vec<tree, va_heap, vl_ptr> scopes;
+
+public:
   name_lookup (tree n, int f, tree v = NULL_TREE)
-  : name (n), value (v), type (NULL_TREE), scopes (NULL), flags (f)
+  : name (n), value (v), type (NULL_TREE), flags (f)
   {
+    gcc_checking_assert (scopes.is_empty ());
   }
   ~name_lookup ();
 
@@ -93,11 +101,15 @@ public:
   void unmark (); /* Unmark the scope vector.  */
 
 private:
+  /* Look in only namespace.  */
+  bool search_namespace_only (tree scope);
   /* Look in namespace and its (recursive) inlines. Ignore using
      directives.  Return true if something found (inc dups). */
   bool search_namespace (tree scope);
-  /* Look in the using directives of namespace + inlines.  */
+  /* Look in the using directives of namespace + inlines using
+     qualified lookup rules.  */
   bool search_usings (tree scope);
+
 public:
   /* Search namespace + inlines + usings as qualified lookup.  */
   bool search_qualified (tree scope);
@@ -107,10 +119,12 @@ public:// for now
   bool add (const cxx_binding *scope, int flags);
 };
 
+/* Stack of scopes to unmark.  */
+vec<tree, va_heap, vl_ptr> name_lookup::scopes;
+
 name_lookup::~name_lookup ()
 {
   unmark ();
-  release_tree_vector (scopes);
 }
 
 void
@@ -118,20 +132,35 @@ name_lookup::mark_seen (tree scope)
 {
   gcc_checking_assert (!seen_p (scope));
   LOOKUP_SEEN_P (scope) = true;
-  vec_safe_push (scopes, scope);
+  scopes.safe_push (scope);
 }
 
 void
 name_lookup::unmark ()
 {
-  if (scopes)
-    while (!scopes->is_empty ())
-      {
-	tree decl = scopes->pop ();
-	LOOKUP_SEEN_P (decl) = false;
-	LOOKUP_FOUND_P (decl) = false;
-      }
+  while (!scopes.is_empty ())
+    {
+      tree decl = scopes.pop ();
+      LOOKUP_SEEN_P (decl) = false;
+      LOOKUP_FOUND_P (decl) = false;
+    }
 }
+
+/* Look in exactly namespace SCOPE.  */
+
+bool
+name_lookup::search_namespace_only (tree scope)
+{
+  bool found = false;
+
+  if (cxx_binding *binding = cp_binding_level_find_binding_for_name
+      (NAMESPACE_LEVEL (scope), name))
+    found = add (binding, flags);
+
+  return found;
+}
+
+/* Conditionally look in namespace SCOPE and inline children.  */
 
 bool
 name_lookup::search_namespace (tree scope)
@@ -140,14 +169,10 @@ name_lookup::search_namespace (tree scope)
     /* We've visited this scope before.  Return what we found then.  */
     return found_p (scope);
 
-  bool found = false;
-
-  /* Look in this namespace. */
-  if (cxx_binding *binding = cp_binding_level_find_binding_for_name
-      (NAMESPACE_LEVEL (scope), name))
-    found = add (binding, flags);
-
-  /* Look in its inline children.  */
+  /* Look in exactly namespace. */
+  bool found = search_namespace_only (scope);
+  
+  /* Recursively look in its inline children.  */
   for (tree inner = DECL_NAMESPACE_INLINEES (scope); inner;
        inner = TREE_CHAIN (inner))
     found |= search_namespace (TREE_PURPOSE (inner));
@@ -158,6 +183,9 @@ name_lookup::search_namespace (tree scope)
   return found;
 }
 
+/* Recursively follow using directives of SCOPE & its inline children.
+   Such following is essentially a flood-fill algorithm.  */
+
 bool
 name_lookup::search_usings (tree scope)
 {
@@ -165,7 +193,7 @@ name_lookup::search_usings (tree scope)
      namespace_only walk.  */
   if (found_p (scope))
     return true;
-  
+
   bool found = false;
   for (tree iter = DECL_NAMESPACE_USING (scope); iter;
        iter = TREE_CHAIN (iter))
@@ -184,6 +212,14 @@ name_lookup::search_usings (tree scope)
 
   return found;
 }
+
+/* Qualified namespace lookup in SCOPE.
+   1) Look in SCOPE (+inlines).  If found, we're done.
+   2) Otherwise recurse for every using directive of SCOPE (+inlines).
+
+   Trickiness is (a) loops and (b) multiple paths to same namespace.
+   In both cases we want to not repeat any lookups, and know whether
+   to stop the caller's step #2.  Do this via the FOUND_P marker.  */
 
 bool
 name_lookup::search_qualified (tree scope)
@@ -322,7 +358,7 @@ adl_lookup::find_and_mark (tree scope)
     {
       LOOKUP_FOUND_P (scope) = true;
       if (!LOOKUP_SEEN_P (scope))
-	vec_safe_push (scopes, scope);
+	scopes.safe_push (scope);
     }
 
   return result;

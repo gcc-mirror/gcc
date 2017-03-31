@@ -1,3 +1,12 @@
+2017-03-31  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* name-lookup.c (name_lookup::scopes): Make static. Adjust uses.
+	(name_lookup::search_namespace_only): Broken out of ...
+	(name_lookup::search_namespace): ... here.  Call it.
+	* tree.c (ovl_cache): New.
+	(ovl_make, ovl_lookup_keep): Use it.
+
 2017-03-30  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
