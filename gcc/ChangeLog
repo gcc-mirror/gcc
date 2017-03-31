@@ -1,5 +1,9 @@
 2017-03-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/80163
+	* varasm.c (initializer_constant_valid_p_1): Disallow sign-extending
+	conversions to integer types wider than word and pointer.
+
 	PR debug/80025
 	* cselib.h (rtx_equal_for_cselib_1): Add depth argument.
 	(rtx_equal_for_cselib_p): Pass 0 to it.

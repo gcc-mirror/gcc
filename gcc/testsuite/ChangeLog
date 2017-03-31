@@ -1,5 +1,8 @@
 2017-03-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/80163
+	* gcc.dg/pr80163.c: New test.
+
 	PR debug/80025
 	* gcc.dg/torture/pr80025.c: New test.
 
