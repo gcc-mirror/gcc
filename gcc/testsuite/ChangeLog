@@ -1,3 +1,8 @@
+2017-03-31  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/79405
+	gcc.dg/pr79405.c: New testcase.
+
 2017-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/79255

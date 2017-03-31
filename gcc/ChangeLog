@@ -1,3 +1,12 @@
+2017-03-31  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/79405
+	* fwprop.c (propagations_left): New variable.
+	(forward_propagate_into): Decrement it.
+	(fwprop_init): Initialize it.
+	(fw_prop): If the variable has reached zero, stop propagating.
+	(fwprop_addr): Ditto.
+
 2017-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/79255
