@@ -464,8 +464,13 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	}
     }
 
-  if (attr->dummy && ((attr->function || attr->subroutine) && 
-			gfc_current_state () == COMP_CONTAINS))
+  /* The copying of procedure dummy arguments for module procedures in
+     a submodule occur whilst the current state is COMP_CONTAINS. It
+     is necessary, therefore, to let this through.  */
+  if (attr->dummy
+      && (attr->function || attr->subroutine)
+      && gfc_current_state () == COMP_CONTAINS
+      && !(gfc_new_block && gfc_new_block->abr_modproc_decl))
     gfc_error_now ("internal procedure %qs at %L conflicts with "
 		   "DUMMY argument", name, where);
 
@@ -1585,6 +1590,13 @@ gfc_add_flavor (symbol_attribute *attr, sym_flavor f, const char *name,
     return false;
 
   if (attr->flavor == f && f == FL_VARIABLE)
+    return true;
+
+  /* Copying a procedure dummy argument for a module procedure in a
+     submodule results in the flavor being copied and would result in
+     an error without this.  */
+  if (gfc_new_block && gfc_new_block->abr_modproc_decl
+      && attr->flavor == f && f == FL_PROCEDURE)
     return true;
 
   if (attr->flavor != FL_UNKNOWN)

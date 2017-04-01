@@ -1,6 +1,14 @@
 2017-04-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
+	PR fortran/71838
+	* symbol.c (check_conflict): A dummy procedure in a submodule,
+	module procedure is not an error.
+	(gfc_add_flavor): Ditto.
+
+2017-04-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
 	PR fortran/79676
 	* module.c (mio_symbol_attribute): Remove reset of the flag
 	'no_module_procedures'.
