@@ -1,3 +1,9 @@
+2017-04-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/79676
+	* gfortran.dg/submodule_28.f08 : New test.
+
 2017-03-31  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/80218
