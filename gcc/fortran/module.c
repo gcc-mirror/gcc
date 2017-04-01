@@ -193,10 +193,6 @@ static const char *module_name;
 /* The name of the .smod file that the submodule will write to.  */
 static const char *submodule_name;
 
-/* Suppress the output of a .smod file by module, if no module
-   procedures have been seen.  */
-static bool no_module_procedures;
-
 static gfc_use_list *module_list;
 
 /* If we're reading an intrinsic module, this is its ID.  */
@@ -2240,10 +2236,7 @@ mio_symbol_attribute (symbol_attribute *attr)
       if (attr->array_outer_dependency)
 	MIO_NAME (ab_attribute) (AB_ARRAY_OUTER_DEPENDENCY, attr_bits);
       if (attr->module_procedure)
-	{
 	MIO_NAME (ab_attribute) (AB_MODULE_PROCEDURE, attr_bits);
-	  no_module_procedures = false;
-	}
       if (attr->oacc_declare_create)
 	MIO_NAME (ab_attribute) (AB_OACC_DECLARE_CREATE, attr_bits);
       if (attr->oacc_declare_copyin)
@@ -6129,6 +6122,18 @@ dump_module (const char *name, int dump_flag)
 }
 
 
+/* Suppress the output of a .smod file by module, if no module
+   procedures have been seen.  */
+static bool no_module_procedures;
+
+static void
+check_for_module_procedures (gfc_symbol *sym)
+{
+  if (sym && sym->attr.module_procedure)
+    no_module_procedures = false;
+}
+
+
 void
 gfc_dump_module (const char *name, int dump_flag)
 {
@@ -6138,6 +6143,8 @@ gfc_dump_module (const char *name, int dump_flag)
     dump_smod =false;
 
   no_module_procedures = true;
+  gfc_traverse_ns (gfc_current_ns, check_for_module_procedures);
+
   dump_module (name, dump_flag);
 
   if (no_module_procedures || dump_smod)
