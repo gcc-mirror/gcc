@@ -19707,24 +19707,38 @@
 (define_mode_attr imod4_narrow
   [(V64SF "V16SF") (V64SI "V16SI")])
 
-(define_insn "mov<mode>"
+(define_expand "mov<mode>"
   [(set (match_operand:IMOD4 0 "nonimmediate_operand")
-	(match_operand:IMOD4 1 "general_operand"))]
+	(match_operand:IMOD4 1 "vector_move_operand"))]
   "TARGET_AVX512F"
-  "#")
+{
+  ix86_expand_vector_move (<MODE>mode, operands);
+  DONE;
+})
 
-(define_split
-  [(set (match_operand:IMOD4 0 "register_operand")
-	(match_operand:IMOD4 1 "nonimmediate_operand"))]
-  "TARGET_AVX512F && reload_completed"
-  [(set (subreg:<imod4_narrow> (match_dup 0) 0)
-	(subreg:<imod4_narrow> (match_dup 1) 0))
-   (set (subreg:<imod4_narrow> (match_dup 0) 64)
-	(subreg:<imod4_narrow> (match_dup 1) 64))
-   (set (subreg:<imod4_narrow> (match_dup 0) 128)
-	(subreg:<imod4_narrow> (match_dup 1) 128))
-   (set (subreg:<imod4_narrow> (match_dup 0) 192)
-	(subreg:<imod4_narrow> (match_dup 1) 192))])
+(define_insn_and_split "*mov<mode>_internal"
+  [(set (match_operand:IMOD4 0 "nonimmediate_operand" "=v,v ,m")
+	(match_operand:IMOD4 1 "vector_move_operand"  " C,vm,v"))]
+  "TARGET_AVX512F
+   && (register_operand (operands[0], <MODE>mode)
+       || register_operand (operands[1], <MODE>mode))"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx op0, op1;
+  int i;
+
+  for (i = 0; i < 4; i++)
+    {
+      op0 = simplify_subreg
+	     (<imod4_narrow>mode, operands[0], <MODE>mode, i * 64);
+      op1 = simplify_subreg
+	     (<imod4_narrow>mode, operands[1], <MODE>mode, i * 64);
+      emit_move_insn (op0, op1);
+    }
+  DONE;
+})
 
 (define_insn "avx5124fmaddps_4fmaddps"
   [(set (match_operand:V16SF 0 "register_operand" "=v")

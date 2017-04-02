@@ -1,3 +1,10 @@
+2017-04-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80250
+	* config/i386/sse.md (mov<IMOD4:mode>): Remove insn pattern.
+	(mov<IMOD4:mode>): New expander.
+	(*mov<IMOD4:mode>_internal): New insn and split pattern.
+
 2017-03-31  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/79405
