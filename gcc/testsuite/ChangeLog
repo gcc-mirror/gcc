@@ -1,3 +1,9 @@
+2017-04-02  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.c-torture/compile/nested-3.c: New testcase.
+	* gcc.c-torture/execute/20170401-1.c: New testcase.
+	* gcc.c-torture/execute/20170401-2.c: New testcase.
+
 2017-03-31  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/79405
