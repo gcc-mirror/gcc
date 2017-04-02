@@ -1,5 +1,9 @@
 2017-04-02  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/sse.md (movdi_to_sse): Add missing DONE.
+
+2017-04-02  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/80250
 	* config/i386/sse.md (mov<IMOD4:mode>): Remove insn pattern.
 	(mov<IMOD4:mode>): New expander.

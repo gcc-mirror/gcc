@@ -1141,6 +1141,7 @@
    }
  else
    gcc_unreachable ();
+ DONE;
 })
 
 (define_split
