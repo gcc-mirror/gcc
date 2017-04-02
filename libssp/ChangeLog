@@ -1,3 +1,7 @@
+2017-04-01  Jonathan Yong  <10walls@gmail.com>
+
+	* ssp.c (__guard_setup): Suppress unused variable warning.
+
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046
