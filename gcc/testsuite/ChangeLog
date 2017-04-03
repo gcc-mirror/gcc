@@ -1,3 +1,8 @@
+2017-04-03  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR testsuite/79356
+	* gcc.dg/attr-alloc_size-11.c: Don't xfail on s390.
+
 2017-04-03  Robin Dapp  <rdapp@linux.vnet.ibm.com>
 
 	* gcc.target/s390/vector/vcond-shift.c (foo, foo2, foo3, baz, baf)
