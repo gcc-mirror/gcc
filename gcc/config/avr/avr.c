@@ -13335,7 +13335,7 @@ typedef struct
   /* G^-1, the inverse of G (*, arg) */
   unsigned ginv;
 
-  /* The cost of appplying G (*, arg) */
+  /* The cost of applying G (*, arg) */
   int cost;
 
   /* The composition F o G^-1 (*, arg) for some function F */

@@ -1,3 +1,7 @@
+2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* c-warn.c (do_warn_double_promotion): Fix typo in comment.
+
 2017-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79572

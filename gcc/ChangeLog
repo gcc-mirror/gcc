@@ -1,3 +1,45 @@
+2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* alias.c (base_alias_check): Fix typo in comment.
+	* cgraph.h (class ipa_polymorphic_call_context): Likewise.
+	* cgraphunit.c (symbol_table::compile): Likewise.
+	* collect2.c (maybe_run_lto_and_relink): Likewise.
+	* config/arm/arm.c (arm_thumb1_mi_thunk): Likewise.
+	* config/avr/avr-arch.h (avr_arch_info_t): Likewise.
+	* config/avr/avr.c (avr_map_op_t): Likewise.
+	* config/cr16/cr16.h (DATA_ALIGNMENT): Likewise.
+	* config/epiphany/epiphany.c (TARGET_ARG_PARTIAL_BYTES): Likewise.
+	* config/epiphany/epiphany.md (movcc): Likewise.
+	* config/i386/i386.c (legitimize_pe_coff_extern_decl): Likewise.
+	* config/m68k/m68k.c (struct _sched_ib, m68k_sched_variable_issue):
+	Likewise.
+	* config/mips/mips.c (mips_save_restore_reg): Likewise.
+	* config/rx/rx.c (rx_is_restricted_memory_address): Likewise.
+	* config/s390/s390.c (Z10_EARLYLOAD_DISTANCE): Likewise.
+	* config/sh/sh.c (sh_rtx_costs): Likewise.
+	* fold-const.c (fold_truth_andor): Likewise.
+	* genautomata.c (collapse_flag): Likewise.
+	* gengtype.h (struct type::u::s): Likewise.
+	* gensupport.c (has_subst_attribute, add_mnemonic_string): Likewise.
+	* input.c (FORMAT_AMOUNT): Likewise.
+	* ipa-cp.c (class ipcp_lattice, agg_replacements_to_vector)
+	(known_aggs_to_agg_replacement_list): Likewise.
+	* ipa-inline-analysis.c: Likewise.
+	* ipa-inline.h (estimate_edge_time, estimate_edge_hints): Likewise.
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::restrict_to_inner_class): Likewise.
+	* loop-unroll.c (analyze_insn_to_expand_var): Likewise.
+	* lra.c (lra_optional_reload_pseudos, lra_subreg_reload_pseudos):
+	Likewise.
+	* modulo-sched.c (apply_reg_moves): Likewise.
+	* omp-expand.c (build_omp_regions_1): Likewise.
+	* trans-mem.c (struct tm_wrapper_hasher): Likewise.
+	* tree-ssa-loop-ivopts.c (may_eliminate_iv): Likewise.
+	* tree-ssa-loop-niter.c (maybe_lower_iteration_bound): Likewise.
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Likewise.
+	* value-prof.c: Likewise.
+	* var-tracking.c (val_reset): Likewise.
+
 2017-04-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80275

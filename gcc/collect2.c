@@ -761,7 +761,7 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
       do_wait (prog, pex);
       pex = NULL;
 
-      /* Compute memory needed for new LD arguments.  At most number of original arguemtns
+      /* Compute memory needed for new LD arguments.  At most number of original arguments
 	 plus number of partitions.  */
       for (lto_ld_argv_size = 0; lto_ld_argv[lto_ld_argv_size]; lto_ld_argv_size++)
 	;

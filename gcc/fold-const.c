@@ -8072,7 +8072,7 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
 	  return fold_build2_loc (loc, icode, type, TREE_OPERAND (arg0, 0),
 				  tem);
 	}
-	/* Same as abouve but for (A AND[-IF] (B AND-IF C)) -> ((A AND B) AND-IF C),
+	/* Same as above but for (A AND[-IF] (B AND-IF C)) -> ((A AND B) AND-IF C),
 	   or (A OR[-IF] (B OR-IF C) -> ((A OR B) OR-IF C).  */
       else if (TREE_CODE (arg1) == icode
 	  && simple_operand_p_2 (arg0)

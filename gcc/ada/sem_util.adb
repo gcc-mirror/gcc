@@ -16131,7 +16131,7 @@ package body Sem_Util is
                                                N_Allocator,
                                                N_Qualified_Expression);
 
-      --  An alloctor that appears within the initialization expression of an
+      --  An allocator that appears within the initialization expression of an
       --  object declaration is considered a potentially dynamic coextension
       --  when the initialization expression is an allocator or a qualified
       --  expression.

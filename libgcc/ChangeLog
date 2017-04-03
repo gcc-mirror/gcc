@@ -1,3 +1,7 @@
+2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/c6x/pr-support.c (__gnu_unwind_execute): Fix typo in comment.
+
 2017-03-27  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/ieee-754/divdf3.S (__divdf3): Use __ARCEM__.

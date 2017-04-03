@@ -713,7 +713,7 @@ decFloat * decFloatFromPacked(decFloat *df, Int exp, const uByte *packed) {
 /*  returns df, which will be canonical or NULL if any of the	      */
 /*    requirements are not met (if this case df is unchanged); that   */
 /*    is, the input data must be as returned by decFloatToPacked,     */
-/*    except that all six sign codes are acccepted.		      */
+/*    except that all six sign codes are accepted.		      */
 /*								      */
 /* No status will be set.					      */
 /* ------------------------------------------------------------------ */

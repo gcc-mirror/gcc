@@ -3091,7 +3091,7 @@ The three modes are:
 
 Note that these modes apply only to the evaluation of predefined
 arithmetic, membership, and comparison operators for signed integer
-aritmetic.
+arithmetic.
 
 For fixed-point arithmetic, checks can be suppressed. But if checks
 are enabled

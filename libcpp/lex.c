@@ -912,7 +912,7 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 
 #else
 
-/* We only have one accellerated alternative.  Use a direct call so that
+/* We only have one accelerated alternative.  Use a direct call so that
    we encourage inlining.  */
 
 #define search_line_fast  search_line_acc_char

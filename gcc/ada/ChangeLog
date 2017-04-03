@@ -1,3 +1,14 @@
+2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Fix typo.
+	* g-socket.adb (To_Host_Entry): Fix typo in comment.
+	* gnat_ugn.texi: Fix typo.
+	* raise.c (_gnat_builtin_longjmp): Fix capitalization in comment.
+	* s-stposu.adb (Allocate_Any_Controlled): Fix typo in comment.
+	* sem_ch3.adb (Build_Derived_Record_Type): Likewise.
+	* sem_util.adb (Mark_Coextensions): Likewise.
+	* sem_util.ads (Available_Full_View_Of_Component): Likewise.
+
 2017-03-28  Andreas Schwab  <schwab@suse.de>
 
 	PR ada/80117

@@ -2157,7 +2157,7 @@ base_alias_check (rtx x, rtx x_base, rtx y, rtx y_base,
   /* The base addresses are different expressions.  If they are not accessed
      via AND, there is no conflict.  We can bring knowledge of object
      alignment into play here.  For example, on alpha, "char a, b;" can
-     alias one another, though "char a; long b;" cannot.  AND addesses may
+     alias one another, though "char a; long b;" cannot.  AND addresses may
      implicitly alias surrounding objects; i.e. unaligned access in DImode
      via AND address can alias all surrounding object types except those
      with aligment 8 or higher.  */

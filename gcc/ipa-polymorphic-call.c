@@ -117,7 +117,7 @@ possible_placement_new (tree type, tree expected_type,
    Return true when lookup was sucesful.
 
    When CONSIDER_PLACEMENT_NEW is false, reject contexts that may be made
-   valid only via alocation of new polymorphic type inside by means
+   valid only via allocation of new polymorphic type inside by means
    of placement new.
 
    When CONSIDER_BASES is false, only look for actual fields, not base types

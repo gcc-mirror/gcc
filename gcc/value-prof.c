@@ -100,7 +100,7 @@ along with GCC; see the file COPYING3.  If not see
    * The value profiling code could be used to record analysis results
      from non-profiling (e.g. VRP).
    * Adding new profilers should be simplified, starting with a cleanup
-     of what-happens-where andwith making gimple_find_values_to_profile
+     of what-happens-where and with making gimple_find_values_to_profile
      and gimple_value_profile_transformations table-driven, perhaps...
 */
 

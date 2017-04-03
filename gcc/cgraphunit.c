@@ -2497,7 +2497,7 @@ symbol_table::compile (void)
   bitmap_obstack_release (NULL);
   mark_functions_to_output ();
 
-  /* When weakref support is missing, we autmatically translate all
+  /* When weakref support is missing, we automatically translate all
      references to NODE to references to its ultimate alias target.
      The renaming mechanizm uses flag IDENTIFIER_TRANSPARENT_ALIAS and
      TREE_CHAIN.

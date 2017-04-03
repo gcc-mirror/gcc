@@ -2267,13 +2267,13 @@ bitmap_head lra_inheritance_pseudos;
 /* Split regnos before the new spill pass.  */
 bitmap_head lra_split_regs;
 
-/* Reload pseudo regnos before the new assignmnet pass which still can
-   be spilled after the assinment pass as memory is also accepted in
+/* Reload pseudo regnos before the new assignment pass which still can
+   be spilled after the assignment pass as memory is also accepted in
    insns for the reload pseudos.  */
 bitmap_head lra_optional_reload_pseudos;
 
 /* Pseudo regnos used for subreg reloads before the new assignment
-   pass.  Such pseudos still can be spilled after the assinment
+   pass.  Such pseudos still can be spilled after the assignment
    pass.  */
 bitmap_head lra_subreg_reload_pseudos;
 

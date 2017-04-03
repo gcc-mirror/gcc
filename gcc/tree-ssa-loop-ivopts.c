@@ -5543,7 +5543,7 @@ may_eliminate_iv (struct ivopts_data *data,
     return false;
 
   /* Sometimes, it is possible to handle the situation that the number of
-     iterations may be zero unless additional assumtions by using <
+     iterations may be zero unless additional assumptions by using <
      instead of != in the exit condition.
 
      TODO: we could also calculate the value MAY_BE_ZERO ? 0 : NITER and

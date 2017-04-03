@@ -2555,7 +2555,7 @@ val_reset (dataflow_set *set, decl_or_value dv)
     {
       decl_or_value cdv = dv_from_value (cval);
 
-      /* Keep the remaining values connected, accummulating links
+      /* Keep the remaining values connected, accumulating links
 	 in the canonical value.  */
       for (node = var->var_part[0].loc_chain; node; node = node->next)
 	{

@@ -3648,10 +3648,10 @@ one_static_initialization_or_destruction (tree decl, tree init, bool initp)
 
   /* Make sure temporary variables in the initialiser all have
      their DECL_CONTEXT() set to a value different from NULL_TREE.
-     This can happen when global variables initialisers are built.
+     This can happen when global variables initializers are built.
      In that case, the DECL_CONTEXT() of the global variables _AND_ of all 
      the temporary variables that might have been generated in the
-     accompagning initialisers is NULL_TREE, meaning the variables have been
+     accompanying initializers is NULL_TREE, meaning the variables have been
      declared in the global namespace.
      What we want to do here is to fix that and make sure the DECL_CONTEXT()
      of the temporaries are set to the current function decl.  */

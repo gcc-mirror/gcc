@@ -1584,7 +1584,7 @@ make_ptrmem_declarator (cp_cv_quals cv_qualifiers, tree class_type,
 }
 
 /* Make a declarator for the function given by TARGET, with the
-   indicated PARMS.  The CV_QUALIFIERS aply to the function, as in
+   indicated PARMS.  The CV_QUALIFIERS apply to the function, as in
    "const"-qualified member function.  The EXCEPTION_SPECIFICATION
    indicates what exceptions can be thrown.  */
 

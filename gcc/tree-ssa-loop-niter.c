@@ -3697,7 +3697,7 @@ maybe_lower_iteration_bound (struct loop *loop)
      TODO: Due to the way record_estimate choose estimates to store, the bounds
      will be always nb_iterations_upper_bound-1.  We can change this to record
      also statements not dominating the loop latch and update the walk bellow
-     to the shortest path algorthm.  */
+     to the shortest path algorithm.  */
   for (elt = loop->bounds; elt; elt = elt->next)
     {
       if (!elt->is_exit

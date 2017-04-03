@@ -1,3 +1,11 @@
+2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* class.c (update_vtable_entry_for_fn): Fix typo in comment.
+	* decl2.c (one_static_initialization_or_destruction): Likewise.
+	* name-lookup.c (store_bindings): Likewise.
+	* parser.c (make_call_declarator): Likewise.
+	* pt.c (check_explicit_specialization): Likewise.
+
 2017-04-03  Jason Merrill  <jason@redhat.com>
 
 	PR sanitizer/79993 - ICE with VLA initialization from string

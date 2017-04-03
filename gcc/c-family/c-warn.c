@@ -1850,7 +1850,7 @@ warn_for_sign_compare (location_t location,
    the warning message.  It must have two %T specifiers for the type
    that was converted (generally "float") and the type to which it was
    converted (generally "double), respectively.  LOC is the location
-   to which the awrning should refer.  */
+   to which the warning should refer.  */
 
 void
 do_warn_double_promotion (tree result_type, tree type1, tree type2,

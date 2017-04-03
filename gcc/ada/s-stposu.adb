@@ -221,7 +221,7 @@ package body System.Storage_Pools.Subpools is
          pragma Assert
            (Fin_Address /= null, "primitive Finalize_Address not available");
 
-         --  The size must acount for the hidden header preceding the object.
+         --  The size must account for the hidden header preceding the object.
          --  Account for possible padding space before the header due to a
          --  larger alignment.
 
