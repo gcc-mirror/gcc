@@ -1,3 +1,11 @@
+2017-04-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Back port from the trunk
+	2017-03-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/79947
+	* gcc.target/powerpc/pr79947.c: New test.
+
 2017-04-03  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline
