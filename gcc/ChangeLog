@@ -1,3 +1,9 @@
+2017-04-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80275
+	* fold-const.c (split_address_to_core_and_offset): Handle
+	POINTER_PLUS_EXPR.
+
 2017-04-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-nested.c (get_descriptor_type): Make sure that the alignment of
