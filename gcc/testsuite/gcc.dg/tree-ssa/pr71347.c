@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-optimized -fpredictive-commoning" } */
 
 double in;
 extern void Write (double);
@@ -14,4 +14,4 @@ void foo (void)
 }
 
 /* Load of X[i - i] can be omitted by reusing X[i] in previous iteration.  */
-/* { dg-final { scan-tree-dump-not ".* = MEM.*;" "optimized" { xfail { ia64-*-* arm*-*-* m68k*-*-* sparc*-*-* } } } } */
+/* { dg-final { scan-tree-dump-not ".* = MEM.*;" "optimized" } } */
