@@ -7986,7 +7986,7 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 	}
       else if (code == GIMPLE_OMP_ATOMIC_STORE)
 	{
-	  /* GIMPLE_OMP_ATOMIC_STORE is analoguous to
+	  /* GIMPLE_OMP_ATOMIC_STORE is analogous to
 	     GIMPLE_OMP_RETURN, but matches with
 	     GIMPLE_OMP_ATOMIC_LOAD.  */
 	  gcc_assert (parent);

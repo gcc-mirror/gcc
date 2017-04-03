@@ -679,7 +679,7 @@ change_subst_attribute (struct queue_elem *elem,
    represented by SUBST_ELEM and this attribute has value SUBST_TRUE.
    DEFINE_SUBST isn't applied to patterns without such attribute.  In other
    words, we suppose the default value of the attribute to be 'no' since it is
-   always generated automaticaly in read-rtl.c.  */
+   always generated automatically in read-rtl.c.  */
 static bool
 has_subst_attribute (struct queue_elem *elem, struct queue_elem *subst_elem)
 {
@@ -2259,7 +2259,7 @@ htab_eq_string (const void *s1, const void *s2)
 }
 
 /* Add mnemonic STR with length LEN to the mnemonic hash table
-   MNEMONIC_HTAB.  A trailing zero end character is appendend to STR
+   MNEMONIC_HTAB.  A trailing zero end character is appended to STR
    and a permanent heap copy of STR is created.  */
 
 static void

@@ -11414,7 +11414,7 @@ mips_save_restore_reg (machine_mode mode, int regno,
   fn (gen_rtx_REG (mode, regno), mem);
 }
 
-/* Call FN for each accumlator that is saved by the current function.
+/* Call FN for each accumulator that is saved by the current function.
    SP_OFFSET is the offset of the current stack pointer from the start
    of the frame.  */
 

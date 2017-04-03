@@ -1,6 +1,6 @@
-/* Test that IPA-CP is able to figure out that poth parameters a are constant 7
+/* Test that IPA-CP is able to figure out that both parameters a are constant 7
    even though f and h recursively call each other and specialize them
-   accordinly.  */
+   accordingly.  */
 
 /* { dg-do compile } */
 /* { dg-options "-O3 -fipa-cp -fipa-cp-clone -fdump-ipa-cp -fno-early-inlining"  } */

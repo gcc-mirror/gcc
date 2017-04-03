@@ -6341,7 +6341,7 @@ store_bindings (tree names, vec<cxx_saved_binding, va_gc> **old_bindings)
       vec_safe_reserve_exact (*old_bindings, bindings_need_stored.length ());
       for (i = 0; bindings_need_stored.iterate (i, &id); ++i)
 	{
-	  /* We can appearantly have duplicates in NAMES.  */
+	  /* We can apparently have duplicates in NAMES.  */
 	  if (store_binding_p (id))
 	    store_binding (id, old_bindings);
 	}

@@ -1,3 +1,12 @@
+2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.old-deja/g++.benjamin/scope02.C: Fix typo in comment.
+	* gcc.dg/20031012-1.c: Likewise.
+	* gcc.dg/ipa/ipcp-1.c: Likewise.
+	* gcc.dg/torture/matrix-3.c: Likewise.
+	* gcc.target/powerpc/ppc-spe.c: Likewise.
+	* gcc.target/rx/zero-width-bitfield.c: Likewise.
+
 2017-04-03  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/80246

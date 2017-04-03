@@ -30,12 +30,12 @@ along with GCC; see the file COPYING3.  If not see
    For each call
      - call statement size and time
 
-   inlinie_summary datastructures store above information locally (i.e.
+   inline_summary data structures store above information locally (i.e.
    parameters of the function itself) and globally (i.e. parameters of
    the function created by applying all the inline decisions already
    present in the callgraph).
 
-   We provide accestor to the inline_summary datastructure and
+   We provide access to the inline_summary data structure and
    basic logic updating the parameters when inlining is performed. 
 
    The summaries are context sensitive.  Context means
@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
      2) whether function is inlined into the call or not.
    It is easy to add more variants.  To represent function size and time
    that depends on context (i.e. it is known to be optimized away when
-   context is known either by inlining or from IP-CP and clonning),
+   context is known either by inlining or from IP-CP and cloning),
    we use predicates. Predicates are logical formulas in
    conjunctive-disjunctive form consisting of clauses. Clauses are bitmaps
    specifying what conditions must be true. Conditions are simple test

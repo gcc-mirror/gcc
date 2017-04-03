@@ -267,7 +267,7 @@ rx_is_legitimate_address (machine_mode mode, rtx x,
   return rx_small_data_operand (x);
 }
 
-/* Returns TRUE for simple memory addreses, ie ones
+/* Returns TRUE for simple memory addresses, ie ones
    that do not involve register indirect addressing
    or pre/post increment/decrement.  */
 

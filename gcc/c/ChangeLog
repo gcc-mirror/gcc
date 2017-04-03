@@ -1,3 +1,7 @@
+2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* c-array-notation.c: Fix typo in comment.
+
 2017-03-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/79730

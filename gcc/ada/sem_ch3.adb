@@ -8706,7 +8706,7 @@ package body Sem_Ch3 is
 
                --  However, if the record contains an array constrained by
                --  the discriminant but with some different bound, the compiler
-               --  attemps to create a smaller range for the discriminant type.
+               --  attempts to create a smaller range for the discriminant type.
                --  (See exp_ch3.Adjust_Discriminants). In this case, where
                --  the discriminant type is a scalar type, the check must use
                --  the original discriminant type in the parent declaration.

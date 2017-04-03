@@ -3259,7 +3259,7 @@ sh_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
       return false;
 
     /* The cost of a sign or zero extend depends on whether the source is a
-       reg or a mem.  In case of a mem take the address into acount.  */
+       reg or a mem.  In case of a mem take the address into account.  */
     case SIGN_EXTEND:
       if (arith_reg_operand (XEXP (x, 0), GET_MODE (XEXP (x, 0))))
 	{

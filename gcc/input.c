@@ -885,7 +885,7 @@ make_location (location_t caret, location_t start, location_t finish)
 #define STAT_LABEL(x) ((x) < 10 * ONE_K ? ' ' : ((x) < 10 * ONE_M ? 'k' : 'M'))
 
 /* Display an integer amount as multiple of 1K or 1M (in base 2).
-   Display the correct unit (either k, M, or ' ') after the amout, as
+   Display the correct unit (either k, M, or ' ') after the amount, as
    well.  */
 #define FORMAT_AMOUNT(size) SCALE (size), STAT_LABEL (size)
 

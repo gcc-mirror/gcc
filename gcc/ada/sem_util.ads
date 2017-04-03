@@ -154,10 +154,10 @@ package Sem_Util is
 
    function Available_Full_View_Of_Component (T : Entity_Id) return Boolean;
    --  If at the point of declaration an array type has a private or limited
-   --  component, several array operations are not avaiable on the type, and
+   --  component, several array operations are not available on the type, and
    --  the array type is flagged accordingly. If in the immediate scope of
    --  the array type the component becomes non-private or non-limited, these
-   --  operations become avaiable. This can happen if the scopes of both types
+   --  operations become available. This can happen if the scopes of both types
    --  are open, and the scope of the array is not outside the scope of the
    --  component.
 

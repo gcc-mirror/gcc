@@ -908,7 +908,7 @@ LINEMAPS_LAST_ALLOCATED_ORDINARY_MAP (const line_maps *set)
 }
 
 /* Returns a pointer to the beginning of the region where macro maps
-   are allcoated.  */
+   are allocated.  */
 inline line_map_macro *
 LINEMAPS_MACRO_MAPS (const line_maps *set)
 {

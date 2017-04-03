@@ -309,7 +309,7 @@ estimate_edge_growth (struct cgraph_edge *edge)
 	  - inline_edge_summary (edge)->call_stmt_size);
 }
 
-/* Return estimated callee runtime increase after inlning
+/* Return estimated callee runtime increase after inlining
    EDGE.  */
 
 static inline int
@@ -323,7 +323,7 @@ estimate_edge_time (struct cgraph_edge *edge)
 }
 
 
-/* Return estimated callee runtime increase after inlning
+/* Return estimated callee runtime increase after inlining
    EDGE.  */
 
 static inline inline_hints

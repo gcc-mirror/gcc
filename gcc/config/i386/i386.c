@@ -16713,7 +16713,7 @@ get_dllimport_decl (tree decl, bool beimport)
   return to;
 }
 
-/* Expand SYMBOL into its corresponding far-addresse symbol.
+/* Expand SYMBOL into its corresponding far-address symbol.
    WANT_REG is true if we require the result be a register.  */
 
 static rtx
