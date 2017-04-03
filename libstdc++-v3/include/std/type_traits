@@ -3062,6 +3062,26 @@ template <typename _From, typename _To>
 #endif
 #undef _GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP
 
+#ifdef __has_builtin
+# if !__has_builtin(__is_aggregate)
+// Try not to break non-GNU compilers that don't support the built-in:
+#  define _GLIBCXX_NO_BUILTIN_IS_AGGREGATE 1
+# endif
+#endif
+
+#ifndef _GLIBCXX_NO_BUILTIN_IS_AGGREGATE
+#define __cpp_lib_is_aggregate 201703
+  /// is_aggregate
+  template<typename _Tp>
+    struct is_aggregate
+    : bool_constant<__is_aggregate(remove_cv_t<_Tp>)> { };
+
+  /// is_aggregate_v
+  template<typename _Tp>
+    inline constexpr bool is_aggregate_v = is_aggregate<_Tp>::value;
+#endif
+#undef _GLIBCXX_NO_BUILTIN_IS_AGGREGATE
+
 #endif // C++17
 
 _GLIBCXX_END_NAMESPACE_VERSION
