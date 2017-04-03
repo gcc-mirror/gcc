@@ -496,6 +496,8 @@ static GTY(()) tree descriptor_type;
 static tree
 get_descriptor_type (struct nesting_info *info)
 {
+  /* The base alignment is that of a function.  */
+  const unsigned align = FUNCTION_ALIGNMENT (FUNCTION_BOUNDARY);
   tree t;
 
   if (descriptor_type)
@@ -505,6 +507,8 @@ get_descriptor_type (struct nesting_info *info)
   t = build_array_type (ptr_type_node, t);
   t = build_decl (DECL_SOURCE_LOCATION (info->context),
 		  FIELD_DECL, get_identifier ("__data"), t);
+  SET_DECL_ALIGN (t, MAX (TYPE_ALIGN (ptr_type_node), align));
+  DECL_USER_ALIGN (t) = 1;
 
   descriptor_type = make_node (RECORD_TYPE);
   TYPE_NAME (descriptor_type) = get_identifier ("__builtin_descriptor");
