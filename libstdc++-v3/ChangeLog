@@ -1,3 +1,25 @@
+2017-04-03  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Backport from mainline
+        2017-04-03  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/79141
+	* include/bits/stl_pair.h (__nonesuch_no_braces): New.
+	(operator=(typename conditional<
+	__and_<is_copy_assignable<_T1>,
+	is_copy_assignable<_T2>>::value,
+	const pair&, const __nonesuch&>::type)): Change __nonesuch
+	to __nonesuch_no_braces.
+	(operator=(typename conditional<
+	__not_<__and_<is_copy_assignable<_T1>,
+	is_copy_assignable<_T2>>>::value,
+	const pair&, const __nonesuch&>::type)): Likewise.
+	(operator=(typename conditional<
+	__and_<is_move_assignable<_T1>,
+	is_move_assignable<_T2>>::value,
+	pair&&, __nonesuch&&>::type)): Likewise.
+	* testsuite/20_util/pair/79141.cc: New.
+
 2017-03-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80137
