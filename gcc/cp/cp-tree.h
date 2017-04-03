@@ -2539,8 +2539,11 @@ struct GTY(()) lang_decl_fn {
 struct GTY(()) lang_decl_ns {
   struct lang_decl_base base;
   cp_binding_level *level;
-  tree ns_using;
-  tree ns_users;
+
+  /* using directives and inline children.  These need to be va_gc,
+     because of PCH.  */
+  vec<tree, va_gc> *usings;
+  vec<tree, va_gc> *inlinees;
 };
 
 /* DECL_LANG_SPECIFIC for parameters.  */
@@ -3093,28 +3096,21 @@ struct GTY(()) lang_decl {
   (decl_function_context (TYPE_MAIN_DECL (NODE)) != NULL_TREE)
 
 /* The nesting depth of namespace, class or function.  Makes is_ancestor much
-   simpler.  Only 8 bits available.
-   FIXME: Only valid for namespaces.  */
+   simpler.  Only 8 bits available.  */
 #define SCOPE_DEPTH(NODE) \
-  (TREE_CHECK5(NODE, NAMESPACE_DECL, RECORD_TYPE, UNION_TYPE, FUNCTION_DECL, \
-	       TEMPLATE_DECL)->base.u.bits.address_space)
+  (NAMESPACE_DECL_CHECK (NODE)->base.u.bits.address_space)
 
 /* Whether the namepace is an inline namespace.  */
 #define DECL_NAMESPACE_INLINE_P(NODE) \
   TREE_LANG_FLAG_0 (NAMESPACE_DECL_CHECK (NODE))
 
-/* For a NAMESPACE_DECL: the list of using namespace directives
-   The PURPOSE is the used namespace, the value is the namespace
-   that is the common ancestor.  */
-#define DECL_NAMESPACE_USING(NODE) (LANG_DECL_NS_CHECK (NODE)->ns_using)
+/* For a NAMESPACE_DECL: an OVERLOAD list of using namespace directives.  */
+#define DECL_NAMESPACE_USING(NODE) \
+   (LANG_DECL_NS_CHECK (NODE)->usings)
 
-/* In a NAMESPACE_DECL, the DECL_INITIAL is used to record all users
-   of a namespace, to record the transitive closure of using namespace.  */
-#define DECL_NAMESPACE_USERS(NODE) (LANG_DECL_NS_CHECK (NODE)->ns_users)
-
-/* In a NAMESPACE_DECL, the list of direct inline namespaces.  */
+/* In a NAMESPACE_DECL, an OVERLOAD list of direct inline namespaces.  */
 #define DECL_NAMESPACE_INLINEES(NODE) \
-  DECL_INITIAL (NAMESPACE_DECL_CHECK (NODE))
+   (LANG_DECL_NS_CHECK (NODE)->inlinees)
 
 /* In a NAMESPACE_DECL, points to the original namespace if this is
    a namespace alias.  */
@@ -3128,10 +3124,6 @@ struct GTY(()) lang_decl {
   (TREE_CODE (NODE) == NAMESPACE_DECL			\
    && CP_DECL_CONTEXT (NODE) == global_namespace	\
    && DECL_NAME (NODE) == std_identifier)
-
-/* In a TREE_LIST concatenating using directives, indicate indirect
-   directives  */
-#define TREE_INDIRECT_USING(NODE) TREE_LANG_FLAG_0 (TREE_LIST_CHECK (NODE))
 
 /* In a TREE_LIST in an attribute list, indicates that the attribute
    must be applied at instantiation time.  */

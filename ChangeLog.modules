@@ -1,3 +1,26 @@
+2017-04-03  Nathan Sidwell  <nathan@acm.org>
+
+	Remove usings graph.
+	gcc/cp/
+	* cp-tree.h (lang_decl_ns): Replace tree list ns_using, ns_users
+	with tree vector usings & inlinees.
+	(DCL_NAMES_SPACE_USING, DECL_NAMESPACE_INLINEES): Update.
+	(TREE_INDIRECT_USING): Delete.
+	* decl.c (cxx_init_decl_processing): Tweak.
+	* name-lookup.h (cp_binding_level): using_directives is a vec.
+	* name-lookup.c (name_lookup::do_queue_usings, queue_usings,
+	search_namespace, search_usings, queue_namespace,
+	search_unqualified, assoc_namespace_only): inlinees and usings are
+	vectors.  Remove old TREE_LIST code.
+	(namespace_ancestor_1, namespace_ancestor, add_using_namespace_1,
+	add_using_namespace): Delete.
+	(qualified_namespace_lookup): Tweak.
+	(add_using_directive): New.
+	(do_toplevel_using_directive, do_local_using_directive): Adjust.
+	(push_namespace): Adjust.
+	* tree.c (decl_anon_ns_mem_p): Reimplement.
+	(cp_free_lang_data): Update.
+
 2017-03-31  Nathan Sidwell  <nathan@acm.org>
 
 	Reimplement unqualified namespace lookup

@@ -125,12 +125,12 @@ private:
 private:
   using_queue *queue_namespace (using_queue *queue, int depth, tree scope);
   using_queue *do_queue_usings (using_queue *queue, int depth,
-				tree scope, tree usings);
+				vec<tree, va_gc> *);
   using_queue *queue_usings (using_queue *queue, int depth,
-			     tree scope, tree usings)
+			     vec<tree, va_gc> *usings)
   {
     if (usings)
-      queue = do_queue_usings (queue, depth, scope, usings);
+      queue = do_queue_usings (queue, depth, usings);
     return queue;
   }
 
@@ -234,9 +234,9 @@ name_lookup::search_namespace (tree scope)
   bool found = search_namespace_only (scope);
   
   /* Recursively look in its inline children.  */
-  for (tree inner = DECL_NAMESPACE_INLINEES (scope); inner;
-       inner = TREE_CHAIN (inner))
-    found |= search_namespace (TREE_PURPOSE (inner));
+  if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
+    for (unsigned ix = inlinees->length (); ix--;)
+      found |= search_namespace ((*inlinees)[ix]);
 
   if (found)
     mark_found (scope);
@@ -256,18 +256,14 @@ name_lookup::search_usings (tree scope)
     return true;
 
   bool found = false;
-  for (tree iter = DECL_NAMESPACE_USING (scope); iter;
-       iter = TREE_CHAIN (iter))
-    // FIXME: remove once using directives converted
-    if (!TREE_INDIRECT_USING (iter)
-	&& !(DECL_NAMESPACE_INLINE_P (TREE_PURPOSE (iter))
-	     && CP_DECL_CONTEXT (TREE_PURPOSE (iter)) == scope))
-      found |= search_qualified (TREE_PURPOSE (iter));
+  if (vec<tree, va_gc> *usings = DECL_NAMESPACE_USING (scope))
+    for (unsigned ix = usings->length (); ix--;)
+      found |= search_qualified ((*usings)[ix]);
 
   /* Look in its inline children.  */
-  for (tree inner = DECL_NAMESPACE_INLINEES (scope); inner;
-       inner = TREE_CHAIN (inner))
-    found |= search_usings (TREE_PURPOSE (inner));
+  if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
+    for (unsigned ix = inlinees->length (); ix--;)
+      found |= search_usings ((*inlinees)[ix]);
 
   if (found)
     mark_found (scope);
@@ -315,13 +311,13 @@ name_lookup::queue_namespace (using_queue *queue, int depth, tree scope)
     common = CP_DECL_CONTEXT (common);
   vec_safe_push (queue, using_pair (common, scope));
 
-  /* Queue its using targets.  */
-  queue = queue_usings (queue, depth, scope, DECL_NAMESPACE_USING (scope));
+  /* Queue its inline children.  */
+  if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
+    for (unsigned ix = inlinees->length (); ix--;)
+      queue = queue_namespace (queue, depth, (*inlinees)[ix]);
 
-  /* Queue in its inline children.  */
-  for (tree inner = DECL_NAMESPACE_INLINEES (scope); inner;
-       inner = TREE_CHAIN (inner))
-    queue = queue_namespace (queue, depth, TREE_PURPOSE (inner));
+  /* Queue its using targets.  */
+  queue = queue_usings (queue, depth, DECL_NAMESPACE_USING (scope));
 
   return queue;
 }
@@ -329,21 +325,11 @@ name_lookup::queue_namespace (using_queue *queue, int depth, tree scope)
 /* Add the namespaces in USINGS to the unqualified search queue.  */
 
 name_lookup::using_queue *
-name_lookup::do_queue_usings (using_queue *queue, int depth, tree scope,
-			      tree usings)
+name_lookup::do_queue_usings (using_queue *queue, int depth,
+			      vec<tree, va_gc> *usings)
 {
-  do
-    {
-      // FIXME: remove once using directives converted
-      if (!TREE_INDIRECT_USING (usings)
-	  && !(DECL_NAMESPACE_INLINE_P (TREE_PURPOSE (usings))
-	       && CP_DECL_CONTEXT (TREE_PURPOSE (usings)) == scope))
-	queue = queue_namespace (queue, depth,
-				 // FIXME: make using original
-				 ORIGINAL_NAMESPACE (TREE_PURPOSE (usings)));
-      usings = TREE_CHAIN (usings);
-    }
-  while (usings);
+  for (unsigned ix = usings->length (); ix--;)
+    queue = queue_namespace (queue, depth, (*usings)[ix]);
 
   return queue;
 }
@@ -364,12 +350,9 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
   bool found = false;
   int length = vec_safe_length (queue);
 
-  scope = ORIGINAL_NAMESPACE (scope);
-
   /* Queue local using-directives.  */
   for (; level->kind != sk_namespace; level = level->level_chain)
-    queue = queue_usings (queue, SCOPE_DEPTH (scope),
-			  NULL_TREE, level->using_directives);
+    queue = queue_usings (queue, SCOPE_DEPTH (scope), level->using_directives);
 
   for (; !found; scope = CP_DECL_CONTEXT (scope))
     {
@@ -556,14 +539,12 @@ adl_lookup::assoc_namespace_only (tree scope)
 {
   mark_seen (scope);
 
-  tree value = namespace_binding (name, scope);
-
-  add_functions (ovl_skip_hidden (value));
-
   /* Look down into inline namespaces.  */
-  for (tree inner = DECL_NAMESPACE_INLINEES (scope); inner;
-       inner = TREE_CHAIN (inner))
-    assoc_namespace_only (TREE_PURPOSE (inner));
+  if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
+    for (unsigned ix = inlinees->length (); ix--;)
+      assoc_namespace_only ((*inlinees)[ix]);
+
+  add_functions (ovl_skip_hidden (namespace_binding (name, scope)));
 }
 
 /* Find the containing non-inlined namespace, add it and all its
@@ -866,8 +847,6 @@ static void consider_binding_level (tree name, best_match <tree, tree> &bm,
 				    bool look_within_fields,
 				    enum lookup_name_fuzzy_kind kind);
 static tree lookup_type_current_level (tree);
-static void do_local_using_directive (tree);
-static void do_toplevel_using_directive (tree, tree);
 static tree lookup_extern_c_fun_in_all_ns (tree);
 static void diagnose_name_conflict (tree, tree);
 
@@ -4534,32 +4513,6 @@ pop_decl_namespace (void)
   decl_namespace_list->pop ();
 }
 
-/* Return the namespace that is the common ancestor
-   of two given namespaces.  */
-
-static tree
-namespace_ancestor_1 (tree ns1, tree ns2)
-{
-  tree nsr;
-  if (is_nested_namespace (ns1, ns2))
-    nsr = ns1;
-  else
-    nsr = namespace_ancestor_1 (CP_DECL_CONTEXT (ns1), ns2);
-  return nsr;
-}
-
-/* Wrapper for namespace_ancestor_1.  */
-
-static tree
-namespace_ancestor (tree ns1, tree ns2)
-{
-  tree nsr;
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  nsr = namespace_ancestor_1 (ns1, ns2);
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return nsr;
-}
-
 /* Process a namespace-alias declaration.  */
 
 void
@@ -4630,60 +4583,6 @@ pushdecl_namespace_level (tree x, bool is_friend)
     }
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return t;
-}
-
-/* Insert USED into the using list of USER. Set INDIRECT_flag if this
-   directive is not directly from the source. Also find the common
-   ancestor and let our users know about the new namespace. */
-
-static void
-add_using_namespace_1 (tree user, tree used, bool indirect)
-{
-  tree t;
-  /* Using oneself is a no-op.  */
-  if (user == used)
-    return;
-  gcc_assert (TREE_CODE (user) == NAMESPACE_DECL);
-  gcc_assert (TREE_CODE (used) == NAMESPACE_DECL);
-  /* Check if we already have this.  */
-  t = purpose_member (used, DECL_NAMESPACE_USING (user));
-  if (t != NULL_TREE)
-    {
-      if (!indirect)
-	/* Promote to direct usage.  */
-	TREE_INDIRECT_USING (t) = 0;
-      return;
-    }
-
-  /* Add used to the user's using list.  */
-  DECL_NAMESPACE_USING (user)
-    = tree_cons (used, namespace_ancestor (user, used),
-		 DECL_NAMESPACE_USING (user));
-
-  TREE_INDIRECT_USING (DECL_NAMESPACE_USING (user)) = indirect;
-
-  /* Add user to the used's users list.  */
-  DECL_NAMESPACE_USERS (used)
-    = tree_cons (user, 0, DECL_NAMESPACE_USERS (used));
-
-  /* Recursively add all namespaces used.  */
-  for (t = DECL_NAMESPACE_USING (used); t; t = TREE_CHAIN (t))
-    /* indirect usage */
-    add_using_namespace_1 (user, TREE_PURPOSE (t), 1);
-
-  /* Tell everyone using us about the new used namespaces.  */
-  for (t = DECL_NAMESPACE_USERS (user); t; t = TREE_CHAIN (t))
-    add_using_namespace_1 (TREE_PURPOSE (t), used, 1);
-}
-
-/* Wrapper for add_using_namespace_1.  */
-
-static void
-add_using_namespace (tree user, tree used, bool indirect)
-{
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  add_using_namespace_1 (user, used, indirect);
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
 /* Process a using-declaration not appearing in class or local scope.  */
@@ -4929,9 +4828,7 @@ static bool
 qualified_namespace_lookup (tree scope, name_lookup *lookup)
 {
   timevar_start (TV_NAME_LOOKUP);
-  /* Look through namespace aliases.  */
-  scope = ORIGINAL_NAMESPACE (scope);
-  lookup->search_qualified (scope);
+  lookup->search_qualified (ORIGINAL_NAMESPACE (scope));
   timevar_stop (TV_NAME_LOOKUP);
   return lookup->value != error_mark_node;
 }
@@ -5592,54 +5489,33 @@ lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
   return ret;
 }
 
-/* A using directive in namespace USER_NS for namespace USING_NS.  */
+/* Add TARGET to USINGS, if it does not already exist there.
+   We used to build the complete graph of usings at this point, from
+   the POV of the source namespaces.  Now we build that as we perform
+   the unqualified search.  */
 
 static void
-do_toplevel_using_directive (tree user_ns, tree using_ns)
+add_using_directive (vec<tree, va_gc> *&usings, tree target)
 {
-  add_using_namespace (user_ns, using_ns, 0);
+  if (usings)
+    for (unsigned ix = usings->length (); ix--;)
+      if ((*usings)[ix] == target)
+	return;
 
+  vec_safe_push (usings, target);
+}
+
+/* A using directive in namespace USER for namespace TARGET.  */
+
+static void
+do_toplevel_using_directive (tree user, tree target)
+{
+  add_using_directive (DECL_NAMESPACE_USING (user), target);
   gcc_assert (!processing_template_decl);
-  
+
   /* Emit debugging info.  */
-  tree context = user_ns != global_namespace ? user_ns : NULL_TREE;
-  debug_hooks->imported_module_or_decl (using_ns, NULL_TREE, context, false);
-}
-
-/* Worker for do_local_using_directive.  */
-
-static tree
-do_local_using_directive_r (tree usings, tree used)
-{
-  if (!LOOKUP_SEEN_P (used))
-    {
-      LOOKUP_SEEN_P (used) = true;
-      tree ancestor = namespace_ancestor (current_decl_namespace (), used);
-      usings = tree_cons (used, ancestor, usings);
-
-      /* Recursively add all namespaces used.  */
-      for (tree iter = DECL_NAMESPACE_USING (used); iter;
-	   iter = TREE_CHAIN (iter))
-	usings = do_local_using_directive_r (usings, TREE_PURPOSE (iter));
-    }
-
-  return usings;
-}
-
-/* Add namespace to using_directives.  */
-
-static void
-do_local_using_directive (tree used)
-{
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  tree usings = current_binding_level->using_directives;
-  for (tree p = usings; p; p = TREE_CHAIN (p))
-    LOOKUP_SEEN_P (TREE_PURPOSE (p)) = true;
-  usings = do_local_using_directive_r (usings, used);
-  for (tree p = usings; p; p = TREE_CHAIN (p))
-    LOOKUP_SEEN_P (TREE_PURPOSE (p)) = false;
-  current_binding_level->using_directives = usings;
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+  tree context = user != global_namespace ? user : NULL_TREE;
+  debug_hooks->imported_module_or_decl (user, NULL_TREE, context, false);
 }
 
 /* The type TYPE is being declared.  If it is a class template, or a
@@ -6016,19 +5892,20 @@ finish_namespace_using_directive (tree name_space, tree attribs)
 /* Process a function-scope using-directive.  */
 
 void
-finish_local_using_directive (tree name_space, tree attribs)
+finish_local_using_directive (tree target, tree attribs)
 {
   gcc_checking_assert (local_bindings_p ());
-  if (name_space == error_mark_node)
+  if (target == error_mark_node)
     return;
 
   if (attribs && attribs != error_mark_node)
     warning (OPT_Wattributes, "attributes ignored on local using directive");
   
   if (building_stmt_list_p ())
-    add_stmt (build_stmt (input_location, USING_STMT, name_space));
+    add_stmt (build_stmt (input_location, USING_STMT, target));
 
-  do_local_using_directive (ORIGINAL_NAMESPACE (name_space));
+  add_using_directive (current_binding_level->using_directives,
+		       ORIGINAL_NAMESPACE (target));
 }
 
 /* A chain of saved_scope structures awaiting reuse.  */
@@ -6296,13 +6173,6 @@ push_namespace (tree name, bool make_inline)
 	       SCOPE_DEPTH (current_namespace));
       DECL_CONTEXT (ns) = FROB_CONTEXT (current_namespace);
 
-      /* The name of this namespace is not visible to other translation
-	 units if it is an anonymous namespace or member thereof.  */
-      if (name == anon_identifier || decl_anon_ns_mem_p (current_namespace))
-	TREE_PUBLIC (ns) = 0;
-      else
-	TREE_PUBLIC (ns) = 1;
-
       if (pushdecl (ns) == error_mark_node)
 	ns = NULL_TREE;
       else
@@ -6312,19 +6182,18 @@ push_namespace (tree name, bool make_inline)
 	      /* Clear DECL_NAME for the benefit of debugging back ends.  */
 	      SET_DECL_ASSEMBLER_NAME (ns, name);
 	      DECL_NAME (ns) = NULL_TREE;
+
+	      if (!make_inline)
+		do_toplevel_using_directive (current_namespace, ns);
 	    }
+	  else if (TREE_PUBLIC (current_namespace))
+	    TREE_PUBLIC (ns) = 1;
 
 	  if (make_inline)
 	    {
 	      DECL_NAMESPACE_INLINE_P (ns) = true;
-	      DECL_NAMESPACE_INLINEES (current_namespace)
-		= tree_cons (ns, NULL_TREE,
-			     DECL_NAMESPACE_INLINEES (current_namespace));
+	      vec_safe_push (DECL_NAMESPACE_INLINEES (current_namespace), ns);
 	    }
-
-	  if (make_inline || name == anon_identifier)
-	    /* Import the contents of the namespace.  */
-	    do_toplevel_using_directive (current_namespace, ns);
 
 	  begin_scope (sk_namespace, ns);
 	}

@@ -3296,22 +3296,15 @@ decl_namespace_context (tree decl)
 bool
 decl_anon_ns_mem_p (const_tree decl)
 {
-  while (1)
+  while (TREE_CODE (decl) != NAMESPACE_DECL)
     {
-      if (decl == NULL_TREE || decl == error_mark_node)
-	return false;
-      if (TREE_CODE (decl) == NAMESPACE_DECL
-	  && DECL_NAME (decl) == NULL_TREE)
-	return true;
-      /* Classes and namespaces inside anonymous namespaces have
-         TREE_PUBLIC == 0, so we can shortcut the search.  */
-      else if (TYPE_P (decl))
-	return (TREE_PUBLIC (TYPE_MAIN_DECL (decl)) == 0);
-      else if (TREE_CODE (decl) == NAMESPACE_DECL)
-	return (TREE_PUBLIC (decl) == 0);
-      else
-	decl = DECL_CONTEXT (decl);
+      /* Classes inside anonymous namespaces have TREE_PUBLIC == 0.  */
+      if (TYPE_P (decl))
+	return !TREE_PUBLIC (TYPE_MAIN_DECL (decl));
+
+      decl = CP_DECL_CONTEXT (decl);
     }
+  return !TREE_PUBLIC (decl);
 }
 
 /* Subroutine of cp_tree_equal: t1 and t2 are the CALL_EXPR_FNs of two
@@ -5006,14 +4999,9 @@ cp_free_lang_data (tree t)
       TREE_STATIC (t) = 0;
     }
   if (TREE_CODE (t) == NAMESPACE_DECL)
-    {
-      /* The list of users of a namespace isn't useful for the middle-end
-	 or debug generators.  */
-      DECL_NAMESPACE_USERS (t) = NULL_TREE;
-      /* Neither do we need the leftover chaining of namespaces
-         from the binding level.  */
-      DECL_CHAIN (t) = NULL_TREE;
-    }
+    /* We do not need the leftover chaining of namespaces
+       from the binding level.  */
+    DECL_CHAIN (t) = NULL_TREE;
 }
 
 /* Stub for c-common.  Please keep in sync with c-decl.c.
