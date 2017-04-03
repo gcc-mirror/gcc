@@ -1,3 +1,12 @@
+2017-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR sanitizer/79993 - ICE with VLA initialization from string
+	PR c++/69487 - wrong VLA initialization from string
+	* init.c (finish_length_check): Split out from build_vec_init.
+	(build_vec_init): Handle STRING_CST.
+	* typeck2.c (split_nonconstant_init): Handle STRING_CST.
+	(digest_init_r): Don't give a STRING_CST VLA type.
+
 2017-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79572
