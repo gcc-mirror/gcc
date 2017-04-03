@@ -1,5 +1,8 @@
 2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/ios_base.h: Correct comment.
+	* testsuite/util/testsuite_hooks.h: Likewise.
+
 	* doc/xml/manual/status_cxx2017.xml: Update C++17 status table.
 	* doc/xml/manual/appendix_contributing.xml (contrib.organization): Add
 	directories for debug, parallel and profile headers.
