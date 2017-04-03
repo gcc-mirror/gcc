@@ -1,5 +1,10 @@
 2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2017.xml: Update C++17 status table.
+	* doc/xml/manual/appendix_contributing.xml (contrib.organization): Add
+	directories for debug, parallel and profile headers.
+	* doc/html/*: Regenerate.
+
 	* include/bits/char_traits.h (__gnu_cxx::char_traits): Add
 	_GLIBCXX14_CONSTEXPR on assign, compare, find, and length.
 	(std::char_traits<char>, std::char_traits<wchar_t>): Add
