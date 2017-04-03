@@ -1,3 +1,8 @@
+2017-04-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-nested.c (get_descriptor_type): Make sure that the alignment of
+	descriptors is at least equal to that of functions.
+
 2017-04-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (movdi_to_sse): Add missing DONE.
