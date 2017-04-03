@@ -558,7 +558,7 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 7 </entry>
-      <entry/>
+      <entry><code> ??? </code></entry>
     </row>
 
     <row>
@@ -572,17 +572,6 @@ Feature-testing recommendations for C++</link>.
       <entry><code> __cpp_lib_map_try_emplace >= 201411</code>,
 	     <code> __cpp_lib_unordered_map_try_emplace >= 201411</code>
       </entry>
-    </row>
-
-    <row>
-      <entry> Return type of <code>emplace</code> </entry>
-      <entry>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0084r2.pdf">
-	P0084R2
-	</link>
-      </entry>
-      <entry align="center"> 7 </entry>
-      <entry><code> ??? </code></entry>
     </row>
 
     <row>
