@@ -1,6 +1,16 @@
 2017-04-03  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/80246
+	* gcc.target/powerpc/dfp-builtin-1.c: Require hard_dfp, not
+	powerpc_vsx_ok.
+	(std, ld): Limit scan-assembler-times check to lp64.
+	(stwu, stw, lwz): Add scan-assembler-times check for ilp32.
+	* gcc.target/powerpc/dfp-builtin-2.c: Require hard_dfp, not
+	powerpc_vsx_ok.
+
+2017-04-03  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/80246
 	* gcc.target/powerpc/pr80246.c: Require hard_dfp.
 
 2017-04-03  Richard Biener  <rguenther@suse.de>
