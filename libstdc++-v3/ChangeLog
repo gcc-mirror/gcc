@@ -1,5 +1,8 @@
 2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2017.xml: Remove duplicate table entry.
+	* doc/html/*: Regenerate.
+
 	* testsuite/20_util/reference_wrapper/invoke.cc: Uncomment tests
 	that no longer fail.
 
