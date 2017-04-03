@@ -52,7 +52,7 @@ DEFPARAM (PARAM_PREDICTABLE_BRANCH_OUTCOME,
 DEFPARAM (PARAM_INLINE_MIN_SPEEDUP,
 	  "inline-min-speedup",
 	  "The minimal estimated speedup allowing inliner to ignore inline-insns-single and inline-insns-auto.",
-	  10, 0, 0)
+	  8, 0, 0)
 
 /* The single function inlining limit. This is the maximum size
    of a function counted in internal gcc instructions (not in
@@ -565,7 +565,7 @@ DEFPARAM(PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS,
 
 DEFPARAM(PARAM_VECT_MAX_PEELING_FOR_ALIGNMENT,
          "vect-max-peeling-for-alignment",
-         "Max number of loop peels to enhancement alignment of data references in a loop.",
+         "Maximum number of loop peels to enhance alignment of data references in a loop.",
          -1, -1, 64)
 
 DEFPARAM(PARAM_MAX_CSELIB_MEMORY_LOCATIONS,
@@ -657,7 +657,7 @@ DEFPARAM(PARAM_SELSCHED_MAX_LOOKAHEAD,
 DEFPARAM(PARAM_SELSCHED_MAX_SCHED_TIMES,
          "selsched-max-sched-times",
          "Maximum number of times that an insn could be scheduled.",
-         2, 0, 0)
+         2, 1, 0)
 
 DEFPARAM(PARAM_SELSCHED_INSNS_TO_RENAME,
          "selsched-insns-to-rename",
@@ -965,7 +965,7 @@ DEFPARAM (PARAM_MAX_VARTRACK_REVERSE_OP_SIZE,
 DEFPARAM (PARAM_MIN_NONDEBUG_INSN_UID,
 	  "min-nondebug-insn-uid",
 	  "The minimum UID to be used for a nondebug insn.",
-	  0, 1, 0)
+	  0, 0, 0)
 
 DEFPARAM (PARAM_IPA_SRA_PTR_GROWTH_FACTOR,
 	  "ipa-sra-ptr-growth-factor",
@@ -1102,13 +1102,13 @@ DEFPARAM (PARAM_MAX_TAIL_MERGE_COMPARISONS,
 DEFPARAM (PARAM_STORE_MERGING_ALLOW_UNALIGNED,
 	  "store-merging-allow-unaligned",
 	  "Allow the store merging pass to introduce unaligned stores "
-	  "if it is legal to do so",
+	  "if it is legal to do so.",
 	  1, 0, 1)
 
 DEFPARAM (PARAM_MAX_STORES_TO_MERGE,
 	  "max-stores-to-merge",
 	  "Maximum number of constant stores to merge in the "
-	  "store merging pass",
+	  "store merging pass.",
 	  64, 2, 0)
 
 DEFPARAM (PARAM_MAX_TAIL_MERGE_ITERATIONS,
@@ -1237,7 +1237,7 @@ DEFPARAM (PARAM_MAX_SSA_NAME_QUERY_DEPTH,
 	  "max-ssa-name-query-depth",
 	  "Maximum recursion depth allowed when querying a property of an"
 	  " SSA name.",
-	  3, 1, 0)
+	  3, 1, 10)
 
 DEFPARAM (PARAM_MAX_RTL_IF_CONVERSION_INSNS,
 	  "max-rtl-if-conversion-insns",

@@ -1250,10 +1250,10 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 	    continue;
 
 	  while (last_combined_insn
-		 && last_combined_insn->deleted ())
+		 && (!NONDEBUG_INSN_P (last_combined_insn)
+		     || last_combined_insn->deleted ()))
 	    last_combined_insn = PREV_INSN (last_combined_insn);
 	  if (last_combined_insn == NULL_RTX
-	      || BARRIER_P (last_combined_insn)
 	      || BLOCK_FOR_INSN (last_combined_insn) != this_basic_block
 	      || DF_INSN_LUID (last_combined_insn) <= DF_INSN_LUID (insn))
 	    last_combined_insn = insn;
@@ -1953,12 +1953,21 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
       || (succ2 && FIND_REG_INC_NOTE (succ2, dest))
       /* Don't substitute into a non-local goto, this confuses CFG.  */
       || (JUMP_P (i3) && find_reg_note (i3, REG_NON_LOCAL_GOTO, NULL_RTX))
-      /* Make sure that DEST is not used after SUCC but before I3.  */
+      /* Make sure that DEST is not used after INSN but before SUCC, or
+	 after SUCC and before SUCC2, or after SUCC2 but before I3.  */
       || (!all_adjacent
 	  && ((succ2
 	       && (reg_used_between_p (dest, succ2, i3)
 		   || reg_used_between_p (dest, succ, succ2)))
-	      || (!succ2 && succ && reg_used_between_p (dest, succ, i3))))
+	      || (!succ2 && succ && reg_used_between_p (dest, succ, i3))
+	      || (succ
+		  /* SUCC and SUCC2 can be split halves from a PARALLEL; in
+		     that case SUCC is not in the insn stream, so use SUCC2
+		     instead for this test.  */
+		  && reg_used_between_p (dest, insn,
+					 succ2
+					 && INSN_UID (succ) == INSN_UID (succ2)
+					 ? succ2 : succ))))
       /* Make sure that the value that is to be substituted for the register
 	 does not use any registers whose values alter in between.  However,
 	 If the insns are adjacent, a use can't cross a set even though we
@@ -4148,7 +4157,16 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 				     PATTERN (undobuf.other_insn)))
 	      ||(REG_NOTE_KIND (note) == REG_UNUSED
 		 && !reg_set_p (XEXP (note, 0),
-				PATTERN (undobuf.other_insn))))
+				PATTERN (undobuf.other_insn)))
+	      /* Simply drop equal note since it may be no longer valid
+		 for other_insn.  It may be possible to record that CC
+		 register is changed and only discard those notes, but
+		 in practice it's unnecessary complication and doesn't
+		 give any meaningful improvement.
+
+		 See PR78559.  */
+	      || REG_NOTE_KIND (note) == REG_EQUAL
+	      || REG_NOTE_KIND (note) == REG_EQUIV)
 	    remove_note (undobuf.other_insn, note);
 	}
 
@@ -4284,26 +4302,25 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
     if (CALL_P (i3) && CALL_INSN_FUNCTION_USAGE (i3))
       {
-	rtx call_usage = CALL_INSN_FUNCTION_USAGE (i3);
-
-	reset_used_flags (call_usage);
-	call_usage = copy_rtx (call_usage);
-
-	if (substed_i2)
+	for (rtx link = CALL_INSN_FUNCTION_USAGE (i3); link;
+	     link = XEXP (link, 1))
 	  {
-	    /* I2SRC must still be meaningful at this point.  Some splitting
-	       operations can invalidate I2SRC, but those operations do not
-	       apply to calls.  */
-	    gcc_assert (i2src);
-	    replace_rtx (call_usage, i2dest, i2src);
+	    if (substed_i2)
+	      {
+		/* I2SRC must still be meaningful at this point.  Some
+		   splitting operations can invalidate I2SRC, but those
+		   operations do not apply to calls.  */
+		gcc_assert (i2src);
+		XEXP (link, 0) = simplify_replace_rtx (XEXP (link, 0),
+						       i2dest, i2src);
+	      }
+	    if (substed_i1)
+	      XEXP (link, 0) = simplify_replace_rtx (XEXP (link, 0),
+						     i1dest, i1src);
+	    if (substed_i0)
+	      XEXP (link, 0) = simplify_replace_rtx (XEXP (link, 0),
+						     i0dest, i0src);
 	  }
-
-	if (substed_i1)
-	  replace_rtx (call_usage, i1dest, i1src);
-	if (substed_i0)
-	  replace_rtx (call_usage, i0dest, i0src);
-
-	CALL_INSN_FUNCTION_USAGE (i3) = call_usage;
       }
 
     if (undobuf.other_insn)
@@ -14278,6 +14295,11 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 			  distribute_notes (old_notes, tem_insn, tem_insn, NULL,
 					    NULL_RTX, NULL_RTX, NULL_RTX);
 			  distribute_links (LOG_LINKS (tem_insn));
+
+			  unsigned int regno = REGNO (XEXP (note, 0));
+			  reg_stat_type *rsp = &reg_stat[regno];
+			  if (rsp->last_set == tem_insn)
+			    record_value_for_reg (XEXP (note, 0), NULL, NULL_RTX);
 
 			  SET_INSN_DELETED (tem_insn);
 			  if (tem_insn == i2)

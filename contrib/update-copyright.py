@@ -28,13 +28,13 @@
 # output has been vetted.  You can instead pass the names of individual
 # directories, including those that haven't been approved.  So:
 #
-#    update-copyright.pl --this-year
+#    update-copyright.py --this-year
 #
 # is the command that would be used at the beginning of a year to update
 # all copyright notices (and possibly at other times to check whether
 # new files have been added with old years).  On the other hand:
 #
-#    update-copyright.pl --this-year libitm
+#    update-copyright.py --this-year libitm
 #
 # would run the script on just libitm/.
 #
@@ -393,8 +393,10 @@ class Copyright:
         lines = []
         changed = False
         line_filter = filter.get_line_filter (dir, filename)
+        mode = None
         with open (pathname, 'r') as file:
             prev = None
+            mode = os.fstat (file.fileno()).st_mode
             for line in file:
                 while line:
                     next_line = None
@@ -421,6 +423,7 @@ class Copyright:
             with open (tmp_pathname, 'w') as file:
                 for line in lines:
                     file.write (line)
+                os.fchmod (file.fileno(), mode)
             if self.use_quilt:
                 subprocess.call (['quilt', 'add', pathname])
             os.rename (tmp_pathname, pathname)
@@ -663,6 +666,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('Florida State University')
         self.add_external_author ('Greg Colvin and Beman Dawes.')
         self.add_external_author ('Hewlett-Packard Company')
+        self.add_external_author ('Intel Corporation')
         self.add_external_author ('Information Technology Industry Council.')
         self.add_external_author ('James Theiler, Brian Gough')
         self.add_external_author ('Makoto Matsumoto and Takuji Nishimura,')
@@ -710,6 +714,7 @@ class GCCCmdLine (CmdLine):
         self.add_dir ('libgfortran')
         # libgo is imported from upstream.
         self.add_dir ('libgomp')
+        self.add_dir ('libhsail-rt')
         self.add_dir ('libiberty')
         self.add_dir ('libitm')
         self.add_dir ('libobjc')
@@ -735,6 +740,7 @@ class GCCCmdLine (CmdLine):
             'libgcc',
             'libgfortran',
             'libgomp',
+            'libhsail-rt',
             'libiberty',
             'libitm',
             'libobjc',

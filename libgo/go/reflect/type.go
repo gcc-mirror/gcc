@@ -1174,6 +1174,7 @@ func (t *rtype) ptrTo() *rtype {
 	pp := *prototype
 
 	pp.string = &s
+	pp.ptrToThis = nil
 
 	// For the type structures linked into the binary, the
 	// compiler provides a good hash of the string.
@@ -1677,7 +1678,7 @@ func FuncOf(in, out []Type, variadic bool) Type {
 	*ft = *prototype
 
 	// Build a hash and minimally populate ft.
-	var hash uint32 = 8
+	var hash uint32
 	var fin, fout []*rtype
 	shift := uint(1)
 	for _, in := range in {
@@ -1697,6 +1698,7 @@ func FuncOf(in, out []Type, variadic bool) Type {
 		hash++
 	}
 	hash <<= 4
+	hash += 8
 	ft.hash = hash
 	ft.in = fin
 	ft.out = fout

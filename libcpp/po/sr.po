@@ -1,21 +1,21 @@
 # Serbian translation of cpplib.
-# Copyright (C) 2014 Free Software Foundation, Inc.
+# Copyright © 2017 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Мирослав Николић <miroslavnikolic@rocketmail.com>, 2012—2016.
+# Мирослав Николић <miroslavnikolic@rocketmail.com>, 2012—2017.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib-6.1.0\n"
+"Project-Id-Version: cpplib-7.1-b20170101\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2017-01-01 00:51+0000\n"
-"PO-Revision-Date: 2016-05-29 19:20+0200\n"
+"PO-Revision-Date: 2017-01-27 07:31+0200\n"
 "Last-Translator: Мирослав Николић <miroslavnikolic@rocketmail.com>\n"
 "Language-Team: Serbian <(nothing)>\n"
 "Language: sr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
 
 #: charset.c:674
 #, c-format
@@ -135,7 +135,7 @@ msgstr "претварам низ промене у знаковни скуп и
 
 #: charset.c:1614
 msgid "missing open quote"
-msgstr ""
+msgstr "недостаје отворена заграда"
 
 #: charset.c:1827 charset.c:1891
 msgid "character constant too long for its type"
@@ -530,10 +530,9 @@ msgid "imaginary number in preprocessor expression"
 msgstr "имагинаран број у изразу претптоцесора"
 
 #: expr.c:1162
-#, fuzzy, c-format
-#| msgid "\"%s\" is not defined"
+#, c-format
 msgid "\"%s\" is not defined, evaluates to 0"
-msgstr "„%s“ није одређено"
+msgstr "„%s“ није одређено, процењује се на 0"
 
 #: expr.c:1175
 msgid "assertions are a GCC extension"

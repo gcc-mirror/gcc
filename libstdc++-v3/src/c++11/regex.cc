@@ -24,10 +24,16 @@
 
 #include <stdexcept>
 #include <bits/regex_error.h>
+#include <bits/functexcept.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  void
+  __throw_regex_error(regex_constants::error_type __ecode
+		      __attribute__((unused)))
+  { _GLIBCXX_THROW_OR_ABORT(regex_error(__ecode)); }
 
   regex_error::regex_error(regex_constants::error_type __ecode)
   : std::runtime_error("regex_error"), _M_code(__ecode)

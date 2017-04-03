@@ -752,7 +752,8 @@ extern int rs6000_vector_align[];
 			 && (TARGET_POPCNTB || VECTOR_UNIT_VSX_P (DFmode)))
 
 #define TARGET_FRSQRTES	(TARGET_HARD_FLOAT && TARGET_POPCNTB \
-			 && TARGET_FPRS && TARGET_SINGLE_FLOAT)
+			 && TARGET_PPC_GFXOPT && TARGET_FPRS \
+			 && TARGET_SINGLE_FLOAT)
 
 #define TARGET_FRSQRTE	(TARGET_HARD_FLOAT && TARGET_FPRS \
 			 && TARGET_DOUBLE_FLOAT \
@@ -1611,6 +1612,7 @@ enum r6000_reg_class_enum {
   RS6000_CONSTRAINT_wx,		/* FPR register for STFIWX */
   RS6000_CONSTRAINT_wy,		/* VSX register for SF */
   RS6000_CONSTRAINT_wz,		/* FPR register for LFIWZX */
+  RS6000_CONSTRAINT_wA,		/* BASE_REGS if 64-bit.  */
   RS6000_CONSTRAINT_wH,		/* Altivec register for 32-bit integers.  */
   RS6000_CONSTRAINT_wI,		/* VSX register for 32-bit integers.  */
   RS6000_CONSTRAINT_wJ,		/* VSX register for 8/16-bit integers.  */

@@ -346,12 +346,12 @@ struct cost_pair
 {
   struct iv_cand *cand;	/* The candidate.  */
   comp_cost cost;	/* The cost.  */
+  enum tree_code comp;	/* For iv elimination, the comparison.  */
   bitmap depends_on;	/* The list of invariants that have to be
 			   preserved.  */
   tree value;		/* For final value elimination, the expression for
 			   the final value of the iv.  For iv elimination,
 			   the new bound to compare with.  */
-  enum tree_code comp;	/* For iv elimination, the comparison.  */
   iv_inv_expr_ent *inv_expr; /* Loop invariant expression.  */
 };
 
@@ -2324,6 +2324,10 @@ find_interesting_uses_address (struct ivopts_data *data, gimple *stmt,
     }
 
   civ = alloc_iv (data, base, step);
+  /* Fail if base object of this memory reference is unknown.  */
+  if (civ->base_object == NULL_TREE)
+    goto fail;
+
   record_group_use (data, op_p, civ, stmt, USE_ADDRESS);
   return;
 

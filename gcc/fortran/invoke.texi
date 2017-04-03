@@ -1629,9 +1629,8 @@ for matrices with size up to @var{n}. If the matrices involved are not
 square, the size comparison is performed using the geometric mean of
 the dimensions of the argument and result matrices.
 
-The default value for @var{n} is the value specified for
-@code{-fblas-matmul-limit} if this option is specified, or unlimitited
-otherwise.
+The default value for @var{n} is 30.  The @code{-fblas-matmul-limit}
+can be used to change this value.
 
 @item -frecursive
 @opindex @code{frecursive}

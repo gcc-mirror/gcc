@@ -882,31 +882,35 @@ typedef struct acc_dispatch_t
   struct target_mem_desc *data_environ;
 
   /* Execute.  */
-  void (*exec_func) (void (*) (void *), size_t, void **, void **, int,
-		     unsigned *, void *);
+  __typeof (GOMP_OFFLOAD_openacc_exec) *exec_func;
 
   /* Async cleanup callback registration.  */
-  void (*register_async_cleanup_func) (void *, int);
+  __typeof (GOMP_OFFLOAD_openacc_register_async_cleanup)
+    *register_async_cleanup_func;
 
   /* Asynchronous routines.  */
-  int (*async_test_func) (int);
-  int (*async_test_all_func) (void);
-  void (*async_wait_func) (int);
-  void (*async_wait_async_func) (int, int);
-  void (*async_wait_all_func) (void);
-  void (*async_wait_all_async_func) (int);
-  void (*async_set_async_func) (int);
+  __typeof (GOMP_OFFLOAD_openacc_async_test) *async_test_func;
+  __typeof (GOMP_OFFLOAD_openacc_async_test_all) *async_test_all_func;
+  __typeof (GOMP_OFFLOAD_openacc_async_wait) *async_wait_func;
+  __typeof (GOMP_OFFLOAD_openacc_async_wait_async) *async_wait_async_func;
+  __typeof (GOMP_OFFLOAD_openacc_async_wait_all) *async_wait_all_func;
+  __typeof (GOMP_OFFLOAD_openacc_async_wait_all_async)
+    *async_wait_all_async_func;
+  __typeof (GOMP_OFFLOAD_openacc_async_set_async) *async_set_async_func;
 
   /* Create/destroy TLS data.  */
-  void *(*create_thread_data_func) (int);
-  void (*destroy_thread_data_func) (void *);
+  __typeof (GOMP_OFFLOAD_openacc_create_thread_data) *create_thread_data_func;
+  __typeof (GOMP_OFFLOAD_openacc_destroy_thread_data)
+    *destroy_thread_data_func;
 
   /* NVIDIA target specific routines.  */
   struct {
-    void *(*get_current_device_func) (void);
-    void *(*get_current_context_func) (void);
-    void *(*get_stream_func) (int);
-    int (*set_stream_func) (int, void *);
+    __typeof (GOMP_OFFLOAD_openacc_cuda_get_current_device)
+      *get_current_device_func;
+    __typeof (GOMP_OFFLOAD_openacc_cuda_get_current_context)
+      *get_current_context_func;
+    __typeof (GOMP_OFFLOAD_openacc_cuda_get_stream) *get_stream_func;
+    __typeof (GOMP_OFFLOAD_openacc_cuda_set_stream) *set_stream_func;
   } cuda;
 } acc_dispatch_t;
 
@@ -940,23 +944,23 @@ struct gomp_device_descr
   enum offload_target_type type;
 
   /* Function handlers.  */
-  const char *(*get_name_func) (void);
-  unsigned int (*get_caps_func) (void);
-  int (*get_type_func) (void);
-  int (*get_num_devices_func) (void);
-  bool (*init_device_func) (int);
-  bool (*fini_device_func) (int);
-  unsigned (*version_func) (void);
-  int (*load_image_func) (int, unsigned, const void *, struct addr_pair **);
-  bool (*unload_image_func) (int, unsigned, const void *);
-  void *(*alloc_func) (int, size_t);
-  bool (*free_func) (int, void *);
-  bool (*dev2host_func) (int, void *, const void *, size_t);
-  bool (*host2dev_func) (int, void *, const void *, size_t);
-  bool (*dev2dev_func) (int, void *, const void *, size_t);
-  bool (*can_run_func) (void *);
-  void (*run_func) (int, void *, void *, void **);
-  void (*async_run_func) (int, void *, void *, void **, void *);
+  __typeof (GOMP_OFFLOAD_get_name) *get_name_func;
+  __typeof (GOMP_OFFLOAD_get_caps) *get_caps_func;
+  __typeof (GOMP_OFFLOAD_get_type) *get_type_func;
+  __typeof (GOMP_OFFLOAD_get_num_devices) *get_num_devices_func;
+  __typeof (GOMP_OFFLOAD_init_device) *init_device_func;
+  __typeof (GOMP_OFFLOAD_fini_device) *fini_device_func;
+  __typeof (GOMP_OFFLOAD_version) *version_func;
+  __typeof (GOMP_OFFLOAD_load_image) *load_image_func;
+  __typeof (GOMP_OFFLOAD_unload_image) *unload_image_func;
+  __typeof (GOMP_OFFLOAD_alloc) *alloc_func;
+  __typeof (GOMP_OFFLOAD_free) *free_func;
+  __typeof (GOMP_OFFLOAD_dev2host) *dev2host_func;
+  __typeof (GOMP_OFFLOAD_host2dev) *host2dev_func;
+  __typeof (GOMP_OFFLOAD_dev2dev) *dev2dev_func;
+  __typeof (GOMP_OFFLOAD_can_run) *can_run_func;
+  __typeof (GOMP_OFFLOAD_run) *run_func;
+  __typeof (GOMP_OFFLOAD_async_run) *async_run_func;
 
   /* Splay tree containing information about mapped memory regions.  */
   struct splay_tree_s mem_map;

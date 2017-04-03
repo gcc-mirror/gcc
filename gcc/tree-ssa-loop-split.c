@@ -436,7 +436,6 @@ compute_new_first_bound (gimple_seq *stmts, struct tree_niter_desc *niter,
   if (POINTER_TYPE_P (TREE_TYPE (guard_init)))
     {
       enddiff = gimple_convert (stmts, sizetype, enddiff);
-      enddiff = gimple_build (stmts, NEGATE_EXPR, sizetype, enddiff);
       newbound = gimple_build (stmts, POINTER_PLUS_EXPR,
 			       TREE_TYPE (guard_init),
 			       guard_init, enddiff);
@@ -562,7 +561,8 @@ split_loop (struct loop *loop1, struct tree_niter_desc *niter)
 	basic_block cond_bb;
 	struct loop *loop2 = loop_version (loop1, cond, &cond_bb,
 					   REG_BR_PROB_BASE, REG_BR_PROB_BASE,
-					   REG_BR_PROB_BASE, true);
+					   REG_BR_PROB_BASE, REG_BR_PROB_BASE,
+					   true);
 	gcc_assert (loop2);
 	update_ssa (TODO_update_ssa);
 

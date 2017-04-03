@@ -181,7 +181,7 @@
     <biblioentry xml:id="biblio.dawestimer">
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.boost.org/doc/libs/release/libs/timer/">
+	      xlink:href="http://www.boost.org/libs/timer/">
 	  Boost Timer Library
 	</link>
       </title>
@@ -208,7 +208,7 @@
     <biblioentry xml:id="biblio.clearypool">
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.boost.org/doc/libs/release/libs/pool/">
+	      xlink:href="http://www.boost.org/libs/pool/">
 	  Boost Pool Library
 	</link>
       </title>
@@ -236,7 +236,7 @@
     <biblioentry xml:id="biblio.maddocktraits">
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.boost.org/doc/libs/release/libs/type_traits/">
+	      xlink:href="http://www.boost.org/libs/type_traits/">
 	  Boost Type Traits Library
 	</link>
       </title>
@@ -892,12 +892,9 @@
     </biblioentry>
 
     <!-- 26 -->
-    <biblioentry xml:id="biblio.maverik_lowerbounds">
+    <biblioentry xml:id="biblio.maverick_lowerbounds">
       <title>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://magic.aladdin.cs.cmu.edu/2005/08/01/deamortization-part-2-binomial-heaps/">
-	  Deamortization - Part 2: Binomial Heaps
-	</link>
+	Deamortization - Part 2: Binomial Heaps
       </title>
       <date>
 	2005
@@ -906,7 +903,7 @@
       <author>
 	<personname>
 	  <firstname>
-	    Maverik
+	    Maverick
 	  </firstname>
 	  <surname>
 	    Woo
@@ -1422,10 +1419,7 @@
     <!-- 45 -->
     <biblioentry xml:id="biblio.wickland96thirty">
       <title>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://myweb.wvnet.edu/~gsa00121/books/amongdead30.zip">
-	  Thirty Years Among the Dead
-	</link>
+	Thirty Years Among the Dead
       </title>
       <date>
 	1996

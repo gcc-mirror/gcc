@@ -1,14 +1,14 @@
 # Translation of cpplib to Esperanto
-# Copyright (C) 2013, 2014, 2015, 2016 Free Software Foundation, Inc.
+# Copyright (C) 2013, 2014, 2015, 2016, 2017 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Felipe Castro <fefcas@gmail.com>, 2013, 2014, 2015, 2016.
+# Felipe Castro <fefcas@gmail.com>, 2013, 2014, 2015, 2016, 2017.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 6.1.0\n"
+"Project-Id-Version: cpplib 7.1-b20170101\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2017-01-01 00:51+0000\n"
-"PO-Revision-Date: 2016-10-28 21:47-0300\n"
+"PO-Revision-Date: 2017-01-28 22:15-0300\n"
 "Last-Translator: Felipe Castro <fefcas@gmail.com>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
 "Language: eo\n"
@@ -136,7 +136,7 @@ msgstr "konverto de eskapa sekvo al plenumiga signaro"
 
 #: charset.c:1614
 msgid "missing open quote"
-msgstr ""
+msgstr "mankas komenca citilo"
 
 #: charset.c:1827 charset.c:1891
 msgid "character constant too long for its type"
@@ -531,10 +531,9 @@ msgid "imaginary number in preprocessor expression"
 msgstr "imaginara numero en antaŭproceza esprimo"
 
 #: expr.c:1162
-#, fuzzy, c-format
-#| msgid "\"%s\" is not defined"
+#, c-format
 msgid "\"%s\" is not defined, evaluates to 0"
-msgstr "\"%s\" ne estas difinita"
+msgstr "\"%s\" ne estas difinita, rezultas al 0"
 
 #: expr.c:1175
 msgid "assertions are a GCC extension"

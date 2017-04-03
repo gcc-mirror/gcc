@@ -1,6 +1,6 @@
 /* { dg-do compile { target { *-*-linux* && ilp32 } } } */
 /* { dg-options "-O2" } */
-/* { dg-final { scan-assembler-times "@ha" 1 } } */
+/* { dg-final { scan-assembler-times "@ha" 1 { target { ! fpic } } } } */
 
 
 /* Test for PR 7003, address of array loaded int register

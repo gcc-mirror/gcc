@@ -56,7 +56,8 @@ echo '	_SIGSYS:    {_SigThrow, "SIGSYS: bad system call"},'
 # Handle signals that are not supported on all systems.
 
 checksig() {
-    if grep 'const $1 = ' gen-sysinfo.go >/dev/null 2>&1; then
+    if grep "const $1 = " gen-sysinfo.go >/dev/null 2>&1 \
+	&& ! grep "const $1 = _SIG" gen-sysinfo.go > /dev/null 2>&1; then
 	echo "	$1: $2,"
     fi
 }

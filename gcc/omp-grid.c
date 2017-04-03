@@ -232,7 +232,7 @@ grid_find_single_omp_among_assignments (gimple_seq seq, grid_prop *grid,
       if (!ret && dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, grid->target_loc,
 			 GRID_MISSED_MSG_PREFIX "%s construct does not contain"
-			 "any other OpenMP construct\n", name);
+			 " any other OpenMP construct\n", name);
       return ret;
     }
   else
@@ -309,7 +309,7 @@ grid_parallel_clauses_gridifiable (gomp_parallel *par, location_t tloc)
 	  if (dump_enabled_p ())
 	    {
 	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, tloc,
-			       GRID_MISSED_MSG_PREFIX "a reduction clause"
+			       GRID_MISSED_MSG_PREFIX "a reduction clause "
 			       "is present\n ");
 	      dump_printf_loc (MSG_NOTE, gimple_location (par),
 			       "Parallel construct has a reduction clause\n");

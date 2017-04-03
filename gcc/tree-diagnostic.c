@@ -243,7 +243,7 @@ virt_loc_aware_diagnostic_finalizer (diagnostic_context *context,
 }
 
 /* Default tree printer.   Handles declarations only.  */
-static bool
+bool
 default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 		      int precision, bool wide, bool set_locus, bool hash)
 {

@@ -2151,6 +2151,23 @@ struct record_modified_bb_info
   gimple *stmt;
 };
 
+/* Value is initialized in INIT_BB and used in USE_BB.  We want to copute
+   probability how often it changes between USE_BB.
+   INIT_BB->frequency/USE_BB->frequency is an estimate, but if INIT_BB
+   is in different loop nest, we can do better.
+   This is all just estimate.  In theory we look for minimal cut separating
+   INIT_BB and USE_BB, but we only want to anticipate loop invariant motion
+   anyway.  */
+
+static basic_block
+get_minimal_bb (basic_block init_bb, basic_block use_bb)
+{
+  struct loop *l = find_common_loop (init_bb->loop_father, use_bb->loop_father);
+  if (l && l->header->frequency < init_bb->frequency)
+    return l->header;
+  return init_bb;
+}
+
 /* Callback of walk_aliased_vdefs.  Records basic blocks where the value may be
    set except for info->stmt.  */
 
@@ -2164,7 +2181,9 @@ record_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
   bitmap_set_bit (info->bb_set,
 		  SSA_NAME_IS_DEFAULT_DEF (vdef)
 		  ? ENTRY_BLOCK_PTR_FOR_FN (cfun)->index
-		  : gimple_bb (SSA_NAME_DEF_STMT (vdef))->index);
+		  : get_minimal_bb
+			 (gimple_bb (SSA_NAME_DEF_STMT (vdef)),
+			  gimple_bb (info->stmt))->index);
   return false;
 }
 
@@ -2206,7 +2225,9 @@ param_change_prob (gimple *stmt, int i)
       if (SSA_NAME_IS_DEFAULT_DEF (base))
 	init_freq = ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency;
       else
-	init_freq = gimple_bb (SSA_NAME_DEF_STMT (base))->frequency;
+	init_freq = get_minimal_bb
+		      (gimple_bb (SSA_NAME_DEF_STMT (base)),
+		       gimple_bb (stmt))->frequency;
 
       if (!init_freq)
 	init_freq = 1;
@@ -3521,18 +3542,22 @@ remap_edge_change_prob (struct cgraph_edge *inlined_edge,
 	{
 	  struct ipa_jump_func *jfunc = ipa_get_ith_jump_func (args, i);
 	  if (jfunc->type == IPA_JF_PASS_THROUGH
-	      && (ipa_get_jf_pass_through_formal_id (jfunc)
-		  < (int) inlined_es->param.length ()))
+	      || jfunc->type == IPA_JF_ANCESTOR)
 	    {
-	      int jf_formal_id = ipa_get_jf_pass_through_formal_id (jfunc);
-	      int prob1 = es->param[i].change_prob;
-	      int prob2 = inlined_es->param[jf_formal_id].change_prob;
-	      int prob = combine_probabilities (prob1, prob2);
+	      int id = jfunc->type == IPA_JF_PASS_THROUGH
+		       ? ipa_get_jf_pass_through_formal_id (jfunc)
+		       : ipa_get_jf_ancestor_formal_id (jfunc);
+	      if (id < (int) inlined_es->param.length ())
+		{
+		  int prob1 = es->param[i].change_prob;
+		  int prob2 = inlined_es->param[id].change_prob;
+		  int prob = combine_probabilities (prob1, prob2);
 
-	      if (prob1 && prob2 && !prob)
-		prob = 1;
+		  if (prob1 && prob2 && !prob)
+		    prob = 1;
 
-	      es->param[i].change_prob = prob;
+		  es->param[i].change_prob = prob;
+		}
 	    }
 	}
     }

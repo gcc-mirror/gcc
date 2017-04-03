@@ -133,10 +133,10 @@
 })
 
 (define_insn "atomic_loaddi_1"
-  [(set (match_operand:DI 0 "register_operand" "=U,?*f")
-	(unspec:DI [(match_operand:DI 1 "memory_operand" "m,m")]
+  [(set (match_operand:DI 0 "register_operand" "=r,?*f")
+	(unspec:DI [(match_operand:DI 1 "memory_operand" "T,T")]
 		   UNSPEC_ATOMIC))]
-  "!TARGET_ARCH64"
+  "TARGET_ARCH32"
   "ldd\t%1, %0"
   [(set_attr "type" "load,fpload")])
 
@@ -160,11 +160,11 @@
 })
 
 (define_insn "atomic_storedi_1"
-  [(set (match_operand:DI 0 "memory_operand" "=m,m,m")
+  [(set (match_operand:DI 0 "memory_operand" "=T,T,T")
 	(unspec:DI
-	  [(match_operand:DI 1 "register_or_v9_zero_operand" "J,U,?*f")]
+	  [(match_operand:DI 1 "register_or_v9_zero_operand" "J,r,?*f")]
 	  UNSPEC_ATOMIC))]
-  "!TARGET_ARCH64"
+  "TARGET_ARCH32"
   "@
    stx\t%r1, %0
    std\t%1, %0

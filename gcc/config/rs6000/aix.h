@@ -218,9 +218,9 @@
 
 /* This now supports a natural alignment mode.  */
 /* AIX word-aligns FP doubles but doubleword-aligns 64-bit ints.  */
-#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
+#define ADJUST_FIELD_ALIGN(FIELD, TYPE, COMPUTED) \
   ((TARGET_ALIGN_NATURAL == 0						\
-    && TYPE_MODE (strip_array_types (TREE_TYPE (FIELD))) == DFmode)	\
+    && TYPE_MODE (strip_array_types (TYPE)) == DFmode)			\
    ? MIN ((COMPUTED), 32)						\
    : (COMPUTED))
 

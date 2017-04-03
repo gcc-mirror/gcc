@@ -1,5 +1,6 @@
 /* PR c/7652 */
 /* { dg-do compile } */
+/* { dg-require-effective-target alloca } */
 /* { dg-options "-Wimplicit-fallthrough" } */
 
 extern void bar (int);
@@ -20,8 +21,8 @@ f (int i)
   switch (i)
     {
     case 1:
-      { /* { dg-warning "statement may fall through" "" { target c } 23 } */
-	int a[i]; /* { dg-warning "statement may fall through" "" { target c++ } 24 } */
+      { /* { dg-warning "statement may fall through" "" { target c } 24 } */
+	int a[i]; /* { dg-warning "statement may fall through" "" { target c++ } 25 } */
       }
     case 2:
       bar (99);
@@ -30,8 +31,8 @@ f (int i)
   switch (i)
     {
     case 1:
-      for (int j = 0; j < 10; j++) /* { dg-warning "statement may fall through" "" { target c } 33 } */
-	map[j] = j; /* { dg-warning "statement may fall through" "" { target c++ } 34 } */
+      for (int j = 0; j < 10; j++) /* { dg-warning "statement may fall through" "" { target c } 34 } */
+	map[j] = j; /* { dg-warning "statement may fall through" "" { target c++ } 35 } */
     case 2:
       bar (99);
     }

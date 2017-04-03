@@ -75,14 +75,6 @@ extern void matmul_'rtype_code` ('rtype` * const restrict retarray,
 	int blas_limit, blas_call gemm);
 export_proto(matmul_'rtype_code`);
 
-'ifelse(rtype_letter,`r',dnl
-`#if defined(HAVE_AVX) && defined(HAVE_AVX2)
-/* REAL types generate identical code for AVX and AVX2.  Only generate
-   an AVX2 function if we are dealing with integer.  */
-#undef HAVE_AVX2
-#endif')
-`
-
 /* Put exhaustive list of possible architectures here here, ORed together.  */
 
 #if defined(HAVE_AVX) || defined(HAVE_AVX2) || defined(HAVE_AVX512F)
@@ -101,7 +93,7 @@ static' include(matmul_internal.m4)dnl
 `static void
 'matmul_name` ('rtype` * const restrict retarray, 
 	'rtype` * const restrict a, 'rtype` * const restrict b, int try_blas,
-	int blas_limit, blas_call gemm) __attribute__((__target__("avx2")));
+	int blas_limit, blas_call gemm) __attribute__((__target__("avx2,fma")));
 static' include(matmul_internal.m4)dnl
 `#endif /* HAVE_AVX2 */
 
@@ -129,28 +121,34 @@ void matmul_'rtype_code` ('rtype` * const restrict retarray,
 {
   static void (*matmul_p) ('rtype` * const restrict retarray, 
 	'rtype` * const restrict a, 'rtype` * const restrict b, int try_blas,
-	int blas_limit, blas_call gemm) = NULL;
+	int blas_limit, blas_call gemm);
 
-  if (matmul_p == NULL)
+  void (*matmul_fn) ('rtype` * const restrict retarray, 
+	'rtype` * const restrict a, 'rtype` * const restrict b, int try_blas,
+	int blas_limit, blas_call gemm);
+
+  matmul_fn = __atomic_load_n (&matmul_p, __ATOMIC_RELAXED);
+  if (matmul_fn == NULL)
     {
-      matmul_p = matmul_'rtype_code`_vanilla;
+      matmul_fn = matmul_'rtype_code`_vanilla;
       if (__cpu_model.__cpu_vendor == VENDOR_INTEL)
 	{
           /* Run down the available processors in order of preference.  */
 #ifdef HAVE_AVX512F
       	  if (__cpu_model.__cpu_features[0] & (1 << FEATURE_AVX512F))
 	    {
-	      matmul_p = matmul_'rtype_code`_avx512f;
-	      goto tailcall;
+	      matmul_fn = matmul_'rtype_code`_avx512f;
+	      goto store;
 	    }
 
 #endif  /* HAVE_AVX512F */
 
 #ifdef HAVE_AVX2
-      	  if (__cpu_model.__cpu_features[0] & (1 << FEATURE_AVX2))
+      	  if ((__cpu_model.__cpu_features[0] & (1 << FEATURE_AVX2))
+	     && (__cpu_model.__cpu_features[0] & (1 << FEATURE_FMA)))
 	    {
-	      matmul_p = matmul_'rtype_code`_avx2;
-	      goto tailcall;
+	      matmul_fn = matmul_'rtype_code`_avx2;
+	      goto store;
 	    }
 
 #endif
@@ -158,15 +156,16 @@ void matmul_'rtype_code` ('rtype` * const restrict retarray,
 #ifdef HAVE_AVX
       	  if (__cpu_model.__cpu_features[0] & (1 << FEATURE_AVX))
  	    {
-              matmul_p = matmul_'rtype_code`_avx;
-	      goto tailcall;
+              matmul_fn = matmul_'rtype_code`_avx;
+	      goto store;
 	    }
 #endif  /* HAVE_AVX */
         }
+   store:
+      __atomic_store_n (&matmul_p, matmul_fn, __ATOMIC_RELAXED);
    }
 
-tailcall:
-   (*matmul_p) (retarray, a, b, try_blas, blas_limit, gemm);
+   (*matmul_fn) (retarray, a, b, try_blas, blas_limit, gemm);
 }
 
 #else  /* Just the vanilla function.  */

@@ -218,6 +218,10 @@ struct target_regs {
   /* 1 if the corresponding class contains a register of the given mode.  */
   char x_contains_reg_of_mode[N_REG_CLASSES][MAX_MACHINE_MODE];
 
+  /* 1 if the corresponding class contains a register of the given mode
+     which is not global and can therefore be allocated.  */
+  char x_contains_allocatable_reg_of_mode[N_REG_CLASSES][MAX_MACHINE_MODE];
+
   /* Record for each mode whether we can move a register directly to or
      from an object of that mode in memory.  If we can't, we won't try
      to use that mode directly when accessing a field of that mode.  */
@@ -243,6 +247,8 @@ extern struct target_regs *this_target_regs;
   (this_target_regs->x_have_regs_of_mode)
 #define contains_reg_of_mode \
   (this_target_regs->x_contains_reg_of_mode)
+#define contains_allocatable_reg_of_mode \
+  (this_target_regs->x_contains_allocatable_reg_of_mode)
 #define direct_load \
   (this_target_regs->x_direct_load)
 #define direct_store \

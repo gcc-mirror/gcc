@@ -1,3 +1,31 @@
+2017-03-27  Pedro Alves  <palves@redhat.com>
+
+	* cp-demint.c (cplus_demangle_fill_component): Handle
+	DEMANGLE_COMPONENT_RVALUE_REFERENCE.
+
+2017-03-12  Mark Wielaard  <mark@klomp.org>
+
+	* cp-demangle.c (cplus_demangle_fill_name): Initialize
+	demangle_component d_printing.
+	(cplus_demangle_fill_extended_operator): Likewise.
+	(cplus_demangle_fill_ctor): Likewise.
+	(cplus_demangle_fill_dtor): Likewise.
+
+2017-03-08  Mark Wielaard  <mark@klomp.org>
+
+	PR demangler/70909
+	PR demangler/67264
+	* cp-demangle.c: Fix endless recursion. Pass
+	struct demangle_component as non const.
+	(d_make_empty): Initialize variable.
+	(d_print_comp_inner): Limit recursion.
+	(d_print_comp): Decrement variable.
+	* cp-demint.c (cplus_demangle_fill_component): Initialize
+	variable.
+	(cplus_demangle_fill_builtin_type): Likewise.
+	(cplus_demangle_fill_operator): Likewise.
+	* testsuite/demangle-expected: Add tests.
+
 2017-01-18  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR PR c++/70182

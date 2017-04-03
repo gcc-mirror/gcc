@@ -43,8 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #define C_TYPE_INCOMPLETE_VARS(TYPE) TYPE_VFIELD (TYPE)
 
 /* In an IDENTIFIER_NODE, nonzero if this identifier is actually a
-   keyword.  C_RID_CODE (node) is then the RID_* value of the keyword,
-   and C_RID_YYCODE is the token number wanted by Yacc.  */
+   keyword.  C_RID_CODE (node) is then the RID_* value of the keyword.  */
 #define C_IS_RESERVED_WORD(ID) TREE_LANG_FLAG_0 (ID)
 
 /* Record whether a type or decl was written with nonconstant size.
@@ -268,6 +267,7 @@ enum c_declspec_word {
   cdw_alignas,
   cdw_address_space,
   cdw_gimple,
+  cdw_rtl,
   cdw_number_of_elements /* This one must always be the last
 			    enumerator.  */
 };
@@ -291,8 +291,8 @@ struct c_declspecs {
      NULL; attributes (possibly from multiple lists) will be passed
      separately.  */
   tree attrs;
-  /* The pass to start compiling a __GIMPLE function with.  */
-  char *gimple_pass;
+  /* The pass to start compiling a __GIMPLE or __RTL function with.  */
+  char *gimple_or_rtl_pass;
   /* The base-2 log of the greatest alignment required by an _Alignas
      specifier, in bytes, or -1 if no such specifiers with nonzero
      alignment.  */
@@ -367,6 +367,8 @@ struct c_declspecs {
   BOOL_BITFIELD alignas_p : 1;
   /* Whether any __GIMPLE specifier was specified.  */
   BOOL_BITFIELD gimple_p : 1;
+  /* Whether any __RTL specifier was specified.  */
+  BOOL_BITFIELD rtl_p : 1;
   /* The address space that the declaration belongs to.  */
   addr_space_t address_space;
 };
@@ -613,7 +615,7 @@ extern int same_translation_unit_p (const_tree, const_tree);
 extern int comptypes (tree, tree);
 extern int comptypes_check_different_types (tree, tree, bool *);
 extern bool c_vla_type_p (const_tree);
-extern bool c_mark_addressable (tree);
+extern bool c_mark_addressable (tree, bool = false);
 extern void c_incomplete_type_error (location_t, const_tree, const_tree);
 extern tree c_type_promotes_to (tree);
 extern struct c_expr default_function_array_conversion (location_t,

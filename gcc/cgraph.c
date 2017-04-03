@@ -1314,7 +1314,7 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	{
 	  if (dump_file)
 	    fprintf (dump_file,
-		     "Expanding speculative call of %s/%i -> %s/%i count:"
+		     "Expanding speculative call of %s/%i -> %s/%i count: "
 		     "%" PRId64"\n",
 		     xstrdup_for_dump (e->caller->name ()),
 		     e->caller->order,
@@ -1424,8 +1424,23 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
       if (skip_bounds)
 	new_stmt = chkp_copy_call_skip_bounds (new_stmt);
 
+      tree old_fntype = gimple_call_fntype (e->call_stmt);
       gimple_call_set_fndecl (new_stmt, e->callee->decl);
-      gimple_call_set_fntype (new_stmt, gimple_call_fntype (e->call_stmt));
+      cgraph_node *origin = e->callee;
+      while (origin->clone_of)
+	origin = origin->clone_of;
+
+      if ((origin->former_clone_of
+	   && old_fntype == TREE_TYPE (origin->former_clone_of))
+	  || old_fntype == TREE_TYPE (origin->decl))
+	gimple_call_set_fntype (new_stmt, TREE_TYPE (e->callee->decl));
+      else
+	{
+	  bitmap skip = e->callee->clone.combined_args_to_skip;
+	  tree t = cgraph_build_function_type_skip_args (old_fntype, skip,
+							 false);
+	  gimple_call_set_fntype (new_stmt, t);
+	}
 
       if (gimple_vdef (new_stmt)
 	  && TREE_CODE (gimple_vdef (new_stmt)) == SSA_NAME)
@@ -2066,6 +2081,28 @@ cgraph_node::dump (FILE *f)
     fprintf (f, "  Profile id: %i\n",
 	     profile_id);
   fprintf (f, "  First run: %i\n", tp_first_run);
+  cgraph_function_version_info *vi = function_version ();
+  if (vi != NULL)
+    {
+      fprintf (f, "  Version info: ");
+      if (vi->prev != NULL)
+	{
+	  fprintf (f, "prev: ");
+	  fprintf (f, "%s/%i ", vi->prev->this_node->asm_name (),
+		   vi->prev->this_node->order);
+	}
+      if (vi->next != NULL)
+	{
+	  fprintf (f, "next: ");
+	  fprintf (f, "%s/%i ", vi->next->this_node->asm_name (),
+		   vi->next->this_node->order);
+	}
+      if (vi->dispatcher_resolver != NULL_TREE)
+	fprintf (f, "dispatcher: %s",
+		 lang_hooks.decl_printable_name (vi->dispatcher_resolver, 2));
+
+      fprintf (f, "\n");
+    }
   fprintf (f, "  Function flags:");
   if (count)
     fprintf (f, " executed %" PRId64"x",

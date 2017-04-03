@@ -23,7 +23,7 @@ program asyncwait
 
   !$acc wait (1 ! { dg-error "Syntax error in OpenACC expression list at" }
 
-  !$acc wait (1, *) ! { dg-error "Invalid argument to \\\$\\\!ACC WAIT" }
+  !$acc wait (1, *) ! { dg-error "Invalid argument to \\\!\\\$ACC WAIT" }
 
   !$acc wait (1, a) ! { dg-error "WAIT clause at \\\(1\\\) requires a scalar INTEGER expression" }
 

@@ -29,5 +29,6 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "split to 1 loops and 1 library call" "ldist" } } */
-/* { dg-final { scan-tree-dump "generated memcpy" "ldist" } } */
+/* XFAILed due to the fix for PR79245.  */
+/* { dg-final { scan-tree-dump "split to 1 loops and 1 library call" "ldist" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "generated memcpy" "ldist" { xfail *-*-* }  } } */

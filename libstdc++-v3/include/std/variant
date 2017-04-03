@@ -91,7 +91,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : std::integral_constant<size_t, sizeof...(_Types)> {};
 
   template<typename _Variant>
-    constexpr size_t variant_size_v = variant_size<_Variant>::value;
+    inline constexpr size_t variant_size_v = variant_size<_Variant>::value;
 
   template<size_t _Np, typename _Variant>
     struct variant_alternative;
@@ -120,7 +120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct variant_alternative<_Np, const volatile _Variant>
     { using type = add_cv_t<variant_alternative_t<_Np, _Variant>>; };
 
-  constexpr size_t variant_npos = -1;
+  inline constexpr size_t variant_npos = -1;
 
   template<size_t _Np, typename... _Types>
     constexpr variant_alternative_t<_Np, variant<_Types...>>&
@@ -151,7 +151,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __index_of : std::integral_constant<size_t, 0> {};
 
   template<typename _Tp, typename... _Types>
-    constexpr size_t __index_of_v = __index_of<_Tp, _Types...>::value;
+    inline constexpr size_t __index_of_v = __index_of<_Tp, _Types...>::value;
 
   template<typename _Tp, typename _First, typename... _Rest>
     struct __index_of<_Tp, _First, _Rest...> :
@@ -264,21 +264,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       swap(__ref_cast<_Lhs>(__lhs), __ref_cast<_Rhs>(__rhs));
     }
 
-  template<typename _Variant, size_t _Np>
-    constexpr bool
-    __erased_equal_to(_Variant&& __lhs, _Variant&& __rhs)
-    {
-      return __get<_Np>(std::forward<_Variant>(__lhs))
-	  == __get<_Np>(std::forward<_Variant>(__rhs));
+#define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP, __NAME) \
+  template<typename _Variant, size_t _Np> \
+    constexpr bool \
+    __erased_##__NAME(const _Variant& __lhs, const _Variant& __rhs) \
+    { \
+      return __get<_Np>(std::forward<_Variant>(__lhs)) \
+	  __OP __get<_Np>(std::forward<_Variant>(__rhs)); \
     }
 
-  template<typename _Variant, size_t _Np>
-    constexpr bool
-    __erased_less_than(const _Variant& __lhs, const _Variant& __rhs)
-    {
-      return __get<_Np>(std::forward<_Variant>(__lhs))
-	  < __get<_Np>(std::forward<_Variant>(__rhs));
-    }
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(<, less)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(<=, less_equal)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(==, equal)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(!=, not_equal)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(>=, greater_equal)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(>, greater)
+
+#undef _VARIANT_RELATION_FUNCTION_TEMPLATE
 
   template<typename _Tp>
     constexpr size_t
@@ -508,7 +510,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __tuple_count;
 
   template<typename _Tp, typename _Tuple>
-    constexpr size_t __tuple_count_v = __tuple_count<_Tp, _Tuple>::value;
+    inline constexpr size_t __tuple_count_v =
+      __tuple_count<_Tp, _Tuple>::value;
 
   template<typename _Tp, typename... _Types>
     struct __tuple_count<_Tp, tuple<_Types...>>
@@ -522,7 +525,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // TODO: Reuse this in <tuple> ?
   template<typename _Tp, typename... _Types>
-    constexpr bool __exactly_once = __tuple_count_v<_Tp, tuple<_Types...>> == 1;
+    inline constexpr bool __exactly_once =
+      __tuple_count_v<_Tp, tuple<_Types...>> == 1;
 
   // Takes _Types and create an overloaded _S_fun for each type.
   // If a type appears more than once in _Types, create only one overload.
@@ -813,62 +817,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(__ptr);
     }
 
-  template<typename... _Types>
-    constexpr bool operator==(const variant<_Types...>& __lhs,
-			      const variant<_Types...>& __rhs)
-    {
-      return __lhs._M_equal_to(__rhs, std::index_sequence_for<_Types...>{});
-    }
+  struct monostate { };
 
-  template<typename... _Types>
-    constexpr inline bool
-    operator!=(const variant<_Types...>& __lhs, const variant<_Types...>& __rhs)
-    { return !(__lhs == __rhs); }
+#define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP, __NAME) \
+  template<typename... _Types> \
+    constexpr bool operator __OP(const variant<_Types...>& __lhs, \
+				 const variant<_Types...>& __rhs) \
+    { \
+      return __lhs._M_##__NAME(__rhs, std::index_sequence_for<_Types...>{}); \
+    } \
+\
+  constexpr bool operator __OP(monostate, monostate) noexcept \
+  { return 0 __OP 0; }
 
-  template<typename... _Types>
-    constexpr inline bool
-    operator<(const variant<_Types...>& __lhs, const variant<_Types...>& __rhs)
-    {
-      return __lhs._M_less_than(__rhs, std::index_sequence_for<_Types...>{});
-    }
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(<, less)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(<=, less_equal)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(==, equal)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(!=, not_equal)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(>=, greater_equal)
+  _VARIANT_RELATION_FUNCTION_TEMPLATE(>, greater)
 
-  template<typename... _Types>
-    constexpr inline bool
-    operator>(const variant<_Types...>& __lhs, const variant<_Types...>& __rhs)
-    { return __rhs < __lhs; }
-
-  template<typename... _Types>
-    constexpr inline bool
-    operator<=(const variant<_Types...>& __lhs, const variant<_Types...>& __rhs)
-    { return !(__lhs > __rhs); }
-
-  template<typename... _Types>
-    constexpr inline bool
-    operator>=(const variant<_Types...>& __lhs, const variant<_Types...>& __rhs)
-    { return !(__lhs < __rhs); }
+#undef _VARIANT_RELATION_FUNCTION_TEMPLATE
 
   template<typename _Visitor, typename... _Variants>
     constexpr decltype(auto) visit(_Visitor&&, _Variants&&...);
-
-  struct monostate { };
-
-  constexpr bool operator<(monostate, monostate) noexcept
-  { return false; }
-
-  constexpr bool operator>(monostate, monostate) noexcept
-  { return false; }
-
-  constexpr bool operator<=(monostate, monostate) noexcept
-  { return true; }
-
-  constexpr bool operator>=(monostate, monostate) noexcept
-  { return true; }
-
-  constexpr bool operator==(monostate, monostate) noexcept
-  { return true; }
-
-  constexpr bool operator!=(monostate, monostate) noexcept
-  { return false; }
 
   template<typename... _Types>
     inline enable_if_t<(is_move_constructible_v<_Types> && ...)
@@ -1037,25 +1009,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Tp, typename... _Args>
-	enable_if_t<is_constructible_v<_Tp, _Args...> && __exactly_once<_Tp>>
+	enable_if_t<is_constructible_v<_Tp, _Args...> && __exactly_once<_Tp>,
+		    _Tp&>
 	emplace(_Args&&... __args)
 	{
-	  this->emplace<__index_of<_Tp>>(std::forward<_Args>(__args)...);
+	  auto& ret =
+	    this->emplace<__index_of<_Tp>>(std::forward<_Args>(__args)...);
 	  __glibcxx_assert(holds_alternative<_Tp>(*this));
+	  return ret;
 	}
 
       template<typename _Tp, typename _Up, typename... _Args>
 	enable_if_t<is_constructible_v<_Tp, initializer_list<_Up>&, _Args...>
-		    && __exactly_once<_Tp>>
+		    && __exactly_once<_Tp>,
+		    _Tp&>
 	emplace(initializer_list<_Up> __il, _Args&&... __args)
 	{
-	  this->emplace<__index_of<_Tp>>(__il, std::forward<_Args>(__args)...);
+	  auto& ret =
+	    this->emplace<__index_of<_Tp>>(__il,
+					   std::forward<_Args>(__args)...);
 	  __glibcxx_assert(holds_alternative<_Tp>(*this));
+	  return ret;
 	}
 
       template<size_t _Np, typename... _Args>
 	enable_if_t<is_constructible_v<variant_alternative_t<_Np, variant>,
-				       _Args...>>
+				       _Args...>,
+		    variant_alternative_t<_Np, variant>&>
 	emplace(_Args&&... __args)
 	{
 	  static_assert(_Np < sizeof...(_Types),
@@ -1072,11 +1052,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __throw_exception_again;
 	    }
 	  __glibcxx_assert(index() == _Np);
+	  return std::get<_Np>(*this);
 	}
 
       template<size_t _Np, typename _Up, typename... _Args>
 	enable_if_t<is_constructible_v<variant_alternative_t<_Np, variant>,
-				       initializer_list<_Up>&, _Args...>>
+				       initializer_list<_Up>&, _Args...>,
+		    variant_alternative_t<_Np, variant>&>
 	emplace(initializer_list<_Up> __il, _Args&&... __args)
 	{
 	  static_assert(_Np < sizeof...(_Types),
@@ -1093,6 +1075,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __throw_exception_again;
 	    }
 	  __glibcxx_assert(index() == _Np);
+	  return std::get<_Np>(*this);
 	}
 
       constexpr bool valueless_by_exception() const noexcept
@@ -1140,51 +1123,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     private:
-      template<size_t... __indices>
-	static constexpr bool
-	(*_S_equal_to_vtable[])(const variant&, const variant&) =
-	  { &__detail::__variant::__erased_equal_to<
-	    const variant&, __indices>... };
-
-      template<size_t... __indices>
-	static constexpr bool
-	(*_S_less_than_vtable[])(const variant&, const variant&) =
-	  { &__detail::__variant::__erased_less_than<
-	      const variant&, __indices>... };
-
-      template<size_t... __indices>
-	constexpr bool
-	_M_equal_to(const variant& __rhs,
-		    std::index_sequence<__indices...>) const
-	{
-	  if (this->index() != __rhs.index())
-	    return false;
-
-	  if (this->valueless_by_exception())
-	    return true;
-
-	  return _S_equal_to_vtable<__indices...>[this->index()](*this, __rhs);
+#define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP, __NAME) \
+      template<size_t... __indices> \
+	static constexpr bool \
+	(*_S_erased_##__NAME[])(const variant&, const variant&) = \
+	  { &__detail::__variant::__erased_##__NAME< \
+                const variant&, __indices>... }; \
+      template<size_t... __indices> \
+	constexpr inline bool \
+	_M_##__NAME(const variant& __rhs, \
+		    std::index_sequence<__indices...>) const \
+	{ \
+	  auto __lhs_index = this->index(); \
+	  auto __rhs_index = __rhs.index(); \
+	  if (__lhs_index != __rhs_index || valueless_by_exception()) \
+	    /* Modulo addition. */ \
+	    return __lhs_index + 1 __OP __rhs_index + 1; \
+	  return _S_erased_##__NAME<__indices...>[__lhs_index](*this, __rhs); \
 	}
 
-      template<size_t... __indices>
-	constexpr inline bool
-	_M_less_than(const variant& __rhs,
-		     std::index_sequence<__indices...>) const
-	{
-	  auto __lhs_index = this->index();
-	  auto __rhs_index = __rhs.index();
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(<, less)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(<=, less_equal)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(==, equal)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(!=, not_equal)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(>=, greater_equal)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(>, greater)
 
-	  if (__lhs_index < __rhs_index)
-	    return true;
-
-	  if (__lhs_index > __rhs_index)
-	    return false;
-
-	  if (this->valueless_by_exception())
-	    return false;
-
-	  return _S_less_than_vtable<__indices...>[__lhs_index](*this, __rhs);
-	}
+#undef _VARIANT_RELATION_FUNCTION_TEMPLATE
 
       template<size_t _Np, typename _Vp>
 	friend constexpr decltype(auto) __detail::__variant::
@@ -1200,15 +1165,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
         __get_storage(_Vp&& __v);
 
-      template<typename... _Tp>
-	friend constexpr bool
-	operator==(const variant<_Tp...>& __lhs,
-		   const variant<_Tp...>& __rhs);
+#define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP) \
+      template<typename... _Tp> \
+	friend constexpr bool \
+	operator __OP(const variant<_Tp...>& __lhs, \
+		      const variant<_Tp...>& __rhs);
 
-      template<typename... _Tp>
-	friend constexpr bool
-	operator<(const variant<_Tp...>& __lhs,
-		  const variant<_Tp...>& __rhs);
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(<)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(<=)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(==)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(!=)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(>=)
+      _VARIANT_RELATION_FUNCTION_TEMPLATE(>)
+
+#undef _VARIANT_RELATION_FUNCTION_TEMPLATE
     };
 
   template<size_t _Np, typename... _Types>
@@ -1263,7 +1233,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__throw_bad_variant_access("Unexpected index");
 
       using _Result_type =
-	decltype(std::forward<_Visitor>(__visitor)(get<0>(__variants)...));
+	decltype(std::forward<_Visitor>(__visitor)(
+	    get<0>(std::forward<_Variants>(__variants))...));
 
       constexpr auto& __vtable = __detail::__variant::__gen_vtable<
 	_Result_type, _Visitor&&, _Variants&&...>::_S_vtable;
@@ -1278,7 +1249,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       size_t
       operator()(const variant<_Types...>& __t) const
-      noexcept((is_nothrow_callable_v<hash<decay_t<_Types>>(_Types)> && ...))
+      noexcept((is_nothrow_invocable_v<hash<decay_t<_Types>>, _Types> && ...))
       {
 	if (!__t.valueless_by_exception())
 	  {

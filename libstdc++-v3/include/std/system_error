@@ -62,9 +62,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201402L
   template <typename _Tp>
-    constexpr bool is_error_code_enum_v = is_error_code_enum<_Tp>::value;
+    inline constexpr bool is_error_code_enum_v =
+      is_error_code_enum<_Tp>::value;
   template <typename _Tp>
-    constexpr bool is_error_condition_enum_v =
+    inline constexpr bool is_error_condition_enum_v =
       is_error_condition_enum<_Tp>::value;
 #endif // C++17
   inline namespace _V2 {
@@ -372,14 +373,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#ifndef _GLIBCXX_COMPATIBILITY_CXX0X
-
 #include <bits/functional_hash.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#ifndef _GLIBCXX_COMPATIBILITY_CXX0X
   // DR 1182.
   /// std::hash specialization for error_code.
   template<>
@@ -393,11 +393,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return std::_Hash_impl::__hash_combine(__e._M_cat, __tmp);
       }
     };
+#endif // _GLIBCXX_COMPATIBILITY_CXX0X
+
+#if __cplusplus > 201402L
+  // DR 2686.
+  /// std::hash specialization for error_condition.
+  template<>
+    struct hash<error_condition>
+    : public __hash_base<size_t, error_condition>
+    {
+      size_t
+      operator()(const error_condition& __e) const noexcept
+      {
+	const size_t __tmp = std::_Hash_impl::hash(__e.value());
+	return std::_Hash_impl::__hash_combine(__e.category(), __tmp);
+      }
+    };
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
-
-#endif // _GLIBCXX_COMPATIBILITY_CXX0X
 
 #endif // C++11
 

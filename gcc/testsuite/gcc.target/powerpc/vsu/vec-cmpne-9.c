@@ -14,4 +14,4 @@ fetch_data (vector double *arg1_p, vector double *arg2_p)
   return vec_cmpne (arg_1, arg_2);
 }
 
-/* { dg-final { scan-assembler "xvcmpnedp" } } */
+/* { dg-final { scan-assembler "xvcmpeqdp" } } */

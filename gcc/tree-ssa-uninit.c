@@ -191,11 +191,39 @@ warn_uninit (enum opt_code wc, tree t, tree expr, tree var,
     }
 }
 
+struct check_defs_data
+{
+  /* If we found any may-defs besides must-def clobbers.  */
+  bool found_may_defs;
+};
+
+/* Callback for walk_aliased_vdefs.  */
+
+static bool
+check_defs (ao_ref *ref, tree vdef, void *data_)
+{
+  check_defs_data *data = (check_defs_data *)data_;
+  gimple *def_stmt = SSA_NAME_DEF_STMT (vdef);
+  /* If this is a clobber then if it is not a kill walk past it.  */
+  if (gimple_clobber_p (def_stmt))
+    {
+      if (stmt_kills_ref_p (def_stmt, ref))
+	return true;
+      return false;
+    }
+  /* Found a may-def on this path.  */
+  data->found_may_defs = true;
+  return true;
+}
+
 static unsigned int
 warn_uninitialized_vars (bool warn_possibly_uninitialized)
 {
   gimple_stmt_iterator gsi;
   basic_block bb;
+  unsigned int vdef_cnt = 0;
+  unsigned int oracle_cnt = 0;
+  unsigned limit = 0;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -236,39 +264,81 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 			     stmt, UNKNOWN_LOCATION);
 	    }
 
-	  /* For memory the only cheap thing we can do is see if we
-	     have a use of the default def of the virtual operand.
-	     ???  Not so cheap would be to use the alias oracle via
-	     walk_aliased_vdefs, if we don't find any aliasing vdef
-	     warn as is-used-uninitialized, if we don't find an aliasing
-	     vdef that kills our use (stmt_kills_ref_p), warn as
-	     may-be-used-uninitialized.  But this walk is quadratic and
-	     so must be limited which means we would miss warning
-	     opportunities.  */
-	  use = gimple_vuse (stmt);
-	  if (use
-	      && gimple_assign_single_p (stmt)
-	      && !gimple_vdef (stmt)
-	      && SSA_NAME_IS_DEFAULT_DEF (use))
+	  /* For limiting the alias walk below we count all
+	     vdefs in the function.  */
+	  if (gimple_vdef (stmt))
+	    vdef_cnt++;
+
+	  if (gimple_assign_load_p (stmt)
+	      && gimple_has_location (stmt))
 	    {
 	      tree rhs = gimple_assign_rhs1 (stmt);
-	      tree base = get_base_address (rhs);
-
-	      /* Do not warn if it can be initialized outside this function.  */
-	      if (!VAR_P (base)
-		  || DECL_HARD_REGISTER (base)
-		  || is_global_var (base))
+	      if (TREE_NO_WARNING (rhs))
 		continue;
 
+	      ao_ref ref;
+	      ao_ref_init (&ref, rhs);
+
+	      /* Do not warn if it can be initialized outside this function.  */
+	      tree base = ao_ref_base (&ref);
+	      if (!VAR_P (base)
+		  || DECL_HARD_REGISTER (base)
+		  || is_global_var (base)
+		  || TREE_NO_WARNING (base))
+		continue;
+
+	      /* Do not warn if the access is fully outside of the
+	         variable.  */
+	      if (ref.size != -1
+		  && ref.max_size == ref.size
+		  && (ref.offset + ref.size <= 0
+		      || (ref.offset >= 0
+			  && TREE_CODE (DECL_SIZE (base)) == INTEGER_CST
+			  && compare_tree_int (DECL_SIZE (base),
+					       ref.offset) <= 0)))
+		continue;
+
+	      /* Limit the walking to a constant number of stmts after
+	         we overcommit quadratic behavior for small functions
+		 and O(n) behavior.  */
+	      if (oracle_cnt > 128 * 128
+		  && oracle_cnt > vdef_cnt * 2)
+		limit = 32;
+	      check_defs_data data;
+	      data.found_may_defs = false;
+	      use = gimple_vuse (stmt);
+	      int res = walk_aliased_vdefs (&ref, use,
+					    check_defs, &data, NULL,
+					    NULL, limit);
+	      if (res == -1)
+		{
+		  oracle_cnt += limit;
+		  continue;
+		}
+	      oracle_cnt += res;
+	      if (data.found_may_defs)
+		continue;
+
+	      /* We didn't find any may-defs so on all paths either
+	         reached function entry or a killing clobber.  */
+	      location_t location
+		= linemap_resolve_location (line_table, gimple_location (stmt),
+					    LRK_SPELLING_LOCATION, NULL);
 	      if (always_executed)
-		warn_uninit (OPT_Wuninitialized, use, gimple_assign_rhs1 (stmt),
-			     base, "%qE is used uninitialized in this function",
-			     stmt, UNKNOWN_LOCATION);
+		{
+		  if (warning_at (location, OPT_Wuninitialized,
+				  "%qE is used uninitialized in this function",
+				  rhs))
+		    /* ???  This is only effective for decls as in
+		       gcc.dg/uninit-B-O0.c.  Avoid doing this for
+		       maybe-uninit uses as it may hide important
+		       locations.  */
+		    TREE_NO_WARNING (rhs) = 1;
+		}
 	      else if (warn_possibly_uninitialized)
-		warn_uninit (OPT_Wmaybe_uninitialized, use,
-			     gimple_assign_rhs1 (stmt), base,
-			     "%qE may be used uninitialized in this function",
-			     stmt, UNKNOWN_LOCATION);
+		warning_at (location, OPT_Wmaybe_uninitialized,
+			    "%qE may be used uninitialized in this function",
+			    rhs);
 	    }
 	}
     }

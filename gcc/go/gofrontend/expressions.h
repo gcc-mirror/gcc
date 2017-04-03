@@ -1842,6 +1842,9 @@ class Unary_expression : public Expression
   { this->issue_nil_check_ = (this->op_ == OPERATOR_MULT); }
 
  private:
+  static bool
+  base_is_static_initializer(Expression*);
+
   // The unary operator to apply.
   Operator op_;
   // Normally true.  False if this is an address expression which does
@@ -2639,6 +2642,26 @@ class Array_index_expression : public Expression
   const Expression*
   array() const
   { return this->array_; }
+
+  // Return the index of a simple index expression, or the start index
+  // of a slice expression.
+  Expression*
+  start()
+  { return this->start_; }
+
+  const Expression*
+  start() const
+  { return this->start_; }
+
+  // Return the end index of a slice expression.  This is NULL for a
+  // simple index expression.
+  Expression*
+  end()
+  { return this->end_; }
+
+  const Expression*
+  end() const
+  { return this->end_; }
 
  protected:
   int

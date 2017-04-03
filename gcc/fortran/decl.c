@@ -1499,7 +1499,7 @@ gfc_set_constant_character_len (int len, gfc_expr *expr, int check_len)
 
   if (expr->ts.type != BT_CHARACTER)
     return;
- 
+
   if (expr->expr_type != EXPR_CONSTANT)
     {
       gfc_error_now ("CHARACTER length must be a constant at %L", &expr->where);
@@ -1908,7 +1908,7 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
           c = gfc_find_component (s->sym, name, true, true, NULL);
           if (c != NULL)
             {
-              gfc_error_now ("Component '%s' at %C already declared at %L",
+              gfc_error_now ("Component %qs at %C already declared at %L",
                              name, &c->loc);
               return false;
             }
@@ -3138,7 +3138,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
        * don't need all the extra derived-type stuff for structures.  */
       if (gfc_find_symbol (gfc_dt_upper_string (name), NULL, 1, &sym))
         {
-          gfc_error ("Type name '%s' at %C is ambiguous", name);
+          gfc_error ("Type name %qs at %C is ambiguous", name);
           return MATCH_ERROR;
         }
       if (sym && sym->attr.flavor == FL_STRUCT)
@@ -5430,6 +5430,7 @@ add_hidden_procptr_result (gfc_symbol *sym)
 	  gfc_get_sym_tree ("ppr@", gfc_current_ns->parent, &stree, false);
 	  st2 = gfc_new_symtree (&gfc_current_ns->sym_root, "ppr@");
 	  st2->n.sym = stree->n.sym;
+	  stree->n.sym->refs++;
 	}
       sym->result = stree->n.sym;
 
@@ -6756,7 +6757,7 @@ gfc_match_end (gfc_statement *st)
   match m;
   gfc_namespace *parent_ns, *ns, *prev_ns;
   gfc_namespace **nsp;
-  bool abreviated_modproc_decl;
+  bool abreviated_modproc_decl = false;
   bool got_matching_end = false;
 
   old_loc = gfc_current_locus;
@@ -6780,15 +6781,17 @@ gfc_match_end (gfc_statement *st)
       state = gfc_state_stack->previous->state;
       block_name = gfc_state_stack->previous->sym == NULL
 		 ? NULL : gfc_state_stack->previous->sym->name;
+      abreviated_modproc_decl = gfc_state_stack->previous->sym
+		&& gfc_state_stack->previous->sym->abr_modproc_decl;
       break;
 
     default:
       break;
     }
 
-  abreviated_modproc_decl
-	= gfc_current_block ()
-	  && gfc_current_block ()->abr_modproc_decl;
+  if (!abreviated_modproc_decl)
+    abreviated_modproc_decl = gfc_current_block ()
+			      && gfc_current_block ()->abr_modproc_decl;
 
   switch (state)
     {
@@ -7566,8 +7569,15 @@ access_attr_decl (gfc_statement st)
 
 	case INTERFACE_GENERIC:
 	case INTERFACE_DTIO:
+
 	  if (gfc_get_symbol (name, NULL, &sym))
 	    goto done;
+
+	  if (type == INTERFACE_DTIO
+	      && gfc_current_ns->proc_name
+	      && gfc_current_ns->proc_name->attr.flavor == FL_MODULE
+	      && sym->attr.flavor == FL_UNKNOWN)
+	    sym->attr.flavor = FL_PROCEDURE;
 
 	  if (!gfc_add_access (&sym->attr,
 			       (st == ST_PUBLIC)
@@ -8577,7 +8587,7 @@ get_struct_decl (const char *name, sym_flavor fl, locus *decl,
 
   if (sym->components != NULL || sym->attr.zero_comp)
     {
-      gfc_error ("Type definition of '%s' at %C was already defined at %L",
+      gfc_error ("Type definition of %qs at %C was already defined at %L",
                  sym->name, &sym->declared_at);
       return false;
     }
@@ -8730,7 +8740,7 @@ gfc_match_structure_decl (void)
   /* Make sure the name is not the name of an intrinsic type.  */
   if (gfc_is_intrinsic_typename (name))
     {
-      gfc_error ("Structure name '%s' at %C cannot be the same as an"
+      gfc_error ("Structure name %qs at %C cannot be the same as an"
 		 " intrinsic type", name);
       return MATCH_ERROR;
     }

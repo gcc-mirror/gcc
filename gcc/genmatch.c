@@ -192,6 +192,11 @@ output_line_directive (FILE *f, source_location location,
     {
       /* When writing to a dumpfile only dump the filename.  */
       const char *file = strrchr (loc.file, DIR_SEPARATOR);
+#if defined(DIR_SEPARATOR_2)
+      const char *pos2 = strrchr (loc.file, DIR_SEPARATOR_2);
+      if (pos2 && (!file || (pos2 > file)))
+	file = pos2;
+#endif
       if (!file)
 	file = loc.file;
       else
@@ -3821,8 +3826,7 @@ parser::next ()
     {
       token = cpp_get_token (r);
     }
-  while (token->type == CPP_PADDING
-	 && token->type != CPP_EOF);
+  while (token->type == CPP_PADDING);
   return token;
 }
 
@@ -3837,8 +3841,7 @@ parser::peek (unsigned num)
     {
       token = cpp_peek_token (r, i++);
     }
-  while ((token->type == CPP_PADDING
-	  && token->type != CPP_EOF)
+  while (token->type == CPP_PADDING
 	 || (--num > 0));
   /* If we peek at EOF this is a fatal error as it leaves the
      cpp_reader in unusable state.  Assume we really wanted a

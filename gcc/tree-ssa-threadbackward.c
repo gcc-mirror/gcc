@@ -159,6 +159,10 @@ profitable_jump_thread_path (vec<basic_block, va_gc> *&path,
   bool threaded_through_latch = false;
   bool multiway_branch_in_path = false;
   bool threaded_multiway_branch = false;
+  bool contains_hot_bb = false;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Checking profitability of path (backwards): ");
 
   /* Count the number of instructions on the path: as these instructions
      will have to be duplicated, we will not record the path if there
@@ -168,6 +172,8 @@ profitable_jump_thread_path (vec<basic_block, va_gc> *&path,
     {
       basic_block bb = (*path)[j];
 
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, " bb:%i", bb->index);
       /* Remember, blocks in the path are stored in opposite order
 	 in the PATH array.  The last entry in the array represents
 	 the block with an outgoing edge that we will redirect to the
@@ -177,6 +183,7 @@ profitable_jump_thread_path (vec<basic_block, va_gc> *&path,
 	 branch.  */
       if (j < path_length - 1)
 	{
+	  int orig_n_insns = n_insns;
 	  if (bb->loop_father != loop)
 	    {
 	      path_crosses_loops = true;
@@ -219,6 +226,8 @@ profitable_jump_thread_path (vec<basic_block, va_gc> *&path,
 		}
 	    }
 
+	  if (!contains_hot_bb && speed_p)
+	    contains_hot_bb |= optimize_bb_for_speed_p (bb);
 	  for (gsi = gsi_after_labels (bb);
 	       !gsi_end_p (gsi);
 	       gsi_next_nondebug (&gsi))
@@ -229,8 +238,10 @@ profitable_jump_thread_path (vec<basic_block, va_gc> *&path,
 		  && !(gimple_code (stmt) == GIMPLE_ASSIGN
 		       && gimple_assign_rhs_code (stmt) == ASSERT_EXPR)
 		  && !is_gimple_debug (stmt))
-	        n_insns += estimate_num_insns (stmt, &eni_size_weights);
+		n_insns += estimate_num_insns (stmt, &eni_size_weights);
 	    }
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, " (%i insns)", n_insns-orig_n_insns);
 
 	  /* We do not look at the block with the threaded branch
 	     in this loop.  So if any block with a last statement that
@@ -264,7 +275,13 @@ profitable_jump_thread_path (vec<basic_block, va_gc> *&path,
      last block in the threading path.  So don't count it against our
      statement count.  */
 
-  n_insns-= estimate_num_insns (stmt, &eni_size_weights);
+  int stmt_insns = estimate_num_insns (stmt, &eni_size_weights);
+  n_insns-= stmt_insns;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "\n  Control statement insns: %i\n"
+	     "  Overall: %i insns\n",
+	     stmt_insns, n_insns);
 
   /* We have found a constant value for ARG.  For GIMPLE_SWITCH
      and GIMPLE_GOTO, we use it as-is.  However, for a GIMPLE_COND
@@ -311,7 +328,11 @@ profitable_jump_thread_path (vec<basic_block, va_gc> *&path,
       return NULL;
     }
 
-  if (speed_p && optimize_edge_for_speed_p (taken_edge))
+  /* Threading is profitable if the path duplicated is hot but also
+     in a case we separate cold path from hot path and permit optimization
+     of the hot path later.  Be on the agressive side here. In some testcases,
+     as in PR 78407 this leads to noticeable improvements.  */
+  if (speed_p && (optimize_edge_for_speed_p (taken_edge) || contains_hot_bb))
     {
       if (n_insns >= PARAM_VALUE (PARAM_MAX_FSM_THREAD_PATH_INSNS))
 	{
@@ -865,6 +886,8 @@ pass_early_thread_jumps::gate (function *fun ATTRIBUTE_UNUSED)
 unsigned int
 pass_early_thread_jumps::execute (function *fun)
 {
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+
   /* Try to thread each block with more than one successor.  */
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
@@ -873,6 +896,8 @@ pass_early_thread_jumps::execute (function *fun)
 	find_jump_threads_backwards (bb, false);
     }
   thread_through_all_blocks (true);
+
+  loop_optimizer_finalize ();
   return 0;
 }
 

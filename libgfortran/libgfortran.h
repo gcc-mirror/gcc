@@ -111,6 +111,11 @@ typedef off_t gfc_offset;
 #define likely(x)       __builtin_expect(!!(x), 1)
 #define unlikely(x)     __builtin_expect(!!(x), 0)
 
+/* This macro can be used to annotate conditions which we know to
+   be true, so that the compiler can optimize based on the condition.  */
+
+#define GFC_ASSERT(EXPR)                                                \
+  ((void)(__builtin_expect (!(EXPR), 0) ? __builtin_unreachable (), 0 : 0))
 
 /* Make sure we have ptrdiff_t. */
 #ifndef HAVE_PTRDIFF_T

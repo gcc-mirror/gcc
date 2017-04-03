@@ -2259,6 +2259,19 @@ extract_range_from_binary_expr_1 (value_range *vr,
   else if (vr1.type == VR_UNDEFINED)
     set_value_range_to_varying (&vr1);
 
+  /* We get imprecise results from ranges_from_anti_range when
+     code is EXACT_DIV_EXPR.  We could mask out bits in the resulting
+     range, but then we also need to hack up vrp_meet.  It's just
+     easier to special case when vr0 is ~[0,0] for EXACT_DIV_EXPR.  */
+  if (code == EXACT_DIV_EXPR
+      && vr0.type == VR_ANTI_RANGE
+      && vr0.min == vr0.max
+      && integer_zerop (vr0.min))
+    {
+      set_value_range_to_nonnull (vr, expr_type);
+      return;
+    }
+
   /* Now canonicalize anti-ranges to ranges when they are not symbolic
      and express ~[] op X as ([]' op X) U ([]'' op X).  */
   if (vr0.type == VR_ANTI_RANGE
@@ -2618,8 +2631,17 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	    min = build_symbolic_expr (expr_type, sym_min_op0,
 				       neg_min_op0, min);
 	  else if (sym_min_op1)
-	    min = build_symbolic_expr (expr_type, sym_min_op1,
-				       neg_min_op1 ^ minus_p, min);
+	    {
+	      /* We may not negate if that might introduce
+		 undefined overflow.  */
+	      if (! minus_p
+		  || neg_min_op1
+		  || TYPE_OVERFLOW_WRAPS (expr_type))
+		min = build_symbolic_expr (expr_type, sym_min_op1,
+					   neg_min_op1 ^ minus_p, min);
+	      else
+		min = NULL_TREE;
+	    }
 
 	  /* Likewise for the upper bound.  */
 	  if (sym_max_op0 == sym_max_op1)
@@ -2628,8 +2650,17 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	    max = build_symbolic_expr (expr_type, sym_max_op0,
 				       neg_max_op0, max);
 	  else if (sym_max_op1)
-	    max = build_symbolic_expr (expr_type, sym_max_op1,
-				       neg_max_op1 ^ minus_p, max);
+	    {
+	      /* We may not negate if that might introduce
+		 undefined overflow.  */
+	      if (! minus_p
+		  || neg_max_op1
+		  || TYPE_OVERFLOW_WRAPS (expr_type))
+		max = build_symbolic_expr (expr_type, sym_max_op1,
+					   neg_max_op1 ^ minus_p, max);
+	      else
+		max = NULL_TREE;
+	    }
 	}
       else
 	{
@@ -3298,6 +3329,21 @@ extract_range_from_binary_expr (value_range *vr,
 
       extract_range_from_binary_expr_1 (vr, code, expr_type, &n_vr0, &vr1);
     }
+
+  /* If we didn't derive a range for MINUS_EXPR, and
+     op1's range is ~[op0,op0] or vice-versa, then we
+     can derive a non-null range.  This happens often for
+     pointer subtraction.  */
+  if (vr->type == VR_VARYING
+      && code == MINUS_EXPR
+      && TREE_CODE (op0) == SSA_NAME
+      && ((vr0.type == VR_ANTI_RANGE
+	   && vr0.min == op1
+	   && vr0.min == vr0.max)
+	  || (vr1.type == VR_ANTI_RANGE
+	      && vr1.min == op0
+	      && vr1.min == vr1.max)))
+      set_value_range_to_nonnull (vr, TREE_TYPE (op0));
 }
 
 /* Extract range information from a unary operation CODE based on
@@ -4061,7 +4107,7 @@ extract_range_basic (value_range *vr, gimple *stmt)
     }
   /* Handle extraction of the two results (result of arithmetics and
      a flag whether arithmetics overflowed) from {ADD,SUB,MUL}_OVERFLOW
-     internal function.  */
+     internal function.  Similarly from ATOMIC_COMPARE_EXCHANGE.  */
   else if (is_gimple_assign (stmt)
 	   && (gimple_assign_rhs_code (stmt) == REALPART_EXPR
 	       || gimple_assign_rhs_code (stmt) == IMAGPART_EXPR)
@@ -4085,6 +4131,16 @@ extract_range_basic (value_range *vr, gimple *stmt)
 		  break;
 		case IFN_MUL_OVERFLOW:
 		  subcode = MULT_EXPR;
+		  break;
+		case IFN_ATOMIC_COMPARE_EXCHANGE:
+		  if (code == IMAGPART_EXPR)
+		    {
+		      /* This is the boolean return value whether compare and
+			 exchange changed anything or not.  */
+		      set_value_range (vr, VR_RANGE, build_int_cst (type, 0),
+				       build_int_cst (type, 1), NULL);
+		      return;
+		    }
 		  break;
 		default:
 		  break;
@@ -5032,18 +5088,6 @@ register_new_assert_for (tree name, tree expr,
 	      loc->si = si;
 	      return;
 	    }
-	  /* If we have the same assertion on all incoming edges of a BB
-	     instead insert it at the beginning of it.  */
-	  if (e && loc->e
-	      && e != loc->e
-	      && dest_bb == loc->e->dest
-	      && EDGE_COUNT (dest_bb->preds) == 2)
-	    {
-	      loc->bb = dest_bb;
-	      loc->e = NULL;
-	      loc->si = gsi_none ();
-	      return;
-	    }
 	}
 
       /* Update the last node of the list and move to the next one.  */
@@ -5170,6 +5214,118 @@ masked_increment (const wide_int &val_in, const wide_int &mask,
   return val ^ sgnbit;
 }
 
+/* Helper for overflow_comparison_p
+
+   OP0 CODE OP1 is a comparison.  Examine the comparison and potentially
+   OP1's defining statement to see if it ultimately has the form
+   OP0 CODE (OP0 PLUS INTEGER_CST)
+
+   If so, return TRUE indicating this is an overflow test and store into
+   *NEW_CST an updated constant that can be used in a narrowed range test.
+
+   REVERSED indicates if the comparison was originally:
+
+   OP1 CODE' OP0.
+
+   This affects how we build the updated constant.  */
+
+static bool
+overflow_comparison_p_1 (enum tree_code code, tree op0, tree op1,
+		         bool follow_assert_exprs, bool reversed, tree *new_cst)
+{
+  /* See if this is a relational operation between two SSA_NAMES with
+     unsigned, overflow wrapping values.  If so, check it more deeply.  */
+  if ((code == LT_EXPR || code == LE_EXPR
+       || code == GE_EXPR || code == GT_EXPR)
+      && TREE_CODE (op0) == SSA_NAME
+      && TREE_CODE (op1) == SSA_NAME
+      && INTEGRAL_TYPE_P (TREE_TYPE (op0))
+      && TYPE_UNSIGNED (TREE_TYPE (op0))
+      && TYPE_OVERFLOW_WRAPS (TREE_TYPE (op0)))
+    {
+      gimple *op1_def = SSA_NAME_DEF_STMT (op1);
+
+      /* If requested, follow any ASSERT_EXPRs backwards for OP1.  */
+      if (follow_assert_exprs)
+	{
+	  while (gimple_assign_single_p (op1_def)
+		 && TREE_CODE (gimple_assign_rhs1 (op1_def)) == ASSERT_EXPR)
+	    {
+	      op1 = TREE_OPERAND (gimple_assign_rhs1 (op1_def), 0);
+	      if (TREE_CODE (op1) != SSA_NAME)
+		break;
+	      op1_def = SSA_NAME_DEF_STMT (op1);
+	    }
+	}
+
+      /* Now look at the defining statement of OP1 to see if it adds
+	 or subtracts a nonzero constant from another operand.  */
+      if (op1_def
+	  && is_gimple_assign (op1_def)
+	  && gimple_assign_rhs_code (op1_def) == PLUS_EXPR
+	  && TREE_CODE (gimple_assign_rhs2 (op1_def)) == INTEGER_CST
+	  && !integer_zerop (gimple_assign_rhs2 (op1_def)))
+	{
+	  tree target = gimple_assign_rhs1 (op1_def);
+
+	  /* If requested, follow ASSERT_EXPRs backwards for op0 looking
+	     for one where TARGET appears on the RHS.  */
+	  if (follow_assert_exprs)
+	    {
+	      /* Now see if that "other operand" is op0, following the chain
+		 of ASSERT_EXPRs if necessary.  */
+	      gimple *op0_def = SSA_NAME_DEF_STMT (op0);
+	      while (op0 != target
+		     && gimple_assign_single_p (op0_def)
+		     && TREE_CODE (gimple_assign_rhs1 (op0_def)) == ASSERT_EXPR)
+		{
+		  op0 = TREE_OPERAND (gimple_assign_rhs1 (op0_def), 0);
+		  if (TREE_CODE (op0) != SSA_NAME)
+		    break;
+		  op0_def = SSA_NAME_DEF_STMT (op0);
+		}
+	    }
+
+	  /* If we did not find our target SSA_NAME, then this is not
+	     an overflow test.  */
+	  if (op0 != target)
+	    return false;
+
+	  tree type = TREE_TYPE (op0);
+	  wide_int max = wi::max_value (TYPE_PRECISION (type), UNSIGNED);
+	  tree inc = gimple_assign_rhs2 (op1_def);
+	  if (reversed)
+	    *new_cst = wide_int_to_tree (type, max + inc);
+	  else
+	    *new_cst = wide_int_to_tree (type, max - inc);
+	  return true;
+	}
+    }
+  return false;
+}
+
+/* OP0 CODE OP1 is a comparison.  Examine the comparison and potentially
+   OP1's defining statement to see if it ultimately has the form
+   OP0 CODE (OP0 PLUS INTEGER_CST)
+
+   If so, return TRUE indicating this is an overflow test and store into
+   *NEW_CST an updated constant that can be used in a narrowed range test.
+
+   These statements are left as-is in the IL to facilitate discovery of
+   {ADD,SUB}_OVERFLOW sequences later in the optimizer pipeline.  But
+   the alternate range representation is often useful within VRP.  */
+
+static bool
+overflow_comparison_p (tree_code code, tree name, tree val,
+		       bool use_equiv_p, tree *new_cst)
+{
+  if (overflow_comparison_p_1 (code, name, val, use_equiv_p, false, new_cst))
+    return true;
+  return overflow_comparison_p_1 (swap_tree_comparison (code), val, name,
+				  use_equiv_p, true, new_cst);
+}
+
+
 /* Try to register an edge assertion for SSA name NAME on edge E for
    the condition COND contributing to the conditional jump pointed to by BSI.
    Invert the condition COND if INVERT is true.  */
@@ -5191,7 +5347,17 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
   /* Only register an ASSERT_EXPR if NAME was found in the sub-graph
      reachable from E.  */
   if (live_on_edge (e, name))
-    register_new_assert_for (name, name, comp_code, val, NULL, e, bsi);
+    {
+      tree x;
+      if (overflow_comparison_p (comp_code, name, val, false, &x))
+	{
+	  enum tree_code new_code
+	    = ((comp_code == GT_EXPR || comp_code == GE_EXPR)
+	       ? GT_EXPR : LE_EXPR);
+	  register_new_assert_for (name, name, new_code, x, NULL, e, bsi);
+	}
+      register_new_assert_for (name, name, comp_code, val, NULL, e, bsi);
+    }
 
   /* In the case of NAME <= CST and NAME being defined as
      NAME = (unsigned) NAME2 + CST2 we can assert NAME2 >= -CST2
@@ -6473,6 +6639,41 @@ process_assert_insertions_for (tree name, assert_locus *loc)
   gcc_unreachable ();
 }
 
+/* Qsort helper for sorting assert locations.  */
+
+static int
+compare_assert_loc (const void *pa, const void *pb)
+{
+  assert_locus * const a = *(assert_locus * const *)pa;
+  assert_locus * const b = *(assert_locus * const *)pb;
+  if (! a->e && b->e)
+    return 1;
+  else if (a->e && ! b->e)
+    return -1;
+
+  /* Sort after destination index.  */
+  if (! a->e && ! b->e)
+    ;
+  else if (a->e->dest->index > b->e->dest->index)
+    return 1;
+  else if (a->e->dest->index < b->e->dest->index)
+    return -1;
+
+  /* Sort after comp_code.  */
+  if (a->comp_code > b->comp_code)
+    return 1;
+  else if (a->comp_code < b->comp_code)
+    return -1;
+
+  /* Break the tie using hashing and source/bb index.  */
+  hashval_t ha = iterative_hash_expr (a->expr, iterative_hash_expr (a->val, 0));
+  hashval_t hb = iterative_hash_expr (b->expr, iterative_hash_expr (b->val, 0));
+  if (ha == hb)
+    return (a->e && b->e
+	    ? a->e->src->index - b->e->src->index
+	    : a->bb->index - b->bb->index);
+  return ha - hb;
+}
 
 /* Process all the insertions registered for every name N_i registered
    in NEED_ASSERT_FOR.  The list of assertions to be inserted are
@@ -6494,13 +6695,71 @@ process_assert_insertions (void)
       assert_locus *loc = asserts_for[i];
       gcc_assert (loc);
 
-      while (loc)
+      auto_vec<assert_locus *, 16> asserts;
+      for (; loc; loc = loc->next)
+	asserts.safe_push (loc);
+      asserts.qsort (compare_assert_loc);
+
+      /* Push down common asserts to successors and remove redundant ones.  */
+      unsigned ecnt = 0;
+      assert_locus *common = NULL;
+      unsigned commonj = 0;
+      for (unsigned j = 0; j < asserts.length (); ++j)
 	{
-	  assert_locus *next = loc->next;
+	  loc = asserts[j];
+	  if (! loc->e)
+	    common = NULL;
+	  else if (! common
+		   || loc->e->dest != common->e->dest
+		   || loc->comp_code != common->comp_code
+		   || ! operand_equal_p (loc->val, common->val, 0)
+		   || ! operand_equal_p (loc->expr, common->expr, 0))
+	    {
+	      commonj = j;
+	      common = loc;
+	      ecnt = 1;
+	    }
+	  else if (loc->e == asserts[j-1]->e)
+	    {
+	      /* Remove duplicate asserts.  */
+	      if (commonj == j - 1)
+		{
+		  commonj = j;
+		  common = loc;
+		}
+	      free (asserts[j-1]);
+	      asserts[j-1] = NULL;
+	    }
+	  else
+	    {
+	      ecnt++;
+	      if (EDGE_COUNT (common->e->dest->preds) == ecnt)
+		{
+		  /* We have the same assertion on all incoming edges of a BB.
+		     Insert it at the beginning of that block.  */
+		  loc->bb = loc->e->dest;
+		  loc->e = NULL;
+		  loc->si = gsi_none ();
+		  common = NULL;
+		  /* Clear asserts commoned.  */
+		  for (; commonj != j; ++commonj)
+		    if (asserts[commonj])
+		      {
+			free (asserts[commonj]);
+			asserts[commonj] = NULL;
+		      }
+		}
+	    }
+	}
+
+      for (unsigned j = 0; j < asserts.length (); ++j)
+	{
+	  loc = asserts[j];
+	  if (! loc)
+	    continue;
 	  update_edges_p |= process_assert_insertions_for (ssa_name (i), loc);
-	  free (loc);
-	  loc = next;
 	  num_asserts++;
+	  free (loc);
 	}
     }
 
@@ -6974,8 +7233,20 @@ remove_range_assertions (void)
 		  }
 	      }
 
-	    /* Propagate the RHS into every use of the LHS.  */
-	    replace_uses_by (lhs, var);
+	    /* Propagate the RHS into every use of the LHS.  For SSA names
+	       also propagate abnormals as it merely restores the original
+	       IL in this case (an replace_uses_by would assert).  */
+	    if (TREE_CODE (var) == SSA_NAME)
+	      {
+		imm_use_iterator iter;
+		use_operand_p use_p;
+		gimple *use_stmt;
+		FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
+		  FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		    SET_USE (use_p, var);
+	      }
+	    else
+	      replace_uses_by (lhs, var);
 
 	    /* And finally, remove the copy, it is not needed.  */
 	    gsi_remove (&si, true);
@@ -7022,6 +7293,7 @@ stmt_interesting_for_vrp (gimple *stmt)
 	  case IFN_ADD_OVERFLOW:
 	  case IFN_SUB_OVERFLOW:
 	  case IFN_MUL_OVERFLOW:
+	  case IFN_ATOMIC_COMPARE_EXCHANGE:
 	    /* These internal calls return _Complex integer type,
 	       but are interesting to VRP nevertheless.  */
 	    if (lhs && TREE_CODE (lhs) == SSA_NAME)
@@ -7444,6 +7716,39 @@ vrp_evaluate_conditional_warnv_with_ops (enum tree_code code, tree op0,
   if (!INTEGRAL_TYPE_P (TREE_TYPE (op0))
       && !POINTER_TYPE_P (TREE_TYPE (op0)))
     return NULL_TREE;
+
+  /* If OP0 CODE OP1 is an overflow comparison, if it can be expressed
+     as a simple equality test, then prefer that over its current form
+     for evaluation.
+
+     An overflow test which collapses to an equality test can always be
+     expressed as a comparison of one argument against zero.  Overflow
+     occurs when the chosen argument is zero and does not occur if the
+     chosen argument is not zero.  */
+  tree x;
+  if (overflow_comparison_p (code, op0, op1, use_equiv_p, &x))
+    {
+      wide_int max = wi::max_value (TYPE_PRECISION (TREE_TYPE (op0)), UNSIGNED);
+      /* B = A - 1; if (A < B) -> B = A - 1; if (A == 0)
+         B = A - 1; if (A > B) -> B = A - 1; if (A != 0)
+         B = A + 1; if (B < A) -> B = A + 1; if (B == 0)
+         B = A + 1; if (B > A) -> B = A + 1; if (B != 0) */
+      if (integer_zerop (x))
+	{
+	  op1 = x;
+	  code = (code == LT_EXPR || code == LE_EXPR) ? EQ_EXPR : NE_EXPR;
+	}
+      /* B = A + 1; if (A > B) -> B = A + 1; if (B == 0)
+         B = A + 1; if (A < B) -> B = A + 1; if (B != 0)
+         B = A - 1; if (B > A) -> B = A - 1; if (A == 0)
+         B = A - 1; if (B < A) -> B = A - 1; if (A != 0) */
+      else if (wi::eq_p (x, max - 1))
+	{
+	  op0 = op1;
+	  op1 = wide_int_to_tree (TREE_TYPE (op0), 0);
+	  code = (code == GT_EXPR || code == GE_EXPR) ? EQ_EXPR : NE_EXPR;
+	}
+    }
 
   if ((ret = vrp_evaluate_conditional_warnv_with_ops_using_ranges
 	       (code, op0, op1, strict_overflow_p)))
@@ -8014,6 +8319,7 @@ vrp_visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
       case IFN_ADD_OVERFLOW:
       case IFN_SUB_OVERFLOW:
       case IFN_MUL_OVERFLOW:
+      case IFN_ATOMIC_COMPARE_EXCHANGE:
 	/* These internal calls return _Complex integer type,
 	   which VRP does not track, but the immediate uses
 	   thereof might be interesting.  */
@@ -8526,6 +8832,17 @@ intersect_ranges (enum value_range_type *vr0type,
 	  /* Choose the anti-range if the range is effectively varying.  */
 	  else if (vrp_val_is_min (vr1min)
 		   && vrp_val_is_max (vr1max))
+	    ;
+	  /* Choose the anti-range if it is ~[0,0], that range is special
+	     enough to special case when vr1's range is relatively wide.  */
+	  else if (*vr0min == *vr0max
+		   && integer_zerop (*vr0min)
+		   && (TYPE_PRECISION (TREE_TYPE (*vr0min))
+		       == TYPE_PRECISION (ptr_type_node))
+		   && TREE_CODE (vr1max) == INTEGER_CST
+		   && TREE_CODE (vr1min) == INTEGER_CST
+		   && (wi::clz (wi::sub (vr1max, vr1min))
+		       < TYPE_PRECISION (TREE_TYPE (*vr0min)) / 2))
 	    ;
 	  /* Else choose the range.  */
 	  else
@@ -9133,12 +9450,12 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
   return true;
 }
 
-/* Simplify a division or modulo operator to a right shift or
-   bitwise and if the first operand is unsigned or is greater
-   than zero and the second operand is an exact power of two.
-   For TRUNC_MOD_EXPR op0 % op1 with constant op1, optimize it
-   into just op0 if op0's range is known to be a subset of
-   [-op1 + 1, op1 - 1] for signed and [0, op1 - 1] for unsigned
+/* Simplify a division or modulo operator to a right shift or bitwise and
+   if the first operand is unsigned or is greater than zero and the second
+   operand is an exact power of two.  For TRUNC_MOD_EXPR op0 % op1 with
+   constant op1 (op1min = op1) or with op1 in [op1min, op1max] range,
+   optimize it into just op0 if op0's range is known to be a subset of
+   [-op1min + 1, op1min - 1] for signed and [0, op1min - 1] for unsigned
    modulo.  */
 
 static bool
@@ -9148,18 +9465,42 @@ simplify_div_or_mod_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
   tree val = NULL;
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
-  value_range *vr = get_value_range (op0);
+  tree op0min = NULL_TREE, op0max = NULL_TREE;
+  tree op1min = op1;
+  value_range *vr = NULL;
+
+  if (TREE_CODE (op0) == INTEGER_CST)
+    {
+      op0min = op0;
+      op0max = op0;
+    }
+  else
+    {
+      vr = get_value_range (op0);
+      if (range_int_cst_p (vr))
+	{
+	  op0min = vr->min;
+	  op0max = vr->max;
+	}
+    }
 
   if (rhs_code == TRUNC_MOD_EXPR
-      && TREE_CODE (op1) == INTEGER_CST
-      && tree_int_cst_sgn (op1) == 1
-      && range_int_cst_p (vr)
-      && tree_int_cst_lt (vr->max, op1))
+      && TREE_CODE (op1) == SSA_NAME)
+    {
+      value_range *vr1 = get_value_range (op1);
+      if (range_int_cst_p (vr1))
+	op1min = vr1->min;
+    }
+  if (rhs_code == TRUNC_MOD_EXPR
+      && TREE_CODE (op1min) == INTEGER_CST
+      && tree_int_cst_sgn (op1min) == 1
+      && op0max
+      && tree_int_cst_lt (op0max, op1min))
     {
       if (TYPE_UNSIGNED (TREE_TYPE (op0))
-	  || tree_int_cst_sgn (vr->min) >= 0
-	  || tree_int_cst_lt (fold_unary (NEGATE_EXPR, TREE_TYPE (op1), op1),
-			      vr->min))
+	  || tree_int_cst_sgn (op0min) >= 0
+	  || tree_int_cst_lt (fold_unary (NEGATE_EXPR, TREE_TYPE (op1min), op1min),
+			      op0min))
 	{
 	  /* If op0 already has the range op0 % op1 has,
 	     then TRUNC_MOD_EXPR won't change anything.  */
@@ -9167,6 +9508,9 @@ simplify_div_or_mod_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
 	  return true;
 	}
     }
+
+  if (TREE_CODE (op0) != SSA_NAME)
+    return false;
 
   if (!integer_pow2p (op1))
     {
@@ -10276,7 +10620,8 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	 range.  */
 	case TRUNC_DIV_EXPR:
 	case TRUNC_MOD_EXPR:
-	  if (TREE_CODE (rhs1) == SSA_NAME
+	  if ((TREE_CODE (rhs1) == SSA_NAME
+	       || TREE_CODE (rhs1) == INTEGER_CST)
 	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
 	    return simplify_div_or_mod_using_ranges (gsi, stmt);
 	  break;
@@ -10401,8 +10746,32 @@ vrp_fold_stmt (gimple_stmt_iterator *si)
   return simplify_stmt_using_ranges (si);
 }
 
-/* Unwindable const/copy equivalences.  */
-const_and_copies *equiv_stack;
+/* Return the LHS of any ASSERT_EXPR where OP appears as the first
+   argument to the ASSERT_EXPR and in which the ASSERT_EXPR dominates
+   BB.  If no such ASSERT_EXPR is found, return OP.  */
+
+static tree
+lhs_of_dominating_assert (tree op, basic_block bb, gimple *stmt)
+{
+  imm_use_iterator imm_iter;
+  gimple *use_stmt;
+  use_operand_p use_p;
+
+  if (TREE_CODE (op) == SSA_NAME)
+    {
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, op)
+	{
+	  use_stmt = USE_STMT (use_p);
+	  if (use_stmt != stmt
+	      && gimple_assign_single_p (use_stmt)
+	      && TREE_CODE (gimple_assign_rhs1 (use_stmt)) == ASSERT_EXPR
+	      && TREE_OPERAND (gimple_assign_rhs1 (use_stmt), 0) == op
+	      && dominated_by_p (CDI_DOMINATORS, bb, gimple_bb (use_stmt)))
+	    return gimple_assign_lhs (use_stmt);
+	}
+    }
+  return op;
+}
 
 /* A trivial wrapper so that we can present the generic jump threading
    code with a simple API for simplifying statements.  STMT is the
@@ -10411,13 +10780,25 @@ const_and_copies *equiv_stack;
 
 static tree
 simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
-    class avail_exprs_stack *avail_exprs_stack ATTRIBUTE_UNUSED)
+    class avail_exprs_stack *avail_exprs_stack ATTRIBUTE_UNUSED,
+    basic_block bb)
 {
+  /* First see if the conditional is in the hash table.  */
+  tree cached_lhs = avail_exprs_stack->lookup_avail_expr (stmt, false, true);
+  if (cached_lhs && is_gimple_min_invariant (cached_lhs))
+    return cached_lhs;
+
   if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
-    return vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
-				     gimple_cond_lhs (cond_stmt),
-				     gimple_cond_rhs (cond_stmt),
-				     within_stmt);
+    {
+      tree op0 = gimple_cond_lhs (cond_stmt);
+      op0 = lhs_of_dominating_assert (op0, bb, stmt);
+
+      tree op1 = gimple_cond_rhs (cond_stmt);
+      op1 = lhs_of_dominating_assert (op1, bb, stmt);
+
+      return vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
+				       op0, op1, within_stmt);
+    }
 
   /* We simplify a switch statement by trying to determine which case label
      will be taken.  If we are successful then we return the corresponding
@@ -10427,6 +10808,8 @@ simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
       tree op = gimple_switch_index (switch_stmt);
       if (TREE_CODE (op) != SSA_NAME)
 	return NULL_TREE;
+
+      op = lhs_of_dominating_assert (op, bb, stmt);
 
       value_range *vr = get_value_range (op);
       if ((vr->type != VR_RANGE && vr->type != VR_ANTI_RANGE)
@@ -10498,6 +10881,83 @@ simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
   return NULL_TREE;
 }
 
+class vrp_dom_walker : public dom_walker
+{
+public:
+  vrp_dom_walker (cdi_direction direction,
+		  class const_and_copies *const_and_copies,
+		  class avail_exprs_stack *avail_exprs_stack)
+    : dom_walker (direction, true),
+      m_const_and_copies (const_and_copies),
+      m_avail_exprs_stack (avail_exprs_stack),
+      m_dummy_cond (NULL) {}
+
+  virtual edge before_dom_children (basic_block);
+  virtual void after_dom_children (basic_block);
+
+private:
+  class const_and_copies *m_const_and_copies;
+  class avail_exprs_stack *m_avail_exprs_stack;
+
+  gcond *m_dummy_cond;
+};
+
+/* Called before processing dominator children of BB.  We want to look
+   at ASSERT_EXPRs and record information from them in the appropriate
+   tables.
+
+   We could look at other statements here.  It's not seen as likely
+   to significantly increase the jump threads we discover.  */
+
+edge
+vrp_dom_walker::before_dom_children (basic_block bb)
+{
+  gimple_stmt_iterator gsi;
+
+  for (gsi = gsi_start_nondebug_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      if (gimple_assign_single_p (stmt)
+         && TREE_CODE (gimple_assign_rhs1 (stmt)) == ASSERT_EXPR)
+	{
+	  tree rhs1 = gimple_assign_rhs1 (stmt);
+	  tree cond = TREE_OPERAND (rhs1, 1);
+	  tree inverted = invert_truthvalue (cond);
+	  vec<cond_equivalence> p;
+	  p.create (3);
+	  record_conditions (&p, cond, inverted);
+	  for (unsigned int i = 0; i < p.length (); i++)
+	    m_avail_exprs_stack->record_cond (&p[i]);
+
+	  tree lhs = gimple_assign_lhs (stmt);
+	  m_const_and_copies->record_const_or_copy (lhs,
+						    TREE_OPERAND (rhs1, 0));
+	  p.release ();
+	  continue;
+	}
+      break;
+    }
+  return NULL;
+}
+
+/* Called after processing dominator children of BB.  This is where we
+   actually call into the threader.  */
+void
+vrp_dom_walker::after_dom_children (basic_block bb)
+{
+  if (!m_dummy_cond)
+    m_dummy_cond = gimple_build_cond (NE_EXPR,
+				      integer_zero_node, integer_zero_node,
+				      NULL, NULL);
+
+  thread_outgoing_edges (bb, m_dummy_cond, m_const_and_copies,
+			 m_avail_exprs_stack,
+			 simplify_stmt_for_jump_threading);
+
+  m_avail_exprs_stack->pop_to_marker ();
+  m_const_and_copies->pop_to_marker ();
+}
+
 /* Blocks which have more than one predecessor and more than
    one successor present jump threading opportunities, i.e.,
    when the block is reached from a specific predecessor, we
@@ -10521,8 +10981,6 @@ simplify_stmt_for_jump_threading (gimple *stmt, gimple *within_stmt,
 static void
 identify_jump_threads (void)
 {
-  basic_block bb;
-  gcond *dummy;
   int i;
   edge e;
 
@@ -10545,69 +11003,15 @@ identify_jump_threads (void)
 
   /* Allocate our unwinder stack to unwind any temporary equivalences
      that might be recorded.  */
-  equiv_stack = new const_and_copies ();
+  const_and_copies *equiv_stack = new const_and_copies ();
 
-  /* To avoid lots of silly node creation, we create a single
-     conditional and just modify it in-place when attempting to
-     thread jumps.  */
-  dummy = gimple_build_cond (EQ_EXPR,
-			     integer_zero_node, integer_zero_node,
-			     NULL, NULL);
+  hash_table<expr_elt_hasher> *avail_exprs
+    = new hash_table<expr_elt_hasher> (1024);
+  avail_exprs_stack *avail_exprs_stack
+    = new class avail_exprs_stack (avail_exprs);
 
-  /* Walk through all the blocks finding those which present a
-     potential jump threading opportunity.  We could set this up
-     as a dominator walker and record data during the walk, but
-     I doubt it's worth the effort for the classes of jump
-     threading opportunities we are trying to identify at this
-     point in compilation.  */
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      gimple *last;
-
-      /* If the generic jump threading code does not find this block
-	 interesting, then there is nothing to do.  */
-      if (! potentially_threadable_block (bb))
-	continue;
-
-      last = last_stmt (bb);
-
-      /* We're basically looking for a switch or any kind of conditional with
-	 integral or pointer type arguments.  Note the type of the second
-	 argument will be the same as the first argument, so no need to
-	 check it explicitly. 
-
-	 We also handle the case where there are no statements in the
-	 block.  This come up with forwarder blocks that are not
-	 optimized away because they lead to a loop header.  But we do
-	 want to thread through them as we can sometimes thread to the
-	 loop exit which is obviously profitable.  */
-      if (!last
-	  || gimple_code (last) == GIMPLE_SWITCH
-	  || (gimple_code (last) == GIMPLE_COND
-      	      && TREE_CODE (gimple_cond_lhs (last)) == SSA_NAME
-	      && (INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_lhs (last)))
-		  || POINTER_TYPE_P (TREE_TYPE (gimple_cond_lhs (last))))
-	      && (TREE_CODE (gimple_cond_rhs (last)) == SSA_NAME
-		  || is_gimple_min_invariant (gimple_cond_rhs (last)))))
-	{
-	  edge_iterator ei;
-
-	  /* We've got a block with multiple predecessors and multiple
-	     successors which also ends in a suitable conditional or
-	     switch statement.  For each predecessor, see if we can thread
-	     it to a specific successor.  */
-	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    {
-	      /* Do not thread across edges marked to ignoreor abnormal
-		 edges in the CFG.  */
-	      if (e->flags & (EDGE_IGNORE | EDGE_COMPLEX))
-		continue;
-
-	      thread_across_edge (dummy, e, true, equiv_stack, NULL,
-				  simplify_stmt_for_jump_threading);
-	    }
-	}
-    }
+  vrp_dom_walker walker (CDI_DOMINATORS, equiv_stack, avail_exprs_stack);
+  walker.walk (cfun->cfg->x_entry_block_ptr);
 
   /* Clear EDGE_IGNORE.  */
   FOR_EACH_VEC_ELT (to_remove_edges, i, e)
@@ -10616,19 +11020,9 @@ identify_jump_threads (void)
   /* We do not actually update the CFG or SSA graphs at this point as
      ASSERT_EXPRs are still in the IL and cfg cleanup code does not yet
      handle ASSERT_EXPRs gracefully.  */
-}
-
-/* We identified all the jump threading opportunities earlier, but could
-   not transform the CFG at that time.  This routine transforms the
-   CFG and arranges for the dominator tree to be rebuilt if necessary.
-
-   Note the SSA graph update will occur during the normal TODO
-   processing by the pass manager.  */
-static void
-finalize_jump_threads (void)
-{
-  thread_through_all_blocks (false);
   delete equiv_stack;
+  delete avail_exprs;
+  delete avail_exprs_stack;
 }
 
 /* Free VRP lattice.  */
@@ -10694,10 +11088,6 @@ vrp_finalize (bool warn_array_bounds_p)
 
   if (warn_array_bounds && warn_array_bounds_p)
     check_all_array_refs ();
-
-  /* We must identify jump threading opportunities before we release
-     the datastructures built by VRP.  */
-  identify_jump_threads ();
 }
 
 /* evrp_dom_walker visits the basic blocks in the dominance order and set
@@ -11289,6 +11679,11 @@ execute_vrp (bool warn_array_bounds_p)
   vrp_initialize ();
   ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);
   vrp_finalize (warn_array_bounds_p);
+
+  /* We must identify jump threading opportunities before we release
+     the datastructures built by VRP.  */
+  identify_jump_threads ();
+
   vrp_free_lattice ();
 
   free_numbers_of_iterations_estimates (cfun);
@@ -11305,7 +11700,13 @@ execute_vrp (bool warn_array_bounds_p)
      duplication and CFG manipulation.  */
   update_ssa (TODO_update_ssa);
 
-  finalize_jump_threads ();
+  /* We identified all the jump threading opportunities earlier, but could
+     not transform the CFG at that time.  This routine transforms the
+     CFG and arranges for the dominator tree to be rebuilt if necessary.
+
+     Note the SSA graph update will occur during the normal TODO
+     processing by the pass manager.  */
+  thread_through_all_blocks (false);
 
   /* Remove dead edges from SWITCH_EXPR optimization.  This leaves the
      CFG in a broken state and requires a cfg_cleanup run.  */

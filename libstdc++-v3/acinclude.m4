@@ -397,7 +397,7 @@ AC_DEFUN([GLIBCXX_CHECK_S_ISREG_OR_S_IFREG], [
   res=no
   if test $glibcxx_cv_S_ISREG = yes; then
     AC_DEFINE(HAVE_S_ISREG, 1,
-	      [Define if S_IFREG is available in <sys/stat.h>.])
+	      [Define if S_ISREG is available in <sys/stat.h>.])
     res=S_ISREG
   elif test $glibcxx_cv_S_IFREG = yes; then
     AC_DEFINE(HAVE_S_IFREG, 1,
@@ -2297,7 +2297,8 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
       AC_MSG_CHECKING([for obsolete isnan function in <math.h>])
         AC_CACHE_VAL(glibcxx_cv_obsolete_isnan, [
           AC_COMPILE_IFELSE([AC_LANG_SOURCE(
-            [#include <math.h>
+            [#define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
+             #include <math.h>
              #undef isnan
              namespace std {
                using ::isnan;

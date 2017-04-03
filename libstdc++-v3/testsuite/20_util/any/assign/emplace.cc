@@ -72,4 +72,8 @@ int main()
   std::any o10;
   o10.emplace<char*>(nullptr);
   VERIFY(o9.type() == o10.type());
+  std::any o11;
+  VERIFY(&o11.emplace<int>(42) == &std::any_cast<int&>(o11));
+  VERIFY(&o11.emplace<std::vector<int>>({1,2,3}) ==
+	 &std::any_cast<std::vector<int>&>(o11));
 }

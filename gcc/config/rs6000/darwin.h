@@ -319,7 +319,7 @@ extern int darwin_emit_branch_islands;
    suppressed for vector and long double items (both 128 in size).
    There is a dummy use of the FIELD argument to avoid an unused variable
    warning (see PR59496).  */
-#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED)			\
+#define ADJUST_FIELD_ALIGN(FIELD, TYPE, COMPUTED)		\
   ((void) (FIELD),						\
     (TARGET_ALIGN_NATURAL					\
      ? (COMPUTED)						\

@@ -1059,16 +1059,12 @@ BU_ALTIVEC_2 (VMINUW,	      "vminuw",		CONST,	uminv4si3)
 BU_ALTIVEC_2 (VMINSW,	      "vminsw",		CONST,	sminv4si3)
 BU_ALTIVEC_2 (VMINFP,	      "vminfp",		CONST,	sminv4sf3)
 BU_ALTIVEC_2 (VMULEUB,	      "vmuleub",	CONST,	vec_widen_umult_even_v16qi)
-BU_ALTIVEC_2 (VMULEUB_UNS,    "vmuleub_uns",	CONST,	vec_widen_umult_even_v16qi)
 BU_ALTIVEC_2 (VMULESB,	      "vmulesb",	CONST,	vec_widen_smult_even_v16qi)
 BU_ALTIVEC_2 (VMULEUH,	      "vmuleuh",	CONST,	vec_widen_umult_even_v8hi)
-BU_ALTIVEC_2 (VMULEUH_UNS,    "vmuleuh_uns",	CONST,	vec_widen_umult_even_v8hi)
 BU_ALTIVEC_2 (VMULESH,	      "vmulesh",	CONST,	vec_widen_smult_even_v8hi)
 BU_ALTIVEC_2 (VMULOUB,	      "vmuloub",	CONST,	vec_widen_umult_odd_v16qi)
-BU_ALTIVEC_2 (VMULOUB_UNS,    "vmuloub_uns",	CONST,	vec_widen_umult_odd_v16qi)
 BU_ALTIVEC_2 (VMULOSB,	      "vmulosb",	CONST,	vec_widen_smult_odd_v16qi)
 BU_ALTIVEC_2 (VMULOUH,	      "vmulouh",	CONST,	vec_widen_umult_odd_v8hi)
-BU_ALTIVEC_2 (VMULOUH_UNS,    "vmulouh_uns",	CONST,	vec_widen_umult_odd_v8hi)
 BU_ALTIVEC_2 (VMULOSH,	      "vmulosh",	CONST,	vec_widen_smult_odd_v8hi)
 BU_ALTIVEC_2 (VNOR,	      "vnor",		CONST,	norv4si3)
 BU_ALTIVEC_2 (VOR,	      "vor",		CONST,	iorv4si3)
@@ -1964,6 +1960,7 @@ BU_P9V_VSX_1 (XXBRH_V8HI,	"xxbrh_v8hi",	CONST,	p9_xxbrh_v8hi)
 
 /* 2 argument vsx scalar functions added in ISA 3.0 (power9).  */
 BU_P9V_64BIT_VSX_2 (VSIEDP,	"scalar_insert_exp",	CONST,	xsiexpdp)
+BU_P9V_64BIT_VSX_2 (VSIEDPF,	"scalar_insert_exp_dp",	CONST,	xsiexpdpf)
 
 BU_P9V_VSX_2 (VSCEDPGT,	"scalar_cmp_exp_dp_gt",	CONST,	xscmpexpdp_gt)
 BU_P9V_VSX_2 (VSCEDPLT,	"scalar_cmp_exp_dp_lt",	CONST,	xscmpexpdp_lt)
@@ -2052,24 +2049,27 @@ BU_P9V_AV_1 (VCTZLSBB, "vctzlsbb",		CONST,	vctzlsbb)
    new awareness of the "vector compare not equal" (vcmpneb, vcmpneb.,
    vcmpneh, vcmpneh., vcmpnew, vcmpnew.) and "vector compare
    not equal or zero" (vcmpnezb, vcmpnezb., vcmpnezh, vcmpnezh.,
-   vcmpnezw, vcmpnezw.) instructions.  For consistency with existing
-   infrastructure, this new awareness is integrated in the style of
-   earlier implementations of the __builtin_vec_cmpne and
-   __builtin_vec_cmpeq_p functions. */
+   vcmpnezw, vcmpnezw.) instructions.  */
 
 BU_P9V_AV_2 (CMPNEB,	"vcmpneb",	CONST,	vcmpneb)
 BU_P9V_AV_2 (CMPNEH,	"vcmpneh",	CONST,	vcmpneh)
 BU_P9V_AV_2 (CMPNEW,	"vcmpnew",	CONST,	vcmpnew)
-BU_P9V_AV_2 (CMPNEF,	"vcmpnef",	CONST,	vcmpnesp)
-BU_P9V_AV_2 (CMPNED,	"vcmpned",	CONST,	vcmpnedp)
 
-BU_P9V_AV_P (VCMPNEB_P,	"vcmpneb_p",	CONST,	vector_ne_v16qi_p)
-BU_P9V_AV_P (VCMPNEH_P,	"vcmpneh_p",	CONST,	vector_ne_v8hi_p)
-BU_P9V_AV_P (VCMPNEW_P,	"vcmpnew_p",	CONST,	vector_ne_v4si_p)
-BU_P9V_AV_P (VCMPNED_P,	"vcmpned_p",	CONST,	vector_ne_v2di_p)
+BU_P9V_AV_2 (VCMPNEB_P,	"vcmpneb_p",	CONST,	vector_ne_v16qi_p)
+BU_P9V_AV_2 (VCMPNEH_P,	"vcmpneh_p",	CONST,	vector_ne_v8hi_p)
+BU_P9V_AV_2 (VCMPNEW_P,	"vcmpnew_p",	CONST,	vector_ne_v4si_p)
+BU_P9V_AV_2 (VCMPNED_P,	"vcmpned_p",	CONST,	vector_ne_v2di_p)
 
-BU_P9V_AV_P (VCMPNEFP_P,	"vcmpnefp_p",	CONST,	vector_ne_v4sf_p)
-BU_P9V_AV_P (VCMPNEDP_P,	"vcmpnedp_p",	CONST,	vector_ne_v2df_p)
+BU_P9V_AV_2 (VCMPNEFP_P,	"vcmpnefp_p",	CONST,	vector_ne_v4sf_p)
+BU_P9V_AV_2 (VCMPNEDP_P,	"vcmpnedp_p",	CONST,	vector_ne_v2df_p)
+
+BU_P9V_AV_2 (VCMPAEB_P,	"vcmpaeb_p",	CONST,	vector_ae_v16qi_p)
+BU_P9V_AV_2 (VCMPAEH_P,	"vcmpaeh_p",	CONST,	vector_ae_v8hi_p)
+BU_P9V_AV_2 (VCMPAEW_P,	"vcmpaew_p",	CONST,	vector_ae_v4si_p)
+BU_P9V_AV_2 (VCMPAED_P,	"vcmpaed_p",	CONST,	vector_ae_v2di_p)
+
+BU_P9V_AV_2 (VCMPAEFP_P,	"vcmpaefp_p",	CONST,	vector_ae_v4sf_p)
+BU_P9V_AV_2 (VCMPAEDP_P,	"vcmpaedp_p",	CONST,	vector_ae_v2df_p)
 
 BU_P9V_AV_2 (CMPNEZB,	"vcmpnezb",	CONST,	vcmpnezb)
 BU_P9V_AV_2 (CMPNEZH,	"vcmpnezh",	CONST,	vcmpnezh)
@@ -2094,7 +2094,8 @@ BU_P9V_OVERLOAD_3 (VINSERT4B,	"vinsert4b")
 BU_P9V_OVERLOAD_2 (CMPNEZ,	"vcmpnez")
 
 BU_P9V_OVERLOAD_P (VCMPNEZ_P,	"vcmpnez_p")
-BU_P9V_OVERLOAD_P (VCMPNE_P,	"vcmpne_p")
+BU_P9V_OVERLOAD_2 (VCMPNE_P,	"vcmpne_p")
+BU_P9V_OVERLOAD_2 (VCMPAE_P,	"vcmpae_p")
 
 /* ISA 3.0 Vector scalar overloaded 1 argument functions */
 BU_P9V_OVERLOAD_1 (VCLZLSBB,	"vclzlsbb")

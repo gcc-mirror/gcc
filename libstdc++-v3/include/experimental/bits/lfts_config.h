@@ -46,10 +46,14 @@ inline namespace fundamentals_v2 { inline namespace __7 { } }
 
 namespace experimental
 {
-inline namespace fundamentals_v1 { inline namespace __7 { } }
+inline namespace fundamentals_v1 {
+  inline namespace __7 { }
+  namespace __detail { inline namespace __7 { } }
+}
 inline namespace fundamentals_v2 {
   inline namespace __7 { }
   namespace pmr { inline namespace __7 { } }
+  namespace __detail { inline namespace __7 { } }
 } // namespace fundamentals_v2
 inline namespace literals { inline namespace string_view_literals {
   inline namespace __7 { }

@@ -7950,6 +7950,8 @@ duplicate_allocatable_coarray (tree dest, tree dest_tok, tree src,
       tree dummy_desc;
 
       gfc_init_se (&se, NULL);
+      gfc_clear_attr (&attr);
+      attr.allocatable = 1;
       dummy_desc = gfc_conv_scalar_to_descriptor (&se, dest, attr);
       gfc_add_block_to_block (&globalblock, &se.pre);
       size = TYPE_SIZE_UNIT (TREE_TYPE (type));
@@ -8220,9 +8222,17 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
 	  /* Shortcut to get the attributes of the component.  */
 	  if (c->ts.type == BT_CLASS)
-	    attr = &CLASS_DATA (c)->attr;
+	    {
+	      attr = &CLASS_DATA (c)->attr;
+	      if (attr->class_pointer)
+		continue;
+	    }
 	  else
-	    attr = &c->attr;
+	    {
+	      attr = &c->attr;
+	      if (attr->pointer)
+		continue;
+	    }
 
 	  if ((c->ts.type == BT_DERIVED && !c->attr.pointer)
 	     || (c->ts.type == BT_CLASS && !CLASS_DATA (c)->attr.class_pointer))
@@ -8510,14 +8520,15 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      else
 		{
 		  gfc_se se;
-		  symbol_attribute attr;
 
 		  gfc_init_se (&se, NULL);
-		  gfc_clear_attr (&attr);
 		  token = fold_build3_loc (input_location, COMPONENT_REF,
 					   pvoid_type_node, decl, c->caf_token,
 					   NULL_TREE);
-		  comp = gfc_conv_scalar_to_descriptor (&se, comp, attr);
+		  comp = gfc_conv_scalar_to_descriptor (&se, comp,
+							c->ts.type == BT_CLASS
+							? CLASS_DATA (c)->attr
+							: c->attr);
 		  gfc_add_block_to_block (&fnblock, &se.pre);
 		}
 

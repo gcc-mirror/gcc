@@ -264,12 +264,14 @@ _gfortran_caf_sync_images (int count __attribute__ ((unused)),
     *stat = 0;
 }
 
+
 void
 _gfortran_caf_stop_numeric(int32_t stop_code)
 {
   fprintf (stderr, "STOP %d\n", stop_code);
   exit (0);
 }
+
 
 void
 _gfortran_caf_stop_str(const char *string, int32_t len)
@@ -282,6 +284,7 @@ _gfortran_caf_stop_str(const char *string, int32_t len)
   exit (0);
 }
 
+
 void
 _gfortran_caf_error_stop_str (const char *string, int32_t len)
 {
@@ -291,6 +294,74 @@ _gfortran_caf_error_stop_str (const char *string, int32_t len)
   fputs ("\n", stderr);
 
   exit (1);
+}
+
+
+/* Reported that the program terminated because of a fail image issued.
+   Because this is a single image library, nothing else than aborting the whole
+   program can be done.  */
+
+void _gfortran_caf_fail_image (void)
+{
+  fputs ("IMAGE FAILED!\n", stderr);
+  exit (0);
+}
+
+
+/* Get the status of image IMAGE.  Because being the single image library all
+   other images are reported to be stopped.  */
+
+int _gfortran_caf_image_status (int image,
+				caf_team_t * team __attribute__ ((unused)))
+{
+  if (image == 1)
+    return 0;
+  else
+    return CAF_STAT_STOPPED_IMAGE;
+}
+
+
+/* Single image library.  There can not be any failed images with only one
+   image.  */
+
+void
+_gfortran_caf_failed_images (gfc_descriptor_t *array,
+			     caf_team_t * team __attribute__ ((unused)),
+			     int * kind)
+{
+  int local_kind = kind != NULL ? *kind : 4;
+
+  array->base_addr = NULL;
+  array->dtype = ((BT_INTEGER << GFC_DTYPE_TYPE_SHIFT)
+		  | (local_kind << GFC_DTYPE_SIZE_SHIFT));
+   /* Setting lower_bound higher then upper_bound is what the compiler does to
+      indicate an empty array.  */
+  array->dim[0].lower_bound = 0;
+  array->dim[0]._ubound = -1;
+  array->dim[0]._stride = 1;
+  array->offset = 0;
+}
+
+
+/* With only one image available no other images can be stopped.  Therefore
+   return an empty array.  */
+
+void
+_gfortran_caf_stopped_images (gfc_descriptor_t *array,
+			      caf_team_t * team __attribute__ ((unused)),
+			      int * kind)
+{
+  int local_kind = kind != NULL ? *kind : 4;
+
+  array->base_addr = NULL;
+  array->dtype =  ((BT_INTEGER << GFC_DTYPE_TYPE_SHIFT)
+		   | (local_kind << GFC_DTYPE_SIZE_SHIFT));
+  /* Setting lower_bound higher then upper_bound is what the compiler does to
+     indicate an empty array.  */
+  array->dim[0].lower_bound = 0;
+  array->dim[0]._ubound = -1;
+  array->dim[0]._stride = 1;
+  array->offset = 0;
 }
 
 

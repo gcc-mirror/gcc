@@ -6474,7 +6474,7 @@ const pass_data pass_data_gen_hsail =
 {
   GIMPLE_PASS,
   "hsagen",	 			/* name */
-  OPTGROUP_NONE,			/* optinfo_flags */
+  OPTGROUP_OMP,				/* optinfo_flags */
   TV_NONE,				/* tv_id */
   PROP_cfg | PROP_ssa,			/* properties_required */
   0,					/* properties_provided */

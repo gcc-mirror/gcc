@@ -53,7 +53,7 @@ ACX_CHECK_PROG_VER([MAKEINFO], [makeinfo], [--version],
                    [4.[4-9]*|4.[1-9][0-9]*|[5-9]*|[1-9][0-9]*])
 AM_CONDITIONAL(BUILD_INFO, test $gcc_cv_prog_makeinfo_modern = "yes")
 
-ACX_BUGURL([http://gcc.gnu.org/bugs.html])
+ACX_BUGURL([https://gcc.gnu.org/bugs/])
 
 # Configure libtool
 AM_PROG_LIBTOOL

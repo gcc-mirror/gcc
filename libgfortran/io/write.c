@@ -2075,7 +2075,7 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
   /* Write namelist variable names in upper case. If a derived type,
      nothing is output.  If a component, base and base_name are set.  */
 
-  if (obj->type != BT_DERIVED)
+  if (obj->type != BT_DERIVED || obj->dtio_sub != NULL)
     {
       namelist_write_newline (dtp);
       write_character (dtp, " ", 1, 1, NODELIM);
@@ -2227,14 +2227,9 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 		  int noiostat;
 		  int *child_iostat = NULL;
 		  gfc_array_i4 vlist;
-		  gfc_class list_obj;
 		  formatted_dtio dtio_ptr = (formatted_dtio)obj->dtio_sub;
 
 		  GFC_DIMENSION_SET(vlist.dim[0],1, 0, 0);
-
-		  list_obj.data = p;
-		  list_obj.vptr = obj->vtable;
-		  list_obj.len = 0;
 
 		  /* Set iostat, intent(out).  */
 		  noiostat = 0;
@@ -2252,12 +2247,31 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 		      child_iomsg = tmp_iomsg;
 		      child_iomsg_len = IOMSG_LEN;
 		    }
-		  namelist_write_newline (dtp);
+
+		  /* If writing to an internal unit, stash it to allow
+		     the child procedure to access it.  */
+		  if (is_internal_unit (dtp))
+		    stash_internal_unit (dtp);
+		      
 		  /* Call the user defined formatted WRITE procedure.  */
 		  dtp->u.p.current_unit->child_dtio++;
-		  dtio_ptr ((void *)&list_obj, &unit, iotype, &vlist,
-			    child_iostat, child_iomsg,
-			    iotype_len, child_iomsg_len);
+		  if (obj->type == BT_DERIVED)
+		    {
+		      // build a class container
+		      gfc_class list_obj;
+		      list_obj.data = p;
+		      list_obj.vptr = obj->vtable;
+		      list_obj.len = 0;
+		      dtio_ptr ((void *)&list_obj, &unit, iotype, &vlist,
+				child_iostat, child_iomsg,
+				iotype_len, child_iomsg_len);
+		    }
+		  else
+		    {
+		      dtio_ptr (p, &unit, iotype, &vlist,
+				child_iostat, child_iomsg,
+				iotype_len, child_iomsg_len);
+		    }
 		  dtp->u.p.current_unit->child_dtio--;
 
 		  goto obj_loop;

@@ -5,7 +5,7 @@
 
 #include <altivec.h>
 
-__vector long long int
+__vector unsigned long long int
 get_significands (__vector double *p)
 {
   __vector double source = *p;

@@ -130,6 +130,8 @@ struct lra_operand_data
 {
   /* The machine description constraint string of the operand.	*/
   const char *constraint;
+  /* Alternatives for which early_clobber can be true.  */
+  alternative_mask early_clobber_alts;
   /* It is taken only from machine description (which is different
      from recog_data.operand_mode) and can be of VOIDmode.  */
   ENUM_BITFIELD(machine_mode) mode : 16;
@@ -150,6 +152,8 @@ struct lra_operand_data
 /* Info about register occurrence in an insn.  */
 struct lra_insn_reg
 {
+  /* Alternatives for which early_clobber can be true.  */
+  alternative_mask early_clobber_alts;
   /* The biggest mode through which the insn refers to the register
      occurrence (remember the register can be accessed through a
      subreg in the insn).  */

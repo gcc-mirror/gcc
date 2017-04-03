@@ -1139,7 +1139,7 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
       if (name1 && name2 && strcmp (name1, name2))
 	{
 	  inform (loc_t1,
-		  "type name %<%s%> should match type name %<%s%>",
+		  "type name %qs should match type name %qs",
 		  name1, name2);
 	  if (loc_t2_useful)
 	    inform (loc_t2,
@@ -1628,7 +1628,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 		      if (DECL_VIRTUAL_P (f1) != DECL_VIRTUAL_P (f2))
 			{
 			  warn_odr (t1, t2, f1, f2, warn, warned,
-				    G_("s definition that differs by virtual "
+				    G_("a definition that differs by virtual "
 				       "keyword in another translation unit"));
 			  return false;
 			}
@@ -2462,10 +2462,19 @@ maybe_record_node (vec <cgraph_node *> &nodes,
 	  nodes.safe_push (target_node);
 	}
     }
-  else if (completep
-	   && (!type_in_anonymous_namespace_p
-		 (DECL_CONTEXT (target))
-	       || flag_ltrans))
+  else if (!completep)
+    ;
+  /* We have definition of __cxa_pure_virtual that is not accessible (it is
+     optimized out or partitioned to other unit) so we can not add it.  When
+     not sanitizing, there is nothing to do.
+     Otherwise declare the list incomplete.  */
+  else if (pure_virtual)
+    {
+      if (flag_sanitize & SANITIZE_UNREACHABLE)
+	*completep = false;
+    }
+  else if (flag_ltrans
+	   || !type_in_anonymous_namespace_p (DECL_CONTEXT (target)))
     *completep = false;
 }
 

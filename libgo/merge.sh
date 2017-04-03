@@ -71,7 +71,9 @@ merge() {
   elif test -f ${old}; then
     # The file exists in the old version.
     if ! test -f ${libgo}; then
-      echo "merge.sh: $name: skipping: exists in old and new git, but not in libgo"
+      if ! cmp -s ${old} ${new}; then
+        echo "merge.sh: $name: skipping: exists in old and new git, but not in libgo"
+      fi
       continue
     fi
     if cmp -s ${old} ${libgo}; then
@@ -147,7 +149,7 @@ done
 
 (cd ${NEWDIR}/src && find . -name testdata -print) | while read d; do
   skip=false
-  case "$f" in
+  case "$d" in
   ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/internal/browser/*)
     ;;
   ./cmd/*)

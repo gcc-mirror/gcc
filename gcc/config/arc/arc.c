@@ -243,11 +243,8 @@ static bool arc_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 						enum by_pieces_operation op,
 						bool);
 
-static const arc_cpu_t *arc_selected_cpu;
-static const arc_arch_t *arc_selected_arch;
-
-/* Global var which sets the current compilation architecture.  */
-enum base_architecture arc_base_cpu;
+/* Globally visible information about currently selected cpu.  */
+const arc_cpu_t *arc_selected_cpu;
 
 /* Implements target hook vector_mode_supported_p.  */
 
@@ -679,6 +676,12 @@ make_pass_arc_predicate_delay_insns (gcc::context *ctxt)
 static void
 arc_init (void)
 {
+  if (TARGET_V2)
+    {
+      /* I have the multiplier, then use it*/
+      if (TARGET_MPYW || TARGET_MULTI)
+	  arc_multcost = COSTS_N_INSNS (1);
+    }
   /* Note: arc_multcost is only used in rtx_cost if speed is true.  */
   if (arc_multcost < 0)
     switch (arc_tune)
@@ -787,11 +790,9 @@ arc_override_options (void)
 
   /* Set the default cpu options.  */
   arc_selected_cpu = &arc_cpu_types[(int) arc_cpu];
-  arc_selected_arch = &arc_arch_types[(int) arc_selected_cpu->arch];
-  arc_base_cpu = arc_selected_arch->arch;
 
   /* Set the architectures.  */
-  switch (arc_selected_arch->arch)
+  switch (arc_selected_cpu->arch_info->arch_id)
     {
     case BASE_ARCH_em:
       arc_cpu_string = "EM";
@@ -822,16 +823,16 @@ arc_override_options (void)
     if ((arc_selected_cpu->flags & CODE)		\
 	&& ((target_flags_explicit & MASK) == 0))	\
       target_flags |= MASK;				\
-    if (arc_selected_arch->dflags & CODE)		\
+    if (arc_selected_cpu->arch_info->dflags & CODE)	\
       target_flags |= MASK;				\
   } while (0);
-#define ARC_OPTX(NAME, CODE, VAR, VAL, DOC)	\
-  do {						\
-    if ((arc_selected_cpu->flags & CODE)	\
-	&& (VAR == DEFAULT_##VAR))		\
-      VAR = VAL;				\
-    if (arc_selected_arch->dflags & CODE)	\
-      VAR = VAL;				\
+#define ARC_OPTX(NAME, CODE, VAR, VAL, DOC)		\
+  do {							\
+    if ((arc_selected_cpu->flags & CODE)		\
+	&& (VAR == DEFAULT_##VAR))			\
+      VAR = VAL;					\
+    if (arc_selected_cpu->arch_info->dflags & CODE)	\
+      VAR = VAL;					\
   } while (0);
 
 #include "arc-options.def"
@@ -844,18 +845,18 @@ arc_override_options (void)
 #define ARC_OPTX(NAME, CODE, VAR, VAL, DOC)			\
   do {								\
     if ((VAR == VAL)						\
-	&& (!(arc_selected_arch->flags & CODE)))		\
+	&& (!(arc_selected_cpu->arch_info->flags & CODE)))	\
       {								\
 	error ("%s is not available for %s architecture",	\
-	       DOC, arc_selected_arch->name);			\
+	       DOC, arc_selected_cpu->arch_info->name);		\
       }								\
   } while (0);
 #define ARC_OPT(NAME, CODE, MASK, DOC)				\
   do {								\
     if ((target_flags & MASK)					\
-	&& (!(arc_selected_arch->flags & CODE)))		\
+	&& (!(arc_selected_cpu->arch_info->flags & CODE)))	\
       error ("%s is not available for %s architecture",		\
-	     DOC, arc_selected_arch->name);			\
+	     DOC, arc_selected_cpu->arch_info->name);		\
   } while (0);
 
 #include "arc-options.def"
@@ -1379,20 +1380,42 @@ arc_conditional_register_usage (void)
     }
   if (TARGET_Q_CLASS)
     {
-      reg_alloc_order[2] = 12;
-      reg_alloc_order[3] = 13;
-      reg_alloc_order[4] = 14;
-      reg_alloc_order[5] = 15;
-      reg_alloc_order[6] = 1;
-      reg_alloc_order[7] = 0;
-      reg_alloc_order[8] = 4;
-      reg_alloc_order[9] = 5;
-      reg_alloc_order[10] = 6;
-      reg_alloc_order[11] = 7;
-      reg_alloc_order[12] = 8;
-      reg_alloc_order[13] = 9;
-      reg_alloc_order[14] = 10;
-      reg_alloc_order[15] = 11;
+      if (optimize_size)
+	{
+	  reg_alloc_order[0] = 0;
+	  reg_alloc_order[1] = 1;
+	  reg_alloc_order[2] = 2;
+	  reg_alloc_order[3] = 3;
+	  reg_alloc_order[4] = 12;
+	  reg_alloc_order[5] = 13;
+	  reg_alloc_order[6] = 14;
+	  reg_alloc_order[7] = 15;
+	  reg_alloc_order[8] = 4;
+	  reg_alloc_order[9] = 5;
+	  reg_alloc_order[10] = 6;
+	  reg_alloc_order[11] = 7;
+	  reg_alloc_order[12] = 8;
+	  reg_alloc_order[13] = 9;
+	  reg_alloc_order[14] = 10;
+	  reg_alloc_order[15] = 11;
+	}
+      else
+	{
+	  reg_alloc_order[2] = 12;
+	  reg_alloc_order[3] = 13;
+	  reg_alloc_order[4] = 14;
+	  reg_alloc_order[5] = 15;
+	  reg_alloc_order[6] = 1;
+	  reg_alloc_order[7] = 0;
+	  reg_alloc_order[8] = 4;
+	  reg_alloc_order[9] = 5;
+	  reg_alloc_order[10] = 6;
+	  reg_alloc_order[11] = 7;
+	  reg_alloc_order[12] = 8;
+	  reg_alloc_order[13] = 9;
+	  reg_alloc_order[14] = 10;
+	  reg_alloc_order[15] = 11;
+	}
     }
   if (TARGET_SIMD_SET)
     {
@@ -3837,8 +3860,6 @@ arc_ccfsm_advance (rtx_insn *insn, struct arc_ccfsm *state)
 	      break;
 	    }
 
-	  scanbody = PATTERN (this_insn);
-
 	  switch (GET_CODE (this_insn))
 	    {
 	    case CODE_LABEL:
@@ -3873,6 +3894,8 @@ arc_ccfsm_advance (rtx_insn *insn, struct arc_ccfsm *state)
 	      break;
 
 	    case JUMP_INSN:
+	      scanbody = PATTERN (this_insn);
+
 	      /* If this is an unconditional branch to the same label, succeed.
 		 If it is to another label, do nothing.  If it is conditional,
 		 fail.  */
@@ -3907,6 +3930,8 @@ arc_ccfsm_advance (rtx_insn *insn, struct arc_ccfsm *state)
 	      break;
 
 	    case INSN:
+	      scanbody = PATTERN (this_insn);
+
 	      /* We can only do this with insns that can use the condition
 		 codes (and don't set them).  */
 	      if (GET_CODE (scanbody) == SET
@@ -4903,8 +4928,55 @@ arc_legitimize_pic_address (rtx orig, rtx oldx)
 	      /* Check that the unspec is one of the ones we generate?  */
 	      return orig;
 	    }
+	  /* fwprop is placing in the REG_EQUIV notes constant pic
+	     unspecs expressions.  Then, loop may use these notes for
+	     optimizations resulting in complex patterns that are not
+	     supported by the current implementation. The following
+	     two if-cases are simplifying the complex patters to
+	     simpler ones.  */
+	  else if (GET_CODE (addr) == MINUS)
+	    {
+	      rtx op0 = XEXP (addr, 0);
+	      rtx op1 = XEXP (addr, 1);
+	      gcc_assert (oldx);
+	      gcc_assert (GET_CODE (op1) == UNSPEC);
+
+	      emit_move_insn (oldx,
+			      gen_rtx_CONST (SImode,
+					     arc_legitimize_pic_address (op1,
+									 NULL_RTX)));
+	      emit_insn (gen_rtx_SET (oldx, gen_rtx_MINUS (SImode, op0, oldx)));
+	      return oldx;
+
+	    }
+	  else if (GET_CODE (addr) != PLUS)
+	    {
+	      rtx tmp = XEXP (addr, 0);
+	      enum rtx_code code = GET_CODE (addr);
+
+	      /* It only works for UNARY operations.  */
+	      gcc_assert (UNARY_P (addr));
+	      gcc_assert (GET_CODE (tmp) == UNSPEC);
+	      gcc_assert (oldx);
+
+	      emit_move_insn
+		(oldx,
+		 gen_rtx_CONST (SImode,
+				arc_legitimize_pic_address (tmp,
+							    NULL_RTX)));
+
+	      emit_insn (gen_rtx_SET (oldx,
+				      gen_rtx_fmt_ee (code, SImode,
+						      oldx, const0_rtx)));
+
+	      return oldx;
+	    }
 	  else
-	    gcc_assert (GET_CODE (addr) == PLUS);
+	    {
+	      gcc_assert (GET_CODE (addr) == PLUS);
+	      if (GET_CODE (XEXP (addr, 0)) == UNSPEC)
+		return orig;
+	    }
 	}
 
       if (GET_CODE (addr) == PLUS)
@@ -7292,6 +7364,17 @@ arc_output_addsi (rtx *operands, bool cond_p, bool output_p)
 	  || (REGNO (operands[0]) == STACK_POINTER_REGNUM
 	      && match && !(neg_intval & ~124)))
 	ADDSI_OUTPUT1 ("sub%? %0,%1,%n2");
+
+      if (REG_P(operands[0]) && REG_P(operands[1])
+	  && (REGNO(operands[0]) <= 31) && (REGNO(operands[0]) == REGNO(operands[1]))
+	  && CONST_INT_P (operands[2]) && ( (intval>= -1) && (intval <= 6)))
+	ADDSI_OUTPUT1 ("add%? %0,%1,%2");
+
+      if (TARGET_CODE_DENSITY && REG_P(operands[0]) && REG_P(operands[1])
+	  && ((REGNO(operands[0]) == 0) || (REGNO(operands[0]) == 1))
+	  && satisfies_constraint_Rcq (operands[1])
+	  && satisfies_constraint_L (operands[2]))
+	ADDSI_OUTPUT1 ("add%? %0,%1,%2 ;3");
     }
 
   /* Now try to emit a 32 bit insn without long immediate.  */
@@ -7406,7 +7489,7 @@ force_offsettable (rtx addr, HOST_WIDE_INT size, bool reuse)
     }
   if (!REG_P (base)
       || (REGNO (base) != STACK_POINTER_REGNUM
-	  && REGNO_PTR_FRAME_P (REGNO (addr)))
+	  && REGNO_PTR_FRAME_P (REGNO (base)))
       || !CONST_INT_P (offs) || !SMALL_INT (INTVAL (offs))
       || !SMALL_INT (INTVAL (offs) + size))
     {
@@ -9298,9 +9381,10 @@ arc_can_follow_jump (const rtx_insn *follower, const rtx_insn *followee)
    Return true if REGNO should be added to the deemed uses of the epilogue.
 
    We use the return address
-   arc_return_address_regs[arc_compute_function_type (cfun)] .
-   But also, we have to make sure all the register restore instructions
-   are known to be live in interrupt functions.  */
+   arc_return_address_regs[arc_compute_function_type (cfun)].  But
+   also, we have to make sure all the register restore instructions
+   are known to be live in interrupt functions, plus the blink
+   register if it is clobbered by the isr.  */
 
 bool
 arc_epilogue_uses (int regno)
@@ -9313,7 +9397,8 @@ arc_epilogue_uses (int regno)
 	{
 	  if (!fixed_regs[regno])
 	    return true;
-	  return regno == arc_return_address_regs[cfun->machine->fn_type];
+	  return ((regno == arc_return_address_regs[cfun->machine->fn_type])
+		  || (regno == RETURN_ADDR_REGNUM));
 	}
       else
 	return regno == RETURN_ADDR_REGNUM;

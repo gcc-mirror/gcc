@@ -189,13 +189,13 @@ __divdf3:
 	asl r8,DBL1H,12
 	lsr r12,DBL1L,20
 	lsr r4,r8,26
-#ifdef __HS__
+#if defined (__ARCHS__) || defined (__ARCEM__)
 	add3 r10,pcl,60 ; (.Ldivtab-.) >> 3
 #else
 	add3 r10,pcl,59 ; (.Ldivtab-.) >> 3
 #endif
 	ld.as r4,[r10,r4]
-#ifdef __HS__
+#if defined (__ARCHS__) || defined (__ARCEM__)
 	ld.as r9,[pcl,182]; [pcl,(-((.-.L7ff00000) >> 2))] ; 0x7ff00000
 #else
 	ld.as r9,[pcl,180]; [pcl,(-((.-.L7ff00000) >> 2))] ; 0x7ff00000
@@ -299,14 +299,14 @@ __divdf3:
 	rsub r7,r6,5
 	asr r10,r12,28
 	bmsk r4,r12,27
-#ifdef __HS__
+#if defined (__ARCHS__) || defined (__ARCEM__)
 	min  r7, r7, 31
 	asr  DBL0L, r4, r7
 #else
 	asrs DBL0L,r4,r7
 #endif
 	add DBL1H,r11,r10
-#ifdef __HS__
+#if defined (__ARCHS__) || defined (__ARCEM__)
 	abs.f r10, r4
 	sub.mi r10, r10, 1
 #endif

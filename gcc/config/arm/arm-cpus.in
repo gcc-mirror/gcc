@@ -814,7 +814,7 @@ end cpu cortex-m0.small-multiply
 
 begin cpu cortex-m0plus.small-multiply
  cname cortexm0plussmallmultiply
- tune for cortexm0-plus
+ tune for cortex-m0plus
  tune flags LDSCHED SMALLMUL
  architecture armv6-m
  costs v6m

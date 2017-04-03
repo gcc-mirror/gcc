@@ -82,11 +82,12 @@ specifications.
 Janne Blomqvist for contributions to GNU Fortran.
 
 @item
-Segher Boessenkool for various fixes.
+Hans-J. Boehm for his garbage collector, IA-64 libffi port, and other
+Java work.
 
 @item
-Hans-J. Boehm for his @uref{http://www.hpl.hp.com/@/personal/@/Hans_Boehm/@/gc/,,
-garbage collector}, IA-64 libffi port, and other Java work.
+Segher Boessenkool for helping maintain the PowerPC port and the
+instruction combiner plus various contributions to the middle end.
 
 @item
 Neil Booth for work on cpplib, lang hooks, debug hooks and other
@@ -173,6 +174,10 @@ Denis Chertykov for contributing and maintaining the AVR port, the first GCC por
 for an 8-bit architecture.
 
 @item
+Kito Cheng for his work on the RISC-V port, including bringing up the test
+suite and maintenance.
+
+@item
 Scott Christley for his Objective-C contributions.
 
 @item
@@ -215,6 +220,9 @@ Ian Dall for major improvements to the NS32k port.
 @item
 Paul Dale for his work to add uClinux platform support to the
 m68k backend.
+
+@item
+Palmer Dabbelt for his work maintaining the RISC-V port.
 
 @item
 Dario Dariol contributed the four varieties of sample programs
@@ -625,9 +633,7 @@ Michael Matz for his work on dominance tree discovery, the x86-64 port,
 link-time optimization framework and general optimization improvements.
 
 @item
-All of the Mauve project
-@uref{http://sourceware.org/cgi-bin/cvsweb.cgi/~checkout~/mauve/THANKS?rev=1.2&cvsroot=mauve&only_with_tag=HEAD,,contributors},
-for Java test code.
+All of the Mauve project contributors for Java test code.
 
 @item
 Bryce McKinlay for numerous GCJ and libgcj fixes and improvements.
@@ -1033,6 +1039,9 @@ associated configure steps.
 
 @item
 Todd Vierling for contributions for NetBSD ports.
+
+@item
+Andrew Waterman for contributing the RISC-V port, as well as maintaining it.
 
 @item
 Jonathan Wakely for contributing libstdc++ Doxygen notes and XHTML

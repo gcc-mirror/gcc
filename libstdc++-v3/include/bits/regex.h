@@ -2674,9 +2674,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 			   initializer_list<int>,
 			   regex_constants::match_flag_type =
 			   regex_constants::match_default) = delete;
-      template <std::size_t N>
+      template <std::size_t _Nm>
 	regex_token_iterator(_Bi_iter, _Bi_iter, const regex_type&&,
-			     const int (&)[N],
+			     const int (&)[_Nm],
 			     regex_constants::match_flag_type =
 			     regex_constants::match_default) = delete;
 

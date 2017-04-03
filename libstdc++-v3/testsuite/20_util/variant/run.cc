@@ -47,6 +47,13 @@ struct AlwaysThrow
     throw nullptr;
     return *this;
   }
+
+  bool operator<(const AlwaysThrow&) const { VERIFY(false); }
+  bool operator<=(const AlwaysThrow&) const { VERIFY(false); }
+  bool operator==(const AlwaysThrow&) const { VERIFY(false); }
+  bool operator!=(const AlwaysThrow&) const { VERIFY(false); }
+  bool operator>=(const AlwaysThrow&) const { VERIFY(false); }
+  bool operator>(const AlwaysThrow&) const { VERIFY(false); }
 };
 
 void default_ctor()
@@ -182,6 +189,15 @@ void emplace()
     try { v.emplace<1>(AlwaysThrow{}); } catch (nullptr_t) { }
     VERIFY(v.valueless_by_exception());
   }
+  VERIFY(&v.emplace<0>(1) == &std::get<0>(v));
+  VERIFY(&v.emplace<int>(1) == &std::get<int>(v));
+  VERIFY(&v.emplace<1>("a") == &std::get<1>(v));
+  VERIFY(&v.emplace<string>("a") == &std::get<string>(v));
+  {
+    variant<vector<int>> v;
+    VERIFY(&v.emplace<0>({1,2,3}) == &std::get<0>(v));
+    VERIFY(&v.emplace<vector<int>>({1,2,3}) == &std::get<vector<int>>(v));
+  }
 }
 
 void test_get()
@@ -229,6 +245,23 @@ void test_relational()
 
   VERIFY((variant<int, string>(2) < variant<int, string>("a")));
   VERIFY((variant<string, int>(2) > variant<string, int>("a")));
+
+  {
+    variant<int, AlwaysThrow> v, w;
+    try
+      {
+	AlwaysThrow a;
+	v = a;
+      }
+    catch (nullptr_t) { }
+    VERIFY(v.valueless_by_exception());
+    VERIFY(v < w);
+    VERIFY(v <= w);
+    VERIFY(!(v == w));
+    VERIFY(v != w);
+    VERIFY(w > v);
+    VERIFY(w >= v);
+  }
 }
 
 void test_swap()

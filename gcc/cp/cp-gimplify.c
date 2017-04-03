@@ -549,6 +549,7 @@ simple_empty_class_p (tree type, tree op)
   return
     ((TREE_CODE (op) == COMPOUND_EXPR
       && simple_empty_class_p (type, TREE_OPERAND (op, 1)))
+     || TREE_CODE (op) == EMPTY_CLASS_EXPR
      || is_gimple_lvalue (op)
      || INDIRECT_REF_P (op)
      || (TREE_CODE (op) == CONSTRUCTOR
@@ -1107,6 +1108,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
   if (wtd->handle_invisiref_parm_p && is_invisiref_parm (stmt))
     {
       *stmt_p = convert_from_reference (stmt);
+      p_set->add (*stmt_p);
       *walk_subtrees = 0;
       return NULL;
     }
@@ -1125,6 +1127,19 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  *stmt_p = h->to;
 	  *walk_subtrees = 0;
 	  return NULL;
+	}
+    }
+
+  if (TREE_CODE (stmt) == INTEGER_CST
+      && TREE_CODE (TREE_TYPE (stmt)) == REFERENCE_TYPE
+      && (flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT))
+      && !wtd->no_sanitize_p)
+    {
+      ubsan_maybe_instrument_reference (stmt_p);
+      if (*stmt_p != stmt)
+	{
+	  *walk_subtrees = 0;
+	  return NULL_TREE;
 	}
     }
 
@@ -1475,7 +1490,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       if ((flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT))
 	  && TREE_CODE (stmt) == NOP_EXPR
 	  && TREE_CODE (TREE_TYPE (stmt)) == REFERENCE_TYPE)
-	ubsan_maybe_instrument_reference (stmt);
+	ubsan_maybe_instrument_reference (stmt_p);
       else if (TREE_CODE (stmt) == CALL_EXPR)
 	{
 	  tree fn = CALL_EXPR_FN (stmt);
@@ -2054,6 +2069,14 @@ cp_fold (tree x)
   code = TREE_CODE (x);
   switch (code)
     {
+    case CLEANUP_POINT_EXPR:
+      /* Strip CLEANUP_POINT_EXPR if the expression doesn't have side
+	 effects.  */
+      r = cp_fold_rvalue (TREE_OPERAND (x, 0));
+      if (!TREE_SIDE_EFFECTS (r))
+	x = r;
+      break;
+
     case SIZEOF_EXPR:
       x = fold_sizeof_expr (x);
       break;
@@ -2357,30 +2380,26 @@ cp_fold (tree x)
       {
 	unsigned i;
 	constructor_elt *p;
-	bool changed = false;
 	vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (x);
 	vec<constructor_elt, va_gc> *nelts = NULL;
-	vec_safe_reserve (nelts, vec_safe_length (elts));
 	FOR_EACH_VEC_SAFE_ELT (elts, i, p)
 	  {
 	    tree op = cp_fold (p->value);
-	    constructor_elt e = { p->index, op };
-	    nelts->quick_push (e);
 	    if (op != p->value)
 	      {
 		if (op == error_mark_node)
 		  {
 		    x = error_mark_node;
-		    changed = false;
+		    vec_free (nelts);
 		    break;
 		  }
-		changed = true;
+		if (nelts == NULL)
+		  nelts = elts->copy ();
+		(*nelts)[i].value = op;
 	      }
 	  }
-	if (changed)
+	if (nelts)
 	  x = build_constructor (TREE_TYPE (x), nelts);
-	else
-	  vec_free (nelts);
 	break;
       }
     case TREE_VEC:

@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fcoarray=lib -lcaf_single" }
+! { dg-additional-options "-latomic" { target libatomic_available } }
 !
 ! Contributed by Andre Vehreschild
 ! Check that manually freeing components does not lead to a runtime crash,

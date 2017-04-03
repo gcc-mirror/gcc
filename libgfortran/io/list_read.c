@@ -51,7 +51,8 @@ typedef unsigned char uchar;
 #define CASE_DIGITS   case '0': case '1': case '2': case '3': case '4': \
                       case '5': case '6': case '7': case '8': case '9'
 
-#define CASE_SEPARATORS case ' ': case ',': case '/': case '\n': \
+#define CASE_SEPARATORS /* Fall through. */ \
+			case ' ': case ',': case '/': case '\n': \
 			case '\t': case '\r': case ';'
 
 /* This macro assumes that we're operating on a variable.  */
@@ -2221,6 +2222,7 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 	  dtp->u.p.fdtio_ptr (p, &unit, iotype, &vlist,
 			      child_iostat, child_iomsg,
 			      iotype_len, child_iomsg_len);
+	  dtp->u.p.child_saved_iostat = *child_iostat;
 	  dtp->u.p.current_unit->child_dtio--;
       }
       break;
@@ -2352,15 +2354,18 @@ finish_list_read (st_parameter_dt *dtp)
       /* Set the next_char and push_char worker functions.  */
       set_workers (dtp);
 
-      c = next_char (dtp);
-      if (c == EOF)
+      if (likely (dtp->u.p.child_saved_iostat == LIBERROR_OK))
 	{
-	  free_line (dtp);
-	  hit_eof (dtp);
-	  return;
+	  c = next_char (dtp);
+	  if (c == EOF)
+	    {
+	      free_line (dtp);
+	      hit_eof (dtp);
+	      return;
+	    }
+	  if (c != '\n')
+	    eat_line (dtp);
 	}
-      if (c != '\n')
-	eat_line (dtp);
     }
 
   free_line (dtp);
@@ -2953,6 +2958,61 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 	    break;
 
 	  case BT_DERIVED:
+	    /* If this object has a User Defined procedure, call it.  */
+	    if (nl->dtio_sub != NULL)
+	      {
+		int unit = dtp->u.p.current_unit->unit_number;
+		char iotype[] = "NAMELIST";
+		gfc_charlen_type iotype_len = 8;
+		char tmp_iomsg[IOMSG_LEN] = "";
+		char *child_iomsg;
+		gfc_charlen_type child_iomsg_len;
+		int noiostat;
+		int *child_iostat = NULL;
+		gfc_array_i4 vlist;
+		gfc_class list_obj;
+		formatted_dtio dtio_ptr = (formatted_dtio)nl->dtio_sub;
+
+		GFC_DESCRIPTOR_DATA(&vlist) = NULL;
+		GFC_DIMENSION_SET(vlist.dim[0],1, 0, 0);
+
+		list_obj.data = (void *)nl->mem_pos;
+		list_obj.vptr = nl->vtable;
+		list_obj.len = 0;
+
+		/* Set iostat, intent(out).  */
+		noiostat = 0;
+		child_iostat = (dtp->common.flags & IOPARM_HAS_IOSTAT) ?
+				dtp->common.iostat : &noiostat;
+
+		/* Set iomsg, intent(inout).  */
+		if (dtp->common.flags & IOPARM_HAS_IOMSG)
+		  {
+		    child_iomsg = dtp->common.iomsg;
+		    child_iomsg_len = dtp->common.iomsg_len;
+		  }
+		else
+		  {
+		    child_iomsg = tmp_iomsg;
+		    child_iomsg_len = IOMSG_LEN;
+		  }
+
+		/* If reading from an internal unit, stash it to allow
+		   the child procedure to access it.  */
+		if (is_internal_unit (dtp))
+		  stash_internal_unit (dtp);
+
+		/* Call the user defined formatted READ procedure.  */
+		dtp->u.p.current_unit->child_dtio++;
+		dtio_ptr ((void *)&list_obj, &unit, iotype, &vlist,
+			  child_iostat, child_iomsg,
+			  iotype_len, child_iomsg_len);
+		dtp->u.p.child_saved_iostat = *child_iostat;
+		dtp->u.p.current_unit->child_dtio--;
+		goto incr_idx;
+	      }
+
+	    /* Must be default derived type namelist read.  */
 	    obj_name_len = strlen (nl->var_name) + 1;
 	    obj_name = xmalloc (obj_name_len+1);
 	    memcpy (obj_name, nl->var_name, obj_name_len-1);
@@ -3263,53 +3323,6 @@ get_name:
 
       goto nml_err_ret;
     }
-  else if (nl->dtio_sub != NULL)
-    {
-      int unit = dtp->u.p.current_unit->unit_number;
-      char iotype[] = "NAMELIST";
-      gfc_charlen_type iotype_len = 8;
-      char tmp_iomsg[IOMSG_LEN] = "";
-      char *child_iomsg;
-      gfc_charlen_type child_iomsg_len;
-      int noiostat;
-      int *child_iostat = NULL;
-      gfc_array_i4 vlist;
-      gfc_class list_obj;
-      formatted_dtio dtio_ptr = (formatted_dtio)nl->dtio_sub;
-
-      GFC_DESCRIPTOR_DATA(&vlist) = NULL;
-      GFC_DIMENSION_SET(vlist.dim[0],1, 0, 0);
-
-      list_obj.data = (void *)nl->mem_pos;
-      list_obj.vptr = nl->vtable;
-      list_obj.len = 0;
-
-      /* Set iostat, intent(out).  */
-      noiostat = 0;
-      child_iostat = (dtp->common.flags & IOPARM_HAS_IOSTAT) ?
-		      dtp->common.iostat : &noiostat;
-
-      /* Set iomsg, intent(inout).  */
-      if (dtp->common.flags & IOPARM_HAS_IOMSG)
-	{
-	  child_iomsg = dtp->common.iomsg;
-	  child_iomsg_len = dtp->common.iomsg_len;
-	}
-      else
-	{
-	  child_iomsg = tmp_iomsg;
-	  child_iomsg_len = IOMSG_LEN;
-	}
-
-      /* Call the user defined formatted READ procedure.  */
-      dtp->u.p.current_unit->child_dtio++;
-      dtio_ptr ((void *)&list_obj, &unit, iotype, &vlist,
-		child_iostat, child_iomsg,
-		iotype_len, child_iomsg_len);
-      dtp->u.p.current_unit->child_dtio--;
-
-      return true;
-    }
 
   /* Get the length, data length, base pointer and rank of the variable.
      Set the default loop specification first.  */
@@ -3456,11 +3469,12 @@ get_name:
 		nl->var_name);
       goto nml_err_ret;
     }
+
   /* If a derived type, touch its components and restore the root
      namelist_info if we have parsed a qualified derived type
      component.  */
 
-  if (nl->type == BT_DERIVED)
+  if (nl->type == BT_DERIVED && nl->dtio_sub == NULL)
     nml_touch_nodes (nl);
 
   if (first_nl)

@@ -323,9 +323,17 @@ dump_unary_rhs (pretty_printer *buffer, gassign *gs, int spc, int flags)
       break;
 
     case ABS_EXPR:
-      pp_string (buffer, "ABS_EXPR <");
-      dump_generic_node (buffer, rhs, spc, flags, false);
-      pp_greater (buffer);
+      if (flags & TDF_GIMPLE)
+	{
+	  pp_string (buffer, "__ABS ");
+	  dump_generic_node (buffer, rhs, spc, flags, false);
+	}
+      else
+	{
+	  pp_string (buffer, "ABS_EXPR <");
+	  dump_generic_node (buffer, rhs, spc, flags, false);
+	  pp_greater (buffer);
+	}
       break;
 
     default:
@@ -445,11 +453,24 @@ dump_ternary_rhs (pretty_printer *buffer, gassign *gs, int spc, int flags)
       break;
 
     case FMA_EXPR:
-      dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
-      pp_string (buffer, " * ");
-      dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
-      pp_string (buffer, " + ");
-      dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
+      if (flags & TDF_GIMPLE)
+	{
+	  pp_string (buffer, "__FMA (");
+	  dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
+	  pp_comma (buffer);
+	  dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
+	  pp_comma (buffer);
+	  dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
+	  pp_right_paren (buffer);
+	}
+      else
+	{
+	  dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
+	  pp_string (buffer, " * ");
+	  dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
+	  pp_string (buffer, " + ");
+	  dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
+	}
       break;
 
     case DOT_PROD_EXPR:

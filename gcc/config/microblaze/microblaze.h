@@ -757,7 +757,7 @@ do {									\
    an assembler-name for a local static variable named NAME.
    LABELNO is an integer which is different for each call.  */
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)			\
-( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),			\
+( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 13),			\
   sprintf ((OUTPUT), "%s.%lu", (NAME), (unsigned long)(LABELNO)))
 
 /* How to start an assembler comment.

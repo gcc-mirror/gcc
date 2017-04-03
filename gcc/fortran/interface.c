@@ -398,10 +398,10 @@ gfc_match_end_interface (void)
 	      m = MATCH_ERROR;
 	      if (strcmp(s2, "none") == 0)
 		gfc_error ("Expecting %<END INTERFACE OPERATOR (%s)%> "
-			   "at %C, ", s1);
+			   "at %C", s1);
 	      else
 		gfc_error ("Expecting %<END INTERFACE OPERATOR (%s)%> at %C, "
-			   "but got %s", s1, s2);
+			   "but got %qs", s1, s2);
 	    }
 
 	}
@@ -4615,7 +4615,7 @@ check_dtio_arg_TKR_intent (gfc_symbol *fsym, bool typebound, bt type,
       && rank == 0
       && (((type == BT_CLASS) && CLASS_DATA (fsym)->attr.dimension)
 	  || ((type != BT_CLASS) && fsym->attr.dimension)))
-    gfc_error ("DTIO dummy argument at %L be a scalar",
+    gfc_error ("DTIO dummy argument at %L must be a scalar",
 	       &fsym->declared_at);
   else if (rank == 1
 	   && (fsym->as == NULL || fsym->as->type != AS_ASSUMED_SHAPE))
@@ -4623,7 +4623,7 @@ check_dtio_arg_TKR_intent (gfc_symbol *fsym, bool typebound, bt type,
 	       "ASSUMED SHAPE ARRAY", &fsym->declared_at);
 
   if (fsym->attr.intent != intent)
-    gfc_error ("DTIO dummy argument at %L must have intent %s",
+    gfc_error ("DTIO dummy argument at %L must have INTENT %s",
 	       &fsym->declared_at, gfc_code2string (intents, (int)intent));
   return;
 }
@@ -4694,7 +4694,7 @@ check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
 
   gcc_assert (dtio_sub);
   if (!dtio_sub->attr.subroutine)
-    gfc_error ("DTIO procedure '%s' at %L must be a subroutine",
+    gfc_error ("DTIO procedure %qs at %L must be a subroutine",
 	       dtio_sub->name, &dtio_sub->declared_at);
 
   arg_num = 0;
@@ -4703,14 +4703,14 @@ check_dtio_interface1 (gfc_symbol *derived, gfc_symtree *tb_io_st,
 
   if (arg_num < (formatted ? 6 : 4))
     {
-      gfc_error ("Too few dummy arguments in DTIO procedure '%s' at %L",
+      gfc_error ("Too few dummy arguments in DTIO procedure %qs at %L",
 		 dtio_sub->name, &dtio_sub->declared_at);
       return;
     }
 
   if (arg_num > (formatted ? 6 : 4))
     {
-      gfc_error ("Too many dummy arguments in DTIO procedure '%s' at %L",
+      gfc_error ("Too many dummy arguments in DTIO procedure %qs at %L",
 		 dtio_sub->name, &dtio_sub->declared_at);
       return;
     }
@@ -4829,7 +4829,7 @@ gfc_find_typebound_dtio_proc (gfc_symbol *derived, bool write, bool formatted)
   gfc_symtree *tb_io_st = NULL;
   bool t = false;
 
-  if (!derived || derived->attr.flavor != FL_DERIVED)
+  if (!derived || !derived->resolved || derived->attr.flavor != FL_DERIVED)
     return NULL;
 
   /* Try to find a typebound DTIO binding.  */

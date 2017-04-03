@@ -779,7 +779,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   base = ref;
   while (handled_component_p (base))
     base = TREE_OPERAND (base, 0);
-  unsigned int base_alignment;
+  unsigned int base_alignment = 0;
   unsigned HOST_WIDE_INT base_bitpos;
   get_object_alignment_1 (base, &base_alignment, &base_bitpos);
   /* As data-ref analysis strips the MEM_REF down to its base operand
@@ -788,8 +788,17 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
      DR_BASE_ADDRESS.  */
   if (TREE_CODE (base) == MEM_REF)
     {
-      base_bitpos -= mem_ref_offset (base).to_short_addr () * BITS_PER_UNIT;
-      base_bitpos &= (base_alignment - 1);
+      /* Note all this only works if DR_BASE_ADDRESS is the same as
+	 MEM_REF operand zero, otherwise DR/SCEV analysis might have factored
+	 in other offsets.  We need to rework DR to compute the alingment
+	 of DR_BASE_ADDRESS as long as all information is still available.  */
+      if (operand_equal_p (TREE_OPERAND (base, 0), base_addr, 0))
+	{
+	  base_bitpos -= mem_ref_offset (base).to_short_addr () * BITS_PER_UNIT;
+	  base_bitpos &= (base_alignment - 1);
+	}
+      else
+	base_bitpos = BITS_PER_UNIT;
     }
   if (base_bitpos != 0)
     base_alignment = base_bitpos & -base_bitpos;
@@ -1098,12 +1107,9 @@ vector_alignment_reachable_p (struct data_reference *dr)
       bool is_packed = not_size_aligned (DR_REF (dr));
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-	                 "Unknown misalignment, is_packed = %d\n",is_packed);
-      if ((TYPE_USER_ALIGN (type) && !is_packed)
-	  || targetm.vectorize.vector_alignment_reachable (type, is_packed))
-	return true;
-      else
-	return false;
+	                 "Unknown misalignment, %snaturally aligned\n",
+			 is_packed ? "not " : "");
+      return targetm.vectorize.vector_alignment_reachable (type, is_packed);
     }
 
   return true;
@@ -1140,8 +1146,8 @@ vect_get_data_access_cost (struct data_reference *dr,
 
 typedef struct _vect_peel_info
 {
-  int npeel;
   struct data_reference *dr;
+  int npeel;
   unsigned int count;
 } *vect_peel_info;
 
@@ -6153,10 +6159,8 @@ vect_supportable_dr_alignment (struct data_reference *dr,
       if (!known_alignment_for_access_p (dr))
 	is_packed = not_size_aligned (DR_REF (dr));
 
-      if ((TYPE_USER_ALIGN (type) && !is_packed)
-	  || targetm.vectorize.
-	       support_vector_misalignment (mode, type,
-					    DR_MISALIGNMENT (dr), is_packed))
+      if (targetm.vectorize.support_vector_misalignment
+	    (mode, type, DR_MISALIGNMENT (dr), is_packed))
 	/* Can't software pipeline the loads, but can at least do them.  */
 	return dr_unaligned_supported;
     }
@@ -6168,10 +6172,8 @@ vect_supportable_dr_alignment (struct data_reference *dr,
       if (!known_alignment_for_access_p (dr))
 	is_packed = not_size_aligned (DR_REF (dr));
 
-     if ((TYPE_USER_ALIGN (type) && !is_packed)
-	 || targetm.vectorize.
-	      support_vector_misalignment (mode, type,
-					   DR_MISALIGNMENT (dr), is_packed))
+     if (targetm.vectorize.support_vector_misalignment
+	   (mode, type, DR_MISALIGNMENT (dr), is_packed))
        return dr_unaligned_supported;
     }
 

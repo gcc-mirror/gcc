@@ -1,4 +1,4 @@
-// { dg-do compile { target c++14 } }
+// { dg-do compile { target c++11 } }
 
 // Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
@@ -24,4 +24,6 @@ int main()
   constexpr std::complex<int> c{};
   constexpr auto r __attribute__((unused)) = real(c);
   constexpr auto i __attribute__((unused)) = imag(c);
+  constexpr double r2 __attribute__((unused)) = std::real(0.0);
+  constexpr double i2 __attribute__((unused)) = std::imag(0.0);
 }

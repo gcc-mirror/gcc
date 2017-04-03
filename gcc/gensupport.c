@@ -3000,6 +3000,10 @@ get_pattern_stats_1 (struct pattern_stats *stats, rtx x)
       break;
 
     case MATCH_SCRATCH:
+      if (stats->min_scratch_opno == -1)
+	stats->min_scratch_opno = XINT (x, 0);
+      else
+	stats->min_scratch_opno = MIN (stats->min_scratch_opno, XINT (x, 0));
       stats->max_scratch_opno = MAX (stats->max_scratch_opno, XINT (x, 0));
       break;
 
@@ -3032,6 +3036,7 @@ get_pattern_stats (struct pattern_stats *stats, rtvec pattern)
 
   stats->max_opno = -1;
   stats->max_dup_opno = -1;
+  stats->min_scratch_opno = -1;
   stats->max_scratch_opno = -1;
   stats->num_dups = 0;
 

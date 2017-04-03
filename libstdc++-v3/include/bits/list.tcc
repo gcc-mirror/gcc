@@ -405,7 +405,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  }
 	  __catch(...)
 	    {
-	      size_t __dist = std::distance(__first2, __last2);
+	      const size_t __dist = std::distance(__first2, __last2);
 	      this->_M_inc_size(__orig_size - __dist);
 	      __x._M_set_size(__dist);
 	      __throw_exception_again;
@@ -453,7 +453,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      }
 	    __catch(...)
 	      {
-		size_t __dist = std::distance(__first2, __last2);
+		const size_t __dist = std::distance(__first2, __last2);
 		this->_M_inc_size(__orig_size - __dist);
 		__x._M_set_size(__dist);
 		__throw_exception_again;
@@ -500,8 +500,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	__catch(...)
 	  {
 	    this->splice(this->end(), __carry);
-	    for (int i = 0; i < sizeof(__tmp)/sizeof(__tmp[0]); ++i)
-	      this->splice(this->end(), __tmp[i]);
+	    for (int __i = 0; __i < sizeof(__tmp)/sizeof(__tmp[0]); ++__i)
+	      this->splice(this->end(), __tmp[__i]);
 	    __throw_exception_again;
 	  }
       }
@@ -586,8 +586,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    __catch(...)
 	      {
 		this->splice(this->end(), __carry);
-		for (int i = 0; i < sizeof(__tmp)/sizeof(__tmp[0]); ++i)
-		  this->splice(this->end(), __tmp[i]);
+		for (int __i = 0; __i < sizeof(__tmp)/sizeof(__tmp[0]); ++__i)
+		  this->splice(this->end(), __tmp[__i]);
 		__throw_exception_again;
 	      }
 	  }

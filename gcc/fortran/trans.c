@@ -151,11 +151,11 @@ gfc_add_modify_loc (location_t loc, stmtblock_t * pblock, tree lhs, tree rhs)
   tree t1, t2;
   t1 = TREE_TYPE (rhs);
   t2 = TREE_TYPE (lhs);
-  /* Make sure that the types of the rhs and the lhs are the same
+  /* Make sure that the types of the rhs and the lhs are compatible
      for scalar assignments.  We should probably have something
      similar for aggregates, but right now removing that check just
      breaks everything.  */
-  gcc_checking_assert (t1 == t2
+  gcc_checking_assert (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2)
 		       || AGGREGATE_TYPE_P (TREE_TYPE (lhs)));
 
   tmp = fold_build2_loc (loc, MODIFY_EXPR, void_type_node, lhs,
@@ -1951,6 +1951,10 @@ trans_code (gfc_code * code, tree cond)
 	case EXEC_EVENT_POST:
 	case EXEC_EVENT_WAIT:
 	  res = gfc_trans_event_post_wait (code, code->op);
+	  break;
+
+	case EXEC_FAIL_IMAGE:
+	  res = gfc_trans_fail_image (code);
 	  break;
 
 	case EXEC_FORALL:

@@ -1420,7 +1420,7 @@ vect_get_vec_def_for_operand (tree op, gimple *stmt, tree vectype)
 
       if (vectype)
 	vector_type = vectype;
-      else if (TREE_CODE (TREE_TYPE (op)) == BOOLEAN_TYPE
+      else if (VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (op))
 	       && VECTOR_BOOLEAN_TYPE_P (stmt_vectype))
 	vector_type = build_same_sized_truth_vector_type (stmt_vectype);
       else
@@ -1731,7 +1731,7 @@ get_group_load_store_type (gimple *stmt, tree vectype, bool slp,
   bool single_element_p = (stmt == first_stmt
 			   && !GROUP_NEXT_ELEMENT (stmt_info));
   unsigned HOST_WIDE_INT gap = GROUP_GAP (vinfo_for_stmt (first_stmt));
-  int nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  unsigned nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   /* True if the vectorized statements would access beyond the last
      statement in the group.  */
@@ -1794,9 +1794,13 @@ get_group_load_store_type (gimple *stmt, tree vectype, bool slp,
       /* If there is a gap at the end of the group then these optimizations
 	 would access excess elements in the last iteration.  */
       bool would_overrun_p = (gap != 0);
-      /* If the access is aligned an overrun is fine.  */
+      /* If the access is aligned an overrun is fine, but only if the
+         overrun is not inside an unused vector (if the gap is as large
+	 or larger than a vector).  */
       if (would_overrun_p
-	  && aligned_access_p (STMT_VINFO_DATA_REF (stmt_info)))
+	  && gap < nunits
+	  && aligned_access_p
+		(STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt))))
 	would_overrun_p = false;
       if (!STMT_VINFO_STRIDED_P (stmt_info)
 	  && (can_overrun_p || !would_overrun_p)
@@ -2029,7 +2033,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 
   mask = gimple_call_arg (stmt, 2);
 
-  if (TREE_CODE (TREE_TYPE (mask)) != BOOLEAN_TYPE)
+  if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (mask)))
     return false;
 
   /* FORNOW. This restriction should be relaxed.  */
@@ -3070,8 +3074,8 @@ struct simd_call_arg_info
 {
   tree vectype;
   tree op;
-  enum vect_def_type dt;
   HOST_WIDE_INT linear_step;
+  enum vect_def_type dt;
   unsigned int align;
   bool simd_lane_linear;
 };
@@ -5275,9 +5279,9 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
 	 of booleans or vector of integers).  We use output
 	 vectype because operations on boolean don't change
 	 type.  */
-      if (TREE_CODE (TREE_TYPE (op0)) == BOOLEAN_TYPE)
+      if (VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (op0)))
 	{
-	  if (TREE_CODE (TREE_TYPE (scalar_dest)) != BOOLEAN_TYPE)
+	  if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (scalar_dest)))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6121,6 +6125,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  if (slp)
 	    break;
 	}
+
+      vec_oprnds.release ();
       return true;
     }
 
@@ -6324,7 +6330,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		   vect_permute_store_chain().  */
 		vec_oprnd = result_chain[i];
 
-	      data_ref = fold_build2 (MEM_REF, TREE_TYPE (vec_oprnd),
+	      data_ref = fold_build2 (MEM_REF, vectype,
 				      dataref_ptr,
 				      dataref_offset
 				      ? dataref_offset
@@ -7666,7 +7672,7 @@ vect_is_simple_cond (tree cond, vec_info *vinfo, tree *comp_vectype)
 
   /* Mask case.  */
   if (TREE_CODE (cond) == SSA_NAME
-      && TREE_CODE (TREE_TYPE (cond)) == BOOLEAN_TYPE)
+      && VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (cond)))
     {
       gimple *lhs_def_stmt = SSA_NAME_DEF_STMT (cond);
       if (!vect_is_simple_use (cond, vinfo, &lhs_def_stmt,
@@ -8486,37 +8492,42 @@ vect_analyze_stmt (gimple *stmt, bool *need_to_vectorize, slp_tree node)
     {
       gcc_assert (PURE_SLP_STMT (stmt_info));
 
-      scalar_type = TREE_TYPE (gimple_get_lhs (stmt));
-      if (dump_enabled_p ())
-        {
-          dump_printf_loc (MSG_NOTE, vect_location,
-                           "get vectype for scalar type:  ");
-          dump_generic_expr (MSG_NOTE, TDF_SLIM, scalar_type);
-          dump_printf (MSG_NOTE, "\n");
-        }
+      /* Memory accesses already got their vector type assigned
+         in vect_analyze_data_refs.  */
+      if (! STMT_VINFO_DATA_REF (stmt_info))
+	{
+	  scalar_type = TREE_TYPE (gimple_get_lhs (stmt));
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "get vectype for scalar type:  ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, scalar_type);
+	      dump_printf (MSG_NOTE, "\n");
+	    }
 
-      vectype = get_vectype_for_scalar_type (scalar_type);
-      if (!vectype)
-        {
-          if (dump_enabled_p ())
-            {
-               dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                "not SLPed: unsupported data-type ");
-               dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-                                  scalar_type);
-              dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-            }
-          return false;
-        }
+	  vectype = get_vectype_for_scalar_type (scalar_type);
+	  if (!vectype)
+	    {
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				   "not SLPed: unsupported data-type ");
+		  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+				     scalar_type);
+		  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
+		}
+	      return false;
+	    }
 
-      if (dump_enabled_p ())
-        {
-          dump_printf_loc (MSG_NOTE, vect_location, "vectype:  ");
-          dump_generic_expr (MSG_NOTE, TDF_SLIM, vectype);
-          dump_printf (MSG_NOTE, "\n");
-        }
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location, "vectype:  ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, vectype);
+	      dump_printf (MSG_NOTE, "\n");
+	    }
 
-      STMT_VINFO_VECTYPE (stmt_info) = vectype;
+	  STMT_VINFO_VECTYPE (stmt_info) = vectype;
+	}
    }
 
   if (STMT_VINFO_RELEVANT_P (stmt_info))
@@ -8952,6 +8963,7 @@ free_stmt_vec_info (gimple *stmt)
 static tree
 get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
 {
+  tree orig_scalar_type = scalar_type;
   machine_mode inner_mode = TYPE_MODE (scalar_type);
   machine_mode simd_mode;
   unsigned int nbytes = GET_MODE_SIZE (inner_mode);
@@ -9012,6 +9024,12 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
       && !INTEGRAL_MODE_P (TYPE_MODE (vectype)))
     return NULL_TREE;
 
+  /* Re-attach the address-space qualifier if we canonicalized the scalar
+     type.  */
+  if (TYPE_ADDR_SPACE (orig_scalar_type) != TYPE_ADDR_SPACE (vectype))
+    return build_qualified_type
+	     (vectype, KEEP_QUAL_ADDR_SPACE (TYPE_QUALS (orig_scalar_type)));
+
   return vectype;
 }
 
@@ -9059,7 +9077,7 @@ get_mask_type_for_scalar_type (tree scalar_type)
 tree
 get_same_sized_vectype (tree scalar_type, tree vector_type)
 {
-  if (TREE_CODE (scalar_type) == BOOLEAN_TYPE)
+  if (VECT_SCALAR_BOOLEAN_TYPE_P (scalar_type))
     return build_same_sized_truth_vector_type (vector_type);
 
   return get_vectype_for_scalar_type_and_size

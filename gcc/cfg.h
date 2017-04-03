@@ -110,6 +110,7 @@ extern void scale_bbs_frequencies_gcov_type (basic_block *, int, gcov_type,
 extern void initialize_original_copy_tables (void);
 extern void reset_original_copy_tables (void);
 extern void free_original_copy_tables (void);
+extern bool original_copy_tables_initialized_p (void);
 extern void set_bb_original (basic_block, basic_block);
 extern basic_block get_bb_original (basic_block);
 extern void set_bb_copy (basic_block, basic_block);

@@ -73,9 +73,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Invoke a callable object.
   template<typename _Callable, typename... _Args>
-    inline result_of_t<_Callable&&(_Args&&...)>
+    inline invoke_result_t<_Callable, _Args...>
     invoke(_Callable&& __fn, _Args&&... __args)
-    noexcept(is_nothrow_callable_v<_Callable&&(_Args&&...)>)
+    noexcept(is_nothrow_invocable_v<_Callable, _Args...>)
     {
       return std::__invoke(std::forward<_Callable>(__fn),
 			   std::forward<_Args>(__args)...);
@@ -242,9 +242,9 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     { };
 
 #if __cplusplus > 201402L
-  template <typename _Tp> constexpr bool is_bind_expression_v
+  template <typename _Tp> inline constexpr bool is_bind_expression_v
     = is_bind_expression<_Tp>::value;
-  template <typename _Tp> constexpr int is_placeholder_v
+  template <typename _Tp> inline constexpr int is_placeholder_v
     = is_placeholder<_Tp>::value;
 #endif // C++17
 
@@ -502,7 +502,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
       template<typename _Fn, typename _CallArgs, typename... _BArgs>
 	using _Res_type_impl
-	  = typename result_of< _Fn&(_Mu_type<_BArgs, _CallArgs>...) >::type;
+	  = typename result_of< _Fn&(_Mu_type<_BArgs, _CallArgs>&&...) >::type;
 
       template<typename _CallArgs>
 	using _Res_type = _Res_type_impl<_Functor, _CallArgs, _Bound_args...>;
@@ -902,15 +902,12 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
   template<typename _Fn>
     class _Not_fn
     {
-      template<typename _Tp>
-	using __is_nothrow_negatable
-	  = __bool_constant<noexcept(!std::declval<_Tp>())>;
-
       template<typename _Fn2, typename... _Args>
-	using __noexcept_cond = __and_<
-	  __is_nothrow_callable<_Fn2(_Args&&...)>,
-	  __is_nothrow_negatable<result_of_t<_Fn2(_Args&&...)>>
-	>;
+	using __inv_res_t = typename __invoke_result<_Fn2, _Args...>::type;
+
+      template<typename _Tp>
+	static decltype(!std::declval<_Tp>())
+	_S_not() noexcept(noexcept(!std::declval<_Tp>()));
 
     public:
       template<typename _Fn2>
@@ -921,39 +918,23 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       _Not_fn(_Not_fn&& __fn) = default;
       ~_Not_fn() = default;
 
-      template<typename... _Args>
-	auto
-	operator()(_Args&&... __args) &
-	noexcept(__noexcept_cond<_Fn&, _Args&&...>::value)
-	-> decltype(!std::declval<result_of_t<_Fn&(_Args&&...)>>())
-	{ return !std::__invoke(_M_fn, std::forward<_Args>(__args)...); }
-
-      template<typename... _Args>
-	auto
-	operator()(_Args&&... __args) const &
-	noexcept(__noexcept_cond<const _Fn&, _Args&&...>::value)
-	-> decltype(!std::declval<result_of_t<const _Fn&(_Args&&...)>>())
-	{ return !std::__invoke(_M_fn, std::forward<_Args>(__args)...); }
-
-      template<typename... _Args>
-	auto
-	operator()(_Args&&... __args) &&
-	noexcept(__noexcept_cond<_Fn&&, _Args&&...>::value)
-	-> decltype(!std::declval<result_of_t<_Fn&&(_Args&&...)>>())
-	{
-	  return !std::__invoke(std::move(_M_fn),
-				std::forward<_Args>(__args)...);
+      // Macro to define operator() with given cv-qualifiers ref-qualifiers,
+      // forwarding _M_fn and the function arguments with the same qualifiers,
+      // and deducing the return type and exception-specification.
+#define _GLIBCXX_NOT_FN_CALL_OP( _QUALS )				\
+      template<typename... _Args>					\
+	decltype(_S_not<__inv_res_t<_Fn _QUALS, _Args...>>())		\
+	operator()(_Args&&... __args) _QUALS				\
+	noexcept(noexcept(_S_not<__inv_res_t<_Fn _QUALS, _Args...>>()))	\
+	{								\
+	  return !std::__invoke(std::forward< _Fn _QUALS >(_M_fn),	\
+				std::forward<_Args>(__args)...);	\
 	}
-
-      template<typename... _Args>
-	auto
-	operator()(_Args&&... __args) const &&
-	noexcept(__noexcept_cond<const _Fn&&, _Args&&...>::value)
-	-> decltype(!std::declval<result_of_t<const _Fn&&(_Args&&...)>>())
-	{
-	  return !std::__invoke(std::move(_M_fn),
-				std::forward<_Args>(__args)...);
-	}
+      _GLIBCXX_NOT_FN_CALL_OP( & )
+      _GLIBCXX_NOT_FN_CALL_OP( const & )
+      _GLIBCXX_NOT_FN_CALL_OP( && )
+      _GLIBCXX_NOT_FN_CALL_OP( const && )
+#undef _GLIBCXX_NOT_FN_CALL
 
     private:
       _Fn _M_fn;
@@ -1193,36 +1174,6 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       _RAIter _M_pat;
       _RAIter _M_pat_end;
     };
-
-  /// Generator function for default_searcher
-  template<typename _ForwardIterator,
-	   typename _BinaryPredicate = std::equal_to<>>
-    inline default_searcher<_ForwardIterator, _BinaryPredicate>
-    make_default_searcher(_ForwardIterator __pat_first,
-			  _ForwardIterator __pat_last,
-			  _BinaryPredicate __pred = _BinaryPredicate())
-    { return { __pat_first, __pat_last, __pred }; }
-
-  /// Generator function for boyer_moore_searcher
-  template<typename _RAIter, typename _Hash
-	     = std::hash<typename std::iterator_traits<_RAIter>::value_type>,
-	   typename _BinaryPredicate = equal_to<>>
-    inline boyer_moore_searcher<_RAIter, _Hash, _BinaryPredicate>
-    make_boyer_moore_searcher(_RAIter __pat_first, _RAIter __pat_last,
-			      _Hash __hf = _Hash(),
-			      _BinaryPredicate __pred = _BinaryPredicate())
-    { return { __pat_first, __pat_last, std::move(__hf), std::move(__pred) }; }
-
-  /// Generator function for boyer_moore_horspool_searcher
-  template<typename _RAIter, typename _Hash
-	     = std::hash<typename std::iterator_traits<_RAIter>::value_type>,
-	   typename _BinaryPredicate = equal_to<>>
-    inline boyer_moore_horspool_searcher<_RAIter, _Hash, _BinaryPredicate>
-    make_boyer_moore_horspool_searcher(_RAIter __pat_first, _RAIter __pat_last,
-				       _Hash __hf = _Hash(),
-				       _BinaryPredicate __pred
-				       = _BinaryPredicate())
-    { return { __pat_first, __pat_last, std::move(__hf), std::move(__pred) }; }
 
   template<typename _RAIter, typename _Hash, typename _BinaryPredicate>
     boyer_moore_searcher<_RAIter, _Hash, _BinaryPredicate>::

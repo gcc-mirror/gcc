@@ -43,4 +43,4 @@ void test01()
 
   tuple<Type> t(allocator_arg, a, 1);
 }
-// { dg-error "static assertion failed" "" { target *-*-* } 89 }
+// { dg-error "static assertion failed" "" { target *-*-* } 90 }

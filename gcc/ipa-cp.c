@@ -1819,8 +1819,8 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
 	 and we store it in jump function during analysis stage.  */
 
       if (src_lats->bits_lattice.bottom_p ()
-	  && jfunc->bits.known)
-	return dest_lattice->meet_with (jfunc->bits.value, jfunc->bits.mask,
+	  && jfunc->bits)
+	return dest_lattice->meet_with (jfunc->bits->value, jfunc->bits->mask,
 					precision);
       else
 	return dest_lattice->meet_with (src_lats->bits_lattice, precision, sgn,
@@ -1829,10 +1829,9 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
 
   else if (jfunc->type == IPA_JF_ANCESTOR)
     return dest_lattice->set_to_bottom ();
-
-  else if (jfunc->bits.known)
-    return dest_lattice->meet_with (jfunc->bits.value, jfunc->bits.mask, precision);
-
+  else if (jfunc->bits)
+    return dest_lattice->meet_with (jfunc->bits->value, jfunc->bits->mask,
+				    precision);
   else
     return dest_lattice->set_to_bottom ();
 }
@@ -1903,19 +1902,21 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 	  val = fold_convert (param_type, val);
 	  if (TREE_OVERFLOW_P (val))
 	    val = drop_tree_overflow (val);
-	  jfunc->vr_known = true;
-	  jfunc->m_vr.type = VR_RANGE;
-	  jfunc->m_vr.min = val;
-	  jfunc->m_vr.max = val;
-	  return dest_lat->meet_with (&jfunc->m_vr);
+
+	  value_range tmpvr;
+	  memset (&tmpvr, 0, sizeof (tmpvr));
+	  tmpvr.type = VR_RANGE;
+	  tmpvr.min = val;
+	  tmpvr.max = val;
+	  return dest_lat->meet_with (&tmpvr);
 	}
     }
 
   value_range vr;
-  if (jfunc->vr_known
-      && ipa_vr_operation_and_type_effects (&vr, &jfunc->m_vr, NOP_EXPR,
+  if (jfunc->m_vr
+      && ipa_vr_operation_and_type_effects (&vr, jfunc->m_vr, NOP_EXPR,
 					    param_type,
-					    TREE_TYPE (jfunc->m_vr.min)))
+					    TREE_TYPE (jfunc->m_vr->min)))
     return dest_lat->meet_with (&vr);
   else
     return dest_lat->set_to_bottom ();
@@ -4870,19 +4871,17 @@ ipcp_store_bits_results (void)
       for (unsigned i = 0; i < count; i++)
 	{
 	  ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
-	  ipa_bits bits_jfunc;
+	  ipa_bits *jfbits;
 
 	  if (plats->bits_lattice.constant_p ())
-	    {
-	      bits_jfunc.known = true;
-	      bits_jfunc.value = plats->bits_lattice.get_value ();
-	      bits_jfunc.mask = plats->bits_lattice.get_mask ();
-	    }
+	    jfbits
+	      = ipa_get_ipa_bits_for_value (plats->bits_lattice.get_value (),
+					    plats->bits_lattice.get_mask ());
 	  else
-	    bits_jfunc.known = false;
+	    jfbits = NULL;
 
-	  ts->bits->quick_push (bits_jfunc);
-	  if (!dump_file || !bits_jfunc.known)
+	  ts->bits->quick_push (jfbits);
+	  if (!dump_file || !jfbits)
 	    continue;
 	  if (!dumped_sth)
 	    {
@@ -4891,9 +4890,9 @@ ipcp_store_bits_results (void)
 	      dumped_sth = true;
 	    }
 	  fprintf (dump_file, " param %i: value = ", i);
-	  print_hex (bits_jfunc.value, dump_file);
+	  print_hex (jfbits->value, dump_file);
 	  fprintf (dump_file, ", mask = ");
-	  print_hex (bits_jfunc.mask, dump_file);
+	  print_hex (jfbits->mask, dump_file);
 	  fprintf (dump_file, "\n");
 	}
     }

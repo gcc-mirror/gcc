@@ -461,6 +461,7 @@ set_internal_unit (st_parameter_dt *dtp, gfc_unit *iunit, int kind)
 {
   gfc_offset start_record = 0;
 
+  iunit->unit_number = dtp->common.unit;
   iunit->recl = dtp->internal_unit_len;
   iunit->internal_unit = dtp->internal_unit;
   iunit->internal_unit_len = dtp->internal_unit_len;
@@ -598,15 +599,28 @@ get_unit (st_parameter_dt *dtp, int do_create)
 	  return unit;
 	}
     }
+
+  /* If an internal unit number is passed from the parent to the child
+     it should have been stashed on the newunit_stack ready to be used.
+     Check for it now and return the internal unit if found.  */
+  if (newunit_tos && (dtp->common.unit <= NEWUNIT_START)
+      && (dtp->common.unit == newunit_stack[newunit_tos].unit_number))
+    {
+      unit = newunit_stack[newunit_tos--].unit;
+      return unit;
+    }
+
   /* Has to be an external unit.  */
   dtp->u.p.unit_is_internal = 0;
   dtp->internal_unit = NULL;
   dtp->internal_unit_desc = NULL;
+
   /* For an external unit with unit number < 0 creating it on the fly
      is not allowed, such units must be created with
      OPEN(NEWUNIT=...).  */
   if (dtp->common.unit < 0)
     return get_gfc_unit (dtp->common.unit, 0);
+
   return get_gfc_unit (dtp->common.unit, do_create);
 }
 

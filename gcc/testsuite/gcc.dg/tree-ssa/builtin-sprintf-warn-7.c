@@ -32,12 +32,14 @@ void test_integer_cst (void)
 void test_integer_var (int i)
 {
   T (0, "%*d",  INT_MIN, i);     /* { dg-warning "writing 2147483648 bytes" } */
-  T (0, "%*d",  INT_MAX, i);     /* { dg-warning "writing 2147483647 bytes" } */
-
-  T (0, "%.*d", INT_MIN, i);     /* { dg-warning "writing between 1 and 11 bytes" } */
 
   /* The following writes INT_MAX digits and, when i is negative, a minus
      sign.  */
+  T (0, "%.*d", INT_MAX, i);     /* { dg-warning "writing between 2147483647 and 2147483648 bytes" } */
+
+  T (0, "%.*d", INT_MIN, i);     /* { dg-warning "writing between 1 and 11 bytes" } */
+
+  /* The following writes a range because of the possible minus sign.  */
   T (0, "%.*d", INT_MAX, i);     /* { dg-warning "writing between 2147483647 and 2147483648 bytes" } */
 
   T (0, "%*.*d", INT_MIN, INT_MIN, i);   /* { dg-warning "writing 2147483648 bytes" } */
@@ -52,7 +54,10 @@ void test_floating_a_cst (void)
   T (0, "%*a",  INT_MIN, 0.);     /* { dg-warning "writing 2147483648 bytes" } */
   T (0, "%*a",  INT_MAX, 0.);     /* { dg-warning "writing 2147483647 bytes" } */
 
-  T (0, "%.*a", INT_MIN, 0.);     /* { dg-warning "writing 6 bytes" } */
+  /* %a is poorly specified and as a result some implementations trim
+     redundant trailing zeros (e.g., Glibc) and others don't (e.g.,
+     Solaris).  */
+  T (0, "%.*a", INT_MIN, 0.);     /* { dg-warning "writing between 6 and 20 bytes" } */
 
   T (0, "%.*a", INT_MAX, 0.);     /* { dg-warning "writing 2147483654 bytes" } */
 
@@ -111,7 +116,7 @@ void test_floating_f_cst (void)
   T (0, "%*f",  INT_MIN, 0.);     /* { dg-warning "writing 2147483648 bytes" } */
   T (0, "%*f",  INT_MAX, 0.);     /* { dg-warning "writing 2147483647 bytes" } */
 
-  T (0, "%.*f", INT_MIN, 0.);     /* { dg-warning "writing 8 byte" } */
+  T (0, "%.*f", INT_MIN, 0.);     /* { dg-warning "writing 8 bytes" } */
 
   T (0, "%.*f", INT_MAX, 0.);     /* { dg-warning "writing 2147483649 bytes" } */
 
@@ -178,14 +183,14 @@ void test_string_cst (void)
 
 void test_string_var (const char *s)
 {
-  T (0, "%*s",  INT_MIN, s);     /* { dg-warning "writing 2147483648 bytes" } */
-  T (0, "%*s",  INT_MAX, s);     /* { dg-warning "writing 2147483647 bytes" } */
+  T (0, "%*s",  INT_MIN, s);     /* { dg-warning "writing 2147483648 or more bytes" } */
+  T (0, "%*s",  INT_MAX, s);     /* { dg-warning "writing 2147483647 or more bytes" } */
 
   T (0, "%.*s", INT_MIN, s);     /* { dg-warning "writing a terminating nul" } */
 
-  T (0, "%.*s", INT_MAX, s);     /* { dg-warning "writing between 0 and 2147483647 bytes" } */
+  T (0, "%.*s", INT_MAX, s);     /* { dg-warning "writing up to 2147483647 bytes" } */
 
-  T (0, "%*.*s", INT_MIN, INT_MIN, s);   /* { dg-warning "writing 2147483648 bytes" } */
+  T (0, "%*.*s", INT_MIN, INT_MIN, s);   /* { dg-warning "writing 2147483648 or more bytes" } */
 
   T (0, "%*.*s", INT_MAX, INT_MAX, s);   /* { dg-warning "writing 2147483647 bytes" } */
 }

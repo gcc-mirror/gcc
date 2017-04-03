@@ -181,13 +181,14 @@ do {							\
 /* Prototype functions in xcoffout.c.  */
 
 extern int stab_to_sclass (int);
-extern void xcoffout_begin_prologue (unsigned int, const char *);
+extern void xcoffout_begin_prologue (unsigned int, unsigned int, const char *);
 extern void xcoffout_begin_block (unsigned, unsigned);
 extern void xcoffout_end_epilogue (unsigned int, const char *);
 extern void xcoffout_end_function (unsigned int);
 extern void xcoffout_end_block (unsigned, unsigned);
 extern int xcoff_assign_fundamental_type_number (tree);
 extern void xcoffout_declare_function (FILE *, tree, const char *);
-extern void xcoffout_source_line (unsigned int, const char *, int, bool);
+extern void xcoffout_source_line (unsigned int, unsigned int, const char *,
+				  int, bool);
 
 #endif /* GCC_XCOFFOUT_H */

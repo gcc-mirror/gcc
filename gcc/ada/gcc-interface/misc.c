@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -149,7 +149,7 @@ gnat_handle_option (size_t scode, const char *arg, int value, int kind,
       handle_generated_option (&global_options, &global_options_set,
 			       OPT_Wunused, NULL, value,
 			       gnat_option_lang_mask (), kind, loc,
-			       handlers, global_dc);
+			       handlers, true, global_dc);
       warn_uninitialized = value;
       warn_maybe_uninitialized = value;
       break;
@@ -736,22 +736,59 @@ gnat_type_max_size (const_tree gnu_type)
      elaborated and possibly replaced by a VAR_DECL.  */
   tree max_unitsize = max_size (TYPE_SIZE_UNIT (gnu_type), true);
 
-  /* If we don't have a constant, see what we can get from TYPE_ADA_SIZE,
-     which should stay untouched.  */
-  if (!tree_fits_uhwi_p (max_unitsize)
-      && RECORD_OR_UNION_TYPE_P (gnu_type)
-      && !TYPE_FAT_POINTER_P (gnu_type)
-      && TYPE_ADA_SIZE (gnu_type))
+  /* If we don't have a constant, try to look at attributes which should have
+     stayed untouched.  */
+  if (!tree_fits_uhwi_p (max_unitsize))
     {
-      tree max_adasize = max_size (TYPE_ADA_SIZE (gnu_type), true);
+      /* For record types, see what we can get from TYPE_ADA_SIZE.  */
+      if (RECORD_OR_UNION_TYPE_P (gnu_type)
+	  && !TYPE_FAT_POINTER_P (gnu_type)
+	  && TYPE_ADA_SIZE (gnu_type))
+	{
+	  tree max_adasize = max_size (TYPE_ADA_SIZE (gnu_type), true);
 
-      /* If we have succeeded in finding a constant, round it up to the
-	 type's alignment and return the result in units.  */
-      if (tree_fits_uhwi_p (max_adasize))
-	max_unitsize
-	  = size_binop (CEIL_DIV_EXPR,
-			round_up (max_adasize, TYPE_ALIGN (gnu_type)),
-			bitsize_unit_node);
+	  /* If we have succeeded in finding a constant, round it up to the
+	     type's alignment and return the result in units.  */
+	  if (tree_fits_uhwi_p (max_adasize))
+	    max_unitsize
+	      = size_binop (CEIL_DIV_EXPR,
+			    round_up (max_adasize, TYPE_ALIGN (gnu_type)),
+			    bitsize_unit_node);
+	}
+
+      /* For array types, see what we can get from TYPE_INDEX_TYPE.  */
+      else if (TREE_CODE (gnu_type) == ARRAY_TYPE
+	       && TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type))
+	       && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (gnu_type))))
+	{
+	  tree lb = TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type)));
+	  tree hb = TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type)));
+	  if (TREE_CODE (lb) != INTEGER_CST
+	      && TYPE_RM_SIZE (TREE_TYPE (lb))
+	      && compare_tree_int (TYPE_RM_SIZE (TREE_TYPE (lb)), 16) <= 0)
+	    lb = TYPE_MIN_VALUE (TREE_TYPE (lb));
+	  if (TREE_CODE (hb) != INTEGER_CST
+	      && TYPE_RM_SIZE (TREE_TYPE (hb))
+	      && compare_tree_int (TYPE_RM_SIZE (TREE_TYPE (hb)), 16) <= 0)
+	    hb = TYPE_MAX_VALUE (TREE_TYPE (hb));
+	  if (TREE_CODE (lb) == INTEGER_CST && TREE_CODE (hb) == INTEGER_CST)
+	    {
+	      tree ctype = get_base_type (TREE_TYPE (lb));
+	      lb = fold_convert (ctype, lb);
+	      hb = fold_convert (ctype, hb);
+	      if (tree_int_cst_le (lb, hb))
+		{
+		  tree length
+		    = fold_build2 (PLUS_EXPR, ctype,
+				   fold_build2 (MINUS_EXPR, ctype, hb, lb),
+				   build_int_cst (ctype, 1));
+		  max_unitsize
+		    = fold_build2 (MULT_EXPR, sizetype,
+				   fold_convert (sizetype, length),
+				   TYPE_SIZE_UNIT (TREE_TYPE (gnu_type)));
+		}
+	    }
+	}
     }
 
   return max_unitsize;

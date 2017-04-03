@@ -972,7 +972,7 @@ cprop_jump (basic_block bb, rtx_insn *setcc, rtx_insn *jump, rtx from, rtx src)
   if (dump_file != NULL)
     {
       fprintf (dump_file,
-	       "GLOBAL CONST-PROP: Replacing reg %d in jump_insn %d with"
+	       "GLOBAL CONST-PROP: Replacing reg %d in jump_insn %d with "
 	       "constant ", REGNO (from), INSN_UID (jump));
       print_rtl (dump_file, src);
       fprintf (dump_file, "\n");
@@ -1697,7 +1697,6 @@ bypass_conditional_jumps (void)
   if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return 0;
 
-  bypass_last_basic_block = last_basic_block_for_fn (cfun);
   mark_dfs_back_edges ();
 
   changed = 0;
@@ -1853,17 +1852,30 @@ one_cprop_pass (void)
 		if (! NOTE_P (insn) && ! insn->deleted ())
 		  mark_oprs_set (insn);
 
-		if (!was_uncond_trap && !seen_uncond_trap
+		if (!was_uncond_trap
 		    && GET_CODE (PATTERN (insn)) == TRAP_IF
 		    && XEXP (PATTERN (insn), 0) == const1_rtx)
 		  {
-		    seen_uncond_trap = true;
-		    uncond_traps.safe_push (insn);
+		    /* If we have already seen an unconditional trap
+		       earlier, the rest of the bb is going to be removed
+		       as unreachable.  Just turn it into a note, so that
+		       RTL verification doesn't complain about it before
+		       it is finally removed.  */
+		    if (seen_uncond_trap)
+		      set_insn_deleted (insn);
+		    else
+		      {
+			seen_uncond_trap = true;
+			uncond_traps.safe_push (insn);
+		      }
 		  }
 	      }
 	}
 
-      changed |= bypass_conditional_jumps ();
+      /* Make sure bypass_conditional_jumps will ignore not just its new
+	 basic blocks, but also the ones after unconditional traps (those are
+	 unreachable and will be eventually removed as such).  */
+      bypass_last_basic_block = last_basic_block_for_fn (cfun);
 
       while (!uncond_traps.is_empty ())
 	{
@@ -1872,6 +1884,8 @@ one_cprop_pass (void)
 	  remove_edge (split_block (to_split, insn));
 	  emit_barrier_after_bb (to_split);
 	}
+
+      changed |= bypass_conditional_jumps ();
 
       FREE_REG_SET (reg_set_bitmap);
       free_cprop_mem ();

@@ -496,6 +496,8 @@ static GTY(()) tree descriptor_type;
 static tree
 get_descriptor_type (struct nesting_info *info)
 {
+  /* The base alignment is that of a function.  */
+  const unsigned align = FUNCTION_ALIGNMENT (FUNCTION_BOUNDARY);
   tree t;
 
   if (descriptor_type)
@@ -505,6 +507,8 @@ get_descriptor_type (struct nesting_info *info)
   t = build_array_type (ptr_type_node, t);
   t = build_decl (DECL_SOURCE_LOCATION (info->context),
 		  FIELD_DECL, get_identifier ("__data"), t);
+  SET_DECL_ALIGN (t, MAX (TYPE_ALIGN (ptr_type_node), align));
+  DECL_USER_ALIGN (t) = 1;
 
   descriptor_type = make_node (RECORD_TYPE);
   TYPE_NAME (descriptor_type) = get_identifier ("__builtin_descriptor");
@@ -1274,6 +1278,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_DEFAULT:
 	case OMP_CLAUSE_COPYIN:
 	case OMP_CLAUSE_COLLAPSE:
+	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_MERGEABLE:
 	case OMP_CLAUSE_PROC_BIND:
@@ -1286,8 +1291,6 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_AUTO:
 	  break;
 
-	  /* OpenACC tile clauses are discarded during gimplification.  */
-	case OMP_CLAUSE_TILE:
 	  /* The following clause belongs to the OpenACC cache directive, which
 	     is discarded during gimplification.  */
 	case OMP_CLAUSE__CACHE_:
@@ -1982,6 +1985,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_DEFAULT:
 	case OMP_CLAUSE_COPYIN:
 	case OMP_CLAUSE_COLLAPSE:
+	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_MERGEABLE:
 	case OMP_CLAUSE_PROC_BIND:
@@ -1994,8 +1998,6 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_AUTO:
 	  break;
 
-	  /* OpenACC tile clauses are discarded during gimplification.  */
-	case OMP_CLAUSE_TILE:
 	  /* The following clause belongs to the OpenACC cache directive, which
 	     is discarded during gimplification.  */
 	case OMP_CLAUSE__CACHE_:

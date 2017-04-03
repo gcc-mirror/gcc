@@ -119,7 +119,7 @@ Macros
 * Object-like Macros::
 * Function-like Macros::
 * Macro Arguments::
-* Stringification::
+* Stringizing::
 * Concatenation::
 * Variadic Macros::
 * Predefined Macros::
@@ -1155,7 +1155,7 @@ macros when you are compiling C++.
 * Object-like Macros::
 * Function-like Macros::
 * Macro Arguments::
-* Stringification::
+* Stringizing::
 * Concatenation::
 * Variadic Macros::
 * Predefined Macros::
@@ -1453,9 +1453,9 @@ their corresponding actual arguments.
 foo(bar)        @expansion{} bar, "x"
 @end smallexample
 
-@node Stringification
-@section Stringification
-@cindex stringification
+@node Stringizing
+@section Stringizing
+@cindex stringizing
 @cindex @samp{#} operator
 
 Sometimes you may want to convert a macro argument into a string
@@ -1464,16 +1464,16 @@ can use the @samp{#} preprocessing operator instead.  When a macro
 parameter is used with a leading @samp{#}, the preprocessor replaces it
 with the literal text of the actual argument, converted to a string
 constant.  Unlike normal parameter replacement, the argument is not
-macro-expanded first.  This is called @dfn{stringification}.
+macro-expanded first.  This is called @dfn{stringizing}.
 
 There is no way to combine an argument with surrounding text and
-stringify it all together.  Instead, you can write a series of adjacent
-string constants and stringified arguments.  The preprocessor will
-replace the stringified arguments with string constants.  The C
-compiler will then combine all the adjacent string constants into one
+stringize it all together.  Instead, you can write a series of adjacent
+string constants and stringized arguments.  The preprocessor
+replaces the stringized arguments with string constants.  The C
+compiler then combines all the adjacent string constants into one
 long string.
 
-Here is an example of a macro definition that uses stringification:
+Here is an example of a macro definition that uses stringizing:
 
 @smallexample
 @group
@@ -1489,7 +1489,7 @@ WARN_IF (x == 0);
 
 @noindent
 The argument for @code{EXP} is substituted once, as-is, into the
-@code{if} statement, and once, stringified, into the argument to
+@code{if} statement, and once, stringized, into the argument to
 @code{fprintf}.  If @code{x} were a macro, it would be expanded in the
 @code{if} statement, but not in the string.
 
@@ -1498,24 +1498,24 @@ write @code{WARN_IF (@var{arg});}, which the resemblance of
 @code{WARN_IF} to a function would make C programmers want to do; see
 @ref{Swallowing the Semicolon}.
 
-Stringification in C involves more than putting double-quote characters
+Stringizing in C involves more than putting double-quote characters
 around the fragment.  The preprocessor backslash-escapes the quotes
 surrounding embedded string constants, and all backslashes within string and
 character constants, in order to get a valid C string constant with the
-proper contents.  Thus, stringifying @code{@w{p = "foo\n";}} results in
+proper contents.  Thus, stringizing @code{@w{p = "foo\n";}} results in
 @t{@w{"p = \"foo\\n\";"}}.  However, backslashes that are not inside string
 or character constants are not duplicated: @samp{\n} by itself
-stringifies to @t{"\n"}.
+stringizes to @t{"\n"}.
 
-All leading and trailing whitespace in text being stringified is
+All leading and trailing whitespace in text being stringized is
 ignored.  Any sequence of whitespace in the middle of the text is
-converted to a single space in the stringified result.  Comments are
-replaced by whitespace long before stringification happens, so they
-never appear in stringified text.
+converted to a single space in the stringized result.  Comments are
+replaced by whitespace long before stringizing happens, so they
+never appear in stringized text.
 
 There is no way to convert a macro argument into a character constant.
 
-If you want to stringify the result of expansion of a macro argument,
+If you want to stringize the result of expansion of a macro argument,
 you have to use two levels of macros.
 
 @smallexample
@@ -1530,7 +1530,7 @@ xstr (foo)
      @expansion{} "4"
 @end smallexample
 
-@code{s} is stringified when it is used in @code{str}, so it is not
+@code{s} is stringized when it is used in @code{str}, so it is not
 macro-expanded first.  But @code{s} is an ordinary argument to
 @code{xstr}, so it is completely macro-expanded before @code{xstr}
 itself is expanded (@pxref{Argument Prescan}).  Therefore, by the time
@@ -1569,7 +1569,7 @@ but you could just as well write them as one token in the first place.
 Token pasting is most useful when one or both of the tokens comes from a
 macro argument.  If either of the tokens next to an @samp{##} is a
 parameter name, it is replaced by its actual argument before @samp{##}
-executes.  As with stringification, the actual argument is not
+executes.  As with stringizing, the actual argument is not
 macro-expanded first.  If the argument is empty, that @samp{##} has no
 effect.
 
@@ -1607,7 +1607,7 @@ struct command commands[] =
 It would be cleaner not to have to give each command name twice, once in
 the string constant and once in the function name.  A macro which takes the
 name of a command as an argument can make this unnecessary.  The string
-constant can be created with stringification, and the function name by
+constant can be created with stringizing, and the function name by
 concatenating the argument with @samp{_command}.  Here is how it is done:
 
 @smallexample
@@ -1649,7 +1649,7 @@ eprintf ("%s:%d: ", input_file, lineno)
 
 The variable argument is completely macro-expanded before it is inserted
 into the macro expansion, just like an ordinary argument.  You may use
-the @samp{#} and @samp{##} operators to stringify the variable argument
+the @samp{#} and @samp{##} operators to stringize the variable argument
 or to paste its leading or trailing token with another token.  (But see
 below for an important special case for @samp{##}.)
 
@@ -2912,7 +2912,7 @@ macro, but not when it indirectly appears in its own definition.
 @cindex prescan of macro arguments
 
 Macro arguments are completely macro-expanded before they are
-substituted into a macro body, unless they are stringified or pasted
+substituted into a macro body, unless they are stringized or pasted
 with other tokens.  After substitution, the entire macro body, including
 the substituted arguments, is scanned again for macros to be expanded.
 The result is that the arguments are scanned @emph{twice} to expand
@@ -2952,12 +2952,12 @@ appear during the main scan as an indirect self-reference and would not
 be expanded.
 
 @item
-Macros that call other macros that stringify or concatenate.
+Macros that call other macros that stringize or concatenate.
 
-If an argument is stringified or concatenated, the prescan does not
-occur.  If you @emph{want} to expand a macro, then stringify or
+If an argument is stringized or concatenated, the prescan does not
+occur.  If you @emph{want} to expand a macro, then stringize or
 concatenate its expansion, you can do that by causing one macro to call
-another macro that does the stringification or concatenation.  For
+another macro that does the stringizing or concatenation.  For
 instance, if you have
 
 @smallexample
@@ -3830,7 +3830,7 @@ implementation removes comments even before saving the macro
 replacement text, but it careful to do it in such a way that the
 observed effect is identical even in the function-like macro case.)
 
-The ISO stringification operator @samp{#} and token paste operator
+The ISO stringizing operator @samp{#} and token paste operator
 @samp{##} have no special meaning.  As explained later, an effect
 similar to these operators can be obtained in a different way.  Macro
 names that are embedded in quotes, either from the main file or after

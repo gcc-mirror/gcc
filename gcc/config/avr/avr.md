@@ -1062,8 +1062,8 @@
                    (match_operand 2 "const_int_operand" ""))
               (use (match_operand:HI 1 "const_int_operand" ""))
               (use (match_operand:HI 3 "const_int_operand" ""))
-              (clobber (match_scratch:HI 4 ""))
-              (clobber (match_dup 5))])]
+              (clobber (match_scratch:HI 5 ""))
+              (clobber (match_dup 4))])]
   ""
   {
     rtx addr0;
@@ -1077,7 +1077,7 @@
       FAIL;
 
     mode = u8_operand (operands[1], VOIDmode) ? QImode : HImode;
-    operands[5] = gen_rtx_SCRATCH (mode);
+    operands[4] = gen_rtx_SCRATCH (mode);
     operands[1] = copy_to_mode_reg (mode,
                                     gen_int_mode (INTVAL (operands[1]), mode));
     addr0 = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
@@ -1200,12 +1200,14 @@
 
 
 (define_insn "*addhi3_zero_extend"
-  [(set (match_operand:HI 0 "register_operand"                         "=r")
-        (plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
-                 (match_operand:HI 2 "register_operand"                 "0")))]
+  [(set (match_operand:HI 0 "register_operand"                         "=r,*?r")
+        (plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r  ,0"))
+                 (match_operand:HI 2 "register_operand"                 "0  ,r")))]
   ""
-  "add %A0,%1\;adc %B0,__zero_reg__"
-  [(set_attr "length" "2")
+  "@
+	add %A0,%1\;adc %B0,__zero_reg__
+	add %A0,%A2\;mov %B0,%B2\;adc %B0,__zero_reg__"
+  [(set_attr "length" "2,3")
    (set_attr "cc" "set_n")])
 
 (define_insn "*addhi3_zero_extend1"

@@ -11,6 +11,6 @@ avx512bw_test ()
   unsigned int i = 53;
 
   volatile __mmask64 r = _kshiftli_mask64 (k1, i);
-  if (r != 1 << i)
+  if (r != 1ULL << i)
     abort ();
 }

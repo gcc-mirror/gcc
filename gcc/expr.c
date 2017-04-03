@@ -8809,6 +8809,34 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	 where some terms of the dividend have coeffs divisible by it.  */
       expand_operands (treeop0, treeop1,
 		       subtarget, &op0, &op1, EXPAND_NORMAL);
+      if (SCALAR_INT_MODE_P (mode)
+	  && optimize >= 2
+	  && get_range_pos_neg (treeop0) == 1
+	  && get_range_pos_neg (treeop1) == 1)
+	{
+	  /* If both arguments are known to be positive when interpreted
+	     as signed, we can expand it as both signed and unsigned
+	     division or modulo.  Choose the cheaper sequence in that case.  */
+	  bool speed_p = optimize_insn_for_speed_p ();
+	  do_pending_stack_adjust ();
+	  start_sequence ();
+	  rtx uns_ret = expand_divmod (0, code, mode, op0, op1, target, 1);
+	  rtx_insn *uns_insns = get_insns ();
+	  end_sequence ();
+	  start_sequence ();
+	  rtx sgn_ret = expand_divmod (0, code, mode, op0, op1, target, 0);
+	  rtx_insn *sgn_insns = get_insns ();
+	  end_sequence ();
+	  unsigned uns_cost = seq_cost (uns_insns, speed_p);
+	  unsigned sgn_cost = seq_cost (sgn_insns, speed_p);
+	  if (uns_cost < sgn_cost || (uns_cost == sgn_cost && unsignedp))
+	    {
+	      emit_insn (uns_insns);
+	      return uns_ret;
+	    }
+	  emit_insn (sgn_insns);
+	  return sgn_ret;
+	}
       return expand_divmod (0, code, mode, op0, op1, target, unsignedp);
 
     case RDIV_EXPR:
@@ -8914,6 +8942,18 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 			   OPTAB_WIDEN);
       if (temp != 0)
 	return temp;
+
+      /* For vector MIN <x, y>, expand it a VEC_COND_EXPR <x <= y, x, y>
+	 and similarly for MAX <x, y>.  */
+      if (VECTOR_TYPE_P (type))
+	{
+	  tree t0 = make_tree (type, op0);
+	  tree t1 = make_tree (type, op1);
+	  tree comparison = build2 (code == MIN_EXPR ? LE_EXPR : GE_EXPR,
+				    type, t0, t1);
+	  return expand_vec_cond_expr (type, comparison, t0, t1,
+				       original_target);
+	}
 
       /* At this point, a MEM target is no longer useful; we will get better
 	 code without it.  */

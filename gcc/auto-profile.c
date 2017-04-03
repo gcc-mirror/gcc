@@ -344,7 +344,7 @@ get_combined_location (location_t loc, tree decl)
 {
   /* TODO: allow more bits for line and less bits for discriminator.  */
   if (LOCATION_LINE (loc) - DECL_SOURCE_LINE (decl) >= (1<<16))
-    warning_at (loc, OPT_Woverflow, "Offset exceeds 16 bytes.");
+    warning_at (loc, OPT_Woverflow, "offset exceeds 16 bytes");
   return ((LOCATION_LINE (loc) - DECL_SOURCE_LINE (decl)) << 16);
 }
 
@@ -917,13 +917,13 @@ read_profile (void)
 {
   if (gcov_open (auto_profile_file, 1) == 0)
     {
-      error ("Cannot open profile file %s.", auto_profile_file);
+      error ("cannot open profile file %s", auto_profile_file);
       return;
     }
 
   if (gcov_read_unsigned () != GCOV_DATA_MAGIC)
     {
-      error ("AutoFDO profile magic number does not match.");
+      error ("AutoFDO profile magic number does not match");
       return;
     }
 
@@ -931,7 +931,7 @@ read_profile (void)
   unsigned version = gcov_read_unsigned ();
   if (version != AUTO_PROFILE_VERSION)
     {
-      error ("AutoFDO profile version %u does match %u.",
+      error ("AutoFDO profile version %u does match %u",
 	     version, AUTO_PROFILE_VERSION);
       return;
     }
@@ -943,7 +943,7 @@ read_profile (void)
   afdo_string_table = new string_table ();
   if (!afdo_string_table->read())
     {
-      error ("Cannot read string table from %s.", auto_profile_file);
+      error ("cannot read string table from %s", auto_profile_file);
       return;
     }
 
@@ -951,7 +951,7 @@ read_profile (void)
   afdo_source_profile = autofdo_source_profile::create ();
   if (afdo_source_profile == NULL)
     {
-      error ("Cannot read function profile from %s.", auto_profile_file);
+      error ("cannot read function profile from %s", auto_profile_file);
       return;
     }
 
@@ -961,7 +961,7 @@ read_profile (void)
   /* Read in the working set.  */
   if (gcov_read_unsigned () != GCOV_TAG_AFDO_WORKING_SET)
     {
-      error ("Cannot read working set from %s.", auto_profile_file);
+      error ("cannot read working set from %s", auto_profile_file);
       return;
     }
 

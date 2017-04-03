@@ -2081,7 +2081,8 @@ Gcc_backend::return_statement(Bfunction* bfunction,
   // If the result size is zero bytes, we have set the function type
   // to have a result type of void, so don't return anything.
   // See the function_type method.
-  if (int_size_in_bytes(TREE_TYPE(result)) == 0)
+  tree res_type = TREE_TYPE(result);
+  if (res_type == void_type_node || int_size_in_bytes(res_type) == 0)
     {
       tree stmt_list = NULL_TREE;
       for (std::vector<Bexpression*>::const_iterator p = vals.begin();

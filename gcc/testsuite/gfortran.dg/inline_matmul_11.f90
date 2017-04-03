@@ -1,5 +1,5 @@
 ! { dg-do  run }
-! { dg-additional-options "-ffrontend-optimize -fdump-tree-original" }
+! { dg-additional-options "-ffrontend-optimize -fdump-tree-optimized" }
 ! PR fortran/66176 - inline conjg for matml.
 program main
   complex, dimension(3,2) :: a
@@ -29,4 +29,4 @@ program main
   c = matmul(conjg(a), b)
   if (any(conjg(c) /= res2)) call abort
 end program main
-! { dg-final { scan-tree-dump-times "_gfortran_matmul" 0 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_matmul" 0 "optimized" } }

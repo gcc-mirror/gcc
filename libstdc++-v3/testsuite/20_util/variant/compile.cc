@@ -65,7 +65,11 @@ struct nonliteral
   nonliteral() { }
 
   bool operator<(const nonliteral&) const;
+  bool operator<=(const nonliteral&) const;
   bool operator==(const nonliteral&) const;
+  bool operator!=(const nonliteral&) const;
+  bool operator>=(const nonliteral&) const;
+  bool operator>(const nonliteral&) const;
 };
 
 void default_ctor()
@@ -290,6 +294,12 @@ void test_visit()
       constexpr bool operator()(const nonliteral&) { return false; }
     };
     static_assert(visit(Visitor(), variant<int, nonliteral>(0)), "");
+  }
+  // PR libstdc++/79513
+  {
+    std::variant<int> v [[gnu::unused]] (5);
+    std::visit([](int&){}, v);
+    std::visit([](int&&){}, std::move(v));
   }
 }
 

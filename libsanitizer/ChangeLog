@@ -1,3 +1,51 @@
+2017-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/78158
+	* tsan/tsan_interface_atomic.cc: Cherry-pick upstream r298378.
+
+2017-02-16  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	PR sanitizer/79562
+	* sanitizer_common/sanitizer_platform_limits_posix.cc: Cherry-pick
+	upstream r294806.
+
+2017-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/79341
+	* configure.tgt (s390*-*-linux*): Don't disable libsanitizer on
+	s390-linux 31-bit.
+	* sanitizer_common/sanitizer_internal_defs.h: Cherry-pick upstream
+	r294793.
+	* sanitizer_common/sanitizer_common_interceptors.inc: Cherry-pick
+	upstream r294790.
+	* sanitizer_common/sanitizer_linux_s390.cc: Cherry-pick upstream
+	r294799.
+
+2017-02-03  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/78663
+	* sanitizer_common/sanitizer_mac.cc: Cherry-pick upstream r293992.
+	* sanitizer_common/sanitizer_platform_interceptors.h: Likewise.
+
+2017-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.tgt: Enable asan and ubsan on 64-bit s390*-*-linux*.
+
+2017-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.tgt: Enable tsan and lsan on powerpc64{,le}-*-linux*.
+
+	PR sanitizer/79168
+	* merge.sh (change_comment_headers): Don't remove 2nd and 3rd line
+	if the 3rd line doesn't contain 'The LLVM Compiler Infrastructure'
+	text.
+	* sanitizer_common/sanitizer_linux_mips64.S: Regenerated.
+	* sanitizer_common/sanitizer_linux_x86_64.S: Likewise.
+	* tsan/tsan_ppc_regs.h: Likewise.
+	* tsan/tsan_rtl_aarch64.S: Likewise.
+	* tsan/tsan_rtl_mips64.S: Likewise.
+	* tsan/tsan_rtl_ppc64.S: Likewise.
+
 2017-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046

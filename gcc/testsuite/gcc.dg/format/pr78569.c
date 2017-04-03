@@ -20,5 +20,5 @@ void test (void)
 		      "channel uplink (see section 7.6.1).");
 
   /* { dg-warning "output truncated" "" { target *-*-* } 7 } */
-  /* { dg-message "format output" "" { target *-*-* } 6 } */
+  /* { dg-message "output" "" { target *-*-* } 6 } */
 }

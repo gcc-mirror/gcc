@@ -1,5 +1,5 @@
 /* { dg-do run { target { *-*-linux* *-*-gnu* } } } */
-/* { dg-options "-O0 -lm" } */
+/* { dg-options "-O0 -lm -fsignaling-nans" } */
 /* { dg-add-options ieee } */
 /* { dg-require-effective-target issignaling } */
 

@@ -3,10 +3,8 @@
    constant folding.  With optimization enabled the test will fail to
    link if any of the assertions fails.  Without optimization the test
    aborts at runtime if any of the assertions fails.  */
-/* { dg-do run }
-   The h and hh length modifiers are a C99 feature (see PR 78959).
-   { dg-require-effective-target c99_runtime }
-   { dg-additional-options "-O2 -Wall -Wno-pedantic -fprintf-return-value" } */
+/* { dg-do run } */
+/* { dg-additional-options "-O2 -Wall -Wno-pedantic -fprintf-return-value" } */
 
 #ifndef LINE
 #  define LINE   0
@@ -320,7 +318,6 @@ test_d_i (int i, long li)
 #if __SIZEOF_SHORT__ == 2
   RNG ( 1,  6,  7, "%hi",      i);
   RNG ( 1,  5,  6, "%hu",      i);
-
   RNG ( 1,  6,  7, "%.1hi",    i);
   RNG ( 2,  6,  7, "%.2hi",    i);
   RNG ( 3,  6,  7, "%.3hi",    i);
@@ -328,7 +325,6 @@ test_d_i (int i, long li)
   RNG ( 5,  6,  7, "%.5hi",    i);
   RNG ( 6,  7,  8, "%.6hi",    i);
   RNG ( 7,  8,  9, "%.7hi",    i);
-
 #elif __SIZEOF_SHORT__ == 4
   RNG ( 1, 11, 12, "%hi",      i);
   RNG ( 1, 10, 11, "%hu",      i);
@@ -474,16 +470,21 @@ test_a_double (double d)
   EQL ( 6,  7, "%.0a", 0.0);        /* 0x0p+0 */
   EQL ( 6,  7, "%.0a", 1.0);        /* 0x8p-3 */
   EQL ( 6,  7, "%.0a", 2.0);        /* 0x8p-2 */
-  EQL ( 8,  9, "%.1a", 3.0);        /* 0xc.0p-2 */
-  EQL ( 9, 10, "%.2a", 4.0);        /* 0x8.00p-1 */
-  EQL (10, 11, "%.3a", 5.0);        /* 0xa.000p-1 */
 
-  EQL (11, 12, "%.*a", 4, 6.0);     /* 0xc.0000p-1 */
-  EQL (12, 13, "%.*a", 5, 7.0);     /* 0xe.00000p-1 */
+  /* The decimal point may be up to MB_LEN_MAX long.  */
+  RNG ( 8, 13, 14, "%.1a", 3.0);    /* 0xc.0p-2 */
+  RNG ( 9, 14, 15, "%.2a", 4.0);    /* 0x8.00p-1 */
+  RNG (10, 15, 16, "%.3a", 5.0);    /* 0xa.000p-1 */
+
+  RNG (11, 16, 17, "%.*a", 4, 6.0); /* 0xc.0000p-1 */
+  RNG (12, 17, 18, "%.*a", 5, 7.0); /* 0xe.00000p-1 */
 	                            /* d is in [ 0, -DBL_MAX ] */
   RNG ( 6, 10, 11, "%.0a", d);      /* 0x0p+0 ... -0x2p+1023 */
-  RNG ( 6, 12, 13, "%.1a", d);      /* 0x0p+0 ... -0x2.0p+1023 */
-  RNG ( 6, 13, 14, "%.2a", d);      /* 0x0p+0 ... -0x2.00p+1023 */
+  /* %a is poorly specified and allows for implementations divergence:
+     some (such as Glibc) trim redundant trailing zeros after decimal
+     point and others (e.g., Solaris) don't.  */
+  RNG ( 8, 30, 31, "%.1a", d);      /* 0x0.0p+0  ... -0x2.0...0p+1023 */
+  RNG ( 9, 30, 31, "%.2a", d);      /* 0x0.00p+0 ... -0x2.00...0p+1023 */
 }
 
 static void __attribute__ ((noinline, noclone))
@@ -492,159 +493,161 @@ test_a_long_double (void)
   EQL ( 6,  7, "%.0La", 0.0L);      /* 0x0p+0 */
   EQL ( 6,  7, "%.0La", 1.0L);      /* 0x8p-3 */
   EQL ( 6,  7, "%.0La", 2.0L);      /* 0x8p-2 */
-  EQL ( 8,  9, "%.1La", 3.0L);      /* 0xc.0p-2 */
-  EQL ( 9, 10, "%.2La", 4.0L);      /* 0xa.00p-1 */
+
+  RNG ( 8, 13, 14, "%.1La", 3.0L);  /* 0xc.0p-2 */
+  RNG ( 9, 14, 15, "%.2La", 4.0L);  /* 0xa.00p-1 */
 }
 
 static void __attribute__ ((noinline, noclone))
 test_e_double (double d)
 {
-  EQL (12, 13, "%e",  1.0e0);
-  EQL (13, 14, "%e", -1.0e0);
-  EQL (12, 13, "%e",  1.0e+1);
-  EQL (13, 14, "%e", -1.0e+1);
-  EQL (12, 13, "%e",  1.0e+12);
-  EQL (13, 14, "%e", -1.0e+12);
-  EQL (13, 14, "%e",  1.0e+123);
-  EQL (14, 15, "%e", -1.0e+123);
+  RNG (12, 17, 18, "%e",  1.0e0);
+  RNG (13, 18, 19, "%e", -1.0e0);
+  RNG (12, 17, 18, "%e",  1.0e+1);
+  RNG (13, 18, 19, "%e", -1.0e+1);
+  RNG (12, 17, 18, "%e",  1.0e+12);
+  RNG (13, 18, 19, "%e", -1.0e+12);
+  RNG (13, 18, 19, "%e",  1.0e+123);
+  RNG (14, 19, 20, "%e", -1.0e+123);
 
-  EQL (12, 13, "%e",  9.999e+99);
-  EQL (12, 13, "%e",  9.9999e+99);
-  EQL (12, 13, "%e",  9.99999e+99);
+  RNG (12, 17, 18, "%e",  9.999e+99);
+  RNG (12, 17, 18, "%e",  9.9999e+99);
+  RNG (12, 17, 18, "%e",  9.99999e+99);
 
   /* The actual output of the following directive depends on the rounding
      mode.  */
-  /* EQL (12, "%e",  9.9999994e+99); */
+  /* RNG (12, "%e",  9.9999994e+99); */
 
-  EQL (12, 13, "%e",  1.0e-1);
-  EQL (12, 13, "%e",  1.0e-12);
-  EQL (13, 14, "%e",  1.0e-123);
+  RNG (12, 17, 18, "%e",  1.0e-1);
+  RNG (12, 17, 18, "%e",  1.0e-12);
+  RNG (13, 18, 19, "%e",  1.0e-123);
 
-  RNG (12, 14, 15, "%e", d);
-  RNG ( 5,  7,  8, "%.e", d);
-  RNG ( 5,  7,  8, "%.0e", d);
-  RNG ( 7,  9, 10, "%.1e", d);
-  RNG ( 8, 10, 11, "%.2e", d);
-  RNG ( 9, 11, 12, "%.3e", d);
-  RNG (10, 12, 13, "%.4e", d);
-  RNG (11, 13, 14, "%.5e", d);
-  RNG (12, 14, 15, "%.6e", d);
-  RNG (13, 15, 16, "%.7e", d);
+  RNG (12, 19, 20, "%e",   d);
+  RNG ( 5, 11, 12, "%.e",  d);
+  RNG ( 5, 12, 13, "%.0e", d);
+  RNG ( 7, 14, 15, "%.1e", d);
+  RNG ( 8, 15, 16, "%.2e", d);
+  RNG ( 9, 16, 17, "%.3e", d);
+  RNG (10, 17, 18, "%.4e", d);
+  RNG (11, 18, 19, "%.5e", d);
+  RNG (12, 19, 20, "%.6e", d);
+  RNG (13, 20, 21, "%.7e", d);
 
-  RNG (4006, 4008, 4009, "%.4000e", d);
+  RNG (4006, 4013, 4014, "%.4000e", d);
 
   RNG ( 5,  7,  8, "%.*e", 0, d);
-  RNG ( 7,  9, 10, "%.*e", 1, d);
-  RNG ( 8, 10, 11, "%.*e", 2, d);
-  RNG ( 9, 11, 12, "%.*e", 3, d);
-  RNG (10, 12, 13, "%.*e", 4, d);
-  RNG (11, 13, 14, "%.*e", 5, d);
-  RNG (12, 14, 15, "%.*e", 6, d);
-  RNG (13, 15, 16, "%.*e", 7, d);
+  RNG ( 7, 14, 15, "%.*e", 1, d);
+  RNG ( 8, 15, 16, "%.*e", 2, d);
+  RNG ( 9, 16, 17, "%.*e", 3, d);
+  RNG (10, 17, 18, "%.*e", 4, d);
+  RNG (11, 18, 19, "%.*e", 5, d);
+  RNG (12, 19, 20, "%.*e", 6, d);
+  RNG (13, 20, 21, "%.*e", 7, d);
 
-  RNG (4006, 4008, 4009, "%.*e", 4000, d);
+  RNG (4006, 4013, 4014, "%.*e", 4000, d);
 }
 
 static void __attribute__ ((noinline, noclone))
 test_e_long_double (long double d)
 {
-  EQL (12, 13, "%Le",  1.0e0L);
-  EQL (13, 14, "%Le", -1.0e0L);
-  EQL (12, 13, "%Le",  1.0e+1L);
-  EQL (13, 14, "%Le", -1.0e+1L);
-  EQL (12, 13, "%Le",  1.0e+12L);
-  EQL (13, 14, "%Le", -1.0e+12L);
-  EQL (13, 14, "%Le",  1.0e+123L);
-  EQL (14, 15, "%Le", -1.0e+123L);
+  RNG (12, 17, 18, "%Le",  1.0e0L);
+  RNG (13, 18, 19, "%Le", -1.0e0L);
+  RNG (12, 17, 18, "%Le",  1.0e+1L);
+  RNG (13, 18, 19, "%Le", -1.0e+1L);
+  RNG (12, 18, 19, "%Le",  1.0e+12L);
+  RNG (13, 19, 20, "%Le", -1.0e+12L);
+  RNG (13, 19, 20, "%Le",  1.0e+123L);
+  RNG (14, 20, 21, "%Le", -1.0e+123L);
 
-  EQL (12, 13, "%Le",  9.999e+99L);
-  EQL (12, 13, "%Le",  9.9999e+99L);
-  EQL (12, 13, "%Le",  9.99999e+99L);
+  RNG (12, 18, 19, "%Le",  9.999e+99L);
+  RNG (12, 18, 19, "%Le",  9.9999e+99L);
+  RNG (12, 18, 19, "%Le",  9.99999e+99L);
 
 #if __DBL_DIG__ < __LDBL_DIG__
-  EQL (12, 13, "%Le",  9.999999e+99L);
+  RNG (12, 17, 18, "%Le",  9.999999e+99L);
 #else
-  RNG (12, 13, 14, "%Le",  9.999999e+99L);
+  RNG (12, 18, 19, "%Le",  9.999999e+99L);
 #endif
 
   /* The actual output of the following directive depends on the rounding
      mode.  */
-  /* EQL (12, "%Le",  9.9999994e+99L); */
+  /* RNG (12, "%Le",  9.9999994e+99L); */
 
-  EQL (12, 13, "%Le",  1.0e-1L);
-  EQL (12, 13, "%Le",  1.0e-12L);
-  EQL (13, 14, "%Le",  1.0e-123L);
+  RNG (12, 17, 18, "%Le",  1.0e-1L);
+  RNG (12, 17, 18, "%Le",  1.0e-12L);
+  RNG (13, 18, 19, "%Le",  1.0e-123L);
 
   EQL ( 6,  7, "%.0Le",   1.0e-111L);
-  EQL ( 8,  9, "%.1Le",   1.0e-111L);
-  EQL (19, 20, "%.12Le",  1.0e-112L);
-  EQL (20, 21, "%.13Le",  1.0e-113L);
+
+  RNG ( 8, 13, 14, "%.1Le",   1.0e-111L);
+  RNG (19, 25, 25, "%.12Le",  1.0e-112L);
+  RNG (20, 26, 27, "%.13Le",  1.0e-113L);
 
   /* The following correspond to the double results plus 1 for the upper
      bound accounting for the four-digit exponent.  */
-  RNG (12, 15, 16, "%Le", d);    /* 0.000000e+00 ...  -1.189732e+4932 */
+  RNG (12, 20, 21, "%Le", d);    /* 0.000000e+00 ...  -1.189732e+4932 */
   RNG ( 5,  8,  9, "%.Le", d);
   RNG ( 5,  9, 10, "%.0Le", d);
-  RNG ( 7, 10, 11, "%.1Le", d);  /* 0.0e+00      ...  -1.2e+4932 */
-  RNG ( 8, 11, 12, "%.2Le", d);  /* 0.00e+00     ...  -1.19e+4932 */
-  RNG ( 9, 12, 13, "%.3Le", d);
-  RNG (10, 13, 14, "%.4Le", d);
-  RNG (11, 14, 15, "%.5Le", d);
-  RNG (12, 15, 16, "%.6Le", d);  /* same as plain "%Le" */
-  RNG (13, 16, 17, "%.7Le", d);  /* 0.0000000e+00 ... -1.1897315e+4932 */
+  RNG ( 7, 15, 16, "%.1Le", d);  /* 0.0e+00      ...  -1.2e+4932 */
+  RNG ( 8, 16, 17, "%.2Le", d);  /* 0.00e+00     ...  -1.19e+4932 */
+  RNG ( 9, 17, 18, "%.3Le", d);
+  RNG (10, 18, 19, "%.4Le", d);
+  RNG (11, 19, 20, "%.5Le", d);
+  RNG (12, 20, 21, "%.6Le", d);  /* same as plain "%Le" */
+  RNG (13, 21, 22, "%.7Le", d);  /* 0.0000000e+00 ... -1.1897315e+4932 */
 
   RNG ( 5,  9, 10, "%.*Le", 0, d);
-  RNG ( 7, 10, 11, "%.*Le", 1, d);
-  RNG ( 8, 11, 12, "%.*Le", 2, d);
-  RNG ( 9, 12, 13, "%.*Le", 3, d);
-  RNG (10, 13, 14, "%.*Le", 4, d);
-  RNG (11, 14, 15, "%.*Le", 5, d);
-  RNG (12, 15, 16, "%.*Le", 6, d);
-  RNG (13, 16, 17, "%.*Le", 7, d);
+  RNG ( 7, 15, 16, "%.*Le", 1, d);
+  RNG ( 8, 16, 17, "%.*Le", 2, d);
+  RNG ( 9, 17, 18, "%.*Le", 3, d);
+  RNG (10, 18, 19, "%.*Le", 4, d);
+  RNG (11, 19, 20, "%.*Le", 5, d);
+  RNG (12, 20, 21, "%.*Le", 6, d);
+  RNG (13, 21, 22, "%.*Le", 7, d);
 }
 
 static void __attribute__ ((noinline, noclone))
 test_f_double (double d)
 {
-  EQL (  8,   9, "%f", 0.0e0);
-  EQL (  8,   9, "%f", 0.1e0);
-  EQL (  8,   9, "%f", 0.12e0);
-  EQL (  8,   9, "%f", 0.123e0);
-  EQL (  8,   9, "%f", 0.1234e0);
-  EQL (  8,   9, "%f", 0.12345e0);
-  EQL (  8,   9, "%f", 0.123456e0);
-  EQL (  8,   9, "%f", 1.234567e0);
+  RNG (  8,  13,  14, "%f", 0.0e0);
+  RNG (  8,  13,  14, "%f", 0.1e0);
+  RNG (  8,  13,  14, "%f", 0.12e0);
+  RNG (  8,  13,  14, "%f", 0.123e0);
+  RNG (  8,  13,  14, "%f", 0.1234e0);
+  RNG (  8,  13,  14, "%f", 0.12345e0);
+  RNG (  8,  13,  14, "%f", 0.123456e0);
+  RNG (  8,  13,  14, "%f", 1.234567e0);
 
-  EQL (  9,  10, "%f", 1.0e+1);
-  EQL ( 20,  21, "%f", 1.0e+12);
-  EQL (130, 131, "%f", 1.0e+123);
+  RNG (  9,  14,  15, "%f", 1.0e+1);
+  RNG ( 20,  26,  27, "%f", 1.0e+12);
+  RNG (130, 136, 137, "%f", 1.0e+123);
 
-  EQL (  8,   9, "%f", 1.0e-1);
-  EQL (  8,   9, "%f", 1.0e-12);
-  EQL (  8,   9, "%f", 1.0e-123);
+  RNG (  8,  13,  14, "%f", 1.0e-1);
+  RNG (  8,  13,  14, "%f", 1.0e-12);
+  RNG (  8,  13,  14, "%f", 1.0e-123);
 
-  RNG (  8, 317, 318, "%f", d);
+  RNG (  8, 322, 323, "%f", d);
 }
 
 static void __attribute__ ((noinline, noclone))
 test_f_long_double (void)
 {
-  EQL (  8,   9, "%Lf", 0.0e0L);
-  EQL (  8,   9, "%Lf", 0.1e0L);
-  EQL (  8,   9, "%Lf", 0.12e0L);
-  EQL (  8,   9, "%Lf", 0.123e0L);
-  EQL (  8,   9, "%Lf", 0.1234e0L);
-  EQL (  8,   9, "%Lf", 0.12345e0L);
-  EQL (  8,   9, "%Lf", 0.123456e0L);
-  EQL (  8,   9, "%Lf", 1.234567e0L);
+  RNG (  8,  15,  16, "%Lf", 0.0e0L);
+  RNG (  8,  14,  15, "%Lf", 0.1e0L);
+  RNG (  8,  14,  15, "%Lf", 0.12e0L);
+  RNG (  8,  14,  15, "%Lf", 0.123e0L);
+  RNG (  8,  14,  15, "%Lf", 0.1234e0L);
+  RNG (  8,  14,  15, "%Lf", 0.12345e0L);
+  RNG (  8,  14,  15, "%Lf", 0.123456e0L);
+  RNG (  8,  14,  15, "%Lf", 1.234567e0L);
 
-  EQL (  9,  10, "%Lf", 1.0e+1L);
-  EQL ( 20,  21, "%Lf", 1.0e+12L);
-  EQL (130, 131, "%Lf", 1.0e+123L);
+  RNG (  9,  15,  16, "%Lf", 1.0e+1L);
+  RNG ( 20,  26,  27, "%Lf", 1.0e+12L);
+  RNG (130, 136, 137, "%Lf", 1.0e+123L);
 
-  EQL (  8,   9, "%Lf", 1.0e-1L);
-  EQL (  8,   9, "%Lf", 1.0e-12L);
-  EQL (  8,   9, "%Lf", 1.0e-123L);
+  RNG (  8,  14,  15, "%Lf", 1.0e-1L);
+  RNG (  8,  14,  15, "%Lf", 1.0e-12L);
+  RNG (  8,  14,  15, "%Lf", 1.0e-123L);
 }
 
 static void __attribute__ ((noinline, noclone))
@@ -652,52 +655,54 @@ test_g_double (double d)
 {
   /* Numbers exactly representable in binary floating point.  */
   EQL (  1,   2, "%g", 0.0);
-  EQL (  3,   4, "%g", 1.0 / 2);
-  EQL (  4,   5, "%g", 1.0 / 4);
-  EQL (  5,   6, "%g", 1.0 / 8);
-  EQL (  6,   7, "%g", 1.0 / 16);
-  EQL (  7,   8, "%g", 1.0 / 32);
-  EQL (  8,   9, "%g", 1.0 / 64);
-  EQL (  9,  10, "%g", 1.0 / 128);
-  EQL ( 10,  11, "%g", 1.0 / 256);
-  EQL ( 10,  11, "%g", 1.0 / 512);
+
+  RNG (  3,   8,  9, "%g", 1.0 / 2);
+  RNG (  4,   9, 10, "%g", 1.0 / 4);
+  RNG (  5,  10, 11, "%g", 1.0 / 8);
+  RNG (  6,  11, 12, "%g", 1.0 / 16);
+  RNG (  7,  12, 13, "%g", 1.0 / 32);
+  RNG (  8,  13, 14, "%g", 1.0 / 64);
+  RNG (  9,  14, 15, "%g", 1.0 / 128);
+  RNG ( 10,  15, 16, "%g", 1.0 / 256);
+  RNG ( 10,  16, 17, "%g", 1.0 / 512);
 
   /* Numbers that are not exactly representable.  */
-  RNG ( 3,  8,  9, "%g", 0.1);
-  RNG ( 4,  8,  9, "%g", 0.12);
-  RNG ( 5,  8,  9, "%g", 0.123);
-  RNG ( 6,  8,  9, "%g", 0.1234);
-  RNG ( 7,  8,  9, "%g", 0.12345);
-  RNG ( 8,  8,  9, "%g", 0.123456);
+  RNG ( 3, 13, 14, "%g", 0.1);
+  RNG ( 4, 13, 14, "%g", 0.12);
+  RNG ( 5, 13, 14, "%g", 0.123);
+  RNG ( 6, 13, 14, "%g", 0.1234);
+  RNG ( 7, 13, 14, "%g", 0.12345);
+  RNG ( 8, 13, 14, "%g", 0.123456);
 
-  RNG ( 4,  7,  8, "%g", 0.123e+1);
-  EQL (     8,  9, "%g", 0.123e+12);
-  RNG ( 9, 12, 13, "%g", 0.123e+134);
+  RNG ( 4, 17, 18, "%g", 0.123e+1);
+  RNG ( 8, 18, 19, "%g", 0.123e+12);
+  RNG ( 9, 19, 20, "%g", 0.123e+134);
 
-  RNG ( 1, 13, 14, "%g", d);
-  RNG ( 1,  7,  8, "%.g", d);
-  RNG ( 1,  7,  8, "%.0g", d);
-  RNG ( 1,  7,  8, "%.1g", d);
-  RNG ( 1,  9, 10, "%.2g", d);
-  RNG ( 1, 10, 11, "%.3g", d);
-  RNG ( 1, 11, 12, "%.4g", d);
-  RNG ( 1, 12, 13, "%.5g", d);
-  RNG ( 1, 13, 14, "%.6g", d);
-  RNG ( 1, 14, 15, "%.7g", d);
-  RNG ( 1, 15, 16, "%.8g", d);
+  RNG ( 1, 18, 19, "%g", d);
+  RNG ( 1, 12, 13, "%.g", d);
+  RNG ( 1, 12, 13, "%.0g", d);
+  RNG ( 1, 12, 13, "%.1g", d);
+  RNG ( 1, 14, 15, "%.2g", d);
+  RNG ( 1, 15, 16, "%.3g", d);
+  RNG ( 1, 16, 17, "%.4g", d);
+  RNG ( 1, 17, 18, "%.5g", d);
+  RNG ( 1, 18, 19, "%.6g", d);
+  RNG ( 1, 19, 20, "%.7g", d);
+  RNG ( 1, 20, 21, "%.8g", d);
 
-  RNG ( 1,310,311, "%.9999g", d);
+  RNG ( 1, 315, 316, "%.9999g", d);
 
-  RNG ( 1,  7,  8, "%.*g", 0, d);
-  RNG ( 1,  7,  8, "%.*g", 1, d);
-  RNG ( 1,  9, 10, "%.*g", 2, d);
-  RNG ( 1, 10, 11, "%.*g", 3, d);
-  RNG ( 1, 11, 12, "%.*g", 4, d);
-  RNG ( 1, 12, 13, "%.*g", 5, d);
-  RNG ( 1, 13, 14, "%.*g", 6, d);
-  RNG ( 1, 14, 15, "%.*g", 7, d);
-  RNG ( 1, 15, 16, "%.*g", 8, d);
-  RNG ( 1,310,311, "%.*g", 9999, d);
+  RNG ( 1, 12, 13, "%.*g", 0, d);
+  RNG ( 1, 12, 13, "%.*g", 1, d);
+  RNG ( 1, 14, 15, "%.*g", 2, d);
+  RNG ( 1, 15, 16, "%.*g", 3, d);
+  RNG ( 1, 16, 17, "%.*g", 4, d);
+  RNG ( 1, 17, 18, "%.*g", 5, d);
+  RNG ( 1, 18, 19, "%.*g", 6, d);
+  RNG ( 1, 19, 20, "%.*g", 7, d);
+  RNG ( 1, 20, 21, "%.*g", 8, d);
+
+  RNG ( 1, 315, 316, "%.*g", 9999, d);
 }
 
 static void __attribute__ ((noinline, noclone))
@@ -705,36 +710,32 @@ test_g_long_double (void)
 {
   /* Numbers exactly representable in binary floating point.  */
   EQL (  1,   2, "%Lg", 0.0L);
-  EQL (  3,   4, "%Lg", 1.0L / 2);
-  EQL (  4,   5, "%Lg", 1.0L / 4);
-  EQL (  5,   6, "%Lg", 1.0L / 8);
-  EQL (  6,   7, "%Lg", 1.0L / 16);
-  EQL (  7,   8, "%Lg", 1.0L / 32);
-  EQL (  8,   9, "%Lg", 1.0L / 64);
-  EQL (  9,  10, "%Lg", 1.0L / 128);
-  EQL ( 10,  11, "%Lg", 1.0L / 256);
-  EQL ( 10,  11, "%Lg", 1.0L / 512);
+  RNG (  3,   8, 9, "%Lg", 1.0L / 2);
+  RNG (  4,   9, 10, "%Lg", 1.0L / 4);
+  RNG (  5,  10, 11, "%Lg", 1.0L / 8);
+  RNG (  6,  11, 12, "%Lg", 1.0L / 16);
+  RNG (  7,  12, 13, "%Lg", 1.0L / 32);
+  RNG (  8,  13, 14, "%Lg", 1.0L / 64);
+  RNG (  9,  14, 15, "%Lg", 1.0L / 128);
+  RNG ( 10,  15, 16, "%Lg", 1.0L / 256);
+  RNG ( 10,  15, 16, "%Lg", 1.0L / 512);
 
   /* Numbers that are not exactly representable.  */
-#if __LDBL_DIG__ < 31
-  /* x86_64, for example, represents 0.1 as 1.000000...1...e-1
-     and formats it as either "0.1" (when rounded down) or "0.100001"
-     (rounded up).  */
-  RNG ( 3,  8,  9, "%Lg", 0.1L);
-#else
-  /* powerpc64 represents 0.1 as 9.999999...6e-2 and formats it
-   as "0.0999999" (rounded down) or "0.1" (rounded up).  */
-  RNG ( 3,  9, 10, "%Lg", 0.1L);
-#endif
-  RNG ( 4,  8,  9, "%Lg", 0.12L);
-  RNG ( 5,  8,  9, "%Lg", 0.123L);
-  RNG ( 6,  8,  9, "%Lg", 0.1234L);
-  RNG ( 7,  8,  9, "%Lg", 0.12345L);
-  RNG ( 8,  8,  9, "%Lg", 0.123456L);
 
-  RNG ( 4,  7,  8, "%Lg", 0.123e+1L);
-  EQL (     8,  9, "%Lg", 0.123e+12L);
-  RNG ( 9, 12, 13, "%Lg", 0.123e+134L);
+  /* The following test case results in up to 14 bytes on powerpc*-*-*
+     but only in 13 bytes on x86_64 (see PR testsuite/79293).  Test just
+     for the former for simplicity.  */
+  RNG ( 3, 14, 15, "%Lg", 0.1L);
+
+  RNG ( 4, 13, 14, "%Lg", 0.12L);
+  RNG ( 5, 13, 14, "%Lg", 0.123L);
+  RNG ( 6, 13, 14, "%Lg", 0.1234L);
+  RNG ( 7, 13, 14, "%Lg", 0.12345L);
+  RNG ( 8, 13, 14, "%Lg", 0.123456L);
+
+  RNG ( 4, 12, 13, "%Lg", 0.123e+1L);
+  RNG ( 8, 13, 14, "%Lg", 0.123e+12L);
+  RNG ( 9, 17, 18, "%Lg", 0.123e+134L);
 }
 
 static void __attribute__ ((noinline, noclone))
@@ -773,6 +774,34 @@ test_s (int i)
   RNG (  3,   6,   7, "%-s", i ? "123" : "123456");
 }
 
+static void __attribute__ ((noinline, noclone))
+test_n (void)
+{
+  int n;
+  EQL (  0,   1, "%n", &n);
+  EQL (  1,   2, "1%n", &n);
+  EQL (  2,   3, "12%n", &n);
+  EQL (  3,   4, "12%n3", &n);
+  EQL (  4,   5, "12%n34", &n);
+  EQL (  4,   5, "12%n34%n", &n, &n);
+  EQL (  5,   6, "12%n34%n5", &n, &n);
+  EQL (  6,   7, "12%n34%n56", &n, &n);
+  EQL (  6,   7, "%s%n%s%n%s", "12", &n, "34", &n, "56");
+}
+
+static void __attribute__ ((noinline, noclone))
+test_percent (void)
+{
+  /* Provide extra arguments siunce the EQL macro needs at least one.  */
+  EQL (  1,   2, "%%", 0);         /* { dg-warning "too many arguments" } */
+  EQL (  2,   3, "%%%%", 0);       /* { dg-warning "too many arguments" } */
+  EQL (  3,   4, "%%%%%%", 0);     /* { dg-warning "too many arguments" } */
+  EQL (  3,   4, "%%%%%%%s", "");
+  EQL (  3,   4, "%%%%%s%%", "");
+  EQL (  3,   4, "%%%s%%%%", "");
+  EQL (  3,   4, "%s%%%%%%", "");
+}
+
 int main (void)
 {
   test_c ('?');
@@ -790,6 +819,10 @@ int main (void)
   test_g_long_double ();
 
   test_s (0);
+
+  test_n ();
+
+  test_percent ();
 
   if (nfails)
     {

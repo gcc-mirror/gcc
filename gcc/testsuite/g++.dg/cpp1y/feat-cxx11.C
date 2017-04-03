@@ -166,7 +166,7 @@
 
 //  C++14 attributes:
 
-//  Attribute [[deprecated]] is allowed in C++11 as an extension (with pedwarn).
+//  Attribute [[deprecated]] is allowed in C++11 as an extension.
 #ifdef __has_cpp_attribute
 #  if ! __has_cpp_attribute(deprecated)
 #    error "__has_cpp_attribute(deprecated)"

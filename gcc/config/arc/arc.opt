@@ -469,7 +469,7 @@ EnumValue
 Enum(arc_fpu) String(fpud_all) Value(FPU_FPUD_ALL)
 
 mtp-regno=
-Target RejectNegative Joined UInteger Var(arc_tp_regno) Init(25)
+Target RejectNegative Joined UInteger Var(arc_tp_regno) Init(TARGET_ARC_TP_REGNO_DEFAULT)
 Specify thread pointer register number.
 
 mtp-regno=none

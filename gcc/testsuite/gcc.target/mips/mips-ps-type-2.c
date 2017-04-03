@@ -32,6 +32,11 @@ NOMIPS16 v2sf init (float a, float b)
 /* Move between registers */
 NOMIPS16 v2sf move (v2sf a)
 {
+  register v2sf b __asm__("$f0") = a;
+  register v2sf c __asm__("$f2");
+  __asm__ __volatile__ ("" : "+f" (b));
+  c = b;
+  __asm__ __volatile__ ("" : : "f" (c));
   return a;
 }
 

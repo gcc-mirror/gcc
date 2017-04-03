@@ -82,6 +82,10 @@ reshape_'rtype_ccode` ('rtype` * const restrict ret,
   index_type shape_data[GFC_MAX_DIMENSIONS];
 
   rdim = GFC_DESCRIPTOR_EXTENT(shape,0);
+  /* rdim is always > 0; this lets the compiler optimize more and
+   avoids a potential warning.  */
+  GFC_ASSERT(rdim>0);
+
   if (rdim != GFC_DESCRIPTOR_RANK(ret))
     runtime_error("rank of return array incorrect in RESHAPE intrinsic");
 
@@ -236,6 +240,11 @@ reshape_'rtype_ccode` ('rtype` * const restrict ret,
     }
 
   sdim = GFC_DESCRIPTOR_RANK (source);
+
+  /* sdim is always > 0; this lets the compiler optimize more and
+   avoids a warning.  */
+  GFC_ASSERT(sdim>0);
+
   ssize = 1;
   sempty = 0;
   for (n = 0; n < sdim; n++)

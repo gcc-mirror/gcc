@@ -1,0 +1,3 @@
+# Only XLEN and ABI affect Linux multilib dir names, e.g. /lib32/ilp32d/
+MULTILIB_DIRNAMES := $(patsubst rv32%,lib32,$(patsubst rv64%,lib64,$(MULTILIB_DIRNAMES)))
+MULTILIB_OSDIRNAMES := $(patsubst lib%,../lib%,$(MULTILIB_DIRNAMES))

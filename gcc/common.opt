@@ -689,8 +689,8 @@ Common Var(warn_stack_protect) Warning
 Warn when not issuing stack smashing protection for some reason.
 
 Wstack-usage=
-Common Joined RejectNegative UInteger Var(warn_stack_usage) Init(-1) Warning
-Warn if stack usage might be larger than specified amount.
+Common Joined RejectNegative UInteger Var(warn_stack_usage) Warning
+-Wstack-usage=<number>	Warn if stack usage might be larger than specified amount.
 
 Wstrict-aliasing
 Common Warning
@@ -1376,7 +1376,7 @@ Perform a forward propagation pass on RTL.
 
 ffp-contract=
 Common Joined RejectNegative Enum(fp_contract_mode) Var(flag_fp_contract_mode) Init(FP_CONTRACT_FAST) Optimization
--ffp-contract=[off|on|fast] Perform floating-point expression contraction.
+-ffp-contract=[off|on|fast]	Perform floating-point expression contraction.
 
 Enum
 Name(fp_contract_mode) Type(enum fp_contract_mode) UnknownError(unknown floating point contraction style %qs)
@@ -1528,7 +1528,7 @@ Perform conversion of conditional jumps to conditional execution.
 
 fstack-reuse=
 Common Joined RejectNegative Enum(stack_reuse_level) Var(flag_stack_reuse) Init(SR_ALL) Optimization
--fstack-reuse=[all|named_vars|none] Set stack reuse level for local variables.
+-fstack-reuse=[all|named_vars|none]	Set stack reuse level for local variables.
 
 Enum
 Name(stack_reuse_level) Type(enum stack_reuse_level) UnknownError(unknown Stack Reuse Level %qs)
@@ -1612,8 +1612,8 @@ Common Report Var(flag_ipa_cp_clone) Optimization
 Perform cloning to make Interprocedural constant propagation stronger.
 
 fipa-cp-alignment
-Common Report Var(flag_ipa_cp_alignment) Optimization
-Perform alignment discovery and propagation to make Interprocedural constant propagation stronger.
+Common Ignore
+Does nothing.  Preserved for backward compatibility.
 
 fipa-bit-cp
 Common Report Var(flag_ipa_bit_cp) Optimization
@@ -1661,7 +1661,7 @@ Perform IPA Value Range Propagation.
 
 fira-algorithm=
 Common Joined RejectNegative Enum(ira_algorithm) Var(flag_ira_algorithm) Init(IRA_ALGORITHM_CB) Optimization
--fira-algorithm=[CB|priority] Set the used IRA algorithm.
+-fira-algorithm=[CB|priority]	Set the used IRA algorithm.
 
 Enum
 Name(ira_algorithm) Type(enum ira_algorithm) UnknownError(unknown IRA algorithm %qs)
@@ -1674,7 +1674,7 @@ Enum(ira_algorithm) String(priority) Value(IRA_ALGORITHM_PRIORITY)
 
 fira-region=
 Common Joined RejectNegative Enum(ira_region) Var(flag_ira_region) Init(IRA_REGION_AUTODETECT) Optimization
--fira-region=[one|all|mixed] Set regions for IRA.
+-fira-region=[one|all|mixed]	Set regions for IRA.
 
 Enum
 Name(ira_region) Type(enum ira_region) UnknownError(unknown IRA region %qs)
@@ -2073,7 +2073,7 @@ Reorder basic blocks to improve code placement.
 
 freorder-blocks-algorithm=
 Common Joined RejectNegative Enum(reorder_blocks_algorithm) Var(flag_reorder_blocks_algorithm) Init(REORDER_BLOCKS_ALGORITHM_SIMPLE) Optimization
--freorder-blocks-algorithm=[simple|stc] Set the used basic block reordering algorithm.
+-freorder-blocks-algorithm=[simple|stc]	Set the used basic block reordering algorithm.
 
 Enum
 Name(reorder_blocks_algorithm) Type(enum reorder_blocks_algorithm) UnknownError(unknown basic block reordering algorithm %qs)
@@ -2523,7 +2523,7 @@ Enable loop optimizations on tree level.
 
 ftree-parallelize-loops=
 Common Report Joined RejectNegative UInteger Var(flag_tree_parallelize_loops) Init(1) Optimization
-Enable automatic parallelization of loops.
+-ftree-parallelize-loops=<number>	Enable automatic parallelization of loops.
 
 ftree-phiprop
 Common Report Var(flag_tree_phiprop) Init(1) Optimization
@@ -2691,10 +2691,11 @@ Enable basic block vectorization (SLP) on trees.
 fvect-cost-model=
 Common Joined RejectNegative Enum(vect_cost_model) Var(flag_vect_cost_model) Init(VECT_COST_MODEL_DEFAULT) Optimization
 Specifies the cost model for vectorization.
+-fvect-cost-model=[unlimited|dynamic|cheap]	Specifies the cost model for vectorization.
 
 fsimd-cost-model=
 Common Joined RejectNegative Enum(vect_cost_model) Var(flag_simd_cost_model) Init(VECT_COST_MODEL_UNLIMITED) Optimization
-Specifies the vectorization cost model for code marked with a simd directive.
+-fsimd-cost-model=[unlimited|dynamic|cheap]	Specifies the vectorization cost model for code marked with a simd directive.
 
 Enum
 Name(vect_cost_model) Type(enum vect_cost_model) UnknownError(unknown vectorizer cost model %qs)
@@ -2804,6 +2805,14 @@ Generate debug information in default format.
 gcoff
 Common Driver JoinedOrMissing Negative(gdwarf)
 Generate debug information in COFF format.
+
+gno-column-info
+Common Driver RejectNegative Var(debug_column_info,0) Init(0)
+Don't record DW_AT_decl_column and DW_AT_call_column in DWARF.
+
+gcolumn-info
+Common Driver RejectNegative Var(debug_column_info,1)
+Record DW_AT_decl_column and DW_AT_call_column in DWARF.
 
 gdwarf
 Common Driver JoinedOrMissing Negative(gdwarf-)

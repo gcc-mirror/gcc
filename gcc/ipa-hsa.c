@@ -289,7 +289,7 @@ const pass_data pass_data_ipa_hsa =
 {
   IPA_PASS, /* type */
   "hsa", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
+  OPTGROUP_OMP, /* optinfo_flags */
   TV_IPA_HSA, /* tv_id */
   0, /* properties_required */
   0, /* properties_provided */

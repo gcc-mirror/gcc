@@ -433,7 +433,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	      /* Bool ops don't participate in vectorization factor
 		 computation.  For comparison use compared types to
 		 compute a factor.  */
-	      if (TREE_CODE (scalar_type) == BOOLEAN_TYPE
+	      if (VECT_SCALAR_BOOLEAN_TYPE_P (scalar_type)
 		  && is_gimple_assign (stmt)
 		  && gimple_assign_rhs_code (stmt) != COND_EXPR)
 		{
@@ -442,11 +442,10 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 		    mask_producers.safe_push (stmt_info);
 		  bool_result = true;
 
-		  if (gimple_code (stmt) == GIMPLE_ASSIGN
-		      && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt))
-			 == tcc_comparison
-		      && TREE_CODE (TREE_TYPE (gimple_assign_rhs1 (stmt)))
-			 != BOOLEAN_TYPE)
+		  if (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt))
+		      == tcc_comparison
+		      && !VECT_SCALAR_BOOLEAN_TYPE_P
+			    (TREE_TYPE (gimple_assign_rhs1 (stmt))))
 		    scalar_type = TREE_TYPE (gimple_assign_rhs1 (stmt));
 		  else
 		    {
@@ -585,9 +584,10 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 
       stmt = STMT_VINFO_STMT (mask_producers[i]);
 
-      if (gimple_code (stmt) == GIMPLE_ASSIGN
+      if (is_gimple_assign (stmt)
 	  && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_comparison
-	  && TREE_CODE (TREE_TYPE (gimple_assign_rhs1 (stmt))) != BOOLEAN_TYPE)
+	  && !VECT_SCALAR_BOOLEAN_TYPE_P
+				      (TREE_TYPE (gimple_assign_rhs1 (stmt))))
 	{
 	  scalar_type = TREE_TYPE (gimple_assign_rhs1 (stmt));
 	  mask_type = get_mask_type_for_scalar_type (scalar_type);
@@ -1329,9 +1329,9 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
             continue;
 
 	  vect_cost_for_stmt kind;
-          if (STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt)))
+          if (STMT_VINFO_DATA_REF (stmt_info))
             {
-              if (DR_IS_READ (STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt))))
+              if (DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
                kind = scalar_load;
              else
                kind = scalar_store;
@@ -1341,7 +1341,7 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
 
 	  scalar_single_iter_cost
 	    += record_stmt_cost (&LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
-				 factor, kind, NULL, 0, vect_prologue);
+				 factor, kind, stmt_info, 0, vect_prologue);
         }
     }
   LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST (loop_vinfo)
@@ -3178,16 +3178,24 @@ vect_get_known_peeling_cost (loop_vec_info loop_vinfo, int peel_iters_prologue,
   int j;
   if (peel_iters_prologue)
     FOR_EACH_VEC_ELT (*scalar_cost_vec, j, si)
-      retval += record_stmt_cost (prologue_cost_vec,
-				  si->count * peel_iters_prologue,
-				  si->kind, NULL, si->misalign,
-				  vect_prologue);
+	{
+	  stmt_vec_info stmt_info
+	    = si->stmt ? vinfo_for_stmt (si->stmt) : NULL;
+	  retval += record_stmt_cost (prologue_cost_vec,
+				      si->count * peel_iters_prologue,
+				      si->kind, stmt_info, si->misalign,
+				      vect_prologue);
+	}
   if (*peel_iters_epilogue)
     FOR_EACH_VEC_ELT (*scalar_cost_vec, j, si)
-      retval += record_stmt_cost (epilogue_cost_vec,
-				  si->count * *peel_iters_epilogue,
-				  si->kind, NULL, si->misalign,
-				  vect_epilogue);
+	{
+	  stmt_vec_info stmt_info
+	    = si->stmt ? vinfo_for_stmt (si->stmt) : NULL;
+	  retval += record_stmt_cost (epilogue_cost_vec,
+				      si->count * *peel_iters_epilogue,
+				      si->kind, stmt_info, si->misalign,
+				      vect_epilogue);
+	}
 
   return retval;
 }
@@ -6164,20 +6172,24 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	  if (slp_node)
 	    {
 	      /* Get vec defs for all the operands except the reduction index,
-		ensuring the ordering of the ops in the vector is kept.  */
+		 ensuring the ordering of the ops in the vector is kept.  */
 	      auto_vec<tree, 3> slp_ops;
 	      auto_vec<vec<tree>, 3> vec_defs;
 
-	      slp_ops.quick_push ((reduc_index == 0) ? NULL : ops[0]);
-	      slp_ops.quick_push ((reduc_index == 1) ? NULL : ops[1]);
+	      slp_ops.quick_push (reduc_index == 0 ? NULL : ops[0]);
+	      slp_ops.quick_push (reduc_index == 1 ? NULL : ops[1]);
 	      if (op_type == ternary_op)
-		slp_ops.quick_push ((reduc_index == 2) ? NULL : ops[2]);
+		slp_ops.quick_push (reduc_index == 2 ? NULL : ops[2]);
 
 	      vect_get_slp_defs (slp_ops, slp_node, &vec_defs, -1);
 
-	      vec_oprnds0.safe_splice (vec_defs[(reduc_index == 0) ? 1 : 0]);
+	      vec_oprnds0.safe_splice (vec_defs[reduc_index == 0 ? 1 : 0]);
+	      vec_defs[reduc_index == 0 ? 1 : 0].release ();
 	      if (op_type == ternary_op)
-		vec_oprnds1.safe_splice (vec_defs[(reduc_index == 2) ? 1 : 2]);
+		{
+		  vec_oprnds1.safe_splice (vec_defs[reduc_index == 2 ? 1 : 2]);
+		  vec_defs[reduc_index == 2 ? 1 : 2].release ();
+		}
 	    }
           else
 	    {
@@ -6186,7 +6198,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
               vec_oprnds0.quick_push (loop_vec_def0);
               if (op_type == ternary_op)
                {
-		 op1 = (reduc_index == 0) ? ops[2] : ops[1];
+		 op1 = reduc_index == 0 ? ops[2] : ops[1];
                  loop_vec_def1 = vect_get_vec_def_for_operand (op1, stmt);
                  vec_oprnds1.quick_push (loop_vec_def1);
                }
@@ -6706,6 +6718,50 @@ loop_niters_no_overflow (loop_vec_info loop_vinfo)
   return false;
 }
 
+/* Scale profiling counters by estimation for LOOP which is vectorized
+   by factor VF.  */
+
+static void
+scale_profile_for_vect_loop (struct loop *loop, unsigned vf)
+{
+  edge preheader = loop_preheader_edge (loop);
+  /* Reduce loop iterations by the vectorization factor.  */
+  gcov_type new_est_niter = niter_for_unrolled_loop (loop, vf);
+  gcov_type freq_h = loop->header->count, freq_e = preheader->count;
+
+  /* Use frequency only if counts are zero.  */
+  if (freq_h == 0 && freq_e == 0)
+    {
+      freq_h = loop->header->frequency;
+      freq_e = EDGE_FREQUENCY (preheader);
+    }
+  if (freq_h != 0)
+    {
+      gcov_type scale;
+
+      /* Avoid dropping loop body profile counter to 0 because of zero count
+	 in loop's preheader.  */
+      freq_e = MAX (freq_e, 1);
+      /* This should not overflow.  */
+      scale = GCOV_COMPUTE_SCALE (freq_e * (new_est_niter + 1), freq_h);
+      scale_loop_frequencies (loop, scale, REG_BR_PROB_BASE);
+    }
+
+  basic_block exit_bb = single_pred (loop->latch);
+  edge exit_e = single_exit (loop);
+  exit_e->count = loop_preheader_edge (loop)->count;
+  exit_e->probability = REG_BR_PROB_BASE / (new_est_niter + 1);
+
+  edge exit_l = single_pred_edge (loop->latch);
+  int prob = exit_l->probability;
+  exit_l->probability = REG_BR_PROB_BASE - exit_e->probability;
+  exit_l->count = exit_bb->count - exit_e->count;
+  if (exit_l->count < 0)
+    exit_l->count = 0;
+  if (prob > 0)
+    scale_bbs_frequencies_int (&loop->latch, 1, exit_l->probability, prob);
+}
+
 /* Function vect_transform_loop.
 
    The analysis phase has determined that the loop is vectorizable.
@@ -6731,15 +6787,9 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   bool transform_pattern_stmt = false;
   bool check_profitability = false;
   int th;
-  /* Record number of iterations before we started tampering with the profile. */
-  gcov_type expected_iterations = expected_loop_iterations_unbounded (loop);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "=== vec_transform_loop ===\n");
-
-  /* If profile is inprecise, we have chance to fix it up.  */
-  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
-    expected_iterations = LOOP_VINFO_INT_NITERS (loop_vinfo);
 
   /* Use the more conservative vectorization threshold.  If the number
      of iterations is constant assume the cost check has been performed
@@ -7056,9 +7106,8 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
   slpeel_make_loop_iterate_ntimes (loop, niters_vector);
 
-  /* Reduce loop iterations by the vectorization factor.  */
-  scale_loop_profile (loop, GCOV_COMPUTE_SCALE (1, vf),
-		      expected_iterations / vf);
+  scale_profile_for_vect_loop (loop, vf);
+
   /* The minimum number of iterations performed by the epilogue.  This
      is 1 when peeling for gaps because we always need a final scalar
      iteration.  */
@@ -7180,6 +7229,7 @@ optimize_mask_stores (struct loop *loop)
   unsigned nbbs = loop->num_nodes;
   unsigned i;
   basic_block bb;
+  struct loop *bb_loop;
   gimple_stmt_iterator gsi;
   gimple *stmt;
   auto_vec<gimple *> worklist;
@@ -7218,11 +7268,16 @@ optimize_mask_stores (struct loop *loop)
       last = worklist.pop ();
       mask = gimple_call_arg (last, 2);
       bb = gimple_bb (last);
-      /* Create new bb.  */
+      /* Create then_bb and if-then structure in CFG, then_bb belongs to
+	 the same loop as if_bb.  It could be different to LOOP when two
+	 level loop-nest is vectorized and mask_store belongs to the inner
+	 one.  */
       e = split_block (bb, last);
+      bb_loop = bb->loop_father;
+      gcc_assert (loop == bb_loop || flow_loop_nested_p (loop, bb_loop));
       join_bb = e->dest;
       store_bb = create_empty_bb (bb);
-      add_bb_to_loop (store_bb, loop);
+      add_bb_to_loop (store_bb, bb_loop);
       e->flags = EDGE_TRUE_VALUE;
       efalse = make_edge (bb, store_bb, EDGE_FALSE_VALUE);
       /* Put STORE_BB to likely part.  */

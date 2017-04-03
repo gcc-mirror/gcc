@@ -14,4 +14,5 @@
 @property int a[8]; /* { dg-error "property can not be an array" } */
 @property int b:8;  /* { dg-error "expected" } */
 @property int c[];  /* { dg-error "property can not be an array" } */
+/* { dg-error "forbids flexible array member" "flexible array member" { target *-*-* } .-1 } */
 @end

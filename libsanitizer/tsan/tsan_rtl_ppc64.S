@@ -1,4 +1,6 @@
 #include "tsan_ppc_regs.h"
+
+        .section .text
         .hidden __tsan_setjmp
         .globl _setjmp
         .type _setjmp, @function

@@ -206,6 +206,9 @@ prepare_call_address (tree fndecl_or_type, rtx funexp, rtx static_chain_value,
 	  DECL_STATIC_CHAIN (fndecl_or_type) = 1;
 	  rtx chain = targetm.calls.static_chain (fndecl_or_type, false);
 
+	  if (GET_MODE (funexp) != Pmode)
+	    funexp = convert_memory_address (Pmode, funexp);
+
 	  /* Avoid long live ranges around function calls.  */
 	  funexp = copy_to_mode_reg (Pmode, funexp);
 
@@ -3262,8 +3265,7 @@ expand_call (tree exp, rtx target, int ignore)
     n_named_args = num_actuals;
 
   /* Make a vector to hold all the information about each arg.  */
-  args = XALLOCAVEC (struct arg_data, num_actuals);
-  memset (args, 0, num_actuals * sizeof (struct arg_data));
+  args = XCNEWVEC (struct arg_data, num_actuals);
 
   /* Build up entries in the ARGS array, compute the size of the
      arguments into ARGS_SIZE, etc.  */
@@ -4265,6 +4267,7 @@ expand_call (tree exp, rtx target, int ignore)
   currently_expanding_call--;
 
   free (stack_usage_map_buf);
+  free (args);
 
   /* Join result with returned bounds so caller may use them if needed.  */
   target = chkp_join_splitted_slot (target, valbnd);
@@ -5649,3 +5652,6 @@ must_pass_in_stack_var_size_or_pad (machine_mode mode, const_tree type)
 
   return false;
 }
+
+/* Tell the garbage collector about GTY markers in this source file.  */
+#include "gt-calls.h"

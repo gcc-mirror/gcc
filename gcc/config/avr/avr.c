@@ -49,6 +49,7 @@
 #include "context.h"
 #include "tree-pass.h"
 #include "print-rtl.h"
+#include "rtl-iter.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -12823,6 +12824,34 @@ avr_convert_to_type (tree type, tree expr)
 }
 
 
+/* Implement `TARGET_LEGITIMATE_COMBINED_INSN'.  */
+
+/* PR78883: Filter out paradoxical SUBREGs of MEM which are not handled
+   properly by following passes.  As INSN_SCHEDULING is off and hence
+   general_operand accepts such expressions, ditch them now.  */
+
+static bool
+avr_legitimate_combined_insn (rtx_insn *insn)
+{
+  subrtx_iterator::array_type array;
+
+  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+    {
+      const_rtx op = *iter;
+
+      if (SUBREG_P (op)
+          && MEM_P (SUBREG_REG (op))
+          && (GET_MODE_SIZE (GET_MODE (op))
+              > GET_MODE_SIZE (GET_MODE (SUBREG_REG (op)))))
+        {
+          return false;
+        }
+    }
+
+  return true;
+}
+
+
 /* PR63633: The middle-end might come up with hard regs as input operands.
 
    RMASK is a bit mask representing a subset of hard registers R0...R31:
@@ -14363,6 +14392,9 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 #undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
 #define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
   avr_use_by_pieces_infrastructure_p
+
+#undef  TARGET_LEGITIMATE_COMBINED_INSN
+#define TARGET_LEGITIMATE_COMBINED_INSN avr_legitimate_combined_insn
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

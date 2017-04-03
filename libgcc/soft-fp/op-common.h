@@ -1,5 +1,5 @@
 /* Software floating-point emulation. Common operations.
-   Copyright (C) 1997-2016 Free Software Foundation, Inc.
+   Copyright (C) 1997-2017 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz),
@@ -898,6 +898,7 @@
 	case _FP_CLS_COMBINE (FP_CLS_NAN, FP_CLS_INF):		\
 	case _FP_CLS_COMBINE (FP_CLS_NAN, FP_CLS_ZERO):		\
 	  R##_s = X##_s;					\
+	  /* FALLTHRU */					\
 								\
 	case _FP_CLS_COMBINE (FP_CLS_INF, FP_CLS_INF):		\
 	case _FP_CLS_COMBINE (FP_CLS_INF, FP_CLS_NORMAL):	\
@@ -911,6 +912,7 @@
 	case _FP_CLS_COMBINE (FP_CLS_INF, FP_CLS_NAN):		\
 	case _FP_CLS_COMBINE (FP_CLS_ZERO, FP_CLS_NAN):		\
 	  R##_s = Y##_s;					\
+	  /* FALLTHRU */					\
 								\
 	case _FP_CLS_COMBINE (FP_CLS_NORMAL, FP_CLS_INF):	\
 	case _FP_CLS_COMBINE (FP_CLS_NORMAL, FP_CLS_ZERO):	\
@@ -1063,6 +1065,7 @@
 	case _FP_CLS_COMBINE (FP_CLS_NAN, FP_CLS_INF):			\
 	case _FP_CLS_COMBINE (FP_CLS_NAN, FP_CLS_ZERO):			\
 	  _FP_FMA_T##_s = X##_s;					\
+	  /* FALLTHRU */						\
 									\
 	case _FP_CLS_COMBINE (FP_CLS_INF, FP_CLS_INF):			\
 	case _FP_CLS_COMBINE (FP_CLS_INF, FP_CLS_NORMAL):		\
@@ -1076,6 +1079,7 @@
 	case _FP_CLS_COMBINE (FP_CLS_INF, FP_CLS_NAN):			\
 	case _FP_CLS_COMBINE (FP_CLS_ZERO, FP_CLS_NAN):			\
 	  _FP_FMA_T##_s = Y##_s;					\
+	  /* FALLTHRU */						\
 									\
 	case _FP_CLS_COMBINE (FP_CLS_NORMAL, FP_CLS_INF):		\
 	case _FP_CLS_COMBINE (FP_CLS_NORMAL, FP_CLS_ZERO):		\
@@ -1198,6 +1202,7 @@
 								\
 	case _FP_CLS_COMBINE (FP_CLS_NORMAL, FP_CLS_ZERO):	\
 	  FP_SET_EXCEPTION (FP_EX_DIVZERO);			\
+	  /* FALLTHRU */					\
 	case _FP_CLS_COMBINE (FP_CLS_INF, FP_CLS_ZERO):		\
 	case _FP_CLS_COMBINE (FP_CLS_INF, FP_CLS_NORMAL):	\
 	  R##_c = FP_CLS_INF;					\

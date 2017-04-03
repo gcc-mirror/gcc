@@ -129,8 +129,8 @@ typedef struct _slp_oprnd_info
   /* Information about the first statement, its vector def-type, type, the
      operand itself in case it's constant, and an indication if it's a pattern
      stmt.  */
-  enum vect_def_type first_dt;
   tree first_op_type;
+  enum vect_def_type first_dt;
   bool first_pattern;
   bool second_pattern;
 } *slp_oprnd_info;
@@ -2949,7 +2949,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
   gimple_seq ctor_seq = NULL;
 
   /* Check if vector type is a boolean vector.  */
-  if (TREE_CODE (TREE_TYPE (op)) == BOOLEAN_TYPE
+  if (VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (op))
       && vect_mask_constant_operand_p (stmt, op_num))
     vector_type
       = build_same_sized_truth_vector_type (STMT_VINFO_VECTYPE (stmt_vinfo));
@@ -3379,66 +3379,6 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
     }
 }
 
-
-/* Create NCOPIES permutation statements using the mask MASK_BYTES (by
-   building a vector of type MASK_TYPE from it) and two input vectors placed in
-   DR_CHAIN at FIRST_VEC_INDX and SECOND_VEC_INDX for the first copy and
-   shifting by STRIDE elements of DR_CHAIN for every copy.
-   (STRIDE is the number of vectorized stmts for NODE divided by the number of
-   copies).
-   VECT_STMTS_COUNTER specifies the index in the vectorized stmts of NODE, where
-   the created stmts must be inserted.  */
-
-static inline void
-vect_create_mask_and_perm (gimple *stmt,
-                           tree mask, int first_vec_indx, int second_vec_indx,
-                           gimple_stmt_iterator *gsi, slp_tree node,
-                           tree vectype, vec<tree> dr_chain,
-                           int ncopies, int vect_stmts_counter)
-{
-  tree perm_dest;
-  gimple *perm_stmt = NULL;
-  int i, stride_in, stride_out;
-  tree first_vec, second_vec, data_ref;
-
-  stride_out = SLP_TREE_NUMBER_OF_VEC_STMTS (node) / ncopies;
-  stride_in = dr_chain.length () / ncopies;
-
-  /* Initialize the vect stmts of NODE to properly insert the generated
-     stmts later.  */
-  for (i = SLP_TREE_VEC_STMTS (node).length ();
-       i < (int) SLP_TREE_NUMBER_OF_VEC_STMTS (node); i++)
-    SLP_TREE_VEC_STMTS (node).quick_push (NULL);
-
-  perm_dest = vect_create_destination_var (gimple_assign_lhs (stmt), vectype);
-  for (i = 0; i < ncopies; i++)
-    {
-      first_vec = dr_chain[first_vec_indx];
-      second_vec = dr_chain[second_vec_indx];
-
-      /* Generate the permute statement if necessary.  */
-      if (mask)
-	{
-	  perm_stmt = gimple_build_assign (perm_dest, VEC_PERM_EXPR,
-					   first_vec, second_vec, mask);
-	  data_ref = make_ssa_name (perm_dest, perm_stmt);
-	  gimple_set_lhs (perm_stmt, data_ref);
-	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
-	}
-      else
-	/* If mask was NULL_TREE generate the requested identity transform.  */
-	perm_stmt = SSA_NAME_DEF_STMT (first_vec);
-
-      /* Store the vector statement in NODE.  */
-      SLP_TREE_VEC_STMTS (node)[stride_out * i + vect_stmts_counter]
-	= perm_stmt;
-
-      first_vec_indx += stride_in;
-      second_vec_indx += stride_in;
-    }
-}
-
-
 /* Generate vector permute statements from a list of loads in DR_CHAIN.
    If ANALYZE_ONLY is TRUE, only check that it is possible to create valid
    permute statements for the SLP node NODE of the SLP instance
@@ -3456,7 +3396,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   int nunits, vec_index = 0;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   int group_size = SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
-  int unroll_factor, mask_element, ncopies;
+  int mask_element;
   unsigned char *mask;
   machine_mode mode;
 
@@ -3474,11 +3414,13 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   mask_type = get_vectype_for_scalar_type (mask_element_type);
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
   mask = XALLOCAVEC (unsigned char, nunits);
-  unroll_factor = SLP_INSTANCE_UNROLLING_FACTOR (slp_node_instance);
 
-  /* Number of copies is determined by the final vectorization factor
-     relatively to SLP_NODE_INSTANCE unrolling factor.  */
-  ncopies = vf / SLP_INSTANCE_UNROLLING_FACTOR (slp_node_instance);
+  /* Initialize the vect stmts of NODE to properly insert the generated
+     stmts later.  */
+  if (! analyze_only)
+    for (unsigned i = SLP_TREE_VEC_STMTS (node).length ();
+	 i < SLP_TREE_NUMBER_OF_VEC_STMTS (node); i++)
+      SLP_TREE_VEC_STMTS (node).quick_push (NULL);
 
   /* Generate permutation masks for every NODE. Number of masks for each NODE
      is equal to GROUP_SIZE.
@@ -3505,7 +3447,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   bool noop_p = true;
   *n_perms = 0;
 
-  for (int j = 0; j < unroll_factor; j++)
+  for (int j = 0; j < vf; j++)
     {
       for (int k = 0; k < group_size; k++)
 	{
@@ -3578,10 +3520,30 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 
 		  if (second_vec_index == -1)
 		    second_vec_index = first_vec_index;
-		  vect_create_mask_and_perm (stmt, mask_vec, first_vec_index,
-					     second_vec_index,
-					     gsi, node, vectype, dr_chain,
-					     ncopies, vect_stmts_counter++);
+
+		  /* Generate the permute statement if necessary.  */
+		  tree first_vec = dr_chain[first_vec_index];
+		  tree second_vec = dr_chain[second_vec_index];
+		  gimple *perm_stmt;
+		  if (! noop_p)
+		    {
+		      tree perm_dest
+			= vect_create_destination_var (gimple_assign_lhs (stmt),
+						       vectype);
+		      perm_dest = make_ssa_name (perm_dest);
+		      perm_stmt = gimple_build_assign (perm_dest,
+						       VEC_PERM_EXPR,
+						       first_vec, second_vec,
+						       mask_vec);
+		      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+		    }
+		  else
+		    /* If mask was NULL_TREE generate the requested
+		       identity transform.  */
+		    perm_stmt = SSA_NAME_DEF_STMT (first_vec);
+
+		  /* Store the vector statement in NODE.  */
+		  SLP_TREE_VEC_STMTS (node)[vect_stmts_counter++] = perm_stmt;
 		}
 
 	      index = 0;

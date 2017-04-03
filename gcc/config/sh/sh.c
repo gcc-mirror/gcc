@@ -2152,7 +2152,6 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
     }
   operands[1] = op1h;
   operands[2] = op2h;
-  operands[4] = NULL_RTX;
 
   if (msw_taken != LAST_AND_UNUSED_RTX_CODE)
     expand_cbranchsi4 (operands, msw_taken, msw_taken_prob);

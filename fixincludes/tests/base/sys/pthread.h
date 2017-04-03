@@ -14,8 +14,13 @@
 #endif  /* HPUX11_LWP_RWLOCK_VALID_CHECK */
 
 
+#if defined( HPUX11_PTHREAD_POINTER_CHECK )
+#define __MPOINTER		long	m_ptr
+#endif  /* HPUX11_PTHREAD_POINTER_CHECK */
+
+
 #if defined( HPUX11_PTHREAD_CONST_CHECK )
-#define __POINTER_SET		((void *) 1L)
+#define __POINTER_SET		1
 #endif  /* HPUX11_PTHREAD_CONST_CHECK */
 
 

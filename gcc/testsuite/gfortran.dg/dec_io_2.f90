@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target { ! { *-*-mingw* } } } }
 ! { dg-options "-fdec" }
 !
 ! Run-time tests for various carriagecontrol parameters with DEC I/O.

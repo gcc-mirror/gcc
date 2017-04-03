@@ -1251,6 +1251,29 @@ tree_ssa_strip_useless_type_conversions (tree exp)
   return exp;
 }
 
+/* Return true if T, as SSA_NAME, has an implicit default defined value.  */
+
+bool
+ssa_defined_default_def_p (tree t)
+{
+  tree var = SSA_NAME_VAR (t);
+
+  if (!var)
+    ;
+  /* Parameters get their initial value from the function entry.  */
+  else if (TREE_CODE (var) == PARM_DECL)
+    return true;
+  /* When returning by reference the return address is actually a hidden
+     parameter.  */
+  else if (TREE_CODE (var) == RESULT_DECL && DECL_BY_REFERENCE (var))
+    return true;
+  /* Hard register variables get their initial value from the ether.  */
+  else if (VAR_P (var) && DECL_HARD_REGISTER (var))
+    return true;
+
+  return false;
+}
+
 
 /* Return true if T, an SSA_NAME, has an undefined value.  PARTIAL is what
    should be returned if the value is only partially undefined.  */
@@ -1259,19 +1282,8 @@ bool
 ssa_undefined_value_p (tree t, bool partial)
 {
   gimple *def_stmt;
-  tree var = SSA_NAME_VAR (t);
 
-  if (!var)
-    ;
-  /* Parameters get their initial value from the function entry.  */
-  else if (TREE_CODE (var) == PARM_DECL)
-    return false;
-  /* When returning by reference the return address is actually a hidden
-     parameter.  */
-  else if (TREE_CODE (var) == RESULT_DECL && DECL_BY_REFERENCE (var))
-    return false;
-  /* Hard register variables get their initial value from the ether.  */
-  else if (VAR_P (var) && DECL_HARD_REGISTER (var))
+  if (ssa_defined_default_def_p (t))
     return false;
 
   /* The value is undefined iff its definition statement is empty.  */
@@ -1642,7 +1654,8 @@ execute_update_addresses_taken (void)
 		  gimple_ior_addresses_taken (addresses_taken, stmt);
 		  gimple_call_set_arg (stmt, 1, arg);
 		}
-	      else if (is_asan_mark_p (stmt))
+	      else if (is_asan_mark_p (stmt)
+		       || gimple_call_internal_p (stmt, IFN_GOMP_SIMT_ENTER))
 		;
 	      else
 		gimple_ior_addresses_taken (addresses_taken, stmt);
@@ -1928,6 +1941,18 @@ execute_update_addresses_taken (void)
 			continue;
 		      }
 		  }
+		else if (gimple_call_internal_p (stmt, IFN_GOMP_SIMT_ENTER))
+		  for (i = 1; i < gimple_call_num_args (stmt); i++)
+		    {
+		      tree *argp = gimple_call_arg_ptr (stmt, i);
+		      if (*argp == null_pointer_node)
+			continue;
+		      gcc_assert (TREE_CODE (*argp) == ADDR_EXPR
+				  && VAR_P (TREE_OPERAND (*argp, 0)));
+		      tree var = TREE_OPERAND (*argp, 0);
+		      if (bitmap_bit_p (suitable_for_renaming, DECL_UID (var)))
+			*argp = null_pointer_node;
+		    }
 		for (i = 0; i < gimple_call_num_args (stmt); ++i)
 		  {
 		    tree *argp = gimple_call_arg_ptr (stmt, i);

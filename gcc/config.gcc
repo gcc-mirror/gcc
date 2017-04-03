@@ -319,6 +319,7 @@ arc*-*-*)
 	c_target_objs="arc-c.o"
 	cxx_target_objs="arc-c.o"
 	extra_options="${extra_options} arc/arc-tables.opt"
+	extra_headers="arc-simd.h"
 	;;
 arm*-*-*)
 	cpu_type=arm
@@ -451,6 +452,10 @@ powerpc*-*-*)
 	esac
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
 	;;
+riscv*)
+	cpu_type=riscv
+	extra_objs="riscv-builtins.o riscv-c.o"
+	;;
 rs6000*-*-*)
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
 	;;
@@ -571,7 +576,7 @@ x86_64-*-*)
 	tm_file="vxworks-dummy.h ${tm_file}"
 	;;
 arm*-*-*)
-	tm_p_file="${tm_p_file} arm/aarch-common-protos.h"
+	tm_p_file="arm/arm-flags.h arm/arm-isa.h ${tm_p_file} arm/aarch-common-protos.h"
 	tm_file="vxworks-dummy.h ${tm_file}"
 	;;
 mips*-*-* | sh*-*-* | sparc*-*-*)
@@ -1011,8 +1016,7 @@ alpha*-dec-*vms*)
 	tmake_file="${tmake_file} alpha/t-vms alpha/t-alpha"
 	;;
 arc*-*-elf*)
-	extra_headers="arc-simd.h"
-	tm_file="arc/arc-arch.h dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tm_file="arc/arc-arch.h dbxelf.h elfos.h newlib-stdint.h arc/elf.h ${tm_file}"
 	tmake_file="arc/t-multilib arc/t-arc"
 	extra_gcc_objs="driver-arc.o"
 	if test "x$with_cpu" != x; then
@@ -1029,15 +1033,12 @@ arc*-*-elf*)
 	*)	echo "with_endian=${with_endian} not supported."; exit 1 ;;
 	esac
 	case ${with_endian} in
-	big*)	tm_defines="DRIVER_ENDIAN_SELF_SPECS=\\\"%{!EL:%{!mlittle-endian:-mbig-endian}}\\\" ${tm_defines}"
+	big*)	tm_file="arc/big.h ${tm_file}"
 	esac
 	;;
 arc*-*-linux-uclibc*)
-	extra_headers="arc-simd.h"
-	tm_file="arc/arc-arch.h dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file}"
-	tmake_file="${tmake_file} arc/t-uClibc arc/t-arc"
-	tm_defines="${tm_defines} TARGET_SDATA_DEFAULT=0"
-	tm_defines="${tm_defines} TARGET_MMEDIUM_CALLS_DEFAULT=1"
+	tm_file="arc/arc-arch.h dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arc/linux.h ${tm_file}"
+	tmake_file="${tmake_file} arc/t-arc"
 	extra_gcc_objs="driver-arc.o"
 	if test "x$with_cpu" != x; then
 		tm_defines="${tm_defines} TARGET_CPU_BUILD=PROCESSOR_$with_cpu"
@@ -1053,7 +1054,7 @@ arc*-*-linux-uclibc*)
 	*)	echo "with_endian=${with_endian} not supported."; exit 1 ;;
 	esac
 	case ${with_endian} in
-	big*)	tm_defines="DRIVER_ENDIAN_SELF_SPECS=\\\"%{!EL:%{!mlittle-endian:-mbig-endian}}\\\" ${tm_defines}"
+	big*)	tm_file="arc/big.h ${tm_file}"
 	esac
         ;;
 arm-wrs-vxworks)
@@ -2016,6 +2017,34 @@ microblaze*-*-elf)
 	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
 	tmake_file="${tmake_file} microblaze/t-microblaze"
         ;;
+riscv*-*-linux*)
+	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} riscv/linux.h"
+	case "x${enable_multilib}" in
+	xno) ;;
+	xyes) tmake_file="${tmake_file} riscv/t-linux-multilib" ;;
+	*) echo "Unknown value for enable_multilib"; exit 1
+	esac
+	tmake_file="${tmake_file} riscv/t-riscv riscv/t-linux"
+	gnu_ld=yes
+	gas=yes
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+	;;
+riscv*-*-elf*)
+	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h"
+	case "x${enable_multilib}" in
+	xno) ;;
+	xyes) tmake_file="${tmake_file} riscv/t-elf-multilib" ;;
+	*) echo "Unknown value for enable_multilib"; exit 1
+	esac
+	tmake_file="${tmake_file} riscv/t-riscv"
+	gnu_ld=yes
+	gas=yes
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_ABICALLS"
 	tm_file="elfos.h ${tm_file} mips/elf.h netbsd.h netbsd-elf.h mips/netbsd.h"
@@ -3939,6 +3968,70 @@ case "${target}" in
 		done
 		;;
 
+	riscv*-*-*)
+		supported_defaults="abi arch tune"
+
+		case "${target}" in
+		riscv32*) xlen=32 ;;
+		riscv64*) xlen=64 ;;
+		*) echo "Unsupported RISC-V target ${target}" 1>&2; exit 1 ;;
+		esac
+
+		# Infer arch from --with-arch, --target, and --with-abi.
+		case "${with_arch}" in
+		rv32i* | rv32g* | rv64i* | rv64g*)
+			# OK.
+			;;
+		"")
+			# Infer XLEN, but otherwise assume GC.
+			case "${with_abi}" in
+			ilp32 | ilp32f | ilp32d) with_arch="rv32gc" ;;
+			lp64 | lp64f | lp64d) with_arch="rv64gc" ;;
+			*) with_arch="rv${xlen}gc" ;;
+			esac
+			;;
+		*)
+			echo "--with-arch=${with_arch} is not supported.  The argument must begin with rv32i, rv32g, rv64i, or rv64g." 1>&2
+			exit 1
+			;;
+		esac
+
+		# Make sure --with-abi is valid.  If it was not specified,
+		# pick a default based on the ISA, preferring soft-float
+		# unless the D extension is present.
+		case "${with_abi}" in
+		ilp32 | ilp32f | ilp32d | lp64 | lp64f | lp64d)
+			;;
+		"")
+			case "${with_arch}" in
+			rv32*d* | rv32g*) with_abi=ilp32d ;;
+			rv32*) with_abi=ilp32 ;;
+			rv64*d* | rv64g*) with_abi=lp64d ;;
+			rv64*) with_abi=lp64 ;;
+			esac
+			;;
+		*)
+			echo "--with-abi=${with_abi} is not supported" 1>&2
+			exit 1
+			;;
+		esac
+
+		# Make sure ABI and ISA are compatible.
+		case "${with_abi},${with_arch}" in
+		ilp32,rv32* \
+		| ilp32f,rv32*f* | ilp32f,rv32g* \
+		| ilp32d,rv32*d* | ilp32d,rv32g* \
+		| lp64,rv64* \
+		| lp64f,rv64*f* | lp64f,rv64g* \
+		| lp64d,rv64*d* | lp64d,rv64g*)
+			;;
+		*)
+			echo "--with-abi=${with_abi} is not supported for ISA ${with_arch}" 1>&2
+			exit 1
+			;;
+		esac
+		;;
+
 	mips*-*-*)
 		supported_defaults="abi arch arch_32 arch_64 float fpu nan fp_32 odd_spreg_32 tune tune_32 tune_64 divide llsc mips-plt synci lxc1-sxc1 madd4"
 
@@ -4164,8 +4257,9 @@ case "${target}" in
 				eval "with_$which=405"
 				;;
 			"" | common | native \
-			| power | power[23456789] | power6x | powerpc | powerpc64 \
-			| rios | rios1 | rios2 | rsc | rsc1 | rs64a \
+			| power[3456789] | power5+ | power6x \
+			| powerpc | powerpc64 | powerpc64le \
+			| rs64 \
 			| 401 | 403 | 405 | 405fp | 440 | 440fp | 464 | 464fp \
 			| 476 | 476fp | 505 | 601 | 602 | 603 | 603e | ec603e \
 			| 604 | 604e | 620 | 630 | 740 | 750 | 7400 | 7450 \
@@ -4237,7 +4331,7 @@ case "${target}" in
 		for which in arch tune; do
 			eval "val=\$with_$which"
 			case ${val} in
-			"" | native | g5 | g6 | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | arch3 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11)
+			"" | native | g5 | g6 | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | arch3 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12)
 				# OK
 				;;
 			*)

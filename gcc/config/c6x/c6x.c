@@ -3799,6 +3799,7 @@ predicate_insn (rtx_insn *insn, rtx cond, bool doit)
     {
       if (doit)
 	{
+	  cond = copy_rtx (cond);
 	  rtx newpat = gen_rtx_COND_EXEC (VOIDmode, cond, PATTERN (insn));
 	  PATTERN (insn) = newpat;
 	  INSN_CODE (insn) = -1;
@@ -5788,8 +5789,9 @@ hwloop_optimize (hwloop_info loop)
   start_sequence ();
 
   insn = emit_insn (gen_mvilc (loop->iter_reg));
+  if (loop->iter_reg_used_outside)
+    insn = emit_move_insn (loop->iter_reg, const0_rtx);
   insn = emit_insn (gen_sploop (GEN_INT (sp_ii)));
-
   seq = get_insns ();
 
   if (!single_succ_p (entry_bb) || vec_safe_length (loop->incoming) > 1)

@@ -776,11 +776,11 @@ process_args (int argc, char **argv)
         case 'd':
           flag_display_progress = 1;
           break;
-	case 'v':
-	  print_version ();
 	case 'x':
 	  flag_hash_filenames = 1;
 	  break;
+	case 'v':
+	  print_version ();
 	  /* print_version will exit.  */
 	default:
 	  print_usage (true);
@@ -1669,7 +1669,10 @@ read_count_file (function_t *fns)
       gcov_sync (base, length);
       if ((error = gcov_is_error ()))
 	{
-	  fnotice (stderr, error < 0 ? "%s:overflowed\n" : "%s:corrupted\n",
+	  fnotice (stderr,
+		   error < 0
+		   ? N_("%s:overflowed\n")
+		   : N_("%s:corrupted\n"),
 		   da_file_name);
 	  goto cleanup;
 	}
@@ -2164,7 +2167,7 @@ static void
 md5sum_to_hex (const char *sum, char *buffer)
 {
   for (unsigned i = 0; i < 16; i++)
-    sprintf (buffer + (2 * i), "%02x", sum[i]);
+    sprintf (buffer + (2 * i), "%02x", (unsigned char)sum[i]);
 }
 
 /* Generate an output file name. INPUT_NAME is the canonicalized main
@@ -2213,7 +2216,7 @@ make_gcov_file_name (const char *input_name, const char *src_name)
       char md5sum_hex[33];
 
       md5_init_ctx (&ctx);
-      md5_process_bytes (result, strlen (result), &ctx);
+      md5_process_bytes (src_name, strlen (src_name), &ctx);
       md5_finish_ctx (&ctx, md5sum);
       md5sum_to_hex (md5sum, md5sum_hex);
       free (result);
@@ -2509,14 +2512,20 @@ read_line (FILE *file)
     {
       size_t len = strlen (string + pos);
 
-      if (string[pos + len - 1] == '\n')
+      if (len && string[pos + len - 1] == '\n')
 	{
 	  string[pos + len - 1] = 0;
 	  return string;
 	}
       pos += len;
-      string = XRESIZEVEC (char, string, string_len * 2);
-      string_len *= 2;
+      /* If the file contains NUL characters or an incomplete
+	 last line, which can happen more than once in one run,
+	 we have to avoid doubling the STRING_LEN unnecessarily.  */
+      if (pos > string_len / 2)
+	{
+	  string_len *= 2;
+	  string = XRESIZEVEC (char, string, string_len);
+	}
     }
 
   return pos ? string : NULL;

@@ -488,6 +488,7 @@ decode_statement (void)
       break;
 
     case 'f':
+      match ("fail image", gfc_match_fail_image, ST_FAIL_IMAGE);
       match ("final", gfc_match_final_decl, ST_FINAL);
       match ("flush", gfc_match_flush, ST_FLUSH);
       match ("format", gfc_match_format, ST_FORMAT);
@@ -1499,7 +1500,7 @@ next_statement (void)
   case ST_OMP_TARGET_EXIT_DATA: case ST_OMP_ORDERED_DEPEND: \
   case ST_ERROR_STOP: case ST_SYNC_ALL: \
   case ST_SYNC_IMAGES: case ST_SYNC_MEMORY: case ST_LOCK: case ST_UNLOCK: \
-  case ST_EVENT_POST: case ST_EVENT_WAIT: \
+  case ST_EVENT_POST: case ST_EVENT_WAIT: case ST_FAIL_IMAGE: \
   case ST_OACC_UPDATE: case ST_OACC_WAIT: case ST_OACC_CACHE: \
   case ST_OACC_ENTER_DATA: case ST_OACC_EXIT_DATA
 
@@ -1827,6 +1828,9 @@ gfc_ascii_statement (gfc_statement st)
     case ST_EVENT_WAIT:
       p = "EVENT WAIT";
       break;
+    case ST_FAIL_IMAGE:
+      p = "FAIL IMAGE";
+      break;
     case ST_END_ASSOCIATE:
       p = "END ASSOCIATE";
       break;
@@ -2124,10 +2128,10 @@ gfc_ascii_statement (gfc_statement st)
       p = "!$ACC ROUTINE";
       break;
     case ST_OACC_ATOMIC:
-      p = "!ACC ATOMIC";
+      p = "!$ACC ATOMIC";
       break;
     case ST_OACC_END_ATOMIC:
-      p = "!ACC END ATOMIC";
+      p = "!$ACC END ATOMIC";
       break;
     case ST_OMP_ATOMIC:
       p = "!$OMP ATOMIC";
@@ -2917,7 +2921,7 @@ check_component (gfc_symbol *sym, gfc_component *c, gfc_component **lockp,
       coarray = true;
       sym->attr.coarray_comp = 1;
     }
- 
+
   if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.coarray_comp
       && !c->attr.pointer)
     {
@@ -3081,7 +3085,7 @@ parse_union (void)
           /* Add a component to the union for each map. */
           if (!gfc_add_component (un, gfc_new_block->name, &c))
             {
-              gfc_internal_error ("failed to create map component '%s'", 
+              gfc_internal_error ("failed to create map component '%s'",
                   gfc_new_block->name);
               reject_statement ();
               return;
@@ -4340,8 +4344,8 @@ parse_critical_block (void)
   for (sd = gfc_state_stack; sd; sd = sd->previous)
     if (sd->state == COMP_OMP_STRUCTURED_BLOCK)
       gfc_error_now (is_oacc (sd)
-		     ? "CRITICAL block inside of OpenACC region at %C"
-		     : "CRITICAL block inside of OpenMP region at %C");
+		     ? G_("CRITICAL block inside of OpenACC region at %C")
+		     : G_("CRITICAL block inside of OpenMP region at %C"));
 
   s.ext.end_do_label = new_st.label1;
 
@@ -5809,6 +5813,9 @@ static void
 set_syms_host_assoc (gfc_symbol *sym)
 {
   gfc_component *c;
+  const char dot[2] = ".";
+  char parent1[GFC_MAX_SYMBOL_LEN + 1];
+  char parent2[GFC_MAX_SYMBOL_LEN + 1];
 
   if (sym == NULL)
     return;
@@ -5816,16 +5823,32 @@ set_syms_host_assoc (gfc_symbol *sym)
   if (sym->attr.module_procedure)
     sym->attr.external = 0;
 
-/*  sym->attr.access = ACCESS_PUBLIC;  */
-
   sym->attr.use_assoc = 0;
   sym->attr.host_assoc = 1;
   sym->attr.used_in_submodule =1;
 
   if (sym->attr.flavor == FL_DERIVED)
     {
-      for (c = sym->components; c; c = c->next)
-	c->attr.access = ACCESS_PUBLIC;
+      /* Derived types with PRIVATE components that are declared in
+	 modules other than the parent module must not be changed to be
+	 PUBLIC. The 'use-assoc' attribute must be reset so that the
+	 test in symbol.c(gfc_find_component) works correctly. This is
+	 not necessary for PRIVATE symbols since they are not read from
+	 the module.  */
+      memset(parent1, '\0', sizeof(parent1));
+      memset(parent2, '\0', sizeof(parent2));
+      strcpy (parent1, gfc_new_block->name);
+      strcpy (parent2, sym->module);
+      if (strcmp (strtok (parent1, dot), strtok (parent2, dot)) == 0)
+	{
+	  for (c = sym->components; c; c = c->next)
+	    c->attr.access = ACCESS_PUBLIC;
+	}
+      else
+	{
+	  sym->attr.use_assoc = 1;
+	  sym->attr.host_assoc = 0;
+	}
     }
 }
 

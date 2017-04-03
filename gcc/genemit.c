@@ -448,6 +448,10 @@ gen_expand (md_rtx_info *info)
 
   /* Find out how many operands this function has.  */
   get_pattern_stats (&stats, XVEC (expand, 1));
+  if (stats.min_scratch_opno != -1
+      && stats.min_scratch_opno <= MAX (stats.max_opno, stats.max_dup_opno))
+    fatal_at (info->loc, "define_expand for %s needs to have match_scratch "
+			 "numbers above all other operands", XSTR (expand, 0));
 
   /* Output the function name and argument declarations.  */
   printf ("rtx\ngen_%s (", XSTR (expand, 0));
@@ -479,8 +483,6 @@ gen_expand (md_rtx_info *info)
      make a local variable.  */
   for (i = stats.num_generator_args; i <= stats.max_dup_opno; i++)
     printf ("  rtx operand%d;\n", i);
-  for (; i <= stats.max_scratch_opno; i++)
-    printf ("  rtx operand%d ATTRIBUTE_UNUSED;\n", i);
   printf ("  rtx_insn *_val = 0;\n");
   printf ("  start_sequence ();\n");
 
@@ -516,7 +518,7 @@ gen_expand (md_rtx_info *info)
 	 (unless we aren't going to use them at all).  */
       if (XVEC (expand, 1) != 0)
 	{
-	  for (i = 0; i < stats.num_operand_vars; i++)
+	  for (i = 0; i <= MAX (stats.max_opno, stats.max_dup_opno); i++)
 	    {
 	      printf ("    operand%d = operands[%d];\n", i, i);
 	      printf ("    (void) operand%d;\n", i);

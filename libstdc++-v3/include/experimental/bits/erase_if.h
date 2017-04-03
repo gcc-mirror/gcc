@@ -43,9 +43,9 @@ namespace experimental
 {
 inline namespace fundamentals_v2
 {
-
   namespace __detail
   {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Container, typename _Predicate>
       void
       __erase_nodes_if(_Container& __cont, _Predicate __pred)
@@ -59,9 +59,8 @@ inline namespace fundamentals_v2
 	    ++__iter;
 	}
       }
-  }
-
-
+_GLIBCXX_END_NAMESPACE_VERSION
+  } // namespace __detail
 } // inline namespace fundamentals_v2
 } // namespace experimental
 } // namespace std

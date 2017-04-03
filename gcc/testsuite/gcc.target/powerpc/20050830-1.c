@@ -2,7 +2,7 @@
 /* { dg-do compile { target powerpc*-*-* } } */
 /* { dg-options "-O2" } */
 /* XFAIL for now, see PR66612.  */
-/* { dg-final { scan-assembler "bdn" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler "bdn" { xfail lp64 } } } */
 extern int a[];
 int foo(int w) {
   int n = w;

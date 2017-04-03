@@ -1,3 +1,65 @@
+2017-03-27  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/ieee-754/divdf3.S (__divdf3): Use __ARCEM__.
+
+2017-03-10  John Marino  <gnugcc@marino.st>
+
+	* config/aarch64/freebsd-unwind.h: New file.
+	* config.host: Add aarch64-*-freebsd unwinder.
+
+2017-03-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/crtrestvr.s: Use .machine altivec.
+	* config/rs6000/crtsavevr.s: Ditto.
+
+2017-03-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* configure.ac (test for libgcc_cv_powerpc_float128): Temporarily
+	modify CFLAGS.  Add -mabi=altivec -mvsx -mfloat128.
+	(test for libgcc_cv_powerpc_float128_hw): Add -mpower9-vector and
+	-mfloat128-hardware to the CFLAGS.  Fix syntax error in the C snippet.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+2017-03-02  Jonathan Yong <10walls@gmail.com>
+
+	* config/i386/gthr-win32.h: Define NOGDI before
+	windows.h include to prevent w32api CC_NONE macro
+	clash with libgfortran.
+
+2017-03-02  Jonathan Yong <10walls@gmail.com>
+
+	* unwind-seh.c: Suppress warnings for RtlUnwindEx calls.
+
+2017-02-16  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/value-unwind.h: New file.
+	* config.host (aarch64*-*-*): Add aarch64/value-unwind.h
+	to tm_file.
+
+2017-02-06  Palmer Dabbelt <palmer@dabbelt.com>
+
+	* config.host: Add RISC-V tuples.
+	* config/riscv/atomic.c: New file.
+	* config/riscv/crti.S: Likewise.
+	* config/riscv/crtn.S: Likewise.
+	* config/riscv/div.S: Likewise.
+	* config/riscv/linux-unwind.h: Likewise.
+	* config/riscv/muldi3.S: Likewise.
+	* config/riscv/multi3.S: Likewise.
+	* config/riscv/save-restore.S: Likewise.
+	* config/riscv/sfp-machine.h: Likewise.
+	* config/riscv/t-elf: Likewise.
+	* config/riscv/t-elf32: Likewise.
+	* config/riscv/t-elf64: Likewise.
+	* config/riscv/t-softfp32: Likewise.
+	* config/riscv/t-softfp64: Likewise.
+
+2017-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* soft-fp/op-common.h (_FP_MUL, _FP_FMA, _FP_DIV): Add
+	/* FALLTHRU */ comments.
+
 2017-01-21  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config/i386/cygming-crtbegin.c (LIBGCJ_SONAME): No longer #define.

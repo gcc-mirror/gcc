@@ -262,7 +262,7 @@ maybe_thunk_body (tree fn, bool force)
   populate_clone_array (fn, fns);
 
   /* Don't use thunks if the base clone omits inherited parameters.  */
-  if (ctor_omit_inherited_parms (fns[0]))
+  if (fns[0] && ctor_omit_inherited_parms (fns[0]))
     return 0;
 
   DECL_ABSTRACT_P (fn) = false;
@@ -324,7 +324,7 @@ maybe_thunk_body (tree fn, bool force)
       if (length > max_parms)
         max_parms = length;
     }
-  args = (tree *) alloca (max_parms * sizeof (tree));
+  args = XALLOCAVEC (tree, max_parms);
 
   /* We know that any clones immediately follow FN in TYPE_METHODS.  */
   FOR_EACH_CLONE (clone, fn)
@@ -621,9 +621,21 @@ maybe_clone_body (tree fn)
                  function.  */
               else
                 {
-                  decl_map->put (parm, clone_parm);
+		  tree replacement;
 		  if (clone_parm)
-		    clone_parm = DECL_CHAIN (clone_parm);
+		    {
+		      replacement = clone_parm;
+		      clone_parm = DECL_CHAIN (clone_parm);
+		    }
+		  else
+		    {
+		      /* Inheriting ctors can omit parameters from the base
+			 clone.  Replace them with null lvalues.  */
+		      tree reftype = build_reference_type (TREE_TYPE (parm));
+		      replacement = fold_convert (reftype, null_pointer_node);
+		      replacement = convert_from_reference (replacement);
+		    }
+                  decl_map->put (parm, replacement);
                 }
             }
 

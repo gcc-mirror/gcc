@@ -6472,9 +6472,13 @@ mips_function_value_regno_p (const unsigned int regno)
 static bool
 mips_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
 {
-  return (TARGET_OLDABI
-	  ? TYPE_MODE (type) == BLKmode
-	  : !IN_RANGE (int_size_in_bytes (type), 0, 2 * UNITS_PER_WORD));
+  if (TARGET_OLDABI)
+    /* Ensure that any floating point vector types are returned via memory
+       even if they are supported through a vector mode with some ASEs.  */
+    return (VECTOR_FLOAT_TYPE_P (type)
+	    || TYPE_MODE (type) == BLKmode);
+
+  return (!IN_RANGE (int_size_in_bytes (type), 0, 2 * UNITS_PER_WORD));
 }
 
 /* Implement TARGET_SETUP_INCOMING_VARARGS.  */
@@ -8094,6 +8098,9 @@ mips_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
   /* Mop up any left-over bytes.  */
   if (leftover)
     mips_block_move_straight (dest, src, leftover);
+  else
+    /* Temporary fix for PR79150.  */
+    emit_insn (gen_nop ());
 }
 
 /* Expand a movmemsi instruction, which copies LENGTH bytes from
@@ -16571,9 +16578,27 @@ mips_expand_builtin_insn (enum insn_code icode, unsigned int nops,
 {
   machine_mode imode;
   int rangelo = 0, rangehi = 0, error_opno = 0;
+  rtx sireg;
 
   switch (icode)
     {
+    /* The third operand of these instructions is in SImode, so we need to
+       bring the corresponding builtin argument from QImode into SImode.  */
+    case CODE_FOR_loongson_pshufh:
+    case CODE_FOR_loongson_psllh:
+    case CODE_FOR_loongson_psllw:
+    case CODE_FOR_loongson_psrah:
+    case CODE_FOR_loongson_psraw:
+    case CODE_FOR_loongson_psrlh:
+    case CODE_FOR_loongson_psrlw:
+      gcc_assert (has_target_p && nops == 3 && ops[2].mode == QImode);
+      sireg = gen_reg_rtx (SImode);
+      emit_insn (gen_zero_extendqisi2 (sireg,
+				       force_reg (QImode, ops[2].value)));
+      ops[2].value = sireg;
+      ops[2].mode = SImode;
+      break;
+
     case CODE_FOR_msa_addvi_b:
     case CODE_FOR_msa_addvi_h:
     case CODE_FOR_msa_addvi_w:
@@ -21608,7 +21633,7 @@ mips_expand_vi_broadcast (machine_mode vmode, rtx target, rtx elt)
 /* Return a const_int vector of VAL with mode MODE.  */
 
 rtx
-mips_gen_const_int_vector (machine_mode mode, int val)
+mips_gen_const_int_vector (machine_mode mode, HOST_WIDE_INT val)
 {
   int nunits = GET_MODE_NUNITS (mode);
   rtvec v = rtvec_alloc (nunits);
@@ -21732,11 +21757,12 @@ mips_expand_vector_init (rtx target, rtx vals)
 		case V8HImode:
 		case V4SImode:
 		case V2DImode:
-		  emit_move_insn (target, same);
+		  temp = gen_rtx_CONST_VECTOR (vmode, XVEC (vals, 0));
+		  emit_move_insn (target, temp);
 		  return;
 
 		default:
-		  break;
+		  gcc_unreachable ();
 		}
 	    }
 	  temp = gen_reg_rtx (imode);

@@ -4446,7 +4446,7 @@ if test "${with_bugurl+set}" = set; then :
 	   ;;
      esac
 else
-  BUGURL="http://gcc.gnu.org/bugs.html"
+  BUGURL="https://gcc.gnu.org/bugs/"
 
 fi
 

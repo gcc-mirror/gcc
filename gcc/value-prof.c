@@ -365,7 +365,17 @@ stream_out_histogram_value (struct output_block *ob, histogram_value hist)
       break;
     }
   for (i = 0; i < hist->n_counters; i++)
-    streamer_write_gcov_count (ob, hist->hvalue.counters[i]);
+    {
+      /* When user uses an unsigned type with a big value, constant converted
+	 to gcov_type (a signed type) can be negative.  */
+      gcov_type value = hist->hvalue.counters[i];
+      if (hist->type == HIST_TYPE_SINGLE_VALUE && i == 0)
+	;
+      else
+	gcc_assert (value >= 0);
+
+      streamer_write_gcov_count (ob, value);
+    }
   if (hist->hvalue.next)
     stream_out_histogram_value (ob, hist->hvalue.next);
 }
@@ -1358,7 +1368,8 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
   dcall_stmt = as_a <gcall *> (gimple_copy (icall_stmt));
   gimple_call_set_fndecl (dcall_stmt, direct_call->decl);
   dflags = flags_from_decl_or_type (direct_call->decl);
-  if ((dflags & ECF_NORETURN) != 0)
+  if ((dflags & ECF_NORETURN) != 0
+      && should_remove_lhs_p (gimple_call_lhs (dcall_stmt)))
     gimple_call_set_lhs (dcall_stmt, NULL_TREE);
   gsi_insert_before (&gsi, dcall_stmt, GSI_SAME_STMT);
 

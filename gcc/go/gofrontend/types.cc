@@ -1580,6 +1580,42 @@ Type::make_type_descriptor_ptr_type()
   return ret;
 }
 
+// Return the alignment required by the memequalN function.  N is a
+// type size: 16, 32, 64, or 128.  The memequalN functions are defined
+// in libgo/go/runtime/alg.go.
+
+int64_t
+Type::memequal_align(Gogo* gogo, int size)
+{
+  const char* tn;
+  switch (size)
+    {
+    case 16:
+      tn = "int16";
+      break;
+    case 32:
+      tn = "int32";
+      break;
+    case 64:
+      tn = "int64";
+      break;
+    case 128:
+      // The code uses [2]int64, which must have the same alignment as
+      // int64.
+      tn = "int64";
+      break;
+    default:
+      go_unreachable();
+    }
+
+  Type* t = Type::lookup_integer_type(tn);
+
+  int64_t ret;
+  if (!t->backend_type_align(gogo, &ret))
+    go_unreachable();
+  return ret;
+}
+
 // Return whether this type needs specially built type functions.
 // This returns true for types that are comparable and either can not
 // use an identity comparison, or are a non-standard size.
@@ -1614,14 +1650,13 @@ Type::needs_specific_type_functions(Gogo* gogo)
     case 0:
     case 1:
     case 2:
-      return align < 2;
+      return align < Type::memequal_align(gogo, 16);
     case 4:
-      return align < 4;
+      return align < Type::memequal_align(gogo, 32);
     case 8:
-      return align < 8;
+      return align < Type::memequal_align(gogo, 64);
     case 16:
-      // 8, not 16, because of how runtime.memequal128 is written.
-      return align < 8;
+      return align < Type::memequal_align(gogo, 128);
     default:
       return true;
     }
@@ -1713,7 +1748,7 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 	  equal_fnname = "runtime.memequal8";
 	  break;
 	case 2:
-	  if (align < 2)
+	  if (align < Type::memequal_align(gogo, 16))
 	    build_functions = true;
 	  else
 	    {
@@ -1722,7 +1757,7 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 	    }
 	  break;
 	case 4:
-	  if (align < 4)
+	  if (align < Type::memequal_align(gogo, 32))
 	    build_functions = true;
 	  else
 	    {
@@ -1731,7 +1766,7 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 	    }
 	  break;
 	case 8:
-	  if (align < 8)
+	  if (align < Type::memequal_align(gogo, 64))
 	    build_functions = true;
 	  else
 	    {
@@ -1740,8 +1775,7 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 	    }
 	  break;
 	case 16:
-	  // 8, not 16, because of how runtime.memequal128 is written.
-	  if (align < 8)
+	  if (align < Type::memequal_align(gogo, 128))
 	    build_functions = true;
 	  else
 	    {

@@ -2,7 +2,7 @@
    ABI.  */
 
 /* { dg-do run { target { s390*-*-* } } } */
-/* { dg-require-effective-target vector } */
+/* { dg-require-effective-target s390_vx } */
 /* { dg-options "-O3 -mzarch -march=z13 --save-temps" } */
 
 /* Make sure arguments are fetched from the argument overflow area.  */

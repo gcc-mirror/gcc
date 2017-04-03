@@ -1480,6 +1480,15 @@ DEFHOOK_UNDOC
  "Return speculation types that are checked for instruction @var{insn}",
  unsigned int, (rtx_insn *insn), NULL)
 
+DEFHOOK
+(can_speculate_insn,
+ "Some instructions should never be speculated by the schedulers, usually\n\
+ because the instruction is too expensive to get this wrong.  Often such\n\
+ instructions have long latency, and often they are not fully modeled in the\n\
+ pipeline descriptions.  This hook should return @code{false} if @var{insn}\n\
+ should not be speculated.",
+ bool, (rtx_insn *insn), hook_bool_rtx_insn_true)
+
 DEFHOOK_UNDOC
 (skip_rtx_p,
  "Return bool if rtx scanning should just skip current layer and\
@@ -1801,10 +1810,10 @@ misalignment value (@var{misalign}).",
  default_builtin_vectorization_cost)
 
 /* Return true if vector alignment is reachable (by peeling N
-   iterations) for the given type.  */
+   iterations) for the given scalar type.  */
 DEFHOOK
 (vector_alignment_reachable,
- "Return true if vector alignment is reachable (by peeling N iterations) for the given type.",
+ "Return true if vector alignment is reachable (by peeling N iterations) for the given scalar type @var{type}.  @var{is_packed} is false if the scalar access using @var{type} is known to be naturally aligned.",
  bool, (const_tree type, bool is_packed),
  default_builtin_vector_alignment_reachable)
 

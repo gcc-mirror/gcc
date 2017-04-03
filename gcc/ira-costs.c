@@ -74,7 +74,7 @@ static struct costs *costs;
 static struct costs *total_allocno_costs;
 
 /* It is the current size of struct costs.  */
-static int struct_costs_size;
+static size_t struct_costs_size;
 
 /* Return pointer to structure containing costs of allocno or pseudo
    with given NUM in array ARR.  */
@@ -1438,8 +1438,25 @@ scan_one_insn (rtx_insn *insn)
     return insn;
 
   pat_code = GET_CODE (PATTERN (insn));
-  if (pat_code == USE || pat_code == CLOBBER || pat_code == ASM_INPUT)
+  if (pat_code == ASM_INPUT)
     return insn;
+
+  /* If INSN is a USE/CLOBBER of a pseudo in a mode M then go ahead
+     and initialize the register move costs of mode M.
+
+     The pseudo may be related to another pseudo via a copy (implicit or
+     explicit) and if there are no mode M uses/sets of the original
+     pseudo, then we may leave the register move costs uninitialized for
+     mode M. */
+  if (pat_code == USE || pat_code == CLOBBER)
+    {
+      rtx x = XEXP (PATTERN (insn), 0);
+      if (GET_CODE (x) == REG
+	  && REGNO (x) >= FIRST_PSEUDO_REGISTER
+	  && have_regs_of_mode[GET_MODE (x)])
+        ira_init_register_move_cost_if_necessary (GET_MODE (x));
+      return insn;
+    }
 
   counted_mem = false;
   set = single_set (insn);

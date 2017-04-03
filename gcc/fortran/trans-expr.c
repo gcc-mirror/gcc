@@ -2277,7 +2277,7 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
 	msg = xasprintf ("Substring out of bounds: lower bound (%%ld) of '%s' "
 			 "is less than one", name);
       else
-	msg = xasprintf ("Substring out of bounds: lower bound (%%ld)"
+	msg = xasprintf ("Substring out of bounds: lower bound (%%ld) "
 			 "is less than one");
       gfc_trans_runtime_check (true, false, fault, &se->pre, where, msg,
 			       fold_convert (long_integer_type_node,
@@ -6228,13 +6228,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       gfc_add_block_to_block (&se->pre, &post);
 
       /* Transformational functions of derived types with allocatable
-         components must have the result allocatable components copied.  */
+	 components must have the result allocatable components copied when the
+	 argument is actually given.  */
       arg = expr->value.function.actual;
       if (result && arg && expr->rank
-	    && expr->value.function.isym
-	    && expr->value.function.isym->transformational
-	    && arg->expr->ts.type == BT_DERIVED
-	    && arg->expr->ts.u.derived->attr.alloc_comp)
+	  && expr->value.function.isym
+	  && expr->value.function.isym->transformational
+	  && arg->expr
+	  && arg->expr->ts.type == BT_DERIVED
+	  && arg->expr->ts.u.derived->attr.alloc_comp)
 	{
 	  tree tmp2;
 	  /* Copy the allocatable components.  We have to use a
@@ -7516,7 +7518,6 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init, bool coarray)
 	  && (!c->expr || c->expr->expr_type == EXPR_NULL))
 	{
 	  tree token, desc, size;
-	  symbol_attribute attr;
 	  bool is_array = cm->ts.type == BT_CLASS
 	      ? CLASS_DATA (cm)->attr.dimension : cm->attr.dimension;
 
@@ -7549,7 +7550,10 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init, bool coarray)
 	    }
 	  else
 	    {
-	      desc = gfc_conv_scalar_to_descriptor (&se, field, attr);
+	      desc = gfc_conv_scalar_to_descriptor (&se, field,
+						    cm->ts.type == BT_CLASS
+						    ? CLASS_DATA (cm)->attr
+						    : cm->attr);
 	      size = TYPE_SIZE_UNIT (TREE_TYPE (field));
 	    }
 	  gfc_add_block_to_block (&block, &se.pre);
@@ -9959,13 +9963,16 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	  tree cond;
 	  const char* msg;
 
+	  tmp = INDIRECT_REF_P (lse.expr)
+	      ? gfc_build_addr_expr (NULL_TREE, lse.expr) : lse.expr;
+
 	  /* We should only get array references here.  */
-	  gcc_assert (TREE_CODE (lse.expr) == POINTER_PLUS_EXPR
-		      || TREE_CODE (lse.expr) == ARRAY_REF);
+	  gcc_assert (TREE_CODE (tmp) == POINTER_PLUS_EXPR
+		      || TREE_CODE (tmp) == ARRAY_REF);
 
 	  /* 'tmp' is either the pointer to the array(POINTER_PLUS_EXPR)
 	     or the array itself(ARRAY_REF).  */
-	  tmp = TREE_OPERAND (lse.expr, 0);
+	  tmp = TREE_OPERAND (tmp, 0);
 
 	  /* Provide the address of the array.  */
 	  if (TREE_CODE (lse.expr) == ARRAY_REF)

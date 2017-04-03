@@ -253,9 +253,9 @@ shift_bytes_in_array_right (unsigned char *ptr, unsigned int sz,
       unsigned prev_carry_over = carry_over;
       carry_over = ptr[i] & carry_mask;
 
-     carry_over <<= (unsigned char) BITS_PER_UNIT - amnt;
-     ptr[i] >>= amnt;
-     ptr[i] |= prev_carry_over;
+      carry_over <<= (unsigned char) BITS_PER_UNIT - amnt;
+      ptr[i] >>= amnt;
+      ptr[i] |= prev_carry_over;
     }
 }
 
@@ -352,8 +352,9 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
 {
   unsigned int first_byte = bitpos / BITS_PER_UNIT;
   tree tmp_int = expr;
-  bool sub_byte_op_p = (bitlen % BITS_PER_UNIT) || (bitpos % BITS_PER_UNIT)
-			|| mode_for_size (bitlen, MODE_INT, 0) == BLKmode;
+  bool sub_byte_op_p = ((bitlen % BITS_PER_UNIT)
+			|| (bitpos % BITS_PER_UNIT)
+			|| mode_for_size (bitlen, MODE_INT, 0) == BLKmode);
 
   if (!sub_byte_op_p)
     return (native_encode_expr (tmp_int, ptr + first_byte, total_bytes, 0)
@@ -407,7 +408,7 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
   memset (tmpbuf, '\0', byte_size);
   /* The store detection code should only have allowed constants that are
      accepted by native_encode_expr.  */
-  if (native_encode_expr (expr, tmpbuf, byte_size, 0) == 0)
+  if (native_encode_expr (expr, tmpbuf, byte_size - 1, 0) == 0)
     gcc_unreachable ();
 
   /* The native_encode_expr machinery uses TYPE_MODE to determine how many
@@ -418,25 +419,27 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
      contain a sign bit due to sign-extension).  */
   unsigned int padding
     = byte_size - ROUND_UP (bitlen, BITS_PER_UNIT) / BITS_PER_UNIT - 1;
-  if (padding != 0
-      || bitlen % BITS_PER_UNIT != 0)
-    {
-      /* On big-endian the padding is at the 'front' so just skip the initial
-	 bytes.  */
-      if (BYTES_BIG_ENDIAN)
-	tmpbuf += padding;
+  /* On big-endian the padding is at the 'front' so just skip the initial
+     bytes.  */
+  if (BYTES_BIG_ENDIAN)
+    tmpbuf += padding;
 
-      byte_size -= padding;
-      if (bitlen % BITS_PER_UNIT != 0)
-	{
-	  if (BYTES_BIG_ENDIAN)
-	    clear_bit_region_be (tmpbuf, BITS_PER_UNIT - 1,
-				 BITS_PER_UNIT - (bitlen % BITS_PER_UNIT));
-	  else
-	    clear_bit_region (tmpbuf, bitlen,
-			      byte_size * BITS_PER_UNIT - bitlen);
-	}
+  byte_size -= padding;
+
+  if (bitlen % BITS_PER_UNIT != 0)
+    {
+      if (BYTES_BIG_ENDIAN)
+	clear_bit_region_be (tmpbuf, BITS_PER_UNIT - 1,
+			     BITS_PER_UNIT - (bitlen % BITS_PER_UNIT));
+      else
+	clear_bit_region (tmpbuf, bitlen,
+			  byte_size * BITS_PER_UNIT - bitlen);
     }
+  /* Left shifting relies on the last byte being clear if bitlen is
+     a multiple of BITS_PER_UNIT, which might not be clear if
+     there are padding bytes.  */
+  else if (!BYTES_BIG_ENDIAN)
+    tmpbuf[byte_size - 1] = '\0';
 
   /* Clear the bit region in PTR where the bits from TMPBUF will be
      inserted into.  */
@@ -672,11 +675,34 @@ merged_store_group::apply_stores ()
 
 struct imm_store_chain_info
 {
+  /* Doubly-linked list that imposes an order on chain processing.
+     PNXP (prev's next pointer) points to the head of a list, or to
+     the next field in the previous chain in the list.
+     See pass_store_merging::m_stores_head for more rationale.  */
+  imm_store_chain_info *next, **pnxp;
   tree base_addr;
   auto_vec<struct store_immediate_info *> m_store_info;
   auto_vec<merged_store_group *> m_merged_store_groups;
 
-  imm_store_chain_info (tree b_a) : base_addr (b_a) {}
+  imm_store_chain_info (imm_store_chain_info *&inspt, tree b_a)
+  : next (inspt), pnxp (&inspt), base_addr (b_a)
+  {
+    inspt = this;
+    if (next)
+      {
+	gcc_checking_assert (pnxp == next->pnxp);
+	next->pnxp = &next;
+      }
+  }
+  ~imm_store_chain_info ()
+  {
+    *pnxp = next;
+    if (next)
+      {
+	gcc_checking_assert (&next == next->pnxp);
+	next->pnxp = pnxp;
+      }
+  }
   bool terminate_and_process_chain ();
   bool coalesce_immediate_stores ();
   bool output_merged_store (merged_store_group *);
@@ -699,7 +725,7 @@ class pass_store_merging : public gimple_opt_pass
 {
 public:
   pass_store_merging (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_tree_store_merging, ctxt)
+    : gimple_opt_pass (pass_data_tree_store_merging, ctxt), m_stores_head ()
   {
   }
 
@@ -715,6 +741,17 @@ public:
 private:
   hash_map<tree_operand_hash, struct imm_store_chain_info *> m_stores;
 
+  /* Form a doubly-linked stack of the elements of m_stores, so that
+     we can iterate over them in a predictable way.  Using this order
+     avoids extraneous differences in the compiler output just because
+     of tree pointer variations (e.g. different chains end up in
+     different positions of m_stores, so they are handled in different
+     orders, so they allocate or release SSA names in different
+     orders, and when they get reused, subsequent passes end up
+     getting different SSA names, which may ultimately change
+     decisions when going out of SSA).  */
+  imm_store_chain_info *m_stores_head;
+
   bool terminate_and_process_all_chains ();
   bool terminate_all_aliasing_chains (imm_store_chain_info **,
 				      bool, gimple *);
@@ -727,11 +764,11 @@ private:
 bool
 pass_store_merging::terminate_and_process_all_chains ()
 {
-  hash_map<tree_operand_hash, struct imm_store_chain_info *>::iterator iter
-    = m_stores.begin ();
   bool ret = false;
-  for (; iter != m_stores.end (); ++iter)
-    ret |= terminate_and_release_chain ((*iter).second);
+  while (m_stores_head)
+    ret |= terminate_and_release_chain (m_stores_head);
+  gcc_assert (m_stores.elements () == 0);
+  gcc_assert (m_stores_head == NULL);
 
   return ret;
 }
@@ -796,15 +833,14 @@ pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
 	}
     }
 
-  hash_map<tree_operand_hash, struct imm_store_chain_info *>::iterator iter
-    = m_stores.begin ();
-
   /* Check for aliasing with all other store chains.  */
-  for (; iter != m_stores.end (); ++iter)
+  for (imm_store_chain_info *next = m_stores_head, *cur = next; cur; cur = next)
     {
+      next = cur->next;
+
       /* We already checked all the stores in chain_info and terminated the
 	 chain if necessary.  Skip it here.  */
-      if (chain_info && (*chain_info) == (*iter).second)
+      if (chain_info && (*chain_info) == cur)
 	continue;
 
       /* We can't use the base object here as that does not reliably exist.
@@ -812,11 +848,11 @@ pass_store_merging::terminate_all_aliasing_chains (imm_store_chain_info
 	 minimum and maximum offset and the maximum size we could improve
 	 things here).  */
       ao_ref chain_ref;
-      ao_ref_init_from_ptr_and_size (&chain_ref, (*iter).first, NULL_TREE);
+      ao_ref_init_from_ptr_and_size (&chain_ref, cur->base_addr, NULL_TREE);
       if (ref_maybe_used_by_stmt_p (stmt, &chain_ref)
 	  || stmt_may_clobber_ref_p_1 (stmt, &chain_ref))
 	{
-	  terminate_and_release_chain ((*iter).second);
+	  terminate_and_release_chain (cur);
 	  ret = true;
 	}
     }
@@ -1333,6 +1369,9 @@ pass_store_merging::execute (function *fun)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 
+	  if (is_gimple_debug (stmt))
+	    continue;
+
 	  if (gimple_has_volatile_ops (stmt))
 	    {
 	      /* Terminate all chains.  */
@@ -1342,9 +1381,6 @@ pass_store_merging::execute (function *fun)
 	      terminate_and_process_all_chains ();
 	      continue;
 	    }
-
-	  if (is_gimple_debug (stmt))
-	    continue;
 
 	  if (gimple_assign_single_p (stmt) && gimple_vdef (stmt)
 	      && !stmt_can_throw_internal (stmt)
@@ -1453,7 +1489,7 @@ pass_store_merging::execute (function *fun)
 		  terminate_all_aliasing_chains (chain_info, false, stmt);
 		  /* Start a new chain.  */
 		  struct imm_store_chain_info *new_chain
-		    = new imm_store_chain_info (base_addr);
+		    = new imm_store_chain_info (m_stores_head, base_addr);
 		  info = new store_immediate_info (bitsize, bitpos,
 						   stmt, 0);
 		  new_chain->m_store_info.safe_push (info);

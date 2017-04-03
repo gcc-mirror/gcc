@@ -145,6 +145,7 @@ ubsan_encode_value (tree t, bool in_expand_p)
 	     code by making vars unnecessarily addressable.  */
 	  tree var = create_tmp_var (type);
 	  tree tem = build2 (MODIFY_EXPR, void_type_node, var, t);
+	  mark_addressable (var);
 	  if (in_expand_p)
 	    {
 	      rtx mem
@@ -409,7 +410,9 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
 	{
 	  pp_left_bracket (&pretty_name);
 	  tree dom = TYPE_DOMAIN (t);
-	  if (dom && TREE_CODE (TYPE_MAX_VALUE (dom)) == INTEGER_CST)
+	  if (dom != NULL_TREE
+	      && TYPE_MAX_VALUE (dom) != NULL_TREE
+	      && TREE_CODE (TYPE_MAX_VALUE (dom)) == INTEGER_CST)
 	    {
 	      if (tree_fits_uhwi_p (TYPE_MAX_VALUE (dom))
 		  && tree_to_uhwi (TYPE_MAX_VALUE (dom)) + 1 != 0)
@@ -1769,7 +1772,7 @@ instrument_object_size (gimple_stmt_iterator *gsi, bool is_lhs)
 	{
 	  tree repr = DECL_BIT_FIELD_REPRESENTATIVE (TREE_OPERAND (t, 1));
 	  t = build3 (COMPONENT_REF, TREE_TYPE (repr), TREE_OPERAND (t, 0),
-		      repr, NULL_TREE);
+		      repr, TREE_OPERAND (t, 2));
 	}
       break;
     case ARRAY_REF:

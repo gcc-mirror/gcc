@@ -63,7 +63,7 @@
 #define bit_MMXEXT	(1 << 22)
 #define bit_LM		(1 << 29)
 #define bit_3DNOWP	(1 << 30)
-#define bit_3DNOW	(1 << 31)
+#define bit_3DNOW	(1u << 31)
 
 /* %ebx  */
 #define bit_CLZERO	(1 << 0)
@@ -98,6 +98,7 @@
 #define bit_PKU	(1 << 3)
 #define bit_OSPKE	(1 << 4)
 #define bit_AVX512VPOPCNTDQ	(1 << 14)
+#define bit_RDPID	(1 << 22)
 
 /* %edx */
 #define bit_AVX5124VNNIW (1 << 2)

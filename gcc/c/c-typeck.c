@@ -2654,7 +2654,7 @@ build_array_ref (location_t loc, tree array, tree index)
 	  || (COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (array)))
 	      && TREE_CODE (TYPE_SIZE (TREE_TYPE (TREE_TYPE (array)))) != INTEGER_CST))
 	{
-	  if (!c_mark_addressable (array))
+	  if (!c_mark_addressable (array, true))
 	    return error_mark_node;
 	}
       /* An array that is indexed by a constant value which is not within
@@ -3110,7 +3110,8 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
     return error_mark_node;
 
   /* Check that the arguments to the function are valid.  */
-  bool warned_p = check_function_arguments (loc, fntype, nargs, argarray);
+  bool warned_p = check_function_arguments (loc, fundecl, fntype,
+					    nargs, argarray);
 
   if (name != NULL_TREE
       && !strncmp (IDENTIFIER_POINTER (name), "__builtin_", 10))
@@ -3437,15 +3438,18 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 		  /* Detect integer changing in width or signedness.
 		     These warnings are only activated with
 		     -Wtraditional-conversion, not with -Wtraditional.  */
-		  else if (warn_traditional_conversion && INTEGRAL_TYPE_P (type)
+		  else if (warn_traditional_conversion
+			   && INTEGRAL_TYPE_P (type)
 			   && INTEGRAL_TYPE_P (valtype))
 		    {
 		      tree would_have_been = default_conversion (val);
 		      tree type1 = TREE_TYPE (would_have_been);
 
-		      if (TREE_CODE (type) == ENUMERAL_TYPE
-			  && (TYPE_MAIN_VARIANT (type)
-			      == TYPE_MAIN_VARIANT (valtype)))
+		      if (val == error_mark_node)
+			/* VAL could have been of incomplete type.  */;
+		      else if (TREE_CODE (type) == ENUMERAL_TYPE
+			       && (TYPE_MAIN_VARIANT (type)
+				   == TYPE_MAIN_VARIANT (valtype)))
 			/* No warning if function asks for enum
 			   and the actual arg is that enum type.  */
 			;
@@ -4751,16 +4755,26 @@ lvalue_or_else (location_t loc, const_tree ref, enum lvalue_use use)
 
 /* Mark EXP saying that we need to be able to take the
    address of it; it should not be allocated in a register.
-   Returns true if successful.  */
+   Returns true if successful.  ARRAY_REF_P is true if this
+   is for ARRAY_REF construction - in that case we don't want
+   to look through VIEW_CONVERT_EXPR from VECTOR_TYPE to ARRAY_TYPE,
+   it is fine to use ARRAY_REFs for vector subscripts on vector
+   register variables.  */
 
 bool
-c_mark_addressable (tree exp)
+c_mark_addressable (tree exp, bool array_ref_p)
 {
   tree x = exp;
 
   while (1)
     switch (TREE_CODE (x))
       {
+      case VIEW_CONVERT_EXPR:
+	if (array_ref_p
+	    && TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE
+	    && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (x, 0))))
+	  return true;
+	/* FALLTHRU */
       case COMPONENT_REF:
       case ADDR_EXPR:
       case ARRAY_REF:
@@ -11852,13 +11866,15 @@ build_binary_op (location_t location, enum tree_code code,
   else if (TREE_CODE (ret) != INTEGER_CST && int_operands
 	   && !in_late_binary_op)
     ret = note_integer_operands (ret);
-  if (semantic_result_type)
-    ret = build1 (EXCESS_PRECISION_EXPR, semantic_result_type, ret);
   protected_set_expr_location (ret, location);
 
   if (instrument_expr != NULL)
     ret = fold_build2 (COMPOUND_EXPR, TREE_TYPE (ret),
 		       instrument_expr, ret);
+
+  if (semantic_result_type)
+    ret = build1_loc (location, EXCESS_PRECISION_EXPR,
+		      semantic_result_type, ret);
 
   return ret;
 }

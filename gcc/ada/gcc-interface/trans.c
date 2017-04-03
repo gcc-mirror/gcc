@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -3614,7 +3614,14 @@ return_value_ok_for_nrv_p (tree ret_obj, tree ret_val)
   if (TREE_ADDRESSABLE (ret_val))
     return false;
 
+  /* For the constrained case, test for overalignment.  */
   if (ret_obj && DECL_ALIGN (ret_val) > DECL_ALIGN (ret_obj))
+    return false;
+
+  /* For the unconstrained case, test for bogus initialization.  */
+  if (!ret_obj
+      && DECL_INITIAL (ret_val)
+      && TREE_CODE (DECL_INITIAL (ret_val)) == NULL_EXPR)
     return false;
 
   return true;
@@ -4965,10 +4972,6 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
   tree gnu_result;
   tree gnu_expr;
   Node_Id gnat_temp;
-  /* Node providing the sloc for the cleanup actions.  */
-  Node_Id gnat_cleanup_loc_node = (Present (End_Label (gnat_node)) ?
-                                   End_Label (gnat_node) :
-                                   gnat_node);
 
   /* The GCC exception handling mechanism can handle both ZCX and SJLJ schemes
      and we have our own SJLJ mechanism.  To call the GCC mechanism, we call
@@ -5018,7 +5021,8 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 
       /* When we exit this block, restore the saved value.  */
       add_cleanup (build_call_n_expr (set_jmpbuf_decl, 1, gnu_jmpsave_decl),
-		   gnat_cleanup_loc_node);
+		   Present (End_Label (gnat_node))
+		   ? End_Label (gnat_node) : gnat_node);
     }
 
   /* If we are to call a function when exiting this block, add a cleanup
@@ -5027,11 +5031,18 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
   if (at_end)
     {
       tree proc_decl = gnat_to_gnu (At_End_Proc (gnat_node));
+
       /* When not optimizing, disable inlining of finalizers as this can
 	 create a more complex CFG in the parent function.  */
       if (!optimize)
 	DECL_DECLARED_INLINE_P (proc_decl) = 0;
-      add_cleanup (build_call_n_expr (proc_decl, 0), gnat_cleanup_loc_node);
+
+      /* If there is no end label attached, we use the location of the At_End
+	 procedure because Expand_Cleanup_Actions might reset the location of
+	 the enclosing construct to that of an inner statement.  */
+      add_cleanup (build_call_n_expr (proc_decl, 0),
+		   Present (End_Label (gnat_node))
+		   ? End_Label (gnat_node) : At_End_Proc (gnat_node));
     }
 
   /* Now build the tree for the declarations and statements inside this block.
@@ -7748,7 +7759,6 @@ gnat_to_gnu (Node_Id gnat_node)
       && (kind == N_Identifier
 	  || kind == N_Expanded_Name
 	  || kind == N_Explicit_Dereference
-	  || kind == N_Function_Call
 	  || kind == N_Indexed_Component
 	  || kind == N_Selected_Component)
       && TREE_CODE (get_base_type (gnu_result_type)) == BOOLEAN_TYPE

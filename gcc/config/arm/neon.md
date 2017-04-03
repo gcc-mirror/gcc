@@ -1335,14 +1335,14 @@
   }
 )
 
-(define_insn "vec_sel_widen_ssum_lo<VQI:mode><VW:mode>3"
-  [(set (match_operand:<VW:V_widen> 0 "s_register_operand" "=w")
-	(plus:<VW:V_widen>
-	 (sign_extend:<VW:V_widen>
-	  (vec_select:VW
+(define_insn "vec_sel_widen_ssum_lo<mode><V_half>3"
+  [(set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+	(plus:<V_double_width>
+	 (sign_extend:<V_double_width>
+	  (vec_select:<V_HALF>
 	   (match_operand:VQI 1 "s_register_operand" "%w")
 	   (match_operand:VQI 2 "vect_par_constant_low" "")))
-	 (match_operand:<VW:V_widen> 3 "s_register_operand" "0")))]
+	 (match_operand:<V_double_width> 3 "s_register_operand" "0")))]
   "TARGET_NEON"
 {
   return BYTES_BIG_ENDIAN ?  "vaddw.<V_s_elem>\t%q0, %q3, %f1" :
@@ -1350,13 +1350,14 @@
 }
   [(set_attr "type" "neon_add_widen")])
 
-(define_insn "vec_sel_widen_ssum_hi<VQI:mode><VW:mode>3"
-  [(set (match_operand:<VW:V_widen> 0 "s_register_operand" "=w")
-	(plus:<VW:V_widen>
-	 (sign_extend:<VW:V_widen>
-	  (vec_select:VW (match_operand:VQI 1 "s_register_operand" "%w")
+(define_insn "vec_sel_widen_ssum_hi<mode><V_half>3"
+  [(set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+	(plus:<V_double_width>
+	 (sign_extend:<V_double_width>
+	  (vec_select:<V_HALF>
+			 (match_operand:VQI 1 "s_register_operand" "%w")
 			 (match_operand:VQI 2 "vect_par_constant_high" "")))
-	 (match_operand:<VW:V_widen> 3 "s_register_operand" "0")))]
+	 (match_operand:<V_double_width> 3 "s_register_operand" "0")))]
   "TARGET_NEON"
 {
   return BYTES_BIG_ENDIAN ?  "vaddw.<V_s_elem>\t%q0, %q3, %e1" :
@@ -1404,14 +1405,14 @@
   }
 )
 
-(define_insn "vec_sel_widen_usum_lo<VQI:mode><VW:mode>3"
-  [(set (match_operand:<VW:V_widen> 0 "s_register_operand" "=w")
-	(plus:<VW:V_widen>
-	 (zero_extend:<VW:V_widen>
-	  (vec_select:VW
+(define_insn "vec_sel_widen_usum_lo<mode><V_half>3"
+  [(set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+	(plus:<V_double_width>
+	 (zero_extend:<V_double_width>
+	  (vec_select:<V_HALF>
 	   (match_operand:VQI 1 "s_register_operand" "%w")
 	   (match_operand:VQI 2 "vect_par_constant_low" "")))
-	 (match_operand:<VW:V_widen> 3 "s_register_operand" "0")))]
+	 (match_operand:<V_double_width> 3 "s_register_operand" "0")))]
   "TARGET_NEON"
 {
   return BYTES_BIG_ENDIAN ?  "vaddw.<V_u_elem>\t%q0, %q3, %f1" :
@@ -1419,13 +1420,14 @@
 }
   [(set_attr "type" "neon_add_widen")])
 
-(define_insn "vec_sel_widen_usum_hi<VQI:mode><VW:mode>3"
-  [(set (match_operand:<VW:V_widen> 0 "s_register_operand" "=w")
-	(plus:<VW:V_widen>
-	 (zero_extend:<VW:V_widen>
-	  (vec_select:VW (match_operand:VQI 1 "s_register_operand" "%w")
+(define_insn "vec_sel_widen_usum_hi<mode><V_half>3"
+  [(set (match_operand:<V_double_width> 0 "s_register_operand" "=w")
+	(plus:<V_double_width>
+	 (zero_extend:<V_double_width>
+	  (vec_select:<V_HALF>
+			 (match_operand:VQI 1 "s_register_operand" "%w")
 			 (match_operand:VQI 2 "vect_par_constant_high" "")))
-	 (match_operand:<VW:V_widen> 3 "s_register_operand" "0")))]
+	 (match_operand:<V_double_width> 3 "s_register_operand" "0")))]
   "TARGET_NEON"
 {
  return BYTES_BIG_ENDIAN ?  "vaddw.<V_u_elem>\t%q0, %q3, %e1" :

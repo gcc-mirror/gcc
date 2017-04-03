@@ -236,7 +236,7 @@ struct GTY(()) function {
   /* The loops in this function.  */
   struct loops *x_current_loops;
 
-  /* Filled by the GIMPLE FE, pass to start compilation with.  */
+  /* Filled by the GIMPLE and RTL FEs, pass to start compilation with.  */
   char *pass_startwith;
 
   /* The stack usage of this function.  */

@@ -1,7 +1,78 @@
-2017-01-19  Uros Bizjak  <ubizjak@gmail.com>
+2017-03-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
-	PR target/78478
-	* config/ax_check_define.m4: New file.
+	* configure.ac: Enable LTO by default on darwin >= 9.
+	* configure: Regenerate.
+
+2017-03-20  Palmer Dabbelt  <palmer@dabbelt.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add Kito Cheng, Palmer Dabbelt,
+	and Andrew Waterman as the RISC-V maintainers.
+
+2017-03-18  Nicolas Koenig  <koenigni@gcc.gnu.org>
+
+	* MAINTAINERS: Add self to Write After Approval
+
+2017-03-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config.guess: Import latest from upstream.
+
+2017-03-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS (Write After Approval): Remove entries that are
+	already covered under Reviewers.
+
+2017-03-08  Mark Wielaard  <mark@klomp.org>
+
+	PR demangler/70909
+	PR demangler/67264
+	* include/demangle.h: Add d_printing to struct demangle_component
+	and pass struct demangle_component as non const.
+
+2017-02-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS: Remove Neil Booth as option handling maintainer.
+
+2017-02-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.tpl: Remove HOST_ISLVER.
+	(HOST_EXPORTS): Remove ISLVER.
+	* Makefile.in: Regenerate.
+
+2017-02-13  Richard Biener  <rguenther@suse.de>
+
+	* configure: Re-generate.
+
+2017-02-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS: Adjust bug reporting URL.
+
+2017-02-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS (Write After Approval): Remove redundant entry
+	for Andrew Burgess.
+
+2017-02-03  John David Anglin  <danglin@gcc.gnu.org>
+
+        * configure.ac: Add gcc/function-tests.o to compare_exclusions for
+	32-bit hppa*-*-hpux*.
+        * configure: Regenerate.
+
+2017-01-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* configure.ac: Moved the white list of enabling BRIG FE to
+	libhsail-rt/configure.tgt.
+	* configure: Regenerated.
+	* MAINTAINERS: Updated maintainers for BRIG FE and libhsail-rt.
+
+2017-01-24  Pekka Jääskeläinen  <pekka@parmance.com>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* Makefile.def (target_modules): Added libhsail-rt.
+	(languages): Added language brig.
+	* Makefile.in: Regenerated.
+	* configure.ac (TOPLEVEL_CONFIGURE_ARGUMENTS): Added
+	tgarget-libhsail-rt.  Make brig unsupported on untested architectures.
+	* configure: Regenerated.
 
 2017-01-17  Jakub Jelinek  <jakub@redhat.com>
 

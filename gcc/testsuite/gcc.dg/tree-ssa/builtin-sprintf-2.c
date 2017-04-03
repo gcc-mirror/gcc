@@ -7,7 +7,7 @@
    The test is compiled with warnings disabled to make sure the absence
    of optimizations does not depend on the presence of warnings.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fprintf-return-value -fdump-tree-optimized -ftrack-macro-expansion=0 -w" } */
+/* { dg-options "-O2 -fprintf-return-value -fdump-tree-optimized -w" } */
 
 #ifndef LINE
 # define LINE 0
@@ -59,15 +59,15 @@ void must_not_eliminate (void);
 
 typedef __SIZE_TYPE__ size_t;
 
-extern int i;
-extern unsigned u;
-extern long li;
-extern unsigned long lu;
-extern size_t sz;
-extern char *str;
+volatile int i;
+volatile unsigned u;
+volatile long li;
+volatile unsigned long lu;
+volatile size_t sz;
+volatile char *str;
 
-extern double d;
-extern long double ld;
+volatile double d;
+volatile long double ld;
 
 /* Verify that overflowing the destination object disables the return
    value optimization.  */
@@ -243,6 +243,14 @@ RNG (6,  6,  7, "%La",      0.0L)   /* Glibc output: "0x0p+0"  */
 RNG (6,  6,  7, "%La",      ld)
 RNG (6,  6,  7, "%.4096La", ld)
 
+/* Verify that the pound flag with unknown precision prevents the %g
+   directive from trimming trailing zeros as it otherwise does.  As
+   a consequence, the result must be assumed to be as large as
+   precision.  */
+RNG (1,  315,  316, "%#.*g", i, d);
+RNG (1, 4095, 4096, "%#.*g", i, d);
+RNG (1, 4095, 4096, "%#.*g", i, 0.0);
+
 /* Verify that the result of formatting an unknown string isn't optimized
    into a non-negative range.  The string could be longer that 4,095 bytes,
    resulting in the formatting function having undefined behavior (and
@@ -280,8 +288,9 @@ RNG (0,  6,   8, "%s%ls", "1", L"2");
 
 */
 
-/*  Only conditional calls to abort should be made (with any probability):
-    { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\]:\n *must_not_eliminate" 124 "optimized" { target { ilp32 || lp64 } } } }
-    { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\]:\n *must_not_eliminate" 93 "optimized" { target { { ! ilp32 } && { ! lp64 } } } } }
+/*  Only conditional calls to must_not_eliminate must be made (with
+    any probability):
+    { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\]:\n *must_not_eliminate" 127 "optimized" { target { ilp32 || lp64 } } } }
+    { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\]:\n *must_not_eliminate" 96 "optimized" { target { { ! ilp32 } && { ! lp64 } } } } }
     No unconditional calls to abort should be made:
     { dg-final { scan-tree-dump-not ";\n *must_not_eliminate" "optimized" } } */

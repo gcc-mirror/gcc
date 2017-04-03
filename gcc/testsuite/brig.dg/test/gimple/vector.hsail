@@ -1,0 +1,57 @@
+module &module:1:0:$full:$large:$default;
+
+/* A test for vector operands. */
+
+/* { dg-do compile } */
+/* { dg-options "-fdump-tree-original" } */
+
+prog kernel &Kernel(kernarg_u64 %input_ptr, kernarg_u64 %output_ptr)
+{
+        ld_kernarg_u64 $d0, [%input_ptr];
+	ld_v2_global_f32 ($s0, $s1), [$d0];
+	ld_v3_global_f32 ($s2, $s3, $s4), [$d0 + 8];
+	ld_v4_global_f32 ($s5, $s6, $s7, $s8), [$d0 + 20];
+
+	add_f32 $s9, $s0, $s1;
+	combine_v2_b64_b32 $d2, ($s1, $s0);
+	combine_v2_b64_b32 $d3, ($s2, $s3);
+
+	add_pp_f32x2 $d4, $d2, $d3;
+
+	expand_v2_b32_b64 ($s0, $s3), $d4;
+
+        ld_kernarg_u64 $d1, [%output_ptr];
+        st_v2_global_f32 ($s0, $s1), [$d1];
+        st_v3_global_f32 ($s2, $s3, $s4), [$d1 + 8];
+        st_v4_global_f32 ($s5, $s6, $s7, $s8), [$d1 + 20];
+
+        ret;
+};
+
+/* The v2 load is done via casting to a vector datatype ptr. */
+/* { dg-final { scan-tree-dump " = MEM\\\[\\\(vector\\\(2\\\) <float:32> \\\*\\\)" "original"} } */
+
+/* The v3 load is scalarized (at the moment) due to gcc requiring 2's exponent wide vectors. */
+/* { dg-final { scan-tree-dump "s0 = VIEW_CONVERT_EXPR<unsigned int>\\\(BIT_FIELD_REF <mem_read.\[0-9\]+, 32, 0>\\\);\[\n ]+s1 = VIEW_CONVERT_EXPR<unsigned int>\\\(BIT_FIELD_REF <mem_read.\[0-9\]+, 32, 32>\\\);" "original"} } */
+
+/* The v4 load is done via casting to a vector datatype ptr. */
+/* { dg-final { scan-tree-dump " = MEM\\\[\\\(vector\\\(4\\\) <float:32> \\\*\\\)" "original"} } */
+
+/* The combines are generated to vector constructors. */
+/* { dg-final { scan-tree-dump "{s1, s0}" "original"} } */
+/* { dg-final { scan-tree-dump "{s2, s3}" "original"} } */
+
+/* Expands to BIT_FIELD_REFs. */
+/* { dg-final { scan-tree-dump "s0 = BIT_FIELD_REF <d4, 32, 0>;" "original"} } */
+/* { dg-final { scan-tree-dump "s3 = BIT_FIELD_REF <d4, 32, 32>;" "original"} } */
+
+/* The v1 store is done via casting to a vector datatype ptr and constructing a vector from the inputs. */
+/* { dg-final { scan-tree-dump "MEM\\\[\\\(vector\\\(2\\\) <float:32> \\\*\\\)\\\(<float:32> \\\*\\\) d1\\\] = " "original"} } */
+
+/* The v3 store is scalarized (at the moment) due to gcc requiring 2's exponent wide vectors. */
+/* { dg-final { scan-tree-dump "\\\*\\\(<float:32> \\\*\\\) \\\(\\\(sizetype\\\) d1 \\\+ 8\\\) \\\+ 0 = VIEW_CONVERT_EXPR<<float:32>>\\\(s2\\\);" "original"} } */
+/* { dg-final { scan-tree-dump "\\\*\\\(<float:32> \\\*\\\) \\\(\\\(sizetype\\\) d1 \\\+ 8\\\) \\\+ 4 = VIEW_CONVERT_EXPR<<float:32>>\\\(s3\\\);" "original"} } */
+/* { dg-final { scan-tree-dump "\\\*\\\(<float:32> \\\*\\\) \\\(\\\(sizetype\\\) d1 \\\+ 8\\\) \\\+ 8 = VIEW_CONVERT_EXPR<<float:32>>\\\(s4\\\);" "original"} } */
+
+/* The v4 store is done via casting to a vector datatype and constructing a vector from the inputs. */
+/* { dg-final { scan-tree-dump "MEM\\\[\\\(vector\\\(4\\\) <float:32> \\\*\\\)\\\(<float:32> \\\*\\\) \\\(\\\(sizetype\\\) d1 \\\+ 20\\\)\\\] = {VIEW_CONVERT_EXPR<<float:32>>\\\(s5\\\), VIEW_CONVERT_EXPR<<float:32>>\\\(s6\\\), VIEW_CONVERT_EXPR<<float:32>>\\\(s7\\\), VIEW_CONVERT_EXPR<<float:32>>\\\(s8\\\)};" "original"} } */

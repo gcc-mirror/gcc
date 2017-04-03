@@ -1,0 +1,33 @@
+module &module:1:0:$full:$large:$default;
+
+/* Test for atomic instructions. */
+
+/* { dg-do compile } */
+/* { dg-options "-fdump-tree-original" } */
+
+prog kernel &Kernel(kernarg_u64 %input_ptr, kernarg_u64 %output_ptr)
+{
+        ld_kernarg_u64 $d0, [%input_ptr];
+
+	atomic_ld_global_rlx_system_b32 $s0, [$d0];
+	atomic_add_global_rlx_system_u32 $s1, [$d0 + 4], $s0;
+
+        ld_kernarg_u64 $d0, [%output_ptr];
+        atomicnoret_st_global_rlx_system_b32 [$d0], $s2;
+
+	atomicnoret_min_global_rlx_system_u32 [$d0 + 4], $s1;
+
+        ret;
+};
+
+/* The atomic loads are implemented by casting to an atomic pointer. */
+/* { dg-final { scan-tree-dump "s0 = VIEW_CONVERT_EXPR<unsigned int>\\\(\\\*\\\(atomic unsigned int \\\*\\\)" "original"} } */
+
+/* The atomic add should call a gcc builtin. */
+/* { dg-final { scan-tree-dump "= __sync_fetch_and_add_4 \\\(" "original"} } */
+
+/* The atomic stores are implemented by casting to an atomic pointer. */
+/* { dg-final { scan-tree-dump "\\\*\\\(atomic unsigned int \\\*\\\) d0 = s2;" "original"} } */
+
+/* The atomic min is implemented by a custom builtin. */
+/* { dg-final { scan-tree-dump "builtin_out.\[0-9\]+ = __builtin___hsail_atomic_min_u32 \\\(" "original"} } */

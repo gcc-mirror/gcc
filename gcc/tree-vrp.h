@@ -24,7 +24,7 @@ enum value_range_type { VR_UNDEFINED, VR_RANGE,
 
 /* Range of values that can be associated with an SSA_NAME after VRP
    has executed.  */
-struct GTY(()) value_range
+struct GTY((for_user)) value_range
 {
   /* Lattice value represented by this range.  */
   enum value_range_type type;

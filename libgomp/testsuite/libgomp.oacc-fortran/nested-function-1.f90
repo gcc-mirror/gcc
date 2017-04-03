@@ -33,7 +33,7 @@ firstdo: do i = 1, 3
   subroutine test2
     integer :: a(3,3,3), k, kk, kkk, l, ll, lll
     a = 0
-    !$acc parallel
+    !$acc parallel num_workers(8)
     ! Use "gang(static:1)" here and below to effectively turn gang-redundant
     ! execution mode into something like gang-single.
     !$acc loop gang(static:1) collapse(1)

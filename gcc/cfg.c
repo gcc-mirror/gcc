@@ -1095,6 +1095,15 @@ free_original_copy_tables (void)
   original_copy_bb_pool = NULL;
 }
 
+/* Return true iff we have had a call to initialize_original_copy_tables
+   without a corresponding call to free_original_copy_tables.  */
+
+bool
+original_copy_tables_initialized_p (void)
+{
+  return original_copy_bb_pool != NULL;
+}
+
 /* Removes the value associated with OBJ from table TAB.  */
 
 static void

@@ -96,7 +96,7 @@ program test1
   if (iomsg.ne.'SUCCESS') call abort
   if (any(udt1%myarray.ne.result_array)) call abort
   close(10)
-  open (10, form='formatted')
+  open (10, form='formatted', status='scratch')
   write (10, '(dt)') more1
   rewind(10)
   more1%myarray = 99

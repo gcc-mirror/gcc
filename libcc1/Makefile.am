@@ -19,9 +19,11 @@
 ACLOCAL_AMFLAGS = -I .. -I ../config
 gcc_build_dir = ../gcc
 AM_CPPFLAGS = -I $(srcdir)/../include -I $(srcdir)/../libgcc \
-	-I $(gcc_build_dir) -I$(srcdir)/../gcc \
-	-I $(srcdir)/../gcc/c -I $(srcdir)/../gcc/c-family \
-	-I $(srcdir)/../libcpp/include $(GMPINC)
+	-I $(gcc_build_dir) -I$(srcdir)/../gcc $($@_CPPFLAGS) $(GMPINC)
+CPPFLAGS_FOR_C_FAMILY = -I $(srcdir)/../gcc/c-family \
+	-I $(srcdir)/../libcpp/include
+CPPFLAGS_FOR_C = $(CPPFLAGS_FOR_C_FAMILY) -I $(srcdir)/../gcc/c
+CPPFLAGS_FOR_CXX = $(CPPFLAGS_FOR_C_FAMILY) -I $(srcdir)/../gcc/cp
 AM_CXXFLAGS = $(WARN_FLAGS) $(WERROR) $(visibility)
 override CXXFLAGS := $(filter-out -fsanitize=address,$(CXXFLAGS))
 override LDFLAGS := $(filter-out -fsanitize=address,$(LDFLAGS))
@@ -39,33 +41,57 @@ plugindir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)/plugin
 cc1libdir = $(libdir)/$(libsuffix)
 
 if ENABLE_PLUGIN
-plugin_LTLIBRARIES = libcc1plugin.la
+plugin_LTLIBRARIES = libcc1plugin.la libcp1plugin.la
 cc1lib_LTLIBRARIES = libcc1.la
 endif
 
-BUILT_SOURCES = compiler-name.h
-MOSTLYCLEANFILES = compiler-name.h
+BUILT_SOURCES = c-compiler-name.h cp-compiler-name.h
+MOSTLYCLEANFILES = c-compiler-name.h cp-compiler-name.h
 
 # Put this in a header so we don't run sed for each compilation.  This
 # is also simpler to debug as one can easily see the constant.
-compiler-name.h: Makefile
-	echo "#define COMPILER_NAME \"`echo gcc | sed '$(transform)'`\"" > $@
+# FIXME: compute it in configure.ac and output it in config.status, or
+# introduce timestamp files for some indirection to avoid rebuilding it
+# every time.
+c-compiler-name.h: Makefile
+	-rm -f $@T
+	echo "#define C_COMPILER_NAME \"`echo gcc | sed '$(transform)'`\"" > $@T
+	mv $@T $@ # $(SHELL) $(srcdir)/../move-if-change $@T $@
 
+cp-compiler-name.h: Makefile
+	-rm -f $@T
+	echo "#define CP_COMPILER_NAME \"`echo g++ | sed '$(transform)'`\"" > $@T
+	mv $@T $@ # $(SHELL) $(srcdir)/../move-if-change $@T $@
 
 shared_source = callbacks.cc callbacks.hh connection.cc connection.hh \
     marshall.cc marshall.hh rpc.hh status.hh
 
+marshall_c_source = marshall-c.hh
+marshall_cxx_source = marshall-cp.hh
+
 libcc1plugin_la_LDFLAGS = -module -export-symbols $(srcdir)/libcc1plugin.sym
-libcc1plugin_la_SOURCES = plugin.cc $(shared_source)
+libcc1plugin_la_SOURCES = libcc1plugin.cc $(shared_source) $(marshall_c_source)
+libcc1plugin.lo_CPPFLAGS = $(CPPFLAGS_FOR_C)
 libcc1plugin_la_LIBADD = $(libiberty)
 libcc1plugin_la_DEPENDENCIES = $(libiberty_dep)
 libcc1plugin_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(libcc1plugin_la_LDFLAGS) $(LTLDFLAGS) -o $@
 
+libcp1plugin_la_LDFLAGS = -module -export-symbols $(srcdir)/libcp1plugin.sym
+libcp1plugin_la_SOURCES = libcp1plugin.cc $(shared_source) $(marshall_cxx_source)
+libcp1plugin.lo_CPPFLAGS = $(CPPFLAGS_FOR_CXX)
+libcp1plugin_la_LIBADD = $(libiberty)
+libcp1plugin_la_DEPENDENCIES = $(libiberty_dep)
+libcp1plugin_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(libcp1plugin_la_LDFLAGS) $(LTLDFLAGS) -o $@
+
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 libcc1_la_LDFLAGS = -module -export-symbols $(srcdir)/libcc1.sym
-libcc1_la_SOURCES = findcomp.cc libcc1.cc names.cc names.hh $(shared_source)
+libcc1_la_SOURCES = findcomp.cc libcc1.cc libcp1.cc \
+		names.cc names.hh $(shared_source) \
+		$(marshall_c_source) $(marshall_cxx_source)
 libcc1_la_LIBADD = $(libiberty)
 libcc1_la_DEPENDENCIES = $(libiberty_dep)
 libcc1_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \

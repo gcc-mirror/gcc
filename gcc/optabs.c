@@ -6086,7 +6086,14 @@ expand_atomic_test_and_set (rtx target, rtx mem, enum memmodel model)
 rtx
 expand_atomic_exchange (rtx target, rtx mem, rtx val, enum memmodel model)
 {
+  machine_mode mode = GET_MODE (mem);
   rtx ret;
+
+  /* If loads are not atomic for the required size and we are not called to
+     provide a __sync builtin, do not do anything so that we stay consistent
+     with atomic loads of the same size.  */
+  if (!can_atomic_load_p (mode) && !is_mm_sync (model))
+    return NULL_RTX;
 
   ret = maybe_emit_atomic_exchange (target, mem, val, model);
 
@@ -6120,6 +6127,12 @@ expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
   enum insn_code icode;
   rtx target_oval, target_bool = NULL_RTX;
   rtx libfunc;
+
+  /* If loads are not atomic for the required size and we are not called to
+     provide a __sync builtin, do not do anything so that we stay consistent
+     with atomic loads of the same size.  */
+  if (!can_atomic_load_p (mode) && !is_mm_sync (succ_model))
+    return false;
 
   /* Load expected into a register for the compare and swap.  */
   if (MEM_P (expected))
@@ -6316,19 +6329,13 @@ expand_atomic_load (rtx target, rtx mem, enum memmodel model)
     }
 
   /* If the size of the object is greater than word size on this target,
-     then we assume that a load will not be atomic.  */
+     then we assume that a load will not be atomic.  We could try to
+     emulate a load with a compare-and-swap operation, but the store that
+     doing this could result in would be incorrect if this is a volatile
+     atomic load or targetting read-only-mapped memory.  */
   if (GET_MODE_PRECISION (mode) > BITS_PER_WORD)
-    {
-      /* Issue val = compare_and_swap (mem, 0, 0).
-	 This may cause the occasional harmless store of 0 when the value is
-	 already 0, but it seems to be OK according to the standards guys.  */
-      if (expand_atomic_compare_and_swap (NULL, &target, mem, const0_rtx,
-					  const0_rtx, false, model, model))
-	return target;
-      else
-      /* Otherwise there is no atomic load, leave the library call.  */
-        return NULL_RTX;
-    }
+    /* If there is no atomic load, leave the library call.  */
+    return NULL_RTX;
 
   /* Otherwise assume loads are atomic, and emit the proper barriers.  */
   if (!target || target == const0_rtx)
@@ -6370,7 +6377,9 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
 	return const0_rtx;
     }
 
-  /* If using __sync_lock_release is a viable alternative, try it.  */
+  /* If using __sync_lock_release is a viable alternative, try it.
+     Note that this will not be set to true if we are expanding a generic
+     __atomic_store_n.  */
   if (use_release)
     {
       icode = direct_optab_handler (sync_lock_release_optab, mode);
@@ -6389,16 +6398,22 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
     }
 
   /* If the size of the object is greater than word size on this target,
-     a default store will not be atomic, Try a mem_exchange and throw away
-     the result.  If that doesn't work, don't do anything.  */
+     a default store will not be atomic.  */
   if (GET_MODE_PRECISION (mode) > BITS_PER_WORD)
     {
-      rtx target = maybe_emit_atomic_exchange (NULL_RTX, mem, val, model);
-      if (!target)
-        target = maybe_emit_compare_and_swap_exchange_loop (NULL_RTX, mem, val);
-      if (target)
-        return const0_rtx;
-      else
+      /* If loads are atomic or we are called to provide a __sync builtin,
+	 we can try a atomic_exchange and throw away the result.  Otherwise,
+	 don't do anything so that we do not create an inconsistency between
+	 loads and stores.  */
+      if (can_atomic_load_p (mode) || is_mm_sync (model))
+	{
+	  rtx target = maybe_emit_atomic_exchange (NULL_RTX, mem, val, model);
+	  if (!target)
+	    target = maybe_emit_compare_and_swap_exchange_loop (NULL_RTX, mem,
+								val);
+	  if (target)
+	    return const0_rtx;
+	}
         return NULL_RTX;
     }
 
@@ -6712,6 +6727,12 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
   machine_mode mode = GET_MODE (mem);
   rtx result;
   bool unused_result = (target == const0_rtx);
+
+  /* If loads are not atomic for the required size and we are not called to
+     provide a __sync builtin, do not do anything so that we stay consistent
+     with atomic loads of the same size.  */
+  if (!can_atomic_load_p (mode) && !is_mm_sync (model))
+    return NULL_RTX;
 
   result = expand_atomic_fetch_op_no_fallback (target, mem, val, code, model,
 					       after);

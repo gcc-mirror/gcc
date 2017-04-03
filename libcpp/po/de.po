@@ -5,21 +5,22 @@
 # Roland Stigge <stigge@antcom.de>, 2003-2008, 2010, 2012-2013.
 # Mario Blättermann <mario.blaettermann@gmail.com>, 2014-2016.
 # Philipp Thomas <pth@suse.de>, 2016.
+# Roland Illig <roland.illig@gmx.de>, 2017.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 6.1.0\n"
+"Project-Id-Version: cpplib 7.1-b20170101\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2017-01-01 00:51+0000\n"
-"PO-Revision-Date: 2016-04-28 11:39+0200\n"
-"Last-Translator: Philipp Thomas <pth@suse.de>\n"
+"PO-Revision-Date: 2017-01-29 21:12+0100\n"
+"Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 1.8.6\n"
+"X-Generator: Poedit 1.8.11\n"
 
 #: charset.c:674
 #, c-format
@@ -141,7 +142,7 @@ msgstr "Escape-Sequenz wird in Zeichensatz der Ausführung konvertiert"
 
 #: charset.c:1614
 msgid "missing open quote"
-msgstr ""
+msgstr "Fehlendes öffnendes Anführungszeichen"
 
 #: charset.c:1827 charset.c:1891
 msgid "character constant too long for its type"
@@ -536,10 +537,9 @@ msgid "imaginary number in preprocessor expression"
 msgstr "imaginäre Zahl in Präprozessorausdruck"
 
 #: expr.c:1162
-#, fuzzy, c-format
-#| msgid "\"%s\" is not defined"
+#, c-format
 msgid "\"%s\" is not defined, evaluates to 0"
-msgstr "»%s« ist nicht definiert"
+msgstr "»%s« ist nicht definiert, wird zu 0 ausgewertet"
 
 #: expr.c:1175
 msgid "assertions are a GCC extension"

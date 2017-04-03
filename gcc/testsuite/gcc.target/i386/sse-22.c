@@ -50,7 +50,7 @@
   { return func (A, B, imm1, imm2, imm3); }
 
 #define test_2vx(func, op1_type, op2_type, imm1, imm2)     \
-  _CONCAT(_,func) (op1_type A, op2_type B, int const I, int const L) \
+  void _CONCAT(_,func) (op1_type A, op2_type B, int const I, int const L) \
   { func (A, B, imm1, imm2); }
 
 #define test_3(func, type, op1_type, op2_type, op3_type, imm)		\
@@ -74,7 +74,7 @@
   { func (A, B, C, imm); }
 
 #define test_3vx(func, op1_type, op2_type, op3_type, imm1, imm2)   \
-  int _CONCAT(_,func) (op1_type A, op2_type B,             	   \
+  void _CONCAT(_,func) (op1_type A, op2_type B,             	   \
 		       op3_type C, int const I, int const L)       \
   { func (A, B, C, imm1, imm2); }
 
@@ -647,11 +647,18 @@ test_4x (_mm_maskz_fixupimm_round_sd, __m128d, __mmask8, __m128d, __m128d, __m12
 test_4x (_mm_maskz_fixupimm_round_ss, __m128, __mmask8, __m128, __m128, __m128i, 1, 8)
 
 /* avx512pfintrin.h */
+test_2vx (_mm512_prefetch_i32gather_ps, __m512i, void const *, 1, _MM_HINT_T0)
+test_2vx (_mm512_prefetch_i32scatter_ps, void const *, __m512i, 1, _MM_HINT_T0)
+test_2vx (_mm512_prefetch_i64gather_ps, __m512i, void const *, 1, _MM_HINT_T0)
+test_2vx (_mm512_prefetch_i64scatter_ps, void const *, __m512i, 1, _MM_HINT_T0)
+test_2vx (_mm512_prefetch_i32gather_pd, __m256i, void const *, 1, _MM_HINT_T0)
+test_2vx (_mm512_prefetch_i32scatter_pd, void const *, __m256i, 1, _MM_HINT_T0)
+test_2vx (_mm512_prefetch_i64gather_pd, __m512i, long long *, 1, _MM_HINT_T0)
+test_2vx (_mm512_prefetch_i64scatter_pd, void const *, __m512i, 1, _MM_HINT_T0)
 test_3vx (_mm512_mask_prefetch_i32gather_ps, __m512i, __mmask16, void const *, 1, _MM_HINT_T0)
 test_3vx (_mm512_mask_prefetch_i32scatter_ps, void const *, __mmask16, __m512i, 1, _MM_HINT_T0)
 test_3vx (_mm512_mask_prefetch_i64gather_ps, __m512i, __mmask8, void const *, 1, _MM_HINT_T0)
 test_3vx (_mm512_mask_prefetch_i64scatter_ps, void const *, __mmask8, __m512i, 1, _MM_HINT_T0)
-
 test_3vx (_mm512_mask_prefetch_i32gather_pd, __m256i, __mmask8, void const *, 1, _MM_HINT_T0)
 test_3vx (_mm512_mask_prefetch_i32scatter_pd, void const *, __mmask8, __m256i, 1, _MM_HINT_T0)
 test_3vx (_mm512_mask_prefetch_i64gather_pd, __m512i, __mmask8, long long *, 1, _MM_HINT_T0)
@@ -700,7 +707,7 @@ test_2 (_mm_clmulepi64_si128, __m128i, __m128i, __m128i, 1)
 
 /* x86intrin.h (FMA4/XOP/LWP/BMI/BMI2/TBM/LZCNT/FMA). */
 #ifdef DIFFERENT_PRAGMAS
-#pragma GCC target ("fma4,xop,lwp,bmi,bmi2,tbm,lzcnt,fma,rdseed,prfchw,adx,fxsr,xsaveopt,xsavec,xsaves,clflushopt,clwb,pku,sgx")
+#pragma GCC target ("fma4,xop,lwp,bmi,bmi2,tbm,lzcnt,fma,rdseed,prfchw,adx,fxsr,xsaveopt,xsavec,xsaves,clflushopt,clwb,pku,sgx,rdpid")
 #endif
 #include <x86intrin.h>
 /* xopintrin.h */

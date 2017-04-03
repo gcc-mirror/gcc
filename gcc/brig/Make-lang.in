@@ -1,0 +1,247 @@
+# Make-lang.in -- Top level -*- makefile -*- fragment for gcc BRIG (HSAIL)
+# frontend.
+
+# Copyright (C) 2015-2017 Free Software Foundation, Inc.
+
+# This file is part of GCC.
+
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file provides the language dependent support in the main Makefile.
+
+# Installation name.
+
+GCCBRIG_INSTALL_NAME := $(shell echo gccbrig|sed '$(program_transform_name)')
+GCCBRIG_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gccbrig|sed \
+	'$(program_transform_name)')
+
+# The name for selecting brig in LANGUAGES.
+brig: brig1$(exeext)
+
+.PHONY: brig
+
+CFLAGS-brig/brigspec.o += $(DRIVER_DEFINES)
+
+GCCBRIG_OBJS = $(GCC_OBJS) brig/brigspec.o
+gccbrig$(exeext): $(GCCBRIG_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
+	$(LIBDEPS)
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	  $(GCCBRIG_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
+	  $(EXTRA_GCC_LIBS) $(LIBS)
+
+# The cross-compiler version.  This is built mainly as a signal to the
+# brig.install-common target.  If this executable exists, it means that
+# brig.all.cross was run.
+gccbrig-cross$(exeext): gccbrig$(exeext)
+	-rm -f gccbrig-cross$(exeext)
+	cp gccbrig$(exeext) gccbrig-cross$(exeext)
+
+# Use strict warnings.
+brig-warn = $(STRICT_WARN)
+
+BRIG_OBJS = \
+	brig/brig-lang.o \
+	brig/brig-code-entry-handler.o \
+	brig/brig-function-handler.o \
+	brig/brig-variable-handler.o \
+	brig/brig-fbarrier-handler.o \
+	brig/brig-label-handler.o \
+	brig/brig-comment-handler.o \
+	brig/brig-basic-inst-handler.o \
+	brig/brig-cvt-inst-handler.o \
+	brig/brig-seg-inst-handler.o \
+	brig/brig-lane-inst-handler.o \
+	brig/brig-queue-inst-handler.o \
+	brig/brig-copy-move-inst-handler.o \
+	brig/brig-signal-inst-handler.o \
+	brig/brig-atomic-inst-handler.o \
+	brig/brig-arg-block-handler.o \
+	brig/brig-control-handler.o \
+	brig/brig-cmp-inst-handler.o \
+	brig/brig-branch-inst-handler.o \
+	brig/brig-mem-inst-handler.o \
+	brig/brig-module-handler.o \
+	brig/brig-inst-mod-handler.o \
+	brig/brig-function.o \
+	brig/brig-to-generic.o \
+	brig/brig-machine.o \
+	brig/brig-util.o
+
+brig_OBJS = $(BRIG_OBJS) brig/brigspec.o
+
+# brig1$(exeext): $(BRIG_OBJS) attribs.o $(BACKEND) $(LIBDEPS)
+# 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+# 	      $(BRIG_OBJS) attribs.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
+
+
+brig1$(exeext): $(BRIG_OBJS) attribs.o $(BACKEND) $(LIBDEPS)
+	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	      $(BRIG_OBJS) attribs.o $(BACKEND) $(LIBS) \
+		  $(BACKENDLIBS)
+
+# Documentation.
+
+GO_TEXI_FILES = \
+	brig/gccbrig.texi \
+	$(gcc_docdir)/include/fdl.texi \
+	$(gcc_docdir)/include/gpl_v3.texi \
+	$(gcc_docdir)/include/gcc-common.texi \
+	gcc-vers.texi
+
+# doc/gccbrig.info: $(BRIG_TEXI_FILES)
+# 	if test "x$(BUILD_INFO)" = xinfo; then \
+# 	  rm -f doc/gccbrig.info*; \
+# 	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(gcc_docdir) \
+# 		-I $(gcc_docdir)/include -o $@ $<; \
+# 	else true; fi
+
+# doc/gccbrig.dvi: $(BRIG_TEXI_FILES)
+# 	$(TEXI2DVI) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
+
+# doc/gccbrig.pdf: $(BRIG_TEXI_FILES)
+# 	$(TEXI2PDF) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
+
+$(build_htmldir)/brig/index.html: $(BRIG_TEXI_FILES)
+	$(mkinstalldirs) $(@D)
+	rm -f $(@D)/*
+	$(TEXI2HTML) -I $(gcc_docdir) -I $(gcc_docdir)/include \
+		-I $(srcdir)/brig -o $(@D) $<
+
+# Build hooks.
+
+brig.all.cross: gccbrig-cross$(exeext)
+brig.start.encap: gccbrig$(exeext)
+brig.rest.encap:
+#brig.info: doc/gccbrig.info
+brig.info:
+brig.dvi: doc/gccbrig.dvi
+brig.pdf: doc/gccbrig.pdf
+brig.html: $(build_htmldir)/brig/index.html
+brig.srcinfo: #doc/gccbrig.info
+#	-cp -p $^ $(srcdir)/doc
+
+brig.srcextra:
+brig.tags: force
+	cd $(srcdir)/brig; \
+	etags -o TAGS.sub *.c *.h; \
+	etags --include TAGS.sub --include ../TAGS.sub
+brig.man:
+
+#brig.srcman: doc/gccbrig.1
+#	-cp -p $^ $(srcdir)/doc
+
+lang_checks += check-brig
+
+# Install hooks.
+
+brig.install-common: installdirs
+	-rm -f $(DESTDIR)$(bindir)/$(GCCBRIG_INSTALL_NAME)$(exeext)
+	$(INSTALL_PROGRAM) gccbrig$(exeext) \
+	$(DESTDIR)$(bindir)/$(GCCBRIG_INSTALL_NAME)$(exeext)
+	-if test -f brig1$(exeext); then \
+	  if test -f gccbrig-cross$(exeext); then \
+	    :; \
+	  else \
+	    rm -f $(DESTDIR)$(bindir)/$(GCCBRIG_TARGET_INSTALL_NAME)$(exeext); \
+	    ( cd $(DESTDIR)$(bindir) && \
+	      $(LN) $(GCCBRIG_INSTALL_NAME)$(exeext) \
+	      $(GCCBRIG_TARGET_INSTALL_NAME)$(exeext) ); \
+	  fi; \
+	fi
+
+brig.install-plugin:
+
+brig.install-info: #$(DESTDIR)$(infodir)/gccbrig.info
+
+brig.install-pdf: doc/gccbrig.pdf
+	@$(NORMAL_INSTALL)
+	test -z "$(pdfdir)" || $(mkinstalldirs) "$(DESTDIR)$(pdfdir)/gcc"
+	@for p in doc/gccbrig.pdf; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(pdf__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(pdfdir)/gcc/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
+	done
+
+brig.install-html: $(build_htmldir)/brig
+	@$(NORMAL_INSTALL)
+	test -z "$(htmldir)" || $(mkinstalldirs) "$(DESTDIR)$(htmldir)"
+	@for p in $(build_htmldir)/brig; do \
+	  if test -f "$$p" || test -d "$$p"; then d=""; else d="$(srcdir)/"; \
+	  fi; \
+	  f=$(html__strip_dir) \
+	  if test -d "$$d$$p"; then \
+	    echo " $(mkinstalldirs) '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(mkinstalldirs) "$(DESTDIR)$(htmldir)/$$f" || exit 1; \
+	    echo " $(INSTALL_DATA) '$$d$$p'/* '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p"/* "$(DESTDIR)$(htmldir)/$$f"; \
+	  else \
+	    echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(htmldir)/$$f"; \
+	  fi; \
+	done
+
+brig.install-man: #$(DESTDIR)$(man1dir)/$(GCCBRIG_INSTALL_NAME)$(man1ext)
+
+#$(DESTDIR)$(man1dir)/$(GCCBRIG_INSTALL_NAME)$(man1ext): doc/gccbrig.1 \
+#	installdirs
+#	-rm -f $@
+#	-$(INSTALL_DATA) $< $@
+#	-chmod a-x $@
+
+brig.uninstall:
+	rm -rf $(DESTDIR)$(bindir)/$(GCCBRIG_INSTALL_NAME)$(exeext)
+	rm -rf $(DESTDIR)$(man1dir)/$(GCCBRIG_INSTALL_NAME)$(man1ext)
+	rm -rf $(DESTDIR)$(bindir)/$(GCCBRIG_TARGET_INSTALL_NAME)$(exeext)
+	rm -rf $(DESTDIR)$(infodir)/gccbrig.info*
+
+# Clean hooks.
+
+brig.mostlyclean:
+	-rm -f brig/*$(objext)
+	-rm -f brig/*$(coverageexts)
+brig.clean:
+brig.distclean:
+brig.maintainer-clean:
+	-rm -f $(docobjdir)/gccbrig.1
+
+# Stage hooks.
+
+brig.stage1: stage1-start
+	-mv brig/*$(objext) stage1/brig
+brig.stage2: stage2-start
+	-mv brig/*$(objext) stage2/brig
+brig.stage3: stage3-start
+	-mv brig/*$(objext) stage3/brig
+brig.stage4: stage4-start
+	-mv brig/*$(objext) stage4/brig
+brig.stageprofile: stageprofile-start
+	-mv brig/*$(objext) stageprofile/brig
+brig.stagefeedback: stagefeedback-start
+	-mv brig/*$(objext) stagefeedback/brig
+
+CFLAGS-brig/brig-lang.o += -DDEFAULT_TARGET_VERSION=\"$(version)\" \
+	-DDEFAULT_TARGET_MACHINE=\"$(target_noncanonical)\"
+
+BRIGINCLUDES = -I $(srcdir)/brig -I ${HOME}/local/include \
+	-I $(srcdir)/brig/brigfrontend
+
+brig/brig-machine.o: brig/brigfrontend/brig-machine.c
+	$(COMPILE) $(BRIGINCLUDES) $<
+	$(POSTCOMPILE)
+
+brig/%.o: brig/brigfrontend/%.cc
+	$(COMPILE) $(BRIGINCLUDES) $<
+	$(POSTCOMPILE)

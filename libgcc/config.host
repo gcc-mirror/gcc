@@ -167,6 +167,9 @@ powerpc*-*-*)
 	;;
 rs6000*-*-*)
 	;;
+riscv*-*-*)
+	cpu_type=riscv
+	;;
 sparc64*-*-*)
 	cpu_type=sparc
 	;;
@@ -337,7 +340,7 @@ aarch64*-*-freebsd*)
 	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
-	md_unwind_header=aarch64/aarch64-unwind.h
+	md_unwind_header=aarch64/freebsd-unwind.h
 	;;
 aarch64*-*-linux*)
 	extra_parts="$extra_parts crtfastmath.o"
@@ -1093,6 +1096,15 @@ powerpcle-*-eabi*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
 	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	;;
+riscv*-*-linux*)
+	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address}"
+	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
+	md_unwind_header=riscv/linux-unwind.h
+	;;
+riscv*-*-*)
+	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address}"
+	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o"
+	;;
 rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 	md_unwind_header=rs6000/aix-unwind.h
 	tmake_file="t-fdpbit rs6000/t-ppc64-fp rs6000/t-slibgcc-aix rs6000/t-ibm-ldouble"
@@ -1366,5 +1378,9 @@ i[34567]86-*-linux* | x86_64-*-linux*)
 		tmake_file="${tmake_file} i386/${host_address}/t-softfp-compat"
 	fi
 	tm_file="${tm_file} i386/value-unwind.h"
+	;;
+aarch64*-*-*)
+	# ILP32 needs an extra header for unwinding
+	tm_file="${tm_file} aarch64/value-unwind.h"
 	;;
 esac

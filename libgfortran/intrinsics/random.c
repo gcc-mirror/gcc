@@ -304,7 +304,7 @@ static int
 getosrandom (void *buf, size_t buflen)
 {
   /* rand_s is available in MinGW-w64 but not plain MinGW.  */
-#ifdef __MINGW64_VERSION_MAJOR
+#if defined(__MINGW64_VERSION_MAJOR)
   unsigned int* b = buf;
   for (unsigned i = 0; i < buflen / sizeof (unsigned int); i++)
     rand_s (&b[i]);

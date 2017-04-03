@@ -968,6 +968,11 @@ proc check_effective_target_setrlimit {} {
     return [check_function_available "setrlimit"]
 }
 
+# Return 1 if the target supports gettimeofday, 0 otherwise.
+proc check_effective_target_gettimeofday {} {
+    return [check_function_available "gettimeofday"]
+}
+
 # Return 1 if the target supports swapcontext, 0 otherwise.
 proc check_effective_target_swapcontext {} {
     return [check_no_compiler_messages swapcontext executable {
@@ -1482,6 +1487,14 @@ proc check_effective_target_static_libgfortran { } {
 	print *, 'test'
 	end
     } "-static"]
+}
+
+# Return 1 if we can use the -rdynamic option, 0 otherwise.
+
+proc check_effective_target_rdynamic { } {
+  return [check_no_compiler_messages rdynamic executable {
+     int main() { return 0; }
+  } "-rdynamic"]
 }
 
 # Return 1 if cilk-plus is supported by the target, 0 otherwise.
@@ -2197,36 +2210,34 @@ proc check_effective_target_powerpc64 { } {
 
 # GCC 3.4.0 for powerpc64-*-linux* included an ABI fix for passing
 # complex float arguments.  This affects gfortran tests that call cabsf
-# in libm built by an earlier compiler.  Return 1 if libm uses the same
-# argument passing as the compiler under test, 0 otherwise.
-#
-# When the target name changes, replace the cached result.
+# in libm built by an earlier compiler.  Return 0 if libm uses the same
+# argument passing as the compiler under test, 1 otherwise.
 
 proc check_effective_target_broken_cplxf_arg { } {
+    # Skip the work for targets known not to be affected.
+    if { ![istarget powerpc*-*-linux*] || ![is-effective-target lp64] } {
+	return 0
+    }
+
     return [check_cached_effective_target broken_cplxf_arg {
-	# Skip the work for targets known not to be affected.
-	if { ![istarget powerpc64-*-linux*] } {
-	    expr 0
-	} elseif { ![is-effective-target lp64] } {
-	    expr 0
-	} else {
-	    check_runtime_nocache broken_cplxf_arg {
-		#include <complex.h>
-		extern void abort (void);
-		float fabsf (float);
-		float cabsf (_Complex float);
-		int main ()
-		{
-		  _Complex float cf;
-		  float f;
-		  cf = 3 + 4.0fi;
-		  f = cabsf (cf);
-		  if (fabsf (f - 5.0) > 0.0001)
-		    abort ();
-		  return 0;
-		}
-	    } "-lm"
-	}
+	check_runtime_nocache broken_cplxf_arg {
+	    #include <complex.h>
+	    extern void abort (void);
+	    float fabsf (float);
+	    float cabsf (_Complex float);
+	    int main ()
+	    {
+	      _Complex float cf;
+	      float f;
+	      cf = 3 + 4.0fi;
+	      f = cabsf (cf);
+	      if (fabsf (f - 5.0) > 0.0001)
+		/* Yes, it's broken.  */
+		return 0;
+	      /* All fine, not broken.  */
+	      return 1;
+	    }
+	} "-lm"
     }]
 }
 
@@ -6514,9 +6525,7 @@ proc check_effective_target_section_anchors { } {
 # Return 1 if the target supports atomic operations on "int_128" values.
 
 proc check_effective_target_sync_int_128 { } {
-    if { (([istarget i?86-*-*] || [istarget x86_64-*-*])
-	  && ![is-effective-target ia32])
-	 || [istarget spu-*-*] } {
+    if { [istarget spu-*-*] } {
 	return 1
     } else {
 	return 0
@@ -6525,23 +6534,10 @@ proc check_effective_target_sync_int_128 { } {
 
 # Return 1 if the target supports atomic operations on "int_128" values
 # and can execute them.
+# This requires support for both compare-and-swap and true atomic loads.
 
 proc check_effective_target_sync_int_128_runtime { } {
-    if { (([istarget i?86-*-*] || [istarget x86_64-*-*])
-	  && ![is-effective-target ia32]
-	  && [check_cached_effective_target sync_int_128_available {
-	      check_runtime_nocache sync_int_128_available {
-		  #include "cpuid.h"
-		  int main ()
-		  {
-		      unsigned int eax, ebx, ecx, edx;
-		      if (__get_cpuid (1, &eax, &ebx, &ecx, &edx))
-			return !(ecx & bit_CMPXCHG16B);
-		      return 1;
-		  }
-	      } ""
-	  }])
-	 || [istarget spu-*-*] } {
+    if { [istarget spu-*-*] } {
 	return 1
     } else {
 	return 0
@@ -7986,6 +7982,7 @@ proc check_effective_target_logical_op_short_circuit {} {
 	 || [istarget s390*-*-*]
 	 || [istarget powerpc*-*-*]
 	 || [istarget nios2*-*-*]
+	 || [istarget riscv*-*-*]
 	 || [istarget visium-*-*]
 	 || [check_effective_target_arm_cortex_m] } {
 	return 1
@@ -8210,6 +8207,41 @@ proc check_effective_target_profile_update_atomic {} {
     return [check_no_compiler_messages profile_update_atomic assembly {
 	int main (void) { return 0; }
     } "-fprofile-update=atomic -fprofile-generate"]
+}
+
+# Return 1 if vector (va - vector add) instructions are understood by
+# the assembler and can be executed.  This also covers checking for
+# the VX kernel feature.  A kernel without that feature does not
+# enable the vector facility and the following check will die with a
+# signal.
+proc check_effective_target_s390_vx { } {
+    if ![istarget s390*-*-*] then {
+	return 0;
+    }
+
+    return [check_runtime s390_check_vx {
+	int main (void)
+	{
+	    asm ("va %%v24, %%v26, %%v28, 3" : : : "v24", "v26", "v28");
+	    return 0;
+	}
+    } "-march=z13 -mzarch" ]
+}
+
+# Same as above but for the arch12 vector enhancement facility. Test
+# is performed with the vector nand instruction.
+proc check_effective_target_s390_vxe { } {
+    if ![istarget s390*-*-*] then {
+	return 0;
+    }
+
+    return [check_runtime s390_check_vxe {
+	int main (void)
+	{
+	    asm ("vnn %%v24, %%v26, %%v28" : : : "v24", "v26", "v28");
+	    return 0;
+	}
+    } "-march=arch12 -mzarch" ]
 }
 
 #For versions of ARM architectures that have hardware div insn,

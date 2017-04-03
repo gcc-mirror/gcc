@@ -410,20 +410,26 @@
   "All one bit scalar or vector constant"
   (match_test "op == CONSTM1_RTX (GET_MODE (op))"))
 
+; vector generate mask operand - support for up to 64 bit elements
 (define_constraint "jxx"
   "@internal"
   (and (match_code "const_vector")
        (match_test "s390_contiguous_bitmask_vector_p (op, NULL, NULL)")))
 
+; vector generate byte mask operand - this is only supposed to deal
+; with real vectors 128 bit values of being either 0 or -1 are handled
+; with j00 and jm1
 (define_constraint "jyy"
   "@internal"
   (and (match_code "const_vector")
        (match_test "s390_bytemask_vector_p (op, NULL)")))
 
+; vector replicate immediate operand - support for up to 64 bit elements
 (define_constraint "jKK"
   "@internal"
-  (and (and (match_code "const_vector")
-	    (match_test "const_vec_duplicate_p (op)"))
+  (and (and (and (match_code "const_vector")
+		 (match_test "const_vec_duplicate_p (op)"))
+	    (match_test "GET_MODE_UNIT_SIZE (GET_MODE (op)) <= 8"))
        (match_test "satisfies_constraint_K (XVECEXP (op, 0, 0))")))
 
 (define_constraint "jm6"

@@ -581,7 +581,7 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #define HAVE_DESIGNATED_INITIALIZERS 0
 #else
 #define HAVE_DESIGNATED_INITIALIZERS \
-  (((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
+  ((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
 #endif
 #endif
 
@@ -590,7 +590,7 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #define HAVE_DESIGNATED_UNION_INITIALIZERS (GCC_VERSION >= 4007)
 #else
 #define HAVE_DESIGNATED_UNION_INITIALIZERS \
-  (((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
+  ((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
 #endif
 #endif
 

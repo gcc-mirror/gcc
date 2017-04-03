@@ -674,6 +674,24 @@ gfc_trans_stop (gfc_code *code, bool error_stop)
   return gfc_finish_block (&se.pre);
 }
 
+/* Translate the FAIL IMAGE statement.  */
+
+tree
+gfc_trans_fail_image (gfc_code *code ATTRIBUTE_UNUSED)
+{
+  if (flag_coarray == GFC_FCOARRAY_LIB)
+    return build_call_expr_loc (input_location,
+				gfor_fndecl_caf_fail_image, 1,
+				build_int_cst (pchar_type_node, 0));
+  else
+    {
+      const char *name = gfc_get_string (PREFIX ("exit_i%d"), 4);
+      gfc_symbol *exsym = gfc_get_intrinsic_sub_symbol (name);
+      tree tmp = gfc_get_symbol_decl (exsym);
+      return build_call_expr_loc (input_location, tmp, 1, integer_zero_node);
+    }
+}
+
 
 tree
 gfc_trans_lock_unlock (gfc_code *code, gfc_exec_op op)
@@ -5572,7 +5590,8 @@ gfc_trans_allocate (gfc_code * code)
      expression.  */
   if (code->expr3)
     {
-      bool vtab_needed = false, temp_var_needed = false;
+      bool vtab_needed = false, temp_var_needed = false,
+	  temp_obj_created = false;
 
       is_coarray = gfc_is_coarray (code->expr3);
 
@@ -5645,7 +5664,7 @@ gfc_trans_allocate (gfc_code * code)
 				     code->expr3->ts,
 				     false, true,
 				     false, false);
-	  temp_var_needed = !VAR_P (se.expr);
+	  temp_obj_created = temp_var_needed = !VAR_P (se.expr);
 	}
       gfc_add_block_to_block (&block, &se.pre);
       gfc_add_block_to_block (&post, &se.post);
@@ -5714,11 +5733,12 @@ gfc_trans_allocate (gfc_code * code)
 	}
 
       /* Deallocate any allocatable components in expressions that use a
-	 temporary, i.e. are not of expr-type EXPR_VARIABLE or force the
-	 use of a temporary, after the assignment of expr3 is completed.  */
+	 temporary object, i.e. are not a simple alias of to an EXPR_VARIABLE.
+	 E.g. temporaries of a function call need freeing of their components
+	 here.  */
       if ((code->expr3->ts.type == BT_DERIVED
 	   || code->expr3->ts.type == BT_CLASS)
-	  && (code->expr3->expr_type != EXPR_VARIABLE || temp_var_needed)
+	  && (code->expr3->expr_type != EXPR_VARIABLE || temp_obj_created)
 	  && code->expr3->ts.u.derived->attr.alloc_comp)
 	{
 	  tmp = gfc_deallocate_alloc_comp (code->expr3->ts.u.derived,
@@ -6009,14 +6029,21 @@ gfc_trans_allocate (gfc_code * code)
 	 needs to be provided, which is done most of the time by the
 	 pre-evaluation step.  */
       nelems = NULL_TREE;
-      if (expr3_len && code->expr3->ts.type == BT_CHARACTER)
-	/* When al is an array, then the element size for each element
-	   in the array is needed, which is the product of the len and
-	   esize for char arrays.  */
-	tmp = fold_build2_loc (input_location, MULT_EXPR,
-			       TREE_TYPE (expr3_esize), expr3_esize,
-			       fold_convert (TREE_TYPE (expr3_esize),
-					     expr3_len));
+      if (expr3_len && (code->expr3->ts.type == BT_CHARACTER
+			|| code->expr3->ts.type == BT_CLASS))
+	{
+	  /* When al is an array, then the element size for each element
+	     in the array is needed, which is the product of the len and
+	     esize for char arrays.  For unlimited polymorphics len can be
+	     zero, therefore take the maximum of len and one.  */
+	  tmp = fold_build2_loc (input_location, MAX_EXPR,
+				 TREE_TYPE (expr3_len),
+				 expr3_len, fold_convert (TREE_TYPE (expr3_len),
+							  integer_one_node));
+	  tmp = fold_build2_loc (input_location, MULT_EXPR,
+				 TREE_TYPE (expr3_esize), expr3_esize,
+				 fold_convert (TREE_TYPE (expr3_esize), tmp));
+	}
       else
 	tmp = expr3_esize;
       if (!gfc_array_allocate (&se, expr, stat, errmsg, errlen,

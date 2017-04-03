@@ -403,6 +403,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__inline",		RID_INLINE,	0 },
   { "__inline__",	RID_INLINE,	0 },
   { "__is_abstract",	RID_IS_ABSTRACT, D_CXXONLY },
+  { "__is_aggregate",	RID_IS_AGGREGATE, D_CXXONLY },
   { "__is_base_of",	RID_IS_BASE_OF, D_CXXONLY },
   { "__is_class",	RID_IS_CLASS,	D_CXXONLY },
   { "__is_empty",	RID_IS_EMPTY,	D_CXXONLY },
@@ -437,6 +438,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__volatile__",	RID_VOLATILE,	0 },
   { "__GIMPLE",		RID_GIMPLE,	D_CONLY },
   { "__PHI",		RID_PHI,	D_CONLY },
+  { "__RTL",		RID_RTL,	D_CONLY },
   { "alignas",		RID_ALIGNAS,	D_CXXONLY | D_CXX11 | D_CXXWARN },
   { "alignof",		RID_ALIGNOF,	D_CXXONLY | D_CXX11 | D_CXXWARN },
   { "asm",		RID_ASM,	D_ASM },
@@ -5367,6 +5369,49 @@ check_function_sentinel (const_tree fntype, int nargs, tree *argarray)
     }
 }
 
+/* Check that the same argument isn't passed to restrict arguments
+   and other arguments.  */
+
+static void
+check_function_restrict (const_tree fndecl, const_tree fntype,
+			 int nargs, tree *argarray)
+{
+  int i;
+  tree parms;
+
+  if (fndecl
+      && TREE_CODE (fndecl) == FUNCTION_DECL
+      && DECL_ARGUMENTS (fndecl))
+    parms = DECL_ARGUMENTS (fndecl);
+  else
+    parms = TYPE_ARG_TYPES (fntype);
+
+  for (i = 0; i < nargs; i++)
+    TREE_VISITED (argarray[i]) = 0;
+
+  for (i = 0; i < nargs && parms && parms != void_list_node; i++)
+    {
+      tree type;
+      if (TREE_CODE (parms) == PARM_DECL)
+	{
+	  type = TREE_TYPE (parms);
+	  parms = DECL_CHAIN (parms);
+	}
+      else
+	{
+	  type = TREE_VALUE (parms);
+	  parms = TREE_CHAIN (parms);
+	}
+      if (POINTER_TYPE_P (type)
+	  && TYPE_RESTRICT (type)
+	  && !TYPE_READONLY (TREE_TYPE (type)))
+	warn_for_restrict (i, argarray, nargs);
+    }
+
+  for (i = 0; i < nargs; i++)
+    TREE_VISITED (argarray[i]) = 0;
+}
+
 /* Helper for check_function_nonnull; given a list of operands which
    must be non-null in ARGS, determine if operand PARAM_NUM should be
    checked.  */
@@ -5608,8 +5653,8 @@ attribute_fallthrough_p (tree attr)
    There are NARGS arguments in the array ARGARRAY.  LOC should be used for
    diagnostics.  Return true if -Wnonnull warning has been diagnosed.  */
 bool
-check_function_arguments (location_t loc, const_tree fntype, int nargs,
-			  tree *argarray)
+check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
+			  int nargs, tree *argarray)
 {
   bool warned_p = false;
 
@@ -5627,6 +5672,9 @@ check_function_arguments (location_t loc, const_tree fntype, int nargs,
 
   if (warn_format)
     check_function_sentinel (fntype, nargs, argarray);
+
+  if (warn_restrict)
+    check_function_restrict (fndecl, fntype, nargs, argarray);
   return warned_p;
 }
 
@@ -6488,13 +6536,16 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 void 
 c_common_mark_addressable_vec (tree t)
 {   
+  if (TREE_CODE (t) == C_MAYBE_CONST_EXPR)
+    t = C_MAYBE_CONST_EXPR_EXPR (t);
   while (handled_component_p (t))
     t = TREE_OPERAND (t, 0);
   if (!VAR_P (t)
       && TREE_CODE (t) != PARM_DECL
       && TREE_CODE (t) != COMPOUND_LITERAL_EXPR)
     return;
-  TREE_ADDRESSABLE (t) = 1;
+  if (!VAR_P (t) || !DECL_HARD_REGISTER (t))
+    TREE_ADDRESSABLE (t) = 1;
 }
 
 
@@ -7428,7 +7479,12 @@ set_underlying_type (tree x)
       tt = build_variant_type_copy (tt);
       TYPE_STUB_DECL (tt) = TYPE_STUB_DECL (DECL_ORIGINAL_TYPE (x));
       TYPE_NAME (tt) = x;
-      TREE_USED (tt) = TREE_USED (x);
+
+      /* Mark the type as used only when its type decl is decorated
+	 with attribute unused.  */
+      if (lookup_attribute ("unused", DECL_ATTRIBUTES (x)))
+	TREE_USED (tt) = 1;
+
       TREE_TYPE (x) = tt;
     }
 }

@@ -1840,6 +1840,13 @@ add_functions (void)
 	     a, BT_UNKNOWN, 0, REQUIRED,
 	     mo, BT_UNKNOWN, 0, REQUIRED);
 
+  add_sym_2 ("failed_images", GFC_ISYM_FAILED_IMAGES, CLASS_TRANSFORMATIONAL,
+	     ACTUAL_NO, BT_INTEGER, dd, GFC_STD_F2008_TS,
+	     gfc_check_failed_or_stopped_images,
+	     gfc_simplify_failed_or_stopped_images,
+	     gfc_resolve_failed_images, "team", BT_VOID, di, OPTIONAL,
+	     "kind", BT_INTEGER, di, OPTIONAL);
+
   add_sym_0 ("fdate",  GFC_ISYM_FDATE, CLASS_IMPURE, ACTUAL_NO, BT_CHARACTER,
 	     dc, GFC_STD_GNU, NULL, NULL, gfc_resolve_fdate);
 
@@ -2080,6 +2087,11 @@ add_functions (void)
   add_sym_2 ("image_index", GFC_ISYM_IMAGE_INDEX, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2008,
 	     gfc_check_image_index, gfc_simplify_image_index, gfc_resolve_image_index,
 	     ca, BT_REAL, dr, REQUIRED, sub, BT_INTEGER, ii, REQUIRED);
+
+  add_sym_2 ("image_status", GFC_ISYM_IMAGE_STATUS, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F2008_TS, gfc_check_image_status,
+	     gfc_simplify_image_status, gfc_resolve_image_status, "image",
+	     BT_INTEGER, di, REQUIRED, "team", BT_VOID, di, OPTIONAL);
 
   /* The resolution function for INDEX is called gfc_resolve_index_func
      because the name gfc_resolve_index is already used in resolve.c.  */
@@ -2988,6 +3000,13 @@ add_functions (void)
 		    vl, BT_INTEGER, di, REQUIRED, INTENT_OUT);
 
   make_generic ("stat", GFC_ISYM_STAT, GFC_STD_GNU);
+
+  add_sym_2 ("stopped_images", GFC_ISYM_STOPPED_IMAGES, CLASS_TRANSFORMATIONAL,
+	     ACTUAL_NO, BT_INTEGER, dd, GFC_STD_F2008_TS,
+	     gfc_check_failed_or_stopped_images,
+	     gfc_simplify_failed_or_stopped_images,
+	     gfc_resolve_stopped_images, "team", BT_VOID, di, OPTIONAL,
+	     "kind", BT_INTEGER, di, OPTIONAL);
 
   add_sym_2 ("storage_size", GFC_ISYM_STORAGE_SIZE, CLASS_INQUIRY, ACTUAL_NO,
 	     BT_INTEGER, di, GFC_STD_F2008,
@@ -4678,6 +4697,27 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
       if (!error_flag)
 	gfc_pop_suppress_errors ();
       return MATCH_ERROR;
+    }
+
+  /* F95, 7.1.6.1: Only transformational functions REPEAT, RESHAPE,
+     SELECTED_INT_KIND, SELECTED_REAL_KIND, TRANSFER, and TRIM are allowed in
+     initialization expressions.  */
+
+  if (gfc_init_expr_flag && isym->transformational)
+    {
+      gfc_isym_id id = isym->id;
+      if (id != GFC_ISYM_REPEAT && id != GFC_ISYM_RESHAPE
+	  && id != GFC_ISYM_SI_KIND && id != GFC_ISYM_SR_KIND
+	  && id != GFC_ISYM_TRANSFER && id != GFC_ISYM_TRIM
+	  && !gfc_notify_std (GFC_STD_F2003, "Transformational function %qs "
+			      "at %L is invalid in an initialization "
+			      "expression", name, &expr->where))
+	{
+	  if (!error_flag)
+	    gfc_pop_suppress_errors ();
+
+	  return MATCH_ERROR;
+	}
     }
 
   gfc_current_intrinsic_where = &expr->where;

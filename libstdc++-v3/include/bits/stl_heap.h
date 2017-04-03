@@ -100,7 +100,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     __is_heap(_RandomAccessIterator __first, _Compare __comp, _Distance __n)
     {
-      __gnu_cxx::__ops::_Iter_comp_iter<_Compare> __cmp(_GLIBCXX_MOVE(__comp));
+      typedef __decltype(__comp) _Cmp;
+      __gnu_cxx::__ops::_Iter_comp_iter<_Cmp> __cmp(_GLIBCXX_MOVE(__comp));
       return std::__is_heap_until(__first, __n, __cmp) == __n;
     }
 
@@ -313,8 +314,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       if (__last - __first > 1)
 	{
-	  using __gnu_cxx::__ops::_Iter_comp_iter;
-	  _Iter_comp_iter<_Compare> __cmp(_GLIBCXX_MOVE(__comp));
+	  typedef __decltype(__comp) _Cmp;
+	  __gnu_cxx::__ops::_Iter_comp_iter<_Cmp> __cmp(_GLIBCXX_MOVE(__comp));
 	  --__last;
 	  std::__pop_heap(__first, __last, __last, __cmp);
 	}
@@ -391,7 +392,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_requires_valid_range(__first, __last);
       __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
 
-      __gnu_cxx::__ops::_Iter_comp_iter<_Compare> __cmp(_GLIBCXX_MOVE(__comp));
+      typedef __decltype(__comp) _Cmp;
+      __gnu_cxx::__ops::_Iter_comp_iter<_Cmp> __cmp(_GLIBCXX_MOVE(__comp));
       std::__make_heap(__first, __last, __cmp);
     }
 
@@ -454,7 +456,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
       __glibcxx_requires_heap_pred(__first, __last, __comp);
 
-      __gnu_cxx::__ops::_Iter_comp_iter<_Compare> __cmp(_GLIBCXX_MOVE(__comp));
+      typedef __decltype(__comp) _Cmp;
+      __gnu_cxx::__ops::_Iter_comp_iter<_Cmp> __cmp(_GLIBCXX_MOVE(__comp));
       std::__sort_heap(__first, __last, __cmp);
     }
 
@@ -508,7 +511,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_requires_valid_range(__first, __last);
       __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
 
-      __gnu_cxx::__ops::_Iter_comp_iter<_Compare> __cmp(_GLIBCXX_MOVE(__comp));
+      typedef __decltype(__comp) _Cmp;
+      __gnu_cxx::__ops::_Iter_comp_iter<_Cmp> __cmp(_GLIBCXX_MOVE(__comp));
       return __first
 	+ std::__is_heap_until(__first, std::distance(__first, __last), __cmp);
     }
@@ -545,7 +549,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_requires_irreflexive_pred(__first, __last, __comp);
 
       const auto __dist = std::distance(__first, __last);
-      __gnu_cxx::__ops::_Iter_comp_iter<_Compare> __cmp(_GLIBCXX_MOVE(__comp));
+      typedef __decltype(__comp) _Cmp;
+      __gnu_cxx::__ops::_Iter_comp_iter<_Cmp> __cmp(_GLIBCXX_MOVE(__comp));
       return std::__is_heap_until(__first, __dist, __cmp) == __dist;
     }
 #endif

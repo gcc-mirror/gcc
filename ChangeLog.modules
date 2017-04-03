@@ -1,5 +1,13 @@
 2017-04-03  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r246647.
+	gcc/cp/
+	* pt.c (): Adjust guiding decl code.
+	libcc1/
+	* libcp1plugin.cc (safe_pushdecl_maybe_friend): Adjust.
+	(plugin_make_namespace_inline): Adjust.
+	(plugin_add_using_namespace): Likewise.
+
 	Remove usings graph.
 	gcc/cp/
 	* cp-tree.h (lang_decl_ns): Replace tree list ns_using, ns_users

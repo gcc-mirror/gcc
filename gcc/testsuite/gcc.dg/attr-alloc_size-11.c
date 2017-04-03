@@ -45,10 +45,10 @@ typedef __SIZE_TYPE__    size_t;
     return CAT (alloc_anti_range_, __LINE__)(n);		\
   } typedef void dummy   /* Require a semicolon.  */
 
-/* The following tests fail because of missing range information.  */
-TEST (signed char, SCHAR_MIN + 2, ALLOC_MAX);   /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" "missing range info for signed char" { xfail *-*-* } } */
-TEST (short, SHRT_MIN + 2, ALLOC_MAX); /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" "missing range info for short" { xfail *-*-* } } */
-
+/* The following tests fail because of missing range information.  The xfail
+   exclusions are PR79356.  */
+TEST (signed char, SCHAR_MIN + 2, ALLOC_MAX);   /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" "missing range info for signed char" { xfail { ! { aarch64*-*-* arm*-*-* ia64-*-* mips*-*-* powerpc*-*-* sparc*-*-* s390*-*-* } } } } */
+TEST (short, SHRT_MIN + 2, ALLOC_MAX); /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" "missing range info for short" { xfail { ! { aarch64*-*-* arm*-*-* ia64-*-* mips*-*-* powerpc*-*-* sparc*-*-* s390x-*-* } } } } */
 TEST (int, INT_MIN + 2, ALLOC_MAX);    /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" } */
 TEST (int, -3, ALLOC_MAX);             /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" } */
 TEST (int, -2, ALLOC_MAX);             /* { dg-warning "argument 1 range \\\[13, \[0-9\]+\\\] exceeds maximum object size 12" } */

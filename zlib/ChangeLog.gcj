@@ -1,3 +1,10 @@
+2017-03-15  Yaakov Selkowitz <yselkowitz@redhat.com>
+
+	PR bootstrap/79771
+	* gzguts.h (WIDECHAR): Do not define for __CYGWIN__.
+	* zlib.h (gzopen_w): Do not declare for __CYGWIN__.
+	* win32/zlib.def: Remove gzopen_w.
+		
 2017-01-22  Matthias Klose  <doko@ubuntu.com>
 
 	* Import zlib 1.2.11.

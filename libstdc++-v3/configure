@@ -18390,7 +18390,8 @@ else
 
           cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <math.h>
+#define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
+             #include <math.h>
              #undef isnan
              namespace std {
                using ::isnan;

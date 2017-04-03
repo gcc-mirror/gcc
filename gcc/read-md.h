@@ -111,6 +111,9 @@ class md_reader
 
   bool read_md_files (int, const char **, bool (*) (const char *));
   bool read_file (const char *filename);
+  bool read_file_fragment (const char *filename,
+			   int first_line,
+			   int last_line);
 
   /* A hook that handles a single .md-file directive, up to but not
      including the closing ')'.  It takes two arguments: the file position
@@ -245,6 +248,10 @@ class md_reader
 
   /* A table of enum_type structures, hashed by name.  */
   htab_t m_enum_types;
+
+  /* If non-zero, filter the input to just this subset of lines.  */
+  int m_first_line;
+  int m_last_line;
 };
 
 /* Global singleton; constrast with rtx_reader_ptr below.  */

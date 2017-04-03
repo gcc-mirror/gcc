@@ -298,8 +298,8 @@ do {									\
 
 /* An expression for the alignment of a structure field FIELD if the
    alignment computed in the usual way is COMPUTED.  */
-#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED)				      \
-	(rs6000_special_adjust_field_align_p ((FIELD), (COMPUTED))	      \
+#define ADJUST_FIELD_ALIGN(FIELD, TYPE, COMPUTED)			      \
+	(rs6000_special_adjust_field_align_p ((TYPE), (COMPUTED))	      \
 	 ? 128 : COMPUTED)
 
 #undef  BIGGEST_FIELD_ALIGNMENT

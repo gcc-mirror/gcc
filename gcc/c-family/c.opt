@@ -293,7 +293,7 @@ Warn about 'new' of type with extended alignment without -faligned-new.
 
 Waligned-new=
 C++ ObjC++ Var(warn_aligned_new) Enum(warn_aligned_new_level) Joined RejectNegative Warning LangEnabledBy(C++ ObjC++,Wall,1,0)
--Waligned-new=all Warn even if 'new' uses a class member allocation function.
+-Waligned-new=[none|global|all]	Warn even if 'new' uses a class member allocation function.
 
 Wall
 C ObjC C++ ObjC++ Warning
@@ -314,7 +314,7 @@ C ObjC C++ ObjC++ Var(warn_alloc_zero) Warning
 
 Walloca-larger-than=
 C ObjC C++ LTO ObjC++ Var(warn_alloca_limit) Warning Joined RejectNegative UInteger
--Walloca-larger-than=<number> Warn on unbounded uses of
+-Walloca-larger-than=<number>	Warn on unbounded uses of
 alloca, and on bounded uses of alloca whose bound can be larger than
 <number> bytes.
 
@@ -486,7 +486,7 @@ Warn about an empty body in an if or else statement.
 
 Wendif-labels
 C ObjC C++ ObjC++ CPP(warn_endif_labels) CppReason(CPP_W_ENDIF_LABELS) Var(cpp_warn_endif_labels) Init(1) Warning LangEnabledBy(C ObjC C++ ObjC++,Wpedantic)
-Warn about stray tokens after #elif and #endif.
+Warn about stray tokens after #else and #endif.
 
 Wenum-compare
 C ObjC C++ ObjC++ Var(warn_enum_compare) Init(-1) Warning LangEnabledBy(C ObjC,Wall || Wc++-compat)
@@ -780,6 +780,10 @@ Wnoexcept
 C++ ObjC++ Var(warn_noexcept) Warning
 Warn when a noexcept expression evaluates to false even though the expression can't actually throw.
 
+Wnoexcept-type
+C++ ObjC++ Warning Var(warn_noexcept_type) LangEnabledBy(C++ ObjC++,Wabi || Wc++1z-compat)
+Warn if C++1z noexcept function type will change the mangled name of a symbol.
+
 Wnon-template-friend
 C++ ObjC++ Var(warn_nontemplate_friend) Init(1) Warning
 Warn when non-templatized friend functions are declared within a template.
@@ -806,7 +810,7 @@ C ObjC C++ ObjC++ Warning Alias(Wnormalized=,nfc,none)
 
 Wnormalized=
 C ObjC C++ ObjC++ RejectNegative Joined Warning CPP(warn_normalize) CppReason(CPP_W_NORMALIZE) Init(normalized_C) Var(cpp_warn_normalize) Enum(cpp_normalize_level)
--Wnormalized=<none|id|nfc|nfkc>	Warn about non-normalized Unicode strings.
+-Wnormalized=[none|id|nfc|nfkc]	Warn about non-normalized Unicode strings.
 
 ; Required for these enum values.
 SourceInclude
@@ -1097,7 +1101,7 @@ Warn if a variable length array is used.
 
 Wvla-larger-than=
 C ObjC C++ ObjC++ Var(warn_vla_limit) Warning Joined RejectNegative UInteger
--Wvla-larger-than=<number> Warn on unbounded uses of variable-length arrays, and
+-Wvla-larger-than=<number>	Warn on unbounded uses of variable-length arrays, and
 on bounded uses of variable-length arrays whose bound can be
 larger than <number> bytes.
 

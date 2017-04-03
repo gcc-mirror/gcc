@@ -295,6 +295,29 @@ nonnegative_check (const char *arg, gfc_expr *expr)
 }
 
 
+/* If expr is a constant, then check to ensure that it is greater than zero.  */
+
+static bool
+positive_check (int n, gfc_expr *expr)
+{
+  int i;
+
+  if (expr->expr_type == EXPR_CONSTANT)
+    {
+      gfc_extract_int (expr, &i);
+      if (i <= 0)
+	{
+	  gfc_error ("%qs argument of %qs intrinsic at %L must be positive",
+		     gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
+		     &expr->where);
+	  return false;
+	}
+    }
+
+  return true;
+}
+
+
 /* If expr2 is constant, then check that the value is less than
    (less than or equal to, if 'or_equal' is true) bit_size(expr1).  */
 
@@ -1134,6 +1157,60 @@ gfc_check_atomic_ref (gfc_expr *value, gfc_expr *atom, gfc_expr *stat)
     }
 
   return gfc_check_atomic (atom, 1, value, 0, stat, 2);
+}
+
+
+bool
+gfc_check_image_status (gfc_expr *image, gfc_expr *team)
+{
+  /* IMAGE has to be a positive, scalar integer.  */
+  if (!type_check (image, 0, BT_INTEGER) || !scalar_check (image, 0)
+      || !positive_check (0, image))
+    return false;
+
+  if (team)
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L not yet supported",
+		 gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
+		 &team->where);
+      return false;
+    }
+  return true;
+}
+
+
+bool
+gfc_check_failed_or_stopped_images (gfc_expr *team, gfc_expr *kind)
+{
+  if (team)
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L not yet supported",
+		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		 &team->where);
+      return false;
+    }
+
+  if (kind)
+    {
+      int k;
+
+      if (!type_check (kind, 1, BT_INTEGER) || !scalar_check (kind, 1)
+	  || !positive_check (1, kind))
+	return false;
+
+      /* Get the kind, reporting error on non-constant or overflow.  */
+      gfc_current_locus = kind->where;
+      if (gfc_extract_int (kind, &k, 1))
+	return false;
+      if (gfc_validate_kind (BT_INTEGER, k, true) == -1)
+	{
+	  gfc_error ("%qs argument of %qs intrinsic at %L shall specify a "
+		     "valid integer kind", gfc_current_intrinsic_arg[1]->name,
+		     gfc_current_intrinsic, &kind->where);
+	  return false;
+	}
+    }
+  return true;
 }
 
 

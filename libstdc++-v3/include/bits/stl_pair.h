@@ -76,7 +76,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct piecewise_construct_t { explicit piecewise_construct_t() = default; };
 
   /// piecewise_construct
-  constexpr piecewise_construct_t piecewise_construct = piecewise_construct_t();
+  _GLIBCXX17_INLINE constexpr piecewise_construct_t piecewise_construct =
+    piecewise_construct_t();
 
   // Forward declarations.
   template<typename...>
@@ -424,6 +425,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
              _Index_tuple<_Indexes1...>, _Index_tuple<_Indexes2...>);
 #endif
     };
+
+#if __cpp_deduction_guides >= 201606
+  template<typename _T1, typename _T2> pair(_T1, _T2) -> pair<_T1, _T2>;
+#endif
 
   /// Two pairs of the same type are equal iff their members are equal.
   template<typename _T1, typename _T2>

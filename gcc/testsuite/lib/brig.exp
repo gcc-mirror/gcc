@@ -1,0 +1,40 @@
+# Copyright (C) 2009-2017 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+load_lib prune.exp
+load_lib gcc-defs.exp
+load_lib timeout.exp
+load_lib target-libpath.exp
+#
+# brig_target_compile -- compile a HSAIL input to BRIG using HSAILasm and then
+#                        compile the BRIG to target ISA using gcc
+
+proc brig_target_compile { source dest type options } {
+    global tmpdir
+    global testname_with_flags
+    if { [file extension $source] == ".hsail" } {
+	# We cannot assume all inputs are .hsail as the dg machinery
+	# calls this for a some c files to check linker plugin support or
+	# similar.
+	set brig_source ${tmpdir}/[file tail ${source}].brig
+	exec HSAILasm $source -o ${brig_source}
+	set source ${brig_source}
+	# Change the testname the .brig.
+	set testname_with_flags [file tail $source]
+    }
+    return [target_compile $source $dest $type $options]
+}
+

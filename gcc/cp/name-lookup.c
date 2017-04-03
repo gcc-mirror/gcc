@@ -860,6 +860,28 @@ static void diagnose_name_conflict (tree, tree);
 
 static GTY((deletable)) binding_entry free_binding_entry = NULL;
 
+/* The binding oracle; see cp-tree.h.  */
+
+cp_binding_oracle_function *cp_binding_oracle;
+
+/* If we have a binding oracle, ask it for all namespace-scoped
+   definitions of NAME.  */
+
+static inline void
+query_oracle (tree name)
+{
+  if (!cp_binding_oracle)
+    return;
+
+  /* LOOKED_UP holds the set of identifiers that we have already
+     looked up with the oracle.  */
+  static hash_set<tree> looked_up;
+  if (looked_up.add (name))
+    return;
+
+  cp_binding_oracle (CP_ORACLE_IDENTIFIER, name);
+}
+
 /* Create a binding_entry object for (NAME, TYPE).  */
 
 static inline binding_entry
@@ -4743,6 +4765,9 @@ bool
 suggest_alternative_in_explicit_scope (location_t location, tree name,
 				       tree scope)
 {
+  /* Resolve any namespace aliases.  */
+  scope = ORIGINAL_NAMESPACE (scope);
+
   cp_binding_level *level = NAMESPACE_LEVEL (scope);
 
   best_match <tree, tree> bm (name);
@@ -4828,6 +4853,7 @@ static bool
 qualified_namespace_lookup (tree scope, name_lookup *lookup)
 {
   timevar_start (TV_NAME_LOOKUP);
+  query_oracle (lookup->name);
   lookup->search_qualified (ORIGINAL_NAMESPACE (scope));
   timevar_stop (TV_NAME_LOOKUP);
   return lookup->value != error_mark_node;
@@ -5093,6 +5119,8 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
 {
   cxx_binding *iter;
   tree val = NULL_TREE;
+
+  query_oracle (name);
 
   /* Conversion operators are handled specially because ordinary
      unqualified name lookup will not find template conversion
@@ -5702,6 +5730,15 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	  decl = do_pushdecl_with_scope (decl, b, /*is_friend=*/false);
 	  if (decl == error_mark_node)
 	    return decl;
+
+	  if (DECL_CONTEXT (decl) == std_node
+	      && strcmp (TYPE_NAME_STRING (type), "initializer_list") == 0
+	      && !CLASSTYPE_TEMPLATE_INFO (type))
+	    {
+	      error ("declaration of std::initializer_list does not match "
+		     "#include <initializer_list>, isn't a template");
+	      return error_mark_node;
+	    }
 	}
 
       if (! in_class)
@@ -5762,6 +5799,7 @@ pushtag (tree name, tree type, tag_scope scope)
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
+
 
 /* Subroutines for reverting temporarily to top-level for instantiation
    of templates and such.  We actually need to clear out the class- and

@@ -78,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename __gnu_cxx::__alloc_traits<_Tp_alloc_type>::pointer
        	pointer;
 
-      struct _Vector_impl 
+      struct _Vector_impl
       : public _Tp_alloc_type
       {
 	pointer _M_start;
@@ -107,7 +107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  std::swap(_M_end_of_storage, __x._M_end_of_storage);
 	}
       };
-      
+
     public:
       typedef _Alloc allocator_type;
 
@@ -215,13 +215,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp, typename _Alloc = std::allocator<_Tp> >
     class vector : protected _Vector_base<_Tp, _Alloc>
     {
+#ifdef _GLIBCXX_CONCEPT_CHECKS
       // Concept requirements.
       typedef typename _Alloc::value_type		_Alloc_value_type;
-#if __cplusplus < 201103L
+# if __cplusplus < 201103L
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
-#endif
+# endif
       __glibcxx_class_requires2(_Tp, _Alloc_value_type, _SameTypeConcept)
-      
+#endif
+
       typedef _Vector_base<_Tp, _Alloc>			_Base;
       typedef typename _Base::_Tp_alloc_type		_Tp_alloc_type;
       typedef __gnu_cxx::__alloc_traits<_Tp_alloc_type>	_Alloc_traits;
@@ -842,7 +844,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       at(size_type __n)
       {
 	_M_range_check(__n);
-	return (*this)[__n]; 
+	return (*this)[__n];
       }
 
       /**
@@ -895,7 +897,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	__glibcxx_requires_nonempty();
 	return *(end() - 1);
       }
-      
+
       /**
        *  Returns a read-only (constant) reference to the data at the
        *  last element of the %vector.
@@ -953,7 +955,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       template<typename... _Args>
 #if __cplusplus > 201402L
-        reference
+	reference
 #else
 	void
 #endif
@@ -1045,7 +1047,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __position  An iterator into the %vector.
        *  @param  __l  An initializer_list.
        *
-       *  This function will insert copies of the data in the 
+       *  This function will insert copies of the data in the
        *  initializer_list @a l into the %vector before the location
        *  specified by @a position.
        *

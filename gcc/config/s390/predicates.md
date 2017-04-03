@@ -147,8 +147,8 @@
       if (GET_CODE (XEXP (op, 1)) != CONST_INT
           || (INTVAL (XEXP (op, 1)) & 1) != 0)
         return false;
-      if (INTVAL (XEXP (op, 1)) >= (HOST_WIDE_INT)1 << 31
-	  || INTVAL (XEXP (op, 1)) < -((HOST_WIDE_INT)1 << 31))
+      if (INTVAL (XEXP (op, 1)) >= HOST_WIDE_INT_1 << 31
+	  || INTVAL (XEXP (op, 1)) < -(HOST_WIDE_INT_1 << 31))
         return false;
       op = XEXP (op, 0);
     }

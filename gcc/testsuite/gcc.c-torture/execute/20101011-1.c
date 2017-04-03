@@ -6,6 +6,9 @@
 #elif defined (__powerpc__) || defined (__PPC__) || defined (__ppc__) || defined (__POWERPC__) || defined (__ppc)
   /* On PPC division by zero does not trap.  */
 # define DO_TEST 0
+#elif defined (__riscv)
+  /* On RISC-V division by zero does not trap.  */
+# define DO_TEST 0
 #elif defined (__SPU__)
   /* On SPU division by zero does not trap.  */
 # define DO_TEST 0

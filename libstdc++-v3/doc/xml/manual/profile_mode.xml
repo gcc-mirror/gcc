@@ -25,9 +25,9 @@
   calls to an instrumentation library to record the internal state of
   various components at interesting entry/exit points to/from the standard
   library.  Process trace, recognize suboptimal patterns, give advice.
-  For details, see
-  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://dx.doi.org/10.1109/CGO.2009.36">paper presented at
-   CGO 2009</link>.
+  For details, see the
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ieeexplore.ieee.org/document/4907670/">Perflint
+  paper presented at CGO 2009</link>.
   </para>
   <para>
   <emphasis>Strengths: </emphasis>
@@ -328,7 +328,7 @@ vector-size: improvement = 3: call stack = 0x804842c ...
 
   <para>
   For details, see
-   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://dx.doi.org/10.1109/CGO.2009.36">paper presented at
+   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ieeexplore.ieee.org/document/4907670/">paper presented at
    CGO 2009</link>.
   </para>
 </section>
@@ -1403,7 +1403,7 @@ foo.cc:1: advice: Change "list" to "forward_list".
   See papers:
   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://dl.acm.org/citation.cfm?doid=1065944.1065981">
   A framework for adaptive algorithm selection in STAPL</link> and
-  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ieeexplore.ieee.org/search/wrapper.jsp?arnumber=4228227">
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ieeexplore.ieee.org/document/4228227/">
   Optimizing Sorting with Machine Learning Algorithms</link>.
   </para></listitem>
   <listitem><para><emphasis>Sample runtime reduction:</emphasis>60%.
@@ -1509,8 +1509,8 @@ foo.cc:7: advice: Insert prefetch instruction.
   <listitem><para><emphasis>Fundamentals:</emphasis>Allocation can be tuned
   to a specific traversal pattern, to result in better data locality.
   See paper:
-  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.springerlink.com/content/8085744l00x72662/">
-  Custom Memory Allocation for Free</link>.
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://parasol.tamu.edu/publications/download.php?file_id=570">
+  Custom Memory Allocation for Free</link> by Jula and Rauchwerger.
   </para></listitem>
   <listitem><para><emphasis>Sample runtime reduction:</emphasis>30%.
   </para></listitem>
