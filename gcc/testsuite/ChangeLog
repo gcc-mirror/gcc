@@ -1,3 +1,7 @@
+2017-04-03  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/pr71347.c: Add predcom and drop XFAILs.
+
 2017-04-02  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.c-torture/compile/nested-3.c: New testcase.
