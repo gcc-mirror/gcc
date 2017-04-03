@@ -749,6 +749,10 @@ split_nonconstant_init (tree dest, tree init)
       DECL_INITIAL (dest) = init;
       TREE_READONLY (dest) = 0;
     }
+  else if (TREE_CODE (init) == STRING_CST
+	   && array_of_runtime_bound_p (TREE_TYPE (dest)))
+    code = build_vec_init (dest, NULL_TREE, init, /*value-init*/false,
+			   /*from array*/1, tf_warning_or_error);
   else
     code = build2 (INIT_EXPR, TREE_TYPE (dest), dest, init);
 
@@ -1066,7 +1070,8 @@ digest_init_r (tree type, tree init, bool nested, int flags,
 		}
 	    }
 
-	  if (type != TREE_TYPE (init))
+	  if (type != TREE_TYPE (init)
+	      && !variably_modified_type_p (type, NULL_TREE))
 	    {
 	      init = copy_node (init);
 	      TREE_TYPE (init) = type;
