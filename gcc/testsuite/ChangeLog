@@ -1,3 +1,8 @@
+2017-04-03  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/80246
+	* gcc.target/powerpc/pr80246.c: Require hard_dfp.
+
 2017-04-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80275
