@@ -1,3 +1,8 @@
+2017-04-03  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
+	* gcc.target/s390/vector/vcond-shift.c (foo, foo2, foo3, baz, baf)
+	(bal): Increase iteration count and assume alignment.
+
 2017-04-03  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/tree-ssa/pr71347.c: Add predcom and drop XFAILs.

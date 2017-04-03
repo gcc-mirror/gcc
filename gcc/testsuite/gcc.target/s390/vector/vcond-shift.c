@@ -11,51 +11,63 @@
 /* { dg-final { scan-assembler "vesrlh\t%v.?,%v.?,15" } } */
 /* { dg-final { scan-assembler "vesrlb\t%v.?,%v.?,7" } } */
 
-#define SZ 4
-#define SZ2 8
-#define SZ3 16
+#define SZ 8
+#define SZ2 16
+#define SZ3 32
 
 void foo(int *w)
 {
   int i;
-  /* Should expand to (w + (w < 0 ? 1 : 0)) >> 1
-     which in turn should get simplified to (w + (w >> 31)) >> 1.  */
+  int *ww = __builtin_assume_aligned (w, 8);
+
+  /* Should expand to (ww + (ww < 0 ? 1 : 0)) >> 1
+     which in turn should get simplified to (ww + (ww >> 31)) >> 1.  */
   for (i = 0; i < SZ; i++)
-    w[i] = w[i] / 2;
+    ww[i] = ww[i] / 2;
 }
 
 void foo2(short *w)
 {
   int i;
+  short *ww = __builtin_assume_aligned (w, 8);
+
   for (i = 0; i < SZ2; i++)
-    w[i] = w[i] / 2;
+    ww[i] = ww[i] / 2;
 }
 
 
 void foo3(signed char *w)
 {
   int i;
+  signed char *ww = __builtin_assume_aligned (w, 8);
+
   for (i = 0; i < SZ3; i++)
-    w[i] = w[i] / 2;
+    ww[i] = ww[i] / 2;
 }
 
 int baz(int *x)
 {
   int i;
+  int *xx = __builtin_assume_aligned (x, 8);
+
   for (i = 0; i < SZ; i++)
-    x[i] = x[i] < 0 ? -1 : 0;
+    xx[i] = xx[i] < 0 ? -1 : 0;
 }
 
 int baf(short *x)
 {
   int i;
+  short *xx = __builtin_assume_aligned (x, 8);
+
   for (i = 0; i < SZ2; i++)
-    x[i] = x[i] >= 0 ? 0 : 1;
+    xx[i] = xx[i] >= 0 ? 0 : 1;
 }
 
 int bal(signed char *x)
 {
   int i;
+  signed char *xx = __builtin_assume_aligned (x, 8);
+
   for (i = 0; i < SZ3; i++)
-    x[i] = x[i] >= 0 ? 0 : -1;
+    xx[i] = xx[i] >= 0 ? 0 : -1;
 }
