@@ -51,6 +51,7 @@
 # endif
 #endif
 #include <errno.h>
+#include "thread-stacksize.h"
 
 #ifndef HAVE_STRTOULL
 # define strtoull(ptr, eptr, base) strtoul (ptr, eptr, base)
@@ -1187,7 +1188,7 @@ handle_omp_display_env (unsigned long stacksize, int wait_policy)
 static void __attribute__((constructor))
 initialize_env (void)
 {
-  unsigned long thread_limit_var, stacksize = 0;
+  unsigned long thread_limit_var, stacksize = GOMP_DEFAULT_STACKSIZE;
   int wait_policy;
 
   /* Do a compile time check that mkomp_h.pl did good job.  */
@@ -1274,7 +1275,8 @@ initialize_env (void)
   pthread_attr_setdetachstate (&gomp_thread_attr, PTHREAD_CREATE_DETACHED);
 
   if (parse_stacksize ("OMP_STACKSIZE", &stacksize)
-      || parse_stacksize ("GOMP_STACKSIZE", &stacksize))
+      || parse_stacksize ("GOMP_STACKSIZE", &stacksize)
+      || GOMP_DEFAULT_STACKSIZE)
     {
       int err;
 
