@@ -3660,6 +3660,16 @@ and uses a multiple of @code{BRANCH_COST} otherwise.",
 unsigned int, (edge e),
 default_max_noce_ifcvt_seq_cost)
 
+/* Return true if the given instruction sequence is a good candidate
+   as a replacement for the if-convertible sequence.  */
+DEFHOOK
+(noce_conversion_profitable_p,
+ "This hook returns true if the instruction sequence @code{seq} is a good\n\
+candidate as a replacement for the if-convertible sequence described in\n\
+@code{if_info}.",
+bool, (rtx_insn *seq, struct noce_if_info *if_info),
+default_noce_conversion_profitable_p)
+
 /* Permit speculative instructions in delay slots during delayed-branch 
    scheduling.  */
 DEFHOOK

@@ -1,3 +1,9 @@
+2017-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79390
+	* gcc.target/i386/pr79390.c: New test.
+	* gcc.dg/ifcvt-4.c: Use -mtune-ctrl=^one_if_conv_insn for i?86/x86_64.
+
 2017-04-04  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR c++/80296

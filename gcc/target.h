@@ -140,6 +140,9 @@ struct ddg;
 /* This is defined in cfgloop.h .  */
 struct loop;
 
+/* This is defined in ifcvt.h.  */
+struct noce_if_info;
+
 /* This is defined in tree-ssa-alias.h.  */
 struct ao_ref;
 

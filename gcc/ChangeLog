@@ -1,3 +1,27 @@
+2017-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79390
+	* target.h (struct noce_if_info): Declare.
+	* targhooks.h (default_noce_conversion_profitable_p): Declare.
+	* target.def (noce_conversion_profitable_p): New target hook.
+	* ifcvt.h (struct noce_if_info): New type, moved from ...
+	* ifcvt.c (struct noce_if_info): ... here.
+	(noce_conversion_profitable_p): Renamed to ...
+	(default_noce_conversion_profitable_p): ... this.  No longer
+	static nor inline.
+	(noce_try_store_flag_constants, noce_try_addcc,
+	noce_try_store_flag_mask, noce_try_cmove, noce_try_cmove_arith,
+	noce_convert_multiple_sets): Use targetm.noce_conversion_profitable_p
+	instead of noce_conversion_profitable_p.
+	* config/i386/i386.c: Include ifcvt.h.
+	(ix86_option_override_internal): Don't override
+	PARAM_MAX_RTL_IF_CONVERSION_INSNS default.
+	(ix86_noce_conversion_profitable_p): New function.
+	(TARGET_NOCE_CONVERSION_PROFITABLE_P): Redefine.
+	* config/i386/x86-tune.def (X86_TUNE_ONE_IF_CONV_INSN): Adjust comment.
+	* doc/tm.texi.in (TARGET_NOCE_CONVERSION_PROFITABLE_P): Add.
+	* doc/tm.texi: Regenerated.
+
 2017-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Grammar

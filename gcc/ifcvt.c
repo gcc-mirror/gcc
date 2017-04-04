@@ -760,76 +760,6 @@ cond_exec_process_if_block (ce_if_block * ce_info,
   return FALSE;
 }
 
-/* Used by noce_process_if_block to communicate with its subroutines.
-
-   The subroutines know that A and B may be evaluated freely.  They
-   know that X is a register.  They should insert new instructions
-   before cond_earliest.  */
-
-struct noce_if_info
-{
-  /* The basic blocks that make up the IF-THEN-{ELSE-,}JOIN block.  */
-  basic_block test_bb, then_bb, else_bb, join_bb;
-
-  /* The jump that ends TEST_BB.  */
-  rtx_insn *jump;
-
-  /* The jump condition.  */
-  rtx cond;
-
-  /* Reversed jump condition.  */
-  rtx rev_cond;
-
-  /* New insns should be inserted before this one.  */
-  rtx_insn *cond_earliest;
-
-  /* Insns in the THEN and ELSE block.  There is always just this
-     one insns in those blocks.  The insns are single_set insns.
-     If there was no ELSE block, INSN_B is the last insn before
-     COND_EARLIEST, or NULL_RTX.  In the former case, the insn
-     operands are still valid, as if INSN_B was moved down below
-     the jump.  */
-  rtx_insn *insn_a, *insn_b;
-
-  /* The SET_SRC of INSN_A and INSN_B.  */
-  rtx a, b;
-
-  /* The SET_DEST of INSN_A.  */
-  rtx x;
-
-  /* The original set destination that the THEN and ELSE basic blocks finally
-     write their result to.  */
-  rtx orig_x;
-  /* True if this if block is not canonical.  In the canonical form of
-     if blocks, the THEN_BB is the block reached via the fallthru edge
-     from TEST_BB.  For the noce transformations, we allow the symmetric
-     form as well.  */
-  bool then_else_reversed;
-
-  /* True if the contents of then_bb and else_bb are a
-     simple single set instruction.  */
-  bool then_simple;
-  bool else_simple;
-
-  /* True if we're optimisizing the control block for speed, false if
-     we're optimizing for size.  */
-  bool speed_p;
-
-  /* An estimate of the original costs.  When optimizing for size, this is the
-     combined cost of COND, JUMP and the costs for THEN_BB and ELSE_BB.
-     When optimizing for speed, we use the costs of COND plus the minimum of
-     the costs for THEN_BB and ELSE_BB, as computed in the next field.  */
-  unsigned int original_cost;
-
-  /* Maximum permissible cost for the unconditional sequence we should
-     generate to replace this branch.  */
-  unsigned int max_seq_cost;
-
-  /* The name of the noce transform that succeeded in if-converting
-     this structure.  Used for debugging.  */
-  const char *transform_name;
-};
-
 static rtx noce_emit_store_flag (struct noce_if_info *, rtx, int, int);
 static int noce_try_move (struct noce_if_info *);
 static int noce_try_ifelse_collapse (struct noce_if_info *);
@@ -857,11 +787,14 @@ noce_reversed_cond_code (struct noce_if_info *if_info)
   return reversed_comparison_code (if_info->cond, if_info->jump);
 }
 
-/* Return TRUE if SEQ is a good candidate as a replacement for the
-   if-convertible sequence described in IF_INFO.  */
+/* Return true if SEQ is a good candidate as a replacement for the
+   if-convertible sequence described in IF_INFO.
+   This is the default implementation that targets can override
+   through a target hook.  */
 
-inline static bool
-noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
+bool
+default_noce_conversion_profitable_p (rtx_insn *seq,
+				      struct noce_if_info *if_info)
 {
   bool speed_p = if_info->speed_p;
 
@@ -1544,7 +1477,7 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
 	noce_emit_move_insn (if_info->x, target);
 
       seq = end_ifcvt_sequence (if_info);
-      if (!seq || !noce_conversion_profitable_p (seq, if_info))
+      if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
 	return FALSE;
 
       emit_insn_before_setloc (seq, if_info->jump,
@@ -1605,7 +1538,7 @@ noce_try_addcc (struct noce_if_info *if_info)
 		noce_emit_move_insn (if_info->x, target);
 
 	      seq = end_ifcvt_sequence (if_info);
-	      if (!seq || !noce_conversion_profitable_p (seq, if_info))
+	      if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
 		return FALSE;
 
 	      emit_insn_before_setloc (seq, if_info->jump,
@@ -1647,7 +1580,7 @@ noce_try_addcc (struct noce_if_info *if_info)
 		noce_emit_move_insn (if_info->x, target);
 
 	      seq = end_ifcvt_sequence (if_info);
-	      if (!seq || !noce_conversion_profitable_p (seq, if_info))
+	      if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
 		return FALSE;
 
 	      emit_insn_before_setloc (seq, if_info->jump,
@@ -1698,7 +1631,7 @@ noce_try_store_flag_mask (struct noce_if_info *if_info)
 	    noce_emit_move_insn (if_info->x, target);
 
 	  seq = end_ifcvt_sequence (if_info);
-	  if (!seq || !noce_conversion_profitable_p (seq, if_info))
+	  if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
 	    return FALSE;
 
 	  emit_insn_before_setloc (seq, if_info->jump,
@@ -1850,7 +1783,7 @@ noce_try_cmove (struct noce_if_info *if_info)
 	    noce_emit_move_insn (if_info->x, target);
 
 	  seq = end_ifcvt_sequence (if_info);
-	  if (!seq || !noce_conversion_profitable_p (seq, if_info))
+	  if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
 	    return FALSE;
 
 	  emit_insn_before_setloc (seq, if_info->jump,
@@ -1903,7 +1836,7 @@ noce_try_cmove (struct noce_if_info *if_info)
 		noce_emit_move_insn (if_info->x, target);
 
 	      seq = end_ifcvt_sequence (if_info);
-	      if (!seq || !noce_conversion_profitable_p (seq, if_info))
+	      if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
 		return FALSE;
 
 	      emit_insn_before_setloc (seq, if_info->jump,
@@ -2345,7 +2278,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
     noce_emit_move_insn (x, target);
 
   ifcvt_seq = end_ifcvt_sequence (if_info);
-  if (!ifcvt_seq || !noce_conversion_profitable_p (ifcvt_seq, if_info))
+  if (!ifcvt_seq || !targetm.noce_conversion_profitable_p (ifcvt_seq, if_info))
     return FALSE;
 
   emit_insn_before_setloc (ifcvt_seq, if_info->jump,
@@ -3308,7 +3241,7 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
   /* Actually emit the sequence if it isn't too expensive.  */
   rtx_insn *seq = get_insns ();
 
-  if (!noce_conversion_profitable_p (seq, if_info))
+  if (!targetm.noce_conversion_profitable_p (seq, if_info))
     {
       end_sequence ();
       return FALSE;
