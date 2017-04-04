@@ -1,4 +1,12 @@
 2017-04-04  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR c++/80297
+	* genmatch.c (capture::gen_transform): For GENERIC unshare_expr
+	captures used multiple times, except for the last use.
+	* generic-match-head.c: Include gimplify.h.
+
+2017-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/79390
 	* target.h (struct noce_if_info): Declare.
