@@ -1,3 +1,8 @@
+2017-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80275
+	* g++.dg/opt/pr80275.C: Make g static.
+
 2017-04-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/60818
