@@ -35582,10 +35582,17 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	{
 	  /* SIMD shift insns take either an 8-bit immediate or
 	     register as count.  But builtin functions take int as
-	     count.  If count doesn't match, we put it in register.  */
+	     count.  If count doesn't match, we put it in register.
+	     The instructions are using 64-bit count, if op is just
+	     32-bit, zero-extend it, as negative shift counts
+	     are undefined behavior and zero-extension is more
+	     efficient.  */
 	  if (!match)
 	    {
-	      op = lowpart_subreg (SImode, op, GET_MODE (op));
+	      if (SCALAR_INT_MODE_P (GET_MODE (op)))
+		op = convert_modes (mode, GET_MODE (op), op, 1);
+	      else
+		op = lowpart_subreg (mode, op, GET_MODE (op));
 	      if (!insn_p->operand[i + 1].predicate (op, mode))
 		op = copy_to_reg (op);
 	    }

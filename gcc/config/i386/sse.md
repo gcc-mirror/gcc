@@ -10620,7 +10620,7 @@
   [(set (match_operand:VI24_AVX512BW_1 0 "register_operand" "=v,v")
 	(ashiftrt:VI24_AVX512BW_1
 	  (match_operand:VI24_AVX512BW_1 1 "nonimmediate_operand" "v,vm")
-	  (match_operand:SI 2 "nonmemory_operand" "v,N")))]
+	  (match_operand:DI 2 "nonmemory_operand" "v,N")))]
   "TARGET_AVX512VL"
   "vpsra<ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sseishft")
@@ -10634,7 +10634,7 @@
   [(set (match_operand:VI24_AVX2 0 "register_operand" "=x,x")
 	(ashiftrt:VI24_AVX2
 	  (match_operand:VI24_AVX2 1 "register_operand" "0,x")
-	  (match_operand:SI 2 "nonmemory_operand" "xN,xN")))]
+	  (match_operand:DI 2 "nonmemory_operand" "xN,xN")))]
   "TARGET_SSE2"
   "@
    psra<ssemodesuffix>\t{%2, %0|%0, %2}
@@ -10667,7 +10667,7 @@
   [(set (match_operand:VI248_AVX512BW_AVX512VL 0 "register_operand" "=v,v")
 	(ashiftrt:VI248_AVX512BW_AVX512VL
 	  (match_operand:VI248_AVX512BW_AVX512VL 1 "nonimmediate_operand" "v,vm")
-	  (match_operand:SI 2 "nonmemory_operand" "v,N")))]
+	  (match_operand:DI 2 "nonmemory_operand" "v,N")))]
   "TARGET_AVX512F"
   "vpsra<ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sseishft")
@@ -10681,7 +10681,7 @@
   [(set (match_operand:VI2_AVX2_AVX512BW 0 "register_operand" "=x,v")
 	(any_lshift:VI2_AVX2_AVX512BW
 	  (match_operand:VI2_AVX2_AVX512BW 1 "register_operand" "0,v")
-	  (match_operand:SI 2 "nonmemory_operand" "xN,vN")))]
+	  (match_operand:DI 2 "nonmemory_operand" "xN,vN")))]
   "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>"
   "@
    p<vshift><ssemodesuffix>\t{%2, %0|%0, %2}
@@ -10700,7 +10700,7 @@
   [(set (match_operand:VI48_AVX2 0 "register_operand" "=x,x,v")
 	(any_lshift:VI48_AVX2
 	  (match_operand:VI48_AVX2 1 "register_operand" "0,x,v")
-	  (match_operand:SI 2 "nonmemory_operand" "xN,xN,vN")))]
+	  (match_operand:DI 2 "nonmemory_operand" "xN,xN,vN")))]
   "TARGET_SSE2 && <mask_mode512bit_condition>"
   "@
    p<vshift><ssemodesuffix>\t{%2, %0|%0, %2}
@@ -10720,7 +10720,7 @@
   [(set (match_operand:VI48_512 0 "register_operand" "=v,v")
 	(any_lshift:VI48_512
 	  (match_operand:VI48_512 1 "nonimmediate_operand" "v,m")
-	  (match_operand:SI 2 "nonmemory_operand" "vN,N")))]
+	  (match_operand:DI 2 "nonmemory_operand" "vN,N")))]
   "TARGET_AVX512F && <mask_mode512bit_condition>"
   "vp<vshift><ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "isa" "avx512f")
