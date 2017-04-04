@@ -1,10 +1,16 @@
+2017-04-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/80307
+	* config/arm/arm.c (thumb1_rtx_costs): Give a cost of 32
+	instructions for small multiply cores.
+
 2017-04-04  Jeff Law  <law@redhat.com>
 
 	* config/mips/mips.c (mips_multi_add): Zero initialize the newly
 	added member.
 	(mips_expand_vec_perm_const): Initialize elements in orig_perm
 	that are not set by the loop over the elements.
-	
+
 2017-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/80286
