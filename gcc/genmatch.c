@@ -2525,7 +2525,18 @@ capture::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
 	}
     }
 
-  fprintf_indent (f, indent, "%s = captures[%u];\n", dest, where);
+  /* If in GENERIC some capture is used multiple times, unshare it except
+     when emitting the last use.  */
+  if (!gimple
+      && cinfo->info.exists ()
+      && cinfo->info[cinfo->info[where].same_as].result_use_count > 1)
+    {
+      fprintf_indent (f, indent, "%s = unshare_expr (captures[%u]);\n",
+		      dest, where);
+      cinfo->info[cinfo->info[where].same_as].result_use_count--;
+    }
+  else
+    fprintf_indent (f, indent, "%s = captures[%u];\n", dest, where);
 
   /* ???  Stupid tcc_comparison GENERIC trees in COND_EXPRs.  Deal
      with substituting a capture of that.  */
