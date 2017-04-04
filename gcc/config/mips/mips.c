@@ -4574,12 +4574,13 @@ mips_multi_start (void)
   mips_multi_num_insns = 0;
 }
 
-/* Add a new, uninitialized member to the current multi-insn sequence.  */
+/* Add a new, zero initialized member to the current multi-insn sequence.  */
 
 static struct mips_multi_member *
 mips_multi_add (void)
 {
   mips_multi_member empty;
+  memset (&empty, 0, sizeof (empty));
   return mips_multi_members.safe_push (empty);
 }
 
@@ -21355,6 +21356,9 @@ mips_expand_vec_perm_const (rtx operands[4])
   d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
   d.testing_p = false;
 
+  /* This is overly conservative, but ensures we don't get an
+     uninitialized warning on ORIG_PERM.  */
+  memset (&orig_perm[nelt], 0, MAX_VECT_LEN);
   for (i = which = 0; i < nelt; ++i)
     {
       rtx e = XVECEXP (sel, 0, i);
