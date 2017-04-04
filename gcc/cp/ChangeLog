@@ -1,3 +1,9 @@
+2017-04-04  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR c++/80296
+	* cxx-pretty-print.c (cxx_pretty_printer::expression): Add
+	UNARY_PLUS_EXPR case.
+
 2017-04-03  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (finish_template_type): Check CLASSTYPE_TEMPLATE_INFO.

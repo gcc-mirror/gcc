@@ -1,3 +1,8 @@
+2017-04-04  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR c++/80296
+	* g++.dg/cpp0x/alias-decl-80296.C: New test.
+
 2017-04-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR target/80307
