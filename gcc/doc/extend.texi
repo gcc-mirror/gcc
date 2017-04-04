@@ -15546,7 +15546,7 @@ Appendix A of this document lists the vector API interfaces that must be
 provided by compliant compilers.  Programmers should preferentially use
 the interfaces described therein.  However, historically GCC has provided
 additional interfaces for access to vector instructions.  These are
-described briefly below.
+briefly described below.
 
 The following interfaces are supported for the generic and specific
 AltiVec operations and the AltiVec predicates.  In cases where there

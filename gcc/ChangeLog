@@ -1,3 +1,8 @@
+2017-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Grammar
+	correction.
+
 2017-04-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR target/80307
