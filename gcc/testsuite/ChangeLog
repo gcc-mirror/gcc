@@ -1,3 +1,9 @@
+2017-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80286
+	* gcc.target/i386/avx-pr80286.c: New test.
+	* gcc.dg/pr80286.c: New test.
+
 2017-04-04  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/80281
