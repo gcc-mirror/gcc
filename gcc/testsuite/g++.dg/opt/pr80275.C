@@ -3,7 +3,7 @@
 
 #include <algorithm>
 
-int g()
+static int g()
 {
       return 1234;
 }
