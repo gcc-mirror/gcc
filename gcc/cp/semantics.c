@@ -3157,6 +3157,7 @@ finish_template_type (tree name, tree args, int entering_scope)
   if (flag_concepts
       && entering_scope
       && CLASS_TYPE_P (type)
+      && CLASSTYPE_TEMPLATE_INFO (type)
       && dependent_type_p (type)
       && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type)))
     type = fixup_template_type (type);
