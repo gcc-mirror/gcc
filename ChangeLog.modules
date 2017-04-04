@@ -1,6 +1,16 @@
 2017-04-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.h (get_global_value_if_present,
+	is_typename_at_global_scope): Delete.
+	* class.c (build_vtbl_initializer): Adjust.
+	* decl.c (grokdeclarator)
+	* except.c (do_get_exception_ptr, do_begin_catch, do_end_catch,
+	do_allocate_exception, do_free_exception, build_throw): Adjust.
+	* init.c (throw_bad_array_new_length): Adjust.
+	* rtti.c (throw_bad_cast, throw_bad_typeid): Adjust.
+
+	gcc/cp/
 	* cp-tree.h (CPTI_INIT_LIST_IDENTIFIER, init_list_identifier): New.
 	* decl.c (initialize_predefined_identifiers): Initialize
 	initializer_list identifier.

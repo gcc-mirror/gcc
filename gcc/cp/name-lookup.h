@@ -350,26 +350,4 @@ extern void pop_nested_namespace (tree);
 extern void push_to_top_level (void);
 extern void pop_from_top_level (void);
 
-/* Set *DECL to the (non-hidden) declaration for ID at global scope,
-   if present and return true; otherwise return false.  */
-
-inline bool
-get_global_value_if_present (tree id, tree *decl)
-{
-  tree global_value = get_namespace_value (global_namespace, id);
-  if (global_value)
-    *decl = global_value;
-  return global_value != NULL;
-}
-
-/* True is the binding of IDENTIFIER at global scope names a type.  */
-
-inline bool
-is_typename_at_global_scope (tree id)
-{
-  tree global_value = get_namespace_value (global_namespace, id);
-
-  return global_value && TREE_CODE (global_value) == TYPE_DECL;
-}
-
 #endif /* GCC_CP_NAME_LOOKUP_H */

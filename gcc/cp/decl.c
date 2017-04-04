@@ -10096,7 +10096,8 @@ grokdeclarator (const cp_declarator *declarator,
 		    gcc_assert (flags == NO_SPECIAL);
 		    flags = TYPENAME_FLAG;
 		    sfk = sfk_conversion;
-		    if (is_typename_at_global_scope (dname))
+		    tree glob = IDENTIFIER_GLOBAL_VALUE (dname);
+		    if (glob && TREE_CODE (glob) == TYPE_DECL)
 		      name = identifier_to_locale (IDENTIFIER_POINTER (dname));
 		    else
 		      name = "<invalid operator>";
