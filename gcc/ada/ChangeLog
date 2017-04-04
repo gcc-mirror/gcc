@@ -1,3 +1,8 @@
+2017-04-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* system-linux-s390.ads: Use Long_Integer'Size to define
+	Memory_Size.
+
 2017-04-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch3.adb (Build_Derived_Record_Type): Fix long line.
