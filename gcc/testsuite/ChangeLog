@@ -1,3 +1,8 @@
+2017-04-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/60818
+	* gcc.c-torture/compile/pr60818.c: New testcase.
+
 2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* g++.old-deja/g++.benjamin/scope02.C: Fix typo in comment.
