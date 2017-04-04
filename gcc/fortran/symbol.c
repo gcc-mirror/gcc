@@ -2782,10 +2782,20 @@ void
 gfc_delete_symtree (gfc_symtree **root, const char *name)
 {
   gfc_symtree st, *st0;
+  const char *p;
 
-  st0 = gfc_find_symtree (*root, name);
+  /* Submodules are marked as mod.submod.  When freeing a submodule
+     symbol, the symtree only has "submod", so adjust that here.  */
 
-  st.name = gfc_get_string ("%s", name);
+  p = strrchr(name, '.');
+  if (p)
+    p++;
+  else
+    p = name;
+
+  st0 = gfc_find_symtree (*root, p);
+
+  st.name = gfc_get_string ("%s", p);
   gfc_delete_bbt (root, &st, compare_symtree);
 
   free (st0);
