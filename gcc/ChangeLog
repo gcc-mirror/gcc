@@ -1,3 +1,11 @@
+2017-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80281
+	* match.pd (A + (-B) -> A - B): Make sure to preserve unsigned
+	arithmetic done for the negate or the plus.  Simplify.
+	(A - (-B) -> A + B): Likewise.
+	* fold-const.c (split_tree): Make sure to not negate pointers.
+
 2017-04-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/60818

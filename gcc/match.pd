@@ -1148,19 +1148,31 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* Contract negates.  */
  /* A + (-B) -> A - B */
  (simplify
-  (plus:c (convert1? @0) (convert2? (negate @1)))
-  /* Apply STRIP_NOPS on @0 and the negate.  */
-  (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
-       && tree_nop_conversion_p (type, TREE_TYPE (@1))
+  (plus:c @0 (convert? (negate @1)))
+  /* Apply STRIP_NOPS on the negate.  */
+  (if (tree_nop_conversion_p (type, TREE_TYPE (@1))
        && !TYPE_OVERFLOW_SANITIZED (type))
-   (minus (convert @0) (convert @1))))
+   (with
+    {
+     tree t1 = type;
+     if (INTEGRAL_TYPE_P (type)
+	 && TYPE_OVERFLOW_WRAPS (type) != TYPE_OVERFLOW_WRAPS (TREE_TYPE (@1)))
+       t1 = TYPE_OVERFLOW_WRAPS (type) ? type : TREE_TYPE (@1);
+    }
+    (convert (minus (convert:t1 @0) (convert:t1 @1))))))
  /* A - (-B) -> A + B */
  (simplify
-  (minus (convert1? @0) (convert2? (negate @1)))
-  (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
-       && tree_nop_conversion_p (type, TREE_TYPE (@1))
+  (minus @0 (convert? (negate @1)))
+  (if (tree_nop_conversion_p (type, TREE_TYPE (@1))
        && !TYPE_OVERFLOW_SANITIZED (type))
-   (plus (convert @0) (convert @1))))
+   (with
+    {
+     tree t1 = type;
+     if (INTEGRAL_TYPE_P (type)
+	 && TYPE_OVERFLOW_WRAPS (type) != TYPE_OVERFLOW_WRAPS (TREE_TYPE (@1)))
+       t1 = TYPE_OVERFLOW_WRAPS (type) ? type : TREE_TYPE (@1);
+    }
+    (convert (plus (convert:t1 @0) (convert:t1 @1))))))
  /* -(-A) -> A */
  (simplify
   (negate (convert? (negate @1)))
