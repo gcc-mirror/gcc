@@ -144,6 +144,7 @@ enum cp_tree_index
     CPTI_ANON_IDENTIFIER,
     CPTI_AUTO_IDENTIFIER,
     CPTI_DECLTYPE_AUTO_IDENTIFIER,
+    CPTI_INIT_LIST_IDENTIFIER,
 
     CPTI_LANG_NAME_C,
     CPTI_LANG_NAME_CPLUSPLUS,
@@ -236,6 +237,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 /* auto and declspec(auto) identifiers.  */
 #define auto_identifier			cp_global_trees[CPTI_AUTO_IDENTIFIER]
 #define decltype_auto_identifier	cp_global_trees[CPTI_DECLTYPE_AUTO_IDENTIFIER]
+#define init_list_identifier		cp_global_trees[CPTI_INIT_LIST_IDENTIFIER]
 /* The name of a C++17 deduction guide.  */
 #define lang_name_c			cp_global_trees[CPTI_LANG_NAME_C]
 #define lang_name_cplusplus		cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]

@@ -5736,7 +5736,7 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	    return decl;
 
 	  if (DECL_CONTEXT (decl) == std_node
-	      && strcmp (TYPE_NAME_STRING (type), "initializer_list") == 0
+	      && init_list_identifier == DECL_NAME (TYPE_NAME (type))
 	      && !CLASSTYPE_TEMPLATE_INFO (type))
 	    {
 	      error ("declaration of std::initializer_list does not match "

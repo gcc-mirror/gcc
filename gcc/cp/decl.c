@@ -4021,6 +4021,7 @@ initialize_predefined_identifiers (void)
     { "_GLOBAL__N_1", &anon_identifier, 0 },
     { "auto", &auto_identifier, 0 },
     { "decltype(auto)", &decltype_auto_identifier, 0 },
+    { "initializer_list", &init_list_identifier, 0 },
     { NULL, NULL, 0 }
   };
 

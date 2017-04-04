@@ -1,5 +1,13 @@
 2017-04-04  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (CPTI_INIT_LIST_IDENTIFIER, init_list_identifier): New.
+	* decl.c (initialize_predefined_identifiers): Initialize
+	initializer_list identifier.
+	* call.c (is_std_init_list): Adjust.
+	* name-lookup.c (do_pushtag): Likewise.
+	* pt.c (listify): Likewise.
+
 	Separating namespace bindings part 1
 	gcc/cp/
 	* name-lookup.h (namespace_binding, set_namespace_binding):
