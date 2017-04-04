@@ -8727,6 +8727,9 @@ thumb1_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
       return COSTS_N_INSNS (1);
 
     case MULT:
+      if (arm_arch6m && arm_m_profile_small_mul)
+	return COSTS_N_INSNS (32);
+
       if (CONST_INT_P (XEXP (x, 1)))
 	{
 	  int cycles = 0;
