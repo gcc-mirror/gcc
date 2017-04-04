@@ -308,8 +308,8 @@ extern void poplevel_class (void);
 extern tree lookup_name_prefer_type (tree, int);
 extern tree lookup_name_real (tree, int, int, bool, int, int);
 extern tree lookup_type_scope (tree, tag_scope);
-extern tree namespace_binding (tree, tree);
-extern void set_namespace_binding (tree, tree, tree);
+extern tree get_namespace_value (tree NS, tree ID);
+extern void set_namespace_value (tree NS, tree ID, tree VAL);
 extern tree lookup_qualified_name (tree, tree, int, bool, /*hidden*/bool = false);
 extern tree lookup_name_nonclass (tree);
 extern tree lookup_name_innermost_nonclass_level (tree);
@@ -356,7 +356,7 @@ extern void pop_from_top_level (void);
 inline bool
 get_global_value_if_present (tree id, tree *decl)
 {
-  tree global_value = namespace_binding (id, global_namespace);
+  tree global_value = get_namespace_value (global_namespace, id);
   if (global_value)
     *decl = global_value;
   return global_value != NULL;
@@ -367,7 +367,7 @@ get_global_value_if_present (tree id, tree *decl)
 inline bool
 is_typename_at_global_scope (tree id)
 {
-  tree global_value = namespace_binding (id, global_namespace);
+  tree global_value = get_namespace_value (global_namespace, id);
 
   return global_value && TREE_CODE (global_value) == TYPE_DECL;
 }

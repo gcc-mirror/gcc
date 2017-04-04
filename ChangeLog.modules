@@ -1,3 +1,35 @@
+2017-04-04  Nathan Sidwell  <nathan@acm.org>
+
+	Separating namespace bindings part 1
+	gcc/cp/
+	* name-lookup.h (namespace_binding, set_namespace_binding):
+	Replace with ...
+	(get_namespace_value, set_namespace_value): ... these.
+	(get_global_value_if_present, is_typename_at_global_scope): Adjust.
+	* cp-tree.h (IDENTIFIER_GLOBAL_VALUE,
+	SET_IDENTIFIER_GLOBAL_VALUE): Adjust.
+	(IDENTIFIER_NAMESPACE_VALUE, SET_IDENTIFIER_NAMESPACE_VALUE): Delete.
+	* pt.c (listify): Use get_namespace_value.
+	* decl.c (poplevel): Use get_namespace_value.
+	* name-lookup.c (cp_binding_level_find_binding_for_name): Replace
+	with ...
+	(find_namespace_binding): ... this.
+	(update_namespace_binding, find_namespace_value,
+	add_namespace_decl, add_local_decl): New.
+	(name_lookup::search_namespace_only,
+	adl_lookup::assoc_namespace_only): Adjust.
+	(binding_for_name, add_decl_to_level): Delete.
+	(fixup_unhidden_decl, do_pushdecl, push_local_binding,
+	check_for_out_of_scope_variable,
+	set_identifier_type_value_with_scope, push_overloaded_decl_1): Adjust.
+	(namespace_binding_1, namespace_binding): Replace with ...
+	(get_namespace_value): ... this.
+	(set_namespace_binding_1, set_namespace_binding): Replace with ...
+	(set_namespace_value): ... this.
+	(do_toplevel_using_decl, lookup_type_scope_1,
+	lookup_name_innermost_nonclass_level_1, do_push_nested_namespace,
+	push_namespace): Adjust.
+
 2017-04-03  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r246647.
