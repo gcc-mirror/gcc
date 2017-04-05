@@ -153,11 +153,7 @@ amiga_named_section (const char *name, unsigned int flags, tree decl);
 #define FRAME_POINTER_REGNUM 13
 
 #undef M68K_REGNAME
-#define M68K_REGNAME(r) ( \
-  ( ((r) == FRAME_POINTER_REGNUM) \
-    && frame_pointer_needed) ? \
-    M68K_FP_REG_NAME : reg_names[(r)])
-
+#define M68K_REGNAME(r) (reg_names[(r)])
 
 /* The AmigaOS ABI does not define how structures should be returned, so,
    contrary to 'm68k.h', we prefer a multithread-safe solution.  */
