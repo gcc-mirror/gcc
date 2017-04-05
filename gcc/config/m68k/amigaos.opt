@@ -32,13 +32,17 @@ Target Report Var(flag_pic,4)
 data is adressed relativ to a4 with 32 bit offsets
 
 resident
-Target Common Report Var(flag_mybaserel,1)
+Target Common Report Var(flag_pic,3)
 data is adressed relativ to a4, linked as resident
 
 resident32
-Target Common Report Var(flag_mybaserel,2)
+Target Common Report Var(flag_pic,4)
 data is adressed relativ to a4 with 32 bit offsets, linked as resident
 
 mcrt=
 Target RejectNegative Var(amigaos_crt) Joined
 Specify startup binary
+
+fbbb
+Target Var(flag_bbb_opts,1) UInteger Init(0)
+Enable Bebbo's optimizations
