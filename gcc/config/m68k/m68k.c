@@ -2928,6 +2928,17 @@ m68k_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	    *total = COSTS_N_INSNS (TARGET_COLDFIRE ? 2 : 3);
 	    return true;
 	}
+      /* reg + value */
+//      if (mode == SImode
+//	  && REG_P(XEXP(x, 0))) {
+//	  if (m68k_rtx_costs(XEXP(x, 1), mode, PLUS, 1, total, speed))
+//	    {
+//	      if (REGNO_REG_CLASS(REGNO(XEXP(x, 0))) == ADDR_REGS)
+//		*total += 4;
+//	      return true;
+//	    }
+//      }
+
       return false;
 
     case ASHIFT:
@@ -2995,6 +3006,25 @@ m68k_rtx_costs (rtx x, machine_mode mode, int outer_code,
       if (outer_code == COMPARE)
         *total = 0;
       return false;
+
+    case MEM:
+      {
+      /* simple but not exact */
+	rtx y = XEXP(x, 0);
+	int yc = GET_CODE(y);
+	if (yc == REG || yc == PRE_INC || yc == POST_INC || yc == POST_DEC)
+	  *total += 4;
+	else
+	if (yc == PRE_DEC)
+	  *total += 6;
+	else
+	  *total += 8;
+
+	if (mode != QImode && mode != QImode)
+	  *total += 4;
+
+	return true;
+      }
 
     default:
       return false;
