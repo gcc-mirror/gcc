@@ -1,3 +1,8 @@
+2017-04-05  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR target/79890
+	* gcc.target/s390/pr79890.c: New test case.
+
 2017-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/80310

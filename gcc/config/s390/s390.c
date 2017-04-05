@@ -9512,6 +9512,12 @@ s390_register_info_gprtofpr ()
   if (!TARGET_Z10 || !TARGET_HARD_FLOAT || !crtl->is_leaf)
     return;
 
+  /* builtin_eh_return needs to be able to modify the return address
+     on the stack.  It could also adjust the FPR save slot instead but
+     is it worth the trouble?!  */
+  if (crtl->calls_eh_return)
+    return;
+
   for (i = 15; i >= 6; i--)
     {
       if (cfun_gpr_save_slot (i) == SAVE_SLOT_NONE)
