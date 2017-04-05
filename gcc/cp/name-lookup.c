@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool supplement_binding (cxx_binding *binding, tree decl);
 static cxx_binding *cxx_binding_make (tree value, tree type);
+static tree do_namespace_push_overload (tree ns, tree decl, bool is_friend);
+static tree do_local_push_overload (tree decl, bool is_friend);
 
 /* Return the binding for NAME in SCOPE, if any.  Otherwise, return NULL.  */
 // FIXME this should totally be a map
@@ -927,7 +929,6 @@ do_lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
 }
 
 static cp_binding_level *innermost_nonclass_level (void);
-static tree push_overloaded_decl (tree, int, bool);
 static bool qualified_namespace_lookup (tree, name_lookup *);
 static void consider_binding_level (tree name, best_match <tree, tree> &bm,
 				    cp_binding_level *lvl,
@@ -1950,7 +1951,7 @@ do_pushdecl (tree x, bool is_friend)
 	    t = do_namespace_push_overload (current_namespace, x, is_friend);
 	  else
 	    {
-	      t = push_overloaded_decl (x, PUSH_LOCAL, is_friend);
+	      t = do_local_push_overload (x, is_friend);
 	      /* We do not need to create a binding for this name;
 		 push_overloaded_decl will have already done so if
 		 necessary.  */
@@ -3343,44 +3344,15 @@ augment_local_overload_binding (tree name, int flags, tree oldval, tree newval)
     push_local_binding (name, newval, flags);
 }
 
-/* DECL is a FUNCTION_DECL for a non-member function, which may have
-   other definitions already in place.  We get around this by making
-   the value of the identifier point to a list of all the things that
-   want to be referenced by that name.  It is then up to the users of
-   that name to decide what to do with that list.
-
-   DECL may also be a TEMPLATE_DECL, with a FUNCTION_DECL in its
-   DECL_TEMPLATE_RESULT.  It is dealt with the same way.
-
-   FLAGS is a bitwise-or of the following values:
-     PUSH_LOCAL: Bind DECL in the current scope, rather than at
-		 namespace scope.
-     PUSH_USING: DECL is being pushed as the result of a using
-		 declaration.
-
-   IS_FRIEND is true if this is a friend declaration.
-
-   The value returned may be a previous declaration if we guessed wrong
-   about what language DECL should belong to (C or C++).  Otherwise,
-   it's always DECL (and never something that's not a _DECL).  */
+/* DECL is a non-member function.  Push it into the overload set of
+   the local scope (or find it already there).  IS_FRIEND is true if
+   this is a friend declaration.  */
 
 static tree
-push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
+do_local_push_overload (tree decl, bool is_friend)
 {
   tree name = DECL_NAME (decl);
-  tree old;
-  tree new_binding;
-  int doing_global = (namespace_bindings_p () || !(flags & PUSH_LOCAL));
-
-  gcc_assert (!doing_global);
-  /* USING decls should go via augment_local_overload_binding or
-     directly updating the binding.  */
-  gcc_assert (!(flags & PUSH_USING));
-
-  if (doing_global)
-    old = find_namespace_value (CP_DECL_CONTEXT (decl), name);
-  else
-    old = lookup_name_innermost_nonclass_level (name);
+  tree old = lookup_name_innermost_nonclass_level (name);
 
   if (old)
     {
@@ -3400,7 +3372,6 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
 	      tree fn = *iter;
 
 	      if (iter.via_using_p ()
-		  && !(flags & PUSH_USING)
 		  && matching_using_decl_p (fn, decl)
 		  && ! decls_match (fn, decl))
 		diagnose_name_conflict (decl, fn);
@@ -3410,30 +3381,11 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
 		return dup;
 	      if (dup == fn)
 		{
-		  if (!iter.hidden_p ())
-		    /* We might have tried to push a hidden decl that
-		       matched a non-hidden one.  Don't allow that to
-		       hide the decl.  */
-		    DECL_ANTICIPATED (dup) = false;
-		  else if (!DECL_HIDDEN_P (dup))
-		    {
-		      /* The name has become unhidden.  Fixup the
-			 overload chain.  */
-		      tree head = iter.unhide (old);
-		      if (head != old)
-			old = fixup_unhidden_decl
-			  (DECL_NAME (dup), doing_global
-			   ? CP_DECL_CONTEXT (dup) : NULL_TREE, old, head);
-		    }
-
+		  gcc_assert (!iter.hidden_p ()
+			      && !DECL_HIDDEN_P (dup));
 		  return dup;
 		}
 	    }
-
-	  /* We don't overload implicit built-ins.  duplicate_decls()
-	     may fail to merge the decls if the new decl is e.g. a
-	     template function.  */
-	  old = skip_anticipated_builtins (old);
 	}
       else if (old == error_mark_node)
 	/* Ignore the undefined symbol marker.  */
@@ -3446,26 +3398,11 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
 	}
     }
 
-  new_binding = ovl_add (old, decl, (flags & PUSH_USING) != 0);
+  tree new_binding = ovl_add (old, decl);
 
-  if (doing_global)
-    update_namespace_binding (current_namespace, name, new_binding);
-  else
-    augment_local_overload_binding (name, flags, old, new_binding);
+  augment_local_overload_binding (name, 0, old, new_binding);
 
   return decl;
-}
-
-/* Wrapper for push_overloaded_decl_1.  */
-
-static tree
-push_overloaded_decl (tree decl, int flags, bool is_friend)
-{
-  tree ret;
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = push_overloaded_decl_1 (decl, flags, is_friend);
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return ret;
 }
 
 /* Check a non-member using-declaration. Return the name and scope

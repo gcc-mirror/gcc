@@ -1,5 +1,12 @@
 2017-04-05  Nathan Sidwell  <nathan@acm.org>
 
+	Separating namespace bindings part 3
+	gcc/cp/
+	* name-lookup.c (do_local_push_overload): New, split out of ...
+	(push_overloaded_decl_1): ... this.  Delete.
+	(push_overloaded_decl): Delete.
+	(do_pushdecl): Adjust.
+
 	Separating namespace bindings part 2
 	gcc/cp/
 	* name-lookup.c (compparms_for_decl_and_using_decl): Replace with ...
