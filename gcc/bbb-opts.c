@@ -1,5 +1,6 @@
 /* Bebbo's Optimizations.
- Copyright (C) 2010-2016 Free Software Foundation, Inc.
+ Copyright (C) 2010-2017 Free Software Foundation, Inc.
+ Copyright (C) 2017 Stefan "Bebbo" Franke.
 
  This file is part of GCC.
 
@@ -26,14 +27,7 @@
  * check if a->b->a can be moved out of a loop.
  *
  * #2 strcpy_opt
- * move a,reg
- * move reg,b
- * cmp  #0,reg
- * jcc
- *
- * ->
- * move a,b
- * jcc
+ * check if a temp reg can be eliminated.
  *
  */
 
@@ -55,39 +49,91 @@
 #include <map>
 
 /* enough for m68k. */
-typedef unsigned insn_info; //[(FIRST_PSEUDO_REGISTER + sizeof(unsigned) * 8 - 1) / (sizeof(unsigned) * 8)];
-
-static inline void
-resetii (unsigned & ii)
+struct insn_info
 {
-  ii = 0;
-}
+  unsigned mask;
 
-static inline void
-setii (unsigned regno, unsigned & ii)
-{
-  ii |= 1 << regno;
-}
+  insn_info () :
+      mask (0)
+  {
+  }
 
-static inline void
-clearii (unsigned regno, unsigned & ii)
-{
-  ii &= ~(1 << regno);
-}
+  inline void
+  reset ()
+  {
+    mask = 0;
+  }
 
-static inline bool
-getii (unsigned regno, unsigned & ii)
-{
-  return ii & (1 << regno) ? true : false;
-}
+  inline void
+  set (int regno)
+  {
+    mask |= 1 << regno;
+  }
+
+  inline void
+  unset (int regno)
+  {
+    mask &= ~(1 << regno);
+  }
+
+  inline bool
+  get (int regno)
+  {
+    return (mask & (1 << regno)) != 0;
+  }
+
+  inline insn_info
+  operator | (insn_info const & o) const
+  {
+    insn_info t;
+    t.mask = mask | o.mask;
+    return t;
+  }
+
+  inline insn_info
+  operator & (insn_info const & o) const
+  {
+    insn_info t;
+    t.mask = mask & o.mask;
+    return t;
+  }
+
+  inline insn_info &
+  operator |= (insn_info const & o)
+  {
+    mask |= o.mask;
+    return *this;
+  }
+
+  inline insn_info &
+  operator &= (insn_info const & o)
+  {
+    mask &= o.mask;
+    return *this;
+  }
+
+  inline bool
+  operator == (insn_info const & o)
+  {
+    return mask == o.mask;
+  }
+
+  inline insn_info
+  operator ~ () const
+  {
+    insn_info t;
+    t.mask = ~mask;
+    return t;
+  }
+};
 
 /* scan rtx for registers. */
 static void
-scanii (rtx x, unsigned & ii)
+scanii (rtx x, insn_info & ii)
 {
   if (REG_P(x))
     {
-      setii (REGNO(x), ii);
+      ii.set (REGNO(x));
       return;
     }
 
@@ -118,59 +164,25 @@ clear (void)
 }
 
 static void
-dump_costs (void)
-{
-  rtx d0 = gen_raw_REG (SImode, 0);
-  rtx d0b = gen_raw_REG (QImode, 0);
-  rtx d1 = gen_raw_REG (SImode, 1);
-  rtx d1b = gen_raw_REG (QImode, 1);
-  rtx a0 = gen_raw_REG (SImode, 8);
-  rtx a1 = gen_raw_REG (SImode, 9);
-
-  struct ICO
-  {
-    char const * name;
-    rtx set;
-  } data[] =
-    {
-      { "move d0,(a0)", gen_rtx_SET(gen_rtx_MEM (SImode, a0), d0) },
-      { "move a0,d0", gen_rtx_SET(d0, a0) },
-      { "move (a0),d0", gen_rtx_SET(d0, gen_rtx_MEM (SImode, a0)) },
-      { "move d0,(a0)", gen_rtx_SET(gen_rtx_MEM (SImode, a0), d0) },
-      { "move d1,(a1)+", gen_rtx_SET(d1, gen_rtx_MEM (SImode, gen_rtx_POST_INC (SImode, a1))) },
-      { "move (a0),(a1)", gen_rtx_SET(gen_rtx_MEM (SImode, a1), gen_rtx_MEM (SImode, a0)) },
-      { 0, 0 } }, *p;
-
-  for (p = data; p->name; ++p)
-    {
-      int cost = insn_rtx_cost (p->set, true);
-      fprintf (stderr, "%s: %d\n", p->name, cost);
-    }
-}
-
-
-static void
 dump_insns (char const * name)
 {
-  rtx_insn *insn, *next;
-  fprintf(stderr, "====================================: %s\n", name);
-  for (unsigned i = 0; i < insns.size(); ++i)
+  fprintf (stderr, "====================================: %s\n", name);
+  for (unsigned i = 0; i < insns.size (); ++i)
     {
       insn_info & ii = infos[i];
 
       for (int j = 0; j < 8; ++j)
-	if (getii(j, ii))
-	  fprintf(stderr, "d%d ", j);
+	if (ii.get (j))
+	  fprintf (stderr, "d%d ", j);
 
       for (int j = 8; j < 16; ++j)
-	if (getii(j, ii))
-	  fprintf(stderr, "a%d ", j-8);
+	if (ii.get (j))
+	  fprintf (stderr, "a%d ", j - 8);
 
-      fprintf(stderr, "\t");
-      debug_rtx(insns[i]);
+      fprintf (stderr, "\t");
+      debug_rtx (insns[i]);
     }
 }
-
 
 /*
  * Create a filtered view of insns - keep only those to work with.
@@ -192,7 +204,7 @@ filter_insns ()
 	{
 	  //	  debug_rtx (insn);
 	  if (JUMP_P(insn))
-	    jumps.push_back(insn);
+	    jumps.push_back (insn);
 
 	  insn2index.insert (std::make_pair (insn, insns.size ()));
 	  insns.push_back (insn);
@@ -201,13 +213,12 @@ filter_insns ()
 
   /* prepare insn_info */
   insn_info ii;
-  resetii (ii);
   for (unsigned i = 0; i < insns.size (); ++i)
     {
       infos.push_back (ii);
     }
 
-  /* own analyze life */
+  /* own analyze reg life */
   std::vector<std::pair<unsigned, insn_info>> todo;
   todo.push_back (std::make_pair (insns.size () - 1, ii));
 
@@ -236,53 +247,40 @@ filter_insns ()
 		  if (JUMP_LABEL(*i) == insn)
 		    {
 		      std::map<rtx_insn *, unsigned>::iterator j = insn2index.find (*i);
-		      if (j != insn2index.end())
+		      if (j != insn2index.end ())
 			todo.push_back (std::make_pair (j->second, ii));
 		    }
 		}
 	      continue;
 	    }
 
-	  rtx set = single_set (insn);
-	  if (set == 0)
-	    {
-	      if (JUMP_P(insn)) {
-		  resetii(ii);
-		  setii(0, ii);
-		  infos[pos] = ii;
-		  continue;
-	      }
-	      fprintf(stderr, "##### ");
-	      debug_rtx(insn);
-	    continue;
-	    }
-
-	  rtx src = SET_SRC(set);
-	  rtx dst = SET_DEST(set);
-
-	  debug_rtx(insn);
+	  rtx pattern = PATTERN (insn);
 
 	  if (CALL_P(insn))
 	    {
 	      /* a call sets d0 and kills d1,a0,a1. */
-	      if (getii (1, ii))
+	      if (ii.get (1))
 		fprintf (stderr, "d1 used after call\n");
-	      if (getii (8, ii))
+	      if (ii.get (8))
 		fprintf (stderr, "a0 used after call\n");
-	      if (getii (9, ii))
+	      if (ii.get (9))
 		fprintf (stderr, "a1 used after call\n");
 
-	      resetii (ii);
+	      ii.unset(0);
+	      ii.unset(1);
+	      ii.unset(8);
+	      ii.unset(9);
+
+	      // FIXME: get the DECL and read attributes.
 	      // use regs depending on flag mregparm
 	      for (int i = 0; i < amigaos_regparm; ++i)
 		{
-		  setii (i, ii);
-		  setii (i + 8, ii);
+		  ii.set (i);
+		  ii.set (i + 8);
 		}
 
 	      // check for reg use
-	      if (REG_P(src))
-		setii (REGNO(src), ii);
+	      scanii (pattern, ii);
 
 	      infos[pos] = ii;
 	      continue;
@@ -290,37 +288,55 @@ filter_insns ()
 
 	  if (JUMP_P(insn))
 	    {
-	      if (ANY_RETURN_P(src))
+	      if (ANY_RETURN_P(pattern))
 		{
-		  resetii (ii);
-		  setii (0, ii);
+		  ii.reset ();
+		  ii.set (0);
 		}
 	      else
 		{
 		  ii |= infos[pos];
 
 		  // check for reg use
-		  if (REG_P(src))
-		    setii (REGNO(src), ii);
+		  scanii(PATTERN(insn), ii);
 
 		}
 	      infos[pos] = ii;
 	      continue;
 	    }
 
+
+	  rtx set = single_set (insn);
+	  if (set == 0)
+	    {
+	      if (GET_CODE (pattern) == USE)
+		{
+		  rtx x = XEXP(pattern, 0);
+		  if (REG_P(x))
+		    ii.set(REGNO(x));
+		  infos[pos] = ii;
+		  continue;
+		}
+
+	      fprintf (stderr, "##### ");
+	      debug_rtx (insn);
+	      scanii (pattern, ii);
+	      infos[pos] = ii;
+	      continue;
+	    }
+
+	  rtx src = SET_SRC(set);
+	  rtx dst = SET_DEST(set);
 	  // scan insn for regs
 	  // a def stop propagation
 	  // a use starts propagation
 	  // also add use to current ii
 	  insn_info use;
-	  resetii (use);
-
 	  insn_info def;
-	  resetii (def);
 
 	  scanii (src, use);
 	  if (REG_P(dst))
-	    setii (REGNO(dst), def);
+	    def.set (REGNO(dst));
 	  else
 	    scanii (dst, use);
 
@@ -808,16 +824,16 @@ commute_add_move (void)
       if (!set)
 	continue;
 
-      rtx reg1 = SET_DEST(set);
-      if (!REG_P(reg1))
+      rtx reg1dst = SET_DEST(set);
+      if (!REG_P(reg1dst))
 	continue;
 
       rtx plus = SET_SRC(set);
       if (GET_CODE(plus) != PLUS)
 	continue;
 
-      rtx reg2 = XEXP(plus, 0);
-      if (!REG_P(reg2))
+      rtx reg1src = XEXP(plus, 0);
+      if (!REG_P(reg1src) || reg1src == reg1dst)
 	continue;
 
       rtx cnst = XEXP(plus, 1);
@@ -834,35 +850,35 @@ commute_add_move (void)
 	continue;
 
       rtx memreg = XEXP(dst, 0);
-      if (!REG_P(memreg) || REGNO(memreg) != REGNO(reg2))
+      if (!REG_P(memreg) || REGNO(memreg) != REGNO(reg1src))
 	continue;
 
       int oldcost1 = insn_rtx_cost (set, true);
       int oldcost2 = insn_rtx_cost (set2, true);
 
-      fprintf (stderr, "commute_add_move found, oldcost: %d = %d + %d\n", oldcost1 + oldcost2, oldcost1, oldcost2);
+      fprintf (stderr, "commute_add_move found, old cost: %d = %d + %d\n", oldcost1 + oldcost2, oldcost1, oldcost2);
 
-      //debug_rtx (insn);
-      //debug_rtx (next);
+      debug_rtx (insn);
+      debug_rtx (next);
 
-      rtx pinc = gen_rtx_POST_INC(GET_MODE(dst), reg1);
+      rtx pinc = gen_rtx_POST_INC(GET_MODE(dst), reg1dst);
       rtx newmem = replace_equiv_address_nv (dst, pinc);
 
       if (validate_change (next, &SET_DEST(set2), newmem, 0))
 	{
 	  SET_INSN_DELETED(insn);
 
-	  insn = emit_insn_before (gen_movsi (reg1, reg2), next);
+	  insn = emit_insn_before (gen_movsi (reg1dst, reg1src), next);
 
-	  add_reg_note (next, REG_INC, reg1);
+	  add_reg_note (next, REG_INC, reg1dst);
 
 	  int newcost1 = insn_rtx_cost (set, true);
 	  int newcost2 = insn_rtx_cost (set2, true);
 
-	  fprintf (stderr, "commute_add_move found, newcost: %d = %d + %d\n", newcost1 + newcost2, newcost1, newcost2);
+	  fprintf (stderr, "commute_add_move found, new cost: %d = %d + %d\n", newcost1 + newcost2, newcost1, newcost2);
 
-	  //debug_rtx (insn);
-	  //debug_rtx (next);
+	  debug_rtx (insn);
+	  debug_rtx (next);
 
 	  df_insn_rescan (insn);
 	  df_insn_rescan (next);
@@ -889,10 +905,40 @@ const_cmp_to_sub (void)
       if (dst != cc0_rtx)
 	continue;
 
-      fprintf (stderr, "cc0:");
-      debug_rtx (insn);
+//      fprintf (stderr, "cc0:");
+//      debug_rtx (insn);
     }
 #endif
+  return change_count;
+}
+
+static unsigned
+elim_dead_assign (void)
+{
+  unsigned change_count = 0;
+  for (unsigned index = 0; index + 1 < insns.size (); ++index)
+    {
+      rtx_insn * insn = insns[index];
+      if (!NONJUMP_INSN_P(insn))
+	continue;
+
+      rtx set = single_set (insn);
+      if (!set)
+	continue;
+
+      rtx src = SET_SRC(set);
+      rtx dst = SET_DEST(set);
+      if (!REG_P(dst) || !REG_P(src))
+	continue;
+
+      if (!infos[index].get (REGNO(dst)))
+	{
+	  fprintf (stderr, "eliminate dead assignment to %d:", REGNO(dst));
+	  debug_rtx (insn);
+	  SET_INSN_DELETED(insn);
+	  ++change_count;
+	}
+    }
   return change_count;
 }
 
@@ -904,7 +950,6 @@ execute_bbb_optimizations (void)
   df_note_add_problem ();
   df_analyze ();
 
-//  dump_insns ("bbb 0");
   filter_insns ();
 
   for (;;)
@@ -925,14 +970,15 @@ execute_bbb_optimizations (void)
       if (const_cmp_to_sub ())
 	done = 0, filter_insns ();
 
+      if (elim_dead_assign ())
+	done = 0, filter_insns ();
+
       if (done)
 	break;
     }
 
-  dump_insns ("bbb 1");
+//  dump_insns ("bbb 1");
   clear ();
-
-  dump_costs ();
 
   return 0;
 }
@@ -964,7 +1010,7 @@ namespace
     virtual bool
     gate (function *)
     {
-      return TARGET_AMIGA;
+      return TARGET_AMIGA && flag_bbb_opts;
     }
 
     virtual unsigned int
