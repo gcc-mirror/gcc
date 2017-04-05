@@ -1,3 +1,11 @@
+2017-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80309
+	* pt.c (canonical_type_parameter): Use vec_safe_grow_cleared instead
+	of a loop doing vec_safe_push of NULL.  Formatting fixes.
+	(rewrite_template_parm): Copy TEMPLATE_PARM_PARAMETER_PACK from oldidx
+	to newidx before calling canonical_type_parameter on newtype.
+
 2017-04-04  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR c++/80296

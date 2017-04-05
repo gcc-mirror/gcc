@@ -3997,10 +3997,10 @@ canonical_type_parameter (tree type)
   tree list;
   int idx = TEMPLATE_TYPE_IDX (type);
   if (!canonical_template_parms)
-    vec_alloc (canonical_template_parms, idx+1);
+    vec_alloc (canonical_template_parms, idx + 1);
 
-  while (canonical_template_parms->length () <= (unsigned)idx)
-    vec_safe_push (canonical_template_parms, NULL_TREE);
+  if (canonical_template_parms->length () <= (unsigned) idx)
+    vec_safe_grow_cleared (canonical_template_parms, idx + 1);
 
   list = (*canonical_template_parms)[idx];
   while (list && !comptypes (type, TREE_VALUE (list), COMPARE_STRUCTURAL))
@@ -4011,8 +4011,7 @@ canonical_type_parameter (tree type)
   else
     {
       (*canonical_template_parms)[idx]
-		= tree_cons (NULL_TREE, type,
-			     (*canonical_template_parms)[idx]);
+	= tree_cons (NULL_TREE, type, (*canonical_template_parms)[idx]);
       return type;
     }
 }
@@ -24955,6 +24954,8 @@ rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
       newidx = TEMPLATE_TYPE_PARM_INDEX (newtype)
 	= build_template_parm_index (index, level, level,
 				     newdecl, newtype);
+      TEMPLATE_PARM_PARAMETER_PACK (newidx)
+	= TEMPLATE_PARM_PARAMETER_PACK (oldidx);
       TYPE_STUB_DECL (newtype) = TYPE_NAME (newtype) = newdecl;
       TYPE_CANONICAL (newtype) = canonical_type_parameter (newtype);
 
@@ -25002,11 +25003,11 @@ rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
       SET_DECL_TEMPLATE_PARM_P (newconst);
       newidx = build_template_parm_index (index, level, level,
 					  newconst, newtype);
+      TEMPLATE_PARM_PARAMETER_PACK (newidx)
+	= TEMPLATE_PARM_PARAMETER_PACK (oldidx);
       DECL_INITIAL (newdecl) = DECL_INITIAL (newconst) = newidx;
     }
 
-  TEMPLATE_PARM_PARAMETER_PACK (newidx)
-    = TEMPLATE_PARM_PARAMETER_PACK (oldidx);
   return newdecl;
 }
 
