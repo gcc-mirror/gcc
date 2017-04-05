@@ -1,3 +1,10 @@
+2017-04-05  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/70703
+	* ira-color.c (update_costs_from_allocno): Use the smallest mode.
+	(update_conflict_hard_regno_costs): Use long instead of unsigned
+	arithmetic for cost calculation.
+
 2017-04-05  Jakub Jelinek  <jakub@redhat.com>
 	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
