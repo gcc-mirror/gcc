@@ -30,9 +30,13 @@
 #include <mmintrin.h>
 #include <prfchwintrin.h>
 
-#ifndef __3dNOW__
+#if defined __x86_64__ && !defined __SSE__ || !defined __3dNOW__
 #pragma GCC push_options
+#ifdef __x86_64__
+#pragma GCC target("sse,3dnow")
+#else
 #pragma GCC target("3dnow")
+#endif
 #define __DISABLE_3dNOW__
 #endif /* __3dNOW__ */
 
@@ -176,7 +180,20 @@ _m_to_float (__m64 __A)
   return __tmp.a[0];
 }
 
-#ifdef __3dNOW_A__
+#ifdef __DISABLE_3dNOW__
+#undef __DISABLE_3dNOW__
+#pragma GCC pop_options
+#endif /* __DISABLE_3dNOW__ */
+
+#if defined __x86_64__ && !defined __SSE__ || !defined __3dNOW_A__
+#pragma GCC push_options
+#ifdef __x86_64__
+#pragma GCC target("sse,3dnowa")
+#else
+#pragma GCC target("3dnowa")
+#endif
+#define __DISABLE_3dNOW_A__
+#endif /* __3dNOW_A__ */
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _m_pf2iw (__m64 __A)
@@ -208,11 +225,9 @@ _m_pswapd (__m64 __A)
   return (__m64)__builtin_ia32_pswapdsf ((__v2sf)__A);
 }
 
-#endif /* __3dNOW_A__ */
-
-#ifdef __DISABLE_3dNOW__
-#undef __DISABLE_3dNOW__
+#ifdef __DISABLE_3dNOW_A__
+#undef __DISABLE_3dNOW_A__
 #pragma GCC pop_options
-#endif /* __DISABLE_3dNOW__ */
+#endif /* __DISABLE_3dNOW_A__ */
 
 #endif /* _MM3DNOW_H_INCLUDED */

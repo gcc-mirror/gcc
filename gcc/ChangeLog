@@ -1,3 +1,12 @@
+2017-04-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80298
+	* config/i386/mmintrin.h: Add -msse target option when __SSE__ is
+	not defined for x86_64 target.  Add -mmmx target option when __SSE2__
+	is not defined.
+	* config/i386/mm3dnow.h: Add -msse target when __SSE__ is not defined
+	for x86_64 target.  Handle -m3dnowa option.
+
 2017-04-05  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/70703
