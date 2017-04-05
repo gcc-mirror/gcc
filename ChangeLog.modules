@@ -1,3 +1,14 @@
+2017-04-05  Nathan Sidwell  <nathan@acm.org>
+
+	Separating namespace bindings part 2
+	gcc/cp/
+	* name-lookup.c (compparms_for_decl_and_using_decl): Replace with ...
+	(matching_using_decl_p): ... this.
+	(do_namespace_push_overload): New, split out of ...
+	(push_overloaded_decl_1): ... this.
+	(do_pushdecl): Adjust.
+	(do_nonmember_using_decl): Adjust.
+
 2017-04-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

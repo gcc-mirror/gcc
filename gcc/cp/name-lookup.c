@@ -1547,6 +1547,115 @@ fixup_unhidden_decl (tree name, tree context, tree old, tree head)
   return head;
 }
 
+/* Compares the parameter-type-lists of USING_FN and REGULAR_FN and
+   returns false if they are different.  If the DECLs are template
+   functions, the return types and the template parameter lists are
+   compared too (DR 565).  */
+
+static bool
+matching_using_decl_p (tree using_fn, tree regular_fn)
+{
+  if (!compparms (TYPE_ARG_TYPES (TREE_TYPE (using_fn)),
+		  TYPE_ARG_TYPES (TREE_TYPE (regular_fn))))
+    return false;
+
+  if (TREE_CODE (using_fn) == TEMPLATE_DECL
+      && TREE_CODE (regular_fn) == TEMPLATE_DECL)
+    {
+      /* Compare template parms.  */
+      if (!comp_template_parms (DECL_TEMPLATE_PARMS (using_fn),
+				DECL_TEMPLATE_PARMS (regular_fn)))
+	return false;
+
+      /* And return type.  */
+      if (!same_type_p (TREE_TYPE (TREE_TYPE (using_fn)),
+			TREE_TYPE (TREE_TYPE (regular_fn))))
+	return false;
+    }
+
+  return true;
+}
+
+/* DECL is a non-member function.  Push it into the overload set of NS
+   (or find it already there).  IS_FRIEND is true if this is a friend
+   declaration.  */
+
+static tree
+do_namespace_push_overload (tree ns, tree decl, bool is_friend)
+{
+  tree name = DECL_NAME (decl);
+  cxx_binding *binding = find_namespace_binding (ns, name, /*insert=*/true);
+
+  if (tree old = binding->value)
+    {
+      if (TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
+	{
+	  tree t = TREE_TYPE (old);
+	  if (MAYBE_CLASS_TYPE_P (t) && warn_shadow
+	      && (! DECL_IN_SYSTEM_HEADER (decl)
+		  || ! DECL_IN_SYSTEM_HEADER (old)))
+	    warning (OPT_Wshadow, "%q#D hides constructor for %q#T", decl, t);
+
+	  /* Slide the typedecl out of the way.  */
+	  binding->type = old;
+	  binding->value = NULL_TREE;
+	}
+      else if (OVL_P (old))
+	{
+	  for (ovl_iterator iter (old); iter; ++iter)
+	    {
+	      tree fn = *iter;
+
+	      if (iter.via_using_p ()
+		  && matching_using_decl_p (fn, decl)
+		  && ! decls_match (fn, decl))
+		diagnose_name_conflict (decl, fn);
+
+	      tree dup = duplicate_decls (decl, fn, is_friend);
+	      if (dup == error_mark_node)
+		return dup;
+	      if (dup == fn)
+		{
+		  if (!iter.hidden_p ())
+		    /* We might have tried to push a hidden decl that
+		       matched a non-hidden one.  Don't allow that to
+		       hide the decl.  */
+		    DECL_ANTICIPATED (dup) = false;
+		  else if (!DECL_HIDDEN_P (dup))
+		    {
+		      /* The name has become unhidden.  Fixup the
+			 overload chain.  */
+		      tree head = iter.unhide (old);
+		      if (head != old)
+			old = fixup_unhidden_decl
+			  (DECL_NAME (dup), ns, old, head);
+		    }
+
+		  return dup;
+		}
+	    }
+
+	  /* We don't overload implicit built-ins.  duplicate_decls()
+	     may fail to merge the decls if the new decl is e.g. a
+	     template function.  */
+	  old = skip_anticipated_builtins (old);
+	}
+      else if (old == error_mark_node)
+	/* Ignore the undefined symbol marker.  */
+	old = NULL_TREE;
+      else
+	{
+	  error ("previous non-function declaration %q+#D", old);
+	  error ("conflicts with function declaration %q#D", decl);
+	  return decl;
+	}
+    }
+
+  binding->value = ovl_add (binding->value, decl);
+
+  return decl;
+}
+
 /* Record a decl-node X as belonging to the current lexical scope.
    Check for errors (such as an incompatible declaration for the same
    name already seen in the same scope).  IS_FRIEND is true if X is
@@ -1837,16 +1946,20 @@ do_pushdecl (tree x, bool is_friend)
       t = x;
       if (DECL_NON_THUNK_FUNCTION_P (x) && ! DECL_FUNCTION_MEMBER_P (x))
 	{
-	  t = push_overloaded_decl (x, PUSH_LOCAL, is_friend);
-	  if (!namespace_bindings_p ())
-	    /* We do not need to create a binding for this name;
-	       push_overloaded_decl will have already done so if
-	       necessary.  */
-	    need_new_binding = 0;
+	  if (namespace_bindings_p ())
+	    t = do_namespace_push_overload (current_namespace, x, is_friend);
+	  else
+	    {
+	      t = push_overloaded_decl (x, PUSH_LOCAL, is_friend);
+	      /* We do not need to create a binding for this name;
+		 push_overloaded_decl will have already done so if
+		 necessary.  */
+	      need_new_binding = 0;
+	    }
 	}
       else if (DECL_FUNCTION_TEMPLATE_P (x) && DECL_NAMESPACE_SCOPE_P (x))
 	{
-	  t = push_overloaded_decl (x, PUSH_GLOBAL, is_friend);
+	  t = do_namespace_push_overload (CP_DECL_CONTEXT (t), x, is_friend);
 	  if (t == x)
 	    add_namespace_decl (CP_DECL_CONTEXT (t), x);
 	}
@@ -3230,28 +3343,6 @@ augment_local_overload_binding (tree name, int flags, tree oldval, tree newval)
     push_local_binding (name, newval, flags);
 }
 
-/* Helper function for push_overloaded_decl_1 and do_nonmember_using_decl.
-   Compares the parameter-type-lists of DECL1 and DECL2 and returns false
-   if they are different.  If the DECLs are template functions, the return
-   types and the template parameter lists are compared too (DR 565).  */
-
-static bool
-compparms_for_decl_and_using_decl (tree decl1, tree decl2)
-{
-  if (!compparms (TYPE_ARG_TYPES (TREE_TYPE (decl1)),
-		  TYPE_ARG_TYPES (TREE_TYPE (decl2))))
-    return false;
-
-  if (! DECL_FUNCTION_TEMPLATE_P (decl1)
-      || ! DECL_FUNCTION_TEMPLATE_P (decl2))
-    return true;
-
-  return (comp_template_parms (DECL_TEMPLATE_PARMS (decl1),
-			       DECL_TEMPLATE_PARMS (decl2))
-	  && same_type_p (TREE_TYPE (TREE_TYPE (decl1)),
-			  TREE_TYPE (TREE_TYPE (decl2))));
-}
-
 /* DECL is a FUNCTION_DECL for a non-member function, which may have
    other definitions already in place.  We get around this by making
    the value of the identifier point to a list of all the things that
@@ -3281,6 +3372,7 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
   tree new_binding;
   int doing_global = (namespace_bindings_p () || !(flags & PUSH_LOCAL));
 
+  gcc_assert (!doing_global);
   /* USING decls should go via augment_local_overload_binding or
      directly updating the binding.  */
   gcc_assert (!(flags & PUSH_USING));
@@ -3309,7 +3401,7 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
 
 	      if (iter.via_using_p ()
 		  && !(flags & PUSH_USING)
-		  && compparms_for_decl_and_using_decl (fn, decl)
+		  && matching_using_decl_p (fn, decl)
 		  && ! decls_match (fn, decl))
 		diagnose_name_conflict (decl, fn);
 
@@ -3497,7 +3589,7 @@ do_nonmember_using_decl (tree scope, tree name, cxx_binding *bind)
 		    found = true;
 		  else if (old.via_using_p ())
 		    continue; /* this is a using decl */
-		  else if (compparms_for_decl_and_using_decl (new_fn, old_fn))
+		  else if (matching_using_decl_p (new_fn, old_fn))
 		    {
 		      /* There was already a non-using declaration in
 			 this scope with the same parameter types. If both
