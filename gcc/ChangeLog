@@ -1,3 +1,7 @@
+2017-04-05  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* builtins.def (BUILT_IN_UPDATE_SETJMP_BUF): Fix type.
+
 2017-04-05  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/70703
