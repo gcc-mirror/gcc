@@ -1,3 +1,8 @@
+2017-04-05  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/70703
+	* gcc.target/i386/pr70703.c: New.
+
 2017-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/80308
