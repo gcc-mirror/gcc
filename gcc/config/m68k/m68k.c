@@ -2928,16 +2928,6 @@ m68k_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	    *total = COSTS_N_INSNS (TARGET_COLDFIRE ? 2 : 3);
 	    return true;
 	}
-      /* reg + value */
-//      if (mode == SImode
-//	  && REG_P(XEXP(x, 0))) {
-//	  if (m68k_rtx_costs(XEXP(x, 1), mode, PLUS, 1, total, speed))
-//	    {
-//	      if (REGNO_REG_CLASS(REGNO(XEXP(x, 0))) == ADDR_REGS)
-//		*total += 4;
-//	      return true;
-//	    }
-//      }
 
       return false;
 
