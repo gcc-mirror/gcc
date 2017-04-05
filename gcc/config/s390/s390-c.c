@@ -854,7 +854,7 @@ s390_resolve_overloaded_builtin (location_t loc,
   const unsigned int ob_flags = bflags_for_builtin(ob_fcode);
   int num_matches = 0;
   tree target_builtin_decl, b_arg_chain, return_type;
-  enum s390_builtin_ov_type_index last_match_fntype_index;
+  enum s390_builtin_ov_type_index last_match_fntype_index = BT_OV_MAX;
 
   if (TARGET_DEBUG_ARG)
     fprintf (stderr,
