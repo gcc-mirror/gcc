@@ -133,7 +133,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.1-b20170226\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-02-25 19:14+0000\n"
-"PO-Revision-Date: 2017-03-29 20:42+0200\n"
+"PO-Revision-Date: 2017-03-31 20:54+0200\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -6656,7 +6656,7 @@ msgstr "Avertir à propos des fonctions qui pourraient être candidates pour les
 
 #: c-family/c.opt:725
 msgid "Suggest that the override keyword be used when the declaration of a virtual function overrides another."
-msgstr "Suggérer l'utilisation du mot-clé « override » quand la déclaration d'une fonction virtuelle en écrase une autre."
+msgstr "L'utilisation du mot-clé « override » est suggérée quand la déclaration d'une fonction virtuelle en écrase une autre."
 
 #: c-family/c.opt:730
 msgid "Warn about enumerated switches, with no default, missing a case."
@@ -34022,7 +34022,7 @@ msgstr "%<#pragma omp declare simd%> doit être suivi d'une déclaration ou une 
 #: c/c-parser.c:16672 cp/parser.c:36612
 #, gcc-internal-format
 msgid "%<#pragma omp declare simd%> or %<simd%> attribute cannot be used in the same function marked as a Cilk Plus SIMD-enabled function"
-msgstr "%<#pragma omp declare simd%> ou l'attribut %<simd%> ne peuvent être utilisés dans la même fonction marquée comme une fonction Cilk Plus avec SIMD activé"
+msgstr "%<#pragma omp declare simd%> ou l'attribut %<simd%> ne peuvent pas être utilisés dans la même fonction marquée comme une fonction Cilk Plus avec SIMD activé"
 
 #: c/c-parser.c:16686
 #, gcc-internal-format
