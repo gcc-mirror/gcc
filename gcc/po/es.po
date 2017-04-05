@@ -38,7 +38,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.1-b20170226\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-02-25 19:14+0000\n"
-"PO-Revision-Date: 2017-03-29 00:08+0200\n"
+"PO-Revision-Date: 2017-04-01 15:37+0200\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -19217,79 +19217,72 @@ msgstr "solamente a las regiones %<distribute%> o %<parallel%> se les permite es
 #: omp-low.c:2512
 #, gcc-internal-format
 msgid "%<distribute%> region must be strictly nested inside %<teams%> construct"
-msgstr ""
+msgstr "las regiones %<distribute%> deben estar estrictamente anidadas dentro de construcciones %<teams%>"
 
 #: omp-low.c:2553
 #, gcc-internal-format
 msgid "OpenACC loop directive must be associated with an OpenACC compute region"
-msgstr ""
+msgstr "la directiva de bucle OpenACC debe estar asociada a una región de cómputo OpenACC"
 
 #: omp-low.c:2575
-#, fuzzy, gcc-internal-format
-#| msgid "operand is const_double"
+#, gcc-internal-format
 msgid "orphaned %qs construct"
-msgstr "el operando es const_double"
+msgstr "construcción %qs huérfana"
 
 #: omp-low.c:2604
 #, gcc-internal-format
 msgid "%<#pragma omp cancel for%> inside %<nowait%> for construct"
-msgstr ""
+msgstr "%<#pragma omp cancel for%> dentro de %<nowait%> para construcción"
 
 #: omp-low.c:2609
 #, gcc-internal-format
 msgid "%<#pragma omp cancel for%> inside %<ordered%> for construct"
-msgstr ""
+msgstr "%<#pragma omp cancel for%> dentro de %<ordered%> para construcción"
 
 #: omp-low.c:2629 omp-low.c:2642
-#, fuzzy, gcc-internal-format
-#| msgid "%<#pragma omp section%> may only be used in %<#pragma omp sections%> construct"
+#, gcc-internal-format
 msgid "%<#pragma omp cancel sections%> inside %<nowait%> sections construct"
-msgstr "%<#pragma omp section%> sólo se puede usar en construcciones %<#pragma omp sections%>"
+msgstr "%<#pragma omp cancel section%> dentro de contrucción de secciones %<nowait%>"
 
 #: omp-low.c:2668
 #, gcc-internal-format
 msgid "%<%s taskgroup%> construct not closely nested inside of %<taskgroup%> region"
-msgstr ""
+msgstr "la construcción %<%s taskgroup%> no está bien anidada dentro de la región %<taskgroup%>"
 
 #: omp-low.c:2682
-#, fuzzy, gcc-internal-format
-#| msgid "invalid PHI argument"
+#, gcc-internal-format
 msgid "invalid arguments"
-msgstr "argumento PHI no válido"
+msgstr "argumentos no válidos"
 
 #: omp-low.c:2688
 #, gcc-internal-format
 msgid "%<%s %s%> construct not closely nested inside of %qs"
-msgstr ""
+msgstr "la construcción %<%s %s%> no está bien anidada dentro de %qs"
 
 #: omp-low.c:2716
-#, fuzzy, gcc-internal-format
-#| msgid "barrier region may not be closely nested inside of work-sharing, critical, ordered, master or explicit task region"
+#, gcc-internal-format
 msgid "barrier region may not be closely nested inside of work-sharing, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> or %<taskloop%> region"
-msgstr "la región de barrera puede no estar bien anidada dentro de la región de trabajo compartido, crítica, ordenada, maestra o de tarea explícita"
+msgstr "la región de barrera puede no estar bien anidada dentro de la región de trabajo compartido, %<critical%>, %<ordered%>, %<master%>, %<task%> explícita o región %<taskloop%>"
 
 #: omp-low.c:2723
-#, fuzzy, gcc-internal-format
-#| msgid "work-sharing region may not be closely nested inside of work-sharing, critical, ordered, master or explicit task region"
+#, gcc-internal-format
 msgid "work-sharing region may not be closely nested inside of work-sharing, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> or %<taskloop%> region"
-msgstr "la región de trabajo compartido puede no estar bien anidada dentro de la región de trabajo compartido, crítica, ordenada, maestra o de tarea explícita"
+msgstr "la región de trabajo compartido puede no estar bien anidada dentro de la región de trabajo compartido, %<crítical%>, %<ordered%>, %<master%>, %<task%> explícita o región %<taskloop%>"
 
 #: omp-low.c:2752
-#, fuzzy, gcc-internal-format
-#| msgid "master region may not be closely nested inside of work-sharing or explicit task region"
+#, gcc-internal-format
 msgid "%<master%> region may not be closely nested inside of work-sharing, explicit %<task%> or %<taskloop%> region"
-msgstr "la región maestra puede no estar bien anidada dentro de la región de trabajo compartido o de tarea explícita"
+msgstr "la región %<master%> puede no estar bien anidada dentro de la región de trabajo compartido, de %<task%> explícita o de región %<taskloop%>"
 
 #: omp-low.c:2776 omp-low.c:2915
 #, gcc-internal-format
 msgid "%<depend(%s)%> is only allowed in %<omp ordered%>"
-msgstr ""
+msgstr "%<depend(%s)%> solo se permite en %<omp ordered%>"
 
 #: omp-low.c:2804
-#, fuzzy, gcc-internal-format
-#| msgid "ordered region must be closely nested inside a loop region with an ordered clause"
+#, gcc-internal-format
 msgid "%<ordered%> construct with %<depend%> clause must be closely nested inside an %<ordered%> loop"
-msgstr "la región ordenada puede estar bien anidada dentro de una región de bucle con una cláusula ordenada"
+msgstr "la construcción %<ordered%> con la cláusula %<depend%> debe estar bien anidada dentro de un bucle %<ordered%>"
 
 #: omp-low.c:2821
 #, gcc-internal-format
@@ -19297,155 +19290,145 @@ msgid "invalid depend kind in omp %<ordered%> %<depend%>"
 msgstr ""
 
 #: omp-low.c:2836
-#, fuzzy, gcc-internal-format
-#| msgid "ordered region must be closely nested inside a loop region with an ordered clause"
+#, gcc-internal-format
 msgid "%<ordered%> %<simd%> must be closely nested inside %<simd%> region"
-msgstr "la región ordenada puede estar bien anidada dentro de una región de bucle con una cláusula ordenada"
+msgstr "%<ordered%> %<simd%> debe estar bien anidada dentro de una región %<simd%>"
 
 #: omp-low.c:2849
-#, fuzzy, gcc-internal-format
-#| msgid "ordered region may not be closely nested inside of critical or explicit task region"
+#, gcc-internal-format
 msgid "%<ordered%> region may not be closely nested inside of %<critical%>, %<ordered%>, explicit %<task%> or %<taskloop%> region"
-msgstr "la región ordenada puede no estar bien anidada dentro de la región crítica o de tarea explícita"
+msgstr "la región %<ordered%> puede no estar bien anidada dentro de la región %<critical%>, %<ordered%>, explicit %<task%> o %<taskloop%>"
 
 #: omp-low.c:2860 omp-low.c:2873
-#, fuzzy, gcc-internal-format
-#| msgid "ordered region must be closely nested inside a loop region with an ordered clause"
+#, gcc-internal-format
 msgid "%<ordered%> region must be closely nested inside a loop region with an %<ordered%> clause"
-msgstr "la región ordenada puede estar bien anidada dentro de una región de bucle con una cláusula ordenada"
+msgstr "la región %<ordered%> debe estar bien anidada dentro de una región de bucle con una cláusula %<ordered%>"
 
 #: omp-low.c:2890
-#, fuzzy, gcc-internal-format
-#| msgid "critical region may not be nested inside a critical region with the same name"
+#, gcc-internal-format
 msgid "%<critical%> region may not be nested inside a %<critical%> region with the same name"
-msgstr "la región crítica puede no estar bien anidada dentro de una región crítica con el mismo nombre"
+msgstr "la región %<critical%> puede no estar bien anidada dentro de una región %<critical%> con el mismo nombre"
 
 #: omp-low.c:2902
 #, gcc-internal-format
 msgid "%<teams%> construct not closely nested inside of %<target%> construct"
-msgstr ""
+msgstr "construcción %<teams%> no bien anidada dentro de construcción %<target%>"
 
 #: omp-low.c:2923
 #, gcc-internal-format
 msgid "OpenACC region inside of OpenACC routine, nested parallelism not supported yet"
-msgstr ""
+msgstr "región OpenACC dentro de rutina OpenACC; el paralelismo anidado aún no se permite"
 
 #: omp-low.c:2936
 #, gcc-internal-format
 msgid "OpenACC construct inside of non-OpenACC region"
-msgstr ""
+msgstr "construcción OpenACC dentro de región no OpenACC"
 
 #: omp-low.c:2981
 #, gcc-internal-format
 msgid "%s %qs construct inside of %s %qs region"
-msgstr ""
+msgstr "construcción %s %qs dentro de región %s %qs"
 
 #: omp-low.c:2994 omp-low.c:3001
 #, gcc-internal-format
 msgid "%qs construct inside of %qs region"
-msgstr ""
+msgstr "construcción %qs dentro de región %qs"
 
 #: omp-low.c:3113
 #, gcc-internal-format
 msgid "setjmp/longjmp inside simd construct"
-msgstr ""
+msgstr "setjmp/longjmp dentro de construcción simd"
 
 #: omp-low.c:6281
 #, gcc-internal-format
 msgid "ignoring sink clause with offset that is not a multiple of the loop step"
-msgstr ""
+msgstr "se hace caso omiso de cláusula sumidero con desplazamiento que no es múltiplo del paso del bucle"
 
 #: omp-low.c:6304
 #, gcc-internal-format
 msgid "first offset must be in opposite direction of loop iterations"
-msgstr ""
+msgstr "el primer desplazamiento debe estar en dirección opuesta a las iteraciones del bucle"
 
 #: omp-low.c:9027
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid exit from OpenMP structured block"
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid exit from %s structured block"
-msgstr "salida no válida de un bloque estructurado OpenMP"
+msgstr "salida no válida de un bloque estructurado %s"
 
 #: omp-low.c:9029 omp-low.c:9034
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid entry to OpenMP structured block"
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid entry to %s structured block"
-msgstr "entrada no válida a un bloque estructurado OpenMP"
+msgstr "entrada no válida a un bloque estructurado %s"
 
 #. Otherwise, be vague and lazy, but efficient.
 #: omp-low.c:9038
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid branch to/from an OpenMP structured block"
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid branch to/from %s structured block"
-msgstr "ramificación no válida desde/para un bloque estructurado OpenMP"
+msgstr "ramificación no válida desde/para un bloque estructurado %s"
 
 #: omp-offload.c:597
 #, gcc-internal-format, gfc-internal-format
 msgid "-fopenacc-dim operand is malformed at '%s'"
-msgstr ""
+msgstr "operando -fopenacc-dim defectuoso en '%s'"
 
 #: omp-offload.c:1152
 #, gcc-internal-format, gfc-internal-format
 msgid "%s uses same OpenACC parallelism as containing loop"
-msgstr ""
+msgstr "%s usa el mismo paralelismo OpenACC que el bucle que lo contiene"
 
 #: omp-offload.c:1154 omp-offload.c:1183
 #, gcc-internal-format
 msgid "containing loop here"
-msgstr ""
+msgstr "bucle que lo contiene aquí"
 
 #: omp-offload.c:1158
 #, gcc-internal-format, gfc-internal-format
 msgid "%s uses OpenACC parallelism disallowed by containing routine"
-msgstr ""
+msgstr "%s usa paralelismo OpenACC no permitido por la rutina que lo contiene"
 
 #: omp-offload.c:1163
-#, fuzzy, gcc-internal-format
-#| msgid "%qD declared here"
+#, gcc-internal-format
 msgid "routine %qD declared here"
-msgstr "%qD se declara aquí"
+msgstr "la rutina %qD se declara aquí"
 
 #: omp-offload.c:1176
 #, gcc-internal-format
 msgid "incorrectly nested OpenACC loop parallelism"
-msgstr ""
+msgstr "paralelismo de bucle OpenACC incorrectamente anidado"
 
 #: omp-offload.c:1317
 #, gcc-internal-format
 msgid "insufficient partitioning available to parallelize element loop"
-msgstr ""
+msgstr "insuficiente paralelismo disponible para paralelizar bucle de elemento"
 
 #: omp-offload.c:1324
 #, gcc-internal-format, gfc-internal-format
 msgid "insufficient partitioning available to parallelize%s loop"
-msgstr ""
+msgstr "insuficiente paralelismo disponible para paralelizar bucle %s"
 
 #: omp-simd-clone.c:192
-#, fuzzy, gcc-internal-format
-#| msgid "ignoring pragma: %s"
+#, gcc-internal-format
 msgid "ignoring large linear step"
-msgstr "ignorando el pragma: %s"
+msgstr "ignorando el paso lineal grande"
 
 #: omp-simd-clone.c:199
 #, gcc-internal-format
 msgid "ignoring zero linear step"
-msgstr ""
+msgstr "se hace caso omiso del paso lineal cero"
 
 #: omp-simd-clone.c:258
 #, gcc-internal-format
 msgid "ignoring %<#pragma omp declare simd%> on function with %<_Atomic%> qualified return type"
-msgstr ""
+msgstr "se hace caso omiso de %<#pragma omp declare simd%> en función con tipo de retorno cualificado %<_Atomic%>"
 
 #: omp-simd-clone.c:269
 #, gcc-internal-format
 msgid "ignoring %<#pragma omp declare simd%> on function with %<_Atomic%> qualified non-%<uniform%> argument"
-msgstr ""
+msgstr "se hace caso omiso de %<#pragma omp declare simd%> en función con argumento non-%<uniform%> cualificado %<_Atomic%>"
 
 #: optabs.c:4195
-#, fuzzy, gcc-internal-format
-#| msgid "BYTE type used at %C is not available on the target machine"
+#, gcc-internal-format
 msgid "indirect jumps are not available on this target"
-msgstr "El tipo BYTE usado en %C no está disponible en la máquina objetivo"
+msgstr "los saltos indirectos no está disponibles en este objetivo"
 
 #: opts-common.c:1119
 #, gcc-internal-format
@@ -19468,10 +19451,9 @@ msgid "unrecognized argument in option %qs"
 msgstr "no se reconoce el argumento en la opción %qs"
 
 #: opts-common.c:1160 config/i386/i386.c:4719
-#, fuzzy, gcc-internal-format
-#| msgid "valid arguments to %qs are: %s"
+#, gcc-internal-format
 msgid "valid arguments to %qs are: %s; did you mean %qs?"
-msgstr "los argumentos válidos para %qs son: %s"
+msgstr "los argumentos válidos para %qs son: %s; ¿quiso decir %qs?"
 
 #: opts-common.c:1163 config/i386/i386.c:4722
 #, gcc-internal-format
@@ -19495,10 +19477,9 @@ msgid "unrecognized command line option %<-fdump-%s%>"
 msgstr "no se reconoce la opción de línea de órdenes %<-fdump-%s%>"
 
 #: opts-global.c:369
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized command line option %<-fdump-%s%>"
+#, gcc-internal-format
 msgid "unrecognized command line option %<-fopt-info-%s%>"
-msgstr "no se reconoce la opción de línea de órdenes %<-fdump-%s%>"
+msgstr "no se reconoce la opción de línea de órdenes %<-fopt-info-%s%>"
 
 #: opts-global.c:390 opts-global.c:398
 #, gcc-internal-format
@@ -19513,13 +19494,12 @@ msgstr "no se reconoce el nombre de registro %qs"
 #: opts-global.c:440
 #, gcc-internal-format
 msgid "-fasan-shadow-offset should only be used with -fsanitize=kernel-address"
-msgstr ""
+msgstr "-fasan-shadow-offset solo debería usarse con -fsanitize=kernel-address"
 
 #: opts-global.c:443
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized address"
+#, gcc-internal-format
 msgid "unrecognized shadow offset %qs"
-msgstr "no se reconoce la dirección"
+msgstr "no se reconoce el desplazamiento oscurecido %qs"
 
 #: opts.c:90
 #, gcc-internal-format
@@ -19537,10 +19517,9 @@ msgid "%<-femit-struct-debug-detailed=dir:...%> must allow at least as much as %
 msgstr "%<-femit-struct-debug-detailed=dir:...%> debe permitir por lo menos tanto como %<-femit-struct-debug-detailed=ind:...%>"
 
 #: opts.c:586
-#, fuzzy, gcc-internal-format
-#| msgid "argument to %qs should be a non-negative integer"
+#, gcc-internal-format
 msgid "argument to %<-O%> should be a non-negative integer, %<g%>, %<s%> or %<fast%>"
-msgstr "el argumento para %qs debe ser un entero no negativo"
+msgstr "el argumento para %<-O%> debe ser un entero no negativo, %<g%>, %<s%> o %<fast%>"
 
 #: opts.c:739
 #, gcc-internal-format
@@ -19578,10 +19557,9 @@ msgid "-freorder-blocks-and-partition does not work on this architecture"
 msgstr "-freorder-blocks-and-partition no funciona en esta arquitectura"
 
 #: opts.c:912
-#, fuzzy, gcc-internal-format
-#| msgid "-fno-fat-lto-objects are supported only with linker plugin."
+#, gcc-internal-format
 msgid "-fno-fat-lto-objects are supported only with linker plugin"
-msgstr "-fno-fat-lto-object sólo se admite con el plugin enlazador."
+msgstr "-fno-fat-lto-object sólo se admite con el plugin enlazador"
 
 #: opts.c:925
 #, gcc-internal-format
@@ -19589,32 +19567,29 @@ msgid "%<-fsplit-stack%> is not supported by this compiler configuration"
 msgstr "%<-fsplit-stack%> no se admite en esta configuración de compilador"
 
 #: opts.c:957
-#, fuzzy, gcc-internal-format
-#| msgid "-fdirectives-only is incompatible with -traditional"
+#, gcc-internal-format
 msgid "-fsanitize=address is incompatible with -fsanitize=kernel-address"
-msgstr "-fdirectives-only es incompatible con -traditional"
+msgstr "-fsanitize=address es incompatible con -fsanitize=kernel-address"
 
 #: opts.c:964
 #, gcc-internal-format
 msgid "-fsanitize=address and -fsanitize=kernel-address are incompatible with -fsanitize=thread"
-msgstr ""
+msgstr "-fsanitize=address y -fsanitize=kernel-address son incompatibles con -fsanitize=thread"
 
 #: opts.c:970
-#, fuzzy, gcc-internal-format
-#| msgid "-fdirectives-only is incompatible with -traditional"
+#, gcc-internal-format
 msgid "-fsanitize=leak is incompatible with -fsanitize=thread"
-msgstr "-fdirectives-only es incompatible con -traditional"
+msgstr "-fsanitize=leak es incompatible con -fsanitize=thread"
 
 #: opts.c:976
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "-fpic is not supported"
+#, gcc-internal-format, gfc-internal-format
 msgid "-fsanitize-recover=%s is not supported"
-msgstr "no se admite -fpic"
+msgstr "no se admite -fsanitize-recover=%s"
 
 #: opts.c:1005
 #, gcc-internal-format
 msgid "-fsanitize-address-use-after-scope requires -fstack-reuse=none option"
-msgstr ""
+msgstr "-fsanitize-address-use-after-scope requiere -fstack-reuse=none option"
 
 #: opts.c:1410
 #, gcc-internal-format
@@ -19624,19 +19599,17 @@ msgstr "no se reconocen las include_flags 0x%x pasadas a print_specific_help"
 #: opts.c:1610
 #, gcc-internal-format
 msgid "-fsanitize=all option is not valid"
-msgstr ""
+msgstr "la opción -fsanitize=all no es válida"
 
 #: opts.c:1642
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized argument to --help= option: %q.*s"
+#, gcc-internal-format
 msgid "unrecognized argument to -f%ssanitize%s= option: %q.*s; did you mean %qs"
-msgstr "no se reconoce el argumento para la opción --help=: %q.*s"
+msgstr "no se reconoce el argumento para la opción -f%ssanitize%s=: %q.*s; ¿quiso decir %qs?"
 
 #: opts.c:1649
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized argument to --help= option: %q.*s"
+#, gcc-internal-format
 msgid "unrecognized argument to -f%ssanitize%s= option: %q.*s"
-msgstr "no se reconoce el argumento para la opción --help=: %q.*s"
+msgstr "no se reconoce el argumento para la opción -f%ssanitize%s=: %q.*s"
 
 #: opts.c:1828
 #, gcc-internal-format
@@ -19649,15 +19622,14 @@ msgid "unrecognized argument to --help= option: %q.*s"
 msgstr "no se reconoce el argumento para la opción --help=: %q.*s"
 
 #: opts.c:2078
-#, fuzzy, gcc-internal-format
-#| msgid "LTO support has not been enabled in this configuration"
+#, gcc-internal-format
 msgid "HSA has not been enabled during configuration"
-msgstr "el soporte para LTO no se activó en esta configuración"
+msgstr "HSA no se activó durante la configuración"
 
 #: opts.c:2090
 #, gcc-internal-format
 msgid "-foffload-abi option can be specified only for offload compiler"
-msgstr ""
+msgstr "la opción -foffload-abi solo puede especificarse para compilador de descarga"
 
 #: opts.c:2098
 #, gcc-internal-format, gfc-internal-format
@@ -19665,15 +19637,14 @@ msgid "structure alignment must be a small power of two, not %d"
 msgstr "la alineación de la estructura debe ser una potencia pequeña de dos, no %d"
 
 #: opts.c:2217
-#, fuzzy, gcc-internal-format
-#| msgid "unknown stack check parameter \"%s\""
+#, gcc-internal-format
 msgid "unknown stack check parameter %qs"
-msgstr "parámetro de revisión de pila \"%s\" desconocido"
+msgstr "parámetro de revisión de pila desconocido %qs"
 
 #: opts.c:2249
 #, gcc-internal-format
 msgid "%<-gdwarf%s%> is ambiguous; use %<-gdwarf-%s%> for DWARF version or %<-gdwarf -g%s%> for debug level"
-msgstr ""
+msgstr "%<-gdwarf%s%> es ambiguo; use %<-gdwarf-%s%> para la versión DWARF o %<-gdwarf -g%s%> para nivel de depuración"
 
 #: opts.c:2260
 #, gcc-internal-format, gfc-internal-format
@@ -19686,16 +19657,14 @@ msgid "%s: --param arguments should be of the form NAME=VALUE"
 msgstr "%s: los argumentos --param deben ser de la forma NOMBRE=VALOR"
 
 #: opts.c:2371
-#, fuzzy, gcc-internal-format
-#| msgid "invalid --param value %qs"
+#, gcc-internal-format
 msgid "invalid --param name %qs; did you mean %qs?"
-msgstr "valor de --param %qs no válido"
+msgstr "nombre de --param %qs no válido; ¿quiso decir %qs?"
 
 #: opts.c:2374
-#, fuzzy, gcc-internal-format
-#| msgid "invalid --param value %qs"
+#, gcc-internal-format
 msgid "invalid --param name %qs"
-msgstr "valor de --param %qs no válido"
+msgstr "nombre de --param %qs no válido"
 
 #: opts.c:2382
 #, gcc-internal-format
@@ -19708,22 +19677,19 @@ msgid "target system does not support debug output"
 msgstr "el sistema objetivo no admite salida de depuración"
 
 #: opts.c:2513
-#, fuzzy, gcc-internal-format
-#| msgid "debug format \"%s\" conflicts with prior selection"
+#, gcc-internal-format
 msgid "debug format %qs conflicts with prior selection"
-msgstr "el formato de depuración \"%s\" genera un conflicto con una selección previa"
+msgstr "el formato de depuración %qs genera un conflicto con una selección previa"
 
 #: opts.c:2531
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognised debug output level \"%s\""
+#, gcc-internal-format
 msgid "unrecognized debug output level %qs"
-msgstr "no se reconoce el nivel de salida de depuración \"%s\""
+msgstr "no se reconoce el nivel de salida de depuración %qs"
 
 #: opts.c:2533
-#, fuzzy, gcc-internal-format
-#| msgid "debug output level %s is too high"
+#, gcc-internal-format
 msgid "debug output level %qs is too high"
-msgstr "el nivel de salida de depuración %s es demasiado elevado"
+msgstr "el nivel de salida de depuración %qs es demasiado elevado"
 
 #: opts.c:2553
 #, gcc-internal-format
@@ -19748,7 +19714,7 @@ msgstr "-Werror=%s: no existe la opción -%s"
 #: opts.c:2629
 #, gcc-internal-format, gfc-internal-format
 msgid "-Werror=%s: -%s is not an option that controls warnings"
-msgstr ""
+msgstr "-Werror=%s: -%s no es una opción para controlar avisos"
 
 #. If we didn't find this parameter, issue an error message.
 #: params.c:198
@@ -19767,15 +19733,14 @@ msgid "maximum value of parameter %qs is %u"
 msgstr "el valor máximo del parámetro %qs es %u"
 
 #: passes.c:81
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s does not support split_edge"
+#, gcc-internal-format, gfc-internal-format
 msgid "pass %s does not support cloning"
-msgstr "%s no admite split_edge"
+msgstr "el paso %s no admite clonación"
 
 #: passes.c:87
 #, gcc-internal-format, gfc-internal-format
 msgid "pass %s needs a set_pass_param implementation to handle the extra argument in NEXT_PASS"
-msgstr ""
+msgstr "el paso %s necesita una implementación set_pass_param para manejar el argumento extra en NEXT_PASS"
 
 #: passes.c:1020
 #, gcc-internal-format
@@ -19926,10 +19891,9 @@ msgid "-iplugindir <dir> option not passed from the gcc driver"
 msgstr "no se pasó la opción -iplugindir <dir> del controlador de gcc"
 
 #: predict.c:3197
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Missing argument list in function '%s' at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Missing counts for called function %s/%i"
-msgstr "Faltan la lista de argumentos en la función '%s' en %C"
+msgstr "Faltan las cuentas para la función invocada %s/%i"
 
 #: profile.c:452
 #, gcc-internal-format, gfc-internal-format
@@ -19959,53 +19923,47 @@ msgstr "información de análisis de perfil corrupta: el número de ejecuciones 
 #: read-rtl-function.c:262
 #, gcc-internal-format, gfc-internal-format
 msgid "insn with UID %i not found for operand %i (`%s') of insn %i"
-msgstr ""
+msgstr "insn con UID %i no encontrada para el operando %i (`%s') de insn %i"
 
 #: read-rtl-function.c:266
 #, gcc-internal-format, gfc-internal-format
 msgid "insn with UID %i not found for operand %i of insn %i"
-msgstr ""
+msgstr "insn con UID %i no encontrada para el operando %i de insn %i"
 
 #: read-rtl-function.c:707
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "unrecognized register name %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "unrecognized edge flag: '%s'"
-msgstr "no se reconoce el nombre de registro %qs"
+msgstr "no se reconoce el indicador de borde: '%s'"
 
 #: read-rtl-function.c:850
-#, fuzzy, gcc-internal-format
-#| msgid "Do not generate #line directives."
+#, gcc-internal-format
 msgid "more than one 'crtl' directive"
-msgstr "No genera directivas #line."
+msgstr "más de una directiva 'crtl'"
 
 #: read-rtl-function.c:978
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "unrecognized visibility value %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "unrecognized enum value: '%s'"
-msgstr "no se reconoce el valor de visibilidad %qs"
+msgstr "no se reconoce el valor de enumerado '%s'"
 
 #: read-rtl-function.c:1133 read-rtl-function.c:1175
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Expecting %s statement at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "was expecting `%s'"
-msgstr "Se esperaba la declaración %s en %C"
+msgstr "se esperaba `%s'"
 
 #: read-rtl-function.c:1552
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "duplicate case label: %<"
+#, gcc-internal-format, gfc-internal-format
 msgid "duplicate insn UID: %i"
-msgstr "etiqueta de case duplicada: %<"
+msgstr "UID de insn duplicado: %i"
 
 #: read-rtl-function.c:1612
 #, gcc-internal-format
 msgid "start/end of RTL fragment are in different files"
-msgstr ""
+msgstr "principio/fin de fragmento RTL en ficheros diferentes"
 
 #: read-rtl-function.c:1618
-#, fuzzy, gcc-internal-format
-#| msgid "stack size must not be greater than 64k"
+#, gcc-internal-format
 msgid "start of RTL fragment must be on an earlier line than end"
-msgstr "el tamaño de la pila no debe ser mayor a 64k"
+msgstr "el principio del fragmento RTL debe estar en una línea anterior al fin"
 
 #: reg-stack.c:536
 #, gcc-internal-format, gfc-internal-format
@@ -20028,10 +19986,9 @@ msgid "implicitly popped regs must be grouped at top of stack"
 msgstr "los registros extraídos implícitamente deben ser agrupados en la parte superior de la pila"
 
 #: reg-stack.c:626
-#, fuzzy, gcc-internal-format
-#| msgid "implicitly popped regs must be grouped at top of stack"
+#, gcc-internal-format
 msgid "explicitly used regs must be grouped at top of stack"
-msgstr "los registros extraídos implícitamente deben ser agrupados en la parte superior de la pila"
+msgstr "los registros usados explícitamente deben ser agrupados en la parte superior de la pila"
 
 #: reg-stack.c:645
 #, gcc-internal-format
@@ -20176,10 +20133,9 @@ msgid "RTL check: attempt to treat non-block symbol as a block symbol in %s, at 
 msgstr "Revisión RTL: se intentó tratar un símbolo que no es de bloque como un símbolo de bloque en %s, en %s:%d"
 
 #: rtl.c:874
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "RTL check: access of elt %d of vector with last elt %d in %s, at %s:%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "RTL check: access of hwi elt %d of vector with last elt %d in %s, at %s:%d"
-msgstr "Revisión RTL: acceso de elt %d de vector con el último elt %d en %s, en %s:%d"
+msgstr "Revisión RTL: acceso de hwi elt %d de vector con el último elt %d en %s, en %s:%d"
 
 #: rtl.c:884
 #, gcc-internal-format, gfc-internal-format
@@ -20312,10 +20268,9 @@ msgid "alignment of array elements is greater than element size"
 msgstr "la alineación de los elementos de la matriz es mayor que el tamaño de los elementos"
 
 #: substring-locations.c:164
-#, fuzzy, gcc-internal-format
-#| msgid "originally defined here"
+#, gcc-internal-format
 msgid "format string is defined here"
-msgstr "se definió originalmente aquí"
+msgstr "la cadena de formato se definió aquí"
 
 #: symtab.c:299
 #, gcc-internal-format
@@ -20323,37 +20278,34 @@ msgid "%D renamed after being referenced in assembly"
 msgstr "se renombró %D después de ser referenciado en el ensamblado"
 
 #: symtab.c:970
-#, fuzzy, gcc-internal-format
-#| msgid "function returning a function"
+#, gcc-internal-format
 msgid "function symbol is not function"
-msgstr "la función devuelve una función"
+msgstr "el símbolo de función no es una función"
 
 #: symtab.c:978
-#, fuzzy, gcc-internal-format
-#| msgid "array is not addressable"
+#, gcc-internal-format
 msgid "variable symbol is not variable"
-msgstr "la matriz no es direccionable"
+msgstr "el símbolo de variable no es una variable"
 
 #: symtab.c:984
-#, fuzzy, gcc-internal-format
-#| msgid "node has wrong clone list"
+#, gcc-internal-format
 msgid "node has unknown type"
-msgstr "el nodo tiene una lista de clones errónea"
+msgstr "el nodo tiene un tipo desconocido"
 
 #: symtab.c:993
 #, gcc-internal-format
 msgid "node not found node->decl->decl_with_vis.symtab_node"
-msgstr ""
+msgstr "nodo no encontrado node->decl->decl_with_vis.symtab_node"
 
 #: symtab.c:1001
 #, gcc-internal-format
 msgid "node differs from node->decl->decl_with_vis.symtab_node"
-msgstr ""
+msgstr "el nodo difiere de node->decl->decl_with_vis.symtab_node"
 
 #: symtab.c:1010
 #, gcc-internal-format
 msgid "assembler name hash list corrupted"
-msgstr ""
+msgstr "lista hash de nombres del ensamblador corrupta"
 
 #: symtab.c:1023
 #, fuzzy, gcc-internal-format
@@ -20362,10 +20314,9 @@ msgid "node not found in symtab assembler name hash"
 msgstr "no se encontró un nodo en cgraph_hash"
 
 #: symtab.c:1030
-#, fuzzy, gcc-internal-format
-#| msgid "double linked list of clones corrupted"
+#, gcc-internal-format
 msgid "double linked list of assembler names corrupted"
-msgstr "lista de clones doblemente ligada corrrupta"
+msgstr "lista doblemente enlazada de nombres del ensamblador corrrupta"
 
 #: symtab.c:1035
 #, fuzzy, gcc-internal-format
@@ -20374,48 +20325,44 @@ msgid "node has body_removed but is definition"
 msgstr "se usó %qD antes de su definición"
 
 #: symtab.c:1040
-#, fuzzy, gcc-internal-format
-#| msgid "node is in clone list but it is not clone"
+#, gcc-internal-format
 msgid "node is analyzed but it is not a definition"
-msgstr "el nodo está en la lista de clones pero no es clon"
+msgstr "el nodo está analizado pero no es una definición"
 
 #: symtab.c:1045
 #, gcc-internal-format
 msgid "node is alias but not implicit alias"
-msgstr ""
+msgstr "el nodo es un alias pero no un alias implícito"
 
 #: symtab.c:1050
-#, fuzzy, gcc-internal-format
-#| msgid "node is in clone list but it is not clone"
+#, gcc-internal-format
 msgid "node is alias but not definition"
-msgstr "el nodo está en la lista de clones pero no es clon"
+msgstr "el nodo es un alias pero no una definición"
 
 #: symtab.c:1055
 #, gcc-internal-format
 msgid "node is weakref but not an transparent_alias"
-msgstr ""
+msgstr "el nodo es una weakref pero no un transparent_alias"
 
 #: symtab.c:1060
 #, gcc-internal-format
 msgid "node is transparent_alias but not an alias"
-msgstr ""
+msgstr "el nodo es un transparent_alias pero no un alias"
 
 #: symtab.c:1069
-#, fuzzy, gcc-internal-format
-#| msgid "node is in clone list but it is not clone"
+#, gcc-internal-format
 msgid "node is in same_comdat_group list but has no comdat_group"
-msgstr "el nodo está en la lista de clones pero no es clon"
+msgstr "el nodo está en la lista same_comdat_group no tiene comdat_group"
 
 #: symtab.c:1074
-#, fuzzy, gcc-internal-format
-#| msgid "same_comdat_group is not a circular list"
+#, gcc-internal-format
 msgid "same_comdat_group list across different groups"
-msgstr "same_comdat_group no es una lista circular"
+msgstr "list same_comdat_group con grupos diferentes"
 
 #: symtab.c:1079
 #, gcc-internal-format
 msgid "mixing different types of symbol in same comdat groups is not supported"
-msgstr ""
+msgstr "no se permite mezclar diferentes símbolos de tipos en los mismos grupos comdat"
 
 #: symtab.c:1084
 #, gcc-internal-format
@@ -20430,23 +20377,22 @@ msgstr "same_comdat_group no es una lista circular"
 #: symtab.c:1106
 #, gcc-internal-format, gfc-internal-format
 msgid "comdat-local symbol referred to by %s outside its comdat"
-msgstr ""
+msgstr "el símbolo comdat-local referenciado en %s fuera de su comdat"
 
 #: symtab.c:1116
 #, gcc-internal-format
 msgid "implicit_section flag is set but section isn't"
-msgstr ""
+msgstr "el indicador implicit_section está puesto pero la sección on lo es"
 
 #: symtab.c:1123
-#, fuzzy, gcc-internal-format
-#| msgid "node is alone in a comdat group"
+#, gcc-internal-format
 msgid "Both section and comdat group is set"
-msgstr "el nodo está solo en un grupo comdat"
+msgstr "Tanto la sección como el grupo comdat están puestos"
 
 #: symtab.c:1135
 #, gcc-internal-format
 msgid "Alias and target's section differs"
-msgstr ""
+msgstr "Alias y sección del objetivo difieren"
 
 #: symtab.c:1142
 #, gcc-internal-format

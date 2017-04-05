@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.1-b20170226\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-02-25 19:14+0000\n"
-"PO-Revision-Date: 2017-03-26 01:34+0100\n"
+"PO-Revision-Date: 2017-04-02 22:33+0200\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.0beta5\n"
+"X-Generator: Poedit 2.0\n"
 
 #: cfgrtl.c:2661
 msgid "flow control insn inside a basic block"
@@ -2194,7 +2194,7 @@ msgstr "Mindestwahrscheinlichkeit in Prozent für Durchfall-Kanten, damit der BB
 #: params.def:850
 #, no-c-format
 msgid "The maximum ratio between array size and switch branches for a switch conversion to take place."
-msgstr "Maximales Verhältnis zwischen Feldgröße und Switch-Zweigen, bei dem eine Switch-Umwandlung erfolgt."
+msgstr "Maximales Verhältnis zwischen Arraygröße und Switch-Zweigen, bei dem eine Switch-Umwandlung erfolgt."
 
 #: params.def:858
 #, no-c-format
@@ -2334,7 +2334,7 @@ msgstr "Übersetzungszeit-Bonus, den IPA-CP an Kandidaten vergibt, die Schleifen
 #: params.def:1033
 #, no-c-format
 msgid "Compile-time bonus IPA-CP assigns to candidates which make an array index known.."
-msgstr "Übersetzungszeit-Bonus, den IPA-CP an Kandidaten vergibt, die einen Feldindex bekannt machen."
+msgstr "Übersetzungszeit-Bonus, den IPA-CP an Kandidaten vergibt, die einen Arrayindex bekannt machen."
 
 #: params.def:1039
 #, no-c-format
@@ -4297,7 +4297,7 @@ msgstr "Cilk-Array-Notation kann nicht als Ausdruck für berechnetes Goto verwen
 
 #: c/c-parser.c:5328
 msgid "Cilk array notation cannot be used for a throw expression"
-msgstr "Cilk-Feldnotation kann nicht in throw-Ausdruck verwendet werden"
+msgstr "Cilk-Array-Notation kann nicht in throw-Ausdruck verwendet werden"
 
 #: c/c-parser.c:5703 cp/semantics.c:1144
 msgid "Cilk array notation cannot be used as a condition for switch statement"
@@ -4711,7 +4711,7 @@ msgstr "Division durch Null bei %L"
 
 #: fortran/arith.c:110
 msgid "Array operands are incommensurate at %L"
-msgstr "Feld-Operanden sind unzureichend bei %L"
+msgstr "Array-Operanden sind unzureichend bei %L"
 
 #: fortran/arith.c:114
 msgid "Integer outside symmetric range implied by Standard Fortran at %L"
@@ -4758,7 +4758,7 @@ msgstr "Gelöschte Funktion:"
 
 #: fortran/expr.c:3241
 msgid "array assignment"
-msgstr "Feld-Zuweisung"
+msgstr "Array-Zuweisung"
 
 #: fortran/gfortranspec.c:425
 #, c-format
@@ -5032,7 +5032,7 @@ msgstr "Argument von angenommenem Typ"
 
 #: fortran/resolve.c:2335
 msgid "array result"
-msgstr "Feldresultat"
+msgstr "Arrayergebnis"
 
 #: fortran/resolve.c:2340
 msgid "pointer or allocatable result"
@@ -6523,7 +6523,7 @@ msgstr "Bei verdächtigen Aufrufen bestimmter Zeichenkettenfunktionen warnen, we
 
 #: c-family/c.opt:707
 msgid "Warn when sizeof is applied on a parameter declared as an array."
-msgstr "Warnen, wenn sizeof auf einen Funktionsparameter angewendet wird, der als Feld deklariert ist."
+msgstr "Warnen, wenn sizeof auf einen Funktionsparameter angewendet wird, der als Array deklariert ist."
 
 #: c-family/c.opt:711
 msgid "Warn about buffer overflow in string manipulation functions like memcpy and strcpy."
@@ -6839,7 +6839,7 @@ msgstr "Bei fragwürdiger Verwendung der Makros, die variable Argumente ermittel
 
 #: c-family/c.opt:1096
 msgid "Warn if a variable length array is used."
-msgstr "Warnen, wenn ein Feld veränderbarer Länge verwendet wird."
+msgstr "Warnen, wenn ein Array variabler Länge verwendet wird."
 
 #: c-family/c.opt:1100
 msgid "-Wvla-larger-than=<number> Warn on unbounded uses of variable-length arrays, and on bounded uses of variable-length arrays whose bound can be larger than <number> bytes."
@@ -9919,7 +9919,7 @@ msgstr "Die z-Vektor-Spracherweiterung einschalten, die das kontextabhängige Ve
 
 #: config/s390/s390.opt:207
 msgid "Warn if a function uses alloca or creates an array with dynamic size."
-msgstr "Warnen, wenn eine Funktion alloca verwendet oder ein Feld dynamischer Größe erzeugt."
+msgstr "Warnen, wenn eine Funktion alloca verwendet oder ein Array dynamischer Größe erzeugt."
 
 #: config/s390/s390.opt:211
 msgid "Warn if a single function's framesize exceeds the given framesize."
@@ -13135,7 +13135,7 @@ msgstr "Dieser Schalter ist veraltet; stattdessen -Wextra verwenden."
 
 #: common.opt:538
 msgid "Warn about returning structures, unions or arrays."
-msgstr "Bei zurückgegebenen Strukturen, Unions oder Feldern warnen."
+msgstr "Bei zurückgegebenen Strukturen, Unions oder Arrays warnen."
 
 #: common.opt:542
 msgid "Warn if a loop with constant number of iterations triggers undefined behavior."
@@ -13143,7 +13143,7 @@ msgstr "Warnen, wenn Schleife mit konstanter Anzahl von Durchläufen zu undefini
 
 #: common.opt:546 common.opt:550
 msgid "Warn if an array is accessed out of bounds."
-msgstr "Warnen, wenn auf ein Feld außerhalb der Grenzen zugegriffen wird."
+msgstr "Warnen, wenn auf ein Array außerhalb der Grenzen zugegriffen wird."
 
 #: common.opt:554
 msgid "Warn about inappropriate attribute usage."
@@ -13447,7 +13447,7 @@ msgstr "Profilierungsinformationen für Aufrufgraph-Knotengewichtungen verwenden
 
 #: common.opt:1022
 msgid "Generate code to check bounds before indexing arrays."
-msgstr "Code zur Überprüfung der Grenzen vor Feldindizierung erzeugen."
+msgstr "Code zur Überprüfung der Grenzen vor Arrayindizierung erzeugen."
 
 #: common.opt:1026
 msgid "Replace add, compare, branch with branch on count register."
@@ -14193,7 +14193,7 @@ msgstr "Vorhersehende vereinheitlichende Optimierung durchlaufen."
 
 #: common.opt:1962
 msgid "Generate prefetch instructions, if available, for arrays in loops."
-msgstr "Wenn verfügbar, Prefetch-Befehle für Felder in Schleifen erzeugen."
+msgstr "Wenn verfügbar, Prefetch-Befehle für Arrays in Schleifen erzeugen."
 
 #: common.opt:1966
 msgid "Enable basic program profiling code."
@@ -14704,7 +14704,7 @@ msgstr "Pfade aufteilen, die zu Schleifen-Rückkanten führen."
 
 #: common.opt:2582
 msgid "Assume common declarations may be overridden with ones with a larger trailing array."
-msgstr "Annehmen, dass gemeinsame Deklaration durch solche übersteuert werden dürfen, die ein längeres hintangestelltes Array haben."
+msgstr "Annehmen, dass gemeinsame Deklarationen durch solche übersteuert werden dürfen, die ein längeres hintangestelltes Array haben."
 
 #: common.opt:2587
 msgid "Compile whole compilation unit at a time."
@@ -15119,11 +15119,11 @@ msgstr "zu viele Argumente für make"
 
 #: go/gofrontend/expressions.cc:8534
 msgid "argument must be array or slice or channel"
-msgstr "Argument muss Feld oder Scheibe oder Kanal sein"
+msgstr "Argument muss Array oder Scheibe oder Kanal sein"
 
 #: go/gofrontend/expressions.cc:8544
 msgid "argument must be string or array or slice or map or channel"
-msgstr "Argument muss Zeichenkette oder Feld oder Scheibe oder Abbildung oder Kanal sein"
+msgstr "Argument muss Zeichenkette oder Array oder Scheibe oder Map oder Kanal sein"
 
 #: go/gofrontend/expressions.cc:8590
 msgid "unsupported argument type to builtin function"
@@ -15305,7 +15305,7 @@ msgstr "zu viele Variablen in Bereichsklausel mit Kanal"
 
 #: go/gofrontend/statements.cc:5342
 msgid "range clause must have array, slice, string, map, or channel type"
-msgstr "Bereichsklausel muss Feld, Scheibe, Zeichenkette, Abbildung oder Kanaltyp haben"
+msgstr "Bereichsklausel muss vom Typ Array, Scheibe, Zeichenkette, Map oder Kanal sein"
 
 #: go/gofrontend/types.cc:513
 msgid "invalid comparison of non-ordered type"
@@ -15342,11 +15342,11 @@ msgstr "ungültiger Vergleich einer nicht-vergleichbaren Struktur"
 
 #: go/gofrontend/types.cc:596
 msgid "invalid comparison of generated array"
-msgstr "ungültiger Vergleich eines generierten Feldes"
+msgstr "ungültiger Vergleich eines generierten Arrays"
 
 #: go/gofrontend/types.cc:603
 msgid "invalid comparison of non-comparable array"
-msgstr "ungültiger Vergleich eines nicht-vergleichbaren Feldes"
+msgstr "ungültiger Vergleich eines nicht-vergleichbaren Arrays"
 
 #: go/gofrontend/types.cc:631
 msgid "multiple-value function call in single-value context"
@@ -15904,7 +15904,7 @@ msgstr "Stapelschutz schützt nicht lokale Variablen: Puffer variabler Größe"
 #: cfgexpand.c:6244
 #, gcc-internal-format, gfc-internal-format
 msgid "stack protector not protecting function: all local arrays are less than %d bytes long"
-msgstr "Stapelschutz schützt nicht Funktion: Alle lokalen Felder sind kleiner als %d Bytes"
+msgstr "Stapelschutz schützt nicht Funktion: Alle lokalen Arrays sind kleiner als %d Bytes"
 
 #: cfghooks.c:111
 #, gcc-internal-format, gfc-internal-format
@@ -18647,7 +18647,7 @@ msgstr "der inkompatible Typ ist hier definiert"
 #: ipa-devirt.c:1174
 #, gcc-internal-format
 msgid "array types have different bounds"
-msgstr "Feldtypen haben unterschiedliche Grenzen"
+msgstr "Arraytypen haben unterschiedliche Grenzen"
 
 #: ipa-devirt.c:1189
 #, gcc-internal-format
@@ -20239,7 +20239,7 @@ msgstr "gepacktes Attribut ist unnötig"
 #: stor-layout.c:2353
 #, gcc-internal-format
 msgid "alignment of array elements is greater than element size"
-msgstr "Ausrichtung der Feldelemente ist größer als Elementgröße"
+msgstr "Ausrichtung der Arrayelemente ist größer als die Elementgröße"
 
 #: substring-locations.c:164
 #, gcc-internal-format
@@ -20876,17 +20876,17 @@ msgstr "ungültiger Operand in indirekter Referenz"
 #: tree-cfg.c:3231
 #, gcc-internal-format
 msgid "invalid operands to array reference"
-msgstr "ungültige Operanden in Feldreferenz"
+msgstr "ungültige Operanden in Arrayreferenz"
 
 #: tree-cfg.c:3242
 #, gcc-internal-format
 msgid "type mismatch in array reference"
-msgstr "Typ passt nicht in Feldreferenz"
+msgstr "Typ passt nicht in Arrayreferenz"
 
 #: tree-cfg.c:3251
 #, gcc-internal-format
 msgid "type mismatch in array range reference"
-msgstr "Typ passt nicht in Feldbereichsreferenz"
+msgstr "Typ passt nicht in Arraybereichsreferenz"
 
 #: tree-cfg.c:3262
 #, gcc-internal-format
@@ -22010,17 +22010,17 @@ msgstr "Vektorisierung für eine SIMD-Schleife nicht durchgeführt"
 #: tree-vrp.c:6860 tree-vrp.c:6900 tree-vrp.c:6981
 #, gcc-internal-format
 msgid "array subscript is above array bounds"
-msgstr "Feldindex ist oberhalb der Feldgrenzen"
+msgstr "Arrayindex ist oberhalb der Arraygrenze"
 
 #: tree-vrp.c:6884
 #, gcc-internal-format
 msgid "array subscript is outside array bounds"
-msgstr "Feldindex ist außerhalb der Feldgrenzen"
+msgstr "Arrayindex ist außerhalb der Arraygrenzen"
 
 #: tree-vrp.c:6913 tree-vrp.c:6968
 #, gcc-internal-format
 msgid "array subscript is below array bounds"
-msgstr "Feldindex ist unterhalb der Feldgrenzen"
+msgstr "Arrayindex ist unterhalb der Arraygrenze"
 
 #: tree-vrp.c:7794
 #, gcc-internal-format
@@ -22151,7 +22151,7 @@ msgstr "%qE bringt Standardsichtbarkeit mit sich, aber %qD wurde bereits mit and
 #: tree.c:8358
 #, gcc-internal-format
 msgid "arrays of functions are not meaningful"
-msgstr "Felder von Funktionen sind sinnlos"
+msgstr "Arrays von Funktionen sind sinnlos"
 
 #: tree.c:8527
 #, gcc-internal-format
@@ -23396,7 +23396,7 @@ msgstr "Ungültige Anwendung von %qs auf unvollständigen Typen %qT"
 #: c-family/c-common.c:3742
 #, gcc-internal-format
 msgid "invalid application of %qs to array type %qT of incomplete element type"
-msgstr "Ungültige Anwendung von %qs auf Feldtyp %qT mit unvollständigem Elementtyp"
+msgstr "Ungültige Anwendung von %qs auf Arraytyp %qT mit unvollständigem Elementtyp"
 
 #: c-family/c-common.c:3784
 #, gcc-internal-format
@@ -23607,7 +23607,7 @@ msgstr "Index %E markiert einen Offset größer als die Größe von %qT"
 #: c-family/c-common.c:6523 cp/init.c:2895 cp/init.c:2914
 #, gcc-internal-format
 msgid "size of array is too large"
-msgstr "Feldgröße ist zu groß"
+msgstr "Arraygröße ist zu groß"
 
 #: c-family/c-common.c:6608
 #, gcc-internal-format
@@ -23685,12 +23685,12 @@ msgstr "eingebaute Funktion %qE muss direkt aufgerufen werden"
 #: c-family/c-common.c:7965 c/c-decl.c:6117
 #, gcc-internal-format
 msgid "size of array %qE is too large"
-msgstr "Feldgröße von %qE ist zu groß"
+msgstr "Arraygröße von %qE ist zu groß"
 
 #: c-family/c-common.c:7967 c/c-decl.c:6120
 #, gcc-internal-format
 msgid "size of unnamed array is too large"
-msgstr "Größe des unbenannten Feldes ist zu groß"
+msgstr "Größe des unbenannten Arrays ist zu groß"
 
 #: c-family/c-common.c:7997
 #, gcc-internal-format
@@ -27791,7 +27791,7 @@ msgstr "MMX-Vektorrückgabe ohne eingeschaltetes MMX ändert das ABI"
 #: config/i386/i386.c:8934
 #, gcc-internal-format
 msgid "the ABI of passing struct with a flexible array member has changed in GCC 4.4"
-msgstr "Das ABI der Struct-Übergabe mit einem flexiblen Feldelement hat sich in GCC 4.4 geändert"
+msgstr "Das ABI der Struct-Übergabe mit einem flexiblen Arrayelement hat sich in GCC 4.4 geändert"
 
 #: config/i386/i386.c:9051
 #, gcc-internal-format
@@ -30926,7 +30926,7 @@ msgstr "Attribut %qE hat keinen Effekt"
 #: ada/gcc-interface/utils.c:6286
 #, gcc-internal-format
 msgid "attribute %qs applies to array types only"
-msgstr "Attribut %qs bezieht sich nur auf Feldtypen"
+msgstr "Attribut %qs bezieht sich nur auf Arraytypen"
 
 #: brig/brig-lang.c:194
 #, gcc-internal-format
@@ -30958,17 +30958,17 @@ msgstr "Unpassende Längen zwischen linker und rechter Seite"
 #: c/c-array-notation.c:1343 cp/cp-array-notation.c:1430
 #, gcc-internal-format
 msgid "start-index of array notation triplet is not an integer"
-msgstr "Startindex von Feldnotationstripel ist keine Ganzzahl"
+msgstr "Startindex von Arraygnotationstripel ist keine Ganzzahl"
 
 #: c/c-array-notation.c:1348 cp/cp-array-notation.c:1435
 #, gcc-internal-format
 msgid "length of array notation triplet is not an integer"
-msgstr "Länge von Feldnotationstripel ist keine Ganzzahl"
+msgstr "Länge von Arraynotationstripel ist keine Ganzzahl"
 
 #: c/c-array-notation.c:1355 cp/cp-array-notation.c:1440
 #, gcc-internal-format
 msgid "stride of array notation triplet is not an integer"
-msgstr "Schrittweite von Feldnotationstripel ist keine Ganzzahl"
+msgstr "Schrittweite von Arraynotationstripel ist keine Ganzzahl"
 
 #: c/c-array-notation.c:1376
 #, gcc-internal-format
@@ -31004,7 +31004,7 @@ msgstr "Konvertierung zu Nicht-Skalar-Typ verlangt"
 #: c/c-decl.c:815
 #, gcc-internal-format
 msgid "array %q+D assumed to have one element"
-msgstr "Feld %q+D als einelementig betrachtet"
+msgstr "Array %q+D als einelementig betrachtet"
 
 #: c/c-decl.c:856
 #, gcc-internal-format
@@ -31049,7 +31049,7 @@ msgstr "Variable %qD gesetzt, aber nicht verwendet"
 #: c/c-decl.c:1283
 #, gcc-internal-format
 msgid "type of array %q+D completed incompatibly with implicit initialization"
-msgstr "Typ des Feldes %q+D vervollständigt Unverträglichkeit mit impliziter Initialisierung"
+msgstr "Typ des Arrays %q+D vervollständigt Unverträglichkeit mit impliziter Initialisierung"
 
 #: c/c-decl.c:1564 c/c-decl.c:6617 c/c-decl.c:7481 c/c-decl.c:8215
 #, gcc-internal-format
@@ -31460,12 +31460,12 @@ msgstr "Leere Deklaration"
 #: c/c-decl.c:4502
 #, gcc-internal-format
 msgid "ISO C90 does not support %<static%> or type qualifiers in parameter array declarators"
-msgstr "ISO-C90 unterstützt kein %<static%> oder Typkennzeichner in Parameterfelddeklaratoren"
+msgstr "ISO-C90 unterstützt kein %<static%> oder Typkennzeichner in Parameterarraydeklaratoren"
 
 #: c/c-decl.c:4506
 #, gcc-internal-format
 msgid "ISO C90 does not support %<[*]%> array declarators"
-msgstr "ISO-C90 unterstützt nicht %<[*]%>-Felddeklaratoren"
+msgstr "ISO-C90 unterstützt %<[*]%>-Arraydeklaratoren nicht"
 
 #. C99 6.7.5.2p4
 #. A function definition isn't function prototype scope C99 6.2.1p4.
@@ -31538,12 +31538,12 @@ msgstr "Initialisierung gibt nicht die Größe von %q+D an"
 #: c/c-decl.c:4915
 #, gcc-internal-format
 msgid "array size missing in %q+D"
-msgstr "Feldgröße fehlt in %q+D"
+msgstr "Arraygröße fehlt in %q+D"
 
 #: c/c-decl.c:4927
 #, gcc-internal-format
 msgid "zero or negative size array %q+D"
-msgstr "Feldgröße von %q+D ist null oder negativ"
+msgstr "Arraygröße von %q+D ist null oder negativ"
 
 #: c/c-decl.c:4998
 #, gcc-internal-format
@@ -31618,22 +31618,22 @@ msgstr "%qs ist schmaler als die Werte seines Typs"
 #: c/c-decl.c:5452
 #, gcc-internal-format
 msgid "ISO C90 forbids array %qE whose size can%'t be evaluated"
-msgstr "ISO-C90 verbietet Feld %qE, dessen Größe nicht ausgewertet werden kann"
+msgstr "ISO-C90 verbietet Array %qE, dessen Größe nicht ausgewertet werden kann"
 
 #: c/c-decl.c:5455
 #, gcc-internal-format
 msgid "ISO C90 forbids array whose size can%'t be evaluated"
-msgstr "ISO-C90 verbietet Feld, dessen Größe nicht ausgewertet werden kann"
+msgstr "ISO-C90 verbietet Array, dessen Größe nicht ausgewertet werden kann"
 
 #: c/c-decl.c:5462
 #, gcc-internal-format
 msgid "ISO C90 forbids variable length array %qE"
-msgstr "ISO-C90 verbietet Feld %qE variabler Größe"
+msgstr "ISO-C90 verbietet Array %qE variabler Größe"
 
 #: c/c-decl.c:5464
 #, gcc-internal-format
 msgid "ISO C90 forbids variable length array"
-msgstr "ISO-C90 verbietet Feld variabler Größe"
+msgstr "ISO-C90 verbietet Array variabler Größe"
 
 #: c/c-decl.c:5673 c/c-decl.c:6047 c/c-decl.c:6057
 #, gcc-internal-format
@@ -31766,77 +31766,77 @@ msgstr "Funktions-Gültigkeitsbereich %qE ist implizit auto, jedoch als %qs dekl
 #: c/c-decl.c:5899 c/c-decl.c:6268
 #, gcc-internal-format
 msgid "static or type qualifiers in non-parameter array declarator"
-msgstr "»static« oder Typkennzeichner in Nicht-Parameter-Felddeklarator"
+msgstr "»static« oder Typkennzeichner in Nicht-Parameter-Arraydeklarator"
 
 #: c/c-decl.c:5947
 #, gcc-internal-format
 msgid "declaration of %qE as array of voids"
-msgstr "Deklaration von %qE als Feld von voids"
+msgstr "Deklaration von %qE als Array von voids"
 
 #: c/c-decl.c:5949
 #, gcc-internal-format
 msgid "declaration of type name as array of voids"
-msgstr "Deklaration eines Typnamen als Feld von voids"
+msgstr "Deklaration eines Typnamen als Array von voids"
 
 #: c/c-decl.c:5956
 #, gcc-internal-format
 msgid "declaration of %qE as array of functions"
-msgstr "Deklaration von %qE als Feld von Funktionen"
+msgstr "Deklaration von %qE als Array von Funktionen"
 
 #: c/c-decl.c:5959
 #, gcc-internal-format
 msgid "declaration of type name as array of functions"
-msgstr "Deklaration eines Typnamen als Feld von Funktionen"
+msgstr "Deklaration eines Typnamen als Array von Funktionen"
 
 #: c/c-decl.c:5967 c/c-decl.c:7973
 #, gcc-internal-format
 msgid "invalid use of structure with flexible array member"
-msgstr "ungültige Verwendung einer Struktur mit flexiblem Feldelement"
+msgstr "ungültige Verwendung einer Struktur mit flexiblem Arrayelement"
 
 #: c/c-decl.c:5993
 #, gcc-internal-format
 msgid "size of array %qE has non-integer type"
-msgstr "Feldgröße von %qE hat Nicht-Ganzzahltyp"
+msgstr "Arraygröße von %qE hat Nicht-Ganzzahltyp"
 
 #: c/c-decl.c:5997
 #, gcc-internal-format
 msgid "size of unnamed array has non-integer type"
-msgstr "Feldgröße eines unbenannten Feldes hat Nicht-Ganzzahltyp"
+msgstr "Größe eines unbenannten Arrays hat Nicht-Ganzzahltyp"
 
 #: c/c-decl.c:6004
 #, gcc-internal-format
 msgid "size of array %qE has incomplete type"
-msgstr "Feldgröße von %qE hat unvollständigen Typ"
+msgstr "Arraygröße von %qE hat unvollständigen Typ"
 
 #: c/c-decl.c:6007
 #, gcc-internal-format
 msgid "size of unnamed array has incomplete type"
-msgstr "Feldgröße eines unbenannten Feldes hat unvollständigen Typ"
+msgstr "Größe eines unbenannten Arrays hat unvollständigen Typ"
 
 #: c/c-decl.c:6018
 #, gcc-internal-format
 msgid "ISO C forbids zero-size array %qE"
-msgstr "ISO-C verbietet Feld %qE der Größe null"
+msgstr "ISO-C verbietet Array %qE der Größe null"
 
 #: c/c-decl.c:6021
 #, gcc-internal-format
 msgid "ISO C forbids zero-size array"
-msgstr "ISO-C verbietet Feld der Größe null"
+msgstr "ISO-C verbietet Array der Größe null"
 
 #: c/c-decl.c:6030
 #, gcc-internal-format
 msgid "size of array %qE is negative"
-msgstr "Größe des Feldes %qE ist negativ"
+msgstr "Größe des Arrays %qE ist negativ"
 
 #: c/c-decl.c:6032
 #, gcc-internal-format
 msgid "size of unnamed array is negative"
-msgstr "Größe des unbenannten Feldes ist negativ"
+msgstr "Größe des unbenannten Arrays ist negativ"
 
 #: c/c-decl.c:6156 c/c-decl.c:6787
 #, gcc-internal-format
 msgid "ISO C90 does not support flexible array members"
-msgstr "ISO-C90 unterstützt keine flexiblen Felder als Elemente"
+msgstr "ISO-C90 unterstützt keine flexiblen Arrays als Elemente"
 
 #. C99 6.7.5.2p4
 #: c/c-decl.c:6178
@@ -31847,17 +31847,17 @@ msgstr "%<[*]%> nicht in einer Deklaration"
 #: c/c-decl.c:6191
 #, gcc-internal-format
 msgid "array type has incomplete element type %qT"
-msgstr "Feldtyp hat unvollständigen Elementtypen %qT"
+msgstr "Arraytyp hat unvollständigen Elementtypen %qT"
 
 #: c/c-decl.c:6197
 #, gcc-internal-format
 msgid "declaration of %qE as multidimensional array must have bounds for all dimensions except the first"
-msgstr "Deklaration von %qE als multidimensionales Feld muss für alle Dimensionen außer der ersten Grenzen haben"
+msgstr "Deklaration von %qE als multidimensionales Array muss für alle Dimensionen außer der ersten Grenzen haben"
 
 #: c/c-decl.c:6201
 #, gcc-internal-format
 msgid "declaration of multidimensional array must have bounds for all dimensions except the first"
-msgstr "Deklaration von multidimensionalem Feld muss für alle Dimensionen außer der ersten Grenzen haben"
+msgstr "Deklaration von multidimensionalem Array muss für alle Dimensionen außer der ersten Grenzen haben"
 
 #: c/c-decl.c:6304
 #, gcc-internal-format
@@ -31872,12 +31872,12 @@ msgstr "Typname als Funktion, die eine Funktion zurückgibt, deklariert"
 #: c/c-decl.c:6314
 #, gcc-internal-format
 msgid "%qE declared as function returning an array"
-msgstr "%qE als Funktion, die ein Feld zurückgibt, deklariert"
+msgstr "%qE als Funktion, die ein Array zurückgibt, deklariert"
 
 #: c/c-decl.c:6317
 #, gcc-internal-format
 msgid "type name declared as function returning an array"
-msgstr "Typname als Funktion, die ein Feld zurückgibt, deklariert"
+msgstr "Typname als Funktion, die ein Array zurückgibt, deklariert"
 
 #: c/c-decl.c:6358
 #, gcc-internal-format
@@ -32019,7 +32019,7 @@ msgstr "Variable oder Feld %qE als »void« deklariert"
 #: c/c-decl.c:6711
 #, gcc-internal-format
 msgid "attributes in parameter array declarator ignored"
-msgstr "Attribute in Parameterfelddeklarator ignoriert"
+msgstr "Attribute in Parameterarraydeklarator ignoriert"
 
 #: c/c-decl.c:6753
 #, gcc-internal-format
@@ -32244,12 +32244,12 @@ msgstr "struct hat keine Elemente"
 #: c/c-decl.c:7952 cp/decl.c:11823
 #, gcc-internal-format
 msgid "flexible array member in union"
-msgstr "flexibles Feldelement in Union"
+msgstr "flexibles Arrayelement in Union"
 
 #: c/c-decl.c:7958
 #, gcc-internal-format
 msgid "flexible array member not at end of struct"
-msgstr "flexibles Feld-Element nicht am Ende von struct"
+msgstr "flexibles Arrayelement nicht am Ende von struct"
 
 #: c/c-decl.c:7964
 #, gcc-internal-format
@@ -33002,7 +33002,7 @@ msgstr "Bezeichner oder %<(%> erwartet"
 #: c/c-parser.c:3571 c/c-parser.c:3600
 #, gcc-internal-format
 msgid "array notations cannot be used in declaration"
-msgstr "In Deklarationen dürfen keine Feldnotationen verwendet werden"
+msgstr "In Deklarationen dürfen keine Arraynotationen verwendet werden"
 
 #: c/c-parser.c:3740
 #, gcc-internal-format
@@ -33746,7 +33746,7 @@ msgstr "keine gültigen Klauseln in %<#pragma acc declare%> angegeben"
 #: c/c-parser.c:13778 cp/parser.c:36152
 #, gcc-internal-format
 msgid "array section in %<#pragma acc declare%>"
-msgstr "Feldabschnitt in %<#pragma acc declare%>"
+msgstr "Arrayabschnitt in %<#pragma acc declare%>"
 
 #: c/c-parser.c:13798 cp/parser.c:36172
 #, gcc-internal-format
@@ -33836,7 +33836,7 @@ msgstr "ungültiger Operator für %<#pragma omp atomic%>"
 #: c/c-parser.c:14777 cp/semantics.c:8524 cp/semantics.c:8534
 #, gcc-internal-format
 msgid "%<#pragma omp atomic capture%> uses two different expressions for memory"
-msgstr "%<#pragma omp atomic capture%> verwendet zwei unterschiedliche Audrücke für Speicher"
+msgstr "%<#pragma omp atomic capture%> verwendet zwei unterschiedliche Ausdrücke für Speicher"
 
 #: c/c-parser.c:14842 c/c-parser.c:14864
 #, gcc-internal-format
@@ -34201,12 +34201,12 @@ msgstr "falsche Verwendung eines void-Ausdruckes"
 #: c/c-typeck.c:242
 #, gcc-internal-format
 msgid "invalid use of flexible array member"
-msgstr "falsche Verwendung eines flexiblen Feldelements"
+msgstr "falsche Verwendung eines flexiblen Arrayelements"
 
 #: c/c-typeck.c:248 cp/typeck2.c:503
 #, gcc-internal-format
 msgid "invalid use of array with unspecified bounds"
-msgstr "falsche Verwendung eines Feldes mit unbekannten Grenzen"
+msgstr "falsche Verwendung eines Arrays mit unbekannten Grenzen"
 
 #: c/c-typeck.c:256
 #, gcc-internal-format
@@ -34267,7 +34267,7 @@ msgstr "Funktionsrückgabetypen nicht kompatibel wegen %<volatile%>"
 #: c/c-typeck.c:1880
 #, gcc-internal-format
 msgid "converting an array compound literal to a pointer is ill-formed in C++"
-msgstr "Umwandlung eines zusammengesetzten Feldliterals ist in C++ ungültig"
+msgstr "Umwandlung eines zusammengesetzten Arrayliterals ist in C++ ungültig"
 
 #: c/c-typeck.c:2404 c/c-typeck.c:8378
 #, gcc-internal-format
@@ -34317,12 +34317,12 @@ msgstr "Rang des Arrayindexes ist größer als 1"
 #: c/c-typeck.c:2610
 #, gcc-internal-format
 msgid "subscripted value is neither array nor pointer nor vector"
-msgstr "indizierter Wert ist weder Feld noch Zeiger noch Vektor"
+msgstr "indizierter Wert ist weder Array noch Zeiger noch Vektor"
 
 #: c/c-typeck.c:2620 cp/typeck.c:3201 cp/typeck.c:3288
 #, gcc-internal-format
 msgid "array subscript is not an integer"
-msgstr "Feldindex ist keine Ganzzahl"
+msgstr "Arrayindex ist keine Ganzzahl"
 
 #: c/c-typeck.c:2626
 #, gcc-internal-format
@@ -34332,12 +34332,12 @@ msgstr "indizierter Wert ist Zeiger auf Funktion"
 #: c/c-typeck.c:2680
 #, gcc-internal-format
 msgid "ISO C forbids subscripting %<register%> array"
-msgstr "ISO-C verbietet, ein %<register%>-Feld zu indizieren"
+msgstr "ISO-C verbietet, ein %<register%>-Array zu indizieren"
 
 #: c/c-typeck.c:2683
 #, gcc-internal-format
 msgid "ISO C90 forbids subscripting non-lvalue array"
-msgstr "ISO-C90 verbietet, ein Nicht-L-Wert-Feld zu indizieren"
+msgstr "ISO-C90 verbietet, ein Nicht-L-Wert-Array zu indizieren"
 
 #: c/c-typeck.c:2797
 #, gcc-internal-format
@@ -34595,7 +34595,7 @@ msgstr "Adresse der Register-Variablen %qD angefordert"
 #: c/c-typeck.c:4902
 #, gcc-internal-format
 msgid "non-lvalue array in conditional expression"
-msgstr "Nicht-L-Wert-Feld in bedingtem Ausdruck"
+msgstr "Nicht-L-Wert-Array in bedingtem Ausdruck"
 
 #: c/c-typeck.c:4960 cp/call.c:5232
 #, gcc-internal-format
@@ -34664,7 +34664,7 @@ msgstr "zur Sicherheit müssen alle vorübergehenden Zeiger in Umwandlung von %q
 #: c/c-typeck.c:5428
 #, gcc-internal-format
 msgid "cast specifies array type"
-msgstr "Typkonvertierung gibt Feldtyp an"
+msgstr "Typkonvertierung gibt Arraytyp an"
 
 #: c/c-typeck.c:5434
 #, gcc-internal-format
@@ -34754,7 +34754,7 @@ msgstr "(nahe der Initialisierung für %qs)"
 #: c/c-typeck.c:6097
 #, gcc-internal-format
 msgid "array initialized from parenthesized string constant"
-msgstr "Feld mit geklammerter Zeichenkettenkonstante initialisiert"
+msgstr "Array mit geklammerter Zeichenkettenkonstante initialisiert"
 
 #. This macro is used to emit diagnostics to ensure that all format
 #. strings are complete sentences, visible to gettext and checked at
@@ -34939,7 +34939,7 @@ msgstr "return von inkompatiblem Zeigertyp"
 #: c/c-typeck.c:6756 c/c-typeck.c:7250 cp/typeck.c:2008
 #, gcc-internal-format
 msgid "invalid use of non-lvalue array"
-msgstr "ungültige Verwendung eines Nicht-L-Wert-Feldes"
+msgstr "ungültige Verwendung eines Nicht-L-Wert-Arrays"
 
 #: c/c-typeck.c:6767
 #, gcc-internal-format
@@ -35009,27 +35009,27 @@ msgstr "traditionelles C lehnt automatische Gesamt-Initialisierung ab"
 #: c/c-typeck.c:7123 c/c-typeck.c:8020 cp/typeck2.c:1026
 #, gcc-internal-format
 msgid "initialization of a flexible array member"
-msgstr "Initialisierung eines flexiblen Feld-Elements"
+msgstr "Initialisierung eines flexiblen Array-Elements"
 
 #: c/c-typeck.c:7133 cp/typeck2.c:1041
 #, gcc-internal-format
 msgid "char-array initialized from wide string"
-msgstr "char-Feld mit wide-Zeichenkette initialisiert"
+msgstr "char-Array mit wide-Zeichenkette initialisiert"
 
 #: c/c-typeck.c:7142
 #, gcc-internal-format
 msgid "wide character array initialized from non-wide string"
-msgstr "Feld von wide character mit Nicht-wide-Zeichenkette initialisiert"
+msgstr "Array von wide character mit Nicht-wide-Zeichenkette initialisiert"
 
 #: c/c-typeck.c:7148
 #, gcc-internal-format
 msgid "wide character array initialized from incompatible wide string"
-msgstr "Feld von wide character mit unverträglicher wide-Zeichenkette initialisiert"
+msgstr "Array von wide character mit unverträglicher wide-Zeichenkette initialisiert"
 
 #: c/c-typeck.c:7182
 #, gcc-internal-format
 msgid "array of inappropriate type initialized from string constant"
-msgstr "Feld unpassenden Typs mit Zeichenkettenkonstante initialisiert"
+msgstr "Array unpassenden Typs mit Zeichenkettenkonstante initialisiert"
 
 #: c/c-typeck.c:7269 c/c-typeck.c:7293 c/c-typeck.c:7296 c/c-typeck.c:7304
 #: c/c-typeck.c:7344 c/c-typeck.c:8869 c/c-typeck.c:8919
@@ -35040,7 +35040,7 @@ msgstr "Initialisierungselement ist nicht konstant"
 #: c/c-typeck.c:7278
 #, gcc-internal-format
 msgid "array initialized from non-constant array expression"
-msgstr "Feld mit nicht konstantem Feldausdruck initialisiert"
+msgstr "Array mit nicht konstantem Arrayausdruck initialisiert"
 
 #: c/c-typeck.c:7309 c/c-typeck.c:7357 c/c-typeck.c:8929
 #, gcc-internal-format
@@ -35075,7 +35075,7 @@ msgstr "geschweifte Klammern um Skalar-Initialisierung"
 #: c/c-typeck.c:8017 c/c-typeck.c:9351
 #, gcc-internal-format
 msgid "initialization of flexible array member in a nested context"
-msgstr "Initialisierung eines flexiblen Feld-Elements in geschachteltem Kontext"
+msgstr "Initialisierung eines flexiblen Array-Elements in geschachteltem Kontext"
 
 #: c/c-typeck.c:8054
 #, gcc-internal-format
@@ -35100,7 +35100,7 @@ msgstr "zusätzliche Elemente in Skalar-Initialisierung"
 #: c/c-typeck.c:8219 c/c-typeck.c:8301
 #, gcc-internal-format
 msgid "array index in non-array initializer"
-msgstr "Feldindex in Nicht-Feld-Initialisierung"
+msgstr "Arrayindex in Nicht-Array-Initialisierung"
 
 #: c/c-typeck.c:8224 c/c-typeck.c:8363
 #, gcc-internal-format
@@ -35110,22 +35110,22 @@ msgstr "Feldname nicht in Datensatz- oder union-Initialisierung"
 #: c/c-typeck.c:8274
 #, gcc-internal-format
 msgid "array index in initializer not of integer type"
-msgstr "Feldindex in Initialisierung hat nicht Ganzzahltyp"
+msgstr "Arrayindex in Initialisierung hat nicht Ganzzahltyp"
 
 #: c/c-typeck.c:8283 c/c-typeck.c:8292
 #, gcc-internal-format
 msgid "array index in initializer is not an integer constant expression"
-msgstr "Feldindex in Initialisierung ist kein konstanter Ganzzahlausdruck"
+msgstr "Arrayindex in Initialisierung ist kein konstanter Ganzzahlausdruck"
 
 #: c/c-typeck.c:8297 c/c-typeck.c:8299
 #, gcc-internal-format
 msgid "nonconstant array index in initializer"
-msgstr "nichtkonstanter Feldindex in Initialisierung"
+msgstr "nichtkonstanter Arrayindex in Initialisierung"
 
 #: c/c-typeck.c:8303 c/c-typeck.c:8306
 #, gcc-internal-format
 msgid "array index in initializer exceeds array bounds"
-msgstr "Feldindex in Initialisierung überschreitet Feldgrenzen"
+msgstr "Arrayindex in Initialisierung überschreitet Arraygrenzen"
 
 #: c/c-typeck.c:8325
 #, gcc-internal-format
@@ -35135,7 +35135,7 @@ msgstr "leerer Indexbereich in Initialisierung"
 #: c/c-typeck.c:8334
 #, gcc-internal-format
 msgid "array index range in initializer exceeds array bounds"
-msgstr "Feldindexbereich in Initialisierung überschreitet Feldgrenzen"
+msgstr "Arrayindexbereich in Initialisierung überschreitet Arraygrenzen"
 
 #: c/c-typeck.c:8437 c/c-typeck.c:8467 c/c-typeck.c:9010
 #, gcc-internal-format
@@ -35150,7 +35150,7 @@ msgstr "initialisiertes Feld überschrieben"
 #: c/c-typeck.c:9232
 #, gcc-internal-format
 msgid "excess elements in char array initializer"
-msgstr "Elementüberschreitung in char-Feld-Initialisierung"
+msgstr "Elementüberschreitung in char-Array-Initialisierung"
 
 #: c/c-typeck.c:9239 c/c-typeck.c:9310
 #, gcc-internal-format
@@ -35165,7 +35165,7 @@ msgstr "positionelle Initialisierung eines Feldes in %<struct%>, die mit dem %<d
 #: c/c-typeck.c:9325
 #, gcc-internal-format
 msgid "non-static initialization of a flexible array member"
-msgstr "nicht-statische Initialisierung eines flexiblen Feldelements"
+msgstr "nicht-statische Initialisierung eines flexiblen Arrayelements"
 
 #: c/c-typeck.c:9424
 #, gcc-internal-format
@@ -35180,7 +35180,7 @@ msgstr "traditionelles C lehnt Initialisierung von unions ab"
 #: c/c-typeck.c:9514
 #, gcc-internal-format
 msgid "excess elements in array initializer"
-msgstr "Elementüberschreitung in Feldinitialisierung"
+msgstr "Elementüberschreitung in Arrayinitialisierung"
 
 #: c/c-typeck.c:9548
 #, gcc-internal-format
@@ -35376,7 +35376,7 @@ msgstr "implizite Umwandlung von %qT in %qT zur Anpassung an anderen Operanden d
 #: c/c-typeck.c:11882
 #, gcc-internal-format
 msgid "used array that cannot be converted to pointer where scalar is required"
-msgstr "Feld, das nicht in Zeiger umgewandelt werden kann, anstelle des geforderten Skalars verwendet"
+msgstr "Array, das nicht in Zeiger umgewandelt werden kann, anstelle des geforderten Skalars verwendet"
 
 #: c/c-typeck.c:11886
 #, gcc-internal-format
@@ -35636,7 +35636,7 @@ msgstr "%qE ist in %<depends%>-Klausel keine Variable"
 #: c/c-typeck.c:13346 cp/semantics.c:6664
 #, gcc-internal-format
 msgid "array section does not have mappable type in %qs clause"
-msgstr "Feldabschnitt in %qs-Klausel hat keinen zuordenbaren Typ"
+msgstr "Arrayabschnitt in %qs-Klausel hat keinen zuordenbaren Typ"
 
 #: c/c-typeck.c:13370 c/c-typeck.c:13504 cp/semantics.c:6683
 #: cp/semantics.c:6840
@@ -35684,7 +35684,7 @@ msgstr "%qE in %<uniform%>-Klausel ist kein Argument"
 #: c/c-typeck.c:13599
 #, gcc-internal-format
 msgid "%qs variable is neither a pointer nor an array"
-msgstr "Variable %qs ist weder Zeiger noch Feld"
+msgstr "Variable %qs ist weder Zeiger noch Array"
 
 #: c/c-typeck.c:13674 cp/semantics.c:6350
 #, gcc-internal-format
@@ -36795,7 +36795,7 @@ msgstr "ungültige Verwendung von %q#T mit Array der Größe 0 in %q#D"
 #: cp/class.c:7009
 #, gcc-internal-format
 msgid "invalid use of %q#T with a flexible array member in %q#T"
-msgstr "ungültige Verwendung von %q#T mit flexiblem Feldelement in %q#T"
+msgstr "ungültige Verwendung von %q#T mit flexiblem Arrayelement in %q#T"
 
 #: cp/class.c:7014
 #, gcc-internal-format
@@ -37270,7 +37270,7 @@ msgstr "%<delete[]%> ist kein Konstantenausdruck"
 #: cp/constexpr.c:5721
 #, gcc-internal-format
 msgid "non-constant array initialization"
-msgstr "nicht konstante Feldinitialisierung"
+msgstr "nicht konstante Arrayinitialisierung"
 
 #: cp/constexpr.c:5742
 #, gcc-internal-format
@@ -38327,7 +38327,7 @@ msgstr "Variable %q#D hat Initialisierung, aber unvollständigen Typ"
 #: cp/decl.c:5234 cp/decl.c:6144
 #, gcc-internal-format
 msgid "elements of array %q#D have incomplete type"
-msgstr "Elemente des Feldes %q#D haben unvollständigen Typ"
+msgstr "Elemente des Arrays %q#D haben unvollständigen Typ"
 
 #: cp/decl.c:5243
 #, gcc-internal-format
@@ -38342,12 +38342,12 @@ msgstr "%qD als Referenz deklariert, aber nicht initialisiert"
 #: cp/decl.c:5334
 #, gcc-internal-format
 msgid "name used in a GNU-style designated initializer for an array"
-msgstr "Name in benannter Initialisierung im GNU-Stil für ein Feld verwendet"
+msgstr "Name in benannter Initialisierung im GNU-Stil für ein Array verwendet"
 
 #: cp/decl.c:5340
 #, gcc-internal-format
 msgid "name %qD used in a GNU-style designated initializer for an array"
-msgstr "Name %qD in benannter Initialisierung im GNU-Stil für ein Feld verwendet"
+msgstr "Name %qD in benannter Initialisierung im GNU-Stil für ein Array verwendet"
 
 #: cp/decl.c:5356 cp/typeck2.c:1288 cp/typeck2.c:1401
 #, gcc-internal-format
@@ -38367,12 +38367,12 @@ msgstr "Initialisierung gibt nicht die Größe von %qD an"
 #: cp/decl.c:5416
 #, gcc-internal-format
 msgid "array size missing in %qD"
-msgstr "Feldgröße fehlt in %qD"
+msgstr "Arraygröße fehlt in %qD"
 
 #: cp/decl.c:5428
 #, gcc-internal-format
 msgid "zero-size array %qD"
-msgstr "Feld %qD der Größe null"
+msgstr "Array %qD der Größe null"
 
 #: cp/decl.c:5468
 #, gcc-internal-format
@@ -38468,7 +38468,7 @@ msgstr "geschweifte Klammern fehlen um Initialisierung für %qT"
 #: cp/decl.c:6146
 #, gcc-internal-format
 msgid "elements of array %q#T have incomplete type"
-msgstr "Elemente des Feldes %q#T haben unvollständigen Typ"
+msgstr "Elemente des Arrays %q#T haben unvollständigen Typ"
 
 #: cp/decl.c:6154
 #, gcc-internal-format
@@ -38493,7 +38493,7 @@ msgstr "in C++98 muss %qD mit Konstruktor initialisiert werden, nicht mit %<{...
 #: cp/decl.c:6371
 #, gcc-internal-format
 msgid "array %qD initialized by parenthesized string literal %qE"
-msgstr "Feld %qD mit geklammerter Zeichenkettenkonstante %qE initialisiert"
+msgstr "Array %qD mit geklammerter Zeichenkettenkonstante %qE initialisiert"
 
 #: cp/decl.c:6404
 #, gcc-internal-format
@@ -38648,12 +38648,12 @@ msgstr "Initialisierung gibt nicht die Größe von %qT an"
 #: cp/decl.c:8254
 #, gcc-internal-format
 msgid "array size missing in %qT"
-msgstr "Feldgröße fehlt in %qT"
+msgstr "Arraygröße fehlt in %qT"
 
 #: cp/decl.c:8257
 #, gcc-internal-format
 msgid "zero-size array %qT"
-msgstr "Feld %qT der Größe null"
+msgstr "Array %qT der Größe null"
 
 #: cp/decl.c:8273
 #, gcc-internal-format
@@ -38929,97 +38929,97 @@ msgstr "ISO-C++ verbietet Initialisierung der Elementkonstante %qD vom nicht ein
 #: cp/decl.c:9380 cp/decl.c:9407
 #, gcc-internal-format
 msgid "size of array %qD has non-integral type %qT"
-msgstr "Feldgröße von %qD hat nicht-ganzzahligen Typen %qT"
+msgstr "Arraygröße von %qD hat nicht-ganzzahligen Typen %qT"
 
 #: cp/decl.c:9383 cp/decl.c:9409
 #, gcc-internal-format
 msgid "size of array has non-integral type %qT"
-msgstr "Feldgröße hat nicht-ganzzahligen Typen %qT"
+msgstr "Arraygröße hat nicht-ganzzahligen Typen %qT"
 
 #: cp/decl.c:9440 cp/decl.c:9493
 #, gcc-internal-format
 msgid "size of array is not an integral constant-expression"
-msgstr "Größe des Feldes ist kein konstanter Ganzzahlausdruck"
+msgstr "Größe des Arrays ist kein konstanter Ganzzahlausdruck"
 
 #: cp/decl.c:9459
 #, gcc-internal-format
 msgid "size of array %qD is negative"
-msgstr "Größe des Feldes %qD ist negativ"
+msgstr "Größe des Arrays %qD ist negativ"
 
 #: cp/decl.c:9461 cp/init.c:3539
 #, gcc-internal-format
 msgid "size of array is negative"
-msgstr "Größe des Feldes ist negativ"
+msgstr "Größe des Arrays ist negativ"
 
 #: cp/decl.c:9475
 #, gcc-internal-format
 msgid "ISO C++ forbids zero-size array %qD"
-msgstr "ISO-C++ verbietet Feld %qD der Größe null"
+msgstr "ISO-C++ verbietet Array %qD der Größe null"
 
 #: cp/decl.c:9477
 #, gcc-internal-format
 msgid "ISO C++ forbids zero-size array"
-msgstr "ISO-C++ verbietet Feld der Größe null"
+msgstr "ISO-C++ verbietet Array der Größe null"
 
 #: cp/decl.c:9490
 #, gcc-internal-format
 msgid "size of array %qD is not an integral constant-expression"
-msgstr "Größe des Feldes %qD ist kein konstanter Ganzzahlausdruck"
+msgstr "Größe des Arrays %qD ist kein konstanter Ganzzahlausdruck"
 
 #: cp/decl.c:9499
 #, gcc-internal-format
 msgid "ISO C++ forbids variable length array %qD"
-msgstr "ISO-C++ verbietet Feld %qD variabler Länge"
+msgstr "ISO-C++ verbietet Array %qD variabler Länge"
 
 #: cp/decl.c:9501
 #, gcc-internal-format
 msgid "ISO C++ forbids variable length array"
-msgstr "ISO-C++ verbietet Feld variabler Länge"
+msgstr "ISO-C++ verbietet Array variabler Länge"
 
 #: cp/decl.c:9507
 #, gcc-internal-format
 msgid "variable length array %qD is used"
-msgstr "Feld %qD variabler Länge wird verwendet"
+msgstr "Array %qD variabler Länge wird verwendet"
 
 #: cp/decl.c:9510
 #, gcc-internal-format
 msgid "variable length array is used"
-msgstr "Feld variabler Größe wird verwendet"
+msgstr "Array variabler Größe wird verwendet"
 
 #: cp/decl.c:9561
 #, gcc-internal-format
 msgid "overflow in array dimension"
-msgstr "Überlauf in Feldgröße"
+msgstr "Überlauf in Arraygröße"
 
 #: cp/decl.c:9614
 #, gcc-internal-format
 msgid "%qD declared as array of %qT"
-msgstr "%qD als Feld von %qT deklariert"
+msgstr "%qD als Array von %qT deklariert"
 
 #: cp/decl.c:9624
 #, gcc-internal-format
 msgid "declaration of %qD as array of void"
-msgstr "Deklaration von %qD als Feld von voids"
+msgstr "Deklaration von %qD als Array von voids"
 
 #: cp/decl.c:9626
 #, gcc-internal-format
 msgid "creating array of void"
-msgstr "Feld von void wird erzeugt"
+msgstr "Array von void wird erzeugt"
 
 #: cp/decl.c:9631
 #, gcc-internal-format
 msgid "declaration of %qD as array of functions"
-msgstr "Deklaration von %qD als Feld von Funktionen"
+msgstr "Deklaration von %qD als Array von Funktionen"
 
 #: cp/decl.c:9633
 #, gcc-internal-format
 msgid "creating array of functions"
-msgstr "Feld von Funktionen wird erzeugt"
+msgstr "Array von Funktionen wird erzeugt"
 
 #: cp/decl.c:9638
 #, gcc-internal-format
 msgid "declaration of %qD as array of references"
-msgstr "Deklaration von %qD als Feld von Referenzen"
+msgstr "Deklaration von %qD als Array von Referenzen"
 
 #: cp/decl.c:9640
 #, gcc-internal-format
@@ -40354,7 +40354,7 @@ msgstr "ungültige Typen %<%T[%T]%> für Feldindex"
 #: cp/decl2.c:466
 #, gcc-internal-format
 msgid "deleting array %q#E"
-msgstr "Feld %q#E wird gelöscht"
+msgstr "Array %q#E wird gelöscht"
 
 #: cp/decl2.c:472
 #, gcc-internal-format
@@ -40757,7 +40757,7 @@ msgstr "Catch-Parameter kann nicht mit R-Wert-Referenztyp %qT deklariert werden"
 #: cp/except.c:856
 #, gcc-internal-format
 msgid "cannot throw expression of type %qT because it involves types of variable size"
-msgstr "Audruck vom Typ %qT kann nicht geworfen werden, da Typen mit variabler Größe beteiligt sind"
+msgstr "Ausdruck vom Typ %qT kann nicht geworfen werden, da Typen mit variabler Größe beteiligt sind"
 
 #: cp/except.c:859
 #, gcc-internal-format
@@ -40931,7 +40931,7 @@ msgstr "%qD wird mit sich selbst initialisiert"
 #: cp/init.c:782
 #, gcc-internal-format
 msgid "invalid initializer for array member %q#D"
-msgstr "ungültige Initialisierung für Feldelement %q#D"
+msgstr "ungültige Initialisierung für Arrayelement %q#D"
 
 #: cp/init.c:796 cp/init.c:820 cp/init.c:2323 cp/method.c:1344
 #, gcc-internal-format
@@ -41037,7 +41037,7 @@ msgstr "Typ %qT ist keine direkte Basis von %qT"
 #: cp/init.c:1631
 #, gcc-internal-format
 msgid "bad array initializer"
-msgstr "schlechte Feldinitialisierung"
+msgstr "schlechte Arrayinitialisierung"
 
 #: cp/init.c:1949 cp/semantics.c:3191
 #, gcc-internal-format
@@ -41112,7 +41112,7 @@ msgstr "Placement-New konstruiert ein Objekt vom Typ %qT und Größe %qwu in ein
 #: cp/init.c:2768
 #, gcc-internal-format
 msgid "integer overflow in array size"
-msgstr "Ganzzahlüberlauf in Feldgröße"
+msgstr "Ganzzahlüberlauf in Arraygröße"
 
 #: cp/init.c:2778
 #, gcc-internal-format
@@ -41162,12 +41162,12 @@ msgstr "verwenden Sie %<-faligned-new%>, um die C++17-Unterstützung für übera
 #: cp/init.c:3259
 #, gcc-internal-format
 msgid "parenthesized initializer in array new"
-msgstr "geklammerte Initialisierung in Feld-»new«"
+msgstr "geklammerte Initialisierung in Array-»new«"
 
 #: cp/init.c:3521
 #, gcc-internal-format
 msgid "size in array new must have integral type"
-msgstr "Größe des Feldes bei »new« muss Ganzzahltyp haben"
+msgstr "Größe des Arrays bei »new« muss Ganzzahltyp haben"
 
 #: cp/init.c:3553
 #, gcc-internal-format
@@ -41197,12 +41197,12 @@ msgstr "Initialisierung endet vorzeitig"
 #: cp/init.c:4229
 #, gcc-internal-format
 msgid "cannot initialize multi-dimensional array with initializer"
-msgstr "mehrdimensionales Feld kann nicht initialisiert werden"
+msgstr "mehrdimensionales Array kann nicht initialisiert werden"
 
 #: cp/init.c:4436
 #, gcc-internal-format
 msgid "unknown array size in delete"
-msgstr "unbekannte Feldgröße in »delete«"
+msgstr "unbekannte Arraygröße in »delete«"
 
 #: cp/init.c:4460
 #, gcc-internal-format
@@ -41227,7 +41227,7 @@ msgstr "Löschen des Objekts mit polymorphem Klassentyp %qT mit nicht-virtuellem
 #: cp/init.c:4793
 #, gcc-internal-format
 msgid "type to vector delete is neither pointer or array type"
-msgstr "Typ für Vektor-»delete« ist weder Zeiger- noch Feldtyp"
+msgstr "Typ für Vektor-»delete« ist weder Zeiger- noch Arraytyp"
 
 #: cp/lambda.c:498
 #, gcc-internal-format
@@ -41955,7 +41955,7 @@ msgstr "eine Verringerung kann nicht in einem Konstanten-Ausdruck auftreten"
 #: cp/parser.c:3059
 #, gcc-internal-format
 msgid "an array reference cannot appear in a constant-expression"
-msgstr "eine Feldreferenz kann nicht in einem Konstanten-Ausdruck auftreten"
+msgstr "eine Arrayreferenz kann nicht in einem Konstanten-Ausdruck auftreten"
 
 #: cp/parser.c:3063
 #, gcc-internal-format
@@ -42337,7 +42337,7 @@ msgstr "Typen dürfen nicht in einem »new«-Ausdruck definiert werden"
 #: cp/parser.c:8204
 #, gcc-internal-format
 msgid "array bound forbidden after parenthesized type-id"
-msgstr "Feldgrenze hinter geklammerter type-id ist verboten"
+msgstr "Arraygrenze hinter geklammerter type-id ist verboten"
 
 #: cp/parser.c:8206
 #, gcc-internal-format
@@ -43079,7 +43079,7 @@ msgstr "Nicht-Funktion %qD als implizites Template deklariert"
 #: cp/parser.c:19799
 #, gcc-internal-format
 msgid "array bound is not an integer constant"
-msgstr "Feldgrenze ist keine Ganzzahlkonstante"
+msgstr "Arraygrenze ist keine Ganzzahlkonstante"
 
 #: cp/parser.c:19925
 #, gcc-internal-format
@@ -44546,7 +44546,7 @@ msgstr " hergeleitete Werte für Nicht-Typ-Parameter %qE stehen in Konflikt (%qE
 #: cp/pt.c:6201
 #, gcc-internal-format
 msgid "  variable-sized array type %qT is not a valid template argument"
-msgstr " Feldtyp %qT mit veränderlicher Größe ist kein gültiges Templateargument"
+msgstr " Arraytyp %qT mit veränderlicher Größe ist kein gültiges Templateargument"
 
 #: cp/pt.c:6212
 #, gcc-internal-format
@@ -44878,7 +44878,7 @@ msgstr "in Deklaration %q+D"
 #: cp/pt.c:13113
 #, gcc-internal-format
 msgid "function returning an array"
-msgstr "Funktion gibt ein Feld zurück"
+msgstr "Funktion gibt ein Array zurück"
 
 #: cp/pt.c:13115
 #, gcc-internal-format
@@ -44933,7 +44933,7 @@ msgstr "Zeiger auf Element mit Typ »void« wird erzeugt"
 #: cp/pt.c:13909
 #, gcc-internal-format
 msgid "creating array of %qT"
-msgstr "Feld von %qT wird erzeugt"
+msgstr "Array von %qT wird erzeugt"
 
 #: cp/pt.c:13942
 #, gcc-internal-format
@@ -46120,7 +46120,7 @@ msgstr "%qT ist kein Zeiger auf Objekt"
 #: cp/typeck.c:3092
 #, gcc-internal-format
 msgid "invalid use of array indexing on pointer to member"
-msgstr "ungültige Verwendung von Feldindizierung bei Zeiger auf Element"
+msgstr "ungültige Verwendung von Arrayindizierung bei Zeiger auf Element"
 
 #: cp/typeck.c:3095
 #, gcc-internal-format
@@ -46140,7 +46140,7 @@ msgstr "linker Operand von %<->*%> muss Zeiger auf Klasse sein, ist aber ein Zei
 #: cp/typeck.c:3137
 #, gcc-internal-format
 msgid "subscript missing in array reference"
-msgstr "Index fehlt in Feldreferenz"
+msgstr "Index fehlt in Arrayreferenz"
 
 #: cp/typeck.c:3153
 #, gcc-internal-format
@@ -46150,12 +46150,12 @@ msgstr "Rang des Arrayindexes ist größer als 1"
 #: cp/typeck.c:3248
 #, gcc-internal-format
 msgid "subscripting array declared %<register%>"
-msgstr "Indizierung eines als %<register%> deklarierten Feldes"
+msgstr "Indizierung eines als %<register%> deklarierten Arrays"
 
 #: cp/typeck.c:3282
 #, gcc-internal-format
 msgid "subscripted value is neither array nor pointer"
-msgstr "indizierter Wert ist weder ein Feld noch ein Zeiger"
+msgstr "indizierter Wert ist weder ein Array noch ein Zeiger"
 
 #: cp/typeck.c:3355
 #, gcc-internal-format
@@ -46578,7 +46578,7 @@ msgstr "ungültiges const_cast von Typ %qT in Typ %qT"
 #: cp/typeck.c:7477 cp/typeck.c:7485
 #, gcc-internal-format
 msgid "ISO C++ forbids casting to an array type %qT"
-msgstr "ISO-C++ verbietet Umwandlung in Feldtyp %qT"
+msgstr "ISO-C++ verbietet Umwandlung in Arraytyp %qT"
 
 #: cp/typeck.c:7494
 #, gcc-internal-format
@@ -46593,7 +46593,7 @@ msgstr "  in Auswertung von %<%Q(%#T, %#T)%>"
 #: cp/typeck.c:7868
 #, gcc-internal-format
 msgid "assigning to an array from an initializer list"
-msgstr "Zuweisung an Feld von Initialisierungsliste"
+msgstr "Zuweisung an Array von Initialisierungsliste"
 
 #: cp/typeck.c:7894
 #, gcc-internal-format
@@ -46603,12 +46603,12 @@ msgstr "unverträgliche Typen in Zuweisung von %qT an %qT"
 #: cp/typeck.c:7908
 #, gcc-internal-format
 msgid "array used as initializer"
-msgstr "Feld als Initialisierung verwendet"
+msgstr "Array als Initialisierung verwendet"
 
 #: cp/typeck.c:7910
 #, gcc-internal-format
 msgid "invalid array assignment"
-msgstr "Ungültiger Feldzuweisung"
+msgstr "Ungültige Arrayzuweisung"
 
 #: cp/typeck.c:8044
 #, gcc-internal-format
@@ -46874,7 +46874,7 @@ msgstr "ungültiger abstrakter Typ für %q+D"
 #: cp/typeck2.c:348
 #, gcc-internal-format
 msgid "creating array of %qT, which is an abstract class type"
-msgstr "Feld von %qT wird erzeugt, was ein abstrakter Klassentyp ist"
+msgstr "Array von %qT wird erzeugt, was ein abstrakter Klassentyp ist"
 
 #: cp/typeck2.c:351
 #, gcc-internal-format
@@ -47019,17 +47019,17 @@ msgstr " der Ausdruck hat einen konstanten Wert, ist aber kein konstanter Ausdru
 #: cp/typeck2.c:1051
 #, gcc-internal-format
 msgid "int-array initialized from non-wide string"
-msgstr "int-Feld mit Nicht-wide-Zeichenkette initialisiert"
+msgstr "int-Array mit Nicht-wide-Zeichenkette initialisiert"
 
 #: cp/typeck2.c:1057
 #, gcc-internal-format
 msgid "int-array initialized from incompatible wide string"
-msgstr "Ganzzahlfeld mit unverträglicher wide-Zeichenkette initialisiert"
+msgstr "Ganzzahlarray mit unverträglicher wide-Zeichenkette initialisiert"
 
 #: cp/typeck2.c:1078
 #, gcc-internal-format
 msgid "initializer-string for array of chars is too long"
-msgstr "Initialisierungs-Zeichenkette für char-Feld ist zu lang"
+msgstr "Initialisierungs-Zeichenkette für char-Array ist zu lang"
 
 #: cp/typeck2.c:1131
 #, gcc-internal-format
@@ -47039,7 +47039,7 @@ msgstr "Aggregat des Typs %qT kann nicht mit zusammengesetztem Literal initialis
 #: cp/typeck2.c:1149
 #, gcc-internal-format
 msgid "array must be initialized with a brace-enclosed initializer"
-msgstr "Feld muss mit Initialisierung mit umgebenden geschweiften Klammern initialisiert werden"
+msgstr "Array muss mit Initialisierung mit umgebenden geschweiften Klammern initialisiert werden"
 
 #: cp/typeck2.c:1435 cp/typeck2.c:1462
 #, gcc-internal-format
@@ -47114,7 +47114,7 @@ msgstr "Typ für Zeiger auf Elementfunktion %qT braucht einen lvalue"
 #: cp/typeck2.c:1957
 #, gcc-internal-format
 msgid "functional cast to array type %qT"
-msgstr "funktionale Umwandlung in Feldtyp %qT"
+msgstr "funktionale Umwandlung in Arraytyp %qT"
 
 #: cp/typeck2.c:1972
 #, gcc-internal-format
@@ -47287,7 +47287,7 @@ msgstr "Division durch Null beim Konvertieren von %s in %s bei %L"
 #: fortran/arith.c:1960
 #, gcc-internal-format, gfc-internal-format
 msgid "Array operands are incommensurate converting %s to %s at %L"
-msgstr "Feldoperanden sind unzureichend beim Konvertieren von %s in %s bei %L"
+msgstr "Arrayoperanden sind unzureichend beim Konvertieren von %s in %s bei %L"
 
 #: fortran/arith.c:1964
 #, gcc-internal-format, gfc-internal-format
@@ -47326,7 +47326,7 @@ msgstr "Hollerith-Konstante bei %L ist zu lang, um sie in %qs umzuwandeln"
 #: fortran/array.c:95
 #, gcc-internal-format, gfc-internal-format
 msgid "Expected array subscript at %C"
-msgstr "Feldindex erwartet bei %C"
+msgstr "Arrayindex erwartet bei %C"
 
 #: fortran/array.c:104
 #, gcc-internal-format
@@ -48569,7 +48569,7 @@ msgstr "Ausgabedatei %qs wird geöffnet: %s"
 #: fortran/data.c:65
 #, gcc-internal-format, gfc-internal-format
 msgid "non-constant array in DATA statement %L"
-msgstr "nichtkonstantes Feld in DATA-Anweisung %L"
+msgstr "Nichtkonstantes Feld in DATA-Anweisung %L"
 
 #: fortran/data.c:137
 #, gcc-internal-format, gfc-internal-format
@@ -59387,7 +59387,7 @@ msgstr "ungültige Eigenschaftsdeklaration"
 #: objc/objc-act.c:910
 #, gcc-internal-format
 msgid "property can not be an array"
-msgstr "Eigenschaft kann kein Feld sein"
+msgstr "Eigenschaft kann kein Array sein"
 
 #. A @property is not an actual variable, but it is a way to
 #. describe a pair of accessor methods, so its type (which is
@@ -59890,7 +59890,7 @@ msgstr "Instanzvariable %qs hat unbekannte Größe"
 #: objc/objc-act.c:6229
 #, gcc-internal-format
 msgid "instance variable %qs uses flexible array member"
-msgstr "Instanzvariable %qs verwendet flexibles Feldelement"
+msgstr "Instanzvariable %qs verwendet flexibles Arrayelement"
 
 #: objc/objc-act.c:6256
 #, gcc-internal-format
