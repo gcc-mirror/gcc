@@ -94,7 +94,9 @@ static void
 add_namespace_decl (tree ns, tree decl)
 {
   /* We should not be adding whole overloads.  */
-  gcc_checking_assert (TREE_CODE (decl) != OVERLOAD);
+  gcc_checking_assert (TREE_CODE (decl) != OVERLOAD
+		       && (TREE_CODE (decl) != TREE_LIST
+			   || TREE_CODE (TREE_VALUE (decl)) != OVERLOAD));
 
   cp_binding_level *b = NAMESPACE_LEVEL (ns);
 
@@ -124,14 +126,15 @@ add_namespace_decl (tree ns, tree decl)
     }
 }
 
-/* Add DECL to local binding level B.  */
+/* Add DECL to local binding level B.  DECL might be an OVERLOAD.  */
 
 static void
 add_local_decl (cp_binding_level *b, tree decl)
 {
   gcc_assert (b->kind != sk_namespace
 	      && (TREE_CODE (decl) != NAMESPACE_DECL
-		  || DECL_NAMESPACE_ALIAS (decl)));
+		  || DECL_NAMESPACE_ALIAS (decl))
+	      && TREE_CODE (decl) != OVERLOAD);
 
   TREE_CHAIN (decl) = b->names;
   b->names = decl;
@@ -1279,8 +1282,14 @@ pop_local_binding (tree id, tree decl)
 void
 pop_bindings_and_leave_scope (void)
 {
-  for (tree t = getdecls (); t; t = DECL_CHAIN (t))
-    pop_local_binding (DECL_NAME (t), t);
+  for (tree t = get_local_decls (); t; t = DECL_CHAIN (t))
+    {
+      tree decl = TREE_CODE (t) == TREE_LIST ? TREE_VALUE (t) : t;
+      tree name = OVL_NAME (decl);
+
+      pop_local_binding (name, decl);
+    }
+
   leave_scope ();
 }
 
@@ -1670,13 +1679,10 @@ static tree
 do_pushdecl (tree x, bool is_friend)
 {
   tree t;
-  tree name;
-  int need_new_binding;
+  bool need_new_binding = true;
 
   if (x == error_mark_node)
     return error_mark_node;
-
-  need_new_binding = 1;
 
   if (DECL_TEMPLATE_PARM_P (x))
     /* Template parameters have no context; they are not X::T even
@@ -1712,11 +1718,13 @@ do_pushdecl (tree x, bool is_friend)
 	DECL_LOCAL_FUNCTION_P (x) = 1;
     }
 
-  name = DECL_NAME (x);
-  if (name)
+  gcc_assert (!current_function_decl || x != current_function_decl);
+
+  if (tree name = DECL_NAME (x))
     {
       int different_binding_level = 0;
 
+      gcc_assert (TREE_CODE (name) != TEMPLATE_ID_EXPR);
       if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
 	name = TREE_OPERAND (name, 0);
 
@@ -1955,7 +1963,7 @@ do_pushdecl (tree x, bool is_friend)
 	      /* We do not need to create a binding for this name;
 		 push_overloaded_decl will have already done so if
 		 necessary.  */
-	      need_new_binding = 0;
+	      need_new_binding = false;
 	    }
 	}
       else if (DECL_FUNCTION_TEMPLATE_P (x) && DECL_NAMESPACE_SCOPE_P (x))
@@ -2860,12 +2868,13 @@ keep_next_level (bool keep)
   keep_next_level_flag = keep;
 }
 
-/* Return the list of declarations of the current level.  */
+/* Return the list of declarations of the current local scope.  */
 
 tree
-getdecls (void)
+get_local_decls (void)
 {
-  gcc_assert (current_binding_level->kind != sk_namespace);
+  gcc_assert (current_binding_level->kind != sk_namespace
+	      && current_binding_level->kind != sk_class);
   return current_binding_level->names;
 }
 

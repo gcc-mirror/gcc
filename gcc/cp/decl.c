@@ -643,12 +643,10 @@ poplevel (int keep, int reverse, int functionbody)
   if ((warn_unused_variable || warn_unused_but_set_variable)
       && current_binding_level->kind != sk_template_parms
       && !processing_template_decl)
-    for (tree d = getdecls (); d; d = TREE_CHAIN (d))
+    for (tree d = get_local_decls (); d; d = TREE_CHAIN (d))
       {
-	/* There are cases where D itself is a TREE_LIST.  See in
-	   push_local_binding where the list of decls returned by
-	   getdecls is built.  */
 	decl = TREE_CODE (d) == TREE_LIST ? TREE_VALUE (d) : d;
+
 	tree type = TREE_TYPE (decl);
 	if (VAR_P (decl)
 	    && (! TREE_USED (decl) || !DECL_READ_P (decl))
@@ -679,9 +677,7 @@ poplevel (int keep, int reverse, int functionbody)
   /* Remove declarations for all the DECLs in this level.  */
   for (link = decls; link; link = TREE_CHAIN (link))
     {
-      decl = link;
-      if (TREE_CODE (decl) == TREE_LIST)
-	decl = TREE_VALUE (decl);
+      decl = TREE_CODE (link) == TREE_LIST ? TREE_VALUE (link) : link;
       tree name = OVL_NAME (decl);
 
       if (leaving_for_scope && VAR_P (decl)
@@ -14810,17 +14806,10 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       decl1 = newdecl1;
     }
 
-  /* We are now in the scope of the function being defined.  */
-  current_function_decl = decl1;
-
-  /* Save the parm names or decls from this function's declarator
-     where store_parm_decls will find them.  */
-  current_function_parms = DECL_ARGUMENTS (decl1);
-
   /* Make sure the parameter and return types are reasonable.  When
      you declare a function, these types can be incomplete, but they
      must be complete when you define the function.  */
-  check_function_type (decl1, current_function_parms);
+  check_function_type (decl1, DECL_ARGUMENTS (decl1));
 
   /* Build the return declaration for the function.  */
   restype = TREE_TYPE (fntype);
@@ -14836,9 +14825,6 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 
       cp_apply_type_quals_to_decl (cp_type_quals (restype), resdecl);
     }
-
-  /* Let the user know we're compiling this function.  */
-  announce_function (decl1);
 
   /* Record the decl so that the function name is defined.
      If we already have a decl for this name, and it is a FUNCTION_DECL,
@@ -14911,8 +14897,15 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	maybe_apply_pragma_weak (decl1);
     }
 
-  /* Reset this in case the call to pushdecl changed it.  */
+  /* We are now in the scope of the function being defined.  */
   current_function_decl = decl1;
+
+  /* Save the parm names or decls from this function's declarator
+     where store_parm_decls will find them.  */
+  current_function_parms = DECL_ARGUMENTS (decl1);
+
+  /* Let the user know we're compiling this function.  */
+  announce_function (decl1);
 
   gcc_assert (DECL_INITIAL (decl1));
 
@@ -15216,7 +15209,7 @@ store_parm_decls (tree current_function_parms)
       /* Get the decls in their original chain order and record in the
 	 function.  This is all and only the PARM_DECLs that were
 	 pushed into scope by the loop above.  */
-      DECL_ARGUMENTS (fndecl) = getdecls ();
+      DECL_ARGUMENTS (fndecl) = get_local_decls ();
     }
   else
     DECL_ARGUMENTS (fndecl) = NULL_TREE;

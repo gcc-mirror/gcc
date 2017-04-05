@@ -1,5 +1,19 @@
 2017-04-05  Nathan Sidwell  <nathan@acm.org>
 
+	Separating namespace bindings part 5
+	gcc/cp/
+	* name-lookup.h (getdecls): Rename to ...
+	(get_local_decls): ... here.
+	* name-lookup.c (pop_bindings_and_leave_scope): Adjust.
+	(do_pushdecl): Add some asserts.
+	 (getdecls): Rename to ...
+	(get_local_decls): ... here.  Assert local scope.
+	* decl.c (poplevel): Adjust.
+	(start_preparsed_function): Don't set current_function_decl, until
+	decl is pushed.
+	(store_parm_decls): Adjust.
+	* parser.c (synthesize_implicit_template_parm): Adjust.
+
 	Separating namespace bindings part 4
 	gcc/cp/
 	* cp-lang.c (LANG_HOOKS_GETDECLS): Override.
