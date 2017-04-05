@@ -1,3 +1,9 @@
+2017-04-05  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR target/79890
+	* config/s390/s390.c (s390_register_info_gprtofpr): Return if
+	call_eh_return is true.
+
 2017-04-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390-c.c (s390_resolve_overloaded_builtin):
