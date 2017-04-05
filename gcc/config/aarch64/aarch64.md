@@ -5412,11 +5412,11 @@
    (set_attr "type" "block")]
 )
 
-(define_insn "probe_stack_range_<PTR:mode>"
-  [(set (match_operand:PTR 0 "register_operand" "=r")
-	(unspec_volatile:PTR [(match_operand:PTR 1 "register_operand" "0")
-			      (match_operand:PTR 2 "register_operand" "r")]
-			       UNSPECV_PROBE_STACK_RANGE))]
+(define_insn "probe_stack_range"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec_volatile:DI [(match_operand:DI 1 "register_operand" "0")
+			     (match_operand:DI 2 "register_operand" "r")]
+			      UNSPECV_PROBE_STACK_RANGE))]
   ""
 {
   return aarch64_output_probe_stack_range (operands[0], operands[2]);

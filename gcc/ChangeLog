@@ -1,3 +1,11 @@
+2017-04-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/78002
+	* config/aarch64/aarch64.c (aarch64_emit_probe_stack_range): Replace
+	ptr_mode with Pmode throughout.
+	* config/aarch64/aarch64.md (probe_stack_range_<PTR:mode): Rename
+	into probe_stack_range and use DImode.
+
 2017-04-05  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	PR target/79890
