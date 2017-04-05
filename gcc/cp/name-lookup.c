@@ -1236,7 +1236,7 @@ push_binding (tree id, tree decl, cp_binding_level* level)
    for ID.  */
 
 void
-pop_binding (tree id, tree decl)
+pop_local_binding (tree id, tree decl)
 {
   cxx_binding *binding;
 
@@ -1280,7 +1280,7 @@ void
 pop_bindings_and_leave_scope (void)
 {
   for (tree t = getdecls (); t; t = DECL_CHAIN (t))
-    pop_binding (DECL_NAME (t), t);
+    pop_local_binding (DECL_NAME (t), t);
   leave_scope ();
 }
 
@@ -2860,14 +2860,12 @@ keep_next_level (bool keep)
   keep_next_level_flag = keep;
 }
 
-/* Return the list of declarations of the current level.
-   Note that this list is in reverse order unless/until
-   you nreverse it; and when you do nreverse it, you must
-   store the result back using `storedecls' or you will lose.  */
+/* Return the list of declarations of the current level.  */
 
 tree
 getdecls (void)
 {
+  gcc_assert (current_binding_level->kind != sk_namespace);
   return current_binding_level->names;
 }
 

@@ -1,5 +1,17 @@
 2017-04-05  Nathan Sidwell  <nathan@acm.org>
 
+	Separating namespace bindings part 4
+	gcc/cp/
+	* cp-lang.c (LANG_HOOKS_GETDECLS): Override.
+	(get_global_decls): New.
+	* decl.c (poplevel): Assert not in namespace.  Simplify.
+	* name-lookup.c (pop_binding): Rename to ...
+	(pop_local_binding): ... here.
+	(pop_bindings_and_leave_scope): Adjust.
+	(getdecls): Assert not in namespace.
+	* name-lookup.h (pop_binding): Rename to ...
+	(pop_local_binding): ... here.
+
 	Separating namespace bindings part 3
 	gcc/cp/
 	* name-lookup.c (do_local_push_overload): New, split out of ...
