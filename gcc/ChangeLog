@@ -1,3 +1,10 @@
+2017-04-05  Jakub Jelinek  <jakub@redhat.com>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR sanitizer/80308
+	* asan.c (asan_store_shadow_bytes): Fix location of last_chunk_value
+	for big endian.
+
 2017-04-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/78002
