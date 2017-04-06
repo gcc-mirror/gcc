@@ -1,3 +1,8 @@
+2017-04-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/79390
+	* gcc.target/i386/pr79390.c: Allow for cmovl.a.
+
 2017-04-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80262
