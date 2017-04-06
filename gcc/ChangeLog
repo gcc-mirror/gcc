@@ -1,3 +1,11 @@
+2017-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80262
+	* tree-sra.c (build_ref_for_offset): Preserve address-space
+	information.
+	* tree-ssa-sccvn.c (vn_reference_maybe_forwprop_address):
+	Drop useless address-space information on MEM_REF offsets.
+
 2017-04-05  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* builtins.def (BUILT_IN_UPDATE_SETJMP_BUF): Fix type.
