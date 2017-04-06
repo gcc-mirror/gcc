@@ -1,6 +1,12 @@
 2017-04-06  Nathan Sidwell  <nathan@acm.org>
 
 	Separating namespace bindings part 6
+	gcc/cp/
+	* name-lookup.c (check_local_shadow, set_decl_context_in_fn): Break
+	out and simplify from ... 
+	(do_pushdecl): ... here.  Call them.
+
+	Separating namespace bindings part 6
 	gcc/c-family/
 	* c-common.h (pushdecl_top_level): Delete.
 	gcc/cp/

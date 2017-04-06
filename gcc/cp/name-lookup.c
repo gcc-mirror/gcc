@@ -1719,6 +1719,235 @@ check_extern_c_conflict (tree decl)
     }
 }
 
+/* DECL is being declared at a local scope where OLD_LOCAL (at OLD_SCOPE) and
+   OLD_GLOBAL are the existing local and global bindings of the name.
+   Emit suitable shadow warnings.  */
+
+static void
+check_local_shadow (tree decl, cp_binding_level *old_scope,
+		    tree old_local, tree old_global)
+{
+  /* Don't complain about the parms we push and then pop
+     while tentatively parsing a function declarator.  */
+  if (TREE_CODE (decl) == PARM_DECL && !DECL_CONTEXT (decl))
+    return;
+
+  /* Inline decls shadow nothing.  */
+  if (DECL_FROM_INLINE (decl))
+    return;
+
+  /* External decls are something else.  */
+  if (DECL_EXTERNAL (decl))
+    return;
+
+  tree shadowed = NULL_TREE;
+  if (old_local
+      && (TREE_CODE (old_local) == PARM_DECL
+	  || VAR_P (old_local)
+	  || (TREE_CODE (old_local) == TYPE_DECL
+	      && (!DECL_ARTIFICIAL (old_local)
+		  || TREE_CODE (decl) == TYPE_DECL)))
+      && (!DECL_ARTIFICIAL (decl)
+	  || DECL_IMPLICIT_TYPEDEF_P (decl)
+	  || (VAR_P (decl) && DECL_ANON_UNION_VAR_P (decl))))
+    {
+      /* DECL shadows a local thing possibly of interest.  */
+
+      /* Don't complain if it's from an enclosing function.  */
+      if (DECL_CONTEXT (old_local) == current_function_decl
+	  && TREE_CODE (decl) != PARM_DECL
+	  && TREE_CODE (old_local) == PARM_DECL)
+	{
+	  /* Go to where the parms should be and see if we find
+	     them there.  */
+	  cp_binding_level *b = current_binding_level->level_chain;
+
+	  if (FUNCTION_NEEDS_BODY_BLOCK (current_function_decl))
+	    /* Skip the ctor/dtor cleanup level.  */
+	    b = b->level_chain;
+
+	  /* ARM $8.3 */
+	  if (b->kind == sk_function_parms)
+	    {
+	      error ("declaration of %q#D shadows a parameter", decl);
+	      return;
+	    }
+	}
+
+      /* The local structure or class can't use parameters of
+	 the containing function anyway.  */
+      if (DECL_CONTEXT (old_local) != current_function_decl)
+	{
+	  for (cp_binding_level *scope = current_binding_level;
+	       scope != old_scope; scope = scope->level_chain)
+	    if (scope->kind == sk_class
+		&& !LAMBDA_TYPE_P (scope->this_entity))
+	      return;
+	}
+      /* Error if redeclaring a local declared in a
+	 init-statement or in the condition of an if or
+	 switch statement when the new declaration is in the
+	 outermost block of the controlled statement.
+	 Redeclaring a variable from a for or while condition is
+	 detected elsewhere.  */
+      else if (VAR_P (old_local)
+	       && old_scope == current_binding_level->level_chain
+	       && (old_scope->kind == sk_cond || old_scope->kind == sk_for))
+	{
+	  error ("redeclaration of %q#D", decl);
+	  inform (DECL_SOURCE_LOCATION (old_local),
+		  "%q#D previously declared here", old_local);
+	  return;
+	}
+      /* C++11:
+	 3.3.3/3:  The name declared in an exception-declaration (...)
+	 shall not be redeclared in the outermost block of the handler.
+	 3.3.3/2:  A parameter name shall not be redeclared (...) in
+	 the outermost block of any handler associated with a
+	 function-try-block.
+	 3.4.1/15: The function parameter names shall not be redeclared
+	 in the exception-declaration nor in the outermost block of a
+	 handler for the function-try-block.  */
+      else if ((TREE_CODE (old_local) == VAR_DECL
+		&& old_scope == current_binding_level->level_chain
+		&& old_scope->kind == sk_catch)
+	       || (TREE_CODE (old_local) == PARM_DECL
+		   && (current_binding_level->kind == sk_catch
+		       || current_binding_level->level_chain->kind == sk_catch)
+		   && in_function_try_handler))
+	{
+	  if (permerror (input_location, "redeclaration of %q#D", decl))
+	    inform (DECL_SOURCE_LOCATION (old_local),
+		    "%q#D previously declared here", old_local);
+	  return;
+	}
+
+      /* If '-Wshadow=compatible-local' is specified without other
+	 -Wshadow= flags, we will warn only when the type of the
+	 shadowing variable (DECL) can be converted to that of the
+	 shadowed parameter (OLD_LOCAL). The reason why we only check
+	 if DECL's type can be converted to OLD_LOCAL's type (but not the
+	 other way around) is because when users accidentally shadow a
+	 parameter, more than often they would use the variable
+	 thinking (mistakenly) it's still the parameter. It would be
+	 rare that users would use the variable in the place that
+	 expects the parameter but thinking it's a new decl.  */
+
+      enum opt_code warning_code;
+      if (warn_shadow)
+	warning_code = OPT_Wshadow;
+      else if (warn_shadow_local)
+	warning_code = OPT_Wshadow_local;
+      else if (warn_shadow_compatible_local
+	       && can_convert (TREE_TYPE (old_local), TREE_TYPE (decl),
+			       tf_none))
+	warning_code = OPT_Wshadow_compatible_local;
+      else
+	return;
+
+      const char *msg;
+      if (TREE_CODE (old_local) == PARM_DECL)
+	msg = "declaration of %q#D shadows a parameter";
+      else if (is_capture_proxy (old_local))
+	msg = "declaration of %qD shadows a lambda capture";
+      else
+	msg = "declaration of %qD shadows a previous local";
+
+      if (warning_at (input_location, warning_code, msg, decl))
+	{
+	  shadowed = old_local;
+	  goto inform_shadowed;
+	}
+      return;
+    }
+
+  if (!warn_shadow)
+    return;
+
+  /* Don't warn for artificial things that are not implicit typedefs.  */
+  if (DECL_ARTIFICIAL (decl) && !DECL_IMPLICIT_TYPEDEF_P (decl))
+    return;
+  
+  if (nonlambda_method_basetype ())
+    if (tree member = lookup_member (current_nonlambda_class_type (),
+				     DECL_NAME (decl), /*protect=*/0,
+				     /*want_type=*/false, tf_warning_or_error))
+      {
+	member = MAYBE_BASELINK_FUNCTIONS (member);
+
+	/* Warn if a variable shadows a non-function, or the variable
+	   is a function or a pointer-to-function.  */
+	if (!OVL_P (member)
+	    || TREE_CODE (decl) == FUNCTION_DECL
+	    || TYPE_PTRFN_P (TREE_TYPE (decl))
+	    || TYPE_PTRMEMFUNC_P (TREE_TYPE (decl)))
+	  {
+	    if (warning_at (input_location, OPT_Wshadow,
+			    "declaration of %qD shadows a member of %qT",
+			    decl, current_nonlambda_class_type ())
+		&& DECL_P (member))
+	      {
+		shadowed = member;
+		goto inform_shadowed;
+	      }
+	  }
+	return;
+      }
+
+  if (old_global
+      && (VAR_P (old_global)
+	  || (TREE_CODE (old_global) == TYPE_DECL
+	      && (!DECL_ARTIFICIAL (old_global)
+		  || TREE_CODE (decl) == TYPE_DECL)))
+      && !instantiating_current_function_p ())
+    /* XXX shadow warnings in outer-more namespaces */
+    {
+      if (warning_at (input_location, OPT_Wshadow,
+		      "declaration of %qD shadows a global declaration",
+		      decl))
+	{
+	  shadowed = old_global;
+	  goto inform_shadowed;
+	}
+      return;
+    }
+
+  return;
+
+ inform_shadowed:
+  inform (DECL_SOURCE_LOCATION (shadowed), "shadowed declaration is here");
+}
+
+/* DECL is being pushed inside function CFUN.  Set its context, if
+   needed.  */
+
+static void
+set_decl_context_in_fn (tree ctx, tree decl)
+{
+  if (!DECL_CONTEXT (decl)
+      /* A local declaration for a function doesn't constitute
+	 nesting.  */
+      && TREE_CODE (decl) != FUNCTION_DECL
+      /* A local declaration for an `extern' variable is in the
+	 scope of the current namespace, not the current
+	 function.  */
+      && !(VAR_P (decl) && DECL_EXTERNAL (decl))
+      /* When parsing the parameter list of a function declarator,
+	 don't set DECL_CONTEXT to an enclosing function.  When we
+	 push the PARM_DECLs in order to process the function body,
+	 current_binding_level->this_entity will be set.  */
+      && !(TREE_CODE (decl) == PARM_DECL
+	   && current_binding_level->kind == sk_function_parms
+	   && current_binding_level->this_entity == NULL))
+    DECL_CONTEXT (decl) = ctx;
+
+  /* If this is the declaration for a namespace-scope function,
+     but the declaration itself is in a local scope, mark the
+     declaration.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_NAMESPACE_SCOPE_P (decl))
+    DECL_LOCAL_FUNCTION_P (decl) = 1;
+}
+
 /* Record a decl-node X as belonging to the current lexical scope.
    Check for errors (such as an incompatible declaration for the same
    name already seen in the same scope).  IS_FRIEND is true if X is
@@ -1737,30 +1966,7 @@ do_pushdecl (tree decl, bool is_friend)
     return error_mark_node;
 
   if (!DECL_TEMPLATE_PARM_P (decl) && current_function_decl)
-    {
-      if (!DECL_CONTEXT (decl)
-	  /* A local declaration for a function doesn't constitute
-	     nesting.  */
-	  && TREE_CODE (decl) != FUNCTION_DECL
-	  /* A local declaration for an `extern' variable is in the
-	     scope of the current namespace, not the current
-	     function.  */
-	  && !(VAR_P (decl) && DECL_EXTERNAL (decl))
-	  /* When parsing the parameter list of a function declarator,
-	     don't set DECL_CONTEXT to an enclosing function.  When we
-	     push the PARM_DECLs in order to process the function body,
-	     current_binding_level->this_entity will be set.  */
-	  && !(TREE_CODE (decl) == PARM_DECL
-	       && current_binding_level->kind == sk_function_parms
-	       && current_binding_level->this_entity == NULL))
-	DECL_CONTEXT (decl) = current_function_decl;
-
-      /* If this is the declaration for a namespace-scope function,
-	 but the declaration itself is in a local scope, mark the
-	 declaration.  */
-      if (TREE_CODE (decl) == FUNCTION_DECL && DECL_NAMESPACE_SCOPE_P (decl))
-	DECL_LOCAL_FUNCTION_P (decl) = 1;
-    }
+    set_decl_context_in_fn (current_function_decl, decl);
 
   if (tree name = DECL_NAME (decl))
     {
@@ -1798,127 +2004,100 @@ do_pushdecl (tree decl, bool is_friend)
 	    different_binding_level = true;
 	}
 
-      /* If we are declaring a function, and the result of name-lookup
-	 was an OVERLOAD, look for an overloaded instance that is
-	 actually the same as the function we are declaring.  (If
-	 there is one, we have to merge our declaration with the
-	 previous declaration.)  */
       tree ovl = old;
       ovl_iterator saved_iter (NULL_TREE);
-      if (old && TREE_CODE (old) == OVERLOAD)
-	{
-	  tree match = NULL_TREE;
 
-	  if (TREE_CODE (decl) == FUNCTION_DECL)
-	    for (ovl_iterator iter (old); iter; ++iter)
+      if (!old)
+	;
+      else if (old == error_mark_node)
+	old = NULL_TREE;
+      else if (TREE_CODE (decl) != FUNCTION_DECL)
+	/* Not pushing a function, just pick the first overload.  */
+	old = OVL_FIRST (old);
+      else
+	/* See if there's a matching overload.  */
+	{
+	  old = NULL;
+
+	  for (ovl_iterator iter (ovl); iter; ++iter)
+	    if (decls_match (*iter, decl))
 	      {
-		if (decls_match (*iter, decl))
-		  {
-		    saved_iter = iter;
-		    match = *iter;
-		    break;
-		  }
+		saved_iter = iter;
+		old = *iter;
+		break;
 	      }
-	  else
-	    /* Just choose one.  */
-	    match = OVL_FIRST (old);
-	  old = match;
 	}
 
-      if (old && old != error_mark_node)
+      if (!old)
+	;
+      else if (different_binding_level)
 	{
-	  if (different_binding_level)
+	  if (decls_match (decl, old))
+	    /* The standard only says that the local extern inherits
+	       linkage from the previous decl; in particular, default
+	       args are not shared.  Add the decl into a hash table to
+	       make sure only the previous decl in this case is seen
+	       by the middle end.  */
 	    {
-	      if (decls_match (decl, old))
-		/* The standard only says that the local extern
-		   inherits linkage from the previous decl; in
-		   particular, default args are not shared.  Add
-		   the decl into a hash table to make sure only
-		   the previous decl in this case is seen by the
-		   middle end.  */
-		{
-		  struct cxx_int_tree_map *h;
+	      struct cxx_int_tree_map *h;
 
-		  TREE_PUBLIC (decl) = TREE_PUBLIC (old);
+	      TREE_PUBLIC (decl) = TREE_PUBLIC (old);
 
-		  if (cp_function_chain->extern_decl_map == NULL)
-		    cp_function_chain->extern_decl_map
-		      = hash_table<cxx_int_tree_map_hasher>::create_ggc (20);
+	      if (cp_function_chain->extern_decl_map == NULL)
+		cp_function_chain->extern_decl_map
+		  = hash_table<cxx_int_tree_map_hasher>::create_ggc (20);
 
-		  h = ggc_alloc<cxx_int_tree_map> ();
-		  h->uid = DECL_UID (decl);
-		  h->to = old;
-		  cxx_int_tree_map **loc = cp_function_chain->extern_decl_map
-		    ->find_slot (h, INSERT);
-		  *loc = h;
-		}
+	      h = ggc_alloc<cxx_int_tree_map> ();
+	      h->uid = DECL_UID (decl);
+	      h->to = old;
+	      cxx_int_tree_map **loc = cp_function_chain->extern_decl_map
+		->find_slot (h, INSERT);
+	      *loc = h;
 	    }
-	  else if (TREE_CODE (old) == PARM_DECL)
+	}
+      else if (TREE_CODE (old) == PARM_DECL)
+	{
+	  if (tree d = duplicate_decls (decl, old, is_friend))
+	    return d;
+	}
+      else if ((DECL_EXTERN_C_FUNCTION_P (decl)
+		|| DECL_FUNCTION_TEMPLATE_P (decl))
+	       && DECL_DECLARES_FUNCTION_P (old))
+	/* Don't do anything just yet.  */;
+      else if (old == wchar_decl_node)
+	{
+	  if (! DECL_IN_SYSTEM_HEADER (decl))
+	    pedwarn (input_location, OPT_Wpedantic,
+		     "redeclaration of %<wchar_t%> as %qT", TREE_TYPE (decl));
+
+	  /* Throw away the redeclaration.  */
+	  return old;
+	}
+      else if (tree olddecl = duplicate_decls (decl, old, is_friend))
+	{
+	  if (olddecl == error_mark_node)
+	    return error_mark_node;
+
+	  if (saved_iter && saved_iter.hidden_p () && !DECL_HIDDEN_P (olddecl))
 	    {
-	      /* Check for duplicate params.  */
-	      if (tree d = duplicate_decls (decl, old, is_friend))
-		return d;
+	      tree head = saved_iter.unhide (ovl);
+	      if (head != ovl)
+		ovl = fixup_unhidden_decl
+		  (DECL_NAME (olddecl),
+		   DECL_NAMESPACE_SCOPE_P (olddecl)
+		   && namespace_bindings_p ()
+		   ? CP_DECL_CONTEXT (olddecl) : NULL_TREE, ovl, head);
 	    }
-	  else if ((DECL_EXTERN_C_FUNCTION_P (decl)
-		    || DECL_FUNCTION_TEMPLATE_P (decl))
-		   && DECL_DECLARES_FUNCTION_P (old))
-	    /* Don't do anything just yet.  */;
-	  else if (old == wchar_decl_node)
-	    {
-	      if (! DECL_IN_SYSTEM_HEADER (decl))
-		pedwarn (input_location, OPT_Wpedantic,
-			 "redeclaration of %<wchar_t%> as %qT",
-			 TREE_TYPE (decl));
 
-	      /* Throw away the redeclaration.  */
-	      return old;
-	    }
-	  else
-	    {
-	      tree olddecl = duplicate_decls (decl, old, is_friend);
-
-	      /* If the redeclaration failed, we can stop at this
-		 point.  */
-	      if (olddecl == error_mark_node)
-		return error_mark_node;
-
-	      if (olddecl)
-		{
-		  if (saved_iter && saved_iter.hidden_p ()
-		      && !DECL_HIDDEN_P (olddecl))
-		    {
-		      tree head = saved_iter.unhide (ovl);
-		      if (head != ovl)
-			ovl = fixup_unhidden_decl
-			  (DECL_NAME (olddecl),
-			   DECL_NAMESPACE_SCOPE_P (olddecl)
-			   && namespace_bindings_p ()
-			   ? CP_DECL_CONTEXT (olddecl) : NULL_TREE, ovl, head);
-		    }
-		  if (TREE_CODE (old) == TYPE_DECL)
-		    // FIXME: Why?
-		    SET_IDENTIFIER_TYPE_VALUE (name, TREE_TYPE (old));
-
-		  return old;
-		}
-	      else if (DECL_MAIN_P (decl) && TREE_CODE (old) == FUNCTION_DECL)
-		{
-		  /* A redeclaration of main, but not a duplicate of the
-		     previous one.
-
-		     [basic.start.main]
-
-		     This function shall not be overloaded.  */
-		  error ("invalid redeclaration of %q+D", old);
-		  error ("as %qD", decl);
-		  /* We don't try to push this declaration since that
-		     causes a crash.  */
-		  return decl;
-		}
-	    }
+	  if (TREE_CODE (old) == TYPE_DECL)
+	    // FIXME: Why?
+	    SET_IDENTIFIER_TYPE_VALUE (name, TREE_TYPE (old));
+	      
+	  return old;
 	}
 
       /* We are pushing a new decl.  */
+
       if (TREE_CODE (decl) == FUNCTION_DECL && DECL_EXTERN_C_P (decl))
 	check_extern_c_conflict (decl);
 
@@ -1939,7 +2118,7 @@ do_pushdecl (tree decl, bool is_friend)
 	DECL_ANTICIPATED (decl) = DECL_HIDDEN_FRIEND_P (decl) = 1;
 
       old = decl;
-      if (DECL_NON_THUNK_FUNCTION_P (decl) && ! DECL_FUNCTION_MEMBER_P (decl))
+      if (DECL_NON_THUNK_FUNCTION_P (decl))
 	{
 	  if (namespace_bindings_p ())
 	    old = do_namespace_push_overload (current_namespace,
@@ -2115,217 +2294,7 @@ do_pushdecl (tree decl, bool is_friend)
 	      && TREE_PUBLIC (decl))
 	    TREE_PUBLIC (name) = 1;
 
-	  /* Don't complain about the parms we push and then pop
-	     while tentatively parsing a function declarator.  */
-	  if (TREE_CODE (decl) == PARM_DECL && !DECL_CONTEXT (decl))
-	    /* Ignore.  */;
-
-	  /* Warn if shadowing an argument at the top level of the body.  */
-	  else if (oldlocal != NULL_TREE && !DECL_EXTERNAL (decl)
-		   /* Inline decls shadow nothing.  */
-		   && !DECL_FROM_INLINE (decl)
-		   && (TREE_CODE (oldlocal) == PARM_DECL
-		       || VAR_P (oldlocal)
-                       /* If the old decl is a type decl, only warn if the
-                          old decl is an explicit typedef or if both the old
-                          and new decls are type decls.  */
-                       || (TREE_CODE (oldlocal) == TYPE_DECL
-                           && (!DECL_ARTIFICIAL (oldlocal)
-                               || TREE_CODE (decl) == TYPE_DECL)))
-                   /* Don't check for internally generated vars unless
-                      it's an implicit typedef (see create_implicit_typedef
-                      in decl.c) or anonymous union variable.  */
-		   && (!DECL_ARTIFICIAL (decl)
-		       || DECL_IMPLICIT_TYPEDEF_P (decl)
-		       || (VAR_P (decl) && DECL_ANON_UNION_VAR_P (decl))))
-	    {
-	      bool nowarn = false;
-
-	      /* Don't complain if it's from an enclosing function.  */
-	      if (DECL_CONTEXT (oldlocal) == current_function_decl
-		  && TREE_CODE (decl) != PARM_DECL
-		  && TREE_CODE (oldlocal) == PARM_DECL)
-		{
-		  /* Go to where the parms should be and see if we find
-		     them there.  */
-		  cp_binding_level *b = current_binding_level->level_chain;
-
-		  if (FUNCTION_NEEDS_BODY_BLOCK (current_function_decl))
-		    /* Skip the ctor/dtor cleanup level.  */
-		    b = b->level_chain;
-
-		  /* ARM $8.3 */
-		  if (b->kind == sk_function_parms)
-		    {
-		      error ("declaration of %q#D shadows a parameter", decl);
-		      nowarn = true;
-		    }
-		}
-
-	      /* The local structure or class can't use parameters of
-		 the containing function anyway.  */
-	      if (DECL_CONTEXT (oldlocal) != current_function_decl)
-		{
-		  cp_binding_level *scope = current_binding_level;
-		  tree context = DECL_CONTEXT (oldlocal);
-		  for (; scope; scope = scope->level_chain)
-		   {
-		     if (scope->kind == sk_function_parms
-			 && scope->this_entity == context)
-		      break;
-		     if (scope->kind == sk_class
-			 && !LAMBDA_TYPE_P (scope->this_entity))
-		       {
-			 nowarn = true;
-			 break;
-		       }
-		   }
-		}
-	      /* Error if redeclaring a local declared in a
-		 init-statement or in the condition of an if or
-		 switch statement when the new declaration is in the
-		 outermost block of the controlled statement.
-		 Redeclaring a variable from a for or while condition is
-		 detected elsewhere.  */
-	      else if (VAR_P (oldlocal)
-		       && oldscope == current_binding_level->level_chain
-		       && (oldscope->kind == sk_cond
-			   || oldscope->kind == sk_for))
-		{
-		  error ("redeclaration of %q#D", decl);
-		  inform (DECL_SOURCE_LOCATION (oldlocal),
-			  "%q#D previously declared here", oldlocal);
-		  nowarn = true;
-		}
-	      /* C++11:
-		 3.3.3/3:  The name declared in an exception-declaration (...)
-		 shall not be redeclared in the outermost block of the handler.
-		 3.3.3/2:  A parameter name shall not be redeclared (...) in
-		 the outermost block of any handler associated with a
-		 function-try-block.
-		 3.4.1/15: The function parameter names shall not be redeclared
-		 in the exception-declaration nor in the outermost block of a
-		 handler for the function-try-block.  */
-	      else if ((VAR_P (oldlocal)
-			&& oldscope == current_binding_level->level_chain
-			&& oldscope->kind == sk_catch)
-		       || (TREE_CODE (oldlocal) == PARM_DECL
-			   && (current_binding_level->kind == sk_catch
-			       || (current_binding_level->level_chain->kind
-				   == sk_catch))
-			   && in_function_try_handler))
-		{
-		  if (permerror (input_location, "redeclaration of %q#D",
-				 decl))
-		    inform (DECL_SOURCE_LOCATION (oldlocal),
-			    "%q#D previously declared here", oldlocal);
-		  nowarn = true;
-		}
-
-	      if ((warn_shadow
-		   || warn_shadow_local
-		   || warn_shadow_compatible_local)
-		  && !nowarn)
-		{
-		  bool warned;
-		  enum opt_code warning_code;
-		  /* If '-Wshadow=compatible-local' is specified without other
-		     -Wshadow= flags, we will warn only when the type of the
-		     shadowing variable (i.e. x) can be converted to that of
-		     the shadowed parameter (oldlocal). The reason why we only
-		     check if x's type can be converted to oldlocal's type
-		     (but not the other way around) is because when users
-		     accidentally shadow a parameter, more than often they
-		     would use the variable thinking (mistakenly) it's still
-		     the parameter. It would be rare that users would use the
-		     variable in the place that expects the parameter but
-		     thinking it's a new decl.  */
-		  if (warn_shadow)
-		    warning_code = OPT_Wshadow;
-		  else if (can_convert (TREE_TYPE (oldlocal), TREE_TYPE (decl),
-					tf_none))
-		    warning_code = OPT_Wshadow_compatible_local;
-		  else
-		    warning_code = OPT_Wshadow_local;
-
-		  if (TREE_CODE (oldlocal) == PARM_DECL)
-		    warned = warning_at (input_location, warning_code,
-				"declaration of %q#D shadows a parameter",
-					 decl);
-		  else if (is_capture_proxy (oldlocal))
-		    warned = warning_at (input_location, warning_code,
-				"declaration of %qD shadows a lambda capture",
-				decl);
-		  else
-		    warned = warning_at (input_location, warning_code,
-				"declaration of %qD shadows a previous local",
-				decl);
-
-		  if (warned)
-		    inform (DECL_SOURCE_LOCATION (oldlocal),
-			    "shadowed declaration is here");
-		}
-	    }
-
-	  /* Maybe warn if shadowing something else.  */
-	  else if (warn_shadow && !DECL_EXTERNAL (decl)
-                   /* No shadow warnings for internally generated vars unless
-                      it's an implicit typedef (see create_implicit_typedef
-                      in decl.c).  */
-                   && (! DECL_ARTIFICIAL (decl)
-		       || DECL_IMPLICIT_TYPEDEF_P (decl))
-                   /* No shadow warnings for vars made for inlining.  */
-                   && ! DECL_FROM_INLINE (decl))
-	    {
-	      tree member;
-
-	      if (nonlambda_method_basetype ())
-		member = lookup_member (current_nonlambda_class_type (),
-					name,
-					/*protect=*/0,
-					/*want_type=*/false,
-					tf_warning_or_error);
-	      else
-		member = NULL_TREE;
-
-	      if (member && !TREE_STATIC (member))
-		{
-		  member = MAYBE_BASELINK_FUNCTIONS (member);
-		  member = OVL_FIRST (member);
-	
-		  /* Do not warn if a variable shadows a function, unless
-		     the variable is a function or a pointer-to-function.  */
-		  if (TREE_CODE (member) != FUNCTION_DECL
-		      || TREE_CODE (decl) == FUNCTION_DECL
-		      || TYPE_PTRFN_P (TREE_TYPE (decl))
-		      || TYPE_PTRMEMFUNC_P (TREE_TYPE (decl)))
-		    {
-		      if (warning_at (input_location, OPT_Wshadow,
-				      "declaration of %qD shadows a member of %qT",
-				      decl, current_nonlambda_class_type ())
-			  && DECL_P (member))
-			inform (DECL_SOURCE_LOCATION (member),
-				"shadowed declaration is here");
-		    }
-		}
-	      else if (oldglobal != NULL_TREE
-		       && (VAR_P (oldglobal)
-                           /* If the old decl is a type decl, only warn if the
-                              old decl is an explicit typedef or if both the
-                              old and new decls are type decls.  */
-                           || (TREE_CODE (oldglobal) == TYPE_DECL
-                               && (!DECL_ARTIFICIAL (oldglobal)
-                                   || TREE_CODE (decl) == TYPE_DECL)))
-		       && !instantiating_current_function_p ())
-		/* XXX shadow warnings in outer-more namespaces */
-		{
-		  if (warning_at (input_location, OPT_Wshadow,
-				  "declaration of %qD shadows a "
-				  "global declaration", decl))
-		    inform (DECL_SOURCE_LOCATION (oldglobal),
-			    "shadowed declaration is here");
-		}
-	    }
+	  check_local_shadow (decl, oldscope, oldlocal, oldglobal);
 	}
 
       if (VAR_P (decl))
