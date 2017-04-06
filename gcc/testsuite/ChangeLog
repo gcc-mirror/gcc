@@ -1,3 +1,8 @@
+2017-04-06  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/80166
+	* gcc.dg/asan/pr80166.c: New test.
+
 2017-04-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR tree-optimization/79390
