@@ -30,9 +30,13 @@
 #include <mmintrin.h>
 #include <prfchwintrin.h>
 
-#ifndef __3dNOW__
+#if defined __x86_64__ && !defined __SSE__ || !defined __3dNOW__
 #pragma GCC push_options
+#ifdef __x86_64__
+#pragma GCC target("sse,3dnow")
+#else
 #pragma GCC target("3dnow")
+#endif
 #define __DISABLE_3dNOW__
 #endif /* __3dNOW__ */
 
