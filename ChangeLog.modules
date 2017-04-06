@@ -1,3 +1,15 @@
+2017-04-06  Nathan Sidwell  <nathan@acm.org>
+
+	Separating namespace bindings part 6
+	gcc/c-family/
+	* c-common.h (pushdecl_top_level): Delete.
+	gcc/cp/
+	* name-lookup.h (pushdecl_top_level): Delete non-friendly version.
+	* name-lookup.c (check_extern_c_conflict): New.
+	(lookup_extern_c_fun_in_all_ns): Delete.
+	(do_pushdecl): Call it.  Rename variables sanely.
+	(pushdecl_top_level): Delete non-friendly version.
+
 2017-04-05  Nathan Sidwell  <nathan@acm.org>
 
 	Separating namespace bindings part 5
