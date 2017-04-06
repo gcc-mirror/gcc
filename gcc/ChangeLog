@@ -1,5 +1,12 @@
 2017-04-06  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/80286
+	* config/i386/sse.md (*vec_extractv4si_0_zext_sse4): New pattern.
+	* config/i386/i386.md (*zero_extendsidi2):
+	Add (?*x,*x) and (?*v,*v) alternatives.
+
+2017-04-06  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/79733
 	* config/i386/i386.c (ix86_expand_builtin)
 	<case IX86_BUILTIN_K{,OR}TEST{C,Z}{8,16,32,64}>: Determine insn operand
