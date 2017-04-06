@@ -48,7 +48,9 @@
 #include <vector>
 #include <map>
 
-/* enough for m68k. */
+/* Enough for m68k.
+ * Why a class? Maybe extend it for general usage.
+ */
 struct insn_info
 {
   unsigned mask;
@@ -127,7 +129,7 @@ struct insn_info
   }
 };
 
-/* scan rtx for registers. */
+/* scan rtx for registers and set the corresponding flags. */
 static void
 scanii (rtx x, insn_info & ii)
 {
@@ -149,11 +151,17 @@ scanii (rtx x, insn_info & ii)
     }
 }
 
+/*
+ * Collect some data.
+ */
 static std::vector<rtx_insn *> insns;
 static std::vector<rtx_insn *> jumps;
 static std::map<rtx_insn *, unsigned> insn2index;
 static std::vector<insn_info> infos;
 
+/*
+ * Reset collected data.
+ */
 static void
 clear (void)
 {
@@ -163,6 +171,10 @@ clear (void)
   infos.clear ();
 }
 
+/*
+ * Helper function to dump the code.
+ * Sometimes used during debugging.
+ */
 static void
 dump_insns (char const * name)
 {
@@ -188,7 +200,7 @@ dump_insns (char const * name)
  * Create a filtered view of insns - keep only those to work with.
  */
 static void
-filter_insns ()
+update_meta_data ()
 {
   rtx_insn *insn, *next;
   clear ();
@@ -258,18 +270,11 @@ filter_insns ()
 
 	  if (CALL_P(insn))
 	    {
-	      /* a call sets d0 and kills d1,a0,a1. */
-	      if (ii.get (1))
-		fprintf (stderr, "d1 used after call\n");
-	      if (ii.get (8))
-		fprintf (stderr, "a0 used after call\n");
-	      if (ii.get (9))
-		fprintf (stderr, "a1 used after call\n");
-
-	      ii.unset(0);
-	      ii.unset(1);
-	      ii.unset(8);
-	      ii.unset(9);
+	      /* a call sets d0 and maybe also d1,a0,a1. */
+	      ii.unset (0);
+	      ii.unset (1);
+	      ii.unset (8);
+	      ii.unset (9);
 
 	      // FIXME: get the DECL and read attributes.
 	      // use regs depending on flag mregparm
@@ -298,13 +303,12 @@ filter_insns ()
 		  ii |= infos[pos];
 
 		  // check for reg use
-		  scanii(PATTERN(insn), ii);
+		  scanii (PATTERN (insn), ii);
 
 		}
 	      infos[pos] = ii;
 	      continue;
 	    }
-
 
 	  rtx set = single_set (insn);
 	  if (set == 0)
@@ -313,13 +317,16 @@ filter_insns ()
 		{
 		  rtx x = XEXP(pattern, 0);
 		  if (REG_P(x))
-		    ii.set(REGNO(x));
+		    ii.set (REGNO(x));
 		  infos[pos] = ii;
 		  continue;
 		}
 
-	      fprintf (stderr, "##### ");
-	      debug_rtx (insn);
+	      if (GET_CODE (pattern) != PARALLEL)
+		{
+		  fprintf (stderr, "##### ");
+		  debug_rtx (insn);
+		}
 	      scanii (pattern, ii);
 	      infos[pos] = ii;
 	      continue;
@@ -501,7 +508,7 @@ propagate_moves ()
 				{
 				  std::vector<rtx_insn *>::iterator label_iter = jump_out.begin ();
 				  int fixup = 0;
-				  fprintf (stderr, "need %d jump out fixups\n", jump_out.size ());
+				  fprintf (stderr, ": need %d jump out fixups\n", jump_out.size ());
 
 				  for (unsigned k = *i + 1; k != *j; ++k)
 				    {
@@ -574,7 +581,7 @@ propagate_moves ()
 				  rtx_insn * after = insns[index + 1];
 				  rtx bset = single_set (before);
 
-				  fprintf (stderr, "condition met, moving regs %d, %d\n", REGNO(srci), REGNO(dsti));
+				  fprintf (stderr, ": condition met, moving regs %d, %d\n", REGNO(srci), REGNO(dsti));
 
 				  /* Move in front of loop and mark as dead. */
 				  remove_insn (ii);
@@ -607,7 +614,7 @@ propagate_moves ()
 				  /* add fixes if there were jumps out of the loop. */
 				  if (jump_out.size ())
 				    {
-				      fprintf (stderr, "fixing %d jump outs\n", jump_out.size ());
+				      fprintf (stderr, ": fixing %d jump outs\n", jump_out.size ());
 
 				      for (unsigned k = 0; k < jump_out.size (); ++k)
 					{
@@ -698,7 +705,7 @@ opt_strcpy ()
 
 			  fprintf (
 			  stderr,
-				   "condition met, removing compare and joining insns - omit reg %d\n", REGNO(dst));
+				   ": condition met, removing compare and joining insns - omit reg %d\n", REGNO(dst));
 
 			  for (link = REG_NOTES(x2reg); link; link = XEXP(link, 1))
 			    if (REG_NOTE_KIND (link) != REG_LABEL_OPERAND)
@@ -856,7 +863,7 @@ commute_add_move (void)
       int oldcost1 = insn_rtx_cost (set, true);
       int oldcost2 = insn_rtx_cost (set2, true);
 
-      fprintf (stderr, "commute_add_move found, old cost: %d = %d + %d\n", oldcost1 + oldcost2, oldcost1, oldcost2);
+      fprintf (stderr, ": commute_add_move found, old cost: %d = %d + %d\n", oldcost1 + oldcost2, oldcost1, oldcost2);
 
       debug_rtx (insn);
       debug_rtx (next);
@@ -875,7 +882,7 @@ commute_add_move (void)
 	  int newcost1 = insn_rtx_cost (set, true);
 	  int newcost2 = insn_rtx_cost (set2, true);
 
-	  fprintf (stderr, "commute_add_move found, new cost: %d = %d + %d\n", newcost1 + newcost2, newcost1, newcost2);
+	  fprintf (stderr, ": commute_add_move found, new cost: %d = %d + %d\n", newcost1 + newcost2, newcost1, newcost2);
 
 	  debug_rtx (insn);
 	  debug_rtx (next);
@@ -889,24 +896,122 @@ commute_add_move (void)
   return change_count;
 }
 
+/*
+ * Replace
+ *
+ * move x,dx
+ * cmp  dx,dy
+ *
+ * if dx and dy are both dead after compare.
+ *
+ * with
+ *
+ * sub #n,dx
+ *
+ d0 d1 d2 a0 a1 a7       (insn 99 59 41 7 (set (reg:SI 2 d2)
+ (const_int 1 [0x1])) sn.c:8 38 {*movsi_m68k}
+ (nil))
+ d0 d1 d2 a0 a1 a7       (insn 41 99 42 7 (set (cc0)
+ (compare (reg/v:SI 1 d1 [orig:54 n ] [54])
+ (reg:SI 2 d2))) sn.c:8 16 {*m68k.md:499}
+ (expr_list:REG_DEAD (reg:SI 2 d2)
+ (expr_list:REG_DEAD (reg/v:SI 1 d1 [orig:54 n ] [54])
+ (nil))))
+ *
+ */
 static unsigned
 const_cmp_to_sub (void)
 {
   unsigned change_count = 0;
 #if HAVE_cc0
-  for (unsigned index = 0; index + 1 < insns.size (); ++index)
+  for (unsigned index = 1; index + 1 < insns.size (); ++index)
     {
       rtx_insn * insn = insns[index];
-      rtx set = single_set (insn);
-      if (!set)
+      rtx seti = single_set (insn);
+      if (!seti)
 	continue;
 
-      rtx dst = SET_DEST(set);
-      if (dst != cc0_rtx)
+      rtx dsti = SET_DEST(seti);
+      if (dsti != cc0_rtx)
 	continue;
 
-//      fprintf (stderr, "cc0:");
-//      debug_rtx (insn);
+      rtx srci = SET_SRC(seti);
+      if (GET_CODE(srci) != COMPARE)
+	continue;
+
+      rtx left = XEXP(srci, 0);
+      rtx right = XEXP(srci, 1);
+      if (!REG_P(left) || !REG_P(right))
+	continue;
+
+      if (!find_reg_note (insn, REG_DEAD, left) || !find_reg_note (insn, REG_DEAD, right))
+	continue;
+
+      fprintf (stderr, ": found reg-reg compare with both dead\n");
+
+      // maybe add a search?
+      rtx_insn * prev = insns[index - 1];
+      rtx setp = single_set (prev);
+      if (!setp)
+	continue;
+
+      rtx dstp = SET_DEST(setp);
+      if (!REG_P(dstp) || dstp != left)
+	continue;
+
+      rtx srcp = SET_SRC(setp);
+      if (!CONST_INT_P(srcp))
+	continue;
+
+      int intval = -INTVAL(srcp);
+      if (intval < -8 || intval > 7)
+	continue;
+
+      enum machine_mode mode = GET_MODE(dstp);
+      rtx reg = dstp == left ? right : left;
+      rtx plus = gen_rtx_PLUS(mode, reg, gen_rtx_CONST_INT(mode, intval));
+
+      SET_SRC(setp) = plus;
+      SET_DEST(setp) = reg;
+
+      int num_clobbers_to_add = 0;
+      int insn_code_number = recog (PATTERN (prev), prev, &num_clobbers_to_add);
+
+      SET_SRC(setp) = srcp;
+      SET_DEST(setp) = dstp;
+
+      if (insn_code_number < 0)
+	continue;
+
+      debug_rtx(prev);
+      debug_rtx(insn);
+
+      // also convert current statement to cmp #0, reg
+      SET_INSN_DELETED(insn);
+      rtx neu = gen_rtx_SET(cc0_rtx, gen_rtx_COMPARE(mode, reg, gen_rtx_CONST_INT(mode, 0)));
+      insn = emit_insn_after(neu, prev);
+      add_reg_note (insn, REG_DEAD, reg);
+
+      SET_INSN_DELETED(prev);
+      neu = gen_rtx_SET(reg, plus);
+      prev = emit_insn_before(neu, insn);
+
+      int omitted_regno = REGNO(dstp == left ? left: right);
+      if (!(df->hard_regs_live_count[omitted_regno] -= 2))
+        df_set_regs_ever_live (omitted_regno, false);
+
+      fprintf (stderr, ": replaced reg-reg compare with sub\n");
+      debug_rtx(prev);
+      debug_rtx(insn);
+
+      if (dstp != left)
+	{
+	  // invert all conditions using this statement.
+
+	}
+
+
+      ++change_count;
     }
 #endif
   return change_count;
@@ -933,7 +1038,7 @@ elim_dead_assign (void)
 
       if (!infos[index].get (REGNO(dst)))
 	{
-	  fprintf (stderr, "eliminate dead assignment to %d:", REGNO(dst));
+	  fprintf (stderr, ": eliminate dead assignment to %d:", REGNO(dst));
 	  debug_rtx (insn);
 	  SET_INSN_DELETED(insn);
 	  ++change_count;
@@ -950,28 +1055,28 @@ execute_bbb_optimizations (void)
   df_note_add_problem ();
   df_analyze ();
 
-  filter_insns ();
+  update_meta_data ();
 
   for (;;)
     {
       int done = 1;
       if (propagate_moves ())
-	done = 0, filter_insns ();
+	done = 0, update_meta_data ();
 
       if (offset_2_autoinc ())
-	done = 0, filter_insns ();
+	done = 0, update_meta_data ();
 
       if (opt_strcpy ())
-	done = 0, filter_insns ();
+	done = 0, update_meta_data ();
 
       if (commute_add_move ())
-	done = 0, filter_insns ();
+	done = 0, update_meta_data ();
 
       if (const_cmp_to_sub ())
-	done = 0, filter_insns ();
+	done = 0, update_meta_data ();
 
       if (elim_dead_assign ())
-	done = 0, filter_insns ();
+	done = 0, update_meta_data ();
 
       if (done)
 	break;
