@@ -1,5 +1,10 @@
 2017-04-06  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/80262
+	* gcc.target/i386/pr80262.c: New testcase.
+
+2017-04-06  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/80281
 	* gcc.dg/tree-ssa/pr40921.c: Add -fp-contract=off.
 
