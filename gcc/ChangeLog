@@ -1,5 +1,11 @@
 2017-04-06  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/80334
+	* tree-ssa-loop-ivopts.c (rewrite_use_address): Properly
+	preserve alignment of accesses.
+
+2017-04-06  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/80262
 	* tree-sra.c (build_ref_for_offset): Preserve address-space
 	information.
