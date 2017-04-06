@@ -1,5 +1,10 @@
 2017-04-06  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/79733
+	* gcc.target/i386/pr79733.c: New test.
+
+2017-04-06  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/80298
 	* gcc.target/i386/pr80298-1.c: New test.
 	* gcc.target/i386/pr80298-2.c: Ditto.
