@@ -25,4 +25,4 @@ foo (void)
   return jp;
 }
 
-/* { dg-final { scan-assembler "\[ \\t\]cmov\[a-z]+\[ \\t\]" } } */
+/* { dg-final { scan-assembler "\[ \\t\]cmov\[a-z.]+\[ \\t\]" } } */
