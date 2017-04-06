@@ -1,6 +1,10 @@
 2017-04-06  Nathan Sidwell  <nathan@acm.org>
 
-	Separating namespace bindings part 6
+	Separating namespace bindings part 8
+	gcc/cp/
+	* name-lookup.c (do_pushdecl): Kill obsolete C-era code!
+
+	Separating namespace bindings part 7
 	gcc/cp/
 	* name-lookup.c (check_local_shadow, set_decl_context_in_fn): Break
 	out and simplify from ... 

@@ -1948,14 +1948,14 @@ set_decl_context_in_fn (tree ctx, tree decl)
     DECL_LOCAL_FUNCTION_P (decl) = 1;
 }
 
-/* Record a decl-node X as belonging to the current lexical scope.
-   Check for errors (such as an incompatible declaration for the same
-   name already seen in the same scope).  IS_FRIEND is true if X is
+/* Record DECL as belonging to the current lexical scope.  Check for
+   errors (such as an incompatible declaration for the same name
+   already seen in the same scope).  IS_FRIEND is true if DECL is
    declared as a friend.
 
-   Returns either X or an old decl for the same name.
-   If an old decl is returned, it may have been smashed
-   to agree with what X says.  */
+   Returns either DCL or an old decl for the same name.  If an old
+   decl is returned, it may have been smashed to agree with what DECL
+   says.  */
 
 static tree
 do_pushdecl (tree decl, bool is_friend)
@@ -2197,15 +2197,6 @@ do_pushdecl (tree decl, bool is_friend)
 	 Install the new declaration and return it.  */
       if (namespace_bindings_p ())
 	{
-	  /* Install a global value.  */
-
-	  /* If the first global decl has external linkage,
-	     warn if we later see static one.  */
-	  if (IDENTIFIER_GLOBAL_VALUE (name) == NULL_TREE
-	      && TREE_PUBLIC (decl))
-	    TREE_PUBLIC (name) = 1;
-
-	  /* Bind the name for the entity.  */
 	  if (!(TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl)
 		&& old != NULL_TREE)
 	      && (TREE_CODE (decl) == TYPE_DECL
@@ -2227,11 +2218,16 @@ do_pushdecl (tree decl, bool is_friend)
 	  tree oldlocal = NULL_TREE;
 	  cp_binding_level *oldscope = NULL;
 	  cxx_binding *oldbinding = outer_binding (name, NULL, true);
+
 	  if (oldbinding)
 	    {
 	      oldlocal = oldbinding->value;
 	      oldscope = oldbinding->scope;
 	    }
+	  while (oldlocal
+		 && VAR_P (oldlocal)
+		 && DECL_DEAD_FOR_LOCAL (oldlocal))
+	    oldlocal = DECL_SHADOWED_FOR_VAR (oldlocal);
 
 	  if (need_new_binding)
 	    {
@@ -2251,48 +2247,6 @@ do_pushdecl (tree decl, bool is_friend)
 	     go through namespaces.  */
 	  if (TREE_CODE (decl) == NAMESPACE_DECL)
 	    set_identifier_type_value (name, NULL_TREE);
-
-	  if (oldlocal)
-	    {
-	      tree d = oldlocal;
-
-	      while (oldlocal
-		     && VAR_P (oldlocal)
-		     && DECL_DEAD_FOR_LOCAL (oldlocal))
-		oldlocal = DECL_SHADOWED_FOR_VAR (oldlocal);
-
-	      if (oldlocal == NULL_TREE)
-		oldlocal = find_namespace_value
-		  (current_namespace, DECL_NAME (d));
-	    }
-
-	  /* If this is an extern function declaration, see if we
-	     have a global definition or declaration for the function.  */
-	  if (oldlocal == NULL_TREE
-	      && DECL_EXTERNAL (decl)
-	      && oldglobal != NULL_TREE
-	      && TREE_CODE (decl) == FUNCTION_DECL
-	      && TREE_CODE (oldglobal) == FUNCTION_DECL)
-	    {
-	      /* We have one.  Their types must agree.  */
-	      if (decls_match (decl, oldglobal))
-		/* OK */;
-	      else
-		{
-		  warning (0, "extern declaration of %q#D doesn%'t match",
-			   decl);
-		  warning_at (DECL_SOURCE_LOCATION (oldglobal), 0,
-			      "global declaration %q#D", oldglobal);
-		}
-	    }
-	  /* If we have a local external declaration,
-	     and no file-scope declaration has yet been seen,
-	     then if we later have a file-scope decl it must not be static.  */
-	  if (oldlocal == NULL_TREE
-	      && oldglobal == NULL_TREE
-	      && DECL_EXTERNAL (decl)
-	      && TREE_PUBLIC (decl))
-	    TREE_PUBLIC (name) = 1;
 
 	  check_local_shadow (decl, oldscope, oldlocal, oldglobal);
 	}
