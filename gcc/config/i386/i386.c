@@ -37752,98 +37752,82 @@ rdseed_step:
 
     case IX86_BUILTIN_KTESTC8:
       icode = CODE_FOR_ktestqi;
-      mode0 = QImode;
-      mode1 = CCCmode;
+      mode3 = CCCmode;
       goto kortest;
 
     case IX86_BUILTIN_KTESTZ8:
       icode = CODE_FOR_ktestqi;
-      mode0 = QImode;
-      mode1 = CCZmode;
+      mode3 = CCZmode;
       goto kortest;
 
     case IX86_BUILTIN_KTESTC16:
       icode = CODE_FOR_ktesthi;
-      mode0 = HImode;
-      mode1 = CCCmode;
+      mode3 = CCCmode;
       goto kortest;
 
     case IX86_BUILTIN_KTESTZ16:
       icode = CODE_FOR_ktesthi;
-      mode0 = HImode;
-      mode1 = CCZmode;
+      mode3 = CCZmode;
       goto kortest;
 
     case IX86_BUILTIN_KTESTC32:
       icode = CODE_FOR_ktestsi;
-      mode0 = SImode;
-      mode1 = CCCmode;
+      mode3 = CCCmode;
       goto kortest;
 
     case IX86_BUILTIN_KTESTZ32:
       icode = CODE_FOR_ktestsi;
-      mode0 = SImode;
-      mode1 = CCZmode;
+      mode3 = CCZmode;
       goto kortest;
 
     case IX86_BUILTIN_KTESTC64:
       icode = CODE_FOR_ktestdi;
-      mode0 = DImode;
-      mode1 = CCCmode;
+      mode3 = CCCmode;
       goto kortest;
 
     case IX86_BUILTIN_KTESTZ64:
       icode = CODE_FOR_ktestdi;
-      mode0 = DImode;
-      mode1 = CCZmode;
+      mode3 = CCZmode;
       goto kortest;
 
     case IX86_BUILTIN_KORTESTC8:
       icode = CODE_FOR_kortestqi;
-      mode0 = QImode;
-      mode1 = CCCmode;
+      mode3 = CCCmode;
       goto kortest;
 
     case IX86_BUILTIN_KORTESTZ8:
       icode = CODE_FOR_kortestqi;
-      mode0 = QImode;
-      mode1 = CCZmode;
+      mode3 = CCZmode;
       goto kortest;
 
     case IX86_BUILTIN_KORTESTC16:
       icode = CODE_FOR_kortesthi;
-      mode0 = HImode;
-      mode1 = CCCmode;
+      mode3 = CCCmode;
       goto kortest;
 
     case IX86_BUILTIN_KORTESTZ16:
       icode = CODE_FOR_kortesthi;
-      mode0 = HImode;
-      mode1 = CCZmode;
+      mode3 = CCZmode;
       goto kortest;
 
     case IX86_BUILTIN_KORTESTC32:
       icode = CODE_FOR_kortestsi;
-      mode0 = SImode;
-      mode1 = CCCmode;
+      mode3 = CCCmode;
       goto kortest;
 
     case IX86_BUILTIN_KORTESTZ32:
       icode = CODE_FOR_kortestsi;
-      mode0 = SImode;
-      mode1 = CCZmode;
+      mode3 = CCZmode;
       goto kortest;
 
     case IX86_BUILTIN_KORTESTC64:
       icode = CODE_FOR_kortestdi;
-      mode0 = DImode;
-      mode1 = CCCmode;
+      mode3 = CCCmode;
       goto kortest;
 
     case IX86_BUILTIN_KORTESTZ64:
       icode = CODE_FOR_kortestdi;
-      mode0 = DImode;
-      mode1 = CCZmode;
+      mode3 = CCZmode;
 
     kortest:
       arg0 = CALL_EXPR_ARG (exp, 0); /* Mask reg src1.  */
@@ -37851,19 +37835,32 @@ rdseed_step:
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
 
-      op0 = copy_to_reg (op0);
-      op0 = lowpart_subreg (mode0, op0, GET_MODE (op0));
-      op1 = copy_to_reg (op1);
-      op1 = lowpart_subreg (mode0, op1, GET_MODE (op1));
+      mode0 = insn_data[icode].operand[0].mode;
+      mode1 = insn_data[icode].operand[1].mode;
+
+      if (GET_MODE (op0) != VOIDmode)
+	op0 = force_reg (GET_MODE (op0), op0);
+
+      op0 = gen_lowpart (mode0, op0);
+
+      if (!insn_data[icode].operand[0].predicate (op0, mode0))
+	op0 = copy_to_mode_reg (mode0, op0);
+
+      if (GET_MODE (op1) != VOIDmode)
+	op1 = force_reg (GET_MODE (op1), op1);
+
+      op1 = gen_lowpart (mode1, op1);
+
+      if (!insn_data[icode].operand[1].predicate (op1, mode1))
+	op1 = copy_to_mode_reg (mode1, op1);
 
       target = gen_reg_rtx (QImode);
-      emit_insn (gen_rtx_SET (target, const0_rtx));
 
       /* Emit kortest.  */
       emit_insn (GEN_FCN (icode) (op0, op1));
       /* And use setcc to return result from flags.  */
       ix86_expand_setcc (target, EQ,
-			 gen_rtx_REG (mode1, FLAGS_REG), const0_rtx);
+			 gen_rtx_REG (mode3, FLAGS_REG), const0_rtx);
       return target;
 
     case IX86_BUILTIN_GATHERSIV2DF:
