@@ -1,3 +1,9 @@
+2017-04-06  Thomas Preud'homme  <thomas.preudhomme@arm.com
+
+	PR target/80082
+	* gcc.target/arm/atomic_loaddi_11.c: Target Cortex-R5 instead of
+	ARMv7-R.
+
 2017-04-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80334
