@@ -3373,8 +3373,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	     object being initialized, replace them now and don't try to
 	     preevaluate.  */
 	  bool had_placeholder = false;
-	  if (cxx_dialect >= cxx14
-	      && !processing_template_decl
+	  if (!processing_template_decl
 	      && TREE_CODE (init_expr) == INIT_EXPR)
 	    TREE_OPERAND (init_expr, 1)
 	      = replace_placeholders (TREE_OPERAND (init_expr, 1),

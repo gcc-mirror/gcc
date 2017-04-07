@@ -3,6 +3,9 @@
 	PR sanitizer/80348
 	* g++.dg/ubsan/div-by-zero-2.C: New test.
 
+	PR c++/80095
+	* g++.dg/cpp1y/nsdmi-aggr8.C: New test.
+
 2017-04-07  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/70478
