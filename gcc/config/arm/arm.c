@@ -26549,12 +26549,11 @@ arm_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
   return mode;
 }
 
-/* AAPCS based ABIs use short enums by default.  */
 
 static bool
 arm_default_short_enums (void)
 {
-  return TARGET_AAPCS_BASED && arm_abi != ARM_ABI_AAPCS_LINUX;
+  return ARM_DEFAULT_SHORT_ENUMS;
 }
 
 
