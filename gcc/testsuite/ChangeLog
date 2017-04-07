@@ -1,3 +1,8 @@
+2017-04-07  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/80212
+	* g++.dg/ipa/pr80212.C: New test.
+
 2017-04-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.dg/tree-ssa/pr79800.c: Require c99_runtime.
