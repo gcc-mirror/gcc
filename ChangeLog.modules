@@ -1,3 +1,14 @@
+2017-04-07  Nathan Sidwell  <nathan@acm.org>
+
+	Fix bogus scope handling
+	gcc/cp/
+	* call.c (make_temporary_var_for_ref_to_temp): Push temp into
+	current scope.
+	* decl.c (xref_tag_1): Pass ts_lambda to pushtag.
+	* name-lookup (do_pushtag): Deal with ts_lambda scope.
+	gcc/testsuite
+	* g++.dg/cpp0x/forw_enum9.C: Fix testcase.
+
 2017-04-06  Nathan Sidwell  <nathan@acm.org>
 
 	Separating namespace bindings part 8

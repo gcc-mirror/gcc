@@ -5553,10 +5553,9 @@ maybe_process_template_type_declaration (tree type, int is_friend,
 static tree
 do_pushtag (tree name, tree type, tag_scope scope)
 {
-  cp_binding_level *b;
   tree decl;
 
-  b = current_binding_level;
+  cp_binding_level *b = current_binding_level;
   while (/* Cleanup scopes are not scopes from the point of view of
 	    the language.  */
 	 b->kind == sk_cleanup
@@ -5568,13 +5567,8 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	    view of the language.  */
 	 || (b->kind == sk_template_parms
 	     && (b->explicit_spec_p || scope == ts_global))
-	 || (b->kind == sk_class
-	     && (scope != ts_current
-		 /* We may be defining a new type in the initializer
-		    of a static member variable. We allow this when
-		    not pedantic, and it is particularly useful for
-		    type punning via an anonymous union.  */
-		 || COMPLETE_TYPE_P (b->this_entity))))
+	 /* Pushing into a class is ok for lambdas or want current  */
+	 || (b->kind == sk_class && scope != ts_lambda && scope != ts_current))
     b = b->level_chain;
 
   gcc_assert (identifier_p (name));
@@ -5591,9 +5585,10 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	  tree cs = current_scope ();
 
 	  if (scope == ts_current
+	      || scope == ts_lambda
 	      || (cs && TREE_CODE (cs) == FUNCTION_DECL))
 	    context = cs;
-	  else if (cs != NULL_TREE && TYPE_P (cs))
+	  else if (cs && TYPE_P (cs))
 	    /* When declaring a friend class of a local class, we want
 	       to inject the newly named class into the scope
 	       containing the local class, not the namespace
@@ -5627,7 +5622,8 @@ do_pushtag (tree name, tree type, tag_scope scope)
 
       if (b->kind == sk_class)
 	{
-	  if (!TYPE_BEING_DEFINED (current_class_type))
+	  if (!TYPE_BEING_DEFINED (current_class_type)
+	      && scope != ts_lambda)
 	    return error_mark_node;
 
 	  if (!PROCESSING_REAL_TEMPLATE_DECL_P ())
@@ -5678,6 +5674,7 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	    vec_safe_push (local_classes, type);
 	}
     }
+
   if (b->kind == sk_class
       && !COMPLETE_TYPE_P (current_class_type))
     {
