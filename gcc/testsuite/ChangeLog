@@ -1,3 +1,7 @@
+2017-04-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.dg/tree-ssa/pr79800.c: Require c99_runtime.
+
 2017-04-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80334
