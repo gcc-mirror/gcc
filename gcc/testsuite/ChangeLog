@@ -1,5 +1,11 @@
 2017-04-07  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/80334
+	* g++.dg/torture/pr80334.C: Use __BIGGEST_ALIGNMENT__ for
+	alignas on stack.
+
+2017-04-07  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/80341
 	* gcc.dg/torture/pr80341.c: New testcase.
 
