@@ -9530,8 +9530,12 @@ aarch64_process_target_attr (tree args, const char* pragma_or_attr)
 
       return true;
     }
-  /* We expect to find a string to parse.  */
-  gcc_assert (TREE_CODE (args) == STRING_CST);
+
+  if (TREE_CODE (args) != STRING_CST)
+    {
+      error ("attribute %<target%> argument not a string");
+      return false;
+    }
 
   size_t len = strlen (TREE_STRING_POINTER (args));
   char *str_to_check = (char *) alloca (len + 1);

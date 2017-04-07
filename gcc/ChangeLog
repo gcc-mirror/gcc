@@ -1,5 +1,11 @@
 2017-04-07  Martin Liska  <mliska@suse.cz>
 
+	PR target/79889
+	* config/aarch64/aarch64.c (aarch64_process_target_attr):
+	Show error message instead of an ICE.
+
+2017-04-07  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/80212
 	* ipa-split.c (split_function): Add function part to a same comdat
 	group.
