@@ -1,5 +1,9 @@
 2017-04-07  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.target/i386/avx512f-vgetmantps-2.c: Add -mfpmath=sse to
+	dg-options.
+	* gcc.target/i386/avx512f-vgetmantpd-2.c: Likewise.
+
 	PR target/80322
 	PR target/80323
 	PR target/80325

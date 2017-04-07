@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mavx512f -std=c99" } */
+/* { dg-options "-O2 -mavx512f -std=c99 -mfpmath=sse" } */
 /* { dg-require-effective-target avx512f } */
 /* { dg-require-effective-target c99_runtime } */
 
