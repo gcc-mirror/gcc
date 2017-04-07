@@ -1,3 +1,9 @@
+2017-04-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/70478
+	* lra-constraints.c (process_alt_operands): Disfavor alternative
+	insn memory operands.
+
 2017-04-07  Jeff Law  <law@redhat.com>
 
 	* config/iq2000/iq2000.c (final_prescan_insn): Do not separate a

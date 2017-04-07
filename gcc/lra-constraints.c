@@ -2685,6 +2685,21 @@ process_alt_operands (int only_alternative)
 		    }
 		}
 
+	      /* When we use memory operand, the insn should read the
+		 value from memory and even if we just wrote a value
+		 into the memory it is costly in comparison with an
+		 insn alternative which does not use memory
+		 (e.g. register or immediate operand).  */
+	      if (no_regs_p && offmemok)
+		{
+		  if (lra_dump_file != NULL)
+		    fprintf
+		      (lra_dump_file,
+		       "            Using memory insn operand %d: reject+=3\n",
+		       nop);
+		  reject += 3;
+		}
+	      
 #ifdef SECONDARY_MEMORY_NEEDED
 	      /* If reload requires moving value through secondary
 		 memory, it will need one more insn at least.  */
