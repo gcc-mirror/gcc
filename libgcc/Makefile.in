@@ -348,8 +348,6 @@ LIBUNWIND =
 SHLIBUNWIND_LINK =
 SHLIBUNWIND_INSTALL =
 
-tmake_file = @tmake_file@
-include $(srcdir)/empty.mk $(tmake_file)
 
 # Create links to files specified in config.host.
 LIBGCC_LINKS = enable-execute-stack.c unwind.h md-unwind-support.h \
@@ -365,6 +363,9 @@ sfp-machine.h: $(srcdir)/config/$(sfp_machine_header)
 	-$(LN_S) $< $@
 gthr-default.h: $(srcdir)/$(thread_header)
 	-$(LN_S) $< $@
+
+tmake_file = @tmake_file@
+include $(srcdir)/empty.mk $(tmake_file)
 
 # Collect target defines and headers from config.host.
 libgcc_tm_defines = @tm_defines@
