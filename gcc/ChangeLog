@@ -1,3 +1,11 @@
+2017-04-07  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/arm/arm.h (ARM_DEFAULT_SHORT_ENUMS): Provide default
+	definition.
+	* config/arm/arm.c (arm_default_short_enums): Use
+	ARM_DEFAULT_SHORT_ENUMS.
+	* config/arm/rtems.h (ARM_DEFAULT_SHORT_ENUMS): Define.
+
 2017-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/80234
