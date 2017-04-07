@@ -1,3 +1,15 @@
+2017-04-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-affine.c (wide_int_ext_for_comb): Take type rather
+	than aff_tree.
+	(aff_combination_const): Adjust.
+	(aff_combination_scale): Likewise.
+	(aff_combination_add_elt): Likewise.
+	(aff_combination_add_cst): Likewise.
+	(aff_combination_convert): Likewise.
+	(add_elt_to_tree): Likewise.  Remove unused argument.
+	(aff_combination_to_tree): Adjust calls to add_elt_to_tree.
+
 2017-04-07  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/arm/arm.h (ARM_DEFAULT_SHORT_ENUMS): Provide default
