@@ -1,5 +1,11 @@
 2017-04-07  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR rtl-optimization/70703
+	* ira-color.c (update_conflict_hard_regno_costs): Use
+	int64_t instead of HOST_WIDE_INT.
+
+2017-04-07  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR rtl-optimization/70478
 	* lra-constraints.c (process_alt_operands): Disfavor alternative
 	insn memory operands.
