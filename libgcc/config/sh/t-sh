@@ -45,7 +45,7 @@ sdivsi3_i4i-Os-4-200.o: $(srcdir)/config/sh/lib1funcs-Os-4-200.S
 	$(gcc_compile) -c -DL_sdivsi3_i4i $<
 udivsi3_i4i-Os-4-200.o: $(srcdir)/config/sh/lib1funcs-Os-4-200.S
 	$(gcc_compile) -c -DL_udivsi3_i4i $<
-unwind-dw2-Os-4-200.o: $(srcdir)/unwind-dw2.c
+unwind-dw2-Os-4-200.o: $(srcdir)/unwind-dw2.c $(LIBGCC_LINKS)
 	$(gcc_compile) $(LIBGCC2_CFLAGS) $(vis_hide) -fexceptions -Os -c $<
 
 OBJS_Os_4_200=sdivsi3_i4i-Os-4-200.o udivsi3_i4i-Os-4-200.o unwind-dw2-Os-4-200.o
