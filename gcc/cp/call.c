@@ -8047,9 +8047,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	{
 	  arg = cp_build_indirect_ref (arg, RO_NULL, complain);
 	  val = build2 (MODIFY_EXPR, TREE_TYPE (to), to, arg);
-	  if (cxx_dialect >= cxx14)
-	    /* Handle NSDMI that refer to the object being initialized.  */
-	    replace_placeholders (arg, to);
+	  /* Handle NSDMI that refer to the object being initialized.  */
+	  replace_placeholders (arg, to);
 	}
       else
 	{

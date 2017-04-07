@@ -3,6 +3,16 @@
 	PR sanitizer/80348
 	* typeck.c (cp_build_binary_op): Convert COP[01] to ORIG_TYPE.
 
+	PR c++/80095
+	* call.c (build_over_call): Don't check cxx_dialect.
+	* cp-gimplify.c (cp_gimplify_init_expr): Don't check cxx_dialect nor
+	whether SUB is a CONSTRUCTOR.
+	* init.c (build_new_1): Don't check cxx_dialect.
+	* tree.c (replace_placeholders): Add a function comment.  Return if
+	not in C++14, or if the object isn't a (member of a) class.
+	* typeck2.c (store_init_value): Don't check cxx_dialect nor whether
+	TYPE is CLASS_TYPE_P.
+
 2017-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/80309
