@@ -79,7 +79,6 @@ struct insn_info
   inline void
   def (int regno)
   {
-    _use |= 1 << regno;
     _def |= 1 << regno;
   }
 
@@ -151,7 +150,9 @@ struct insn_info
     return t;
   }
 
-  inline bool contains(insn_info const & o) const {
+  inline bool
+  contains (insn_info const & o) const
+  {
     if (o._def & ~_def)
       return false;
     if (o._use & ~_use)
@@ -211,21 +212,22 @@ clear (void)
   infos.clear ();
 }
 
-static bool is_reg_dead(unsigned regno, unsigned pos)
+static bool
+is_reg_dead (unsigned regno, unsigned pos)
 {
-  if (pos >= infos.size())
+  if (pos >= infos.size ())
     return true;
 
   insn_info & ii0 = infos[pos++];
-  if (!ii0.is_use(regno))
+  if (!ii0.is_use (regno))
     return true;
 
-  if (pos >= infos.size())
+  if (pos >= infos.size ())
     return true;
 
   insn_info & ii1 = infos[pos];
 
-  return !ii1.is_use(regno);
+  return !ii1.is_use (regno);
 }
 
 /*
@@ -274,7 +276,6 @@ update_meta_data ()
 
       if (NONJUMP_INSN_P (insn) || LABEL_P(insn) || JUMP_P(insn) || CALL_P(insn))
 	{
-	  //	  debug_rtx (insn);
 	  if (JUMP_P(insn))
 	    jumps.push_back (insn);
 
@@ -306,7 +307,7 @@ update_meta_data ()
 	{
 	  rtx_insn * insn = insns[pos];
 
-	  if (pass && infos[pos].contains(ii))
+	  if (pass && infos[pos].contains (ii))
 	    break;
 
 	  ii |= infos[pos];
@@ -578,7 +579,6 @@ propagate_moves ()
 				{
 				  std::vector<rtx_insn *>::iterator label_iter = jump_out.begin ();
 				  int fixup = 0;
-				  fprintf (stderr, ": need %d jump out fixups\n", jump_out.size ());
 
 				  for (unsigned k = *i + 1; k != *j; ++k)
 				    {
@@ -651,7 +651,8 @@ propagate_moves ()
 				  rtx_insn * after = insns[index + 1];
 				  rtx bset = single_set (before);
 
-				  fprintf (stderr, ": condition met, moving regs %d, %d\n", REGNO(srci), REGNO(dsti));
+				  fprintf (stderr, ":bbb: propagate_moves condition met, moving regs %d, %d\n",
+					   REGNO(srci), REGNO(dsti));
 
 				  /* Move in front of loop and mark as dead. */
 				  remove_insn (ii);
@@ -684,7 +685,7 @@ propagate_moves ()
 				  /* add fixes if there were jumps out of the loop. */
 				  if (jump_out.size ())
 				    {
-				      fprintf (stderr, ": fixing %d jump outs\n", jump_out.size ());
+				      fprintf (stderr, ":bbb: propagate_moves fixing %d jump outs\n", jump_out.size ());
 
 				      for (unsigned k = 0; k < jump_out.size (); ++k)
 					{
@@ -763,7 +764,7 @@ opt_strcpy ()
 		      SET_SRC(single_set(reg2x)) = SET_SRC(single_set (x2reg));
 		      insn_code_number = recog (PATTERN (reg2x), reg2x, &num_clobbers_to_add);
 
-		      if (insn_code_number < 0)
+		      if (insn_code_number < 0 || !check_asm_operands (reg2x))
 			{
 			  /* restore register. */
 			  SET_SRC(single_set(reg2x)) = SET_DEST(single_set (x2reg));
@@ -775,7 +776,8 @@ opt_strcpy ()
 
 			  fprintf (
 			  stderr,
-				   ": condition met, removing compare and joining insns - omit reg %d\n", REGNO(dst));
+				   ":bbb: opt_strcpy condition met, removing compare and joining insns - omit reg %d\n",
+				   REGNO(dst));
 
 			  for (link = REG_NOTES(x2reg); link; link = XEXP(link, 1))
 			    if (REG_NOTE_KIND (link) != REG_LABEL_OPERAND)
@@ -930,14 +932,6 @@ commute_add_move (void)
       if (!REG_P(memreg) || REGNO(memreg) != REGNO(reg1src))
 	continue;
 
-      int oldcost1 = insn_rtx_cost (set, true);
-      int oldcost2 = insn_rtx_cost (set2, true);
-
-      fprintf (stderr, ": commute_add_move found, old cost: %d = %d + %d\n", oldcost1 + oldcost2, oldcost1, oldcost2);
-
-      debug_rtx (insn);
-      debug_rtx (next);
-
       rtx pinc = gen_rtx_POST_INC(GET_MODE(dst), reg1dst);
       rtx newmem = replace_equiv_address_nv (dst, pinc);
 
@@ -949,14 +943,7 @@ commute_add_move (void)
 
 	  add_reg_note (next, REG_INC, reg1dst);
 
-	  int newcost1 = insn_rtx_cost (set, true);
-	  int newcost2 = insn_rtx_cost (set2, true);
-
-	  fprintf (stderr, ": commute_add_move found, new cost: %d = %d + %d\n", newcost1 + newcost2, newcost1,
-		   newcost2);
-
-	  debug_rtx (insn);
-	  debug_rtx (next);
+	  fprintf (stderr, ":bbb: commute_add_move found\n");
 
 	  df_insn_rescan (insn);
 	  df_insn_rescan (next);
@@ -1018,11 +1005,15 @@ const_cmp_to_sub (void)
 //      if (!find_reg_note (insn, REG_DEAD, left) || !find_reg_note (insn, REG_DEAD, right))
 //	continue;
 
-      if (!is_reg_dead(REGNO(left), index) || !is_reg_dead(REGNO(right), index))
-  	continue;
+      // TODO
+      // FEATURE: check if the next uses are also a add/sub
+      // then maybe that add/sub can be adjusted too
 
-      fprintf (stderr, ": found reg-reg compare with both dead: %d %d\n",
-	       is_reg_dead(REGNO(left), index), is_reg_dead(REGNO(right), index));
+      if (!is_reg_dead (REGNO(left), index) || !is_reg_dead (REGNO(right), index))
+	continue;
+
+      fprintf (stderr, ":bbb: found reg-reg compare with both dead: %d %d\n", is_reg_dead (REGNO(left), index),
+	       is_reg_dead (REGNO(right), index));
 
       // maybe add a search?
       rtx_insn * prev = insns[index - 1];
@@ -1051,15 +1042,14 @@ const_cmp_to_sub (void)
 
       int num_clobbers_to_add = 0;
       int insn_code_number = recog (PATTERN (prev), prev, &num_clobbers_to_add);
+      if (insn_code_number >= 0 && !check_asm_operands (prev))
+	insn_code_number = -1;
 
       SET_SRC(setp) = srcp;
       SET_DEST(setp) = dstp;
 
       if (insn_code_number < 0)
 	continue;
-
-      debug_rtx (prev);
-      debug_rtx (insn);
 
       // also convert current statement to cmp #0, reg
       SET_INSN_DELETED(insn);
@@ -1076,16 +1066,14 @@ const_cmp_to_sub (void)
 //      if (!(df->hard_regs_live_count[omitted_regno] -= 2))
 //	df_set_regs_ever_live (omitted_regno, false);
 
-      fprintf (stderr, ": replaced reg-reg compare with sub\n");
-      debug_rtx (prev);
-      debug_rtx (insn);
+      fprintf (stderr, ":bbb: const_cmp_to_sub replaced reg-reg compare with sub\n");
 
       if (dstp != left)
 	{
 	  // invert all conditions using this statement.
 	  std::vector<unsigned> todo;
 	  std::vector<unsigned> done;
-	  done.resize(insns.size());
+	  done.resize (insns.size ());
 	  todo.push_back (index + 1);
 
 	  while (todo.size ())
@@ -1139,7 +1127,7 @@ const_cmp_to_sub (void)
 
 		  if (code != newcode)
 		    {
-		      fprintf (stderr, ": patch jcc %d -> %d\n", code, newcode);
+		      fprintf (stderr, ":bbb: patch jcc %d -> %d\n", code, newcode);
 		      XEXP(jmpsrc, 0) = gen_rtx_fmt_ee(newcode, VOIDmode, XEXP(condition, 0), XEXP(condition, 1));
 		    }
 		}
@@ -1173,11 +1161,90 @@ elim_dead_assign (void)
 
       if (!infos[index].is_use (REGNO(dst)))
 	{
-	  fprintf (stderr, ": eliminate dead assignment to %d:", REGNO(dst));
-	  debug_rtx (insn);
+	  fprintf (stderr, ":bbb: elim_dead_assign to %d\n", REGNO(dst));
 	  SET_INSN_DELETED(insn);
 	  ++change_count;
 	}
+    }
+  return change_count;
+}
+
+/*
+ * rare and only little gain - but :-)
+ lea (-1,a0),a1
+ add.l d1,a1
+ subq.l #1,d1
+ ->
+ move.l a0,a1
+ subq.l #1,d1
+ add.l d1,a1
+ */
+static unsigned
+merge_add (void)
+{
+  unsigned change_count = 0;
+  for (unsigned index = 0; index + 2 < insns.size (); ++index)
+    {
+      rtx_insn * ins1 = insns[index];
+      rtx_insn * ins2 = insns[index + 1];
+      rtx_insn * ins3 = insns[index + 2];
+      if (!NONJUMP_INSN_P(ins1) && !NONJUMP_INSN_P(ins2) && !NONJUMP_INSN_P(ins3))
+	continue;
+
+      rtx set1 = single_set (ins1);
+      rtx set2 = single_set (ins2);
+      rtx set3 = single_set (ins3);
+      if (!set1 || !set2 || !set3)
+	continue;
+
+      rtx dst1 = SET_DEST(set1);
+      rtx dst2 = SET_DEST(set2);
+      rtx dst3 = SET_DEST(set3);
+      if (!REG_P(dst1) || !REG_P(dst2) || !REG_P(dst3))
+	continue;
+
+      CC_STATUS_INIT;
+      NOTICE_UPDATE_CC(PATTERN (ins2), ins2);
+      if (cc_status.value1 || cc_status.value2)
+	continue;
+
+      rtx src1 = SET_SRC(set1);
+      rtx src2 = SET_SRC(set2);
+      rtx src3 = SET_SRC(set3);
+      if (GET_CODE(src1) != PLUS || GET_CODE(src2) != PLUS || GET_CODE(src3) != PLUS)
+	continue;
+
+      rtx l1 = XEXP(src1, 0);
+      rtx l2 = XEXP(src2, 0);
+      rtx l3 = XEXP(src3, 0);
+
+      rtx r1 = XEXP(src1, 1);
+      rtx r2 = XEXP(src2, 1);
+      rtx r3 = XEXP(src3, 1);
+      if (!CONST_INT_P(r1) || !REG_P(r2) || !CONST_INT_P(r3))
+	continue;
+
+      if (REGNO(dst1) != REGNO(dst2) || REGNO(r2) != REGNO(dst3))
+	continue;
+
+      fprintf (stderr, ": merge_add pattern found\n");
+
+      SET_SRC(set1) = l1;
+      remove_insn (ins2);
+      add_insn_after (ins2, ins3, 0);
+    }
+  return change_count;
+}
+
+/*
+ * Always prefer lower register numbers within the class.
+ */
+static unsigned
+bb_reg_rename(void)
+{
+  unsigned change_count = 0;
+  for (unsigned index = 0; index < insns.size (); ++index)
+    {
     }
   return change_count;
 }
@@ -1195,22 +1262,31 @@ execute_bbb_optimizations (void)
   for (;;)
     {
       int done = 1;
-      if (propagate_moves ())
-	done = 0, update_meta_data ();
+      for (;;)
+	{
+	  if (propagate_moves ())
+	    done = 0, update_meta_data ();
 
-      if (offset_2_autoinc ())
-	done = 0, update_meta_data ();
+	  if (offset_2_autoinc ())
+	    done = 0, update_meta_data ();
 
-      if (opt_strcpy ())
-	done = 0, update_meta_data ();
+	  if (opt_strcpy ())
+	    done = 0, update_meta_data ();
 
-      if (commute_add_move ())
-	done = 0, update_meta_data ();
+	  if (commute_add_move ())
+	    done = 0, update_meta_data ();
 
-      if (const_cmp_to_sub ())
-	done = 0, update_meta_data ();
+	  if (const_cmp_to_sub ())
+	    done = 0, update_meta_data ();
 
-      if (elim_dead_assign ())
+	  if (merge_add ())
+	    done = 0, update_meta_data ();
+
+	  if (elim_dead_assign ())
+	    done = 0, update_meta_data ();
+	}
+
+      if (bb_reg_rename ())
 	done = 0, update_meta_data ();
 
       if (done)
@@ -1250,7 +1326,7 @@ namespace
     virtual bool
     gate (function *)
     {
-      return TARGET_AMIGA && flag_bbb_opts;
+      return TARGET_AMIGA;// && flag_bbb_opts;
     }
 
     virtual unsigned int
