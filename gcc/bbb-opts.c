@@ -1240,7 +1240,7 @@ merge_add (void)
  * Always prefer lower register numbers within the class.
  */
 static unsigned
-bb_reg_rename(void)
+bb_reg_rename (void)
 {
   unsigned change_count = 0;
   for (unsigned index = 0; index < insns.size (); ++index)
@@ -1262,29 +1262,26 @@ execute_bbb_optimizations (void)
   for (;;)
     {
       int done = 1;
-      for (;;)
-	{
-	  if (propagate_moves ())
-	    done = 0, update_meta_data ();
+      if (propagate_moves ())
+	done = 0, update_meta_data ();
 
-	  if (offset_2_autoinc ())
-	    done = 0, update_meta_data ();
+      if (offset_2_autoinc ())
+	done = 0, update_meta_data ();
 
-	  if (opt_strcpy ())
-	    done = 0, update_meta_data ();
+      if (opt_strcpy ())
+	done = 0, update_meta_data ();
 
-	  if (commute_add_move ())
-	    done = 0, update_meta_data ();
+      if (commute_add_move ())
+	done = 0, update_meta_data ();
 
-	  if (const_cmp_to_sub ())
-	    done = 0, update_meta_data ();
+      if (const_cmp_to_sub ())
+	done = 0, update_meta_data ();
 
-	  if (merge_add ())
-	    done = 0, update_meta_data ();
+      if (merge_add ())
+	done = 0, update_meta_data ();
 
-	  if (elim_dead_assign ())
-	    done = 0, update_meta_data ();
-	}
+      if (elim_dead_assign ())
+	done = 0, update_meta_data ();
 
       if (bb_reg_rename ())
 	done = 0, update_meta_data ();
@@ -1326,7 +1323,7 @@ namespace
     virtual bool
     gate (function *)
     {
-      return TARGET_AMIGA;// && flag_bbb_opts;
+      return TARGET_AMIGA;      // && flag_bbb_opts;
     }
 
     virtual unsigned int
