@@ -1,3 +1,8 @@
+2017-04-07  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80348
+	* g++.dg/ubsan/div-by-zero-2.C: New test.
+
 2017-04-07  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/70478
