@@ -1,3 +1,8 @@
+2017-04-07  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80348
+	* typeck.c (cp_build_binary_op): Convert COP[01] to ORIG_TYPE.
+
 2017-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/80309
