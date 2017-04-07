@@ -1,3 +1,19 @@
+2017-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80322
+	PR target/80323
+	PR target/80325
+	PR target/80326
+	* gcc.target/i386/avx512f-undefined-1.c: New test.
+	* gcc.target/i386/avx512f-cvtsd-1.c: New test.
+	* gcc.target/i386/avx-cvtsd-1.c: New test.
+	* gcc.target/i386/avx512f-cvtss-1.c: New test.
+	* gcc.target/i386/avx512f-abspd-1.c: New test.
+	* gcc.target/i386/avx-cvtss-1.c: New test.
+	* gcc.target/i386/avx512f-absps-1.c: New test.
+	* gcc.target/i386/avx512f-int2mask-1.c: New test.
+	* gcc.target/i386/avx512f-mask2int-1.c: New test.
+
 2017-04-07  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80348
