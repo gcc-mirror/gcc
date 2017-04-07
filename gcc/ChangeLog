@@ -1,3 +1,14 @@
+2017-04-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2017-04-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/79733
+	* config/i386/i386.c (ix86_expand_builtin)
+	<case IX86_BUILTIN_KORTEST{C,Z}16>: Determine insn operand
+	mode from insn data. Convert operands to insn operand mode.
+	Copy operands that don't satisfy insn predicate to a register.
+
 2017-03-30  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline
