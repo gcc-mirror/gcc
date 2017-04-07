@@ -34,9 +34,9 @@ along with GCC; see the file COPYING3.  If not see
 /* Extends CST as appropriate for the affine combinations COMB.  */
 
 widest_int
-wide_int_ext_for_comb (const widest_int &cst, aff_tree *comb)
+wide_int_ext_for_comb (const widest_int &cst, tree type)
 {
-  return wi::sext (cst, TYPE_PRECISION (comb->type));
+  return wi::sext (cst, TYPE_PRECISION (type));
 }
 
 /* Initializes affine combination COMB so that its value is zero in TYPE.  */
@@ -59,7 +59,7 @@ void
 aff_combination_const (aff_tree *comb, tree type, const widest_int &cst)
 {
   aff_combination_zero (comb, type);
-  comb->offset = wide_int_ext_for_comb (cst, comb);;
+  comb->offset = wide_int_ext_for_comb (cst, comb->type);;
 }
 
 /* Sets COMB to single element ELT.  */
@@ -81,7 +81,7 @@ aff_combination_scale (aff_tree *comb, const widest_int &scale_in)
 {
   unsigned i, j;
 
-  widest_int scale = wide_int_ext_for_comb (scale_in, comb);
+  widest_int scale = wide_int_ext_for_comb (scale_in, comb->type);
   if (scale == 1)
     return;
 
@@ -91,11 +91,11 @@ aff_combination_scale (aff_tree *comb, const widest_int &scale_in)
       return;
     }
 
-  comb->offset = wide_int_ext_for_comb (scale * comb->offset, comb);
+  comb->offset = wide_int_ext_for_comb (scale * comb->offset, comb->type);
   for (i = 0, j = 0; i < comb->n; i++)
     {
       widest_int new_coef
-	= wide_int_ext_for_comb (scale * comb->elts[i].coef, comb);
+	= wide_int_ext_for_comb (scale * comb->elts[i].coef, comb->type);
       /* A coefficient may become zero due to overflow.  Remove the zero
 	 elements.  */
       if (new_coef == 0)
@@ -132,7 +132,7 @@ aff_combination_add_elt (aff_tree *comb, tree elt, const widest_int &scale_in)
   unsigned i;
   tree type;
 
-  widest_int scale = wide_int_ext_for_comb (scale_in, comb);
+  widest_int scale = wide_int_ext_for_comb (scale_in, comb->type);
   if (scale == 0)
     return;
 
@@ -140,7 +140,7 @@ aff_combination_add_elt (aff_tree *comb, tree elt, const widest_int &scale_in)
     if (operand_equal_p (comb->elts[i].val, elt, 0))
       {
 	widest_int new_coef
-	  = wide_int_ext_for_comb (comb->elts[i].coef + scale, comb);
+	  = wide_int_ext_for_comb (comb->elts[i].coef + scale, comb->type);
 	if (new_coef != 0)
 	  {
 	    comb->elts[i].coef = new_coef;
@@ -191,7 +191,7 @@ aff_combination_add_elt (aff_tree *comb, tree elt, const widest_int &scale_in)
 static void
 aff_combination_add_cst (aff_tree *c, const widest_int &cst)
 {
-  c->offset = wide_int_ext_for_comb (c->offset + cst, c);
+  c->offset = wide_int_ext_for_comb (c->offset + cst, c->type);
 }
 
 /* Adds COMB2 to COMB1.  */
@@ -230,7 +230,7 @@ aff_combination_convert (aff_tree *comb, tree type)
   if (TYPE_PRECISION (type) == TYPE_PRECISION (comb_type))
     return;
 
-  comb->offset = wide_int_ext_for_comb (comb->offset, comb);
+  comb->offset = wide_int_ext_for_comb (comb->offset, comb->type);
   for (i = j = 0; i < comb->n; i++)
     {
       if (comb->elts[i].coef == 0)
@@ -374,15 +374,14 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
    combination COMB.  */
 
 static tree
-add_elt_to_tree (tree expr, tree type, tree elt, const widest_int &scale_in,
-		 aff_tree *comb ATTRIBUTE_UNUSED)
+add_elt_to_tree (tree expr, tree type, tree elt, const widest_int &scale_in)
 {
   enum tree_code code;
   tree type1 = type;
   if (POINTER_TYPE_P (type))
     type1 = sizetype;
 
-  widest_int scale = wide_int_ext_for_comb (scale_in, comb);
+  widest_int scale = wide_int_ext_for_comb (scale_in, type);
 
   if (scale == -1
       && POINTER_TYPE_P (TREE_TYPE (elt)))
@@ -466,11 +465,10 @@ aff_combination_to_tree (aff_tree *comb)
   gcc_assert (comb->n == MAX_AFF_ELTS || comb->rest == NULL_TREE);
 
   for (i = 0; i < comb->n; i++)
-    expr = add_elt_to_tree (expr, type, comb->elts[i].val, comb->elts[i].coef,
-			    comb);
+    expr = add_elt_to_tree (expr, type, comb->elts[i].val, comb->elts[i].coef);
 
   if (comb->rest)
-    expr = add_elt_to_tree (expr, type, comb->rest, 1, comb);
+    expr = add_elt_to_tree (expr, type, comb->rest, 1);
 
   /* Ensure that we get x - 1, not x + (-1) or x + 0xff..f if x is
      unsigned.  */
@@ -484,8 +482,7 @@ aff_combination_to_tree (aff_tree *comb)
       off = comb->offset;
       sgn = 1;
     }
-  return add_elt_to_tree (expr, type, wide_int_to_tree (type1, off), sgn,
-			  comb);
+  return add_elt_to_tree (expr, type, wide_int_to_tree (type1, off), sgn);
 }
 
 /* Copies the tree elements of COMB to ensure that they are not shared.  */
