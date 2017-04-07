@@ -1,3 +1,10 @@
+2017-04-07  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	Backport from mainline
+        2017-04-07  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/aarch64/aarch64-freebsd.h: Define WCHAR_T.
+
 2017-04-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

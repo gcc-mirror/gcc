@@ -91,4 +91,7 @@
 #undef TARGET_BINDS_LOCAL_P
 #define TARGET_BINDS_LOCAL_P default_binds_local_p_2
 
+#undef  WCHAR_TYPE
+#define WCHAR_TYPE  "unsigned int"
+
 #endif  /* GCC_AARCH64_FREEBSD_H */
