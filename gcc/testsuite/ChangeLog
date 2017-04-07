@@ -1,3 +1,8 @@
+2017-04-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/70478
+	* gcc.target/s390/pr70478.c: New.
+
 2017-04-07  Martin Liska  <mliska@suse.cz>
 
 	PR target/79889
