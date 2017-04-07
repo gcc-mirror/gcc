@@ -60,6 +60,20 @@ typedef double __m512d_u __attribute__ ((__vector_size__ (64), __may_alias__, __
 typedef unsigned char  __mmask8;
 typedef unsigned short __mmask16;
 
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_int2mask (int __M)
+{
+  return (__mmask16) __M;
+}
+
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask2int (__mmask16 __M)
+{
+  return (int) __M;
+}
+
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_set_epi64 (long long __A, long long __B, long long __C,
@@ -124,6 +138,8 @@ _mm512_undefined_ps (void)
   __m512 __Y = __Y;
   return __Y;
 }
+
+#define _mm512_undefined _mm512_undefined_ps
 
 extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -7264,6 +7280,39 @@ _mm512_mask_testn_epi64_mask (__mmask8 __U, __m512i __A, __m512i __B)
 						(__v8di) __B, __U);
 }
 
+extern __inline __m512
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_abs_ps (__m512 __A)
+{
+  return (__m512) _mm512_and_epi32 ((__m512i) __A,
+				    _mm512_set1_epi32 (0x7fffffff));
+}
+
+extern __inline __m512
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_abs_ps (__m512 __W, __mmask16 __U, __m512 __A)
+{
+  return (__m512) _mm512_mask_and_epi32 ((__m512i) __W, __U, (__m512i) __A,
+					 _mm512_set1_epi32 (0x7fffffff));
+}
+
+extern __inline __m512d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_abs_pd (__m512 __A)
+{
+  return (__m512d) _mm512_and_epi64 ((__m512i) __A,
+				     _mm512_set1_epi64 (0x7fffffffffffffffLL));
+}
+
+extern __inline __m512d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_abs_pd (__m512d __W, __mmask8 __U, __m512 __A)
+{
+  return (__m512d)
+	 _mm512_mask_and_epi64 ((__m512i) __W, __U, (__m512i) __A,
+				_mm512_set1_epi64 (0x7fffffffffffffffLL));
+}
+
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_unpackhi_epi32 (__m512i __A, __m512i __B)
@@ -12009,6 +12058,20 @@ _mm512_maskz_cvtps_epu32 (__mmask16 __U, __m512 __A)
 						     _mm512_setzero_si512 (),
 						     (__mmask16) __U,
 						     _MM_FROUND_CUR_DIRECTION);
+}
+
+extern __inline double
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtsd_f64 (__m512d __A)
+{
+  return __A[0];
+}
+
+extern __inline float
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtss_f32 (__m512 __A)
+{
+  return __A[0];
 }
 
 #ifdef __x86_64__
