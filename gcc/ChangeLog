@@ -1,5 +1,14 @@
 2017-04-07  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/80341
+	* tree.c (get_unwidened): Also handle ! for_type case for
+	INTEGER_CSTs.
+	* convert.c (do_narrow): Split out from ...
+	(convert_to_integer_1): ... here.  Do not pass final truncation
+	type to get_unwidened for TRUNC_DIV_EXPR.
+
+2017-04-07  Richard Biener  <rguenther@suse.de>
+
 	* tree-affine.c (wide_int_ext_for_comb): Take type rather
 	than aff_tree.
 	(aff_combination_const): Adjust.
