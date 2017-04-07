@@ -1,3 +1,8 @@
+2017-04-07  Jeff Law  <law@redhat.com>
+
+	* config/iq2000/iq2000.c (final_prescan_insn): Do not separate a
+	CALL and NOTE_INSN_CALL_ARG_LOCATION.
+
 2017-04-07  Martin Liska  <mliska@suse.cz>
 
 	PR target/79889
