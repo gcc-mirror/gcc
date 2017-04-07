@@ -8,7 +8,7 @@ char x;
 int
 main()
 {
-  alignas(16) B b[3];
+  alignas(__BIGGEST_ALIGNMENT__) B b[3];
   for (int i = 0; i < 3; i++) b[i].unpacked.c = 'a' + i;
   for (int i = 0; i < 3; i++)
     {
