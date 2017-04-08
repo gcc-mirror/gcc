@@ -1913,6 +1913,8 @@ regrename_optimize (void)
   return 0;
 }
 
+class opt_pass * global_pass_regrename;
+
 namespace {
 
 const pass_data pass_data_regrename =
@@ -1927,13 +1929,14 @@ const pass_data pass_data_regrename =
   0, /* todo_flags_start */
   TODO_df_finish, /* todo_flags_finish */
 };
-
 class pass_regrename : public rtl_opt_pass
 {
 public:
   pass_regrename (gcc::context *ctxt)
     : rtl_opt_pass (pass_data_regrename, ctxt)
-  {}
+  {
+    ::global_pass_regrename = this;
+  }
 
   /* opt_pass methods: */
   virtual bool gate (function *)
@@ -1942,6 +1945,11 @@ public:
     }
 
   virtual unsigned int execute (function *) { return regrename_optimize (); }
+
+  opt_pass * clone ()
+    {
+      return new pass_regrename(m_ctxt);
+    }
 
 }; // class pass_regrename
 

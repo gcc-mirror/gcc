@@ -45,6 +45,7 @@
 #include "emit-rtl.h"
 #include "tree-pass.h"
 #include "conditions.h"
+#include "cselib.h"
 #include <vector>
 #include <map>
 
@@ -110,14 +111,14 @@ struct insn_info
     return t;
   }
 
-  inline insn_info
-  operator & (insn_info const & o) const
-  {
-    insn_info t;
-    t._use = _use & o._use;
-    t._def = _def & o._def;
-    return t;
-  }
+//  inline insn_info
+//  operator & (insn_info const & o) const
+//  {
+//    insn_info t;
+//    t._use = _use & o._use;
+//    t._def = _def & o._def;
+//    return t;
+//  }
 
   inline insn_info &
   operator |= (insn_info const & o)
@@ -130,7 +131,7 @@ struct insn_info
   inline insn_info &
   operator &= (insn_info const & o)
   {
-    _use &= o._use;
+    _use &= o._use & o._def;
     _def &= o._def;
     return *this;
   }
@@ -162,6 +163,18 @@ struct insn_info
 
   void
   scan (rtx);
+
+  unsigned
+  get_def_mask () const
+  {
+    if (!_def || _def > 0xffff)
+      return 0;
+
+    unsigned mask = _def - 1;
+    if (_def > 0xff)
+      mask &= 0xff00;
+    return mask;
+  }
 };
 
 /* scan rtx for registers and set the corresponding flags. */
@@ -192,6 +205,47 @@ insn_info::scan (rtx x)
     }
 }
 
+/* perform reg renaming. */
+static void
+do_reg_rename (rtx x, unsigned oldregno, unsigned newregno)
+{
+  if (REG_P(x))
+    {
+      if (REGNO(x) == oldregno)
+	df_ref_change_reg_with_loc (x, newregno);
+      return;
+    }
+
+  if (x == cc0_rtx)
+    return;
+
+  RTX_CODE code = GET_CODE(x);
+  const char *fmt = GET_RTX_FORMAT(code);
+  for (int i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	do_reg_rename (XEXP(x, i), oldregno, newregno);
+      else if (fmt[i] == 'E')
+	for (int j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  do_reg_rename (XVECEXP(x, i, j), oldregno, newregno);
+    }
+}
+
+static int
+bit2regno (unsigned bit)
+{
+  if (!bit)
+    return -1;
+
+  unsigned regno = 0;
+  while (!(bit & 1))
+    {
+      ++regno;
+      bit >>= 1;
+    }
+  return regno;
+}
+
 /*
  * Collect some data.
  */
@@ -212,22 +266,25 @@ clear (void)
   infos.clear ();
 }
 
+/*
+ *  return true if the register is DEAD.
+ */
 static bool
 is_reg_dead (unsigned regno, unsigned pos)
 {
-  if (pos >= infos.size ())
-    return true;
+  for(;;) {
+    if (pos + 1 >= infos.size ())
+      return true;
 
-  insn_info & ii0 = infos[pos++];
-  if (!ii0.is_use (regno))
-    return true;
+    rtx_insn * insn = insns[pos + 1];
+    if (!LABEL_P(insn) && GET_CODE(insn) != USE)
+      break;
+    ++pos;
+  }
 
-  if (pos >= infos.size ())
-    return true;
-
-  insn_info & ii1 = infos[pos];
-
-  return !ii1.is_use (regno);
+  insn_info & ii0 = infos[pos + 1];
+  // not dead if usage is reported in the next statement
+  return !ii0.is_use (regno);
 }
 
 /*
@@ -241,6 +298,8 @@ dump_insns (char const * name)
   for (unsigned i = 0; i < insns.size (); ++i)
     {
       insn_info & ii = infos[i];
+
+      fprintf(stderr, "%d: ", i);
 
       for (int j = 0; j < 8; ++j)
 	if (ii.is_use (j))
@@ -300,6 +359,9 @@ update_meta_data ()
     {
       std::pair<unsigned, insn_info> p = *todo.rbegin ();
       todo.pop_back ();
+
+//      fprintf(stderr, "%d ", p.first);
+//      dump_insns("update");
 
       insn_info ii = p.second;
 
@@ -655,9 +717,8 @@ propagate_moves ()
 					   REGNO(srci), REGNO(dsti));
 
 				  /* Move in front of loop and mark as dead. */
-				  remove_insn (ii);
-				  add_insn_after (ii, before, 0);
-				  add_reg_note (ii, REG_DEAD, srci);
+				  rtx_insn * newii = make_insn_raw(PATTERN(ii));
+				  SET_INSN_DELETED(ii);
 
 				  /* Plus check if the reg was just loaded. */
 				  if (bset)
@@ -665,22 +726,31 @@ propagate_moves ()
 				      rtx bdst = SET_DEST(bset);
 				      if (REG_P(bdst) && REGNO(bdst) == REGNO(srci))
 					{
-					  SET_DEST(bset) = dsti;
-					  SET_INSN_DELETED(ii);
+					  SET_SRC(PATTERN(newii)) = SET_SRC(bset);
+//					  SET_INSN_DELETED(ii);
 					}
 				    }
+				  else
+				    add_reg_note (newii, REG_DEAD, srci);
+
+
+				  add_insn_after (newii, before, 0);
+
 
 				  /* Move behind loop - into next BB. */
-				  remove_insn (jj);
-				  add_insn_before (jj, after, 0);
+				  rtx_insn * newjj = make_insn_raw(PATTERN(jj));
+				  add_insn_before (newjj, after, 0);
+				  SET_INSN_DELETED(jj);
 
 				  reg_reg.erase (j);
 				  reg_reg.erase (i);
 				  j = reg_reg.end ();
 				  inc = false;
 
-				  df_insn_rescan (ii);
-				  df_insn_rescan (jj);
+//				  df_insn_rescan (ii);
+//				  df_insn_rescan (jj);
+				  df_insn_rescan (newii);
+				  df_insn_rescan (newjj);
 
 				  /* add fixes if there were jumps out of the loop. */
 				  if (jump_out.size ())
@@ -761,23 +831,19 @@ opt_strcpy ()
 		      int num_clobbers_to_add = 0;
 		      int insn_code_number;
 
-		      SET_SRC(single_set(reg2x)) = SET_SRC(single_set (x2reg));
-		      insn_code_number = recog (PATTERN (reg2x), reg2x, &num_clobbers_to_add);
-
-		      if (insn_code_number < 0 || !check_asm_operands (reg2x))
+		      rtx_insn * newinsn = make_insn_raw (
+			  gen_rtx_SET(SET_DEST(single_set(reg2x)), SET_SRC(single_set (x2reg))));
+		      insn_code_number = recog (PATTERN (newinsn), newinsn, &num_clobbers_to_add);
+		      if (insn_code_number >= 0 && check_asm_operands (PATTERN (newinsn)))
 			{
-			  /* restore register. */
-			  SET_SRC(single_set(reg2x)) = SET_DEST(single_set (x2reg));
-			}
-		      else
-			{
-
 			  rtx link;
 
 			  fprintf (
 			  stderr,
 				   ":bbb: opt_strcpy condition met, removing compare and joining insns - omit reg %d\n",
 				   REGNO(dst));
+
+			  SET_SRC(single_set(reg2x)) = SET_SRC(single_set (x2reg));
 
 			  for (link = REG_NOTES(x2reg); link; link = XEXP(link, 1))
 			    if (REG_NOTE_KIND (link) != REG_LABEL_OPERAND)
@@ -935,15 +1001,19 @@ commute_add_move (void)
       rtx pinc = gen_rtx_POST_INC(GET_MODE(dst), reg1dst);
       rtx newmem = replace_equiv_address_nv (dst, pinc);
 
+      rtx_insn * newinsn = make_insn_raw (gen_rtx_SET(reg1dst, reg1src));
+      if (recog (PATTERN (newinsn), newinsn, 0) < 0 || !check_asm_operands (PATTERN (newinsn)))
+	continue;
+
       if (validate_change (next, &SET_DEST(set2), newmem, 0))
 	{
+	  fprintf (stderr, ":bbb: commute_add_move found\n");
+
 	  SET_INSN_DELETED(insn);
 
-	  insn = emit_insn_before (gen_movsi (reg1dst, reg1src), next);
+	  insn = emit_insn_before (newinsn, next);
 
 	  add_reg_note (next, REG_INC, reg1dst);
-
-	  fprintf (stderr, ":bbb: commute_add_move found\n");
 
 	  df_insn_rescan (insn);
 	  df_insn_rescan (next);
@@ -1037,18 +1107,11 @@ const_cmp_to_sub (void)
       rtx reg = dstp == left ? right : left;
       rtx plus = gen_rtx_PLUS(mode, reg, gen_rtx_CONST_INT (mode, intval));
 
-      SET_SRC(setp) = plus;
-      SET_DEST(setp) = reg;
+      rtx_insn * neuprev = make_insn_raw (gen_rtx_SET(reg, plus));
 
       int num_clobbers_to_add = 0;
-      int insn_code_number = recog (PATTERN (prev), prev, &num_clobbers_to_add);
-      if (insn_code_number >= 0 && !check_asm_operands (prev))
-	insn_code_number = -1;
-
-      SET_SRC(setp) = srcp;
-      SET_DEST(setp) = dstp;
-
-      if (insn_code_number < 0)
+      int insn_code_number = recog (PATTERN (neuprev), neuprev, &num_clobbers_to_add);
+      if (insn_code_number >= 0 && !check_asm_operands (PATTERN (neuprev)))
 	continue;
 
       // also convert current statement to cmp #0, reg
@@ -1058,11 +1121,11 @@ const_cmp_to_sub (void)
       add_reg_note (insn, REG_DEAD, reg);
 
       SET_INSN_DELETED(prev);
-      neu = gen_rtx_SET(reg, plus);
-      prev = emit_insn_before (neu, insn);
+      prev = emit_insn_before (neuprev, insn);
 
 // urks - unknown side effects
 //      int omitted_regno = REGNO(dstp);
+//      cselib_invalidate_rtx (dstp);
 //      if (!(df->hard_regs_live_count[omitted_regno] -= 2))
 //	df_set_regs_ever_live (omitted_regno, false);
 
@@ -1159,7 +1222,7 @@ elim_dead_assign (void)
       if (!REG_P(dst) || !REG_P(src))
 	continue;
 
-      if (!infos[index].is_use (REGNO(dst)))
+      if (is_reg_dead(REGNO(dst),index))
 	{
 	  fprintf (stderr, ":bbb: elim_dead_assign to %d\n", REGNO(dst));
 	  SET_INSN_DELETED(insn);
@@ -1227,7 +1290,7 @@ merge_add (void)
       if (REGNO(dst1) != REGNO(dst2) || REGNO(r2) != REGNO(dst3))
 	continue;
 
-      fprintf (stderr, ": merge_add pattern found\n");
+      fprintf (stderr, ":bbb: merge_add applied\n");
 
       SET_SRC(set1) = l1;
       remove_insn (ins2);
@@ -1242,59 +1305,81 @@ merge_add (void)
 static unsigned
 bb_reg_rename (void)
 {
-  unsigned change_count = 0;
+  dump_insns("bb_reg_rename");
   for (unsigned index = 0; index < insns.size (); ++index)
     {
+      insn_info & ii = infos[index];
+      const unsigned def = ii._def;
+      unsigned mask = ii.get_def_mask ();
+
+      if (!mask)
+	continue;
+
+      std::vector<unsigned> found;
+      std::vector<unsigned> todo;
+      if (index + 1 < insns.size ())
+	todo.push_back (index + 1);
+
+      found.push_back (index);
+      /* a register was defined, follow all branches. */
+      while (todo.size ())
+	{
+	  unsigned pos = todo[todo.size () - 1];
+	  todo.pop_back ();
+
+	  insn_info & jj = infos[pos];
+	  /* defined again. */
+	  if (jj._def & def)
+	    continue;
+
+	  /* not referenced. */
+	  if (!(jj._use & def))
+	    continue;
+
+	  /* update free regs. */
+	  mask &= ~jj._use;
+	  if (!mask)
+	    break;
+
+	  found.push_back (pos);
+
+	  /* follow jump and/or next insn. */
+	  rtx_insn * insn = insns[index];
+	  if (JUMP_P(insn))
+	    {
+	      std::map<rtx_insn *, unsigned>::iterator j = insn2index.find ((rtx_insn *) JUMP_LABEL(insn));
+	      if (j != insn2index.end ())
+		todo.push_back (j->second);
+
+	      rtx jmppattern = PATTERN (insn);
+
+	      rtx jmpsrc = XEXP(jmppattern, 1);
+	      if (GET_CODE(jmpsrc) == IF_THEN_ELSE)
+		if (pos + 1 < insns.size ())
+		  todo.push_back (pos + 1);
+	    }
+	  else if (pos + 1 < insns.size ())
+	    todo.push_back (pos + 1);
+	}
+
+      if (mask)
+	{
+	  int oldregno = bit2regno (def);
+	  int newregno = bit2regno (mask);
+	  fprintf (stderr, ":bbb: bb_reg_rename %d -> %d\n", oldregno, newregno);
+
+	  for (std::vector<unsigned>::iterator i = found.begin (); i != found.end (); ++i)
+	    do_reg_rename (PATTERN (insns[*i]), oldregno, newregno);
+
+	  cselib_invalidate_rtx (gen_raw_REG (SImode, oldregno));
+	  cselib_invalidate_rtx (gen_raw_REG (SImode, newregno));
+	  return 1;
+	}
     }
-  return change_count;
-}
-
-/* Main entry point to the pass.  */
-static unsigned int
-execute_bbb_optimizations (void)
-{
-  df_set_flags (DF_LR_RUN_DCE + DF_DEFER_INSN_RESCAN);
-  df_note_add_problem ();
-  df_analyze ();
-
-  update_meta_data ();
-
-  for (;;)
-    {
-      int done = 1;
-      if (propagate_moves ())
-	done = 0, update_meta_data ();
-
-      if (offset_2_autoinc ())
-	done = 0, update_meta_data ();
-
-      if (opt_strcpy ())
-	done = 0, update_meta_data ();
-
-      if (commute_add_move ())
-	done = 0, update_meta_data ();
-
-      if (const_cmp_to_sub ())
-	done = 0, update_meta_data ();
-
-      if (merge_add ())
-	done = 0, update_meta_data ();
-
-      if (elim_dead_assign ())
-	done = 0, update_meta_data ();
-
-      if (bb_reg_rename ())
-	done = 0, update_meta_data ();
-
-      if (done)
-	break;
-    }
-
-//  dump_insns ("bbb 1");
-  clear ();
-
   return 0;
 }
+
+extern class opt_pass * global_pass_regrename;
 
 namespace
 {
@@ -1315,7 +1400,7 @@ namespace
   {
   public:
     pass_bbb_optimizations (gcc::context *ctxt) :
-	rtl_opt_pass (pass_data_bbb_optimizations, ctxt)
+	rtl_opt_pass (pass_data_bbb_optimizations, ctxt), pp (0)
     {
     }
 
@@ -1323,7 +1408,7 @@ namespace
     virtual bool
     gate (function *)
     {
-      return TARGET_AMIGA;      // && flag_bbb_opts;
+      return TARGET_AMIGA && flag_bbb_opts;
     }
 
     virtual unsigned int
@@ -1335,13 +1420,81 @@ namespace
     opt_pass *
     clone ()
     {
-      return new pass_bbb_optimizations (m_ctxt);
+      pass_bbb_optimizations * bbb =  new pass_bbb_optimizations (m_ctxt);
+      // bbb->pp = pp + 1;
+      return bbb;
     }
 
+    unsigned int pp;
+
+    unsigned
+    execute_bbb_optimizations (void);
   };
 // class pass_bbb_optimizations
 
-}// anon namespace
+
+  /* Main entry point to the pass.  */
+  unsigned
+  pass_bbb_optimizations::execute_bbb_optimizations (void)
+  {
+    df_set_flags (DF_LR_RUN_DCE + DF_DEFER_INSN_RESCAN);
+    df_note_add_problem ();
+    df_analyze ();
+
+    update_meta_data ();
+
+    bool do_opt_strcpy = strchr(flag_bbb_opts, 's') || strchr(flag_bbb_opts, '*');
+    bool do_commute_add_move = strchr(flag_bbb_opts, 'a') || strchr(flag_bbb_opts, '*');
+    bool do_propagate_moves = strchr(flag_bbb_opts, 'p') || strchr(flag_bbb_opts, '*');
+    bool do_const_cmp_to_sub = strchr(flag_bbb_opts, 'c') || strchr(flag_bbb_opts, '*');
+    bool do_merge_add = strchr(flag_bbb_opts, 'm') || strchr(flag_bbb_opts, '*');
+    bool do_elim_dead_assign = strchr(flag_bbb_opts, 'e') || strchr(flag_bbb_opts, '*');
+    bool do_bb_reg_rename = strchr(flag_bbb_opts, 'r') || strchr(flag_bbb_opts, '*');
+
+
+    for (;;)
+      {
+	int done = 1;
+	if (do_opt_strcpy && opt_strcpy ())
+	  done = 0, update_meta_data ();
+
+	if (do_commute_add_move && commute_add_move ())
+	  done = 0, update_meta_data ();
+
+	if (do_propagate_moves && propagate_moves ())
+	  done = 0, update_meta_data ();
+
+//	if (offset_2_autoinc ())
+//	  done = 0, update_meta_data ();
+
+	if (do_const_cmp_to_sub && const_cmp_to_sub ())
+	  done = 0, update_meta_data ();
+
+	if (do_merge_add && merge_add ())
+	  done = 0, update_meta_data ();
+
+	if (do_elim_dead_assign && elim_dead_assign ())
+	  done = 0, update_meta_data ();
+
+//	if (do_bb_reg_rename && bb_reg_rename ())
+//	  done = 0, update_meta_data ();
+	if (done)
+	  break;
+      }
+
+    if (do_bb_reg_rename && ::global_pass_regrename)
+      {
+	class opt_pass * rr = ::global_pass_regrename->clone();
+	rr->execute(0);
+      }
+
+    if (strchr(flag_bbb_opts, 'X')) dump_insns ("bbb 1");
+    clear ();
+
+    return 0;
+  }
+
+}      // anon namespace
 
 rtl_opt_pass *
 make_pass_bbb_optimizations (gcc::context * ctxt)
