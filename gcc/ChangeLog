@@ -1,3 +1,11 @@
+2017-04-08  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	Backport from mainline
+	2017-04-08  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/aarch64/aarch64-freebsd.h: Define MCOUNT_NAME.
+	Add comment for WCHAR_T.
+
 2017-04-07  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	Backport from mainline
