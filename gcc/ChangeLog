@@ -1,3 +1,8 @@
+2017-04-08  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	PR target/80358
+	* config/rs6000/rs6000.c (expand_block_compare): Fix boundary check.
+
 2017-04-07  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* rs6000/rs6000.c (vec_load_pendulum): Rename...
