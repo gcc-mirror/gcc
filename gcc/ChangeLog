@@ -1,3 +1,8 @@
+2017-04-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/70478
+	* lra-constraints.c: Reverse the last patch.
+
 2017-04-08  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/aarch64/aarch64-freebsd.h: Define MCOUNT_NAME.
