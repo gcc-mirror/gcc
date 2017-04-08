@@ -43,6 +43,6 @@ mcrt=
 Target RejectNegative Var(amigaos_crt) Joined
 Specify startup binary
 
-fbbb
-Target Var(flag_bbb_opts,1) UInteger Init(0)
+fbbb=
+Target Var(flag_bbb_opts) Joined
 Enable Bebbo's optimizations
