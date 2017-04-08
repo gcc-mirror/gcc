@@ -19672,8 +19672,9 @@ expand_block_compare (rtx operands[])
   unsigned int load_mode_size = GET_MODE_SIZE (load_mode);
 
   /* We don't want to generate too much code.  */
-  if (ROUND_UP (bytes, load_mode_size) / load_mode_size
-      > (unsigned HOST_WIDE_INT) rs6000_block_compare_inline_limit)
+  unsigned HOST_WIDE_INT max_bytes =
+    load_mode_size * (unsigned HOST_WIDE_INT) rs6000_block_compare_inline_limit;
+  if (!IN_RANGE (bytes, 1, max_bytes))
     return false;
 
   bool generate_6432_conversion = false;
