@@ -1,5 +1,10 @@
 2017-04-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80356 - ICE with reference to function template argument.
+	PR c++/79294
+	* pt.c (convert_nontype_argument_function): Adjust type even with a
+	value-dependent argument.
+
 	PR c++/80267 - ICE with nested capture of reference
 	PR c++/60992
 	* pt.c (tsubst_copy): Handle lookup finding a capture proxy.

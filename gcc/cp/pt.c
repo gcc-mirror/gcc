@@ -5981,7 +5981,7 @@ convert_nontype_argument_function (tree type, tree expr,
     return error_mark_node;
 
   if (value_dependent_expression_p (fn))
-    return fn;
+    goto accept;
 
   fn_no_ptr = strip_fnptr_conv (fn);
   if (TREE_CODE (fn_no_ptr) == ADDR_EXPR)
@@ -6030,6 +6030,7 @@ convert_nontype_argument_function (tree type, tree expr,
       return NULL_TREE;
     }
 
+ accept:
   if (TREE_CODE (type) == REFERENCE_TYPE)
     fn = build_address (fn);
   if (!same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (fn)))
