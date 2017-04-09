@@ -1,3 +1,9 @@
+2017-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80267 - ICE with nested capture of reference
+	PR c++/60992
+	* pt.c (tsubst_copy): Handle lookup finding a capture proxy.
+
 2017-04-07  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80348
