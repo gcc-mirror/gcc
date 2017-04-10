@@ -1,3 +1,8 @@
+2017-04-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80046
+	* gfortran.dg/proc_ptr_comp_48.f90: New test case.
+
 2017-04-10  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/torture/pr79905.C: Add -maltivec option.
