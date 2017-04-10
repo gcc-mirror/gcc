@@ -1957,6 +1957,18 @@ set_decl_context_in_fn (tree ctx, tree decl)
    decl is returned, it may have been smashed to agree with what DECL
    says.  */
 
+/* bnd-ctx-frn
+   nsA nsB  no   lookup nsB, inject nsB?
+   nsA nsB  yes  lookup nsB, inject hidden nsB?
+
+   nsA !ns  no   lookup local, inject ?
+   nsA !ns  yes  lookup local, inject ?
+   loc nsB  no   lookup local, inject ?
+   loc nsB  yes  lookup local, inject ?
+   loc !ns  no   lookup local, inject local
+   loc !ns  yes  lookup local, inject ?
+*/
+
 static tree
 do_pushdecl (tree decl, bool is_friend)
 {
@@ -1970,11 +1982,8 @@ do_pushdecl (tree decl, bool is_friend)
 
   if (tree name = DECL_NAME (decl))
     {
-      bool different_binding_level = false;
       tree old;
 
-      /* In case this decl was explicitly namespace-qualified, look it
-	 up in its namespace context.  */
       if (DECL_NAMESPACE_SCOPE_P (decl) && namespace_bindings_p ())
 	old = find_namespace_value (CP_DECL_CONTEXT (decl), name);
       else
@@ -1994,107 +2003,67 @@ do_pushdecl (tree decl, bool is_friend)
 	  /* Or in the innermost namespace.  */
 	  if (!old)
 	    old = find_namespace_value (CP_DECL_CONTEXT (decl), name);
-	  /* Does it have linkage?  Note that if this isn't a DECL, it's an
-	     OVERLOAD, which is OK.  */
-	  if (old && DECL_P (old)
-	      && !(TREE_STATIC (old) || DECL_EXTERNAL (old)))
-	    old = NULL_TREE;
 
 	  if (old)
-	    different_binding_level = true;
+	    {
+	      for (ovl_iterator iter (old); iter; ++iter)
+		if (iter.hidden_p () && DECL_IS_BUILTIN (*iter))
+		  ;
+		else if ((TREE_STATIC (*iter) || DECL_EXTERNAL (*iter))
+			 && decls_match (*iter, decl))
+		  {
+		    /* The standard only says that the local extern
+		       inherits linkage from the previous decl; in
+		       particular, default args are not shared.  Add
+		       the decl into a hash table to make sure only
+		       the previous decl in this case is seen by the
+		       middle end.  */
+		    struct cxx_int_tree_map *h;
+
+		    /* We inherit the outer decl's linkage.  But we're a
+		       different decl.  */
+		    TREE_PUBLIC (decl) = TREE_PUBLIC (*iter);
+
+		    if (cp_function_chain->extern_decl_map == NULL)
+		      cp_function_chain->extern_decl_map
+			= hash_table<cxx_int_tree_map_hasher>::create_ggc (20);
+
+		    h = ggc_alloc<cxx_int_tree_map> ();
+		    h->uid = DECL_UID (decl);
+		    h->to = *iter;
+		    cxx_int_tree_map **loc = cp_function_chain->extern_decl_map
+		      ->find_slot (h, INSERT);
+		    *loc = h;
+		  }
+	      old = NULL_TREE;
+	    }
 	}
 
-      tree ovl = old;
-      ovl_iterator saved_iter (NULL_TREE);
-
-      if (!old)
-	;
-      else if (old == error_mark_node)
+      if (old == error_mark_node)
 	old = NULL_TREE;
-      else if (TREE_CODE (decl) != FUNCTION_DECL)
-	/* Not pushing a function, just pick the first overload.  */
-	old = OVL_FIRST (old);
-      else
-	/* See if there's a matching overload.  */
-	{
-	  old = NULL;
 
-	  for (ovl_iterator iter (ovl); iter; ++iter)
-	    if (decls_match (*iter, decl))
+      for (ovl_iterator iter (old); iter; ++iter)
+	if (iter.hidden_p () && DECL_IS_BUILTIN (*iter))
+	  ; /* Anticipated builtins are treated as new decls.  */
+	else if (tree match = duplicate_decls (decl, *iter, is_friend))
+	  {
+	    if (match == error_mark_node)
+	      return match;
+
+	    if (iter.hidden_p () && !DECL_HIDDEN_P (match))
 	      {
-		saved_iter = iter;
-		old = *iter;
-		break;
+		/* Unhiding a previously hidden friend.  */
+		tree head = iter.unhide (old);
+		if (head != old)
+		  old = fixup_unhidden_decl
+		    (name,
+		     DECL_NAMESPACE_SCOPE_P (match)
+		     && namespace_bindings_p ()
+		     ? CP_DECL_CONTEXT (match) : NULL_TREE, old, head);
 	      }
-	}
 
-      if (!old)
-	;
-      else if (different_binding_level)
-	{
-	  if (decls_match (decl, old))
-	    /* The standard only says that the local extern inherits
-	       linkage from the previous decl; in particular, default
-	       args are not shared.  Add the decl into a hash table to
-	       make sure only the previous decl in this case is seen
-	       by the middle end.  */
-	    {
-	      struct cxx_int_tree_map *h;
-
-	      TREE_PUBLIC (decl) = TREE_PUBLIC (old);
-
-	      if (cp_function_chain->extern_decl_map == NULL)
-		cp_function_chain->extern_decl_map
-		  = hash_table<cxx_int_tree_map_hasher>::create_ggc (20);
-
-	      h = ggc_alloc<cxx_int_tree_map> ();
-	      h->uid = DECL_UID (decl);
-	      h->to = old;
-	      cxx_int_tree_map **loc = cp_function_chain->extern_decl_map
-		->find_slot (h, INSERT);
-	      *loc = h;
-	    }
-	}
-      else if (TREE_CODE (old) == PARM_DECL)
-	{
-	  if (tree d = duplicate_decls (decl, old, is_friend))
-	    return d;
-	}
-      else if ((DECL_EXTERN_C_FUNCTION_P (decl)
-		|| DECL_FUNCTION_TEMPLATE_P (decl))
-	       && DECL_DECLARES_FUNCTION_P (old))
-	/* Don't do anything just yet.  */;
-      else if (old == wchar_decl_node)
-	{
-	  if (! DECL_IN_SYSTEM_HEADER (decl))
-	    pedwarn (input_location, OPT_Wpedantic,
-		     "redeclaration of %<wchar_t%> as %qT", TREE_TYPE (decl));
-
-	  /* Throw away the redeclaration.  */
-	  return old;
-	}
-      else if (tree olddecl = duplicate_decls (decl, old, is_friend))
-	{
-	  if (olddecl == error_mark_node)
-	    return error_mark_node;
-
-	  if (saved_iter && saved_iter.hidden_p () && !DECL_HIDDEN_P (olddecl))
-	    {
-	      tree head = saved_iter.unhide (ovl);
-	      if (head != ovl)
-		ovl = fixup_unhidden_decl
-		  (DECL_NAME (olddecl),
-		   DECL_NAMESPACE_SCOPE_P (olddecl)
-		   && namespace_bindings_p ()
-		   ? CP_DECL_CONTEXT (olddecl) : NULL_TREE, ovl, head);
-	    }
-
-	  if (TREE_CODE (old) == TYPE_DECL)
-	    // FIXME: Why?
-	    SET_IDENTIFIER_TYPE_VALUE (name, TREE_TYPE (old));
-	      
-	  return old;
-	}
+	    return match;
+	  }
 
       /* We are pushing a new decl.  */
 
@@ -2118,11 +2087,16 @@ do_pushdecl (tree decl, bool is_friend)
 	DECL_ANTICIPATED (decl) = DECL_HIDDEN_FRIEND_P (decl) = 1;
 
       old = decl;
-      if (DECL_NON_THUNK_FUNCTION_P (decl))
+
+      if (DECL_DECLARES_FUNCTION_P (decl))
 	{
 	  if (namespace_bindings_p ())
-	    old = do_namespace_push_overload (current_namespace,
-					      decl, is_friend);
+	    {
+	      gcc_assert (DECL_NAMESPACE_SCOPE_P (decl));
+	      old = do_namespace_push_overload (CP_DECL_CONTEXT (decl),
+						decl, is_friend);
+	      
+	    }
 	  else
 	    {
 	      old = do_local_push_overload (decl, is_friend);
@@ -2131,21 +2105,19 @@ do_pushdecl (tree decl, bool is_friend)
 		 necessary.  */
 	      need_new_binding = false;
 	    }
-	}
-      else if (DECL_FUNCTION_TEMPLATE_P (decl)
-	       && DECL_NAMESPACE_SCOPE_P (decl))
-	{
-	  old = do_namespace_push_overload (CP_DECL_CONTEXT (decl),
-					    decl, is_friend);
-	  if (old == decl)
-	    add_namespace_decl (CP_DECL_CONTEXT (decl), decl);
+	  check_default_args (old);
 	}
 
-      if (DECL_DECLARES_FUNCTION_P (old))
-	check_default_args (old);
-
-      if (old != decl || DECL_FUNCTION_TEMPLATE_P (old))
+      if (old != decl)
 	return old;
+
+      if (DECL_FUNCTION_TEMPLATE_P (decl))
+	{
+	  // FIXME: Why bail out now?
+	  gcc_assert (need_new_binding);
+	  add_namespace_decl (CP_DECL_CONTEXT (decl), decl);
+	  return old;
+	}      
 
       if (TREE_CODE (decl) == TYPE_DECL)
 	{
@@ -2174,7 +2146,8 @@ do_pushdecl (tree decl, bool is_friend)
 
 	 Avoid duplicate warnings where they are used.  */
 
-      if (TREE_PUBLIC (decl) && TREE_CODE (decl) != FUNCTION_DECL)
+      if (TREE_PUBLIC (decl) && TREE_CODE (decl) == VAR_DECL
+	  && current_function_decl)
 	if (tree ns_old = find_namespace_value (current_namespace, name))
 	  {
 	    ns_old = OVL_FIRST (ns_old);
@@ -2197,6 +2170,9 @@ do_pushdecl (tree decl, bool is_friend)
 	 Install the new declaration and return it.  */
       if (namespace_bindings_p ())
 	{
+	  gcc_assert (DECL_NAMESPACE_SCOPE_P (decl)
+		      || (TREE_CODE (decl) == CONST_DECL
+			  && UNSCOPED_ENUM_P (DECL_CONTEXT (decl))));
 	  if (!(TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl)
 		&& old != NULL_TREE)
 	      && (TREE_CODE (decl) == TYPE_DECL
@@ -2205,11 +2181,6 @@ do_pushdecl (tree decl, bool is_friend)
 		  || TREE_CODE (decl) == CONST_DECL
 		  || TREE_CODE (decl) == TEMPLATE_DECL))
 	    update_namespace_binding (current_namespace, name, decl);
-
-	  /* If new decl is `static' and an `extern' was seen previously,
-	     warn about it.  */
-	  if (decl != NULL_TREE && old != NULL_TREE && decls_match (decl, old))
-	    warn_extern_redeclared_static (decl, old);
 	}
       else
 	{

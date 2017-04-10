@@ -1,3 +1,9 @@
+2017-04-10  Nathan Sidwell  <nathan@acm.org>
+
+	Separating namespace bindings part 9
+	gcc/cp/
+	* name-lookup.c (do_pushdecl): Delete a tonne of obsolete code.
+
 2017-04-07  Nathan Sidwell  <nathan@acm.org>
 
 	Fix bogus scope handling
