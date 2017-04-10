@@ -1,3 +1,30 @@
+2017-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80324
+	* config/i386/avx512fintrin.h (_mm512_reduce_add_epi32,
+	_mm512_reduce_mul_epi32, _mm512_reduce_and_epi32,
+	_mm512_reduce_or_epi32, _mm512_mask_reduce_add_epi32,
+	_mm512_mask_reduce_mul_epi32, _mm512_mask_reduce_and_epi32,
+	_mm512_mask_reduce_or_epi32, _mm512_reduce_min_epi32,
+	_mm512_reduce_max_epi32, _mm512_reduce_min_epu32,
+	_mm512_reduce_max_epu32, _mm512_mask_reduce_min_epi32,
+	_mm512_mask_reduce_max_epi32, _mm512_mask_reduce_min_epu32,
+	_mm512_mask_reduce_max_epu32, _mm512_reduce_add_ps,
+	_mm512_reduce_mul_ps, _mm512_mask_reduce_add_ps,
+	_mm512_mask_reduce_mul_ps, _mm512_reduce_min_ps, _mm512_reduce_max_ps,
+	_mm512_mask_reduce_min_ps, _mm512_mask_reduce_max_ps,
+	_mm512_reduce_add_epi64, _mm512_reduce_mul_epi64,
+	_mm512_reduce_and_epi64, _mm512_reduce_or_epi64,
+	_mm512_mask_reduce_add_epi64, _mm512_mask_reduce_mul_epi64,
+	_mm512_mask_reduce_and_epi64, _mm512_mask_reduce_or_epi64,
+	_mm512_reduce_min_epi64, _mm512_reduce_max_epi64,
+	_mm512_mask_reduce_min_epi64, _mm512_mask_reduce_max_epi64,
+	_mm512_reduce_min_epu64, _mm512_reduce_max_epu64,
+	_mm512_mask_reduce_min_epu64, _mm512_mask_reduce_max_epu64,
+	_mm512_reduce_add_pd, _mm512_reduce_mul_pd, _mm512_mask_reduce_add_pd,
+	_mm512_mask_reduce_mul_pd, _mm512_reduce_min_pd, _mm512_reduce_max_pd,
+	_mm512_mask_reduce_min_pd, _mm512_mask_reduce_max_pd): New intrinsics.
+
 2017-04-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/70478
