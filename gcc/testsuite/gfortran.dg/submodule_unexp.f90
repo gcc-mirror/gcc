@@ -3,6 +3,6 @@
 ! This used to ICE
 program p
    type t
-   submodule (m) sm ! { dg-error "Unexpected SUBMODULE statement at" }
+   submodule (m) sm ! { dg-error "SUBMODULE declaration at" }
    end type
 end
