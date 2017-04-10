@@ -1719,13 +1719,11 @@ check_extern_c_conflict (tree decl)
     }
 }
 
-/* DECL is being declared at a local scope where OLD_LOCAL (at OLD_SCOPE) and
-   OLD_GLOBAL are the existing local and global bindings of the name.
-   Emit suitable shadow warnings.  */
+/* DECL is being declared at a local scope.  Emit suitable shadow
+   warnings.  */
 
 static void
-check_local_shadow (tree decl, cp_binding_level *old_scope,
-		    tree old_local, tree old_global)
+check_local_shadow (tree decl)
 {
   /* Don't complain about the parms we push and then pop
      while tentatively parsing a function declarator.  */
@@ -1740,12 +1738,22 @@ check_local_shadow (tree decl, cp_binding_level *old_scope,
   if (DECL_EXTERNAL (decl))
     return;
 
+  tree old = NULL_TREE;
+  cp_binding_level *old_scope = NULL;
+  if (cxx_binding *binding = outer_binding (DECL_NAME (decl), NULL, true))
+    {
+      old = binding->value;
+      old_scope = binding->scope;
+    }
+  while (old && VAR_P (old) && DECL_DEAD_FOR_LOCAL (old))
+    old = DECL_SHADOWED_FOR_VAR (old);
+
   tree shadowed = NULL_TREE;
-  if (old_local
-      && (TREE_CODE (old_local) == PARM_DECL
-	  || VAR_P (old_local)
-	  || (TREE_CODE (old_local) == TYPE_DECL
-	      && (!DECL_ARTIFICIAL (old_local)
+  if (old
+      && (TREE_CODE (old) == PARM_DECL
+	  || VAR_P (old)
+	  || (TREE_CODE (old) == TYPE_DECL
+	      && (!DECL_ARTIFICIAL (old)
 		  || TREE_CODE (decl) == TYPE_DECL)))
       && (!DECL_ARTIFICIAL (decl)
 	  || DECL_IMPLICIT_TYPEDEF_P (decl)
@@ -1754,9 +1762,9 @@ check_local_shadow (tree decl, cp_binding_level *old_scope,
       /* DECL shadows a local thing possibly of interest.  */
 
       /* Don't complain if it's from an enclosing function.  */
-      if (DECL_CONTEXT (old_local) == current_function_decl
+      if (DECL_CONTEXT (old) == current_function_decl
 	  && TREE_CODE (decl) != PARM_DECL
-	  && TREE_CODE (old_local) == PARM_DECL)
+	  && TREE_CODE (old) == PARM_DECL)
 	{
 	  /* Go to where the parms should be and see if we find
 	     them there.  */
@@ -1776,7 +1784,7 @@ check_local_shadow (tree decl, cp_binding_level *old_scope,
 
       /* The local structure or class can't use parameters of
 	 the containing function anyway.  */
-      if (DECL_CONTEXT (old_local) != current_function_decl)
+      if (DECL_CONTEXT (old) != current_function_decl)
 	{
 	  for (cp_binding_level *scope = current_binding_level;
 	       scope != old_scope; scope = scope->level_chain)
@@ -1790,13 +1798,13 @@ check_local_shadow (tree decl, cp_binding_level *old_scope,
 	 outermost block of the controlled statement.
 	 Redeclaring a variable from a for or while condition is
 	 detected elsewhere.  */
-      else if (VAR_P (old_local)
+      else if (VAR_P (old)
 	       && old_scope == current_binding_level->level_chain
 	       && (old_scope->kind == sk_cond || old_scope->kind == sk_for))
 	{
 	  error ("redeclaration of %q#D", decl);
-	  inform (DECL_SOURCE_LOCATION (old_local),
-		  "%q#D previously declared here", old_local);
+	  inform (DECL_SOURCE_LOCATION (old),
+		  "%q#D previously declared here", old);
 	  return;
 	}
       /* C++11:
@@ -1808,17 +1816,17 @@ check_local_shadow (tree decl, cp_binding_level *old_scope,
 	 3.4.1/15: The function parameter names shall not be redeclared
 	 in the exception-declaration nor in the outermost block of a
 	 handler for the function-try-block.  */
-      else if ((TREE_CODE (old_local) == VAR_DECL
+      else if ((TREE_CODE (old) == VAR_DECL
 		&& old_scope == current_binding_level->level_chain
 		&& old_scope->kind == sk_catch)
-	       || (TREE_CODE (old_local) == PARM_DECL
+	       || (TREE_CODE (old) == PARM_DECL
 		   && (current_binding_level->kind == sk_catch
 		       || current_binding_level->level_chain->kind == sk_catch)
 		   && in_function_try_handler))
 	{
 	  if (permerror (input_location, "redeclaration of %q#D", decl))
-	    inform (DECL_SOURCE_LOCATION (old_local),
-		    "%q#D previously declared here", old_local);
+	    inform (DECL_SOURCE_LOCATION (old),
+		    "%q#D previously declared here", old);
 	  return;
 	}
 
@@ -1839,23 +1847,22 @@ check_local_shadow (tree decl, cp_binding_level *old_scope,
       else if (warn_shadow_local)
 	warning_code = OPT_Wshadow_local;
       else if (warn_shadow_compatible_local
-	       && can_convert (TREE_TYPE (old_local), TREE_TYPE (decl),
-			       tf_none))
+	       && can_convert (TREE_TYPE (old), TREE_TYPE (decl), tf_none))
 	warning_code = OPT_Wshadow_compatible_local;
       else
 	return;
 
       const char *msg;
-      if (TREE_CODE (old_local) == PARM_DECL)
+      if (TREE_CODE (old) == PARM_DECL)
 	msg = "declaration of %q#D shadows a parameter";
-      else if (is_capture_proxy (old_local))
+      else if (is_capture_proxy (old))
 	msg = "declaration of %qD shadows a lambda capture";
       else
 	msg = "declaration of %qD shadows a previous local";
 
       if (warning_at (input_location, warning_code, msg, decl))
 	{
-	  shadowed = old_local;
+	  shadowed = old;
 	  goto inform_shadowed;
 	}
       return;
@@ -1894,10 +1901,12 @@ check_local_shadow (tree decl, cp_binding_level *old_scope,
 	return;
       }
 
-  if (old_global
-      && (VAR_P (old_global)
-	  || (TREE_CODE (old_global) == TYPE_DECL
-	      && (!DECL_ARTIFICIAL (old_global)
+  /* Now look for a namespace shadow.  */
+  old = find_namespace_value (current_namespace, DECL_NAME (decl));
+  if (old
+      && (VAR_P (old)
+	  || (TREE_CODE (old) == TYPE_DECL
+	      && (!DECL_ARTIFICIAL (old)
 		  || TREE_CODE (decl) == TYPE_DECL)))
       && !instantiating_current_function_p ())
     /* XXX shadow warnings in outer-more namespaces */
@@ -1906,7 +1915,7 @@ check_local_shadow (tree decl, cp_binding_level *old_scope,
 		      "declaration of %qD shadows a global declaration",
 		      decl))
 	{
-	  shadowed = old_global;
+	  shadowed = old;
 	  goto inform_shadowed;
 	}
       return;
@@ -2123,22 +2132,7 @@ do_pushdecl (tree decl, bool is_friend)
       else
 	{
 	  /* Here to install a non-global value.  */
-	  tree oldglobal = find_namespace_value (current_namespace, name);
-	  tree oldlocal = NULL_TREE;
-	  cp_binding_level *oldscope = NULL;
-	  cxx_binding *oldbinding = outer_binding (name, NULL, true);
-
-	  if (oldbinding)
-	    {
-	      oldlocal = oldbinding->value;
-	      oldscope = oldbinding->scope;
-	    }
-	  while (oldlocal
-		 && VAR_P (oldlocal)
-		 && DECL_DEAD_FOR_LOCAL (oldlocal))
-	    oldlocal = DECL_SHADOWED_FOR_VAR (oldlocal);
-
-	  check_local_shadow (decl, oldscope, oldlocal, oldglobal);
+	  check_local_shadow (decl);
 
 	  if (need_new_binding)
 	    {

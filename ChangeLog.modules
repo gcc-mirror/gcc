@@ -1,5 +1,10 @@
 2017-04-10  Nathan Sidwell  <nathan@acm.org>
 
+	Separating namespace bindings part 11
+	gcc/cp/
+	* name-lookup.c (check_local_shadow): Move lookup code to here ...
+	(do_pushdecl): ... from here.
+
 	Separating namespace bindings part 10
 	gcc/cp/
 	* name-lookup.c (do_pushdecl): Reorder & delete more obsolete code.
