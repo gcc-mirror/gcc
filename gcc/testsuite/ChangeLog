@@ -1,5 +1,10 @@
 2017-04-10  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/80362
+	* gcc.dg/torture/pr80362.c: New testcase.
+
+2017-04-10  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/80304
 	* gcc.dg/torture/pr80304.c: New testcase.
 
