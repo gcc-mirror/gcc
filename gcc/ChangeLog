@@ -1,3 +1,9 @@
+2017-04-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR target/79905
+	* config/rs6000/rs6000.c (rs6000_vector_type): New.
+	(rs6000_init_builtins): Use it.
+
 2016-04-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (<mrc>): Add mode to SET source.
