@@ -1,3 +1,10 @@
+2017-04-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/80108
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Enhance special handling given to the TARGET_P9_MINMAX option in
+	relation to certain other options.
+
 2017-04-10  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/80153

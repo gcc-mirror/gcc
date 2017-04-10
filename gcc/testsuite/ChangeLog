@@ -1,3 +1,9 @@
+2017-04-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/80108
+	* gcc.target/powerpc/ppc-fortran/ppc-fortran.exp: New file.
+	* gcc.target/powerpc/ppc-fortran/pr80108-1.f90: New test.
+
 2017-04-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/unroll-7.c: Declare "a" as a pointer to external array.
