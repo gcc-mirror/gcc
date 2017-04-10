@@ -17257,6 +17257,22 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   gcc_unreachable ();
 }
 
+/* Create a builtin vector type with a name.  Taking care not to give
+   the canonical type a name.  */
+
+static tree
+rs6000_vector_type (const char *name, tree elt_type, unsigned num_elts)
+{
+  tree result = build_vector_type (elt_type, num_elts);
+
+  /* Copy so we don't give the canonical type a name.  */
+  result = build_variant_type_copy (result);
+
+  add_builtin_type (name, result);
+
+  return result;
+}
+
 static void
 rs6000_init_builtins (void)
 {
@@ -17273,18 +17289,29 @@ rs6000_init_builtins (void)
 
   V2SI_type_node = build_vector_type (intSI_type_node, 2);
   V2SF_type_node = build_vector_type (float_type_node, 2);
-  V2DI_type_node = build_vector_type (intDI_type_node, 2);
-  V2DF_type_node = build_vector_type (double_type_node, 2);
+  V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64 ? "__vector long"
+				       : "__vector long long",
+				       intDI_type_node, 2);
+  V2DF_type_node = rs6000_vector_type ("__vector double", double_type_node, 2);
   V4HI_type_node = build_vector_type (intHI_type_node, 4);
-  V4SI_type_node = build_vector_type (intSI_type_node, 4);
-  V4SF_type_node = build_vector_type (float_type_node, 4);
-  V8HI_type_node = build_vector_type (intHI_type_node, 8);
-  V16QI_type_node = build_vector_type (intQI_type_node, 16);
+  V4SI_type_node = rs6000_vector_type ("__vector signed int",
+				       intSI_type_node, 4);
+  V4SF_type_node = rs6000_vector_type ("__vector float", float_type_node, 4);
+  V8HI_type_node = rs6000_vector_type ("__vector signed short",
+				       intHI_type_node, 8);
+  V16QI_type_node = rs6000_vector_type ("__vector signed char",
+					intQI_type_node, 16);
 
-  unsigned_V16QI_type_node = build_vector_type (unsigned_intQI_type_node, 16);
-  unsigned_V8HI_type_node = build_vector_type (unsigned_intHI_type_node, 8);
-  unsigned_V4SI_type_node = build_vector_type (unsigned_intSI_type_node, 4);
-  unsigned_V2DI_type_node = build_vector_type (unsigned_intDI_type_node, 2);
+  unsigned_V16QI_type_node = rs6000_vector_type ("__vector unsigned char",
+					unsigned_intQI_type_node, 16);
+  unsigned_V8HI_type_node = rs6000_vector_type ("__vector unsigned short",
+				       unsigned_intHI_type_node, 8);
+  unsigned_V4SI_type_node = rs6000_vector_type ("__vector unsigned int",
+				       unsigned_intSI_type_node, 4);
+  unsigned_V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64
+				       ? "__vector unsigned long"
+				       : "__vector unsigned long long",
+				       unsigned_intDI_type_node, 2);
 
   opaque_V2SF_type_node = build_opaque_vector_type (float_type_node, 2);
   opaque_V2SI_type_node = build_opaque_vector_type (intSI_type_node, 2);
@@ -17299,8 +17326,11 @@ rs6000_init_builtins (void)
      must live in VSX registers.  */
   if (intTI_type_node)
     {
-      V1TI_type_node = build_vector_type (intTI_type_node, 1);
-      unsigned_V1TI_type_node = build_vector_type (unsigned_intTI_type_node, 1);
+      V1TI_type_node = rs6000_vector_type ("__vector __int128",
+					   intTI_type_node, 1);
+      unsigned_V1TI_type_node
+	= rs6000_vector_type ("__vector unsigned __int128",
+			      unsigned_intTI_type_node, 1);
     }
 
   /* The 'vector bool ...' types must be kept distinct from 'vector unsigned ...'
@@ -17432,83 +17462,18 @@ rs6000_init_builtins (void)
   tdecl = add_builtin_type ("__pixel", pixel_type_node);
   TYPE_NAME (pixel_type_node) = tdecl;
 
-  bool_V16QI_type_node = build_vector_type (bool_char_type_node, 16);
-  bool_V8HI_type_node = build_vector_type (bool_short_type_node, 8);
-  bool_V4SI_type_node = build_vector_type (bool_int_type_node, 4);
-  bool_V2DI_type_node = build_vector_type (bool_long_type_node, 2);
-  pixel_V8HI_type_node = build_vector_type (pixel_type_node, 8);
-
-  tdecl = add_builtin_type ("__vector unsigned char", unsigned_V16QI_type_node);
-  TYPE_NAME (unsigned_V16QI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector signed char", V16QI_type_node);
-  TYPE_NAME (V16QI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector __bool char", bool_V16QI_type_node);
-  TYPE_NAME (bool_V16QI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector unsigned short", unsigned_V8HI_type_node);
-  TYPE_NAME (unsigned_V8HI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector signed short", V8HI_type_node);
-  TYPE_NAME (V8HI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector __bool short", bool_V8HI_type_node);
-  TYPE_NAME (bool_V8HI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector unsigned int", unsigned_V4SI_type_node);
-  TYPE_NAME (unsigned_V4SI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector signed int", V4SI_type_node);
-  TYPE_NAME (V4SI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector __bool int", bool_V4SI_type_node);
-  TYPE_NAME (bool_V4SI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector float", V4SF_type_node);
-  TYPE_NAME (V4SF_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector __pixel", pixel_V8HI_type_node);
-  TYPE_NAME (pixel_V8HI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector double", V2DF_type_node);
-  TYPE_NAME (V2DF_type_node) = tdecl;
-
-  if (TARGET_POWERPC64)
-    {
-      tdecl = add_builtin_type ("__vector long", V2DI_type_node);
-      TYPE_NAME (V2DI_type_node) = tdecl;
-
-      tdecl = add_builtin_type ("__vector unsigned long",
-				unsigned_V2DI_type_node);
-      TYPE_NAME (unsigned_V2DI_type_node) = tdecl;
-
-      tdecl = add_builtin_type ("__vector __bool long", bool_V2DI_type_node);
-      TYPE_NAME (bool_V2DI_type_node) = tdecl;
-    }
-  else
-    {
-      tdecl = add_builtin_type ("__vector long long", V2DI_type_node);
-      TYPE_NAME (V2DI_type_node) = tdecl;
-
-      tdecl = add_builtin_type ("__vector unsigned long long",
-				unsigned_V2DI_type_node);
-      TYPE_NAME (unsigned_V2DI_type_node) = tdecl;
-
-      tdecl = add_builtin_type ("__vector __bool long long",
-				bool_V2DI_type_node);
-      TYPE_NAME (bool_V2DI_type_node) = tdecl;
-    }
-
-  if (V1TI_type_node)
-    {
-      tdecl = add_builtin_type ("__vector __int128", V1TI_type_node);
-      TYPE_NAME (V1TI_type_node) = tdecl;
-
-      tdecl = add_builtin_type ("__vector unsigned __int128",
-				unsigned_V1TI_type_node);
-      TYPE_NAME (unsigned_V1TI_type_node) = tdecl;
-    }
+  bool_V16QI_type_node = rs6000_vector_type ("__vector __bool char",
+					     bool_char_type_node, 16);
+  bool_V8HI_type_node = rs6000_vector_type ("__vector __bool short",
+					    bool_short_type_node, 8);
+  bool_V4SI_type_node = rs6000_vector_type ("__vector __bool int",
+					    bool_int_type_node, 4);
+  bool_V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64
+					    ? "__vector __bool long"
+					    : "__vector __bool long long",
+					    bool_long_type_node, 2);
+  pixel_V8HI_type_node = rs6000_vector_type ("__vector __pixel",
+					     pixel_type_node, 8);
 
   /* Paired and SPE builtins are only available if you build a compiler with
      the appropriate options, so only create those builtins with the
