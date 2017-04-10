@@ -1,3 +1,9 @@
+2017-04-10  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/80350
+	* c-ubsan.c (ubsan_instrument_shift): Evaluate RHS before
+	doing an UBSAN check.
+
 2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* c-warn.c (do_warn_double_promotion): Fix typo in comment.
