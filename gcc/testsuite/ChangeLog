@@ -1,3 +1,10 @@
+2017-04-10  Nicolas Koenig  <koenigni@student.ethz.ch>
+
+	PR fortran/69498 
+	* gfortran.dg/submodule_unexp.f90: Modified test
+	to account for new error.
+	* gfortran.dg/submodule_twice.f90: New Test
+
 2017-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/80176

@@ -1,3 +1,11 @@
+
+2017-04-10  Nicolas Koenig  <koenigni@student.ethz.ch>
+            Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/69498 
+	* module.c (gfc_match_submodule): Add error
+	if function is called in the wrong state.
+
 2017-04-10  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/80046

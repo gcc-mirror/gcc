@@ -741,6 +741,13 @@ gfc_match_submodule (void)
   if (!gfc_notify_std (GFC_STD_F2008, "SUBMODULE declaration at %C"))
     return MATCH_ERROR;
 
+  if (gfc_current_state () != COMP_NONE)
+    {
+      gfc_error ("SUBMODULE declaration at %C cannot appear within "
+		 "another scoping unit");
+      return MATCH_ERROR;
+    }
+
   gfc_new_block = NULL;
   gcc_assert (module_list == NULL);
 
