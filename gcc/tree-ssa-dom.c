@@ -701,7 +701,8 @@ derive_equivalences_from_bit_ior (tree name,
 				  const_and_copies *const_and_copies,
 				  int recursion_limit)
 {
-  if (recursion_limit == 0)
+  if (recursion_limit == 0
+      || !fold_convertible_p (TREE_TYPE (name), integer_zero_node))
     return;
 
   if (TREE_CODE (name) == SSA_NAME)
