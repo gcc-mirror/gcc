@@ -1,5 +1,9 @@
 2017-04-10  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.dg/unroll-7.c: Declare "a" as a pointer to external array.
+
+2017-04-10  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR testsuite/79356
 	* gcc.dg/attr-alloc_size-11.c: Don't xfail on alpha.
 
