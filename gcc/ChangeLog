@@ -1,3 +1,8 @@
+2016-04-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (<mrc>): Add mode to SET source.
+	(<mrrc>): Likewise.
+
 2017-04-10  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/80344
