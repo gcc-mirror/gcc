@@ -2004,39 +2004,36 @@ do_pushdecl (tree decl, bool is_friend)
 	  if (!old)
 	    old = find_namespace_value (CP_DECL_CONTEXT (decl), name);
 
-	  if (old)
-	    {
-	      for (ovl_iterator iter (old); iter; ++iter)
-		if (iter.hidden_p () && DECL_IS_BUILTIN (*iter))
-		  ;
-		else if ((TREE_STATIC (*iter) || DECL_EXTERNAL (*iter))
-			 && decls_match (*iter, decl))
-		  {
-		    /* The standard only says that the local extern
-		       inherits linkage from the previous decl; in
-		       particular, default args are not shared.  Add
-		       the decl into a hash table to make sure only
-		       the previous decl in this case is seen by the
-		       middle end.  */
-		    struct cxx_int_tree_map *h;
+	  for (ovl_iterator iter (old); iter; ++iter)
+	    if (iter.hidden_p () && DECL_IS_BUILTIN (*iter))
+	      ;
+	    else if ((TREE_STATIC (*iter) || DECL_EXTERNAL (*iter))
+		     && decls_match (*iter, decl))
+	      {
+		/* The standard only says that the local extern
+		   inherits linkage from the previous decl; in
+		   particular, default args are not shared.  Add the
+		   decl into a hash table to make sure only the
+		   previous decl in this case is seen by the middle
+		   end.  */
+		struct cxx_int_tree_map *h;
 
-		    /* We inherit the outer decl's linkage.  But we're a
-		       different decl.  */
-		    TREE_PUBLIC (decl) = TREE_PUBLIC (*iter);
+		/* We inherit the outer decl's linkage.  But we're a
+		   different decl.  */
+		TREE_PUBLIC (decl) = TREE_PUBLIC (*iter);
 
-		    if (cp_function_chain->extern_decl_map == NULL)
-		      cp_function_chain->extern_decl_map
-			= hash_table<cxx_int_tree_map_hasher>::create_ggc (20);
+		if (cp_function_chain->extern_decl_map == NULL)
+		  cp_function_chain->extern_decl_map
+		    = hash_table<cxx_int_tree_map_hasher>::create_ggc (20);
 
-		    h = ggc_alloc<cxx_int_tree_map> ();
-		    h->uid = DECL_UID (decl);
-		    h->to = *iter;
-		    cxx_int_tree_map **loc = cp_function_chain->extern_decl_map
-		      ->find_slot (h, INSERT);
-		    *loc = h;
-		  }
-	      old = NULL_TREE;
-	    }
+		h = ggc_alloc<cxx_int_tree_map> ();
+		h->uid = DECL_UID (decl);
+		h->to = *iter;
+		cxx_int_tree_map **loc = cp_function_chain->extern_decl_map
+		  ->find_slot (h, INSERT);
+		*loc = h;
+	      }
+	  old = NULL_TREE;
 	}
 
       if (old == error_mark_node)
@@ -2065,37 +2062,30 @@ do_pushdecl (tree decl, bool is_friend)
 	    return match;
 	  }
 
-      /* We are pushing a new decl.  */
-
-      if (TREE_CODE (decl) == FUNCTION_DECL && DECL_EXTERN_C_P (decl))
-	check_extern_c_conflict (decl);
-
-      check_template_shadow (decl);
-
-      /* If this is a function conjured up by the back end, massage it
-	 so it looks friendly.  */
-      if (DECL_NON_THUNK_FUNCTION_P (decl) && ! DECL_LANG_SPECIFIC (decl))
-	{
-	  retrofit_lang_decl (decl);
-	  SET_DECL_LANGUAGE (decl, lang_c);
-	}
-
-      if (is_friend && DECL_DECLARES_FUNCTION_P (decl)
-	  && !flag_friend_injection)
-	/* A friend declaration of a function or a function template,
-	   hide it from ordinary function lookup.  */
-	DECL_ANTICIPATED (decl) = DECL_HIDDEN_FRIEND_P (decl) = 1;
-
       old = decl;
+
+      /* We are pushing a new decl.  */
+      check_template_shadow (decl);
 
       if (DECL_DECLARES_FUNCTION_P (decl))
 	{
+	  if (DECL_EXTERN_C_P (decl))
+	    check_extern_c_conflict (decl);
+
+	  check_default_args (decl);
+
+	  if (is_friend && !flag_friend_injection)
+	    /* A friend declaration of a function or a function template,
+	       hide it from ordinary function lookup.  */
+	    DECL_ANTICIPATED (decl) = DECL_HIDDEN_FRIEND_P (decl) = true;
+
 	  if (namespace_bindings_p ())
 	    {
 	      gcc_assert (DECL_NAMESPACE_SCOPE_P (decl));
+	      // current_namespace is also ok here, it only differs
+	      // in error cases involving ambiguity
 	      old = do_namespace_push_overload (CP_DECL_CONTEXT (decl),
 						decl, is_friend);
-	      
 	    }
 	  else
 	    {
@@ -2105,19 +2095,64 @@ do_pushdecl (tree decl, bool is_friend)
 		 necessary.  */
 	      need_new_binding = false;
 	    }
-	  check_default_args (old);
 	}
 
       if (old != decl)
+	/* This happens if we uncover a hidden builtin.  */
 	return old;
 
       if (DECL_FUNCTION_TEMPLATE_P (decl))
 	{
-	  // FIXME: Why bail out now?
+	  // FIXME: Why bail out now? see below for inadequate check
 	  gcc_assert (need_new_binding);
 	  add_namespace_decl (CP_DECL_CONTEXT (decl), decl);
-	  return old;
-	}      
+	  return decl;
+	}
+
+      /* This name is new in its binding level.
+	 Install the new declaration and return it.  */
+      if (namespace_bindings_p ())
+	{
+	  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
+	    ;
+	  else if (DECL_DECLARES_FUNCTION_P (decl))
+	    ;
+	  else
+	    update_namespace_binding (current_namespace, name, decl);
+	}
+      else
+	{
+	  /* Here to install a non-global value.  */
+	  tree oldglobal = find_namespace_value (current_namespace, name);
+	  tree oldlocal = NULL_TREE;
+	  cp_binding_level *oldscope = NULL;
+	  cxx_binding *oldbinding = outer_binding (name, NULL, true);
+
+	  if (oldbinding)
+	    {
+	      oldlocal = oldbinding->value;
+	      oldscope = oldbinding->scope;
+	    }
+	  while (oldlocal
+		 && VAR_P (oldlocal)
+		 && DECL_DEAD_FOR_LOCAL (oldlocal))
+	    oldlocal = DECL_SHADOWED_FOR_VAR (oldlocal);
+
+	  check_local_shadow (decl, oldscope, oldlocal, oldglobal);
+
+	  if (need_new_binding)
+	    {
+	      push_local_binding (name, decl, 0);
+	      /* Because push_local_binding will hook X on to the
+		 current_binding_level's name list, we don't want to
+		 do that again below.  */
+	      need_new_binding = 0;
+	    }
+
+	  if (TREE_CODE (decl) == NAMESPACE_DECL)
+	    /* A local namespace alias.  */
+	    set_identifier_type_value (name, NULL_TREE);
+	}
 
       if (TREE_CODE (decl) == TYPE_DECL)
 	{
@@ -2128,8 +2163,7 @@ do_pushdecl (tree decl, bool is_friend)
 	      if (TYPE_NAME (type) != decl)
 		set_underlying_type (decl);
 
-	      if (TYPE_IDENTIFIER (type))
-		set_identifier_type_value (DECL_NAME (decl), decl);
+	      set_identifier_type_value (name, decl);
 	    }
 
 	  /* If this is a locally defined typedef in a function that
@@ -2165,62 +2199,6 @@ do_pushdecl (tree decl, bool is_friend)
 			  "previous external decl of %q#D", ns_old);
 	      }
 	  }
-
-      /* This name is new in its binding level.
-	 Install the new declaration and return it.  */
-      if (namespace_bindings_p ())
-	{
-	  gcc_assert (DECL_NAMESPACE_SCOPE_P (decl)
-		      || (TREE_CODE (decl) == CONST_DECL
-			  && UNSCOPED_ENUM_P (DECL_CONTEXT (decl))));
-	  if (!(TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl)
-		&& old != NULL_TREE)
-	      && (TREE_CODE (decl) == TYPE_DECL
-		  || VAR_P (decl)
-		  || TREE_CODE (decl) == NAMESPACE_DECL
-		  || TREE_CODE (decl) == CONST_DECL
-		  || TREE_CODE (decl) == TEMPLATE_DECL))
-	    update_namespace_binding (current_namespace, name, decl);
-	}
-      else
-	{
-	  /* Here to install a non-global value.  */
-	  tree oldglobal = find_namespace_value (current_namespace, name);
-	  tree oldlocal = NULL_TREE;
-	  cp_binding_level *oldscope = NULL;
-	  cxx_binding *oldbinding = outer_binding (name, NULL, true);
-
-	  if (oldbinding)
-	    {
-	      oldlocal = oldbinding->value;
-	      oldscope = oldbinding->scope;
-	    }
-	  while (oldlocal
-		 && VAR_P (oldlocal)
-		 && DECL_DEAD_FOR_LOCAL (oldlocal))
-	    oldlocal = DECL_SHADOWED_FOR_VAR (oldlocal);
-
-	  if (need_new_binding)
-	    {
-	      push_local_binding (name, decl, 0);
-	      /* Because push_local_binding will hook X on to the
-		 current_binding_level's name list, we don't want to
-		 do that again below.  */
-	      need_new_binding = 0;
-	    }
-
-	  /* If this is a TYPE_DECL, push it into the type value slot.  */
-	  if (TREE_CODE (decl) == TYPE_DECL)
-	    set_identifier_type_value (name, decl);
-
-	  /* Clear out any TYPE_DECL shadowed by a namespace so that
-	     we won't think this is a type.  The C struct hack doesn't
-	     go through namespaces.  */
-	  if (TREE_CODE (decl) == NAMESPACE_DECL)
-	    set_identifier_type_value (name, NULL_TREE);
-
-	  check_local_shadow (decl, oldscope, oldlocal, oldglobal);
-	}
 
       if (VAR_P (decl))
 	maybe_register_incomplete_var (decl);
