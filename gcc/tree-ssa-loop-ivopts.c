@@ -3335,41 +3335,20 @@ add_iv_candidate_for_use (struct ivopts_data *data, struct iv_use *use)
     }
 
   /* Record common candidate with base_object removed in base.  */
-  if (iv->base_object != NULL)
+  base = iv->base;
+  STRIP_NOPS (base);
+  if (iv->base_object != NULL && TREE_CODE (base) == POINTER_PLUS_EXPR)
     {
-      unsigned i;
-      aff_tree aff_base;
-      tree step, base_object = iv->base_object;
+      tree step = iv->step;
 
-      base = iv->base;
-      step = iv->step;
-      STRIP_NOPS (base);
       STRIP_NOPS (step);
-      STRIP_NOPS (base_object);
-      tree_to_aff_combination (base, TREE_TYPE (base), &aff_base);
-      for (i = 0; i < aff_base.n; i++)
-	{
-	  if (aff_base.elts[i].coef != 1)
-	    continue;
-
-	  if (operand_equal_p (aff_base.elts[i].val, base_object, 0))
-	    break;
-	}
-      if (i < aff_base.n)
-	{
-	  aff_combination_remove_elt (&aff_base, i);
-	  base = aff_combination_to_tree (&aff_base);
-	  basetype = TREE_TYPE (base);
-	  if (POINTER_TYPE_P (basetype))
-	    basetype = sizetype;
-
-	  step = fold_convert (basetype, step);
-	  record_common_cand (data, base, step, use);
-	  /* Also record common candidate with offset stripped.  */
-	  base = strip_offset (base, &offset);
-	  if (offset)
-	    record_common_cand (data, base, step, use);
-	}
+      base = TREE_OPERAND (base, 1);
+      step = fold_convert (sizetype, step);
+      record_common_cand (data, base, step, use);
+      /* Also record common candidate with offset stripped.  */
+      base = strip_offset (base, &offset);
+      if (offset)
+	record_common_cand (data, base, step, use);
     }
 
   /* At last, add auto-incremental candidates.  Make such variables
