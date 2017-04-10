@@ -1,4 +1,16 @@
 2017-04-10  Richard Biener  <rguenther@suse.de>
+	    Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/80153
+	* tree-affine.c (aff_combination_to_tree): Get base pointer from
+	the first element of pointer type aff_tree.  Build result expr in
+	aff_tree's type.
+	(add_elt_to_tree): Convert to type unconditionally.  Remove other
+	fold_convert calls.
+	* tree-ssa-loop-ivopts.c (alloc_iv): Pass in consistent types.
+	(rewrite_use_nonlinear_expr): Check invariant using iv information.
+
+2017-04-10  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (find_func_aliases): Properly handle
 	asm inputs.
