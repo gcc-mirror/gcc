@@ -19345,7 +19345,7 @@ Use (do not use) the MIPS Enhanced Virtual Addressing instructions.
 @itemx -mno-virt
 @opindex mvirt
 @opindex mno-virt
-Use (do not use) the MIPS Virtualization Application Specific instructions.
+Use (do not use) the MIPS Virtualization (VZ) instructions.
 
 @item -mxpa
 @itemx -mno-xpa
