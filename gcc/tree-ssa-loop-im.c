@@ -2145,9 +2145,21 @@ ref_indep_loop_p_1 (int safelen, struct loop *loop, im_mem_ref *ref,
 	  fprintf (dump_file, "\n");
 	}
 
+      /* We need to recurse to properly handle UNANALYZABLE_MEM_ID.  */
+      struct loop *inner = loop->inner;
+      while (inner)
+	{
+	  if (!ref_indep_loop_p_1 (safelen, inner, ref, stored_p, ref_loop))
+	    {
+	      indep_p = false;
+	      break;
+	    }
+	  inner = inner->next;
+	}
+
       /* Avoid caching here as safelen depends on context and refs
          are shared between different contexts.  */
-      return true;
+      return indep_p;
     }
   else
     {
