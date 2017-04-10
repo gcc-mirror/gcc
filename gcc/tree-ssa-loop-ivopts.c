@@ -1171,7 +1171,7 @@ alloc_iv (struct ivopts_data *data, tree base, tree step,
       || contain_complex_addr_expr (expr))
     {
       aff_tree comb;
-      tree_to_aff_combination (expr, TREE_TYPE (base), &comb);
+      tree_to_aff_combination (expr, TREE_TYPE (expr), &comb);
       base = fold_convert (TREE_TYPE (base), aff_combination_to_tree (&comb));
     }
 
@@ -7183,7 +7183,7 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 			    struct iv_use *use, struct iv_cand *cand)
 {
   tree comp;
-  tree op, tgt;
+  tree tgt;
   gassign *ass;
   gimple_stmt_iterator bsi;
 
@@ -7194,6 +7194,7 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
   if (cand->pos == IP_ORIGINAL
       && cand->incremented_at == use->stmt)
     {
+      tree op = NULL_TREE;
       enum tree_code stmt_code;
 
       gcc_assert (is_gimple_assign (use->stmt));
@@ -7213,14 +7214,19 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 	    op = gimple_assign_rhs2 (use->stmt);
 	  else if (gimple_assign_rhs2 (use->stmt) == cand->var_before)
 	    op = gimple_assign_rhs1 (use->stmt);
-	  else
-	    op = NULL_TREE;
 	}
-      else
-	op = NULL_TREE;
 
-      if (op && expr_invariant_in_loop_p (data->current_loop, op))
-	return;
+      if (op != NULL_TREE)
+	{
+	  if (expr_invariant_in_loop_p (data->current_loop, op))
+	    return;
+	  if (TREE_CODE (op) == SSA_NAME)
+	    {
+	      struct iv *iv = get_iv (data, op);
+	      if (iv != NULL && integer_zerop (iv->step))
+		return;
+	    }
+	}
     }
 
   comp = get_computation (data->current_loop, use, cand);

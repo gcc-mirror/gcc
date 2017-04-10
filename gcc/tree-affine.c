@@ -377,58 +377,28 @@ static tree
 add_elt_to_tree (tree expr, tree type, tree elt, const widest_int &scale_in)
 {
   enum tree_code code;
-  tree type1 = type;
-  if (POINTER_TYPE_P (type))
-    type1 = sizetype;
 
   widest_int scale = wide_int_ext_for_comb (scale_in, type);
 
-  if (scale == -1
-      && POINTER_TYPE_P (TREE_TYPE (elt)))
-    {
-      elt = convert_to_ptrofftype (elt);
-      elt = fold_build1 (NEGATE_EXPR, TREE_TYPE (elt), elt);
-      scale = 1;
-    }
-
+  elt = fold_convert (type, elt);
   if (scale == 1)
     {
       if (!expr)
-	{
-	  if (POINTER_TYPE_P (TREE_TYPE (elt)))
-	    return elt;
-	  else
-	    return fold_convert (type1, elt);
-	}
+	return elt;
 
-      if (POINTER_TYPE_P (TREE_TYPE (expr)))
-	return fold_build_pointer_plus (expr, elt);
-      if (POINTER_TYPE_P (TREE_TYPE (elt)))
-	return fold_build_pointer_plus (elt, expr);
-      return fold_build2 (PLUS_EXPR, type1,
-			  expr, fold_convert (type1, elt));
+      return fold_build2 (PLUS_EXPR, type, expr, elt);
     }
 
   if (scale == -1)
     {
       if (!expr)
-	return fold_build1 (NEGATE_EXPR, type1,
-			    fold_convert (type1, elt));
+	return fold_build1 (NEGATE_EXPR, type, elt);
 
-      if (POINTER_TYPE_P (TREE_TYPE (expr)))
-	{
-	  elt = convert_to_ptrofftype (elt);
-	  elt = fold_build1 (NEGATE_EXPR, TREE_TYPE (elt), elt);
-	  return fold_build_pointer_plus (expr, elt);
-	}
-      return fold_build2 (MINUS_EXPR, type1,
-			  expr, fold_convert (type1, elt));
+      return fold_build2 (MINUS_EXPR, type, expr, elt);
     }
 
-  elt = fold_convert (type1, elt);
   if (!expr)
-    return fold_build2 (MULT_EXPR, type1, elt,
-			wide_int_to_tree (type1, scale));
+    return fold_build2 (MULT_EXPR, type, elt, wide_int_to_tree (type, scale));
 
   if (wi::neg_p (scale))
     {
@@ -438,15 +408,8 @@ add_elt_to_tree (tree expr, tree type, tree elt, const widest_int &scale_in)
   else
     code = PLUS_EXPR;
 
-  elt = fold_build2 (MULT_EXPR, type1, elt,
-		     wide_int_to_tree (type1, scale));
-  if (POINTER_TYPE_P (TREE_TYPE (expr)))
-    {
-      if (code == MINUS_EXPR)
-        elt = fold_build1 (NEGATE_EXPR, type1, elt);
-      return fold_build_pointer_plus (expr, elt);
-    }
-  return fold_build2 (code, type1, expr, elt);
+  elt = fold_build2 (MULT_EXPR, type, elt, wide_int_to_tree (type, scale));
+  return fold_build2 (code, type, expr, elt);
 }
 
 /* Makes tree from the affine combination COMB.  */
@@ -454,17 +417,25 @@ add_elt_to_tree (tree expr, tree type, tree elt, const widest_int &scale_in)
 tree
 aff_combination_to_tree (aff_tree *comb)
 {
-  tree type = comb->type;
-  tree expr = NULL_TREE;
+  tree type = comb->type, base = NULL_TREE, expr = NULL_TREE;
   unsigned i;
   widest_int off, sgn;
-  tree type1 = type;
-  if (POINTER_TYPE_P (type))
-    type1 = sizetype;
 
   gcc_assert (comb->n == MAX_AFF_ELTS || comb->rest == NULL_TREE);
 
-  for (i = 0; i < comb->n; i++)
+  i = 0;
+  if (POINTER_TYPE_P (type))
+    {
+      type = sizetype;
+      if (comb->n > 0 && comb->elts[0].coef == 1
+	  && POINTER_TYPE_P (TREE_TYPE (comb->elts[0].val)))
+	{
+	  base = comb->elts[0].val;
+	  ++i;
+	}
+    }
+
+  for (; i < comb->n; i++)
     expr = add_elt_to_tree (expr, type, comb->elts[i].val, comb->elts[i].coef);
 
   if (comb->rest)
@@ -482,7 +453,12 @@ aff_combination_to_tree (aff_tree *comb)
       off = comb->offset;
       sgn = 1;
     }
-  return add_elt_to_tree (expr, type, wide_int_to_tree (type1, off), sgn);
+  expr = add_elt_to_tree (expr, type, wide_int_to_tree (type, off), sgn);
+
+  if (base)
+    return fold_build_pointer_plus (base, expr);
+  else
+    return fold_convert (comb->type, expr);
 }
 
 /* Copies the tree elements of COMB to ensure that they are not shared.  */
