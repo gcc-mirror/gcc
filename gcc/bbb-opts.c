@@ -111,15 +111,6 @@ struct insn_info
     return t;
   }
 
-//  inline insn_info
-//  operator & (insn_info const & o) const
-//  {
-//    insn_info t;
-//    t._use = _use & o._use;
-//    t._def = _def & o._def;
-//    return t;
-//  }
-
   inline insn_info &
   operator |= (insn_info const & o)
   {
@@ -250,6 +241,7 @@ bit2regno (unsigned bit)
  * Collect some data.
  */
 static std::vector<rtx_insn *> insns;
+static std::vector<rtx_insn *> temp;
 static std::vector<rtx_insn *> jumps;
 static std::map<rtx_insn *, unsigned> insn2index;
 static std::vector<insn_info> infos;
@@ -272,15 +264,16 @@ clear (void)
 static bool
 is_reg_dead (unsigned regno, unsigned pos)
 {
-  for(;;) {
-    if (pos + 1 >= infos.size ())
-      return true;
+  for (;;)
+    {
+      if (pos + 1 >= infos.size ())
+	return true;
 
-    rtx_insn * insn = insns[pos + 1];
-    if (!LABEL_P(insn) && GET_CODE(insn) != USE)
-      break;
-    ++pos;
-  }
+      rtx_insn * insn = insns[pos + 1];
+      if (!LABEL_P(insn) && GET_CODE(insn) != USE)
+	break;
+      ++pos;
+    }
 
   insn_info & ii0 = infos[pos + 1];
   // not dead if usage is reported in the next statement
@@ -292,14 +285,19 @@ is_reg_dead (unsigned regno, unsigned pos)
  * Sometimes used during debugging.
  */
 static void
-dump_insns (char const * name)
+dump_insns (char const * name, bool all)
 {
   fprintf (stderr, "====================================: %s\n", name);
+  if (all)
+    {
+      for (rtx_insn * insn = get_insns (); insn && insn != insns[0]; insn = NEXT_INSN (insn))
+	debug_rtx (insn);
+    }
   for (unsigned i = 0; i < insns.size (); ++i)
     {
       insn_info & ii = infos[i];
 
-      fprintf(stderr, "%d: ", i);
+      fprintf (stderr, "%d: ", i);
 
       for (int j = 0; j < 8; ++j)
 	if (ii.is_use (j))
@@ -314,6 +312,13 @@ dump_insns (char const * name)
 
       fprintf (stderr, "\t");
       debug_rtx (insns[i]);
+
+      if (all)
+	{
+	  rtx_insn * p = i + 1 < insns.size () ? insns[i + 1] : 0;
+	  for (rtx_insn * q = NEXT_INSN (insns[i]); q && q != p; q = NEXT_INSN (q))
+	    debug_rtx (q);
+	}
     }
 }
 
@@ -321,7 +326,7 @@ dump_insns (char const * name)
  * Create a filtered view of insns - keep only those to work with.
  */
 static void
-update_meta_data ()
+update_insns ()
 {
   rtx_insn *insn, *next;
   clear ();
@@ -342,7 +347,11 @@ update_meta_data ()
 	  insns.push_back (insn);
 	}
     }
+}
 
+static void
+update_insn_infos (void)
+{
   /* prepare insn_info */
   insn_info ii;
   for (unsigned i = 0; i < insns.size (); ++i)
@@ -360,14 +369,13 @@ update_meta_data ()
       std::pair<unsigned, insn_info> p = *todo.rbegin ();
       todo.pop_back ();
 
-//      fprintf(stderr, "%d ", p.first);
-//      dump_insns("update");
-
       insn_info ii = p.second;
 
       for (int pos = p.first; pos >= 0; --pos)
 	{
 	  rtx_insn * insn = insns[pos];
+	  if (!insn) // moved to temp for stack frame cleanup
+	    continue;
 
 	  if (pass && infos[pos].contains (ii))
 	    break;
@@ -487,7 +495,6 @@ update_meta_data ()
 	}
       ++pass;
     }
-
 }
 
 /*
@@ -717,7 +724,7 @@ propagate_moves ()
 					   REGNO(srci), REGNO(dsti));
 
 				  /* Move in front of loop and mark as dead. */
-				  rtx_insn * newii = make_insn_raw(PATTERN(ii));
+				  rtx_insn * newii = make_insn_raw (PATTERN (ii));
 				  SET_INSN_DELETED(ii);
 
 				  /* Plus check if the reg was just loaded. */
@@ -733,12 +740,10 @@ propagate_moves ()
 				  else
 				    add_reg_note (newii, REG_DEAD, srci);
 
-
 				  add_insn_after (newii, before, 0);
 
-
 				  /* Move behind loop - into next BB. */
-				  rtx_insn * newjj = make_insn_raw(PATTERN(jj));
+				  rtx_insn * newjj = make_insn_raw (PATTERN (jj));
 				  add_insn_before (newjj, after, 0);
 				  SET_INSN_DELETED(jj);
 
@@ -896,47 +901,6 @@ opt_strcpy ()
 }
 
 /*
- * Convert loops using a counting reg as offset with an address reg
- * into a loop with auto inc address regs.
- */
-static unsigned
-offset_2_autoinc (void)
-{
-  unsigned change_count = 0;
-#if 0
-  rtx_insn * reg_const = 0;
-
-  for (unsigned index = 0; index < insns.size (); ++index)
-    {
-      rtx_insn * insn = insns[index];
-
-      if (!next || !LABEL_P(next) || LABEL_NUSES(next) != 1)
-      continue;
-
-      if (!NONJUMP_INSN_P(insn))
-      continue;
-
-      rtx use = single_set (insn);
-      if (!use)
-      continue;
-
-      rtx reg = SET_DEST(use);
-      if (!REG_P(reg))
-      continue;
-
-      rtx val = SET_SRC(use);
-
-//      fprintf(stderr, "possible start for offset_2_autoinc\n");
-//      //debug_rtx(insn);
-//      //debug_rtx(next);
-
-    }
-
-#endif
-  return change_count;
-}
-
-/*
  * convert
  *
  * set reg1, plus (reg2, const)
@@ -1052,7 +1016,7 @@ const_cmp_to_sub (void)
 {
   unsigned change_count = 0;
 #if HAVE_cc0
-  for (unsigned index = 1; index + 1 < insns.size (); ++index)
+  for (unsigned index = insns.size () - 2; index > 0; --index)
     {
       rtx_insn * insn = insns[index];
       rtx seti = single_set (insn);
@@ -1072,13 +1036,13 @@ const_cmp_to_sub (void)
       if (!REG_P(left) || !REG_P(right))
 	continue;
 
-//      if (!find_reg_note (insn, REG_DEAD, left) || !find_reg_note (insn, REG_DEAD, right))
-//	continue;
-
       // TODO
       // FEATURE: check if the next uses are also a add/sub
       // then maybe that add/sub can be adjusted too
 
+      //      if (!find_reg_note (insn, REG_DEAD, left) || !find_reg_note (insn, REG_DEAD, right))
+      //	continue;
+      // use own reg_dead
       if (!is_reg_dead (REGNO(left), index) || !is_reg_dead (REGNO(right), index))
 	continue;
 
@@ -1222,7 +1186,7 @@ elim_dead_assign (void)
       if (!REG_P(dst) || !REG_P(src))
 	continue;
 
-      if (is_reg_dead(REGNO(dst),index))
+      if (is_reg_dead (REGNO(dst), index))
 	{
 	  fprintf (stderr, ":bbb: elim_dead_assign to %d\n", REGNO(dst));
 	  SET_INSN_DELETED(insn);
@@ -1278,8 +1242,8 @@ merge_add (void)
 	continue;
 
       rtx l1 = XEXP(src1, 0);
-      rtx l2 = XEXP(src2, 0);
-      rtx l3 = XEXP(src3, 0);
+//      rtx l2 = XEXP(src2, 0);
+//      rtx l3 = XEXP(src3, 0);
 
       rtx r1 = XEXP(src1, 1);
       rtx r2 = XEXP(src2, 1);
@@ -1293,89 +1257,393 @@ merge_add (void)
       fprintf (stderr, ":bbb: merge_add applied\n");
 
       SET_SRC(set1) = l1;
-      remove_insn (ins2);
-      add_insn_after (ins2, ins3, 0);
+      rtx_insn * newins2 = make_insn_raw (PATTERN (ins2));
+      add_insn_after (newins2, ins3, 0);
+      SET_INSN_DELETED(ins2);
+      df_insn_rescan (ins1);
     }
   return change_count;
 }
 
-/*
- * Always prefer lower register numbers within the class.
+static void
+clear_temp ()
+{
+  for (unsigned i = 0; i < temp.size (); ++i)
+    if (temp[i])
+      insns[i] = temp[i], temp[i] = 0;
+}
+
+/**
+ * 1. scan for all used registers.
+ * 2. scan the stack from for omittable push/pop
+ * 3. adjust stack frame + insns referring to stack pointer
+ * typical code:
+ subq.l #4,sp
+ movem.l #16190,-(sp)
+ move.l 52(sp),d2
+ move.l 56(sp),d3
+
+ * or
+ link a5,#4
+ movem.l #16190,-(sp)
+ move.l 8(a5),d2
+ move.l 12(a5),d3
+ *
+ * => with a5 check only prolog/epilog
+ * => without a5 adjust insns referring sp if offset > startoffset + current sp diff
+ *
+ * startvalue count(pushes)*4
+ * newstartvalue = startvalue - omitted pushes
  */
 static unsigned
-bb_reg_rename (void)
+shrink_stack_frame (void)
 {
-  dump_insns("bb_reg_rename");
-  for (unsigned index = 0; index < insns.size (); ++index)
+  /* nothing to do. */
+  if (!insns.size ())
+    return 0;
+
+  temp.resize (insns.size ());
+
+  unsigned pos = 0;
+  rtx_insn * insn = insns[pos];
+  if (JUMP_P(insn)) /* return -> empty function*/
+    return 0;
+
+  bool usea5 = false;
+  unsigned paramstart = 4;
+  /*
+   * Move prologue to temp.
+   * Only register push and parallel insn unless its a link a5 are moved.
+   */
+  rtx_insn * prev = get_insns ();
+  for (; pos < insns.size ();)
     {
-      insn_info & ii = infos[index];
-      const unsigned def = ii._def;
-      unsigned mask = ii.get_def_mask ();
+      insn = insns[pos];
 
-      if (!mask)
-	continue;
+      /* check for prologue end. */
+      for (; prev != insn; prev = NEXT_INSN (prev))
+	if (NOTE_P(prev) && NOTE_KIND(prev) == NOTE_INSN_PROLOGUE_END)
+	  break;
+      if (prev != insn)
+	break;
 
-      std::vector<unsigned> found;
-      std::vector<unsigned> todo;
-      if (index + 1 < insns.size ())
-	todo.push_back (index + 1);
-
-      found.push_back (index);
-      /* a register was defined, follow all branches. */
-      while (todo.size ())
+      rtx pattern = PATTERN (insn);
+      if (GET_CODE(pattern) == PARALLEL)
 	{
-	  unsigned pos = todo[todo.size () - 1];
-	  todo.pop_back ();
-
-	  insn_info & jj = infos[pos];
-	  /* defined again. */
-	  if (jj._def & def)
-	    continue;
-
-	  /* not referenced. */
-	  if (!(jj._use & def))
-	    continue;
-
-	  /* update free regs. */
-	  mask &= ~jj._use;
-	  if (!mask)
-	    break;
-
-	  found.push_back (pos);
-
-	  /* follow jump and/or next insn. */
-	  rtx_insn * insn = insns[index];
-	  if (JUMP_P(insn))
+	  rtx set = XVECEXP(pattern, 0, 0);
+	  rtx dst = SET_DEST(set);
+	  /* ignore link a5 */
+	  if (REG_P(dst) && REGNO(dst) == 13)
+	    usea5 = true;
+	  else
 	    {
-	      std::map<rtx_insn *, unsigned>::iterator j = insn2index.find ((rtx_insn *) JUMP_LABEL(insn));
-	      if (j != insn2index.end ())
-		todo.push_back (j->second);
-
-	      rtx jmppattern = PATTERN (insn);
-
-	      rtx jmpsrc = XEXP(jmppattern, 1);
-	      if (GET_CODE(jmpsrc) == IF_THEN_ELSE)
-		if (pos + 1 < insns.size ())
-		  todo.push_back (pos + 1);
+	      /* use movem */
+	      temp[pos] = insn;
+	      insns[pos] = 0;
 	    }
-	  else if (pos + 1 < insns.size ())
-	    todo.push_back (pos + 1);
+	  ++pos;
+	  continue;
+	}
+      if (GET_CODE(pattern) != SET)
+	{
+	  ++pos;
+	  continue;
 	}
 
-      if (mask)
+      /* move only the push statements. */
+      rtx src = SET_SRC(pattern);
+      rtx dest = SET_DEST(pattern);
+      if (REG_P(src))
 	{
-	  int oldregno = bit2regno (def);
-	  int newregno = bit2regno (mask);
-	  fprintf (stderr, ":bbb: bb_reg_rename %d -> %d\n", oldregno, newregno);
+	  if (MEM_P(dest))
+	    {
+	      rtx predec = XEXP(dest, 0);
+	      if (GET_CODE(predec) == PRE_DEC)
+		{
+		  rtx reg = XEXP(predec, 0);
+		  if (REG_P(reg) && REGNO(reg) == 15)
+		    {
+		      temp[pos] = insn;
+		      insns[pos] = 0;
+		    }
+		}
+	    }
+	}
+      else if (GET_CODE(src) == PLUS && REG_P(dest) && REGNO(dest) == 15)
+	{
+	  /* check for stack variables. */
+	  rtx reg = XEXP(src, 0);
+	  rtx cx = XEXP(src, 1);
+	  if (REG_P(reg) && REGNO(reg) == 15 && CONST_INT_P(cx))
+	    paramstart -= INTVAL(cx);
+	}
 
-	  for (std::vector<unsigned>::iterator i = found.begin (); i != found.end (); ++i)
-	    do_reg_rename (PATTERN (insns[*i]), oldregno, newregno);
-
-	  cselib_invalidate_rtx (gen_raw_REG (SImode, oldregno));
-	  cselib_invalidate_rtx (gen_raw_REG (SImode, newregno));
-	  return 1;
+      if (++pos >= insns.size ())
+	{
+	  clear_temp ();
+	  return 0;
 	}
     }
+
+  if (pos == 0)
+    return 0;
+
+  unsigned prologueend = pos;
+
+  /* search epilogues - there can be multiple epilogues. */
+  while (pos < insns.size ())
+    {
+      while (pos < insns.size ())
+	{
+	  insn = insns[pos];
+	  for (; prev != insn; prev = NEXT_INSN (prev))
+	    if (NOTE_P(prev) && NOTE_KIND(prev) == NOTE_INSN_EPILOGUE_BEG)
+	      break;
+
+	  if (prev != insn)
+	    break;
+
+	  ++pos;
+	}
+
+      /* move epilogues away. */
+      for (; pos < insns.size (); ++pos)
+	{
+	  insn = insns[pos];
+	  if (JUMP_P(insn)) /* return */
+	    break;
+
+	  if (LABEL_P(insn))
+	    break;
+
+	  /* omitt the frame pointer a5. */
+	  rtx pattern = PATTERN (insn);
+	  if (GET_CODE(pattern) == PARALLEL)
+	    {
+	      rtx set = XVECEXP(pattern, 0, 0);
+	      rtx dst = SET_DEST(set);
+	      /* unlink is last. */
+	      if (REG_P(dst) && REGNO(dst) == 13)
+		break;
+
+	      /* movem. */
+	      temp[pos] = insn;
+	      insns[pos] = 0;
+	    }
+	  else if (GET_CODE(pattern) == SET)
+	    {
+	      /* check for move (a7+), x */
+	      rtx src = SET_SRC(pattern);
+	      rtx dst = SET_DEST(pattern);
+	      if (REG_P(dst))
+		{
+		  if (MEM_P(src))
+		    {
+		      rtx postinc = XEXP(src, 0);
+		      if (GET_CODE(postinc) == POST_INC)
+			{
+			  rtx reg = XEXP(postinc, 0);
+			  if (REG_P(reg) && REGNO(reg) == 15)
+			    {
+			      temp[pos] = insn;
+			      insns[pos] = 0;
+			    }
+			}
+		    }
+		}
+	    }
+	}
+      ++pos;
+    }
+  /* gather usage stats without prologue/epilogue */
+  update_insn_infos ();
+  insn_info ii;
+  for (unsigned i = 0; i < infos.size (); ++i)
+    ii |= infos[i];
+  unsigned freemask = ~ii._use;
+
+  rtx a7 = gen_raw_REG (SImode, 15);
+
+  unsigned adjust = 0;
+  /* now all push/pop insns are in temp. */
+  for (unsigned i = 0; i < temp.size (); ++i)
+    {
+      insn = temp[i];
+      if (!insn)
+	continue;
+
+      rtx pattern = PATTERN (insn);
+      /* check the pushed regs, either a vector or single statements */
+      if (GET_CODE(pattern) == PARALLEL)
+	{
+	  std::vector<rtx> regs;
+	  std::vector<rtx> clobbers;
+	  for (int j = 0; j < XVECLEN(pattern, 0); ++j)
+	    {
+	      rtx set = XVECEXP(pattern, 0, j);
+	      if (GET_CODE(set) == CLOBBER)
+		{
+		  clobbers.push_back (set);
+		  continue;
+		}
+	      rtx src = SET_SRC(set);
+	      rtx dst = SET_DEST(set);
+	      rtx reg;
+	      if (MEM_P(src))
+		reg = dst;
+	      else if (MEM_P(dst))
+		reg = src;
+	      else
+		continue;
+
+	      if (i < prologueend)
+		paramstart += 4;
+	      unsigned regbit = 1 << REGNO(reg);
+	      if (freemask & regbit)
+		{
+		  fprintf (stderr, i < prologueend ? "remove push for %d\n" : "remove pop for %d\n", REGNO(reg));
+		  if (i < prologueend)
+		    adjust += 4;
+		}
+	      else
+		regs.push_back (reg);
+	    }
+
+	  /* don't touch - clobbers! */
+	  if (clobbers.size())
+	    continue;
+
+	  if ((int) regs.size () + 1 < XVECLEN(pattern, 0) || regs.size () <= 2)
+	    {
+	      if (regs.size () <= 2)
+		{
+		  for (unsigned k = 0; k < regs.size (); ++k)
+		    {
+		      rtx reg = regs[k];
+		      if (i < prologueend)
+			{
+			  /* push */
+			  rtx dec = gen_rtx_PRE_DEC(SImode, a7);
+			  rtx mem = gen_rtx_MEM (SImode, dec);
+			  rtx set = gen_rtx_SET(mem, reg);
+			  emit_insn_after (set, insn);
+			}
+		      else
+			{
+			  /* pop */
+			  rtx dec = gen_rtx_POST_INC(SImode, a7);
+			  rtx mem = gen_rtx_MEM (SImode, dec);
+			  rtx set = gen_rtx_SET(reg, mem);
+			  emit_insn_before (set, insn);
+			}
+		    }
+		}
+	      else
+		{
+		  rtx parallel = gen_rtx_PARALLEL(VOIDmode, rtvec_alloc (regs.size () + 1));
+		  int x = regs.size () * 4 + 4;
+
+		  rtx plus = gen_rtx_PLUS(SImode, a7, gen_rtx_CONST_INT (SImode, i < prologueend ? -x : x));
+		  XVECEXP(parallel, 0, 0) = gen_rtx_SET(a7, plus);
+
+		  if (i >= prologueend)
+		    x = 0;
+
+		  for (unsigned k = 0; k < regs.size (); ++k)
+		    {
+		      if (i < prologueend)
+			{
+			  /* push */
+			  plus = gen_rtx_PLUS(SImode, a7, gen_rtx_CONST_INT (SImode, -x));
+			  x -= 4;
+			  rtx mem = gen_rtx_MEM (SImode, plus);
+			  rtx set = gen_rtx_SET(mem, regs[k]);
+			  XVECEXP(parallel, 0, k + 1) = set;
+			}
+		      else
+			{
+			  /* pop */
+			  plus = x ? gen_rtx_PLUS(SImode, a7, gen_rtx_CONST_INT (SImode, x)) : a7;
+			  x += 4;
+			  rtx mem = gen_rtx_MEM (SImode, plus);
+			  rtx set = gen_rtx_SET(regs[k], mem);
+			  XVECEXP(parallel, 0, k + 1) = set;
+			}
+		    }
+		  emit_insn_after (parallel, insn);
+		}
+	      SET_INSN_DELETED(insn);
+	    }
+	}
+      else
+	{
+	  rtx set = PATTERN (insn);
+
+	  if (i < prologueend)
+	    {
+	      /* move x,-(a7). */
+	      paramstart += 4;
+	      rtx src = SET_SRC(set);
+	      unsigned regbit = 1 << REGNO(src);
+	      if (freemask & regbit)
+		{
+		  adjust += 4;
+		  fprintf (stderr, "remove push for %d\n", REGNO(src));
+		  SET_INSN_DELETED(insn);
+		}
+	    }
+	  else
+	    {
+	      /* move (a7)+,x */
+	      rtx dst = SET_DEST(set);
+	      unsigned regbit = 1 << REGNO(dst);
+	      if (freemask & regbit)
+		{
+		  fprintf (stderr, "remove pop for %d\n", REGNO(dst));
+		  SET_INSN_DELETED(insn);
+		}
+	    }
+	}
+    }
+
+  /* fix sp offsets. */
+  if (!usea5 && adjust)
+    {
+      for (unsigned index = 0; index < insns.size (); ++index)
+	{
+	  insn = insns[index];
+	  if (!insn || !INSN_P(insn))
+	    continue;
+
+	  rtx set = single_set (insn);
+	  if (!set)
+	    continue;
+
+	  rtx mem = SET_SRC(set);
+	  if (MEM_P(mem))
+	    {
+	      rtx plus = XEXP(mem, 0);
+	      if (GET_CODE(plus) == PLUS)
+		{
+		  rtx sp = XEXP(plus, 0);
+		  if (REG_P(sp) && REGNO(sp) == 15)
+		    {
+		      rtx c = XEXP(plus, 1);
+		      if (CONST_INT_P(c))
+			{
+			  int n = INTVAL(c);
+			  if (n >= paramstart)
+			    XEXP(plus, 1) = gen_rtx_CONST_INT (SImode, n - adjust);
+			}
+		    }
+		}
+	    }
+	}
+    }
+
+  /* restore stack insns */
+  clear_temp ();
+
   return 0;
 }
 
@@ -1420,7 +1688,7 @@ namespace
     opt_pass *
     clone ()
     {
-      pass_bbb_optimizations * bbb =  new pass_bbb_optimizations (m_ctxt);
+      pass_bbb_optimizations * bbb = new pass_bbb_optimizations (m_ctxt);
       // bbb->pp = pp + 1;
       return bbb;
     }
@@ -1432,7 +1700,6 @@ namespace
   };
 // class pass_bbb_optimizations
 
-
   /* Main entry point to the pass.  */
   unsigned
   pass_bbb_optimizations::execute_bbb_optimizations (void)
@@ -1441,54 +1708,58 @@ namespace
     df_note_add_problem ();
     df_analyze ();
 
-    update_meta_data ();
+    update_insns ();
 
-    bool do_opt_strcpy = strchr(flag_bbb_opts, 's') || strchr(flag_bbb_opts, '*');
-    bool do_commute_add_move = strchr(flag_bbb_opts, 'a') || strchr(flag_bbb_opts, '*');
-    bool do_propagate_moves = strchr(flag_bbb_opts, 'p') || strchr(flag_bbb_opts, '*');
-    bool do_const_cmp_to_sub = strchr(flag_bbb_opts, 'c') || strchr(flag_bbb_opts, '*');
-    bool do_merge_add = strchr(flag_bbb_opts, 'm') || strchr(flag_bbb_opts, '*');
-    bool do_elim_dead_assign = strchr(flag_bbb_opts, 'e') || strchr(flag_bbb_opts, '*');
-    bool do_bb_reg_rename = strchr(flag_bbb_opts, 'r') || strchr(flag_bbb_opts, '*');
-
+    bool do_opt_strcpy = strchr (flag_bbb_opts, 's') || strchr (flag_bbb_opts, '*');
+    bool do_commute_add_move = strchr (flag_bbb_opts, 'a') || strchr (flag_bbb_opts, '*');
+    bool do_propagate_moves = strchr (flag_bbb_opts, 'p') || strchr (flag_bbb_opts, '*');
+    bool do_const_cmp_to_sub = strchr (flag_bbb_opts, 'c') || strchr (flag_bbb_opts, '*');
+    bool do_merge_add = strchr (flag_bbb_opts, 'm') || strchr (flag_bbb_opts, '*');
+    bool do_elim_dead_assign = strchr (flag_bbb_opts, 'e') || strchr (flag_bbb_opts, '*');
+    bool do_bb_reg_rename = strchr (flag_bbb_opts, 'r') || strchr (flag_bbb_opts, '*');
+    bool do_shrink_stack_frame = strchr (flag_bbb_opts, 'f') || strchr (flag_bbb_opts, '*');
 
     for (;;)
       {
 	int done = 1;
 	if (do_opt_strcpy && opt_strcpy ())
-	  done = 0, update_meta_data ();
+	  done = 0, update_insns ();
 
 	if (do_commute_add_move && commute_add_move ())
-	  done = 0, update_meta_data ();
+	  done = 0, update_insns ();
 
 	if (do_propagate_moves && propagate_moves ())
-	  done = 0, update_meta_data ();
+	  done = 0, update_insns ();
 
-//	if (offset_2_autoinc ())
-//	  done = 0, update_meta_data ();
-
+	update_insn_infos ();
 	if (do_const_cmp_to_sub && const_cmp_to_sub ())
-	  done = 0, update_meta_data ();
+	  done = 0, update_insns (), update_insn_infos ();
 
 	if (do_merge_add && merge_add ())
-	  done = 0, update_meta_data ();
+	  done = 0, update_insns (), update_insn_infos ();
 
 	if (do_elim_dead_assign && elim_dead_assign ())
-	  done = 0, update_meta_data ();
+	  done = 0, update_insns ();
 
-//	if (do_bb_reg_rename && bb_reg_rename ())
-//	  done = 0, update_meta_data ();
 	if (done)
 	  break;
       }
 
     if (do_bb_reg_rename && ::global_pass_regrename)
       {
-	class opt_pass * rr = ::global_pass_regrename->clone();
-	rr->execute(0);
+	class opt_pass * rr = ::global_pass_regrename->clone ();
+	rr->execute (0);
+	update_insns ();
       }
 
-    if (strchr(flag_bbb_opts, 'X')) dump_insns ("bbb 1");
+    if (do_shrink_stack_frame)
+      {
+	shrink_stack_frame ();
+	update_insns ();
+      }
+
+    if (strchr (flag_bbb_opts, 'X') || strchr (flag_bbb_opts, 'x'))
+      dump_insns ("bbb 1", strchr (flag_bbb_opts, 'X'));
     clear ();
 
     return 0;
