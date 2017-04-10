@@ -3595,24 +3595,40 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	  return false;
 	}
 
+      /* F08:7.2.2.4 (4)  */
+      if (s2 && gfc_explicit_interface_required (s2, err, sizeof(err)))
+	{
+	  if (comp1 && !s1)
+	    {
+	      gfc_error ("Explicit interface required for component %qs at %L: %s",
+			 comp1->name, &lvalue->where, err);
+	      return false;
+	    }
+	  else if (s1->attr.if_source == IFSRC_UNKNOWN)
+	    {
+	      gfc_error ("Explicit interface required for %qs at %L: %s",
+			 s1->name, &lvalue->where, err);
+	      return false;
+	    }
+	}
+      if (s1 && gfc_explicit_interface_required (s1, err, sizeof(err)))
+	{
+	  if (comp2 && !s2)
+	    {
+	      gfc_error ("Explicit interface required for component %qs at %L: %s",
+			 comp2->name, &rvalue->where, err);
+	      return false;
+	    }
+	  else if (s2->attr.if_source == IFSRC_UNKNOWN)
+	    {
+	      gfc_error ("Explicit interface required for %qs at %L: %s",
+			 s2->name, &rvalue->where, err);
+	      return false;
+	    }
+	}
+
       if (s1 == s2 || !s1 || !s2)
 	return true;
-
-      /* F08:7.2.2.4 (4)  */
-      if (s1->attr.if_source == IFSRC_UNKNOWN
-	  && gfc_explicit_interface_required (s2, err, sizeof(err)))
-	{
-	  gfc_error ("Explicit interface required for %qs at %L: %s",
-		     s1->name, &lvalue->where, err);
-	  return false;
-	}
-      if (s2->attr.if_source == IFSRC_UNKNOWN
-	  && gfc_explicit_interface_required (s1, err, sizeof(err)))
-	{
-	  gfc_error ("Explicit interface required for %qs at %L: %s",
-		     s2->name, &rvalue->where, err);
-	  return false;
-	}
 
       if (!gfc_compare_interfaces (s1, s2, name, 0, 1,
 				   err, sizeof(err), NULL, NULL))
