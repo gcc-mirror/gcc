@@ -1,3 +1,9 @@
+2017-04-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80362
+	* fold-const.c (fold_binary_loc): Look at unstripped ops when
+	looking for NEGATE_EXPR in -A / -B to A / B folding.
+
 2017-04-10  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/80224
