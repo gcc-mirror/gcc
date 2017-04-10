@@ -1,3 +1,10 @@
+2017-04-10  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/80374
+	* tree-ssa-dom.c (derive_equivalences_from_bit_ior): Do not try to
+	record anything if we can not convert integer_zero_node to the
+	desired type.
+
 2017-04-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/80108

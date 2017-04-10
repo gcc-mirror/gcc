@@ -1,3 +1,8 @@
+2017-04-10  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/80374
+	* g++.dg/pr80374.c: New test.
+
 2017-04-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR target/80108
