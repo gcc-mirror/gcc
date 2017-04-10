@@ -1,6 +1,11 @@
+2017-04-10  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/pr40340-3.c: Adjust directive pattern.
+	* gcc.dg/pr40340-4.c: Same.
+
 2017-04-10  Nicolas Koenig  <koenigni@student.ethz.ch>
 
-	PR fortran/69498 
+	PR fortran/69498
 	* gfortran.dg/submodule_unexp.f90: Modified test
 	to account for new error.
 	* gfortran.dg/submodule_twice.f90: New Test
