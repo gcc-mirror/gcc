@@ -1,3 +1,9 @@
+2017-04-10  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80348
+	* typeck.c (cp_build_binary_op): Use NULL_TREE instead of NULL.  Set
+	ORIG_TYPE earlier and not only when shortening.
+
 2017-04-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80356 - ICE with reference to function template argument.
