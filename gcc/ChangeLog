@@ -1,3 +1,12 @@
+2017-04-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/70478
+	* lra-constraints.c (curr_small_class_check): New.
+	(update_and_check_small_class_inputs): New.
+	(process_alt_operands): Update curr_small_class_check.  Disfavor
+	alternative insn memory operands.  Check available regs for small
+	class operands.
+
 2017-03-31  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	PR target/80057
