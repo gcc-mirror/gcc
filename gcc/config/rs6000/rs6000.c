@@ -4273,8 +4273,40 @@ rs6000_option_override_internal (bool global_init_p)
   /* For the newer switches (vsx, dfp, etc.) set some of the older options,
      unless the user explicitly used the -mno-<option> to disable the code.  */
   if (TARGET_P9_VECTOR || TARGET_MODULO || TARGET_P9_DFORM_SCALAR
-      || TARGET_P9_DFORM_VECTOR || TARGET_P9_DFORM_BOTH > 0 || TARGET_P9_MINMAX)
+      || TARGET_P9_DFORM_VECTOR || TARGET_P9_DFORM_BOTH > 0)
     rs6000_isa_flags |= (ISA_3_0_MASKS_SERVER & ~rs6000_isa_flags_explicit);
+  else if (TARGET_P9_MINMAX)
+    {
+      if (have_cpu)
+	{
+	  if (cpu_index == PROCESSOR_POWER9)
+	    {
+	      /* legacy behavior: allow -mcpu-power9 with certain
+		 capabilities explicitly disabled.  */
+	      rs6000_isa_flags |=
+		(ISA_3_0_MASKS_SERVER & ~rs6000_isa_flags_explicit);
+	      /* However, reject this automatic fix if certain
+		 capabilities required for TARGET_P9_MINMAX support
+		 have been explicitly disabled.  */
+	      if (((OPTION_MASK_VSX | OPTION_MASK_UPPER_REGS_SF
+		    | OPTION_MASK_UPPER_REGS_DF) & rs6000_isa_flags)
+		  != (OPTION_MASK_VSX | OPTION_MASK_UPPER_REGS_SF
+		       | OPTION_MASK_UPPER_REGS_DF))
+		error ("-mpower9-minmax incompatible with explicitly disabled options");
+		}
+	  else
+	    error ("Power9 target option is incompatible with -mcpu=<xxx> for "
+		   "<xxx> less than power9");
+	}
+      else if ((ISA_3_0_MASKS_SERVER & rs6000_isa_flags_explicit)
+	       != (ISA_3_0_MASKS_SERVER & rs6000_isa_flags
+		   & rs6000_isa_flags_explicit))
+	/* Enforce that none of the ISA_3_0_MASKS_SERVER flags
+	   were explicitly cleared.  */
+	error ("-mpower9-minmax incompatible with explicitly disabled options");
+      else
+	rs6000_isa_flags |= ISA_3_0_MASKS_SERVER;
+    }
   else if (TARGET_P8_VECTOR || TARGET_DIRECT_MOVE || TARGET_CRYPTO)
     rs6000_isa_flags |= (ISA_2_7_MASKS_SERVER & ~rs6000_isa_flags_explicit);
   else if (TARGET_VSX)
