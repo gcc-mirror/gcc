@@ -1,3 +1,9 @@
+2017-04-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/80389
+	* config/arm/arm.c (arm_configure_build_target): When -mcpu and -arch
+	conflict, set target->arch_name instead of target->cpu_name.
+
 2017-04-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80374
