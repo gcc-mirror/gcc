@@ -1,3 +1,8 @@
+2017-04-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (dimode_scalar_chain::compute_convert_gain):
+	Use shift_const cost parameter when calculating gain of STV shifts.
+
 2017-04-11  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/70478
@@ -132,7 +137,7 @@
 2017-04-10  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/80153
-	* tree-ssa-loop-ivopts.c (add_iv_candidate_for_use): Check and 
+	* tree-ssa-loop-ivopts.c (add_iv_candidate_for_use): Check and
 	remove POINTER_PLUS_EXPR's base part directly, rather than through
 	aff_tree.
 
@@ -204,7 +209,7 @@
 
 	PR middle-end/80344
 	* gimplify.c (is_gimple_mem_rhs_or_call): Allow CLOBBERs.
- 
+
 2017-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/80324
@@ -1282,14 +1287,14 @@
 	matching condition.
 
 2017-03-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
-            Richard Biener  <rguenth@suse.de>
+	    Richard Biener  <rguenth@suse.de>
 
 	PR tree-optimization/79908
 	PR tree-optimization/80136
 	* tree-stdarg.c (expand_ifn_va_arg_1): For a VA_ARG whose LHS has
 	been cast away, gimplify_and_add suffices.
 
-2017-03-23  Markus Trippelsdorf  <markus@trippelsdorf.de> 
+2017-03-23  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* tree-vrp.c (identify_jump_threads): Delete avail_exprs.
 
@@ -1463,7 +1468,7 @@
 	conditional jump, if the jump is the last insn of the loop.
 
 2017-03-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
-            Richard Biener  <rguenth@suse.de>
+	    Richard Biener  <rguenth@suse.de>
 
 	PR tree-optimization/79908
 	* tree-stdarg.c (expand_ifn_va_arg_1): For a VA_ARG whose LHS has
@@ -1620,7 +1625,7 @@
 
 2017-03-19  Gerald Pfeifer  <gerald@pfeifer.com>
 
-	* doc/install.texi (Specific) <sparc-*-linux*>: No longer refer 
+	* doc/install.texi (Specific) <sparc-*-linux*>: No longer refer
 	to age-old versions of binutils and glibc.
 
 2017-03-18  Segher Boessenkool  <segher@kernel.crashing.org>
@@ -1632,7 +1637,7 @@
 	* doc/contrib.texi (Contributors): Add Segher Boessenkool.
 
 2017-03-18  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/install.texi (Specific) <arm-*-eabi>: Remove old
 	requirement for binutils 2.13.
 
@@ -1967,7 +1972,7 @@
 	* doc/gccint.texi: Ditto.
 
 2017-03-13  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/install.texi (Specific) <avr>: Remove reference to
 	binutils 2.13.
 
@@ -2039,7 +2044,7 @@
 
 	* doc/install.texi (Specific) <mips-*-*>: Remove description of
 	issue that only occurred with binutils below 2.18.
-	
+
 2017-03-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific) <cris-axis-elf>: No longer
@@ -2148,8 +2153,8 @@
 
 2017-03-10  Martin Liska  <mliska@suse.cz>
 
-        PR target/65705
-        PR target/69804
+	PR target/65705
+	PR target/69804
 	* toplev.c (process_options): Enable MPX with LSAN and UBSAN.
 	* tree-chkp.c (chkp_walk_pointer_assignments): Verify that
 	FIELD != NULL.
@@ -2336,7 +2341,8 @@
 2017-03-08  Martin Sebor  <msebor@redhat.com>
 
 	PR target/79928
-	* config/nds32/nds32.c (nds32_option_override): 
+	* config/nds32/nds32.c (nds32_option_override):
+	Fix misspelled diagnostic.
 
 2017-03-08  Jakub Jelinek  <jakub@redhat.com>
 

@@ -3407,7 +3407,7 @@ dimode_scalar_chain::compute_convert_gain ()
       else if (GET_CODE (src) == ASHIFT
 	       || GET_CODE (src) == LSHIFTRT)
 	{
-	  gain += ix86_cost->add;
+	  gain += ix86_cost->shift_const;
     	  if (CONST_INT_P (XEXP (src, 0)))
 	    gain -= vector_const_cost (XEXP (src, 0));
 	  if (CONST_INT_P (XEXP (src, 1))
