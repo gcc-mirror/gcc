@@ -191,9 +191,9 @@ cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
 /* Build variant of function type ORIG_TYPE skipping ARGS_TO_SKIP and the
    return value if SKIP_RETURN is true.  */
 
-static tree
-build_function_type_skip_args (tree orig_type, bitmap args_to_skip,
-			       bool skip_return)
+tree
+cgraph_build_function_type_skip_args (tree orig_type, bitmap args_to_skip,
+				      bool skip_return)
 {
   tree new_type = NULL;
   tree args, new_args = NULL;
@@ -258,7 +258,8 @@ build_function_decl_skip_args (tree orig_decl, bitmap args_to_skip,
   if (prototype_p (new_type)
       || (skip_return && !VOID_TYPE_P (TREE_TYPE (new_type))))
     new_type
-      = build_function_type_skip_args (new_type, args_to_skip, skip_return);
+      = cgraph_build_function_type_skip_args (new_type, args_to_skip,
+					      skip_return);
   TREE_TYPE (new_decl) = new_type;
 
   /* For declarations setting DECL_VINDEX (i.e. methods)

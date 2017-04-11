@@ -2238,6 +2238,8 @@ tree clone_function_name (tree decl, const char *);
 
 void tree_function_versioning (tree, tree, vec<ipa_replace_map *, va_gc> *,
 			       bool, bitmap, bool, bitmap, basic_block);
+tree cgraph_build_function_type_skip_args (tree orig_type, bitmap args_to_skip,
+					   bool skip_return);
 
 /* In cgraphbuild.c  */
 int compute_call_stmt_bb_frequency (tree, basic_block bb);

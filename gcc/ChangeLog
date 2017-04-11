@@ -1,3 +1,16 @@
+2017-04-11  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2017-03-30  Martin Jambor  <mjambor@suse.cz>
+
+        PR ipa/77333
+        * cgraph.h (cgraph_build_function_type_skip_args): Declare.
+        * cgraph.c (redirect_call_stmt_to_callee): Set gimple fntype so that
+        it reflects the signature changes performed at the callee side.
+        * cgraphclones.c (build_function_type_skip_args): Make public, renamed
+        to cgraph_build_function_type_skip_args.
+        (build_function_decl_skip_args): Adjust call to the above function.
+
 2017-04-11  Bin Cheng  <bin.cheng@arm.com>
 
 	Backport from mainline
