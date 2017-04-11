@@ -1,3 +1,58 @@
+2017-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80381
+	* config/i386/i386-builtin-types.def
+	(V16HI_FTYPE_V16HI_INT_V16HI_UHI_COUNT,
+	V16HI_FTYPE_V16HI_V8HI_V16HI_UHI_COUNT,
+	V16SI_FTYPE_V16SI_INT_V16SI_UHI_COUNT,
+	V16SI_FTYPE_V16SI_V4SI_V16SI_UHI_COUNT,
+	V2DI_FTYPE_V2DI_INT_V2DI_UQI_COUNT,
+	V2DI_FTYPE_V2DI_V2DI_V2DI_UQI_COUNT,
+	V32HI_FTYPE_V32HI_INT_V32HI_USI_COUNT,
+	V32HI_FTYPE_V32HI_V8HI_V32HI_USI_COUNT,
+	V4DI_FTYPE_V4DI_INT_V4DI_UQI_COUNT,
+	V4DI_FTYPE_V4DI_V2DI_V4DI_UQI_COUNT,
+	V4SI_FTYPE_V4SI_INT_V4SI_UQI_COUNT,
+	V4SI_FTYPE_V4SI_V4SI_V4SI_UQI_COUNT,
+	V8DI_FTYPE_V8DI_INT_V8DI_UQI_COUNT,
+	V8DI_FTYPE_V8DI_V2DI_V8DI_UQI_COUNT,
+	V8HI_FTYPE_V8HI_INT_V8HI_UQI_COUNT,
+	V8HI_FTYPE_V8HI_V8HI_V8HI_UQI_COUNT,
+	V8SI_FTYPE_V8SI_INT_V8SI_UQI_COUNT,
+	V8SI_FTYPE_V8SI_V4SI_V8SI_UQI_COUNT): New function type aliases.
+	* config/i386/i386-builtin.def (__builtin_ia32_pslld512_mask,
+	__builtin_ia32_pslldi512_mask, __builtin_ia32_psllq512_mask,
+	__builtin_ia32_psllqi512_mask, __builtin_ia32_psrad512_mask,
+	__builtin_ia32_psradi512_mask, __builtin_ia32_psraq512_mask,
+	__builtin_ia32_psraqi512_mask, __builtin_ia32_psrld512_mask,
+	__builtin_ia32_psrldi512_mask, __builtin_ia32_psrlq512_mask,
+	__builtin_ia32_psrlqi512_mask, __builtin_ia32_psllwi128_mask,
+	__builtin_ia32_pslldi128_mask, __builtin_ia32_psllqi128_mask,
+	__builtin_ia32_psllw128_mask, __builtin_ia32_pslld128_mask,
+	__builtin_ia32_psllq128_mask, __builtin_ia32_psllwi256_mask,
+	__builtin_ia32_psllw256_mask, __builtin_ia32_pslldi256_mask,
+	__builtin_ia32_pslld256_mask, __builtin_ia32_psllqi256_mask,
+	__builtin_ia32_psllq256_mask, __builtin_ia32_psradi128_mask,
+	__builtin_ia32_psrad128_mask, __builtin_ia32_psradi256_mask,
+	__builtin_ia32_psrad256_mask, __builtin_ia32_psraqi128_mask,
+	__builtin_ia32_psraq128_mask, __builtin_ia32_psraqi256_mask,
+	__builtin_ia32_psraq256_mask, __builtin_ia32_psrldi128_mask,
+	__builtin_ia32_psrld128_mask, __builtin_ia32_psrldi256_mask,
+	__builtin_ia32_psrld256_mask, __builtin_ia32_psrlqi128_mask,
+	__builtin_ia32_psrlq128_mask, __builtin_ia32_psrlqi256_mask,
+	__builtin_ia32_psrlq256_mask, __builtin_ia32_psrawi256_mask,
+	__builtin_ia32_psraw256_mask, __builtin_ia32_psrawi128_mask,
+	__builtin_ia32_psraw128_mask, __builtin_ia32_psrlwi256_mask,
+	__builtin_ia32_psrlw256_mask, __builtin_ia32_psrlwi128_mask,
+	__builtin_ia32_psrlw128_mask, __builtin_ia32_psllwi512_mask,
+	__builtin_ia32_psllw512_mask, __builtin_ia32_psrawi512_mask,
+	__builtin_ia32_psraw512_mask, __builtin_ia32_psrlwi512_mask,
+	__builtin_ia32_psrlw512_mask): Use _COUNT suffixed function type
+	aliases.
+	* config/i386/i386.c (ix86_expand_args_builtin): Rename last_arg_count
+	flag to second_arg_count, handle 4 argument function type _COUNT
+	aliases, handle second_arg_count on second argument rather than last.
+
 2017-04-10  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/80374

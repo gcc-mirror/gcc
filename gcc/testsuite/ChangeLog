@@ -1,5 +1,8 @@
 2017-04-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/80381
+	* gcc.target/i386/pr80381.c: New test.
+
 	PR c++/80363
 	* g++.dg/ext/pr80363.C: New test.
 
