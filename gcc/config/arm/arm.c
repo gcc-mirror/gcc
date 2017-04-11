@@ -866,6 +866,9 @@ int arm_arch_thumb2;
 int arm_arch_arm_hwdiv;
 int arm_arch_thumb_hwdiv;
 
+/* Nonzero if this chip supports the Large Physical Address Extension.  */
+int arm_arch_lpae;
+
 /* Nonzero if chip disallows volatile memory access in IT block.  */
 int arm_arch_no_volatile_ce;
 
@@ -2862,6 +2865,7 @@ arm_option_override (void)
   arm_arch_iwmmxt2 = (insn_flags & FL_IWMMXT2) != 0;
   arm_arch_thumb_hwdiv = (insn_flags & FL_THUMB_DIV) != 0;
   arm_arch_arm_hwdiv = (insn_flags & FL_ARM_DIV) != 0;
+  arm_arch_lpae = (insn_flags & FL_LPAE) != 0;
   arm_arch_no_volatile_ce = (insn_flags & FL_NO_VOLATILE_CE) != 0;
   arm_tune_cortex_a9 = (arm_tune == cortexa9) != 0;
   arm_arch_crc = (insn_flags & FL_CRC32) != 0;

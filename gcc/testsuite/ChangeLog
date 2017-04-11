@@ -1,3 +1,12 @@
+2017-04-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from GCC 6
+	2017-04-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/80082
+	* gcc.target/arm/atomic_loaddi_10.c: New testcase.
+	* gcc.target/arm/atomic_loaddi_11.c: Likewise.
+
 2017-04-11  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline

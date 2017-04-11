@@ -343,7 +343,7 @@ extern bool arm_is_constant_pool_ref (rtx);
 #define FL_STRONG     (1 << 8)	      /* StrongARM */
 #define FL_ARCH5E     (1 << 9)        /* DSP extensions to v5 */
 #define FL_XSCALE     (1 << 10)	      /* XScale */
-/* spare	      (1 << 11)	*/
+#define FL_LPAE       (1 << 11)       /* ARMv7-A LPAE.  */
 #define FL_ARCH6      (1 << 12)       /* Architecture rel 6.  Adds
 					 media instructions.  */
 #define FL_VFPV2      (1 << 13)       /* Vector Floating Point V2.  */
@@ -392,7 +392,7 @@ extern bool arm_is_constant_pool_ref (rtx);
 #define FL_FOR_ARCH6M	(FL_FOR_ARCH6 & ~FL_NOTM)
 #define FL_FOR_ARCH7	((FL_FOR_ARCH6T2 & ~FL_NOTM) | FL_ARCH7)
 #define FL_FOR_ARCH7A	(FL_FOR_ARCH7 | FL_NOTM | FL_ARCH6K)
-#define FL_FOR_ARCH7VE	(FL_FOR_ARCH7A | FL_THUMB_DIV | FL_ARM_DIV)
+#define FL_FOR_ARCH7VE	(FL_FOR_ARCH7A | FL_THUMB_DIV | FL_ARM_DIV | FL_LPAE)
 #define FL_FOR_ARCH7R	(FL_FOR_ARCH7A | FL_THUMB_DIV)
 #define FL_FOR_ARCH7M	(FL_FOR_ARCH7 | FL_THUMB_DIV)
 #define FL_FOR_ARCH7EM  (FL_FOR_ARCH7M | FL_ARCH7EM)
@@ -486,6 +486,9 @@ extern int arm_arch_thumb2;
 /* Nonzero if chip supports integer division instruction.  */
 extern int arm_arch_arm_hwdiv;
 extern int arm_arch_thumb_hwdiv;
+
+/* Nonzero if this chip supports the Large Physical Address Extension.  */
+extern int arm_arch_lpae;
 
 /* Nonzero if chip disallows volatile memory access in IT block.  */
 extern int arm_arch_no_volatile_ce;

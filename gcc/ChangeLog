@@ -1,3 +1,17 @@
+2017-04-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from GCC 6
+	2017-04-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/80082
+	* config/arm/arm-protos.h (FL_LPAE): Define macro.
+	(FL_FOR_ARCH7VE): Add FL_LPAE.
+	(arm_arch_lpae): Declare extern.
+	* config/arm/arm.c (arm_arch_lpae): Declare.
+	(arm_option_override): Define arm_arch_lpae.
+	* config/arm/arm.h (TARGET_HAVE_LPAE): Redefine in term of
+	arm_arch_lpae.
+
 2017-04-11  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline

@@ -370,8 +370,7 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_HAVE_LDREX	((arm_arch6 && TARGET_ARM) || arm_arch7)
 
 /* Nonzero if this chip supports LPAE.  */
-#define TARGET_HAVE_LPAE						\
-  (arm_arch7 && ((insn_flags & FL_FOR_ARCH7VE) == FL_FOR_ARCH7VE))
+#define TARGET_HAVE_LPAE	(arm_arch_lpae)
 
 /* Nonzero if this chip supports ldrex{bh} and strex{bh}.  */
 #define TARGET_HAVE_LDREXBH	((arm_arch6k && TARGET_ARM) || arm_arch7)
