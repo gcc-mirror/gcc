@@ -599,8 +599,7 @@ fmtresult::type_max_digits (tree type, int base)
 }
 
 static bool
-get_int_range (tree, tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
-	       bool, HOST_WIDE_INT);
+get_int_range (tree, HOST_WIDE_INT *, HOST_WIDE_INT *, bool, HOST_WIDE_INT);
 
 /* Description of a format directive.  A directive is either a plain
    string or a conversion specification that starts with '%'.  */
@@ -674,7 +673,7 @@ struct directive
      For an indeterminate ARG set width to [0, INT_MAX].  */
   void set_width (tree arg)
   {
-    get_int_range (arg, integer_type_node, width, width + 1, true, 0);
+    get_int_range (arg, width, width + 1, true, 0);
   }
 
   /* Set both bounds of the precision range to VAL.  */
@@ -690,7 +689,7 @@ struct directive
      For an indeterminate ARG set precision to [-1, INT_MAX].  */
   void set_precision (tree arg)
   {
-    get_int_range (arg, integer_type_node, prec, prec + 1, false, -1);
+    get_int_range (arg, prec, prec + 1, false, -1);
   }
 
   /* Return true if both width and precision are known to be
@@ -927,25 +926,27 @@ build_intmax_type_nodes (tree *pintmax, tree *puintmax)
     }
 }
 
-/* Determine the range [*PMIN, *PMAX] that the expression ARG of TYPE
-   is in.  Return true when the range is a subrange of that of TYPE.
-   Whn ARG is null it is as if it had the full range of TYPE.
+/* Determine the range [*PMIN, *PMAX] that the expression ARG is
+   in and that is representable in type int.
+   Return true when the range is a subrange of that of int.
+   When ARG is null it is as if it had the full range of int.
    When ABSOLUTE is true the range reflects the absolute value of
    the argument.  When ABSOLUTE is false, negative bounds of
    the determined range are replaced with NEGBOUND.  */
 
 static bool
-get_int_range (tree arg, tree type, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
+get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
 	       bool absolute, HOST_WIDE_INT negbound)
 {
+  /* The type of the result.  */
+  const_tree type = integer_type_node;
+
   bool knownrange = false;
 
   if (!arg)
     {
-      *pmin = (TYPE_UNSIGNED (type)
-	       ? tree_to_uhwi (TYPE_MIN_VALUE (type))
-	       : tree_to_shwi (TYPE_MIN_VALUE (type)));
-      *pmax = tree_to_uhwi (TYPE_MAX_VALUE (type));
+      *pmin = tree_to_shwi (TYPE_MIN_VALUE (type));
+      *pmax = tree_to_shwi (TYPE_MAX_VALUE (type));
     }
   else if (TREE_CODE (arg) == INTEGER_CST)
     {
@@ -961,10 +962,16 @@ get_int_range (tree arg, tree type, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
       /* True if the argument's range cannot be determined.  */
       bool unknown = true;
 
-      type = TREE_TYPE (arg);
+      tree argtype = TREE_TYPE (arg);
 
+      /* Ignore invalid arguments with greater precision that that
+	 of the expected type (e.g., in sprintf("%*i", 12LL, i)).
+	 They will have been detected and diagnosed by -Wformat and
+	 so it's not important to complicate this code to try to deal
+	 with them again.  */
       if (TREE_CODE (arg) == SSA_NAME
-	  && TREE_CODE (type) == INTEGER_TYPE)
+	  && INTEGRAL_TYPE_P (argtype)
+	  && TYPE_PRECISION (argtype) <= TYPE_PRECISION (type))
 	{
 	  /* Try to determine the range of values of the integer argument.  */
 	  wide_int min, max;
@@ -972,27 +979,34 @@ get_int_range (tree arg, tree type, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
 	  if (range_type == VR_RANGE)
 	    {
 	      HOST_WIDE_INT type_min
-		= (TYPE_UNSIGNED (type)
-		   ? tree_to_uhwi (TYPE_MIN_VALUE (type))
-		   : tree_to_shwi (TYPE_MIN_VALUE (type)));
+		= (TYPE_UNSIGNED (argtype)
+		   ? tree_to_uhwi (TYPE_MIN_VALUE (argtype))
+		   : tree_to_shwi (TYPE_MIN_VALUE (argtype)));
 
-	      HOST_WIDE_INT type_max = tree_to_uhwi (TYPE_MAX_VALUE (type));
+	      HOST_WIDE_INT type_max = tree_to_uhwi (TYPE_MAX_VALUE (argtype));
 
 	      *pmin = min.to_shwi ();
 	      *pmax = max.to_shwi ();
 
-	      /* Return true if the adjusted range is a subrange of
-		 the full range of the argument's type.  */
-	      knownrange = type_min < *pmin || *pmax < type_max;
+	      if (*pmin < *pmax)
+		{
+		  /* Return true if the adjusted range is a subrange of
+		     the full range of the argument's type.  *PMAX may
+		     be less than *PMIN when the argument is unsigned
+		     and its upper bound is in excess of TYPE_MAX.  In
+		     that (invalid) case disregard the range and use that
+		     of the expected type instead.  */
+		  knownrange = type_min < *pmin || *pmax < type_max;
 
-	      unknown = false;
+		  unknown = false;
+		}
 	    }
 	}
 
       /* Handle an argument with an unknown range as if none had been
 	 provided.  */
       if (unknown)
-	return get_int_range (NULL_TREE, type, pmin, pmax, absolute, negbound);
+	return get_int_range (NULL_TREE, pmin, pmax, absolute, negbound);
     }
 
   /* Adjust each bound as specified by ABSOLUTE and NEGBOUND.  */
@@ -1004,6 +1018,9 @@ get_int_range (tree arg, tree type, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
 	    *pmin = *pmax = -*pmin;
 	  else
 	    {
+	      /* Make sure signed overlow is avoided.  */
+	      gcc_assert (*pmin != HOST_WIDE_INT_MIN);
+
 	      HOST_WIDE_INT tmp = -*pmin;
 	      *pmin = 0;
 	      if (*pmax < tmp)
@@ -1948,7 +1965,7 @@ format_character (const directive &dir, tree arg)
       res.range.min = 0;
 
       HOST_WIDE_INT min, max;
-      if (get_int_range (arg, integer_type_node, &min, &max, false, 0))
+      if (get_int_range (arg, &min, &max, false, 0))
 	{
 	  if (min == 0 && max == 0)
 	    {
@@ -3125,7 +3142,7 @@ parse_directive (pass_sprintf_length::call_info &info,
 
   if (star_width)
     {
-      if (TREE_CODE (TREE_TYPE (star_width)) == INTEGER_TYPE)
+      if (INTEGRAL_TYPE_P (TREE_TYPE (star_width)))
 	dir.set_width (star_width);
       else
 	{
@@ -3140,7 +3157,7 @@ parse_directive (pass_sprintf_length::call_info &info,
 
   if (star_precision)
     {
-      if (TREE_CODE (TREE_TYPE (star_precision)) == INTEGER_TYPE)
+      if (INTEGRAL_TYPE_P (TREE_TYPE (star_precision)))
 	dir.set_precision (star_precision);
       else
 	{

@@ -1,3 +1,8 @@
+2017-04-11  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/80364
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-16.c: New test.
+
 2017-04-11  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/70878
