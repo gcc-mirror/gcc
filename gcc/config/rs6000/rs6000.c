@@ -14582,7 +14582,7 @@ rs6000_expand_unop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || INTVAL (op0) < -16)
 	{
 	  error ("argument 1 must be a 5-bit signed literal");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
 
@@ -14685,7 +14685,7 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || TREE_INT_CST_LOW (arg1) & ~0x1f)
 	{
 	  error ("argument 2 must be a 5-bit unsigned literal");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
   else if (icode == CODE_FOR_dfptstsfi_eq_dd
@@ -15611,13 +15611,18 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || TREE_INT_CST_LOW (arg2) & ~0xf)
 	{
 	  error ("argument 3 must be a 4-bit unsigned literal");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
   else if (icode == CODE_FOR_vsx_xxpermdi_v2df
            || icode == CODE_FOR_vsx_xxpermdi_v2di
            || icode == CODE_FOR_vsx_xxpermdi_v2df_be
            || icode == CODE_FOR_vsx_xxpermdi_v2di_be
+           || icode == CODE_FOR_vsx_xxpermdi_v1ti
+           || icode == CODE_FOR_vsx_xxpermdi_v4sf
+           || icode == CODE_FOR_vsx_xxpermdi_v4si
+           || icode == CODE_FOR_vsx_xxpermdi_v8hi
+           || icode == CODE_FOR_vsx_xxpermdi_v16qi
            || icode == CODE_FOR_vsx_xxsldwi_v16qi
            || icode == CODE_FOR_vsx_xxsldwi_v8hi
            || icode == CODE_FOR_vsx_xxsldwi_v4si
@@ -15631,7 +15636,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || TREE_INT_CST_LOW (arg2) & ~0x3)
 	{
 	  error ("argument 3 must be a 2-bit unsigned literal");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
   else if (icode == CODE_FOR_vsx_set_v2df
@@ -15651,7 +15656,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || TREE_INT_CST_LOW (arg2) & ~0x1)
 	{
 	  error ("argument 3 must be a 1-bit unsigned literal");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
   else if (icode == CODE_FOR_dfp_ddedpd_dd
@@ -15663,7 +15668,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || TREE_INT_CST_LOW (arg2) & ~0x3)
 	{
 	  error ("argument 1 must be 0 or 2");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
   else if (icode == CODE_FOR_dfp_denbcd_dd
@@ -15675,7 +15680,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || TREE_INT_CST_LOW (arg0) & ~0x1)
 	{
 	  error ("argument 1 must be a 1-bit unsigned literal");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
   else if (icode == CODE_FOR_dfp_dscli_dd
@@ -15689,7 +15694,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || TREE_INT_CST_LOW (arg1) & ~0x3f)
 	{
 	  error ("argument 2 must be a 6-bit unsigned literal");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
   else if (icode == CODE_FOR_crypto_vshasigmaw
@@ -15701,14 +15706,14 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
       if (TREE_CODE (arg1) != INTEGER_CST || wi::geu_p (arg1, 2))
 	{
 	  error ("argument 2 must be 0 or 1");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
 
       STRIP_NOPS (arg2);
-      if (TREE_CODE (arg2) != INTEGER_CST || wi::geu_p (arg1, 16))
+      if (TREE_CODE (arg2) != INTEGER_CST || wi::geu_p (arg2, 16))
 	{
 	  error ("argument 3 must be in the range 0..15");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
 
