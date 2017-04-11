@@ -1,3 +1,9 @@
+2017-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/80394
+	* omp-low.c (scan_omp_task): Don't optimize away empty tasks
+	if they have any depend clauses.
+
 2017-04-11  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/80212
