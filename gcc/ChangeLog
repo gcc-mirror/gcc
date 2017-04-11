@@ -1,5 +1,9 @@
 2017-04-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/80385
+	* simplify-rtx.c (simplify_unary_operation_1): Don't transform
+	(not (neg X)) into (plus X -1) for complex or non-integral modes.
+
 	PR libgomp/80394
 	* omp-low.c (scan_omp_task): Don't optimize away empty tasks
 	if they have any depend clauses.
