@@ -1,3 +1,11 @@
+2017-04-11  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2017-03-30  Martin Jambor  <mjambor@suse.cz>
+
+        PR ipa/77333
+        * g++.dg/ipa/pr77333.C: New test.
+
 2017-04-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
