@@ -1,3 +1,9 @@
+2017-04-11  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/70478
+	* lra-constraints.c (process_alt_operands): Check memory for
+	disfavoring memory insn operand.
+
 2017-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/80100

@@ -2722,12 +2722,14 @@ process_alt_operands (int only_alternative)
 		    }
 		}
 
-	      /* When we use memory operand, the insn should read the
-		 value from memory and even if we just wrote a value
-		 into the memory it is costly in comparison with an
-		 insn alternative which does not use memory
-		 (e.g. register or immediate operand).  */
-	      if (no_regs_p && offmemok)
+	      /* When we use an operand requiring memory in given
+		 alternative, the insn should write *and* read the
+		 value to/from memory it is costly in comparison with
+		 an insn alternative which does not use memory
+		 (e.g. register or immediate operand).  We exclude
+		 memory operand for such case as we can satisfy the
+		 memory constraints by reloading address.  */
+	      if (no_regs_p && offmemok && !MEM_P (op))
 		{
 		  if (lra_dump_file != NULL)
 		    fprintf
