@@ -1,5 +1,17 @@
 2017-04-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/80370
+	* decl.c (cp_finish_decomp): If processing_template_decl on
+	non-dependent decl, only set TREE_TYPE on the v[i] decls, but don't
+	change their DECL_VALUE_EXPR nor cp_finish_decl them.  Instead make
+	sure DECL_VALUE_EXPR is the canonical NULL type ARRAY_REF for tsubst
+	processing.
+	* pt.c (value_dependent_expression_p) <case VAR_DECL>: For variables
+	with DECL_VALUE_EXPR, return true if DECL_VALUE_EXPR is type
+	dependent.
+
+2017-04-11  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/80363
 	* error.c (dump_expr): Handle VEC_COND_EXPR like COND_EXPR.
 
