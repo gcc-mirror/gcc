@@ -701,13 +701,12 @@ derive_equivalences_from_bit_ior (tree name,
 				  const_and_copies *const_and_copies,
 				  int recursion_limit)
 {
-  if (recursion_limit == 0
-      || !fold_convertible_p (TREE_TYPE (name), integer_zero_node))
+  if (recursion_limit == 0)
     return;
 
   if (TREE_CODE (name) == SSA_NAME)
     {
-      tree value = fold_convert (TREE_TYPE (name), integer_zero_node);
+      tree value = build_zero_cst (TREE_TYPE (name));
 
       /* This records the equivalence for the toplevel object.  */
       record_equality (name, value, const_and_copies);
