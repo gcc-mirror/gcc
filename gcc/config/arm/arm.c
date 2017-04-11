@@ -3098,15 +3098,15 @@ arm_configure_build_target (struct arm_build_target *target,
 		arm_selected_tune = arm_selected_cpu;
 
 	      arm_selected_cpu = arm_selected_arch;
+	      target->arch_name = arm_selected_arch->name;
 	    }
 	  else
 	    {
 	      /* Architecture and CPU are essentially the same.
 		 Prefer the CPU setting.  */
 	      arm_selected_arch = NULL;
+	      target->core_name = arm_selected_cpu->name;
 	    }
-
-	  target->core_name = arm_selected_cpu->name;
 	}
       else
 	{
