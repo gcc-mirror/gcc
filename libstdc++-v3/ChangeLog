@@ -1,3 +1,8 @@
+2017-04-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/faq.xml: Update reference link to C++ ABI for Itanium.
+	* doc/xml/manual/abi.xml. Ditto (thrice).
+
 2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Remove duplicate table entry.
