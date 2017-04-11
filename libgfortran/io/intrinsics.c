@@ -36,10 +36,10 @@ extern int PREFIX(fgetc) (const int *, char *, gfc_charlen_type);
 export_proto_np(PREFIX(fgetc));
 
 int
-PREFIX(fgetc) (const int * unit, char * c, gfc_charlen_type c_len)
+PREFIX(fgetc) (const int *unit, char *c, gfc_charlen_type c_len)
 {
   int ret;
-  gfc_unit * u = find_unit (*unit);
+  gfc_unit *u = find_unit (*unit);
 
   if (u == NULL)
     return -1;
@@ -70,7 +70,7 @@ PREFIX(fgetc) (const int * unit, char * c, gfc_charlen_type c_len)
     (const int *, char *, GFC_INTEGER_ ## kind *, gfc_charlen_type); \
   export_proto(fgetc_i ## kind ## _sub); \
   void fgetc_i ## kind ## _sub \
-  (const int * unit, char * c, GFC_INTEGER_ ## kind * st, gfc_charlen_type c_len) \
+  (const int *unit, char *c, GFC_INTEGER_ ## kind *st, gfc_charlen_type c_len) \
     { if (st != NULL) \
         *st = PREFIX(fgetc) (unit, c, c_len); \
       else \
@@ -86,7 +86,7 @@ extern int PREFIX(fget) (char *, gfc_charlen_type);
 export_proto_np(PREFIX(fget));
 
 int
-PREFIX(fget) (char * c, gfc_charlen_type c_len)
+PREFIX(fget) (char *c, gfc_charlen_type c_len)
 {
   return PREFIX(fgetc) (&five, c, c_len);
 }
@@ -97,7 +97,7 @@ PREFIX(fget) (char * c, gfc_charlen_type c_len)
     (char *, GFC_INTEGER_ ## kind *, gfc_charlen_type); \
   export_proto(fget_i ## kind ## _sub); \
   void fget_i ## kind ## _sub \
-  (char * c, GFC_INTEGER_ ## kind * st, gfc_charlen_type c_len) \
+  (char *c, GFC_INTEGER_ ## kind *st, gfc_charlen_type c_len) \
     { if (st != NULL) \
         *st = PREFIX(fgetc) (&five, c, c_len); \
       else \
@@ -114,11 +114,11 @@ extern int PREFIX(fputc) (const int *, char *, gfc_charlen_type);
 export_proto_np(PREFIX(fputc));
 
 int
-PREFIX(fputc) (const int * unit, char * c,
+PREFIX(fputc) (const int *unit, char *c,
 	       gfc_charlen_type c_len __attribute__((unused)))
 {
   ssize_t s;
-  gfc_unit * u = find_unit (*unit);
+  gfc_unit *u = find_unit (*unit);
 
   if (u == NULL)
     return -1;
@@ -143,7 +143,7 @@ PREFIX(fputc) (const int * unit, char * c,
     (const int *, char *, GFC_INTEGER_ ## kind *, gfc_charlen_type); \
   export_proto(fputc_i ## kind ## _sub); \
   void fputc_i ## kind ## _sub \
-  (const int * unit, char * c, GFC_INTEGER_ ## kind * st, gfc_charlen_type c_len) \
+  (const int *unit, char *c, GFC_INTEGER_ ## kind *st, gfc_charlen_type c_len) \
     { if (st != NULL) \
         *st = PREFIX(fputc) (unit, c, c_len); \
       else \
@@ -159,7 +159,7 @@ extern int PREFIX(fput) (char *, gfc_charlen_type);
 export_proto_np(PREFIX(fput));
 
 int
-PREFIX(fput) (char * c, gfc_charlen_type c_len)
+PREFIX(fput) (char *c, gfc_charlen_type c_len)
 {
   return PREFIX(fputc) (&six, c, c_len);
 }
@@ -170,7 +170,7 @@ PREFIX(fput) (char * c, gfc_charlen_type c_len)
     (char *, GFC_INTEGER_ ## kind *, gfc_charlen_type); \
   export_proto(fput_i ## kind ## _sub); \
   void fput_i ## kind ## _sub \
-  (char * c, GFC_INTEGER_ ## kind * st, gfc_charlen_type c_len) \
+  (char *c, GFC_INTEGER_ ## kind *st, gfc_charlen_type c_len) \
     { if (st != NULL) \
         *st = PREFIX(fputc) (&six, c, c_len); \
       else \
@@ -236,9 +236,9 @@ extern void fseek_sub (int *, GFC_IO_INT *, int *, int *);
 export_proto(fseek_sub);
 
 void
-fseek_sub (int * unit, GFC_IO_INT * offset, int * whence, int * status)
+fseek_sub (int *unit, GFC_IO_INT *offset, int *whence, int *status)
 {
-  gfc_unit * u = find_unit (*unit);
+  gfc_unit *u = find_unit (*unit);
   ssize_t result = -1;
 
   if (u != NULL)
@@ -259,7 +259,7 @@ fseek_sub (int * unit, GFC_IO_INT * offset, int * whence, int * status)
 static gfc_offset
 gf_ftell (int unit)
 {
-  gfc_unit * u = find_unit (unit);
+  gfc_unit *u = find_unit (unit);
   if (u == NULL)
     return -1;
   int pos = fbuf_reset (u);
@@ -275,7 +275,7 @@ extern GFC_IO_INT PREFIX(ftell) (int *);
 export_proto_np(PREFIX(ftell));
 
 GFC_IO_INT
-PREFIX(ftell) (int * unit)
+PREFIX(ftell) (int *unit)
 {
   return gf_ftell (*unit);
 }
@@ -285,7 +285,7 @@ PREFIX(ftell) (int * unit)
   extern void ftell_i ## kind ## _sub (int *, GFC_INTEGER_ ## kind *); \
   export_proto(ftell_i ## kind ## _sub); \
   void \
-  ftell_i ## kind ## _sub (int * unit, GFC_INTEGER_ ## kind * offset) \
+  ftell_i ## kind ## _sub (int *unit, GFC_INTEGER_ ## kind *offset) \
   { \
     *offset = gf_ftell (*unit);			\
   }
@@ -346,7 +346,7 @@ extern void ttynam_sub (int *, char *, gfc_charlen_type);
 export_proto(ttynam_sub);
 
 void
-ttynam_sub (int *unit, char * name, gfc_charlen_type name_len)
+ttynam_sub (int *unit, char *name, gfc_charlen_type name_len)
 {
   gfc_unit *u;
   int nlen;
@@ -373,7 +373,7 @@ extern void ttynam (char **, gfc_charlen_type *, int);
 export_proto(ttynam);
 
 void
-ttynam (char ** name, gfc_charlen_type * name_len, int unit)
+ttynam (char **name, gfc_charlen_type *name_len, int unit)
 {
   gfc_unit *u;
 

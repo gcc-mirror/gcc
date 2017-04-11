@@ -863,7 +863,7 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
 
   if (unlikely (is_char4_unit (dtp)))
     {
-      gfc_char4_t * p4 = (gfc_char4_t *) p;
+      gfc_char4_t *p4 = (gfc_char4_t *)p;
       if (nblank < 0)
 	{
 	  memset4 (p4, '*', w);
@@ -2040,8 +2040,8 @@ namelist_write_newline (st_parameter_dt *dtp)
 
 
 static namelist_info *
-nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
-	       namelist_info * base, char * base_name)
+nml_write_obj (st_parameter_dt *dtp, namelist_info *obj, index_type offset,
+	       namelist_info *base, char *base_name)
 {
   int rep_ctr;
   int num;
@@ -2053,15 +2053,15 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
   size_t clen;
   index_type elem_ctr;
   size_t obj_name_len;
-  void * p;
+  void *p;
   char cup;
-  char * obj_name;
-  char * ext_name;
-  char * q;
+  char *obj_name;
+  char *ext_name;
+  char *q;
   size_t ext_name_len;
   char rep_buff[NML_DIGITS];
-  namelist_info * cmp;
-  namelist_info * retval = obj->next;
+  namelist_info *cmp;
+  namelist_info *retval = obj->next;
   size_t base_name_len;
   size_t base_var_name_len;
   size_t tot_len;
@@ -2156,7 +2156,7 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 
       if ((elem_ctr < (nelem - 1)) &&
 	  (obj->type != BT_DERIVED) &&
-	  !memcmp (p, (void*)(p + obj_size ), obj_size ))
+	  !memcmp (p, (void *)(p + obj_size ), obj_size ))
 	{
 	  rep_ctr++;
 	}
@@ -2393,11 +2393,11 @@ obj_loop:
 void
 namelist_write (st_parameter_dt *dtp)
 {
-  namelist_info * t1, *t2, *dummy = NULL;
+  namelist_info *t1, *t2, *dummy = NULL;
   index_type i;
   index_type dummy_offset = 0;
   char c;
-  char * dummy_name = NULL;
+  char *dummy_name = NULL;
 
   /* Set the delimiter for namelist output.  */
   switch (dtp->u.p.current_unit->delim_status)

@@ -1,3 +1,22 @@
+2017-04-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* close.c: Fix white space in pointer declarations and comment
+	formats where applicable.
+	* fbuf.c: Likewise.
+	* fbuf.h: Likewise.
+	* format.c: Likewise.
+	* inquire.c: Likewise.
+	* intrinsics.c: Likewise.
+	* list_read.c: Likewise.
+	* lock.c: Likewise.
+	* open.c: Likewise.
+	* read.c: Likewise.
+	* transfer.c: Likewise.
+	* unit.c: Likewise.
+	* unix.c: Likewise.
+	* unix.h: Likewise.
+	* write.c: Likewise.
+
 2017-03-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/78670
