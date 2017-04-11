@@ -1,5 +1,24 @@
 2017-04-11  Nathan Sidwell  <nathan@acm.org>
 
+	Separating namespace bindings part 14
+	gcc/cp/
+	* friend.c (do_friend): Use pushdecl directly.
+	* name-lookup.h (lookup_name_innermost_nonclass_level): Delete.
+	* name-lookup.c (find_local_value): New.  Broken out of ...
+	(lookup_name_innermost_nonclass_level_1): ... here.  Call
+	it.  Rename to ...
+	(lookup_name_innermost_nonclass_level): ... this.  Delete external
+	entry point.
+	(do_pushdecl): Start handling binding levels directly.  Check
+	local class friend injection rule.  More cleanup.
+	gcc/testsuite/
+	* g++.dg/lookup/friend12.C: Augment & adjust.
+	* g++.old-deja/g++.jason/scoping12.C: Adjust.
+
+	Separating namespace bindings part 13
+	gcc/cp/
+	* name-lookup.c (do_pushdecl): Some cleanups.
+
 	Separating namespace bindings part 12
 	gcc/cp/
 	* name-lookup.c (do_pushdecl): Move overload pushing next to

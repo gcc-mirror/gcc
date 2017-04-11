@@ -37,6 +37,7 @@ static bool supplement_binding (cxx_binding *binding, tree decl);
 static cxx_binding *cxx_binding_make (tree value, tree type);
 static tree do_namespace_push_overload (tree ns, tree decl, bool is_friend);
 static tree do_local_push_overload (tree decl, bool is_friend);
+static cp_binding_level *innermost_nonclass_level (void);
 
 /* Return the binding for NAME in SCOPE, if any.  Otherwise, return NULL.  */
 // FIXME this should totally be a map
@@ -124,6 +125,39 @@ add_namespace_decl (tree ns, tree decl)
 		  || DECL_DECLARED_INLINE_P (decl))))
 	vec_safe_push (b->static_decls, decl);
     }
+}
+
+/* Find the value binding for NAME in the local binding level B.  */
+
+static tree
+find_local_value (cp_binding_level *b, tree name)
+{
+  if (cxx_binding *binding = IDENTIFIER_BINDING (name))
+    for (;; b = b->level_chain)
+      {
+	if (binding->scope == b
+	    && !(VAR_P (binding->value)
+		 && DECL_DEAD_FOR_LOCAL (binding->value)))
+	  return binding->value;
+
+	/* Cleanup contours are transparent to the language.  */
+	if (b->kind != sk_cleanup)
+	  break;
+      }
+  return NULL_TREE;
+}
+
+/* Only look in the innermost non-class level.  */
+
+static tree
+lookup_name_innermost_nonclass_level (tree name)
+{
+  cp_binding_level *b = innermost_nonclass_level ();
+
+  if (b->kind == sk_namespace)
+    return find_namespace_value (current_namespace, name);
+  else
+    return find_local_value (b, name);
 }
 
 /* Add DECL to local binding level B.  DECL might be an OVERLOAD.  */
@@ -931,7 +965,6 @@ do_lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
   return fns;
 }
 
-static cp_binding_level *innermost_nonclass_level (void);
 static bool qualified_namespace_lookup (tree, name_lookup *);
 static void consider_binding_level (tree name, best_match <tree, tree> &bm,
 				    cp_binding_level *lvl,
@@ -1984,14 +2017,27 @@ do_pushdecl (tree decl, bool is_friend)
   if (!DECL_TEMPLATE_PARM_P (decl) && current_function_decl)
     set_decl_context_in_fn (current_function_decl, decl);
 
+  /* The binding level we will be pushing into.  During local class
+     pushing, we want to push to the containing scope.  */
+  cp_binding_level *binding_level = current_binding_level;
+  while (binding_level->kind == sk_class)
+    binding_level = binding_level->level_chain;
+
   if (tree name = DECL_NAME (decl))
     {
       tree old;
 
-      if (DECL_NAMESPACE_SCOPE_P (decl) && namespace_bindings_p ())
-	old = find_namespace_value (CP_DECL_CONTEXT (decl), name);
+      if (binding_level->kind == sk_namespace)
+	{
+	/* We look in the decl's namespace for an existing
+	   declaration, even though we push into the current
+	   namespace.  */
+	  tree ns = (DECL_NAMESPACE_SCOPE_P (decl)
+		     ? CP_DECL_CONTEXT (decl) : current_namespace);
+	  old = find_namespace_value (ns, name);
+	}
       else
-	old = lookup_name_innermost_nonclass_level (name);
+	old = find_local_value (binding_level, name);
 
       /* [basic.link] If there is a visible declaration of an entity
 	 with linkage having the same name and type, ignoring entities
@@ -2046,6 +2092,7 @@ do_pushdecl (tree decl, bool is_friend)
       for (ovl_iterator iter (old); iter; ++iter)
 	if (iter.hidden_p () && DECL_IS_BUILTIN (*iter))
 	  ; /* Anticipated builtins are treated as new decls.  */
+      // FIXME: using decls?
 	else if (tree match = duplicate_decls (decl, *iter, is_friend))
 	  {
 	    if (match == error_mark_node)
@@ -2066,8 +2113,6 @@ do_pushdecl (tree decl, bool is_friend)
 	    return match;
 	  }
 
-      old = decl;
-
       /* We are pushing a new decl.  */
       check_template_shadow (decl);
 
@@ -2078,53 +2123,60 @@ do_pushdecl (tree decl, bool is_friend)
 
 	  check_default_args (decl);
 
-	  if (is_friend && !flag_friend_injection)
-	    /* A friend declaration of a function or a function template,
-	       hide it from ordinary function lookup.  */
-	    DECL_ANTICIPATED (decl) = DECL_HIDDEN_FRIEND_P (decl) = true;
+	  if (is_friend)
+	    {
+	      if (binding_level->kind != sk_namespace)
+		/* In a local class, a friend function declaration must
+		   find a matching decl in the innermost non-class scope.
+		   [class.friend/11] */
+		error ("friend declaration %qD in local class without "
+		       "prior local declaration", decl);
+	      else if (!flag_friend_injection)
+		/* Hide it from ordinary lookup.  */
+		DECL_ANTICIPATED (decl) = DECL_HIDDEN_FRIEND_P (decl) = true;
+	    }
 	}
 
-      if (old != decl)
-	/* This happens if we uncover a hidden builtin.  */
-	return old;
+      old = decl;
 
-      /* This name is new in its binding level.
-	 Install the new declaration and return it.  */
       if (namespace_bindings_p ())
 	{
 	  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
 	    ;
 	  else if (DECL_DECLARES_FUNCTION_P (decl))
-	    old = do_namespace_push_overload (CP_DECL_CONTEXT (decl),
-						decl, is_friend);
+	    old = do_namespace_push_overload (current_namespace,
+					      decl, is_friend);
 	  else
 	    update_namespace_binding (current_namespace, name, decl);
 	}
       else
 	{
-	  /* Here to install a non-global value.  */
 	  check_local_shadow (decl);
-
-	  if (need_new_binding)
-	    {
-	      if (DECL_DECLARES_FUNCTION_P (decl))
-		old = do_local_push_overload (decl, is_friend);
-	      else
-		push_local_binding (name, decl, 0);
-	      /* Because push_local_binding will hook X on to the
-		 current_binding_level's name list, we don't want to
-		 do that again below.  */
-	      need_new_binding = false;
-	    }
 
 	  if (TREE_CODE (decl) == NAMESPACE_DECL)
 	    /* A local namespace alias.  */
 	    set_identifier_type_value (name, NULL_TREE);
+
+	  if (DECL_DECLARES_FUNCTION_P (decl))
+	    old = do_local_push_overload (decl, is_friend);
+	  else
+	    push_local_binding (name, decl, 0);
+	  /* Because push_local_binding will hook X on to the
+	     current_binding_level's name list, we don't want to do
+	     that again below.  */
+	  need_new_binding = false;
 	}
 
       if (old != decl)
-	/* This happens if we uncover a hidden builtin.  */
-	return old;
+	{
+	  /* This happens if we uncover a hidden builtin.  Duplicate
+	     decls will have eaten the builtin, so we do not want to
+	     link it in again, but we do want to do the other
+	     processing, in case we've declared it as a different
+	     kind of thing.  */
+	  need_new_binding = false;
+	  decl = old;
+	}
 
       if (TREE_CODE (decl) == TYPE_DECL)
 	{
@@ -2178,8 +2230,6 @@ do_pushdecl (tree decl, bool is_friend)
 
   if (!need_new_binding)
     ;
-  else if (DECL_NAMESPACE_SCOPE_P (decl))
-    add_namespace_decl (CP_DECL_CONTEXT (decl), decl);
   else if (namespace_bindings_p ())
     add_namespace_decl (current_namespace, decl);
   else
@@ -5222,60 +5272,6 @@ lookup_type_scope (tree name, tag_scope scope)
   tree ret;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   ret = lookup_type_scope_1 (name, scope);
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return ret;
-}
-
-
-/* Similar to `lookup_name' but look only in the innermost non-class
-   binding level.  */
-
-static tree
-lookup_name_innermost_nonclass_level_1 (tree name)
-{
-  cp_binding_level *b;
-  tree t = NULL_TREE;
-
-  b = innermost_nonclass_level ();
-
-  if (b->kind == sk_namespace)
-    {
-      t = find_namespace_value (current_namespace, name);
-
-      /* extern "C" function() */
-      if (t != NULL_TREE && TREE_CODE (t) == TREE_LIST)
-	t = TREE_VALUE (t);
-    }
-  else if (IDENTIFIER_BINDING (name)
-	   && LOCAL_BINDING_P (IDENTIFIER_BINDING (name)))
-    {
-      cxx_binding *binding;
-      binding = IDENTIFIER_BINDING (name);
-      while (1)
-	{
-	  if (binding->scope == b
-	      && !(VAR_P (binding->value)
-		   && DECL_DEAD_FOR_LOCAL (binding->value)))
-	    return binding->value;
-
-	  if (b->kind == sk_cleanup)
-	    b = b->level_chain;
-	  else
-	    break;
-	}
-    }
-
-  return t;
-}
-
-/* Wrapper for lookup_name_innermost_nonclass_level_1.  */
-
-tree
-lookup_name_innermost_nonclass_level (tree name)
-{
-  tree ret;
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = lookup_name_innermost_nonclass_level_1 (name);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
