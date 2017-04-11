@@ -1,5 +1,21 @@
 2017-04-11  Nathan Sidwell  <nathan@acm.org>
 
+	Separating namespace bindings part 15
+	gcc/cp/
+	* cp-tree.h (PUSH_GLOBAL, PUSH_LOCAL, PUSH_USING): Delete.
+	* lex.c (unqualified_name_lookup_error): Adjust push_local_binding
+	call.
+	* name-lookup.h (push_local_binding): Flags is now bool.
+	* name-lookup.c (matching_using_decl_p): Rename to ...
+	(matching_fn_p): ... here.  Update callers.
+	(set_local_extern_decl_linkage): New.  Broken out of ...
+	(do_pushdecl): ... here.  Call it.
+	(push_local_binding, augment_local_overload_binding,
+	do_local_push_overload, do_local_using_decl): Flags is now bool.
+	gcc/testsuite/
+	* g++.dg/lookup/extern-redecl1.C: New.
+	* g++.dg/parse/ctor9.c: tweak.
+
 	Separating namespace bindings part 14
 	gcc/cp/
 	* friend.c (do_friend): Use pushdecl directly.

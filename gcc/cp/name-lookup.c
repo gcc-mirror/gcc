@@ -1589,29 +1589,29 @@ fixup_unhidden_decl (tree name, tree context, tree old, tree head)
   return head;
 }
 
-/* Compares the parameter-type-lists of USING_FN and REGULAR_FN and
+/* Compares the parameter-type-lists of ONE and TWO and
    returns false if they are different.  If the DECLs are template
    functions, the return types and the template parameter lists are
    compared too (DR 565).  */
 
 static bool
-matching_using_decl_p (tree using_fn, tree regular_fn)
+matching_fn_p (tree one, tree two)
 {
-  if (!compparms (TYPE_ARG_TYPES (TREE_TYPE (using_fn)),
-		  TYPE_ARG_TYPES (TREE_TYPE (regular_fn))))
+  if (!compparms (TYPE_ARG_TYPES (TREE_TYPE (one)),
+		  TYPE_ARG_TYPES (TREE_TYPE (two))))
     return false;
 
-  if (TREE_CODE (using_fn) == TEMPLATE_DECL
-      && TREE_CODE (regular_fn) == TEMPLATE_DECL)
+  if (TREE_CODE (one) == TEMPLATE_DECL
+      && TREE_CODE (two) == TEMPLATE_DECL)
     {
       /* Compare template parms.  */
-      if (!comp_template_parms (DECL_TEMPLATE_PARMS (using_fn),
-				DECL_TEMPLATE_PARMS (regular_fn)))
+      if (!comp_template_parms (DECL_TEMPLATE_PARMS (one),
+				DECL_TEMPLATE_PARMS (two)))
 	return false;
 
       /* And return type.  */
-      if (!same_type_p (TREE_TYPE (TREE_TYPE (using_fn)),
-			TREE_TYPE (TREE_TYPE (regular_fn))))
+      if (!same_type_p (TREE_TYPE (TREE_TYPE (one)),
+			TREE_TYPE (TREE_TYPE (two))))
 	return false;
     }
 
@@ -1649,7 +1649,7 @@ do_namespace_push_overload (tree ns, tree decl, bool is_friend)
 	      tree fn = *iter;
 
 	      if (iter.via_using_p ()
-		  && matching_using_decl_p (fn, decl)
+		  && matching_fn_p (fn, decl)
 		  && ! decls_match (fn, decl))
 		diagnose_name_conflict (decl, fn);
 
@@ -1990,6 +1990,107 @@ set_decl_context_in_fn (tree ctx, tree decl)
     DECL_LOCAL_FUNCTION_P (decl) = 1;
 }
 
+/* DECL is a local-scope decl with linkage.  SHADOWED is true if the
+   name is already bound at the current level.
+
+   [basic.link] If there is a visible declaration of an entity with
+   linkage having the same name and type, ignoring entities declared
+   outside the innermost enclosing namespace scope, the block scope
+   declaration declares that same entity and receives the linkage of
+   the previous declaration.
+
+   Also, make sure that this decl matches any existing external decl
+   in the enclosing namespace.  */
+
+static void
+set_local_extern_decl_linkage (tree decl, bool shadowed)
+{
+  tree ns_value = decl; /* Unique marker.  */
+
+  if (!shadowed)
+    {
+      tree loc_value = innermost_non_namespace_value (DECL_NAME (decl));
+      if (!loc_value)
+	{
+	  ns_value
+	    = find_namespace_value (current_namespace, DECL_NAME (decl));
+	  loc_value = ns_value;
+	}
+      if (loc_value == error_mark_node)
+	loc_value = NULL_TREE;
+
+      for (ovl_iterator iter (loc_value); iter; ++iter)
+	if (iter.hidden_p () && DECL_IS_BUILTIN (*iter))
+	  ;
+	else if ((TREE_STATIC (*iter) || DECL_EXTERNAL (*iter))
+		 && decls_match (*iter, decl))
+	  {
+	    /* The standard only says that the local extern inherits
+	       linkage from the previous decl; in particular, default
+	       args are not shared.  Add the decl into a hash table to
+	       make sure only the previous decl in this case is seen
+	       by the middle end.  */
+	    struct cxx_int_tree_map *h;
+
+	    /* We inherit the outer decl's linkage.  But we're a
+	       different decl.  */
+	    TREE_PUBLIC (decl) = TREE_PUBLIC (*iter);
+
+	    if (cp_function_chain->extern_decl_map == NULL)
+	      cp_function_chain->extern_decl_map
+		= hash_table<cxx_int_tree_map_hasher>::create_ggc (20);
+
+	    h = ggc_alloc<cxx_int_tree_map> ();
+	    h->uid = DECL_UID (decl);
+	    h->to = *iter;
+	    cxx_int_tree_map **loc = cp_function_chain->extern_decl_map
+	      ->find_slot (h, INSERT);
+	    *loc = h;
+	    break;
+	  }
+    }
+
+  if (TREE_PUBLIC (decl))
+    {
+      /* DECL is externally visible.  Make sure it matches a matching
+	 decl in the namespace scpe.  We only really need to check
+	 this when inserting the decl, not when we find an existing
+	 match in the current scope.  However, in practice we're
+	 going to be inserting a new decl in the majority of cases --
+	 who writes multiple extern decls for the same thing in the
+	 same local scope?  Doing it here often avoids a duplicate
+	 namespace lookup.  */
+
+      /* Avoid repeating a lookup.  */
+      if (ns_value == decl)
+	ns_value = find_namespace_value (current_namespace, DECL_NAME (decl));
+
+      if (ns_value == error_mark_node)
+	ns_value = NULL_TREE;
+
+      for (ovl_iterator iter (ns_value); iter; ++iter)
+	{
+	  tree other = *iter;
+
+	  if (!(TREE_PUBLIC (other) || DECL_EXTERNAL (other)))
+	    ; /* Not externally visible.   */
+	  else if (DECL_EXTERN_C_P (decl) && DECL_EXTERN_C_P (other))
+	    ; /* Both are extern "C", we'll check via that mechanism.  */
+	  else if (TREE_CODE (other) != TREE_CODE (decl)
+		   || ((VAR_P (decl) || matching_fn_p (other, decl))
+		       && !comptypes (TREE_TYPE (decl), TREE_TYPE (other),
+				      COMPARE_REDECLARATION)))
+	    {
+	      if (permerror (DECL_SOURCE_LOCATION (decl),
+			     "local external declaration %q#D", decl))
+		inform (DECL_SOURCE_LOCATION (other),
+			"does not match previous declaration %q#D", other);
+	      break;
+	    }
+	}
+    }
+}
+
 /* Record DECL as belonging to the current lexical scope.  Check for
    errors (such as an incompatible declaration for the same name
    already seen in the same scope).  IS_FRIEND is true if DECL is
@@ -2000,7 +2101,7 @@ set_decl_context_in_fn (tree ctx, tree decl)
    says.  */
 
 /* bnd ctx
-   nsA nsB   lookup nsB,   inject nsB
+   nsA nsB   lookup nsB,   inject nsA
    nsA !ns   lookup local, inject nsA
    loc nsB   lookup local, inject local
    loc !ns   lookup local, inject local
@@ -2029,9 +2130,9 @@ do_pushdecl (tree decl, bool is_friend)
 
       if (binding_level->kind == sk_namespace)
 	{
-	/* We look in the decl's namespace for an existing
-	   declaration, even though we push into the current
-	   namespace.  */
+	  /* We look in the decl's namespace for an existing
+	     declaration, even though we push into the current
+	     namespace.  */
 	  tree ns = (DECL_NAMESPACE_SCOPE_P (decl)
 		     ? CP_DECL_CONTEXT (decl) : current_namespace);
 	  old = find_namespace_value (ns, name);
@@ -2039,52 +2140,9 @@ do_pushdecl (tree decl, bool is_friend)
       else
 	old = find_local_value (binding_level, name);
 
-      /* [basic.link] If there is a visible declaration of an entity
-	 with linkage having the same name and type, ignoring entities
-	 declared outside the innermost enclosing namespace scope, the
-	 block scope declaration declares that same entity and
-	 receives the linkage of the previous declaration.  */
-      if (!old && current_function_decl
-	  && VAR_OR_FUNCTION_DECL_P (decl)
+      if (current_function_decl && VAR_OR_FUNCTION_DECL_P (decl)
 	  && DECL_EXTERNAL (decl))
-	{
-	  /* Look in block scope.  */
-	  old = innermost_non_namespace_value (name);
-	  /* Or in the innermost namespace.  */
-	  if (!old)
-	    old = find_namespace_value (CP_DECL_CONTEXT (decl), name);
-
-	  for (ovl_iterator iter (old); iter; ++iter)
-	    if (iter.hidden_p () && DECL_IS_BUILTIN (*iter))
-	      ;
-	    else if ((TREE_STATIC (*iter) || DECL_EXTERNAL (*iter))
-		     && decls_match (*iter, decl))
-	      {
-		/* The standard only says that the local extern
-		   inherits linkage from the previous decl; in
-		   particular, default args are not shared.  Add the
-		   decl into a hash table to make sure only the
-		   previous decl in this case is seen by the middle
-		   end.  */
-		struct cxx_int_tree_map *h;
-
-		/* We inherit the outer decl's linkage.  But we're a
-		   different decl.  */
-		TREE_PUBLIC (decl) = TREE_PUBLIC (*iter);
-
-		if (cp_function_chain->extern_decl_map == NULL)
-		  cp_function_chain->extern_decl_map
-		    = hash_table<cxx_int_tree_map_hasher>::create_ggc (20);
-
-		h = ggc_alloc<cxx_int_tree_map> ();
-		h->uid = DECL_UID (decl);
-		h->to = *iter;
-		cxx_int_tree_map **loc = cp_function_chain->extern_decl_map
-		  ->find_slot (h, INSERT);
-		*loc = h;
-	      }
-	  old = NULL_TREE;
-	}
+	set_local_extern_decl_linkage (decl, old != NULL_TREE);
 
       if (old == error_mark_node)
 	old = NULL_TREE;
@@ -2160,7 +2218,7 @@ do_pushdecl (tree decl, bool is_friend)
 	  if (DECL_DECLARES_FUNCTION_P (decl))
 	    old = do_local_push_overload (decl, is_friend);
 	  else
-	    push_local_binding (name, decl, 0);
+	    push_local_binding (name, decl, false);
 	  /* Because push_local_binding will hook X on to the
 	     current_binding_level's name list, we don't want to do
 	     that again below.  */
@@ -2196,33 +2254,6 @@ do_pushdecl (tree decl, bool is_friend)
 	  if (!instantiating_current_function_p ())
 	    record_locally_defined_typedef (decl);
 	}
-
-      /* Multiple external decls of the same identifier ought to match.
-
-	 We get warnings about inline functions where they are defined.
-	 We get warnings about other functions from push_overloaded_decl.
-
-	 Avoid duplicate warnings where they are used.  */
-
-      if (TREE_PUBLIC (decl) && TREE_CODE (decl) == VAR_DECL
-	  && current_function_decl)
-	if (tree ns_old = find_namespace_value (current_namespace, name))
-	  {
-	    ns_old = OVL_FIRST (ns_old);
-
-	    if (ns_old != error_mark_node
-		&& (DECL_EXTERNAL (ns_old) || TREE_PUBLIC (ns_old))
-		/* If different sort of thing, we already gave an error.  */
-		&& TREE_CODE (ns_old) == TREE_CODE (decl)
-		&& !comptypes (TREE_TYPE (decl), TREE_TYPE (ns_old),
-			       COMPARE_REDECLARATION))
-	      {
-		if (permerror (input_location, "type mismatch with previous "
-			       "external decl of %q#D", decl))
-		  inform (DECL_SOURCE_LOCATION (decl),
-			  "previous external decl of %q#D", ns_old);
-	      }
-	  }
 
       if (VAR_P (decl))
 	maybe_register_incomplete_var (decl);
@@ -2289,12 +2320,11 @@ maybe_push_decl (tree decl)
 }
 
 /* Bind DECL to ID in the current_binding_level, assumed to be a local
-   binding level.  If PUSH_USING is set in FLAGS, we know that DECL
-   doesn't really belong to this binding level, that it got here
-   through a using-declaration.  */
+   binding level.  If IS_USING is true, DECL got here through a
+   using-declaration.  */
 
 void
-push_local_binding (tree id, tree decl, int flags)
+push_local_binding (tree id, tree decl, bool is_using)
 {
   cp_binding_level *b;
 
@@ -2315,7 +2345,7 @@ push_local_binding (tree id, tree decl, int flags)
     /* Create a new binding.  */
     push_binding (id, decl, b);
 
-  if (TREE_CODE (decl) == OVERLOAD || (flags & PUSH_USING))
+  if (TREE_CODE (decl) == OVERLOAD || is_using)
     /* We must put the OVERLOAD or using into a TREE_LIST since we
        cannot use the decl's chain itself.  */
     decl = build_tree_list (NULL_TREE, decl);
@@ -3185,7 +3215,8 @@ pushdecl_outermost_localscope (tree x)
    Update it to be NEWVAL (which might or might not be different).  */
 
 static void
-augment_local_overload_binding (tree name, int flags, tree oldval, tree newval)
+augment_local_overload_binding (tree name, bool is_using,
+				tree oldval, tree newval)
 {
   if (oldval == newval)
     /* Nothing to do.  */;
@@ -3193,7 +3224,7 @@ augment_local_overload_binding (tree name, int flags, tree oldval, tree newval)
     replace_local_overload_binding (name, oldval, newval);
   else
     /* Install the new binding.  */
-    push_local_binding (name, newval, flags);
+    push_local_binding (name, newval, is_using);
 }
 
 /* DECL is a non-member function.  Push it into the overload set of
@@ -3224,7 +3255,7 @@ do_local_push_overload (tree decl, bool is_friend)
 	      tree fn = *iter;
 
 	      if (iter.via_using_p ()
-		  && matching_using_decl_p (fn, decl)
+		  && matching_fn_p (fn, decl)
 		  && ! decls_match (fn, decl))
 		diagnose_name_conflict (decl, fn);
 
@@ -3252,7 +3283,7 @@ do_local_push_overload (tree decl, bool is_friend)
 
   tree new_binding = ovl_add (old, decl);
 
-  augment_local_overload_binding (name, 0, old, new_binding);
+  augment_local_overload_binding (name, false, old, new_binding);
 
   return decl;
 }
@@ -3378,7 +3409,7 @@ do_nonmember_using_decl (tree scope, tree name, cxx_binding *bind)
 		    found = true;
 		  else if (old.via_using_p ())
 		    continue; /* this is a using decl */
-		  else if (matching_using_decl_p (new_fn, old_fn))
+		  else if (matching_fn_p (new_fn, old_fn))
 		    {
 		      /* There was already a non-using declaration in
 			 this scope with the same parameter types. If both
@@ -3458,11 +3489,11 @@ do_local_using_decl (tree decl, tree scope, tree name)
   do_nonmember_using_decl (scope, name, &bind);
 
   if (bind.value)
-    augment_local_overload_binding (name, PUSH_USING, oldval, bind.value);
+    augment_local_overload_binding (name, true, oldval, bind.value);
 
   if (bind.type)
     {
-      push_local_binding (name, bind.type, PUSH_USING);
+      push_local_binding (name, bind.type, true);
       set_identifier_type_value (name, bind.type);
     }
 
