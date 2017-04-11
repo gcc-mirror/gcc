@@ -1,3 +1,8 @@
+2017-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80363
+	* g++.dg/ext/pr80363.C: New test.
+
 2017-04-11  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.dg/tree-ssa/builtin-sprintf-warn-10.c: Require double64plus.
