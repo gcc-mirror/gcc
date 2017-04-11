@@ -1,3 +1,9 @@
+2017-04-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80374
+	* tree-ssa-dom.c (derive_equivalences_from_bit_ior): Use
+	build_zero_cst, remove fold_convertible_p check again.
+
 2017-04-11  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/70878
