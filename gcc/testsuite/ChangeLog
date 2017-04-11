@@ -1,3 +1,14 @@
+2017-04-11  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/80345
+	* gcc.c-torture/compile/pr80345.c
+
+	Backport from mainline
+	2016-02-10  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/68021
+	* gcc.dg/tree-ssa/pr68021.c: New test.
+
 2017-04-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

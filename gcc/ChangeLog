@@ -1,3 +1,12 @@
+2017-04-11  Bin Cheng  <bin.cheng@arm.com>
+
+	Backport from mainline
+	2016-02-10  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/68021
+	* tree-ssa-loop-ivopts.c (get_computation_aff): Set ratio to 1 if
+	when computing the value of biv cand by itself.
+
 2017-04-08  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	Backport from mainline
@@ -9,7 +18,7 @@
 2017-04-07  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	Backport from mainline
-        2017-04-07  Andreas Tobler  <andreast@gcc.gnu.org>
+	2017-04-07  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/aarch64/aarch64-freebsd.h: Define WCHAR_T.
 
