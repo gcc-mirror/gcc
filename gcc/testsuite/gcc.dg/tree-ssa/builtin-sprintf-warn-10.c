@@ -2,6 +2,7 @@
    Test to verify the correctness of ranges of output computed for floating
    point directives.
    { dg-do compile }
+   { dg-require-effective-target double64plus }
    { dg-options "-O2 -Wformat -Wformat-overflow -ftrack-macro-expansion=0" } */
 
 typedef __builtin_va_list va_list;
