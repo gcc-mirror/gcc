@@ -1,5 +1,9 @@
 2017-04-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/80100
+	* simplify-rtx.c (simplify_binary_operation_1) <case IOR>: Perform
+	left shift in unsigned HOST_WIDE_INT type.
+
 	PR rtl-optimization/80385
 	* simplify-rtx.c (simplify_unary_operation_1): Don't transform
 	(not (neg X)) into (plus X -1) for complex or non-integral modes.
