@@ -1966,16 +1966,11 @@ set_decl_context_in_fn (tree ctx, tree decl)
    decl is returned, it may have been smashed to agree with what DECL
    says.  */
 
-/* bnd-ctx-frn
-   nsA nsB  no   lookup nsB, inject nsB?
-   nsA nsB  yes  lookup nsB, inject hidden nsB?
-
-   nsA !ns  no   lookup local, inject ?
-   nsA !ns  yes  lookup local, inject ?
-   loc nsB  no   lookup local, inject ?
-   loc nsB  yes  lookup local, inject ?
-   loc !ns  no   lookup local, inject local
-   loc !ns  yes  lookup local, inject ?
+/* bnd ctx
+   nsA nsB   lookup nsB,   inject nsB
+   nsA !ns   lookup local, inject nsA
+   loc nsB   lookup local, inject local
+   loc !ns   lookup local, inject local
 */
 
 static tree
@@ -2087,36 +2082,11 @@ do_pushdecl (tree decl, bool is_friend)
 	    /* A friend declaration of a function or a function template,
 	       hide it from ordinary function lookup.  */
 	    DECL_ANTICIPATED (decl) = DECL_HIDDEN_FRIEND_P (decl) = true;
-
-	  if (namespace_bindings_p ())
-	    {
-	      gcc_assert (DECL_NAMESPACE_SCOPE_P (decl));
-	      // current_namespace is also ok here, it only differs
-	      // in error cases involving ambiguity
-	      old = do_namespace_push_overload (CP_DECL_CONTEXT (decl),
-						decl, is_friend);
-	    }
-	  else
-	    {
-	      old = do_local_push_overload (decl, is_friend);
-	      /* We do not need to create a binding for this name;
-		 push_overloaded_decl will have already done so if
-		 necessary.  */
-	      need_new_binding = false;
-	    }
 	}
 
       if (old != decl)
 	/* This happens if we uncover a hidden builtin.  */
 	return old;
-
-      if (DECL_FUNCTION_TEMPLATE_P (decl))
-	{
-	  // FIXME: Why bail out now? see below for inadequate check
-	  gcc_assert (need_new_binding);
-	  add_namespace_decl (CP_DECL_CONTEXT (decl), decl);
-	  return decl;
-	}
 
       /* This name is new in its binding level.
 	 Install the new declaration and return it.  */
@@ -2125,7 +2095,8 @@ do_pushdecl (tree decl, bool is_friend)
 	  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
 	    ;
 	  else if (DECL_DECLARES_FUNCTION_P (decl))
-	    ;
+	    old = do_namespace_push_overload (CP_DECL_CONTEXT (decl),
+						decl, is_friend);
 	  else
 	    update_namespace_binding (current_namespace, name, decl);
 	}
@@ -2136,17 +2107,24 @@ do_pushdecl (tree decl, bool is_friend)
 
 	  if (need_new_binding)
 	    {
-	      push_local_binding (name, decl, 0);
+	      if (DECL_DECLARES_FUNCTION_P (decl))
+		old = do_local_push_overload (decl, is_friend);
+	      else
+		push_local_binding (name, decl, 0);
 	      /* Because push_local_binding will hook X on to the
 		 current_binding_level's name list, we don't want to
 		 do that again below.  */
-	      need_new_binding = 0;
+	      need_new_binding = false;
 	    }
 
 	  if (TREE_CODE (decl) == NAMESPACE_DECL)
 	    /* A local namespace alias.  */
 	    set_identifier_type_value (name, NULL_TREE);
 	}
+
+      if (old != decl)
+	/* This happens if we uncover a hidden builtin.  */
+	return old;
 
       if (TREE_CODE (decl) == TYPE_DECL)
 	{

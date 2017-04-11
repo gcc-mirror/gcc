@@ -1,3 +1,10 @@
+2017-04-11  Nathan Sidwell  <nathan@acm.org>
+
+	Separating namespace bindings part 12
+	gcc/cp/
+	* name-lookup.c (do_pushdecl): Move overload pushing next to
+	non-overload pushing.
+
 2017-04-10  Nathan Sidwell  <nathan@acm.org>
 
 	Separating namespace bindings part 11
