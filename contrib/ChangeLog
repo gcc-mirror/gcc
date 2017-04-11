@@ -1,3 +1,8 @@
+2017-04-11  Damian Rouson  <damian@sourceryinstitute.org>
+
+        * download_prerequisites (md5_check): New function emulates Linux
+        'md5 --check' on macOS.  Modified script for macOS compatibility.
+
 2017-02-06  Palmer Dabbelt  <palmer@dabbelt.com>
 
 	* config-list.mki (LIST): Add riscv32-unknown-linux-gun and
