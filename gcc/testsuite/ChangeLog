@@ -1,3 +1,9 @@
+2017-04-11  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-10.c: Require double64plus.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c (void test_too_large):
+	Add avr-*-* to non-lp64 selector.
+
 2017-04-10  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/pr40340-3.c: Adjust directive pattern.
