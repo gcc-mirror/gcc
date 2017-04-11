@@ -1,3 +1,16 @@
+2017-04-11  Pat Haugen  <pthaugen@us.ibm.com>
+
+	Backport from mainline
+	2017-04-07  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* rs6000/rs6000.c (vec_load_pendulum): Rename...
+	(vec_pairing): ...to this.
+	(power9_sched_reorder2): Rewrite code for pairing vector/vecload insns.
+	(rs6000_sched_init): Adjust for name change.
+	(struct rs6000_sched_context): Likewise.
+	(rs6000_init_sched_context): Likewise.
+	(rs6000_set_sched_context): Likewise.
+
 2017-04-11  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
