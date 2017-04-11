@@ -1,5 +1,8 @@
 2017-04-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/80370
+	* g++.dg/cpp1z/decomp28.C: New test.
+
 	PR middle-end/80100
 	* gcc.dg/pr80100.c: New test.
 

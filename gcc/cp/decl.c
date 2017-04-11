@@ -7473,6 +7473,8 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	{
 	  TREE_TYPE (v[i]) = eltype;
 	  layout_decl (v[i], 0);
+	  if (processing_template_decl)
+	    continue;
 	  tree t = unshare_expr (dexp);
 	  t = build4_loc (DECL_SOURCE_LOCATION (v[i]), ARRAY_REF,
 			  eltype, t, size_int (i), NULL_TREE,
@@ -7492,6 +7494,8 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	{
 	  TREE_TYPE (v[i]) = eltype;
 	  layout_decl (v[i], 0);
+	  if (processing_template_decl)
+	    continue;
 	  tree t = unshare_expr (dexp);
 	  t = build1_loc (DECL_SOURCE_LOCATION (v[i]),
 			  i ? IMAGPART_EXPR : REALPART_EXPR, eltype,
@@ -7510,6 +7514,8 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	{
 	  TREE_TYPE (v[i]) = eltype;
 	  layout_decl (v[i], 0);
+	  if (processing_template_decl)
+	    continue;
 	  tree t = unshare_expr (dexp);
 	  convert_vector_to_array_for_subscript (DECL_SOURCE_LOCATION (v[i]),
 						 &t, size_int (i));
@@ -7559,8 +7565,9 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	      SET_DECL_VALUE_EXPR (v[i], NULL_TREE);
 	      DECL_HAS_VALUE_EXPR_P (v[i]) = 0;
 	    }
-	  cp_finish_decl (v[i], init, /*constexpr*/false,
-			  /*asm*/NULL_TREE, LOOKUP_NORMAL);
+	  if (!processing_template_decl)
+	    cp_finish_decl (v[i], init, /*constexpr*/false,
+			    /*asm*/NULL_TREE, LOOKUP_NORMAL);
 	}
     }
   else if (TREE_CODE (type) == UNION_TYPE)
@@ -7615,12 +7622,26 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	      tt = TREE_OPERAND (tt, 0);
 	    TREE_TYPE (v[i]) = TREE_TYPE (tt);
 	    layout_decl (v[i], 0);
-	    SET_DECL_VALUE_EXPR (v[i], tt);
-	    DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
+	    if (!processing_template_decl)
+	      {
+		SET_DECL_VALUE_EXPR (v[i], tt);
+		DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
+	      }
 	    i++;
 	  }
     }
-  if (DECL_NAMESPACE_SCOPE_P (decl))
+  if (processing_template_decl)
+    {
+      for (unsigned int i = 0; i < count; i++)
+	if (!DECL_HAS_VALUE_EXPR_P (v[i]))
+	  {
+	    tree a = build_nt (ARRAY_REF, decl, size_int (i),
+			       NULL_TREE, NULL_TREE);
+	    SET_DECL_VALUE_EXPR (v[i], a);
+	    DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
+	  }
+    }
+  else if (DECL_NAMESPACE_SCOPE_P (decl))
     SET_DECL_ASSEMBLER_NAME (decl, mangle_decomp (decl, v));
 }
 
