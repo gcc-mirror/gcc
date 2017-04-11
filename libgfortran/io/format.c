@@ -25,7 +25,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 
 /* format.c-- parse a FORMAT string into a binary format suitable for
- * interpretation during I/O statements */
+   interpretation during I/O statements.  */
 
 #include "io.h"
 #include "format.h"
@@ -179,8 +179,8 @@ find_parsed_format (st_parameter_dt *dtp)
 
 
 /* next_char()-- Return the next character in the format string.
- * Returns -1 when the string is done.  If the literal flag is set,
- * spaces are significant, otherwise they are not. */
+   Returns -1 when the string is done.  If the literal flag is set,
+   spaces are significant, otherwise they are not. */
 
 static int
 next_char (format_data *fmt, int literal)
@@ -209,8 +209,8 @@ next_char (format_data *fmt, int literal)
 
 
 /* get_fnode()-- Allocate a new format node, inserting it into the
- * current singly linked list.  These are initially allocated from the
- * static buffer. */
+   current singly linked list.  These are initially allocated from the
+   static buffer. */
 
 static fnode *
 get_fnode (format_data *fmt, fnode **head, fnode **tail, format_token t)
@@ -286,8 +286,8 @@ free_format_data (format_data *fmt)
 
 
 /* format_lex()-- Simple lexical analyzer for getting the next token
- * in a FORMAT string.  We support a one-level token pushback in the
- * fmt->saved_token variable. */
+   in a FORMAT string.  We support a one-level token pushback in the
+   fmt->saved_token variable. */
 
 static format_token
 format_lex (format_data *fmt)
@@ -605,8 +605,8 @@ format_lex (format_data *fmt)
 
 
 /* parse_format_list()-- Parse a format list.  Assumes that a left
- * paren has already been seen.  Returns a list representing the
- * parenthesis node which contains the rest of the list. */
+   paren has already been seen.  Returns a list representing the
+   parenthesis node which contains the rest of the list. */
 
 static fnode *
 parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
@@ -1196,13 +1196,13 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 
 
 /* format_error()-- Generate an error message for a format statement.
- * If the node that gives the location of the error is NULL, the error
- * is assumed to happen at parse time, and the current location of the
- * parser is shown.
- *
- * We generate a message showing where the problem is.  We take extra
- * care to print only the relevant part of the format if it is longer
- * than a standard 80 column display. */
+   If the node that gives the location of the error is NULL, the error
+   is assumed to happen at parse time, and the current location of the
+   parser is shown.
+
+   We generate a message showing where the problem is.  We take extra
+   care to print only the relevant part of the format if it is longer
+   than a standard 80 column display. */
 
 void
 format_error (st_parameter_dt *dtp, const fnode *f, const char *message)
@@ -1254,11 +1254,11 @@ format_error (st_parameter_dt *dtp, const fnode *f, const char *message)
 
 
 /* revert()-- Do reversion of the format.  Control reverts to the left
- * parenthesis that matches the rightmost right parenthesis.  From our
- * tree structure, we are looking for the rightmost parenthesis node
- * at the second level, the first level always being a single
- * parenthesis node.  If this node doesn't exit, we use the top
- * level. */
+   parenthesis that matches the rightmost right parenthesis.  From our
+   tree structure, we are looking for the rightmost parenthesis node
+   at the second level, the first level always being a single
+   parenthesis node.  If this node doesn't exit, we use the top
+   level. */
 
 static void
 revert (st_parameter_dt *dtp)
@@ -1360,12 +1360,12 @@ parse_format (st_parameter_dt *dtp)
 
 
 /* next_format0()-- Get the next format node without worrying about
- * reversion.  Returns NULL when we hit the end of the list.
- * Parenthesis nodes are incremented after the list has been
- * exhausted, other nodes are incremented before they are returned. */
+   reversion.  Returns NULL when we hit the end of the list.
+   Parenthesis nodes are incremented after the list has been
+   exhausted, other nodes are incremented before they are returned. */
 
 static const fnode *
-next_format0 (fnode * f)
+next_format0 (fnode *f)
 {
   const fnode *r;
 
@@ -1418,11 +1418,11 @@ next_format0 (fnode * f)
 
 
 /* next_format()-- Return the next format node.  If the format list
- * ends up being exhausted, we do reversion.  Reversion is only
- * allowed if we've seen a data descriptor since the
- * initialization or the last reversion.  We return NULL if there
- * are no more data descriptors to return (which is an error
- * condition). */
+   ends up being exhausted, we do reversion.  Reversion is only
+   allowed if we've seen a data descriptor since the
+   initialization or the last reversion.  We return NULL if there
+   are no more data descriptors to return (which is an error
+   condition).  */
 
 const fnode *
 next_format (st_parameter_dt *dtp)
@@ -1455,7 +1455,7 @@ next_format (st_parameter_dt *dtp)
 	}
 
       /* Push the first reverted token and return a colon node in case
-       * there are no more data items. */
+	 there are no more data items.  */
 
       fmt->saved_format = f;
       return &colon_node;
@@ -1475,11 +1475,11 @@ next_format (st_parameter_dt *dtp)
 
 
 /* unget_format()-- Push the given format back so that it will be
- * returned on the next call to next_format() without affecting
- * counts.  This is necessary when we've encountered a data
- * descriptor, but don't know what the data item is yet.  The format
- * node is pushed back, and we return control to the main program,
- * which calls the library back with the data item (or not). */
+   returned on the next call to next_format() without affecting
+   counts.  This is necessary when we've encountered a data
+   descriptor, but don't know what the data item is yet.  The format
+   node is pushed back, and we return control to the main program,
+   which calls the library back with the data item (or not). */
 
 void
 unget_format (st_parameter_dt *dtp, const fnode *f)

@@ -33,7 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 
 void
-fbuf_init (gfc_unit * u, int len)
+fbuf_init (gfc_unit *u, int len)
 {
   if (len == 0)
     len = 512;			/* Default size.  */
@@ -46,7 +46,7 @@ fbuf_init (gfc_unit * u, int len)
 
 
 void
-fbuf_destroy (gfc_unit * u)
+fbuf_destroy (gfc_unit *u)
 {
   if (u->fbuf == NULL)
     return;
@@ -58,7 +58,7 @@ fbuf_destroy (gfc_unit * u)
 
 static void
 #ifdef FBUF_DEBUG
-fbuf_debug (gfc_unit * u, const char * format, ...)
+fbuf_debug (gfc_unit *u, const char *format, ...)
 {
   va_list args;
   va_start(args, format);
@@ -73,8 +73,8 @@ fbuf_debug (gfc_unit * u, const char * format, ...)
   fprintf (stderr, "''\n");
 }
 #else
-fbuf_debug (gfc_unit * u __attribute__ ((unused)),
-            const char * format __attribute__ ((unused)),
+fbuf_debug (gfc_unit *u __attribute__ ((unused)),
+            const char *format __attribute__ ((unused)),
             ...) {}
 #endif
 
@@ -85,7 +85,7 @@ fbuf_debug (gfc_unit * u __attribute__ ((unused)),
    modified.  */
 
 int
-fbuf_reset (gfc_unit * u)
+fbuf_reset (gfc_unit *u)
 {
   int seekval = 0;
 
@@ -111,7 +111,7 @@ fbuf_reset (gfc_unit * u)
    reallocating if necessary.  */
 
 char *
-fbuf_alloc (gfc_unit * u, int len)
+fbuf_alloc (gfc_unit *u, int len)
 {
   int newlen;
   char *dest;
@@ -119,7 +119,7 @@ fbuf_alloc (gfc_unit * u, int len)
   if (u->fbuf->pos + len > u->fbuf->len)
     {
       /* Round up to nearest multiple of the current buffer length.  */
-      newlen = ((u->fbuf->pos + len) / u->fbuf->len + 1) * u->fbuf->len;
+      newlen = ((u->fbuf->pos + len) / u->fbuf->len + 1) *u->fbuf->len;
       u->fbuf->buf = xrealloc (u->fbuf->buf, newlen);
       u->fbuf->len = newlen;
     }
@@ -136,7 +136,7 @@ fbuf_alloc (gfc_unit * u, int len)
    mode. Return value is 0 for success, -1 on failure.  */
 
 int
-fbuf_flush (gfc_unit * u, unit_mode mode)
+fbuf_flush (gfc_unit *u, unit_mode mode)
 {
   int nwritten;
 
@@ -175,7 +175,7 @@ fbuf_flush (gfc_unit * u, unit_mode mode)
    Return value is 0 for success, -1 on failure.  */
 
 int
-fbuf_flush_list (gfc_unit * u, unit_mode mode)
+fbuf_flush_list (gfc_unit *u, unit_mode mode)
 {
   int nwritten;
 
@@ -207,7 +207,7 @@ fbuf_flush_list (gfc_unit * u, unit_mode mode)
 
 
 int
-fbuf_seek (gfc_unit * u, int off, int whence)
+fbuf_seek (gfc_unit *u, int off, int whence)
 {
   if (!u->fbuf)
     return -1;
@@ -248,7 +248,7 @@ fbuf_seek (gfc_unit * u, int off, int whence)
    of bytes actually processed. */
 
 char *
-fbuf_read (gfc_unit * u, int * len)
+fbuf_read (gfc_unit *u, int *len)
 {
   char *ptr;
   int oldact, oldpos;
@@ -279,7 +279,7 @@ fbuf_read (gfc_unit * u, int * len)
    reading. Never call this function directly.  */
 
 int
-fbuf_getc_refill (gfc_unit * u)
+fbuf_getc_refill (gfc_unit *u)
 {
   int nread;
   char *p;

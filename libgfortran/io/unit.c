@@ -141,11 +141,11 @@ __gthread_mutex_t old_locale_lock;
 
 
 /* This implementation is based on Stefan Nilsson's article in the
- * July 1997 Doctor Dobb's Journal, "Treaps in Java". */
+   July 1997 Doctor Dobb's Journal, "Treaps in Java". */
 
 /* pseudo_random()-- Simple linear congruential pseudorandom number
- * generator.  The period of this generator is 44071, which is plenty
- * for our purposes.  */
+   generator.  The period of this generator is 44071, which is plenty
+   for our purposes.  */
 
 static int
 pseudo_random (void)
@@ -160,7 +160,7 @@ pseudo_random (void)
 /* rotate_left()-- Rotate the treap left */
 
 static gfc_unit *
-rotate_left (gfc_unit * t)
+rotate_left (gfc_unit *t)
 {
   gfc_unit *temp;
 
@@ -175,7 +175,7 @@ rotate_left (gfc_unit * t)
 /* rotate_right()-- Rotate the treap right */
 
 static gfc_unit *
-rotate_right (gfc_unit * t)
+rotate_right (gfc_unit *t)
 {
   gfc_unit *temp;
 
@@ -257,7 +257,7 @@ insert_unit (int n)
 /* destroy_unit_mutex()-- Destroy the mutex and free memory of unit.  */
 
 static void
-destroy_unit_mutex (gfc_unit * u)
+destroy_unit_mutex (gfc_unit *u)
 {
   __gthread_mutex_destroy (&u->lock);
   free (u);
@@ -265,7 +265,7 @@ destroy_unit_mutex (gfc_unit * u)
 
 
 static gfc_unit *
-delete_root (gfc_unit * t)
+delete_root (gfc_unit *t)
 {
   gfc_unit *temp;
 
@@ -290,12 +290,12 @@ delete_root (gfc_unit * t)
 
 
 /* delete_treap()-- Delete an element from a tree.  The 'old' value
- * does not necessarily have to point to the element to be deleted, it
- * must just point to a treap structure with the key to be deleted.
- * Returns the new root node of the tree. */
+   does not necessarily have to point to the element to be deleted, it
+   must just point to a treap structure with the key to be deleted.
+   Returns the new root node of the tree. */
 
 static gfc_unit *
-delete_treap (gfc_unit * old, gfc_unit * t)
+delete_treap (gfc_unit *old, gfc_unit *t)
 {
   int c;
 
@@ -318,15 +318,15 @@ delete_treap (gfc_unit * old, gfc_unit * t)
 /* delete_unit()-- Delete a unit from a tree */
 
 static void
-delete_unit (gfc_unit * old)
+delete_unit (gfc_unit *old)
 {
   unit_root = delete_treap (old, unit_root);
 }
 
 
 /* get_gfc_unit()-- Given an integer, return a pointer to the unit
- * structure.  Returns NULL if the unit does not exist,
- * otherwise returns a locked unit. */
+   structure.  Returns NULL if the unit does not exist,
+   otherwise returns a locked unit. */
 
 static gfc_unit *
 get_gfc_unit (int n, int do_create)
@@ -560,7 +560,7 @@ stash_internal_unit (st_parameter_dt *dtp)
 gfc_unit *
 get_unit (st_parameter_dt *dtp, int do_create)
 {
-  gfc_unit * unit;
+  gfc_unit *unit;
 
   if ((dtp->common.flags & IOPARM_DT_HAS_INTERNAL_UNIT) != 0)
     {
@@ -852,7 +852,7 @@ close_units (void)
    ftruncate, returns 0 on success, -1 on failure.  */
 
 int
-unit_truncate (gfc_unit * u, gfc_offset pos, st_parameter_common * common)
+unit_truncate (gfc_unit *u, gfc_offset pos, st_parameter_common *common)
 {
   int ret;
 

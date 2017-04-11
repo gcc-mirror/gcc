@@ -46,7 +46,7 @@ st_close (st_parameter_close *clp)
   close_status status;
   gfc_unit *u;
 #if !HAVE_UNLINK_OPEN_FILE
-  char * path;
+  char *path;
 
   path = NULL;
 #endif

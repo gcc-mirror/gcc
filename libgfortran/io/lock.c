@@ -41,7 +41,7 @@ library_start (st_parameter_common *cmp)
 void
 free_ionml (st_parameter_dt *dtp)
 {
-  namelist_info * t1, *t2;
+  namelist_info *t1, *t2;
 
   /* Delete the namelist, if it exists.  */
 
