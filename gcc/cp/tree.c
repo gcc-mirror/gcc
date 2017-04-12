@@ -949,6 +949,13 @@ build_cplus_array_type (tree elt_type, tree index_type)
   else
     {
       t = build_array_type (elt_type, index_type);
+      if (elt_type == unsigned_char_type_node
+	  || elt_type == signed_char_type_node
+	  || elt_type == char_type_node
+	  || (TREE_CODE (elt_type) == ENUMERAL_TYPE
+	      && TYPE_CONTEXT (elt_type) == std_node
+	      && !strcmp ("byte", TYPE_NAME_STRING (elt_type))))
+	TYPE_TYPELESS_STORAGE (t) = 1;
     }
 
   /* Now check whether we already have this array variant.  */
@@ -972,6 +979,7 @@ build_cplus_array_type (tree elt_type, tree index_type)
 		 as it will overwrite alignment etc. of all variants.  */
 	      TYPE_SIZE (t) = TYPE_SIZE (m);
 	      TYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (m);
+	      TYPE_TYPELESS_STORAGE (t) = TYPE_TYPELESS_STORAGE (m);
 	    }
 
 	  TYPE_MAIN_VARIANT (t) = m;

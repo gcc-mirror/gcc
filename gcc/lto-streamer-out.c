@@ -1143,6 +1143,8 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 	}
       else if (code == ARRAY_TYPE)
 	hstate.add_flag (TYPE_NONALIASED_COMPONENT (t));
+      if (AGGREGATE_TYPE_P (t))
+	hstate.add_flag (TYPE_TYPELESS_STORAGE (t));
       hstate.commit_flag ();
       hstate.add_int (TYPE_PRECISION (t));
       hstate.add_int (TYPE_ALIGN (t));

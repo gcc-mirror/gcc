@@ -1,3 +1,10 @@
+2017-04-12  Richard Biener  <rguenther@suse.de>
+	Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/79671
+	* tree.c (build_cplus_array_type): Set TYPE_TYPELESS_STORAGE
+	for arrays of character or std::byte type.
+
 2017-04-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80294 - ICE with constexpr and inheritance.

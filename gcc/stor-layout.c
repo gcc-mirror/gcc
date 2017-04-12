@@ -1091,6 +1091,10 @@ place_union_field (record_layout_info rli, tree field)
   if (TREE_CODE (TREE_TYPE (field)) == ERROR_MARK)
     return;
 
+  if (AGGREGATE_TYPE_P (TREE_TYPE (field))
+      && TYPE_TYPELESS_STORAGE (TREE_TYPE (field)))
+    TYPE_TYPELESS_STORAGE (rli->t) = 1;
+
   /* We assume the union's size will be a multiple of a byte so we don't
      bother with BITPOS.  */
   if (TREE_CODE (rli->t) == UNION_TYPE)
@@ -1167,6 +1171,10 @@ place_field (record_layout_info rli, tree field)
       SET_DECL_OFFSET_ALIGN (field, rli->offset_align);
       return;
     }
+
+  if (AGGREGATE_TYPE_P (type)
+      && TYPE_TYPELESS_STORAGE (type))
+    TYPE_TYPELESS_STORAGE (rli->t) = 1;
 
   /* Work out the known alignment so far.  Note that A & (-A) is the
      value of the least-significant bit in A that is one.  */
@@ -2340,6 +2348,8 @@ layout_type (tree type)
 		SET_TYPE_MODE (type, BLKmode);
 	      }
 	  }
+	if (AGGREGATE_TYPE_P (element))
+	  TYPE_TYPELESS_STORAGE (type) = TYPE_TYPELESS_STORAGE (element);
 	/* When the element size is constant, check that it is at least as
 	   large as the element alignment.  */
 	if (TYPE_SIZE_UNIT (element)
