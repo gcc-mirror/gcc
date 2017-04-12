@@ -1,13 +1,21 @@
 2017-04-12  Nathan Sidwell  <nathan@acm.org>
 
-	Separating namespace bindings part 18
+	Unifying binding push part 4
+	gcc/cp/
+	* name-lookup.c (namespace_push_binding, local_push_binding):
+	Don't dup decls here. Deal with using.
+	(do_pushdecl): Adjust.
+	gcc/testsuite/
+	* g++.dg/lookup/using58.C: New.
+
+	Unifying binding push part 3
 	gcc/cp/
 	* name-lookup.c (create_local_binding) New.
 	(do_local_push_overload): Turn into ...
 	(local_push_binding): ... this.
 	(do_pushdecl): Adjust.
 
-	Separating namespace bindings part 17
+	Unifying binding push part 2
 	gcc/cp/
 	* name-lookup.c (create_namespace_binding) New.
 	(find_namespace_binding): Use it.
@@ -15,7 +23,7 @@
 	(namespace_push_binding): ... this.
 	(do_pusdecl): Adjust
 
-	Separating namespace bindings part 16
+	Unifying binding push part 1
 	gcc/cp/
 	* name-lookup.c (do_pusdecl): Skip using decls.  Retain namespace.
 

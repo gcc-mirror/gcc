@@ -35,8 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool supplement_binding (cxx_binding *binding, tree decl);
 static cxx_binding *cxx_binding_make (tree value, tree type);
-static tree local_push_binding (cp_binding_level *level,
-				tree old, tree decl, bool is_friend);
+static tree local_push_binding (cp_binding_level *level, tree old, tree decl);
 static cp_binding_level *innermost_nonclass_level (void);
 
 /* Create a new binding for NAME in namespace NS.  */
@@ -1645,7 +1644,7 @@ matching_fn_p (tree one, tree two)
    decl.  */
 
 static tree
-namespace_push_binding (cxx_binding *binding, tree decl, bool is_friend)
+namespace_push_binding (cxx_binding *binding, tree decl)
 {
   if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
     ; /* Do nothing.  */
@@ -1678,31 +1677,19 @@ namespace_push_binding (cxx_binding *binding, tree decl, bool is_friend)
 	      tree fn = *iter;
 
 	      if (iter.via_using_p ()
-		  && matching_fn_p (fn, decl)
-		  && ! decls_match (fn, decl))
-		diagnose_name_conflict (decl, fn);
-
-	      // FIXME: when overloads are properly ordered,
-	      // bail out early
-	      if (iter.hidden_p () || iter.via_using_p ())
+		  && matching_fn_p (fn, decl))
 		{
-		  tree dup = duplicate_decls (decl, fn, is_friend);
-		  if (dup == error_mark_node)
-		    return dup;
-		  if (dup == fn)
-		    {
-		      if (!iter.hidden_p ())
-			/* We might have tried to push a
-			   hidden decl that matched a
-			   non-hidden one.  Don't allow that
-			   to hide the decl.  */
-			DECL_ANTICIPATED (dup) = false;
-		      else if (!DECL_HIDDEN_P (dup))
-			/* The name has become unhidden.
-			   Fixup the overload chain.  */
-			binding->value = iter.unhide (old);
-		      return dup;
-		    }
+		  /* If a function declaration in namespace scope or
+		     block scope has the same name and the same
+		     parameter-type- list (8.3.5) as a function
+		     introduced by a using-declaration, and the
+		     declarations do not declare the same function,
+		     the program is ill-formed.  [namespace.udecl]/14 */
+		  if (decls_match (fn, decl))
+		    // FIXME: turn using into non-using?
+		    return fn;
+		  else
+		    diagnose_name_conflict (decl, fn);
 		}
 	    }
 	  /* We don't overload implicit built-ins.
@@ -2187,9 +2174,10 @@ do_pushdecl (tree decl, bool is_friend)
 	old = NULL_TREE;
 
       for (ovl_iterator iter (old); iter; ++iter)
-	if (iter.hidden_p () && DECL_IS_BUILTIN (*iter))
-	  ; /* Anticipated builtins are treated as new decls.  */
-	else if (iter.via_using_p ())
+	if (iter.via_using_p ())
+	  // FIXME: when overloads are in maintained ordering, we can
+	  // check usings here too and avoid the scan when actually
+	  // pushing the decl.
 	  ; /* Ignore using decls here.  */
 	else if (tree match = duplicate_decls (decl, *iter, is_friend))
 	  {
@@ -2247,11 +2235,11 @@ do_pushdecl (tree decl, bool is_friend)
 	      ns = current_namespace;
 	      ns_binding = create_namespace_binding (ns, name);
 	    }
-	  old = namespace_push_binding (ns_binding, decl, is_friend);
+	  old = namespace_push_binding (ns_binding, decl);
 	}
       else
 	{
-	  old = local_push_binding (binding_level, old, decl, is_friend);
+	  old = local_push_binding (binding_level, old, decl);
 	  /* Because push_local_binding will hook DECL on to the
 	     current_binding_level's name list, we don't want to do
 	     that again below.  */
@@ -3264,8 +3252,7 @@ augment_local_overload_binding (tree name, bool is_using,
    level.  */
 
 static tree
-local_push_binding (cp_binding_level *level,
-		    tree old, tree decl, bool is_friend)
+local_push_binding (cp_binding_level *level, tree old, tree decl)
 {
   tree to_push = decl;
 
@@ -3291,21 +3278,12 @@ local_push_binding (cp_binding_level *level,
 	      tree fn = *iter;
 
 	      if (iter.via_using_p ()
-		  && matching_fn_p (fn, decl)
-		  && ! decls_match (fn, decl))
-		diagnose_name_conflict (decl, fn);
-
-	      if (iter.hidden_p () || iter.via_using_p ())
+		  && matching_fn_p (fn, decl))
 		{
-		  tree dup = duplicate_decls (decl, fn, is_friend);
-		  if (dup == error_mark_node)
-		    return dup;
-		  if (dup == fn)
-		    {
-		      gcc_assert (!iter.hidden_p ()
-				  && !DECL_HIDDEN_P (dup));
-		      return dup;
-		    }
+		  if (decls_match (fn, decl))
+		    return fn;
+		  else
+		    diagnose_name_conflict (decl, fn);
 		}
 	    }
 	}
