@@ -1,3 +1,9 @@
+2017-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79390
+	* gimple-ssa-split-paths.c (is_feasible_trace): Restrict
+	threading case even more.
+
 2017-04-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/80382
