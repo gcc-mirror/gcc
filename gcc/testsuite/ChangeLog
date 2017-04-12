@@ -1,3 +1,11 @@
+2017-04-12  Richard Biener  <rguenther@suse.de>
+	Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/79671
+	* g++.dg/torture/pr79671.C: New testcase.
+	* g++.dg/lto/pr79671_0.C: Likewise.
+	* g++.dg/lto/pr79671_1.c: Likewise.
+
 2017-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/80349

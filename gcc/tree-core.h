@@ -1511,7 +1511,9 @@ struct GTY(()) tree_type_common {
      so we need to store the value 32 (not 31, as we need the zero
      as well), hence six bits.  */
   unsigned align : 6;
-  unsigned spare : 25;
+  unsigned typeless_storage : 1;
+  unsigned spare : 24;
+
   alias_set_type alias_set;
   tree pointer_to;
   tree reference_to;

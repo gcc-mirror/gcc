@@ -1,3 +1,21 @@
+2017-04-12  Richard Biener  <rguenther@suse.de>
+	Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/79671
+	* alias.c (component_uses_parent_alias_set_from): Handle
+	TYPE_TYPELESS_STORAGE.
+	(get_alias_set): Likewise.
+	* tree-core.h (tree_type_common): Add typeless_storage flag.
+	* tree.h (TYPE_TYPELESS_STORAGE): New macro.
+	* stor-layout.c (place_union_field): Set TYPE_TYPELESS_STORAGE
+	for types containing members with TYPE_TYPELESS_STORAGE.
+	(place_field): Likewise.
+	(layout_type): Likewise for ARRAY_TYPE.
+	* lto-streamer-out.c (hash_tree): Hash TYPE_TYPELESS_STORAGE.
+	* tree-streamer-in.c (unpack_ts_type_common_value_fields): Stream
+	TYPE_TYPELESS_STORAGE.
+	* tree-streamer-out.c (pack_ts_type_common_value_fields): Likewise.
+
 2017-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/80349

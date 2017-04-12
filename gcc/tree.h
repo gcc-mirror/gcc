@@ -2035,6 +2035,13 @@ extern machine_mode element_mode (const_tree t);
 #define TYPE_NONALIASED_COMPONENT(NODE) \
   (ARRAY_TYPE_CHECK (NODE)->type_common.transparent_aggr_flag)
 
+/* For an ARRAY_TYPE, a RECORD_TYPE, a UNION_TYPE or a QUAL_UNION_TYPE
+   whether the array is typeless storage or the type contains a member
+   with this flag set.  Such types are excempt from type-based alias
+   analysis.  */
+#define TYPE_TYPELESS_STORAGE(NODE) \
+  (TREE_CHECK4 (NODE, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE, ARRAY_TYPE)->type_common.typeless_storage)
+
 /* Indicated that objects of this type should be laid out in as
    compact a way as possible.  */
 #define TYPE_PACKED(NODE) (TYPE_CHECK (NODE)->base.u.bits.packed_flag)
