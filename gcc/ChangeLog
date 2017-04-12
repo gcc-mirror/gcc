@@ -1,3 +1,9 @@
+2017-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/80349
+	* fold-const.c (fold_binary_loc) <case BIT_IOR_EXPR>: Convert arg0's
+	first argument to type.
+
 2017-04-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/80376
