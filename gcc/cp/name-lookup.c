@@ -2126,6 +2126,7 @@ do_pushdecl (tree decl, bool is_friend)
 
   if (tree name = DECL_NAME (decl))
     {
+      tree ns = NULL_TREE; /* Searched namespace.  */
       tree old;
 
       if (binding_level->kind == sk_namespace)
@@ -2133,8 +2134,8 @@ do_pushdecl (tree decl, bool is_friend)
 	  /* We look in the decl's namespace for an existing
 	     declaration, even though we push into the current
 	     namespace.  */
-	  tree ns = (DECL_NAMESPACE_SCOPE_P (decl)
-		     ? CP_DECL_CONTEXT (decl) : current_namespace);
+	  ns = (DECL_NAMESPACE_SCOPE_P (decl)
+		? CP_DECL_CONTEXT (decl) : current_namespace);
 	  old = find_namespace_value (ns, name);
 	}
       else
@@ -2150,7 +2151,8 @@ do_pushdecl (tree decl, bool is_friend)
       for (ovl_iterator iter (old); iter; ++iter)
 	if (iter.hidden_p () && DECL_IS_BUILTIN (*iter))
 	  ; /* Anticipated builtins are treated as new decls.  */
-      // FIXME: using decls?
+	else if (iter.via_using_p ())
+	  ; /* Ignore using decls here.  */
 	else if (tree match = duplicate_decls (decl, *iter, is_friend))
 	  {
 	    if (match == error_mark_node)
@@ -2161,11 +2163,7 @@ do_pushdecl (tree decl, bool is_friend)
 		/* Unhiding a previously hidden friend.  */
 		tree head = iter.unhide (old);
 		if (head != old)
-		  old = fixup_unhidden_decl
-		    (name,
-		     DECL_NAMESPACE_SCOPE_P (match)
-		     && namespace_bindings_p ()
-		     ? CP_DECL_CONTEXT (match) : NULL_TREE, old, head);
+		  fixup_unhidden_decl (name, ns, old, head);
 	      }
 
 	    return match;
@@ -2197,7 +2195,16 @@ do_pushdecl (tree decl, bool is_friend)
 
       old = decl;
 
-      if (namespace_bindings_p ())
+      if (binding_level->kind != sk_namespace)
+	{
+	  check_local_shadow (decl);
+
+	  if (TREE_CODE (decl) == NAMESPACE_DECL)
+	    /* A local namespace alias.  */
+	    set_identifier_type_value (name, NULL_TREE);
+	}
+
+      if (binding_level->kind == sk_namespace)
 	{
 	  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
 	    ;
@@ -2209,17 +2216,11 @@ do_pushdecl (tree decl, bool is_friend)
 	}
       else
 	{
-	  check_local_shadow (decl);
-
-	  if (TREE_CODE (decl) == NAMESPACE_DECL)
-	    /* A local namespace alias.  */
-	    set_identifier_type_value (name, NULL_TREE);
-
 	  if (DECL_DECLARES_FUNCTION_P (decl))
 	    old = do_local_push_overload (decl, is_friend);
 	  else
 	    push_local_binding (name, decl, false);
-	  /* Because push_local_binding will hook X on to the
+	  /* Because push_local_binding will hook DECL on to the
 	     current_binding_level's name list, we don't want to do
 	     that again below.  */
 	  need_new_binding = false;
@@ -2227,6 +2228,7 @@ do_pushdecl (tree decl, bool is_friend)
 
       if (old != decl)
 	{
+	  // FIXME This comment may be inaccurate
 	  /* This happens if we uncover a hidden builtin.  Duplicate
 	     decls will have eaten the builtin, so we do not want to
 	     link it in again, but we do want to do the other
@@ -2254,14 +2256,13 @@ do_pushdecl (tree decl, bool is_friend)
 	  if (!instantiating_current_function_p ())
 	    record_locally_defined_typedef (decl);
 	}
-
-      if (VAR_P (decl))
+      else if (VAR_P (decl))
 	maybe_register_incomplete_var (decl);
     }
 
   if (!need_new_binding)
     ;
-  else if (namespace_bindings_p ())
+  else if (binding_level->kind == sk_namespace)
     add_namespace_decl (current_namespace, decl);
   else
     add_local_decl (current_binding_level, decl);

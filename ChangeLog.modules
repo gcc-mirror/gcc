@@ -1,3 +1,9 @@
+2017-04-12  Nathan Sidwell  <nathan@acm.org>
+
+	Separating namespace bindings part 16
+	gcc/cp/
+	* name-lookup.c (do_pusdecl): Skip using decls.  Retain namespace.
+
 2017-04-11  Nathan Sidwell  <nathan@acm.org>
 
 	Separating namespace bindings part 15
