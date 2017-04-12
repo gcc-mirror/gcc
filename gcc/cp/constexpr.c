@@ -378,6 +378,9 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
   if (TREE_CODE (member) == COMPONENT_REF)
     {
       tree aggr = TREE_OPERAND (member, 0);
+      if (TREE_CODE (aggr) == VAR_DECL)
+	/* Initializing a local variable, don't add anything.  */
+	return true;
       if (TREE_CODE (aggr) != COMPONENT_REF)
 	/* Normal member initialization.  */
 	member = TREE_OPERAND (member, 1);
