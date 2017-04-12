@@ -1,5 +1,6 @@
 2017-04-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	PR target/80382
 	* config/rs6000/sync.md (atomic_load<mode>, atomic_store<mode): Test
 	for quad_address_p for TImode, instead of just not indexed_address.
 
