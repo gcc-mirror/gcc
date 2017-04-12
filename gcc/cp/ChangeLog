@@ -1,5 +1,9 @@
 2017-04-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/79566 - elaborated-type-specifier in range for
+	* parser.c (cp_parser_simple_declaration): Fix check for type
+	definition.
+
 	PR c++/79580 - ICE with compound literal
 	* parser.c (cp_parser_class_head): If we're in the middle of an
 	expression, use ts_within_enclosing_non_class.
