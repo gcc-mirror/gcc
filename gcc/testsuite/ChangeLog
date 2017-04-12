@@ -1,5 +1,8 @@
 2017-04-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/79390
+	* gcc.target/i386/pr70465-2.c: Xfail the scan-assembler-not test.
+
 	PR sanitizer/80403
 	PR sanitizer/80404
 	PR sanitizer/80405
