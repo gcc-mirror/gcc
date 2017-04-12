@@ -6465,7 +6465,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       if (complain & tf_error)
 	{
 	  /* Call build_user_type_conversion again for the error.  */
-	  build_user_type_conversion (totype, convs->u.expr, LOOKUP_NORMAL,
+	  build_user_type_conversion (totype, convs->u.expr, LOOKUP_IMPLICIT,
 				      complain);
 	  if (fn)
 	    inform (DECL_SOURCE_LOCATION (fn),
