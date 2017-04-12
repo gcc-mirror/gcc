@@ -8333,7 +8333,8 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	}
 
       else if (modifier == EXPAND_INITIALIZER)
-	op0 = gen_rtx_fmt_e (unsignedp ? ZERO_EXTEND : SIGN_EXTEND, mode, op0);
+	op0 = gen_rtx_fmt_e (TYPE_UNSIGNED (TREE_TYPE (treeop0))
+			     ? ZERO_EXTEND : SIGN_EXTEND, mode, op0);
 
       else if (target == 0)
 	op0 = convert_to_mode (mode, op0,
