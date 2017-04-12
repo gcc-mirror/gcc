@@ -1,5 +1,9 @@
 2017-04-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/78282 - auto template and pack expansion
+	* pt.c (find_parameter_packs_r): Don't walk into the type of
+	templates other than template template-parameters.
+
 	PR c++/79607 - ICE with T{} initializer
 	* decl.c (type_dependent_init_p): Check the type of a CONSTRUCTOR.
 
