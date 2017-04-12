@@ -1,5 +1,8 @@
 2017-04-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/77563 - missing ambiguous conversion error.
+	* call.c (convert_like_real): Use LOOKUP_IMPLICIT.
+
 	PR c++/79519 - ICE with deleted template friend.
 	* decl.c (grokdeclarator): Complain about misplaced function
 	definition using =, as well.
