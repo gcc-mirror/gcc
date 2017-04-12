@@ -1,3 +1,8 @@
+2017-04-12  Jeff Law  <law@redhat.com>
+
+	* config/cris/cris.md (cris_preferred_reload_class): Return
+	GENNONACR_REGS rather than GENERAL_REGS.
+
 2017-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/80163
