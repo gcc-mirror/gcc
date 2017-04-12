@@ -1,5 +1,9 @@
 2017-04-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80043 - ICE with -fpermissive
+	* typeck.c (convert_for_assignment): Handle instantiate_type
+	not giving an error.
+
 	PR c++/78282 - auto template and pack expansion
 	* pt.c (find_parameter_packs_r): Don't walk into the type of
 	templates other than template template-parameters.

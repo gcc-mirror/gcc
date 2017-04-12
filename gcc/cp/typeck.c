@@ -8343,7 +8343,12 @@ convert_for_assignment (tree type, tree rhs,
 		 overloaded function.  Call instantiate_type to get error
 		 messages.  */
 	      if (rhstype == unknown_type_node)
-		instantiate_type (type, rhs, tf_warning_or_error);
+		{
+		  tree r = instantiate_type (type, rhs, tf_warning_or_error);
+		  /* -fpermissive might allow this.  */
+		  if (!seen_error ())
+		    return r;
+		}
 	      else if (fndecl)
 		error ("cannot convert %qT to %qT for argument %qP to %qD",
 		       rhstype, type, parmnum, fndecl);
