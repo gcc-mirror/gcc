@@ -1,11 +1,16 @@
+2017-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/80163
+	* gcc.dg/torture/pr80163.c: New test.
+
 2017-04-12  Richard Biener  <rguenther@suse.de>
-	Jeff Law  <law@redhat.com>
+	    Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/80359
 	* gcc.dg/torture/pr80359.c: New testcase.
 
 2017-04-12  Richard Biener  <rguenther@suse.de>
-	Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR middle-end/79671
 	* g++.dg/torture/pr79671.C: New testcase.

@@ -1,5 +1,12 @@
+2017-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/80163
+	* expr.c <CASE_CONVERT>: For EXPAND_INITIALIZER determine SIGN_EXTEND
+	vs. ZERO_EXTEND based on signedness of treeop0's type rather than
+	signedness of the result type.
+
 2017-04-12  Richard Biener  <rguenther@suse.de>
-	Jeff Law  <law@redhat.com>
+	    Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/80359
 	* tree-ssa-dse.c (maybe_trim_partially_dead_store): Do not
@@ -18,7 +25,7 @@
 	for quad_address_p for TImode, instead of just not indexed_address.
 
 2017-04-12  Richard Biener  <rguenther@suse.de>
-	Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR middle-end/79671
 	* alias.c (component_uses_parent_alias_set_from): Handle
