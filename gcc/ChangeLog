@@ -1,5 +1,10 @@
 2017-04-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/79390
+	* optabs.c (emit_conditional_move): If the preferred op2/op3 operand
+	order does not result in usable sequence, retry with reversed operand
+	order.
+
 	PR sanitizer/80403
 	PR sanitizer/80404
 	PR sanitizer/80405

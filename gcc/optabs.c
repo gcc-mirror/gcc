@@ -4258,12 +4258,15 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
   if (cmode == VOIDmode)
     cmode = GET_MODE (op0);
 
+  enum rtx_code orig_code = code;
+  bool swapped = false;
   if (swap_commutative_operands_p (op2, op3)
       && ((reversed = reversed_comparison_code_parts (code, op0, op1, NULL))
           != UNKNOWN))
     {
       std::swap (op2, op3);
       code = reversed;
+      swapped = true;
     }
 
   if (mode == VOIDmode)
@@ -4272,45 +4275,62 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
   icode = direct_optab_handler (movcc_optab, mode);
 
   if (icode == CODE_FOR_nothing)
-    return 0;
+    return NULL_RTX;
 
   if (!target)
     target = gen_reg_rtx (mode);
 
-  code = unsignedp ? unsigned_condition (code) : code;
-  comparison = simplify_gen_relational (code, VOIDmode, cmode, op0, op1);
-
-  /* We can get const0_rtx or const_true_rtx in some circumstances.  Just
-     return NULL and let the caller figure out how best to deal with this
-     situation.  */
-  if (!COMPARISON_P (comparison))
-    return NULL_RTX;
-
-  saved_pending_stack_adjust save;
-  save_pending_stack_adjust (&save);
-  last = get_last_insn ();
-  do_pending_stack_adjust ();
-  prepare_cmp_insn (XEXP (comparison, 0), XEXP (comparison, 1),
-		    GET_CODE (comparison), NULL_RTX, unsignedp, OPTAB_WIDEN,
-		    &comparison, &cmode);
-  if (comparison)
+  for (int pass = 0; ; pass++)
     {
-      struct expand_operand ops[4];
+      code = unsignedp ? unsigned_condition (code) : code;
+      comparison = simplify_gen_relational (code, VOIDmode, cmode, op0, op1);
 
-      create_output_operand (&ops[0], target, mode);
-      create_fixed_operand (&ops[1], comparison);
-      create_input_operand (&ops[2], op2, mode);
-      create_input_operand (&ops[3], op3, mode);
-      if (maybe_expand_insn (icode, 4, ops))
+      /* We can get const0_rtx or const_true_rtx in some circumstances.  Just
+	 punt and let the caller figure out how best to deal with this
+	 situation.  */
+      if (COMPARISON_P (comparison))
 	{
-	  if (ops[0].value != target)
-	    convert_move (target, ops[0].value, false);
-	  return target;
+	  saved_pending_stack_adjust save;
+	  save_pending_stack_adjust (&save);
+	  last = get_last_insn ();
+	  do_pending_stack_adjust ();
+	  prepare_cmp_insn (XEXP (comparison, 0), XEXP (comparison, 1),
+			    GET_CODE (comparison), NULL_RTX, unsignedp,
+			    OPTAB_WIDEN, &comparison, &cmode);
+	  if (comparison)
+	    {
+	      struct expand_operand ops[4];
+
+	      create_output_operand (&ops[0], target, mode);
+	      create_fixed_operand (&ops[1], comparison);
+	      create_input_operand (&ops[2], op2, mode);
+	      create_input_operand (&ops[3], op3, mode);
+	      if (maybe_expand_insn (icode, 4, ops))
+		{
+		  if (ops[0].value != target)
+		    convert_move (target, ops[0].value, false);
+		  return target;
+		}
+	    }
+	  delete_insns_since (last);
+	  restore_pending_stack_adjust (&save);
 	}
+
+      if (pass == 1)
+	return NULL_RTX;
+
+      /* If the preferred op2/op3 order is not usable, retry with other
+	 operand order, perhaps it will expand successfully.  */
+      if (swapped)
+	code = orig_code;
+      else if ((reversed = reversed_comparison_code_parts (orig_code, op0, op1,
+							   NULL))
+	       != UNKNOWN)
+	code = reversed;
+      else
+	return NULL_RTX;
+      std::swap (op2, op3);
     }
-  delete_insns_since (last);
-  restore_pending_stack_adjust (&save);
-  return NULL_RTX;
 }
 
 
