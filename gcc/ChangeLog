@@ -1,5 +1,8 @@
 2017-04-12  Jeff Law  <law@redhat.com>
 
+	* genattrtab.c (write_eligible_delay): Verify DELAY_INSN still
+	has a delay slot in the generated code.
+
 	* config/cris/cris.md (cris_preferred_reload_class): Return
 	GENNONACR_REGS rather than GENERAL_REGS.
 
