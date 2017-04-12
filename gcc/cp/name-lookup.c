@@ -35,9 +35,24 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool supplement_binding (cxx_binding *binding, tree decl);
 static cxx_binding *cxx_binding_make (tree value, tree type);
-static tree do_namespace_push_overload (tree ns, tree decl, bool is_friend);
 static tree do_local_push_overload (tree decl, bool is_friend);
 static cp_binding_level *innermost_nonclass_level (void);
+
+/* Create a new binding for NAME in namespace NS.  */
+// FIXME: This of course should be a map
+
+static cxx_binding *
+create_namespace_binding (tree ns, tree name)
+{
+  cxx_binding *binding = cxx_binding_make (NULL, NULL);
+  binding->previous = IDENTIFIER_NAMESPACE_BINDINGS (name);
+  binding->scope = NAMESPACE_LEVEL (ns);
+  binding->is_local = false;
+  binding->value_is_inherited = false;
+  IDENTIFIER_NAMESPACE_BINDINGS (name) = binding;
+
+  return binding;
+}
 
 /* Return the binding for NAME in SCOPE, if any.  Otherwise, return NULL.  */
 // FIXME this should totally be a map
@@ -53,15 +68,7 @@ find_namespace_binding (tree ns, tree name, bool insert = false)
       return binding;
 
   if (insert)
-    {
-      /* Make a new binding.  */
-      binding = cxx_binding_make (NULL, NULL);
-      binding->previous = IDENTIFIER_NAMESPACE_BINDINGS (name);
-      binding->scope = scope;
-      binding->is_local = false;
-      binding->value_is_inherited = false;
-      IDENTIFIER_NAMESPACE_BINDINGS (name) = binding;
-    }
+    binding = create_namespace_binding (ns, name);
 
   return binding;
 }
@@ -1618,29 +1625,35 @@ matching_fn_p (tree one, tree two)
   return true;
 }
 
-/* DECL is a non-member function.  Push it into the overload set of NS
-   (or find it already there).  IS_FRIEND is true if this is a friend
-   declaration.  */
+/* Push DECL into BINDING.  Diagnose conflicts and return updated
+   decl.  */
 
 static tree
-do_namespace_push_overload (tree ns, tree decl, bool is_friend)
+namespace_push_binding (cxx_binding *binding, tree decl, bool is_friend)
 {
-  tree name = DECL_NAME (decl);
-  cxx_binding *binding = find_namespace_binding (ns, name, /*insert=*/true);
-
-  if (tree old = binding->value)
+  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
+    ; /* Do nothing.  */
+  else if (DECL_DECLARES_FUNCTION_P (decl))
     {
-      if (TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
+      tree old = binding->value;
+
+      if (!old)
+	;
+      else if (old == error_mark_node)
+	old = NULL_TREE;
+      else if (TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
 	{
-	  tree t = TREE_TYPE (old);
-	  if (MAYBE_CLASS_TYPE_P (t) && warn_shadow
-	      && (! DECL_IN_SYSTEM_HEADER (decl)
-		  || ! DECL_IN_SYSTEM_HEADER (old)))
-	    warning (OPT_Wshadow, "%q#D hides constructor for %q#T", decl, t);
+	  tree type = TREE_TYPE (old);
+	  if (MAYBE_CLASS_TYPE_P (type) && warn_shadow
+	      && (!DECL_IN_SYSTEM_HEADER (decl)
+		  || !DECL_IN_SYSTEM_HEADER (old)))
+	    warning (OPT_Wshadow, "%q#D hides constructor for %q#T",
+		     decl, type);
 
 	  /* Slide the typedecl out of the way.  */
 	  binding->type = old;
 	  binding->value = NULL_TREE;
+	  old = NULL_TREE;
 	}
       else if (OVL_P (old))
 	{
@@ -1653,47 +1666,51 @@ do_namespace_push_overload (tree ns, tree decl, bool is_friend)
 		  && ! decls_match (fn, decl))
 		diagnose_name_conflict (decl, fn);
 
-	      tree dup = duplicate_decls (decl, fn, is_friend);
-	      if (dup == error_mark_node)
-		return dup;
-	      if (dup == fn)
+	      // FIXME: when overloads are properly ordered,
+	      // bail out early
+	      if (iter.hidden_p () || iter.via_using_p ())
 		{
-		  if (!iter.hidden_p ())
-		    /* We might have tried to push a hidden decl that
-		       matched a non-hidden one.  Don't allow that to
-		       hide the decl.  */
-		    DECL_ANTICIPATED (dup) = false;
-		  else if (!DECL_HIDDEN_P (dup))
+		  tree dup = duplicate_decls (decl, fn, is_friend);
+		  if (dup == error_mark_node)
+		    return dup;
+		  if (dup == fn)
 		    {
-		      /* The name has become unhidden.  Fixup the
-			 overload chain.  */
-		      tree head = iter.unhide (old);
-		      if (head != old)
-			old = fixup_unhidden_decl
-			  (DECL_NAME (dup), ns, old, head);
+		      if (!iter.hidden_p ())
+			/* We might have tried to push a
+			   hidden decl that matched a
+			   non-hidden one.  Don't allow that
+			   to hide the decl.  */
+			DECL_ANTICIPATED (dup) = false;
+		      else if (!DECL_HIDDEN_P (dup))
+			/* The name has become unhidden.
+			   Fixup the overload chain.  */
+			binding->value = iter.unhide (old);
+		      return dup;
 		    }
-
-		  return dup;
 		}
 	    }
-
-	  /* We don't overload implicit built-ins.  duplicate_decls()
-	     may fail to merge the decls if the new decl is e.g. a
-	     template function.  */
+	  /* We don't overload implicit built-ins.
+	     duplicate_decls() may fail to merge the decls if
+	     the new decl is e.g. a template function.  */
 	  old = skip_anticipated_builtins (old);
 	}
-      else if (old == error_mark_node)
-	/* Ignore the undefined symbol marker.  */
-	old = NULL_TREE;
       else
 	{
 	  error ("previous non-function declaration %q+#D", old);
 	  error ("conflicts with function declaration %q#D", decl);
 	  return decl;
 	}
-    }
 
-  binding->value = ovl_add (binding->value, decl);
+      // FIXME: insert after using decls
+      binding->value = ovl_add (old, decl);
+    }
+  else
+    {
+      if (!binding->value)
+	binding->value = decl;
+      else
+	supplement_binding (binding, decl);
+    }
 
   return decl;
 }
@@ -2126,6 +2143,7 @@ do_pushdecl (tree decl, bool is_friend)
 
   if (tree name = DECL_NAME (decl))
     {
+      cxx_binding *ns_binding = NULL;
       tree ns = NULL_TREE; /* Searched namespace.  */
       tree old;
 
@@ -2136,7 +2154,11 @@ do_pushdecl (tree decl, bool is_friend)
 	     namespace.  */
 	  ns = (DECL_NAMESPACE_SCOPE_P (decl)
 		? CP_DECL_CONTEXT (decl) : current_namespace);
-	  old = find_namespace_value (ns, name);
+	  /* Create the binding, if this is current namespace, because
+	     that's where we'll be pushing anyway.  */
+	  ns_binding = find_namespace_binding (ns, name,
+					       ns == current_namespace);
+	  old = ns_binding ? ns_binding->value : NULL_TREE;
 	}
       else
 	old = find_local_value (binding_level, name);
@@ -2206,13 +2228,12 @@ do_pushdecl (tree decl, bool is_friend)
 
       if (binding_level->kind == sk_namespace)
 	{
-	  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
-	    ;
-	  else if (DECL_DECLARES_FUNCTION_P (decl))
-	    old = do_namespace_push_overload (current_namespace,
-					      decl, is_friend);
-	  else
-	    update_namespace_binding (current_namespace, name, decl);
+	  if (!ns_binding)
+	    {
+	      ns = current_namespace;
+	      ns_binding = create_namespace_binding (ns, name);
+	    }
+	  old = namespace_push_binding (ns_binding, decl, is_friend);
 	}
       else
 	{

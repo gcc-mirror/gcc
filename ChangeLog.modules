@@ -1,5 +1,13 @@
 2017-04-12  Nathan Sidwell  <nathan@acm.org>
 
+	Separating namespace bindings part 17
+	gcc/cp/
+	* name-lookup.c (create_namespace_binding) New.
+	(find_namespace_binding): Use it.
+	(do_namespace_push_overload): Convert to ...
+	(namespace_push_binding): ... this.
+	(do_pusdecl): Adjust
+
 	Separating namespace bindings part 16
 	gcc/cp/
 	* name-lookup.c (do_pusdecl): Skip using decls.  Retain namespace.
