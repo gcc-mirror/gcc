@@ -35,7 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool supplement_binding (cxx_binding *binding, tree decl);
 static cxx_binding *cxx_binding_make (tree value, tree type);
-static tree do_local_push_overload (tree decl, bool is_friend);
+static tree local_push_binding (cp_binding_level *level,
+				tree old, tree decl, bool is_friend);
 static cp_binding_level *innermost_nonclass_level (void);
 
 /* Create a new binding for NAME in namespace NS.  */
@@ -51,6 +52,21 @@ create_namespace_binding (tree ns, tree name)
   binding->value_is_inherited = false;
   IDENTIFIER_NAMESPACE_BINDINGS (name) = binding;
 
+  return binding;
+}
+
+static cxx_binding *
+create_local_binding (cp_binding_level *level, tree name)
+{
+  cxx_binding *binding = cxx_binding_make (NULL, NULL);
+
+  INHERITED_VALUE_BINDING_P (binding) = false;
+  LOCAL_BINDING_P (binding) = true;
+  binding->scope = level;
+  binding->previous = IDENTIFIER_BINDING (name);
+
+  IDENTIFIER_BINDING (name) = binding;
+  
   return binding;
 }
 
@@ -2215,8 +2231,6 @@ do_pushdecl (tree decl, bool is_friend)
 	    }
 	}
 
-      old = decl;
-
       if (binding_level->kind != sk_namespace)
 	{
 	  check_local_shadow (decl);
@@ -2237,10 +2251,7 @@ do_pushdecl (tree decl, bool is_friend)
 	}
       else
 	{
-	  if (DECL_DECLARES_FUNCTION_P (decl))
-	    old = do_local_push_overload (decl, is_friend);
-	  else
-	    push_local_binding (name, decl, false);
+	  old = local_push_binding (binding_level, old, decl, is_friend);
 	  /* Because push_local_binding will hook DECL on to the
 	     current_binding_level's name list, we don't want to do
 	     that again below.  */
@@ -3249,19 +3260,22 @@ augment_local_overload_binding (tree name, bool is_using,
     push_local_binding (name, newval, is_using);
 }
 
-/* DECL is a non-member function.  Push it into the overload set of
-   the local scope (or find it already there).  IS_FRIEND is true if
-   this is a friend declaration.  */
+/* Push DECL into local scope.  OLD is the existing binding at this
+   level.  */
 
 static tree
-do_local_push_overload (tree decl, bool is_friend)
+local_push_binding (cp_binding_level *level,
+		    tree old, tree decl, bool is_friend)
 {
-  tree name = DECL_NAME (decl);
-  tree old = lookup_name_innermost_nonclass_level (name);
+  tree to_push = decl;
 
-  if (old)
+  if (DECL_DECLARES_FUNCTION_P (decl))
     {
-      if (TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
+      if (!old)
+	;
+      else if (old == error_mark_node)
+	old = NULL_TREE;
+      else if (TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
 	{
 	  tree t = TREE_TYPE (old);
 	  if (MAYBE_CLASS_TYPE_P (t) && warn_shadow
@@ -3281,31 +3295,51 @@ do_local_push_overload (tree decl, bool is_friend)
 		  && ! decls_match (fn, decl))
 		diagnose_name_conflict (decl, fn);
 
-	      tree dup = duplicate_decls (decl, fn, is_friend);
-	      if (dup == error_mark_node)
-		return dup;
-	      if (dup == fn)
+	      if (iter.hidden_p () || iter.via_using_p ())
 		{
-		  gcc_assert (!iter.hidden_p ()
-			      && !DECL_HIDDEN_P (dup));
-		  return dup;
+		  tree dup = duplicate_decls (decl, fn, is_friend);
+		  if (dup == error_mark_node)
+		    return dup;
+		  if (dup == fn)
+		    {
+		      gcc_assert (!iter.hidden_p ()
+				  && !DECL_HIDDEN_P (dup));
+		      return dup;
+		    }
 		}
 	    }
 	}
-      else if (old == error_mark_node)
-	/* Ignore the undefined symbol marker.  */
-	old = NULL_TREE;
       else
 	{
 	  error ("previous non-function declaration %q+#D", old);
 	  error ("conflicts with function declaration %q#D", decl);
 	  return decl;
 	}
+
+      to_push = ovl_add (old, decl);
+
+      if (old)
+	{
+	  replace_local_overload_binding (DECL_NAME (decl), old, to_push);
+	  return decl;
+	}
     }
 
-  tree new_binding = ovl_add (old, decl);
+  if (old)
+    {
+      if (!supplement_binding (IDENTIFIER_BINDING (DECL_NAME (decl)), to_push))
+	return decl;
+    }
+  else
+    {
+      cxx_binding *binding = create_local_binding (level, DECL_NAME (decl));
+      binding->value = to_push;
+    }
 
-  augment_local_overload_binding (name, false, old, new_binding);
+  if (TREE_CODE (to_push) == OVERLOAD)
+    to_push = build_tree_list (NULL_TREE, to_push);
+
+  add_local_decl (level, to_push);
 
   return decl;
 }

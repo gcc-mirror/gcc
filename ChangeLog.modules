@@ -1,5 +1,12 @@
 2017-04-12  Nathan Sidwell  <nathan@acm.org>
 
+	Separating namespace bindings part 18
+	gcc/cp/
+	* name-lookup.c (create_local_binding) New.
+	(do_local_push_overload): Turn into ...
+	(local_push_binding): ... this.
+	(do_pushdecl): Adjust.
+
 	Separating namespace bindings part 17
 	gcc/cp/
 	* name-lookup.c (create_namespace_binding) New.
