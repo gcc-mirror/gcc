@@ -1,5 +1,9 @@
 2017-04-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/79580 - ICE with compound literal
+	* parser.c (cp_parser_class_head): If we're in the middle of an
+	expression, use ts_within_enclosing_non_class.
+
 	PR c++/79508 - lookup error with member template
 	* parser.c (cp_parser_template_name): Clear
 	parser->context->object_type if we aren't doing lookup.
