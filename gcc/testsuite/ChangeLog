@@ -1,5 +1,12 @@
 2017-04-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/80403
+	PR sanitizer/80404
+	PR sanitizer/80405
+	* g++.dg/ubsan/pr80403.C: New test.
+	* g++.dg/ubsan/pr80404.C: New test.
+	* g++.dg/ubsan/pr80405.C: New test.
+
 	PR c/80163
 	* gcc.dg/torture/pr80163.c: New test.
 

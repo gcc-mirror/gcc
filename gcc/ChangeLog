@@ -1,3 +1,12 @@
+2017-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/80403
+	PR sanitizer/80404
+	PR sanitizer/80405
+	* fold-const.c (fold_ternary_loc): Use op1 instead of arg1 as argument
+	to fold_build2_loc.  Convert TREE_OPERAND (tem, 0) to type.  Use
+	op0 instead of fold_convert_loc (loc, type, arg0).
+
 2017-04-12  Jeff Law  <law@redhat.com>
 
 	* genattrtab.c (write_eligible_delay): Verify DELAY_INSN still
