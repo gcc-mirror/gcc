@@ -1,5 +1,9 @@
 2017-04-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/79508 - lookup error with member template
+	* parser.c (cp_parser_template_name): Clear
+	parser->context->object_type if we aren't doing lookup.
+
 	PR c++/79050 - ICE with undeduced auto and LTO
 	* decl.c (poplevel): Remove undeduced auto decls.
 
