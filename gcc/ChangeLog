@@ -1,4 +1,11 @@
 2017-04-12  Richard Biener  <rguenther@suse.de>
+	Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/80359
+	* tree-ssa-dse.c (maybe_trim_partially_dead_store): Do not
+	trim stores to TARGET_MEM_REFs.
+
+2017-04-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79390
 	* gimple-ssa-split-paths.c (is_feasible_trace): Restrict
