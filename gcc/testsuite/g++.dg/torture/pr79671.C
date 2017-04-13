@@ -13,7 +13,7 @@ int __attribute__((noinline)) foo()
   new (&x) B (0);
   y = x;
   B *q = reinterpret_cast <B *>(&y);
-  asm volatile ("" : "=r" (q) : "r" (q));
+  asm volatile ("" : "=r" (q) : "0" (q));
   return q->i;
 }
 
