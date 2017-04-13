@@ -314,7 +314,6 @@ extern tree lookup_qualified_name (tree, tree, int, bool, /*hidden*/bool = false
 extern tree lookup_name_nonclass (tree);
 extern bool is_local_extern (tree);
 extern tree lookup_function_nonclass (tree, vec<tree, va_gc> *, bool);
-extern void push_local_binding (tree, tree, bool is_using);
 extern bool pushdecl_class_level (tree);
 extern tree pushdecl_namespace_level (tree, bool);
 extern bool push_class_level_binding (tree, tree);

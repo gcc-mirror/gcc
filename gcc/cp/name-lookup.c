@@ -36,8 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool supplement_binding (cxx_binding *binding, tree decl);
 static cxx_binding *cxx_binding_make (tree value, tree type);
-static tree local_push_binding (cp_binding_level *level, tree ns,
-				cxx_binding *binding,
+static tree local_push_binding (cp_binding_level *level, cxx_binding *binding,
 				tree old, tree decl, bool is_friend);
 static cp_binding_level *innermost_nonclass_level (void);
 
@@ -112,6 +111,40 @@ find_namespace_value (tree ns, tree name)
   cxx_binding *b = find_namespace_binding (ns, name);
 
   return b ? b->value : NULL_TREE;
+}
+
+/* Add DECL to the list of things declared in a binding level.  */
+
+static void
+add_decl_to_level (cp_binding_level *level, tree decl)
+{
+  gcc_assert (level->kind != sk_class);
+
+  if (TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl))
+    {
+      /* Inner namespaces get their own chain, to make walking
+	 simpler.  */
+      //  FIXME: only because of cp_binding_level::static_decls
+      DECL_CHAIN (decl) = level->namespaces;
+      level->namespaces = decl;
+    }
+  else
+    {
+      TREE_CHAIN (decl) = level->names;
+      level->names = decl;
+    }
+
+  /* If appropriate, add decl to separate list of statics.  We include
+     extern variables because they might turn out to be static later.
+     It's OK for this list to contain a few false positives.  */
+  if (level->kind != sk_namespace)
+    ;
+  else if ((VAR_P (decl) && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
+	   || (TREE_CODE (decl) == FUNCTION_DECL
+	       && (!TREE_PUBLIC (decl)
+		   || decl_anon_ns_mem_p (decl)
+		   || DECL_DECLARED_INLINE_P (decl))))
+    vec_safe_push (level->static_decls, decl);
 }
 
 /* Add DECL to the list of things declared in namespace NS  */
@@ -1633,7 +1666,7 @@ matching_fn_p (tree one, tree two)
    decl.  */
 
 static tree
-namespace_push_binding (cp_binding_level *level, tree ns, cxx_binding *binding,
+namespace_push_binding (cp_binding_level *level, cxx_binding *binding,
 			tree old, tree decl, bool is_friend)
 {
   tree to_val = decl;
@@ -1755,7 +1788,7 @@ namespace_push_binding (cp_binding_level *level, tree ns, cxx_binding *binding,
 
   if (to_val)
     {
-      add_namespace_decl (ns, decl);
+      add_decl_to_level (level, decl);
 
       binding->value = to_val;
       if (to_type)
@@ -2305,9 +2338,9 @@ do_pushdecl (tree decl, bool is_friend)
 	}
 
       if (level->kind == sk_namespace)
-	old = namespace_push_binding (level, ns, binding, old, decl, is_friend);
+	old = namespace_push_binding (level, binding, old, decl, is_friend);
       else
-	old = local_push_binding (level, ns, binding, old, decl, is_friend);
+	old = local_push_binding (level, binding, old, decl, is_friend);
 
       if (old != decl)
 	/* An existing decl matched, use it.  */
@@ -2333,10 +2366,8 @@ do_pushdecl (tree decl, bool is_friend)
       else if (VAR_P (decl))
 	maybe_register_incomplete_var (decl);
     }
-  else if (level->kind == sk_namespace)
-    add_namespace_decl (current_namespace, decl);
   else
-    add_local_decl (current_binding_level, decl);
+    add_decl_to_level (level, decl);
 
   return decl;
 }
@@ -2386,7 +2417,7 @@ maybe_push_decl (tree decl)
    binding level.  If IS_USING is true, DECL got here through a
    using-declaration.  */
 
-void
+static void
 push_local_binding (tree id, tree decl, bool is_using)
 {
   cp_binding_level *b;
@@ -3278,14 +3309,12 @@ pushdecl_outermost_localscope (tree x)
    level.  */
 
 static tree
-local_push_binding (cp_binding_level *level, tree ns, cxx_binding *binding,
+local_push_binding (cp_binding_level *level, cxx_binding *binding,
 		    tree old, tree decl, bool is_friend)
 {
   tree to_val = decl;
   tree to_type = NULL_TREE;
 
-  gcc_assert (!ns);
-  
   if (old == error_mark_node)
     old = NULL_TREE;
 
@@ -3395,7 +3424,7 @@ local_push_binding (cp_binding_level *level, tree ns, cxx_binding *binding,
 	    to_add = decl;
 	  else if (TREE_CODE (to_add) == OVERLOAD)
 	    to_add = build_tree_list (NULL_TREE, to_add);
-	  add_local_decl (level, to_add);
+	  add_decl_to_level (level, to_add);
 	}
 
       binding->value = to_val;

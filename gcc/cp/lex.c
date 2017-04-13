@@ -450,11 +450,8 @@ unqualified_name_lookup_error (tree name, location_t loc)
       if (local_bindings_p ())
 	{
 	  tree decl = build_decl (loc, VAR_DECL, name, error_mark_node);
-	  DECL_CONTEXT (decl) = current_function_decl;
-	  push_local_binding (name, decl, false);
-	  /* Mark the variable as used so that we do not get warnings
-	     about it being unused later.  */
-	  TREE_USED (decl) = 1;
+	  TREE_USED (decl) = true;
+	  pushdecl (decl);
 	}
     }
 

@@ -1,5 +1,15 @@
 2017-04-13  Nathan Sidwell  <nathan@acm.org>
 
+	Cleanups
+	gcc/cp/
+	* lex.c (unqualified_name_lookup_error): Use pushdecl.
+	* name-lookup.h (push_local_binding): Delete.
+	* name-lookup.c (add_decl_to_level): New, combining
+	add_namespace_decl, add_local_decl.
+	(namespace_push_binding, local_push_binding): Adjust.
+	(do_pushdecl): Adjust.
+	(push_local_binding): Make static.
+
 	Unify binding push part 7
 	gcc/cp/
 	* name-lookup.c (namespace_push_binding): Merge duplicate code
