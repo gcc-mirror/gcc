@@ -1,3 +1,10 @@
+2017-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/80403
+	* fold-const.c (fold_ternary_loc): Revert
+	use op0 instead of fold_convert_loc (loc, type, arg0) part of
+	2017-04-12 change.
+
 2017-04-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/80343
