@@ -2,6 +2,15 @@
 
 	Unifying binding push part 5
 	gcc/cp/
+	* name-lookup.c (find_local_binding): New.  Broken out of ...
+	(find_local_value): ... this.  Use it.
+	(update_local_overload): New.  Broken out of ...
+	(replace_local_overload_binding): ... this.  Use it.
+	(do_pushdecl): Keep local binding around.
+	(local_push_binding): Consume supplement_binding, add_local_decl.
+
+	Unifying binding push part 5
+	gcc/cp/
 	* name-lookup.c (skip_anticipated_builtins): Kill.
 	(namespace_push_binding): Consume supplement_binding.
 	(do_pushdecl): Skip hidden builtin here.  Adjust.
