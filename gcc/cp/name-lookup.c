@@ -1578,47 +1578,25 @@ supplement_binding (cxx_binding *binding, tree decl)
   return ret;
 }
 
-/* BINDING has OLDVAL on its scope's name list.  Replace that slot with
+/* Replace BINDING's current value on its scope's name list with
    NEWVAL.  */
 
 static void
-update_local_overload (cxx_binding *binding, tree oldval, tree newval)
+update_local_overload (cxx_binding *binding, tree newval)
 {
   tree *d;
 
   for (d = &binding->scope->names; ; d = &TREE_CHAIN (*d))
-    if (*d == oldval)
+    if (*d == binding->value)
       {
 	/* Stitch new list node in.  */
 	*d = tree_cons (NULL_TREE, NULL_TREE, TREE_CHAIN (*d));
 	break;
       }
-    else if (TREE_CODE (*d) == TREE_LIST && TREE_VALUE (*d) == oldval)
+    else if (TREE_CODE (*d) == TREE_LIST && TREE_VALUE (*d) == binding->value)
       break;
 
   TREE_VALUE (*d) = newval;
-}
-
-static void
-replace_local_overload_binding (tree name, tree oldval, tree newval)
-{
-  update_local_overload (IDENTIFIER_BINDING (name), oldval, newval);
-
-  /* And update the cxx_binding node.  */
-  IDENTIFIER_BINDING (name)->value = newval;
-}
-
-/* The first decl in OLD became unhidden and moved.  We need to fixup
-   the binding to point at the new HEAD.  */
-
-static tree
-fixup_unhidden_decl (tree name, tree context, tree old, tree head)
-{
-  if (context)
-    update_namespace_binding (context, name, head);
-  else
-    replace_local_overload_binding (name, old, head);
-  return head;
 }
 
 /* Compares the parameter-type-lists of ONE and TWO and
@@ -2263,7 +2241,11 @@ do_pushdecl (tree decl, bool is_friend)
 		/* Unhiding a previously hidden friend.  */
 		tree head = iter.unhide (old);
 		if (head != old)
-		  fixup_unhidden_decl (name, ns, old, head);
+		  {
+		    if (!ns)
+		      update_local_overload (binding, head);
+		    binding->value = head;
+		  }
 	      }
 
 	    return match;
@@ -3309,22 +3291,6 @@ pushdecl_outermost_localscope (tree x)
   return ret;
 }
 
-/* NAME currently has a value binding of OLDVAL (which might be NULL).
-   Update it to be NEWVAL (which might or might not be different).  */
-
-static void
-augment_local_overload_binding (tree name, bool is_using,
-				tree oldval, tree newval)
-{
-  if (oldval == newval)
-    /* Nothing to do.  */;
-  else if (oldval && TREE_CODE (newval) == OVERLOAD)
-    replace_local_overload_binding (name, oldval, newval);
-  else
-    /* Install the new binding.  */
-    push_local_binding (name, newval, is_using);
-}
-
 /* Push DECL into local scope.  OLD is the existing binding at this
    level.  */
 
@@ -3436,7 +3402,7 @@ local_push_binding (cp_binding_level *level, cxx_binding *binding,
   if (to_val)
     {
       if (!to_type && binding->value && OVL_P (to_val))
-	update_local_overload (binding, binding->value, to_val);
+	update_local_overload (binding, to_val);
       else
 	{
 	  tree to_add = to_val;
@@ -3670,7 +3636,18 @@ do_local_using_decl (tree decl, tree scope, tree name)
   do_nonmember_using_decl (scope, name, &bind);
 
   if (bind.value)
-    augment_local_overload_binding (name, true, oldval, bind.value);
+    {
+      if (bind.value == oldval)
+	;
+      else if (oldval && TREE_CODE (bind.value) == OVERLOAD)
+	{
+	  update_local_overload (IDENTIFIER_BINDING (name), bind.value);
+	  IDENTIFIER_BINDING (name)->value = bind.value;
+	}
+      else
+	/* Install the new binding.  */
+	push_local_binding (name, bind.value, true);
+    }
 
   if (bind.type)
     {

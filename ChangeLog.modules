@@ -1,6 +1,13 @@
 2017-04-13  Nathan Sidwell  <nathan@acm.org>
 
-	Unifying binding push part 5
+	Some cleanups
+	gcc/cp/
+	* name-lookup.c (update_local_overload): Drop oldval parm.
+	(replace_local_overload_binding): Delete.  Fold into only caller.
+	(fixup_unhidden_decl): Likewise.
+	(augment_local_overload_binding): Likewise.
+
+	Unifying binding push part 6
 	gcc/cp/
 	* name-lookup.c (find_local_binding): New.  Broken out of ...
 	(find_local_value): ... this.  Use it.
