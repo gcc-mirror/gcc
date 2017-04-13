@@ -1,3 +1,8 @@
+2017-04-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/80343
+	* gcc.target/powerpc/pr80343.c: New.
+
 2017-04-13  Denis Khalikov  <d.khalikov@partner.samsung.com>
 
 	PR sanitizer/80414

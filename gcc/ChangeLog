@@ -1,3 +1,9 @@
+2017-04-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/80343
+	* lra-remat.c (update_scratch_ops): Assign original hard reg to
+	new scratch pseudo.
+
 2017-04-13  Denis Khalikov <d.khalikov@partner.samsung.com>
 
 	PR sanitizer/80414
