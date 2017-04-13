@@ -1,3 +1,13 @@
+2017-04-13  Nathan Sidwell  <nathan@acm.org>
+
+	Unifying binding push part 5
+	gcc/cp/
+	* name-lookup.c (skip_anticipated_builtins): Kill.
+	(namespace_push_binding): Consume supplement_binding.
+	(do_pushdecl): Skip hidden builtin here.  Adjust.
+	gcc/testsuite/
+	* g++.dg/lookup/using59.C: New.
+
 2017-04-12  Nathan Sidwell  <nathan@acm.org>
 
 	Unifying binding push part 4

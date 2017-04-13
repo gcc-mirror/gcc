@@ -1398,17 +1398,6 @@ anticipated_builtin_p (tree ovl)
   return true;
 }
 
-/* Skip an anticipated builtin in the OVL.  There can only be one.  */
-
-static tree
-skip_anticipated_builtins (tree ovl)
-{
-  if (anticipated_builtin_p (ovl))
-    ovl = OVL_CHAIN (ovl);
-
-  return ovl;
-}
-
 /* BINDING records an existing declaration for a name in the current scope.
    But, DECL is another declaration for that same identifier in the
    same scope.  This is the `struct stat' hack whereby a non-typedef
@@ -1644,32 +1633,29 @@ matching_fn_p (tree one, tree two)
    decl.  */
 
 static tree
-namespace_push_binding (cxx_binding *binding, tree decl)
+namespace_push_binding (cxx_binding *binding, tree old, tree decl,
+			bool is_friend)
 {
+  tree to_val = decl;
+  tree to_type = NULL_TREE;
+
+  if (old == error_mark_node)
+    old = NULL_TREE;
+
+  if (old && TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
+    {
+      /* Slide the tdef out of the way.  We'll undo this below, if
+	 we're pushing a matching tdef.  */
+      to_type = old;
+      old = NULL_TREE;
+    }
+
   if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
-    ; /* Do nothing.  */
+    to_val = NULL_TREE; /* Do nothing.  */
   else if (DECL_DECLARES_FUNCTION_P (decl))
     {
-      tree old = binding->value;
-
       if (!old)
 	;
-      else if (old == error_mark_node)
-	old = NULL_TREE;
-      else if (TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
-	{
-	  tree type = TREE_TYPE (old);
-	  if (MAYBE_CLASS_TYPE_P (type) && warn_shadow
-	      && (!DECL_IN_SYSTEM_HEADER (decl)
-		  || !DECL_IN_SYSTEM_HEADER (old)))
-	    warning (OPT_Wshadow, "%q#D hides constructor for %q#T",
-		     decl, type);
-
-	  /* Slide the typedecl out of the way.  */
-	  binding->type = old;
-	  binding->value = NULL_TREE;
-	  old = NULL_TREE;
-	}
       else if (OVL_P (old))
 	{
 	  for (ovl_iterator iter (old); iter; ++iter)
@@ -1685,34 +1671,102 @@ namespace_push_binding (cxx_binding *binding, tree decl)
 		     introduced by a using-declaration, and the
 		     declarations do not declare the same function,
 		     the program is ill-formed.  [namespace.udecl]/14 */
-		  if (decls_match (fn, decl))
-		    // FIXME: turn using into non-using?
-		    return fn;
+		  if (tree match = duplicate_decls (decl, fn, is_friend))
+		    return match;
 		  else
+		    /* FIXME: To preserve existing error behavior, we
+		       still push the decl.  This might change.  */
 		    diagnose_name_conflict (decl, fn);
 		}
 	    }
-	  /* We don't overload implicit built-ins.
-	     duplicate_decls() may fail to merge the decls if
-	     the new decl is e.g. a template function.  */
-	  old = skip_anticipated_builtins (old);
 	}
       else
-	{
-	  error ("previous non-function declaration %q+#D", old);
-	  error ("conflicts with function declaration %q#D", decl);
-	  return decl;
-	}
+	goto conflict;
 
-      // FIXME: insert after using decls
-      binding->value = ovl_add (old, decl);
+      // FIXME: insert after using decls?
+      to_val = ovl_add (old, decl);
+    }
+  else if (to_type && TREE_CODE (decl) == TYPE_DECL)
+    {
+      /* We thought we wanted to slide an artificial typedef out of
+	 the way, to make way for another typedef.  That's not always
+	 what we want to do.  */
+      if (!DECL_ARTIFICIAL (decl))
+	; /* Slide.  */
+      else if (same_type_p (TREE_TYPE (to_type), TREE_TYPE (decl)))
+	/* Two artificial decls to same type.  Do nothing.  */
+	return to_type;
+      else
+	goto conflict;
+    }
+  else if (!old)
+    ;
+  else if (TREE_CODE (old) != TREE_CODE (decl))
+    /* Different kinds of decls conflict.  */
+    goto conflict;
+  else if (TREE_CODE (old) == TYPE_DECL)
+    {
+      if (DECL_ARTIFICIAL (decl))
+	{
+	  /* Slide DECL into the type slot instead.  */
+	  to_type = decl;
+	  to_val = old;
+	}
+      else if (same_type_p (TREE_TYPE (old), TREE_TYPE (decl)))
+	/* Two type decls to the same type.  Do nothing.  */
+	return old;
+      else
+	goto conflict;
+    }
+  else if (TREE_CODE (old) == NAMESPACE_DECL)
+    {
+      if (DECL_NAMESPACE_ALIAS (old) && DECL_NAMESPACE_ALIAS (decl)
+	  && ORIGINAL_NAMESPACE (old) == ORIGINAL_NAMESPACE (decl))
+	/* In a declarative region, a namespace-alias-definition can be
+	   used to redefine a namespace-alias declared in that declarative
+	   region to refer only to the namespace to which it already
+	   refers.  [namespace.alias] */
+	return old;
+      else
+	goto conflict;
+    }
+  else if (TREE_CODE (old) == VAR_DECL)
+    {
+      /* There can be two block-scope declarations of the same
+	 variable, so long as they are `extern' declarations.  */
+      if (!DECL_EXTERNAL (old) || !DECL_EXTERNAL (decl))
+	goto conflict;
+      else if (tree match = duplicate_decls (decl, old, false))
+	return match;
+      else
+	goto conflict;
     }
   else
     {
-      if (!binding->value)
-	binding->value = decl;
-      else
-	supplement_binding (binding, decl);
+    conflict:
+      diagnose_name_conflict (decl, old);
+      to_val = NULL_TREE;
+    }
+
+  if (to_val)
+    {
+      binding->value = to_val;
+      if (to_type)
+	{
+	  gcc_checking_assert (TREE_CODE (to_type) == TYPE_DECL
+			       && DECL_ARTIFICIAL (to_type)
+			       && !binding->type);
+
+	  tree type = TREE_TYPE (to_type);
+	  if (to_type != decl
+	      && MAYBE_CLASS_TYPE_P (type) && warn_shadow
+	      && (!DECL_IN_SYSTEM_HEADER (decl)
+		  || !DECL_IN_SYSTEM_HEADER (to_type)))
+	    warning (OPT_Wshadow, "%q#D hides constructor for %q#T",
+		     decl, type);
+
+	  binding->type = to_type;
+	}
     }
 
   return decl;
@@ -2196,6 +2250,12 @@ do_pushdecl (tree decl, bool is_friend)
 	  }
 
       /* We are pushing a new decl.  */
+
+      /* Skip a hidden builtin we failed to match already.  */
+      if (old && TREE_CODE (old) == OVERLOAD && OVL_HIDDEN_P (old)
+	  && !DECL_HIDDEN_FRIEND_P (OVL_FUNCTION (old)))
+	old = OVL_CHAIN (old);
+
       check_template_shadow (decl);
 
       if (DECL_DECLARES_FUNCTION_P (decl))
@@ -2235,7 +2295,7 @@ do_pushdecl (tree decl, bool is_friend)
 	      ns = current_namespace;
 	      ns_binding = create_namespace_binding (ns, name);
 	    }
-	  old = namespace_push_binding (ns_binding, decl);
+	  old = namespace_push_binding (ns_binding, old, decl, is_friend);
 	}
       else
 	{
@@ -2248,17 +2308,11 @@ do_pushdecl (tree decl, bool is_friend)
 
       if (old != decl)
 	{
-	  // FIXME This comment may be inaccurate
-	  /* This happens if we uncover a hidden builtin.  Duplicate
-	     decls will have eaten the builtin, so we do not want to
-	     link it in again, but we do want to do the other
-	     processing, in case we've declared it as a different
-	     kind of thing.  */
+	  /* An existing decl matched, use it.  */
 	  need_new_binding = false;
 	  decl = old;
 	}
-
-      if (TREE_CODE (decl) == TYPE_DECL)
+      else if (TREE_CODE (decl) == TYPE_DECL)
 	{
 	  tree type = TREE_TYPE (decl);
 
