@@ -24889,7 +24889,12 @@ decls_for_scope (tree stmt, dw_die_ref context_die)
 	for (i = 0; i < BLOCK_NUM_NONLOCALIZED_VARS (stmt); i++)
 	  {
 	    decl = BLOCK_NONLOCALIZED_VAR (stmt, i);
-	    if (TREE_CODE (decl) == FUNCTION_DECL)
+	    if (decl == current_function_decl)
+	      /* Ignore declarations of the current function, while they
+		 are declarations, gen_subprogram_die would treat them
+		 as definitions again, because they are equal to
+		 current_function_decl and endlessly recurse.  */;
+	    else if (TREE_CODE (decl) == FUNCTION_DECL)
 	      process_scope_var (stmt, decl, NULL_TREE, context_die);
 	    else
 	      process_scope_var (stmt, NULL_TREE, decl, context_die);

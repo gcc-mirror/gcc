@@ -1,3 +1,13 @@
+2017-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/80321
+	* gcc.dg/debug/pr80321.c: New test.
+
+2017-04-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/debug10.adb: New test.
+	* gnat.dg/debug10_pkg.ads: New helper.
+
 2017-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/79390

@@ -1,3 +1,9 @@
+2017-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/80321
+	* dwarf2out.c (decls_for_scope): Ignore declarations of
+	current_function_decl in BLOCK_NONLOCALIZED_VARS.
+
 2017-04-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/69953 
