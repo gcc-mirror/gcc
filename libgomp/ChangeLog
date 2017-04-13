@@ -1,3 +1,8 @@
+2017-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* plugin/plugin-nvptx.c (cuda_lib_inited): Use signed char type
+	instead of char.
+
 2017-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/80394

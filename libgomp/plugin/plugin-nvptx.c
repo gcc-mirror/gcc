@@ -106,7 +106,7 @@ struct cuda_lib_s {
 
 /* -1 if init_cuda_lib has not been called yet, false
    if it has been and failed, true if it has been and succeeded.  */
-static char cuda_lib_inited = -1;
+static signed char cuda_lib_inited = -1;
 
 /* Dynamically load the CUDA runtime library and initialize function
    pointers, return false if unsuccessful, true if successful.  */
