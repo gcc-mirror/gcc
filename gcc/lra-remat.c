@@ -1024,6 +1024,7 @@ get_hard_regs (struct lra_insn_reg *reg, int &nregs)
 static void
 update_scratch_ops (rtx_insn *remat_insn)
 {
+  int hard_regno;
   lra_insn_recog_data_t id = lra_get_insn_recog_data (remat_insn);
   struct lra_static_insn_data *static_id = id->insn_static_data;
   for (int i = 0; i < static_id->n_operands; i++)
@@ -1034,9 +1035,17 @@ update_scratch_ops (rtx_insn *remat_insn)
       int regno = REGNO (*loc);
       if (! lra_former_scratch_p (regno))
 	continue;
+      hard_regno = reg_renumber[regno];
       *loc = lra_create_new_reg (GET_MODE (*loc), *loc,
 				 lra_get_allocno_class (regno),
 				 "scratch pseudo copy");
+      if (hard_regno >= 0)
+	{
+	  reg_renumber[REGNO (*loc)] = hard_regno;
+	  if (lra_dump_file)
+	    fprintf (lra_dump_file, "	 Assigning the same %d to r%d\n",
+		     REGNO (*loc), hard_regno);
+	}
       lra_register_new_scratch_op (remat_insn, i);
     }
   
