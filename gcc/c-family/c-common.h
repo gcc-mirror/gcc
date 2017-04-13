@@ -593,7 +593,7 @@ extern tree push_stmt_list (void);
 extern tree pop_stmt_list (tree);
 extern tree add_stmt (tree);
 extern void push_cleanup (tree, tree, bool);
-extern tree pushdecl (tree);
+
 extern tree build_modify_expr (location_t, tree, tree, enum tree_code,
 			       location_t, tree, tree);
 extern tree build_array_notation_expr (location_t, tree, tree, enum tree_code,

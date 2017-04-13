@@ -1,5 +1,17 @@
 2017-04-13  Nathan Sidwell  <nathan@acm.org>
 
+	Cleanup pushdecl interface
+	gcc/cp/
+	* cp-lang.c (cxx_pushdecl): New.
+	(LANG_HOOKS_PUSHDECL): Override.
+	* name-lookup.h (pushdecl): Remove overload. Add default arg.
+	* name-lookup.c (pushdecl): Likewise.
+	gcc/c/
+	* c-tree.h (pushdecl): Declare.
+	gcc/c-family/
+	* c-common.c (c_register_builtin_type): Use pushdecl lang hook.
+	* c-common.h (pushdecl): Don't declare.	
+
 	Some cleanups
 	gcc/cp/
 	* name-lookup.c (update_local_overload): Drop oldval parm.

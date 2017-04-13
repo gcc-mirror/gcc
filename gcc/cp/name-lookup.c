@@ -2361,15 +2361,6 @@ pushdecl (tree x, bool is_friend)
   return x;
 }
 
-/* We need a friendless wrapper, rather than use a default argument,
-   as common code expects this to exist.  */
-
-tree
-pushdecl (tree x)
-{
-  return pushdecl (x, false);
-}
-
 /* Enter DECL into the symbol table, if that's appropriate.  Returns
    DECL, or a modified version thereof.  */
 

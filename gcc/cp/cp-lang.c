@@ -36,6 +36,7 @@ static tree get_template_innermost_arguments_folded (const_tree);
 static tree get_template_argument_pack_elems_folded (const_tree);
 static tree cxx_enum_underlying_base_type (const_tree);
 static tree get_global_decls ();
+static tree cxx_pushdecl (tree);
 
 /* Lang hooks common to C++ and ObjC++ are declared in cp/cp-objcp-common.h;
    consequently, there should be very few hooks below.  */
@@ -81,6 +82,8 @@ static tree get_global_decls ();
 #define LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE cxx_enum_underlying_base_type
 #undef LANG_HOOKS_GETDECLS
 #define LANG_HOOKS_GETDECLS get_global_decls
+#undef LANG_HOOKS_PUSHDECL
+#define LANG_HOOKS_PUSHDECL cxx_pushdecl
 
 /* Each front end provides its own lang hook initializer.  */
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
@@ -238,6 +241,14 @@ static
 tree get_global_decls ()
 {
   return NAMESPACE_LEVEL (global_namespace)->names;
+}
+
+/* Push DECL into the current scope.  */
+
+static
+tree cxx_pushdecl (tree decl)
+{
+  return pushdecl (decl);
 }
 
 #include "gt-cp-cp-lang.h"
