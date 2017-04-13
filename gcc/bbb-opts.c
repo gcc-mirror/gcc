@@ -182,7 +182,8 @@ insn_info::scan (rtx x)
 {
   if (REG_P(x))
     {
-      use (REGNO(x));
+      for (int n = REG_NREGS(x), r = REGNO(x); n > 0; --n, ++r)
+	use (r);
       return;
     }
 
@@ -425,35 +426,34 @@ update_insn_infos (void)
 	      insn_info def;
 	      insn_info use;
 
-	      /* a call sets d0 and maybe also d1,a0,a1. */
-	      if (ii.is_use(0))
+	      /* add mregparm registers. */
+	      for (rtx link = CALL_INSN_FUNCTION_USAGE(insn); link; link = XEXP(link, 1))
+		{
+		  rtx op, reg;
+
+		  if (GET_CODE (op = XEXP (link, 0)) == USE && REG_P(reg = XEXP (op, 0)))
+		    for (int r = REGNO(reg); r <= END_REGNO (reg); ++r)
+		      use.use (r);
+		}
+
+	      rtx set = single_set (insn);
+	      if (set)
+		{
+		  use.scan (SET_SRC(set));
+		  def.scan (SET_DEST(set));
+		}
+	      else
+		use.scan (pattern);
+
+	      /* fix missing defs - a call sets d0 and maybe also d1,a0,a1. */
+	      if (ii.is_use (0))
 		def.def (0);
 	      if (ii.is_use (1))
-		{
-		  fprintf (stderr, ":bbb: use of d1 after call in %s\n", getCurrentFunctionName ());
-		  def.def (1);
-		}
+		def.def (1);
 	      if (ii.is_use (8))
-		{
-		  fprintf (stderr, ":bbb: use of a0 after call in %s\n", getCurrentFunctionName ());
-		  def.def (8);
-		}
+		def.def (8);
 	      if (ii.is_use (9))
-		{
-		  fprintf (stderr, ":bbb: use of a1 after call in %s\n", getCurrentFunctionName ());
-		  def.def (9);
-		}
-
-	      // FIXME: isuse the DECL and read attributes.
-	      // use regs depending on flag mregparm
-	      for (int i = 0; i < amigaos_regparm; ++i)
-		{
-		  use.use (i);
-		  use.use (i + 8);
-		}
-
-	      // check for reg use
-	      use.scan (pattern);
+		def.def (9);
 
 	      infos[pos] = def | use | ii;
 
@@ -494,7 +494,7 @@ update_insn_infos (void)
 		  continue;
 		}
 
-	      if (GET_CODE (pattern) != PARALLEL)
+	      if (GET_CODE (pattern) != PARALLEL && GET_CODE (pattern) != CLOBBER)
 		{
 		  fprintf (stderr, "##### ");
 		  debug_rtx (insn);
@@ -1062,7 +1062,7 @@ const_cmp_to_sub (void)
 {
   unsigned change_count = 0;
 #if HAVE_cc0
-  for (unsigned index = insns.size () - 2; index > 0; --index)
+  for (int index = insns.size () - 2; index > 0; --index)
     {
       rtx_insn * insn = insns[index];
       rtx seti = single_set (insn);
@@ -1079,7 +1079,7 @@ const_cmp_to_sub (void)
 
       rtx left = XEXP(srci, 0);
       rtx right = XEXP(srci, 1);
-      if (!REG_P(left) || !REG_P(right))
+      if (!REG_P(left) || !REG_P(right) || REG_NREGS(left) > 1 || REG_NREGS(right) > 1)
 	continue;
 
       // TODO
@@ -1451,7 +1451,6 @@ shrink_stack_frame (void)
 	  ++pos;
 	}
 
-
       /* move epilogues away. */
       for (; pos < insns.size (); ++pos)
 	{
@@ -1506,7 +1505,12 @@ shrink_stack_frame (void)
   update_insn_infos ();
   insn_info ii;
   for (unsigned i = 0; i < infos.size (); ++i)
-    ii |= infos[i];
+    {
+      insn_info & jj = infos[i];
+      ii |= jj;
+//      fprintf (stderr, "%08lx %08lx\n", jj._use, jj._def);
+    }
+//  fprintf (stderr, "%08lx %08lx\n", ii._use, ii._def);
   unsigned freemask = ~ii._use;
 
   rtx a7 = gen_raw_REG (SImode, STACK_POINTER_REGNUM);
@@ -1562,9 +1566,15 @@ shrink_stack_frame (void)
 	  if (clobbers.size ())
 	    continue;
 
-	  if ((int) regs.size () + 1 < XVECLEN(pattern, 0) || regs.size () <= 2)
+	  /* add romm for add.
+	   * push is always using -(a7) addressing.
+	   * If a5 is used a movem offset(a5) is generated to pop saved registers..
+	   * Otherwise a7 is used and with (a7)+ addressing.
+	   */
+	  int add1 = i < prologueend || !usea5 ? 1 : 0;
+	  if ((int) regs.size () + add1 < XVECLEN(pattern, 0) || regs.size () <= 2)
 	    {
-	      fprintf (stderr, ":bbb: shrinking stack frame from %d to %d\n", XVECLEN(pattern, 0), regs.size () + 1);
+	      fprintf (stderr, ":bbb: shrinking stack frame from %d to %d\n", XVECLEN(pattern, 0) - add1, regs.size ());
 	      if (regs.size () <= 2)
 		{
 		  for (unsigned k = 0; k < regs.size (); ++k)
@@ -1590,8 +1600,6 @@ shrink_stack_frame (void)
 		}
 	      else
 		{
-		  /* add romm for add. */
-		  int add1 = i < prologueend || !usea5 ? 1 : 0;
 		  rtx parallel = gen_rtx_PARALLEL(VOIDmode, rtvec_alloc (regs.size () + add1));
 		  rtx plus;
 
@@ -1856,7 +1864,7 @@ namespace
     clone ()
     {
       pass_bbb_optimizations * bbb = new pass_bbb_optimizations (m_ctxt);
-      // bbb->pp = pp + 1;
+      bbb->pp = pp + 1;
       return bbb;
     }
 
@@ -1871,10 +1879,6 @@ namespace
   unsigned
   pass_bbb_optimizations::execute_bbb_optimizations (void)
   {
-
-    if (strchr (flag_bbb_opts, 'X') || strchr (flag_bbb_opts, 'x'))
-      fprintf (stderr, "%s:\n", current_function_func_begin_label);
-
     df_set_flags (DF_LR_RUN_DCE + DF_DEFER_INSN_RESCAN);
     df_note_add_problem ();
     df_analyze ();
