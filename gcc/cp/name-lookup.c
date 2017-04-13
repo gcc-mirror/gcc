@@ -36,7 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool supplement_binding (cxx_binding *binding, tree decl);
 static cxx_binding *cxx_binding_make (tree value, tree type);
-static tree local_push_binding (cp_binding_level *level, cxx_binding *binding,
+static tree local_push_binding (cp_binding_level *level, tree ns,
+				cxx_binding *binding,
 				tree old, tree decl, bool is_friend);
 static cp_binding_level *innermost_nonclass_level (void);
 
@@ -1632,12 +1633,13 @@ matching_fn_p (tree one, tree two)
    decl.  */
 
 static tree
-namespace_push_binding (cxx_binding *binding, tree old, tree decl,
-			bool is_friend)
+namespace_push_binding (cp_binding_level *level, tree ns, cxx_binding *binding,
+			tree old, tree decl, bool is_friend)
 {
   tree to_val = decl;
   tree to_type = NULL_TREE;
 
+  gcc_assert (level->kind == sk_namespace);
   if (old == error_mark_node)
     old = NULL_TREE;
 
@@ -1649,9 +1651,7 @@ namespace_push_binding (cxx_binding *binding, tree old, tree decl,
       old = NULL_TREE;
     }
 
-  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
-    to_val = NULL_TREE; /* Do nothing.  */
-  else if (DECL_DECLARES_FUNCTION_P (decl))
+  if (DECL_DECLARES_FUNCTION_P (decl))
     {
       if (!old)
 	;
@@ -1700,6 +1700,12 @@ namespace_push_binding (cxx_binding *binding, tree old, tree decl,
     }
   else if (!old)
     ;
+  else if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
+    {
+      /* Slide DECL into the type slot.  */
+      to_type = decl;
+      to_val = old;
+    }
   else if (TREE_CODE (old) != TREE_CODE (decl))
     /* Different kinds of decls conflict.  */
     goto conflict;
@@ -1749,6 +1755,8 @@ namespace_push_binding (cxx_binding *binding, tree old, tree decl,
 
   if (to_val)
     {
+      add_namespace_decl (ns, decl);
+
       binding->value = to_val;
       if (to_type)
 	{
@@ -2183,8 +2191,6 @@ set_local_extern_decl_linkage (tree decl, bool shadowed)
 static tree
 do_pushdecl (tree decl, bool is_friend)
 {
-  bool need_new_binding = true;
-
   if (decl == error_mark_node)
     return error_mark_node;
 
@@ -2288,35 +2294,24 @@ do_pushdecl (tree decl, bool is_friend)
 	  if (TREE_CODE (decl) == NAMESPACE_DECL)
 	    /* A local namespace alias.  */
 	    set_identifier_type_value (name, NULL_TREE);
+
+	  if (!binding)
+	    binding = create_local_binding (level, name);
+	}
+      else if (!binding)
+	{
+	  ns = current_namespace;
+	  binding = create_namespace_binding (ns, name);
 	}
 
       if (level->kind == sk_namespace)
-	{
-	  if (!binding)
-	    {
-	      ns = current_namespace;
-	      binding = create_namespace_binding (ns, name);
-	    }
-	  old = namespace_push_binding (binding, old, decl, is_friend);
-	}
+	old = namespace_push_binding (level, ns, binding, old, decl, is_friend);
       else
-	{
-	  if (!binding)
-	    binding = create_local_binding (level, name);
-
-	  old = local_push_binding (level, binding, old, decl, is_friend);
-	  /* Because push_local_binding will hook DECL on to the
-	     current_binding_level's name list, we don't want to do
-	     that again below.  */
-	  need_new_binding = false;
-	}
+	old = local_push_binding (level, ns, binding, old, decl, is_friend);
 
       if (old != decl)
-	{
-	  /* An existing decl matched, use it.  */
-	  need_new_binding = false;
-	  decl = old;
-	}
+	/* An existing decl matched, use it.  */
+	decl = old;
       else if (TREE_CODE (decl) == TYPE_DECL)
 	{
 	  tree type = TREE_TYPE (decl);
@@ -2338,9 +2333,6 @@ do_pushdecl (tree decl, bool is_friend)
       else if (VAR_P (decl))
 	maybe_register_incomplete_var (decl);
     }
-
-  if (!need_new_binding)
-    ;
   else if (level->kind == sk_namespace)
     add_namespace_decl (current_namespace, decl);
   else
@@ -3286,12 +3278,14 @@ pushdecl_outermost_localscope (tree x)
    level.  */
 
 static tree
-local_push_binding (cp_binding_level *level, cxx_binding *binding,
+local_push_binding (cp_binding_level *level, tree ns, cxx_binding *binding,
 		    tree old, tree decl, bool is_friend)
 {
   tree to_val = decl;
   tree to_type = NULL_TREE;
 
+  gcc_assert (!ns);
+  
   if (old == error_mark_node)
     old = NULL_TREE;
 

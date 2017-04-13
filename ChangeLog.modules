@@ -1,5 +1,11 @@
 2017-04-13  Nathan Sidwell  <nathan@acm.org>
 
+	Unify binding push part 7
+	gcc/cp/
+	* name-lookup.c (namespace_push_binding): Merge duplicate code
+	from local_push_binding.  Chain the decl.
+	(do_pushdecl): Adjust.
+
 	Cleanup pushdecl interface
 	gcc/cp/
 	* cp-lang.c (cxx_pushdecl): New.
