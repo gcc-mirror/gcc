@@ -84,6 +84,30 @@
 				 | OPTION_MASK_UPPER_REGS_SF		\
 				 | OPTION_MASK_VSX_SMALL_INTEGER)
 
+/* Flags that need to be turned off if -mno-power9-vector.  */
+#define OTHER_P9_VECTOR_MASKS	(OPTION_MASK_FLOAT128_HW		\
+				 | OPTION_MASK_P9_DFORM_SCALAR		\
+				 | OPTION_MASK_P9_DFORM_VECTOR		\
+				 | OPTION_MASK_P9_MINMAX)
+
+/* Flags that need to be turned off if -mno-power8-vector.  */
+#define OTHER_P8_VECTOR_MASKS	(OTHER_P9_VECTOR_MASKS			\
+				 | OPTION_MASK_P9_VECTOR		\
+				 | OPTION_MASK_DIRECT_MOVE		\
+				 | OPTION_MASK_CRYPTO			\
+				 | OPTION_MASK_UPPER_REGS_SF)		\
+
+/* Flags that need to be turned off if -mno-vsx.  */
+#define OTHER_VSX_VECTOR_MASKS	(OTHER_P8_VECTOR_MASKS			\
+				 | OPTION_MASK_EFFICIENT_UNALIGNED_VSX	\
+				 | OPTION_MASK_FLOAT128_KEYWORD		\
+				 | OPTION_MASK_FLOAT128_TYPE		\
+				 | OPTION_MASK_P8_VECTOR		\
+				 | OPTION_MASK_UPPER_REGS_DI		\
+				 | OPTION_MASK_UPPER_REGS_DF		\
+				 | OPTION_MASK_VSX_SMALL_INTEGER	\
+				 | OPTION_MASK_VSX_TIMODE)
+
 #define POWERPC_7400_MASK	(OPTION_MASK_PPC_GFXOPT | OPTION_MASK_ALTIVEC)
 
 /* Deal with ports that do not have -mstrict-align.  */

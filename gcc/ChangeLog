@@ -1,3 +1,18 @@
+2017-04-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/80098
+	* config/rs6000/rs6000-cpus.def (OTHER_P9_VECTOR_MASKS): Define
+	masks of options that should be turned off if the VSX vector
+	options are turned off.
+	(OTHER_P8_VECTOR_MASKS): Likewise.
+	(OTHER_VSX_VECTOR_MASKS): Likewise.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Call
+	rs6000_disable_incompatible_switches to validate no type switches
+	like -mvsx.
+	(rs6000_incompatible_switch): New function to disallow turning on
+	other vector options if -mno-vsx, -mno-power8-vector, or
+	-mno-power9-vector are specified.
+
 2017-04-14  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.h (CRT_CALL_STATIC_FUNCTION): Use long calls.
