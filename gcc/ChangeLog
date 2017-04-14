@@ -1,3 +1,9 @@
+2017-04-13  Jeff Law  <law@redhat.com>
+
+	* config/mips.mips.md (zero_extendsidi2): Do not allow SP to appear
+	in operands[1] if it is a MEM and TARGET_MIPS16 is active.
+	(zero_extendsidi2_dext): Likewise.
+
 2017-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/80403
