@@ -1335,6 +1335,7 @@ static void rs6000_print_isa_options (FILE *, int, const char *,
 				      HOST_WIDE_INT);
 static void rs6000_print_builtin_options (FILE *, int, const char *,
 					  HOST_WIDE_INT);
+static HOST_WIDE_INT rs6000_disable_incompatible_switches (void);
 
 static enum rs6000_reg_type register_to_reg_type (rtx, bool *);
 static bool rs6000_secondary_reload_move (enum rs6000_reg_type,
@@ -3902,6 +3903,7 @@ rs6000_option_override_internal (bool global_init_p)
   const char *implicit_cpu = OPTION_TARGET_CPU_DEFAULT;
 
   HOST_WIDE_INT set_masks;
+  HOST_WIDE_INT ignore_masks;
   int cpu_index;
   int tune_index;
   struct cl_target_option *main_target_opt
@@ -3967,7 +3969,8 @@ rs6000_option_override_internal (bool global_init_p)
 #endif
 #ifdef OS_MISSING_ALTIVEC
   if (OS_MISSING_ALTIVEC)
-    set_masks &= ~(OPTION_MASK_ALTIVEC | OPTION_MASK_VSX);
+    set_masks &= ~(OPTION_MASK_ALTIVEC | OPTION_MASK_VSX
+		   | OTHER_VSX_VECTOR_MASKS);
 #endif
 
   /* Don't override by the processor default if given explicitly.  */
@@ -4270,11 +4273,15 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
     rs6000_print_isa_options (stderr, 0, "before defaults", rs6000_isa_flags);
 
+  /* Handle explicit -mno-{altivec,vsx,power8-vector,power9-vector} and turn
+     off all of the options that depend on those flags.  */
+  ignore_masks = rs6000_disable_incompatible_switches ();
+
   /* For the newer switches (vsx, dfp, etc.) set some of the older options,
      unless the user explicitly used the -mno-<option> to disable the code.  */
   if (TARGET_P9_VECTOR || TARGET_MODULO || TARGET_P9_DFORM_SCALAR
       || TARGET_P9_DFORM_VECTOR || TARGET_P9_DFORM_BOTH > 0)
-    rs6000_isa_flags |= (ISA_3_0_MASKS_SERVER & ~rs6000_isa_flags_explicit);
+    rs6000_isa_flags |= (ISA_3_0_MASKS_SERVER & ~ignore_masks);
   else if (TARGET_P9_MINMAX)
     {
       if (have_cpu)
@@ -4283,15 +4290,14 @@ rs6000_option_override_internal (bool global_init_p)
 	    {
 	      /* legacy behavior: allow -mcpu-power9 with certain
 		 capabilities explicitly disabled.  */
-	      rs6000_isa_flags |=
-		(ISA_3_0_MASKS_SERVER & ~rs6000_isa_flags_explicit);
+	      rs6000_isa_flags |= (ISA_3_0_MASKS_SERVER & ~ignore_masks);
 	      /* However, reject this automatic fix if certain
 		 capabilities required for TARGET_P9_MINMAX support
 		 have been explicitly disabled.  */
 	      if (((OPTION_MASK_VSX | OPTION_MASK_UPPER_REGS_SF
 		    | OPTION_MASK_UPPER_REGS_DF) & rs6000_isa_flags)
 		  != (OPTION_MASK_VSX | OPTION_MASK_UPPER_REGS_SF
-		       | OPTION_MASK_UPPER_REGS_DF))
+		      | OPTION_MASK_UPPER_REGS_DF))
 		error ("-mpower9-minmax incompatible with explicitly disabled options");
 		}
 	  else
@@ -4308,21 +4314,21 @@ rs6000_option_override_internal (bool global_init_p)
 	rs6000_isa_flags |= ISA_3_0_MASKS_SERVER;
     }
   else if (TARGET_P8_VECTOR || TARGET_DIRECT_MOVE || TARGET_CRYPTO)
-    rs6000_isa_flags |= (ISA_2_7_MASKS_SERVER & ~rs6000_isa_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_7_MASKS_SERVER & ~ignore_masks);
   else if (TARGET_VSX)
-    rs6000_isa_flags |= (ISA_2_6_MASKS_SERVER & ~rs6000_isa_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_6_MASKS_SERVER & ~ignore_masks);
   else if (TARGET_POPCNTD)
-    rs6000_isa_flags |= (ISA_2_6_MASKS_EMBEDDED & ~rs6000_isa_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_6_MASKS_EMBEDDED & ~ignore_masks);
   else if (TARGET_DFP)
-    rs6000_isa_flags |= (ISA_2_5_MASKS_SERVER & ~rs6000_isa_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_5_MASKS_SERVER & ~ignore_masks);
   else if (TARGET_CMPB)
-    rs6000_isa_flags |= (ISA_2_5_MASKS_EMBEDDED & ~rs6000_isa_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_5_MASKS_EMBEDDED & ~ignore_masks);
   else if (TARGET_FPRND)
-    rs6000_isa_flags |= (ISA_2_4_MASKS & ~rs6000_isa_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_4_MASKS & ~ignore_masks);
   else if (TARGET_POPCNTB)
-    rs6000_isa_flags |= (ISA_2_2_MASKS & ~rs6000_isa_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_2_MASKS & ~ignore_masks);
   else if (TARGET_ALTIVEC)
-    rs6000_isa_flags |= (OPTION_MASK_PPC_GFXOPT & ~rs6000_isa_flags_explicit);
+    rs6000_isa_flags |= (OPTION_MASK_PPC_GFXOPT & ~ignore_masks);
 
   if (TARGET_CRYPTO && !TARGET_ALTIVEC)
     {
@@ -39719,6 +39725,81 @@ rs6000_print_builtin_options (FILE *file, int indent, const char *string,
   rs6000_print_options_internal (file, indent, string, flags, "",
 				 &rs6000_builtin_mask_names[0],
 				 ARRAY_SIZE (rs6000_builtin_mask_names));
+}
+
+/* If the user used -mno-vsx, we need turn off all of the implicit ISA 2.06,
+   2.07, and 3.0 options that relate to the vector unit (-mdirect-move,
+   -mvsx-timode, -mupper-regs-df).
+
+   If the user used -mno-power8-vector, we need to turn off all of the implicit
+   ISA 2.07 and 3.0 options that relate to the vector unit.
+
+   If the user used -mno-power9-vector, we need to turn off all of the implicit
+   ISA 3.0 options that relate to the vector unit.
+
+   This function does not handle explicit options such as the user specifying
+   -mdirect-move.  These are handled in rs6000_option_override_internal, and
+   the appropriate error is given if needed.
+
+   We return a mask of all of the implicit options that should not be enabled
+   by default.  */
+
+static HOST_WIDE_INT
+rs6000_disable_incompatible_switches (void)
+{
+  HOST_WIDE_INT ignore_masks = rs6000_isa_flags_explicit;
+  size_t i, j;
+
+  static const struct {
+    const HOST_WIDE_INT no_flag;	/* flag explicitly turned off.  */
+    const HOST_WIDE_INT dep_flags;	/* flags that depend on this option.  */
+    const char *const name;		/* name of the switch.  */
+  } flags[] = {
+    { OPTION_MASK_P9_VECTOR,	OTHER_P9_VECTOR_MASKS,	"power9-vector"	},
+    { OPTION_MASK_P8_VECTOR,	OTHER_P8_VECTOR_MASKS,	"power8-vector"	},
+    { OPTION_MASK_VSX,		OTHER_VSX_VECTOR_MASKS,	"vsx"		},
+  };
+
+  for (i = 0; i < ARRAY_SIZE (flags); i++)
+    {
+      HOST_WIDE_INT no_flag = flags[i].no_flag;
+
+      if ((rs6000_isa_flags & no_flag) == 0
+	  && (rs6000_isa_flags_explicit & no_flag) != 0)
+	{
+	  HOST_WIDE_INT dep_flags = flags[i].dep_flags;
+	  HOST_WIDE_INT set_flags = (rs6000_isa_flags_explicit
+				     & rs6000_isa_flags
+				     & dep_flags);
+
+	  if (set_flags)
+	    {
+	      for (j = 0; j < ARRAY_SIZE (rs6000_opt_masks); j++)
+		if ((set_flags & rs6000_opt_masks[j].mask) != 0)
+		  {
+		    set_flags &= ~rs6000_opt_masks[j].mask;
+		    error ("-mno-%s turns off -m%s",
+			   flags[i].name,
+			   rs6000_opt_masks[j].name);
+		  }
+
+	      gcc_assert (!set_flags);
+	    }
+
+	  rs6000_isa_flags &= ~dep_flags;
+	  ignore_masks |= no_flag | dep_flags;
+	}
+    }
+
+  if (!TARGET_P9_VECTOR
+      && (rs6000_isa_flags_explicit & OPTION_MASK_P9_VECTOR) != 0
+      && TARGET_P9_DFORM_BOTH > 0)
+    {
+      error ("-mno-power9-vector turns off -mpower9-dform");
+      TARGET_P9_DFORM_BOTH = 0;
+    }
+
+  return ignore_masks;
 }
 
 
