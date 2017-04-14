@@ -1,0 +1,6 @@
+eclipse.preferences.version=1
+environment/project/cdt.managedbuild.config.gnu.cross.exe.debug.452878522/PATH/delimiter=;
+environment/project/cdt.managedbuild.config.gnu.cross.exe.debug.452878522/PATH/operation=replace
+environment/project/cdt.managedbuild.config.gnu.cross.exe.debug.452878522/PATH/value=C\:\\WINDOWS\\system32;C\:\\WINDOWS;C\:\\Program Files\\SlikSvn\\bin;C\:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0;c\:\\cygwin\\bin;D\:\\develop\\workspaces\\c1\\amigaos-cross-toolchain\\m68k-amigaos\\bin
+environment/project/cdt.managedbuild.config.gnu.cross.exe.debug.452878522/append=true
+environment/project/cdt.managedbuild.config.gnu.cross.exe.debug.452878522/appendContributed=true
