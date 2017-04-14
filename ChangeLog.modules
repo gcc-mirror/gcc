@@ -1,3 +1,12 @@
+2017-04-14  Nathan Sidwell  <nathan@acm.org>
+
+	Merge namespace and local scope binding update
+	gcc/cp/
+	* name-lookup.c (add_namespace_decl): Delete.
+	(namespace_push_binding, local_push_binding): Merge into ...
+	(update_binding): ... this.
+	(do_pushdecl): Adjust.
+
 2017-04-13  Nathan Sidwell  <nathan@acm.org>
 
 	Cleanups

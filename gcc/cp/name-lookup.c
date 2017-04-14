@@ -1,4 +1,3 @@
-
 /* Definitions for C++ name lookup routines.
    Copyright (C) 2003-2017 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
@@ -36,8 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool supplement_binding (cxx_binding *binding, tree decl);
 static cxx_binding *cxx_binding_make (tree value, tree type);
-static tree local_push_binding (cp_binding_level *level, cxx_binding *binding,
-				tree old, tree decl, bool is_friend);
 static cp_binding_level *innermost_nonclass_level (void);
 
 /* Create a new binding for NAME in namespace NS.  */
@@ -145,44 +142,6 @@ add_decl_to_level (cp_binding_level *level, tree decl)
 		   || decl_anon_ns_mem_p (decl)
 		   || DECL_DECLARED_INLINE_P (decl))))
     vec_safe_push (level->static_decls, decl);
-}
-
-/* Add DECL to the list of things declared in namespace NS  */
-
-static void
-add_namespace_decl (tree ns, tree decl)
-{
-  /* We should not be adding whole overloads.  */
-  gcc_checking_assert (TREE_CODE (decl) != OVERLOAD
-		       && (TREE_CODE (decl) != TREE_LIST
-			   || TREE_CODE (TREE_VALUE (decl)) != OVERLOAD));
-
-  cp_binding_level *b = NAMESPACE_LEVEL (ns);
-
-  if (TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl))
-    {
-      /* Inner namespaces get their own list.  */
-      // FIXME: why?
-      DECL_CHAIN (decl) = b->namespaces;
-      b->namespaces = decl;
-    }
-  else
-    {
-      TREE_CHAIN (decl) = b->names;
-      b->names = decl;
-
-      /* If appropriate, add decl to separate list of statics.  We
-	 include extern variables because they might turn out to be
-	 static later.  It's OK for this list to contain a few false
-	 positives.  */
-      if ((VAR_P (decl)
-	   && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
-	  || (TREE_CODE (decl) == FUNCTION_DECL
-	      && (!TREE_PUBLIC (decl)
-		  || decl_anon_ns_mem_p (decl)
-		  || DECL_DECLARED_INLINE_P (decl))))
-	vec_safe_push (b->static_decls, decl);
-    }
 }
 
 /* Find the binding for NAME in the local binding level B.  */
@@ -1662,17 +1621,18 @@ matching_fn_p (tree one, tree two)
   return true;
 }
 
-/* Push DECL into BINDING.  Diagnose conflicts and return updated
-   decl.  */
+/* Push DECL into nonclass LEVEL BINDING.  OLD is the current binding
+   value (possibly with anticipated builtins stripped).  Diagnose
+   conflicts and return updated decl.  */
 
 static tree
-namespace_push_binding (cp_binding_level *level, cxx_binding *binding,
-			tree old, tree decl, bool is_friend)
+update_binding (cp_binding_level *level, cxx_binding *binding,
+		tree old, tree decl, bool is_friend)
 {
   tree to_val = decl;
   tree to_type = NULL_TREE;
 
-  gcc_assert (level->kind == sk_namespace);
+  gcc_assert (level->kind != sk_class);
   if (old == error_mark_node)
     old = NULL_TREE;
 
@@ -1788,7 +1748,22 @@ namespace_push_binding (cp_binding_level *level, cxx_binding *binding,
 
   if (to_val)
     {
-      add_decl_to_level (level, decl);
+      if (level->kind != sk_namespace
+	  && !to_type && binding->value && OVL_P (to_val))
+	update_local_overload (binding, to_val);
+      else
+	{
+	  tree to_add = to_val;
+      
+	  if (level->kind == sk_namespace)
+	    to_add = decl;
+	  else if (to_type == decl)
+	    to_add = decl;
+	  else if (TREE_CODE (to_add) == OVERLOAD)
+	    to_add = build_tree_list (NULL_TREE, to_add);
+
+	  add_decl_to_level (level, to_add);
+	}
 
       binding->value = to_val;
       if (to_type)
@@ -2293,8 +2268,7 @@ do_pushdecl (tree decl, bool is_friend)
       /* We are pushing a new decl.  */
 
       /* Skip a hidden builtin we failed to match already.  */
-      if (old && TREE_CODE (old) == OVERLOAD && OVL_HIDDEN_P (old)
-	  && !DECL_HIDDEN_FRIEND_P (OVL_FUNCTION (old)))
+      if (old && anticipated_builtin_p (old))
 	old = OVL_CHAIN (old);
 
       check_template_shadow (decl);
@@ -2337,10 +2311,7 @@ do_pushdecl (tree decl, bool is_friend)
 	  binding = create_namespace_binding (ns, name);
 	}
 
-      if (level->kind == sk_namespace)
-	old = namespace_push_binding (level, binding, old, decl, is_friend);
-      else
-	old = local_push_binding (level, binding, old, decl, is_friend);
+      old = update_binding (level, binding, old, decl, is_friend);
 
       if (old != decl)
 	/* An existing decl matched, use it.  */
@@ -3303,150 +3274,6 @@ pushdecl_outermost_localscope (tree x)
   tree ret = do_pushdecl_with_scope (x, b, false);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
-}
-
-/* Push DECL into local scope.  OLD is the existing binding at this
-   level.  */
-
-static tree
-local_push_binding (cp_binding_level *level, cxx_binding *binding,
-		    tree old, tree decl, bool is_friend)
-{
-  tree to_val = decl;
-  tree to_type = NULL_TREE;
-
-  if (old == error_mark_node)
-    old = NULL_TREE;
-
-  if (old && TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
-    {
-      /* Slide the tdef out of the way.  We'll undo this below, if
-	 we're pushing a matching tdef.  */
-      to_type = old;
-      old = NULL_TREE;
-    }
-  
-  if (DECL_DECLARES_FUNCTION_P (decl))
-    {
-      if (!old)
-	;
-      else if (OVL_P (old))
-	{
-	  for (ovl_iterator iter (old); iter; ++iter)
-	    {
-	      tree fn = *iter;
-
-	      if (iter.via_using_p ()
-		  && matching_fn_p (fn, decl))
-		{
-		  if (tree match = duplicate_decls (decl, fn, is_friend))
-		    return match;
-		  else
-		    diagnose_name_conflict (decl, fn);
-		}
-	    }
-	}
-      else
-	goto conflict;
-
-      to_val = ovl_add (old, decl);
-    }
-  else if (to_type && TREE_CODE (decl) == TYPE_DECL)
-    {
-      /* We thought we wanted to slide an artificial typedef out of
-	 the way, to make way for another typedef.  That's not always
-	 what we want to do.  */
-      if (!DECL_ARTIFICIAL (decl))
-	; /* Slide.  */
-      else if (same_type_p (TREE_TYPE (to_type), TREE_TYPE (decl)))
-	/* Two artificial decls to same type.  Do nothing.  */
-	return to_type;
-      else
-	goto conflict;
-    }
-  else if (!old)
-    ;
-  else if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
-    {
-      /* Slide DECL into the type slot.  */
-      to_type = decl;
-      to_val = old;
-    }
-  else if (TREE_CODE (old) != TREE_CODE (decl))
-    /* Different kinds of decls conflict.  */
-    goto conflict;
-  else if (TREE_CODE (old) == TYPE_DECL)
-    {
-      if (same_type_p (TREE_TYPE (old), TREE_TYPE (decl)))
-	/* Two type decls to the same type.  Do nothing.  */
-	return old;
-      else
-	goto conflict;
-    }
-  else if (TREE_CODE (old) == NAMESPACE_DECL)
-    {
-      if (DECL_NAMESPACE_ALIAS (old) && DECL_NAMESPACE_ALIAS (decl)
-	  && ORIGINAL_NAMESPACE (old) == ORIGINAL_NAMESPACE (decl))
-	/* In a declarative region, a namespace-alias-definition can be
-	   used to redefine a namespace-alias declared in that declarative
-	   region to refer only to the namespace to which it already
-	   refers.  [namespace.alias] */
-	return old;
-      else
-	goto conflict;
-    }
-  else if (TREE_CODE (old) == VAR_DECL)
-    {
-      /* There can be two block-scope declarations of the same
-	 variable, so long as they are `extern' declarations.  */
-      if (!DECL_EXTERNAL (old) || !DECL_EXTERNAL (decl))
-	goto conflict;
-      else if (tree match = duplicate_decls (decl, old, false))
-	return match;
-      else
-	goto conflict;
-    }
-  else
-    {
-    conflict:
-      diagnose_name_conflict (decl, old);
-      to_val = NULL_TREE;
-    }
-
-  if (to_val)
-    {
-      if (!to_type && binding->value && OVL_P (to_val))
-	update_local_overload (binding, to_val);
-      else
-	{
-	  tree to_add = to_val;
-	  if (to_type == decl)
-	    to_add = decl;
-	  else if (TREE_CODE (to_add) == OVERLOAD)
-	    to_add = build_tree_list (NULL_TREE, to_add);
-	  add_decl_to_level (level, to_add);
-	}
-
-      binding->value = to_val;
-      if (to_type)
-	{
-	  gcc_checking_assert (TREE_CODE (to_type) == TYPE_DECL
-			       && DECL_ARTIFICIAL (to_type)
-			       && !binding->type);
-
-	  tree type = TREE_TYPE (to_type);
-	  if (to_type != decl
-	      && MAYBE_CLASS_TYPE_P (type) && warn_shadow
-	      && (!DECL_IN_SYSTEM_HEADER (decl)
-		  || !DECL_IN_SYSTEM_HEADER (to_type)))
-	    warning (OPT_Wshadow, "%q#D hides constructor for %q#T",
-		     decl, type);
-
-	  binding->type = to_type;
-	}
-    }
-
-  return decl;
 }
 
 /* Check a non-member using-declaration. Return the name and scope
