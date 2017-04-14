@@ -1515,10 +1515,11 @@ extern enum arc_function_type arc_compute_function_type (struct function *);
 /* Called by crtstuff.c to make calls to function FUNCTION that are defined in
    SECTION_OP, and then to switch back to text section.  */
 #undef CRT_CALL_STATIC_FUNCTION
-#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC) \
-    asm (SECTION_OP "\n\t"				\
-	"bl @" USER_LABEL_PREFIX #FUNC "\n"		\
-	TEXT_SECTION_ASM_OP);
+#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)		\
+  asm (SECTION_OP "\n\t"					\
+       "add r12,pcl,@" USER_LABEL_PREFIX #FUNC "@pcl\n\t"	\
+       "jl  [r12]\n"						\
+       TEXT_SECTION_ASM_OP);
 
 /* This macro expands to the name of the scratch register r12, used for
    temporary calculations according to the ABI.  */
