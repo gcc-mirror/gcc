@@ -1,3 +1,12 @@
+2017-04-14  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	Backport from trunk
+	2015-11-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/59910
+	PR fortran/80388
+	* gfortran.dg/pr59910.f90: New test.
+
 2017-04-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Backport from GCC 6
