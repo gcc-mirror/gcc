@@ -1,5 +1,12 @@
 2017-04-14  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc-protos.h (arc_decl_pretend_args): Remove.
+	* config/arc/arc.c (arc_decl_pretend_args): Likewise.
+	* config/arc/arc.h (CFA_FRAME_BASE_OFFSET): Likewise.
+	(ARG_POINTER_CFA_OFFSET): Likewise.
+
+2017-04-14  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.c (arc_mode_dependent_address_p): Relax
 	conditions to take advantage of various optimizations.
 

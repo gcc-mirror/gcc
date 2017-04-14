@@ -9338,17 +9338,6 @@ arc_text_label (rtx_insn *label)
   return false;
 }
 
-/* Return the size of the pretend args for DECL.  */
-
-int
-arc_decl_pretend_args (tree decl)
-{
-  /* struct function is in DECL_STRUCT_FUNCTION (decl), but no
-     pretend_args there...  See PR38391.  */
-  gcc_assert (decl == current_function_decl);
-  return crtl->args.pretend_args_size;
-}
-
 /* Without this, gcc.dg/tree-prof/bb-reorg.c fails to assemble
   when compiling with -O2 -freorder-blocks-and-partition -fprofile-use
   -D_PROFILE_USE; delay branch scheduling then follows a crossing jump
