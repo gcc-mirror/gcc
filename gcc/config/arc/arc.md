@@ -5070,7 +5070,7 @@
     {
       /* ??? Can do better for when a scratch register
 	 is known.  But that would require extra testing.  */
-      return "push_s r0\;add r0,pcl,%4-(.&-4)\;sr r0,[2]; LP_START\;add r0,pcl,.L__GCC__LP%1-(.&-4)\;sr r0,[3]; LP_END\;pop_s r0";
+      return "push_s r0\;add r0,pcl,%4@pcl\;sr r0,[2]; LP_START\;add r0,pcl,.L__GCC__LP%1@pcl\;sr r0,[3]; LP_END\;pop_s r0";
     }
   /* Check if the loop end is in range to be set by the lp instruction.  */
   size = INTVAL (operands[3]) < 2 ? 0 : 2048;
