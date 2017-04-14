@@ -4712,7 +4712,7 @@ c_parse_final_cleanups (void)
 	    }
 	}
 
-      if (walk_namespaces (wrapup_globals_for_namespace, /*data=*/0))
+      if (wrapup_namespace_globals ())
 	reconsider = true;
 
       /* Static data members are just like namespace-scope globals.  */
@@ -4736,8 +4736,6 @@ c_parse_final_cleanups (void)
       retries++;
     }
   while (reconsider);
-
-  walk_namespaces (diagnose_inline_vars_for_namespace, /*data=*/0);
 
   lower_var_init ();
 

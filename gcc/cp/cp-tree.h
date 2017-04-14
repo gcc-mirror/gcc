@@ -2456,7 +2456,9 @@ struct GTY(()) lang_decl_base {
 /* DECL_LANG_SPECIFIC for the above codes.  */
 
 struct GTY(()) lang_decl_min {
-  struct lang_decl_base base;
+  struct lang_decl_base base; /* 32-bits.  */
+
+  /* 32 bits padding on 64-bit host.  */
 
   /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
      THUNK_ALIAS.
@@ -2491,16 +2493,17 @@ struct GTY(()) lang_decl_fn {
   unsigned static_function : 1;
   unsigned pure_virtual : 1;
   unsigned defaulted_p : 1;
-
   unsigned has_in_charge_parm_p : 1;
   unsigned has_vtt_parm_p : 1;
+  
   unsigned pending_inline_p : 1;
   unsigned nonconverting : 1;
   unsigned thunk_p : 1;
   unsigned this_thunk_p : 1;
   unsigned hidden_friend_p : 1;
   unsigned omp_declare_reduction_p : 1;
-  /* 2 spare bits on 32-bit hosts, 34 on 64-bit hosts.  */
+  /* 2 spare bits.  */
+  /* 32-bits padding on 64-bit host.  */
 
   /* For a non-thunk function decl, this is a tree list of
      friendly classes. For a thunk function decl, it is the
@@ -2538,7 +2541,7 @@ struct GTY(()) lang_decl_fn {
 /* DECL_LANG_SPECIFIC for namespaces.  */
 
 struct GTY(()) lang_decl_ns {
-  struct lang_decl_base base;
+  struct lang_decl_base base; /* 32 bits.  */
   cp_binding_level *level;
 
   /* using directives and inline children.  These need to be va_gc,
@@ -2550,7 +2553,7 @@ struct GTY(()) lang_decl_ns {
 /* DECL_LANG_SPECIFIC for parameters.  */
 
 struct GTY(()) lang_decl_parm {
-  struct lang_decl_base base;
+  struct lang_decl_base base; /* 32 bits.  */
   int level;
   int index;
 };
@@ -5089,6 +5092,12 @@ extern int current_class_depth;
 /* An array of all local classes present in this translation unit, in
    declaration order.  */
 extern GTY(()) vec<tree, va_gc> *local_classes;
+
+/* in decl.c */
+
+/* An array of static vars & fns.  */
+extern GTY(()) vec<tree, va_gc> *static_decls;
+
 
 /* Here's where we control how name mangling takes place.  */
 
@@ -6067,8 +6076,7 @@ extern tree check_default_argument		(tree, tree, tsubst_flags_t);
 typedef int (*walk_namespaces_fn)		(tree, void *);
 extern int walk_namespaces			(walk_namespaces_fn,
 						 void *);
-extern int wrapup_globals_for_namespace		(tree, void *);
-extern int diagnose_inline_vars_for_namespace	(tree, void *);
+extern int wrapup_namespace_globals		();
 extern tree create_implicit_typedef		(tree, tree);
 extern int local_variable_p			(const_tree);
 extern tree register_dtor_fn			(tree);
