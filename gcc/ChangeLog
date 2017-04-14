@@ -1,3 +1,8 @@
+2017-04-14  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_mode_dependent_address_p): Relax
+	conditions to take advantage of various optimizations.
+
 2017-04-13  Jeff Law  <law@redhat.com>
 
 	* config/mips.mips.md (zero_extendsidi2): Do not allow SP to appear

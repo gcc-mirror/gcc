@@ -5509,13 +5509,9 @@ arc_mode_dependent_address_p (const_rtx addr, addr_space_t)
 {
   /* SYMBOL_REF is not mode dependent: it is either a small data reference,
      which is valid for loads and stores, or a limm offset, which is valid for
-     loads.  */
-  /* Scaled indices are scaled by the access mode; likewise for scaled
-     offsets, which are needed for maximum offset stores.  */
+     loads.  Scaled indices are scaled by the access mode.  */
   if (GET_CODE (addr) == PLUS
-      && (GET_CODE (XEXP ((addr), 0)) == MULT
-	  || (CONST_INT_P (XEXP ((addr), 1))
-	      && !SMALL_INT (INTVAL (XEXP ((addr), 1))))))
+      && GET_CODE (XEXP ((addr), 0)) == MULT)
     return true;
   return false;
 }
