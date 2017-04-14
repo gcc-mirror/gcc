@@ -1,3 +1,8 @@
+2017-04-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80361
+	* gfortran.dg/class_62.f90: New test case.
+
 2017-04-14  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* gcc.target/arc/loop-1.c: New file.

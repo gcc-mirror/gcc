@@ -1,3 +1,8 @@
+2017-04-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80361
+	* class.c (generate_finalization_wrapper): Give the finalization wrapper
+	the recursive attribute.
 
 2017-04-10  Nicolas Koenig  <koenigni@student.ethz.ch>
             Paul Thomas  <pault@gcc.gnu.org>
