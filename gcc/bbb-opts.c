@@ -51,6 +51,42 @@
 #include <vector>
 #include <map>
 
+static bool be_verbose;
+
+extern struct lang_hooks lang_hooks;
+extern tree current_function_decl;
+static tree last_function_decl;
+static char const *
+getCurrentFunctionName ()
+{
+  static char fxname[512];
+  if (current_function_decl == NULL)
+    strcpy (fxname, "<toplevel>");
+  else
+    strcpy (fxname, lang_hooks.decl_printable_name (current_function_decl, 2));
+  return fxname;
+}
+
+static int
+log (char const * fmt, ...)
+{
+  if (!be_verbose)
+    return 0;
+
+  va_list args;
+  va_start(args, fmt);
+  if (last_function_decl != current_function_decl)
+    {
+      last_function_decl = current_function_decl;
+      printf (":bbb: in '%s'\n", getCurrentFunctionName ());
+    }
+  printf (":bbb: ");
+  int retval = vprintf (fmt, args);
+  va_end(args);
+  fflush (stdout);
+  return retval;
+}
+
 /* Enough for m68k.
  * Why a class? Maybe extend it for general usage.
  *
@@ -231,21 +267,6 @@ do_reg_rename (rtx x, unsigned oldregno, unsigned newregno)
     }
 }
 
-static int
-bit2regno (unsigned bit)
-{
-  if (!bit)
-    return -1;
-
-  unsigned regno = 0;
-  while (!(bit & 1))
-    {
-      ++regno;
-      bit >>= 1;
-    }
-  return regno;
-}
-
 /*
  * Collect some data.
  */
@@ -358,19 +379,6 @@ update_insns ()
     }
 }
 
-extern struct lang_hooks lang_hooks;
-extern tree current_function_decl;
-static char const *
-getCurrentFunctionName ()
-{
-  static char fxname[512];
-  if (current_function_decl == NULL)
-    strcpy (fxname, "<toplevel>");
-  else
-    strcpy (fxname, lang_hooks.decl_printable_name (current_function_decl, 2));
-  return fxname;
-}
-
 static void
 update_insn_infos (void)
 {
@@ -432,7 +440,7 @@ update_insn_infos (void)
 		  rtx op, reg;
 
 		  if (GET_CODE (op = XEXP (link, 0)) == USE && REG_P(reg = XEXP (op, 0)))
-		    for (int r = REGNO(reg); r <= END_REGNO (reg); ++r)
+		    for (unsigned r = REGNO(reg); r <= END_REGNO (reg); ++r)
 		      use.use (r);
 		}
 
@@ -468,7 +476,7 @@ update_insn_infos (void)
 	      if (ANY_RETURN_P(pattern))
 		{
 		  ii.reset ();
-		  ii.use (0);
+//		  ii.use (0);
 		}
 	      else
 		{
@@ -494,7 +502,7 @@ update_insn_infos (void)
 		  continue;
 		}
 
-	      if (GET_CODE (pattern) != PARALLEL && GET_CODE (pattern) != CLOBBER)
+	      if (GET_CODE (pattern) != PARALLEL && GET_CODE (pattern) != CLOBBER && be_verbose)
 		{
 		  fprintf (stderr, "##### ");
 		  debug_rtx (insn);
@@ -761,9 +769,9 @@ propagate_moves ()
 				  rtx_insn * after = insns[index + 1];
 				  rtx bset = single_set (before);
 
-				  fprintf (stderr, ":bbb: propagate_moves condition met, moving regs %s, %s\n",
+				  log ("propagate_moves condition met, moving regs %s, %s\n",
 				  reg_names[REGNO(srci)],
-					   reg_names[REGNO(dsti)]);
+				       reg_names[REGNO(dsti)]);
 
 				  /* Move in front of loop and mark as dead. */
 				  rtx_insn * newii = make_insn_raw (PATTERN (ii));
@@ -800,7 +808,7 @@ propagate_moves ()
 				  /* add fixes if there were jumps out of the loop. */
 				  if (jump_out.size ())
 				    {
-				      fprintf (stderr, ":bbb: propagate_moves fixing %d jump outs\n", jump_out.size ());
+				      log ("propagate_moves fixing %d jump outs\n", jump_out.size ());
 
 				      for (unsigned k = 0; k < jump_out.size (); ++k)
 					{
@@ -873,7 +881,8 @@ opt_strcpy ()
 	      rtx dst = XEXP(src, 0);
 	      src = XEXP(src, 1);
 
-	      if (CONST_INT_P(src) && INTVAL(src) == 0 && find_reg_note (insn, REG_DEAD, dst))
+//	      if (CONST_INT_P(src) && INTVAL(src) == 0 && find_reg_note (insn, REG_DEAD, dst))
+	      if (REG_P(dst) && CONST_INT_P(src) && INTVAL(src) == 0 && is_reg_dead(REGNO(dst), index))
 		{
 		  /* now check via NOTICE_UPDATE_CC*/
 		  NOTICE_UPDATE_CC(PATTERN (reg2x), reg2x);
@@ -889,10 +898,8 @@ opt_strcpy ()
 			{
 			  rtx link;
 
-			  fprintf (
-			  stderr,
-				   ":bbb: opt_strcpy condition met, removing compare and joining insns - omit reg %s\n",
-				   reg_names[REGNO(dst)]);
+			  log ("opt_strcpy condition met, removing compare and joining insns - omit reg %s\n",
+			  reg_names[REGNO(dst)]);
 
 			  SET_SRC(single_set(reg2x)) = SET_SRC(single_set (x2reg));
 
@@ -1017,7 +1024,7 @@ commute_add_move (void)
 
       if (validate_change (next, &SET_DEST(set2), newmem, 0))
 	{
-	  fprintf (stderr, ":bbb: commute_add_move found\n");
+	  log ("commute_add_move found\n");
 
 	  SET_INSN_DELETED(insn);
 
@@ -1130,7 +1137,7 @@ const_cmp_to_sub (void)
       SET_INSN_DELETED(prev);
       prev = emit_insn_before (neuprev, insn);
 
-      fprintf (stderr, ":bbb: const_cmp_to_sub replaced reg-reg compare with sub\n");
+      log ("const_cmp_to_sub replaced reg-reg compare with sub\n");
 
       if (dstp != left)
 	{
@@ -1191,7 +1198,7 @@ const_cmp_to_sub (void)
 
 		  if (code != newcode)
 		    {
-		      fprintf (stderr, ":bbb: patch jcc %d -> %d\n", code, newcode);
+		      log ("patch jcc %d -> %d\n", code, newcode);
 		      XEXP(jmpsrc, 0) = gen_rtx_fmt_ee(newcode, VOIDmode, XEXP(condition, 0), XEXP(condition, 1));
 		    }
 		}
@@ -1225,7 +1232,7 @@ elim_dead_assign (void)
 
       if (is_reg_dead (REGNO(dst), index))
 	{
-	  fprintf (stderr, ":bbb: elim_dead_assign to %s\n", reg_names[REGNO(dst)]);
+	  log ("elim_dead_assign to %s\n", reg_names[REGNO(dst)]);
 	  SET_INSN_DELETED(insn);
 	  ++change_count;
 	}
@@ -1291,13 +1298,15 @@ merge_add (void)
       if (REGNO(dst1) != REGNO(dst2) || REGNO(r2) != REGNO(dst3))
 	continue;
 
-      fprintf (stderr, ":bbb: merge_add applied\n");
+      log ("merge_add applied\n");
 
-      SET_SRC(set1) = l1;
+      rtx_insn * newins1 = make_insn_raw(gen_rtx_SET(dst1, l1));
+      add_insn_after (newins1, ins1, 0);
+      SET_INSN_DELETED(ins1);
+
       rtx_insn * newins2 = make_insn_raw (PATTERN (ins2));
       add_insn_after (newins2, ins3, 0);
       SET_INSN_DELETED(ins2);
-      df_insn_rescan (ins1);
     }
   return change_count;
 }
@@ -1508,9 +1517,7 @@ shrink_stack_frame (void)
     {
       insn_info & jj = infos[i];
       ii |= jj;
-//      fprintf (stderr, "%08lx %08lx\n", jj._use, jj._def);
     }
-//  fprintf (stderr, "%08lx %08lx\n", ii._use, ii._def);
   unsigned freemask = ~ii._use;
 
   rtx a7 = gen_raw_REG (SImode, STACK_POINTER_REGNUM);
@@ -1553,7 +1560,7 @@ shrink_stack_frame (void)
 	      unsigned regbit = 1 << REGNO(reg);
 	      if (freemask & regbit)
 		{
-		  fprintf (stderr, i < prologueend ? ":bbb: remove push for %s\n" : ":bbb: remove pop for %s\n",
+		  log (i < prologueend ? "remove push for %s\n" : "remove pop for %s\n",
 		  reg_names[REGNO(reg)]);
 		  if (i < prologueend)
 		    adjust += 4;
@@ -1574,7 +1581,7 @@ shrink_stack_frame (void)
 	  int add1 = i < prologueend || !usea5 ? 1 : 0;
 	  if ((int) regs.size () + add1 < XVECLEN(pattern, 0) || regs.size () <= 2)
 	    {
-	      fprintf (stderr, ":bbb: shrinking stack frame from %d to %d\n", XVECLEN(pattern, 0) - add1, regs.size ());
+	      log ("shrinking stack frame from %d to %d\n", XVECLEN(pattern, 0) - add1, regs.size ());
 	      if (regs.size () <= 2)
 		{
 		  for (unsigned k = 0; k < regs.size (); ++k)
@@ -1667,7 +1674,7 @@ shrink_stack_frame (void)
 	      if (freemask & regbit)
 		{
 		  adjust += REGNO(src) > STACK_POINTER_REGNUM ? 12 : 4;
-		  fprintf (stderr, ":bbb: remove push for %s\n", reg_names[REGNO(src)]);
+		  log ("remove push for %s\n", reg_names[REGNO(src)]);
 		  SET_INSN_DELETED(insn);
 		}
 	    }
@@ -1678,7 +1685,7 @@ shrink_stack_frame (void)
 	      unsigned regbit = 1 << REGNO(dst);
 	      if (freemask & regbit)
 		{
-		  fprintf (stderr, ":bbb: remove pop for %s\n", reg_names[REGNO(dst)]);
+		  log ("remove pop for %s\n", reg_names[REGNO(dst)]);
 		  SET_INSN_DELETED(insn);
 		}
 	    }
@@ -1726,99 +1733,6 @@ shrink_stack_frame (void)
   return 0;
 }
 
-/*
- * Always prefer lower register numbers within the class.
- */
-static unsigned
-bb_reg_rename (void)
-{
-  for (unsigned index = 0; index < insns.size (); ++index)
-    {
-      insn_info & ii = infos[index];
-      const unsigned def = ii._def;
-      unsigned mask = ii.get_def_mask ();
-
-      if (!mask)
-	continue;
-
-      std::vector<unsigned> found;
-      std::vector<unsigned> todo;
-      if (index + 1 < insns.size ())
-	todo.push_back (index + 1);
-
-      found.push_back (index);
-      /* a register was defined, follow all branches. */
-      while (todo.size ())
-	{
-	  unsigned pos = todo[todo.size () - 1];
-	  todo.pop_back ();
-
-	  if (LABEL_P(insns[pos]))
-	    {
-	      if (pos + 1 < insns.size ())
-		todo.push_back (pos + 1);
-	      continue;
-	    }
-
-	  insn_info & jj = infos[pos];
-
-	  /* update free regs. */
-	  mask &= ~jj._use;
-	  mask &= ~jj._def;
-	  if (!mask)
-	    break;
-
-	  /* defined again. */
-	  if (jj._def & def)
-	    continue;
-
-	  /* not referenced. */
-	  if (!(jj._use & def))
-	    continue;
-
-	  found.push_back (pos);
-
-	  /* follow jump and/or next insn. */
-	  rtx_insn * insn = insns[pos];
-	  if (JUMP_P(insn))
-	    {
-	      std::map<rtx_insn *, unsigned>::iterator j = insn2index.find ((rtx_insn *) JUMP_LABEL(insn));
-	      if (j != insn2index.end ())
-		todo.push_back (j->second);
-
-	      rtx jmppattern = PATTERN (insn);
-
-	      rtx jmpsrc = XEXP(jmppattern, 1);
-	      if (GET_CODE(jmpsrc) == IF_THEN_ELSE)
-		if (pos + 1 < insns.size ())
-		  todo.push_back (pos + 1);
-	    }
-	  else if (pos + 1 < insns.size ())
-	    todo.push_back (pos + 1);
-	}
-
-      if (mask)
-	{
-	  int oldregno = bit2regno (def);
-	  int newregno = bit2regno (mask);
-	  fprintf (stderr, ":bbb: bb_reg_rename %s -> %s (%d insns)\n", reg_names[oldregno], reg_names[newregno],
-		   found.size ());
-
-	  for (std::vector<unsigned>::iterator i = found.begin (); i != found.end (); ++i)
-	    {
-	      debug_rtx (insns[*i]);
-	      do_reg_rename (PATTERN (insns[*i]), oldregno, newregno);
-	    }
-
-	  cselib_invalidate_rtx (gen_raw_REG (SImode, oldregno));
-	  cselib_invalidate_rtx (gen_raw_REG (SImode, newregno));
-	  return 1;
-	}
-    }
-  return 0;
-}
-
-extern const char * current_function_func_begin_label;
 extern class opt_pass * global_pass_regrename;
 
 namespace
@@ -1848,10 +1762,10 @@ namespace
     virtual bool
     gate (function *)
     {
-      if (!flag_bbb_opts)
-	flag_bbb_opts = "*";
+      if (!string_bbb_opts)
+	string_bbb_opts = "+";
 
-      return TARGET_AMIGA && optimize > 0 && flag_bbb_opts;
+      return TARGET_AMIGA && optimize > 0 && string_bbb_opts && !strchr (string_bbb_opts, '-');
     }
 
     virtual unsigned int
@@ -1883,20 +1797,21 @@ namespace
     df_note_add_problem ();
     df_analyze ();
 
-    update_insns ();
+    be_verbose = strchr (string_bbb_opts, 'v');
 
-    bool do_opt_strcpy = strchr (flag_bbb_opts, 's') || strchr (flag_bbb_opts, '*');
-    bool do_commute_add_move = strchr (flag_bbb_opts, 'a') || strchr (flag_bbb_opts, '*');
-    bool do_propagate_moves = strchr (flag_bbb_opts, 'p') || strchr (flag_bbb_opts, '*');
-    bool do_const_cmp_to_sub = strchr (flag_bbb_opts, 'c') || strchr (flag_bbb_opts, '*');
-    bool do_merge_add = strchr (flag_bbb_opts, 'm') || strchr (flag_bbb_opts, '*');
-    bool do_elim_dead_assign = strchr (flag_bbb_opts, 'e') || strchr (flag_bbb_opts, '*');
-    bool do_bb_reg_rename = strchr (flag_bbb_opts, 'r') || strchr (flag_bbb_opts, '*');
-    bool do_shrink_stack_frame = strchr (flag_bbb_opts, 'f') || strchr (flag_bbb_opts, '*');
+    bool do_opt_strcpy = strchr (string_bbb_opts, 's') || strchr (string_bbb_opts, '+');
+    bool do_commute_add_move = strchr (string_bbb_opts, 'a') || strchr (string_bbb_opts, '+');
+    bool do_propagate_moves = strchr (string_bbb_opts, 'p') || strchr (string_bbb_opts, '+');
+    bool do_const_cmp_to_sub = strchr (string_bbb_opts, 'c') || strchr (string_bbb_opts, '+');
+    bool do_merge_add = strchr (string_bbb_opts, 'm') || strchr (string_bbb_opts, '+');
+    bool do_elim_dead_assign = strchr (string_bbb_opts, 'e') || strchr (string_bbb_opts, '+');
+    bool do_bb_reg_rename = strchr (string_bbb_opts, 'r') || strchr (string_bbb_opts, '+');
+    bool do_shrink_stack_frame = strchr (string_bbb_opts, 'f') || strchr (string_bbb_opts, '+');
 
     for (;;)
       {
 	int done = 1;
+	update_insns ();
 	if (do_opt_strcpy && opt_strcpy ())
 	  done = 0, update_insns ();
 
@@ -1916,20 +1831,20 @@ namespace
 	if (do_elim_dead_assign && elim_dead_assign ())
 	  done = 0, update_insns ();
 
+	if (do_bb_reg_rename && ::global_pass_regrename)
+	  {
+	    class opt_pass * rr = ::global_pass_regrename->clone ();
+	    rr->execute (0);
+
+    //	update_insns ();
+    //	update_insn_infos ();
+    //	bb_reg_rename ();
+
+	    update_insns ();
+	  }
+
 	if (done)
 	  break;
-      }
-
-    if (do_bb_reg_rename && ::global_pass_regrename)
-      {
-	class opt_pass * rr = ::global_pass_regrename->clone ();
-	rr->execute (0);
-
-//	update_insns ();
-//	update_insn_infos ();
-//	bb_reg_rename ();
-
-	update_insns ();
       }
 
     if (do_shrink_stack_frame)
@@ -1938,8 +1853,8 @@ namespace
 	update_insns ();
       }
 
-    if (strchr (flag_bbb_opts, 'X') || strchr (flag_bbb_opts, 'x'))
-      dump_insns ("bbb 1", strchr (flag_bbb_opts, 'X'));
+    if (strchr (string_bbb_opts, 'X') || strchr (string_bbb_opts, 'x'))
+      dump_insns ("bbb", strchr (string_bbb_opts, 'X'));
     clear ();
 
     return 0;

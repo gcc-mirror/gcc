@@ -2165,7 +2165,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
   /* Ignore deleted insns.  These can occur when we split insns (due to a
      template of "#") while not optimizing.  */
-  if (insn->deleted () || GET_CODE(insn) == VALUE || GET_CODE(insn) == CONST_FIXED)
+  if (insn->deleted () || GET_CODE(insn) == VALUE || GET_CODE(insn) == CONST_FIXED || GET_CODE(insn) == DEBUG_IMPLICIT_PTR)
     return NEXT_INSN (insn);
 
   switch (GET_CODE (insn))
