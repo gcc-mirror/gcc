@@ -6569,8 +6569,6 @@ arc_reorg (void)
 	  rtx_insn *lp_simple = NULL;
 	  rtx_insn *next = NULL;
 	  rtx op0 = XEXP (XVECEXP (PATTERN (insn), 0, 1), 0);
-	  HOST_WIDE_INT loop_end_id
-	    = -INTVAL (XEXP (XVECEXP (PATTERN (insn), 0, 4), 0));
 	  int seen_label = 0;
 
 	  for (lp = prev;
@@ -6581,6 +6579,9 @@ arc_reorg (void)
 	  if (!lp || !NONJUMP_INSN_P (lp)
 	      || dead_or_set_regno_p (lp, LP_COUNT))
 	    {
+	      HOST_WIDE_INT loop_end_id
+		= INTVAL (XEXP (XVECEXP (PATTERN (insn), 0, 4), 0));
+
 	      for (prev = next = insn, lp = NULL ; prev || next;)
 		{
 		  if (prev)

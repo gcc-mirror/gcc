@@ -1,3 +1,7 @@
+2017-04-14  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* gcc.target/arc/loop-1.c: New file.
+
 2017-04-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/80098
