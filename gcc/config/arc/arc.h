@@ -1581,11 +1581,6 @@ extern enum arc_function_type arc_compute_function_type (struct function *);
 
 #define INIT_EXPANDERS arc_init_expanders ()
 
-#define CFA_FRAME_BASE_OFFSET(FUNDECL) (-arc_decl_pretend_args ((FUNDECL)))
-
-#define ARG_POINTER_CFA_OFFSET(FNDECL) \
-  (FIRST_PARM_OFFSET (FNDECL) + arc_decl_pretend_args ((FNDECL)))
-
 enum
 {
   ARC_LRA_PRIORITY_NONE, ARC_LRA_PRIORITY_NONCOMPACT, ARC_LRA_PRIORITY_COMPACT

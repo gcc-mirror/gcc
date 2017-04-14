@@ -111,7 +111,6 @@ extern int arc_label_align (rtx_insn *label);
 extern bool arc_need_delay (rtx_insn *insn);
 extern bool arc_text_label (rtx_insn *insn);
 
-extern int arc_decl_pretend_args (tree decl);
 extern bool arc_short_comparison_p (rtx, int);
 extern bool arc_epilogue_uses (int regno);
 extern bool arc_eh_uses (int regno);
