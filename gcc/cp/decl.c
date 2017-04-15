@@ -9852,6 +9852,49 @@ mark_inline_variable (tree decl)
     }
 }
 
+
+/* Assign a typedef-given name to a class or enumeration type declared
+   as anonymous at first.  This was split out of grokdeclarator
+   because it is also used in libcc1.  */
+
+void
+name_unnamed_type (tree type, tree decl)
+{
+  gcc_assert (TYPE_UNNAMED_P (type));
+
+  /* Replace the anonymous name with the real name everywhere.  */
+  for (tree t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+    {
+      if (anon_aggrname_p (TYPE_IDENTIFIER (t)))
+	/* We do not rename the debug info representing the
+	   unnamed tagged type because the standard says in
+	   [dcl.typedef] that the naming applies only for
+	   linkage purposes.  */
+	/*debug_hooks->set_name (t, decl);*/
+	TYPE_NAME (t) = decl;
+    }
+
+  if (TYPE_LANG_SPECIFIC (type))
+    TYPE_WAS_UNNAMED (type) = 1;
+
+  /* If this is a typedef within a template class, the nested
+     type is a (non-primary) template.  The name for the
+     template needs updating as well.  */
+  if (TYPE_LANG_SPECIFIC (type) && CLASSTYPE_TEMPLATE_INFO (type))
+    DECL_NAME (CLASSTYPE_TI_TEMPLATE (type))
+      = TYPE_IDENTIFIER (type);
+
+  /* Adjust linkage now that we aren't unnamed anymore.  */
+  reset_type_linkage (type);
+
+  /* FIXME remangle member functions; member functions of a
+     type with external linkage have external linkage.  */
+
+  /* Check that our job is done, and that it would fail if we
+     attempted to do it again.  */
+  gcc_assert (!TYPE_UNNAMED_P (type));
+}
+
 /* Given declspecs and a declarator (abstract or otherwise), determine
    the name and type of the object declared and construct a DECL node
    for it.
@@ -11576,37 +11619,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  && declspecs->type_definition_p
 	  && attributes_naming_typedef_ok (*attrlist)
 	  && cp_type_quals (type) == TYPE_UNQUALIFIED)
-	{
-	  tree t;
-
-	  /* Replace the anonymous name with the real name everywhere.  */
-	  for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
-	    {
-	      if (anon_aggrname_p (TYPE_IDENTIFIER (t)))
-		/* We do not rename the debug info representing the
-		   unnamed tagged type because the standard says in
-		   [dcl.typedef] that the naming applies only for
-		   linkage purposes.  */
-		/*debug_hooks->set_name (t, decl);*/
-		TYPE_NAME (t) = decl;
-  	    }
-
-	  if (TYPE_LANG_SPECIFIC (type))
-	    TYPE_WAS_UNNAMED (type) = 1;
-
-	  /* If this is a typedef within a template class, the nested
-	     type is a (non-primary) template.  The name for the
-	     template needs updating as well.  */
-	  if (TYPE_LANG_SPECIFIC (type) && CLASSTYPE_TEMPLATE_INFO (type))
-	    DECL_NAME (CLASSTYPE_TI_TEMPLATE (type))
-	      = TYPE_IDENTIFIER (type);
-
-	  /* Adjust linkage now that we aren't unnamed anymore.  */
-	  reset_type_linkage (type);
-
-	  /* FIXME remangle member functions; member functions of a
-	     type with external linkage have external linkage.  */
-	}
+	name_unnamed_type (type, decl);
 
       if (signed_p
 	  || (typedef_decl && C_TYPEDEF_EXPLICITLY_SIGNED (typedef_decl)))

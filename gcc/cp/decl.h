@@ -35,6 +35,7 @@ enum decl_context
 extern tree grokdeclarator (const cp_declarator *,
 			    cp_decl_specifier_seq *,
 			    enum decl_context, int, tree*);
+extern void name_unnamed_type (tree, tree);
 
 /* States indicating how grokdeclarator() should handle declspecs marked
    with __attribute__((deprecated)).  An object declared as
