@@ -1,4 +1,4 @@
-! {dg_do run }
+! { dg-do run }
 !
 ! Tests the fix for PR67674
 !
