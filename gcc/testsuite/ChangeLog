@@ -1,3 +1,11 @@
+2017-04-15  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* gfortran.dg/deferred_character_3.f90: Fix dg directive.
+	* gfortran.dg/generic_29.f90: Likewise.
+	* gfortran.dg/goacc/multi-clause.f90: Likewise.
+	* gfortran.dg/pr41922.f90: Likewise.
+	* gfortran.dg/pr70006.f90: Likewise.
+
 2017-04-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR tree-optimization/66612

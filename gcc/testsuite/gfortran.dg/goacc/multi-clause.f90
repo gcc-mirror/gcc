@@ -1,6 +1,6 @@
 ! Test if variable appearing in multiple clauses are errors.
 
-! { dg-compile }
+! { dg-do compile }
 
 program combined
   implicit none
