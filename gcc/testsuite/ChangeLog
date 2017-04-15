@@ -1,6 +1,22 @@
+2017-04-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/pr54669.c: Fix dg-do directive.
+	* gcc.dg/pr78582.c: Ditto.
+	* gcc.dg/pr80020.c: Ditto.
+	* gcc.dg/torture/pr57993-2.cpp: Ditto.
+	* gcc.dg/tree-ssa/builtin-sprintf-3.c: Ditto.
+	* gcc.dg/tree-ssa/builtin-sprintf-4.c: Ditto.
+	* gcc.dg/tree-ssa/builtin-sprintf-5.c: Ditto.
+	* gcc.dg/tree-ssa/builtin-sprintf-6.c: Ditto.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-5.c: Ditto.
+	* gcc.dg/tree-ssa/pr79327-2.c: Ditto.
+	* gcc.dg/tree-ssa/pr79352.c: Ditto.
+	* gcc.dg/tree-ssa/pr79376.c: Ditto.
+	* gcc.dg/tree-ssa/pr79691.c: Ditto.
+
 2017-04-15  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
-	* gfortran.dg/deferred_character_3.f90: Fix dg directive.
+	* gfortran.dg/deferred_character_3.f90: Fix dg-do directive.
 	* gfortran.dg/generic_29.f90: Likewise.
 	* gfortran.dg/goacc/multi-clause.f90: Likewise.
 	* gfortran.dg/pr41922.f90: Likewise.

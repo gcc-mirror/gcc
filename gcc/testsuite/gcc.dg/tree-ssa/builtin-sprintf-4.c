@@ -2,7 +2,7 @@
    gimple-ssa-sprintf.c:214
    Disable warnings to exercise code paths through the pass that may
    not be exercised when the -Wformat-overflow option is in effect.  */
-/* { dg-compile }
+/* { dg-do compile }
    { dg-options "-O2 -fdump-tree-optimized -w" } */
 
 
