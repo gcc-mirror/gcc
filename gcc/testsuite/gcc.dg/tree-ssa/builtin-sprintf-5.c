@@ -1,6 +1,6 @@
 /* PR middle-end/78476 - snprintf(0, 0, ...) with known arguments not
    optimized away
-   { dg-compile }
+   { dg-do compile }
    { dg-options "-O2 -fdump-tree-optimized" }
    { dg-require-effective-target int32plus } */
 

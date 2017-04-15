@@ -1,6 +1,6 @@
 /* PR tree-optimization/79376 - wrong lower bound with %s and non-constant
    strings in -Wformat-overflow
-   { dg-compile }
+   { dg-do compile }
    { dg-options "-O2 -fdump-tree-optimized" } */
 
 #define CAT(s, n)   s ## n

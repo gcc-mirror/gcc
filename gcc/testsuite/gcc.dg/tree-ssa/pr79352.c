@@ -1,6 +1,6 @@
 /* PR tree-optimization/79352 - -fprintf-return-value doesn't handle
    flexible-like array members properly
-   { dg-compile }
+   { dg-do compile }
    { dg-options "-O2 -fdump-tree-optimized" } */
 
 struct A { int i; char a1[1]; };
