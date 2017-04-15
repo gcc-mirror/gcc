@@ -1494,6 +1494,15 @@ plugin_build_decl (cc1_plugin::connection *self,
 
   set_access_flags (decl, acc_flags);
 
+  /* If this is the typedef that names an otherwise anonymous type,
+     propagate the typedef name to the type.  In normal compilation,
+     this is done in grokdeclarator.  */
+  if (sym_kind == GCC_CP_SYMBOL_TYPEDEF
+      && !template_decl_p
+      && DECL_CONTEXT (decl) == TYPE_CONTEXT (sym_type)
+      && TYPE_UNNAMED_P (sym_type))
+    name_unnamed_type (sym_type, decl);
+
   if (sym_kind != GCC_CP_SYMBOL_TYPEDEF
       && sym_kind != GCC_CP_SYMBOL_CLASS
       && sym_kind != GCC_CP_SYMBOL_UNION
