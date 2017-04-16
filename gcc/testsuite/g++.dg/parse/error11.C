@@ -50,7 +50,7 @@ void func(void)
   //  the special error message.
   Foo<: :B> k2;     // { dg-bogus "cannot begin|alternate spelling" "smart error should not be triggered here" }
   Foo[:B> k1;       // { dg-bogus "cannot begin|alternate spelling" "smart error should not be triggered here" } 
-// { dg-error "6:missing template arguments before" "template" { target *-*-* } { 51 } }
+// { dg-error "6:missing template arguments before" "template" { target *-*-* } 51 }
 // { dg-error "9:expected primary-expression before ':' token" "primary" { target *-*-* } 51 }
 // { dg-error "9:expected '\]' before ':' token" "backslash" { target *-*-* } 51 }
 // { dg-error "6:missing template arguments before" "template" { target *-*-* } 52 }

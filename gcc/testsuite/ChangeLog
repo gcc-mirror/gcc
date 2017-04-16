@@ -1,3 +1,16 @@
+2017-04-16  Tom de Vries  <tom@codesourcery.com>
+
+	* g++.dg/parse/error11.C: Remove braces around line number in dejagnu
+	  directive.
+	* g++.dg/parse/error3.C: Same.
+	* g++.old-deja/g++.pt/niklas01a.C: Same.
+	* gcc.dg/990506-0.c: Same.
+	* gcc.dg/cpp/19990413-1.c: Same.
+	* gcc.dg/cpp/pragma-1.c: Same.
+	* gcc.dg/cpp/pragma-2.c: Same.
+	* gcc.dg/m-un-2.c: Same.
+	* objc.dg/private-1.m: Same.
+
 2017-04-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/pr54669.c: Fix dg-do directive.
