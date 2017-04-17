@@ -1,3 +1,11 @@
+2017-04-12  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR target/80315
+	* gcc.target/powerpc/pr80315-1.c: New test.
+	* gcc.target/powerpc/pr80315-2.c: New test.
+	* gcc.target/powerpc/pr80315-3.c: New test.
+	* gcc.target/powerpc/pr80315-4.c: New test.
+
 2017-04-16  Tom de Vries  <tom@codesourcery.com>
 
 	* g++.dg/parse/error11.C: Remove braces around line number in dejagnu
