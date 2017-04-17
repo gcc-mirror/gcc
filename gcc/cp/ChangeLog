@@ -1,3 +1,7 @@
+2017-04-17  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst_init): Set TARGET_EXPR_DIRECT_INIT_P.
+
 2017-04-15  Alexandre Oliva <aoliva@redhat.com>
 
 	* decl.c (name_unnamed_type): Split out of...
