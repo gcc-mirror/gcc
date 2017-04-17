@@ -14413,6 +14413,8 @@ tsubst_init (tree init, tree decl, tree args,
 			       complain);
       if (TREE_CODE (init) == AGGR_INIT_EXPR)
 	init = get_target_expr_sfinae (init, complain);
+      if (TREE_CODE (init) == TARGET_EXPR)
+	TARGET_EXPR_DIRECT_INIT_P (init) = true;
     }
 
   return init;
