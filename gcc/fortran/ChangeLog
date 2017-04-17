@@ -1,3 +1,9 @@
+2017-04-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80440
+	* module.c (find_symtree_for_symbol): Delete.
+	(read_module): Remove the call to the above.
+
 2017-04-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/80361
@@ -5,9 +11,9 @@
 	the recursive attribute.
 
 2017-04-10  Nicolas Koenig  <koenigni@student.ethz.ch>
-            Paul Thomas  <pault@gcc.gnu.org>
+	    Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/69498 
+	PR fortran/69498
 	* module.c (gfc_match_submodule): Add error
 	if function is called in the wrong state.
 
@@ -17,7 +23,7 @@
 	* expr.c (gfc_check_pointer_assign): Check if procedure pointer
 	components in a pointer assignment need an explicit interface.
 
-2017-03-18  Nicolas Koenig  <koenigni@student.ethz.ch> 
+2017-03-18  Nicolas Koenig  <koenigni@student.ethz.ch>
 
 	PR fortran/69498
 	* symbol.c (gfc_delete_symtree): If there is a period in the name, ignore
