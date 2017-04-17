@@ -1,5 +1,8 @@
 2017-04-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80415 - wrong error with default arg and array reference.
+	* tree.c (lvalue_kind): Return clk_class for an array prvalue.
+
 	* pt.c (tsubst_init): Set TARGET_EXPR_DIRECT_INIT_P.
 
 2017-04-15  Alexandre Oliva <aoliva@redhat.com>
