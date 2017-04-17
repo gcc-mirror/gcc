@@ -1,3 +1,8 @@
+2017-04-17  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/80287
+	* class.c (fixup_may_alias): Fix all type variants.
+
 2017-04-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80415 - wrong error with default arg and array reference.
