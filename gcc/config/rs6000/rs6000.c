@@ -7600,12 +7600,8 @@ rs6000_expand_vector_extract (rtx target, rtx vec, rtx elt)
 	  return;
 
 	case V4SFmode:
-	  if (TARGET_UPPER_REGS_SF)
-	    {
-	      emit_insn (gen_vsx_extract_v4sf_var (target, vec, elt));
-	      return;
-	    }
-	  break;
+	  emit_insn (gen_vsx_extract_v4sf_var (target, vec, elt));
+	  return;
 
 	case V4SImode:
 	  emit_insn (gen_vsx_extract_v4si_var (target, vec, elt));
