@@ -1,3 +1,13 @@
+2017-04-18  Jeff Law  <law@redhat.com>
+
+	* regcprop.c (maybe_mode_change): Avoid creating copies of the
+	stack pointer.
+
+	Revert:
+	2017-04-13  Jeff Law  <law@redhat.com>
+	* config/mips.mips.md (zero_extendsidi2): Do not allow SP to appear
+	in operands[1] if it is a MEM and TARGET_MIPS16 is active.
+
 2017-04-18  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/79453

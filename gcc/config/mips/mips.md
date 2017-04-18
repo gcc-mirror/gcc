@@ -3493,10 +3493,7 @@
 (define_insn_and_split "*zero_extendsidi2"
   [(set (match_operand:DI 0 "register_operand" "=d,d")
         (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "d,W")))]
-  "TARGET_64BIT && !ISA_HAS_EXT_INS
-   && !(TARGET_MIPS16
-        && MEM_P (operands[1])
-        && reg_mentioned_p (stack_pointer_rtx, operands[1]))"
+  "TARGET_64BIT && !ISA_HAS_EXT_INS"
   "@
    #
    lwu\t%0,%1"
@@ -3512,10 +3509,7 @@
 (define_insn "*zero_extendsidi2_dext"
   [(set (match_operand:DI 0 "register_operand" "=d,d")
         (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "d,W")))]
-  "TARGET_64BIT && ISA_HAS_EXT_INS
-   && !(TARGET_MIPS16
-        && MEM_P (operands[1])
-        && reg_mentioned_p (stack_pointer_rtx, operands[1]))"
+  "TARGET_64BIT && ISA_HAS_EXT_INS"
   "@
    dext\t%0,%1,0,32
    lwu\t%0,%1"
