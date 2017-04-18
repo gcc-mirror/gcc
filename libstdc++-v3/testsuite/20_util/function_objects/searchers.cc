@@ -49,7 +49,8 @@ test01()
 
   for (auto n : needles)
   {
-    auto ne = n + std::strlen(n);
+    auto nlen = std::strlen(n);
+    auto ne = n + nlen;
     default_searcher d(n, ne);
     boyer_moore_searcher bm(n, ne);
     boyer_moore_horspool_searcher bmh(n, ne);
@@ -59,10 +60,22 @@ test01()
       auto res = std::search(h, he, n, ne);
       auto d_res = d(h, he);
       VERIFY( d_res.first == res );
+      if (res == he)
+	VERIFY( d_res.second == d_res.first );
+      else
+	VERIFY( d_res.second == (d_res.first + nlen) );
       auto bm_res = bm(h, he);
       VERIFY( bm_res.first == res );
+      if (res == he)
+	VERIFY( bm_res.second == bm_res.first );
+      else
+	VERIFY( bm_res.second == (bm_res.first + nlen) );
       auto bmh_res = bmh(h, he);
       VERIFY( bmh_res.first == res );
+      if (res == he)
+	VERIFY( bmh_res.second == bmh_res.first );
+      else
+	VERIFY( bmh_res.second == (bmh_res.first + nlen) );
     }
   }
 }
@@ -82,7 +95,8 @@ test02()
 
   for (auto n : needles)
   {
-    auto ne = n + std::wcslen(n);
+    auto nlen = std::wcslen(n);
+    auto ne = n + nlen;
     default_searcher d(n, ne);
     boyer_moore_searcher bm(n, ne);
     boyer_moore_horspool_searcher bmh(n, ne);
@@ -92,10 +106,22 @@ test02()
       auto res = std::search(h, he, n, ne);
       auto d_res = d(h, he);
       VERIFY( d_res.first == res );
+      if (res == he)
+	VERIFY( d_res.second == d_res.first );
+      else
+	VERIFY( d_res.second == (d_res.first + nlen) );
       auto bm_res = bm(h, he);
       VERIFY( bm_res.first == res );
+      if (res == he)
+	VERIFY( bm_res.second == bm_res.first );
+      else
+	VERIFY( bm_res.second == (bm_res.first + nlen) );
       auto bmh_res = bmh(h, he);
       VERIFY( bmh_res.first == res );
+      if (res == he)
+	VERIFY( bmh_res.second == bmh_res.first );
+      else
+	VERIFY( bmh_res.second == (bmh_res.first + nlen) );
     }
   }
 #endif
@@ -119,7 +145,8 @@ test03()
 
   const char* needle = " foo 123 ";
   const char* haystack = "*****foo*123******";
-  const char* ne = needle + std::strlen(needle);
+  auto nlen = std::strlen(needle);
+  const char* ne = needle + nlen;
   const char* he = haystack + std::strlen(haystack);
 
   default_searcher d(needle, ne, eq);
@@ -129,10 +156,22 @@ test03()
   auto res = std::search(haystack, he, needle, ne, eq);
   auto d_res = d(haystack, he);
   VERIFY( d_res.first == res );
+  if (res == he)
+    VERIFY( d_res.second == d_res.first );
+  else
+    VERIFY( d_res.second == (d_res.first + nlen) );
   auto bm_res = bm(haystack, he);
   VERIFY( bm_res.first == res );
+  if (res == he)
+    VERIFY( bm_res.second == bm_res.first );
+  else
+    VERIFY( bm_res.second == (bm_res.first + nlen) );
   auto bmh_res = bmh(haystack, he);
   VERIFY( bmh_res.first == res );
+  if (res == he)
+    VERIFY( bmh_res.second == bmh_res.first );
+  else
+    VERIFY( bmh_res.second == (bmh_res.first + nlen) );
 }
 
 int

@@ -969,17 +969,17 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	operator()(_ForwardIterator2 __first, _ForwardIterator2 __last) const
 	{
 	  _ForwardIterator2 __first_ret =
-	    std::search(__first, __last,
-			std::get<0>(_M_m), std::get<1>(_M_m),
+	    std::search(__first, __last, std::get<0>(_M_m), std::get<1>(_M_m),
 			std::get<2>(_M_m));
-	  _ForwardIterator2 __second_ret = __first_ret == __last ?
-	    __last :  std::next(__first_ret, std::distance(std::get<0>(_M_m),
-							   std::get<1>(_M_m)));
-	  return std::make_pair(__first_ret, __second_ret);
+	  auto __ret = std::make_pair(__first_ret, __first_ret);
+	  if (__ret.first != __last)
+	    std::advance(__ret.second, std::distance(std::get<0>(_M_m),
+						     std::get<1>(_M_m)));
+	  return __ret;
 	}
 
     private:
-      std::tuple<_ForwardIterator1, _ForwardIterator1, _BinaryPredicate> _M_m;
+      tuple<_ForwardIterator1, _ForwardIterator1, _BinaryPredicate> _M_m;
     };
 
   template<typename _Key, typename _Tp, typename _Hash, typename _Pred>
@@ -1025,7 +1025,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	    for (__diff_type __i = 0; __i < __patlen - 1; ++__i)
 	      {
 		auto __ch = __pat[__i];
-		using _UCh = std::make_unsigned_t<decltype(__ch)>;
+		using _UCh = make_unsigned_t<decltype(__ch)>;
 		auto __uch = static_cast<_UCh>(__ch);
 		std::get<0>(_M_bad_char)[__uch] = __patlen - 1 - __i;
 	      }
@@ -1037,7 +1037,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	__diff_type
 	_M_lookup(_Key __key, __diff_type __not_found) const
 	{
-	  auto __ukey = static_cast<std::make_unsigned_t<_Key>>(__key);
+	  auto __ukey = static_cast<make_unsigned_t<_Key>>(__key);
 	  if (__ukey >= _Len)
 	    return __not_found;
 	  return std::get<0>(_M_bad_char)[__ukey];
@@ -1046,14 +1046,14 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       const _Pred&
       _M_pred() const { return std::get<1>(_M_bad_char); }
 
-      std::tuple<_GLIBCXX_STD_C::array<_Tp, _Len>, _Pred> _M_bad_char;
+      tuple<_GLIBCXX_STD_C::array<_Tp, _Len>, _Pred> _M_bad_char;
     };
 
   template<typename _Pred>
-    struct __is_std_equal_to : std::false_type { };
+    struct __is_std_equal_to : false_type { };
 
   template<>
-    struct __is_std_equal_to<std::equal_to<void>> : std::true_type { };
+    struct __is_std_equal_to<equal_to<void>> : true_type { };
 
   // Use __boyer_moore_array_base when pattern consists of narrow characters
   // and uses std::equal_to as the predicate.
@@ -1061,14 +1061,14 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
            typename _Val = typename iterator_traits<_RAIter>::value_type,
 	   typename _Diff = typename iterator_traits<_RAIter>::difference_type>
     using __boyer_moore_base_t
-      = std::conditional_t<sizeof(_Val) == 1 && is_integral<_Val>::value
-			   && __is_std_equal_to<_Pred>::value,
-			   __boyer_moore_array_base<_Diff, 256, _Pred>,
-			   __boyer_moore_map_base<_Val, _Diff, _Hash, _Pred>>;
+      = conditional_t<sizeof(_Val) == 1 && is_integral<_Val>::value
+		      && __is_std_equal_to<_Pred>::value,
+		      __boyer_moore_array_base<_Diff, 256, _Pred>,
+		      __boyer_moore_map_base<_Val, _Diff, _Hash, _Pred>>;
 
   template<typename _RAIter, typename _Hash
-	     = std::hash<typename std::iterator_traits<_RAIter>::value_type>,
-	   typename _BinaryPredicate = std::equal_to<>>
+	     = hash<typename iterator_traits<_RAIter>::value_type>,
+	   typename _BinaryPredicate = equal_to<>>
     class boyer_moore_searcher
     : __boyer_moore_base_t<_RAIter, _Hash, _BinaryPredicate>
     {
@@ -1123,8 +1123,8 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     };
 
   template<typename _RAIter, typename _Hash
-	     = std::hash<typename std::iterator_traits<_RAIter>::value_type>,
-	   typename _BinaryPredicate = std::equal_to<>>
+	     = hash<typename iterator_traits<_RAIter>::value_type>,
+	   typename _BinaryPredicate = equal_to<>>
     class boyer_moore_horspool_searcher
     : __boyer_moore_base_t<_RAIter, _Hash, _BinaryPredicate>
     {
@@ -1156,8 +1156,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	      for (auto __scan = __patlen - 1;
 		   __pred(__first[__scan], _M_pat[__scan]); --__scan)
 		if (__scan == 0)
-		  return std::make_pair(__first,
-					std::next(__first, __patlen));
+		  return std::make_pair(__first, __first + __patlen);
 	      auto __shift = _M_bad_char_shift(__first[__patlen - 1]);
 	      __len -= __shift;
 	      __first += __shift;
@@ -1223,8 +1222,10 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	      --__j;
 	    }
 	  if (__j < 0)
-	    return std::make_pair(__first + __i + 1, std::next(__first,
-							       __patlen));
+	    {
+	      const auto __match = __first + __i + 1;
+	      return std::make_pair(__match, __match + __patlen);
+	    }
 	  __i += std::max(_M_bad_char_shift(__first[__i]),
 			  _M_good_suffix[__j]);
 	}
