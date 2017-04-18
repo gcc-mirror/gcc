@@ -20,6 +20,7 @@
 
 #include "config.h"
 #include "system.h"
+#include "intl.h"
 #include "coretypes.h"
 #include "backend.h"
 #include "target.h"
@@ -9797,28 +9798,28 @@ avr_pgm_check_var_decl (tree node)
 
     case VAR_DECL:
       if (as = avr_nonconst_pointer_addrspace (TREE_TYPE (node)), as)
-        reason = "variable";
+        reason = _("variable");
       break;
 
     case PARM_DECL:
       if (as = avr_nonconst_pointer_addrspace (TREE_TYPE (node)), as)
-        reason = "function parameter";
+        reason = _("function parameter");
       break;
 
     case FIELD_DECL:
       if (as = avr_nonconst_pointer_addrspace (TREE_TYPE (node)), as)
-        reason = "structure field";
+        reason = _("structure field");
       break;
 
     case FUNCTION_DECL:
       if (as = avr_nonconst_pointer_addrspace (TREE_TYPE (TREE_TYPE (node))),
           as)
-        reason = "return type of function";
+        reason = _("return type of function");
       break;
 
     case POINTER_TYPE:
       if (as = avr_nonconst_pointer_addrspace (node), as)
-        reason = "pointer";
+        reason = _("pointer");
       break;
     }
 

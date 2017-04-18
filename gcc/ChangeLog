@@ -1,3 +1,9 @@
+2017-04-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/79435
+	* config/avr/avr.c (intl.h): Include it.
+	(avr_pgm_check_var_decl) [reason]: Wrap	diagnostic snippets into _().
+
 2017-04-18  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/78783
