@@ -3,6 +3,11 @@
 	PR c++/80244 - ICE with attribute in template alias.
 	* tree.c (strip_typedefs): Handle UNDERLYING_TYPE.
 
+	PR c++/80241 - ICE with alignas pack expansion.
+	* error.c (dump_expr): Handle TREE_LIST.
+	* parser.c (cp_parser_std_attribute_list): Return error_mark if
+	make_pack_expansion returns an error.
+
 2017-04-17  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/80287
