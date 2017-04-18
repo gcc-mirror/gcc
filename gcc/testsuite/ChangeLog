@@ -1,5 +1,8 @@
 2017-04-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/80444
+	* gcc.dg/sancov/pr80444.c: New test.
+
 	PR middle-end/79788
 	PR middle-end/80375
 	* gcc.dg/pr79788-1.c: New test.
