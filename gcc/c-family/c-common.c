@@ -2179,10 +2179,6 @@ c_common_type_for_mode (machine_mode mode, int unsignedp)
       return (unsignedp ? int_n_trees[i].unsigned_type
 	      : int_n_trees[i].signed_type);
 
-  if (mode == TYPE_MODE (widest_integer_literal_type_node))
-    return unsignedp ? widest_unsigned_literal_type_node
-		     : widest_integer_literal_type_node;
-
   if (mode == QImode)
     return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
 
@@ -2412,8 +2408,6 @@ c_common_signed_or_unsigned_type (int unsignedp, tree type)
       return (unsignedp ? int_n_trees[i].unsigned_type
 	      : int_n_trees[i].signed_type);
 
-  if (type1 == widest_integer_literal_type_node || type1 == widest_unsigned_literal_type_node)
-    return unsignedp ? widest_unsigned_literal_type_node : widest_integer_literal_type_node;
 #if HOST_BITS_PER_WIDE_INT >= 64
   if (type1 == intTI_type_node || type1 == unsigned_intTI_type_node)
     return unsignedp ? unsigned_intTI_type_node : intTI_type_node;
@@ -2533,10 +2527,6 @@ c_common_signed_or_unsigned_type (int unsignedp, tree type)
 	&& TYPE_PRECISION (type) == int_n_data[i].bitsize)
       return (unsignedp ? int_n_trees[i].unsigned_type
 	      : int_n_trees[i].signed_type);
-
-  if (TYPE_OK (widest_integer_literal_type_node))
-    return (unsignedp ? widest_unsigned_literal_type_node
-	    : widest_integer_literal_type_node);
 
 #if HOST_BITS_PER_WIDE_INT >= 64
   if (TYPE_OK (intTI_type_node))
@@ -4164,17 +4154,16 @@ c_common_nodes_and_builtins (void)
 #endif
 
   /* Create the widest literal types.  */
-  widest_integer_literal_type_node
-    = make_signed_type (HOST_BITS_PER_WIDE_INT * 2);
-  lang_hooks.decls.pushdecl (build_decl (UNKNOWN_LOCATION,
-					 TYPE_DECL, NULL_TREE,
-					 widest_integer_literal_type_node));
-
-  widest_unsigned_literal_type_node
-    = make_unsigned_type (HOST_BITS_PER_WIDE_INT * 2);
-  lang_hooks.decls.pushdecl (build_decl (UNKNOWN_LOCATION,
-					 TYPE_DECL, NULL_TREE,
-					 widest_unsigned_literal_type_node));
+  if (targetm.scalar_mode_supported_p (TImode))
+    {
+      widest_integer_literal_type_node = intTI_type_node;
+      widest_unsigned_literal_type_node = unsigned_intTI_type_node;
+    }
+  else
+    {
+      widest_integer_literal_type_node = intDI_type_node;
+      widest_unsigned_literal_type_node = unsigned_intDI_type_node;
+    }
 
   signed_size_type_node = c_common_signed_type (size_type_node);
 

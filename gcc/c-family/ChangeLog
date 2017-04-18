@@ -1,3 +1,14 @@
+2017-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79788
+	PR middle-end/80375
+	* c-common.c (c_common_type_for_mode): Don't handle
+	widest_*_literal_type_node here.
+	c_common_signed_or_unsigned_type): Likewise.
+	(c_common_nodes_and_builtins): Set widest_*_literal_type_node
+	to *intTI_type_node or *intDI_type_node depending on whether
+	TImode is supported by the target or not.
+
 2017-04-10  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/80350
