@@ -1,3 +1,8 @@
+2017-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80443
+	* gcc.c-torture/compile/pr80443.c: New test.
+
 2017-04-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/80357
