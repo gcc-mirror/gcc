@@ -2017,6 +2017,11 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
   if (newpos2 != NULL_RTX)
     src2 = BLOCK_FOR_INSN (newpos2);
 
+  /* Check that SRC1 and SRC2 have preds again.  They may have changed
+     above due to the call to flow_find_cross_jump.  */
+  if (EDGE_COUNT (src1->preds) == 0 || EDGE_COUNT (src2->preds) == 0)
+    return false;
+
   if (dir == dir_backward)
     {
 #define SWAP(T, X, Y) do { T tmp = (X); (X) = (Y); (Y) = tmp; } while (0)

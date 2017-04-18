@@ -1,3 +1,9 @@
+2017-04-18  Jeff Law  <law@redhat.com>
+
+	PR middle-end/80422
+	* cfgcleanup.c (try_crossjump_to_edge): Verify SRC1 and SRC2 have
+	predecessors after walking up the insn chain.
+
 2017-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/80263
