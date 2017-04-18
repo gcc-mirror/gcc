@@ -24846,8 +24846,12 @@ cp_parser_std_attribute_list (cp_parser *parser, tree attr_ns)
 	    error_at (token->location,
 		      "expected attribute before %<...%>");
 	  else
-	    TREE_VALUE (attribute)
-	      = make_pack_expansion (TREE_VALUE (attribute));
+	    {
+	      tree pack = make_pack_expansion (TREE_VALUE (attribute));
+	      if (pack == error_mark_node)
+		return error_mark_node;
+	      TREE_VALUE (attribute) = pack;
+	    }
 	  token = cp_lexer_peek_token (parser->lexer);
 	}
       if (token->type != CPP_COMMA)
