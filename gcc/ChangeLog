@@ -1,3 +1,9 @@
+2017-04-18  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/78783
+	* gcov-tool.c (gcov_output_files): Validate that destination
+	file is either removed by the tool or by a user.
+
 2017-04-14  Andrew Burgess  <andrew.burgess@embecosm.com>
 	    Guy Benyei  <guybe@mellanox.com>
 
