@@ -2,7 +2,7 @@
 
 	Backport from 2017-04-18 trunk r246966.
 
-	PR target/79435
+	PR target/79453
 	* config/avr/avr.c (intl.h): Include it.
 	(avr_pgm_check_var_decl) [reason]: Wrap	diagnostic snippets into _().
 
