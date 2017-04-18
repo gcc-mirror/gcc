@@ -517,18 +517,11 @@ CROSS_SYSTEM_HEADER_DIR = @CROSS_SYSTEM_HEADER_DIR@
 # macro is also used in a double-quoted context.
 SYSTEM_HEADER_DIR = `echo @SYSTEM_HEADER_DIR@ | sed -e :a -e 's,[^/]*/\.\.\/,,' -e ta`
 
-# Path to the system headers on the build machine
-ifeq ($(build),$(host))
-BUILD_SYSTEM_HEADER_DIR = $(SYSTEM_HEADER_DIR)
-else
-BUILD_SYSTEM_HEADER_DIR = `echo $(CROSS_SYSTEM_HEADER_DIR) | sed -e :a -e 's,[^/]*/\.\.\/,,' -e ta`
-endif
-
 # Control whether to run fixincludes.
 STMP_FIXINC = @STMP_FIXINC@
 
 # Test to see whether <limits.h> exists in the system header files.
-LIMITS_H_TEST = [ -f $(BUILD_SYSTEM_HEADER_DIR)/limits.h ]
+LIMITS_H_TEST = [ -f $(SYSTEM_HEADER_DIR)/limits.h ]
 
 # Directory for prefix to system directories, for
 # each of $(system_prefix)/usr/include, $(system_prefix)/usr/lib, etc.
@@ -579,7 +572,7 @@ ifeq ($(enable_multiarch),yes)
 else
   ifeq ($(enable_multiarch),auto)
     # SYSTEM_HEADER_DIR is makefile syntax, cannot be evaluated in configure.ac
-    if_multiarch = $(if $(wildcard $(shell echo $(BUILD_SYSTEM_HEADER_DIR))/../../usr/lib/*/crti.o),$(1))
+    if_multiarch = $(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib/*/crti.o),$(1))
   else
     if_multiarch =
   endif
@@ -2999,11 +2992,11 @@ stmp-fixinc: gsyslimits.h macro_list fixinc_list \
 	    sysroot_headers_suffix=`echo $${ml} | sed -e 's/;.*$$//'`; \
 	    multi_dir=`echo $${ml} | sed -e 's/^[^;]*;//'`; \
 	    fix_dir=include-fixed$${multi_dir}; \
-	    if ! $(inhibit_libc) && test ! -d ${BUILD_SYSTEM_HEADER_DIR}; then \
+	    if ! $(inhibit_libc) && test ! -d ${SYSTEM_HEADER_DIR}; then \
 	      echo The directory that should contain system headers does not exist: >&2 ; \
-	      echo "  ${BUILD_SYSTEM_HEADER_DIR}" >&2 ; \
+	      echo "  ${SYSTEM_HEADER_DIR}" >&2 ; \
 	      tooldir_sysinc=`echo "${gcc_tooldir}/sys-include" | sed -e :a -e "s,[^/]*/\.\.\/,," -e ta`; \
-	      if test "x${BUILD_SYSTEM_HEADER_DIR}" = "x$${tooldir_sysinc}"; \
+	      if test "x${SYSTEM_HEADER_DIR}" = "x$${tooldir_sysinc}"; \
 	      then sleep 1; else exit 1; fi; \
 	    fi; \
 	    $(mkinstalldirs) $${fix_dir}; \
@@ -3014,7 +3007,7 @@ stmp-fixinc: gsyslimits.h macro_list fixinc_list \
 	      export TARGET_MACHINE srcdir SHELL MACRO_LIST && \
 	      cd $(build_objdir)/fixincludes && \
 	      $(SHELL) ./fixinc.sh "$${gcc_dir}/$${fix_dir}" \
-	        $(BUILD_SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS) ); \
+	        $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS) ); \
 	    rm -f $${fix_dir}/syslimits.h; \
 	    if [ -f $${fix_dir}/limits.h ]; then \
 	      mv $${fix_dir}/limits.h $${fix_dir}/syslimits.h; \
