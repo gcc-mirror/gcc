@@ -1,3 +1,10 @@
+2017-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80443
+	* tree-vrp.c (intersect_ranges): For signed 1-bit precision type,
+	instead of adding 1, subtract -1 and similarly instead of subtracting
+	1 add -1.
+
 2017-04-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/80357
