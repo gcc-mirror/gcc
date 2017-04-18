@@ -12464,19 +12464,28 @@ modified_type_die (tree type, int cv_quals, bool reverse,
      this type.  */
   qualified_type = get_qualified_type (type, cv_quals);
 
-  if (qualified_type == sizetype
-      && TYPE_NAME (qualified_type)
-      && TREE_CODE (TYPE_NAME (qualified_type)) == TYPE_DECL)
+  if (qualified_type == sizetype)
     {
-      tree t = TREE_TYPE (TYPE_NAME (qualified_type));
+      /* Try not to expose the internal sizetype type's name.  */
+      if (TYPE_NAME (qualified_type)
+	  && TREE_CODE (TYPE_NAME (qualified_type)) == TYPE_DECL)
+	{
+	  tree t = TREE_TYPE (TYPE_NAME (qualified_type));
 
-      gcc_checking_assert (TREE_CODE (t) == INTEGER_TYPE
-			   && TYPE_PRECISION (t)
-			   == TYPE_PRECISION (qualified_type)
-			   && TYPE_UNSIGNED (t)
-			   == TYPE_UNSIGNED (qualified_type));
-      qualified_type = t;
+	  gcc_checking_assert (TREE_CODE (t) == INTEGER_TYPE
+			       && (TYPE_PRECISION (t)
+				   == TYPE_PRECISION (qualified_type))
+			       && (TYPE_UNSIGNED (t)
+				   == TYPE_UNSIGNED (qualified_type)));
+	  qualified_type = t;
+	}
+      else if (qualified_type == sizetype
+	       && TREE_CODE (sizetype) == TREE_CODE (size_type_node)
+	       && TYPE_PRECISION (sizetype) == TYPE_PRECISION (size_type_node)
+	       && TYPE_UNSIGNED (sizetype) == TYPE_UNSIGNED (size_type_node))
+	qualified_type = size_type_node;
     }
+
 
   /* If we do, then we can just use its DIE, if it exists.  */
   if (qualified_type)
