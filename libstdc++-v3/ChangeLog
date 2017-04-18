@@ -1,3 +1,17 @@
+2017-04-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/functional (default_searcher, __boyer_moore_array_base)
+	(__is_std_equal_to, __boyer_moore_base_t, boyer_moore_searcher)
+	(boyer_moore_horspool_searcher): Remove redundant namespace
+	qualification.
+	(default_searcher::operator()): Construct return value early and
+	advance second member in-place.
+	(boyer_moore_horspool_searcher::operator()): Increment random access
+	iterator directly instead of using std::next.
+	(boyer_moore_searcher::operator()): Fix return value.
+	* testsuite/20_util/function_objects/searchers.cc: Check both parts
+	of return values.
+
 2017-04-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/faq.xml: Update reference link to C++ ABI for Itanium.
