@@ -1,3 +1,8 @@
+2017-04-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/80244 - ICE with attribute in template alias.
+	* tree.c (strip_typedefs): Handle UNDERLYING_TYPE.
+
 2017-04-17  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/80287
