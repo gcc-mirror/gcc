@@ -6585,7 +6585,6 @@
    (use (match_operand 0 "pmode_register_operand" ""))]
   ""
   {
-    operands[0] = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
     return mips_output_jump (operands, 0, -1, false);
   }
   [(set_attr "type"	"jump")

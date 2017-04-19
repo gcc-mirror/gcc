@@ -1,3 +1,8 @@
+2017-04-18  Jeff Law  <law@redhat.com>
+
+	PR target/74563
+	* gcc.target/mips/pr74563: New test.
+
 2017-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/80443
