@@ -1,3 +1,11 @@
+2017-04-19  Eric Botcazou  <ebotcazou@adacore.com>
+            Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80426
+	* tree-vrp.c (extract_range_from_binary_expr_1): For an additive
+	operation on symbolic operands, also compute the overflow for the
+	invariant part when the operation degenerates into a negation.
+
 2017-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/80461
