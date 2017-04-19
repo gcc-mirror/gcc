@@ -1,3 +1,8 @@
+2017-04-19  Paulo J. Matos  <paulo@matos-sorge.com>
+
+	PR lto/50345
+	* doc/lto.texi: Remove an extra 'that'.
+
 2017-04-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/80429
