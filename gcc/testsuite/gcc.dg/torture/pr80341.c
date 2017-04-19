@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-additional-options "-Wno-overflow" } */
+/* { dg-require-effective-target int32plus } */
 
 const signed char c = -84;
 signed char s;
