@@ -537,7 +537,7 @@ _m68k_function_arg (struct amigaos_args * cum, machine_mode mode, const_tree typ
 		  }
 	      }
 
-	  if (reg == AMIGAOS_MAX_REGPARM && altregbegin != -1)
+	  if (reg == cum->num_of_regs && altregbegin != -1)
 	    {
 	      DPRINTF(("look for alt reg\n"));
 	      regbegin = altregbegin;
