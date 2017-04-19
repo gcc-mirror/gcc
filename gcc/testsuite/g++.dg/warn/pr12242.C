@@ -11,7 +11,7 @@ void example ()
   Y y;
   
   x = 10;  // { dg-warning "invalid conversion from .int. to .X." "invalid" }
-           // { dg-warning "unspecified" "unspecified" { target *-*-* } 13 }
+           // { dg-warning "unspecified" "unspecified" { target *-*-* } .-1 }
   x = 1;   // { dg-warning "invalid conversion from .int. to .X." }
   x = C;   // { dg-error "cannot convert .Y. to .X. in assignment" }  
   x = D;   // { dg-error "cannot convert .Y. to .X. in assignment" }  

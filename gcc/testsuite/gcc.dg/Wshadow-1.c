@@ -13,7 +13,7 @@ void foo (double decl1)		/* { dg-warning "shadows a global decl" } */
 void foo1 (int d)		/* { dg-message "note: previous definition" } */
 {
   double d;	 /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "redeclared as different" "" { target *-*-* } 15 } */
+  /* { dg-error "redeclared as different" "" { target *-*-* } .-1 } */
 }
 
 void foo2 (int d)		/* { dg-message "shadowed declaration" } */

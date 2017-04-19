@@ -11,7 +11,7 @@ foo (int x)
   #pragma omp taskgroup
     {
       bad2: ;			// { dg-error "jump to label" }
-                                // { dg-message "enters OpenMP" "" { target *-*-* } 13 }
+                                // { dg-message "enters OpenMP" "" { target *-*-* } .-1 }
     }
 
   #pragma omp taskgroup
@@ -26,7 +26,7 @@ foo (int x)
   {
   #pragma omp taskgroup		// { dg-warning "statement will never be executed" }
     { case 0:; }		// { dg-error "jump" }
-                                // { dg-message "enters" "" { target *-*-* } 28 }
+                                // { dg-message "enters" "" { target *-*-* } .-1 }
   }
 }
 

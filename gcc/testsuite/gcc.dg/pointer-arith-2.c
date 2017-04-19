@@ -31,9 +31,9 @@ g (void)
   f -= 0; /* { dg-warning "pointer to a function used in arithmetic" } */
   f -= 1; /* { dg-warning "pointer to a function used in arithmetic" } */
   p[0]; /* { dg-warning "dereferencing 'void \\*' pointer" } */
-  /* { dg-warning "pointer of type 'void \\*' used in arithmetic" "array 1" { target *-*-* } 33 } */
+  /* { dg-warning "pointer of type 'void \\*' used in arithmetic" "array 1" { target *-*-* } .-1 } */
   0[p]; /* { dg-warning "dereferencing 'void \\*' pointer" } */
-  /* { dg-warning "pointer of type 'void \\*' used in arithmetic" "array 1" { target *-*-* } 35 } */
+  /* { dg-warning "pointer of type 'void \\*' used in arithmetic" "array 1" { target *-*-* } .-1 } */
   f[0]; /* { dg-error "subscripted value is pointer to function" } */
   0[f]; /* { dg-error "subscripted value is pointer to function" } */
   p - p; /* { dg-warning "pointer of type 'void \\*' used in subtraction" } */

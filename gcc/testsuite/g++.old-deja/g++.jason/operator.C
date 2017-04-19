@@ -29,4 +29,4 @@ void * operator new (A a);	// { dg-error "first parameter" }
 void operator delete (A a);	// { dg-error "first parameter" }
 
 char * operator char * (int);	// { dg-error "return type" "ret" }
-// { dg-error "nonstatic member function" "mem" { target *-*-* } 31 }
+// { dg-error "nonstatic member function" "mem" { target *-*-* } .-1 }

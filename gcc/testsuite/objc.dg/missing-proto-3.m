@@ -10,7 +10,7 @@
 @end
 
 @interface MyClass <UndefinedProtocol, DefinedProtocol>
-/* { dg-error "cannot find protocol declaration for .UndefinedProtocol." "" { target *-*-* } 12 } */
+/* { dg-error "cannot find protocol declaration for .UndefinedProtocol." "" { target *-*-* } .-1 } */
 @end
 
 @implementation MyClass

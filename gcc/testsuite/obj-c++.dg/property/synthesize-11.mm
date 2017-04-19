@@ -27,5 +27,5 @@
 @synthesize countA; /* { dg-error ".atomic. property .countA. is using bit-field instance variable .countA." } */
 @synthesize countB; /* { dg-error "property .countB. is using instance variable .countB. of incompatible type" } */
 @end /* { dg-warning "incomplete implementation of class" } */
-/* { dg-message "method definition for ..setCountA.. not found" "" { target *-*-* } 29 } */
-/* { dg-message "method definition for ..countA. not found" "" { target *-*-* } 29 } */
+/* { dg-message "method definition for ..setCountA.. not found" "" { target *-*-* } .-1 } */
+/* { dg-message "method definition for ..countA. not found" "" { target *-*-* } .-2 } */

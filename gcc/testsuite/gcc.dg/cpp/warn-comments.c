@@ -4,4 +4,4 @@
 /* /* */  // { dg-warning "4: \"\.\*\" within comment .-Wcomment." }
 
 // \
-          // { dg-warning "1: multi-line comment .-Wcomment." "multi-line" { target *-*-* } 6 }
+          // { dg-warning "1: multi-line comment .-Wcomment." "multi-line" { target *-*-* } .-1 }

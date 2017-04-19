@@ -9,11 +9,11 @@ S s;
 
 int main() {
   s.x++; // { dg-warning "deprecated" "" { target { ! c++1z } } }
-  // { dg-error "forbidden" "" { target c++1z } 11 }
+  // { dg-error "forbidden" "" { target c++1z } .-1 }
   if (s.x != 1)
     return 1;
   ++s.x; // { dg-warning "deprecated" "" { target { ! c++1z } } }
-  // { dg-error "forbidden" "" { target c++1z } 15 }
+  // { dg-error "forbidden" "" { target c++1z } .-1 }
   if (s.x != 1)
     return 2;
 }

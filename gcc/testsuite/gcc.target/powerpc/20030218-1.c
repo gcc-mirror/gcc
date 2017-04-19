@@ -20,7 +20,7 @@ main (void)
 
   /* Just because this is a V2SI, it doesn't make it an opaque.  */
   vint = vshort; /* { dg-message "note: use -flax-vector-conversions to permit conversions between vectors with differing element types or numbers of subparts" } */
-  /* { dg-error "incompatible types when assigning" "" { target *-*-* } 22 } */
+  /* { dg-error "incompatible types when assigning" "" { target *-*-* } .-1 } */
 
   return 0;
 }

@@ -12,13 +12,13 @@ extern bool foo_b (void);
 extern int foo_i (void);
 
 #ifdef __cplusplus
-template <class T, class U> bool tfn1(T t, U u) { return (!t == u); } /* { dg-warning "logical not is only applied to the left hand side of comparison" "" { target c++ } 15 } */
+template <class T, class U> bool tfn1(T t, U u) { return (!t == u); } /* { dg-warning "logical not is only applied to the left hand side of comparison" "" { target c++ } . } */
 template <class T, class U> bool tfn2(T t, U u) { return ((!t) == u); }
-template <class T, class U> bool tfn3(T t, U u) { return (!g(t) == u); } /* { dg-warning "logical not is only applied to the left hand side of comparison" "" { target c++ } 17 } */
+template <class T, class U> bool tfn3(T t, U u) { return (!g(t) == u); } /* { dg-warning "logical not is only applied to the left hand side of comparison" "" { target c++ } . } */
 template <class T, class U> bool tfn4(T t, U u) { return ((!g(t)) == u); }
 template <class T, class U> bool tfn5(T t, U u) { return (!!t == u); } /* { dg-bogus "logical not is only applied to the left hand side of comparison" } */
 template <class T, class U> bool tfn6(T t, U u) { return (!!g(t) == u); } /* { dg-bogus "logical not is only applied to the left hand side of comparison" } */
-template <int N> bool tfn7(int i1, int i2) { return (!i1 == i2); } /* { dg-warning "logical not is only applied to the left hand side of comparison" "" { target c++ } 21 } */
+template <int N> bool tfn7(int i1, int i2) { return (!i1 == i2); } /* { dg-warning "logical not is only applied to the left hand side of comparison" "" { target c++ } . } */
 #endif
 
 void

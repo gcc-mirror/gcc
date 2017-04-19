@@ -5,7 +5,7 @@ static t1 *a;           /* { dg-error "unknown type name 't1'" } */
 
 int z;                  /* { dg-message "previous declaration of 'z'" } */
 typedef t2 *z;          /* { dg-error "unknown type name 't2'" } */
-/* { dg-error "'z' redeclared " "redeclared" { target *-*-* } 7 } */
+/* { dg-error "'z' redeclared " "redeclared" { target *-*-* } .-1 } */
 
 extern t3 p1(void);     /* { dg-error "unknown type name 't3'" } */
 int p2(const t4 x);     /* { dg-error "unknown type name 't4'" } */
@@ -61,13 +61,13 @@ int recover3;
 const char *f1()
 {
   return (const t17) "abc";       /* { dg-error "unknown type name 't17'" "t17" } */
-/* { dg-bogus "expected" "expected" { target *-*-* } 63 } */
+/* { dg-bogus "expected" "expected" { target *-*-* } .-1 } */
 }
 
 const char *f2()
 {
   return (const t18 *) "abc";     /* { dg-error "unknown type name 't18'" "t18" } */
-/* { dg-bogus "expected" "expected" { target *-*-* } 69 } */
+/* { dg-bogus "expected" "expected" { target *-*-* } .-1 } */
 }
 
 
@@ -77,14 +77,14 @@ const char *f2()
 void *f3(int x)
 {
   return (void *) ((void *(*)(t19)) f3);       /* { dg-error "unknown type name 't19'" "t19" } */
-/* { dg-bogus "expected" "expected" { xfail *-*-* } 79 } */
+/* { dg-bogus "expected" "expected" { xfail *-*-* } .-1 } */
 }
 
 const void *f4()
 {
   return &((const t20){1});       /* { dg-error "unknown type name 't20'" } */
-/* { dg-bogus "return discards 'const'" "discards" { target *-*-* } 85 } */
-/* { dg-bogus "expected" "expected" { target *-*-* } 85 } */
+/* { dg-bogus "return discards 'const'" "discards" { target *-*-* } .-1 } */
+/* { dg-bogus "expected" "expected" { target *-*-* } .-2 } */
 }
 
 int f5(__builtin_va_list ap)
@@ -96,5 +96,5 @@ int f5(__builtin_va_list ap)
 int f6(void)
 {
   return __builtin_offsetof (t23, field); /* { dg-error "unknown type name 't23'" "t23" } */
-/* { dg-bogus "request for member" "request" { target *-*-* } 98 } */
+/* { dg-bogus "request for member" "request" { target *-*-* } .-1 } */
 }

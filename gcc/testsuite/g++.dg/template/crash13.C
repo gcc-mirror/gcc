@@ -13,7 +13,7 @@ template <typename T> struct C
 {
     typedef typename A<T>::B X;
     X::Y;			// { dg-error "not a base type" }
-// { dg-warning "deprecated" "" { target *-*-* } 15 }
+// { dg-warning "deprecated" "" { target *-*-* } .-1 }
 };
 
 C<void> c;

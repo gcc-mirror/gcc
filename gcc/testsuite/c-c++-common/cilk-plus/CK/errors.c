@@ -9,7 +9,7 @@ int check_spawn(int v)
   /* XXX: no error in C++ */
     ;
   if (v + _Cilk_spawn func_2())  /* { dg-error "cannot contain" "" { target c } } */
-  /* { dg-error "invalid use" "" { target c++ } 11 } */
+  /* { dg-error "invalid use" "" { target c++ } .-1 } */
     ;
   if (v, _Cilk_spawn func_2()) /* { dg-error "spawned function call cannot be part" } */
     ;

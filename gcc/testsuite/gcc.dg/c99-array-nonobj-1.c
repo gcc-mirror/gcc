@@ -9,19 +9,19 @@ typedef void func (void);
 struct s;
 
 extern int a[][]; /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "array" "\[\]\[\] var" { target *-*-* } 11 } */
+/* { dg-error "array" "\[\]\[\] var" { target *-*-* } .-1 } */
 
 void f (int [][]); /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "array" "\[\]\[\] arg" { target *-*-* } 14 } */
+/* { dg-error "array" "\[\]\[\] arg" { target *-*-* } .-1 } */
 
 extern struct s b[]; /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "array" "struct \[\] var" { target *-*-* } 17 } */
+/* { dg-error "array" "struct \[\] var" { target *-*-* } .-1 } */
 
 void g (struct s []); /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "array" "struct \[\] arg" { target *-*-* } 20 } */
+/* { dg-error "array" "struct \[\] arg" { target *-*-* } .-1 } */
 
 extern func c[]; /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "array" "func \[\] var" { target *-*-* } 23 } */
+/* { dg-error "array" "func \[\] var" { target *-*-* } .-1 } */
 
 void h (func []); /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "array" "func \[\] arg" { target *-*-* } 26 } */
+/* { dg-error "array" "func \[\] arg" { target *-*-* } .-1 } */

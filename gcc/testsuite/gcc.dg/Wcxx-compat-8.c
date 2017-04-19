@@ -25,15 +25,15 @@ int v4 = C;
 enum e3
 {
   F = sizeof (struct t3),	/* { dg-bogus "invalid in C\[+\]\[+\]" } */
-  /* { dg-error "invalid application of 'sizeof'" "" { target *-*-* } 27 } */
+  /* { dg-error "invalid application of 'sizeof'" "" { target *-*-* } .-1 } */
   G = __alignof__ (struct t4), /* { dg-bogus "invalid in C\[+\]\[+\]" } */
-  /* { dg-error "invalid application of '__alignof__'" "" { target *-*-* } 29 } */
+  /* { dg-error "invalid application of '__alignof__'" "" { target *-*-* } .-1 } */
   H
 };
 
 __typeof__ (struct s5 { int i; }) v5; /* { dg-warning "invalid in C\[+\]\[+\]" } */
 __typeof__ (struct t5) w5; /* { dg-bogus "invalid in C\[+\]\[+\]" } */
-  /* { dg-error "storage size of 'w5' isn't known" "" { target *-*-* } 35 } */
+  /* { dg-error "storage size of 'w5' isn't known" "" { target *-*-* } .-1 } */
 
 int
 f1 (struct s1 *p)

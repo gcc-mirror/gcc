@@ -8,12 +8,12 @@ char *restrict foo;
 /* The following are constraint violations and should be rejected.  */
 
 int restrict bar; /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "restrict" "restrict constraint violation" { target *-*-* } 10 } */
+/* { dg-error "restrict" "restrict constraint violation" { target *-*-* } .-1 } */
 
 typedef void (*fp) (void);
 
 fp restrict baz; /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "restrict" "restrict constraint violation" { target *-*-* } 15 } */
+/* { dg-error "restrict" "restrict constraint violation" { target *-*-* } .-1 } */
 
 void quux (int restrict a[3]); /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "restrict" "restrict constraint violation" { target *-*-* } 18 } */
+/* { dg-error "restrict" "restrict constraint violation" { target *-*-* } .-1 } */
