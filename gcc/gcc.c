@@ -10109,7 +10109,7 @@ const char * amiga_m68k_prefix_func(int argc, const char ** argv) {
   char * p = 0;
   if (standard_libexec_prefix)
     {
-      char * glp = concat(standard_libexec_prefix, "",0);
+      char * glp = concat(standard_libexec_prefix, "", NULL);
       p = strrchr(glp, '/');
       if (p)
 	{
@@ -10122,17 +10122,17 @@ const char * amiga_m68k_prefix_func(int argc, const char ** argv) {
 	      if (p)
 		{
 		  p[1] = 0;
-		  p = concat(glp, "m68k-amigaos/", 0);
+		  p = concat(glp, "m68k-amigaos/", NULL);
 		}
 	    }
         }
       free(glp);
     }
   if (!p)
-    p = concat("../../../../", "", 0);
+    p = concat("../../../../", "", NULL);
 
   for (int i = 0; i < argc; ++i) {
-      char * q = concat(p, argv[i], 0);
+      char * q = concat(p, argv[i], NULL);
       free(p);
       p = q;
   }
