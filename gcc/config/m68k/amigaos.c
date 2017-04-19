@@ -371,8 +371,7 @@ struct amigaos_args
   tree formal_type; /* New field: formal type of the current argument.  */
 };
 
-static struct amigaos_args mycum;
-static CUMULATIVE_ARGS * lastcum;
+static struct amigaos_args mycum, othercum;
 
 /* Argument-passing support functions.  */
 
@@ -383,8 +382,8 @@ static CUMULATIVE_ARGS * lastcum;
 void
 amigaos_init_cumulative_args (CUMULATIVE_ARGS *cump, tree fntype, tree decl)
 {
-  struct amigaos_args * cum = &mycum;
-  lastcum = cump;
+  struct amigaos_args * cum = decl == current_function_decl ? &mycum : &othercum;
+  *cump = (int)cum;
   cum->num_of_regs = amigaos_regparm > 0 ? amigaos_regparm : 0;
   DPRINTF(("0amigaos_init_cumulative_args %p -> %d\r\n", cum, cum->num_of_regs));
 
@@ -460,13 +459,10 @@ void
 amigaos_function_arg_advance (cumulative_args_t cum_v, machine_mode, const_tree,
 			      bool)
 {
-  struct amigaos_args * cum = &mycum;
-  CUMULATIVE_ARGS *cump = (CUMULATIVE_ARGS *) get_cumulative_args (cum_v);
+  struct amigaos_args *cum = *(struct amigaos_args **) get_cumulative_args (cum_v);
   /* Update the data in CUM to advance over an argument.  */
 
   DPRINTF(("amigaos_function_arg_advance1 %p\r\n", cump));
-  if (cump != lastcum)
-    return;
 
   if (cum->last_arg_reg != -1)
     {
@@ -495,13 +491,9 @@ static struct rtx_def *
 _m68k_function_arg (CUMULATIVE_ARGS *, machine_mode, const_tree);
 
 static struct rtx_def *
-_m68k_function_arg (CUMULATIVE_ARGS *cump, machine_mode mode, const_tree type)
+_m68k_function_arg (struct amigaos_args * cum, machine_mode mode, const_tree type)
 {
-  struct amigaos_args * cum = &mycum;
   DPRINTF(("m68k_function_arg numOfRegs=%d\r\n", cum ? cum->num_of_regs : 0));
-
-  if (cump != lastcum)
-    return 0;
 
   if (cum->num_of_regs)
     {
@@ -573,14 +565,9 @@ struct rtx_def *
 amigaos_function_arg (cumulative_args_t cum_v, machine_mode mode,
 		      const_tree type, bool)
 {
-  struct amigaos_args * cum = &mycum;
-
   DPRINTF(("amigaos_function_arg %p\r\n", cum_v.p));
 
-  CUMULATIVE_ARGS *cump = (CUMULATIVE_ARGS *) get_cumulative_args (cum_v);
-
-  if (cump != lastcum)
-    return 0;
+  struct amigaos_args *cum = *(struct amigaos_args **) get_cumulative_args (cum_v);
 
   tree asmtree = type ? TYPE_ATTRIBUTES(type) : NULL_TREE;
   if (asmtree && 0 == strcmp ("asm", IDENTIFIER_POINTER(TREE_PURPOSE(asmtree))))
@@ -590,15 +577,29 @@ amigaos_function_arg (cumulative_args_t cum_v, machine_mode mode,
       cum->last_arg_len = HARD_REGNO_NREGS(cum->last_arg_reg, mode);
 
       for (i = 0; i < cum->last_arg_len; i++)
-	if (cum->regs_already_used & (1 << (cum->last_arg_reg + i)))
-	  {
-	    error ("two parameters allocated for one register");
-	    break;
-	  }
+	{
+	  if (cum->regs_already_used & (1 << (cum->last_arg_reg + i)))
+	    {
+	      error ("two parameters allocated for one register");
+	      break;
+	    }
+	  cum->regs_already_used |= (1 << (cum->last_arg_reg + i));
+	}
       return gen_rtx_REG (mode, cum->last_arg_reg);
     }
-  return _m68k_function_arg (cump, mode, type);
+  return _m68k_function_arg (cum, mode, type);
 }
+
+void amiga_emit_regparm_clobbers(void)
+{
+  int x = 0;
+  for (int i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
+    {
+      if (mycum.regs_already_used & (1 << i))
+	emit_insn(gen_rtx_CLOBBER(Pmode, gen_raw_REG(Pmode, i)));
+    }
+}
+
 
 /* Return zero if the attributes on TYPE1 and TYPE2 are incompatible,
  one if they are compatible, and two if they are nearly compatible
@@ -825,7 +826,7 @@ read_only_operand (rtx operand)
 }
 
 reg_class_t
-amiga_preferred_rename_class2(reg_class_t rclass ATTRIBUTE_UNUSED, int regno )
+amiga_preferred_rename_class2 (reg_class_t rclass ATTRIBUTE_UNUSED, int regno)
 {
   if (regno == 0)
     return D0_REGS;

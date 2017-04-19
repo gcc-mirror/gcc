@@ -1004,6 +1004,8 @@ m68k_set_frame_related (rtx_insn *insn)
 
 /* Emit RTL for the "prologue" define_expand.  */
 
+extern void amiga_emit_regparm_clobbers(void);
+
 void
 m68k_expand_prologue (void)
 {
@@ -1011,6 +1013,10 @@ m68k_expand_prologue (void)
   rtx limit, src, dest;
 
   m68k_compute_frame_layout ();
+
+#ifdef TARGET_AMIGA
+  amiga_emit_regparm_clobbers();
+#endif
 
   if (flag_stack_usage_info)
     current_function_static_stack_size
