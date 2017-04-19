@@ -18,10 +18,9 @@
   alignment and in a particular layout, mangling names according to a
   well-defined algorithm, has specific arrangements for the support of
   virtual functions, etc. These details are defined as the compiler
-  Application Binary Interface, or ABI. The GNU C++ compiler uses an
-  industry-standard C++ ABI starting with version 3. Details can be
-  found in the <a class="link" href="http://mentorembedded.github.io/cxx-abi/abi.html" target="_top">ABI
-  specification</a>.
+  Application Binary Interface, or ABI. From GCC version 3 onwards the
+  GNU C++ compiler uses an industry-standard C++ ABI, the
+  <a class="link" href="abi.html#biblio.cxxabi" title="Itanium C++ ABI">Itanium C++ ABI</a>.
 </p><p>
  The GNU C++ compiler, g++, has a compiler command line option to
   switch between various different C++ ABIs. This explicit version
@@ -334,7 +333,7 @@ class that would otherwise have implicit versions. This will change
 the way the compiler deals with this class in by-value return
 statements or parameters: instead of passing instances of this
 class in registers, the compiler will be forced to use memory. See the
-section on <a class="link" href="http://mentorembedded.github.io/cxx-abi/abi.html#calls" target="_top">Function
+section on <a class="link" href="https://itanium-cxx-abi.github.io/cxx-abi/abi.html#calls" target="_top">Function
 Calling Conventions and APIs</a>
  of the C++ ABI documentation for further details.
 </p></li></ol></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="abi.impl"></a>Implementation</h3></div></div></div><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
@@ -532,8 +531,8 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 	  ABIcheck
 	</a>
       </em>. </span></p></div><div class="biblioentry"><a id="biblio.cxxabi"></a><p>[biblio.cxxabi] <span class="title"><em>
-	<a class="link" href="http://mentorembedded.github.io/cxx-abi/" target="_top">
-	  C++ ABI Summary
+	<a class="link" href="https://itanium-cxx-abi.github.io/cxx-abi/" target="_top">
+	  Itanium C++ ABI
 	</a>
       </em>. </span></p></div><div class="biblioentry"><a id="id-1.3.6.3.6.10.4"></a><p><span class="title"><em>
 	<a class="link" href="https://software.intel.com/en-us/articles/intel-compilers-for-linux-compatibility-with-gnu-compilers" target="_top">

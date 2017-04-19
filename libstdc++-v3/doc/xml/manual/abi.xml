@@ -40,10 +40,9 @@
   alignment and in a particular layout, mangling names according to a
   well-defined algorithm, has specific arrangements for the support of
   virtual functions, etc. These details are defined as the compiler
-  Application Binary Interface, or ABI. The GNU C++ compiler uses an
-  industry-standard C++ ABI starting with version 3. Details can be
-  found in the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://itanium-cxx-abi.github.io/cxx-abi/">ABI
-  specification</link>.
+  Application Binary Interface, or ABI. From GCC version 3 onwards the
+  GNU C++ compiler uses an industry-standard C++ ABI, the
+  <link linkend="biblio.cxxabi">Itanium C++ ABI</link>.
 </para>
 
 <para>
@@ -1116,7 +1115,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
 	      xlink:href="https://itanium-cxx-abi.github.io/cxx-abi/">
-	  C++ ABI Summary
+	  Itanium C++ ABI
 	</link>
       </title>
     </biblioentry>
