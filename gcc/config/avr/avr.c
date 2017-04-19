@@ -25,6 +25,8 @@
 #include "backend.h"
 #include "target.h"
 #include "rtl.h"
+#include "tree.h"
+#include "cgraph.h"
 #include "c-family/c-common.h"
 #include "cfghooks.h"
 #include "df.h"
@@ -10127,9 +10129,14 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
       && !DECL_EXTERNAL (decl)
       && avr_progmem_p (decl, DECL_ATTRIBUTES (decl)))
     {
-      warning (OPT_Wuninitialized,
-               "uninitialized variable %q+D put into "
-               "program memory area", decl);
+      // Don't warn for (implicit) aliases like in PR80462.
+      tree asmname = DECL_ASSEMBLER_NAME (decl);
+      varpool_node *node = varpool_node::get_for_asmname (asmname);
+      bool alias_p = node && node->alias;
+
+      if (!alias_p)
+        warning (OPT_Wuninitialized, "uninitialized variable %q+D put into "
+                 "program memory area", decl);
     }
 
   default_encode_section_info (decl, rtl, new_decl_p);
