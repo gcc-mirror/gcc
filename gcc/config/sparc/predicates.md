@@ -373,6 +373,7 @@
   if (TARGET_ARCH32 && mode == DImode && GET_CODE (op) == CONST_INT)
     return true;
 
+  /* Allow FP constants to be built in integer registers.  */
   if (mclass == MODE_FLOAT && GET_CODE (op) == CONST_DOUBLE)
     return true;
 
@@ -388,7 +389,14 @@
 
   /* Check for valid MEM forms.  */
   if (GET_CODE (op) == MEM)
-    return memory_address_p (mode, XEXP (op, 0));
+    {
+      /* Except when LRA is precisely working hard to make them valid
+	 and relying entirely on the constraints.  */
+      if (lra_in_progress)
+	return true;
+
+      return memory_address_p (mode, XEXP (op, 0));
+    }
 
   return false;
 })
