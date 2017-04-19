@@ -1,3 +1,9 @@
+2017-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80446
+	* include/std/type_traits (is_aggregate): Change __has_builtin checks.
+	* libsupc++/new (launder): Likewise.
+
 2017-04-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/functional (default_searcher, __boyer_moore_array_base)

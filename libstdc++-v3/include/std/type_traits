@@ -3062,14 +3062,16 @@ template <typename _From, typename _To>
 #endif
 #undef _GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP
 
-#ifdef __has_builtin
-# if !__has_builtin(__is_aggregate)
-// Try not to break non-GNU compilers that don't support the built-in:
-#  define _GLIBCXX_NO_BUILTIN_IS_AGGREGATE 1
+#if __GNUC__ >= 7
+# define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
+#elif defined __has_builtin
+// For non-GNU compilers:
+# if __has_builtin(__is_aggregate)
+#  define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
 # endif
 #endif
 
-#ifndef _GLIBCXX_NO_BUILTIN_IS_AGGREGATE
+#ifdef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
 #define __cpp_lib_is_aggregate 201703
   /// is_aggregate
   template<typename _Tp>
@@ -3080,7 +3082,7 @@ template <typename _From, typename _To>
   template<typename _Tp>
     inline constexpr bool is_aggregate_v = is_aggregate<_Tp>::value;
 #endif
-#undef _GLIBCXX_NO_BUILTIN_IS_AGGREGATE
+#undef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
 
 #endif // C++17
 
