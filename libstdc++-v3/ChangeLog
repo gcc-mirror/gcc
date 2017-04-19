@@ -1,5 +1,7 @@
 2017-04-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/new: Update comment on #endif directive.
+
 	PR libstdc++/80448
 	* include/experimental/bits/fs_dir.h (directory_iterator)
 	(recursive_directory_iterator): Remove noexcept from defaulted

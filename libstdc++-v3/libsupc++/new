@@ -209,7 +209,7 @@ namespace std
   void launder(volatile void*) = delete;
   void launder(const volatile void*) = delete;
 }
-#endif // _GLIBCXX_NO_BUILTIN_LAUNDER
+#endif // _GLIBCXX_HAVE_BUILTIN_LAUNDER
 #undef _GLIBCXX_HAVE_BUILTIN_LAUNDER
 #endif // C++17
 
