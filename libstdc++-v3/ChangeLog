@@ -1,5 +1,10 @@
 2017-04-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/abi.xml: Rephrase one of the references to the
+	Itanium C++ ABI.
+	* doc/xml/manual/test.xml: Document DejaGnu 1.5.3 requirement.
+	* doc/html/*: Regenerate.
+
 	* libsupc++/new: Update comment on #endif directive.
 
 	PR libstdc++/80448
