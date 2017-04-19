@@ -325,20 +325,24 @@ dump_insns (char const * name, bool all)
     }
   for (unsigned i = 0; i < insns.size (); ++i)
     {
-      insn_info & ii = infos[i];
-
       fprintf (stderr, "%d: ", i);
 
-      for (int j = 0; j < 8; ++j)
-	if (ii.is_use (j))
-	  fprintf (stderr, ii.is_def (j) ? "*d%d " : "d%d ", j);
+      if (i < infos.size ())
+	{
+	  insn_info & ii = infos[i];
 
-      for (int j = 8; j < 16; ++j)
-	if (ii.is_use (j))
-	  fprintf (stderr, ii.is_def (j) ? "*a%d " : "a%d ", j - 8);
+	  for (int j = 0; j < 8; ++j)
+	    if (ii.is_use (j))
+	      fprintf (stderr, ii.is_def (j) ? "*d%d " : "d%d ", j);
 
-      if (ii.is_use (FIRST_PSEUDO_REGISTER))
-	fprintf (stderr, ii.is_def (FIRST_PSEUDO_REGISTER) ? "*cc " : "cc ");
+	  for (int j = 8; j < 16; ++j)
+	    if (ii.is_use (j))
+	      fprintf (stderr, ii.is_def (j) ? "*a%d " : "a%d ", j - 8);
+
+	  if (ii.is_use (FIRST_PSEUDO_REGISTER))
+	    fprintf (stderr, ii.is_def (FIRST_PSEUDO_REGISTER) ? "*cc " : "cc ");
+
+	}
 
       fprintf (stderr, "\t");
       debug_rtx (insns[i]);
@@ -502,6 +506,14 @@ update_insn_infos (void)
 		  continue;
 		}
 
+	      if (GET_CODE (pattern) == CLOBBER ) {
+		  /* mark regs as use and def */
+		  insn_info ud;
+		  ud.scan(pattern);
+		  ud._def |= ud._use;
+		  infos[pos] |= ud;
+		  continue;
+	      }
 	      if (GET_CODE (pattern) != PARALLEL && GET_CODE (pattern) != CLOBBER && be_verbose)
 		{
 		  fprintf (stderr, "##### ");
@@ -882,7 +894,7 @@ opt_strcpy ()
 	      src = XEXP(src, 1);
 
 //	      if (CONST_INT_P(src) && INTVAL(src) == 0 && find_reg_note (insn, REG_DEAD, dst))
-	      if (REG_P(dst) && CONST_INT_P(src) && INTVAL(src) == 0 && is_reg_dead(REGNO(dst), index))
+	      if (REG_P(dst) && CONST_INT_P(src) && INTVAL(src) == 0 && is_reg_dead (REGNO(dst), index))
 		{
 		  /* now check via NOTICE_UPDATE_CC*/
 		  NOTICE_UPDATE_CC(PATTERN (reg2x), reg2x);
@@ -1300,7 +1312,7 @@ merge_add (void)
 
       log ("merge_add applied\n");
 
-      rtx_insn * newins1 = make_insn_raw(gen_rtx_SET(dst1, l1));
+      rtx_insn * newins1 = make_insn_raw (gen_rtx_SET(dst1, l1));
       add_insn_after (newins1, ins1, 0);
       SET_INSN_DELETED(ins1);
 
@@ -1836,9 +1848,9 @@ namespace
 	    class opt_pass * rr = ::global_pass_regrename->clone ();
 	    rr->execute (0);
 
-    //	update_insns ();
-    //	update_insn_infos ();
-    //	bb_reg_rename ();
+	    //	update_insns ();
+	    //	update_insn_infos ();
+	    //	bb_reg_rename ();
 
 	    update_insns ();
 	  }
@@ -1851,6 +1863,7 @@ namespace
       {
 	shrink_stack_frame ();
 	update_insns ();
+	update_insn_infos ();
       }
 
     if (strchr (string_bbb_opts, 'X') || strchr (string_bbb_opts, 'x'))

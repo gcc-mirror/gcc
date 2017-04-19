@@ -892,7 +892,7 @@ regrename_analyze (bitmap bb_mask)
 	      if (!range_overlaps_hard_reg_set_p (live, chain->regno,
 						  chain->nregs))
 		continue;
-	      
+
 	      n_succs_used++;
 
 	      dest_ri = (struct bb_rename_info *)e->dest->aux;
@@ -916,7 +916,7 @@ regrename_analyze (bitmap bb_mask)
 			  printed = true;
 			  fprintf (dump_file,
 				   "  merging chains %d (->%d) and %d (->%d) [%s]\n",
-				   k, incoming_chain->id, j, chain->id, 
+				   k, incoming_chain->id, j, chain->id,
 				   reg_names[incoming_chain->regno]);
 			}
 
@@ -1892,6 +1892,28 @@ regrename_finish (void)
   obstack_free (&rename_obstack, NULL);
 }
 
+void
+mark_early_clobbers_alive (void)
+{
+  rtx_insn * insn;
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      rtx pattern;
+      if (NOTE_P(insn) && NOTE_KIND(insn) == NOTE_INSN_PROLOGUE_END)
+	break;
+
+      pattern = PATTERN (insn);
+      if (pattern && GET_CODE(pattern) == CLOBBER)
+	{
+	  rtx *loc;
+
+	  loc = &REG_NOTES(insn);
+	  while (*loc)
+	    *loc = XEXP(*loc, 1);
+	}
+    }
+}
+
 /* Perform register renaming on the current function.  */
 
 static unsigned int
@@ -1901,6 +1923,8 @@ regrename_optimize (void)
   df_note_add_problem ();
   df_analyze ();
   df_set_flags (DF_DEFER_INSN_RESCAN);
+
+  mark_early_clobbers_alive ();
 
   regrename_init (false);
 
