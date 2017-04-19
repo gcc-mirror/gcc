@@ -1,3 +1,11 @@
+2017-04-19  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/80435
+	* Makefile.in: Install gcov.h.
+	* gcov.h: New file.
+	* libgcov.h: Use the header and make __gcov_flush publicly
+	visible.
+
 2017-04-18  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/78783
