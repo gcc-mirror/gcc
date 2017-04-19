@@ -1,5 +1,10 @@
 2017-04-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/80448
+	* include/experimental/bits/fs_dir.h (directory_iterator)
+	(recursive_directory_iterator): Remove noexcept from defaulted
+	constructors.
+
 	PR libstdc++/80446
 	* include/std/type_traits (is_aggregate): Change __has_builtin checks.
 	* libsupc++/new (launder): Likewise.
