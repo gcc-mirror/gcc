@@ -1,3 +1,11 @@
+2017-04-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	Tobias Burnus  <tobias.burnus@physik.fu-berlin.de>
+
+	PR bootstrap/77661
+	* Makefile.def: Don't pass --enable-maintainer-mode on to an
+	in-tree build MPC.
+	* Makefile.in: Regenerate.
+
 2017-03-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* configure.ac: Enable LTO by default on darwin >= 9.
