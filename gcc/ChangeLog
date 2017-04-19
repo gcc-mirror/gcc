@@ -1,3 +1,8 @@
+2017-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/80436
+	* tree-ssa-loop-manip.c (find_uses_to_rename_def): Ignore debug uses.
+
 2017-04-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/80462

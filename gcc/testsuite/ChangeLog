@@ -1,3 +1,8 @@
+2017-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/80436
+	* g++.dg/opt/pr80436.C: New test.
+
 2017-04-19  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.dg/torture/pr80341.c: Require int32plus.
