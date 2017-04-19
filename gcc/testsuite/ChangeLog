@@ -1,5 +1,8 @@
 2017-04-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/80461
+	* g++.dg/debug/pr80461.C: New test.
+
 	PR c++/80459
 	* c-c++-common/opaque-vector.c (SIZEOF_MAXINT): Define.
 	(f): Don't test long double vectors if __SIZEOF_LONG_DOUBLE__
