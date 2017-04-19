@@ -1,3 +1,13 @@
+2017-04-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2017-04-19 trunk r246997.
+
+	PR target/80462
+	* config/avr/avr.c (tree.h): Include it.
+	(cgraph.h): Include it.
+	(avr_encode_section_info): Don't warn for uninitialized progmem
+	variable if it's just an alias.
+
 2017-04-18  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2017-04-18 trunk r246966.
