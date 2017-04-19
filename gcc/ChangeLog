@@ -1,5 +1,9 @@
 2017-04-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/80461
+	* dwarf2out.c (modified_type_die, gen_type_die_with_usage):
+	Check for t with zero TYPE_QUALS_NO_ADDR_SPACE.
+
 	PR debug/80436
 	* tree-ssa-loop-manip.c (find_uses_to_rename_def): Ignore debug uses.
 

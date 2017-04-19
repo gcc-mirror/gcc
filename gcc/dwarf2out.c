@@ -12690,7 +12690,9 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	     but try to canonicalize.  */
 	  tree main = TYPE_MAIN_VARIANT (type);
 	  for (tree t = main; t; t = TYPE_NEXT_VARIANT (t))
-	    if (check_base_type (t, main) && check_lang_type (t, type))
+	    if (TYPE_QUALS_NO_ADDR_SPACE (t) == 0
+		&& check_base_type (t, main)
+		&& check_lang_type (t, type))
 	      return lookup_type_die (t);
 	  return lookup_type_die (type);
 	}
@@ -24580,13 +24582,13 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
 	 but try to canonicalize.  */
       tree main = TYPE_MAIN_VARIANT (type);
       for (tree t = main; t; t = TYPE_NEXT_VARIANT (t))
-	{
-	  if (check_base_type (t, main) && check_lang_type (t, type))
-	    {
-	      type = t;
-	      break;
-	    }
-	}
+	if (TYPE_QUALS_NO_ADDR_SPACE (t) == 0
+	    && check_base_type (t, main)
+	    && check_lang_type (t, type))
+	  {
+	    type = t;
+	    break;
+	  }
     }
   else if (TREE_CODE (type) != VECTOR_TYPE
 	   && TREE_CODE (type) != ARRAY_TYPE)
