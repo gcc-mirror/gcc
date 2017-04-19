@@ -494,6 +494,9 @@ find_uses_to_rename_def (tree def, bitmap *use_blocks, bitmap need_phis)
 
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
     {
+      if (is_gimple_debug (use_stmt))
+	continue;
+
       basic_block use_bb = gimple_bb (use_stmt);
 
       use_operand_p use_p;
