@@ -1,3 +1,10 @@
+2017-04-19  Eric Botcazou  <ebotcazou@adacore.com>
+            Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/sparc/predicates.md (input_operand): Add comment.  Return
+	true for any memory operand when LRA is in progress.
+	* config/sparc/sparc.c (sparc_expand_move): Minor formatting fix.
+
 2017-04-18  Jeff Law  <law@redhat.com>
 
 	PR target/74563
