@@ -1,3 +1,9 @@
+2017-04-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/80429
+	* ira.c (split_live_ranges_for_shrink_wrap): Don't split regs that
+	are only used in debug insns.
+
 2017-04-19  Eric Botcazou  <ebotcazou@adacore.com>
             Vladimir Makarov  <vmakarov@redhat.com>
 
