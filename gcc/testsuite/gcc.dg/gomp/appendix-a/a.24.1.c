@@ -19,7 +19,7 @@ a24 (int a)
     x = c;			/* O.K.  -  x is threadprivate */
     				/*       -  c has const-qualified type */
     z[i] = y;
-    /* { dg-error "'i' not specified" "" { target *-*-* } 21 } */
+    /* { dg-error "'i' not specified" "" { target *-*-* } .-1 } */
     /* { dg-error "enclosing 'parallel'" "" { target *-*-* } 13 } */
     /* { dg-error "'y' not specified" "" { target *-*-* } 21 }  */
 #pragma omp for firstprivate(y)
@@ -29,7 +29,7 @@ a24 (int a)
 				/*      - y is listed in firstprivate clause */
       }
     z[l] = t;
-    /* { dg-error "'l' not specified" "" { target *-*-* } 31 } */
-    /* { dg-error "'t' not specified" "" { target *-*-* } 31 }  */
+    /* { dg-error "'l' not specified" "" { target *-*-* } .-1 } */
+    /* { dg-error "'t' not specified" "" { target *-*-* } .-2 }  */
   }
 }

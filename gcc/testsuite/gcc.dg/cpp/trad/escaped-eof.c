@@ -2,5 +2,5 @@
 
 /* { dg-do preprocess } */
 
-/* { dg-warning "backslash-new" "escaped EOF warning" { target *-*-* } 6 } */
+/* { dg-warning "backslash-new" "escaped EOF warning" { target *-*-* } .+1 } */
 \

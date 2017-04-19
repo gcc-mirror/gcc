@@ -15,7 +15,7 @@ struct vtable {
 struct vtable mtable = {
   malloc,
   free
-}; /* { dg-warning "missing initializer" "warning regression" { target *-*-* } 18 } */
+}; /* { dg-warning "missing initializer" "warning regression" { target *-*-* } . } */
    /* { dg-message "declared here" "warning regression 2" { target *-*-* } 12 } */
 
 /* With designated initializers, we assume you meant to leave out the

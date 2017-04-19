@@ -33,7 +33,7 @@
 + (NTGridDataObject*)dataObject:(id<MyObject, MyCoding>)data
 {
     NTGridDataObject *result = [[NTGridDataObject alloc] initWithData:data];
-    /* { dg-warning "multiple methods named .\\-initWithData:. found" "" { target *-*-* } 35 } */
+    /* { dg-warning "multiple methods named .\\-initWithData:. found" "" { target *-*-* } .-1 } */
     /* { dg-message "using .\\-\\(id\\)initWithData:\\(TestsuiteObject \\*\\)data." "" { target *-*-* } 11 } */
     /* { dg-message "also found .\\-\\(id\\)initWithData:\\(id <MyObject, MyCoding>\\)data." "" { target *-*-* } 19 } */
     /* { dg-message "also found .\\-\\(id\\)initWithData:\\(int\\)data." "" { target *-*-* } 15 } */

@@ -69,8 +69,8 @@ void foo()
     a[i] = b[j];
 
 #pragma simd linear(blah2, 36)
-  /* { dg-error "'blah2' \(undeclared\|has not been\)" "undeclared" { target *-*-* } 71 } */
-  /* { dg-error "expected" "expected" { target *-*-* } 71 } */
+  /* { dg-error "'blah2' \(undeclared\|has not been\)" "undeclared" { target *-*-* } .-1 } */
+  /* { dg-error "expected" "expected" { target *-*-* } .-2 } */
   for (int i=0; i < 1000; ++i)
     a[i] = b[j];
 

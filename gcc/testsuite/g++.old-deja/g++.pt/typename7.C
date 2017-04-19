@@ -16,7 +16,7 @@ struct D : public A <C <T> > {
   void f ()
     {
       B* new_entries = (B *) 0;  // { dg-error "'B' was not declared in this scope" "B" }
-      // { dg-error "'new_entries' was not declared in this scope" "new_entries" { target *-*-* } 18 }
-      // { dg-error "expected" "exp" { target *-*-* } 18 }
+      // { dg-error "'new_entries' was not declared in this scope" "new_entries" { target *-*-* } .-1 }
+      // { dg-error "expected" "exp" { target *-*-* } .-2 }
     }
 };

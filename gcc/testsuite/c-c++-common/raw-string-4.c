@@ -4,15 +4,15 @@
 // { dg-options "-std=c++0x" { target c++ } }
 
 const int	i0	= R'a';	// { dg-error "was not declared|undeclared" "undeclared" }
-		// { dg-error "expected ',' or ';'" "expected" { target c } 6 }
+		// { dg-error "expected ',' or ';'" "expected" { target c } .-1 }
 const int	i1	= uR'a';	// { dg-error "was not declared|undeclared" "undeclared" }
-		// { dg-error "expected ',' or ';'" "expected" { target c } 8 }
+		// { dg-error "expected ',' or ';'" "expected" { target c } .-1 }
 const int	i2	= UR'a';	// { dg-error "was not declared|undeclared" "undeclared" }
-		// { dg-error "expected ',' or ';'" "expected" { target c } 10 }
+		// { dg-error "expected ',' or ';'" "expected" { target c } .-1 }
 const int	i3	= u8R'a';	// { dg-error "was not declared|undeclared" "undeclared" }
-		// { dg-error "expected ',' or ';'" "expected" { target c } 12 }
+		// { dg-error "expected ',' or ';'" "expected" { target c } .-1 }
 const int	i4	= LR'a';	// { dg-error "was not declared|undeclared" "undeclared" }
-		// { dg-error "expected ',' or ';'" "expected" { target c } 14 }
+		// { dg-error "expected ',' or ';'" "expected" { target c } .-1 }
 
 #define R	1 +
 #define uR	2 +

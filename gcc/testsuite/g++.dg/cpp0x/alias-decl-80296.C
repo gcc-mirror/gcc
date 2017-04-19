@@ -6,4 +6,4 @@ template <int...> struct A {};
 template <int... N> using B = A<+N...>;
 
 B<int> b; // { dg-error "type/value mismatch" }
-          // { dg-message "expected a constant" "expected" { target *-*-* } 8 }
+          // { dg-message "expected a constant" "expected" { target *-*-* } .-1 }

@@ -11,9 +11,9 @@ int main()
   int i;
 
   b++; // { dg-warning "deprecated" "" { target { ! c++1z } } }
-  // { dg-error "forbidden" "" { target c++1z } 13 }
+  // { dg-error "forbidden" "" { target c++1z } .-1 }
   b++; // { dg-warning "deprecated" "" { target { ! c++1z } } }
-  // { dg-error "forbidden" "" { target c++1z } 15 }
+  // { dg-error "forbidden" "" { target c++1z } .-1 }
   i = b;
   if (i != 1)
     abort ();

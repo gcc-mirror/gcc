@@ -6,5 +6,5 @@
 
 #define foo - ## >>
 foo;
-/* { dg-error "expected identifier.*'-'" "expected" { target *-*-* } 8 } */
-/* { dg-error pasting "pasting" { target *-*-* } 8 } */
+/* { dg-error "expected identifier.*'-'" "expected" { target *-*-* } .-1 } */
+/* { dg-error pasting "pasting" { target *-*-* } .-2 } */

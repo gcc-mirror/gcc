@@ -3,5 +3,5 @@
 /* { dg-options "-std=c99 -pedantic-errors" } */
 
 struct Foo { int; }; /* { dg-bogus "unnamed" } */
-/* { dg-error "declaration does not declare anything" "int;" { target *-*-* } 5 } */
-/* { dg-error "struct has no members" "no members" { target *-*-* } 5 } */
+/* { dg-error "declaration does not declare anything" "int;" { target *-*-* } .-1 } */
+/* { dg-error "struct has no members" "no members" { target *-*-* } .-2 } */

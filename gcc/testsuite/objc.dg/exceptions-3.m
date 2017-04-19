@@ -70,7 +70,7 @@ int test (id object)
 
   @try { @throw object; }
   @catch (MyObject x)     /* { dg-error "@catch parameter is not a known Objective-C class type" } */
-    {                     /* { dg-error "conversion to non-scalar type requested" "" { target *-*-* } 72 } */
+    {                     /* { dg-error "conversion to non-scalar type requested" "" { target *-*-* } .-1 } */
       dummy++;
     }
 

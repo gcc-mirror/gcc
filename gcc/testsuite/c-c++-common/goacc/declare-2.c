@@ -4,7 +4,7 @@
 #pragma acc declare /* { dg-error "no valid clauses" } */
 
 #pragma acc declare create(undeclared) /* { dg-error "undeclared" } */
-/* { dg-error "no valid clauses" "second error" { target *-*-* } 6 } */
+/* { dg-error "no valid clauses" "second error" { target *-*-* } .-1 } */
 
 int v0[10];
 #pragma acc declare create(v0[1:3]) /* { dg-error "array section" } */

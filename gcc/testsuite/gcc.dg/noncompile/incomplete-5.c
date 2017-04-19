@@ -4,5 +4,5 @@
 struct A
 {
   enum E : 8; /* { dg-warning "narrower than values of its type" } */
-  /* { dg-error "has incomplete type" "incomplete" { target *-*-* } 6 } */
+  /* { dg-error "has incomplete type" "incomplete" { target *-*-* } .-1 } */
 };

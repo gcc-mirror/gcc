@@ -39,11 +39,11 @@ foo (char *s, size_t m, const struct tm *tp)
   strftime (s, m, "%EB", tp); /* { dg-warning "flag|modifier" "bad %EB" } */
   strftime (s, m, "%Ed", tp); /* { dg-warning "flag|modifier" "bad %Ed" } */
   strftime (s, m, "%ED", tp); /* { dg-warning "flag|modifier" "bad %ED" } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 41 } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } .-1 } */
   strftime (s, m, "%Ee", tp); /* { dg-warning "flag|modifier" "bad %Ee" } */
   strftime (s, m, "%EF", tp); /* { dg-warning "flag|modifier" "bad %EF" } */
   strftime (s, m, "%Eg", tp); /* { dg-warning "flag|modifier" "bad %Eg" } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 45 } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } .-1 } */
   strftime (s, m, "%EG", tp); /* { dg-warning "flag|modifier" "bad %EG" } */
   strftime (s, m, "%Eh", tp); /* { dg-warning "flag|modifier" "bad %Eh" } */
   strftime (s, m, "%EH", tp); /* { dg-warning "flag|modifier" "bad %EH" } */
@@ -71,13 +71,13 @@ foo (char *s, size_t m, const struct tm *tp)
   strftime (s, m, "%Ob", tp); /* { dg-warning "flag|modifier" "bad %Ob" } */
   strftime (s, m, "%OB", tp); /* { dg-warning "flag|modifier" "bad %OB" } */
   strftime (s, m, "%Oc", tp); /* { dg-warning "flag|modifier" "bad %Oc" } */
-  /* { dg-warning "in some locales" "2-digit year" { target *-*-* } 73 } */
+  /* { dg-warning "in some locales" "2-digit year" { target *-*-* } .-1 } */
   strftime (s, m, "%OC", tp); /* { dg-warning "flag|modifier|C" "bad %OC" } */
   strftime (s, m, "%OD", tp); /* { dg-warning "flag|modifier" "bad %OD" } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 76 } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } .-1 } */
   strftime (s, m, "%OF", tp); /* { dg-warning "flag|modifier" "bad %OF" } */
   strftime (s, m, "%Og", tp); /* { dg-warning "flag|modifier|C" "bad %Og" } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 79 } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } .-1 } */
   strftime (s, m, "%OG", tp); /* { dg-warning "flag|modifier|C" "bad %OG" } */
   strftime (s, m, "%Oh", tp); /* { dg-warning "flag|modifier" "bad %Oh" } */
   strftime (s, m, "%Oj", tp); /* { dg-warning "flag|modifier|C" "bad %Oj" } */
@@ -88,7 +88,7 @@ foo (char *s, size_t m, const struct tm *tp)
   strftime (s, m, "%Ot", tp); /* { dg-warning "flag|modifier" "bad %Ot" } */
   strftime (s, m, "%OT", tp); /* { dg-warning "flag|modifier" "bad %OT" } */
   strftime (s, m, "%Ox", tp); /* { dg-warning "flag|modifier" "bad %Ox" } */
-  /* { dg-warning "in some locales" "2-digit year" { target *-*-* } 90 } */
+  /* { dg-warning "in some locales" "2-digit year" { target *-*-* } .-1 } */
   strftime (s, m, "%OX", tp); /* { dg-warning "flag|modifier" "bad %OX" } */
   strftime (s, m, "%OY", tp); /* { dg-warning "flag|modifier|C" "bad %OY" } */
   strftime (s, m, "%Oz", tp); /* { dg-warning "flag|modifier|C" "bad %Oz" } */

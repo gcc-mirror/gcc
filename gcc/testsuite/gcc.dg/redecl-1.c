@@ -66,12 +66,12 @@ void test4(void)
 void prime5(void)
 {
   extern double bar5(double);	/* { dg-message "note: previous declaration" "previous 1" } */
-} /* { dg-message "note: previous implicit declaration" "previous 2" { target *-*-* } 68 } */
+} /* { dg-message "note: previous implicit declaration" "previous 2" { target *-*-* } .-1 } */
 
 void test5(void)
 {
   bar5(1);			/* { dg-warning "implicit declaration of function" } */
-} /* { dg-error "incompatible implicit declaration" "" { target *-*-* } 73 } */
+} /* { dg-error "incompatible implicit declaration" "" { target *-*-* } .-1 } */
 
 /* Extern then static, both at file scope.  */
 
@@ -95,7 +95,7 @@ static int test7(int x)		/* { dg-error "follows non-static" } */
 void prime8(void)
 {
   test8();			/* { dg-message "note: previous" "" } */
-                                /* { dg-warning "implicit" "implicit" { target *-*-* } 97 } */
+                                /* { dg-warning "implicit" "implicit" { target *-*-* } .-1 } */
 }
 
 static int test8(int x)		/* { dg-error "follows non-static" } */

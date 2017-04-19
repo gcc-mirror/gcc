@@ -25,25 +25,25 @@ f1 (void)
   #pragma omp target map(from: b[1:1])		/* { dg-error "'_Atomic' 'b' in 'map' clause" } */
   ;
   #pragma omp target map(to: c.a)		/* { dg-error "'_Atomic' 'c.a' in 'map' clause" } */
-  /* { dg-warning "accessing a member 'a' of an atomic structure 'c'" "" { target *-*-* } 27 } */
+  /* { dg-warning "accessing a member 'a' of an atomic structure 'c'" "" { target *-*-* } .-1 } */
   ;
   #pragma omp target map(to: c.b[1])		/* { dg-error "'_Atomic' 'c.b' in 'map' clause" } */
-  /* { dg-warning "accessing a member 'b' of an atomic structure 'c'" "" { target *-*-* } 30 } */
+  /* { dg-warning "accessing a member 'b' of an atomic structure 'c'" "" { target *-*-* } .-1 } */
   ;
   #pragma omp target data map(c)		/* { dg-error "'_Atomic' 'c' in 'map' clause" } */
-  /* { dg-error "must contain at least one" "" { target *-*-* } 33 } */
+  /* { dg-error "must contain at least one" "" { target *-*-* } .-1 } */
   {
     #pragma omp target update to (c.a)		/* { dg-error "'_Atomic' 'c.a' in 'to' clause" } */
-    /* { dg-error "must contain at least one" "" { target *-*-* } 36 } */
-    /* { dg-warning "accessing a member 'a' of an atomic structure 'c'" "" { target *-*-* } 36 } */
+    /* { dg-error "must contain at least one" "" { target *-*-* } .-1 } */
+    /* { dg-warning "accessing a member 'a' of an atomic structure 'c'" "" { target *-*-* } .-2 } */
     #pragma omp target update from (c.b[1])	/* { dg-error "'_Atomic' 'c.b' in 'from' clause" } */
-    /* { dg-error "must contain at least one" "" { target *-*-* } 39 } */
-    /* { dg-warning "accessing a member 'b' of an atomic structure 'c'" "" { target *-*-* } 39 } */
+    /* { dg-error "must contain at least one" "" { target *-*-* } .-1 } */
+    /* { dg-warning "accessing a member 'b' of an atomic structure 'c'" "" { target *-*-* } .-2 } */
     #pragma omp target update to (c)		/* { dg-error "'_Atomic' 'c' in 'to' clause" } */
-    /* { dg-error "must contain at least one" "" { target *-*-* } 42 } */
+    /* { dg-error "must contain at least one" "" { target *-*-* } .-1 } */
   }
   #pragma omp target map(to: c.c[0:])		/* { dg-error "'_Atomic' 'c.c' in 'map' clause" } */
-  /* { dg-warning "accessing a member 'c' of an atomic structure 'c'" "" { target *-*-* } 45 } */
+  /* { dg-warning "accessing a member 'c' of an atomic structure 'c'" "" { target *-*-* } .-1 } */
   ;
   #pragma omp target map(to: p[1:2])		/* { dg-error "'_Atomic' 'p' in 'map' clause" } */
   ;

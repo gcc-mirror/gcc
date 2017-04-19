@@ -18,7 +18,7 @@
                !       - Z is listed in SHARED clause
       X=1      ! O.K. - X is THREADPRIVATE
       Z(I) = Y ! Error - cannot reference I or Y here
-! { dg-error "'i' not specified" "" { target *-*-* } 20 } */
+! { dg-error "'i' not specified" "" { target *-*-* } .-1 } */
 ! { dg-error "enclosing 'parallel'" "" { target *-*-* } 14 } */
 ! { dg-error "'y' not specified" "" { target *-*-* } 20 }  */
 !$OMP DO firstprivate(y)

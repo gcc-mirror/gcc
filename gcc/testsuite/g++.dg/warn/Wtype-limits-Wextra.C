@@ -13,7 +13,7 @@ void a (unsigned char x)
     return;
   if (255 >= x) /* { dg-warning "comparison is always true due to limited range of data type" } */
     return;
-  if ((int)x <= 255) /* { dg-bogus "comparison is always true due to limited range of data type" "" { xfail *-*-* } 16 } */
+  if ((int)x <= 255) /* { dg-bogus "comparison is always true due to limited range of data type" "" { xfail *-*-* } . } */
     return;
   if (255 >= (unsigned char) 1)
     return;
@@ -58,7 +58,7 @@ void e (unsigned long long x)
 
 int test (int x) 
 {
-  if ((long long)x <= 0x123456789ABCLL) /* { dg-bogus "comparison is always true due to limited range of data type" "" { xfail *-*-* } 61 } */
+  if ((long long)x <= 0x123456789ABCLL) /* { dg-bogus "comparison is always true due to limited range of data type" "" { xfail *-*-* } . } */
     return 1;
   else 
     return 0;

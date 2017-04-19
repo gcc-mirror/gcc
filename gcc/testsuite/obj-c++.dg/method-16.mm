@@ -24,7 +24,7 @@
 void foo(void) {
   id obj1, obj2 = 0;
   obj2 = [obj1 initWithData: obj2];
-     /* { dg-warning "multiple methods named .\\-initWithData:. found" "" { target *-*-* } 26 } */
+     /* { dg-warning "multiple methods named .\\-initWithData:. found" "" { target *-*-* } .-1 } */
      /* { dg-message "using .\\-\\(void\\)initWithData:\\(Object1 \\*\\)data." "" { target *-*-* } 13 } */
      /* { dg-message "also found .\\-\\(id\\)initWithData:\\(Object1 \\*\\)data." "" { target *-*-* } 17 } */
      /* { dg-message "also found .\\-\\(id\\)initWithData:\\(Object2 \\*\\)data." "" { target *-*-* } 21 } */

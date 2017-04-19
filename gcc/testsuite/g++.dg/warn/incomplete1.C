@@ -17,6 +17,6 @@ int
 main (int argc, char **argv)
 {
   delete a;	// { dg-warning "delete" "warn" }
-  // { dg-message "note" "note" { target *-*-* } 19 }
+  // { dg-message "note" "note" { target *-*-* } .-1 }
   return 0;
 }

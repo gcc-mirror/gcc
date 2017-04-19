@@ -13,7 +13,7 @@ void a (unsigned char x)
     return;
   if (255 >= x) /* { dg-warning "comparison is always true due to limited range of data type" } */
     return;
-  if ((int)x <= 255) /* { dg-bogus "comparison is always true due to limited range of data type" "" { xfail *-*-* } 16 } */
+  if ((int)x <= 255) /* { dg-bogus "comparison is always true due to limited range of data type" "" { xfail *-*-* } . } */
     return;
   if (255 >= (unsigned char) 1)
     return;
@@ -21,13 +21,13 @@ void a (unsigned char x)
 }
 
 void b (unsigned short x)
-{                    /* { dg-warning "comparison of unsigned expression < 0 is always false" "" { target { ! int32plus } } 25 } */
+{                    /* { dg-warning "comparison of unsigned expression < 0 is always false" "" { target { ! int32plus } } .+1 } */
   if (x < 0)  return;/* { dg-warning "comparison is always false due to limited range of data type" "" { target { int32plus } } } */
-                     /* { dg-warning "comparison of unsigned expression >= 0 is always true" "" { target { ! int32plus } } 27 } */
+                     /* { dg-warning "comparison of unsigned expression >= 0 is always true" "" { target { ! int32plus } } .+1 } */
   if (x >= 0) return;/* { dg-warning "comparison is always true due to limited range of data type" "" { target { int32plus } } } */
-                     /* { dg-warning "comparison of unsigned expression < 0 is always false" "" { target { ! int32plus } } 29 } */
+                     /* { dg-warning "comparison of unsigned expression < 0 is always false" "" { target { ! int32plus } } .+1 } */
   if (0 > x)  return;/* { dg-warning "comparison is always false due to limited range of data type" "" { target { int32plus } } } */
-                     /* { dg-warning "comparison of unsigned expression >= 0 is always true" "" { target { ! int32plus } } 31 } */
+                     /* { dg-warning "comparison of unsigned expression >= 0 is always true" "" { target { ! int32plus } } .+1 } */
   if (0 <= x) return;/* { dg-warning "comparison is always true due to limited range of data type" "" { target { int32plus } } } */
 }
 
@@ -61,7 +61,7 @@ void e (unsigned long long x)
 
 int test (int x) 
 {
-  if ((long long)x <= 0x123456789ABCLL) /* { dg-bogus "comparison is always true due to limited range of data type" "" { xfail *-*-* } 64 } */
+  if ((long long)x <= 0x123456789ABCLL) /* { dg-bogus "comparison is always true due to limited range of data type" "" { xfail *-*-* } . } */
     return 1;
   else 
     return 0;

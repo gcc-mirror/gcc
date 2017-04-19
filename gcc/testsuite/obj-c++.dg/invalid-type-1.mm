@@ -19,7 +19,7 @@ id <MyProtocol> object; /* This is fine.  */
 AClass <MyProtocol> *object1; /* This is fine.  */
 
 Integer <MyProtocol> *object2; /* { dg-error ".Integer {aka int}. is not a template" } */
-/* { dg-error ".MyProtocol. was not declared in this scope" "" { target *-*-* } 21 } */
+/* { dg-error ".MyProtocol. was not declared in this scope" "" { target *-*-* } .-1 } */
 
 Integer <NonExistingProtocol> *object3; /* { dg-error ".Integer {aka int}. is not a template" } */
-/* { dg-error ".NonExistingProtocol. was not declared in this scope" "" { target *-*-* } 24 } */
+/* { dg-error ".NonExistingProtocol. was not declared in this scope" "" { target *-*-* } .-1 } */

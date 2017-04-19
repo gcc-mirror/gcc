@@ -15,7 +15,7 @@ void
 f02 (int a[const])
 {
   int **b = &a; /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "discards" "discards quals" { target *-*-* } 17 } */
+  /* { dg-error "discards" "discards quals" { target *-*-* } .-1 } */
   int *const *c = &a;
 }
 void
@@ -23,7 +23,7 @@ f03 (a)
      int a[const];
 {
   int **b = &a; /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "discards" "discards quals" { target *-*-* } 25 } */
+  /* { dg-error "discards" "discards quals" { target *-*-* } .-1 } */
   int *const *c = &a;
 }
 
@@ -34,7 +34,7 @@ void
 f12 (int a[const 2])
 {
   int **b = &a; /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "discards" "discards quals" { target *-*-* } 36 } */
+  /* { dg-error "discards" "discards quals" { target *-*-* } .-1 } */
   int *const *c = &a;
 }
 void
@@ -42,7 +42,7 @@ f13 (a)
      int a[const 2];
 {
   int **b = &a; /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "discards" "discards quals" { target *-*-* } 44 } */
+  /* { dg-error "discards" "discards quals" { target *-*-* } .-1 } */
   int *const *c = &a;
 }
 
@@ -70,7 +70,7 @@ void
 f32 (int a[static const 2])
 {
   int **b = &a; /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "discards" "discards quals" { target *-*-* } 72 } */
+  /* { dg-error "discards" "discards quals" { target *-*-* } .-1 } */
   int *const *c = &a;
 }
 void
@@ -78,7 +78,7 @@ f33 (a)
      int a[static const 2];
 {
   int **b = &a; /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "discards" "discards quals" { target *-*-* } 80 } */
+  /* { dg-error "discards" "discards quals" { target *-*-* } .-1 } */
   int *const *c = &a;
 }
 
@@ -89,7 +89,7 @@ void
 f42 (int a[const static 2])
 {
   int **b = &a; /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "discards" "discards quals" { target *-*-* } 91 } */
+  /* { dg-error "discards" "discards quals" { target *-*-* } .-1 } */
   int *const *c = &a;
 }
 void
@@ -97,15 +97,15 @@ f43 (a)
      int a[const static 2];
 {
   int **b = &a; /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "discards" "discards quals" { target *-*-* } 99 } */
+  /* { dg-error "discards" "discards quals" { target *-*-* } .-1 } */
   int *const *c = &a;
 }
 
 /* Test rejection of static and type qualifiers in non-parameter contexts.  */
 int x[const 2]; /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "non-parameter" "quals in non-parm array" { target *-*-* } 105 } */
+/* { dg-error "non-parameter" "quals in non-parm array" { target *-*-* } .-1 } */
 int y[static 2]; /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "non-parameter" "static in non-parm array" { target *-*-* } 107 } */
+/* { dg-error "non-parameter" "static in non-parm array" { target *-*-* } .-1 } */
 void g (int a[static 2][3]);
 void h (int a[2][static 3]); /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "non-parameter" "static in non-final parm array" { target *-*-* } 110 } */
+/* { dg-error "non-parameter" "static in non-final parm array" { target *-*-* } .-1 } */

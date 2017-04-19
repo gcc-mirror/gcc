@@ -13,6 +13,6 @@
 @implementation Test
 @synthesize v1;       /* { dg-error "must be an existing ivar" } */
 @end
-/* { dg-warning "incomplete implementation" "" { target *-*-* } 15 } */
-/* { dg-warning "method definition for .-setV1:. not found" "" { target *-*-* } 15 } */
-/* { dg-warning "method definition for .-v1. not found" "" { target *-*-* } 15 } */
+/* { dg-warning "incomplete implementation" "" { target *-*-* } .-1 } */
+/* { dg-warning "method definition for .-setV1:. not found" "" { target *-*-* } .-2 } */
+/* { dg-warning "method definition for .-v1. not found" "" { target *-*-* } .-3 } */

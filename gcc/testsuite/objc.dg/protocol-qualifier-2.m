@@ -25,7 +25,7 @@ void test1 (void)
 {
   [object1 method]; /* Ok */
   [object2 method]; /* { dg-warning ".MyClass. may not respond to ..method." } */
-                    /* { dg-warning "without a matching method" "" { target *-*-* } 27 } */
-                    /* { dg-warning "will be assumed to return" "" { target *-*-* } 27 } */
-                    /* { dg-warning "as arguments" "" { target *-*-* } 27 } */
+                    /* { dg-warning "without a matching method" "" { target *-*-* } .-1 } */
+                    /* { dg-warning "will be assumed to return" "" { target *-*-* } .-2 } */
+                    /* { dg-warning "as arguments" "" { target *-*-* } .-3 } */
 }

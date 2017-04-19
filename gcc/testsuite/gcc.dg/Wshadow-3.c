@@ -18,4 +18,4 @@ int f9(x) int x; { return 0; }
 int f10(v) { return 0; } /* { dg-warning "declaration of 'v' shadows a global declaration" } */
 int f11(int a, int b(int a));
 int f12(int a, int b(int a, int x[a])); /* { dg-warning "declaration of 'a' shadows a parameter" } */
-/* { dg-message "shadowed declaration" "outer parm" { target *-*-* } 20 } */
+/* { dg-message "shadowed declaration" "outer parm" { target *-*-* } .-1 } */

@@ -6,5 +6,5 @@
 
 int asm;	// { dg-error "before .asm." }
 int typeof;	// { dg-error "expected" "expected" }
-// { dg-error "multiple types" "multiple" { target *-*-* } 8 }
-// { dg-error "declaration" "declaration" { target *-*-* } 8 }
+// { dg-error "multiple types" "multiple" { target *-*-* } .-1 }
+// { dg-error "declaration" "declaration" { target *-*-* } .-2 }
