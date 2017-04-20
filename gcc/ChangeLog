@@ -1,3 +1,15 @@
+2017-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/80423
+	* tree.h (build_array_type): Add typeless_storage default argument.
+	* tree.c (type_cache_hasher::equal): Also compare
+	TYPE_TYPELESS_STORAGE flag for ARRAY_TYPEs.
+	(build_array_type): Add typeless_storage argument, set
+	TYPE_TYPELESS_STORAGE to it, if shared also hash it, and pass to
+	recursive call.
+	(build_nonshared_array_type): Adjust build_array_type_1 caller.
+	(build_array_type): Likewise.  Add typeless_storage argument.
+
 2017-04-19  Eric Botcazou  <ebotcazou@adacore.com>
             Jakub Jelinek  <jakub@redhat.com>
 

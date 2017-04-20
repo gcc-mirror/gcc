@@ -1,3 +1,8 @@
+2017-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/80423
+	* c-common.c (complete_array_type): Preserve TYPE_TYPELESS_STORAGE.
+
 2017-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/79788

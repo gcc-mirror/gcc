@@ -949,14 +949,14 @@ build_cplus_array_type (tree elt_type, tree index_type)
     }
   else
     {
-      t = build_array_type (elt_type, index_type);
-      if (elt_type == unsigned_char_type_node
-	  || elt_type == signed_char_type_node
-	  || elt_type == char_type_node
-	  || (TREE_CODE (elt_type) == ENUMERAL_TYPE
-	      && TYPE_CONTEXT (elt_type) == std_node
-	      && !strcmp ("byte", TYPE_NAME_STRING (elt_type))))
-	TYPE_TYPELESS_STORAGE (t) = 1;
+      bool typeless_storage
+	= (elt_type == unsigned_char_type_node
+	   || elt_type == signed_char_type_node
+	   || elt_type == char_type_node
+	   || (TREE_CODE (elt_type) == ENUMERAL_TYPE
+	       && TYPE_CONTEXT (elt_type) == std_node
+	       && !strcmp ("byte", TYPE_NAME_STRING (elt_type))));
+      t = build_array_type (elt_type, index_type, typeless_storage);
     }
 
   /* Now check whether we already have this array variant.  */
