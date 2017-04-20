@@ -1,3 +1,7 @@
+2017-04-20  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* c.opt (Wextra-semi): New C++ warning flag.
+
 2017-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/80423

@@ -1,3 +1,8 @@
+2017-04-20  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* parser.c (cp_parser_member_declaration): Add warning with fixit
+	information for extra semicolon after in-class function definition.
+
 2017-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/80423

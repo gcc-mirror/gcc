@@ -504,6 +504,10 @@ Wextra
 C ObjC C++ ObjC++ Warning
 ; in common.opt
 
+Wextra-semi
+C++ ObjC++ Var(warn_extra_semi) Warning
+Warn about semicolon after in-class function definition.
+
 Wfloat-conversion
 C ObjC C++ ObjC++ Var(warn_float_conversion) Warning LangEnabledBy(C ObjC C++ ObjC++,Wconversion)
 Warn for implicit type conversions that cause loss of floating point precision.
