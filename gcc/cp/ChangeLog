@@ -1,3 +1,9 @@
+2017-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/80473
+	* init.c (build_new_1): Suppress notes about over-aligned new when
+	the warning is suppressed.
+
 2017-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/80423
