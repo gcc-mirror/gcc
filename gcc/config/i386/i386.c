@@ -17650,12 +17650,16 @@ print_reg (rtx x, int code, FILE *file)
 
   regno = REGNO (x);
 
-  gcc_assert (regno != ARG_POINTER_REGNUM
-	      && regno != FRAME_POINTER_REGNUM
-	      && regno != FPSR_REG
-	      && regno != FPCR_REG);
-
-  if (regno == FLAGS_REG)
+  if (regno == ARG_POINTER_REGNUM
+      || regno == FRAME_POINTER_REGNUM
+      || regno == FPSR_REG
+      || regno == FPCR_REG)
+    {
+      output_operand_lossage
+	("invalid use of register '%s'", reg_names[regno]);
+      return;
+    }
+  else if (regno == FLAGS_REG)
     {
       output_operand_lossage ("invalid use of asm flag output");
       return;
