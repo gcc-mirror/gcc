@@ -6220,7 +6220,15 @@ struct s @{ int f, g, h; @};
 struct s x = @{ .f = 3, .g = 4 @};
 @end smallexample
 
-In C++ this option does not warn either about the empty @{ @}
+In C this option does not warn about the universal zero initializer
+@samp{@{ 0 @}}:
+
+@smallexample
+struct s @{ int f, g, h; @};
+struct s x = @{ 0 @};
+@end smallexample
+
+Likewise, in C++ this option does not warn about the empty @{ @}
 initializer, for example:
 
 @smallexample
