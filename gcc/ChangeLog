@@ -1,5 +1,12 @@
 2017-04-20  Richard Biener  <rguenther@suse.de>
 
+	* ggc-page.c (ggc_allocated_p): Rename to ...
+	(safe_lookup_page_table_entry): ... this and return the lookup
+	result.
+	(gt_ggc_m_S): Use safe_lookup_page_table_entry.
+
+2017-04-20  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/80453
 	* tree-ssa-sccvn.h (struct vn_phi_s): Add cclhs and ccrhs members.
 	* tree-ssa-sccvn.c (cond_stmts_equal_p): Use recorded lhs and rhs
