@@ -1,3 +1,7 @@
+2017-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* BASE-VER: Set to 8.0.0.
+
 2017-04-20  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.c (arm_elf_asm_cdtor): Create non-default
