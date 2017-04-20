@@ -67,6 +67,9 @@ typedef struct vn_phi_s
   hashval_t hashcode;
   vec<tree> phiargs;
   basic_block block;
+  /* Controlling condition lhs/rhs.  */
+  tree cclhs;
+  tree ccrhs;
   tree type;
   tree result;
 } *vn_phi_t;

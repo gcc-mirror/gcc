@@ -1,3 +1,13 @@
+2017-04-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80453
+	* tree-ssa-sccvn.h (struct vn_phi_s): Add cclhs and ccrhs members.
+	* tree-ssa-sccvn.c (cond_stmts_equal_p): Use recorded lhs and rhs
+	from the conditions.
+	(vn_phi_eq): Pass them down.
+	(vn_phi_lookup): Record them.
+	(vn_phi_insert): Likewise.
+
 2017-04-20  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	* config/mips/mips.c (mips_expand_vec_perm_const): Re-fix
