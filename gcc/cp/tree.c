@@ -2234,7 +2234,7 @@ ovl_iterator::remove_node (tree overload, tree node)
 /* Mark or unmark a lookup set. */
 
 void
-ovl_lookup_mark (tree ovl, bool val)
+lookup_mark (tree ovl, bool val)
 {
   /* For every node that is a lookup, mark the thing it points to.  */
   for (; ovl && TREE_CODE (ovl) == OVERLOAD && OVL_LOOKUP_P (ovl);
@@ -2249,7 +2249,7 @@ ovl_lookup_mark (tree ovl, bool val)
 /* Add a potential overload into a lookup set.  */
 
 tree
-ovl_lookup_add (tree lookup, tree ovl)
+lookup_add (tree lookup, tree ovl)
 {
   if (lookup || TREE_CODE (ovl) == TEMPLATE_DECL)
     {
@@ -2265,7 +2265,7 @@ ovl_lookup_add (tree lookup, tree ovl)
 /* Add a potential overload into a lookup set.  */
 
 tree
-ovl_lookup_maybe_add (tree lookup, tree ovl)
+lookup_maybe_add (tree lookup, tree ovl)
 {
   if (LOOKUP_SEEN_P (ovl))
     return lookup;
@@ -2327,14 +2327,14 @@ ovl_lookup_maybe_add (tree lookup, tree ovl)
      lookup.  */
   LOOKUP_SEEN_P (ovl) = true;
 
-  return ovl_lookup_add (lookup, ovl);
+  return lookup_add (lookup, ovl);
 }
 
 /* Preserve the contents of a lookup so that it is available for a
    later instantiation.  */
 
 void
-ovl_lookup_keep (tree lookup, bool keep)
+lookup_keep (tree lookup, bool keep)
 {
   for (;
        lookup && TREE_CODE (lookup) == OVERLOAD

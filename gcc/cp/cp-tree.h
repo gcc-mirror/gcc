@@ -6848,10 +6848,10 @@ extern tree ovl_make				(tree fn,
 						 tree next = NULL_TREE);
 extern tree ovl_insert				(tree maybe_ovl, tree fn,
 						 bool using_p = false);
-extern void ovl_lookup_keep			(tree lookup, bool keep);
-extern void ovl_lookup_mark			(tree lookup, bool val);
-extern tree ovl_lookup_add			(tree lookup, tree ovl);
-extern tree ovl_lookup_maybe_add		(tree lookup, tree ovl);
+extern void lookup_keep				(tree lookup, bool keep);
+extern void lookup_mark				(tree lookup, bool val);
+extern tree lookup_add				(tree lookup, tree ovl);
+extern tree lookup_maybe_add			(tree lookup, tree ovl);
 extern tree get_ovl				(tree expr,
 						 bool want_first = false)
   ATTRIBUTE_NTC_PURE;

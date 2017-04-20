@@ -1,5 +1,10 @@
 2017-04-20  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (ovl_lookup_keep, ovl_lookup_mark, ovl_lookup_add,
+	ovl_lookup_maybe_add): Rename to ...
+	(lookup_keep, lookup_mark, lookup_add, lookup_maybe_add): ... these.
+
 	Keep overloads correctly ordered
 	gcc/cp/
 	* cp-tree.h (ovl_iterator::unhide): Reimplement.

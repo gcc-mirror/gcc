@@ -2934,7 +2934,7 @@ check_explicit_specialization (tree declarator,
 
 		    /* Glue all these conversion functions together
 		       with those we already have.  */
-		    fns = ovl_lookup_add (fns, ovl);
+		    fns = lookup_add (fns, ovl);
 		  }
 	    }
 
@@ -25197,7 +25197,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	  tree pruned = NULL_TREE;
 	  for (ovl2_iterator iter (cands); iter; ++iter)
 	    if (!DECL_NONCONVERTING_P (STRIP_TEMPLATE (*iter)))
-	      pruned = ovl_lookup_add (pruned, *iter);
+	      pruned = lookup_add (pruned, *iter);
 
 	  cands = pruned;
 	}
@@ -25222,7 +25222,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	    && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
 	  elided = true;
 	else
-	  cands = ovl_lookup_add (cands, guide);
+	  cands = lookup_add (cands, guide);
 
 	saw_ctor = true;
       }
@@ -25234,7 +25234,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	  && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
 	elided = true;
       else
-	cands = ovl_lookup_add (cands, guide);
+	cands = lookup_add (cands, guide);
     }
   if (args->length() == 1)
     {
@@ -25244,7 +25244,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	  && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
 	elided = true;
       else
-	cands = ovl_lookup_add (cands, guide);
+	cands = lookup_add (cands, guide);
     }
 
   if (elided && !cands)

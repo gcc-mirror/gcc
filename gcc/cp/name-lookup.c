@@ -615,7 +615,7 @@ name_lookup::add (const cxx_binding *binding, int flags)
 		&& same_type_p (TREE_TYPE (value), TREE_TYPE (new_val))))
     {
       if (OVL_P (value) && OVL_P (new_val))
-	value = ovl_lookup_add (value, new_val);
+	value = lookup_add (value, new_val);
       else
 	value = build_ambiguous (value, new_val);
     }
@@ -682,7 +682,7 @@ adl_lookup::add_functions (tree ovl)
   else if (!DECL_DECLARES_FUNCTION_P (ovl))
     return;
 
-  value = ovl_lookup_maybe_add (value, ovl);
+  value = lookup_maybe_add (value, ovl);
 }
 
 /* Add functions of a namespace to the lookup structure.  */
@@ -980,7 +980,7 @@ do_lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
 {
   adl_lookup lookup (name, fns);
 
-  ovl_lookup_mark (fns, true);
+  lookup_mark (fns, true);
   unsigned ix;
   tree arg;
 
@@ -991,7 +991,7 @@ do_lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
       lookup.assoc_expr (arg);
 
   fns = lookup.value;
-  ovl_lookup_mark (fns, false);
+  lookup_mark (fns, false);
 
   return fns;
 }
