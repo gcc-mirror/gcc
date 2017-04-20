@@ -615,7 +615,7 @@ name_lookup::add (const cxx_binding *binding, int flags)
 		&& same_type_p (TREE_TYPE (value), TREE_TYPE (new_val))))
     {
       if (OVL_P (value) && OVL_P (new_val))
-	value = ovl_add (value, new_val, -1);
+	value = ovl_lookup_add (value, new_val);
       else
 	value = build_ambiguous (value, new_val);
     }
@@ -682,7 +682,7 @@ adl_lookup::add_functions (tree ovl)
   else if (!DECL_DECLARES_FUNCTION_P (ovl))
     return;
 
-  value = ovl_lookup_add (value, ovl);
+  value = ovl_lookup_maybe_add (value, ovl);
 }
 
 /* Add functions of a namespace to the lookup structure.  */
@@ -978,7 +978,9 @@ adl_lookup::assoc_template_arg (tree arg)
 static tree
 do_lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
 {
-  adl_lookup lookup (name, ovl_lookup_mark (fns, true));
+  adl_lookup lookup (name, fns);
+
+  ovl_lookup_mark (fns, true);
   unsigned ix;
   tree arg;
 
@@ -988,7 +990,8 @@ do_lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
     if (!TYPE_P (arg))
       lookup.assoc_expr (arg);
 
-  fns = ovl_lookup_mark (lookup.value, false);
+  fns = lookup.value;
+  ovl_lookup_mark (fns, false);
 
   return fns;
 }
@@ -1675,8 +1678,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding,
       else
 	goto conflict;
 
-      // FIXME: insert after using decls?
-      to_val = ovl_add (old, decl);
+      to_val = ovl_insert (old, decl);
     }
   else if (to_type && TREE_CODE (decl) == TYPE_DECL)
     {
@@ -3417,7 +3419,7 @@ do_nonmember_using_decl (tree scope, tree name, cxx_binding *bind)
 		   builtins here.  They don't cause a problem, and
 		   we'd like to match them with a future
 		   declaration.  */
-		bind->value = ovl_add (bind->value, new_fn, true);
+		bind->value = ovl_insert (bind->value, new_fn, true);
 	    }
 	}
       else

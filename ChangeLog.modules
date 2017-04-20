@@ -1,3 +1,24 @@
+2017-04-20  Nathan Sidwell  <nathan@acm.org>
+
+	Keep overloads correctly ordered
+	gcc/cp/
+	* cp-tree.h (ovl_iterator::unhide): Reimplement.
+	(ovl_iterator::replace, ovl_iterator::ovl_unhide): Delete.
+	(ovl_iterator::remove_node, ovl_iterator::unhide_node): Declare.
+	(ovl_insert, ovl_lookup_maybe_add): Declare.
+	* name-lookup.c (adl_lookup::add_functions): Adjust.
+	(do_lookup_arg_dependent): Adjust.
+	(do_nonmember_using_decl): Adjust.
+	* pt.c (make_constrained_auto, do_class_deduction): Adjust.
+	* tree.c (ov_move_unhidden, ovl_add): Delete.
+	(ovl_copy, ovl_insert): New.
+	(ovl_iterator::unhide_node, ovl_iterator::remove_node): New.
+	(ovl_lookup_mark, ovl_lookup_add): Adjust.
+	(ovl_lookup_maybe_add): New.
+	(ovl_lookup_keep, ovl_skip_hidden): Adjust.
+	(ovl_iterator::ovl_unhide, ovl_iterator::replace): Delete.
+	* class.c (add_method): Adjust.
+
 2017-04-14  Nathan Sidwell  <nathan@acm.org>
 
 	Kill per-namespace static_decls.

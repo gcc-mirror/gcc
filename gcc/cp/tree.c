@@ -2099,94 +2099,151 @@ ovl_make (tree fn, tree next)
   return result;
 }
 
-/* OVL is an unhidden node that preceeds a hidden one.  Move it down
-   to after the hidden nodes.  Return the new OVL head.  */
-
 static tree
-ovl_move_unhidden (tree ovl)
+ovl_copy (tree ovl)
 {
-  tree prev, probe = ovl;
+  tree result = ovl_cache;
 
-  do
+  if (result)
     {
-      prev = probe;
-      probe = OVL_CHAIN (prev);
+      ovl_cache = OVL_FUNCTION (result);
+      /* Zap the flags.  */
+      memset (result, 0, sizeof (tree_base));
+      TREE_SET_CODE (result, OVERLOAD);
     }
-  while (probe && OVL_HIDDEN_P (probe));
+  else
+    result = make_node (OVERLOAD);
 
-  tree result = OVL_CHAIN (ovl);
-  TREE_TYPE (prev) = unknown_type_node;
-  if (!probe && TREE_CODE (OVL_FUNCTION (ovl)) != TEMPLATE_DECL)
-    TREE_TYPE (ovl) = TREE_TYPE (OVL_FUNCTION (ovl));
-  OVL_CHAIN (ovl) = probe;
-  OVL_CHAIN (prev) = ovl;
+  gcc_assert (!OVL_NESTED_P (ovl) && !OVL_LOOKUP_P (ovl));
+  TREE_TYPE (result) = TREE_TYPE (ovl);
+  OVL_FUNCTION (result) = OVL_FUNCTION (ovl);
+  OVL_CHAIN (result) = OVL_CHAIN (ovl);
+  if (OVL_HIDDEN_P (ovl))
+    OVL_HIDDEN_P (ovl) = true;
+  if (OVL_VIA_USING_P (ovl))
+    OVL_VIA_USING_P (ovl) = true;
   return result;
 }
 
-/* Add FN into the overload set MAYBE_OVL.  MAYBE_OVL can be NULL, or
-   a plain decl.  If MAYBE_OVL is NULL, and FN doesn't require
-   wrapping in an overload, we return plain FN.  NOT_HIDDEN_OR_USING
-   encodes !hiddenness or usingness .  */
+/* Add FN to the (potentially NULL) overload set OVL.  VIA_USING is
+   true, if FN is via a using declaration.  We also pay attention to
+   DECL_HIDDEN.  Overloads are ordered as hidden, using, regular.  */
 
 tree
-ovl_add (tree maybe_ovl, tree fn, int look_or_using)
+ovl_insert (tree maybe_ovl, tree fn, bool using_p)
 {
-  tree result;
+  bool hidden_p = !using_p && DECL_HIDDEN_P (fn);
+  int weight = hidden_p * 2 + using_p;
+  bool copying = false;
 
-  /* 2d overloads only creatable via ovl_add_lookup.  */
-  gcc_checking_assert (look_or_using < 0 || TREE_CODE (fn) != OVERLOAD);
+  tree result = NULL_TREE;
+  tree insert_after = NULL_TREE;
 
-  if (maybe_ovl && TREE_CODE (maybe_ovl) != OVERLOAD)
+  /* Find insertion point.  */
+  while (maybe_ovl && TREE_CODE (maybe_ovl) == OVERLOAD
+	 && (weight <
+	     (OVL_HIDDEN_P (maybe_ovl) * 2 + OVL_VIA_USING_P (maybe_ovl))))
     {
-      /* Don't chain to a non-overload.  */
-      maybe_ovl = ovl_make (maybe_ovl);
-      if (look_or_using < 0)
-	OVL_LOOKUP_P (maybe_ovl) = true;
+      gcc_checking_assert (!OVL_LOOKUP_P (maybe_ovl)
+			   && (!OVL_USED_P (maybe_ovl) || !copying));
+      if (OVL_USED_P (maybe_ovl))
+	{
+	  copying = true;
+	  maybe_ovl = ovl_copy (maybe_ovl);
+	  if (insert_after)
+	    TREE_CHAIN (insert_after) = maybe_ovl;
+	}
+      if (!result)
+	result = maybe_ovl;
+      insert_after = maybe_ovl;
+      maybe_ovl = OVL_CHAIN (maybe_ovl);
     }
 
-  result = fn;
-  bool using_p = look_or_using > 0;
-  bool hidden_p = !look_or_using && DECL_HIDDEN_P (fn);
-
+  tree trail = fn;
   if (maybe_ovl || using_p || hidden_p || TREE_CODE (fn) == TEMPLATE_DECL)
     {
-      result = ovl_make (fn, maybe_ovl);
+      trail = ovl_make (fn, maybe_ovl);
       if (hidden_p)
-	OVL_HIDDEN_P (result) = true;
+	OVL_HIDDEN_P (trail) = true;
       if (using_p)
-	OVL_VIA_USING_P (result) = true;
-      if (look_or_using < 0)
-	OVL_LOOKUP_P (result) = true;
-
-      if (!hidden_p && maybe_ovl && OVL_HIDDEN_P (maybe_ovl))
-	/* We inserted a non-hidden before a hidden.  Fix that up
-	   now.  */
-	result = ovl_move_unhidden (result);
+	OVL_VIA_USING_P (trail) = true;
     }
+
+  if (insert_after)
+    {
+      TREE_CHAIN (insert_after) = trail;
+      TREE_TYPE (insert_after) = unknown_type_node;
+    }
+  else
+    result = trail;
+
   return result;
+}
+
+tree
+ovl_iterator::unhide_node (tree overload, tree node)
+{
+  /* We cannot have returned NODE as part of a lookup overload, so it
+     cannot be USED.  */
+  gcc_checking_assert (!OVL_USED_P (node));
+
+  OVL_HIDDEN_P (node) = false;
+  if (tree chain = OVL_CHAIN (node))
+    if (TREE_CODE (chain) == OVERLOAD
+	&& (OVL_VIA_USING_P (chain) || OVL_HIDDEN_P (chain)))
+      {
+	overload = remove_node (overload, node);
+	overload = ovl_insert (overload, OVL_FUNCTION (node));
+      }
+  return overload;
+}
+
+/* NODE is on the overloads of OVL.  Remove it.  If a predecessor is
+   OVL_USED we must copy OVL nodes, because those are immutable.  */
+
+tree
+ovl_iterator::remove_node (tree overload, tree node)
+{
+  bool copying = false;
+
+  tree *slot = &overload;
+  while (*slot != node)
+    {
+      tree probe = *slot;
+      gcc_checking_assert (!OVL_LOOKUP_P (probe)
+			   && (!OVL_USED_P (probe) || !copying));
+      if (OVL_USED_P (probe))
+	{
+	  copying = true;
+	  probe = ovl_copy (probe);
+	  *slot = probe;
+	}
+
+      slot = &OVL_CHAIN (probe);
+    }
+
+  /* Stitch out NODE.  We don't have to worry about now making a
+     singleton overload (and consequently maybe setting its type),
+     because all uses of this function will be followed by inserting a
+     new node that must follow the place we've cut this out from.  */
+  *slot = OVL_CHAIN (node);
+
+  return overload;
 }
 
 /* Mark or unmark a lookup set. */
 
-tree
+void
 ovl_lookup_mark (tree ovl, bool val)
 {
-  if (!ovl)
-    ;
-  else if (TREE_CODE (ovl) == FUNCTION_DECL
-	   || !OVL_LOOKUP_P (ovl))
-    LOOKUP_SEEN_P (ovl) = val;
-  else
-    for (tree probe = ovl; probe; probe = OVL_CHAIN (probe))
-      if (!OVL_LOOKUP_P (probe))
-	{
-	  LOOKUP_SEEN_P (probe) = val;
-	  break;
-	}
-      else
-	LOOKUP_SEEN_P (OVL_FUNCTION (probe)) = val;
+  /* For every node that is a lookup, mark the thing it points to.  */
+  for (; ovl && TREE_CODE (ovl) == OVERLOAD && OVL_LOOKUP_P (ovl);
+       ovl = OVL_CHAIN (ovl))
+    LOOKUP_SEEN_P (OVL_FUNCTION (ovl)) = val;
 
-  return ovl;
+  if (ovl && (TREE_CODE (ovl) == OVERLOAD ||
+	      TREE_CODE (ovl) == FUNCTION_DECL))
+    LOOKUP_SEEN_P (ovl) = val;
 }
 
 /* Add a potential overload into a lookup set.  */
@@ -2194,63 +2251,73 @@ ovl_lookup_mark (tree ovl, bool val)
 tree
 ovl_lookup_add (tree lookup, tree ovl)
 {
+  if (lookup || TREE_CODE (ovl) == TEMPLATE_DECL)
+    {
+      lookup = ovl_make (ovl, lookup);
+      OVL_LOOKUP_P (lookup) = true;
+    }
+  else
+    lookup = ovl;
+
+  return lookup;
+}
+
+/* Add a potential overload into a lookup set.  */
+
+tree
+ovl_lookup_maybe_add (tree lookup, tree ovl)
+{
   if (LOOKUP_SEEN_P (ovl))
     return lookup;
 
-  if (TREE_CODE (ovl) == OVERLOAD)
+  if (lookup && TREE_CODE (ovl) == OVERLOAD)
     {
       /* Determine if we already have some part of this overload in
 	 the overload set.  If so fix things up so we only have the
 	 overload set once.  */
       tree marked = NULL_TREE;
 
-      for (tree probe = ovl; !marked && probe; probe = OVL_CHAIN (probe))
+      for (tree probe = ovl; probe; probe = OVL_CHAIN (probe))
 	if (LOOKUP_SEEN_P (probe))
-	  marked = probe;
-	else if (!OVL_CHAIN (probe) && LOOKUP_SEEN_P (OVL_FUNCTION (probe)))
-	  marked = OVL_FUNCTION (probe);
+	  {
+	    marked = probe;
+	    break;
+	  }
+	else if (TREE_CODE (probe) != OVERLOAD)
+	  break;
 
       if (marked)
-	LOOKUP_SEEN_P (marked) = false;
-
-      if (!marked)
-	;
-      else if (TREE_CODE (lookup) == FUNCTION_DECL
-	       || !OVL_LOOKUP_P (lookup))
 	{
-	  gcc_checking_assert (marked == lookup);
-	  lookup = NULL_TREE;
-	}
-      else
-	{
-	  /* The tail of this overload is already in the lookup set.
-	     Stitch out the tail case, which might involve copying.  */
+	  /* The tail of this overload is already in the lookup
+	     set.  Stitch out the tail case, which might involve
+	     copying.  */
 	  bool rewrite = false;
 
-	  for (tree probe = lookup, prev = NULL; ;
-	       prev = probe, probe = OVL_CHAIN (probe))
+	  LOOKUP_SEEN_P (marked) = false;
+	  for (tree *prev = &lookup, probe = *prev;
+	       ; prev = &OVL_CHAIN (probe), probe = *prev)
 	    {
-	      if (!OVL_LOOKUP_P (probe))
+	      if (probe == marked)
 		{
-		  gcc_checking_assert (marked == probe);
-		  OVL_CHAIN (prev) = NULL_TREE;
+		  *prev = NULL_TREE;
 		  break;
 		}
-	      else if (marked == OVL_FUNCTION (probe))
+	      gcc_checking_assert (OVL_LOOKUP_P (probe));
+	      if (marked == OVL_FUNCTION (probe))
 		{
-		  (prev ? OVL_CHAIN (prev) : lookup) = OVL_CHAIN (probe);
+		  *prev = OVL_CHAIN (probe);
 		  break;
 		}
 
 	      /* If we're in a used part of the lookup set, copy the
-		 node.  */
+		 node, so as to not disturb stored uses.  */
 	      gcc_checking_assert (!rewrite || OVL_USED_P (probe));
 	      if (OVL_USED_P (probe))
 		{
-		  rewrite = TRUE;
-		  probe = copy_node (probe);
-		  (prev ? OVL_CHAIN (prev) : lookup) = probe;
-		  OVL_USED_P (probe) = false;
+		  rewrite = true;
+		  probe = ovl_copy (probe);
+		  OVL_LOOKUP_P (probe) = true;
+		  *prev = probe;
 		}
 	    }
 	}
@@ -2259,9 +2326,8 @@ ovl_lookup_add (tree lookup, tree ovl)
   /* Finally mark the new overload and prepend it to the current
      lookup.  */
   LOOKUP_SEEN_P (ovl) = true;
-  lookup = ovl_add (lookup, ovl, -1);
 
-  return lookup;
+  return ovl_lookup_add (lookup, ovl);
 }
 
 /* Preserve the contents of a lookup so that it is available for a
@@ -2270,17 +2336,16 @@ ovl_lookup_add (tree lookup, tree ovl)
 void
 ovl_lookup_keep (tree lookup, bool keep)
 {
-  if (TREE_CODE (lookup) == OVERLOAD)
-    for (; lookup && OVL_LOOKUP_P (lookup) && !OVL_USED_P (lookup);
-	 lookup = OVL_CHAIN (lookup))
+  for (;
+       lookup && TREE_CODE (lookup) == OVERLOAD
+	 && OVL_LOOKUP_P (lookup) && !OVL_USED_P (lookup);
+       lookup = OVL_CHAIN (lookup))
+    if (keep)
+      OVL_USED_P (lookup) = true;
+    else
       {
-	if (keep)
-	  OVL_USED_P (lookup) = true;
-	else
-	  {
-	    OVL_FUNCTION (lookup) = ovl_cache;
-	    ovl_cache = lookup;
-	  }
+	OVL_FUNCTION (lookup) = ovl_cache;
+	ovl_cache = lookup;
       }
 }
 
@@ -2289,66 +2354,20 @@ ovl_lookup_keep (tree lookup, bool keep)
 tree
 ovl_skip_hidden (tree ovl)
 {
-  if (!ovl)
-    ;
-  else if (TREE_CODE (ovl) == OVERLOAD)
-    {
-      /* Skip over the hidden ones.  */
-      while (ovl && OVL_HIDDEN_P (ovl))
-	{
-	  gcc_checking_assert (DECL_HIDDEN_P (OVL_FUNCTION (ovl)));
-	  ovl = OVL_CHAIN (ovl);
-	}
+  for (;
+       ovl && TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
+       ovl = OVL_CHAIN (ovl))
+    gcc_checking_assert (DECL_HIDDEN_P (OVL_FUNCTION (ovl)));
 
-      /* Make sure there are no disagreements after this.  */
-      for (tree probe = ovl; probe; probe = OVL_CHAIN (probe))
-	gcc_checking_assert (!OVL_HIDDEN_P (probe)
-			     && !DECL_HIDDEN_P (OVL_FUNCTION (probe)));
-    }
-  else if (DECL_P (ovl) && DECL_HIDDEN_P (ovl))
+  if (ovl && TREE_CODE (ovl) != OVERLOAD && DECL_HIDDEN_P (ovl))
     {
       /* Any hidden functions should have been wrapped in an
-	 overload.  */
+	 overload, but injected friend classes will not.  */
       gcc_checking_assert (!DECL_DECLARES_FUNCTION_P (ovl));
       ovl = NULL_TREE;
     }
 
   return ovl;
-}
-
-/* NODE is a newly unhidden decl in OVL that has following hidden decls.
-   Reorder the overload.  Returns its new head, which will be
-   different if NODE was the first decl in the overload.  */
-
-tree
-ovl_iterator::ovl_unhide (tree ovl, tree node)
-{
-  tree prev, probe;
-  
-  for (prev = NULL, probe = ovl; probe != node; probe = OVL_CHAIN (prev))
-    prev = probe;
-
-  (prev ? OVL_CHAIN (prev) : ovl) = ovl_move_unhidden (node);
-  
-  return ovl;
-}
-
-/* Replace the current slot with FN.  Also, the slot being replaced is
-   changing from a using declaration to a regular declaration.  */
-
-void
-ovl_iterator::replace (tree fn, unsigned count) const
-{
-  OVL_FUNCTION (ovl) = fn;
-  TREE_TYPE (ovl) = unknown_type_node;
-  OVL_VIA_USING_P (ovl) = false;
-  /* Zap out any cleared slots.  */
-  for (tree *slot = &OVL_CHAIN (ovl); --count;)
-    {
-      while (OVL_FUNCTION (*slot))
-	slot = &OVL_CHAIN (*slot);
-      *slot = OVL_CHAIN (*slot);
-    }
 }
 
 /* Get the overload set that an EXPR refers to.  */

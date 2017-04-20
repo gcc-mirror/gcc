@@ -1083,8 +1083,6 @@ add_method (tree type, tree method, bool via_using)
   current_fns = insert_p ? NULL_TREE : (*method_vec)[slot];
 
   /* Check to see if we've already got this method.  */
-  ovl_iterator overwrite (NULL_TREE);
-  unsigned replaced = 0;
   for (ovl_iterator iter (current_fns); iter; ++iter)
     {
       tree fn = *iter;
@@ -1204,8 +1202,8 @@ add_method (tree type, tree method, bool via_using)
 			  /* Inheriting the same constructor along different
 			     paths, combine them.  */
 			  SET_DECL_INHERITED_CTOR
-			    (fn, ovl_add (DECL_INHERITED_CTOR (fn),
-					  DECL_INHERITED_CTOR (method)));
+			    (fn, ovl_make (DECL_INHERITED_CTOR (method),
+					   DECL_INHERITED_CTOR (fn)));
 			  /* And discard the new one.  */
 			  return false;
 			}
@@ -1231,8 +1229,7 @@ add_method (tree type, tree method, bool via_using)
 		   && DECL_INHERITED_CTOR (fn))
 	    {
 	      /* Hide the inherited constructor.  */
-	      gcc_assert (iter.via_using_p ());
-	      replaced = iter.replace (overwrite, replaced);
+	      current_fns = iter.unusing (current_fns);
 	      continue;
 	    }
 	  else
@@ -1248,12 +1245,7 @@ add_method (tree type, tree method, bool via_using)
   if (current_fns && DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (method))
     return false;
 
-  if (replaced)
-    /* Overwrite and zap old bindings.  */
-    overwrite.replace (method, replaced);
-  else
-    /* Add the new binding.  */
-    overload = ovl_add (current_fns, method, via_using);
+  overload = ovl_insert (current_fns, method, via_using);
 
   if (conv_p)
     TYPE_HAS_CONVERSION (type) = 1;

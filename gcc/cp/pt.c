@@ -2934,8 +2934,7 @@ check_explicit_specialization (tree declarator,
 
 		    /* Glue all these conversion functions together
 		       with those we already have.  */
-		    for (ovl_iterator iter (ovl); iter; ++iter)
-		      fns = ovl_add (fns, *iter);
+		    fns = ovl_lookup_add (fns, ovl);
 		  }
 	    }
 
@@ -24681,7 +24680,7 @@ make_constrained_auto (tree con, tree args)
 
   /* Build the constraint. */
   tree tmpl = DECL_TI_TEMPLATE (con);
-  tree expr = VAR_P (con) ? tmpl : ovl_add (NULL_TREE, tmpl);
+  tree expr = VAR_P (con) ? tmpl : ovl_make (tmpl);
   expr = build_concept_check (expr, type, args);
 
   tree constr = normalize_expression (expr);
@@ -25198,7 +25197,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	  tree pruned = NULL_TREE;
 	  for (ovl2_iterator iter (cands); iter; ++iter)
 	    if (!DECL_NONCONVERTING_P (STRIP_TEMPLATE (*iter)))
-	      pruned = ovl_add (pruned, *iter);
+	      pruned = ovl_lookup_add (pruned, *iter);
 
 	  cands = pruned;
 	}
@@ -25223,7 +25222,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	    && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
 	  elided = true;
 	else
-	  cands = ovl_add (cands, guide);
+	  cands = ovl_lookup_add (cands, guide);
 
 	saw_ctor = true;
       }
@@ -25235,7 +25234,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	  && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
 	elided = true;
       else
-	cands = ovl_add (cands, guide);
+	cands = ovl_lookup_add (cands, guide);
     }
   if (args->length() == 1)
     {
@@ -25245,7 +25244,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 	  && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
 	elided = true;
       else
-	cands = ovl_add (cands, guide);
+	cands = ovl_lookup_add (cands, guide);
     }
 
   if (elided && !cands)

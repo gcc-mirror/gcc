@@ -719,11 +719,12 @@ class ovl_iterator
  public:
   tree unhide (tree overload)
   {
-    OVL_HIDDEN_P (ovl) = false;
-    if (OVL_CHAIN (ovl) && OVL_HIDDEN_P (OVL_CHAIN (ovl)))
-      /* There's a following still-hidden decl.  */
-      return ovl_unhide (overload, ovl);
-    return overload;
+    return unhide_node (overload, ovl);
+  }
+  tree unusing (tree overload)
+  {
+    gcc_assert (via_using_p ());
+    return remove_node (overload, ovl);
   }
 
  public:
@@ -731,20 +732,6 @@ class ovl_iterator
   {
     return OVL_FUNCTION (ovl);
   }
-  unsigned replace (ovl_iterator &stash, unsigned count) const
-  {
-    if (count)
-      OVL_FUNCTION (ovl) = NULL_TREE;
-    else
-      stash = *this;
-    return count++;
-  }
-  void replace (tree fn, unsigned count) const;
-
-private:
-  /* We make this a static fn, to prevent the iterator object becoming
-     sra-opaque.  */
-  static tree ovl_unhide (tree ovl, tree fn);
 
 protected:
   tree maybe_push ()
@@ -758,6 +745,10 @@ protected:
       }
     return r;
   }
+
+ private:
+  static tree remove_node (tree ovl, tree node);
+  static tree unhide_node (tree ovl, tree node);
 };
 
 /* Iterator over a (potentially) 2 dimensional overload.  */
@@ -6855,11 +6846,12 @@ ovl_first (tree node)
 extern tree ovl_skip_hidden			(tree);
 extern tree ovl_make				(tree fn,
 						 tree next = NULL_TREE);
-extern tree ovl_add				(tree maybe_ovl, tree fn,
-						 int look_or_using = 0);
+extern tree ovl_insert				(tree maybe_ovl, tree fn,
+						 bool using_p = false);
 extern void ovl_lookup_keep			(tree lookup, bool keep);
-extern tree ovl_lookup_mark			(tree lookup, bool val);
+extern void ovl_lookup_mark			(tree lookup, bool val);
 extern tree ovl_lookup_add			(tree lookup, tree ovl);
+extern tree ovl_lookup_maybe_add		(tree lookup, tree ovl);
 extern tree get_ovl				(tree expr,
 						 bool want_first = false)
   ATTRIBUTE_NTC_PURE;
