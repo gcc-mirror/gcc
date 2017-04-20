@@ -23386,7 +23386,15 @@ cp_parser_member_declaration (cp_parser* parser)
 		  token = cp_lexer_peek_token (parser->lexer);
 		  /* If the next token is a semicolon, consume it.  */
 		  if (token->type == CPP_SEMICOLON)
-		    cp_lexer_consume_token (parser->lexer);
+		    {
+		      location_t semicolon_loc
+			= cp_lexer_consume_token (parser->lexer)->location;
+		      gcc_rich_location richloc (semicolon_loc);
+		      richloc.add_fixit_remove ();
+		      warning_at_rich_loc (&richloc, OPT_Wextra_semi,
+					   "extra %<;%> after in-class "
+					   "function definition");
+		    }
 		  goto out;
 		}
 	      else

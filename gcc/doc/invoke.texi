@@ -274,7 +274,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-discarded-qualifiers  -Wno-discarded-array-qualifiers @gol
 -Wno-div-by-zero  -Wdouble-promotion  -Wduplicated-cond @gol
 -Wempty-body  -Wenum-compare  -Wno-endif-labels  -Wexpansion-to-defined @gol
--Werror  -Werror=*  -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
+-Werror  -Werror=*  -Wextra-semi  -Wfatal-errors @gol
+-Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-contains-nul  -Wno-format-extra-args  @gol
 -Wformat-nonliteral -Wformat-overflow=@var{n} @gol
 -Wformat-security  -Wformat-signedness  -Wformat-truncation=@var{n} @gol
@@ -5959,6 +5960,11 @@ Warn about a comparison between values of different enumerated types.
 In C++ enumerated type mismatches in conditional expressions are also
 diagnosed and the warning is enabled by default.  In C this warning is 
 enabled by @option{-Wall}.
+
+@item -Wextra-semi @r{(C++, Objective-C++ only)}
+@opindex Wextra-semi
+@opindex Wno-extra-semi
+Warn about redundant semicolon after in-class function definition.
 
 @item -Wjump-misses-init @r{(C, Objective-C only)}
 @opindex Wjump-misses-init

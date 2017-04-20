@@ -1,3 +1,7 @@
+2017-04-20  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* doc/invoke.texi (-Wextra-semi): Document new warning option.
+
 2017-04-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57796
