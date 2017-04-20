@@ -21358,7 +21358,7 @@ mips_expand_vec_perm_const (rtx operands[4])
 
   /* This is overly conservative, but ensures we don't get an
      uninitialized warning on ORIG_PERM.  */
-  memset (&orig_perm[nelt], 0, MAX_VECT_LEN);
+  memset (orig_perm, 0, MAX_VECT_LEN);
   for (i = which = 0; i < nelt; ++i)
     {
       rtx e = XVECEXP (sel, 0, i);
