@@ -6386,7 +6386,6 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 {
   tree maxindex, type, main_type, elt, unqual_elt;
   int failure = 0, quals;
-  hashval_t hashcode = 0;
   bool overflow_p = false;
 
   maxindex = size_zero_node;
@@ -6480,13 +6479,15 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
   TYPE_DOMAIN (main_type)
     = build_range_type (TREE_TYPE (maxindex),
 			build_int_cst (TREE_TYPE (maxindex), 0), maxindex);
+  TYPE_TYPELESS_STORAGE (main_type) = TYPE_TYPELESS_STORAGE (type);
   layout_type (main_type);
 
   /* Make sure we have the canonical MAIN_TYPE. */
-  hashcode = iterative_hash_object (TYPE_HASH (unqual_elt), hashcode);
-  hashcode = iterative_hash_object (TYPE_HASH (TYPE_DOMAIN (main_type)),
-				    hashcode);
-  main_type = type_hash_canon (hashcode, main_type);
+  inchash::hash hstate;
+  hstate.add_object (TYPE_HASH (unqual_elt));
+  hstate.add_object (TYPE_HASH (TYPE_DOMAIN (main_type)));
+  hstate.add_flag (TYPE_TYPELESS_STORAGE (main_type));
+  main_type = type_hash_canon (hstate.end (), main_type);
 
   /* Fix the canonical type.  */
   if (TYPE_STRUCTURAL_EQUALITY_P (TREE_TYPE (main_type))
@@ -6497,7 +6498,8 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 	       != TYPE_DOMAIN (main_type)))
     TYPE_CANONICAL (main_type)
       = build_array_type (TYPE_CANONICAL (TREE_TYPE (main_type)),
-			  TYPE_CANONICAL (TYPE_DOMAIN (main_type)));
+			  TYPE_CANONICAL (TYPE_DOMAIN (main_type)),
+			  TYPE_TYPELESS_STORAGE (main_type));
   else
     TYPE_CANONICAL (main_type) = main_type;
 
