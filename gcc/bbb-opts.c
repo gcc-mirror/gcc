@@ -49,6 +49,7 @@
 #include "cselib.h"
 #include "langhooks.h"
 #include <vector>
+#include <set>
 #include <map>
 
 static bool be_verbose;
@@ -94,11 +95,12 @@ log (char const * fmt, ...)
  */
 struct insn_info
 {
-  unsigned _use;
-  unsigned _def;
+  unsigned _use;  // bit set if registers are used
+  unsigned _def;  // bit set if registers are defined
+  unsigned _hard; // bit set if registers can't be renamed
 
   insn_info () :
-      _use (0), _def (0)
+      _use (0), _def (0), _hard (0)
   {
   }
 
@@ -107,6 +109,7 @@ struct insn_info
   {
     _use = 0;
     _def = 0;
+    _hard = 0;
   }
 
   inline void
@@ -122,10 +125,17 @@ struct insn_info
   }
 
   inline void
+  hard (int regno)
+  {
+    _hard |= 1 << regno;
+  }
+
+  inline void
   unset (int regno)
   {
     _use &= ~(1 << regno);
     _def &= ~(1 << regno);
+    _hard &= ~(1 << regno);
   }
 
   inline bool
@@ -140,12 +150,19 @@ struct insn_info
     return (_def & (1 << regno)) != 0;
   }
 
+  inline bool
+  is_hard (int regno)
+  {
+    return (_hard & (1 << regno)) != 0;
+  }
+
   inline insn_info
   operator | (insn_info const & o) const
   {
     insn_info t;
     t._use = _use | o._use;
     t._def = _def | o._def;
+    t._hard = _hard | o._hard;
     return t;
   }
 
@@ -154,6 +171,7 @@ struct insn_info
   {
     _use |= o._use;
     _def |= o._def;
+    _hard |= o._hard;
     return *this;
   }
 
@@ -162,6 +180,7 @@ struct insn_info
   {
     _use &= o._use & o._def;
     _def &= o._def;
+    _hard &= o._hard & o._def;
     return *this;
   }
 
@@ -177,6 +196,7 @@ struct insn_info
     insn_info t;
     t._use = ~_use;
     t._def = ~_def;
+    t._hard = ~_hard;
     return t;
   }
 
@@ -194,9 +214,12 @@ struct insn_info
   scan (rtx);
 
   unsigned
-  get_def_mask () const
+  get_free_mask () const
   {
-    if (!_def || _def > 0x7fff)
+    if (_def & _hard)
+      return 0;
+
+    if (!_def || _def > 0x1000)
       return 0;
 
     unsigned mask = _def - 1;
@@ -204,11 +227,10 @@ struct insn_info
     if ((mask & ~_def) != mask)
       return 0;
 
-    if (_def > 0x1000)
-      return 0;
     if (_def > 0xff)
       mask &= 0xff00;
-    return mask;
+
+    return mask & ~_use;
   }
 };
 
@@ -271,6 +293,7 @@ do_reg_rename (rtx x, unsigned oldregno, unsigned newregno)
  * Collect some data.
  */
 static std::vector<rtx_insn *> insns;
+static std::vector<bool> proepilogue;
 static std::vector<rtx_insn *> temp;
 static std::vector<rtx_insn *> jumps;
 static std::map<rtx_insn *, unsigned> insn2index;
@@ -283,6 +306,7 @@ static void
 clear (void)
 {
   insns.clear ();
+  proepilogue.clear ();
   jumps.clear ();
   insn2index.clear ();
   infos.clear ();
@@ -333,11 +357,23 @@ dump_insns (char const * name, bool all)
 
 	  for (int j = 0; j < 8; ++j)
 	    if (ii.is_use (j))
-	      fprintf (stderr, ii.is_def (j) ? "*d%d " : "d%d ", j);
+	      {
+		if (ii.is_hard (j))
+		  fprintf (stderr, "!");
+		if (ii.is_def (j))
+		  fprintf (stderr, "*");
+		fprintf (stderr, "d%d ", j);
+	      }
 
 	  for (int j = 8; j < 16; ++j)
 	    if (ii.is_use (j))
-	      fprintf (stderr, ii.is_def (j) ? "*a%d " : "a%d ", j - 8);
+	      {
+		if (ii.is_hard (j))
+		  fprintf (stderr, "!");
+		if (ii.is_def (j))
+		  fprintf (stderr, "*");
+		fprintf (stderr, "a%d ", j - 8);
+	      }
 
 	  if (ii.is_use (FIRST_PSEUDO_REGISTER))
 	    fprintf (stderr, ii.is_def (FIRST_PSEUDO_REGISTER) ? "*cc " : "cc ");
@@ -367,6 +403,7 @@ update_insns ()
 
   df_insn_rescan_all ();
 
+  bool inproepilogue = true;
   /* create a vector with relevant insn. */
   for (insn = get_insns (); insn; insn = next)
     {
@@ -379,6 +416,18 @@ update_insns ()
 
 	  insn2index.insert (std::make_pair (insn, insns.size ()));
 	  insns.push_back (insn);
+	  proepilogue.push_back (inproepilogue);
+
+	  if (JUMP_P(insn))
+	    inproepilogue = false;
+	}
+
+      if (NOTE_P(insn))
+	{
+	  if (NOTE_KIND(insn) == NOTE_INSN_PROLOGUE_END)
+	    inproepilogue = false;
+	  else if (NOTE_KIND(insn) == NOTE_INSN_EPILOGUE_BEG)
+	    inproepilogue = true;
 	}
     }
 }
@@ -447,6 +496,8 @@ update_insn_infos (void)
 		    for (unsigned r = REGNO(reg); r <= END_REGNO (reg); ++r)
 		      use.use (r);
 		}
+	      /* also mark all registers as not renamable */
+	      use._hard = use._use;
 
 	      rtx set = single_set (insn);
 	      if (set)
@@ -457,15 +508,11 @@ update_insn_infos (void)
 	      else
 		use.scan (pattern);
 
-	      /* fix missing defs - a call sets d0 and maybe also d1,a0,a1. */
-	      if (ii.is_use (0))
-		def.def (0);
-	      if (ii.is_use (1))
-		def.def (1);
-	      if (ii.is_use (8))
-		def.def (8);
-	      if (ii.is_use (9))
-		def.def (9);
+	      /* mark scratch registers. */
+	      def.def (0);
+	      def.def (1);
+	      def.def (8);
+	      def.def (9);
 
 	      infos[pos] = def | use | ii;
 
@@ -501,26 +548,37 @@ update_insn_infos (void)
 		{
 		  rtx x = XEXP(pattern, 0);
 		  if (REG_P(x))
-		    ii.use (REGNO(x));
+		    {
+		      ii.use (REGNO(x));
+		      ii.hard (REGNO(x));
+		    }
 		  infos[pos] = ii;
 		  continue;
 		}
 
-	      if (GET_CODE (pattern) == CLOBBER ) {
+	      if (GET_CODE (pattern) == CLOBBER)
+		{
 		  /* mark regs as use and def */
 		  insn_info ud;
-		  ud.scan(pattern);
+		  ud.scan (pattern);
 		  ud._def |= ud._use;
+		  ud._hard = ud._use; /* don't rename. */
 		  infos[pos] |= ud;
 		  continue;
-	      }
-	      if (GET_CODE (pattern) != PARALLEL && GET_CODE (pattern) != CLOBBER && be_verbose)
+		}
+	      if (GET_CODE (pattern) != PARALLEL && be_verbose)
 		{
 		  fprintf (stderr, "##### ");
 		  debug_rtx (insn);
 		}
-	      ii.scan (pattern);
-	      infos[pos] = ii;
+
+	      insn_info jj;
+	      jj.scan (pattern);
+
+	      if (proepilogue[pos])
+		jj._hard = jj._use | jj._def;
+
+	      infos[pos] = ii | jj;
 	      continue;
 	    }
 
@@ -549,6 +607,9 @@ update_insn_infos (void)
 		def.def (FIRST_PSEUDO_REGISTER);
 	    }
 
+	  if (proepilogue[pos])
+	    ii._hard |= use._use | def._def;
+
 	  infos[pos] = def | use | ii;
 
 	  ii &= ~def;
@@ -556,6 +617,114 @@ update_insn_infos (void)
 	}
       ++pass;
     }
+}
+
+static int
+bit2regno (unsigned bit)
+{
+  if (!bit)
+    return -1;
+
+  unsigned regno = 0;
+  while (!(bit & 1))
+    {
+      ++regno;
+      bit >>= 1;
+    }
+  return regno;
+}
+
+/*
+ * Always prefer lower register numbers within the class.
+ */
+static unsigned
+bb_reg_rename (void)
+{
+//  dump_insns ("rename", 1);
+  for (unsigned index = 0; index < insns.size (); ++index)
+    {
+      insn_info & ii = infos[index];
+      const unsigned def = ii._def & ~ii._hard;
+      unsigned mask = ii.get_free_mask ();
+
+      if (!mask || !def)
+	continue;
+
+      std::set<unsigned> found;
+      std::vector<unsigned> todo;
+      if (index + 1 < insns.size ())
+	todo.push_back (index + 1);
+
+      found.insert (index);
+      /* a register was defined, follow all branches. */
+      while (todo.size ())
+	{
+	  unsigned pos = todo[todo.size () - 1];
+	  todo.pop_back ();
+
+	  if (found.find (pos) != found.end ())
+	    continue;
+
+	  if (LABEL_P(insns[pos]))
+	    {
+	      if (pos + 1 < insns.size ())
+		todo.push_back (pos + 1);
+	      continue;
+	    }
+
+	  insn_info & jj = infos[pos];
+
+	  /* not used. */
+	  if (!(jj._use & def))
+	    continue;
+
+	  /* update free regs. */
+	  mask &= ~jj._use;
+	  mask &= ~jj._def;
+	  if (!mask)
+	    break;
+
+
+	  found.insert (pos);
+
+	  /* follow jump and/or next insn. */
+	  rtx_insn * insn = insns[pos];
+	  if (JUMP_P(insn))
+	    {
+	      std::map<rtx_insn *, unsigned>::iterator j = insn2index.find ((rtx_insn *) JUMP_LABEL(insn));
+	      if (j != insn2index.end ())
+		todo.push_back (j->second);
+
+	      rtx jmppattern = PATTERN (insn);
+
+	      rtx jmpsrc = XEXP(jmppattern, 1);
+	      if (GET_CODE(jmpsrc) == IF_THEN_ELSE)
+		if (pos + 1 < insns.size ())
+		  todo.push_back (pos + 1);
+	    }
+	  else if (pos + 1 < insns.size ())
+	    todo.push_back (pos + 1);
+	}
+
+      if (mask)
+	{
+	  int oldregno = bit2regno (def);
+	  int newregno = bit2regno (mask);
+	  log ("bb_reg_rename %s -> %s (%d insns)\n", reg_names[oldregno], reg_names[newregno], found.size ());
+
+	  for (std::set<unsigned>::iterator i = found.begin (); i != found.end (); ++i)
+	    {
+//	      if (be_verbose)
+//		debug_rtx (insns[*i]);
+	      do_reg_rename (PATTERN (insns[*i]), oldregno, newregno);
+	    }
+
+	  cselib_invalidate_rtx (gen_raw_REG (SImode, oldregno));
+	  cselib_invalidate_rtx (gen_raw_REG (SImode, newregno));
+	  return 1;
+	}
+    }
+  return 0;
 }
 
 /*
@@ -1841,18 +2010,19 @@ namespace
 	  done = 0, update_insns (), update_insn_infos ();
 
 	if (do_elim_dead_assign && elim_dead_assign ())
-	  done = 0, update_insns ();
+	  done = 0, update_insns (), update_insn_infos ();
 
 	if (do_bb_reg_rename && ::global_pass_regrename)
 	  {
-	    class opt_pass * rr = ::global_pass_regrename->clone ();
-	    rr->execute (0);
+//	    class opt_pass * rr = ::global_pass_regrename->clone ();
+//	    rr->execute (0);
 
-	    //	update_insns ();
-	    //	update_insn_infos ();
-	    //	bb_reg_rename ();
-
-	    update_insns ();
+	    while (bb_reg_rename ())
+	      {
+		update_insns ();
+		update_insn_infos ();
+		done = 0;
+	      }
 	  }
 
 	if (done)

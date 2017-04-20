@@ -1892,28 +1892,6 @@ regrename_finish (void)
   obstack_free (&rename_obstack, NULL);
 }
 
-void
-mark_early_clobbers_alive (void)
-{
-  rtx_insn * insn;
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    {
-      rtx pattern;
-      if (NOTE_P(insn) && NOTE_KIND(insn) == NOTE_INSN_PROLOGUE_END)
-	break;
-
-      pattern = PATTERN (insn);
-      if (pattern && GET_CODE(pattern) == CLOBBER)
-	{
-	  rtx *loc;
-
-	  loc = &REG_NOTES(insn);
-	  while (*loc)
-	    *loc = XEXP(*loc, 1);
-	}
-    }
-}
-
 /* Perform register renaming on the current function.  */
 
 static unsigned int
@@ -1923,8 +1901,6 @@ regrename_optimize (void)
   df_note_add_problem ();
   df_analyze ();
   df_set_flags (DF_DEFER_INSN_RESCAN);
-
-  mark_early_clobbers_alive ();
 
   regrename_init (false);
 
@@ -1965,7 +1941,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return (optimize > 0 && (flag_rename_registers));
+      return (optimize > 0 && (flag_rename_registers) && !TARGET_AMIGA);
     }
 
   virtual unsigned int execute (function *) { return regrename_optimize (); }

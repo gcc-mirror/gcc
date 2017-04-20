@@ -589,11 +589,12 @@ amigaos_function_arg (cumulative_args_t cum_v, machine_mode mode,
 
 void amiga_emit_regparm_clobbers(void)
 {
+  rtx sp = gen_raw_REG(Pmode, 15);
   for (int i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
     if (mycum.regs_already_used & (1 << i))
       {
 	rtx reg = gen_raw_REG(Pmode, i);
-        emit_insn(gen_rtx_CLOBBER(Pmode, gen_rtx_SET(reg, reg)));
+        emit_insn(gen_rtx_CLOBBER(Pmode, gen_rtx_SET(reg, gen_rtx_MEM(Pmode, reg))));
       }
 }
 
