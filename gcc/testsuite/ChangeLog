@@ -1,3 +1,7 @@
+2017-04-20  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++/opt/pr80436.C: XFAIL on AIX.
+
 2017-04-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/80473
