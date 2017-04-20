@@ -1,3 +1,11 @@
+2017-04-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78090
+	* config/i386/constraints.md (Yc): New register constraint.
+	* config/i386/i386.md (*float<SWI48:mode><MODEF:mode>2_mixed):
+	Use Yc constraint for alternative 2 of operand 0.  Remove
+	preferred_for_speed attribute.
+
 2017-04-20  Alexander Monakov  <amonakov@ispras.ru>
 
 	* omp-low.c (lower_lastprivate_clauses): Correct handling of linear and
