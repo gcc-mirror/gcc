@@ -1,5 +1,12 @@
 2017-04-20  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/57796
+	* tree-vect-stmts.c (vect_model_store_cost): Cost scatters
+	as N scalar stores.
+	(vect_model_load_cost): Cost gathers as N scalar loads.
+
+2017-04-20  Richard Biener  <rguenther@suse.de>
+
 	* ggc-page.c (ggc_allocated_p): Rename to ...
 	(safe_lookup_page_table_entry): ... this and return the lookup
 	result.
