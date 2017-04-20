@@ -22593,7 +22593,7 @@ arm_elf_asm_cdtor (rtx symbol, int priority, bool is_ctor)
       sprintf (buf, "%s.%.5u",
 	       is_ctor ? ".init_array" : ".fini_array",
 	       priority);
-      s = get_section (buf, SECTION_WRITE, NULL_TREE);
+      s = get_section (buf, SECTION_WRITE | SECTION_NOTYPE, NULL_TREE);
     }
   else if (is_ctor)
     s = ctors_section;
