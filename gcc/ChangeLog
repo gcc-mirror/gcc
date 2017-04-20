@@ -1,3 +1,9 @@
+2017-04-20  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.c (arm_elf_asm_cdtor): Create non-default
+	priority .init_array and .fini_array section with SECTION_NOTYPE
+	flag.
+
 2017-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/80423
