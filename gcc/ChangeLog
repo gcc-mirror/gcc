@@ -1,3 +1,9 @@
+2017-04-20  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR other/71250
+	* doc/invoke.texi (-Wmissing-field-initializers): Mention that warning
+	is suppressed for '{ 0 }' in C.
+
 2017-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 8.0.0.
