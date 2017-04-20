@@ -591,7 +591,10 @@ void amiga_emit_regparm_clobbers(void)
 {
   for (int i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
     if (mycum.regs_already_used & (1 << i))
-      emit_insn(gen_rtx_CLOBBER(Pmode, gen_raw_REG(Pmode, i)));
+      {
+	rtx reg = gen_raw_REG(Pmode, i);
+        emit_insn(gen_rtx_CLOBBER(Pmode, gen_rtx_SET(reg, reg)));
+      }
 }
 
 
