@@ -1,5 +1,11 @@
 2017-04-20  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/79804
+	* config/i386/i386.c (print_reg): Remove assert for disalowed
+	regno values, call output_operand_lossage instead.
+
+2017-04-20  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/78090
 	* config/i386/constraints.md (Yc): New register constraint.
 	* config/i386/i386.md (*float<SWI48:mode><MODEF:mode>2_mixed):

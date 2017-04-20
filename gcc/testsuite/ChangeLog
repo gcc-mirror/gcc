@@ -1,5 +1,10 @@
 2017-04-20  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/79804
+	* gcc.target/i386/pr79804.c: New test.
+
+2017-04-20  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/78090
 	* gcc.target/i386/conversion-2.c: Remove obsolete test.
 
