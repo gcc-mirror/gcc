@@ -1,3 +1,7 @@
+2017-04-20  Alexander Monakov  <amonakov@ispras.ru>
+
+	* testsuite/libgomp.c/target-36.c: New testcase.
+
 2017-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* plugin/plugin-nvptx.c (cuda_lib_inited): Use signed char type
