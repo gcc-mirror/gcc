@@ -1,3 +1,8 @@
+2017-04-20  Alexander Monakov  <amonakov@ispras.ru>
+
+	* omp-low.c (lower_lastprivate_clauses): Correct handling of linear and
+	lastprivate clauses in SIMT case.
+
 2017-04-20  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* doc/invoke.texi (-Wextra-semi): Document new warning option.
