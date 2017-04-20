@@ -3126,13 +3126,15 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	  || CP_DECL_CONTEXT (alloc_fn) == global_namespace)
       && !aligned_allocation_fn_p (alloc_fn))
     {
-      warning (OPT_Waligned_new_, "%<new%> of type %qT with extended "
-	       "alignment %d", elt_type, TYPE_ALIGN_UNIT (elt_type));
-      inform (input_location, "uses %qD, which does not have an alignment "
-	      "parameter", alloc_fn);
-      if (!aligned_new_threshold)
-	inform (input_location, "use %<-faligned-new%> to enable C++17 "
-				"over-aligned new support");
+      if (warning (OPT_Waligned_new_, "%<new%> of type %qT with extended "
+		   "alignment %d", elt_type, TYPE_ALIGN_UNIT (elt_type)))
+	{
+	  inform (input_location, "uses %qD, which does not have an alignment "
+		  "parameter", alloc_fn);
+	  if (!aligned_new_threshold)
+	    inform (input_location, "use %<-faligned-new%> to enable C++17 "
+				    "over-aligned new support");
+	}
     }
 
   /* If we found a simple case of PLACEMENT_EXPR above, then copy it
