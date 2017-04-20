@@ -1,3 +1,8 @@
+2017-04-20  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/mips.c (mips_expand_vec_perm_const): Re-fix
+	uninitialized variable warning to avoid buffer overrun.
+
 2017-04-20  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR other/71250
