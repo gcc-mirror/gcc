@@ -1,3 +1,8 @@
+2017-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/80473
+	* g++.dg/diagnostic/pr80473.C: New test.
+
 2017-04-20  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* g++.dg/warn/Wextra-semi.C: New test.
