@@ -1,5 +1,14 @@
 2017-04-21  Richard Biener  <rguenther@suse.de>
 
+	* tree.h (build_qualified_type): Annotate with CXX_MEM_STAT_INFO.
+	(build_distinct_type_copy): Likewise.
+	(build_variant_type_copy): Likewise.
+	* tree.c (build_qualified_type): Pass down mem-stat info.
+	(build_distinct_type_copy): Likewise.
+	(build_variant_type_copy): Likewise.
+
+2017-04-21  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/80237
 	* tree-ssa-pre.c (find_leader_in_sets): Add third set argument,
 	defaulted to NULL.
