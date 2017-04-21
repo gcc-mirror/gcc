@@ -157,8 +157,6 @@ struct loop_size
 static bool
 constant_after_peeling (tree op, gimple *stmt, struct loop *loop)
 {
-  affine_iv iv;
-
   if (is_gimple_min_invariant (op))
     return true;
 
@@ -188,12 +186,12 @@ constant_after_peeling (tree op, gimple *stmt, struct loop *loop)
       return false;
     }
 
-  /* Induction variables are constants.  */
-  if (!simple_iv (loop, loop_containing_stmt (stmt), op, &iv, false))
+  /* Induction variables are constants when defined in loop.  */
+  if (loop_containing_stmt (stmt) != loop)
     return false;
-  if (!is_gimple_min_invariant (iv.base))
-    return false;
-  if (!is_gimple_min_invariant (iv.step))
+  tree ev = analyze_scalar_evolution (loop, op);
+  if (chrec_contains_undetermined (ev)
+      || chrec_contains_symbols (ev))
     return false;
   return true;
 }
@@ -1259,7 +1257,7 @@ propagate_constants_for_unrolling (basic_block bb)
 
       if (! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (result)
 	  && gimple_phi_num_args (phi) == 1
-	  && TREE_CODE (arg) == INTEGER_CST)
+	  && CONSTANT_CLASS_P (arg))
 	{
 	  replace_uses_by (result, arg);
 	  gsi_remove (&gsi, true);
@@ -1276,7 +1274,7 @@ propagate_constants_for_unrolling (basic_block bb)
       tree lhs;
 
       if (is_gimple_assign (stmt)
-	  && gimple_assign_rhs_code (stmt) == INTEGER_CST
+	  && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_constant
 	  && (lhs = gimple_assign_lhs (stmt), TREE_CODE (lhs) == SSA_NAME)
 	  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
 	{
