@@ -2481,7 +2481,20 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	  else if (min_op0)
 	    wmin = min_op0;
 	  else if (min_op1)
-	    wmin = minus_p ? wi::neg (min_op1) : min_op1;
+	    {
+	      if (minus_p)
+		{
+		  wmin = wi::neg (min_op1);
+
+		  /* Check for overflow.  */
+		  if (sgn == SIGNED && wi::neg_p (min_op1) && wi::neg_p (wmin))
+		    min_ovf = 1;
+		  else if (sgn == UNSIGNED && wi::ne_p (min_op1, 0))
+		    min_ovf = -1;
+		}
+	      else
+		wmin = min_op1;
+	    }
 	  else
 	    wmin = wi::shwi (0, prec);
 
@@ -2509,7 +2522,20 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	  else if (max_op0)
 	    wmax = max_op0;
 	  else if (max_op1)
-	    wmax = minus_p ? wi::neg (max_op1) : max_op1;
+	    {
+	      if (minus_p)
+		{
+		  wmax = wi::neg (max_op1);
+
+		  /* Check for overflow.  */
+		  if (sgn == SIGNED && wi::neg_p (max_op1) && wi::neg_p (wmax))
+		    max_ovf = 1;
+		  else if (sgn == UNSIGNED && wi::ne_p (max_op1, 0))
+		    max_ovf = -1;
+		}
+	      else
+		wmax = max_op1;
+	    }
 	  else
 	    wmax = wi::shwi (0, prec);
 
