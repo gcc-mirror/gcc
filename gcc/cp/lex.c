@@ -607,11 +607,11 @@ cxx_dup_lang_specific_decl (tree node)
 /* Copy DECL, including any language-specific parts.  */
 
 tree
-copy_decl (tree decl)
+copy_decl (tree decl MEM_STAT_DECL)
 {
   tree copy;
 
-  copy = copy_node (decl);
+  copy = copy_node_stat (decl PASS_MEM_STAT);
   cxx_dup_lang_specific_decl (copy);
   return copy;
 }
@@ -645,11 +645,11 @@ copy_lang_type (tree node)
 /* Copy TYPE, including any language-specific parts.  */
 
 tree
-copy_type (tree type)
+copy_type (tree type MEM_STAT_DECL)
 {
   tree copy;
 
-  copy = copy_node (type);
+  copy = copy_node_stat (type PASS_MEM_STAT);
   copy_lang_type (copy);
   return copy;
 }

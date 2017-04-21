@@ -6622,7 +6622,7 @@ get_qualified_type (tree type, int type_quals)
    exist.  This function never returns NULL_TREE.  */
 
 tree
-build_qualified_type (tree type, int type_quals)
+build_qualified_type (tree type, int type_quals MEM_STAT_DECL)
 {
   tree t;
 
@@ -6632,7 +6632,7 @@ build_qualified_type (tree type, int type_quals)
   /* If not, build it.  */
   if (!t)
     {
-      t = build_variant_type_copy (type);
+      t = build_variant_type_copy (type PASS_MEM_STAT);
       set_type_quals (t, type_quals);
 
       if (((type_quals & TYPE_QUAL_ATOMIC) == TYPE_QUAL_ATOMIC))
@@ -6695,9 +6695,9 @@ build_aligned_type (tree type, unsigned int align)
    TYPE_CANONICAL points to itself. */
 
 tree
-build_distinct_type_copy (tree type)
+build_distinct_type_copy (tree type MEM_STAT_DECL)
 {
-  tree t = copy_node (type);
+  tree t = copy_node_stat (type PASS_MEM_STAT);
 
   TYPE_POINTER_TO (t) = 0;
   TYPE_REFERENCE_TO (t) = 0;
@@ -6733,11 +6733,11 @@ build_distinct_type_copy (tree type)
    require structural equality checks). */
 
 tree
-build_variant_type_copy (tree type)
+build_variant_type_copy (tree type MEM_STAT_DECL)
 {
   tree t, m = TYPE_MAIN_VARIANT (type);
 
-  t = build_distinct_type_copy (type);
+  t = build_distinct_type_copy (type PASS_MEM_STAT);
 
   /* Since we're building a variant, assume that it is a non-semantic
      variant. This also propagates TYPE_STRUCTURAL_EQUALITY_P. */

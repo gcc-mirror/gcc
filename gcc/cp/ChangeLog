@@ -1,3 +1,10 @@
+2017-04-21  Richard Biener  <rguenther@suse.de>
+
+	* cp-tree.h (copy_decl): Annotate with CXX_MEM_STAT_INFO.
+	(copy_type): Likewise.
+	* lex.c (copy_decl): Pass down mem-stat info.
+	(copy_type): Likewise.
+
 2017-04-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/80473
