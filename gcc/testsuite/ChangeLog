@@ -1,3 +1,10 @@
+2017-04-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80237
+	* gcc.dg/tree-ssa/tailcall-9.c: New testcase.
+	* gcc.dg/tree-ssa/ldist-pr45948.c: Remove undefined behavior,
+	adjust expected optimizations.
+
 2016-04-21  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/no-scevccp-outer-13.c: Adjust to prevent unrolling
