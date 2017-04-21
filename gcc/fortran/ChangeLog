@@ -1,3 +1,10 @@
+2017-04-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80392
+	* trans-types.c (gfc_get_derived_type): Prevent an infinite loop when
+	building a derived type that includes a procedure pointer component
+	with a polymorphic result.
+
 2017-04-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/80440
