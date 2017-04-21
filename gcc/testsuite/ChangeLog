@@ -1,3 +1,9 @@
+2017-04-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/80426
+	* gcc.c-torture/execute/20170429-1.c: Rename into...
+	* gcc.c-torture/execute/20170419-1.c: ...this.
+
 2017-04-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/79804
