@@ -319,6 +319,9 @@ struct d_info_checkpoint
   int expansion;
 };
 
+/* Maximum number of times d_print_comp may be called recursively.  */
+#define MAX_RECURSION_COUNT 1024
+
 enum { D_PRINT_BUFFER_LENGTH = 256 };
 struct d_print_info
 {
@@ -341,6 +344,9 @@ struct d_print_info
   struct d_print_mod *modifiers;
   /* Set to 1 if we saw a demangling error.  */
   int demangle_failure;
+  /* Number of times d_print_comp was recursively called.  Should not
+     be bigger than MAX_RECURSION_COUNT.  */
+  int recursion;
   /* Non-zero if we're printing a lambda argument.  A template
      parameter reference actually means 'auto'.  */
   int is_lambda_arg;
@@ -4151,6 +4157,7 @@ d_print_init (struct d_print_info *dpi, demangle_callbackref callback,
   dpi->opaque = opaque;
 
   dpi->demangle_failure = 0;
+  dpi->recursion = 0;
   dpi->is_lambda_arg = 0;
 
   dpi->component_stack = NULL;
@@ -5685,13 +5692,14 @@ d_print_comp (struct d_print_info *dpi, int options,
 	      struct demangle_component *dc)
 {
   struct d_component_stack self;
-  if (dc == NULL || dc->d_printing > 1)
+  if (dc == NULL || dc->d_printing > 1 || dpi->recursion > MAX_RECURSION_COUNT)
     {
       d_print_error (dpi);
       return;
     }
-  else
-    dc->d_printing++;
+
+  dc->d_printing++;
+  dpi->recursion++;
 
   self.dc = dc;
   self.parent = dpi->component_stack;
@@ -5701,6 +5709,7 @@ d_print_comp (struct d_print_info *dpi, int options,
 
   dpi->component_stack = self.parent;
   dc->d_printing--;
+  dpi->recursion--;
 }
 
 /* Print a Java dentifier.  For Java we try to handle encoded extended
