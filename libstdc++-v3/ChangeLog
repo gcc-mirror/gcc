@@ -1,3 +1,18 @@
+2017-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/backward/auto_ptr.h: Ignore deprecated warnings from use
+	of auto_ptr.
+	* include/bits/shared_ptr.h: Likewise.
+	* include/bits/shared_ptr_base.h: Likewise.
+	* include/bits/unique_ptr.h: Likewise.
+	* libstdc++-v3/testsuite/20_util/default_delete/48631_neg.cc: Adjust
+	dg-error lineno.
+	* libstdc++-v3/testsuite/20_util/default_delete/void_neg.cc: Likewise.
+	* libstdc++-v3/testsuite/20_util/unique_ptr/assign/48635_neg.cc:
+	Likewise.
+	* libstdc++-v3/testsuite/20_util/unique_ptr/cons/cv_qual_neg.cc:
+	Likewise.
+
 2017-04-20  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR libstdc++/68397 std::tr1::expint fails ... long double arguments.
