@@ -1,5 +1,12 @@
 2017-04-21  Mark Wielaard  <mark@klomp.org>
 
+	* cp-demangle.c (MAX_RECURSION_COUNT): New constant.
+	(struct d_print_info): Add recursion field.
+	(d_print_init): Initialize recursion.
+	(d_print_comp): Check and update d_print_info recursion depth.
+
+2017-04-21  Mark Wielaard  <mark@klomp.org>
+
 	* cp-demangle.c (d_substitution): Return NULL if d_add_substitution
 	fails.
 
