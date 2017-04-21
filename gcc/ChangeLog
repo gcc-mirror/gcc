@@ -1,3 +1,11 @@
+2017-04-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*extzvqi_mem_rex64): Move above *extzv<mode>.
+	Remove UNSPEC_NOREX_MEM tag.  Update corresponding peephole2 pattern.
+	(*insvqi_1_mem_rex64): Move above insv<mode>_1.  Remove
+	UNSPEC_NOREX_MEM tag.  Update corresponding peephole2 pattern.
+	(UNSPEC_NOREX_MEM): Remove definition.
+
 2017-04-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79547
@@ -116,7 +124,7 @@
 	(build_array_type): Likewise.  Add typeless_storage argument.
 
 2017-04-19  Eric Botcazou  <ebotcazou@adacore.com>
-            Jakub Jelinek  <jakub@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/80426
 	* tree-vrp.c (extract_range_from_binary_expr_1): For an additive
@@ -158,7 +166,7 @@
 	are only used in debug insns.
 
 2017-04-19  Eric Botcazou  <ebotcazou@adacore.com>
-            Vladimir Makarov  <vmakarov@redhat.com>
+	    Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/sparc/predicates.md (input_operand): Add comment.  Return
 	true for any memory operand when LRA is in progress.
@@ -325,7 +333,7 @@
 
 2017-04-12  Jan Hubicka  <hubicka@ucw.cz>
 
-	PR lto/69953 
+	PR lto/69953
 	* ipa-visibility.c (non_local_p): Fix typos.
 	(localize_node): When localizing symbol in same comdat group,
 	dissolve the group only when we know external symbols are going
