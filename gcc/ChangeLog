@@ -1,5 +1,13 @@
 2017-04-21  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/79547
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call):
+	Handle strlen, strcmp, strncmp, strcasecmp, strncasecmp, memcmp,
+	bcmp, strspn, strcspn, __builtin_object_size and __builtin_constant_p
+	without any constraints.
+
+2017-04-21  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/78847
 	* fold-const.c (split_tree): Handle POINTER_PLUS_EXPR.
 
