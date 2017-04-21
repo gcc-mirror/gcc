@@ -133,7 +133,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.1-b20170226\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-02-25 19:14+0000\n"
-"PO-Revision-Date: 2017-03-31 20:54+0200\n"
+"PO-Revision-Date: 2017-04-06 07:14+0200\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -5698,7 +5698,7 @@ msgstr "Avertir à propos de l'absence d'une esperluette (&) dans des constantes
 
 #: fortran/lang.opt:210
 msgid "Warn about creation of array temporaries."
-msgstr "Avertir à propos de la création de temporaires de tableaux"
+msgstr "Avertir à propos de la création de temporaires de tableaux."
 
 #: fortran/lang.opt:214
 msgid "Warn about type and rank mismatches between arguments and parameters."
@@ -6248,7 +6248,7 @@ msgstr "Ne pas générer de directives #line."
 
 #: c-family/c.opt:257
 msgid "-U<macro>\tUndefine <macro>."
-msgstr "-U<macro>\tAbandonner la définition <macro>"
+msgstr "-U<macro>\tAbandonner la définition <macro>."
 
 #: c-family/c.opt:261
 msgid "Warn about things that will change when compiling with an ABI-compliant compiler."
@@ -7206,7 +7206,7 @@ msgstr "Ne pas supposer que les bibliothèques standards du C et « main » ex
 
 #: c-family/c.opt:1392
 msgid "Recognize GNU-defined keywords."
-msgstr "Reconnaître les mots clés définis par GNU"
+msgstr "Reconnaître les mots clés définis par GNU."
 
 #: c-family/c.opt:1396
 msgid "Generate code for GNU runtime environment."
@@ -9490,7 +9490,7 @@ msgstr "Remplacer les divisions entières sur 32 ou 64 bits par des divisions su
 
 #: config/i386/i386.opt:883
 msgid "Split 32-byte AVX unaligned load."
-msgstr "Scinder les chargements AVX non alignés de 32 octets"
+msgstr "Scinder les chargements AVX non alignés de 32 octets."
 
 #: config/i386/i386.opt:887
 msgid "Split 32-byte AVX unaligned store."
@@ -14296,11 +14296,11 @@ msgstr "Générer du code indépendant de la position pour les exécutables si p
 
 #: common.opt:1938
 msgid "Generate position-independent code if possible (small mode)."
-msgstr "Générer du code indépendant de la position si possible (mode petit)"
+msgstr "Générer du code indépendant de la position si possible (mode petit)."
 
 #: common.opt:1942
 msgid "Generate position-independent code for executables if possible (small mode)."
-msgstr "Générer du code indépendant de la position pour les exécutables si possible (mode petit)"
+msgstr "Générer du code indépendant de la position pour les exécutables si possible (mode petit)."
 
 #: common.opt:1946
 msgid "Use PLT for PIC calls (-fno-plt: load the address from GOT at call site)."
@@ -18530,7 +18530,7 @@ msgstr "réduction privée invalide sur %qE"
 #: gimplify.c:10858 omp-low.c:2812
 #, gcc-internal-format
 msgid "%<ordered%> construct with %<depend%> clause must be closely nested inside a loop with %<ordered%> clause with a parameter"
-msgstr "une construction %<ordered%> avec une clause %<depend%> doit être nichée dans une boucle avec une clause %<ordered%> avec un paramètre"
+msgstr "une construction %<ordered%> avec une clause %<depend%> doit être étroitement imbriquée dans une boucle avec une clause %<ordered%> avec un paramètre"
 
 #: gimplify.c:10876
 #, gcc-internal-format
@@ -19304,22 +19304,22 @@ msgstr "construction non OpenACC à l'intérieur d'une région OpenACC"
 #: omp-low.c:2475
 #, gcc-internal-format
 msgid "%<ordered simd threads%> must be closely nested inside of %<for simd%> region"
-msgstr "%<ordered simd threads%> doit être niché à l'intérieur d'une région %<for simd%>"
+msgstr "%<ordered simd threads%> doit être étroitement imbriquée à l'intérieur d'une région %<for simd%>"
 
 #: omp-low.c:2483
 #, gcc-internal-format
 msgid "OpenMP constructs other than %<#pragma omp ordered simd%> may not be nested inside %<simd%> region"
-msgstr "les constructions OpenMP autres que %<#pragma omp ordered simd%> ne peuvent pas être nichées à l'intérieur d'une région %<simd%>"
+msgstr "les constructions OpenMP autres que %<#pragma omp ordered simd%> ne peuvent pas être imbriquées à l'intérieur d'une région %<simd%>"
 
 #: omp-low.c:2495
 #, gcc-internal-format
 msgid "only %<distribute%> or %<parallel%> regions are allowed to be strictly nested inside %<teams%> region"
-msgstr "seules les régions %<distribute%> ou %<parallel%> sont autorisées à être strictement nichées à l'intérieur d'une région %<teams%>"
+msgstr "seules les régions %<distribute%> ou %<parallel%> sont autorisées à être strictement imbriquées à l'intérieur d'une région %<teams%>"
 
 #: omp-low.c:2512
 #, gcc-internal-format
 msgid "%<distribute%> region must be strictly nested inside %<teams%> construct"
-msgstr "une région %<distribute%> doit être strictement nichée à l'intérieur d'une construction %<teams%>"
+msgstr "une région %<distribute%> doit être strictement imbriquées à l'intérieur d'une construction %<teams%>"
 
 #: omp-low.c:2553
 #, gcc-internal-format
@@ -19349,7 +19349,7 @@ msgstr "%<#pragma omp cancel sections%> à l'intérieur d'une construction de se
 #: omp-low.c:2668
 #, gcc-internal-format
 msgid "%<%s taskgroup%> construct not closely nested inside of %<taskgroup%> region"
-msgstr "la construction %<%s taskgroup%> n'est pas nichée à l'intérieur de la région %<taskgroup%>"
+msgstr "la construction %<%s taskgroup%> n'est pas étroitement imbriquée à l'intérieur de la région %<taskgroup%>"
 
 #: omp-low.c:2682
 #, gcc-internal-format
@@ -19359,22 +19359,22 @@ msgstr "arguments invalides"
 #: omp-low.c:2688
 #, gcc-internal-format
 msgid "%<%s %s%> construct not closely nested inside of %qs"
-msgstr "construction %<%s %s%> pas nichée à l'intérieur de %qs"
+msgstr "construction %<%s %s%> pas étroitement imbriquée à l'intérieur de %qs"
 
 #: omp-low.c:2716
 #, gcc-internal-format
 msgid "barrier region may not be closely nested inside of work-sharing, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> or %<taskloop%> region"
-msgstr "une région barrière ne peut pas être nichée à l'intérieur d'un partage de tâche, %<critical%>, %<ordered%>, %<master%>, un %<task%> explicite ou une région %<taskloop%> "
+msgstr "une région barrière ne peut pas être étroitement imbriquée à l'intérieur d'une région de partage de tâche, %<critical%>, %<ordered%>, %<master%>, %<task%> explicite ou %<taskloop%>"
 
 #: omp-low.c:2723
 #, gcc-internal-format
 msgid "work-sharing region may not be closely nested inside of work-sharing, %<critical%>, %<ordered%>, %<master%>, explicit %<task%> or %<taskloop%> region"
-msgstr "la région qui partage une tâche ne peut pas être nichée à l'intérieur d'un partage de tâche, %<critical%>, %<ordered%>, %<master%>, un %<task%> explicite ou une région %<taskloop%>"
+msgstr "la région qui partage une tâche ne peut pas être étroitement imbriquée à l'intérieur d'une région de partage de tâche, %<critical%>, %<ordered%>, %<master%>, %<task%> explicite ou %<taskloop%>"
 
 #: omp-low.c:2752
 #, gcc-internal-format
 msgid "%<master%> region may not be closely nested inside of work-sharing, explicit %<task%> or %<taskloop%> region"
-msgstr "une région %<master%> ne peut pas être nichée à l'intérieur d'un partage de tâche, un %<task%> explicite ou une région %<taskloop%>"
+msgstr "une région %<master%> ne peut pas être étroitement imbriquée à l'intérieur d'un partage de tâche, un %<task%> explicite ou une région %<taskloop%>"
 
 #: omp-low.c:2776 omp-low.c:2915
 #, gcc-internal-format
@@ -19384,7 +19384,7 @@ msgstr "%<depend(%s)%> est uniquement autorisé dans %<omp ordered%>"
 #: omp-low.c:2804
 #, gcc-internal-format
 msgid "%<ordered%> construct with %<depend%> clause must be closely nested inside an %<ordered%> loop"
-msgstr "une construction %<ordered%> avec une clause %<depend%> doit être nichée à l'intérieur d'une boucle %<ordered%>"
+msgstr "une construction %<ordered%> avec une clause %<depend%> doit être étroitement imbriquée à l'intérieur d'une boucle %<ordered%>"
 
 #: omp-low.c:2821
 #, gcc-internal-format
@@ -19394,27 +19394,27 @@ msgstr "sous-type dépendant invalide dans omp %<ordered%> %<depend%>"
 #: omp-low.c:2836
 #, gcc-internal-format
 msgid "%<ordered%> %<simd%> must be closely nested inside %<simd%> region"
-msgstr "%<ordered%> %<simd%> doit être niché à l'intérieur d'une région %<simd%>"
+msgstr "%<ordered%> %<simd%> doit être étroitement imbriquée à l'intérieur d'une région %<simd%>"
 
 #: omp-low.c:2849
 #, gcc-internal-format
 msgid "%<ordered%> region may not be closely nested inside of %<critical%>, %<ordered%>, explicit %<task%> or %<taskloop%> region"
-msgstr "une région %<ordered%> ne peut pas être nichée à l'intérieur de %<critical%>, %<ordered%>, un %<task%> explicite ou une région %<taskloop%>"
+msgstr "une région %<ordered%> ne peut pas être étroitement imbriquée à l'intérieur d'une région %<critical%>, %<ordered%>, %<task%> explicite ou %<taskloop%>"
 
 #: omp-low.c:2860 omp-low.c:2873
 #, gcc-internal-format
 msgid "%<ordered%> region must be closely nested inside a loop region with an %<ordered%> clause"
-msgstr "une région %<ordered%> doit être nichée à l'intérieur d'une région de boucle avec la clause %<ordered%>"
+msgstr "une région %<ordered%> doit être étroitement imbriquée à l'intérieur d'une région de boucle avec la clause %<ordered%>"
 
 #: omp-low.c:2890
 #, gcc-internal-format
 msgid "%<critical%> region may not be nested inside a %<critical%> region with the same name"
-msgstr "une région %<critical%> ne peut pas être nichée à l'intérieur d'une région %<critical%> portant le même nom"
+msgstr "une région %<critical%> ne peut pas être imbriquée à l'intérieur d'une région %<critical%> portant le même nom"
 
 #: omp-low.c:2902
 #, gcc-internal-format
 msgid "%<teams%> construct not closely nested inside of %<target%> construct"
-msgstr "la construction %<teams%> n'est pas nichée dans une construction %<target%>"
+msgstr "la construction %<teams%> n'est pas étroitement imbriquée dans une construction %<target%>"
 
 #: omp-low.c:2923
 #, gcc-internal-format
@@ -39319,7 +39319,7 @@ msgstr "l'espace réservé par le type %qT dans le patron doit être suivi d'un 
 #: cp/decl.c:10540
 #, gcc-internal-format
 msgid "member %qD cannot be declared both %<virtual%> and %<static%>"
-msgstr "le membre %qD ne peut pas être déclaré %<virtual%> et %<static%>"
+msgstr "le membre %qD ne peut pas être déclaré à la fois %<virtual%> et %<static%>"
 
 #: cp/decl.c:10546
 #, gcc-internal-format
@@ -39808,7 +39808,7 @@ msgstr "fonction %qD déclarée %<virtual%> à l'intérieur d'une union"
 #: cp/decl.c:11893
 #, gcc-internal-format
 msgid "%qD cannot be declared %<virtual%>, since it is always static"
-msgstr "%qD ne peut pas être déclaré virtuel puisqu'il est toujours statique"
+msgstr "%qD ne peut pas être déclaré %<virtual%> puisqu'il est toujours statique"
 
 #: cp/decl.c:11909
 #, gcc-internal-format
@@ -39913,7 +39913,7 @@ msgstr "la classe de stockage %<thread_local%> est invalide pour la fonction %qs
 #: cp/decl.c:12175
 #, gcc-internal-format
 msgid "virt-specifiers in %qs not allowed outside a class definition"
-msgstr "un spécificateur de type « virt-specifier » dans %qs n'est pas permis en dehors d'une définition de classe"
+msgstr "le spécificateur de type « virt-specifier » sur %qs n'est pas permis en dehors d'une définition de classe"
 
 #: cp/decl.c:12186
 #, gcc-internal-format
