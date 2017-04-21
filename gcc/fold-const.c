@@ -798,8 +798,11 @@ split_tree (location_t loc, tree in, tree type, enum tree_code code,
 		  though the C standard doesn't say so) for integers because
 		  the value is not affected.  For reals, the value might be
 		  affected, so we can't.  */
-	       && ((code == PLUS_EXPR && TREE_CODE (in) == MINUS_EXPR)
-		   || (code == MINUS_EXPR && TREE_CODE (in) == PLUS_EXPR))))
+	       && ((code == PLUS_EXPR && TREE_CODE (in) == POINTER_PLUS_EXPR)
+		   || (code == PLUS_EXPR && TREE_CODE (in) == MINUS_EXPR)
+		   || (code == MINUS_EXPR
+		       && (TREE_CODE (in) == PLUS_EXPR
+			   || TREE_CODE (in) == POINTER_PLUS_EXPR)))))
     {
       tree op0 = TREE_OPERAND (in, 0);
       tree op1 = TREE_OPERAND (in, 1);
