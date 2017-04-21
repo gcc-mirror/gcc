@@ -1,3 +1,11 @@
+2017-04-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backport from mainline
+	2015-11-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR target/68390
+	* gcc.c-torture/execute/pr68390.c: New test.
+
 2017-04-14  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	Backport from trunk
