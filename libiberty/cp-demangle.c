@@ -3891,7 +3891,8 @@ d_substitution (struct d_info *di, int prefix)
 		  /* If there are ABI tags on the abbreviation, it becomes
 		     a substitution candidate.  */
 		  dc = d_abi_tags (di, dc);
-		  d_add_substitution (di, dc);
+		  if (! d_add_substitution (di, dc))
+		    return NULL;
 		}
 	      return dc;
 	    }
