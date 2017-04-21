@@ -1,3 +1,10 @@
+2017-04-21  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/80361
+	* class.c (generate_finalization_wrapper): Give the finalization wrapper
+	the recursive attribute.
+
 2017-04-14  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	Backport from trunk
