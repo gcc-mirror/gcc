@@ -1313,17 +1313,20 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
 }
 
 /* Like bitmap_find_leader, but checks for the value existing in SET1 *or*
-   SET2.  This is used to avoid making a set consisting of the union
-   of PA_IN and ANTIC_IN during insert.  */
+   SET2 *or* SET3.  This is used to avoid making a set consisting of the union
+   of PA_IN and ANTIC_IN during insert and phi-translation.  */
 
 static inline pre_expr
-find_leader_in_sets (unsigned int val, bitmap_set_t set1, bitmap_set_t set2)
+find_leader_in_sets (unsigned int val, bitmap_set_t set1, bitmap_set_t set2,
+		     bitmap_set_t set3 = NULL)
 {
   pre_expr result;
 
   result = bitmap_find_leader (set1, val);
   if (!result && set2)
     result = bitmap_find_leader (set2, val);
+  if (!result && set3)
+    result = bitmap_find_leader (set3, val);
   return result;
 }
 
@@ -1478,7 +1481,8 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		    else
 		      {
 			unsigned value_id = get_expr_value_id (constant);
-			constant = find_leader_in_sets (value_id, set1, set2);
+			constant = find_leader_in_sets (value_id, set1, set2,
+							AVAIL_OUT (pred));
 			if (constant)
 			  return constant;
 		      }
