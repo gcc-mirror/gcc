@@ -356,9 +356,8 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
 {
   bool has_preferred_class;
   enum reg_class preferred_class;
+  int pass;
   int best_new_reg = old_reg;
-  int new_reg;
-  int hit = 0;
 
   /* Further narrow the set of registers we can use for renaming.
      If the chain needs a call-saved register, mark the call-used
@@ -371,14 +370,14 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
 
   /* Compute preferred rename class of super union of all the classes
      in the chain.  */
-  preferred_class = (enum reg_class) targetm.preferred_rename_class2 (
-      super_class, old_reg);
+  preferred_class
+    = (enum reg_class) targetm.preferred_rename_class (super_class);
 
   /* Pick and check the register from the tied chain iff the tied chain
    is not renamed.  */
   if (this_head->tied_chain && !this_head->tied_chain->renamed
-      && check_new_reg_p (old_reg, this_head->tied_chain->regno, this_head,
-			  *unavailable))
+      && check_new_reg_p (old_reg, this_head->tied_chain->regno,
+			  this_head, *unavailable))
     return this_head->tied_chain->regno;
 
   /* If PREFERRED_CLASS is not NO_REGS, we iterate in the first pass
@@ -388,10 +387,14 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
    If PREFERRED_CLASS is NO_REGS, we iterate over all registers in
    ascending order without any preference.  */
   has_preferred_class = (preferred_class != NO_REGS);
+  for (pass = (has_preferred_class ? 0 : 1); pass < 2; pass++)
+    {
+      int new_reg;
   for (new_reg = 0; new_reg < FIRST_PSEUDO_REGISTER; new_reg++)
     {
       if (has_preferred_class
-	  && !TEST_HARD_REG_BIT(reg_class_contents[preferred_class],
+	      && (pass == 0)
+	      != TEST_HARD_REG_BIT (reg_class_contents[preferred_class],
 				   new_reg))
 	continue;
 
@@ -405,11 +408,14 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
        don't belong to PREFERRED_CLASS to registers that do, even
        though the latters were used not very long ago.
        Also use a register if no best_new_reg was found till now  */
-      if (new_reg < old_reg || !hit)
-	{
-	  hit = 1;
+	  if (((pass == 0 || !has_preferred_class)
+	      && !TEST_HARD_REG_BIT (reg_class_contents[preferred_class],
+				     best_new_reg))
+	      || tick[best_new_reg] > tick[new_reg])
 	  best_new_reg = new_reg;
 	}
+      if (pass == 0 && best_new_reg != old_reg)
+	break;
     }
   return best_new_reg;
 }
@@ -1932,8 +1938,7 @@ class pass_regrename : public rtl_opt_pass
 public:
   pass_regrename (gcc::context *ctxt)
     : rtl_opt_pass (pass_data_regrename, ctxt)
-  {
-  }
+  {}
 
   /* opt_pass methods: */
   virtual bool gate (function *)
@@ -1942,11 +1947,6 @@ public:
     }
 
   virtual unsigned int execute (function *) { return regrename_optimize (); }
-
-  opt_pass * clone ()
-    {
-      return new pass_regrename(m_ctxt);
-    }
 
 }; // class pass_regrename
 
