@@ -55,6 +55,7 @@ inside_basic_block_p (const rtx_insn *insn)
     case DEBUG_INSN:
       return true;
 
+    case DEBUG_IMPLICIT_PTR:
     case JUMP_TABLE_DATA:
     case BARRIER:
     case NOTE:

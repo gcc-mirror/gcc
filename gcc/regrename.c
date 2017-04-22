@@ -1913,8 +1913,6 @@ regrename_optimize (void)
   return 0;
 }
 
-class opt_pass * global_pass_regrename;
-
 namespace {
 
 const pass_data pass_data_regrename =
@@ -1935,7 +1933,6 @@ public:
   pass_regrename (gcc::context *ctxt)
     : rtl_opt_pass (pass_data_regrename, ctxt)
   {
-    ::global_pass_regrename = this;
   }
 
   /* opt_pass methods: */
