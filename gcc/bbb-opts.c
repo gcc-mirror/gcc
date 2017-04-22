@@ -367,7 +367,7 @@ temp_reg_rename (std::vector<std::pair<rtx *, rtx>> & loc, rtx x, unsigned oldre
  * Collect some data.
  */
 static std::vector<rtx_insn *> insns;
-static std::vector<bool> proepilogue;
+static std::vector<char> proepilogue;
 static std::vector<rtx_insn *> temp;
 static std::vector<rtx_insn *> jumps;
 static std::map<rtx_insn *, unsigned> insn2index;
@@ -477,7 +477,7 @@ update_insns ()
 
   df_insn_rescan_all ();
 
-  bool inproepilogue = true;
+  char inproepilogue = 1;
   /* create a vector with relevant insn. */
   for (insn = get_insns (); insn; insn = next)
     {
@@ -493,32 +493,34 @@ update_insns ()
 	  proepilogue.push_back (inproepilogue);
 
 	  if (JUMP_P(insn))
-	    inproepilogue = false;
+	    inproepilogue = 0;
 	}
 
       if (NOTE_P(insn))
 	{
 	  if (NOTE_KIND(insn) == NOTE_INSN_PROLOGUE_END)
-	    inproepilogue = false;
+	    inproepilogue = 0;
 	  else if (NOTE_KIND(insn) == NOTE_INSN_EPILOGUE_BEG)
-	    inproepilogue = true;
+	    inproepilogue = 2;
 	}
     }
 }
 
+/* This is the important function to track register usage plus hard/live state.
+ *
+ * Start at bottom and work upwards. On all labels trigger all jumps referring to this label.
+ * A set destination into a register is a def. All other register references are an use.
+ * Hard registers cann't be renamed and are mandatory for regparms and asm_operands.
+ */
 static void
 update_insn_infos (void)
 {
   /* prepare insn_info */
-  insn_info ii0;
-  for (unsigned i = 0; i < insns.size (); ++i)
-    {
-      infos.push_back (ii0);
-    }
+  infos.resize (insns.size ());
 
   /* own analyze reg life */
   std::vector<std::pair<unsigned, insn_info>> todo;
-  todo.push_back (std::make_pair (insns.size () - 1, ii0));
+  todo.push_back (std::make_pair (insns.size () - 1, insn_info ()));
 
   int pass = 0;
   while (!todo.empty ())
@@ -531,9 +533,11 @@ update_insn_infos (void)
       for (int pos = p.first; pos >= 0; --pos)
 	{
 	  rtx_insn * insn = insns[pos];
-	  if (!insn) // moved to temp for stack frame cleanup
+	  /* can be NULL as used in opt_shrink_stack_frame(). */
+	  if (!insn)
 	    continue;
 
+	  /* no new information -> break. */
 	  if (pass && infos[pos].contains (ii))
 	    break;
 
@@ -648,6 +652,7 @@ update_insn_infos (void)
     }
 }
 
+/* convert the lowest set bit into a register number. */
 static int
 bit2regno (unsigned bit)
 {
@@ -667,7 +672,7 @@ bit2regno (unsigned bit)
  * Always prefer lower register numbers within the class.
  */
 static unsigned
-bb_reg_rename (void)
+opt_reg_rename (void)
 {
 //  dump_insns ("rename", 1);
   for (unsigned index = 0; index < insns.size (); ++index)
@@ -738,8 +743,7 @@ bb_reg_rename (void)
 	      rtx jmppattern = PATTERN (insn);
 	      if (GET_CODE(jmppattern) == PARALLEL)
 		{
-		  return 0; /* can't handle yet. */
-//		  jmppattern = XVECEXP(jmppattern, 0, 0);
+		  return 0; /* can't handle yet. Abort renaming. */
 		}
 
 	      rtx jmpsrc = XEXP(jmppattern, 1);
@@ -788,7 +792,7 @@ bb_reg_rename (void)
 	  if (!ok)
 	    continue;
 
-	  log ("bb_reg_rename %s -> %s (%d locs)\n", reg_names[oldregno], reg_names[newregno], patch.size ());
+	  log ("opt_reg_rename %s -> %s (%d locs)\n", reg_names[oldregno], reg_names[newregno], patch.size ());
 
 	  /* apply all changes. */
 	  for (std::vector<std::pair<rtx *, rtx>>::iterator j = patch.begin (); j != patch.end (); ++j)
@@ -1470,6 +1474,10 @@ opt_const_cmp_to_sub (void)
   return change_count;
 }
 
+/*
+ * Some optimizations (e.g. propagate_moves) might result into an unuses assignment behind the loop.
+ * delete those insns.
+ */
 static unsigned
 elim_dead_assign (void)
 {
@@ -1570,6 +1578,9 @@ opt_merge_add (void)
   return change_count;
 }
 
+/*
+ * Move the insns back from temp to insns.
+ */
 static void
 clear_temp ()
 {
@@ -1607,6 +1618,7 @@ opt_shrink_stack_frame (void)
   if (!insns.size ())
     return 0;
 
+  std::vector<int> a5pos;
   temp.resize (insns.size ());
 
   unsigned pos = 0;
@@ -1622,16 +1634,11 @@ opt_shrink_stack_frame (void)
    * Move prologue to temp.
    * Only register push and parallel insn unless its a link a5 are moved.
    */
-  rtx_insn * prev = get_insns ();
   for (; pos < insns.size ();)
     {
       insn = insns[pos];
 
-      /* check for prologue end. */
-      for (; prev != insn; prev = NEXT_INSN (prev))
-	if (NOTE_P(prev) && NOTE_KIND(prev) == NOTE_INSN_PROLOGUE_END)
-	  break;
-      if (prev != insn)
+      if (proepilogue[pos] != 1)
 	break;
 
       rtx pattern = PATTERN (insn);
@@ -1642,6 +1649,7 @@ opt_shrink_stack_frame (void)
 	  /* ignore link a5 */
 	  if (REG_P(dst) && REGNO(dst) == FRAME_POINTER_REGNUM)
 	    {
+	      a5pos.push_back (pos);
 	      usea5 = true;
 	      set = XVECEXP(pattern, 0, 2);
 	      a5offset = INTVAL(XEXP(SET_SRC(set), 1));
@@ -1657,6 +1665,9 @@ opt_shrink_stack_frame (void)
 	}
       if (GET_CODE(pattern) != SET)
 	{
+	  /* (set (mem:BLK (scratch) [0  A8]) (unspec:BLK [ ...)) */
+	  if (MEM_P(SET_DEST(pattern)) && GET_CODE(SET_SRC(pattern)) == UNSPEC)
+	    a5pos.push_back (pos);
 	  ++pos;
 	  continue;
 	}
@@ -1701,21 +1712,13 @@ opt_shrink_stack_frame (void)
 
   unsigned prologueend = pos;
 
-  prev = insn;
-
   /* search epilogues - there can be multiple epilogues. */
   while (pos < insns.size ())
     {
       while (pos < insns.size ())
 	{
-	  insn = insns[pos];
-	  for (; prev != insn; prev = NEXT_INSN (prev))
-	    if (NOTE_P(prev) && NOTE_KIND(prev) == NOTE_INSN_EPILOGUE_BEG)
-	      break;
-
-	  if (prev != insn)
+	  if (proepilogue[pos])
 	    break;
-
 	  ++pos;
 	}
 
@@ -1723,13 +1726,10 @@ opt_shrink_stack_frame (void)
       for (; pos < insns.size (); ++pos)
 	{
 	  insn = insns[pos];
-	  if (JUMP_P(insn)) /* return */
+	  if (JUMP_P(insn) || LABEL_P(insn) || !proepilogue[pos])
 	    break;
 
-	  if (LABEL_P(insn))
-	    break;
-
-	  /* omitt the frame pointer a5. */
+	  /* omit the frame pointer a5. */
 	  rtx pattern = PATTERN (insn);
 	  if (GET_CODE(pattern) == PARALLEL)
 	    {
@@ -1737,7 +1737,10 @@ opt_shrink_stack_frame (void)
 	      rtx dst = SET_DEST(set);
 	      /* unlink is last. */
 	      if (REG_P(dst) && REGNO(dst) == FRAME_POINTER_REGNUM)
-		break;
+		{
+		  a5pos.push_back (pos);
+		  break;
+		}
 
 	      /* movem. */
 	      temp[pos] = insn;
@@ -1766,7 +1769,6 @@ opt_shrink_stack_frame (void)
 		}
 	    }
 	}
-      prev = insn;
       ++pos;
     }
   /* gather usage stats without prologue/epilogue */
@@ -1989,6 +1991,33 @@ opt_shrink_stack_frame (void)
 	}
     }
 
+  if (usea5 && a5offset == -4)
+    {
+      for (std::vector<int>::iterator i = a5pos.begin (); i != a5pos.end (); ++i)
+	{
+	  temp[*i] = insns[*i];
+	  insns[*i] = 0;
+	}
+      update_insn_infos ();
+      insn_info ii;
+      for (unsigned i = 0; i < infos.size (); ++i)
+	{
+	  if (proepilogue[i])
+	    continue;
+
+	  insn_info & jj = infos[i];
+	  ii |= jj;
+	}
+      unsigned freemask = ~ii._use;
+
+      if (freemask & (1 << FRAME_POINTER_REGNUM))
+	{
+	  log ("dropping unused frame pointer\n");
+	  for (std::vector<int>::iterator i = a5pos.begin (); i != a5pos.end (); ++i)
+	    SET_INSN_DELETED(temp[*i]);
+	}
+    }
+
   /* restore stack insns */
   clear_temp ();
 
@@ -2000,14 +2029,14 @@ namespace
 
   const pass_data pass_data_bbb_optimizations =
     { RTL_PASS, /* type */
-    "bbb", /* name */
+    "bebbo's-optimizers", /* name */
     OPTGROUP_NONE, /* optinfo_flags */
     TV_NONE, /* tv_id */
     0, /* properties_required */
     0, /* properties_provided */
     0, /* properties_destroyed */
     0, /* todo_flags_start */
-    ( TODO_df_finish | TODO_df_verify), /* todo_flags_finish */
+    0, /* todo_flags_finish */
     };
 
   class pass_bbb_optimizations : public rtl_opt_pass
@@ -2053,10 +2082,6 @@ namespace
   unsigned
   pass_bbb_optimizations::execute_bbb_optimizations (void)
   {
-    df_set_flags (DF_LR_RUN_DCE + DF_DEFER_INSN_RESCAN);
-    df_note_add_problem ();
-    df_analyze ();
-
     be_verbose = strchr (string_bbb_opts, 'v');
 
     bool do_opt_strcpy = strchr (string_bbb_opts, 's') || strchr (string_bbb_opts, '+');
@@ -2093,7 +2118,7 @@ namespace
 
 	if (do_bb_reg_rename)
 	  {
-	    while (bb_reg_rename ())
+	    while (opt_reg_rename ())
 	      {
 		update_insns ();
 		update_insn_infos ();
