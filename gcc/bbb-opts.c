@@ -476,7 +476,7 @@ update_insns ()
   rtx_insn *insn, *next;
   clear ();
 
-  df_insn_rescan_all ();
+  // df_insn_rescan_all ();
 
   char inproepilogue = 1;
   /* create a vector with relevant insn. */
@@ -593,10 +593,25 @@ update_insn_infos (void)
 
 	  if (JUMP_P(insn))
 	    {
-	      if (ANY_RETURN_P(pattern))
-		ii.reset ();
-
 	      insn_info use;
+	      if (ANY_RETURN_P(pattern))
+		{
+		  tree type = TYPE_SIZE(TREE_TYPE (DECL_RESULT (current_function_decl)));
+		  int sz = type ? TREE_INT_CST_LOW(type) : 0;
+		  // log ("return size %d\n", sz);
+		  if (sz <= 64)
+		    {
+		      use.hard (0);
+		      use.use (0);
+		      if (sz > 32)
+			{
+			  use.hard (1);
+			  use.use (1);
+			}
+		    }
+		  ii.reset ();
+		}
+
 	      use.scan (pattern);
 	      infos[pos] = use | ii;
 	      ii.updateWith (use);
@@ -752,7 +767,7 @@ opt_reg_rename (void)
 		}
 
 	      rtx jmpsrc = XEXP(jmppattern, 1);
-	      if (GET_CODE(jmpsrc) == IF_THEN_ELSE)
+	      if (jmpsrc && GET_CODE(jmpsrc) == IF_THEN_ELSE)
 		if (pos + 1 < insns.size ())
 		  todo.push_back (pos + 1);
 	    }
@@ -1065,8 +1080,8 @@ opt_propagate_moves ()
 				  j = reg_reg.end ();
 				  inc = false;
 
-				  df_insn_rescan (newii);
-				  df_insn_rescan (newjj);
+				  // df_insn_rescan (newii);
+				  // df_insn_rescan (newjj);
 
 				  /* add fixes if there were jumps out of the loop. */
 				  if (jump_out.size ())
@@ -1078,7 +1093,7 @@ opt_propagate_moves ()
 					  rtx neu = gen_rtx_SET(
 					      dstj, gen_rtx_PLUS(Pmode, dsti, gen_rtx_CONST_INT(Pmode, fixups[k])));
 					  rtx_insn * neui = emit_insn_after (neu, jump_out[k]);
-					  df_insn_rescan (neui);
+					  // df_insn_rescan (neui);
 					}
 				    }
 				  ++change_count;
@@ -1178,7 +1193,7 @@ opt_strcpy ()
 			  SET_INSN_DELETED(x2reg);
 			  SET_INSN_DELETED(insn);
 
-			  df_insn_rescan (reg2x);
+			  // df_insn_rescan (reg2x);
 
 			  ++change_count;
 			}
@@ -1238,7 +1253,7 @@ opt_strcpy ()
  (nil)))
  */
 static unsigned
-commute_add_move (void)
+opt_commute_add_move (void)
 {
   unsigned change_count = 0;
 
@@ -1295,8 +1310,8 @@ commute_add_move (void)
 
 	  add_reg_note (next, REG_INC, reg1dst);
 
-	  df_insn_rescan (insn);
-	  df_insn_rescan (next);
+	  // df_insn_rescan (insn);
+	  // df_insn_rescan (next);
 
 	  ++change_count;
 	}
@@ -1484,7 +1499,7 @@ opt_const_cmp_to_sub (void)
  * delete those insns.
  */
 static unsigned
-elim_dead_assign (void)
+opt_elim_dead_assign (void)
 {
   unsigned change_count = 0;
   for (unsigned index = 0; index + 1 < insns.size (); ++index)
@@ -1835,7 +1850,7 @@ opt_shrink_stack_frame (void)
 		    adjust += 4;
 		}
 	      else
-		regs.push_back (reg);
+		regs.push_back (copy_reg (reg, -1));
 	    }
 
 	  /* don't touch - clobbers! */
@@ -1907,7 +1922,7 @@ opt_shrink_stack_frame (void)
 		      else
 			{
 			  /* pop */
-			  if (usea5 && a5offset != -4)
+			  if (usea5)
 			    {
 			      x += REGNO(regs[k]) > STACK_POINTER_REGNUM ? 12 : 4;
 			      plus = gen_rtx_PLUS(SImode, a5, gen_rtx_CONST_INT (SImode, a5offset + x));
@@ -2041,8 +2056,8 @@ namespace
     0, /* properties_provided */
     0, /* properties_destroyed */
     0, /* todo_flags_start */
-    0, /* todo_flags_finish */
-    };
+    0, //( TODO_df_finish | TODO_df_verify), /* todo_flags_finish */
+      };
 
   class pass_bbb_optimizations : public rtl_opt_pass
   {
@@ -2087,6 +2102,10 @@ namespace
   unsigned
   pass_bbb_optimizations::execute_bbb_optimizations (void)
   {
+    // df_set_flags (df_LR_RUN_DCE + df_DEFER_INSN_RESCAN);
+    // df_note_add_problem ();
+    // df_analyze ();
+
     be_verbose = strchr (string_bbb_opts, 'v');
 
     bool do_opt_strcpy = strchr (string_bbb_opts, 's') || strchr (string_bbb_opts, '+');
@@ -2106,7 +2125,7 @@ namespace
 	if (do_opt_strcpy && opt_strcpy ())
 	  done = 0, update_insns ();
 
-	if (do_commute_add_move && commute_add_move ())
+	if (do_commute_add_move && opt_commute_add_move ())
 	  done = 0, update_insns ();
 
 	if (do_propagate_moves && opt_propagate_moves ())
@@ -2119,7 +2138,7 @@ namespace
 	if (do_merge_add && opt_merge_add ())
 	  done = 0, update_insns (), update_insn_infos ();
 
-	if (do_elim_dead_assign && elim_dead_assign ())
+	if (do_elim_dead_assign && opt_elim_dead_assign ())
 	  done = 0, update_insns (), update_insn_infos ();
 
 	if (do_bb_reg_rename)
