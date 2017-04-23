@@ -1,3 +1,9 @@
+2017-04-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80121
+	* trans-types.c (gfc_conv_procedure_call): Deallocate the components
+	of allocatable intent(out) arguments.
+
 2017-04-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/80392
