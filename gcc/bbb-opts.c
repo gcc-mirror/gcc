@@ -390,24 +390,23 @@ clear (void)
 
 /*
  *  return true if the register is DEAD.
+ *  Do not check at jumps.
  */
 static bool
-is_reg_dead (unsigned regno, unsigned pos)
+is_reg_dead (unsigned regno, unsigned _pos)
 {
-  for (;;)
+  // skip labels.
+  for (unsigned pos = _pos + 1; pos < infos.size (); ++pos)
     {
-      if (pos + 1 >= infos.size ())
-	return true;
+      insn_info & ii0 = infos[pos];
+      // skip entries without info
+      if (!ii0._def && !ii0._use && !ii0._hard)
+	continue;
 
-      rtx_insn * insn = insns[pos + 1];
-      if (!LABEL_P(insn) && GET_CODE(insn) != USE)
-	break;
-      ++pos;
+      // not dead if usage is reported in the next statement
+      return !ii0.is_use (regno) && !ii0.is_hard (regno);
     }
-
-  insn_info & ii0 = infos[pos + 1];
-  // not dead if usage is reported in the next statement
-  return !ii0.is_use (regno);
+  return true;
 }
 
 /*
@@ -720,18 +719,21 @@ opt_reg_rename (void)
 	    mask = 0;
 
 	  /* defined again -> invalid rename */
-	  if (jj._def & toRename)
+	  if ((jj._def & toRename) && !(jj._use & toRename))
 	    mask = 0;
 
-	  /* update free regs. */
-	  mask &= ~jj._use;
-	  mask &= ~jj._def;
 	  if (!mask)
 	    break;
 
 	  /* not used. */
 	  if (!(jj._use & toRename))
 	    continue;
+
+	  /* update free regs. */
+	  mask &= ~jj._use;
+	  mask &= ~jj._def;
+	  if (!mask)
+	    break;
 
 	  found.insert (pos);
 
@@ -2100,6 +2102,7 @@ namespace
       {
 	int done = 1;
 	update_insns ();
+	update_insn_infos ();
 	if (do_opt_strcpy && opt_strcpy ())
 	  done = 0, update_insns ();
 
