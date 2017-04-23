@@ -337,7 +337,7 @@ copy_reg (rtx reg, int newregno)
 
 /* Rename the register plus track all locs to undo these changes. */
 static void
-temp_reg_rename (std::vector<std::pair<rtx *, rtx>> & loc, rtx x, unsigned oldregno, unsigned newregno)
+temp_reg_rename (std::vector<std::pair<rtx *, rtx> > & loc, rtx x, unsigned oldregno, unsigned newregno)
 {
   RTX_CODE code = GET_CODE(x);
 
@@ -521,7 +521,7 @@ update_insn_infos (void)
   infos.resize (insns.size ());
 
   /* own analyze reg life */
-  std::vector<std::pair<unsigned, insn_info>> todo;
+  std::vector<std::pair<unsigned, insn_info> > todo;
   todo.push_back (std::make_pair (insns.size () - 1, insn_info ()));
 
   int pass = 0;
@@ -764,8 +764,8 @@ opt_reg_rename (void)
 	  int newregno = bit2regno (mask);
 
 	  /* check the renamed insns. */
-	  std::vector<std::pair<rtx *, rtx>> locs;
-	  std::vector<std::pair<rtx *, rtx>> patch;
+	  std::vector<std::pair<rtx *, rtx> > locs;
+	  std::vector<std::pair<rtx *, rtx> > patch;
 	  bool ok = true;
 
 	  for (std::set<unsigned>::iterator i = found.begin (); ok && i != found.end (); ++i)
@@ -782,7 +782,7 @@ opt_reg_rename (void)
 		    ok = false;
 
 		  /* undo temp change but keep loc and new register. */
-		  for (std::vector<std::pair<rtx *, rtx>>::iterator j = locs.begin (); j != locs.end (); ++j)
+		  for (std::vector<std::pair<rtx *, rtx> >::iterator j = locs.begin (); j != locs.end (); ++j)
 		    {
 		      patch.push_back (std::make_pair (j->first, *j->first));
 		      *j->first = j->second;
@@ -798,7 +798,7 @@ opt_reg_rename (void)
 	  log ("opt_reg_rename %s -> %s (%d locs)\n", reg_names[oldregno], reg_names[newregno], patch.size ());
 
 	  /* apply all changes. */
-	  for (std::vector<std::pair<rtx *, rtx>>::iterator j = patch.begin (); j != patch.end (); ++j)
+	  for (std::vector<std::pair<rtx *, rtx> >::iterator j = patch.begin (); j != patch.end (); ++j)
 	    *j->first = j->second;
 
 	  return 1;
