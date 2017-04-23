@@ -1,25 +1,25 @@
 /* Configuration for GNU C-compiler for m68k Amiga, running AmigaOS.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2003
-   Free Software Foundation, Inc.  
-   Contributed by Markus M. Wild (wild@amiga.physik.unizh.ch).
-   Heavily modified by Kamil Iskra (iskra@student.uci.agh.edu.pl).
+ Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2003
+ Free Software Foundation, Inc.
+ Contributed by Markus M. Wild (wild@amiga.physik.unizh.ch).
+ Heavily modified by Kamil Iskra (iskra@student.uci.agh.edu.pl).
 
-This file is part of GCC.
+ This file is part of GCC.
 
-GCC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+ GCC is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2, or (at your option)
+ any later version.
 
-GCC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+ GCC is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with GCC; see the file COPYING.  If not, write to
-the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.  */
+ You should have received a copy of the GNU General Public License
+ along with GCC; see the file COPYING.  If not, write to
+ the Free Software Foundation, 59 Temple Place - Suite 330,
+ Boston, MA 02111-1307, USA.  */
 
 //work without flag_writable_strings which is not in GCC4
 #define REGPARMS_68K 1
@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "target.h"
 #include "diagnostic-core.h"
+#include "langhooks.h"
 #include "config/m68k/amigaos.h"
 
 //#define MYDEBUG 1
@@ -56,28 +57,28 @@ static rtx gen_stack_management_call (rtx, rtx, const char *);
 /* Baserel support.  */
 
 /* Does operand (which is a symbolic_operand) live in text space? If
-   so SYMBOL_REF_FLAG, which is set by ENCODE_SECTION_INFO, will be true.
+ so SYMBOL_REF_FLAG, which is set by ENCODE_SECTION_INFO, will be true.
 
-   This function is used in base relative code generation. */
+ This function is used in base relative code generation. */
 
 int
 read_only_operand (rtx operand)
-{
-  if (GET_CODE (operand) == CONST)
+  {
+    if (GET_CODE (operand) == CONST)
     operand = XEXP (XEXP (operand, 0), 0);
-  if (GET_CODE (operand) == SYMBOL_REF)
+    if (GET_CODE (operand) == SYMBOL_REF)
     return SYMBOL_REF_FLAG (operand) || CONSTANT_POOL_ADDRESS_P (operand);
-  return 1;
-}
+    return 1;
+  }
 
 /* Choose the section to use for DECL.  RELOC is true if its value contains
-   any relocatable expression.  */
+ any relocatable expression.  */
 
 void
 amigaos_select_section (tree decl ATTRIBUTE_UNUSED, int reloc ATTRIBUTE_UNUSED,
-			unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
-{
- // if (TREE_CODE (decl) == STRING_CST)
+    unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
+  {
+    // if (TREE_CODE (decl) == STRING_CST)
 //    {
 //// flag_writable_strings /data_section not in gcc4,
 ////make life easy and put to same section
@@ -104,195 +105,189 @@ amigaos_select_section (tree decl ATTRIBUTE_UNUSED, int reloc ATTRIBUTE_UNUSED,
 //    readonly_data_section ();
 //  else
     //data_section ();
-}
+  }
 
 /* This function is used while generating a base relative code.
-   It returns 1 if a decl is not relocatable, i. e., if it can be put
-   in the text section.
-   Currently, it's very primitive: it just checks if the object size
-   is less than 4 bytes (i. e., if it can hold a pointer).  It also
-   supports arrays and floating point types.  */
+ It returns 1 if a decl is not relocatable, i. e., if it can be put
+ in the text section.
+ Currently, it's very primitive: it just checks if the object size
+ is less than 4 bytes (i. e., if it can hold a pointer).  It also
+ supports arrays and floating point types.  */
 
 static int
 amigaos_put_in_text (tree decl)
-{
-  tree type = TREE_TYPE (decl);
-  if (TREE_CODE (type) == ARRAY_TYPE)
+  {
+    tree type = TREE_TYPE (decl);
+    if (TREE_CODE (type) == ARRAY_TYPE)
     type = TREE_TYPE (type);
-  return (TREE_INT_CST_ELT(TYPE_SIZE (type), 1) == 0
-	  && TREE_INT_CST_LOW (TYPE_SIZE (type)) < 32)
-	  || FLOAT_TYPE_P (type);
-}
+    return (TREE_INT_CST_ELT(TYPE_SIZE (type), 1) == 0
+	&& TREE_INT_CST_LOW (TYPE_SIZE (type)) < 32)
+    || FLOAT_TYPE_P (type);
+  }
 
 /* Record properties of a DECL into the associated SYMBOL_REF.  */
 
 void
 amigaos_encode_section_info (tree decl, rtx rtl, int first)
-{
-  default_encode_section_info (decl, rtl, first);
+  {
+    default_encode_section_info (decl, rtl, first);
 
-
-  SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
-  if (TREE_CODE (decl) == FUNCTION_DECL) // huh seem do same. not in gcc4 flag_writable_strings
     SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
-  else
-    {
-      if ((MEM_READONLY_P (rtl) && !MEM_VOLATILE_P (rtl)
-           && (flag_pic<3 || (TREE_CODE (decl) == STRING_CST
-                              )
-               || amigaos_put_in_text (decl)))
-          || (TREE_CODE (decl) == VAR_DECL
-              && DECL_SECTION_NAME (decl) != NULL))
-        SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
-    }
-}
+    if (TREE_CODE (decl) == FUNCTION_DECL) // huh seem do same. not in gcc4 flag_writable_strings
+    SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
+    else
+      {
+	if ((MEM_READONLY_P (rtl) && !MEM_VOLATILE_P (rtl)
+		&& (flag_pic<3 || (TREE_CODE (decl) == STRING_CST
+		    )
+		    || amigaos_put_in_text (decl)))
+	    || (TREE_CODE (decl) == VAR_DECL
+		&& DECL_SECTION_NAME (decl) != NULL))
+	SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
+      }
+  }
 
 /* Common routine used to check if a4 should be preserved/restored.  */
 
 int
 amigaos_restore_a4 (void)
-{
-  return (flag_pic >= 3 &&
-	  (TARGET_RESTORE_A4 || TARGET_ALWAYS_RESTORE_A4
-	   || lookup_attribute ("saveds",
-				TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl)))));
-}
+  {
+    return (flag_pic >= 3 &&
+	(TARGET_RESTORE_A4 || TARGET_ALWAYS_RESTORE_A4
+	    || lookup_attribute ("saveds",
+		TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl)))));
+  }
 
 void
 amigaos_alternate_pic_setup (FILE *stream)
-{
-  if (TARGET_RESTORE_A4 || TARGET_ALWAYS_RESTORE_A4)
+  {
+    if (TARGET_RESTORE_A4 || TARGET_ALWAYS_RESTORE_A4)
     asm_fprintf (stream, "\tjbsr %U__restore_a4\n");
-  else if (lookup_attribute ("saveds",
-			     TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))))
+    else if (lookup_attribute ("saveds",
+	    TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))))
     asm_fprintf (stream, "\tlea %U__a4_init,%Ra4\n");
-}
+  }
 
 /* Attributes support.  */
 
 #define AMIGA_CHIP_SECTION_NAME ".datachip"
 
 /* Handle a "chip" attribute;
-   arguments as in struct attribute_spec.handler.  */
+ arguments as in struct attribute_spec.handler.  */
 
 tree
 amigaos_handle_decl_attribute (tree *node, tree name,
-			       tree args ATTRIBUTE_UNUSED,
-			       int flags ATTRIBUTE_UNUSED,
-			       bool *no_add_attrs)
-{
-  if (TREE_CODE (*node) == VAR_DECL)
-    {
-      if (is_attribute_p ("chip", name))
+    tree args ATTRIBUTE_UNUSED,
+    int flags ATTRIBUTE_UNUSED,
+    bool *no_add_attrs)
+  {
+    if (TREE_CODE (*node) == VAR_DECL)
+      {
+	if (is_attribute_p ("chip", name))
 #ifdef TARGET_ASM_NAMED_SECTION
-        {
-	  if (! TREE_STATIC (*node) && ! DECL_EXTERNAL (*node))
+	  {
+	    if (! TREE_STATIC (*node) && ! DECL_EXTERNAL (*node))
 	    error ("`chip' attribute cannot be specified for local variables");
-	  else
-	    {
-	      /* The decl may have already been given a section attribute from
-	         a previous declaration.  Ensure they match.  */
-	      if (DECL_SECTION_NAME (*node) == NULL_TREE)
-	        DECL_SECTION_NAME (*node) =
-		  build_string (strlen (AMIGA_CHIP_SECTION_NAME) + 1,
-			        AMIGA_CHIP_SECTION_NAME);
-	      else if (strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (*node)),
-			       AMIGA_CHIP_SECTION_NAME) != 0)
-	        {
-		  error_with_decl (*node,
-			  "`chip' for `%s' conflicts with previous declaration");
-	        }
-	    }
-        }
+	    else
+	      {
+		/* The decl may have already been given a section attribute from
+		 a previous declaration.  Ensure they match.  */
+		if (DECL_SECTION_NAME (*node) == NULL_TREE)
+		DECL_SECTION_NAME (*node) =
+		build_string (strlen (AMIGA_CHIP_SECTION_NAME) + 1,
+		    AMIGA_CHIP_SECTION_NAME);
+		else if (strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (*node)),
+			AMIGA_CHIP_SECTION_NAME) != 0)
+		  {
+		    error_with_decl (*node,
+			"`chip' for `%s' conflicts with previous declaration");
+		  }
+	      }
+	  }
 #else
-        error ("`chip' attribute is not supported for this target");
+	error ("`chip' attribute is not supported for this target");
 #endif
-    }
-  else
-    {
-      warning (OPT_Wattributes, "`%s' attribute only applies to variables",
-	       IDENTIFIER_POINTER (name));
-      *no_add_attrs = true;
-    }
+      }
+    else
+      {
+	warning (OPT_Wattributes, "`%s' attribute only applies to variables",
+	    IDENTIFIER_POINTER (name));
+	*no_add_attrs = true;
+      }
 
-  return NULL_TREE;
-}
+    return NULL_TREE;
+  }
 
 //----- from 68k.c start
-
-
-
-
- 
 
 /* Stack checking and automatic extension support.  */
 
 void
 amigaos_prologue_begin_hook (FILE *stream, int fsize)
-{
-  if (TARGET_STACKCHECK)
-    {
-      if (fsize < 256)
+  {
+    if (TARGET_STACKCHECK)
+      {
+	if (fsize < 256)
 	asm_fprintf (stream, "\tcmpl %s,%Rsp\n"
-			     "\tjcc 0f\n"
-			     "\tjra %U__stkovf\n"
-			     "\t0:\n",
-		     (flag_pic == 3 ? "a4@(___stk_limit:W)" :
-				      (flag_pic == 4 ? "a4@(___stk_limit:L)" :
-						       "___stk_limit")));
-      else
+	    "\tjcc 0f\n"
+	    "\tjra %U__stkovf\n"
+	    "\t0:\n",
+	    (flag_pic == 3 ? "a4@(___stk_limit:W)" :
+		(flag_pic == 4 ? "a4@(___stk_limit:L)" :
+		    "___stk_limit")));
+	else
 	asm_fprintf (stream, "\tmovel %I%d,%Rd0\n\tjbsr %U__stkchk_d0\n",
-		     fsize);
-    }
-}
+	    fsize);
+      }
+  }
 
 void
 amigaos_alternate_frame_setup_f (FILE *stream, int fsize)
-{
-  if (fsize < 128)
+  {
+    if (fsize < 128)
     asm_fprintf (stream, "\tcmpl %s,%Rsp\n"
-			 "\tjcc 0f\n"
-			 "\tmoveq %I%d,%Rd0\n"
-			 "\tmoveq %I0,%Rd1\n"
-			 "\tjbsr %U__stkext_f\n"
-			 "0:\tlink %Ra5,%I%d:W\n",
-		 (flag_pic == 3 ? "a4@(___stk_limit:W)" :
-				  (flag_pic == 4 ? "a4@(___stk_limit:L)" :
-						   "___stk_limit")),
-		 fsize, -fsize);
-  else
+	"\tjcc 0f\n"
+	"\tmoveq %I%d,%Rd0\n"
+	"\tmoveq %I0,%Rd1\n"
+	"\tjbsr %U__stkext_f\n"
+	"0:\tlink %Ra5,%I%d:W\n",
+	(flag_pic == 3 ? "a4@(___stk_limit:W)" :
+	    (flag_pic == 4 ? "a4@(___stk_limit:L)" :
+		"___stk_limit")),
+	fsize, -fsize);
+    else
     asm_fprintf (stream, "\tmovel %I%d,%Rd0\n\tjbsr %U__link_a5_d0_f\n",
-		 fsize);
-}
+	fsize);
+  }
 
 void
 amigaos_alternate_frame_setup (FILE *stream, int fsize)
-{
-  if (!fsize)
+  {
+    if (!fsize)
     asm_fprintf (stream, "\tcmpl %s,%Rsp\n"
-			 "\tjcc 0f\n"
-			 "\tmoveq %I0,%Rd0\n"
-			 "\tmoveq %I0,%Rd1\n"
-			 "\tjbsr %U__stkext_f\n"
-			 "0:\n",
-		 (flag_pic == 3 ? "a4@(___stk_limit:W)" :
-				  (flag_pic == 4 ? "a4@(___stk_limit:L)" :
-						   "___stk_limit")));
-  else if (fsize < 128)
+	"\tjcc 0f\n"
+	"\tmoveq %I0,%Rd0\n"
+	"\tmoveq %I0,%Rd1\n"
+	"\tjbsr %U__stkext_f\n"
+	"0:\n",
+	(flag_pic == 3 ? "a4@(___stk_limit:W)" :
+	    (flag_pic == 4 ? "a4@(___stk_limit:L)" :
+		"___stk_limit")));
+    else if (fsize < 128)
     asm_fprintf (stream, "\tcmpl %s,%Rsp\n"
-			 "\tjcc 0f\n"
-			 "\tmoveq %I%d,%Rd0\n"
-			 "\tmoveq %I0,%Rd1\n"
-			 "\tjbsr %U__stkext_f\n"
-			 "0:\taddw %I%d,%Rsp\n",
-		 (flag_pic == 3 ? "a4@(___stk_limit:W)" :
-				  (flag_pic == 4 ? "a4@(___stk_limit:L)" :
-						   "___stk_limit")),
-		 fsize, -fsize);
-  else
+	"\tjcc 0f\n"
+	"\tmoveq %I%d,%Rd0\n"
+	"\tmoveq %I0,%Rd1\n"
+	"\tjbsr %U__stkext_f\n"
+	"0:\taddw %I%d,%Rsp\n",
+	(flag_pic == 3 ? "a4@(___stk_limit:W)" :
+	    (flag_pic == 4 ? "a4@(___stk_limit:L)" :
+		"___stk_limit")),
+	fsize, -fsize);
+    else
     asm_fprintf (stream, "\tmovel %I%d,%Rd0\n\tjbsr %U__sub_d0_sp_f\n",
-		 fsize);
-}
+	fsize);
+  }
 
 //static rtx
 //gen_stack_management_call (rtx stack_pointer, rtx arg, const char *func)
@@ -385,7 +380,8 @@ amigaos_init_cumulative_args (CUMULATIVE_ARGS *cump, tree fntype, tree decl)
   struct amigaos_args * cum = decl == current_function_decl ? &mycum : &othercum;
   *cump = decl == current_function_decl;
   cum->num_of_regs = amigaos_regparm > 0 ? amigaos_regparm : 0;
-  DPRINTF(("0amigaos_init_cumulative_args %p -> %d\r\n", cum, cum->num_of_regs));
+  DPRINTF(
+      ("0amigaos_init_cumulative_args %s %p -> %d\r\n", decl ? lang_hooks.decl_printable_name (decl, 2) : "?", cum, cum->num_of_regs));
 
   /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
@@ -394,28 +390,32 @@ amigaos_init_cumulative_args (CUMULATIVE_ARGS *cump, tree fntype, tree decl)
   cum->last_arg_reg = -1;
   cum->regs_already_used = 0;
 
-  if (decl)
+  if (fntype)
     {
-      tree attrs = DECL_ATTRIBUTES(decl);
-      if (lookup_attribute ("stkparm", attrs))
-	  cum->num_of_regs = 0;
-      else
+      tree attrs = decl ? DECL_ATTRIBUTES(decl) : NULL;
+      if (attrs)
 	{
-	  tree ratree = lookup_attribute ("regparm", attrs);
-	  cum->num_of_regs = amigaos_regparm != 0 ?
-	      amigaos_regparm : AMIGAOS_DEFAULT_REGPARM;
-	  if (ratree)
+	  if (lookup_attribute ("stkparm", attrs))
+	    cum->num_of_regs = 0;
+	  else
 	    {
-	      tree args = TREE_VALUE(ratree);
-
-	      if (args && TREE_CODE (args) == TREE_LIST)
+	      tree ratree = lookup_attribute ("regparm", attrs);
+	      cum->num_of_regs = amigaos_regparm != 0 ?
+	      amigaos_regparm :
+							AMIGAOS_DEFAULT_REGPARM;
+	      if (ratree)
 		{
-		  tree val = TREE_VALUE(args);
-		  if (TREE_CODE (val) == INTEGER_CST)
+		  tree args = TREE_VALUE(ratree);
+
+		  if (args && TREE_CODE (args) == TREE_LIST)
 		    {
-		      int no = TREE_INT_CST_LOW(val);
-		      if (no > 0 && no < AMIGAOS_MAX_REGPARM)
-			cum->num_of_regs = no;
+		      tree val = TREE_VALUE(args);
+		      if (TREE_CODE (val) == INTEGER_CST)
+			{
+			  int no = TREE_INT_CST_LOW(val);
+			  if (no > 0 && no < AMIGAOS_MAX_REGPARM)
+			    cum->num_of_regs = no;
+			}
 		    }
 		}
 	    }
@@ -442,7 +442,7 @@ amigaos_init_cumulative_args (CUMULATIVE_ARGS *cump, tree fntype, tree decl)
 	  tree type = TYPE_SIZE(TREE_TYPE (DECL_RESULT (current_function_decl)));
 	  int sz = type ? TREE_INT_CST_LOW(type) : 0;
 	  if (sz > 64) /* mark a0 as already used. */
-	    cum->regs_already_used |= 1<<8;
+	    cum->regs_already_used |= 1 << 8;
 	}
     }
 
@@ -465,13 +465,12 @@ amigaos_init_cumulative_args (CUMULATIVE_ARGS *cump, tree fntype, tree decl)
 /* Update the data in CUM to advance over an argument.  */
 
 void
-amigaos_function_arg_advance (cumulative_args_t cum_v, machine_mode, const_tree,
-			      bool)
+amigaos_function_arg_advance (cumulative_args_t cum_v, machine_mode, const_tree, bool)
 {
   struct amigaos_args *cum = *get_cumulative_args (cum_v) ? &mycum : &othercum;
   /* Update the data in CUM to advance over an argument.  */
 
-  DPRINTF(("amigaos_function_arg_advance1 %p\r\n", cump));
+  DPRINTF(("amigaos_function_arg_advance1 %p\r\n", cum));
 
   if (cum->last_arg_reg != -1)
     {
@@ -507,8 +506,7 @@ _m68k_function_arg (struct amigaos_args * cum, machine_mode mode, const_tree typ
 
       /* FIXME: The last condition below is a workaround for a bug.  */
       if (TARGET_68881 && FLOAT_MODE_P(mode) &&
-      GET_MODE_UNIT_SIZE (mode) <= 12
-	  && (GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT || mode == SCmode))
+      GET_MODE_UNIT_SIZE (mode) <= 12 && (GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT || mode == SCmode))
 	{
 	  regbegin = 16; /* FPx */
 	  len = GET_MODE_NUNITS(mode);
@@ -534,8 +532,7 @@ _m68k_function_arg (struct amigaos_args * cum, machine_mode mode, const_tree typ
 	    if (!(cum->regs_already_used & mask))
 	      {
 		int end;
-		for (end = reg; end < cum->num_of_regs && end < reg + len;
-		    end++, mask <<= 1)
+		for (end = reg; end < cum->num_of_regs && end < reg + len; end++, mask <<= 1)
 		  if (cum->regs_already_used & mask)
 		    break;
 		if (end == reg + len)
@@ -568,14 +565,15 @@ _m68k_function_arg (struct amigaos_args * cum, machine_mode mode, const_tree typ
  in a register, and which register. */
 
 struct rtx_def *
-amigaos_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		      const_tree type, bool)
+amigaos_function_arg (cumulative_args_t cum_v, machine_mode mode, const_tree type, bool)
 {
   DPRINTF(("amigaos_function_arg %p\r\n", cum_v.p));
 
   struct amigaos_args *cum = *get_cumulative_args (cum_v) ? &mycum : &othercum;
 
-  tree asmtree = type ? TYPE_ATTRIBUTES(type) : NULL_TREE;
+  tree asmtree = type ? TYPE_ATTRIBUTES(cum->formal_type ? TREE_VALUE(cum->formal_type) : type) : NULL_TREE;
+  //tree asmtree = type ? TYPE_ATTRIBUTES(type) : NULL_TREE;
+
   if (asmtree && 0 == strcmp ("asm", IDENTIFIER_POINTER(TREE_PURPOSE(asmtree))))
     {
       int i;
@@ -596,17 +594,17 @@ amigaos_function_arg (cumulative_args_t cum_v, machine_mode mode,
   return _m68k_function_arg (cum, mode, type);
 }
 
-void amiga_emit_regparm_clobbers(void)
+void
+amiga_emit_regparm_clobbers (void)
 {
-  rtx sp = gen_raw_REG(Pmode, 15);
+  rtx sp = gen_raw_REG (Pmode, 15);
   for (int i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
     if (mycum.regs_already_used & (1 << i))
       {
-	rtx reg = gen_raw_REG(Pmode, i);
-        emit_insn(gen_rtx_CLOBBER(Pmode, gen_rtx_SET(reg, gen_rtx_MEM(Pmode, reg))));
+	rtx reg = gen_raw_REG (Pmode, i);
+	emit_insn (gen_rtx_CLOBBER(Pmode, gen_rtx_SET(reg, gen_rtx_MEM(Pmode, reg))));
       }
 }
-
 
 /* Return zero if the attributes on TYPE1 and TYPE2 are incompatible,
  one if they are compatible, and two if they are nearly compatible
@@ -633,8 +631,7 @@ amigaos_comp_type_attributes (const_tree type1, const_tree type2)
 	    attr2 = NULL_TREE;
 	  if (attr1 && attr2)
 	    {
-	      if (TREE_FIXED_CST_PTR(TREE_VALUE(attr1))->data.low
-		  != TREE_FIXED_CST_PTR(TREE_VALUE(attr2))->data.low)
+	      if (TREE_FIXED_CST_PTR(TREE_VALUE(attr1))->data.low != TREE_FIXED_CST_PTR(TREE_VALUE(attr2))->data.low)
 		return 0;
 	    }
 	  else if (attr1 || attr2)
@@ -647,140 +644,135 @@ amigaos_comp_type_attributes (const_tree type1, const_tree type2)
 }
 
 /* Return zero if the attributes on TYPE1 and TYPE2 are incompatible,
-   one if they are compatible, and two if they are nearly compatible
-   (which causes a warning to be generated). */
+ one if they are compatible, and two if they are nearly compatible
+ (which causes a warning to be generated). */
 #if 0
 static int
 m68k_comp_type_attributes (tree type1, tree type2)
-{
+  {
 
-  /* Functions or methods are incompatible if they specify mutually
+    /* Functions or methods are incompatible if they specify mutually
      exclusive ways of passing arguments.  */
-  if (TREE_CODE (type1) == FUNCTION_TYPE || TREE_CODE (type1) == METHOD_TYPE)
-    {
-      tree arg1, arg2;
-      if (!! lookup_attribute ("stkparm", TYPE_ATTRIBUTES (type1)) !=
-	     !! lookup_attribute ("stkparm", TYPE_ATTRIBUTES (type2))
-	  || !! lookup_attribute ("regparm", TYPE_ATTRIBUTES (type1)) !=
-	     !! lookup_attribute ("regparm", TYPE_ATTRIBUTES (type2)))
+    if (TREE_CODE (type1) == FUNCTION_TYPE || TREE_CODE (type1) == METHOD_TYPE)
+      {
+	tree arg1, arg2;
+	if (!! lookup_attribute ("stkparm", TYPE_ATTRIBUTES (type1)) !=
+	    !! lookup_attribute ("stkparm", TYPE_ATTRIBUTES (type2))
+	    || !! lookup_attribute ("regparm", TYPE_ATTRIBUTES (type1)) !=
+	    !! lookup_attribute ("regparm", TYPE_ATTRIBUTES (type2)))
 	return 0; /* 'regparm' and 'stkparm' are mutually exclusive.  */
 
-      arg1 = lookup_attribute ("regparm", TYPE_ATTRIBUTES (type1));
-      arg2 = lookup_attribute ("regparm", TYPE_ATTRIBUTES (type2));
-      if (arg1 && arg2)
-	{
-	  int num1 = 0, num2 = 0;
-	  if (TREE_VALUE (arg1) && TREE_CODE (TREE_VALUE (arg1)) == TREE_LIST)
-	    {
-	      tree numofregs = TREE_VALUE (TREE_VALUE (arg1));
-	      if (numofregs)
+	arg1 = lookup_attribute ("regparm", TYPE_ATTRIBUTES (type1));
+	arg2 = lookup_attribute ("regparm", TYPE_ATTRIBUTES (type2));
+	if (arg1 && arg2)
+	  {
+	    int num1 = 0, num2 = 0;
+	    if (TREE_VALUE (arg1) && TREE_CODE (TREE_VALUE (arg1)) == TREE_LIST)
+	      {
+		tree numofregs = TREE_VALUE (TREE_VALUE (arg1));
+		if (numofregs)
 		num1 = TREE_INT_CST_LOW (numofregs);
-	    }
-	  if (TREE_VALUE (arg2) && TREE_CODE (TREE_VALUE (arg2)) == TREE_LIST)
-	    {
-	      tree numofregs = TREE_VALUE (TREE_VALUE (arg2));
-	      if (numofregs)
+	      }
+	    if (TREE_VALUE (arg2) && TREE_CODE (TREE_VALUE (arg2)) == TREE_LIST)
+	      {
+		tree numofregs = TREE_VALUE (TREE_VALUE (arg2));
+		if (numofregs)
 		num2 = TREE_INT_CST_LOW (numofregs);
-	    }
-	  if (num1 != num2)
+	      }
+	    if (num1 != num2)
 	    return 0; /* Different numbers, or no number in one type.  */
-	}
-    }
+	  }
+      }
 #ifdef TARGET_AMIGAOS
     return amigaos_comp_type_attributes(type1, type2);
 #else
-  return 1;
+    return 1;
 #endif
-}
+  }
 #endif
 
 /* end-GG-local */
 
-
 /* Handle a "regparm", "stkparm" attribute;
  arguments as in struct attribute_spec.handler.  */
 tree
-amigaos_handle_type_attribute (tree *node, tree name, tree args,
-			       int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
+amigaos_handle_type_attribute (tree *node, tree name, tree args, int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   tree nnn = *node;
-  do { // while (0);
-  DPRINTF(("%p with treecode %d\n", node, TREE_CODE(nnn)));
-  if (TREE_CODE (nnn) == FUNCTION_DECL || TREE_CODE (nnn) == FUNCTION_TYPE
-      || TREE_CODE (nnn) == METHOD_TYPE)
-    {
-      /* 'regparm' accepts one optional argument - number of registers in
-       single class that should be used to pass arguments.  */
-      if (is_attribute_p ("regparm", name))
+  do
+    { // while (0);
+      DPRINTF(("%p with treecode %d\n", node, TREE_CODE(nnn)));
+      if (TREE_CODE (nnn) == FUNCTION_DECL || TREE_CODE (nnn) == FUNCTION_TYPE || TREE_CODE (nnn) == METHOD_TYPE)
 	{
-	  DPRINTF(("regparm found\n"));
+	  /* 'regparm' accepts one optional argument - number of registers in
+	   single class that should be used to pass arguments.  */
+	  if (is_attribute_p ("regparm", name))
+	    {
+	      DPRINTF(("regparm found\n"));
 
-	  if (lookup_attribute ("stkparm", TYPE_ATTRIBUTES(nnn)))
-	    {
-	      error ("`regparm' and `stkparm' are mutually exclusive");
-	      break;
-	    }
-	  if (args && TREE_CODE (args) == TREE_LIST)
-	    {
-	      tree val = TREE_VALUE(args);
-	      DPRINTF(("regparm with val: %d\n", TREE_CODE(val)));
-	      if (TREE_CODE (val) == INTEGER_CST)
+	      if (lookup_attribute ("stkparm", TYPE_ATTRIBUTES(nnn)))
 		{
-		  int no = TREE_INT_CST_LOW(val);
-		  if (no < 0 || no > AMIGAOS_MAX_REGPARM)
+		  error ("`regparm' and `stkparm' are mutually exclusive");
+		  break;
+		}
+	      if (args && TREE_CODE (args) == TREE_LIST)
+		{
+		  tree val = TREE_VALUE(args);
+		  DPRINTF(("regparm with val: %d\n", TREE_CODE(val)));
+		  if (TREE_CODE (val) == INTEGER_CST)
 		    {
-		      error ("`regparm' attribute: value %d not in [0 - %d]",
-			     no,
-			     AMIGAOS_MAX_REGPARM);
+		      int no = TREE_INT_CST_LOW(val);
+		      if (no < 0 || no > AMIGAOS_MAX_REGPARM)
+			{
+			  error ("`regparm' attribute: value %d not in [0 - %d]", no,
+			  AMIGAOS_MAX_REGPARM);
+			  break;
+			}
+		    }
+		  else
+		    {
+		      error ("invalid argument(s) to `regparm' attribute");
 		      break;
 		    }
 		}
-	      else
+	    }
+	  else if (is_attribute_p ("stkparm", name))
+	    {
+	      if (lookup_attribute ("regparm", TYPE_ATTRIBUTES(nnn)))
 		{
-		  error ("invalid argument(s) to `regparm' attribute");
+		  error ("`regparm' and `stkparm' are mutually exclusive");
 		  break;
 		}
 	    }
-	}
-      else if (is_attribute_p ("stkparm", name))
-	{
-	  if (lookup_attribute ("regparm", TYPE_ATTRIBUTES(nnn)))
+	  else if (is_attribute_p ("stackext", name))
 	    {
-	      error ("`regparm' and `stkparm' are mutually exclusive");
-	      break;
+	      if (lookup_attribute ("interrupt", TYPE_ATTRIBUTES(nnn)))
+		{
+		  error ("`stackext' and `interrupt' are mutually exclusive");
+		  break;
+		}
+	    }
+	  else if (is_attribute_p ("saveds", name))
+	    {
 	    }
 	}
-      else if (is_attribute_p ("stackext", name))
+      else
 	{
-	  if (lookup_attribute ("interrupt", TYPE_ATTRIBUTES(nnn)))
-	    {
-	      error ("`stackext' and `interrupt' are mutually exclusive");
-	      break;
-	    }
+	  warning (OPT_Wattributes, "`%s' attribute only applies to functions", IDENTIFIER_POINTER(name));
 	}
-      else if (is_attribute_p ("saveds", name))
-	{
-	}
+      return NULL_TREE ;
     }
-  else
-    {
-      warning (OPT_Wattributes, "`%s' attribute only applies to functions",
-	       IDENTIFIER_POINTER(name));
-    }
-  return NULL_TREE;
-  } while (0);
+  while (0);
   // error case
   *no_add_attrs = true;
-  return NULL_TREE;
+  return NULL_TREE ;
 }
-
 
 extern bool
 m68k_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 
 bool
-amigaos_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno,
-		   int *total, bool speed)
+amigaos_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno, int *total, bool speed)
 {
 //  DPRINTF(("outer: %d, opno: %d", outer_code, opno));
   bool r = m68k_rtx_costs (x, mode, outer_code, opno, total, speed);
@@ -790,13 +782,12 @@ amigaos_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno,
   return r;
 }
 
-
 /* Output assembly to switch to section NAME with attribute FLAGS.  */
 
 extern void
 amiga_named_section (const char *name, unsigned int flags, tree decl ATTRIBUTE_UNUSED)
 {
-  if (0 == strncmp(".text", name, 5))
+  if (0 == strncmp (".text", name, 5))
     name = ".text";
   fprintf (asm_out_file, "\t%s\n", name);
 }
@@ -806,7 +797,8 @@ amiga_named_section (const char *name, unsigned int flags, tree decl ATTRIBUTE_U
 /**
  * Does x reference the pic_reg and is const or plus?
  */
-int amiga_is_const_pic_ref(const_rtx x)
+int
+amiga_is_const_pic_ref (const_rtx x)
 {
   const_rtx y = x;
   if (flag_pic < 3)
@@ -816,19 +808,18 @@ int amiga_is_const_pic_ref(const_rtx x)
   return (x != y && REG_P(y) && REGNO(y) == PIC_REG);
 }
 
-
 /* Does operand (which is a symbolic_operand) live in text space? If
-   so SYMBOL_REF_FLAG, which is set by ENCODE_SECTION_INFO, will be true.
+ so SYMBOL_REF_FLAG, which is set by ENCODE_SECTION_INFO, will be true.
 
-   This function is used in base relative code generation. */
+ This function is used in base relative code generation. */
 
 int
 read_only_operand (rtx operand)
 {
   if (GET_CODE (operand) == CONST)
-    operand = XEXP (XEXP (operand, 0), 0);
+    operand = XEXP(XEXP (operand, 0), 0);
   if (GET_CODE (operand) == SYMBOL_REF)
-    return SYMBOL_REF_FLAG (operand) || CONSTANT_POOL_ADDRESS_P (operand);
+    return SYMBOL_REF_FLAG (operand) || CONSTANT_POOL_ADDRESS_P(operand);
   return 1;
 }
 
