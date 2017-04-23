@@ -1,3 +1,10 @@
+2017-04-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/80484
+	* io.c (format_lex): Check for '/' and set token to FMT_SLASH.
+	(check_format): Move FMT_DT checking code to data_desc section.
+	* module.c (gfc_match_use): Include the case of INTERFACE_DTIO.
+
 2017-04-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/80121
