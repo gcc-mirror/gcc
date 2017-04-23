@@ -238,6 +238,8 @@ struct insn_info
       return false;
     if (o._use & ~_use)
       return false;
+    if (o._hard & ~_hard)
+      return false;
     return true;
   }
 
@@ -298,7 +300,7 @@ insn_info::scan (rtx x)
       scan (SET_SRC(x));
       int code = GET_CODE(SET_SRC(x));
       if (code == ASM_OPERANDS)
-	_hard |= _def | _use;
+	_use = _hard |= _def | _use;
       return;
     }
 
@@ -713,22 +715,23 @@ opt_reg_rename (void)
 
 	  insn_info & jj = infos[pos];
 
-	  /* not used. */
-	  if (!(jj._use & toRename))
-	    continue;
-
 	  /* marked as hard reg -> invalid rename */
 	  if (jj._hard & toRename)
-	    {
-	      mask = 0;
-	      break;
-	    }
+	    mask = 0;
+
+	  /* defined again -> invalid rename */
+	  if (jj._def & toRename)
+	    mask = 0;
 
 	  /* update free regs. */
 	  mask &= ~jj._use;
 	  mask &= ~jj._def;
 	  if (!mask)
 	    break;
+
+	  /* not used. */
+	  if (!(jj._use & toRename))
+	    continue;
 
 	  found.insert (pos);
 
@@ -1902,7 +1905,7 @@ opt_shrink_stack_frame (void)
 		      else
 			{
 			  /* pop */
-			  if (usea5)
+			  if (usea5 && a5offset != -4)
 			    {
 			      x += REGNO(regs[k]) > STACK_POINTER_REGNUM ? 12 : 4;
 			      plus = gen_rtx_PLUS(SImode, a5, gen_rtx_CONST_INT (SImode, a5offset + x));
