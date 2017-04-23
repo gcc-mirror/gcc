@@ -491,12 +491,22 @@ format_lex (void)
 			  token = FMT_END;
 			  break;
 			}
+		      if (c == '/')
+			{
+			  token = FMT_SLASH;
+			  break;
+			}
 		      if (c == delim)
 			continue;
 		      unget_char ();
 		      break;
 		    }
 		}
+	    }
+	  else if (c == '/')
+	    {
+	      token = FMT_SLASH;
+	      break;
 	    }
 	  else
 	    unget_char ();
@@ -687,54 +697,6 @@ format_item_1:
 	return false;
       goto between_desc;
 
-    case FMT_DT:
-      t = format_lex ();
-      if (t == FMT_ERROR)
-	goto fail;
-      switch (t)
-	{
-	case FMT_RPAREN:
-	  level--;
-	  if (level < 0)
-	    goto finished;
-	  goto between_desc;
-
-	case FMT_COMMA:
-	  goto format_item;
-
-	case FMT_LPAREN:
-
-  dtio_vlist:
-	  t = format_lex ();
-	  if (t == FMT_ERROR)
-	    goto fail;
-
-	  if (t != FMT_POSINT)
-	    {
-	      error = posint_required;
-	      goto syntax;
-	    }
-
-	  t = format_lex ();
-	  if (t == FMT_ERROR)
-	    goto fail;
-
-	  if (t == FMT_COMMA)
-	    goto dtio_vlist;
-	  if (t != FMT_RPAREN)
-	    {
-	      error = _("Right parenthesis expected at %C");
-	      goto syntax;
-	    }
-	  goto between_desc;
-
-	default:
-	  error = unexpected_element;
-	  goto syntax;
-	}
-
-      goto format_item;
-
     case FMT_SIGN:
     case FMT_BLANK:
     case FMT_DP:
@@ -783,6 +745,7 @@ format_item_1:
     case FMT_A:
     case FMT_D:
     case FMT_H:
+    case FMT_DT:
       goto data_desc;
 
     case FMT_END:
@@ -1002,6 +965,53 @@ data_desc:
 	    }
 	}
 
+      break;
+
+    case FMT_DT:
+      t = format_lex ();
+      if (t == FMT_ERROR)
+	goto fail;
+      switch (t)
+	{
+	case FMT_RPAREN:
+	  level--;
+	  if (level < 0)
+	    goto finished;
+	  goto between_desc;
+
+	case FMT_COMMA:
+	  goto format_item;
+
+	case FMT_LPAREN:
+
+  dtio_vlist:
+	  t = format_lex ();
+	  if (t == FMT_ERROR)
+	    goto fail;
+
+	  if (t != FMT_POSINT)
+	    {
+	      error = posint_required;
+	      goto syntax;
+	    }
+
+	  t = format_lex ();
+	  if (t == FMT_ERROR)
+	    goto fail;
+
+	  if (t == FMT_COMMA)
+	    goto dtio_vlist;
+	  if (t != FMT_RPAREN)
+	    {
+	      error = _("Right parenthesis expected at %C");
+	      goto syntax;
+	    }
+	  goto between_desc;
+
+	default:
+	  error = unexpected_element;
+	  goto syntax;
+	}
       break;
 
     case FMT_F:
