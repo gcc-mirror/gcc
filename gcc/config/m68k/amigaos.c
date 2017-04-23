@@ -435,6 +435,15 @@ amigaos_init_cumulative_args (CUMULATIVE_ARGS *cump, tree fntype, tree decl)
 	  if (!next_param && TREE_VALUE (param) != void_type_node)
 	  cum->num_of_regs = 0;
 	}
+
+      /* check for return values passed in a0 */
+      if (cum->num_of_regs)
+	{
+	  tree type = TYPE_SIZE(TREE_TYPE (DECL_RESULT (current_function_decl)));
+	  int sz = type ? TREE_INT_CST_LOW(type) : 0;
+	  if (sz > 64) /* mark a0 as already used. */
+	    cum->regs_already_used |= 1<<8;
+	}
     }
 
   //#if ! defined (PCC_STATIC_STRUCT_RETURN) && defined (M68K_STRUCT_VALUE_REGNUM)
