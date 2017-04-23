@@ -2811,9 +2811,16 @@ dimode_scalar_to_vector_candidate_p (rtx_insn *insn)
     {
     case ASHIFT:
     case LSHIFTRT:
-      /* FIXME: consider also variable shifts.  */
-      if (!CONST_INT_P (XEXP (src, 1))
-	  || !IN_RANGE (INTVAL (XEXP (src, 1)), 0, 63))
+      if (!REG_P (XEXP (src, 1))
+	  && (!SUBREG_P (XEXP (src, 1))
+	      || SUBREG_BYTE (XEXP (src, 1)) != 0
+	      || !REG_P (SUBREG_REG (XEXP (src, 1))))
+	  && (!CONST_INT_P (XEXP (src, 1))
+	      || !IN_RANGE (INTVAL (XEXP (src, 1)), 0, 63)))
+	return false;
+
+      if (GET_MODE (XEXP (src, 1)) != QImode
+	  && !CONST_INT_P (XEXP (src, 1)))
 	return false;
       break;
 
@@ -2824,6 +2831,10 @@ dimode_scalar_to_vector_candidate_p (rtx_insn *insn)
     case AND:
       if (!REG_P (XEXP (src, 1))
 	  && !MEM_P (XEXP (src, 1))
+	  && !CONST_INT_P (XEXP (src, 1)))
+	return false;
+
+      if (GET_MODE (XEXP (src, 1)) != DImode
 	  && !CONST_INT_P (XEXP (src, 1)))
 	return false;
       break;
@@ -2852,12 +2863,8 @@ dimode_scalar_to_vector_candidate_p (rtx_insn *insn)
 	  || !REG_P (XEXP (XEXP (src, 0), 0))))
       return false;
 
-  if ((GET_MODE (XEXP (src, 0)) != DImode
-       && !CONST_INT_P (XEXP (src, 0)))
-      || (GET_CODE (src) != NEG
-	  && GET_CODE (src) != NOT
-	  && GET_MODE (XEXP (src, 1)) != DImode
-	  && !CONST_INT_P (XEXP (src, 1))))
+  if (GET_MODE (XEXP (src, 0)) != DImode
+      && !CONST_INT_P (XEXP (src, 0)))
     return false;
 
   return true;
@@ -3407,12 +3414,17 @@ dimode_scalar_chain::compute_convert_gain ()
       else if (GET_CODE (src) == ASHIFT
 	       || GET_CODE (src) == LSHIFTRT)
 	{
-	  gain += ix86_cost->shift_const;
     	  if (CONST_INT_P (XEXP (src, 0)))
 	    gain -= vector_const_cost (XEXP (src, 0));
-	  if (CONST_INT_P (XEXP (src, 1))
-	      && INTVAL (XEXP (src, 1)) >= 32)
-	    gain -= COSTS_N_INSNS (1);
+	  if (CONST_INT_P (XEXP (src, 1)))
+	    {
+	      gain += ix86_cost->shift_const;
+	      if (INTVAL (XEXP (src, 1)) >= 32)
+		gain -= COSTS_N_INSNS (1);
+	    }
+	  else
+	    /* Additional gain for omitting two CMOVs.  */
+	    gain += ix86_cost->shift_var + COSTS_N_INSNS (2);
 	}
       else if (GET_CODE (src) == PLUS
 	       || GET_CODE (src) == MINUS
@@ -3528,15 +3540,59 @@ dimode_scalar_chain::make_vector_copies (unsigned regno)
 {
   rtx reg = regno_reg_rtx[regno];
   rtx vreg = gen_reg_rtx (DImode);
+  bool count_reg = false;
   df_ref ref;
 
   for (ref = DF_REG_DEF_CHAIN (regno); ref; ref = DF_REF_NEXT_REG (ref))
     if (!bitmap_bit_p (insns, DF_REF_INSN_UID (ref)))
       {
-	rtx_insn *insn = DF_REF_INSN (ref);
+	df_ref use;
+
+	/* Detect the count register of a shift instruction.  */
+	for (use = DF_REG_USE_CHAIN (regno); use; use = DF_REF_NEXT_REG (use))
+	  if (bitmap_bit_p (insns, DF_REF_INSN_UID (use)))
+	    {
+	      rtx_insn *insn = DF_REF_INSN (use);
+	      rtx def_set = single_set (insn);
+
+	      gcc_assert (def_set);
+
+	      rtx src = SET_SRC (def_set);
+
+	      if ((GET_CODE (src) == ASHIFT
+		   || GET_CODE (src) == LSHIFTRT)
+		  && !CONST_INT_P (XEXP (src, 1))
+		  && reg_or_subregno (XEXP (src, 1)) == regno)
+		count_reg = true;
+	    }
 
 	start_sequence ();
-	if (TARGET_SSE4_1)
+	if (count_reg)
+	  {
+	    rtx qreg = gen_lowpart (QImode, reg);
+	    rtx tmp = gen_reg_rtx (SImode);
+
+	    if (TARGET_ZERO_EXTEND_WITH_AND
+		&& optimize_function_for_speed_p (cfun))
+	      {
+		emit_move_insn (tmp, const0_rtx);
+		emit_insn (gen_movstrictqi
+			   (gen_lowpart (QImode, tmp), qreg));
+	      }
+	    else
+	      emit_insn (gen_rtx_SET
+			 (tmp, gen_rtx_ZERO_EXTEND (SImode, qreg)));
+
+	    if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
+	      {
+		rtx slot = assign_386_stack_local (SImode, SLOT_STV_TEMP);
+		emit_move_insn (slot, tmp);
+		tmp = copy_rtx (slot);
+	      }
+
+	    emit_insn (gen_zero_extendsidi2 (vreg, tmp));
+	  }
+	else if (TARGET_SSE4_1)
 	  {
 	    emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, vreg, 0),
 					CONST0_RTX (V4SImode),
@@ -3571,22 +3627,38 @@ dimode_scalar_chain::make_vector_copies (unsigned regno)
 	  }
 	rtx_insn *seq = get_insns ();
 	end_sequence ();
+	rtx_insn *insn = DF_REF_INSN (ref);
 	emit_conversion_insns (seq, insn);
 
 	if (dump_file)
 	  fprintf (dump_file,
 		   "  Copied r%d to a vector register r%d for insn %d\n",
-		   regno, REGNO (vreg), DF_REF_INSN_UID (ref));
+		   regno, REGNO (vreg), INSN_UID (insn));
       }
 
   for (ref = DF_REG_USE_CHAIN (regno); ref; ref = DF_REF_NEXT_REG (ref))
     if (bitmap_bit_p (insns, DF_REF_INSN_UID (ref)))
       {
-	replace_with_subreg_in_insn (DF_REF_INSN (ref), reg, vreg);
+	rtx_insn *insn = DF_REF_INSN (ref);
+	if (count_reg)
+	  {
+	    rtx def_set = single_set (insn);
+	    gcc_assert (def_set);
+
+	    rtx src = SET_SRC (def_set);
+
+	    if ((GET_CODE (src) == ASHIFT
+		 || GET_CODE (src) == LSHIFTRT)
+		&& !CONST_INT_P (XEXP (src, 1))
+		&& reg_or_subregno (XEXP (src, 1)) == regno)
+	      XEXP (src, 1) = vreg;
+	  }
+	else
+	  replace_with_subreg_in_insn (insn, reg, vreg);
 
 	if (dump_file)
 	  fprintf (dump_file, "  Replaced r%d with r%d in insn %d\n",
-		   regno, REGNO (vreg), DF_REF_INSN_UID (ref));
+		   regno, REGNO (vreg), INSN_UID (insn));
       }
 }
 
@@ -3677,11 +3749,52 @@ dimode_scalar_chain::convert_reg (unsigned regno)
       {
 	if (bitmap_bit_p (conv, DF_REF_INSN_UID (ref)))
 	  {
-	    rtx def_set = single_set (DF_REF_INSN (ref));
-	    if (!MEM_P (SET_DEST (def_set))
-		|| !REG_P (SET_SRC (def_set)))
-	      replace_with_subreg_in_insn (DF_REF_INSN (ref), reg, reg);
-	    bitmap_clear_bit (conv, DF_REF_INSN_UID (ref));
+	    rtx_insn *insn = DF_REF_INSN (ref);
+
+	    rtx def_set = single_set (insn);
+	    gcc_assert (def_set);
+
+	    rtx src = SET_SRC (def_set);
+	    rtx dst = SET_DEST (def_set);
+
+	    if ((GET_CODE (src) == ASHIFT
+		 || GET_CODE (src) == LSHIFTRT)
+		&& !CONST_INT_P (XEXP (src, 1))
+		&& reg_or_subregno (XEXP (src, 1)) == regno)
+	      {
+		rtx tmp2 = gen_reg_rtx (V2DImode);
+
+		start_sequence ();
+
+		if (TARGET_SSE4_1)
+		  emit_insn (gen_sse4_1_zero_extendv2qiv2di2
+			     (tmp2, gen_rtx_SUBREG (V16QImode, reg, 0)));
+		else
+		  {
+		    rtx vec_cst
+		      = gen_rtx_CONST_VECTOR (V2DImode,
+					      gen_rtvec (2, GEN_INT (0xff),
+							 const0_rtx));
+		    vec_cst
+		      = validize_mem (force_const_mem (V2DImode, vec_cst));
+
+		    emit_insn (gen_rtx_SET
+			       (tmp2,
+				gen_rtx_AND (V2DImode,
+					     gen_rtx_SUBREG (V2DImode, reg, 0),
+					     vec_cst)));
+		  }
+		rtx_insn *seq = get_insns ();
+		end_sequence ();
+
+		emit_insn_before (seq, insn);
+
+		XEXP (src, 1) = gen_rtx_SUBREG (DImode, tmp2, 0);
+	      }
+	    else if (!MEM_P (dst) || !REG_P (src))
+	      replace_with_subreg_in_insn (insn, reg, reg);
+
+	    bitmap_clear_bit (conv, INSN_UID (insn));
 	  }
       }
     /* Skip debug insns and uninitialized uses.  */

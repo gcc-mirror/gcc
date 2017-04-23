@@ -1,3 +1,18 @@
+2017-04-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70799
+	* config/i386/i386.c (dimode_scalar_to_vector_candidate_p)
+	<case ASHIFT, case LSHIFTRT>: Also consider variable shifts.
+	Check "XEXP (src, 1)" operand here.
+	<case PLUS, case MINUS, case IOR, case XOR, case AND>:
+	Check "XEXP (src, 1)" operand here.
+	(dimode_scalar_chain::make_vector_copies): Detect count register
+	of a shift instruction.  Zero extend count register from QImode
+	to DImode to satisfy vector shift pattern count operand predicate.
+	Substitute vector shift count operand with a DImode copy.
+	(dimode_scalar_chain::convert_reg): Ditto, zero-extend from
+	vector register.
+
 2017-04-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*extzvqi_mem_rex64): Move above *extzv<mode>.

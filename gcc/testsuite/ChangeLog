@@ -1,3 +1,8 @@
+2017-04-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70799
+	* gcc.target/i186/pr70799-4.c: New test.
+
 2017-04-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/80392
