@@ -212,7 +212,6 @@ struct insn_info
     _use &= ~o._def;
     _use |= o._use;
     _def = 0;
-    _hard &= ~_use;
   }
 
   inline bool
@@ -339,6 +338,9 @@ copy_reg (rtx reg, int newregno)
 static void
 temp_reg_rename (std::vector<std::pair<rtx *, rtx> > & loc, rtx x, unsigned oldregno, unsigned newregno)
 {
+  if (!x)
+    return;
+
   RTX_CODE code = GET_CODE(x);
 
   const char *fmt = GET_RTX_FORMAT(code);
@@ -542,6 +544,7 @@ update_insn_infos (void)
 	  if (pass && infos[pos].contains (ii))
 	    break;
 
+	  ii._hard = 0;
 	  ii |= infos[pos];
 
 	  if (LABEL_P(insn))
@@ -646,7 +649,7 @@ update_insn_infos (void)
 	  use.scan (pattern);
 	  if (single_set (insn) == 0)
 	    use._hard = use._use | use._def;
-
+	  else
 	  /* if not cc0 defined check for mod. */
 	  if (!use.is_def (FIRST_PSEUDO_REGISTER))
 	    {
@@ -684,6 +687,34 @@ bit2regno (unsigned bit)
   return regno;
 }
 
+static unsigned
+find_start (std::set<unsigned> & found, unsigned start, unsigned rename_regno)
+{
+  /* search the start. */
+  while (start < 0)
+    {
+      unsigned startm1 = start - 1;
+
+      /* already searched. */
+      if (found.find (startm1) != found.end ())
+	break;
+
+      /* do not run over RETURNS */
+      rtx_insn * before = insns[startm1];
+      if (JUMP_P(before) && ANY_RETURN_P(PATTERN (before)))
+	break;
+
+      start = startm1;
+
+      /* found the definition without use. */
+      insn_info & jj = infos[start];
+      if (jj.is_def (rename_regno) && !jj.is_use (rename_regno))
+	break;
+
+    }
+  return start;
+}
+
 /*
  * Always prefer lower register numbers within the class.
  */
@@ -696,9 +727,11 @@ opt_reg_rename (void)
       insn_info & ii = infos[index];
 
       /* do not rename if register is hard or used in same statement. */
-      const unsigned toRename = ii._def & ~ii._hard & ~ii._use;
-      if (!toRename)
+      const unsigned rename_regbit = ii._def & ~ii._hard & ~ii._use;
+      if (!rename_regbit)
 	continue;
+
+      const unsigned rename_regno = bit2regno (rename_regbit);
 
       /* get the mask for free registers. */
       unsigned mask = ii.get_free_mask ();
@@ -717,11 +750,36 @@ opt_reg_rename (void)
 	  unsigned pos = todo[todo.size () - 1];
 	  todo.pop_back ();
 
+	  /* already searched. */
 	  if (found.find (pos) != found.end ())
 	    continue;
 
-	  if (LABEL_P(insns[pos]))
+	  rtx_insn * insn = insns[pos];
+	  if (LABEL_P(insn))
 	    {
+	      found.insert (pos);
+
+	      /* for each jump to this label:
+	       * check if the reg was used at that jump.
+	       * if used, find def
+	       */
+	      for (std::vector<rtx_insn *>::iterator i = jumps.begin (); i != jumps.end (); ++i)
+		{
+		  if (JUMP_LABEL(*i) == insn)
+		    {
+		      std::map<rtx_insn *, unsigned>::iterator j = insn2index.find (*i);
+		      if (j == insn2index.end ())
+			continue;
+
+		      unsigned start = j->second;
+		      if (!infos[start].is_use (rename_regno))
+			continue;
+
+		      start = find_start (found, start, rename_regno);
+		      todo.push_back (start);
+		    }
+		}
+
 	      if (pos + 1 < insns.size ())
 		todo.push_back (pos + 1);
 	      continue;
@@ -730,18 +788,18 @@ opt_reg_rename (void)
 	  insn_info & jj = infos[pos];
 
 	  /* marked as hard reg -> invalid rename */
-	  if (jj._hard & toRename)
+	  if (jj._hard & rename_regbit)
 	    mask = 0;
 
 	  /* defined again -> invalid rename */
-	  if ((jj._def & toRename) && !(jj._use & toRename))
+	  if ((jj._def & rename_regbit) && !(jj._use & rename_regbit))
 	    mask = 0;
 
 	  if (!mask)
 	    break;
 
 	  /* not used. */
-	  if (!(jj._use & toRename))
+	  if (!(jj._use & rename_regbit))
 	    continue;
 
 	  /* update free regs. */
@@ -753,17 +811,41 @@ opt_reg_rename (void)
 	  found.insert (pos);
 
 	  /* follow jump and/or next insn. */
-	  rtx_insn * insn = insns[pos];
 	  if (JUMP_P(insn))
 	    {
 	      std::map<rtx_insn *, unsigned>::iterator j = insn2index.find ((rtx_insn *) JUMP_LABEL(insn));
-	      if (j != insn2index.end ())
-		todo.push_back (j->second);
+	      if (j == insn2index.end ())
+		{
+		  /* whoops - label not found. */
+		  todo.clear ();
+		  mask = 0;
+		  break;
+		}
 
+	      unsigned label_index = j->second;
+	      if (found.find (label_index) == found.end ())
+		{
+		  /* if the rename_reg is used in the insn before.
+		   * search the start.
+		   */
+		  if (label_index > 0)
+		    {
+		      insn_info & bb = infos[label_index - 1];
+		      if (bb.is_use (rename_regbit))
+			{
+			  unsigned start = find_start (found, label_index - 1, rename_regno);
+			  todo.push_back (start);
+			}
+		    }
+		  todo.push_back (label_index);
+		}
 	      rtx jmppattern = PATTERN (insn);
 	      if (GET_CODE(jmppattern) == PARALLEL)
 		{
-		  return 0; /* can't handle yet. Abort renaming. */
+		  /* can't handle yet. Abort renaming. */
+		  todo.clear ();
+		  mask = 0;
+		  break;
 		}
 
 	      rtx jmpsrc = XEXP(jmppattern, 1);
@@ -777,7 +859,7 @@ opt_reg_rename (void)
 
       if (mask)
 	{
-	  int oldregno = bit2regno (toRename);
+	  int oldregno = bit2regno (rename_regbit);
 	  int newregno = bit2regno (mask);
 
 	  /* check the renamed insns. */
@@ -812,7 +894,8 @@ opt_reg_rename (void)
 	  if (!ok)
 	    continue;
 
-	  log ("opt_reg_rename %s -> %s (%d locs)\n", reg_names[oldregno], reg_names[newregno], patch.size ());
+	  log ("opt_reg_rename %s -> %s (%d locs, start at %d)\n", reg_names[oldregno], reg_names[newregno],
+	       patch.size (), index);
 
 	  /* apply all changes. */
 	  for (std::vector<std::pair<rtx *, rtx> >::iterator j = patch.begin (); j != patch.end (); ++j)
