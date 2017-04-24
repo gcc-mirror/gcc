@@ -1,3 +1,8 @@
+2017-04-24  Richard Biener  <rguenther@suse.de>
+
+	PR c++/2972
+	* g++.dg/warn/Wuninitialized-10.C: New testcase.
+
 2017-04-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/80484
