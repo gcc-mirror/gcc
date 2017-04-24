@@ -1,3 +1,8 @@
+2017-04-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/79931
+	* ipa-devirt.c (dump_possible_polymorphic_call_targets): Fix ICE.
+
 2017-04-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80494
