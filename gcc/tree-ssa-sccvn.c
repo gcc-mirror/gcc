@@ -3153,7 +3153,7 @@ print_scc (FILE *out, vec<tree> scc)
   tree var;
   unsigned int i;
 
-  fprintf (out, "SCC consists of:");
+  fprintf (out, "SCC consists of %u:", scc.length ());
   FOR_EACH_VEC_ELT (scc, i, var)
     {
       fprintf (out, " ");
@@ -4316,7 +4316,7 @@ process_scc (vec<tree> scc)
    and process them.  Returns true if all went well, false if
    we run into resource limits.  */
 
-static bool
+static void
 extract_and_process_scc_for_name (tree name)
 {
   auto_vec<tree> scc;
@@ -4332,24 +4332,37 @@ extract_and_process_scc_for_name (tree name)
       scc.safe_push (x);
     } while (x != name);
 
-  /* Bail out of SCCVN in case a SCC turns out to be incredibly large.  */
-  if (scc.length ()
-      > (unsigned)PARAM_VALUE (PARAM_SCCVN_MAX_SCC_SIZE))
+  /* Drop all defs in the SCC to varying in case a SCC turns out to be
+     incredibly large.
+     ???  Just switch to a non-optimistic mode that avoids any iteration.  */
+  if (scc.length () > (unsigned)PARAM_VALUE (PARAM_SCCVN_MAX_SCC_SIZE))
     {
       if (dump_file)
-	fprintf (dump_file, "WARNING: Giving up with SCCVN due to "
-		 "SCC size %u exceeding %u\n", scc.length (),
-		 (unsigned)PARAM_VALUE (PARAM_SCCVN_MAX_SCC_SIZE));
-
-      return false;
+	{
+	  print_scc (dump_file, scc);
+	  fprintf (dump_file, "WARNING: Giving up value-numbering SCC due to "
+		   "size %u exceeding %u\n", scc.length (),
+		   (unsigned)PARAM_VALUE (PARAM_SCCVN_MAX_SCC_SIZE));
+	}
+      tree var;
+      unsigned i;
+      FOR_EACH_VEC_ELT (scc, i, var)
+	{
+	  gimple *def = SSA_NAME_DEF_STMT (var);
+	  mark_use_processed (var);
+	  if (SSA_NAME_IS_DEFAULT_DEF (var)
+	      || gimple_code (def) == GIMPLE_PHI)
+	    set_ssa_val_to (var, var);
+	  else
+	    defs_to_varying (def);
+	}
+      return;
     }
 
   if (scc.length () > 1)
     sort_scc (scc);
 
   process_scc (scc);
-
-  return true;
 }
 
 /* Depth first search on NAME to discover and process SCC's in the SSA
@@ -4359,7 +4372,7 @@ extract_and_process_scc_for_name (tree name)
    Returns true if successful, false if we stopped processing SCC's due
    to resource constraints.  */
 
-static bool
+static void
 DFS (tree name)
 {
   auto_vec<ssa_op_iter> itervec;
@@ -4399,12 +4412,11 @@ start_over:
 	{
 	  /* See if we found an SCC.  */
 	  if (VN_INFO (name)->low == VN_INFO (name)->dfsnum)
-	    if (!extract_and_process_scc_for_name (name))
-	      return false;
+	    extract_and_process_scc_for_name (name);
 
 	  /* Check if we are done.  */
 	  if (namevec.is_empty ())
-	    return true;
+	    return;
 
 	  /* Restore the last use walker and continue walking there.  */
 	  use = name;
@@ -4687,7 +4699,7 @@ class sccvn_dom_walker : public dom_walker
 {
 public:
   sccvn_dom_walker ()
-    : dom_walker (CDI_DOMINATORS, true), fail (false), cond_stack (0) {}
+    : dom_walker (CDI_DOMINATORS, true), cond_stack (0) {}
 
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -4697,7 +4709,6 @@ public:
   void record_conds (basic_block,
 		     enum tree_code code, tree lhs, tree rhs, bool value);
 
-  bool fail;
   auto_vec<std::pair <basic_block, std::pair <vn_nary_op_t, vn_nary_op_t> > >
     cond_stack;
 };
@@ -4793,9 +4804,6 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
   edge e;
   edge_iterator ei;
 
-  if (fail)
-    return NULL;
-
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Visiting BB %d\n", bb->index);
 
@@ -4851,12 +4859,8 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
     {
       gphi *phi = gsi.phi ();
       tree res = PHI_RESULT (phi);
-      if (!VN_INFO (res)->visited
-	  && !DFS (res))
-	{
-	  fail = true;
-	  return NULL;
-	}
+      if (!VN_INFO (res)->visited)
+	DFS (res);
     }
   for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
        !gsi_end_p (gsi); gsi_next (&gsi))
@@ -4864,12 +4868,8 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
       ssa_op_iter i;
       tree op;
       FOR_EACH_SSA_TREE_OPERAND (op, gsi_stmt (gsi), i, SSA_OP_ALL_DEFS)
-	if (!VN_INFO (op)->visited
-	    && !DFS (op))
-	  {
-	    fail = true;
-	    return NULL;
-	  }
+	if (!VN_INFO (op)->visited)
+	  DFS (op);
     }
 
   /* Finally look at the last stmt.  */
@@ -4941,7 +4941,7 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
    due to resource constraints.  DEFAULT_VN_WALK_KIND_ specifies
    how we use the alias oracle walking during the VN process.  */
 
-bool
+void
 run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
 {
   size_t i;
@@ -4977,12 +4977,6 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
      SSA defs and decide whether outgoing edges are not executable.  */
   sccvn_dom_walker walker;
   walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  if (walker.fail)
-    {
-      scc_vn_restore_ssa_info ();
-      free_scc_vn ();
-      return false;
-    }
 
   /* Initialize the value ids and prune out remaining VN_TOPs
      from dead code.  */
@@ -5027,8 +5021,6 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
 	    }
 	}
     }
-
-  return true;
 }
 
 /* Return the maximum value id we have ever seen.  */

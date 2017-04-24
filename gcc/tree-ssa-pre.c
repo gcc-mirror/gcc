@@ -5086,11 +5086,7 @@ pass_pre::execute (function *fun)
      loop_optimizer_init may create new phis, etc.  */
   loop_optimizer_init (LOOPS_NORMAL);
 
-  if (!run_scc_vn (VN_WALK))
-    {
-      loop_optimizer_finalize ();
-      return 0;
-    }
+  run_scc_vn (VN_WALK);
 
   init_pre ();
   scev_initialize ();
@@ -5202,8 +5198,7 @@ pass_fre::execute (function *fun)
 {
   unsigned int todo = 0;
 
-  if (!run_scc_vn (VN_WALKREWRITE))
-    return 0;
+  run_scc_vn (VN_WALKREWRITE);
 
   memset (&pre_stats, 0, sizeof (pre_stats));
 
