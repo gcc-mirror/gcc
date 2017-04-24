@@ -1,3 +1,39 @@
+2017-04-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/types.rst (gccjit::type::get_const): Remove
+	comment.
+	(gccjit::type::get_aligned): Add.
+	* docs/topics/compatibility.rst: Add LIBGCCJIT_ABI_7.
+	* docs/topics/types.rst: Add gcc_jit_type_get_aligned.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-playback.c (gcc::jit::playback::type::get_aligned): New
+	method.
+	* jit-playback.h (gcc::jit::playback::type::get_aligned): New
+	method.
+	* jit-recording.c: Within namespace gcc::jit::recording...
+	(type::get_aligned): New method.
+	(memento_of_get_aligned::replay_into): New method.
+	(memento_of_get_aligned::make_debug_string): New method.
+	(memento_of_get_aligned::write_reproducer): New method.
+	* jit-recording.h: Within namespace gcc::jit::recording...
+	(type::get_aligned): New method.
+	(type::accepts_writes_from): Strip off qualifications from
+	this when comparing pointer equality.
+	(decorated_type): New subclass of type, subsuming the
+	commonality between memento_of_get_const and
+	memento_of_get_volatile.
+	(memento_of_get_const): Make a subclass of decorated_type,
+	rather than type.
+	(memento_of_get_volatile): Likewise.
+	(memento_of_get_aligned): Likewise.
+	* libgccjit++.h: Within namespace gccjit...
+	(type::get_const): New method.
+	(type::get_aligned): New method.
+	* libgccjit.c (gcc_jit_type_get_aligned): New function.
+	* libgccjit.h (gcc_jit_type_get_aligned): New decl.
+	* libgccjit.map (LIBGCCJIT_ABI_7): New
+	(gcc_jit_type_get_aligned): Add.
+
 2017-01-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* dummy-frontend.c (jit_langhook_type_for_size): Delete.

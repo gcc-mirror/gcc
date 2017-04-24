@@ -1,5 +1,13 @@
 2017-04-24  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit.dg/all-non-failing-tests.h: Add test-alignment.c.
+	* jit.dg/test-alignment.c: New test case.
+	* jit.dg/test-alignment.cc: New test case.
+	* jit.dg/test-error-gcc_jit_type_get_aligned-non-power-of-two.c:
+	New test case.
+
+2017-04-24  David Malcolm  <dmalcolm@redhat.com>
+
 	PR c++/80016
 	* g++.dg/plugin/diagnostic-test-expressions-1.C (test_sizeof): New
 	test function.

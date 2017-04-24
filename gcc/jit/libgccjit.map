@@ -150,3 +150,8 @@ LIBGCCJIT_ABI_6 {
   global:
     gcc_jit_rvalue_set_bool_require_tail_call;
 } LIBGCCJIT_ABI_5;
+
+LIBGCCJIT_ABI_7 {
+  global:
+    gcc_jit_type_get_aligned;
+} LIBGCCJIT_ABI_6;

@@ -142,3 +142,10 @@ entrypoints:
 -------------------
 ``LIBGCCJIT_ABI_6`` covers the addition of
 :func:`gcc_jit_rvalue_set_bool_require_tail_call`
+
+.. _LIBGCCJIT_ABI_7:
+
+``LIBGCCJIT_ABI_7``
+-------------------
+``LIBGCCJIT_ABI_7`` covers the addition of
+:func:`gcc_jit_type_get_aligned`

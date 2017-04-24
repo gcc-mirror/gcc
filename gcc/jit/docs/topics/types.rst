@@ -117,6 +117,25 @@ Pointers, `const`, and `volatile`
 
    Given type "T", get type "T[N]" (for a constant N).
 
+.. function::  gcc_jit_type *\
+               gcc_jit_type_get_aligned (gcc_jit_type *type, \
+                                         size_t alignment_in_bytes)
+
+   Given type "T", get type:
+
+   .. code-block:: c
+
+      T __attribute__ ((aligned (ALIGNMENT_IN_BYTES)))
+
+   The alignment must be a power of two.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_7`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_type_get_aligned
+
 
 Structures and unions
 ---------------------

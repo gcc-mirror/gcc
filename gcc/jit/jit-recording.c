@@ -1974,6 +1974,20 @@ recording::type::get_volatile ()
   return result;
 }
 
+/* Given a type, get an aligned version of the type.
+
+   Implements the post-error-checking part of
+   gcc_jit_type_get_aligned.  */
+
+recording::type *
+recording::type::get_aligned (size_t alignment_in_bytes)
+{
+  recording::type *result
+    = new memento_of_get_aligned (this, alignment_in_bytes);
+  m_ctxt->record (result);
+  return result;
+}
+
 const char *
 recording::type::access_as_type (reproducer &r)
 {
@@ -2417,6 +2431,44 @@ recording::memento_of_get_volatile::write_reproducer (reproducer &r)
 	   "    gcc_jit_type_get_volatile (%s);\n",
 	   id,
 	   r.get_identifier_as_type (m_other_type));
+}
+
+/* The implementation of class gcc::jit::recording::memento_of_get_aligned.  */
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::memento_of_get_aligned.  */
+
+void
+recording::memento_of_get_aligned::replay_into (replayer *)
+{
+  set_playback_obj
+    (m_other_type->playback_type ()->get_aligned (m_alignment_in_bytes));
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   results of get_aligned.  */
+
+recording::string *
+recording::memento_of_get_aligned::make_debug_string ()
+{
+  return string::from_printf (m_ctxt,
+			      "%s  __attribute__((aligned(%zi)))",
+			      m_other_type->get_debug_string (),
+			      m_alignment_in_bytes);
+}
+
+/* Implementation of recording::memento::write_reproducer for volatile
+   types. */
+
+void
+recording::memento_of_get_aligned::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "type");
+  r.write ("  gcc_jit_type *%s =\n"
+	   "    gcc_jit_type_get_aligned (%s, %zi);\n",
+	   id,
+	   r.get_identifier_as_type (m_other_type),
+	   m_alignment_in_bytes);
 }
 
 /* The implementation of class gcc::jit::recording::array_type */
