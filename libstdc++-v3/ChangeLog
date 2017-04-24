@@ -1,5 +1,9 @@
 2017-04-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/80506
+	* include/bits/random.tcc (gamma_distribution::operator()): Fix magic
+	number used in loop condition.
+
 	PR libstdc++/80504
 	* include/bits/refwrap.h (ref, cref): Qualify calls.
 	* testsuite/20_util/reference_wrapper/80504.cc: New test.
