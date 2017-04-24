@@ -1,5 +1,17 @@
 2017-04-24  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-sccvn.h (run_scc_vn): Adjust prototype.
+	* tree-ssa-sccvn.c (print_scc): Print SCC size.
+	(extract_and_process_scc_for_name): Never fail but drop SCC to varying.
+	(DFS): Adjust and never fail.
+	(sccvn_dom_walker::fail): Remove.
+	(sccvn_dom_walker::before_dom_children): Adjust.
+	(run_scc_vn): Likewise and never fail.
+	* tree-ssa-pre.c (pass_pre::execute): Adjust.
+	(pass_fre::execute): Likewise.
+
+2017-04-24  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/79725
 	* tree-ssa-sink.c (statement_sink_location): Return whether
 	failure reason was zero uses.  Move that check later.
