@@ -306,7 +306,7 @@ extern tree lookup_name_prefer_type (tree, int);
 extern tree lookup_name_real (tree, int, int, bool, int, int);
 extern tree lookup_type_scope (tree, tag_scope);
 extern tree get_namespace_value (tree NS, tree ID);
-extern void set_namespace_value (tree NS, tree ID, tree VAL);
+extern void set_global_value (tree ID, tree VAL);
 extern tree lookup_qualified_name (tree, tree, int, bool, /*hidden*/bool = false);
 extern tree lookup_name_nonclass (tree);
 extern bool is_local_extern (tree);

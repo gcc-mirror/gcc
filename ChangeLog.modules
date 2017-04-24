@@ -1,3 +1,13 @@
+2017-04-24  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (SET_IDENTIFIER_GLOBAL_VALUE): Update.
+	* name-lookup.h (set_namespace_value): Rename to ....
+	(set_global_value): ... here.
+	* name-lookup.c (update_namespace_binding): Delete.
+	(set_namespace_value): Rename to ....
+	(set_global_value): ... here.  Update binding directly.
+
 2017-04-20  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

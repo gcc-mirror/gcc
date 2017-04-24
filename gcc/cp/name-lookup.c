@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "spellcheck-tree.h"
 #include "parser.h"
 
-static bool supplement_binding (cxx_binding *binding, tree decl);
 static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
 
@@ -85,21 +84,6 @@ find_namespace_binding (tree ns, tree name, bool insert = false)
     binding = create_namespace_binding (ns, name);
 
   return binding;
-}
-
-/* Set the binding of NAME in NS to VAL.  */
-
-static void
-update_namespace_binding (tree ns, tree name, tree val)
-{
-  cxx_binding *b = find_namespace_binding (ns, name, true);
-
-  if (!b->value
-      || (TREE_CODE (val) == OVERLOAD && !OVL_SINGLE_P (val))
-      || val == error_mark_node)
-    b->value = val;
-  else
-    supplement_binding (b, val);
 }
 
 static tree
@@ -4212,16 +4196,31 @@ get_namespace_value (tree ns, tree name)
   return ret;
 }
 
-/* Set the for NAME in SCOPE to VAL.  */
+/* Set NAME in the global namespace to VAL.  */
 
 void
-set_namespace_value (tree ns, tree name, tree val)
+set_global_value (tree name, tree val)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  if (!ns)
-    ns = global_namespace;
-  gcc_checking_assert (!DECL_NAMESPACE_ALIAS (ns));
-  update_namespace_binding (ns, name, val);
+
+  cxx_binding *b = find_namespace_binding (global_namespace, name, true);
+
+  if (!b->value)
+    b->value = val;
+  else if (val == b->value)
+    ;
+  else if (TREE_CODE (val) == TYPE_DECL && DECL_ARTIFICIAL (val))
+    b->type = val;
+  else if (TREE_CODE (b->value) == TYPE_DECL && DECL_ARTIFICIAL (b->value))
+    {
+      b->type = b->value;
+      b->value = val;
+    }
+  else
+    /* The user's placed something in the implementor's
+       namespace.  */
+    diagnose_name_conflict (val, b->value);
+
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
