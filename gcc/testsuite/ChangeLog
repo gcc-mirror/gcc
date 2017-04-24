@@ -1,5 +1,10 @@
 2017-04-24  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/80494
+	* gfortran.dg/pr80494.f90: New testcase.
+
+2017-04-24  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/79725
 	* gcc.dg/tree-ssa/ssa-sink-15.c: New testcase.
 
