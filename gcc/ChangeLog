@@ -1,5 +1,13 @@
 2017-04-24  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/79725
+	* tree-ssa-sink.c (statement_sink_location): Return whether
+	failure reason was zero uses.  Move that check later.
+	(sink_code_in_bb): Deal with zero uses by removing the stmt
+	if possible.
+
+2017-04-24  Richard Biener  <rguenther@suse.de>
+
 	PR c++/2972
 	* tree-ssa-uninit.c (warn_uninitialized_vars): Handle some
 	pointer-based references.
