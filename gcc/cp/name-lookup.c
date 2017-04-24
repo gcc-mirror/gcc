@@ -153,7 +153,6 @@ find_local_binding (cp_binding_level *b, tree name)
 static tree
 find_local_value (cp_binding_level *b, tree name)
 {
-  
   if (cxx_binding *binding = find_local_binding (b, name))
     return binding->value;
   return NULL_TREE;
@@ -985,7 +984,6 @@ static void consider_binding_level (tree name, best_match <tree, tree> &bm,
 				    cp_binding_level *lvl,
 				    bool look_within_fields,
 				    enum lookup_name_fuzzy_kind kind);
-static tree lookup_type_current_level (tree);
 static void diagnose_name_conflict (tree, tree);
 
 /* Compute the chain index of a binding_entry given the HASH value of its
@@ -3314,10 +3312,13 @@ validate_nonmember_using_decl (tree decl, tree scope, tree name)
   return using_decl;
 }
 
-/* Process local and global using-declarations.  */
+/* Process a local-scope or namespace-scope using declaration.  SCOPE
+   is the nominated scope to search for NAME.  VALUE_P and TYPE_P
+   point to the binding for NAME in the current scoe and are
+   updated.  */
 
 static void
-do_nonmember_using_decl (tree scope, tree name, cxx_binding *bind)
+do_nonmember_using_decl (tree scope, tree name, tree *value_p, tree *type_p)
 {
   name_lookup lookup (name, 0);
 
@@ -3344,12 +3345,15 @@ do_nonmember_using_decl (tree scope, tree name, cxx_binding *bind)
       lookup.type = NULL_TREE;
     }
 
+  tree value = *value_p;
+  tree type = *type_p;
+
   /* Shift the old and new bindings around so we're comparing class and
      enumeration names to each other.  */
-  if (bind->value && DECL_IMPLICIT_TYPEDEF_P (bind->value))
+  if (value && DECL_IMPLICIT_TYPEDEF_P (value))
     {
-      bind->type = bind->value;
-      bind->value = NULL_TREE;
+      type = value;
+      value = NULL_TREE;
     }
 
   if (lookup.value && DECL_IMPLICIT_TYPEDEF_P (lookup.value))
@@ -3358,24 +3362,14 @@ do_nonmember_using_decl (tree scope, tree name, cxx_binding *bind)
       lookup.value = NULL_TREE;
     }
 
-  if (lookup.value && lookup.value != bind->value)
+  if (lookup.value && lookup.value != value)
     {
       /* Check for using functions.  */
-      if (OVL_P (lookup.value))
+      if (OVL_P (lookup.value) && (!value || OVL_P (value)))
 	{
-	  if (bind->value && !OVL_P (bind->value))
-	    {
-	      error ("%qD is already declared in this scope", name);
-	      bind->value= NULL_TREE;
-	    }
-
 	  for (ovl2_iterator usings (lookup.value); usings; ++usings)
 	    {
 	      tree new_fn = *usings;
-
-	      /* Don't import functions that haven't been declared.  */
-	      if (DECL_ANTICIPATED (new_fn))
-		gcc_unreachable ();
 
 	      /* [namespace.udecl]
 
@@ -3384,7 +3378,7 @@ do_nonmember_using_decl (tree scope, tree name, cxx_binding *bind)
 		 function introduced by a using declaration the program is
 		 ill-formed.  */
 	      bool found = false;
-	      for (ovl_iterator old (bind->value); !found && old; ++old)
+	      for (ovl_iterator old (value); !found && old; ++old)
 		{
 		  tree old_fn = *old;
 
@@ -3393,9 +3387,9 @@ do_nonmember_using_decl (tree scope, tree name, cxx_binding *bind)
 		       namespace.  */
 		    found = true;
 		  else if (old.via_using_p ())
-		    continue; /* this is a using decl */
+		    continue; /* This is a using decl. */
 		  else if (old.hidden_p () && !DECL_HIDDEN_FRIEND_P (old_fn))
-		    continue; /* this is an anticipated builtin.  */
+		    continue; /* This is an anticipated builtin.  */
 		  else if (!matching_fn_p (new_fn, old_fn))
 		    continue; /* Parameters do not match.  */
 		  else if (decls_match (new_fn, old_fn))
@@ -3412,33 +3406,35 @@ do_nonmember_using_decl (tree scope, tree name, cxx_binding *bind)
 		   builtins here.  They don't cause a problem, and
 		   we'd like to match them with a future
 		   declaration.  */
-		bind->value = ovl_insert (bind->value, new_fn, true);
+		value = ovl_insert (value, new_fn, true);
 	    }
 	}
+      else if (value
+	       /* Ignore anticipated builtins.  */
+	       && !anticipated_builtin_p (value)
+	       && !decls_match (lookup.value, value))
+	diagnose_name_conflict (lookup.value, value);
       else
-	{
-	  if (bind->value
-	      /* Ignore anticipated builtins.  */
-	      && !anticipated_builtin_p (bind->value)
-	      && !decls_match (lookup.value, bind->value))
-	    diagnose_name_conflict (lookup.value, bind->value);
-	  bind->value = lookup.value;
-	}
+	value = lookup.value;
     }
 
-  if (lookup.type)
+  if (lookup.type && lookup.type != type)
     {
-      if (bind->type && !decls_match (bind->type, lookup.type))
-	diagnose_name_conflict (lookup.type, bind->type);
-      bind->type = lookup.type;
+      if (type && !decls_match (lookup.type, type))
+	diagnose_name_conflict (lookup.type, type);
+      else
+	type = lookup.type;
     }
 
   /* If bind->value is empty, shift any class or enumeration name back.  */
-  if (!bind->value)
+  if (!value)
     {
-      bind->value = bind->type;
-      bind->type = NULL_TREE;
+      value = type;
+      type = NULL_TREE;
     }
+
+  *value_p = value;
+  *type_p = type;
 }
 
 /* Process a using-declaration at function scope.  */
@@ -3446,7 +3442,6 @@ do_nonmember_using_decl (tree scope, tree name, cxx_binding *bind)
 void
 do_local_using_decl (tree decl, tree scope, tree name)
 {
-  cxx_binding bind;
   tree orig_decl = decl;
 
   decl = validate_nonmember_using_decl (decl, scope, name);
@@ -3457,30 +3452,35 @@ do_local_using_decl (tree decl, tree scope, tree name)
       && at_function_scope_p ())
     add_decl_expr (decl);
 
-  bind.value = lookup_name_innermost_nonclass_level (name);
-  bind.type = lookup_type_current_level (name);
-  tree oldval = bind.value;
+  gcc_checking_assert (current_binding_level->kind != sk_class
+		       && current_binding_level->kind != sk_namespace);
+  cxx_binding *binding = find_local_binding (current_binding_level, name);
+  tree value = binding ? binding->value : NULL_TREE;
+  tree type = binding ? binding->type : NULL_TREE;
 
-  do_nonmember_using_decl (scope, name, &bind);
+  do_nonmember_using_decl (scope, name, &value, &type);
 
-  if (bind.value)
+  if (!value)
+    ;
+  else if (binding && value == binding->value)
+    ;
+  else if (binding && binding->value && TREE_CODE (value) == OVERLOAD)
     {
-      if (bind.value == oldval)
-	;
-      else if (oldval && TREE_CODE (bind.value) == OVERLOAD)
-	{
-	  update_local_overload (IDENTIFIER_BINDING (name), bind.value);
-	  IDENTIFIER_BINDING (name)->value = bind.value;
-	}
-      else
-	/* Install the new binding.  */
-	push_local_binding (name, bind.value, true);
+      update_local_overload (IDENTIFIER_BINDING (name), value);
+      IDENTIFIER_BINDING (name)->value = value;
     }
+  else
+    /* Install the new binding.  */
+    push_local_binding (name, value, true);
 
-  if (bind.type)
+  if (!type)
+    ;
+  else if (binding && type == binding->type)
+    ;
+  else
     {
-      push_local_binding (name, bind.type, true);
-      set_identifier_type_value (name, bind.type);
+      push_local_binding (name, type, true);
+      set_identifier_type_value (name, type);
     }
 
   /* Emit debug info.  */
@@ -4539,8 +4539,7 @@ do_toplevel_using_decl (tree decl, tree scope, tree name)
   cxx_binding *binding
     = find_namespace_binding (current_namespace, name, true);
 
-  /* This will update *binding directly.  */
-  do_nonmember_using_decl (scope, name, binding);
+  do_nonmember_using_decl (scope, name, &binding->value, &binding->type);
 
   /* Emit debug info.  */
   if (!processing_template_decl)
@@ -5335,38 +5334,6 @@ is_local_extern (tree decl)
       return LOCAL_BINDING_P (binding);
 
   return false;
-}
-
-/* Like lookup_name_innermost_nonclass_level, but for types.  */
-
-static tree
-lookup_type_current_level (tree name)
-{
-  tree t = NULL_TREE;
-
-  timevar_start (TV_NAME_LOOKUP);
-  gcc_assert (current_binding_level->kind != sk_namespace);
-
-  if (REAL_IDENTIFIER_TYPE_VALUE (name) != NULL_TREE
-      && REAL_IDENTIFIER_TYPE_VALUE (name) != global_type_node)
-    {
-      cp_binding_level *b = current_binding_level;
-      while (1)
-	{
-	  if (purpose_member (name, b->type_shadowed))
-	    {
-	      t = REAL_IDENTIFIER_TYPE_VALUE (name);
-	      break;
-	    }
-	  if (b->kind == sk_cleanup)
-	    b = b->level_chain;
-	  else
-	    break;
-	}
-    }
-
-  timevar_stop (TV_NAME_LOOKUP);
-  return t;
 }
 
 /* Wrapper for do_lookup_arg_dependent.  */

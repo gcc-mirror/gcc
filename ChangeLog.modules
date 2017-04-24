@@ -1,6 +1,13 @@
 2017-04-24  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.c (do_nonmember_using_decl): Pass in pointers to
+	value and type nodes.
+	(do_local_using_directive): Use current_binding_level directly.
+	(do_toplevel_using_directive): Adjust.
+	(lookup_type_current_level): Delete.
+
+	gcc/cp/
 	* name-lookup.c (diagnose_name_conflict): Check decl context.
 	(do_nonmember_using_decl): Simplify.
 	gcc/testsuite/
