@@ -1,5 +1,11 @@
 2017-04-24  Richard Biener  <rguenther@suse.de>
 
+	PR c++/2972
+	* tree-ssa-uninit.c (warn_uninitialized_vars): Handle some
+	pointer-based references.
+
+2017-04-24  Richard Biener  <rguenther@suse.de>
+
 	PR bootstrap/79814
 	* pass_manager.h (pass_manager::operator new): Remove.
 	(pass_manager::operator delete): Likewise.
