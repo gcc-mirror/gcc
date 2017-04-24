@@ -1,3 +1,15 @@
+2017-04-24  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* decl.c (grokdeclarator): Use %qT instead of %<%T%> in diagnostics.
+	(start_enum): Likewise.
+	(build_enumerator): Likewise. Use %qE instead of plain %E.
+	* parser.c (cp_parser_mem_initializer_list): Use %qD instead of
+	%<%D%> in diagnostics.
+	(cp_parser_elaborated_type_specifier): Likewise.
+	* pt.c (make_pack_expansion): Use %qT and %qE instead of
+	%<%T%> and %<%E%> in diagnostics.
+	(tsubst_pack_expansion): Likewise.
+
 2017-04-24  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/80016

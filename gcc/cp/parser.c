@@ -14084,7 +14084,7 @@ cp_parser_mem_initializer_list (cp_parser* parser)
               && !TYPE_P (TREE_PURPOSE (mem_initializer)))
             {
               error_at (token->location,
-			"cannot expand initializer for member %<%D%>",
+			"cannot expand initializer for member %qD",
 			TREE_PURPOSE (mem_initializer));
               mem_initializer = error_mark_node;
             }
@@ -17274,7 +17274,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	  || cp_lexer_next_token_is_keyword (parser->lexer, RID_STRUCT))
 	{
 	    pedwarn (input_location, 0, "elaborated-type-specifier "
-		      "for a scoped enum must not use the %<%D%> keyword",
+		      "for a scoped enum must not use the %qD keyword",
 		      cp_lexer_peek_token (parser->lexer)->u.value);
 	  /* Consume the `struct' or `class' and parse it anyway.  */
 	  cp_lexer_consume_token (parser->lexer);

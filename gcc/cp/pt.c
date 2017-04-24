@@ -3701,7 +3701,7 @@ make_pack_expansion (tree arg)
 
       if (parameter_packs == NULL_TREE)
         {
-          error ("base initializer expansion %<%T%> contains no parameter packs", arg);
+          error ("base initializer expansion %qT contains no parameter packs", arg);
           delete ppd.visited;
           return error_mark_node;
         }
@@ -3765,9 +3765,9 @@ make_pack_expansion (tree arg)
   if (parameter_packs == NULL_TREE)
     {
       if (TYPE_P (arg))
-        error ("expansion pattern %<%T%> contains no argument packs", arg);
+        error ("expansion pattern %qT contains no argument packs", arg);
       else
-        error ("expansion pattern %<%E%> contains no argument packs", arg);
+        error ("expansion pattern %qE contains no argument packs", arg);
       return error_mark_node;
     }
   PACK_EXPANSION_PARAMETER_PACKS (result) = parameter_packs;
@@ -11409,12 +11409,10 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	      if (!(complain & tf_error))
 		/* Fail quietly.  */;
               else if (TREE_CODE (t) == TYPE_PACK_EXPANSION)
-                error ("mismatched argument pack lengths while expanding "
-                       "%<%T%>",
+                error ("mismatched argument pack lengths while expanding %qT",
                        pattern);
               else
-                error ("mismatched argument pack lengths while expanding "
-                       "%<%E%>",
+                error ("mismatched argument pack lengths while expanding %qE",
                        pattern);
               return error_mark_node;
             }
