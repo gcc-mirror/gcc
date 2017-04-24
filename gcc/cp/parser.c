@@ -20258,7 +20258,9 @@ cp_parser_cv_qualifier_seq_opt (cp_parser* parser)
 
       if (cv_quals & cv_qualifier)
 	{
-	  error_at (token->location, "duplicate cv-qualifier");
+	  gcc_rich_location richloc (token->location);
+	  richloc.add_fixit_remove ();
+	  error_at_rich_loc (&richloc, "duplicate cv-qualifier");
 	  cp_lexer_purge_token (parser->lexer);
 	}
       else
@@ -20405,7 +20407,9 @@ cp_parser_virt_specifier_seq_opt (cp_parser* parser)
 
       if (virt_specifiers & virt_specifier)
 	{
-	  error_at (token->location, "duplicate virt-specifier");
+	  gcc_rich_location richloc (token->location);
+	  richloc.add_fixit_remove ();
+	  error_at_rich_loc (&richloc, "duplicate virt-specifier");
 	  cp_lexer_purge_token (parser->lexer);
 	}
       else
@@ -27677,7 +27681,11 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 	    error_at (location,
 		      "both %<__thread%> and %<thread_local%> specified");
 	  else
-	    error_at (location, "duplicate %qD", token->u.value);
+	    {
+	      gcc_rich_location richloc (location);
+	      richloc.add_fixit_remove ();
+	      error_at_rich_loc (&richloc, "duplicate %qD", token->u.value);
+	    }
 	}
       else
 	{
@@ -27698,8 +27706,9 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
             "constexpr",
 	    "__complex"
 	  };
-	  error_at (location,
-		    "duplicate %qs", decl_spec_names[ds]);
+	  gcc_rich_location richloc (location);
+	  richloc.add_fixit_remove ();
+	  error_at_rich_loc (&richloc, "duplicate %qs", decl_spec_names[ds]);
 	}
     }
 }
