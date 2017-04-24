@@ -1,5 +1,9 @@
 2017-04-24  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/80504
+	* include/bits/refwrap.h (ref, cref): Qualify calls.
+	* testsuite/20_util/reference_wrapper/80504.cc: New test.
+
 	PR libstdc++/80493
 	* include/experimental/optional (optional::swap): Fix exception
 	specification.
