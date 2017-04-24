@@ -1,6 +1,16 @@
 2017-04-24  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.c (add_local_decl): Delete.
+	(name_lookup::add): Fold into ...
+	(name_lookup::search_namespace_only): ... here.
+	(update_binding): Allow pushing the same artificial type.
+	(do_pushdecl): Explicitly set namespace type.
+	(push_local_binding): Use add_decl_to_level.
+	(set_identifier_type_Value_with_scope): Use update_binding for
+	namespaces.
+
+	gcc/cp/
 	* name-lookup.c (do_nonmember_using_decl): Pass in pointers to
 	value and type nodes.
 	(do_local_using_directive): Use current_binding_level directly.

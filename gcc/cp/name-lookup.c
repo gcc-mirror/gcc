@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 
 static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
+static void set_identifier_type_value_with_scope (tree id, tree decl,
+						  cp_binding_level *b);
 
 /* Create a new binding for NAME in namespace NS.  */
 // FIXME: This of course should be a map
@@ -171,20 +173,6 @@ lookup_name_innermost_nonclass_level (tree name)
     return find_local_value (b, name);
 }
 
-/* Add DECL to local binding level B.  DECL might be an OVERLOAD.  */
-
-static void
-add_local_decl (cp_binding_level *b, tree decl)
-{
-  gcc_assert (b->kind != sk_namespace
-	      && (TREE_CODE (decl) != NAMESPACE_DECL
-		  || DECL_NAMESPACE_ALIAS (decl))
-	      && TREE_CODE (decl) != OVERLOAD);
-
-  TREE_CHAIN (decl) = b->names;
-  b->names = decl;
-}
-
 struct name_lookup
 {
 public:
@@ -276,10 +264,6 @@ public:
   bool search_qualified (tree scope);
   /* Search namespace + inlines + usings as unqualified lookup.  */
   bool search_unqualified (tree scope, cp_binding_level *);
-
-public:// FIXME for now
-  /* Add new bindings in.  */
-  bool add (const cxx_binding *scope, int flags);
 };
 
 /* Scopes to unmark.  */
@@ -344,6 +328,20 @@ name_lookup::mark_seen (tree scope)
   scopes.safe_push (scope);
 }
 
+static tree
+build_ambiguous (tree current, tree addition)
+{
+  if (TREE_CODE (current) != TREE_LIST)
+    {
+      current = build_tree_list (NULL_TREE, current);
+      TREE_TYPE (current) = error_mark_node;
+    }
+  current = tree_cons (NULL_TREE, addition, current);
+  TREE_TYPE (current) = error_mark_node;
+
+  return current;
+}
+
 /* Look in exactly namespace SCOPE.  */
 
 bool
@@ -352,7 +350,80 @@ name_lookup::search_namespace_only (tree scope)
   bool found = false;
 
   if (cxx_binding *binding = find_namespace_binding (scope, name))
-    found = add (binding, flags);
+    {
+      tree new_val = binding->value;
+      tree new_type = binding->type;
+
+      /* Did we really see a type? */
+      if (LOOKUP_NAMESPACES_ONLY (flags)
+	  || (!(flags & LOOKUP_HIDDEN)
+	      && new_type && DECL_HIDDEN_P (new_type)))
+	new_type = NULL_TREE;
+
+      if (new_val && !(flags & LOOKUP_HIDDEN))
+	new_val = ovl_skip_hidden (new_val);
+
+      /* Do we really see a value? */
+      if (new_val)
+	switch (TREE_CODE (new_val))
+	  {
+	  case TEMPLATE_DECL:
+	    /* If we expect types or namespaces, and not templates,
+	       or this is not a template class.  */
+	    if ((LOOKUP_QUALIFIERS_ONLY (flags)
+		 && !DECL_TYPE_TEMPLATE_P (new_val)))
+	      new_val = NULL_TREE;
+	    break;
+	  case TYPE_DECL:
+	    if (LOOKUP_NAMESPACES_ONLY (flags)
+		|| (new_type && (flags & LOOKUP_PREFER_TYPES)))
+	      new_val = NULL_TREE;
+	    break;
+	  case NAMESPACE_DECL:
+	    if (LOOKUP_TYPES_ONLY (flags))
+	      new_val = NULL_TREE;
+	    break;
+	  default:
+	    if (LOOKUP_QUALIFIERS_ONLY (flags))
+	      new_val = NULL_TREE;
+	  }
+
+      if (!new_val)
+	{
+	  new_val = new_type;
+	  new_type = NULL_TREE;
+	}
+
+      /* Now merge.  */
+      if (!value)
+	value = new_val;
+      else if (!new_val)
+	;
+      else if (new_val == value)
+	;
+      else if ((TREE_CODE (value) == TYPE_DECL
+		&& TREE_CODE (new_val) == TYPE_DECL
+		&& same_type_p (TREE_TYPE (value), TREE_TYPE (new_val))))
+	;
+      else if (OVL_P (value) && OVL_P (new_val))
+	value = lookup_add (value, new_val);
+      else
+	value = build_ambiguous (value, new_val);
+
+      if (!type)
+	type = new_type;
+      else if (!new_type)
+	;
+      else if (new_type == type)
+	;
+      else if (same_type_p (TREE_TYPE (type), TREE_TYPE (new_type)))
+	;
+      else
+	type = build_ambiguous (type, new_type);
+
+      if (new_val)
+	found = true;
+    }
 
   return found;
 }
@@ -524,93 +595,6 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
   
   vec_safe_truncate (queue, length);
   return found;
-}
-
-static tree
-build_ambiguous (tree current, tree addition)
-{
-  if (TREE_CODE (current) != TREE_LIST)
-    {
-      current = build_tree_list (NULL_TREE, current);
-      TREE_TYPE (current) = error_mark_node;
-    }
-  current = tree_cons (NULL_TREE, addition, current);
-  TREE_TYPE (current) = error_mark_node;
-
-  return current;
-}
-
-/* Add values from a binding in.  Return true if we really saw
-   something.  */
-
-bool
-name_lookup::add (const cxx_binding *binding, int flags)
-{
-  tree new_val = binding->value;
-  tree new_type = binding->type;
-
-  /* Did we really see a type? */
-  if (LOOKUP_NAMESPACES_ONLY (flags)
-      || (!(flags & LOOKUP_HIDDEN) && new_type && DECL_HIDDEN_P (new_type)))
-    new_type = NULL_TREE;
-
-  if (new_val && !(flags & LOOKUP_HIDDEN))
-    new_val = ovl_skip_hidden (new_val);
-
-  /* Do we really see a value? */
-  if (new_val)
-    switch (TREE_CODE (new_val))
-      {
-      case TEMPLATE_DECL:
-	/* If we expect types or namespaces, and not templates,
-	   or this is not a template class.  */
-	if ((LOOKUP_QUALIFIERS_ONLY (flags)
-	     && !DECL_TYPE_TEMPLATE_P (new_val)))
-	  new_val = NULL_TREE;
-	break;
-      case TYPE_DECL:
-	if (LOOKUP_NAMESPACES_ONLY (flags)
-	    || (new_type && (flags & LOOKUP_PREFER_TYPES)))
-	  new_val = NULL_TREE;
-	break;
-      case NAMESPACE_DECL:
-	if (LOOKUP_TYPES_ONLY (flags))
-	  new_val = NULL_TREE;
-	break;
-      default:
-	if (LOOKUP_QUALIFIERS_ONLY (flags))
-	  new_val = NULL_TREE;
-      }
-
-  if (!new_val)
-    {
-      new_val = new_type;
-      new_type = NULL_TREE;
-    }
-
-  /* Now merge.  */
-  if (!value)
-    value = new_val;
-  else if (new_val && new_val != value
-	   /* Finding the same type via different typedefs is ok. */
-	   && !(TREE_CODE (value) == TYPE_DECL
-		&& TREE_CODE (new_val) == TYPE_DECL
-		&& same_type_p (TREE_TYPE (value), TREE_TYPE (new_val))))
-    {
-      if (OVL_P (value) && OVL_P (new_val))
-	value = lookup_add (value, new_val);
-      else
-	value = build_ambiguous (value, new_val);
-    }
-
-  if (!type)
-    type = new_type;
-  else if (new_type && type != new_type
-	   /* Finding the same type via different typedefs is ok. */
-	   && !same_type_p (TREE_TYPE (type), TREE_TYPE (new_type)))
-    type = build_ambiguous (type, new_type);
-
-  return new_val;
 }
 
 struct adl_lookup : name_lookup
@@ -1751,7 +1735,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding,
 	}
 
       binding->value = to_val;
-      if (to_type)
+      if (to_type && to_type != binding->type)
 	{
 	  gcc_checking_assert (TREE_CODE (to_type) == TYPE_DECL
 			       && DECL_ARTIFICIAL (to_type)
@@ -2170,16 +2154,9 @@ set_local_extern_decl_linkage (tree decl, bool shadowed)
    already seen in the same scope).  IS_FRIEND is true if DECL is
    declared as a friend.
 
-   Returns either DCL or an old decl for the same name.  If an old
+   Returns either DECL or an old decl for the same name.  If an old
    decl is returned, it may have been smashed to agree with what DECL
    says.  */
-
-/* bnd ctx
-   nsA nsB   lookup nsB,   inject nsA
-   nsA !ns   lookup local, inject nsA
-   loc nsB   lookup local, inject local
-   loc !ns   lookup local, inject local
-*/
 
 static tree
 do_pushdecl (tree decl, bool is_friend)
@@ -2226,9 +2203,6 @@ do_pushdecl (tree decl, bool is_friend)
 
       for (ovl_iterator iter (old); iter; ++iter)
 	if (iter.via_using_p ())
-	  // FIXME: when overloads are in maintained ordering, we can
-	  // check usings here too and avoid the scan when actually
-	  // pushing the decl.
 	  ; /* Ignore using decls here.  */
 	else if (tree match = duplicate_decls (decl, *iter, is_friend))
 	  {
@@ -2310,7 +2284,10 @@ do_pushdecl (tree decl, bool is_friend)
 	      if (TYPE_NAME (type) != decl)
 		set_underlying_type (decl);
 
-	      set_identifier_type_value (name, decl);
+	      if (!ns)
+		set_identifier_type_value_with_scope (name, decl, level);
+	      else
+		SET_IDENTIFIER_TYPE_VALUE (name, global_type_node);
 	    }
 
 	  /* If this is a locally defined typedef in a function that
@@ -2402,7 +2379,7 @@ push_local_binding (tree id, tree decl, bool is_using)
 
   /* And put DECL on the list of things declared by the current
      binding level.  */
-  add_local_decl (b, decl);
+  add_decl_to_level (b, decl);
 }
 
 /* Check to see whether or not DECL is a variable that would have been
@@ -3033,10 +3010,7 @@ set_identifier_type_value_with_scope (tree id, tree decl, cp_binding_level *b)
       cxx_binding *binding = (find_namespace_binding
 			      (current_namespace, id, true));
       gcc_assert (decl);
-      if (binding->value)
-	supplement_binding (binding, decl);
-      else
-	binding->value = decl;
+      update_binding (b, binding, binding->value, decl, false);
 
       /* Store marker instead of real type.  */
       type = global_type_node;
