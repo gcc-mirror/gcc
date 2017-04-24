@@ -1,3 +1,9 @@
+2017-04-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80493
+	* include/experimental/optional (optional::swap): Fix exception
+	specification.
+
 2017-04-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80316
