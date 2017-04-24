@@ -25,4 +25,3 @@ PROGRAM p
 END PROGRAM
 
 ! { dg-final { scan-tree-dump-times "__builtin_free" 6 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }
