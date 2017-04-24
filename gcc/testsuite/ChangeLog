@@ -1,3 +1,7 @@
+2017-04-24  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/cmpexactdiv-2.c: New file.
+
 2017-04-24  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* g++.dg/diagnostic/duplicate1.C: New test.
