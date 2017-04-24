@@ -1,3 +1,11 @@
+2017-04-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/80293
+	* tree-sra.c (scalarizable_type_p): New parameter const_decl, make
+	char arrays not totally scalarizable if it is false.
+	(analyze_all_variable_accesses): Pass correct value in the new
+	parameter.  Add a statistics counter.
+
 2017-04-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/79931
