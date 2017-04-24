@@ -1,3 +1,9 @@
+2017-04-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/80121
+	* gfortran.dg/intent_out_9.f90: Remove deprecated cleanup-tree-dump
+	directive.
+
 2017-04-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/all-non-failing-tests.h: Add test-alignment.c.
