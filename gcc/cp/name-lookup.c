@@ -1538,7 +1538,8 @@ diagnose_name_conflict (tree decl, tree bval)
       && (TREE_CODE (decl) != TYPE_DECL
 	  || (DECL_ARTIFICIAL (decl) && DECL_ARTIFICIAL (bval))
 	  || (!DECL_ARTIFICIAL (decl) && !DECL_ARTIFICIAL (bval)))
-      && !DECL_DECLARES_FUNCTION_P (decl))
+      && !DECL_DECLARES_FUNCTION_P (decl)
+      && CP_DECL_CONTEXT (decl) == CP_DECL_CONTEXT (bval))
     error ("redeclaration of %q#D", decl);
   else
     error ("%q#D conflicts with a previous declaration", decl);
@@ -3329,6 +3330,19 @@ do_nonmember_using_decl (tree scope, tree name, cxx_binding *bind)
       error ("%qD not declared", name);
       return;
     }
+  else if (TREE_CODE (lookup.value) == TREE_LIST)
+    {
+      error ("reference to %qD is ambiguous", name);
+      print_candidates (lookup.type);
+      lookup.value = NULL_TREE;
+    }
+
+  if (lookup.type && TREE_CODE (lookup.type) == TREE_LIST)
+    {
+      error ("reference to %qD is ambiguous", name);
+      print_candidates (lookup.type);
+      lookup.type = NULL_TREE;
+    }
 
   /* Shift the old and new bindings around so we're comparing class and
      enumeration names to each other.  */
@@ -3361,7 +3375,7 @@ do_nonmember_using_decl (tree scope, tree name, cxx_binding *bind)
 
 	      /* Don't import functions that haven't been declared.  */
 	      if (DECL_ANTICIPATED (new_fn))
-		continue;
+		gcc_unreachable ();
 
 	      /* [namespace.udecl]
 
@@ -3380,21 +3394,16 @@ do_nonmember_using_decl (tree scope, tree name, cxx_binding *bind)
 		    found = true;
 		  else if (old.via_using_p ())
 		    continue; /* this is a using decl */
-		  else if (matching_fn_p (new_fn, old_fn))
+		  else if (old.hidden_p () && !DECL_HIDDEN_FRIEND_P (old_fn))
+		    continue; /* this is an anticipated builtin.  */
+		  else if (!matching_fn_p (new_fn, old_fn))
+		    continue; /* Parameters do not match.  */
+		  else if (decls_match (new_fn, old_fn))
+		    found = true;
+		  else
 		    {
-		      /* There was already a non-using declaration in
-			 this scope with the same parameter types. If both
-			 are the same extern "C" functions, that's ok.  */
-		      if (DECL_ANTICIPATED (old_fn)
-			  && !DECL_HIDDEN_FRIEND_P (old_fn))
-			/* Ignore anticipated built-ins.  */;
-		      else if (decls_match (new_fn, old_fn))
-			found = true;
-		      else
-			{
-			  diagnose_name_conflict (new_fn, old_fn);
-			  found = true;
-			}
+		      diagnose_name_conflict (new_fn, old_fn);
+		      found = true;
 		    }
 		}
 
@@ -3412,24 +3421,19 @@ do_nonmember_using_decl (tree scope, tree name, cxx_binding *bind)
 	      /* Ignore anticipated builtins.  */
 	      && !anticipated_builtin_p (bind->value)
 	      && !decls_match (lookup.value, bind->value))
-	    error ("%qD is already declared in this scope", name);
+	    diagnose_name_conflict (lookup.value, bind->value);
 	  bind->value = lookup.value;
 	}
     }
 
-  if (lookup.type && TREE_CODE (lookup.type) == TREE_LIST)
+  if (lookup.type)
     {
-      error ("reference to %qD is ambiguous", name);
-      print_candidates (lookup.type);
-    }
-  else
-    {
-      if (bind->type && lookup.type && !decls_match (bind->type, lookup.type))
-	error ("%qD is already declared in this scope", name);
+      if (bind->type && !decls_match (bind->type, lookup.type))
+	diagnose_name_conflict (lookup.type, bind->type);
       bind->type = lookup.type;
     }
 
-  /* If bind->value is empty, shift any class or enumeration name down.  */
+  /* If bind->value is empty, shift any class or enumeration name back.  */
   if (!bind->value)
     {
       bind->value = bind->type;

@@ -8,5 +8,5 @@ namespace A { int a; }
 
 namespace C{
   int a;
-  using A::a;		// { dg-error "already declared" }
+  using A::a;		// { dg-error "conflicts with a previous" }
 }

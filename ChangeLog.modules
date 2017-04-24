@@ -1,6 +1,13 @@
 2017-04-24  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.c (diagnose_name_conflict): Check decl context.
+	(do_nonmember_using_decl): Simplify.
+	gcc/testsuite/
+	* g++.dg/lookup/using13.C: Adjust error.
+	* g++.dg/lookup/using59.C: Likewise,
+
+	gcc/cp/
 	* cp-tree.h (SET_IDENTIFIER_GLOBAL_VALUE): Update.
 	* name-lookup.h (set_namespace_value): Rename to ....
 	(set_global_value): ... here.
