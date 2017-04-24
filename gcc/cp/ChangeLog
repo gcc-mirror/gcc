@@ -1,3 +1,9 @@
+2017-04-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/80016
+	* parser.c (cp_parser_unary_expression):  Generate a location
+	range for alignof and sizeof expressions.
+
 2017-04-24  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* parser.c (cp_parser_cv_qualifier_seq_opt): Add fix-it info to

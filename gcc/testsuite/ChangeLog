@@ -1,3 +1,10 @@
+2017-04-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/80016
+	* g++.dg/plugin/diagnostic-test-expressions-1.C (test_sizeof): New
+	test function.
+	(test_alignof): New test function.
+
 2017-04-24  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/cmpexactdiv-2.c: New file.

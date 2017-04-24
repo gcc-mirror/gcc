@@ -7805,12 +7805,11 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	  {
 	    tree operand, ret;
 	    enum tree_code op;
-	    location_t first_loc;
+	    location_t start_loc = token->location;
 
 	    op = keyword == RID_ALIGNOF ? ALIGNOF_EXPR : SIZEOF_EXPR;
 	    /* Consume the token.  */
 	    cp_lexer_consume_token (parser->lexer);
-	    first_loc = cp_lexer_peek_token (parser->lexer)->location;
 	    /* Parse the operand.  */
 	    operand = cp_parser_sizeof_operand (parser, keyword);
 
@@ -7846,9 +7845,21 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 		    TREE_SIDE_EFFECTS (ret) = 0;
 		    TREE_READONLY (ret) = 1;
 		  }
-		SET_EXPR_LOCATION (ret, first_loc);
 	      }
-	    return ret;
+
+	    /* Construct a location e.g. :
+	       alignof (expr)
+	       ^~~~~~~~~~~~~~
+	       with start == caret at the start of the "alignof"/"sizeof"
+	       token, with the endpoint at the final closing paren.  */
+	    location_t finish_loc
+	      = cp_lexer_previous_token (parser->lexer)->location;
+	    location_t compound_loc
+	      = make_location (start_loc, start_loc, finish_loc);
+
+	    cp_expr ret_expr (ret);
+	    ret_expr.set_location (compound_loc);
+	    return ret_expr;
 	  }
 
 	case RID_NEW:
