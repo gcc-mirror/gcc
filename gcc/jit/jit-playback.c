@@ -1095,6 +1095,21 @@ new_dereference (tree ptr,
   return datum;
 }
 
+/* Construct a playback::type instance (wrapping a tree)
+   with the given alignment.  */
+
+playback::type *
+playback::type::
+get_aligned (size_t alignment_in_bytes) const
+{
+  tree t_new_type = build_variant_type_copy (m_inner);
+
+  SET_TYPE_ALIGN (t_new_type, alignment_in_bytes * BITS_PER_UNIT);
+  TYPE_USER_ALIGN (t_new_type) = 1;
+
+  return new type (t_new_type);
+}
+
 /* Construct a playback::lvalue instance (wrapping a tree) for a
    field access.  */
 
