@@ -1,3 +1,10 @@
+2017-04-24  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* parser.c (cp_parser_cv_qualifier_seq_opt): Add fix-it info to
+	error message.
+	(cp_parser_virt_specifier_seq_opt): Likewise.
+	(set_and_check_decl_spec_loc): Likewise twice.
+
 2017-04-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80179 - ICE with initialized flexible array member.
