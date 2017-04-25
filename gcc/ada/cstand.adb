@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,6 @@ with Set_Targ; use Set_Targ;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
-with Scn;
 with Sem_Mech; use Sem_Mech;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -582,10 +581,6 @@ package body CStand is
    --  Start of processing for Create_Standard
 
    begin
-      --  Initialize scanner for internal scans of literals
-
-      Scn.Initialize_Scanner (No_Unit, Internal_Source_File);
-
       --  First step is to create defining identifiers for each entity
 
       for S in Standard_Entity_Type loop

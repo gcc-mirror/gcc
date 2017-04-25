@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -306,7 +306,7 @@ package body Fmap is
       Name_Buffer (1 .. Name_Len) := File_Name;
       Read_Source_File (Name_Enter, 0, Hi, Src, Config);
 
-      if Src = null then
+      if Null_Source_Buffer_Ptr (Src) then
          Write_Str ("warning: could not read mapping file """);
          Write_Str (File_Name);
          Write_Line ("""");

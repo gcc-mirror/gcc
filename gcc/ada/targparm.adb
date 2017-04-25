@@ -169,7 +169,7 @@ package body Targparm is
 
       Read_Source_File (Name_Find, Lo => 0, Hi => Hi, Src => Text);
 
-      if Text = null then
+      if Null_Source_Buffer_Ptr (Text) then
          Write_Line ("fatal error, run-time library not installed correctly");
          Write_Line ("cannot locate file system.ads");
          raise Unrecoverable_Error;

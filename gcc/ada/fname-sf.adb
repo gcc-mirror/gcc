@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,7 +74,7 @@ package body Fname.SF is
       Name_Len := 8;
       Read_Source_File (Name_Enter, 0, Hi, Src);
 
-      if Src /= null then
+      if not Null_Source_Buffer_Ptr (Src) then
          BS := To_Big_String_Ptr (Src);
          SP := BS (1 .. Natural (Hi))'Unrestricted_Access;
          Scan_SFN_Pragmas
