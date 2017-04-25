@@ -1134,7 +1134,7 @@ package body Sem_Ch10 is
             Style_Check := Save_Style_Check;
          end;
 
-         --  In GNATprove mode, force the loading of a Interrupt_Priority when
+         --  In GNATprove mode, force the loading of an Interrupt_Priority when
          --  processing compilation units with potentially "main" subprograms.
          --  This is required for the ceiling priority protocol checks, which
          --  are triggered by these subprograms.

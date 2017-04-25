@@ -1,3 +1,50 @@
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Add_Internal_Interface_Entities): Move
+	Has_Non_Trivial_Precondition to sem_util. for use elsewhere.
+	Improve error message on operations that inherit non-conforming
+	classwide preconditions from ancestor and progenitor.
+	* sem_util.ads, sem_util.adb (Has_Non_Trivial_Precondition):
+	moved here from sem_ch3.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Implement legality
+	check given in RM 6.1.1 (17) concerning renamings of overriding
+	operations that inherits class-wide preconditions from ancestor
+	or progenitor.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Build_Adjust_Or_Finalize_Statements): Code cleanup.
+	(Build_Adjust_Statements): Code cleanup.
+	(Build_Finalizer): Update the initialization of
+	Exceptions_OK.
+	(Build_Finalize_Statements): Code cleanup.
+	(Build_Initialize_Statements): Code cleanup.
+	(Make_Deep_Array_Body): Update the initialization of
+	Exceptions_OK.
+	(Make_Deep_Record_Body): Update the initialization of Exceptions_OK.
+	(Process_Object_Declaration): Generate a null exception handler only
+	when exceptions are allowed.
+	(Process_Transients_In_Scope): Update the initialization of
+	Exceptions_OK.
+	* exp_util.ads, exp_util.adb (Exceptions_In_Finalization_OK): New
+	routine.
+	* sem_ch11.adb (Analyze_Exception_Handlers): Do not check any
+	restrictions when the handler is internally generated and the
+	mode is warnings.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Has_Non_Trivial_Precondition): New predicate to
+	enforce legality rule on classwide preconditions inherited from
+	both an ancestor and a progenitor (RM 6.1.1 (10-13).
+	* sem_disp.adb (Check_Dispatching_Context): A call to an abstract
+	subprogram need not be dispatching if it appears in a precondition
+	for an abstract or null subprogram.
+
+2017-04-25  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch10.adb: Minor typo fix.
+
 2017-04-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Makefile.in: Cleanup VxWorks targets.

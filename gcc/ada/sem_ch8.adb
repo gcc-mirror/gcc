@@ -3191,6 +3191,19 @@ package body Sem_Ch8 is
               ("renamed entity cannot be subprogram that requires overriding "
                & "(RM 8.5.4 (5.1))", N);
          end if;
+
+         declare
+            Prev : constant Entity_Id := Overridden_Operation (New_S);
+         begin
+            if Present (Prev)
+              and then
+                 (Has_Non_Trivial_Precondition (Prev)
+                    or else Has_Non_Trivial_Precondition (Old_S))
+            then
+               Error_Msg_NE ("conflicting inherited classwide preconditions "
+                 & "in renaming of& (RM 6.1.1 (17)", N, Old_S);
+            end if;
+         end;
       end if;
 
       if Old_S /= Any_Id then

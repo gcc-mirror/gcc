@@ -1169,6 +1169,10 @@ package Sem_Util is
    --  null statement, possibly followed by an optional return. Used to
    --  optimize useless calls to assertion checks.
 
+      function Has_Non_Trivial_Precondition (P : Entity_Id) return Boolean;
+      --  True if subprogram has a class-wide precondition that is not
+      --  statically True.
+
    function Has_Null_Exclusion (N : Node_Id) return Boolean;
    --  Determine whether node N has a null exclusion
 
