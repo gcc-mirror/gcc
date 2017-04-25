@@ -1188,10 +1188,7 @@ package body Sem_Ch13 is
       --  itself is frozen the type will have been frozen as well.
 
       if not Scope_Within_Or_Same (Current_Scope, Scope (E)) then
-         if Is_Type (E)
-           and then Ekind (Scope (E)) = E_Package
-           and then not Is_Frozen (Scope (E))
-         then
+         if Is_Type (E) and then From_Nested_Package (E) then
             declare
                Pack : constant Entity_Id := Scope (E);
 
@@ -1208,6 +1205,7 @@ package body Sem_Ch13 is
                end if;
 
                End_Package_Scope (Pack);
+               return;
             end;
 
          else
