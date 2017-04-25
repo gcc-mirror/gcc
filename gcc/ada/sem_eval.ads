@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -507,6 +507,16 @@ package Sem_Eval is
    --  types that match in the RM sense because of use of 'Object_Size),
    --  except when testing a generic actual T1 against an ancestor T2 in a
    --  formal derived type association (indicated by Formal_Derived_Matching).
+
+   procedure Test_Comparison
+     (Op           : Node_Id;
+      Assume_Valid : Boolean;
+      True_Result  : out Boolean;
+      False_Result : out Boolean);
+   --  Determine the outcome of evaluating comparison operator Op using routine
+   --  Compile_Time_Compare. Assume_Valid should be set when the operands are
+   --  to be assumed valid. Flags True_Result and False_Result are set when the
+   --  comparison evaluates to True or False respectively.
 
    procedure Why_Not_Static (Expr : Node_Id);
    --  This procedure may be called after generating an error message that

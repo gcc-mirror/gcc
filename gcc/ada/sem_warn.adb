@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -140,6 +140,12 @@ package body Sem_Warn is
    --  this is simply the setting of the flag Has_Pragma_Unreferenced. If E is
    --  a body formal, the setting of the flag in the corresponding spec is
    --  also checked (and True returned if either flag is True).
+
+   function Is_Attribute_And_Known_Value_Comparison
+     (Op : Node_Id) return Boolean;
+   --  Determine whether operator Op denotes a comparison where the left
+   --  operand is an attribute reference and the value of the right operand is
+   --  known at compile time.
 
    function Never_Set_In_Source_Check_Spec (E : Entity_Id) return Boolean;
    --  Tests Never_Set_In_Source status for entity E. If E is not a formal,
@@ -2840,6 +2846,23 @@ package body Sem_Warn is
       In_Out_Warnings.Init;
    end Initialize;
 
+   ---------------------------------------------
+   -- Is_Attribute_And_Known_Value_Comparison --
+   ---------------------------------------------
+
+   function Is_Attribute_And_Known_Value_Comparison
+     (Op : Node_Id) return Boolean
+   is
+      Orig_Op : constant Node_Id := Original_Node (Op);
+
+   begin
+      return
+        Nkind (Orig_Op) in N_Op_Compare
+          and then Nkind (Original_Node (Left_Opnd (Orig_Op))) =
+                     N_Attribute_Reference
+          and then Compile_Time_Known_Value (Right_Opnd (Orig_Op));
+   end Is_Attribute_And_Known_Value_Comparison;
+
    ------------------------------------
    -- Never_Set_In_Source_Check_Spec --
    ------------------------------------
@@ -3239,13 +3262,55 @@ package body Sem_Warn is
       end if;
    end Referenced_As_Out_Parameter_Check_Spec;
 
+   --------------------------------------
+   -- Warn_On_Constant_Valid_Condition --
+   --------------------------------------
+
+   procedure Warn_On_Constant_Valid_Condition (Op : Node_Id) is
+      True_Result  : Boolean;
+      False_Result : Boolean;
+
+   begin
+      --  Determine the potential outcome of the comparison assuming that the
+      --  operands are valid. Do not consider instances because the check was
+      --  already performed in the generic. Do not consider comparison between
+      --  an attribute reference and a compile time known value since this is
+      --  most likely a conditional compilation. Do not consider internal files
+      --  in order to allow for various assertions and safeguards within our
+      --  runtime.
+
+      if Constant_Condition_Warnings
+        and then Comes_From_Source (Original_Node (Op))
+        and then not In_Instance
+        and then not Is_Attribute_And_Known_Value_Comparison (Op)
+        and then not Is_Internal_File_Name
+                       (Unit_File_Name (Get_Source_Unit (Op)))
+      then
+         Test_Comparison
+           (Op           => Op,
+            Assume_Valid => True,
+            True_Result  => True_Result,
+            False_Result => False_Result);
+
+         --  Warn on a possible evaluation to False / True in the presence of
+         --  invalid values.
+
+         if True_Result then
+            Error_Msg_N
+              ("condition can only be False if invalid values present??", Op);
+
+         elsif False_Result then
+            Error_Msg_N
+              ("condition can only be True if invalid values present??", Op);
+         end if;
+      end if;
+   end Warn_On_Constant_Valid_Condition;
+
    -----------------------------
    -- Warn_On_Known_Condition --
    -----------------------------
 
    procedure Warn_On_Known_Condition (C : Node_Id) is
-      P           : Node_Id;
-      Orig        : constant Node_Id := Original_Node (C);
       Test_Result : Boolean;
 
       function Is_Known_Branch return Boolean;
@@ -3327,6 +3392,11 @@ package body Sem_Warn is
          end if;
       end Track;
 
+      --  Local variables
+
+      Orig : constant Node_Id := Original_Node (C);
+      P    : Node_Id;
+
    --  Start of processing for Warn_On_Known_Condition
 
    begin
@@ -3365,11 +3435,7 @@ package body Sem_Warn is
          --  Don't warn if comparison of result of attribute against a constant
          --  value, since this is likely legitimate conditional compilation.
 
-         if Nkind (Orig) in N_Op_Compare
-           and then Compile_Time_Known_Value (Right_Opnd (Orig))
-           and then Nkind (Original_Node (Left_Opnd (Orig))) =
-                                                     N_Attribute_Reference
-         then
+         if Is_Attribute_And_Known_Value_Comparison (C) then
             return;
          end if;
 
