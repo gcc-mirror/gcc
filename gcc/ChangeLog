@@ -1,5 +1,10 @@
 2017-04-25  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (arc_output_addsi): Check for h-register class
+	when emitting short ADD instructions.
+
+2017-04-25  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (cmpsi_cc_insn_mixed): Use 'h' register
 	constraint.
 	(cmpsi_cc_c_insn): Likewise.
