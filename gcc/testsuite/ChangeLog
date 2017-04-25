@@ -1,3 +1,8 @@
+2017-04-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/cmpmul-1.c: New file.
+	* gcc.dg/Wstrict-overflow-18.c: Xfail.
+
 2017-04-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/80121

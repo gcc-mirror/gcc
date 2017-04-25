@@ -14,7 +14,8 @@ foo (struct c *p)
 
   for (i = 0; i < p->a - p->b; ++i)
     {
-      if (i > 0)  /* { dg-warning "signed overflow" "" } */
+      /* See PR80511 for the XFAIL.  */
+      if (i > 0)  /* { dg-warning "signed overflow" "" { xfail *-*-* } } */
 	sum += 2;
       bar (p);
     }
