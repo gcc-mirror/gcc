@@ -493,14 +493,7 @@ package body Urealp is
 
    procedure Tree_Read is
    begin
-      --  Disable the warnings emitted by -gnatwc because the following check
-      --  acts as a signal in case Num_Ureal_Constants is changed.
-
-      pragma Warnings
-        (Off, "condition can only be * if invalid values present");
       pragma Assert (Num_Ureal_Constants = 10);
-      pragma Warnings
-        (On,  "condition can only be * if invalid values present");
 
       Ureals.Tree_Read;
       Tree_Read_Int (Int (UR_0));
@@ -525,14 +518,7 @@ package body Urealp is
 
    procedure Tree_Write is
    begin
-      --  Disable the warnings emitted by -gnatwc because the following check
-      --  acts as a signal in case Num_Ureal_Constants is changed.
-
-      pragma Warnings
-        (Off, "condition can only be * if invalid values present");
       pragma Assert (Num_Ureal_Constants = 10);
-      pragma Warnings
-        (On,  "condition can only be * if invalid values present");
 
       Ureals.Tree_Write;
       Tree_Write_Int (Int (UR_0));

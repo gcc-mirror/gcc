@@ -70,26 +70,26 @@ package body Sem_Elab is
       Ent  : Entity_Id;
    end record;
 
-   package Elab_Call is new Table.Table (
-     Table_Component_Type => Elab_Call_Entry,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 1,
-     Table_Initial        => 50,
-     Table_Increment      => 100,
-     Table_Name           => "Elab_Call");
+   package Elab_Call is new Table.Table
+     (Table_Component_Type => Elab_Call_Entry,
+      Table_Index_Type     => Int,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 50,
+      Table_Increment      => 100,
+      Table_Name           => "Elab_Call");
 
    --  This table is initialized at the start of each outer level call. It
    --  holds the entities for all subprograms that have been examined for this
    --  particular outer level call, and is used to prevent both infinite
    --  recursion, and useless reanalysis of bodies already seen
 
-   package Elab_Visited is new Table.Table (
-     Table_Component_Type => Entity_Id,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 1,
-     Table_Initial        => 200,
-     Table_Increment      => 100,
-     Table_Name           => "Elab_Visited");
+   package Elab_Visited is new Table.Table
+     (Table_Component_Type => Entity_Id,
+      Table_Index_Type     => Int,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 200,
+      Table_Increment      => 100,
+      Table_Name           => "Elab_Visited");
 
    --  This table stores calls to Check_Internal_Call that are delayed until
    --  all generics are instantiated and in particular until after all generic
@@ -112,23 +112,29 @@ package body Sem_Elab is
       --  The current scope of the call. This is restored when we complete the
       --  delayed call, so that we do this in the right scope.
 
-      From_SPARK_Code : Boolean;
-      --  Save indication of whether this call is under SPARK_Mode => On
+      Outer_Scope : Entity_Id;
+      --  Save scope of outer level call
 
       From_Elab_Code : Boolean;
       --  Save indication of whether this call is from elaboration code
 
-      Outer_Scope : Entity_Id;
-      --  Save scope of outer level call
+      In_Task_Activation : Boolean;
+      --  Save indication of whether this call is from a task body. Tasks are
+      --  activated at the "begin", which is after all local procedure bodies,
+      --  so calls to those procedures can't fail, even if they occur after the
+      --  task body.
+
+      From_SPARK_Code : Boolean;
+      --  Save indication of whether this call is under SPARK_Mode => On
    end record;
 
-   package Delay_Check is new Table.Table (
-     Table_Component_Type => Delay_Element,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 1,
-     Table_Initial        => 1000,
-     Table_Increment      => 100,
-     Table_Name           => "Delay_Check");
+   package Delay_Check is new Table.Table
+     (Table_Component_Type => Delay_Element,
+      Table_Index_Type     => Int,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 1000,
+      Table_Increment      => 100,
+      Table_Name           => "Delay_Check");
 
    C_Scope : Entity_Id;
    --  Top-level scope of current scope. Compute this only once at the outer
@@ -145,10 +151,12 @@ package body Sem_Elab is
    --  routines in other units if this flag is True.
 
    In_Task_Activation : Boolean := False;
-   --  This flag indicates whether we are performing elaboration checks on
-   --  task procedures, at the point of activation. If true, we do not trace
-   --  internal calls in these procedures, because all local bodies are known
-   --  to be elaborated.
+   --  This flag indicates whether we are performing elaboration checks on task
+   --  bodies, at the point of activation. If true, we do not raise
+   --  Program_Error for calls to local procedures, because all local bodies
+   --  are known to be elaborated. However, we still need to trace such calls,
+   --  because a local procedure could call a procedure in another package,
+   --  so we might need an implicit Elaborate_All.
 
    Delaying_Elab_Checks : Boolean := True;
    --  This is set True till the compilation is complete, including the
@@ -242,7 +250,7 @@ package body Sem_Elab is
       Orig_Ent    : Entity_Id);
    --  The processing for Check_Internal_Call is divided up into two phases,
    --  and this represents the second phase. The second phase is delayed if
-   --  Delaying_Elab_Calls is set to True. In this delayed case, the first
+   --  Delaying_Elab_Checks is set to True. In this delayed case, the first
    --  phase makes an entry in the Delay_Check table, which is processed when
    --  Check_Elab_Calls is called. N, E and Orig_Ent are as for the call to
    --  Check_Internal_Call. Outer_Scope is the outer level scope for the
@@ -1956,6 +1964,7 @@ package body Sem_Elab is
          for J in Delay_Check.First .. Delay_Check.Last loop
             Push_Scope (Delay_Check.Table (J).Curscop);
             From_Elab_Code := Delay_Check.Table (J).From_Elab_Code;
+            In_Task_Activation := Delay_Check.Table (J).In_Task_Activation;
 
             --  Set appropriate value of SPARK_Mode
 
@@ -1965,11 +1974,11 @@ package body Sem_Elab is
                SPARK_Mode := On;
             end if;
 
-            Check_Internal_Call_Continue (
-              N           => Delay_Check.Table (J).N,
-              E           => Delay_Check.Table (J).E,
-              Outer_Scope => Delay_Check.Table (J).Outer_Scope,
-              Orig_Ent    => Delay_Check.Table (J).Orig_Ent);
+            Check_Internal_Call_Continue
+              (N           => Delay_Check.Table (J).N,
+               E           => Delay_Check.Table (J).E,
+               Outer_Scope => Delay_Check.Table (J).Outer_Scope,
+               Orig_Ent    => Delay_Check.Table (J).Orig_Ent);
 
             SPARK_Mode := Save_SPARK_Mode;
             Pop_Scope;
@@ -2201,12 +2210,6 @@ package body Sem_Elab is
       elsif Is_Intrinsic_Subprogram (E) then
          return;
 
-      --  No need to trace local calls if checking task activation, because
-      --  other local bodies are elaborated already.
-
-      elsif In_Task_Activation then
-         return;
-
       --  Nothing to do if call is within a generic unit
 
       elsif Inside_A_Generic then
@@ -2224,14 +2227,15 @@ package body Sem_Elab is
       --  Delay this call if we are still delaying calls
 
       if Delaying_Elab_Checks then
-         Delay_Check.Append (
-           (N               => N,
-            E               => E,
-            Orig_Ent        => Orig_Ent,
-            Curscop         => Current_Scope,
-            Outer_Scope     => Outer_Scope,
-            From_Elab_Code  => From_Elab_Code,
-            From_SPARK_Code => SPARK_Mode = On));
+         Delay_Check.Append
+           ((N                  => N,
+             E                  => E,
+             Orig_Ent           => Orig_Ent,
+             Curscop            => Current_Scope,
+             Outer_Scope        => Outer_Scope,
+             From_Elab_Code     => From_Elab_Code,
+             In_Task_Activation => In_Task_Activation,
+             From_SPARK_Code    => SPARK_Mode = On));
          return;
 
       --  Otherwise, call phase 2 continuation right now
@@ -2520,7 +2524,10 @@ package body Sem_Elab is
             --  inserted.
 
          begin
-            if Inst_Case then
+            if In_Task_Activation then
+               Insert_Check := False;
+
+            elsif Inst_Case then
                Error_Msg_NE
                  ("cannot instantiate& before body seen<<", N, Orig_Ent);
 

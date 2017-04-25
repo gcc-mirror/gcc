@@ -12756,22 +12756,9 @@ package body Sem_Prag is
 
             --  Deal with SCO generation
 
-            case Cname is
-
-               --  Nothing to do for predicates as the checks occur in the
-               --  client units. The SCO for the aspect in the declaration
-               --  unit is conservatively always enabled.
-
-               when Name_Predicate =>
-                  null;
-
-               --  Otherwise mark aspect/pragma SCO as enabled
-
-               when others =>
-                  if Is_Checked (N) and then not Split_PPC (N) then
-                     Set_SCO_Pragma_Enabled (Loc);
-                  end if;
-            end case;
+            if Is_Checked (N) and then not Split_PPC (N) then
+               Set_SCO_Pragma_Enabled (Loc);
+            end if;
 
             --  Deal with analyzing the string argument
 

@@ -42,6 +42,7 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Par_SCO;  use Par_SCO;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
@@ -8419,6 +8420,10 @@ package body Sem_Ch13 is
          --  Start of processing for Add_Predicate
 
          begin
+            --  Mark corresponding SCO as enabled
+
+            Set_SCO_Pragma_Enabled (Sloc (Prag));
+
             --  Extract the arguments of the pragma. The expression itself
             --  is copied for use in the predicate function, to preserve the
             --  original version for ASIS use.

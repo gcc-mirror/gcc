@@ -1,3 +1,36 @@
+2017-04-25  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Pragma_Check): Remove
+	bogus circuitry for the case where Name is Predicate.
+
+2017-04-25  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb(Traverse_Declarations_Or_Statements.Traverse_Aspects):
+	Create SCOs for Predicate aspects in disabled
+	state initially, to be enabled later on by...
+	* sem_ch13.adb (Build_Predicate_Functions.Add_Predicates): Mark
+	SCO for predicate as enabled.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* comperr.adb (Compiler_Abort): Remove now obsolete pair of
+	pragmas Warnings Off / On.
+	* namet.adb (Finalize): Remove now obsolete pair of pragmas
+	Warnings Off / On.
+	* output.adb: Remove now obsolete pair of pragmas Warnings Off / On.
+	* sem_warn.adb (Warn_On_Constant_Valid_Condition): Do not
+	consider comparisons between static expressions because their
+	values cannot be invalidated.
+	* urealp.adb (Tree_Read): Remove now obsolete pair of pragmas
+	Warnings Off / On.
+	(Tree_Write): Remove now obsolete pair of pragmas Warnings Off / On.
+	* usage.adb Remove now obsolete pair of pragmas Warnings Off / On.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* sem_elab.adb (In_Task_Activation): Trace internal calls in
+	task bodies.
+
 2017-04-25  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_prag.adb, sem_warn.adb, sem_eval.adb: Minor reformatting and
