@@ -642,6 +642,7 @@ package body Rtsfind is
 
       for J in RTU_Id loop
          RT_Unit_Table (J).Entity := Empty;
+         RT_Unit_Table (J).First_Implicit_With := Empty;
       end loop;
 
       for J in RE_Id loop
@@ -959,7 +960,7 @@ package body Rtsfind is
       --  from the enumeration literal name in type RTU_Id.
 
       U.Uname                := Get_Unit_Name (U_Id);
-      U. First_Implicit_With := Empty;
+      U.First_Implicit_With  := Empty;
 
       --  Now do the load call, note that setting Error_Node to Empty is
       --  a signal to Load_Unit that we will regard a failure to find the
