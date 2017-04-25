@@ -231,12 +231,17 @@ package body Sem_Prag is
    function Find_Related_Context
      (Prag      : Node_Id;
       Do_Checks : Boolean := False) return Node_Id;
-   --  Subsidiaty to the analysis of pragmas Async_Readers, Async_Writers,
-   --  Constant_After_Elaboration, Effective_Reads, Effective_Writers and
-   --  Part_Of. Find the first source declaration or statement found while
-   --  traversing the previous node chain starting from pragma Prag. If flag
-   --  Do_Checks is set, the routine reports duplicate pragmas. The routine
-   --  returns Empty when reaching the start of the node chain.
+   --  Subsidiary to the analysis of pragmas
+   --    Async_Readers
+   --    Async_Writers
+   --    Constant_After_Elaboration
+   --    Effective_Reads
+   --    Effective_Writers
+   --    Part_Of
+   --  Find the first source declaration or statement found while traversing
+   --  the previous node chain starting from pragma Prag. If flag Do_Checks is
+   --  set, the routine reports duplicate pragmas. The routine returns Empty
+   --  when reaching the start of the node chain.
 
    function Get_Base_Subprogram (Def_Id : Entity_Id) return Entity_Id;
    --  If Def_Id refers to a renamed subprogram, then the base subprogram (the
