@@ -1,3 +1,8 @@
+2017-04-25  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/s390.md ("cstorecc4"): Use load-on-condition and deal
+	with CCZmode for TARGET_Z196.
+
 2017-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/80501
