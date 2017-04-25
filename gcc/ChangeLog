@@ -1,3 +1,10 @@
+2017-04-25  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/80497
+	* gimple-ssa-sprintf.c (get_int_range): Avoid assuming all integer
+	constants are representable in HOST_WIDE_INT.
+	(parse_directive): Ditto.
+
 2017-04-25  Marek Polacek  <polacek@redhat.com>
 
 	2017-04-25  Marek Polacek  <polacek@redhat.com>
