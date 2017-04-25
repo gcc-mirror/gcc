@@ -595,6 +595,12 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    --  this may not be worth the effort. Also we could deal with the same
    --  situation for EXIT with a label, but for now don't bother with that.
 
+   Current_Assign_Node : Node_Id := Empty;
+   --  This is the node of the current assignment statement being compiled.
+   --  It is used to record the presence of target_names on its RHS. This
+   --  context-dependent trick simplifies the analysis of such nodes, where
+   --  the RHS must first be analyzed with expansion disabled.
+
    ---------------------------------
    -- Parsing Routines by Chapter --
    ---------------------------------

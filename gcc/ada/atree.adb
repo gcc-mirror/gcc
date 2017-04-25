@@ -767,16 +767,12 @@ package body Atree is
       --  Deal with copying extension nodes if present. No need to copy flags
       --  table entries, since they are always zero for extending components.
 
-      if Has_Extension (Source) then
-         pragma Assert (Has_Extension (Destination));
+      pragma Assert (Has_Extension (Source) = Has_Extension (Destination));
 
+      if Has_Extension (Source) then
          for J in 1 .. Num_Extension_Nodes loop
             Nodes.Table (Destination + J) := Nodes.Table (Source + J);
          end loop;
-
-      else
-         pragma Assert (not Has_Extension (Source));
-         null;
       end if;
    end Copy_Node;
 

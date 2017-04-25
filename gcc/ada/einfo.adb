@@ -615,10 +615,9 @@ package body Einfo is
    --    Has_Partial_Visible_Refinement  Flag296
    --    Is_Entry_Wrapper                Flag297
    --    Is_Underlying_Full_View         Flag298
+   --    Body_Needed_For_Inlining        Flag299
 
-   --    (unused)                        Flag299
    --    (unused)                        Flag300
-
    --    (unused)                        Flag301
    --    (unused)                        Flag302
    --    (unused)                        Flag303
@@ -828,6 +827,12 @@ package body Einfo is
       pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package));
       return Node19 (Id);
    end Body_Entity;
+
+   function Body_Needed_For_Inlining (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Package);
+      return Flag299 (Id);
+   end Body_Needed_For_Inlining;
 
    function Body_Needed_For_SAL (Id : E) return B is
    begin
@@ -3860,6 +3865,12 @@ package body Einfo is
       pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package));
       Set_Node19 (Id, V);
    end Set_Body_Entity;
+
+   procedure Set_Body_Needed_For_Inlining (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Package);
+      Set_Flag299 (Id, V);
+   end Set_Body_Needed_For_Inlining;
 
    procedure Set_Body_Needed_For_SAL (Id : E; V : B := True) is
    begin
@@ -9252,6 +9263,7 @@ package body Einfo is
 
       W ("Address_Taken",                   Flag104 (Id));
       W ("Body_Needed_For_SAL",             Flag40  (Id));
+      W ("Body_Needed_For_Inlining",        Flag299 (Id));
       W ("C_Pass_By_Copy",                  Flag125 (Id));
       W ("Can_Never_Be_Null",               Flag38  (Id));
       W ("Checks_May_Be_Suppressed",        Flag31  (Id));

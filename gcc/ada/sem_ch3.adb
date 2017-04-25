@@ -2574,7 +2574,7 @@ package body Sem_Ch3 is
                --  rejected. Pending notification we restrict this call to
                --  ASIS mode.
 
-               if False and then ASIS_Mode then -- ????
+               if ASIS_Mode then
                   Resolve_Aspects;
                end if;
 

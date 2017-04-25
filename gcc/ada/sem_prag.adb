@@ -9112,6 +9112,17 @@ package body Sem_Prag is
 
             Next (Assoc);
          end loop;
+
+         --  If the context is a package declaration, the pragma indicates
+         --  that inlining will require the presence of the corresponding
+         --  body. (this may be further refined).
+
+         if not In_Instance
+           and then Nkind (Unit (Cunit (Current_Sem_Unit)))
+                      = N_Package_Declaration
+         then
+            Set_Body_Needed_For_Inlining (Cunit_Entity (Current_Sem_Unit));
+         end if;
       end Process_Inline;
 
       ----------------------------

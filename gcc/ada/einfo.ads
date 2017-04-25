@@ -529,6 +529,14 @@ package Einfo is
 --       units. Indicates that the source for the body must be included
 --       when the unit is part of a standalone library.
 
+--    Body_Needed_For_Inlining (Flag299)
+--       Defined in package entities that are compilation units. Used to
+--       determine whether the body unit needs to be compiled when the
+--       package declaration appears in the list of units to inline. A body
+--       is needed for inline processing if the unit declaration contains
+--       functions that carry pragma Inline or Inline_Always, or if it
+--       contains a generic unit that requires a body.
+--
 --    Body_References (Elist16)
 --       Defined in abstract state entities. Contains an element list of
 --       references (identifiers) that appear in a package body whose spec
@@ -6238,6 +6246,7 @@ package Einfo is
    --    SPARK_Pragma                        (Node40)
    --    SPARK_Aux_Pragma                    (Node41)
    --    Delay_Subprogram_Descriptors        (Flag50)
+   --    Body_Needed_For_Inlining            (Flag299)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Discard_Names                       (Flag88)
@@ -6880,6 +6889,7 @@ package Einfo is
    function Block_Node                          (Id : E) return N;
    function Body_Entity                         (Id : E) return E;
    function Body_Needed_For_SAL                 (Id : E) return B;
+   function Body_Needed_For_Inlining            (Id : E) return B;
    function Body_References                     (Id : E) return L;
    function C_Pass_By_Copy                      (Id : E) return B;
    function Can_Never_Be_Null                   (Id : E) return B;
@@ -7563,6 +7573,7 @@ package Einfo is
    procedure Set_BIP_Initialization_Call         (Id : E; V : N);
    procedure Set_Block_Node                      (Id : E; V : N);
    procedure Set_Body_Entity                     (Id : E; V : E);
+   procedure Set_Body_Needed_For_Inlining        (Id : E; V : B := True);
    procedure Set_Body_Needed_For_SAL             (Id : E; V : B := True);
    procedure Set_Body_References                 (Id : E; V : L);
    procedure Set_C_Pass_By_Copy                  (Id : E; V : B := True);
@@ -8365,6 +8376,7 @@ package Einfo is
    pragma Inline (BIP_Initialization_Call);
    pragma Inline (Block_Node);
    pragma Inline (Body_Entity);
+   pragma Inline (Body_Needed_For_Inlining);
    pragma Inline (Body_Needed_For_SAL);
    pragma Inline (Body_References);
    pragma Inline (C_Pass_By_Copy);
@@ -8886,6 +8898,7 @@ package Einfo is
    pragma Inline (Set_BIP_Initialization_Call);
    pragma Inline (Set_Block_Node);
    pragma Inline (Set_Body_Entity);
+   pragma Inline (Set_Body_Needed_For_Inlining);
    pragma Inline (Set_Body_Needed_For_SAL);
    pragma Inline (Set_Body_References);
    pragma Inline (Set_C_Pass_By_Copy);
