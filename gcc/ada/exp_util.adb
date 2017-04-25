@@ -5198,9 +5198,8 @@ package body Exp_Util is
       U_Typ : constant Entity_Id := Unique_Entity (Typ);
 
       Calls_OK : Boolean := False;
-      --  This flag is set to True when expression Expr contains at
-      --  least one call to a non-dispatching primitive function of
-      --  Typ.
+      --  This flag is set to True when expression Expr contains at least one
+      --  call to a non-dispatching primitive function of Typ.
 
       function Search_Primitive_Calls (N : Node_Id) return Traverse_Result;
       --  Search for nondispatching calls to primitive functions of type Typ
@@ -5209,9 +5208,7 @@ package body Exp_Util is
       -- Search_Primitive_Calls --
       ----------------------------
 
-      function Search_Primitive_Calls
-        (N : Node_Id) return Traverse_Result
-      is
+      function Search_Primitive_Calls (N : Node_Id) return Traverse_Result is
          Disp_Typ : Entity_Id;
          Subp     : Entity_Id;
 
@@ -5224,24 +5221,24 @@ package body Exp_Util is
          then
             Subp := Entity (Name (N));
 
-            --  Do not consider function calls with a controlling argument
-            --  as those are always dispatching calls.
+            --  Do not consider function calls with a controlling argument as
+            --  those are always dispatching calls.
 
             if Is_Dispatching_Operation (Subp)
               and then No (Controlling_Argument (N))
             then
                Disp_Typ := Find_Dispatching_Type (Subp);
 
-               --  To qualify as a suitable primitive, the dispatching
-               --  type of the function must be the input type.
+               --  To qualify as a suitable primitive, the dispatching type of
+               --  the function must be the input type.
 
                if Present (Disp_Typ)
                  and then Unique_Entity (Disp_Typ) = U_Typ
                then
                   Calls_OK := True;
 
-                  --  There is no need to continue the traversal as one
-                  --  such call suffices.
+                  --  There is no need to continue the traversal as one such
+                  --  call suffices.
 
                   return Abandon;
                end if;
@@ -5251,8 +5248,7 @@ package body Exp_Util is
          return OK;
       end Search_Primitive_Calls;
 
-      procedure Search_Calls is
-        new Traverse_Proc (Search_Primitive_Calls);
+      procedure Search_Calls is new Traverse_Proc (Search_Primitive_Calls);
 
    --  Start of processing for Expression_Contains_Primitives_Calls_Of_Type
 
