@@ -403,10 +403,6 @@ package body Sem_Ch6 is
             end if;
          end if;
 
-         if Is_Access_Type (Etype (Prev)) then
-            Freeze_Before (N, Designated_Type (Etype (Prev)));
-         end if;
-
          --  For navigation purposes, indicate that the function is a body
 
          Generate_Reference (Prev, Defining_Entity (N), 'b', Force => True);
@@ -3089,7 +3085,27 @@ package body Sem_Ch6 is
                elsif Ekind_In (Entity (Node), E_Component,
                                               E_Discriminant)
                then
-                  Freeze_Before (N, Scope (Entity (Node)));
+                  declare
+                     Rec : constant Entity_Id := Scope (Entity (Node));
+                  begin
+
+                     --  Check that the enclosing record type can be frozen.
+                     --  This provides a better error message than generating
+                     --  primitives whose compilation fails much later.
+                     --  Refine the error message if possible.
+
+                     Check_Fully_Declared (Rec, Node);
+
+                     if Error_Posted (Node) then
+                        if Has_Private_Component (Rec) then
+                           Error_Msg_NE ("\type& has private component",
+                             Node, Rec);
+                        end if;
+
+                     else
+                        Freeze_Before (N, Rec);
+                     end if;
+                  end;
                end if;
             end if;
 
