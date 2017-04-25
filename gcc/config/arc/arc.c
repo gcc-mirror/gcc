@@ -7324,6 +7324,10 @@ arc_output_addsi (rtx *operands, bool cond_p, bool output_p)
   int short_p = (!cond_p && short_0 && satisfies_constraint_Rcq (operands[1]));
   int ret = 0;
 
+#define REG_H_P(OP) (REG_P (OP) && ((TARGET_V2 && REGNO (OP) <= 31	\
+				     && REGNO (OP) != 30)		\
+				    || !TARGET_V2))
+
 #define ADDSI_OUTPUT1(FORMAT) do {\
   if (output_p) \
     output_asm_insn (FORMAT, operands);\
@@ -7346,32 +7350,40 @@ arc_output_addsi (rtx *operands, bool cond_p, bool output_p)
 	 but add1 r0,sp,35 doesn't.  */
       && (!output_p || (get_attr_length (current_output_insn) & 2)))
     {
+      /* Generate add_s a,b,c; add_s b,b,u7; add_s c,b,u3; add_s b,b,h
+	 patterns.  */
       if (short_p
-	  && (REG_P (operands[2])
-	      ? (match || satisfies_constraint_Rcq (operands[2]))
-	      : (unsigned) intval <= (match ? 127 : 7)))
-	ADDSI_OUTPUT1 ("add%? %0,%1,%2");
-      if (short_0 && REG_P (operands[1]) && match2)
-	ADDSI_OUTPUT1 ("add%? %0,%2,%1");
+	  && ((REG_H_P (operands[2])
+	       && (match || satisfies_constraint_Rcq (operands[2])))
+	      || (CONST_INT_P (operands[2])
+		  && ((unsigned) intval <= (match ? 127 : 7)))))
+	ADDSI_OUTPUT1 ("add%? %0,%1,%2 ;1");
+
+      /* Generate add_s b,b,h patterns.  */
+      if (short_0 && match2 && REG_H_P (operands[1]))
+	ADDSI_OUTPUT1 ("add%? %0,%2,%1 ;2");
+
+      /* Generate add_s b,sp,u7; add_s sp,sp,u7 patterns.  */
       if ((short_0 || REGNO (operands[0]) == STACK_POINTER_REGNUM)
 	  && REGNO (operands[1]) == STACK_POINTER_REGNUM && !(intval & ~124))
-	ADDSI_OUTPUT1 ("add%? %0,%1,%2");
+	ADDSI_OUTPUT1 ("add%? %0,%1,%2 ;3");
 
       if ((short_p && (unsigned) neg_intval <= (match ? 31 : 7))
 	  || (REGNO (operands[0]) == STACK_POINTER_REGNUM
 	      && match && !(neg_intval & ~124)))
-	ADDSI_OUTPUT1 ("sub%? %0,%1,%n2");
+	ADDSI_OUTPUT1 ("sub%? %0,%1,%n2 ;4");
 
-      if (REG_P(operands[0]) && REG_P(operands[1])
-	  && (REGNO(operands[0]) <= 31) && (REGNO(operands[0]) == REGNO(operands[1]))
-	  && CONST_INT_P (operands[2]) && ( (intval>= -1) && (intval <= 6)))
-	ADDSI_OUTPUT1 ("add%? %0,%1,%2");
+      /* Generate add_s h,h,s3 patterns.  */
+      if (REG_H_P (operands[0]) && match && TARGET_V2
+	  && CONST_INT_P (operands[2]) && ((intval>= -1) && (intval <= 6)))
+	ADDSI_OUTPUT1 ("add%? %0,%1,%2 ;5");
 
-      if (TARGET_CODE_DENSITY && REG_P(operands[0]) && REG_P(operands[1])
-	  && ((REGNO(operands[0]) == 0) || (REGNO(operands[0]) == 1))
+      /* Generate add_s r0,b,u6; add_s r1,b,u6 patterns.  */
+      if (TARGET_CODE_DENSITY && REG_P (operands[0]) && REG_P (operands[1])
+	  && ((REGNO (operands[0]) == 0) || (REGNO (operands[0]) == 1))
 	  && satisfies_constraint_Rcq (operands[1])
 	  && satisfies_constraint_L (operands[2]))
-	ADDSI_OUTPUT1 ("add%? %0,%1,%2 ;3");
+	ADDSI_OUTPUT1 ("add%? %0,%1,%2 ;6");
     }
 
   /* Now try to emit a 32 bit insn without long immediate.  */
