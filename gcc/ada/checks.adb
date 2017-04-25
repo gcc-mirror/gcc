@@ -2943,20 +2943,24 @@ package body Checks is
 
       --  The additional less-precise tests below catch these cases
 
+      --  In GNATprove_Mode, also deal with the case of a conversion from
+      --  floating-point to integer. It is only possible because analysis
+      --  in GNATprove rules out the possibility of a NaN or infinite value.
+
       --  Note: skip this if we are given a source_typ, since the point of
       --  supplying a Source_Typ is to stop us looking at the expression.
       --  We could sharpen this test to be out parameters only ???
 
       if Is_Discrete_Type (Target_Typ)
-        and then Is_Discrete_Type (Etype (Expr))
+        and then (Is_Discrete_Type (Etype (Expr))
+                   or else (GNATprove_Mode
+                             and then Is_Floating_Point_Type (Etype (Expr))))
         and then not Is_Unconstrained_Subscr_Ref
         and then No (Source_Typ)
       then
          declare
             Tlo : constant Node_Id := Type_Low_Bound  (Target_Typ);
             Thi : constant Node_Id := Type_High_Bound (Target_Typ);
-            Lo  : Uint;
-            Hi  : Uint;
 
          begin
             if Compile_Time_Known_Value (Tlo)
@@ -2965,6 +2969,8 @@ package body Checks is
                declare
                   Lov : constant Uint := Expr_Value (Tlo);
                   Hiv : constant Uint := Expr_Value (Thi);
+                  Lo  : Uint;
+                  Hi  : Uint;
 
                begin
                   --  If range is null, we for sure have a constraint error
@@ -2991,7 +2997,34 @@ package body Checks is
 
                   --  Otherwise determine range of value
 
-                  Determine_Range (Expr, OK, Lo, Hi, Assume_Valid => True);
+                  if Is_Discrete_Type (Etype (Expr)) then
+                     Determine_Range (Expr, OK, Lo, Hi,
+                                      Assume_Valid => True);
+
+                  --  When converting a float to an integer type, determine the
+                  --  range in real first, and then convert the bounds using
+                  --  UR_To_Uint which correctly rounds away from zero when
+                  --  half way between two integers, as required by normal
+                  --  Ada 95 rounding semantics. It is only possible because
+                  --  analysis in GNATprove rules out the possibility of a NaN
+                  --  or infinite value.
+
+                  elsif GNATprove_Mode
+                    and then Is_Floating_Point_Type (Etype (Expr))
+                  then
+                     declare
+                        Lor : Ureal;
+                        Hir : Ureal;
+                     begin
+                        Determine_Range_R (Expr, OK, Lor, Hir,
+                                           Assume_Valid => True);
+
+                        if OK then
+                           Lo := UR_To_Uint (Lor);
+                           Hi := UR_To_Uint (Hir);
+                        end if;
+                     end;
+                  end if;
 
                   if OK then
 
@@ -3449,7 +3482,9 @@ package body Checks is
             if not Range_Checks_Suppressed (Target_Type)
               and then not Range_Checks_Suppressed (Expr_Type)
             then
-               if Float_To_Int then
+               if Float_To_Int
+                 and then not GNATprove_Mode
+               then
                   Apply_Float_Conversion_Check (Expr, Target_Type);
                else
                   Apply_Scalar_Range_Check
@@ -4688,11 +4723,39 @@ package body Checks is
 
             end case;
 
-         --  For type conversion from one discrete type to another, we can
-         --  refine the range using the converted value.
-
          when N_Type_Conversion =>
-            Determine_Range (Expression (N), OK1, Lor, Hir, Assume_Valid);
+
+            --  For type conversion from one discrete type to another, we can
+            --  refine the range using the converted value.
+
+            if Is_Discrete_Type (Etype (Expression (N))) then
+               Determine_Range (Expression (N), OK1, Lor, Hir, Assume_Valid);
+
+            --  When converting a float to an integer type, determine the range
+            --  in real first, and then convert the bounds using UR_To_Uint
+            --  which correctly rounds away from zero when half way between two
+            --  integers, as required by normal Ada 95 rounding semantics. It
+            --  is only possible because analysis in GNATprove rules out the
+            --  possibility of a NaN or infinite value.
+
+            elsif GNATprove_Mode
+              and then Is_Floating_Point_Type (Etype (Expression (N)))
+            then
+               declare
+                  Lor_Real, Hir_Real : Ureal;
+               begin
+                  Determine_Range_R (Expression (N), OK1, Lor_Real, Hir_Real,
+                                     Assume_Valid);
+
+                  if OK1 then
+                     Lor := UR_To_Uint (Lor_Real);
+                     Hir := UR_To_Uint (Hir_Real);
+                  end if;
+               end;
+
+            else
+               OK1 := False;
+            end if;
 
          --  Nothing special to do for all other expression kinds
 

@@ -1,5 +1,20 @@
 2017-04-25  Yannick Moy  <moy@adacore.com>
 
+	* checks.adb (Apply_Scalar_Range_Check): Analyze precisely
+	conversions from float to integer in GNATprove mode.
+	(Apply_Type_Conversion_Checks): Make sure in GNATprove mode
+	to call Apply_Type_Conversion_Checks, so that range checks
+	are properly positioned when needed on conversions, including
+	when converting from float to integer.	(Determine_Range): In
+	GNATprove mode, take into account the possibility of conversion
+	from float to integer.
+	* sem_res.adb (Resolve_Type_Conversion): Only enforce range
+	check on conversions from fixed-point to integer, not anymore
+	on conversions from floating-point to integer, when in GNATprove
+	mode.
+
+2017-04-25  Yannick Moy  <moy@adacore.com>
+
 	* checks.adb (Determine_Range_R): Special case type conversions
 	from integer to float in order to get bounds in that case too.
 	* eval_fat.adb (Machine): Avoid issuing warnings in GNATprove
