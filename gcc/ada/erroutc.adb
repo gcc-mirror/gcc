@@ -1447,7 +1447,7 @@ package body Erroutc is
       Specific_Warnings.Append
         ((Start      => Loc,
           Msg        => new String'(Msg),
-          Stop       => Source_Last (Current_Source_File),
+          Stop       => Source_Last (Get_Source_File_Index (Loc)),
           Reason     => Reason,
           Open       => True,
           Used       => Used,
@@ -1531,7 +1531,7 @@ package body Erroutc is
 
       Warnings.Append
         ((Start  => Loc,
-          Stop   => Source_Last (Current_Source_File),
+          Stop   => Source_Last (Get_Source_File_Index (Loc)),
           Reason => Reason));
    end Set_Warnings_Mode_Off;
 

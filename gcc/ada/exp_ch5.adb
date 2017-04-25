@@ -1642,10 +1642,16 @@ package body Exp_Ch5 is
          --  The expression will be reanalyzed when the enclosing assignment
          --  is reanalyzed, so reset the entity, which may be a temporary
          --  created during analysis, e.g. a loop variable for an iterated
-         --  component association.
+         --  component association. However, if entity is callable then
+         --  resolution has established its proper identity (including in
+         --  rewritten prefixed calls) so we must preserve it.
 
          elsif Is_Entity_Name (N) then
-            Set_Entity (N, Empty);
+            if Present (Entity (N))
+              and then not Is_Overloadable (Entity (N))
+            then
+               Set_Entity (N, Empty);
+            end if;
          end if;
 
          Set_Analyzed (N, False);

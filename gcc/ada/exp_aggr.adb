@@ -4274,7 +4274,7 @@ package body Exp_Aggr is
       --  Check whether all components of the aggregate are compile-time known
       --  values, and can be passed as is to the back-end without further
       --  expansion.
-      --  An Iterated_component_Association is treated as non-static, but there
+      --  An Iterated_Component_Association is treated as non-static, but there
       --  are possibilities for optimization here.
 
       function Flatten

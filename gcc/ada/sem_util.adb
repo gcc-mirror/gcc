@@ -20638,16 +20638,34 @@ package body Sem_Util is
       Set_Alignment                 (T1, Alignment                 (T2));
    end Set_Size_Info;
 
+   ------------------------------
+   -- Should_Ignore_Pragma_Par --
+   ------------------------------
+
+   function Should_Ignore_Pragma_Par (Prag_Name : Name_Id) return Boolean is
+      pragma Assert (Compiler_State = Parsing);
+      --  This one can't work during semantic analysis, because we don't have a
+      --  correct Current_Source_File.
+
+      Result : constant Boolean :=
+        Get_Name_Table_Boolean3 (Prag_Name)
+          and then not Is_Internal_File_Name (File_Name (Current_Source_File));
+   begin
+      return Result;
+   end Should_Ignore_Pragma_Par;
+
    --------------------------
-   -- Should_Ignore_Pragma --
+   -- Should_Ignore_Pragma_Sem --
    --------------------------
 
-   function Should_Ignore_Pragma (Prag_Name : Name_Id) return Boolean is
+   function Should_Ignore_Pragma_Sem (N : Node_Id) return Boolean is
+      pragma Assert (Compiler_State = Analyzing);
+      Prag_Name : constant Name_Id := Pragma_Name (N);
+      Result : constant Boolean :=
+        Get_Name_Table_Boolean3 (Prag_Name) and then not In_Internal_Unit (N);
    begin
-      return
-        not Is_Internal_File_Name (File_Name (Current_Source_File))
-          and then Get_Name_Table_Boolean3 (Prag_Name);
-   end Should_Ignore_Pragma;
+      return Result;
+   end Should_Ignore_Pragma_Sem;
 
    --------------------
    -- Static_Boolean --

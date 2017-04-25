@@ -168,7 +168,7 @@ package body Exp_Prag is
       --  the back end or the expander here does not get overenthusiastic and
       --  start processing such a pragma!
 
-      if Should_Ignore_Pragma (Pname) then
+      if Should_Ignore_Pragma_Sem (N) then
          Rewrite (N, Make_Null_Statement (Sloc (N)));
          return;
       end if;

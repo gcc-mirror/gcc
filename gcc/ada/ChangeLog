@@ -1,3 +1,78 @@
+2017-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* a-numaux.ads: Fix description of a-numaux-darwin
+	and a-numaux-x86.
+	(Double): Define to Long_Float.
+	* a-numaux-vxworks.ads (Double): Likewise.
+	* a-numaux-darwin.ads
+	(Double): Likewise.
+	* a-numaux-libc-x86.ads (Double): Define to Long_Long_Float.
+	* a-numaux-x86.ads: Fix package description.
+	* a-numaux-x86.adb (Is_Nan): Minor tweak.
+	(Reduce): Adjust and complete description. Call Is_Nan instead of
+	testing manually. Use an integer temporary to hold rounded value.
+	* a-numaux-darwin.adb (Reduce): Likewise.
+	(Is_Nan): New function.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): Additional refinement
+	on analysis of prefix whose type is a current instance of a
+	synchronized type, but where the prefix itself is an entity that
+	is an object.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Replace_Target): When rewriting the RHS, preserve
+	the identity of callable entities therein, because they have been
+	properly resolved, and prefixed calls may have been rewritten
+	as normal calls.
+
+2017-04-25  Patrick Bernardi  <bernardi@adacore.com>
+
+	* exp_ch3.adb (Build_Init_Statements): Convert
+	the expression of the pragma/aspect Secondary_Stack_Size to
+	internal type System.Parameters.Size_Type before assigning
+	it to the Secondary_Stack_Size component of the task type's
+	corresponding record.
+
+2017-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_eval.adb (Compile_Time_Compare): Reinstate the expr+literal
+	(etc) optimizations when the type is modular and the offsets
+	are equal.
+
+2017-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-osinte-freebsd.ads: Minor comment tweaks
+
+2017-04-25  Javier Miranda  <miranda@adacore.com>
+
+	* urealp.adb (UR_Write): Reverse previous patch
+	adding documentation on why we generate multiplications instead
+	of divisions (needed to avoid expressions whose computation with
+	large numbers may cause division by 0).
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* erroutc.adb (Set_Specific_Warning_Off,
+	Set_Warnings_Mode_Off): Use the correct source file for
+	Stop. Was using Current_Source_File, which is only valid during
+	parsing. Current_Source_File will have a leftover value from
+	whatever file happened to be parsed last, because of a with_clause
+	or something.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* lib.ads, lib.adb (In_Internal_Unit): New functions similar
+	to In_Predefined_Unit, but including GNAT units.
+	* sem_util.ads, sem_util.adb (Should_Ignore_Pragma): Replace
+	with Should_Ignore_Pragma_Par and Should_Ignore_Pragma_Sem,
+	because Should_Ignore_Pragma was not working reliably outside
+	the parser, because Current_Source_File is not valid.
+	* sem_prag.adb, exp_prag.adb: Call Should_Ignore_Pragma_Sem.
+	* par-prag.adb: Call Should_Ignore_Pragma_Par.
+
 2017-04-25  Arnaud Charlet  <charlet@adacore.com trojanek>
 
 	* gnat1drv.adb (Gnat1Drv): Disable Generate_Processed_File in

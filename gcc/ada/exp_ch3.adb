@@ -2950,6 +2950,11 @@ package body Exp_Ch3 is
                            Exp :=
                              Unchecked_Convert_To
                                (RTE (RE_Dispatching_Domain_Access), Exp);
+
+                        --  Conversion for Secondary_Stack_Size value
+
+                        elsif Nam = Name_Secondary_Stack_Size then
+                           Exp := Convert_To (RTE (RE_Size_Type), Exp);
                         end if;
 
                         Actions := Build_Assignment (Id, Exp);
