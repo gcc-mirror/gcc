@@ -640,7 +640,8 @@ extern enum reg_class arc_regno_reg_class[];
 #define REGNO_OK_FOR_BASE_P(REGNO)					\
   ((REGNO) < 29 || ((REGNO) == ARG_POINTER_REGNUM) || ((REGNO) == 63)	\
    || ((unsigned) reg_renumber[REGNO] < 29)				\
-   || ((unsigned) (REGNO) == (unsigned) arc_tp_regno))
+   || ((unsigned) (REGNO) == (unsigned) arc_tp_regno)			\
+   || (fixed_regs[REGNO] == 0 && IN_RANGE (REGNO, 32, 59)))
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) REGNO_OK_FOR_BASE_P(REGNO)
 
@@ -922,18 +923,15 @@ extern int arc_initial_elimination_offset(int from, int to);
 
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
-#define REG_OK_FOR_INDEX_P_NONSTRICT(X) \
-((unsigned) REGNO (X) >= FIRST_PSEUDO_REGISTER || \
- (unsigned) REGNO (X) < 29 || \
- (unsigned) REGNO (X) == 63 || \
- (unsigned) REGNO (X) == ARG_POINTER_REGNUM)
+#define REG_OK_FOR_INDEX_P_NONSTRICT(X)			\
+  ((unsigned) REGNO (X) >= FIRST_PSEUDO_REGISTER	\
+   || REGNO_OK_FOR_BASE_P (REGNO (X)))
+
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
-#define REG_OK_FOR_BASE_P_NONSTRICT(X) \
-((unsigned) REGNO (X) >= FIRST_PSEUDO_REGISTER || \
- (unsigned) REGNO (X) < 29 || \
- (unsigned) REGNO (X) == 63 || \
- (unsigned) REGNO (X) == ARG_POINTER_REGNUM)
+#define REG_OK_FOR_BASE_P_NONSTRICT(X)			\
+  ((unsigned) REGNO (X) >= FIRST_PSEUDO_REGISTER	\
+   || REGNO_OK_FOR_BASE_P (REGNO (X)))
 
 /* Nonzero if X is a hard reg that can be used as an index.  */
 #define REG_OK_FOR_INDEX_P_STRICT(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
