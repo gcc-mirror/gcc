@@ -270,6 +270,8 @@ package body Einfo is
    --    Entry_Max_Queue_Lengths_Array   Node35
    --    Import_Pragma                   Node35
 
+   --    Validated_Object                Node36
+
    --    Class_Wide_Preconds             List38
 
    --    Class_Wide_Postconds            List39
@@ -3477,6 +3479,12 @@ package body Einfo is
       return Flag95 (Id);
    end Uses_Sec_Stack;
 
+   function Validated_Object (Id : E) return N is
+   begin
+      pragma Assert (Ekind (Id) = E_Variable);
+      return Node36 (Id);
+   end Validated_Object;
+
    function Warnings_Off (Id : E) return B is
    begin
       return Flag96 (Id);
@@ -6617,6 +6625,12 @@ package body Einfo is
    begin
       Set_Flag95 (Id, V);
    end Set_Uses_Sec_Stack;
+
+   procedure Set_Validated_Object (Id : E; V : N) is
+   begin
+      pragma Assert (Ekind (Id) = E_Variable);
+      Set_Node36 (Id, V);
+   end Set_Validated_Object;
 
    procedure Set_Warnings_Off (Id : E; V : B := True) is
    begin
@@ -10881,9 +10895,14 @@ package body Einfo is
    ------------------------
 
    procedure Write_Field36_Name (Id : Entity_Id) is
-      pragma Unreferenced (Id);
    begin
-      Write_Str ("Field36??");
+      case Ekind (Id) is
+         when E_Variable =>
+            Write_Str ("Validated_Object");
+
+         when others =>
+            Write_Str ("Field36??");
+      end case;
    end Write_Field36_Name;
 
    ------------------------

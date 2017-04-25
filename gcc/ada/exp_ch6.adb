@@ -1901,6 +1901,21 @@ package body Exp_Ch6 is
             then
                Add_Call_By_Copy_Code;
 
+            --  The actual denotes a variable which captures the value of an
+            --  object for validation purposes. Add a copy-back to reflect any
+            --  potential changes in value back into the original object.
+
+            --    Temp : ... := Object;
+            --    if not Temp'Valid then ...
+            --    Call (Temp);
+            --    Object := Temp;
+
+            elsif Is_Validation_Variable_Reference (Actual) then
+               Append_To (Post_Call,
+                 Make_Assignment_Statement (Loc,
+                   Name       => Validated_Object (Entity (Actual)),
+                   Expression => New_Occurrence_Of (Entity (Actual), Loc)));
+
             elsif Nkind (Actual) = N_Indexed_Component
               and then Is_Entity_Name (Prefix (Actual))
               and then Has_Volatile_Components (Entity (Prefix (Actual)))
