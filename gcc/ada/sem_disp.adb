@@ -574,9 +574,7 @@ package body Sem_Disp is
             --  a primitive of an abstract type. The call is non-dispatching
             --  but will be legal in overridings of the operation.
 
-            elsif In_Spec_Expression
-              and then
-                (Is_Subprogram (Scop)
+            elsif (Is_Subprogram (Scop)
                   or else Chars (Scop) = Name_Postcondition)
               and then
                 (Is_Abstract_Subprogram (Scop)

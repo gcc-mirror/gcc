@@ -1327,8 +1327,7 @@ package body Exp_Ch7 is
                              or else
                                (Present (Clean_Stmts)
                                  and then Is_Non_Empty_List (Clean_Stmts));
-      Exceptions_OK    : constant Boolean :=
-                           not Restriction_Active (No_Exception_Propagation);
+      Exceptions_OK    : constant Boolean := Exceptions_In_Finalization_OK;
       For_Package_Body : constant Boolean := Nkind (N) = N_Package_Body;
       For_Package_Spec : constant Boolean := Nkind (N) = N_Package_Declaration;
       For_Package      : constant Boolean :=
@@ -2844,7 +2843,7 @@ package body Exp_Ch7 is
          Body_Ins  : Node_Id;
          Count_Ins : Node_Id;
          Fin_Call  : Node_Id;
-         Fin_Stmts : List_Id;
+         Fin_Stmts : List_Id := No_List;
          Inc_Decl  : Node_Id;
          Label     : Node_Id;
          Label_Id  : Entity_Id;
@@ -3004,8 +3003,6 @@ package body Exp_Ch7 is
          --  manual finalization of their lock managers.
 
          if Is_Protected then
-            Fin_Stmts := No_List;
-
             if Is_Simple_Protected_Type (Obj_Typ) then
                Fin_Call := Cleanup_Protected_Object (Decl, Obj_Ref);
 
@@ -3031,8 +3028,8 @@ package body Exp_Ch7 is
             --          null;
             --    end;
 
-            if Present (Fin_Stmts) then
-               Append_To (Finalizer_Stmts,
+            if Present (Fin_Stmts) and then Exceptions_OK then
+               Fin_Stmts := New_List (
                  Make_Block_Statement (Loc,
                    Handled_Statement_Sequence =>
                      Make_Handled_Sequence_Of_Statements (Loc,
@@ -4866,8 +4863,7 @@ package body Exp_Ch7 is
          Last_Object  : Node_Id;
          Related_Node : Node_Id)
       is
-         Exceptions_OK : constant Boolean :=
-                           not Restriction_Active (No_Exception_Propagation);
+         Exceptions_OK : constant Boolean := Exceptions_In_Finalization_OK;
 
          Must_Hook : Boolean := False;
          --  Flag denoting whether the context requires transient object
@@ -5529,6 +5525,8 @@ package body Exp_Ch7 is
      (Prim : Final_Primitives;
       Typ  : Entity_Id) return List_Id
    is
+      Exceptions_OK : constant Boolean := Exceptions_In_Finalization_OK;
+
       function Build_Adjust_Or_Finalize_Statements
         (Typ : Entity_Id) return List_Id;
       --  Create the statements necessary to adjust or finalize an array of
@@ -5645,12 +5643,10 @@ package body Exp_Ch7 is
       function Build_Adjust_Or_Finalize_Statements
         (Typ : Entity_Id) return List_Id
       is
-         Comp_Typ      : constant Entity_Id  := Component_Type (Typ);
-         Exceptions_OK : constant Boolean    :=
-                           not Restriction_Active (No_Exception_Propagation);
-         Index_List    : constant List_Id    := New_List;
-         Loc           : constant Source_Ptr := Sloc (Typ);
-         Num_Dims      : constant Int        := Number_Dimensions (Typ);
+         Comp_Typ   : constant Entity_Id  := Component_Type (Typ);
+         Index_List : constant List_Id    := New_List;
+         Loc        : constant Source_Ptr := Sloc (Typ);
+         Num_Dims   : constant Int        := Number_Dimensions (Typ);
 
          procedure Build_Indexes;
          --  Generate the indexes used in the dimension loops
@@ -5822,13 +5818,11 @@ package body Exp_Ch7 is
       ---------------------------------
 
       function Build_Initialize_Statements (Typ : Entity_Id) return List_Id is
-         Comp_Typ      : constant Entity_Id  := Component_Type (Typ);
-         Exceptions_OK : constant Boolean    :=
-                           not Restriction_Active (No_Exception_Propagation);
-         Final_List    : constant List_Id    := New_List;
-         Index_List    : constant List_Id    := New_List;
-         Loc           : constant Source_Ptr := Sloc (Typ);
-         Num_Dims      : constant Int        := Number_Dimensions (Typ);
+         Comp_Typ   : constant Entity_Id  := Component_Type (Typ);
+         Final_List : constant List_Id    := New_List;
+         Index_List : constant List_Id    := New_List;
+         Loc        : constant Source_Ptr := Sloc (Typ);
+         Num_Dims   : constant Int        := Number_Dimensions (Typ);
 
          function Build_Assignment (Counter_Id : Entity_Id) return Node_Id;
          --  Generate the following assignment:
@@ -6349,6 +6343,8 @@ package body Exp_Ch7 is
       Typ      : Entity_Id;
       Is_Local : Boolean := False) return List_Id
    is
+      Exceptions_OK : constant Boolean := Exceptions_In_Finalization_OK;
+
       function Build_Adjust_Statements (Typ : Entity_Id) return List_Id;
       --  Build the statements necessary to adjust a record type. The type may
       --  have discriminants and contain variant parts. Generate:
@@ -6498,17 +6494,10 @@ package body Exp_Ch7 is
       -----------------------------
 
       function Build_Adjust_Statements (Typ : Entity_Id) return List_Id is
-         Exceptions_OK  : constant Boolean    :=
-                            not Restriction_Active (No_Exception_Propagation);
-         Loc            : constant Source_Ptr := Sloc (Typ);
-         Typ_Def        : constant Node_Id    :=
-                            Type_Definition (Parent (Typ));
+         Loc     : constant Source_Ptr := Sloc (Typ);
+         Typ_Def : constant Node_Id    := Type_Definition (Parent (Typ));
 
-         Bod_Stmts       : List_Id;
-         Finalizer_Data  : Finalization_Exception_Data;
-         Finalizer_Decls : List_Id := No_List;
-         Rec_Def         : Node_Id;
-         Var_Case        : Node_Id;
+         Finalizer_Data : Finalization_Exception_Data;
 
          function Process_Component_List_For_Adjust
            (Comps : Node_Id) return List_Id;
@@ -6581,6 +6570,7 @@ package body Exp_Ch7 is
             Decl_Typ  : Entity_Id;
             Has_POC   : Boolean;
             Num_Comps : Nat;
+            Var_Case  : Node_Id;
 
          --  Start of processing for Process_Component_List_For_Adjust
 
@@ -6709,6 +6699,12 @@ package body Exp_Ch7 is
 
             return Stmts;
          end Process_Component_List_For_Adjust;
+
+         --  Local variables
+
+         Bod_Stmts       : List_Id;
+         Finalizer_Decls : List_Id := No_List;
+         Rec_Def         : Node_Id;
 
       --  Start of processing for Build_Adjust_Statements
 
@@ -6914,18 +6910,12 @@ package body Exp_Ch7 is
       -------------------------------
 
       function Build_Finalize_Statements (Typ : Entity_Id) return List_Id is
-         Exceptions_OK  : constant Boolean    :=
-                            not Restriction_Active (No_Exception_Propagation);
-         Loc            : constant Source_Ptr := Sloc (Typ);
-         Typ_Def        : constant Node_Id    :=
-                            Type_Definition (Parent (Typ));
+         Loc     : constant Source_Ptr := Sloc (Typ);
+         Typ_Def : constant Node_Id    := Type_Definition (Parent (Typ));
 
-         Bod_Stmts       : List_Id;
-         Counter         : Int := 0;
-         Finalizer_Data  : Finalization_Exception_Data;
-         Finalizer_Decls : List_Id := No_List;
-         Rec_Def         : Node_Id;
-         Var_Case        : Node_Id;
+         Counter        : Int := 0;
+         Finalizer_Data : Finalization_Exception_Data;
+         Num_Comps      : Nat := 0;
 
          function Process_Component_List_For_Finalize
            (Comps : Node_Id) return List_Id;
@@ -6940,19 +6930,6 @@ package body Exp_Ch7 is
          function Process_Component_List_For_Finalize
            (Comps : Node_Id) return List_Id
          is
-            Alts       : List_Id;
-            Counter_Id : Entity_Id;
-            Decl       : Node_Id;
-            Decl_Id    : Entity_Id;
-            Decl_Typ   : Entity_Id;
-            Decls      : List_Id;
-            Has_POC    : Boolean;
-            Jump_Block : Node_Id;
-            Label      : Node_Id;
-            Label_Id   : Entity_Id;
-            Num_Comps  : Nat;
-            Stmts      : List_Id;
-
             procedure Process_Component_For_Finalize
               (Decl  : Node_Id;
                Alts  : List_Id;
@@ -7065,6 +7042,21 @@ package body Exp_Ch7 is
                   Append_To (Stmts, Fin_Call);
                end if;
             end Process_Component_For_Finalize;
+
+            --  Local variables
+
+            Alts       : List_Id;
+            Counter_Id : Entity_Id;
+            Decl       : Node_Id;
+            Decl_Id    : Entity_Id;
+            Decl_Typ   : Entity_Id;
+            Decls      : List_Id;
+            Has_POC    : Boolean;
+            Jump_Block : Node_Id;
+            Label      : Node_Id;
+            Label_Id   : Entity_Id;
+            Stmts      : List_Id;
+            Var_Case   : Node_Id;
 
          --  Start of processing for Process_Component_List_For_Finalize
 
@@ -7285,6 +7277,12 @@ package body Exp_Ch7 is
                return New_List (Jump_Block);
             end if;
          end Process_Component_List_For_Finalize;
+
+         --  Local variables
+
+         Bod_Stmts       : List_Id;
+         Finalizer_Decls : List_Id := No_List;
+         Rec_Def         : Node_Id;
 
       --  Start of processing for Build_Finalize_Statements
 

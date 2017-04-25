@@ -1717,6 +1717,43 @@ package body Sem_Ch3 is
                   Derived_Type => Tagged_Type,
                   Parent_Type  => Iface);
 
+               declare
+                  Anc : Entity_Id;
+               begin
+                  if Is_Inherited_Operation (Prim)
+                    and then Present (Alias (Prim))
+                  then
+                     Anc := Alias (Prim);
+                  else
+                     Anc := Overridden_Operation (Prim);
+                  end if;
+
+                  --  Apply legality checks in RM 6.1.1 (10-13) concerning
+                  --  non-conforming preconditions in both an ancestor and
+                  --  a progenitor operation.
+
+                  if Present (Anc)
+                    and then Has_Non_Trivial_Precondition (Anc)
+                    and then Has_Non_Trivial_Precondition (Iface_Prim)
+                  then
+                     if Is_Abstract_Subprogram (Prim)
+                       or else (Ekind (Prim) = E_Procedure
+                         and then
+                           Nkind (Parent (Prim)) = N_Procedure_Specification
+                         and then Null_Present (Parent (Prim)))
+                     then
+                        null;
+
+                     --  The inherited operation must be overridden
+
+                     elsif not Comes_From_Source (Prim) then
+                        Error_Msg_NE ("&inherits non-conforming preconditions "
+                          & "and must be overridden (RM 6.1.1 (10-16)",
+                            Parent (Tagged_Type), Prim);
+                     end if;
+                  end if;
+               end;
+
                --  Ada 2005 (AI-251): Decorate internal entity Iface_Subp
                --  associated with interface types. These entities are
                --  only registered in the list of primitives of its

@@ -535,6 +535,10 @@ package Exp_Util is
    --  indicating that no checks were required). The Sloc field of the
    --  constructed N_Or_Else node is copied from Cond1.
 
+   function Exceptions_In_Finalization_OK return Boolean;
+   --  Determine whether the finalization machinery can safely add exception
+   --  handlers and recovery circuitry.
+
    procedure Expand_Static_Predicates_In_Choices (N : Node_Id);
    --  N is either a case alternative or a variant. The Discrete_Choices field
    --  of N points to a list of choices. If any of these choices is the name

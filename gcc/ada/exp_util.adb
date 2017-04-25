@@ -4784,6 +4784,18 @@ package body Exp_Util is
       end if;
    end Evolve_Or_Else;
 
+   -----------------------------------
+   -- Exceptions_In_Finalization_OK --
+   -----------------------------------
+
+   function Exceptions_In_Finalization_OK return Boolean is
+   begin
+      return
+        not (Restriction_Active (No_Exception_Handlers)    or else
+             Restriction_Active (No_Exception_Propagation) or else
+             Restriction_Active (No_Exceptions));
+   end Exceptions_In_Finalization_OK;
+
    -----------------------------------------
    -- Expand_Static_Predicates_In_Choices --
    -----------------------------------------

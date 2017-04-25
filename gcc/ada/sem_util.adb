@@ -9820,6 +9820,18 @@ package body Sem_Util is
           and then Nkind (Node (First_Elmt (Constits))) /= N_Null;
    end Has_Non_Null_Refinement;
 
+   ----------------------------------
+   -- Has_Non_Trivial_Precondition --
+   ----------------------------------
+
+   function Has_Non_Trivial_Precondition (P : Entity_Id) return Boolean is
+      Cont : constant Node_Id := Find_Aspect (P, Aspect_Pre);
+   begin
+      return Present (Cont)
+        and then Class_Present (Cont)
+        and then not Is_Entity_Name (Expression (Cont));
+   end Has_Non_Trivial_Precondition;
+
    -------------------
    -- Has_Null_Body --
    -------------------
