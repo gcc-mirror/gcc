@@ -1181,32 +1181,6 @@ package body Sem is
       end if;
    end Insert_List_After_And_Analyze;
 
-   --  Version with check(s) suppressed
-
-   procedure Insert_List_After_And_Analyze
-     (N : Node_Id; L : List_Id; Suppress : Check_Id)
-   is
-   begin
-      if Suppress = All_Checks then
-         declare
-            Svs : constant Suppress_Array := Scope_Suppress.Suppress;
-         begin
-            Scope_Suppress.Suppress := (others => True);
-            Insert_List_After_And_Analyze (N, L);
-            Scope_Suppress.Suppress := Svs;
-         end;
-
-      else
-         declare
-            Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
-         begin
-            Scope_Suppress.Suppress (Suppress) := True;
-            Insert_List_After_And_Analyze (N, L);
-            Scope_Suppress.Suppress (Suppress) := Svg;
-         end;
-      end if;
-   end Insert_List_After_And_Analyze;
-
    ------------------------------------
    -- Insert_List_Before_And_Analyze --
    ------------------------------------
@@ -1236,32 +1210,6 @@ package body Sem is
             Mark_Rewrite_Insertion (Node);
             Next (Node);
          end loop;
-      end if;
-   end Insert_List_Before_And_Analyze;
-
-   --  Version with check(s) suppressed
-
-   procedure Insert_List_Before_And_Analyze
-     (N : Node_Id; L : List_Id; Suppress : Check_Id)
-   is
-   begin
-      if Suppress = All_Checks then
-         declare
-            Svs : constant Suppress_Array := Scope_Suppress.Suppress;
-         begin
-            Scope_Suppress.Suppress := (others => True);
-            Insert_List_Before_And_Analyze (N, L);
-            Scope_Suppress.Suppress := Svs;
-         end;
-
-      else
-         declare
-            Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
-         begin
-            Scope_Suppress.Suppress (Suppress) := True;
-            Insert_List_Before_And_Analyze (N, L);
-            Scope_Suppress.Suppress (Suppress) := Svg;
-         end;
       end if;
    end Insert_List_Before_And_Analyze;
 

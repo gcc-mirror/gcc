@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -213,24 +213,6 @@ package Osint is
    --  Expand a wildcard host syntax file or directory specification and return
    --  a list of valid Unix syntax file or directory specs. If Only_Dirs is
    --  True, then only return directories.
-
-   function To_Canonical_Dir_Spec
-     (Host_Dir     : String;
-      Prefix_Style : Boolean) return String_Access;
-   --  Convert a host syntax directory specification to canonical (Unix)
-   --  syntax. If Prefix_Style then make it a valid file specification prefix.
-   --  A file specification prefix is a directory specification that can be
-   --  appended with a simple file specification to yield a valid absolute
-   --  or relative path to a file. On a conversion to Unix syntax this simply
-   --  means the spec has a trailing slash ("/").
-
-   function To_Canonical_File_Spec
-     (Host_File : String) return String_Access;
-   --  Convert a host syntax file specification to canonical (Unix) syntax
-
-   function To_Canonical_Path_Spec
-     (Host_Path : String) return String_Access;
-   --  Convert a host syntax Path specification to canonical (Unix) syntax
 
    function To_Host_Dir_Spec
      (Canonical_Dir : String;

@@ -5199,7 +5199,7 @@ package body Exp_Util is
 
       Calls_OK : Boolean := False;
       --  This flag is set to True when expression Expr contains at least one
-      --  call to a non-dispatching primitive function of Typ.
+      --  call to a nondispatching primitive function of Typ.
 
       function Search_Primitive_Calls (N : Node_Id) return Traverse_Result;
       --  Search for nondispatching calls to primitive functions of type Typ
@@ -5213,7 +5213,7 @@ package body Exp_Util is
          Subp     : Entity_Id;
 
       begin
-         --  Detect a function call which could denote a non-dispatching
+         --  Detect a function call that could denote a nondispatching
          --  primitive of the input type.
 
          if Nkind (N) = N_Function_Call
@@ -5221,7 +5221,7 @@ package body Exp_Util is
          then
             Subp := Entity (Name (N));
 
-            --  Do not consider function calls with a controlling argument as
+            --  Do not consider function calls with a controlling argument, as
             --  those are always dispatching calls.
 
             if Is_Dispatching_Operation (Subp)
@@ -5237,7 +5237,7 @@ package body Exp_Util is
                then
                   Calls_OK := True;
 
-                  --  There is no need to continue the traversal as one such
+                  --  There is no need to continue the traversal, as one such
                   --  call suffices.
 
                   return Abandon;
