@@ -4887,21 +4887,6 @@ package body Sem_Ch13 is
                     ("\?j?use interrupt procedure instead", N);
                end if;
 
-            --  Case of an address clause for a controlled object, which we
-            --  consider to be erroneous.
-
-            elsif Is_Controlled (Etype (U_Ent))
-              or else Has_Controlled_Component (Etype (U_Ent))
-            then
-               Error_Msg_NE
-                 ("??controlled object & must not be overlaid", Nam, U_Ent);
-               Error_Msg_N
-                 ("\??Program_Error will be raised at run time", Nam);
-               Insert_Action (Declaration_Node (U_Ent),
-                 Make_Raise_Program_Error (Loc,
-                   Reason => PE_Overlaid_Controlled_Object));
-               return;
-
             --  Case of an address clause for a class-wide object, which is
             --  considered erroneous.
 
@@ -4915,9 +4900,9 @@ package body Sem_Ch13 is
                    Reason => PE_Overlaid_Controlled_Object));
                return;
 
-            --  Case of address clause for a (non-controlled) object
+            --  Case of address clause for an object
 
-            elsif Ekind_In (U_Ent, E_Variable, E_Constant) then
+            elsif Ekind_In (U_Ent, E_Constant, E_Variable) then
                declare
                   Expr  : constant Node_Id := Expression (N);
                   O_Ent : Entity_Id;
@@ -5006,28 +4991,11 @@ package body Sem_Ch13 is
                      end;
                   end if;
 
-                  --  Overlaying controlled objects is erroneous. Emit warning
-                  --  but continue analysis because program is itself legal,
-                  --  and back end must see address clause.
-
-                  if Present (O_Ent)
-                    and then (Has_Controlled_Component (Etype (O_Ent))
-                               or else Is_Controlled (Etype (O_Ent)))
-                    and then not Inside_A_Generic
-                  then
-                     Error_Msg_N
-                       ("??cannot use overlays with controlled objects", Expr);
-                     Error_Msg_N
-                       ("\??Program_Error will be raised at run time", Expr);
-                     Insert_Action (Declaration_Node (U_Ent),
-                       Make_Raise_Program_Error (Loc,
-                         Reason => PE_Overlaid_Controlled_Object));
-
                   --  Issue an unconditional warning for a constant overlaying
                   --  a variable. For the reverse case, we will issue it only
                   --  if the variable is modified.
 
-                  elsif Ekind (U_Ent) = E_Constant
+                  if Ekind (U_Ent) = E_Constant
                     and then Present (O_Ent)
                     and then not Overlays_Constant (U_Ent)
                     and then Address_Clause_Overlay_Warnings

@@ -359,6 +359,9 @@ extern struct Node *Nodes_Ptr;
 #define Parent atree__parent
 extern Node_Id Parent (Node_Id);
 
+#define Original_Node atree__original_node
+extern Node_Id Original_Node (Node_Id);
+
 /* The auxiliary flags array which is allocated in parallel to Nodes */
 
 struct Flags
