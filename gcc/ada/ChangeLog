@@ -1,3 +1,44 @@
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb, sem_ch5.adb: Minor reformatting.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* types.ads: Minor: Fix '???' comment.
+	* sem_ch8.adb: Minor comment fix.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* sem_prag.adb: Remove suspicious uses of Name_Buf.
+	* stringt.ads, stringt.adb, exp_dbug.adb, sem_dim.adb: Remove
+	Add_String_To_Name_Buffer, to avoid using the global Name_Buf.
+	Add String_To_Name with no side effects.
+
+2017-04-25  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Add
+	additional condition for edge case.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* par-ch2.adb, scans.ads, scn.adb: Do not give an error for
+	reserved words inside pragmas. This is necessary to allow the
+	pragma name Interface to be used in pragma Ignore_Pragma.
+	* par.adb: Minor comment fix.
+
+2017-04-25  Javier Miranda  <miranda@adacore.com>
+
+	* a-tags.ads, a-tags.adb (Type_Is_Abstract): Renamed as Is_Abstract.
+	* rtsfind.ads (RE_Type_Is_Abstract): Renamed as Is_Abstract.
+	* exp_disp.adb (Make_DT): Update occurrences of RE_Type_Is_Abstract.
+	* exp_intr.adb (Expand_Dispatching_Constructor_Call): Update
+	occurrences of RE_Type_Is_Abstract
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Build_Chain): Account for ancestor
+	subtypes while traversing the derivation chain.
+
 2017-04-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb: minor reformatting.

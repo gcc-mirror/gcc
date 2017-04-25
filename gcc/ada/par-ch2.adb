@@ -268,6 +268,7 @@ package body Ch2 is
    --  Start of processing for P_Pragma
 
    begin
+      Inside_Pragma := True;
       Prag_Node := New_Node (N_Pragma, Token_Ptr);
       Scan; -- past PRAGMA
       Prag_Name := Token_Name;
@@ -362,9 +363,10 @@ package body Ch2 is
 
       Semicolon_Loc := Token_Ptr;
 
-      --  Cancel indication of being within Depends pragm. Can be done
-      --  unconditionally, since quicker than doing a test.
+      --  Cancel indication of being within a pragma or in particular a Depends
+      --  pragma.
 
+      Inside_Pragma  := False;
       Inside_Depends := False;
 
       --  Now we have two tasks left, we need to scan out the semicolon
@@ -388,12 +390,11 @@ package body Ch2 is
          Skip_Pragma_Semicolon;
          return Par.Prag (Prag_Node, Semicolon_Loc);
       end if;
-
    exception
       when Error_Resync =>
          Resync_Past_Semicolon;
+         Inside_Pragma := False;
          return Error;
-
    end P_Pragma;
 
    --  This routine is called if a pragma is encountered in an inappropriate

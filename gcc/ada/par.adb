@@ -70,8 +70,8 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    --  Par.Ch5.Get_Loop_Block_Name).
 
    Inside_Record_Definition : Boolean := False;
-   --  Flag set True within a record definition. Used to control warning
-   --  for redefinition of standard entities (not issued for field names).
+   --  True within a record definition. Used to control warning for
+   --  redefinition of standard entities (not issued for field names).
 
    --------------------
    -- Error Recovery --

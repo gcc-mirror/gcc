@@ -256,6 +256,11 @@ package Types is
    --    Universal integers (type Uint)
    --    Universal reals (type Ureal)
 
+   --  These types are represented as integer indices into various tables.
+   --  However, they should be treated as private, except in a few documented
+   --  cases. In particular it is never appropriate to perform arithmetic
+   --  operations using these types.
+
    --  In most contexts, the strongly typed interface determines which of these
    --  types is present. However, there are some situations (involving untyped
    --  traversals of the tree), where it is convenient to be easily able to
@@ -485,11 +490,6 @@ package Types is
 
    --  String_Id values are used to identify entries in the strings table. They
    --  are subscripts into the Strings table defined in package Stringt.
-
-   --  Note that with only a few exceptions, which are clearly documented, the
-   --  type String_Id should be regarded as a private type. In particular it is
-   --  never appropriate to perform arithmetic operations using this type.
-   --  Doesn't this also apply to all other *_Id types???
 
    type String_Id is range Strings_Low_Bound .. Strings_High_Bound;
    --  Type used to identify entries in the strings table

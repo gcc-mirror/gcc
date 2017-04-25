@@ -100,11 +100,13 @@ package body Sem_Ch5 is
    --  Ghost mode.
 
    procedure Analyze_Assignment (N : Node_Id) is
-      Lhs                : constant Node_Id := Name (N);
-      Rhs                : constant Node_Id := Expression (N);
-      T1                 : Entity_Id;
-      T2                 : Entity_Id;
-      Decl               : Node_Id;
+      Lhs : constant Node_Id := Name (N);
+      Rhs : constant Node_Id := Expression (N);
+
+      Decl : Node_Id;
+      T1   : Entity_Id;
+      T2   : Entity_Id;
+
       Save_Full_Analysis : Boolean;
 
       procedure Diagnose_Non_Variable_Lhs (N : Node_Id);
@@ -312,11 +314,12 @@ package body Sem_Ch5 is
       Analyze (Rhs);
 
       --  Ensure that we never do an assignment on a variable marked as
-      --  as Safe_To_Reevaluate.
+      --  Is_Safe_To_Reevaluate.
 
-      pragma Assert (not Is_Entity_Name (Lhs)
-        or else Ekind (Entity (Lhs)) /= E_Variable
-        or else not Is_Safe_To_Reevaluate (Entity (Lhs)));
+      pragma Assert
+        (not Is_Entity_Name (Lhs)
+          or else Ekind (Entity (Lhs)) /= E_Variable
+          or else not Is_Safe_To_Reevaluate (Entity (Lhs)));
 
       --  Start type analysis for assignment
 
@@ -3558,8 +3561,8 @@ package body Sem_Ch5 is
    ------------------------
 
    procedure Analyze_Statements (L : List_Id) is
-      S   : Node_Id;
       Lab : Entity_Id;
+      S   : Node_Id;
 
    begin
       --  The labels declared in the statement list are reachable from

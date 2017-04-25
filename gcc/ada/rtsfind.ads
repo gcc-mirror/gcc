@@ -637,6 +637,7 @@ package Rtsfind is
      RE_Interface_Data,                  -- Ada.Tags
      RE_Interface_Data_Element,          -- Ada.Tags
      RE_Interface_Tag,                   -- Ada.Tags
+     RE_Is_Abstract,                     -- Ada.Tags
      RE_IW_Membership,                   -- Ada.Tags
      RE_Max_Predef_Prims,                -- Ada.Tags
      RE_Needs_Finalization,              -- Ada.Tags
@@ -668,7 +669,6 @@ package Rtsfind is
      RE_Signature,                       -- Ada.Tags
      RE_SSD,                             -- Ada.Tags
      RE_TSD,                             -- Ada.Tags
-     RE_Type_Is_Abstract,                -- Ada.Tags
      RE_Type_Specific_Data,              -- Ada.Tags
      RE_Register_Interface_Offset,       -- Ada.Tags
      RE_Register_Tag,                    -- Ada.Tags
@@ -1870,6 +1870,7 @@ package Rtsfind is
      RE_Interface_Data                   => Ada_Tags,
      RE_Interface_Data_Element           => Ada_Tags,
      RE_Interface_Tag                    => Ada_Tags,
+     RE_Is_Abstract                      => Ada_Tags,
      RE_IW_Membership                    => Ada_Tags,
      RE_Max_Predef_Prims                 => Ada_Tags,
      RE_Needs_Finalization               => Ada_Tags,
@@ -1901,7 +1902,6 @@ package Rtsfind is
      RE_Signature                        => Ada_Tags,
      RE_SSD                              => Ada_Tags,
      RE_TSD                              => Ada_Tags,
-     RE_Type_Is_Abstract                 => Ada_Tags,
      RE_Type_Specific_Data               => Ada_Tags,
      RE_Register_Interface_Offset        => Ada_Tags,
      RE_Register_Tag                     => Ada_Tags,

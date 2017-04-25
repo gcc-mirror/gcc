@@ -400,7 +400,7 @@ package body Exp_Intr is
         Make_Implicit_If_Statement (N,
           Condition       => Make_Function_Call (Loc,
              Name                   =>
-               New_Occurrence_Of (RTE (RE_Type_Is_Abstract), Loc),
+               New_Occurrence_Of (RTE (RE_Is_Abstract), Loc),
              Parameter_Associations => New_List (New_Copy_Tree (Tag_Arg))),
 
           Then_Statements => New_List (
