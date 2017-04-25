@@ -174,10 +174,14 @@ package Sem_Dim is
    --  resolution of the ultimate components to a separate phase, which forces
    --  this separate dimension verification.
 
-   procedure Copy_Dimensions (From, To : Node_Id);
+   procedure Copy_Dimensions (From : Node_Id; To : Node_Id);
    --  Copy dimension vector of node From to node To. Note that To must be a
    --  node that is allowed to contain a dimension (see OK_For_Dimension in
    --  body of Sem_Dim).
+
+   function Dimensions_Match (T1 : Entity_Id; T2 : Entity_Id) return Boolean;
+   --  If the common base type has a dimension system, verify that two
+   --  subtypes have the same dimensions. Used for conformance checking.
 
    procedure Eval_Op_Expon_For_Dimensioned_Type
      (N    : Node_Id;

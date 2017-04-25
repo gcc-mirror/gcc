@@ -2347,7 +2347,7 @@ package body Sem_Dim is
    -- Copy_Dimensions --
    ---------------------
 
-   procedure Copy_Dimensions (From, To : Node_Id) is
+   procedure Copy_Dimensions (From : Node_Id; To : Node_Id) is
       Dims_Of_From : constant Dimension_Type := Dimensions_Of (From);
 
    begin
@@ -2592,6 +2592,17 @@ package body Sem_Dim is
       Error_Msg_Name_1 := Name_Find;
       Error_Msg_N ("assumed to be%%??", N);
    end Dim_Warning_For_Numeric_Literal;
+
+   ----------------------
+   -- Dimensions_Match --
+   ----------------------
+
+   function Dimensions_Match (T1 : Entity_Id; T2 : Entity_Id) return Boolean is
+   begin
+      return
+        not Has_Dimension_System (Base_Type (T1))
+          or else Dimensions_Of (T1) = Dimensions_Of (T2);
+   end Dimensions_Match;
 
    ----------------------------------------
    -- Eval_Op_Expon_For_Dimensioned_Type --

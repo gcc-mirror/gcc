@@ -21320,22 +21320,35 @@ package body Sem_Util is
                      Prot_Type := Scope (Scope (E));
                   end if;
 
-                  pragma Assert (Ekind (Prot_Type) = E_Protected_Type);
+                  --  A protected type may be declared as a private type, in
+                  --  which case we need to get its full view.
 
-                  --  Traverse the entity list of the protected type and locate
-                  --  an entry declaration which matches the entry body.
+                  if Is_Private_Type (Prot_Type) then
+                     Prot_Type := Full_View (Prot_Type);
+                  end if;
 
-                  Prot_Item := First_Entity (Prot_Type);
-                  while Present (Prot_Item) loop
-                     if Ekind (Prot_Item) in Entry_Kind
-                       and then Corresponding_Body (Parent (Prot_Item)) = E
-                     then
-                        U := Prot_Item;
-                        exit;
-                     end if;
+                  --  Full view may not be present on error, in which case
+                  --  return E by default.
 
-                     Next_Entity (Prot_Item);
-                  end loop;
+                  if Present (Prot_Type) then
+                     pragma Assert (Ekind (Prot_Type) = E_Protected_Type);
+
+                     --  Traverse the entity list of the protected type and
+                     --  locate an entry declaration which matches the entry
+                     --  body.
+
+                     Prot_Item := First_Entity (Prot_Type);
+                     while Present (Prot_Item) loop
+                        if Ekind (Prot_Item) in Entry_Kind
+                          and then Corresponding_Body (Parent (Prot_Item)) = E
+                        then
+                           U := Prot_Item;
+                           exit;
+                        end if;
+
+                        Next_Entity (Prot_Item);
+                     end loop;
+                  end if;
                end;
             end if;
 
@@ -21380,6 +21393,10 @@ package body Sem_Util is
                end if;
             end if;
 
+            if Is_Private_Type (U) then
+               U := Full_View (U);
+            end if;
+
          when E_Subprogram_Body =>
             P := Parent (E);
 
@@ -21419,6 +21436,10 @@ package body Sem_Util is
                if Is_Single_Task_Object (U) then
                   U := Etype (U);
                end if;
+            end if;
+
+            if Is_Private_Type (U) then
+               U := Full_View (U);
             end if;
 
          when Type_Kind =>
