@@ -2056,14 +2056,14 @@ package body Scng is
             --  In Ada 2020, a target name (i.e. @) is a valid prefix of an
             --  attribute, and functions like a name.
 
-            if Prev_Token = Tok_Identifier
-               or else Prev_Token = Tok_Right_Paren
-               or else Prev_Token = Tok_All
-               or else Prev_Token = Tok_Delta
-               or else Prev_Token = Tok_Digits
-               or else Prev_Token = Tok_Project
-               or else Prev_Token = Tok_At_Sign
-               or else Prev_Token in Token_Class_Literal
+            if Prev_Token = Tok_All
+              or else Prev_Token = Tok_At_Sign
+              or else Prev_Token = Tok_Delta
+              or else Prev_Token = Tok_Digits
+              or else Prev_Token = Tok_Identifier
+              or else Prev_Token = Tok_Project
+              or else Prev_Token = Tok_Right_Paren
+              or else Prev_Token in Token_Class_Literal
             then
                Token := Tok_Apostrophe;
 

@@ -1,3 +1,16 @@
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_aggr.adb, inline.adb, einfo.adb, einfo.ads, scng.adb,
+	sem_prag.adb: Minor reformatting.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb (Type_Key): Add code in the
+	recursive Compute_Type_Key to protect against fetching the source
+	code for Standard, in case a component of the type is declared
+	in Standard. There was already code to do this for the original
+	type, but not for its components.
+
 2017-04-25  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch3.adb (Build_Initialization_Call): Handle

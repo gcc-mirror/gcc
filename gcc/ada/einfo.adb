@@ -9262,8 +9262,8 @@ package body Einfo is
       end if;
 
       W ("Address_Taken",                   Flag104 (Id));
-      W ("Body_Needed_For_SAL",             Flag40  (Id));
       W ("Body_Needed_For_Inlining",        Flag299 (Id));
+      W ("Body_Needed_For_SAL",             Flag40  (Id));
       W ("C_Pass_By_Copy",                  Flag125 (Id));
       W ("Can_Never_Be_Null",               Flag38  (Id));
       W ("Checks_May_Be_Suppressed",        Flag31  (Id));
