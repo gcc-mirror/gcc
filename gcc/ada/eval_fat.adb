@@ -503,8 +503,9 @@ package body Eval_Fat is
 
       if X_Exp < Emin then
          declare
-            Emin_Den : constant UI := Machine_Emin_Value (RT)
-                                        - Machine_Mantissa_Value (RT) + Uint_1;
+            Emin_Den : constant UI := Machine_Emin_Value (RT) -
+                                        Machine_Mantissa_Value (RT) + Uint_1;
+
          begin
             --  Do not issue warnings about underflows in GNATprove mode,
             --  as calling Machine as part of interval checking may lead
@@ -516,6 +517,7 @@ package body Eval_Fat is
                      Error_Msg_N
                        ("floating-point value underflows to -0.0??", Enode);
                   end if;
+
                   return Ureal_M_0;
 
                else
@@ -523,6 +525,7 @@ package body Eval_Fat is
                      Error_Msg_N
                        ("floating-point value underflows to 0.0??", Enode);
                   end if;
+
                   return Ureal_0;
                end if;
 
@@ -553,8 +556,8 @@ package body Eval_Fat is
 
                begin
                   --  Do not issue warnings about loss of precision in
-                  --  GNATprove mode, as calling Machine as part of
-                  --  interval checking may lead to spurious warnings.
+                  --  GNATprove mode, as calling Machine as part of interval
+                  --  checking may lead to spurious warnings.
 
                   if X_Frac_Denorm /= X_Frac then
                      if not GNATprove_Mode then

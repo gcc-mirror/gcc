@@ -1,5 +1,29 @@
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_ch7.adb, checks.adb, sem_prag.adb, eval_fat.adb: Minor
+	reformatting.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* binde.adb (Validate): Do not pass dynamic strings
+	to pragma Assert, because older compilers do not support that.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* s-fileio.adb (Close): When a temp file is
+	closed, delete it and clean up its Temp_File_Record immediately,
+	rather than waiting until later.
+	(Temp_File_Record): Add File
+	component, so Close can know which Temp_File_Record corresponds
+	to the file being closed.
+	(Delete): Don't delete temp files,
+	because they are deleted by Close.
+	(Open): Set the File component
+	of Temp_File_Record. This requires moving the creation of the
+	Temp_File_Record to the end, after the AFCB has been created.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* checks.adb (Insert_Valid_Check): Do not generate
 	a validity check when inside a generic.
 
