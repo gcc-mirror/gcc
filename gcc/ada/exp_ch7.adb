@@ -787,7 +787,7 @@ package body Exp_Ch7 is
               Typ   => Typ,
               Stmts => Make_Deep_Array_Body (Finalize_Case, Typ)));
 
-         --  Create TSS primitive Finalize_Address (unless CodePeer_Mode).
+         --  Create TSS primitive Finalize_Address (unless CodePeer_Mode)
 
          if not CodePeer_Mode then
             Set_TSS (Typ,
@@ -3671,7 +3671,7 @@ package body Exp_Ch7 is
               Typ   => Typ,
               Stmts => Make_Deep_Record_Body (Finalize_Case, Typ)));
 
-         --  Create TSS primitive Finalize_Address (unless CodePeer_Mode).
+         --  Create TSS primitive Finalize_Address (unless CodePeer_Mode)
 
          if not CodePeer_Mode then
             Set_TSS (Typ,
@@ -7801,7 +7801,8 @@ package body Exp_Ch7 is
          return;
       end if;
 
-      --  Don't generate Finalize_Address routine for CodePeer
+      --  Do not generate Finalize_Address routine for CodePeer
+
       if CodePeer_Mode then
          return;
       end if;

@@ -4243,35 +4243,34 @@ package body Sem_Prag is
                Prev := Overridden_Operation (Prev);
             end loop;
 
-            --  If the controlling type of the subprogram has progenitors,
-            --  an interface operation implemented by the current operation
-            --  may have a class-wide precondition.
+            --  If the controlling type of the subprogram has progenitors, an
+            --  interface operation implemented by the current operation may
+            --  have a class-wide precondition.
 
             Typ := Find_Dispatching_Type (E);
             if Has_Interfaces (Typ) then
                declare
-                  Ints      : Elist_Id;
                   Elmt      : Elmt_Id;
-                  Prim_List : Elist_Id;
-                  Prim_Elmt : Elmt_Id;
+                  Ints      : Elist_Id;
                   Prim      : Entity_Id;
+                  Prim_Elmt : Elmt_Id;
+                  Prim_List : Elist_Id;
+
                begin
                   Collect_Interfaces (Typ, Ints);
                   Elmt := First_Elmt (Ints);
 
-                  --  Iterate over the primitive operations of each
-                  --  interface.
+                  --  Iterate over the primitive operations of each interface
 
                   while Present (Elmt) loop
-                     Prim_List :=
-                      (Direct_Primitive_Operations (Node (Elmt)));
+                     Prim_List := Direct_Primitive_Operations (Node (Elmt));
                      Prim_Elmt := First_Elmt (Prim_List);
                      while Present (Prim_Elmt) loop
                         Prim := Node (Prim_Elmt);
                         if Chars (Prim) = Chars (E)
                           and then Present (Contract (Prim))
                           and then Class_Present
-                            (Pre_Post_Conditions (Contract (Prim)))
+                                     (Pre_Post_Conditions (Contract (Prim)))
                         then
                            return True;
                         end if;
@@ -4286,6 +4285,8 @@ package body Sem_Prag is
 
             return False;
          end Inherits_Class_Wide_Pre;
+
+      --  Start of processing for Analyze_Pre_Post_Condition
 
       begin
          --  Change the name of pragmas Pre, Pre_Class, Post and Post_Class to
@@ -4422,11 +4423,11 @@ package body Sem_Prag is
                  and then not Inherits_Class_Wide_Pre (E)
                then
                   Error_Msg_N
-                    ("illegal class-wide precondition on overriding "
-                      & "operation", Corresponding_Aspect (N));
+                    ("illegal class-wide precondition on overriding operation",
+                     Corresponding_Aspect (N));
 
                --  If the operation is declared in the private part of an
-               --  instance it may not override any visible operations,  but
+               --  instance it may not override any visible operations, but
                --  still have a parent operation that carries a precondition.
 
                elsif In_Instance
@@ -4439,7 +4440,7 @@ package body Sem_Prag is
                then
                   Error_Msg_N
                     ("illegal class-wide precondition on overriding "
-                      & "operation in instance", Corresponding_Aspect (N));
+                     & "operation in instance", Corresponding_Aspect (N));
                end if;
             end;
 

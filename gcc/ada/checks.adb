@@ -2959,23 +2959,23 @@ package body Checks is
         and then No (Source_Typ)
       then
          declare
-            Tlo : constant Node_Id := Type_Low_Bound  (Target_Typ);
             Thi : constant Node_Id := Type_High_Bound (Target_Typ);
+            Tlo : constant Node_Id := Type_Low_Bound  (Target_Typ);
 
          begin
             if Compile_Time_Known_Value (Tlo)
               and then Compile_Time_Known_Value (Thi)
             then
                declare
-                  Lov : constant Uint := Expr_Value (Tlo);
                   Hiv : constant Uint := Expr_Value (Thi);
-                  Lo  : Uint;
+                  Lov : constant Uint := Expr_Value (Tlo);
                   Hi  : Uint;
+                  Lo  : Uint;
 
                begin
-                  --  If range is null, we for sure have a constraint error
-                  --  (we don't even need to look at the value involved,
-                  --  since all possible values will raise CE).
+                  --  If range is null, we for sure have a constraint error (we
+                  --  don't even need to look at the value involved, since all
+                  --  possible values will raise CE).
 
                   if Lov > Hiv then
 
@@ -2998,8 +2998,8 @@ package body Checks is
                   --  Otherwise determine range of value
 
                   if Is_Discrete_Type (Etype (Expr)) then
-                     Determine_Range (Expr, OK, Lo, Hi,
-                                      Assume_Valid => True);
+                     Determine_Range
+                       (Expr, OK, Lo, Hi, Assume_Valid => True);
 
                   --  When converting a float to an integer type, determine the
                   --  range in real first, and then convert the bounds using
@@ -3013,11 +3013,12 @@ package body Checks is
                     and then Is_Floating_Point_Type (Etype (Expr))
                   then
                      declare
-                        Lor : Ureal;
                         Hir : Ureal;
+                        Lor : Ureal;
+
                      begin
-                        Determine_Range_R (Expr, OK, Lor, Hir,
-                                           Assume_Valid => True);
+                        Determine_Range_R
+                          (Expr, OK, Lor, Hir, Assume_Valid => True);
 
                         if OK then
                            Lo := UR_To_Uint (Lor);
@@ -5111,6 +5112,7 @@ package body Checks is
                   M2 : constant Ureal := Round_Machine (Lo_Left * Hi_Right);
                   M3 : constant Ureal := Round_Machine (Hi_Left * Lo_Right);
                   M4 : constant Ureal := Round_Machine (Hi_Left * Hi_Right);
+
                begin
                   Lor := UR_Min (UR_Min (M1, M2), UR_Min (M3, M4));
                   Hir := UR_Max (UR_Max (M1, M2), UR_Max (M3, M4));
@@ -5195,10 +5197,12 @@ package body Checks is
 
             elsif Is_Discrete_Type (Etype (Expression (N))) then
                declare
-                  Lor_Int, Hir_Int : Uint;
+                  Hir_Int : Uint;
+                  Lor_Int : Uint;
+
                begin
-                  Determine_Range (Expression (N), OK1, Lor_Int, Hir_Int,
-                                   Assume_Valid);
+                  Determine_Range
+                    (Expression (N), OK1, Lor_Int, Hir_Int, Assume_Valid);
 
                   if OK1 then
                      Lor := Round_Machine (UR_From_Uint (Lor_Int));
