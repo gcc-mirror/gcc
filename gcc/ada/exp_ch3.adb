@@ -7529,7 +7529,22 @@ package body Exp_Ch3 is
       --  class-wide invariants from parent types or interfaces, and invariants
       --  on array elements or record components.
 
-      if Has_Invariants (Def_Id) then
+      if Is_Interface (Def_Id) then
+
+         --  Interfaces are treated as the partial view of a private type in
+         --  order to achieve uniformity with the general case. As a result, an
+         --  interface receives only a "partial" invariant procedure which is
+         --  never called.
+
+         if Has_Own_Invariants (Def_Id) then
+            Build_Invariant_Procedure_Body
+              (Typ               => Def_Id,
+               Partial_Invariant => Is_Interface (Def_Id));
+         end if;
+
+      --  Non-interface types
+
+      elsif Has_Invariants (Def_Id) then
          Build_Invariant_Procedure_Body (Def_Id);
       end if;
 

@@ -1062,10 +1062,9 @@ package Exp_Util is
    --      the internally-generated inherited primitive of Deriv_Typ.
 
    procedure Replace_Type_References
-     (Expr     : Node_Id;
-      Typ      : Entity_Id;
-      Obj_Id   : Entity_Id;
-      Dispatch : Boolean := False);
+     (Expr   : Node_Id;
+      Typ    : Entity_Id;
+      Obj_Id : Entity_Id);
    --  Substitute all references of the current instance of type Typ with
    --  references to formal parameter Obj_Id within expression Expr.
 
