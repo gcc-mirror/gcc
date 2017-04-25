@@ -3354,7 +3354,7 @@ and similarly for `Mass`, `Time`, `Electric_Current`,
 The package also defines conventional names for values of each unit, for
 example:
 
-  .. code-block":: ada
+  .. code-block:: ada
 
      m   : constant Length           := 1.0;
      kg  : constant Mass             := 1.0;
