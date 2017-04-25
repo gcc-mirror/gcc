@@ -1187,7 +1187,7 @@ package body Osint is
                      and then Name_Buffer (Name_Len - 2 .. Name_Len) = ".dg")
          then
             Found := N;
-            Attr.all  := Unknown_Attributes;
+            Attr.all := Unknown_Attributes;
 
             if T = Config then
                if Full_Name then
@@ -1199,7 +1199,7 @@ package body Osint is
                   begin
                      Name_Buffer (1 .. Full_Size) := Full_Path;
                      Name_Len := Full_Size;
-                     Found := Name_Find;
+                     Found    := Name_Find;
                   end;
                end if;
 

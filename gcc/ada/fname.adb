@@ -57,6 +57,10 @@ package body Fname is
      Table_Increment      => Alloc.SFN_Table_Increment,
      Table_Name           => "Fname_Dummy_Table");
 
+   function Has_Internal_Extension (Fname : String) return Boolean;
+   --  True if the extension is ".ads" or ".adb", as is always the case for
+   --  internal/predefined units.
+
    function Has_Prefix (X, Prefix : String) return Boolean;
    --  True if Prefix is at the beginning of X. For example,
    --  Has_Prefix("a-filename.ads", Prefix => "a-") is True.
@@ -64,18 +68,15 @@ package body Fname is
    function Has_Suffix (X, Suffix : String) return Boolean;
    --  True if Suffix is at the end of X
 
-   function Has_Internal_Extension (Fname : String) return Boolean;
-   --  True if the extension is ".ads" or ".adb", as is always the case for
-   --  internal/predefined units.
-
    ----------------------------
    -- Has_Internal_Extension --
    ----------------------------
 
    function Has_Internal_Extension (Fname : String) return Boolean is
    begin
-      return Has_Suffix (Fname, Suffix => ".ads")
-        or else Has_Suffix (Fname, Suffix => ".adb");
+      return
+        Has_Suffix (Fname, Suffix => ".ads")
+          or else Has_Suffix (Fname, Suffix => ".adb");
    end Has_Internal_Extension;
 
    ----------------
@@ -87,7 +88,7 @@ package body Fname is
       if X'Length >= Prefix'Length then
          declare
             Slice : String renames
-              X (X'First .. X'First + Prefix'Length - 1);
+                      X (X'First .. X'First + Prefix'Length - 1);
          begin
             return Slice = Prefix;
          end;
@@ -104,7 +105,7 @@ package body Fname is
       if X'Length >= Suffix'Length then
          declare
             Slice : String renames
-              X (X'Last - Suffix'Length + 1 .. X'Last);
+                      X (X'Last - Suffix'Length + 1 .. X'Last);
          begin
             return Slice = Suffix;
          end;
@@ -118,7 +119,8 @@ package body Fname is
 
    function Is_Internal_File_Name
      (Fname              : String;
-      Renamings_Included : Boolean := True) return Boolean is
+      Renamings_Included : Boolean := True) return Boolean
+   is
    begin
       --  Check for internal extensions first, so we don't think (e.g.)
       --  "gnat.adc" is internal.
@@ -127,9 +129,10 @@ package body Fname is
          return False;
       end if;
 
-      return Is_Predefined_File_Name (Fname, Renamings_Included)
-        or else Has_Prefix (Fname, Prefix => "g-")
-        or else Has_Prefix (Fname, Prefix => "gnat.ad");
+      return
+        Is_Predefined_File_Name (Fname, Renamings_Included)
+          or else Has_Prefix (Fname, Prefix => "g-")
+          or else Has_Prefix (Fname, Prefix => "gnat.ad");
    end Is_Internal_File_Name;
 
    function Is_Internal_File_Name
@@ -137,8 +140,9 @@ package body Fname is
       Renamings_Included : Boolean := True) return Boolean
    is
    begin
-      return Is_Internal_File_Name
-        (Get_Name_String (Fname), Renamings_Included);
+      return
+        Is_Internal_File_Name
+          (Get_Name_String (Fname), Renamings_Included);
    end Is_Internal_File_Name;
 
    -----------------------------
@@ -147,7 +151,8 @@ package body Fname is
 
    function Is_Predefined_File_Name
      (Fname              : String;
-      Renamings_Included : Boolean := True) return Boolean is
+      Renamings_Included : Boolean := True) return Boolean
+   is
    begin
       if not Has_Internal_Extension (Fname) then
          return False;
@@ -166,9 +171,9 @@ package body Fname is
          return False;
       end if;
 
-      if Has_Prefix (Fname, Prefix => "ada.ad") -- Ada
-        or else Has_Prefix (Fname, Prefix => "interfac.ad") -- Interfaces
-        or else Has_Prefix (Fname, Prefix => "system.ad") -- System
+      if Has_Prefix (Fname, Prefix => "ada.ad")              --  Ada
+        or else Has_Prefix (Fname, Prefix => "interfac.ad")  --  Interfaces
+        or else Has_Prefix (Fname, Prefix => "system.ad")    --  System
       then
          return True;
       end if;
@@ -179,16 +184,38 @@ package body Fname is
 
       --  The following are the predefined renamings
 
-      return Has_Prefix (Fname, Prefix => "calendar.ad") -- Calendar
-        or else Has_Prefix (Fname, Prefix => "machcode.ad") -- Machine_Code
-        or else Has_Prefix (Fname, Prefix => "unchconv.ad")
+      return
+         --  Calendar
+
+        Has_Prefix (Fname, Prefix => "calendar.ad")
+
+         --  Machine_Code
+
+          or else Has_Prefix (Fname, Prefix => "machcode.ad")
+
          --  Unchecked_Conversion
-        or else Has_Prefix (Fname, Prefix => "unchdeal.ad")
+
+          or else Has_Prefix (Fname, Prefix => "unchconv.ad")
+
          --  Unchecked_Deallocation
-        or else Has_Prefix (Fname, Prefix => "directio.ad") -- Direct_IO
-        or else Has_Prefix (Fname, Prefix => "ioexcept.ad") -- IO_Exceptions
-        or else Has_Prefix (Fname, Prefix => "sequenio.ad") -- Sequential_IO
-        or else Has_Prefix (Fname, Prefix => "text_io.ad"); -- Text_IO
+
+          or else Has_Prefix (Fname, Prefix => "unchdeal.ad")
+
+         --  Direct_IO
+
+          or else Has_Prefix (Fname, Prefix => "directio.ad")
+
+         --  IO_Exceptions
+
+          or else Has_Prefix (Fname, Prefix => "ioexcept.ad")
+
+         --  Sequential_IO
+
+          or else Has_Prefix (Fname, Prefix => "sequenio.ad")
+
+         --  Text_IO
+
+          or else Has_Prefix (Fname, Prefix => "text_io.ad");
    end Is_Predefined_File_Name;
 
    function Is_Predefined_File_Name
@@ -196,8 +223,9 @@ package body Fname is
       Renamings_Included : Boolean := True) return Boolean
    is
    begin
-      return Is_Predefined_File_Name
-        (Get_Name_String (Fname), Renamings_Included);
+      return
+        Is_Predefined_File_Name
+          (Get_Name_String (Fname), Renamings_Included);
    end Is_Predefined_File_Name;
 
    ---------------

@@ -378,8 +378,9 @@ package body Scn is
    ------------------------------
 
    procedure Scan_Reserved_Identifier (Force_Msg : Boolean) is
-      Token_Chars : String := Token_Type'Image (Token);
+      Token_Chars : String  := Token_Type'Image (Token);
       Len         : Natural := 0;
+
    begin
       --  AI12-0125 : '@' denotes the target_name, i.e. serves as an
       --  abbreviation for the LHS of an assignment.

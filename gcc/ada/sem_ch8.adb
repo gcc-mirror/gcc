@@ -3632,9 +3632,9 @@ package body Sem_Ch8 is
 
       if Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
         and then Get_Name_String
-          (Unit_File_Name (Current_Sem_Unit)) (1 .. 3) /= "a-n"
-        and then
-          Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Declaration
+                   (Unit_File_Name (Current_Sem_Unit)) (1 .. 3) /= "a-n"
+        and then Nkind (Unit (Cunit (Current_Sem_Unit))) =
+                   N_Package_Declaration
       then
          Error_Msg_N ("use clause not allowed in predefined spec", N);
       end if;

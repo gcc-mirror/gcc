@@ -1,5 +1,15 @@
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* make.adb, par-ch2.adb, sem_util.adb, scans.ads, sem_ch8.adb,
+	scn.adb, osint.adb, fname.adb: Minor reformatting.
+
+2017-04-25  Pascal Obry  <obry@adacore.com>
+
+	* s-taprop-mingw.adb: Do not check for CloseHandle in
+	Finalize_TCB.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_util.adb (Check_Part_Of_Reference):
 	Continue to examine the context if the reference appears within
 	an expression function.

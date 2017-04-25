@@ -20517,8 +20517,9 @@ package body Sem_Util is
 
    function Should_Ignore_Pragma (Prag_Name : Name_Id) return Boolean is
    begin
-      return not Is_Internal_File_Name (File_Name (Current_Source_File))
-        and then Get_Name_Table_Boolean3 (Prag_Name);
+      return
+        not Is_Internal_File_Name (File_Name (Current_Source_File))
+          and then Get_Name_Table_Boolean3 (Prag_Name);
    end Should_Ignore_Pragma;
 
    --------------------
