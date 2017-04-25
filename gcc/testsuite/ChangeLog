@@ -1,3 +1,8 @@
+2017-04-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70799
+	* gcc.target/i386/pr70799-5.c: New test.
+
 2017-04-25  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/80497
@@ -173,7 +178,7 @@
 2017-04-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/70799
-	* gcc.target/i186/pr70799-4.c: New test.
+	* gcc.target/i386/pr70799-4.c: New test.
 
 2017-04-21  Janus Weil  <janus@gcc.gnu.org>
 
@@ -279,7 +284,7 @@
 	* gcc.dg/torture/pr80341.c: Require int32plus.
 
 2017-04-19  Eric Botcazou  <ebotcazou@adacore.com>
-            Jeff Law  <law@redhat.com>
+	    Jeff Law  <law@redhat.com>
 
 	* gcc.c-torture/compile/20170419-1.c: New test.
 
