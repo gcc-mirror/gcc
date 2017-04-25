@@ -561,7 +561,7 @@ package body Sem_Disp is
               and then not Is_Abstract_Subprogram (Alias (Subp))
               and then No (DTC_Entity (Subp))
               and then Find_Dispatching_Type (Subp) =
-                 Find_Dispatching_Type (Alias (Subp))
+                         Find_Dispatching_Type (Alias (Subp))
             then
                --  Private overriding of inherited abstract operation, call is
                --  legal.
