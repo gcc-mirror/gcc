@@ -1,3 +1,10 @@
+2017-04-25  Arnaud Charlet  <charlet@adacore.com trojanek>
+
+	PR ada/78845
+
+	* a-ngcoar.adb, a-ngrear.adb (Inverse): call Unit_Matrix with First_1
+	set to A'First(2) and vice versa.
+
 2017-04-25  Yannick Moy  <moy@adacore.com>
 
 	* freeze.adb (Freeze_Record_Type): Remove obsolete
