@@ -197,20 +197,21 @@ package body Exp_Atag is
         Make_Object_Declaration (Loc,
           Defining_Identifier => Obj_TSD,
           Constant_Present    => True,
-          Object_Definition   => New_Occurrence_Of
-                                   (RTE (RE_Type_Specific_Data_Ptr), Loc),
-          Expression => Build_TSD (Loc, New_Occurrence_Of (Tag_Addr, Loc))),
+          Object_Definition   =>
+            New_Occurrence_Of (RTE (RE_Type_Specific_Data_Ptr), Loc),
+          Expression          =>
+            Build_TSD (Loc, New_Occurrence_Of (Tag_Addr, Loc))),
         Suppress => All_Checks);
 
       Insert_Action (Related_Nod,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Typ_TSD,
           Constant_Present    => True,
-          Object_Definition   => New_Occurrence_Of
-                                   (RTE (RE_Type_Specific_Data_Ptr), Loc),
-          Expression => Build_TSD (Loc,
-                          Unchecked_Convert_To (RTE (RE_Address),
-                            Typ_Tag_Node))),
+          Object_Definition   =>
+            New_Occurrence_Of (RTE (RE_Type_Specific_Data_Ptr), Loc),
+          Expression          =>
+            Build_TSD (Loc,
+              Unchecked_Convert_To (RTE (RE_Address), Typ_Tag_Node))),
         Suppress => All_Checks);
 
       Insert_Action (Related_Nod,
@@ -246,7 +247,7 @@ package body Exp_Atag is
             Make_Op_Eq (Loc,
               Left_Opnd =>
                 Make_Indexed_Component (Loc,
-                  Prefix =>
+                  Prefix      =>
                     Make_Selected_Component (Loc,
                       Prefix        => New_Occurrence_Of (Obj_TSD, Loc),
                       Selector_Name =>

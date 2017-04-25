@@ -1090,8 +1090,8 @@ package body Sem_Ch8 is
                     ("\function & will be called only once?R?", Nam,
                      Entity (Name (Nam)));
                   Error_Msg_N -- CODEFIX
-                    ("\suggest using an initialized constant "
-                     & "object instead?R?", Nam);
+                    ("\suggest using an initialized constant object "
+                     & "instead?R?", Nam);
                end if;
          end case;
       end if;
@@ -3804,8 +3804,8 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      --  Otherwise, create new list and attach to it the operations that
-      --  are made use-visible by the clause.
+      --  Otherwise, create new list and attach to it the operations that are
+      --  made use-visible by the clause.
 
       Set_Used_Operations (N, New_Elmt_List);
       Id := First (Subtype_Marks (N));
@@ -4606,13 +4606,13 @@ package body Sem_Ch8 is
                   --  use_type clause.
 
                   if Nkind (Id) = N_Defining_Operator_Symbol
-                       and then
-                         (Is_Primitive_Operator_In_Use (Id, First_Formal (Id))
-                           or else
-                             (Present (Next_Formal (First_Formal (Id)))
-                               and then
-                                 Is_Primitive_Operator_In_Use
-                                   (Id, Next_Formal (First_Formal (Id)))))
+                    and then
+                      (Is_Primitive_Operator_In_Use (Id, First_Formal (Id))
+                        or else
+                          (Present (Next_Formal (First_Formal (Id)))
+                            and then
+                              Is_Primitive_Operator_In_Use
+                                (Id, Next_Formal (First_Formal (Id)))))
                   then
                      null;
                   else
@@ -9197,8 +9197,8 @@ package body Sem_Ch8 is
 
       elsif From_Limited_With (T) and then From_Limited_With (Scope (T)) then
          Error_Msg_N
-           ("incomplete type from limited view "
-            & "cannot appear in use clause", Id);
+           ("incomplete type from limited view cannot appear in use clause",
+            Id);
 
       --  If the use clause is redundant, Used_Operations will usually be
       --  empty, but we need to set it to empty here in one case: If we are

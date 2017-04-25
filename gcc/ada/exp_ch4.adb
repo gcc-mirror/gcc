@@ -5859,8 +5859,7 @@ package body Exp_Ch4 is
                if Tagged_Type_Expansion then
                   Tagged_Membership (N, SCIL_Node, New_N);
                   Rewrite (N, New_N);
-                  Analyze_And_Resolve
-                    (N, Restyp, Suppress => All_Checks);
+                  Analyze_And_Resolve (N, Restyp, Suppress => All_Checks);
 
                   --  Update decoration of relocated node referenced by the
                   --  SCIL node.

@@ -812,7 +812,7 @@ package body Inline is
                               Next (Item);
                            end loop;
 
-                           --  If no suspicious with_clauses, analyze the body.
+                           --  If no suspicious with_clauses, analyze the body
 
                            if Is_Inlined (U_Id) then
                               Semantics (Body_Unit);
