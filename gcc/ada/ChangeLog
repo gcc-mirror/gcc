@@ -1,3 +1,35 @@
+2017-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Library_Level_Target): New function.
+	(Expand_Concatenate): When optimization is enabled, also expand
+	the operation out-of-line if the concatenation is present within
+	the expression of the declaration of a library-level object and
+	not only if it is the expression of the declaration.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* freeze.adb (Freeze_Object_Declaration): Do
+	not Remove_Side_Effects if there is a pragma Linker_Section,
+	because in that case we want static initialization in the
+	appropriate section.
+
+2017-04-25  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_dbug.adb: Minor rewording and reformatting.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Statically_Denotes_Object): New predicate, to
+	handle the proposed changes to rules concerning potentially
+	unevaluated expressions, to include selected components that
+	do not depend on discriminants, and indexed components with
+	static indices.
+	* sem_util.adb (Is_Potentially_Unevaluated): Add check for
+	predicate in quantified expression, and fix bugs in the handling
+	of case expressions and membership test.
+	(Analyze_Attribute_Old_Result): use new predicate.
+	(Analyze_Attribute, case Loop_Entry): ditto.
+
 2017-04-25  Bob Duff  <duff@adacore.com>
 
 	* s-secsta.adb (SS_Info): Add a comment

@@ -14439,7 +14439,8 @@ package body Sem_Util is
                                N_And_Then,
                                N_Or_Else,
                                N_In,
-                               N_Not_In)
+                               N_Not_In,
+                               N_Quantified_Expression)
       loop
          Expr := Par;
          Par  := Parent (Par);
@@ -14448,7 +14449,10 @@ package body Sem_Util is
          --  expansion of an enclosing construct (such as another attribute)
          --  the predicate does not apply.
 
-         if Nkind (Par) not in N_Subexpr
+         if Nkind (Par) = N_Case_Expression_Alternative then
+            null;
+
+         elsif Nkind (Par) not in N_Subexpr
            or else not Comes_From_Source (Par)
          then
             return False;
@@ -14465,7 +14469,21 @@ package body Sem_Util is
          return Expr = Right_Opnd (Par);
 
       elsif Nkind_In (Par, N_In, N_Not_In) then
-         return Expr /= Left_Opnd (Par);
+
+         --  If the membership includes several alternatives, only the first is
+         --  definitely evaluated.
+
+         if Present (Alternatives (Par)) then
+            return Expr /= First (Alternatives (Par));
+
+         --  If this is a range membership both bounds are evaluated
+
+         else
+            return False;
+         end if;
+
+      elsif Nkind (Par) = N_Quantified_Expression then
+         return Expr = Condition (Par);
 
       else
          return False;

@@ -2767,6 +2767,10 @@ package body Exp_Ch4 is
       --  Set True during generation of the assignments of operands into
       --  result once an operand known to be non-null has been seen.
 
+      function Library_Level_Target return Boolean;
+      --  Return True if the concatenation is within the expression of the
+      --  declaration of a library-level object.
+
       function Make_Artyp_Literal (Val : Nat) return Node_Id;
       --  This function makes an N_Integer_Literal node that is returned in
       --  analyzed form with the type set to Artyp. Importantly this literal
@@ -2781,6 +2785,30 @@ package body Exp_Ch4 is
 
       function To_Ityp (X : Node_Id) return Node_Id;
       --  The inverse function (uses Val in the case of enumeration types)
+
+      --------------------------
+      -- Library_Level_Target --
+      --------------------------
+
+      function Library_Level_Target return Boolean is
+         P : Node_Id := Parent (Cnode);
+
+      begin
+         while Present (P) loop
+            if Nkind (P) = N_Object_Declaration then
+               return Is_Library_Level_Entity (Defining_Identifier (P));
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (P) then
+               return False;
+            end if;
+
+            P := Parent (P);
+         end loop;
+
+         return False;
+      end Library_Level_Target;
 
       ------------------------
       -- Make_Artyp_Literal --
@@ -2841,16 +2869,6 @@ package body Exp_Ch4 is
       end To_Ityp;
 
       --  Local Declarations
-
-      Lib_Level_Target : constant Boolean :=
-        Nkind (Parent (Cnode)) = N_Object_Declaration
-          and then
-            Is_Library_Level_Entity (Defining_Identifier (Parent (Cnode)));
-
-      --  If the concatenation declares a library level entity, we call the
-      --  built-in concatenation routines to prevent code bloat, regardless
-      --  of optimization level. This is space-efficient, and prevent linking
-      --  problems when units are compiled with different optimizations.
 
       Opnd_Typ : Entity_Id;
       Ent      : Entity_Id;
@@ -3372,22 +3390,27 @@ package body Exp_Ch4 is
 
       --    There are nine or fewer retained (non-null) operands
 
-      --    The optimization level is -O0
+      --    The optimization level is -O0 or the debug flag gnatd.C is set,
+      --    and the debug flag gnatd.c is not set.
 
       --    The corresponding System.Concat_n.Str_Concat_n routine is
       --    available in the run time.
-
-      --    The debug flag gnatd.c is not set
 
       --  If all these conditions are met then we generate a call to the
       --  relevant concatenation routine. The purpose of this is to avoid
       --  undesirable code bloat at -O0.
 
+      --  If the concatenation is within the declaration of a library-level
+      --  object, we call the built-in concatenation routines to prevent code
+      --  bloat, regardless of the optimization level. This is space efficient
+      --  and prevents linking problems when units are compiled with different
+      --  optimization levels.
+
       if Atyp = Standard_String
         and then NN in 2 .. 9
-        and then (Lib_Level_Target
-          or else ((Optimization_Level = 0 or else Debug_Flag_Dot_CC)
-                     and then not Debug_Flag_Dot_C))
+        and then (((Optimization_Level = 0 or else Debug_Flag_Dot_CC)
+                     and then not Debug_Flag_Dot_C)
+                  or else Library_Level_Target)
       then
          declare
             RR : constant array (Nat range 2 .. 9) of RE_Id :=
