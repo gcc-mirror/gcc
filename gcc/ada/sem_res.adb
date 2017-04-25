@@ -4211,6 +4211,21 @@ package body Sem_Res is
                end if;
             end if;
 
+            --  In -gnatd.q mode, forget that a given array is constant when
+            --  it is passed as an IN parameter to a foreign-convention
+            --  subprogram. This is in case the subprogram evilly modifies the
+            --  object. Of course, correct code would use IN OUT.
+
+            if Debug_Flag_Dot_Q
+              and then Ekind (F) = E_In_Parameter
+              and then Has_Foreign_Convention (Nam)
+              and then Is_Array_Type (F_Typ)
+              and then Nkind (A) in N_Has_Entity
+              and then Present (Entity (A))
+            then
+               Set_Is_True_Constant (Entity (A), False);
+            end if;
+
             --  Case of OUT or IN OUT parameter
 
             if Ekind (F) /= E_In_Parameter then
