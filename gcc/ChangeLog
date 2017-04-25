@@ -1,3 +1,7 @@
+2017-04-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	* fold-const.c (tree_single_nonzero_warnv_p): Handle SSA_NAME.
+
 2017-04-25  Julian Brown  <julian@codesourcery.com>
 	    Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
 

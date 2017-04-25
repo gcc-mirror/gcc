@@ -13412,6 +13412,11 @@ tree_single_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 	}
       break;
 
+    case SSA_NAME:
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	break;
+      return expr_not_equal_to (t, wi::zero (TYPE_PRECISION (TREE_TYPE (t))));
+
     default:
       break;
     }
