@@ -1180,6 +1180,10 @@ package body Exp_Ch6 is
       --  that all that is needed is to simply create a temporary and copy
       --  the value in and out of the temporary.
 
+      procedure Add_Validation_Call_By_Copy_Code (Act : Node_Id);
+      --  Perform copy-back for actual parameter Act which denotes a validation
+      --  variable.
+
       procedure Check_Fortran_Logical;
       --  A value of type Logical that is passed through a formal parameter
       --  must be normalized because .TRUE. usually does not have the same
@@ -1618,6 +1622,85 @@ package body Exp_Ch6 is
          end if;
       end Add_Simple_Call_By_Copy_Code;
 
+      --------------------------------------
+      -- Add_Validation_Call_By_Copy_Code --
+      --------------------------------------
+
+      procedure Add_Validation_Call_By_Copy_Code (Act : Node_Id) is
+         Expr    : Node_Id;
+         Obj     : Node_Id;
+         Obj_Typ : Entity_Id;
+         Var     : Node_Id;
+         Var_Id  : Entity_Id;
+
+      begin
+         Var := Act;
+
+         --  Use the expression when the context qualifies a reference in some
+         --  fashion.
+
+         while Nkind_In (Var, N_Qualified_Expression,
+                              N_Type_Conversion,
+                              N_Unchecked_Type_Conversion)
+         loop
+            Var := Expression (Var);
+         end loop;
+
+         --  Copy the value of the validation variable back into the object
+         --  being validated.
+
+         if Is_Entity_Name (Var) then
+            Var_Id  := Entity (Var);
+            Obj     := Validated_Object (Var_Id);
+            Obj_Typ := Etype (Obj);
+
+            Expr := New_Occurrence_Of (Var_Id, Loc);
+
+            --  A type conversion is needed when the validation variable and
+            --  the validated object carry different types. This case occurs
+            --  when the actual is qualified in some fashion.
+
+            --    Common:
+            --      subtype Int is Integer range ...;
+            --      procedure Call (Val : in out Integer);
+
+            --    Original:
+            --      Object : Int;
+            --      Call (Integer (Object));
+
+            --    Expanded:
+            --      Object : Int;
+            --      Var : Integer := Object;  --  conversion to base type
+            --      if not Var'Valid then     --  validity check
+            --      Call (Var);               --  modify Var
+            --      Object := Int (Var);      --  conversion to subtype
+
+            if Etype (Var_Id) /= Obj_Typ then
+               Expr :=
+                 Make_Type_Conversion (Loc,
+                   Subtype_Mark => New_Occurrence_Of (Obj_Typ, Loc),
+                   Expression   => Expr);
+            end if;
+
+            --  Generate:
+            --    Object := Var;
+            --      <or>
+            --    Object := Object_Type (Var);
+
+            Append_To (Post_Call,
+              Make_Assignment_Statement (Loc,
+                Name       => Obj,
+                Expression => Expr));
+
+         --  If the flow reaches this point, then this routine was invoked with
+         --  an actual which does not denote a validation variable.
+
+         else
+            pragma Assert (False);
+            null;
+         end if;
+      end Add_Validation_Call_By_Copy_Code;
+
       ---------------------------
       -- Check_Fortran_Logical --
       ---------------------------
@@ -1831,10 +1914,26 @@ package body Exp_Ch6 is
                end if;
             end if;
 
-            --  If argument is a type conversion for a type that is passed
-            --  by copy, then we must pass the parameter by copy.
+            --  The actual denotes a variable which captures the value of an
+            --  object for validation purposes. Add a copy-back to reflect any
+            --  potential changes in value back into the original object.
 
-            if Nkind (Actual) = N_Type_Conversion
+            --    Var : ... := Object;
+            --    if not Var'Valid then  --  validity check
+            --    Call (Var);            --  modify var
+            --    Object := Var;         --  update Object
+
+            --  This case is given higher priority because the subsequent check
+            --  for type conversion may add an extra copy of the variable and
+            --  prevent proper value propagation back in the original object.
+
+            if Is_Validation_Variable_Reference (Actual) then
+               Add_Validation_Call_By_Copy_Code (Actual);
+
+            --  If argument is a type conversion for a type that is passed by
+            --  copy, then we must pass the parameter by copy.
+
+            elsif Nkind (Actual) = N_Type_Conversion
               and then
                 (Is_Numeric_Type (E_Formal)
                   or else Is_Access_Type (E_Formal)
@@ -1912,21 +2011,6 @@ package body Exp_Ch6 is
               and then not Is_Volatile (E_Formal)
             then
                Add_Call_By_Copy_Code;
-
-            --  The actual denotes a variable which captures the value of an
-            --  object for validation purposes. Add a copy-back to reflect any
-            --  potential changes in value back into the original object.
-
-            --    Temp : ... := Object;
-            --    if not Temp'Valid then ...
-            --    Call (Temp);
-            --    Object := Temp;
-
-            elsif Is_Validation_Variable_Reference (Actual) then
-               Append_To (Post_Call,
-                 Make_Assignment_Statement (Loc,
-                   Name       => Validated_Object (Entity (Actual)),
-                   Expression => New_Occurrence_Of (Entity (Actual), Loc)));
 
             elsif Nkind (Actual) = N_Indexed_Component
               and then Is_Entity_Name (Prefix (Actual))

@@ -1,5 +1,14 @@
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* checks.adb (Insert_Valid_Check): Code cleanup.
+	* exp_ch6.adb (Add_Validation_Call_By_Copy_Code): New routine.
+	(Expand_Actuals): Generate proper copy-back for a validation
+	variable when it acts as the argument of a type conversion.
+	* sem_util.adb (Is_Validation_Variable_Reference): Augment the
+	predicate to operate on type qualifications.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_prag.adb, exp_ch6.adb, binde.adb, sem_disp.adb, s-fileio.adb:
 	Minor reformatting.
 
