@@ -494,7 +494,7 @@ package body Sem_Eval is
       --  to gigi. The frontend computes the information about which
       --  expressions are static, which is used by gnat2why to call
       --  Check_Non_Static_Context on exactly those real literals that are
-      --  not sub-expressions of static expressions.
+      --  not subexpressions of static expressions.
 
       if Nkind (N) = N_Real_Literal
         and then not Is_Machine_Number (N)
@@ -3159,7 +3159,7 @@ package body Sem_Eval is
       --  of the required form, Ent is set to Empty.
       --
       --  Orig indicates whether Expr is the original expression to consider,
-      --  or if we are handling a sub-expression (e.g. recursive call to
+      --  or if we are handling a subexpression (e.g. recursive call to
       --  Decompose_Expr).
 
       procedure Fold_General_Op (Is_Static : Boolean);
@@ -3444,9 +3444,9 @@ package body Sem_Eval is
    begin
       --  One special case to deal with first. If we can tell that the result
       --  will be false because the lengths of one or more index subtypes are
-      --  compile time known and different, then we can replace the entire
-      --  result by False. We only do this for one dimensional arrays, because
-      --  the case of multi-dimensional arrays is rare and too much trouble. If
+      --  compile-time known and different, then we can replace the entire
+      --  result by False. We only do this for one-dimensional arrays, because
+      --  the case of multidimensional arrays is rare and too much trouble. If
       --  one of the operands is an illegal aggregate, its type might still be
       --  an arbitrary composite type, so nothing to do.
 
@@ -6068,7 +6068,7 @@ package body Sem_Eval is
       Orig_Op  : constant Node_Id   := Original_Node (Op);
 
       procedure Replacement_Warning (Msg : String);
-      --  Emit a warning on a comparison which can be replaced by '='
+      --  Emit a warning on a comparison that can be replaced by '='
 
       -------------------------
       -- Replacement_Warning --

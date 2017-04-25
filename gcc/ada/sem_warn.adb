@@ -3274,7 +3274,7 @@ package body Sem_Warn is
       --  Determine the potential outcome of the comparison assuming that the
       --  operands are valid. Do not consider instances because the check was
       --  already performed in the generic. Do not consider comparison between
-      --  an attribute reference and a compile time known value since this is
+      --  an attribute reference and a compile-time known value since this is
       --  most likely a conditional compilation. Do not consider internal files
       --  in order to allow for various assertions and safeguards within our
       --  runtime.
