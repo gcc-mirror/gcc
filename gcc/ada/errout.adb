@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -312,11 +312,6 @@ package body Errout is
       --  template in instantiation case, otherwise unchanged).
 
    begin
-      --  It is a fatal error to issue an error message when scanning from the
-      --  internal source buffer (see Sinput for further documentation)
-
-      pragma Assert (Sinput.Source /= Internal_Source_Ptr);
-
       --  Return if all errors are to be ignored
 
       if Errors_Must_Be_Ignored then

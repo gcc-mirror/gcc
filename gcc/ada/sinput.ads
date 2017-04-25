@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -450,18 +450,6 @@ package Sinput is
 
    Source : Source_Buffer_Ptr;
    --  Current source (copy of Source_File.Table (Current_Source_Unit).Source)
-
-   Internal_Source : aliased Source_Buffer (1 .. 81);
-   --  This buffer is used internally in the compiler when the lexical analyzer
-   --  is used to scan a string from within the compiler. The procedure is to
-   --  establish Internal_Source_Ptr as the value of Source, set the string to
-   --  be scanned, appropriately terminated, in this buffer, and set Scan_Ptr
-   --  to point to the start of the buffer. It is a fatal error if the scanner
-   --  signals an error while scanning a token in this internal buffer.
-
-   Internal_Source_Ptr : constant Source_Buffer_Ptr :=
-                           Internal_Source'Unrestricted_Access;
-   --  Pointer to internal source buffer
 
    -----------------------------------------
    -- Handling of Source Line Terminators --

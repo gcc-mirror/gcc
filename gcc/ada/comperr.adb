@@ -265,7 +265,7 @@ package body Comperr is
 
             --  If we get a Src file, we use it
 
-            if Src /= null then
+            if not Null_Source_Buffer_Ptr (Src) then
                Lo := 0;
 
                Outer : while Lo < Hi loop

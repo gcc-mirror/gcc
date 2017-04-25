@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -200,7 +200,7 @@ package Types is
    --  This is a virtual type used as the designated type of the access type
    --  Source_Buffer_Ptr, see Osint.Read_Source_File for details.
 
-   type Source_Buffer_Ptr is access all Big_Source_Buffer;
+   type Source_Buffer_Ptr is access constant Big_Source_Buffer;
    --  Pointer to source buffer. We use virtual origin addressing for source
    --  buffers, with thin pointers. The pointer points to a virtual instance
    --  of type Big_Source_Buffer, where the actual type is in fact of type
@@ -209,6 +209,21 @@ package Types is
    --  details. Again, as for Big_String_Ptr, we should never allocate using
    --  this type, but we don't give a storage size clause of zero, since we
    --  may end up doing deallocations of instances allocated manually.
+
+   function Null_Source_Buffer_Ptr (X : Source_Buffer_Ptr) return Boolean;
+   --  True if X = null. ???This usage of "=" is wrong, because the zero-origin
+   --  pointer could happen to be equal to null. We need to eliminate this.
+
+   function Source_Buffer_Ptr_Equal (X, Y : Source_Buffer_Ptr) return Boolean
+     renames "=";
+   --  Squirrel away the predefined "=", for use in Null_Source_Buffer_Ptr.
+   --  Do not call this elsewhere.
+
+   function "=" (X, Y : Source_Buffer_Ptr) return Boolean is abstract;
+   --  Make "=" abstract, to make sure noone calls it. Note that this makes
+   --  "/=" abstract as well. Calls to "=" on Source_Buffer_Ptr are always
+   --  wrong, because two different arrays allocated at two different addresses
+   --  can have the same virtual origin.
 
    subtype Source_Ptr is Text_Ptr;
    --  Type used to represent a source location, which is a subscript of a
@@ -567,11 +582,6 @@ package Types is
 
    type Source_File_Index is new Int range -1 .. Int'Last;
    --  Type used to index the source file table (see package Sinput)
-
-   Internal_Source_File : constant Source_File_Index :=
-                            Source_File_Index'First;
-   --  Value used to indicate the buffer for the source-code-like strings
-   --  internally created withing the compiler (see package Sinput)
 
    No_Source_File : constant Source_File_Index := 0;
    --  Value used to indicate no source file present

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -876,19 +876,24 @@ package body Sinput is
             declare
                S : Source_File_Record renames Source_File.Table (J);
 
+               type Source_Buffer_Ptr_Var is access all Big_Source_Buffer;
+
                procedure Free_Ptr is new Unchecked_Deallocation
-                 (Big_Source_Buffer, Source_Buffer_Ptr);
+                 (Big_Source_Buffer, Source_Buffer_Ptr_Var);
+               --  This works only because we're calling malloc, which keeps
+               --  track of the size on its own, ignoring the size of
+               --  Big_Source_Buffer, which is the wrong size.
 
                pragma Warnings (Off);
                --  This unchecked conversion is aliasing safe, since it is not
                --  used to create improperly aliased pointer values.
 
-               function To_Source_Buffer_Ptr is new
-                 Unchecked_Conversion (Address, Source_Buffer_Ptr);
+               function To_Source_Buffer_Ptr_Var is new
+                 Unchecked_Conversion (Address, Source_Buffer_Ptr_Var);
 
                pragma Warnings (On);
 
-               Tmp1 : Source_Buffer_Ptr;
+               Tmp1 : Source_Buffer_Ptr_Var;
 
             begin
                if S.Instance /= No_Instance_Id then
@@ -903,7 +908,7 @@ package body Sinput is
                   --  from the zero origin pointer stored in the source table.
 
                   Tmp1 :=
-                    To_Source_Buffer_Ptr
+                    To_Source_Buffer_Ptr_Var
                       (S.Source_Text (S.Source_First)'Address);
                   Free_Ptr (Tmp1);
 
@@ -1254,29 +1259,17 @@ package body Sinput is
 
    function Source_First (S : SFI) return Source_Ptr is
    begin
-      if S = Internal_Source_File then
-         return Internal_Source'First;
-      else
-         return Source_File.Table (S).Source_First;
-      end if;
+      return Source_File.Table (S).Source_First;
    end Source_First;
 
    function Source_Last (S : SFI) return Source_Ptr is
    begin
-      if S = Internal_Source_File then
-         return Internal_Source'Last;
-      else
-         return Source_File.Table (S).Source_Last;
-      end if;
+      return Source_File.Table (S).Source_Last;
    end Source_Last;
 
    function Source_Text (S : SFI) return Source_Buffer_Ptr is
    begin
-      if S = Internal_Source_File then
-         return Internal_Source_Ptr;
-      else
-         return Source_File.Table (S).Source_Text;
-      end if;
+      return Source_File.Table (S).Source_Text;
    end Source_Text;
 
    function Template (S : SFI) return SFI is

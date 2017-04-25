@@ -1,3 +1,15 @@
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* err_vars.ads, fmap.adb, fmap.ads, comperr.adb, fname-sf.adb,
+	types.adb, types.ads, types.h, sinput-l.adb, targparm.adb,
+	errout.adb, sinput.adb, sinput.ads, cstand.adb, scn.adb,
+	scn.ads, gnatls.adb: Eliminate the vestigial Internal_Source_File and
+	the Internal_Source buffer. This removes the incorrect call to "="
+	the customer noticed.
+	Wrap remaining calls to "=" in Null_Source_Buffer_Ptr. We
+	eventually need to eliminate them altogether. Or else get rid
+	of zero-origin addressing.
+
 2017-04-25  Claire Dross  <dross@adacore.com>
 
 	* exp_util.ads (Expression_Contains_Primitives_Calls_Of): New

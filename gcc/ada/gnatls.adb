@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1653,7 +1653,7 @@ begin
 
          Read_Source_File (Name_Find, Lo => 0, Hi => Hi, Src => Text);
 
-         if Text = null then
+         if Null_Source_Buffer_Ptr (Text) then
             No_Runtime := True;
          end if;
       end;

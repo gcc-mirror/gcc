@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,7 +80,7 @@ package Err_Vars is
    Error_Msg_Exception : exception;
    --  Exception raised if Raise_Exception_On_Error is true
 
-   Current_Error_Source_File : Source_File_Index := Internal_Source_File;
+   Current_Error_Source_File : Source_File_Index := No_Source_File;
    --  Id of current messages. Used to post file name when unit changes. This
    --  is initialized to Main_Source_File at the start of a compilation, which
    --  means that no file names will be output unless there are errors in units
