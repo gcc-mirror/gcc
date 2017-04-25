@@ -1,3 +1,8 @@
+2017-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/80500
+	* gcc.dg/pr80500.c: New test.
+
 2017-04-25  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/cmpmul-1.c: New file.

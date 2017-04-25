@@ -1,3 +1,9 @@
+2017-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/80500
+	* loop-unroll.c (combine_var_copies_in_loop_exit): Call copy_rtx on
+	sum's initial value.
+
 2017-04-25  Julian Brown  <julian@codesourcery.com>
 	    Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
 
