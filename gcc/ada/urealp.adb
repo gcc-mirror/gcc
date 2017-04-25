@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1472,8 +1472,8 @@ package body Urealp is
       --  of the following forms, depending on the sign of the number
       --  and the sign of the exponent (= minus denominator value)
 
-      --    numerator.0*base**exponent
-      --    numerator.0*base**-exponent
+      --    numerator.0/base**exponent
+      --    numerator.0/base**-exponent
 
       --  And of course an exponent of 0 can be omitted
 
@@ -1486,16 +1486,14 @@ package body Urealp is
          Write_Str (".0");
 
          if Val.Den /= 0 then
-            Write_Char ('*');
+            Write_Char ('/');
             Write_Int (Val.Rbase);
             Write_Str ("**");
 
             if Val.Den <= 0 then
                UI_Write (-Val.Den, Decimal);
             else
-               Write_Str ("(-");
                UI_Write (Val.Den, Decimal);
-               Write_Char (')');
             end if;
          end if;
 
