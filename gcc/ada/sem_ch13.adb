@@ -12688,7 +12688,6 @@ package body Sem_Ch13 is
          E : Entity_Id;
 
       begin
-
          --  Types with nameable components are records and discriminated
          --  private types.
 
@@ -12705,7 +12704,7 @@ package body Sem_Ch13 is
             end loop;
          end if;
 
-         --  Nothing by that name, or type has no components.
+         --  Nothing by that name, or the type has no components
 
          return Empty;
       end Visible_Component;

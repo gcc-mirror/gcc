@@ -1657,6 +1657,7 @@ package body Rtsfind is
       pragma Assert (GNATprove_Mode);
 
       --  Force loading of a predefined unit
+
       Unused := RTE (E);
    end SPARK_Implicit_Load;
 
