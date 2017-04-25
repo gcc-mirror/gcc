@@ -433,6 +433,7 @@ package Snames is
    Name_License                        : constant Name_Id := N + $; -- GNAT
    Name_Locking_Policy                 : constant Name_Id := N + $;
    Name_Loop_Optimize                  : constant Name_Id := N + $; -- GNAT
+   Name_No_Heap_Finalization           : constant Name_Id := N + $; -- GNAT
    Name_No_Run_Time                    : constant Name_Id := N + $; -- GNAT
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
    Name_No_Tagged_Streams              : constant Name_Id := N + $; -- GNAT
@@ -1797,6 +1798,7 @@ package Snames is
       Pragma_License,
       Pragma_Locking_Policy,
       Pragma_Loop_Optimize,
+      Pragma_No_Heap_Finalization,
       Pragma_No_Run_Time,
       Pragma_No_Strict_Aliasing,
       Pragma_No_Tagged_Streams,

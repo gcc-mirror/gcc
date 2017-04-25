@@ -4295,6 +4295,7 @@ package body Sem_Ch4 is
       Comp          : Entity_Id;
       Has_Candidate : Boolean := False;
       In_Scope      : Boolean;
+      Is_Private_Op : Boolean;
       Parent_N      : Node_Id;
       Pent          : Entity_Id := Empty;
       Prefix_Type   : Entity_Id;
@@ -4825,7 +4826,7 @@ package body Sem_Ch4 is
 
          --  Find visible operation with given name. For a protected type,
          --  the possible candidates are discriminants, entries or protected
-         --  procedures. For a task type, the set can only include entries or
+         --  subprograms. For a task type, the set can only include entries or
          --  discriminants if the task type is not an enclosing scope. If it
          --  is an enclosing scope (e.g. in an inner task) then all entities
          --  are visible, but the prefix must denote the enclosing scope, i.e.
@@ -4833,6 +4834,7 @@ package body Sem_Ch4 is
 
          Set_Etype (Sel, Any_Type);
          In_Scope := In_Open_Scopes (Prefix_Type);
+         Is_Private_Op := False;
 
          while Present (Comp) loop
 
@@ -4845,6 +4847,9 @@ package body Sem_Ch4 is
                             or else Comp /= First_Private_Entity (Type_To_Use))
                then
                   Add_One_Interp (Sel, Comp, Etype (Comp));
+                  if Comp = First_Private_Entity (Type_To_Use) then
+                     Is_Private_Op := True;
+                  end if;
 
                   --  If the prefix is tagged, the correct interpretation may
                   --  lie in the primitive or class-wide operations of the
@@ -4921,6 +4926,12 @@ package body Sem_Ch4 is
             if Is_Task_Type (Prefix_Type)
               and then Present (Entity (Sel))
               and then Ekind_In (Entity (Sel), E_Entry, E_Entry_Family)
+            then
+               null;
+
+            elsif Is_Protected_Type (Prefix_Type)
+              and then Is_Overloadable (Entity (Sel))
+              and then not Is_Private_Op
             then
                null;
 

@@ -486,32 +486,39 @@ package body Exp_Ch7 is
       then
          return False;
 
-      --  Do not consider types that return on the secondary stack
+      --  Do not consider an access type which return on the secondary stack
 
       elsif Present (Associated_Storage_Pool (Ptr_Typ))
         and then Is_RTE (Associated_Storage_Pool (Ptr_Typ), RE_SS_Pool)
       then
          return False;
 
-      --  Do not consider types which may never allocate an object
+      --  Do not consider an access type which may never allocate an object
 
       elsif No_Pool_Assigned (Ptr_Typ) then
          return False;
 
-      --  Do not consider access types coming from Ada.Unchecked_Deallocation
-      --  instances. Even though the designated type may be controlled, the
-      --  access type will never participate in allocation.
+      --  Do not consider an access type coming from an Unchecked_Deallocation
+      --  instance. Even though the designated type may be controlled, the
+      --  access type will never participate in any allocations.
 
       elsif In_Deallocation_Instance (Ptr_Typ) then
          return False;
 
-      --  Do not consider non-library access types when restriction
-      --  No_Nested_Finalization is in effect since masters are controlled
-      --  objects.
+      --  Do not consider a non-library access type when No_Nested_Finalization
+      --  is in effect since finalization masters are controlled objects and if
+      --  created will violate the restriction.
 
       elsif Restriction_Active (No_Nested_Finalization)
         and then not Is_Library_Level_Entity (Ptr_Typ)
       then
+         return False;
+
+      --  Do not consider an access type subject to pragma No_Heap_Finalization
+      --  because objects allocated through such a type are not to be finalized
+      --  when the access type goes out of scope.
+
+      elsif No_Heap_Finalization (Ptr_Typ) then
          return False;
 
       --  Do not create finalization masters in GNATprove mode because this

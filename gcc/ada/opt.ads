@@ -1115,6 +1115,11 @@ package Opt is
    --  in the spec of the extended main unit. Used to determine if we need to
    --  do special tests for violation of this aspect.
 
+   No_Heap_Finalization_Pragma : Node_Id := Empty;
+   --  GNAT
+   --  Set to point to a No_Heap_Finalization pragma defined in a configuration
+   --  file.
+
    No_Main_Subprogram : Boolean := False;
    --  GNATMAKE, GNATBIND
    --  Set to True if compilation/binding of a program without main
