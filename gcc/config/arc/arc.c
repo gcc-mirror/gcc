@@ -1543,6 +1543,11 @@ arc_conditional_register_usage (void)
       arc_regno_reg_class[42] = ALL_REGS;
       arc_regno_reg_class[43] = ALL_REGS;
 
+      fixed_regs[40] = 1;
+      fixed_regs[41] = 1;
+      fixed_regs[42] = 1;
+      fixed_regs[43] = 1;
+
       arc_hard_regno_mode_ok[40] = 0;
       arc_hard_regno_mode_ok[42] = 0;
 
