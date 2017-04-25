@@ -3998,8 +3998,8 @@ package body Sem_Prag is
 
       procedure Set_Ravenscar_Profile (Profile : Profile_Name; N : Node_Id);
       --  Activate the set of configuration pragmas and restrictions that make
-      --  up the Profile. Profile must be either GNAT_Extended_Ravencar,
-      --  GNAT_Ravenscar_EDF or Ravenscar. N is the corresponding pragma node,
+      --  up the Profile. Profile must be either GNAT_Extended_Ravenscar,
+      --  GNAT_Ravenscar_EDF, or Ravenscar. N is the corresponding pragma node,
       --  which is used for error messages on any constructs violating the
       --  profile.
 

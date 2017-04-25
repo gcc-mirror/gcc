@@ -1,3 +1,8 @@
+2017-04-25  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_prag.adb, sem_warn.adb, sem_eval.adb: Minor reformatting and
+	typo fixes.
+
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* comperr.adb (Compiler_Abort): Add a pair of pragma Warnings
