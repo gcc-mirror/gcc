@@ -170,8 +170,8 @@ package Sem_Warn is
 
    procedure Warn_On_Constant_Valid_Condition (Op : Node_Id);
    --  Determine the outcome of evaluating conditional or relational operator
-   --  Op assuming that its operands are valid. Emit a warning when the result
-   --  of the evaluation is True or False.
+   --  Op assuming that its scalar operands are valid. Emit a warning when the
+   --  result of the evaluation is True or False.
 
    procedure Warn_On_Known_Condition (C : Node_Id);
    --  C is a node for a boolean expression resulting from a relational

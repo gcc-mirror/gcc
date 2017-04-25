@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -93,6 +93,12 @@ package body Bindgen is
    --  is in the closure of the partition. This is set by procedure
    --  Resolve_Binder_Options, and it is used to call a procedure that starts
    --  slave processors.
+
+   System_Version_Control_Used : Boolean := False;
+   --  Flag indicating whether unit System.Version_Control is in the closure.
+   --  This unit is implicitly withed by the compiler when Version or
+   --  Body_Version attributes are used. If the package is not in the closure,
+   --  the version definitions can be removed.
 
    Lib_Final_Built : Boolean := False;
    --  Flag indicating whether the finalize_library rountine has been built
@@ -1303,6 +1309,7 @@ package body Bindgen is
 
    procedure Gen_Elab_Order (Elab_Order : Unit_Id_Array) is
    begin
+      WBI ("");
       WBI ("   --  BEGIN ELABORATION ORDER");
 
       for J in Elab_Order'Range loop
@@ -1313,7 +1320,6 @@ package body Bindgen is
       end loop;
 
       WBI ("   --  END ELABORATION ORDER");
-      WBI ("");
    end Gen_Elab_Order;
 
    --------------------------
@@ -2259,7 +2265,16 @@ package body Bindgen is
            Get_Main_Name & """);");
       end if;
 
-      Gen_Versions;
+      --  Generate version numbers for units, only if needed. Be very safe on
+      --  the condition.
+
+      if not Configurable_Run_Time_On_Target
+        or else System_Version_Control_Used
+        or else not Bind_Main_Program
+      then
+         Gen_Versions;
+      end if;
+
       Gen_Elab_Order (Elab_Order);
 
       --  Spec is complete
@@ -2865,6 +2880,11 @@ package body Bindgen is
          Check_Package (System_BB_CPU_Primitives_Multiprocessors_Used,
                         "system.bb.cpu_primitives.multiprocessors%s");
 
+         --  Ditto for System.Version_Control, which is used for Version and
+         --  Body_Version attributes.
+
+         Check_Package (System_Version_Control_Used,
+                        "system.version_control%s");
       end loop;
    end Resolve_Binder_Options;
 

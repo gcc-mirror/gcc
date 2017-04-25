@@ -1688,15 +1688,15 @@ package body Par_SCO is
                --  Pre/post can have checks in client units too because of
                --  inheritance, so should they receive the same treatment???
 
-               when Aspect_Invariant
+               when Aspect_Dynamic_Predicate
+                  | Aspect_Invariant
                   | Aspect_Post
                   | Aspect_Postcondition
                   | Aspect_Pre
                   | Aspect_Precondition
-                  | Aspect_Type_Invariant
-                  | Aspect_Dynamic_Predicate
                   | Aspect_Predicate
                   | Aspect_Static_Predicate
+                  | Aspect_Type_Invariant
                =>
                   C1 := 'a';
 
