@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1553,9 +1553,12 @@ package body Sem_Ch6 is
       Actuals : constant List_Id    := Parameter_Associations (N);
       Loc     : constant Source_Ptr := Sloc (N);
       P       : constant Node_Id    := Name (N);
-      Actual  : Node_Id;
-      Mode    : Ghost_Mode_Type;
-      New_N   : Node_Id;
+
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
+
+      Actual : Node_Id;
+      New_N  : Node_Id;
 
    --  Start of processing for Analyze_Procedure_Call
 
@@ -1598,7 +1601,7 @@ package body Sem_Ch6 is
       --  Set the mode now to ensure that any nodes generated during analysis
       --  and expansion are properly marked as Ghost.
 
-      Mark_And_Set_Ghost_Procedure_Call (N, Mode);
+      Mark_And_Set_Ghost_Procedure_Call (N);
 
       --  Otherwise analyze the parameters
 
@@ -1793,7 +1796,7 @@ package body Sem_Ch6 is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Mode);
+      Restore_Ghost_Mode (Saved_GM);
    end Analyze_Procedure_Call;
 
    ------------------------------
@@ -3314,9 +3317,10 @@ package body Sem_Ch6 is
 
       --  Local variables
 
-      Save_ISMP : constant Boolean := Ignore_SPARK_Mode_Pragmas_In_Instance;
-      Mode      : Ghost_Mode_Type;
-      Mode_Set  : Boolean := False;
+      Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_ISMP : constant Boolean         :=
+                     Ignore_SPARK_Mode_Pragmas_In_Instance;
+      --  Save the Ghost and SPARK mode-related data to restore on exit
 
    --  Start of processing for Analyze_Subprogram_Body_Helper
 
@@ -3368,8 +3372,7 @@ package body Sem_Ch6 is
             --  the mode now to ensure that any nodes generated during analysis
             --  and expansion are properly marked as Ghost.
 
-            Mark_And_Set_Ghost_Body (N, Spec_Id, Mode);
-            Mode_Set := True;
+            Mark_And_Set_Ghost_Body (N, Spec_Id);
 
             Set_Is_Compilation_Unit (Body_Id, Is_Compilation_Unit (Spec_Id));
             Set_Is_Child_Unit       (Body_Id, Is_Child_Unit       (Spec_Id));
@@ -3414,8 +3417,7 @@ package body Sem_Ch6 is
                --  Ghost. Set the mode now to ensure that any nodes generated
                --  during analysis and expansion are properly marked as Ghost.
 
-               Mark_And_Set_Ghost_Body (N, Spec_Id, Mode);
-               Mode_Set := True;
+               Mark_And_Set_Ghost_Body (N, Spec_Id);
 
             else
                Spec_Id := Find_Corresponding_Spec (N);
@@ -3425,8 +3427,7 @@ package body Sem_Ch6 is
                --  Ghost. Set the mode now to ensure that any nodes generated
                --  during analysis and expansion are properly marked as Ghost.
 
-               Mark_And_Set_Ghost_Body (N, Spec_Id, Mode);
-               Mode_Set := True;
+               Mark_And_Set_Ghost_Body (N, Spec_Id);
 
                --  In GNATprove mode, if the body has no previous spec, create
                --  one so that the inlining machinery can operate properly.
@@ -3527,8 +3528,7 @@ package body Sem_Ch6 is
             --  the mode now to ensure that any nodes generated during analysis
             --  and expansion are properly marked as Ghost.
 
-            Mark_And_Set_Ghost_Body (N, Spec_Id, Mode);
-            Mode_Set := True;
+            Mark_And_Set_Ghost_Body (N, Spec_Id);
          end if;
       end if;
 
@@ -4447,11 +4447,8 @@ package body Sem_Ch6 is
       end if;
 
    <<Leave>>
-      Ignore_SPARK_Mode_Pragmas_In_Instance := Save_ISMP;
-
-      if Mode_Set then
-         Restore_Ghost_Mode (Mode);
-      end if;
+      Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
+      Restore_Ghost_Mode (Saved_GM);
    end Analyze_Subprogram_Body_Helper;
 
    ------------------------------------

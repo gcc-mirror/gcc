@@ -1,3 +1,141 @@
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* contracts.adb (Analyze_Entry_Or_Subprogram_Body_Contract):
+	Add a warning about SPARK mode management. The routine now
+	saves and restores both the mode and associated pragma.
+	(Analyze_Entry_Or_Subprogram_Contract): Add a warning about
+	SPARK mode management. The routine now saves and restores both
+	the mode and associated pragma.
+	(Analyze_Object_Contract):
+	Add a warning about SPARK mode management. The routine
+	now saves and restores both the mode and associated pragma.
+	(Analyze_Package_Body_Contract): Add a warning about SPARK mode
+	management.  The routine now saves and restores both the mode
+	and associated pragma.	(Analyze_Package_Contract): Add a warning
+	about SPARK mode management. The routine now saves and restores
+	both the mode and associated pragma.
+	(Analyze_Task_Contract):
+	Add a warning about SPARK mode management. The routine now saves
+	and restores both the mode and associated pragma.
+	* expander.adb (Expand): Change the way the Ghost mode is saved
+	and restored.
+	* exp_ch3.adb (Freeze_Type): Change the way the Ghost mode is
+	saved and restored.
+	* exp_disp.adb (Make_DT): Change the way the Ghost mode is saved
+	and restored.
+	* exp_util.adb (Build_DIC_Procedure_Body):
+	Change the way the Ghost mode is saved and restored.
+	(Build_DIC_Procedure_Declaration): Change the way the Ghost
+	mode is saved and restored.
+	(Build_Invariant_Procedure_Body):
+	Change the way the Ghost mode is saved and restored.
+	(Build_Invariant_Procedure_Declaration): Change the way the Ghost
+	mode is saved and restored.
+	(Make_Predicate_Call): Change the
+	way the Ghost mode is saved and restored.
+	* freeze.adb (Freeze_Entity): Change the way the Ghost mode is
+	saved and restored.
+	* ghost.adb (Mark_And_Set_Ghost_Assignment): Remove parameter Mode
+	and its assignment.
+	(Mark_And_Set_Ghost_Body): Remove parameter
+	Mode and its assignment.
+	(Mark_And_Set_Ghost_Completion):
+	Remove parameter Mode and its assignment.
+	(Mark_And_Set_Ghost_Declaration): Remove parameter Mode and its
+	assignment.
+	(Mark_And_Set_Ghost_Instantiation): Remove parameter
+	Mode and its assignment.
+	(Mark_And_Set_Ghost_Procedure_Call):
+	Remove parameter Mode and its assignment.
+	(Set_Ghost_Mode):
+	Remove parameter Mode and its assignment.
+	* ghost.ads (Mark_And_Set_Ghost_Assignment): Remove parameter Mode
+	and update the comment on usage.
+	(Mark_And_Set_Ghost_Body):
+	Remove parameter Mode and update the comment on usage.
+	(Mark_And_Set_Ghost_Completion): Remove parameter Mode and
+	update the comment on usage.
+	(Mark_And_Set_Ghost_Declaration):
+	Remove parameter Mode and update the comment on usage.
+	(Mark_And_Set_Ghost_Instantiation): Remove parameter Mode and
+	update the comment on usage.
+	(Mark_And_Set_Ghost_Procedure_Call):
+	Remove parameter Mode and update the comment on usage.
+	(Set_Ghost_Mode): Remove parameter Mode and update the comment
+	on usage.
+	* lib.ads Remove obsolete fields SPARK_Mode_Pragma from various
+	types.
+	* lib-load.adb (Create_Dummy_Package_Unit): Remove the assignment
+	of obsolete field SPARK_Mode_Pragma.
+	(Load_Main_Source): Remove
+	the assignment of obsolete field SPARK_Mode_Pragma.
+	(Load_Unit): Remove the assignment of obsolete field SPARK_Mode_Pragma.
+	* lib-writ.adb (Add_Preprocessing_Dependency): Remove
+	the assignment of obsolete field SPARK_Mode_Pragma.
+	(Ensure_System_Dependency): Remove the assignment of obsolete
+	field SPARK_Mode_Pragma.
+	* rtsfind.adb (Load_RTU): Add a warning about Ghost and SPARK
+	mode management. Change the way Ghost and SPARK modes are saved
+	and restored.
+	* sem.adb (Analyze): Change the way the Ghost mode is saved
+	and restored.
+	* sem_ch3.adb (Analyze_Object_Declaration): Change the way the
+	Ghost mode is saved and restored.
+	(Process_Full_View): Change
+	the way the Ghost mode is saved and restored.
+	* sem_ch5.adb (Analyze_Assignment): Change the way the Ghost
+	mode is saved and restored.
+	* sem_ch6.adb (Analyze_Procedure_Call): Change the way the Ghost
+	mode is saved and restored.
+	(Analyze_Subprogram_Body_Helper):
+	Change the way the Ghost mode is saved and restored.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Change the way the
+	Ghost mode is saved and restored.
+	* sem_ch10.adb (Analyze_Subunit): Add a warning about SPARK mode
+	management. Save the SPARK mode-related data prior to any changes
+	to the scope stack and contexts. The mode is then reinstalled
+	before the subunit is analyzed in order to restore the original
+	view of the subunit.
+	* sem_ch12.adb (Analyze_Package_Instantiation): Update the
+	warning on region management.  Change the way the Ghost and
+	SPARK modes are saved and restored.
+	(Inline_Instance_Body):
+	Add a warning about SPARK mode management. Code clean up.
+	(Analyze_Subprogram_Instantiation): Update the warning on region
+	management.  Change the way the Ghost and SPARK modes are saved
+	and restored.
+	(Instantiate_Package_Body): Update the warning
+	on region management. Change the way the Ghost and SPARK modes
+	are saved and restored.
+	(Instantiate_Subprogram_Body): Update
+	the warning on region management. Change the way the Ghost and
+	SPARK modes are saved and restored.
+	(Set_Instance_Env): Add a
+	warning about SPARK mode management. Change the way SPARK mode
+	is saved and restored.
+	* sem_ch13.adb (Build_Predicate_Functions):
+	Change the way the Ghost mode is saved and restored.
+	(Build_Predicate_Function_Declaration): Change the way the Ghost
+	mode is saved and restored.
+	* sem_elab.adb (Check_Elab_Calls): Add a warning about SPARK
+	mode management. Change the way SPARK mode is saved and restored.
+	* sem_prag.adb (Analyze_Contract_Cases_In_Decl_Part):
+	Change the way the Ghost mode is saved and restored.
+	(Analyze_Initial_Condition_In_Decl_Part): Change the way
+	the Ghost mode is saved and restored.
+	(Analyze_Pragma):
+	Change the way the Ghost mode is saved and restored.
+	(Analyze_Pre_Post_Condition_In_Decl_Part): Change the way the
+	Ghost mode is saved and restored.
+	* sem_util.adb (Install_SPARK_Mode): New routine.
+	(Restore_SPARK_Mode): New routine.
+	(Save_SPARK_Mode_And_Set): Removed.
+	(Set_SPARK_Mode): New routine.
+	* sem_util.ads (Install_SPARK_Mode): New routine.
+	(Restore_SPARK_Mode): New routine.
+	(Save_SPARK_Mode_And_Set): Removed.
+	(Set_SPARK_Mode): New routine.
+
 2017-04-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb, sem_util.ads (From_Nested_Package): New predicate

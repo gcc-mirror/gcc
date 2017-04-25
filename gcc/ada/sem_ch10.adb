@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2058,6 +2058,10 @@ package body Sem_Ch10 is
    --  context before analyzing the proper body itself. On exit, we remove only
    --  the explicit context of the subunit.
 
+   --  WARNING: This routine manages SPARK regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  SPARK mode.
+
    procedure Analyze_Subunit (N : Node_Id) is
       Lib_Unit : constant Node_Id   := Library_Unit (N);
       Par_Unit : constant Entity_Id := Current_Scope;
@@ -2290,6 +2294,12 @@ package body Sem_Ch10 is
          Pop_Scope;
       end Remove_Scope;
 
+      Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
+      Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      --  Save the SPARK mode-related data to restore on exit. Removing
+      --  eclosing scopes and contexts to provide a clean environment for the
+      --  context of the subunit will eliminate any previously set SPARK_Mode.
+
    --  Start of processing for Analyze_Subunit
 
    begin
@@ -2386,6 +2396,12 @@ package body Sem_Ch10 is
       end if;
 
       Generate_Parent_References (Unit (N), Par_Unit);
+
+      --  Reinstall the SPARK_Mode which was in effect prior to any scope and
+      --  context manipulations.
+
+      Install_SPARK_Mode (Saved_SM, Saved_SMP);
+
       Analyze (Proper_Body (Unit (N)));
       Remove_Context (N);
 

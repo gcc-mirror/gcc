@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -7193,9 +7193,10 @@ package body Exp_Ch3 is
 
       Def_Id : constant Entity_Id := Entity (N);
 
-      Mode     : Ghost_Mode_Type;
-      Mode_Set : Boolean := False;
-      Result   : Boolean := False;
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
+
+      Result : Boolean := False;
 
    --  Start of processing for Freeze_Type
 
@@ -7204,8 +7205,7 @@ package body Exp_Ch3 is
       --  now to ensure that any nodes generated during freezing are properly
       --  marked as Ghost.
 
-      Set_Ghost_Mode (Def_Id, Mode);
-      Mode_Set := True;
+      Set_Ghost_Mode (Def_Id);
 
       --  Process any remote access-to-class-wide types designating the type
       --  being frozen.
@@ -7548,17 +7548,13 @@ package body Exp_Ch3 is
          Build_Invariant_Procedure_Body (Def_Id);
       end if;
 
-      if Mode_Set then
-         Restore_Ghost_Mode (Mode);
-      end if;
+      Restore_Ghost_Mode (Saved_GM);
 
       return Result;
 
    exception
       when RE_Not_Available =>
-         if Mode_Set then
-            Restore_Ghost_Mode (Mode);
-         end if;
+         Restore_Ghost_Mode (Saved_GM);
 
          return False;
    end Freeze_Type;

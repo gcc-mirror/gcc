@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -95,8 +95,7 @@ package body Lib.Writ is
          Serial_Number     => 0,
          Version           => 0,
          Error_Location    => No_Location,
-         OA_Setting        => 'O',
-         SPARK_Mode_Pragma => Empty);
+         OA_Setting        => 'O');
    end Add_Preprocessing_Dependency;
 
    ------------------------------
@@ -153,8 +152,7 @@ package body Lib.Writ is
         Serial_Number     => 0,
         Version           => 0,
         Error_Location    => No_Location,
-        OA_Setting        => 'O',
-        SPARK_Mode_Pragma => Empty);
+        OA_Setting        => 'O');
 
       --  Parse system.ads so that the checksum is set right. Style checks are
       --  not applied. The Ekind is set to ensure that this reference is always

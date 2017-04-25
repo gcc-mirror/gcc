@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -284,7 +284,8 @@ package body Sem_Ch5 is
 
       --  Local variables
 
-      Mode : Ghost_Mode_Type;
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
 
    --  Start of processing for Analyze_Assignment
 
@@ -310,7 +311,7 @@ package body Sem_Ch5 is
          Current_Assignment := Empty;
       end if;
 
-      Mark_And_Set_Ghost_Assignment (N, Mode);
+      Mark_And_Set_Ghost_Assignment (N);
       Analyze (Rhs);
 
       --  Ensure that we never do an assignment on a variable marked as
@@ -939,7 +940,7 @@ package body Sem_Ch5 is
       Analyze_Dimension (N);
 
    <<Leave>>
-      Restore_Ghost_Mode (Mode);
+      Restore_Ghost_Mode (Saved_GM);
 
       --  If the right-hand side contains target names, expansion has been
       --  disabled to prevent expansion that might move target names out of

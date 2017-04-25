@@ -1331,6 +1331,9 @@ package Sem_Util is
    --  Install both the generic formal parameters and the formal parameters of
    --  generic subprogram Subp_Id into visibility.
 
+   procedure Install_SPARK_Mode (Mode : SPARK_Mode_Type; Prag : Node_Id);
+   --  Establish the SPARK_Mode and SPARK_Mode_Pragma currently in effect
+
    function Is_Actual_Out_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of out mode in a subprogram call
 
@@ -2209,9 +2212,11 @@ package Sem_Util is
    procedure Reset_Analyzed_Flags (N : Node_Id);
    --  Reset the Analyzed flags in all nodes of the tree whose root is N
 
-   procedure Restore_SPARK_Mode (Mode : SPARK_Mode_Type);
-   --  Set the current SPARK_Mode to whatever Mode denotes. This routime must
-   --  be used in tandem with Save_SPARK_Mode_And_Set.
+   procedure Restore_SPARK_Mode
+     (Mode : SPARK_Mode_Type;
+      Prag : Node_Id);
+   --  Set the current SPARK_Mode to Mode and SPARK_Mode_Pragma to Prag. This
+   --  routine must be used in tandem with Set_SPARK_Mode.
 
    function Returns_Unconstrained_Type (Subp : Entity_Id) return Boolean;
    --  Return true if Subp is a function that returns an unconstrained type
@@ -2268,13 +2273,6 @@ package Sem_Util is
    --  or if they are the same object (in the sense of function Same_Object).
    --  A result of False does not necessarily mean they have different values,
    --  just that it is not possible to determine they have the same value.
-
-   procedure Save_SPARK_Mode_And_Set
-     (Context : Entity_Id;
-      Mode    : out SPARK_Mode_Type);
-   --  Save the current SPARK_Mode in effect in Mode. Establish the SPARK_Mode
-   --  (if any) of a package or a subprogram denoted by Context. This routine
-   --  must be used in tandem with Restore_SPARK_Mode.
 
    function Scalar_Part_Present (T : Entity_Id) return Boolean;
    --  Tests if type T can be determined at compile time to have at least one
@@ -2370,6 +2368,11 @@ package Sem_Util is
    --  in the fixed-point and discrete cases, and also copies the alignment
    --  value from T2 to T1. It does NOT copy the RM_Size field, which must be
    --  separately set if this is required to be copied also.
+
+   procedure Set_SPARK_Mode (Context : Entity_Id);
+   --  Establish the SPARK_Mode and SPARK_Mode_Pragma (if any) of a package or
+   --  a subprogram denoted by Context. This routine must be used in tandem
+   --  with Restore_SPARK_Mode.
 
    function Scope_Is_Transient return Boolean;
    --  True if the current scope is transient

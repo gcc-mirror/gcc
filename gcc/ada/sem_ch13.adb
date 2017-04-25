@@ -8566,7 +8566,8 @@ package body Sem_Ch13 is
 
       --  Local variables
 
-      Mode : Ghost_Mode_Type;
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
 
    --  Start of processing for Build_Predicate_Functions
 
@@ -8583,7 +8584,7 @@ package body Sem_Ch13 is
       --  The related type may be subject to pragma Ghost. Set the mode now to
       --  ensure that the predicate functions are properly marked as Ghost.
 
-      Set_Ghost_Mode (Typ, Mode);
+      Set_Ghost_Mode (Typ);
 
       --  Prepare to construct predicate expression
 
@@ -8937,7 +8938,7 @@ package body Sem_Ch13 is
          end;
       end if;
 
-      Restore_Ghost_Mode (Mode);
+      Restore_Ghost_Mode (Saved_GM);
    end Build_Predicate_Functions;
 
    ------------------------------------------
@@ -8953,16 +8954,18 @@ package body Sem_Ch13 is
    is
       Loc : constant Source_Ptr := Sloc (Typ);
 
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
+
       Func_Decl : Node_Id;
       Func_Id   : Entity_Id;
-      Mode      : Ghost_Mode_Type;
       Spec      : Node_Id;
 
    begin
       --  The related type may be subject to pragma Ghost. Set the mode now to
       --  ensure that the predicate functions are properly marked as Ghost.
 
-      Set_Ghost_Mode (Typ, Mode);
+      Set_Ghost_Mode (Typ);
 
       Func_Id :=
         Make_Defining_Identifier (Loc,
@@ -8996,7 +8999,7 @@ package body Sem_Ch13 is
       Insert_After (Parent (Typ), Func_Decl);
       Analyze (Func_Decl);
 
-      Restore_Ghost_Mode (Mode);
+      Restore_Ghost_Mode (Saved_GM);
 
       return Func_Decl;
    end Build_Predicate_Function_Declaration;

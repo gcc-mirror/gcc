@@ -11694,6 +11694,16 @@ package body Sem_Util is
       end loop;
    end Install_Generic_Formals;
 
+   ------------------------
+   -- Install_SPARK_Mode --
+   ------------------------
+
+   procedure Install_SPARK_Mode (Mode : SPARK_Mode_Type; Prag : Node_Id) is
+   begin
+      SPARK_Mode        := Mode;
+      SPARK_Mode_Pragma := Prag;
+   end Install_SPARK_Mode;
+
    -----------------------------
    -- Is_Actual_Out_Parameter --
    -----------------------------
@@ -19830,9 +19840,13 @@ package body Sem_Util is
    -- Restore_SPARK_Mode --
    ------------------------
 
-   procedure Restore_SPARK_Mode (Mode : SPARK_Mode_Type) is
+   procedure Restore_SPARK_Mode
+     (Mode : SPARK_Mode_Type;
+      Prag : Node_Id)
+   is
    begin
-      SPARK_Mode := Mode;
+      SPARK_Mode        := Mode;
+      SPARK_Mode_Pragma := Prag;
    end Restore_SPARK_Mode;
 
    --------------------------------
@@ -20156,28 +20170,23 @@ package body Sem_Util is
       end if;
    end Same_Value;
 
-   -----------------------------
-   -- Save_SPARK_Mode_And_Set --
-   -----------------------------
+   --------------------
+   -- Set_SPARK_Mode --
+   --------------------
 
-   procedure Save_SPARK_Mode_And_Set
-     (Context : Entity_Id;
-      Mode    : out SPARK_Mode_Type)
-   is
+   procedure Set_SPARK_Mode (Context : Entity_Id) is
    begin
-      --  Save the current mode in effect
-
-      Mode := SPARK_Mode;
-
       --  Do not consider illegal or partially decorated constructs
 
       if Ekind (Context) = E_Void or else Error_Posted (Context) then
          null;
 
       elsif Present (SPARK_Pragma (Context)) then
-         SPARK_Mode := Get_SPARK_Mode_From_Annotation (SPARK_Pragma (Context));
+         Install_SPARK_Mode
+           (Mode => Get_SPARK_Mode_From_Annotation (SPARK_Pragma (Context)),
+            Prag => SPARK_Pragma (Context));
       end if;
-   end Save_SPARK_Mode_And_Set;
+   end Set_SPARK_Mode;
 
    -------------------------
    -- Scalar_Part_Present --

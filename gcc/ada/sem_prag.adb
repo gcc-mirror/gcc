@@ -472,8 +472,10 @@ package body Sem_Prag is
 
       CCases : constant Node_Id := Expression (Get_Argument (N, Spec_Id));
 
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
+
       CCase         : Node_Id;
-      Mode          : Ghost_Mode_Type;
       Restore_Scope : Boolean := False;
 
    --  Start of processing for Analyze_Contract_Cases_In_Decl_Part
@@ -490,7 +492,7 @@ package body Sem_Prag is
       --  point of analysis may not necessarily be the same. Use the mode in
       --  effect at the point of declaration.
 
-      Set_Ghost_Mode (N, Mode);
+      Set_Ghost_Mode (N);
 
       --  Single and multiple contract cases must appear in aggregate form. If
       --  this is not the case, then either the parser of the analysis of the
@@ -537,7 +539,8 @@ package body Sem_Prag is
       end if;
 
       Set_Is_Analyzed_Pragma (N);
-      Restore_Ghost_Mode (Mode);
+
+      Restore_Ghost_Mode (Saved_GM);
    end Analyze_Contract_Cases_In_Decl_Part;
 
    ----------------------------------
@@ -2672,7 +2675,8 @@ package body Sem_Prag is
       Pack_Id   : constant Entity_Id := Defining_Entity (Pack_Decl);
       Expr      : constant Node_Id   := Expression (Get_Argument (N, Pack_Id));
 
-      Mode : Ghost_Mode_Type;
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
 
    begin
       --  Do not analyze the pragma multiple times
@@ -2686,7 +2690,7 @@ package body Sem_Prag is
       --  point of analysis may not necessarily be the same. Use the mode in
       --  effect at the point of declaration.
 
-      Set_Ghost_Mode (N, Mode);
+      Set_Ghost_Mode (N);
 
       --  The expression is preanalyzed because it has not been moved to its
       --  final place yet. A direct analysis may generate side effects and this
@@ -2695,7 +2699,7 @@ package body Sem_Prag is
       Preanalyze_Assert_Expression (Expr, Standard_Boolean);
       Set_Is_Analyzed_Pragma (N);
 
-      Restore_Ghost_Mode (Mode);
+      Restore_Ghost_Mode (Saved_GM);
    end Analyze_Initial_Condition_In_Decl_Part;
 
    --------------------------------------
@@ -12662,10 +12666,12 @@ package body Sem_Prag is
          --  restore the Ghost mode.
 
          when Pragma_Check => Check : declare
+            Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+            --  Save the Ghost mode to restore on exit
+
             Cname : Name_Id;
             Eloc  : Source_Ptr;
             Expr  : Node_Id;
-            Mode  : Ghost_Mode_Type;
             Str   : Node_Id;
 
          begin
@@ -12673,7 +12679,7 @@ package body Sem_Prag is
             --  the mode now to ensure that any nodes generated during analysis
             --  and expansion are marked as Ghost.
 
-            Set_Ghost_Mode (N, Mode);
+            Set_Ghost_Mode (N);
 
             GNAT_Pragma;
             Check_At_Least_N_Arguments (2);
@@ -12857,7 +12863,7 @@ package body Sem_Prag is
                In_Assertion_Expr := In_Assertion_Expr - 1;
             end if;
 
-            Restore_Ghost_Mode (Mode);
+            Restore_Ghost_Mode (Saved_GM);
          end Check;
 
          --------------------------
@@ -24031,8 +24037,10 @@ package body Sem_Prag is
       Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Subp_Decl);
       Expr      : constant Node_Id   := Expression (Get_Argument (N, Spec_Id));
 
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
+
       Errors        : Nat;
-      Mode          : Ghost_Mode_Type;
       Restore_Scope : Boolean := False;
 
    --  Start of processing for Analyze_Pre_Post_Condition_In_Decl_Part
@@ -24049,7 +24057,7 @@ package body Sem_Prag is
       --  point of analysis may not necessarily be the same. Use the mode in
       --  effect at the point of declaration.
 
-      Set_Ghost_Mode (N, Mode);
+      Set_Ghost_Mode (N);
 
       --  Ensure that the subprogram and its formals are visible when analyzing
       --  the expression of the pragma.
@@ -24120,7 +24128,7 @@ package body Sem_Prag is
       Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
       Set_Is_Analyzed_Pragma (N);
 
-      Restore_Ghost_Mode (Mode);
+      Restore_Ghost_Mode (Saved_GM);
    end Analyze_Pre_Post_Condition_In_Decl_Part;
 
    ------------------------------------------

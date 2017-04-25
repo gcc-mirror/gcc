@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1529,11 +1529,13 @@ package body Exp_Util is
 
       Loc : constant Source_Ptr := Sloc (Typ);
 
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
+
       DIC_Prag     : Node_Id;
       DIC_Typ      : Entity_Id;
       Dummy_1      : Entity_Id;
       Dummy_2      : Entity_Id;
-      Mode         : Ghost_Mode_Type;
       Proc_Body    : Node_Id;
       Proc_Body_Id : Entity_Id;
       Proc_Decl    : Node_Id;
@@ -1582,7 +1584,7 @@ package body Exp_Util is
       --  The working type may be subject to pragma Ghost. Set the mode now to
       --  ensure that the DIC procedure is properly marked as Ghost.
 
-      Set_Ghost_Mode (Work_Typ, Mode);
+      Set_Ghost_Mode (Work_Typ);
 
       --  The working type must be either define a DIC pragma of its own or
       --  inherit one from a parent type.
@@ -1762,7 +1764,7 @@ package body Exp_Util is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Mode);
+      Restore_Ghost_Mode (Saved_GM);
    end Build_DIC_Procedure_Body;
 
    -------------------------------------
@@ -1776,9 +1778,11 @@ package body Exp_Util is
    procedure Build_DIC_Procedure_Declaration (Typ : Entity_Id) is
       Loc : constant Source_Ptr := Sloc (Typ);
 
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
+
       DIC_Prag  : Node_Id;
       DIC_Typ   : Entity_Id;
-      Mode      : Ghost_Mode_Type;
       Proc_Decl : Node_Id;
       Proc_Id   : Entity_Id;
       Typ_Decl  : Node_Id;
@@ -1835,7 +1839,7 @@ package body Exp_Util is
       --  The working type may be subject to pragma Ghost. Set the mode now to
       --  ensure that the DIC procedure is properly marked as Ghost.
 
-      Set_Ghost_Mode (Work_Typ, Mode);
+      Set_Ghost_Mode (Work_Typ);
 
       --  The type must be either subject to a DIC pragma or inherit one from a
       --  parent type.
@@ -1959,7 +1963,7 @@ package body Exp_Util is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Mode);
+      Restore_Ghost_Mode (Saved_GM);
    end Build_DIC_Procedure_Declaration;
 
    ------------------------------------
@@ -2889,8 +2893,10 @@ package body Exp_Util is
 
       --  Local variables
 
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
+
       Dummy        : Entity_Id;
-      Mode         : Ghost_Mode_Type;
       Priv_Item    : Node_Id;
       Proc_Body    : Node_Id;
       Proc_Body_Id : Entity_Id;
@@ -2944,7 +2950,7 @@ package body Exp_Util is
       --  The working type may be subject to pragma Ghost. Set the mode now to
       --  ensure that the invariant procedure is properly marked as Ghost.
 
-      Set_Ghost_Mode (Work_Typ, Mode);
+      Set_Ghost_Mode (Work_Typ);
 
       --  The type must either have invariants of its own, inherit class-wide
       --  invariants from parent types or interfaces, or be an array or record
@@ -3228,7 +3234,7 @@ package body Exp_Util is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Mode);
+      Restore_Ghost_Mode (Saved_GM);
    end Build_Invariant_Procedure_Body;
 
    -------------------------------------------
@@ -3245,7 +3251,9 @@ package body Exp_Util is
    is
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Mode      : Ghost_Mode_Type;
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
+
       Proc_Decl : Node_Id;
       Proc_Id   : Entity_Id;
       Proc_Nam  : Name_Id;
@@ -3295,7 +3303,7 @@ package body Exp_Util is
       --  The working type may be subject to pragma Ghost. Set the mode now to
       --  ensure that the invariant procedure is properly marked as Ghost.
 
-      Set_Ghost_Mode (Work_Typ, Mode);
+      Set_Ghost_Mode (Work_Typ);
 
       --  The type must either have invariants of its own, inherit class-wide
       --  invariants from parent or interface types, or be an array or record
@@ -3452,7 +3460,7 @@ package body Exp_Util is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Mode);
+      Restore_Ghost_Mode (Saved_GM);
    end Build_Invariant_Procedure_Declaration;
 
    --------------------------
@@ -9288,9 +9296,11 @@ package body Exp_Util is
    is
       Loc : constant Source_Ptr := Sloc (Expr);
 
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
+
       Call    : Node_Id;
       Func_Id : Entity_Id;
-      Mode    : Ghost_Mode_Type;
 
    begin
       pragma Assert (Present (Predicate_Function (Typ)));
@@ -9298,7 +9308,7 @@ package body Exp_Util is
       --  The related type may be subject to pragma Ghost. Set the mode now to
       --  ensure that the call is properly marked as Ghost.
 
-      Set_Ghost_Mode (Typ, Mode);
+      Set_Ghost_Mode (Typ);
 
       --  Call special membership version if requested and available
 
@@ -9315,7 +9325,8 @@ package body Exp_Util is
           Name                   => New_Occurrence_Of (Func_Id, Loc),
           Parameter_Associations => New_List (Relocate_Node (Expr)));
 
-      Restore_Ghost_Mode (Mode);
+      Restore_Ghost_Mode (Saved_GM);
+
       return Call;
    end Make_Predicate_Call;
 

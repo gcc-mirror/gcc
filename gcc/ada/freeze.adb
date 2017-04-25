@@ -5107,7 +5107,8 @@ package body Freeze is
 
       --  Local variables
 
-      Mode : Ghost_Mode_Type;
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
 
    --  Start of processing for Freeze_Entity
 
@@ -5116,7 +5117,7 @@ package body Freeze is
       --  now to ensure that any nodes generated during freezing are properly
       --  flagged as Ghost.
 
-      Set_Ghost_Mode (E, Mode);
+      Set_Ghost_Mode (E);
 
       --  We are going to test for various reasons why this entity need not be
       --  frozen here, but in the case of an Itype that's defined within a
@@ -6723,7 +6724,8 @@ package body Freeze is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Mode);
+      Restore_Ghost_Mode (Saved_GM);
+
       return Result;
    end Freeze_Entity;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4396,6 +4396,9 @@ package body Exp_Disp is
       Name_TSD          : constant Name_Id :=
                             New_External_Name (Tname, 'B', Suffix_Index => -1);
 
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
+
       AI                 : Elmt_Id;
       AI_Tag_Elmt        : Elmt_Id;
       AI_Tag_Comp        : Elmt_Id;
@@ -4408,7 +4411,6 @@ package body Exp_Disp is
       ITable             : Node_Id;
       I_Depth            : Nat := 0;
       Iface_Table_Node   : Node_Id;
-      Mode               : Ghost_Mode_Type;
       Name_ITable        : Name_Id;
       Nb_Predef_Prims    : Nat := 0;
       Nb_Prim            : Nat := 0;
@@ -4436,7 +4438,7 @@ package body Exp_Disp is
       --  the mode now to ensure that any nodes generated during dispatch table
       --  creation are properly marked as Ghost.
 
-      Set_Ghost_Mode (Typ, Mode);
+      Set_Ghost_Mode (Typ);
 
       --  Handle cases in which there is no need to build the dispatch table
 
@@ -6242,7 +6244,7 @@ package body Exp_Disp is
       Register_CG_Node (Typ);
 
    <<Leave>>
-      Restore_Ghost_Mode (Mode);
+      Restore_Ghost_Mode (Saved_GM);
 
       return Result;
    end Make_DT;

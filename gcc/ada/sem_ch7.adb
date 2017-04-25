@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -539,12 +539,14 @@ package body Sem_Ch7 is
 
       --  Local variables
 
-      Save_ISMP : constant Boolean := Ignore_SPARK_Mode_Pragmas_In_Instance;
+      Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_ISMP : constant Boolean         :=
+                     Ignore_SPARK_Mode_Pragmas_In_Instance;
+      --  Save the Ghost and SPARK mode-related data to restore on exit
 
       Body_Id          : Entity_Id;
       HSS              : Node_Id;
       Last_Spec_Entity : Entity_Id;
-      Mode             : Ghost_Mode_Type;
       New_N            : Node_Id;
       Pack_Decl        : Node_Id;
       Spec_Id          : Entity_Id;
@@ -647,7 +649,7 @@ package body Sem_Ch7 is
       --  the mode now to ensure that any nodes generated during analysis and
       --  expansion are properly flagged as ignored Ghost.
 
-      Mark_And_Set_Ghost_Body (N, Spec_Id, Mode);
+      Mark_And_Set_Ghost_Body (N, Spec_Id);
 
       Set_Is_Compilation_Unit (Body_Id, Is_Compilation_Unit (Spec_Id));
       Style.Check_Identifier (Body_Id, Spec_Id);
@@ -941,9 +943,8 @@ package body Sem_Ch7 is
          end if;
       end if;
 
-      Ignore_SPARK_Mode_Pragmas_In_Instance := Save_ISMP;
-
-      Restore_Ghost_Mode (Mode);
+      Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
+      Restore_Ghost_Mode (Saved_GM);
    end Analyze_Package_Body_Helper;
 
    ---------------------------------

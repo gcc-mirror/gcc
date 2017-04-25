@@ -1937,8 +1937,11 @@ package body Sem_Elab is
    -- Check_Elab_Calls --
    ----------------------
 
+   --  WARNING: This routine manages SPARK regions
+
    procedure Check_Elab_Calls is
-      Save_SPARK_Mode : SPARK_Mode_Type;
+      Saved_SM  : SPARK_Mode_Type;
+      Saved_SMP : Node_Id;
 
    begin
       --  If expansion is disabled, do not generate any checks, unless we
@@ -1966,9 +1969,10 @@ package body Sem_Elab is
             From_Elab_Code := Delay_Check.Table (J).From_Elab_Code;
             In_Task_Activation := Delay_Check.Table (J).In_Task_Activation;
 
-            --  Set appropriate value of SPARK_Mode
+            Saved_SM  := SPARK_Mode;
+            Saved_SMP := SPARK_Mode_Pragma;
 
-            Save_SPARK_Mode := SPARK_Mode;
+            --  Set appropriate value of SPARK_Mode
 
             if Delay_Check.Table (J).From_SPARK_Code then
                SPARK_Mode := On;
@@ -1980,7 +1984,7 @@ package body Sem_Elab is
                Outer_Scope => Delay_Check.Table (J).Outer_Scope,
                Orig_Ent    => Delay_Check.Table (J).Orig_Ent);
 
-            SPARK_Mode := Save_SPARK_Mode;
+            Restore_SPARK_Mode (Saved_SM, Saved_SMP);
             Pop_Scope;
          end loop;
 
