@@ -1,3 +1,11 @@
+2017-04-25  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2017-04-25  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+        * config/s390/s390.md (define_peephole2): New peephole to help
+        combining the load-and-test pattern with volatile memory.
+
 2017-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/80501
