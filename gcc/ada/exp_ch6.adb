@@ -414,7 +414,8 @@ package body Exp_Ch6 is
             --  master.
 
             if Is_Library_Level_Entity (Ptr_Typ)
-              and then Finalize_Storage_Only (Desig_Typ)
+              and then (Finalize_Storage_Only (Desig_Typ)
+                          or else No_Heap_Finalization (Ptr_Typ))
             then
                Actual := Make_Null (Loc);
 

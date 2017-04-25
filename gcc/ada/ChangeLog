@@ -1,3 +1,28 @@
+2017-04-25  Pascal Obry  <obry@adacore.com>
+
+	* g-sercom.ads: Add simple usage of GNAT.Serial_Communication.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion):
+	When resolving against any fixed type, set the type of the
+	operand as universal real when the operand is a multiplication
+	or a division where both operands are of any fixed type.
+	(Unique_Fixed_Point_Type): Add local variable ErrN. Improve the
+	placement of an error message by pointing to the operand of a
+	type conversion rather than the conversion itself.
+
+2017-04-25  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Function_Declaration): Set
+	Needs_Debug_Info when producing SCOs.
+
+2017-04-25  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch6.adb (Add_Finalization_Master_Actual_To_Build_In_Place_Call):
+	Always pass a null finalization master for a library level named access
+	type to which a pragme No_Heap_Finalization applies.
+
 2017-04-25  Arnaud Charlet  <charlet@adacore.com trojanek>
 
 	PR ada/78845

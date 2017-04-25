@@ -8908,6 +8908,13 @@ package body Sem_Ch13 is
         Make_Defining_Identifier (Loc,
           Chars => New_External_Name (Chars (Typ), "Predicate"));
 
+      --  The predicate function requires debug info when the predicates are
+      --  subject to Source Coverage Obligations.
+
+      if Opt.Generate_SCO then
+         Set_Debug_Info_Needed (Func_Id);
+      end if;
+
       Spec :=
         Make_Function_Specification (Loc,
           Defining_Unit_Name       => Func_Id,
