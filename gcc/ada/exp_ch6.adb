@@ -6635,15 +6635,20 @@ package body Exp_Ch6 is
                    Attribute_Name => Name_Tag);
             end if;
 
-            Insert_Action (Exp,
-              Make_Raise_Program_Error (Loc,
-                Condition =>
-                  Make_Op_Gt (Loc,
-                    Left_Opnd  => Build_Get_Access_Level (Loc, Tag_Node),
-                    Right_Opnd =>
-                      Make_Integer_Literal (Loc,
-                        Scope_Depth (Enclosing_Dynamic_Scope (Scope_Id)))),
-                Reason => PE_Accessibility_Check_Failed));
+            if not CodePeer_Mode then
+               --  CodePeer doesn't do anything useful with
+               --  Ada.Tags.Type_Specific_Data components
+
+               Insert_Action (Exp,
+                 Make_Raise_Program_Error (Loc,
+                   Condition =>
+                     Make_Op_Gt (Loc,
+                       Left_Opnd  => Build_Get_Access_Level (Loc, Tag_Node),
+                       Right_Opnd =>
+                         Make_Integer_Literal (Loc,
+                           Scope_Depth (Enclosing_Dynamic_Scope (Scope_Id)))),
+                   Reason => PE_Accessibility_Check_Failed));
+            end if;
          end;
 
       --  AI05-0073: If function has a controlling access result, check that

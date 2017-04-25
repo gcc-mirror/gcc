@@ -9416,7 +9416,8 @@ package body Sem_Prag is
 
                         if Is_Bad_Spelling_Of (Chars (Expr), Name_Enter) then
                            Set_Casing
-                             (Identifier_Casing (Current_Source_File));
+                             (Identifier_Casing
+                               (Source_Index (Current_Sem_Unit)));
                            Error_Msg_String (1 .. Rnm'Length) :=
                              Name_Buffer (1 .. Name_Len);
                            Error_Msg_Strlen := Rnm'Length;

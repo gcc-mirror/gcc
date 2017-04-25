@@ -33,6 +33,7 @@ with Exp_Ch11; use Exp_Ch11;
 with Exp_Util; use Exp_Util;
 with Expander; use Expander;
 with Inline;   use Inline;
+with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -432,11 +433,12 @@ package body Exp_Prag is
                   Add_Str_To_Name_Buffer ("failed invariant from ");
 
                --  For all other checks, the string is "xxx failed at yyy"
-               --  where xxx is the check name with current source file casing.
+               --  where xxx is the check name with appropriate casing.
 
                else
                   Get_Name_String (Nam);
-                  Set_Casing (Identifier_Casing (Current_Source_File));
+                  Set_Casing
+                    (Identifier_Casing (Source_Index (Current_Sem_Unit)));
                   Add_Str_To_Name_Buffer (" failed at ");
                end if;
 

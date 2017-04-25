@@ -1680,7 +1680,7 @@ package body Sem_Ch13 is
                end if;
 
                --  A variable is most likely modified from the outside. Take
-               --  Take the optimistic approach to avoid spurious errors.
+               --  the optimistic approach to avoid spurious errors.
 
                if Ekind (E) = E_Variable then
                   Set_Never_Set_In_Source (E, False);
@@ -3208,13 +3208,15 @@ package body Sem_Ch13 is
                   end if;
 
                   --  Check that the class-wide predicate cannot be applied to
-                  --  an operation of a synchronized type that is not a tagged
-                  --  type. Other legality checks are performed when analyzing
-                  --  the contract of the operation.
+                  --  an operation of a synchronized type. AI12-0182 forbids
+                  --  these altogether, while earlier language semantics made
+                  --  them legal on tagged synchronized types.
+
+                  --  Other legality checks are performed when analyzing the
+                  --  contract of the operation.
 
                   if Class_Present (Aspect)
                     and then Is_Concurrent_Type (Current_Scope)
-                    and then not Is_Tagged_Type (Current_Scope)
                     and then Ekind_In (E, E_Entry, E_Function, E_Procedure)
                   then
                      Error_Msg_Name_1 := Original_Aspect_Pragma_Name (Aspect);

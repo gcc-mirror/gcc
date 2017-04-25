@@ -1,3 +1,37 @@
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* sem_prag.adb (Process_Restrictions_Or_Restriction_Warnings):
+	Use Source_Index (Current_Sem_Unit) to find the correct casing.
+	* exp_prag.adb (Expand_Pragma_Check): Use Source_Index
+	(Current_Sem_Unit) to find the correct casing.
+	* par.adb (Par): Null out Current_Source_File, to ensure that
+	the above bugs won't rear their ugly heads again.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Type): For an attribute reference
+	'Class, if prefix type is synchronized and previous errors
+	have suppressed the creation of the corresponding record type,
+	create a spurious class-wide for the synchonized type itself,
+	to catch other misuses of the attribute
+
+2017-04-25  Steve Baird  <baird@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return): if CodePeer_Mode
+	is True, then don't generate the accessibility check for the
+	tag of a tagged result.
+	* exp_intr.adb (Expand_Dispatching_Constructor_Call):
+	if CodePeer_Mode is True, then don't generate the
+	tag checks for the result of call to an instance of
+	Ada.Tags.Generic_Dispatching_Constructor (i.e., both the "is a
+	descendant of" check and the accessibility check).
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb: Code cleanups.
+	* a-strbou.ads: minor whitespace fix in Trim for bounded strings.
+	* sem_ch8.ads: Minor comment fix.
+
 2017-04-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch4.adb (Library_Level_Target): New function.
