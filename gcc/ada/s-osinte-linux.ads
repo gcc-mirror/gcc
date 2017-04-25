@@ -452,6 +452,20 @@ package System.OS_Interface is
    -- POSIX.1c  Section 13 --
    --------------------------
 
+   PTHREAD_PRIO_NONE    : constant := 0;
+   PTHREAD_PRIO_INHERIT : constant := 1;
+   PTHREAD_PRIO_PROTECT : constant := 2;
+
+   function pthread_mutexattr_setprotocol
+     (attr     : access pthread_mutexattr_t;
+      protocol : int) return int;
+   pragma Import (C, pthread_mutexattr_setprotocol);
+
+   function pthread_mutexattr_setprioceiling
+     (attr        : access pthread_mutexattr_t;
+      prioceiling : int) return int;
+   pragma Import (C, pthread_mutexattr_setprioceiling);
+
    type struct_sched_param is record
       sched_priority : int;  --  scheduling priority
    end record;

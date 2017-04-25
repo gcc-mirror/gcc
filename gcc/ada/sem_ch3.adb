@@ -17660,7 +17660,12 @@ package body Sem_Ch3 is
          end if;
 
          while Present (Disc) loop
-            pragma Assert (Present (Assoc));
+            --  If no further associations return the discriminant, value
+            --  will be found on the second pass.
+
+            if No (Assoc) then
+               return Result;
+            end if;
 
             if Original_Record_Component (Disc) = Result_Entity then
                return Node (Assoc);
@@ -17689,6 +17694,8 @@ package body Sem_Ch3 is
    begin
       --  ??? This routine is a gigantic mess and will be deleted. For the
       --  time being just test for the trivial case before calling recurse.
+
+      --  We are now celebrating the 20th anniversary of this comment!
 
       if Base_Type (Scope (Discriminant)) = Base_Type (Typ_For_Constraint) then
          declare
