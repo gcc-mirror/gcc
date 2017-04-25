@@ -191,7 +191,11 @@ static void m68k_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
 
 #if INT_OP_GROUP == INT_OP_DOT_WORD
 #undef TARGET_ASM_ALIGNED_HI_OP
+#ifndef TARGET_AMIGAOS_VASM
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
+#else
+#define TARGET_ASM_ALIGNED_HI_OP "\tdc.w\t"
+#endif
 #endif
 
 #if INT_OP_GROUP == INT_OP_NO_DOT
@@ -595,8 +599,11 @@ m68k_option_override (void)
   if (!flag_pic || flag_pic > 2)
     {
       m68k_symbolic_call_var = M68K_SYMBOLIC_CALL_JSR;
-
+#ifndef TARGET_AMIGAOS_VASM
       m68k_symbolic_jump = "jra %a0";
+#else
+      m68k_symbolic_jump = "jmp %a0";
+#endif
     }
   else if (TARGET_ID_SHARED_LIBRARY)
     /* All addresses must be loaded from the GOT.  */
@@ -1831,13 +1838,21 @@ output_btst (rtx *operands, rtx countop, rtx dataop, rtx_insn *insn, int signpos
 	      && next_insn_tests_no_inequality (insn))
 	    {
 	    cc_status.flags = CC_NOT_NEGATIVE | CC_Z_IN_NOT_N | CC_NO_OVERFLOW;
+#ifndef TARGET_AMIGAOS_VASM
 	    return "move%.w %1,%%ccr";
+#else
+	    return "move%.w %1,ccr";
+#endif	    
 	    }
 	  if (count == 2 && DATA_REG_P (operands[1])
 	      && next_insn_tests_no_inequality (insn))
 	    {
 	    cc_status.flags = CC_NOT_NEGATIVE | CC_INVERTED | CC_NO_OVERFLOW;
+#ifndef TARGET_AMIGAOS_VASM
 	    return "move%.w %1,%%ccr";
+#else
+	    return "move%.w %1,ccr";
+#endif	    
 	    }
 	  /* count == 1 followed by bvc/bvs and
 	     count == 0 followed by bcc/bcs are also possible, but need

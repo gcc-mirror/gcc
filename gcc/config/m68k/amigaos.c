@@ -50,6 +50,7 @@
 
 //int amiga_declare_object;
 
+
 #if 0
 static int amigaos_put_in_text (tree);
 static rtx gen_stack_management_call (rtx, rtx, const char *);
@@ -783,7 +784,7 @@ amigaos_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno, int *tota
 }
 
 /* Output assembly to switch to section NAME with attribute FLAGS.  */
-
+#ifndef TARGET_AMIGAOS_VASM
 extern void
 amiga_named_section (const char *name, unsigned int flags, tree decl ATTRIBUTE_UNUSED)
 {
@@ -791,6 +792,22 @@ amiga_named_section (const char *name, unsigned int flags, tree decl ATTRIBUTE_U
     name = ".text";
   fprintf (asm_out_file, "\t%s\n", name);
 }
+#else
+extern void
+amiga_named_section (const char *name, unsigned int flags, tree decl ATTRIBUTE_UNUSED)
+{
+  if (0 == strncmp(".text", name, 5))
+    name = ".text";
+
+  if (0 == strncmp("section ", name, 8)) {
+//  fprintf (asm_out_file, "\t.section\t%s\n", name);
+    fprintf (asm_out_file, "\t%s\n", name);
+  } else {
+    fprintf (asm_out_file, "\tsection %s\n", name);
+  }
+}
+#endif
+
 
 /* Baserel support.  */
 

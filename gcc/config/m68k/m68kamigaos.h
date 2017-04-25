@@ -61,7 +61,11 @@ along with GCC; see the file COPYING3.  If not see
    These labels will not appear in the symbol table.  */
 
 #undef LOCAL_LABEL_PREFIX
+#ifndef TARGET_AMIGAOS_VASM
 #define LOCAL_LABEL_PREFIX "."
+#else
+#define LOCAL_LABEL_PREFIX "_."
+#endif
 
 /* The prefix to add to user-visible assembler symbols.  */
 
@@ -71,24 +75,43 @@ along with GCC; see the file COPYING3.  If not see
 /* config/m68k.md has an explicit reference to the program counter,
    prefix this by the register prefix.  */
 
+#ifndef TARGET_AMIGAOS_VASM
 #define ASM_RETURN_CASE_JUMP				\
   do {							\
       return "jmp %%pc@(2,%0:w)";			\
   } while (0)
+#else
+#define ASM_RETURN_CASE_JUMP				\
+  do {							\
+     return "jmp (2,pc,%0.w)";				\
+  } while (0)
+#endif
 
 /* This is how to output an assembler line that says to advance the
    location counter to a multiple of 2**LOG bytes.  */
 
+#ifndef TARGET_AMIGAOS_VASM
 #ifndef ALIGN_ASM_OP
 #define ALIGN_ASM_OP "\t.align\t"
 #endif
+#else
+#define ALIGN_ASM_OP "\talign\t"
+#endif
 
 #undef ASM_OUTPUT_ALIGN
+#ifndef TARGET_AMIGAOS_VASM    
 #define ASM_OUTPUT_ALIGN(FILE,LOG)				\
 do {								\
   if ((LOG) > 0)						\
     fprintf ((FILE), "%s%u\n", ALIGN_ASM_OP, 1 << (LOG));	\
 } while (0)
+#else
+#define ASM_OUTPUT_ALIGN(FILE,LOG)				\
+do {								\
+  if ((LOG) > 0)						\
+    fprintf ((FILE), "%s%u\n", ALIGN_ASM_OP, (LOG));		\
+} while (0)
+#endif
 
 #if 0
 extern int amiga_declare_object;
@@ -126,7 +149,11 @@ amiga_declare_object = 0
 #undef M68K_STATIC_CHAIN_REG_NAME
 #define M68K_STATIC_CHAIN_REG_NAME REGISTER_PREFIX "a1"
 
+#ifndef TARGET_AMIGAOS_VASM
 #define ASM_COMMENT_START "|"
+#else
+#define ASM_COMMENT_START "|"
+#endif
 
 /* Define how the m68k registers should be numbered for Dwarf output.
    The numbering provided here should be compatible with the native
@@ -147,15 +174,34 @@ amiga_declare_object = 0
 
 #undef ASM_OUTPUT_COMMON
 #undef ASM_OUTPUT_LOCAL
-#define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
+#ifndef TARGET_AMIGAOS_VASM
+#define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)	\
 ( fputs (".comm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ",%u\n", (int)(SIZE)))
+#else
+#define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
+  ( switch_to_section (bss_section),                  \
+  fputs ("|.comm\n\tcnop 0,4\n", (FILE)),            \
+  assemble_name ((FILE), (NAME)),			      \
+  fprintf ((FILE), ":\n\tds.b %u\n", (int)(SIZE)),    \
+  fputs ("\txdef ", (FILE)),			      \
+  assemble_name ((FILE), (NAME)),                     \
+  fprintf ((FILE), "\n"))
+#endif
 
+#ifndef TARGET_AMIGAOS_VASM
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs (".lcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ",%u\n", (int)(SIZE)))
+#else
+#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
+( switch_to_section (bss_section),                   \
+  fputs ("|.lcomm\n\tcnop 0,4\n", (FILE)),                           \
+  assemble_name ((FILE), (NAME)),				\
+  fprintf ((FILE), ":\n\tds.b %u\n", (int)(SIZE)))
+#endif
 
 /* Currently, JUMP_TABLES_IN_TEXT_SECTION must be defined in order to
    keep switch tables in the text section.  */
@@ -169,8 +215,12 @@ amiga_declare_object = 0
   fprintf ((FILE), "%s&%d\n", SWBEG_ASM_OP, XVECLEN (PATTERN (TABLE), 1));
 /* end of stuff from m68kv4.h */
 
+#ifndef TARGET_AMIGAOS_VASM
 #ifndef BSS_SECTION_ASM_OP
 #define BSS_SECTION_ASM_OP	"\t.bss"
+#endif
+#else
+#define BSS_SECTION_ASM_OP	"\tsection\tbss"
 #endif
 
 #ifndef ASM_OUTPUT_ALIGNED_BSS
@@ -294,8 +344,13 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
 /* Various -m flags require special flags to the assembler.  */
 
 #undef ASM_SPEC
+#ifndef TARGET_AMIGAOS_VASM
 #define ASM_SPEC							\
-  "%(asm_cpu) %(asm_cpu_default) %{msmall-code:-sc}"
+   "%(asm_cpu) %(asm_cpu_default) %{msmall-code:-sc}"
+#else
+#define ASM_SPEC							\
+   "-gas -esc -ldots -Fhunk -quiet %(asm_cpu) %(asm_cpu_default) %{msmall-code:-sc}"
+#endif
 
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC							\
@@ -305,8 +360,13 @@ if (target_flags & (MASK_RESTORE_A4|MASK_ALWAYS_RESTORE_A4))	\
   "%{m68040} "								\
   "%{m68060}"
 
+#ifndef TARGET_AMIGAOS_VASM
 #define ASM_CPU_DEFAULT_SPEC						\
-  "%{!m680*:%{!mc680*:-m68040}}"
+   "%{!m680*:%{!mc680*:-m68040}}"
+#else
+#define ASM_CPU_DEFAULT_SPEC						\
+   "%{!m680*:%{!mc680*:-m68000}}"
+#endif
 
 /* Choose the right startup file, depending on whether we use base relative
    code, base relative code with automatic relocation (-resident), their

@@ -2,7 +2,7 @@
 # Configuration validation subroutine script.
 #   Copyright 1992-2016 Free Software Foundation, Inc.
 
-timestamp='2016-01-01'
+timestamp='2017-04-21'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -500,7 +500,7 @@ case $basic_machine in
 	amiga | amiga-*)
 		basic_machine=m68k-unknown
 		;;
-	amigaos | amigados)
+	amigaos | amigaosvasm | amigados)
 		basic_machine=m68k-unknown
 		os=-amigaos
 		;;
@@ -1380,7 +1380,7 @@ case $os in
 	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
 	      | -aos* | -aros* | -cloudabi* | -sortix* \
 	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
-	      | -clix* | -riscos* | -uniplus* | -iris* | -rtu* | -xenix* \
+	      | -clix* | -riscos* | -uniplus* | -iris* | -rt* | -xenix* \
 	      | -hiux* | -386bsd* | -knetbsd* | -mirbsd* | -netbsd* \
 	      | -bitrig* | -openbsd* | -solidbsd* \
 	      | -ekkobsd* | -kfreebsd* | -freebsd* | -riscix* | -lynxos* \

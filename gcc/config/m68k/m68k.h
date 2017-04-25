@@ -204,7 +204,11 @@ along with GCC; see the file COPYING3.  If not see
 #define INT_OP_DC	3	/* dc.b, dc.w, dc.l */
 
 /* Set the default.  */
+#ifndef TARGET_AMIGAOS_VASM
 #define INT_OP_GROUP INT_OP_DOT_WORD
+#else
+#define INT_OP_GROUP INT_OP_DC
+#endif
 
 /* Bit values used by m68k-devices.def to identify processor capabilities.  */
 #define FL_BITFIELD  (1 << 0)    /* Support bitfield instructions.  */
@@ -729,9 +733,49 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
   if (cc_prev_status.flags & CC_NO_OVERFLOW)			\
     return NO_OV;						\
   return NORMAL; } while (0)
+
+#ifdef TARGET_AMIGAOS_VASM
+#define ASM_OUTPUT_ASCII(MYFILE, MYSTRING, MYLENGTH) \
+  do {                                                                        \
+    FILE *_hide_asm_out_file = (MYFILE);                                      \
+    const unsigned char *_hide_p = (const unsigned char *) (MYSTRING);        \
+    int _hide_thissize = (MYLENGTH);                                          \
+    {                                                                         \
+      FILE *asm_out_file = _hide_asm_out_file;                                \
+      const unsigned char *p = _hide_p;                                       \
+      int thissize = _hide_thissize;                                          \
+      int i;                                                                  \
+      fprintf (asm_out_file, "\tdc.b \"");                                    \
+                                                                              \
+      for (i = 0; i < thissize; i++)                                          \
+        {                                                                     \
+          int c = p[i];                                                       \
+          if (c == '\"' || c == '\\')                                         \
+            putc ('\\', asm_out_file);                                        \
+          if (ISPRINT (c))                                                    \
+            putc (c, asm_out_file);                                           \
+          else                                                                \
+            {                                                                 \
+              fprintf (asm_out_file, "\\%o", c);                              \
+              /* After an octal-escape, if a digit follows,                   \
+                 terminate one string constant and start another.             \
+                 The VAX assembler fails to stop reading the escape           \
+                 after three digits, so this is the only way we               \
+                 can get it to parse the data properly.  */                   \
+              if (i < thissize - 1 && ISDIGIT (p[i + 1]))                     \
+                fprintf (asm_out_file, "\"\n\tdc.b \"");                      \
+          }                                                                   \
+        }                                                                     \
+      fprintf (asm_out_file, "\"\n");                                         \
+    }                                                                         \
+  }                                                                           \
+  while (0)
+#endif
 
+
 /* Control the assembler format that we output.  */
 
+#ifndef TARGET_AMIGAOS_VASM
 #define ASM_APP_ON "#APP\n"
 #define ASM_APP_OFF "#NO_APP\n"
 #define TEXT_SECTION_ASM_OP "\t.text"
@@ -741,6 +785,17 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 #define LOCAL_LABEL_PREFIX ""
 #define USER_LABEL_PREFIX "_"
 #define IMMEDIATE_PREFIX "#"
+#else
+#define ASM_APP_ON ""
+#define ASM_APP_OFF ""
+#define TEXT_SECTION_ASM_OP "\tsection .text"
+#define DATA_SECTION_ASM_OP "\tsection .data"
+#define GLOBAL_ASM_OP "\txdef\t"
+#define REGISTER_PREFIX ""
+#define LOCAL_LABEL_PREFIX "_."
+#define USER_LABEL_PREFIX "_"
+#define IMMEDIATE_PREFIX "#"
+#endif
 
 #define REGISTER_NAMES \
 {REGISTER_PREFIX"d0", REGISTER_PREFIX"d1", REGISTER_PREFIX"d2",	\
@@ -860,11 +915,17 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 
 /* The m68k does not use absolute case-vectors, but we must define this macro
    anyway.  */
-#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
+#ifndef TARGET_AMIGAOS_VASM
+#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)	\
   asm_fprintf (FILE, "\t.long %LL%d\n", VALUE)
-
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)	\
   asm_fprintf (FILE, "\t.word %LL%d-%LL%d\n", VALUE, REL)
+#else
+#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)	\
+ asm_fprintf (FILE, "\tdc.l %LL%d\n", VALUE)
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
+  asm_fprintf (FILE, "\tdc.w %LL%d-%LL%d\n", VALUE, REL)
+#endif
 
 /* We don't have a way to align to more than a two-byte boundary, so do the
    best we can and don't complain.  */
@@ -874,13 +935,24 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 
 #ifdef HAVE_GAS_BALIGN_AND_P2ALIGN
 /* Use "move.l %a4,%a4" to advance within code.  */
+#ifndef TARGET_AMIGAOS_VASM
 #define ASM_OUTPUT_ALIGN_WITH_NOP(FILE,LOG)			\
   if ((LOG) > 0)						\
     fprintf ((FILE), "\t.balignw %u,0x284c\n", 1 << (LOG));
 #endif
+#else
+#define ASM_OUTPUT_ALIGN_WITH_NOP(FILE,LOG)			\
+  if ((LOG) > 0)						\
+    fprintf ((FILE), "\tcnop 0,%u\n", 1 << (LOG));
+#endif
 
+#ifndef TARGET_AMIGAOS_VASM
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.skip %u\n", (int)(SIZE))
+#else
+#define ASM_OUTPUT_SKIP(FILE,SIZE)  \
+  fprintf (FILE, "\tds.b %u\n", (int)(SIZE))
+#endif
 
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs (".comm ", (FILE)),			\
