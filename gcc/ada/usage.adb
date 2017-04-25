@@ -671,11 +671,6 @@ begin
    Write_Switch_Char ("zr");
    Write_Line ("Distribution stub generation for receiver stubs");
 
-   --  Disable the warnings emitted by -gnatwc because Ada_Version_Default may
-   --  be changed to denote a different default value.
-
-   pragma Warnings (Off, "condition can only be * if invalid values present");
-
    if not Latest_Ada_Only then
 
       --  Line for -gnat83 switch
@@ -713,8 +708,6 @@ begin
    else
       Write_Line ("Ada 2012 mode");
    end if;
-
-   pragma Warnings (On, "condition can only be * if invalid values present");
 
    --  Line for -gnat-p switch
 

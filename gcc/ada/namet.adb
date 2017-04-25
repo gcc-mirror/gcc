@@ -672,12 +672,6 @@ package body Namet is
                   Max_Chain_Length := C;
                end if;
 
-               --  Disable the warnings emitted by -gnatwc because the tests
-               --  involving Verbosity involve conditional compilation.
-
-               pragma Warnings
-                 (Off, "condition can only be * if invalid values present");
-
                if Verbosity >= 2 then
                   Write_Str ("Hash_Table (");
                   Write_Int (J);
@@ -709,9 +703,6 @@ package body Namet is
                      N := Name_Entries.Table (N).Hash_Link;
                   end loop;
                end if;
-
-               pragma Warnings
-                 (On, "condition can only be * if invalid values present");
             end;
          end if;
       end loop;

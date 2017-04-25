@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1678,7 +1678,15 @@ package body Par_SCO is
                --  Aspects rewritten into pragmas controlled by a Check_Policy:
                --  Current_Pragma_Sloc must be set to the sloc of the aspect
                --  specification. The corresponding pragma will have the same
-               --  sloc.
+               --  sloc. Note that Invariant, Pre, and Post will be enabled if
+               --  the policy is Check; on the other hand, predicate aspects
+               --  will be enabled for Check and Ignore (when Add_Predicate
+               --  is called) because the actual checks occur in client units.
+               --  When the assertion policy for Predicate is Disable, the
+               --  SCO remains disabled, because Add_Predicate is never called.
+
+               --  Pre/post can have checks in client units too because of
+               --  inheritance, so should they receive the same treatment???
 
                when Aspect_Invariant
                   | Aspect_Post
@@ -1686,24 +1694,11 @@ package body Par_SCO is
                   | Aspect_Pre
                   | Aspect_Precondition
                   | Aspect_Type_Invariant
-               =>
-                  C1 := 'a';
-
-               --  Aspects whose checks are generated in client units,
-               --  regardless of whether or not the check is activated in the
-               --  unit which contains the declaration: create decision as
-               --  unconditionally enabled aspect (but still make a pragma
-               --  entry since Set_SCO_Pragma_Enabled will be called when
-               --  analyzing actual checks, possibly in other units).
-
-               --  Pre/post can have checks in client units too because of
-               --  inheritance, so should they be moved here???
-
-               when Aspect_Dynamic_Predicate
+                  | Aspect_Dynamic_Predicate
                   | Aspect_Predicate
                   | Aspect_Static_Predicate
                =>
-                  C1 := 'A';
+                  C1 := 'a';
 
                --  Other aspects: just process any decision nested in the
                --  aspect expression.

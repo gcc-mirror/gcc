@@ -98,17 +98,8 @@ package body Comperr is
          Write_Eol;
       end End_Line;
 
-      --  Disable the warnings emitted by -gnatwc because the following two
-      --  constants are initialized by means of conditional compilation.
-
-      pragma Warnings
-        (Off, "condition can only be * if invalid values present");
-
       Is_GPL_Version : constant Boolean := Gnatvsn.Build_Type = GPL;
       Is_FSF_Version : constant Boolean := Gnatvsn.Build_Type = FSF;
-
-      pragma Warnings
-        (On, "condition can only be * if invalid values present");
 
    --  Start of processing for Compiler_Abort
 

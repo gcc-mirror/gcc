@@ -3267,22 +3267,39 @@ package body Sem_Warn is
    --------------------------------------
 
    procedure Warn_On_Constant_Valid_Condition (Op : Node_Id) is
+      Left  : constant Node_Id := Left_Opnd  (Op);
+      Right : constant Node_Id := Right_Opnd (Op);
+
       True_Result  : Boolean;
       False_Result : Boolean;
 
    begin
       --  Determine the potential outcome of the comparison assuming that the
-      --  operands are valid. Do not consider instances because the check was
-      --  already performed in the generic. Do not consider comparison between
-      --  an attribute reference and a compile-time known value since this is
-      --  most likely a conditional compilation. Do not consider internal files
-      --  in order to allow for various assertions and safeguards within our
-      --  runtime.
+      --  operands are valid.
 
       if Constant_Condition_Warnings
         and then Comes_From_Source (Original_Node (Op))
+
+        --  Do not consider instances because the check was already performed
+        --  in the generic.
+
         and then not In_Instance
+
+        --  Do not consider comparisons between two static expressions such as
+        --  constants or literals because those values cannot be invalidated.
+
+        and then not (Is_Static_Expression (Left)
+                       and then Is_Static_Expression (Right))
+
+        --  Do not consider comparison between an attribute reference and a
+        --  compile-time known value since this is most likely a conditional
+        --  compilation.
+
         and then not Is_Attribute_And_Known_Value_Comparison (Op)
+
+        --  Do not consider internal files to allow for various assertions and
+        --  safeguards within our runtime.
+
         and then not Is_Internal_File_Name
                        (Unit_File_Name (Get_Source_Unit (Op)))
       then

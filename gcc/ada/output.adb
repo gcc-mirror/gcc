@@ -55,12 +55,7 @@ package body Output is
    Indentation_Limit : constant Positive := 40;
    --  Indentation beyond this number of spaces wraps around
 
-   --  Disable the warnings emitted by -gnatwc because the comparison within
-   --  the assertion depends on conditional compilation.
-
-   pragma Warnings (Off, "condition can only be * if invalid values present");
    pragma Assert (Indentation_Limit < Buffer_Max / 2);
-   pragma Warnings (On,  "condition can only be * if invalid values present");
    --  Make sure this is substantially shorter than the line length
 
    Cur_Indentation : Natural := 0;
