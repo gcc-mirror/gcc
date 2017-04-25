@@ -134,7 +134,7 @@ package body Fname is
       return
         Is_Predefined_File_Name (Fname, Renamings_Included)
           or else Has_Prefix (Fname, Prefix => "g-")
-          or else Has_Prefix (Fname, Prefix => "gnat.ad");
+          or else Has_Prefix (Fname, Prefix => "gnat.");
    end Is_Internal_File_Name;
 
    function Is_Internal_File_Name
@@ -174,9 +174,13 @@ package body Fname is
          return False;
       end if;
 
-      if Has_Prefix (Fname, Prefix => "ada.ad")              --  Ada
-        or else Has_Prefix (Fname, Prefix => "interfac.ad")  --  Interfaces
-        or else Has_Prefix (Fname, Prefix => "system.ad")    --  System
+      --  We include the "." in the prefixes below, so we don't match (e.g.)
+      --  adamant.ads. So the first line matches "ada.ads", "ada.adb", and
+      --  "ada.ali".
+
+      if Has_Prefix (Fname, Prefix => "ada.")              --  Ada
+        or else Has_Prefix (Fname, Prefix => "interfac.")  --  Interfaces
+        or else Has_Prefix (Fname, Prefix => "system.")    --  System
       then
          return True;
       end if;
@@ -190,45 +194,46 @@ package body Fname is
       return
          --  Calendar
 
-        Has_Prefix (Fname, Prefix => "calendar.ad")
+        Has_Prefix (Fname, Prefix => "calendar.")
 
          --  Machine_Code
 
-          or else Has_Prefix (Fname, Prefix => "machcode.ad")
+          or else Has_Prefix (Fname, Prefix => "machcode.")
 
          --  Unchecked_Conversion
 
-          or else Has_Prefix (Fname, Prefix => "unchconv.ad")
+          or else Has_Prefix (Fname, Prefix => "unchconv.")
 
          --  Unchecked_Deallocation
 
-          or else Has_Prefix (Fname, Prefix => "unchdeal.ad")
+          or else Has_Prefix (Fname, Prefix => "unchdeal.")
 
          --  Direct_IO
 
-          or else Has_Prefix (Fname, Prefix => "directio.ad")
+          or else Has_Prefix (Fname, Prefix => "directio.")
 
          --  IO_Exceptions
 
-          or else Has_Prefix (Fname, Prefix => "ioexcept.ad")
+          or else Has_Prefix (Fname, Prefix => "ioexcept.")
 
          --  Sequential_IO
 
-          or else Has_Prefix (Fname, Prefix => "sequenio.ad")
+          or else Has_Prefix (Fname, Prefix => "sequenio.")
 
          --  Text_IO
 
-          or else Has_Prefix (Fname, Prefix => "text_io.ad");
+          or else Has_Prefix (Fname, Prefix => "text_io.");
    end Is_Predefined_File_Name;
 
    function Is_Predefined_File_Name
      (Fname              : File_Name_Type;
       Renamings_Included : Boolean := True) return Boolean
    is
-   begin
-      return
+      Result : constant Boolean :=
         Is_Predefined_File_Name
           (Get_Name_String (Fname), Renamings_Included);
+   begin
+      return Result;
    end Is_Predefined_File_Name;
 
    ---------------

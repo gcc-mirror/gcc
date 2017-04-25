@@ -3811,6 +3811,7 @@ package body Sem_Ch5 is
       if Nkind (R_Copy) in N_Subexpr and then Is_Overloaded (R_Copy) then
 
          --  Apply preference rules for range of predefined integer types, or
+         --  check for array or iterable construct for "of" iterator, or
          --  diagnose true ambiguity.
 
          declare
@@ -3840,6 +3841,24 @@ package body Sem_Ch5 is
                         Error_Msg_NE ("\\} ", R_Copy, Found);
                         Error_Msg_NE ("\\} ", R_Copy, It.Typ);
                         exit;
+                     end if;
+                  end if;
+
+               elsif Nkind (Parent (R_Copy)) = N_Iterator_Specification
+                 and then Of_Present (Parent (R_Copy))
+               then
+                  if Is_Array_Type (It.Typ)
+                    or else Has_Aspect (It.Typ, Aspect_Iterator_Element)
+                    or else Has_Aspect (It.Typ, Aspect_Constant_Indexing)
+                    or else Has_Aspect (It.Typ, Aspect_Variable_Indexing)
+                  then
+                     if No (Found) then
+                        Found := It.Typ;
+                        Set_Etype (R_Copy, It.Typ);
+
+                     else
+                        Error_Msg_N
+                          ("ambiguous domain of iteration", R_Copy);
                      end if;
                   end if;
                end if;
