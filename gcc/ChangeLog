@@ -1,3 +1,19 @@
+2017-04-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/77728
+	* config/aarch64/aarch64.c (struct aarch64_fn_arg_alignment): New
+	type.
+	(aarch64_function_arg_alignment): Return aarch64_fn_arg_alignment
+	struct.  Ignore DECL_ALIGN of decls other than FIELD_DECL for
+	the alignment computation, but return their maximum in warn_alignment.
+	(aarch64_layout_arg): Adjust aarch64_function_arg_alignment caller.
+	Emit a -Wpsabi note if warn_alignment is 16 bytes, but alignment
+	is smaller.
+	(aarch64_function_arg_boundary): Likewise.  Simplify using MIN/MAX.
+	(aarch64_gimplify_va_arg_expr): Adjust aarch64_function_arg_alignment
+	caller.
+
 2017-04-25  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/simdext.md (dmpyh): Fix typo.
