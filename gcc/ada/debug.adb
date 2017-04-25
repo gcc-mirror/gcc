@@ -127,7 +127,7 @@ package body Debug is
    --  d.G  Ignore calls through generic formal parameters for elaboration
    --  d.H  GNSA mode for ASIS
    --  d.I  Do not ignore enum representation clauses in CodePeer mode
-   --  d.J
+   --  d.J  Relaxed rules for pragma No_Return
    --  d.K  Enable generation of contract-only procedures in CodePeer mode
    --  d.L  Depend on back end for limited types in if and case expressions
    --  d.M  Relaxed RM semantics
@@ -644,6 +644,11 @@ package body Debug is
    --       types in CodePeer is good for the majority of Ada code, but in some
    --       cases being able to change this default might be useful to remove
    --       some false positives.
+
+   --  d.J  Relaxed rules for pragma No_Return. A pragma No_Return is illegal
+   --       if it applies to a body. This switch disables the legality check
+   --       for that. If the procedure does in fact return normally, execution
+   --       is erroneous, and therefore unpredictable.
 
    --  d.K  Enable generation of contract-only procedures in CodePeer mode and
    --       report a warning on subprograms for which the contract-only body
