@@ -23127,7 +23127,11 @@ cp_parser_member_declaration (cp_parser* parser)
 	{
 	  cp_token *token = cp_lexer_peek_token (parser->lexer);
 	  if (!in_system_header_at (token->location))
-	    pedwarn (token->location, OPT_Wpedantic, "extra %<;%>");
+	    {
+	      gcc_rich_location richloc (token->location);
+	      richloc.add_fixit_remove ();
+	      pedwarn_at_rich_loc (&richloc, OPT_Wpedantic, "extra %<;%>");
+	    }
 	}
       else
 	{

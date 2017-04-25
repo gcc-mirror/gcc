@@ -1,5 +1,10 @@
 2017-04-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* parser.c (cp_parser_member_declaration): Add fix-it hint
+	for removing stray semicolons.
+
+2017-04-25  David Malcolm  <dmalcolm@redhat.com>
+
 	* name-lookup.c (get_std_name_hint): New function.
 	(maybe_suggest_missing_header): New function.
 	(suggest_alternative_in_explicit_scope): Call
