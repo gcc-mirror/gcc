@@ -9898,8 +9898,10 @@ fold_binary_loc (location_t loc,
 
 	  /* If (C1|C2) == ~0 then (X&C1)|C2 becomes X|C2.  */
 	  if (msk.and_not (c1 | c2) == 0)
-	    return fold_build2_loc (loc, BIT_IOR_EXPR, type,
-				    TREE_OPERAND (arg0, 0), arg1);
+	    {
+	      tem = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
+	      return fold_build2_loc (loc, BIT_IOR_EXPR, type, tem, arg1);
+	    }
 
 	  /* Minimize the number of bits set in C1, i.e. C1 := C1 & ~C2,
 	     unless (C1 & ~C2) | (C2 & C3) for some C3 is a mask of some
