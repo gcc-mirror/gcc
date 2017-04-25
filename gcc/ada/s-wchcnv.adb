@@ -406,7 +406,7 @@ package body System.WCh_Cnv is
          when WCEM_Brackets =>
 
             --  Values in the range 0-255 are directly output. Note that there
-            --  is some issue with [ (16#5B#] since this will cause confusion
+            --  is an issue with [ (16#5B#) since this will cause confusion
             --  if the resulting string is interpreted using brackets encoding.
 
             --  One possibility would be to always output [ as ["5B"] but in

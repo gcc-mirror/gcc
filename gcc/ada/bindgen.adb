@@ -2717,7 +2717,7 @@ package body Bindgen is
       --  every file, then we could use the encoding of the initial specified
       --  file, but this information is passed only for potential main
       --  programs. We could fix this sometime, but it is a very minor point
-      --  (wide character default encoding for [Wide_[Wide_]Text_IO when there
+      --  (wide character default encoding for [Wide_[Wide_]]Text_IO when there
       --  is no main program).
 
       elsif No_Main_Subprogram then

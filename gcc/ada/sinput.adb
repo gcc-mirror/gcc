@@ -272,11 +272,13 @@ package body Sinput is
          Tst (J) := C;
       end loop;
 
-      Read_BOM (Tst, Len, BOM, False);
+      Read_BOM (Tst, Len, BOM, XML_Support => False);
 
       case BOM is
          when UTF8_All =>
             Scan_Ptr := Scan_Ptr + Source_Ptr (Len);
+            First_Non_Blank_Location := Scan_Ptr;
+            Current_Line_Start := Scan_Ptr;
             Wide_Character_Encoding_Method := WCEM_UTF8;
             Upper_Half_Encoding := True;
 

@@ -560,8 +560,8 @@ package Sinput is
    --  the start of the current source. If the current source starts with a
    --  recognized BOM, then some flags such as Wide_Character_Encoding_Method
    --  are set accordingly, and the Scan_Ptr on return points past this BOM.
-   --  An error message is output and Unrecoverable_Error raised if a non-
-   --  recognized BOM is detected. The call has no effect if no BOM is found.
+   --  An error message is output and Unrecoverable_Error raised if an
+   --  unrecognized BOM is detected. The call has no effect if no BOM is found.
 
    function Get_Column_Number (P : Source_Ptr) return Column_Number;
    --  The ones-origin column number of the specified Source_Ptr value is
