@@ -1,3 +1,53 @@
+2017-04-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Case_Expression): Emit error message when
+	generating C code on complex case expressions.
+
+2017-04-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Generate a warning instead
+	of silently ignoring pragma Ada_xxx in Latest_Ada_Only mode.
+	* directio.ads, ioexcept.ads, sequenio.ads, text_io.ads: Use
+	Ada_2012 instead of Ada_2005 to be compatible with the above
+	change.
+	* bindgen.adb: Silence new warning on pragma Ada_95.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Generate_Range_Check): Revert part of previous change.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Try_Container_Indexing): Handle properly a
+	container indexing operation that appears as a an actual in a
+	parameter association in a procedure call.
+
+2017-04-25  Olivier Ramonat  <ramonat@adacore.com>
+
+	* prj-proc.adb, sem_util.adb, s-stposu.adb, sem_attr.adb, prj-conf.ads:
+	Fix spelling mistakes.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* types.ads, osint.adb, sinput-c.adb, sinput-d.adb, sinput-l.adb,
+	* sinput-p.adb: Use regular fat pointers, with bounds checking,
+	for source buffers.  Fix misc obscure bugs.
+	* sinput.ads, sinput.adb: Use regular fat pointers, with bounds
+	checking, for source buffers.  Modify representation clause for
+	Source_File_Record as appropriate.  Move Source_File_Index_Table
+	from spec to body, because it is not used outside the body.
+	Move Set_Source_File_Index_Table into the private part, because
+	it is used only in the body and in children.  Use trickery to
+	modify the dope in the generic instantiation case.  It's ugly,
+	but not as ugly as the previous method.  Fix documentation.
+	Remove obsolete code.
+	* fname-sf.adb, targparm.adb: Fix misc out-of-bounds
+	indexing in source buffers.
+	* fmap.adb: Avoid conversions from one string type to another.
+	Remove a use of global name buffer.
+	* osint.ads, sfn_scan.ads, sfn_scan.adb, sinput-c.ads: Comment
+	fixes.
+
 2017-04-25  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_util.adb, exp_ch4.adb: Minor reformatting.

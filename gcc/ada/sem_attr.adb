@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4317,7 +4317,7 @@ package body Sem_Attr is
       begin
          Attr := N;
 
-         --  Set the type of the attribute now to ensure the successfull
+         --  Set the type of the attribute now to ensure the successful
          --  continuation of analysis even if the attribute is misplaced.
 
          Set_Etype (Attr, P_Type);

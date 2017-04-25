@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,7 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Debug;  use Debug;
 with Opt;    use Opt;
+with Output; use Output;
 with System; use System;
 
 with Ada.Unchecked_Conversion;
@@ -65,6 +67,14 @@ package body Sinput.C is
       Source_File.Increment_Last;
       X := Source_File.Last;
 
+      if Debug_Flag_L then
+         Write_Str ("Sinput.C.Load_File: created source ");
+         Write_Int (Int (X));
+         Write_Str (" for ");
+         Write_Str (Path);
+         Write_Line ("");
+      end if;
+
       if X = Source_File.First then
          Lo := First_Source_Ptr;
       else
@@ -100,50 +110,24 @@ package body Sinput.C is
       --  Do the actual read operation
 
       declare
-         subtype Actual_Source_Buffer is Source_Buffer (Lo .. Hi);
-         --  Physical buffer allocated
-
-         type Actual_Source_Ptr is access Actual_Source_Buffer;
-         --  This is the pointer type for the physical buffer allocated
-
-         Actual_Ptr : constant Actual_Source_Ptr := new Actual_Source_Buffer;
-         --  And this is the actual physical buffer
-
-      begin
+         Var_Ptr : constant Source_Buffer_Ptr_Var :=
+           new Source_Buffer (Lo .. Hi);
          --  Allocate source buffer, allowing extra character at end for EOF
 
+      begin
          --  Some systems have file types that require one read per line,
          --  so read until we get the Len bytes or until there are no more
          --  characters.
 
          Hi := Lo;
          loop
-            Actual_Len := Read (Source_File_FD, Actual_Ptr (Hi)'Address, Len);
+            Actual_Len := Read (Source_File_FD, Var_Ptr (Hi)'Address, Len);
             Hi := Hi + Source_Ptr (Actual_Len);
             exit when Actual_Len = Len or else Actual_Len <= 0;
          end loop;
 
-         Actual_Ptr (Hi) := EOF;
-
-         --  Now we need to work out the proper virtual origin pointer to
-         --  return. This is exactly Actual_Ptr (0)'Address, but we have to
-         --  be careful to suppress checks to compute this address.
-
-         declare
-            pragma Suppress (All_Checks);
-
-            pragma Warnings (Off);
-            --  The following unchecked conversion is aliased safe, since it
-            --  is not used to create improperly aliased pointer values.
-
-            function To_Source_Buffer_Ptr is new
-              Ada.Unchecked_Conversion (Address, Source_Buffer_Ptr);
-
-            pragma Warnings (On);
-
-         begin
-            Src := To_Source_Buffer_Ptr (Actual_Ptr (0)'Address);
-         end;
+         Var_Ptr (Hi) := EOF;
+         Src := Var_Ptr.all'Access;
       end;
 
       --  Read is complete, close the file and we are done (no need to test
@@ -199,7 +183,8 @@ package body Sinput.C is
                Source_Text         => Src,
                Template            => No_Source_File,
                Unit                => No_Unit,
-               Time_Stamp          => Empty_Time_Stamp);
+               Time_Stamp          => Empty_Time_Stamp,
+               Index               => X);
 
          Alloc_Line_Tables (S, Opt.Table_Factor * Alloc.Lines_Initial);
          S.Lines_Table (1) := Lo;
