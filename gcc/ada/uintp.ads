@@ -238,7 +238,7 @@ package Uintp is
      (B      : Uint;
       E      : Uint;
       Modulo : Uint) return Uint;
-   --  Efficiently compute (B ** E) rem Modulo
+   --  Efficiently compute (B**E) rem Modulo
 
    function UI_Modular_Inverse (N : Uint; Modulo : Uint) return Uint;
    --  Compute the multiplicative inverse of N in modular arithmetics with the
@@ -438,7 +438,7 @@ private
    Base_Bits : constant := 15;
    --  Number of bits in base value
 
-   Base : constant Int := 2 ** Base_Bits;
+   Base : constant Int := 2**Base_Bits;
 
    --  Values in the range -(Base-1) .. Max_Direct are encoded directly as
    --  Uint values by adding a bias value. The value of Max_Direct is chosen
@@ -454,13 +454,13 @@ private
    --  avoid accidental use of Uint arithmetic on these values, which is never
    --  correct.
 
-   type Ctrl is range Int'First .. Int'Last;
+   type Ctrl is new Int;
 
    Uint_Direct_Bias  : constant Ctrl := Ctrl (Uint_Low_Bound) + Ctrl (Base);
    Uint_Direct_First : constant Ctrl := Uint_Direct_Bias + Ctrl (Min_Direct);
    Uint_Direct_Last  : constant Ctrl := Uint_Direct_Bias + Ctrl (Max_Direct);
 
-   Uint_0   : constant Uint := Uint (Uint_Direct_Bias);
+   Uint_0   : constant Uint := Uint (Uint_Direct_Bias + 0);
    Uint_1   : constant Uint := Uint (Uint_Direct_Bias + 1);
    Uint_2   : constant Uint := Uint (Uint_Direct_Bias + 2);
    Uint_3   : constant Uint := Uint (Uint_Direct_Bias + 3);
@@ -499,7 +499,7 @@ private
    Uint_Minus_80  : constant Uint := Uint (Uint_Direct_Bias - 80);
    Uint_Minus_128 : constant Uint := Uint (Uint_Direct_Bias - 128);
 
-   Uint_Max_Simple_Mul : constant := Uint_Direct_Bias + 2 ** 15;
+   Uint_Max_Simple_Mul : constant := Uint_Direct_Bias + 2**15;
    --  If two values are directly represented and less than or equal to this
    --  value, then we know the product fits in a 32-bit integer. This allows
    --  UI_Mul to efficiently compute the product in this case.
