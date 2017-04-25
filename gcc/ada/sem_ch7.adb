@@ -2568,6 +2568,11 @@ package body Sem_Ch7 is
          Propagate_DIC_Attributes (Full, From_Typ => Full_Base);
          Propagate_DIC_Attributes (Full_Base, From_Typ => Full);
 
+         --  Propagate Default_Initial_Condition-related attributes from the
+         --  full view to the private view.
+
+         Propagate_DIC_Attributes (Priv, From_Typ => Full);
+
          --  Propagate invariant-related attributes from the base type of the
          --  full view to the full view and vice versa. This may seem strange,
          --  but is necessary depending on which type triggered the generation
