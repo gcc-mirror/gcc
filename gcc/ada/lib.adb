@@ -905,6 +905,7 @@ package body Lib is
    function In_Internal_Unit (S : Source_Ptr) return Boolean is
       Unit : constant Unit_Number_Type := Get_Source_Unit (S);
       File : constant File_Name_Type   := Unit_File_Name (Unit);
+
    begin
       return Is_Internal_File_Name (File);
    end In_Internal_Unit;
