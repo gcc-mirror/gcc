@@ -2279,12 +2279,32 @@ package body Sem_Ch3 is
 
             if Nkind (Context) = N_Package_Specification then
 
+               --  Preanalyze and resolve the class-wide invariants of an
+               --  interface at the end of whichever declarative part has the
+               --  interface type. Note that an interface may be declared in
+               --  any non-package declarative part, but reaching the end of
+               --  such a declarative part will always freeze the type and
+               --  generate the invariant procedure (see Freeze_Type).
+
+               if Is_Interface (Typ) then
+
+                  --  Interfaces are treated as the partial view of a private
+                  --  type in order to achieve uniformity with the general
+                  --  case. As a result, an interface receives only a "partial"
+                  --  invariant procedure which is never called.
+
+                  if Has_Own_Invariants (Typ) then
+                     Build_Invariant_Procedure_Body
+                       (Typ               => Typ,
+                        Partial_Invariant => True);
+                  end if;
+
                --  Preanalyze and resolve the invariants of a private type
                --  at the end of the visible declarations to catch potential
                --  errors. Inherited class-wide invariants are not included
                --  because they have already been resolved.
 
-               if Decls = Visible_Declarations (Context)
+               elsif Decls = Visible_Declarations (Context)
                  and then Ekind_In (Typ, E_Limited_Private_Type,
                                          E_Private_Type,
                                          E_Record_Type_With_Private)
@@ -15315,10 +15335,9 @@ package body Sem_Ch3 is
 
       New_Overloaded_Entity (New_Subp, Derived_Type);
 
-      --  Implement rule in 6.1.1 (15) : if subprogram inherits non-conforming
-      --  classwide preconditions and the derived type is abstract, the
-      --  derived operation is abstract as well if parent subprogram is not
-      --  abstract or null.
+      --  Ada RM 6.1.1 (15): If a subprogram inherits non-conforming class-wide
+      --  preconditions and the derived type is abstract, the derived operation
+      --  is abstract as well if parent subprogram is not abstract or null.
 
       if Is_Abstract_Type (Derived_Type)
         and then Has_Non_Trivial_Precondition (Parent_Subp)

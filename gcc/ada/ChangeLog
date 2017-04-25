@@ -1,3 +1,46 @@
+2017-04-25  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch3.adb (Freeze_Type): Add condition to always treat
+	interface types as a partial view of a private type for the
+	generation of invariant procedure bodies.
+	* exp_util.adb, exp_util.ads (Add_Inherited_Invariants):
+	Add a condition to get the Corresponding_Record_Type for
+	concurrent types, add condition to return in the absence of a
+	class in the pragma, remove call to Replace_Type_References,
+	and add call to Replace_References.
+	(Add_Interface_Invariatns),
+	(Add_Parent_Invariants): Modify call to Add_Inherited_Invariants
+	to including the working type T.
+	(Add_Own_Invariants): Remove
+	legacy condition for separate units, remove dispatching for ASIS
+	and save a copy of the expression in the pragma expression.
+	(Build_Invariant_Procedure_Body): Default initalize vars,
+	remove return condition on interfaces, always use the
+	private type for interfaces, and move the processing of types
+	until after the processing of invariants for the full view.
+	(Build_Invariant_Procedure_Declaration): Remove condition
+	to return if an interface type is encountered and add
+	condition to convert the formal parameter to its class-wide
+	counterpart if Work_Typ is abstract.
+	(Replace_Type): Add call to Remove_Controlling_Arguments.
+	(Replace_Type_Ref): Remove class-wide dispatching for the current
+	instance of the type.
+	(Replace_Type_References): Remove parameter "Derived"
+	(Remove_Controlling_Arguments): Created in order to removing
+	the controlliong argument from calls to primitives in the case
+	of the formal parameter being an class-wide abstract type.
+	* sem_ch3.adb (Build_Assertion_Bodies_For_Type): Almost identical
+	to the change made to Freeze_Type in exp_ch3. Add a condition
+	to treat interface types as a partial view.
+	* sem_prag.adb (Analyze_Pragma): Modify parameters in the call
+	to Build_Invariant_Procedure_Declaration to properly generate a
+	"partial" invariant procedure when Typ is an interface.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* a-numeri.ads: Go back to using brackets encoding for the Greek
+	letter pi.
+
 2017-04-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Derive_Subprogram): Implement rule in RM 6.1.1
