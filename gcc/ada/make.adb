@@ -2945,7 +2945,7 @@ package body Make is
 
          begin
             if Is_Predefined_File_Name
-              (Fname, Renamings_Included => False)
+                 (Fname, Renamings_Included => False)
             then
                if Check_Readonly_Files or else Must_Compile then
                   Comp_Args (Comp_Args'First + 2 .. Comp_Last + 1) :=

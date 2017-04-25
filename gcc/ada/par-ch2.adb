@@ -224,26 +224,6 @@ package body Ch2 is
    --  in fact the bodies ARE present, supplied by these pragmas.
 
    function P_Pragma (Skipping : Boolean := False) return Node_Id is
-      Interface_Check_Required : Boolean := False;
-      --  Set True if check of pragma INTERFACE is required
-
-      Import_Check_Required : Boolean := False;
-      --  Set True if check of pragma IMPORT is required
-
-      Arg_Count : Nat := 0;
-      --  Number of argument associations processed
-
-      Identifier_Seen : Boolean := False;
-      --  Set True if an identifier is encountered for a pragma argument. Used
-      --  to check that there are no more arguments without identifiers.
-
-      Prag_Node     : Node_Id;
-      Prag_Name     : Name_Id;
-      Semicolon_Loc : Source_Ptr;
-      Ident_Node    : Node_Id;
-      Assoc_Node    : Node_Id;
-      Result        : Node_Id;
-
       procedure Skip_Pragma_Semicolon;
       --  Skip past semicolon at end of pragma
 
@@ -264,6 +244,28 @@ package body Ch2 is
             T_Semicolon;
          end if;
       end Skip_Pragma_Semicolon;
+
+      --  Local variables
+
+      Interface_Check_Required : Boolean := False;
+      --  Set True if check of pragma INTERFACE is required
+
+      Import_Check_Required : Boolean := False;
+      --  Set True if check of pragma IMPORT is required
+
+      Arg_Count : Nat := 0;
+      --  Number of argument associations processed
+
+      Identifier_Seen : Boolean := False;
+      --  Set True if an identifier is encountered for a pragma argument. Used
+      --  to check that there are no more arguments without identifiers.
+
+      Assoc_Node    : Node_Id;
+      Ident_Node    : Node_Id;
+      Prag_Name     : Name_Id;
+      Prag_Node     : Node_Id;
+      Result        : Node_Id;
+      Semicolon_Loc : Source_Ptr;
 
    --  Start of processing for P_Pragma
 
@@ -366,8 +368,8 @@ package body Ch2 is
       --  Cancel indication of being within a pragma or in particular a Depends
       --  pragma.
 
-      Inside_Pragma  := False;
       Inside_Depends := False;
+      Inside_Pragma  := False;
 
       --  Now we have two tasks left, we need to scan out the semicolon
       --  following the pragma, and we have to call Par.Prag to process
@@ -390,10 +392,12 @@ package body Ch2 is
          Skip_Pragma_Semicolon;
          return Par.Prag (Prag_Node, Semicolon_Loc);
       end if;
+
    exception
       when Error_Resync =>
          Resync_Past_Semicolon;
-         Inside_Pragma := False;
+         Inside_Depends := False;
+         Inside_Pragma  := False;
          return Error;
    end P_Pragma;
 
