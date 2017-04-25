@@ -159,14 +159,16 @@ package body Exp_Ch6 is
    --  we have an infinite recursion.
 
    procedure Expand_Actuals
-     (N : Node_Id; Subp : Entity_Id; Post_Call : out List_Id);
-   --  Return in Post_Call a list of actions to take place after the call.
-   --  The call will later be rewritten as an Expression_With_Actions,
-   --  with the Post_Call actions inserted, and the call inside.
+     (N         : Node_Id;
+      Subp      : Entity_Id;
+      Post_Call : out List_Id);
+   --  Return a list of actions to take place after the call in Post_Call. The
+   --  call will later be rewritten as an Expression_With_Actions, with the
+   --  Post_Call actions inserted, and the call inside.
    --
-   --  For each actual of an in-out or out parameter which is a numeric
-   --  (view) conversion of the form T (A), where A denotes a variable,
-   --  we insert the declaration:
+   --  For each actual of an in-out or out parameter which is a numeric (view)
+   --  conversion of the form T (A), where A denotes a variable, we insert the
+   --  declaration:
    --
    --    Temp : T[ := T (A)];
    --
@@ -197,12 +199,7 @@ package body Exp_Ch6 is
    --  based on the predicates of the actual type.
 
    procedure Expand_Call_Helper (N : Node_Id; Post_Call : out List_Id);
-   --  Does the main work of Expand_Call. Post_Call is as for Expand_Actuals
-
-   procedure Insert_Post_Call_Actions
-     (N : Node_Id; Post_Call : List_Id);
-   --  Insert the Post_Call list (previously produced by
-   --  Expand_Actuals/Expand_Call_Helper) into the tree.
+   --  Does the main work of Expand_Call. Post_Call is as for Expand_Actuals.
 
    procedure Expand_Ctrl_Function_Call (N : Node_Id);
    --  N is a function call which returns a controlled object. Transform the
@@ -235,6 +232,10 @@ package body Exp_Ch6 is
      (Subtyp : Entity_Id) return Boolean;
    --  Returns True if the given subtype is unconstrained and has one or more
    --  access discriminants.
+
+   procedure Insert_Post_Call_Actions (N : Node_Id; Post_Call : List_Id);
+   --  Insert the Post_Call list previously produced by routine Expand_Actuals
+   --  or Expand_Call_Helper into the tree.
 
    procedure Rewrite_Function_Call_For_C (N : Node_Id);
    --  When generating C code, replace a call to a function that returns an
@@ -1155,7 +1156,9 @@ package body Exp_Ch6 is
    --------------------
 
    procedure Expand_Actuals
-     (N : Node_Id; Subp : Entity_Id; Post_Call : out List_Id)
+     (N         : Node_Id;
+      Subp      : Entity_Id;
+      Post_Call : out List_Id)
    is
       Loc       : constant Source_Ptr := Sloc (N);
       Actual    : Node_Id;
@@ -7220,27 +7223,24 @@ package body Exp_Ch6 is
    -- Insert_Post_Call_Actions --
    ------------------------------
 
-   procedure Insert_Post_Call_Actions
-     (N : Node_Id; Post_Call : List_Id)
-   is
+   procedure Insert_Post_Call_Actions (N : Node_Id; Post_Call : List_Id) is
    begin
       if Is_Empty_List (Post_Call) then
          return;
       end if;
 
-      --  Cases where the call is not a member of a statement list.
-      --  This includes the case where the call is an actual in another
-      --  function call or indexing, i.e. an expression context as well.
+      --  Cases where the call is not a member of a statement list. This
+      --  includes the case where the call is an actual in another function
+      --  call or indexing, i.e. an expression context as well.
 
       if not Is_List_Member (N)
         or else Nkind_In (Parent (N), N_Function_Call, N_Indexed_Component)
       then
          --  In Ada 2012 the call may be a function call in an expression
-         --  (since OUT and IN OUT parameters are now allowed for such
-         --  calls). The write-back of (in)-out parameters is handled
-         --  by the back-end, but the constraint checks generated when
-         --  subtypes of formal and actual don't match must be inserted
-         --  in the form of assignments.
+         --  (since OUT and IN OUT parameters are now allowed for such calls).
+         --  The write-back of (in)-out parameters is handled by the back-end,
+         --  but the constraint checks generated when subtypes of formal and
+         --  actual don't match must be inserted in the form of assignments.
 
          if Nkind (Original_Node (N)) = N_Function_Call then
             pragma Assert (Ada_Version >= Ada_2012);
@@ -7252,8 +7252,8 @@ package body Exp_Ch6 is
             --  Insert_Actions_After (P, Post_Call), but that doesn't work
             --  for Ada 2012. If we are in the middle of an expression, e.g.
             --  the condition of an IF, this call would insert after the IF
-            --  statement, which is much too late to be doing the write
-            --  back. For example:
+            --  statement, which is much too late to be doing the write back.
+            --  For example:
 
             --     if Clobber (X) then
             --        Put_Line (X'Img);
@@ -7261,9 +7261,9 @@ package body Exp_Ch6 is
             --        goto Junk
             --     end if;
 
-            --  Now assume Clobber changes X, if we put the write back
-            --  after the IF, the Put_Line gets the wrong value and the
-            --  goto causes the write back to be skipped completely.
+            --  Now assume Clobber changes X, if we put the write back after
+            --  the IF, the Put_Line gets the wrong value and the goto causes
+            --  the write back to be skipped completely.
 
             --  To deal with this, we replace the call by
 
@@ -7304,10 +7304,10 @@ package body Exp_Ch6 is
                Set_Analyzed (Name, False);
             end;
 
-         --  If not the special Ada 2012 case of a function call, then
-         --  we must have the triggering statement of a triggering
-         --  alternative or an entry call alternative, and we can add
-         --  the post call stuff to the corresponding statement list.
+         --  If not the special Ada 2012 case of a function call, then we must
+         --  have the triggering statement of a triggering alternative or an
+         --  entry call alternative, and we can add the post call stuff to the
+         --  corresponding statement list.
 
          else
             declare
@@ -7315,8 +7315,8 @@ package body Exp_Ch6 is
 
             begin
                P := Parent (N);
-               pragma Assert (Nkind_In (P, N_Triggering_Alternative,
-                                           N_Entry_Call_Alternative));
+               pragma Assert (Nkind_In (P, N_Entry_Call_Alternative,
+                                           N_Triggering_Alternative));
 
                if Is_Non_Empty_List (Statements (P)) then
                   Insert_List_Before_And_Analyze
@@ -7327,8 +7327,8 @@ package body Exp_Ch6 is
             end;
          end if;
 
-      --  Otherwise, normal case where N is in a statement sequence,
-      --  just put the post-call stuff after the call statement.
+      --  Otherwise, normal case where N is in a statement sequence, just put
+      --  the post-call stuff after the call statement.
 
       else
          Insert_Actions_After (N, Post_Call);

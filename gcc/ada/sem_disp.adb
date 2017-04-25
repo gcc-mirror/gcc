@@ -967,8 +967,8 @@ package body Sem_Disp is
                   Error_Msg_Name_2 := Chars (E);
                   Error_Msg_Sloc := Sloc (E);
                   Error_Msg_N
-                    ("?j?primitive of type % defined after private " &
-                     "extension % #?", Prim);
+                    ("?j?primitive of type % defined after private extension "
+                     & "% #?", Prim);
                   Error_Msg_Name_1 := Chars (Prim);
                   Error_Msg_Name_2 := Chars (E);
                   Error_Msg_N
@@ -988,6 +988,8 @@ package body Sem_Disp is
       Has_Dispatching_Parent : Boolean   := False;
       Ovr_Subp               : Entity_Id := Empty;
       Tagged_Type            : Entity_Id;
+
+   --  Start of processing for Check_Dispatching_Operation
 
    begin
       if not Ekind_In (Subp, E_Function, E_Procedure) then
@@ -1080,8 +1082,8 @@ package body Sem_Disp is
                then
                   Error_Msg_N ("??declaration of& is too late!", Subp);
                   Error_Msg_NE -- CODEFIX??
-                    ("\??spec should appear immediately after declaration "
-                     & "of & !", Subp, Typ);
+                    ("\??spec should appear immediately after declaration of "
+                     & "& !", Subp, Typ);
                   exit;
                end if;
 
@@ -1109,8 +1111,8 @@ package body Sem_Disp is
                then
                   Error_Msg_N ("??declaration of& is too late!", Subp);
                   Error_Msg_NE
-                    ("\??spec should appear immediately after declaration "
-                     & "of & !", Subp, Typ);
+                    ("\??spec should appear immediately after declaration of "
+                     & "& !", Subp, Typ);
                end if;
             end if;
          end;

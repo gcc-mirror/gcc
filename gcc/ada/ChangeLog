@@ -1,3 +1,8 @@
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb, exp_ch6.adb, binde.adb, sem_disp.adb, s-fileio.adb:
+	Minor reformatting.
+
 2017-04-25  Bob Duff  <duff@adacore.com>
 
 	* sem_prag.adb (No_Return): Give an error if the pragma applies

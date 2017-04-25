@@ -4219,9 +4219,9 @@ package body Sem_Prag is
 
          function Inherits_Class_Wide_Pre (E : Entity_Id) return Boolean is
             Typ  : constant Entity_Id := Find_Dispatching_Type (E);
-            Prev : Entity_Id          := Overridden_Operation (E);
             Cont : Node_Id;
             Prag : Node_Id;
+            Prev : Entity_Id := Overridden_Operation (E);
 
          begin
             --  Check ancestors on the overriding operation to examine the
@@ -4240,9 +4240,9 @@ package body Sem_Prag is
                   end loop;
                end if;
 
-               --  For a type derived from a generic formal type, the
-               --  operation inheriting the condition is a renaming, not
-               --  an overriding of the operation of the formal.
+               --  For a type derived from a generic formal type, the operation
+               --  inheriting the condition is a renaming, not an overriding of
+               --  the operation of the formal.
 
                if Is_Generic_Type (Find_Dispatching_Type (Prev)) then
                   Prev := Alias (Prev);
@@ -7399,20 +7399,21 @@ package body Sem_Prag is
 
                  or else Ekind (E) = E_Variable
 
-                 --  A component as well.  The entity does not have its
-                 --  Ekind set until the enclosing record declaration is
-                 --  fully analyzed.
+                 --  A component as well. The entity does not have its Ekind
+                 --  set until the enclosing record declaration is fully
+                 --  analyzed.
 
                  or else Nkind (Parent (E)) = N_Component_Declaration
 
                  --  An access to subprogram is also allowed
 
-                 or else (Is_Access_Type (E)
-                   and then Ekind (Designated_Type (E)) = E_Subprogram_Type)
+                 or else
+                   (Is_Access_Type (E)
+                     and then Ekind (Designated_Type (E)) = E_Subprogram_Type)
 
                  --  Allow internal call to set convention of subprogram type
 
-                 or else (Ekind (E) = E_Subprogram_Type)
+                 or else Ekind (E) = E_Subprogram_Type
                then
                   null;
 
@@ -8084,8 +8085,8 @@ package body Sem_Prag is
                                                              N_Subprogram_Body
                then
                   Error_Pragma
-                    ("pragma% requires separate spec" &
-                      " and must come before body");
+                    ("pragma% requires separate spec and must come before "
+                     & "body");
                end if;
 
                --  Test result type if given, note that the result type
@@ -8097,14 +8098,14 @@ package body Sem_Prag is
                   Match := False;
 
                elsif Etype (Def_Id) /= Standard_Void_Type
-                 and then
-                   Nam_In (Pname, Name_Export_Procedure, Name_Import_Procedure)
+                 and then Nam_In (Pname, Name_Export_Procedure,
+                                         Name_Import_Procedure)
                then
                   Match := False;
 
-               --  Test parameter types if given. Note that this parameter
-               --  has not been analyzed (and must not be, since it is
-               --  semantic nonsense), so we get it as the parser left it.
+               --  Test parameter types if given. Note that this parameter has
+               --  not been analyzed (and must not be, since it is semantic
+               --  nonsense), so we get it as the parser left it.
 
                elsif Present (Arg_Parameter_Types) then
                   Check_Matching_Types : declare
@@ -8119,8 +8120,8 @@ package body Sem_Prag is
                            Match := False;
                         end if;
 
-                     --  A list of one type, e.g. (List) is parsed as
-                     --  a parenthesized expression.
+                     --  A list of one type, e.g. (List) is parsed as a
+                     --  parenthesized expression.
 
                      elsif Nkind (Arg_Parameter_Types) /= N_Aggregate
                        and then Paren_Count (Arg_Parameter_Types) = 1
@@ -18176,7 +18177,8 @@ package body Sem_Prag is
                while Present (E)
                  and then Scope (E) = Current_Scope
                loop
-                  if Ekind_In (E, E_Procedure, E_Generic_Procedure) then
+                  if Ekind_In (E, E_Generic_Procedure, E_Procedure) then
+
                      --  Check that the pragma is not applied to a body.
                      --  First check the specless body case, to give a
                      --  different error message. These checks do not apply
@@ -18189,8 +18191,8 @@ package body Sem_Prag is
                           and then not Relaxed_RM_Semantics
                         then
                            Error_Pragma
-                             ("pragma% requires separate spec" &
-                                " and must come before body");
+                             ("pragma% requires separate spec and must come "
+                              & "before body");
                         end if;
 
                         --  Now the "specful" body case
