@@ -248,10 +248,11 @@ package Exp_Util is
    --  not install a call to Abort_Defer.
 
    procedure Build_Class_Wide_Expression
-     (Prag        : Node_Id;
-      Subp        : Entity_Id;
-      Par_Subp    : Entity_Id;
-      Adjust_Sloc : Boolean);
+     (Prag          : Node_Id;
+      Subp          : Entity_Id;
+      Par_Subp      : Entity_Id;
+      Adjust_Sloc   : Boolean;
+      Needs_Wrapper : out Boolean);
    --  Build the expression for an inherited class-wide condition. Prag is
    --  the pragma constructed from the corresponding aspect of the parent
    --  subprogram, and Subp is the overriding operation, and Par_Subp is
@@ -264,6 +265,11 @@ package Exp_Util is
    --  is the expression of the original class-wide aspect. In SPARK_Mode, such
    --  operation which are just inherited but have modified pre/postconditions
    --  are illegal.
+   --  If there are calls to overridden operations in the condition, and the
+   --  pragma applies to an inherited operation, a wrapper must be built for
+   --  it to capture the new inherited condition. The flag Needs_Wrapper is
+   --  set in that case so that the wrapper can be built, when the controlling
+   --  type is frozen.
 
    function Build_DIC_Call
      (Loc    : Source_Ptr;

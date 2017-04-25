@@ -1,3 +1,35 @@
+2017-04-25  Tristan Gingold  <gingold@adacore.com>
+
+	* s-mmap.ads (Data): Add pragma Inline.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): Do not use
+	a renaming to alias a volatile name because this will lead to
+	multiple evaluations of the volatile name. Use a constant to
+	capture the value instead.
+
+2017-04-25  Doug Rupp  <rupp@adacore.com>
+
+	* init.c [VxWorks Section]: Disable sigtramp for ppc64-vx7.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb, exp_util.ads (Build_Class_Wide_Expression):
+	Add out parameter to indicate to caller that a wrapper must
+	be constructed for an inherited primitive whose inherited
+	pre/postcondition has called to overridden primitives.
+	* freeze.adb (Check_Inherited_Conditions): Build wrapper body
+	for inherited primitive that requires it.
+	* sem_disp.adb (Check_Dispatching_Operation): Such wrappers are
+	legal primitive operations and belong to the list of bodies
+	generated after the freeze point of a type.
+	* sem_prag.adb (Build_Pragma_Check_Equivalent): Use new signature
+	of Build_Class_Wide_Expression.
+	* sem_util.adb, sem_util.ads (Build_Overriding_Spec): New procedure
+	to construct the specification of the wrapper subprogram created
+	for an inherited operation.
+
 2017-04-25  Bob Duff  <duff@adacore.com>
 
 	* s-osinte-linux.ads (pthread_mutexattr_setprotocol,

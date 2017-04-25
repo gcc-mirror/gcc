@@ -1041,11 +1041,13 @@ package body Exp_Util is
    ---------------------------------
 
    procedure Build_Class_Wide_Expression
-     (Prag        : Node_Id;
-      Subp        : Entity_Id;
-      Par_Subp    : Entity_Id;
-      Adjust_Sloc : Boolean)
+     (Prag          : Node_Id;
+      Subp          : Entity_Id;
+      Par_Subp      : Entity_Id;
+      Adjust_Sloc   : Boolean;
+      Needs_Wrapper : out Boolean)
    is
+
       function Replace_Entity (N : Node_Id) return Traverse_Result;
       --  Replace reference to formal of inherited operation or to primitive
       --  operation of root type, with corresponding entity for derived type,
@@ -1089,6 +1091,13 @@ package body Exp_Util is
 
             if Present (New_E) then
                Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
+
+               --  If the entity is an overridden primitive, we must build
+               --  a wrapper for the current inherited operation.
+
+               if Is_Subprogram (New_E) then
+                  Needs_Wrapper := True;
+               end if;
             end if;
 
             --  Check that there are no calls left to abstract operations if
@@ -1156,6 +1165,8 @@ package body Exp_Util is
    --  Start of processing for Build_Class_Wide_Expression
 
    begin
+      Needs_Wrapper := False;
+
       --  Add mapping from old formals to new formals
 
       Par_Formal  := First_Formal (Par_Subp);

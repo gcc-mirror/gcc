@@ -55,6 +55,7 @@ with Sem_Ch6;   use Sem_Ch6;
 with Sem_Ch7;   use Sem_Ch7;
 with Sem_Ch8;   use Sem_Ch8;
 with Sem_Ch13;  use Sem_Ch13;
+with Sem_Disp;  use Sem_Disp;
 with Sem_Eval;  use Sem_Eval;
 with Sem_Mech;  use Sem_Mech;
 with Sem_Prag;  use Sem_Prag;
@@ -1395,17 +1396,22 @@ package body Freeze is
    --------------------------------
 
    procedure Check_Inherited_Conditions (R : Entity_Id) is
-      Prim_Ops : constant Elist_Id := Primitive_Operations (R);
-      A_Post   : Node_Id;
-      A_Pre    : Node_Id;
-      Op_Node  : Elmt_Id;
-      Par_Prim : Entity_Id;
-      Prim     : Entity_Id;
+      Prim_Ops      : constant Elist_Id := Primitive_Operations (R);
+      A_Post        : Node_Id;
+      A_Pre         : Node_Id;
+      Decls         : List_Id;
+      Op_Node       : Elmt_Id;
+      Par_Prim      : Entity_Id;
+      Par_Type      : Entity_Id;
+      New_Prag      : Node_Id;
+      Prim          : Entity_Id;
+      Needs_Wrapper : Boolean;
 
    begin
       Op_Node := First_Elmt (Prim_Ops);
       while Present (Op_Node) loop
-         Prim := Node (Op_Node);
+         Prim          := Node (Op_Node);
+         Needs_Wrapper := False;
 
          --  Map the overridden primitive to the overriding one. This takes
          --  care of all overridings and is done only once.
@@ -1446,9 +1452,12 @@ package body Freeze is
 
       Op_Node := First_Elmt (Prim_Ops);
       while Present (Op_Node) loop
-         Prim := Node (Op_Node);
+         Decls := Empty_List;
+         Prim  := Node (Op_Node);
+
          if not Comes_From_Source (Prim) and then Present (Alias (Prim)) then
             Par_Prim := Alias (Prim);
+            Par_Type := Find_Dispatching_Type (Par_Prim);
 
             --  Analyze the contract items of the parent operation, before
             --  they are rewritten when inherited.
@@ -1458,22 +1467,114 @@ package body Freeze is
             A_Pre := Get_Pragma (Par_Prim, Pragma_Precondition);
 
             if Present (A_Pre) and then Class_Present (A_Pre) then
+               New_Prag := New_Copy_Tree (A_Pre);
                Build_Class_Wide_Expression
-                 (Prag        => New_Copy_Tree (A_Pre),
-                  Subp        => Prim,
-                  Par_Subp    => Par_Prim,
-                  Adjust_Sloc => False);
+                 (Prag          => New_Prag,
+                  Subp          => Prim,
+                  Par_Subp      => Par_Prim,
+                  Adjust_Sloc   => False,
+                  Needs_Wrapper => Needs_Wrapper);
+
+               if Needs_Wrapper then
+                  Append (New_Prag, Decls);
+               end if;
             end if;
 
             A_Post := Get_Pragma (Par_Prim, Pragma_Postcondition);
 
             if Present (A_Post) and then Class_Present (A_Post) then
+               New_Prag := New_Copy_Tree (A_Pre);
                Build_Class_Wide_Expression
-                 (Prag        => New_Copy_Tree (A_Post),
-                  Subp        => Prim,
-                  Par_Subp    => Par_Prim,
-                  Adjust_Sloc => False);
+                 (Prag           => New_Prag,
+                  Subp           => Prim,
+                  Par_Subp       => Par_Prim,
+                  Adjust_Sloc    => False,
+                  Needs_Wrapper  => Needs_Wrapper);
+
+               if Needs_Wrapper then
+                  Append (New_Prag, Decls);
+               end if;
             end if;
+         end if;
+
+         if Needs_Wrapper and then not Is_Abstract_Subprogram (Par_Prim) then
+
+            --  We need to build a new primitive that overrides the inherited
+            --  one, and whose inherited expression has been updated above.
+            --  These expressions are the arguments of pragmas that are part
+            --  of the declarations of the wrapper. The wrapper holds a single
+            --  statement that is a call to the parent primitive, where the
+            --  controlling actuals are conversions to the corresponding type
+            --  in the parent primitive:
+
+            --  procedure New_Prim (F1 : T1.; ...) is
+            --     pragma Check (Precondition,  Expr);
+            --  begin
+            --     Par_Prim (Par_Type (F1) ..);
+            --  end;
+            --
+            --  If the primitive is a function the statement is a call.
+
+            declare
+               Loc        : constant Source_Ptr := Sloc (R);
+               Formal     : Entity_Id;
+               Actuals    : List_Id;
+               New_F_Spec : Node_Id;
+               New_Formal : Entity_Id;
+               New_Proc   : Node_Id;
+               New_Spec   : Node_Id;
+               Call       : Node_Id;
+
+            begin
+               Actuals  := Empty_List;
+               New_Spec := Build_Overriding_Spec (Par_Prim, R);
+               Formal     := First_Formal (Par_Prim);
+               New_F_Spec := First (Parameter_Specifications (New_Spec));
+
+               while Present (Formal) loop
+                  New_Formal := Defining_Identifier (New_F_Spec);
+
+                  --  If controlling argument, add conversion.
+
+                  if Etype (Formal) = Par_Type then
+                     Append_To (Actuals,
+                       Make_Type_Conversion (Loc,
+                         New_Occurrence_Of (Par_Type, Loc),
+                         New_Occurrence_Of (New_Formal, Loc)));
+
+                  else
+                     Append_To (Actuals, New_Occurrence_Of (New_Formal, Loc));
+                  end if;
+
+                  Next_Formal (Formal);
+                  Next (New_F_Spec);
+               end loop;
+
+               if Ekind (Par_Prim) = E_Procedure then
+                  Call := Make_Procedure_Call_Statement (Loc,
+                    Parameter_Associations => Actuals,
+                    Name => New_Occurrence_Of (Par_Prim, Loc));
+               else
+                  Call := Make_Simple_Return_Statement (Loc,
+                     Expression =>
+                       Make_Function_Call (Loc,
+                         Parameter_Associations => Actuals,
+                      Name => New_Occurrence_Of (Par_Prim, Loc)));
+               end if;
+
+               New_Proc := Make_Subprogram_Body (Loc,
+                Specification              => New_Spec,
+                Declarations               => Decls,
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => New_List (Call),
+                    End_Label  => Make_Identifier (Loc, Chars (Prim))));
+
+               Insert_After (Parent (R), New_Proc);
+               Analyze (New_Proc);
+            end;
+
+            Needs_Wrapper := False;
          end if;
 
          Next_Elmt (Op_Node);
