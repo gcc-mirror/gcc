@@ -3622,11 +3622,21 @@ package body Sem_Util is
       -----------------------
 
       function SPARK_Mode_Is_Off (N : Node_Id) return Boolean is
-         Prag : constant Node_Id := SPARK_Pragma (Defining_Entity (N));
+         Id   : constant Entity_Id := Defining_Entity (N);
+         Prag : constant Node_Id   := SPARK_Pragma (Id);
 
       begin
-         return
-           Present (Prag) and then Get_SPARK_Mode_From_Annotation (Prag) = Off;
+         --  Default the mode to "off" when the context is an instance and all
+         --  SPARK_Mode pragmas found within are to be ignored.
+
+         if Ignore_SPARK_Mode_Pragmas (Id) then
+            return True;
+
+         else
+            return
+              Present (Prag)
+                and then Get_SPARK_Mode_From_Annotation (Prag) = Off;
+         end if;
       end SPARK_Mode_Is_Off;
 
    --  Start of processing for Check_State_Refinements

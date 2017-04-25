@@ -165,7 +165,7 @@
 ------------------
 
 --  For certain kind of expressions, such as aggregates, we need to defer
---  expansion of the aggregate and its inner expressions after the whole
+--  expansion of the aggregate and its inner expressions until after the whole
 --  set of expressions appearing inside the aggregate have been analyzed.
 --  Consider, for instance the following example:
 --
@@ -177,17 +177,17 @@
 --  repeatedly (for instance in the above aggregate "new Thing (Function_Call)"
 --  needs to be called 100 times.)
 
---  The reason why this mechanism does not work is that the expanded code for
---  the children is typically inserted above the parent and thus when the
---  father gets expanded no re-evaluation takes place. For instance in the case
---  of aggregates if "new Thing (Function_Call)" is expanded before of the
---  aggregate the expanded code will be placed outside of the aggregate and
---  when expanding the aggregate the loop from 1 to 100 will not surround the
+--  The reason this mechanism does not work is that the expanded code for the
+--  children is typically inserted above the parent and thus when the father
+--  gets expanded no re-evaluation takes place. For instance in the case of
+--  aggregates if "new Thing (Function_Call)" is expanded before the aggregate
+--  the expanded code will be placed outside of the aggregate and when
+--  expanding the aggregate the loop from 1 to 100 will not surround the
 --  expanded code for "new Thing (Function_Call)".
 
---  To remedy this situation we introduce a new flag which signals whether we
---  want a full analysis (i.e. expansion is enabled) or a pre-analysis which
---  performs Analysis and Resolution but no expansion.
+--  To remedy this situation we introduce a flag that signals whether we want a
+--  full analysis (i.e. expansion is enabled) or a pre-analysis which performs
+--  Analysis and Resolution but no expansion.
 
 --  After the complete pre-analysis of an expression has been carried out we
 --  can transform the expression and then carry out the full three stage

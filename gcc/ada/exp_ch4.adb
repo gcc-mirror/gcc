@@ -5859,7 +5859,8 @@ package body Exp_Ch4 is
                if Tagged_Type_Expansion then
                   Tagged_Membership (N, SCIL_Node, New_N);
                   Rewrite (N, New_N);
-                  Analyze_And_Resolve (N, Restyp);
+                  Analyze_And_Resolve
+                    (N, Restyp, Suppress => All_Checks);
 
                   --  Update decoration of relocated node referenced by the
                   --  SCIL node.
@@ -10908,7 +10909,8 @@ package body Exp_Ch4 is
                Insert_Action (N,
                  Make_Raise_Constraint_Error (Loc,
                    Condition => Cond,
-                   Reason    => CE_Tag_Check_Failed));
+                   Reason    => CE_Tag_Check_Failed),
+                 Suppress => All_Checks);
             end Make_Tag_Check;
 
          --  Start of processing for Tagged_Conversion

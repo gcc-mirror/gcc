@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,9 +66,9 @@
 --      always the case).
 
 --  In both these cases, Replace or Rewrite must be used to achieve the
---  of the node, since the Expander routine is only passed the Node_Id
---  of the node to be expanded, and the resulting expanded Node_Id must
---  be the same (the parameter to Expand is mode in, not mode in-out).
+--  expansion of the node, since the Expander routine is only passed the
+--  Node_Id of the node to be expanded, and the resulting expanded Node_Id
+--  must be the same (the parameter to Expand is mode in, not mode in-out).
 
 --  For nodes other than subexpressions, it is not necessary to preserve the
 --  original tree in the Expand routines, unlike the case for modifications

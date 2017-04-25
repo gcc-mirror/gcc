@@ -2164,6 +2164,13 @@ package Einfo is
 --       scopes. Homonyms in the same scope are overloaded. Used for name
 --       resolution and for the generation of debugging information.
 
+--    Ignore_SPARK_Mode_Pragmas (Flag301)
+--       Present in concurrent type, entry, operator, [generic] package,
+--       package body, [generic] subprogram, and subprogram body entities.
+--       Set when the entity appears in an instance subject to SPARK_Mode
+--       "off" and indicates that all SPARK_Mode pragmas found within must
+--       be ignored.
+
 --    Implementation_Base_Type (synthesized)
 --       Applies to all entities. For types, similar to Base_Type, but never
 --       returns a private type when applied to a non-private type. Instead in
@@ -5922,14 +5929,15 @@ package Einfo is
    --    Extra_Formals                       (Node28)
    --    Contract                            (Node34)
    --    SPARK_Pragma                        (Node40)   (protected kind)
-   --    Needs_No_Actuals                    (Flag22)
-   --    Uses_Sec_Stack                      (Flag95)
    --    Default_Expressions_Processed       (Flag108)
    --    Entry_Accepted                      (Flag152)
-   --    Sec_Stack_Needed_For_Return         (Flag167)
    --    Has_Expanded_Contract               (Flag240)
-   --    SPARK_Pragma_Inherited              (Flag265)  (protected kind)
+   --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    Is_Entry_Wrapper                    (Flag297)
+   --    Needs_No_Actuals                    (Flag22)
+   --    Sec_Stack_Needed_For_Return         (Flag167)
+   --    SPARK_Pragma_Inherited              (Flag265)  (protected kind)
+   --    Uses_Sec_Stack                      (Flag95)
    --    Address_Clause                      (synth)
    --    Entry_Index_Type                    (synth)
    --    First_Formal                        (synth)
@@ -6056,6 +6064,7 @@ package Einfo is
    --    Has_Nested_Subprogram               (Flag282)
    --    Has_Out_Or_In_Out_Parameter         (Flag110)
    --    Has_Recursive_Call                  (Flag143)
+   --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    Is_Abstract_Subprogram              (Flag19)   (non-generic case only)
    --    Is_Called                           (Flag102)  (non-generic case only)
    --    Is_Constructor                      (Flag76)
@@ -6209,6 +6218,7 @@ package Einfo is
    --    SPARK_Pragma                        (Node40)
    --    Default_Expressions_Processed       (Flag108)
    --    Has_Nested_Subprogram               (Flag282)
+   --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    Is_Intrinsic_Subprogram             (Flag64)
    --    Is_Machine_Code_Subprogram          (Flag137)
    --    Is_Primitive                        (Flag218)
@@ -6272,6 +6282,7 @@ package Einfo is
    --    Has_Forward_Instantiation           (Flag175)
    --    Has_Master_Entity                   (Flag21)
    --    Has_RACW                            (Flag214)  (non-generic case only)
+   --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    In_Package_Body                     (Flag48)
    --    In_Use                              (Flag8)
    --    Is_Instantiated                     (Flag126)
@@ -6299,6 +6310,7 @@ package Einfo is
    --    SPARK_Aux_Pragma                    (Node41)
    --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Delay_Subprogram_Descriptors        (Flag50)
+   --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
    --    SPARK_Pragma_Inherited              (Flag265)
    --    Scope_Depth                         (synth)
@@ -6367,6 +6379,7 @@ package Einfo is
    --    Has_Master_Entity                   (Flag21)
    --    Has_Nested_Block_With_Handler       (Flag101)
    --    Has_Nested_Subprogram               (Flag282)
+   --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    Is_Abstract_Subprogram              (Flag19)   (non-generic case only)
    --    Is_Asynchronous                     (Flag81)
    --    Is_Called                           (Flag102)  (non-generic case only)
@@ -6406,6 +6419,7 @@ package Einfo is
 
    --  E_Protected_Body
    --    SPARK_Pragma                        (Node40)
+   --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    SPARK_Pragma_Inherited              (Flag265)
    --    (any others??? First/Last Entity, Scope_Depth???)
 
@@ -6427,6 +6441,7 @@ package Einfo is
    --    Entry_Max_Queue_Lengths_Array       (Node35)
    --    SPARK_Pragma                        (Node40)
    --    SPARK_Aux_Pragma                    (Node41)
+   --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    Sec_Stack_Needed_For_Return         (Flag167)  ???
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
    --    SPARK_Pragma_Inherited              (Flag265)
@@ -6557,6 +6572,7 @@ package Einfo is
    --  E_Task_Body
    --    Contract                            (Node34)
    --    SPARK_Pragma                        (Node40)
+   --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    SPARK_Pragma_Inherited              (Flag265)
    --    (any others??? First/Last Entity, Scope_Depth???)
 
@@ -6580,6 +6596,7 @@ package Einfo is
    --    Delay_Cleanups                      (Flag114)
    --    Has_Master_Entity                   (Flag21)
    --    Has_Storage_Size_Clause             (Flag23)   (base type only)
+   --    Ignore_SPARK_Mode_Pragmas           (Flag301)
    --    Sec_Stack_Needed_For_Return         (Flag167)  ???
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
    --    SPARK_Pragma_Inherited              (Flag265)
@@ -7103,6 +7120,7 @@ package Einfo is
    function Has_Xref_Entry                      (Id : E) return B;
    function Hiding_Loop_Variable                (Id : E) return E;
    function Homonym                             (Id : E) return E;
+   function Ignore_SPARK_Mode_Pragmas           (Id : E) return B;
    function Import_Pragma                       (Id : E) return E;
    function Incomplete_Actuals                  (Id : E) return L;
    function In_Package_Body                     (Id : E) return B;
@@ -7788,6 +7806,7 @@ package Einfo is
    procedure Set_Has_Xref_Entry                  (Id : E; V : B := True);
    procedure Set_Hiding_Loop_Variable            (Id : E; V : E);
    procedure Set_Homonym                         (Id : E; V : E);
+   procedure Set_Ignore_SPARK_Mode_Pragmas       (Id : E; V : B := True);
    procedure Set_Import_Pragma                   (Id : E; V : E);
    procedure Set_Incomplete_Actuals              (Id : E; V : L);
    procedure Set_In_Package_Body                 (Id : E; V : B := True);
@@ -8587,6 +8606,7 @@ package Einfo is
    pragma Inline (Has_Xref_Entry);
    pragma Inline (Hiding_Loop_Variable);
    pragma Inline (Homonym);
+   pragma Inline (Ignore_SPARK_Mode_Pragmas);
    pragma Inline (Import_Pragma);
    pragma Inline (Incomplete_Actuals);
    pragma Inline (In_Package_Body);
@@ -9109,6 +9129,7 @@ package Einfo is
    pragma Inline (Set_Has_Xref_Entry);
    pragma Inline (Set_Hiding_Loop_Variable);
    pragma Inline (Set_Homonym);
+   pragma Inline (Set_Ignore_SPARK_Mode_Pragmas);
    pragma Inline (Set_Import_Pragma);
    pragma Inline (Set_Incomplete_Actuals);
    pragma Inline (Set_In_Package_Body);

@@ -343,8 +343,10 @@ package body Exp_Dbug is
 
       begin
          Enable :=
-           Enable or else (Ekind (T) in Array_Kind
-                            and then Present (Packed_Array_Impl_Type (T)));
+           Enable
+             or else
+               (Ekind (T) in Array_Kind
+                 and then Present (Packed_Array_Impl_Type (T)));
       end Enable_If_Packed_Array;
 
       ----------------------
@@ -359,7 +361,7 @@ package body Exp_Dbug is
          elsif Nkind (N) = N_Identifier
            and then Scope_Contains (Scope (Entity (N)), Ent)
            and then (Ekind (Entity (N)) = E_Constant
-                     or else Ekind (Entity (N)) = E_In_Parameter)
+                      or else Ekind (Entity (N)) = E_In_Parameter)
          then
             Prepend_String_To_Buffer (Get_Name_String (Chars (Entity (N))));
 
@@ -375,25 +377,25 @@ package body Exp_Dbug is
       -- Scope_Contains --
       --------------------
 
-      function Scope_Contains (Sc : Node_Id; Ent : Entity_Id) return Boolean
-      is
+      function Scope_Contains (Sc : Node_Id; Ent : Entity_Id) return Boolean is
          Cur : Node_Id := Scope (Ent);
+
       begin
          while Present (Cur) loop
             if Cur = Sc then
                return True;
             end if;
+
             Cur := Scope (Cur);
          end loop;
+
          return False;
       end Scope_Contains;
 
    --  Start of processing for Debug_Renaming_Declaration
 
    begin
-      if not Comes_From_Source (N)
-        and then not Needs_Debug_Info (Ent)
-      then
+      if not Comes_From_Source (N) and then not Needs_Debug_Info (Ent) then
          return Empty;
       end if;
 

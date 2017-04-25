@@ -21689,7 +21689,7 @@ package body Sem_Prag is
             --  enclosing context has SPARK_Mode set to "off", the pragma has
             --  no semantic effect.
 
-            if Ignore_Pragma_SPARK_Mode then
+            if Ignore_SPARK_Mode_Pragmas_In_Instance then
                Rewrite (N, Make_Null_Statement (Loc));
                Analyze (N);
                return;

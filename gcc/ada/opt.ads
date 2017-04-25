@@ -814,17 +814,17 @@ package Opt is
    --  default value appropriate to the system (in Osint.Initialize), and then
    --  reset if a command line switch is used to change the setting.
 
-   Ignore_Pragma_SPARK_Mode : Boolean := False;
-   --  GNAT
-   --  Set True to ignore the semantics and effects of pragma SPARK_Mode when
-   --  the pragma appears inside an instance whose enclosing context is subject
-   --  to SPARK_Mode "off".
-
    Ignore_Rep_Clauses : Boolean := False;
    --  GNAT
    --  Set True to ignore all representation clauses. Useful when compiling
    --  code from foreign compilers for checking or ASIS purposes. Can be
    --  set True by use of -gnatI.
+
+   Ignore_SPARK_Mode_Pragmas_In_Instance : Boolean := False;
+   --  GNAT
+   --  Set True to ignore the semantics and effects of pragma SPARK_Mode when
+   --  the pragma appears inside an instance whose enclosing context is subject
+   --  to SPARK_Mode "off". This property applies to nested instances.
 
    Ignore_Style_Checks_Pragmas : Boolean := False;
    --  GNAT

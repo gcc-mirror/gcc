@@ -59,14 +59,13 @@ package body Fname is
 
    function Has_Internal_Extension (Fname : String) return Boolean;
    pragma Inline (Has_Internal_Extension);
-   --  True if the extension is appropriate for an internal/predefined
-   --  unit. That means ".ads" or ".adb" for source files, and ".ali" for
-   --  ALI files.
+   --  True if the extension is appropriate for an internal/predefined unit.
+   --  That means ".ads" or ".adb" for source files, and ".ali" for ALI files.
 
    function Has_Prefix (X, Prefix : String) return Boolean;
    pragma Inline (Has_Prefix);
    --  True if Prefix is at the beginning of X. For example,
-   --  Has_Prefix("a-filename.ads", Prefix => "a-") is True.
+   --  Has_Prefix ("a-filename.ads", Prefix => "a-") is True.
 
    ----------------------------
    -- Has_Internal_Extension --
@@ -145,14 +144,14 @@ package body Fname is
       subtype Str8 is String (1 .. 8);
 
       Renaming_Names : constant array (1 .. 8) of Str8 :=
-        ("calendar",       -- Calendar
-         "machcode",       -- Machine_Code
-         "unchconv",       -- Unchecked_Conversion
-         "unchdeal",       -- Unchecked_Deallocation
-         "directio",       -- Direct_IO
-         "ioexcept",       -- IO_Exceptions
-         "sequenio",       -- Sequential_IO
-         "text_io.");      -- Text_IO
+        ("calendar",   --  Calendar
+         "machcode",   --  Machine_Code
+         "unchconv",   --  Unchecked_Conversion
+         "unchdeal",   --  Unchecked_Deallocation
+         "directio",   --  Direct_IO
+         "ioexcept",   --  IO_Exceptions
+         "sequenio",   --  Sequential_IO
+         "text_io.");  --  Text_IO
 
       --  Note: the implementation is optimized to perform uniform comparisons
       --  on string slices whose length is known at compile time and at most 8
