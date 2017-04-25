@@ -2809,6 +2809,11 @@ dimode_scalar_to_vector_candidate_p (rtx_insn *insn)
 
   switch (GET_CODE (src))
     {
+    case ASHIFTRT:
+      if (!TARGET_AVX512VL)
+	return false;
+      /* FALLTHRU */
+
     case ASHIFT:
     case LSHIFTRT:
       if (!REG_P (XEXP (src, 1))
@@ -3412,6 +3417,7 @@ dimode_scalar_chain::compute_convert_gain ()
       else if (MEM_P (src) && REG_P (dst))
 	gain += 2 * ix86_cost->int_load[2] - ix86_cost->sse_load[1];
       else if (GET_CODE (src) == ASHIFT
+	       || GET_CODE (src) == ASHIFTRT
 	       || GET_CODE (src) == LSHIFTRT)
 	{
     	  if (CONST_INT_P (XEXP (src, 0)))
@@ -3560,6 +3566,7 @@ dimode_scalar_chain::make_vector_copies (unsigned regno)
 	      rtx src = SET_SRC (def_set);
 
 	      if ((GET_CODE (src) == ASHIFT
+		   || GET_CODE (src) == ASHIFTRT
 		   || GET_CODE (src) == LSHIFTRT)
 		  && !CONST_INT_P (XEXP (src, 1))
 		  && reg_or_subregno (XEXP (src, 1)) == regno)
@@ -3648,6 +3655,7 @@ dimode_scalar_chain::make_vector_copies (unsigned regno)
 	    rtx src = SET_SRC (def_set);
 
 	    if ((GET_CODE (src) == ASHIFT
+		 || GET_CODE (src) == ASHIFTRT
 		 || GET_CODE (src) == LSHIFTRT)
 		&& !CONST_INT_P (XEXP (src, 1))
 		&& reg_or_subregno (XEXP (src, 1)) == regno)
@@ -3758,6 +3766,7 @@ dimode_scalar_chain::convert_reg (unsigned regno)
 	    rtx dst = SET_DEST (def_set);
 
 	    if ((GET_CODE (src) == ASHIFT
+		 || GET_CODE (src) == ASHIFTRT
 		 || GET_CODE (src) == LSHIFTRT)
 		&& !CONST_INT_P (XEXP (src, 1))
 		&& reg_or_subregno (XEXP (src, 1)) == regno)
@@ -3902,6 +3911,7 @@ dimode_scalar_chain::convert_insn (rtx_insn *insn)
   switch (GET_CODE (src))
     {
     case ASHIFT:
+    case ASHIFTRT:
     case LSHIFTRT:
       convert_op (&XEXP (src, 0), insn);
       PUT_MODE (src, V2DImode);

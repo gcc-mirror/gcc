@@ -413,9 +413,10 @@
    (V4DI "TARGET_AVX512VL") V16SI V8DI])
 
 ;; Suppose TARGET_AVX512VL as baseline
-(define_mode_iterator VI24_AVX512BW_1
+(define_mode_iterator VI248_AVX512BW_1
  [(V16HI "TARGET_AVX512BW") (V8HI "TARGET_AVX512BW")
-  V8SI V4SI])
+  V8SI V4SI
+  V2DI])
    
 (define_mode_iterator VI48_AVX512F
   [(V16SI "TARGET_AVX512F") V8SI V4SI
@@ -10617,9 +10618,9 @@
 })
 
 (define_insn "<mask_codefor>ashr<mode>3<mask_name>"
-  [(set (match_operand:VI24_AVX512BW_1 0 "register_operand" "=v,v")
-	(ashiftrt:VI24_AVX512BW_1
-	  (match_operand:VI24_AVX512BW_1 1 "nonimmediate_operand" "v,vm")
+  [(set (match_operand:VI248_AVX512BW_1 0 "register_operand" "=v,v")
+	(ashiftrt:VI248_AVX512BW_1
+	  (match_operand:VI248_AVX512BW_1 1 "nonimmediate_operand" "v,vm")
 	  (match_operand:DI 2 "nonmemory_operand" "v,N")))]
   "TARGET_AVX512VL"
   "vpsra<ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
@@ -10648,20 +10649,6 @@
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<sseinsnmode>")])
-
-(define_insn "<mask_codefor>ashrv2di3<mask_name>"
-  [(set (match_operand:V2DI 0 "register_operand" "=v,v")
-	(ashiftrt:V2DI
-	  (match_operand:V2DI 1 "nonimmediate_operand" "v,vm")
-	  (match_operand:DI 2 "nonmemory_operand" "v,N")))]
-  "TARGET_AVX512VL"
-  "vpsraq\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
-  [(set_attr "type" "sseishft")
-   (set (attr "length_immediate")
-     (if_then_else (match_operand 2 "const_int_operand")
-       (const_string "1")
-       (const_string "0")))
-   (set_attr "mode" "TI")])
 
 (define_insn "ashr<mode>3<mask_name>"
   [(set (match_operand:VI248_AVX512BW_AVX512VL 0 "register_operand" "=v,v")

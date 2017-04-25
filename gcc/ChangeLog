@@ -1,3 +1,18 @@
+2017-04-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70799
+	* config/i386/i386.c (dimode_scalar_to_vector_candidate_p):
+	Handle ASHIFTRT.
+	(dimode_scalar_chain::compute_convert_gain): Ditto.
+	(dimode_scalar_chain::make_vector_copies): Ditto.
+	(dimode_scalar_chain::convert_reg): Ditto.
+	(dimode_scalar_chain::convert_insn): Ditto.
+	* config/i386/sse.md (VI24_AVX512BW_1): Remove mode iterator.
+	(VI248_AVX512BW_1): New mode iterator.
+	(<mask_codefor>ashr<mode>3<mask_name>): Merge insn pattern with
+	<mask_codefor>ashrv2di3<mask_name> insn using VI248_AVX512BW_1
+	mode iterator.
+
 2017-04-25  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/80497
