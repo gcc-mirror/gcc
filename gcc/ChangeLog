@@ -1,5 +1,11 @@
 2017-04-25  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/80509
+	* passes.c (pass_manager::pass_manager): Initialize
+	m_name_to_pass_map.
+
+2017-04-25  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/79201
 	* tree-ssa-sink.c (statement_sink_location): Handle calls.
 
