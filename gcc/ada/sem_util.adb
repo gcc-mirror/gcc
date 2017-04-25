@@ -15282,12 +15282,32 @@ package body Sem_Util is
    --------------------------------------
 
    function Is_Validation_Variable_Reference (N : Node_Id) return Boolean is
+      Var    : Node_Id;
+      Var_Id : Entity_Id;
+
    begin
+      Var := N;
+
+      --  Use the expression when the context qualifies a reference in some
+      --  fashion.
+
+      while Nkind_In (Var, N_Qualified_Expression,
+                           N_Type_Conversion,
+                           N_Unchecked_Type_Conversion)
+      loop
+         Var := Expression (Var);
+      end loop;
+
+      Var_Id := Empty;
+
+      if Is_Entity_Name (Var) then
+         Var_Id := Entity (Var);
+      end if;
+
       return
-        Is_Entity_Name (N)
-          and then Present (Entity (N))
-          and then Ekind (Entity (N)) = E_Variable
-          and then Present (Validated_Object (Entity (N)));
+        Present (Var_Id)
+          and then Ekind (Var_Id) = E_Variable
+          and then Present (Validated_Object (Var_Id));
    end Is_Validation_Variable_Reference;
 
    ----------------------------

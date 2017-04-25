@@ -7286,10 +7286,11 @@ package body Checks is
 
       declare
          DRC : constant Boolean := Do_Range_Check (Exp);
-         CE  : Node_Id;
-         Obj : Node_Id;
-         PV  : Node_Id;
-         Var : Entity_Id;
+
+         CE     : Node_Id;
+         Obj    : Node_Id;
+         PV     : Node_Id;
+         Var_Id : Entity_Id;
 
       begin
          Set_Do_Range_Check (Exp, False);
@@ -7301,14 +7302,14 @@ package body Checks is
          --    1) The evaluation of the object results in only one read in the
          --       case where the object is atomic or volatile.
 
-         --         Temp ... := Object;  --  read
+         --         Var ... := Object;  --  read
 
          --    2) The captured value is the one verified by attribute 'Valid.
          --       As a result the object is not evaluated again, which would
          --       result in an unwanted read in the case where the object is
          --       atomic or volatile.
 
-         --         if not Temp'Valid then    --  OK, no read of Object
+         --         if not Var'Valid then     --  OK, no read of Object
 
          --         if not Object'Valid then  --  Wrong, extra read of Object
 
@@ -7316,7 +7317,7 @@ package body Checks is
          --       As a result the object is not evaluated again, in the same
          --       vein as 2).
 
-         --         ... Temp ...    --  OK, no read of Object
+         --         ... Var ...     --  OK, no read of Object
 
          --         ... Object ...  --  Wrong, extra read of Object
 
@@ -7326,24 +7327,24 @@ package body Checks is
 
          --         procedure Call (Val : in out ...);
 
-         --         Temp : ... := Object;   --  read Object
-         --         if not Temp'Valid then  --  validity check
-         --         Call (Temp);            --  modify Temp
-         --         Object := Temp;         --  update Object
+         --         Var : ... := Object;   --  read Object
+         --         if not Var'Valid then  --  validity check
+         --         Call (Var);            --  modify Var
+         --         Object := Var;         --  update Object
 
          if Is_Variable (Exp) then
-            Obj := New_Copy_Tree (Exp);
-            Var := Make_Temporary (Loc, 'T', Exp);
+            Obj    := New_Copy_Tree (Exp);
+            Var_Id := Make_Temporary (Loc, 'T', Exp);
 
             Insert_Action (Exp,
               Make_Object_Declaration (Loc,
-                Defining_Identifier => Var,
+                Defining_Identifier => Var_Id,
                 Object_Definition   => New_Occurrence_Of (Typ, Loc),
                 Expression          => Relocate_Node (Exp)));
-            Set_Validated_Object (Var, Obj);
+            Set_Validated_Object (Var_Id, Obj);
 
-            Rewrite (Exp, New_Occurrence_Of (Var, Loc));
-            PV := New_Occurrence_Of (Var, Loc);
+            Rewrite (Exp, New_Occurrence_Of (Var_Id, Loc));
+            PV := New_Occurrence_Of (Var_Id, Loc);
 
          --  Otherwise the expression does not denote a variable. Force its
          --  evaluation by capturing its value in a constant. Generate:
