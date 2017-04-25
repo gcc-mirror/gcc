@@ -3927,7 +3927,8 @@ package body Sem_Prag is
       procedure Process_Interface_Name
         (Subprogram_Def : Entity_Id;
          Ext_Arg        : Node_Id;
-         Link_Arg       : Node_Id);
+         Link_Arg       : Node_Id;
+         Prag           : Node_Id);
       --  Given the last two arguments of pragma Import, pragma Export, or
       --  pragma Interface_Name, performs validity checks and sets the
       --  Interface_Name field of the given subprogram entity to the
@@ -3936,7 +3937,9 @@ package body Sem_Prag is
       --  Ext_Arg may represent the Link_Name if Link_Arg is missing, and
       --  appropriate named notation is used for Ext_Arg. If neither Ext_Arg
       --  nor Link_Arg is present, the interface name is set to the default
-      --  from the subprogram name.
+      --  from the subprogram name. In addition, the pragma itself is passed
+      --  to analyze any expressions in the case the pragma came from an aspect
+      --  specification.
 
       procedure Process_Interrupt_Or_Attach_Handler;
       --  Common processing for Interrupt and Attach_Handler pragmas
@@ -8421,7 +8424,7 @@ package body Sem_Prag is
                   Set_Imported (Def_Id);
                end if;
 
-               Process_Interface_Name (Def_Id, Arg3, Arg4);
+               Process_Interface_Name (Def_Id, Arg3, Arg4, N);
 
                --  Note that we do not set Is_Public here. That's because we
                --  only want to set it if there is no address clause, and we
@@ -8583,7 +8586,7 @@ package body Sem_Prag is
                      end if;
                   end;
 
-                  Process_Interface_Name (Def_Id, Arg3, Arg4);
+                  Process_Interface_Name (Def_Id, Arg3, Arg4, N);
                end if;
 
                if Is_Compilation_Unit (Hom_Id) then
@@ -9128,7 +9131,8 @@ package body Sem_Prag is
       procedure Process_Interface_Name
         (Subprogram_Def : Entity_Id;
          Ext_Arg        : Node_Id;
-         Link_Arg       : Node_Id)
+         Link_Arg       : Node_Id;
+         Prag           : Node_Id)
       is
          Ext_Nam    : Node_Id;
          Link_Nam   : Node_Id;
@@ -9179,6 +9183,40 @@ package body Sem_Prag is
       --  Start of processing for Process_Interface_Name
 
       begin
+         --  If we are looking at a pragma that comes from an aspect then it
+         --  needs to have its corresponding aspect argument expressions
+         --  analyzed in addition to the generated pragma so that aspects
+         --  within generic units get properly resolved.
+
+         if Present (Prag) and then From_Aspect_Specification (Prag) then
+            declare
+               Asp     : constant Node_Id := Corresponding_Aspect (Prag);
+               Dummy_1 : Node_Id;
+               Dummy_2 : Node_Id;
+               Dummy_3 : Node_Id;
+               EN      : Node_Id;
+               LN      : Node_Id;
+
+            begin
+               --  Obtain all interfacing aspects used to construct the pragma
+
+               Get_Interfacing_Aspects
+                 (Asp, Dummy_1, EN, Dummy_2, Dummy_3, LN);
+
+               --  Analyze the expression of aspect External_Name
+
+               if Present (EN) then
+                  Analyze (Expression (EN));
+               end if;
+
+               --  Analyze the expressio of aspect Link_Name
+
+               if Present (LN) then
+                  Analyze (Expression (LN));
+               end if;
+            end;
+         end if;
+
          if No (Link_Arg) then
             if No (Ext_Arg) then
                return;
@@ -13497,7 +13535,7 @@ package body Sem_Prag is
                if Arg_Count >= 2 then
                   Set_Imported (Def_Id);
                   Set_Is_Public (Def_Id);
-                  Process_Interface_Name (Def_Id, Arg2, Arg3);
+                  Process_Interface_Name (Def_Id, Arg2, Arg3, N);
                end if;
 
                Set_Has_Completion (Def_Id);
@@ -14648,7 +14686,7 @@ package body Sem_Prag is
                     (Get_Pragma_Arg (Arg2), Sure => False);
                end if;
 
-               Process_Interface_Name (Def_Id, Arg3, Arg4);
+               Process_Interface_Name (Def_Id, Arg3, Arg4, N);
                Set_Exported (Def_Id, Arg2);
             end if;
 
@@ -15154,7 +15192,7 @@ package body Sem_Prag is
 
             Note_Possible_Modification
               (Get_Pragma_Arg (Arg2), Sure => False);
-            Process_Interface_Name (E, Arg3, Arg4);
+            Process_Interface_Name (E, Arg3, Arg4, N);
             Set_Exported (E, Arg2);
          end External;
 
@@ -16607,7 +16645,7 @@ package body Sem_Prag is
                   end if;
 
                   Set_Is_Public (Def_Id);
-                  Process_Interface_Name (Def_Id, Arg2, Arg3);
+                  Process_Interface_Name (Def_Id, Arg2, Arg3, N);
                end if;
 
             --  Otherwise must be subprogram
@@ -16627,7 +16665,7 @@ package body Sem_Prag is
                   Def_Id := Get_Base_Subprogram (Hom_Id);
 
                   if Is_Imported (Def_Id) then
-                     Process_Interface_Name (Def_Id, Arg2, Arg3);
+                     Process_Interface_Name (Def_Id, Arg2, Arg3, N);
                      Found := True;
                   end if;
 

@@ -8181,6 +8181,106 @@ package body Sem_Util is
       end if;
    end Get_Index_Bounds;
 
+   -----------------------------
+   -- Get_Interfacing_Aspects --
+   -----------------------------
+
+   procedure Get_Interfacing_Aspects
+     (Iface_Asp : Node_Id;
+      Conv_Asp  : out Node_Id;
+      EN_Asp    : out Node_Id;
+      Expo_Asp  : out Node_Id;
+      Imp_Asp   : out Node_Id;
+      LN_Asp    : out Node_Id;
+      Do_Checks : Boolean := False)
+   is
+      procedure Save_Or_Duplication_Error
+        (Asp : Node_Id;
+         To  : in out Node_Id);
+      --  Save the value of aspect Asp in node To. If To already has a value,
+      --  then this is considered a duplicate use of aspect. Emit an error if
+      --  flag Do_Checks is set.
+
+      -------------------------------
+      -- Save_Or_Duplication_Error --
+      -------------------------------
+
+      procedure Save_Or_Duplication_Error
+        (Asp : Node_Id;
+         To  : in out Node_Id)
+      is
+      begin
+         --  Detect an extra aspect and issue an error
+
+         if Present (To) then
+            if Do_Checks then
+               Error_Msg_Name_1 := Chars (Identifier (Asp));
+               Error_Msg_Sloc   := Sloc (To);
+               Error_Msg_N ("aspect % previously given #", Asp);
+            end if;
+
+         --  Otherwise capture the aspect
+
+         else
+            To := Asp;
+         end if;
+      end Save_Or_Duplication_Error;
+
+      --  Local variables
+
+      Asp    : Node_Id;
+      Asp_Id : Aspect_Id;
+
+      --  The following variables capture each individual aspect
+
+      Conv : Node_Id := Empty;
+      EN   : Node_Id := Empty;
+      Expo : Node_Id := Empty;
+      Imp  : Node_Id := Empty;
+      LN   : Node_Id := Empty;
+
+   --  Start of processing for Get_Interfacing_Aspects
+
+   begin
+      --  The input interfacing aspect should reside in an aspect specification
+      --  list.
+
+      pragma Assert (Is_List_Member (Iface_Asp));
+
+      --  Examine the aspect specifications of the related entity. Find and
+      --  capture all interfacing aspects. Detect duplicates and emit errors
+      --  if applicable.
+
+      Asp := First (List_Containing (Iface_Asp));
+      while Present (Asp) loop
+         Asp_Id := Get_Aspect_Id (Asp);
+
+         if Asp_Id = Aspect_Convention then
+            Save_Or_Duplication_Error (Asp, Conv);
+
+         elsif Asp_Id = Aspect_External_Name then
+            Save_Or_Duplication_Error (Asp, EN);
+
+         elsif Asp_Id = Aspect_Export then
+            Save_Or_Duplication_Error (Asp, Expo);
+
+         elsif Asp_Id = Aspect_Import then
+            Save_Or_Duplication_Error (Asp, Imp);
+
+         elsif Asp_Id = Aspect_Link_Name then
+            Save_Or_Duplication_Error (Asp, LN);
+         end if;
+
+         Next (Asp);
+      end loop;
+
+      Conv_Asp := Conv;
+      EN_Asp   := EN;
+      Expo_Asp := Expo;
+      Imp_Asp  := Imp;
+      LN_Asp   := LN;
+   end Get_Interfacing_Aspects;
+
    ---------------------------------
    -- Get_Iterable_Type_Primitive --
    ---------------------------------
