@@ -285,6 +285,31 @@ Note that this simple scheme preserves the relative order of the tasks
 that were ready to execute in the priority queue where R has been
 placed at the end.
 
+.. Support_for_Locking_Policies
+
+Support for Locking Policies
+----------------------------
+
+This section specifies which policies specified by pragma Locking_Policy
+are supported on which platforms.
+
+GNAT supports the standard `Ceiling_Locking` policy, and the
+implementation defined `Inheritance_Locking` and
+`Concurrent_Readers_Locking` policies.
+
+`Ceiling_Locking` is supported on all platforms if the operating system
+supports it. In particular, `Ceiling_Locking` is not supported on
+VxWorks.
+`Inheritance_Locking` is supported on
+Linux,
+Darwin (Mac OS X),
+LynxOS 178,
+and VxWorks.
+`Concurrent_Readers_Locking` is supported on Linux.
+
+Note that on Linux, `Ceiling_Locking` requires the program to be running
+with root privileges. Otherwise, the policy is ignored.
+
 .. _GNAT_Implementation_of_Shared_Passive_Packages:
 
 GNAT Implementation of Shared Passive Packages

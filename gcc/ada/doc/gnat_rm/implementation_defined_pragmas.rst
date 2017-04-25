@@ -564,7 +564,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Asynch_Readers   [ (boolean_EXPRESSION) ];
+  pragma Asynch_Readers [ (boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect `Async_Readers` in
 the SPARK 2014 Reference Manual, section 7.1.2.
@@ -578,7 +578,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Asynch_Writers   [ (boolean_EXPRESSION) ];
+  pragma Asynch_Writers [ (boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect `Async_Writers` in
 the SPARK 2014 Reference Manual, section 7.1.2.
@@ -1203,9 +1203,9 @@ following is an example of use within a package spec:
   package Math_Functions is
      ...
      function Sqrt (Arg : Float) return Float;
-     pragma Contract_Cases ((Arg in 0 .. 99) => Sqrt'Result < 10,
-                            Arg >= 100       => Sqrt'Result >= 10,
-                            others           => Sqrt'Result = 0);
+     pragma Contract_Cases (((Arg in 0.0 .. 99.0) => Sqrt'Result < 10.0,
+                             Arg >= 100.0         => Sqrt'Result >= 10.0,
+                             others               => Sqrt'Result = 0.0));
      ...
   end Math_Functions;
 
@@ -1379,6 +1379,21 @@ Syntax:
 This pragma is standard in Ada 2012, but is available in all earlier
 versions of Ada as an implementation-defined pragma.
 See Ada 2012 Reference Manual for details.
+
+Pragma Deadline_Floor
+=====================
+
+Syntax:
+
+
+.. code-block:: ada
+
+  pragma Deadline_Floor (time_span_EXPRESSION);
+
+
+This pragma applies only to protected types and specifies the floor
+deadline inherited by a task when the task enters a protected object.
+It is effective only when the EDF scheduling policy is used.
 
 .. _Pragma-Default_Initial_Condition:
 
@@ -1628,7 +1643,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Effective_Reads  [ (boolean_EXPRESSION) ];
+  pragma Effective_Reads [ (boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect `Effective_Reads` in
 the SPARK 2014 Reference Manual, section 7.1.2.
@@ -2248,14 +2263,13 @@ Syntax:
   pragma Favor_Top_Level (type_NAME);
 
 
-The named type must be an access-to-subprogram type. This pragma is an
-efficiency hint to the compiler, regarding the use of 'Access or
-'Unrestricted_Access on nested (non-library-level) subprograms. The
-pragma means that nested subprograms are not used with this type, or
-are rare, so that the generated code should be efficient in the
-top-level case. When this pragma is used, dynamically generated
-trampolines may be used on some targets for nested subprograms.
-See also the No_Implicit_Dynamic_Code restriction.
+The argument of pragma `Favor_Top_Level` must be a named access-to-subprogram
+type. This pragma is an efficiency hint to the compiler, regarding the use of
+`'Access` or `'Unrestricted_Access` on nested (non-library-level) subprograms.
+The pragma means that nested subprograms are not used with this type, or are
+rare, so that the generated code should be efficient in the top-level case.
+When this pragma is used, dynamically generated trampolines may be used on some
+targets for nested subprograms. See restriction `No_Implicit_Dynamic_Code`.
 
 Pragma Finalize_Storage_Only
 ============================
@@ -2268,11 +2282,14 @@ Syntax:
   pragma Finalize_Storage_Only (first_subtype_LOCAL_NAME);
 
 
-This pragma allows the compiler not to emit a Finalize call for objects
-defined at the library level.  This is mostly useful for types where
-finalization is only used to deal with storage reclamation since in most
-environments it is not necessary to reclaim memory just before terminating
-execution, hence the name.
+The argument of pragma `Finalize_Storage_Only` must denote a local type which
+is derived from `Ada.Finalization.Controlled` or `Limited_Controlled`. The
+pragma suppresses the call to `Finalize` for declared library-level objects
+of the argument type. This is mostly useful for types where finalization is
+only used to deal with storage reclamation since in most environments it is
+not necessary to reclaim memory just before terminating execution, hence the
+name. Note that this pragma does not suppress Finalize calls for library-level
+heap-allocated objects (see pragma `No_Heap_Finalization`).
 
 Pragma Float_Representation
 ===========================
@@ -2849,9 +2866,13 @@ Syntax:
   pragma Inline_Always (NAME [, NAME]);
 
 
-Similar to pragma `Inline` except that inlining is not subject to
-the use of option *-gnatn* or *-gnatN* and the inlining
-happens regardless of whether these options are used.
+Similar to pragma `Inline` except that inlining is unconditional.
+Inline_Always instructs the compiler to inline every direct call to the
+subprogram or else to emit a compilation error, independently of any
+option, in particular *-gnatn* or *-gnatN* or the optimization level.
+It is an error to take the address or access of `NAME`. It is also an error to
+apply this pragma to a primitive operation of a tagged type. Thanks to such
+restrictions, the compiler is allowed to remove the out-of-line body of `NAME`.
 
 Pragma Inline_Generic
 =====================
@@ -2974,7 +2995,9 @@ Interrupts can be in one of three states:
 
   The interrupt is reserved (no Ada handler can be installed), and the
   Ada run-time may not install a handler. As a result you are guaranteed
-  standard system default action if this interrupt is raised.
+  standard system default action if this interrupt is raised. This also allows
+  installing a low level handler via C APIs such as sigaction(), outside
+  of Ada control.
 
 * Runtime
 
@@ -2984,7 +3007,8 @@ Interrupts can be in one of three states:
 
 * User
 
-  The interrupt is unreserved.  The user may install a handler to provide
+  The interrupt is unreserved.  The user may install an Ada handler via
+  Ada.Interrupts and pragma Interrupt_Handler or Attach_Handler to provide
   some other action.
 
 These states are the allowed values of the `State` parameter of the
@@ -3614,11 +3638,43 @@ Syntax:
 
 This is a program unit pragma (there is also an equivalent aspect of the
 same name) that establishes the restriction `No_Elaboration_Code` for
-the current unit and any extended main source units (body and subunits.
-It also has has the effect of enforcing a transitive application of this
-aspect, so that if any unit is implicitly or explicitly WITH'ed by the
+the current unit and any extended main source units (body and subunits).
+It also has the effect of enforcing a transitive application of this
+aspect, so that if any unit is implicitly or explicitly with'ed by the
 current unit, it must also have the No_Elaboration_Code_All aspect set.
 It may be applied to package or subprogram specs or their generic versions.
+
+Pragma No_Heap_Finalization
+===========================
+
+Syntax:
+
+
+::
+
+  pragma No_Heap_Finalization [ (first_subtype_LOCAL_NAME) ];
+
+
+Pragma `No_Heap_Finalization` may be used as a configuration pragma or as a
+type-specific pragma.
+
+In its configuration form, the pragma must appear within a configuration file
+such as gnat.adc, without an argument. The pragma suppresses the call to
+`Finalize` for heap-allocated objects created through library-level named
+access-to-object types in cases where the designated type requires finalization
+actions.
+
+In its type-specific form, the argument of the pragma must denote a
+library-level named access-to-object type. The pragma suppresses the call to
+`Finalize` for heap-allocated objects created through the specific access type
+in cases where the designated type requires finalization actions.
+
+It is still possible to finalize such heap-allocated objects by explicitly
+deallocating them.
+
+A library-level named access-to-object type declared within a generic unit will
+lose its `No_Heap_Finalization` pragma when the corresponding instance does not
+appear at the library level.
 
 Pragma No_Inline
 ================
@@ -4855,14 +4911,16 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Profile (Ravenscar | Restricted | Rational | GNAT_Extended_Ravenscar);
+  pragma Profile (Ravenscar | Restricted | Rational |
+                  GNAT_Extended_Ravenscar | GNAT_Ravenscar_EDF );
 
 
 This pragma is standard in Ada 2005, but is available in all earlier
 versions of Ada as an implementation-defined pragma. This is a
 configuration pragma that establishes a set of configuration pragmas
 that depend on the argument. `Ravenscar` is standard in Ada 2005.
-The other possibilities (`Restricted`, `Rational`, `GNAT_Extended_Ravenscar`)
+The other possibilities (`Restricted`, `Rational`,
+`GNAT_Extended_Ravenscar`, `GNAT_Ravenscar_EDF`)
 are implementation-defined. The set of configuration pragmas
 is defined in the following sections.
 
@@ -4991,6 +5049,11 @@ is defined in the following sections.
 
   The ``Max_Protected_Entries``, ``Max_Entry_Queue_Length``, and
   ``No_Relative_Delay`` restrictions have been removed.
+
+* Pragma Profile (GNAT_Ravenscar_EDF)
+
+  This profile corresponds to the Ravenscar profile but using
+  EDF_Across_Priority as the Task_Scheduling_Policy.
 
 * Pragma Profile (Restricted)
 
@@ -5536,26 +5599,26 @@ Syntax:
 
   pragma Secondary_Stack_Size (integer_EXPRESSION);
 
-This pragma appears within the task definition of a single task declaration 
-or a task type declaration (like pragma `Storage_Size`) and applies to all 
-task objects of that type. The argument specifies the size of the secondary 
+This pragma appears within the task definition of a single task declaration
+or a task type declaration (like pragma `Storage_Size`) and applies to all
+task objects of that type. The argument specifies the size of the secondary
 stack to be used by these task objects, and must be of an integer type. The
-secondary stack is used to handle functions that return a variable-sized 
+secondary stack is used to handle functions that return a variable-sized
 result, for example a function returning an unconstrained String.
 
 Note this pragma only applies to targets using fixed secondary stacks, like
-VxWorks 653 and bare board targets, where a fixed block for the 
+VxWorks 653 and bare board targets, where a fixed block for the
 secondary stack is allocated from the primary stack of the task. By default,
 these targets assign a percentage of the primary stack for the secondary stack,
-as defined by `System.Parameter.Sec_Stack_Percentage`. With this pragma, 
+as defined by `System.Parameter.Sec_Stack_Percentage`. With this pragma,
 an `integer_EXPRESSION` of bytes is assigned from the primary stack instead.
 
-For most targets, the pragma does not apply as the secondary stack grows on 
-demand: allocated as a chain of blocks in the heap. The default size of these 
-blocks can be modified via the `-D` binder option as described in 
+For most targets, the pragma does not apply as the secondary stack grows on
+demand: allocated as a chain of blocks in the heap. The default size of these
+blocks can be modified via the `-D` binder option as described in
 :title:`GNAT User's Guide`.
 
-Note that no check is made to see if the secondary stack can fit inside the 
+Note that no check is made to see if the secondary stack can fit inside the
 primary stack.
 
 Note the pragma cannot appear when the restriction `No_Secondary_Stack`
@@ -7383,6 +7446,10 @@ source text appearing subsequently. It is a configuration pragma, but may
 also be used at any point that a pragma is allowed, and it is permissible
 to have more than one such pragma in a file, allowing multiple encodings
 to appear within the same file.
+
+However, note that the pragma cannot immediately precede the relevant
+wide character, because then the previous encoding will still be in
+effect, causing "illegal character" errors.
 
 The argument can be an identifier or a character literal. In the identifier
 case, it is one of `HEX`, `UPPER`, `SHIFT_JIS`,
