@@ -559,7 +559,7 @@ package Exp_Util is
    function Expression_Contains_Primitives_Calls_Of
      (Expr : Node_Id;
       Typ  : Entity_Id) return Boolean;
-   --  Return True if the expression Expr contains a non-dispatching call to a
+   --  Return True if the expression Expr contains a nondispatching call to a
    --  function which is a primitive of the tagged type Typ.
 
    function Finalize_Address (Typ : Entity_Id) return Entity_Id;

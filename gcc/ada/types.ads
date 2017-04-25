@@ -220,7 +220,7 @@ package Types is
    --  Do not call this elsewhere.
 
    function "=" (X, Y : Source_Buffer_Ptr) return Boolean is abstract;
-   --  Make "=" abstract, to make sure noone calls it. Note that this makes
+   --  Make "=" abstract, to make sure no one calls it. Note that this makes
    --  "/=" abstract as well. Calls to "=" on Source_Buffer_Ptr are always
    --  wrong, because two different arrays allocated at two different addresses
    --  can have the same virtual origin.
