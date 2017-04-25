@@ -1,3 +1,11 @@
+2017-04-25  Tom de Vries  <tom@codesourcery.com>
+
+	* lib/gcc-dg.exp (cleanup-after-saved-dg-test): Cleanup line number
+	variables.
+	(dg-line): New proc.
+	(process-message): Handle line number variables.
+	* objc.dg/try-catch-12.m: Use dg-line.
+
 2017-04-25  Bill Seurer  <seurer@linux.vnet.ibm.com>
 
 	PR target/80482
