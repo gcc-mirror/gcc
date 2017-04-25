@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -864,6 +864,10 @@ package body Rtsfind is
    -- Load_RTU --
    --------------
 
+   --  WARNING: This routine manages Ghost and SPARK regions. Return statements
+   --  must be replaced by gotos which jump to the end of the routine in order
+   --  to restore the Ghost and SPARK modes.
+
    procedure Load_RTU
      (U_Id        : RTU_Id;
       Id          : RE_Id   := RE_Null;
@@ -926,7 +930,10 @@ package body Rtsfind is
 
       --  Local variables
 
-      Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+      Save_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Save_SM  : constant SPARK_Mode_Type := SPARK_Mode;
+      Save_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      --  Save Ghost and SPARK mode-related data to restore on exit
 
    --  Start of processing for Load_RTU
 
@@ -940,6 +947,7 @@ package body Rtsfind is
       --  Provide a clean environment for the unit
 
       Install_Ghost_Mode (None);
+      Install_SPARK_Mode (None, Empty);
 
       --  Note if secondary stack is used
 
@@ -1042,7 +1050,8 @@ package body Rtsfind is
          Set_Is_Potentially_Use_Visible (U.Entity, True);
       end if;
 
-      Restore_Ghost_Mode (Save_Ghost_Mode);
+      Restore_Ghost_Mode (Save_GM);
+      Restore_SPARK_Mode (Save_SM, Save_SMP);
    end Load_RTU;
 
    --------------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3688,8 +3688,9 @@ package body Sem_Ch3 is
 
       --  Local variables
 
-      Mode       : Ghost_Mode_Type;
-      Mode_Set   : Boolean := False;
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
+
       Related_Id : Entity_Id;
 
    --  Start of processing for Analyze_Object_Declaration
@@ -3760,8 +3761,7 @@ package body Sem_Ch3 is
          --  The object declaration is Ghost when it completes a deferred Ghost
          --  constant.
 
-         Mark_And_Set_Ghost_Completion (N, Prev_Entity, Mode);
-         Mode_Set := True;
+         Mark_And_Set_Ghost_Completion (N, Prev_Entity);
 
          Constant_Redeclaration (Id, N, T);
 
@@ -4700,9 +4700,7 @@ package body Sem_Ch3 is
          Check_No_Hidden_State (Id);
       end if;
 
-      if Mode_Set then
-         Restore_Ghost_Mode (Mode);
-      end if;
+      Restore_Ghost_Mode (Saved_GM);
    end Analyze_Object_Declaration;
 
    ---------------------------
@@ -19858,15 +19856,16 @@ package body Sem_Ch3 is
 
       --  Local variables
 
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+
       Full_Indic  : Node_Id;
       Full_Parent : Entity_Id;
-      Mode        : Ghost_Mode_Type;
       Priv_Parent : Entity_Id;
 
    --  Start of processing for Process_Full_View
 
    begin
-      Mark_And_Set_Ghost_Completion (N, Priv_T, Mode);
+      Mark_And_Set_Ghost_Completion (N, Priv_T);
 
       --  First some sanity checks that must be done after semantic
       --  decoration of the full view and thus cannot be placed with other
@@ -20519,7 +20518,7 @@ package body Sem_Ch3 is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Mode);
+      Restore_Ghost_Mode (Saved_GM);
    end Process_Full_View;
 
    -----------------------------------

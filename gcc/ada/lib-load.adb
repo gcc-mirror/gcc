@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -227,8 +227,7 @@ package body Lib.Load is
         Unit_File_Name    => Get_File_Name (Spec_Name, Subunit => False),
         Unit_Name         => Spec_Name,
         Version           => 0,
-        OA_Setting        => 'O',
-        SPARK_Mode_Pragma => Empty);
+        OA_Setting        => 'O');
 
       Set_Comes_From_Source_Default (Save_CS);
       Set_Error_Posted (Cunit_Entity);
@@ -334,8 +333,7 @@ package body Lib.Load is
            Unit_File_Name    => Fname,
            Unit_Name         => No_Unit_Name,
            Version           => Version,
-           OA_Setting        => 'O',
-           SPARK_Mode_Pragma => Empty);
+           OA_Setting        => 'O');
       end if;
    end Load_Main_Source;
 
@@ -700,8 +698,7 @@ package body Lib.Load is
               Unit_File_Name    => Fname,
               Unit_Name         => Uname_Actual,
               Version           => Source_Checksum (Src_Ind),
-              OA_Setting        => 'O',
-              SPARK_Mode_Pragma => Empty);
+              OA_Setting        => 'O');
 
             --  Parse the new unit
 

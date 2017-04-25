@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,8 +102,8 @@ package body Sem is
    --  Ghost mode.
 
    procedure Analyze (N : Node_Id) is
-      Mode     : Ghost_Mode_Type;
-      Mode_Set : Boolean := False;
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
 
    begin
       Debug_A_Entry ("analyzing  ", N);
@@ -120,8 +120,7 @@ package body Sem is
       --  marked as Ghost.
 
       if Is_Declaration (N) then
-         Mark_And_Set_Ghost_Declaration (N, Mode);
-         Mode_Set := True;
+         Mark_And_Set_Ghost_Declaration (N);
       end if;
 
       --  Otherwise processing depends on the node kind
@@ -762,9 +761,7 @@ package body Sem is
          Expand_SPARK_Potential_Renaming (N);
       end if;
 
-      if Mode_Set then
-         Restore_Ghost_Mode (Mode);
-      end if;
+      Restore_Ghost_Mode (Saved_GM);
    end Analyze;
 
    --  Version with check(s) suppressed
