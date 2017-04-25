@@ -1,5 +1,10 @@
 2017-04-25  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* config/s390/s390.md (define_peephole2): New peephole to help
+	combining the load-and-test pattern with volatile memory.
+
+2017-04-25  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* config/s390/s390.md ("cstorecc4"): Use load-on-condition and deal
 	with CCZmode for TARGET_Z196.
 
