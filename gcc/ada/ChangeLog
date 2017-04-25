@@ -1,3 +1,12 @@
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* uintp.adb (Most_Sig_2_Digits): In case Direct (Right), fetch
+	Direct_Val (Right), instead of the incorrect Direct_Val (Left).
+	(UI_GCD): Remove ??? comment involving possible efficiency
+	improvements. This just isn't important after all these years.
+	Also minor cleanup.
+	* uintp.ads: Minor cleanup.
+
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_util.adb, exp_util.ads, sem_ch7.adb, sem_prag.adb, exp_ch3.adb:

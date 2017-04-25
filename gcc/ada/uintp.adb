@@ -52,7 +52,7 @@ package body Uintp is
 
    UI_Power_2 : array (Int range 0 .. 64) of Uint;
    --  This table is used to memoize exponentiations by powers of 2. The Nth
-   --  entry, if set, contains the Uint value 2 ** N. Initially UI_Power_2_Set
+   --  entry, if set, contains the Uint value 2**N. Initially UI_Power_2_Set
    --  is zero and only the 0'th entry is set, the invariant being that all
    --  entries in the range 0 .. UI_Power_2_Set are initialized.
 
@@ -149,9 +149,9 @@ package body Uintp is
       Left_Hat  : out Int;
       Right_Hat : out Int);
    --  Returns leading two significant digits from the given pair of Uint's.
-   --  Mathematically: returns Left / (Base ** K) and Right / (Base ** K) where
+   --  Mathematically: returns Left / (Base**K) and Right / (Base**K) where
    --  K is as small as possible S.T. Right_Hat < Base * Base. It is required
-   --  that Left > Right for the algorithm to work.
+   --  that Left >= Right for the algorithm to work.
 
    function N_Digits (Input : Uint) return Int;
    pragma Inline (N_Digits);
@@ -264,7 +264,7 @@ package body Uintp is
       -------------------
 
       function Better_In_Hex return Boolean is
-         T16 : constant Uint := Uint_2 ** Int'(16);
+         T16 : constant Uint := Uint_2**Int'(16);
          A   : Uint;
 
       begin
@@ -506,6 +506,7 @@ package body Uintp is
       pragma Assert (Left >= Right);
 
       if Direct (Left) then
+         pragma Assert (Direct (Right));
          Left_Hat  := Direct_Val (Left);
          Right_Hat := Direct_Val (Right);
          return;
@@ -533,7 +534,7 @@ package body Uintp is
 
       begin
          if Direct (Right) then
-            T := Direct_Val (Left);
+            T := Direct_Val (Right);
             R1 := abs (T / Base);
             R2 := T rem Base;
             Length_R := 2;
@@ -1370,7 +1371,7 @@ package body Uintp is
 
       elsif Right <= Uint_64 then
 
-         --  2 ** N for N in 2 .. 64
+         --  2**N for N in 2 .. 64
 
          if Left = Uint_2 then
             declare
@@ -1390,7 +1391,7 @@ package body Uintp is
                return UI_Power_2 (Right_Int);
             end;
 
-         --  10 ** N for N in 2 .. 64
+         --  10**N for N in 2 .. 64
 
          elsif Left = Uint_10 then
             declare
@@ -1584,20 +1585,6 @@ package body Uintp is
 
          else
             --  Use prior single precision steps to compute this Euclid step
-
-            --  For constructs such as:
-            --  sqrt_2: constant := 1.41421_35623_73095_04880_16887_24209_698;
-            --  sqrt_eps: constant long_float := long_float( 1.0 / sqrt_2)
-            --    ** long_float'machine_mantissa;
-            --
-            --  we spend 80% of our time working on this step. Perhaps we need
-            --  a special case Int / Uint dot product to speed things up. ???
-
-            --  Alternatively we could increase the single precision iterations
-            --  to handle Uint's of some small size ( <5 digits?). Then we
-            --  would have more iterations on small Uint. On the code above, we
-            --  only get 5 (on average) single precision iterations per large
-            --  iteration. ???
 
             Tmp_UI := (UI_From_Int (A) * U) + (UI_From_Int (B) * V);
             V := (UI_From_Int (C) * U) + (UI_From_Int (D) * V);
