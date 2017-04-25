@@ -423,8 +423,13 @@ package body Errout is
 
       --  or
 
-      --     warning: in instantiation at
+      --     warning: in instantiation at ...
       --     warning: original warning message
+
+      --  or
+
+      --     info: in instantiation at ...
+      --     info: original info message
 
       --  All these messages are posted at the location of the top level
       --  instantiation. If there are nested instantiations, then the
@@ -440,8 +445,13 @@ package body Errout is
 
       --  or
 
-      --     warning: in inlined body at
+      --     warning: in inlined body at ...
       --     warning: original warning message
+
+      --  or
+
+      --     info: in inlined body at ...
+      --     info: original info message
 
       --  OK, here we have an instantiation error, and we need to generate the
       --  error on the instantiation, rather than on the template.
@@ -494,7 +504,11 @@ package body Errout is
                --  Case of inlined body
 
                if Inlined_Body (X) then
-                  if Is_Warning_Msg or Is_Style_Msg then
+                  if Is_Info_Msg then
+                     Error_Msg_Internal
+                       ("info: in inlined body #",
+                        Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+                  elsif Is_Warning_Msg or Is_Style_Msg then
                      Error_Msg_Internal
                        (Warn_Insertion & "in inlined body #",
                         Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
@@ -507,7 +521,11 @@ package body Errout is
                --  Case of generic instantiation
 
                else
-                  if Is_Warning_Msg or else Is_Style_Msg then
+                  if Is_Info_Msg then
+                     Error_Msg_Internal
+                       ("info: in instantiation #",
+                        Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+                  elsif Is_Warning_Msg or else Is_Style_Msg then
                      Error_Msg_Internal
                        (Warn_Insertion & "in instantiation #",
                         Actual_Error_Loc, Flag_Location, Msg_Cont_Status);

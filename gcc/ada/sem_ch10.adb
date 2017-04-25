@@ -1204,32 +1204,38 @@ package body Sem_Ch10 is
             --  where the elaboration routine might otherwise be called more
             --  than once.
 
-            --  Case of units which do not require elaboration checks
+            --  They are also needed to ensure explicit visibility from the
+            --  binder generated code of all the units involved in a partition
+            --  when control-flow preservation is requested.
 
-            if
-              --  Pure units do not need checks
+            --  Case of units which do not require an elaboration entity
 
-              Is_Pure (Spec_Id)
+            if not Opt.Suppress_Control_Flow_Optimizations
+              and then
+              ( --  Pure units do not need checks
 
-              --  Preelaborated units do not need checks
+                Is_Pure (Spec_Id)
 
-              or else Is_Preelaborated (Spec_Id)
+                --  Preelaborated units do not need checks
 
-              --  No checks needed if pragma Elaborate_Body present
+                or else Is_Preelaborated (Spec_Id)
 
-              or else Has_Pragma_Elaborate_Body (Spec_Id)
+                --  No checks needed if pragma Elaborate_Body present
 
-              --  No checks needed if unit does not require a body
+                or else Has_Pragma_Elaborate_Body (Spec_Id)
 
-              or else not Unit_Requires_Body (Spec_Id)
+                --  No checks needed if unit does not require a body
 
-              --  No checks needed for predefined files
+                or else not Unit_Requires_Body (Spec_Id)
 
-              or else Is_Predefined_File_Name (Unit_File_Name (Unum))
+                --  No checks needed for predefined files
 
-              --  No checks required if no separate spec
+                or else Is_Predefined_File_Name (Unit_File_Name (Unum))
 
-              or else Acts_As_Spec (N)
+                --  No checks required if no separate spec
+
+                or else Acts_As_Spec (N)
+              )
             then
                --  This is a case where we only need the entity for
                --  checking to prevent multiple elaboration checks.
