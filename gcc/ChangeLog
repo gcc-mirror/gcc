@@ -3,6 +3,15 @@
 	Backport from mainline
 	2017-04-25  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+        PR target/80464
+        * config/s390/vector.md: Split MEM->GPR vector moves for
+        non-s_operand addresses.
+
+2017-04-25  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2017-04-25  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
         PR target/79895
         * config/s390/predicates.md (reload_const_wide_int_operand): New
         predicate.
