@@ -5119,11 +5119,33 @@ package body Checks is
                end if;
             end if;
 
-         --  For type conversion from one floating-point type to another, we
-         --  can refine the range using the converted value.
-
          when N_Type_Conversion =>
-            Determine_Range_R (Expression (N), OK1, Lor, Hir, Assume_Valid);
+
+            --  For type conversion from one floating-point type to another, we
+            --  can refine the range using the converted value.
+
+            if Is_Floating_Point_Type (Etype (Expression (N))) then
+               Determine_Range_R (Expression (N), OK1, Lor, Hir, Assume_Valid);
+
+            --  When converting an integer to a floating-point type, determine
+            --  the range in integer first, and then convert the bounds.
+
+            elsif Is_Discrete_Type (Etype (Expression (N))) then
+               declare
+                  Lor_Int, Hir_Int : Uint;
+               begin
+                  Determine_Range (Expression (N), OK1, Lor_Int, Hir_Int,
+                                   Assume_Valid);
+
+                  if OK1 then
+                     Lor := Round_Machine (UR_From_Uint (Lor_Int));
+                     Hir := Round_Machine (UR_From_Uint (Hir_Int));
+                  end if;
+               end;
+
+            else
+               OK1 := False;
+            end if;
 
          --  Nothing special to do for all other expression kinds
 

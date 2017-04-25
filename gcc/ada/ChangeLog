@@ -1,3 +1,10 @@
+2017-04-25  Yannick Moy  <moy@adacore.com>
+
+	* checks.adb (Determine_Range_R): Special case type conversions
+	from integer to float in order to get bounds in that case too.
+	* eval_fat.adb (Machine): Avoid issuing warnings in GNATprove
+	mode, for computations involved in interval checking.
+
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* checks.adb (Insert_Valid_Check): Partially reimplement validity
