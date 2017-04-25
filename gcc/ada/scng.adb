@@ -2533,9 +2533,11 @@ package body Scng is
 
       --  End loop past format effectors. The exit from this loop is by
       --  executing a return statement following completion of token scan
-      --  (control never falls out of this loop to the code which follows)
+      --  (control never falls out of this loop to the code that follows).
 
       end loop;
+
+      pragma Assert (False);
 
       --  Wide_Character scanning routine. On entry we have encountered the
       --  initial character of a wide character sequence.
