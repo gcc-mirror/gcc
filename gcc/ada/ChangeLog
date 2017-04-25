@@ -1,3 +1,7 @@
+2017-04-25  Arnaud Charlet  <charlet@adacore.com trojanek>
+
+	* gnatvsn.ads (Library_Version): Bump to 8. Update comment.
+
 2017-04-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_aux.adb (Nearest_Ancestor): Use original node of type
