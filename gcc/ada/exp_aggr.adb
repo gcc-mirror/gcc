@@ -352,7 +352,7 @@ package body Exp_Aggr is
       --  which hit memory limits in the backend.
 
       function Component_Count (T : Entity_Id) return Nat;
-      --  The limit is applied to the total number of components that the
+      --  The limit is applied to the total number of subcomponents that the
       --  aggregate will have, which is the number of static expressions
       --  that will appear in the flattened array. This requires a recursive
       --  computation of the number of scalar components of the structure.
@@ -399,8 +399,20 @@ package body Exp_Aggr is
                   return 0;
 
                else
-                  return
-                    Siz * UI_To_Int (Expr_Value (Hi) - Expr_Value (Lo) + 1);
+                  --  If the number of components is greater than Int'Last,
+                  --  then return Int'Last, so caller will return False (Aggr
+                  --  size is not OK). Otherwise, UI_To_Int will crash.
+
+                  declare
+                     UI : constant Uint :=
+                            Expr_Value (Hi) - Expr_Value (Lo) + 1;
+                  begin
+                     if UI_Is_In_Int_Range (UI) then
+                        return Siz * UI_To_Int (UI);
+                     else
+                        return Int'Last;
+                     end if;
+                  end;
                end if;
             end;
 

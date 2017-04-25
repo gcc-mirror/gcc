@@ -1,3 +1,27 @@
+2017-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fname.adb (Is_Internal_File_Name): Arrange for the slices to
+	have a length which is a power of 2.
+	(Is_Predefined_File_Name): Likewise. Adjust comment.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* exp_aggr.adb (Component_Count): Protect the
+	arithmetic from attempting to convert a value >= 2**31 to Int,
+	which would otherwise raise Constraint_Error.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* opt.ads (Locking_Policy): Fix incorrect documentation. The
+	first character of the policy name is not unique.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* s-fileio.adb (Name): Raise Use_Error if the file is a temp file.
+	* s-ficobl.ads (Is_Temporary_File): Remove incorrect comment
+	about this flag not being used. It was already used, and it is
+	now used more.
+
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb Flag301 is now known as Ignore_SPARK_Mode_Pragmas.

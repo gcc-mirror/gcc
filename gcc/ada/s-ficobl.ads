@@ -108,10 +108,7 @@ package System.File_Control_Block is
 
       Is_Temporary_File : Boolean;
       --  A flag set only for temporary files (i.e. files created using the
-      --  Create function with a null name parameter, using tmpfile). This
-      --  is currently not used since temporary files are deleted by the
-      --  operating system, but it is set properly in case some systems
-      --  need this information in the future.
+      --  Create function with a null name parameter).
 
       Is_System_File : Boolean;
       --  A flag set only for system files (stdin, stdout, stderr)

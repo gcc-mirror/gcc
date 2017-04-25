@@ -119,7 +119,15 @@ package body Fname is
          return False;
       end if;
 
-      return Has_Prefix (Fname, "g-") or else Has_Prefix (Fname, "gnat.");
+      --  Definitely internal if prefix is g-
+
+      if Has_Prefix (Fname, "g-") then
+         return True;
+      end if;
+
+      --  See the note in Is_Predefined_File_Name for the rationale
+
+      return Fname'Length = 8 and then Has_Prefix (Fname, "gnat");
    end Is_Internal_File_Name;
 
    function Is_Internal_File_Name
@@ -154,9 +162,12 @@ package body Fname is
          "text_io.");  --  Text_IO
 
       --  Note: the implementation is optimized to perform uniform comparisons
-      --  on string slices whose length is known at compile time and at most 8
-      --  characters; the remaining calls to Has_Prefix must be inlined so as
-      --  to expose the compile-time known length.
+      --  on string slices whose length is known at compile time and is a small
+      --  power of 2 (at most 8 characters); the remaining calls to Has_Prefix
+      --  must be inlined to expose the compile-time known length. There must
+      --  be no calls to the fallback string comparison routine (e.g. memcmp)
+      --  left in the object code for the function; this can save up to 10% of
+      --  the entire compilation time spent in the front end.
 
    begin
       if not Has_Internal_Extension (Fname) then
@@ -187,7 +198,7 @@ package body Fname is
 
       if Has_Prefix (Fname, "ada.")             --  Ada
         or else Has_Prefix (Fname, "interfac")  --  Interfaces
-        or else Has_Prefix (Fname, "system.")   --  System
+        or else Has_Prefix (Fname, "system.a")  --  System
       then
          return True;
       end if;
