@@ -3756,14 +3756,15 @@ package body Freeze is
          --  cannot modify the size of alignment of an aliased component.
 
          All_Elem_Components : Boolean := True;
-         --  Set False if we encounter a component of a composite type
+         --  True if all components are of a type whose underlying type is
+         --  elementary.
 
          All_Sized_Components : Boolean := True;
-         --  Set False if we encounter a component with unknown RM_Size
+         --  True if all components have a known RM_Size
 
          All_Storage_Unit_Components : Boolean := True;
-         --  Set False if we encounter a component of a composite type whose
-         --  RM_Size is not a multiple of the storage unit.
+         --  True if all components have an RM_Size that is a multiple of the
+         --  storage unit.
 
          Elem_Component_Total_Esize : Uint := Uint_0;
          --  Accumulates total Esize values of all elementary components. Used
@@ -4091,7 +4092,9 @@ package body Freeze is
                Sized_Component_Total_RM_Size :=
                  Sized_Component_Total_RM_Size + RM_Size (Etype (Comp));
 
-               if Is_Elementary_Type (Etype (Comp)) then
+               if Present (Underlying_Type (Etype (Comp)))
+                 and then Is_Elementary_Type (Underlying_Type (Etype (Comp)))
+               then
                   Elem_Component_Total_Esize :=
                     Elem_Component_Total_Esize + Esize (Etype (Comp));
                else

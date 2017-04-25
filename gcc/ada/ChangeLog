@@ -1,5 +1,24 @@
 2017-04-25  Bob Duff  <duff@adacore.com>
 
+	* freeze.adb (Freeze_Record_Type): Use the
+	underlying type of the component type to determine whether it's
+	elementary. For representation clause purposes, a private type
+	should behave the same as its full type.
+	* fname.ads, fname.adb (Is_Predefined_File_Name):
+	Make sure things like "system.ali" are recognized as predefined.
+
+2017-04-25  Javier Miranda  <miranda@adacore.com>
+
+	* debug.adb: Update documentation of -gnatd.6.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Preanalyze_Range): Handle properly an Ada2012
+	element iterator when the name is an overloaded function call,
+	one of whose interpretations yields an array.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
 	* uname.ads, uname.adb (Is_Predefined_Unit_Name,
 	Is_Internal_Unit_Name): New functions for operating on unit
 	names, as opposed to file names. There's some duplicated code
