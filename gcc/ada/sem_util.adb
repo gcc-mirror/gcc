@@ -15277,6 +15277,19 @@ package body Sem_Util is
       return T = Universal_Integer or else T = Universal_Real;
    end Is_Universal_Numeric_Type;
 
+   --------------------------------------
+   -- Is_Validation_Variable_Reference --
+   --------------------------------------
+
+   function Is_Validation_Variable_Reference (N : Node_Id) return Boolean is
+   begin
+      return
+        Is_Entity_Name (N)
+          and then Present (Entity (N))
+          and then Ekind (Entity (N)) = E_Variable
+          and then Present (Validated_Object (Entity (N)));
+   end Is_Validation_Variable_Reference;
+
    ----------------------------
    -- Is_Variable_Size_Array --
    ----------------------------
@@ -15643,7 +15656,6 @@ package body Sem_Util is
    ------------------------
 
    function Is_Volatile_Object (N : Node_Id) return Boolean is
-
       function Is_Volatile_Prefix (N : Node_Id) return Boolean;
       --  If prefix is an implicit dereference, examine designated type
 

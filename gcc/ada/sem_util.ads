@@ -1786,6 +1786,10 @@ package Sem_Util is
    pragma Inline (Is_Universal_Numeric_Type);
    --  True if T is Universal_Integer or Universal_Real
 
+   function Is_Validation_Variable_Reference (N : Node_Id) return Boolean;
+   --  Determine whether N denotes a reference to a variable which captures the
+   --  value of an object for validation purposes.
+
    function Is_Variable_Size_Array (E : Entity_Id) return Boolean;
    --  Returns true if E has variable size components
 

@@ -1,3 +1,38 @@
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): Partially reimplement validity
+	checks.
+	* einfo.adb Node36 is now used as Validated_Object.
+	(Validated_Object): New routine.
+	(Set_Validated_Object): New routine.
+	(Write_Field36_Name): Add an entry for Validated_Object.
+	* einfo.ads Add new attribute Validated_Object along with
+	usage in entities.
+	(Validated_Object): New routine along with pragma Inline.
+	(Set_Validated_Object): New routine along with pragma Inline.
+	* exp_attr.adb (Make_Range_Test): Add processing for validation
+	variables to avoid extra reads and copies of the prefix.
+	* exp_ch6.adb (Expand_Actuals): Add copy-back for validation
+	variables in order to reflect any changes done in the variable
+	back into the original object.
+	* sem_util.adb (Is_Validation_Variable_Reference): New routine.
+	* sem_util.ads (Is_Validation_Variable_Reference): New routine.
+
+2017-04-25  Steve Baird  <baird@adacore.com>
+
+	* exp_ch7.adb (Build_Array_Deep_Procs,
+	Build_Record_Deep_Procs, Make_Finalize_Address_Body): Don't
+	generate Finalize_Address routines for CodePeer.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Inherits_Class_Wide_Pre): subsidiary of
+	Analyze_Pre_Post_Condition, to implement the legality checks
+	mandated by AI12-0131: Pre'Class shall not be specified for an
+	overriding primitive subprogram of a tagged type T unless the
+	Pre'Class aspect is specified for the corresponding primitive
+	subprogram of some ancestor of T.
+
 2017-04-25  Bob Duff  <duff@adacore.com>
 
 	* sem_ch8.adb (Use_One_Type): If a use_type_clause

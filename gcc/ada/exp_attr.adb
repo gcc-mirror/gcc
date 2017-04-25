@@ -6488,32 +6488,48 @@ package body Exp_Attr is
          ---------------------
 
          function Make_Range_Test return Node_Id is
-            Temp : constant Node_Id := Duplicate_Subexpr (Pref);
+            Temp : Node_Id;
 
          begin
-            --  The value whose validity is being checked has been captured in
-            --  an object declaration. We certainly don't want this object to
-            --  appear valid because the declaration initializes it.
+            --  The prefix of attribute 'Valid should always denote an object
+            --  reference. The reference is either coming directly from source
+            --  or is produced by validity check expansion.
 
-            if Is_Entity_Name (Temp) then
-               Set_Is_Known_Valid (Entity (Temp), False);
+            --  If the prefix denotes a variable which captures the value of
+            --  an object for validation purposes, use the variable in the
+            --  range test. This ensures that no extra copies or extra reads
+            --  are produced as part of the test. Generate:
+
+            --    Temp : ... := Object;
+            --    if not Temp in ... then
+
+            if Is_Validation_Variable_Reference (Pref) then
+               Temp := New_Occurrence_Of (Entity (Pref), Loc);
+
+            --  Otherwise the prefix is either a source object or a constant
+            --  produced by validity check expansion. Generate:
+
+            --    Temp : constant ... := Pref;
+            --    if not Temp in ... then
+
+            else
+               Temp := Duplicate_Subexpr (Pref);
             end if;
 
             return
               Make_In (Loc,
-                Left_Opnd  =>
-                  Unchecked_Convert_To (Btyp, Temp),
+                Left_Opnd  => Unchecked_Convert_To (Btyp, Temp),
                 Right_Opnd =>
                   Make_Range (Loc,
-                    Low_Bound =>
+                    Low_Bound  =>
                       Unchecked_Convert_To (Btyp,
                         Make_Attribute_Reference (Loc,
-                          Prefix => New_Occurrence_Of (Ptyp, Loc),
+                          Prefix         => New_Occurrence_Of (Ptyp, Loc),
                           Attribute_Name => Name_First)),
                     High_Bound =>
                       Unchecked_Convert_To (Btyp,
                         Make_Attribute_Reference (Loc,
-                          Prefix => New_Occurrence_Of (Ptyp, Loc),
+                          Prefix         => New_Occurrence_Of (Ptyp, Loc),
                           Attribute_Name => Name_Last))));
          end Make_Range_Test;
 

@@ -4208,6 +4208,85 @@ package body Sem_Prag is
          --  Flag set when the pragma is one of Pre, Pre_Class, Post or
          --  Post_Class.
 
+         function Inherits_Class_Wide_Pre (E : Entity_Id) return Boolean;
+         --  Implement rules in AI12-0131: an overriding operation can have
+         --  a class-wide precondition only if one of its ancestors has an
+         --  explicit class-wide precondition.
+
+         -----------------------------
+         -- Inherits_Class_Wide_Pre --
+         -----------------------------
+
+         function Inherits_Class_Wide_Pre (E : Entity_Id) return Boolean is
+            Prev : Entity_Id := Overridden_Operation (E);
+            Cont : Node_Id;
+            Prag : Node_Id;
+            Typ  : Entity_Id;
+
+         begin
+            --  Check ancestors on the overriding operation to examine the
+            --  preconditions that may apply to them.
+
+            while Present (Prev) loop
+               Cont := Contract (Prev);
+               if Present (Cont) then
+                  Prag := Pre_Post_Conditions (Cont);
+                  while Present (Prag) loop
+                     if Class_Present (Prag) then
+                        return True;
+                     end if;
+
+                     Prag := Next_Pragma (Prag);
+                  end loop;
+               end if;
+
+               Prev := Overridden_Operation (Prev);
+            end loop;
+
+            --  If the controlling type of the subprogram has progenitors,
+            --  an interface operation implemented by the current operation
+            --  may have a class-wide precondition.
+
+            Typ := Find_Dispatching_Type (E);
+            if Has_Interfaces (Typ) then
+               declare
+                  Ints      : Elist_Id;
+                  Elmt      : Elmt_Id;
+                  Prim_List : Elist_Id;
+                  Prim_Elmt : Elmt_Id;
+                  Prim      : Entity_Id;
+               begin
+                  Collect_Interfaces (Typ, Ints);
+                  Elmt := First_Elmt (Ints);
+
+                  --  Iterate over the primitive operations of each
+                  --  interface.
+
+                  while Present (Elmt) loop
+                     Prim_List :=
+                      (Direct_Primitive_Operations (Node (Elmt)));
+                     Prim_Elmt := First_Elmt (Prim_List);
+                     while Present (Prim_Elmt) loop
+                        Prim := Node (Prim_Elmt);
+                        if Chars (Prim) = Chars (E)
+                          and then Present (Contract (Prim))
+                          and then Class_Present
+                            (Pre_Post_Conditions (Contract (Prim)))
+                        then
+                           return True;
+                        end if;
+
+                        Next_Elmt (Prim_Elmt);
+                     end loop;
+
+                     Next_Elmt (Elmt);
+                  end loop;
+               end;
+            end if;
+
+            return False;
+         end Inherits_Class_Wide_Pre;
+
       begin
          --  Change the name of pragmas Pre, Pre_Class, Post and Post_Class to
          --  offer uniformity among the various kinds of pre/postconditions by
@@ -4325,6 +4404,43 @@ package body Sem_Prag is
             then
                Error_Pragma ("aspect % requires ''Class for null procedure");
             end if;
+
+            --  Implement the legality checks mandated by AI12-0131:
+            --    Pre'Class shall not be specified for an overriding primitive
+            --    subprogram of a tagged type T unless the Pre'Class aspect is
+            --    specified for the corresponding primitive subprogram of some
+            --    ancestor of T.
+
+            declare
+               E : constant Entity_Id := Defining_Entity (Subp_Decl);
+               H : constant Entity_Id := Homonym (E);
+
+            begin
+               if Class_Present (N)
+                 and then Present (Overridden_Operation (E))
+                 and then not Inherits_Class_Wide_Pre (E)
+               then
+                  Error_Msg_N
+                    ("illegal class-wide precondition on overriding "
+                      & "operation", Corresponding_Aspect (N));
+
+               --  If the operation is declared in the private part of an
+               --  instance it may not override any visible operations,  but
+               --  still have a parent operation that carries a precondition.
+
+               elsif In_Instance
+                 and then In_Private_Part (Current_Scope)
+                 and then Present (H)
+                 and then Scope (E) = Scope (H)
+                 and then Is_Inherited_Operation (H)
+                 and then Present (Overridden_Operation (H))
+                 and then not Inherits_Class_Wide_Pre (H)
+               then
+                  Error_Msg_N
+                    ("illegal class-wide precondition on overriding "
+                      & "operation in instance", Corresponding_Aspect (N));
+               end if;
+            end;
 
          --  Otherwise the placement is illegal
 

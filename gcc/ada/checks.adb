@@ -7180,51 +7180,92 @@ package body Checks is
          Exp := Expression (Exp);
       end loop;
 
+      --  Do not generate a check for a variable which already validates the
+      --  value of an assignable object.
+
+      if Is_Validation_Variable_Reference (Exp) then
+         return;
+      end if;
+
       --  We are about to insert the validity check for Exp. We save and
       --  reset the Do_Range_Check flag over this validity check, and then
       --  put it back for the final original reference (Exp may be rewritten).
 
       declare
          DRC : constant Boolean := Do_Range_Check (Exp);
-         PV  : Node_Id;
          CE  : Node_Id;
+         Obj : Node_Id;
+         PV  : Node_Id;
+         Var : Entity_Id;
 
       begin
          Set_Do_Range_Check (Exp, False);
 
-         --  Force evaluation to avoid multiple reads for atomic/volatile
+         --  If the expression denotes an assignable object, capture its value
+         --  in a variable and replace the original expression by the variable.
+         --  This approach has several effects:
 
-         --  Note: we set Name_Req to False. We used to set it to True, with
-         --  the thinking that a name is required as the prefix of the 'Valid
-         --  call, but in fact the check that the prefix of an attribute is
-         --  a name is in the parser, and we just don't require it here.
-         --  Moreover, when we set Name_Req to True, that interfered with the
-         --  checking for Volatile, since we couldn't just capture the value.
+         --    1) The evaluation of the object results in only one read in the
+         --       case where the object is atomic or volatile.
 
-         if Is_Entity_Name (Exp)
-           and then Is_Volatile (Entity (Exp))
-         then
-            --  Same reasoning as above for setting Name_Req to False
+         --         Temp ... := Object;  --  read
 
-            Force_Evaluation (Exp, Name_Req => False);
+         --    2) The captured value is the one verified by attribute 'Valid.
+         --       As a result the object is not evaluated again, which would
+         --       result in an unwanted read in the case where the object is
+         --       atomic or volatile.
+
+         --         if not Temp'Valid then    --  OK, no read of Object
+
+         --         if not Object'Valid then  --  Wrong, extra read of Object
+
+         --    3) The captured value replaces the original object reference.
+         --       As a result the object is not evaluated again, in the same
+         --       vein as 2).
+
+         --         ... Temp ...    --  OK, no read of Object
+
+         --         ... Object ...  --  Wrong, extra read of Object
+
+         --    4) The use of a variable to capture the value of the object
+         --       allows the propagation of any changes back to the original
+         --       object.
+
+         --         procedure Call (Val : in out ...);
+
+         --         Temp : ... := Object;   --  read Object
+         --         if not Temp'Valid then  --  validity check
+         --         Call (Temp);            --  modify Temp
+         --         Object := Temp;         --  update Object
+
+         if Is_Variable (Exp) then
+            Obj := New_Copy_Tree (Exp);
+            Var := Make_Temporary (Loc, 'T', Exp);
+
+            Insert_Action (Exp,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Var,
+                Object_Definition   => New_Occurrence_Of (Typ, Loc),
+                Expression          => Relocate_Node (Exp)));
+            Set_Validated_Object (Var, Obj);
+
+            Rewrite (Exp, New_Occurrence_Of (Var, Loc));
+            PV := New_Occurrence_Of (Var, Loc);
+
+         --  Otherwise the expression does not denote a variable. Force its
+         --  evaluation by capturing its value in a constant. Generate:
+
+         --    Temp : constant ... := Exp;
+
+         else
+            Force_Evaluation
+              (Exp           => Exp,
+               Related_Id    => Related_Id,
+               Is_Low_Bound  => Is_Low_Bound,
+               Is_High_Bound => Is_High_Bound);
+
+            PV := New_Copy_Tree (Exp);
          end if;
-
-         --  Build the prefix for the 'Valid call. If the expression denotes
-         --  a non-volatile name, use a renaming to alias it, otherwise use a
-         --  constant to capture the value of the expression.
-
-         --    Temp : ... renames Expr;      --  non-volatile name
-         --    Temp : constant ... := Expr;  --  all other cases
-
-         PV :=
-           Duplicate_Subexpr_No_Checks
-             (Exp           => Exp,
-              Name_Req      => False,
-              Renaming_Req  =>
-                Is_Name_Reference (Exp) and then not Is_Volatile (Typ),
-              Related_Id    => Related_Id,
-              Is_Low_Bound  => Is_Low_Bound,
-              Is_High_Bound => Is_High_Bound);
 
          --  A rather specialized test. If PV is an analyzed expression which
          --  is an indexed component of a packed array that has not been

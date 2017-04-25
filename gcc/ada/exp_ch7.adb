@@ -787,13 +787,15 @@ package body Exp_Ch7 is
               Typ   => Typ,
               Stmts => Make_Deep_Array_Body (Finalize_Case, Typ)));
 
-         --  Create TSS primitive Finalize_Address.
+         --  Create TSS primitive Finalize_Address (unless CodePeer_Mode).
 
-         Set_TSS (Typ,
-           Make_Deep_Proc
-             (Prim  => Address_Case,
-              Typ   => Typ,
-              Stmts => Make_Deep_Array_Body (Address_Case, Typ)));
+         if not CodePeer_Mode then
+            Set_TSS (Typ,
+              Make_Deep_Proc
+                (Prim  => Address_Case,
+                 Typ   => Typ,
+                 Stmts => Make_Deep_Array_Body (Address_Case, Typ)));
+         end if;
       end if;
    end Build_Array_Deep_Procs;
 
@@ -3669,13 +3671,15 @@ package body Exp_Ch7 is
               Typ   => Typ,
               Stmts => Make_Deep_Record_Body (Finalize_Case, Typ)));
 
-         --  Create TSS primitive Finalize_Address
+         --  Create TSS primitive Finalize_Address (unless CodePeer_Mode).
 
-         Set_TSS (Typ,
-           Make_Deep_Proc
-             (Prim  => Address_Case,
-              Typ   => Typ,
-              Stmts => Make_Deep_Record_Body (Address_Case, Typ)));
+         if not CodePeer_Mode then
+            Set_TSS (Typ,
+              Make_Deep_Proc
+                (Prim  => Address_Case,
+                 Typ   => Typ,
+                 Stmts => Make_Deep_Record_Body (Address_Case, Typ)));
+         end if;
       end if;
    end Build_Record_Deep_Procs;
 
@@ -7794,6 +7798,11 @@ package body Exp_Ch7 is
             and then Ekind (Root_Type (Typ)) = E_Record_Subtype
             and then not Comes_From_Source (Root_Type (Typ)))
       then
+         return;
+      end if;
+
+      --  Don't generate Finalize_Address routine for CodePeer
+      if CodePeer_Mode then
          return;
       end if;
 
