@@ -1,3 +1,11 @@
+2017-04-25  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/79895
+	* config/s390/predicates.md (reload_const_wide_int_operand): New
+	predicate.
+	* config/s390/s390.md ("movti"): Remove d/P alternative.
+	("movti_bigconst"): New pattern definition.
+
 2017-04-25  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	PR target/80080
