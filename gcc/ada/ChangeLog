@@ -1,3 +1,27 @@
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): Do not generate
+	a validity check when inside a generic.
+
+2017-04-25  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): Fix bad logic.
+
+2017-04-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* snames.ads-tmpl (Snames): More names for detecting predefined
+	potentially blocking subprograms.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pre_Post_Condition): The rules
+	concerning inheritance of class-wide preconditions do not apply
+	to postconditions.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* s-ficobl.ads: Minor comment fix.
+
 2017-04-25  Yannick Moy  <moy@adacore.com>
 
 	* checks.adb (Apply_Scalar_Range_Check): Analyze precisely

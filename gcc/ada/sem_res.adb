@@ -11055,17 +11055,17 @@ package body Sem_Res is
 
       --  If at this stage we have a real to integer conversion, make sure that
       --  the Do_Range_Check flag is set, because such conversions in general
-      --  need a range check. We only need this if expansion is off, or we are
-      --  in GNATprove mode and the conversion if from fixed-point to integer
+      --  need a range check. We only need this if expansion is off.
+      --  In GNATprove mode, we only do that when converting from fixed-point
       --  (as floating-point to integer conversions are now handled in
       --  GNATprove mode).
 
       if Nkind (N) = N_Type_Conversion
         and then not Expander_Active
         and then Is_Integer_Type (Target_Typ)
-        and then (Is_Real_Type (Operand_Typ)
-                   or else (GNATprove_Mode
-                             and then Is_Fixed_Point_Type (Operand_Typ)))
+        and then (Is_Fixed_Point_Type (Operand_Typ)
+                   or else (not GNATprove_Mode
+                             and then Is_Floating_Point_Type (Operand_Typ)))
       then
          Set_Do_Range_Check (Operand);
       end if;

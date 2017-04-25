@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1992-2014, Free Software Foundation, Inc.       --
+--            Copyright (C) 1992-2016, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,7 +89,7 @@ package System.File_Control_Block is
       Name : Pstring;
       --  A pointer to the file name. The file name is null for temporary
       --  files, and also for standard files (stdin, stdout, stderr). The
-      --  name is always null-terminated if it is non-null.
+      --  name is always NUL-terminated if it is non-null.
 
       Encoding : System.CRTL.Filename_Encoding;
       --  Encoding used to specified the filename
