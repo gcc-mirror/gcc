@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -17120,10 +17120,12 @@ package body Sem_Util is
          pragma Assert (not Is_Itype (Old_Entity));
          pragma Assert (Nkind (Old_Entity) in N_Entity);
 
-         --  Restrict entity creation to variable declarations. There is no
-         --  need to create variables declared in inner scopes.
+         --  Restrict entity creation to declarations of constants, variables
+         --  and subtypes. There is no need to duplicate entities declared in
+         --  inner scopes.
 
-         if not Ekind_In (Old_Entity, E_Constant, E_Variable)
+         if (not Ekind_In (Old_Entity, E_Constant, E_Variable)
+              and then Nkind (Parent (Old_Entity)) /= N_Subtype_Declaration)
            or else EWA_Inner_Scope_Level > 0
          then
             return;

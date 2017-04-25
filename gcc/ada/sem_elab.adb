@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -629,7 +629,18 @@ package body Sem_Elab is
          return W_Scope;
       end Find_W_Scope;
 
-      --  Locals
+      --  Local variables
+
+      Inst_Case : constant Boolean := Nkind (N) in N_Generic_Instantiation;
+      --  Indicates if we have instantiation case
+
+      Loc : constant Source_Ptr := Sloc (N);
+
+      SPARK_Elab_Errors : constant Boolean :=
+                            SPARK_Mode = On
+                              and then Dynamic_Elaboration_Checks;
+      --  Flag set when an entity is called or a variable is read during SPARK
+      --  dynamic elaboration.
 
       Variable_Case : constant Boolean :=
                         Nkind (N) in N_Has_Entity
@@ -637,10 +648,17 @@ package body Sem_Elab is
                           and then Ekind (Entity (N)) = E_Variable;
       --  Indicates if we have variable reference case
 
-      Loc : constant Source_Ptr := Sloc (N);
-
-      Inst_Case : constant Boolean := Nkind (N) in N_Generic_Instantiation;
-      --  Indicates if we have instantiation case
+      W_Scope : constant Entity_Id := Find_W_Scope;
+      --  Top-level scope of directly called entity for subprogram. This
+      --  differs from E_Scope in the case where renamings or derivations
+      --  are involved, since it does not follow these links. W_Scope is
+      --  generally in a visible unit, and it is this scope that may require
+      --  an Elaborate_All. However, there are some cases (initialization
+      --  calls and calls involving object notation) where W_Scope might not
+      --  be in the context of the current unit, and there is an intermediate
+      --  package that is, in which case the Elaborate_All has to be placed
+      --  on this intermediate package. These special cases are handled in
+      --  Set_Elaboration_Constraint.
 
       Ent                  : Entity_Id;
       Callee_Unit_Internal : Boolean;
@@ -666,26 +684,6 @@ package body Sem_Elab is
       --  following renamings and derivations, so this scope can be in a
       --  non-visible unit. This is the scope that is to be investigated to
       --  see whether an elaboration check is required.
-
-      Is_DIC_Proc : Boolean := False;
-      --  Flag set when the call denotes the Default_Initial_Condition
-      --  procedure of a private type that wraps a nontrivial assertion
-      --  expression.
-
-      Issue_In_SPARK : Boolean;
-      --  Flag set when a source entity is called during elaboration in SPARK
-
-      W_Scope : constant Entity_Id := Find_W_Scope;
-      --  Top-level scope of directly called entity for subprogram. This
-      --  differs from E_Scope in the case where renamings or derivations
-      --  are involved, since it does not follow these links. W_Scope is
-      --  generally in a visible unit, and it is this scope that may require
-      --  an Elaborate_All. However, there are some cases (initialization
-      --  calls and calls involving object notation) where W_Scope might not
-      --  be in the context of the current unit, and there is an intermediate
-      --  package that is, in which case the Elaborate_All has to be placed
-      --  on this intermediate package. These special cases are handled in
-      --  Set_Elaboration_Constraint.
 
    --  Start of processing for Check_A_Call
 
@@ -1019,33 +1017,19 @@ package body Sem_Elab is
          return;
       end if;
 
-      Is_DIC_Proc := Is_Nontrivial_DIC_Procedure (Ent);
-
-      --  Elaboration issues in SPARK are reported only for source constructs
-      --  and for nontrivial Default_Initial_Condition procedures. The latter
-      --  must be checked because the default initialization of an object of a
-      --  private type triggers the evaluation of the Default_Initial_Condition
-      --  expression, which in turn may have side effects.
-
-      Issue_In_SPARK :=
-        SPARK_Mode = On
-          and then Dynamic_Elaboration_Checks
-          and then (Comes_From_Source (Ent) or Is_DIC_Proc);
-
       --  Now check if an Elaborate_All (or dynamic check) is needed
 
-      if not Suppress_Elaboration_Warnings (Ent)
+      if (Elab_Info_Messages or Elab_Warnings or SPARK_Elab_Errors)
+        and then Generate_Warnings
+        and then not Suppress_Elaboration_Warnings (Ent)
         and then not Elaboration_Checks_Suppressed (Ent)
         and then not Suppress_Elaboration_Warnings (E_Scope)
         and then not Elaboration_Checks_Suppressed (E_Scope)
-        and then ((Elab_Warnings or Elab_Info_Messages)
-                    or else SPARK_Mode = On)
-        and then Generate_Warnings
       then
          --  Instantiation case
 
          if Inst_Case then
-            if Issue_In_SPARK then
+            if Comes_From_Source (Ent) and then SPARK_Elab_Errors then
                Error_Msg_NE
                  ("instantiation of & during elaboration in SPARK", N, Ent);
             else
@@ -1063,9 +1047,11 @@ package body Sem_Elab is
 
          --  Variable reference in SPARK mode
 
-         elsif Variable_Case and Issue_In_SPARK then
-            Error_Msg_NE
-              ("reference to & during elaboration in SPARK", N, Ent);
+         elsif Variable_Case then
+            if Comes_From_Source (Ent) and then SPARK_Elab_Errors then
+               Error_Msg_NE
+                 ("reference to & during elaboration in SPARK", N, Ent);
+            end if;
 
          --  Subprogram call case
 
@@ -1079,14 +1065,14 @@ package body Sem_Elab is
                   "info: implicit call to & during elaboration?$?",
                   Ent);
 
-            elsif Issue_In_SPARK then
+            elsif SPARK_Elab_Errors then
 
                --  Emit a specialized error message when the elaboration of an
                --  object of a private type evaluates the expression of pragma
                --  Default_Initial_Condition. This prevents the internal name
                --  of the procedure from appearing in the error message.
 
-               if Is_DIC_Proc then
+               if Is_Nontrivial_DIC_Procedure (Ent) then
                   Error_Msg_N
                     ("call to Default_Initial_Condition during elaboration in "
                      & "SPARK", N);
@@ -1108,7 +1094,7 @@ package body Sem_Elab is
          --  Case of Elaborate_All not present and required, for SPARK this
          --  is an error, so give an error message.
 
-         if Issue_In_SPARK then
+         if SPARK_Elab_Errors then
             Error_Msg_NE -- CODEFIX
               ("\Elaborate_All pragma required for&", N, W_Scope);
 
