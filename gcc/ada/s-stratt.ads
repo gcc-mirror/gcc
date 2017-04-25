@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,7 +86,7 @@ package System.Stream_Attributes is
    --  are used only if the type in question has a standard representation.
    --  For the case of a non-standard representation (one where the size of
    --  the first subtype is specified, or where an enumeration representation
-   --  clause is given, these three types are treated like any other cases
+   --  clause is given), these three types are treated like any other cases
    --  of enumeration types, as described above.
 
    ---------------------
