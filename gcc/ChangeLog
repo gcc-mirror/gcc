@@ -1,5 +1,10 @@
 2017-04-25  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (arc_conditional_register_usage): Use ACCL,
+	ACCH registers whenever they are available.
+
+2017-04-25  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.c (arc_conditional_register_usage): Make D0, D1
 	double regs fix when not used.
 

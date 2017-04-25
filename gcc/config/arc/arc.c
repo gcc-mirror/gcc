@@ -1585,6 +1585,15 @@ arc_conditional_register_usage (void)
     SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], ACCH_REGNO);
     SET_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], ACCL_REGNO);
     SET_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], ACCH_REGNO);
+    SET_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], ACCL_REGNO);
+    SET_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], ACCH_REGNO);
+    SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], ACCL_REGNO);
+    SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], ACCH_REGNO);
+
+     /* Allow the compiler to freely use them.  */
+    fixed_regs[ACCL_REGNO] = 0;
+    fixed_regs[ACCH_REGNO] = 0;
+
     arc_hard_regno_mode_ok[ACC_REG_FIRST] = D_MODES;
   }
 }
