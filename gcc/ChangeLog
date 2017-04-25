@@ -1,3 +1,11 @@
+2017-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80492
+	* alias.c (compare_base_decls): Handle registers with asm
+	specification conservatively.
+	* tree-ssa-alias.c (decl_refs_may_alias_p): Handle
+	compare_base_decls returning dont-know properly.
+
 2017-04-25  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (LEGITIMATE_OFFSET_ADDRESS_P): Delete macro.
