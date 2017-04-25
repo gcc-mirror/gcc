@@ -7616,20 +7616,12 @@ package body Exp_Ch4 is
    -----------------------
 
    procedure Expand_N_Op_Expon (N : Node_Id) is
-      Loc    : constant Source_Ptr := Sloc (N);
-      Typ    : constant Entity_Id  := Etype (N);
-      Rtyp   : constant Entity_Id  := Root_Type (Typ);
-      Base   : Node_Id;
-      Bastyp : Node_Id;
-      Exp    : Node_Id;
-      Exptyp : Entity_Id;
-      Ovflo  : constant Boolean    := Do_Overflow_Check (N);
-      Expv   : Uint;
-      Temp   : Node_Id;
-      Rent   : RE_Id;
-      Ent    : Entity_Id;
-      Etyp   : Entity_Id;
-      Xnode  : Node_Id;
+      Loc   : constant Source_Ptr := Sloc (N);
+      Ovflo : constant Boolean    := Do_Overflow_Check (N);
+      Typ   : constant Entity_Id  := Etype (N);
+      Rtyp  : constant Entity_Id  := Root_Type (Typ);
+
+      Bastyp : Entity_Id;
 
       function Wrap_MA (Exp : Node_Id) return Node_Id;
       --  Given an expression Exp, if the root type is Float or Long_Float,
@@ -7644,6 +7636,7 @@ package body Exp_Ch4 is
 
       function Wrap_MA (Exp : Node_Id) return Node_Id is
          Loc : constant Source_Ptr := Sloc (Exp);
+
       begin
          if Rtyp = Standard_Float or else Rtyp = Standard_Long_Float then
             return
@@ -7655,6 +7648,18 @@ package body Exp_Ch4 is
             return Exp;
          end if;
       end Wrap_MA;
+
+      --  Local variables
+
+      Base   : Node_Id;
+      Ent    : Entity_Id;
+      Etyp   : Entity_Id;
+      Exp    : Node_Id;
+      Exptyp : Entity_Id;
+      Expv   : Uint;
+      Rent   : RE_Id;
+      Temp   : Node_Id;
+      Xnode  : Node_Id;
 
    --  Start of processing for Expand_N_Op_Expon
 
@@ -10784,8 +10789,8 @@ package body Exp_Ch4 is
          if not Comes_From_Source (N)
            and then Is_Interface (Designated_Type (Target_Type))
            and then Nkind (Original_Node (N)) = N_Attribute_Reference
-           and then
-             Attribute_Name (Original_Node (N)) = Name_Unrestricted_Access
+           and then Attribute_Name (Original_Node (N)) =
+                      Name_Unrestricted_Access
          then
             null;
 
