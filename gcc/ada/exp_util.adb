@@ -5198,7 +5198,7 @@ package body Exp_Util is
       U_Typ : constant Entity_Id := Unique_Entity (Typ);
 
       function Search_Primitive_Calls (N : Node_Id) return Traverse_Result;
-      --  Search for non-dispatching calls to primitive functions of type Typ
+      --  Search for nondispatching calls to primitive functions of type Typ
 
       ----------------------------
       -- Search_Primitive_Calls --
