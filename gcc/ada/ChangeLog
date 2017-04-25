@@ -1,3 +1,29 @@
+2017-04-25  Claire Dross  <dross@adacore.com>
+
+	* sem_prag.adb (Collect_Inherited_Class_Wide_Conditions): Go to
+	ultimate alias when accessing overridden operation. Indeed, if the
+	overridden operation is itself inherited, it won't have any explicit
+	contract.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): There can be no
+	overlap if the two formals have different types, because formally
+	the corresponding actuals cannot designate the same objects.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_dim.adb (Dimensions_Of_Operand): minot cleanups: a) If
+	dimensions are present from context, use them.	b) If operand is
+	a static constant rewritten as a literal, obtain the dimensions
+	from the original declaration, otherwise use dimensions of type
+	established from context.
+
+2017-04-25  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Is_Effectively_Volatile): Protect against base type
+	of array that is private.
+
 2017-04-25  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch3.adb, exp_util.adb, sem_prag.adb, exp_ch4.adb: Minor

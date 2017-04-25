@@ -27915,8 +27915,12 @@ package body Sem_Prag is
    ---------------------------------------------
 
    procedure Collect_Inherited_Class_Wide_Conditions (Subp : Entity_Id) is
-      Parent_Subp  : constant Entity_Id := Overridden_Operation (Subp);
-      Prags        : constant Node_Id   := Contract (Parent_Subp);
+      Parent_Subp : constant Entity_Id :=
+                      Ultimate_Alias (Overridden_Operation (Subp));
+      --  The Overridden_Operation may itself be inherited and as such have no
+      --  explicit contract.
+
+      Prags        : constant Node_Id := Contract (Parent_Subp);
       In_Spec_Expr : Boolean;
       Installed    : Boolean;
       Prag         : Node_Id;
