@@ -620,7 +620,7 @@ package body Einfo is
    --    Body_Needed_For_Inlining        Flag299
 
    --    Has_Private_Extension           Flag300
-   --    (unused)                        Flag301
+   --    Ignore_SPARK_Mode_Pragmas       Flag301
    --    (unused)                        Flag302
    --    (unused)                        Flag303
    --    (unused)                        Flag304
@@ -1980,6 +1980,29 @@ package body Einfo is
    begin
       return Node4 (Id);
    end Homonym;
+
+   function Ignore_SPARK_Mode_Pragmas (Id : E) return B is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Protected_Body,   --  concurrent variants
+                       E_Protected_Type,
+                       E_Task_Body,
+                       E_Task_Type)
+          or else
+         Ekind_In (Id, E_Entry,            --  overloadable variants
+                       E_Entry_Family,
+                       E_Function,
+                       E_Generic_Function,
+                       E_Generic_Procedure,
+                       E_Operator,
+                       E_Procedure,
+                       E_Subprogram_Body)
+           or else
+         Ekind_In (Id, E_Generic_Package,  --  package variants
+                       E_Package,
+                       E_Package_Body));
+      return Flag301 (Id);
+   end Ignore_SPARK_Mode_Pragmas;
 
    function Import_Pragma (Id : E) return E is
    begin
@@ -5072,6 +5095,29 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Package);
       Set_Elist24 (Id, V);
    end Set_Incomplete_Actuals;
+
+   procedure Set_Ignore_SPARK_Mode_Pragmas (Id : E; V : B := True) is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Protected_Body,   --  concurrent variants
+                       E_Protected_Type,
+                       E_Task_Body,
+                       E_Task_Type)
+          or else
+         Ekind_In (Id, E_Entry,            --  overloadable variants
+                       E_Entry_Family,
+                       E_Function,
+                       E_Generic_Function,
+                       E_Generic_Procedure,
+                       E_Operator,
+                       E_Procedure,
+                       E_Subprogram_Body)
+           or else
+         Ekind_In (Id, E_Generic_Package,  --  package variants
+                       E_Package,
+                       E_Package_Body));
+      Set_Flag301 (Id, V);
+   end Set_Ignore_SPARK_Mode_Pragmas;
 
    procedure Set_Import_Pragma (Id : E; V : E) is
    begin
@@ -9402,6 +9448,7 @@ package body Einfo is
       W ("Has_Visible_Refinement",          Flag263 (Id));
       W ("Has_Volatile_Components",         Flag87  (Id));
       W ("Has_Xref_Entry",                  Flag182 (Id));
+      W ("Ignore_SPARK_Mode_Pragmas",       Flag301 (Id));
       W ("In_Package_Body",                 Flag48  (Id));
       W ("In_Private_Part",                 Flag45  (Id));
       W ("In_Use",                          Flag8   (Id));

@@ -539,6 +539,8 @@ package body Sem_Ch7 is
 
       --  Local variables
 
+      Save_ISMP : constant Boolean := Ignore_SPARK_Mode_Pragmas_In_Instance;
+
       Body_Id          : Entity_Id;
       HSS              : Node_Id;
       Last_Spec_Entity : Entity_Id;
@@ -738,6 +740,14 @@ package body Sem_Ch7 is
          Set_SPARK_Aux_Pragma           (Body_Id, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited     (Body_Id);
          Set_SPARK_Aux_Pragma_Inherited (Body_Id);
+
+         --  A package body may be instantiated or inlined at a later pass.
+         --  Restore the state of Ignore_SPARK_Mode_Pragmas_In_Instance when
+         --  it applied to the package spec.
+
+         if Ignore_SPARK_Mode_Pragmas (Spec_Id) then
+            Ignore_SPARK_Mode_Pragmas_In_Instance := True;
+         end if;
       end if;
 
       Set_Categorization_From_Pragmas (N);
@@ -931,6 +941,8 @@ package body Sem_Ch7 is
          end if;
       end if;
 
+      Ignore_SPARK_Mode_Pragmas_In_Instance := Save_ISMP;
+
       Restore_Ghost_Mode (Mode);
    end Analyze_Package_Body_Helper;
 
@@ -969,6 +981,15 @@ package body Sem_Ch7 is
          Set_SPARK_Aux_Pragma           (Id, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited     (Id);
          Set_SPARK_Aux_Pragma_Inherited (Id);
+
+         --  Save the state of flag Ignore_SPARK_Mode_Pragmas_In_Instance in
+         --  case the body of this package is instantiated or inlined later and
+         --  out of context. The body uses this attribute to restore the value
+         --  of the global flag.
+
+         if Ignore_SPARK_Mode_Pragmas_In_Instance then
+            Set_Ignore_SPARK_Mode_Pragmas (Id);
+         end if;
       end if;
 
       --  Analyze aspect specifications immediately, since we need to recognize

@@ -849,8 +849,8 @@ package body System.Task_Primitives.Operations is
                end if;
             end loop;
 
-            --  Cover the odd situtation if someone decides to change
-            --  Parameters.Max_Task_Image_Length to less than 16 characters
+            --  Cover the odd situation where someone decides to change
+            --  Parameters.Max_Task_Image_Length to less than 16 characters.
 
             if Len > Parameters.Max_Task_Image_Length then
                Len := Parameters.Max_Task_Image_Length;

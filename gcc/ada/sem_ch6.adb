@@ -3298,8 +3298,9 @@ package body Sem_Ch6 is
 
       --  Local variables
 
-      Mode     : Ghost_Mode_Type;
-      Mode_Set : Boolean := False;
+      Save_ISMP : constant Boolean := Ignore_SPARK_Mode_Pragmas_In_Instance;
+      Mode      : Ghost_Mode_Type;
+      Mode_Set  : Boolean := False;
 
    --  Start of processing for Analyze_Subprogram_Body_Helper
 
@@ -3371,7 +3372,7 @@ package body Sem_Ch6 is
 
          else
             Enter_Name (Body_Id);
-            return;
+            goto Leave;
          end if;
 
       --  Non-generic case, find the subprogram declaration, if one was seen,
@@ -3381,7 +3382,7 @@ package body Sem_Ch6 is
       --  analysis.
 
       elsif Prev_Id = Body_Id and then Has_Completion (Body_Id) then
-         return;
+         goto Leave;
 
       else
          Body_Id := Analyze_Subprogram_Specification (Body_Spec);
@@ -3868,6 +3869,29 @@ package body Sem_Ch6 is
          Set_SPARK_Pragma_Inherited (Body_Id);
       end if;
 
+      --  A subprogram body may be instantiated or inlined at a later pass.
+      --  Restore the state of Ignore_SPARK_Mode_Pragmas_In_Instance when it
+      --  applied to the initial declaration of the body.
+
+      if Present (Spec_Id) then
+         if Ignore_SPARK_Mode_Pragmas (Spec_Id) then
+            Ignore_SPARK_Mode_Pragmas_In_Instance := True;
+         end if;
+
+      else
+         --  Save the state of flag Ignore_SPARK_Mode_Pragmas_In_Instance in
+         --  case the body is instantiated or inlined later and out of context.
+         --  The body uses this attribute to restore the value of the global
+         --  flag.
+
+         if Ignore_SPARK_Mode_Pragmas_In_Instance then
+            Set_Ignore_SPARK_Mode_Pragmas (Body_Id);
+
+         elsif Ignore_SPARK_Mode_Pragmas (Body_Id) then
+            Ignore_SPARK_Mode_Pragmas_In_Instance := True;
+         end if;
+      end if;
+
       --  If this is the proper body of a stub, we must verify that the stub
       --  conforms to the body, and to the previous spec if one was present.
       --  We know already that the body conforms to that spec. This test is
@@ -4056,6 +4080,7 @@ package body Sem_Ch6 is
                                 Protected_Body_Subprogram (Spec_Id);
             Prot_Ext_Formal : Entity_Id := Extra_Formals (Spec_Id);
             Impl_Ext_Formal : Entity_Id := Extra_Formals (Impl_Subp);
+
          begin
             while Present (Prot_Ext_Formal) loop
                pragma Assert (Present (Impl_Ext_Formal));
@@ -4406,6 +4431,8 @@ package body Sem_Ch6 is
       end if;
 
    <<Leave>>
+      Ignore_SPARK_Mode_Pragmas_In_Instance := Save_ISMP;
+
       if Mode_Set then
          Restore_Ghost_Mode (Mode);
       end if;
@@ -4468,6 +4495,15 @@ package body Sem_Ch6 is
       else
          Set_SPARK_Pragma (Designator, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited (Designator);
+      end if;
+
+      --  Save the state of flag Ignore_SPARK_Mode_Pragmas_In_Instance in case
+      --  the body of this subprogram is instantiated or inlined later and out
+      --  of context. The body uses this attribute to restore the value of the
+      --  global flag.
+
+      if Ignore_SPARK_Mode_Pragmas_In_Instance then
+         Set_Ignore_SPARK_Mode_Pragmas (Designator);
       end if;
 
       if Debug_Flag_C then

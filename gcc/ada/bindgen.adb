@@ -1120,8 +1120,8 @@ package body Bindgen is
                --  where we increment the elaboration entity if one exists.
 
                --  Likewise for lone specs with an elaboration entity defined
-               --  despite No_Elaboration_Code, e.g. when requested to
-               --  preserve control flow.
+               --  despite No_Elaboration_Code, e.g. when requested to preserve
+               --  control flow.
 
                if (U.Utype = Is_Body or else U.Utype = Is_Spec_Only)
                  and then Units.Table (Unum_Spec).Set_Elab_Entity

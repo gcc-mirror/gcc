@@ -2605,8 +2605,8 @@ package body Sem_Ch12 is
 
       --  Local variables
 
-      Save_IPSM : constant Boolean := Ignore_Pragma_SPARK_Mode;
-      --  Save flag Ignore_Pragma_SPARK_Mode for restore on exit
+      Save_ISMP : constant Boolean := Ignore_SPARK_Mode_Pragmas_In_Instance;
+      --  Save flag Ignore_SPARK_Mode_Pragmas_In_Instance for restore on exit
 
       Associations     : Boolean := True;
       New_N            : Node_Id;
@@ -2782,7 +2782,12 @@ package body Sem_Ch12 is
       --  all SPARK_Mode pragmas within the generic_package_name.
 
       if SPARK_Mode /= On then
-         Ignore_Pragma_SPARK_Mode := True;
+         Ignore_SPARK_Mode_Pragmas_In_Instance := True;
+
+         --  Mark the formal spec in case the body is instantiated at a later
+         --  pass. This preserves the original context in effect for the body.
+
+         Set_Ignore_SPARK_Mode_Pragmas (Formal);
       end if;
 
       Analyze (Specification (N));
@@ -2843,7 +2848,7 @@ package body Sem_Ch12 is
          Analyze_Aspect_Specifications (N, Pack_Id);
       end if;
 
-      Ignore_Pragma_SPARK_Mode := Save_IPSM;
+      Ignore_SPARK_Mode_Pragmas_In_Instance := Save_ISMP;
    end Analyze_Formal_Package_Declaration;
 
    ---------------------------------
@@ -3622,8 +3627,8 @@ package body Sem_Ch12 is
       Inline_Now        : Boolean := False;
       Has_Inline_Always : Boolean := False;
 
-      Save_IPSM : constant Boolean := Ignore_Pragma_SPARK_Mode;
-      --  Save flag Ignore_Pragma_SPARK_Mode for restore on exit
+      Save_ISMP : constant Boolean := Ignore_SPARK_Mode_Pragmas_In_Instance;
+      --  Save flag Ignore_SPARK_Mode_Pragmas_In_Instance for restore on exit
 
       Save_SM  : constant SPARK_Mode_Type := SPARK_Mode;
       Save_SMP : constant Node_Id         := SPARK_Mode_Pragma;
@@ -3865,7 +3870,13 @@ package body Sem_Ch12 is
          --  the instance.
 
          if SPARK_Mode /= On then
-            Ignore_Pragma_SPARK_Mode := True;
+            Ignore_SPARK_Mode_Pragmas_In_Instance := True;
+
+            --  Mark the instance spec in case the body is instantiated at a
+            --  later pass. This preserves the original context in effect for
+            --  the body.
+
+            Set_Ignore_SPARK_Mode_Pragmas (Act_Decl_Id);
          end if;
 
          Gen_Decl := Unit_Declaration_Node (Gen_Unit);
@@ -4433,11 +4444,6 @@ package body Sem_Ch12 is
          Set_Defining_Identifier (N, Act_Decl_Id);
       end if;
 
-      Ignore_Pragma_SPARK_Mode := Save_IPSM;
-      SPARK_Mode               := Save_SM;
-      SPARK_Mode_Pragma        := Save_SMP;
-      Style_Check              := Save_Style_Check;
-
       --  Check that if N is an instantiation of System.Dim_Float_IO or
       --  System.Dim_Integer_IO, the formal type has a dimension system.
 
@@ -4460,6 +4466,11 @@ package body Sem_Ch12 is
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
       end if;
 
+      Ignore_SPARK_Mode_Pragmas_In_Instance := Save_ISMP;
+      SPARK_Mode        := Save_SM;
+      SPARK_Mode_Pragma := Save_SMP;
+      Style_Check       := Save_Style_Check;
+
       if Mode_Set then
          Restore_Ghost_Mode (Mode);
       end if;
@@ -4474,10 +4485,10 @@ package body Sem_Ch12 is
             Restore_Env;
          end if;
 
-         Ignore_Pragma_SPARK_Mode := Save_IPSM;
-         SPARK_Mode               := Save_SM;
-         SPARK_Mode_Pragma        := Save_SMP;
-         Style_Check              := Save_Style_Check;
+         Ignore_SPARK_Mode_Pragmas_In_Instance := Save_ISMP;
+         SPARK_Mode        := Save_SM;
+         SPARK_Mode_Pragma := Save_SMP;
+         Style_Check       := Save_Style_Check;
 
          if Mode_Set then
             Restore_Ghost_Mode (Mode);
@@ -5119,8 +5130,8 @@ package body Sem_Ch12 is
 
       --  Local variables
 
-      Save_IPSM : constant Boolean := Ignore_Pragma_SPARK_Mode;
-      --  Save flag Ignore_Pragma_SPARK_Mode for restore on exit
+      Save_ISMP : constant Boolean := Ignore_SPARK_Mode_Pragmas_In_Instance;
+      --  Save flag Ignore_SPARK_Mode_Pragmas_In_Instance for restore on exit
 
       Save_SM  : constant SPARK_Mode_Type := SPARK_Mode;
       Save_SMP : constant Node_Id         := SPARK_Mode_Pragma;
@@ -5201,15 +5212,6 @@ package body Sem_Ch12 is
          Error_Msg_NE ("instantiation of & within itself", N, Gen_Unit);
 
       else
-         --  If the context of the instance is subject to SPARK_Mode "off" or
-         --  the annotation is altogether missing, set the global flag which
-         --  signals Analyze_Pragma to ignore all SPARK_Mode pragmas within
-         --  the instance.
-
-         if SPARK_Mode /= On then
-            Ignore_Pragma_SPARK_Mode := True;
-         end if;
-
          Set_Entity (Gen_Id, Gen_Unit);
          Set_Is_Instantiated (Gen_Unit);
 
@@ -5348,6 +5350,22 @@ package body Sem_Ch12 is
          Set_Has_Pragma_Inline_Always
            (Anon_Id,     Has_Pragma_Inline_Always (Gen_Unit));
 
+         --  If the context of the instance is subject to SPARK_Mode "off" or
+         --  the annotation is altogether missing, set the global flag which
+         --  signals Analyze_Pragma to ignore all SPARK_Mode pragmas within
+         --  the instance.
+
+         if SPARK_Mode /= On then
+            Ignore_SPARK_Mode_Pragmas_In_Instance := True;
+
+            --  Mark both the instance spec and the anonymous package in case
+            --  the body is instantiated at a later pass. This preserves the
+            --  original context in effect for the body.
+
+            Set_Ignore_SPARK_Mode_Pragmas (Act_Decl_Id);
+            Set_Ignore_SPARK_Mode_Pragmas (Anon_Id);
+         end if;
+
          if not Is_Intrinsic_Subprogram (Gen_Unit) then
             Check_Elab_Instantiation (N);
          end if;
@@ -5421,16 +5439,16 @@ package body Sem_Ch12 is
          Env_Installed := False;
          Generic_Renamings.Set_Last (0);
          Generic_Renamings_HTable.Reset;
-
-         Ignore_Pragma_SPARK_Mode := Save_IPSM;
-         SPARK_Mode               := Save_SM;
-         SPARK_Mode_Pragma        := Save_SMP;
       end if;
 
    <<Leave>>
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
       end if;
+
+      Ignore_SPARK_Mode_Pragmas_In_Instance := Save_ISMP;
+      SPARK_Mode        := Save_SM;
+      SPARK_Mode_Pragma := Save_SMP;
 
       if Mode_Set then
          Restore_Ghost_Mode (Mode);
@@ -5446,9 +5464,9 @@ package body Sem_Ch12 is
             Restore_Env;
          end if;
 
-         Ignore_Pragma_SPARK_Mode := Save_IPSM;
-         SPARK_Mode               := Save_SM;
-         SPARK_Mode_Pragma        := Save_SMP;
+         Ignore_SPARK_Mode_Pragmas_In_Instance := Save_ISMP;
+         SPARK_Mode        := Save_SM;
+         SPARK_Mode_Pragma := Save_SMP;
 
          if Mode_Set then
             Restore_Ghost_Mode (Mode);
@@ -10847,7 +10865,8 @@ package body Sem_Ch12 is
       Gen_Decl    : constant Node_Id    := Unit_Declaration_Node (Gen_Unit);
       Loc         : constant Source_Ptr := Sloc (Inst_Node);
 
-      Save_IPSM        : constant Boolean := Ignore_Pragma_SPARK_Mode;
+      Save_ISMP        : constant Boolean :=
+                           Ignore_SPARK_Mode_Pragmas_In_Instance;
       Save_Style_Check : constant Boolean := Style_Check;
 
       procedure Check_Initialized_Types;
@@ -11009,13 +11028,16 @@ package body Sem_Ch12 is
          Save_Env (Gen_Unit, Act_Decl_Id);
          Style_Check := False;
 
-         --  If the context of the instance is subject to SPARK_Mode "off" or
-         --  the annotation is altogether missing, set the global flag which
-         --  signals Analyze_Pragma to ignore all SPARK_Mode pragmas within
-         --  the instance.
+         --  If the context of the instance is subject to SPARK_Mode "off", the
+         --  annotation is missing, or the body is instantiated at a later pass
+         --  and its spec ignored SPARK_Mode pragma, set the global flag which
+         --  signals Analyze_Pragma to ignore all SPARK_Mode pragmas within the
+         --  instance.
 
-         if SPARK_Mode /= On then
-            Ignore_Pragma_SPARK_Mode := True;
+         if SPARK_Mode /= On
+           or else Ignore_SPARK_Mode_Pragmas (Act_Decl_Id)
+         then
+            Ignore_SPARK_Mode_Pragmas_In_Instance := True;
          end if;
 
          Current_Sem_Unit := Body_Info.Current_Sem_Unit;
@@ -11186,8 +11208,6 @@ package body Sem_Ch12 is
          end if;
 
          Restore_Env;
-         Ignore_Pragma_SPARK_Mode := Save_IPSM;
-         Style_Check := Save_Style_Check;
 
       --  If we have no body, and the unit requires a body, then complain. This
       --  complaint is suppressed if we have detected other errors (since a
@@ -11209,7 +11229,7 @@ package body Sem_Ch12 is
          --  was already detected, since this can cause blowups.
 
          else
-            return;
+            goto Leave;
          end if;
 
       --  Case of package that does not need a body
@@ -11244,6 +11264,9 @@ package body Sem_Ch12 is
       Expander_Mode_Restore;
 
    <<Leave>>
+      Ignore_SPARK_Mode_Pragmas_In_Instance := Save_ISMP;
+      Style_Check := Save_Style_Check;
+
       Restore_Ghost_Mode (Mode);
    end Instantiate_Package_Body;
 
@@ -11269,8 +11292,9 @@ package body Sem_Ch12 is
       Pack_Id     : constant Entity_Id  :=
                       Defining_Unit_Name (Parent (Act_Decl));
 
-      Saved_IPSM        : constant Boolean        := Ignore_Pragma_SPARK_Mode;
-      Saved_Style_Check : constant Boolean        := Style_Check;
+      Saved_ISMP        : constant Boolean :=
+                            Ignore_SPARK_Mode_Pragmas_In_Instance;
+      Saved_Style_Check : constant Boolean := Style_Check;
       Saved_Warnings    : constant Warning_Record := Save_Warnings;
 
       Act_Body    : Node_Id;
@@ -11363,13 +11387,16 @@ package body Sem_Ch12 is
          Save_Env (Gen_Unit, Act_Decl_Id);
          Style_Check := False;
 
-         --  If the context of the instance is subject to SPARK_Mode "off" or
-         --  the annotation is altogether missing, set the global flag which
-         --  signals Analyze_Pragma to ignore all SPARK_Mode pragmas within
-         --  the instance.
+         --  If the context of the instance is subject to SPARK_Mode "off", the
+         --  annotation is missing, or the body is instantiated at a later pass
+         --  and its spec ignored SPARK_Mode pragma, set the global flag which
+         --  signals Analyze_Pragma to ignore all SPARK_Mode pragmas within the
+         --  instance.
 
-         if SPARK_Mode /= On then
-            Ignore_Pragma_SPARK_Mode := True;
+         if SPARK_Mode /= On
+           or else Ignore_SPARK_Mode_Pragmas (Act_Decl_Id)
+         then
+            Ignore_SPARK_Mode_Pragmas_In_Instance := True;
          end if;
 
          Current_Sem_Unit := Body_Info.Current_Sem_Unit;
@@ -11473,8 +11500,6 @@ package body Sem_Ch12 is
          end if;
 
          Restore_Env;
-         Ignore_Pragma_SPARK_Mode := Saved_IPSM;
-         Style_Check := Saved_Style_Check;
          Restore_Warnings (Saved_Warnings);
 
       --  Body not found. Error was emitted already. If there were no previous
@@ -11549,6 +11574,9 @@ package body Sem_Ch12 is
       Expander_Mode_Restore;
 
    <<Leave>>
+      Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
+      Style_Check := Saved_Style_Check;
+
       Restore_Ghost_Mode (Mode);
    end Instantiate_Subprogram_Body;
 
@@ -11562,12 +11590,12 @@ package body Sem_Ch12 is
       Analyzed_Formal : Node_Id;
       Actual_Decls    : List_Id) return List_Id
    is
-      Gen_T      : constant Entity_Id  := Defining_Identifier (Formal);
       A_Gen_T    : constant Entity_Id  :=
                      Defining_Identifier (Analyzed_Formal);
-      Ancestor   : Entity_Id := Empty;
       Def        : constant Node_Id    := Formal_Type_Definition (Formal);
+      Gen_T      : constant Entity_Id  := Defining_Identifier (Formal);
       Act_T      : Entity_Id;
+      Ancestor   : Entity_Id := Empty;
       Decl_Node  : Node_Id;
       Decl_Nodes : List_Id;
       Loc        : Source_Ptr;
