@@ -17270,12 +17270,16 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
       tag_type = enum_type;
       /* Issue a warning if the `struct' or `class' key (for C++0x scoped
 	 enums) is used here.  */
-      if (cp_lexer_next_token_is_keyword (parser->lexer, RID_CLASS)
-	  || cp_lexer_next_token_is_keyword (parser->lexer, RID_STRUCT))
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
+      if (cp_parser_is_keyword (token, RID_CLASS)
+	  || cp_parser_is_keyword (token, RID_STRUCT))
 	{
-	    pedwarn (input_location, 0, "elaborated-type-specifier "
-		      "for a scoped enum must not use the %qD keyword",
-		      cp_lexer_peek_token (parser->lexer)->u.value);
+	  gcc_rich_location richloc (token->location);
+	  richloc.add_range (input_location, false);
+	  richloc.add_fixit_remove ();
+	  pedwarn_at_rich_loc (&richloc, 0, "elaborated-type-specifier for "
+			       "a scoped enum must not use the %qD keyword",
+			       token->u.value);
 	  /* Consume the `struct' or `class' and parse it anyway.  */
 	  cp_lexer_consume_token (parser->lexer);
 	}
