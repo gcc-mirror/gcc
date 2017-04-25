@@ -1999,7 +1999,7 @@ package body Exp_Util is
       --  Obj_Id denotes the entity of the _object formal parameter of the
       --  invariant procedure. All created checks are added to list Checks.
 
-      procedure Add_Inherited_Invariant
+      procedure Add_Inherited_Invariants
         (Full_Typ : Entity_Id;
          Priv_Typ : Entity_Id;
          Obj_Id   : Entity_Id;
@@ -2028,7 +2028,7 @@ package body Exp_Util is
       --  is added to list Checks. Flag Inherited should be set when the pragma
       --  is inherited from a parent or interface type.
 
-      procedure Add_Own_Invariant
+      procedure Add_Own_Invariants
         (T         : Entity_Id;
          Obj_Id    : Entity_Id;
          Checks    : in out List_Id;
@@ -2211,11 +2211,11 @@ package body Exp_Util is
             Dim_Checks => Checks);
       end Add_Array_Component_Invariants;
 
-      -----------------------------
-      -- Add_Inherited_Invariant --
-      -----------------------------
+      ------------------------------
+      -- Add_Inherited_Invariants --
+      ------------------------------
 
-      procedure Add_Inherited_Invariant
+      procedure Add_Inherited_Invariants
         (Full_Typ : Entity_Id;
          Priv_Typ : Entity_Id;
          Obj_Id   : Entity_Id;
@@ -2267,9 +2267,9 @@ package body Exp_Util is
                elsif Present (Full_Typ) and then Entity (Arg1) = Full_Typ then
                   Rep_Typ := Full_Typ;
 
-               --  Otherwise the pragma applies to a parent type in which case
-               --  it will be processed at a later stage by
-               --  Add_Parent_Invariants or Add_Interface_Invariants.
+               --  Otherwise the pragma applies to a parent type and will be
+               --  processed at a later step by routine Add_Parent_Invariants
+               --  or Add_Interface_Invariants.
 
                else
                   return;
@@ -2298,7 +2298,7 @@ package body Exp_Util is
 
             Next_Rep_Item (Prag);
          end loop;
-      end Add_Inherited_Invariant;
+      end Add_Inherited_Invariants;
 
       ------------------------------
       -- Add_Interface_Invariants --
@@ -2313,10 +2313,8 @@ package body Exp_Util is
          Ifaces     : Elist_Id;
 
       begin
-         --  Generate an invariant check for each inherited class-wide
-         --  invariant coming from all interfaces implemented by type T. Obj_Id
-         --  denotes the entity of the _object formal parameter of the
-         --  invariant procedure. All created checks are added to list Checks.
+         --  Generate an invariant check for each class-wide invariant coming
+         --  from all interfaces implemented by type T.
 
          if Is_Tagged_Type (T) then
             Collect_Interfaces (T, Ifaces);
@@ -2325,7 +2323,7 @@ package body Exp_Util is
 
             Iface_Elmt := First_Elmt (Ifaces);
             while Present (Iface_Elmt) loop
-               Add_Inherited_Invariant
+               Add_Inherited_Invariants
                  (Full_Typ => Node (Iface_Elmt),
                   Priv_Typ => Empty,
                   Obj_Id   => Obj_Id,
@@ -2480,7 +2478,7 @@ package body Exp_Util is
                Add_Record_Component_Invariants (Full_Typ, Obj_Id, Checks);
             end if;
 
-            Add_Inherited_Invariant
+            Add_Inherited_Invariants
               (Full_Typ => Full_Typ,
                Priv_Typ => Priv_Typ,
                Obj_Id   => Obj_Id,
@@ -2490,11 +2488,11 @@ package body Exp_Util is
          end loop;
       end Add_Parent_Invariants;
 
-      -----------------------
-      -- Add_Own_Invariant --
-      -----------------------
+      ------------------------
+      -- Add_Own_Invariants --
+      ------------------------
 
-      procedure Add_Own_Invariant
+      procedure Add_Own_Invariants
         (T         : Entity_Id;
          Obj_Id    : Entity_Id;
          Checks    : in out List_Id;
@@ -2540,9 +2538,8 @@ package body Exp_Util is
                Ploc := Sloc (Prag);
 
                --  Verify the pragma belongs to T, otherwise the pragma applies
-               --  to a parent type in which case it will be processed at a
-               --  later stage by Add_Parent_Invariants or
-               --  Add_Interface_Invariants.
+               --  to a parent type in which case it will be processed later by
+               --  Add_Parent_Invariants or Add_Interface_Invariants.
 
                if Entity (Arg1) /= T then
                   return;
@@ -2550,8 +2547,8 @@ package body Exp_Util is
 
                Expr := New_Copy_Tree (Arg2);
 
-               --  Substitute all references to type T with references to
-               --  the _object formal parameter.
+               --  Substitute all references to type T with references to the
+               --  _object formal parameter.
 
                Replace_Type_References
                  (Expr     => Expr,
@@ -2627,7 +2624,7 @@ package body Exp_Util is
 
             Next_Rep_Item (Prag);
          end loop;
-      end Add_Own_Invariant;
+      end Add_Own_Invariants;
 
       -------------------------------------
       -- Add_Record_Component_Invariants --
@@ -3010,7 +3007,7 @@ package body Exp_Util is
       if Partial_Invariant then
          pragma Assert (Present (Priv_Typ));
 
-         Add_Own_Invariant
+         Add_Own_Invariants
            (T      => Priv_Typ,
             Obj_Id => Obj_Id,
             Checks => Stmts);
@@ -3102,13 +3099,13 @@ package body Exp_Util is
          --  of the partial view. This also handles any invariants on array or
          --  record components.
 
-         Add_Own_Invariant
+         Add_Own_Invariants
            (T         => Priv_Typ,
             Obj_Id    => Obj_Id,
             Checks    => Stmts,
             Priv_Item => Priv_Item);
 
-         Add_Own_Invariant
+         Add_Own_Invariants
            (T         => Full_Typ,
             Obj_Id    => Obj_Id,
             Checks    => Stmts,
