@@ -1292,7 +1292,8 @@ package body Exp_Util is
          if Is_Ignored (DIC_Prag) then
             null;
 
-         --  Otherwise the DIC expression must be checked at runtime. Generate:
+         --  Otherwise the DIC expression must be checked at run time.
+         --  Generate:
 
          --    pragma Check (<Nam>, <DIC_Expr>);
 
@@ -2245,7 +2246,7 @@ package body Exp_Util is
 
          --  When the type inheriting the class-wide invariant is a concurrent
          --  type, use the corresponding record type because it contains all
-         --  primitive operations of the concurren type and allows for proper
+         --  primitive operations of the concurrent type and allows for proper
          --  substitution.
 
          if Is_Concurrent_Type (T) then
@@ -2417,7 +2418,7 @@ package body Exp_Util is
             null;
 
          --  Otherwise the invariant is checked. Build a pragma Check to verify
-         --  the expression at runtime.
+         --  the expression at run time.
 
          else
             Assoc := New_List (
@@ -3395,11 +3396,11 @@ package body Exp_Util is
       --      force every derived type to potentially provide an empty body.
 
       --    * The invariant procedure does not need to be declared as abstract.
-      --      This allows for a proper body which in turn avoids redundant
+      --      This allows for a proper body, which in turn avoids redundant
       --      processing of the same invariants for types with multiple views.
 
       --    * The class-wide type allows for calls to abstract primitives
-      --      within a non-abstract subprogram. The calls are treated as
+      --      within a nonabstract subprogram. The calls are treated as
       --      dispatching and require additional processing when they are
       --      remapped to call primitives of derived types. See routine
       --      Replace_References for details.
@@ -11506,7 +11507,7 @@ package body Exp_Util is
 
       function Replace_Ref (Ref : Node_Id) return Traverse_Result is
          procedure Remove_Controlling_Arguments (From_Arg : Node_Id);
-         --  Reset the Controlling_Argument of all function calls which
+         --  Reset the Controlling_Argument of all function calls that
          --  encapsulate node From_Arg.
 
          ----------------------------------
@@ -11630,14 +11631,14 @@ package body Exp_Util is
                New_Ref := New_Occurrence_Of (Deriv_Obj, Loc);
 
                --  The type of the _object parameter is class-wide when the
-               --  expression comes from an assertion pragma which applies to
+               --  expression comes from an assertion pragma that applies to
                --  an abstract parent type or an interface. The class-wide type
                --  facilitates the preanalysis of the expression by treating
-               --  calls to abstract primitives which mention the current
+               --  calls to abstract primitives that mention the current
                --  instance of the type as dispatching. Once the calls are
                --  remapped to invoke overriding or inherited primitives, the
                --  calls no longer need to be dispatching. Examine all function
-               --  calls which encapsule the _object parameter and reset their
+               --  calls that encapsulate the _object parameter and reset their
                --  Controlling_Argument attribute.
 
                if Is_Class_Wide_Type (Etype (Par_Obj))

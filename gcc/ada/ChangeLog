@@ -1,3 +1,13 @@
+2017-04-25  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb, exp_util.adb, sem_prag.adb, exp_ch4.adb: Minor
+	reformatting.
+
+2017-04-25  Yannick Moy  <moy@adacore.com>
+
+	* a-ngelfu.adb, a-ngelfu.ads: Add SPARK_Mode On on spec, Off
+	on body.
+
 2017-04-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_disp.adb (Check_Dispatching_Context): Add guard to refine
