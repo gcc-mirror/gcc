@@ -17112,11 +17112,11 @@ package body Sem_Prag is
 
             Discard := Rep_Item_Too_Late (Typ, N, FOnly => True);
 
-            --  Create the declaration of the invariant procedure which will
-            --  verify the invariant at run-time. Interfaces are treated as the
+            --  Create the declaration of the invariant procedure that will
+            --  verify the invariant at run time. Interfaces are treated as the
             --  partial view of a private type in order to achieve uniformity
             --  with the general case. As a result, an interface receives only
-            --  a "partial" invariant procedure which is never called.
+            --  a "partial" invariant procedure, which is never called.
 
             Build_Invariant_Procedure_Declaration
               (Typ               => Typ,

@@ -1729,7 +1729,7 @@ package body Sem_Ch3 is
                   end if;
 
                   --  Apply legality checks in RM 6.1.1 (10-13) concerning
-                  --  non-conforming preconditions in both an ancestor and
+                  --  nonconforming preconditions in both an ancestor and
                   --  a progenitor operation.
 
                   if Present (Anc)
@@ -2289,9 +2289,9 @@ package body Sem_Ch3 is
                if Is_Interface (Typ) then
 
                   --  Interfaces are treated as the partial view of a private
-                  --  type in order to achieve uniformity with the general
+                  --  type, in order to achieve uniformity with the general
                   --  case. As a result, an interface receives only a "partial"
-                  --  invariant procedure which is never called.
+                  --  invariant procedure, which is never called.
 
                   if Has_Own_Invariants (Typ) then
                      Build_Invariant_Procedure_Body
@@ -15335,7 +15335,7 @@ package body Sem_Ch3 is
 
       New_Overloaded_Entity (New_Subp, Derived_Type);
 
-      --  Ada RM 6.1.1 (15): If a subprogram inherits non-conforming class-wide
+      --  Ada RM 6.1.1 (15): If a subprogram inherits nonconforming class-wide
       --  preconditions and the derived type is abstract, the derived operation
       --  is abstract as well if parent subprogram is not abstract or null.
 

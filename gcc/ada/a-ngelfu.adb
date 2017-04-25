@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,9 @@
 
 with Ada.Numerics.Aux;
 
-package body Ada.Numerics.Generic_Elementary_Functions is
+package body Ada.Numerics.Generic_Elementary_Functions with
+  SPARK_Mode => Off
+is
 
    use type Ada.Numerics.Aux.Double;
 
