@@ -58,16 +58,15 @@ package body Fname is
      Table_Name           => "Fname_Dummy_Table");
 
    function Has_Internal_Extension (Fname : String) return Boolean;
+   pragma Inline (Has_Internal_Extension);
    --  True if the extension is appropriate for an internal/predefined
    --  unit. That means ".ads" or ".adb" for source files, and ".ali" for
    --  ALI files.
 
    function Has_Prefix (X, Prefix : String) return Boolean;
+   pragma Inline (Has_Prefix);
    --  True if Prefix is at the beginning of X. For example,
    --  Has_Prefix("a-filename.ads", Prefix => "a-") is True.
-
-   function Has_Suffix (X, Suffix : String) return Boolean;
-   --  True if Suffix is at the end of X
 
    ----------------------------
    -- Has_Internal_Extension --
@@ -75,10 +74,14 @@ package body Fname is
 
    function Has_Internal_Extension (Fname : String) return Boolean is
    begin
-      return
-        Has_Suffix (Fname, Suffix => ".ads")
-          or else Has_Suffix (Fname, Suffix => ".adb")
-          or else Has_Suffix (Fname, Suffix => ".ali");
+      if Fname'Length >= 4 then
+         declare
+            S : String renames Fname (Fname'Last - 3 .. Fname'Last);
+         begin
+            return S = ".ads" or else S = ".adb" or else S = ".ali";
+         end;
+      end if;
+      return False;
    end Has_Internal_Extension;
 
    ----------------
@@ -89,31 +92,13 @@ package body Fname is
    begin
       if X'Length >= Prefix'Length then
          declare
-            Slice : String renames
-                      X (X'First .. X'First + Prefix'Length - 1);
+            S : String renames X (X'First .. X'First + Prefix'Length - 1);
          begin
-            return Slice = Prefix;
+            return S = Prefix;
          end;
       end if;
       return False;
    end Has_Prefix;
-
-   ----------------
-   -- Has_Suffix --
-   ----------------
-
-   function Has_Suffix (X, Suffix : String) return Boolean is
-   begin
-      if X'Length >= Suffix'Length then
-         declare
-            Slice : String renames
-                      X (X'Last - Suffix'Length + 1 .. X'Last);
-         begin
-            return Slice = Suffix;
-         end;
-      end if;
-      return False;
-   end Has_Suffix;
 
    ---------------------------
    -- Is_Internal_File_Name --
@@ -124,6 +109,10 @@ package body Fname is
       Renamings_Included : Boolean := True) return Boolean
    is
    begin
+      if Is_Predefined_File_Name (Fname, Renamings_Included) then
+         return True;
+      end if;
+
       --  Check for internal extensions first, so we don't think (e.g.)
       --  "gnat.adc" is internal.
 
@@ -131,10 +120,7 @@ package body Fname is
          return False;
       end if;
 
-      return
-        Is_Predefined_File_Name (Fname, Renamings_Included)
-          or else Has_Prefix (Fname, Prefix => "g-")
-          or else Has_Prefix (Fname, Prefix => "gnat.");
+      return Has_Prefix (Fname, "g-") or else Has_Prefix (Fname, "gnat.");
    end Is_Internal_File_Name;
 
    function Is_Internal_File_Name
@@ -156,16 +142,38 @@ package body Fname is
      (Fname              : String;
       Renamings_Included : Boolean := True) return Boolean
    is
+      subtype Str8 is String (1 .. 8);
+
+      Renaming_Names : constant array (1 .. 8) of Str8 :=
+        ("calendar",       -- Calendar
+         "machcode",       -- Machine_Code
+         "unchconv",       -- Unchecked_Conversion
+         "unchdeal",       -- Unchecked_Deallocation
+         "directio",       -- Direct_IO
+         "ioexcept",       -- IO_Exceptions
+         "sequenio",       -- Sequential_IO
+         "text_io.");      -- Text_IO
+
+      --  Note: the implementation is optimized to perform uniform comparisons
+      --  on string slices whose length is known at compile time and at most 8
+      --  characters; the remaining calls to Has_Prefix must be inlined so as
+      --  to expose the compile-time known length.
+
    begin
       if not Has_Internal_Extension (Fname) then
          return False;
       end if;
 
-      if Has_Prefix (Fname, "a-")
-        or else Has_Prefix (Fname, "i-")
-        or else Has_Prefix (Fname, "s-")
-      then
-         return True;
+      --  Definitely predefined if prefix is a- i- or s-
+
+      if Fname'Length >= 2 then
+         declare
+            S : String renames Fname (Fname'First .. Fname'First + 1);
+         begin
+            if S = "a-" or else S = "i-" or else S = "s-" then
+               return True;
+            end if;
+         end;
       end if;
 
       --  Definitely false if longer than 12 characters (8.3)
@@ -176,53 +184,30 @@ package body Fname is
 
       --  We include the "." in the prefixes below, so we don't match (e.g.)
       --  adamant.ads. So the first line matches "ada.ads", "ada.adb", and
-      --  "ada.ali".
+      --  "ada.ali". But that's not necessary if they have 8 characters.
 
-      if Has_Prefix (Fname, Prefix => "ada.")              --  Ada
-        or else Has_Prefix (Fname, Prefix => "interfac.")  --  Interfaces
-        or else Has_Prefix (Fname, Prefix => "system.")    --  System
+      if Has_Prefix (Fname, "ada.")             --  Ada
+        or else Has_Prefix (Fname, "interfac")  --  Interfaces
+        or else Has_Prefix (Fname, "system.")   --  System
       then
          return True;
       end if;
 
-      if not Renamings_Included then
-         return False;
+      --  If instructed and the name has 8+ characters, check for renamings
+
+      if Renamings_Included and then Fname'Length >= 8 then
+         declare
+            S : String renames Fname (Fname'First .. Fname'First + 7);
+         begin
+            for J in Renaming_Names'Range loop
+               if S = Renaming_Names (J) then
+                  return True;
+               end if;
+            end loop;
+         end;
       end if;
 
-      --  The following are the predefined renamings
-
-      return
-         --  Calendar
-
-        Has_Prefix (Fname, Prefix => "calendar.")
-
-         --  Machine_Code
-
-          or else Has_Prefix (Fname, Prefix => "machcode.")
-
-         --  Unchecked_Conversion
-
-          or else Has_Prefix (Fname, Prefix => "unchconv.")
-
-         --  Unchecked_Deallocation
-
-          or else Has_Prefix (Fname, Prefix => "unchdeal.")
-
-         --  Direct_IO
-
-          or else Has_Prefix (Fname, Prefix => "directio.")
-
-         --  IO_Exceptions
-
-          or else Has_Prefix (Fname, Prefix => "ioexcept.")
-
-         --  Sequential_IO
-
-          or else Has_Prefix (Fname, Prefix => "sequenio.")
-
-         --  Text_IO
-
-          or else Has_Prefix (Fname, Prefix => "text_io.");
+      return False;
    end Is_Predefined_File_Name;
 
    function Is_Predefined_File_Name

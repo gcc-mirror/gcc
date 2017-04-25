@@ -1117,9 +1117,13 @@ package body Bindgen is
             then
                --  In the case of a body with a separate spec, where the
                --  separate spec has an elaboration entity defined, this is
-               --  where we increment the elaboration entity if one exists
+               --  where we increment the elaboration entity if one exists.
 
-               if U.Utype = Is_Body
+               --  Likewise for lone specs with an elaboration entity defined
+               --  despite No_Elaboration_Code, e.g. when requested to
+               --  preserve control flow.
+
+               if (U.Utype = Is_Body or else U.Utype = Is_Spec_Only)
                  and then Units.Table (Unum_Spec).Set_Elab_Entity
                  and then not CodePeer_Mode
                then

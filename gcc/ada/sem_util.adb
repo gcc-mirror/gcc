@@ -16488,6 +16488,73 @@ package body Sem_Util is
       end if;
    end New_Copy_List_Tree;
 
+   --------------------------------------------------
+   -- New_Copy_Tree Auxiliary Data and Subprograms --
+   --------------------------------------------------
+
+   use Atree.Unchecked_Access;
+   use Atree_Private_Part;
+
+   --  Our approach here requires a two pass traversal of the tree. The
+   --  first pass visits all nodes that eventually will be copied looking
+   --  for defining Itypes. If any defining Itypes are found, then they are
+   --  copied, and an entry is added to the replacement map. In the second
+   --  phase, the tree is copied, using the replacement map to replace any
+   --  Itype references within the copied tree.
+
+   --  The following hash tables are used to speed up access to the map. They
+   --  are declared at library level to avoid elaborating them for every call
+   --  to New_Copy_Tree. This can save up to 2% of the entire compilation time
+   --  spent in the front end.
+
+   subtype NCT_Header_Num is Int range 0 .. 511;
+   --  Defines range of headers in hash tables (512 headers)
+
+   function New_Copy_Hash (E : Entity_Id) return NCT_Header_Num;
+   --  Hash function used for hash operations
+
+   -------------------
+   -- New_Copy_Hash --
+   -------------------
+
+   function New_Copy_Hash (E : Entity_Id) return NCT_Header_Num is
+   begin
+      return Nat (E) mod (NCT_Header_Num'Last + 1);
+   end New_Copy_Hash;
+
+   ---------------
+   -- NCT_Assoc --
+   ---------------
+
+   --  The hash table NCT_Assoc associates old entities in the table with their
+   --  corresponding new entities (i.e. the pairs of entries presented in the
+   --  original Map argument are Key-Element pairs).
+
+   package NCT_Assoc is new Simple_HTable (
+     Header_Num => NCT_Header_Num,
+     Element    => Entity_Id,
+     No_Element => Empty,
+     Key        => Entity_Id,
+     Hash       => New_Copy_Hash,
+     Equal      => Types."=");
+
+   ---------------------
+   -- NCT_Itype_Assoc --
+   ---------------------
+
+   --  The hash table NCT_Itype_Assoc contains entries only for those old
+   --  nodes which have a non-empty Associated_Node_For_Itype set. The key
+   --  is the associated node, and the element is the new node itself (NOT
+   --  the associated node for the new node).
+
+   package NCT_Itype_Assoc is new Simple_HTable (
+     Header_Num => NCT_Header_Num,
+     Element    => Entity_Id,
+     No_Element => Empty,
+     Key        => Entity_Id,
+     Hash       => New_Copy_Hash,
+     Equal      => Types."=");
+
    -------------------
    -- New_Copy_Tree --
    -------------------
@@ -16509,63 +16576,10 @@ package body Sem_Util is
       --  variables for declarations located in blocks or subprograms defined
       --  in Expression_With_Action nodes.
 
-      ------------------------------------
-      -- Auxiliary Data and Subprograms --
-      ------------------------------------
-
-      use Atree.Unchecked_Access;
-      use Atree_Private_Part;
-
-      --  Our approach here requires a two pass traversal of the tree. The
-      --  first pass visits all nodes that eventually will be copied looking
-      --  for defining Itypes. If any defining Itypes are found, then they are
-      --  copied, and an entry is added to the replacement map. In the second
-      --  phase, the tree is copied, using the replacement map to replace any
-      --  Itype references within the copied tree.
-
-      --  The following hash tables are used if the Map supplied has more than
-      --  hash threshold entries to speed up access to the map. If there are
-      --  fewer entries, then the map is searched sequentially (because setting
-      --  up a hash table for only a few entries takes more time than it saves.
-
-      subtype NCT_Header_Num is Int range 0 .. 511;
-      --  Defines range of headers in hash tables (512 headers)
-
-      function New_Copy_Hash (E : Entity_Id) return NCT_Header_Num;
-      --  Hash function used for hash operations
-
-      ---------------
-      -- NCT_Assoc --
-      ---------------
-
-      --  The hash table NCT_Assoc associates old entities in the table with
-      --  their corresponding new entities (i.e. the pairs of entries presented
-      --  in the original Map argument are Key-Element pairs).
-
-      package NCT_Assoc is new Simple_HTable (
-        Header_Num => NCT_Header_Num,
-        Element    => Entity_Id,
-        No_Element => Empty,
-        Key        => Entity_Id,
-        Hash       => New_Copy_Hash,
-        Equal      => Types."=");
-
-      ---------------------
-      -- NCT_Itype_Assoc --
-      ---------------------
-
-      --  The hash table NCT_Itype_Assoc contains entries only for those old
-      --  nodes which have a non-empty Associated_Node_For_Itype set. The key
-      --  is the associated node, and the element is the new node itself (NOT
-      --  the associated node for the new node).
-
-      package NCT_Itype_Assoc is new Simple_HTable (
-        Header_Num => NCT_Header_Num,
-        Element    => Entity_Id,
-        No_Element => Empty,
-        Key        => Entity_Id,
-        Hash       => New_Copy_Hash,
-        Equal      => Types."=");
+      NCT_Hash_Tables_Used : Boolean := False;
+      --  Set to True if hash tables are in use. It is intended to speed up the
+      --  common case, which is no hash tables in use. This can save up to 8%
+      --  of the entire compilation time spent in the front end.
 
       function Assoc (N : Node_Or_Entity_Id) return Node_Id;
       --  Called during second phase to map entities into their corresponding
@@ -16627,7 +16641,7 @@ package body Sem_Util is
          Ent : Entity_Id;
 
       begin
-         if Nkind (N) not in N_Entity then
+         if Nkind (N) not in N_Entity or else not NCT_Hash_Tables_Used then
             return N;
 
          else
@@ -16681,6 +16695,8 @@ package body Sem_Util is
 
             Next_Elmt (Elmt);
          end loop;
+
+         NCT_Hash_Tables_Used := True;
       end Build_NCT_Hash_Tables;
 
       ---------------------------------
@@ -17041,14 +17057,6 @@ package body Sem_Util is
 
          return False;
       end In_Map;
-      -------------------
-      -- New_Copy_Hash --
-      -------------------
-
-      function New_Copy_Hash (E : Entity_Id) return NCT_Header_Num is
-      begin
-         return Nat (E) mod (NCT_Header_Num'Last + 1);
-      end New_Copy_Hash;
 
       -----------------
       -- Visit_Elist --
@@ -17099,6 +17107,7 @@ package body Sem_Util is
          --  Add new association to map
 
          NCT_Assoc.Set (Old_Entity, New_E);
+         NCT_Hash_Tables_Used := True;
 
          --  Visit descendants that eventually get copied
 
@@ -17228,6 +17237,7 @@ package body Sem_Util is
          --  Add new association to map
 
          NCT_Assoc.Set (Old_Itype, New_Itype);
+         NCT_Hash_Tables_Used := True;
 
          --  If a record subtype is simply copied, the entity list will be
          --  shared. Thus cloned_Subtype must be set to indicate the sharing.
@@ -17354,28 +17364,30 @@ package body Sem_Util is
       --  Now the second phase of the copy can start. First we process all the
       --  mapped entities, copying their descendants.
 
-      declare
-         Old_E : Entity_Id := Empty;
-         New_E : Entity_Id;
+      if NCT_Hash_Tables_Used then
+         declare
+            Old_E : Entity_Id := Empty;
+            New_E : Entity_Id;
 
-      begin
-         NCT_Assoc.Get_First (Old_E, New_E);
-         while Present (New_E) loop
+         begin
+            NCT_Assoc.Get_First (Old_E, New_E);
+            while Present (New_E) loop
 
-            --  Skip entities that were not created in the first phase (that
-            --  is, old entities specified by the caller in the set of mappings
-            --  to be applied to the tree).
+               --  Skip entities that were not created in the first phase
+               --  (that is, old entities specified by the caller in the
+               --  set of mappings to be applied to the tree).
 
-            if Is_Itype (New_E)
-              or else No (Map)
-              or else not In_Map (Old_E)
-            then
-               Copy_Entity_With_Replacement (New_E);
-            end if;
+               if Is_Itype (New_E)
+                 or else No (Map)
+                 or else not In_Map (Old_E)
+               then
+                  Copy_Entity_With_Replacement (New_E);
+               end if;
 
-            NCT_Assoc.Get_Next (Old_E, New_E);
-         end loop;
-      end;
+               NCT_Assoc.Get_Next (Old_E, New_E);
+            end loop;
+         end;
+      end if;
 
       --  Now we can copy the actual tree
 
@@ -17383,8 +17395,10 @@ package body Sem_Util is
          Result : constant Node_Id := Copy_Node_With_Replacement (Source);
 
       begin
-         NCT_Assoc.Reset;
-         NCT_Itype_Assoc.Reset;
+         if NCT_Hash_Tables_Used then
+            NCT_Assoc.Reset;
+            NCT_Itype_Assoc.Reset;
+         end if;
 
          return Result;
       end;

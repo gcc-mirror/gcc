@@ -1,3 +1,46 @@
+2017-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (New_Copy_Tree): Put back the declarations of the
+	hash tables at library level.  Reinstate the NCT_Hash_Tables_Used
+	variable and set it to True whenever the main hash table is
+	populated.  Short- circuit the Assoc function if it is false
+	and add associated guards.
+
+2017-04-25  Olivier Hainque  <hainque@adacore.com>
+
+	* bindgen.adb (Gen_Elab_Calls): Also update counter of lone
+	specs without elaboration code that have an elaboration counter
+	nevertheless, e.g.  when compiled with -fpreserve-control-flow.
+	* sem_ch10.adb (Analyze_Compilation_Unit):
+	Set_Elaboration_Entity_Required when requested to preserve
+	control flow, to ensure the unit elaboration is materialized at
+	bind time, resulting in the inclusion of the unit object file
+	in the executable closure at link time.
+
+2017-04-25  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* exp_dbug.adb: In Debug_Renaming_Declaration,
+	when dealing with indexed component, accept to produce a renaming
+	symbol when the index is an IN parameter or when it is a name
+	defined in an outer scope.
+
+2017-04-25  Yannick Moy  <moy@adacore.com>
+
+	* errout.adb (Error_Msg): Adapt continuation
+	message in instantiations and inlined bodies for info messages.
+
+2017-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fname.adb (Has_Internal_Extension): Add pragma Inline.
+	Use direct 4-character slice comparisons.
+	(Has_Prefix): Add
+	pragma Inline.	(Has_Suffix): Delete.
+	(Is_Internal_File_Name):
+	Test Is_Predefined_File_Name first.
+	(Is_Predefined_File_Name):
+	Use direct slice comparisons as much as possible and limit all
+	comparisons to at most 8 characters.
+
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* checks.adb (Insert_Valid_Check): Code cleanup.
