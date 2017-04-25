@@ -1650,8 +1650,8 @@ package body Exp_Attr is
             --  Perform a view conversion when either the argument or the
             --  formal parameter are of a private type.
 
-            if Is_Private_Type (Formal_Typ)
-              or else Is_Private_Type (Item_Typ)
+            if Is_Private_Type (Base_Type (Formal_Typ))
+              or else Is_Private_Type (Base_Type (Item_Typ))
             then
                Rewrite (Item,
                  Unchecked_Convert_To (Formal_Typ, Relocate_Node (Item)));

@@ -1384,8 +1384,12 @@ package body Freeze is
    begin
       Decl := Original_Node (Unit_Declaration_Node (Nam));
 
+      --  The subprogram body created for the expression function is not
+      --  itself a freeze point.
+
       if Scope (Nam) = Current_Scope
         and then Nkind (Decl) = N_Expression_Function
+        and then Nkind (N) /= N_Subprogram_Body
       then
          Check_Deferred (Expression (Decl));
       end if;

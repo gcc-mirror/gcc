@@ -1,3 +1,49 @@
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Check_Expression_Function): Do not check for the
+	use of deferred constants if the freezing of the expression
+	function is triggered by its generated body, rather than a
+	premature use.
+
+2017-04-25  Javier Miranda  <miranda@adacore.com>
+
+	* exp_attr.adb (Rewrite_Stream_Proc_Call): Handle
+	subtypes of private types when performing the view conversion.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Freeze_Type): Signal the DIC body is created for
+	the purposes of freezing.
+	* exp_util.adb Update the documentation and structure of the
+	type map used in class-wide semantics of assertion expressions.
+	(Add_Inherited_Tagged_DIC): There is really no need to preanalyze
+	and resolve the triaged expression because all substitutions
+	refer to the proper entities.  Update the replacement of
+	references.
+	(Build_DIC_Procedure_Body): Add formal parameter
+	For_Freeze. Add local variable Build_Body. Inherited DIC pragmas
+	are now only processed when freezing occurs.  Build a body only
+	when one is needed.
+	(Entity_Hash): Removed.
+	(Map_Types): New routine.
+	(Replace_Object_And_Primitive_References): Removed.
+	(Replace_References): New routine.
+	(Replace_Type_References): Moved to the library level of Exp_Util.
+	(Type_Map_Hash): New routine.
+	(Update_Primitives_Mapping): Update the mapping call.
+	(Update_Primitives_Mapping_Of_Types): Removed.
+	* exp_util.ads (Build_DIC_Procedure_Body): Add formal
+	parameter For_Freeze and update the comment on usage.
+	(Map_Types): New routine.
+	(Replace_References): New routine.
+	(Replace_Type_References): Moved to the library level of Exp_Util.
+	(Update_Primitives_Mapping_Of_Types): Removed.
+	* sem_ch7.adb (Preserve_Full_Attributes): Propagate the DIC
+	properties of the private type to the full view in case the full
+	view derives from a parent type and inherits a DIC pragma.
+	* sem_prag.adb (Analyze_Pragma): Guard against a case where a
+	DIC pragma is placed at the top of a declarative region.
+
 2017-04-25  Tristan Gingold  <gingold@adacore.com>
 
 	* s-mmap.ads (Data): Add pragma Inline.

@@ -7509,7 +7509,7 @@ package body Exp_Ch3 is
       --  verification of pragma Default_Initial_Condition's expression.
 
       if Has_DIC (Def_Id) then
-         Build_DIC_Procedure_Body (Def_Id);
+         Build_DIC_Procedure_Body (Def_Id, For_Freeze => True);
       end if;
 
       --  Generate the [spec and] body of the invariant procedure tasked with
