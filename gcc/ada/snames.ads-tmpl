@@ -275,14 +275,18 @@ package Snames is
    Name_EDF                            : constant Name_Id := N + $;
    Name_Reset_Standard_Files           : constant Name_Id := N + $;
    Name_Sequential_IO                  : constant Name_Id := N + $;
+   Name_Strings                        : constant Name_Id := N + $;
    Name_Streams                        : constant Name_Id := N + $;
    Name_Suspend_Until_True             : constant Name_Id := N + $;
    Name_Suspend_Until_True_And_Set_Deadline : constant Name_Id := N + $;
    Name_Synchronous_Barriers           : constant Name_Id := N + $;
    Name_Task_Identification            : constant Name_Id := N + $;
    Name_Text_Streams                   : constant Name_Id := N + $;
+   Name_Unbounded                      : constant Name_Id := N + $;
    Name_Unbounded_IO                   : constant Name_Id := N + $;
    Name_Wait_For_Release               : constant Name_Id := N + $;
+   Name_Wide_Unbounded                 : constant Name_Id := N + $;
+   Name_Wide_Wide_Unbounded            : constant Name_Id := N + $;
    Name_Yield                          : constant Name_Id := N + $;
 
    --  Names of implementations of the distributed systems annex

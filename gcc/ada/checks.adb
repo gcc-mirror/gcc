@@ -7233,26 +7233,30 @@ package body Checks is
         or else Expr_Known_Valid (Expr)
       then
          return;
-      end if;
 
       --  Do not insert checks within a predicate function. This will arise
       --  if the current unit and the predicate function are being compiled
       --  with validity checks enabled.
 
-      if Present (Predicate_Function (Typ))
+      elsif Present (Predicate_Function (Typ))
         and then Current_Scope = Predicate_Function (Typ)
       then
          return;
-      end if;
 
       --  If the expression is a packed component of a modular type of the
       --  right size, the data is always valid.
 
-      if Nkind (Expr) = N_Selected_Component
+      elsif Nkind (Expr) = N_Selected_Component
         and then Present (Component_Clause (Entity (Selector_Name (Expr))))
         and then Is_Modular_Integer_Type (Typ)
         and then Modulus (Typ) = 2 ** Esize (Entity (Selector_Name (Expr)))
       then
+         return;
+
+      --  Do not generate a validity check when inside a generic unit as this
+      --  is an expansion activity.
+
+      elsif Inside_A_Generic then
          return;
       end if;
 

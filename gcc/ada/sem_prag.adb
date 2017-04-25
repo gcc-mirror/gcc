@@ -4417,6 +4417,7 @@ package body Sem_Prag is
 
             begin
                if Class_Present (N)
+                 and then Pragma_Name (N) = Name_Precondition
                  and then Present (Overridden_Operation (E))
                  and then not Inherits_Class_Wide_Pre (E)
                then
