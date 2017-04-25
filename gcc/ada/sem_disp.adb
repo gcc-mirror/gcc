@@ -549,12 +549,19 @@ package body Sem_Disp is
       --  Start of processing for Check_Dispatching_Context
 
       begin
+         --  If the called subprogram is a private overriding, replace it
+         --  with its alias, which has the correct body. Verify that the
+         --  two subprograms have the same controlling type (this is not the
+         --  case for an inherited subprogram that has become abstract).
+
          if Is_Abstract_Subprogram (Subp)
            and then No (Controlling_Argument (Call))
          then
             if Present (Alias (Subp))
               and then not Is_Abstract_Subprogram (Alias (Subp))
               and then No (DTC_Entity (Subp))
+              and then Find_Dispatching_Type (Subp) =
+                 Find_Dispatching_Type (Alias (Subp))
             then
                --  Private overriding of inherited abstract operation, call is
                --  legal.

@@ -1,3 +1,13 @@
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Context): Add guard to refine
+	the check that recognizes a call to a private overridding and
+	replaces the called subprogram with its alias.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb: Minor reformatting.
+
 2017-04-25  Justin Squirek  <squirek@adacore.com>
 
 	* exp_ch3.adb (Freeze_Type): Add condition to always treat
