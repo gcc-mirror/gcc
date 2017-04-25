@@ -800,7 +800,7 @@ package body Exp_Dbug is
         and then No (Address_Clause (E))
         and then not Has_Suffix
       then
-         Add_String_To_Name_Buffer (Strval (Interface_Name (E)));
+         Append (Global_Name_Buffer, Strval (Interface_Name (E)));
 
       --  All other cases besides the interface name case
 

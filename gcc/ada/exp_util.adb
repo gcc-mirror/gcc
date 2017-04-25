@@ -8230,16 +8230,44 @@ package body Exp_Util is
 
          Curr_Typ := Deriv_Typ;
          loop
-            --  Work with the view which contains the discriminants and stored
-            --  constraints.
+            --  Handle the case where the current type is a record which
+            --  derives from a subtype.
 
-            Anc_Typ := Discriminated_View (Base_Type (Etype (Curr_Typ)));
+            --    subtype Sub_Typ is Par_Typ ...
+            --    type Deriv_Typ is Sub_Typ ...
 
-            --  Use the first subtype when dealing with base types
+            if Ekind (Curr_Typ) = E_Record_Type
+              and then Present (Parent_Subtype (Curr_Typ))
+            then
+               Anc_Typ := Parent_Subtype (Curr_Typ);
+
+            --  Handle the case where the current type is a record subtype of
+            --  another subtype.
+
+            --    subtype Sub_Typ1 is Par_Typ ...
+            --    subtype Sub_Typ2 is Sub_Typ1 ...
+
+            elsif Ekind (Curr_Typ) = E_Record_Subtype
+              and then Present (Cloned_Subtype (Curr_Typ))
+            then
+               Anc_Typ := Cloned_Subtype (Curr_Typ);
+
+            --  Otherwise use the direct parent type
+
+            else
+               Anc_Typ := Etype (Curr_Typ);
+            end if;
+
+            --  Use the first subtype when dealing with itypes
 
             if Is_Itype (Anc_Typ) then
                Anc_Typ := First_Subtype (Anc_Typ);
             end if;
+
+            --  Work with the view which contains the discriminants and stored
+            --  constraints.
+
+            Anc_Typ := Discriminated_View (Anc_Typ);
 
             --  Stop the climb when either the parent type has been reached or
             --  there are no more ancestors left to examine.

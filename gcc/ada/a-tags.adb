@@ -177,6 +177,24 @@ package body Ada.Tags is
       return To_Address (TSD.External_Tag);
    end Get_External_Tag;
 
+   -----------------
+   -- Is_Abstract --
+   -----------------
+
+   function Is_Abstract (T : Tag) return Boolean is
+      TSD_Ptr : Addr_Ptr;
+      TSD     : Type_Specific_Data_Ptr;
+
+   begin
+      if T = No_Tag then
+         raise Tag_Error;
+      end if;
+
+      TSD_Ptr := To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
+      TSD     := To_Type_Specific_Data_Ptr (TSD_Ptr.all);
+      return TSD.Is_Abstract;
+   end Is_Abstract;
+
    -------------------
    -- Is_Primary_DT --
    -------------------
@@ -1022,24 +1040,6 @@ package body Ada.Tags is
    begin
       SSD (T).SSD_Table (Position).Kind := Value;
    end Set_Prim_Op_Kind;
-
-   ----------------------
-   -- Type_Is_Abstract --
-   ----------------------
-
-   function Type_Is_Abstract (T : Tag) return Boolean is
-      TSD_Ptr : Addr_Ptr;
-      TSD     : Type_Specific_Data_Ptr;
-
-   begin
-      if T = No_Tag then
-         raise Tag_Error;
-      end if;
-
-      TSD_Ptr := To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
-      TSD     := To_Type_Specific_Data_Ptr (TSD_Ptr.all);
-      return TSD.Type_Is_Abstract;
-   end Type_Is_Abstract;
 
    --------------------
    -- Unregister_Tag --

@@ -5941,9 +5941,7 @@ package body Sem_Prag is
 
       procedure Check_Optional_Identifier (Arg : Node_Id; Id : String) is
       begin
-         Name_Buffer (1 .. Id'Length) := Id;
-         Name_Len := Id'Length;
-         Check_Optional_Identifier (Arg, Name_Find);
+         Check_Optional_Identifier (Arg, Name_Find (Id));
       end Check_Optional_Identifier;
 
       -------------------------------------
@@ -8300,8 +8298,7 @@ package body Sem_Prag is
          Nam  : Name_Id;
 
       begin
-         String_To_Name_Buffer (Strval (Expression (Arg3)));
-         Nam := Name_Find;
+         Nam := String_To_Name (Strval (Expression (Arg3)));
 
          Elmt := First_Elmt (Predefined_Float_Types);
          while Present (Elmt) and then Chars (Node (Elmt)) /= Nam loop
@@ -9223,8 +9220,7 @@ package body Sem_Prag is
 
             begin
                if Prag_Id = Pragma_Import then
-                  String_To_Name_Buffer (Strval (Expr_Value_S (Ext_Nam)));
-                  Nam := Name_Find;
+                  Nam := String_To_Name (Strval (Expr_Value_S (Ext_Nam)));
                   E   := Entity_Id (Get_Name_Table_Int (Nam));
 
                   if Nam /= Chars (Subprogram_Def)
@@ -10273,20 +10269,9 @@ package body Sem_Prag is
          --    No_Dependence => Ada.Execution_Time.Group_Budget
          --    No_Dependence => Ada.Execution_Time.Timers
 
-         --  ??? The use of Name_Buffer here is suspicious. The names should
-         --  be registered in snames.ads-tmpl and used to build the qualified
-         --  names of units.
-
          if Ada_Version >= Ada_2005 then
-            Name_Buffer (1 .. 3) := "ada";
-            Name_Len := 3;
-
-            Pref_Id := Make_Identifier (Loc, Name_Find);
-
-            Name_Buffer (1 .. 14) := "execution_time";
-            Name_Len := 14;
-
-            Sel_Id := Make_Identifier (Loc, Name_Find);
+            Pref_Id := Make_Identifier (Loc, Name_Find ("ada"));
+            Sel_Id  := Make_Identifier (Loc, Name_Find ("execution_time"));
 
             Pref :=
               Make_Selected_Component
@@ -10294,10 +10279,7 @@ package body Sem_Prag is
                  Prefix        => Pref_Id,
                  Selector_Name => Sel_Id);
 
-            Name_Buffer (1 .. 13) := "group_budgets";
-            Name_Len := 13;
-
-            Sel_Id := Make_Identifier (Loc, Name_Find);
+            Sel_Id := Make_Identifier (Loc, Name_Find ("group_budgets"));
 
             Nod :=
               Make_Selected_Component
@@ -10310,10 +10292,7 @@ package body Sem_Prag is
                Warn    => Treat_Restrictions_As_Warnings,
                Profile => Ravenscar);
 
-            Name_Buffer (1 .. 6) := "timers";
-            Name_Len := 6;
-
-            Sel_Id := Make_Identifier (Loc, Name_Find);
+            Sel_Id := Make_Identifier (Loc, Name_Find ("timers"));
 
             Nod :=
               Make_Selected_Component
@@ -10332,15 +10311,8 @@ package body Sem_Prag is
          --    No_Dependence => System.Multiprocessors.Dispatching_Domains
 
          if Ada_Version >= Ada_2012 then
-            Name_Buffer (1 .. 6) := "system";
-            Name_Len := 6;
-
-            Pref_Id := Make_Identifier (Loc, Name_Find);
-
-            Name_Buffer (1 .. 15) := "multiprocessors";
-            Name_Len := 15;
-
-            Sel_Id := Make_Identifier (Loc, Name_Find);
+            Pref_Id := Make_Identifier (Loc, Name_Find ("system"));
+            Sel_Id  := Make_Identifier (Loc, Name_Find ("multiprocessors"));
 
             Pref :=
               Make_Selected_Component
@@ -10348,10 +10320,7 @@ package body Sem_Prag is
                  Prefix        => Pref_Id,
                  Selector_Name => Sel_Id);
 
-            Name_Buffer (1 .. 19) := "dispatching_domains";
-            Name_Len := 19;
-
-            Sel_Id := Make_Identifier (Loc, Name_Find);
+            Sel_Id := Make_Identifier (Loc, Name_Find ("dispatching_domains"));
 
             Nod :=
               Make_Selected_Component

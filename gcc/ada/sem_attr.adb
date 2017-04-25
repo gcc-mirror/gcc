@@ -10522,10 +10522,10 @@ package body Sem_Attr is
                --  also be accessibility checks on those, this is where the
                --  checks can eventually be centralized ???
 
-               if Ekind_In (Btyp, E_Access_Subprogram_Type,
-                                  E_Anonymous_Access_Subprogram_Type,
-                                  E_Access_Protected_Subprogram_Type,
-                                  E_Anonymous_Access_Protected_Subprogram_Type)
+               if Ekind_In (Btyp, E_Access_Protected_Subprogram_Type,
+                                  E_Access_Subprogram_Type,
+                                  E_Anonymous_Access_Protected_Subprogram_Type,
+                                  E_Anonymous_Access_Subprogram_Type)
                then
                   --  Deal with convention mismatch
 
@@ -10545,9 +10545,10 @@ package body Sem_Attr is
                                     Entity (Name (Parent (N)));
                         begin
                            if Convention (Subp) = Convention_Intrinsic then
-                              Error_Msg_FE ("?subprogram and its formal "
-                              & "access parameters have convention Intrinsic",
-                                Parent (N), Subp);
+                              Error_Msg_FE
+                                ("?subprogram and its formal access "
+                                 & "parameters have convention Intrinsic",
+                                 Parent (N), Subp);
                               Error_Msg_N
                                 ("actual cannot be access attribute", N);
                            end if;

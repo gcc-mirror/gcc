@@ -2646,6 +2646,8 @@ package body Sem_Ch3 is
               and then Was_Expression_Function (Next_Decl)
               and then not Is_Compilation_Unit (Current_Scope)
               and then not Is_Generic_Instance (Current_Scope)
+              and then not In_Package_Body
+                             (Enclosing_Lib_Unit_Entity (Current_Scope))
             then
                --  Loop through all entities in the current scope to identify
                --  an instance of the edge case outlined above and ignore

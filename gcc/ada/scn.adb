@@ -255,9 +255,7 @@ package body Scn is
 
       --  Clear flags for reserved words used as identifiers
 
-      for J in Token_Type loop
-         Used_As_Identifier (J) := False;
-      end loop;
+      Used_As_Identifier := (others => False);
    end Initialize_Scanner;
 
    ---------------
@@ -380,8 +378,8 @@ package body Scn is
    ------------------------------
 
    procedure Scan_Reserved_Identifier (Force_Msg : Boolean) is
-      Token_Chars : constant String := Token_Type'Image (Token);
-
+      Token_Chars : String := Token_Type'Image (Token);
+      Len         : Natural := 0;
    begin
       --  AI12-0125 : '@' denotes the target_name, i.e. serves as an
       --  abbreviation for the LHS of an assignment.
@@ -394,16 +392,24 @@ package body Scn is
       --  We have in Token_Chars the image of the Token name, i.e. Tok_xxx.
       --  This code extracts the xxx and makes an identifier out of it.
 
-      Name_Len := 0;
-
       for J in 5 .. Token_Chars'Length loop
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := Fold_Lower (Token_Chars (J));
+         Len := Len + 1;
+         Token_Chars (Len) := Fold_Lower (Token_Chars (J));
       end loop;
 
-      Token_Name := Name_Find;
+      Token_Name := Name_Find (Token_Chars (1 .. Len));
 
-      if not Used_As_Identifier (Token) or else Force_Msg then
+      --  If Inside_Pragma is True, we don't give an error. This is to allow
+      --  things like "pragma Ignore_Pragma (Interface)", where "Interface" is
+      --  a reserved word. There is no danger of missing errors, because any
+      --  misuse must have been preceded by an illegal declaration. For
+      --  example, in "pragma Pack (Begin);", either Begin is not declared,
+      --  which is an error, or it is declared, which will be an error on that
+      --  declaration.
+
+      if (not Used_As_Identifier (Token) or else Force_Msg)
+        and then not Inside_Pragma
+      then
          Error_Msg_Name_1 := Token_Name;
          Error_Msg_SC ("reserved word* cannot be used as identifier!");
          Used_As_Identifier (Token) := True;

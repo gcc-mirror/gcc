@@ -2521,8 +2521,9 @@ package body Sem_Dim is
             Add_Str_To_Name_Buffer ("has dimension ");
          end if;
 
-         Add_String_To_Name_Buffer
-           (From_Dim_To_Str_Of_Dim_Symbols (Dims_Of_N, System, True));
+         Append
+           (Global_Name_Buffer,
+            From_Dim_To_Str_Of_Dim_Symbols (Dims_Of_N, System, True));
 
       --  N is dimensionless
 
@@ -2562,12 +2563,12 @@ package body Sem_Dim is
 
       Name_Len := 0;
 
-      Add_String_To_Name_Buffer (String_From_Numeric_Literal (N));
+      Append (Global_Name_Buffer, String_From_Numeric_Literal (N));
 
       --  Insert a blank between the literal and the symbol
 
       Add_Str_To_Name_Buffer (" ");
-      Add_String_To_Name_Buffer (Symbol_Of (Typ));
+      Append (Global_Name_Buffer, Symbol_Of (Typ));
 
       Error_Msg_Name_1 := Name_Find;
       Error_Msg_N ("assumed to be%%??", N);
