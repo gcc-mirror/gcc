@@ -3091,15 +3091,15 @@ package body Sem_Ch6 is
 
                      --  Check that the enclosing record type can be frozen.
                      --  This provides a better error message than generating
-                     --  primitives whose compilation fails much later.
-                     --  Refine the error message if possible.
+                     --  primitives whose compilation fails much later. Refine
+                     --  the error message if possible.
 
                      Check_Fully_Declared (Rec, Node);
 
                      if Error_Posted (Node) then
                         if Has_Private_Component (Rec) then
-                           Error_Msg_NE ("\type& has private component",
-                             Node, Rec);
+                           Error_Msg_NE
+                             ("\type& has private component", Node, Rec);
                         end if;
 
                      else

@@ -4371,18 +4371,13 @@ package body Sem_Ch13 is
 
                   --  Note that analysis will have added the interpretation
                   --  that corresponds to the dereference. We only check the
-                  --  subprogram itself.
+                  --  subprogram itself. Ignore homonyms that may come from
+                  --  derived types in the context.
 
-                  if Is_Overloadable (It.Nam) then
-
-                     --  Ignore homonyms that may come from derived types
-                     --  in the context.
-
-                     if not Comes_From_Source (It.Nam) then
-                        null;
-                     else
-                        Check_One_Function (It.Nam);
-                     end if;
+                  if Is_Overloadable (It.Nam)
+                    and then Comes_From_Source (It.Nam)
+                  then
+                     Check_One_Function (It.Nam);
                   end if;
 
                   Get_Next_Interp (I, It);
@@ -4392,8 +4387,8 @@ package body Sem_Ch13 is
 
          if not Indexing_Found and then not Error_Posted (N) then
             Error_Msg_NE
-              ("aspect Indexing requires a local function that "
-               & "applies to type&", Expr, Ent);
+              ("aspect Indexing requires a local function that applies to "
+               & "type&", Expr, Ent);
          end if;
       end Check_Indexing_Functions;
 

@@ -409,13 +409,13 @@ package body Exp_Ch6 is
             Desig_Typ := Directly_Designated_Type (Ptr_Typ);
 
             --  Check for a library-level access type whose designated type has
-            --  supressed finalization. Such an access types lack a master.
-            --  Pass a null actual to the callee in order to signal a missing
-            --  master.
+            --  suppressed finalization or the access type is subject to pragma
+            --  No_Heap_Finalization. Such an access type lacks a master. Pass
+            --  a null actual to callee in order to signal a missing master.
 
             if Is_Library_Level_Entity (Ptr_Typ)
               and then (Finalize_Storage_Only (Desig_Typ)
-                          or else No_Heap_Finalization (Ptr_Typ))
+                         or else No_Heap_Finalization (Ptr_Typ))
             then
                Actual := Make_Null (Loc);
 

@@ -1,3 +1,14 @@
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb, sem_ch13.adb, sem_ch6.adb: Minor reformatting.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Under -gnatd.q, reset
+	Is_True_Constant for an array variable that is passed to a
+	foreign function as an 'in' parameter.
+	* debug.adb: Document -gnatd.q.
+
 2017-04-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Analyze_Expression_Function): If expression function
