@@ -1457,6 +1457,8 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    procedure Labl is separate;
    procedure Load is separate;
 
+   Result : List_Id := Empty_List;
+
 --  Start of processing for Par
 
 begin
@@ -1472,13 +1474,13 @@ begin
       begin
          loop
             if Token = Tok_EOF then
-               Compiler_State := Analyzing;
-               return Pragmas;
+               Result := Pragmas;
+               exit;
 
             elsif Token /= Tok_Pragma then
                Error_Msg_SC ("only pragmas allowed in configuration file");
-               Compiler_State := Analyzing;
-               return Error_List;
+               Result := Error_List;
+               exit;
 
             else
                P_Node := P_Pragma;
@@ -1690,7 +1692,9 @@ begin
 
       Restore_Opt_Config_Switches (Save_Config_Switches);
       Set_Comes_From_Source_Default (False);
-      Compiler_State := Analyzing;
-      return Empty_List;
    end if;
+
+   Compiler_State      := Analyzing;
+   Current_Source_File := No_Source_File;
+   return Result;
 end Par;

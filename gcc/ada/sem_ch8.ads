@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -171,7 +171,7 @@ package Sem_Ch8 is
 
    procedure Set_Use (L : List_Id);
    --  Find use clauses that are declarative items in a package declaration
-   --  and  set the potentially use-visible flags of imported entities before
+   --  and set the potentially use-visible flags of imported entities before
    --  analyzing the corresponding package body.
 
    procedure ws;
