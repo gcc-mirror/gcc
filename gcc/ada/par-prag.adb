@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1334,6 +1334,7 @@ begin
          | Pragma_Component_Alignment
          | Pragma_Controlled
          | Pragma_Convention
+         | Pragma_Deadline_Floor
          | Pragma_Debug_Policy
          | Pragma_Depends
          | Pragma_Detect_Blocking

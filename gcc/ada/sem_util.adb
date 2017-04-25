@@ -3311,11 +3311,20 @@ package body Sem_Util is
                elsif Nkind_In (N, N_Expanded_Name, N_Identifier) then
                   Ent := Entity (N);
 
-                  --  The entity may be modifiable through an implicit
-                  --  dereference.
+                  --  Treat an undecorated reference as OK
 
                   if No (Ent)
-                    or else Ekind (Ent) in Assignable_Kind
+
+                    --  A reference to an assignable entity is considered a
+                    --  change in the post-state of a subprogram.
+
+                    or else Ekind_In (Ent, E_Generic_In_Out_Parameter,
+                                           E_In_Out_Parameter,
+                                           E_Out_Parameter,
+                                           E_Variable)
+
+                    --  The reference may be modified through a dereference
+
                     or else (Is_Access_Type (Etype (Ent))
                               and then Nkind (Parent (N)) =
                                          N_Selected_Component)
