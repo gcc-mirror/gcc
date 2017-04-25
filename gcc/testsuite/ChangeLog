@@ -1,3 +1,11 @@
+2017-04-25  Marek Polacek  <polacek@redhat.com>
+
+	2017-04-25  Marek Polacek  <polacek@redhat.com>
+	Backport from mainline
+
+	PR sanitizer/80349
+	* g++.dg/ubsan/pr80349-2.C: New test.
+
 2017-04-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
