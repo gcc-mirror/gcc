@@ -290,6 +290,21 @@ package Exp_Util is
    --  Create the declaration of the procedure which verifies the assertion
    --  expression of pragma Default_Initial_Condition at run time.
 
+   procedure Build_Invariant_Procedure_Body
+     (Typ               : Entity_Id;
+      Partial_Invariant : Boolean := False);
+   --  Create the body of the procedure which verifies the invariants of type
+   --  Typ at runtime. Flag Partial_Invariant should be set when Typ denotes a
+   --  private type, otherwise it is assumed that Typ denotes the full view of
+   --  a private type.
+
+   procedure Build_Invariant_Procedure_Declaration
+     (Typ               : Entity_Id;
+      Partial_Invariant : Boolean := False);
+   --  Create the declaration of the procedure which verifies the invariants of
+   --  type Typ at runtime. Flag Partial_Invariant should be set when building
+   --  the invariant procedure for a private type.
+
    procedure Build_Procedure_Form (N : Node_Id);
    --  Create a procedure declaration which emulates the behavior of a function
    --  that returns an array type, for C-compatible generation.
@@ -805,6 +820,12 @@ package Exp_Util is
    --  Returns true if type T is not tagged and is a derived type,
    --  or is a private type whose completion is such a type.
 
+   function Is_Untagged_Private_Derivation
+     (Priv_Typ : Entity_Id;
+      Full_Typ : Entity_Id) return Boolean;
+   --  Determine whether private type Priv_Typ and its full view Full_Typ
+   --  represent an untagged derivation from a private parent.
+
    function Is_Volatile_Reference (N : Node_Id) return Boolean;
    --  Checks if the node N represents a volatile reference, which can be
    --  either a direct reference to a variable treated as volatile, or an
@@ -1037,9 +1058,10 @@ package Exp_Util is
    --      the internally-generated inherited primitive of Deriv_Typ.
 
    procedure Replace_Type_References
-     (Expr   : Node_Id;
-      Typ    : Entity_Id;
-      Obj_Id : Entity_Id);
+     (Expr     : Node_Id;
+      Typ      : Entity_Id;
+      Obj_Id   : Entity_Id;
+      Dispatch : Boolean := False);
    --  Substitute all references of the current instance of type Typ with
    --  references to formal parameter Obj_Id within expression Expr.
 
