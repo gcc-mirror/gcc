@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2015-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2015-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -658,6 +658,7 @@ package body Contracts is
 
       if SPARK_Mode = On
         and then Ekind_In (Subp_Id, E_Function, E_Generic_Function)
+        and then Comes_From_Source (Subp_Id)
         and then not Is_Volatile_Function (Subp_Id)
       then
          Check_Nonvolatile_Function_Profile (Subp_Id);
