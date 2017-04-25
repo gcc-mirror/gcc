@@ -1,3 +1,15 @@
+2017-04-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/80177
+	* name-lookup.c (suggest_alternative_in_explicit_scope): Convert
+	candidate type of bm from tree to const char *.
+	(consider_binding_level): Likewise.
+	(lookup_name_fuzzy): Likewise, using this to merge the best
+	result from the preprocessor into bm, rather than immediately
+	returning, so that better matches from reserved words can "win".
+	Guard the rejection of keywords that don't start decl-specifiers
+	so it only happens for FUZZY_LOOKUP_TYPENAME.
+
 2017-04-24  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* decl.c (grokdeclarator): Use %qT instead of %<%T%> in diagnostics.
