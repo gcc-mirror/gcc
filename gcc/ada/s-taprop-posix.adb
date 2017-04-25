@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -352,12 +352,11 @@ package body System.Task_Primitives.Operations is
    -- Initialize_Lock --
    ---------------------
 
-   --  Note: mutexes and cond_variables needed per-task basis are
-   --        initialized in Initialize_TCB and the Storage_Error is
-   --        handled. Other mutexes (such as RTS_Lock, Memory_Lock...)
-   --        used in RTS is initialized before any status change of RTS.
-   --        Therefore raising Storage_Error in the following routines
-   --        should be able to be handled safely.
+   --  Note: mutexes and cond_variables needed per-task basis are initialized
+   --  in Initialize_TCB and the Storage_Error is handled. Other mutexes (such
+   --  as RTS_Lock, Memory_Lock...) used in RTS is initialized before any
+   --  status change of RTS. Therefore raising Storage_Error in the following
+   --  routines should be able to be handled safely.
 
    procedure Initialize_Lock
      (Prio : System.Any_Priority;
@@ -474,10 +473,10 @@ package body System.Task_Primitives.Operations is
    begin
       Result := pthread_mutex_lock (L.WO'Access);
 
-      --  Assume that the cause of EINVAL is a priority ceiling violation
+      --  The cause of EINVAL is a priority ceiling violation
 
-      Ceiling_Violation := (Result = EINVAL);
-      pragma Assert (Result = 0 or else Result = EINVAL);
+      Ceiling_Violation := Result = EINVAL;
+      pragma Assert (Result = 0 or else Ceiling_Violation);
    end Write_Lock;
 
    procedure Write_Lock

@@ -13548,8 +13548,14 @@ package body Sem_Util is
                      (Is_Object_Reference (Prefix (N))
                        or else Is_Access_Type (Etype (Prefix (N))));
 
+            --  An explicit dereference denotes an object, except that a
+            --  conditional expression gets turned into an explicit dereference
+            --  in some cases, and conditional expressions are not object
+            --  names.
+
             when N_Explicit_Dereference =>
-               return True;
+               return not Nkind_In
+                 (Original_Node (N), N_If_Expression, N_Case_Expression);
 
             --  A view conversion of a tagged object is an object reference
 

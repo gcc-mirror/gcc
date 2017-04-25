@@ -1,3 +1,31 @@
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* s-osinte-linux.ads (pthread_mutexattr_setprotocol,
+	pthread_mutexattr_setprioceiling): Add new interfaces for these
+	pthread operations.
+	* s-taprop-linux.adb (Initialize_Lock, Initialize_TCB): Set
+	protocols as appropriate for Locking_Policy 'C' and 'I'.
+	* s-taprop-posix.adb: Minor reformatting to make it more similar
+	to s-taprop-linux.adb.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Get_Discriminant_Value, Search_Derivation_Levels):
+	Handle properly a multi- level derivation involving both renamed
+	and constrained parent discriminants, when the type to be
+	constrained has fewer discriminants that the ultimate ancestor.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* sem_util.adb (Is_Object_Reference): In the
+	case of N_Explicit_Dereference, return False if it came from a
+	conditional expression.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* par-ch4.adb (P_Case_Expression): If a semicolon
+	is followed by "when", assume that ";" was meant to be ",".
+
 2017-04-25  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch9.adb, sem_ch10.adb, sem_util.adb: Minor reformatting and typo
