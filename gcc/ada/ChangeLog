@@ -1,3 +1,42 @@
+2017-04-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* rtsfind.ads (SPARK_Implicit_Load): New procedure for forced
+	loading of an entity.
+	* rtsfind.adb (SPARK_Implicit_Load): Body with a pattern
+	previously repeated in the analysis.
+	* sem_ch9.adb (Analyze_Protected_Type_Declaration): use new
+	procedure SPARK_Implicit_Load.	(Analyze_Task_Type_Declaration):
+	use new procedure SPARK_Implicit_Load.
+	* sem_ch10.adb (Analyze_Compilation_Unit): Use new procedure
+	SPARK_Implicit_Load.
+
+2017-04-25  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (New_Copy_Tree): By default
+	copying of defining identifiers is prohibited because
+	this would introduce an entirely new entity into the
+	tree. This patch introduces an exception to this general
+	rule: the declaration of constants and variables located in
+	Expression_With_Action nodes.
+	(Copy_Itype_With_Replacement): Renamed as Copy_Entity_With_Replacement.
+	(In_Map): New subprogram.
+	(Visit_Entity): New subprogram.
+	(Visit_Node): Handle EWA_Level,
+	EWA_Inner_Scope_Level, and take care of defining entities defined
+	in Expression_With_Action nodes.
+
+2017-04-25  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch6.adb: minor comment edit.
+	* sinfo.ads, sinfo.adb: New Null_Statement attribute for null
+	procedure specifications that come from source.
+	* par-ch6.adb (P_Subprogram, case of a null procedure): Set new
+	Null_Statement attribute.
+	* par_sco.adb (Traverse_Declarations_Or_Statements): For a null
+	procedure, generate statement SCO for the generated NULL statement.
+	* sem_ch6.adb (Analyze_Null_Procedure): Use null statement from
+	parser, if available.
+
 2017-04-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* system-linux-s390.ads: Use Long_Integer'Size to define

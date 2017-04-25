@@ -16227,6 +16227,17 @@ package body Sem_Util is
       New_Sloc  : Source_Ptr := No_Location;
       New_Scope : Entity_Id  := Empty) return Node_Id
    is
+      EWA_Level             : Nat := 0;
+      --  By default copying of defining identifiers is prohibited because this
+      --  would introduce an entirely new entity into the tree. The exception
+      --  to this general rule are declaration of constants and variables
+      --  located in Expression_With_Action nodes.
+
+      EWA_Inner_Scope_Level : Nat := 0;
+      --  Level of internal scope of defined in EWAs. Used to avoid creating
+      --  variables for declarations located in blocks or subprograms defined
+      --  in Expression_With_Action nodes.
+
       ------------------------------------
       -- Auxiliary Data and Subprograms --
       ------------------------------------
@@ -16297,11 +16308,11 @@ package body Sem_Util is
         (Old_Elist : Elist_Id) return Elist_Id;
       --  Called during second phase to copy element list doing replacements
 
-      procedure Copy_Itype_With_Replacement (New_Itype : Entity_Id);
-      --  Called during the second phase to process a copied Itype. The actual
+      procedure Copy_Entity_With_Replacement (New_Entity : Entity_Id);
+      --  Called during the second phase to process a copied Entity. The actual
       --  copy happened during the first phase (so that we could make the entry
       --  in the mapping), but we still have to deal with the descendants of
-      --  the copied Itype and copy them where necessary.
+      --  the copied Entity and copy them where necessary.
 
       function Copy_List_With_Replacement (Old_List : List_Id) return List_Id;
       --  Called during second phase to copy list doing replacements
@@ -16309,8 +16320,17 @@ package body Sem_Util is
       function Copy_Node_With_Replacement (Old_Node : Node_Id) return Node_Id;
       --  Called during second phase to copy node doing replacements
 
+      function In_Map (E : Entity_Id) return Boolean;
+      --  Return True if E is one of the old entities specified in the set of
+      --  mappings to be applied to entities in the tree (ie. Map).
+
       procedure Visit_Elist (E : Elist_Id);
       --  Called during first phase to visit all elements of an Elist
+
+      procedure Visit_Entity (Old_Entity : Entity_Id);
+      --  Called during first phase to visit subsidiary fields of a defining
+      --  entity which is not an itype, and also create a copy and make an
+      --  entry in the replacement map for the new copy.
 
       procedure Visit_Field (F : Union_Id; N : Node_Id);
       --  Visit a single field, recursing to call Visit_Node or Visit_List if
@@ -16420,51 +16440,51 @@ package body Sem_Util is
          return New_Elist;
       end Copy_Elist_With_Replacement;
 
-      ---------------------------------
-      -- Copy_Itype_With_Replacement --
-      ---------------------------------
+      ----------------------------------
+      -- Copy_Entity_With_Replacement --
+      ----------------------------------
 
       --  This routine exactly parallels its phase one analog Visit_Itype,
 
-      procedure Copy_Itype_With_Replacement (New_Itype : Entity_Id) is
+      procedure Copy_Entity_With_Replacement (New_Entity : Entity_Id) is
       begin
          --  Translate Next_Entity, Scope, and Etype fields, in case they
          --  reference entities that have been mapped into copies.
 
-         Set_Next_Entity (New_Itype, Assoc (Next_Entity (New_Itype)));
-         Set_Etype       (New_Itype, Assoc (Etype       (New_Itype)));
+         Set_Next_Entity (New_Entity, Assoc (Next_Entity (New_Entity)));
+         Set_Etype       (New_Entity, Assoc (Etype       (New_Entity)));
 
          if Present (New_Scope) then
-            Set_Scope    (New_Itype, New_Scope);
+            Set_Scope    (New_Entity, New_Scope);
          else
-            Set_Scope    (New_Itype, Assoc (Scope       (New_Itype)));
+            Set_Scope    (New_Entity, Assoc (Scope       (New_Entity)));
          end if;
 
          --  Copy referenced fields
 
-         if Is_Discrete_Type (New_Itype) then
-            Set_Scalar_Range (New_Itype,
-              Copy_Node_With_Replacement (Scalar_Range (New_Itype)));
+         if Is_Discrete_Type (New_Entity) then
+            Set_Scalar_Range (New_Entity,
+              Copy_Node_With_Replacement (Scalar_Range (New_Entity)));
 
-         elsif Has_Discriminants (Base_Type (New_Itype)) then
-            Set_Discriminant_Constraint (New_Itype,
+         elsif Has_Discriminants (Base_Type (New_Entity)) then
+            Set_Discriminant_Constraint (New_Entity,
               Copy_Elist_With_Replacement
-                (Discriminant_Constraint (New_Itype)));
+                (Discriminant_Constraint (New_Entity)));
 
-         elsif Is_Array_Type (New_Itype) then
-            if Present (First_Index (New_Itype)) then
-               Set_First_Index (New_Itype,
+         elsif Is_Array_Type (New_Entity) then
+            if Present (First_Index (New_Entity)) then
+               Set_First_Index (New_Entity,
                  First (Copy_List_With_Replacement
-                         (List_Containing (First_Index (New_Itype)))));
+                         (List_Containing (First_Index (New_Entity)))));
             end if;
 
-            if Is_Packed (New_Itype) then
-               Set_Packed_Array_Impl_Type (New_Itype,
+            if Is_Packed (New_Entity) then
+               Set_Packed_Array_Impl_Type (New_Entity,
                  Copy_Node_With_Replacement
-                   (Packed_Array_Impl_Type (New_Itype)));
+                   (Packed_Array_Impl_Type (New_Entity)));
             end if;
          end if;
-      end Copy_Itype_With_Replacement;
+      end Copy_Entity_With_Replacement;
 
       --------------------------------
       -- Copy_List_With_Replacement --
@@ -16726,6 +16746,31 @@ package body Sem_Util is
          return New_Node;
       end Copy_Node_With_Replacement;
 
+      ------------
+      -- In_Map --
+      ------------
+
+      function In_Map (E : Entity_Id) return Boolean is
+         Elmt : Elmt_Id;
+         Ent  : Entity_Id;
+
+      begin
+         if Present (Map) then
+            Elmt := First_Elmt (Map);
+            while Present (Elmt) loop
+               Ent := Node (Elmt);
+
+               if Ent = E then
+                  return True;
+               end if;
+
+               Next_Elmt (Elmt);
+               Next_Elmt (Elmt);
+            end loop;
+         end if;
+
+         return False;
+      end In_Map;
       -------------------
       -- New_Copy_Hash --
       -------------------
@@ -16751,6 +16796,44 @@ package body Sem_Util is
             end loop;
          end if;
       end Visit_Elist;
+
+      ------------------
+      -- Visit_Entity --
+      ------------------
+
+      procedure Visit_Entity (Old_Entity : Entity_Id) is
+         New_E : Entity_Id;
+
+      begin
+         pragma Assert (not Is_Itype (Old_Entity));
+         pragma Assert (Nkind (Old_Entity) in N_Entity);
+
+         --  Restrict entity creation to variable declarations. There is no
+         --  need to create variables declared in inner scopes.
+
+         if not Ekind_In (Old_Entity, E_Constant, E_Variable)
+           or else EWA_Inner_Scope_Level > 0
+         then
+            return;
+         end if;
+
+         New_E := New_Copy (Old_Entity);
+
+         --  The new entity has all the attributes of the old one, and we
+         --  just copy the contents of the entity. However, the back-end
+         --  needs different names for debugging purposes, so we create a
+         --  new internal name for it in all cases.
+
+         Set_Chars (New_E, New_Internal_Name ('T'));
+
+         --  Add new association to map
+
+         NCT_Assoc.Set (Old_Entity, New_E);
+
+         --  Visit descendants that eventually get copied
+
+         Visit_Field (Union_Id (Etype (Old_Entity)), Old_Entity);
+      end Visit_Entity;
 
       -----------------
       -- Visit_Field --
@@ -16931,9 +17014,19 @@ package body Sem_Util is
 
       procedure Visit_Node (N : Node_Or_Entity_Id) is
       begin
+         if Nkind (N) = N_Expression_With_Actions then
+            EWA_Level := EWA_Level + 1;
+
+         elsif EWA_Level > 0
+           and then Nkind_In (N, N_Block_Statement,
+                                 N_Subprogram_Body,
+                                 N_Subprogram_Declaration)
+         then
+            EWA_Inner_Scope_Level := EWA_Inner_Scope_Level + 1;
+
          --  Handle case of an Itype, which must be copied
 
-         if Nkind (N) in N_Entity and then Is_Itype (N) then
+         elsif Nkind (N) in N_Entity and then Is_Itype (N) then
 
             --  Nothing to do if already in the list. This can happen with an
             --  Itype entity that appears more than once in the tree. Note that
@@ -16944,6 +17037,18 @@ package body Sem_Util is
             end if;
 
             Visit_Itype (N);
+
+         --  Handle defining entities in Expression_With_Action nodes
+
+         elsif Nkind (N) in N_Entity and then EWA_Level > 0 then
+
+            --  Nothing to do if already in the hash table
+
+            if Present (NCT_Assoc.Get (Entity_Id (N))) then
+               return;
+            end if;
+
+            Visit_Entity (N);
          end if;
 
          --  Visit descendants
@@ -16953,6 +17058,17 @@ package body Sem_Util is
          Visit_Field (Field3 (N), N);
          Visit_Field (Field4 (N), N);
          Visit_Field (Field5 (N), N);
+
+         if EWA_Level > 0
+           and then Nkind_In (N, N_Block_Statement,
+                                 N_Subprogram_Body,
+                                 N_Subprogram_Declaration)
+         then
+            EWA_Inner_Scope_Level := EWA_Inner_Scope_Level - 1;
+
+         elsif Nkind (N) = N_Expression_With_Actions then
+            EWA_Level := EWA_Level - 1;
+         end if;
       end Visit_Node;
 
    --  Start of processing for New_Copy_Tree
@@ -16975,8 +17091,16 @@ package body Sem_Util is
       begin
          NCT_Assoc.Get_First (Old_E, New_E);
          while Present (New_E) loop
-            if Is_Itype (New_E) then
-               Copy_Itype_With_Replacement (New_E);
+
+            --  Skip entities that were not created in the first phase (that
+            --  is, old entities specified by the caller in the set of mappings
+            --  to be applied to the tree).
+
+            if Is_Itype (New_E)
+              or else No (Map)
+              or else not In_Map (Old_E)
+            then
+               Copy_Entity_With_Replacement (New_E);
             end if;
 
             NCT_Assoc.Get_Next (Old_E, New_E);

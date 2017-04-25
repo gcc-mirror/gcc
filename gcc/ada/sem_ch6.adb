@@ -1370,6 +1370,7 @@ package body Sem_Ch6 is
       Designator : Entity_Id;
       Form       : Node_Id;
       Null_Body  : Node_Id := Empty;
+      Null_Stmt  : Node_Id := Null_Statement (Spec);
       Prev       : Entity_Id;
 
    begin
@@ -1379,13 +1380,22 @@ package body Sem_Ch6 is
       --  the first case the body is analyzed at the freeze point, in the other
       --  it replaces the null procedure declaration.
 
+      --  For a null procedure that comes from source, a NULL statement is
+      --  provided by the parser, which carries the source location of the
+      --  NULL keyword, and has Comes_From_Source set. For a null procedure
+      --  from expansion, create one now.
+
+      if No (Null_Stmt) then
+         Null_Stmt := Make_Null_Statement (Loc);
+      end if;
+
       Null_Body :=
         Make_Subprogram_Body (Loc,
           Specification => New_Copy_Tree (Spec),
           Declarations  => New_List,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => New_List (Make_Null_Statement (Loc))));
+              Statements => New_List (Null_Stmt)));
 
       --  Create new entities for body and formals
 

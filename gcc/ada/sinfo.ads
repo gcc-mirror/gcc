@@ -5155,6 +5155,7 @@ package Sinfo is
       --  N_Procedure_Specification
       --  Sloc points to PROCEDURE
       --  Defining_Unit_Name (Node1)
+      --  Null_Statement (Node2-Sem) NULL statement for body, if Null_Present
       --  Parameter_Specifications (List3) (set to No_List if no formal part)
       --  Generic_Parent (Node5-Sem)
       --  Null_Present (Flag13) set for null procedure case (Ada 2005 feature)
@@ -9699,9 +9700,6 @@ package Sinfo is
    function Non_Aliased_Prefix
      (N : Node_Id) return Boolean;    -- Flag18
 
-   function Null_Present
-     (N : Node_Id) return Boolean;    -- Flag13
-
    function Null_Excluding_Subtype
      (N : Node_Id) return Boolean;    -- Flag16
 
@@ -9711,8 +9709,14 @@ package Sinfo is
    function Null_Exclusion_In_Return_Present
      (N : Node_Id) return Boolean;    -- Flag14
 
+   function Null_Present
+     (N : Node_Id) return Boolean;    -- Flag13
+
    function Null_Record_Present
      (N : Node_Id) return Boolean;    -- Flag17
+
+   function Null_Statement
+     (N : Node_Id) return Node_Id;    -- Node2
 
    function Object_Definition
      (N : Node_Id) return Node_Id;    -- Node4
@@ -10755,9 +10759,6 @@ package Sinfo is
    procedure Set_Non_Aliased_Prefix
      (N : Node_Id; Val : Boolean := True);    -- Flag18
 
-   procedure Set_Null_Present
-     (N : Node_Id; Val : Boolean := True);    -- Flag13
-
    procedure Set_Null_Excluding_Subtype
      (N : Node_Id; Val : Boolean := True);    -- Flag16
 
@@ -10767,8 +10768,14 @@ package Sinfo is
    procedure Set_Null_Exclusion_In_Return_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag14
 
+   procedure Set_Null_Present
+     (N : Node_Id; Val : Boolean := True);    -- Flag13
+
    procedure Set_Null_Record_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag17
+
+   procedure Set_Null_Statement
+     (N : Node_Id; Val : Node_Id);            -- Node2
 
    procedure Set_Object_Definition
      (N : Node_Id; Val : Node_Id);            -- Node4
@@ -11900,7 +11907,7 @@ package Sinfo is
 
      N_Procedure_Specification =>
        (1 => True,    --  Defining_Unit_Name (Node1)
-        2 => False,   --  unused
+        2 => False,   --  Null_Statement (Node2-Sem)
         3 => True,    --  Parameter_Specifications (List3)
         4 => False,   --  unused
         5 => False),  --  Generic_Parent (Node5-Sem)
@@ -13088,11 +13095,12 @@ package Sinfo is
    pragma Inline (No_Side_Effect_Removal);
    pragma Inline (No_Truncation);
    pragma Inline (Non_Aliased_Prefix);
-   pragma Inline (Null_Present);
    pragma Inline (Null_Excluding_Subtype);
    pragma Inline (Null_Exclusion_Present);
    pragma Inline (Null_Exclusion_In_Return_Present);
+   pragma Inline (Null_Present);
    pragma Inline (Null_Record_Present);
+   pragma Inline (Null_Statement);
    pragma Inline (Object_Definition);
    pragma Inline (Of_Present);
    pragma Inline (Original_Discriminant);
@@ -13441,6 +13449,7 @@ package Sinfo is
    pragma Inline (Set_Null_Exclusion_In_Return_Present);
    pragma Inline (Set_Null_Present);
    pragma Inline (Set_Null_Record_Present);
+   pragma Inline (Set_Null_Statement);
    pragma Inline (Set_Object_Definition);
    pragma Inline (Set_Of_Present);
    pragma Inline (Set_Original_Discriminant);

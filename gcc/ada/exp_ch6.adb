@@ -5763,7 +5763,7 @@ package body Exp_Ch6 is
       --  Ada 2005 (AI-348): Generate body for a null procedure. In most
       --  cases this is superfluous because calls to it will be automatically
       --  inlined, but we definitely need the body if preconditions for the
-      --  procedure are present.
+      --  procedure are present, or if performing coverage analysis.
 
       elsif Nkind (Specification (N)) = N_Procedure_Specification
         and then Null_Present (Specification (N))
