@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2108,6 +2108,7 @@ package body Freeze is
 
       Freeze_Nodes : constant List_Id :=
                        Freeze_Entity (T, N, Do_Freeze_Profile);
+      Pack         : constant Entity_Id := Scope (T);
 
    begin
       if Ekind (T) = E_Function then
@@ -2115,7 +2116,23 @@ package body Freeze is
       end if;
 
       if Is_Non_Empty_List (Freeze_Nodes) then
-         Insert_Actions (N, Freeze_Nodes);
+
+         --  If the entity is a type declared in an inner package, it may be
+         --  frozen by an outer declaration before the package itself is
+         --  frozen. Install the package scope to analyze the freeze nodes,
+         --  which may include generated subprograms such as predicate
+         --  functions, etc.
+
+         if Is_Type (T) and then From_Nested_Package (T) then
+            Push_Scope (Pack);
+            Install_Visible_Declarations (Pack);
+            Install_Private_Declarations (Pack);
+            Insert_Actions (N, Freeze_Nodes);
+            End_Package_Scope (Pack);
+
+         else
+            Insert_Actions (N, Freeze_Nodes);
+         end if;
       end if;
    end Freeze_Before;
 

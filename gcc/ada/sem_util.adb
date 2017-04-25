@@ -7575,6 +7575,19 @@ package body Sem_Util is
       return Res (Res'First .. Res_Index - 1);
    end Fix_Msg;
 
+   -------------------------
+   -- From_Nested_Package --
+   -------------------------
+
+   function From_Nested_Package (T : Entity_Id) return Boolean is
+      Pack : constant Entity_Id := Scope (T);
+   begin
+      return Ekind (Pack) = E_Package
+        and then not Is_Frozen (Pack)
+        and then not Scope_Within_Or_Same (Current_Scope, Pack)
+        and then In_Open_Scopes (Scope (Pack));
+   end From_Nested_Package;
+
    -----------------------
    -- Gather_Components --
    -----------------------

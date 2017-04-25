@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -818,6 +818,13 @@ package Sem_Util is
    --    * Replace "protected" with
    --      - "task" when Id is a single task object, task type or task body
    --  All other non-matching words remain as is
+
+   function From_Nested_Package (T : Entity_Id) return Boolean;
+   --  A type declared in a nested package may be frozen by a declaration
+   --  appearing after the package but before the package is frozen. If the
+   --  type has aspects that generate subprograms, these may contain references
+   --  to entities local to the nested package. In that case the package must
+   --  be installed on the scope stack to prevent spurious visibility errors.
 
    procedure Gather_Components
      (Typ           : Entity_Id;
