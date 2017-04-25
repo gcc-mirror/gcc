@@ -1403,6 +1403,7 @@ package Snames is
    Name_Project_Path                       : constant Name_Id := N + $;
    Name_Project_Subdir                     : constant Name_Id := N + $;
    Name_Remote                             : constant Name_Id := N + $;
+   Name_Required_Artifacts                 : constant Name_Id := N + $;
    Name_Response_File_Format               : constant Name_Id := N + $;
    Name_Response_File_Switches             : constant Name_Id := N + $;
    Name_Root_Dir                           : constant Name_Id := N + $;

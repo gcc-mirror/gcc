@@ -1,5 +1,35 @@
 2017-04-25  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch3.adb (Derive_Subprogram): Implement rule in RM 6.1.1
+	(10-15): if derived type T with progenitors is abstract,
+	and primitive P of this type inherits non-trivial classwide
+	preconditions from both a parent operation and from an interface
+	operation, then the inherited operation is abstract if the parent
+	operation is not null.
+	* sem_disp.ads, sem_disp.adb: replace function Covers_Some_Interface
+	with Covered_Interface_Op to yield the actual interface operation
+	that is implemented by a given inherited operation.
+
+2017-04-25  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Expon): Relocate left
+	and right operands after performing the validity checks. Required
+	because validity checks may remove side effects from the operands.
+
+2017-04-25  Javier Miranda  <miranda@adacore.com>
+
+	* exp_attr.adb (Attribute_Unrestricted_Access):
+	Do not disable implicit type conversion.  Required to generate
+	code that displaces the pointer to reference the secondary
+	dispatch table.
+
+2017-04-25  Pascal Obry  <obry@adacore.com>
+
+	* prj-attr.adb, snames.ads-tmpl: Add package Install's
+	Required_Artifacts attribute.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_util.adb (Same_Value): String literals are compile-time
 	values, and comparing them must use Expr_Value_S.
 

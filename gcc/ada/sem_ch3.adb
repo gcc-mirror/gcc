@@ -15079,7 +15079,7 @@ package body Sem_Ch3 is
 
       elsif Ada_Version >= Ada_2005
          and then Is_Dispatching_Operation (Parent_Subp)
-         and then Covers_Some_Interface (Parent_Subp)
+         and then Present (Covered_Interface_Op (Parent_Subp))
       then
          Set_Derived_Name;
 
@@ -15314,6 +15314,29 @@ package body Sem_Ch3 is
       end if;
 
       New_Overloaded_Entity (New_Subp, Derived_Type);
+
+      --  Implement rule in 6.1.1 (15) : if subprogram inherits non-conforming
+      --  classwide preconditions and the derived type is abstract, the
+      --  derived operation is abstract as well if parent subprogram is not
+      --  abstract or null.
+
+      if Is_Abstract_Type (Derived_Type)
+        and then Has_Non_Trivial_Precondition (Parent_Subp)
+        and then Present (Interfaces (Derived_Type))
+      then
+         Set_Is_Dispatching_Operation (New_Subp);
+
+         declare
+            Iface_Prim : constant Entity_Id := Covered_Interface_Op (New_Subp);
+
+         begin
+            if Present (Iface_Prim)
+              and then Has_Non_Trivial_Precondition (Iface_Prim)
+            then
+               Set_Is_Abstract_Subprogram (New_Subp);
+            end if;
+         end;
+      end if;
 
       --  Check for case of a derived subprogram for the instantiation of a
       --  formal derived tagged type, if so mark the subprogram as dispatching

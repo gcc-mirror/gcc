@@ -109,11 +109,11 @@ package body Sem_Disp is
       Append_Unique_Elmt (New_Op, List);
    end Add_Dispatching_Operation;
 
-   ---------------------------
-   -- Covers_Some_Interface --
-   ---------------------------
+   --------------------------
+   -- Covered_Interface_Op --
+   --------------------------
 
-   function Covers_Some_Interface (Prim : Entity_Id) return Boolean is
+   function Covered_Interface_Op (Prim : Entity_Id) return Entity_Id is
       Tagged_Type : constant Entity_Id := Find_Dispatching_Type (Prim);
       Elmt        : Elmt_Id;
       E           : Entity_Id;
@@ -139,14 +139,14 @@ package body Sem_Disp is
                if Present (Interface_Alias (E))
                  and then Alias (E) = Prim
                then
-                  return True;
+                  return Interface_Alias (E);
                end if;
 
                Next_Elmt (Elmt);
             end loop;
 
          --  Otherwise we must collect all the interface primitives and check
-         --  if the Prim will override some interface primitive.
+         --  if the Prim overrides (implements) some interface primitive.
 
          else
             declare
@@ -165,11 +165,11 @@ package body Sem_Disp is
                   while Present (Elmt) loop
                      Iface_Prim := Node (Elmt);
 
-                     if Chars (Iface) = Chars (Prim)
+                     if Chars (Iface_Prim) = Chars (Prim)
                        and then Is_Interface_Conformant
                                   (Tagged_Type, Iface_Prim, Prim)
                      then
-                        return True;
+                        return Iface_Prim;
                      end if;
 
                      Next_Elmt (Elmt);
@@ -181,8 +181,8 @@ package body Sem_Disp is
          end if;
       end if;
 
-      return False;
-   end Covers_Some_Interface;
+      return Empty;
+   end Covered_Interface_Op;
 
    -------------------------------
    -- Check_Controlling_Formals --

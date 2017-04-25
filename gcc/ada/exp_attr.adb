@@ -2114,10 +2114,9 @@ package body Exp_Attr is
                                      (Etype (Prefix (Ref_Object))));
                   begin
                      --  No implicit conversion required if designated types
-                     --  match, or if we have an unrestricted access.
+                     --  match.
 
                      if Obj_DDT /= Btyp_DDT
-                       and then Id /= Attribute_Unrestricted_Access
                        and then not (Is_Class_Wide_Type (Obj_DDT)
                                       and then Etype (Obj_DDT) = Btyp_DDT)
                      then
