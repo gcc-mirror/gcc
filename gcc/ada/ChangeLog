@@ -1,3 +1,7 @@
+2017-04-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* ada_get_targ.adb: New file.
+
 2017-04-25  Bob Duff  <duff@adacore.com>
 
 	* uintp.adb (Most_Sig_2_Digits): In case Direct (Right), fetch
