@@ -486,14 +486,14 @@ package body Exp_Ch7 is
       then
          return False;
 
-      --  Do not consider an access type which return on the secondary stack
+      --  Do not consider an access type that returns on the secondary stack
 
       elsif Present (Associated_Storage_Pool (Ptr_Typ))
         and then Is_RTE (Associated_Storage_Pool (Ptr_Typ), RE_SS_Pool)
       then
          return False;
 
-      --  Do not consider an access type which may never allocate an object
+      --  Do not consider an access type that can never allocate an object
 
       elsif No_Pool_Assigned (Ptr_Typ) then
          return False;

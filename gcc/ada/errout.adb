@@ -2105,7 +2105,7 @@ package body Errout is
 
       if Warning_Mode = Treat_As_Error then
          Total_Errors_Detected :=
-           Total_Errors_Detected + Warnings_Detected - Info_Messages;
+           Total_Errors_Detected + Warnings_Detected;
          Warnings_Detected := Info_Messages;
       end if;
    end Output_Messages;

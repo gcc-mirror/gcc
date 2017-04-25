@@ -17922,7 +17922,7 @@ package body Sem_Prag is
                if Is_Library_Level_Entity (Typ) then
                   null;
 
-               --  Qietly ignore an access-to-object type originally declared
+               --  Quietly ignore an access-to-object type originally declared
                --  at the library level within a generic, but instantiated at
                --  a non-library level. As a result the access-to-object type
                --  "loses" its No_Heap_Finalization property.
