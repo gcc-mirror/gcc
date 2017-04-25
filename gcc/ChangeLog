@@ -1,3 +1,11 @@
+2017-04-25  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/80486
+	* dominance.c (dom_info::m_n_basic_blocks): Change type to unsigned.
+	(new_zero_array): Adjust signature.
+	(dom_info::dom_init): Used unsigned rather that size_t.
+	(dom_info::dom_info): Same.
+
 2017-04-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
