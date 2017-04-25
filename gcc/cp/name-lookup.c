@@ -48,7 +48,8 @@ static bool lookup_using_namespace (tree, struct scope_binding *, tree,
 				    tree, int);
 static bool qualified_lookup_using_namespace (tree, tree,
 					      struct scope_binding *, int);
-static void consider_binding_level (tree name, best_match <tree, tree> &bm,
+static void consider_binding_level (tree name,
+				    best_match <tree, const char *> &bm,
 				    cp_binding_level *lvl,
 				    bool look_within_fields,
 				    enum lookup_name_fuzzy_kind kind);
@@ -4550,14 +4551,13 @@ suggest_alternative_in_explicit_scope (location_t location, tree name,
 
   cp_binding_level *level = NAMESPACE_LEVEL (scope);
 
-  best_match <tree, tree> bm (name);
+  best_match <tree, const char *> bm (name);
   consider_binding_level (name, bm, level, false, FUZZY_LOOKUP_NAME);
 
   /* See if we have a good suggesion for the user.  */
-  tree best_id = bm.get_best_meaningful_candidate ();
-  if (best_id)
+  const char *fuzzy_name = bm.get_best_meaningful_candidate ();
+  if (fuzzy_name)
     {
-      const char *fuzzy_name = IDENTIFIER_POINTER (best_id);
       gcc_rich_location richloc (location);
       richloc.add_fixit_replace (fuzzy_name);
       inform_at_rich_loc (&richloc, "suggested alternative: %qs",
@@ -4797,7 +4797,7 @@ qualified_lookup_using_namespace (tree name, tree scope,
    Traverse binding level LVL, looking for good name matches for NAME
    (and BM).  */
 static void
-consider_binding_level (tree name, best_match <tree, tree> &bm,
+consider_binding_level (tree name, best_match <tree, const char *> &bm,
 			cp_binding_level *lvl, bool look_within_fields,
 			enum lookup_name_fuzzy_kind kind)
 {
@@ -4809,7 +4809,7 @@ consider_binding_level (tree name, best_match <tree, tree> &bm,
 	tree best_matching_field
 	  = lookup_member_fuzzy (type, name, want_type_p);
 	if (best_matching_field)
-	  bm.consider (best_matching_field);
+	  bm.consider (IDENTIFIER_POINTER (best_matching_field));
       }
 
   for (tree t = lvl->names; t; t = TREE_CHAIN (t))
@@ -4838,7 +4838,7 @@ consider_binding_level (tree name, best_match <tree, tree> &bm,
       if (tree name = DECL_NAME (d))
 	/* Ignore internal names with spaces in them.  */
 	if (!strchr (IDENTIFIER_POINTER (name), ' '))
-	  bm.consider (DECL_NAME (d));
+	  bm.consider (IDENTIFIER_POINTER (name));
     }
 }
 
@@ -4851,7 +4851,7 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
 {
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
 
-  best_match <tree, tree> bm (name);
+  best_match <tree, const char *> bm (name);
 
   cp_binding_level *lvl;
   for (lvl = scope_chain->class_bindings; lvl; lvl = lvl->level_chain)
@@ -4874,9 +4874,9 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
      the identifiers already checked.  */
   best_macro_match bmm (name, bm.get_best_distance (), parse_in);
   cpp_hashnode *best_macro = bmm.get_best_meaningful_candidate ();
-  /* If a macro is the closest so far to NAME, suggest it.  */
+  /* If a macro is the closest so far to NAME, consider it.  */
   if (best_macro)
-    return (const char *)best_macro->ident.str;
+    bm.consider ((const char *)best_macro->ident.str);
 
   /* Try the "starts_decl_specifier_p" keywords to detect
      "singed" vs "signed" typos.  */
@@ -4884,8 +4884,9 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
     {
       const c_common_resword *resword = &c_common_reswords[i];
 
-      if (!cp_keyword_starts_decl_specifier_p (resword->rid))
-	continue;
+      if (kind == FUZZY_LOOKUP_TYPENAME)
+	if (!cp_keyword_starts_decl_specifier_p (resword->rid))
+	  continue;
 
       tree resword_identifier = ridpointers [resword->rid];
       if (!resword_identifier)
@@ -4897,16 +4898,10 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
       if (!C_IS_RESERVED_WORD (resword_identifier))
 	continue;
 
-      bm.consider (resword_identifier);
+      bm.consider (IDENTIFIER_POINTER (resword_identifier));
     }
 
-  /* See if we have a good suggesion for the user.  */
-  tree best_id = bm.get_best_meaningful_candidate ();
-  if (best_id)
-    return IDENTIFIER_POINTER (best_id);
-
-  /* No meaningful suggestion available.  */
-  return NULL;
+  return bm.get_best_meaningful_candidate ();
 }
 
 /* Subroutine of outer_binding.
