@@ -738,123 +738,124 @@ opt_reg_rename (void)
       if (!mask)
 	continue;
 
-      std::set<unsigned> found;
+      /* first = pos to start, second indicates to treat def as use. */
       std::vector<unsigned> todo;
+      std::set<unsigned> found;
       if (index + 1 < insns.size ())
 	todo.push_back (index + 1);
 
+//      /* trigger jump checking */
+//      if (index > 0 && LABEL_P(insns[index - 1]))
+//	todo.push_back (std::make_pair(index - 1, 0));
+
       found.insert (index);
       /* a register was defined, follow all branches. */
-      while (todo.size ())
+      while (mask && todo.size ())
 	{
-	  unsigned pos = todo[todo.size () - 1];
+	  unsigned runpos = todo[todo.size () - 1];
 	  todo.pop_back ();
 
-	  /* already searched. */
-	  if (found.find (pos) != found.end ())
-	    continue;
-
-	  rtx_insn * insn = insns[pos];
-	  if (LABEL_P(insn))
+	  for (unsigned pos = runpos; mask && pos < insns.size (); ++pos)
 	    {
+	      /* already searched. */
+	      if (found.find (pos) != found.end ())
+		break;
+
+	      rtx_insn * insn = insns[pos];
+	      if (LABEL_P(insn))
+		{
+		  found.insert (pos);
+
+		  /* for each jump to this label:
+		   * check if the reg was used at that jump.
+		   * if used, find def
+		   */
+		  for (std::vector<rtx_insn *>::iterator i = jumps.begin (); i != jumps.end (); ++i)
+		    {
+		      if (JUMP_LABEL(*i) == insn)
+			{
+			  std::map<rtx_insn *, unsigned>::iterator j = insn2index.find (*i);
+			  if (j == insn2index.end ())
+			    continue;
+
+			  unsigned start = j->second;
+			  if (!infos[start].is_use (rename_regno))
+			    continue;
+
+			  start = find_start (found, start, rename_regno);
+			  todo.push_back (start);
+			}
+		    }
+		  continue;
+		}
+
+	      insn_info & jj = infos[pos];
+
+	      /* marked as hard reg -> invalid rename */
+	      if (jj._use & jj._hard & rename_regbit)
+		mask = 0;
+
+//	  /* defined again -> invalid rename */
+//	  if ((jj._def & rename_regbit) && !(jj._use & rename_regbit))
+//	    mask = 0;
+
+	      if (!mask)
+		break;
+
+	      /* not used. and not a def */
+	      if (pos == runpos && (jj._def & rename_regbit))
+		{
+		  /* continue since this pos was added by start search. */
+		}
+	      else if (!(jj._use & rename_regbit))
+		break;
+
+	      /* update free regs. */
+	      mask &= ~jj._use;
+	      mask &= ~jj._def;
+	      if (!mask)
+		break;
+
 	      found.insert (pos);
 
-	      /* for each jump to this label:
-	       * check if the reg was used at that jump.
-	       * if used, find def
-	       */
-	      for (std::vector<rtx_insn *>::iterator i = jumps.begin (); i != jumps.end (); ++i)
+	      /* follow jump and/or next insn. */
+	      if (JUMP_P(insn))
 		{
-		  if (JUMP_LABEL(*i) == insn)
+		  std::map<rtx_insn *, unsigned>::iterator j = insn2index.find ((rtx_insn *) JUMP_LABEL(insn));
+		  if (j == insn2index.end ())
 		    {
-		      std::map<rtx_insn *, unsigned>::iterator j = insn2index.find (*i);
-		      if (j == insn2index.end ())
-			continue;
-
-		      unsigned start = j->second;
-		      if (!infos[start].is_use (rename_regno))
-			continue;
-
-		      start = find_start (found, start, rename_regno);
-		      todo.push_back (start);
+		      /* whoops - label not found. */
+		      mask = 0;
+		      break;
 		    }
-		}
 
-	      if (pos + 1 < insns.size ())
-		todo.push_back (pos + 1);
-	      continue;
-	    }
-
-	  insn_info & jj = infos[pos];
-
-	  /* marked as hard reg -> invalid rename */
-	  if (jj._hard & rename_regbit)
-	    mask = 0;
-
-	  /* defined again -> invalid rename */
-	  if ((jj._def & rename_regbit) && !(jj._use & rename_regbit))
-	    mask = 0;
-
-	  if (!mask)
-	    break;
-
-	  /* not used. */
-	  if (!(jj._use & rename_regbit))
-	    continue;
-
-	  /* update free regs. */
-	  mask &= ~jj._use;
-	  mask &= ~jj._def;
-	  if (!mask)
-	    break;
-
-	  found.insert (pos);
-
-	  /* follow jump and/or next insn. */
-	  if (JUMP_P(insn))
-	    {
-	      std::map<rtx_insn *, unsigned>::iterator j = insn2index.find ((rtx_insn *) JUMP_LABEL(insn));
-	      if (j == insn2index.end ())
-		{
-		  /* whoops - label not found. */
-		  todo.clear ();
-		  mask = 0;
-		  break;
-		}
-
-	      unsigned label_index = j->second;
-	      if (found.find (label_index) == found.end ())
-		{
-		  /* if the rename_reg is used in the insn before.
-		   * search the start.
-		   */
-		  if (label_index > 0)
+		  unsigned label_index = j->second;
+		  if (found.find (label_index) == found.end ())
 		    {
-		      insn_info & bb = infos[label_index - 1];
+		      /* if the rename_reg is used in the insn before.
+		       * search the start.
+		       */
+		      insn_info & bb = infos[label_index + 1];
 		      if (bb.is_use (rename_regbit))
 			{
 			  unsigned start = find_start (found, label_index - 1, rename_regno);
 			  todo.push_back (start);
 			}
+		      todo.push_back (label_index + 1);
 		    }
-		  todo.push_back (label_index);
-		}
-	      rtx jmppattern = PATTERN (insn);
-	      if (GET_CODE(jmppattern) == PARALLEL)
-		{
-		  /* can't handle yet. Abort renaming. */
-		  todo.clear ();
-		  mask = 0;
-		  break;
-		}
+		  rtx jmppattern = PATTERN (insn);
+		  if (GET_CODE(jmppattern) == PARALLEL)
+		    {
+		      /* can't handle yet. Abort renaming. */
+		      mask = 0;
+		      break;
+		    }
 
-	      rtx jmpsrc = XEXP(jmppattern, 1);
-	      if (jmpsrc && GET_CODE(jmpsrc) == IF_THEN_ELSE)
-		if (pos + 1 < insns.size ())
-		  todo.push_back (pos + 1);
+		  rtx jmpsrc = XEXP(jmppattern, 1);
+		  if (!jmpsrc || GET_CODE(jmpsrc) != IF_THEN_ELSE)
+		    break;
+		}
 	    }
-	  else if (pos + 1 < insns.size ())
-	    todo.push_back (pos + 1);
 	}
 
       if (mask)
