@@ -1,3 +1,7 @@
+2017-04-25  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/simdext.md (dmpyh): Fix typo.
+
 2017-04-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80492
