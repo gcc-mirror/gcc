@@ -12808,14 +12808,18 @@ package body Sem_Util is
             declare
                Anc : Entity_Id := Base_Type (Id);
             begin
-               if Ekind (Anc) in Private_Kind then
+               if Is_Private_Type (Anc) then
                   Anc := Full_View (Anc);
                end if;
+
+               --  Test for presence of ancestor, as the full view of a private
+               --  type may be missing in case of error.
 
                return
                  Has_Volatile_Components (Id)
                    or else
-                 Is_Effectively_Volatile (Component_Type (Anc));
+                 (Present (Anc)
+                   and then Is_Effectively_Volatile (Component_Type (Anc)));
             end;
 
          --  A protected type is always volatile

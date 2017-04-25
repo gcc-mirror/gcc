@@ -4625,9 +4625,11 @@ package body Freeze is
             if Is_Effectively_Volatile (Rec) then
 
                --  A discriminated type cannot be effectively volatile
-               --  (SPARK RM C.6(4)).
+               --  (SPARK RM 7.1.3(5)).
 
-               if Has_Discriminants (Rec) then
+               if Has_Discriminants (Rec)
+                 and then not Is_Protected_Type (Rec)
+               then
                   Error_Msg_N ("discriminated type & cannot be volatile", Rec);
 
                --  A tagged type cannot be effectively volatile
@@ -4638,7 +4640,7 @@ package body Freeze is
                end if;
 
             --  A non-effectively volatile record type cannot contain
-            --  effectively volatile components (SPARK RM C.6(2)).
+            --  effectively volatile components (SPARK RM 7.1.3(6)).
 
             else
                Comp := First_Component (Rec);
