@@ -1,3 +1,12 @@
+2017-04-25  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (cmpsi_cc_insn_mixed): Use 'h' register
+	constraint.
+	(cmpsi_cc_c_insn): Likewise.
+	(cbranchsi4_scratch): Compute proper instruction length using
+	compact_hreg_operand.
+	* config/arc/predicates.md (compact_hreg_operand): New predicate.
+
 2017-04-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/80509

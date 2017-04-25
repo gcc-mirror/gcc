@@ -189,6 +189,19 @@
   }
 )
 
+(define_predicate "compact_hreg_operand"
+  (match_code "reg, subreg")
+  {
+     if ((GET_MODE (op) != mode) && (mode != VOIDmode))
+	 return 0;
+
+      return (GET_CODE (op) == REG)
+      && (REGNO (op) >= FIRST_PSEUDO_REGISTER
+		|| (TARGET_V2 && REGNO (op) <= 31 && REGNO (op) != 30)
+		|| !TARGET_V2);
+  }
+)
+
 ;; Return true if OP is an acceptable memory operand for ARCompact
 ;; 16-bit store instructions
 (define_predicate "compact_store_memory_operand"
