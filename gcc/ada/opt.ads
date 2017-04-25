@@ -1021,9 +1021,12 @@ package Opt is
 
    Locking_Policy : Character := ' ';
    --  GNAT, GNATBIND
-   --  Set to ' ' for the default case (no locking policy specified). Reset to
-   --  first character (uppercase) of locking policy name if a valid pragma
-   --  Locking_Policy is encountered.
+
+   --  Set to ' ' for the default case (no locking policy specified). Otherwise
+   --  set based on the pragma Locking_Policy:
+   --     Ceiling_Locking: 'C'
+   --     Concurrent_Readers_Locking: 'R'
+   --     Inheritance_Locking: 'I'
 
    Locking_Policy_Sloc : Source_Ptr := No_Location;
    --  GNAT, GNATBIND
