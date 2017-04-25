@@ -570,15 +570,6 @@ package body Sem_Ch5 is
 
       Resolve (Rhs, T1);
 
-      --  If the right-hand side contains target names, expansion has been
-      --  disabled to prevent expansion that might move target names out of
-      --  the context of the assignment statement. Restore the expander mode
-      --  now so that assignment statement can be properly expanded.
-
-      if Nkind (N) = N_Assignment_Statement and then Has_Target_Names (N) then
-         Expander_Mode_Restore;
-      end if;
-
       --  This is the point at which we check for an unset reference
 
       Check_Unset_Reference (Rhs);
@@ -939,6 +930,15 @@ package body Sem_Ch5 is
    <<Leave>>
       Current_LHS := Empty;
       Restore_Ghost_Mode (Mode);
+
+      --  If the right-hand side contains target names, expansion has been
+      --  disabled to prevent expansion that might move target names out of
+      --  the context of the assignment statement. Restore the expander mode
+      --  now so that assignment statement can be properly expanded.
+
+      if Nkind (N) = N_Assignment_Statement and then Has_Target_Names (N) then
+         Expander_Mode_Restore;
+      end if;
    end Analyze_Assignment;
 
    -----------------------------

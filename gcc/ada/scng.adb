@@ -2052,6 +2052,8 @@ package body Scng is
             --  T'Digits'Img. Strings literals are included for things like
             --  "abs"'Address. Other literals are included to give better error
             --  behavior for illegal cases like 123'Img.
+            --  In Ada2020 a target name (i.e. @) is a valid prefix of an
+            --  attribute, and functions like a name.
 
             if Prev_Token = Tok_Identifier
                or else Prev_Token = Tok_Right_Paren
@@ -2059,6 +2061,7 @@ package body Scng is
                or else Prev_Token = Tok_Delta
                or else Prev_Token = Tok_Digits
                or else Prev_Token = Tok_Project
+               or else Prev_Token = Tok_At_Sign
                or else Prev_Token in Token_Class_Literal
             then
                Token := Tok_Apostrophe;

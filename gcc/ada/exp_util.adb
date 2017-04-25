@@ -1057,7 +1057,6 @@ package body Exp_Util is
       Adjust_Sloc   : Boolean;
       Needs_Wrapper : out Boolean)
    is
-
       function Replace_Entity (N : Node_Id) return Traverse_Result;
       --  Replace reference to formal of inherited operation or to primitive
       --  operation of root type, with corresponding entity for derived type,
@@ -1102,8 +1101,8 @@ package body Exp_Util is
             if Present (New_E) then
                Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
 
-               --  If the entity is an overridden primitive, we must build
-               --  a wrapper for the current inherited operation.
+               --  If the entity is an overridden primitive, we must build a
+               --  wrapper for the current inherited operation.
 
                if Is_Subprogram (New_E) then
                   Needs_Wrapper := True;
