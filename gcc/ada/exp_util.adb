@@ -1987,16 +1987,17 @@ package body Exp_Util is
       --  Obj_Id denotes the entity of the _object formal parameter of the
       --  invariant procedure. All created checks are added to list Checks.
 
-      procedure Add_Interface_Invariants
-        (T      : Entity_Id;
-         Obj_Id : Entity_Id;
-         Checks : in out List_Id);
-      --  Generate an invariant check for each inherited class-wide invariant
-      --  coming from all interfaces implemented by type T. Obj_Id denotes the
-      --  entity of the _object formal parameter of the invariant procedure.
-      --  All created checks are added to list Checks.
+      procedure Add_Invariant_Check
+        (Prag      : Node_Id;
+         Expr      : Node_Id;
+         Checks    : in out List_Id;
+         Inherited : Boolean := False);
+      --  Subsidiary to all Add_xxx_Invariant routines. Add a runtime check to
+      --  verify assertion expression Expr of pragma Prag. All generated code
+      --  is added to list Checks. Flag Inherited should be set when the pragma
+      --  is inherited from a parent or interface type.
 
-      procedure Add_Parent_Invariants
+      procedure Add_Inherited_Invariant
         (T      : Entity_Id;
          Obj_Id : Entity_Id;
          Checks : in out List_Id);
@@ -2005,6 +2006,16 @@ package body Exp_Util is
       --  the _object formal parameter of the invariant procedure. All created
       --  checks are added to list Checks.
 
+      procedure Add_Own_Invariant
+        (T         : Entity_Id;
+         Obj_Id    : Entity_Id;
+         Checks    : in out List_Id;
+         Priv_Item : Node_Id := Empty);
+      --  Generate an invariant check for each invariant found for type T.
+      --  Obj_Id denotes the entity of the _object formal parameter of the
+      --  invariant procedure. All created checks are added to list Checks.
+      --  Priv_Item denotes the first rep item of the private type.
+
       procedure Add_Record_Component_Invariants
         (T      : Entity_Id;
          Obj_Id : Entity_Id;
@@ -2012,27 +2023,6 @@ package body Exp_Util is
       --  Generate an invariant check for each component of record type T.
       --  Obj_Id denotes the entity of the _object formal parameter of the
       --  invariant procedure. All created checks are added to list Checks.
-
-      procedure Add_Type_Invariants
-        (Priv_Typ  : Entity_Id;
-         Full_Typ  : Entity_Id;
-         CRec_Typ  : Entity_Id;
-         Obj_Id    : Entity_Id;
-         Checks    : in out List_Id;
-         Inherit   : Boolean := False;
-         Priv_Item : Node_Id := Empty);
-      --  Generate an invariant check for each invariant found in one of the
-      --  following types (if available):
-      --
-      --    Priv_Typ - the partial view of a type
-      --    Full_Typ - the full view of a type
-      --    CRec_Typ - the corresponding record of a protected or a task type
-      --
-      --  Obj_Id denotes the entity of the _object formal parameter of the
-      --  invariant procedure. All created checks are added to list Checks.
-      --  Flag Inherit should be set when generating invariant checks for
-      --  inherited class-wide invariants. Priv_Item denotes the first rep
-      --  item of the private type.
 
       ------------------------------------
       -- Add_Array_Component_Invariants --
@@ -2176,7 +2166,7 @@ package body Exp_Util is
                                   Expressions    => New_List (
                                     Make_Integer_Literal (Loc, Dim))))),
 
-                      Statements => Comp_Checks));
+                      Statements       => Comp_Checks));
                end if;
             end if;
          end Process_One_Dimension;
@@ -2190,102 +2180,309 @@ package body Exp_Util is
             Dim_Checks => Checks);
       end Add_Array_Component_Invariants;
 
-      ------------------------------
-      -- Add_Interface_Invariants --
-      ------------------------------
+      -----------------------------
+      -- Add_Inherited_Invariant --
+      -----------------------------
 
-      procedure Add_Interface_Invariants
+      procedure Add_Inherited_Invariant
         (T      : Entity_Id;
          Obj_Id : Entity_Id;
          Checks : in out List_Id)
       is
-         Iface_Elmt : Elmt_Id;
-         Ifaces     : Elist_Id;
+         Arg1 : Node_Id;
+         Arg2 : Node_Id;
+         Expr : Node_Id;
+         Prag : Node_Id;
+
+         Rep_Typ : Entity_Id;
+         --  The replacement type used in the substitution of the current
+         --  instance of a type with the _object formal parameter
 
       begin
-         if Is_Tagged_Type (T) then
-            Collect_Interfaces (T, Ifaces);
-
-            --  Process the class-wide invariants of all implemented interfaces
-
-            Iface_Elmt := First_Elmt (Ifaces);
-            while Present (Iface_Elmt) loop
-               Add_Type_Invariants
-                 (Priv_Typ => Empty,
-                  Full_Typ => Node (Iface_Elmt),
-                  CRec_Typ => Empty,
-                  Obj_Id   => Obj_Id,
-                  Checks   => Checks,
-                  Inherit  => True);
-
-               Next_Elmt (Iface_Elmt);
-            end loop;
-         end if;
-      end Add_Interface_Invariants;
-
-      ---------------------------
-      -- Add_Parent_Invariants --
-      ---------------------------
-
-      procedure Add_Parent_Invariants
-        (T      : Entity_Id;
-         Obj_Id : Entity_Id;
-         Checks : in out List_Id)
-      is
-         Dummy_1 : Entity_Id;
-         Dummy_2 : Entity_Id;
-
-         Curr_Typ : Entity_Id;
-         --  The entity of the current type being examined
-
-         Full_Typ : Entity_Id;
-         --  The full view of Par_Typ
-
-         Par_Typ : Entity_Id;
-         --  The entity of the parent type
-
-         Priv_Typ : Entity_Id;
-         --  The partial view of Par_Typ
-
-      begin
-         --  Do not process array types because they cannot have true parent
-         --  types. This also prevents the generation of a duplicate invariant
-         --  check when the input type is an array base type because its Etype
-         --  denotes the first subtype, both of which share the same component
-         --  type.
-
-         if Is_Array_Type (T) then
+         if not Present (T) then
             return;
          end if;
 
-         --  Climb the parent type chain
+         Prag := First_Rep_Item (T);
+         while Present (Prag) loop
+            if Nkind (Prag) = N_Pragma
+              and then Pragma_Name (Prag) = Name_Invariant
+            then
+               --  Nothing to do if the pragma was already processed
 
-         Curr_Typ := T;
-         loop
-            --  Do not consider subtypes as they inherit the invariants from
-            --  their base types.
+               if Contains (Pragmas_Seen, Prag) then
+                  return;
+               end if;
 
-            Par_Typ := Base_Type (Etype (Curr_Typ));
+               --  Extract the arguments of the invariant pragma
 
-            --  Stop the climb once the root of the parent chain is reached
+               Arg1 := First (Pragma_Argument_Associations (Prag));
+               Arg2 := Next (Arg1);
 
-            exit when Curr_Typ = Par_Typ;
+               Arg1 := Get_Pragma_Arg (Arg1);
+               Arg2 := Get_Pragma_Arg (Arg2);
 
-            --  Process the class-wide invariants of the parent type
+               --  Otherwise the pragma applies to a parent type in which case
+               --  it will be processed at a later stage by
+               --  Add_Parent_Invariants or Add_Interface_Invariants.
 
-            Get_Views (Par_Typ, Priv_Typ, Full_Typ, Dummy_1, Dummy_2);
+               if Entity (Arg1) = T then
+                  Rep_Typ := Entity (Arg1);
 
-            Add_Type_Invariants
-              (Priv_Typ => Priv_Typ,
-               Full_Typ => Full_Typ,
-               CRec_Typ => Empty,
-               Obj_Id   => Obj_Id,
-               Checks   => Checks,
-               Inherit  => True);
+               elsif Present (Full_View (T))
+                 and then Entity (Arg1) = Full_View (T)
+               then
+                  Rep_Typ := Full_View (T);
 
-            Curr_Typ := Par_Typ;
+               else
+                  return;
+               end if;
+
+               --  Nothing to do when the caller requests the processing of
+               --  all inherited class-wide invariants, but the pragma does
+               --  not fall in this category.
+
+               if not Class_Present (Prag) then
+                  return;
+               end if;
+
+               Expr := New_Copy_Tree (Arg2);
+
+               --  Substitute all references to type T with references to the
+               --  _object formal parameter.
+
+               --  ??? Dispatching must be removed due to AI12-0150-1
+
+               Replace_Type_References
+                 (Expr, Rep_Typ, Obj_Id, Dispatch => Class_Present (Prag));
+
+               Add_Invariant_Check (Prag, Expr, Checks, Inherited => True);
+            end if;
+
+            Next_Rep_Item (Prag);
          end loop;
-      end Add_Parent_Invariants;
+      end Add_Inherited_Invariant;
+
+      -------------------------
+      -- Add_Invariant_Check --
+      -------------------------
+
+      procedure Add_Invariant_Check
+        (Prag      : Node_Id;
+         Expr      : Node_Id;
+         Checks    : in out List_Id;
+         Inherited : Boolean := False)
+      is
+         Args    : constant List_Id    := Pragma_Argument_Associations (Prag);
+         Nam     : constant Name_Id    := Original_Aspect_Pragma_Name (Prag);
+         Ploc    : constant Source_Ptr := Sloc (Prag);
+         Str_Arg : constant Node_Id    := Next (Next (First (Args)));
+
+         Assoc : List_Id;
+         Str   : String_Id;
+
+      begin
+         --  The invariant is ignored, nothing left to do
+
+         if Is_Ignored (Prag) then
+            null;
+
+         --  Otherwise the invariant is checked. Build a Check pragma to verify
+         --  the expression at runtime.
+
+         else
+            Assoc := New_List (
+              Make_Pragma_Argument_Association (Ploc,
+                Expression => Make_Identifier (Ploc, Nam)),
+              Make_Pragma_Argument_Association (Ploc,
+                Expression => Expr));
+
+            --  Handle the String argument (if any)
+
+            if Present (Str_Arg) then
+               Str := Strval (Get_Pragma_Arg (Str_Arg));
+
+               --  When inheriting an invariant, modify the message from
+               --  "failed invariant" to "failed inherited invariant".
+
+               if Inherited then
+                  String_To_Name_Buffer (Str);
+
+                  if Name_Buffer (1 .. 16) = "failed invariant" then
+                     Insert_Str_In_Name_Buffer ("inherited ", 8);
+                     Str := String_From_Name_Buffer;
+                  end if;
+               end if;
+
+               Append_To (Assoc,
+                 Make_Pragma_Argument_Association (Ploc,
+                   Expression => Make_String_Literal (Ploc, Str)));
+            end if;
+
+            --  Generate:
+            --    pragma Check (<Nam>, <Expr>, <Str>);
+
+            Append_New_To (Checks,
+              Make_Pragma (Ploc,
+                Chars                        => Name_Check,
+                Pragma_Argument_Associations => Assoc));
+         end if;
+
+         --  Output an info message when inheriting an invariant and the
+         --  listing option is enabled.
+
+         if Inherited and Opt.List_Inherited_Aspects then
+            Error_Msg_Sloc := Sloc (Prag);
+            Error_Msg_N
+              ("info: & inherits `Invariant''Class` aspect from #?L?", Typ);
+         end if;
+
+         --  Add the pragma to the list of processed pragmas
+
+         Append_New_Elmt (Prag, Pragmas_Seen);
+         Produced_Check := True;
+      end Add_Invariant_Check;
+
+      -----------------------
+      -- Add_Own_Invariant --
+      -----------------------
+
+      procedure Add_Own_Invariant
+        (T         : Entity_Id;
+         Obj_Id    : Entity_Id;
+         Checks    : in out List_Id;
+         Priv_Item : Node_Id := Empty)
+      is
+         Arg1      : Node_Id;
+         Arg2      : Node_Id;
+         ASIS_Expr : Node_Id;
+         Asp       : Node_Id;
+         Expr      : Node_Id;
+         Ploc      : Source_Ptr;
+         Prag      : Node_Id;
+
+      begin
+         if not Present (T) then
+            return;
+         end if;
+
+         Prag := First_Rep_Item (T);
+         while Present (Prag) loop
+            if Nkind (Prag) = N_Pragma
+              and then Pragma_Name (Prag) = Name_Invariant
+            then
+               --  Stop the traversal of the rep item chain once a specific
+               --  item is encountered.
+
+               if Present (Priv_Item) and then Prag = Priv_Item then
+                  exit;
+               end if;
+
+               --  Nothing to do if the pragma was already processed
+
+               if Contains (Pragmas_Seen, Prag) then
+                  return;
+               end if;
+
+               --  Extract the arguments of the invariant pragma
+
+               Arg1 := First (Pragma_Argument_Associations (Prag));
+               Arg2 := Next (Arg1);
+
+               Arg1 := Get_Pragma_Arg (Arg1);
+               Arg2 := Get_Pragma_Arg (Arg2);
+
+               Asp  := Corresponding_Aspect (Prag);
+               Ploc := Sloc (Prag);
+
+               --  Otherwise the pragma applies to a parent type in which case
+               --  it will be processed at a later stage by
+               --  Add_Parent_Invariants or Add_Interface_Invariants.
+
+               if Entity (Arg1) /= T then
+                  return;
+               end if;
+
+               Expr := New_Copy_Tree (Arg2);
+
+               --  Substitute all references to type T with references to
+               --  the _object formal parameter.
+
+               Replace_Type_References
+                 (Expr     => Expr,
+                  Typ      => T,
+                  Obj_Id   => Obj_Id,
+                  Dispatch => Class_Present (Prag));
+
+               --  Preanalyze the invariant expression to detect errors and at
+               --  the same time capture the visibility of the proper package
+               --  part.
+
+               --  Historical note: the old implementation of invariants used
+               --  node N as the parent, but a package specification as parent
+               --  of an expression is bizarre.
+
+               Set_Parent (Expr, Parent (Arg2));
+               Preanalyze_Assert_Expression (Expr, Any_Boolean);
+
+               --  If the pragma comes from an aspect specification, replace
+               --  the saved expression because all type references must be
+               --  substituted for the call to Preanalyze_Spec_Expression in
+               --  Check_Aspect_At_xxx routines.
+
+               if Present (Asp) then
+                  Set_Entity (Identifier (Asp), New_Copy_Tree (Expr));
+               end if;
+
+               --  Analyze the original invariant expression for ASIS
+
+               if ASIS_Mode then
+                  ASIS_Expr := Empty;
+
+                  if Comes_From_Source (Prag) then
+                     ASIS_Expr := Arg2;
+                  elsif Present (Asp) then
+                     ASIS_Expr := Expression (Asp);
+                  end if;
+
+                  if Present (ASIS_Expr) then
+                     Replace_Type_References
+                       (Expr     => ASIS_Expr,
+                        Typ      => T,
+                        Obj_Id   => Obj_Id,
+                        Dispatch => Class_Present (Prag));
+
+                     Preanalyze_Assert_Expression (ASIS_Expr, Any_Boolean);
+                  end if;
+               end if;
+
+               --  A class-wide invariant may be inherited in a separate unit,
+               --  where the corresponding expression cannot be resolved by
+               --  visibility, because it refers to a local function. Propagate
+               --  semantic information to the original representation item, to
+               --  be used when an invariant procedure for a derived type is
+               --  constructed.
+
+               --  ??? Unclear how to handle class-wide invariants that are not
+               --  function calls.
+
+               if Class_Present (Prag)
+                 and then Nkind (Expr) = N_Function_Call
+                 and then Nkind (Arg2) = N_Indexed_Component
+               then
+                  Rewrite (Arg2,
+                    Make_Function_Call (Ploc,
+                      Name                   =>
+                        New_Occurrence_Of (Entity (Name (Expr)), Ploc),
+                      Parameter_Associations => Expressions (Arg2)));
+               end if;
+
+               Add_Invariant_Check (Prag, Expr, Checks);
+            end if;
+
+            Next_Rep_Item (Prag);
+         end loop;
+      end Add_Own_Invariant;
 
       -------------------------------------
       -- Add_Record_Component_Invariants --
@@ -2513,294 +2710,12 @@ package body Exp_Util is
          end if;
       end Add_Record_Component_Invariants;
 
-      -------------------------
-      -- Add_Type_Invariants --
-      -------------------------
-
-      procedure Add_Type_Invariants
-        (Priv_Typ  : Entity_Id;
-         Full_Typ  : Entity_Id;
-         CRec_Typ  : Entity_Id;
-         Obj_Id    : Entity_Id;
-         Checks    : in out List_Id;
-         Inherit   : Boolean := False;
-         Priv_Item : Node_Id := Empty)
-      is
-         procedure Add_Invariant (Prag : Node_Id);
-         --  Create a runtime check to verify the invariant exression of pragma
-         --  Prag. All generated code is added to list Checks.
-
-         procedure Process_Type (T : Entity_Id; Stop_Item : Node_Id := Empty);
-         --  Generate invariant checks for type T by inspecting the rep item
-         --  chain of the type. Stop_Item denotes a rep item which once seen
-         --  will stop the inspection.
-
-         -------------------
-         -- Add_Invariant --
-         -------------------
-
-         procedure Add_Invariant (Prag : Node_Id) is
-            Asp  : constant Node_Id    := Corresponding_Aspect (Prag);
-            Nam  : constant Name_Id    := Original_Aspect_Pragma_Name (Prag);
-            Ploc : constant Source_Ptr := Sloc (Prag);
-
-            Arg1      : Node_Id;
-            Arg2      : Node_Id;
-            Arg3      : Node_Id;
-            ASIS_Expr : Node_Id;
-            Assoc     : List_Id;
-            Expr      : Node_Id;
-            Str       : String_Id;
-
-            Rep_Typ : Entity_Id;
-            --  The replacement type used in the substitution of the current
-            --  instance of a type with the _object formal parameter.
-
-         begin
-            --  Nothing to do if the pragma was already processed
-
-            if Contains (Pragmas_Seen, Prag) then
-               return;
-            end if;
-
-            --  Extract the arguments of the invariant pragma
-
-            Arg1 := First (Pragma_Argument_Associations (Prag));
-            Arg2 := Next (Arg1);
-            Arg3 := Next (Arg2);
-
-            Arg1 := Get_Pragma_Arg (Arg1);
-            Arg2 := Get_Pragma_Arg (Arg2);
-
-            --  The pragma applies to the partial view
-
-            if Present (Priv_Typ) and then Entity (Arg1) = Priv_Typ then
-               Rep_Typ := Priv_Typ;
-
-            --  The pragma applies to the full view
-
-            elsif Present (Full_Typ) and then Entity (Arg1) = Full_Typ then
-               Rep_Typ := Full_Typ;
-
-            --  Otherwise the pragma applies to a parent type in which case it
-            --  will be processed at a later stage by Add_Parent_Invariants or
-            --  Add_Interface_Invariants.
-
-            else
-               return;
-            end if;
-
-            --  Nothing to do when the caller requests the processing of all
-            --  inherited class-wide invariants, but the pragma does not fall
-            --  in this category.
-
-            if Inherit and then not Class_Present (Prag) then
-               return;
-            end if;
-
-            Expr := New_Copy_Tree (Arg2);
-
-            --  Substitute all references to type Rep_Typ with references to
-            --  the _object formal parameter. Dispatching here must be removed
-            --  due to AI12-0150-1 !!!
-
-            Replace_Type_References
-              (Expr, Rep_Typ, Obj_Id, Dispatch => Class_Present (Prag));
-
-            --  Additional processing for non-class-wide invariants
-
-            if not Inherit then
-
-               --  Preanalyze the invariant expression to detect errors and at
-               --  the same time capture the visibility of the proper package
-               --  part.
-
-               --  Historical note: the old implementation of invariants used
-               --  node N as the parent, but a package specification as parent
-               --  of an expression is bizarre.
-
-               Set_Parent (Expr, Parent (Arg2));
-               Preanalyze_Assert_Expression (Expr, Any_Boolean);
-
-               --  If the pragma comes from an aspect specification, replace
-               --  the saved expression because all type references must be
-               --  substituted for the call to Preanalyze_Spec_Expression in
-               --  Check_Aspect_At_xxx routines.
-
-               if Present (Asp) then
-                  Set_Entity (Identifier (Asp), New_Copy_Tree (Expr));
-               end if;
-
-               --  Analyze the original invariant expression for ASIS
-
-               if ASIS_Mode then
-                  ASIS_Expr := Empty;
-
-                  if Comes_From_Source (Prag) then
-                     ASIS_Expr := Arg2;
-                  elsif Present (Asp) then
-                     ASIS_Expr := Expression (Asp);
-                  end if;
-
-                  if Present (ASIS_Expr) then
-                     Replace_Type_References
-                       (ASIS_Expr, Rep_Typ, Obj_Id, Class_Present (Prag));
-                     Preanalyze_Assert_Expression (ASIS_Expr, Any_Boolean);
-                  end if;
-               end if;
-
-               --  A class-wide invariant may be inherited in a separate unit,
-               --  where the corresponding expression cannot be resolved by
-               --  visibility, because it refers to a local function. Propagate
-               --  semantic information to the original representation item, to
-               --  be used when an invariant procedure for a derived type is
-               --  constructed.
-
-               --  ??? Unclear how to handle class-wide invariants that are not
-               --  function calls.
-
-               if Class_Present (Prag)
-                 and then Nkind (Expr) = N_Function_Call
-                 and then Nkind (Arg2) = N_Indexed_Component
-               then
-                  Rewrite (Arg2,
-                    Make_Function_Call (Ploc,
-                      Name                   =>
-                        New_Occurrence_Of (Entity (Name (Expr)), Ploc),
-                      Parameter_Associations => Expressions (Arg2)));
-               end if;
-            end if;
-
-            --  The invariant is ignored, nothing left to do
-
-            if Is_Ignored (Prag) then
-               null;
-
-            --  Otherwise the invariant is checked. Build a Check pragma to
-            --  verify the expression at runtime.
-
-            else
-               Assoc := New_List (
-                 Make_Pragma_Argument_Association (Ploc,
-                   Expression => Make_Identifier (Ploc, Nam)),
-                 Make_Pragma_Argument_Association (Ploc,
-                   Expression => Expr));
-
-               --  Handle the String argument (if any)
-
-               if Present (Arg3) then
-                  Str := Strval (Get_Pragma_Arg (Arg3));
-
-                  --  When inheriting an invariant, modify the message from
-                  --  "failed invariant" to "failed inherited invariant".
-
-                  if Inherit then
-                     String_To_Name_Buffer (Str);
-
-                     if Name_Buffer (1 .. 16) = "failed invariant" then
-                        Insert_Str_In_Name_Buffer ("inherited ", 8);
-                        Str := String_From_Name_Buffer;
-                     end if;
-                  end if;
-
-                  Append_To (Assoc,
-                    Make_Pragma_Argument_Association (Ploc,
-                      Expression => Make_String_Literal (Ploc, Str)));
-               end if;
-
-               --  Generate:
-               --    pragma Check (<Nam>, <Expr>, <Str>);
-
-               Append_New_To (Checks,
-                 Make_Pragma (Ploc,
-                   Chars                        => Name_Check,
-                   Pragma_Argument_Associations => Assoc));
-            end if;
-
-            --  Output an info message when inheriting an invariant and the
-            --  listing option is enabled.
-
-            if Inherit and Opt.List_Inherited_Aspects then
-               Error_Msg_Sloc := Sloc (Prag);
-               Error_Msg_N
-                 ("info: & inherits `Invariant''Class` aspect from #?L?", Typ);
-            end if;
-
-            --  Add the pragma to the list of processed pragmas
-
-            Append_New_Elmt (Prag, Pragmas_Seen);
-            Produced_Check := True;
-         end Add_Invariant;
-
-         ------------------
-         -- Process_Type --
-         ------------------
-
-         procedure Process_Type
-           (T         : Entity_Id;
-            Stop_Item : Node_Id := Empty)
-         is
-            Rep_Item : Node_Id;
-
-         begin
-            Rep_Item := First_Rep_Item (T);
-            while Present (Rep_Item) loop
-               if Nkind (Rep_Item) = N_Pragma
-                 and then Pragma_Name (Rep_Item) = Name_Invariant
-               then
-                  --  Stop the traversal of the rep item chain once a specific
-                  --  item is encountered.
-
-                  if Present (Stop_Item) and then Rep_Item = Stop_Item then
-                     exit;
-
-                  --  Otherwise generate an invariant check
-
-                  else
-                     Add_Invariant (Rep_Item);
-                  end if;
-               end if;
-
-               Next_Rep_Item (Rep_Item);
-            end loop;
-         end Process_Type;
-
-      --  Start of processing for Add_Type_Invariants
-
-      begin
-         --  Process the invariants of the partial view
-
-         if Present (Priv_Typ) then
-            Process_Type (Priv_Typ);
-         end if;
-
-         --  Process the invariants of the full view
-
-         if Present (Full_Typ) then
-            Process_Type (Full_Typ, Stop_Item => Priv_Item);
-
-            --  Process the elements of an array type
-
-            if Is_Array_Type (Full_Typ) then
-               Add_Array_Component_Invariants (Full_Typ, Obj_Id, Checks);
-
-            --  Process the components of a record type
-
-            elsif Ekind (Full_Typ) = E_Record_Type then
-               Add_Record_Component_Invariants (Full_Typ, Obj_Id, Checks);
-            end if;
-         end if;
-
-         --  Process the components of a corresponding record type
-
-         if Present (CRec_Typ) then
-            Add_Record_Component_Invariants (CRec_Typ, Obj_Id, Checks);
-         end if;
-      end Add_Type_Invariants;
-
       --  Local variables
 
-      Dummy        : Entity_Id;
+      Dummy_1      : Entity_Id;
+      Dummy_2      : Entity_Id;
+      Iface_Elmt   : Elmt_Id;
+      Ifaces       : Elist_Id;
       Mode         : Ghost_Mode_Type;
       Priv_Item    : Node_Id;
       Proc_Body    : Node_Id;
@@ -2872,7 +2787,7 @@ package body Exp_Util is
 
       --  Obtain both views of the type
 
-      Get_Views (Work_Typ, Priv_Typ, Full_Typ, Dummy, CRec_Typ);
+      Get_Views (Work_Typ, Priv_Typ, Full_Typ, Dummy_1, CRec_Typ);
 
       --  The caller requests a body for the partial invariant procedure
 
@@ -2953,12 +2868,10 @@ package body Exp_Util is
       if Partial_Invariant then
          pragma Assert (Present (Priv_Typ));
 
-         Add_Type_Invariants
-           (Priv_Typ => Priv_Typ,
-            Full_Typ => Empty,
-            CRec_Typ => Empty,
-            Obj_Id   => Obj_Id,
-            Checks   => Stmts);
+         Add_Own_Invariant
+           (T      => Priv_Typ,
+            Obj_Id => Obj_Id,
+            Checks => Stmts);
 
       --  Otherwise the "full" invariant procedure verifies the invariants of
       --  the full view, all array or record components, as well as class-wide
@@ -3032,27 +2945,115 @@ package body Exp_Util is
             end if;
          end if;
 
+         --  Process the elements of an array type
+
+         if Is_Array_Type (Full_Typ) then
+            Add_Array_Component_Invariants (Full_Typ, Obj_Id, Stmts);
+
+         --  Process the components of a record type
+
+         elsif Ekind (Full_Typ) = E_Record_Type then
+            Add_Record_Component_Invariants (Full_Typ, Obj_Id, Stmts);
+         end if;
+
          --  Process the invariants of the full view and in certain cases those
          --  of the partial view. This also handles any invariants on array or
          --  record components.
 
-         Add_Type_Invariants
-           (Priv_Typ  => Priv_Typ,
-            Full_Typ  => Full_Typ,
-            CRec_Typ  => CRec_Typ,
+         Add_Own_Invariant
+           (T         => Priv_Typ,
             Obj_Id    => Obj_Id,
             Checks    => Stmts,
             Priv_Item => Priv_Item);
 
+         Add_Own_Invariant
+           (T         => Full_Typ,
+            Obj_Id    => Obj_Id,
+            Checks    => Stmts,
+            Priv_Item => Priv_Item);
+
+         if Present (CRec_Typ) then
+            Add_Record_Component_Invariants (CRec_Typ, Obj_Id, Stmts);
+         end if;
+
          --  Process the inherited class-wide invariants of all parent types.
          --  This also handles any invariants on record components.
 
-         Add_Parent_Invariants (Full_Typ, Obj_Id, Stmts);
+         declare
+            Curr_Typ : Entity_Id;
+            --  The entity of the current type being examined
 
-         --  Process the inherited class-wide invariants of all implemented
-         --  interface types.
+            Par_Full : Entity_Id;
+            --  The full view of Par_Typ
 
-         Add_Interface_Invariants (Full_Typ, Obj_Id, Stmts);
+            Par_Priv : Entity_Id;
+            --  The partial view of Par_Typ
+
+            Par_Typ : Entity_Id;
+            --  The entity of the parent type
+
+         begin
+            if not Is_Array_Type (Full_Typ) then
+
+               --  Climb the parent type chain
+
+               Curr_Typ := Full_Typ;
+               loop
+                  --  Do not consider subtypes as they inherit the invariants
+                  --  from their base types.
+
+                  Par_Typ := Base_Type (Etype (Curr_Typ));
+
+                  --  Stop the climb once the root of the parent chain is
+                  --  reached.
+
+                  exit when Curr_Typ = Par_Typ;
+
+                  --  Process the class-wide invariants of the parent type
+
+                  Get_Views (Par_Typ, Par_Priv, Par_Full, Dummy_1, Dummy_2);
+
+                  --  Process the elements of an array type
+
+                  if Is_Array_Type (Par_Full) then
+                     Add_Array_Component_Invariants (Par_Full, Obj_Id, Stmts);
+
+                  --  Process the components of a record type
+
+                  elsif Ekind (Par_Full) = E_Record_Type then
+                     Add_Record_Component_Invariants (Par_Full, Obj_Id, Stmts);
+                  end if;
+
+                  Add_Inherited_Invariant
+                    (T      => Par_Priv,
+                     Obj_Id => Obj_Id,
+                     Checks => Stmts);
+
+                  Curr_Typ := Par_Typ;
+               end loop;
+            end if;
+         end;
+
+         --  Generate an invariant check for each inherited class-wide
+         --  invariant coming from all interfaces implemented by type T. Obj_Id
+         --  denotes the entity of the _object formal parameter of the
+         --  invariant procedure. All created checks are added to list Checks.
+
+         if Is_Tagged_Type (Full_Typ) then
+            Collect_Interfaces (Full_Typ, Ifaces);
+
+            --  Process the class-wide invariants of all implemented interfaces
+
+            Iface_Elmt := First_Elmt (Ifaces);
+            while Present (Iface_Elmt) loop
+               Add_Inherited_Invariant
+                 (T      => Node (Iface_Elmt),
+                  Obj_Id => Obj_Id,
+                  Checks => Stmts);
+
+               Next_Elmt (Iface_Elmt);
+            end loop;
+         end if;
       end if;
 
       End_Scope;

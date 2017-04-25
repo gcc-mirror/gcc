@@ -231,7 +231,7 @@ package body Fname.UF is
       --    _and_.ads
 
       --  which is bit peculiar, but we keep it that way. This means that we
-      --  avoid bombs due to writing a bad file name, and w get expected error
+      --  avoid bombs due to writing a bad file name, and we get expected error
       --  processing downstream, e.g. a compilation following gnatchop.
 
       if Name_Buffer (1) = '"' then
@@ -298,12 +298,10 @@ package body Fname.UF is
             Pent := SFN_Patterns.First;
             while Pent <= SFN_Patterns.Last loop
                if SFN_Patterns.Table (Pent).Typ = Unit_Char_Search then
-                  Name_Len := 0;
-
                   --  Determine if we have a predefined file name
 
                   Is_Predef :=
-                    Is_Predefined_File_Name
+                    Is_Predefined_Unit_Name
                       (Uname, Renamings_Included => True);
 
                   --  Found a match, execute the pattern
