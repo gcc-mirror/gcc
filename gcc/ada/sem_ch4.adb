@@ -4914,6 +4914,7 @@ package body Sem_Ch4 is
          --  expression of the same type, unless the selector designates a
          --  public operation (otherwise that would represent an attempt to
          --  reach an internal entity of another synchronized object).
+
          --  This is legal if prefix is an access to such type and there is
          --  a dereference, or is a component with a dereferenced prefix.
          --  It is also legal if the prefix is a component of a task type,
@@ -4943,6 +4944,21 @@ package body Sem_Ch4 is
                Set_Etype  (Sel, Any_Type);
                return;
             end if;
+
+         --  Another special case: the prefix may denote an object of the type
+         --  (but not a type) in which case this is an external call and the
+         --  operation must be public.
+
+         elsif In_Scope
+           and then Is_Object_Reference (Original_Node (Prefix (N)))
+           and then Is_Private_Op
+         then
+            Error_Msg_NE
+              ("invalid reference to private operation of some object of "
+               & "type &", N, Type_To_Use);
+            Set_Entity (Sel, Any_Id);
+            Set_Etype  (Sel, Any_Type);
+            return;
          end if;
 
          --  If there is no visible entity with the given name or none of the

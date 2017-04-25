@@ -10389,7 +10389,7 @@ package body Sem_Prag is
 
       --  Ignore pragma if Ignore_Pragma applies
 
-      if Should_Ignore_Pragma (Pname) then
+      if Should_Ignore_Pragma_Sem (N) then
          return;
       end if;
 

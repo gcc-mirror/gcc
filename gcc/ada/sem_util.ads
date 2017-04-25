@@ -2359,10 +2359,12 @@ package Sem_Util is
    function Scope_Is_Transient return Boolean;
    --  True if the current scope is transient
 
-   function Should_Ignore_Pragma (Prag_Name : Name_Id) return Boolean;
+   function Should_Ignore_Pragma_Par (Prag_Name : Name_Id) return Boolean;
+   function Should_Ignore_Pragma_Sem (N : Node_Id) return Boolean;
    --  True if we should ignore pragmas with the specified name. In particular,
    --  this returns True if pragma Ignore_Pragma applies, and we are not in a
-   --  predefined unit.
+   --  predefined unit. The _Par version should be called only from the parser;
+   --  the _Sem version should be called only during semantic analysis.
 
    function Static_Boolean (N : Node_Id) return Uint;
    --  This function analyzes the given expression node and then resolves it

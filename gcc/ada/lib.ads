@@ -599,6 +599,11 @@ package Lib is
    function In_Predefined_Unit (S : Source_Ptr) return Boolean;
    --  Same function as above but argument is a source pointer
 
+   function In_Internal_Unit (N : Node_Or_Entity_Id) return Boolean;
+   function In_Internal_Unit (S : Source_Ptr) return Boolean;
+   --  Same as In_Predefined_Unit, except units in the GNAT hierarchy are
+   --  included.
+
    function In_Same_Code_Unit (N1, N2 : Node_Or_Entity_Id) return Boolean;
    pragma Inline (In_Same_Code_Unit);
    --  Determines if the two nodes or entities N1 and N2 are in the same

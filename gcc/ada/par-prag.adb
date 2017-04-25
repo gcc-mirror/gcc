@@ -294,7 +294,7 @@ begin
 
    --  Ignore pragma previously flagged by Ignore_Pragma
 
-   if Should_Ignore_Pragma (Prag_Name) then
+   if Should_Ignore_Pragma_Par (Prag_Name) then
       return Pragma_Node;
    end if;
 
