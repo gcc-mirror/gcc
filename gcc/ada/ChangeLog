@@ -1,3 +1,25 @@
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Check_Part_Of_Reference):
+	Continue to examine the context if the reference appears within
+	an expression function.
+
+2017-04-25  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch7.adb, exp_ch7.ads Remove Build_Invariant_Procedure_Body
+	and Build_Invariant_Procedure_Declaration.
+	* exp_util.ads, exp_util.adb Add Build_Invariant_Procedure_Body
+	and Build_Invariant_Procedure_Declaration from exp_ch7
+	and break-out Is_Untagged_Private_Derivation from
+	Build_Invariant_Procedure_Body.
+	(Replace_Type_References):
+	Append an extra parameter to allow for dispatching replacements
+	and add the corrasponding logic.
+	(Type_Invariant): Remove
+	Replace_Typ_Refs and replace its references with calls to
+	Replace_Type_References.
+	* sem_ch3.adb, sem_prag.adb: Remove with and use of exp_ch7.
+
 2017-04-25  Bob Duff  <duff@adacore.com>
 
 	* sem_util.ads, sem_util.adb (Should_Ignore_Pragma): New function

@@ -39,7 +39,6 @@ with Debug;     use Debug;
 with Einfo;     use Einfo;
 with Elists;    use Elists;
 with Errout;    use Errout;
-with Exp_Ch7;   use Exp_Ch7;
 with Exp_Dist;  use Exp_Dist;
 with Exp_Util;  use Exp_Util;
 with Freeze;    use Freeze;

@@ -1823,8 +1823,20 @@ package body Sem_Util is
                               N_Subprogram_Declaration)
            and then not Comes_From_Source (Par)
          then
-            OK_Use := True;
-            exit;
+            --  Continue to examine the context if the reference appears in a
+            --  subprogram body which was previously an expression function.
+
+            if Nkind (Par) = N_Subprogram_Body
+              and then Was_Expression_Function (Par)
+            then
+               null;
+
+            --  Otherwise the reference is legal
+
+            else
+               OK_Use := True;
+               exit;
+            end if;
 
          --  The reference has been relocated to an inlined body for GNATprove.
          --  Assume that the reference is legal as the real check was already

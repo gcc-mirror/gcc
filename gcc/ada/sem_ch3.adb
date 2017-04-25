@@ -33,7 +33,6 @@ with Einfo;     use Einfo;
 with Errout;    use Errout;
 with Eval_Fat;  use Eval_Fat;
 with Exp_Ch3;   use Exp_Ch3;
-with Exp_Ch7;   use Exp_Ch7;
 with Exp_Ch9;   use Exp_Ch9;
 with Exp_Disp;  use Exp_Disp;
 with Exp_Dist;  use Exp_Dist;
