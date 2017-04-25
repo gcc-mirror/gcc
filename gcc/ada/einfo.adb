@@ -619,7 +619,7 @@ package body Einfo is
    --    Is_Underlying_Full_View         Flag298
    --    Body_Needed_For_Inlining        Flag299
 
-   --    (unused)                        Flag300
+   --    Has_Private_Extension           Flag300
    --    (unused)                        Flag301
    --    (unused)                        Flag302
    --    (unused)                        Flag303
@@ -1817,6 +1817,12 @@ package body Einfo is
    begin
       return Flag155 (Id);
    end Has_Private_Declaration;
+
+   function Has_Private_Extension (Id : E) return B is
+   begin
+      pragma Assert (Is_Tagged_Type (Id));
+      return Flag300 (Id);
+   end Has_Private_Extension;
 
    function Has_Protected (Id : E) return B is
    begin
@@ -4890,6 +4896,12 @@ package body Einfo is
    begin
       Set_Flag155 (Id, V);
    end Set_Has_Private_Declaration;
+
+   procedure Set_Has_Private_Extension (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Tagged_Type (Id));
+      Set_Flag300 (Id, V);
+   end Set_Has_Private_Extension;
 
    procedure Set_Has_Protected (Id : E; V : B := True) is
    begin
@@ -9363,6 +9375,7 @@ package body Einfo is
       W ("Has_Primitive_Operations",        Flag120 (Id));
       W ("Has_Private_Ancestor",            Flag151 (Id));
       W ("Has_Private_Declaration",         Flag155 (Id));
+      W ("Has_Private_Extension",           Flag300 (Id));
       W ("Has_Protected",                   Flag271 (Id));
       W ("Has_Qualified_Name",              Flag161 (Id));
       W ("Has_RACW",                        Flag214 (Id));

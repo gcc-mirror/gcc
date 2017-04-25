@@ -4897,6 +4897,12 @@ package body Sem_Ch3 is
          end if;
       end if;
 
+      --  Remember that its parent type has a private extension. Used to warn
+      --  on public primitives of the parent type defined after its private
+      --  extensions (see Check_Dispatching_Operation).
+
+      Set_Has_Private_Extension (Parent_Type);
+
    <<Leave>>
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, T);

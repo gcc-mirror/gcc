@@ -7401,24 +7401,32 @@ package body Sem_Prag is
                     ("dispatching subprogram# cannot use Stdcall convention!",
                      Arg1);
 
-               --  Subprograms are not allowed
+               --  Several allowed cases
 
-               elsif not Is_Subprogram_Or_Generic_Subprogram (E)
+               elsif Is_Subprogram_Or_Generic_Subprogram (E)
 
                  --  A variable is OK
 
-                 and then Ekind (E) /= E_Variable
+                 or else Ekind (E) = E_Variable
+
+                 --  A component as well.  The entity does not have its
+                 --  Ekind set until the enclosing record declaration is
+                 --  fully analyzed.
+
+                 or else Nkind (Parent (E)) = N_Component_Declaration
 
                  --  An access to subprogram is also allowed
 
-                 and then not
-                   (Is_Access_Type (E)
-                     and then Ekind (Designated_Type (E)) = E_Subprogram_Type)
+                 or else (Is_Access_Type (E)
+                   and then Ekind (Designated_Type (E)) = E_Subprogram_Type)
 
                  --  Allow internal call to set convention of subprogram type
 
-                 and then not (Ekind (E) = E_Subprogram_Type)
+                 or else (Ekind (E) = E_Subprogram_Type)
                then
+                  null;
+
+               else
                   Error_Pragma_Arg
                     ("second argument of pragma% must be subprogram (type)",
                      Arg2);

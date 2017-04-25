@@ -52,6 +52,7 @@ with Snames;   use Snames;
 with Sinfo;    use Sinfo;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
+with Warnsw;   use Warnsw;
 
 package body Sem_Disp is
 
@@ -932,6 +933,57 @@ package body Sem_Disp is
    ---------------------------------
 
    procedure Check_Dispatching_Operation (Subp, Old_Subp : Entity_Id) is
+      procedure Warn_On_Late_Primitive_After_Private_Extension
+        (Typ  : Entity_Id;
+         Prim : Entity_Id);
+      --  Prim is a dispatching primitive of the tagged type Typ. Warn on Prim
+      --  if it is a public primitive defined after some private extension of
+      --  the tagged type.
+
+      ----------------------------------------------------
+      -- Warn_On_Late_Primitive_After_Private_Extension --
+      ----------------------------------------------------
+
+      procedure Warn_On_Late_Primitive_After_Private_Extension
+        (Typ  : Entity_Id;
+         Prim : Entity_Id)
+      is
+         E : Entity_Id;
+
+      begin
+         if Warn_On_Late_Primitives
+           and then Comes_From_Source (Prim)
+           and then Has_Private_Extension (Typ)
+           and then Is_Package_Or_Generic_Package (Current_Scope)
+           and then not In_Private_Part (Current_Scope)
+         then
+            E := Next_Entity (Typ);
+
+            while E /= Prim loop
+               if Ekind (E) = E_Record_Type_With_Private
+                 and then Etype (E) = Typ
+               then
+                  Error_Msg_Name_1 := Chars (Typ);
+                  Error_Msg_Name_2 := Chars (E);
+                  Error_Msg_Sloc := Sloc (E);
+                  Error_Msg_N
+                    ("?j?primitive of type % defined after private " &
+                     "extension % #?", Prim);
+                  Error_Msg_Name_1 := Chars (Prim);
+                  Error_Msg_Name_2 := Chars (E);
+                  Error_Msg_N
+                    ("\spec of % should appear before declaration of type %!",
+                     Prim);
+                  exit;
+               end if;
+
+               Next_Entity (E);
+            end loop;
+         end if;
+      end Warn_On_Late_Primitive_After_Private_Extension;
+
+      --  Local variables
+
       Body_Is_Last_Primitive : Boolean   := False;
       Has_Dispatching_Parent : Boolean   := False;
       Ovr_Subp               : Entity_Id := Empty;
@@ -1591,6 +1643,13 @@ package body Sem_Disp is
             end if;
          end;
       end if;
+
+      --  For similarity with record extensions, in Ada 9X the language should
+      --  have disallowed adding visible operations to a tagged type after
+      --  deriving a private extension from it. Report a warning if this
+      --  primitive is defined after a private extension of Tagged_Type.
+
+      Warn_On_Late_Primitive_After_Private_Extension (Tagged_Type, Subp);
    end Check_Dispatching_Operation;
 
    ------------------------------------------

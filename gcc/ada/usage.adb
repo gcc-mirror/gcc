@@ -507,6 +507,10 @@ begin
                                                   "(annex J) feature");
    Write_Line ("        J*   turn off warnings for obsolescent " &
                                                   "(annex J) feature");
+   Write_Line ("        .j+  turn on warnings for late dispatching " &
+                                                  "primitives");
+   Write_Line ("        .J*  turn off warnings for late dispatching " &
+                                                  "primitives");
    Write_Line ("        k+   turn on warnings on constant variable");
    Write_Line ("        K*   turn off warnings on constant variable");
    Write_Line ("        .k   turn on warnings for standard redefinition");
