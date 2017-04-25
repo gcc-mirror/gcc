@@ -1978,7 +1978,6 @@ package body Sem_Cat is
          if Comes_From_Source (Typ) and then Is_Type (Typ)
            and then Ekind (Typ) /= E_Incomplete_Type
          then
-
             --  Check that the type can be meaningfully transmitted to another
             --  partition (E.2.2(8)).
 
