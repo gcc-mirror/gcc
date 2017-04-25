@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1375,6 +1375,13 @@ package body Sem_Dim is
             else
                return Dimensions_Of (Etype (N));
             end if;
+
+         --  A type conversion may have been inserted to rewrite other
+         --  expressions, e.g. function returns. Dimensions are those of
+         --  the target type.
+
+         elsif Nkind (N) = N_Type_Conversion then
+            return Dimensions_Of (Etype (N));
 
          --  Otherwise return the default dimensions
 

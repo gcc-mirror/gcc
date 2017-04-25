@@ -382,14 +382,15 @@ package body Sem_Ch6 is
          --  An entity can only be frozen if it is complete, so if the type
          --  is still unfrozen it must still be incomplete in some way, e.g.
          --  a private type without a full view, or a type derived from such
-         --  in an enclosing scope. Except in a generic context, such use of
+         --  in an enclosing scope. Except in a generic context (where the
+         --  type may be a generic formal or derived from such), such use of
          --  an incomplete type is an error. On the other hand, if this is a
          --  limited view of a type, the type is declared in another unit and
          --  frozen there. We must be in a context seeing the nonlimited view
          --  of the type, which will be installed when the body is compiled.
 
          if not Is_Frozen (Ret_Type)
-           and then not Is_Generic_Type (Ret_Type)
+           and then not Is_Generic_Type (Root_Type (Ret_Type))
            and then not Inside_A_Generic
          then
             if From_Limited_With (Ret_Type)

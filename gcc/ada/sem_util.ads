@@ -1889,6 +1889,18 @@ package Sem_Util is
    --  present, this size check code is killed, since the object will not be
    --  allocated by the program.
 
+   function Known_Non_Null (N : Node_Id) return Boolean;
+   --  Given a node N for a subexpression of an access type, determines if
+   --  this subexpression yields a value that is known at compile time to
+   --  be non-null and returns True if so. Returns False otherwise. It is
+   --  an error to call this function if N is not of an access type.
+
+   function Known_Null (N : Node_Id) return Boolean;
+   --  Given a node N for a subexpression of an access type, determines if this
+   --  subexpression yields a value that is known at compile time to be null
+   --  and returns True if so. Returns False otherwise. It is an error to call
+   --  this function if N is not of an access type.
+
    function Known_To_Be_Assigned (N : Node_Id) return Boolean;
    --  The node N is an entity reference. This function determines whether the
    --  reference is for sure an assignment of the entity, returning True if

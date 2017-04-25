@@ -100,6 +100,25 @@ package body Sem_Util is
    --  components in the selected variant to determine whether all of them
    --  have a default.
 
+   type Null_Status_Kind is
+     (Is_Null,
+      --  This value indicates that a subexpression is known to have a null
+      --  value at compile time.
+
+      Is_Non_Null,
+      --  This value indicates that a subexpression is known to have a non-null
+      --  value at compile time.
+
+      Unknown);
+      --  This value indicates that it cannot be determined at compile time
+      --  whether a subexpression yields a null or non-null value.
+
+   function Null_Status (N : Node_Id) return Null_Status_Kind;
+   --  Determine whether subexpression N of an access type yields a null value,
+   --  a non-null value, or the value cannot be determined at compile time. The
+   --  routine does not take simple flow diagnostics into account, it relies on
+   --  static facts such as the presence of null exclusions.
+
    function Old_Requires_Transient_Scope (Id : Entity_Id) return Boolean;
    function New_Requires_Transient_Scope (Id : Entity_Id) return Boolean;
    --  ???We retain the old and new algorithms for Requires_Transient_Scope for
@@ -15966,6 +15985,104 @@ package body Sem_Util is
       end if;
    end Kill_Size_Check_Code;
 
+   --------------------
+   -- Known_Non_Null --
+   --------------------
+
+   function Known_Non_Null (N : Node_Id) return Boolean is
+      Status : constant Null_Status_Kind := Null_Status (N);
+
+      Id  : Entity_Id;
+      Op  : Node_Kind;
+      Val : Node_Id;
+
+   begin
+      --  The expression yields a non-null value ignoring simple flow analysis
+
+      if Status = Is_Non_Null then
+         return True;
+
+      --  Otherwise check whether N is a reference to an entity that appears
+      --  within a conditional construct.
+
+      elsif Is_Entity_Name (N) and then Present (Entity (N)) then
+
+         --  First check if we are in decisive conditional
+
+         Get_Current_Value_Condition (N, Op, Val);
+
+         if Known_Null (Val) then
+            if Op = N_Op_Eq then
+               return False;
+            elsif Op = N_Op_Ne then
+               return True;
+            end if;
+         end if;
+
+         --  If OK to do replacement, test Is_Known_Non_Null flag
+
+         Id := Entity (N);
+
+         if OK_To_Do_Constant_Replacement (Id) then
+            return Is_Known_Non_Null (Id);
+         end if;
+      end if;
+
+      --  Otherwise it is not possible to determine whether N yields a non-null
+      --  value.
+
+      return False;
+   end Known_Non_Null;
+
+   ----------------
+   -- Known_Null --
+   ----------------
+
+   function Known_Null (N : Node_Id) return Boolean is
+      Status : constant Null_Status_Kind := Null_Status (N);
+
+      Id  : Entity_Id;
+      Op  : Node_Kind;
+      Val : Node_Id;
+
+   begin
+      --  The expression yields a null value ignoring simple flow analysis
+
+      if Status = Is_Null then
+         return True;
+
+      --  Otherwise check whether N is a reference to an entity that appears
+      --  within a conditional construct.
+
+      elsif Is_Entity_Name (N) and then Present (Entity (N)) then
+
+         --  First check if we are in decisive conditional
+
+         Get_Current_Value_Condition (N, Op, Val);
+
+         if Known_Null (Val) then
+            if Op = N_Op_Eq then
+               return True;
+            elsif Op = N_Op_Ne then
+               return False;
+            end if;
+         end if;
+
+         --  If OK to do replacement, test Is_Known_Null flag
+
+         Id := Entity (N);
+
+         if OK_To_Do_Constant_Replacement (Id) then
+            return Is_Known_Null (Id);
+         end if;
+      end if;
+
+      --  Otherwise it is not possible to determine whether N yields a null
+      --  value.
+
+      return False;
+   end Known_Null;
+
    --------------------------
    -- Known_To_Be_Assigned --
    --------------------------
@@ -18346,6 +18463,204 @@ package body Sem_Util is
          null;
       end loop;
    end Note_Possible_Modification;
+
+   -----------------
+   -- Null_Status --
+   -----------------
+
+   function Null_Status (N : Node_Id) return Null_Status_Kind is
+      function Is_Null_Excluding_Def (Def : Node_Id) return Boolean;
+      --  Determine whether definition Def carries a null exclusion
+
+      function Null_Status_Of_Entity (Id : Entity_Id) return Null_Status_Kind;
+      --  Determine the null status of arbitrary entity Id
+
+      function Null_Status_Of_Type (Typ : Entity_Id) return Null_Status_Kind;
+      --  Determine the null status of type Typ
+
+      ---------------------------
+      -- Is_Null_Excluding_Def --
+      ---------------------------
+
+      function Is_Null_Excluding_Def (Def : Node_Id) return Boolean is
+      begin
+         return
+           Nkind_In (Def, N_Access_Definition,
+                          N_Access_Function_Definition,
+                          N_Access_Procedure_Definition,
+                          N_Access_To_Object_Definition,
+                          N_Component_Definition,
+                          N_Derived_Type_Definition)
+             and then Null_Exclusion_Present (Def);
+      end Is_Null_Excluding_Def;
+
+      ---------------------------
+      -- Null_Status_Of_Entity --
+      ---------------------------
+
+      function Null_Status_Of_Entity
+        (Id : Entity_Id) return Null_Status_Kind
+      is
+         Decl : constant Node_Id := Declaration_Node (Id);
+         Def  : Node_Id;
+
+      begin
+         --  The value of an imported or exported entity may be set externally
+         --  regardless of a null exclusion. As a result, the value cannot be
+         --  determined statically.
+
+         if Is_Imported (Id) or else Is_Exported (Id) then
+            return Unknown;
+
+         elsif Nkind_In (Decl, N_Component_Declaration,
+                               N_Discriminant_Specification,
+                               N_Formal_Object_Declaration,
+                               N_Object_Declaration,
+                               N_Object_Renaming_Declaration,
+                               N_Parameter_Specification)
+         then
+            --  A component declaration yields a non-null value when either
+            --  its component definition or access definition carries a null
+            --  exclusion.
+
+            if Nkind (Decl) = N_Component_Declaration then
+               Def := Component_Definition (Decl);
+
+               if Is_Null_Excluding_Def (Def) then
+                  return Is_Non_Null;
+               end if;
+
+               Def := Access_Definition (Def);
+
+               if Present (Def) and then Is_Null_Excluding_Def (Def) then
+                  return Is_Non_Null;
+               end if;
+
+            --  A formal object declaration yields a non-null value if its
+            --  access definition carries a null exclusion. If the object is
+            --  default initialized, then the value depends on the expression.
+
+            elsif Nkind (Decl) = N_Formal_Object_Declaration then
+               Def := Access_Definition  (Decl);
+
+               if Present (Def) and then Is_Null_Excluding_Def (Def) then
+                  return Is_Non_Null;
+               end if;
+
+            --  A constant may yield a null or non-null value depending on its
+            --  initialization expression.
+
+            elsif Ekind (Id) = E_Constant then
+               return Null_Status (Constant_Value (Id));
+
+            --  The construct yields a non-null value when it has a null
+            --  exclusion.
+
+            elsif Null_Exclusion_Present (Decl) then
+               return Is_Non_Null;
+
+            --  An object renaming declaration yields a non-null value if its
+            --  access definition carries a null exclusion. Otherwise the value
+            --  depends on the renamed name.
+
+            elsif Nkind (Decl) = N_Object_Renaming_Declaration then
+               Def := Access_Definition (Decl);
+
+               if Present (Def) and then Is_Null_Excluding_Def (Def) then
+                  return Is_Non_Null;
+
+               else
+                  return Null_Status (Name (Decl));
+               end if;
+            end if;
+         end if;
+
+         --  At this point the declaration of the entity does not carry a null
+         --  exclusion and lacks an initialization expression. Check the status
+         --  of its type.
+
+         return Null_Status_Of_Type (Etype (Id));
+      end Null_Status_Of_Entity;
+
+      -------------------------
+      -- Null_Status_Of_Type --
+      -------------------------
+
+      function Null_Status_Of_Type (Typ : Entity_Id) return Null_Status_Kind is
+         Curr : Entity_Id;
+         Decl : Node_Id;
+
+      begin
+         --  Traverse the type chain looking for types with null exclusion
+
+         Curr := Typ;
+         while Present (Curr) and then Etype (Curr) /= Curr loop
+            Decl := Parent (Curr);
+
+            --  Guard against itypes which do not always have declarations. A
+            --  type yields a non-null value if it carries a null exclusion.
+
+            if Present (Decl) then
+               if Nkind (Decl) = N_Full_Type_Declaration
+                 and then Is_Null_Excluding_Def (Type_Definition (Decl))
+               then
+                  return Is_Non_Null;
+
+               elsif Nkind (Decl) = N_Subtype_Declaration
+                 and then Null_Exclusion_Present (Decl)
+               then
+                  return Is_Non_Null;
+               end if;
+            end if;
+
+            Curr := Etype (Curr);
+         end loop;
+
+         --  The type chain does not contain any null excluding types
+
+         return Unknown;
+      end Null_Status_Of_Type;
+
+   --  Start of processing for Null_Status
+
+   begin
+      --  An allocator always creates a non-null value
+
+      if Nkind (N) = N_Allocator then
+         return Is_Non_Null;
+
+      --  Taking the 'Access of something yields a non-null value
+
+      elsif Nkind (N) = N_Attribute_Reference
+        and then Nam_In (Attribute_Name (N), Name_Access,
+                                             Name_Unchecked_Access,
+                                             Name_Unrestricted_Access)
+      then
+         return Is_Non_Null;
+
+      --  "null" yields null
+
+      elsif Nkind (N) = N_Null then
+         return Is_Null;
+
+      --  Check the status of the operand of a type conversion
+
+      elsif Nkind (N) = N_Type_Conversion then
+         return Null_Status (Expression (N));
+
+      --  The input denotes a reference to an entity. Determine whether the
+      --  entity or its type yields a null or non-null value.
+
+      elsif Is_Entity_Name (N) and then Present (Entity (N)) then
+         return Null_Status_Of_Entity (Entity (N));
+      end if;
+
+      --  Otherwise it is not possible to determine the null status of the
+      --  subexpression at compile time without resorting to simple flow
+      --  analysis.
+
+      return Unknown;
+   end Null_Status;
 
    --------------------------------------
    --  Null_To_Null_Address_Convert_OK --

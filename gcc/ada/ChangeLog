@@ -1,3 +1,33 @@
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Known_Non_Null): Moved to Sem_Util.
+	(Known_Null): Moved to Sem_Util.
+	* exp_util.ads (Known_Non_Null): Moved to Sem_Util.
+	(Known_Null): Moved to Sem_Util.
+	* sem_util.adb Add new enumeration type Null_Status_Kind.
+	(Known_Non_Null): Moved from Exp_Util. Most of the logic in
+	this routine is now carried out by Null_Status.
+	(Known_Null): Moved from Exp_Util. Most of the logic in this routine
+	is now carried out by Null_Status.
+	(Null_Status): New routine.
+	* sem_util.ads (Known_Non_Null): Moved from Exp_Util.
+	(Known_Null): Moved from Exp_Util.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Do not report an
+	error on the return type of an expression function that is a
+	completion, if the type is derived from a generic formal type.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_dim.adb (Dimensions_Of_Operand): The dimensions of a type
+	conversion are those of the target type.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* a-clrefi.adb: Minor cleanup.
+
 2017-04-25  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_util.adb, exp_util.ads, types.ads: Minor reformatting.
