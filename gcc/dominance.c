@@ -125,7 +125,7 @@ private:
   bitmap m_fake_exit_edge;
 
   /* Number of basic blocks in the function being compiled.  */
-  size_t m_n_basic_blocks;
+  unsigned m_n_basic_blocks;
 
   /* True, if we are computing postdominators (rather than dominators).  */
   bool m_reverse;
@@ -148,7 +148,7 @@ void debug_dominance_tree (cdi_direction, basic_block);
    `x = new T[num] {};'.  */
 
 template<typename T>
-inline T *new_zero_array (size_t num)
+inline T *new_zero_array (unsigned num)
 {
   T *result = new T[num];
   memset (result, 0, sizeof (T) * num);
@@ -160,14 +160,15 @@ inline T *new_zero_array (size_t num)
 void
 dom_info::dom_init (void)
 {
-  size_t num = m_n_basic_blocks;
+  unsigned num = m_n_basic_blocks;
+
   m_dfs_parent = new_zero_array <TBB> (num);
   m_dom = new_zero_array <TBB> (num);
 
   m_path_min = new TBB[num];
   m_key = new TBB[num];
   m_set_size = new unsigned int[num];
-  for (size_t i = 0; i < num; i++)
+  for (unsigned i = 0; i < num; i++)
     {
       m_path_min[i] = m_key[i] = i;
       m_set_size[i] = 1;
@@ -221,13 +222,13 @@ dom_info::dom_info (function *fn, cdi_direction dir)
 dom_info::dom_info (vec<basic_block> region, cdi_direction dir)
 {
   m_n_basic_blocks = region.length ();
-  unsigned int nm1 = m_n_basic_blocks - 1;
+  unsigned nm1 = m_n_basic_blocks - 1;
 
   dom_init ();
 
   /* Determine max basic block index in region.  */
   int max_index = region[0]->index;
-  for (size_t i = 1; i <= nm1; i++)
+  for (unsigned i = 1; i <= nm1; i++)
     if (region[i]->index > max_index)
       max_index = region[i]->index;
   max_index += 1;  /* set index on the first bb out of region.  */
