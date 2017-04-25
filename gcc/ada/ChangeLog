@@ -1,3 +1,37 @@
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* sem_prag.adb (No_Return): Give an error if the pragma applies
+	to a body. Specialize the error for the specless body case,
+	as is done for (e.g.) pragma Convention.
+	* debug.adb: Add switch -gnatd.J to disable the above legality
+	checks. This is mainly for use in our test suite, to avoid
+	rewriting a lot of illegal (but working) code.	It might also
+	be useful to customers. Under this switch, if a pragma No_Return
+	applies to a body, and the procedure raises an exception (as it
+	should), the pragma has no effect. If the procedure does return,
+	execution is erroneous.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): This is the
+	root of the problem. It took N as an 'in out' parameter, and in
+	some cases, rewrote N, but then set N to Original_Node(N). So
+	the node returned in N had no Parent. The caller continued
+	processing of this orphaned node. In some cases that caused a
+	crash (e.g. Remove_Side_Effects climbs up Parents in a loop,
+	and trips over the Empty Parent). The solution is to make N an
+	'in' parameter.  Instead of rewriting it, return the list of
+	post-call actions, so the caller can do the rewriting later,
+	after N has been fully processed.
+	(Expand_Call_Helper): Move most of Expand_Call here. It has
+	too many premature 'return' statements, and we want to do the
+	rewriting on return.
+	(Insert_Post_Call_Actions): New procedure to insert the post-call
+	actions in the appropriate place. In the problematic case,
+	that involves rewriting N as an Expression_With_Actions.
+	(Expand_Call): Call the new procedures Expand_Call_Helper and
+	Insert_Post_Call_Actions.
+
 2017-04-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Inherits_Class_Wide_Pre): Cleanup code, handle

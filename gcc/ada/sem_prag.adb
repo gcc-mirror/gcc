@@ -7621,7 +7621,7 @@ package body Sem_Prag is
          end if;
 
          --  Check that we are not applying this to a specless body. Relax this
-         --  check if Relaxed_RM_Semantics to accomodate other Ada compilers.
+         --  check if Relaxed_RM_Semantics to accommodate other Ada compilers.
 
          if Is_Subprogram (E)
            and then Nkind (Parent (Declaration_Node (E))) = N_Subprogram_Body
@@ -8084,8 +8084,8 @@ package body Sem_Prag is
                                                              N_Subprogram_Body
                then
                   Error_Pragma
-                    ("pragma% requires separate spec"
-                      & " and must come before body");
+                    ("pragma% requires separate spec" &
+                      " and must come before body");
                end if;
 
                --  Test result type if given, note that the result type
@@ -18177,6 +18177,29 @@ package body Sem_Prag is
                  and then Scope (E) = Current_Scope
                loop
                   if Ekind_In (E, E_Procedure, E_Generic_Procedure) then
+                     --  Check that the pragma is not applied to a body.
+                     --  First check the specless body case, to give a
+                     --  different error message. These checks do not apply
+                     --  if Relaxed_RM_Semantics, to accommodate other Ada
+                     --  compilers. Disable these checks under -gnatd.J.
+
+                     if not Debug_Flag_Dot_JJ then
+                        if Nkind (Parent (Declaration_Node (E))) =
+                            N_Subprogram_Body
+                          and then not Relaxed_RM_Semantics
+                        then
+                           Error_Pragma
+                             ("pragma% requires separate spec" &
+                                " and must come before body");
+                        end if;
+
+                        --  Now the "specful" body case
+
+                        if Rep_Item_Too_Late (E, N) then
+                           raise Pragma_Exit;
+                        end if;
+                     end if;
+
                      Set_No_Return (E);
 
                      --  A pragma that applies to a Ghost entity becomes Ghost
@@ -26125,7 +26148,7 @@ package body Sem_Prag is
                raise Program_Error;
             end if;
 
-         --  To accomodate partial decoration of disabled SPARK features, this
+         --  To accommodate partial decoration of disabled SPARK features, this
          --  routine may be called with illegal input. If this is the case, do
          --  not raise Program_Error.
 
@@ -28031,7 +28054,7 @@ package body Sem_Prag is
               (Item     => First (Choices (Clause)),
                Is_Input => False);
 
-         --  To accomodate partial decoration of disabled SPARK features, this
+         --  To accommodate partial decoration of disabled SPARK features, this
          --  routine may be called with illegal input. If this is the case, do
          --  not raise Program_Error.
 
@@ -28105,7 +28128,7 @@ package body Sem_Prag is
                end loop;
             end if;
 
-         --  To accomodate partial decoration of disabled SPARK features, this
+         --  To accommodate partial decoration of disabled SPARK features, this
          --  routine may be called with illegal input. If this is the case, do
          --  not raise Program_Error.
 
