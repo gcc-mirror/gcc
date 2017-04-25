@@ -1,5 +1,32 @@
 2017-04-25  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	PR target/80080
+	* s390-protos.h (s390_expand_cs_hqi): Removed.
+	(s390_expand_cs, s390_expand_atomic_exchange_tdsi): New prototypes.
+	* config/s390/s390.c (s390_emit_compare_and_swap): Handle all integer
+	modes as well as CCZ1mode and CCZmode.
+	(s390_expand_atomic_exchange_tdsi, s390_expand_atomic): Adapt to new
+	signature of s390_emit_compare_and_swap.
+	(s390_expand_cs_hqi): Likewise, make static.
+	(s390_expand_cs_tdsi): Generate an explicit compare before trying
+	compare-and-swap, in some cases.
+	(s390_expand_cs): Wrapper function.
+	(s390_expand_atomic_exchange_tdsi): New backend specific expander for
+	atomic_exchange.
+	(s390_match_ccmode_set): Allow CCZmode <-> CCZ1 mode.
+	* config/s390/s390.md ("atomic_compare_and_swap<mode>"): Merge the
+	patterns for small and large integers.  Forbid symref memory operands.
+	Move expander to s390.c.  Require cc register.
+	("atomic_compare_and_swap<DGPR:mode><CCZZ1:mode>_internal")
+	("*atomic_compare_and_swap<TDI:mode><CCZZ1:mode>_1")
+	("*atomic_compare_and_swapdi<CCZZ1:mode>_2")
+	("*atomic_compare_and_swapsi<CCZZ1:mode>_3"): Use s_operand to forbid
+	symref memory operands.  Remove CC mode and call s390_match_ccmode
+	instead.
+	("atomic_exchange<mode>"): Allow and implement all integer modes.
+
+2017-04-25  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* config/s390/s390.md (define_peephole2): New peephole to help
 	combining the load-and-test pattern with volatile memory.
 

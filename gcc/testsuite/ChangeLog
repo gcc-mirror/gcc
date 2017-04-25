@@ -1,3 +1,10 @@
+2017-04-25  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR target/80080
+	* gcc.target/s390/md/atomic_compare_exchange-1.c: New test.
+	* gcc.target/s390/md/atomic_compare_exchange-1.inc: New test.
+	* gcc.target/s390/md/atomic_exchange-1.inc: New test.
+
 2017-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/80501

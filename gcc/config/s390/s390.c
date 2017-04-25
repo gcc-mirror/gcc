@@ -1306,6 +1306,7 @@ s390_match_ccmode_set (rtx set, machine_mode req_mode)
   set_mode = GET_MODE (SET_DEST (set));
   switch (set_mode)
     {
+    case CCZ1mode:
     case CCSmode:
     case CCSRmode:
     case CCUmode:
@@ -1328,7 +1329,8 @@ s390_match_ccmode_set (rtx set, machine_mode req_mode)
 
     case CCZmode:
       if (req_mode != CCSmode && req_mode != CCUmode && req_mode != CCTmode
-	  && req_mode != CCSRmode && req_mode != CCURmode)
+	  && req_mode != CCSRmode && req_mode != CCURmode
+	  && req_mode != CCZ1mode)
         return 0;
       break;
 
@@ -1762,11 +1764,31 @@ s390_emit_compare (enum rtx_code code, rtx op0, rtx op1)
 
 static rtx
 s390_emit_compare_and_swap (enum rtx_code code, rtx old, rtx mem,
-			    rtx cmp, rtx new_rtx)
+			    rtx cmp, rtx new_rtx, machine_mode ccmode)
 {
-  emit_insn (gen_atomic_compare_and_swapsi_internal (old, mem, cmp, new_rtx));
-  return s390_emit_compare (code, gen_rtx_REG (CCZ1mode, CC_REGNUM),
-			    const0_rtx);
+  rtx cc;
+
+  cc = gen_rtx_REG (ccmode, CC_REGNUM);
+  switch (GET_MODE (mem))
+    {
+    case SImode:
+      emit_insn (gen_atomic_compare_and_swapsi_internal (old, mem, cmp,
+							 new_rtx, cc));
+      break;
+    case DImode:
+      emit_insn (gen_atomic_compare_and_swapdi_internal (old, mem, cmp,
+							 new_rtx, cc));
+      break;
+    case TImode:
+	emit_insn (gen_atomic_compare_and_swapti_internal (old, mem, cmp,
+							   new_rtx, cc));
+      break;
+    case QImode:
+    case HImode:
+    default:
+      gcc_unreachable ();
+    }
+  return s390_emit_compare (code, cc, const0_rtx);
 }
 
 /* Emit a jump instruction to TARGET and return it.  If COND is
@@ -6723,7 +6745,7 @@ s390_two_part_insv (struct alignment_context *ac, rtx *seq1, rtx *seq2,
    the memory location, CMP the old value to compare MEM with and NEW_RTX the
    value to set if CMP == MEM.  */
 
-void
+static void
 s390_expand_cs_hqi (machine_mode mode, rtx btarget, rtx vtarget, rtx mem,
 		    rtx cmp, rtx new_rtx, bool is_weak)
 {
@@ -6770,7 +6792,7 @@ s390_expand_cs_hqi (machine_mode mode, rtx btarget, rtx vtarget, rtx mem,
   emit_insn (seq2);
   emit_insn (seq3);
 
-  cc = s390_emit_compare_and_swap (EQ, res, ac.memsi, cmpv, newv);
+  cc = s390_emit_compare_and_swap (EQ, res, ac.memsi, cmpv, newv, CCZ1mode);
   if (is_weak)
     emit_insn (gen_cstorecc4 (btarget, cc, XEXP (cc, 0), XEXP (cc, 1)));
   else
@@ -6797,6 +6819,151 @@ s390_expand_cs_hqi (machine_mode mode, rtx btarget, rtx vtarget, rtx mem,
   /* Return the correct part of the bitfield.  */
   convert_move (vtarget, expand_simple_binop (SImode, LSHIFTRT, res, ac.shift,
 					      NULL_RTX, 1, OPTAB_DIRECT), 1);
+}
+
+/* Variant of s390_expand_cs for SI, DI and TI modes.  */
+static void
+s390_expand_cs_tdsi (machine_mode mode, rtx btarget, rtx vtarget, rtx mem,
+		     rtx cmp, rtx new_rtx, bool is_weak)
+{
+  rtx output = vtarget;
+  rtx_code_label *skip_cs_label = NULL;
+  bool do_const_opt = false;
+
+  if (!register_operand (output, mode))
+    output = gen_reg_rtx (mode);
+
+  /* If IS_WEAK is true and the INPUT value is a constant, compare the memory
+     with the constant first and skip the compare_and_swap because its very
+     expensive and likely to fail anyway.
+     Note 1: This is done only for IS_WEAK.  C11 allows optimizations that may
+     cause spurious in that case.
+     Note 2: It may be useful to do this also for non-constant INPUT.
+     Note 3: Currently only targets with "load on condition" are supported
+     (z196 and newer).  */
+
+  if (TARGET_Z196
+      && (mode == SImode || mode == DImode))
+    do_const_opt = (is_weak && CONST_INT_P (cmp));
+
+  if (do_const_opt)
+    {
+      const int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
+      rtx cc = gen_rtx_REG (CCZmode, CC_REGNUM);
+
+      skip_cs_label = gen_label_rtx ();
+      emit_move_insn (btarget, const0_rtx);
+      if (CONST_INT_P (cmp) && INTVAL (cmp) == 0)
+	{
+	  rtvec lt = rtvec_alloc (2);
+
+	  /* Load-and-test + conditional jump.  */
+	  RTVEC_ELT (lt, 0)
+	    = gen_rtx_SET (cc, gen_rtx_COMPARE (CCZmode, mem, cmp));
+	  RTVEC_ELT (lt, 1) = gen_rtx_SET (output, mem);
+	  emit_insn (gen_rtx_PARALLEL (VOIDmode, lt));
+	}
+      else
+	{
+	  emit_move_insn (output, mem);
+	  emit_insn (gen_rtx_SET (cc, gen_rtx_COMPARE (CCZmode, output, cmp)));
+	}
+      s390_emit_jump (skip_cs_label, gen_rtx_NE (VOIDmode, cc, const0_rtx));
+      add_int_reg_note (get_last_insn (), REG_BR_PROB, very_unlikely);
+      /* If the jump is not taken, OUTPUT is the expected value.  */
+      cmp = output;
+      /* Reload newval to a register manually, *after* the compare and jump
+	 above.  Otherwise Reload might place it before the jump.  */
+    }
+  else
+    cmp = force_reg (mode, cmp);
+  new_rtx = force_reg (mode, new_rtx);
+  s390_emit_compare_and_swap (EQ, output, mem, cmp, new_rtx,
+			      (do_const_opt) ? CCZmode : CCZ1mode);
+  if (skip_cs_label != NULL)
+    emit_label (skip_cs_label);
+
+  /* We deliberately accept non-register operands in the predicate
+     to ensure the write back to the output operand happens *before*
+     the store-flags code below.  This makes it easier for combine
+     to merge the store-flags code with a potential test-and-branch
+     pattern following (immediately!) afterwards.  */
+  if (output != vtarget)
+    emit_move_insn (vtarget, output);
+
+  if (do_const_opt)
+    {
+      rtx cc, cond, ite;
+
+      /* Do not use gen_cstorecc4 here because it writes either 1 or 0, but
+	 btarget has already been initialized with 0 above.  */
+      cc = gen_rtx_REG (CCZmode, CC_REGNUM);
+      cond = gen_rtx_EQ (VOIDmode, cc, const0_rtx);
+      ite = gen_rtx_IF_THEN_ELSE (SImode, cond, const1_rtx, btarget);
+      emit_insn (gen_rtx_SET (btarget, ite));
+    }
+  else
+    {
+      rtx cc, cond;
+
+      cc = gen_rtx_REG (CCZ1mode, CC_REGNUM);
+      cond = gen_rtx_EQ (SImode, cc, const0_rtx);
+      emit_insn (gen_cstorecc4 (btarget, cond, cc, const0_rtx));
+    }
+}
+
+/* Expand an atomic compare and swap operation.  MEM is the memory location,
+   CMP the old value to compare MEM with and NEW_RTX the value to set if
+   CMP == MEM.  */
+
+void
+s390_expand_cs (machine_mode mode, rtx btarget, rtx vtarget, rtx mem,
+		rtx cmp, rtx new_rtx, bool is_weak)
+{
+  switch (mode)
+    {
+    case TImode:
+    case DImode:
+    case SImode:
+      s390_expand_cs_tdsi (mode, btarget, vtarget, mem, cmp, new_rtx, is_weak);
+      break;
+    case HImode:
+    case QImode:
+      s390_expand_cs_hqi (mode, btarget, vtarget, mem, cmp, new_rtx, is_weak);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Expand an atomic_exchange operation simulated with a compare-and-swap loop.
+   The memory location MEM is set to INPUT.  OUTPUT is set to the previous value
+   of MEM.  */
+
+void
+s390_expand_atomic_exchange_tdsi (rtx output, rtx mem, rtx input)
+{
+  machine_mode mode = GET_MODE (mem);
+  rtx_code_label *csloop;
+
+  if (TARGET_Z196
+      && (mode == DImode || mode == SImode)
+      && CONST_INT_P (input) && INTVAL (input) == 0)
+    {
+      emit_move_insn (output, const0_rtx);
+      if (mode == DImode)
+	emit_insn (gen_atomic_fetch_anddi (output, mem, const0_rtx, input));
+      else
+	emit_insn (gen_atomic_fetch_andsi (output, mem, const0_rtx, input));
+      return;
+    }
+
+  input = force_reg (mode, input);
+  emit_move_insn (output, mem);
+  csloop = gen_label_rtx ();
+  emit_label (csloop);
+  s390_emit_jump (csloop, s390_emit_compare_and_swap (NE, output, mem, output,
+						      input, CCZ1mode));
 }
 
 /* Expand an atomic operation CODE of mode MODE.  MEM is the memory location
@@ -6878,7 +7045,8 @@ s390_expand_atomic (machine_mode mode, enum rtx_code code,
     }
 
   s390_emit_jump (csloop, s390_emit_compare_and_swap (NE, cmp,
-						      ac.memsi, cmp, new_rtx));
+						      ac.memsi, cmp, new_rtx,
+						      CCZ1mode));
 
   /* Return the correct part of the bitfield.  */
   if (target)
