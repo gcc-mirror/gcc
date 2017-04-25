@@ -1,3 +1,9 @@
+2017-04-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/77728
+	* g++.dg/abi/pr77728-1.C: New test.
+
 2017-04-25  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80349
