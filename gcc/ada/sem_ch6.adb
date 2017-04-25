@@ -6101,6 +6101,8 @@ package body Sem_Ch6 is
              Is_Predefined_File_Name
                (Unit_File_Name (Get_Source_Unit (Alias (Overridden_Subp))))
          then
+            Get_Name_String
+              (Unit_File_Name (Get_Source_Unit (Alias (Overridden_Subp))));
             Error_Msg_NE ("subprogram & is not overriding", Spec, Subp);
 
          elsif Is_Subprogram (Subp) then

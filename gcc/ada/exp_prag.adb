@@ -168,7 +168,7 @@ package body Exp_Prag is
       --  the back end or the expander here does not get overenthusiastic and
       --  start processing such a pragma!
 
-      if Get_Name_Table_Boolean3 (Pname) then
+      if Should_Ignore_Pragma (Pname) then
          Rewrite (N, Make_Null_Statement (Sloc (N)));
          return;
       end if;

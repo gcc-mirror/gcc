@@ -1,3 +1,23 @@
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Should_Ignore_Pragma): New function
+	that returns True when appropriate.
+	* par-prag.adb, exp_prag.adb, sem_prag.adb: Do not ignore pragmas
+	when compiling predefined files.
+	* fname.ads, fname.adb (Is_Predefined_File_Name): Fix bug:
+	"gnat.adc" should not be considered a predefined file name.
+	That required (or at least encouraged) a lot of cleanup of global
+	variable usage. We shouldn't be communicating information via
+	the global name buffer.
+	* bindgen.adb, errout.adb, fname-uf.adb, lib-load.adb, make.adb,
+	* restrict.adb, sem_ch10.adb, sem_ch6.adb, sem_ch8.adb: Changes
+	required by the above-mentioned cleanup.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* osint.adb (Find_File): Handle properly a request for a
+	configuration file whose name is a directory.
+
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_attr.adb, sem_ch5.adb: Minor reformatting.

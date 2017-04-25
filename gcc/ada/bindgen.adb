@@ -1275,6 +1275,7 @@ package body Bindgen is
                 (No_Run_Time_Mode
                   and then Is_Predefined_File_Name (U.Sfile))
             then
+               Get_Name_String (U.Sfile);
                Set_String ("   ");
                Set_String ("E");
                Set_Unit_Number (Unum);

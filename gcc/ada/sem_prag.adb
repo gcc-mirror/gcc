@@ -10352,7 +10352,7 @@ package body Sem_Prag is
 
       --  Ignore pragma if Ignore_Pragma applies
 
-      if Get_Name_Table_Boolean3 (Pname) then
+      if Should_Ignore_Pragma (Pname) then
          return;
       end if;
 

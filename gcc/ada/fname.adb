@@ -57,122 +57,147 @@ package body Fname is
      Table_Increment      => Alloc.SFN_Table_Increment,
      Table_Name           => "Fname_Dummy_Table");
 
+   function Has_Prefix (X, Prefix : String) return Boolean;
+   --  True if Prefix is at the beginning of X. For example,
+   --  Has_Prefix("a-filename.ads", Prefix => "a-") is True.
+
+   function Has_Suffix (X, Suffix : String) return Boolean;
+   --  True if Suffix is at the end of X
+
+   function Has_Internal_Extension (Fname : String) return Boolean;
+   --  True if the extension is ".ads" or ".adb", as is always the case for
+   --  internal/predefined units.
+
+   ----------------------------
+   -- Has_Internal_Extension --
+   ----------------------------
+
+   function Has_Internal_Extension (Fname : String) return Boolean is
+   begin
+      return Has_Suffix (Fname, Suffix => ".ads")
+        or else Has_Suffix (Fname, Suffix => ".adb");
+   end Has_Internal_Extension;
+
+   ----------------
+   -- Has_Prefix --
+   ----------------
+
+   function Has_Prefix (X, Prefix : String) return Boolean is
+   begin
+      if X'Length >= Prefix'Length then
+         declare
+            Slice : String renames
+              X (X'First .. X'First + Prefix'Length - 1);
+         begin
+            return Slice = Prefix;
+         end;
+      end if;
+      return False;
+   end Has_Prefix;
+
+   ----------------
+   -- Has_Suffix --
+   ----------------
+
+   function Has_Suffix (X, Suffix : String) return Boolean is
+   begin
+      if X'Length >= Suffix'Length then
+         declare
+            Slice : String renames
+              X (X'Last - Suffix'Length + 1 .. X'Last);
+         begin
+            return Slice = Suffix;
+         end;
+      end if;
+      return False;
+   end Has_Suffix;
+
    ---------------------------
    -- Is_Internal_File_Name --
    ---------------------------
+
+   function Is_Internal_File_Name
+     (Fname              : String;
+      Renamings_Included : Boolean := True) return Boolean is
+   begin
+      --  Check for internal extensions first, so we don't think (e.g.)
+      --  "gnat.adc" is internal.
+
+      if not Has_Internal_Extension (Fname) then
+         return False;
+      end if;
+
+      return Is_Predefined_File_Name (Fname, Renamings_Included)
+        or else Has_Prefix (Fname, Prefix => "g-")
+        or else Has_Prefix (Fname, Prefix => "gnat.ad");
+   end Is_Internal_File_Name;
 
    function Is_Internal_File_Name
      (Fname              : File_Name_Type;
       Renamings_Included : Boolean := True) return Boolean
    is
    begin
-      if Is_Predefined_File_Name (Fname, Renamings_Included) then
-         return True;
-
-      --  Once Is_Predefined_File_Name has been called and returns False,
-      --  Name_Buffer contains Fname and Name_Len is set to 8.
-
-      elsif Name_Buffer (1 .. 2) = "g-"
-        or else Name_Buffer (1 .. 8) = "gnat    "
-      then
-         return True;
-
-      else
-         return False;
-      end if;
+      return Is_Internal_File_Name
+        (Get_Name_String (Fname), Renamings_Included);
    end Is_Internal_File_Name;
 
    -----------------------------
    -- Is_Predefined_File_Name --
    -----------------------------
 
-   --  This should really be a test of unit name, given the possibility of
-   --  pragma Source_File_Name setting arbitrary file names for any files???
+   function Is_Predefined_File_Name
+     (Fname              : String;
+      Renamings_Included : Boolean := True) return Boolean is
+   begin
+      if not Has_Internal_Extension (Fname) then
+         return False;
+      end if;
 
-   --  Once Is_Predefined_File_Name has been called and returns False,
-   --  Name_Buffer contains Fname and Name_Len is set to 8. This is used
-   --  only by Is_Internal_File_Name, and is not part of the official
-   --  external interface of this function.
+      if Has_Prefix (Fname, "a-")
+        or else Has_Prefix (Fname, "i-")
+        or else Has_Prefix (Fname, "s-")
+      then
+         return True;
+      end if;
+
+      --  Definitely false if longer than 12 characters (8.3)
+
+      if Fname'Length > 12 then
+         return False;
+      end if;
+
+      if Has_Prefix (Fname, Prefix => "ada.ad") -- Ada
+        or else Has_Prefix (Fname, Prefix => "interfac.ad") -- Interfaces
+        or else Has_Prefix (Fname, Prefix => "system.ad") -- System
+      then
+         return True;
+      end if;
+
+      if not Renamings_Included then
+         return False;
+      end if;
+
+      --  The following are the predefined renamings
+
+      return Has_Prefix (Fname, Prefix => "calendar.ad") -- Calendar
+        or else Has_Prefix (Fname, Prefix => "machcode.ad") -- Machine_Code
+        or else Has_Prefix (Fname, Prefix => "unchconv.ad")
+         --  Unchecked_Conversion
+        or else Has_Prefix (Fname, Prefix => "unchdeal.ad")
+         --  Unchecked_Deallocation
+        or else Has_Prefix (Fname, Prefix => "directio.ad") -- Direct_IO
+        or else Has_Prefix (Fname, Prefix => "ioexcept.ad") -- IO_Exceptions
+        or else Has_Prefix (Fname, Prefix => "sequenio.ad") -- Sequential_IO
+        or else Has_Prefix (Fname, Prefix => "text_io.ad"); -- Text_IO
+   end Is_Predefined_File_Name;
 
    function Is_Predefined_File_Name
      (Fname              : File_Name_Type;
       Renamings_Included : Boolean := True) return Boolean
    is
    begin
-      Get_Name_String (Fname);
-      return Is_Predefined_File_Name (Renamings_Included);
-   end Is_Predefined_File_Name;
-
-   function Is_Predefined_File_Name
-     (Renamings_Included : Boolean := True) return Boolean
-   is
-      subtype Str8 is String (1 .. 8);
-
-      Predef_Names : constant array (1 .. 11) of Str8 :=
-        ("ada     ",       -- Ada
-         "interfac",       -- Interfaces
-         "system  ",       -- System
-
-         --  Remaining entries are only considered if Renamings_Included true
-
-         "calendar",       -- Calendar
-         "machcode",       -- Machine_Code
-         "unchconv",       -- Unchecked_Conversion
-         "unchdeal",       -- Unchecked_Deallocation
-         "directio",       -- Direct_IO
-         "ioexcept",       -- IO_Exceptions
-         "sequenio",       -- Sequential_IO
-         "text_io ");      -- Text_IO
-
-         Num_Entries : constant Natural :=
-                         3 + 8 * Boolean'Pos (Renamings_Included);
-
-   begin
-      --  Remove extension (if present)
-
-      if Name_Len > 4 and then Name_Buffer (Name_Len - 3) = '.' then
-         Name_Len := Name_Len - 4;
-      end if;
-
-      --  Definitely predefined if prefix is a- i- or s- followed by letter
-
-      if Name_Len >=  3
-        and then Name_Buffer (2) = '-'
-        and then (Name_Buffer (1) = 'a'
-                    or else
-                  Name_Buffer (1) = 'i'
-                    or else
-                  Name_Buffer (1) = 's')
-        and then (Name_Buffer (3) in 'a' .. 'z'
-                    or else
-                  Name_Buffer (3) in 'A' .. 'Z')
-      then
-         return True;
-
-      --  Definitely false if longer than 12 characters (8.3)
-
-      elsif Name_Len > 8 then
-         return False;
-      end if;
-
-      --  Otherwise check against special list, first padding to 8 characters
-
-      while Name_Len < 8 loop
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := ' ';
-      end loop;
-
-      for J in 1 .. Num_Entries loop
-         if Name_Buffer (1 .. 8) = Predef_Names (J) then
-            return True;
-         end if;
-      end loop;
-
-      --  Note: when we return False here, the Name_Buffer contains the
-      --  padded file name. This is not defined for clients of the package,
-      --  but is used by Is_Internal_File_Name.
-
-      return False;
+      return Is_Predefined_File_Name
+        (Get_Name_String (Fname), Renamings_Included);
    end Is_Predefined_File_Name;
 
    ---------------
