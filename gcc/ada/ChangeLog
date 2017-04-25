@@ -1,3 +1,21 @@
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb: minor reformatting.
+
+2017-04-25  Doug Rupp  <rupp@adacore.com>
+
+	* sigtramp-vxworks-target.inc [PPC64]: Add a .localentry pseudo-op.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment): Reset Full_Analysis flag on
+	the first pass over an assignment statement with target names,
+	to prevent the generation of subtypes (such as discriminated
+	record components)that may carry the target name outside of the
+	tree for the assignment. The subtypes will be generated when
+	the assignment is reanalyzed in full.
+	(Analyze_Target_Name): Handle properly class-wide types.
+
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* elists.ads, elists.adb (Prepend_Unique_Elmt): New routine.
