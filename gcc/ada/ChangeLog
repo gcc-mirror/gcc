@@ -1,3 +1,34 @@
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aux.adb (Nearest_Ancestor): Use original node of type
+	declaration to locate nearest ancestor, because derived
+	type declarations for record types are rewritten as record
+	declarations.
+	* sem_ch13.adb (Add_Call): Use an unchecked conversion to handle
+	properly derivations that are completions of private types.
+	(Add_Predicates): If type is private, examine rep. items of full
+	view, which may include inherited predicates.
+	(Build_Predicate_Functions): Ditto.
+
+2017-04-25  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (New_Copy_Tree.Visit_Entity): Extend previous change
+	to generate new entities for subtype declarations located in
+	Expression_With_Action nodes.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (Check_A_Call): Remove
+	local variables Is_DIC_Proc and Issue_In_SPARK. Verify the
+	need for Elaborate_All when SPARK elaboration checks are
+	required. Update the checks for instances, variables, and calls
+	to Default_Initial_Condition procedures.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* aspects.ads, aspects.adb: Make the GNAT-specific pragma No_Inline
+	into a boolean aspect, in analogy with the Ada aspect No_Return.
+
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch6.adb, sem_ch13.adb, sem_ch6.adb: Minor reformatting.

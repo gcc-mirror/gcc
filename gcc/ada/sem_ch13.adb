@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -8309,11 +8309,15 @@ package body Sem_Ch13 is
          if Present (T) and then Present (Predicate_Function (T)) then
             Set_Has_Predicates (Typ);
 
-            --  Build the call to the predicate function of T
+            --  Build the call to the predicate function of T. The type may be
+            --  derived, so use an unchecked conversion for the actual.
 
             Exp :=
               Make_Predicate_Call
-                (T, Convert_To (T, Make_Identifier (Loc, Object_Name)));
+                (Typ  => T,
+                 Expr =>
+                   Unchecked_Convert_To (T,
+                     Make_Identifier (Loc, Object_Name)));
 
             --  "and"-in the call to evolving expression
 
@@ -8456,6 +8460,14 @@ package body Sem_Ch13 is
 
       begin
          Ritem := First_Rep_Item (Typ);
+
+         --  If the type is private, check whether full view has inherited
+         --  predicates.
+
+         if Is_Private_Type (Typ) and then No (Ritem) then
+            Ritem := First_Rep_Item (Full_View (Typ));
+         end if;
+
          while Present (Ritem) loop
             if Nkind (Ritem) = N_Pragma
               and then Pragma_Name (Ritem) = Name_Predicate
@@ -8562,8 +8574,16 @@ package body Sem_Ch13 is
       --  ones for the current type, as required by AI12-0071-1.
 
       declare
-         Atyp : constant Entity_Id := Nearest_Ancestor (Typ);
+         Atyp : Entity_Id;
       begin
+         Atyp := Nearest_Ancestor (Typ);
+
+         --  The type may be private but the full view may inherit predicates
+
+         if No (Atyp) and then Is_Private_Type (Typ) then
+            Atyp := Nearest_Ancestor (Full_View (Typ));
+         end if;
+
          if Present (Atyp) then
             Add_Call (Atyp);
          end if;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -189,6 +189,7 @@ package Aspects is
       Aspect_Inline_Always,                 -- GNAT
       Aspect_Interrupt_Handler,
       Aspect_Lock_Free,                     -- GNAT
+      Aspect_No_Inline,                     -- GNAT
       Aspect_No_Return,
       Aspect_No_Tagged_Streams,             -- GNAT
       Aspect_Pack,
@@ -468,6 +469,7 @@ package Aspects is
       Aspect_Machine_Radix                => Name_Machine_Radix,
       Aspect_Max_Queue_Length             => Name_Max_Queue_Length,
       Aspect_No_Elaboration_Code_All      => Name_No_Elaboration_Code_All,
+      Aspect_No_Inline                    => Name_No_Inline,
       Aspect_No_Return                    => Name_No_Return,
       Aspect_No_Tagged_Streams            => Name_No_Tagged_Streams,
       Aspect_Object_Size                  => Name_Object_Size,
@@ -677,6 +679,7 @@ package Aspects is
       Aspect_Link_Name                    => Always_Delay,
       Aspect_Linker_Section               => Always_Delay,
       Aspect_Lock_Free                    => Always_Delay,
+      Aspect_No_Inline                    => Always_Delay,
       Aspect_No_Return                    => Always_Delay,
       Aspect_Output                       => Always_Delay,
       Aspect_Persistent_BSS               => Always_Delay,
