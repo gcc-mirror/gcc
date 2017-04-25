@@ -3487,13 +3487,12 @@ package body Sem_Warn is
    ---------------------------------
 
    procedure Warn_On_Overlapping_Actuals (Subp : Entity_Id; N : Node_Id) is
-      Act1, Act2   : Node_Id;
-      Form1, Form2 : Entity_Id;
-
       function Is_Covered_Formal (Formal : Node_Id) return Boolean;
       --  Return True if Formal is covered by the rule
 
-      function Refer_Same_Object (Act1, Act2 : Node_Id) return Boolean;
+      function Refer_Same_Object
+        (Act1 : Node_Id;
+         Act2 : Node_Id) return Boolean;
       --  Two names are known to refer to the same object if the two names
       --  are known to denote the same object; or one of the names is a
       --  selected_component, indexed_component, or slice and its prefix is
@@ -3501,16 +3500,6 @@ package body Sem_Warn is
       --  two names statically denotes a renaming declaration whose renamed
       --  object_name is known to refer to the same object as the other name
       --  (RM 6.4.1(6.11/3))
-
-      -----------------------
-      -- Refer_Same_Object --
-      -----------------------
-
-      function Refer_Same_Object (Act1, Act2 : Node_Id) return Boolean is
-      begin
-         return Denotes_Same_Object (Act1, Act2)
-           or else Denotes_Same_Prefix (Act1, Act2);
-      end Refer_Same_Object;
 
       -----------------------
       -- Is_Covered_Formal --
@@ -3525,7 +3514,31 @@ package body Sem_Warn is
                         or else Is_Array_Type (Etype (Formal)));
       end Is_Covered_Formal;
 
+      -----------------------
+      -- Refer_Same_Object --
+      -----------------------
+
+      function Refer_Same_Object
+        (Act1 : Node_Id;
+         Act2 : Node_Id) return Boolean
+      is
+      begin
+         return
+           Denotes_Same_Object (Act1, Act2)
+             or else Denotes_Same_Prefix (Act1, Act2);
+      end Refer_Same_Object;
+
+      --  Local variables
+
+      Act1  : Node_Id;
+      Act2  : Node_Id;
+      Form1 : Entity_Id;
+      Form2 : Entity_Id;
+
+   --  Start of processing for Warn_On_Overlapping_Actuals
+
    begin
+
       if Ada_Version < Ada_2012 and then not Warn_On_Overlap then
          return;
       end if;
@@ -3590,6 +3603,14 @@ package body Sem_Warn is
                   elsif Ada_Version >= Ada_2012
                     and then not Is_Elementary_Type (Etype (Form1))
                     and then not Warn_On_Overlap
+                  then
+                     null;
+
+                  --  If the types of the formals are different there can
+                  --  be no aliasing (even though there might be overlap
+                  --  through address clauses, which must be intentional).
+
+                  elsif Base_Type (Etype (Form1)) /= Base_Type (Etype (Form2))
                   then
                      null;
 

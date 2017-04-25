@@ -1343,7 +1343,11 @@ package body Sem_Dim is
       function Dimensions_Of_Operand (N : Node_Id) return Dimension_Type;
       --  If the operand is a numeric literal that comes from a declared
       --  constant, use the dimensions of the constant which were computed
-      --  from the expression of the constant declaration.
+      --  from the expression of the constant declaration. Otherwise the
+      --  dimensions are those of the operand, or the type of the operand.
+      --  This takes care of node rewritings from validity checks, where the
+      --  dimensions of the operand itself may not be preserved, while the
+      --  type comes from context and must have dimension information.
 
       procedure Error_Dim_Msg_For_Binary_Op (N, L, R : Node_Id);
       --  Error using Error_Msg_NE and Error_Msg_N at node N. Output the
@@ -1354,13 +1358,28 @@ package body Sem_Dim is
       ---------------------------
 
       function Dimensions_Of_Operand (N : Node_Id) return Dimension_Type is
+         Dims : constant Dimension_Type := Dimensions_Of (N);
+
       begin
-         if Nkind (N) = N_Real_Literal
-           and then Present (Original_Entity (N))
-         then
-            return Dimensions_Of (Original_Entity (N));
+         if Exists (Dims) then
+            return Dims;
+
+         elsif Is_Entity_Name (N) then
+            return Dimensions_Of (Etype (Entity (N)));
+
+         elsif Nkind (N) = N_Real_Literal then
+
+            if Present (Original_Entity (N)) then
+               return Dimensions_Of (Original_Entity (N));
+
+            else
+               return Dimensions_Of (Etype (N));
+            end if;
+
+         --  Otherwise return the default dimensions
+
          else
-            return Dimensions_Of (N);
+            return Dims;
          end if;
       end Dimensions_Of_Operand;
 
