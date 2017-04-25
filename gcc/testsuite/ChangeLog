@@ -1,3 +1,8 @@
+2017-04-25  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/attr-alloc_size-10.c: Ignore overflow warnings
+	for targets with int size less than 32 bits.
+
 2017-04-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79201

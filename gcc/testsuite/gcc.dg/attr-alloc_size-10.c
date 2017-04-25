@@ -4,7 +4,8 @@
    range.
 
    { dg-do compile }
-   { dg-options "-O2 -Walloc-size-larger-than=12" } */
+   { dg-options "-O2 -Walloc-size-larger-than=12" } 
+   { dg-options "-Wno-overflow" { target { ! int32plus } } } */
 
 #define SCHAR_MAX __SCHAR_MAX__
 #define SCHAR_MIN (-SCHAR_MAX - 1)
