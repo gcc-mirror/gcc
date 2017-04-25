@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1995-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,6 @@ package body System.Strings is
    ----------
 
    procedure Free (Arg : in out String_List_Access) is
-      X : String_Access;
 
       procedure Free_Array is new Ada.Unchecked_Deallocation
         (Object => String_List, Name => String_List_Access);
@@ -48,8 +47,7 @@ package body System.Strings is
 
       if Arg /= null then
          for J in Arg'Range loop
-            X := Arg (J);
-            Free (X);
+            Free (Arg (J));
          end loop;
       end if;
 

@@ -937,6 +937,12 @@ package System.OS_Lib is
    --  This function will always set success to False under VxWorks, since
    --  there is no notion of executables under this OS.
 
+   procedure Non_Blocking_Wait_Process
+     (Pid : out Process_Id; Success : out Boolean);
+   --  Same as Wait_Process, except if there are no completed child processes,
+   --  return immediately without blocking, and return Invalid_Pid in Pid.
+   --  Not supported on all platforms; Success = False if not supported.
+
    -------------------------------------
    -- NOTE: Spawn in Tasking Programs --
    -------------------------------------
