@@ -1,3 +1,14 @@
+2017-04-25  Nathan Sidwell  <nathan@acm.org>
+
+	Namespace stat hack via special overload
+	gcc/cp
+	* name-lookup.c (STAT_HACK_P, STAT_TYPE, STAT_DECL,
+	MAYBE_STAT_DECL, MAYBE_STAT_TYPE): New.
+	(stat_hack): New.
+	(find_namespace_value, name_lookup::search_namespace_only,
+	update_binding, do_pushdecl, set_identifier_type_value_with_scope,
+	set_global_value, lookup_type_scope_1, do_pushtag): Adjust.
+
 2017-04-24  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

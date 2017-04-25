@@ -69,6 +69,28 @@ create_local_binding (cp_binding_level *level, tree name)
   return binding;
 }
 
+/* Create an overload suitable for recording an artificial TYPE_DECL
+   and another decl.  We use this machanism to implement the struct
+   stat hack within a namespace.  It'd be nice to use it everywhere,
+   but that's more change than necessary.  */
+
+#define STAT_HACK_P(N) ((N) && TREE_CODE (N) == OVERLOAD && OVL_LOOKUP_P (N))
+#define STAT_TYPE(N) TREE_TYPE (N)
+#define STAT_DECL(N) OVL_FUNCTION (N)
+#define MAYBE_STAT_DECL(N) (STAT_HACK_P (N) ? STAT_DECL (N) : N)
+#define MAYBE_STAT_TYPE(N) (STAT_HACK_P (N) ? STAT_TYPE (N) : NULL_TREE)
+
+static tree stat_hack (tree decl = NULL_TREE, tree type = NULL_TREE)
+{
+  tree result = make_node (OVERLOAD);
+
+  /* Mark this as a lookup, so we can tell this is a stat hack.  */
+  OVL_LOOKUP_P (result) = true;
+  STAT_DECL (result) = decl;
+  STAT_TYPE (result) = type;
+  return result;
+}
+
 /* Return the binding for NAME in SCOPE, if any.  Otherwise, return NULL.  */
 // FIXME this should totally be a map
 
@@ -93,7 +115,7 @@ find_namespace_value (tree ns, tree name)
 {
   cxx_binding *b = find_namespace_binding (ns, name);
 
-  return b ? b->value : NULL_TREE;
+  return b ? MAYBE_STAT_DECL (b->value) : NULL_TREE;
 }
 
 /* Add DECL to the list of things declared in a binding level.  */
@@ -351,8 +373,8 @@ name_lookup::search_namespace_only (tree scope)
 
   if (cxx_binding *binding = find_namespace_binding (scope, name))
     {
-      tree new_val = binding->value;
-      tree new_type = binding->type;
+      tree new_val = MAYBE_STAT_DECL (binding->value);
+      tree new_type = MAYBE_STAT_TYPE (binding->value);
 
       /* Did we really see a type? */
       if (LOOKUP_NAMESPACES_ONLY (flags)
@@ -1734,12 +1756,15 @@ update_binding (cp_binding_level *level, cxx_binding *binding,
 	  add_decl_to_level (level, to_add);
 	}
 
-      binding->value = to_val;
-      if (to_type && to_type != binding->type)
+      if (to_type == (level->kind == sk_namespace
+		      ? MAYBE_STAT_TYPE (binding->value)
+		      : binding->type))
+	to_type = NULL_TREE;
+
+      if (to_type)
 	{
 	  gcc_checking_assert (TREE_CODE (to_type) == TYPE_DECL
-			       && DECL_ARTIFICIAL (to_type)
-			       && !binding->type);
+			       && DECL_ARTIFICIAL (to_type));
 
 	  tree type = TREE_TYPE (to_type);
 	  if (to_type != decl
@@ -1748,8 +1773,26 @@ update_binding (cp_binding_level *level, cxx_binding *binding,
 		  || !DECL_IN_SYSTEM_HEADER (to_type)))
 	    warning (OPT_Wshadow, "%q#D hides constructor for %q#T",
 		     decl, type);
+	}
 
-	  binding->type = to_type;
+      if (level->kind == sk_namespace)
+	{
+	  if (STAT_HACK_P (binding->value))
+	    {
+	      if (to_type)
+		STAT_TYPE (binding->value) = to_type;
+	      STAT_DECL (binding->value) = to_val;
+	    }
+	  else if (to_type)
+	    binding->value = stat_hack (to_val, to_type);
+	  else
+	    binding->value = to_val;
+	}
+      else
+	{
+	  if (to_type)
+	    binding->type = to_type;
+	  binding->value = to_val;
 	}
     }
 
@@ -2192,7 +2235,7 @@ do_pushdecl (tree decl, bool is_friend)
 	}
       else
 	binding = find_local_binding (level, name);
-      tree old = binding ? binding->value : NULL_TREE;
+      tree old = binding ? MAYBE_STAT_DECL (binding->value) : NULL_TREE;
 
       if (current_function_decl && VAR_OR_FUNCTION_DECL_P (decl)
 	  && DECL_EXTERNAL (decl))
@@ -3010,7 +3053,8 @@ set_identifier_type_value_with_scope (tree id, tree decl, cp_binding_level *b)
       cxx_binding *binding = (find_namespace_binding
 			      (current_namespace, id, true));
       gcc_assert (decl);
-      update_binding (b, binding, binding->value, decl, false);
+      update_binding (b, binding, MAYBE_STAT_DECL (binding->value),
+		      decl, false);
 
       /* Store marker instead of real type.  */
       type = global_type_node;
@@ -4174,7 +4218,8 @@ get_namespace_value (tree ns, tree name)
   return ret;
 }
 
-/* Set NAME in the global namespace to VAL.  */
+/* Set NAME in the global namespace to VAL.  Does not add it to the
+   list of things in the namespace.  */
 
 void
 set_global_value (tree name, tree val)
@@ -4182,18 +4227,18 @@ set_global_value (tree name, tree val)
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
 
   cxx_binding *b = find_namespace_binding (global_namespace, name, true);
-
-  if (!b->value)
+  tree old = MAYBE_STAT_DECL (b->value);
+  
+  if (!old)
     b->value = val;
-  else if (val == b->value)
+  else if (old == val)
     ;
-  else if (TREE_CODE (val) == TYPE_DECL && DECL_ARTIFICIAL (val))
-    b->type = val;
-  else if (TREE_CODE (b->value) == TYPE_DECL && DECL_ARTIFICIAL (b->value))
-    {
-      b->type = b->value;
-      b->value = val;
-    }
+  else if (!STAT_HACK_P (b->value)
+	   && TREE_CODE (val) == TYPE_DECL && DECL_ARTIFICIAL (val))
+    b->value = stat_hack (old, val);
+  else if (!STAT_HACK_P (b->value)
+	   && TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
+    b->value = stat_hack (val, old);
   else
     /* The user's placed something in the implementor's
        namespace.  */
@@ -5237,10 +5282,15 @@ lookup_type_scope_1 (tree name, tag_scope scope)
       if (iter)
 	{
 	  /* If this is the kind of thing we're looking for, we're done.  */
-	  if (qualify_lookup (iter->type, LOOKUP_PREFER_TYPES))
-	    val = iter->type;
-	  else if (qualify_lookup (iter->value, LOOKUP_PREFER_TYPES))
-	    val = iter->value;
+	  if (tree type = MAYBE_STAT_TYPE (iter->value))
+	    if (qualify_lookup (type, LOOKUP_PREFER_TYPES))
+	      val = type;
+	  if (!val)
+	    {
+	      if (tree decl = MAYBE_STAT_DECL (iter->value))
+		if (qualify_lookup (decl, LOOKUP_PREFER_TYPES))
+		  val = decl;
+	    }
 	}
 
     }
@@ -5540,9 +5590,6 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	      return error_mark_node;
 	    }
 	}
-
-      if (! in_class)
-	set_identifier_type_value_with_scope (name, tdef, b);
 
       TYPE_CONTEXT (type) = DECL_CONTEXT (decl);
 
