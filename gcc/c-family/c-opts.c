@@ -971,6 +971,10 @@ c_common_post_options (const char **pfilename)
 #endif
     }
 
+  if (num_in_fnames > 1)
+    error ("too many filenames given.  Type %s --help for usage",
+	   progname);
+
   if (flag_preprocess_only)
     {
       /* Open the output now.  We must do so even if flag_no_output is
@@ -986,10 +990,6 @@ c_common_post_options (const char **pfilename)
 	  fatal_error (input_location, "opening output file %s: %m", out_fname);
 	  return false;
 	}
-
-      if (num_in_fnames > 1)
-	error ("too many filenames given.  Type %s --help for usage",
-	       progname);
 
       init_pp_output (out_stream);
     }

@@ -1,3 +1,9 @@
+2017-04-25  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-common.c (c_type_hasher, type_hash_table): Remove.
+	(c_common_get_alias_set): Remove unreachable code.
+	* c-opts.c (c_common_post_options): Make sure cc1 takes only one file.
+
 2017-04-20  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* c.opt (Wextra-semi): New C++ warning flag.

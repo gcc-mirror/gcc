@@ -3508,67 +3508,6 @@ c_apply_type_quals_to_decl (int type_quals, tree decl)
     }
 }
 
-struct c_type_hasher : ggc_ptr_hash<tree_node>
-{
-  static hashval_t hash (tree);
-  static bool equal (tree, tree);
-};
-
-/* Hash function for the problem of multiple type definitions in
-   different files.  This must hash all types that will compare
-   equal via comptypes to the same value.  In practice it hashes
-   on some of the simple stuff and leaves the details to comptypes.  */
-
-hashval_t
-c_type_hasher::hash (tree t)
-{
-  int n_elements;
-  int shift, size;
-  tree t2;
-  switch (TREE_CODE (t))
-    {
-    /* For pointers, hash on pointee type plus some swizzling.  */
-    case POINTER_TYPE:
-      return hash (TREE_TYPE (t)) ^ 0x3003003;
-    /* Hash on number of elements and total size.  */
-    case ENUMERAL_TYPE:
-      shift = 3;
-      t2 = TYPE_VALUES (t);
-      break;
-    case RECORD_TYPE:
-      shift = 0;
-      t2 = TYPE_FIELDS (t);
-      break;
-    case QUAL_UNION_TYPE:
-      shift = 1;
-      t2 = TYPE_FIELDS (t);
-      break;
-    case UNION_TYPE:
-      shift = 2;
-      t2 = TYPE_FIELDS (t);
-      break;
-    default:
-      gcc_unreachable ();
-    }
-  /* FIXME: We want to use a DECL_CHAIN iteration method here, but
-     TYPE_VALUES of ENUMERAL_TYPEs is stored as a TREE_LIST.  */
-  n_elements = list_length (t2);
-  /* We might have a VLA here.  */
-  if (TREE_CODE (TYPE_SIZE (t)) != INTEGER_CST)
-    size = 0;
-  else
-    size = TREE_INT_CST_LOW (TYPE_SIZE (t));
-  return ((size << 24) | (n_elements << shift));
-}
-
-bool
-c_type_hasher::equal (tree t1, tree t2)
-{
-  return lang_hooks.types_compatible_p (t1, t2);
-}
-
-static GTY(()) hash_table<c_type_hasher> *type_hash_table;
-
 /* Return the typed-based alias set for T, which may be an expression
    or a type.  Return -1 if we don't do anything special.  */
 
@@ -3606,60 +3545,6 @@ c_common_get_alias_set (tree t)
       if (t1 != t)
 	return get_alias_set (t1);
     }
-
-  /* Handle the case of multiple type nodes referring to "the same" type,
-     which occurs with IMA.  These share an alias set.  FIXME:  Currently only
-     C90 is handled.  (In C99 type compatibility is not transitive, which
-     complicates things mightily. The alias set splay trees can theoretically
-     represent this, but insertion is tricky when you consider all the
-     different orders things might arrive in.) */
-
-  if (c_language != clk_c || flag_isoc99)
-    return -1;
-
-  /* Save time if there's only one input file.  */
-  if (num_in_fnames == 1)
-    return -1;
-
-  /* Pointers need special handling if they point to any type that
-     needs special handling (below).  */
-  if (TREE_CODE (t) == POINTER_TYPE)
-    {
-      tree t2;
-      /* Find bottom type under any nested POINTERs.  */
-      for (t2 = TREE_TYPE (t);
-	   TREE_CODE (t2) == POINTER_TYPE;
-	   t2 = TREE_TYPE (t2))
-	;
-      if (!RECORD_OR_UNION_TYPE_P (t2)
-	  && TREE_CODE (t2) != ENUMERAL_TYPE)
-	return -1;
-      if (TYPE_SIZE (t2) == 0)
-	return -1;
-    }
-  /* These are the only cases that need special handling.  */
-  if (!RECORD_OR_UNION_TYPE_P (t)
-      && TREE_CODE (t) != ENUMERAL_TYPE
-      && TREE_CODE (t) != POINTER_TYPE)
-    return -1;
-  /* Undefined? */
-  if (TYPE_SIZE (t) == 0)
-    return -1;
-
-  /* Look up t in hash table.  Only one of the compatible types within each
-     alias set is recorded in the table.  */
-  if (!type_hash_table)
-    type_hash_table = hash_table<c_type_hasher>::create_ggc (1021);
-  tree *slot = type_hash_table->find_slot (t, INSERT);
-  if (*slot != NULL)
-    {
-      TYPE_ALIAS_SET (t) = TYPE_ALIAS_SET ((tree)*slot);
-      return TYPE_ALIAS_SET ((tree)*slot);
-    }
-  else
-    /* Our caller will assign and record (in t) a new alias set; all we need
-       to do is remember t in the hash table.  */
-    *slot = t;
 
   return -1;
 }
