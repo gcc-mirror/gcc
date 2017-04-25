@@ -1,3 +1,9 @@
+2017-04-25  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	PR target/80482
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): Change
+	type checks to test for compatibility instead of equality.
+
 2017-04-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

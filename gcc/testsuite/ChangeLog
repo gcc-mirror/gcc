@@ -1,3 +1,8 @@
+2017-04-25  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	PR target/80482
+	* gcc.target/powerpc/vec-constvolatile.c: New test.
+
 2017-04-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/semicolon-fixits.C: New test case.
