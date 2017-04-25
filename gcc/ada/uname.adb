@@ -41,6 +41,10 @@ with Sinput;   use Sinput;
 
 package body Uname is
 
+   function Has_Prefix (X, Prefix : String) return Boolean;
+   --  True if Prefix is at the beginning of X. For example,
+   --  Has_Prefix("a-filename.ads", Prefix => "a-") is True.
+
    -------------------
    -- Get_Body_Name --
    -------------------
@@ -472,6 +476,23 @@ package body Uname is
       end if;
    end Get_Unit_Name_String;
 
+   ----------------
+   -- Has_Prefix --
+   ----------------
+
+   function Has_Prefix (X, Prefix : String) return Boolean is
+   begin
+      if X'Length >= Prefix'Length then
+         declare
+            Slice : String renames
+                      X (X'First .. X'First + Prefix'Length - 1);
+         begin
+            return Slice = Prefix;
+         end;
+      end if;
+      return False;
+   end Has_Prefix;
+
    ------------------
    -- Is_Body_Name --
    ------------------
@@ -505,6 +526,72 @@ package body Uname is
 
       return True;
    end Is_Child_Name;
+
+   ---------------------------
+   -- Is_Internal_Unit_Name --
+   ---------------------------
+
+   function Is_Internal_Unit_Name
+     (Name               : String;
+      Renamings_Included : Boolean := True) return Boolean
+   is
+      Gnat : constant String := "gnat";
+
+   begin
+      if Name = Gnat then
+         return True;
+      end if;
+
+      if Has_Prefix (Name, Prefix => Gnat & ".") then
+         return True;
+      end if;
+
+      return Is_Predefined_Unit_Name (Name, Renamings_Included);
+   end Is_Internal_Unit_Name;
+
+   -----------------------------
+   -- Is_Predefined_Unit_Name --
+   -----------------------------
+
+   function Is_Predefined_Unit_Name
+     (Name               : String;
+      Renamings_Included : Boolean := True) return Boolean
+   is
+      Ada        : constant String := "ada";
+      Interfaces : constant String := "interfaces";
+      System     : constant String := "system";
+
+   begin
+      if Name = Ada
+        or else Name = Interfaces
+        or else Name = System
+      then
+         return True;
+      end if;
+
+      if Has_Prefix (Name, Prefix => Ada & ".")
+        or else Has_Prefix (Name, Prefix => Interfaces & ".")
+        or else Has_Prefix (Name, Prefix => System & ".")
+      then
+         return True;
+      end if;
+
+      if not Renamings_Included then
+         return False;
+      end if;
+
+      --  The following are the predefined renamings
+
+      return
+        Name = "calendar"
+          or else Name = "machine_code"
+          or else Name = "unchecked_conversion"
+          or else Name = "unchecked_deallocation"
+          or else Name = "direct_io"
+          or else Name = "io_exceptions"
+          or else Name = "sequential_io"
+          or else Name = "text_io";
+   end Is_Predefined_Unit_Name;
 
    ------------------
    -- Is_Spec_Name --

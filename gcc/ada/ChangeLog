@@ -1,3 +1,36 @@
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* uname.ads, uname.adb (Is_Predefined_Unit_Name,
+	Is_Internal_Unit_Name): New functions for operating on unit
+	names, as opposed to file names. There's some duplicated code
+	with fname.adb, which is unfortunate, but it seems like we don't
+	want to add dependencies here.
+	* fname-uf.adb (Get_File_Name): Change Is_Predefined_File_Name
+	to Is_Predefined_Unit_Name; the former was wrong, because Uname
+	is not a file name at all.
+	* fname.ads, fname.adb: Document the fact that
+	Is_Predefined_File_Name and Is_Internal_File_Name can be called
+	for ALI files, and fix the code so it works properly for ALI
+	files. E.g. these should return True for "system.ali".
+
+2017-04-25  Justin Squirek  <squirek@adacore.com>
+
+	* exp_util.adb (Add_Invariant): Removed,
+	code moved to Add_Invariant_Check, Add_Inherited_Invariant,
+	and Add_Own_Invariant.	(Add_Invariant_Check): Used
+	for adding runtime checks from any kind of invariant.
+	(Add_Inherited_Invariant): Generates invariant checks for
+	class-wide invariants (Add_Interface_Invariants): Removed, code
+	moved to Build_Invariant_Procedure_Body (Add_Own_Invariant):
+	Create a types own invariant procedure (Add_Parent_Invariants):
+	Removed, code moved to Build_Invariant_Procedure_Body
+	(Build_Invariant_Procedure_Body): Add refactored calls
+	and integrated code from Add_Parent_Invariants and
+	Add_Interface_Invariants.
+	(Process_Type): Removed, the
+	relavant code was inlined into both Add_Own_Invariant and
+	Add_Inherited_Invariant.
+
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* make.adb, par-ch2.adb, sem_util.adb, scans.ads, sem_ch8.adb,

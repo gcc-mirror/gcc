@@ -68,15 +68,16 @@ package Fname is
    function Is_Predefined_File_Name
      (Fname              : File_Name_Type;
       Renamings_Included : Boolean := True) return Boolean;
-   --  These functions determine if the given file name (which must be a
-   --  simple file name with no directory information) is the file name for
-   --  one of the predefined library units (i.e. part of the Ada, System, or
-   --  Interface hierarchies). Note that units in the GNAT hierarchy are not
-   --  considered predefined (see Is_Internal_File_Name below). The
-   --  Renamings_Included parameter indicates whether annex J renamings such as
-   --  Text_IO are to be considered as predefined. If Renamings_Included is
-   --  True, then Text_IO will return True, otherwise only children of Ada,
-   --  Interfaces and System return True.
+   --  These functions determine if the given file name (which must be a simple
+   --  file name with no directory information) is the source or ALI file name
+   --  for one of the predefined library units (i.e. part of the Ada, System,
+   --  or Interface hierarchies). Note that units in the GNAT hierarchy are not
+   --  considered predefined (see Is_Internal_File_Name below).
+   --
+   --  The Renamings_Included parameter indicates whether annex J renamings
+   --  such as Text_IO are to be considered as predefined. If
+   --  Renamings_Included is True, then Text_IO will return True, otherwise
+   --  only children of Ada, Interfaces and System return True.
 
    function Is_Internal_File_Name
      (Fname              : String;

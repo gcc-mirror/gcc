@@ -58,8 +58,9 @@ package body Fname is
      Table_Name           => "Fname_Dummy_Table");
 
    function Has_Internal_Extension (Fname : String) return Boolean;
-   --  True if the extension is ".ads" or ".adb", as is always the case for
-   --  internal/predefined units.
+   --  True if the extension is appropriate for an internal/predefined
+   --  unit. That means ".ads" or ".adb" for source files, and ".ali" for
+   --  ALI files.
 
    function Has_Prefix (X, Prefix : String) return Boolean;
    --  True if Prefix is at the beginning of X. For example,
@@ -76,7 +77,8 @@ package body Fname is
    begin
       return
         Has_Suffix (Fname, Suffix => ".ads")
-          or else Has_Suffix (Fname, Suffix => ".adb");
+          or else Has_Suffix (Fname, Suffix => ".adb")
+          or else Has_Suffix (Fname, Suffix => ".ali");
    end Has_Internal_Extension;
 
    ----------------
@@ -139,10 +141,11 @@ package body Fname is
      (Fname              : File_Name_Type;
       Renamings_Included : Boolean := True) return Boolean
    is
+      Result : constant Boolean :=
+                 Is_Internal_File_Name
+                   (Get_Name_String (Fname), Renamings_Included);
    begin
-      return
-        Is_Internal_File_Name
-          (Get_Name_String (Fname), Renamings_Included);
+      return Result;
    end Is_Internal_File_Name;
 
    -----------------------------
