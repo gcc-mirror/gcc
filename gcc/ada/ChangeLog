@@ -1,3 +1,23 @@
+2017-04-25  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.adb, exp_ch4.adb: Minor reformatting.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb: Code clean up in various routines.
+	(Generate_Range_Check): Do not generate a range check when the
+	expander is not active or when index/range checks are suppressed
+	on the target type.
+	(Insert_List_After_And_Analyze, Insert_List_Before_And_Analyze):
+	Remove variants that include a Supress parameter. These routines
+	are never used, and were introduced before the current scope-based
+	check suppression method.
+
+2017-04-25  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* prj-part.adb, cstreams.c, osint.adb, osint.ads: Remove VMS specific
+	code and some subprogram calls that are now noop.
+
 2017-04-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Case_Expression): Take

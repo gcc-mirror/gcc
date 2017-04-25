@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -489,17 +489,18 @@ package body Checks is
       Static_Sloc  : Source_Ptr;
       Flag_Node    : Node_Id)
    is
+      Checks_On : constant Boolean :=
+                    not Index_Checks_Suppressed (Suppress_Typ)
+                      or else
+                    not Range_Checks_Suppressed (Suppress_Typ);
+
       Internal_Flag_Node   : constant Node_Id    := Flag_Node;
       Internal_Static_Sloc : constant Source_Ptr := Static_Sloc;
 
-      Checks_On : constant Boolean :=
-        (not Index_Checks_Suppressed (Suppress_Typ))
-         or else (not Range_Checks_Suppressed (Suppress_Typ));
-
    begin
-      --  For now we just return if Checks_On is false, however this should
-      --  be enhanced to check for an always True value in the condition
-      --  and to generate a compilation warning???
+      --  For now we just return if Checks_On is false, however this should be
+      --  enhanced to check for an always True value in the condition and to
+      --  generate a compilation warning???
 
       if not Checks_On then
          return;
@@ -3116,14 +3117,16 @@ package body Checks is
       Source_Typ : Entity_Id;
       Do_Static  : Boolean)
    is
-      Cond     : Node_Id;
-      R_Result : Check_Result;
-      R_Cno    : Node_Id;
+      Checks_On : constant Boolean :=
+                    not Index_Checks_Suppressed (Target_Typ)
+                      or else
+                    not Length_Checks_Suppressed (Target_Typ);
 
-      Loc         : constant Source_Ptr := Sloc (Ck_Node);
-      Checks_On   : constant Boolean :=
-        (not Index_Checks_Suppressed (Target_Typ))
-          or else (not Length_Checks_Suppressed (Target_Typ));
+      Loc : constant Source_Ptr := Sloc (Ck_Node);
+
+      Cond     : Node_Id;
+      R_Cno    : Node_Id;
+      R_Result : Check_Result;
 
    begin
       --  Only apply checks when generating code
@@ -3228,11 +3231,12 @@ package body Checks is
       Source_Typ : Entity_Id;
       Do_Static  : Boolean)
    is
-      Loc       : constant Source_Ptr := Sloc (Ck_Node);
       Checks_On : constant Boolean :=
                     not Index_Checks_Suppressed (Target_Typ)
                       or else
                     not Range_Checks_Suppressed (Target_Typ);
+
+      Loc : constant Source_Ptr := Sloc (Ck_Node);
 
       Cond     : Node_Id;
       R_Cno    : Node_Id;
@@ -6693,9 +6697,20 @@ package body Checks is
          Set_Etype (N, Target_Base_Type);
       end Convert_And_Check_Range;
 
+      --  Local variables
+
+      Checks_On : constant Boolean :=
+                    not Index_Checks_Suppressed (Target_Type)
+                      or else
+                    not Range_Checks_Suppressed (Target_Type);
+
    --  Start of processing for Generate_Range_Check
 
    begin
+      if not Expander_Active or not Checks_On then
+         return;
+      end if;
+
       --  First special case, if the source type is already within the range
       --  of the target type, then no check is needed (probably we should have
       --  stopped Do_Range_Check from being set in the first place, but better
@@ -7155,13 +7170,14 @@ package body Checks is
       Flag_Node    : Node_Id    := Empty;
       Do_Before    : Boolean    := False)
    is
+      Checks_On  : constant Boolean :=
+                     not Index_Checks_Suppressed (Suppress_Typ)
+                       or else
+                     not Range_Checks_Suppressed (Suppress_Typ);
+
+      Check_Node           : Node_Id;
       Internal_Flag_Node   : Node_Id    := Flag_Node;
       Internal_Static_Sloc : Source_Ptr := Static_Sloc;
-
-      Check_Node : Node_Id;
-      Checks_On  : constant Boolean :=
-        (not Index_Checks_Suppressed (Suppress_Typ))
-         or else (not Range_Checks_Suppressed (Suppress_Typ));
 
    begin
       --  For now we just return if Checks_On is false, however this should be

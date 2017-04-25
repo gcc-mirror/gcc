@@ -4718,6 +4718,7 @@ package body Exp_Ch4 is
    ------------------------------
 
    procedure Expand_N_Case_Expression (N : Node_Id) is
+
       function Is_Copy_Type (Typ : Entity_Id) return Boolean;
       --  Return True if we can copy objects of this type when expanding a case
       --  expression.
@@ -4728,7 +4729,7 @@ package body Exp_Ch4 is
 
       function Is_Copy_Type (Typ : Entity_Id) return Boolean is
       begin
-         --  if Minimize_Expression_With_Actions is True, we can afford to copy
+         --  If Minimize_Expression_With_Actions is True, we can afford to copy
          --  large objects, as long as they are constrained and not limited.
 
          return
@@ -4818,7 +4819,7 @@ package body Exp_Ch4 is
 
       --  This approach avoids extra copies of potentially large objects. It
       --  also allows handling of values of limited or unconstrained types.
-      --  Note that we do the copy also for constrained, non limited types
+      --  Note that we do the copy also for constrained, nonlimited types
       --  when minimizing expressions with actions (e.g. when generating C
       --  code) since it allows us to do the optimization below in more cases.
 
@@ -4852,7 +4853,7 @@ package body Exp_Ch4 is
          Target_Typ := Typ;
 
          --  ??? Do not perform the optimization when the return statement is
-         --  within a predicate function as this causes spurious errors. Could
+         --  within a predicate function, as this causes spurious errors. Could
          --  this be a possible mismatch in handling this case somewhere else
          --  in semantic analysis?
 
@@ -5479,7 +5480,7 @@ package body Exp_Ch4 is
       end if;
 
       --  Fall through here for either the limited expansion, or the case of
-      --  inserting actions for non-limited types. In both these cases, we must
+      --  inserting actions for nonlimited types. In both these cases, we must
       --  move the SLOC of the parent If statement to the newly created one and
       --  change it to the SLOC of the expression which, after expansion, will
       --  correspond to what is being evaluated.
