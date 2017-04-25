@@ -2256,33 +2256,58 @@ aarch64_vfp_is_call_candidate (cumulative_args_t pcum_v, machine_mode mode,
 						  NULL);
 }
 
-/* Given MODE and TYPE of a function argument, return the alignment in
+struct aarch64_fn_arg_alignment
+{
+  /* Alignment for FIELD_DECLs in function arguments.  */
+  unsigned int alignment;
+  /* Alignment for decls other than FIELD_DECLs in function arguments.  */
+  unsigned int warn_alignment;
+};
+
+/* Given MODE and TYPE of a function argument, return a pair of alignments in
    bits.  The idea is to suppress any stronger alignment requested by
    the user and opt for the natural alignment (specified in AAPCS64 \S 4.1).
    This is a helper function for local use only.  */
 
-static unsigned int
+static struct aarch64_fn_arg_alignment
 aarch64_function_arg_alignment (machine_mode mode, const_tree type)
 {
+  struct aarch64_fn_arg_alignment aa;
+  aa.alignment = 0;
+  aa.warn_alignment = 0;
+
   if (!type)
-    return GET_MODE_ALIGNMENT (mode);
+    {
+      aa.alignment = GET_MODE_ALIGNMENT (mode);
+      return aa;
+    }
+
   if (integer_zerop (TYPE_SIZE (type)))
-    return 0;
+    return aa;
 
   gcc_assert (TYPE_MODE (type) == mode);
 
   if (!AGGREGATE_TYPE_P (type))
-    return TYPE_ALIGN (TYPE_MAIN_VARIANT (type));
+    {
+      aa.alignment = TYPE_ALIGN (TYPE_MAIN_VARIANT (type));
+      return aa;
+    }
 
   if (TREE_CODE (type) == ARRAY_TYPE)
-    return TYPE_ALIGN (TREE_TYPE (type));
-
-  unsigned int alignment = 0;
+    {
+      aa.alignment = TYPE_ALIGN (TREE_TYPE (type));
+      return aa;
+    }
 
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
-    alignment = std::max (alignment, DECL_ALIGN (field));
+    {
+      if (TREE_CODE (field) == FIELD_DECL)
+	aa.alignment = std::max (aa.alignment, DECL_ALIGN (field));
+      else
+	aa.warn_alignment = std::max (aa.warn_alignment, DECL_ALIGN (field));
+    }
 
-  return alignment;
+  return aa;
 }
 
 /* Layout a function argument according to the AAPCS64 rules.  The rule
@@ -2369,24 +2394,39 @@ aarch64_layout_arg (cumulative_args_t pcum_v, machine_mode mode,
      entirely general registers.  */
   if (allocate_ncrn && (ncrn + nregs <= NUM_ARG_REGS))
     {
-      unsigned int alignment = aarch64_function_arg_alignment (mode, type);
 
       gcc_assert (nregs == 0 || nregs == 1 || nregs == 2);
 
       /* C.8 if the argument has an alignment of 16 then the NGRN is
          rounded up to the next even number.  */
-      if (nregs == 2 && alignment == 16 * BITS_PER_UNIT && ncrn % 2)
+      if (nregs == 2 && ncrn % 2)
 	{
-	  ++ncrn;
-	  gcc_assert (ncrn + nregs <= NUM_ARG_REGS);
+	  struct aarch64_fn_arg_alignment aa
+	    = aarch64_function_arg_alignment (mode, type);
+
+	  /* The == 16 * BITS_PER_UNIT instead of >= 16 * BITS_PER_UNIT
+	     comparisons are there because for > 16 * BITS_PER_UNIT
+	     alignment nregs should be > 2 and therefore it should be
+	     passed by reference rather than value.  */
+	  if (aa.warn_alignment == 16 * BITS_PER_UNIT
+	      && aa.alignment < aa.warn_alignment
+	      && warn_psabi
+	      && currently_expanding_gimple_stmt)
+	    inform (input_location,
+		    "parameter passing for argument of type %qT "
+		    "changed in GCC 7.1", type);
+	  else if (aa.alignment == 16 * BITS_PER_UNIT)
+	    {
+	      ++ncrn;
+	      gcc_assert (ncrn + nregs <= NUM_ARG_REGS);
+	    }
 	}
+
       /* NREGS can be 0 when e.g. an empty structure is to be passed.
          A reg is still generated for it, but the caller should be smart
 	 enough not to use it.  */
       if (nregs == 0 || nregs == 1 || GET_MODE_CLASS (mode) == MODE_INT)
-	{
-	  pcum->aapcs_reg = gen_rtx_REG (mode, R0_REGNUM + ncrn);
-	}
+	pcum->aapcs_reg = gen_rtx_REG (mode, R0_REGNUM + ncrn);
       else
 	{
 	  rtx par;
@@ -2414,7 +2454,10 @@ aarch64_layout_arg (cumulative_args_t pcum_v, machine_mode mode,
      this argument and align the total size if necessary.  */
 on_stack:
   pcum->aapcs_stack_words = size / UNITS_PER_WORD;
-  if (aarch64_function_arg_alignment (mode, type) == 16 * BITS_PER_UNIT)
+  struct aarch64_fn_arg_alignment aa
+    = aarch64_function_arg_alignment (mode, type);
+
+  if (aa.alignment == 16 * BITS_PER_UNIT)
     pcum->aapcs_stack_size = ROUND_UP (pcum->aapcs_stack_size,
 				       16 / UNITS_PER_WORD);
   return;
@@ -2505,13 +2548,17 @@ aarch64_function_arg_regno_p (unsigned regno)
 static unsigned int
 aarch64_function_arg_boundary (machine_mode mode, const_tree type)
 {
-  unsigned int alignment = aarch64_function_arg_alignment (mode, type);
+  struct aarch64_fn_arg_alignment aa
+    = aarch64_function_arg_alignment (mode, type);
+  aa.alignment = MIN (MAX (aa.alignment, PARM_BOUNDARY), STACK_BOUNDARY);
+  aa.warn_alignment
+    = MIN (MAX (aa.warn_alignment, PARM_BOUNDARY), STACK_BOUNDARY);
 
-  if (alignment < PARM_BOUNDARY)
-    alignment = PARM_BOUNDARY;
-  if (alignment > STACK_BOUNDARY)
-    alignment = STACK_BOUNDARY;
-  return alignment;
+  if (warn_psabi && aa.warn_alignment > aa.alignment)
+    inform (input_location, "parameter passing for argument of type %qT "
+	    "changed in GCC 7.1", type);
+
+  return aa.alignment;
 }
 
 /* For use by FUNCTION_ARG_PADDING (MODE, TYPE).
@@ -10211,7 +10258,9 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   stack = build3 (COMPONENT_REF, TREE_TYPE (f_stack), unshare_expr (valist),
 		  f_stack, NULL_TREE);
   size = int_size_in_bytes (type);
-  align = aarch64_function_arg_alignment (mode, type) / BITS_PER_UNIT;
+  struct aarch64_fn_arg_alignment aa
+    = aarch64_function_arg_alignment (mode, type);
+  align = aa.alignment / BITS_PER_UNIT;
 
   dw_align = false;
   adjust = 0;
