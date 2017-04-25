@@ -1,3 +1,33 @@
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* s-secsta.adb (SS_Info): Add a comment
+	explaining why we don't need to walk all the chunks in order to
+	compute the total size.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* namet.ads, namet.adb (Global_Name_Buffer): Increase the length
+	of the global name buffer to 4*Max_Line_Length.
+
+2017-04-25  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch8.adb (Expand_N_Object_Renaming_Declaration): When creating a
+	renaming entity for debug information, mark the entity as needing debug
+	info if it comes from sources.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Remove the
+	restriction converning the use of 'Address where the prefix is
+	of a controlled type.
+
+2017-04-25  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* exp_dbug.adb: In Debug_Renaming_Declaration,
+	skip slices that are made redundant by an indexed component
+	access.
+	* atree.h: New definition for Original_Node.
+
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb, sem_prag.ads: Minor reformatting.

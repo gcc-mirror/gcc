@@ -30,6 +30,7 @@
 ------------------------------------------------------------------------------
 
 with Alloc;
+with Hostparm; use Hostparm;
 with Table;
 with System;   use System;
 with Types;    use Types;
@@ -165,7 +166,7 @@ package Namet is
    --  which is used by most of the code via the renamings. New code ought
    --  to avoid the global.
 
-   Global_Name_Buffer : Bounded_String;
+   Global_Name_Buffer : Bounded_String (Max_Length => 4 * Max_Line_Length);
    Name_Buffer        : String renames Global_Name_Buffer.Chars;
    Name_Len           : Natural renames Global_Name_Buffer.Length;
 

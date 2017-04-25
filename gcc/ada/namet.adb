@@ -116,6 +116,9 @@ package body Namet is
    procedure Append (Buf : in out Bounded_String; C : Character) is
    begin
       if Buf.Length >= Buf.Chars'Last then
+         Write_Str ("Name buffer overflow; Max_Length = ");
+         Write_Int (Int (Buf.Max_Length));
+         Write_Line ("");
          raise Program_Error;
       end if;
 
