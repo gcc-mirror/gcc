@@ -7581,11 +7581,13 @@ package body Sem_Util is
 
    function From_Nested_Package (T : Entity_Id) return Boolean is
       Pack : constant Entity_Id := Scope (T);
+
    begin
-      return Ekind (Pack) = E_Package
-        and then not Is_Frozen (Pack)
-        and then not Scope_Within_Or_Same (Current_Scope, Pack)
-        and then In_Open_Scopes (Scope (Pack));
+      return
+        Ekind (Pack) = E_Package
+          and then not Is_Frozen (Pack)
+          and then not Scope_Within_Or_Same (Current_Scope, Pack)
+          and then In_Open_Scopes (Scope (Pack));
    end From_Nested_Package;
 
    -----------------------

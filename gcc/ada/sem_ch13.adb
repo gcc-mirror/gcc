@@ -1181,11 +1181,11 @@ package body Sem_Ch13 is
    --  Start of processing for Analyze_Aspects_At_Freeze_Point
 
    begin
-      --  Must be visible in current scope, but if this is a type from
-      --  a nested package it may be frozen from an object declaration
-      --  in the enclosing scope, so install the package declarations
-      --  to complete the analysis of the aspects, if any. If the package
-      --  itself is frozen the type will have been frozen as well.
+      --  Must be visible in current scope, but if this is a type from a nested
+      --  package it may be frozen from an object declaration in the enclosing
+      --  scope, so install the package declarations to complete the analysis
+      --  of the aspects, if any. If the package itself is frozen the type will
+      --  have been frozen as well.
 
       if not Scope_Within_Or_Same (Current_Scope, Scope (E)) then
          if Is_Type (E) and then From_Nested_Package (E) then
@@ -1208,11 +1208,10 @@ package body Sem_Ch13 is
                return;
             end;
 
+         --  Aspects from other entities in different contexts are analyzed
+         --  elsewhere.
+
          else
-
-            --  Aspects from other entities in different contexts are
-            --  analyzed elsewhere.
-
             return;
          end if;
       end if;
