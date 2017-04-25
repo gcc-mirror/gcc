@@ -2734,6 +2734,7 @@ package body Errout is
           not Is_Predefined_File_Name
                 (Unit_File_Name (Get_Source_Unit (Error_Msg_Node_1)))
       then
+         Get_Name_String (Unit_File_Name (Get_Source_Unit (Error_Msg_Node_1)));
          Set_Msg_Str (" defined");
          Set_Msg_Insertion_Line_Number (Sloc (Error_Msg_Node_1), Flag);
 

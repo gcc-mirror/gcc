@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -302,10 +302,9 @@ package body Fname.UF is
 
                   --  Determine if we have a predefined file name
 
-                  Name_Len := Uname'Length;
-                  Name_Buffer (1 .. Name_Len) := Uname;
                   Is_Predef :=
-                    Is_Predefined_File_Name (Renamings_Included => True);
+                    Is_Predefined_File_Name
+                      (Uname, Renamings_Included => True);
 
                   --  Found a match, execute the pattern
 

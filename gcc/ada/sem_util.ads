@@ -2335,6 +2335,11 @@ package Sem_Util is
    function Scope_Is_Transient return Boolean;
    --  True if the current scope is transient
 
+   function Should_Ignore_Pragma (Prag_Name : Name_Id) return Boolean;
+   --  True if we should ignore pragmas with the specified name. In particular,
+   --  this returns True if pragma Ignore_Pragma applies, and we are not in a
+   --  predefined unit.
+
    function Static_Boolean (N : Node_Id) return Uint;
    --  This function analyzes the given expression node and then resolves it
    --  as Standard.Boolean. If the result is static, then Uint_1 or Uint_0 is

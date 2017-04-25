@@ -3631,7 +3631,8 @@ package body Sem_Ch8 is
       --  children of Ada.Numerics, which are never loaded by Rtsfind).
 
       if Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
-        and then Name_Buffer (1 .. 3) /= "a-n"
+        and then Get_Name_String
+          (Unit_File_Name (Current_Sem_Unit)) (1 .. 3) /= "a-n"
         and then
           Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Declaration
       then

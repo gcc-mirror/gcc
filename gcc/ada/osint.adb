@@ -1189,16 +1189,25 @@ package body Osint is
             Found := N;
             Attr.all  := Unknown_Attributes;
 
-            if T = Config and then Full_Name then
-               declare
-                  Full_Path : constant String :=
-                                Normalize_Pathname (Get_Name_String (N));
-                  Full_Size : constant Natural := Full_Path'Length;
-               begin
-                  Name_Buffer (1 .. Full_Size) := Full_Path;
-                  Name_Len := Full_Size;
-                  Found := Name_Find;
-               end;
+            if T = Config then
+               if Full_Name then
+                  declare
+                     Full_Path : constant String :=
+                                   Normalize_Pathname (Get_Name_String (N));
+                     Full_Size : constant Natural := Full_Path'Length;
+
+                  begin
+                     Name_Buffer (1 .. Full_Size) := Full_Path;
+                     Name_Len := Full_Size;
+                     Found := Name_Find;
+                  end;
+               end if;
+
+               --  Check that it is a file, not a directory
+
+               if not Is_Regular_File (Get_Name_String (Found)) then
+                  Found := No_File;
+               end if;
             end if;
 
             return;

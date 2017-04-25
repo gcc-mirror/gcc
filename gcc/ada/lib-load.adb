@@ -582,6 +582,8 @@ package body Lib.Load is
                end if;
 
                if Present (Error_Node) then
+                  Get_Name_String (Fname);
+
                   if Is_Predefined_File_Name (Fname) then
                      Error_Msg_Unit_1 := Uname_Actual;
                      Error_Msg
@@ -785,6 +787,8 @@ package body Lib.Load is
             --  Generate message if unit required
 
             if Required then
+               Get_Name_String (Fname);
+
                if Is_Predefined_File_Name (Fname) then
 
                   --  This is a predefined library unit which is not present

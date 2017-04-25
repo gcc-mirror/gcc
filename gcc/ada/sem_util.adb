@@ -20499,6 +20499,16 @@ package body Sem_Util is
       Set_Alignment                 (T1, Alignment                 (T2));
    end Set_Size_Info;
 
+   --------------------------
+   -- Should_Ignore_Pragma --
+   --------------------------
+
+   function Should_Ignore_Pragma (Prag_Name : Name_Id) return Boolean is
+   begin
+      return not Is_Internal_File_Name (File_Name (Current_Source_File))
+        and then Get_Name_Table_Boolean3 (Prag_Name);
+   end Should_Ignore_Pragma;
+
    --------------------
    -- Static_Boolean --
    --------------------
