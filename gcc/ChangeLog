@@ -5,6 +5,12 @@
 2017-04-25  Julian Brown  <julian@codesourcery.com>
 	    Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
 
+	* config/aarch64/thunderx2t99.md (thunderx2t99_aes): New Reservation.
+	(thunderx2t99_sha): New Reservation.
+
+2017-04-25  Julian Brown  <julian@codesourcery.com>
+	    Naveen H.S  <Naveen.Hurugalawadi@cavium.com>
+
 	* config/aarch64/aarch64-simd.md (aarch64_simd_vec_set<mode>): Fix
 	type for 1-element load.
 

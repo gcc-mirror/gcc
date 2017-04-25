@@ -441,3 +441,16 @@
   (and (eq_attr "tune" "thunderx2t99")
        (eq_attr "type" "neon_store2_one_lane,neon_store2_one_lane_q"))
   "thunderx2t99_ls01,thunderx2t99_f01")
+
+;; Crypto extensions.
+
+(define_insn_reservation "thunderx2t99_aes" 5
+  (and (eq_attr "tune" "thunderx2t99")
+       (eq_attr "type" "crypto_aese,crypto_aesmc"))
+  "thunderx2t99_f1")
+
+(define_insn_reservation "thunderx2t99_sha" 7
+  (and (eq_attr "tune" "thunderx2t99")
+       (eq_attr "type" "crypto_sha1_fast,crypto_sha1_xor,crypto_sha1_slow,\
+			crypto_sha256_fast,crypto_sha256_slow"))
+  "thunderx2t99_f1")
