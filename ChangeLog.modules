@@ -1,7 +1,12 @@
 2017-04-25  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* name-lookup.c (extern_c_fns): New hash.
+	(check_extern_c_conflict): Reimplement using hash map.
+	(do_pushdecl): Move check_extern_c_conflict later.
+
 	Namespace stat hack via special overload
-	gcc/cp
+	gcc/cp/
 	* name-lookup.c (STAT_HACK_P, STAT_TYPE, STAT_DECL,
 	MAYBE_STAT_DECL, MAYBE_STAT_TYPE): New.
 	(stat_hack): New.

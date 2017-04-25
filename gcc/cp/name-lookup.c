@@ -1799,9 +1799,13 @@ update_binding (cp_binding_level *level, cxx_binding *binding,
   return decl;
 }
 
-/* DECL has C linkage. Look it up in all namespaces.  If we find an
-   existing binding, make sure it has the same exception
-   specification, otherwise, bail in error [7.5, 7.6].  */
+/* Map of identifiers to extern C functions.  */
+
+static GTY(()) hash_map<tree,tree> *extern_c_fns;
+
+/* DECL has C linkage. If we have an existing instance, make sure it
+   has the same exception specification [7.5, 7.6].  If there's no
+   instance, add DECL to the map.  */
 
 static void
 check_extern_c_conflict (tree decl)
@@ -1809,47 +1813,41 @@ check_extern_c_conflict (tree decl)
   /* Ignore artificial or system header decls.  */
   if (DECL_ARTIFICIAL (decl) || DECL_IN_SYSTEM_HEADER (decl))
     return;
-  
-  tree previous = NULL_TREE;
-  tree name = DECL_NAME (decl);
 
-  // FIXME: We should just have a map of names to extern_c bindings
-  for (cxx_binding *iter = IDENTIFIER_NAMESPACE_BINDINGS (name);
-       !previous && iter; iter = iter->previous)
-    for (ovl_iterator it (iter->value); !previous && it; ++it)
-      {
-	tree d = *it;
-	if (TREE_CODE (d) == FUNCTION_DECL && DECL_EXTERN_C_P (d)
-	    /* Should we be ignoring a mismatch to one of these?  */
-	    && !DECL_ARTIFICIAL (d) && !DECL_IN_SYSTEM_HEADER (d)
-	    && DECL_CONTEXT (d) != DECL_CONTEXT (decl))
-	  previous = d;
-      }
-  if (!previous)
-    return;
+  if (!extern_c_fns)
+    extern_c_fns = hash_map<tree,tree>::create_ggc (127);
 
-  /* In case either decl or previous is declared to throw an
-     exception, make sure both exception specifications are equal.  */
-
-  int mismatch = 0;
-  if (!decls_match (decl, previous))
-    mismatch = 1;
-  else if (!comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (previous)),
-			       TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl)),
-			       ce_normal))
-    mismatch = -1;
-  else if (DECL_ASSEMBLER_NAME_SET_P (previous))
-    SET_DECL_ASSEMBLER_NAME (decl, DECL_ASSEMBLER_NAME (previous));
-
-  if (mismatch)
+  bool existed;
+  tree *slot = &extern_c_fns->get_or_insert (DECL_NAME (decl), &existed);
+  if (!existed)
+    *slot = decl;
+  else if (DECL_CONTEXT (*slot) == DECL_CONTEXT (decl))
+    ; /* If they're in the same context, we'll have already complained
+	 about a (possible) mismatch, when inserting the decl.  */
+  else
     {
-      pedwarn (input_location, 0,
-	       "declaration of %q#D with C language linkage", decl);
-      pedwarn (DECL_SOURCE_LOCATION (previous), 0,
-	       "conflicts with previous declaration %q#D", previous);
-      if (mismatch < 0)
-	pedwarn (input_location, 0,
-		 "due to different exception specifications");
+      tree old = *slot;
+
+      int mismatch = 0;
+      if (!decls_match (decl, old))
+	mismatch = 1;
+      else if (!comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (old)),
+				   TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl)),
+				   ce_normal))
+	mismatch = -1;
+      else if (DECL_ASSEMBLER_NAME_SET_P (old))
+	SET_DECL_ASSEMBLER_NAME (decl, DECL_ASSEMBLER_NAME (old));
+
+      if (mismatch)
+	{
+	  pedwarn (input_location, 0,
+		   "declaration of %q#D with C language linkage", decl);
+	  pedwarn (DECL_SOURCE_LOCATION (old), 0,
+		   "conflicts with previous declaration %q#D", old);
+	  if (mismatch < 0)
+	    pedwarn (input_location, 0,
+		     "due to different exception specifications");
+	}
     }
 }
 
@@ -2277,9 +2275,6 @@ do_pushdecl (tree decl, bool is_friend)
 
       if (DECL_DECLARES_FUNCTION_P (decl))
 	{
-	  if (DECL_EXTERN_C_P (decl))
-	    check_extern_c_conflict (decl);
-
 	  check_default_args (decl);
 
 	  if (is_friend)
@@ -2341,6 +2336,8 @@ do_pushdecl (tree decl, bool is_friend)
 	}
       else if (VAR_P (decl))
 	maybe_register_incomplete_var (decl);
+      else if (TREE_CODE (decl) == FUNCTION_DECL && DECL_EXTERN_C_P (decl))
+	check_extern_c_conflict (decl);
     }
   else
     add_decl_to_level (level, decl);
@@ -3155,35 +3152,6 @@ make_lambda_name (void)
 
   sprintf (buf, LAMBDANAME_FORMAT, lambda_cnt++);
   return get_identifier (buf);
-}
-
-
-/* Returns a list of C-linkage decls with the name NAME.  */
-
-tree
-c_linkage_bindings (tree name)
-{
-  tree decls = NULL_TREE;
-  cxx_binding *iter;
-
-  for (iter = IDENTIFIER_NAMESPACE_BINDINGS (name);
-       iter;
-       iter = iter->previous)
-    {
-      for (ovl_iterator it (iter->value); it; ++it)
-	{
-	  tree decl = *it;
-	  if (DECL_EXTERN_C_P (decl)
-	      && !DECL_ARTIFICIAL (decl))
-	    {
-	      if (decls == NULL_TREE)
-		decls = decl;
-	      else
-		decls = tree_cons (NULL_TREE, decl, decls);
-	    }
-	}
-    }
-  return decls;
 }
 
 /* Insert another USING_DECL into the current binding level, returning
@@ -5517,7 +5485,6 @@ do_pushtag (tree name, tree type, tag_scope scope)
   if (identifier_type_value_1 (name) != type)
     {
       tree tdef;
-      int in_class = 0;
       tree context = TYPE_CONTEXT (type);
 
       if (! context)
@@ -5537,11 +5504,6 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	}
       if (!context)
 	context = current_namespace;
-
-      if (b->kind == sk_class
-	  || (b->kind == sk_template_parms
-	      && b->level_chain->kind == sk_class))
-	in_class = 1;
 
       tdef = create_implicit_typedef (name, type);
       DECL_CONTEXT (tdef) = FROB_CONTEXT (context);
