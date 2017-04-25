@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -304,7 +304,18 @@ package body Targparm is
             Set_Profile_Restrictions (GNAT_Extended_Ravenscar);
             Opt.Task_Dispatching_Policy := 'F';
             Opt.Locking_Policy          := 'C';
-            P := P + 27;
+            P := P + 41;
+            goto Line_Loop_Continue;
+
+         --  Test for pragma Profile (GNAT_Ravenscar_EDF);
+
+         elsif System_Text (P .. P + 35) =
+                 "pragma Profile (GNAT_Ravenscar_EDF);"
+         then
+            Set_Profile_Restrictions (GNAT_Ravenscar_EDF);
+            Opt.Task_Dispatching_Policy := 'E';
+            Opt.Locking_Policy          := 'C';
+            P := P + 36;
             goto Line_Loop_Continue;
 
          --  Test for pragma Profile (Restricted);

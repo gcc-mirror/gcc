@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -513,6 +513,7 @@ package Snames is
    --  correctly recognize and process CPU. CPU is a standard Ada 2012
    --  pragma.
 
+   Name_Deadline_Floor                 : constant Name_Id := N + $; -- GNAT
    Name_Debug                          : constant Name_Id := N + $; -- GNAT
    Name_Default_Initial_Condition      : constant Name_Id := N + $; -- GNAT
    Name_Depends                        : constant Name_Id := N + $; -- GNAT
@@ -748,6 +749,7 @@ package Snames is
    Name_General                        : constant Name_Id := N + $;
    Name_Gnat                           : constant Name_Id := N + $;
    Name_Gnat_Extended_Ravenscar        : constant Name_Id := N + $;
+   Name_Gnat_Ravenscar_EDF             : constant Name_Id := N + $;
    Name_Gnatprove                      : constant Name_Id := N + $;
    Name_GPL                            : constant Name_Id := N + $;
    Name_High_Order_First               : constant Name_Id := N + $;
@@ -1871,6 +1873,7 @@ package Snames is
       Pragma_CPP_Constructor,
       Pragma_CPP_Virtual,
       Pragma_CPP_Vtable,
+      Pragma_Deadline_Floor,
       Pragma_Debug,
       Pragma_Default_Initial_Condition,
       Pragma_Depends,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -13217,8 +13217,8 @@ package body Sem_Ch12 is
                --  package, in which case the usual generic rule applies.
 
                declare
-                  Exp_Status         : Boolean := True;
-                  Scop               : Entity_Id;
+                  Exp_Status : Boolean := True;
+                  Scop       : Entity_Id;
 
                begin
                   --  Loop through scopes looking for generic package
@@ -13292,8 +13292,7 @@ package body Sem_Ch12 is
 
                            --  Package instance
 
-                           if
-                             Nkind (Node (Decl)) = N_Package_Instantiation
+                           if Nkind (Node (Decl)) = N_Package_Instantiation
                            then
                               Instantiate_Package_Body
                                 (Info, Body_Optional => True);
@@ -13308,8 +13307,9 @@ package body Sem_Ch12 is
                               --  these result in the corresponding pragmas,
                               --  inserted after the subprogram declaration.
                               --  They must be skipped as well when retrieving
-                              --  the desired spec. A direct link would be
-                              --  more robust ???
+                              --  the desired spec. Some of them may have been
+                              --  rewritten as null statements.
+                              --  A direct link would be more robust ???
 
                               declare
                                  Decl : Node_Id :=
@@ -13317,7 +13317,9 @@ package body Sem_Ch12 is
                                             (Specification (Info.Act_Decl))));
                               begin
                                  while Nkind_In (Decl,
-                                   N_Subprogram_Renaming_Declaration, N_Pragma)
+                                   N_Null_Statement,
+                                   N_Pragma,
+                                   N_Subprogram_Renaming_Declaration)
                                  loop
                                     Decl := Prev (Decl);
                                  end loop;

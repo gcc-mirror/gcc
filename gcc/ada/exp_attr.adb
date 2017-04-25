@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5515,12 +5515,17 @@ package body Exp_Attr is
 
                --  Ada 2005 (AI-216): Program_Error is raised when executing
                --  the default implementation of the Read attribute of an
-               --  Unchecked_Union type.
+               --  Unchecked_Union type. We replace the attribute with a
+               --  raise statement (rather than inserting it before) to handle
+               --  properly the case of an unchecked union that is a record
+               --  component.
 
                if Is_Unchecked_Union (Base_Type (U_Type)) then
-                  Insert_Action (N,
+                  Rewrite (N,
                     Make_Raise_Program_Error (Loc,
                       Reason => PE_Unchecked_Union_Restriction));
+                  Set_Etype (N, B_Type);
+                  return;
                end if;
 
                if Has_Discriminants (U_Type)
@@ -7215,14 +7220,21 @@ package body Exp_Attr is
                --  Unchecked_Union type. However, if the 'Write reference is
                --  within the generated Output stream procedure, Write outputs
                --  the components, and the default values of the discriminant
-               --  are streamed by the Output procedure itself.
+               --  are streamed by the Output procedure itself. If there are
+               --  no default values this is also erroneous.
 
-               if Is_Unchecked_Union (Base_Type (U_Type))
-                 and not Is_TSS (Current_Scope, TSS_Stream_Output)
-               then
-                  Insert_Action (N,
-                    Make_Raise_Program_Error (Loc,
-                      Reason => PE_Unchecked_Union_Restriction));
+               if Is_Unchecked_Union (Base_Type (U_Type)) then
+                  if (not Is_TSS (Current_Scope, TSS_Stream_Output)
+                       and not Is_TSS (Current_Scope, TSS_Stream_Write))
+                    or else No (Discriminant_Default_Value
+                                 (First_Discriminant (U_Type)))
+                  then
+                     Rewrite (N,
+                       Make_Raise_Program_Error (Loc,
+                         Reason => PE_Unchecked_Union_Restriction));
+                     Set_Etype (N, U_Type);
+                     return;
+                  end if;
                end if;
 
                if Has_Discriminants (U_Type)

@@ -1,3 +1,50 @@
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Is_Post_State): A reference to a
+	generic in out parameter is considered a change in the post-state
+	of a subprogram.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Load_Parent_Of_Generic); When retrieving the
+	declaration of a subprogram instance within its wrapper package,
+	skip over null statements that may result from the rewriting of
+	ignored pragmas.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Expand_Attribute_Reference, case 'Read):
+	If the type is an unchecked_union, replace the attribute with
+	a Raise_Program_Error (rather than inserting such before the
+	attribute reference) to handle properly the case where we are
+	processing a component of a larger record, and we need to prevent
+	further expansion for the unchecked union.
+	(Expand_Attribute_Reference, case 'Write): If the type is
+	an unchecked_union, check whether enclosing scope is a Write
+	subprogram. Replace attribute with a Raise_Program_Error if the
+	discriminants of the unchecked_union type have not default values
+	because such a use is erroneous..
+
+2017-04-25  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Task_Type_Declaration):
+	Add relative_deadline to task record on edf profile.
+	(Make_Initialize_Protection): Pass deadline_floor value on edf profile.
+	(Make_Task_Create_Call): Pass relative_deadline value.
+	* par-prag.adb (Prag): Handle Pragma_Deadline_Floor.
+	* s-rident.ads (Profile_Name): Add GNAT_Ravenscar_EDF.
+	(Profile_Info): Add info for GNAT_Ravenscar_EDF.
+	* sem_prag.adb (Set_Ravenscar_Profile): Handle
+	GNAT_Ravenscar_EDF (set scheduling policy).
+	(Analyze_Pragma): Handle GNAT_Ravenscar_EDF profile and Deadline_Floor
+	pragma.
+	(Sig_Flags): Add choice for Pragma_Deadline_Floor.
+	* snames.ads-tmpl (Name_Deadline_Floor, Name_Gnat_Ravenscar_EDF):
+	New names.
+	(Pragma_Deadline_Floor): New pragma.
+	* targparm.adb (Get_Target_Parameters): Recognize
+	GNAT_Ravenscar_EDF profile.
+
 2017-04-25  Arnaud Charlet  <charlet@adacore.com trojanek>
 
 	* gnatvsn.ads (Library_Version): Bump to 8. Update comment.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3998,9 +3998,10 @@ package body Sem_Prag is
 
       procedure Set_Ravenscar_Profile (Profile : Profile_Name; N : Node_Id);
       --  Activate the set of configuration pragmas and restrictions that make
-      --  up the Profile. Profile must be either GNAT_Extended_Ravencar or
-      --  Ravenscar. N is the corresponding pragma node, which is used for
-      --  error messages on any constructs violating the profile.
+      --  up the Profile. Profile must be either GNAT_Extended_Ravencar,
+      --  GNAT_Ravenscar_EDF or Ravenscar. N is the corresponding pragma node,
+      --  which is used for error messages on any constructs violating the
+      --  profile.
 
       ----------------------------------
       -- Acquire_Warning_Match_String --
@@ -10322,6 +10323,9 @@ package body Sem_Prag is
       --    Set required policies
 
       --      pragma Task_Dispatching_Policy (FIFO_Within_Priorities)
+      --        (For Ravenscar and GNAT_Extended_Ravenscar profiles)
+      --      pragma Task_Dispatching_Policy (EDF_Across_Priorities)
+      --        (For GNAT_Ravenscar_EDF profile)
       --      pragma Locking_Policy (Ceiling_Locking)
 
       --    Set Detect_Blocking mode
@@ -10364,13 +10368,24 @@ package body Sem_Prag is
          Pref_Id : Node_Id;
          Sel_Id  : Node_Id;
 
+         Profile_Dispatching_Policy : Character;
+
       --  Start of processing for Set_Ravenscar_Profile
 
       begin
+         --  pragma Task_Dispatching_Policy (EDF_Across_Priorities)
+
+         if Profile = GNAT_Ravenscar_EDF then
+            Profile_Dispatching_Policy := 'E';
+
          --  pragma Task_Dispatching_Policy (FIFO_Within_Priorities)
 
+         else
+            Profile_Dispatching_Policy := 'F';
+         end if;
+
          if Task_Dispatching_Policy /= ' '
-           and then Task_Dispatching_Policy /= 'F'
+           and then Task_Dispatching_Policy /= Profile_Dispatching_Policy
          then
             Error_Msg_Sloc := Task_Dispatching_Policy_Sloc;
             Set_Error_Msg_To_Profile_Name;
@@ -10381,7 +10396,7 @@ package body Sem_Prag is
          --  name.
 
          else
-            Task_Dispatching_Policy := 'F';
+            Task_Dispatching_Policy := Profile_Dispatching_Policy;
 
             if Task_Dispatching_Policy_Sloc /= System_Location then
                Task_Dispatching_Policy_Sloc := Loc;
@@ -13817,6 +13832,45 @@ package body Sem_Prag is
             Check_Duplicate_Pragma (Ent);
             Record_Rep_Item (Ent, N);
          end CPU;
+
+         --------------------
+         -- Deadline_Floor --
+         --------------------
+
+         --  pragma Deadline_Floor (time_span_EXPRESSION);
+
+         when Pragma_Deadline_Floor => Deadline_Floor : declare
+            P   : constant Node_Id := Parent (N);
+            Arg : Node_Id;
+            Ent : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_No_Identifiers;
+            Check_Arg_Count (1);
+
+            Arg := Get_Pragma_Arg (Arg1);
+
+            --  The expression must be analyzed in the special manner described
+            --  in "Handling of Default and Per-Object Expressions" in sem.ads.
+
+            Preanalyze_Spec_Expression (Arg, RTE (RE_Time_Span));
+
+            --  Only protected types allowed
+
+            if Nkind (P) /= N_Protected_Definition then
+               Pragma_Misplaced;
+
+            else
+               Ent := Defining_Identifier (Parent (P));
+
+               --  Check duplicate pragma before we chain the pragma in the Rep
+               --  Item chain of Ent.
+
+               Check_Duplicate_Pragma (Ent);
+               Record_Rep_Item (Ent, N);
+            end if;
+         end Deadline_Floor;
 
          -----------
          -- Debug --
@@ -19927,6 +19981,9 @@ package body Sem_Prag is
 
                elsif Chars (Argx) = Name_Gnat_Extended_Ravenscar then
                   Set_Ravenscar_Profile (GNAT_Extended_Ravenscar, N);
+
+               elsif Chars (Argx) = Name_Gnat_Ravenscar_EDF then
+                  Set_Ravenscar_Profile (GNAT_Ravenscar_EDF, N);
 
                elsif Chars (Argx) = Name_Restricted then
                   Set_Profile_Restrictions
@@ -29110,6 +29167,7 @@ package body Sem_Prag is
       Pragma_Controlled                     =>  0,
       Pragma_Convention                     =>  0,
       Pragma_Convention_Identifier          =>  0,
+      Pragma_Deadline_Floor                 => -1,
       Pragma_Debug                          => -1,
       Pragma_Debug_Policy                   =>  0,
       Pragma_Detect_Blocking                =>  0,
