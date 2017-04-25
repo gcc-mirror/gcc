@@ -454,3 +454,10 @@
        (eq_attr "type" "crypto_sha1_fast,crypto_sha1_xor,crypto_sha1_slow,\
 			crypto_sha256_fast,crypto_sha256_slow"))
   "thunderx2t99_f1")
+
+;; CRC extension.
+
+(define_insn_reservation "thunderx2t99_crc" 4
+  (and (eq_attr "tune" "thunderx2t99")
+       (eq_attr "type" "crc"))
+  "thunderx2t99_i1")
