@@ -2235,7 +2235,7 @@ package body Binde is
          begin
             while S /= No_Successor loop
                if UNR.Table (Succ.Table (S).After).Elab_Position <=
-                 UNR.Table (U).Elab_Position
+                    UNR.Table (U).Elab_Position
                then
                   OK := False;
                   Write_Line (Msg & " elab order failed");

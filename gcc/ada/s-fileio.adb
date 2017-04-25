@@ -296,14 +296,15 @@ package body System.File_IO is
             Temp : access Temp_File_Record_Ptr := Temp_Files'Access;
             --  Note the double indirection here
 
+            Discard  : int;
             New_Temp : Temp_File_Record_Ptr;
-            Discard : int;
+
          begin
             while Temp.all.all.File /= File loop
                Temp := Temp.all.all.Next'Access;
             end loop;
 
-            Discard := unlink (Temp.all.all.Name'Address);
+            Discard  := unlink (Temp.all.all.Name'Address);
             New_Temp := Temp.all.all.Next;
             Free (Temp.all);
             Temp.all := New_Temp;
