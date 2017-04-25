@@ -1812,13 +1812,15 @@ package body Par_SCO is
                   Process_Decisions_Defer
                     (Parameter_Specifications (Spec), 'X');
 
-                  --  Case of a null procedure: generate a NULL statement SCO
+                  --  Case of a null procedure: generate SCO for fictitious
+                  --  NULL statement located at the NULL keyword in the
+                  --  procedure specification.
 
                   if Nkind (N) = N_Subprogram_Declaration
                     and then Nkind (Spec) = N_Procedure_Specification
                     and then Null_Present (Spec)
                   then
-                     Traverse_Degenerate_Subprogram (N);
+                     Traverse_Degenerate_Subprogram (Null_Statement (Spec));
 
                   --  Case of an expression function: generate a statement SCO
                   --  for the expression (and then decision SCOs for any nested

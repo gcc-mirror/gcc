@@ -3223,4 +3223,9 @@ package Rtsfind is
    procedure Set_RTU_Loaded (N : Node_Id);
    --  Register the predefined unit N as already loaded
 
+   procedure SPARK_Implicit_Load (E : RE_Id);
+   --  Force loading of the unit containing the entity E; only needed in
+   --  GNATprove mode when processing code that implicitly references a
+   --  given entity.
+
 end Rtsfind;

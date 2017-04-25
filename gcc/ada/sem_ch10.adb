@@ -1145,8 +1145,7 @@ package body Sem_Ch10 is
                                          N_Function_Instantiation)
          then
             declare
-               Spec   : Node_Id;
-               Unused : Entity_Id;
+               Spec : Node_Id;
 
             begin
                case Nkind (Unit_Node) is
@@ -1163,15 +1162,15 @@ package body Sem_Ch10 is
 
                pragma Assert (Nkind (Spec) in N_Subprogram_Specification);
 
-               --  Only subprogram with no parameters can act as "main", and if
-               --  it is a function, it needs to return an integer.
+               --  Main subprogram must have no parameters, and if it is a
+               --  function, it must return an integer.
 
                if No (Parameter_Specifications (Spec))
                  and then (Nkind (Spec) = N_Procedure_Specification
                              or else
                            Is_Integer_Type (Etype (Result_Definition (Spec))))
                then
-                  Unused := RTE (RE_Interrupt_Priority);
+                  SPARK_Implicit_Load (RE_Interrupt_Priority);
                end if;
             end;
          end if;
