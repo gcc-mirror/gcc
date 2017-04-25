@@ -302,7 +302,11 @@ package body Ada.Task_Attributes is
 
          --  No finalization needed, simply set to Val
 
-         TT.Attributes (Index) := To_Address (Val);
+         if Attribute'Size = Integer'Size then
+            TT.Attributes (Index) := Atomic_Address (To_Int (Val));
+         else
+            TT.Attributes (Index) := To_Address (Val);
+         end if;
 
       else
          Self_Id := STPO.Self;

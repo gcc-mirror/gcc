@@ -3374,6 +3374,14 @@ package body Sem_Ch12 is
       End_Package_Scope (Id);
       Exit_Generic_Scope (Id);
 
+      --  If the generic appears within a package unit, the body of that unit
+      --  has to be present for instantiation and inlining.
+
+      if Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Declaration then
+         Set_Body_Needed_For_Inlining
+           (Defining_Entity (Unit (Cunit (Current_Sem_Unit))));
+      end if;
+
       if Nkind (Parent (N)) /= N_Compilation_Unit then
          Move_Freeze_Nodes (Id, N, Visible_Declarations (Specification (N)));
          Move_Freeze_Nodes (Id, N, Private_Declarations (Specification (N)));
@@ -3552,6 +3560,16 @@ package body Sem_Ch12 is
          Set_Body_Required (Parent (N), Unit_Requires_Body (Id));
       end if;
 
+      --  If the generic appears within a package unit, the body of that unit
+      --  has to be present for instantiation and inlining.
+
+      if Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Declaration
+        and then Unit_Requires_Body (Id)
+      then
+         Set_Body_Needed_For_Inlining
+           (Defining_Entity (Unit (Cunit (Current_Sem_Unit))));
+      end if;
+
       Set_Categorization_From_Pragmas (N);
       Validate_Categorization_Dependency (N, Id);
 
@@ -3724,6 +3742,8 @@ package body Sem_Ch12 is
       --  Turn off style checking in instances. If the check is enabled on the
       --  generic unit, a warning in an instance would just be noise. If not
       --  enabled on the generic, then a warning in an instance is just wrong.
+      --  This must be done after analyzing the actuals, which do come from
+      --  source and are subject to style checking.
 
       Style_Check := False;
 

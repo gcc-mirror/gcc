@@ -5353,6 +5353,16 @@ package body Sem_Res is
                Resolve (Op2, T2);
             end;
 
+         --  A universal real conditional expression can appear in a fixed-type
+         --  context and must be resolved with that context to facilitate the
+         --  code generation to the backend.
+
+         elsif Nkind_In (N, N_Case_Expression, N_If_Expression)
+           and then Etype (N) = Universal_Real
+           and then Is_Fixed_Point_Type (B_Typ)
+         then
+            Resolve (N, B_Typ);
+
          else
             Resolve (N);
          end if;

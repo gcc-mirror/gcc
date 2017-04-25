@@ -300,6 +300,10 @@ package body Sem_Ch5 is
       --  Ghost entity. Set the mode now to ensure that any nodes generated
       --  during analysis and expansion are properly marked as Ghost.
 
+      if Has_Target_Names (N) then
+         Expander_Mode_Save_And_Set (False);
+      end if;
+
       Mark_And_Set_Ghost_Assignment (N, Mode);
       Analyze (Rhs);
 
@@ -3546,15 +3550,6 @@ package body Sem_Ch5 is
       else
          Set_Has_Target_Names (Parent (Current_LHS));
          Set_Etype (N, Etype (Current_LHS));
-
-         --  Disable expansion for the rest of the analysis of the current
-         --  right-hand side. The enclosing assignment statement will be
-         --  rewritten during expansion, together with occurrences of the
-         --  target name.
-
-         if Expander_Active then
-            Expander_Mode_Save_And_Set (False);
-         end if;
       end if;
    end Analyze_Target_Name;
 

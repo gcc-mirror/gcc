@@ -235,6 +235,10 @@ package body Ch4 is
 
       if Token = Tok_At_Sign then
          Scan_Reserved_Identifier (Force_Msg => False);
+
+         if Present (Current_Assign_Node) then
+            Set_Has_Target_Names (Current_Assign_Node);
+         end if;
       end if;
 
       Name_Node := Token_Node;

@@ -73,6 +73,8 @@ package body System.Memory is
       --  return Null_Address, and then we can check for that special value.
       --  However, that doesn't work on VxWorks, because malloc(size_t'Last)
       --  prints an unwanted warning message before returning Null_Address.
+      --  Note that the branch is correctly predicted on modern hardware, so
+      --  there is negligible overhead.
 
       if Size = size_t'Last then
          raise Storage_Error with "object too large";

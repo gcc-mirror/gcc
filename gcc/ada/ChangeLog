@@ -1,3 +1,63 @@
+2017-04-25  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Build_Initialization_Call): Handle
+	subtypes of private types when searching for the underlying full
+	view of a private type.
+
+2017-04-25  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Set_Mixed_Mode_Operand): A universal
+	real conditional expression can appear in a fixed-type context
+	and must be resolved with that context to facilitate the code
+	generation to the backend.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.adb, einfo.ads (Body_Needed_For_Inlining): New flag,
+	to indicate whether during inline processing, when some unit U1
+	appears in the context of a unit U2 compiled for instantiation
+	or inlining purposes, the body of U1 needs to be compiled as well.
+	* sem_prag.adb (Process_Inline): Set Body_Needed_For_Inlining if
+	context is a package declaration.
+	* sem_ch12.adb (Analyze_Generic_Subprogram_Declaration,
+	Analyze_Generic_Package_Declaration): ditto.
+	* inline.adb (Analyze_Inlined_Bodies): Check
+	Body_Needed_For_Inlining.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* par.adb (Current_Assign_Node): Global variable use to record
+	the presence of a target_name in the right hand side of the
+	assignment being parsed.
+	* par-ch4.adb (P_Name): If the name is a target_name, mark the
+	enclosing assignment node accordingly.
+	* par-ch5.adb (P_Assignment_Statement): Set Current_Assign_Node
+	appropriately.
+	* sem_ch5.adb (Analyze_Assignment): Disable expansion before
+	analyzing RHS if the statement has target_names.
+	* sem_aggr.adb (Resolve_Iterated_Component_Association): Handle
+	properly choices that are subtype marks.
+	* exp_ch5.adb: Code cleanup.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* s-memory.adb: Add a comment regarding efficiency.
+	* atree.adb: Fix the assertion, and combine 2 assertions into one,
+	"the source has an extension if and only if the destination does."
+	* sem_ch3.adb, sem_ch13.adb: Address ??? comments.
+
+2017-04-25  Arnaud Charlet  <charlet@adacore.com trojanek>
+
+	* a-tasatt.adb (Set_Value): Fix handling of 32bits -> 64bits
+	conversion.
+
+2017-04-25  Doug Rupp  <rupp@adacore.com>
+
+	* init.c (__gnat_error_handler) [vxworks]: Turn on sigtramp
+	handling for ppc64-vx7.
+	* sigtramp-vxworks-target.inc
+	[SIGTRAMP_BODY]: Add section for ppc64-vx7.
+
 2017-04-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* ada_get_targ.adb: New file.

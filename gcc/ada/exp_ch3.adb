@@ -1451,6 +1451,12 @@ package body Exp_Ch3 is
             elsif Is_Generic_Actual_Type (Full_Type) then
                Full_Type := Base_Type (Full_Type);
 
+            elsif Ekind (Full_Type) = E_Private_Subtype
+              and then (not Has_Discriminants (Full_Type)
+                         or else No (Discriminant_Constraint (Full_Type)))
+            then
+               Full_Type := Etype (Full_Type);
+
             --  The loop has recovered the [underlying] full view, stop the
             --  traversal.
 

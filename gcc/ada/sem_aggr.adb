@@ -1664,7 +1664,19 @@ package body Sem_Aggr is
                Others_Present := True;
 
             else
-               Analyze_And_Resolve (Choice, Index_Typ);
+               Analyze (Choice);
+
+               --  Choice can be a subtype name, a range, or an expression.
+
+               if Is_Entity_Name (Choice)
+                 and then Is_Type (Entity (Choice))
+                 and then Base_Type (Entity (Choice)) = Base_Type (Index_Typ)
+               then
+                  null;
+
+               else
+                  Analyze_And_Resolve (Choice, Index_Typ);
+               end if;
             end if;
 
             Next (Choice);
@@ -1681,6 +1693,8 @@ package body Sem_Aggr is
          --  Decorate the index variable in the current scope. The association
          --  may have several choices, each one leading to a loop, so we create
          --  this variable only once to prevent homonyms in this scope.
+         --  The expression has to be analyzed once the index variable is
+         --  directly visible.
 
          if No (Scope (Id)) then
             Enter_Name (Id);
