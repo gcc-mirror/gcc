@@ -1,3 +1,8 @@
+2017-04-25  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/dg.exp (find-cxx-tests): New function.
+	(main): Use it, remove explicit pruning
+
 2017-04-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80492
