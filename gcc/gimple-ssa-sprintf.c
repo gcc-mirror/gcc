@@ -948,7 +948,8 @@ get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
       *pmin = tree_to_shwi (TYPE_MIN_VALUE (type));
       *pmax = tree_to_shwi (TYPE_MAX_VALUE (type));
     }
-  else if (TREE_CODE (arg) == INTEGER_CST)
+  else if (TREE_CODE (arg) == INTEGER_CST
+	   && TYPE_PRECISION (TREE_TYPE (arg)) <= TYPE_PRECISION (type))
     {
       /* For a constant argument return its value adjusted as specified
 	 by NEGATIVE and NEGBOUND and return true to indicate that the
@@ -2916,7 +2917,9 @@ parse_directive (pass_sprintf_length::call_info &info,
       if (width != -1)
 	dollar = width + info.argidx;
       else if (star_width
-	       && TREE_CODE (star_width) == INTEGER_CST)
+	       && TREE_CODE (star_width) == INTEGER_CST
+	       && (TYPE_PRECISION (TREE_TYPE (star_width))
+		   <= TYPE_PRECISION (integer_type_node)))
 	dollar = width + tree_to_shwi (star_width);
 
       /* Bail when the numbered argument is out of range (it will
