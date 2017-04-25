@@ -2834,10 +2834,12 @@ package body Sem_Util is
       Prot : Entity_Id;
 
    begin
+      Prot := Empty;
+
       S := Current_Scope;
       while Present (S) loop
          if S = Standard_Standard then
-            return;
+            exit;
 
          elsif Ekind (S) = E_Function
            and then Ekind (Scope (S)) = E_Protected_Type
@@ -2849,28 +2851,30 @@ package body Sem_Util is
          S := Scope (S);
       end loop;
 
-      if Scope (Nam) = Prot and then Ekind (Nam) /= E_Function then
-
+      if Present (Prot)
+        and then Scope (Nam) = Prot
+        and then Ekind (Nam) /= E_Function
+      then
          --  An indirect function call (e.g. a callback within a protected
          --  function body) is not statically illegal. If the access type is
          --  anonymous and is the type of an access parameter, the scope of Nam
          --  will be the protected type, but it is not a protected operation.
 
          if Ekind (Nam) = E_Subprogram_Type
-           and then
-             Nkind (Associated_Node_For_Itype (Nam)) = N_Function_Specification
+           and then Nkind (Associated_Node_For_Itype (Nam)) =
+                      N_Function_Specification
          then
             null;
 
          elsif Nkind (N) = N_Subprogram_Renaming_Declaration then
             Error_Msg_N
-              ("within protected function cannot use protected "
-               & "procedure in renaming or as generic actual", N);
+              ("within protected function cannot use protected procedure in "
+               & "renaming or as generic actual", N);
 
          elsif Nkind (N) = N_Attribute_Reference then
             Error_Msg_N
-              ("within protected function cannot take access of "
-               & " protected procedure", N);
+              ("within protected function cannot take access of protected "
+               & "procedure", N);
 
          else
             Error_Msg_N
@@ -2878,6 +2882,67 @@ package body Sem_Util is
             Error_Msg_N
               ("\cannot call operation that may modify it", N);
          end if;
+      end if;
+
+      --  Verify that an internal call does not appear within a precondition
+      --  of a protected operation. This implements AI12-0166.
+      --  The precondition aspect has been rewritten as a pragma Precondition
+      --  and we check whether the scope of the called subprogram is the same
+      --  as that of the entity to which the aspect applies.
+
+      if Convention (Nam) = Convention_Protected then
+         declare
+            P : Node_Id;
+
+         begin
+            P := Parent (N);
+            while Present (P) loop
+               if Nkind (P) = N_Pragma
+                 and then Chars (Pragma_Identifier (P)) = Name_Precondition
+                 and then From_Aspect_Specification (P)
+                 and then
+                   Scope (Entity (Corresponding_Aspect (P))) = Scope (Nam)
+               then
+                  Error_Msg_N
+                    ("internal call cannot appear in precondition of "
+                     & "protected operation", N);
+                  return;
+
+               elsif Nkind (P) = N_Pragma
+                 and then Chars (Pragma_Identifier (P)) = Name_Contract_Cases
+               then
+                  --  Check whether call is in a case guard. It is legal in a
+                  --  consequence.
+
+                  P := N;
+                  while Present (P) loop
+                     if Nkind (Parent (P)) = N_Component_Association
+                       and then P /= Expression (Parent (P))
+                     then
+                        Error_Msg_N
+                          ("internal call cannot appear in case guard in a "
+                           & "contract case", N);
+                     end if;
+
+                     P := Parent (P);
+                  end loop;
+
+                  return;
+
+               elsif Nkind (P) = N_Parameter_Specification
+                 and then Scope (Current_Scope) = Scope (Nam)
+                 and then Nkind_In (Parent (P), N_Entry_Declaration,
+                                                N_Subprogram_Declaration)
+               then
+                  Error_Msg_N
+                    ("internal call cannot appear in default for formal of "
+                     & "protected operation", N);
+                  return;
+               end if;
+
+               P := Parent (P);
+            end loop;
+         end;
       end if;
    end Check_Internal_Protected_Use;
 
@@ -20648,21 +20713,24 @@ package body Sem_Util is
       --  correct Current_Source_File.
 
       Result : constant Boolean :=
-        Get_Name_Table_Boolean3 (Prag_Name)
-          and then not Is_Internal_File_Name (File_Name (Current_Source_File));
+                 Get_Name_Table_Boolean3 (Prag_Name)
+                   and then not Is_Internal_File_Name
+                                  (File_Name (Current_Source_File));
    begin
       return Result;
    end Should_Ignore_Pragma_Par;
 
-   --------------------------
+   ------------------------------
    -- Should_Ignore_Pragma_Sem --
-   --------------------------
+   ------------------------------
 
    function Should_Ignore_Pragma_Sem (N : Node_Id) return Boolean is
       pragma Assert (Compiler_State = Analyzing);
       Prag_Name : constant Name_Id := Pragma_Name (N);
-      Result : constant Boolean :=
-        Get_Name_Table_Boolean3 (Prag_Name) and then not In_Internal_Unit (N);
+      Result    : constant Boolean :=
+                    Get_Name_Table_Boolean3 (Prag_Name)
+                      and then not In_Internal_Unit (N);
+
    begin
       return Result;
    end Should_Ignore_Pragma_Sem;

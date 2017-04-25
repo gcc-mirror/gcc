@@ -1,3 +1,12 @@
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Check_Entry_Contract): Call
+	Preanalyze_Spec_Expression so that resolution takes place as well.
+	* sem_util.adb (Check_Internal_Protected_Use): Reject properly
+	internal calls that appear in preconditions of protected
+	operations, in default values for same, and in contract guards
+	for contract cases in SPARK.
+
 2017-04-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* a-numaux.ads: Fix description of a-numaux-darwin

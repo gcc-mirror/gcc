@@ -2326,9 +2326,7 @@ package body Sem_Ch3 is
                            (First (Pragma_Argument_Associations (ASN))));
                      Set_Parent (Exp, ASN);
 
-                     --  ??? why not Preanalyze_Assert_Expression
-
-                     Preanalyze (Exp);
+                     Preanalyze_Assert_Expression (Exp, Standard_Boolean);
                   end if;
 
                   ASN := Next_Pragma (ASN);
