@@ -77,13 +77,6 @@ static const char *arc_cpu_string = arc_cpu_name;
 		      ? 0 \
 		      : -(-GET_MODE_SIZE (MODE) | -4) >> 1)))
 
-#define LEGITIMATE_OFFSET_ADDRESS_P(MODE, X, INDEX, STRICT) \
-(GET_CODE (X) == PLUS			     \
-  && RTX_OK_FOR_BASE_P (XEXP (X, 0), (STRICT)) \
-  && ((INDEX && RTX_OK_FOR_INDEX_P (XEXP (X, 1), (STRICT)) \
-       && GET_MODE_SIZE ((MODE)) <= 4) \
-      || RTX_OK_FOR_OFFSET_P (MODE, XEXP (X, 1))))
-
 #define LEGITIMATE_SCALED_ADDRESS_P(MODE, X, STRICT) \
 (GET_CODE (X) == PLUS \
  && GET_CODE (XEXP (X, 0)) == MULT \
@@ -245,6 +238,39 @@ static bool arc_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 
 /* Globally visible information about currently selected cpu.  */
 const arc_cpu_t *arc_selected_cpu;
+
+/* Check for constructions like REG + OFFS, where OFFS can be a
+   register, an immediate or an long immediate. */
+
+static bool
+legitimate_offset_address_p (enum machine_mode mode, rtx x, bool index,
+			     bool strict)
+{
+  if (GET_CODE (x) != PLUS)
+    return false;
+
+  if (!RTX_OK_FOR_BASE_P (XEXP (x, 0), (strict)))
+    return false;
+
+  /* Check for: [Rx + small offset] or [Rx + Ry].  */
+  if (((index && RTX_OK_FOR_INDEX_P (XEXP (x, 1), (strict))
+	&& GET_MODE_SIZE ((mode)) <= 4)
+       || RTX_OK_FOR_OFFSET_P (mode, XEXP (x, 1))))
+    return true;
+
+  /* Check for [Rx + symbol].  */
+  if (!flag_pic
+      && (GET_CODE (XEXP (x, 1)) == SYMBOL_REF)
+      /* Avoid this type of address for double or larger modes.  */
+      && (GET_MODE_SIZE (mode) <= 4)
+      /* Avoid small data which ends in something like GP +
+	 symb@sda.  */
+      && (!SYMBOL_REF_SMALL_P (XEXP (x, 1))
+	  || TARGET_NO_SDATA_SET))
+    return true;
+
+  return false;
+}
 
 /* Implements target hook vector_mode_supported_p.  */
 
@@ -5468,7 +5494,7 @@ arc_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 {
   if (RTX_OK_FOR_BASE_P (x, strict))
      return true;
-  if (LEGITIMATE_OFFSET_ADDRESS_P (mode, x, TARGET_INDEXED_LOADS, strict))
+  if (legitimate_offset_address_p (mode, x, TARGET_INDEXED_LOADS, strict))
      return true;
   if (LEGITIMATE_SCALED_ADDRESS_P (mode, x, strict))
     return true;
@@ -5509,7 +5535,7 @@ arc_legitimate_address_p (machine_mode mode, rtx x, bool strict)
   if ((GET_CODE (x) == PRE_MODIFY || GET_CODE (x) == POST_MODIFY)
       && GET_CODE (XEXP ((x), 1)) == PLUS
       && rtx_equal_p (XEXP ((x), 0), XEXP (XEXP (x, 1), 0))
-      && LEGITIMATE_OFFSET_ADDRESS_P (QImode, XEXP (x, 1),
+      && legitimate_offset_address_p (QImode, XEXP (x, 1),
 				      TARGET_AUTO_MODIFY_REG, strict))
     return true;
   return false;
