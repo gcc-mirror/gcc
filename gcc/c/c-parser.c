@@ -2948,8 +2948,13 @@ c_parser_struct_or_union_specifier (c_parser *parser)
 	  /* Parse any stray semicolon.  */
 	  if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	    {
-	      pedwarn (c_parser_peek_token (parser)->location, OPT_Wpedantic,
-		       "extra semicolon in struct or union specified");
+	      location_t semicolon_loc
+		= c_parser_peek_token (parser)->location;
+	      gcc_rich_location richloc (semicolon_loc);
+	      richloc.add_fixit_remove ();
+	      pedwarn_at_rich_loc
+		(&richloc, OPT_Wpedantic,
+		 "extra semicolon in struct or union specified");
 	      c_parser_consume_token (parser);
 	      continue;
 	    }
