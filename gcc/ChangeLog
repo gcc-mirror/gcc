@@ -1,5 +1,12 @@
 2017-04-25  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/80497
+	* gimple-ssa-sprintf.c (get_int_range): Avoid assuming all integer
+	constants are representable in HOST_WIDE_INT.
+	(parse_directive): Ditto.
+
+2017-04-25  Martin Sebor  <msebor@redhat.com>
+
 	PR bootstrap/80486
 	* dominance.c (dom_info::m_n_basic_blocks): Change type to unsigned.
 	(new_zero_array): Adjust signature.
