@@ -1,3 +1,13 @@
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb, exp_util.adb, sem_prag.adb, freeze.adb, sem_util.adb:
+	Minor reformatting.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* scng.adb (Scan): Handle '@' appropriately.
+	* sem_ch5.adb: Code cleanup.
+
 2017-04-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb (Check_Expression_Function): Do not check for the

@@ -27026,9 +27026,6 @@ package body Sem_Prag is
       Inher_Id       : Entity_Id := Empty;
       Keep_Pragma_Id : Boolean := False) return Node_Id
    is
-      Needs_Wrapper : Boolean;
-      pragma Unreferenced (Needs_Wrapper);
-
       function Suppress_Reference (N : Node_Id) return Traverse_Result;
       --  Detect whether node N references a formal parameter subject to
       --  pragma Unreferenced. If this is the case, set Comes_From_Source
@@ -27065,11 +27062,14 @@ package body Sem_Prag is
 
       --  Local variables
 
-      Loc          : constant Source_Ptr := Sloc (Prag);
-      Prag_Nam     : constant Name_Id    := Pragma_Name (Prag);
-      Check_Prag   : Node_Id;
-      Msg_Arg      : Node_Id;
-      Nam          : Name_Id;
+      Loc        : constant Source_Ptr := Sloc (Prag);
+      Prag_Nam   : constant Name_Id    := Pragma_Name (Prag);
+      Check_Prag : Node_Id;
+      Msg_Arg    : Node_Id;
+      Nam        : Name_Id;
+
+      Needs_Wrapper : Boolean;
+      pragma Unreferenced (Needs_Wrapper);
 
    --  Start of processing for Build_Pragma_Check_Equivalent
 
@@ -27097,8 +27097,11 @@ package body Sem_Prag is
          --  Build the inherited class-wide condition
 
          Build_Class_Wide_Expression
-           (Check_Prag, Subp_Id, Inher_Id, Adjust_Sloc => True,
-             Needs_Wrapper =>  Needs_Wrapper);
+           (Prag          => Check_Prag,
+            Subp          => Subp_Id,
+            Par_Subp      => Inher_Id,
+            Adjust_Sloc   => True,
+            Needs_Wrapper => Needs_Wrapper);
 
       --  If not an inherited condition simply copy the original pragma
 

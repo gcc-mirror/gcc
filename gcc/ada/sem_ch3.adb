@@ -17660,8 +17660,9 @@ package body Sem_Ch3 is
          end if;
 
          while Present (Disc) loop
-            --  If no further associations return the discriminant, value
-            --  will be found on the second pass.
+
+            --  If no further associations return the discriminant, value will
+            --  be found on the second pass.
 
             if No (Assoc) then
                return Result;

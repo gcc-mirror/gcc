@@ -1596,18 +1596,21 @@ package body Sem_Util is
       Formal_Spec : Node_Id;
       Formal_Type : Node_Id;
       New_Spec    : Node_Id;
+
    begin
       New_Spec := Copy_Subprogram_Spec (Spec);
+
       Formal_Spec := First (Parameter_Specifications (New_Spec));
       while Present (Formal_Spec) loop
          Formal_Type := Parameter_Type (Formal_Spec);
+
          if Is_Entity_Name (Formal_Type)
            and then Entity (Formal_Type) = Par_Typ
          then
             Rewrite (Formal_Type, New_Occurrence_Of (Typ, Loc));
          end if;
 
-         --  Nothing needs to be done for access parameters.
+         --  Nothing needs to be done for access parameters
 
          Next (Formal_Spec);
       end loop;
@@ -13588,8 +13591,8 @@ package body Sem_Util is
             --  names.
 
             when N_Explicit_Dereference =>
-               return not Nkind_In
-                 (Original_Node (N), N_If_Expression, N_Case_Expression);
+               return not Nkind_In (Original_Node (N), N_Case_Expression,
+                                                       N_If_Expression);
 
             --  A view conversion of a tagged object is an object reference
 
