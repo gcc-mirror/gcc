@@ -1,5 +1,19 @@
 2017-04-25  Bob Duff  <duff@adacore.com>
 
+	* sem_ch8.adb (Use_One_Type): If a use_type_clause
+	is redundant, set its Used_Operations to empty. This is only
+	necessary for use clauses that appear in the parent of a generic
+	child unit, because those use clauses get reanalyzed when we
+	instantiate the generic, and we don't want the Used_Operations
+	carried over from the original context (where it was probably
+	not redundant).
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb: Minor reformatting.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
 	* sem_prag.adb (Process_Restrictions_Or_Restriction_Warnings):
 	Use Source_Index (Current_Sem_Unit) to find the correct casing.
 	* exp_prag.adb (Expand_Pragma_Check): Use Source_Index

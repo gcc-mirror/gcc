@@ -9200,11 +9200,22 @@ package body Sem_Ch8 is
            ("incomplete type from limited view "
             & "cannot appear in use clause", Id);
 
+      --  If the use clause is redundant, Used_Operations will usually be
+      --  empty, but we need to set it to empty here in one case: If we are
+      --  instantiating a generic library unit, then we install the ancestors
+      --  of that unit in the scope stack, which involves reprocessing use
+      --  clauses in those ancestors. Such a use clause will typically have a
+      --  nonempty Used_Operations unless it was redundant in the generic unit,
+      --  even if it is redundant at the place of the instantiation.
+
+      elsif Redundant_Use (Id) then
+         Set_Used_Operations (Parent (Id), New_Elmt_List);
+
       --  If the subtype mark designates a subtype in a different package,
       --  we have to check that the parent type is visible, otherwise the
       --  use type clause is a noop. Not clear how to do that???
 
-      elsif not Redundant_Use (Id) then
+      else
          Set_In_Use (T);
 
          --  If T is tagged, primitive operators on class-wide operands

@@ -6635,10 +6635,10 @@ package body Exp_Ch6 is
                    Attribute_Name => Name_Tag);
             end if;
 
-            if not CodePeer_Mode then
-               --  CodePeer doesn't do anything useful with
-               --  Ada.Tags.Type_Specific_Data components
+            --  CodePeer does not do anything useful with
+            --  Ada.Tags.Type_Specific_Data components.
 
+            if not CodePeer_Mode then
                Insert_Action (Exp,
                  Make_Raise_Program_Error (Loc,
                    Condition =>
@@ -6647,7 +6647,7 @@ package body Exp_Ch6 is
                        Right_Opnd =>
                          Make_Integer_Literal (Loc,
                            Scope_Depth (Enclosing_Dynamic_Scope (Scope_Id)))),
-                   Reason => PE_Accessibility_Check_Failed));
+                   Reason    => PE_Accessibility_Check_Failed));
             end if;
          end;
 
