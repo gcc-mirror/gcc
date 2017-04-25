@@ -2243,6 +2243,19 @@ package body Exp_Util is
             return;
          end if;
 
+         --  When the type inheriting the class-wide invariant is a concurrent
+         --  type, use the corresponding record type because it contains all
+         --  primitive operations of the concurren type and allows for proper
+         --  substitution.
+
+         if Is_Concurrent_Type (T) then
+            Deriv_Typ := Corresponding_Record_Type (T);
+         else
+            Deriv_Typ := T;
+         end if;
+
+               pragma Assert (Present (Deriv_Typ));
+
          --  Determine which rep item chain to use. Precedence is given to that
          --  of the parent type's partial view since it usually carries all the
          --  class-wide invariants.
@@ -2317,19 +2330,6 @@ package body Exp_Util is
                --      primitive.
 
                Expr := New_Copy_Tree (Prag_Expr);
-
-               --  When the type inheriting the class-wide invariant is a task
-               --  or protected type, use the corresponding record type because
-               --  it contains all primitive operations of the concurren type
-               --  and allows for proper substitution.
-
-               if Is_Concurrent_Type (T) then
-                  Deriv_Typ := Corresponding_Record_Type (T);
-               else
-                  Deriv_Typ := T;
-               end if;
-
-               pragma Assert (Present (Deriv_Typ));
 
                --  The parent type must have a "partial" invariant procedure
                --  because class-wide invariants are captured exclusively by
