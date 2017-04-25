@@ -1,5 +1,12 @@
 2017-04-25  David Malcolm  <dmalcolm@redhat.com>
 
+	* name-lookup.c (get_std_name_hint): New function.
+	(maybe_suggest_missing_header): New function.
+	(suggest_alternative_in_explicit_scope): Call
+	maybe_suggest_missing_header.
+
+2017-04-25  David Malcolm  <dmalcolm@redhat.com>
+
 	PR c++/80177
 	* name-lookup.c (suggest_alternative_in_explicit_scope): Convert
 	candidate type of bm from tree to const char *.
