@@ -1913,6 +1913,9 @@ combine_var_copies_in_loop_exit (struct var_to_expand *ve, basic_block place)
   if (ve->var_expansions.length () == 0)
     return;
 
+  /* ve->reg might be SUBREG or some other non-shareable RTL, and we use
+     it both here and as the destination of the assignment.  */
+  sum = copy_rtx (sum);
   start_sequence ();
   switch (ve->op)
     {
