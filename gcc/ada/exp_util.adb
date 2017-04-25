@@ -5197,6 +5197,11 @@ package body Exp_Util is
    is
       U_Typ : constant Entity_Id := Unique_Entity (Typ);
 
+      Calls_OK : Boolean := False;
+      --  This flag is set to True when expression Expr contains at
+      --  least one call to a non-dispatching primitive function of
+      --  Typ.
+
       function Search_Primitive_Calls (N : Node_Id) return Traverse_Result;
       --  Search for nondispatching calls to primitive functions of type Typ
 
@@ -5204,46 +5209,56 @@ package body Exp_Util is
       -- Search_Primitive_Calls --
       ----------------------------
 
-      function Search_Primitive_Calls (N : Node_Id) return Traverse_Result is
+      function Search_Primitive_Calls
+        (N : Node_Id) return Traverse_Result
+      is
+         Disp_Typ : Entity_Id;
+         Subp     : Entity_Id;
+
       begin
-         if Nkind (N) = N_Identifier
-           and then Present (Entity (N))
-           and then
-             (Is_Formal (Entity (N)) or else Is_Subprogram (Entity (N)))
-           and then Nkind (Parent (N)) = N_Function_Call
+         --  Detect a function call which could denote a non-dispatching
+         --  primitive of the input type.
+
+         if Nkind (N) = N_Function_Call
+           and then Is_Entity_Name (Name (N))
          then
-            --  Do not consider dispatching calls
+            Subp := Entity (Name (N));
 
-            if Is_Subprogram (Entity (N))
-              and then Nkind (Parent (N)) = N_Function_Call
-              and then Present (Controlling_Argument (Parent (N)))
+            --  Do not consider function calls with a controlling argument
+            --  as those are always dispatching calls.
+
+            if Is_Dispatching_Operation (Subp)
+              and then No (Controlling_Argument (N))
             then
-               return OK;
-            end if;
+               Disp_Typ := Find_Dispatching_Type (Subp);
 
-            --  If N is a function call, and E is dispatching, search for the
-            --  controlling type to see if it is Ty.
+               --  To qualify as a suitable primitive, the dispatching
+               --  type of the function must be the input type.
 
-            if Is_Subprogram (Entity (N))
-              and then Nkind (Parent (N)) = N_Function_Call
-              and then Is_Dispatching_Operation (Entity (N))
-              and then Present (Find_Dispatching_Type (Entity (N)))
-              and then
-                Unique_Entity (Find_Dispatching_Type (Entity (N))) = U_Typ
-            then
-               return Abandon;
+               if Present (Disp_Typ)
+                 and then Unique_Entity (Disp_Typ) = U_Typ
+               then
+                  Calls_OK := True;
+
+                  --  There is no need to continue the traversal as one
+                  --  such call suffices.
+
+                  return Abandon;
+               end if;
             end if;
          end if;
 
          return OK;
       end Search_Primitive_Calls;
 
-      function Search_Calls is new Traverse_Func (Search_Primitive_Calls);
+      procedure Search_Calls is
+        new Traverse_Proc (Search_Primitive_Calls);
 
    --  Start of processing for Expression_Contains_Primitives_Calls_Of_Type
 
    begin
-      return Search_Calls (Expr) = Abandon;
+      Search_Calls (Expr);
+      return Calls_OK;
    end Expression_Contains_Primitives_Calls_Of;
 
    ----------------------
@@ -8937,137 +8952,6 @@ package body Exp_Util is
          end;
       end if;
    end Known_Non_Negative;
-
-   --------------------
-   -- Known_Non_Null --
-   --------------------
-
-   function Known_Non_Null (N : Node_Id) return Boolean is
-   begin
-      --  Checks for case where N is an entity reference
-
-      if Is_Entity_Name (N) and then Present (Entity (N)) then
-         declare
-            E   : constant Entity_Id := Entity (N);
-            Op  : Node_Kind;
-            Val : Node_Id;
-
-         begin
-            --  First check if we are in decisive conditional
-
-            Get_Current_Value_Condition (N, Op, Val);
-
-            if Known_Null (Val) then
-               if Op = N_Op_Eq then
-                  return False;
-               elsif Op = N_Op_Ne then
-                  return True;
-               end if;
-            end if;
-
-            --  If OK to do replacement, test Is_Known_Non_Null flag
-
-            if OK_To_Do_Constant_Replacement (E) then
-               return Is_Known_Non_Null (E);
-
-            --  Otherwise if not safe to do replacement, then say so
-
-            else
-               return False;
-            end if;
-         end;
-
-      --  True if access attribute
-
-      elsif Nkind (N) = N_Attribute_Reference
-        and then Nam_In (Attribute_Name (N), Name_Access,
-                                             Name_Unchecked_Access,
-                                             Name_Unrestricted_Access)
-      then
-         return True;
-
-      --  True if allocator
-
-      elsif Nkind (N) = N_Allocator then
-         return True;
-
-      --  For a conversion, true if expression is known non-null
-
-      elsif Nkind (N) = N_Type_Conversion then
-         return Known_Non_Null (Expression (N));
-
-      --  Above are all cases where the value could be determined to be
-      --  non-null. In all other cases, we don't know, so return False.
-
-      else
-         return False;
-      end if;
-   end Known_Non_Null;
-
-   ----------------
-   -- Known_Null --
-   ----------------
-
-   function Known_Null (N : Node_Id) return Boolean is
-   begin
-      --  Checks for case where N is an entity reference
-
-      if Is_Entity_Name (N) and then Present (Entity (N)) then
-         declare
-            E   : constant Entity_Id := Entity (N);
-            Op  : Node_Kind;
-            Val : Node_Id;
-
-         begin
-            --  Constant null value is for sure null
-
-            if Ekind (E) = E_Constant
-              and then Known_Null (Constant_Value (E))
-            then
-               return True;
-            end if;
-
-            --  First check if we are in decisive conditional
-
-            Get_Current_Value_Condition (N, Op, Val);
-
-            if Known_Null (Val) then
-               if Op = N_Op_Eq then
-                  return True;
-               elsif Op = N_Op_Ne then
-                  return False;
-               end if;
-            end if;
-
-            --  If OK to do replacement, test Is_Known_Null flag
-
-            if OK_To_Do_Constant_Replacement (E) then
-               return Is_Known_Null (E);
-
-            --  Otherwise if not safe to do replacement, then say so
-
-            else
-               return False;
-            end if;
-         end;
-
-      --  True if explicit reference to null
-
-      elsif Nkind (N) = N_Null then
-         return True;
-
-      --  For a conversion, true if expression is known null
-
-      elsif Nkind (N) = N_Type_Conversion then
-         return Known_Null (Expression (N));
-
-      --  Above are all cases where the value could be determined to be null.
-      --  In all other cases, we don't know, so return False.
-
-      else
-         return False;
-      end if;
-   end Known_Null;
 
    -----------------------------
    -- Make_CW_Equivalent_Type --

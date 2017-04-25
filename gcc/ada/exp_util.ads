@@ -860,18 +860,6 @@ package Exp_Util is
    --  that cannot possibly be negative, and if so returns True. A value of
    --  False means that it is not known if the value is positive or negative.
 
-   function Known_Non_Null (N : Node_Id) return Boolean;
-   --  Given a node N for a subexpression of an access type, determines if
-   --  this subexpression yields a value that is known at compile time to
-   --  be non-null and returns True if so. Returns False otherwise. It is
-   --  an error to call this function if N is not of an access type.
-
-   function Known_Null (N : Node_Id) return Boolean;
-   --  Given a node N for a subexpression of an access type, determines if this
-   --  subexpression yields a value that is known at compile time to be null
-   --  and returns True if so. Returns False otherwise. It is an error to call
-   --  this function if N is not of an access type.
-
    function Make_Invariant_Call (Expr : Node_Id) return Node_Id;
    --  Expr is an object of a type which Has_Invariants set (and which thus
    --  also has an Invariant_Procedure set). If invariants are enabled, this
