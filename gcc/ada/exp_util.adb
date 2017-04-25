@@ -481,12 +481,6 @@ package body Exp_Util is
      (N           : Node_Id;
       Is_Allocate : Boolean)
    is
-      Desig_Typ    : Entity_Id;
-      Expr         : Node_Id;
-      Pool_Id      : Entity_Id;
-      Proc_To_Call : Node_Id := Empty;
-      Ptr_Typ      : Entity_Id;
-
       function Find_Object (E : Node_Id) return Node_Id;
       --  Given an arbitrary expression of an allocator, try to find an object
       --  reference in it, otherwise return the original expression.
@@ -575,6 +569,15 @@ package body Exp_Util is
 
          return False;
       end Is_Allocate_Deallocate_Proc;
+
+      --  Local variables
+
+      Desig_Typ    : Entity_Id;
+      Expr         : Node_Id;
+      Needs_Fin    : Boolean;
+      Pool_Id      : Entity_Id;
+      Proc_To_Call : Node_Id := Empty;
+      Ptr_Typ      : Entity_Id;
 
    --  Start of processing for Build_Allocate_Deallocate_Proc
 
@@ -667,7 +670,15 @@ package body Exp_Util is
          return;
       end if;
 
-      if Needs_Finalization (Desig_Typ) then
+      --  Finalization actions are required when the object to be allocated or
+      --  deallocated needs these actions and the associated access type is not
+      --  subject to pragma No_Heap_Finalization.
+
+      Needs_Fin :=
+        Needs_Finalization (Desig_Typ)
+          and then not No_Heap_Finalization (Ptr_Typ);
+
+      if Needs_Fin then
 
          --  Certain run-time configurations and targets do not provide support
          --  for controlled types.
@@ -737,7 +748,7 @@ package body Exp_Util is
 
             --  c) Finalization master
 
-            if Needs_Finalization (Desig_Typ) then
+            if Needs_Fin then
                Fin_Mas_Id  := Finalization_Master (Ptr_Typ);
                Fin_Mas_Act := New_Occurrence_Of (Fin_Mas_Id, Loc);
 
@@ -761,7 +772,7 @@ package body Exp_Util is
             --  Primitive Finalize_Address is never generated in CodePeer mode
             --  since it contains an Unchecked_Conversion.
 
-            if Needs_Finalization (Desig_Typ) and then not CodePeer_Mode then
+            if Needs_Fin and then not CodePeer_Mode then
                Fin_Addr_Id := Finalize_Address (Desig_Typ);
                pragma Assert (Present (Fin_Addr_Id));
 
@@ -807,8 +818,8 @@ package body Exp_Util is
 
          --  h) Is_Controlled
 
-         if Needs_Finalization (Desig_Typ) then
-            declare
+         if Needs_Fin then
+            Is_Controlled : declare
                Flag_Id   : constant Entity_Id := Make_Temporary (Loc, 'F');
                Flag_Expr : Node_Id;
                Param     : Node_Id;
@@ -904,7 +915,7 @@ package body Exp_Util is
                     Expression          => Flag_Expr));
 
                Append_To (Actuals, New_Occurrence_Of (Flag_Id, Loc));
-            end;
+            end Is_Controlled;
 
          --  The object is not controlled
 
@@ -935,19 +946,19 @@ package body Exp_Util is
 
          Insert_Action (N,
            Make_Subprogram_Body (Loc,
-             Specification =>
+             Specification              =>
 
                --  procedure Pnn
 
                Make_Procedure_Specification (Loc,
-                 Defining_Unit_Name => Proc_Id,
+                 Defining_Unit_Name       => Proc_Id,
                  Parameter_Specifications => New_List (
 
                   --  P : Root_Storage_Pool
 
                    Make_Parameter_Specification (Loc,
                      Defining_Identifier => Make_Temporary (Loc, 'P'),
-                     Parameter_Type =>
+                     Parameter_Type      =>
                        New_Occurrence_Of (RTE (RE_Root_Storage_Pool), Loc)),
 
                   --  A : [out] Address
@@ -972,13 +983,14 @@ package body Exp_Util is
                      Parameter_Type      =>
                        New_Occurrence_Of (RTE (RE_Storage_Count), Loc)))),
 
-             Declarations => No_List,
+             Declarations               => No_List,
 
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => New_List (
                    Make_Procedure_Call_Statement (Loc,
-                     Name => New_Occurrence_Of (Proc_To_Call, Loc),
+                     Name                   =>
+                       New_Occurrence_Of (Proc_To_Call, Loc),
                      Parameter_Associations => Actuals)))));
 
          --  The newly generated Allocate / Deallocate becomes the default
@@ -10252,7 +10264,8 @@ package body Exp_Util is
          --  Class-wide types are treated as controlled because derivations
          --  from the root type can introduce controlled components.
 
-         return Is_Class_Wide_Type (T)
+         return
+           Is_Class_Wide_Type (T)
              or else Is_Controlled (T)
              or else Has_Some_Controlled_Component (T)
              or else

@@ -3533,6 +3533,11 @@ package body Einfo is
       return Ekind (Id) in Aggregate_Kind;
    end Is_Aggregate_Type;
 
+   function Is_Anonymous_Access_Type            (Id : E) return B is
+   begin
+      return Ekind (Id) in Anonymous_Access_Kind;
+   end Is_Anonymous_Access_Type;
+
    function Is_Array_Type                       (Id : E) return B is
    begin
       return Ekind (Id) in Array_Kind;

@@ -4845,12 +4845,6 @@ package Einfo is
       --  An access to subprogram type, created by an access to subprogram
       --  declaration.
 
-      E_Anonymous_Access_Subprogram_Type,
-      --  An anonymous access to subprogram type, created by an access to
-      --  subprogram declaration, or generated for a current instance of
-      --  a type name appearing within a component definition that has an
-      --  anonymous access to subprogram type.
-
       E_Access_Protected_Subprogram_Type,
       --  An access to a protected subprogram, created by the corresponding
       --  declaration. Values of such a type denote both a protected object
@@ -4860,6 +4854,12 @@ package Einfo is
       E_Anonymous_Access_Protected_Subprogram_Type,
       --  An anonymous access to protected subprogram type, created by an
       --  access to subprogram declaration.
+
+      E_Anonymous_Access_Subprogram_Type,
+      --  An anonymous access to subprogram type, created by an access to
+      --  subprogram declaration, or generated for a current instance of
+      --  a type name appearing within a component definition that has an
+      --  anonymous access to subprogram type.
 
       E_Anonymous_Access_Type,
       --  An anonymous access type created by an access parameter or access
@@ -5090,16 +5090,16 @@ package Einfo is
    --  E_Allocator_Type
    --  E_General_Access_Type
    --  E_Access_Subprogram_Type
-   --  E_Anonymous_Access_Subprogram_Type
    --  E_Access_Protected_Subprogram_Type
    --  E_Anonymous_Access_Protected_Subprogram_Type
+   --  E_Anonymous_Access_Subprogram_Type
        E_Anonymous_Access_Type;
 
    subtype Access_Subprogram_Kind      is Entity_Kind range
        E_Access_Subprogram_Type ..
-   --  E_Anonymous_Access_Subprogram_Type
    --  E_Access_Protected_Subprogram_Type
-       E_Anonymous_Access_Protected_Subprogram_Type;
+   --  E_Anonymous_Access_Protected_Subprogram_Type
+       E_Anonymous_Access_Subprogram_Type;
 
    subtype Access_Protected_Kind       is Entity_Kind range
       E_Access_Protected_Subprogram_Type ..
@@ -5113,6 +5113,11 @@ package Einfo is
    --  E_Class_Wide_Subtype
    --  E_Record_Type
        E_Record_Subtype;
+
+   subtype Anonymous_Access_Kind       is Entity_Kind range
+       E_Anonymous_Access_Protected_Subprogram_Type ..
+   --  E_Anonymous_Subprogram_Type
+       E_Anonymous_Access_Type;
 
    subtype Array_Kind                  is Entity_Kind range
        E_Array_Type ..
@@ -5209,8 +5214,8 @@ package Einfo is
    --  E_General_Access_Type
    --  E_Access_Subprogram_Type
    --  E_Access_Protected_Subprogram_Type
-   --  E_Anonymous_Access_Subprogram_Type
    --  E_Anonymous_Access_Protected_Subprogram_Type
+   --  E_Anonymous_Access_Subprogram_Type
        E_Anonymous_Access_Type;
 
    subtype Enumeration_Kind            is Entity_Kind range
@@ -5388,8 +5393,8 @@ package Einfo is
    --  E_General_Access_Type
    --  E_Access_Subprogram_Type,
    --  E_Access_Protected_Subprogram_Type
-   --  E_Anonymous_Access_Subprogram_Type
    --  E_Anonymous_Access_Protected_Subprogram_Type
+   --  E_Anonymous_Access_Subprogram_Type
    --  E_Anonymous_Access_Type
    --  E_Array_Type
    --  E_Array_Subtype
@@ -7359,6 +7364,7 @@ package Einfo is
    function Is_Access_Protected_Subprogram_Type (Id : E) return B;
    function Is_Access_Subprogram_Type           (Id : E) return B;
    function Is_Aggregate_Type                   (Id : E) return B;
+   function Is_Anonymous_Access_Type            (Id : E) return B;
    function Is_Array_Type                       (Id : E) return B;
    function Is_Assignable                       (Id : E) return B;
    function Is_Class_Wide_Type                  (Id : E) return B;

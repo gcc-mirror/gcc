@@ -230,8 +230,8 @@ package body Fname is
       Renamings_Included : Boolean := True) return Boolean
    is
       Result : constant Boolean :=
-        Is_Predefined_File_Name
-          (Get_Name_String (Fname), Renamings_Included);
+                 Is_Predefined_File_Name
+                   (Get_Name_String (Fname), Renamings_Included);
    begin
       return Result;
    end Is_Predefined_File_Name;

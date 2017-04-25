@@ -1983,6 +1983,9 @@ package Sem_Util is
    --  Note that the result produced is always an expression, not a parameter
    --  association node, even if named notation was used.
 
+   function No_Heap_Finalization (Typ : Entity_Id) return Boolean;
+   --  Determine whether type Typ is subject to pragma No_Heap_Finalization
+
    procedure Normalize_Actuals
      (N       : Node_Id;
       S       : Entity_Id;

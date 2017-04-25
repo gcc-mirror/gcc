@@ -3857,8 +3857,7 @@ package body Sem_Ch5 is
                         Set_Etype (R_Copy, It.Typ);
 
                      else
-                        Error_Msg_N
-                          ("ambiguous domain of iteration", R_Copy);
+                        Error_Msg_N ("ambiguous domain of iteration", R_Copy);
                      end if;
                   end if;
                end if;

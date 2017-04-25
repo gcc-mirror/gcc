@@ -13815,9 +13815,10 @@ package body Sem_Prag is
 
                if Nkind (Stmt) = N_Pragma then
                   if Pragma_Name (Stmt) = Pname then
-                     Error_Msg_Name_1 := Pname;
-                     Error_Msg_Sloc   := Sloc (Stmt);
-                     Error_Msg_N ("pragma % duplicates pragma declared#", N);
+                     Duplication_Error
+                       (Prag => N,
+                        Prev => Stmt);
+                     raise Pragma_Exit;
                   end if;
 
                --  Skip internally generated code. Note that derived type
@@ -15321,9 +15322,10 @@ package body Sem_Prag is
 
                if Nkind (Stmt) = N_Pragma then
                   if Pragma_Name (Stmt) = Pname then
-                     Error_Msg_Name_1 := Pname;
-                     Error_Msg_Sloc   := Sloc (Stmt);
-                     Error_Msg_N ("pragma % duplicates pragma declared#", N);
+                     Duplication_Error
+                       (Prag => N,
+                        Prev => Stmt);
+                     raise Pragma_Exit;
                   end if;
 
                --  Task unit declared without a definition cannot be subject to
@@ -17827,6 +17829,134 @@ package body Sem_Prag is
             if In_Extended_Main_Source_Unit (N) then
                Opt.No_Elab_Code_All_Pragma := N;
             end if;
+
+         --------------------------
+         -- No_Heap_Finalization --
+         --------------------------
+
+         --  pragma No_Heap_Finalization [ (first_subtype_LOCAL_NAME) ];
+
+         when Pragma_No_Heap_Finalization => No_Heap_Finalization : declare
+            Context : constant Node_Id := Parent (N);
+            Typ_Arg : constant Node_Id := Get_Pragma_Arg (Arg1);
+            Prev    : Node_Id;
+            Typ     : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_No_Identifiers;
+
+            --  The pragma appears in a configuration file
+
+            if No (Context) then
+               Check_Arg_Count (0);
+               Check_Valid_Configuration_Pragma;
+
+               --  Detect a duplicate pragma
+
+               if Present (No_Heap_Finalization_Pragma) then
+                  Duplication_Error
+                    (Prag => N,
+                     Prev => No_Heap_Finalization_Pragma);
+                  raise Pragma_Exit;
+               end if;
+
+               No_Heap_Finalization_Pragma := N;
+
+            --  Otherwise the pragma should be associated with a library-level
+            --  named access-to-object type.
+
+            else
+               Check_Arg_Count (1);
+               Check_Arg_Is_Local_Name (Arg1);
+
+               Find_Type (Typ_Arg);
+               Typ := Entity (Typ_Arg);
+
+               --  The type being subjected to the pragma is erroneous
+
+               if Typ = Any_Type then
+                  Error_Pragma ("cannot find type referenced by pragma %");
+
+               --  The pragma is applied to an incomplete or generic formal
+               --  type way too early.
+
+               elsif Rep_Item_Too_Early (Typ, N) then
+                  return;
+
+               else
+                  Typ := Underlying_Type (Typ);
+               end if;
+
+               --  The pragma must apply to an access-to-object type
+
+               if Ekind_In (Typ, E_Access_Type, E_General_Access_Type) then
+                  null;
+
+               --  Give a detailed error message on all other access type kinds
+
+               elsif Ekind (Typ) = E_Access_Protected_Subprogram_Type then
+                  Error_Pragma
+                    ("pragma % cannot apply to access protected subprogram "
+                     & "type");
+
+               elsif Ekind (Typ) = E_Access_Subprogram_Type then
+                  Error_Pragma
+                    ("pragma % cannot apply to access subprogram type");
+
+               elsif Is_Anonymous_Access_Type (Typ) then
+                  Error_Pragma
+                    ("pragma % cannot apply to anonymous access type");
+
+               --  Give a general error message in case the pragma applies to a
+               --  non-access type.
+
+               else
+                  Error_Pragma
+                    ("pragma % must apply to library level access type");
+               end if;
+
+               --  At this point the argument denotes an access-to-object type.
+               --  Ensure that the type is declared at the library level.
+
+               if Is_Library_Level_Entity (Typ) then
+                  null;
+
+               --  Qietly ignore an access-to-object type originally declared
+               --  at the library level within a generic, but instantiated at
+               --  a non-library level. As a result the access-to-object type
+               --  "loses" its No_Heap_Finalization property.
+
+               elsif In_Instance then
+                  raise Pragma_Exit;
+
+               else
+                  Error_Pragma
+                    ("pragma % must apply to library level access type");
+               end if;
+
+               --  Detect a duplicate pragma
+
+               if Present (No_Heap_Finalization_Pragma) then
+                  Duplication_Error
+                    (Prag => N,
+                     Prev => No_Heap_Finalization_Pragma);
+                  raise Pragma_Exit;
+
+               else
+                  Prev := Get_Pragma (Typ, Pragma_No_Heap_Finalization);
+
+                  if Present (Prev) then
+                     Duplication_Error
+                       (Prag => N,
+                        Prev => Prev);
+                     raise Pragma_Exit;
+                  end if;
+               end if;
+
+               Record_Rep_Item (Typ, N);
+            end if;
+         end No_Heap_Finalization;
 
          ---------------
          -- No_Inline --
@@ -21402,8 +21532,9 @@ package body Sem_Prag is
                Check_Valid_Configuration_Pragma;
 
                if Present (SPARK_Mode_Pragma) then
-                  Error_Msg_Sloc := Sloc (SPARK_Mode_Pragma);
-                  Error_Msg_N ("pragma% duplicates pragma declared#", N);
+                  Duplication_Error
+                    (Prag => N,
+                     Prev => SPARK_Mode_Pragma);
                   raise Pragma_Exit;
                end if;
 
@@ -21433,9 +21564,9 @@ package body Sem_Prag is
 
                   if Nkind (Stmt) = N_Pragma then
                      if Pragma_Name (Stmt) = Pname then
-                        Error_Msg_Name_1 := Pname;
-                        Error_Msg_Sloc   := Sloc (Stmt);
-                        Error_Msg_N ("pragma% duplicates pragma declared#", N);
+                        Duplication_Error
+                          (Prag => N,
+                           Prev => Stmt);
                         raise Pragma_Exit;
                      end if;
 
@@ -28867,6 +28998,7 @@ package body Sem_Prag is
       Pragma_No_Return                      =>  0,
       Pragma_No_Body                        =>  0,
       Pragma_No_Elaboration_Code_All        =>  0,
+      Pragma_No_Heap_Finalization           =>  0,
       Pragma_No_Inline                      =>  0,
       Pragma_No_Run_Time                    => -1,
       Pragma_No_Strict_Aliasing             => -1,

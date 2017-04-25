@@ -12846,6 +12846,7 @@ package body Sem_Util is
       S : constant Ureal := Small_Value (T);
       M : Urealp.Save_Mark;
       R : Boolean;
+
    begin
       M := Urealp.Mark;
       R := (U = UR_Trunc (U / S) * S);
@@ -17490,6 +17491,32 @@ package body Sem_Util is
          return True;
       end if;
    end New_Requires_Transient_Scope;
+
+   --------------------------
+   -- No_Heap_Finalization --
+   --------------------------
+
+   function No_Heap_Finalization (Typ : Entity_Id) return Boolean is
+   begin
+      if Ekind_In (Typ, E_Access_Type, E_General_Access_Type)
+        and then Is_Library_Level_Entity (Typ)
+      then
+         --  A global No_Heap_Finalization pragma applies to all library-level
+         --  named access-to-object types.
+
+         if Present (No_Heap_Finalization_Pragma) then
+            return True;
+
+         --  The library-level named access-to-object type itself is subject to
+         --  pragma No_Heap_Finalization.
+
+         elsif Present (Get_Pragma (Typ, Pragma_No_Heap_Finalization)) then
+            return True;
+         end if;
+      end if;
+
+      return False;
+   end No_Heap_Finalization;
 
    -----------------------
    -- Normalize_Actuals --

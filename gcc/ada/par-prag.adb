@@ -1410,6 +1410,7 @@ begin
          | Pragma_Memory_Size
          | Pragma_No_Body
          | Pragma_No_Elaboration_Code_All
+         | Pragma_No_Heap_Finalization
          | Pragma_No_Inline
          | Pragma_No_Return
          | Pragma_No_Run_Time

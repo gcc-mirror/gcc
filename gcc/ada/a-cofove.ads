@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -73,7 +73,8 @@ is
    --  unbounded case; you can't assign from one object to another if the
    --  Capacity is different.
 
-   function Empty_Vector return Vector;
+   function Empty_Vector return Vector with
+     Global => null;
 
    function "=" (Left, Right : Vector) return Boolean with
      Global => null;

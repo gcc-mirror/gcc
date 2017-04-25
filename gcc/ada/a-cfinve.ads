@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2014-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -73,7 +73,8 @@ is
    type Vector (Capacity : Capacity_Range) is limited private with
      Default_Initial_Condition;
 
-   function Empty_Vector return Vector;
+   function Empty_Vector return Vector with
+     Global => null;
 
    function "=" (Left, Right : Vector) return Boolean with
      Global => null;

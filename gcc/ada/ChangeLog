@@ -1,3 +1,54 @@
+2017-04-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-cfinve.ads, a-cofove.ads (Empty_Vector): add Global contract.
+
+2017-04-25  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Minor
+	correction to comments, move out large conditional and scope
+	traversal into a predicate.
+	(Uses_Unseen_Lib_Unit_Priv): Predicate function made from extracted
+	logic.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): Refine analysis
+	of prefix whose type is a current instance of a synchronized
+	type. If the prefix is an object this is an external call (or
+	requeue) that can only access public operations of the object. The
+	previous predicate was too restrictive, and did not allow public
+	protected operations, only task entries.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch5.adb, fname.adb: Minor reformatting.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Is_Anonymous_Access_Type): New routine.
+	* einfo.ads Update the placement of
+	E_Anonymous_Access_Subprogram_Type along with all subtypes that
+	mention the ekind.
+	(Is_Anonymous_Access_Type): New routine.
+	* exp_ch7.adb (Allows_Finalization_Master): Do not generate a
+	master for an access type subject to pragma No_Heap_Finalization.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): An object being
+	allocated or deallocated does not finalization actions if the
+	associated access type is subject to pragma No_Heap_Finalization.
+	* opt.ads Add new global variable No_Heap_Finalization_Pragma.
+	* par-prag.adb Pragma No_Heap_Finalization does not need special
+	processing from the parser.
+	* sem_ch6.adb (Check_Return_Subtype_Indication): Remove ancient
+	??? comments. Use the new predicate Is_Anonymous_Access_Type.
+	* sem_prag.adb Add an entry in table Sig_Flags for pragma
+	No_Heap_Finalization.
+	(Analyze_Pragma): Add processing for
+	pragma No_Heap_Finalization. Update various error messages to
+	use Duplication_Error.
+	* sem_util.ads, sem_util.adb (No_Heap_Finalization): New routine.
+	* snames.ads-tmpl: Add new predefined name No_Heap_Finalization
+	and corresponding pragma id.
+
 2017-04-25  Bob Duff  <duff@adacore.com>
 
 	* freeze.adb (Freeze_Record_Type): Use the
