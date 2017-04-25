@@ -278,9 +278,13 @@ package Exp_Util is
    --  Build a call to the DIC procedure of type Typ with Obj_Id as the actual
    --  parameter.
 
-   procedure Build_DIC_Procedure_Body (Typ : Entity_Id);
+   procedure Build_DIC_Procedure_Body
+     (Typ        : Entity_Id;
+      For_Freeze : Boolean := False);
    --  Create the body of the procedure which verifies the assertion expression
-   --  of pragma Default_Initial_Condition at run time.
+   --  of pragma Default_Initial_Condition at run time. Flag For_Freeze should
+   --  be set when the body is construction as part of the freezing actions for
+   --  Typ.
 
    procedure Build_DIC_Procedure_Declaration (Typ : Entity_Id);
    --  Create the declaration of the procedure which verifies the assertion
@@ -870,6 +874,19 @@ package Exp_Util is
    --  wide type. Set Related_Id to request an external name for the subtype
    --  rather than an internal temporary.
 
+   procedure Map_Types (Parent_Type : Entity_Id; Derived_Type : Entity_Id);
+   --  Establish the following mapping between the attributes of tagged parent
+   --  type Parent_Type and tagged derived type Derived_Type.
+   --
+   --    * Map each discriminant of Parent_Type to ether the corresponding
+   --      discriminant of Derived_Type or come constraint.
+
+   --    * Map each primitive operation of Parent_Type to the corresponding
+   --      primitive of Derived_Type.
+   --
+   --  The mapping Parent_Type -> Derived_Type is also added to the table in
+   --  order to prevent subsequent attempts of the same mapping.
+
    function Matching_Standard_Type (Typ : Entity_Id) return Entity_Id;
    --  Given a scalar subtype Typ, returns a matching type in standard that
    --  has the same object size value. For example, a 16 bit signed type will
@@ -995,6 +1012,37 @@ package Exp_Util is
    --  renaming cannot be elaborated without evaluating the subexpression, so
    --  gigi would resort to method 1) or 3) under the hood for them.
 
+   procedure Replace_References
+     (Expr      : Node_Id;
+      Par_Typ   : Entity_Id;
+      Deriv_Typ : Entity_Id;
+      Par_Obj   : Entity_Id := Empty;
+      Deriv_Obj : Entity_Id := Empty);
+   --  Expr denotes an arbitrary expression. Par_Typ is a tagged parent type
+   --  in a type hierarchy. Deriv_Typ is a tagged type derived from Par_Typ
+   --  with optional ancestors in between. Par_Obj is a formal parameter
+   --  which emulates the current instance of Par_Typ. Deriv_Obj is a formal
+   --  parameter which emulates the current instance of Deriv_Typ. Perform the
+   --  following substitutions in Expr:
+   --
+   --    * Replace a reference to Par_Obj with a reference to Deriv_Obj
+   --
+   --    * Replace a reference to a discriminant of Par_Typ with a suitable
+   --      value from the point of view of Deriv_Typ.
+   --
+   --    * Replace a call to an overridden primitive of Par_Typ with a call to
+   --      an overriding primitive of Deriv_Typ.
+   --
+   --    * Replace a call to an inherited primitive of Par_Type with a call to
+   --      the internally-generated inherited primitive of Deriv_Typ.
+
+   procedure Replace_Type_References
+     (Expr   : Node_Id;
+      Typ    : Entity_Id;
+      Obj_Id : Entity_Id);
+   --  Substitute all references of the current instance of type Typ with
+   --  references to formal parameter Obj_Id within expression Expr.
+
    function Represented_As_Scalar (T : Entity_Id) return Boolean;
    --  Returns True iff the implementation of this type in code generation
    --  terms is scalar. This is true for scalars in the Ada sense, and for
@@ -1102,12 +1150,6 @@ package Exp_Util is
    --  frozen yet, so we cannot use the dispatch table directly. This is called
    --  when elaborating a contract for a subprogram, and when freezing a type
    --  extension to verify legality rules on inherited conditions.
-
-   procedure Update_Primitives_Mapping_Of_Types
-     (Par_Typ   : Entity_Id;
-      Deriv_Typ : Entity_Id);
-   --  Map the primitive operations of parent type Par_Typ to the corresponding
-   --  primitives of derived type Deriv_Typ.
 
    function Within_Case_Or_If_Expression (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N is within a case or an if expression
