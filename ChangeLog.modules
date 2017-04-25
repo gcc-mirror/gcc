@@ -1,6 +1,13 @@
 2017-04-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.c (find_namespace_binding): Return slot
+	pointer. Adjust all callers.
+	(update_binding): Add slot pointer arg.  Adjust.
+	(check_extern_c_conflict): Cons up list of fns.
+	(c_linkage_bindings): Use extern_c_fns map.
+
+	gcc/cp/
 	* name-lookup.c (extern_c_fns): New hash.
 	(check_extern_c_conflict): Reimplement using hash map.
 	(do_pushdecl): Move check_extern_c_conflict later.

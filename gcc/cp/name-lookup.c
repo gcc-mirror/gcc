@@ -94,7 +94,7 @@ static tree stat_hack (tree decl = NULL_TREE, tree type = NULL_TREE)
 /* Return the binding for NAME in SCOPE, if any.  Otherwise, return NULL.  */
 // FIXME this should totally be a map
 
-static cxx_binding *
+static tree *
 find_namespace_binding (tree ns, tree name, bool insert = false)
 {
   cp_binding_level *scope = NAMESPACE_LEVEL (ns);
@@ -102,20 +102,20 @@ find_namespace_binding (tree ns, tree name, bool insert = false)
 
   for (; binding != NULL; binding = binding->previous)
     if (binding->scope == scope)
-      return binding;
+      return &binding->value;
 
   if (insert)
-    binding = create_namespace_binding (ns, name);
+    return &create_namespace_binding (ns, name)->value;
 
-  return binding;
+  return NULL;
 }
 
 static tree
 find_namespace_value (tree ns, tree name)
 {
-  cxx_binding *b = find_namespace_binding (ns, name);
+  tree *b = find_namespace_binding (ns, name);
 
-  return b ? MAYBE_STAT_DECL (b->value) : NULL_TREE;
+  return b ? MAYBE_STAT_DECL (*b) : NULL_TREE;
 }
 
 /* Add DECL to the list of things declared in a binding level.  */
@@ -371,10 +371,10 @@ name_lookup::search_namespace_only (tree scope)
 {
   bool found = false;
 
-  if (cxx_binding *binding = find_namespace_binding (scope, name))
+  if (tree *binding = find_namespace_binding (scope, name))
     {
-      tree new_val = MAYBE_STAT_DECL (binding->value);
-      tree new_type = MAYBE_STAT_TYPE (binding->value);
+      tree new_val = MAYBE_STAT_DECL (*binding);
+      tree new_type = MAYBE_STAT_TYPE (*binding);
 
       /* Did we really see a type? */
       if (LOOKUP_NAMESPACES_ONLY (flags)
@@ -1613,18 +1613,19 @@ matching_fn_p (tree one, tree two)
   return true;
 }
 
-/* Push DECL into nonclass LEVEL BINDING.  OLD is the current binding
-   value (possibly with anticipated builtins stripped).  Diagnose
-   conflicts and return updated decl.  */
+/* Push DECL into nonclass LEVEL BINDING or SLOT.  OLD is the current
+   binding value (possibly with anticipated builtins stripped).
+   Diagnose conflicts and return updated decl.  */
 
 static tree
-update_binding (cp_binding_level *level, cxx_binding *binding,
+update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 		tree old, tree decl, bool is_friend)
 {
   tree to_val = decl;
   tree to_type = NULL_TREE;
 
-  gcc_assert (level->kind != sk_class);
+  gcc_assert (level->kind == sk_namespace ? !binding
+	      : level->kind != sk_class && !slot);
   if (old == error_mark_node)
     old = NULL_TREE;
 
@@ -1756,9 +1757,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding,
 	  add_decl_to_level (level, to_add);
 	}
 
-      if (to_type == (level->kind == sk_namespace
-		      ? MAYBE_STAT_TYPE (binding->value)
-		      : binding->type))
+      if (to_type == (slot ? MAYBE_STAT_TYPE (*slot) : binding->type))
 	to_type = NULL_TREE;
 
       if (to_type)
@@ -1775,18 +1774,18 @@ update_binding (cp_binding_level *level, cxx_binding *binding,
 		     decl, type);
 	}
 
-      if (level->kind == sk_namespace)
+      if (slot)
 	{
-	  if (STAT_HACK_P (binding->value))
+	  if (STAT_HACK_P (*slot))
 	    {
 	      if (to_type)
-		STAT_TYPE (binding->value) = to_type;
-	      STAT_DECL (binding->value) = to_val;
+		STAT_TYPE (*slot) = to_type;
+	      STAT_DECL (*slot) = to_val;
 	    }
 	  else if (to_type)
-	    binding->value = stat_hack (to_val, to_type);
+	    *slot = stat_hack (to_val, to_type);
 	  else
-	    binding->value = to_val;
+	    *slot = to_val;
 	}
       else
 	{
@@ -1799,7 +1798,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding,
   return decl;
 }
 
-/* Map of identifiers to extern C functions.  */
+/* Map of identifiers to extern C functions (or LISTS thereof).  */
 
 static GTY(()) hash_map<tree,tree> *extern_c_fns;
 
@@ -1821,15 +1820,17 @@ check_extern_c_conflict (tree decl)
   tree *slot = &extern_c_fns->get_or_insert (DECL_NAME (decl), &existed);
   if (!existed)
     *slot = decl;
-  else if (DECL_CONTEXT (*slot) == DECL_CONTEXT (decl))
-    ; /* If they're in the same context, we'll have already complained
-	 about a (possible) mismatch, when inserting the decl.  */
   else
     {
       tree old = *slot;
+      if (TREE_CODE (old) == TREE_LIST)
+	old = TREE_VALUE (old);
 
       int mismatch = 0;
-      if (!decls_match (decl, old))
+      if (DECL_CONTEXT (old) == DECL_CONTEXT (decl))
+	; /* If they're in the same context, we'll have already complained
+	     about a (possible) mismatch, when inserting the decl.  */
+      else if (!decls_match (decl, old))
 	mismatch = 1;
       else if (!comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (old)),
 				   TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl)),
@@ -1848,7 +1849,22 @@ check_extern_c_conflict (tree decl)
 	    pedwarn (input_location, 0,
 		     "due to different exception specifications");
 	}
+      else
+	/* Chain it on for c_linkage_binding's use.  */
+	*slot = tree_cons (NULL_TREE, decl, *slot);
     }
+}
+
+/* Returns a list of C-linkage decls with the name NAME.  Used in
+   c-family/c-pragma.c to implement redefine_extname pragma.  */
+
+tree
+c_linkage_bindings (tree name)
+{
+  if (extern_c_fns)
+    if (tree *slot = extern_c_fns->get (name))
+      return *slot;
+  return NULL_TREE;
 }
 
 /* DECL is being declared at a local scope.  Emit suitable shadow
@@ -2216,8 +2232,10 @@ do_pushdecl (tree decl, bool is_friend)
 
   if (tree name = DECL_NAME (decl))
     {
-      cxx_binding *binding = NULL;
+      cxx_binding *binding = NULL; /* Local scope binding.  */
       tree ns = NULL_TREE; /* Searched namespace.  */
+      tree *slot = NULL; /* Binding slot in namespace.  */
+      tree old = NULL_TREE;
 
       if (level->kind == sk_namespace)
 	{
@@ -2228,12 +2246,17 @@ do_pushdecl (tree decl, bool is_friend)
 		? CP_DECL_CONTEXT (decl) : current_namespace);
 	  /* Create the binding, if this is current namespace, because
 	     that's where we'll be pushing anyway.  */
-	  binding = find_namespace_binding (ns, name,
+	  slot = find_namespace_binding (ns, name,
 					    ns == current_namespace);
+	  if (slot)
+	    old = MAYBE_STAT_DECL (*slot);
 	}
       else
-	binding = find_local_binding (level, name);
-      tree old = binding ? MAYBE_STAT_DECL (binding->value) : NULL_TREE;
+	{
+	  binding = find_local_binding (level, name);
+	  if (binding)
+	    old = binding->value;
+	}
 
       if (current_function_decl && VAR_OR_FUNCTION_DECL_P (decl)
 	  && DECL_EXTERNAL (decl))
@@ -2257,8 +2280,14 @@ do_pushdecl (tree decl, bool is_friend)
 		if (head != old)
 		  {
 		    if (!ns)
-		      update_local_overload (binding, head);
-		    binding->value = head;
+		      {
+			update_local_overload (binding, head);
+			binding->value = head;
+		      }
+		    else if (STAT_HACK_P (*slot))
+		      STAT_DECL (*slot) = head;
+		    else
+		      *slot = head;
 		  }
 	      }
 
@@ -2302,13 +2331,13 @@ do_pushdecl (tree decl, bool is_friend)
 	  if (!binding)
 	    binding = create_local_binding (level, name);
 	}
-      else if (!binding)
+      else if (!slot)
 	{
 	  ns = current_namespace;
-	  binding = create_namespace_binding (ns, name);
+	  slot = &create_namespace_binding (ns, name)->value;
 	}
 
-      old = update_binding (level, binding, old, decl, is_friend);
+      old = update_binding (level, binding, slot, old, decl, is_friend);
 
       if (old != decl)
 	/* An existing decl matched, use it.  */
@@ -3047,11 +3076,9 @@ set_identifier_type_value_with_scope (tree id, tree decl, cp_binding_level *b)
     }
   else
     {
-      cxx_binding *binding = (find_namespace_binding
-			      (current_namespace, id, true));
+      tree *slot = find_namespace_binding (current_namespace, id, true);
       gcc_assert (decl);
-      update_binding (b, binding, MAYBE_STAT_DECL (binding->value),
-		      decl, false);
+      update_binding (b, NULL, slot, MAYBE_STAT_DECL (*slot), decl, false);
 
       /* Store marker instead of real type.  */
       type = global_type_node;
@@ -4180,8 +4207,8 @@ get_namespace_value (tree ns, tree name)
   if (!ns)
     ns = global_namespace;
   gcc_checking_assert (!DECL_NAMESPACE_ALIAS (ns));
-  cxx_binding *binding = find_namespace_binding (ns, name);
-  tree ret = binding ? binding->value : NULL_TREE;
+  tree *slot = find_namespace_binding (ns, name);
+  tree ret = slot ? MAYBE_STAT_DECL (*slot) : NULL_TREE;
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
@@ -4194,23 +4221,23 @@ set_global_value (tree name, tree val)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
 
-  cxx_binding *b = find_namespace_binding (global_namespace, name, true);
-  tree old = MAYBE_STAT_DECL (b->value);
-  
+  tree *slot = find_namespace_binding (global_namespace, name, true);
+  tree old = MAYBE_STAT_DECL (*slot);
+
   if (!old)
-    b->value = val;
+    *slot = val;
   else if (old == val)
     ;
-  else if (!STAT_HACK_P (b->value)
+  else if (!STAT_HACK_P (*slot)
 	   && TREE_CODE (val) == TYPE_DECL && DECL_ARTIFICIAL (val))
-    b->value = stat_hack (old, val);
-  else if (!STAT_HACK_P (b->value)
+    *slot = stat_hack (old, val);
+  else if (!STAT_HACK_P (*slot)
 	   && TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
-    b->value = stat_hack (val, old);
+    *slot = stat_hack (val, old);
   else
     /* The user's placed something in the implementor's
        namespace.  */
-    diagnose_name_conflict (val, b->value);
+    diagnose_name_conflict (val, old);
 
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
@@ -4523,10 +4550,19 @@ do_toplevel_using_decl (tree decl, tree scope, tree name)
   if (decl == NULL_TREE)
     return;
 
-  cxx_binding *binding
-    = find_namespace_binding (current_namespace, name, true);
-
-  do_nonmember_using_decl (scope, name, &binding->value, &binding->type);
+  tree *slot = find_namespace_binding (current_namespace, name, true);
+  tree val = slot ? MAYBE_STAT_DECL (*slot) : NULL_TREE;
+  tree type = slot ? MAYBE_STAT_TYPE (*slot) : NULL_TREE;
+  do_nonmember_using_decl (scope, name, &val, &type);
+  if (STAT_HACK_P (*slot))
+    {
+      STAT_DECL (*slot) = val;
+      STAT_TYPE (*slot) = type;
+    }
+  else if (type)
+    *slot = stat_hack (val, type);
+  else
+    *slot = val;
 
   /* Emit debug info.  */
   if (!processing_template_decl)
@@ -5212,6 +5248,7 @@ lookup_type_scope_1 (tree name, tag_scope scope)
 {
   cxx_binding *iter = NULL;
   tree val = NULL_TREE;
+  cp_binding_level *level = NULL;
 
   /* Look in non-namespace scope first.  */
   if (current_binding_level->kind != sk_namespace)
@@ -5243,24 +5280,26 @@ lookup_type_scope_1 (tree name, tag_scope scope)
     }
 
   /* Look in namespace scope.  */
-  if (!val)
+  if (val)
+    level = iter->scope;
+  else
     {
-      iter = find_namespace_binding (current_decl_namespace (), name);
+      tree ns = current_decl_namespace ();
 
-      if (iter)
+      if (tree *slot = find_namespace_binding (ns, name))
 	{
 	  /* If this is the kind of thing we're looking for, we're done.  */
-	  if (tree type = MAYBE_STAT_TYPE (iter->value))
+	  if (tree type = MAYBE_STAT_TYPE (*slot))
 	    if (qualify_lookup (type, LOOKUP_PREFER_TYPES))
 	      val = type;
 	  if (!val)
 	    {
-	      if (tree decl = MAYBE_STAT_DECL (iter->value))
+	      if (tree decl = MAYBE_STAT_DECL (*slot))
 		if (qualify_lookup (decl, LOOKUP_PREFER_TYPES))
 		  val = decl;
 	    }
+	  level = NAMESPACE_LEVEL (ns);
 	}
-
     }
 
   /* Type found, check if it is in the allowed scopes, ignoring cleanup
@@ -5270,7 +5309,7 @@ lookup_type_scope_1 (tree name, tag_scope scope)
       cp_binding_level *b = current_binding_level;
       while (b)
 	{
-	  if (iter->scope == b)
+	  if (level == b)
 	    return val;
 
 	  if (b->kind == sk_cleanup || b->kind == sk_template_parms
