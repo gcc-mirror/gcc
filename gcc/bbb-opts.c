@@ -691,7 +691,7 @@ static unsigned
 find_start (std::set<unsigned> & found, unsigned start, unsigned rename_regno)
 {
   /* search the start. */
-  while (start < 0)
+  while (start > 0)
     {
       unsigned startm1 = start - 1;
 
