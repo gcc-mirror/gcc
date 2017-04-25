@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -671,7 +671,13 @@ begin
    Write_Switch_Char ("zr");
    Write_Line ("Distribution stub generation for receiver stubs");
 
+   --  Disable the warnings emitted by -gnatwc because Ada_Version_Default may
+   --  be changed to denote a different default value.
+
+   pragma Warnings (Off, "condition can only be * if invalid values present");
+
    if not Latest_Ada_Only then
+
       --  Line for -gnat83 switch
 
       Write_Switch_Char ("83");
@@ -707,6 +713,8 @@ begin
    else
       Write_Line ("Ada 2012 mode");
    end if;
+
+   pragma Warnings (On, "condition can only be * if invalid values present");
 
    --  Line for -gnat-p switch
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3144,11 +3144,302 @@ package body Sem_Eval is
    --  equality test A = "ABC", and the former is definitely static.
 
    procedure Eval_Relational_Op (N : Node_Id) is
-      Left   : constant Node_Id   := Left_Opnd (N);
-      Right  : constant Node_Id   := Right_Opnd (N);
-      Typ    : constant Entity_Id := Etype (Left);
-      Otype  : Entity_Id := Empty;
-      Result : Boolean;
+      Left  : constant Node_Id := Left_Opnd  (N);
+      Right : constant Node_Id := Right_Opnd (N);
+
+      procedure Decompose_Expr
+        (Expr : Node_Id;
+         Ent  : out Entity_Id;
+         Kind : out Character;
+         Cons : out Uint;
+         Orig : Boolean := True);
+      --  Given expression Expr, see if it is of the form X [+/- K]. If so, Ent
+      --  is set to the entity in X, Kind is 'F','L','E' for 'First or 'Last or
+      --  simple entity, and Cons is the value of K. If the expression is not
+      --  of the required form, Ent is set to Empty.
+      --
+      --  Orig indicates whether Expr is the original expression to consider,
+      --  or if we are handling a sub-expression (e.g. recursive call to
+      --  Decompose_Expr).
+
+      procedure Fold_General_Op (Is_Static : Boolean);
+      --  Attempt to fold arbitrary relational operator N. Flag Is_Static must
+      --  be set when the operator denotes a static expression.
+
+      procedure Fold_Static_Real_Op;
+      --  Attempt to fold static real type relational operator N
+
+      function Static_Length (Expr : Node_Id) return Uint;
+      --  If Expr is an expression for a constrained array whose length is
+      --  known at compile time, return the non-negative length, otherwise
+      --  return -1.
+
+      --------------------
+      -- Decompose_Expr --
+      --------------------
+
+      procedure Decompose_Expr
+        (Expr : Node_Id;
+         Ent  : out Entity_Id;
+         Kind : out Character;
+         Cons : out Uint;
+         Orig : Boolean := True)
+      is
+         Exp : Node_Id;
+
+      begin
+         --  Assume that the expression does not meet the expected form
+
+         Cons := No_Uint;
+         Ent  := Empty;
+         Kind := '?';
+
+         if Nkind (Expr) = N_Op_Add
+           and then Compile_Time_Known_Value (Right_Opnd (Expr))
+         then
+            Exp  := Left_Opnd (Expr);
+            Cons := Expr_Value (Right_Opnd (Expr));
+
+         elsif Nkind (Expr) = N_Op_Subtract
+           and then Compile_Time_Known_Value (Right_Opnd (Expr))
+         then
+            Exp  := Left_Opnd (Expr);
+            Cons := -Expr_Value (Right_Opnd (Expr));
+
+         --  If the bound is a constant created to remove side effects, recover
+         --  the original expression to see if it has one of the recognizable
+         --  forms.
+
+         elsif Nkind (Expr) = N_Identifier
+           and then not Comes_From_Source (Entity (Expr))
+           and then Ekind (Entity (Expr)) = E_Constant
+           and then Nkind (Parent (Entity (Expr))) = N_Object_Declaration
+         then
+            Exp := Expression (Parent (Entity (Expr)));
+            Decompose_Expr (Exp, Ent, Kind, Cons, Orig => False);
+
+            --  If original expression includes an entity, create a reference
+            --  to it for use below.
+
+            if Present (Ent) then
+               Exp := New_Occurrence_Of (Ent, Sloc (Ent));
+            else
+               return;
+            end if;
+
+         else
+            --  Only consider the case of X + 0 for a full expression, and
+            --  not when recursing, otherwise we may end up with evaluating
+            --  expressions not known at compile time to 0.
+
+            if Orig then
+               Exp  := Expr;
+               Cons := Uint_0;
+            else
+               return;
+            end if;
+         end if;
+
+         --  At this stage Exp is set to the potential X
+
+         if Nkind (Exp) = N_Attribute_Reference then
+            if Attribute_Name (Exp) = Name_First then
+               Kind := 'F';
+            elsif Attribute_Name (Exp) = Name_Last then
+               Kind := 'L';
+            else
+               return;
+            end if;
+
+            Exp := Prefix (Exp);
+
+         else
+            Kind := 'E';
+         end if;
+
+         if Is_Entity_Name (Exp) and then Present (Entity (Exp)) then
+            Ent := Entity (Exp);
+         end if;
+      end Decompose_Expr;
+
+      ---------------------
+      -- Fold_General_Op --
+      ---------------------
+
+      procedure Fold_General_Op (Is_Static : Boolean) is
+         CR : constant Compare_Result :=
+                Compile_Time_Compare (Left, Right, Assume_Valid => False);
+
+         Result : Boolean;
+
+      begin
+         if CR = Unknown then
+            return;
+         end if;
+
+         case Nkind (N) is
+            when N_Op_Eq =>
+               if CR = EQ then
+                  Result := True;
+               elsif CR = NE or else CR = GT or else CR = LT then
+                  Result := False;
+               else
+                  return;
+               end if;
+
+            when N_Op_Ge =>
+               if CR = GT or else CR = EQ or else CR = GE then
+                  Result := True;
+               elsif CR = LT then
+                  Result := False;
+               else
+                  return;
+               end if;
+
+            when N_Op_Gt =>
+               if CR = GT then
+                  Result := True;
+               elsif CR = EQ or else CR = LT or else CR = LE then
+                  Result := False;
+               else
+                  return;
+               end if;
+
+            when N_Op_Le =>
+               if CR = LT or else CR = EQ or else CR = LE then
+                  Result := True;
+               elsif CR = GT then
+                  Result := False;
+               else
+                  return;
+               end if;
+
+            when N_Op_Lt =>
+               if CR = LT then
+                  Result := True;
+               elsif CR = EQ or else CR = GT or else CR = GE then
+                  Result := False;
+               else
+                  return;
+               end if;
+
+            when N_Op_Ne =>
+               if CR = NE or else CR = GT or else CR = LT then
+                  Result := True;
+               elsif CR = EQ then
+                  Result := False;
+               else
+                  return;
+               end if;
+
+            when others =>
+               raise Program_Error;
+         end case;
+
+         --  Determine the potential outcome of the relation assuming the
+         --  operands are valid and emit a warning when the relation yields
+         --  True or False only in the presence of invalid values.
+
+         Warn_On_Constant_Valid_Condition (N);
+
+         Fold_Uint (N, Test (Result), Is_Static);
+      end Fold_General_Op;
+
+      -------------------------
+      -- Fold_Static_Real_Op --
+      -------------------------
+
+      procedure Fold_Static_Real_Op is
+         Left_Real  : constant Ureal := Expr_Value_R (Left);
+         Right_Real : constant Ureal := Expr_Value_R (Right);
+         Result     : Boolean;
+
+      begin
+         case Nkind (N) is
+            when N_Op_Eq => Result := (Left_Real =  Right_Real);
+            when N_Op_Ge => Result := (Left_Real >= Right_Real);
+            when N_Op_Gt => Result := (Left_Real >  Right_Real);
+            when N_Op_Le => Result := (Left_Real <= Right_Real);
+            when N_Op_Lt => Result := (Left_Real <  Right_Real);
+            when N_Op_Ne => Result := (Left_Real /= Right_Real);
+            when others  => raise Program_Error;
+         end case;
+
+         Fold_Uint (N, Test (Result), True);
+      end Fold_Static_Real_Op;
+
+      -------------------
+      -- Static_Length --
+      -------------------
+
+      function Static_Length (Expr : Node_Id) return Uint is
+         Cons1 : Uint;
+         Cons2 : Uint;
+         Ent1  : Entity_Id;
+         Ent2  : Entity_Id;
+         Kind1 : Character;
+         Kind2 : Character;
+         Typ   : Entity_Id;
+
+      begin
+         --  First easy case string literal
+
+         if Nkind (Expr) = N_String_Literal then
+            return UI_From_Int (String_Length (Strval (Expr)));
+
+         --  Second easy case, not constrained subtype, so no length
+
+         elsif not Is_Constrained (Etype (Expr)) then
+            return Uint_Minus_1;
+         end if;
+
+         --  General case
+
+         Typ := Etype (First_Index (Etype (Expr)));
+
+         --  The simple case, both bounds are known at compile time
+
+         if Is_Discrete_Type (Typ)
+           and then Compile_Time_Known_Value (Type_Low_Bound (Typ))
+           and then Compile_Time_Known_Value (Type_High_Bound (Typ))
+         then
+            return
+              UI_Max (Uint_0, Expr_Value (Type_High_Bound (Typ)) -
+                              Expr_Value (Type_Low_Bound  (Typ)) + 1);
+         end if;
+
+         --  A more complex case, where the bounds are of the form X [+/- K1]
+         --  .. X [+/- K2]), where X is an expression that is either A'First or
+         --  A'Last (with A an entity name), or X is an entity name, and the
+         --  two X's are the same and K1 and K2 are known at compile time, in
+         --  this case, the length can also be computed at compile time, even
+         --  though the bounds are not known. A common case of this is e.g.
+         --  (X'First .. X'First+5).
+
+         Decompose_Expr
+           (Original_Node (Type_Low_Bound  (Typ)), Ent1, Kind1, Cons1);
+         Decompose_Expr
+           (Original_Node (Type_High_Bound (Typ)), Ent2, Kind2, Cons2);
+
+         if Present (Ent1) and then Ent1 = Ent2 and then Kind1 = Kind2 then
+            return Cons2 - Cons1 + 1;
+         else
+            return Uint_Minus_1;
+         end if;
+      end Static_Length;
+
+      --  Local variables
+
+      Left_Typ  : constant Entity_Id := Etype (Left);
+      Right_Typ : constant Entity_Id := Etype (Right);
+      Fold      : Boolean;
+      Left_Len  : Uint;
+      Op_Typ    : Entity_Id := Empty;
+      Right_Len : Uint;
+
+      Is_Static_Expression : Boolean;
+
+   --  Start of processing for Eval_Relational_Op
 
    begin
       --  One special case to deal with first. If we can tell that the result
@@ -3159,259 +3450,58 @@ package body Sem_Eval is
       --  one of the operands is an illegal aggregate, its type might still be
       --  an arbitrary composite type, so nothing to do.
 
-      if Is_Array_Type (Typ)
-        and then Typ /= Any_Composite
-        and then Number_Dimensions (Typ) = 1
-        and then (Nkind (N) = N_Op_Eq or else Nkind (N) = N_Op_Ne)
+      if Is_Array_Type (Left_Typ)
+        and then Left_Typ /= Any_Composite
+        and then Number_Dimensions (Left_Typ) = 1
+        and then Nkind_In (N, N_Op_Eq, N_Op_Ne)
       then
          if Raises_Constraint_Error (Left)
               or else
             Raises_Constraint_Error (Right)
          then
             return;
-         end if;
 
          --  OK, we have the case where we may be able to do this fold
 
-         Length_Mismatch : declare
-            procedure Get_Static_Length (Op : Node_Id; Len : out Uint);
-            --  If Op is an expression for a constrained array with a known at
-            --  compile time length, then Len is set to this (non-negative
-            --  length). Otherwise Len is set to minus 1.
+         else
+            Left_Len  := Static_Length (Left);
+            Right_Len := Static_Length (Right);
 
-            -----------------------
-            -- Get_Static_Length --
-            -----------------------
-
-            procedure Get_Static_Length (Op : Node_Id; Len : out Uint) is
-               T : Entity_Id;
-
-            begin
-               --  First easy case string literal
-
-               if Nkind (Op) = N_String_Literal then
-                  Len := UI_From_Int (String_Length (Strval (Op)));
-                  return;
-               end if;
-
-               --  Second easy case, not constrained subtype, so no length
-
-               if not Is_Constrained (Etype (Op)) then
-                  Len := Uint_Minus_1;
-                  return;
-               end if;
-
-               --  General case
-
-               T := Etype (First_Index (Etype (Op)));
-
-               --  The simple case, both bounds are known at compile time
-
-               if Is_Discrete_Type (T)
-                 and then Compile_Time_Known_Value (Type_Low_Bound (T))
-                 and then Compile_Time_Known_Value (Type_High_Bound (T))
-               then
-                  Len := UI_Max (Uint_0,
-                                 Expr_Value (Type_High_Bound (T)) -
-                                   Expr_Value (Type_Low_Bound  (T)) + 1);
-                  return;
-               end if;
-
-               --  A more complex case, where the bounds are of the form
-               --  X [+/- K1] .. X [+/- K2]), where X is an expression that is
-               --  either A'First or A'Last (with A an entity name), or X is an
-               --  entity name, and the two X's are the same and K1 and K2 are
-               --  known at compile time, in this case, the length can also be
-               --  computed at compile time, even though the bounds are not
-               --  known. A common case of this is e.g. (X'First .. X'First+5).
-
-               Extract_Length : declare
-                  procedure Decompose_Expr
-                    (Expr : Node_Id;
-                     Ent  : out Entity_Id;
-                     Kind : out Character;
-                     Cons : out Uint;
-                     Orig : Boolean := True);
-                  --  Given an expression see if it is of the form given above,
-                  --  X [+/- K]. If so Ent is set to the entity in X, Kind is
-                  --  'F','L','E' for 'First/'Last/simple entity, and Cons is
-                  --  the value of K. If the expression is not of the required
-                  --  form, Ent is set to Empty.
-                  --
-                  --  Orig indicates whether Expr is the original expression
-                  --  to consider, or if we are handling a sub-expression
-                  --  (e.g. recursive call to Decompose_Expr).
-
-                  --------------------
-                  -- Decompose_Expr --
-                  --------------------
-
-                  procedure Decompose_Expr
-                    (Expr : Node_Id;
-                     Ent  : out Entity_Id;
-                     Kind : out Character;
-                     Cons : out Uint;
-                     Orig : Boolean := True)
-                  is
-                     Exp : Node_Id;
-
-                  begin
-                     Ent := Empty;
-
-                     --  Ignored values:
-
-                     Kind := '?';
-                     Cons := No_Uint;
-
-                     if Nkind (Expr) = N_Op_Add
-                       and then Compile_Time_Known_Value (Right_Opnd (Expr))
-                     then
-                        Exp  := Left_Opnd (Expr);
-                        Cons := Expr_Value (Right_Opnd (Expr));
-
-                     elsif Nkind (Expr) = N_Op_Subtract
-                       and then Compile_Time_Known_Value (Right_Opnd (Expr))
-                     then
-                        Exp  := Left_Opnd (Expr);
-                        Cons := -Expr_Value (Right_Opnd (Expr));
-
-                     --  If the bound is a constant created to remove side
-                     --  effects, recover original expression to see if it has
-                     --  one of the recognizable forms.
-
-                     elsif Nkind (Expr) = N_Identifier
-                       and then not Comes_From_Source (Entity (Expr))
-                       and then Ekind (Entity (Expr)) = E_Constant
-                       and then
-                         Nkind (Parent (Entity (Expr))) = N_Object_Declaration
-                     then
-                        Exp := Expression (Parent (Entity (Expr)));
-                        Decompose_Expr (Exp, Ent, Kind, Cons, Orig => False);
-
-                        --  If original expression includes an entity, create a
-                        --  reference to it for use below.
-
-                        if Present (Ent) then
-                           Exp := New_Occurrence_Of (Ent, Sloc (Ent));
-                        else
-                           return;
-                        end if;
-
-                     else
-                        --  Only consider the case of X + 0 for a full
-                        --  expression, and not when recursing, otherwise we
-                        --  may end up with evaluating expressions not known
-                        --  at compile time to 0.
-
-                        if Orig then
-                           Exp  := Expr;
-                           Cons := Uint_0;
-                        else
-                           return;
-                        end if;
-                     end if;
-
-                     --  At this stage Exp is set to the potential X
-
-                     if Nkind (Exp) = N_Attribute_Reference then
-                        if Attribute_Name (Exp) = Name_First then
-                           Kind := 'F';
-                        elsif Attribute_Name (Exp) = Name_Last then
-                           Kind := 'L';
-                        else
-                           return;
-                        end if;
-
-                        Exp := Prefix (Exp);
-
-                     else
-                        Kind := 'E';
-                     end if;
-
-                     if Is_Entity_Name (Exp)
-                       and then Present (Entity (Exp))
-                     then
-                        Ent := Entity (Exp);
-                     end if;
-                  end Decompose_Expr;
-
-                  --  Local Variables
-
-                  Ent1,  Ent2  : Entity_Id;
-                  Kind1, Kind2 : Character;
-                  Cons1, Cons2 : Uint;
-
-               --  Start of processing for Extract_Length
-
-               begin
-                  Decompose_Expr
-                    (Original_Node (Type_Low_Bound  (T)), Ent1, Kind1, Cons1);
-                  Decompose_Expr
-                    (Original_Node (Type_High_Bound (T)), Ent2, Kind2, Cons2);
-
-                  if Present (Ent1)
-                    and then Ent1 = Ent2
-                    and then Kind1 = Kind2
-                  then
-                     Len := Cons2 - Cons1 + 1;
-                  else
-                     Len := Uint_Minus_1;
-                  end if;
-               end Extract_Length;
-            end Get_Static_Length;
-
-            --  Local Variables
-
-            Len_L : Uint;
-            Len_R : Uint;
-
-         --  Start of processing for Length_Mismatch
-
-         begin
-            Get_Static_Length (Left,  Len_L);
-            Get_Static_Length (Right, Len_R);
-
-            if Len_L /= Uint_Minus_1
-              and then Len_R /= Uint_Minus_1
-              and then Len_L /= Len_R
+            if Left_Len /= Uint_Minus_1
+              and then Right_Len /= Uint_Minus_1
+              and then Left_Len /= Right_Len
             then
                Fold_Uint (N, Test (Nkind (N) = N_Op_Ne), False);
                Warn_On_Known_Condition (N);
                return;
             end if;
-         end Length_Mismatch;
-      end if;
+         end if;
 
-      declare
-         Is_Static_Expression : Boolean;
+      --  General case
 
-         Is_Foldable : Boolean;
-         pragma Unreferenced (Is_Foldable);
-
-      begin
-         --  Initialize the value of Is_Static_Expression. The value of
-         --  Is_Foldable returned by Test_Expression_Is_Foldable is not needed
-         --  since, even when some operand is a variable, we can still perform
-         --  the static evaluation of the expression in some cases (for
-         --  example, for a variable of a subtype of Integer we statically
-         --  know that any value stored in such variable is smaller than
-         --  Integer'Last).
+      else
+         --  Initialize the value of Is_Static_Expression. The value of Fold
+         --  returned by Test_Expression_Is_Foldable is not needed since, even
+         --  when some operand is a variable, we can still perform the static
+         --  evaluation of the expression in some cases (for example, for a
+         --  variable of a subtype of Integer we statically know that any value
+         --  stored in such variable is smaller than Integer'Last).
 
          Test_Expression_Is_Foldable
-           (N, Left, Right, Is_Static_Expression, Is_Foldable);
+           (N, Left, Right, Is_Static_Expression, Fold);
 
-         --  Only comparisons of scalars can give static results. In
-         --  particular, comparisons of strings never yield a static
-         --  result, even if both operands are static strings, except that
-         --  as noted above, we allow equality/inequality for strings.
+         --  Only comparisons of scalars can give static results. A comparison
+         --  of strings never yields a static result, even if both operands are
+         --  static strings, except that as noted above, we allow equality and
+         --  inequality for strings.
 
-         if Is_String_Type (Typ)
+         if Is_String_Type (Left_Typ)
            and then not Comes_From_Source (N)
            and then Nkind_In (N, N_Op_Eq, N_Op_Ne)
          then
             null;
 
-         elsif not Is_Scalar_Type (Typ) then
+         elsif not Is_Scalar_Type (Left_Typ) then
             Is_Static_Expression := False;
             Set_Is_Static_Expression (N, False);
          end if;
@@ -3420,117 +3510,27 @@ package body Sem_Eval is
          --  an explicit scope, determine appropriate specific numeric type,
          --  and diagnose possible ambiguity.
 
-         if Is_Universal_Numeric_Type (Etype (Left))
+         if Is_Universal_Numeric_Type (Left_Typ)
               and then
-            Is_Universal_Numeric_Type (Etype (Right))
+            Is_Universal_Numeric_Type (Right_Typ)
          then
-            Otype := Find_Universal_Operator_Type (N);
+            Op_Typ := Find_Universal_Operator_Type (N);
          end if;
 
-         --  For static real type expressions, do not use Compile_Time_Compare
-         --  since it worries about run-time results which are not exact.
+         --  Attempt to fold the relational operator
 
-         if Is_Static_Expression and then Is_Real_Type (Typ) then
-            declare
-               Left_Real  : constant Ureal := Expr_Value_R (Left);
-               Right_Real : constant Ureal := Expr_Value_R (Right);
-
-            begin
-               case Nkind (N) is
-                  when N_Op_Eq => Result := (Left_Real =  Right_Real);
-                  when N_Op_Ne => Result := (Left_Real /= Right_Real);
-                  when N_Op_Lt => Result := (Left_Real <  Right_Real);
-                  when N_Op_Le => Result := (Left_Real <= Right_Real);
-                  when N_Op_Gt => Result := (Left_Real >  Right_Real);
-                  when N_Op_Ge => Result := (Left_Real >= Right_Real);
-                  when others  => raise Program_Error;
-               end case;
-
-               Fold_Uint (N, Test (Result), True);
-            end;
-
-         --  For all other cases, we use Compile_Time_Compare to do the compare
-
+         if Is_Static_Expression and then Is_Real_Type (Left_Typ) then
+            Fold_Static_Real_Op;
          else
-            declare
-               CR : constant Compare_Result :=
-                      Compile_Time_Compare
-                        (Left, Right, Assume_Valid => False);
-
-            begin
-               if CR = Unknown then
-                  return;
-               end if;
-
-               case Nkind (N) is
-                  when N_Op_Eq =>
-                     if CR = EQ then
-                        Result := True;
-                     elsif CR = NE or else CR = GT or else CR = LT then
-                        Result := False;
-                     else
-                        return;
-                     end if;
-
-                  when N_Op_Ne =>
-                     if CR = NE or else CR = GT or else CR = LT then
-                        Result := True;
-                     elsif CR = EQ then
-                        Result := False;
-                     else
-                        return;
-                     end if;
-
-                  when N_Op_Lt =>
-                     if CR = LT then
-                        Result := True;
-                     elsif CR = EQ or else CR = GT or else CR = GE then
-                        Result := False;
-                     else
-                        return;
-                     end if;
-
-                  when N_Op_Le =>
-                     if CR = LT or else CR = EQ or else CR = LE then
-                        Result := True;
-                     elsif CR = GT then
-                        Result := False;
-                     else
-                        return;
-                     end if;
-
-                  when N_Op_Gt =>
-                     if CR = GT then
-                        Result := True;
-                     elsif CR = EQ or else CR = LT or else CR = LE then
-                        Result := False;
-                     else
-                        return;
-                     end if;
-
-                  when N_Op_Ge =>
-                     if CR = GT or else CR = EQ or else CR = GE then
-                        Result := True;
-                     elsif CR = LT then
-                        Result := False;
-                     else
-                        return;
-                     end if;
-
-                  when others =>
-                     raise Program_Error;
-               end case;
-            end;
-
-            Fold_Uint (N, Test (Result), Is_Static_Expression);
+            Fold_General_Op (Is_Static_Expression);
          end if;
-      end;
+      end if;
 
       --  For the case of a folded relational operator on a specific numeric
-      --  type, freeze operand type now.
+      --  type, freeze the operand type now.
 
-      if Present (Otype) then
-         Freeze_Before (N, Otype);
+      if Present (Op_Typ) then
+         Freeze_Before (N, Op_Typ);
       end if;
 
       Warn_On_Known_Condition (N);
@@ -6052,6 +6052,85 @@ package body Sem_Eval is
          return Uint_0;
       end if;
    end Test;
+
+   ---------------------
+   -- Test_Comparison --
+   ---------------------
+
+   procedure Test_Comparison
+     (Op           : Node_Id;
+      Assume_Valid : Boolean;
+      True_Result  : out Boolean;
+      False_Result : out Boolean)
+   is
+      Left     : constant Node_Id   := Left_Opnd (Op);
+      Left_Typ : constant Entity_Id := Etype (Left);
+      Orig_Op  : constant Node_Id   := Original_Node (Op);
+
+      procedure Replacement_Warning (Msg : String);
+      --  Emit a warning on a comparison which can be replaced by '='
+
+      -------------------------
+      -- Replacement_Warning --
+      -------------------------
+
+      procedure Replacement_Warning (Msg : String) is
+      begin
+         if Constant_Condition_Warnings
+           and then Comes_From_Source (Orig_Op)
+           and then Is_Integer_Type (Left_Typ)
+           and then not Error_Posted (Op)
+           and then not Has_Warnings_Off (Left_Typ)
+           and then not In_Instance
+         then
+            Error_Msg_N (Msg, Op);
+         end if;
+      end Replacement_Warning;
+
+      --  Local variables
+
+      Res : constant Compare_Result :=
+              Compile_Time_Compare (Left, Right_Opnd (Op), Assume_Valid);
+
+   --  Start of processing for Test_Comparison
+
+   begin
+      case N_Op_Compare (Nkind (Op)) is
+         when N_Op_Eq =>
+            True_Result  := Res = EQ;
+            False_Result := Res = LT or else Res = GT or else Res = NE;
+
+         when N_Op_Ge =>
+            True_Result  := Res in Compare_GE;
+            False_Result := Res = LT;
+
+            if Res = LE and then Nkind (Orig_Op) = N_Op_Ge then
+               Replacement_Warning
+                 ("can never be greater than, could replace by ""'=""?c?");
+            end if;
+
+         when N_Op_Gt =>
+            True_Result  := Res = GT;
+            False_Result := Res in Compare_LE;
+
+         when N_Op_Le =>
+            True_Result  := Res in Compare_LE;
+            False_Result := Res = GT;
+
+            if Res = GE and then Nkind (Orig_Op) = N_Op_Le then
+               Replacement_Warning
+                 ("can never be less than, could replace by ""'=""?c?");
+            end if;
+
+         when N_Op_Lt =>
+            True_Result  := Res = LT;
+            False_Result := Res in Compare_GE;
+
+         when N_Op_Ne =>
+            True_Result  := Res = NE or else Res = GT or else Res = LT;
+            False_Result := Res = EQ;
+      end case;
+   end Test_Comparison;
 
    ---------------------------------
    -- Test_Expression_Is_Foldable --

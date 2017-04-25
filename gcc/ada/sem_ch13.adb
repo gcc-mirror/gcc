@@ -2456,7 +2456,8 @@ package body Sem_Ch13 is
 
                      goto Continue;
 
-                  --  For tasks pass the aspect as an attribute
+                  --  For task and protected types pass the aspect as an
+                  --  attribute.
 
                   else
                      Aitem :=

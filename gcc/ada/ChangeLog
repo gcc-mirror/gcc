@@ -1,5 +1,36 @@
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* comperr.adb (Compiler_Abort): Add a pair of pragma Warnings
+	On/Off to defend against a spurious warning in conditional
+	compilation.
+	* exp_ch4.adb (Rewrite_Comparison): Reimplemented.
+	* namet.adb (Finalize): Add a pair of pragma Warnings On/Off to
+	defend against a spurious warning in conditional compilation.
+	* output.adb Add a pair of pragma Warnings On/Off to defend
+	against a spurious warning in conditional compilation.
+	* sem_eval.adb (Eval_Relational_Op): Major code clean up.
+	(Fold_General_Op): New routine.
+	(Fold_Static_Real_Op): New routine.
+	(Test_Comparison): New routine.
+	* sem_eval.ads (Test_Comparison): New routine.
+	* sem_warn.adb (Is_Attribute_Constant_Comparison): New routine.
+	(Warn_On_Constant_Valid_Condition): New routine.
+	(Warn_On_Known_Condition): Use Is_Attribute_Constant_Comparison
+	to detect a specific case.
+	* sem_warn.adb (Warn_On_Constant_Valid_Condition): New routine.
+	* urealp.adb (Tree_Read): Add a pair of pragma Warnings On/Off
+	to defend against a spurious warning in conditional compilation.
+	(Tree_Write): Add a pair of pragma Warnings On/Off to defend
+	against a spurious warning in conditional compilation.
+	* usage.adb Add a pair of pragma Warnings On/Off to defend
+	against a spurious warning in conditional compilation.
+
+2017-04-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* sinfo.ads, sem_ch13.adb: Update comment.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_util.adb (Is_Post_State): A reference to a
 	generic in out parameter is considered a change in the post-state
 	of a subprogram.
