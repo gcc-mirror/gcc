@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2000-2011, AdaCore                      --
+--                    Copyright (C) 2000-2016, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,7 +64,13 @@ package GNAT.Expect.TTY is
    --  GNAT.TTY.Close_TTY.
 
    procedure Interrupt (Pid : Integer);
-   --  Interrupt a process given its pid
+   --  Interrupt a process given its pid.
+   --  This is equivalent to sending a ctrl-c event, or kill -SIGINT.
+
+   procedure Terminate_Process (Pid : Integer);
+   --  Terminate abruptly a process given its pid.
+   --  This is equivalent to kill -SIGKILL under unix, or TerminateProcess
+   --  under Windows.
 
    overriding procedure Send
      (Descriptor   : in out TTY_Process_Descriptor;

@@ -139,12 +139,15 @@ package body Erroutc is
 
             --  Adjust error message count
 
-            if Errors.Table (D).Warn or else Errors.Table (D).Style then
-               Warnings_Detected := Warnings_Detected - 1;
+            if Errors.Table (D).Info then
+               Info_Messages := Info_Messages - 1;
 
-               if Errors.Table (D).Info then
-                  Info_Messages := Info_Messages - 1;
+               if Errors.Table (D).Warn then
+                  Warnings_Detected := Warnings_Detected - 1;
                end if;
+
+            elsif Errors.Table (D).Warn or else Errors.Table (D).Style then
+               Warnings_Detected := Warnings_Detected - 1;
 
                --  Note: we do not need to decrement Warnings_Treated_As_Errors
                --  because this only gets incremented if we actually output the
@@ -240,7 +243,7 @@ package body Erroutc is
    function Compilation_Errors return Boolean is
    begin
       return Total_Errors_Detected /= 0
-        or else (Warnings_Detected - Info_Messages /= 0
+        or else (Warnings_Detected /= 0
                   and then Warning_Mode = Treat_As_Error)
         or else Warnings_Treated_As_Errors /= 0;
    end Compilation_Errors;

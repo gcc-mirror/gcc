@@ -1,3 +1,36 @@
+2017-04-25  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch7.adb, einfo.ads, sem_prag.adb: Minor reformatting and typo
+	correction.
+
+2017-04-25  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Comparison_Op): Do not
+	attempt evaluation of relational operations inside assertions.
+
+2017-04-25  Justin Squirek  <squirek@adacore.com>
+
+	* exp_util.adb (Add_Interface_Invariants):
+	Restored, code moved back from Build_Invariant_Procedure_Body.
+	(Add_Parent_Invariants): Restored, code moved back from
+	Build_Invariant_Procedure_Body.
+	(Build_Invariant_Procedure_Body):
+	Remove refactored calls and integrated code from
+	Add_Parent_Invariants and Add_Interface_Invariants.
+
+2017-04-25  Johannes Kanig  <kanig@adacore.com>
+
+	* errout.adb (Output_Messages): Adjust computation of total
+	errors
+	* erroutc.adb (Error_Msg): In statistics counts, deal
+	correctly with informational messages that are not warnings.
+	* errutil.adb (Finalize): adjust computation of total errors.
+
+2017-04-25  Arnaud Charlet  <charlet@adacore.com trojanek>
+
+	* terminals.c (__gnat_terminate_pid): New.
+	* g-exptty.ads (Terminate_Process): New. Update comments.
+
 2017-04-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* a-cfinve.ads, a-cofove.ads (Empty_Vector): add Global contract.

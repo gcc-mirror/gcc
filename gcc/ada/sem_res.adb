@@ -6898,11 +6898,16 @@ package body Sem_Res is
             N, Etype (L));
       end if;
 
-      --  Evaluate the relation (note we do this after the above check since
-      --  this Eval call may change N to True/False.
-
       Analyze_Dimension (N);
-      Eval_Relational_Op (N);
+
+      --  Evaluate the relation (note we do this after the above check since
+      --  this Eval call may change N to True/False. Skip this evaluation
+      --  inside assertions, in order to keep assertions as written by users
+      --  for tools that rely on these, e.g. GNATprove for loop invariants.
+
+      if In_Assertion_Expr = 0 then
+         Eval_Relational_Op (N);
+      end if;
    end Resolve_Comparison_Op;
 
    -----------------------------------------
