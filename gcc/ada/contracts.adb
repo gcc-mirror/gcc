@@ -878,12 +878,6 @@ package body Contracts is
                then
                   Error_Msg_N
                     ("discriminated object & cannot be volatile", Obj_Id);
-
-               --  An object of a tagged type cannot be effectively volatile
-               --  (SPARK RM C.6(5)).
-
-               elsif Is_Tagged_Type (Obj_Typ) then
-                  Error_Msg_N ("tagged object & cannot be volatile", Obj_Id);
                end if;
 
             --  The object is not effectively volatile
