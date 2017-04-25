@@ -5187,6 +5187,65 @@ package body Exp_Util is
       end if;
    end Expand_Subtype_From_Expr;
 
+   ---------------------------------------------
+   -- Expression_Contains_Primitives_Calls_Of --
+   ---------------------------------------------
+
+   function Expression_Contains_Primitives_Calls_Of
+     (Expr : Node_Id;
+      Typ  : Entity_Id) return Boolean
+   is
+      U_Typ : constant Entity_Id := Unique_Entity (Typ);
+
+      function Search_Primitive_Calls (N : Node_Id) return Traverse_Result;
+      --  Search for non-dispatching calls to primitive functions of type Typ
+
+      ----------------------------
+      -- Search_Primitive_Calls --
+      ----------------------------
+
+      function Search_Primitive_Calls (N : Node_Id) return Traverse_Result is
+      begin
+         if Nkind (N) = N_Identifier
+           and then Present (Entity (N))
+           and then
+             (Is_Formal (Entity (N)) or else Is_Subprogram (Entity (N)))
+           and then Nkind (Parent (N)) = N_Function_Call
+         then
+            --  Do not consider dispatching calls
+
+            if Is_Subprogram (Entity (N))
+              and then Nkind (Parent (N)) = N_Function_Call
+              and then Present (Controlling_Argument (Parent (N)))
+            then
+               return OK;
+            end if;
+
+            --  If N is a function call, and E is dispatching, search for the
+            --  controlling type to see if it is Ty.
+
+            if Is_Subprogram (Entity (N))
+              and then Nkind (Parent (N)) = N_Function_Call
+              and then Is_Dispatching_Operation (Entity (N))
+              and then Present (Find_Dispatching_Type (Entity (N)))
+              and then
+                Unique_Entity (Find_Dispatching_Type (Entity (N))) = U_Typ
+            then
+               return Abandon;
+            end if;
+         end if;
+
+         return OK;
+      end Search_Primitive_Calls;
+
+      function Search_Calls is new Traverse_Func (Search_Primitive_Calls);
+
+   --  Start of processing for Expression_Contains_Primitives_Calls_Of_Type
+
+   begin
+      return Search_Calls (Expr) = Abandon;
+   end Expression_Contains_Primitives_Calls_Of;
+
    ----------------------
    -- Finalize_Address --
    ----------------------

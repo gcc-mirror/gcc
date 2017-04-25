@@ -1,3 +1,16 @@
+2017-04-25  Claire Dross  <dross@adacore.com>
+
+	* exp_util.ads (Expression_Contains_Primitives_Calls_Of): New
+	function used in GNATprove to know if an expression contains
+	non-dispatching calls on primitives of a tagged type.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* rtsfind.adb (Initialize): Initialize
+	First_Implicit_With. Building the compiler with Normalize_Scalars
+	and validity checking finds this being used as an uninitialized
+	variable.
+
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* contracts.adb (Analyze_Entry_Or_Subprogram_Body_Contract):

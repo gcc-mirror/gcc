@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -555,6 +555,12 @@ package Exp_Util is
    --  declarations and/or allocations when the type is indefinite (including
    --  class-wide). Set Related_Id to request an external name for the subtype
    --  rather than an internal temporary.
+
+   function Expression_Contains_Primitives_Calls_Of
+     (Expr : Node_Id;
+      Typ  : Entity_Id) return Boolean;
+   --  Return True if the expression Expr contains a non-dispatching call to a
+   --  function which is a primitive of the tagged type Typ.
 
    function Finalize_Address (Typ : Entity_Id) return Entity_Id;
    --  Locate TSS primitive Finalize_Address in type Typ. Return Empty if the
