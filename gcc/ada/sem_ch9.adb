@@ -2254,7 +2254,7 @@ package body Sem_Ch9 is
       end if;
 
       --  In GNATprove mode, force the loading of a Interrupt_Priority, which
-      --  is required for the ceiling priority protocol checks trigerred by
+      --  is required for the ceiling priority protocol checks triggered by
       --  calls originating from protected subprograms and entries.
 
       if GNATprove_Mode then
@@ -3201,7 +3201,7 @@ package body Sem_Ch9 is
       end if;
 
       --  In GNATprove mode, force the loading of a Interrupt_Priority, which
-      --  is required for the ceiling priority protocol checks trigerred by
+      --  is required for the ceiling priority protocol checks triggered by
       --  calls originating from tasks.
 
       if GNATprove_Mode then

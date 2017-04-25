@@ -1137,12 +1137,12 @@ package body Sem_Ch10 is
          --  In GNATprove mode, force the loading of a Interrupt_Priority when
          --  processing compilation units with potentially "main" subprograms.
          --  This is required for the ceiling priority protocol checks, which
-         --  are trigerred by these subprograms.
+         --  are triggered by these subprograms.
 
          if GNATprove_Mode
-           and then Nkind_In (Unit_Node, N_Subprogram_Body,
+           and then Nkind_In (Unit_Node, N_Function_Instantiation,
                                          N_Procedure_Instantiation,
-                                         N_Function_Instantiation)
+                                         N_Subprogram_Body)
          then
             declare
                Spec : Node_Id;

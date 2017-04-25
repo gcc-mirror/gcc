@@ -16227,11 +16227,11 @@ package body Sem_Util is
       New_Sloc  : Source_Ptr := No_Location;
       New_Scope : Entity_Id  := Empty) return Node_Id
    is
-      EWA_Level             : Nat := 0;
-      --  By default copying of defining identifiers is prohibited because this
-      --  would introduce an entirely new entity into the tree. The exception
-      --  to this general rule are declaration of constants and variables
-      --  located in Expression_With_Action nodes.
+      EWA_Level : Nat := 0;
+      --  By default, copying of defining identifiers is prohibited because
+      --  this would introduce an entirely new entity into the tree. The
+      --  exception to this general rule is declaration of constants and
+      --  variables located in Expression_With_Action nodes.
 
       EWA_Inner_Scope_Level : Nat := 0;
       --  Level of internal scope of defined in EWAs. Used to avoid creating
@@ -16302,7 +16302,7 @@ package body Sem_Util is
       --  not in the hash table, then it is returned unchanged.
 
       procedure Build_NCT_Hash_Tables;
-      --  Builds hash tables.
+      --  Builds hash tables
 
       function Copy_Elist_With_Replacement
         (Old_Elist : Elist_Id) return Elist_Id;
@@ -16322,7 +16322,7 @@ package body Sem_Util is
 
       function In_Map (E : Entity_Id) return Boolean;
       --  Return True if E is one of the old entities specified in the set of
-      --  mappings to be applied to entities in the tree (ie. Map).
+      --  mappings to be applied to entities in the tree (i.e. Map).
 
       procedure Visit_Elist (E : Elist_Id);
       --  Called during first phase to visit all elements of an Elist
@@ -16398,12 +16398,11 @@ package body Sem_Util is
                             Associated_Node_For_Itype (Ent);
 
                begin
+                  --  Enter the link between the associated node of the old
+                  --  Itype and the new Itype, for updating later when node
+                  --  is copied.
+
                   if Present (Anode) then
-
-                     --  Enter a link between the associated node of the old
-                     --  Itype and the new Itype, for updating later when node
-                     --  is copied.
-
                      NCT_Itype_Assoc.Set (Anode, Node (Elmt));
                   end if;
                end;
@@ -16444,7 +16443,7 @@ package body Sem_Util is
       -- Copy_Entity_With_Replacement --
       ----------------------------------
 
-      --  This routine exactly parallels its phase one analog Visit_Itype,
+      --  This routine exactly parallels its phase one analog Visit_Itype
 
       procedure Copy_Entity_With_Replacement (New_Entity : Entity_Id) is
       begin

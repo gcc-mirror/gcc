@@ -1,3 +1,8 @@
+2017-04-25  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch9.adb, sem_ch10.adb, sem_util.adb: Minor reformatting and typo
+	fixes.
+
 2017-04-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* rtsfind.ads (SPARK_Implicit_Load): New procedure for forced
