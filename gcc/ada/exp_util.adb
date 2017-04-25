@@ -92,27 +92,17 @@ package body Exp_Util is
    --  operations are mapped into the overriding operations of that current
    --  type extension.
 
-   --  The contents of the map are as follows:
+   Primitives_Mapping_Size : constant := 511;
 
-   --    Key                                Value
+   subtype Num_Primitives is Integer range 0 .. Primitives_Mapping_Size - 1;
+   function Entity_Hash (E : Entity_Id) return Num_Primitives;
 
-   --    Discriminant (Entity_Id)           Discriminant (Entity_Id)
-   --    Discriminant (Entity_Id)           Non-discriminant name (Entity_Id)
-   --    Discriminant (Entity_Id)           Expression (Node_Id)
-   --    Primitive subprogram (Entity_Id)   Primitive subprogram (Entity_Id)
-   --    Type (Entity_Id)                   Type (Entity_Id)
-
-   Type_Map_Size : constant := 511;
-
-   subtype Type_Map_Header is Integer range 0 .. Type_Map_Size - 1;
-   function Type_Map_Hash (Id : Entity_Id) return Type_Map_Header;
-
-   package Type_Map is new GNAT.HTable.Simple_HTable
-     (Header_Num => Type_Map_Header,
+   package Primitives_Mapping is new GNAT.HTable.Simple_HTable
+     (Header_Num => Num_Primitives,
       Key        => Entity_Id,
-      Element    => Node_Or_Entity_Id,
+      Element    => Entity_Id,
       No_element => Empty,
-      Hash       => Type_Map_Hash,
+      Hash       => Entity_Hash,
       Equal      => "=");
 
    -----------------------
@@ -1096,7 +1086,7 @@ package body Exp_Util is
 
             --  Determine whether entity has a renaming
 
-            New_E := Type_Map.Get (Entity (N));
+            New_E := Primitives_Mapping.Get (Entity (N));
 
             if Present (New_E) then
                Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
@@ -1182,7 +1172,7 @@ package body Exp_Util is
       Subp_Formal := First_Formal (Subp);
 
       while Present (Par_Formal) and then Present (Subp_Formal) loop
-         Type_Map.Set (Par_Formal, Subp_Formal);
+         Primitives_Mapping.Set (Par_Formal, Subp_Formal);
          Next_Formal (Par_Formal);
          Next_Formal (Subp_Formal);
       end loop;
@@ -1220,10 +1210,7 @@ package body Exp_Util is
    --  replaced by gotos which jump to the end of the routine and restore the
    --  Ghost mode.
 
-   procedure Build_DIC_Procedure_Body
-     (Typ        : Entity_Id;
-      For_Freeze : Boolean := False)
-   is
+   procedure Build_DIC_Procedure_Body (Typ : Entity_Id) is
       procedure Add_DIC_Check
         (DIC_Prag : Node_Id;
          DIC_Expr : Node_Id;
@@ -1261,6 +1248,34 @@ package body Exp_Util is
       --  Add a runtime check to verify the assertion expression of pragma
       --  DIC_Prag. DIC_Typ is the owner of the DIC pragma. All generated code
       --  is added to list Stmts.
+
+      procedure Replace_Object_And_Primitive_References
+        (Expr      : Node_Id;
+         Par_Typ   : Entity_Id;
+         Deriv_Typ : Entity_Id;
+         Par_Obj   : Entity_Id := Empty;
+         Deriv_Obj : Entity_Id := Empty);
+      --  Expr denotes an arbitrary expression. Par_Typ is a parent type in a
+      --  type hierarchy. Deriv_Typ is a type derived from Par_Typ. Par_Obj is
+      --  the formal parameter which emulates the current instance of Par_Typ.
+      --  Deriv_Obj is the formal parameter which emulates the current instance
+      --  of Deriv_Typ. Perform the following substitutions:
+      --
+      --    * Replace a reference to Par_Obj with a reference to Deriv_Obj if
+      --      applicable.
+      --
+      --    * Replace a call to an overridden parent primitive with a call to
+      --      the overriding derived type primitive.
+      --
+      --    * Replace a call to an inherited parent primitive with a call to
+      --      the internally-generated inherited derived type primitive.
+
+      procedure Replace_Type_References
+        (Expr   : Node_Id;
+         Typ    : Entity_Id;
+         Obj_Id : Entity_Id);
+      --  Substitute all references of the current instance of type Typ with
+      --  references to formal parameter Obj_Id within expression Expr.
 
       -------------------
       -- Add_DIC_Check --
@@ -1343,6 +1358,7 @@ package body Exp_Util is
          Deriv_Typ : Entity_Id;
          Stmts     : in out List_Id)
       is
+         Deriv_Decl : constant Node_Id   := Declaration_Node (Deriv_Typ);
          Deriv_Proc : constant Entity_Id := DIC_Procedure (Deriv_Typ);
          DIC_Args   : constant List_Id   :=
                         Pragma_Argument_Associations (DIC_Prag);
@@ -1367,9 +1383,6 @@ package body Exp_Util is
          --      type's DIC procedure with a reference to the _object parameter
          --      of the derived types' DIC procedure.
 
-         --    * Replace a reference to a discriminant of the parent type with
-         --      a suitable value from the point of view of the derived type.
-
          --    * Replace a call to an overridden parent primitive with a call
          --      to the overriding derived type primitive.
 
@@ -1382,12 +1395,18 @@ package body Exp_Util is
 
          pragma Assert (Present (Deriv_Proc) and then Present (Par_Proc));
 
-         Replace_References
+         Replace_Object_And_Primitive_References
            (Expr      => Expr,
             Par_Typ   => Par_Typ,
             Deriv_Typ => Deriv_Typ,
             Par_Obj   => First_Formal (Par_Proc),
             Deriv_Obj => First_Formal (Deriv_Proc));
+
+         --  Preanalyze the DIC expression to detect errors and at the same
+         --  time capture the visibility of the proper package part.
+
+         Set_Parent (Expr, Deriv_Decl);
+         Preanalyze_Assert_Expression (Expr, Any_Boolean);
 
          --  Once the DIC assertion expression is fully processed, add a check
          --  to the statements of the DIC procedure.
@@ -1512,6 +1531,200 @@ package body Exp_Util is
             Stmts    => Stmts);
       end Add_Own_DIC;
 
+      ---------------------------------------------
+      -- Replace_Object_And_Primitive_References --
+      ---------------------------------------------
+
+      procedure Replace_Object_And_Primitive_References
+        (Expr      : Node_Id;
+         Par_Typ   : Entity_Id;
+         Deriv_Typ : Entity_Id;
+         Par_Obj   : Entity_Id := Empty;
+         Deriv_Obj : Entity_Id := Empty)
+      is
+         function Replace_Ref (Ref : Node_Id) return Traverse_Result;
+         --  Substitute a reference to an entity with a reference to the
+         --  corresponding entity stored in in table Primitives_Mapping.
+
+         -----------------
+         -- Replace_Ref --
+         -----------------
+
+         function Replace_Ref (Ref : Node_Id) return Traverse_Result is
+            Context : constant Node_Id    := Parent (Ref);
+            Loc     : constant Source_Ptr := Sloc (Ref);
+            New_Id  : Entity_Id;
+            New_Ref : Node_Id;
+            Ref_Id  : Entity_Id;
+            Result  : Traverse_Result;
+
+         begin
+            Result := OK;
+
+            --  The current node denotes a reference
+
+            if Nkind (Ref) in N_Has_Entity and then Present (Entity (Ref)) then
+               Ref_Id := Entity (Ref);
+               New_Id := Primitives_Mapping.Get (Ref_Id);
+
+               --  The reference mentions a parent type primitive which has a
+               --  corresponding derived type primitive.
+
+               if Present (New_Id) then
+                  New_Ref := New_Occurrence_Of (New_Id, Loc);
+
+               --  The reference mentions the _object parameter of the parent
+               --  type's DIC procedure.
+
+               elsif Present (Par_Obj)
+                 and then Present (Deriv_Obj)
+                 and then Ref_Id = Par_Obj
+               then
+                  New_Ref := New_Occurrence_Of (Deriv_Obj, Loc);
+
+                  --  The reference to _object acts as an actual parameter in a
+                  --  subprogram call which may be invoking a primitive of the
+                  --  parent type:
+
+                  --    Primitive (... _object ...);
+
+                  --  The parent type primitive may not be overridden nor
+                  --  inherited when it is declared after the derived type
+                  --  definition:
+
+                  --    type Parent is tagged private;
+                  --    type Child is new Parent with private;
+                  --    procedure Primitive (Obj : Parent);
+
+                  --  In this scenario the _object parameter is converted to
+                  --  the parent type.
+
+                  if Nkind_In (Context, N_Function_Call,
+                                        N_Procedure_Call_Statement)
+                    and then
+                      No (Primitives_Mapping.Get (Entity (Name (Context))))
+                  then
+                     New_Ref := Convert_To (Par_Typ, New_Ref);
+
+                     --  Do not process the generated type conversion because
+                     --  both the parent type and the derived type are in the
+                     --  Primitives_Mapping table. This will clobber the type
+                     --  conversion by resetting its subtype mark.
+
+                     Result := Skip;
+                  end if;
+
+               --  Otherwise there is nothing to replace
+
+               else
+                  New_Ref := Empty;
+               end if;
+
+               if Present (New_Ref) then
+                  Rewrite (Ref, New_Ref);
+
+                  --  Update the return type when the context of the reference
+                  --  acts as the name of a function call. Note that the update
+                  --  should not be performed when the reference appears as an
+                  --  actual in the call.
+
+                  if Nkind (Context) = N_Function_Call
+                    and then Name (Context) = Ref
+                  then
+                     Set_Etype (Context, Etype (New_Id));
+                  end if;
+               end if;
+            end if;
+
+            --  Reanalyze the reference due to potential replacements
+
+            if Nkind (Ref) in N_Has_Etype then
+               Set_Analyzed (Ref, False);
+            end if;
+
+            return Result;
+         end Replace_Ref;
+
+         procedure Replace_Refs is new Traverse_Proc (Replace_Ref);
+
+      --  Start of processing for Replace_Object_And_Primitive_References
+
+      begin
+         --  Map each primitive operation of the parent type to the proper
+         --  primitive of the derived type.
+
+         Update_Primitives_Mapping_Of_Types
+           (Par_Typ   => Par_Typ,
+            Deriv_Typ => Deriv_Typ);
+
+         --  Inspect the input expression and perform substitutions where
+         --  necessary.
+
+         Replace_Refs (Expr);
+      end Replace_Object_And_Primitive_References;
+
+      -----------------------------
+      -- Replace_Type_References --
+      -----------------------------
+
+      procedure Replace_Type_References
+        (Expr   : Node_Id;
+         Typ    : Entity_Id;
+         Obj_Id : Entity_Id)
+      is
+         procedure Replace_Type_Ref (N : Node_Id);
+         --  Substitute a single reference of the current instance of type Typ
+         --  with a reference to Obj_Id.
+
+         ----------------------
+         -- Replace_Type_Ref --
+         ----------------------
+
+         procedure Replace_Type_Ref (N : Node_Id) is
+            Ref : Node_Id;
+
+         begin
+            --  Decorate the reference to Typ even though it may be rewritten
+            --  further down. This is done for two reasons:
+
+            --    1) ASIS has all necessary semantic information in the
+            --    original tree.
+
+            --    2) Routines which examine properties of the Original_Node
+            --    have some semantic information.
+
+            if Nkind (N) = N_Identifier then
+               Set_Entity (N, Typ);
+               Set_Etype  (N, Typ);
+
+            elsif Nkind (N) = N_Selected_Component then
+               Analyze (Prefix (N));
+               Set_Entity (Selector_Name (N), Typ);
+               Set_Etype  (Selector_Name (N), Typ);
+            end if;
+
+            --  Perform the following substitution:
+
+            --    Typ  -->  _object
+
+            Ref := Make_Identifier (Sloc (N), Chars (Obj_Id));
+            Set_Entity (Ref, Obj_Id);
+            Set_Etype  (Ref, Typ);
+
+            Rewrite (N, Ref);
+
+            Set_Comes_From_Source (N, True);
+         end Replace_Type_Ref;
+
+         procedure Replace_Type_Refs is
+           new Replace_Type_References_Generic (Replace_Type_Ref);
+
+      --  Start of processing for Replace_Type_References
+
+      begin
+         Replace_Type_Refs (Expr, Typ);
+      end Replace_Type_References;
+
       --  Local variables
 
       Loc : constant Source_Ptr := Sloc (Typ);
@@ -1526,9 +1739,6 @@ package body Exp_Util is
       Proc_Decl    : Node_Id;
       Proc_Id      : Entity_Id;
       Stmts        : List_Id := No_List;
-
-      Build_Body : Boolean := False;
-      --  Flag set when the type requires a DIC procedure body to be built
 
       Work_Typ : Entity_Id;
       --  The working type
@@ -1644,18 +1854,9 @@ package body Exp_Util is
             DIC_Typ  => DIC_Typ,
             Stmts    => Stmts);
 
-         Build_Body := True;
+      --  Otherwise the working type inherits a DIC pragma from a parent type
 
-      --  Otherwise the working type inherits a DIC pragma from a parent type.
-      --  This processing is carried out when the type is frozen because the
-      --  state of all parent discriminants is known at that point. Note that
-      --  it is semantically sound to delay the creation of the DIC procedure
-      --  body till the freeze point. If the type has a DIC pragma of its own,
-      --  then the DIC procedure body would have already been constructed at
-      --  the end of the visible declarations and all parent DIC pragmas are
-      --  effectively "hidden" and irrelevant.
-
-      elsif For_Freeze then
+      else
          pragma Assert (Has_Inherited_DIC (Work_Typ));
          pragma Assert (DIC_Typ /= Work_Typ);
 
@@ -1681,71 +1882,66 @@ package body Exp_Util is
                Deriv_Typ => Work_Typ,
                Stmts     => Stmts);
          end if;
-
-         Build_Body := True;
       end if;
 
       End_Scope;
 
-      if Build_Body then
+      --  Produce an empty completing body in the following cases:
+      --    * Assertions are disabled
+      --    * The DIC Assertion_Policy is Ignore
+      --    * Pragma DIC appears without an argument
+      --    * Pragma DIC appears with argument "null"
 
-         --  Produce an empty completing body in the following cases:
-         --    * Assertions are disabled
-         --    * The DIC Assertion_Policy is Ignore
-         --    * Pragma DIC appears without an argument
-         --    * Pragma DIC appears with argument "null"
+      if No (Stmts) then
+         Stmts := New_List (Make_Null_Statement (Loc));
+      end if;
 
-         if No (Stmts) then
-            Stmts := New_List (Make_Null_Statement (Loc));
-         end if;
+      --  Generate:
+      --    procedure <Work_Typ>DIC (_object : <Work_Typ>) is
+      --    begin
+      --       <Stmts>
+      --    end <Work_Typ>DIC;
 
-         --  Generate:
-         --    procedure <Work_Typ>DIC (_object : <Work_Typ>) is
-         --    begin
-         --       <Stmts>
-         --    end <Work_Typ>DIC;
+      Proc_Body :=
+        Make_Subprogram_Body (Loc,
+          Specification                =>
+            Copy_Subprogram_Spec (Parent (Proc_Id)),
+          Declarations                 => Empty_List,
+            Handled_Statement_Sequence =>
+              Make_Handled_Sequence_Of_Statements (Loc,
+                Statements => Stmts));
+      Proc_Body_Id := Defining_Entity (Proc_Body);
 
-         Proc_Body :=
-           Make_Subprogram_Body (Loc,
-             Specification                =>
-               Copy_Subprogram_Spec (Parent (Proc_Id)),
-             Declarations                 => Empty_List,
-               Handled_Statement_Sequence =>
-                 Make_Handled_Sequence_Of_Statements (Loc,
-                   Statements => Stmts));
-         Proc_Body_Id := Defining_Entity (Proc_Body);
+      --  Perform minor decoration in case the body is not analyzed
 
-         --  Perform minor decoration in case the body is not analyzed
+      Set_Ekind (Proc_Body_Id, E_Subprogram_Body);
+      Set_Etype (Proc_Body_Id, Standard_Void_Type);
+      Set_Scope (Proc_Body_Id, Current_Scope);
 
-         Set_Ekind (Proc_Body_Id, E_Subprogram_Body);
-         Set_Etype (Proc_Body_Id, Standard_Void_Type);
-         Set_Scope (Proc_Body_Id, Current_Scope);
+      --  Link both spec and body to avoid generating duplicates
 
-         --  Link both spec and body to avoid generating duplicates
+      Set_Corresponding_Body (Proc_Decl, Proc_Body_Id);
+      Set_Corresponding_Spec (Proc_Body, Proc_Id);
 
-         Set_Corresponding_Body (Proc_Decl, Proc_Body_Id);
-         Set_Corresponding_Spec (Proc_Body, Proc_Id);
+      --  The body should not be inserted into the tree when the context is
+      --  ASIS or a generic unit because it is not part of the template. Note
+      --  that the body must still be generated in order to resolve the DIC
+      --  assertion expression.
 
-         --  The body should not be inserted into the tree when the context
-         --  is ASIS or a generic unit because it is not part of the template.
-         --  Note that the body must still be generated in order to resolve the
-         --  DIC assertion expression.
+      if ASIS_Mode or Inside_A_Generic then
+         null;
 
-         if ASIS_Mode or Inside_A_Generic then
-            null;
+      --  Semi-insert the body into the tree for GNATprove by setting its
+      --  Parent field. This allows for proper upstream tree traversals.
 
-         --  Semi-insert the body into the tree for GNATprove by setting its
-         --  Parent field. This allows for proper upstream tree traversals.
+      elsif GNATprove_Mode then
+         Set_Parent (Proc_Body, Parent (Declaration_Node (Work_Typ)));
 
-         elsif GNATprove_Mode then
-            Set_Parent (Proc_Body, Parent (Declaration_Node (Work_Typ)));
+      --  Otherwise the body is part of the freezing actions of the working
+      --  type.
 
-         --  Otherwise the body is part of the freezing actions of the working
-         --  type.
-
-         else
-            Append_Freeze_Action (Work_Typ, Proc_Body);
-         end if;
+      else
+         Append_Freeze_Action (Work_Typ, Proc_Body);
       end if;
 
    <<Leave>>
@@ -3191,6 +3387,15 @@ package body Exp_Util is
          Insert_Action (N, IR);
       end if;
    end Ensure_Defined;
+
+   -----------------
+   -- Entity_Hash --
+   -----------------
+
+   function Entity_Hash (E : Entity_Id) return Num_Primitives is
+   begin
+      return Num_Primitives (E mod Primitives_Mapping_Size);
+   end Entity_Hash;
 
    --------------------
    -- Entry_Names_OK --
@@ -8084,494 +8289,6 @@ package body Exp_Util is
               Constraints => List_Constr));
    end Make_Subtype_From_Expr;
 
-   ---------------
-   -- Map_Types --
-   ---------------
-
-   procedure Map_Types (Par_Typ : Entity_Id; Deriv_Typ : Entity_Id) is
-
-      --  Note: most of the routines in Map_Types are intentionally unnested to
-      --  avoid deep indentation of code.
-
-      procedure Add_Primitive (Prim : Entity_Id);
-      --  Subsidiary to Map_Primitives. Find a primitive in the inheritance or
-      --  overriding chain starting from Prim whose dispatching type is parent
-      --  type Par_Typ and add a mapping between the result and primitive Prim.
-
-      function Ancestor_Primitive (Subp : Entity_Id) return Entity_Id;
-      --  Subsidiary to Map_Primitives. Return the next ancestor primitive in
-      --  the inheritance or overriding chain of subprogram Subp. Return Empty
-      --  if no such primitive is available.
-
-      function Build_Chain return Elist_Id;
-      --  Subsidiary to Map_Discriminants. Recreate the derivation chain from
-      --  parent type Par_Typ leading down towards derived type Deriv_Typ. The
-      --  list has the form:
-      --
-      --    head                                              tail
-      --    v                                                 v
-      --    <Ancestor_N> -> <Ancestor_N-1> -> <Ancestor_1> -> Deriv_Typ
-      --
-      --  Note that Par_Typ is not part of the resulting derivation chain.
-
-      function Find_Discriminant_Value
-        (Discr    : Entity_Id;
-         Typ_Elmt : Elmt_Id) return Node_Or_Entity_Id;
-      --  Subsidiary to Map_Discriminants. Find the value of discriminant Discr
-      --  in the derivation chain starting from parent type Par_Typ leading to
-      --  derived type Deriv_Typ. The returned value is one of the following:
-      --
-      --    * An entity which is either a discriminant or a non-discriminant
-      --      name which renames/constraints Discr.
-      --
-      --    * An expression which constraints Discr
-      --
-      --  Typ_Elmt is an element of the derivation chain created by routine
-      --  Build_Chain and denotes the current ancestor being examined.
-
-      procedure Map_Discriminants;
-      --  Map each discriminant of type Par_Typ to a meaningful constraint from
-      --  the point of view of type Deriv_Typ.
-
-      procedure Map_Primitives;
-      --  Map each primitive of type Par_Typ to a corresponding primitive of
-      --  type Deriv_Typ.
-
-      -------------------
-      -- Add_Primitive --
-      -------------------
-
-      procedure Add_Primitive (Prim : Entity_Id) is
-         Par_Prim : Entity_Id;
-
-      begin
-         --  Inspect the inheritance chain through the Alias attribute and the
-         --  overriding chain through the Overridden_Operation looking for an
-         --  ancestor primitive with the appropriate dispatching type.
-
-         Par_Prim := Prim;
-         while Present (Par_Prim) loop
-            exit when Find_Dispatching_Type (Par_Prim) = Par_Typ;
-            Par_Prim := Ancestor_Primitive (Par_Prim);
-         end loop;
-
-         --  Create a mapping of the form:
-
-         --    parent type primitive -> derived type primitive
-
-         if Present (Par_Prim) then
-            Type_Map.Set (Par_Prim, Prim);
-         end if;
-      end Add_Primitive;
-
-      ------------------------
-      -- Ancestor_Primitive --
-      ------------------------
-
-      function Ancestor_Primitive (Subp : Entity_Id) return Entity_Id is
-         Inher_Prim : constant Entity_Id := Alias (Subp);
-         Over_Prim  : constant Entity_Id := Overridden_Operation (Subp);
-
-      begin
-         --  The current subprogram overrides an ancestor primitive
-
-         if Present (Over_Prim) then
-            return Over_Prim;
-
-         --  The current subprogram is an internally generated alias of an
-         --  inherited ancestor primitive.
-
-         elsif Present (Inher_Prim) then
-            return Inher_Prim;
-
-         --  Otherwise the current subprogram is the root of the inheritance or
-         --  overriding chain.
-
-         else
-            return Empty;
-         end if;
-      end Ancestor_Primitive;
-
-      -----------------
-      -- Build_Chain --
-      -----------------
-
-      function Build_Chain return Elist_Id is
-         Anc_Typ  : Entity_Id;
-         Chain    : Elist_Id;
-         Curr_Typ : Entity_Id;
-
-      begin
-         Chain := New_Elmt_List;
-
-         --  Add the derived type to the derivation chain
-
-         Prepend_Elmt (Deriv_Typ, Chain);
-
-         --  Examine all ancestors starting from the derived type climbing
-         --  towards parent type Par_Typ.
-
-         Curr_Typ := Deriv_Typ;
-         loop
-            Anc_Typ := Base_Type (Etype (Curr_Typ));
-
-            --  Stop the climb when either the parent type has been reached or
-            --  there are no more ancestors left to examine.
-
-            exit when Anc_Typ = Curr_Typ or else Anc_Typ = Par_Typ;
-
-            --  Add the current ancestor to the derivation chain
-
-            Prepend_Elmt (Anc_Typ, Chain);
-            Curr_Typ := Anc_Typ;
-         end loop;
-
-         return Chain;
-      end Build_Chain;
-
-      -----------------------------
-      -- Find_Discriminant_Value --
-      -----------------------------
-
-      function Find_Discriminant_Value
-        (Discr    : Entity_Id;
-         Typ_Elmt : Elmt_Id) return Node_Or_Entity_Id
-      is
-         Discr_Pos : constant Uint      := Discriminant_Number (Discr);
-         Typ       : constant Entity_Id := Node (Typ_Elmt);
-
-         function Find_Constraint_Value
-           (Constr : Node_Or_Entity_Id) return Node_Or_Entity_Id;
-         --  Given constraint Constr, find what it denotes. This is either:
-         --
-         --    * An entity which is either a discriminant or a name
-         --
-         --    * An expression
-
-         ---------------------------
-         -- Find_Constraint_Value --
-         ---------------------------
-
-         function Find_Constraint_Value
-           (Constr : Node_Or_Entity_Id) return Node_Or_Entity_Id
-         is
-         begin
-            if Nkind (Constr) in N_Entity then
-
-               --  The constraint denotes a discriminant of the current type
-               --  which renames the ancestor discriminant:
-
-               --              vv
-               --    type Typ (D1 : ...; DN : ...) is
-               --      new Anc (Discr => D1) with ...
-               --                        ^^
-
-               if Ekind (Constr) = E_Discriminant then
-
-                  --  The discriminant belongs to derived type Deriv_Typ. This
-                  --  is the final value for the ancestor discriminant as the
-                  --  derivations chain has been fully exhausted.
-
-                  if Typ = Deriv_Typ then
-                     return Constr;
-
-                  --  Otherwise the discriminant may be renamed or constrained
-                  --  at a lower level. Continue looking down the derivation
-                  --  chain.
-
-                  else
-                     return
-                       Find_Discriminant_Value
-                         (Discr    => Constr,
-                          Typ_Elmt => Next_Elmt (Typ_Elmt));
-                  end if;
-
-               --  Otherwise the constraint denotes a reference to some name
-               --  which results in a Girder discriminant:
-
-               --    vvvv
-               --    Name : ...;
-               --    type Typ (D1 : ...; DN : ...) is
-               --      new Anc (Discr => Name) with ...
-               --                        ^^^^
-
-               --  Return the name as this is the proper constraint of the
-               --  discriminant.
-
-               else
-                  return Constr;
-               end if;
-
-            --  The constraint denotes a reference to a name
-
-            elsif Is_Entity_Name (Constr) then
-               return Find_Constraint_Value (Entity (Constr));
-
-            --  Otherwise the current constraint is an expression which yields
-            --  a Girder discriminant:
-
-            --    type Typ (D1 : ...; DN : ...) is
-            --      new Anc (Discr => <expression>) with ...
-            --                         ^^^^^^^^^^
-
-            --  Return the expression as this is the proper constraint of the
-            --  discriminant.
-
-            else
-               return Constr;
-            end if;
-         end Find_Constraint_Value;
-
-         --  Local variables
-
-         Constrs : constant Elist_Id := Stored_Constraint (Typ);
-
-         Constr_Elmt : Elmt_Id;
-         Pos         : Uint;
-         Typ_Discr   : Entity_Id;
-
-      --  Start of processing for Find_Discriminant_Value
-
-      begin
-         --  The algorithm for finding the value of a discriminant works as
-         --  follows. First, it recreates the derivation chain from Par_Typ
-         --  to Deriv_Typ as a list:
-
-         --     Par_Typ      (shown for completeness)
-         --        v
-         --    Ancestor_N  <-- head of chain
-         --        v
-         --    Ancestor_1
-         --        v
-         --    Deriv_Typ   <--  tail of chain
-
-         --  The algorithm then traces the fate of a parent discriminant down
-         --  the derivation chain. At each derivation level, the discriminant
-         --  may be either inherited or constrained.
-
-         --    1) Discriminant is inherited: there are two cases, depending on
-         --    which type is inheriting.
-
-         --    1.1) Deriv_Typ is inheriting:
-
-         --      type Ancestor (D_1 : ...) is tagged ...
-         --      type Deriv_Typ is new Ancestor ...
-
-         --    In this case the inherited discriminant is the final value of
-         --    the parent discriminant because the end of the derivation chain
-         --    has been reached.
-
-         --    1.2) Some other type is inheriting:
-
-         --      type Ancestor_1 (D_1 : ...) is tagged ...
-         --      type Ancestor_2 is new Ancestor_1 ...
-
-         --    In this case the algorithm continues to trace the fate of the
-         --    inherited discriminant down the derivation chain because it may
-         --    be further inherited or constrained.
-
-         --    2) Discriminant is constrained: there are three cases, depending
-         --    on what the constraint is.
-
-         --    2.1) The constraint is another discriminant (aka renaming):
-
-         --      type Ancestor_1 (D_1 : ...) is tagged ...
-         --      type Ancestor_2 (D_2 : ...) is new Ancestor_1 (D_1 => D_2) ...
-
-         --    In this case the constraining discriminant becomes the one to
-         --    track down the derivation chain. The algorithm already knows
-         --    that D_2 constrains D_1, therefore if the algorithm finds the
-         --    value of D_2, then this would also be the value for D_1.
-
-         --    2.2) The constraint is a name (aka Girder):
-
-         --      Name : ...
-         --      type Ancestor_1 (D_1 : ...) is tagged ...
-         --      type Ancestor_2 is new Ancestor_1 (D_1 => Name) ...
-
-         --    In this case the name is the final value of D_1 because the
-         --    discriminant cannot be further constrained.
-
-         --    2.3) The constraint is an expression (aka Girder):
-
-         --      type Ancestor_1 (D_1 : ...) is tagged ...
-         --      type Ancestor_2 is new Ancestor_1 (D_1 => 1 + 2) ...
-
-         --    Similar to 2.2, the expression is the final value of D_1
-
-         Pos := Uint_1;
-
-         --  When a derived type constrains its parent type, all constaints
-         --  appear in the Stored_Constraint list. Examine the list looking
-         --  for a positional match.
-
-         if Present (Constrs) then
-            Constr_Elmt := First_Elmt (Constrs);
-            while Present (Constr_Elmt) loop
-
-               --  The position of the current constraint matches that of the
-               --  ancestor discriminant.
-
-               if Pos = Discr_Pos then
-                  return Find_Constraint_Value (Node (Constr_Elmt));
-               end if;
-
-               Next_Elmt (Constr_Elmt);
-               Pos := Pos + 1;
-            end loop;
-
-         --  Otherwise the derived type does not constraint its parent type in
-         --  which case it inherits the parent discriminants.
-
-         else
-            Typ_Discr := First_Discriminant (Typ);
-            while Present (Typ_Discr) loop
-
-               --  The position of the current discriminant matches that of the
-               --  ancestor discriminant.
-
-               if Pos = Discr_Pos then
-                  return Find_Constraint_Value (Typ_Discr);
-               end if;
-
-               Next_Discriminant (Typ_Discr);
-               Pos := Pos + 1;
-            end loop;
-         end if;
-
-         --  A discriminant must always have a corresponding value. This is
-         --  either another discriminant, a name, or an expression.
-
-         pragma Assert (False);
-
-         return Empty;
-      end Find_Discriminant_Value;
-
-      -----------------------
-      -- Map_Discriminants --
-      -----------------------
-
-      procedure Map_Discriminants is
-         Deriv_Chain : constant Elist_Id := Build_Chain;
-
-         Discr     : Entity_Id;
-         Discr_Val : Node_Or_Entity_Id;
-
-      begin
-         --  Examine each discriminant of parent type Par_Typ and find a proper
-         --  value for it from the point of view of derived type Deriv_Typ.
-
-         if Has_Discriminants (Par_Typ) then
-            Discr := First_Discriminant (Par_Typ);
-            while Present (Discr) loop
-               Discr_Val :=
-                 Find_Discriminant_Value
-                   (Discr    => Discr,
-                    Typ_Elmt => First_Elmt (Deriv_Chain));
-
-               --  Create a mapping of the form:
-
-               --    parent type discriminant -> value
-
-               Type_Map.Set (Discr, Discr_Val);
-
-               Next_Discriminant (Discr);
-            end loop;
-         end if;
-      end Map_Discriminants;
-
-      --------------------
-      -- Map_Primitives --
-      --------------------
-
-      procedure Map_Primitives is
-         Deriv_Prim : Entity_Id;
-         Par_Prim   : Entity_Id;
-         Par_Prims  : Elist_Id;
-         Prim_Elmt  : Elmt_Id;
-
-      begin
-         --  Inspect the primitives of the derived type and determine whether
-         --  they relate to the primitives of the parent type. If there is a
-         --  meaningful relation, create a mapping of the form:
-
-         --    parent type primitive -> derived type primitive
-
-         if Present (Direct_Primitive_Operations (Deriv_Typ)) then
-            Prim_Elmt := First_Elmt (Direct_Primitive_Operations (Deriv_Typ));
-            while Present (Prim_Elmt) loop
-               Deriv_Prim := Node (Prim_Elmt);
-
-               if Is_Subprogram (Deriv_Prim)
-                 and then Find_Dispatching_Type (Deriv_Prim) = Deriv_Typ
-               then
-                  Add_Primitive (Deriv_Prim);
-               end if;
-
-               Next_Elmt (Prim_Elmt);
-            end loop;
-         end if;
-
-         --  If the parent operation is an interface operation, the overriding
-         --  indicator is not present. Instead, we get from the interface
-         --  operation the primitive of the current type that implements it.
-
-         if Is_Interface (Par_Typ) then
-            Par_Prims := Collect_Primitive_Operations (Par_Typ);
-
-            if Present (Par_Prims) then
-               Prim_Elmt := First_Elmt (Par_Prims);
-
-               while Present (Prim_Elmt) loop
-                  Par_Prim   := Node (Prim_Elmt);
-                  Deriv_Prim :=
-                    Find_Primitive_Covering_Interface (Deriv_Typ, Par_Prim);
-
-                  if Present (Deriv_Prim) then
-                     Type_Map.Set (Par_Prim, Deriv_Prim);
-                  end if;
-
-                  Next_Elmt (Prim_Elmt);
-               end loop;
-            end if;
-         end if;
-      end Map_Primitives;
-
-   --  Start of processing for Map_Types
-
-   begin
-      --  Nothing to do if there are no types to work with
-
-      if No (Par_Typ) or else No (Deriv_Typ) then
-         return;
-
-      --  Nothing to do if the mapping already exists
-
-      elsif Type_Map.Get (Par_Typ) = Deriv_Typ then
-         return;
-
-      --  Nothing to do if both types are not tagged. Note that untagged types
-      --  do not have primitive operations and their discriminants are already
-      --  handled by gigi.
-
-      elsif not Is_Tagged_Type (Par_Typ)
-        or else not Is_Tagged_Type (Deriv_Typ)
-      then
-         return;
-      end if;
-
-      --  Create a mapping of the form:
-
-      --    parent type -> derived type
-
-      --  to prevent any subsequent attempts to produce the same relations.
-
-      Type_Map.Set (Par_Typ, Deriv_Typ);
-
-      Map_Discriminants;
-      Map_Primitives;
-   end Map_Types;
-
    ----------------------------
    -- Matching_Standard_Type --
    ----------------------------
@@ -9803,280 +9520,6 @@ package body Exp_Util is
    <<Leave>>
       Scope_Suppress := Svg_Suppress;
    end Remove_Side_Effects;
-
-   ------------------------
-   -- Replace_References --
-   ------------------------
-
-   procedure Replace_References
-     (Expr      : Node_Id;
-      Par_Typ   : Entity_Id;
-      Deriv_Typ : Entity_Id;
-      Par_Obj   : Entity_Id := Empty;
-      Deriv_Obj : Entity_Id := Empty)
-   is
-      function Is_Deriv_Obj_Ref (Ref : Node_Id) return Boolean;
-      --  Determine whether node Ref denotes some component of Deriv_Obj
-
-      function Replace_Ref (Ref : Node_Id) return Traverse_Result;
-      --  Substitute a reference to an entity with the corresponding value
-      --  stored in table Type_Map.
-
-      ----------------------
-      -- Is_Deriv_Obj_Ref --
-      ----------------------
-
-      function Is_Deriv_Obj_Ref (Ref : Node_Id) return Boolean is
-         Par : constant Node_Id := Parent (Ref);
-
-      begin
-         --  Detect the folowing selected component form:
-
-         --    Deriv_Obj.(something)
-
-         return
-           Nkind (Par) = N_Selected_Component
-             and then Is_Entity_Name (Prefix (Par))
-             and then Entity (Prefix (Par)) = Deriv_Obj;
-      end Is_Deriv_Obj_Ref;
-
-      -----------------
-      -- Replace_Ref --
-      -----------------
-
-      function Replace_Ref (Ref : Node_Id) return Traverse_Result is
-         Context : constant Node_Id    := Parent (Ref);
-         Loc     : constant Source_Ptr := Sloc (Ref);
-         Ref_Id  : Entity_Id;
-         Result  : Traverse_Result;
-
-         New_Ref : Node_Id;
-         --  The new reference which is intended to substitute the old one
-
-         Old_Ref : Node_Id;
-         --  The reference designated for replacement. In certain cases this
-         --  may be a node other than Ref.
-
-         Val : Node_Or_Entity_Id;
-         --  The corresponding value of Ref from the type map
-
-      begin
-         --  Assume that the input reference is to be replaced and that the
-         --  traversal should examine the children of the reference.
-
-         Old_Ref := Ref;
-         Result  := OK;
-
-         --  The input denotes a meaningful reference
-
-         if Nkind (Ref) in N_Has_Entity and then Present (Entity (Ref)) then
-            Ref_Id := Entity (Ref);
-            Val    := Type_Map.Get (Ref_Id);
-
-            --  The reference has a corresponding value in the type map, a
-            --  substitution is possible.
-
-            if Present (Val) then
-
-               --  The reference denotes a discriminant
-
-               if Ekind (Ref_Id) = E_Discriminant then
-                  if Nkind (Val) in N_Entity then
-
-                     --  The value denotes another discriminant. Replace as
-                     --  follows:
-
-                     --    _object.Discr -> _object.Val
-
-                     if Ekind (Val) = E_Discriminant then
-                        New_Ref := New_Occurrence_Of (Val, Loc);
-
-                     --  Otherwise the value denotes the entity of a name which
-                     --  constraints the discriminant. Replace as follows:
-
-                     --    _object.Discr -> Val
-
-                     else
-                        pragma Assert (Is_Deriv_Obj_Ref (Old_Ref));
-
-                        New_Ref := New_Occurrence_Of (Val, Loc);
-                        Old_Ref := Parent (Old_Ref);
-                     end if;
-
-                  --  Otherwise the value denotes an arbitrary expression which
-                  --  constraints the discriminant. Replace as follows:
-
-                  --    _object.Discr -> Val
-
-                  else
-                     pragma Assert (Is_Deriv_Obj_Ref (Old_Ref));
-
-                     New_Ref := New_Copy_Tree (Val);
-                     Old_Ref := Parent (Old_Ref);
-                  end if;
-
-               --  Otherwise the reference denotes a primitive. Replace as
-               --  follows:
-
-               --    Primitive -> Val
-
-               else
-                  pragma Assert (Nkind (Val) in N_Entity);
-                  New_Ref := New_Occurrence_Of (Val, Loc);
-               end if;
-
-            --  The reference mentions the _object parameter of the parent
-            --  type's DIC procedure. Replace as follows:
-
-            --    _object -> _object
-
-            elsif Present (Par_Obj)
-              and then Present (Deriv_Obj)
-              and then Ref_Id = Par_Obj
-            then
-               New_Ref := New_Occurrence_Of (Deriv_Obj, Loc);
-
-               --  The reference to _object acts as an actual parameter in a
-               --  subprogram call which may be invoking a primitive of the
-               --  parent type:
-
-               --    Primitive (... _object ...);
-
-               --  The parent type primitive may not be overridden nor
-               --  inherited when it is declared after the derived type
-               --  definition:
-
-               --    type Parent is tagged private;
-               --    type Child is new Parent with private;
-               --    procedure Primitive (Obj : Parent);
-
-               --  In this scenario the _object parameter is converted to the
-               --  parent type.
-
-               if Nkind_In (Context, N_Function_Call,
-                                     N_Procedure_Call_Statement)
-                 and then No (Type_Map.Get (Entity (Name (Context))))
-               then
-                  New_Ref := Convert_To (Par_Typ, New_Ref);
-
-                  --  Do not process the generated type conversion because
-                  --  both the parent type and the derived type are in the
-                  --  Type_Map table. This will clobber the type conversion
-                  --  by resetting its subtype mark.
-
-                  Result := Skip;
-               end if;
-
-            --  Otherwise there is nothing to replace
-
-            else
-               New_Ref := Empty;
-            end if;
-
-            if Present (New_Ref) then
-               Rewrite (Old_Ref, New_Ref);
-
-               --  Update the return type when the context of the reference
-               --  acts as the name of a function call. Note that the update
-               --  should not be performed when the reference appears as an
-               --  actual in the call.
-
-               if Nkind (Context) = N_Function_Call
-                 and then Name (Context) = Old_Ref
-               then
-                  Set_Etype (Context, Etype (Val));
-               end if;
-            end if;
-         end if;
-
-         --  Reanalyze the reference due to potential replacements
-
-         if Nkind (Old_Ref) in N_Has_Etype then
-            Set_Analyzed (Old_Ref, False);
-         end if;
-
-         return Result;
-      end Replace_Ref;
-
-      procedure Replace_Refs is new Traverse_Proc (Replace_Ref);
-
-   --  Start of processing for Replace_References
-
-   begin
-      --  Map the attributes of the parent type to the proper corresponding
-      --  attributes of the derived type.
-
-      Map_Types
-        (Par_Typ   => Par_Typ,
-         Deriv_Typ => Deriv_Typ);
-
-      --  Inspect the input expression and perform substitutions where
-      --  necessary.
-
-      Replace_Refs (Expr);
-   end Replace_References;
-
-   -----------------------------
-   -- Replace_Type_References --
-   -----------------------------
-
-   procedure Replace_Type_References
-     (Expr   : Node_Id;
-      Typ    : Entity_Id;
-      Obj_Id : Entity_Id)
-   is
-      procedure Replace_Type_Ref (N : Node_Id);
-      --  Substitute a single reference of the current instance of type Typ
-      --  with a reference to Obj_Id.
-
-      ----------------------
-      -- Replace_Type_Ref --
-      ----------------------
-
-      procedure Replace_Type_Ref (N : Node_Id) is
-         Ref : Node_Id;
-
-      begin
-         --  Decorate the reference to Typ even though it may be rewritten
-         --  further down. This is done for two reasons:
-
-         --    * ASIS has all necessary semantic information in the original
-         --      tree.
-
-         --    * Routines which examine properties of the Original_Node have
-         --      some semantic information.
-
-         if Nkind (N) = N_Identifier then
-            Set_Entity (N, Typ);
-            Set_Etype  (N, Typ);
-
-         elsif Nkind (N) = N_Selected_Component then
-            Analyze (Prefix (N));
-            Set_Entity (Selector_Name (N), Typ);
-            Set_Etype  (Selector_Name (N), Typ);
-         end if;
-
-         --  Perform the following substitution:
-
-         --    Typ  ->  _object
-
-         Ref := Make_Identifier (Sloc (N), Chars (Obj_Id));
-         Set_Entity (Ref, Obj_Id);
-         Set_Etype  (Ref, Typ);
-
-         Rewrite (N, Ref);
-
-         Set_Comes_From_Source (N, True);
-      end Replace_Type_Ref;
-
-      procedure Replace_Type_Refs is
-        new Replace_Type_References_Generic (Replace_Type_Ref);
-
-   --  Start of processing for Replace_Type_References
-
-   begin
-      Replace_Type_Refs (Expr, Typ);
-   end Replace_Type_References;
 
    ---------------------------
    -- Represented_As_Scalar --
@@ -11521,15 +10964,6 @@ package body Exp_Util is
         and then Esize (Left_Typ) = Esize (Result_Typ);
    end Target_Has_Fixed_Ops;
 
-   -------------------
-   -- Type_Map_Hash --
-   -------------------
-
-   function Type_Map_Hash (Id : Entity_Id) return Type_Map_Header is
-   begin
-      return Type_Map_Header (Id mod Type_Map_Size);
-   end Type_Map_Hash;
-
    ------------------------------------------
    -- Type_May_Have_Bit_Aligned_Components --
    ------------------------------------------
@@ -11581,10 +11015,162 @@ package body Exp_Util is
       Subp_Id  : Entity_Id)
    is
    begin
-      Map_Types
+      Update_Primitives_Mapping_Of_Types
         (Par_Typ   => Find_Dispatching_Type (Inher_Id),
          Deriv_Typ => Find_Dispatching_Type (Subp_Id));
    end Update_Primitives_Mapping;
+
+   ----------------------------------------
+   -- Update_Primitives_Mapping_Of_Types --
+   ----------------------------------------
+
+   procedure Update_Primitives_Mapping_Of_Types
+     (Par_Typ   : Entity_Id;
+      Deriv_Typ : Entity_Id)
+   is
+      procedure Add_Primitive (Prim : Entity_Id);
+      --  Find a primitive in the inheritance/overriding chain starting from
+      --  Prim whose dispatching type is parent type Par_Typ and add a mapping
+      --  between the result and primitive Prim.
+
+      -------------------
+      -- Add_Primitive --
+      -------------------
+
+      procedure Add_Primitive (Prim : Entity_Id) is
+         function Ancestor_Primitive (Subp : Entity_Id) return Entity_Id;
+         --  Return the next ancestor primitive in the inheritance/overriding
+         --  chain of subprogram Subp. Return Empty if no such primitive is
+         --  available.
+
+         ------------------------
+         -- Ancestor_Primitive --
+         ------------------------
+
+         function Ancestor_Primitive (Subp : Entity_Id) return Entity_Id is
+            Inher_Prim : constant Entity_Id := Alias (Subp);
+            Over_Prim  : constant Entity_Id := Overridden_Operation (Subp);
+
+         begin
+            --  The current subprogram overrides an ancestor primitive
+
+            if Present (Over_Prim) then
+               return Over_Prim;
+
+            --  The current subprogram is an internally generated alias of an
+            --  inherited ancestor primitive.
+
+            elsif Present (Inher_Prim) then
+               return Inher_Prim;
+
+            --  Otherwise the current subprogram is the root of the inheritance
+            --  or overriding chain.
+
+            else
+               return Empty;
+            end if;
+         end Ancestor_Primitive;
+
+         --  Local variables
+
+         Par_Prim : Entity_Id;
+
+      --  Start of processing for Add_Primitive
+
+      begin
+         --  Inspect both the inheritance chain through the Alias attribute and
+         --  the overriding chain through the Overridden_Operation looking for
+         --  an ancestor primitive with the appropriate dispatching type.
+
+         Par_Prim := Prim;
+         while Present (Par_Prim) loop
+            exit when Find_Dispatching_Type (Par_Prim) = Par_Typ;
+            Par_Prim := Ancestor_Primitive (Par_Prim);
+         end loop;
+
+         --  Create a mapping of the form:
+
+         --    Parent type primitive -> derived type primitive
+
+         if Present (Par_Prim) then
+            Primitives_Mapping.Set (Par_Prim, Prim);
+         end if;
+      end Add_Primitive;
+
+      --  Local variables
+
+      Deriv_Prim : Entity_Id;
+      Par_Prim   : Entity_Id;
+      Par_Prims  : Elist_Id;
+      Prim_Elmt  : Elmt_Id;
+
+   --  Start of processing for Update_Primitives_Mapping_Of_Types
+
+   begin
+      --  Nothing to do if there are no types to work with
+
+      if No (Par_Typ) or else No (Deriv_Typ) then
+         return;
+
+      --  Nothing to do if the mapping already exists
+
+      elsif Primitives_Mapping.Get (Par_Typ) = Deriv_Typ then
+         return;
+      end if;
+
+      --  Create a mapping of the form:
+
+      --    Parent type -> Derived type
+
+      --  to prevent any subsequent attempts to produce the same relations.
+
+      Primitives_Mapping.Set (Par_Typ, Deriv_Typ);
+
+      --  Inspect the primitives of the derived type and determine whether they
+      --  relate to the primitives of the parent type. If there is a meaningful
+      --  relation, create a mapping of the form:
+
+      --    Parent type primitive -> Derived type primitive
+
+      if Present (Direct_Primitive_Operations (Deriv_Typ)) then
+         Prim_Elmt := First_Elmt (Direct_Primitive_Operations (Deriv_Typ));
+         while Present (Prim_Elmt) loop
+            Deriv_Prim := Node (Prim_Elmt);
+
+            if Is_Subprogram (Deriv_Prim)
+              and then Find_Dispatching_Type (Deriv_Prim) = Deriv_Typ
+            then
+               Add_Primitive (Deriv_Prim);
+            end if;
+
+            Next_Elmt (Prim_Elmt);
+         end loop;
+      end if;
+
+      --  If the parent operation is an interface operation, the overriding
+      --  indicator is not present. Instead, we get from the interface
+      --  operation the primitive of the current type that implements it.
+
+      if Is_Interface (Par_Typ) then
+         Par_Prims := Collect_Primitive_Operations (Par_Typ);
+
+         if Present (Par_Prims) then
+            Prim_Elmt := First_Elmt (Par_Prims);
+
+            while Present (Prim_Elmt) loop
+               Par_Prim   := Node (Prim_Elmt);
+               Deriv_Prim :=
+                 Find_Primitive_Covering_Interface (Deriv_Typ, Par_Prim);
+
+               if Present (Deriv_Prim) then
+                  Primitives_Mapping.Set (Par_Prim, Deriv_Prim);
+               end if;
+
+               Next_Elmt (Prim_Elmt);
+            end loop;
+         end if;
+      end if;
+   end Update_Primitives_Mapping_Of_Types;
 
    ----------------------------------
    -- Within_Case_Or_If_Expression --

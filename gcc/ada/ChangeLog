@@ -1,5 +1,12 @@
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_util.adb, exp_util.ads, sem_ch7.adb, sem_prag.adb, exp_ch3.adb:
+	Revert previous changes.
+	* scng.adb: Minor reformatting.
+	* s-stratt.ads: Fix unbalanced parens in comment.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch3.adb, exp_util.adb, sem_prag.adb, freeze.adb, sem_util.adb:
 	Minor reformatting.
 

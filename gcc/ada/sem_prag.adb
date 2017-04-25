@@ -13828,7 +13828,6 @@ package body Sem_Prag is
             Check_No_Identifiers;
             Check_At_Most_N_Arguments (1);
 
-            Typ  := Empty;
             Stmt := Prev (N);
             while Present (Stmt) loop
 
@@ -13869,14 +13868,6 @@ package body Sem_Prag is
 
                Stmt := Prev (Stmt);
             end loop;
-
-            --  The pragma does not apply to a legal construct, issue an error
-            --  and stop the analysis.
-
-            if No (Typ) then
-               Pragma_Misplaced;
-               return;
-            end if;
 
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
