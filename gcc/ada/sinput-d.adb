@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,8 +23,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Debug;   use Debug;
 with Osint;   use Osint;
 with Osint.C; use Osint.C;
+with Output;  use Output;
 
 package body Sinput.D is
 
@@ -36,11 +38,8 @@ package body Sinput.D is
    ------------------------
 
    procedure Close_Debug_Source is
-      S    : Source_File_Record renames Source_File.Table (Dfile);
+      SFR  : Source_File_Record renames Source_File.Table (Dfile);
       Src  : Source_Buffer_Ptr;
-
-      pragma Warnings (Off, S);
-
    begin
       Trim_Lines_Table (Dfile);
       Close_Debug_File;
@@ -49,8 +48,10 @@ package body Sinput.D is
       --  subsequent access.
 
       Read_Source_File
-        (S.Full_Debug_Name, S.Source_First, S.Source_Last, Src);
-      S.Source_Text := Src;
+        (SFR.Full_Debug_Name, SFR.Source_First, SFR.Source_Last, Src);
+      SFR.Source_Text := Src;
+      pragma Assert (SFR.Source_Text'First = SFR.Source_First);
+      pragma Assert (SFR.Source_Text'Last = SFR.Source_Last);
    end Close_Debug_Source;
 
    -------------------------
@@ -72,8 +73,10 @@ package body Sinput.D is
          S : Source_File_Record renames Source_File.Table (Dfile);
 
       begin
+         S.Index             := Dfile;
          S.Full_Debug_Name   := Create_Debug_File (S.File_Name);
          S.Debug_Source_Name := Strip_Directory (S.Full_Debug_Name);
+         S.Source_Text       := null;
          S.Source_First      := Loc;
          S.Source_Last       := Loc;
          S.Lines_Table       := null;
@@ -85,6 +88,14 @@ package body Sinput.D is
          Alloc_Line_Tables
            (S, Int (Source_File.Table (Source).Last_Source_Line * 3));
          S.Lines_Table (1) := Loc;
+
+         if Debug_Flag_L then
+            Write_Str ("Sinput.D.Create_Debug_Source: created source ");
+            Write_Int (Int (Dfile));
+            Write_Str (" for ");
+            Write_Str (Get_Name_String (S.Full_Debug_Name));
+            Write_Line ("");
+         end if;
       end;
    end Create_Debug_Source;
 

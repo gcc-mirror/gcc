@@ -2083,8 +2083,8 @@ package body Bindgen is
       --  handle use of Ada 2005 keywords as identifiers in Ada 95 mode. None
       --  of the Ada 2005 or Ada 2012 constructs are needed by the binder file.
 
-      WBI ("pragma Ada_95;");
       WBI ("pragma Warnings (Off);");
+      WBI ("pragma Ada_95;");
 
       --  If we are operating in Restrictions (No_Exception_Handlers) mode,
       --  then we need to make sure that the binder program is compiled with
@@ -2291,8 +2291,8 @@ package body Bindgen is
       --  handle use of Ada 2005 keywords as identifiers in Ada 95 mode. None
       --  of the Ada 2005/2012 constructs are needed by the binder file.
 
-      WBI ("pragma Ada_95;");
       WBI ("pragma Warnings (Off);");
+      WBI ("pragma Ada_95;");
 
       --  Output Source_File_Name pragmas which look like
 

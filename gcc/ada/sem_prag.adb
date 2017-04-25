@@ -11486,7 +11486,9 @@ package body Sem_Prag is
 
             --  Now set Ada 83 mode
 
-            if not Latest_Ada_Only then
+            if Latest_Ada_Only then
+               Error_Pragma ("??pragma% ignored");
+            else
                Ada_Version          := Ada_83;
                Ada_Version_Explicit := Ada_83;
                Ada_Version_Pragma   := N;
@@ -11520,7 +11522,9 @@ package body Sem_Prag is
 
             --  Now set Ada 95 mode
 
-            if not Latest_Ada_Only then
+            if Latest_Ada_Only then
+               Error_Pragma ("??pragma% ignored");
+            else
                Ada_Version          := Ada_95;
                Ada_Version_Explicit := Ada_95;
                Ada_Version_Pragma   := N;
@@ -11582,7 +11586,9 @@ package body Sem_Prag is
 
                --  Now set appropriate Ada mode
 
-               if not Latest_Ada_Only then
+               if Latest_Ada_Only then
+                  Error_Pragma ("??pragma% ignored");
+               else
                   Ada_Version          := Ada_2005;
                   Ada_Version_Explicit := Ada_2005;
                   Ada_Version_Pragma   := N;

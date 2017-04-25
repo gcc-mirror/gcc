@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,8 +25,9 @@
 
 --  This child package contains a procedure to load files
 
---  It is used by Sinput.P to load project files, and by GPrep to load
---  preprocessor definition files and input files.
+--  It is used by Sinput.P to load project files, by GPrep to load preprocessor
+--  definition files and input files, and by ALI.Util to compute checksums for
+--  source files.
 
 package Sinput.C is
 

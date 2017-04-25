@@ -2651,49 +2651,23 @@ package body Osint is
       --  Do the actual read operation
 
       declare
-         subtype Actual_Source_Buffer is Source_Buffer (Lo .. Hi);
-         --  Physical buffer allocated
-
-         type Actual_Source_Ptr is access Actual_Source_Buffer;
-         --  This is the pointer type for the physical buffer allocated
-
-         Actual_Ptr : constant Actual_Source_Ptr := new Actual_Source_Buffer;
-         --  And this is the actual physical buffer
-
-      begin
+         Var_Ptr : constant Source_Buffer_Ptr_Var :=
+           new Source_Buffer (Lo .. Hi);
          --  Allocate source buffer, allowing extra character at end for EOF
-
+      begin
          --  Some systems have file types that require one read per line,
          --  so read until we get the Len bytes or until there are no more
          --  characters.
 
          Hi := Lo;
          loop
-            Actual_Len := Read (Source_File_FD, Actual_Ptr (Hi)'Address, Len);
+            Actual_Len := Read (Source_File_FD, Var_Ptr (Hi)'Address, Len);
             Hi := Hi + Source_Ptr (Actual_Len);
             exit when Actual_Len = Len or else Actual_Len <= 0;
          end loop;
 
-         Actual_Ptr (Hi) := EOF;
-
-         --  Now we need to work out the proper virtual origin pointer to
-         --  return. This is exactly Actual_Ptr (0)'Address, but we have to
-         --  be careful to suppress checks to compute this address.
-
-         declare
-            pragma Suppress (All_Checks);
-
-            pragma Warnings (Off);
-            --  This use of unchecked conversion is aliasing safe
-
-            function To_Source_Buffer_Ptr is new
-              Unchecked_Conversion (Address, Source_Buffer_Ptr);
-
-            pragma Warnings (On);
-
-         begin
-            Src := To_Source_Buffer_Ptr (Actual_Ptr (0)'Address);
-         end;
+         Var_Ptr (Hi) := EOF;
+         Src := Var_Ptr.all'Access;
       end;
 
       --  Read is complete, get time stamp and close file and we are done
@@ -2703,6 +2677,10 @@ package body Osint is
       --  The status should never be False. But, if it is, what can we do?
       --  So, we don't test it.
 
+      --  ???We don't really need to return Hi anymore; We could get rid of
+      --  it. We could also make this into a function.
+
+      pragma Assert (Hi = Src'Last);
    end Read_Source_File;
 
    -------------------

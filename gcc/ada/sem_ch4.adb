@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -7521,6 +7521,15 @@ package body Sem_Ch4 is
    is
       Pref_Typ : constant Entity_Id := Etype (Prefix);
 
+      function Expr_Matches_In_Formal
+        (Subp : Entity_Id;
+         Par  : Node_Id) return Boolean;
+      --  Find formal corresponding to given indexed component that is an
+      --  actual in a call. Note that the enclosing subprogram call has not
+      --  beenanalyzed yet, and the parameter list is not normalized, so
+      --  that if the argument is a parameter association we must match it
+      --  by name and not by position.
+
       function Constant_Indexing_OK return Boolean;
       --  Constant_Indexing is legal if there is no Variable_Indexing defined
       --  for the type, or else node not a target of assignment, or an actual
@@ -7534,6 +7543,56 @@ package body Sem_Ch4 is
       --  name Nam. If the operation is overloaded, the reference carries all
       --  interpretations. Flag Is_Constant should be set when the context is
       --  constant indexing.
+
+      -----------------------------
+      -- Expr_Matches_In_Formal  --
+      -----------------------------
+
+      function Expr_Matches_In_Formal
+        (Subp : Entity_Id;
+         Par  : Node_Id) return Boolean
+      is
+         Actual : Node_Id;
+         Formal : Node_Id;
+
+      begin
+         Formal := First_Formal (Subp);
+         Actual := First  (Parameter_Associations ((Parent (Par))));
+
+         if Nkind (Par) /= N_Parameter_Association then
+
+            --  Match by position.
+
+            while Present (Actual) and then Present (Formal) loop
+               exit when Actual = Par;
+               Next (Actual);
+
+               if Present (Formal) then
+                  Next_Formal (Formal);
+
+               --  Otherwise this is a parameter mismatch, the error is
+               --  reported elsewhere, or else variable indexing is implied.
+
+               else
+                  return False;
+               end if;
+            end loop;
+
+         else
+            --  Match by name
+
+            while Present (Formal) loop
+               exit when Chars (Formal) = Chars (Selector_Name (Par));
+               Next_Formal (Formal);
+
+               if No (Formal) then
+                  return False;
+               end if;
+            end loop;
+         end if;
+
+         return Present (Formal) and then Ekind (Formal) = E_In_Parameter;
+      end Expr_Matches_In_Formal;
 
       --------------------------
       -- Constant_Indexing_OK --
@@ -7566,8 +7625,6 @@ package body Sem_Ch4 is
               and then Is_Entity_Name (Name (Parent (Par)))
             then
                declare
-                  Actual : Node_Id;
-                  Formal : Entity_Id;
                   Proc   : Entity_Id;
 
                begin
@@ -7582,33 +7639,21 @@ package body Sem_Ch4 is
                   if Is_Overloaded (Name (Parent (Par))) then
                      declare
                         Proc : constant Node_Id := Name (Parent (Par));
-                        A    : Node_Id;
-                        F    : Entity_Id;
                         I    : Interp_Index;
                         It   : Interp;
 
                      begin
                         Get_First_Interp (Proc, I, It);
                         while Present (It.Nam) loop
-                           F := First_Formal (It.Nam);
-                           A := First (Parameter_Associations (Parent (Par)));
-
-                           while Present (F) and then Present (A) loop
-                              if A = Par then
-                                 if Ekind (F) /= E_In_Parameter then
-                                    return False;
-                                 else
-                                    exit;  --  interpretation is safe
-                                 end if;
-                              end if;
-
-                              Next_Formal (F);
-                              Next_Actual (A);
-                           end loop;
+                           if not Expr_Matches_In_Formal (It.Nam, Par) then
+                              return False;
+                           end if;
 
                            Get_Next_Interp (I, It);
                         end loop;
                      end;
+
+                     --  All interpretations have a matching in-formal.
 
                      return True;
 
@@ -7623,27 +7668,7 @@ package body Sem_Ch4 is
                      end if;
                   end if;
 
-                  Formal := First_Formal (Proc);
-                  Actual := First_Actual (Parent (Par));
-
-                  --  Find corresponding actual
-
-                  while Present (Actual) loop
-                     exit when Actual = Par;
-                     Next_Actual (Actual);
-
-                     if Present (Formal) then
-                        Next_Formal (Formal);
-
-                     --  Otherwise this is a parameter mismatch, the error is
-                     --  reported elsewhere.
-
-                     else
-                        return False;
-                     end if;
-                  end loop;
-
-                  return Ekind (Formal) = E_In_Parameter;
+                  return Expr_Matches_In_Formal (Proc, Par);
                end;
 
             elsif Nkind (Parent (Par)) = N_Object_Renaming_Declaration then

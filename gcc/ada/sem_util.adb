@@ -21377,7 +21377,7 @@ package body Sem_Util is
    procedure Transfer_Entities (From : Entity_Id; To : Entity_Id) is
       procedure Set_Public_Status_Of (Id : Entity_Id);
       --  Set the Is_Public attribute of arbitrary entity Id by calling routine
-      --  Set_Public_Status. If successfull and Id denotes a record type, set
+      --  Set_Public_Status. If successful and Id denotes a record type, set
       --  the Is_Public attribute of its fields.
 
       --------------------------

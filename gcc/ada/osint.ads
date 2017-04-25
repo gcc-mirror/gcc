@@ -417,11 +417,8 @@ package Osint is
    --  positions other than the last source character are treated as blanks).
    --
    --  The logical lower bound of the source buffer is the input value of Lo,
-   --  and on exit Hi is set to the logical upper bound of the source buffer.
-   --  Note that the returned value in Src points to an array with a physical
-   --  lower bound of zero. This virtual origin addressing approach means that
-   --  a constrained array pointer can be used with a low bound of zero which
-   --  results in more efficient code.
+   --  and on exit Hi is set to the logical upper bound of the source buffer,
+   --  which is redundant with Src'Last.
    --
    --  If the given file cannot be opened, then the action depends on whether
    --  this file is the current main unit (i.e. its name matches the name

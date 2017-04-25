@@ -196,23 +196,14 @@ package Types is
    --  which are one greater than the previous upper bound, rounded up to
    --  a multiple of Source_Align.
 
-   subtype Big_Source_Buffer is Text_Buffer (0 .. Text_Ptr'Last);
-   --  This is a virtual type used as the designated type of the access type
-   --  Source_Buffer_Ptr, see Osint.Read_Source_File for details.
-
-   type Source_Buffer_Ptr is access constant Big_Source_Buffer;
-   --  Pointer to source buffer. We use virtual origin addressing for source
-   --  buffers, with thin pointers. The pointer points to a virtual instance
-   --  of type Big_Source_Buffer, where the actual type is in fact of type
-   --  Source_Buffer. The address is adjusted so that the virtual origin
-   --  addressing works correctly. See Osint.Read_Source_Buffer for further
-   --  details. Again, as for Big_String_Ptr, we should never allocate using
-   --  this type, but we don't give a storage size clause of zero, since we
-   --  may end up doing deallocations of instances allocated manually.
+   type Source_Buffer_Ptr_Var is access all Source_Buffer;
+   type Source_Buffer_Ptr is access constant Source_Buffer;
+   --  Pointer to source buffer. Source_Buffer_Ptr_Var is used for allocation
+   --  and deallocation; Source_Buffer_Ptr is used for all other uses of source
+   --  buffers.
 
    function Null_Source_Buffer_Ptr (X : Source_Buffer_Ptr) return Boolean;
-   --  True if X = null. ???This usage of "=" is wrong, because the zero-origin
-   --  pointer could happen to be equal to null. We need to eliminate this.
+   --  True if X = null
 
    function Source_Buffer_Ptr_Equal (X, Y : Source_Buffer_Ptr) return Boolean
      renames "=";
@@ -220,10 +211,11 @@ package Types is
    --  Do not call this elsewhere.
 
    function "=" (X, Y : Source_Buffer_Ptr) return Boolean is abstract;
-   --  Make "=" abstract, to make sure no one calls it. Note that this makes
-   --  "/=" abstract as well. Calls to "=" on Source_Buffer_Ptr are always
-   --  wrong, because two different arrays allocated at two different addresses
-   --  can have the same virtual origin.
+   --  Make "=" abstract. Note that this makes "/=" abstract as well. This is a
+   --  vestige of the zero-origin array indexing we used to use, where "=" is
+   --  always wrong (including the one in Null_Source_Buffer_Ptr). We keep this
+   --  just because we never need to compare Source_Buffer_Ptrs other than to
+   --  null.
 
    subtype Source_Ptr is Text_Ptr;
    --  Type used to represent a source location, which is a subscript of a
@@ -580,7 +572,7 @@ package Types is
    No_Unit : constant Unit_Number_Type := -1;
    --  Special value used to signal no unit
 
-   type Source_File_Index is new Int range -1 .. Int'Last;
+   type Source_File_Index is new Int range 0 .. Int'Last;
    --  Type used to index the source file table (see package Sinput)
 
    No_Source_File : constant Source_File_Index := 0;
