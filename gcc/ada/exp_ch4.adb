@@ -4718,9 +4718,33 @@ package body Exp_Ch4 is
    ------------------------------
 
    procedure Expand_N_Case_Expression (N : Node_Id) is
-      Loc        : constant Source_Ptr := Sloc (N);
-      Par        : constant Node_Id    := Parent (N);
-      Typ        : constant Entity_Id  := Etype (N);
+      function Is_Copy_Type (Typ : Entity_Id) return Boolean;
+      --  Return True if we can copy objects of this type when expanding a case
+      --  expression.
+
+      ------------------
+      -- Is_Copy_Type --
+      ------------------
+
+      function Is_Copy_Type (Typ : Entity_Id) return Boolean is
+      begin
+         --  if Minimize_Expression_With_Actions is True, we can afford to copy
+         --  large objects, as long as they are constrained and not limited.
+
+         return
+           Is_Elementary_Type (Underlying_Type (Typ))
+             or else
+               (Minimize_Expression_With_Actions
+                 and then Is_Constrained (Underlying_Type (Typ))
+                 and then not Is_Limited_View (Underlying_Type (Typ)));
+      end Is_Copy_Type;
+
+      --  Local variables
+
+      Loc : constant Source_Ptr := Sloc (N);
+      Par : constant Node_Id    := Parent (N);
+      Typ : constant Entity_Id  := Etype (N);
+
       Acts       : List_Id;
       Alt        : Node_Id;
       Case_Stmt  : Node_Id;
@@ -4735,6 +4759,8 @@ package body Exp_Ch4 is
       Optimize_Return_Stmt : Boolean := False;
       --  Flag set when the case expression can be optimized in the context of
       --  a simple return statement.
+
+   --  Start of processing for Expand_N_Case_Expression
 
    begin
       --  Check for MINIMIZED/ELIMINATED overflow mode
@@ -4792,6 +4818,9 @@ package body Exp_Ch4 is
 
       --  This approach avoids extra copies of potentially large objects. It
       --  also allows handling of values of limited or unconstrained types.
+      --  Note that we do the copy also for constrained, non limited types
+      --  when minimizing expressions with actions (e.g. when generating C
+      --  code) since it allows us to do the optimization below in more cases.
 
       --  Small optimization: when the case expression appears in the context
       --  of a simple return statement, expand into
@@ -4817,13 +4846,13 @@ package body Exp_Ch4 is
       Set_From_Conditional_Expression (Case_Stmt);
       Acts := New_List;
 
-      --  Scalar case
+      --  Scalar/Copy case
 
-      if Is_Elementary_Type (Typ) then
+      if Is_Copy_Type (Typ) then
          Target_Typ := Typ;
 
          --  ??? Do not perform the optimization when the return statement is
-         --  within a predicate function as this causes supurious errors. Could
+         --  within a predicate function as this causes spurious errors. Could
          --  this be a possible mismatch in handling this case somewhere else
          --  in semantic analysis?
 
@@ -4883,7 +4912,7 @@ package body Exp_Ch4 is
             --  Generate:
             --    AX'Unrestricted_Access
 
-            if not Is_Elementary_Type (Typ) then
+            if not Is_Copy_Type (Typ) then
                Alt_Expr :=
                  Make_Attribute_Reference (Alt_Loc,
                    Prefix         => Relocate_Node (Alt_Expr),
@@ -4947,7 +4976,7 @@ package body Exp_Ch4 is
       else
          Append_To (Acts, Case_Stmt);
 
-         if Is_Elementary_Type (Typ) then
+         if Is_Copy_Type (Typ) then
             Expr := New_Occurrence_Of (Target, Loc);
 
          else

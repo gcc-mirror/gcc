@@ -1,3 +1,8 @@
+2017-04-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Case_Expression): Take
+	Minimize_Expression_With_Actions into account when possible.
+
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_util.adb (Known_Non_Null): Moved to Sem_Util.
