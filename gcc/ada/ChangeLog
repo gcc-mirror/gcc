@@ -1,5 +1,41 @@
 2017-04-25  Yannick Moy  <moy@adacore.com>
 
+	* freeze.adb (Freeze_Record_Type): Remove obsolete
+	rule on volatile tagged record restriction on SPARK code.
+
+2017-04-25  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (minor) Fix SPARK RM reference.
+
+2017-04-25  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb, sem_util.ads (Unique_Defining_Entity): Update
+	comment to reflect which entity is chosen as unique entity.
+	(Unique_Entity): Return full view instead of private spec for
+	protected type or task type. Fix possible incorrect access when
+	called on entry.
+
+2017-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Set_Slice_Subtype): Treat specially bit-packed
+	array types only instead of all packed array types.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Conforming_Types): If type of formal as a specified
+	dimension system, verify that dimensions of both match.
+	(Check_Conformance): Add error message in case of dimension
+	mismatch.
+	* sem_dim.ads, sem_dim.adb (Dimensions_Match): New utility
+	predicate.
+
+2017-04-25  Arnaud Charlet  <charlet@adacore.com trojanek>
+
+	* gnatxref.adb, gnatfind.adb: Avoid using the term project file,
+	confusing.
+
+2017-04-25  Yannick Moy  <moy@adacore.com>
+
 	* sem_util.adb: Minor refactoring.
 	* freeze.adb (Freeze_Record_Type): Fix checking of SPARK RM 7.1.3(5).
 

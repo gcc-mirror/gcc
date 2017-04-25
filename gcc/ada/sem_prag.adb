@@ -7084,7 +7084,7 @@ package body Sem_Prag is
          --  The following check is only relevant when SPARK_Mode is on as
          --  this is not a standard Ada legality rule. Pragma Volatile can
          --  only apply to a full type declaration or an object declaration
-         --  (SPARK RM C.6(1)). Original_Node is necessary to account for
+         --  (SPARK RM 7.1.3(2)). Original_Node is necessary to account for
          --  untagged derived types that are rewritten as subtypes of their
          --  respective root types.
 
