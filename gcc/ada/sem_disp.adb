@@ -575,7 +575,7 @@ package body Sem_Disp is
             --  but will be legal in overridings of the operation.
 
             elsif (Is_Subprogram (Scop)
-                  or else Chars (Scop) = Name_Postcondition)
+                    or else Chars (Scop) = Name_Postcondition)
               and then
                 (Is_Abstract_Subprogram (Scop)
                   or else

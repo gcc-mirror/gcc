@@ -1737,19 +1737,21 @@ package body Sem_Ch3 is
                     and then Has_Non_Trivial_Precondition (Iface_Prim)
                   then
                      if Is_Abstract_Subprogram (Prim)
-                       or else (Ekind (Prim) = E_Procedure
-                         and then
-                           Nkind (Parent (Prim)) = N_Procedure_Specification
-                         and then Null_Present (Parent (Prim)))
+                       or else
+                         (Ekind (Prim) = E_Procedure
+                           and then Nkind (Parent (Prim)) =
+                                      N_Procedure_Specification
+                           and then Null_Present (Parent (Prim)))
                      then
                         null;
 
                      --  The inherited operation must be overridden
 
                      elsif not Comes_From_Source (Prim) then
-                        Error_Msg_NE ("&inherits non-conforming preconditions "
-                          & "and must be overridden (RM 6.1.1 (10-16)",
-                            Parent (Tagged_Type), Prim);
+                        Error_Msg_NE
+                          ("&inherits non-conforming preconditions and must "
+                           & "be overridden (RM 6.1.1 (10-16)",
+                           Parent (Tagged_Type), Prim);
                      end if;
                   end if;
                end;

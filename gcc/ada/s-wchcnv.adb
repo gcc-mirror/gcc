@@ -93,7 +93,7 @@ package body System.WCh_Cnv is
          W := Shift_Left (W, 6) or (U and 2#00111111#);
       end Get_UTF_Byte;
 
-   --  Start of processing for Char_Sequence_To_Wide
+   --  Start of processing for Char_Sequence_To_UTF_32
 
    begin
       case EM is

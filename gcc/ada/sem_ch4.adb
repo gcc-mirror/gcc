@@ -8448,7 +8448,12 @@ package body Sem_Ch4 is
                 Attribute_Name => Name_Access,
                 Prefix => Relocate_Node (Obj)));
 
-            if not Is_Aliased_View (Obj) then
+            --  If the object is not overloaded verify that taking access of
+            --  it is legal. Otherwise check is made during resolution.
+
+            if not Is_Overloaded (Obj)
+              and then not Is_Aliased_View (Obj)
+            then
                Error_Msg_NE
                  ("object in prefixed call to & must be aliased "
                   & "(RM 4.1.3 (13 1/2))", Prefix (First_Actual), Subprog);

@@ -1,5 +1,35 @@
 2017-04-25  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_util.adb (Same_Value): String literals are compile-time
+	values, and comparing them must use Expr_Value_S.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Complete_Object_Interpretation): If an explicit
+	dereference is introduced for the object, and the object is
+	overloaded, do not check whether it is aliased, because it may
+	include an implicit dereference.
+	* sem_type.adb (Disambiguate): If two interpretations are access
+	attribute types with the same designated type keep either of
+	them and do not report an ambiguity.  A true ambiguity will be
+	reported elsewhere.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* a-numeri.ads: Change the encoding of Greek letter Pi from
+	brackets encoding to UTF-8.  Use pragma Wide_Character_Encoding
+	to indicate the encoding. We considered using a byte order mark
+	(BOM), but that causes various trouble (misc software eats the
+	BOM, if you have a patch with a BOM, then it's not at the start
+	of the patch, so it's not a BOM, the BOM affects with-ing files,
+	etc.).
+	* scng.adb, s-wchcnv.adb: Minor.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb, sem_ch8.adb, sem_disp.adb: Minor reformatting.
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch3.adb (Add_Internal_Interface_Entities): Move
 	Has_Non_Trivial_Precondition to sem_util. for use elsewhere.
 	Improve error message on operations that inherit non-conforming

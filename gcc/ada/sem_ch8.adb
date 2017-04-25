@@ -3197,11 +3197,12 @@ package body Sem_Ch8 is
          begin
             if Present (Prev)
               and then
-                 (Has_Non_Trivial_Precondition (Prev)
-                    or else Has_Non_Trivial_Precondition (Old_S))
+                (Has_Non_Trivial_Precondition (Prev)
+                  or else Has_Non_Trivial_Precondition (Old_S))
             then
-               Error_Msg_NE ("conflicting inherited classwide preconditions "
-                 & "in renaming of& (RM 6.1.1 (17)", N, Old_S);
+               Error_Msg_NE
+                 ("conflicting inherited classwide preconditions in renaming "
+                  & "of& (RM 6.1.1 (17)", N, Old_S);
             end if;
          end;
       end if;

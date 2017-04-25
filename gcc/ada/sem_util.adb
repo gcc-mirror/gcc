@@ -20102,9 +20102,17 @@ package body Sem_Util is
    begin
       if Compile_Time_Known_Value (Node1)
         and then Compile_Time_Known_Value (Node2)
-        and then Expr_Value (Node1) = Expr_Value (Node2)
       then
-         return True;
+         --  Handle properly compile-time expressions that are not
+         --  scalar.
+
+         if Is_String_Type (Etype (Node1)) then
+            return Expr_Value_S (Node1) = Expr_Value_S (Node2);
+
+         else
+            return Expr_Value (Node1) = Expr_Value (Node2);
+         end if;
+
       elsif Same_Object (Node1, Node2) then
          return True;
       else
