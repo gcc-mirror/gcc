@@ -1,3 +1,7 @@
+2017-04-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in: Cleanup VxWorks targets.
+
 2017-04-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fname.adb (Is_Internal_File_Name): Arrange for the slices to
