@@ -2005,7 +2005,7 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
   sigdelset (&mask, sig);
   sigprocmask (SIG_SETMASK, &mask, NULL);
 
-#if defined (__ARMEL__) || defined (__PPC__) || defined (__i386__) || defined (__x86_64__)
+#if defined (__ARMEL__) || (defined (__PPC__) && !defined (__PPC64__)) || defined (__i386__) || defined (__x86_64__)
   /* On certain targets, kernel mode, we process signals through a Call Frame
      Info trampoline, voiding the need for myriads of fallback_frame_state
      variants in the ZCX runtime.  We have no simple way to distinguish ZCX

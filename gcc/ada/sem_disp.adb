@@ -1090,6 +1090,11 @@ package body Sem_Disp is
          --  3. Subprograms associated with stream attributes (built by
          --     New_Stream_Subprogram)
 
+         --  4. Wrapper built for inherited operations with inherited class-
+         --     wide conditions, where the conditions include calls to other
+         --     overridden primitives. The wrappers include checks on these
+         --     modified conditions. (AI12-113).
+
          if Present (Old_Subp)
            and then Present (Overridden_Operation (Subp))
            and then Is_Dispatching_Operation (Old_Subp)
@@ -1098,14 +1103,18 @@ package body Sem_Disp is
               ((Ekind (Subp) = E_Function
                  and then Is_Dispatching_Operation (Old_Subp)
                  and then Is_Null_Extension (Base_Type (Etype (Subp))))
+
               or else
                (Ekind (Subp) = E_Procedure
                  and then Is_Dispatching_Operation (Old_Subp)
                  and then Present (Alias (Old_Subp))
                  and then Is_Null_Interface_Primitive
                              (Ultimate_Alias (Old_Subp)))
+
               or else Get_TSS_Name (Subp) = TSS_Stream_Read
-              or else Get_TSS_Name (Subp) = TSS_Stream_Write);
+              or else Get_TSS_Name (Subp) = TSS_Stream_Write
+
+              or else Present (Contract (Overridden_Operation (Subp))));
 
             Check_Controlling_Formals (Tagged_Type, Subp);
             Override_Dispatching_Operation (Tagged_Type, Old_Subp, Subp);

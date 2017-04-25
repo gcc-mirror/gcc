@@ -227,6 +227,14 @@ package Sem_Util is
    --  the compilation unit, and install it in the Elaboration_Entity field
    --  of Spec_Id, the entity for the compilation unit.
 
+   function Build_Overriding_Spec
+     (Op  : Node_Id;
+      Typ : Entity_Id) return Node_Id;
+   --  Build a subprogram specification for the wrapper of an inherited
+   --  operation with a modified pre- or postcondition (See AI12-0113).
+   --  Op is the parent operation, and Typ is the descendant type that
+   --  inherits the operation.
+
    procedure Build_Explicit_Dereference
      (Expr : Node_Id;
       Disc : Entity_Id);

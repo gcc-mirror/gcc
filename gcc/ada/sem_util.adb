@@ -1581,6 +1581,40 @@ package body Sem_Util is
       Set_Etype (Expr, Designated_Type (Etype (Disc)));
    end Build_Explicit_Dereference;
 
+   ---------------------------
+   -- Build_Overriding_Spec --
+   ---------------------------
+
+   function Build_Overriding_Spec
+     (Op  : Entity_Id;
+      Typ : Entity_Id) return Node_Id
+   is
+      Loc     : constant Source_Ptr := Sloc (Typ);
+      Par_Typ : constant Entity_Id := Find_Dispatching_Type (Op);
+      Spec    : constant Node_Id := Specification (Unit_Declaration_Node (Op));
+
+      Formal_Spec : Node_Id;
+      Formal_Type : Node_Id;
+      New_Spec    : Node_Id;
+   begin
+      New_Spec := Copy_Subprogram_Spec (Spec);
+      Formal_Spec := First (Parameter_Specifications (New_Spec));
+      while Present (Formal_Spec) loop
+         Formal_Type := Parameter_Type (Formal_Spec);
+         if Is_Entity_Name (Formal_Type)
+           and then Entity (Formal_Type) = Par_Typ
+         then
+            Rewrite (Formal_Type, New_Occurrence_Of (Typ, Loc));
+         end if;
+
+         --  Nothing needs to be done for access parameters.
+
+         Next (Formal_Spec);
+      end loop;
+
+      return New_Spec;
+   end Build_Overriding_Spec;
+
    -----------------------------------
    -- Cannot_Raise_Constraint_Error --
    -----------------------------------
