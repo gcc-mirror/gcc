@@ -1,3 +1,12 @@
+2017-04-25  Marek Polacek  <polacek@redhat.com>
+
+	2017-04-25  Marek Polacek  <polacek@redhat.com>
+	Backport from mainline
+
+	PR sanitizer/80349
+	* fold-const.c (fold_binary_loc) <case BIT_IOR_EXPR>: Convert arg0's
+	first argument to type.
+
 2017-04-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
