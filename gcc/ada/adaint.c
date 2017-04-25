@@ -2315,7 +2315,7 @@ __gnat_dup2 (int oldfd ATTRIBUTE_UNUSED, int newfd ATTRIBUTE_UNUSED)
      RTPs.  */
   return -1;
 #elif defined (__PikeOS__)
-  /* Not supported.  */
+  /* Not supported. */
   return -1;
 #elif defined (_WIN32)
   /* Special case when oldfd and newfd are identical and are the standard
@@ -2672,6 +2672,26 @@ __gnat_portable_wait (int *process_status)
 #else
 
   pid = waitpid (-1, &status, 0);
+  status = status & 0xffff;
+#endif
+
+  *process_status = status;
+  return pid;
+}
+
+int
+__gnat_portable_no_block_wait (int *process_status)
+{
+  int status = 0;
+  int pid = 0;
+
+#if defined (__vxworks) || defined (__PikeOS__) || defined (_WIN32)
+  /* Not supported. */
+  status = -1;
+
+#else
+
+  pid = waitpid (-1, &status, WNOHANG);
   status = status & 0xffff;
 #endif
 

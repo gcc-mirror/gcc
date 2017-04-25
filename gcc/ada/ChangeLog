@@ -1,5 +1,34 @@
 2017-04-25  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_prag.adb (Inherits_Class_Wide_Pre): Cleanup code, handle
+	properly type derived from generic formal types, to handle
+	properly modified version of ACATS 4.1B B611017.
+
+2017-04-25  Javier Miranda  <miranda@adacore.com>
+
+	* exp_unst.adb (Subp_Index): Adding missing
+	support for renamings and functions that return a constrained
+	array type (i.e. functions for which the frontend built a
+	procedure with an extra out parameter).
+
+2017-04-25  Pascal Obry  <obry@adacore.com>
+
+	* s-string.adb: Minor code clean-up.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* s-os_lib.ads, s-os_lib.adb (Non_Blocking_Wait_Process): New
+	procedure.
+	* adaint.h, adaint.c (__gnat_portable_no_block_wait): C support
+	function for Non_Blocking_Wait_Process.
+
+2017-04-25  Bob Duff  <duff@adacore.com>
+
+	* prep.adb (Preprocess): Remove incorrect
+	Assert. Current character can be ASCII.CR.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_prag.adb (Set_Convention_From_Pragma): Cleanup code for
 	convention Stdcall, which has a number of exceptions. Convention
 	is legal on a component declaration whose type is an anonymous

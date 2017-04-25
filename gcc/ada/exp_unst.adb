@@ -35,6 +35,7 @@ with Opt;      use Opt;
 with Output;   use Output;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
+with Sem_Aux;  use Sem_Aux;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Mech; use Sem_Mech;
 with Sem_Res;  use Sem_Res;
@@ -176,9 +177,24 @@ package body Exp_Unst is
    ----------------
 
    function Subp_Index (Sub : Entity_Id) return SI_Type is
+      E : Entity_Id := Sub;
+
    begin
-      pragma Assert (Is_Subprogram (Sub));
-      return SI_Type (UI_To_Int (Subps_Index (Sub)));
+      pragma Assert (Is_Subprogram (E));
+
+      if Subps_Index (E) = Uint_0 then
+         E := Ultimate_Alias (E);
+
+         if Ekind (E) = E_Function
+           and then Rewritten_For_C (E)
+           and then Present (Corresponding_Procedure (E))
+         then
+            E := Corresponding_Procedure (E);
+         end if;
+      end if;
+
+      pragma Assert (Subps_Index (E) /= Uint_0);
+      return SI_Type (UI_To_Int (Subps_Index (E)));
    end Subp_Index;
 
    -----------------------

@@ -4218,10 +4218,10 @@ package body Sem_Prag is
          -----------------------------
 
          function Inherits_Class_Wide_Pre (E : Entity_Id) return Boolean is
-            Prev : Entity_Id := Overridden_Operation (E);
+            Typ  : constant Entity_Id := Find_Dispatching_Type (E);
+            Prev : Entity_Id          := Overridden_Operation (E);
             Cont : Node_Id;
             Prag : Node_Id;
-            Typ  : Entity_Id;
 
          begin
             --  Check ancestors on the overriding operation to examine the
@@ -4240,14 +4240,21 @@ package body Sem_Prag is
                   end loop;
                end if;
 
-               Prev := Overridden_Operation (Prev);
+               --  For a type derived from a generic formal type, the
+               --  operation inheriting the condition is a renaming, not
+               --  an overriding of the operation of the formal.
+
+               if Is_Generic_Type (Find_Dispatching_Type (Prev)) then
+                  Prev := Alias (Prev);
+               else
+                  Prev := Overridden_Operation (Prev);
+               end if;
             end loop;
 
             --  If the controlling type of the subprogram has progenitors, an
             --  interface operation implemented by the current operation may
             --  have a class-wide precondition.
 
-            Typ := Find_Dispatching_Type (E);
             if Has_Interfaces (Typ) then
                declare
                   Elmt      : Elmt_Id;
@@ -4414,7 +4421,6 @@ package body Sem_Prag is
 
             declare
                E : constant Entity_Id := Defining_Entity (Subp_Decl);
-               H : constant Entity_Id := Homonym (E);
 
             begin
                if Class_Present (N)
@@ -4425,22 +4431,6 @@ package body Sem_Prag is
                   Error_Msg_N
                     ("illegal class-wide precondition on overriding operation",
                      Corresponding_Aspect (N));
-
-               --  If the operation is declared in the private part of an
-               --  instance it may not override any visible operations, but
-               --  still have a parent operation that carries a precondition.
-
-               elsif In_Instance
-                 and then In_Private_Part (Current_Scope)
-                 and then Present (H)
-                 and then Scope (E) = Scope (H)
-                 and then Is_Inherited_Operation (H)
-                 and then Present (Overridden_Operation (H))
-                 and then not Inherits_Class_Wide_Pre (H)
-               then
-                  Error_Msg_N
-                    ("illegal class-wide precondition on overriding "
-                     & "operation in instance", Corresponding_Aspect (N));
                end if;
             end;
 

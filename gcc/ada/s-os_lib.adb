@@ -1927,6 +1927,28 @@ package body System.OS_Lib is
       return Result;
    end Non_Blocking_Spawn;
 
+   -------------------------------
+   -- Non_Blocking_Wait_Process --
+   -------------------------------
+
+   procedure Non_Blocking_Wait_Process
+     (Pid : out Process_Id; Success : out Boolean)
+   is
+      Status : Integer;
+
+      function Portable_No_Block_Wait (S : Address) return Process_Id;
+      pragma Import
+        (C, Portable_No_Block_Wait, "__gnat_portable_no_block_wait");
+
+   begin
+      Pid := Portable_No_Block_Wait (Status'Address);
+      Success := (Status = 0);
+
+      if Pid = 0 then
+         Pid := Invalid_Pid;
+      end if;
+   end Non_Blocking_Wait_Process;
+
    -------------------------
    -- Normalize_Arguments --
    -------------------------
