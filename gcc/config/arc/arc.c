@@ -6302,10 +6302,28 @@ arc_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   fnaddr = XEXP (DECL_RTL (function), 0);
 
   if (arc_is_longcall_p (fnaddr))
-    fputs ("\tj\t", file);
+    {
+      if (flag_pic)
+	{
+	  asm_fprintf (file, "\tld\t%s, [pcl, @",
+		       ARC_TEMP_SCRATCH_REG);
+	  assemble_name (file, XSTR (fnaddr, 0));
+	  fputs ("@gotpc]\n", file);
+	  asm_fprintf (file, "\tj\t[%s]", ARC_TEMP_SCRATCH_REG);
+	}
+      else
+	{
+	  fputs ("\tj\t@", file);
+	  assemble_name (file, XSTR (fnaddr, 0));
+	}
+    }
   else
-    fputs ("\tb\t", file);
-  assemble_name (file, XSTR (fnaddr, 0));
+    {
+      fputs ("\tb\t@", file);
+      assemble_name (file, XSTR (fnaddr, 0));
+      if (flag_pic)
+	fputs ("@plt\n", file);
+    }
   fputc ('\n', file);
 }
 
