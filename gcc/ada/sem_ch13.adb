@@ -51,6 +51,7 @@ with Sem_Aux;  use Sem_Aux;
 with Sem_Case; use Sem_Case;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
+with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Dim;  use Sem_Dim;
 with Sem_Disp; use Sem_Disp;
@@ -1180,10 +1181,42 @@ package body Sem_Ch13 is
    --  Start of processing for Analyze_Aspects_At_Freeze_Point
 
    begin
-      --  Must be visible in current scope
+      --  Must be visible in current scope, but if this is a type from
+      --  a nested package it may be frozen from an object declaration
+      --  in the enclosing scope, so install the package declarations
+      --  to complete the analysis of the aspects, if any. If the package
+      --  itself is frozen the type will have been frozen as well.
 
       if not Scope_Within_Or_Same (Current_Scope, Scope (E)) then
-         return;
+         if Is_Type (E)
+           and then Ekind (Scope (E)) = E_Package
+           and then not Is_Frozen (Scope (E))
+         then
+            declare
+               Pack : constant Entity_Id := Scope (E);
+
+            begin
+               Push_Scope (Pack);
+               Install_Visible_Declarations (Pack);
+               Install_Private_Declarations (Pack);
+               Analyze_Aspects_At_Freeze_Point (E);
+
+               if Is_Private_Type (E)
+                 and then Present (Full_View (E))
+               then
+                  Analyze_Aspects_At_Freeze_Point (Full_View (E));
+               end if;
+
+               End_Package_Scope (Pack);
+            end;
+
+         else
+
+            --  Aspects from other entities in different contexts are
+            --  analyzed elsewhere.
+
+            return;
+         end if;
       end if;
 
       --  Look for aspect specification entries for this entity

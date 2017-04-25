@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1975,7 +1975,9 @@ package body Sem_Cat is
             U_Typ := Typ;
          end if;
 
-         if Comes_From_Source (Typ) and then Is_Type (Typ) then
+         if Comes_From_Source (Typ) and then Is_Type (Typ)
+           and then Ekind (Typ) /= E_Incomplete_Type
+         then
 
             --  Check that the type can be meaningfully transmitted to another
             --  partition (E.2.2(8)).

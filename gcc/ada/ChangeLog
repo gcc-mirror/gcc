@@ -1,3 +1,33 @@
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_warn.adb (Warn_On_Constant_Valid_Condition): Do not consider
+	comparisons between non- scalar expressions expressions because
+	their values cannot be invalidated.
+	* sem_warn.ads (Warn_On_Constant_Valid_Condition): Update the
+	comment on usage.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* par_sco.adb: Minor reformatting.
+
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspects_At_Freeze_Point): If entity
+	is a type from an unfrozen local package, install package to
+	complete the analysis of delayed aspects of the type.
+
+2017-04-25  Tristan Gingold  <gingold@adacore.com>
+
+	* bingen.adb (System_Version_Control_Used): New variable.
+	(Resolve_Binder_Options): Set the above variable.
+	(Gen_Output_File_Ada): Conditionally call Gen_Versions.
+	(Gen_Elab_Order): Emit blank line before.
+
+2017-04-25  Justin Squirek  <squirek@adacore.com>
+
+	* sem_cat.adb (Validate_RT_RAT_Component): Added
+	an extra check to ignore incomplete types.
+
 2017-04-25  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma, case Pragma_Check): Remove

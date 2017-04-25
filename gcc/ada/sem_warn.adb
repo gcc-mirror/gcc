@@ -3275,10 +3275,12 @@ package body Sem_Warn is
 
    begin
       --  Determine the potential outcome of the comparison assuming that the
-      --  operands are valid.
+      --  scalar operands are valid.
 
       if Constant_Condition_Warnings
         and then Comes_From_Source (Original_Node (Op))
+        and then Is_Scalar_Type (Etype (Left))
+        and then Is_Scalar_Type (Etype (Right))
 
         --  Do not consider instances because the check was already performed
         --  in the generic.
