@@ -1,3 +1,9 @@
+2017-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79201
+	* gcc.dg/tree-ssa/ssa-sink-16.c: New testcase.
+	* gcc.target/i386/pr22152.c: Disable sinking.
+
 2017-04-25  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/80464
