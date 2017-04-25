@@ -9118,8 +9118,8 @@ package body Sem_Prag is
          --  body. (this may be further refined).
 
          if not In_Instance
-           and then Nkind (Unit (Cunit (Current_Sem_Unit)))
-                      = N_Package_Declaration
+           and then Nkind (Unit (Cunit (Current_Sem_Unit))) =
+                      N_Package_Declaration
          then
             Set_Body_Needed_For_Inlining (Cunit_Entity (Current_Sem_Unit));
          end if;

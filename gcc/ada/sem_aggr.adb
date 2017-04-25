@@ -1666,7 +1666,7 @@ package body Sem_Aggr is
             else
                Analyze (Choice);
 
-               --  Choice can be a subtype name, a range, or an expression.
+               --  Choice can be a subtype name, a range, or an expression
 
                if Is_Entity_Name (Choice)
                  and then Is_Type (Entity (Choice))

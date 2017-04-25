@@ -6256,6 +6256,21 @@ package body Sem_Attr is
                return;
             end if;
 
+            --  If the type is declared in Standard, there is no source, so
+            --  just use its name.
+
+            if Scope (T) = Standard_Standard then
+               declare
+                  Name : constant String := Get_Name_String (Chars (T));
+               begin
+                  for J in Name'Range loop
+                     System.CRC32.Update (CRC, Name (J));
+                  end loop;
+               end;
+
+               return;
+            end if;
+
             Sloc_Range (Enclosing_Declaration (T), P_Min, P_Max);
             SFI    := Get_Source_File_Index (P_Min);
             Buffer := Source_Text (SFI);
@@ -6318,24 +6333,20 @@ package body Sem_Attr is
             Store_String_Char (Get_String_Char (Full_Name, Pos (J)));
          end loop;
 
-         --  For standard types return the name of the type, as there is no
-         --  explicit source declaration to use. Otherwise compute CRC and
-         --  convert it to string one character at a time, so as not to use
-         --  Image within the compiler.
+         --  Compute CRC and convert it to string one character at a time, so
+         --  as not to use Image within the compiler.
 
-         if Scope (Entity (P)) /= Standard_Standard then
-            Initialize (CRC);
-            Compute_Type_Key (Entity (P));
+         Initialize (CRC);
+         Compute_Type_Key (Entity (P));
 
-            if not Is_Frozen (Entity (P)) then
-               Error_Msg_N ("premature usage of Type_Key?", N);
-            end if;
-
-            while CRC > 0 loop
-               Store_String_Char (Character'Val (48 + (CRC rem 10)));
-               CRC := CRC / 10;
-            end loop;
+         if not Is_Frozen (Entity (P)) then
+            Error_Msg_N ("premature usage of Type_Key?", N);
          end if;
+
+         while CRC > 0 loop
+            Store_String_Char (Character'Val (48 + (CRC rem 10)));
+            CRC := CRC / 10;
+         end loop;
 
          Rewrite (N, Make_String_Literal (Loc, End_String));
          Analyze_And_Resolve (N, Standard_String);
