@@ -10545,8 +10545,8 @@ package body Sem_Attr is
                                     Entity (Name (Parent (N)));
                         begin
                            if Convention (Subp) = Convention_Intrinsic then
-                              Error_Msg_FE ("subprogram and its formal "
-                              & "parameters have convention Intrinsic",
+                              Error_Msg_FE ("?subprogram and its formal "
+                              & "access parameters have convention Intrinsic",
                                 Parent (N), Subp);
                               Error_Msg_N
                                 ("actual cannot be access attribute", N);

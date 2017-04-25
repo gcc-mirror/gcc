@@ -305,6 +305,7 @@ CR("") \
 TCR("0:") \
 TCR("addis 2,12,.TOC.-0@ha") \
 TCR("addi 2,2,.TOC.-0@l") \
+TCR(".localentry	__gnat_sigtramp_common,.-__gnat_sigtramp_common") \
 TCR("# Allocate frame and save the non-volatile") \
 TCR("# registers we're going to modify") \
 TCR("mflr %r0")	\

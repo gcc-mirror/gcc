@@ -64,10 +64,12 @@ with Uintp;    use Uintp;
 
 package body Sem_Ch5 is
 
-   Current_LHS : Node_Id := Empty;
-   --  Holds the left-hand side of the assignment statement being analyzed.
-   --  Used to determine the type of a target_name appearing on the RHS, for
-   --  AI12-0125 and the use of '@' as an abbreviation for the LHS.
+   Current_Assignment : Node_Id := Empty;
+   --  This variable holds the node for an assignment that contains target
+   --  names. The corresponding flag has been set by the parser, and when
+   --  set the analysis of the RHS must be done with all expansion disabled,
+   --  because the assignment is reanalyzed after expansion has replaced all
+   --  occurrences of the target name appropriately.
 
    Unblocked_Exit_Count : Nat := 0;
    --  This variable is used when processing if statements, case statements,
@@ -98,11 +100,12 @@ package body Sem_Ch5 is
    --  Ghost mode.
 
    procedure Analyze_Assignment (N : Node_Id) is
-      Lhs  : constant Node_Id := Name (N);
-      Rhs  : constant Node_Id := Expression (N);
-      T1   : Entity_Id;
-      T2   : Entity_Id;
-      Decl : Node_Id;
+      Lhs                : constant Node_Id := Name (N);
+      Rhs                : constant Node_Id := Expression (N);
+      T1                 : Entity_Id;
+      T2                 : Entity_Id;
+      Decl               : Node_Id;
+      Save_Full_Analysis : Boolean;
 
       procedure Diagnose_Non_Variable_Lhs (N : Node_Id);
       --  N is the node for the left hand side of an assignment, and it is not
@@ -284,10 +287,6 @@ package body Sem_Ch5 is
    --  Start of processing for Analyze_Assignment
 
    begin
-      --  Save LHS for use in target names (AI12-125)
-
-      Current_LHS := Lhs;
-
       Mark_Coextensions (N, Rhs);
 
       --  Analyze the target of the assignment first in case the expression
@@ -301,7 +300,12 @@ package body Sem_Ch5 is
       --  during analysis and expansion are properly marked as Ghost.
 
       if Has_Target_Names (N) then
+         Current_Assignment := N;
          Expander_Mode_Save_And_Set (False);
+         Save_Full_Analysis := Full_Analysis;
+         Full_Analysis      := False;
+      else
+         Current_Assignment := Empty;
       end if;
 
       Mark_And_Set_Ghost_Assignment (N, Mode);
@@ -932,7 +936,6 @@ package body Sem_Ch5 is
       Analyze_Dimension (N);
 
    <<Leave>>
-      Current_LHS := Empty;
       Restore_Ghost_Mode (Mode);
 
       --  If the right-hand side contains target names, expansion has been
@@ -942,6 +945,7 @@ package body Sem_Ch5 is
 
       if Nkind (N) = N_Assignment_Statement and then Has_Target_Names (N) then
          Expander_Mode_Restore;
+         Full_Analysis := Save_Full_Analysis;
       end if;
    end Analyze_Assignment;
 
@@ -3543,14 +3547,10 @@ package body Sem_Ch5 is
 
    procedure Analyze_Target_Name (N : Node_Id) is
    begin
-      if No (Current_LHS) then
-         Error_Msg_N ("target name can only appear within an assignment", N);
-         Set_Etype (N, Any_Type);
+      --  A target name has the type of the left-hand side of the enclosing
+      --  assignment.
 
-      else
-         Set_Has_Target_Names (Parent (Current_LHS));
-         Set_Etype (N, Etype (Current_LHS));
-      end if;
+      Set_Etype (N, Etype (Name (Current_Assignment)));
    end Analyze_Target_Name;
 
    ------------------------
