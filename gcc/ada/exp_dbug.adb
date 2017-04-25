@@ -389,14 +389,15 @@ package body Exp_Dbug is
          Ren := Original_Node (Ren);
 
          case Nkind (Ren) is
-            when N_Identifier | N_Expanded_Name =>
-
+            when N_Expanded_Name
+               | N_Identifier
+            =>
                if not Present (Renamed_Object (Entity (Ren))) then
                   exit;
                end if;
 
-               --  This is a renaming of a renaming: traverse until the
-               --  final renaming to see if anything is packed on the way.
+               --  This is a renaming of a renaming: traverse until the final
+               --  renaming to see if anything is packed along the way.
 
                Ren := Renamed_Object (Entity (Ren));
 
@@ -443,11 +444,14 @@ package body Exp_Dbug is
                Ren := Prefix (Ren);
 
             when N_Slice =>
+
                --  Assuming X is an array:
                --      X (Y1 .. Y2) (Y3)
+
                --  is equivalent to:
                --      X (Y3)
-               --  GDB cannot handle packed array slices, so avoid to describe
+
+               --  GDB cannot handle packed array slices, so avoid describing
                --  the slice if we can avoid it.
 
                if not Last_Is_Indexed_Comp then

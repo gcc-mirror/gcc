@@ -3197,12 +3197,15 @@ package body Freeze is
 
          --  Similar processing is needed for aspects that may affect
          --  object layout, like Alignment, if there is an initialization
-         --  expression.
+         --  expression. We don't do this if there is a pragma Linker_Section,
+         --  because it would prevent the back end from statically initializing
+         --  the object; we don't want elaboration code in that case.
 
          if Has_Delayed_Aspects (E)
            and then Expander_Active
            and then Is_Array_Type (Etype (E))
            and then Present (Expression (Parent (E)))
+           and then No (Linker_Section_Pragma (E))
          then
             declare
                Decl : constant Node_Id := Parent (E);

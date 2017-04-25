@@ -210,6 +210,15 @@ package body Sem_Attr is
    --  Standard_True, depending on the value of the parameter B. The
    --  result is marked as a static expression.
 
+   function Statically_Denotes_Object (N : Node_Id) return Boolean;
+   --  Predicate used to check the legality of the prefix to 'Loop_Entry and
+   --  'Old, when the prefix is not an entity name. Current RM specfies that
+   --  the prefix must be a direct or expanded name, but it has been proposed
+   --  that the prefix be allowed to be a selected component that does not
+   --  depend on a discriminant, or an indexed component with static indices.
+   --  Current code for this predicate implements this more permissive
+   --  implementation.
+
    -----------------------
    -- Analyze_Attribute --
    -----------------------
@@ -4501,6 +4510,7 @@ package body Sem_Attr is
 
          if Is_Entity_Name (P)
            or else Nkind (Parent (P)) = N_Object_Renaming_Declaration
+           or else Statically_Denotes_Object (P)
          then
             null;
 
@@ -4999,7 +5009,9 @@ package body Sem_Attr is
             --  Ensure that the prefix of attribute 'Old is an entity when it
             --  is potentially unevaluated (6.1.1 (27/3)).
 
-            if Is_Potentially_Unevaluated (N) then
+            if Is_Potentially_Unevaluated (N)
+              and then not Statically_Denotes_Object (P)
+            then
                Uneval_Old_Msg;
 
             --  Detect a possible infinite recursion when the prefix denotes
@@ -11807,6 +11819,59 @@ package body Sem_Attr is
          Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
       end if;
    end Set_Boolean_Result;
+
+   -------------------------------
+   -- Statically_Denotes_Object --
+   -------------------------------
+
+   function Statically_Denotes_Object (N : Node_Id) return Boolean is
+      Indx : Node_Id;
+
+   begin
+      if Is_Entity_Name (N) then
+         return True;
+
+      elsif Nkind (N) = N_Selected_Component
+        and then Statically_Denotes_Object (Prefix (N))
+        and then Present (Entity (Selector_Name (N)))
+      then
+         declare
+            Sel_Id    : constant Entity_Id := Entity (Selector_Name (N));
+            Comp_Decl : constant Node_Id   := Parent (Sel_Id);
+
+         begin
+            if Depends_On_Discriminant (Sel_Id) then
+               return False;
+
+            elsif Nkind (Parent (Parent (Comp_Decl))) = N_Variant then
+               return False;
+
+            else
+               return True;
+            end if;
+         end;
+
+      elsif Nkind (N) = N_Indexed_Component
+        and then Statically_Denotes_Object (Prefix (N))
+        and then Is_Constrained (Etype (Prefix (N)))
+      then
+         Indx := First (Expressions (N));
+         while Present (Indx) loop
+            if not Compile_Time_Known_Value (Indx)
+              or else Do_Range_Check (Indx)
+            then
+               return False;
+            end if;
+
+            Next (Indx);
+         end loop;
+
+         return True;
+
+      else
+         return False;
+      end if;
+   end Statically_Denotes_Object;
 
    --------------------------------
    -- Stream_Attribute_Available --
