@@ -2025,12 +2025,33 @@ package body Contracts is
                   return False;
 
                --  Determine whether the subprogram is declared in the visible
-               --  declarations of the package containing the type.
+               --  declarations of the package containing the type, or in the
+               --  visible declaration of a child unit of that package.
 
                else
-                  return List_Containing (Subp_Decl) =
-                    Visible_Declarations
-                      (Specification (Unit_Declaration_Node (Scope (Typ))));
+                  declare
+                     Decls      : constant List_Id   :=
+                                    List_Containing (Subp_Decl);
+                     Subp_Scope : constant Entity_Id :=
+                                    Scope (Defining_Entity (Subp_Decl));
+                     Typ_Scope  : constant Entity_Id := Scope (Typ);
+
+                  begin
+                     return
+                       Decls = Visible_Declarations
+                           (Specification (Unit_Declaration_Node (Typ_Scope)))
+
+                         or else
+                           (Ekind (Subp_Scope) = E_Package
+                             and then Typ_Scope /= Subp_Scope
+                             and then Is_Child_Unit (Subp_Scope)
+                             and then
+                               Is_Ancestor_Package (Typ_Scope, Subp_Scope)
+                             and then
+                               Decls = Visible_Declarations
+                                 (Specification
+                                   (Unit_Declaration_Node (Subp_Scope))));
+                  end;
                end if;
             end Has_Public_Visibility_Of_Subprogram;
 
