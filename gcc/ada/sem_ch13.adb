@@ -4374,7 +4374,15 @@ package body Sem_Ch13 is
                   --  subprogram itself.
 
                   if Is_Overloadable (It.Nam) then
-                     Check_One_Function (It.Nam);
+
+                     --  Ignore homonyms that may come from derived types
+                     --  in the context.
+
+                     if not Comes_From_Source (It.Nam) then
+                        null;
+                     else
+                        Check_One_Function (It.Nam);
+                     end if;
                   end if;
 
                   Get_Next_Interp (I, It);
