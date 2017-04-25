@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,6 +66,7 @@ package body Warnsw is
       Warn_On_Dereference                 := Setting;
       Warn_On_Export_Import               := Setting;
       Warn_On_Hiding                      := Setting;
+      Warn_On_Late_Primitives             := Setting;
       Warn_On_Modified_Unread             := Setting;
       Warn_On_No_Value_Assigned           := Setting;
       Warn_On_Non_Local_Exception         := Setting;
@@ -147,6 +148,8 @@ package body Warnsw is
         W.Warn_On_Export_Import;
       Warn_On_Hiding                      :=
         W.Warn_On_Hiding;
+      Warn_On_Late_Primitives             :=
+        W.Warn_On_Late_Primitives;
       Warn_On_Modified_Unread             :=
         W.Warn_On_Modified_Unread;
       Warn_On_No_Value_Assigned           :=
@@ -249,6 +252,8 @@ package body Warnsw is
         Warn_On_Export_Import;
       W.Warn_On_Hiding                      :=
         Warn_On_Hiding;
+      W.Warn_On_Late_Primitives             :=
+        Warn_On_Late_Primitives;
       W.Warn_On_Modified_Unread             :=
         Warn_On_Modified_Unread;
       W.Warn_On_No_Value_Assigned           :=
@@ -346,6 +351,12 @@ package body Warnsw is
 
          when 'I' =>
             Warn_On_Overlap                     := False;
+
+         when 'j' =>
+            Warn_On_Late_Primitives             := True;
+
+         when 'J' =>
+            Warn_On_Late_Primitives             := False;
 
          when 'k' =>
             Warn_On_Standard_Redefinition       := True;
@@ -667,6 +678,7 @@ package body Warnsw is
       Warn_On_Biased_Representation       := True; -- -gnatw.b
       Warn_On_Constant                    := True; -- -gnatwk
       Warn_On_Export_Import               := True; -- -gnatwx
+      Warn_On_Late_Primitives             := True; -- -gnatw.j
       Warn_On_Modified_Unread             := True; -- -gnatwm
       Warn_On_No_Value_Assigned           := True; -- -gnatwv
       Warn_On_Non_Local_Exception         := True; -- -gnatw.x

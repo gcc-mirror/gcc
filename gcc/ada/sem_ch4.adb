@@ -8297,7 +8297,7 @@ package body Sem_Ch4 is
       Loc            : constant Source_Ptr := Sloc (N);
       Obj            : constant Node_Id    := Prefix (N);
 
-      Subprog : constant Node_Id    :=
+      Subprog : constant Node_Id :=
                   Make_Identifier (Sloc (Selector_Name (N)),
                     Chars => Chars (Selector_Name (N)));
       --  Identifier on which possible interpretations will be collected
@@ -8308,17 +8308,10 @@ package body Sem_Ch4 is
 
       Actual          : Node_Id;
       Candidate       : Entity_Id := Empty;
-      New_Call_Node   : Node_Id := Empty;
+      New_Call_Node   : Node_Id   := Empty;
       Node_To_Replace : Node_Id;
       Obj_Type        : Entity_Id := Etype (Obj);
-      Success         : Boolean := False;
-
-      function Valid_Candidate
-        (Success : Boolean;
-         Call    : Node_Id;
-         Subp    : Entity_Id) return Entity_Id;
-      --  If the subprogram is a valid interpretation, record it, and add
-      --  to the list of interpretations of Subprog. Otherwise return Empty.
+      Success         : Boolean   := False;
 
       procedure Complete_Object_Operation
         (Call_Node       : Node_Id;
@@ -8328,8 +8321,8 @@ package body Sem_Ch4 is
       --  in the call, and complete the analysis of the call.
 
       procedure Report_Ambiguity (Op : Entity_Id);
-      --  If a prefixed procedure call is ambiguous, indicate whether the
-      --  call includes an implicit dereference or an implicit 'Access.
+      --  If a prefixed procedure call is ambiguous, indicate whether the call
+      --  includes an implicit dereference or an implicit 'Access.
 
       procedure Transform_Object_Operation
         (Call_Node       : out Node_Id;
@@ -8342,106 +8335,27 @@ package body Sem_Ch4 is
       function Try_Class_Wide_Operation
         (Call_Node       : Node_Id;
          Node_To_Replace : Node_Id) return Boolean;
-      --  Traverse all ancestor types looking for a class-wide subprogram
-      --  for which the current operation is a valid non-dispatching call.
+      --  Traverse all ancestor types looking for a class-wide subprogram for
+      --  which the current operation is a valid non-dispatching call.
 
       procedure Try_One_Prefix_Interpretation (T : Entity_Id);
       --  If prefix is overloaded, its interpretation may include different
-      --  tagged types, and we must examine the primitive operations and
-      --  the class-wide operations of each in order to find candidate
+      --  tagged types, and we must examine the primitive operations and the
+      --  class-wide operations of each in order to find candidate
       --  interpretations for the call as a whole.
 
       function Try_Primitive_Operation
         (Call_Node       : Node_Id;
          Node_To_Replace : Node_Id) return Boolean;
       --  Traverse the list of primitive subprograms looking for a dispatching
-      --  operation for which the current node is a valid call .
-
-      ---------------------
-      -- Valid_Candidate --
-      ---------------------
+      --  operation for which the current node is a valid call.
 
       function Valid_Candidate
         (Success : Boolean;
          Call    : Node_Id;
-         Subp    : Entity_Id) return Entity_Id
-      is
-         Arr_Type  : Entity_Id;
-         Comp_Type : Entity_Id;
-
-      begin
-         --  If the subprogram is a valid interpretation, record it in global
-         --  variable Subprog, to collect all possible overloadings.
-
-         if Success then
-            if Subp /= Entity (Subprog) then
-               Add_One_Interp (Subprog, Subp, Etype (Subp));
-            end if;
-         end if;
-
-         --  If the call may be an indexed call, retrieve component type of
-         --  resulting expression, and add possible interpretation.
-
-         Arr_Type  := Empty;
-         Comp_Type := Empty;
-
-         if Nkind (Call) = N_Function_Call
-           and then Nkind (Parent (N)) = N_Indexed_Component
-           and then Needs_One_Actual (Subp)
-         then
-            if Is_Array_Type (Etype (Subp)) then
-               Arr_Type := Etype (Subp);
-
-            elsif Is_Access_Type (Etype (Subp))
-              and then Is_Array_Type (Designated_Type (Etype (Subp)))
-            then
-               Arr_Type := Designated_Type (Etype (Subp));
-            end if;
-         end if;
-
-         if Present (Arr_Type) then
-
-            --  Verify that the actuals (excluding the object) match the types
-            --  of the indexes.
-
-            declare
-               Actual : Node_Id;
-               Index  : Node_Id;
-
-            begin
-               Actual := Next (First_Actual (Call));
-               Index  := First_Index (Arr_Type);
-               while Present (Actual) and then Present (Index) loop
-                  if not Has_Compatible_Type (Actual, Etype (Index)) then
-                     Arr_Type := Empty;
-                     exit;
-                  end if;
-
-                  Next_Actual (Actual);
-                  Next_Index  (Index);
-               end loop;
-
-               if No (Actual)
-                  and then No (Index)
-                  and then Present (Arr_Type)
-               then
-                  Comp_Type := Component_Type (Arr_Type);
-               end if;
-            end;
-
-            if Present (Comp_Type)
-              and then Etype (Subprog) /= Comp_Type
-            then
-               Add_One_Interp (Subprog, Subp, Comp_Type);
-            end if;
-         end if;
-
-         if Etype (Call) /= Any_Type then
-            return Subp;
-         else
-            return Empty;
-         end if;
-      end Valid_Candidate;
+         Subp    : Entity_Id) return Entity_Id;
+      --  If the subprogram is a valid interpretation, record it, and add to
+      --  the list of interpretations of Subprog. Otherwise return Empty.
 
       -------------------------------
       -- Complete_Object_Operation --
@@ -8689,7 +8603,7 @@ package body Sem_Ch4 is
             if Nkind (Parent_Node) = N_Procedure_Call_Statement then
                Call_Node :=
                  Make_Procedure_Call_Statement (Loc,
-                   Name => New_Copy (Subprog),
+                   Name                   => New_Copy (Subprog),
                    Parameter_Associations => Actuals);
 
             else
@@ -8959,11 +8873,9 @@ package body Sem_Ch4 is
       -----------------------------------
 
       procedure Try_One_Prefix_Interpretation (T : Entity_Id) is
-
+         Prev_Obj_Type : constant Entity_Id := Obj_Type;
          --  If the interpretation does not have a valid candidate type,
          --  preserve current value of Obj_Type for subsequent errors.
-
-         Prev_Obj_Type : constant Entity_Id := Obj_Type;
 
       begin
          Obj_Type := T;
@@ -8972,7 +8884,9 @@ package body Sem_Ch4 is
             Obj_Type := Designated_Type (Obj_Type);
          end if;
 
-         if Ekind (Obj_Type) = E_Private_Subtype then
+         if Ekind_In (Obj_Type, E_Private_Subtype,
+                                E_Record_Subtype_With_Private)
+         then
             Obj_Type := Base_Type (Obj_Type);
          end if;
 
@@ -8992,14 +8906,12 @@ package body Sem_Ch4 is
          end if;
 
          --  If the object is not tagged, or the type is still an incomplete
-         --  type, this is not a prefixed call.
+         --  type, this is not a prefixed call. Restore the previous type as
+         --  the current one is not a legal candidate.
 
          if not Is_Tagged_Type (Obj_Type)
            or else Is_Incomplete_Type (Obj_Type)
          then
-
-            --  Restore previous type if current one is not legal candidate
-
             Obj_Type := Prev_Obj_Type;
             return;
          end if;
@@ -9022,7 +8934,7 @@ package body Sem_Ch4 is
             --  primitive. This check must be done even if a candidate
             --  was found in order to report ambiguous calls.
 
-            if not (Prim_Result) then
+            if not Prim_Result then
                CW_Result :=
                  Try_Class_Wide_Operation
                    (Call_Node       => New_Call_Node,
@@ -9360,19 +9272,19 @@ package body Sem_Ch4 is
          if Is_Concurrent_Type (Obj_Type) then
             if Present (Corresponding_Record_Type (Obj_Type)) then
                Corr_Type := Base_Type (Corresponding_Record_Type (Obj_Type));
-               Elmt := First_Elmt (Primitive_Operations (Corr_Type));
+               Elmt      := First_Elmt (Primitive_Operations (Corr_Type));
             else
                Corr_Type := Obj_Type;
-               Elmt := First_Elmt (Collect_Generic_Type_Ops (Obj_Type));
+               Elmt      := First_Elmt (Collect_Generic_Type_Ops (Obj_Type));
             end if;
 
          elsif not Is_Generic_Type (Obj_Type) then
             Corr_Type := Obj_Type;
-            Elmt := First_Elmt (Extended_Primitive_Ops (Obj_Type));
+            Elmt      := First_Elmt (Extended_Primitive_Ops (Obj_Type));
 
          else
             Corr_Type := Obj_Type;
-            Elmt := First_Elmt (Collect_Generic_Type_Ops (Obj_Type));
+            Elmt      := First_Elmt (Collect_Generic_Type_Ops (Obj_Type));
          end if;
 
          while Present (Elmt) loop
@@ -9383,7 +9295,7 @@ package body Sem_Ch4 is
               and then Valid_First_Argument_Of (Prim_Op)
               and then
                 (Nkind (Call_Node) = N_Function_Call)
-                    =
+                   =
                 (Ekind (Prim_Op) = E_Function)
             then
                --  Ada 2005 (AI-251): If this primitive operation corresponds
@@ -9463,6 +9375,92 @@ package body Sem_Ch4 is
 
          return Present (Matching_Op);
       end Try_Primitive_Operation;
+
+      ---------------------
+      -- Valid_Candidate --
+      ---------------------
+
+      function Valid_Candidate
+        (Success : Boolean;
+         Call    : Node_Id;
+         Subp    : Entity_Id) return Entity_Id
+      is
+         Arr_Type  : Entity_Id;
+         Comp_Type : Entity_Id;
+
+      begin
+         --  If the subprogram is a valid interpretation, record it in global
+         --  variable Subprog, to collect all possible overloadings.
+
+         if Success then
+            if Subp /= Entity (Subprog) then
+               Add_One_Interp (Subprog, Subp, Etype (Subp));
+            end if;
+         end if;
+
+         --  If the call may be an indexed call, retrieve component type of
+         --  resulting expression, and add possible interpretation.
+
+         Arr_Type  := Empty;
+         Comp_Type := Empty;
+
+         if Nkind (Call) = N_Function_Call
+           and then Nkind (Parent (N)) = N_Indexed_Component
+           and then Needs_One_Actual (Subp)
+         then
+            if Is_Array_Type (Etype (Subp)) then
+               Arr_Type := Etype (Subp);
+
+            elsif Is_Access_Type (Etype (Subp))
+              and then Is_Array_Type (Designated_Type (Etype (Subp)))
+            then
+               Arr_Type := Designated_Type (Etype (Subp));
+            end if;
+         end if;
+
+         if Present (Arr_Type) then
+
+            --  Verify that the actuals (excluding the object) match the types
+            --  of the indexes.
+
+            declare
+               Actual : Node_Id;
+               Index  : Node_Id;
+
+            begin
+               Actual := Next (First_Actual (Call));
+               Index  := First_Index (Arr_Type);
+               while Present (Actual) and then Present (Index) loop
+                  if not Has_Compatible_Type (Actual, Etype (Index)) then
+                     Arr_Type := Empty;
+                     exit;
+                  end if;
+
+                  Next_Actual (Actual);
+                  Next_Index  (Index);
+               end loop;
+
+               if No (Actual)
+                  and then No (Index)
+                  and then Present (Arr_Type)
+               then
+                  Comp_Type := Component_Type (Arr_Type);
+               end if;
+            end;
+
+            if Present (Comp_Type)
+              and then Etype (Subprog) /= Comp_Type
+            then
+               Add_One_Interp (Subprog, Subp, Comp_Type);
+            end if;
+         end if;
+
+         if Etype (Call) /= Any_Type then
+            return Subp;
+         else
+            return Empty;
+         end if;
+      end Valid_Candidate;
 
    --  Start of processing for Try_Object_Operation
 

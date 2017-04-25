@@ -1,3 +1,32 @@
+2017-04-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Set_Convention_From_Pragma): Cleanup code for
+	convention Stdcall, which has a number of exceptions. Convention
+	is legal on a component declaration whose type is an anonymous
+	access to subprogram.
+
+2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch4.adb: sem_ch4.adb Various reformattings.
+	(Try_One_Prefix_Interpretation): Use the base type when dealing
+	with a subtype created for purposes of constraining a private
+	type with discriminants.
+
+2017-04-25  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads, einfo.adb (Has_Private_Extension): new attribute.
+	* warnsw.ads, warnsw.adb (All_Warnings): Set warning on late
+	dispatching primitives (Restore_Warnings): Restore warning on
+	late dispatching primitives (Save_Warnings): Save warning on late
+	dispatching primitives (Do_Warning_Switch): Use -gnatw.j/-gnatw.J
+	to enable/disable this warning.
+	(WA_Warnings): Set warning on late dispatching primitives.
+	* sem_ch3.adb (Analyze_Private_Extension_Declaration): Remember
+	that its parent type has a private extension.
+	* sem_disp.adb (Warn_On_Late_Primitive_After_Private_Extension):
+	New subprogram.
+	* usage.adb: Document -gnatw.j and -gnatw.J.
+
 2017-04-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb, checks.adb, sem_prag.adb, eval_fat.adb: Minor
