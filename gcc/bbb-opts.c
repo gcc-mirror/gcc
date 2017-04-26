@@ -1551,7 +1551,9 @@ opt_const_cmp_to_sub (void)
 	      rtx jmppattern = PATTERN (patchme);
 
 	      rtx jmpsrc = XEXP(jmppattern, 1);
-	      if (GET_CODE(jmpsrc) == IF_THEN_ELSE)
+	      if (!jmpsrc)
+		ok = false;
+	      else if (GET_CODE(jmpsrc) == IF_THEN_ELSE)
 		{
 		  rtx condition = XEXP(jmpsrc, 0);
 		  RTX_CODE code = GET_CODE(condition);
