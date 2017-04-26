@@ -38,21 +38,7 @@ static cp_binding_level *innermost_nonclass_level (void);
 static void set_identifier_type_value_with_scope (tree id, tree decl,
 						  cp_binding_level *b);
 
-/* Create a new binding for NAME in namespace NS.  */
-// FIXME: This of course should be a map
-
-static cxx_binding *
-create_namespace_binding (tree ns, tree name)
-{
-  cxx_binding *binding = cxx_binding_make (NULL, NULL);
-  binding->previous = IDENTIFIER_NAMESPACE_BINDINGS (name);
-  binding->scope = NAMESPACE_LEVEL (ns);
-  binding->is_local = false;
-  binding->value_is_inherited = false;
-  IDENTIFIER_NAMESPACE_BINDINGS (name) = binding;
-
-  return binding;
-}
+/* Create a new binding for NAME in local binding LEVEL.  */
 
 static cxx_binding *
 create_local_binding (cp_binding_level *level, tree name)
@@ -91,29 +77,31 @@ static tree stat_hack (tree decl = NULL_TREE, tree type = NULL_TREE)
   return result;
 }
 
-/* Return the binding for NAME in SCOPE, if any.  Otherwise, return NULL.  */
-// FIXME this should totally be a map
+/* Return the binding for NAME in SCOPE, if any.  Otherwise create an
+   empty slot.  */
 
 static tree *
-find_namespace_binding (tree ns, tree name, bool insert = false)
+find_or_create_namespace_slot (tree ns, tree name)
 {
-  cp_binding_level *scope = NAMESPACE_LEVEL (ns);
-  cxx_binding *binding = IDENTIFIER_NAMESPACE_BINDINGS (name);
+  bool existed;
+  tree *slot = &DECL_NAMESPACE_BINDINGS (ns)->get_or_insert (name, &existed);
+  if (!existed)
+    *slot = NULL_TREE;
+  return slot;
+}
 
-  for (; binding != NULL; binding = binding->previous)
-    if (binding->scope == scope)
-      return &binding->value;
+/* Return the binding for NAME in SCOPE, if any.  Otherwise, return NULL.  */
 
-  if (insert)
-    return &create_namespace_binding (ns, name)->value;
-
-  return NULL;
+static tree *
+find_namespace_slot (tree ns, tree name)
+{
+  return DECL_NAMESPACE_BINDINGS (ns)->get (name);
 }
 
 static tree
 find_namespace_value (tree ns, tree name)
 {
-  tree *b = find_namespace_binding (ns, name);
+  tree *b = find_namespace_slot (ns, name);
 
   return b ? MAYBE_STAT_DECL (*b) : NULL_TREE;
 }
@@ -371,7 +359,7 @@ name_lookup::search_namespace_only (tree scope)
 {
   bool found = false;
 
-  if (tree *binding = find_namespace_binding (scope, name))
+  if (tree *binding = find_namespace_slot (scope, name))
     {
       tree new_val = MAYBE_STAT_DECL (*binding);
       tree new_type = MAYBE_STAT_TYPE (*binding);
@@ -1800,7 +1788,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 
 /* Map of identifiers to extern C functions (or LISTS thereof).  */
 
-static GTY(()) hash_map<tree,tree> *extern_c_fns;
+static GTY(()) hash_map<lang_identifier *, tree> *extern_c_fns;
 
 /* DECL has C linkage. If we have an existing instance, make sure it
    has the same exception specification [7.5, 7.6].  If there's no
@@ -1814,7 +1802,7 @@ check_extern_c_conflict (tree decl)
     return;
 
   if (!extern_c_fns)
-    extern_c_fns = hash_map<tree,tree>::create_ggc (127);
+    extern_c_fns = hash_map<lang_identifier *,tree>::create_ggc (127);
 
   bool existed;
   tree *slot = &extern_c_fns->get_or_insert (DECL_NAME (decl), &existed);
@@ -2244,10 +2232,12 @@ do_pushdecl (tree decl, bool is_friend)
 	     namespace.  */
 	  ns = (DECL_NAMESPACE_SCOPE_P (decl)
 		? CP_DECL_CONTEXT (decl) : current_namespace);
-	  /* Create the binding, if this is current namespace, because
-	     that's where we'll be pushing anyway.  */
-	  slot = find_namespace_binding (ns, name,
-					    ns == current_namespace);
+	  if (ns == current_namespace)
+	    /* Create the binding, if this is current namespace, because
+	       that's where we'll be pushing anyway.  */
+	    slot = find_or_create_namespace_slot (ns, name);
+	  else
+	    slot = find_namespace_slot (ns, name);
 	  if (slot)
 	    old = MAYBE_STAT_DECL (*slot);
 	}
@@ -2334,7 +2324,7 @@ do_pushdecl (tree decl, bool is_friend)
       else if (!slot)
 	{
 	  ns = current_namespace;
-	  slot = &create_namespace_binding (ns, name)->value;
+	  slot = find_or_create_namespace_slot (ns, name);
 	}
 
       old = update_binding (level, binding, slot, old, decl, is_friend);
@@ -3076,7 +3066,7 @@ set_identifier_type_value_with_scope (tree id, tree decl, cp_binding_level *b)
     }
   else
     {
-      tree *slot = find_namespace_binding (current_namespace, id, true);
+      tree *slot = find_or_create_namespace_slot (current_namespace, id);
       gcc_assert (decl);
       update_binding (b, NULL, slot, MAYBE_STAT_DECL (*slot), decl, false);
 
@@ -4207,7 +4197,7 @@ get_namespace_value (tree ns, tree name)
   if (!ns)
     ns = global_namespace;
   gcc_checking_assert (!DECL_NAMESPACE_ALIAS (ns));
-  tree *slot = find_namespace_binding (ns, name);
+  tree *slot = find_namespace_slot (ns, name);
   tree ret = slot ? MAYBE_STAT_DECL (*slot) : NULL_TREE;
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
@@ -4221,7 +4211,7 @@ set_global_value (tree name, tree val)
 {
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
 
-  tree *slot = find_namespace_binding (global_namespace, name, true);
+  tree *slot = find_or_create_namespace_slot (global_namespace, name);
   tree old = MAYBE_STAT_DECL (*slot);
 
   if (!old)
@@ -4550,7 +4540,7 @@ do_toplevel_using_decl (tree decl, tree scope, tree name)
   if (decl == NULL_TREE)
     return;
 
-  tree *slot = find_namespace_binding (current_namespace, name, true);
+  tree *slot = find_or_create_namespace_slot (current_namespace, name);
   tree val = slot ? MAYBE_STAT_DECL (*slot) : NULL_TREE;
   tree type = slot ? MAYBE_STAT_TYPE (*slot) : NULL_TREE;
   do_nonmember_using_decl (scope, name, &val, &type);
@@ -5286,7 +5276,7 @@ lookup_type_scope_1 (tree name, tag_scope scope)
     {
       tree ns = current_decl_namespace ();
 
-      if (tree *slot = find_namespace_binding (ns, name))
+      if (tree *slot = find_namespace_slot (ns, name))
 	{
 	  /* If this is the kind of thing we're looking for, we're done.  */
 	  if (tree type = MAYBE_STAT_TYPE (*slot))

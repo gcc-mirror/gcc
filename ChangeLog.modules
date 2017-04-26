@@ -1,3 +1,22 @@
+2017-04-26  Nathan Sidwell  <nathan@acm.org>
+
+	Die IDENTIFIER_GLOBAL_BINDINGS! Die!
+	gcc/
+	* ipa-devirt.c (default_hash_traits <type_pair>): Add GTY((skip))s.
+	gcc/cp/
+	* cp-tree.h (lang_identifier): Remove namespace_bindings.
+	(default_hash_traits<lang_identifier *>): Specialization.
+	(IDENTIFIER_NAMESPACE_BINDINGS): Delete.
+	(lang_decl_ns): Add bindings map.
+	(DECL_NAMESPACE_BINDINGS): New.
+	* lex.c (maybe_add_lang_decl_raw): Allocate namespace binding map.
+	* name-lookup.c (create_namespace_binding): Delete.
+	(find_namespace_binding): Split into ...
+	(find_or_create_namespace_slot, find_namespace_slot): ... these.
+	Update all callers.
+	(extern_c_fns): Change to identifier map.
+	* ptree.c (cxx_print_identifier): Remove IDENTIFIER_NAMESPACE_BINDINGS.
+
 2017-04-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

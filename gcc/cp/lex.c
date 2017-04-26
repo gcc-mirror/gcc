@@ -551,6 +551,10 @@ maybe_add_lang_decl_raw (tree t)
 
   ld->u.base.selector = sel;
 
+  if (sel == 2)
+    /* Who'd create a namespace, only to put nothing in it?  */
+    ld->u.ns.bindings = hash_map<lang_identifier *, tree>::create_ggc (499);
+
   DECL_LANG_SPECIFIC (t) = ld;
 
   if (GATHER_STATISTICS)

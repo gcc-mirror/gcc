@@ -525,7 +525,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 
 struct GTY(()) lang_identifier {
   struct c_common_identifier c_common;
-  cxx_binding *namespace_bindings;
   cxx_binding *bindings;
   tree class_template_info;
   tree label_value;
@@ -541,6 +540,26 @@ identifier_p (tree t)
     return (lang_identifier*) t;
   return NULL;
 }
+
+/* Hash trait specialization for lang_identifiers.  This allows
+   PCH-safe maps keyed by DECL_NAME.  If it wasn't for PCH, we could
+   just use a regular tree key.  */
+
+template <>
+struct default_hash_traits <lang_identifier *>
+  : pointer_hash <tree_node>, ggc_remove <tree>
+{
+  /* Use a regular tree as the type, to make using the hash table
+     simpler.  We'll get dynamic type checking with the hash function
+     itself.  */
+  GTY((skip)) typedef tree value_type;
+  GTY((skip)) typedef tree compare_type;
+
+  static hashval_t hash (const value_type &id)
+  {
+    return IDENTIFIER_HASH_VALUE (id);
+  }
+};
 
 /* In an IDENTIFIER_NODE, nonzero if this identifier is actually a
    keyword.  C_RID_CODE (node) is then the RID_* value of the keyword.  */
@@ -934,8 +953,6 @@ enum GTY(()) abstract_class_use {
 
 /* Macros for access to language-specific slots in an identifier.  */
 
-#define IDENTIFIER_NAMESPACE_BINDINGS(NODE)	\
-  (LANG_IDENTIFIER_CAST (NODE)->namespace_bindings)
 #define IDENTIFIER_TEMPLATE(NODE)	\
   (LANG_IDENTIFIER_CAST (NODE)->class_template_info)
 
@@ -2539,6 +2556,9 @@ struct GTY(()) lang_decl_ns {
      because of PCH.  */
   vec<tree, va_gc> *usings;
   vec<tree, va_gc> *inlinees;
+
+  /* Map from IDENTIFIER nodes to DECLS.  */
+  hash_map<lang_identifier *, tree> *bindings;
 };
 
 /* DECL_LANG_SPECIFIC for parameters.  */
@@ -3106,6 +3126,10 @@ struct GTY(()) lang_decl {
 /* In a NAMESPACE_DECL, an OVERLOAD list of direct inline namespaces.  */
 #define DECL_NAMESPACE_INLINEES(NODE) \
    (LANG_DECL_NS_CHECK (NODE)->inlinees)
+
+/* Pointer to hash_map from IDENTIFIERS to DECLS  */
+#define DECL_NAMESPACE_BINDINGS(NODE) \
+   (LANG_DECL_NS_CHECK (NODE)->bindings)
 
 /* In a NAMESPACE_DECL, points to the original namespace if this is
    a namespace alias.  */
