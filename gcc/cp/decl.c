@@ -64,8 +64,8 @@ static const char *redeclaration_error_message (tree, tree);
 
 static int decl_jump_unsafe (tree);
 static void require_complete_types_for_parms (tree);
-static int ambi_op_p (enum tree_code);
-static int unary_op_p (enum tree_code);
+static bool ambi_op_p (enum tree_code);
+static bool unary_op_p (enum tree_code);
 static void push_local_name (tree);
 static tree grok_reference_init (tree, tree, tree, int);
 static tree grokvardecl (tree, tree, tree, const cp_decl_specifier_seq *,
@@ -12907,7 +12907,7 @@ grok_special_member_properties (tree decl)
 /* Check a constructor DECL has the correct form.  Complains
    if the class has a constructor of the form X(X).  */
 
-int
+bool
 grok_ctor_properties (const_tree ctype, const_tree decl)
 {
   int ctor_parm = copy_fn_p (decl);
@@ -12931,15 +12931,15 @@ grok_ctor_properties (const_tree ctype, const_tree decl)
 	 instantiated, but that's hard to forestall.  */
       error ("invalid constructor; you probably meant %<%T (const %T&)%>",
 		ctype, ctype);
-      return 0;
+      return false;
     }
 
-  return 1;
+  return true;
 }
 
 /* An operator with this code is unary, but can also be binary.  */
 
-static int
+static bool
 ambi_op_p (enum tree_code code)
 {
   return (code == INDIRECT_REF
@@ -12952,7 +12952,7 @@ ambi_op_p (enum tree_code code)
 
 /* An operator with this name can only be unary.  */
 
-static int
+static bool
 unary_op_p (enum tree_code code)
 {
   return (code == TRUTH_NOT_EXPR

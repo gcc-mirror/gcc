@@ -5860,7 +5860,7 @@ extern bool move_fn_p                           (const_tree);
 extern bool move_signature_fn_p                 (const_tree);
 extern tree get_scope_of_declarator		(const cp_declarator *);
 extern void grok_special_member_properties	(tree);
-extern int grok_ctor_properties			(const_tree, const_tree);
+extern bool grok_ctor_properties		(const_tree, const_tree);
 extern bool grok_op_properties			(tree, bool);
 extern tree xref_tag				(enum tag_types, tree, tag_scope, bool);
 extern tree xref_tag_from_type			(tree, tree, tag_scope);
