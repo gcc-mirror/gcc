@@ -9611,38 +9611,34 @@ dump_tree_statistics (void)
 
 #define FILE_FUNCTION_FORMAT "_GLOBAL__%s_%s"
 
-/* Generate a crc32 of a byte.  */
+/* Generate a crc32 of the low BYTES bytes of VALUE.  */
 
-static unsigned
-crc32_unsigned_bits (unsigned chksum, unsigned value, unsigned bits)
+unsigned
+crc32_unsigned_n (unsigned chksum, unsigned value, unsigned bytes)
 {
-  unsigned ix;
-
-  for (ix = bits; ix--; value <<= 1)
+  /* This relies on the raw feedback's top 4 bits being zero.  */
+#define FEEDBACK(X) ((X) * 0x04c11db7)
+#define SYNDROME(X) (FEEDBACK ((X) & 1) ^ FEEDBACK ((X) & 2) \
+		     ^ FEEDBACK ((X) & 4) ^ FEEDBACK ((X) & 8))
+  static const unsigned syndromes[16] =
     {
-      unsigned feedback;
-      
-      feedback = (value ^ chksum) & 0x80000000 ? 0x04c11db7 : 0;
-      chksum <<= 1;
-      chksum ^= feedback;
+      SYNDROME(0x0), SYNDROME(0x1), SYNDROME(0x2), SYNDROME(0x3),
+      SYNDROME(0x4), SYNDROME(0x5), SYNDROME(0x6), SYNDROME(0x7),
+      SYNDROME(0x8), SYNDROME(0x9), SYNDROME(0xa), SYNDROME(0xb),
+      SYNDROME(0xc), SYNDROME(0xd), SYNDROME(0xe), SYNDROME(0xf),
+    };
+#undef FEEDBACK
+#undef SYNDROME
+
+  value <<= (32 - bytes * 8);
+  for (unsigned ix = bytes * 2; ix--; value <<= 4)
+    {
+      unsigned feedback = syndromes[((value ^ chksum) >> 28) & 0xf];
+
+      chksum = (chksum << 4) ^ feedback;
     }
+
   return chksum;
-}
-
-/* Generate a crc32 of a 32-bit unsigned.  */
-
-unsigned
-crc32_unsigned (unsigned chksum, unsigned value)
-{
-  return crc32_unsigned_bits (chksum, value, 32);
-}
-
-/* Generate a crc32 of a byte.  */
-
-unsigned
-crc32_byte (unsigned chksum, char byte)
-{
-  return crc32_unsigned_bits (chksum, (unsigned) byte << 24, 8);
 }
 
 /* Generate a crc32 of a string.  */
@@ -9651,9 +9647,7 @@ unsigned
 crc32_string (unsigned chksum, const char *string)
 {
   do
-    {
-      chksum = crc32_byte (chksum, *string);
-    }
+    chksum = crc32_byte (chksum, *string);
   while (*string++);
   return chksum;
 }

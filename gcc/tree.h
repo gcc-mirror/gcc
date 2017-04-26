@@ -4688,9 +4688,18 @@ inlined_function_outer_scope_p (const_tree block)
        function_args_iter_next (&(ITER)))
 
 /* In tree.c */
+extern unsigned crc32_unsigned_n (unsigned, unsigned, unsigned);
 extern unsigned crc32_string (unsigned, const char *);
-extern unsigned crc32_byte (unsigned, char);
-extern unsigned crc32_unsigned (unsigned, unsigned);
+inline unsigned
+crc32_unsigned (unsigned chksum, unsigned value)
+{
+  return crc32_unsigned_n (chksum, value, 4);
+}
+inline unsigned
+crc32_byte (unsigned chksum, char byte)
+{
+  return crc32_unsigned_n (chksum, byte, 1);
+}
 extern void clean_symbol_name (char *);
 extern tree get_file_function_name (const char *);
 extern tree get_callee_fndecl (const_tree);
