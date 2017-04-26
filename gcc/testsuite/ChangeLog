@@ -1,3 +1,7 @@
+2017-04-26  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* g++.dg/diagnostic/nested-name-1.C: New test.
+
 2017-04-26  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/guality/guality.h: Add prefix to test verification.
