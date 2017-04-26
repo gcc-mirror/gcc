@@ -1491,8 +1491,8 @@ opt_const_cmp_to_sub (void)
       if (!setp)
 	continue;
 
-      rtx dstp = SET_DEST(setp);
-      if (!REG_P(dstp))
+      rtx constant_reg = SET_DEST(setp);
+      if (!REG_P(constant_reg))
 	continue;
 
       rtx srcp = SET_SRC(setp);
@@ -1503,34 +1503,20 @@ opt_const_cmp_to_sub (void)
       if (intval < -8 || intval > 7 || intval == 0)
 	continue;
 
-      enum machine_mode mode = GET_MODE(dstp);
+      enum machine_mode mode = GET_MODE(constant_reg);
       if (GET_MODE_SIZE(mode) > 4)
 	continue;
 
       //     printf("mode size: %d\n", GET_MODE_SIZE(mode));
 
-      rtx reg = dstp == left ? right : left;
-      rtx plus = gen_rtx_PLUS(mode, copy_reg (reg, -1), gen_rtx_CONST_INT (mode, intval));
+      rtx reg = constant_reg == left ? right : constant_reg == right ? left : 0;
 
-      rtx_insn * neuprev = make_insn_raw (gen_rtx_SET(copy_reg (reg, -1), plus));
-
-      int num_clobbers_to_add = 0;
-      int insn_code_number = recog (PATTERN (neuprev), neuprev, &num_clobbers_to_add);
-      if (insn_code_number < 0 || !check_asm_operands (PATTERN (neuprev)))
+      // no gain with address regs.
+      if (!reg || REGNO(reg) > 7)
 	continue;
 
-      // also convert current statement to cmp #0, reg
-      SET_INSN_DELETED(insn);
-      rtx neu = gen_rtx_SET(cc0_rtx, gen_rtx_COMPARE(mode, copy_reg(reg, -1), gen_rtx_CONST_INT(mode, 0)));
-      insn = emit_insn_after (neu, prev);
-      add_reg_note (insn, REG_DEAD, reg);
-
-      SET_INSN_DELETED(prev);
-      prev = emit_insn_before (PATTERN (neuprev), insn);
-
-      log ("const_cmp_to_sub replaced reg-reg compare with sub\n");
-
-      if (dstp != left)
+      // search the jump(s)
+      bool ok = true;
 	{
 	  // invert all conditions using this statement.
 	  std::vector<unsigned> todo;
@@ -1538,7 +1524,7 @@ opt_const_cmp_to_sub (void)
 	  done.resize (insns.size ());
 	  todo.push_back (index + 1);
 
-	  while (todo.size ())
+	  while (ok && todo.size ())
 	    {
 	      unsigned pos = todo[todo.size () - 1];
 	      todo.pop_back ();
@@ -1555,7 +1541,7 @@ opt_const_cmp_to_sub (void)
 		todo.push_back (pos + 1);
 
 	      rtx_insn * patchme = insns[pos];
-	      if (!JUMP_P(insn))
+	      if (!JUMP_P(patchme))
 		continue;
 
 	      std::map<rtx_insn *, unsigned>::iterator j = insn2index.find ((rtx_insn *) JUMP_LABEL(patchme));
@@ -1569,32 +1555,33 @@ opt_const_cmp_to_sub (void)
 		{
 		  rtx condition = XEXP(jmpsrc, 0);
 		  RTX_CODE code = GET_CODE(condition);
-		  RTX_CODE newcode = code;
-		  if (code == GE)
-		    newcode = LE;
-		  else if (code == GT)
-		    newcode = LT;
-		  else if (code == LT)
-		    newcode = GT;
-		  else if (code == LE)
-		    newcode = GE;
-		  else if (code == GEU)
-		    newcode = LEU;
-		  else if (code == GTU)
-		    newcode = LTU;
-		  else if (code == LTU)
-		    newcode = GTU;
-		  else if (code == LEU)
-		    newcode = GEU;
-
-		  if (code != newcode)
-		    {
-		      log ("patch jcc %d -> %d\n", code, newcode);
-		      XEXP(jmpsrc, 0) = gen_rtx_fmt_ee(newcode, VOIDmode, XEXP(condition, 0), XEXP(condition, 1));
-		    }
+		  ok = code == EQ || code == NE;
 		}
 	    }
 	}
+      if (!ok)
+	continue;
+
+      rtx plus = gen_rtx_PLUS(mode, copy_reg (reg, -1), gen_rtx_CONST_INT (mode, intval));
+
+      rtx_insn * neuprev = make_insn_raw (gen_rtx_SET(copy_reg (reg, -1), plus));
+
+      int num_clobbers_to_add = 0;
+      int insn_code_number = recog (PATTERN (neuprev), neuprev, &num_clobbers_to_add);
+      if (insn_code_number < 0 || !check_asm_operands (PATTERN (neuprev)))
+	continue;
+
+      // also convert current statement to cmp #0, reg
+      SET_INSN_DELETED(insn);
+      rtx copyreg = copy_reg (reg, -1);
+      rtx neu = gen_rtx_SET(cc0_rtx, gen_rtx_COMPARE(mode, copyreg, gen_rtx_CONST_INT(mode, 0)));
+      insn = emit_insn_after (neu, prev);
+      add_reg_note (insn, REG_DEAD, copyreg);
+
+      SET_INSN_DELETED(prev);
+      prev = emit_insn_before (PATTERN (neuprev), insn);
+
+      log ("const_cmp_to_sub replaced reg-reg compare with sub\n");
 
       ++change_count;
     }
