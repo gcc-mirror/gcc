@@ -1,3 +1,11 @@
+2017-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/deque/allocator/move_assign-2.cc: Improve
+	comment. Ensure first test works because allocator type propagates and
+	not because is_always_equal is true.
+	* testsuite/23_containers/vector/52591.cc: Likewise. Restore original
+	testcase that instantiates the move-assignment operator.
+
 2017-04-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80506
