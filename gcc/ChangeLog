@@ -1,3 +1,10 @@
+2017-04-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* sreal.c: Include backend.h, tree.h, gimple.h, cgraph.h and
+	data-streamer.h
+	(sreal::stream_out, sreal::stream_in): New.
+	* sreal.h (sreal::stream_out, sreal::stream_in): Declare.
+
 2017-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (s-options): Invoke opt-gather.awk with LC_ALL=C in the
