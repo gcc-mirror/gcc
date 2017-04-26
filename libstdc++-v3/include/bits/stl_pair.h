@@ -178,6 +178,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
   };
 
+  struct __wrap_nonesuch : std::__nonesuch {
+    explicit __wrap_nonesuch(const __nonesuch&) = delete;
+  };
+  
 #endif
 
  /**
@@ -359,7 +363,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator=(typename conditional<
 		__and_<is_copy_assignable<_T1>,
 		       is_copy_assignable<_T2>>::value,
-		const pair&, const __nonesuch&>::type __p)
+		const pair&, const __wrap_nonesuch&>::type __p)
       {
 	first = __p.first;
 	second = __p.second;
@@ -370,13 +374,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator=(typename conditional<
 		__not_<__and_<is_copy_assignable<_T1>,
 		              is_copy_assignable<_T2>>>::value,
-		const pair&, const __nonesuch&>::type __p) = delete;
+		const pair&, const __wrap_nonesuch&>::type __p) = delete;
 
       pair&
       operator=(typename conditional<
 		__and_<is_move_assignable<_T1>,
 		       is_move_assignable<_T2>>::value,
-		pair&&, __nonesuch&&>::type __p)
+		pair&&, __wrap_nonesuch&&>::type __p)
       noexcept(__and_<is_nothrow_move_assignable<_T1>,
 	              is_nothrow_move_assignable<_T2>>::value)
       {

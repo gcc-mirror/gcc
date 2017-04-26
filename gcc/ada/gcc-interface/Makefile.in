@@ -2013,7 +2013,7 @@ endif
 
 # AArch64 Linux
 ifeq ($(strip $(filter-out aarch64% linux%,$(target_cpu) $(target_os))),)
-  LIBGNAT_TARGET_PAIRS = \
+  LIBGNAT_TARGET_PAIRS_COMMON = \
   a-exetim.adb<a-exetim-posix.adb \
   a-exetim.ads<a-exetim-default.ads \
   a-intnam.ads<a-intnam-linux.ads \
@@ -2033,9 +2033,22 @@ ifeq ($(strip $(filter-out aarch64% linux%,$(target_cpu) $(target_os))),)
   s-taspri.ads<s-taspri-posix.ads \
   g-sercom.adb<g-sercom-linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
-  $(ATOMICS_BUILTINS_TARGET_PAIRS) \
+  $(ATOMICS_BUILTINS_TARGET_PAIRS)
+
+  LIBGNAT_TARGET_PAIRS_32 = \
+  system.ads<system-linux-aarch64-ilp32.ads
+
+  LIBGNAT_TARGET_PAIRS_64 = \
   system.ads<system-linux-x86_64.ads
   ## ^^ Note the above is a pretty-close placeholder.
+
+  ifneq (,$(or $(filter aarch64-linux-gnu, $(shell $(GCC_FOR_TARGET) $(GNATLIBCFLAGS) -print-multiarch)), $(filter ../lib64, $(shell $(GCC_FOR_TARGET) $(GNATLIBCFLAGS) -print-multi-os-directory))))
+    LIBGNAT_TARGET_PAIRS = \
+    $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_64)
+  else
+    LIBGNAT_TARGET_PAIRS = \
+    $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_32)
+  endif
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \

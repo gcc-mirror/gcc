@@ -1,3 +1,16 @@
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-09  Martin Liska  <mliska@suse.cz>
+
+	* c-ada-spec.c (macro_length): Increment value instead of a pointer.
+
+2017-03-21  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/79548
+	* c-common.c (set_underlying_type): Mark type used only when
+	original del is declared unused.
+
 2017-03-14  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/79962

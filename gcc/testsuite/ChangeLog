@@ -1,3 +1,296 @@
+2017-04-21  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/80361
+	* gfortran.dg/class_62.f90: New test case.
+
+2017-04-11  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2017-03-30  Martin Jambor  <mjambor@suse.cz>
+
+        PR ipa/77333
+        * g++.dg/ipa/pr77333.C: New test.
+
+2017-04-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2017-04-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/79733
+	* gcc.target/i386/pr79733.c: New test.
+
+	2017-04-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/80298
+	* gcc.target/i386/pr80298-1.c: New test.
+	* gcc.target/i386/pr80298-2.c: Ditto.
+
+2017-04-06  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/80082
+	* gcc.target/arm/atomic_loaddi_10.c: New testcase.
+	* gcc.target/arm/atomic_loaddi_11.c: Likewise.
+
+2017-04-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Back port from the trunk
+	2017-03-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/79947
+	* gcc.target/powerpc/pr79947.c: New test.
+
+2017-04-03  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2017-04-03  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/80246
+	* gcc.target/powerpc/dfp-builtin-1.c: Require hard_dfp, not
+	powerpc_vsx_ok.
+	(std, ld): Limit scan-assembler-times check to lp64.
+	(stwu, stw, lwz): Add scan-assembler-times check for ilp32.
+	* gcc.target/powerpc/dfp-builtin-2.c: Require hard_dfp, not
+	powerpc_vsx_ok.
+
+	PR target/80246
+	* gcc.target/powerpc/pr80246.c: Require hard_dfp.
+
+2017-04-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/71838
+	* gfortran.dg/submodule_26.f08 : New test.
+	* gfortran.dg/submodule_27.f08 : New test.
+
+2017-04-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/79676
+	* gfortran.dg/submodule_28.f08 : New test.
+
+2017-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/80218
+	* gcc.dg/pr80218.c: New test.
+
+2017-03-30  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2017-03-30  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/80246
+	* gcc.target/powerpc/dfp-builtin-1.c: Remove unneeded dg-skip-if for
+	Darwin and SPE.
+	(dxex, dxexq): Update return type.
+	(diex, diexq): Update argument type.
+	* gcc.target/powerpc/pr80246.c: New test.
+
+2017-03-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Back port from trunk
+	2017-03-16  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/71294
+	* g++.dg/pr71294.C: New test.
+
+2017-03-29  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/78644
+	* gcc.dg/pr78644-1.c: New testcase.
+	* gcc.dg/pr78644-2.c: Likewise.
+
+	2017-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80181
+	* gcc.dg/torture/pr80181.c: New testcase.
+
+2017-03-28  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2017-03-28  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80067
+	* c-c++-common/ubsan/shift-10.c: New test.
+
+2017-03-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Back port from trunk
+	2017-03-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/78543
+	* gcc.target/powerpc/pr78543.c: New test.
+
+2017-03-27  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
+	2017-03-24  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80092
+	* gcc.dg/tls/emutls-2.c:  Add dg-require-effective-target
+	global_constructor.
+
+2017-03-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/79434
+	* gfortran.dg/submodule_25.f08 : New test.
+
+2017-03-24  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
+	2017-03-24  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80092
+	* gcc.dg/torture/pr71881.c: Add dg-require-effective-target alloca.
+	* gcc.dg/torture/pr78742.c: Same.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.dg/tree-prof/pr66295.c: Skip unless on an x86 target.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-14  Martin Liska  <mliska@suse.cz>
+
+	PR lto/66295
+	* gcc.dg/tree-prof/pr66295.c: New test.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-02-22  Martin Liska  <mliska@suse.cz>
+
+	PR lto/79587
+	* gcc.dg/tree-prof/pr79587.c: New test.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-02-03  Martin Liska  <mliska@suse.cz>
+
+	PR lto/66295
+	* gcc.target/i386/mvc9.c: New test.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	PR target/79906
+	* g++.dg/ext/mv8.C: Add power* targets.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/pr65044.c: Add '.' in order to catch
+	apostrophes.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-20  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/79753
+	* gcc.target/i386/mpx/pr79753.c: New test.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-20  Martin Liska  <mliska@suse.cz>
+
+	PR target/79769
+	PR target/79770
+	* g++.dg/pr79769.C: New test.
+	* gcc.target/i386/mpx/pr79770.c: New test.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-13  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/78339
+	* gcc.target/i386/mpx/pr78339.c: New test.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-09  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/79631
+	* gcc.target/i386/mpx/pr79631.c: New test.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-09  Martin Liska  <mliska@suse.cz>
+
+	PR target/65705
+	PR target/69804
+	* gcc.target/i386/pr71458.c: Update scanned pattern.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-09  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/79761
+	* g++.dg/pr79761.C: New test.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-03  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/79803
+	* gcc.dg/tree-ssa/pr79803.c: New test.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-03-03  Martin Liska  <mliska@suse.cz>
+
+	PR rtl-optimization/79574
+	* gcc.dg/pr79574-2.c: New test.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-02-17  Martin Liska  <mliska@suse.cz>
+
+	PR rtl-optimization/79574
+	* gcc.dg/pr79574.c: New test.
+
+2017-03-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2016-06-13  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/71458
+	* gcc.target/i386/pr71458.c: New test.
+
+2017-03-21  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/79548
+	* g++.dg/warn/Wunused-var-26.C: New test.
+
+2017-03-21  Pat Haugen  <pthaugen@us.ibm.com>
+
+	Backport from mainline:
+	2017-03-17  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR target/79951
+	* gcc.target/powerpc/pr79951.c: New.
+
 2017-03-16  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

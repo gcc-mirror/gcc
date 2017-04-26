@@ -1263,15 +1263,40 @@ process_options (void)
       if (targetm.chkp_bound_mode () == VOIDmode)
 	{
 	  error_at (UNKNOWN_LOCATION,
-		    "-fcheck-pointer-bounds is not supported for this target");
+		    "%<-fcheck-pointer-bounds%> is not supported for this "
+		    "target");
+	  flag_check_pointer_bounds = 0;
+	}
+
+      if (flag_sanitize & SANITIZE_BOUNDS_STRICT)
+	{
+	  error_at (UNKNOWN_LOCATION,
+		    "%<-fcheck-pointer-bounds%> is not supported with "
+		    "%<-fsanitize=bounds-strict%>");
+	  flag_check_pointer_bounds = 0;
+	}
+      else if (flag_sanitize & SANITIZE_BOUNDS)
+	{
+	  error_at (UNKNOWN_LOCATION,
+		    "%<-fcheck-pointer-bounds%> is not supported with "
+		    "%<-fsanitize=bounds%>");
 	  flag_check_pointer_bounds = 0;
 	}
 
       if (flag_sanitize & SANITIZE_ADDRESS)
 	{
 	  error_at (UNKNOWN_LOCATION,
-		    "-fcheck-pointer-bounds is not supported with "
+		    "%<-fcheck-pointer-bounds%> is not supported with "
 		    "Address Sanitizer");
+	  flag_check_pointer_bounds = 0;
+	}
+
+      if (flag_sanitize & SANITIZE_THREAD)
+	{
+	  error_at (UNKNOWN_LOCATION,
+		    "%<-fcheck-pointer-bounds%> is not supported with "
+		    "Thread Sanitizer");
+
 	  flag_check_pointer_bounds = 0;
 	}
     }

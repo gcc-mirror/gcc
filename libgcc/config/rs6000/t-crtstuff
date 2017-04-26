@@ -1,3 +1,6 @@
 # If .sdata is enabled __CTOR_{LIST,END}__ go into .sdata instead of
 # .ctors.
-CRTSTUFF_T_CFLAGS = -msdata=none
+# Do not build crtend.o with -Os as that can result in references to
+# out-of-line register save/restore functions, which may be unresolved
+# as crtend.o is linked after libgcc.a.  See PR45053.
+CRTSTUFF_T_CFLAGS = -msdata=none -O2

@@ -1,7 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-linux* } } } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
-/* { dg-skip-if "" { powerpc*-*-*spe* } { "*" } { "" } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target hard_dfp } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
 /* { dg-options "-mcpu=power7 -O2" } */
 /* { dg-final { scan-assembler-times "ddedpd " 4    } } */
@@ -10,11 +8,17 @@
 /* { dg-final { scan-assembler-times "diex "   1    } } */
 /* { dg-final { scan-assembler-times "dscli "  2    } } */
 /* { dg-final { scan-assembler-times "dscri "  2    } } */
+/* { dg-final { scan-assembler-times "std "    1    { target lp64 } } } */
+/* { dg-final { scan-assembler-times "ld "     1    { target lp64 } } } */
+/* 32-bit needs a stack frame, and needs two GPR mem insns per _Decimal64.  */
+/* { dg-final { scan-assembler-times "stwu "   2    { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "stw "    2    { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "lwz "    2    { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "stfd "   1    } } */
+/* { dg-final { scan-assembler-times "lfd "    1    } } */
 /* { dg-final { scan-assembler-not   "bl __builtin" } } */
 /* { dg-final { scan-assembler-not   "dctqpq"       } } */
 /* { dg-final { scan-assembler-not   "drdpq"        } } */
-/* { dg-final { scan-assembler-not   "stfd"         } } */
-/* { dg-final { scan-assembler-not   "lfd"          } } */
 
 _Decimal64
 do_dedpd_0 (_Decimal64 a)
@@ -52,14 +56,14 @@ do_enbcd_1 (_Decimal64 a)
   return __builtin_denbcd (1, a);
 }
 
-_Decimal64
+long long
 do_xex (_Decimal64 a)
 {
   return __builtin_dxex (a);
 }
 
 _Decimal64
-do_iex (_Decimal64 a, _Decimal64 b)
+do_iex (long long a, _Decimal64 b)
 {
   return __builtin_diex (a, b);
 }

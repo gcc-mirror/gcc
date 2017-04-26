@@ -27,3 +27,5 @@
 	builtin_assert ("system=rtems");	\
 	TARGET_BPABI_CPP_BUILTINS();    	\
     } while (0)
+
+#define ARM_DEFAULT_SHORT_ENUMS false

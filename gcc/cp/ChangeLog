@@ -1,3 +1,55 @@
+2017-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80150 - ICE with overloaded variadic deduction.
+	* pt.c (try_one_overload): Remove asserts.
+
+	PR c++/77563 - missing ambiguous conversion error.
+	* call.c (convert_like_real): Use LOOKUP_IMPLICIT.
+
+	PR c++/79519 - ICE with deleted template friend.
+	* decl.c (grokdeclarator): Complain about misplaced function
+	definition using =, as well.
+
+	PR c++/79640 - infinite recursion with generic lambda.
+	* pt.c (tsubst_copy) [VAR_DECL]: Register the dummy instantiation
+	before substituting its initializer.
+
+	PR c++/80043 - ICE with -fpermissive
+	* typeck.c (convert_for_assignment): Handle instantiate_type
+	not giving an error.
+
+	PR c++/78282 - auto template and pack expansion
+	* pt.c (find_parameter_packs_r): Don't walk into the type of
+	templates other than template template-parameters.
+
+	PR c++/79607 - ICE with T{} initializer
+	* decl.c (type_dependent_init_p): Check the type of a CONSTRUCTOR.
+
+	PR c++/79566 - elaborated-type-specifier in range for
+	* parser.c (cp_parser_simple_declaration): Fix check for type
+	definition.
+
+	PR c++/79580 - ICE with compound literal
+	* parser.c (cp_parser_class_head): If we're in the middle of an
+	expression, use ts_within_enclosing_non_class.
+
+	PR c++/79508 - lookup error with member template
+	* parser.c (cp_parser_template_name): Clear
+	parser->context->object_type if we aren't doing lookup.
+
+	PR c++/79050 - ICE with undeduced auto and LTO
+	* decl.c (poplevel): Remove undeduced auto decls.
+
+	PR c++/79461 - ICE with lambda in constexpr constructor
+	* constexpr.c (build_data_member_initialization): Ignore
+	initialization of a local variable.
+
+2017-03-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/80091
+	* lambda.c (maybe_generic_this_capture): Capture when fn
+	is an identifier node.
+
 2017-03-15  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
