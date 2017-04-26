@@ -1,3 +1,7 @@
+2017-04-26  Tom de Vries  <tom@codesourcery.com>
+
+	* gen_autofdo_event.py: Fix comment.
+
 2017-04-11  Damian Rouson  <damian@sourceryinstitute.org>
 
         * download_prerequisites (md5_check): New function emulates Linux
