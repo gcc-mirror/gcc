@@ -25,9 +25,9 @@
 #include <type_traits>
 
 
-// As an extension we allow move-assignment of std::deque when the element
-// type is not MoveAssignable, as long as the allocator type propagates or
-// is known to always compare equal.
+// Move-assignment of std::deque<T> is allowed for non-MoveAssignable T when
+// the allocator type propagates. As an extension we also allow it if the
+// allocator type is known to always compare equal.
 
 struct C
 {
@@ -43,6 +43,7 @@ struct A1 : std::allocator<T>
   template<typename U> A1(const A1<U>&) { }
 
   using propagate_on_container_move_assignment = std::true_type;
+  using is_always_equal = std::false_type;
 };
 
 void test01()
