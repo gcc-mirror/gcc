@@ -58,7 +58,6 @@
 #include "backend.h"
 #include "target.h"
 #include "rtl.h"
-#include "df.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "recog.h"
@@ -243,6 +242,9 @@ struct insn_info
   }
 
   void
+  scan_call (rtx_insn *);
+
+  void
   scan (rtx);
 
   /* return bits for alternate free registers. */
@@ -266,6 +268,31 @@ struct insn_info
     return mask & ~_use;
   }
 };
+
+void
+insn_info::scan_call (rtx_insn * insn)
+{
+  /* add mregparm registers. */
+  for (rtx link = CALL_INSN_FUNCTION_USAGE(insn); link; link = XEXP(link, 1))
+    {
+      rtx op, reg;
+
+      if (GET_CODE (op = XEXP (link, 0)) == USE && REG_P(reg = XEXP (op, 0)))
+	for (unsigned r = REGNO(reg); r <= END_REGNO (reg); ++r)
+	  use (r);
+    }
+  /* also mark all registers as not renamable */
+  _hard = _use;
+
+  scan (PATTERN (insn));
+
+  /* mark scratch registers. */
+  def (0);
+  def (1);
+  def (8);
+  def (9);
+
+}
 
 /* scan rtx for registers and set the corresponding flags. */
 void
@@ -478,8 +505,6 @@ update_insns ()
   rtx_insn *insn, *next;
   clear ();
 
-  // df_insn_rescan_all ();
-
   char inproepilogue = 1;
   /* create a vector with relevant insn. */
   for (insn = get_insns (); insn; insn = next)
@@ -567,26 +592,7 @@ update_insn_infos (void)
 	  if (CALL_P(insn))
 	    {
 	      insn_info use;
-
-	      /* add mregparm registers. */
-	      for (rtx link = CALL_INSN_FUNCTION_USAGE(insn); link; link = XEXP(link, 1))
-		{
-		  rtx op, reg;
-
-		  if (GET_CODE (op = XEXP (link, 0)) == USE && REG_P(reg = XEXP (op, 0)))
-		    for (unsigned r = REGNO(reg); r <= END_REGNO (reg); ++r)
-		      use.use (r);
-		}
-	      /* also mark all registers as not renamable */
-	      use._hard = use._use;
-
-	      use.scan (pattern);
-
-	      /* mark scratch registers. */
-	      use.def (0);
-	      use.def (1);
-	      use.def (8);
-	      use.def (9);
+	      use.scan_call (insn);
 
 	      infos[pos] = use | ii;
 	      ii.updateWith (use);
@@ -687,6 +693,27 @@ bit2regno (unsigned bit)
   return regno;
 }
 
+/* check if that register is touched between from and to, excluding from and to .*/
+static bool
+is_reg_touched_between (unsigned regno, int from, int to)
+{
+  for (int index = from + 1; index < to; ++index)
+    {
+      insn_info ii;
+      rtx_insn * insn = insns[index];
+      if (CALL_P(insn))
+	ii.scan_call (insn);
+      else
+	ii.scan (PATTERN (insn));
+      if (ii.is_use (regno) || ii.is_def (regno))
+	return true;
+    }
+  return false;
+}
+
+/*
+ * search backward and find the initial assignment for that regno.
+ */
 static unsigned
 find_start (std::set<unsigned> & found, unsigned start, unsigned rename_regno)
 {
@@ -1045,47 +1072,76 @@ opt_propagate_moves ()
 		      if (rtx_equal_p (srci, dstj) && rtx_equal_p (srcj, dsti))
 			{
 			  /* Ensure correct usage. */
-			  if (!reg_used_between_p (srci, current_label, ii) && !reg_used_between_p (srci, ii, jj)
-			      && !reg_used_between_p (srci, jj, insn) && !reg_used_between_p (dsti, current_label, ii)
-			      && !reg_used_between_p (dsti, jj, insn))
+			  if (is_reg_touched_between (REGNO(srci), current_label_index, *i) // label ... move src,x
+			  || is_reg_touched_between (REGNO(srci), *i, *j) // move src,x ... move x,src
+			      || is_reg_touched_between (REGNO(srci), *j, index) // move x,src ... jcc
+			      || is_reg_touched_between (REGNO(dsti), *j, index) // label ... move src,x
+			      || is_reg_touched_between (REGNO(dsti), *j, index) // move x,src ... jcc
+							 )
 			    {
-			      std::vector<int> fixups;
+			      ++j;
+			      continue;
+			    }
 
-			      /* if there are jumps out of the loop,
-			       * check if the modification occurs before the jump,
-			       * and if, that it's a plus const.
-			       */
-			      if (jump_out.size ())
+			  std::vector<int> fixups;
+
+			  /* if there are jumps out of the loop,
+			   * check if the modification occurs before the jump,
+			   * and if, that it's a plus const.
+			   */
+			  if (jump_out.size ())
+			    {
+			      std::vector<rtx_insn *>::iterator label_iter = jump_out.begin ();
+			      int fixup = 0;
+
+			      for (unsigned k = *i + 1; k != *j; ++k)
 				{
-				  std::vector<rtx_insn *>::iterator label_iter = jump_out.begin ();
-				  int fixup = 0;
-
-				  for (unsigned k = *i + 1; k != *j; ++k)
+				  rtx_insn * check = insns[k];
+				  if (JUMP_P(check))
 				    {
-				      rtx_insn * check = insns[k];
-				      if (JUMP_P(check))
+				      fixups.push_back (fixup);
+				      if (++label_iter == jump_out.end ())
+					break;
+				      continue;
+				    }
+
+				  if (reg_overlap_mentioned_p (dsti, PATTERN (check)))
+				    {
+				      /* right now only support auto_incs. */
+				      rtx set = single_set (check);
+				      rtx src = SET_SRC(set);
+				      rtx dst = SET_DEST(set);
+
+				      if (reg_overlap_mentioned_p (dsti, dst))
 					{
-					  fixups.push_back (fixup);
-					  if (++label_iter == jump_out.end ())
+					  if (REG_P(dst))
 					    break;
-					  continue;
+					  if (!MEM_P(dst))
+					    break;
+
+					  rtx x = XEXP(dst, 0);
+					  if (GET_CODE(x) == REG)
+					    fixup += 0; // direct use
+					  else if (GET_CODE(x) == PRE_INC ||
+					  GET_CODE(x) == POST_INC)
+					    fixup -= GET_MODE_SIZE(GET_MODE(dst));
+					  else if (GET_CODE(dst) == PRE_DEC ||
+					  GET_CODE(dst) == POST_DEC)
+					    fixup += GET_MODE_SIZE(GET_MODE(dst));
+					  else
+					    break;
 					}
 
-				      if (reg_overlap_mentioned_p (dsti, PATTERN (check)))
+				      if (reg_overlap_mentioned_p (dsti, src))
 					{
-					  /* right now only support auto_incs. */
-					  rtx set = single_set (check);
-					  rtx src = SET_SRC(set);
-					  rtx dst = SET_DEST(set);
-
-					  if (reg_overlap_mentioned_p (dsti, dst))
+					  if (REG_P(src))
+					    fixup += 0;
+					  else
 					    {
-					      if (REG_P(dst))
-						break;
-					      if (!MEM_P(dst))
+					      if (!MEM_P(src))
 						break;
 
-					      rtx x = XEXP(dst, 0);
+					      rtx x = XEXP(src, 0);
 					      if (GET_CODE(x) == REG)
 						fixup += 0; // direct use
 					      else if (GET_CODE(x) == PRE_INC ||
@@ -1097,91 +1153,64 @@ opt_propagate_moves ()
 					      else
 						break;
 					    }
-
-					  if (reg_overlap_mentioned_p (dsti, src))
-					    {
-					      if (REG_P(src))
-						fixup += 0;
-					      else
-						{
-						  if (!MEM_P(src))
-						    break;
-
-						  rtx x = XEXP(src, 0);
-						  if (GET_CODE(x) == REG)
-						    fixup += 0; // direct use
-						  else if (GET_CODE(x) == PRE_INC ||
-						  GET_CODE(x) == POST_INC)
-						    fixup -= GET_MODE_SIZE(GET_MODE(dst));
-						  else if (GET_CODE(dst) == PRE_DEC ||
-						  GET_CODE(dst) == POST_DEC)
-						    fixup += GET_MODE_SIZE(GET_MODE(dst));
-						  else
-						    break;
-						}
-					    }
 					}
 				    }
 				}
+			    }
 
-			      /* got a fixup for all jump_outs? */
-			      if (fixups.size () == jump_out.size ())
+			  /* got a fixup for all jump_outs? */
+			  if (fixups.size () == jump_out.size ())
+			    {
+			      rtx_insn * before = insns[current_label_index - 1];
+			      rtx_insn * after = insns[index + 1];
+			      rtx bset = single_set (before);
+
+			      log ("propagate_moves condition met, moving regs %s, %s\n",
+			      reg_names[REGNO(srci)],
+				   reg_names[REGNO(dsti)]);
+
+			      /* Move in front of loop and mark as dead. */
+			      rtx_insn * newii = make_insn_raw (PATTERN (ii));
+			      SET_INSN_DELETED(ii);
+
+			      /* Plus check if the reg was just loaded. */
+			      if (bset)
 				{
-				  rtx_insn * before = insns[current_label_index - 1];
-				  rtx_insn * after = insns[index + 1];
-				  rtx bset = single_set (before);
-
-				  log ("propagate_moves condition met, moving regs %s, %s\n",
-				  reg_names[REGNO(srci)],
-				       reg_names[REGNO(dsti)]);
-
-				  /* Move in front of loop and mark as dead. */
-				  rtx_insn * newii = make_insn_raw (PATTERN (ii));
-				  SET_INSN_DELETED(ii);
-
-				  /* Plus check if the reg was just loaded. */
-				  if (bset)
+				  rtx bdst = SET_DEST(bset);
+				  if (REG_P(bdst) && REGNO(bdst) == REGNO(srci))
 				    {
-				      rtx bdst = SET_DEST(bset);
-				      if (REG_P(bdst) && REGNO(bdst) == REGNO(srci))
-					{
-					  SET_SRC(PATTERN(newii)) = SET_SRC(bset);
+				      SET_SRC(PATTERN(newii)) = SET_SRC(bset);
 //					  SET_INSN_DELETED(ii);
-					}
 				    }
-				  else
-				    add_reg_note (newii, REG_DEAD, srci);
-
-				  add_insn_after (newii, before, 0);
-
-				  /* Move behind loop - into next BB. */
-				  rtx_insn * newjj = make_insn_raw (PATTERN (jj));
-				  add_insn_before (newjj, after, 0);
-				  SET_INSN_DELETED(jj);
-
-				  reg_reg.erase (j);
-				  reg_reg.erase (i);
-				  j = reg_reg.end ();
-				  inc = false;
-
-				  // df_insn_rescan (newii);
-				  // df_insn_rescan (newjj);
-
-				  /* add fixes if there were jumps out of the loop. */
-				  if (jump_out.size ())
-				    {
-				      log ("propagate_moves fixing %d jump outs\n", jump_out.size ());
-
-				      for (unsigned k = 0; k < jump_out.size (); ++k)
-					{
-					  rtx neu = gen_rtx_SET(
-					      dstj, gen_rtx_PLUS(Pmode, dsti, gen_rtx_CONST_INT(Pmode, fixups[k])));
-					  rtx_insn * neui = emit_insn_after (neu, jump_out[k]);
-					  // df_insn_rescan (neui);
-					}
-				    }
-				  ++change_count;
 				}
+			      else
+				add_reg_note (newii, REG_DEAD, srci);
+
+			      add_insn_after (newii, before, 0);
+
+			      /* Move behind loop - into next BB. */
+			      rtx_insn * newjj = make_insn_raw (PATTERN (jj));
+			      add_insn_before (newjj, after, 0);
+			      SET_INSN_DELETED(jj);
+
+			      reg_reg.erase (j);
+			      reg_reg.erase (i);
+			      j = reg_reg.end ();
+			      inc = false;
+
+			      /* add fixes if there were jumps out of the loop. */
+			      if (jump_out.size ())
+				{
+				  log ("propagate_moves fixing %d jump outs\n", jump_out.size ());
+
+				  for (unsigned k = 0; k < jump_out.size (); ++k)
+				    {
+				      rtx neu = gen_rtx_SET(
+					  dstj, gen_rtx_PLUS(Pmode, dsti, gen_rtx_CONST_INT(Pmode, fixups[k])));
+				      rtx_insn * neui = emit_insn_after (neu, jump_out[k]);
+				    }
+				}
+			      ++change_count;
 			    }
 			}
 		      if (inc)
@@ -1276,8 +1305,6 @@ opt_strcpy ()
 
 			  SET_INSN_DELETED(x2reg);
 			  SET_INSN_DELETED(insn);
-
-			  // df_insn_rescan (reg2x);
 
 			  ++change_count;
 			}
@@ -1393,9 +1420,6 @@ opt_commute_add_move (void)
 	  insn = emit_insn_before (PATTERN (newinsn), next);
 
 	  add_reg_note (next, REG_INC, reg1dst);
-
-	  // df_insn_rescan (insn);
-	  // df_insn_rescan (next);
 
 	  ++change_count;
 	}
@@ -1579,14 +1603,14 @@ opt_const_cmp_to_sub (void)
 }
 
 /*
- * Some optimizations (e.g. propagate_moves) might result into an unuses assignment behind the loop.
+ * Some optimizations (e.g. propagate_moves) might result into an unused assignment behind the loop.
  * delete those insns.
  */
 static unsigned
 opt_elim_dead_assign (void)
 {
   unsigned change_count = 0;
-  for (unsigned index = 0; index + 1 < insns.size (); ++index)
+  for (int index = insns.size () - 1; index >= 0; --index)
     {
       rtx_insn * insn = insns[index];
       if (!NONJUMP_INSN_P(insn))
@@ -2186,10 +2210,6 @@ namespace
   unsigned
   pass_bbb_optimizations::execute_bbb_optimizations (void)
   {
-    // df_set_flags (df_LR_RUN_DCE + df_DEFER_INSN_RESCAN);
-    // df_note_add_problem ();
-    // df_analyze ();
-
     be_verbose = strchr (string_bbb_opts, 'v');
 
     bool do_opt_strcpy = strchr (string_bbb_opts, 's') || strchr (string_bbb_opts, '+');
