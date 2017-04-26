@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_IPA_INLINE_H
 #define GCC_IPA_INLINE_H
 
+#include "sreal.h"
+
 
 /* Representation of inline parameters that do depend on context function is
    inlined into (i.e. known constant values of function parameters.
@@ -109,7 +111,7 @@ struct GTY(()) size_time_entry
 {
   struct predicate predicate;
   int size;
-  int time;
+  sreal GTY((skip)) time;
 };
 
 /* Function inlining information.  */
@@ -122,7 +124,7 @@ struct GTY(()) inline_summary
   /* Size of the function body.  */
   int self_size;
   /* Time of the function body.  */
-  int self_time;
+  sreal GTY((skip)) self_time;
   /* Minimal size increase after inlining.  */
   int min_size;
 
@@ -146,7 +148,7 @@ struct GTY(()) inline_summary
   /* Expected offset of the stack frame of inlined function.  */
   HOST_WIDE_INT stack_frame_offset;
   /* Estimated size of the function after inlining.  */
-  int time;
+  sreal GTY((skip)) time;
   int size;
 
   /* Conditional size/time information.  The summaries are being

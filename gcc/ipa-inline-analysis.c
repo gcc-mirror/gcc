@@ -96,11 +96,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgexpand.h"
 #include "gimplify.h"
 
-/* Estimate runtime of function can easilly run into huge numbers with many
-   nested loops.  Be sure we can compute time * INLINE_SIZE_SCALE * 2 in an
-   integer.  For anything larger we use gcov_type.  */
-#define MAX_TIME 500000
-
 /* Number of bits in integer, but we really want to be stable across different
    hosts.  */
 #define NUM_CONDITIONS 32
@@ -668,7 +663,7 @@ dump_inline_hints (FILE *f, inline_hints hints)
 /* Record SIZE and TIME under condition PRED into the inline summary.  */
 
 static void
-account_size_time (struct inline_summary *summary, int size, int time,
+account_size_time (struct inline_summary *summary, int size, sreal time,
 		   struct predicate *pred)
 {
   size_time_entry *e;
@@ -680,12 +675,9 @@ account_size_time (struct inline_summary *summary, int size, int time,
 
   /* We need to create initial empty unconitional clause, but otherwie
      we don't need to account empty times and sizes.  */
-  if (!size && !time && summary->entry)
+  if (!size && time == 0 && summary->entry)
     return;
 
-  /* Watch overflow that might result from insane profiles.  */
-  if (time > MAX_TIME * INLINE_TIME_SCALE)
-    time = MAX_TIME * INLINE_TIME_SCALE;
   gcc_assert (time >= 0);
 
   for (i = 0; vec_safe_iterate (summary->entry, i, &e); i++)
@@ -705,12 +697,12 @@ account_size_time (struct inline_summary *summary, int size, int time,
 		 "\t\tReached limit on number of entries, "
 		 "ignoring the predicate.");
     }
-  if (dump_file && (dump_flags & TDF_DETAILS) && (time || size))
+  if (dump_file && (dump_flags & TDF_DETAILS) && (time != 0 || size))
     {
       fprintf (dump_file,
 	       "\t\tAccounting size:%3.2f, time:%3.2f on %spredicate:",
 	       ((double) size) / INLINE_SIZE_SCALE,
-	       ((double) time) / INLINE_TIME_SCALE, found ? "" : "new ");
+	       (time.to_double ()) / INLINE_TIME_SCALE, found ? "" : "new ");
       dump_predicate (dump_file, summary->conds, pred);
     }
   if (!found)
@@ -725,8 +717,6 @@ account_size_time (struct inline_summary *summary, int size, int time,
     {
       e->size += size;
       e->time += time;
-      if (e->time > MAX_TIME * INLINE_TIME_SCALE)
-	e->time = MAX_TIME * INLINE_TIME_SCALE;
     }
 }
 
@@ -1048,7 +1038,8 @@ reset_inline_summary (struct cgraph_node *node,
 {
   struct cgraph_edge *e;
 
-  info->self_size = info->self_time = 0;
+  info->self_size = 0;
+  info->self_time = 0;
   info->estimated_stack_size = 0;
   info->estimated_self_stack_size = 0;
   info->stack_frame_offset = 0;
@@ -1434,8 +1425,8 @@ dump_inline_summary (FILE *f, struct cgraph_node *node)
 	fprintf (f, " contains_cilk_spawn");
       if (s->fp_expressions)
 	fprintf (f, " fp_expression");
-      fprintf (f, "\n  self time:       %i\n", s->self_time);
-      fprintf (f, "  global time:     %i\n", s->time);
+      fprintf (f, "\n  self time:       %f\n", s->self_time.to_double ());
+      fprintf (f, "  global time:     %f\n", s->time.to_double ());
       fprintf (f, "  self size:       %i\n", s->self_size);
       fprintf (f, "  global size:     %i\n", s->size);
       fprintf (f, "  min size:       %i\n", s->min_size);
@@ -1450,7 +1441,7 @@ dump_inline_summary (FILE *f, struct cgraph_node *node)
 	{
 	  fprintf (f, "    size:%f, time:%f, predicate:",
 		   (double) e->size / INLINE_SIZE_SCALE,
-		   (double) e->time / INLINE_TIME_SCALE);
+		   e->time.to_double () / INLINE_TIME_SCALE);
 	  dump_predicate (f, s->conds, &e->predicate);
 	}
       if (s->loop_iterations)
@@ -2534,7 +2525,7 @@ fp_expression_p (gimple *stmt)
 static void
 estimate_function_body_sizes (struct cgraph_node *node, bool early)
 {
-  gcov_type time = 0;
+  sreal time = 0;
   /* Estimate static overhead for function prologue/epilogue and alignment. */
   int size = 2;
   /* Benefits are scaled by probability of elimination that is in range
@@ -2780,8 +2771,6 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		{
 		  time += this_time;
 		  size += this_size;
-		  if (time > MAX_TIME * INLINE_TIME_SCALE)
-		    time = MAX_TIME * INLINE_TIME_SCALE;
 		}
 
 	      /* We account everything but the calls.  Calls have their own
@@ -2814,9 +2803,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	}
     }
   set_hint_predicate (&inline_summaries->get (node)->array_index, array_index);
-  time = (time + CGRAPH_FREQ_BASE / 2) / CGRAPH_FREQ_BASE;
-  if (time > MAX_TIME)
-    time = MAX_TIME;
+  time = time / CGRAPH_FREQ_BASE;
   free (order);
 
   if (nonconstant_names.exists () && !early)
@@ -3167,7 +3154,7 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
 
 static inline void
 estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
-			     int *time,
+			     sreal *time,
 			     int prob,
 			     vec<tree> known_vals,
 			     vec<ipa_polymorphic_call_context> known_contexts,
@@ -3187,10 +3174,8 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
   *size += cur_size;
   if (min_size)
     *min_size += cur_size;
-  *time += apply_probability ((gcov_type) call_time, prob)
+  *time += call_time * prob / REG_BR_PROB_BASE
     * e->frequency * (INLINE_TIME_SCALE / CGRAPH_FREQ_BASE);
-  if (*time > MAX_TIME * INLINE_TIME_SCALE)
-    *time = MAX_TIME * INLINE_TIME_SCALE;
 }
 
 
@@ -3201,7 +3186,7 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
 
 static void
 estimate_calls_size_and_time (struct cgraph_node *node, int *size,
-			      int *min_size, int *time,
+			      int *min_size, sreal *time,
 			      inline_hints *hints,
 			      clause_t possible_truths,
 			      vec<tree> known_vals,
@@ -3283,7 +3268,7 @@ estimate_node_size_and_time (struct cgraph_node *node,
   struct inline_summary *info = inline_summaries->get (node);
   size_time_entry *e;
   int size = 0;
-  int time = 0;
+  sreal time = 0;
   int min_size = 0;
   inline_hints hints = 0;
   int i;
@@ -3323,10 +3308,8 @@ estimate_node_size_and_time (struct cgraph_node *node,
 					      inline_param_summary);
 	    gcc_checking_assert (prob >= 0);
 	    gcc_checking_assert (prob <= REG_BR_PROB_BASE);
-	    time += apply_probability ((gcov_type) e->time, prob);
+	    time += e->time * prob / REG_BR_PROB_BASE;
 	  }
-	if (time > MAX_TIME * INLINE_TIME_SCALE)
-	  time = MAX_TIME * INLINE_TIME_SCALE;
 	gcc_checking_assert (time >= 0);
 
       }
@@ -3358,9 +3341,9 @@ estimate_node_size_and_time (struct cgraph_node *node,
   min_size = RDIV (min_size, INLINE_SIZE_SCALE);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\n   size:%i time:%i\n", (int) size, (int) time);
+    fprintf (dump_file, "\n   size:%i time:%f\n", (int) size, time.to_double ());
   if (ret_time)
-    *ret_time = time;
+    *ret_time = time.to_int ();
   if (ret_size)
     *ret_size = size;
   if (ret_min_size)
@@ -3727,14 +3710,11 @@ inline_merge_summary (struct cgraph_edge *edge)
 					    &toplev_predicate);
       if (!false_predicate_p (&p))
 	{
-	  gcov_type add_time = ((gcov_type) e->time * edge->frequency
-				+ CGRAPH_FREQ_BASE / 2) / CGRAPH_FREQ_BASE;
+	  sreal add_time = e->time * edge->frequency / CGRAPH_FREQ_BASE;
 	  int prob = predicate_probability (callee_info->conds,
 					    &e->predicate,
 					    clause, es->param);
-	  add_time = apply_probability ((gcov_type) add_time, prob);
-	  if (add_time > MAX_TIME * INLINE_TIME_SCALE)
-	    add_time = MAX_TIME * INLINE_TIME_SCALE;
+	  add_time = add_time * prob / REG_BR_PROB_BASE;
 	  if (prob != REG_BR_PROB_BASE
 	      && dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -3782,14 +3762,12 @@ inline_update_overall_summary (struct cgraph_node *node)
   for (i = 0; vec_safe_iterate (info->entry, i, &e); i++)
     {
       info->size += e->size, info->time += e->time;
-      if (info->time > MAX_TIME * INLINE_TIME_SCALE)
-	info->time = MAX_TIME * INLINE_TIME_SCALE;
     }
   estimate_calls_size_and_time (node, &info->size, &info->min_size,
 				&info->time, NULL,
 				~(clause_t) (1 << predicate_false_condition),
 				vNULL, vNULL, vNULL);
-  info->time = (info->time + INLINE_TIME_SCALE / 2) / INLINE_TIME_SCALE;
+  info->time = info->time / INLINE_TIME_SCALE;
   info->size = (info->size + INLINE_SIZE_SCALE / 2) / INLINE_SIZE_SCALE;
 }
 
@@ -3965,15 +3943,13 @@ estimate_time_after_inlining (struct cgraph_node *node,
   struct inline_edge_summary *es = inline_edge_summary (edge);
   if (!es->predicate || !false_predicate_p (es->predicate))
     {
-      gcov_type time =
+      sreal time =
 	inline_summaries->get (node)->time + estimate_edge_time (edge);
       if (time < 0)
 	time = 0;
-      if (time > MAX_TIME)
-	time = MAX_TIME;
-      return time;
+      return time.to_int ();
     }
-  return inline_summaries->get (node)->time;
+  return inline_summaries->get (node)->time.to_int ();
 }
 
 
@@ -4317,7 +4293,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       info->estimated_stack_size
 	= info->estimated_self_stack_size = streamer_read_uhwi (&ib);
       info->size = info->self_size = streamer_read_uhwi (&ib);
-      info->time = info->self_time = streamer_read_uhwi (&ib);
+      info->time = info->self_time = sreal::stream_in (&ib);
 
       bp = streamer_read_bitpack (&ib);
       info->inlinable = bp_unpack_value (&bp, 1);
@@ -4347,7 +4323,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	  struct size_time_entry e;
 
 	  e.size = streamer_read_uhwi (&ib);
-	  e.time = streamer_read_uhwi (&ib);
+	  e.time = sreal::stream_in (&ib);
 	  e.predicate = read_predicate (&ib);
 
 	  vec_safe_push (info->entry, e);
@@ -4482,7 +4458,7 @@ inline_write_summary (void)
 	  streamer_write_uhwi (ob, lto_symtab_encoder_encode (encoder, cnode));
 	  streamer_write_hwi (ob, info->estimated_self_stack_size);
 	  streamer_write_hwi (ob, info->self_size);
-	  streamer_write_hwi (ob, info->self_time);
+	  info->self_time.stream_out (ob);
 	  bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, info->inlinable, 1);
 	  bp_pack_value (&bp, info->contains_cilk_spawn, 1);
@@ -4506,7 +4482,7 @@ inline_write_summary (void)
 	  for (i = 0; vec_safe_iterate (info->entry, i, &e); i++)
 	    {
 	      streamer_write_uhwi (ob, e->size);
-	      streamer_write_uhwi (ob, e->time);
+	      e->time.stream_out (ob);
 	      write_predicate (ob, &e->predicate);
 	    }
 	  write_predicate (ob, info->loop_iterations);

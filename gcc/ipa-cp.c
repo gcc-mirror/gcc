@@ -2832,7 +2832,7 @@ estimate_local_effects (struct cgraph_node *node)
   vec<ipa_agg_jump_function> known_aggs;
   vec<ipa_agg_jump_function_p> known_aggs_ptrs;
   bool always_const;
-  int base_time = inline_summaries->get (node)->time;
+  int base_time = inline_summaries->get (node)->time.to_int ();
   int removable_params_cost;
 
   if (!count || !ipcp_versionable_function_p (node))

@@ -1,5 +1,29 @@
 2017-04-25  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-cp.c (estimate_local_effects): Convert sreal to int.
+	* ipa-inline-analysis.c (MAX_TIME): Remove.
+	(account_size_time): Use sreal for time.
+	(dump_inline_summary): Update.
+	(estimate_function_body_sizes): Update.
+	(estimate_edge_size_and_time): Update.
+	(estimate_calls_size_and_time): Update.
+	(estimate_node_size_and_time): Update.
+	(inline_merge_summary): Update.
+	(inline_update_overall_summary): Update.
+	(estimate_time_after_inlining): Update.
+	(inline_read_section): Update.
+	(inline_write_summary): Update.
+	* ipa-inline.c (compute_uninlined_call_time): Update.
+	(compute_inlined_call_time): Update.
+	(recursive_inlining): Update.
+	(inline_small_functions): Update.
+	(dump_overall_stats): Update.
+	* ipa-inline.h: Include sreal.h.
+	(size_time_entry): Turn time to sreal.
+	(inline_summary): Turn self_time nad time to sreal.
+
+2017-04-25  Jan Hubicka  <hubicka@ucw.cz>
+
 	* sreal.c: Include backend.h, tree.h, gimple.h, cgraph.h and
 	data-streamer.h
 	(sreal::stream_out, sreal::stream_in): New.
