@@ -654,7 +654,7 @@ compute_uninlined_call_time (struct inline_summary *callee_info,
   else
     uninlined_call_time = uninlined_call_time >> 11;
 
-  int caller_time = inline_summaries->get (caller)->time;
+  sreal caller_time = inline_summaries->get (caller)->time;
   return uninlined_call_time + caller_time;
 }
 
@@ -668,7 +668,7 @@ compute_inlined_call_time (struct cgraph_edge *edge,
   cgraph_node *caller = (edge->caller->global.inlined_to 
 			 ? edge->caller->global.inlined_to
 			 : edge->caller);
-  int caller_time = inline_summaries->get (caller)->time;
+  sreal caller_time = inline_summaries->get (caller)->time;
   sreal time = edge_time;
 
   if (edge->count && caller->count)
@@ -753,6 +753,14 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
       int growth = estimate_edge_growth (e);
       inline_hints hints = estimate_edge_hints (e);
       bool big_speedup = big_speedup_p (e);
+/*
+	fprintf (stderr, "%i %i %i\n",growth,hints,big_speedup);
+	dump_inline_summary (stderr, e->caller->global.inlined_to ? e->caller->global.inlined_to : e->caller);
+	dump_inline_summary (stderr, e->callee);
+  sreal time = compute_uninlined_call_time (inline_summaries->get (e->callee),
+					    e);
+  sreal inlined_time = compute_inlined_call_time (e, estimate_edge_time (e));
+ fprintf (stderr, "%f %f\n", time.to_double (), inlined_time.to_double ());*/
 
       if (growth <= 0)
 	;
@@ -1023,7 +1031,9 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   edge_time = estimate_edge_time (edge);
   hints = estimate_edge_hints (edge);
   gcc_checking_assert (edge_time >= 0);
-  gcc_checking_assert (edge_time <= callee_info->time);
+  /* FIXME: -1 to care of rounding issues should go away once cache is migrated.
+     to sreals.  */
+  gcc_checking_assert (edge_time - 1 <= callee_info->time);
   gcc_checking_assert (growth <= callee_info->size);
 
   if (dump)
@@ -1554,9 +1564,11 @@ recursive_inlining (struct cgraph_edge *edge,
   if (dump_file)
     fprintf (dump_file,
 	     "\n   Inlined %i times, "
-	     "body grown from size %i to %i, time %i to %i\n", n,
-	     inline_summaries->get (master_clone)->size, inline_summaries->get (node)->size,
-	     inline_summaries->get (master_clone)->time, inline_summaries->get (node)->time);
+	     "body grown from size %i to %i, time %f to %f\n", n,
+	     inline_summaries->get (master_clone)->size,
+	     inline_summaries->get (node)->size,
+	     inline_summaries->get (master_clone)->time.to_double (),
+	     inline_summaries->get (node)->time.to_double ());
 
   /* Remove master clone we used for inlining.  We rely that clones inlined
      into master clone gets queued just before master clone so we don't
@@ -2052,10 +2064,10 @@ inline_small_functions (void)
       if (dump_file)
 	{
 	  fprintf (dump_file,
-		   " Inlined into %s which now has time %i and size %i, "
+		   " Inlined into %s which now has time %f and size %i, "
 		   "net change of %+i.\n",
 		   edge->caller->name (),
-		   inline_summaries->get (edge->caller)->time,
+		   inline_summaries->get (edge->caller)->time.to_double (),
 		   inline_summaries->get (edge->caller)->size,
 		   overall_size - old_size);
 	}
@@ -2245,7 +2257,7 @@ dump_overall_stats (void)
     if (!node->global.inlined_to
 	&& !node->alias)
       {
-	int time = inline_summaries->get (node)->time;
+	int time = inline_summaries->get (node)->time.to_double ();
 	sum += time;
 	sum_weighted += time * node->count;
       }
