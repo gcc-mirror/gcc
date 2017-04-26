@@ -836,7 +836,7 @@ opt_reg_rename (void)
 		       * search the start.
 		       */
 		      insn_info & bb = infos[label_index + 1];
-		      if (bb.is_use (rename_regbit))
+		      if (bb.is_use (rename_regno))
 			{
 			  unsigned start = find_start (found, label_index - 1, rename_regno);
 			  todo.push_back (start);
