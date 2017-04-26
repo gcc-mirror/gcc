@@ -5931,8 +5931,11 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	      && parser->colon_corrects_to_scope_p
 	      && cp_lexer_peek_nth_token (parser->lexer, 3)->type == CPP_NAME)
 	    {
-	      error_at (token->location,
-			"found %<:%> in nested-name-specifier, expected %<::%>");
+	      gcc_rich_location richloc (token->location);
+	      richloc.add_fixit_replace ("::");
+	      error_at_rich_loc (&richloc,
+				 "found %<:%> in nested-name-specifier, "
+				 "expected %<::%>");
 	      token->type = CPP_SCOPE;
 	    }
 
