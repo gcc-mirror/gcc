@@ -1,3 +1,12 @@
+2017-04-26  Nathan Sidwell  <nathan@acm.org>
+
+	* tree.h (crc32_unsigned_n): Declare.
+	(crc32_unsigned, crc32_unsigned): Make inline.
+	* tree.c (crc32_unsigned_bits): Replace with ...
+	(crc32_unsigned_n): ... this.
+	(crc32_unsigned, crc32_byte): Remove.
+	(crc32_string): Remove unnecessary braces.
+
 2017-04-25  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-cp.c (estimate_local_effects): Convert sreal to int.
