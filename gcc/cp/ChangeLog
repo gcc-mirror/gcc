@@ -1,3 +1,9 @@
+2017-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grok_ctor_properties, ambi_op_p, unary_op_p): Change
+	return type to bool.
+	* cp-tree.h (grok_ctor_properties): Update.
+
 2017-04-26  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* parser.c (cp_parser_nested_name_specifier_opt): Add fix-it
