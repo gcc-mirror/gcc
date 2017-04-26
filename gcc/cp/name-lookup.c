@@ -1790,6 +1790,28 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 
 static GTY(()) hash_map<lang_identifier *, tree> *extern_c_fns;
 
+/* DECL is a C linkage function, find the slot for it in the
+   extern_c_fn mappings.  If it's a new mapping, insert it.  Otherwise
+   return the slot pointer.  */
+
+static tree *
+extern_c_slot (tree decl)
+{
+  /* Ignore artificial or system header decls.  */
+  if (DECL_ARTIFICIAL (decl) || DECL_IN_SYSTEM_HEADER (decl))
+    return NULL;
+
+  bool existed;
+  tree *slot = &extern_c_fns->get_or_insert (DECL_NAME (decl), &existed);
+  if (!existed)
+    {
+      *slot = decl;
+      return NULL;
+    }
+  else
+    return slot;
+}
+
 /* DECL has C linkage. If we have an existing instance, make sure it
    has the same exception specification [7.5, 7.6].  If there's no
    instance, add DECL to the map.  */
@@ -1797,18 +1819,10 @@ static GTY(()) hash_map<lang_identifier *, tree> *extern_c_fns;
 static void
 check_extern_c_conflict (tree decl)
 {
-  /* Ignore artificial or system header decls.  */
-  if (DECL_ARTIFICIAL (decl) || DECL_IN_SYSTEM_HEADER (decl))
-    return;
-
   if (!extern_c_fns)
     extern_c_fns = hash_map<lang_identifier *,tree>::create_ggc (127);
 
-  bool existed;
-  tree *slot = &extern_c_fns->get_or_insert (DECL_NAME (decl), &existed);
-  if (!existed)
-    *slot = decl;
-  else
+  if (tree *slot = extern_c_slot (decl))
     {
       tree old = *slot;
       if (TREE_CODE (old) == TREE_LIST)
@@ -1841,6 +1855,16 @@ check_extern_c_conflict (tree decl)
 	/* Chain it on for c_linkage_binding's use.  */
 	*slot = tree_cons (NULL_TREE, decl, *slot);
     }
+}
+
+/* DECL was an extern C anticipated builtin, that has become unhidden.  Add it
+   to the extern_c mapping.  */
+
+static void
+unhidden_extern_c (tree decl)
+{
+  if (tree *slot = extern_c_slot (decl))
+    *slot = tree_cons (NULL_TREE, decl, *slot);
 }
 
 /* Returns a list of C-linkage decls with the name NAME.  Used in
@@ -2265,7 +2289,7 @@ do_pushdecl (tree decl, bool is_friend)
 
 	    if (iter.hidden_p () && !DECL_HIDDEN_P (match))
 	      {
-		/* Unhiding a previously hidden friend.  */
+		/* Unhiding a previously hidden friend or builtin.  */
 		tree head = iter.unhide (old);
 		if (head != old)
 		  {
@@ -2279,6 +2303,13 @@ do_pushdecl (tree decl, bool is_friend)
 		    else
 		      *slot = head;
 		  }
+		if (TREE_CODE (decl) == FUNCTION_DECL
+		    && DECL_EXTERN_C_P (decl))
+		  /* We can't tell whether this was a friend or
+		     anticipated decl.  A friend will already have
+		     been inserted, but extern C friends are very
+		     rare, and it is harmless to have duplicates.  */
+		  unhidden_extern_c (decl);
 	      }
 
 	    return match;

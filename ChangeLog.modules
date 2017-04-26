@@ -1,5 +1,11 @@
 2017-04-26  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* name-lookup.c (extern_c_slot): New.
+	(check_extern_c_conflict): Use it.
+	(unhidden_extern_c): New.
+	(do_puhdecl): Call it.
+
 	Die IDENTIFIER_GLOBAL_BINDINGS! Die!
 	gcc/
 	* ipa-devirt.c (default_hash_traits <type_pair>): Add GTY((skip))s.
