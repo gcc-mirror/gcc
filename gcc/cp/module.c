@@ -724,7 +724,7 @@ private:
 
 public:
   void write_tree (FILE *, tree);
-  void walk_namespace (FILE *, bool, tree);
+  void walk_namespace (FILE *d, tree ns, bool defns);
 };
 
 cpms_out::cpms_out (FILE *s, const char *n)
@@ -740,6 +740,7 @@ cpms_out::~cpms_out ()
 class cpms_in : public cpm_stream
 {
   cpm_reader r;
+  // FIXME: specialize default_hash_traits
   typedef unbounded_int_hashmap_traits<unsigned,tree> traits;
   hash_map<unsigned,tree,traits> map; /* ids to trees  */
   tree scope;
@@ -1852,7 +1853,7 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
 }
 
 void
-cpms_out::walk_namespace (FILE *d, bool defns, tree ns)
+cpms_out::walk_namespace (FILE *d, tree ns, bool defns)
 {
   gcc_assert (!defns); // FIXME: todo
 
@@ -1871,30 +1872,52 @@ cpms_out::walk_namespace (FILE *d, bool defns, tree ns)
     fprintf (d, "Walking namespace '%s'\n",
 	     IDENTIFIER_POINTER (DECL_NAME (ns)));
 
-  const cp_binding_level *b = NAMESPACE_LEVEL (ns);
-  for (tree name = b->names; name; name = TREE_CHAIN (name))
-    if (mod_ns || MODULE_EXPORT_P (name)
-	// FIXME: set MODULE_EXPORT_P properly.  Utter hack here
-	|| !DECL_EXTERN_C_P (name))
-      {
-	// FIXME:Add other decls later
-	switch (TREE_CODE (name))
+  hash_map<lang_identifier *, tree>::iterator end
+    (DECL_NAMESPACE_BINDINGS (ns)->end ());
+  for (hash_map<lang_identifier *, tree>::iterator iter
+	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
+    {
+      std::pair<tree, tree> binding (*iter);
+
+      tree type; // FIXME stop ignoring me
+      tree decl = decapsulate_binding (binding.second, &type);
+
+      if (OVL_P (decl))
+	{
+	  for (ovl_iterator iter (decl); iter; ++iter)
+	    if (!iter.via_using_p ())
+	      {
+		tree fn = *iter;
+
+		if (mod_ns || MODULE_EXPORT_P (fn)
+		    // FIXME: set MODULE_EXPORT_P properly.  Utter hack here
+		    || !DECL_EXTERN_C_P (fn))
+		  {
+		    gcc_assert (CP_DECL_CONTEXT (fn) == ns);
+
+		    // FIXME:Add templates later
+		    gcc_assert (TREE_CODE (fn) == FUNCTION_DECL);
+
+		    write_tree (d, fn);
+		  }
+	      }
+	}
+      else if (TREE_CODE (decl) == NAMESPACE_DECL)
+	walk_namespace (d, decl, defns);
+      else if (mod_ns || MODULE_EXPORT_P (decl)
+	       // FIXME: set MODULE_EXPORT_P properly.  Utter hack here
+	       || !DECL_EXTERN_C_P (decl))
+	switch (TREE_CODE (decl))
 	  {
-	  case FUNCTION_DECL:
-	    write_tree (d, name);
 	  case VAR_DECL:
 	  case TYPE_DECL:
 	    break;
 	  default:
-	    gcc_unreachable ();
+	    gcc_unreachable (); // FIXME: implement more
 	  }
-	
-      }
-  for (tree inner = b->namespaces; inner;
-       inner = DECL_CHAIN (inner))
-    walk_namespace (d, defns, inner);
+    }
 }
-		  
+
 /* Mangling for module files.  */
 #define MOD_FNAME_PFX "g++-"
 #define MOD_FNAME_SFX ".nms" /* New Module System.  Honest.  */
@@ -2040,7 +2063,7 @@ cpms_in::finish_namespace (FILE *d, tree ns)
 
 /* The set of imported modules.  The current declared module is
    included in this set too.  Maps to an import_kind.  */
-static GTY(()) hash_map<tree, unsigned> *imported_modules;
+static GTY(()) hash_map<lang_identifier *, unsigned> *imported_modules;
 enum import_kind
 {
   ik_indirect,/* Import via import.  */
@@ -2233,7 +2256,7 @@ static bool
 do_import_module (location_t loc, tree name, tree, import_kind kind)
 {
   if (!imported_modules)
-    imported_modules = new hash_map<tree, unsigned>;
+    imported_modules = hash_map<lang_identifier *, unsigned>::create_ggc (31);
 
   bool existed;
   unsigned *val = &imported_modules->get_or_insert (name, &existed);
@@ -2359,7 +2382,7 @@ write_module (FILE *stream, const char *fname, tree name)
     (write_import_cl (&out, d));
   
   /* Write decls.  */
-  out.walk_namespace (d, false, global_namespace);
+  out.walk_namespace (d, global_namespace, false);
 
   // FIXME:Write defns.  Probably fine just to do it during the first
   // namespace walk.
@@ -2399,7 +2422,7 @@ finish_module ()
       free (fname);
     }
 
-  delete imported_modules;
+  /* GC can clean up the detritus.  */
   imported_modules = NULL;
 }
 

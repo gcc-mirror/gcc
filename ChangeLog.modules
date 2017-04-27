@@ -1,5 +1,14 @@
 2017-04-27  Nathan Sidwell  <nathan@acm.org>
 
+	Rework module namespace walking
+	gcc/cp/
+	* name-lookup.h: (decapsulate_binding): Declare.
+	* name-lookup.c: (decapsulate_binding): New.
+	* module.c (cpms_out::walk_namespace): Iterate over namespace
+	bindings, not decls.
+	(imported_modules): Key by lang_identifier.  Adjust
+	allocation/deletion.
+
 	Refix unhidden extern C
 	Revert 2017-04-26 extern_c_slot patch.
 	gcc/cp/

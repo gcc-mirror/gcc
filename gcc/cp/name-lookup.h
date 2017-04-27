@@ -343,4 +343,7 @@ extern void pop_nested_namespace (tree);
 extern void push_to_top_level (void);
 extern void pop_from_top_level (void);
 
+/* Lower level interface for modules. */
+extern tree decapsulate_binding (tree value, tree *type_p);
+
 #endif /* GCC_CP_NAME_LOOKUP_H */

@@ -77,6 +77,17 @@ static tree stat_hack (tree decl = NULL_TREE, tree type = NULL_TREE)
   return result;
 }
 
+/* Split a potentialy stat-hacked value binding into type and value.
+   Decapsulate is totally a word now.  */
+
+tree
+decapsulate_binding (tree value, tree *type_p)
+{
+  if (type_p)
+    *type_p = MAYBE_STAT_TYPE (value);
+  return MAYBE_STAT_DECL (value);
+}
+
 /* Return the binding for NAME in SCOPE, if any.  Otherwise create an
    empty slot.  */
 
