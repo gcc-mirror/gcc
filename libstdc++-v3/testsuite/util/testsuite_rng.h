@@ -79,8 +79,8 @@ namespace __gnu_pbds
       {
 	const double min = m_base_generator.min();
 	const double max = m_base_generator.max();
-	const double range = static_cast<const double>(max - min);
-	const double res = static_cast<const double>(m_base_generator() - min);
+	const double range = static_cast<double>(max - min);
+	const double res = static_cast<double>(m_base_generator() - min);
 	const double ret = res / range;
 	_GLIBCXX_DEBUG_ASSERT(ret >= 0 && ret <= 1);
 	return ret;
