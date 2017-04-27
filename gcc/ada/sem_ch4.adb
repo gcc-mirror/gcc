@@ -7521,19 +7521,19 @@ package body Sem_Ch4 is
    is
       Pref_Typ : constant Entity_Id := Etype (Prefix);
 
+      function Constant_Indexing_OK return Boolean;
+      --  Constant_Indexing is legal if there is no Variable_Indexing defined
+      --  for the type, or else node not a target of assignment, or an actual
+      --  for an IN OUT or OUT formal (RM 4.1.6 (11)).
+
       function Expr_Matches_In_Formal
         (Subp : Entity_Id;
          Par  : Node_Id) return Boolean;
       --  Find formal corresponding to given indexed component that is an
       --  actual in a call. Note that the enclosing subprogram call has not
-      --  beenanalyzed yet, and the parameter list is not normalized, so
+      --  been analyzed yet, and the parameter list is not normalized, so
       --  that if the argument is a parameter association we must match it
       --  by name and not by position.
-
-      function Constant_Indexing_OK return Boolean;
-      --  Constant_Indexing is legal if there is no Variable_Indexing defined
-      --  for the type, or else node not a target of assignment, or an actual
-      --  for an IN OUT or OUT formal (RM 4.1.6 (11)).
 
       function Find_Indexing_Operations
         (T           : Entity_Id;
@@ -7543,56 +7543,6 @@ package body Sem_Ch4 is
       --  name Nam. If the operation is overloaded, the reference carries all
       --  interpretations. Flag Is_Constant should be set when the context is
       --  constant indexing.
-
-      -----------------------------
-      -- Expr_Matches_In_Formal  --
-      -----------------------------
-
-      function Expr_Matches_In_Formal
-        (Subp : Entity_Id;
-         Par  : Node_Id) return Boolean
-      is
-         Actual : Node_Id;
-         Formal : Node_Id;
-
-      begin
-         Formal := First_Formal (Subp);
-         Actual := First  (Parameter_Associations ((Parent (Par))));
-
-         if Nkind (Par) /= N_Parameter_Association then
-
-            --  Match by position.
-
-            while Present (Actual) and then Present (Formal) loop
-               exit when Actual = Par;
-               Next (Actual);
-
-               if Present (Formal) then
-                  Next_Formal (Formal);
-
-               --  Otherwise this is a parameter mismatch, the error is
-               --  reported elsewhere, or else variable indexing is implied.
-
-               else
-                  return False;
-               end if;
-            end loop;
-
-         else
-            --  Match by name
-
-            while Present (Formal) loop
-               exit when Chars (Formal) = Chars (Selector_Name (Par));
-               Next_Formal (Formal);
-
-               if No (Formal) then
-                  return False;
-               end if;
-            end loop;
-         end if;
-
-         return Present (Formal) and then Ekind (Formal) = E_In_Parameter;
-      end Expr_Matches_In_Formal;
 
       --------------------------
       -- Constant_Indexing_OK --
@@ -7653,7 +7603,7 @@ package body Sem_Ch4 is
                         end loop;
                      end;
 
-                     --  All interpretations have a matching in-formal.
+                     --  All interpretations have a matching in-mode formal
 
                      return True;
 
@@ -7710,6 +7660,56 @@ package body Sem_Ch4 is
 
          return True;
       end Constant_Indexing_OK;
+
+      -----------------------------
+      -- Expr_Matches_In_Formal  --
+      -----------------------------
+
+      function Expr_Matches_In_Formal
+        (Subp : Entity_Id;
+         Par  : Node_Id) return Boolean
+      is
+         Actual : Node_Id;
+         Formal : Node_Id;
+
+      begin
+         Formal := First_Formal (Subp);
+         Actual := First (Parameter_Associations ((Parent (Par))));
+
+         if Nkind (Par) /= N_Parameter_Association then
+
+            --  Match by position
+
+            while Present (Actual) and then Present (Formal) loop
+               exit when Actual = Par;
+               Next (Actual);
+
+               if Present (Formal) then
+                  Next_Formal (Formal);
+
+               --  Otherwise this is a parameter mismatch, the error is
+               --  reported elsewhere, or else variable indexing is implied.
+
+               else
+                  return False;
+               end if;
+            end loop;
+
+         else
+            --  Match by name
+
+            while Present (Formal) loop
+               exit when Chars (Formal) = Chars (Selector_Name (Par));
+               Next_Formal (Formal);
+
+               if No (Formal) then
+                  return False;
+               end if;
+            end loop;
+         end if;
+
+         return Present (Formal) and then Ekind (Formal) = E_In_Parameter;
+      end Expr_Matches_In_Formal;
 
       ------------------------------
       -- Find_Indexing_Operations --
