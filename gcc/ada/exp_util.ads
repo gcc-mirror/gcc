@@ -518,8 +518,11 @@ package Exp_Util is
 
    procedure Evaluate_Name (Nam : Node_Id);
    --  Remove all side effects from a name which appears as part of an object
-   --  renaming declaration. More comments are needed here that explain how
-   --  this differs from Force_Evaluation and Remove_Side_Effects ???
+   --  renaming declaration. Similarly to Force_Evaluation, it removes the
+   --  side effects and captures the values of the variables, except for the
+   --  variable being renamed. Hence this differs from Force_Evaluation and
+   --  Remove_Side_Effects (but it calls Force_Evaluation on subexpressions
+   --  whose value needs to be fixed).
 
    procedure Evolve_And_Then (Cond : in out Node_Id; Cond1 : Node_Id);
    --  Rewrites Cond with the expression: Cond and then Cond1. If Cond is

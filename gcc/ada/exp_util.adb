@@ -4724,72 +4724,85 @@ package body Exp_Util is
    -------------------
 
    procedure Evaluate_Name (Nam : Node_Id) is
-      K : constant Node_Kind := Nkind (Nam);
-
    begin
-      --  For an explicit dereference, we simply force the evaluation of the
-      --  name expression. The dereference provides a value that is the address
-      --  for the renamed object, and it is precisely this value that we want
-      --  to preserve.
-
-      if K = N_Explicit_Dereference then
-         Force_Evaluation (Prefix (Nam));
-
-      --  For a selected component, we simply evaluate the prefix
-
-      elsif K = N_Selected_Component then
-         Evaluate_Name (Prefix (Nam));
-
-      --  For an indexed component, or an attribute reference, we evaluate the
+      --  For an attribute reference or an indexed component, evaluate the
       --  prefix, which is itself a name, recursively, and then force the
       --  evaluation of all the subscripts (or attribute expressions).
 
-      elsif Nkind_In (K, N_Indexed_Component, N_Attribute_Reference) then
-         Evaluate_Name (Prefix (Nam));
+      case Nkind (Nam) is
+         when N_Attribute_Reference
+            | N_Indexed_Component
+         =>
+            Evaluate_Name (Prefix (Nam));
 
-         declare
-            E : Node_Id;
+            declare
+               E : Node_Id;
 
-         begin
-            E := First (Expressions (Nam));
-            while Present (E) loop
-               Force_Evaluation (E);
+            begin
+               E := First (Expressions (Nam));
+               while Present (E) loop
+                  Force_Evaluation (E);
 
-               if Original_Node (E) /= E then
-                  Set_Do_Range_Check (E, Do_Range_Check (Original_Node (E)));
-               end if;
+                  if Original_Node (E) /= E then
+                     Set_Do_Range_Check (E,
+                                         Do_Range_Check (Original_Node (E)));
+                  end if;
 
-               Next (E);
-            end loop;
-         end;
+                  Next (E);
+               end loop;
+            end;
 
-      --  For a slice, we evaluate the prefix, as for the indexed component
-      --  case and then, if there is a range present, either directly or as the
-      --  constraint of a discrete subtype indication, we evaluate the two
-      --  bounds of this range.
+         --  For an explicit dereference, we simply force the evaluation of
+         --  the name expression. The dereference provides a value that is the
+         --  address for the renamed object, and it is precisely this value
+         --  that we want to preserve.
 
-      elsif K = N_Slice then
-         Evaluate_Name (Prefix (Nam));
-         Evaluate_Slice_Bounds (Nam);
+         when N_Explicit_Dereference =>
+            Force_Evaluation (Prefix (Nam));
 
-      --  For a type conversion, the expression of the conversion must be the
-      --  name of an object, and we simply need to evaluate this name.
+         --  For a function call, we evaluate the call
 
-      elsif K = N_Type_Conversion then
-         Evaluate_Name (Expression (Nam));
+         when N_Function_Call =>
+            Force_Evaluation (Nam);
 
-      --  For a function call, we evaluate the call
+         --  For a qualified expression, we evaluate the underlying object
+         --  name if any, otherwise we force the evaluation of the underlying
+         --  expression.
 
-      elsif K = N_Function_Call then
-         Force_Evaluation (Nam);
+         when N_Qualified_Expression =>
+            if Is_Object_Reference (Expression (Nam)) then
+               Evaluate_Name (Expression (Nam));
+            else
+               Force_Evaluation (Expression (Nam));
+            end if;
 
-      --  The remaining cases are direct name, operator symbol and character
-      --  literal. In all these cases, we do nothing, since we want to
-      --  reevaluate each time the renamed object is used.
+         --  For a selected component, we simply evaluate the prefix
 
-      else
-         return;
-      end if;
+         when N_Selected_Component =>
+            Evaluate_Name (Prefix (Nam));
+
+         --  For a slice, we evaluate the prefix, as for the indexed component
+         --  case and then, if there is a range present, either directly or as
+         --  the constraint of a discrete subtype indication, we evaluate the
+         --  two bounds of this range.
+
+         when N_Slice =>
+            Evaluate_Name (Prefix (Nam));
+            Evaluate_Slice_Bounds (Nam);
+
+         --  For a type conversion, the expression of the conversion must be
+         --  the name of an object, and we simply need to evaluate this name.
+
+         when N_Type_Conversion =>
+            Evaluate_Name (Expression (Nam));
+
+         --  The remaining cases are direct name, operator symbol and character
+         --  literal. In all these cases, we do nothing, since we want to
+         --  reevaluate each time the renamed object is used.
+
+         when others =>
+            null;
+      end case;
    end Evaluate_Name;
 
    ---------------------------
@@ -6933,7 +6946,7 @@ package body Exp_Util is
             --  existing actions of the expression with actions, and should
             --  never reach here: if actions are inserted on a statement
             --  within the Actions of an expression with actions, or on some
-            --  sub-expression of such a statement, then the outermost proper
+            --  subexpression of such a statement, then the outermost proper
             --  insertion point is right before the statement, and we should
             --  never climb up as far as the N_Expression_With_Actions itself.
 

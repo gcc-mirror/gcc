@@ -1,3 +1,9 @@
+2017-04-27  Yannick Moy  <moy@adacore.com>
+
+	* exp_util.ads, exp_util.adb (Evaluate_Name): Force evaluation
+	of expression being qualified, when not an object name, or else
+	evaluate the underlying name.
+
 2017-04-27  Jerome Lambourg  <lambourg@adacore.com>
 
 	* bindusg.adb, bindgen.adb, gnatbind.adb, opt.ads: add -nognarl switch.
