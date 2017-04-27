@@ -1,3 +1,8 @@
+2017-04-27  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/Make-lang.in: Define EH_MECHANISM while building
+	raise-gcc.c. Fix include search path for raise-gcc.c
+
 2017-04-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fe.h (Warn_On_Questionable_Layout): Declare.
