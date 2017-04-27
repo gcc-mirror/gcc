@@ -1,3 +1,10 @@
+2017-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80539
+	* tree-chrec.c (chrec_fold_plus_poly_poly): Deal with not
+	being in loop-closed SSA form conservatively.
+	(chrec_fold_multiply_poly_poly): Likewise.
+
 2017-04-27  Tamar Christina  <tamar.christina@arm.com>
 
 	PR middle-end/79665

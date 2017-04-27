@@ -1,3 +1,8 @@
+2017-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80539
+	* gcc.dg/torture/pr80539.c: New testcase.
+
 2017-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/77728
