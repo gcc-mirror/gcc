@@ -209,10 +209,10 @@ package Sem_Util is
    --  Determine whether a selected component has a type that depends on
    --  discriminants, and build actual subtype for it if so.
 
-   --  Handling of inherited primitives whose ancestor have class-wide
-   --  pre/post conditions.
+   --  Handling of inherited primitives whose ancestors have class-wide
+   --  pre/postconditions.
 
-   --  If a primitive operation of a parent type has a class-wide pre/post
+   --  If a primitive operation of a parent type has a class-wide pre/post-
    --  condition that includes calls to other primitives, and that operation
    --  is inherited by a descendant type that also overrides some of these
    --  other primitives, the condition that applies to the inherited
@@ -227,7 +227,7 @@ package Sem_Util is
    --  economically we create a subprogram body (a "class-wide clone") to
    --  which no pre/postconditions apply, and we create bodies for the
    --  original and the inherited operation that have their respective
-   --  pre/post conditions and simply call the clone. The following operations
+   --  pre/postconditions and simply call the clone. The following operations
    --  take care of constructing declaration and body of the clone, and
    --  building the calls to it within the appropriate wrappers.
 
@@ -250,7 +250,7 @@ package Sem_Util is
    --  clone includes the proper conversion in a call the parent operation.
 
    procedure Build_Class_Wide_Clone_Decl (Spec_Id : Entity_Id);
-   --  For a subprogram that has a clas-wide condition that contains calls
+   --  For a subprogram that has a class-wide condition that contains calls
    --  to other primitives, build an internal subprogram that is invoked
    --  through a type-specific wrapper for all inherited subprograms that
    --  may have a modified condition.

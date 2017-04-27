@@ -390,9 +390,9 @@ package body Contracts is
             begin
                Analyze_Entry_Or_Subprogram_Contract (Subp_Id, Freeze_Id);
 
-               --  If analysis of a classwide pre/postcondition indicates
+               --  If analysis of a class-wide pre/postcondition indicates
                --  that a class-wide clone is needed, analyze its declaration
-               --  now.  Its body is created when the body of the original
+               --  now. Its body is created when the body of the original
                --  operation is analyzed (and rewritten).
 
                if Is_Subprogram (Subp_Id)
