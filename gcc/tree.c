@@ -7073,9 +7073,16 @@ type_cache_hasher::equal (type_hash *a, type_hash *b)
         break;
       return 0;
     case ARRAY_TYPE:
-      return (TYPE_TYPELESS_STORAGE (a->type)
-	      == TYPE_TYPELESS_STORAGE (b->type)
-	      && TYPE_DOMAIN (a->type) == TYPE_DOMAIN (b->type));
+      /* Don't compare TYPE_TYPELESS_STORAGE flag on aggregates,
+	 where the flag should be inherited from the element type
+	 and can change after ARRAY_TYPEs are created; on non-aggregates
+	 compare it and hash it, scalars will never have that flag set
+	 and we need to differentiate between arrays created by different
+	 front-ends or middle-end created arrays.  */
+      return (TYPE_DOMAIN (a->type) == TYPE_DOMAIN (b->type)
+	      && (AGGREGATE_TYPE_P (TREE_TYPE (a->type))
+		  || (TYPE_TYPELESS_STORAGE (a->type)
+		      == TYPE_TYPELESS_STORAGE (b->type))));
 
     case RECORD_TYPE:
     case UNION_TYPE:
@@ -8386,7 +8393,8 @@ build_array_type_1 (tree elt_type, tree index_type, bool typeless_storage,
       hstate.add_object (TYPE_HASH (elt_type));
       if (index_type)
 	hstate.add_object (TYPE_HASH (index_type));
-      hstate.add_flag (typeless_storage);
+      if (!AGGREGATE_TYPE_P (elt_type))
+	hstate.add_flag (TYPE_TYPELESS_STORAGE (t));
       t = type_hash_canon (hstate.end (), t);
     }
 
