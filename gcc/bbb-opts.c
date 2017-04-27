@@ -126,11 +126,50 @@ class insn_info
   unsigned hard; // bit set if registers can't be renamed
   unsigned use;  // bit set if registers are used in program flow
   unsigned def;  // bit set if registers are defined here
+  int proepi; // 1 = in prologue, 2 = in epilogue, 0 = other
+  bool stack; // part of stack frame insns
+
+  insn_info &
+  operator = (insn_info const &);
 
 public:
-  insn_info (rtx_insn * i = 0) :
-      insn (i), myuse (0), hard (0), use (0), def (0)
+  insn_info (rtx_insn * i = 0, int p = 0) :
+      insn (i), myuse (0), hard (0), use (0), def (0), proepi (p), stack (false)
   {
+  }
+
+  /* update usage. */
+  void
+  update (insn_info & o)
+  {
+    myuse = o.myuse;
+    hard = o.hard;
+    use = o.use;
+    def = o.def;
+  }
+
+  inline rtx_insn *
+  get_insn () const
+  {
+    return insn;
+  }
+
+  void
+  mark_stack ()
+  {
+    stack = true;
+  }
+
+  bool
+  is_stack () const
+  {
+    return stack;
+  }
+
+  inline int
+  in_proepi () const
+  {
+    return proepi;
   }
 
   inline void
@@ -487,12 +526,9 @@ temp_reg_rename (std::vector<std::pair<rtx *, rtx> > & loc, rtx x, unsigned oldr
 /*
  * Collect some data.
  */
-static std::vector<rtx_insn *> insns;
-static std::vector<char> proepilogue;
-static std::vector<rtx_insn *> temp;
+static std::vector<insn_info> infos;
 static std::vector<rtx_insn *> jumps;
 static std::map<rtx_insn *, unsigned> insn2index;
-static std::vector<insn_info> infos;
 
 /*
  * Reset collected data.
@@ -500,8 +536,6 @@ static std::vector<insn_info> infos;
 static void
 clear (void)
 {
-  insns.clear ();
-  proepilogue.clear ();
   jumps.clear ();
   insn2index.clear ();
   infos.clear ();
@@ -578,23 +612,24 @@ dump_insns (char const * name, bool all)
   fprintf (stderr, "====================================: %s\n", name);
   if (all)
     {
-      for (rtx_insn * insn = get_insns (); insn && insn != insns[0]; insn = NEXT_INSN (insn))
+      for (rtx_insn * insn = get_insns (); insn && insn != infos[0].get_insn (); insn = NEXT_INSN (insn))
 	debug_rtx (insn);
     }
-  for (unsigned i = 0; i < insns.size (); ++i)
+  for (unsigned i = 0; i < infos.size (); ++i)
     {
       fprintf (stderr, "%d: ", i);
 
+      rtx_insn * insn = infos[i].get_insn ();
       if (i < infos.size ())
-	append_reg_usage (stderr, insns[i]);
+	append_reg_usage (stderr, insn);
 
       fprintf (stderr, "\t");
-      debug_rtx (insns[i]);
+      debug_rtx (insn);
 
       if (all)
 	{
-	  rtx_insn * p = i + 1 < insns.size () ? insns[i + 1] : 0;
-	  for (rtx_insn * q = NEXT_INSN (insns[i]); q && q != p; q = NEXT_INSN (q))
+	  rtx_insn * p = i + 1 < infos.size () ? infos[i + 1].get_insn () : 0;
+	  for (rtx_insn * q = NEXT_INSN (insn); q && q != p; q = NEXT_INSN (q))
 	    debug_rtx (q);
 	}
     }
@@ -620,9 +655,8 @@ update_insns ()
 	  if (JUMP_P(insn))
 	    jumps.push_back (insn);
 
-	  insn2index.insert (std::make_pair (insn, insns.size ()));
-	  insns.push_back (insn);
-	  proepilogue.push_back (inproepilogue);
+	  insn2index.insert (std::make_pair (insn, infos.size ()));
+	  infos.push_back (insn_info (insn, inproepilogue));
 
 	  if (JUMP_P(insn))
 	    inproepilogue = 0;
@@ -647,12 +681,9 @@ update_insns ()
 static void
 update_insn_infos (void)
 {
-  /* prepare insn_info */
-  infos.resize (insns.size ());
-
   /* own analyze reg life */
   std::vector<std::pair<unsigned, insn_info> > todo;
-  todo.push_back (std::make_pair (insns.size () - 1, insn_info ()));
+  todo.push_back (std::make_pair (infos.size () - 1, insn_info ()));
 
   int pass = 0;
   while (!todo.empty ())
@@ -664,7 +695,7 @@ update_insn_infos (void)
 
       for (int pos = p.first; pos >= 0; --pos)
 	{
-	  rtx_insn * insn = insns[pos];
+	  rtx_insn * insn = infos[pos].get_insn ();
 	  /* can be NULL as used in opt_shrink_stack_frame(). */
 	  if (!insn)
 	    continue;
@@ -679,7 +710,7 @@ update_insn_infos (void)
 	  if (LABEL_P(insn))
 	    {
 	      /* work on all jumps referring to that label. */
-	      for (std::vector<rtx_insn *>::iterator i = jumps.begin (); i != jumps.end (); ++i)
+	      for (auto i = jumps.begin (); i != jumps.end (); ++i)
 		{
 		  if (JUMP_LABEL(*i) == insn)
 		    {
@@ -722,11 +753,11 @@ update_insn_infos (void)
 	    }
 
 	  /* mark not renameable in prologue/epilogue. */
-	  if (proepilogue[pos])
+	  if (infos[pos].in_proepi ())
 	    use.make_hard ();
 
 	  ii.merge (use);
-	  infos[pos] = ii;
+	  infos[pos].update (ii);
 	  ii.updateWith (use);
 	}
       ++pass;
@@ -778,7 +809,7 @@ find_start (std::set<unsigned> & found, unsigned start, unsigned rename_regno)
 	break;
 
       /* do not run over RETURNS */
-      rtx_insn * before = insns[startm1];
+      rtx_insn * before = infos[startm1].get_insn ();
       if (JUMP_P(before) && ANY_RETURN_P(PATTERN (before)))
 	break;
 
@@ -800,7 +831,7 @@ static unsigned
 opt_reg_rename (void)
 {
 //  dump_insns ("rename", 1);
-  for (unsigned index = 0; index < insns.size (); ++index)
+  for (unsigned index = 0; index < infos.size (); ++index)
     {
       insn_info & ii = infos[index];
 
@@ -819,7 +850,7 @@ opt_reg_rename (void)
       /* first = pos to start, second indicates to treat def as use. */
       std::vector<unsigned> todo;
       std::set<unsigned> found;
-      if (index + 1 < insns.size ())
+      if (index + 1 < infos.size ())
 	todo.push_back (index + 1);
 
       found.insert (index);
@@ -829,13 +860,13 @@ opt_reg_rename (void)
 	  unsigned runpos = todo[todo.size () - 1];
 	  todo.pop_back ();
 
-	  for (unsigned pos = runpos; mask && pos < insns.size (); ++pos)
+	  for (unsigned pos = runpos; mask && pos < infos.size (); ++pos)
 	    {
 	      /* already searched. */
 	      if (found.find (pos) != found.end ())
 		break;
 
-	      rtx_insn * insn = insns[pos];
+	      rtx_insn * insn = infos[pos].get_insn ();
 	      if (LABEL_P(insn))
 		{
 		  found.insert (pos);
@@ -844,7 +875,7 @@ opt_reg_rename (void)
 		   * check if the reg was used at that jump.
 		   * if used, find def
 		   */
-		  for (std::vector<rtx_insn *>::iterator i = jumps.begin (); i != jumps.end (); ++i)
+		  for (auto i = jumps.begin (); i != jumps.end (); ++i)
 		    {
 		      if (JUMP_LABEL(*i) == insn)
 			{
@@ -940,7 +971,7 @@ opt_reg_rename (void)
 
 	  for (std::set<unsigned>::iterator i = found.begin (); ok && i != found.end (); ++i)
 	    {
-	      rtx_insn * insn = insns[*i];
+	      rtx_insn * insn = infos[*i].get_insn ();
 
 	      /* temp rename. */
 	      temp_reg_rename (locs, PATTERN (insn), oldregno, newregno);
@@ -1044,9 +1075,9 @@ opt_propagate_moves ()
   std::vector<rtx_insn *> jump_out;
 
   /* start at 1 since there must be an insn before the label. */
-  for (unsigned index = 1; index < insns.size (); ++index)
+  for (unsigned index = 1; index < infos.size (); ++index)
     {
-      rtx_insn * insn = insns[index];
+      rtx_insn * insn = infos[index].get_insn ();
 
       if (LABEL_P(insn))
 	{
@@ -1103,11 +1134,11 @@ opt_propagate_moves ()
 		  bool inc = true;
 		  for (std::vector<unsigned>::iterator j = i + 1; j != reg_reg.end ();)
 		    {
-		      rtx_insn * ii = insns[*i];
+		      rtx_insn * ii = infos[*i].get_insn ();
 		      rtx seti = single_set (ii);
 		      rtx srci = SET_SRC(seti);
 		      rtx dsti = SET_DEST(seti);
-		      rtx_insn * jj = insns[*j];
+		      rtx_insn * jj = infos[*j].get_insn ();
 		      rtx setj = single_set (jj);
 		      rtx srcj = SET_SRC(setj);
 		      rtx dstj = SET_DEST(setj);
@@ -1139,7 +1170,7 @@ opt_propagate_moves ()
 
 			      for (unsigned k = *i + 1; k != *j; ++k)
 				{
-				  rtx_insn * check = insns[k];
+				  rtx_insn * check = infos[k].get_insn ();
 				  if (JUMP_P(check))
 				    {
 				      fixups.push_back (fixup);
@@ -1204,8 +1235,8 @@ opt_propagate_moves ()
 			  /* got a fixup for all jump_outs? */
 			  if (fixups.size () == jump_out.size ())
 			    {
-			      rtx_insn * before = insns[current_label_index - 1];
-			      rtx_insn * after = insns[index + 1];
+			      rtx_insn * before = infos[current_label_index - 1].get_insn ();
+			      rtx_insn * after = infos[index + 1].get_insn ();
 			      rtx bset = single_set (before);
 
 			      log ("propagate_moves condition met, moving regs %s, %s\n",
@@ -1250,7 +1281,7 @@ opt_propagate_moves ()
 				    {
 				      rtx neu = gen_rtx_SET(
 					  dstj, gen_rtx_PLUS(Pmode, dsti, gen_rtx_CONST_INT(Pmode, fixups[k])));
-				      rtx_insn * neui = emit_insn_after (neu, jump_out[k]);
+				      emit_insn_after (neu, jump_out[k]);
 				    }
 				}
 			      ++change_count;
@@ -1290,9 +1321,9 @@ opt_strcpy ()
   rtx_insn * reg2x;
   unsigned int regno;
 
-  for (unsigned index = 0; index < insns.size (); ++index)
+  for (unsigned index = 0; index < infos.size (); ++index)
     {
-      rtx_insn * insn = insns[index];
+      rtx_insn * insn = infos[index].get_insn ();
 
       if (!NONJUMP_INSN_P(insn))
 	{
@@ -1411,9 +1442,9 @@ opt_commute_add_move (void)
 {
   unsigned change_count = 0;
 
-  for (unsigned index = 0; index + 1 < insns.size (); ++index)
+  for (unsigned index = 0; index + 1 < infos.size (); ++index)
     {
-      rtx_insn * insn = insns[index];
+      rtx_insn * insn = infos[index].get_insn ();
       rtx set = single_set (insn);
       if (!set)
 	continue;
@@ -1434,7 +1465,7 @@ opt_commute_add_move (void)
       if (!CONST_INT_P(cnst))
 	continue;
 
-      rtx_insn * next = insns[index + 1];
+      rtx_insn * next = infos[index + 1].get_insn ();
       rtx set2 = single_set (next);
       if (!set2)
 	continue;
@@ -1498,9 +1529,9 @@ opt_const_cmp_to_sub (void)
 {
   unsigned change_count = 0;
 #if HAVE_cc0
-  for (int index = insns.size () - 2; index > 0; --index)
+  for (int index = infos.size () - 2; index > 0; --index)
     {
-      rtx_insn * insn = insns[index];
+      rtx_insn * insn = infos[index].get_insn ();
       rtx seti = single_set (insn);
       if (!seti)
 	continue;
@@ -1529,7 +1560,7 @@ opt_const_cmp_to_sub (void)
 	continue;
 
       // maybe add a search?
-      rtx_insn * prev = insns[index - 1];
+      rtx_insn * prev = infos[index - 1].get_insn ();
       rtx setp = single_set (prev);
       if (!setp)
 	continue;
@@ -1564,7 +1595,7 @@ opt_const_cmp_to_sub (void)
 	  // invert all conditions using this statement.
 	  std::vector<unsigned> todo;
 	  std::vector<unsigned> done;
-	  done.resize (insns.size ());
+	  done.resize (infos.size ());
 	  todo.push_back (index + 1);
 
 	  while (ok && todo.size ())
@@ -1583,7 +1614,7 @@ opt_const_cmp_to_sub (void)
 	      if (pos + 1 < infos.size ())
 		todo.push_back (pos + 1);
 
-	      rtx_insn * patchme = insns[pos];
+	      rtx_insn * patchme = infos[pos].get_insn ();
 	      if (!JUMP_P(patchme))
 		continue;
 
@@ -1642,9 +1673,9 @@ static unsigned
 opt_elim_dead_assign (void)
 {
   unsigned change_count = 0;
-  for (int index = insns.size () - 1; index >= 0; --index)
+  for (int index = infos.size () - 1; index >= 0; --index)
     {
-      rtx_insn * insn = insns[index];
+      rtx_insn * insn = infos[index].get_insn ();
       if (!NONJUMP_INSN_P(insn))
 	continue;
 
@@ -1681,11 +1712,11 @@ static unsigned
 opt_merge_add (void)
 {
   unsigned change_count = 0;
-  for (unsigned index = 0; index + 2 < insns.size (); ++index)
+  for (unsigned index = 0; index + 2 < infos.size (); ++index)
     {
-      rtx_insn * ins1 = insns[index];
-      rtx_insn * ins2 = insns[index + 1];
-      rtx_insn * ins3 = insns[index + 2];
+      rtx_insn * ins1 = infos[index].get_insn ();
+      rtx_insn * ins2 = infos[index + 1].get_insn ();
+      rtx_insn * ins3 = infos[index + 2].get_insn ();
       if (!NONJUMP_INSN_P(ins1) && !NONJUMP_INSN_P(ins2) && !NONJUMP_INSN_P(ins3))
 	continue;
 
@@ -1738,17 +1769,6 @@ opt_merge_add (void)
   return change_count;
 }
 
-/*
- * Move the insns back from temp to insns.
- */
-static void
-clear_temp ()
-{
-  for (unsigned i = 0; i < temp.size (); ++i)
-    if (temp[i])
-      insns[i] = temp[i], temp[i] = 0;
-}
-
 /**
  * 1. scan for all used registers.
  * 2. scan the stack from for omittable push/pop
@@ -1775,14 +1795,13 @@ static unsigned
 opt_shrink_stack_frame (void)
 {
   /* nothing to do. */
-  if (!insns.size ())
+  if (!infos.size ())
     return 0;
 
   std::vector<int> a5pos;
-  temp.resize (insns.size ());
 
   unsigned pos = 0;
-  rtx_insn * insn = insns[pos];
+  rtx_insn * insn = infos[pos].get_insn ();
   if (JUMP_P(insn)) /* return -> empty function*/
     return 0;
 
@@ -1794,11 +1813,12 @@ opt_shrink_stack_frame (void)
    * Move prologue to temp.
    * Only register push and parallel insn unless its a link a5 are moved.
    */
-  for (; pos < insns.size ();)
+  for (; pos < infos.size ();)
     {
-      insn = insns[pos];
+      insn_info & ii = infos[pos];
+      insn = ii.get_insn ();
 
-      if (proepilogue[pos] != 1)
+      if (ii.in_proepi () != 1)
 	break;
 
       rtx pattern = PATTERN (insn);
@@ -1817,8 +1837,7 @@ opt_shrink_stack_frame (void)
 	  else
 	    {
 	      /* use movem */
-	      temp[pos] = insn;
-	      insns[pos] = 0;
+	      ii.mark_stack ();
 	    }
 	  ++pos;
 	  continue;
@@ -1845,8 +1864,7 @@ opt_shrink_stack_frame (void)
 		  rtx reg = XEXP(predec, 0);
 		  if (REG_P(reg) && REGNO(reg) == STACK_POINTER_REGNUM)
 		    {
-		      temp[pos] = insn;
-		      insns[pos] = 0;
+		      ii.mark_stack ();
 		    }
 		}
 	    }
@@ -1860,9 +1878,8 @@ opt_shrink_stack_frame (void)
 	    paramstart -= INTVAL(cx);
 	}
 
-      if (++pos >= insns.size ())
+      if (++pos >= infos.size ())
 	{
-	  clear_temp ();
 	  return 0;
 	}
     }
@@ -1873,20 +1890,21 @@ opt_shrink_stack_frame (void)
   unsigned prologueend = pos;
 
   /* search epilogues - there can be multiple epilogues. */
-  while (pos < insns.size ())
+  while (pos < infos.size ())
     {
-      while (pos < insns.size ())
+      while (pos < infos.size ())
 	{
-	  if (proepilogue[pos])
+	  if (infos[pos].in_proepi ())
 	    break;
 	  ++pos;
 	}
 
       /* move epilogues away. */
-      for (; pos < insns.size (); ++pos)
+      for (; pos < infos.size (); ++pos)
 	{
-	  insn = insns[pos];
-	  if (JUMP_P(insn) || LABEL_P(insn) || !proepilogue[pos])
+	  insn_info & ii = infos[pos];
+	  insn = ii.get_insn ();
+	  if (JUMP_P(insn) || LABEL_P(insn) || !ii.in_proepi ())
 	    break;
 
 	  /* omit the frame pointer a5. */
@@ -1903,8 +1921,7 @@ opt_shrink_stack_frame (void)
 		}
 
 	      /* movem. */
-	      temp[pos] = insn;
-	      insns[pos] = 0;
+	      ii.mark_stack ();
 	    }
 	  else if (GET_CODE(pattern) == SET)
 	    {
@@ -1920,10 +1937,7 @@ opt_shrink_stack_frame (void)
 			{
 			  rtx reg = XEXP(postinc, 0);
 			  if (REG_P(reg) && REGNO(reg) == STACK_POINTER_REGNUM)
-			    {
-			      temp[pos] = insn;
-			      insns[pos] = 0;
-			    }
+			    ii.mark_stack ();
 			}
 		    }
 		}
@@ -1936,10 +1950,10 @@ opt_shrink_stack_frame (void)
   insn_info ii;
   for (unsigned i = 0; i < infos.size (); ++i)
     {
-      if (proepilogue[i])
+      insn_info & jj = infos[i];
+      if (jj.is_stack ())
 	continue;
 
-      insn_info & jj = infos[i];
       ii.merge (jj);
     }
   unsigned freemask = ~ii.get_use ();
@@ -1949,12 +1963,13 @@ opt_shrink_stack_frame (void)
 
   unsigned adjust = 0;
   /* now all push/pop insns are in temp. */
-  for (unsigned i = 0; i < temp.size (); ++i)
+  for (unsigned i = 0; i < infos.size (); ++i)
     {
-      insn = temp[i];
-      if (!insn)
+      insn_info & ii = infos[i];
+      if (!ii.is_stack ())
 	continue;
 
+      insn = ii.get_insn ();
       rtx pattern = PATTERN (insn);
       /* check the pushed regs, either a vector or single statements */
       if (GET_CODE(pattern) == PARALLEL)
@@ -2119,9 +2134,10 @@ opt_shrink_stack_frame (void)
   /* fix sp offsets. */
   if (!usea5 && adjust)
     {
-      for (unsigned index = 0; index < insns.size (); ++index)
+      for (unsigned index = 0; index < infos.size (); ++index)
 	{
-	  insn = insns[index];
+	  insn_info & ii = infos[index];
+	  insn = ii.get_insn ();
 	  if (!insn || !INSN_P(insn))
 	    continue;
 
@@ -2155,17 +2171,16 @@ opt_shrink_stack_frame (void)
     {
       for (std::vector<int>::iterator i = a5pos.begin (); i != a5pos.end (); ++i)
 	{
-	  temp[*i] = insns[*i];
-	  insns[*i] = 0;
+	  insn_info & ii = infos[*i];
+	  ii.mark_stack ();
 	}
-      update_insn_infos ();
-      insn_info ii;
       for (unsigned i = 0; i < infos.size (); ++i)
 	{
-	  if (proepilogue[i])
+	  insn_info ii;
+	  insn_info & jj = infos[i];
+	  if (jj.is_stack ())
 	    continue;
 
-	  insn_info & jj = infos[i];
 	  ii.merge (jj);
 	}
       unsigned freemask = ~ii.get_use ();
@@ -2174,12 +2189,9 @@ opt_shrink_stack_frame (void)
 	{
 	  log ("dropping unused frame pointer\n");
 	  for (std::vector<int>::iterator i = a5pos.begin (); i != a5pos.end (); ++i)
-	    SET_INSN_DELETED(temp[*i]);
+	    SET_INSN_DELETED(infos[*i].get_insn ());
 	}
     }
-
-  /* restore stack insns */
-  clear_temp ();
 
   return 0;
 }
