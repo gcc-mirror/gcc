@@ -38,14 +38,15 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
    -- "=" --
    ---------
 
-   function "=" (S1, S2 : Set) return Boolean is
+   function "=" (S1 : Set; S2 : Set) return Boolean is
      (S1.Content <= S2.Content and S2.Content <= S1.Content);
 
    ----------
    -- "<=" --
    ----------
 
-   function "<=" (S1, S2 : Set) return Boolean is (S1.Content <= S2.Content);
+   function "<=" (S1 : Set; S2 : Set) return Boolean is
+     (S1.Content <= S2.Content);
 
    ---------
    -- Add --
@@ -58,7 +59,7 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
    -- Intersection --
    ------------------
 
-   function Intersection (S1, S2 : Set) return Set is
+   function Intersection (S1 : Set; S2 : Set) return Set is
      (Content => Intersection (S1.Content, S2.Content));
 
    ------------
@@ -68,8 +69,8 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
    function Is_Add (S : Set; E : Element_Type; Result : Set) return Boolean
    is
      (Mem (Result, E)
-      and (for all F of Result => Mem (S, F) or F = E)
-      and (for all E of S => Mem (Result, E)));
+        and (for all F of Result => Mem (S, F) or F = E)
+        and (for all E of S => Mem (Result, E)));
 
    --------------
    -- Is_Empty --
@@ -81,20 +82,24 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
    -- Is_Intersection --
    ---------------------
 
-   function Is_Intersection (S1, S2, Result : Set) return Boolean is
+   function Is_Intersection
+     (S1     : Set;
+      S2     : Set;
+      Result : Set) return Boolean
+   is
      ((for all E of Result =>
-            Mem (S1, E) and Mem (S2, E))
-      and (for all E of S1 =>
-               (if Mem (S2, E) then Mem (Result, E))));
+         Mem (S1, E)
+           and Mem (S2, E))
+           and (for all E of S1 => (if Mem (S2, E) then Mem (Result, E))));
 
    --------------
    -- Is_Union --
    --------------
 
-   function Is_Union (S1, S2, Result : Set) return Boolean is
+   function Is_Union (S1 : Set; S2 : Set; Result : Set) return Boolean is
      ((for all E of Result => Mem (S1, E) or Mem (S2, E))
-      and (for all E of S1 => Mem (Result, E))
-      and (for all E of S2 => Mem (Result, E)));
+         and (for all E of S1 => Mem (Result, E))
+         and (for all E of S2 => Mem (Result, E)));
 
    ------------
    -- Length --
@@ -107,14 +112,14 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
    ---------
 
    function Mem (S : Set; E : Element_Type) return Boolean is
-      (Find (S.Content, E) > 0);
+     (Find (S.Content, E) > 0);
 
    ------------------
    -- Num_Overlaps --
    ------------------
 
-   function Num_Overlaps (S1, S2 : Set) return Count_Type is
-      (Num_Overlaps (S1.Content, S2.Content));
+   function Num_Overlaps (S1 : Set; S2 : Set) return Count_Type is
+     (Num_Overlaps (S1.Content, S2.Content));
 
    ------------
    -- Remove --
@@ -127,6 +132,7 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
    -- Union --
    -----------
 
-   function Union (S1, S2 : Set) return Set is
+   function Union (S1 : Set; S2 : Set) return Set is
      (Content => Union (S1.Content, S2.Content));
+
 end Ada.Containers.Functional_Sets;

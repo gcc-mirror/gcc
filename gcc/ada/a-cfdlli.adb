@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,10 +38,6 @@ is
    procedure Allocate
      (Container : in out List;
       New_Item  : Element_Type;
-      New_Node  : out Count_Type);
-
-   procedure Allocate
-     (Container : in out List;
       New_Node  : out Count_Type);
 
    procedure Free
@@ -109,31 +105,22 @@ is
       end if;
    end Allocate;
 
-   procedure Allocate
-     (Container : in out List;
-      New_Node  : out Count_Type)
-   is
-      N : Node_Array renames Container.Nodes;
-
-   begin
-      if Container.Free >= 0 then
-         New_Node := Container.Free;
-         Container.Free := N (New_Node).Next;
-
-      else
-         New_Node := abs Container.Free;
-         Container.Free := Container.Free - 1;
-      end if;
-   end Allocate;
-
    ------------
    -- Append --
    ------------
 
    procedure Append
      (Container : in out List;
+      New_Item  : Element_Type)
+   is
+   begin
+      Insert (Container, No_Element, New_Item, 1);
+   end Append;
+
+   procedure Append
+     (Container : in out List;
       New_Item  : Element_Type;
-      Count     : Count_Type := 1)
+      Count     : Count_Type)
    is
    begin
       Insert (Container, No_Element, New_Item, Count);
@@ -161,7 +148,7 @@ is
 
       J := Source.First;
       while J /= 0 loop
-         Append (Target, N (J).Element);
+         Append (Target, N (J).Element, 1);
          J := N (J).Next;
       end loop;
    end Assign;
@@ -259,44 +246,24 @@ is
       return P;
    end Copy;
 
-   ---------------------
-   -- Current_To_Last --
-   ---------------------
-
-   function Current_To_Last
-     (Container : List;
-      Current : Cursor) return List is
-      Curs : Cursor := First (Container);
-      C    : List (Container.Capacity) := Copy (Container, Container.Capacity);
-      Node : Count_Type;
-
-   begin
-      if Curs = No_Element then
-         Clear (C);
-         return C;
-      end if;
-
-      if Current /= No_Element and not Has_Element (Container, Current) then
-         raise Constraint_Error;
-      end if;
-
-      while Curs.Node /= Current.Node loop
-         Node := Curs.Node;
-         Delete (C, Curs);
-         Curs := Next (Container, (Node => Node));
-      end loop;
-
-      return C;
-   end Current_To_Last;
-
    ------------
    -- Delete --
    ------------
 
    procedure Delete
      (Container : in out List;
+      Position  : in out Cursor)
+   is
+   begin
+      Delete (Container => Container,
+              Position  => Position,
+              Count     => 1);
+   end Delete;
+
+   procedure Delete
+     (Container : in out List;
       Position  : in out Cursor;
-      Count     : Count_Type := 1)
+      Count     : Count_Type)
    is
       N : Node_Array renames Container.Nodes;
       X : Count_Type;
@@ -357,9 +324,16 @@ is
    -- Delete_First --
    ------------------
 
+   procedure Delete_First (Container : in out List)
+   is
+   begin
+      Delete_First (Container => Container,
+                    Count     => 1);
+   end Delete_First;
+
    procedure Delete_First
      (Container : in out List;
-      Count     : Count_Type := 1)
+      Count     : Count_Type)
    is
       N : Node_Array renames Container.Nodes;
       X : Count_Type;
@@ -391,9 +365,16 @@ is
    -- Delete_Last --
    -----------------
 
+   procedure Delete_Last (Container : in out List)
+   is
+   begin
+      Delete_Last (Container => Container,
+                   Count     => 1);
+   end Delete_Last;
+
    procedure Delete_Last
      (Container : in out List;
-      Count     : Count_Type := 1)
+      Count     : Count_Type)
    is
       N : Node_Array renames Container.Nodes;
       X : Count_Type;
@@ -503,35 +484,355 @@ is
       end if;
    end First_Element;
 
-   -----------------------
-   -- First_To_Previous --
-   -----------------------
+   ------------------
+   -- Formal_Model --
+   ------------------
 
-   function First_To_Previous
-     (Container : List;
-      Current   : Cursor) return List
-   is
-      Curs : Cursor := Current;
-      C    : List (Container.Capacity) := Copy (Container, Container.Capacity);
-      Node : Count_Type;
+   package body Formal_Model is
 
-   begin
-      if Curs = No_Element then
-         return C;
+      ----------------------------
+      -- Lift_Abstraction_Level --
+      ----------------------------
 
-      elsif not Has_Element (Container, Curs) then
-         raise Constraint_Error;
+      procedure Lift_Abstraction_Level (Container : List) is null;
 
-      else
-         while Curs.Node /= 0 loop
-            Node := Curs.Node;
-            Delete (C, Curs);
-            Curs := Next (Container, (Node => Node));
+      -------------------------
+      -- M_Elements_Contains --
+      -------------------------
+
+      function M_Elements_Contains
+        (S   : M.Sequence;
+         Fst : Positive_Count_Type;
+         Lst : Count_Type;
+         E   : Element_Type)
+         return Boolean
+      is
+      begin
+         for I in Fst .. Lst loop
+            if Element (S, I) = E then
+               return True;
+            end if;
+         end loop;
+         return False;
+      end M_Elements_Contains;
+
+      --------------------
+      -- M_Elements_Cst --
+      --------------------
+
+      function M_Elements_Cst
+        (S   : M.Sequence;
+         Fst : Positive_Count_Type;
+         Lst : Count_Type;
+         E   : Element_Type)
+         return Boolean
+      is
+      begin
+         for I in Fst .. Lst loop
+            if Element (S, I) /= E then
+               return False;
+            end if;
+         end loop;
+         return True;
+      end M_Elements_Cst;
+
+      ----------------------
+      -- M_Elements_Equal --
+      ----------------------
+
+      function M_Elements_Equal
+        (S1, S2   : M.Sequence;
+         Fst      : Positive_Count_Type;
+         Lst      : Count_Type)
+         return Boolean
+      is
+      begin
+         return M_Elements_Shifted (S1, S2, Fst, Lst, 0);
+      end M_Elements_Equal;
+
+      -------------------------
+      -- M_Elements_Reversed --
+      -------------------------
+
+      function M_Elements_Reversed (S1, S2 : M.Sequence) return Boolean is
+         L : constant Count_Type := M.Length (S1);
+      begin
+         if L /= M.Length (S2) then
+            return False;
+         end if;
+
+         for I in 1 .. L loop
+            if Element (S1, I) /= Element (S2, L - I + 1)
+            then
+               return False;
+            end if;
          end loop;
 
-         return C;
-      end if;
-   end First_To_Previous;
+         return True;
+      end M_Elements_Reversed;
+
+      ------------------------
+      -- M_Elements_Shifted --
+      ------------------------
+
+      function M_Elements_Shifted
+        (S1, S2   : M.Sequence;
+         Fst      : Positive_Count_Type;
+         Lst      : Count_Type;
+         Offset   : Count_Type'Base := 1)
+         return Boolean
+      is
+      begin
+         for I in Fst .. Lst loop
+            if Element (S1, I) /= Element (S2, I + Offset) then
+               return False;
+            end if;
+         end loop;
+         return True;
+      end M_Elements_Shifted;
+
+      -------------------------
+      -- M_Elements_Shuffled --
+      -------------------------
+
+      function M_Elements_Shuffle
+        (S1, S2   : M.Sequence;
+         Fst      : Positive_Count_Type;
+         Lst      : Count_Type;
+         Offset   : Count_Type'Base)
+         return Boolean
+      is
+      begin
+         for I in Fst .. Lst loop
+            declare
+               Found : Boolean := False;
+               J     : Count_Type := Fst;
+            begin
+               while not Found and J <= Lst loop
+                  if Element (S1, I) = Element (S2, J + Offset) then
+                     Found := True;
+                  end if;
+                  J := J + 1;
+               end loop;
+
+               if not Found then
+                  return False;
+               end if;
+            end;
+         end loop;
+         return True;
+      end M_Elements_Shuffle;
+
+      ------------------------
+      -- M_Elements_Swapted --
+      ------------------------
+
+      function M_Elements_Swapped
+        (S1, S2 : M.Sequence;
+         X, Y   : Positive_Count_Type)
+      return Boolean
+      is
+      begin
+         if M.Length (S1) /= M.Length (S2)
+           or else Element (S1, X) /= Element (S2, Y)
+           or else Element (S1, Y) /= Element (S2, X)
+         then
+            return False;
+         end if;
+
+         for I in 1 .. M.Length (S1) loop
+            if I /= X and then I /= Y
+              and then Element (S1, I) /= Element (S2, I)
+            then
+               return False;
+            end if;
+         end loop;
+
+         return True;
+      end M_Elements_Swapped;
+
+      -----------
+      -- Model --
+      -----------
+
+      function Model (Container : List) return M.Sequence is
+         Position : Count_Type := Container.First;
+         R        : M.Sequence;
+      begin
+         --  Can't use First, Next or Element here, since they depend
+         --  on models for their postconditions
+         while Position /= 0 loop
+            R := M.Add (R, Container.Nodes (Position).Element);
+            Position := Container.Nodes (Position).Next;
+         end loop;
+         return R;
+      end Model;
+
+      -----------------------
+      -- Mapping_preserved --
+      -----------------------
+
+      function Mapping_Preserved
+        (S1, S2 : M.Sequence;
+         M1, M2 : P.Map) return Boolean is
+
+      begin
+         for C of M1 loop
+            if not P.Mem (M2, C)
+              or else P.Get (M1, C) > M.Length (S1)
+              or else P.Get (M2, C) > M.Length (S2)
+              or else M.Get (S1, P.Get (M1, C)) /= M.Get (S2, P.Get (M2, C))
+            then
+               return False;
+            end if;
+         end loop;
+
+         for C of M2 loop
+            if not P.Mem (M1, C) then
+               return False;
+            end if;
+         end loop;
+
+         return True;
+      end Mapping_Preserved;
+
+      -------------------------
+      -- P_Positions_Shifted --
+      -------------------------
+
+      function P_Positions_Shifted
+        (Small : P.Map;
+         Big   : P.Map;
+         Cut   : Positive_Count_Type;
+         Count : Count_Type := 1) return Boolean
+      is
+      begin
+         for Cu of Small loop
+            if not P.Mem (Big, Cu) then
+               return False;
+            end if;
+         end loop;
+
+         for Cu of Big loop
+            declare
+               Pos : constant Positive_Count_Type := P.Get (Big, Cu);
+            begin
+               if Pos < Cut then
+                  if not P.Mem (Small, Cu) or else Pos /= P.Get (Small, Cu)
+                  then
+                     return False;
+                  end if;
+               elsif Pos >= Cut + Count then
+                  if not P.Mem (Small, Cu)
+                    or else Pos /= P.Get (Small, Cu) + Count
+                  then
+                     return False;
+                  end if;
+               else
+                  if P.Mem (Small, Cu) then
+                     return False;
+                  end if;
+               end if;
+            end;
+         end loop;
+         return True;
+      end P_Positions_Shifted;
+
+      -------------------------
+      -- P_Positions_Swapped --
+      -------------------------
+
+      function P_Positions_Swapped
+        (M1, M2 : P.Map;
+         C1, C2 : Cursor) return Boolean
+      is
+      begin
+         if not P.Mem (M1, C1) or not P.Mem (M1, C2)
+           or not P.Mem (M2, C1) or not P.Mem (M2, C2)
+         then
+            return False;
+         end if;
+
+         if P.Get (M1, C1) /= P.Get (M2, C2)
+             or P.Get (M1, C2) /= P.Get (M2, C1)
+         then
+            return False;
+         end if;
+
+         for C of M1 loop
+            if not P.Mem (M2, C) then
+               return False;
+            end if;
+         end loop;
+
+         for C of M2 loop
+            if not P.Mem (M1, C)
+              or else (C /= C1 and C /= C2 and P.Get (M1, C) /= P.Get (M2, C))
+            then
+               return False;
+            end if;
+         end loop;
+
+         return True;
+      end P_Positions_Swapped;
+
+      ---------------------------
+      -- P_Positions_Truncated --
+      ---------------------------
+
+      function P_Positions_Truncated
+        (Small : P.Map;
+         Big   : P.Map;
+         Cut   : Positive_Count_Type;
+         Count : Count_Type := 1) return Boolean
+      is
+      begin
+         for Cu of Small loop
+            if not P.Mem (Big, Cu) then
+               return False;
+            end if;
+         end loop;
+
+         for Cu of Big loop
+            declare
+               Pos : constant Positive_Count_Type := P.Get (Big, Cu);
+            begin
+               if Pos < Cut then
+                  if not P.Mem (Small, Cu) or else Pos /= P.Get (Small, Cu)
+                  then
+                     return False;
+                  end if;
+               elsif Pos >= Cut + Count then
+                  return False;
+               elsif P.Mem (Small, Cu) then
+                  return False;
+               end if;
+            end;
+         end loop;
+         return True;
+      end P_Positions_Truncated;
+
+      ---------------
+      -- Positions --
+      ---------------
+
+      function Positions (Container : List) return P.Map is
+         Position : Count_Type := Container.First;
+         R        : P.Map;
+         I        : Count_Type := 1;
+      begin
+         --  Can't use First, Next or Element here, since they depend
+         --  on models for their postconditions
+         while Position /= 0 loop
+            R := P.Add (R, (Node => Position), I);
+            pragma Assert (P.Length (R) = I);
+            Position := Container.Nodes (Position).Next;
+            I := I + 1;
+         end loop;
+         return R;
+      end Positions;
+
+   end Formal_Model;
 
    ----------
    -- Free --
@@ -601,6 +902,33 @@ is
 
          return True;
       end Is_Sorted;
+
+      -----------------------
+      -- M_Elements_Sorted --
+      -----------------------
+
+      function M_Elements_Sorted (S : M.Sequence) return Boolean is
+      begin
+         if M.Length (S) = 0 then
+            return True;
+         end if;
+
+         declare
+            E1 : Element_Type := Element (S, 1);
+         begin
+            for I in 2 .. M.Length (S) loop
+               declare
+                  E2 : constant Element_Type := Element (S, I);
+               begin
+                  if E2 < E1 then
+                     return False;
+                  end if;
+                  E1 := E2;
+               end;
+            end loop;
+         end;
+         return True;
+      end M_Elements_Sorted;
 
       -----------
       -- Merge --
@@ -766,7 +1094,7 @@ is
       Before    : Cursor;
       New_Item  : Element_Type;
       Position  : out Cursor;
-      Count     : Count_Type := 1)
+      Count     : Count_Type)
    is
       J : Count_Type;
 
@@ -798,7 +1126,21 @@ is
      (Container : in out List;
       Before    : Cursor;
       New_Item  : Element_Type;
-      Count     : Count_Type := 1)
+      Position  : out Cursor)
+   is
+   begin
+      Insert (Container => Container,
+              Before    => Before,
+              New_Item  => New_Item,
+              Position  => Position,
+              Count     => 1);
+   end Insert;
+
+   procedure Insert
+     (Container : in out List;
+      Before    : Cursor;
+      New_Item  : Element_Type;
+      Count     : Count_Type)
    is
       Position : Cursor;
    begin
@@ -808,33 +1150,11 @@ is
    procedure Insert
      (Container : in out List;
       Before    : Cursor;
-      Position  : out Cursor;
-      Count     : Count_Type := 1)
+      New_Item  : Element_Type)
    is
-      J : Count_Type;
-
+      Position : Cursor;
    begin
-      if Before.Node /= 0 then
-         pragma Assert (Vet (Container, Before), "bad cursor in Insert");
-      end if;
-
-      if Count = 0 then
-         Position := Before;
-         return;
-      end if;
-
-      if Container.Length > Container.Capacity - Count then
-         raise Constraint_Error with "new length exceeds capacity";
-      end if;
-
-      Allocate (Container, New_Node => J);
-      Insert_Internal (Container, Before.Node, New_Node => J);
-      Position := (Node => J);
-
-      for Index in 2 .. Count loop
-         Allocate (Container, New_Node => J);
-         Insert_Internal (Container, Before.Node, New_Node => J);
-      end loop;
+      Insert (Container, Before, New_Item, Position, 1);
    end Insert;
 
    ---------------------
@@ -1046,8 +1366,16 @@ is
 
    procedure Prepend
      (Container : in out List;
+      New_Item  : Element_Type)
+   is
+   begin
+      Insert (Container, First (Container), New_Item, 1);
+   end Prepend;
+
+   procedure Prepend
+     (Container : in out List;
       New_Item  : Element_Type;
-      Count     : Count_Type := 1)
+      Count     : Count_Type)
    is
    begin
       Insert (Container, First (Container), New_Item, Count);
@@ -1376,29 +1704,6 @@ is
       pragma Assert (N (Container.First).Prev = 0);
       pragma Assert (N (Container.Last).Next = 0);
    end Splice;
-
-   ------------------
-   -- Strict_Equal --
-   ------------------
-
-   function Strict_Equal (Left, Right : List) return Boolean is
-      CL : Count_Type := Left.First;
-      CR : Count_Type := Right.First;
-
-   begin
-      while CL /= 0 or CR /= 0 loop
-         if CL /= CR or else
-           Left.Nodes (CL).Element /= Right.Nodes (CL).Element
-         then
-            return False;
-         end if;
-
-         CL := Left.Nodes (CL).Next;
-         CR := Right.Nodes (CR).Next;
-      end loop;
-
-      return True;
-   end Strict_Equal;
 
    ----------
    -- Swap --

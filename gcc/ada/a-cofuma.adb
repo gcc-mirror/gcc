@@ -38,15 +38,16 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
    -- "=" --
    ---------
 
-   function "=" (M1, M2 : Map) return Boolean is
+   function "=" (M1 : Map; M2 : Map) return Boolean is
      (M1.Keys <= M2.Keys and M2 <= M1);
 
    ----------
    -- "<=" --
    ----------
 
-   function "<=" (M1, M2 : Map) return Boolean is
+   function "<=" (M1 : Map; M2 : Map) return Boolean is
       I2 : Count_Type;
+
    begin
       for I1 in 1 .. Length (M1.Keys) loop
          I2 := Find (M2.Keys, Get (M1.Keys, I1));
@@ -84,7 +85,10 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
    ------------
 
    function Is_Add
-     (M : Map; K : Key_Type; E : Element_Type; Result : Map) return Boolean
+     (M      : Map;
+      K      : Key_Type;
+      E      : Element_Type;
+      Result : Map) return Boolean
    is
    begin
       if Mem (M, K) or not Mem (Result, K) or Get (Result, K) /= E then
@@ -120,16 +124,19 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
    ------------
 
    function Is_Set
-     (M : Map; K : Key_Type; E : Element_Type; Result : Map) return Boolean
+     (M      : Map;
+      K      : Key_Type;
+      E      : Element_Type;
+      Result : Map) return Boolean
    is
      (Mem (M, K)
-      and then Mem (Result, K)
-      and then Get (Result, K) = E
-      and then (for all KK of M => Mem (Result, KK)
-                and then
-                  (if K /= KK
-                   then Get (Result, KK) = Get (M, KK)))
-      and then (for all K of Result => Mem (M, K)));
+       and then Mem (Result, K)
+       and then Get (Result, K) = E
+       and then (for all KK of M =>
+                   Mem (Result, KK)
+                     and then
+                       (if K /= KK then Get (Result, KK) = Get (M, KK)))
+       and then (for all K of Result => Mem (M, K)));
 
    ------------
    -- Length --
@@ -155,4 +162,5 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
 
    function Set (M : Map; K : Key_Type; E : Element_Type) return Map is
      (Keys => M.Keys, Elements => Set (M.Elements, Find (M.Keys, K), E));
+
 end Ada.Containers.Functional_Maps;

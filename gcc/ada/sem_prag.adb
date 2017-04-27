@@ -3426,7 +3426,7 @@ package body Sem_Prag is
    --------------------
 
    procedure Analyze_Pragma (N : Node_Id) is
-      Loc     : constant Source_Ptr := Sloc (N);
+      Loc : constant Source_Ptr := Sloc (N);
 
       Pname : Name_Id := Pragma_Name (N);
       --  Name of the source pragma, or name of the corresponding aspect for
@@ -10535,7 +10535,7 @@ package body Sem_Prag is
 
       if Should_Ignore_Pragma_Sem (N)
         or else (Prag_Id = Pragma_Default_Scalar_Storage_Order
-                   and then Ignore_Rep_Clauses)
+                  and then Ignore_Rep_Clauses)
       then
          return;
       end if;

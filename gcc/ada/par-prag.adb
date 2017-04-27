@@ -297,7 +297,7 @@ begin
 
    if Should_Ignore_Pragma_Par (Prag_Name)
      or else (Prag_Id = Pragma_Default_Scalar_Storage_Order
-                and then Ignore_Rep_Clauses)
+               and then Ignore_Rep_Clauses)
    then
       return Pragma_Node;
    end if;

@@ -1176,7 +1176,7 @@ package body CStand is
       --  Any_Integer is given reasonable and consistent type and size values)
 
       Any_Type := New_Standard_Entity ("any type");
-      Decl := New_Node (N_Full_Type_Declaration, Stloc);
+      Decl     := New_Node (N_Full_Type_Declaration, Stloc);
       Set_Defining_Identifier (Decl, Any_Type);
       Set_Scope (Any_Type, Standard_Standard);
       Build_Signed_Integer_Type (Any_Type, Standard_Integer_Size);
@@ -1194,7 +1194,8 @@ package body CStand is
       Set_Etype             (Any_Access, Any_Access);
       Init_Size             (Any_Access, System_Address_Size);
       Set_Elem_Alignment    (Any_Access);
-      Set_Directly_Designated_Type (Any_Access, Any_Type);
+      Set_Directly_Designated_Type
+                            (Any_Access, Any_Type);
 
       Any_Character := New_Standard_Entity ("a character type");
       Set_Ekind             (Any_Character, E_Enumeration_Type);

@@ -172,7 +172,7 @@ package body Exp_Prag is
 
       if Should_Ignore_Pragma_Sem (N)
         or else (Prag_Id = Pragma_Default_Scalar_Storage_Order
-                   and then Ignore_Rep_Clauses)
+                  and then Ignore_Rep_Clauses)
       then
          Rewrite (N, Make_Null_Statement (Sloc (N)));
          return;

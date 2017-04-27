@@ -41,6 +41,7 @@ private generic
 
    type Element_Type (<>) is private;
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
+
 package Ada.Containers.Functional_Base with SPARK_Mode => Off is
 
    subtype Extended_Index is Index_Type'Base range
@@ -48,7 +49,7 @@ package Ada.Containers.Functional_Base with SPARK_Mode => Off is
 
    type Container is private;
 
-   function "=" (C1, C2 : Container) return Boolean;
+   function "=" (C1 : Container; C2 : Container) return Boolean;
    --  Return True if C1 and C2 contain the same elements at the same position
 
    function Length (C : Container) return Count_Type;
@@ -57,8 +58,10 @@ package Ada.Containers.Functional_Base with SPARK_Mode => Off is
    function Get (C : Container; I : Index_Type) return Element_Type;
    --  Access to the element at index I in C
 
-   function Set (C : Container; I : Index_Type; E : Element_Type)
-                 return Container;
+   function Set
+     (C : Container;
+      I : Index_Type;
+      E : Element_Type) return Container;
    --  Return a new container which is equal to C except for the element at
    --  index I, which is set to E.
 
@@ -79,17 +82,17 @@ package Ada.Containers.Functional_Base with SPARK_Mode => Off is
    -- Set Operations --
    --------------------
 
-   function "<=" (C1, C2 : Container) return Boolean;
+   function "<=" (C1 : Container; C2 : Container) return Boolean;
    --  Return True if every element of C1 is in C2
 
-   function Num_Overlaps (C1, C2 : Container) return Count_Type;
+   function Num_Overlaps (C1 : Container; C2 : Container) return Count_Type;
    --  Return the number of elements that are in both C1 and C2
 
-   function Union (C1, C2 : Container) return Container;
+   function Union (C1 : Container; C2 : Container) return Container;
    --  Return a container which is C1 plus all the elements of C2 that are not
    --  in C1.
 
-   function Intersection (C1, C2 : Container) return Container;
+   function Intersection (C1 : Container; C2 : Container) return Container;
    --  Return a container which is C1 minus all the elements that are also in
    --  C2.
 

@@ -644,12 +644,6 @@ package body Sem_Elab is
 
       Loc : constant Source_Ptr := Sloc (N);
 
-      SPARK_Elab_Errors : constant Boolean :=
-                            SPARK_Mode = On
-                              and then Dynamic_Elaboration_Checks;
-      --  Flag set when an entity is called or a variable is read during SPARK
-      --  dynamic elaboration.
-
       Variable_Case : constant Boolean :=
                         Nkind (N) in N_Has_Entity
                           and then Present (Entity (N))
@@ -692,6 +686,14 @@ package body Sem_Elab is
       --  following renamings and derivations, so this scope can be in a
       --  non-visible unit. This is the scope that is to be investigated to
       --  see whether an elaboration check is required.
+
+      Is_DIC : Boolean;
+      --  Flag set when the subprogram being invoked the procedure generated
+      --  for pragma Default_Initial_Condition.
+
+      SPARK_Elab_Errors : Boolean;
+      --  Flag set when an entity is called or a variable is read during SPARK
+      --  dynamic elaboration.
 
    --  Start of processing for Check_A_Call
 
@@ -1025,6 +1027,17 @@ package body Sem_Elab is
          return;
       end if;
 
+      --  Determine whether the Default_Initial_Condition procedure of some
+      --  type is being invoked.
+
+      Is_DIC := Ekind (Ent) = E_Procedure and then Is_DIC_Procedure (Ent);
+
+      --  Checks related to Default_Initial_Condition fall under the SPARK
+      --  umbrella because this is a SPARK-specific annotation.
+
+      SPARK_Elab_Errors :=
+        SPARK_Mode = On and (Is_DIC or Dynamic_Elaboration_Checks);
+
       --  Now check if an Elaborate_All (or dynamic check) is needed
 
       if (Elab_Info_Messages or Elab_Warnings or SPARK_Elab_Errors)
@@ -1080,7 +1093,7 @@ package body Sem_Elab is
                --  Default_Initial_Condition. This prevents the internal name
                --  of the procedure from appearing in the error message.
 
-               if Is_Nontrivial_DIC_Procedure (Ent) then
+               if Is_DIC then
                   Error_Msg_N
                     ("call to Default_Initial_Condition during elaboration in "
                      & "SPARK", N);
