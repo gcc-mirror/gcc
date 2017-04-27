@@ -58,6 +58,7 @@ with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
+with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
@@ -649,10 +650,111 @@ package body Exp_Disp is
       Eq_Prim_Op      : Entity_Id := Empty;
       Controlling_Tag : Node_Id;
 
+      procedure Build_Class_Wide_Check;
+      --  If the denoted subprogram has a class-wide precondition, generate
+      --  a check using that precondition before the dispatching call, because
+      --  this is the only class-wide precondition that applies to the call.
+
       function New_Value (From : Node_Id) return Node_Id;
       --  From is the original Expression. New_Value is equivalent to a call
       --  to Duplicate_Subexpr with an explicit dereference when From is an
       --  access parameter.
+
+      ----------------------------
+      -- Build_Class_Wide_Check --
+      ----------------------------
+
+      procedure Build_Class_Wide_Check is
+         Prec    : Node_Id;
+         Cond    : Node_Id;
+         Msg     : Node_Id;
+         Str_Loc : constant String := Build_Location_String (Loc);
+
+         function Replace_Formals (N : Node_Id) return Traverse_Result;
+         --  Replace occurrences of the formals of the subprogram by the
+         --  corresponding actuals in the call, given that this check is
+         --  performed outside of the body of the subprogram.
+
+         ---------------------
+         -- Replace_Formals --
+         ---------------------
+
+         function Replace_Formals (N : Node_Id) return Traverse_Result is
+         begin
+            if Is_Entity_Name (N)
+              and then Present (Entity (N))
+              and then Is_Formal (Entity (N))
+            then
+               declare
+                  A : Node_Id;
+                  F : Entity_Id;
+
+               begin
+                  F := First_Formal (Subp);
+                  A := First_Actual (Call_Node);
+                  while Present (F) loop
+                     if F = Entity (N) then
+                        Rewrite (N, New_Copy_Tree (A));
+                        exit;
+                     end if;
+                     Next_Formal (F);
+                     Next_Actual (A);
+                  end loop;
+               end;
+            end if;
+
+            return OK;
+         end Replace_Formals;
+
+         procedure Update is new Traverse_Proc (Replace_Formals);
+      begin
+
+         --  Locate class-wide precondition, if any
+
+         if Present (Contract (Subp))
+           and then Present (Pre_Post_Conditions (Contract (Subp)))
+         then
+            Prec := Pre_Post_Conditions (Contract (Subp));
+
+            while Present (Prec) loop
+               exit when Pragma_Name (Prec) = Name_Precondition
+                 and then Class_Present (Prec);
+               Prec := Next_Pragma (Prec);
+            end loop;
+
+            if No (Prec) then
+               return;
+            end if;
+
+            --  The expression for the precondition is analyzed within the
+            --  generated pragma. The message text is the last parameter
+            --  of the generated pragma, indicating source of precondition.
+
+            Cond := New_Copy_Tree
+              (Expression (First (Pragma_Argument_Associations (Prec))));
+            Update (Cond);
+
+            --  Build message indicating the failed precondition and the
+            --  dispatching call that caused it.
+
+            Msg := Expression (Last (Pragma_Argument_Associations (Prec)));
+            Name_Len := 0;
+            Append (Global_Name_Buffer, Strval (Msg));
+            Append (Global_Name_Buffer, " in dispatching call at ");
+            Append (Global_Name_Buffer, Str_Loc);
+            Msg := Make_String_Literal (Loc, Name_Buffer (1 .. Name_Len));
+
+            Insert_Action (Call_Node,
+               Make_If_Statement (Loc,
+                  Condition => Make_Op_Not (Loc, Cond),
+                  Then_Statements => New_List (
+                     Make_Procedure_Call_Statement (Loc,
+                       Name                   =>
+                         New_Occurrence_Of
+                           (RTE (RE_Raise_Assert_Failure), Loc),
+                       Parameter_Associations => New_List (Msg)))));
+         end if;
+      end Build_Class_Wide_Check;
 
       ---------------
       -- New_Value --
@@ -713,6 +815,8 @@ package body Exp_Disp is
       then
          Subp := Alias (Subp);
       end if;
+
+      Build_Class_Wide_Check;
 
       --  Definition of the class-wide type and the tagged type
 
@@ -1174,7 +1278,7 @@ package body Exp_Disp is
       if not Tagged_Type_Expansion then
          return;
 
-      --  A static conversion to an interface type that is not classwide is
+      --  A static conversion to an interface type that is not class-wide is
       --  curious but legal if the interface operation is a null procedure.
       --  If the operation is abstract it will be rejected later.
 
@@ -1190,7 +1294,7 @@ package body Exp_Disp is
 
       if not Is_Static then
 
-         --  Give error if configurable run time and Displace not available
+         --  Give error if configurable run-time and Displace not available
 
          if not RTE_Available (RE_Displace) then
             Error_Msg_CRT ("dynamic interface conversion", N);

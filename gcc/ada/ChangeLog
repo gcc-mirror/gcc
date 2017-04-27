@@ -1,3 +1,47 @@
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_eval.adb (Subtypes_Statically_Compatible): Remove duplicated
+	check.
+	(Subtypes_Statically_Match): Remove duplicate check.
+	* sem_prag.adb (Check_Arg_Is_External_Name): Remove duplicate check.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb (Replace_Type): Remove the special processing
+	for selected components.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Merge the
+	processing for attributes Fixed_Value and Integer_Value.
+	* exp_util.adb (Side_Effect_Free): Merge the processing for
+	qualified expressions, type conversions, and unchecked type
+	conversions.
+	* g-comlin.adb (Is_In_Config): Merge the processing for No_Space
+	and Optional.
+	* par-ch3.adb (P_Declarative_Items): Merge the processing for
+	tokens function, not, overriding, and procedure.
+	* sem_ch6.adb (Fully_Conformant_Expressions): Merge the processing
+	for qualified expressions, type conversions, and unchecked
+	type conversions.
+	* sem_util.adb (Compile_Time_Constraint_Error): Merge the
+	processing for Ada 83 and instances.
+	(Object_Access_Level): Merge the processing for indexed components
+	and selected components.
+	* uname.adb (Add_Node_Name): Merge the processing for stubs.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Install_Primitive_Elaboration_Check):
+	Do not generate the check when restriction No_Elaboration_Code
+	is in effect.
+
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_disp.adb (Build_Class_Wide_Check): New subsidiary
+	of Expand_Dispatching_Call. If the denoted subprogram has a
+	class-wide precondition, this is the only precondition that
+	applies to the call, rather that the class-wide preconditions
+	that may apply to the body that is executed. (This is specified
+	in AI12-0195).
+
 2017-04-27  Yannick Moy  <moy@adacore.com>
 
 	* gnat1drv.adb (Adjust_Global_Switches): Issue

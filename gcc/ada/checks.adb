@@ -7740,7 +7740,6 @@ package body Checks is
    -----------------------------------------
 
    procedure Install_Primitive_Elaboration_Check (Subp_Body : Node_Id) is
-
       function Within_Compilation_Unit_Instance
         (Subp_Id : Entity_Id) return Boolean;
       --  Determine whether subprogram Subp_Id appears within an instance which
@@ -7794,6 +7793,11 @@ package body Checks is
       --  expansion is not desirable.
 
       if ASIS_Mode or GNATprove_Mode then
+         return;
+
+      --  Do not generate an elaboration check if such code is not desirable
+
+      elsif Restriction_Active (No_Elaboration_Code) then
          return;
 
       --  Do not generate an elaboration check if the related subprogram is

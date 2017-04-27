@@ -5681,14 +5681,6 @@ package body Sem_Eval is
          then
             return False;
 
-         --  If either type has constraint error bounds, then consider that
-         --  they match to avoid junk cascaded errors here.
-
-         elsif not Is_OK_Static_Subtype (T1)
-           or else not Is_OK_Static_Subtype (T2)
-         then
-            return True;
-
          --  Base types must match, but we don't check that (should we???) but
          --  we do at least check that both types are real, or both types are
          --  not real.
@@ -5708,19 +5700,17 @@ package body Sem_Eval is
             begin
                if Is_Real_Type (T1) then
                   return
-                    (Expr_Value_R (LB1) > Expr_Value_R (HB1))
+                    Expr_Value_R (LB1) > Expr_Value_R (HB1)
                       or else
-                    (Expr_Value_R (LB2) <= Expr_Value_R (LB1)
-                       and then
-                     Expr_Value_R (HB1) <= Expr_Value_R (HB2));
+                        (Expr_Value_R (LB2) <= Expr_Value_R (LB1)
+                          and then Expr_Value_R (HB1) <= Expr_Value_R (HB2));
 
                else
                   return
-                    (Expr_Value (LB1) > Expr_Value (HB1))
+                    Expr_Value (LB1) > Expr_Value (HB1)
                       or else
-                    (Expr_Value (LB2) <= Expr_Value (LB1)
-                       and then
-                     Expr_Value (HB1) <= Expr_Value (HB2));
+                        (Expr_Value (LB2) <= Expr_Value (LB1)
+                          and then Expr_Value (HB1) <= Expr_Value (HB2));
                end if;
             end;
          end if;
@@ -5728,17 +5718,20 @@ package body Sem_Eval is
       --  Access types
 
       elsif Is_Access_Type (T1) then
-         return (not Is_Constrained (T2)
-                  or else (Subtypes_Statically_Match
-                             (Designated_Type (T1), Designated_Type (T2))))
+         return
+           (not Is_Constrained (T2)
+             or else Subtypes_Statically_Match
+                       (Designated_Type (T1), Designated_Type (T2)))
            and then not (Can_Never_Be_Null (T2)
                           and then not Can_Never_Be_Null (T1));
 
       --  All other cases
 
       else
-         return (Is_Composite_Type (T1) and then not Is_Constrained (T2))
-           or else Subtypes_Statically_Match (T1, T2, Formal_Derived_Matching);
+         return
+           (Is_Composite_Type (T1) and then not Is_Constrained (T2))
+             or else Subtypes_Statically_Match
+                       (T1, T2, Formal_Derived_Matching);
       end if;
    end Subtypes_Statically_Compatible;
 
@@ -5856,23 +5849,16 @@ package body Sem_Eval is
 
             else
                if not Is_OK_Static_Subtype (T1)
-                 or else not Is_OK_Static_Subtype (T2)
+                    or else
+                  not Is_OK_Static_Subtype (T2)
                then
                   return False;
 
-               --  If either type has constraint error bounds, then say that
-               --  they match to avoid junk cascaded errors here.
-
-               elsif not Is_OK_Static_Subtype (T1)
-                 or else not Is_OK_Static_Subtype (T2)
-               then
-                  return True;
-
                elsif Is_Real_Type (T1) then
                   return
-                    (Expr_Value_R (LB1) = Expr_Value_R (LB2))
+                    Expr_Value_R (LB1) = Expr_Value_R (LB2)
                       and then
-                    (Expr_Value_R (HB1) = Expr_Value_R (HB2));
+                    Expr_Value_R (HB1) = Expr_Value_R (HB2);
 
                else
                   return

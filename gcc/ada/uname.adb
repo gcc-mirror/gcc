@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -300,12 +300,8 @@ package body Uname is
                when N_Compilation_Unit =>
                   Add_Node_Name (Unit (Node));
 
-               when N_Package_Body_Stub =>
-                  Add_Node_Name (Get_Parent (Node));
-                  Add_Char ('.');
-                  Add_Node_Name (Defining_Identifier (Node));
-
-               when N_Protected_Body_Stub
+               when N_Package_Body_Stub
+                  | N_Protected_Body_Stub
                   | N_Task_Body_Stub
                =>
                   Add_Node_Name (Get_Parent (Node));
