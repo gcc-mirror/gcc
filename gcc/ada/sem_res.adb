@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6102,17 +6102,24 @@ package body Sem_Res is
          --  If the called function is not declared in the main unit and it
          --  returns the limited view of type then use the available view (as
          --  is done in Try_Object_Operation) to prevent back-end confusion;
-         --  the call must appear in a context where the nonlimited view is
-         --  available. If the called function is in the extended main unit
-         --  then no action is needed, because the back end handles this case.
+         --  for the function entity itself. The call must appear in a context
+         --  where the nonlimited view is available. If the function entity is
+         --  in the extended main unit then no action is needed, because the
+         --  back end handles this case. In either case the type of the call
+         --  is the nonlimited view.
 
-         if not In_Extended_Main_Code_Unit (Nam)
-           and then From_Limited_With (Etype (Nam))
+         if From_Limited_With (Etype (Nam))
+           and then Present (Available_View (Etype (Nam)))
          then
-            Set_Etype (Nam, Available_View (Etype (Nam)));
-         end if;
+            Set_Etype (N, Available_View (Etype (Nam)));
 
-         Set_Etype (N, Etype (Nam));
+            if not In_Extended_Main_Code_Unit (Nam) then
+               Set_Etype (Nam, Available_View (Etype (Nam)));
+            end if;
+
+         else
+            Set_Etype (N, Etype (Nam));
+         end if;
       end if;
 
       --  In the case where the call is to an overloaded subprogram, Analyze

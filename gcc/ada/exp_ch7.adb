@@ -8275,31 +8275,27 @@ package body Exp_Ch7 is
 
       function Manages_Sec_Stack (Id : Entity_Id) return Boolean is
       begin
-         --  An exception handler with a choice parameter utilizes a dummy
-         --  block to provide a declarative region. Such a block should not be
-         --  considered because it never manifests in the tree and can never
-         --  release the secondary stack.
+         case Ekind (Id) is
 
-         if Ekind (Id) = E_Block
-           and then Uses_Sec_Stack (Id)
-           and then not Is_Exception_Handler (Id)
-         then
-            return True;
+            --  An exception handler with a choice parameter utilizes a dummy
+            --  block to provide a declarative region. Such a block should not
+            --  be considered because it never manifests in the tree and can
+            --  never release the secondary stack.
 
-         --  Loops are intentionally excluded because they undergo special
-         --  treatment, see Establish_Transient_Scope.
+            when E_Block =>
+               return
+                 Uses_Sec_Stack (Id) and then not Is_Exception_Handler (Id);
 
-         elsif Ekind_In (Id, E_Entry,
-                             E_Entry_Family,
-                             E_Function,
-                             E_Procedure)
-           and then Uses_Sec_Stack (Id)
-         then
-            return True;
+            when E_Entry
+               | E_Entry_Family
+               | E_Function
+               | E_Procedure
+            =>
+               return Uses_Sec_Stack (Id);
 
-         else
-            return False;
-         end if;
+            when others =>
+               return False;
+         end case;
       end Manages_Sec_Stack;
 
       --  Local variables
@@ -8326,14 +8322,11 @@ package body Exp_Ch7 is
 
          Scop := Scope (Trans_Id);
          while Present (Scop) loop
+
+            --  It should not be possible to reach Standard without hitting one
+            --  of the other cases first unless Standard was manually pushed.
+
             if Scop = Standard_Standard then
-               exit;
-
-            --  The transient block must manage the secondary stack when the
-            --  block appears within a loop in order to reclaim the memory at
-            --  each iteration.
-
-            elsif Ekind (Scop) = E_Loop then
                exit;
 
             --  The transient block is within a function which returns on the
@@ -8351,14 +8344,35 @@ package body Exp_Ch7 is
                Set_Uses_Sec_Stack (Trans_Id, False);
                exit;
 
-            --  When requested, the transient block does not need to manage the
-            --  secondary stack when there exists an enclosing block, entry,
-            --  entry family, function, or a procedure which already does that.
+            --  The transient block must manage the secondary stack when the
+            --  block appears within a loop in order to reclaim the memory at
+            --  each iteration.
+
+            elsif Ekind (Scop) = E_Loop then
+               exit;
+
+            --  The transient block does not need to manage the secondary stack
+            --  when there is an enclosing construct which already does that.
             --  This optimization saves on SS_Mark and SS_Release calls but may
             --  allow objects to live a little longer than required.
 
-            elsif Debug_Flag_Dot_S and then Manages_Sec_Stack (Scop) then
+            --  The transient block must manage the secondary stack when switch
+            --  -gnatd.s (strict management) is in effect.
+
+            elsif Manages_Sec_Stack (Scop) and then not Debug_Flag_Dot_S then
                Set_Uses_Sec_Stack (Trans_Id, False);
+               exit;
+
+            --  Prevent the search from going too far because transient blocks
+            --  are bounded by packages and subprogram scopes.
+
+            elsif Ekind_In (Scop, E_Entry,
+                                  E_Entry_Family,
+                                  E_Function,
+                                  E_Package,
+                                  E_Procedure,
+                                  E_Subprogram_Body)
+            then
                exit;
             end if;
 

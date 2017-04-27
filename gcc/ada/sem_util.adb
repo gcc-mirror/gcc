@@ -6023,12 +6023,52 @@ package body Sem_Util is
       end if;
    end Designate_Same_Unit;
 
-   ------------------------------------------
-   -- function Dynamic_Accessibility_Level --
-   ------------------------------------------
+   ---------------------------------------------
+   -- Diagnose_Iterated_Component_Association --
+   ---------------------------------------------
+
+   procedure Diagnose_Iterated_Component_Association (N : Node_Id) is
+      Def_Id : constant Entity_Id := Defining_Identifier (N);
+      Aggr   : Node_Id;
+
+   begin
+      --  Determine whether the iterated component association appears within
+      --  an aggregate. If this is the case, raise Program_Error because the
+      --  iterated component association cannot be left in the tree as is and
+      --  must always be processed by the related aggregate.
+
+      Aggr := N;
+      while Present (Aggr) loop
+         if Nkind (Aggr) = N_Aggregate then
+            raise Program_Error;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (Aggr) then
+            exit;
+         end if;
+
+         Aggr := Parent (Aggr);
+      end loop;
+
+      --  At this point it is known that the iterated component association is
+      --  not within an aggregate. This is really a quantified expression with
+      --  a missing "all" or "some" quantifier.
+
+      Error_Msg_N ("missing quantifier", Def_Id);
+
+      --  Rewrite the iterated component association as True to prevent any
+      --  cascaded errors.
+
+      Rewrite (N, New_Occurrence_Of (Standard_True, Sloc (N)));
+      Analyze (N);
+   end Diagnose_Iterated_Component_Association;
+
+   ---------------------------------
+   -- Dynamic_Accessibility_Level --
+   ---------------------------------
 
    function Dynamic_Accessibility_Level (Expr : Node_Id) return Node_Id is
-      E : Entity_Id;
       Loc : constant Source_Ptr := Sloc (Expr);
 
       function Make_Level_Literal (Level : Uint) return Node_Id;
@@ -6041,10 +6081,15 @@ package body Sem_Util is
 
       function Make_Level_Literal (Level : Uint) return Node_Id is
          Result : constant Node_Id := Make_Integer_Literal (Loc, Level);
+
       begin
          Set_Etype (Result, Standard_Natural);
          return Result;
       end Make_Level_Literal;
+
+      --  Local variables
+
+      E : Entity_Id;
 
    --  Start of processing for Dynamic_Accessibility_Level
 

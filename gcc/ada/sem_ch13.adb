@@ -4670,8 +4670,10 @@ package body Sem_Ch13 is
             when Attribute_Alignment
                | Attribute_Bit_Order
                | Attribute_Component_Size
+               | Attribute_Default_Scalar_Storage_Order
                | Attribute_Machine_Radix
                | Attribute_Object_Size
+               | Attribute_Scalar_Storage_Order
                | Attribute_Size
                | Attribute_Small
                | Attribute_Stream_Size

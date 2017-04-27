@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -890,6 +890,27 @@ package body Exp_Dbug is
       if Has_Suffix then
          Add_Str_To_Name_Buffer ("___");
          Add_Str_To_Name_Buffer (Suffix);
+      end if;
+
+      --  Add a special prefix to distinguish Ghost entities. In Ignored Ghost
+      --  mode, these entities should not leak in the "living" space and they
+      --  should be removed by the compiler in a post-processing pass. Thus,
+      --  the prefix allows anyone to check that the final executable indeed
+      --  does not contain such entities, in such a case. Do not insert this
+      --  prefix for compilation units, whose name is used as a basis for the
+      --  name of the generated elaboration procedure and (when appropriate)
+      --  the executable produced. Only insert this prefix once, for Ghost
+      --  entities declared inside other Ghost entities. Three leading
+      --  underscores are used so that "___ghost_" is a unique substring of
+      --  names produced for Ghost entities, while "__ghost_" can appear in
+      --  names of entities inside a child/local package called "Ghost".
+
+      if Is_Ghost_Entity (E)
+        and then not Is_Compilation_Unit (E)
+        and then (Name_Len < 9
+                   or else Name_Buffer (1 .. 9) /= "___ghost_")
+      then
+         Insert_Str_In_Name_Buffer ("___ghost_", 1);
       end if;
 
       Name_Buffer (Name_Len + 1) := ASCII.NUL;
