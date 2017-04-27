@@ -68,7 +68,7 @@ is
                   Next        => Next,
                   Has_Element => Has_Element,
                   Element     => Key),
-     Default_Initial_Condition => Is_Empty (Map) and Length (Map) = 0;
+     Default_Initial_Condition => Is_Empty (Map);
    pragma Preelaborable_Initialization (Map);
 
    Empty_Map : constant Map;
@@ -118,9 +118,10 @@ is
          Right : K.Sequence) return Boolean renames K."<=";
 
       package P is new Ada.Containers.Functional_Maps
-        (Key_Type        => Cursor,
-         Element_Type    => Positive_Count_Type,
-         Equivalent_Keys => "=");
+        (Key_Type                       => Cursor,
+         Element_Type                   => Positive_Count_Type,
+         Equivalent_Keys                => "=",
+         Enable_Handling_Of_Equivalence => False);
 
       function "="
         (Left  : P.Map;
@@ -262,7 +263,7 @@ is
 
    function Is_Empty (Container : Map) return Boolean with
      Global => null,
-     Post   => Is_Empty'Result = M.Is_Empty (Model (Container));
+     Post   => Is_Empty'Result = (Length (Container) = 0);
 
    procedure Clear (Container : in out Map) with
      Global => null,
@@ -502,6 +503,12 @@ is
                   (Model (Container),
                    Model (Container)'Old,
                    Key)
+
+            --  Key is inserted in Container
+
+            and K.Get (Keys (Container),
+                       P.Get (Positions (Container), Find (Container, Key))) =
+                Key
 
             --  Mapping from cursors to keys is preserved
 

@@ -36,6 +36,10 @@ generic
    type Key_Type (<>) is private;
    type Element_Type (<>)  is private;
    with function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
+   Enable_Handling_Of_Equivalence : Boolean := True;
+   --  This constant should only be set to False when no particular handling
+   --  of equivalence over keys is needed, that is, Equivalent_Keys defines a
+   --  key uniquely.
 
 package Ada.Containers.Functional_Maps with SPARK_Mode is
 
@@ -57,38 +61,40 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
    -----------------------
 
    --  Maps are axiomatized using Has_Key and Get, encoding respectively the
-   --  presence of a key in a map and an accessor to elements associated to its
-   --  keys. The length of a map is also added to protect Add against overflows
-   --  but it is not actually modeled.
+   --  presence of a key in a map and an accessor to elements associated with
+   --  its keys. The length of a map is also added to protect Add against
+   --  overflows but it is not actually modeled.
 
    function Has_Key (Container : Map; Key : Key_Type) return Boolean with
-     Global => null;
    --  Return True if Key is present in Container
 
-   function Get (Container : Map; Key : Key_Type) return Element_Type with
      Global => null,
-     Pre    => Has_Key (Container, Key);
-   --  Return the element associated to Key is present in Container
+     Post   =>
+       (if Enable_Handling_Of_Equivalence then
+
+          --  Has_Key returns the same result on all equivalent keys
+
+          (if (for some K of Container => Equivalent_Keys (K, Key)) then
+             Has_Key'Result));
+
+   function Get (Container : Map; Key : Key_Type) return Element_Type with
+   --  Return the element associated with Key in Container
+
+     Global => null,
+     Pre    => Has_Key (Container, Key),
+     Post   =>
+       (if Enable_Handling_Of_Equivalence then
+
+          --  Get returns the same result on all equivalent keys
+
+          Get'Result = W_Get (Container, Witness (Container, Key))
+          and (for all K of Container =>
+                 (if Equivalent_Keys (K, Key) then
+                    Witness (Container, Key) = Witness (Container, K))));
 
    function Length (Container : Map) return Count_Type with
      Global => null;
    --  Return the number of mappings in Container
-
-   procedure Lift_Equivalent_Keys
-     (Container : Map;
-      Left      : Key_Type;
-      Right     : Key_Type)
-   --  Lemma function which can be called manually to allow GNATprove to deduce
-   --  that Has_Key and Get always return the same result on equivalent keys.
-
-   with
-     Ghost,
-     Global => null,
-     Pre    => Equivalent_Keys (Left, Right),
-     Post   =>
-       Has_Key (Container, Left) = Has_Key (Container, Right)
-         and (if Has_Key (Container, Left) then
-                 Get (Container, Left) = Get (Container, Right));
 
    ------------------------
    -- Property Functions --
@@ -236,8 +242,8 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
      (Container : Map;
       Key       : Key_Type;
       New_Item  : Element_Type) return Map
-   --  Returns Container, where the element associated to Key has been replaced
-   --  by New_Item.
+   --  Returns Container, where the element associated with Key has been
+   --  replaced by New_Item.
 
    with
      Global => null,
@@ -247,6 +253,35 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
          and Get (Set'Result, Key) = New_Item
          and Same_Keys (Container, Set'Result)
          and Elements_Equal_Except (Container, Set'Result, Key);
+
+   ------------------------------
+   --  Handling of Equivalence --
+   ------------------------------
+
+   --  These functions are used to specify that Get returns the same value on
+   --  equivalent keys. They should not be used directly in user code.
+
+   function Has_Witness (Container : Map; Witness : Count_Type) return Boolean
+   with
+     Ghost,
+     Global => null;
+   --  Returns True if there is a key with witness Witness in Container
+
+   function Witness (Container : Map; Key : Key_Type) return Count_Type with
+   --  Returns the witness of Key in Container
+
+     Ghost,
+     Global => null,
+     Pre    => Has_Key (Container, Key),
+     Post   => Has_Witness (Container, Witness'Result);
+
+   function W_Get (Container : Map; Witness : Count_Type) return Element_Type
+   with
+   --  Returns the element associated with a witness in Container
+
+     Ghost,
+     Global => null,
+     Pre    => Has_Witness (Container, Witness);
 
    ---------------------------
    --  Iteration Primitives --

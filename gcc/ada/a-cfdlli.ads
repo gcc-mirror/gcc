@@ -151,9 +151,10 @@ is
       pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Swapped);
 
       package P is new Ada.Containers.Functional_Maps
-        (Key_Type        => Cursor,
-         Element_Type    => Positive_Count_Type,
-         Equivalent_Keys => "=");
+        (Key_Type                       => Cursor,
+         Element_Type                   => Positive_Count_Type,
+         Equivalent_Keys                => "=",
+         Enable_Handling_Of_Equivalence => False);
 
       function "="
         (Left  : P.Map;
