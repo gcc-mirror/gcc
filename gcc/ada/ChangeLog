@@ -1,3 +1,15 @@
+2017-04-27  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Issue
+	a warning in GNATprove mode if the runtime library does not
+	support IEEE-754 floats.
+
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Inherit_Class_Wide_Pre): If the parent operation
+	is itself inherited it does not carry any contract information,
+	so examine its parent operation which is its Alias.
+
 2017-04-27  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute, case 'Image): In Ada2012 the

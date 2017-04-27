@@ -4232,9 +4232,12 @@ package body Sem_Prag is
 
                --  For a type derived from a generic formal type, the operation
                --  inheriting the condition is a renaming, not an overriding of
-               --  the operation of the formal.
+               --  the operation of the formal. Ditto for an inherited
+               --  operation which has no explicit contracts.
 
-               if Is_Generic_Type (Find_Dispatching_Type (Prev)) then
+               if Is_Generic_Type (Find_Dispatching_Type (Prev))
+                 or else not Comes_From_Source (Prev)
+               then
                   Prev := Alias (Prev);
                else
                   Prev := Overridden_Operation (Prev);

@@ -496,6 +496,30 @@ procedure Gnat1drv is
          --  which is more complex to formally verify than the original source.
 
          Tagged_Type_Expansion := False;
+
+         --  Detect that the runtime library support for floating-point numbers
+         --  may not be compatible with SPARK analysis of IEEE-754 floats.
+
+         if Denorm_On_Target = False then
+            Write_Line
+              ("warning: Run-time library may be configured incorrectly");
+            Write_Line
+              ("warning: "
+               & "(SPARK analysis requires support for float subnormals)");
+
+         elsif Machine_Rounds_On_Target = False then
+            Write_Line
+              ("warning: Run-time library may be configured incorrectly");
+            Write_Line
+              ("warning: "
+               & "(SPARK analysis requires support for float rounding)");
+
+         elsif Signed_Zeros_On_Target = False then
+            Write_Line
+              ("warning: Run-time library may be configured incorrectly");
+            Write_Line
+              ("warning: (SPARK analysis requires support for signed zeros)");
+         end if;
       end if;
 
       --  Set Configurable_Run_Time mode if system.ads flag set or if the
