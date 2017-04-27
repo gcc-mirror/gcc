@@ -626,7 +626,8 @@ package body Sem_Eval is
          return Non_Static;
 
       --  When the choice denotes a subtype with a static predictate, check the
-      --  expression against the predicate values.
+      --  expression against the predicate values. Different procedures apply
+      --  to discrete and non-discrete types.
 
       elsif (Nkind (Choice) = N_Subtype_Indication
                or else (Is_Entity_Name (Choice)
@@ -634,10 +635,20 @@ package body Sem_Eval is
         and then Has_Predicates (Etype (Choice))
         and then Has_Static_Predicate (Etype (Choice))
       then
-         return
-           Choices_Match (Expr, Static_Discrete_Predicate (Etype (Choice)));
+         if Is_Discrete_Type (Etype (Choice)) then
+            return Choices_Match
+              (Expr, Static_Discrete_Predicate (Etype (Choice)));
 
-      --  Discrete type case
+         elsif
+            Real_Or_String_Static_Predicate_Matches (Expr, Etype (Choice))
+         then
+            return Match;
+
+         else
+            return No_Match;
+         end if;
+
+      --  Discrete type case only
 
       elsif Is_Discrete_Type (Etyp) then
          Val := Expr_Value (Expr);

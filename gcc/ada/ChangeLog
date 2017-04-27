@@ -1,3 +1,19 @@
+2017-04-27  Yannick Moy  <moy@adacore.com>
+
+	* exp_unst.ads: Fix typos in comments.
+
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_eval.adb (Choice_Matches): Handle properly a real literal
+	whose type has a defined static predicate.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Insert_Dereference_Action):
+	Do not adjust the address of a controlled object when the
+	associated access type is subject to pragma No_Heap_Finalization.
+	Code reformatting.
+
 2017-04-27  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gcc-interface/utils.c (gnat_type_for_size): Set

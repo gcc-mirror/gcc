@@ -12032,7 +12032,6 @@ package body Exp_Ch4 is
    -------------------------------
 
    procedure Insert_Dereference_Action (N : Node_Id) is
-
       function Is_Checked_Storage_Pool (P : Entity_Id) return Boolean;
       --  Return true if type of P is derived from Checked_Pool;
 
@@ -12062,11 +12061,12 @@ package body Exp_Ch4 is
 
       --  Local variables
 
-      Typ   : constant Entity_Id  := Etype (N);
-      Desig : constant Entity_Id  := Available_View (Designated_Type (Typ));
-      Loc   : constant Source_Ptr := Sloc (N);
-      Pool  : constant Entity_Id  := Associated_Storage_Pool (Typ);
-      Pnod  : constant Node_Id    := Parent (N);
+      Context   : constant Node_Id    := Parent (N);
+      Ptr_Typ   : constant Entity_Id  := Etype (N);
+      Desig_Typ : constant Entity_Id  :=
+                    Available_View (Designated_Type (Ptr_Typ));
+      Loc       : constant Source_Ptr := Sloc (N);
+      Pool      : constant Entity_Id  := Associated_Storage_Pool (Ptr_Typ);
 
       Addr      : Entity_Id;
       Alig      : Entity_Id;
@@ -12078,18 +12078,18 @@ package body Exp_Ch4 is
    --  Start of processing for Insert_Dereference_Action
 
    begin
-      pragma Assert (Nkind (Pnod) = N_Explicit_Dereference);
+      pragma Assert (Nkind (Context) = N_Explicit_Dereference);
 
       --  Do not re-expand a dereference which has already been processed by
       --  this routine.
 
-      if Has_Dereference_Action (Pnod) then
+      if Has_Dereference_Action (Context) then
          return;
 
       --  Do not perform this type of expansion for internally-generated
       --  dereferences.
 
-      elsif not Comes_From_Source (Original_Node (Pnod)) then
+      elsif not Comes_From_Source (Original_Node (Context)) then
          return;
 
       --  A dereference action is only applicable to objects which have been
@@ -12131,15 +12131,15 @@ package body Exp_Ch4 is
 
       --  Special case of an unconstrained array: need to add descriptor size
 
-      if Is_Array_Type (Desig)
-        and then not Is_Constrained (First_Subtype (Desig))
+      if Is_Array_Type (Desig_Typ)
+        and then not Is_Constrained (First_Subtype (Desig_Typ))
       then
          Size_Bits :=
            Make_Op_Add (Loc,
              Left_Opnd  =>
                Make_Attribute_Reference (Loc,
                  Prefix         =>
-                   New_Occurrence_Of (First_Subtype (Desig), Loc),
+                   New_Occurrence_Of (First_Subtype (Desig_Typ), Loc),
                  Attribute_Name => Name_Descriptor_Size),
              Right_Opnd => Size_Bits);
       end if;
@@ -12181,7 +12181,14 @@ package body Exp_Ch4 is
       --  knowledge of hidden pointers, we have to bring the two pointers back
       --  in view in order to restore the original state of the object.
 
-      if Needs_Finalization (Desig) then
+      --  The address manipulation is not performed for access types that are
+      --  subject to pragma No_Heap_Finalization because the two pointers do
+      --  not exist in the first place.
+
+      if No_Heap_Finalization (Ptr_Typ) then
+         null;
+
+      elsif Needs_Finalization (Desig_Typ) then
 
          --  Adjust the address and size of the dereferenced object. Generate:
          --    Adjust_Controlled_Dereference (Addr, Size, Alig);
@@ -12203,7 +12210,7 @@ package body Exp_Ch4 is
          --       <Stmt>;
          --    end if;
 
-         if Is_Class_Wide_Type (Desig) then
+         if Is_Class_Wide_Type (Desig_Typ) then
             Deref :=
               Make_Explicit_Dereference (Loc,
                 Prefix => Duplicate_Subexpr_Move_Checks (N));
@@ -12242,7 +12249,7 @@ package body Exp_Ch4 is
       --  Mark the explicit dereference as processed to avoid potential
       --  infinite expansion.
 
-      Set_Has_Dereference_Action (Pnod);
+      Set_Has_Dereference_Action (Context);
 
    exception
       when RE_Not_Available =>
