@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -8266,83 +8266,115 @@ package body Exp_Ch7 is
       Action : Node_Id;
       Par    : Node_Id) return Node_Id
    is
-      Decls  : constant List_Id := New_List;
-      Instrs : constant List_Id := New_List (Action);
+      function Manages_Sec_Stack (Id : Entity_Id) return Boolean;
+      --  Determine whether scoping entity Id manages the secondary stack
+
+      -----------------------
+      -- Manages_Sec_Stack --
+      -----------------------
+
+      function Manages_Sec_Stack (Id : Entity_Id) return Boolean is
+      begin
+         --  An exception handler with a choice parameter utilizes a dummy
+         --  block to provide a declarative region. Such a block should not be
+         --  considered because it never manifests in the tree and can never
+         --  release the secondary stack.
+
+         if Ekind (Id) = E_Block
+           and then Uses_Sec_Stack (Id)
+           and then not Is_Exception_Handler (Id)
+         then
+            return True;
+
+         --  Loops are intentionally excluded because they undergo special
+         --  treatment, see Establish_Transient_Scope.
+
+         elsif Ekind_In (Id, E_Entry,
+                             E_Entry_Family,
+                             E_Function,
+                             E_Procedure)
+           and then Uses_Sec_Stack (Id)
+         then
+            return True;
+
+         else
+            return False;
+         end if;
+      end Manages_Sec_Stack;
+
+      --  Local variables
+
+      Decls    : constant List_Id   := New_List;
+      Instrs   : constant List_Id   := New_List (Action);
+      Trans_Id : constant Entity_Id := Current_Scope;
+
       Block  : Node_Id;
       Insert : Node_Id;
+      Scop   : Entity_Id;
+
+   --  Start of processing for Make_Transient_Block
 
    begin
-      --  Case where only secondary stack use is involved
+      --  Even though the transient block is tasked with managing the secondary
+      --  stack, the block may forgo this functionality depending on how the
+      --  secondary stack is managed by enclosing scopes.
 
-      if Uses_Sec_Stack (Current_Scope)
-        and then Nkind (Action) /= N_Simple_Return_Statement
-        and then Nkind (Par) /= N_Exception_Handler
-      then
-         declare
-            S : Entity_Id;
+      if Manages_Sec_Stack (Trans_Id) then
 
-         begin
-            S := Scope (Current_Scope);
-            loop
-               --  At the outer level, no need to release the sec stack
+         --  Determine whether an enclosing scope already manages the secondary
+         --  stack.
 
-               if S = Standard_Standard then
-                  Set_Uses_Sec_Stack (Current_Scope, False);
-                  exit;
+         Scop := Scope (Trans_Id);
+         while Present (Scop) loop
+            if Scop = Standard_Standard then
+               exit;
 
-               --  In a function, only release the sec stack if the function
-               --  does not return on the sec stack otherwise the result may
-               --  be lost. The caller is responsible for releasing.
+            --  The transient block must manage the secondary stack when the
+            --  block appears within a loop in order to reclaim the memory at
+            --  each iteration.
 
-               elsif Ekind (S) = E_Function then
-                  Set_Uses_Sec_Stack (Current_Scope, False);
+            elsif Ekind (Scop) = E_Loop then
+               exit;
 
-                  if not Requires_Transient_Scope (Etype (S)) then
-                     Set_Uses_Sec_Stack (S, True);
-                     Check_Restriction (No_Secondary_Stack, Action);
-                  end if;
+            --  The transient block is within a function which returns on the
+            --  secondary stack. Take a conservative approach and assume that
+            --  the value on the secondary stack is part of the result. Note
+            --  that it is not possible to detect this dependency without flow
+            --  analysis which the compiler does not have. Letting the object
+            --  live longer than the transient block will not leak any memory
+            --  because the caller will reclaim the total storage used by the
+            --  function.
 
-                  exit;
+            elsif Ekind (Scop) = E_Function
+              and then Sec_Stack_Needed_For_Return (Scop)
+            then
+               Set_Uses_Sec_Stack (Trans_Id, False);
+               exit;
 
-               --  In a loop or entry we should install a block encompassing
-               --  all the construct. For now just release right away.
+            --  When requested, the transient block does not need to manage the
+            --  secondary stack when there exists an enclosing block, entry,
+            --  entry family, function, or a procedure which already does that.
+            --  This optimization saves on SS_Mark and SS_Release calls but may
+            --  allow objects to live a little longer than required.
 
-               elsif Ekind_In (S, E_Entry, E_Loop) then
-                  exit;
+            elsif Debug_Flag_Dot_S and then Manages_Sec_Stack (Scop) then
+               Set_Uses_Sec_Stack (Trans_Id, False);
+               exit;
+            end if;
 
-               --  In a procedure or a block, release the sec stack on exit
-               --  from the construct. Note that an exception handler with a
-               --  choice parameter requires a declarative region in the form
-               --  of a block. The block does not physically manifest in the
-               --  tree as it only serves as a scope. Do not consider such a
-               --  block because it will never release the sec stack.
-
-               --  ??? Memory leak can be created by recursive calls
-
-               elsif Ekind (S) = E_Procedure
-                 or else (Ekind (S) = E_Block
-                           and then not Is_Exception_Handler (S))
-               then
-                  Set_Uses_Sec_Stack (Current_Scope, False);
-                  Set_Uses_Sec_Stack (S, True);
-                  Check_Restriction (No_Secondary_Stack, Action);
-                  exit;
-
-               else
-                  S := Scope (S);
-               end if;
-            end loop;
-         end;
+            Scop := Scope (Scop);
+         end loop;
       end if;
 
       --  Create the transient block. Set the parent now since the block itself
-      --  is not part of the tree. The current scope is the E_Block entity
-      --  that has been pushed by Establish_Transient_Scope.
+      --  is not part of the tree. The current scope is the E_Block entity that
+      --  has been pushed by Establish_Transient_Scope.
 
-      pragma Assert (Ekind (Current_Scope) = E_Block);
+      pragma Assert (Ekind (Trans_Id) = E_Block);
+
       Block :=
         Make_Block_Statement (Loc,
-          Identifier                 => New_Occurrence_Of (Current_Scope, Loc),
+          Identifier                 => New_Occurrence_Of (Trans_Id, Loc),
           Declarations               => Decls,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc, Statements => Instrs),
@@ -8357,8 +8389,9 @@ package body Exp_Ch7 is
         (Action, Clean => False, Manage_SS => False);
 
       Insert := Prev (Action);
+
       if Present (Insert) then
-         Freeze_All (First_Entity (Current_Scope), Insert);
+         Freeze_All (First_Entity (Trans_Id), Insert);
       end if;
 
       --  Transfer cleanup actions to the newly created block

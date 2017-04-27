@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4163,10 +4163,10 @@ package Einfo is
 --       needed, since returns an invalid value in this case.
 
 --    Sec_Stack_Needed_For_Return (Flag167)
---       Defined in scope entities (blocks, functions, procedures, tasks,
---       entries). Set to True when secondary stack is used to hold the
---       returned value of a function and thus should not be released on
---       scope exit.
+--       Defined in scope entities (blocks, entries, entry families, functions,
+--       and procedures). Set to True when secondary stack is used to hold the
+--       returned value of a function and thus should not be released on scope
+--       exit.
 
 --    Shadow_Entities (List14)
 --       Defined in package and generic package entities. Points to a list
@@ -4522,9 +4522,10 @@ package Einfo is
 --       Protection object (see System.Tasking.Protected_Objects).
 
 --    Uses_Sec_Stack (Flag95)
---       Defined in scope entities (block, entry, function, loop, procedure,
---       task). Set to True when secondary stack is used in this scope and must
---       be released on exit unless Sec_Stack_Needed_For_Return is set.
+--       Defined in scope entities (blocks, entries, entry families, functions,
+--       loops, and procedures). Set to True when the secondary stack is used
+--       in this scope and must be released on exit unless flag
+--       Sec_Stack_Needed_For_Return is set.
 
 --    Validated_Object (Node36)
 --       Defined in variables. Contains the object whose value is captured by
@@ -6442,11 +6443,9 @@ package Einfo is
    --    SPARK_Pragma                        (Node40)
    --    SPARK_Aux_Pragma                    (Node41)
    --    Ignore_SPARK_Mode_Pragmas           (Flag301)
-   --    Sec_Stack_Needed_For_Return         (Flag167)  ???
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
    --    SPARK_Pragma_Inherited              (Flag265)
    --    Uses_Lock_Free                      (Flag188)
-   --    Uses_Sec_Stack                      (Flag95)   ???
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
    --    Has_Entries                         (synth)
@@ -6597,10 +6596,8 @@ package Einfo is
    --    Has_Master_Entity                   (Flag21)
    --    Has_Storage_Size_Clause             (Flag23)   (base type only)
    --    Ignore_SPARK_Mode_Pragmas           (Flag301)
-   --    Sec_Stack_Needed_For_Return         (Flag167)  ???
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
    --    SPARK_Pragma_Inherited              (Flag265)
-   --    Uses_Sec_Stack                      (Flag95)   ???
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
    --    Has_Entries                         (synth)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -109,7 +109,7 @@ package body Debug is
    --  d.p  Use original Ada 95 semantics for Bit_Order (disable AI95-0133)
    --  d.q  Suppress optimizations on imported 'in'
    --  d.r  Enable OK_To_Reorder_Components in non-variant records
-   --  d.s
+   --  d.s  Minimize secondary stack Mark and Release calls
    --  d.t  Disable static allocation of library level dispatch tables
    --  d.u  Enable Modify_Tree_For_C (update tree for c)
    --  d.v  Enable OK_To_Reorder_Components in variant records
@@ -571,6 +571,11 @@ package body Debug is
 
    --  d.r  Forces the flag OK_To_Reorder_Components to be set in all record
    --       base types that have no discriminants.
+
+   --  d.s  The compiler does not generate calls to secondary stack management
+   --       routines SS_Mark and SS_Release for a transient block when there is
+   --       an enclosing scoping construct which already manages the secondary
+   --       stack.
 
    --  d.t  The compiler has been modified (a fairly extensive modification)
    --       to generate static dispatch tables for library level tagged types.

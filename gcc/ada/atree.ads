@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3931,7 +3931,7 @@ package Atree is
       --  The nodes of the tree are stored in a table (i.e. an array). In the
       --  case of extended nodes six consecutive components in the array are
       --  used. There are thus two formats for array components. One is used
-      --  for non-extended nodes, and for the first component of extended
+      --  for nonextended nodes, and for the first component of extended
       --  nodes. The other is used for the extension parts (second, third,
       --  fourth, fifth, and sixth components) of an extended node. A variant
       --  record structure is used to distinguish the two formats.
@@ -4021,7 +4021,7 @@ package Atree is
          --    Pflag2            used as Flag63,Flag64,Flag151,Flag238,Flag309
 
          Nkind : Node_Kind;
-         --  For a non-extended node, or the initial section of an extended
+         --  For a nonextended node, or the initial section of an extended
          --  node, this field holds the Node_Kind value. For an extended node,
          --  The Nkind field is used as follows:
          --
@@ -4032,11 +4032,11 @@ package Atree is
          --     Sixth entry:   holds 8 additional flags (Flag310-317)
          --     Seventh entry: currently unused
 
-         --  Now finally (on an 32-bit boundary) comes the variant part
+         --  Now finally (on a 32-bit boundary) comes the variant part
 
          case Is_Extension is
 
-            --  Non-extended node, or first component of extended node
+            --  Nonextended node, or first component of extended node
 
             when False =>
 
@@ -4070,7 +4070,7 @@ package Atree is
                Field10 : Union_Id;
                Field11 : Union_Id;
                Field12 : Union_Id;
-               --  Seven additional general fields available only for entities
+               --  Seven additional general fields available only for entities.
                --  See package Einfo for details of their use (which depends
                --  on the value in the Ekind field).
 

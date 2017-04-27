@@ -6697,9 +6697,20 @@ package body Checks is
          Set_Etype (N, Target_Base_Type);
       end Convert_And_Check_Range;
 
+      --  Local variables
+
+      Checks_On : constant Boolean :=
+                    not Index_Checks_Suppressed (Target_Type)
+                      or else
+                    not Range_Checks_Suppressed (Target_Type);
+
    --  Start of processing for Generate_Range_Check
 
    begin
+      if not Expander_Active or not Checks_On then
+         return;
+      end if;
+
       --  First special case, if the source type is already within the range
       --  of the target type, then no check is needed (probably we should have
       --  stopped Do_Range_Check from being set in the first place, but better

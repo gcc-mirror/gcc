@@ -1041,11 +1041,16 @@ package body Sem_Aux is
 
    function Is_Generic_Formal (E : Entity_Id) return Boolean is
       Kind : Node_Kind;
+
    begin
       if No (E) then
          return False;
       else
-         Kind := Nkind (Parent (E));
+         --  Formal derived types are rewritten as private extensions, so
+         --  examine original node.
+
+         Kind := Nkind (Original_Node (Parent (E)));
+
          return
            Nkind_In (Kind, N_Formal_Object_Declaration,
                            N_Formal_Package_Declaration,
