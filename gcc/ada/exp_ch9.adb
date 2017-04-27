@@ -7509,21 +7509,16 @@ package body Exp_Ch9 is
 
          Cancel_Param := Make_Defining_Identifier (Loc, Name_uC);
 
-         --  Insert declaration of C in declarations of existing block
+         --  Insert the declaration of C in the declarations of the existing
+         --  block. The variable is initialized to something (True or False,
+         --  does not matter) to prevent CodePeer from complaining about a
+         --  possible read of an uninitialized variable.
 
          Prepend_To (Decls,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Cancel_Param,
-             Object_Definition   =>
-               New_Occurrence_Of (Standard_Boolean, Loc),
-             Expression          =>
-               New_Occurrence_Of (Standard_False, Loc),
-               --  True would work equally well here. This initialization
-               --  should be dead, but only because of things (e.g.,
-               --  abortion deferral) that CodePeer doesn't know about.
-               --  We want to avoid CodePeer complaints about a possible read
-               --  of an uninitialized variable when this variable is read,
-               --  so we initialize it here.
+             Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
+             Expression          => New_Occurrence_Of (Standard_False, Loc),
              Has_Init_Expression => True));
 
          --  Remove and save the call to Call_Simple

@@ -33,7 +33,6 @@ with System; use type System.Address;
 package body Ada.Containers.Formal_Indefinite_Vectors with
   SPARK_Mode => Off
 is
-
    function H (New_Item : Element_Type) return Holder renames To_Holder;
    function E (Container : Holder) return Element_Type renames Get;
 
@@ -44,12 +43,12 @@ is
    type Int is range System.Min_Int .. System.Max_Int;
 
    procedure Free is
-      new Ada.Unchecked_Deallocation (Elements_Array, Elements_Array_Ptr);
+     new Ada.Unchecked_Deallocation (Elements_Array, Elements_Array_Ptr);
 
    type Maximal_Array_Ptr is access all Elements_Array (Array_Index)
      with Storage_Size => 0;
    type Maximal_Array_Ptr_Const is access constant Elements_Array (Array_Index)
-       with Storage_Size => 0;
+     with Storage_Size => 0;
 
    function Elems (Container : in out Vector) return Maximal_Array_Ptr;
    function Elemsc
@@ -81,7 +80,7 @@ is
    -- "=" --
    ---------
 
-   function "=" (Left, Right : Vector) return Boolean is
+   function "=" (Left : Vector; Right : Vector) return Boolean is
    begin
       if Left'Address = Right'Address then
          return True;
@@ -117,10 +116,7 @@ is
       Insert (Container, Container.Last + 1, New_Item);
    end Append;
 
-   procedure Append
-     (Container : in out Vector;
-      New_Item  : Element_Type)
-   is
+   procedure Append (Container : in out Vector; New_Item : Element_Type) is
    begin
       Append (Container, New_Item, 1);
    end Append;
@@ -168,8 +164,11 @@ is
 
    function Capacity (Container : Vector) return Capacity_Range is
    begin
-      return (if Bounded then Container.Capacity
-              else Capacity_Range'Last);
+      return
+        (if Bounded then
+            Container.Capacity
+         else
+            Capacity_Range'Last);
    end Capacity;
 
    -----------
@@ -229,19 +228,18 @@ is
 
    function Current_Capacity (Container : Vector) return Capacity_Range is
    begin
-      return (if Container.Elements_Ptr = null
-              then Container.Elements'Length
-              else Container.Elements_Ptr.all'Length);
+      return
+        (if Container.Elements_Ptr = null then
+            Container.Elements'Length
+         else
+            Container.Elements_Ptr.all'Length);
    end Current_Capacity;
 
    ------------
    -- Delete --
    ------------
 
-   procedure Delete
-     (Container : in out Vector;
-      Index     : Extended_Index)
-   is
+   procedure Delete (Container : in out Vector; Index : Extended_Index) is
    begin
       Delete (Container, Index, 1);
    end Delete;
@@ -339,6 +337,7 @@ is
       declare
          EA  : Maximal_Array_Ptr renames Elems (Container);
          Idx : constant Count_Type := EA'First + Off;
+
       begin
          EA (Idx .. Old_Len - Count) := EA (Idx + Count .. Old_Len);
          Container.Last := New_Last;
@@ -349,17 +348,12 @@ is
    -- Delete_First --
    ------------------
 
-   procedure Delete_First
-     (Container : in out Vector)
-   is
+   procedure Delete_First (Container : in out Vector) is
    begin
       Delete_First (Container, 1);
    end Delete_First;
 
-   procedure Delete_First
-     (Container : in out Vector;
-      Count     : Count_Type)
-   is
+   procedure Delete_First (Container : in out Vector; Count : Count_Type) is
    begin
       if Count = 0 then
          return;
@@ -377,17 +371,12 @@ is
    -- Delete_Last --
    -----------------
 
-   procedure Delete_Last
-     (Container : in out Vector)
-   is
+   procedure Delete_Last (Container : in out Vector) is
    begin
       Delete_Last (Container, 1);
    end Delete_Last;
 
-   procedure Delete_Last
-     (Container : in out Vector;
-      Count     : Count_Type)
-   is
+   procedure Delete_Last (Container : in out Vector; Count : Count_Type) is
    begin
       if Count = 0 then
          return;
@@ -431,6 +420,7 @@ is
       declare
          II : constant Int'Base := Int (Index) - Int (No_Index);
          I  : constant Capacity_Range := Capacity_Range (II);
+
       begin
          return Get_Element (Container, I);
       end;
@@ -442,17 +432,20 @@ is
 
    function Elems (Container : in out Vector) return Maximal_Array_Ptr is
    begin
-      return (if Container.Elements_Ptr = null
-              then Container.Elements'Unrestricted_Access
-              else Container.Elements_Ptr.all'Unrestricted_Access);
+      return
+        (if Container.Elements_Ptr = null then
+            Container.Elements'Unrestricted_Access
+         else
+            Container.Elements_Ptr.all'Unrestricted_Access);
    end Elems;
 
-   function Elemsc
-     (Container : Vector) return Maximal_Array_Ptr_Const is
+   function Elemsc (Container : Vector) return Maximal_Array_Ptr_Const is
    begin
-      return (if Container.Elements_Ptr = null
-              then Container.Elements'Unrestricted_Access
-              else Container.Elements_Ptr.all'Unrestricted_Access);
+      return
+        (if Container.Elements_Ptr = null then
+            Container.Elements'Unrestricted_Access
+         else
+            Container.Elements_Ptr.all'Unrestricted_Access);
    end Elemsc;
 
    ----------------
@@ -519,29 +512,15 @@ is
          Right     : M.Sequence) return Boolean
       is
       begin
-         for I in Index_Type'First .. M.Last (Container) loop
+         for Index in Index_Type'First .. M.Last (Container) loop
             declare
-               Found : Boolean := False;
-               J     : Extended_Index := Extended_Index'First;
-
+               Elem : constant Element_Type := Element (Container, Index);
             begin
-               while not Found and J < M.Last (Left) loop
-                  J := J + 1;
-                  if Element (Container, I) = Element (Left, J) then
-                     Found := True;
-                  end if;
-               end loop;
-
-               J := Extended_Index'First;
-
-               while not Found and J < M.Last (Right) loop
-                  J := J + 1;
-                  if Element (Container, I) = Element (Right, J) then
-                     Found := True;
-                  end if;
-               end loop;
-
-               if not Found then
+               if not M.Contains (Left, Index_Type'First, M.Last (Left), Elem)
+                 and then
+                   not M.Contains
+                     (Right, Index_Type'First, M.Last (Right), Elem)
+               then
                   return False;
                end if;
             end;
@@ -589,8 +568,12 @@ is
       -- M_Elements_Reversed --
       -------------------------
 
-      function M_Elements_Reversed (Left, Right : M.Sequence) return Boolean is
+      function M_Elements_Reversed
+        (Left  : M.Sequence;
+         Right : M.Sequence) return Boolean
+      is
          L : constant Index_Type := M.Last (Left);
+
       begin
          if L /= M.Last (Right) then
             return False;
@@ -613,7 +596,8 @@ is
       function M_Elements_Swapped
         (Left  : M.Sequence;
          Right : M.Sequence;
-         X, Y  : Index_Type) return Boolean
+         X     : Index_Type;
+         Y     : Index_Type) return Boolean
       is
       begin
          if M.Length (Left) /= M.Length (Right)
@@ -640,10 +624,12 @@ is
 
       function Model (Container : Vector) return M.Sequence is
          R : M.Sequence;
+
       begin
          for Position in 1 .. Length (Container) loop
             R := M.Add (R, E (Elemsc (Container) (Position)));
          end loop;
+
          return R;
       end Model;
 
@@ -661,11 +647,10 @@ is
 
       function Is_Sorted (Container : Vector) return Boolean is
          L : constant Capacity_Range := Length (Container);
+
       begin
          for J in 1 .. L - 1 loop
-            if Get_Element (Container, J + 1) <
-               Get_Element (Container, J)
-            then
+            if Get_Element (Container, J + 1) < Get_Element (Container, J) then
                return False;
             end if;
          end loop;
@@ -708,19 +693,19 @@ is
       -- Sort --
       ----------
 
-      procedure Sort (Container : in out Vector)
-      is
+      procedure Sort (Container : in out Vector) is
          function "<" (Left : Holder; Right : Holder) return Boolean is
            (E (Left) < E (Right));
 
          procedure Sort is
            new Generic_Array_Sort
-             (Index_Type   => Array_Index,
-              Element_Type => Holder,
-              Array_Type   => Elements_Array,
-              "<"          => "<");
+                 (Index_Type   => Array_Index,
+                  Element_Type => Holder,
+                  Array_Type   => Elements_Array,
+                  "<"          => "<");
 
          Len : constant Capacity_Range := Length (Container);
+
       begin
          if Container.Last <= Index_Type'First then
             return;
@@ -733,13 +718,13 @@ is
       -- Merge --
       -----------
 
-      procedure Merge (Target, Source : in out Vector) is
-         I, J : Count_Type;
+      procedure Merge (Target : in out Vector; Source : in out Vector) is
+         I : Count_Type;
+         J : Count_Type;
 
       begin
          if Target'Address = Source'Address then
-            raise Program_Error with
-              "Target and Source denote same container";
+            raise Program_Error with "Target and Source denote same container";
          end if;
 
          if Length (Source) = 0 then
@@ -755,15 +740,16 @@ is
 
          declare
             New_Length : constant Count_Type := I + Length (Source);
+
          begin
-            if not Bounded and then
-              Current_Capacity (Target) < Capacity_Range (New_Length)
+            if not Bounded
+              and then Current_Capacity (Target) < Capacity_Range (New_Length)
             then
                Reserve_Capacity
                  (Target,
                   Capacity_Range'Max
                     (Current_Capacity (Target) * Growth_Factor,
-                    Capacity_Range (New_Length)));
+                     Capacity_Range (New_Length)));
             end if;
 
             if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
@@ -778,6 +764,7 @@ is
          declare
             TA : Maximal_Array_Ptr renames Elems (Target);
             SA : Maximal_Array_Ptr renames Elems (Source);
+
          begin
             J := Length (Target);
             while Length (Source) /= 0 loop
@@ -820,7 +807,9 @@ is
    -----------------
 
    function Has_Element
-     (Container : Vector; Position : Extended_Index) return Boolean is
+     (Container : Vector;
+      Position  : Extended_Index) return Boolean
+   is
    begin
       return Position in First_Index (Container) .. Last_Index (Container);
    end Has_Element;
@@ -997,8 +986,7 @@ is
             --  worry about if No_Index were less than 0, but that case is
             --  handled above).
 
-            if Index_Type'Last - No_Index >=
-                 Count_Type'Pos (Count_Type'Last)
+            if Index_Type'Last - No_Index >= Count_Type'Pos (Count_Type'Last)
             then
                --  We have determined that range of Index_Type has at least as
                --  many values as in Count_Type, so Count_Type'Last is the
@@ -1064,17 +1052,18 @@ is
 
       --  Increase the capacity of container if needed
 
-      if not Bounded and then
-        Current_Capacity (Container) < Capacity_Range (New_Length)
+      if not Bounded
+        and then Current_Capacity (Container) < Capacity_Range (New_Length)
       then
          Reserve_Capacity
            (Container,
             Capacity_Range'Max (Current_Capacity (Container) * Growth_Factor,
-              Capacity_Range (New_Length)));
+                                Capacity_Range (New_Length)));
       end if;
 
       declare
          EA : Maximal_Array_Ptr renames Elems (Container);
+
       begin
          if Before <= Container.Last then
 
@@ -1134,6 +1123,7 @@ is
       L : constant Int := Int (Container.Last);
       F : constant Int := Int (Index_Type'First);
       N : constant Int'Base := L - F + 1;
+
    begin
       return Capacity_Range (N);
    end Length;
@@ -1142,11 +1132,9 @@ is
    -- Move --
    ----------
 
-   procedure Move
-     (Target : in out Vector;
-      Source : in out Vector)
-   is
+   procedure Move (Target : in out Vector; Source : in out Vector) is
       LS : constant Capacity_Range := Length (Source);
+
    begin
       if Target'Address = Source'Address then
          return;
@@ -1170,10 +1158,7 @@ is
       Insert (Container, Index_Type'First, New_Item);
    end Prepend;
 
-   procedure Prepend
-     (Container : in out Vector;
-      New_Item  : Element_Type)
-   is
+   procedure Prepend (Container : in out Vector; New_Item : Element_Type) is
    begin
       Prepend (Container, New_Item, 1);
    end Prepend;
@@ -1204,6 +1189,7 @@ is
       declare
          II : constant Int'Base := Int (Index) - Int (No_Index);
          I  : constant Capacity_Range := Capacity_Range (II);
+
       begin
          Elems (Container) (I) := H (New_Item);
       end;
@@ -1222,12 +1208,14 @@ is
          if Capacity > Container.Capacity then
             raise Constraint_Error with "Capacity is out of range";
          end if;
+
       else
          if Capacity > Current_Capacity (Container) then
             declare
                New_Elements : constant Elements_Array_Ptr :=
                                 new Elements_Array (1 .. Capacity);
                L            : constant Capacity_Range := Length (Container);
+
             begin
                New_Elements (1 .. L) := Elemsc (Container) (1 .. L);
                Free (Container.Elements_Ptr);
@@ -1248,9 +1236,10 @@ is
       end if;
 
       declare
-         I, J : Capacity_Range;
-         E    : Elements_Array renames
-                  Elems (Container) (1 .. Length (Container));
+         I : Capacity_Range;
+         J : Capacity_Range;
+         E : Elements_Array renames
+               Elems (Container) (1 .. Length (Container));
 
       begin
          I := 1;
@@ -1258,6 +1247,7 @@ is
          while I < J loop
             declare
                EI : constant Holder := E (I);
+
             begin
                E (I) := E (J);
                E (J) := EI;
@@ -1304,7 +1294,11 @@ is
    -- Swap --
    ----------
 
-   procedure Swap (Container : in out Vector; I, J : Index_Type) is
+   procedure Swap
+     (Container : in out Vector;
+      I         : Index_Type;
+      J         : Index_Type)
+   is
    begin
       if I > Container.Last then
          raise Constraint_Error with "I index is out of range";
@@ -1391,10 +1385,11 @@ is
 
          Last := Index_Type (Last_As_Int);
 
-         return (Capacity     => Length,
-                 Last         => Last,
-                 Elements_Ptr => <>,
-                 Elements     => (others => H (New_Item)));
+         return
+           (Capacity     => Length,
+            Last         => Last,
+            Elements_Ptr => <>,
+            Elements     => (others => H (New_Item)));
       end;
    end To_Vector;
 

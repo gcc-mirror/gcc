@@ -1,3 +1,9 @@
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb, a-cfdlli.adb, a-cfdlli.ads, exp_ch9.adb, g-dyntab.adb,
+	sem_dim.adb, a-cfinve.adb, a-cfinve.ads, a-cofove.adb, a-cofove.ads:
+	Minor reformatting and code cleanups.
+
 2017-04-27  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb (Build_Inherited_Condition_Pragmas): New procedure,
