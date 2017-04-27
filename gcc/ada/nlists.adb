@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -721,14 +721,12 @@ package body Nlists is
 
    procedure Lock is
    begin
-      Lists.Locked := True;
       Lists.Release;
-
-      Prev_Node.Locked := True;
-      Next_Node.Locked := True;
-
+      Lists.Locked := True;
       Prev_Node.Release;
+      Prev_Node.Locked := True;
       Next_Node.Release;
+      Next_Node.Locked := True;
    end Lock;
 
    ----------------

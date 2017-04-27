@@ -173,10 +173,10 @@ package GNAT.Dynamic_Tables is
       --  SCO_Unit_Table and SCO_Table in scos.h.
 
       Locked : Boolean := False;
-      --  Table expansion is permitted only if this is False. A client may set
-      --  Locked to True, in which case any attempt to expand the table will
-      --  cause an assertion failure. Note that while a table is locked, its
-      --  address in memory remains fixed and unchanging.
+      --  Table reallocation is permitted only if this is False. A client may
+      --  set Locked to True, in which case any operation that might expand or
+      --  shrink the table will cause an assertion failure. While a table is
+      --  locked, its address in memory remains fixed and unchanging.
 
       P : Table_Private;
    end record;

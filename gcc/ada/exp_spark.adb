@@ -53,6 +53,9 @@ package body Exp_SPARK is
    --  Replace occurrences of System'To_Address by calls to
    --  System.Storage_Elements.To_Address
 
+   procedure Expand_SPARK_Freeze_Type (E : Entity_Id);
+   --  Build the DIC procedure of a type when needed, if not already done
+
    procedure Expand_SPARK_N_Object_Declaration (N : Node_Id);
    --  Perform object-declaration-specific expansion
 
@@ -121,6 +124,11 @@ package body Exp_SPARK is
 
          when N_Object_Renaming_Declaration =>
             Expand_SPARK_N_Object_Renaming_Declaration (N);
+
+         when N_Freeze_Entity =>
+            if Is_Type (Entity (N)) then
+               Expand_SPARK_Freeze_Type (Entity (N));
+            end if;
 
          --  In SPARK mode, no other constructs require expansion
 
@@ -232,6 +240,23 @@ package body Exp_SPARK is
          end;
       end if;
    end Expand_SPARK_N_Attribute_Reference;
+
+   ------------------------------
+   -- Expand_SPARK_Freeze_Type --
+   ------------------------------
+
+   procedure Expand_SPARK_Freeze_Type (E : Entity_Id) is
+   begin
+      --  When a DIC is inherited by a tagged type, it may need to be
+      --  specialized to the descendant type, hence build a separate DIC
+      --  procedure for it as done during regular expansion for compilation.
+
+      if Has_DIC (E)
+        and then Is_Tagged_Type (E)
+      then
+         Build_DIC_Procedure_Body (E, For_Freeze => True);
+      end if;
+   end Expand_SPARK_Freeze_Type;
 
    ---------------------------------------
    -- Expand_SPARK_N_Object_Declaration --

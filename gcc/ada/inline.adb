@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4184,14 +4184,14 @@ package body Inline is
 
    procedure Lock is
    begin
-      Pending_Instantiations.Locked := True;
-      Inlined_Bodies.Locked := True;
-      Successors.Locked := True;
-      Inlined.Locked := True;
       Pending_Instantiations.Release;
+      Pending_Instantiations.Locked := True;
       Inlined_Bodies.Release;
+      Inlined_Bodies.Locked := True;
       Successors.Release;
+      Successors.Locked := True;
       Inlined.Release;
+      Inlined.Locked := True;
    end Lock;
 
    --------------------------------

@@ -44,8 +44,8 @@
 --    and its previous version C'Old) for expressing properties, which is not
 --    possible if cursors encapsulate an access to the underlying container.
 
---  Iteration over maps is done using the Iterable aspect which is SPARK
---  compatible. For of iteration ranges over keys instead of elements.
+--  Iteration over maps is done using the Iterable aspect, which is SPARK
+--  compatible. "For of" iteration ranges over keys instead of elements.
 
 with Ada.Containers.Functional_Vectors;
 with Ada.Containers.Functional_Maps;
@@ -153,7 +153,7 @@ is
                      K.Get (K_Right, P.Get (P_Right, C))));
 
       function Model (Container : Map) return M.Map with
-      --  The highlevel model of a map is a map from keys to elements. Neither
+      --  The high-level model of a map is a map from keys to elements. Neither
       --  cursors nor order of elements are represented in this model. Keys are
       --  modeled up to equivalence.
 
@@ -193,14 +193,14 @@ is
 
       function Positions (Container : Map) return P.Map with
       --  The Positions map is used to model cursors. It only contains valid
-      --  cursors and map them to their position in the container.
+      --  cursors and maps them to their position in the container.
 
         Ghost,
         Global => null,
         Post   =>
           not P.Has_Key (Positions'Result, No_Element)
 
-            --  Positions of cursors are smaller than the container's length.
+            --  Positions of cursors are smaller than the container's length
 
             and then
               (for all I of Positions'Result =>
@@ -217,11 +217,11 @@ is
 
       procedure Lift_Abstraction_Level (Container : Map) with
         --  Lift_Abstraction_Level is a ghost procedure that does nothing but
-        --  assume that we can access to the same elements by iterating over
+        --  assume that we can access the same elements by iterating over
         --  positions or cursors.
         --  This information is not generally useful except when switching from
-        --  a lowlevel, cursor aware view of a container, to a highlevel
-        --  position based view.
+        --  a low-level, cursor-aware view of a container, to a high-level,
+        --  position-based view.
 
         Ghost,
         Global => null,
@@ -328,17 +328,17 @@ is
      Pre    => Has_Element (Container, Position),
      Post   =>
 
-       --  Order of keys and cursors are preserved
+       --  Order of keys and cursors is preserved
 
        Keys (Container) = Keys (Container)'Old
          and Positions (Container) = Positions (Container)'Old
 
-         --  New_Item is now associated to the key at position Position in
+         --  New_Item is now associated with the key at position Position in
          --  Container.
 
          and Element (Container, Position) = New_Item
 
-         --  Elements associated to other keys are preserved
+         --  Elements associated with other keys are preserved
 
          and M.Same_Keys (Model (Container), Model (Container)'Old)
          and M.Elements_Equal_Except
@@ -405,7 +405,7 @@ is
                    Model (Container)'Old,
                    Key)
 
-            --  Mapping from cursors to keys are preserved
+            --  Mapping from cursors to keys is preserved
 
             and Mapping_Preserved
                   (K_Left  => Keys (Container)'Old,
@@ -443,7 +443,7 @@ is
                 Model (Container)'Old,
                 Key)
 
-         --  Mapping from cursors to keys are preserved
+         --  Mapping from cursors to keys is preserved
 
          and Mapping_Preserved
                (K_Left  => Keys (Container)'Old,
@@ -485,7 +485,7 @@ is
                    Keys (Container),
                    P.Get (Positions (Container), Find (Container, Key)))
 
-            --  Elements associated to other keys are preserved
+            --  Elements associated with other keys are preserved
 
             and M.Same_Keys (Model (Container), Model (Container)'Old)
             and M.Elements_Equal_Except
@@ -506,7 +506,7 @@ is
                    Model (Container)'Old,
                    Key)
 
-            --  Mapping from cursors to keys are preserved
+            --  Mapping from cursors to keys is preserved
 
             and Mapping_Preserved
                   (K_Left  => Keys (Container)'Old,
@@ -540,11 +540,11 @@ is
                Keys (Container),
                P.Get (Positions (Container), Find (Container, Key)))
 
-         --  New_Item is now associated to the Key in Container
+         --  New_Item is now associated with the Key in Container
 
          and Element (Model (Container), Key) = New_Item
 
-         --  Elements associated to other keys are preserved
+         --  Elements associated with other keys are preserved
 
          and M.Same_Keys (Model (Container), Model (Container)'Old)
          and M.Elements_Equal_Except
@@ -577,7 +577,7 @@ is
                    Model (Container),
                    Key)
 
-            --  Mapping from cursors to keys are preserved
+            --  Mapping from cursors to keys is preserved
 
             and Mapping_Preserved
                   (K_Left  => Keys (Container),
@@ -607,7 +607,7 @@ is
                 Model (Container),
                 Key)
 
-         --  Mapping from cursors to keys are preserved
+         --  Mapping from cursors to keys is preserved
 
          and Mapping_Preserved
                (K_Left  => Keys (Container),
@@ -639,7 +639,7 @@ is
                 Model (Container),
                 Key (Container, Position)'Old)
 
-         --  Mapping from cursors to keys are preserved
+         --  Mapping from cursors to keys is preserved
 
          and Mapping_Preserved
                (K_Left  => Keys (Container),
@@ -700,7 +700,7 @@ is
        (not Contains (Model (Container), Key) =>
           Find'Result = No_Element,
 
-        --  Otherwise, Find returns a valid cusror in Container
+        --  Otherwise, Find returns a valid cursor in Container
 
         others =>
           P.Has_Key (Positions (Container), Find'Result)

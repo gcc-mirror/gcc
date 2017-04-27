@@ -1088,10 +1088,10 @@ package body Namet is
    begin
       Name_Chars.Set_Last (Name_Chars.Last + Name_Chars_Reserve);
       Name_Entries.Set_Last (Name_Entries.Last + Name_Entries_Reserve);
-      Name_Chars.Locked := True;
-      Name_Entries.Locked := True;
       Name_Chars.Release;
+      Name_Chars.Locked := True;
       Name_Entries.Release;
+      Name_Entries.Locked := True;
    end Lock;
 
    ----------------
@@ -1708,11 +1708,11 @@ package body Namet is
 
    procedure Unlock is
    begin
-      Name_Chars.Set_Last (Name_Chars.Last - Name_Chars_Reserve);
-      Name_Entries.Set_Last (Name_Entries.Last - Name_Entries_Reserve);
       Name_Chars.Locked := False;
-      Name_Entries.Locked := False;
+      Name_Chars.Set_Last (Name_Chars.Last - Name_Chars_Reserve);
       Name_Chars.Release;
+      Name_Entries.Locked := False;
+      Name_Entries.Set_Last (Name_Entries.Last - Name_Entries_Reserve);
       Name_Entries.Release;
    end Unlock;
 

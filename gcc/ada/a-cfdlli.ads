@@ -175,7 +175,7 @@ is
 
             --  Big contains all cursors of Small
 
-            P.Keys_Included (Small, Big)
+            (P.Keys_Included (Small, Big)
 
               --  Cursors located before Cut are not moved, cursors located
               --  after are shifted by Count.
@@ -191,7 +191,7 @@ is
 
               and (for all I of Big =>
                     P.Has_Key (Small, I)
-                      or P.Get (Big, I) - Count in Cut - Count  .. Cut - 1);
+                      or P.Get (Big, I) - Count in Cut - Count  .. Cut - 1));
 
       function P_Positions_Swapped
         (Left  : P.Map;

@@ -48,7 +48,7 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
    --  Maps are empty when default initialized.
    --  "For in" quantification over maps should not be used.
    --  "For of" quantification over maps iterates over keys.
-   --  Note that, for proof, for of quantification is understood modulo
+   --  Note that, for proof, "for of" quantification is understood modulo
    --  equivalence (quantification includes keys equivalent to keys of the
    --  map).
 
