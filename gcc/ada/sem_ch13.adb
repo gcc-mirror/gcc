@@ -9087,10 +9087,10 @@ package body Sem_Ch13 is
       if In_Instance then
          return;
 
-      --  The enclosing scope may have been rewritten during expansion (.e.g.
-      --  a task body is rewritten as a procedure) after this conformance check
-      --  has been performed, so do not perform it again (it may not easily
-      --  be done if full visibility of local entities is not available).
+      --  The enclosing scope may have been rewritten during expansion (.e.g. a
+      --  task body is rewritten as a procedure) after this conformance check
+      --  has been performed, so do not perform it again (it may not easily be
+      --  done if full visibility of local entities is not available).
 
       elsif not Comes_From_Source (Current_Scope) then
          return;

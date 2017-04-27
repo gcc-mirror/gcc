@@ -4745,8 +4745,8 @@ package body Exp_Util is
                   Force_Evaluation (E);
 
                   if Original_Node (E) /= E then
-                     Set_Do_Range_Check (E,
-                                         Do_Range_Check (Original_Node (E)));
+                     Set_Do_Range_Check
+                       (E, Do_Range_Check (Original_Node (E)));
                   end if;
 
                   Next (E);
