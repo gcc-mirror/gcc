@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -359,7 +359,7 @@ tree
 make_dummy_type (Entity_Id gnat_type)
 {
   Entity_Id gnat_equiv = Gigi_Equivalent_Type (Underlying_Type (gnat_type));
-  tree gnu_type;
+  tree gnu_type, debug_type;
 
   /* If there was no equivalent type (can only happen when just annotating
      types) or underlying type, go back to the original type.  */
@@ -383,6 +383,17 @@ make_dummy_type (Entity_Id gnat_type)
     TYPE_BY_REFERENCE_P (gnu_type) = 1;
 
   SET_DUMMY_NODE (gnat_equiv, gnu_type);
+
+  /* Create a debug type so that debug info consumers only see an unspecified
+     type.  */
+  if (Needs_Debug_Info (gnat_type))
+    {
+      debug_type = make_node (LANG_TYPE);
+      SET_TYPE_DEBUG_TYPE (gnu_type, debug_type);
+
+      TYPE_NAME (debug_type) = TYPE_NAME (gnu_type);
+      TYPE_ARTIFICIAL (debug_type) = TYPE_ARTIFICIAL (gnu_type);
+    }
 
   return gnu_type;
 }
@@ -3384,6 +3395,7 @@ gnat_type_for_size (unsigned precision, int unsignedp)
     t = make_unsigned_type (precision);
   else
     t = make_signed_type (precision);
+  TYPE_ARTIFICIAL (t) = 1;
 
   if (precision <= 2 * MAX_BITS_PER_WORD)
     signed_and_unsigned_types[precision][unsignedp] = t;
