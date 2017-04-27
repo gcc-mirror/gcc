@@ -3703,7 +3703,7 @@ package Einfo is
 
 --    OK_To_Reorder_Components (Flag239) [base type only]
 --       Defined in record types. Set if the backend is permitted to reorder
---       the components. If not set, the record must be layed out in the order
+--       the components. If not set, the record must be laid out in the order
 --       in which the components are declared textually. Currently this flag
 --       can only be set by debug switches.
 
@@ -3793,7 +3793,7 @@ package Einfo is
 --       non-contiguous enumeration index types). References the type used to
 --       represent the packed array, which is either a modular type for short
 --       static arrays or an array of System.Unsigned in the bit-packed case,
---       or a regular array in the non-standard enumeration index case). Note
+--       or a regular array in the non-standard enumeration index case. Note
 --       that in some situations (internal types and references to fields of
 --       variant records), it is not always possible to construct this type in
 --       advance of its use. If this field is empty, then the necessary type

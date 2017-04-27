@@ -24016,6 +24016,7 @@ package body Sem_Prag is
                elsif not Is_Abstract_Subprogram (Spec_Id)
                  and then No (Class_Wide_Clone (Spec_Id))
                  and then not Has_Controlling_Result (Spec_Id)
+                 and then SPARK_Mode /= On
                then
                   Build_Class_Wide_Clone_Decl (Spec_Id);
                end if;

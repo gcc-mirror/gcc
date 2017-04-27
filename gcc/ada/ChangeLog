@@ -1,3 +1,15 @@
+2017-04-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads: Minor fixes in comments.
+
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb: disable clones in SPARK_Mode.
+
+2017-04-27  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.ads, contracts.adb: Minor reformatting.
+
 2017-04-27  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb, sem_util.ads (Build_Class_Wide_Clone_Body):
