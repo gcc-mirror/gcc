@@ -1,3 +1,27 @@
+2017-04-27  Bob Duff  <duff@adacore.com>
+
+	* g-dyntab.ads, g-dyntab.adb: Add assertions to subprograms that
+	can reallocate.
+	* atree.adb, elists.adb, fname-uf.adb, ghost.adb, inline.adb,
+	* lib.adb, namet.adb, nlists.adb, sem.adb, sinput.adb, stringt.adb:
+	Reorder code so that above assertions do not fail.
+	* table.ads: Remove obsolete comment on Locked.
+
+2017-04-27  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.ads: Code cleanup.
+
+2017-04-27  Yannick Moy  <moy@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_Freeze_Type): Build a DIC procedure
+	when needed for proof.	(Expand_SPARK): Call the new procedure.
+	* exp_util.ads Fix typo.
+
+2017-04-27  Gary Dismukes  <dismukes@adacore.com>
+
+	* a-cofuma.ads, a-cfhama.ads: Minor reformatting, grammar, and typo
+	fixes.
+
 2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_elab.adb Add new type Visited_Element

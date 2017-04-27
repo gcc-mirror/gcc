@@ -1091,8 +1091,8 @@ package body Ghost is
 
    procedure Lock is
    begin
-      Ignored_Ghost_Units.Locked := True;
       Ignored_Ghost_Units.Release;
+      Ignored_Ghost_Units.Locked := True;
    end Lock;
 
    -----------------------------------

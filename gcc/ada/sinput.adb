@@ -678,8 +678,8 @@ package body Sinput is
 
    procedure Lock is
    begin
-      Source_File.Locked := True;
       Source_File.Release;
+      Source_File.Locked := True;
    end Lock;
 
    ----------------------

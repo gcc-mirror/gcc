@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -128,10 +128,10 @@ package body Stringt is
 
    procedure Lock is
    begin
-      String_Chars.Locked := True;
-      Strings.Locked := True;
       String_Chars.Release;
+      String_Chars.Locked := True;
       Strings.Release;
+      Strings.Locked := True;
    end Lock;
 
    ----------

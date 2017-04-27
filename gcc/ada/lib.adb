@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1046,12 +1046,12 @@ package body Lib is
 
    procedure Lock is
    begin
-      Linker_Option_Lines.Locked := True;
-      Load_Stack.Locked := True;
-      Units.Locked := True;
       Linker_Option_Lines.Release;
+      Linker_Option_Lines.Locked := True;
       Load_Stack.Release;
+      Load_Stack.Locked := True;
       Units.Release;
+      Units.Locked := True;
    end Lock;
 
    ---------------

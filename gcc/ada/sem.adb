@@ -1227,8 +1227,8 @@ package body Sem is
 
    procedure Lock is
    begin
-      Scope_Stack.Locked := True;
       Scope_Stack.Release;
+      Scope_Stack.Locked := True;
    end Lock;
 
    ----------------

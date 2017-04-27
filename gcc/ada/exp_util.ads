@@ -283,7 +283,7 @@ package Exp_Util is
       For_Freeze : Boolean := False);
    --  Create the body of the procedure which verifies the assertion expression
    --  of pragma Default_Initial_Condition at run time. Flag For_Freeze should
-   --  be set when the body is construction as part of the freezing actions for
+   --  be set when the body is constructed as part of the freezing actions for
    --  Typ.
 
    procedure Build_DIC_Procedure_Declaration (Typ : Entity_Id);
