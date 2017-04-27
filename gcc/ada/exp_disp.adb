@@ -673,7 +673,7 @@ package body Exp_Disp is
       --  Local variables
 
       New_Node          : Node_Id;
-      SCIL_Node         : Node_Id;
+      SCIL_Node         : Node_Id := Empty;
       SCIL_Related_Node : Node_Id := Call_Node;
 
    --  Start of processing for Expand_Dispatching_Call

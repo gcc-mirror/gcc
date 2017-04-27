@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -238,35 +238,6 @@ is
    end Copy;
 
    ---------------------
-   -- Current_To_Last --
-   ---------------------
-
-   function Current_To_Last (Container : Map; Current : Cursor) return Map is
-      Curs : Cursor := First (Container);
-      C    : Map (Container.Capacity, Container.Modulus) :=
-               Copy (Container, Container.Capacity);
-      Node : Count_Type;
-
-   begin
-      if Curs = No_Element then
-         Clear (C);
-         return C;
-
-      elsif Current /= No_Element and not Has_Element (Container, Current) then
-         raise Constraint_Error;
-
-      else
-         while Curs.Node /= Current.Node loop
-            Node := Curs.Node;
-            Delete (C, Curs);
-            Curs := Next (Container, (Node => Node));
-         end loop;
-
-         return C;
-      end if;
-   end Current_To_Last;
-
-   ---------------------
    -- Default_Modulus --
    ---------------------
 
@@ -304,6 +275,7 @@ is
       HT_Ops.Delete_Node_Sans_Free (Container, Position.Node);
 
       Free (Container, Position.Node);
+      Position := No_Element;
    end Delete;
 
    -------------
@@ -344,79 +316,6 @@ is
    is
    begin
       return Equivalent_Keys (Key, Node.Key);
-   end Equivalent_Keys;
-
-   function Equivalent_Keys
-     (Left   : Map;
-      CLeft  : Cursor;
-      Right  : Map;
-      CRight : Cursor) return Boolean
-   is
-   begin
-      if not Has_Element (Left, CLeft) then
-         raise Constraint_Error with
-           "Left cursor of Equivalent_Keys has no element";
-      end if;
-
-      if not Has_Element (Right, CRight) then
-         raise Constraint_Error with
-           "Right cursor of Equivalent_Keys has no element";
-      end if;
-
-      pragma Assert (Vet (Left, CLeft),
-                     "Left cursor of Equivalent_Keys is bad");
-      pragma Assert (Vet (Right, CRight),
-                     "Right cursor of Equivalent_Keys is bad");
-
-      declare
-         LN : Node_Type renames Left.Nodes (CLeft.Node);
-         RN : Node_Type renames Right.Nodes (CRight.Node);
-      begin
-         return Equivalent_Keys (LN.Key, RN.Key);
-      end;
-   end Equivalent_Keys;
-
-   function Equivalent_Keys
-     (Left  : Map;
-      CLeft : Cursor;
-      Right : Key_Type) return Boolean
-   is
-   begin
-      if not Has_Element (Left, CLeft) then
-         raise Constraint_Error with
-           "Left cursor of Equivalent_Keys has no element";
-      end if;
-
-      pragma Assert (Vet (Left, CLeft),
-                     "Left cursor in Equivalent_Keys is bad");
-
-      declare
-         LN : Node_Type renames Left.Nodes (CLeft.Node);
-      begin
-         return Equivalent_Keys (LN.Key, Right);
-      end;
-   end Equivalent_Keys;
-
-   function Equivalent_Keys
-     (Left   : Key_Type;
-      Right  : Map;
-      CRight : Cursor) return Boolean
-   is
-   begin
-      if Has_Element (Right, CRight) then
-         raise Constraint_Error with
-           "Right cursor of Equivalent_Keys has no element";
-      end if;
-
-      pragma Assert (Vet (Right, CRight),
-                     "Right cursor of Equivalent_Keys is bad");
-
-      declare
-         RN : Node_Type renames Right.Nodes (CRight.Node);
-
-      begin
-         return Equivalent_Keys (Left, RN.Key);
-      end;
    end Equivalent_Keys;
 
    -------------
@@ -460,37 +359,109 @@ is
       return (Node => Node);
    end First;
 
-   -----------------------
-   -- First_To_Previous --
-   -----------------------
+   ------------------
+   -- Formal_Model --
+   ------------------
 
-   function First_To_Previous
-     (Container : Map;
-      Current : Cursor) return Map is
-      Curs : Cursor;
-      C    : Map (Container.Capacity, Container.Modulus) :=
-               Copy (Container, Container.Capacity);
-      Node : Count_Type;
+   package body Formal_Model is
 
-   begin
-      Curs := Current;
+      ----------
+      -- Keys --
+      ----------
 
-      if Curs = No_Element then
-         return C;
+      function Keys (Container : Map) return K.Sequence is
+         Position : Count_Type := HT_Ops.First (Container);
+         R        : K.Sequence;
 
-      elsif not Has_Element (Container, Curs) then
-         raise Constraint_Error;
+      begin
+         --  Can't use First, Next or Element here, since they depend on models
+         --  for their postconditions.
 
-      else
-         while Curs.Node /= 0 loop
-            Node := Curs.Node;
-            Delete (C, Curs);
-            Curs := Next (Container, (Node => Node));
+         while Position /= 0 loop
+            R := K.Add (R, Container.Nodes (Position).Key);
+            Position := HT_Ops.Next (Container, Position);
          end loop;
 
-         return C;
-      end if;
-   end First_To_Previous;
+         return R;
+      end Keys;
+
+      ----------------------------
+      -- Lift_Abstraction_Level --
+      ----------------------------
+
+      procedure Lift_Abstraction_Level (Container : Map) is null;
+
+      -----------------------
+      -- Mapping_preserved --
+      -----------------------
+
+      function Mapping_Preserved
+        (K_Left  : K.Sequence;
+         K_Right : K.Sequence;
+         P_Left  : P.Map;
+         P_Right : P.Map) return Boolean
+      is
+      begin
+         for C of P_Left loop
+            if not P.Has_Key (P_Right, C)
+              or else P.Get (P_Left,  C) > K.Length (K_Left)
+              or else P.Get (P_Right, C) > K.Length (K_Right)
+              or else K.Get (K_Left,  P.Get (P_Left,  C)) /=
+                      K.Get (K_Right, P.Get (P_Right, C))
+            then
+               return False;
+            end if;
+         end loop;
+
+         return True;
+      end Mapping_Preserved;
+
+      -----------
+      -- Model --
+      -----------
+
+      function Model (Container : Map) return M.Map is
+         Position : Count_Type := HT_Ops.First (Container);
+         R        : M.Map;
+
+      begin
+         --  Can't use First, Next or Element here, since they depend on models
+         --  for their postconditions.
+
+         while Position /= 0 loop
+            R := M.Add (Container => R,
+                        New_Key   => Container.Nodes (Position).Key,
+                        New_Item  => Container.Nodes (Position).Element);
+            Position := HT_Ops.Next (Container, Position);
+         end loop;
+
+         return R;
+      end Model;
+
+      ---------------
+      -- Positions --
+      ---------------
+
+      function Positions (Container : Map) return P.Map is
+         I        : Count_Type := 1;
+         Position : Count_Type := HT_Ops.First (Container);
+         R        : P.Map;
+
+      begin
+         --  Can't use First, Next or Element here, since they depend on models
+         --  for their postconditions.
+
+         while Position /= 0 loop
+            R := P.Add (R, (Node => Position), I);
+            pragma Assert (P.Length (R) = I);
+            Position := HT_Ops.Next (Container, Position);
+            I := I + 1;
+         end loop;
+
+         return R;
+      end Positions;
+
+   end Formal_Model;
 
    ----------
    -- Free --
@@ -748,40 +719,6 @@ is
    end Next;
 
    -------------
-   -- Overlap --
-   -------------
-
-   function Overlap (Left, Right : Map) return Boolean is
-      Left_Node  : Count_Type;
-      Left_Nodes : Nodes_Type renames Left.Nodes;
-
-   begin
-      if Length (Right) = 0 or Length (Left) = 0 then
-         return False;
-      end if;
-
-      if Left'Address = Right'Address then
-         return True;
-      end if;
-
-      Left_Node := First (Left).Node;
-      while Left_Node /= 0 loop
-         declare
-            N : Node_Type renames Left_Nodes (Left_Node);
-            E : Key_Type renames N.Key;
-         begin
-            if Find (Right, E).Node /= 0 then
-               return True;
-            end if;
-         end;
-
-         Left_Node := HT_Ops.Next (Left, Left_Node);
-      end loop;
-
-      return False;
-   end Overlap;
-
-   -------------
    -- Replace --
    -------------
 
@@ -849,35 +786,6 @@ is
    begin
       Node.Next := Next;
    end Set_Next;
-
-   ------------------
-   -- Strict_Equal --
-   ------------------
-
-   function Strict_Equal (Left, Right : Map) return Boolean is
-      CuL : Cursor := First (Left);
-      CuR : Cursor := First (Right);
-
-   begin
-      if Length (Left) /= Length (Right) then
-         return False;
-      end if;
-
-      while CuL.Node /= 0 or else CuR.Node /= 0 loop
-         if CuL.Node /= CuR.Node
-           or else
-             Left.Nodes (CuL.Node).Element /= Right.Nodes (CuR.Node).Element
-           or else Left.Nodes (CuL.Node).Key /= Right.Nodes (CuR.Node).Key
-         then
-            return False;
-         end if;
-
-         CuL := Next (Left, CuL);
-         CuR := Next (Right, CuR);
-      end loop;
-
-      return True;
-   end Strict_Equal;
 
    ---------
    -- Vet --

@@ -93,8 +93,10 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
             K : constant Key_Type := Get (Left.Keys, I);
          begin
             if not Equivalent_Keys (K, New_Key)
-              and then Get (Right.Elements, Find (Right.Keys, K)) /=
-                       Get (Left.Elements, I)
+              and then
+                (Find (Right.Keys, K) = 0
+                   or else Get (Right.Elements, Find (Right.Keys, K)) /=
+                           Get (Left.Elements, I))
             then
                return False;
             end if;
@@ -116,8 +118,10 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
          begin
             if not Equivalent_Keys (K, X)
               and then not Equivalent_Keys (K, Y)
-              and then Get (Right.Elements, Find (Right.Keys, K)) /=
-                       Get (Left.Elements, I)
+              and then
+                (Find (Right.Keys, K) = 0
+                   or else Get (Right.Elements, Find (Right.Keys, K)) /=
+                           Get (Left.Elements, I))
             then
                return False;
             end if;
@@ -228,6 +232,16 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
    begin
       return Length (Container.Elements);
    end Length;
+
+   --------------------------
+   -- Lift_Equivalent_Keys --
+   --------------------------
+
+   procedure Lift_Equivalent_Keys
+     (Container : Map;
+      Left      : Key_Type;
+      Right     : Key_Type)
+   is null;
 
    ---------------
    -- Same_Keys --

@@ -48,6 +48,9 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
    --  Maps are empty when default initialized.
    --  "For in" quantification over maps should not be used.
    --  "For of" quantification over maps iterates over keys.
+   --  Note that, for proof, for of quantification is understood modulo
+   --  equivalence (quantification includes keys equivalent to keys of the
+   --  map).
 
    -----------------------
    --  Basic operations --
@@ -70,6 +73,22 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
    function Length (Container : Map) return Count_Type with
      Global => null;
    --  Return the number of mappings in Container
+
+   procedure Lift_Equivalent_Keys
+     (Container : Map;
+      Left      : Key_Type;
+      Right     : Key_Type)
+   --  Lemma function which can be called manually to allow GNATprove to deduce
+   --  that Has_Key and Get always return the same result on equivalent keys.
+
+   with
+     Ghost,
+     Global => null,
+     Pre    => Equivalent_Keys (Left, Right),
+     Post   =>
+       Has_Key (Container, Left) = Has_Key (Container, Right)
+         and (if Has_Key (Container, Left) then
+                Get (Container, Left) = Get (Container, Right));
 
    ------------------------
    -- Property Functions --
@@ -162,12 +181,12 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
 
    with
      Global => null,
-     Pre    => Keys_Included_Except (Left, Right, New_Key),
      Post   =>
        Elements_Equal_Except'Result =
          (for all Key of Left =>
            (if not Equivalent_Keys (Key, New_Key) then
-               Get (Left, Key) = Get (Right, Key)));
+               Has_Key (Right, Key)
+                 and then Get (Left, Key) = Get (Right, Key)));
 
    function Elements_Equal_Except
      (Left  : Map;
@@ -179,14 +198,14 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
 
    with
      Global => null,
-     Pre    => Keys_Included_Except (Left, Right, X, Y),
      Post   =>
        Elements_Equal_Except'Result =
          (for all Key of Left =>
            (if not Equivalent_Keys (Key, X)
               and not Equivalent_Keys (Key, Y)
             then
-               Get (Left, Key) = Get (Right, Key)));
+               Has_Key (Right, Key)
+                 and then Get (Left, Key) = Get (Right, Key)));
 
    ----------------------------
    -- Construction Functions --

@@ -2738,7 +2738,7 @@ package body Checks is
       S_Typ   : Entity_Id;
       Arr     : Node_Id   := Empty;  -- initialize to prevent warning
       Arr_Typ : Entity_Id := Empty;  -- initialize to prevent warning
-      OK      : Boolean;
+      OK      : Boolean   := False;  -- initialize to prevent warning
 
       Is_Subscr_Ref : Boolean;
       --  Set true if Expr is a subscript
@@ -7936,7 +7936,8 @@ package body Checks is
       Rlo, Rhi : Uint;
       --  Ranges of values for right operand (operator case)
 
-      Llo, Lhi : Uint;
+      Llo : Uint := No_Uint;  -- initialize to prevent warning
+      Lhi : Uint := No_Uint;  -- initialize to prevent warning
       --  Ranges of values for left operand (operator case)
 
       LLIB : constant Entity_Id := Base_Type (Standard_Long_Long_Integer);
@@ -8238,6 +8239,7 @@ package body Checks is
             else
                declare
                   Rtype    : Entity_Id;
+                  pragma Warnings (Off, Rtype);
                   New_Alts : List_Id;
                   New_Exp  : Node_Id;
 

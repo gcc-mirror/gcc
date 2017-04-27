@@ -34,6 +34,7 @@ pragma Compiler_Unit_Warning;
 with GNAT.Heap_Sort_G;
 
 with Ada.Unchecked_Deallocation;
+with System;
 
 package body GNAT.Dynamic_Tables is
 
@@ -44,7 +45,7 @@ package body GNAT.Dynamic_Tables is
    -- Local Subprograms --
    -----------------------
 
-   procedure Grow (T : in out Instance; New_Last : Table_Count_Type);
+   procedure Grow (T : in out Instance; New_Last : Table_Last_Type);
    --  This is called when we are about to set the value of Last to a value
    --  that is larger than Last_Allocated. This reallocates the table to the
    --  larger size, as indicated by New_Last. At the time this is called,
@@ -128,14 +129,12 @@ package body GNAT.Dynamic_Tables is
 
    begin
       if T.Table = Empty then
-         pragma Assert (T.P.Last_Allocated = First - 1);
-         pragma Assert (T.P.Last = First - 1);
+         pragma Assert (T.P = (Last_Allocated | Last => First - 1));
          null;
       else
          Free (Temp);
          T.Table := Empty;
-         T.P.Last_Allocated := First - 1;
-         T.P.Last := First - 1;
+         T.P := (Last_Allocated | Last => First - 1);
       end if;
    end Free;
 
@@ -143,7 +142,7 @@ package body GNAT.Dynamic_Tables is
    -- Grow --
    ----------
 
-   procedure Grow (T : in out Instance; New_Last : Table_Count_Type) is
+   procedure Grow (T : in out Instance; New_Last : Table_Last_Type) is
 
       --  Note: Type Alloc_Ptr below needs to be declared locally so we know
       --  the bounds. That means that the collection is local, so is finalized
@@ -158,7 +157,7 @@ package body GNAT.Dynamic_Tables is
       subtype Table_Length_Type is Table_Index_Type'Base
         range 0 .. Table_Index_Type'Base'Last;
 
-      Old_Last_Allocated   : constant Table_Count_Type  := T.P.Last_Allocated;
+      Old_Last_Allocated   : constant Table_Last_Type  := T.P.Last_Allocated;
       Old_Allocated_Length : constant Table_Length_Type :=
                                Old_Last_Allocated - First + 1;
 
@@ -241,24 +240,82 @@ package body GNAT.Dynamic_Tables is
       Free (T);
    end Init;
 
+   --------------
+   -- Is_Empty --
+   --------------
+
+   function Is_Empty (T : Instance) return Boolean is
+      Result : constant Boolean := T.P.Last = Table_Low_Bound - 1;
+   begin
+      pragma Assert (Result = (T.Table = Empty));
+      return Result;
+   end Is_Empty;
+
    ----------
    -- Last --
    ----------
 
-   function Last (T : Instance) return Table_Count_Type is
+   function Last (T : Instance) return Table_Last_Type is
    begin
       return T.P.Last;
    end Last;
+
+   ----------
+   -- Move --
+   ----------
+
+   procedure Move (From, To : in out Instance) is
+   begin
+      pragma Assert (Is_Empty (To));
+      To := From;
+
+      From.Table            := Empty;
+      From.Locked           := False;
+      From.P.Last_Allocated := Table_Low_Bound - 1;
+      From.P.Last           := Table_Low_Bound - 1;
+      pragma Assert (Is_Empty (From));
+   end Move;
 
    -------------
    -- Release --
    -------------
 
    procedure Release (T : in out Instance) is
-      pragma Assert (not T.Locked);
-      Old_Last_Allocated : constant Table_Count_Type := T.P.Last_Allocated;
+      Old_Last_Allocated : constant Table_Last_Type := T.P.Last_Allocated;
+
+      function New_Last_Allocated return Table_Last_Type;
+      --  Compute the new value of Last_Allocated. This is normally equal to
+      --  Last, but if Release_Threshold /= 0, then we need to take that into
+      --  account.
+
+      function New_Last_Allocated return Table_Last_Type is
+         subtype Table_Length_Type is Table_Index_Type'Base
+           range 0 .. Table_Index_Type'Base'Last;
+         Length : constant Table_Length_Type := T.P.Last - First + 1;
+         Comp_Size_In_Bytes : constant Table_Length_Type :=
+           Table_Type'Component_Size / System.Storage_Unit;
+         Length_Threshold : constant Table_Length_Type :=
+           Table_Length_Type (Release_Threshold) / Comp_Size_In_Bytes;
+      begin
+         if Release_Threshold = 0
+           or else Length < Length_Threshold
+         then
+            return T.P.Last;
+         else
+            declare
+               Extra_Length : constant Table_Length_Type := Length / 1000;
+            begin
+               return (Length + Extra_Length) - 1 + First;
+            end;
+         end if;
+      end New_Last_Allocated;
+
+      New_Last_Alloc : constant Table_Last_Type := New_Last_Allocated;
+
+   --  Start of processing for Release
+
    begin
-      if T.P.Last /= T.P.Last_Allocated then
+      if New_Last_Alloc < T.P.Last_Allocated then
          pragma Assert (T.P.Last < T.P.Last_Allocated);
          pragma Assert (T.Table /= Empty);
 
@@ -272,23 +329,21 @@ package body GNAT.Dynamic_Tables is
               new Ada.Unchecked_Conversion (Table_Ptr, Old_Alloc_Ptr);
 
             subtype Alloc_Type is
-              Table_Type (First .. First + T.P.Last - 1);
+              Table_Type (First .. New_Last_Alloc);
             type Alloc_Ptr is access all Alloc_Type;
 
             function To_Table_Ptr is
-              new Ada.Unchecked_Conversion (Alloc_Ptr, Table_Ptr);
+               new Ada.Unchecked_Conversion (Alloc_Ptr, Table_Ptr);
 
             Old_Table : Old_Alloc_Ptr := To_Old_Alloc_Ptr (T.Table);
-            New_Table : constant Alloc_Ptr :=
-                          new Alloc_Type'(Old_Table (Alloc_Type'Range));
+            New_Table : constant Alloc_Ptr := new Alloc_Type;
          begin
-            T.P.Last_Allocated := T.P.Last;
+            New_Table (Alloc_Type'Range) := Old_Table (Alloc_Type'Range);
+            T.P.Last_Allocated := New_Last_Alloc;
             Free (Old_Table);
             T.Table := To_Table_Ptr (New_Table);
          end;
       end if;
-
-      pragma Assert (T.P.Last = T.P.Last_Allocated);
    end Release;
 
    --------------
@@ -329,8 +384,7 @@ package body GNAT.Dynamic_Tables is
    -- Set_Last --
    --------------
 
-   procedure Set_Last (T : in out Instance; New_Val : Table_Count_Type) is
-      pragma Assert (not T.Locked);
+   procedure Set_Last (T : in out Instance; New_Val : Table_Last_Type) is
    begin
       if New_Val > T.P.Last_Allocated then
          Grow (T, New_Val);

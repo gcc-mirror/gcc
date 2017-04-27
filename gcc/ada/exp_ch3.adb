@@ -3174,7 +3174,7 @@ package body Exp_Ch3 is
          if Present (Variant_Part (Comp_List)) then
             declare
                Variant_Alts : constant List_Id := New_List;
-               Var_Loc      : Source_Ptr;
+               Var_Loc      : Source_Ptr := No_Location;
                Variant      : Node_Id;
 
             begin
