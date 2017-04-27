@@ -6486,7 +6486,8 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
   inchash::hash hstate;
   hstate.add_object (TYPE_HASH (unqual_elt));
   hstate.add_object (TYPE_HASH (TYPE_DOMAIN (main_type)));
-  hstate.add_flag (TYPE_TYPELESS_STORAGE (main_type));
+  if (!AGGREGATE_TYPE_P (unqual_elt))
+    hstate.add_flag (TYPE_TYPELESS_STORAGE (main_type));
   main_type = type_hash_canon (hstate.end (), main_type);
 
   /* Fix the canonical type.  */
