@@ -1,5 +1,10 @@
 2017-04-27  Nathan Sidwell  <nathan@acm.org>
 
+	Kill walk_namespaces
+	gcc/cp/
+	* cp-tree.h (walk_namespaces): Delete.
+	* decl.c (walk_namespaces_r, walk_namespaces): Delete.
+
 	Rework module namespace walking
 	gcc/cp/
 	* name-lookup.h: (decapsulate_binding): Declare.
