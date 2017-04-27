@@ -1,3 +1,8 @@
+2017-04-27  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-interface/utils.c (gnat_type_for_size): Set
+        TYPE_ARTIFICIAL on created types.
+
 2017-04-27  Claire Dross  <dross@adacore.com>
 
 	* a-cfdlli.adb, a-cfdlli.ads (Formal_Model): Adapt to
