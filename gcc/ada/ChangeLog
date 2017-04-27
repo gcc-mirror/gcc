@@ -1,3 +1,21 @@
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case 'Image): In Ada2012 the
+	prefix can be an object reference in which case Obj'Image (X)
+	can only be interpreted as an indexing of the parameterless
+	version of the attribute.
+	* par-ch4.adb (P_Name): An attribute reference can be the prefix of
+	an indexing or a slice operation if the attribute does not require
+	parameters. In Ada2012 'Image also belongs in this category,
+	and A'Image (lo .. hi) is legal and must be parsed as a slice.
+
+2017-04-27  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch4.adb: Minor reformatting.
+	* gnat1drv.adb (Adjust_Global_Switches): When in GNATprove mode,
+	disable the CodePeer and C generation modes. Similar to the
+	opposite actions done in CodePeer mode.
+
 2017-04-27  Yannick Moy  <moy@adacore.com>
 
 	* sem_res.adb: Remove duplicate code.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -380,6 +380,22 @@ procedure Gnat1drv is
       --  executable.
 
       if GNATprove_Mode then
+
+         --  Turn off CodePeer mode (which can be set via e.g. -gnatC or
+         --  -gnateC), not compatible with GNATprove mode.
+
+         CodePeer_Mode := False;
+         Generate_SCIL := False;
+
+         --  Turn off C tree generation, not compatible with GNATprove mode. We
+         --  do not expect this to happen in normal use, since both modes are
+         --  enabled by special tools, but it is useful to turn off these flags
+         --  this way when we are doing GNATprove tests on existing test suites
+         --  that may have -gnateg set, to avoid the need for special casing.
+
+         Modify_Tree_For_C := False;
+         Generate_C_Code := False;
+         Unnest_Subprogram_Mode := False;
 
          --  Turn off inlining, which would confuse formal verification output
          --  and gain nothing.

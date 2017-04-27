@@ -13060,7 +13060,7 @@ package body Exp_Ch4 is
          Result :=
            Make_Op_Le (Loc,
              Left_Opnd  => Left,
-                       Right_Opnd => Right);
+             Right_Opnd => Right);
 
       --  X'Length > 1  => X'First < X'Last
       --  X'Length > n  => X'First + (n = 1) < X'Last

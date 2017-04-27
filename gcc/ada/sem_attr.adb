@@ -4042,10 +4042,25 @@ package body Sem_Attr is
            and then Is_Object_Reference (P)
            and then Is_Scalar_Type (P_Type)
          then
-            Rewrite (N,
-              Make_Attribute_Reference (Loc,
-                Prefix         => Relocate_Node (P),
-                Attribute_Name => Name_Img));
+            if No (Expressions (N)) then
+               Rewrite (N,
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => Relocate_Node (P),
+                   Attribute_Name => Name_Img));
+
+            --  If the attribute reference includes expressions, the
+            --  only possible interpretation is as an indexing of the
+            --  parameterless version of 'Image, so rewrite it accordingly.
+
+            else
+               Rewrite (N,
+                  Make_Indexed_Component (Loc,
+                     Prefix      =>
+                       Make_Attribute_Reference (Loc,
+                         Prefix         => Relocate_Node (P),
+                         Attribute_Name => Name_Img),
+                     Expressions => Expressions (N)));
+            end if;
             Analyze (N);
             return;
 
