@@ -6927,8 +6927,15 @@ package body Sem_Res is
       --  this Eval call may change N to True/False. Skip this evaluation
       --  inside assertions, in order to keep assertions as written by users
       --  for tools that rely on these, e.g. GNATprove for loop invariants.
+      --  Except evaluation is still performed even inside assertions for
+      --  comparisons between values of universal type, which are useless
+      --  for static analysis tools, and not supported even by GNATprove.
 
-      if In_Assertion_Expr = 0 then
+      if In_Assertion_Expr = 0
+        or else (Is_Universal_Numeric_Type (Etype (L))
+                   and then
+                 Is_Universal_Numeric_Type (Etype (R)))
+      then
          Eval_Relational_Op (N);
       end if;
    end Resolve_Comparison_Op;

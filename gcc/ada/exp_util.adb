@@ -1114,10 +1114,13 @@ package body Exp_Util is
             if Present (New_E) then
                Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
 
-               --  If the entity is an overridden primitive, we must build a
-               --  wrapper for the current inherited operation.
+               --  If the entity is an overridden primitive and we are not
+               --  in proof mode, we must build a wrapper for the current
+               --  inherited operation.
 
-               if Is_Subprogram (New_E) then
+               if Is_Subprogram (New_E)
+                 and then not GNATprove_Mode
+               then
                   Needs_Wrapper := True;
                end if;
             end if;

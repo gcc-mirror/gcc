@@ -2171,6 +2171,12 @@ package body Sem_Dim is
 
                Set_Dimensions (Id, Dim_Of_Expr);
 
+            --  Expression may have been constant-folded. If nominal type
+            --  has dimensions, verify that expression has same type.
+
+            elsif Exists (Dim_Of_Etyp) and then Etype (Expr) = Etyp then
+               null;
+
             --  For all other cases, issue an error message
 
             else

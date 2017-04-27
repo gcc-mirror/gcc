@@ -2573,9 +2573,15 @@ package body Sem_Elab is
       --  Call is not at outer level
 
       else
+         --  Do not generate elaboration checks in GNATprove mode because the
+         --  elaboration counter and the check are both forms of expansion.
+
+         if GNATprove_Mode then
+            null;
+
          --  Deal with dynamic elaboration check
 
-         if not Elaboration_Checks_Suppressed (E) then
+         elsif not Elaboration_Checks_Suppressed (E) then
             Set_Elaboration_Entity_Required (E);
 
             --  Case of no elaboration entity allocated yet
