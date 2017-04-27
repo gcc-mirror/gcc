@@ -24007,16 +24007,20 @@ package body Sem_Prag is
                         & "of &", Nod, Disp_Typ);
                   end if;
 
-               --  Otherwise we have a call to an overridden primitive, and
-               --  we will create a common class-wide clone for the body of
-               --  original operation and its eventual inherited versions.
-               --  If the original operation dispatches on result it is
-               --  never inherited and there is no need for a clone.
+               --  Otherwise we have a call to an overridden primitive, and we
+               --  will create a common class-wide clone for the body of
+               --  original operation and its eventual inherited versions.  If
+               --  the original operation dispatches on result it is never
+               --  inherited and there is no need for a clone. There is not
+               --  need for a clone either in GNATprove mode, as cases that
+               --  would require it are rejected (when an inherited primitive
+               --  calls an overridden operation in a class-wide contract), and
+               --  the clone would make proof impossible in some cases.
 
                elsif not Is_Abstract_Subprogram (Spec_Id)
                  and then No (Class_Wide_Clone (Spec_Id))
                  and then not Has_Controlling_Result (Spec_Id)
-                 and then SPARK_Mode /= On
+                 and then not GNATprove_Mode
                then
                   Build_Class_Wide_Clone_Decl (Spec_Id);
                end if;

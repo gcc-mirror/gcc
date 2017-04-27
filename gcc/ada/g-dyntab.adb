@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2016, AdaCore                     --
+--                     Copyright (C) 2000-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -279,7 +279,8 @@ package body GNAT.Dynamic_Tables is
               new Ada.Unchecked_Conversion (Alloc_Ptr, Table_Ptr);
 
             Old_Table : Old_Alloc_Ptr := To_Old_Alloc_Ptr (T.Table);
-            New_Table : constant Alloc_Ptr := new Alloc_Type'(Old_Table.all);
+            New_Table : constant Alloc_Ptr :=
+              new Alloc_Type'(Old_Table (Alloc_Type'Range));
          begin
             T.P.Last_Allocated := T.P.Last;
             Free (Old_Table);

@@ -81,25 +81,40 @@ is
         (Left  : M.Sequence;
          Right : M.Sequence) return Boolean renames M."<=";
 
-      function M_Elements_Shuffle
-        (Left   : M.Sequence;
-         Right  : M.Sequence;
-         Fst    : Positive_Count_Type;
-         Lst    : Count_Type;
-         Offset : Count_Type'Base) return Boolean
-      --  The slice from Fst to Lst in Left contains the same elements than the
-      --  same slide shifted by Offset in Right
+      function M_Elements_In_Union
+        (Container : M.Sequence;
+         Left      : M.Sequence;
+         Right     : M.Sequence) return Boolean
+      --  The elements of Container are contained in either Left or Right
       with
         Global => null,
-        Pre    =>
-          Lst <= M.Length (Left)
-            and Offset in 1 - Fst .. M.Length (Right) - Lst,
         Post   =>
-          M_Elements_Shuffle'Result =
-            (for all J in Fst + Offset .. Lst + Offset =>
-              (for some I in Fst .. Lst =>
+          M_Elements_In_Union'Result =
+            (for all I in 1 .. M.Length (Container) =>
+              (for some J in 1 .. M.Length (Left) =>
+                Element (Container, I) = Element (Left, J))
+              or (for some J in 1 .. M.Length (Right) =>
+                    Element (Container, I) = Element (Right, J)));
+      pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_In_Union);
+
+      function M_Elements_Included
+        (Left  : M.Sequence;
+         L_Fst : Positive_Count_Type := 1;
+         L_Lst : Count_Type;
+         Right : M.Sequence;
+         R_Fst : Positive_Count_Type := 1;
+         R_Lst : Count_Type) return Boolean
+      --  The elements of the slice from L_Fst to L_Lst in Left are contained
+      --  in the slide from R_Fst to R_Lst in Right.
+      with
+        Global => null,
+        Pre    => L_Lst <= M.Length (Left) and R_Lst <= M.Length (Right),
+        Post   =>
+          M_Elements_Included'Result =
+            (for all I in L_Fst .. L_Lst =>
+              (for some J in R_Fst .. R_Lst =>
                 Element (Left, I) = Element (Right, J)));
-      pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Shuffle);
+      pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Included);
 
       function M_Elements_Reversed
         (Left  : M.Sequence;
@@ -242,7 +257,7 @@ is
                      M.Get (M_Right, P.Get (P_Right, C))));
 
       function Model (Container : List) return M.Sequence with
-      --  The highlevel model of a list is a sequence of elements. Cursors are
+      --  The high-level model of a list is a sequence of elements. Cursors are
       --  not represented in this model.
 
         Ghost,
@@ -279,8 +294,8 @@ is
         --  assume that we can access to the same elements by iterating over
         --  positions or cursors.
         --  This information is not generally useful except when switching from
-        --  a lowlevel, cursor aware view of a container, to a highlevel
-        --  position based view.
+        --  a low-level cursor-aware view of a container to a high-level
+        --  position-based view.
 
         Ghost,
         Global => null,
@@ -463,6 +478,15 @@ is
              Right => Model (Container),
              Fst   => 1,
              Lst   => Length (Container)'Old)
+
+            --  Container contains Count times New_Item at the end
+
+            and (if Count > 0 then
+                   M.Constant_Range
+                     (Container => Model (Container),
+                      Fst       => Length (Container)'Old + 1,
+                      Lst       => Length (Container),
+                      Item      => New_Item))
 
             --  Container contains Count times New_Item at the end
 
@@ -747,11 +771,12 @@ is
 
          --  Container contains Count times New_Item at the end
 
-         and M.Constant_Range
-               (Container => Model (Container),
-                Fst       => Length (Container)'Old + 1,
-                Lst       => Length (Container),
-                Item      => New_Item)
+         and (if Count > 0 then
+                M.Constant_Range
+                  (Container => Model (Container),
+                    Fst       => Length (Container)'Old + 1,
+                    Lst       => Length (Container),
+                    Item      => New_Item))
 
          --  Count cursors have been inserted at the end of Container
 
@@ -782,11 +807,11 @@ is
          --  The elements located after Position are shifted by 1
 
          and M.Range_Shifted
-               (Left   => Model (Container)'Old,
-                Right  => Model (Container),
-                Fst    => P.Get (Positions (Container)'Old, Position'Old) + 1,
-                Lst    => Length (Container)'Old,
-                Offset => -1)
+               (Left   => Model (Container),
+                Right  => Model (Container)'Old,
+                Fst    => P.Get (Positions (Container)'Old, Position'Old),
+                Lst    => Length (Container),
+                Offset => 1)
 
          --  Position has been removed from Container
 
@@ -840,12 +865,11 @@ is
             --  Other elements are shifted by Count
 
             and M.Range_Shifted
-                  (Left   => Model (Container)'Old,
-                   Right  => Model (Container),
-                   Fst    =>
-                     P.Get (Positions (Container)'Old, Position'Old) + Count,
-                   Lst    => Length (Container)'Old,
-                   Offset => -Count)
+                  (Left   => Model (Container),
+                   Right  => Model (Container)'Old,
+                   Fst    => P.Get (Positions (Container)'Old, Position'Old),
+                   Lst    => Length (Container),
+                   Offset => Count)
 
             --  Count cursors have been removed from Container at Position
 
@@ -864,11 +888,11 @@ is
          --  The elements of Container are shifted by 1
 
          and M.Range_Shifted
-               (Left   => Model (Container)'Old,
-                Right  => Model (Container),
-                Fst    => 2,
-                Lst    => Length (Container)'Old,
-                Offset => -1)
+               (Left   => Model (Container),
+                Right  => Model (Container)'Old,
+                Fst    => 1,
+                Lst    => Length (Container),
+                Offset => 1)
 
          --  The first cursor of Container has been removed
 
@@ -892,11 +916,11 @@ is
             --  Elements of Container are shifted by Count
 
             and M.Range_Shifted
-                  (Left   => Model (Container)'Old,
-                   Right  => Model (Container),
-                   Fst    => Count + 1,
-                   Lst    => Length (Container)'Old,
-                   Offset => -Count)
+                  (Left   => Model (Container),
+                   Right  => Model (Container)'Old,
+                   Fst    => 1,
+                   Lst    => Length (Container),
+                   Offset => Count)
 
             --  The first Count cursors have been removed from Container
 
@@ -957,7 +981,7 @@ is
 
    procedure Reverse_Elements (Container : in out List) with
      Global => null,
-     Post   => M_Elements_Reversed (Model (Container'Old), Model (Container));
+     Post   => M_Elements_Reversed (Model (Container)'Old, Model (Container));
 
    procedure Swap
      (Container : in out List;
@@ -1017,12 +1041,19 @@ is
             --  The elements of Source are appended to target, the order is not
             --  specified.
 
-            and M_Elements_Shuffle
+            and M_Elements_Included
                   (Left   => Model (Source)'Old,
+                   L_Lst  => Length (Source)'Old,
                    Right  => Model (Target),
-                   Fst    => 1,
-                   Lst    => Length (Source)'Old,
-                   Offset => Length (Target)'Old)
+                   R_Fst  => Length (Target)'Old + 1,
+                   R_Lst  => Length (Target))
+
+            and M_Elements_Included
+                  (Left   => Model (Target),
+                   L_Fst  => Length (Target)'Old + 1,
+                   L_Lst  => Length (Target),
+                   Right  => Model (Source)'Old,
+                   R_Lst  => Length (Source)'Old)
 
             --  Cursors have been inserted at the end of Target
 
@@ -1045,12 +1076,22 @@ is
             --  The elements of Source are inserted before Before, the order is
             --  not specified.
 
-          and M_Elements_Shuffle
-                (Left   => Model (Source)'Old,
-                 Right  => Model (Target),
-                 Fst    => 1,
-                 Lst    => Length (Source)'Old,
-                 Offset => P.Get (Positions (Target)'Old, Before) - 1)
+            and M_Elements_Included
+                  (Left   => Model (Source)'Old,
+                   L_Lst  => Length (Source)'Old,
+                   Right  => Model (Target),
+                   R_Fst  => P.Get (Positions (Target)'Old, Before),
+                   R_Lst  =>
+                     P.Get (Positions (Target)'Old, Before) - 1 +
+                       Length (Source)'Old)
+
+            and M_Elements_Included
+                  (Left   => Model (Target),
+                   L_Fst  => P.Get (Positions (Target)'Old, Before),
+                   L_Lst  => P.Get (Positions (Target)'Old, Before) - 1 +
+                       Length (Source)'Old,
+                   Right  => Model (Source)'Old,
+                   R_Lst  => Length (Source)'Old)
 
           --  Other elements are shifted by the length of Source
 
@@ -1390,7 +1431,7 @@ is
                     P.Get (Positions (Container), Find'Result) >=
                     P.Get (Positions (Container), Position))
 
-            --  It is the first occurence of Item in this slice
+            --  It is the first occurrence of Item in this slice
 
             and not M.Contains
                       (Container => Model (Container),
@@ -1445,7 +1486,7 @@ is
                     P.Get (Positions (Container), Reverse_Find'Result) <=
                     P.Get (Positions (Container), Position))
 
-            --  It is the last occurence of Item in this slice
+            --  It is the last occurrence of Item in this slice
 
             and not M.Contains
                       (Container => Model (Container),
@@ -1489,7 +1530,7 @@ is
         Post   =>
           M_Elements_Sorted'Result =
             (for all I in 1 .. M.Length (Container) =>
-              (for all J in I + 1 .. M.Length (Container) =>
+              (for all J in I .. M.Length (Container) =>
                  Element (Container, I) = Element (Container, J)
                    or Element (Container, I) < Element (Container, J)));
       pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Sorted);
@@ -1502,7 +1543,15 @@ is
         Global => null,
         Post   =>
           Length (Container) = Length (Container)'Old
-            and M_Elements_Sorted (Model (Container));
+            and M_Elements_Sorted (Model (Container))
+            and M_Elements_Included (Left  => Model (Container)'Old,
+                                     L_Lst => Length (Container),
+                                     Right => Model (Container),
+                                     R_Lst => Length (Container))
+            and M_Elements_Included (Left  => Model (Container),
+                                     L_Lst => Length (Container),
+                                     Right => Model (Container)'Old,
+                                     R_Lst => Length (Container));
 
       procedure Merge (Target : in out List; Source : in out List) with
       --  Target and Source should not be aliased
@@ -1513,7 +1562,18 @@ is
             and Length (Source) = 0
             and (if M_Elements_Sorted (Model (Target)'Old)
                    and M_Elements_Sorted (Model (Source)'Old)
-                 then M_Elements_Sorted (Model (Target)));
+                 then M_Elements_Sorted (Model (Target)))
+            and M_Elements_Included (Left  => Model (Target)'Old,
+                                     L_Lst => Length (Target)'Old,
+                                     Right => Model (Target),
+                                     R_Lst => Length (Target))
+            and M_Elements_Included (Left  => Model (Source)'Old,
+                                     L_Lst => Length (Source)'Old,
+                                     Right => Model (Target),
+                                     R_Lst => Length (Target))
+            and M_Elements_In_Union (Model (Target),
+                                     Model (Source)'Old,
+                                     Model (Target)'Old);
    end Generic_Sorting;
 
 private

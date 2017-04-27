@@ -488,6 +488,82 @@ is
       procedure Lift_Abstraction_Level (Container : List) is null;
 
       -------------------------
+      -- M_Elements_In_Union --
+      -------------------------
+
+      function M_Elements_In_Union
+        (Container : M.Sequence;
+         Left      : M.Sequence;
+         Right     : M.Sequence) return Boolean
+      is
+      begin
+         for I in 1 .. M.Length (Container) loop
+            declare
+               Found : Boolean := False;
+               J     : Count_Type := 0;
+
+            begin
+               while not Found and J < M.Length (Left) loop
+                  J := J + 1;
+                  if Element (Container, I) = Element (Left, J) then
+                     Found := True;
+                  end if;
+               end loop;
+
+               J := 0;
+
+               while not Found and J < M.Length (Right) loop
+                  J := J + 1;
+                  if Element (Container, I) = Element (Right, J) then
+                     Found := True;
+                  end if;
+               end loop;
+
+               if not Found then
+                  return False;
+               end if;
+            end;
+         end loop;
+
+         return True;
+      end M_Elements_In_Union;
+
+      -------------------------
+      -- M_Elements_Included --
+      -------------------------
+
+      function M_Elements_Included
+        (Left  : M.Sequence;
+         L_Fst : Positive_Count_Type := 1;
+         L_Lst : Count_Type;
+         Right : M.Sequence;
+         R_Fst : Positive_Count_Type := 1;
+         R_Lst : Count_Type) return Boolean
+      is
+      begin
+         for I in L_Fst .. L_Lst loop
+            declare
+               Found : Boolean := False;
+               J     : Count_Type := R_Fst - 1;
+
+            begin
+               while not Found and J < R_Lst loop
+                  J := J + 1;
+                  if Element (Left, I) = Element (Right, J) then
+                     Found := True;
+                  end if;
+               end loop;
+
+               if not Found then
+                  return False;
+               end if;
+            end;
+         end loop;
+
+         return True;
+      end M_Elements_Included;
+
+      -------------------------
       -- M_Elements_Reversed --
       -------------------------
 
@@ -511,41 +587,6 @@ is
 
          return True;
       end M_Elements_Reversed;
-
-      -------------------------
-      -- M_Elements_Shuffled --
-      -------------------------
-
-      function M_Elements_Shuffle
-        (Left   : M.Sequence;
-         Right  : M.Sequence;
-         Fst    : Positive_Count_Type;
-         Lst    : Count_Type;
-         Offset : Count_Type'Base) return Boolean
-      is
-      begin
-         for I in Fst .. Lst loop
-            declare
-               Found : Boolean := False;
-               J     : Count_Type := Fst;
-
-            begin
-               while not Found and J <= Lst loop
-                  if Element (Left, I) = Element (Right, J + Offset) then
-                     Found := True;
-                  end if;
-
-                  J := J + 1;
-               end loop;
-
-               if not Found then
-                  return False;
-               end if;
-            end;
-         end loop;
-
-         return True;
-      end M_Elements_Shuffle;
 
       ------------------------
       -- M_Elements_Swapted --
@@ -892,7 +933,8 @@ is
 
       begin
          if Target'Address = Source'Address then
-            return;
+            raise Program_Error with
+              "Target and Source denote same container";
          end if;
 
          LI := First (Target);
@@ -1466,7 +1508,7 @@ is
 
    begin
       if CFirst = 0 then
-         CFirst := Container.First;
+         CFirst := Container.Last;
       end if;
 
       if Container.Length = 0 then
@@ -1497,14 +1539,13 @@ is
       SN : Node_Array renames Source.Nodes;
 
    begin
-      if Before.Node /= 0 then
-         pragma Assert (Vet (Target, Before), "bad cursor in Splice");
+      if Target'Address = Source'Address then
+         raise Program_Error with
+           "Target and Source denote same container";
       end if;
 
-      if Target'Address = Source'Address
-        or else Source.Length = 0
-      then
-         return;
+      if Before.Node /= 0 then
+         pragma Assert (Vet (Target, Before), "bad cursor in Splice");
       end if;
 
       pragma Assert (SN (Source.First).Prev = 0);
@@ -1535,8 +1576,8 @@ is
 
    begin
       if Target'Address = Source'Address then
-         Splice (Target, Before, Position);
-         return;
+         raise Program_Error with
+           "Target and Source denote same container";
       end if;
 
       if Position.Node = 0 then

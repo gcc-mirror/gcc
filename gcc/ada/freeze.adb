@@ -1482,7 +1482,7 @@ package body Freeze is
             A_Post := Get_Pragma (Par_Prim, Pragma_Postcondition);
 
             if Present (A_Post) and then Class_Present (A_Post) then
-               New_Prag := New_Copy_Tree (A_Pre);
+               New_Prag := New_Copy_Tree (A_Post);
                Build_Class_Wide_Expression
                  (Prag           => New_Prag,
                   Subp           => Prim,
