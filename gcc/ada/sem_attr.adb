@@ -9662,9 +9662,6 @@ package body Sem_Attr is
          elsif Is_Access_Type (Typ) then
             Id := RE_Type_Class_Access;
 
-         elsif Is_Enumeration_Type (Typ) then
-            Id := RE_Type_Class_Enumeration;
-
          elsif Is_Task_Type (Typ) then
             Id := RE_Type_Class_Task;
 

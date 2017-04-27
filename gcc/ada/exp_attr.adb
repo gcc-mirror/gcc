@@ -3025,16 +3025,15 @@ package body Exp_Attr is
       --  Note: The Elaborated attribute is never passed to the back end
 
       when Attribute_Elaborated => Elaborated : declare
-         Ent : constant Entity_Id := Entity (Pref);
+         Elab_Id : constant Entity_Id := Elaboration_Entity (Entity (Pref));
 
       begin
-         if Present (Elaboration_Entity (Ent)) then
+         if Present (Elab_Id) then
             Rewrite (N,
               Make_Op_Ne (Loc,
-                Left_Opnd =>
-                  New_Occurrence_Of (Elaboration_Entity (Ent), Loc),
-                Right_Opnd =>
-                  Make_Integer_Literal (Loc, Uint_0)));
+                Left_Opnd  => New_Occurrence_Of (Elab_Id, Loc),
+                Right_Opnd => Make_Integer_Literal (Loc, Uint_0)));
+
             Analyze_And_Resolve (N, Typ);
          else
             Rewrite (N, New_Occurrence_Of (Standard_True, Loc));

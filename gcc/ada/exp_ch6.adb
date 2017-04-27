@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5632,6 +5632,13 @@ package body Exp_Ch6 is
       --  Set to encode entity names in package body before gigi is called
 
       Qualify_Entity_Names (N);
+
+      --  If the body belongs to a nonabstract library-level source primitive
+      --  of a tagged type, install an elaboration check which ensures that a
+      --  dispatching call targeting the primitive will not execute the body
+      --  without it being previously elaborated.
+
+      Install_Primitive_Elaboration_Check (N);
    end Expand_N_Subprogram_Body;
 
    -----------------------------------

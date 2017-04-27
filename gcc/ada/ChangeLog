@@ -1,3 +1,23 @@
+2017-04-27  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb: Remove duplicate code.
+	* sem_attr.adb: Delete duplicate code.
+
+2017-04-27  Bob Duff  <duff@adacore.com>
+
+	* g-dyntab.adb: Reduce the amount of copying in
+	Release. No need to copy items past Last.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb Add with and use clauses for Sem_Disp.
+	(Install_Primitive_Elaboration_Check): New routine.
+	* checks.ads (Install_Primitive_Elaboration_Check): New routine.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Clean up the
+	processing of 'Elaborated.
+	* exp_ch6.adb (Expand_N_Subprogram_Body): Install a primitive
+	elaboration check.
+
 2017-04-27  Bob Duff  <duff@adacore.com>
 
 	* g-dyntab.ads, g-dyntab.adb, g-table.ads: Remove incorrect assertion.

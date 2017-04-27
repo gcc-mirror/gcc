@@ -6797,12 +6797,6 @@ package body Sem_Res is
             return;
          end if;
 
-      --  For Standard.Wide_Wide_Character or a type derived from it, we
-      --  know the literal is in range, since the parser checked.
-
-      elsif Root_Type (B_Typ) = Standard_Wide_Wide_Character then
-         return;
-
       --  If the entity is already set, this has already been resolved in a
       --  generic context, or comes from expansion. Nothing else to do.
 

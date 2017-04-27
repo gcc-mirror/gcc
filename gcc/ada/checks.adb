@@ -48,6 +48,7 @@ with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
@@ -7733,6 +7734,203 @@ package body Checks is
 
       Mark_Non_Null;
    end Install_Null_Excluding_Check;
+
+   -----------------------------------------
+   -- Install_Primitive_Elaboration_Check --
+   -----------------------------------------
+
+   procedure Install_Primitive_Elaboration_Check (Subp_Body : Node_Id) is
+
+      function Within_Compilation_Unit_Instance
+        (Subp_Id : Entity_Id) return Boolean;
+      --  Determine whether subprogram Subp_Id appears within an instance which
+      --  acts as a compilation unit.
+
+      --------------------------------------
+      -- Within_Compilation_Unit_Instance --
+      --------------------------------------
+
+      function Within_Compilation_Unit_Instance
+        (Subp_Id : Entity_Id) return Boolean
+      is
+         Pack : Entity_Id;
+
+      begin
+         --  Examine the scope chain looking for a compilation-unit-level
+         --  instance.
+
+         Pack := Scope (Subp_Id);
+         while Present (Pack) and then Pack /= Standard_Standard loop
+            if Ekind (Pack) = E_Package
+              and then Is_Generic_Instance (Pack)
+              and then Nkind (Parent (Unit_Declaration_Node (Pack))) =
+                         N_Compilation_Unit
+            then
+               return True;
+            end if;
+
+            Pack := Scope (Pack);
+         end loop;
+
+         return False;
+      end Within_Compilation_Unit_Instance;
+
+      --  Local declarations
+
+      Context   : constant Node_Id    := Parent (Subp_Body);
+      Loc       : constant Source_Ptr := Sloc (Subp_Body);
+      Subp_Id   : constant Entity_Id  := Unique_Defining_Entity (Subp_Body);
+      Subp_Decl : constant Node_Id    := Unit_Declaration_Node (Subp_Id);
+
+      Decls   : List_Id;
+      Flag_Id : Entity_Id;
+      Set_Ins : Node_Id;
+      Tag_Typ : Entity_Id;
+
+   --  Start of processing for Install_Primitive_Elaboration_Check
+
+   begin
+      --  Do not generate an elaboration check in compilation modes where
+      --  expansion is not desirable.
+
+      if ASIS_Mode or GNATprove_Mode then
+         return;
+
+      --  Do not generate an elaboration check if the related subprogram is
+      --  not subjected to accessibility checks.
+
+      elsif Elaboration_Checks_Suppressed (Subp_Id) then
+         return;
+
+      --  Do not consider subprograms which act as compilation units, because
+      --  they cannot be the target of a dispatching call.
+
+      elsif Nkind (Context) = N_Compilation_Unit then
+         return;
+
+      --  Only nonabstract library-level source primitives are considered for
+      --  this check.
+
+      elsif not
+        (Comes_From_Source (Subp_Id)
+          and then Is_Library_Level_Entity (Subp_Id)
+          and then Is_Primitive (Subp_Id)
+          and then not Is_Abstract_Subprogram (Subp_Id))
+      then
+         return;
+
+      --  Do not consider inlined primitives, because once the body is inlined
+      --  the reference to the elaboration flag will be out of place and will
+      --  result in an undefined symbol.
+
+      elsif Is_Inlined (Subp_Id) or else Has_Pragma_Inline (Subp_Id) then
+         return;
+
+      --  Do not generate a duplicate elaboration check. This happens only in
+      --  the case of primitives completed by an expression function, as the
+      --  corresponding body is apparently analyzed and expanded twice.
+
+      elsif Analyzed (Subp_Body) then
+         return;
+
+      --  Do not consider primitives which occur within an instance that acts
+      --  as a compilation unit. Such an instance defines its spec and body out
+      --  of order (body is first) within the tree, which causes the reference
+      --  to the elaboration flag to appear as an undefined symbol.
+
+      elsif Within_Compilation_Unit_Instance (Subp_Id) then
+         return;
+      end if;
+
+      Tag_Typ := Find_Dispatching_Type (Subp_Id);
+
+      --  Only tagged primitives may be the target of a dispatching call
+
+      if No (Tag_Typ) then
+         return;
+
+      --  Do not consider finalization-related primitives, because they may
+      --  need to be called while elaboration is taking place.
+
+      elsif Is_Controlled (Tag_Typ)
+        and then Nam_In (Chars (Subp_Id), Name_Adjust,
+                                          Name_Finalize,
+                                          Name_Initialize)
+      then
+         return;
+      end if;
+
+      --  Create the declaration of the elaboration flag. The name carries a
+      --  unique counter in case of name overloading.
+
+      Flag_Id :=
+        Make_Defining_Identifier (Loc,
+          Chars => New_External_Name (Chars (Subp_Id), 'F', -1));
+      Set_Is_Frozen (Flag_Id);
+
+      --  Insert the declaration of the elaboration flag in front of the
+      --  primitive spec and analyze it in the proper context.
+
+      Push_Scope (Scope (Subp_Id));
+
+      --  Generate:
+      --    F : Boolean := False;
+
+      Insert_Action (Subp_Decl,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Flag_Id,
+          Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
+          Expression          => New_Occurrence_Of (Standard_False, Loc)));
+      Pop_Scope;
+
+      --  Prevent the compiler from optimizing the elaboration check by killing
+      --  the current value of the flag and the associated assignment.
+
+      Set_Current_Value   (Flag_Id, Empty);
+      Set_Last_Assignment (Flag_Id, Empty);
+
+      --  Add a check at the top of the body declarations to ensure that the
+      --  elaboration flag has been set.
+
+      Decls := Declarations (Subp_Body);
+
+      if No (Decls) then
+         Decls := New_List;
+         Set_Declarations (Subp_Body, Decls);
+      end if;
+
+      --  Generate:
+      --    if not F then
+      --       raise Program_Error with "access before elaboration";
+      --    end if;
+
+      Prepend_To (Decls,
+        Make_Raise_Program_Error (Loc,
+          Condition =>
+            Make_Op_Not (Loc,
+              Right_Opnd => New_Occurrence_Of (Flag_Id, Loc)),
+          Reason    => PE_Access_Before_Elaboration));
+
+      Analyze (First (Decls));
+
+      --  Set the elaboration flag once the body has been elaborated. Insert
+      --  the statement after the subprogram stub when the primitive body is
+      --  a subunit.
+
+      if Nkind (Context) = N_Subunit then
+         Set_Ins := Corresponding_Stub (Context);
+      else
+         Set_Ins := Subp_Body;
+      end if;
+
+      --  Generate:
+      --    F := True;
+
+      Insert_After_And_Analyze (Set_Ins,
+        Make_Assignment_Statement (Loc,
+          Name       => New_Occurrence_Of (Flag_Id, Loc),
+          Expression => New_Occurrence_Of (Standard_True, Loc)));
+   end Install_Primitive_Elaboration_Check;
 
    --------------------------
    -- Install_Static_Check --
