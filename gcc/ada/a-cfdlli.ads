@@ -71,120 +71,59 @@ is
       function "<" (Left, Right : M.Sequence) return Boolean renames M."<";
       function "<=" (Left, Right : M.Sequence) return Boolean renames M."<=";
 
-      function M_Elements_Contains
-        (S   : M.Sequence;
-         Fst : Positive_Count_Type;
-         Lst : Count_Type;
-         E   : Element_Type)
-      return Boolean
-      --  E appears in the slice from Fst to Lst in S
-      with
-        Global => null,
-        Pre    => Lst <= M.Length (S),
-        Post   =>
-          M_Elements_Contains'Result =
-            (for some I in Fst .. Lst => Element (S, I) = E);
-      pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Contains);
-
-      function M_Elements_Cst
-        (S   : M.Sequence;
-         Fst : Positive_Count_Type;
-         Lst : Count_Type;
-         E   : Element_Type)
-      return Boolean
-      --  Every element of the slice from Fst to Lst in S is E.
-      with
-        Global => null,
-        Pre    => Lst <= M.Length (S),
-        Post   =>
-          M_Elements_Cst'Result =
-            (for all I in Fst .. Lst => Element (S, I) = E);
-      pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Cst);
-
-      function M_Elements_Equal
-        (S1, S2 : M.Sequence;
-         Fst    : Positive_Count_Type;
-         Lst    : Count_Type)
-      return Boolean
-      --  The slice from Fst to Lst is the same in S1 and S2
-      with
-        Global => null,
-        Pre    => Lst <= M.Length (S1) and Lst <= M.Length (S2),
-        Post   =>
-          M_Elements_Equal'Result =
-            (for all I in Fst .. Lst => Element (S1, I) = Element (S2, I));
-      pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Equal);
-
       function M_Elements_Shuffle
-        (S1, S2 : M.Sequence;
+        (Left   : M.Sequence;
+         Right  : M.Sequence;
          Fst    : Positive_Count_Type;
          Lst    : Count_Type;
          Offset : Count_Type'Base)
       return Boolean
-      --  The slice from Fst to Lst in S1 contains the same elements than the
-      --  same slide shifted by Offset in S2
+      --  The slice from Fst to Lst in Left contains the same elements than the
+      --  same slide shifted by Offset in Right
       with
         Global => null,
         Pre    =>
-          Lst <= M.Length (S1)
-            and Offset in 1 - Fst .. M.Length (S2) - Lst,
+          Lst <= M.Length (Left)
+            and Offset in 1 - Fst .. M.Length (Right) - Lst,
         Post   =>
           M_Elements_Shuffle'Result =
           (for all J in Fst + Offset .. Lst + Offset =>
              (for some I in Fst .. Lst =>
-                    Element (S1, I) = Element (S2, J)));
+                    Element (Left, I) = Element (Right, J)));
       pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Shuffle);
 
-      function M_Elements_Reversed (S1, S2 : M.Sequence) return Boolean
-      --  S2 is S1 in reverse order
+      function M_Elements_Reversed (Left, Right : M.Sequence) return Boolean
+      --  Right is Left in reverse order
       with
         Global => null,
         Post   =>
           M_Elements_Reversed'Result =
-              (M.Length (S1) = M.Length (S2)
-               and (for all I in 1 .. M.Length (S1) =>
-                   Element (S1, I) = Element (S2, M.Length (S1) - I + 1))
-               and (for all I in 1 .. M.Length (S1) =>
-                   Element (S2, I) = Element (S1, M.Length (S1) - I + 1)));
+              (M.Length (Left) = M.Length (Right)
+               and
+                 (for all I in 1 .. M.Length (Left) =>
+                      Element (Left, I)
+                    = Element (Right, M.Length (Left) - I + 1))
+               and
+                 (for all I in 1 .. M.Length (Left) =>
+                      Element (Right, I)
+                    = Element (Left, M.Length (Left) - I + 1)));
       pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Reversed);
 
-      function M_Elements_Shifted
-        (S1, S2   : M.Sequence;
-         Fst      : Positive_Count_Type;
-         Lst      : Count_Type;
-         Offset   : Count_Type'Base := 1)
-      return Boolean
-      --  The slice from Fst to Lst in S1 has been shifted by Offset in S2.
-      with
-          Global => null,
-        Pre    =>
-          Lst <= M.Length (S1)
-            and Offset in 1 - Fst .. M.Length (S2) - Lst,
-        Post   =>
-          M_Elements_Shifted'Result =
-            ((for all I in Fst .. Lst =>
-                      Element (S1, I) = Element (S2, I + Offset))
-             and (for all I in Fst + Offset .. Lst + Offset =>
-                          Element (S1, I - Offset) = Element (S2, I)));
-      pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Shifted);
-
       function M_Elements_Swapped
-        (S1, S2 : M.Sequence;
-         X, Y   : Positive_Count_Type)
+        (Left  : M.Sequence;
+         Right : M.Sequence;
+         X, Y  : Positive_Count_Type)
       return Boolean
-      --  Elements stored at X and Y are reversed in S1 and S2
+      --  Elements stored at X and Y are reversed in Left and Right
       with
         Global => null,
-        Pre    => X <= M.Length (S1) and Y <= M.Length (S1),
+        Pre    => X <= M.Length (Left) and Y <= M.Length (Left),
         Post   =>
           M_Elements_Swapped'Result =
-            (M.Length (S1) = M.Length (S2)
-             and Element (S1, X) = Element (S2, Y)
-             and Element (S1, Y) = Element (S2, X)
-             and
-               (for all I in 1 .. M.Length (S1) =>
-                 (if I /= X and I /= Y
-                    then Element (S1, I) = Element (S2, I))));
+            (M.Length (Left) = M.Length (Right)
+             and Element (Left, X) = Element (Right, Y)
+             and Element (Left, Y) = Element (Right, X)
+             and M.Equal_Except (Left, Right, X, Y));
       pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Swapped);
 
       package P is new Ada.Containers.Functional_Maps
@@ -205,7 +144,7 @@ is
           P_Positions_Shifted'Result =
 
          --  Big contains all cursors of Small
-        ((for all I of Small => P.Mem (Big, I))
+        (P.Keys_Included (Small, Big)
 
          --  Cursors located before Cut are not moved, cursors located after
          --  are shifted by Count.
@@ -218,28 +157,25 @@ is
          --  New cursors of Big (if any) are between Cut and Cut - 1 + Count
          and
            (for all I of Big =>
-                 P.Mem (Small, I)
+                 P.Has_Key (Small, I)
               or P.Get (Big, I) - Count in Cut - Count  .. Cut - 1));
 
       function P_Positions_Swapped
-        (M1, M2 : P.Map;
-         C1, C2 : Cursor) return Boolean
-      --  M1 and M2 contain the same cursors, but the positions of C1 and C2
+        (Left  : P.Map;
+         Right : P.Map;
+         X, Y  : Cursor) return Boolean
+      --  Left and Right contain the same cursors, but the positions of X and Y
       --  are reversed.
       with
         Ghost,
         Global => null,
         Post   =>
           P_Positions_Swapped'Result =
-              ((for all C of M1 => P.Mem (M2, C))
-               and (for all C of M2 => P.Mem (M1, C))
-               and
-                 (for all C of M1 =>
-                    (if C /= C1 and C /= C2
-                     then P.Get (M1, C) = P.Get (M2, C)))
-               and P.Mem (M1, C1) and P.Mem (M1, C2)
-               and P.Get (M1, C1) = P.Get (M2, C2)
-               and P.Get (M1, C2) = P.Get (M2, C1));
+              (P.Same_Keys (Left, Right)
+               and P.Elements_Equal_Except (Left, Right, X, Y)
+               and P.Has_Key (Left, X) and P.Has_Key (Left, Y)
+               and P.Get (Left, X) = P.Get (Right, Y)
+               and P.Get (Left, Y) = P.Get (Right, X));
 
       function P_Positions_Truncated
         (Small : P.Map;
@@ -252,40 +188,34 @@ is
         Post   =>
           P_Positions_Truncated'Result =
 
-         --  Big contains all cursors of Small
-        ((for all I of Small => P.Mem (Big, I))
-
-         --  The cursors of Small are all bellow Cut
-         and (for all I of Small => P.Get (Small, I) < Cut)
-
-         --  The cursors have the same position in Big and Small
-         and (for all I of Small => P.Get (Big, I) = P.Get (Small, I))
+         --  Big contains all cursors of Small at the same position
+        (Small <= Big
 
          --  New cursors of Big (if any) are between Cut and Cut - 1 + Count
          and
            (for all I of Big =>
-                P.Mem (Small, I)
+                P.Has_Key (Small, I)
              or P.Get (Big, I) - Count in Cut - Count .. Cut - 1));
 
       function Mapping_Preserved
-        (S1, S2 : M.Sequence;
-         M1, M2 : P.Map) return Boolean
+        (M_Left  : M.Sequence;
+         M_Right : M.Sequence;
+         P_Left  : P.Map;
+         P_Right : P.Map) return Boolean
       with
         Ghost,
         Global => null,
         Post   =>
             (if Mapping_Preserved'Result then
 
-            --  M1 contains all cursors of M2
-            (for all I of M2 => P.Mem (M1, I))
+             --  Left and Right contain the same cursors
+             P.Same_Keys (P_Left, P_Right)
 
-            --  M2 contains all cursors of M1
-            and (for all I of M1 => P.Mem (M2, I))
-
-            --  Mappings from cursors to elements induced by S1, M1 and S2, M2
-            --  are the same.
-            and (for all I of M1 =>
-                       M.Get (S1, P.Get (M1, I)) = M.Get (S2, P.Get (M2, I))));
+             --  Mappings from cursors to elements induced by M_Left, P_Left
+             --  and M_Right, P_Right are the same.
+             and (for all C of P_Left =>
+                          M.Get (M_Left, P.Get (P_Left, C))
+                        = M.Get (M_Right, P.Get (P_Right, C))));
 
       function Model (Container : List) return M.Sequence with
       --  The highlevel model of a list is a sequence of elements. Cursors are
@@ -302,7 +232,7 @@ is
 
         Ghost,
         Global => null,
-        Post   => not P.Mem (Positions'Result, No_Element)
+        Post   => not P.Has_Key (Positions'Result, No_Element)
         --  Positions of cursors are smaller than the container's length.
         and then
           (for all I of Positions'Result =>
@@ -388,12 +318,14 @@ is
      --  Cursors are preserved.
      and Positions (Container)'Old = Positions (Container)
 
-     --  The element at the position of Position in Container is replaced by
-     --  New_Item.
-     and M.Is_Set (Model (Container)'Old,
-                   P.Get (Positions (Container), Position),
-                   New_Item,
-                   Model (Container));
+     --  The element at the position of Position in Container is New_Item
+     and Element (Model (Container), P.Get (Positions (Container), Position))
+       = New_Item
+
+     --  Other elements are preserved
+     and M.Equal_Except (Model (Container)'Old,
+                         Model (Container),
+                         P.Get (Positions (Container), Position));
 
    procedure Move (Target : in out List; Source : in out List) with
      Global => null,
@@ -417,25 +349,35 @@ is
 
           --  Positions contains a new mapping from the last cursor of
           --  Container to its length.
-          P.Is_Add
-            (Positions (Container)'Old, Last (Container), Length (Container),
-             Result => Positions (Container))
+          P.Get (Positions (Container), Last (Container)) = Length (Container)
+
+          --  Other cursors come from Container'Old
+          and P.Keys_Included_Except
+            (Left    => Positions (Container),
+             Right   => Positions (Container)'Old,
+             New_Key => Last (Container))
+
+          --  Cursors of Container'Old keep the same position
+          and Positions (Container)'Old <= Positions (Container)
 
           --  Model contains a new element New_Item at the end
-          and M.Is_Add (Model (Container)'Old, New_Item, Model (Container)),
+          and Element (Model (Container), Length (Container)) = New_Item
+
+          --  Elements of Container'Old are preserved
+          and Model (Container)'Old <= Model (Container),
         others              =>
 
           --  The elements of Container located before Before are preserved.
-          M_Elements_Equal
-            (S1  => Model (Container)'Old,
-             S2  => Model (Container),
-             Fst => 1,
-             Lst => P.Get (Positions (Container)'Old, Before) - 1)
+          M.Range_Equal
+            (Left  => Model (Container)'Old,
+             Right => Model (Container),
+             Fst   => 1,
+             Lst   => P.Get (Positions (Container)'Old, Before) - 1)
 
           --  Other elements are shifted by 1.
-          and M_Elements_Shifted
-            (S1     => Model (Container)'Old,
-             S2     => Model (Container),
+          and M.Range_Shifted
+            (Left   => Model (Container)'Old,
+             Right  => Model (Container),
              Fst    => P.Get (Positions (Container)'Old, Before),
              Lst    => Length (Container)'Old,
              Offset => 1)
@@ -468,18 +410,18 @@ is
        (Before = No_Element =>
 
           --  The elements of Container are preserved
-          M_Elements_Equal
-            (S1  => Model (Container)'Old,
-             S2  => Model (Container),
-             Fst => 1,
-             Lst => Length (Container)'Old)
+          M.Range_Equal
+            (Left  => Model (Container)'Old,
+             Right => Model (Container),
+             Fst   => 1,
+             Lst   => Length (Container)'Old)
 
           --  Container contains Count times New_Item at the end
-          and M_Elements_Cst
-            (S   => Model (Container),
-             Fst => Length (Container)'Old + 1,
-             Lst => Length (Container),
-             E   => New_Item)
+          and M.Constant_Range
+            (Container => Model (Container),
+             Fst       => Length (Container)'Old + 1,
+             Lst       => Length (Container),
+             Item      => New_Item)
 
           --  A Count cursors have been inserted at the end of Container
           and P_Positions_Truncated
@@ -490,26 +432,27 @@ is
         others              =>
 
           --  The elements of Container located before Before are preserved
-          M_Elements_Equal
-            (S1  => Model (Container)'Old,
-             S2  => Model (Container),
-             Fst => 1,
-             Lst => P.Get (Positions (Container)'Old, Before) - 1)
+          M.Range_Equal
+            (Left  => Model (Container)'Old,
+             Right => Model (Container),
+             Fst   => 1,
+             Lst   => P.Get (Positions (Container)'Old, Before) - 1)
 
           --  Other elements are shifted by Count.
-          and M_Elements_Shifted
-            (S1     => Model (Container)'Old,
-             S2     => Model (Container),
+          and M.Range_Shifted
+            (Left   => Model (Container)'Old,
+             Right  => Model (Container),
              Fst    => P.Get (Positions (Container)'Old, Before),
              Lst    => Length (Container)'Old,
              Offset => Count)
 
           --  Container contains Count times New_Item after position Before
-          and M_Elements_Cst
-            (S   => Model (Container),
-             Fst => P.Get (Positions (Container)'Old, Before),
-             Lst => P.Get (Positions (Container)'Old, Before) - 1 + Count,
-             E   => New_Item)
+          and M.Constant_Range
+            (Container => Model (Container),
+             Fst       => P.Get (Positions (Container)'Old, Before),
+             Lst       =>
+               P.Get (Positions (Container)'Old, Before) - 1 + Count,
+             Item      => New_Item)
 
           --  Count cursors have been inserted at position Before in Container
           and P_Positions_Shifted
@@ -535,7 +478,7 @@ is
           --  Positions is valid in Container and it is located either before
           --  Before if it is valid in Container or at the end if it is
           --  No_Element.
-          and P.Mem (Positions (Container), Position)
+          and P.Has_Key (Positions (Container), Position)
           and (if Before = No_Element
                then P.Get (Positions (Container), Position)
                   = Length (Container)
@@ -543,16 +486,16 @@ is
                   = P.Get (Positions (Container)'Old, Before))
 
           --  The elements of Container located before Position are preserved.
-          and M_Elements_Equal
-            (S1  => Model (Container)'Old,
-             S2  => Model (Container),
-             Fst => 1,
-             Lst => P.Get (Positions (Container), Position) - 1)
+          and M.Range_Equal
+            (Left  => Model (Container)'Old,
+             Right => Model (Container),
+             Fst   => 1,
+             Lst   => P.Get (Positions (Container), Position) - 1)
 
           --  Other elements are shifted by 1.
-          and M_Elements_Shifted
-            (S1     => Model (Container)'Old,
-             S2     => Model (Container),
+          and M.Range_Shifted
+            (Left   => Model (Container)'Old,
+             Right  => Model (Container),
              Fst    => P.Get (Positions (Container), Position),
              Lst    => Length (Container)'Old,
              Offset => 1)
@@ -590,7 +533,7 @@ is
           --  Positions is valid in Container and it is located either before
           --  Before if it is valid in Container or at the end if it is
           --  No_Element.
-          P.Mem (Positions (Container), Position)
+          P.Has_Key (Positions (Container), Position)
           and (if Before = No_Element
                then P.Get (Positions (Container), Position)
                   = Length (Container)'Old + 1
@@ -598,26 +541,26 @@ is
                   = P.Get (Positions (Container)'Old, Before))
 
           --  The elements of Container located before Position are preserved.
-          and M_Elements_Equal
-            (S1  => Model (Container)'Old,
-             S2  => Model (Container),
-             Fst => 1,
-             Lst => P.Get (Positions (Container), Position) - 1)
+          and M.Range_Equal
+            (Left  => Model (Container)'Old,
+             Right => Model (Container),
+             Fst   => 1,
+             Lst   => P.Get (Positions (Container), Position) - 1)
 
           --  Other elements are shifted by Count.
-          and M_Elements_Shifted
-            (S1     => Model (Container)'Old,
-             S2     => Model (Container),
+          and M.Range_Shifted
+            (Left   => Model (Container)'Old,
+             Right  => Model (Container),
              Fst    => P.Get (Positions (Container), Position),
              Lst    => Length (Container)'Old,
              Offset => Count)
 
           --  Container contains Count times New_Item after position Position
-          and M_Elements_Cst
-            (S   => Model (Container),
-             Fst => P.Get (Positions (Container), Position),
-             Lst => P.Get (Positions (Container), Position) - 1 + Count,
-             E   => New_Item)
+          and M.Constant_Range
+            (Container => Model (Container),
+             Fst       => P.Get (Positions (Container), Position),
+             Lst       => P.Get (Positions (Container), Position) - 1 + Count,
+             Item      => New_Item)
 
           --  Count cursor have been inserted at Position in Container
           and P_Positions_Shifted
@@ -636,9 +579,9 @@ is
        Length (Container) = Length (Container)'Old + 1
 
           --  Elements are shifted by 1
-          and M_Elements_Shifted
-            (S1     => Model (Container)'Old,
-             S2     => Model (Container),
+          and M.Range_Shifted
+            (Left   => Model (Container)'Old,
+             Right  => Model (Container),
              Fst    => 1,
              Lst    => Length (Container)'Old,
              Offset => 1)
@@ -663,19 +606,19 @@ is
        Length (Container) = Length (Container)'Old + Count
 
           --  Elements are shifted by Count.
-          and M_Elements_Shifted
-            (S1     => Model (Container)'Old,
-             S2     => Model (Container),
+          and M.Range_Shifted
+            (Left     => Model (Container)'Old,
+             Right     => Model (Container),
              Fst    => 1,
              Lst    => Length (Container)'Old,
              Offset => Count)
 
           --  Container starts with Count times New_Item
-          and M_Elements_Cst
-            (S   => Model (Container),
-             Fst => 1,
-             Lst => Count,
-             E   => New_Item)
+          and M.Constant_Range
+            (Container => Model (Container),
+             Fst       => 1,
+             Lst       => Count,
+             Item      => New_Item)
 
           --  Count cursors have been inserted at the beginning of Container
           and P_Positions_Shifted
@@ -694,12 +637,23 @@ is
 
           --  Positions contains a new mapping from the last cursor of
           --  Container to its length.
-          and P.Is_Add
-            (Positions (Container)'Old, Last (Container), Length (Container),
-             Result => Positions (Container))
+          and P.Get (Positions (Container), Last (Container))
+            = Length (Container)
+
+          --  Other cursors come from Container'Old
+          and P.Keys_Included_Except
+            (Left    => Positions (Container),
+             Right   => Positions (Container)'Old,
+             New_Key => Last (Container))
+
+          --  Cursors of Container'Old keep the same position
+          and Positions (Container)'Old <= Positions (Container)
 
           --  Model contains a new element New_Item at the end
-          and M.Is_Add (Model (Container)'Old, New_Item, Model (Container));
+          and Element (Model (Container), Length (Container)) = New_Item
+
+          --  Elements of Container'Old are preserved
+          and Model (Container)'Old <= Model (Container);
 
    procedure Append
      (Container : in out List;
@@ -715,11 +669,11 @@ is
           and Model (Container)'Old <= Model (Container)
 
           --  Container contains Count times New_Item at the end
-          and M_Elements_Cst
-            (S   => Model (Container),
-             Fst => Length (Container)'Old + 1,
-             Lst => Length (Container),
-             E   => New_Item)
+          and M.Constant_Range
+            (Container => Model (Container),
+             Fst       => Length (Container)'Old + 1,
+             Lst       => Length (Container),
+             Item      => New_Item)
 
           --  Count cursors have been inserted at the end of Container
           and P_Positions_Truncated
@@ -741,16 +695,16 @@ is
           and Position = No_Element
 
           --  The elements of Container located before Position are preserved.
-          and M_Elements_Equal
-            (S1  => Model (Container)'Old,
-             S2  => Model (Container),
-             Fst => 1,
-             Lst => P.Get (Positions (Container)'Old, Position'Old) - 1)
+          and M.Range_Equal
+            (Left  => Model (Container)'Old,
+             Right => Model (Container),
+             Fst   => 1,
+             Lst   => P.Get (Positions (Container)'Old, Position'Old) - 1)
 
           --  The elements located after Position are shifted by 1
-          and M_Elements_Shifted
-            (S1     => Model (Container)'Old,
-             S2     => Model (Container),
+          and M.Range_Shifted
+            (Left   => Model (Container)'Old,
+             Right  => Model (Container),
              Fst    => P.Get (Positions (Container)'Old, Position'Old) + 1,
              Lst    => Length (Container)'Old,
              Offset => -1)
@@ -776,11 +730,11 @@ is
           and Position = No_Element
 
           --  The elements of Container located before Position are preserved.
-          and M_Elements_Equal
-            (S1  => Model (Container)'Old,
-             S2  => Model (Container),
-             Fst => 1,
-             Lst => P.Get (Positions (Container)'Old, Position'Old) - 1),
+          and M.Range_Equal
+            (Left  => Model (Container)'Old,
+             Right => Model (Container),
+             Fst   => 1,
+             Lst   => P.Get (Positions (Container)'Old, Position'Old) - 1),
      Contract_Cases =>
 
        --  All the elements after Position have been erased
@@ -800,9 +754,9 @@ is
           Length (Container) = Length (Container)'Old - Count
 
           --  Other elements are shifted by Count
-          and M_Elements_Shifted
-            (S1     => Model (Container)'Old,
-             S2     => Model (Container),
+          and M.Range_Shifted
+            (Left   => Model (Container)'Old,
+             Right  => Model (Container),
              Fst    =>
                P.Get (Positions (Container)'Old, Position'Old) + Count,
              Lst    => Length (Container)'Old,
@@ -823,9 +777,9 @@ is
        Length (Container) = Length (Container)'Old - 1
 
           --  The elements of Container are shifted by 1
-          and M_Elements_Shifted
-            (S1     => Model (Container)'Old,
-             S2     => Model (Container),
+          and M.Range_Shifted
+            (Left   => Model (Container)'Old,
+             Right  => Model (Container),
              Fst    => 2,
              Lst    => Length (Container)'Old,
              Offset => -1)
@@ -849,9 +803,9 @@ is
           Length (Container) = Length (Container)'Old - Count
 
           --  Elements of Container are shifted by Count
-          and M_Elements_Shifted
-            (S1     => Model (Container)'Old,
-             S2     => Model (Container),
+          and M.Range_Shifted
+            (Left   => Model (Container)'Old,
+             Right  => Model (Container),
              Fst    => Count + 1,
              Lst    => Length (Container)'Old,
              Offset => -Count)
@@ -874,8 +828,16 @@ is
           and Model (Container) <= Model (Container)'Old
 
           --  The last cursor of Container has been removed
-          and P.Is_Add (Positions (Container), Last (Container)'Old,
-                        Length (Container)'Old, Positions (Container)'Old);
+          and not P.Has_Key (Positions (Container), Last (Container)'Old)
+
+          --  Other cursors are still valid
+          and P.Keys_Included_Except
+            (Left    => Positions (Container)'Old,
+             Right   => Positions (Container)'Old,
+             New_Key => Last (Container)'Old)
+
+          --  The positions of other cursors are preserved
+          and Positions (Container) <= Positions (Container)'Old;
 
    procedure Delete_Last
      (Container : in out List;
@@ -949,17 +911,17 @@ is
        (Before = No_Element =>
 
           --  The elements of Target are preserved
-          M_Elements_Equal
-            (S1  => Model (Target)'Old,
-             S2  => Model (Target),
-             Fst => 1,
-             Lst => Length (Target)'Old)
+          M.Range_Equal
+            (Left  => Model (Target)'Old,
+             Right => Model (Target),
+             Fst   => 1,
+             Lst   => Length (Target)'Old)
 
           --  The elements of Source are appended to target, the order is not
           --  specified.
           and M_Elements_Shuffle
-            (S1     => Model (Source)'Old,
-             S2     => Model (Target),
+            (Left   => Model (Source)'Old,
+             Right  => Model (Target),
              Fst    => 1,
              Lst    => Length (Source)'Old,
              Offset => Length (Target)'Old)
@@ -973,25 +935,25 @@ is
         others              =>
 
           --  The elements of Target located before Before are preserved
-          M_Elements_Equal
-            (S1  => Model (Target)'Old,
-             S2  => Model (Target),
-             Fst => 1,
-             Lst => P.Get (Positions (Target)'Old, Before) - 1)
+          M.Range_Equal
+            (Left  => Model (Target)'Old,
+             Right => Model (Target),
+             Fst   => 1,
+             Lst   => P.Get (Positions (Target)'Old, Before) - 1)
 
           --  The elements of Source are inserted before Before, the order is
           --  not specified.
           and M_Elements_Shuffle
-            (S1     => Model (Source)'Old,
-             S2     => Model (Target),
+            (Left   => Model (Source)'Old,
+             Right  => Model (Target),
              Fst    => 1,
              Lst    => Length (Source)'Old,
              Offset => P.Get (Positions (Target)'Old, Before) - 1)
 
           --  Other elements are shifted by the length of Source
-          and M_Elements_Shifted
-            (S1     => Model (Target)'Old,
-             S2     => Model (Target),
+          and M.Range_Shifted
+            (Left   => Model (Target)'Old,
+             Right  => Model (Target),
              Fst    => P.Get (Positions (Target)'Old, Before),
              Lst    => Length (Target)'Old,
              Offset => Length (Source)'Old)
@@ -1021,16 +983,16 @@ is
           and Length (Source) = Length (Source)'Old - 1
 
           --  The elements of Source located before Position are preserved.
-          and M_Elements_Equal
-            (S1  => Model (Source)'Old,
-             S2  => Model (Source),
-             Fst => 1,
-             Lst => P.Get (Positions (Source)'Old, Position'Old) - 1)
+          and M.Range_Equal
+            (Left  => Model (Source)'Old,
+             Right => Model (Source),
+             Fst   => 1,
+             Lst   => P.Get (Positions (Source)'Old, Position'Old) - 1)
 
           --  The elements located after Position are shifted by 1
-          and M_Elements_Shifted
-            (S1     => Model (Source)'Old,
-             S2     => Model (Source),
+          and M.Range_Shifted
+            (Left   => Model (Source)'Old,
+             Right  => Model (Source),
              Fst    => P.Get (Positions (Source)'Old, Position'Old) + 1,
              Lst    => Length (Source)'Old,
              Offset => -1)
@@ -1044,7 +1006,7 @@ is
           --  Positions is valid in Target and it is located either before
           --  Before if it is valid in Target or at the end if it is
           --  No_Element.
-          and P.Mem (Positions (Target), Position)
+          and P.Has_Key (Positions (Target), Position)
           and (if Before = No_Element
                then P.Get (Positions (Target), Position)
                   = Length (Target)
@@ -1052,16 +1014,16 @@ is
                   = P.Get (Positions (Target)'Old, Before))
 
           --  The elements of Target located before Position are preserved.
-          and M_Elements_Equal
-            (S1  => Model (Target)'Old,
-             S2  => Model (Target),
-             Fst => 1,
-             Lst => P.Get (Positions (Target), Position) - 1)
+          and M.Range_Equal
+            (Left  => Model (Target)'Old,
+             Right => Model (Target),
+             Fst   => 1,
+             Lst   => P.Get (Positions (Target), Position) - 1)
 
           --  Other elements are shifted by 1.
-          and M_Elements_Shifted
-            (S1     => Model (Target)'Old,
-             S2     => Model (Target),
+          and M.Range_Shifted
+            (Left   => Model (Target)'Old,
+             Right  => Model (Target),
              Fst    => P.Get (Positions (Target), Position),
              Lst    => Length (Target)'Old,
              Offset => 1)
@@ -1095,16 +1057,16 @@ is
         Before = No_Element =>
 
           --  The elements located before Position are preserved
-          M_Elements_Equal
-            (S1  => Model (Container)'Old,
-             S2  => Model (Container),
-             Fst => 1,
-             Lst => P.Get (Positions (Container)'Old, Position) - 1)
+          M.Range_Equal
+            (Left  => Model (Container)'Old,
+             Right => Model (Container),
+             Fst   => 1,
+             Lst   => P.Get (Positions (Container)'Old, Position) - 1)
 
           --  The elements located after Position are shifted by 1
-          and M_Elements_Shifted
-            (S1     => Model (Container)'Old,
-             S2     => Model (Container),
+          and M.Range_Shifted
+            (Left   => Model (Container)'Old,
+             Right  => Model (Container),
              Fst    => P.Get (Positions (Container)'Old, Position) + 1,
              Lst    => Length (Container)'Old,
              Offset => -1)
@@ -1117,45 +1079,45 @@ is
 
           --  Cursors from Container continue designating the same elements
           and Mapping_Preserved
-            (S1     => Model (Container)'Old,
-             S2     => Model (Container),
-             M1     => Positions (Container)'Old,
-             M2     => Positions (Container)),
+            (M_Left  => Model (Container)'Old,
+             M_Right => Model (Container),
+             P_Left  => Positions (Container)'Old,
+             P_Right => Positions (Container)),
 
         others              =>
 
           --  The elements located before Position and Before are preserved
-          M_Elements_Equal
-            (S1  => Model (Container)'Old,
-             S2  => Model (Container),
-             Fst => 1,
-             Lst => Count_Type'Min
-                      (P.Get (Positions (Container)'Old, Position) - 1,
-                       P.Get (Positions (Container)'Old, Before) - 1))
+          M.Range_Equal
+            (Left  => Model (Container)'Old,
+             Right => Model (Container),
+             Fst   => 1,
+             Lst   => Count_Type'Min
+               (P.Get (Positions (Container)'Old, Position) - 1,
+                P.Get (Positions (Container)'Old, Before) - 1))
 
           --  The elements located after Position and Before are preserved
-          and M_Elements_Equal
-            (S1  => Model (Container)'Old,
-             S2  => Model (Container),
-             Fst => Count_Type'Max
-                      (P.Get (Positions (Container)'Old, Position) + 1,
-                       P.Get (Positions (Container)'Old, Before) + 1),
-             Lst => Length (Container))
+          and M.Range_Equal
+            (Left  => Model (Container)'Old,
+             Right => Model (Container),
+             Fst   => Count_Type'Max
+               (P.Get (Positions (Container)'Old, Position) + 1,
+                P.Get (Positions (Container)'Old, Before) + 1),
+             Lst   => Length (Container))
 
           --  The elements located after Before and before Position are shifted
           --  by 1 to the right.
-          and M_Elements_Shifted
-            (S1     => Model (Container)'Old,
-             S2     => Model (Container),
+          and M.Range_Shifted
+            (Left   => Model (Container)'Old,
+             Right  => Model (Container),
              Fst    => P.Get (Positions (Container)'Old, Before) + 1,
              Lst    => P.Get (Positions (Container)'Old, Position) - 1,
              Offset => 1)
 
           --  The elements located after Position and before Before are shifted
           --  by 1 to the left.
-          and M_Elements_Shifted
-            (S1     => Model (Container)'Old,
-             S2     => Model (Container),
+          and M.Range_Shifted
+            (Left   => Model (Container)'Old,
+             Right  => Model (Container),
              Fst    => P.Get (Positions (Container)'Old, Position) + 1,
              Lst    => P.Get (Positions (Container)'Old, Before) - 1,
              Offset => -1)
@@ -1168,10 +1130,10 @@ is
 
           --  Cursors from Container continue designating the same elements
           and Mapping_Preserved
-            (S1     => Model (Container)'Old,
-             S2     => Model (Container),
-             M1     => Positions (Container)'Old,
-             M2     => Positions (Container)));
+            (M_Left  => Model (Container)'Old,
+             M_Right => Model (Container),
+             P_Left  => Positions (Container)'Old,
+             P_Right => Positions (Container)));
 
    function First (Container : List) return Cursor with
      Global         => null,
@@ -1260,18 +1222,18 @@ is
 
        --  If Item is not is not contained in Container after Position, Find
        --  returns No_Element.
-       (not M_Elements_Contains
-          (S   => Model (Container),
-           Fst => (if Position = No_Element then 1
-                   else P.Get (Positions (Container), Position)),
-           Lst => Length (Container),
-           E   => Item)
+       (not M.Contains
+          (Container => Model (Container),
+           Fst       => (if Position = No_Element then 1
+                         else P.Get (Positions (Container), Position)),
+           Lst       => Length (Container),
+           Item      => Item)
         =>
           Find'Result = No_Element,
 
         --  Otherwise, Find returns a valid cusror in Container
         others =>
-          P.Mem (Positions (Container), Find'Result)
+          P.Has_Key (Positions (Container), Find'Result)
 
         --  The element designated by the result of Find is Item
         and Element (Model (Container),
@@ -1283,12 +1245,12 @@ is
                >= P.Get (Positions (Container), Position))
 
         --  It is the first occurence of Item in this slice
-        and not M_Elements_Contains
-          (S   => Model (Container),
-           Fst => (if Position = No_Element then 1
-                   else P.Get (Positions (Container), Position)),
-           Lst => P.Get (Positions (Container), Find'Result) - 1,
-           E   => Item));
+        and not M.Contains
+          (Container => Model (Container),
+           Fst       => (if Position = No_Element then 1
+                         else P.Get (Positions (Container), Position)),
+           Lst       => P.Get (Positions (Container), Find'Result) - 1,
+           Item      => Item));
 
    function Reverse_Find
      (Container : List;
@@ -1302,18 +1264,18 @@ is
 
        --  If Item is not is not contained in Container before Position, Find
        --  returns No_Element.
-       (not M_Elements_Contains
-          (S   => Model (Container),
-           Fst => 1,
-           Lst => (if Position = No_Element then Length (Container)
-                   else P.Get (Positions (Container), Position)),
-           E   => Item)
+       (not M.Contains
+          (Container => Model (Container),
+           Fst       => 1,
+           Lst       => (if Position = No_Element then Length (Container)
+                         else P.Get (Positions (Container), Position)),
+           Item      => Item)
         =>
           Reverse_Find'Result = No_Element,
 
         --  Otherwise, Find returns a valid cusror in Container
         others =>
-          P.Mem (Positions (Container), Reverse_Find'Result)
+          P.Has_Key (Positions (Container), Reverse_Find'Result)
 
         --  The element designated by the result of Find is Item
         and Element (Model (Container),
@@ -1325,42 +1287,42 @@ is
                <= P.Get (Positions (Container), Position))
 
         --  It is the last occurence of Item in this slice
-        and not M_Elements_Contains
-          (S   => Model (Container),
-           Fst => P.Get (Positions (Container), Reverse_Find'Result) + 1,
-           Lst => (if Position = No_Element then Length (Container)
-                   else P.Get (Positions (Container), Position)),
-           E   => Item));
+        and not M.Contains
+          (Container => Model (Container),
+           Fst       => P.Get (Positions (Container), Reverse_Find'Result) + 1,
+           Lst       => (if Position = No_Element then Length (Container)
+                         else P.Get (Positions (Container), Position)),
+           Item      => Item));
 
    function Contains
      (Container : List;
       Item      : Element_Type) return Boolean
    with
      Global => null,
-     Post   => Contains'Result =
-         M_Elements_Contains
-          (S   => Model (Container),
-           Fst => 1,
-           Lst => Length (Container),
-           E   => Item);
+     Post   =>
+         Contains'Result = M.Contains (Container => Model (Container),
+                                       Fst       => 1,
+                                       Lst       => Length (Container),
+                                       Item      => Item);
 
    function Has_Element (Container : List; Position : Cursor) return Boolean
    with
      Global => null,
-     Post   => Has_Element'Result = P.Mem (Positions (Container), Position);
+     Post   =>
+         Has_Element'Result = P.Has_Key (Positions (Container), Position);
    pragma Annotate (GNATprove, Inline_For_Proof, Has_Element);
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
    package Generic_Sorting with SPARK_Mode is
-      function M_Elements_Sorted (S : M.Sequence) return Boolean with
+      function M_Elements_Sorted (Container : M.Sequence) return Boolean with
         Ghost,
         Global => null,
         Post   => M_Elements_Sorted'Result =
-          (for all I in 1 .. M.Length (S) =>
-             (for all J in I + 1 .. M.Length (S) =>
-                  Element (S, I) = Element (S, J)
-               or Element (S, I) < Element (S, J)));
+          (for all I in 1 .. M.Length (Container) =>
+             (for all J in I + 1 .. M.Length (Container) =>
+                  Element (Container, I) = Element (Container, J)
+               or Element (Container, I) < Element (Container, J)));
       pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Sorted);
 
       function Is_Sorted (Container : List) return Boolean with

@@ -38,11 +38,7 @@ generic
    --  should have at least one more element at the low end than Index_Type.
 
    type Element_Type (<>) is private;
-   with function "=" (Left, Right : Element_Type) return Boolean is <>;
-
 package Ada.Containers.Functional_Vectors with SPARK_Mode is
-
-   pragma Assertion_Policy (Post => Ignore);
 
    subtype Extended_Index is Index_Type'Base range
      Index_Type'Pred (Index_Type'First) .. Index_Type'Last;
@@ -60,178 +56,299 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
    --  Quantification over sequences can be done using the regular
    --  quantification over its range or directly on its elements with "for of".
 
+   -----------------------
+   --  Basic operations --
+   -----------------------
+
    --  Sequences are axiomatized using Length and Get, providing respectively
    --  the length of a sequence and an accessor to its Nth element:
 
-   function Length (S : Sequence) return Count_Type with
+   function Length (Container : Sequence) return Count_Type with
+   --  Length of a sequence
+
      Global => null,
      Post   =>
        (Index_Type'Pos (Index_Type'First) - 1) + Length'Result <=
           Index_Type'Pos (Index_Type'Last);
 
-   function Last (S : Sequence) return Extended_Index with
-     Global => null,
-     Post   =>
-       Last'Result =
-         Index_Type'Val ((Index_Type'Pos (Index_Type'First) - 1) + Length (S));
-
-   function First return Extended_Index is (Index_Type'First);
-
-   function Get (S : Sequence; N : Extended_Index) return Element_Type
-   --  Get ranges over Extended_Index so that it can be used for iteration
+   function Get
+     (Container : Sequence;
+      Position  : Extended_Index) return Element_Type
+   --  Access the Element at position Position in Container
 
    with
      Global => null,
-     Pre    => N in Index_Type'First .. Last (S);
+     Pre    => Position in Index_Type'First .. Last (Container);
 
-   function "=" (S1 : Sequence; S2 : Sequence) return Boolean with
+   function Last (Container : Sequence) return Extended_Index with
+   --  Last index of a sequence
+
+     Global => null,
+     Post =>
+       Last'Result =
+         Index_Type'Val ((Index_Type'Pos (Index_Type'First) - 1)
+                         + Length (Container));
+   pragma Annotate (GNATprove, Inline_For_Proof, Last);
+
+   function First return Extended_Index is (Index_Type'First);
+   --  First index of a sequence
+
+   ------------------------
+   -- Property Functions --
+   ------------------------
+
+   function "=" (Left : Sequence; Right : Sequence) return Boolean with
    --  Extensional equality over sequences
 
      Global => null,
      Post   =>
        "="'Result =
-         (Length (S1) = Length (S2)
-            and then (for all N in Index_Type'First .. Last (S1) =>
-                        Get (S1, N) = Get (S2, N)));
+         (Length (Left) = Length (Right)
+          and then (for all N in Index_Type'First .. Last (Left) =>
+              Get (Left, N) = Get (Right, N)));
+   pragma Annotate (GNATprove, Inline_For_Proof, "=");
 
-   function "<" (S1 : Sequence; S2 : Sequence) return Boolean with
-   --  S1 is a strict subsequence of S2
+   function "<" (Left : Sequence; Right : Sequence) return Boolean with
+   --  Left is a strict subsequence of Right
 
      Global => null,
      Post   =>
        "<"'Result =
-         (Length (S1) < Length (S2)
-            and then (for all N in Index_Type'First .. Last (S1) =>
-                        Get (S1, N) = Get (S2, N)));
+         (Length (Left) < Length (Right)
+          and then (for all N in Index_Type'First .. Last (Left) =>
+              Get (Left, N) = Get (Right, N)));
+   pragma Annotate (GNATprove, Inline_For_Proof, "<");
 
-   function "<=" (S1 : Sequence; S2 : Sequence) return Boolean with
-   --  S1 is a subsequence of S2
+   function "<=" (Left : Sequence; Right : Sequence) return Boolean with
+   --  Left is a subsequence of Right
 
      Global => null,
      Post   =>
        "<="'Result =
-         (Length (S1) <= Length (S2)
-            and then (for all N in Index_Type'First .. Last (S1) =>
-                        Get (S1, N) = Get (S2, N)));
+         (Length (Left) <= Length (Right)
+          and then (for all N in Index_Type'First .. Last (Left) =>
+              Get (Left, N) = Get (Right, N)));
+   pragma Annotate (GNATprove, Inline_For_Proof, "<=");
 
-   function Is_Set
-     (S      : Sequence;
-      N      : Index_Type;
-      E      : Element_Type;
-      Result : Sequence) return Boolean
-   --  Returns True if Result is S, where the Nth element has been replaced by
-   --  E.
+   function Contains
+     (Container : Sequence;
+      Fst       : Index_Type;
+      Lst       : Extended_Index;
+      Item      : Element_Type)
+         return Boolean
+   --  Returns True if Item occurs in the range from Fst to Lst of Container
 
    with
      Global => null,
+     Pre    => Lst <= Last (Container),
      Post   =>
-       Is_Set'Result =
-         (N in Index_Type'First .. Last (S)
-           and then Length (Result) = Length (S)
-           and then Get (Result, N) = E
-           and then (for all M in Index_Type'First .. Last (S) =>
-                       (if M /= N then Get (Result, M) = Get (S, M))));
+       Contains'Result =
+         (for some I in Fst .. Lst => Get (Container, I) = Item);
+   pragma Annotate (GNATprove, Inline_For_Proof, Contains);
+
+   function Constant_Range
+     (Container : Sequence;
+      Fst       : Index_Type;
+      Lst       : Extended_Index;
+      Item      : Element_Type)
+         return Boolean
+   --  Returns True if every element of the range from Fst to Lst of Container
+   --  is equal to Item.
+
+   with
+     Global => null,
+     Pre    => Lst <= Last (Container),
+     Post   =>
+       Constant_Range'Result =
+         (for all I in Fst .. Lst => Get (Container, I) = Item);
+   pragma Annotate (GNATprove, Inline_For_Proof, Constant_Range);
+
+   function Equal_Except
+     (Left     : Sequence;
+      Right    : Sequence;
+      Position : Index_Type) return Boolean
+   --  Returns True is Left and Right are the same except at position Position
+
+   with
+     Global => null,
+     Pre    => Position <= Last (Left),
+     Post   =>
+       Equal_Except'Result =
+         (Length (Left) = Length (Right)
+          and then (for all I in Index_Type'First .. Last (Left) =>
+              (if I /= Position then Get (Left, I) = Get (Right, I))));
+   pragma Annotate (GNATprove, Inline_For_Proof, Equal_Except);
+
+   function Equal_Except
+     (Left  : Sequence;
+      Right : Sequence;
+      X, Y  : Index_Type) return Boolean
+   --  Returns True is Left and Right are the same except at positions X and Y
+
+   with
+     Global => null,
+     Pre    => X <= Last (Left) and Y <= Last (Left),
+     Post   =>
+       Equal_Except'Result =
+         (Length (Left) = Length (Right)
+          and then (for all I in Index_Type'First .. Last (Left) =>
+              (if I /= X and I /= Y then Get (Left, I) = Get (Right, I))));
+   pragma Annotate (GNATprove, Inline_For_Proof, Equal_Except);
+
+   function Range_Equal
+     (Left  : Sequence;
+      Right : Sequence;
+      Fst   : Index_Type;
+      Lst   : Extended_Index) return Boolean
+   --  Returns True if the ranges from Fst to Lst contain the same elements in
+   --  Left and Right.
+
+   with
+     Global => null,
+     Pre    => Lst <= Last (Left) and Lst <= Last (Right),
+     Post   =>
+       Range_Equal'Result =
+         (for all I in Fst .. Lst => Get (Left, I) = Get (Right, I));
+   pragma Annotate (GNATprove, Inline_For_Proof, Range_Equal);
+
+   function Range_Shifted
+     (Left   : Sequence;
+      Right  : Sequence;
+      Fst    : Index_Type;
+      Lst    : Extended_Index;
+      Offset : Count_Type'Base) return Boolean
+   --  Returns True if the range from Fst to Lst in Left contains the same
+   --  elements as the range from Fst + Offset to Lst + Offset in Right.
+
+   with
+     Global => null,
+     Pre    => Lst <= Last (Left)
+           and Offset in
+              Index_Type'Pos (Index_Type'First) - Index_Type'Pos (Fst) ..
+                   (Index_Type'Pos (Index_Type'First) - 1)
+                  + Length (Right) - Index_Type'Pos (Lst),
+     Post   =>
+       Range_Shifted'Result =
+         ((for all I in Fst .. Lst =>
+                   Get (Left, I)
+           = Get (Right, Index_Type'Val (Index_Type'Pos (I) + Offset)))
+          and
+            (for all I in Index_Type'Val (Index_Type'Pos (Fst) + Offset) ..
+               Index_Type'Val (Index_Type'Pos (Lst) + Offset) =>
+                 Get (Left, Index_Type'Val (Index_Type'Pos (I) - Offset))
+             = Get (Right, I)));
+   pragma Annotate (GNATprove, Inline_For_Proof, Range_Shifted);
+
+   ----------------------------
+   -- Construction Functions --
+   ----------------------------
+
+   --  For better efficiency of both proofs and execution, avoid using
+   --  construction functions in annotations and rather use property functions.
 
    function Set
-     (S : Sequence;
-      N : Index_Type;
-      E : Element_Type) return Sequence
-   --  Returns S, where the Nth element has been replaced by E.
-   --  Is_Set (S, N, E, Result) should be used instead of
-   --  Result = Set (S, N, E) whenever possible both for execution and for
-   --  proof.
+     (Container : Sequence;
+      Position  : Index_Type;
+      New_Item  : Element_Type) return Sequence
+   --  Returns a new sequence which contains the same elements as Container
+   --  except for the one at position Position which is replaced by New_Item.
 
    with
      Global => null,
-     Pre    => N in Index_Type'First .. Last (S),
-     Post   => Is_Set (S, N, E, Set'Result);
+     Pre    => Position in Index_Type'First .. Last (Container),
+     Post   => Get (Set'Result, Position) = New_Item
+     and then Equal_Except (Container, Set'Result, Position);
 
-   function Is_Add
-     (S      : Sequence;
-      E      : Element_Type;
-      Result : Sequence) return Boolean
-   --  Returns True if Result is S appended with E
+   function Add (Container : Sequence; New_Item : Element_Type) return Sequence
+   --  Returns a new sequence which contains the same elements as Container
+   --  plus New_Item at the end.
 
    with
      Global => null,
+     Pre    =>
+       Length (Container) < Count_Type'Last
+         and then Last (Container) < Index_Type'Last,
      Post   =>
-       Is_Add'Result =
-         (Length (Result) = Length (S) + 1
-           and then Get (Result, Last (Result)) = E
-           and then (for all M in Index_Type'First .. Last (S) =>
-                       Get (Result, M) = Get (S, M)));
+       Length (Add'Result) = Length (Container) + 1
+         and then Get (Add'Result, Last (Add'Result)) = New_Item
+         and then Container <= Add'Result;
 
-   function Add (S : Sequence; E : Element_Type) return Sequence with
-   --  Returns S appended with E.
-   --  Is_Add (S, E, Result) should be used instead of Result = Add (S, E)
-   --  whenever possible both for execution and for proof.
-
-     Global => null,
-     Pre    => Length (S) < Count_Type'Last and Last (S) < Index_Type'Last,
-     Post   => Is_Add (S, E, Add'Result);
-
-   function Insert
-     (S : Sequence;
-      N : Index_Type;
-      E : Element_Type) return Sequence
+   function Add
+     (Container : Sequence;
+      Position  : Index_Type;
+      New_Item  : Element_Type) return Sequence
    with
-   --  Returns S with E inserted at index I
+   --  Returns a new sequence which contains the same elements as Container
+   --  except that New_Item has been inserted at position Position.
 
      Global => null,
      Pre    =>
-       Length (S) < Count_Type'Last
-         and then Last (S) < Index_Type'Last
-         and then N <= Extended_Index'Succ (Last (S)),
+       Length (Container) < Count_Type'Last
+         and then Last (Container) < Index_Type'Last
+         and then Position <= Extended_Index'Succ (Last (Container)),
      Post   =>
-       Length (Insert'Result) = Length (S) + 1
-         and then Get (Insert'Result, N) = E
+       Length (Add'Result) = Length (Container) + 1
+         and then Get (Add'Result, Position) = New_Item
          and then
-           (for all M in Index_Type'First .. Extended_Index'Pred (N) =>
-              Get (Insert'Result, M) = Get (S, M))
+            Range_Equal (Left  => Container,
+                         Right =>  Add'Result,
+                         Fst   => Index_Type'First,
+                         Lst   => Index_Type'Pred (Position))
          and then
-           (for all M in Extended_Index'Succ (N) ..  Last (Insert'Result) =>
-              Get (Insert'Result, M) = Get (S, Extended_Index'Pred (M)))
-         and then
-           (for all M in N .. Last (S) =>
-              Get (Insert'Result, Extended_Index'Succ (M)) = Get (S, M));
+            Range_Shifted (Left   => Container,
+                           Right  => Add'Result,
+                           Fst    => Position,
+                           Lst    => Last (Container),
+                           Offset => 1);
 
-   function Remove (S : Sequence; N : Index_Type) return Sequence with
-   --  Returns S without the element at index N
+   function Remove
+     (Container : Sequence;
+      Position : Index_Type) return Sequence
+   --  Returns a new sequence which contains the same elements as Container
+   --  except that the element at position Position has been removed.
 
+   with
      Global => null,
      Pre    =>
-       Length (S) < Count_Type'Last
-         and Last (S) < Index_Type'Last
-         and N in Index_Type'First .. Last (S),
+       Length (Container) < Count_Type'Last
+         and Last (Container) < Index_Type'Last
+         and Position in Index_Type'First .. Last (Container),
      Post   =>
-       Length (Remove'Result) = Length (S) - 1
+       Length (Remove'Result) = Length (Container) - 1
          and then
-           (for all M in Index_Type'First .. Extended_Index'Pred (N) =>
-              Get (Remove'Result, M) = Get (S, M))
+            Range_Equal (Left  => Container,
+                         Right => Remove'Result,
+                         Fst   => Index_Type'First,
+                         Lst   => Index_Type'Pred (Position))
          and then
-           (for all M in N .. Last (Remove'Result) =>
-              Get (Remove'Result, M) = Get (S, Extended_Index'Succ (M)))
-         and then
-           (for all M in Extended_Index'Succ (N) .. Last (S) =>
-              Get (Remove'Result, Extended_Index'Pred (M)) = Get (S, M));
+            Range_Shifted (Left   => Remove'Result,
+                           Right  => Container,
+                           Fst    => Position,
+                           Lst    => Last (Remove'Result),
+                           Offset => 1);
 
    ---------------------------
    --  Iteration Primitives --
    ---------------------------
 
-   function Iter_First (S : Sequence) return Extended_Index with
+   function Iter_First (Container : Sequence) return Extended_Index with
      Global => null;
 
-   function Iter_Has_Element (S : Sequence; I : Extended_Index) return Boolean
+   function Iter_Has_Element
+     (Container : Sequence;
+      Position  : Extended_Index) return Boolean
    with
      Global => null,
-     Post   => Iter_Has_Element'Result = (I in Index_Type'First .. Last (S));
+     Post   => Iter_Has_Element'Result =
+         (Position in Index_Type'First .. Last (Container));
    pragma Annotate (GNATprove, Inline_For_Proof, Iter_Has_Element);
 
-   function Iter_Next (S : Sequence; I : Extended_Index) return Extended_Index
+   function Iter_Next
+     (Container : Sequence;
+      Position  : Extended_Index) return Extended_Index
    with
      Global => null,
-     Pre    => Iter_Has_Element (S, I);
+     Pre    => Iter_Has_Element (Container, Position);
 
 private
 
@@ -245,22 +362,21 @@ private
       Content : Containers.Container;
    end record;
 
-   function Iter_First (S : Sequence) return Extended_Index is
+   function Iter_First (Container : Sequence) return Extended_Index is
      (Index_Type'First);
-
    function Iter_Next
-     (S : Sequence;
-      I : Extended_Index) return Extended_Index
+     (Container : Sequence;
+      Position  : Extended_Index) return Extended_Index
    is
-     (if I = Extended_Index'Last then Extended_Index'First
-      else Extended_Index'Succ (I));
+     (if Position = Extended_Index'Last then Extended_Index'First
+      else Extended_Index'Succ (Position));
 
    function Iter_Has_Element
-     (S : Sequence;
-      I : Extended_Index) return Boolean
+     (Container : Sequence;
+      Position  : Extended_Index) return Boolean
    is
-     (I in Index_Type'First ..
-       (Index_Type'Val
-         ((Index_Type'Pos (Index_Type'First) - 1) + Length (S))));
+     (Position in Index_Type'First ..
+        (Index_Type'Val
+           ((Index_Type'Pos (Index_Type'First) - 1) + Length (Container))));
 
 end Ada.Containers.Functional_Vectors;

@@ -38,21 +38,21 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
    -- "=" --
    ---------
 
-   function "=" (M1 : Map; M2 : Map) return Boolean is
-     (M1.Keys <= M2.Keys and M2 <= M1);
+   function "=" (Left : Map; Right : Map) return Boolean is
+     (Left.Keys <= Right.Keys and Right <= Left);
 
    ----------
    -- "<=" --
    ----------
 
-   function "<=" (M1 : Map; M2 : Map) return Boolean is
+   function "<=" (Left : Map; Right : Map) return Boolean is
       I2 : Count_Type;
 
    begin
-      for I1 in 1 .. Length (M1.Keys) loop
-         I2 := Find (M2.Keys, Get (M1.Keys, I1));
+      for I1 in 1 .. Length (Left.Keys) loop
+         I2 := Find (Right.Keys, Get (Left.Keys, I1));
          if I2 = 0
-           or else Get (M2.Elements, I2) /= Get (M1.Elements, I1)
+           or else Get (Right.Elements, I2) /= Get (Left.Elements, I1)
          then
             return False;
          end if;
@@ -64,103 +64,185 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
    -- Add --
    ---------
 
-   function Add (M : Map; K : Key_Type; E : Element_Type) return Map is
+   function Add
+     (Container : Map;
+      New_Key   : Key_Type;
+      New_Item  : Element_Type) return Map
+   is
    begin
       return
-        (Keys     => Add (M.Keys, Length (M.Keys) + 1, K),
-         Elements => Add (M.Elements, Length (M.Elements) + 1, E));
+        (Keys     =>
+           Add (Container.Keys, Length (Container.Keys) + 1, New_Key),
+         Elements =>
+           Add
+             (Container.Elements, Length (Container.Elements) + 1, New_Item));
    end Add;
+
+   ---------------------------
+   -- Elements_Equal_Except --
+   ---------------------------
+
+   function Elements_Equal_Except
+     (Left    : Map;
+      Right   : Map;
+      New_Key : Key_Type) return Boolean
+   is
+   begin
+      for I in 1 .. Length (Left.Keys) loop
+         declare
+            K : constant Key_Type := Get (Left.Keys, I);
+         begin
+            if not Equivalent_Keys (K, New_Key)
+              and then Get (Right.Elements, Find (Right.Keys, K))
+                    /= Get (Left.Elements, I)
+            then
+               return False;
+            end if;
+         end;
+      end loop;
+      return True;
+   end Elements_Equal_Except;
+
+   function Elements_Equal_Except
+     (Left  : Map;
+      Right : Map;
+      X, Y  : Key_Type) return Boolean
+   is
+   begin
+      for I in 1 .. Length (Left.Keys) loop
+         declare
+            K : constant Key_Type := Get (Left.Keys, I);
+         begin
+            if not Equivalent_Keys (K, X)
+              and then not Equivalent_Keys (K, Y)
+              and then Get (Right.Elements, Find (Right.Keys, K))
+                    /= Get (Left.Elements, I)
+            then
+               return False;
+            end if;
+         end;
+      end loop;
+      return True;
+   end Elements_Equal_Except;
 
    ---------
    -- Get --
    ---------
 
-   function Get (M : Map; K : Key_Type) return Element_Type is
+   function Get (Container : Map; Key : Key_Type) return Element_Type is
    begin
-      return Get (M.Elements, Find (M.Keys, K));
+      return Get (Container.Elements, Find (Container.Keys, Key));
    end Get;
 
-   ------------
-   -- Is_Add --
-   ------------
+   -------------
+   -- Has_Key --
+   -------------
 
-   function Is_Add
-     (M      : Map;
-      K      : Key_Type;
-      E      : Element_Type;
-      Result : Map) return Boolean
-   is
+   function Has_Key (Container : Map; Key : Key_Type) return Boolean is
    begin
-      if Mem (M, K) or not Mem (Result, K) or Get (Result, K) /= E then
-         return False;
-      end if;
-
-      for K of M loop
-         if not Mem (Result, K) or else Get (Result, K) /= Get (M, K) then
-            return False;
-         end if;
-      end loop;
-
-      for KK of Result loop
-         if KK /= K and not Mem (M, KK) then
-            return False;
-         end if;
-      end loop;
-
-      return True;
-   end Is_Add;
+      return Find (Container.Keys, Key) > 0;
+   end Has_Key;
 
    --------------
    -- Is_Empty --
    --------------
 
-   function Is_Empty (M : Map) return Boolean is
+   function Is_Empty (Container : Map) return Boolean is
    begin
-      return Length (M.Keys) = 0;
+      return Length (Container.Keys) = 0;
    end Is_Empty;
 
-   ------------
-   -- Is_Set --
-   ------------
+   -------------------
+   -- Keys_Included --
+   -------------------
 
-   function Is_Set
-     (M      : Map;
-      K      : Key_Type;
-      E      : Element_Type;
-      Result : Map) return Boolean
+   function Keys_Included (Left : Map; Right : Map) return Boolean is
+   begin
+      for I in 1 .. Length (Left.Keys) loop
+         declare
+            K : constant Key_Type := Get (Left.Keys, I);
+         begin
+            if Find (Right.Keys, K) = 0 then
+               return False;
+            end if;
+         end;
+      end loop;
+      return True;
+   end Keys_Included;
+
+   --------------------------
+   -- Keys_Included_Except --
+   --------------------------
+
+   function Keys_Included_Except
+     (Left    : Map;
+      Right   : Map;
+      New_Key : Key_Type) return Boolean
    is
-     (Mem (M, K)
-       and then Mem (Result, K)
-       and then Get (Result, K) = E
-       and then (for all KK of M =>
-                   Mem (Result, KK)
-                     and then
-                       (if K /= KK then Get (Result, KK) = Get (M, KK)))
-       and then (for all K of Result => Mem (M, K)));
+   begin
+      for I in 1 .. Length (Left.Keys) loop
+         declare
+            K : constant Key_Type := Get (Left.Keys, I);
+         begin
+            if not Equivalent_Keys (K, New_Key)
+              and then Find (Right.Keys, K) = 0
+            then
+               return False;
+            end if;
+         end;
+      end loop;
+      return True;
+   end Keys_Included_Except;
+
+   function Keys_Included_Except
+     (Left  : Map;
+      Right : Map;
+      X, Y  : Key_Type) return Boolean
+   is
+   begin
+      for I in 1 .. Length (Left.Keys) loop
+         declare
+            K : constant Key_Type := Get (Left.Keys, I);
+         begin
+            if not Equivalent_Keys (K, X)
+              and then not Equivalent_Keys (K, Y)
+              and then Find (Right.Keys, K) = 0
+            then
+               return False;
+            end if;
+         end;
+      end loop;
+      return True;
+   end Keys_Included_Except;
 
    ------------
    -- Length --
    ------------
 
-   function Length (M : Map) return Count_Type is
+   function Length (Container : Map) return Count_Type is
    begin
-      return Length (M.Elements);
+      return Length (Container.Elements);
    end Length;
 
-   ---------
-   -- Mem --
-   ---------
+   ---------------
+   -- Same_Keys --
+   ---------------
 
-   function Mem (M : Map; K : Key_Type) return Boolean is
-   begin
-      return Find (M.Keys, K) > 0;
-   end Mem;
+   function Same_Keys (Left : Map; Right : Map) return Boolean is
+      (Keys_Included (Left, Right)
+            and Keys_Included (Left => Right, Right => Left));
 
    ---------
    -- Set --
    ---------
 
-   function Set (M : Map; K : Key_Type; E : Element_Type) return Map is
-     (Keys => M.Keys, Elements => Set (M.Elements, Find (M.Keys, K), E));
+   function Set
+     (Container : Map;
+      Key       : Key_Type;
+      New_Item  : Element_Type) return Map
+   is
+     (Keys     => Container.Keys,
+      Elements =>
+         Set (Container.Elements, Find (Container.Keys, Key), New_Item));
 
 end Ada.Containers.Functional_Maps;

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 1992-2016, Free Software Foundation, Inc.      *
+ *             Copyright (C) 1992-2017, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -32,10 +32,6 @@
 /* Code related to the integration of the GCC mechanism for exception
    handling.  */
 
-#ifndef IN_RTS
-#error "RTS unit only"
-#endif
-
 #ifndef CERT
 #include "tconfig.h"
 #include "tsystem.h"
@@ -45,9 +41,14 @@
 #endif
 
 #include <stdarg.h>
+
+#ifdef __cplusplus
+# include <cstdlib>
+#else
 typedef char bool;
 # define true 1
 # define false 0
+#endif
 
 #include "raise.h"
 
@@ -72,6 +73,10 @@ typedef char bool;
 
 #include "unwind.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct _Unwind_Context _Unwind_Context;
 typedef struct _Unwind_Exception _Unwind_Exception;
 
@@ -79,7 +84,7 @@ _Unwind_Reason_Code
 __gnat_Unwind_RaiseException (_Unwind_Exception *);
 
 _Unwind_Reason_Code
-__gnat_Unwind_ForcedUnwind (_Unwind_Exception *, void *, void *);
+__gnat_Unwind_ForcedUnwind (_Unwind_Exception *, _Unwind_Stop_Fn, void *);
 
 extern struct Exception_Occurrence *__gnat_setup_current_excep
  (_Unwind_Exception *);
@@ -209,7 +214,7 @@ db_indent (int requests)
 }
 
 static void ATTRIBUTE_PRINTF_2
-db (int db_code, char * msg_format, ...)
+db (int db_code, const char * msg_format, ...)
 {
   if (db_accepted_codes () & db_code)
     {
@@ -816,8 +821,8 @@ get_call_site_action_for (_Unwind_Ptr ip,
 
       db (DB_CSITE,
 	  "c_site @ %p (+%p), len = %p, lpad @ %p (+%p)\n",
-	  (void *)region->base + cs_start, (void *)cs_start, (void *)cs_len,
-	  (void *)region->lp_base + cs_lp, (void *)cs_lp);
+	  (char *)region->base + cs_start, (void *)cs_start, (void *)cs_len,
+	  (char *)region->lp_base + cs_lp, (void *)cs_lp);
 
       /* The table is sorted, so if we've passed the IP, stop.  */
       if (ip < region->base + cs_start)
@@ -1399,7 +1404,7 @@ __gnat_Unwind_RaiseException (_Unwind_Exception *e)
 
 _Unwind_Reason_Code
 __gnat_Unwind_ForcedUnwind (_Unwind_Exception *e ATTRIBUTE_UNUSED,
-			    void *handler ATTRIBUTE_UNUSED,
+			    _Unwind_Stop_Fn handler ATTRIBUTE_UNUSED,
 			    void *argument ATTRIBUTE_UNUSED)
 {
 #ifdef __USING_SJLJ_EXCEPTIONS__
@@ -1608,4 +1613,8 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
    the offset to the C++ object.  */
 
 const int __gnat_unwind_exception_size = sizeof (_Unwind_Exception);
+#endif
+
+#ifdef __cplusplus
+}
 #endif

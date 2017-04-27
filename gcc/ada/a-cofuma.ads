@@ -36,11 +36,7 @@ generic
    type Key_Type (<>) is private;
    type Element_Type (<>)  is private;
    with function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
-   with function "=" (Left, Right : Element_Type) return Boolean is <>;
-
 package Ada.Containers.Functional_Maps with SPARK_Mode is
-
-   pragma Assertion_Policy (Post => Ignore);
 
    type Map is private with
      Default_Initial_Condition => Is_Empty (Map) and Length (Map) = 0,
@@ -52,100 +48,179 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
    --  "For in" quantification over maps should not be used.
    --  "For of" quantification over maps iterates over keys.
 
-   --  Maps are axiomatized using Mem and Get, encoding respectively the
+   -----------------------
+   --  Basic operations --
+   -----------------------
+
+   --  Maps are axiomatized using Has_Key and Get, encoding respectively the
    --  presence of a key in a map and an accessor to elements associated to its
    --  keys. The length of a map is also added to protect Add against overflows
    --  but it is not actually modeled.
 
-   function Mem (M : Map; K : Key_Type) return Boolean with
+   function Has_Key (Container : Map; Key : Key_Type) return Boolean with
      Global => null;
+   --  Return True if Key is present in Container
 
-   function Get (M : Map; K : Key_Type) return Element_Type with
+   function Get (Container : Map; Key : Key_Type) return Element_Type with
      Global => null,
-     Pre    => Mem (M, K);
+     Pre    => Has_Key (Container, Key);
+   --  Return the element associated to Key is present in Container
 
-   function Length (M : Map) return Count_Type with
+   function Length (Container : Map) return Count_Type with
      Global => null;
+   --  Return the number of mappings in Container
 
-   function "<=" (M1 : Map; M2 : Map) return Boolean with
+   ------------------------
+   -- Property Functions --
+   ------------------------
+
+   function "<=" (Left : Map; Right : Map) return Boolean with
    --  Map inclusion
 
      Global => null,
-     Post   => "<="'Result =
-       (for all K of M1 =>
-          Mem (M2, K) and then Get (M2, K) = Get (M1, K));
+     Post   =>
+       "<="'Result =
+         (for all Key of Left =>
+            Has_Key (Right, Key) and then Get (Right, Key) = Get (Left, Key));
 
-   function "=" (M1 : Map; M2 : Map) return Boolean with
+   function "=" (Left : Map; Right : Map) return Boolean with
    --  Extensional equality over maps
 
      Global => null,
-     Post   => "="'Result =
-       ((for all K of M1 => Mem (M2, K) and then Get (M2, K) = Get (M1, K))
-           and (for all K of M2 => Mem (M1, K)));
+     Post   =>
+       "="'Result =
+         ((for all Key of Left =>
+                   Has_Key (Right, Key)
+           and then Get (Right, Key) = Get (Left, Key))
+          and (for all Key of Right => Has_Key (Left, Key)));
 
-   pragma Warnings (Off, "unused variable ""K""");
-   function Is_Empty (M : Map) return Boolean with
+   pragma Warnings (Off, "unused variable ""Key""");
+   function Is_Empty (Container : Map) return Boolean with
    --  A map is empty if it contains no key
-     Global => null,
-     Post   => Is_Empty'Result = (for all K of M => False);
-   pragma Warnings (On, "unused variable ""K""");
 
-   function Is_Add
-     (M      : Map;
-      K      : Key_Type;
-      E      : Element_Type;
-      Result : Map) return Boolean
-   --  Returns True if Result is M augmented with the mapping K -> E
+     Global => null,
+     Post   => Is_Empty'Result = (for all Key of Container => False);
+   pragma Warnings (On, "unused variable ""Key""");
+
+   function Keys_Included (Left : Map; Right : Map) return Boolean
+   --  Returns True if every Key of Left is in Right
 
    with
      Global => null,
      Post   =>
-       Is_Add'Result =
-         (not Mem (M, K)
-            and then Mem (Result, K)
-            and then Get (Result, K) = E
-            and then (for all K of M =>
-                        Mem (Result, K) and then Get (Result, K) = Get (M, K))
-            and then (for all KK of Result =>
-                        Equivalent_Keys (KK, K) or Mem (M, KK)));
+       Keys_Included'Result = (for all Key of Left => Has_Key (Right, Key));
 
-   function Add (M : Map; K : Key_Type; E : Element_Type) return Map with
-   --  Returns M augmented with the mapping K -> E.
-   --  Is_Add (M, K, E, Result) should be used instead of
-   --  Result = Add (M, K, E) whenever possible both for execution and for
-   --  proof.
-
-     Global => null,
-     Pre    => not Mem (M, K) and Length (M) < Count_Type'Last,
-     Post   => Length (M) + 1 = Length (Add'Result)
-               and Is_Add (M, K, E, Add'Result);
-
-   function Is_Set
-     (M : Map; K : Key_Type; E : Element_Type; Result : Map) return Boolean
-   --  Returns True if Result is M, where the element associated to K has been
-   --  replaced by E.
+   function Same_Keys (Left : Map; Right : Map) return Boolean
+   --  Returns True if Left and Right have the same keys
 
    with
      Global => null,
-     Post   => Is_Set'Result =
-         (Mem (M, K)
-          and then Mem (Result, K)
-          and then Get (Result, K) = E
-          and then (for all KK of M => Mem (Result, KK)
-               and then (if not Equivalent_Keys (K, KK)
-                         then Get (Result, KK) = Get (M, KK)))
-          and then (for all K of Result => Mem (M, K)));
-
-   function Set (M : Map; K : Key_Type; E : Element_Type) return Map with
-   --  Returns M, where the element associated to K has been replaced by E.
-   --  Is_Set (M, K, E, Result) should be used instead of
-   --  Result = Set (M, K, E) whenever possible both for execution and for
-   --  proof.
-
-     Global => null,
-     Pre    => Mem (M, K),
      Post   =>
-       Length (M) = Length (Set'Result) and Is_Set (M, K, E, Set'Result);
+       Same_Keys'Result =
+           (Keys_Included (Left, Right)
+            and Keys_Included (Left => Right, Right => Left));
+   pragma Annotate (GNATprove, Inline_For_Proof, Same_Keys);
+
+   function Keys_Included_Except
+     (Left    : Map;
+      Right   : Map;
+      New_Key : Key_Type) return Boolean
+   --  Returns True if Left contains only keys of Right and possibly New_Key
+
+   with
+     Global => null,
+     Post   =>
+         Keys_Included_Except'Result =
+           (for all Key of Left =>
+              (if not Equivalent_Keys (Key, New_Key)
+               then Has_Key (Right, Key)));
+
+   function Keys_Included_Except
+     (Left  : Map;
+      Right : Map;
+      X, Y  : Key_Type) return Boolean
+   --  Returns True if Left contains only keys of Right and possibly X and Y
+
+   with
+     Global => null,
+     Post   =>
+         Keys_Included_Except'Result =
+           (for all Key of Left =>
+              (if not Equivalent_Keys (Key, X) and not Equivalent_Keys (Key, Y)
+               then Has_Key (Right, Key)));
+
+   function Elements_Equal_Except
+     (Left    : Map;
+      Right   : Map;
+      New_Key : Key_Type) return Boolean
+   --  Returns True if all the keys of Left are mapped to the same elements in
+   --  Left and Right except New_Key.
+
+   with
+     Global => null,
+     Pre    => Keys_Included_Except (Left, Right, New_Key),
+     Post   =>
+       Elements_Equal_Except'Result =
+         (for all Key of Left =>
+            (if not Equivalent_Keys (Key, New_Key)
+             then Get (Left, Key) = Get (Right, Key)));
+
+   function Elements_Equal_Except
+     (Left  : Map;
+      Right : Map;
+      X, Y  : Key_Type) return Boolean
+   --  Returns True if all the keys of Left are mapped to the same elements in
+   --  Left and Right except X and Y.
+
+   with
+     Global => null,
+     Pre    => Keys_Included_Except (Left, Right, X, Y),
+     Post   =>
+       Elements_Equal_Except'Result =
+         (for all Key of Left =>
+            (if not Equivalent_Keys (Key, X) and not Equivalent_Keys (Key, Y)
+             then Get (Left, Key) = Get (Right, Key)));
+
+   ----------------------------
+   -- Construction Functions --
+   ----------------------------
+
+   --  For better efficiency of both proofs and execution, avoid using
+   --  construction functions in annotations and rather use property functions.
+
+   function Add
+     (Container : Map;
+      New_Key   : Key_Type;
+      New_Item  : Element_Type) return Map
+   --  Returns Container augmented with the mapping Key -> New_Item.
+
+   with
+     Global => null,
+     Pre    =>
+         not Has_Key (Container, New_Key)
+       and Length (Container) < Count_Type'Last,
+     Post   =>
+       Length (Container) + 1 = Length (Add'Result)
+       and Has_Key (Add'Result, New_Key)
+       and Get (Add'Result, New_Key) = New_Item
+       and Container <= Add'Result
+       and Keys_Included_Except (Add'Result, Container, New_Key);
+
+   function Set
+     (Container : Map;
+      Key       : Key_Type;
+      New_Item  : Element_Type) return Map
+   --  Returns Container, where the element associated to Key has been replaced
+   --  by New_Item.
+
+   with
+     Global => null,
+     Pre    => Has_Key (Container, Key),
+     Post   =>
+       Length (Container) = Length (Set'Result)
+       and Get (Set'Result, Key) = New_Item
+       and Same_Keys (Container, Set'Result)
+       and Elements_Equal_Except (Container, Set'Result, Key);
 
    ---------------------------
    --  Iteration Primitives --
@@ -153,20 +228,25 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
 
    type Private_Key is private;
 
-   function Iter_First (M : Map) return Private_Key with
+   function Iter_First (Container : Map) return Private_Key with
      Global => null;
 
-   function Iter_Has_Element (M : Map; K : Private_Key) return Boolean with
+   function Iter_Has_Element
+     (Container : Map;
+      Key       : Private_Key) return Boolean
+   with
      Global => null;
 
-   function Iter_Next (M : Map; K : Private_Key) return Private_Key with
+   function Iter_Next (Container : Map; Key : Private_Key) return Private_Key
+   with
      Global => null,
-     Pre    => Iter_Has_Element (M, K);
+     Pre    => Iter_Has_Element (Container, Key);
 
-   function Iter_Element (M : Map; K : Private_Key) return Key_Type with
+   function Iter_Element (Container : Map; Key : Private_Key) return Key_Type
+   with
      Global => null,
-     Pre    => Iter_Has_Element (M, K);
-   pragma Annotate (GNATprove, Iterable_For_Proof, "Contains", Mem);
+     Pre    => Iter_Has_Element (Container, Key);
+   pragma Annotate (GNATprove, Iterable_For_Proof, "Contains", Has_Key);
 
 private
 
@@ -193,15 +273,20 @@ private
 
    type Private_Key is new Count_Type;
 
-   function Iter_First (M : Map) return Private_Key is (1);
+   function Iter_First (Container : Map) return Private_Key is (1);
 
-   function Iter_Has_Element (M : Map; K : Private_Key) return Boolean is
-     (Count_Type (K) in 1 .. Key_Containers.Length (M.Keys));
+   function Iter_Has_Element
+     (Container : Map;
+      Key       : Private_Key) return Boolean
+   is
+     (Count_Type (Key) in 1 .. Key_Containers.Length (Container.Keys));
 
-   function Iter_Next (M : Map; K : Private_Key) return Private_Key is
-     (if K = Private_Key'Last then 0 else K + 1);
+   function Iter_Next (Container : Map; Key : Private_Key) return Private_Key
+   is
+     (if Key = Private_Key'Last then 0 else Key + 1);
 
-   function Iter_Element (M : Map; K : Private_Key) return Key_Type is
-     (Key_Containers.Get (M.Keys, Count_Type (K)));
+   function Iter_Element (Container : Map; Key : Private_Key) return Key_Type
+   is
+     (Key_Containers.Get (Container.Keys, Count_Type (Key)));
 
 end Ada.Containers.Functional_Maps;

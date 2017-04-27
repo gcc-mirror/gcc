@@ -34,129 +34,215 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
    use Containers;
 
    ---------
-   -- "=" --
-   ---------
-
-   function "=" (S1 : Sequence; S2 : Sequence) return Boolean is
-     (S1.Content = S2.Content);
-
-   ---------
    -- "<" --
    ---------
 
-   function "<" (S1 : Sequence; S2 : Sequence) return Boolean is
-     (Length (S1.Content) < Length (S2.Content)
-       and then (for all I in Index_Type'First .. Last (S1) =>
-                   Get (S1.Content, I) = Get (S2.Content, I)));
+   function "<" (Left : Sequence; Right : Sequence) return Boolean is
+     (Length (Left.Content) < Length (Right.Content)
+       and then (for all I in Index_Type'First .. Last (Left) =>
+                   Get (Left.Content, I) = Get (Right.Content, I)));
 
    ----------
    -- "<=" --
    ----------
 
-   function "<=" (S1 : Sequence; S2 : Sequence) return Boolean is
-     (Length (S1.Content) <= Length (S2.Content)
-       and then (for all I in Index_Type'First .. Last (S1) =>
-                   Get (S1.Content, I) = Get (S2.Content, I)));
+   function "<=" (Left : Sequence; Right : Sequence) return Boolean is
+     (Length (Left.Content) <= Length (Right.Content)
+       and then (for all I in Index_Type'First .. Last (Left) =>
+                   Get (Left.Content, I) = Get (Right.Content, I)));
+
+   ---------
+   -- "=" --
+   ---------
+
+   function "=" (Left : Sequence; Right : Sequence) return Boolean is
+     (Left.Content = Right.Content);
 
    ---------
    -- Add --
    ---------
 
-   function Add (S : Sequence; E : Element_Type) return Sequence is
-     (Content => Add (S.Content,
+   function Add (Container : Sequence; New_Item : Element_Type) return Sequence
+   is
+     (Content => Add (Container.Content,
                       Index_Type'Val
                         (Index_Type'Pos (Index_Type'First) +
-                             Length (S.Content)),
-                      E));
+                             Length (Container.Content)),
+                      New_Item));
+
+   function Add
+     (Container : Sequence;
+      Position  : Index_Type;
+      New_Item  : Element_Type) return Sequence
+   is
+     (Content => Add (Container.Content, Position, New_Item));
+
+   --------------------
+   -- Constant_Range --
+   --------------------
+
+   function Constant_Range
+     (Container : Sequence;
+      Fst       : Index_Type;
+      Lst       : Extended_Index;
+      Item      : Element_Type) return Boolean is
+   begin
+      for I in Fst .. Lst loop
+         if Get (Container.Content, I) /= Item then
+            return False;
+         end if;
+      end loop;
+      return True;
+   end Constant_Range;
+
+   --------------
+   -- Contains --
+   --------------
+
+   function Contains
+     (Container : Sequence;
+      Fst       : Index_Type;
+      Lst       : Extended_Index;
+      Item      : Element_Type) return Boolean
+   is
+   begin
+      for I in Fst .. Lst loop
+         if Get (Container.Content, I) = Item then
+            return True;
+         end if;
+      end loop;
+      return False;
+   end Contains;
+
+   ------------------
+   -- Range_Except --
+   ------------------
+
+   function Equal_Except
+     (Left     : Sequence;
+      Right    : Sequence;
+      Position : Index_Type) return Boolean
+   is
+   begin
+      if Length (Left.Content) /= Length (Right.Content) then
+         return False;
+      end if;
+
+      for I in Index_Type'First .. Last (Left) loop
+         if I /= Position
+           and then Get (Left.Content, I) /= Get (Right.Content, I)
+         then
+            return False;
+         end if;
+      end loop;
+
+      return True;
+   end Equal_Except;
+
+   function Equal_Except
+     (Left  : Sequence;
+      Right : Sequence;
+      X, Y  : Index_Type) return Boolean
+   is
+   begin
+      if Length (Left.Content) /= Length (Right.Content) then
+         return False;
+      end if;
+
+      for I in Index_Type'First .. Last (Left) loop
+         if I /= X and then I /= Y
+           and then Get (Left.Content, I) /= Get (Right.Content, I)
+         then
+            return False;
+         end if;
+      end loop;
+
+      return True;
+   end Equal_Except;
 
    ---------
    -- Get --
    ---------
 
-   function Get (S : Sequence; N : Extended_Index) return Element_Type is
-     (Get (S.Content, N));
-
-   ------------
-   -- Insert --
-   ------------
-
-   function Insert
-     (S : Sequence;
-      N : Index_Type;
-      E : Element_Type) return Sequence
+   function Get (Container : Sequence;
+                 Position  : Extended_Index) return Element_Type
    is
-     (Content => Add (S.Content, N, E));
-
-   ------------
-   -- Is_Add --
-   ------------
-
-   function Is_Add
-     (S      : Sequence;
-      E      : Element_Type;
-      Result : Sequence) return Boolean
-   is
-     (Length (Result) = Length (S) + 1
-       and then Get (Result, Index_Type'Val
-                      ((Index_Type'Pos (Index_Type'First) - 1) +
-                          Length (Result))) = E
-      and then
-        (for all M in Index_Type'First ..
-           (Index_Type'Val
-              ((Index_Type'Pos (Index_Type'First) - 1) + Length (S))) =>
-                  Get (Result, M) = Get (S, M)));
-
-   ------------
-   -- Is_Set --
-   ------------
-
-   function Is_Set
-     (S      : Sequence;
-      N      : Index_Type;
-      E      : Element_Type;
-      Result : Sequence) return Boolean
-   is
-     (N in Index_Type'First ..
-             (Index_Type'Val
-                  ((Index_Type'Pos (Index_Type'First) - 1) + Length (S)))
-      and then Length (Result) = Length (S)
-      and then Get (Result, N) = E
-      and then
-        (for all M in  Index_Type'First ..
-             (Index_Type'Val
-                  ((Index_Type'Pos (Index_Type'First) - 1) + Length (S))) =>
-             (if M /= N then Get (Result, M) = Get (S, M))));
+     (Get (Container.Content, Position));
 
    ----------
    -- Last --
    ----------
 
-   function Last (S : Sequence) return Extended_Index is
-     (Index_Type'Val ((Index_Type'Pos (Index_Type'First) - 1) + Length (S)));
+   function Last (Container : Sequence) return Extended_Index is
+     (Index_Type'Val ((Index_Type'Pos (Index_Type'First) - 1)
+                      + Length (Container)));
 
    ------------
    -- Length --
    ------------
 
-   function Length (S : Sequence) return Count_Type is
-     (Length (S.Content));
+   function Length (Container : Sequence) return Count_Type is
+     (Length (Container.Content));
+
+   -----------------
+   -- Range_Equal --
+   -----------------
+
+   function Range_Equal
+     (Left  : Sequence;
+      Right : Sequence;
+      Fst   : Index_Type;
+      Lst   : Extended_Index) return Boolean
+   is
+   begin
+      for I in Fst .. Lst loop
+         if Get (Left, I) /= Get (Right, I) then
+            return False;
+         end if;
+      end loop;
+      return True;
+   end Range_Equal;
+
+   -------------------
+   -- Range_Shifted --
+   -------------------
+
+   function Range_Shifted
+     (Left   : Sequence;
+      Right  : Sequence;
+      Fst    : Index_Type;
+      Lst    : Extended_Index;
+      Offset : Count_Type'Base) return Boolean
+   is
+   begin
+      for I in Fst .. Lst loop
+         if Get (Left, I)
+           /= Get (Right, Index_Type'Val (Index_Type'Pos (I) + Offset))
+         then
+            return False;
+         end if;
+      end loop;
+      return True;
+   end Range_Shifted;
 
    ------------
    -- Remove --
    ------------
 
-   function Remove (S : Sequence; N : Index_Type) return Sequence is
-     (Content => Remove (S.Content, N));
+   function Remove (Container : Sequence;
+                    Position : Index_Type) return Sequence
+   is
+     (Content => Remove (Container.Content, Position));
 
    ---------
    -- Set --
    ---------
 
    function Set
-     (S : Sequence;
-      N : Index_Type;
-      E : Element_Type) return Sequence
+     (Container : Sequence;
+      Position  : Index_Type;
+      New_Item  : Element_Type) return Sequence
    is
-     (Content => Set (S.Content, N, E));
+     (Content => Set (Container.Content, Position, New_Item));
 
 end Ada.Containers.Functional_Vectors;

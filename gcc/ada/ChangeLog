@@ -1,3 +1,87 @@
+2017-04-27  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.adb, a-cfdlli.ads (Formal_Model): Adapt to
+	modifications in functional containers.
+	* a-cofuba.ads, a-cofuma.ads, a-cofuse.ads, a-cofuve.ads Reformat
+	to improve readablity. Subprograms are separated between basic
+	operations, constructors and properties. Universally quantified
+	formulas in contracts are factorized in independant functions
+	with a name and a comment.  Names of parameters are improved.
+
+2017-04-27  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_spark.adb, sem_elab.adb: Minor reformatting and typo fix.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): Do not
+	install a predicate check here since this is already done during
+	the expansion phase. Verify whether the operand satisfies the
+	static predicate (if any) of the target type.
+	* sem_ch3.adb (Analyze_Object_Declaration): Do
+	not install a predicate check if the object is initialized by
+	means of a type conversion because the conversion is subjected
+	to the same check.
+
+2017-04-27  Tristan Gingold  <gingold@adacore.com>
+
+	* raise.c (__gnat_builtin_longjmp): Remove.
+	(__gnat_bracktrace):
+	Add a dummy definition for the compiler (__gnat_eh_personality,
+	__gnat_rcheck_04, __gnat_rcheck_10) (__gnat_rcheck_19,
+	__gnat_rcheck_20, __gnat_rcheck_21) (__gnat_rcheck_30,
+	__gnat_rcheck_31, __gnat_rcheck_32): Likewise.
+	* a-exexpr.adb: Renamed from a-exexpr-gcc.adb
+	* a-except.ads, a-except.adb: Renamed from a-except-2005.ads
+	and a-except-2005.adb.
+	* raise-gcc.c: Allow build in compiler, compiled as a C++
+	file.
+	(__gnat_Unwind_ForcedUnwind): Adjust prototype.
+	(db): Constify msg_format.
+	(get_call_site_action_for): Don't use void arithmetic.
+	* system.ads (Frontend_Exceptions): Set to False.
+	(ZCX_By_Default): Set to True.
+	(GCC_ZC_Support): Set to True.
+	* gcc-interface/Makefile.in: No more variants for a-exexpr.adb and
+	a-except.ad[sb].
+	* gcc-interface/Make-lang.in: Add support for backend zcx exceptions
+	in gnat1 and gnatbind.
+	* gnat1, gnatbind: link with raise-gcc.o, a-exctra.o, s-addima.o,
+	s-excmac.o, s-imgint.o, s-traceb.o, s-trasym.o, s-wchstw.o
+	* s-excmac.ads, s-excmac.adb: Copy of variants.
+	* a-except.o: Adjust preequisites.
+	Add handling of s-excmac-arm.adb and s-excmac-gcc.adb.
+
+2017-04-27  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.adb, a-cfdlli.ads (Formal_Model): Adapt to
+	modifications in functional containers.
+	* a-cofuba.ads, a-cofuma.ads, a-cofuse.ads, a-cofuve.ads Reformat
+	to improve readablity. Subprograms are separated between basic
+	operations, constructors and properties. Universally quantified
+	formulas in contracts are factorized in independant functions
+	with a name and a comment.  Names of parameters are improved.
+
+2017-04-27  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_spark.adb, sem_elab.adb: Minor reformatting and typo fix.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): Do not
+	install a predicate check here since this is already done during
+	the expansion phase. Verify whether the operand satisfies the
+	static predicate (if any) of the target type.
+	* sem_ch3.adb (Analyze_Object_Declaration): Do
+	not install a predicate check if the object is initialized by
+	means of a type conversion because the conversion is subjected
+	to the same check.
+
+2017-04-27  Tristan Gingold  <gingold@adacore.com>
+
+	* a-except.ads, a-except.adb, a-exexpr.adb: Removed (will be
+	replaced by their variants).
+
 2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_prag.adb, a-cofuse.adb, a-cofuse.ads, einfo.adb, sem_prag.adb,

@@ -2427,30 +2427,18 @@ endif
 
 ifeq ($(EH_MECHANISM),-gcc)
   LIBGNAT_TARGET_PAIRS += \
-    a-exexpr.adb<a-exexpr-gcc.adb \
-    s-excmac.ads<s-excmac-gcc.ads
+    s-excmac.ads<s-excmac-gcc.ads \
+    s-excmac.adb<s-excmac-gcc.adb
   EXTRA_LIBGNAT_OBJS+=raise-gcc.o
   EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o
 endif
 
 ifeq ($(EH_MECHANISM),-arm)
   LIBGNAT_TARGET_PAIRS += \
-    a-exexpr.adb<a-exexpr-gcc.adb \
-    s-excmac.ads<s-excmac-arm.ads
+    s-excmac.ads<s-excmac-arm.ads \
+    s-excmac.adb<s-excmac-arm.adb
   EXTRA_LIBGNAT_OBJS+=raise-gcc.o
   EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o
-endif
-
-# Use the Ada 2005 version of Ada.Exceptions by default, unless specified
-# explicitly already. The base files (a-except.ad?) are used only for building
-# the compiler and other basic tools.
-# These base versions lack Ada 2005 additions which would cause bootstrap
-# problems if included in the compiler and other basic tools.
-
-ifeq ($(filter a-except%,$(LIBGNAT_TARGET_PAIRS)),)
-  LIBGNAT_TARGET_PAIRS += \
-    a-except.ads<a-except-2005.ads \
-    a-except.adb<a-except-2005.adb
 endif
 
 # Configuration of host tools
