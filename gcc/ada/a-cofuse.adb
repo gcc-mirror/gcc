@@ -34,9 +34,6 @@ pragma Ada_2012;
 package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
    use Containers;
 
-   pragma Assertion_Policy
-      (Pre => Suppressible, Ghost => Suppressible, Post => Ignore);
-
    ---------
    -- "=" --
    ---------
@@ -55,27 +52,7 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
    ---------
 
    function Add (S : Set; E : Element_Type) return Set is
-     (Content => Add (S.Content, E));
-
-   ------------
-   -- Length --
-   ------------
-
-   function Length (S : Set) return Count_Type is (Length (S.Content));
-
-   ---------
-   -- Mem --
-   ---------
-
-   function Mem (S : Set; E : Element_Type) return Boolean is
-      (Find (S.Content, E) > 0);
-
-   ------------------
-   -- Num_Overlaps --
-   ------------------
-
-   function Num_Overlaps (S1, S2 : Set) return Count_Type is
-      (Num_Overlaps (S1.Content, S2.Content));
+     (Content => Add (S.Content, Length (S.Content) + 1, E));
 
    ------------------
    -- Intersection --
@@ -118,6 +95,33 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
      ((for all E of Result => Mem (S1, E) or Mem (S2, E))
       and (for all E of S1 => Mem (Result, E))
       and (for all E of S2 => Mem (Result, E)));
+
+   ------------
+   -- Length --
+   ------------
+
+   function Length (S : Set) return Count_Type is (Length (S.Content));
+
+   ---------
+   -- Mem --
+   ---------
+
+   function Mem (S : Set; E : Element_Type) return Boolean is
+      (Find (S.Content, E) > 0);
+
+   ------------------
+   -- Num_Overlaps --
+   ------------------
+
+   function Num_Overlaps (S1, S2 : Set) return Count_Type is
+      (Num_Overlaps (S1.Content, S2.Content));
+
+   ------------
+   -- Remove --
+   ------------
+
+   function Remove (S : Set; E : Element_Type) return Set is
+     (Content => Remove (S.Content, Find (S.Content, E)));
 
    -----------
    -- Union --

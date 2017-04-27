@@ -1,3 +1,15 @@
+2017-04-27  Claire Dross  <dross@adacore.com>
+
+	* a-cofuba.ads (Add): Take as an additional input parameter
+	the position where the element should be inserted.
+	(Remove): New function that removes an element from the container.
+	* a-cofuma.ads (Add): Adapt to the new API of Base.Add.
+	* a-cofuse.ads (Add): Adapt to the new API of Base.Add.
+	(Remove): New function that removes an element from a set.
+	* a-cofuve.ads (Add): Adapt to the new API of Base.Add.
+	(Remove): New function that removes an element from a sequence.
+	(Insert): New function that adds anywhere in a sequence.
+
 2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* checks.adb (Generate_Range_Check): Revert previous change.

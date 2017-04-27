@@ -39,6 +39,8 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 package Ada.Containers.Functional_Maps with SPARK_Mode is
 
+   pragma Assertion_Policy (Post => Ignore);
+
    type Map is private with
      Default_Initial_Condition => Is_Empty (Map) and Length (Map) = 0,
      Iterable                  => (First       => Iter_First,
@@ -46,10 +48,10 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
                                    Has_Element => Iter_Has_Element,
                                    Element     => Iter_Element);
    --  Maps are empty when default initialized.
-   --  For in quantification over maps should not be used.
-   --  For of quantification over maps iterates over keys.
+   --  "For in" quantification over maps should not be used.
+   --  "For of" quantification over maps iterates over keys.
 
-   --  Maps are axiomatized using Mem and Get encoding respectively the
+   --  Maps are axiomatized using Mem and Get, encoding respectively the
    --  presence of a key in a map and an accessor to elements associated to its
    --  keys. The length of a map is also added to protect Add against overflows
    --  but it is not actually modeled.
@@ -64,7 +66,7 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
      Global => null;
 
    function "<=" (M1, M2 : Map) return Boolean with
-   --  Map inclusion.
+   --  Map inclusion
 
      Global => null,
      Post   => "<="'Result =
@@ -72,25 +74,23 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
         and then Get (M2, K) = Get (M1, K));
 
    function "=" (M1, M2 : Map) return Boolean with
-   --  Extensional equality over maps.
+   --  Extensional equality over maps
 
      Global => null,
      Post   => "="'Result =
-       ((for all K of M1 => Mem (M2, K)
-        and then Get (M2, K) = Get (M1, K))
-        and (for all K of M2 => Mem (M1, K)));
+       ((for all K of M1 => Mem (M2, K) and then Get (M2, K) = Get (M1, K))
+          and (for all K of M2 => Mem (M1, K)));
 
    pragma Warnings (Off, "unused variable ""K""");
    function Is_Empty (M : Map) return Boolean with
-   --  A map is empty if it contains no key.
-
+   --  A map is empty if it contains no key
      Global => null,
      Post   => Is_Empty'Result = (for all K of M => False);
    pragma Warnings (On, "unused variable ""K""");
 
    function Is_Add
      (M : Map; K : Key_Type; E : Element_Type; Result : Map) return Boolean
-   --  Returns True if Result is M augmented with the mapping K -> E.
+   --  Returns True if Result is M augmented with the mapping K -> E
 
    with
      Global => null,
@@ -115,7 +115,7 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
 
    function Is_Set
      (M : Map; K : Key_Type; E : Element_Type; Result : Map) return Boolean
-   --  Returns True if Result is M where the element associated to K has been
+   --  Returns True if Result is M, where the element associated to K has been
    --  replaced by E.
 
    with
@@ -130,7 +130,7 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
           and then (for all K of Result => Mem (M, K)));
 
    function Set (M : Map; K : Key_Type; E : Element_Type) return Map with
-   --  Returns M where the element associated to K has been replaced by E.
+   --  Returns M, where the element associated to K has been replaced by E.
    --  Is_Set (M, K, E, Result) should be used instead of
    --  Result = Set (M, K, E) whenever possible both for execution and for
    --  proof.
@@ -157,7 +157,9 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
      Global => null,
      Pre    => Iter_Has_Element (M, K);
    pragma Annotate (GNATprove, Iterable_For_Proof, "Contains", Mem);
+
 private
+
    pragma SPARK_Mode (Off);
 
    function "="  (Left, Right : Key_Type) return Boolean
@@ -190,4 +192,5 @@ private
 
    function Iter_Element (M : Map; K : Private_Key) return Key_Type is
      (Key_Containers.Get (M.Keys, Count_Type (K)));
+
 end Ada.Containers.Functional_Maps;

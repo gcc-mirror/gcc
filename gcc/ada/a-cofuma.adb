@@ -34,9 +34,6 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
    use Key_Containers;
    use Element_Containers;
 
-   pragma Assertion_Policy
-      (Pre => Suppressible, Ghost => Suppressible, Post => Ignore);
-
    ---------
    -- "=" --
    ---------
@@ -69,8 +66,8 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
    function Add (M : Map; K : Key_Type; E : Element_Type) return Map is
    begin
       return
-        (Keys     => Add (M.Keys, K),
-         Elements => Add (M.Elements, E));
+        (Keys     => Add (M.Keys, Length (M.Keys) + 1, K),
+         Elements => Add (M.Elements, Length (M.Elements) + 1, E));
    end Add;
 
    ---------
