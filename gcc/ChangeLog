@@ -1,3 +1,7 @@
+2017-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Object Size Checking): Improve grammar.
+
 2017-04-27  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/80530
