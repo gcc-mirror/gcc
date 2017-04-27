@@ -1,3 +1,8 @@
+2017-04-27  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80349
+	* c-c++-common/ubsan/pr80349.c: New test.
+
 2017-04-27  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* g++.dg/cpp1z/direct-enum-init1.C: Adjust for more verbose enum
