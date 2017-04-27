@@ -37,6 +37,8 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 package Ada.Containers.Functional_Sets with SPARK_Mode is
 
+   pragma Assertion_Policy (Post => Ignore);
+
    type Set is private with
      Default_Initial_Condition => Is_Empty (Set) and Length (Set) = 0,
      Iterable                  => (First       => Iter_First,
@@ -44,11 +46,11 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
                                    Has_Element => Iter_Has_Element,
                                    Element     => Iter_Element);
    --  Sets are empty when default initialized.
-   --  For in quantification over sets should not be used.
-   --  For of quantification over sets iterates over elements.
+   --  "For in" quantification over sets should not be used.
+   --  "For of" quantification over sets iterates over elements.
 
-   --  Sets are axiomatized using Mem which encodes whether an element is
-   --  contained in a set.  The length of a set is also added to protect Add
+   --  Sets are axiomatized using Mem, which encodes whether an element is
+   --  contained in a set. The length of a set is also added to protect Add
    --  against overflows but it is not actually modeled.
 
    function Mem (S : Set; E : Element_Type) return Boolean with
@@ -58,13 +60,13 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
      Global => null;
 
    function "<=" (S1, S2 : Set) return Boolean with
-   --  Set inclusion.
+   --  Set inclusion
 
      Global => null,
      Post   => "<="'Result = (for all E of S1 => Mem (S2, E));
 
    function "=" (S1, S2 : Set) return Boolean with
-   --  Extensional equality over sets.
+   --  Extensional equality over sets
 
      Global => null,
      Post   =>
@@ -73,14 +75,14 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
 
    pragma Warnings (Off, "unused variable ""E""");
    function Is_Empty (S : Set) return Boolean with
-   --  A set is empty if it contains no element.
+   --  A set is empty if it contains no element
 
      Global => null,
      Post   => Is_Empty'Result = (for all E of S => False);
    pragma Warnings (On, "unused variable ""E""");
 
    function Is_Add (S : Set; E : Element_Type; Result : Set) return Boolean
-   --  Returns True if Result is S augmented with E.
+   --  Returns True if Result is S augmented with E
 
    with
      Global => null,
@@ -99,8 +101,18 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
      Post   => Length (Add'Result) = Length (S) + 1
      and Is_Add (S, E, Add'Result);
 
+   function Remove (S : Set; E : Element_Type) return Set with
+   --  Returns S without E.
+   --  Is_Add (Result, E, S) should be used instead of Result = Remove (S, E)
+   --  whenever possible both for execution and for proof.
+
+     Global => null,
+     Pre    => Mem (S, E),
+     Post   => Length (Remove'Result) = Length (S) - 1
+     and Is_Add (Remove'Result, E, S);
+
    function Is_Intersection (S1, S2, Result : Set) return Boolean with
-   --  Returns True if Result is the intersection of S1 and S2.
+   --  Returns True if Result is the intersection of S1 and S2
 
      Global => null,
      Post   => Is_Intersection'Result =
@@ -110,7 +122,7 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
                (if Mem (S2, E) then Mem (Result, E))));
 
    function Num_Overlaps (S1, S2 : Set) return Count_Type with
-   --  Number of elements that are both in S1 and S2.
+   --  Number of elements that are both in S1 and S2
 
      Global => null,
      Post   => Num_Overlaps'Result <= Length (S1)
@@ -129,7 +141,7 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
      and Is_Intersection (S1, S2, Intersection'Result);
 
    function Is_Union (S1, S2, Result : Set) return Boolean with
-   --  Returns True if Result is the union of S1 and S2.
+   --  Returns True if Result is the union of S1 and S2
 
      Global => null,
      Post   => Is_Union'Result =
@@ -167,7 +179,9 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
      Global => null,
      Pre    => Iter_Has_Element (S, K);
    pragma Annotate (GNATprove, Iterable_For_Proof, "Contains", Mem);
+
 private
+
    pragma SPARK_Mode (Off);
 
    subtype Positive_Count_Type is Count_Type range 1 .. Count_Type'Last;
@@ -192,4 +206,5 @@ private
 
    function Iter_Element (S : Set; K : Private_Key) return Element_Type is
      (Containers.Get (S.Content, Count_Type (K)));
+
 end Ada.Containers.Functional_Sets;

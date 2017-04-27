@@ -33,9 +33,6 @@ pragma Ada_2012;
 package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
    use Containers;
 
-   pragma Assertion_Policy
-      (Pre => Suppressible, Ghost => Suppressible, Post => Ignore);
-
    ---------
    -- "=" --
    ---------
@@ -66,7 +63,11 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
    ---------
 
    function Add (S : Sequence; E : Element_Type) return Sequence is
-     (Content => Add (S.Content, E));
+     (Content => Add (S.Content,
+                      Index_Type'Val
+                        (Index_Type'Pos (Index_Type'First) +
+                             Length (S.Content)),
+                      E));
 
    ---------
    -- Get --
@@ -74,6 +75,16 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
 
    function Get (S : Sequence; N : Extended_Index) return Element_Type is
      (Get (S.Content, N));
+
+   ------------
+   -- Insert --
+   ------------
+
+   function Insert
+     (S : Sequence;
+      N : Index_Type;
+      E : Element_Type) return Sequence is
+     (Content => Add (S.Content, N, E));
 
    ------------
    -- Is_Add --
@@ -122,6 +133,13 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
 
    function Length (S : Sequence) return Count_Type is
      (Length (S.Content));
+
+   ------------
+   -- Remove --
+   ------------
+
+   function Remove (S : Sequence; N : Index_Type) return Sequence is
+     (Content => Remove (S.Content, N));
 
    ---------
    -- Set --
