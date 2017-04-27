@@ -4424,6 +4424,14 @@ package body Sem_Prag is
                end if;
             end;
 
+         --  A renaming declaration may inherit a generated pragma, its
+         --  placement comes from expansion, not from source.
+
+         elsif Nkind (Subp_Decl) = N_Subprogram_Renaming_Declaration
+           and then not Comes_From_Source (N)
+         then
+            null;
+
          --  Otherwise the placement is illegal
 
          else
@@ -23949,6 +23957,9 @@ package body Sem_Prag is
      (N         : Node_Id;
       Freeze_Id : Entity_Id := Empty)
    is
+      Subp_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
+      Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Subp_Decl);
+
       Disp_Typ : Entity_Id;
       --  The dispatching type of the subprogram subject to the pre- or
       --  postcondition.
@@ -23995,6 +24006,18 @@ package body Sem_Prag is
                        ("operation in class-wide condition must be primitive "
                         & "of &", Nod, Disp_Typ);
                   end if;
+
+               --  Otherwise we have a call to an overridden primitive, and
+               --  we will create a common class-wide clone for the body of
+               --  original operation and its eventual inherited versions.
+               --  If the original operation dispatches on result it is
+               --  never inherited and there is no need for a clone.
+
+               elsif not Is_Abstract_Subprogram (Spec_Id)
+                 and then No (Class_Wide_Clone (Spec_Id))
+                 and then not Has_Controlling_Result (Spec_Id)
+               then
+                  Build_Class_Wide_Clone_Decl (Spec_Id);
                end if;
             end;
 
@@ -24027,10 +24050,7 @@ package body Sem_Prag is
 
       --  Local variables
 
-      Subp_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
-      Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Subp_Decl);
-      Expr      : constant Node_Id   := Expression (Get_Argument (N, Spec_Id));
-
+      Expr     : constant Node_Id := Expression (Get_Argument (N, Spec_Id));
       Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
       --  Save the Ghost mode to restore on exit
 
@@ -24114,6 +24134,15 @@ package body Sem_Prag is
 
       if Restore_Scope then
          End_Scope;
+      end if;
+
+      --  If analysis of the condition indicates that a class-wide clone
+      --  has been created, build and analyze its declaration.
+
+      if Is_Subprogram (Spec_Id)
+        and then Present (Class_Wide_Clone (Spec_Id))
+      then
+         Analyze (Unit_Declaration_Node (Class_Wide_Clone (Spec_Id)));
       end if;
 
       --  Currently it is not possible to inline pre/postconditions on a

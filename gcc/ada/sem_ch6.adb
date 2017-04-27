@@ -415,7 +415,7 @@ package body Sem_Ch6 is
          Orig_N := Original_Node (N);
          Remove_Aspects (Orig_N);
 
-         --  Propagate any pragmas that apply to the expression function to the
+         --  Propagate any pragmas that apply to expression function to the
          --  proper body when the expression function acts as a completion.
          --  Aspects are automatically transfered because of node rewriting.
 
@@ -3622,6 +3622,25 @@ package body Sem_Ch6 is
                Freeze_Expr_Types (Spec_Id);
             end if;
          end if;
+      end if;
+
+      --  If the subprogram has a class-wide clone, build its body as a copy
+      --  of the original body, and rewrite body of original subprogram as a
+      --  wrapper that calls the clone.
+
+      if Present (Spec_Id)
+        and then Present (Class_Wide_Clone (Spec_Id))
+        and then (Comes_From_Source (N) or else Was_Expression_Function (N))
+      then
+         Build_Class_Wide_Clone_Body (Spec_Id, N);
+
+         --  This is the new body for the existing primitive operation
+
+         Rewrite (N, Build_Class_Wide_Clone_Call
+           (Sloc (N), New_List, Spec_Id, Parent (Spec_Id)));
+         Set_Has_Completion (Spec_Id, False);
+         Analyze (N);
+         return;
       end if;
 
       --  Place subprogram on scope stack, and make formals visible. If there

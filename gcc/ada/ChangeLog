@@ -1,3 +1,37 @@
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb, sem_util.ads (Build_Class_Wide_Clone_Body):
+	Build body of subprogram that has a class-wide condition that
+	contains calls to other primitives.
+	(Build_Class_Wide_Clone_Call); Build a call to the common
+	class-wide clone of a subprogram with classwide conditions. The
+	body of the subprogram becomes a wrapper for a call to the
+	clone. The inherited operation becomes a similar wrapper to which
+	modified conditions apply, and the call to the clone includes
+	the proper conversion in a call the parent operation.
+	(Build_Class_Wide_Clone_Decl (Spec_Id : Entity_Id): For a
+	subprogram that has a classwide condition that contains calls to
+	other primitives, build an internal subprogram that is invoked
+	through a type-specific wrapper for all inherited subprograms
+	that may have a modified condition.
+	* sem_prag.adb (Check_References): If subprogram has a classwide
+	condition, create entity for corresponding clone, to be invoked
+	through wrapper subprograns.
+	(Analyze_Pre_Post_Condition_In_Decl_Part): Do not emit error
+	message about placement if pragma isi internally generated.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): If subprogram has
+	a classwide clone, build body of clone as copy of original body,
+	and rewrite original body as a wrapper as a wrapper for a call to
+	the clone, so that it incorporates the original pre/postconditions
+	of the subprogram.
+	* freeze.adb (Check_Inherited_Conditions): For an inherited
+	subprogram that inherits a classwide condition, build spec and
+	body of corresponding wrapper so that call to inherited operation
+	gets the modified conditions.
+	* contracts.adb (Analyze_Contracts): If analysis of classwide
+	condition has created a clone for a primitive operation, analyze
+	declaration of clone.
+
 2017-04-27  Steve Baird  <baird@adacore.com>
 
 	* exp_util.adb (Build_Allocate_Deallocate_Proc):

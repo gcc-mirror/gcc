@@ -209,6 +209,52 @@ package Sem_Util is
    --  Determine whether a selected component has a type that depends on
    --  discriminants, and build actual subtype for it if so.
 
+   --  Handling of inherited primitives whose ancestor have class-wide
+   --  pre/post conditions.
+
+   --  If a primitive operation of a parent type has a class-wide pre/post
+   --  condition that includes calls to other primitives, and that operation
+   --  is inherited by a descendant type that also overrides some of these
+   --  other primitives, the condition that applies to the inherited
+   --  operation has a modified condition in which the overridden primitives
+   --  have been replaced by the primitives of the descendent type. A call
+   --  to the inherited operation cannot be simply a call to the parent
+   --  operation (with an appropriate conversion) as is the case for other
+   --  inherited operations, but must appear with a wrapper subprogram to which
+   --  the modified conditions apply. Furthermore the call to the parent
+   --  operation must not be subject to the original class-wide condition,
+   --  given that modified conditions apply. To implement these semantics
+   --  economically we create a subprogram body (a "class-wide clone") to
+   --  which no pre/postconditions apply, and we create bodies for the
+   --  original and the inherited operation that have their respective
+   --  pre/post conditions and simply call the clone. The following operations
+   --  take care of constructing declaration and body of the clone, and
+   --  building the calls to it within the appropriate wrappers.
+
+   procedure Build_Class_Wide_Clone_Body
+     (Spec_Id  : Entity_Id;
+      Bod      : Node_Id);
+   --  Build body of subprogram that has a class-wide condition that contains
+   --  calls to other primitives. Spec_Id is the Id of the subprogram, and B
+   --  is its source body, which becomes the body of the clone.
+
+   function Build_Class_Wide_Clone_Call
+    (Loc      : Source_Ptr;
+     Decls    : List_Id;
+     Spec_Id  : Entity_Id;
+     Spec     : Node_Id) return Node_Id;
+   --  Build a call to the common class-wide clone of a subprogram with
+   --  class-wide conditions. The body of the subprogram becomes a wrapper
+   --  for a call to the clone. The inherited operation becomes a similar
+   --  wrapper to which modified conditions apply, and the call to the
+   --  clone includes the proper conversion in a call the parent operation.
+
+   procedure Build_Class_Wide_Clone_Decl (Spec_Id : Entity_Id);
+   --  For a subprogram that has a clas-wide condition that contains calls
+   --  to other primitives, build an internal subprogram that is invoked
+   --  through a type-specific wrapper for all inherited subprograms that
+   --  may have a modified condition.
+
    function Build_Default_Subtype
      (T : Entity_Id;
       N : Node_Id) return Entity_Id;

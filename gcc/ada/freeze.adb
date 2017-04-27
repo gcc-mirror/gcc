@@ -55,7 +55,6 @@ with Sem_Ch6;   use Sem_Ch6;
 with Sem_Ch7;   use Sem_Ch7;
 with Sem_Ch8;   use Sem_Ch8;
 with Sem_Ch13;  use Sem_Ch13;
-with Sem_Disp;  use Sem_Disp;
 with Sem_Eval;  use Sem_Eval;
 with Sem_Mech;  use Sem_Mech;
 with Sem_Prag;  use Sem_Prag;
@@ -1408,7 +1407,6 @@ package body Freeze is
       New_Prag      : Node_Id;
       Op_Node       : Elmt_Id;
       Par_Prim      : Entity_Id;
-      Par_Type      : Entity_Id;
       Prim          : Entity_Id;
 
    begin
@@ -1459,7 +1457,6 @@ package body Freeze is
 
          if not Comes_From_Source (Prim) and then Present (Alias (Prim)) then
             Par_Prim := Alias (Prim);
-            Par_Type := Find_Dispatching_Type (Par_Prim);
 
             --  Analyze the contract items of the parent operation, before
             --  they are rewritten when inherited.
@@ -1505,80 +1502,53 @@ package body Freeze is
             --  one, and whose inherited expression has been updated above.
             --  These expressions are the arguments of pragmas that are part
             --  of the declarations of the wrapper. The wrapper holds a single
-            --  statement that is a call to the parent primitive, where the
+            --  statement that is a call to the class-wide clone, where the
             --  controlling actuals are conversions to the corresponding type
             --  in the parent primitive:
 
-            --    procedure New_Prim (F1 : T1.; ...) is
-            --       pragma Check (Precondition,  Expr);
+            --    procedure New_Prim (F1 : T1; ...);
+            --    procedure New_Prim (F1 : T1; ...) is
+            --       pragma Check (Precondition, Expr);
             --    begin
-            --       Par_Prim (Par_Type (F1) ..);
+            --       Par_Prim_Clone (Par_Type (F1), ...);
             --    end;
 
-            --  If the primitive is a function the statement is a call
+            --  If the primitive is a function the statement is a return
+            --  statement with a call.
 
             declare
-               Loc        : constant Source_Ptr := Sloc (R);
-               Actuals    : List_Id;
-               Call       : Node_Id;
-               Formal     : Entity_Id;
-               New_F_Spec : Node_Id;
-               New_Formal : Entity_Id;
-               New_Proc   : Node_Id;
-               New_Spec   : Node_Id;
+               Loc      : constant Source_Ptr := Sloc (R);
+               Par_R    : constant Node_Id    := Parent (R);
+               New_Body : Node_Id;
+               New_Decl : Node_Id;
+               New_Spec : Node_Id;
 
             begin
-               Actuals    := Empty_List;
-               New_Spec   := Build_Overriding_Spec (Par_Prim, R);
-               Formal     := First_Formal (Par_Prim);
-               New_F_Spec := First (Parameter_Specifications (New_Spec));
+               New_Spec := Build_Overriding_Spec (Par_Prim, R);
+               New_Decl :=
+                 Make_Subprogram_Declaration (Loc,
+                   Specification => New_Spec);
 
-               while Present (Formal) loop
-                  New_Formal := Defining_Identifier (New_F_Spec);
+               --  Insert the declaration and the body of the wrapper after
+               --  type declaration that generates inherited operation. For
+               --  a null procedure, the declaration implies a null body.
 
-                  --  If controlling argument, add conversion
+               if Nkind (New_Spec) = N_Procedure_Specification
+                 and then Null_Present (New_Spec)
+               then
+                  Insert_After_And_Analyze (Par_R, New_Decl);
 
-                  if Etype (Formal) = Par_Type then
-                     Append_To (Actuals,
-                       Make_Type_Conversion (Loc,
-                         New_Occurrence_Of (Par_Type, Loc),
-                         New_Occurrence_Of (New_Formal, Loc)));
-
-                  else
-                     Append_To (Actuals, New_Occurrence_Of (New_Formal, Loc));
-                  end if;
-
-                  Next_Formal (Formal);
-                  Next (New_F_Spec);
-               end loop;
-
-               if Ekind (Par_Prim) = E_Procedure then
-                  Call :=
-                    Make_Procedure_Call_Statement (Loc,
-                      Name                   =>
-                        New_Occurrence_Of (Par_Prim, Loc),
-                      Parameter_Associations => Actuals);
                else
-                  Call :=
-                    Make_Simple_Return_Statement (Loc,
-                     Expression =>
-                       Make_Function_Call (Loc,
-                         Name                   =>
-                           New_Occurrence_Of (Par_Prim, Loc),
-                         Parameter_Associations => Actuals));
+                  --  Build body as wrapper to a call to the already built
+                  --  class-wide clone.
+
+                  New_Body :=
+                    Build_Class_Wide_Clone_Call
+                      (Loc, Decls, Par_Prim, New_Spec);
+
+                  Insert_List_After_And_Analyze
+                    (Par_R, New_List (New_Decl, New_Body));
                end if;
-
-               New_Proc :=
-                 Make_Subprogram_Body (Loc,
-                   Specification              => New_Spec,
-                   Declarations               => Decls,
-                   Handled_Statement_Sequence =>
-                     Make_Handled_Sequence_Of_Statements (Loc,
-                       Statements => New_List (Call),
-                       End_Label  => Make_Identifier (Loc, Chars (Prim))));
-
-               Insert_After (Parent (R), New_Proc);
-               Analyze (New_Proc);
             end;
 
             Needs_Wrapper := False;
