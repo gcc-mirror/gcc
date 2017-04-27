@@ -4905,25 +4905,15 @@ package body Sem_Prag is
             then
                return;
 
-            --  Static expression that raises Constraint_Error. This has
-            --  already been flagged, so just exit from pragma processing.
-
-            elsif Is_OK_Static_Expression (Argx) then
-               raise Pragma_Exit;
-
             --  Here we have a real error (non-static expression)
 
             else
                Error_Msg_Name_1 := Pname;
+               Flag_Non_Static_Expr
+                 (Fix_Error ("argument for pragma% must be a identifier or "
+                  & "static string expression!"), Argx);
 
-               declare
-                  Msg : constant String :=
-                          "argument for pragma% must be a identifier or "
-                          & "static string expression!";
-               begin
-                  Flag_Non_Static_Expr (Fix_Error (Msg), Argx);
-                  raise Pragma_Exit;
-               end;
+               raise Pragma_Exit;
             end if;
          end if;
       end Check_Arg_Is_External_Name;
@@ -4936,8 +4926,7 @@ package body Sem_Prag is
          Argx : constant Node_Id := Get_Pragma_Arg (Arg);
       begin
          if Nkind (Argx) /= N_Identifier then
-            Error_Pragma_Arg
-              ("argument for pragma% must be identifier", Argx);
+            Error_Pragma_Arg ("argument for pragma% must be identifier", Argx);
          end if;
       end Check_Arg_Is_Identifier;
 

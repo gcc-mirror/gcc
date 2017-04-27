@@ -8981,7 +8981,10 @@ package body Sem_Ch6 is
                    and then FCE (Explicit_Actual_Parameter (E1),
                                  Explicit_Actual_Parameter (E2));
 
-            when N_Qualified_Expression =>
+            when N_Qualified_Expression
+               | N_Type_Conversion
+               | N_Unchecked_Type_Conversion
+            =>
                return
                  FCE (Subtype_Mark (E1), Subtype_Mark (E2))
                    and then
@@ -9084,23 +9087,11 @@ package body Sem_Ch6 is
                   end if;
                end;
 
-            when N_Type_Conversion =>
-               return
-                 FCE (Subtype_Mark (E1), Subtype_Mark (E2))
-                   and then
-                 FCE (Expression (E1), Expression (E2));
-
             when N_Unary_Op =>
                return
                  Entity (E1) = Entity (E2)
                    and then
                  FCE (Right_Opnd (E1), Right_Opnd (E2));
-
-            when N_Unchecked_Type_Conversion =>
-               return
-                 FCE (Subtype_Mark (E1), Subtype_Mark (E2))
-                   and then
-                 FCE (Expression (E1), Expression (E2));
 
             --  All other node types cannot appear in this context. Strictly
             --  we should raise a fatal internal error. Instead we just ignore

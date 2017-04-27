@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2002,12 +2002,9 @@ package body GNAT.Command_Line is
                   Found_In_Config := True;
                   return False;
 
-               when Parameter_No_Space =>
-                  Callback (Switch, "", Parameter, Index);
-                  Found_In_Config := True;
-                  return False;
-
-               when Parameter_Optional =>
+               when Parameter_No_Space
+                  | Parameter_Optional
+               =>
                   Callback (Switch, "", Parameter, Index);
                   Found_In_Config := True;
                   return False;

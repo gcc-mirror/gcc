@@ -3360,24 +3360,30 @@ package body Exp_Attr is
          end if;
       end First_Bit_Attr;
 
-      -----------------
-      -- Fixed_Value --
-      -----------------
+      --------------------------------
+      -- Fixed_Value, Integer_Value --
+      --------------------------------
 
-      --  We transform:
+      --  We transform
 
       --     fixtype'Fixed_Value (integer-value)
+      --     inttype'Fixed_Value (fixed-value)
 
       --  into
 
-      --     fixtype(integer-value)
+      --     fixtype (integer-value)
+      --     inttype (fixed-value)
+
+      --  respectively.
 
       --  We do all the required analysis of the conversion here, because we do
       --  not want this to go through the fixed-point conversion circuits. Note
       --  that the back end always treats fixed-point as equivalent to the
       --  corresponding integer type anyway.
 
-      when Attribute_Fixed_Value =>
+      when Attribute_Fixed_Value
+         | Attribute_Integer_Value
+      =>
          Rewrite (N,
            Make_Type_Conversion (Loc,
              Subtype_Mark => New_Occurrence_Of (Entity (Pref), Loc),
@@ -3922,37 +3928,6 @@ package body Exp_Attr is
             Freeze_Stream_Subprogram (Fname);
          end if;
       end Input;
-
-      -------------------
-      -- Integer_Value --
-      -------------------
-
-      --  We transform
-
-      --    inttype'Fixed_Value (fixed-value)
-
-      --  into
-
-      --    inttype(integer-value))
-
-      --  we do all the required analysis of the conversion here, because we do
-      --  not want this to go through the fixed-point conversion circuits. Note
-      --  that the back end always treats fixed-point as equivalent to the
-      --  corresponding integer type anyway.
-
-      when Attribute_Integer_Value =>
-         Rewrite (N,
-           Make_Type_Conversion (Loc,
-             Subtype_Mark => New_Occurrence_Of (Entity (Pref), Loc),
-             Expression   => Relocate_Node (First (Exprs))));
-         Set_Etype (N, Entity (Pref));
-         Set_Analyzed (N);
-
-         --  Note: it might appear that a properly analyzed unchecked
-         --  conversion would be just fine here, but that's not the case, since
-         --  the full range check performed by the following call is critical.
-
-         Apply_Type_Conversion_Checks (N);
 
       -------------------
       -- Invalid_Value --

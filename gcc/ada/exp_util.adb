@@ -12942,10 +12942,13 @@ package body Exp_Util is
               Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref)
                 and then Safe_Prefixed_Reference (N);
 
-         --  A type qualification is side effect free if the expression
-         --  is side effect free.
+         --  A type qualification, type conversion, or unchecked expression is
+         --  side effect free if the expression is side effect free.
 
-         when N_Qualified_Expression =>
+         when N_Qualified_Expression
+            | N_Type_Conversion
+            | N_Unchecked_Expression
+         =>
             return Side_Effect_Free (Expression (N), Name_Req, Variable_Ref);
 
          --  A selected component is side effect free only if it is a side
@@ -12969,12 +12972,6 @@ package body Exp_Util is
                Side_Effect_Free (Discrete_Range (N), Name_Req, Variable_Ref)
                  and then Safe_Prefixed_Reference (N);
 
-         --  A type conversion is side effect free if the expression to be
-         --  converted is side effect free.
-
-         when N_Type_Conversion =>
-            return Side_Effect_Free (Expression (N), Name_Req, Variable_Ref);
-
          --  A unary operator is side effect free if the operand
          --  is side effect free.
 
@@ -12989,12 +12986,6 @@ package body Exp_Util is
               Safe_Unchecked_Type_Conversion (N)
                 and then Side_Effect_Free
                            (Expression (N), Name_Req, Variable_Ref);
-
-         --  An unchecked expression is side effect free if its expression
-         --  is side effect free.
-
-         when N_Unchecked_Expression =>
-            return Side_Effect_Free (Expression (N), Name_Req, Variable_Ref);
 
          --  A literal is side effect free
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3042,15 +3042,7 @@ package body Exp_Aggr is
            and then Root_Type (Etype (N)) = Root_Type (Entity (Prefix (Expr)))
          then
             if Is_Entity_Name (Lhs) then
-               Rewrite (Prefix (Expr),
-                 New_Occurrence_Of (Entity (Lhs), Loc));
-
-            elsif Nkind (Lhs) = N_Selected_Component then
-               Rewrite (Expr,
-                 Make_Attribute_Reference (Loc,
-                   Attribute_Name => Name_Unrestricted_Access,
-                   Prefix         => New_Copy_Tree (Lhs)));
-               Set_Analyzed (Parent (Expr), False);
+               Rewrite (Prefix (Expr), New_Occurrence_Of (Entity (Lhs), Loc));
 
             else
                Rewrite (Expr,

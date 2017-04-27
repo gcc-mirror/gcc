@@ -4958,8 +4958,8 @@ package body Sem_Util is
             Eloc := Sloc (N);
          end if;
 
-         --  Copy message to Msgc, converting any ? in the message into
-         --  < instead, so that we have an error in GNATprove mode.
+         --  Copy message to Msgc, converting any ? in the message into <
+         --  instead, so that we have an error in GNATprove mode.
 
          Msgl := Msg'Length;
 
@@ -4976,12 +4976,13 @@ package body Sem_Util is
          if Msg (Msg'Last) = '?' or else Msg (Msg'Last) = '<' then
             Wmsg := True;
 
-         --  In Ada 83, all messages are warnings. In the private part and
-         --  the body of an instance, constraint_checks are only warnings.
-         --  We also make this a warning if the Warn parameter is set.
+         --  In Ada 83, all messages are warnings. In the private part and the
+         --  body of an instance, constraint_checks are only warnings. We also
+         --  make this a warning if the Warn parameter is set.
 
          elsif Warn
            or else (Ada_Version = Ada_83 and then Comes_From_Source (N))
+           or else In_Instance_Not_Visible
          then
             Msgl := Msgl + 1;
             Msgc (Msgl) := '<';
@@ -4989,18 +4990,11 @@ package body Sem_Util is
             Msgc (Msgl) := '<';
             Wmsg := True;
 
-         elsif In_Instance_Not_Visible then
-            Msgl := Msgl + 1;
-            Msgc (Msgl) := '<';
-            Msgl := Msgl + 1;
-            Msgc (Msgl) := '<';
-            Wmsg := True;
-
-         --  Otherwise we have a real error message (Ada 95 static case)
-         --  and we make this an unconditional message. Note that in the
-         --  warning case we do not make the message unconditional, it seems
-         --  quite reasonable to delete messages like this (about exceptions
-         --  that will be raised) in dead code.
+         --  Otherwise we have a real error message (Ada 95 static case) and we
+         --  make this an unconditional message. Note that in the warning case
+         --  we do not make the message unconditional, it seems reasonable to
+         --  delete messages like this (about exceptions that will be raised)
+         --  in dead code.
 
          else
             Wmsg := False;
@@ -19118,14 +19112,7 @@ package body Sem_Util is
             end if;
          end if;
 
-      elsif Nkind (Obj) = N_Selected_Component then
-         if Is_Access_Type (Etype (Prefix (Obj))) then
-            return Type_Access_Level (Etype (Prefix (Obj)));
-         else
-            return Object_Access_Level (Prefix (Obj));
-         end if;
-
-      elsif Nkind (Obj) = N_Indexed_Component then
+      elsif Nkind_In (Obj, N_Indexed_Component, N_Selected_Component) then
          if Is_Access_Type (Etype (Prefix (Obj))) then
             return Type_Access_Level (Etype (Prefix (Obj)));
          else
