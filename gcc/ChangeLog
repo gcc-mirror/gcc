@@ -1,5 +1,9 @@
 2017-04-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/79430
+	* reg-stack.c (emit_swap_insn): If i1src mentions the stack pointer,
+	punt if tmp contains autoinc of stack pointer.
+
 	PR target/77728
 	* config/aarch64/aarch64.c (struct aarch64_fn_arg_alignment): Remove.
 	(aarch64_function_arg_alignment): Return unsigned int again, but still
