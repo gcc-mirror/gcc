@@ -1,3 +1,33 @@
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Build_Inherited_Condition_Pragmas): New procedure,
+	subsidiary of Check_Inherited_Conditions, to build pragmas for an
+	operation whose ancestor has classwide pre/postconditions. This
+	is used both to check the legality of the inheritance in Ada
+	and in SPARK, and to determine whether a wrapper is needed for
+	an inherited operation.
+	* exp_util.adb (Build_Class_Wide_Expression, Replace_Entity):
+	Improve placement of error message for inherited classwide
+	conditions that become illegal on type derivation.
+
+2017-04-27  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch12.adb (Analyze_Generic_Package_Declaration): Set
+	SPARK_Mode from context on generic package.
+	* sem_ch7.adb (Analyze_Package_Declaration): Simplify code to remove
+	useless test.
+
+2017-04-27  Claire Dross  <dross@adacore.com>
+
+	* a-cofuve.ads (Range_Shifted): Rewrite precondition to avoid
+	overflows in computations.
+	* a-cofove.ads (Capacity_Range): Rewrite last bound to avoid
+	overflows in computations.
+	(Insert): Rewrite precondition to avoid overflows in computations.
+	* a-cfinve.ads (Capacity_Range): Rewrite last bound to avoid
+	overflows in computations.
+	(Insert): Rewrite precondition to avoid overflows in computations.
+
 2017-04-27  Steve Baird  <baird@adacore.com>
 
 	* exp_ch9.adb (Expand_N_Asynchronous_Select): Initialize the Cancel

@@ -3382,6 +3382,13 @@ package body Sem_Ch12 is
       Set_Ekind  (Id, E_Generic_Package);
       Set_Etype  (Id, Standard_Void_Type);
 
+      --  Set SPARK_Mode from context
+
+      Set_SPARK_Pragma               (Id, SPARK_Mode_Pragma);
+      Set_SPARK_Aux_Pragma           (Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited     (Id);
+      Set_SPARK_Aux_Pragma_Inherited (Id);
+
       --  Analyze aspects now, so that generated pragmas appear in the
       --  declarations before building and analyzing the generic copy.
 
