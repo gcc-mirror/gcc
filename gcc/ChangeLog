@@ -1,3 +1,9 @@
+2017-04-27  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/79665
+	* expr.c (expand_expr_real_2): Move TRUNC_MOD_EXPR, FLOOR_MOD_EXPR,
+	CEIL_MOD_EXPR, ROUND_MOD_EXPR cases.
+
 2017-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/77728
