@@ -1,3 +1,9 @@
+2017-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/80531
+	* configure.tgt (*-*-aix*): Add -frandom-seed=$@ to XCFLAGS to avoid
+	bootstrap compare failures.
+
 2017-04-20  Alexander Monakov  <amonakov@ispras.ru>
 
 	* testsuite/libgomp.c/target-36.c: New testcase.
