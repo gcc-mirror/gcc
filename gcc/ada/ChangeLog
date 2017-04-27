@@ -1,3 +1,47 @@
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Generate_Range_Check): Revert previous change.
+
+2017-04-27  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb: Minor reformatting/rewording.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): The use
+	of attribute 'Result is not considered a violation of pragma
+	Unreferenced.
+
+2017-04-27  Justin Squirek  <squirek@adacore.com>
+
+	* cstand.adb (Create_Standard): Correctly set
+	Directly_Designated_Type for Any_Access.
+	* sem_type.adb (Covers): Minor grammar fixes.
+
+2017-04-27  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb: Minor cleanup.
+
+2017-04-27  Claire Dross  <dross@adacore.com>
+
+	* a-cofuba.ads, a-cofuba.adb (Ada.Containers.Functional_Base): New
+	private child of Ada.Containers used to implement all functional
+	containers.
+	* a-cofuma.ads, a-cofuma.adb (Ada.Containers.Functional_Maps): New
+	child of Ada.Containers. It provides functional indefinite unbounded
+	maps which can be used as high level models for specification
+	of data structures.
+	* a-cofuse.ads, a-cofuse.adb (Ada.Containers.Functional_Sets): New
+	child of Ada.Containers. It provides functional indefinite unbounded
+	sets which can be used as high level models for specification
+	of data structures.
+	* a-cofuve.ads, a-cofuve.adb (Ada.Containers.Functional_Vectors): New
+	child of Ada.Containers.  It provides functional indefinite unbounded
+	vectors which can be used as high level models for specification
+	of data structures.
+	* Makefile.rtl: Add new packages.
+	* impunit.adb: Add new packages.
+
 2017-04-27  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch4.adb: Minor reformatting.
