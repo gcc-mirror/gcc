@@ -1,5 +1,14 @@
 2017-04-27  Nathan Sidwell  <nathan@acm.org>
 
+	Refix unhidden extern C
+	Revert 2017-04-26 extern_c_slot patch.
+	gcc/cp/
+	* name-lookup (do_pushdecl): Call check_extern_c_conflict when
+	unhiding.
+	gcc/testsuite/
+	* g++.dg/lookup/extern-c-redecl.C: Adjust.
+	* g++.dg/lookup/extern-c-hidden.C: New test.
+
 	Merge trunk r247281.
 	gcc/
 	* tree.c (type_hash_default): Hash TYPE_TYPELESS_STORAGE.
@@ -8,6 +17,12 @@
 	pushdecl langhook.
 
 2017-04-26  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* name-lookup.c (extern_c_slot): New.
+	(check_extern_c_conflict): Use it.
+	(unhidden_extern_c): New.
+	(do_pushdecl): Call it.
 
 	gcc/cp/
 	* name-lookup.c (extern_c_slot): New.
