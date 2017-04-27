@@ -1,3 +1,29 @@
+2017-04-27  Bob Duff  <duff@adacore.com>
+
+	* sinput.adb: Minor code cleanup.
+	* namet.adb (Append): Create faster versions of
+	Append(String) and Append(Name_Id) by using slice assignment
+	instead of loops.
+	* sem_util.adb (In_Instance): Speed this up by removing
+	unnecessary tests; Is_Generic_Instance is defined for all
+	entities.
+	* sem_util.ads, sem_util.adb (In_Parameter_Specification):
+	Remove unused function.
+	* alloc.ads (Nodes_Initial): Use a much larger value, because
+	the compiler was spending a lot of time copying the nodes table
+	when it grows. This number was chosen in 1996, so is rather out
+	of date with current memory sizes. Anyway, it's virtual memory.
+	Get rid of Orig_Nodes_...; use Node_... instead.
+	* atree.adb (Lock): Do not release the Nodes tables; it's a
+	waste of time.
+	Orig_Nodes_ ==> Nodes_
+	* nlists.adb: Orig_Nodes_ ==> Nodes_
+	* g-table.adb: Remove unused "with" clause.
+	* g-table.ads, table.ads: Remove Big_Table_Type, which should
+	not be used by clients.
+	* g-dyntab.adb (Last_Allocated): New function
+	to encapsulate T.P.Last_Allocated, which I'm thinking of changing.
+
 2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_eval.adb (Subtypes_Statically_Compatible): Remove duplicated

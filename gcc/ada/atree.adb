@@ -519,9 +519,9 @@ package body Atree is
       Table_Component_Type => Node_Id,
       Table_Index_Type     => Node_Id'Base,
       Table_Low_Bound      => First_Node_Id,
-      Table_Initial        => Alloc.Orig_Nodes_Initial,
-      Table_Increment      => Alloc.Orig_Nodes_Increment,
-      Release_Threshold    => Alloc.Orig_Nodes_Release_Threshold,
+      Table_Initial        => Alloc.Nodes_Initial,
+      Table_Increment      => Alloc.Nodes_Increment,
+      Release_Threshold    => Alloc.Nodes_Release_Threshold,
       Table_Name           => "Orig_Nodes");
 
    --------------------------
@@ -1579,11 +1579,15 @@ package body Atree is
 
    procedure Lock is
    begin
-      Nodes.Release;
+      --  We used to Release the tables, as in the comments below, but that is
+      --  a waste of time. We're only wasting virtual memory here, and the
+      --  release calls copy large amounts of data.
+
+      --  Nodes.Release;
       Nodes.Locked := True;
-      Flags.Release;
+      --  Flags.Release;
       Flags.Locked := True;
-      Orig_Nodes.Release;
+      --  Orig_Nodes.Release;
       Orig_Nodes.Locked := True;
    end Lock;
 

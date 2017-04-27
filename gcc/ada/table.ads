@@ -71,7 +71,6 @@ package Table is
       subtype Valid_Table_Index_Type is Tab.Valid_Table_Index_Type;
       subtype Table_Last_Type is Tab.Table_Last_Type;
       subtype Table_Type is Tab.Table_Type;
-      subtype Big_Table_Type is Tab.Big_Table_Type;
 
       subtype Table_Ptr is Tab.Table_Ptr;
 

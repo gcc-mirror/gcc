@@ -11250,9 +11250,7 @@ package body Sem_Util is
    begin
       S := Current_Scope;
       while Present (S) and then S /= Standard_Standard loop
-         if Ekind_In (S, E_Function, E_Package, E_Procedure)
-           and then Is_Generic_Instance (S)
-         then
+         if Is_Generic_Instance (S) then
             --  A child instance is always compiled in the context of a parent
             --  instance. Nevertheless, the actuals are not analyzed in an
             --  instance context. We detect this case by examining the current
@@ -11375,26 +11373,6 @@ package body Sem_Util is
 
       return False;
    end In_Package_Body;
-
-   --------------------------------
-   -- In_Parameter_Specification --
-   --------------------------------
-
-   function In_Parameter_Specification (N : Node_Id) return Boolean is
-      PN : Node_Id;
-
-   begin
-      PN := Parent (N);
-      while Present (PN) loop
-         if Nkind (PN) = N_Parameter_Specification then
-            return True;
-         end if;
-
-         PN := Parent (PN);
-      end loop;
-
-      return False;
-   end In_Parameter_Specification;
 
    --------------------------
    -- In_Pragma_Expression --

@@ -32,8 +32,6 @@
 with System;        use System;
 with System.Memory; use System.Memory;
 
-with Ada.Unchecked_Conversion;
-
 package body GNAT.Table is
 
    --------------
