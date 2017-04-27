@@ -4869,11 +4869,10 @@ package body Exp_Ch4 is
       else
          if Generate_C_Code then
 
-            --  We cannot ensure that correct C code will be generated if
-            --  any temporary is created down the line (to e.g. handle
-            --  checks or capture values) since we might end up with
-            --  dangling references to local variables, so better be safe
-            --  and reject the construct.
+            --  We cannot ensure that correct C code will be generated if any
+            --  temporary is created down the line (to e.g. handle checks or
+            --  capture values) since we might end up with dangling references
+            --  to local variables, so better be safe and reject the construct.
 
             Error_Msg_N
               ("case expression too complex, use case statement instead", N);
