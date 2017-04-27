@@ -991,7 +991,8 @@ package body Exp_Util is
                    Make_Procedure_Call_Statement (Loc,
                      Name                   =>
                        New_Occurrence_Of (Proc_To_Call, Loc),
-                     Parameter_Associations => Actuals)))));
+                     Parameter_Associations => Actuals)))),
+           Suppress => All_Checks);
 
          --  The newly generated Allocate / Deallocate becomes the default
          --  procedure to call when the back end processes the allocation /

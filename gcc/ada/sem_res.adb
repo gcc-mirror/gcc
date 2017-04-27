@@ -6621,10 +6621,11 @@ package body Sem_Res is
             Body_Id := Corresponding_Body (Nam_Decl);
 
             --  Nothing to do if the subprogram is not eligible for inlining in
-            --  GNATprove mode.
+            --  GNATprove mode, or inlining is disabled with switch -gnatdm
 
             if not Is_Inlined_Always (Nam_UA)
               or else not Can_Be_Inlined_In_GNATprove_Mode (Nam_UA, Body_Id)
+              or else Debug_Flag_M
             then
                null;
 
