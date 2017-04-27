@@ -66,14 +66,17 @@
 #include "tree.h"
 #include "tree-pass.h"
 #include "conditions.h"
-#include "cselib.h"
 #include "langhooks.h"
 #include <vector>
 #include <set>
 #include <map>
 
-static bool be_verbose;
+bool be_very_verbose;
+bool be_verbose;
 
+#ifdef __ECLIPSE__
+extern char * string_bbb_opts;
+#endif
 extern struct lang_hooks lang_hooks;
 
 /* Lookup of the current function name. */
@@ -116,86 +119,102 @@ log (char const * fmt, ...)
  *
  * Track use & def separate to determine starting points.
  */
-struct insn_info
+class insn_info
 {
-  unsigned _use;  // bit set if registers are used
-  unsigned _def;  // bit set if registers are defined
-  unsigned _hard; // bit set if registers can't be renamed
+  rtx_insn * insn; // the insn
+  unsigned myuse;  // bit set if registers are used in this statement
+  unsigned mydef;  // bit set if registers are set in this statement
+  unsigned hard; // bit set if registers can't be renamed
+  unsigned use;  // bit set if registers are used in program flow
+  unsigned def;  // bit set if registers are defined in program flow
 
-  insn_info () :
-      _use (0), _def (0), _hard (0)
+public:
+  insn_info (rtx_insn * i = 0) :
+      insn (i), myuse (0), mydef (0), hard (0), use (0), def (0)
   {
   }
 
   inline void
   reset ()
   {
-    _use = 0;
-    _def = 0;
-    _hard = 0;
+    use = 0;
+    def = 0;
+    hard = 0;
+  }
+
+  inline bool
+  is_empty ()
+  {
+    return !def && !use && !hard;
   }
 
   inline void
-  use (int regno)
+  mark_use (int regno)
   {
-    _use |= 1 << regno;
+    myuse |= 1 << regno;
+    use |= 1 << regno;
   }
 
   inline void
-  def (int regno)
+  mark_def (int regno)
   {
-    _def |= 1 << regno;
+    mydef |= 1 << regno;
+    def |= 1 << regno;
   }
 
   inline void
-  hard (int regno)
+  mark_hard (int regno)
   {
-    _hard |= 1 << regno;
+    hard |= 1 << regno;
   }
 
   inline void
   unset (int regno)
   {
-    _use &= ~(1 << regno);
-    _def &= ~(1 << regno);
-    _hard &= ~(1 << regno);
+    use &= ~(1 << regno);
+    def &= ~(1 << regno);
+    hard &= ~(1 << regno);
+  }
+
+  inline unsigned
+  get_use () const
+  {
+    return use;
+  }
+  inline unsigned
+  get_def () const
+  {
+    return def;
+  }
+  inline unsigned
+  get_hard () const
+  {
+    return hard;
   }
 
   inline bool
   is_use (int regno)
   {
-    return (_use & (1 << regno)) != 0;
+    return (use & (1 << regno)) != 0;
   }
 
   inline bool
   is_def (int regno)
   {
-    return (_def & (1 << regno)) != 0;
+    return (def & (1 << regno)) != 0;
   }
 
   inline bool
   is_hard (int regno)
   {
-    return (_hard & (1 << regno)) != 0;
+    return (hard & (1 << regno)) != 0;
   }
 
-  inline insn_info
-  operator | (insn_info const & o) const
+  inline void
+  clear_hard_def ()
   {
-    insn_info t;
-    t._use = _use | o._use;
-    t._def = _def | o._def;
-    t._hard = _hard | o._hard;
-    return t;
-  }
-
-  inline insn_info &
-  operator |= (insn_info const & o)
-  {
-    _use |= o._use;
-    _def |= o._def;
-    _hard |= o._hard;
-    return *this;
+    hard = 0;
+    def = 0;
   }
 
   /*
@@ -208,106 +227,155 @@ struct insn_info
   inline void
   updateWith (insn_info const & o)
   {
-    _use &= ~o._def;
-    _use |= o._use;
-    _def = 0;
+    use &= ~o.def;
+    use |= o.use;
+    def = 0;
   }
+
+  inline insn_info &
+  merge (insn_info const & o)
+  {
+    use = (use & ~o.def) | o.use;
+    def |= o.def;
+    hard |= o.hard;
+    return *this;
+  }
+
+  inline insn_info &
+  drop_def ()
+  {
+    use &= ~def;
+    return *this;
+  }
+
+#if 0
+  inline insn_info
+  operator | (insn_info const & o) const
+    {
+      insn_info t;
+      t.use = use | o.use;
+      t.def = def | o.def;
+      t.hard = hard | o.hard;
+      return t;
+    }
 
   inline bool
   operator == (insn_info const & o)
-  {
-    return _use == o._use;
-  }
+    {
+      return use == o.use;
+    }
 
   inline insn_info
   operator ~ () const
+    {
+      insn_info t;
+      t.use = ~use;
+      t.def = ~def;
+      t.hard = ~hard;
+      return t;
+    }
+#endif
+
+  inline insn_info &
+  make_hard ()
   {
-    insn_info t;
-    t._use = ~_use;
-    t._def = ~_def;
-    t._hard = ~_hard;
-    return t;
+    hard = use | def;
+    return *this;
+  }
+
+  inline insn_info &
+  make_clobber ()
+  {
+    hard = use = def = use | def;
+    return *this;
   }
 
   inline bool
   contains (insn_info const & o) const
   {
-    if (o._def & ~_def)
+    if (o.def & ~def)
       return false;
-    if (o._use & ~_use)
+    if (o.use & ~use)
       return false;
-    if (o._hard & ~_hard)
+    if (o.hard & ~hard)
       return false;
     return true;
   }
 
   void
-  scan_call (rtx_insn *);
+  scan ();
 
   void
-  scan (rtx);
+  scan_rtx (rtx);
 
   /* return bits for alternate free registers. */
   unsigned
   get_free_mask () const
   {
-    if (_def & _hard)
+    if (def & hard)
       return 0;
 
-    if (!_def || _def > 0x1000)
+    if (!def || def > 0x1000)
       return 0;
 
-    unsigned mask = _def - 1;
+    unsigned mask = def - 1;
     /* more than one register -> don't touch. */
-    if ((mask & ~_def) != mask)
+    if ((mask & ~def) != mask)
       return 0;
 
-    if (_def > 0xff)
+    if (def > 0xff)
       mask &= 0xff00;
 
-    return mask & ~_use;
+    return mask & ~use;
+  }
+
+  unsigned
+  get_regbit () const
+  {
+    return def & ~hard & ~use & 0x7fff;
   }
 };
 
 void
-insn_info::scan_call (rtx_insn * insn)
+insn_info::scan ()
 {
-  /* add mregparm registers. */
-  for (rtx link = CALL_INSN_FUNCTION_USAGE(insn); link; link = XEXP(link, 1))
+  rtx pattern = PATTERN (insn);
+  if (CALL_P(insn))
     {
-      rtx op, reg;
+      /* add mregparm registers. */
+      for (rtx link = CALL_INSN_FUNCTION_USAGE(insn); link; link = XEXP(link, 1))
+	{
+	  rtx op, reg;
 
-      if (GET_CODE (op = XEXP (link, 0)) == USE && REG_P(reg = XEXP (op, 0)))
-	for (unsigned r = REGNO(reg); r <= END_REGNO (reg); ++r)
-	  use (r);
+	  if (GET_CODE (op = XEXP (link, 0)) == USE && REG_P(reg = XEXP (op, 0)))
+	    for (unsigned r = REGNO(reg); r <= END_REGNO (reg); ++r)
+	      mark_use (r);
+	}
+      /* mark scratch registers. */
+      mark_def (0);
+      mark_def (1);
+      mark_def (8);
+      mark_def (9);
+      /* also mark all registers as not renamable */
+      hard = use;
     }
-  /* also mark all registers as not renamable */
-  _hard = _use;
-
-  scan (PATTERN (insn));
-
-  /* mark scratch registers. */
-  def (0);
-  def (1);
-  def (8);
-  def (9);
-
+  scan_rtx (pattern);
 }
 
 /* scan rtx for registers and set the corresponding flags. */
 void
-insn_info::scan (rtx x)
+insn_info::scan_rtx (rtx x)
 {
   if (REG_P(x))
     {
       for (int n = REG_NREGS(x), r = REGNO(x); n > 0; --n, ++r)
-	use (r);
+	mark_use (r);
       return;
     }
 
   if (x == cc0_rtx)
     {
-      use (FIRST_PSEUDO_REGISTER);
+      mark_use (FIRST_PSEUDO_REGISTER);
       return;
     }
 
@@ -316,17 +384,17 @@ insn_info::scan (rtx x)
   /* handle SET and record use and def. */
   if (code == SET)
     {
-      unsigned u = _use;
-      scan (SET_DEST(x));
+      unsigned u = use;
+      scan_rtx (SET_DEST(x));
       if (REG_P(SET_DEST(x)))
 	{
-	  _def |= _use;
-	  _use = u;
+	  def |= use;
+	  use = u;
 	}
-      scan (SET_SRC(x));
+      scan_rtx (SET_SRC(x));
       int code = GET_CODE(SET_SRC(x));
       if (code == ASM_OPERANDS)
-	_use = _hard |= _def | _use;
+	use = hard |= def | use;
       return;
     }
 
@@ -334,10 +402,10 @@ insn_info::scan (rtx x)
   for (int i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	scan (XEXP(x, i));
+	scan_rtx (XEXP(x, i));
       else if (fmt[i] == 'E')
 	for (int j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  scan (XVECEXP(x, i, j));
+	  scan_rtx (XVECEXP(x, i, j));
     }
 }
 
@@ -429,13 +497,52 @@ is_reg_dead (unsigned regno, unsigned _pos)
     {
       insn_info & ii0 = infos[pos];
       // skip entries without info
-      if (!ii0._def && !ii0._use && !ii0._hard)
+      if (ii0.is_empty ())
 	continue;
 
       // not dead if usage is reported in the next statement
       return !ii0.is_use (regno) && !ii0.is_hard (regno);
     }
   return true;
+}
+
+/* helper stuff to enhance the asm output. */
+int my_flag_regusage;
+void
+append_reg_usage (FILE * f, rtx_insn * insn)
+{
+
+  auto i = insn2index.find (insn);
+  if (i == insn2index.end ())
+    return;
+
+  insn_info & ii = infos[i->second];
+
+  fprintf (f, "\n\t\t\t\t\t\t| ");
+
+  for (int j = 0; j < 8; ++j)
+    if (ii.is_use (j) || ii.is_def (j))
+      {
+	fprintf (f, ii.is_hard (j) ? "!" : " ");
+	fprintf (f, ii.is_def (j) ? ii.is_use (j)  ? "*" : "+" : " ");
+	fprintf (f, "d%d ", j);
+      }
+    else
+      fprintf (f, "     ");
+
+  for (int j = 8; j < 16; ++j)
+    if (ii.is_use (j) || ii.is_def (j))
+      {
+	fprintf (f, ii.is_hard (j) ? "!" : " ");
+	fprintf (f, ii.is_def (j) ? ii.is_use (j)  ? "*" : "+" : " ");
+	fprintf (f, "a%d ", j - 8);
+      }
+    else
+      fprintf (f, "     ");
+
+  if (ii.is_use (FIRST_PSEUDO_REGISTER))
+    fprintf (f, ii.is_def (FIRST_PSEUDO_REGISTER) ? "*cc " : "cc ");
+
 }
 
 /*
@@ -456,33 +563,7 @@ dump_insns (char const * name, bool all)
       fprintf (stderr, "%d: ", i);
 
       if (i < infos.size ())
-	{
-	  insn_info & ii = infos[i];
-
-	  for (int j = 0; j < 8; ++j)
-	    if (ii.is_use (j) || ii.is_def (j))
-	      {
-		if (ii.is_hard (j))
-		  fprintf (stderr, "!");
-		if (ii.is_def (j))
-		  fprintf (stderr, "*");
-		fprintf (stderr, "d%d ", j);
-	      }
-
-	  for (int j = 8; j < 16; ++j)
-	    if (ii.is_use (j) || ii.is_def (j))
-	      {
-		if (ii.is_hard (j))
-		  fprintf (stderr, "!");
-		if (ii.is_def (j))
-		  fprintf (stderr, "*");
-		fprintf (stderr, "a%d ", j - 8);
-	      }
-
-	  if (ii.is_use (FIRST_PSEUDO_REGISTER))
-	    fprintf (stderr, ii.is_def (FIRST_PSEUDO_REGISTER) ? "*cc " : "cc ");
-
-	}
+	append_reg_usage (stderr, insns[i]);
 
       fprintf (stderr, "\t");
       debug_rtx (insns[i]);
@@ -569,8 +650,8 @@ update_insn_infos (void)
 	  if (pass && infos[pos].contains (ii))
 	    break;
 
-	  ii._hard = 0;
-	  ii |= infos[pos];
+	  ii.clear_hard_def ();
+	  ii.merge (infos[pos]);
 
 	  if (LABEL_P(insn))
 	    {
@@ -591,10 +672,11 @@ update_insn_infos (void)
 
 	  if (CALL_P(insn))
 	    {
-	      insn_info use;
-	      use.scan_call (insn);
+	      insn_info use (insn);
+	      use.scan ();
 
-	      infos[pos] = use | ii;
+	      ii.merge (use);
+	      infos[pos] = ii;
 	      ii.updateWith (use);
 
 	      continue;
@@ -602,7 +684,7 @@ update_insn_infos (void)
 
 	  if (JUMP_P(insn))
 	    {
-	      insn_info use;
+	      insn_info use (insn);
 	      if (ANY_RETURN_P(pattern))
 		{
 		  tree type = TYPE_SIZE(TREE_TYPE (DECL_RESULT (current_function_decl)));
@@ -610,19 +692,20 @@ update_insn_infos (void)
 		  // log ("return size %d\n", sz);
 		  if (sz <= 64)
 		    {
-		      use.hard (0);
-		      use.use (0);
+		      use.mark_hard (0);
+		      use.mark_use (0);
 		      if (sz > 32)
 			{
-			  use.hard (1);
-			  use.use (1);
+			  use.mark_hard (1);
+			  use.mark_use (1);
 			}
 		    }
 		  ii.reset ();
 		}
 
-	      use.scan (pattern);
-	      infos[pos] = use | ii;
+	      use.scan ();
+	      ii.merge (use);
+	      infos[pos] = ii;
 	      ii.updateWith (use);
 
 	      continue;
@@ -630,31 +713,41 @@ update_insn_infos (void)
 
 	  if (GET_CODE (pattern) == USE)
 	    {
-	      rtx x = XEXP(pattern, 0);
-	      if (REG_P(x))
-		{
-		  ii.use (REGNO(x));
-		  ii.hard (REGNO(x));
-		}
+	      insn_info use (insn);
+	      use.scan ();
+	      use.make_clobber ();
+
+	      ii.merge (use);
 	      infos[pos] = ii;
+	      ii.updateWith (use);
+
+//	      rtx x = XEXP(pattern, 0);
+//	      if (REG_P(x))
+//		{
+//		  ii.mark_use (REGNO(x));
+//		  ii.mark_hard (REGNO(x));
+//		}
+//	      infos[pos] = ii;
 	      continue;
 	    }
 
 	  if (GET_CODE (pattern) == CLOBBER)
 	    {
 	      /* mark regs as use and def */
-	      insn_info use;
-	      use.scan (pattern);
-	      use._hard = use._use = use._def = use._use | use._def;
-	      infos[pos] = use | ii;
+	      insn_info use (insn);
+	      use.scan ();
+	      use.make_clobber ();
+	      ii.merge (use);
+	      infos[pos] = ii;
 	      ii.updateWith (use);
 	      continue;
 	    }
 
-	  insn_info use;
-	  use.scan (pattern);
+	  insn_info use (insn);
+	  use.scan ();
+
 	  if (single_set (insn) == 0)
-	    use._hard = use._use | use._def;
+	    use.make_hard ();
 	  else
 	  /* if not cc0 defined check for mod. */
 	  if (!use.is_def (FIRST_PSEUDO_REGISTER))
@@ -662,15 +755,15 @@ update_insn_infos (void)
 	      CC_STATUS_INIT;
 	      NOTICE_UPDATE_CC(PATTERN (insn), insn);
 	      if (cc_status.value1 || cc_status.value2)
-		use.def (FIRST_PSEUDO_REGISTER);
+		use.mark_def (FIRST_PSEUDO_REGISTER);
 	    }
 
 	  /* mark not renameable in prologue/epilogue. */
 	  if (proepilogue[pos])
-	    use._hard = use._use | use._def;
+	    use.make_hard ();
 
-	  ii._use &= ~use._def;
-	  infos[pos] = use | ii;
+	  ii.merge (use);
+	  infos[pos] = ii;
 	  ii.updateWith (use);
 	}
       ++pass;
@@ -699,12 +792,12 @@ is_reg_touched_between (unsigned regno, int from, int to)
 {
   for (int index = from + 1; index < to; ++index)
     {
-      insn_info ii;
       rtx_insn * insn = insns[index];
+      insn_info ii (insn);
       if (CALL_P(insn))
-	ii.scan_call (insn);
+	ii.scan ();
       else
-	ii.scan (PATTERN (insn));
+	ii.scan_rtx (PATTERN (insn));
       if (ii.is_use (regno) || ii.is_def (regno))
 	return true;
     }
@@ -754,7 +847,7 @@ opt_reg_rename (void)
       insn_info & ii = infos[index];
 
       /* do not rename if register is hard or used in same statement. */
-      const unsigned rename_regbit = ii._def & ~ii._hard & ~ii._use;
+      const unsigned rename_regbit = ii.get_regbit ();
       if (!rename_regbit)
 	continue;
 
@@ -819,7 +912,7 @@ opt_reg_rename (void)
 	      insn_info & jj = infos[pos];
 
 	      /* marked as hard reg -> invalid rename */
-	      if (jj._use & jj._hard & rename_regbit)
+	      if (jj.get_use () & jj.get_hard () & rename_regbit)
 		mask = 0;
 
 //	  /* defined again -> invalid rename */
@@ -830,16 +923,16 @@ opt_reg_rename (void)
 		break;
 
 	      /* not used. and not a def */
-	      if (pos == runpos && (jj._def & rename_regbit))
+	      if (pos == runpos && (jj.get_def () & rename_regbit))
 		{
 		  /* continue since this pos was added by start search. */
 		}
-	      else if (!(jj._use & rename_regbit))
+	      else if (!(jj.get_use () & rename_regbit))
 		break;
 
 	      /* update free regs. */
-	      mask &= ~jj._use;
-	      mask &= ~jj._def;
+	      mask &= ~jj.get_use ();
+	      mask &= ~jj.get_def ();
 	      if (!mask)
 		break;
 
@@ -1616,7 +1709,7 @@ opt_elim_dead_assign (void)
 
       if (is_reg_dead (REGNO(dst), index))
 	{
-	  log ("elim_dead_assign to %s\n", reg_names[REGNO(dst)]);
+	  log ("%d: elim_dead_assign to %s\n", index, reg_names[REGNO(dst)]);
 	  SET_INSN_DELETED(insn);
 	  ++change_count;
 	}
@@ -1897,9 +1990,9 @@ opt_shrink_stack_frame (void)
 	continue;
 
       insn_info & jj = infos[i];
-      ii |= jj;
+      ii.merge (jj);
     }
-  unsigned freemask = ~ii._use;
+  unsigned freemask = ~ii.get_use ();
 
   rtx a7 = gen_raw_REG (SImode, STACK_POINTER_REGNUM);
   rtx a5 = gen_raw_REG (SImode, FRAME_POINTER_REGNUM);
@@ -2123,9 +2216,9 @@ opt_shrink_stack_frame (void)
 	    continue;
 
 	  insn_info & jj = infos[i];
-	  ii |= jj;
+	  ii.merge (jj);
 	}
-      unsigned freemask = ~ii._use;
+      unsigned freemask = ~ii.get_use ();
 
       if (freemask & (1 << FRAME_POINTER_REGNUM))
 	{
@@ -2199,7 +2292,8 @@ namespace
   unsigned
   pass_bbb_optimizations::execute_bbb_optimizations (void)
   {
-    be_verbose = strchr (string_bbb_opts, 'v');
+    be_very_verbose = strchr (string_bbb_opts, 'V');
+    be_verbose = be_very_verbose || strchr (string_bbb_opts, 'v');
 
     bool do_opt_strcpy = strchr (string_bbb_opts, 's') || strchr (string_bbb_opts, '+');
     bool do_commute_add_move = strchr (string_bbb_opts, 'a') || strchr (string_bbb_opts, '+');
@@ -2257,7 +2351,6 @@ namespace
 
     if (strchr (string_bbb_opts, 'X') || strchr (string_bbb_opts, 'x'))
       dump_insns ("bbb", strchr (string_bbb_opts, 'X'));
-    clear ();
 
     return 0;
   }
