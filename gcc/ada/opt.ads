@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1146,6 +1146,10 @@ package Opt is
    No_Stdlib : Boolean := False;
    --  GNATMAKE, GNATBIND, GNATFIND, GNATXREF
    --  Set to True if no default library search dirs added to search list.
+
+   No_Libgnarl : Boolean := False;
+   --  GNATBIND
+   --  Set to True if libgnarl is not available in the runtime.
 
    No_Strict_Aliasing : Boolean := False;
    --  GNAT

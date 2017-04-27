@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -446,6 +446,9 @@ procedure Gnatbind is
 
          elsif Argv (2 .. Argv'Last) = "nostdinc" then
             Opt.No_Stdinc := True;
+
+         elsif Argv (2 .. Argv'Last) = "nognarl" then
+            Opt.No_Libgnarl := True;
 
          --  -static
 
