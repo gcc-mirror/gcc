@@ -7661,9 +7661,9 @@ package body Sem_Ch4 is
          return True;
       end Constant_Indexing_OK;
 
-      -----------------------------
-      -- Expr_Matches_In_Formal  --
-      -----------------------------
+      ----------------------------
+      -- Expr_Matches_In_Formal --
+      ----------------------------
 
       function Expr_Matches_In_Formal
         (Subp : Entity_Id;

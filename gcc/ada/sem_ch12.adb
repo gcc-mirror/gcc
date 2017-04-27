@@ -1074,7 +1074,7 @@ package body Sem_Ch12 is
       F_Copy  : List_Id) return List_Id
    is
       Actuals_To_Freeze : constant Elist_Id  := New_Elmt_List;
-      Assoc             : constant List_Id   := New_List;
+      Assoc_List        : constant List_Id   := New_List;
       Default_Actuals   : constant List_Id   := New_List;
       Gen_Unit          : constant Entity_Id :=
                             Defining_Entity (Parent (F_Copy));
@@ -1204,6 +1204,7 @@ package body Sem_Ch12 is
          Prims  : constant Elist_Id  := Collect_Primitive_Operations (Typ);
          Elem   : Elmt_Id;
          Formal : Node_Id;
+         Op     : Entity_Id;
 
       begin
          --  Locate primitive operations of the type that are arithmetic
@@ -1218,12 +1219,54 @@ package body Sem_Ch12 is
                --  to justify a warning.
 
                Formal := First_Non_Pragma (Formals);
+               Op     := Alias (Node (Elem));
+
                while Present (Formal) loop
                   if Nkind (Formal) = N_Formal_Concrete_Subprogram_Declaration
                     and then Chars (Defining_Entity (Formal)) =
                                Chars (Node (Elem))
                   then
                      exit;
+
+                  elsif Nkind (Formal) = N_Formal_Package_Declaration then
+                     declare
+                        Assoc : Node_Id;
+                        Ent   : Entity_Id;
+
+                     begin
+                        --  Locate corresponding actual, and check whether it
+                        --  includes a fixed-point type.
+
+                        Assoc := First (Assoc_List);
+                        while Present (Assoc) loop
+                           exit when
+                             Nkind (Assoc) = N_Package_Renaming_Declaration
+                               and then Chars (Defining_Unit_Name (Assoc)) =
+                                 Chars (Defining_Identifier (Formal));
+
+                           Next (Assoc);
+                        end loop;
+
+                        if Present (Assoc) then
+
+                           --  If formal package declares a fixed-point type,
+                           --  and the user-defined operator is derived from
+                           --  a generic instance package, the fixed-point type
+                           --  does not use the corresponding predefined op.
+
+                           Ent := First_Entity (Entity (Name (Assoc)));
+                           while Present (Ent) loop
+                              if Is_Fixed_Point_Type (Ent)
+                                and then Present (Op)
+                                and then Is_Generic_Instance (Scope (Op))
+                              then
+                                 return;
+                              end if;
+
+                              Next_Entity (Ent);
+                           end loop;
+                        end if;
+                     end;
                   end if;
 
                   Next (Formal);
@@ -1414,7 +1457,7 @@ package body Sem_Ch12 is
             Set_Defining_Identifier (Decl, Id);
          end if;
 
-         Append (Decl, Assoc);
+         Append (Decl, Assoc_List);
 
          if No (Found_Assoc) then
             Default :=
@@ -1610,7 +1653,7 @@ package body Sem_Ch12 is
                   else
                      Append_List
                        (Instantiate_Object (Formal, Match, Analyzed_Formal),
-                        Assoc);
+                        Assoc_List);
 
                      --  For a defaulted in_parameter, create an entry in the
                      --  the list of defaulted actuals, for GNATProve use. Do
@@ -1667,8 +1710,8 @@ package body Sem_Ch12 is
                      Analyze (Match);
                      Append_List
                        (Instantiate_Type
-                          (Formal, Match, Analyzed_Formal, Assoc),
-                        Assoc);
+                          (Formal, Match, Analyzed_Formal, Assoc_List),
+                        Assoc_List);
 
                      if Is_Fixed_Point_Type (Entity (Match)) then
                         Check_Fixed_Point_Actual (Match);
@@ -1767,7 +1810,7 @@ package body Sem_Ch12 is
                      end if;
 
                   else
-                     Append_To (Assoc,
+                     Append_To (Assoc_List,
                        Instantiate_Formal_Subprogram
                          (Formal, Match, Analyzed_Formal));
 
@@ -1810,7 +1853,8 @@ package body Sem_Ch12 is
                   if No (Match) and then Box_Present (Formal) then
                      declare
                         Subp : constant Entity_Id :=
-                          Defining_Unit_Name (Specification (Last (Assoc)));
+                          Defining_Unit_Name
+                            (Specification (Last (Assoc_List)));
 
                      begin
                         Append_To (Default_Actuals,
@@ -1849,7 +1893,7 @@ package body Sem_Ch12 is
                      Append_List
                        (Instantiate_Formal_Package
                          (Formal, Match, Analyzed_Formal),
-                        Assoc);
+                        Assoc_List);
                   end if;
 
                --  For use type and use package appearing in the generic part,
@@ -1863,10 +1907,10 @@ package body Sem_Ch12 is
                   if Nkind (Original_Node (I_Node)) =
                                      N_Formal_Package_Declaration
                   then
-                     Append (New_Copy_Tree (Formal), Assoc);
+                     Append (New_Copy_Tree (Formal), Assoc_List);
                   else
                      Remove (Formal);
-                     Append (Formal, Assoc);
+                     Append (Formal, Assoc_List);
                   end if;
 
                when others =>
@@ -1941,7 +1985,7 @@ package body Sem_Ch12 is
          Append_List (Default_Formals, Formals);
       end if;
 
-      return Assoc;
+      return Assoc_List;
    end Analyze_Associations;
 
    -------------------------------

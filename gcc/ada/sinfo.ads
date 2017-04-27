@@ -589,10 +589,10 @@ package Sinfo is
    --    8. Instantiations - Save as 1) or when the instantiation is partially
    --       analyzed and the generic template is Ghost.
 
-   --  Routines Mark_And_Set_Ghost_xxx install a new Ghost region and routine
-   --  Restore_Ghost_Mode ends a Ghost region. A region may be reinstalled
-   --  similar to scopes for decoupled expansion such as the generation of
-   --  dispatch tables or the creation of a predicate function.
+   --  Routines Mark_And_Set_Ghost_xxx and Set_Ghost_Mode install a new Ghost
+   --  region and routine Restore_Ghost_Mode ends a Ghost region. A region may
+   --  be reinstalled similarly to scopes for decoupled expansion such as the
+   --  generation of dispatch tables or the creation of a predicate function.
 
    --  If the mode of a Ghost region is Ignore, any newly created nodes as well
    --  as source entities are marked as ignored Ghost. In additon, the marking
@@ -685,6 +685,43 @@ package Sinfo is
    --       frontend. In particular, if the selected component is a packed
    --       array depending on a discriminant of a unconstrained formal object
    --       parameter of a generic.
+
+   ----------------
+   -- SPARK Mode --
+   ----------------
+
+   --  The SPARK RM 1.6.5 defines a mode of operation called "SPARK mode" which
+   --  starts a scope where the SPARK language semantics are either On, Off, or
+   --  Auto, where Auto leaves the choice to the tools. A SPARK mode may be
+   --  specified by means of an aspect or a pragma.
+
+   --  The following entities may be subject to a SPARK mode. Entities marked
+   --  with * may possess two differente SPARK modes.
+
+   --     E_Entry
+   --     E_Entry_Family
+   --     E_Function
+   --     E_Generic_Function
+   --     E_Generic_Package *
+   --     E_Generic_Procedure
+   --     E_Operator
+   --     E_Package *
+   --     E_Package_Body *
+   --     E_Procedure
+   --     E_Protected_Body
+   --     E_Protected_Subtype
+   --     E_Protected_Type *
+   --     E_Subprogram_Body
+   --     E_Task_Body
+   --     E_Task_Subtype
+   --     E_Task_Type *
+   --     E_Variable
+
+   --  In order to manage SPARK scopes, the compiler relies on global variables
+   --  SPARK_Mode and SPARK_Mode_Pragma and a mechanism called "SPARK regions."
+   --  Routines Install_SPARK_Mode and Set_SPARK_Mode create a new SPARK region
+   --  and routine Restore_SPARK_Mode ends a SPARK region. A region may be
+   --  reinstalled similarly to scopes.
 
    -----------------------
    -- Check Flag Fields --
@@ -5364,23 +5401,6 @@ package Sinfo is
       --  Was_Expression_Function (Flag18-Sem)
       --  Was_Originally_Stub (Flag13-Sem)
 
-      -------------------------
-      -- Expression Function --
-      -------------------------
-
-      --  This is an Ada 2012 extension, we put it here for now, to be labeled
-      --  and put in its proper section when we know exactly where that is.
-
-      --  EXPRESSION_FUNCTION ::=
-      --    FUNCTION SPECIFICATION IS (EXPRESSION)
-      --      [ASPECT_SPECIFICATIONS];
-
-      --  N_Expression_Function
-      --  Sloc points to FUNCTION
-      --  Specification (Node1)
-      --  Expression (Node3)
-      --  Corresponding_Spec (Node5-Sem)
-
       -----------------------------------
       -- 6.4  Procedure Call Statement --
       -----------------------------------
@@ -5532,6 +5552,20 @@ package Sinfo is
       --  and the Defining_Identifier of the Object_Declaration in
       --  Return_Object_Declarations represents the object being
       --  returned. N_Simple_Return_Statement has only the former.
+
+      ------------------------------
+      -- 6.8  Expression Function --
+      ------------------------------
+
+      --  EXPRESSION_FUNCTION ::=
+      --    FUNCTION SPECIFICATION IS (EXPRESSION)
+      --      [ASPECT_SPECIFICATIONS];
+
+      --  N_Expression_Function
+      --  Sloc points to FUNCTION
+      --  Specification (Node1)
+      --  Expression (Node3)
+      --  Corresponding_Spec (Node5-Sem)
 
       ------------------------------
       -- 7.1  Package Declaration --

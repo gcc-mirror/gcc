@@ -512,30 +512,38 @@ package body Sinput is
       --  Assert various properties of the result
 
       procedure Assertions is
+
          --  ???The old version using zero-origin array indexing without array
          --  bounds checks returned 1 (i.e. system.ads) for these special
          --  locations, presumably by accident. We are mimicing that here.
-         Special : constant Boolean :=
-           S = No_Location or else S = Standard_Location
-           or else S = Standard_ASCII_Location or else S = System_Location;
-         pragma Assert ((S > No_Location) xor Special);
 
+         Special : constant Boolean :=
+                     S = No_Location
+                       or else S = Standard_Location
+                       or else S = Standard_ASCII_Location
+                       or else S = System_Location;
+
+         pragma Assert ((S > No_Location) xor Special);
          pragma Assert (Result in Source_File.First .. Source_File.Last);
 
          SFR : Source_File_Record renames Source_File.Table (Result);
+
       begin
          --  SFR.Source_Text = null if and only if this is the SFR for a debug
-         --  output file (*.dg), and that file is under construction.
+         --  output file (*.dg), and that file is under construction. S can be
+         --  slightly past Source_Last in that case because we haven't updated
+         --  Source_Last.
 
-         if not Null_Source_Buffer_Ptr (SFR.Source_Text) then
+         if Null_Source_Buffer_Ptr (SFR.Source_Text) then
+            pragma Assert (S >= SFR.Source_First); null;
+         else
             pragma Assert (SFR.Source_Text'First = SFR.Source_First);
             pragma Assert (SFR.Source_Text'Last = SFR.Source_Last);
-            null;
-         end if;
 
-         if not Special then
-            pragma Assert (S in SFR.Source_First .. SFR.Source_Last);
-            null;
+            if not Special then
+               pragma Assert (S in SFR.Source_First .. SFR.Source_Last);
+               null;
+            end if;
          end if;
       end Assertions;
 

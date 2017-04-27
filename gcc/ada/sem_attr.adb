@@ -11611,6 +11611,7 @@ package body Sem_Attr is
 
                   if Is_Scalar_Type (Component_Type (Typ))
                     and then not Is_OK_Static_Expression (Expr)
+                    and then not Range_Checks_Suppressed (Component_Type (Typ))
                   then
                      if Is_Entity_Name (Expr)
                        and then Etype (Expr) = Component_Type (Typ)
@@ -11682,6 +11683,8 @@ package body Sem_Attr is
 
                      if Is_Scalar_Type (Etype (Entity (Comp)))
                        and then not Is_OK_Static_Expression (Expr)
+                       and then not Range_Checks_Suppressed
+                                      (Etype (Entity (Comp)))
                      then
                         Set_Do_Range_Check (Expr);
                      end if;

@@ -3228,6 +3228,15 @@ package body Sem_Util is
         (Prag        : Node_Id;
          Result_Seen : in out Boolean)
       is
+         procedure Check_Conjunct (Expr : Node_Id);
+         --  Check an individual conjunct in a conjunctions of Boolean
+         --  expressions, connected by "and" or "and then" operators.
+
+         procedure Check_Conjuncts (Expr : Node_Id);
+         --  Apply the post-state check to every conjunct in an expression, in
+         --  case this is a conjunction of Boolean expressions. Otherwise apply
+         --  it to the expression as a whole.
+
          procedure Check_Expression (Expr : Node_Id);
          --  Perform the 'Result and post-state checks on a given expression
 
@@ -3244,6 +3253,103 @@ package body Sem_Util is
          procedure Check_Function_Result is
            new Traverse_Proc (Is_Function_Result);
 
+         --------------------
+         -- Check_Conjunct --
+         --------------------
+
+         procedure Check_Conjunct (Expr : Node_Id) is
+            function Adjust_Message (Msg : String) return String;
+            --  Prepend a prefix to the input message Msg denoting that the
+            --  message applies to a conjunct in the expression, when this
+            --  is the case.
+
+            function Applied_On_Conjunct return Boolean;
+            --  Returns True if the message applies to a conjunct in the
+            --  expression, instead of the whole expression.
+
+            --------------------
+            -- Adjust_Message --
+            --------------------
+
+            function Adjust_Message (Msg : String) return String is
+            begin
+               if Applied_On_Conjunct then
+                  return "conjunct in " & Msg;
+               else
+                  return Msg;
+               end if;
+            end Adjust_Message;
+
+            -------------------------
+            -- Applied_On_Conjunct --
+            -------------------------
+
+            function Applied_On_Conjunct return Boolean is
+            begin
+               --  Expr is the conjunct of an "and" enclosing expression
+
+               return Nkind (Parent (Expr)) in N_Subexpr
+
+                 --  or Expr is a conjunct of an "and then" enclosing
+                 --  expression in a postcondition aspect, which was split in
+                 --  multiple pragmas. The first conjunct has the "and then"
+                 --  expression as Original_Node, and other conjuncts have
+                 --  Split_PCC set to True.
+
+                 or else Nkind (Original_Node (Expr)) = N_And_Then
+                 or else Split_PPC (Prag);
+            end Applied_On_Conjunct;
+
+            --  Local variables
+
+            Err_Node : Node_Id;
+            --  Error node when reporting a warning on a (refined)
+            --  postcondition.
+
+         --  Start of processing for Check_Conjunct
+
+         begin
+            if Applied_On_Conjunct then
+               Err_Node := Expr;
+            else
+               Err_Node := Prag;
+            end if;
+
+            if not Is_Trivial_Boolean (Expr)
+              and then not Mentions_Post_State (Expr)
+            then
+               if Pragma_Name (Prag) = Name_Contract_Cases then
+                  Error_Msg_NE (Adjust_Message
+                    ("contract case does not check the outcome of calling "
+                     & "&?T?"), Expr, Subp_Id);
+
+               elsif Pragma_Name (Prag) = Name_Refined_Post then
+                  Error_Msg_NE (Adjust_Message
+                    ("refined postcondition does not check the outcome of "
+                     & "calling &?T?"), Err_Node, Subp_Id);
+
+               else
+                  Error_Msg_NE (Adjust_Message
+                    ("postcondition does not check the outcome of calling "
+                     & "&?T?"), Err_Node, Subp_Id);
+               end if;
+            end if;
+         end Check_Conjunct;
+
+         ---------------------
+         -- Check_Conjuncts --
+         ---------------------
+
+         procedure Check_Conjuncts (Expr : Node_Id) is
+         begin
+            if Nkind_In (Expr, N_Op_And, N_And_Then) then
+               Check_Conjuncts (Left_Opnd (Expr));
+               Check_Conjuncts (Right_Opnd (Expr));
+            else
+               Check_Conjunct (Expr);
+            end if;
+         end Check_Conjuncts;
+
          ----------------------
          -- Check_Expression --
          ----------------------
@@ -3252,24 +3358,7 @@ package body Sem_Util is
          begin
             if not Is_Trivial_Boolean (Expr) then
                Check_Function_Result (Expr);
-
-               if not Mentions_Post_State (Expr) then
-                  if Pragma_Name (Prag) = Name_Contract_Cases then
-                     Error_Msg_NE
-                       ("contract case does not check the outcome of calling "
-                        & "&?T?", Expr, Subp_Id);
-
-                  elsif Pragma_Name (Prag) = Name_Refined_Post then
-                     Error_Msg_NE
-                       ("refined postcondition does not check the outcome of "
-                        & "calling &?T?", Prag, Subp_Id);
-
-                  else
-                     Error_Msg_NE
-                       ("postcondition does not check the outcome of calling "
-                        & "&?T?", Prag, Subp_Id);
-                  end if;
-               end if;
+               Check_Conjuncts (Expr);
             end if;
          end Check_Expression;
 

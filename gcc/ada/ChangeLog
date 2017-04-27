@@ -1,5 +1,69 @@
 2017-04-27  Gary Dismukes  <dismukes@adacore.com>
 
+	* sem_ch4.adb: Minor reformatting.
+
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Associations): minor reformatting.
+	(Check_Fixed_Point_Actual): Do not emit a warning on a fixed
+	point type actual that has user-defined arithmetic primitives,
+	when there is a previous actual for a formal package that defines
+	a fixed-point type with the parent user-defined operator.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Generate_Range_Check): Reinstate part of previous change.
+	* sem_attr.adb (Resolve_Attribute): Generate a range check when
+	the component type allows range checks.
+
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aux.adb (Is_Generic_Formal): Use original node to locate
+	corresponding declaration, because formal derived types are
+	rewritten as private extensions.
+
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_dim.adb (Analyze_Dimension_Binary_Op): Do not check
+	dimensions of operands if node has been analyzed already, because
+	previous analysis and dimension checking will have removed the
+	dimension information from the operands.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* debug.adb: Document the use of switch -gnatd.s.
+	* einfo.ads Update the documentation on attribute
+	Sec_Stack_Needed_For_Return and attribute Uses_Sec_Stack. Remove
+	the uses of these attributes from certain entities.
+	* exp_ch7.adb (Make_Transient_Block): Reimplement the circuitry
+	which determines whether the block should continue to manage
+	the secondary stack.
+	(Manages_Sec_Stack): New routine.
+
+2017-04-27  Bob Duff  <duff@adacore.com>
+
+	* atree.ads: Minor edit.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sinfo.ads: Update the section on Ghost mode. Add
+	a section on SPARK mode. Update the placement of section on
+	expression functions.
+
+2017-04-27  Bob Duff  <duff@adacore.com>
+
+	* sinput.adb (Get_Source_File_Index): Don't
+	assert that S is in the right range in the case where this is
+	a .dg file under construction.
+
+2017-04-27  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Check_Result_And_Post_State):
+	Handle more precisely each conjunct in expressions formed by
+	and'ing sub-expressions.
+
+2017-04-27  Gary Dismukes  <dismukes@adacore.com>
+
 	* exp_ch4.adb, sem_ch4.adb: Minor typo fix and reformatting.
 
 2017-04-25  Arnaud Charlet  <charlet@adacore.com>

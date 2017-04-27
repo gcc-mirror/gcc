@@ -1406,6 +1406,14 @@ package body Sem_Dim is
    --  Start of processing for Analyze_Dimension_Binary_Op
 
    begin
+      --  If the node is already analyzed, do not examine the operands. At the
+      --  end of the analysis their dimensions have been removed, and the node
+      --  itself may have been rewritten.
+
+      if Analyzed (N) then
+         return;
+      end if;
+
       if Nkind_In (N_Kind, N_Op_Add, N_Op_Expon, N_Op_Subtract)
         or else N_Kind in N_Multiplying_Operator
         or else N_Kind in N_Op_Compare
