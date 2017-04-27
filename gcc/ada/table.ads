@@ -51,9 +51,9 @@ package Table is
       type Table_Component_Type is private;
       type Table_Index_Type     is range <>;
 
-      Table_Low_Bound   : Table_Index_Type;
-      Table_Initial     : Pos;
-      Table_Increment   : Nat;
+      Table_Low_Bound   : Table_Index_Type := Table_Index_Type'First;
+      Table_Initial     : Pos := 8;
+      Table_Increment   : Nat := 100;
       Table_Name        : String; -- for debugging printouts
       Release_Threshold : Nat := 0;
 

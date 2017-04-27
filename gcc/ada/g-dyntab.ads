@@ -53,7 +53,7 @@ generic
    type Table_Component_Type is private;
    type Table_Index_Type     is range <>;
 
-   Table_Low_Bound   : Table_Index_Type;
+   Table_Low_Bound   : Table_Index_Type := Table_Index_Type'First;
    Table_Initial     : Positive := 8;
    Table_Increment   : Natural := 100;
    Release_Threshold : Natural := 0; -- size in bytes
@@ -153,12 +153,13 @@ package GNAT.Dynamic_Tables is
    Empty_Table_Array : aliased Empty_Table_Array_Type;
    function Empty_Table_Array_Ptr_To_Table_Ptr is
      new Ada.Unchecked_Conversion (Empty_Table_Array_Ptr, Table_Ptr);
+   Empty_Table_Ptr : constant Table_Ptr :=
+             Empty_Table_Array_Ptr_To_Table_Ptr (Empty_Table_Array'Access);
    --  End private use only. The above are used to initialize Table to point to
    --  an empty array.
 
    type Instance is record
-      Table : Table_Ptr :=
-                Empty_Table_Array_Ptr_To_Table_Ptr (Empty_Table_Array'Access);
+      Table : Table_Ptr := Empty_Table_Ptr;
       --  The table itself. The lower bound is the value of First. Logically
       --  the upper bound is the current value of Last (although the actual
       --  size of the allocated table may be larger than this). The program may
@@ -187,6 +188,8 @@ package GNAT.Dynamic_Tables is
    --  Reinitializes the table to empty. There is no need to call this before
    --  using a table; tables default to empty.
 
+   procedure Free (T : in out Instance) renames Init;
+
    function First return Table_Index_Type;
    pragma Inline (First);
    --  Export First as synonym for Table_Low_Bound (parallel with use of Last)
@@ -207,9 +210,6 @@ package GNAT.Dynamic_Tables is
    --  reopening large tables and adding a few elements without allocating a
    --  chunk of memory. In both cases current array values are not affected by
    --  this call.
-
-   procedure Free (T : in out Instance);
-   --  Same as Init
 
    procedure Set_Last (T : in out Instance; New_Val : Table_Last_Type);
    pragma Inline (Set_Last);

@@ -38,9 +38,6 @@ with System;
 
 package body GNAT.Dynamic_Tables is
 
-   Empty : constant Table_Ptr :=
-             Empty_Table_Array_Ptr_To_Table_Ptr (Empty_Table_Array'Access);
-
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -117,32 +114,6 @@ package body GNAT.Dynamic_Tables is
    end For_Each;
 
    ----------
-   -- Free --
-   ----------
-
-   procedure Free (T : in out Instance) is
-      pragma Assert (not T.Locked);
-      subtype Alloc_Type is Table_Type (First .. T.P.Last_Allocated);
-      type Alloc_Ptr is access all Alloc_Type;
-
-      procedure Free is new Ada.Unchecked_Deallocation (Alloc_Type, Alloc_Ptr);
-      function To_Alloc_Ptr is
-        new Ada.Unchecked_Conversion (Table_Ptr, Alloc_Ptr);
-
-      Temp : Alloc_Ptr := To_Alloc_Ptr (T.Table);
-
-   begin
-      if T.Table = Empty then
-         pragma Assert (T.P = (Last_Allocated | Last => First - 1));
-         null;
-      else
-         Free (Temp);
-         T.Table := Empty;
-         T.P := (Last_Allocated | Last => First - 1);
-      end if;
-   end Free;
-
-   ----------
    -- Grow --
    ----------
 
@@ -169,7 +140,7 @@ package body GNAT.Dynamic_Tables is
       New_Allocated_Length : Table_Length_Type;
 
    begin
-      if T.Table = Empty then
+      if T.Table = Empty_Table_Ptr then
          New_Allocated_Length := Table_Length_Type (Table_Initial);
       else
          New_Allocated_Length :=
@@ -213,7 +184,7 @@ package body GNAT.Dynamic_Tables is
          New_Table : constant Alloc_Ptr := new Alloc_Type;
 
       begin
-         if T.Table /= Empty then
+         if T.Table /= Empty_Table_Ptr then
             New_Table (First .. T.P.Last) := Old_Table (First .. T.P.Last);
             Free (Old_Table);
          end if;
@@ -223,7 +194,7 @@ package body GNAT.Dynamic_Tables is
 
       pragma Assert (New_Last <= T.P.Last_Allocated);
       pragma Assert (T.Table /= null);
-      pragma Assert (T.Table /= Empty);
+      pragma Assert (T.Table /= Empty_Table_Ptr);
    end Grow;
 
    --------------------
@@ -241,9 +212,25 @@ package body GNAT.Dynamic_Tables is
    ----------
 
    procedure Init (T : in out Instance) is
-   begin
       pragma Assert (not T.Locked);
-      Free (T);
+      subtype Alloc_Type is Table_Type (First .. T.P.Last_Allocated);
+      type Alloc_Ptr is access all Alloc_Type;
+
+      procedure Free is new Ada.Unchecked_Deallocation (Alloc_Type, Alloc_Ptr);
+      function To_Alloc_Ptr is
+        new Ada.Unchecked_Conversion (Table_Ptr, Alloc_Ptr);
+
+      Temp : Alloc_Ptr := To_Alloc_Ptr (T.Table);
+
+   begin
+      if T.Table = Empty_Table_Ptr then
+         pragma Assert (T.P = (Last_Allocated | Last => First - 1));
+         null;
+      else
+         Free (Temp);
+         T.Table := Empty_Table_Ptr;
+         T.P := (Last_Allocated | Last => First - 1);
+      end if;
    end Init;
 
    --------------
@@ -253,7 +240,7 @@ package body GNAT.Dynamic_Tables is
    function Is_Empty (T : Instance) return Boolean is
       Result : constant Boolean := T.P.Last = Table_Low_Bound - 1;
    begin
-      pragma Assert (Result = (T.Table = Empty));
+      pragma Assert (Result = (T.Table = Empty_Table_Ptr));
       return Result;
    end Is_Empty;
 
@@ -277,7 +264,7 @@ package body GNAT.Dynamic_Tables is
       pragma Assert (Is_Empty (To));
       To := From;
 
-      From.Table            := Empty;
+      From.Table            := Empty_Table_Ptr;
       From.Locked           := False;
       From.P.Last_Allocated := Table_Low_Bound - 1;
       From.P.Last           := Table_Low_Bound - 1;
@@ -326,7 +313,7 @@ package body GNAT.Dynamic_Tables is
    begin
       if New_Last_Alloc < T.P.Last_Allocated then
          pragma Assert (T.P.Last < T.P.Last_Allocated);
-         pragma Assert (T.Table /= Empty);
+         pragma Assert (T.Table /= Empty_Table_Ptr);
 
          declare
             subtype Old_Alloc_Type is Table_Type (First .. Old_Last_Allocated);
