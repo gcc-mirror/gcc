@@ -63,6 +63,7 @@ with Stand;    use Stand;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
+with Validsw;  use Validsw;
 
 package body Exp_Ch9 is
 
@@ -5927,13 +5928,12 @@ package body Exp_Ch9 is
    --------------------------
 
    procedure Expand_Entry_Barrier (N : Node_Id; Ent : Entity_Id) is
-      Cond      : constant Node_Id   :=
-                    Condition (Entry_Body_Formal_Part (N));
+      Cond      : constant Node_Id   := Condition (Entry_Body_Formal_Part (N));
       Prot      : constant Entity_Id := Scope (Ent);
       Spec_Decl : constant Node_Id   := Parent (Prot);
-      Func      : Entity_Id          := Empty;
-      B_F       : Node_Id;
-      Body_Decl : Node_Id;
+
+      Func_Id : Entity_Id := Empty;
+      --  The entity of the barrier function
 
       function Is_Global_Entity (N : Node_Id) return Traverse_Result;
       --  Check whether entity in Barrier is external to protected type.
@@ -5966,7 +5966,7 @@ package body Exp_Ch9 is
                --  during expansion, it is ok. If expansion is not performed,
                --  then Func is Empty so this test cannot succeed.
 
-               if Scope (E) = Func then
+               if Scope (E) = Func_Id then
                   null;
 
                --  A protected call from a barrier to another object is ok
@@ -6112,6 +6112,12 @@ package body Exp_Ch9 is
 
       function Check_Pure_Barriers is new Traverse_Func (Is_Pure_Barrier);
 
+      --  Local variables
+
+      Cond_Id    : Entity_Id;
+      Entry_Body : Node_Id;
+      Func_Body  : Node_Id;
+
    --  Start of processing for Expand_Entry_Barrier
 
    begin
@@ -6130,20 +6136,20 @@ package body Exp_Ch9 is
       --  version of it because it is never called.
 
       if Expander_Active then
-         B_F  := Build_Barrier_Function (N, Ent, Prot);
-         Func := Barrier_Function (Ent);
-         Set_Corresponding_Spec (B_F, Func);
+         Func_Body := Build_Barrier_Function (N, Ent, Prot);
+         Func_Id   := Barrier_Function (Ent);
+         Set_Corresponding_Spec (Func_Body, Func_Id);
 
-         Body_Decl := Parent (Corresponding_Body (Spec_Decl));
+         Entry_Body := Parent (Corresponding_Body (Spec_Decl));
 
-         if Nkind (Parent (Body_Decl)) = N_Subunit then
-            Body_Decl := Corresponding_Stub (Parent (Body_Decl));
+         if Nkind (Parent (Entry_Body)) = N_Subunit then
+            Entry_Body := Corresponding_Stub (Parent (Entry_Body));
          end if;
 
-         Insert_Before_And_Analyze (Body_Decl, B_F);
+         Insert_Before_And_Analyze (Entry_Body, Func_Body);
 
          Set_Discriminals (Spec_Decl);
-         Set_Scope (Func, Scope (Prot));
+         Set_Scope (Func_Id, Scope (Prot));
 
       else
          Analyze_And_Resolve (Cond, Any_Boolean);
@@ -6167,20 +6173,25 @@ package body Exp_Ch9 is
       --  scope.
 
       if Is_Entity_Name (Cond) then
+         Cond_Id := Entity (Cond);
 
-         --  A small optimization of useless renamings. If the scope of the
-         --  entity of the condition is not the barrier function, then the
-         --  condition does not reference any of the generated renamings
-         --  within the function.
+         --  Perform a small optimization of simple barrier functions. If the
+         --  scope of the condition's entity is not the barrier function, then
+         --  the condition does not depend on any of the generated renamings.
+         --  If this is the case, eliminate the renamings as they are useless.
+         --  This optimization is not performed when the condition was folded
+         --  and validity checks are in effect because the original condition
+         --  may have produced at least one check that depends on the generated
+         --  renamings.
 
-         if Expander_Active and then Scope (Entity (Cond)) /= Func then
-            Set_Declarations (B_F, Empty_List);
+         if Expander_Active
+           and then Scope (Cond_Id) /= Func_Id
+           and then not Validity_Check_Operands
+         then
+            Set_Declarations (Func_Body, Empty_List);
          end if;
 
-         if Entity (Cond) = Standard_False
-              or else
-            Entity (Cond) = Standard_True
-         then
+         if Cond_Id = Standard_False or else Cond_Id = Standard_True then
             return;
 
          elsif Is_Simple_Barrier_Name (Cond) then

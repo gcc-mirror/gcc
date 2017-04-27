@@ -38,7 +38,6 @@ with System; use type System.Address;
 package body Ada.Containers.Formal_Hashed_Maps with
   SPARK_Mode => Off
 is
-
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -112,8 +111,10 @@ is
       begin
          Node := Left.First.Node;
          while Node /= 0 loop
-            ENode := Find (Container => Right,
-                           Key       => Left.Nodes (Node).Key).Node;
+            ENode :=
+              Find
+                (Container => Right,
+                 Key       => Left.Nodes (Node).Key).Node;
 
             if ENode = 0 or else
               Right.Nodes (ENode).Element /= Left.Nodes (Node).Element
@@ -202,11 +203,11 @@ is
       Capacity : Count_Type := 0) return Map
    is
       C      : constant Count_Type :=
-        Count_Type'Max (Capacity, Source.Capacity);
+                 Count_Type'Max (Capacity, Source.Capacity);
+      Cu     : Cursor;
       H      : Hash_Type;
       N      : Count_Type;
       Target : Map (C, Source.Modulus);
-      Cu     : Cursor;
 
    begin
       if 0 < Capacity and then Capacity < Source.Capacity then
@@ -300,8 +301,8 @@ is
          raise Constraint_Error with "Position cursor equals No_Element";
       end if;
 
-      pragma Assert (Vet (Container, Position),
-                     "bad cursor in function Element");
+      pragma Assert
+        (Vet (Container, Position), "bad cursor in function Element");
 
       return Container.Nodes (Position.Node).Element;
    end Element;
@@ -429,9 +430,12 @@ is
          --  for their postconditions.
 
          while Position /= 0 loop
-            R := M.Add (Container => R,
-                        New_Key   => Container.Nodes (Position).Key,
-                        New_Item  => Container.Nodes (Position).Element);
+            R :=
+              M.Add
+                (Container => R,
+                 New_Key   => Container.Nodes (Position).Key,
+                 New_Item  => Container.Nodes (Position).Element);
+
             Position := HT_Ops.Next (Container, Position);
          end loop;
 
@@ -478,7 +482,6 @@ is
    ----------------------
 
    procedure Generic_Allocate (HT : in out Map; Node : out Count_Type) is
-
       procedure Allocate is
         new HT_Ops.Generic_Allocate (Set_Element);
 
@@ -600,8 +603,7 @@ is
       Insert (Container, Key, New_Item, Position, Inserted);
 
       if not Inserted then
-         raise Constraint_Error with
-           "attempt to insert key already in map";
+         raise Constraint_Error with "attempt to insert key already in map";
       end if;
    end Insert;
 
@@ -647,8 +649,9 @@ is
      (Target : in out Map;
       Source : in out Map)
    is
-      NN   : HT_Types.Nodes_Type renames Source.Nodes;
-      X, Y : Count_Type;
+      NN : HT_Types.Nodes_Type renames Source.Nodes;
+      X  : Count_Type;
+      Y  : Count_Type;
 
    begin
       if Target'Address = Source'Address then
@@ -695,8 +698,7 @@ is
       end if;
 
       if not Has_Element (Container, Position) then
-         raise Constraint_Error
-           with "Position has no element";
+         raise Constraint_Error with "Position has no element";
       end if;
 
       pragma Assert (Vet (Container, Position), "bad cursor in function Next");
@@ -731,8 +733,7 @@ is
 
    begin
       if Node = 0 then
-         raise Constraint_Error with
-           "attempt to replace key not in map";
+         raise Constraint_Error with "attempt to replace key not in map";
       end if;
 
       declare
@@ -758,8 +759,8 @@ is
            "Position cursor of Replace_Element has no element";
       end if;
 
-      pragma Assert (Vet (Container, Position),
-                     "bad cursor in Replace_Element");
+      pragma Assert
+        (Vet (Container, Position), "bad cursor in Replace_Element");
 
       Container.Nodes (Position.Node).Element := New_Item;
    end Replace_Element;
@@ -821,8 +822,9 @@ is
             return False;
          end if;
 
-         X := Container.Buckets
-           (Key_Ops.Index (Container, Container.Nodes (Position.Node).Key));
+         X :=
+           Container.Buckets
+             (Key_Ops.Index (Container, Container.Nodes (Position.Node).Key));
 
          for J in 1 .. Container.Length loop
             if X = Position.Node then

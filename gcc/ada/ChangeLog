@@ -1,3 +1,23 @@
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch9.adb (Expand_Entry_Barrier): Code
+	cleanup. Do not perform the optimization which removes the
+	declarations of the discriminant and component renamings when
+	validity checks on operands and attributes are in effect.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_spark.adb, exp_util.adb, sem_ch7.adb, g-dyntab.adb, g-dyntab.ads,
+	freeze.adb, a-cfinve.ads, a-cofuma.adb, a-cofuma.ads, a-cfhama.adb,
+	a-cfhama.ads, a-cofove.ads: Minor reformatting.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* g-debpoo.adb (Dump_Gnatmem): Protect against a possible null
+	pointer dereference.
+	* g-spipat.adb (Dump): Code clean up. Protect against a possible
+	null pointer dereference.
+
 2017-04-27  Bob Duff  <duff@adacore.com>
 
 	* g-dyntab.ads, g-dyntab.adb: Default for Table_Low_Bound.

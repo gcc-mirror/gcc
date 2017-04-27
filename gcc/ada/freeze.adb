@@ -1406,10 +1406,6 @@ package body Freeze is
       Par_Prim      : Entity_Id;
       Prim          : Entity_Id;
 
-      ---------------------------------------
-      -- Build_Inherited_Condition_Pragmas --
-      ---------------------------------------
-
       procedure Build_Inherited_Condition_Pragmas (Subp : Entity_Id);
       --  Build corresponding pragmas for an operation whose ancestor has
       --  class-wide pre/postconditions. If the operation is inherited, the
@@ -1417,6 +1413,10 @@ package body Freeze is
       --  If the ancestor is being overridden, the pragmas are constructed only
       --  to verify their legality, in case they contain calls to other
       --  primitives that may haven been overridden.
+
+      ---------------------------------------
+      -- Build_Inherited_Condition_Pragmas --
+      ---------------------------------------
 
       procedure Build_Inherited_Condition_Pragmas (Subp : Entity_Id) is
          A_Post   : Node_Id;
@@ -1462,6 +1462,8 @@ package body Freeze is
          end if;
       end Build_Inherited_Condition_Pragmas;
 
+   --  Start of processing for Check_Inherited_Conditions
+
    begin
       Op_Node := First_Elmt (Prim_Ops);
       while Present (Op_Node) loop
@@ -1480,13 +1482,14 @@ package body Freeze is
          Next_Elmt (Op_Node);
       end loop;
 
-      --  Now perform validity checks on the inherited conditions of
-      --  overriding operations, for conformance with LSP, and apply
-      --  SPARK-specific restrictions on inherited conditions.
+      --  Perform validity checks on the inherited conditions of overriding
+      --  operations, for conformance with LSP, and apply SPARK-specific
+      --  restrictions on inherited conditions.
 
       Op_Node := First_Elmt (Prim_Ops);
       while Present (Op_Node) loop
          Prim := Node (Op_Node);
+
          if Present (Overridden_Operation (Prim))
            and then Comes_From_Source (Prim)
          then
@@ -1505,11 +1508,10 @@ package body Freeze is
             if SPARK_Mode = On then
                Collect_Inherited_Class_Wide_Conditions (Prim);
 
+            --  Otherwise build the corresponding pragmas to check for legality
+            --  of the inherited condition.
+
             else
-
-               --  Build the corresponding pragmas to check for legality
-               --  of the inherited condition.
-
                Build_Inherited_Condition_Pragmas (Prim);
             end if;
          end if;
@@ -1541,10 +1543,10 @@ package body Freeze is
             Build_Inherited_Condition_Pragmas (Prim);
          end if;
 
-         if Needs_Wrapper and then not Is_Abstract_Subprogram (Par_Prim)
+         if Needs_Wrapper
+           and then not Is_Abstract_Subprogram (Par_Prim)
            and then Expander_Active
          then
-
             --  We need to build a new primitive that overrides the inherited
             --  one, and whose inherited expression has been updated above.
             --  These expressions are the arguments of pragmas that are part

@@ -983,9 +983,9 @@ package body Sem_Ch7 is
       Set_SPARK_Aux_Pragma_Inherited (Id);
 
       --  Save the state of flag Ignore_SPARK_Mode_Pragmas_In_Instance in case
-      --  the body of this package is instantiated or inlined later and out
-      --  of context. The body uses this attribute to restore the value of
-      --  the global flag.
+      --  the body of this package is instantiated or inlined later and out of
+      --  context. The body uses this attribute to restore the value of the
+      --  global flag.
 
       if Ignore_SPARK_Mode_Pragmas_In_Instance then
          Set_Ignore_SPARK_Mode_Pragmas (Id);

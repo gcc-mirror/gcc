@@ -69,12 +69,12 @@ package GNAT.Dynamic_Tables is
 
    --  Table_Component_Type must not be a type with controlled parts.
 
-   --  The Table_Initial value controls the allocation of the table when
-   --  it is first allocated.
+   --  The Table_Initial value controls the allocation of the table when it is
+   --  first allocated.
 
-   --  The Table_Increment value controls the amount of increase, if the
-   --  table has to be increased in size. The value given is a percentage
-   --  value (e.g. 100 = increase table size by 100%, i.e. double it).
+   --  The Table_Increment value controls the amount of increase, if the table
+   --  has to be increased in size. The value given is a percentage value (e.g.
+   --  100 = increase table size by 100%, i.e. double it).
 
    --  The Last and Set_Last subprograms provide control over the current
    --  logical allocation. They are quite efficient, so they can be used
@@ -85,18 +85,18 @@ package GNAT.Dynamic_Tables is
    --  restrict the use of table for discriminated types. If it is necessary
    --  to take the access of a table element, use Unrestricted_Access.
 
-   --  WARNING: On HPPA, the virtual addressing approach used in this unit
-   --  is incompatible with the indexing instructions on the HPPA. So when
-   --  using this unit, compile your application with -mdisable-indexing.
+   --  WARNING: On HPPA, the virtual addressing approach used in this unit is
+   --  incompatible with the indexing instructions on the HPPA. So when using
+   --  this unit, compile your application with -mdisable-indexing.
 
    --  WARNING: If the table is reallocated, then the address of all its
    --  components will change. So do not capture the address of an element
-   --  and then use the address later after the table may be reallocated.
-   --  One tricky case of this is passing an element of the table to a
-   --  subprogram by reference where the table gets reallocated during
-   --  the execution of the subprogram. The best rule to follow is never
-   --  to pass a table element as a parameter except for the case of IN
-   --  mode parameters with scalar values.
+   --  and then use the address later after the table may be reallocated. One
+   --  tricky case of this is passing an element of the table to a subprogram
+   --  by reference where the table gets reallocated during the execution of
+   --  the subprogram. The best rule to follow is never to pass a table element
+   --  as a parameter except for the case of IN mode parameters with scalar
+   --  values.
 
    pragma Assert (Table_Low_Bound /= Table_Index_Type'Base'First);
 
@@ -107,12 +107,12 @@ package GNAT.Dynamic_Tables is
 
    --  Table_Component_Type must not be a type with controlled parts.
 
-   --  The Table_Initial value controls the allocation of the table when
-   --  it is first allocated.
+   --  The Table_Initial value controls the allocation of the table when it is
+   --  first allocated.
 
-   --  The Table_Increment value controls the amount of increase, if the
-   --  table has to be increased in size. The value given is a percentage
-   --  value (e.g. 100 = increase table size by 100%, i.e. double it).
+   --  The Table_Increment value controls the amount of increase, if the table
+   --  has to be increased in size. The value given is a percentage value (e.g.
+   --  100 = increase table size by 100%, i.e. double it).
 
    --  The Last and Set_Last subprograms provide control over the current
    --  logical allocation. They are quite efficient, so they can be used
@@ -201,9 +201,9 @@ package GNAT.Dynamic_Tables is
 
    procedure Release (T : in out Instance);
    --  Storage is allocated in chunks according to the values given in the
-   --  Table_Initial and Table_Increment parameters. If Release_Threshold is 0
-   --  or the length of the table does not exceed this threshold then a call to
-   --  Release releases all storage that is allocated, but is not logically
+   --  Table_Initial and Table_Increment parameters. If Release_Threshold is
+   --  0 or the length of the table does not exceed this threshold then a call
+   --  to Release releases all storage that is allocated, but is not logically
    --  part of the current array value; otherwise the call to Release leaves
    --  the current array value plus 0.1% of the current table length free
    --  elements located at the end of the table. This parameter facilitates
@@ -267,14 +267,14 @@ package GNAT.Dynamic_Tables is
    generic
      with function Lt (Comp1, Comp2 : Table_Component_Type) return Boolean;
    procedure Sort_Table (Table : in out Instance);
-   --  This procedure sorts the components of the table into ascending
-   --  order making calls to Lt to do required comparisons, and using
-   --  assignments to move components around. The Lt function returns True
-   --  if Comp1 is less than Comp2 (in the sense of the desired sort), and
-   --  False if Comp1 is greater than Comp2. For equal objects it does not
-   --  matter if True or False is returned (it is slightly more efficient
-   --  to return False). The sort is not stable (the order of equal items
-   --  in the table is not preserved).
+   --  This procedure sorts the components of the table into ascending order
+   --  making calls to Lt to do required comparisons, and using assignments
+   --  to move components around. The Lt function returns True if Comp1 is
+   --  less than Comp2 (in the sense of the desired sort), and False if Comp1
+   --  is greater than Comp2. For equal objects it does not matter if True or
+   --  False is returned (it is slightly more efficient to return False). The
+   --  sort is not stable (the order of equal items in the table is not
+   --  preserved).
 
 private
 

@@ -95,8 +95,8 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
             if not Equivalent_Keys (K, New_Key)
               and then
                 (Find (Right.Keys, K) = 0
-                   or else Get (Right.Elements, Find (Right.Keys, K)) /=
-                           Get (Left.Elements, I))
+                  or else Get (Right.Elements, Find (Right.Keys, K)) /=
+                          Get (Left.Elements, I))
             then
                return False;
             end if;
@@ -120,8 +120,8 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
               and then not Equivalent_Keys (K, Y)
               and then
                 (Find (Right.Keys, K) = 0
-                   or else Get (Right.Elements, Find (Right.Keys, K)) /=
-                           Get (Left.Elements, I))
+                  or else Get (Right.Elements, Find (Right.Keys, K)) /=
+                          Get (Left.Elements, I))
             then
                return False;
             end if;
