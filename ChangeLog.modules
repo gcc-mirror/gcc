@@ -1,5 +1,12 @@
 2017-04-27  Nathan Sidwell  <nathan@acm.org>
 
+	Kill rt_import popping madness
+	gcc/cp/
+	* module.c (cpm_serial::rt_export): New tag.
+	(cpms_in::tag_import): Do the importing right now.
+	(cpms_in::read_item): ... not here.
+	(read_module): Pass in dump file name, open it if needed.
+
 	Kill walk_namespaces
 	gcc/cp/
 	* cp-tree.h (walk_namespaces): Delete.

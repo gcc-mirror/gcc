@@ -25,6 +25,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "dumpfile.h"
 
+enum import_kind
+{
+  ik_indirect,/* Import via import.  */
+  ik_import,  /* Regular import.  */
+  ik_export,  /* Exported import.  */
+  ik_impl,    /* The implementation */
+  ik_inter    /* The interface.  */
+};
+
+static bool
+do_import_module (location_t, tree, tree, import_kind, FILE * = NULL);
+
 /* Byte serializer base.  */
 class cpm_serial
 {
@@ -621,6 +633,8 @@ public:
     rt_conf, /* Config info (baked in stuff like target-triplet) */
     rt_flags, /* Flags that affect AST generation, such as fshort-enum.  */
     rt_import, /* A nested import. */
+    rt_export, /* A reexported import.  */
+    rt_binding, /* A name-binding.  */
     rt_trees, /* Global trees.  */
     rt_tree_base = 0x100,      /* Tree codes.  */
     rt_ref_base = 0x1000    /* Back-reference indices.  */
@@ -707,7 +721,7 @@ public:
   void header (FILE *, tree);
   void tag_eof ();
   void tag_conf (FILE *);
-  void tag_import (FILE *, tree, bool);
+  void tag_import (FILE *, tree, bool reexported_p);
   void tag_trees (FILE *);
   int done ()
   {
@@ -754,9 +768,10 @@ public:
   bool header (FILE *, tree);
   int tag_eof (FILE *);
   bool tag_conf (FILE *);
-  int tag_import (FILE *, tree &);
+  bool tag_import (FILE *, bool reexporting);
+  bool tag_binding (FILE *);
   bool tag_trees (FILE *);
-  int read_one (FILE *, tree &);
+  int read_item (FILE *);
   int done ()
   {
     return r.done ();
@@ -1054,16 +1069,14 @@ cpms_out::tag_import (FILE *d, tree name, bool is_export)
   if (d)
     fprintf (d, "Writing %s '%s'\n", is_export ? "export module" : "import",
 	     IDENTIFIER_POINTER (name));
-  w.u (rt_import);
-  w.u (is_export);
+  w.u (is_export ? rt_export : rt_import);
   w.str (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
   w.checkpoint ();
 }
 
-int
-cpms_in::tag_import (FILE *d, tree &imp)
+bool
+cpms_in::tag_import (FILE *d, bool /*is_export*/)
 {
-  bool is_exp = r.u ();
   size_t l;
   const char *mod = r.str (&l);
 
@@ -1082,19 +1095,27 @@ cpms_in::tag_import (FILE *d, tree &imp)
     else if (!ISDIGIT (mod[ix]))
       goto bad;
   if (!l || dot == l)
-    goto bad;
+    {
+      bad:
+      error ("module name '%qs' is malformed", mod);
+      return false;
+    }
 
-  imp = get_identifier_with_length (mod, l);
+  tree imp = get_identifier_with_length (mod, l);
+
   if (d)
-    fprintf (d, "Read import '%s'\n", mod);
-  return (is_exp ? 1 : 0) | 0x10;
- bad:
-  error ("module name '%qs' is malformed", mod);
-  return false;
+    fprintf (d, "Begin nested import '%s'\n", IDENTIFIER_POINTER (imp));
+  // FIXME: importing is more complicated,
+  bool ok = do_import_module (UNKNOWN_LOCATION, imp, NULL_TREE,
+			      ik_import, d);
+  if (d)
+    fprintf (d, "Completed nested import '%s' %s\n",
+	     IDENTIFIER_POINTER (imp), ok ? "ok" : "failed");
+  return ok;
 }
 
 int
-cpms_in::read_one (FILE *d, tree &imp)
+cpms_in::read_item (FILE *d)
 {
   unsigned rt = r.u ();
   switch (rt)
@@ -1103,15 +1124,16 @@ cpms_in::read_one (FILE *d, tree &imp)
       return tag_eof (d);
     case rt_conf:
       return tag_conf (d);
+    case rt_export:
     case rt_import:
-      return tag_import (d, imp);
+      return tag_import (d, rt == rt_export);
     case rt_trees:
       return tag_trees (d);
 
     default:
       break;
     }
-  
+
   tree t;
   if (!read_tree (d, &t, rt))
     {
@@ -2064,14 +2086,6 @@ cpms_in::finish_namespace (FILE *d, tree ns)
 /* The set of imported modules.  The current declared module is
    included in this set too.  Maps to an import_kind.  */
 static GTY(()) hash_map<lang_identifier *, unsigned> *imported_modules;
-enum import_kind
-{
-  ik_indirect,/* Import via import.  */
-  ik_import,  /* Regular import.  */
-  ik_export,  /* Exported import.  */
-  ik_impl,    /* The implementation */
-  ik_inter    /* The interface.  */
-};
 
 /* Lazily open the dumping stream, if enabled. */
 static inline FILE *
@@ -2190,54 +2204,26 @@ module_to_filename (tree id)
   return module_to_ext (id, MOD_FNAME_PFX, MOD_FNAME_SFX, MOD_FNAME_DOT);
 }
 
-static bool
-do_import_module (location_t, tree, tree, import_kind);
-
 /* Read a module NAME file name FNAME on STREAM.  */
 
 static bool
-read_module (FILE *stream, const char *fname, tree name, import_kind kind)
+read_module (FILE *stream,
+	     const char *fname, tree name, import_kind kind, FILE *d)
 {
   cpms_in in (stream, fname, kind == ik_impl);
-  FILE *d = dopen ();
+  bool owning_dump = !d;
+
+  if (owning_dump)
+    d = dopen ();
 
   if (d)
     fprintf (d, "Importing '%s'\n", IDENTIFIER_POINTER (name));
 
   int ok = in.header (d, name);
   if (ok)
-    {
-      tree imp;
-      while ((ok = in.read_one (d, imp)) > 0)
-	if (ok & 0x10)
-	  {
-	    /* We close the dump file around the inner import, as that
-	       will reopen it.  We don't close the module file we're
-	       reading from.  This could lead to a lot of concurrent
-	       open files.  Should that be a problem, we should adjust
-	       read_one to cope with reading a series of imports
-	       before we then save & close file state.  */
-	    if (d)
-	      fprintf (d, "Begin nested import '%s'\n",
-		       IDENTIFIER_POINTER (imp));
-	    dclose (d);
-	    // FIXME: importing is undoubtabtly more complicated,
-	    // I have not got things right
-	    ok = do_import_module (UNKNOWN_LOCATION, imp, NULL_TREE,
-				   kind == ik_impl ? ik_import : ik_indirect);
-	    d = dopen ();
-	    if (d)
-	      fprintf (d, "Completed nested import '%s' %s\n",
-		       IDENTIFIER_POINTER (imp), ok ? "ok" : "failed");
-	    if (!ok)
-	      {
-		inform (UNKNOWN_LOCATION, "while importing %qE (%qs)",
-			name, fname);
-		/* Bail now, things are likely to go really bad.  */
-		break;
-	      }
-	  }
-    }
+    do
+      ok = in.read_item (d);
+    while (ok > 0);
 
   if (int e = in.done ())
     {
@@ -2246,14 +2232,16 @@ read_module (FILE *stream, const char *fname, tree name, import_kind kind)
       ok = false;
     }
 
-  dclose (d);
+  if (owning_dump)
+    dclose (d);
   return ok;
 }
 
 /* Import the module NAME into the current TU. */
 
 static bool
-do_import_module (location_t loc, tree name, tree, import_kind kind)
+do_import_module (location_t loc, tree name, tree, import_kind kind,
+		  FILE *d)
 {
   if (!imported_modules)
     imported_modules = hash_map<lang_identifier *, unsigned>::create_ggc (31);
@@ -2294,7 +2282,7 @@ do_import_module (location_t loc, tree name, tree, import_kind kind)
   else
     {
       tree ctx = current_scope ();
-      ok = read_module (stream, fname, name, kind);
+      ok = read_module (stream, fname, name, kind, d);
       gcc_assert (ctx == current_scope ());
       fclose (stream);
     }
