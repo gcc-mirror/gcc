@@ -1,3 +1,71 @@
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb: copy-paste typo.
+
+2017-04-27  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Pre_Post_In_Decl_Part):
+	Use correct test to detect call in GNATprove mode instead of
+	compilation.
+
+2017-04-27  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.adb, a-cfdlli.ads (Formal_Model.M_Elements_In_Union):
+	New property function expressing that the element of a
+	sequence are contained in the union of two sequences.
+	(Formal_Model.M_Elements_Included): New property function
+	expressing that the element of a sequence are another sequence.
+	(Generic_Sorting): Use new property functions to state that
+	elements are preserved by Sort and Merge.
+	* a-cofove.adb, a-cofove.ads (=): Generic parameter removed to
+	allow the use of regular equality over elements in contracts.
+	(Formal_Model): Ghost package containing model functions
+	that are used in subprogram contracts.	(Capacity):
+	On unbounded containers, return the maximal capacity.
+	(Current_To_Last): Removed, model functions should be used instead.
+	(First_To_Previous): Removed, model functions should be used instead.
+	(Append): Default parameter value replaced
+	by new wrapper to allow more precise contracts.
+	(Insert): Subprogram restored, it seems it was useful to users even if
+	it is inefficient.
+	(Delete): Subprogram restored, it seems it was useful to users even if
+	it is inefficient.
+	(Prepend): Subprogram restored, it seems it was useful to users even
+	if it is inefficient.
+	(Delete_First): Subprogram restored, it seems it
+	was useful to users even if it is inefficient.	(Delete_Last):
+	Default parameter value replaced by new wrapper to allow more
+	precise contracts.
+	(Generic_Sorting.Merge): Subprogram restored.
+	* a-cfinve.adb, a-cfinve.ads (=): Generic parameter removed to
+	allow the use of regular equality over elements in contracts.
+	(Formal_Model): Ghost package containing model functions
+	that are used in subprogram contracts.	(Capacity):
+	On unbounded containers, return the maximal capacity.
+	(Current_To_Last): Removed, model functions should be used
+	instead.
+	(First_To_Previous): Removed, model functions should be used instead.
+	(Append): Default parameter value replaced
+	by new wrapper to allow more precise contracts.
+	(Insert): Subprogram restored, it seems it was useful to users even if
+	it is inefficient.
+	(Delete): Subprogram restored, it seems it was useful to users even if
+	it is inefficient.
+	(Prepend): Subprogram restored, it seems it was useful to users even
+	if it is inefficient.
+	(Delete_First): Subprogram restored, it seems it
+	was useful to users even if it is inefficient.	(Delete_Last):
+	Default parameter value replaced by new wrapper to allow more
+	precise contracts.
+	(Generic_Sorting.Merge): Subprogram restored.
+	(Vector): Do not reuse formal vectors, as it is no longer possible
+	to supply them with an equality function over elements.
+
+2017-04-27  Bob Duff  <duff@adacore.com>
+
+	* g-dyntab.adb (Release): When allocating the new
+	table, use the correct slice of the old table to initialize it.
+
 2017-04-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* einfo.ads: Minor fixes in comments.
