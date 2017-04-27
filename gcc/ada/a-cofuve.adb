@@ -40,7 +40,7 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
    function "<" (Left : Sequence; Right : Sequence) return Boolean is
      (Length (Left.Content) < Length (Right.Content)
        and then (for all I in Index_Type'First .. Last (Left) =>
-                   Get (Left.Content, I) = Get (Right.Content, I)));
+                  Get (Left.Content, I) = Get (Right.Content, I)));
 
    ----------
    -- "<=" --
@@ -49,7 +49,7 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
    function "<=" (Left : Sequence; Right : Sequence) return Boolean is
      (Length (Left.Content) <= Length (Right.Content)
        and then (for all I in Index_Type'First .. Last (Left) =>
-                   Get (Left.Content, I) = Get (Right.Content, I)));
+                  Get (Left.Content, I) = Get (Right.Content, I)));
 
    ---------
    -- "=" --
@@ -62,13 +62,15 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
    -- Add --
    ---------
 
-   function Add (Container : Sequence; New_Item : Element_Type) return Sequence
+   function Add
+     (Container : Sequence;
+      New_Item  : Element_Type) return Sequence
    is
-     (Content => Add (Container.Content,
-                      Index_Type'Val
-                        (Index_Type'Pos (Index_Type'First) +
-                             Length (Container.Content)),
-                      New_Item));
+     (Content =>
+       Add (Container.Content,
+            Index_Type'Val (Index_Type'Pos (Index_Type'First) +
+                            Length (Container.Content)),
+            New_Item));
 
    function Add
      (Container : Sequence;
@@ -92,6 +94,7 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
             return False;
          end if;
       end loop;
+
       return True;
    end Constant_Range;
 
@@ -111,6 +114,7 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
             return True;
          end if;
       end loop;
+
       return False;
    end Contains;
 
@@ -142,7 +146,8 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
    function Equal_Except
      (Left  : Sequence;
       Right : Sequence;
-      X, Y  : Index_Type) return Boolean
+      X     : Index_Type;
+      Y     : Index_Type) return Boolean
    is
    begin
       if Length (Left.Content) /= Length (Right.Content) then
@@ -174,8 +179,8 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
    ----------
 
    function Last (Container : Sequence) return Extended_Index is
-     (Index_Type'Val ((Index_Type'Pos (Index_Type'First) - 1)
-                      + Length (Container)));
+     (Index_Type'Val
+       ((Index_Type'Pos (Index_Type'First) - 1) + Length (Container)));
 
    ------------
    -- Length --
@@ -200,6 +205,7 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
             return False;
          end if;
       end loop;
+
       return True;
    end Range_Equal;
 
@@ -216,8 +222,8 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
    is
    begin
       for I in Fst .. Lst loop
-         if Get (Left, I)
-           /= Get (Right, Index_Type'Val (Index_Type'Pos (I) + Offset))
+         if Get (Left, I) /=
+              Get (Right, Index_Type'Val (Index_Type'Pos (I) + Offset))
          then
             return False;
          end if;
@@ -229,8 +235,9 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
    -- Remove --
    ------------
 
-   function Remove (Container : Sequence;
-                    Position : Index_Type) return Sequence
+   function Remove
+     (Container : Sequence;
+      Position : Index_Type) return Sequence
    is
      (Content => Remove (Container.Content, Position));
 

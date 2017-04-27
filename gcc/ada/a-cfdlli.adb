@@ -30,7 +30,6 @@ with System; use type System.Address;
 package body Ada.Containers.Formal_Doubly_Linked_Lists with
   SPARK_Mode => Off
 is
-
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -55,8 +54,9 @@ is
    -- "=" --
    ---------
 
-   function "=" (Left, Right : List) return Boolean is
-      LI, RI : Count_Type;
+   function "=" (Left : List; Right : List) return Boolean is
+      LI : Count_Type;
+      RI : Count_Type;
 
    begin
       if Left'Address = Right'Address then
@@ -230,10 +230,10 @@ is
          N := N + 1;
       end loop;
 
-      P.Free := Source.Free;
+      P.Free   := Source.Free;
       P.Length := Source.Length;
-      P.First := Source.First;
-      P.Last := Source.Last;
+      P.First  := Source.First;
+      P.Last   := Source.Last;
 
       if P.Free >= 0 then
          N := Source.Capacity + 1;
@@ -250,14 +250,12 @@ is
    -- Delete --
    ------------
 
-   procedure Delete
-     (Container : in out List;
-      Position  : in out Cursor)
-   is
+   procedure Delete (Container : in out List; Position : in out Cursor) is
    begin
-      Delete (Container => Container,
-              Position  => Position,
-              Count     => 1);
+      Delete
+        (Container => Container,
+         Position  => Position,
+         Count     => 1);
    end Delete;
 
    procedure Delete
@@ -272,8 +270,7 @@ is
       if not Has_Element (Container => Container,
                           Position  => Position)
       then
-         raise Constraint_Error with
-           "Position cursor has no element";
+         raise Constraint_Error with "Position cursor has no element";
       end if;
 
       pragma Assert (Vet (Container, Position), "bad cursor in Delete");
@@ -317,6 +314,7 @@ is
 
          Free (Container, X);
       end loop;
+
       Position := No_Element;
    end Delete;
 
@@ -324,17 +322,14 @@ is
    -- Delete_First --
    ------------------
 
-   procedure Delete_First (Container : in out List)
-   is
+   procedure Delete_First (Container : in out List) is
    begin
-      Delete_First (Container => Container,
-                    Count     => 1);
+      Delete_First
+        (Container => Container,
+         Count     => 1);
    end Delete_First;
 
-   procedure Delete_First
-     (Container : in out List;
-      Count     : Count_Type)
-   is
+   procedure Delete_First (Container : in out List; Count : Count_Type) is
       N : Node_Array renames Container.Nodes;
       X : Count_Type;
 
@@ -365,17 +360,14 @@ is
    -- Delete_Last --
    -----------------
 
-   procedure Delete_Last (Container : in out List)
-   is
+   procedure Delete_Last (Container : in out List) is
    begin
-      Delete_Last (Container => Container,
-                   Count     => 1);
+      Delete_Last
+        (Container => Container,
+         Count     => 1);
    end Delete_Last;
 
-   procedure Delete_Last
-     (Container : in out List;
-      Count     : Count_Type)
-   is
+   procedure Delete_Last (Container : in out List; Count : Count_Type) is
       N : Node_Array renames Container.Nodes;
       X : Count_Type;
 
@@ -412,8 +404,7 @@ is
    is
    begin
       if not Has_Element (Container => Container, Position  => Position) then
-         raise Constraint_Error with
-           "Position cursor has no element";
+         raise Constraint_Error with "Position cursor has no element";
       end if;
 
       return Container.Nodes (Position.Node).Element;
@@ -442,8 +433,7 @@ is
       if Position.Node /= 0 and then
         not Has_Element (Container, Position)
       then
-         raise Constraint_Error with
-           "Position cursor has no element";
+         raise Constraint_Error with "Position cursor has no element";
       end if;
 
       while From /= 0 loop
@@ -476,6 +466,7 @@ is
 
    function First_Element (Container : List) return Element_Type is
       F : constant Count_Type := Container.First;
+
    begin
       if F = 0 then
          raise Constraint_Error with "list is empty";
@@ -500,8 +491,12 @@ is
       -- M_Elements_Reversed --
       -------------------------
 
-      function M_Elements_Reversed (Left, Right : M.Sequence) return Boolean is
+      function M_Elements_Reversed
+        (Left  : M.Sequence;
+         Right : M.Sequence) return Boolean
+      is
          L : constant Count_Type := M.Length (Left);
+
       begin
          if L /= M.Length (Right) then
             return False;
@@ -533,11 +528,13 @@ is
             declare
                Found : Boolean := False;
                J     : Count_Type := Fst;
+
             begin
                while not Found and J <= Lst loop
                   if Element (Left, I) = Element (Right, J + Offset) then
                      Found := True;
                   end if;
+
                   J := J + 1;
                end loop;
 
@@ -546,6 +543,7 @@ is
                end if;
             end;
          end loop;
+
          return True;
       end M_Elements_Shuffle;
 
@@ -556,7 +554,8 @@ is
       function M_Elements_Swapped
         (Left  : M.Sequence;
          Right : M.Sequence;
-         X, Y  : Positive_Count_Type) return Boolean
+         X     : Positive_Count_Type;
+         Y     : Positive_Count_Type) return Boolean
       is
       begin
          if M.Length (Left) /= M.Length (Right)
@@ -584,13 +583,16 @@ is
       function Model (Container : List) return M.Sequence is
          Position : Count_Type := Container.First;
          R        : M.Sequence;
+
       begin
-         --  Can't use First, Next or Element here, since they depend
-         --  on models for their postconditions
+         --  Can't use First, Next or Element here, since they depend on models
+         --  for their postconditions.
+
          while Position /= 0 loop
             R := M.Add (R, Container.Nodes (Position).Element);
             Position := Container.Nodes (Position).Next;
          end loop;
+
          return R;
       end Model;
 
@@ -607,10 +609,10 @@ is
       begin
          for C of P_Left loop
             if not P.Has_Key (P_Right, C)
-              or else P.Get (P_Left, C) > M.Length (M_Left)
+              or else P.Get (P_Left,  C) > M.Length (M_Left)
               or else P.Get (P_Right, C) > M.Length (M_Right)
-              or else M.Get (M_Left, P.Get (P_Left, C))
-                   /= M.Get (M_Right, P.Get (P_Right, C))
+              or else M.Get (M_Left,  P.Get (P_Left,  C)) /=
+                      M.Get (M_Right, P.Get (P_Right, C))
             then
                return False;
             end if;
@@ -645,18 +647,22 @@ is
          for Cu of Big loop
             declare
                Pos : constant Positive_Count_Type := P.Get (Big, Cu);
+
             begin
                if Pos < Cut then
-                  if not P.Has_Key (Small, Cu) or else Pos /= P.Get (Small, Cu)
+                  if not P.Has_Key (Small, Cu)
+                    or else Pos /= P.Get (Small, Cu)
                   then
                      return False;
                   end if;
+
                elsif Pos >= Cut + Count then
                   if not P.Has_Key (Small, Cu)
                     or else Pos /= P.Get (Small, Cu) + Count
                   then
                      return False;
                   end if;
+
                else
                   if P.Has_Key (Small, Cu) then
                      return False;
@@ -664,6 +670,7 @@ is
                end if;
             end;
          end loop;
+
          return True;
       end P_Positions_Shifted;
 
@@ -674,17 +681,20 @@ is
       function P_Positions_Swapped
         (Left  : P.Map;
          Right : P.Map;
-         X, Y  : Cursor) return Boolean
+         X     : Cursor;
+         Y     : Cursor) return Boolean
       is
       begin
-         if not P.Has_Key (Left, X) or not P.Has_Key (Left, Y)
-           or not P.Has_Key (Right, X) or not P.Has_Key (Right, Y)
+         if not P.Has_Key (Left, X)
+           or not P.Has_Key (Left, Y)
+           or not P.Has_Key (Right, X)
+           or not P.Has_Key (Right, Y)
          then
             return False;
          end if;
 
          if P.Get (Left, X) /= P.Get (Right, Y)
-             or P.Get (Left, Y) /= P.Get (Right, X)
+           or P.Get (Left, Y) /= P.Get (Right, X)
          then
             return False;
          end if;
@@ -698,7 +708,7 @@ is
          for C of Right loop
             if not P.Has_Key (Left, C)
               or else (C /= X and C /= Y
-                       and P.Get (Left, C) /= P.Get (Right, C))
+                        and P.Get (Left, C) /= P.Get (Right, C))
             then
                return False;
             end if;
@@ -727,19 +737,24 @@ is
          for Cu of Big loop
             declare
                Pos : constant Positive_Count_Type := P.Get (Big, Cu);
+
             begin
                if Pos < Cut then
-                  if not P.Has_Key (Small, Cu) or else Pos /= P.Get (Small, Cu)
+                  if not P.Has_Key (Small, Cu)
+                    or else Pos /= P.Get (Small, Cu)
                   then
                      return False;
                   end if;
+
                elsif Pos >= Cut + Count then
                   return False;
+
                elsif P.Has_Key (Small, Cu) then
                   return False;
                end if;
             end;
          end loop;
+
          return True;
       end P_Positions_Truncated;
 
@@ -748,18 +763,21 @@ is
       ---------------
 
       function Positions (Container : List) return P.Map is
+         I        : Count_Type := 1;
          Position : Count_Type := Container.First;
          R        : P.Map;
-         I        : Count_Type := 1;
+
       begin
-         --  Can't use First, Next or Element here, since they depend
-         --  on models for their postconditions
+         --  Can't use First, Next or Element here, since they depend on models
+         --  for their postconditions.
+
          while Position /= 0 loop
             R := P.Add (R, (Node => Position), I);
             pragma Assert (P.Length (R) = I);
             Position := Container.Nodes (Position).Next;
             I := I + 1;
          end loop;
+
          return R;
       end Positions;
 
@@ -769,10 +787,7 @@ is
    -- Free --
    ----------
 
-   procedure Free
-     (Container : in out List;
-      X         : Count_Type)
-   is
+   procedure Free (Container : in out List; X : Count_Type) is
       pragma Assert (X > 0);
       pragma Assert (X <= Container.Capacity);
 
@@ -846,18 +861,22 @@ is
 
          declare
             E1 : Element_Type := Element (Container, 1);
+
          begin
             for I in 2 .. M.Length (Container) loop
                declare
                   E2 : constant Element_Type := Element (Container, I);
+
                begin
                   if E2 < E1 then
                      return False;
                   end if;
+
                   E1 := E2;
                end;
             end loop;
          end;
+
          return True;
       end M_Elements_Sorted;
 
@@ -865,10 +884,7 @@ is
       -- Merge --
       -----------
 
-      procedure Merge
-        (Target : in out List;
-         Source : in out List)
-      is
+      procedure Merge (Target : in out List; Source : in out List) is
          LN : Node_Array renames Target.Nodes;
          RN : Node_Array renames Source.Nodes;
          LI : Cursor;
@@ -882,18 +898,20 @@ is
          LI := First (Target);
          RI := First (Source);
          while RI.Node /= 0 loop
-            pragma Assert (RN (RI.Node).Next = 0
-              or else not (RN (RN (RI.Node).Next).Element <
-                  RN (RI.Node).Element));
+            pragma Assert
+              (RN (RI.Node).Next = 0
+                or else not (RN (RN (RI.Node).Next).Element <
+                             RN (RI.Node).Element));
 
             if LI.Node = 0 then
                Splice (Target, No_Element, Source);
                return;
             end if;
 
-            pragma Assert (LN (LI.Node).Next = 0
-              or else not (LN (LN (LI.Node).Next).Element <
-                  LN (LI.Node).Element));
+            pragma Assert
+              (LN (LI.Node).Next = 0
+                or else not (LN (LN (LI.Node).Next).Element <
+                             LN (LI.Node).Element));
 
             if RN (RI.Node).Element < LN (LI.Node).Element then
                declare
@@ -917,14 +935,14 @@ is
       procedure Sort (Container : in out List) is
          N : Node_Array renames Container.Nodes;
 
-         procedure Partition (Pivot, Back : Count_Type);
-         procedure Sort (Front, Back : Count_Type);
+         procedure Partition (Pivot : Count_Type; Back : Count_Type);
+         procedure Sort (Front : Count_Type; Back : Count_Type);
 
          ---------------
          -- Partition --
          ---------------
 
-         procedure Partition (Pivot, Back : Count_Type) is
+         procedure Partition (Pivot : Count_Type; Back : Count_Type) is
             Node : Count_Type;
 
          begin
@@ -968,7 +986,7 @@ is
          -- Sort --
          ----------
 
-         procedure Sort (Front, Back : Count_Type) is
+         procedure Sort (Front : Count_Type; Back : Count_Type) is
             Pivot : Count_Type;
 
          begin
@@ -1060,11 +1078,12 @@ is
       Position  : out Cursor)
    is
    begin
-      Insert (Container => Container,
-              Before    => Before,
-              New_Item  => New_Item,
-              Position  => Position,
-              Count     => 1);
+      Insert
+        (Container => Container,
+         Before    => Before,
+         New_Item  => New_Item,
+         Position  => Position,
+         Count     => 1);
    end Insert;
 
    procedure Insert
@@ -1074,6 +1093,7 @@ is
       Count     : Count_Type)
    is
       Position : Cursor;
+
    begin
       Insert (Container, Before, New_Item, Position, Count);
    end Insert;
@@ -1084,6 +1104,7 @@ is
       New_Item  : Element_Type)
    is
       Position : Cursor;
+
    begin
       Insert (Container, Before, New_Item, Position, 1);
    end Insert;
@@ -1171,6 +1192,7 @@ is
 
    function Last_Element (Container : List) return Element_Type is
       L : constant Count_Type := Container.Last;
+
    begin
       if L = 0 then
          raise Constraint_Error with "list is empty";
@@ -1192,10 +1214,7 @@ is
    -- Move --
    ----------
 
-   procedure Move
-     (Target : in out List;
-      Source : in out List)
-   is
+   procedure Move (Target : in out List; Source : in out List) is
       N : Node_Array renames Source.Nodes;
       X : Count_Type;
 
@@ -1295,10 +1314,7 @@ is
    -- Prepend --
    -------------
 
-   procedure Prepend
-     (Container : in out List;
-      New_Item  : Element_Type)
-   is
+   procedure Prepend (Container : in out List; New_Item : Element_Type) is
    begin
       Insert (Container, First (Container), New_Item, 1);
    end Prepend;
@@ -1363,13 +1379,13 @@ is
       I : Count_Type := Container.First;
       J : Count_Type := Container.Last;
 
-      procedure Swap (L, R : Count_Type);
+      procedure Swap (L : Count_Type; R : Count_Type);
 
       ----------
       -- Swap --
       ----------
 
-      procedure Swap (L, R : Count_Type) is
+      procedure Swap (L : Count_Type; R : Count_Type) is
          LN : constant Count_Type := N (L).Next;
          LP : constant Count_Type := N (L).Prev;
 
@@ -1414,7 +1430,7 @@ is
       pragma Assert (N (Container.Last).Next = 0);
 
       Container.First := J;
-      Container.Last := I;
+      Container.Last  := I;
       loop
          Swap (L => I, R => J);
 
@@ -1642,7 +1658,8 @@ is
 
    procedure Swap
      (Container : in out List;
-      I, J      : Cursor)
+      I         : Cursor;
+      J         : Cursor)
    is
    begin
       if I.Node = 0 then
@@ -1679,9 +1696,11 @@ is
 
    procedure Swap_Links
      (Container : in out List;
-      I, J      : Cursor)
+      I         : Cursor;
+      J         : Cursor)
    is
-      I_Next, J_Next : Cursor;
+      I_Next : Cursor;
+      J_Next : Cursor;
 
    begin
       if I.Node = 0 then

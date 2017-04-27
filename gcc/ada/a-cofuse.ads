@@ -34,8 +34,10 @@ private with Ada.Containers.Functional_Base;
 
 generic
    type Element_Type (<>) is private;
-   with
-     function Equivalent_Elements (Left, Right : Element_Type) return Boolean;
+   with function Equivalent_Elements
+     (Left  : Element_Type;
+      Right : Element_Type) return Boolean;
+
 package Ada.Containers.Functional_Sets with SPARK_Mode is
 
    type Set is private with
@@ -80,8 +82,8 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
      Global => null,
      Post   =>
        "="'Result =
-         ((for all Item of Left => Contains (Right, Item))
-             and (for all Item of Right => Contains (Left, Item)));
+         (for all Item of Left => Contains (Right, Item))
+           and (for all Item of Right => Contains (Left, Item));
 
    pragma Warnings (Off, "unused variable ""Item""");
    function Is_Empty (Container : Set) return Boolean with
@@ -102,8 +104,8 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
      Global => null,
      Post   =>
        Included_Except'Result =
-           (for all E of Left =>
-              Contains (Right, E) or Equivalent_Elements (E, Item));
+         (for all E of Left =>
+           Contains (Right, E) or Equivalent_Elements (E, Item));
 
    function Includes_Intersection
      (Container : Set;
@@ -117,7 +119,7 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
      Post   =>
        Includes_Intersection'Result =
          (for all Item of Left =>
-             (if Contains (Right, Item) then Contains (Container, Item)));
+           (if Contains (Right, Item) then Contains (Container, Item)));
 
    function Included_In_Union
      (Container : Set;
@@ -130,7 +132,7 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
      Post   =>
        Included_In_Union'Result =
          (for all Item of Container =>
-            Contains (Left, Item) or Contains (Right, Item));
+           Contains (Left, Item) or Contains (Right, Item));
 
    function Num_Overlaps (Left : Set; Right : Set) return Count_Type with
    --  Number of elements that are both in Left and Right
@@ -158,9 +160,9 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
        and Length (Container) < Count_Type'Last,
      Post   =>
        Length (Add'Result) = Length (Container) + 1
-       and Contains (Add'Result, Item)
-       and Container <= Add'Result
-       and Included_Except (Add'Result, Container, Item);
+         and Contains (Add'Result, Item)
+         and Container <= Add'Result
+         and Included_Except (Add'Result, Container, Item);
 
    function Remove (Container : Set; Item : Element_Type) return Set with
    --  Return a new set containing all the elements of Container except E
@@ -169,9 +171,9 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
      Pre    => Contains (Container, Item),
      Post   =>
        Length (Remove'Result) = Length (Container) - 1
-       and not Contains (Remove'Result, Item)
-       and Remove'Result <= Container
-       and Included_Except (Container, Remove'Result, Item);
+         and not Contains (Remove'Result, Item)
+         and Remove'Result <= Container
+         and Included_Except (Container, Remove'Result, Item);
 
    function Intersection (Left : Set; Right : Set) return Set with
    --  Returns the intersection of Left and Right
@@ -188,8 +190,8 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
 
      Global => null,
      Pre    =>
-       Length (Left) - Num_Overlaps (Left, Right)
-         <= Count_Type'Last - Length (Right),
+       Length (Left) - Num_Overlaps (Left, Right) <=
+         Count_Type'Last - Length (Right),
      Post   =>
        Length (Union'Result) =
          Length (Left) - Num_Overlaps (Left, Right) + Length (Right)
@@ -212,7 +214,9 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
    with
      Global => null;
 
-   function Iter_Next (Container : Set; Key : Private_Key) return Private_Key
+   function Iter_Next
+     (Container : Set;
+      Key       : Private_Key) return Private_Key
    with
      Global => null,
      Pre    => Iter_Has_Element (Container, Key);
@@ -249,7 +253,9 @@ private
    is
      (Count_Type (Key) in 1 .. Containers.Length (Container.Content));
 
-   function Iter_Next (Container : Set; Key : Private_Key) return Private_Key
+   function Iter_Next
+     (Container : Set;
+      Key       : Private_Key) return Private_Key
    is
      (if Key = Private_Key'Last then 0 else Key + 1);
 

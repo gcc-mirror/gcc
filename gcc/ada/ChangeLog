@@ -1,3 +1,32 @@
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-cofuse.adb, a-cfdlli.adb, a-cofuse.ads, a-cfdlli.ads, a-cofuve.adb,
+	a-cofuve.ads, a-cofuma.adb, a-cofuma.ads, sem_eval.adb, a-cofuba.adb:
+	Minor reformatting.
+
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Call): If the return type of a function
+	is incomplete in an context in which the full view is available,
+	replace the type of the call by the full view, to prevent spurious
+	type errors.
+	* exp_disp.adb (Check_Premature_Freezing): Disable check on an
+	abstract subprogram so that compiler does not reject a parameter
+	of a primitive operation of a tagged type being frozen, when
+	the untagged type of that parameter cannot be frozen.
+
+2017-04-27  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb (Compute_Type_Key): Don't walk
+	representation items for irrelevant types, which could be in a
+	different source file.
+
+2017-04-27  Steve Baird  <baird@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference):
+	Don't expand Image, Wide_Image, Wide_Wide_Image attributes
+	for CodePeer.
+
 2017-04-27  Yannick Moy  <moy@adacore.com>
 
 	* exp_unst.ads: Fix typos in comments.

@@ -54,7 +54,7 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
 
    function Add (Container : Set; Item : Element_Type) return Set is
      (Content =>
-         Add (Container.Content, Length (Container.Content) + 1, Item));
+       Add (Container.Content, Length (Container.Content) + 1, Item));
 
    --------------
    -- Contains --
@@ -73,7 +73,7 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
       Item  : Element_Type) return Boolean
    is
      (for all E of Left =>
-         Equivalent_Elements (E, Item) or Contains (Right, E));
+       Equivalent_Elements (E, Item) or Contains (Right, E));
 
    -----------------------
    -- Included_In_Union --
@@ -85,7 +85,7 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
       Right     : Set) return Boolean
    is
      (for all Item of Container =>
-         Contains (Left, Item) or Contains (Right, Item));
+       Contains (Left, Item) or Contains (Right, Item));
 
    ---------------------------
    -- Includes_Intersection --
@@ -97,7 +97,7 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
       Right     : Set) return Boolean
    is
      (for all Item of Left =>
-        (if Contains (Right, Item) then Contains (Container, Item)));
+       (if Contains (Right, Item) then Contains (Container, Item)));
 
    ------------------
    -- Intersection --

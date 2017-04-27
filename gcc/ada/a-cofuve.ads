@@ -38,6 +38,7 @@ generic
    --  should have at least one more element at the low end than Index_Type.
 
    type Element_Type (<>) is private;
+
 package Ada.Containers.Functional_Vectors with SPARK_Mode is
 
    subtype Extended_Index is Index_Type'Base range
@@ -69,7 +70,7 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
      Global => null,
      Post   =>
        (Index_Type'Pos (Index_Type'First) - 1) + Length'Result <=
-          Index_Type'Pos (Index_Type'Last);
+         Index_Type'Pos (Index_Type'Last);
 
    function Get
      (Container : Sequence;
@@ -86,8 +87,8 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
      Global => null,
      Post =>
        Last'Result =
-         Index_Type'Val ((Index_Type'Pos (Index_Type'First) - 1)
-                         + Length (Container));
+         Index_Type'Val ((Index_Type'Pos (Index_Type'First) - 1) +
+           Length (Container));
    pragma Annotate (GNATprove, Inline_For_Proof, Last);
 
    function First return Extended_Index is (Index_Type'First);
@@ -104,8 +105,8 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
      Post   =>
        "="'Result =
          (Length (Left) = Length (Right)
-          and then (for all N in Index_Type'First .. Last (Left) =>
-              Get (Left, N) = Get (Right, N)));
+           and then (for all N in Index_Type'First .. Last (Left) =>
+                      Get (Left, N) = Get (Right, N)));
    pragma Annotate (GNATprove, Inline_For_Proof, "=");
 
    function "<" (Left : Sequence; Right : Sequence) return Boolean with
@@ -115,8 +116,8 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
      Post   =>
        "<"'Result =
          (Length (Left) < Length (Right)
-          and then (for all N in Index_Type'First .. Last (Left) =>
-              Get (Left, N) = Get (Right, N)));
+           and then (for all N in Index_Type'First .. Last (Left) =>
+                      Get (Left, N) = Get (Right, N)));
    pragma Annotate (GNATprove, Inline_For_Proof, "<");
 
    function "<=" (Left : Sequence; Right : Sequence) return Boolean with
@@ -126,16 +127,15 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
      Post   =>
        "<="'Result =
          (Length (Left) <= Length (Right)
-          and then (for all N in Index_Type'First .. Last (Left) =>
-              Get (Left, N) = Get (Right, N)));
+           and then (for all N in Index_Type'First .. Last (Left) =>
+                      Get (Left, N) = Get (Right, N)));
    pragma Annotate (GNATprove, Inline_For_Proof, "<=");
 
    function Contains
      (Container : Sequence;
       Fst       : Index_Type;
       Lst       : Extended_Index;
-      Item      : Element_Type)
-         return Boolean
+      Item      : Element_Type) return Boolean
    --  Returns True if Item occurs in the range from Fst to Lst of Container
 
    with
@@ -150,8 +150,7 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
      (Container : Sequence;
       Fst       : Index_Type;
       Lst       : Extended_Index;
-      Item      : Element_Type)
-         return Boolean
+      Item      : Element_Type) return Boolean
    --  Returns True if every element of the range from Fst to Lst of Container
    --  is equal to Item.
 
@@ -175,14 +174,15 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
      Post   =>
        Equal_Except'Result =
          (Length (Left) = Length (Right)
-          and then (for all I in Index_Type'First .. Last (Left) =>
-              (if I /= Position then Get (Left, I) = Get (Right, I))));
+           and then (for all I in Index_Type'First .. Last (Left) =>
+                      (if I /= Position then Get (Left, I) = Get (Right, I))));
    pragma Annotate (GNATprove, Inline_For_Proof, Equal_Except);
 
    function Equal_Except
      (Left  : Sequence;
       Right : Sequence;
-      X, Y  : Index_Type) return Boolean
+      X     : Index_Type;
+      Y     : Index_Type) return Boolean
    --  Returns True is Left and Right are the same except at positions X and Y
 
    with
@@ -191,8 +191,9 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
      Post   =>
        Equal_Except'Result =
          (Length (Left) = Length (Right)
-          and then (for all I in Index_Type'First .. Last (Left) =>
-              (if I /= X and I /= Y then Get (Left, I) = Get (Right, I))));
+           and then (for all I in Index_Type'First .. Last (Left) =>
+                      (if I /= X and I /= Y then
+                          Get (Left, I) = Get (Right, I))));
    pragma Annotate (GNATprove, Inline_For_Proof, Equal_Except);
 
    function Range_Equal
@@ -222,21 +223,23 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
 
    with
      Global => null,
-     Pre    => Lst <= Last (Left)
-           and Offset in
-              Index_Type'Pos (Index_Type'First) - Index_Type'Pos (Fst) ..
-                   (Index_Type'Pos (Index_Type'First) - 1)
-                  + Length (Right) - Index_Type'Pos (Lst),
+     Pre    =>
+       Lst <= Last (Left)
+         and Offset in
+           Index_Type'Pos (Index_Type'First) - Index_Type'Pos (Fst) ..
+             (Index_Type'Pos (Index_Type'First) - 1) + Length (Right) -
+              Index_Type'Pos (Lst),
      Post   =>
        Range_Shifted'Result =
          ((for all I in Fst .. Lst =>
-                   Get (Left, I)
-           = Get (Right, Index_Type'Val (Index_Type'Pos (I) + Offset)))
+            Get (Left, I) =
+            Get (Right, Index_Type'Val (Index_Type'Pos (I) + Offset)))
           and
             (for all I in Index_Type'Val (Index_Type'Pos (Fst) + Offset) ..
-               Index_Type'Val (Index_Type'Pos (Lst) + Offset) =>
-                 Get (Left, Index_Type'Val (Index_Type'Pos (I) - Offset))
-             = Get (Right, I)));
+               Index_Type'Val (Index_Type'Pos (Lst) + Offset)
+             =>
+               Get (Left, Index_Type'Val (Index_Type'Pos (I) - Offset)) =
+               Get (Right, I)));
    pragma Annotate (GNATprove, Inline_For_Proof, Range_Shifted);
 
    ----------------------------
@@ -256,8 +259,9 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
    with
      Global => null,
      Pre    => Position in Index_Type'First .. Last (Container),
-     Post   => Get (Set'Result, Position) = New_Item
-     and then Equal_Except (Container, Set'Result, Position);
+     Post   =>
+       Get (Set'Result, Position) = New_Item
+         and then Equal_Except (Container, Set'Result, Position);
 
    function Add (Container : Sequence; New_Item : Element_Type) return Sequence
    --  Returns a new sequence which contains the same elements as Container
@@ -289,17 +293,17 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
      Post   =>
        Length (Add'Result) = Length (Container) + 1
          and then Get (Add'Result, Position) = New_Item
-         and then
-            Range_Equal (Left  => Container,
-                         Right =>  Add'Result,
-                         Fst   => Index_Type'First,
-                         Lst   => Index_Type'Pred (Position))
-         and then
-            Range_Shifted (Left   => Container,
-                           Right  => Add'Result,
-                           Fst    => Position,
-                           Lst    => Last (Container),
-                           Offset => 1);
+         and then Range_Equal
+                    (Left  => Container,
+                     Right =>  Add'Result,
+                     Fst   => Index_Type'First,
+                     Lst   => Index_Type'Pred (Position))
+         and then Range_Shifted
+                    (Left   => Container,
+                     Right  => Add'Result,
+                     Fst    => Position,
+                     Lst    => Last (Container),
+                     Offset => 1);
 
    function Remove
      (Container : Sequence;
@@ -315,17 +319,17 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
          and Position in Index_Type'First .. Last (Container),
      Post   =>
        Length (Remove'Result) = Length (Container) - 1
-         and then
-            Range_Equal (Left  => Container,
-                         Right => Remove'Result,
-                         Fst   => Index_Type'First,
-                         Lst   => Index_Type'Pred (Position))
-         and then
-            Range_Shifted (Left   => Remove'Result,
-                           Right  => Container,
-                           Fst    => Position,
-                           Lst    => Last (Remove'Result),
-                           Offset => 1);
+         and then Range_Equal
+                    (Left  => Container,
+                     Right => Remove'Result,
+                     Fst   => Index_Type'First,
+                     Lst   => Index_Type'Pred (Position))
+         and then Range_Shifted
+                    (Left   => Remove'Result,
+                     Right  => Container,
+                     Fst    => Position,
+                     Lst    => Last (Remove'Result),
+                     Offset => 1);
 
    ---------------------------
    --  Iteration Primitives --
@@ -339,7 +343,8 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
       Position  : Extended_Index) return Boolean
    with
      Global => null,
-     Post   => Iter_Has_Element'Result =
+     Post   =>
+       Iter_Has_Element'Result =
          (Position in Index_Type'First .. Last (Container));
    pragma Annotate (GNATprove, Inline_For_Proof, Iter_Has_Element);
 
@@ -364,19 +369,22 @@ private
 
    function Iter_First (Container : Sequence) return Extended_Index is
      (Index_Type'First);
+
    function Iter_Next
      (Container : Sequence;
       Position  : Extended_Index) return Extended_Index
    is
-     (if Position = Extended_Index'Last then Extended_Index'First
-      else Extended_Index'Succ (Position));
+     (if Position = Extended_Index'Last then
+         Extended_Index'First
+      else
+         Extended_Index'Succ (Position));
 
    function Iter_Has_Element
      (Container : Sequence;
       Position  : Extended_Index) return Boolean
    is
      (Position in Index_Type'First ..
-        (Index_Type'Val
-           ((Index_Type'Pos (Index_Type'First) - 1) + Length (Container))));
+       (Index_Type'Val
+         ((Index_Type'Pos (Index_Type'First) - 1) + Length (Container))));
 
 end Ada.Containers.Functional_Vectors;

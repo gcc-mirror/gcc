@@ -33,14 +33,14 @@ pragma Ada_2012;
 
 package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
 
-   function To_Count (Idx : Extended_Index) return Count_Type
-   is (Count_Type
-        (Extended_Index'Pos (Idx) -
-         Extended_Index'Pos (Extended_Index'First)));
+   function To_Count (Idx : Extended_Index) return Count_Type is
+     (Count_Type
+       (Extended_Index'Pos (Idx) -
+        Extended_Index'Pos (Extended_Index'First)));
 
-   function To_Index (Position : Count_Type) return Extended_Index
-   is (Extended_Index'Val
-        (Position + Extended_Index'Pos (Extended_Index'First)));
+   function To_Index (Position : Count_Type) return Extended_Index is
+     (Extended_Index'Val
+       (Position + Extended_Index'Pos (Extended_Index'First)));
    --  Conversion functions between Index_Type and Count_Type
 
    function Find (C : Container; E : access Element_Type) return Count_Type;

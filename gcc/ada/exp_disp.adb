@@ -4510,10 +4510,13 @@ package body Exp_Disp is
 
       if Building_Static_DT (Typ) then
          declare
-            Save      : constant Boolean := Freezing_Library_Level_Tagged_Type;
+            Saved_FLLTT : constant Boolean :=
+                            Freezing_Library_Level_Tagged_Type;
+
+            Formal    : Entity_Id;
+            Frnodes   : List_Id;
             Prim      : Entity_Id;
             Prim_Elmt : Elmt_Id;
-            Frnodes   : List_Id;
 
          begin
             Freezing_Library_Level_Tagged_Type := True;
@@ -4523,18 +4526,21 @@ package body Exp_Disp is
                Prim    := Node (Prim_Elmt);
                Frnodes := Freeze_Entity (Prim, Typ);
 
-               declare
-                  F : Entity_Id;
+               --  We disable this check for abstract subprograms, given that
+               --  they cannot be called directly and thus the state of their
+               --  untagged formals is of no concern. The RM is unclear in any
+               --  case concerning the need for this check, and this topic may
+               --  go back to the ARG.
 
-               begin
-                  F := First_Formal (Prim);
-                  while Present (F) loop
-                     Check_Premature_Freezing (Prim, Typ, Etype (F));
-                     Next_Formal (F);
+               if not Is_Abstract_Subprogram (Prim)  then
+                  Formal := First_Formal (Prim);
+                  while Present (Formal) loop
+                     Check_Premature_Freezing (Prim, Typ, Etype (Formal));
+                     Next_Formal (Formal);
                   end loop;
 
                   Check_Premature_Freezing (Prim, Typ, Etype (Prim));
-               end;
+               end if;
 
                if Present (Frnodes) then
                   Append_List_To (Result, Frnodes);
@@ -4543,7 +4549,7 @@ package body Exp_Disp is
                Next_Elmt (Prim_Elmt);
             end loop;
 
-            Freezing_Library_Level_Tagged_Type := Save;
+            Freezing_Library_Level_Tagged_Type := Saved_FLLTT;
          end;
       end if;
 
