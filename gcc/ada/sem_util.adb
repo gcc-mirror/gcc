@@ -3229,7 +3229,7 @@ package body Sem_Util is
          Result_Seen : in out Boolean)
       is
          procedure Check_Conjunct (Expr : Node_Id);
-         --  Check an individual conjunct in a conjunctions of Boolean
+         --  Check an individual conjunct in a conjunction of Boolean
          --  expressions, connected by "and" or "and then" operators.
 
          procedure Check_Conjuncts (Expr : Node_Id);
@@ -3286,12 +3286,12 @@ package body Sem_Util is
 
             function Applied_On_Conjunct return Boolean is
             begin
-               --  Expr is the conjunct of an "and" enclosing expression
+               --  Expr is the conjunct of an enclosing "and" expression
 
                return Nkind (Parent (Expr)) in N_Subexpr
 
-                 --  or Expr is a conjunct of an "and then" enclosing
-                 --  expression in a postcondition aspect, which was split in
+                 --  or Expr is a conjunct of an enclosing "and then"
+                 --  expression in a postcondition aspect that was split into
                  --  multiple pragmas. The first conjunct has the "and then"
                  --  expression as Original_Node, and other conjuncts have
                  --  Split_PCC set to True.

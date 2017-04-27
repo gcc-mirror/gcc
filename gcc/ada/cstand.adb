@@ -1194,6 +1194,7 @@ package body CStand is
       Set_Etype             (Any_Access, Any_Access);
       Init_Size             (Any_Access, System_Address_Size);
       Set_Elem_Alignment    (Any_Access);
+      Set_Directly_Designated_Type (Any_Access, Any_Type);
 
       Any_Character := New_Standard_Entity ("a character type");
       Set_Ekind             (Any_Character, E_Enumeration_Type);

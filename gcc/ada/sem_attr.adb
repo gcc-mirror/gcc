@@ -6220,7 +6220,7 @@ package body Sem_Attr is
          --  single dereference link in a composite type.
 
          procedure Compute_Type_Key (T : Entity_Id);
-         --  Create a CRC integer from the declaration of the type, For a
+         --  Create a CRC integer from the declaration of the type. For a
          --  composite type, fold in the representation of its components in
          --  recursive fashion. We use directly the source representation of
          --  the types involved.
@@ -6245,19 +6245,13 @@ package body Sem_Attr is
             -----------------------------
 
             procedure Process_One_Declaration is
-               Ptr : Source_Ptr;
-
             begin
-               Ptr := P_Min;
-
                --  Scan type declaration, skipping blanks
 
-               while Ptr <= P_Max loop
+               for Ptr in P_Min .. P_Max loop
                   if Buffer (Ptr) /= ' ' then
                      System.CRC32.Update (CRC, Buffer (Ptr));
                   end if;
-
-                  Ptr := Ptr + 1;
                end loop;
             end Process_One_Declaration;
 
@@ -6284,7 +6278,8 @@ package body Sem_Attr is
             end if;
 
             Sloc_Range (Enclosing_Declaration (T), P_Min, P_Max);
-            SFI    := Get_Source_File_Index (P_Min);
+            SFI := Get_Source_File_Index (P_Min);
+            pragma Assert (SFI = Get_Source_File_Index (P_Max));
             Buffer := Source_Text (SFI);
 
             Process_One_Declaration;
@@ -6301,7 +6296,7 @@ package body Sem_Attr is
                end if;
 
             elsif Is_Derived_Type (T) then
-               Compute_Type_Key (Etype  (T));
+               Compute_Type_Key (Etype (T));
 
             elsif Is_Record_Type (T) then
                declare
@@ -6323,6 +6318,8 @@ package body Sem_Attr is
             while Present (Rep) loop
                if Comes_From_Source (Rep) then
                   Sloc_Range (Rep, P_Min, P_Max);
+                  pragma Assert (SFI = Get_Source_File_Index (P_Min));
+                  pragma Assert (SFI = Get_Source_File_Index (P_Max));
                   Process_One_Declaration;
                end if;
 

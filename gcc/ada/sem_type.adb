@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -802,8 +802,8 @@ package body Sem_Type is
    --  Start of processing for Covers
 
    begin
-      --  If either operand missing, then this is an error, but ignore it (and
-      --  pretend we have a cover) if errors already detected, since this may
+      --  If either operand is missing, then this is an error, but ignore it
+      --  and pretend we have a cover if errors already detected since this may
       --  simply mean we have malformed trees or a semantic error upstream.
 
       if No (T1) or else No (T2) then
