@@ -10797,40 +10797,37 @@ fold_binary_loc (location_t loc,
 	  tree itype = TREE_TYPE (arg0);
 
 	  if (operand_equal_p (arg01, arg11, 0))
-	    return fold_build2_loc (loc, code, type,
-				fold_build2_loc (loc, BIT_AND_EXPR, itype,
-					     fold_build2_loc (loc,
-							  BIT_XOR_EXPR, itype,
-							  arg00, arg10),
-					     arg01),
-				build_zero_cst (itype));
-
+	    {
+	      tem = fold_convert_loc (loc, itype, arg10);
+	      tem = fold_build2_loc (loc, BIT_XOR_EXPR, itype, arg00, tem);
+	      tem = fold_build2_loc (loc, BIT_AND_EXPR, itype, tem, arg01);
+	      return fold_build2_loc (loc, code, type, tem,
+				      build_zero_cst (itype));
+	    }
 	  if (operand_equal_p (arg01, arg10, 0))
-	    return fold_build2_loc (loc, code, type,
-				fold_build2_loc (loc, BIT_AND_EXPR, itype,
-					     fold_build2_loc (loc,
-							  BIT_XOR_EXPR, itype,
-							  arg00, arg11),
-					     arg01),
-				build_zero_cst (itype));
-
+	    {
+	      tem = fold_convert_loc (loc, itype, arg11);
+	      tem = fold_build2_loc (loc, BIT_XOR_EXPR, itype, arg00, tem);
+	      tem = fold_build2_loc (loc, BIT_AND_EXPR, itype, tem, arg01);
+	      return fold_build2_loc (loc, code, type, tem,
+				      build_zero_cst (itype));
+	    }
 	  if (operand_equal_p (arg00, arg11, 0))
-	    return fold_build2_loc (loc, code, type,
-				fold_build2_loc (loc, BIT_AND_EXPR, itype,
-					     fold_build2_loc (loc,
-							  BIT_XOR_EXPR, itype,
-							  arg01, arg10),
-					     arg00),
-				build_zero_cst (itype));
-
+	    {
+	      tem = fold_convert_loc (loc, itype, arg10);
+	      tem = fold_build2_loc (loc, BIT_XOR_EXPR, itype, arg01, tem);
+	      tem = fold_build2_loc (loc, BIT_AND_EXPR, itype, tem, arg00);
+	      return fold_build2_loc (loc, code, type, tem,
+				      build_zero_cst (itype));
+	    }
 	  if (operand_equal_p (arg00, arg10, 0))
-	    return fold_build2_loc (loc, code, type,
-				fold_build2_loc (loc, BIT_AND_EXPR, itype,
-					     fold_build2_loc (loc,
-							  BIT_XOR_EXPR, itype,
-							  arg01, arg11),
-					     arg00),
-				build_zero_cst (itype));
+	    {
+	      tem = fold_convert_loc (loc, itype, arg11);
+	      tem = fold_build2_loc (loc, BIT_XOR_EXPR, itype, arg01, tem);
+	      tem = fold_build2_loc (loc, BIT_AND_EXPR, itype, tem, arg00);
+	      return fold_build2_loc (loc, code, type, tem,
+				      build_zero_cst (itype));
+	    }
 	}
 
       if (TREE_CODE (arg0) == BIT_XOR_EXPR
