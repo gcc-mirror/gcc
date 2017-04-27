@@ -975,22 +975,20 @@ package body Sem_Ch7 is
       Set_Ekind  (Id, E_Package);
       Set_Etype  (Id, Standard_Void_Type);
 
-      --  Set SPARK_Mode from context only for non-generic package
+      --  Set SPARK_Mode from context
 
-      if Ekind (Id) = E_Package then
-         Set_SPARK_Pragma               (Id, SPARK_Mode_Pragma);
-         Set_SPARK_Aux_Pragma           (Id, SPARK_Mode_Pragma);
-         Set_SPARK_Pragma_Inherited     (Id);
-         Set_SPARK_Aux_Pragma_Inherited (Id);
+      Set_SPARK_Pragma               (Id, SPARK_Mode_Pragma);
+      Set_SPARK_Aux_Pragma           (Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited     (Id);
+      Set_SPARK_Aux_Pragma_Inherited (Id);
 
-         --  Save the state of flag Ignore_SPARK_Mode_Pragmas_In_Instance in
-         --  case the body of this package is instantiated or inlined later and
-         --  out of context. The body uses this attribute to restore the value
-         --  of the global flag.
+      --  Save the state of flag Ignore_SPARK_Mode_Pragmas_In_Instance in case
+      --  the body of this package is instantiated or inlined later and out
+      --  of context. The body uses this attribute to restore the value of
+      --  the global flag.
 
-         if Ignore_SPARK_Mode_Pragmas_In_Instance then
-            Set_Ignore_SPARK_Mode_Pragmas (Id);
-         end if;
+      if Ignore_SPARK_Mode_Pragmas_In_Instance then
+         Set_Ignore_SPARK_Mode_Pragmas (Id);
       end if;
 
       --  Analyze aspect specifications immediately, since we need to recognize

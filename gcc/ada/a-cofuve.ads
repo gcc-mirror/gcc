@@ -225,10 +225,16 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
      Global => null,
      Pre    =>
        Lst <= Last (Left)
-         and Offset in
-           Index_Type'Pos (Index_Type'First) - Index_Type'Pos (Fst) ..
-             (Index_Type'Pos (Index_Type'First) - 1) + Length (Right) -
-              Index_Type'Pos (Lst),
+         and then
+           (if Offset < 0 then
+              Index_Type'Pos (Index_Type'Base'First) - Offset <=
+              Index_Type'Pos (Index_Type'First))
+         and then
+           (if Fst <= Lst then
+              Offset in
+                Index_Type'Pos (Index_Type'First) - Index_Type'Pos (Fst) ..
+                  (Index_Type'Pos (Index_Type'First) - 1) + Length (Right) -
+                   Index_Type'Pos (Lst)),
      Post   =>
        Range_Shifted'Result =
          ((for all I in Fst .. Lst =>

@@ -63,8 +63,18 @@ is
 
    No_Index : constant Extended_Index := Extended_Index'First;
 
-   subtype Capacity_Range is
-     Count_Type range 0 .. Count_Type (Index_Type'Last - Index_Type'First + 1);
+   Last_Count : constant Count_Type :=
+     (if Index_Type'Last < Index_Type'First then 0
+      elsif Index_Type'Last < -1
+        or else Index_Type'Pos (Index_Type'First) >
+          Index_Type'Pos (Index_Type'Last) - Count_Type'Last
+      then Index_Type'Pos (Index_Type'Last) -
+          Index_Type'Pos (Index_Type'First) + 1
+      else Count_Type'Last);
+   --  Maximal capacity of any vector. It is the minimum of the size of the
+   --  index range and the last possible Count_Type.
+
+   subtype Capacity_Range is Count_Type range 0 .. Last_Count;
 
    type Vector (Capacity : Capacity_Range) is limited private with
      Default_Initial_Condition => Is_Empty (Vector);
@@ -295,7 +305,8 @@ is
      Pre    =>
        Length (Container) <= Capacity (Container) - Length (New_Item)
          and (Before in Index_Type'First .. Last_Index (Container)
-              or Before - 1 = Last_Index (Container)),
+              or (Before /= No_Index
+                    and then Before - 1 = Last_Index (Container))),
      Post   =>
        Length (Container) = Length (Container)'Old + Length (New_Item)
 
@@ -369,7 +380,8 @@ is
      Pre    =>
        Length (Container) <= Capacity (Container) - Count
          and (Before in Index_Type'First .. Last_Index (Container)
-              or Before - 1 = Last_Index (Container)),
+              or (Before /= No_Index
+                    and then Before - 1 = Last_Index (Container))),
      Post   =>
        Length (Container) = Length (Container)'Old + Count
 

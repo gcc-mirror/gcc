@@ -1400,20 +1400,72 @@ package body Freeze is
 
    procedure Check_Inherited_Conditions (R : Entity_Id) is
       Prim_Ops      : constant Elist_Id := Primitive_Operations (R);
-      A_Post        : Node_Id;
-      A_Pre         : Node_Id;
       Decls         : List_Id;
       Needs_Wrapper : Boolean;
-      New_Prag      : Node_Id;
       Op_Node       : Elmt_Id;
       Par_Prim      : Entity_Id;
       Prim          : Entity_Id;
 
+      ---------------------------------------
+      -- Build_Inherited_Condition_Pragmas --
+      ---------------------------------------
+
+      procedure Build_Inherited_Condition_Pragmas (Subp : Entity_Id);
+      --  Build corresponding pragmas for an operation whose ancestor has
+      --  class-wide pre/postconditions. If the operation is inherited, the
+      --  pragmas force the creation of a wrapper for the inherited operation.
+      --  If the ancestor is being overridden, the pragmas are constructed only
+      --  to verify their legality, in case they contain calls to other
+      --  primitives that may haven been overridden.
+
+      procedure Build_Inherited_Condition_Pragmas (Subp : Entity_Id) is
+         A_Post   : Node_Id;
+         A_Pre    : Node_Id;
+         New_Prag : Node_Id;
+
+      begin
+         A_Pre := Get_Pragma (Par_Prim, Pragma_Precondition);
+         if Present (A_Pre) and then Class_Present (A_Pre) then
+            New_Prag := New_Copy_Tree (A_Pre);
+            Build_Class_Wide_Expression
+              (Prag          => New_Prag,
+               Subp          => Prim,
+               Par_Subp      => Par_Prim,
+               Adjust_Sloc   => False,
+               Needs_Wrapper => Needs_Wrapper);
+
+            if Needs_Wrapper
+              and then not Comes_From_Source (Subp)
+              and then Expander_Active
+            then
+               Append (New_Prag, Decls);
+            end if;
+         end if;
+
+         A_Post := Get_Pragma (Par_Prim, Pragma_Postcondition);
+
+         if Present (A_Post) and then Class_Present (A_Post) then
+            New_Prag := New_Copy_Tree (A_Post);
+            Build_Class_Wide_Expression
+              (Prag           => New_Prag,
+               Subp           => Prim,
+               Par_Subp       => Par_Prim,
+               Adjust_Sloc    => False,
+               Needs_Wrapper  => Needs_Wrapper);
+
+            if Needs_Wrapper
+              and then not Comes_From_Source (Subp)
+              and then Expander_Active
+            then
+               Append (New_Prag, Decls);
+            end if;
+         end if;
+      end Build_Inherited_Condition_Pragmas;
+
    begin
       Op_Node := First_Elmt (Prim_Ops);
       while Present (Op_Node) loop
-         Prim          := Node (Op_Node);
-         Needs_Wrapper := False;
+         Prim := Node (Op_Node);
 
          --  Map the overridden primitive to the overriding one. This takes
          --  care of all overridings and is done only once.
@@ -1421,7 +1473,29 @@ package body Freeze is
          if Present (Overridden_Operation (Prim))
            and then Comes_From_Source (Prim)
          then
-            Update_Primitives_Mapping (Overridden_Operation (Prim), Prim);
+            Par_Prim := Overridden_Operation (Prim);
+            Update_Primitives_Mapping (Par_Prim, Prim);
+         end if;
+
+         Next_Elmt (Op_Node);
+      end loop;
+
+      --  Now perform validity checks on the inherited conditions of
+      --  overriding operations, for conformance with LSP, and apply
+      --  SPARK-specific restrictions on inherited conditions.
+
+      Op_Node := First_Elmt (Prim_Ops);
+      while Present (Op_Node) loop
+         Prim := Node (Op_Node);
+         if Present (Overridden_Operation (Prim))
+           and then Comes_From_Source (Prim)
+         then
+            Par_Prim := Overridden_Operation (Prim);
+
+            --  Analyze the contract items of the overridden operation, before
+            --  they are rewritten as pragmas.
+
+            Analyze_Entry_Or_Subprogram_Contract (Par_Prim);
 
             --  In SPARK mode this is where we can collect the inherited
             --  conditions, because we do not create the Check pragmas that
@@ -1429,28 +1503,27 @@ package body Freeze is
             --  overriding operations.
 
             if SPARK_Mode = On then
-
-               --  Analyze the contract items of the parent operation, before
-               --  they are rewritten when inherited.
-
-               Analyze_Entry_Or_Subprogram_Contract
-                 (Overridden_Operation (Prim));
-
-               --  Now verify the legality of inherited contracts for LSP
-               --  conformance.
-
                Collect_Inherited_Class_Wide_Conditions (Prim);
+
+            else
+
+               --  Build the corresponding pragmas to check for legality
+               --  of the inherited condition.
+
+               Build_Inherited_Condition_Pragmas (Prim);
             end if;
          end if;
 
          Next_Elmt (Op_Node);
       end loop;
 
-      --  In all cases, we examine inherited operations to check whether they
-      --  require a wrapper to handle inherited conditions that call other
-      --  primitives, so that LSP can be verified/enforced.
+      --  Now examine the inherited operations to check whether they require
+      --  a wrapper to handle inherited conditions that call other primitives,
+      --  so that LSP can be verified/enforced.
 
       Op_Node := First_Elmt (Prim_Ops);
+      Needs_Wrapper := False;
+
       while Present (Op_Node) loop
          Decls := Empty_List;
          Prim  := Node (Op_Node);
@@ -1458,45 +1531,19 @@ package body Freeze is
          if not Comes_From_Source (Prim) and then Present (Alias (Prim)) then
             Par_Prim := Alias (Prim);
 
-            --  Analyze the contract items of the parent operation, before
-            --  they are rewritten when inherited.
+            --  Analyze the contract items of the parent operation, and
+            --  determine whether a wrapper is needed. This is determined
+            --  when the condition is rewritten in sem_prag, using the
+            --  mapping between overridden and overriding operations built
+            --  in the loop above.
 
             Analyze_Entry_Or_Subprogram_Contract (Par_Prim);
-
-            A_Pre := Get_Pragma (Par_Prim, Pragma_Precondition);
-
-            if Present (A_Pre) and then Class_Present (A_Pre) then
-               New_Prag := New_Copy_Tree (A_Pre);
-               Build_Class_Wide_Expression
-                 (Prag          => New_Prag,
-                  Subp          => Prim,
-                  Par_Subp      => Par_Prim,
-                  Adjust_Sloc   => False,
-                  Needs_Wrapper => Needs_Wrapper);
-
-               if Needs_Wrapper then
-                  Append (New_Prag, Decls);
-               end if;
-            end if;
-
-            A_Post := Get_Pragma (Par_Prim, Pragma_Postcondition);
-
-            if Present (A_Post) and then Class_Present (A_Post) then
-               New_Prag := New_Copy_Tree (A_Post);
-               Build_Class_Wide_Expression
-                 (Prag           => New_Prag,
-                  Subp           => Prim,
-                  Par_Subp       => Par_Prim,
-                  Adjust_Sloc    => False,
-                  Needs_Wrapper  => Needs_Wrapper);
-
-               if Needs_Wrapper then
-                  Append (New_Prag, Decls);
-               end if;
-            end if;
+            Build_Inherited_Condition_Pragmas (Prim);
          end if;
 
-         if Needs_Wrapper and then not Is_Abstract_Subprogram (Par_Prim) then
+         if Needs_Wrapper and then not Is_Abstract_Subprogram (Par_Prim)
+           and then Expander_Active
+         then
 
             --  We need to build a new primitive that overrides the inherited
             --  one, and whose inherited expression has been updated above.
