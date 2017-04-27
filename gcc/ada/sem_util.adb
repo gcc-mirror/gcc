@@ -1584,7 +1584,13 @@ package body Sem_Util is
       elsif ASIS_Mode then
          return;
 
-      --  See if we need elaboration entity.
+      --  Do not generate an elaboration entity in GNATprove move because the
+      --  elaboration counter is a form of expansion.
+
+      elsif GNATprove_Mode then
+         return;
+
+      --  See if we need elaboration entity
 
       --  We always need an elaboration entity when preserving control flow, as
       --  we want to remain explicit about the unit's elaboration order.

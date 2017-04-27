@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -82,6 +82,16 @@
 
 --  Phase 2 is called only when the node allows a dimension (see body of
 --  Sem_Dim to get the list of nodes that permit dimensions).
+
+--  In principle every node that is a component of a floating-point expression
+--  may have a dimension vector. However, the dimensionality checking is for
+--  the most part a bottom-up tree traversal, and the dimensions of operands
+--  become irrelevant once the dimensions of an operation have been computed.
+--  To minimize space use, the dimensions of operands are removed after the
+--  computation of the dimensions of the parent operation. This may complicate
+--  the analysis of nodes that have been constant-folded or otherwise rewritten
+--  when removing side effects. In such cases, the (sub)type of the expression
+--  is used to determine the applicable dimensions.
 
 with Types; use Types;
 

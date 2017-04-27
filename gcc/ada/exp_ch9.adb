@@ -7515,7 +7515,16 @@ package body Exp_Ch9 is
            Make_Object_Declaration (Loc,
              Defining_Identifier => Cancel_Param,
              Object_Definition   =>
-               New_Occurrence_Of (Standard_Boolean, Loc)));
+               New_Occurrence_Of (Standard_Boolean, Loc),
+             Expression          =>
+               New_Occurrence_Of (Standard_False, Loc),
+               --  True would work equally well here. This initialization
+               --  should be dead, but only because of things (e.g.,
+               --  abortion deferral) that CodePeer doesn't know about.
+               --  We want to avoid CodePeer complaints about a possible read
+               --  of an uninitialized variable when this variable is read,
+               --  so we initialize it here.
+             Has_Init_Expression => True));
 
          --  Remove and save the call to Call_Simple
 

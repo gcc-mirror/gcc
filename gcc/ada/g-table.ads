@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2015, AdaCore                     --
+--                     Copyright (C) 1998-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -154,8 +154,9 @@ package GNAT.Table is
    --  Free all allocated memory for the table. A call to Init is required
    --  before any use of this table after calling Free.
 
-   First : constant Table_Index_Type := Table_Low_Bound;
-   --  Export First as synonym for Low_Bound (parallel with use of Last)
+   function First return Table_Index_Type;
+   pragma Inline (First);
+   --  Export First as synonym for Table_Low_Bound (parallel with use of Last)
 
    procedure Set_Last (New_Val : Table_Index_Type);
    pragma Inline (Set_Last);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2014, AdaCore                     --
+--                     Copyright (C) 1998-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -115,6 +115,15 @@ package body GNAT.Table is
    begin
       Last_Val := Last_Val - 1;
    end Decrement_Last;
+
+   -----------
+   -- First --
+   -----------
+
+   function First return Table_Index_Type is
+   begin
+      return Table_Low_Bound;
+   end First;
 
    --------------
    -- For_Each --

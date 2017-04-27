@@ -1,3 +1,46 @@
+2017-04-27  Steve Baird  <baird@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Asynchronous_Select): Initialize the Cancel
+	flag when it is declared in order to avoid confusing CodePeer about
+	the possibility of an uninitialized variable read.
+
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_dim.adb (Analyze_Dimension_Object_Declaration): There is
+	no dimensionality error if the subtype of the expression is
+	identical to the nominal subtype in the declaration, even though
+	the expression itself may have been constant-folded and lack a
+	dimension vector.
+	* sem_dim.ads: Add comments on setting of dimension vectors and
+	its interaction with node rewritings and side-effect removal.
+
+2017-04-27  Bob Duff  <duff@adacore.com>
+
+	* debug.adb: Minor comment correction.
+	* sem_dim.ads: Minor reformatting and typo fixes.
+
+2017-04-27  Bob Duff  <duff@adacore.com>
+
+	* g-table.adb, g-table.adsa, scos.h: From the C side, access First and
+	Last of the tables via function calls, rather than relying on layout
+	of data structures.
+
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb: No wrapper in GNATprove mode.
+
+2017-04-27  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Comparison_Op): Always
+	evaluate comparisons between values of universal types.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (Check_Internal_Call_Continue): Do not generate
+	an elaboration counter nor a check when in GNATprove mode.
+	* sem_util.adb (Build_Elaboration_Entity): Do not create an
+	elaboration counter when in GNATprove mode.
+
 2017-04-27  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb: copy-paste typo.

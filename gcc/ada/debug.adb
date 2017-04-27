@@ -848,8 +848,8 @@ package body Debug is
    --      prefer specs with no bodies to specs with bodies, and between two
    --      specs with bodies, prefers the one whose body is closer to being
    --      able to be elaborated. This is a clear improvement, but we provide
-   --      this debug flag in case of regressions. Note: -gnatdo is even older
-   --      than -gnatdp.
+   --      this debug flag in case of regressions. Note: -do is even older
+   --      than -dp.
 
    --  dp  Use old elaboration order preference. The new preference rules
    --      elaborate all units within a strongly connected component together,
