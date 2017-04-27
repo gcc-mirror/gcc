@@ -915,6 +915,7 @@ emit_swap_insn (rtx_insn *insn, stack_ptr regstack, rtx reg)
 	  rtx i2set;
 	  rtx_insn *tmp = PREV_INSN (i1);
 	  rtx_insn *limit = PREV_INSN (BB_HEAD (current_block));
+	  bool sp_used = reg_overlap_mentioned_p (stack_pointer_rtx, i1src);
 	  /* Find the previous insn involving stack regs, but don't pass a
 	     block boundary.  */
 	  while (tmp != limit)
@@ -927,6 +928,31 @@ emit_swap_insn (rtx_insn *insn, stack_ptr regstack, rtx reg)
 		{
 		  i2 = tmp;
 		  break;
+		}
+	      /* FIXME: modified_between_p does not consider autoinc
+		 modifications of stack pointer if i1src refers to
+		 stack pointer, check it here manually.  */
+	      if (sp_used && NONDEBUG_INSN_P (tmp))
+		{
+		  subrtx_var_iterator::array_type array;
+		  FOR_EACH_SUBRTX_VAR (iter, array, PATTERN (tmp), NONCONST)
+		    {
+		      rtx mem = *iter;
+		      if (mem
+			  && MEM_P (mem)
+			  && (GET_RTX_CLASS (GET_CODE (XEXP (mem, 0)))
+			      == RTX_AUTOINC))
+			{
+			  if (XEXP (XEXP (mem, 0), 0) == stack_pointer_rtx)
+			    {
+			      i2 = tmp;
+			      break;
+			    }
+			  iter.skip_subrtxes ();
+			}
+		    }
+		  if (i2)
+		    break;
 		}
 	      tmp = PREV_INSN (tmp);
 	    }
