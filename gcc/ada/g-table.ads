@@ -82,7 +82,9 @@ package GNAT.Table is
    function Is_Empty return Boolean;
 
    procedure Init;
+   pragma Inline (Init);
    procedure Free;
+   pragma Inline (Free);
 
    function First return Table_Index_Type;
    pragma Inline (First);
@@ -91,6 +93,7 @@ package GNAT.Table is
    pragma Inline (Last);
 
    procedure Release;
+   pragma Inline (Release);
 
    procedure Set_Last (New_Val : Table_Last_Type);
    pragma Inline (Set_Last);
@@ -105,6 +108,7 @@ package GNAT.Table is
    pragma Inline (Append);
 
    procedure Append_All (New_Vals : Table_Type);
+   pragma Inline (Append_All);
 
    procedure Set_Item
      (Index : Valid_Table_Index_Type;
@@ -115,10 +119,12 @@ package GNAT.Table is
    --  Type used for Save/Restore subprograms
 
    function Save return Saved_Table;
+   pragma Inline (Save);
    --  Resets table to empty, but saves old contents of table in returned
    --  value, for possible later restoration by a call to Restore.
 
    procedure Restore (T : in out Saved_Table);
+   pragma Inline (Restore);
    --  Given a Saved_Table value returned by a prior call to Save, restores
    --  the table to the state it was in at the time of the Save call.
 
@@ -137,9 +143,11 @@ package GNAT.Table is
         Item  : Table_Component_Type;
         Quit  : in out Boolean) is <>;
    procedure For_Each;
+   pragma Inline (For_Each);
 
    generic
      with function Lt (Comp1, Comp2 : Table_Component_Type) return Boolean;
    procedure Sort_Table;
+   pragma Inline (Sort_Table);
 
 end GNAT.Table;

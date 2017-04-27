@@ -1,3 +1,11 @@
+2017-04-27  Bob Duff  <duff@adacore.com>
+
+	* g-dyntab.ads, g-dyntab.adb, g-table.ads: Remove incorrect assertion.
+	If the table grows and then shrinks back to empty, we won't necessarily
+	point back to the empty array. Code cleanups.
+	* sinput.ads: Add 'Base to Size clause to match the declared
+	component subtypes.
+
 2017-04-27  Claire Dross  <dross@adacore.com>
 
 	* a-cforma.adb, a-cforma.ads (=): Generic parameter removed to

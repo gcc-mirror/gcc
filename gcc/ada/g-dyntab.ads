@@ -183,6 +183,7 @@ package GNAT.Dynamic_Tables is
    end record;
 
    function Is_Empty (T : Instance) return Boolean;
+   pragma Inline (Is_Empty);
 
    procedure Init (T : in out Instance);
    --  Reinitializes the table to empty. There is no need to call this before
