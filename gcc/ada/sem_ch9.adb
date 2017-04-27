@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,6 @@ with Einfo;     use Einfo;
 with Errout;    use Errout;
 with Exp_Ch9;   use Exp_Ch9;
 with Elists;    use Elists;
-with Fname;     use Fname;
 with Freeze;    use Freeze;
 with Layout;    use Layout;
 with Lib;       use Lib;
@@ -2024,7 +2023,7 @@ package body Sem_Ch9 is
       --  implemented.
 
       if In_Private_Part (Current_Scope)
-        and then Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit))
+        and then Is_Internal_Unit (Current_Sem_Unit)
       then
          Set_Has_Protected (T, False);
       else

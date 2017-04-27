@@ -367,6 +367,39 @@ is
    package body Formal_Model is
 
       ----------
+      -- Find --
+      ----------
+
+      function Find (Container : K.Sequence; Key : Key_Type) return Count_Type
+      is
+      begin
+         for I in 1 .. K.Length (Container) loop
+            if Equivalent_Keys (Key, K.Get (Container, I)) then
+               return I;
+            end if;
+         end loop;
+         return 0;
+      end Find;
+
+      ---------------------
+      -- K_Keys_Included --
+      ---------------------
+
+      function K_Keys_Included (Left  : K.Sequence;
+                               Right : K.Sequence) return Boolean
+      is
+      begin
+         for I in 1 .. K.Length (Left) loop
+            if not K.Contains (Right, 1, K.Length (Right), K.Get (Left, I))
+            then
+               return False;
+            end if;
+         end loop;
+
+         return True;
+      end K_Keys_Included;
+
+      ----------
       -- Keys --
       ----------
 

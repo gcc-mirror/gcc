@@ -39,7 +39,6 @@ with Exp_Pakd; use Exp_Pakd;
 with Exp_Strm; use Exp_Strm;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
-with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Gnatvsn;  use Gnatvsn;
 with Itypes;   use Itypes;
@@ -7749,7 +7748,7 @@ package body Exp_Attr is
       --  instead. That is why we include the test Is_Available when dealing
       --  with these cases.
 
-      if not Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit)) then
+      if not Is_Predefined_Unit (Current_Sem_Unit) then
          --  Storage_Array as defined in package System.Storage_Elements
 
          if Is_RTE (Base_Typ, RE_Storage_Array) then

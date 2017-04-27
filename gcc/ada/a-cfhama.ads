@@ -56,7 +56,9 @@ generic
    type Element_Type is private;
 
    with function Hash (Key : Key_Type) return Hash_Type;
-   with function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
+   with function Equivalent_Keys
+     (Left  : Key_Type;
+      Right : Key_Type) return Boolean is "=";
 
 package Ada.Containers.Formal_Hashed_Maps with
   SPARK_Mode
@@ -117,6 +119,30 @@ is
         (Left  : K.Sequence;
          Right : K.Sequence) return Boolean renames K."<=";
 
+      function Find (Container : K.Sequence; Key : Key_Type) return Count_Type
+      --  Search for Key in Container
+
+      with
+        Global => null,
+        Post =>
+          (if Find'Result > 0 then
+             Find'Result <= K.Length (Container)
+               and Equivalent_Keys (Key, K.Get (Container, Find'Result)));
+
+      function K_Keys_Included
+        (Left  : K.Sequence;
+         Right : K.Sequence) return Boolean
+      --  Return True if Right contains all the keys of Left
+
+      with
+        Global => null,
+        Post   =>
+          K_Keys_Included'Result =
+            (for all I in 1 .. K.Length (Left) =>
+               Find (Right, K.Get (Left, I)) > 0
+                 and then K.Get (Right, Find (Right, K.Get (Left, I))) =
+                     K.Get (Left, I));
+
       package P is new Ada.Containers.Functional_Maps
         (Key_Type                       => Cursor,
          Element_Type                   => Positive_Count_Type,
@@ -137,7 +163,6 @@ is
          P_Left  : P.Map;
          P_Right : P.Map) return Boolean
       with
-        Ghost,
         Global => null,
         Post   =>
           (if Mapping_Preserved'Result then
@@ -145,6 +170,10 @@ is
              --  Right contains all the cursors of Left
 
              P.Keys_Included (P_Left, P_Right)
+
+               --  Right contains all the keys of Left
+
+               and K_Keys_Included (K_Left, K_Right)
 
                --  Mappings from cursors to elements induced by K_Left, P_Left
                --  and K_Right, P_Right are the same.
@@ -179,9 +208,14 @@ is
             --  It contains all the keys contained in Model
 
             and (for all Key of Model (Container) =>
-                  (for some L of Keys'Result => Equivalent_Keys (L, Key)))
+                  (Find (Keys'Result, Key) > 0
+                     and then Equivalent_Keys
+                      (K.Get (Keys'Result, Find (Keys'Result, Key)), Key)))
 
             --  It has no duplicate
+
+            and (for all I in 1 .. Length (Container) =>
+                  Find (Keys'Result, K.Get (Keys'Result, I)) = I)
 
             and (for all I in 1 .. Length (Container) =>
                   (for all J in 1 .. Length (Container) =>
@@ -259,7 +293,14 @@ is
    with
      Global => null,
      Pre    => Capacity <= Container.Capacity,
-     Post   => Model (Container) = Model (Container)'Old;
+     Post   =>
+       Model (Container) = Model (Container)'Old
+         and Length (Container)'Old = Length (Container)
+
+         --  Actual keys are preserved
+
+         and K_Keys_Included (Keys (Container), Keys (Container)'Old)
+         and K_Keys_Included (Keys (Container)'Old, Keys (Container));
 
    function Is_Empty (Container : Map) return Boolean with
      Global => null,
@@ -278,8 +319,8 @@ is
 
          --  Actual keys are preserved
 
-         and (for all Key of Keys (Source) =>
-               Formal_Hashed_Maps.Key (Target, Find (Target, Key)) = Key);
+         and K_Keys_Included (Keys (Target), Keys (Source))
+         and K_Keys_Included (Keys (Source), Keys (Target));
 
    function Copy
      (Source   : Map;
@@ -355,8 +396,8 @@ is
 
          --  Actual keys are preserved
 
-         and (for all Key of Keys (Source)'Old =>
-               Formal_Hashed_Maps.Key (Target, Find (Target, Key)) = Key);
+         and K_Keys_Included (Keys (Target), Keys (Source)'Old)
+         and K_Keys_Included (Keys (Source)'Old, Keys (Target));
 
    procedure Insert
      (Container : in out Map;
@@ -700,7 +741,7 @@ is
      Global         => null,
      Contract_Cases =>
 
-       --  If Key is not is not contained in Container, Find returns No_Element
+       --  If Key is not contained in Container, Find returns No_Element
 
        (not Contains (Model (Container), Key) =>
           Find'Result = No_Element,
@@ -709,6 +750,8 @@ is
 
         others =>
           P.Has_Key (Positions (Container), Find'Result)
+            and P.Get (Positions (Container), Find'Result) =
+                Find (Keys (Container), Key)
 
             --  The key designated by the result of Find is Key
 

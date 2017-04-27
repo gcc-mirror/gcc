@@ -37,7 +37,6 @@ with Exp_Disp;  use Exp_Disp;
 with Exp_Pakd;  use Exp_Pakd;
 with Exp_Util;  use Exp_Util;
 with Exp_Tss;   use Exp_Tss;
-with Fname;     use Fname;
 with Ghost;     use Ghost;
 with Layout;    use Layout;
 with Lib;       use Lib;
@@ -8197,7 +8196,7 @@ package body Freeze is
       if Is_Pure (E)
         and then Is_Subprogram (E)
         and then not Has_Pragma_Pure_Function (E)
-        and then not Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit))
+        and then not Is_Internal_Unit (Current_Sem_Unit)
       then
          Check_Function_With_Address_Parameter (E);
       end if;

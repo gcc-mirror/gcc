@@ -177,7 +177,7 @@ package body GNAT.Command_Line is
    --  these.
 
    procedure Sort_Sections
-     (Line     : GNAT.OS_Lib.Argument_List_Access;
+     (Line     : not null GNAT.OS_Lib.Argument_List_Access;
       Sections : GNAT.OS_Lib.Argument_List_Access;
       Params   : GNAT.OS_Lib.Argument_List_Access);
    --  Reorder the command line switches so that the switches belonging to a
@@ -2792,7 +2792,7 @@ package body GNAT.Command_Line is
    -------------------
 
    procedure Sort_Sections
-     (Line     : GNAT.OS_Lib.Argument_List_Access;
+     (Line     : not null GNAT.OS_Lib.Argument_List_Access;
       Sections : GNAT.OS_Lib.Argument_List_Access;
       Params   : GNAT.OS_Lib.Argument_List_Access)
    is
@@ -2805,10 +2805,6 @@ package body GNAT.Command_Line is
       Index         : Natural;
 
    begin
-      if Line = null then
-         return;
-      end if;
-
       --  First construct a list of all sections
 
       for E in Line'Range loop

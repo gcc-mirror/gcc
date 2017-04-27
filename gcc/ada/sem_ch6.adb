@@ -39,7 +39,6 @@ with Exp_Dbug;  use Exp_Dbug;
 with Exp_Disp;  use Exp_Disp;
 with Exp_Tss;   use Exp_Tss;
 with Exp_Util;  use Exp_Util;
-with Fname;     use Fname;
 with Freeze;    use Freeze;
 with Ghost;     use Ghost;
 with Inline;    use Inline;
@@ -3308,8 +3307,7 @@ package body Sem_Ch6 is
 
          elsif Style_Check
            and then Can_Override_Operator (Spec_Id)
-           and then not Is_Predefined_File_Name
-                          (Unit_File_Name (Get_Source_Unit (Spec_Id)))
+           and then not In_Predefined_Unit (Spec_Id)
          then
             pragma Assert (Unit_Declaration_Node (Body_Id) = N);
             Style.Missing_Overriding (N, Body_Id);
@@ -6156,9 +6154,7 @@ package body Sem_Ch6 is
            and then Chars (Overridden_Subp) = Name_Adjust
            and then Is_Limited_Type (Etype (First_Formal (Subp)))
            and then Present (Alias (Overridden_Subp))
-           and then
-             Is_Predefined_File_Name
-               (Unit_File_Name (Get_Source_Unit (Alias (Overridden_Subp))))
+           and then In_Predefined_Unit (Alias (Overridden_Subp))
          then
             Get_Name_String
               (Unit_File_Name (Get_Source_Unit (Alias (Overridden_Subp))));
@@ -6243,9 +6239,7 @@ package body Sem_Ch6 is
          elsif not Error_Posted (Subp)
            and then Style_Check
            and then Can_Override_Operator (Subp)
-           and then
-             not Is_Predefined_File_Name
-                   (Unit_File_Name (Get_Source_Unit (Subp)))
+           and then not In_Predefined_Unit (Subp)
          then
             --  If style checks are enabled, indicate that the indicator is
             --  missing. However, at the point of declaration, the type of

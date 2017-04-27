@@ -35,7 +35,6 @@ with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
-with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Ghost;    use Ghost;
 with Inline;   use Inline;
@@ -1895,9 +1894,7 @@ package body Sem_Res is
       function Comes_From_Predefined_Lib_Unit (Nod : Node_Id) return Boolean is
       begin
          return
-           Sloc (Nod) = Standard_Location
-             or else Is_Predefined_File_Name
-                       (Unit_File_Name (Get_Source_Unit (Sloc (Nod))));
+           Sloc (Nod) = Standard_Location or else In_Predefined_Unit (Nod);
       end Comes_From_Predefined_Lib_Unit;
 
       --------------------

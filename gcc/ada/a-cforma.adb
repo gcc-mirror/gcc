@@ -514,6 +514,23 @@ is
 
    package body Formal_Model is
 
+      ----------
+      -- Find --
+      ----------
+
+      function Find (Container : K.Sequence; Key : Key_Type) return Count_Type
+      is
+      begin
+         for I in 1 .. K.Length (Container) loop
+            if Equivalent_Keys (Key, K.Get (Container, I)) then
+               return I;
+            elsif Key < K.Get (Container, I) then
+               return 0;
+            end if;
+         end loop;
+         return 0;
+      end Find;
+
       -------------------------
       -- K_Bigger_Than_Range --
       -------------------------

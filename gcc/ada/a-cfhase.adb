@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -264,35 +264,6 @@ is
    end Copy;
 
    ---------------------
-   -- Current_To_Last --
-   ---------------------
-
-   function Current_To_Last (Container : Set; Current : Cursor) return Set is
-      Curs : Cursor := First (Container);
-      C    : Set (Container.Capacity, Container.Modulus) :=
-               Copy (Container, Container.Capacity);
-      Node : Count_Type;
-
-   begin
-      if Curs = No_Element then
-         Clear (C);
-         return C;
-
-      elsif Current /= No_Element and not Has_Element (Container, Current) then
-         raise Constraint_Error;
-
-      else
-         while Curs.Node /= Current.Node loop
-            Node := Curs.Node;
-            Delete (C, Curs);
-            Curs := Next (Container, (Node => Node));
-         end loop;
-
-         return C;
-      end if;
-   end Current_To_Last;
-
-   ---------------------
    -- Default_Modulus --
    ---------------------
 
@@ -521,83 +492,6 @@ is
       return Is_Equivalent (Left, Right);
    end Equivalent_Sets;
 
-   -------------------------
-   -- Equivalent_Elements --
-   -------------------------
-
-   function Equivalent_Elements
-     (Left  : Set;
-      CLeft : Cursor;
-      Right  : Set;
-      CRight : Cursor) return Boolean
-   is
-   begin
-      if not Has_Element (Left, CLeft) then
-         raise Constraint_Error with
-           "Left cursor of Equivalent_Elements has no element";
-      end if;
-
-      if not Has_Element (Right, CRight) then
-         raise Constraint_Error with
-           "Right cursor of Equivalent_Elements has no element";
-      end if;
-
-      pragma Assert (Vet (Left, CLeft),
-                     "bad Left cursor in Equivalent_Elements");
-      pragma Assert (Vet (Right, CRight),
-                     "bad Right cursor in Equivalent_Elements");
-
-      declare
-         LN : Node_Type renames Left.Nodes (CLeft.Node);
-         RN : Node_Type renames Right.Nodes (CRight.Node);
-      begin
-         return Equivalent_Elements (LN.Element, RN.Element);
-      end;
-   end Equivalent_Elements;
-
-   function Equivalent_Elements
-     (Left  : Set;
-      CLeft : Cursor;
-      Right : Element_Type) return Boolean
-   is
-   begin
-      if not Has_Element (Left, CLeft) then
-         raise Constraint_Error with
-           "Left cursor of Equivalent_Elements has no element";
-      end if;
-
-      pragma Assert (Vet (Left, CLeft),
-                     "Left cursor in Equivalent_Elements is bad");
-
-      declare
-         LN : Node_Type renames Left.Nodes (CLeft.Node);
-      begin
-         return Equivalent_Elements (LN.Element, Right);
-      end;
-   end Equivalent_Elements;
-
-   function Equivalent_Elements
-     (Left   : Element_Type;
-      Right  : Set;
-      CRight : Cursor) return Boolean
-   is
-   begin
-      if not Has_Element (Right, CRight) then
-         raise Constraint_Error with
-           "Right cursor of Equivalent_Elements has no element";
-      end if;
-
-      pragma Assert
-        (Vet (Right, CRight),
-         "Right cursor of Equivalent_Elements is bad");
-
-      declare
-         RN : Node_Type renames Right.Nodes (CRight.Node);
-      begin
-         return Equivalent_Elements (Left, RN.Element);
-      end;
-   end Equivalent_Elements;
-
    ---------------------
    -- Equivalent_Keys --
    ---------------------
@@ -657,36 +551,221 @@ is
       return (Node => Node);
    end First;
 
-   -----------------------
-   -- First_To_Previous --
-   -----------------------
+   ------------------
+   -- Formal_Model --
+   ------------------
 
-   function First_To_Previous
-     (Container : Set;
-      Current   : Cursor) return Set
-   is
-      Curs : Cursor := Current;
-      C    : Set (Container.Capacity, Container.Modulus) :=
-               Copy (Container, Container.Capacity);
-      Node : Count_Type;
+   package body Formal_Model is
 
-   begin
-      if Curs = No_Element then
-         return C;
+      -------------------------
+      -- E_Elements_Included --
+      -------------------------
 
-      elsif not Has_Element (Container, Curs) then
-         raise Constraint_Error;
-
-      else
-         while Curs.Node /= 0 loop
-            Node := Curs.Node;
-            Delete (C, Curs);
-            Curs := Next (Container, (Node => Node));
+      function E_Elements_Included
+        (Left  : E.Sequence;
+         Right : E.Sequence) return Boolean
+      is
+      begin
+         for I in 1 .. E.Length (Left) loop
+            if not E.Contains (Right, 1, E.Length (Right), E.Get (Left, I))
+            then
+               return False;
+            end if;
          end loop;
 
-         return C;
-      end if;
-   end First_To_Previous;
+         return True;
+      end E_Elements_Included;
+
+      function E_Elements_Included
+        (Left  : E.Sequence;
+         Model : M.Set;
+         Right : E.Sequence) return Boolean
+      is
+      begin
+         for I in 1 .. E.Length (Left) loop
+            declare
+               Item : constant Element_Type := E.Get (Left, I);
+            begin
+               if M.Contains (Model, Item) then
+                  if not E.Contains (Right, 1, E.Length (Right), Item) then
+                     return False;
+                  end if;
+               end if;
+            end;
+         end loop;
+
+         return True;
+      end E_Elements_Included;
+
+      function E_Elements_Included
+        (Container : E.Sequence;
+         Model     : M.Set;
+         Left      : E.Sequence;
+         Right     : E.Sequence) return Boolean
+      is
+      begin
+         for I in 1 .. E.Length (Container) loop
+            declare
+               Item : constant Element_Type := E.Get (Container, I);
+            begin
+               if M.Contains (Model, Item) then
+                  if not E.Contains (Left, 1, E.Length (Left), Item) then
+                     return False;
+                  end if;
+               else
+                  if not E.Contains (Right, 1, E.Length (Right), Item) then
+                     return False;
+                  end if;
+               end if;
+            end;
+         end loop;
+
+         return True;
+      end E_Elements_Included;
+
+      ----------
+      -- Find --
+      ----------
+
+      function Find
+        (Container : E.Sequence;
+         Item      : Element_Type) return Count_Type
+      is
+      begin
+         for I in 1 .. E.Length (Container) loop
+            if Equivalent_Elements (Item, E.Get (Container, I)) then
+               return I;
+            end if;
+         end loop;
+         return 0;
+      end Find;
+
+      --------------
+      -- Elements --
+      --------------
+
+      function Elements (Container : Set) return E.Sequence is
+         Position : Count_Type := HT_Ops.First (Container);
+         R        : E.Sequence;
+
+      begin
+         --  Can't use First, Next or Element here, since they depend on models
+         --  for their postconditions.
+
+         while Position /= 0 loop
+            R := E.Add (R, Container.Nodes (Position).Element);
+            Position := HT_Ops.Next (Container, Position);
+         end loop;
+
+         return R;
+      end Elements;
+
+      ----------------------------
+      -- Lift_Abstraction_Level --
+      ----------------------------
+
+      procedure Lift_Abstraction_Level (Container : Set) is null;
+
+      -----------------------
+      -- Mapping_Preserved --
+      -----------------------
+
+      function Mapping_Preserved
+        (E_Left  : E.Sequence;
+         E_Right : E.Sequence;
+         P_Left  : P.Map;
+         P_Right : P.Map) return Boolean
+      is
+      begin
+         for C of P_Left loop
+            if not P.Has_Key (P_Right, C)
+              or else P.Get (P_Left,  C) > E.Length (E_Left)
+              or else P.Get (P_Right, C) > E.Length (E_Right)
+              or else E.Get (E_Left,  P.Get (P_Left,  C)) /=
+                      E.Get (E_Right, P.Get (P_Right, C))
+            then
+               return False;
+            end if;
+         end loop;
+
+         return True;
+      end Mapping_Preserved;
+
+      ------------------------------
+      -- Mapping_Preserved_Except --
+      ------------------------------
+
+      function Mapping_Preserved_Except
+        (E_Left   : E.Sequence;
+         E_Right  : E.Sequence;
+         P_Left   : P.Map;
+         P_Right  : P.Map;
+         Position : Cursor) return Boolean
+      is
+      begin
+         for C of P_Left loop
+            if C /= Position
+              and (not P.Has_Key (P_Right, C)
+                    or else P.Get (P_Left,  C) > E.Length (E_Left)
+                    or else P.Get (P_Right, C) > E.Length (E_Right)
+                    or else E.Get (E_Left,  P.Get (P_Left,  C)) /=
+                            E.Get (E_Right, P.Get (P_Right, C)))
+            then
+               return False;
+            end if;
+         end loop;
+
+         return True;
+      end Mapping_Preserved_Except;
+
+      -----------
+      -- Model --
+      -----------
+
+      function Model (Container : Set) return M.Set is
+         Position : Count_Type := HT_Ops.First (Container);
+         R        : M.Set;
+
+      begin
+         --  Can't use First, Next or Element here, since they depend on models
+         --  for their postconditions.
+
+         while Position /= 0 loop
+            R :=
+              M.Add
+                (Container => R,
+                 Item      => Container.Nodes (Position).Element);
+
+            Position := HT_Ops.Next (Container, Position);
+         end loop;
+
+         return R;
+      end Model;
+
+      ---------------
+      -- Positions --
+      ---------------
+
+      function Positions (Container : Set) return P.Map is
+         I        : Count_Type := 1;
+         Position : Count_Type := HT_Ops.First (Container);
+         R        : P.Map;
+
+      begin
+         --  Can't use First, Next or Element here, since they depend on models
+         --  for their postconditions.
+
+         while Position /= 0 loop
+            R := P.Add (R, (Node => Position), I);
+            pragma Assert (P.Length (R) = I);
+            Position := HT_Ops.Next (Container, Position);
+            I := I + 1;
+         end loop;
+
+         return R;
+      end Positions;
+
+   end Formal_Model;
 
    ----------
    -- Free --
@@ -714,6 +793,190 @@ is
       Allocate (HT, Node);
       HT.Nodes (Node).Has_Element := True;
    end Generic_Allocate;
+
+   package body Generic_Keys with SPARK_Mode => Off is
+
+      -----------------------
+      -- Local Subprograms --
+      -----------------------
+
+      function Equivalent_Key_Node
+        (Key  : Key_Type;
+         Node : Node_Type) return Boolean;
+      pragma Inline (Equivalent_Key_Node);
+
+      --------------------------
+      -- Local Instantiations --
+      --------------------------
+
+      package Key_Keys is
+        new Hash_Tables.Generic_Bounded_Keys
+          (HT_Types        => HT_Types,
+           Next            => Next,
+           Set_Next        => Set_Next,
+           Key_Type        => Key_Type,
+           Hash            => Hash,
+           Equivalent_Keys => Equivalent_Key_Node);
+
+      --------------
+      -- Contains --
+      --------------
+
+      function Contains
+        (Container : Set;
+         Key       : Key_Type) return Boolean
+      is
+      begin
+         return Find (Container, Key) /= No_Element;
+      end Contains;
+
+      ------------
+      -- Delete --
+      ------------
+
+      procedure Delete
+        (Container : in out Set;
+         Key       : Key_Type)
+      is
+         X : Count_Type;
+
+      begin
+         Key_Keys.Delete_Key_Sans_Free (Container, Key, X);
+
+         if X = 0 then
+            raise Constraint_Error with "attempt to delete key not in set";
+         end if;
+
+         Free (Container, X);
+      end Delete;
+
+      -------------
+      -- Element --
+      -------------
+
+      function Element
+        (Container : Set;
+         Key       : Key_Type) return Element_Type
+      is
+         Node : constant Count_Type := Find (Container, Key).Node;
+
+      begin
+         if Node = 0 then
+            raise Constraint_Error with "key not in map";
+         end if;
+
+         return Container.Nodes (Node).Element;
+      end Element;
+
+      -------------------------
+      -- Equivalent_Key_Node --
+      -------------------------
+
+      function Equivalent_Key_Node
+        (Key  : Key_Type;
+         Node : Node_Type) return Boolean
+      is
+      begin
+         return Equivalent_Keys (Key, Generic_Keys.Key (Node.Element));
+      end Equivalent_Key_Node;
+
+      -------------
+      -- Exclude --
+      -------------
+
+      procedure Exclude
+        (Container : in out Set;
+         Key       : Key_Type)
+      is
+         X : Count_Type;
+      begin
+         Key_Keys.Delete_Key_Sans_Free (Container, Key, X);
+         Free (Container, X);
+      end Exclude;
+
+      ----------
+      -- Find --
+      ----------
+
+      function Find
+        (Container : Set;
+         Key       : Key_Type) return Cursor
+      is
+         Node : constant Count_Type := Key_Keys.Find (Container, Key);
+      begin
+         return (if Node = 0 then No_Element else (Node => Node));
+      end Find;
+
+      ------------------
+      -- Formal_Model --
+      ------------------
+
+      package body Formal_Model is
+
+         -----------------------
+         -- M_Included_Except --
+         -----------------------
+
+         function M_Included_Except
+           (Left  : M.Set;
+            Right : M.Set;
+            Key   : Key_Type) return Boolean
+         is
+         begin
+            for E of Left loop
+               if not Contains (Right, E)
+                 and not Equivalent_Keys (Generic_Keys.Key (E), Key)
+               then
+                  return False;
+               end if;
+            end loop;
+            return True;
+         end M_Included_Except;
+
+      end Formal_Model;
+
+      ---------
+      -- Key --
+      ---------
+
+      function Key (Container : Set; Position : Cursor) return Key_Type is
+      begin
+         if not Has_Element (Container, Position) then
+            raise Constraint_Error with
+              "Position cursor has no element";
+         end if;
+
+         pragma Assert
+           (Vet (Container, Position), "bad cursor in function Key");
+
+         declare
+            N  : Node_Type renames Container.Nodes (Position.Node);
+         begin
+            return Key (N.Element);
+         end;
+      end Key;
+
+      -------------
+      -- Replace --
+      -------------
+
+      procedure Replace
+        (Container : in out Set;
+         Key       : Key_Type;
+         New_Item  : Element_Type)
+      is
+         Node : constant Count_Type := Key_Keys.Find (Container, Key);
+
+      begin
+         if Node = 0 then
+            raise Constraint_Error with
+              "attempt to replace key not in set";
+         end if;
+
+         Replace_Element (Container, Node, New_Item);
+      end Replace;
+
+   end Generic_Keys;
 
    -----------------
    -- Has_Element --
@@ -1158,34 +1421,6 @@ is
       Node.Next := Next;
    end Set_Next;
 
-   ------------------
-   -- Strict_Equal --
-   ------------------
-
-   function Strict_Equal (Left, Right : Set) return Boolean is
-      CuL : Cursor := First (Left);
-      CuR : Cursor := First (Right);
-
-   begin
-      if Length (Left) /= Length (Right) then
-         return False;
-      end if;
-
-      while CuL.Node /= 0 or CuR.Node /= 0 loop
-         if CuL.Node /= CuR.Node
-           or else Left.Nodes (CuL.Node).Element /=
-                   Right.Nodes (CuR.Node).Element
-         then
-            return False;
-         end if;
-
-         CuL := Next (Left, CuL);
-         CuR := Next (Right, CuR);
-      end loop;
-
-      return True;
-   end Strict_Equal;
-
    --------------------------
    -- Symmetric_Difference --
    --------------------------
@@ -1385,161 +1620,5 @@ is
          return False;
       end;
    end Vet;
-
-   package body Generic_Keys with SPARK_Mode => Off is
-
-      -----------------------
-      -- Local Subprograms --
-      -----------------------
-
-      function Equivalent_Key_Node
-        (Key  : Key_Type;
-         Node : Node_Type) return Boolean;
-      pragma Inline (Equivalent_Key_Node);
-
-      --------------------------
-      -- Local Instantiations --
-      --------------------------
-
-      package Key_Keys is
-        new Hash_Tables.Generic_Bounded_Keys
-          (HT_Types        => HT_Types,
-           Next            => Next,
-           Set_Next        => Set_Next,
-           Key_Type        => Key_Type,
-           Hash            => Hash,
-           Equivalent_Keys => Equivalent_Key_Node);
-
-      --------------
-      -- Contains --
-      --------------
-
-      function Contains
-        (Container : Set;
-         Key       : Key_Type) return Boolean
-      is
-      begin
-         return Find (Container, Key) /= No_Element;
-      end Contains;
-
-      ------------
-      -- Delete --
-      ------------
-
-      procedure Delete
-        (Container : in out Set;
-         Key       : Key_Type)
-      is
-         X : Count_Type;
-
-      begin
-         Key_Keys.Delete_Key_Sans_Free (Container, Key, X);
-
-         if X = 0 then
-            raise Constraint_Error with "attempt to delete key not in set";
-         end if;
-
-         Free (Container, X);
-      end Delete;
-
-      -------------
-      -- Element --
-      -------------
-
-      function Element
-        (Container : Set;
-         Key       : Key_Type) return Element_Type
-      is
-         Node : constant Count_Type := Find (Container, Key).Node;
-
-      begin
-         if Node = 0 then
-            raise Constraint_Error with "key not in map";
-         end if;
-
-         return Container.Nodes (Node).Element;
-      end Element;
-
-      -------------------------
-      -- Equivalent_Key_Node --
-      -------------------------
-
-      function Equivalent_Key_Node
-        (Key  : Key_Type;
-         Node : Node_Type) return Boolean
-      is
-      begin
-         return Equivalent_Keys (Key, Generic_Keys.Key (Node.Element));
-      end Equivalent_Key_Node;
-
-      -------------
-      -- Exclude --
-      -------------
-
-      procedure Exclude
-        (Container : in out Set;
-         Key       : Key_Type)
-      is
-         X : Count_Type;
-      begin
-         Key_Keys.Delete_Key_Sans_Free (Container, Key, X);
-         Free (Container, X);
-      end Exclude;
-
-      ----------
-      -- Find --
-      ----------
-
-      function Find
-        (Container : Set;
-         Key       : Key_Type) return Cursor
-      is
-         Node : constant Count_Type := Key_Keys.Find (Container, Key);
-      begin
-         return (if Node = 0 then No_Element else (Node => Node));
-      end Find;
-
-      ---------
-      -- Key --
-      ---------
-
-      function Key (Container : Set; Position : Cursor) return Key_Type is
-      begin
-         if not Has_Element (Container, Position) then
-            raise Constraint_Error with
-              "Position cursor has no element";
-         end if;
-
-         pragma Assert
-           (Vet (Container, Position), "bad cursor in function Key");
-
-         declare
-            N  : Node_Type renames Container.Nodes (Position.Node);
-         begin
-            return Key (N.Element);
-         end;
-      end Key;
-
-      -------------
-      -- Replace --
-      -------------
-
-      procedure Replace
-        (Container : in out Set;
-         Key       : Key_Type;
-         New_Item  : Element_Type)
-      is
-         Node : constant Count_Type := Key_Keys.Find (Container, Key);
-
-      begin
-         if Node = 0 then
-            raise Constraint_Error with
-              "attempt to replace key not in set";
-         end if;
-
-         Replace_Element (Container, Node, New_Item);
-      end Replace;
-
-   end Generic_Keys;
 
 end Ada.Containers.Formal_Hashed_Sets;

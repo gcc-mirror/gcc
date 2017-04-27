@@ -37,7 +37,6 @@ with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch9;  use Exp_Ch9;
 with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
-with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Itypes;   use Itypes;
 with Lib;      use Lib;
@@ -4532,8 +4531,7 @@ package body Exp_Aggr is
                                           and then
                                             Is_Preelaborated (Spec_Entity (P)))
                                 or else
-                                  Is_Predefined_File_Name
-                                    (Unit_File_Name (Get_Source_Unit (P)))
+                                  Is_Predefined_Unit (Get_Source_Unit (P))
                               then
                                  null;
 

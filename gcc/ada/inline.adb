@@ -410,8 +410,7 @@ package body Inline is
 
       if not Comes_From_Source (N)
         and then In_Extended_Main_Source_Unit (N)
-        and then
-          Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (E)))
+        and then Is_Predefined_Unit (Get_Source_Unit (E))
       then
          Set_Needs_Debug_Info (E, False);
       end if;
@@ -1556,7 +1555,7 @@ package body Inline is
          --  subprograms may contain nested subprograms and become ineligible
          --  for inlining.
 
-         if Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (Subp)))
+         if Is_Predefined_Unit (Get_Source_Unit (Subp))
            and then not In_Extended_Main_Source_Unit (Subp)
          then
             null;
@@ -1602,7 +1601,7 @@ package body Inline is
          --  compatibility but it will be removed when we enforce the
          --  strictness of the new rules.
 
-         if Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (Subp)))
+         if Is_Predefined_Unit (Get_Source_Unit (Subp))
            and then not In_Extended_Main_Source_Unit (Subp)
          then
             null;
@@ -1617,9 +1616,7 @@ package body Inline is
                declare
                   Gen_P : constant Entity_Id := Generic_Parent (Parent (Subp));
                begin
-                  if Is_Predefined_File_Name
-                       (Unit_File_Name (Get_Source_Unit (Gen_P)))
-                  then
+                  if Is_Predefined_Unit (Get_Source_Unit (Gen_P)) then
                      Set_Is_Inlined (Subp, False);
                      Error_Msg_NE (Msg & "p?", N, Subp);
                      return;
@@ -2283,8 +2280,7 @@ package body Inline is
    is
       Loc       : constant Source_Ptr := Sloc (N);
       Is_Predef : constant Boolean :=
-                    Is_Predefined_File_Name
-                      (Unit_File_Name (Get_Source_Unit (Subp)));
+                    Is_Predefined_Unit (Get_Source_Unit (Subp));
       Orig_Bod  : constant Node_Id :=
                     Body_To_Inline (Unit_Declaration_Node (Subp));
 
@@ -3565,8 +3561,7 @@ package body Inline is
          end if;
 
          return Present (Conv)
-           and then Is_Predefined_File_Name
-                      (Unit_File_Name (Get_Source_Unit (Conv)))
+           and then Is_Predefined_Unit (Get_Source_Unit (Conv))
            and then Is_Intrinsic_Subprogram (Conv);
       end Is_Unchecked_Conversion;
 

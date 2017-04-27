@@ -171,6 +171,16 @@ is
                        Key)));
       pragma Annotate (GNATprove, Inline_For_Proof, K_Is_Find);
 
+      function Find (Container : K.Sequence; Key : Key_Type) return Count_Type
+      --  Search for Key in Container
+
+      with
+        Global => null,
+        Post =>
+          (if Find'Result > 0 then
+             Find'Result <= K.Length (Container)
+               and Equivalent_Keys (Key, K.Get (Container, Find'Result)));
+
       package P is new Ada.Containers.Functional_Maps
         (Key_Type                       => Cursor,
          Element_Type                   => Positive_Count_Type,
@@ -240,17 +250,16 @@ is
 
             --  It contains all the keys contained in Model
 
-            and
-              (for all Key of Model (Container) =>
-                (for some L of Keys'Result => Equivalent_Keys (L, Key)))
+            and (for all Key of Model (Container) =>
+                  (Find (Keys'Result, Key) > 0
+                     and then Equivalent_Keys
+                      (K.Get (Keys'Result, Find (Keys'Result, Key)), Key)))
 
             --  It is sorted in increasing order
 
-            and
-              (for all I in 1 .. Length (Container) =>
-                (for all J in 1 .. Length (Container) =>
-                   (K.Get (Keys'Result, I) < K.Get (Keys'Result, J)) =
-                   (I < J)));
+            and (for all I in 1 .. Length (Container) =>
+                  Find (Keys'Result, K.Get (Keys'Result, I)) = I
+                  and K_Is_Find (Keys'Result, K.Get (Keys'Result, I), I));
       pragma Annotate (GNATprove, Iterable_For_Proof, "Model", Keys);
 
       function Positions (Container : Map) return P.Map with
@@ -482,7 +491,7 @@ is
 
          --  Key now maps to New_Item
 
-         and Formal_Ordered_Maps.Key (Container, Find (Container, Key)) = Key
+         and K.Get (Keys (Container), Find (Keys (Container), Key)) = Key
          and Element (Model (Container), Key) = New_Item
 
          --  Other mappings are preserved
@@ -499,15 +508,14 @@ is
                (Left  => Keys (Container)'Old,
                 Right => Keys (Container),
                 Fst   => 1,
-                Lst   =>
-                  P.Get (Positions (Container), Find (Container, Key)) - 1)
+                Lst   => Find (Keys (Container), Key) - 1)
 
          --  Other keys are shifted by 1
 
          and K.Range_Shifted
                (Left   => Keys (Container)'Old,
                 Right  => Keys (Container),
-                Fst    => P.Get (Positions (Container), Find (Container, Key)),
+                Fst    => Find (Keys (Container), Key),
                 Lst    => Length (Container)'Old,
                 Offset => 1)
 
@@ -516,7 +524,7 @@ is
          and P_Positions_Shifted
                (Positions (Container)'Old,
                 Positions (Container),
-                Cut => P.Get (Positions (Container), Find (Container, Key)));
+                Cut => Find (Keys (Container), Key));
 
    procedure Include
      (Container : in out Map;
@@ -541,13 +549,12 @@ is
             --  The key equivalent to Key in Container is replaced by Key
 
             and K.Get
-                  (Keys (Container),
-                   P.Get (Positions (Container), Find (Container, Key))) = Key
+                  (Keys (Container), Find (Keys (Container), Key)) = Key
 
             and K.Equal_Except
                   (Keys (Container)'Old,
                    Keys (Container),
-                   P.Get (Positions (Container), Find (Container, Key)))
+                   Find (Keys (Container), Key))
 
             --  Elements associated with other keys are preserved
 
@@ -573,8 +580,7 @@ is
             --  Key is inserted in Container
 
             and K.Get
-                  (Keys (Container),
-                   P.Get (Positions (Container), Find (Container, Key))) = Key
+                  (Keys (Container), Find (Keys (Container), Key)) = Key
 
             --  The keys of Container located before Key are preserved
 
@@ -582,16 +588,14 @@ is
                   (Left  => Keys (Container)'Old,
                    Right => Keys (Container),
                    Fst   => 1,
-                   Lst   =>
-                     P.Get (Positions (Container), Find (Container, Key)) - 1)
+                   Lst   => Find (Keys (Container), Key) - 1)
 
             --  Other keys are shifted by 1
 
             and K.Range_Shifted
                   (Left   => Keys (Container)'Old,
                    Right  => Keys (Container),
-                   Fst    =>
-                     P.Get (Positions (Container), Find (Container, Key)),
+                   Fst    => Find (Keys (Container), Key),
                    Lst    => Length (Container)'Old,
                    Offset => 1)
 
@@ -600,8 +604,7 @@ is
             and P_Positions_Shifted
                   (Positions (Container)'Old,
                    Positions (Container),
-                   Cut =>
-                     P.Get (Positions (Container), Find (Container, Key))));
+                   Cut => Find (Keys (Container), Key)));
 
    procedure Replace
      (Container : in out Map;
@@ -610,7 +613,7 @@ is
    with
      Global => null,
      Pre    => Contains (Container, Key),
-     Post  =>
+     Post   =>
 
        --  Cursors are preserved
 
@@ -618,12 +621,11 @@ is
 
          --  The key equivalent to Key in Container is replaced by Key
 
-         and K.Get (Keys (Container),
-                    P.Get (Positions (Container), Find (Container, Key))) = Key
+         and K.Get (Keys (Container), Find (Keys (Container), Key)) = Key
          and K.Equal_Except
               (Keys (Container)'Old,
                Keys (Container),
-               P.Get (Positions (Container), Find (Container, Key)))
+               Find (Keys (Container), Key))
 
          --  New_Item is now associated with the Key in Container
 
@@ -668,17 +670,14 @@ is
                   (Left  => Keys (Container)'Old,
                    Right => Keys (Container),
                    Fst   => 1,
-                   Lst   =>
-                     P.Get (Positions (Container), Find (Container, Key))'Old
-                       - 1)
+                   Lst   => Find (Keys (Container), Key)'Old - 1)
 
             --  The keys located after Key are shifted by 1
 
             and K.Range_Shifted
                   (Left   => Keys (Container),
                    Right  => Keys (Container)'Old,
-                   Fst    =>
-                     P.Get (Positions (Container), Find (Container, Key))'Old,
+                   Fst    => Find (Keys (Container), Key)'Old,
                    Lst    => Length (Container),
                    Offset => 1)
 
@@ -687,9 +686,7 @@ is
             and P_Positions_Shifted
                   (Positions (Container),
                    Positions (Container)'Old,
-                   Cut   =>
-                     P.Get
-                       (Positions (Container), Find (Container, Key))'Old));
+                   Cut   => Find (Keys (Container), Key)'Old));
 
    procedure Delete (Container : in out Map; Key : Key_Type) with
      Global => null,
@@ -715,16 +712,14 @@ is
                (Left  => Keys (Container)'Old,
                 Right => Keys (Container),
                 Fst   => 1,
-                Lst   =>
-                  P.Get (Positions (Container), Find (Container, Key))'Old - 1)
+                Lst   => Find (Keys (Container), Key)'Old - 1)
 
          --  The keys located after Key are shifted by 1
 
          and K.Range_Shifted
                (Left   => Keys (Container),
                 Right  => Keys (Container)'Old,
-                Fst    =>
-                  P.Get (Positions (Container), Find (Container, Key))'Old,
+                Fst    => Find (Keys (Container), Key)'Old,
                 Lst    => Length (Container),
                 Offset => 1)
 
@@ -733,8 +728,7 @@ is
          and P_Positions_Shifted
                (Positions (Container),
                 Positions (Container)'Old,
-                Cut   =>
-                  P.Get (Positions (Container), Find (Container, Key))'Old);
+                Cut   => Find (Keys (Container), Key)'Old);
 
    procedure Delete (Container : in out Map; Position : in out Cursor) with
      Global => null,
@@ -960,29 +954,23 @@ is
      Global         => null,
      Contract_Cases =>
 
-       --  If Key is not is not contained in Container, Find returns No_Element
+       --  If Key is not contained in Container, Find returns No_Element
 
        (not Contains (Model (Container), Key) =>
           not P.Has_Key (Positions (Container), Find'Result)
             and Find'Result = No_Element,
 
-        --  Otherwise, Find returns a valid cusror in Container
+        --  Otherwise, Find returns a valid cursor in Container
 
         others =>
           P.Has_Key (Positions (Container), Find'Result)
+            and P.Get (Positions (Container), Find'Result) =
+                Find (Keys (Container), Key)
 
             --  The key designated by the result of Find is Key
 
             and Equivalent_Keys
-                  (Formal_Ordered_Maps.Key (Container, Find'Result), Key)
-
-            --  Keys of Container are ordered
-
-            and K_Is_Find
-                  (Keys (Container),
-                   Key,
-                   P.Get (Positions (Container),
-                   Find'Result)));
+                  (Formal_Ordered_Maps.Key (Container, Find'Result), Key));
 
    function Element (Container : Map; Key : Key_Type) return Element_Type with
      Global => null,

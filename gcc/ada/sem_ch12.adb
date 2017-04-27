@@ -4109,8 +4109,7 @@ package body Sem_Ch12 is
                --  predefined subprograms marked Inline_Always, to minimize
                --  the use of the run-time library.
 
-               elsif Is_Predefined_File_Name
-                       (Unit_File_Name (Get_Source_Unit (Gen_Decl)))
+               elsif In_Predefined_Unit (Gen_Decl)
                  and then Configurable_Run_Time_Mode
                  and then Nkind (Parent (N)) /= N_Compilation_Unit
                then
@@ -11210,8 +11209,7 @@ package body Sem_Ch12 is
             --  interested in finding possible runtime errors.
 
             if not CodePeer_Mode
-              and then Is_Predefined_File_Name
-                         (Unit_File_Name (Get_Source_Unit (Gen_Decl)))
+              and then In_Predefined_Unit (Gen_Decl)
             then
                Analyze (Act_Body, Suppress => All_Checks);
             else
@@ -15473,10 +15471,7 @@ package body Sem_Ch12 is
       --  to predefined units. Nothing needs to be done for non-internal units.
       --  These are always analyzed in the current mode.
 
-      if Is_Internal_File_Name
-           (Fname              => Unit_File_Name (Get_Source_Unit (Gen_Unit)),
-            Renamings_Included => True)
-      then
+      if In_Internal_Unit (Gen_Unit) then
          Set_Opt_Config_Switches (True, Current_Sem_Unit = Main_Unit);
 
          --  In Ada2012 we may want to enable assertions in an instance of a

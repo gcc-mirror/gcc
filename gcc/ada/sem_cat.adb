@@ -29,7 +29,6 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Disp; use Exp_Disp;
-with Fname;    use Fname;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -263,8 +262,8 @@ package body Sem_Cat is
          --  so it is convenient not to generate them (since it causes
          --  annoying interference with debugging).
 
-         if Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit))
-           and then not Is_Internal_File_Name (Unit_File_Name (Main_Unit))
+         if Is_Internal_Unit (Current_Sem_Unit)
+           and then not Is_Internal_Unit (Main_Unit)
          then
             return;
 
@@ -949,8 +948,7 @@ package body Sem_Cat is
 
          if Is_Private_Type (T)
            and then not Has_Pragma_Preelab_Init (T)
-           and then not Is_Internal_File_Name
-                          (Unit_File_Name (Get_Source_Unit (N)))
+           and then not In_Internal_Unit (N)
          then
             Error_Msg_N
               ("private ancestor type not allowed in preelaborated unit", A);
@@ -1098,8 +1096,7 @@ package body Sem_Cat is
       if In_Preelaborated_Unit
         and then not Debug_Flag_PP
         and then Comes_From_Source (E)
-        and then not
-          Is_Internal_File_Name (Unit_File_Name (Get_Source_Unit (E)))
+        and then not In_Internal_Unit (E)
         and then (not Inside_A_Generic
                    or else Present (Enclosing_Generic_Body (E)))
         and then not Is_Protected_Type (Etype (E))
@@ -2202,7 +2199,7 @@ package body Sem_Cat is
             E   := Entity (N);
             Val := Constant_Value (E);
 
-            if Is_Internal_File_Name (Unit_File_Name (Get_Source_Unit (N)))
+            if In_Internal_Unit (N)
               and then
                 Enclosing_Comp_Unit_Node (N) /= Enclosing_Comp_Unit_Node (E)
               and then (Is_Preelaborated (Scope (E))

@@ -28,7 +28,6 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Exp_Code; use Exp_Code;
-with Fname;    use Fname;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
@@ -1612,10 +1611,7 @@ package body Sem_Warn is
                --  (these would be junk warnings for an applications program,
                --  since they refer to problems in internal units).
 
-               if GNAT_Mode
-                 or else not Is_Internal_File_Name
-                               (Unit_File_Name (Get_Source_Unit (E1)))
-               then
+               if GNAT_Mode or else not In_Internal_Unit (E1) then
                   --  We do not immediately flag the error. This is because we
                   --  have not expanded generic bodies yet, and they may have
                   --  the missing reference. So instead we park the entity on a
@@ -2383,7 +2379,7 @@ package body Sem_Warn is
          --  clearly undesirable.
 
          elsif Configurable_Run_Time_Mode
-           and then Is_Predefined_File_Name (Unit_File_Name (Unit))
+           and then Is_Predefined_Unit (Unit)
          then
             return;
          end if;
@@ -2414,9 +2410,7 @@ package body Sem_Warn is
                   --  (these would be junk warnings for an application program,
                   --  since they refer to problems in internal units).
 
-                  if GNAT_Mode
-                    or else not Is_Internal_File_Name (Unit_File_Name (Unit))
-                  then
+                  if GNAT_Mode or else not Is_Internal_Unit (Unit) then
                      --  Here we definitely have a non-referenced unit. If it
                      --  is the special call for a spec unit, then just set the
                      --  flag to be read later.
@@ -3302,8 +3296,7 @@ package body Sem_Warn is
         --  Do not consider internal files to allow for various assertions and
         --  safeguards within our runtime.
 
-        and then not Is_Internal_File_Name
-                       (Unit_File_Name (Get_Source_Unit (Op)))
+        and then not In_Internal_Unit (Op)
       then
          Test_Comparison
            (Op           => Op,

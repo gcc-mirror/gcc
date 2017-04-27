@@ -469,9 +469,7 @@ package body Rtsfind is
          --  unit for inlining purposes, the body must be illegal in this
          --  mode, and there is no point in continuing.
 
-         if Is_Predefined_File_Name
-           (Unit_File_Name (Get_Source_Unit (Sloc (Current_Error_Node))))
-         then
+         if In_Predefined_Unit (Current_Error_Node) then
             Error_Msg_N
               ("construct not allowed in no run time mode!",
                  Current_Error_Node);
@@ -1626,7 +1624,7 @@ package body Rtsfind is
       E     : constant Entity_Id        :=
                 Defining_Entity (Unit (Cunit (Unum)));
    begin
-      pragma Assert (Is_Predefined_File_Name (Unit_File_Name (Unum)));
+      pragma Assert (Is_Predefined_Unit (Unum));
 
       --  Loop through entries in RTU table looking for matching entry
 

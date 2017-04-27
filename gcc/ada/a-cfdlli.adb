@@ -847,6 +847,45 @@ is
 
    package body Generic_Sorting with SPARK_Mode => Off is
 
+      ------------------
+      -- Formal_Model --
+      ------------------
+
+      package body Formal_Model is
+
+         -----------------------
+         -- M_Elements_Sorted --
+         -----------------------
+
+         function M_Elements_Sorted (Container : M.Sequence) return Boolean is
+         begin
+            if M.Length (Container) = 0 then
+               return True;
+            end if;
+
+            declare
+               E1 : Element_Type := Element (Container, 1);
+
+            begin
+               for I in 2 .. M.Length (Container) loop
+                  declare
+                     E2 : constant Element_Type := Element (Container, I);
+
+                  begin
+                     if E2 < E1 then
+                        return False;
+                     end if;
+
+                     E1 := E2;
+                  end;
+               end loop;
+            end;
+
+            return True;
+         end M_Elements_Sorted;
+
+      end Formal_Model;
+
       ---------------
       -- Is_Sorted --
       ---------------
@@ -866,37 +905,6 @@ is
 
          return True;
       end Is_Sorted;
-
-      -----------------------
-      -- M_Elements_Sorted --
-      -----------------------
-
-      function M_Elements_Sorted (Container : M.Sequence) return Boolean is
-      begin
-         if M.Length (Container) = 0 then
-            return True;
-         end if;
-
-         declare
-            E1 : Element_Type := Element (Container, 1);
-
-         begin
-            for I in 2 .. M.Length (Container) loop
-               declare
-                  E2 : constant Element_Type := Element (Container, I);
-
-               begin
-                  if E2 < E1 then
-                     return False;
-                  end if;
-
-                  E1 := E2;
-               end;
-            end loop;
-         end;
-
-         return True;
-      end M_Elements_Sorted;
 
       -----------
       -- Merge --
