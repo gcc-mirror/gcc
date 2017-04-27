@@ -37,6 +37,10 @@ generic
    with function Equivalent_Elements
      (Left  : Element_Type;
       Right : Element_Type) return Boolean;
+   Enable_Handling_Of_Equivalence : Boolean := True;
+   --  This constant should only be set to False when no particular handling
+   --  of equivalence over elements is needed, that is, Equivalent_Elements
+   --  defines an element uniquely.
 
 package Ada.Containers.Functional_Sets with SPARK_Mode is
 
@@ -49,6 +53,9 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
    --  Sets are empty when default initialized.
    --  "For in" quantification over sets should not be used.
    --  "For of" quantification over sets iterates over elements.
+   --  Note that, for proof, "for of" quantification is understood modulo
+   --  equivalence (quantification includes elements equivalent to elements of
+   --  the map).
 
    -----------------------
    --  Basic operations --
@@ -59,8 +66,16 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
    --  against overflows but it is not actually modeled.
 
    function Contains (Container : Set; Item : Element_Type) return Boolean with
-     Global => null;
    --  Return True if Item is contained in Container
+
+     Global => null,
+     Post   =>
+       (if Enable_Handling_Of_Equivalence then
+
+          --  Contains returns the same result on all equivalent elements
+
+          (if (for some E of Container => Equivalent_Elements (E, Item)) then
+             Contains'Result));
 
    function Length (Container : Set) return Count_Type with
      Global => null;

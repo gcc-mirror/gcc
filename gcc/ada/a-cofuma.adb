@@ -148,6 +148,13 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
       return Find (Container.Keys, Key) > 0;
    end Has_Key;
 
+   -----------------
+   -- Has_Witness --
+   -----------------
+
+   function Has_Witness (Container : Map; Witness : Count_Type) return Boolean
+   is (Witness in 1 .. Length (Container.Keys));
+
    --------------
    -- Is_Empty --
    --------------
@@ -233,16 +240,6 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
       return Length (Container.Elements);
    end Length;
 
-   --------------------------
-   -- Lift_Equivalent_Keys --
-   --------------------------
-
-   procedure Lift_Equivalent_Keys
-     (Container : Map;
-      Left      : Key_Type;
-      Right     : Key_Type)
-   is null;
-
    ---------------
    -- Same_Keys --
    ---------------
@@ -263,5 +260,20 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
      (Keys     => Container.Keys,
       Elements =>
         Set (Container.Elements, Find (Container.Keys, Key), New_Item));
+
+   -----------
+   -- W_Get --
+   -----------
+
+   function W_Get (Container : Map; Witness : Count_Type) return Element_Type
+   is
+     (Get (Container.Elements, Witness));
+
+   -------------
+   -- Witness --
+   -------------
+
+   function Witness (Container : Map; Key : Key_Type) return Count_Type is
+     (Find (Container.Keys, Key));
 
 end Ada.Containers.Functional_Maps;

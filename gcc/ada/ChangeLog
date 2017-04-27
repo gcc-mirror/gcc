@@ -1,3 +1,30 @@
+2017-04-27  Claire Dross  <dross@adacore.com>
+
+	* a-cforma.adb, a-cforma.ads (=): Generic parameter removed to
+	allow the use of regular equality over elements in contracts.
+	(Formal_Model): Ghost package containing model functions that
+	are used in subprogram contracts.
+	(Current_To_Last): Removed, model functions should be used instead.
+	(First_To_Previous): Removed, model functions should be used instead.
+	(Strict_Equal): Removed, model functions should be used instead.
+	(No_Overlap): Removed, model functions should be used instead.
+	* a-cofuma.adb, a-cofuma.ads (Enable_Handling_Of_Equivalence)
+	Boolean generic parameter to disable contracts for equivalence
+	between keys.
+	(Witness): Create a witness of a key that is used for handling of
+	equivalence between keys.
+	(Has_Witness): Check whether a witness is contained in a map.
+	(W_Get): Get the element associated to a witness.
+	(Lift_Equivalent_Keys): Removed, equivalence between keys is handled
+	directly.
+	* a-cofuse.adb, a-cofuse.ads (Enable_Handling_Of_Equivalence)
+	Boolean generic parameter to disable contracts for equivalence
+	between keys.
+	* a-cfhama.adb, a-cfhama.ads (Formal_Model.P) Disable handling
+	of equivalence on functional maps.
+	* a-cfdlli.adb, a-cfdlli.ads (Formal_Model.P) Disable handling
+	of equivalence on functional maps.
+
 2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch9.adb (Expand_Entry_Barrier): Code
