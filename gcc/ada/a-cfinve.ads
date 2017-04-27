@@ -124,8 +124,8 @@ is
             (for all I in Index_Type'First .. M.Last (Container) =>
               (for some J in Index_Type'First .. M.Last (Left) =>
                 Element (Container, I) = Element (Left, J))
-              or (for some J in Index_Type'First .. M.Last (Right) =>
-                    Element (Container, I) = Element (Right, J)));
+                  or (for some J in Index_Type'First .. M.Last (Right) =>
+                       Element (Container, I) = Element (Right, J)));
       pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_In_Union);
 
       function M_Elements_Included
@@ -157,11 +157,11 @@ is
           M_Elements_Reversed'Result =
             (M.Length (Left) = M.Length (Right)
               and (for all I in Index_Type'First .. M.Last (Left) =>
-                     Element (Left, I) =
-                     Element (Right, M.Last (Left) - I + 1))
+                    Element (Left, I) =
+                      Element (Right, M.Last (Left) - I + 1))
               and (for all I in Index_Type'First .. M.Last (Right) =>
-                     Element (Right, I) =
-                     Element (Left, M.Last (Left) - I + 1)));
+                    Element (Right, I) =
+                      Element (Left, M.Last (Left) - I + 1)));
       pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Reversed);
 
       function M_Elements_Swapped
@@ -195,6 +195,7 @@ is
          I : Index_Type) return Element_Type renames M.Get;
       --  To improve readability of contracts, we rename the function used to
       --  access an element in the model to Element.
+
    end Formal_Model;
    use Formal_Model;
 
@@ -213,16 +214,20 @@ is
      Global => null,
      Post   =>
        Formal_Indefinite_Vectors.Length (To_Vector'Result) = Length
-         and M.Constant_Range (Container => Model (To_Vector'Result),
-                               Fst       => Index_Type'First,
-                               Lst       => Last_Index (To_Vector'Result),
-                               Item      => New_Item);
+         and M.Constant_Range
+               (Container => Model (To_Vector'Result),
+                Fst       => Index_Type'First,
+                Lst       => Last_Index (To_Vector'Result),
+                Item      => New_Item);
 
    function Capacity (Container : Vector) return Capacity_Range with
      Global => null,
      Post   =>
-       Capacity'Result = (if Bounded then Container.Capacity
-                          else Capacity_Range'Last);
+       Capacity'Result =
+         (if Bounded then
+             Container.Capacity
+          else
+             Capacity_Range'Last);
    pragma Annotate (GNATprove, Inline_For_Proof, Capacity);
 
    procedure Reserve_Capacity
@@ -257,8 +262,10 @@ is
      Pre    => (if Bounded then (Capacity = 0 or Length (Source) <= Capacity)),
      Post   =>
        Model (Copy'Result) = Model (Source)
-         and (if Capacity = 0 then Copy'Result.Capacity = Length (Source)
-              else Copy'Result.Capacity = Capacity);
+         and (if Capacity = 0 then
+                 Copy'Result.Capacity = Length (Source)
+              else
+                 Copy'Result.Capacity = Capacity);
 
    procedure Move (Target : in out Vector; Source : in out Vector)
    with
@@ -305,7 +312,7 @@ is
      Pre    =>
        Length (Container) <= Capacity (Container) - Length (New_Item)
          and (Before in Index_Type'First .. Last_Index (Container)
-              or (Before /= No_Index
+               or (Before /= No_Index
                     and then Before - 1 = Last_Index (Container))),
      Post   =>
        Length (Container) = Length (Container)'Old + Length (New_Item)
@@ -321,12 +328,12 @@ is
          --  Elements of New_Item are inserted at position Before
 
          and (if Length (New_Item) > 0 then
-                M.Range_Shifted
-                  (Left   => Model (New_Item),
-                    Right  => Model (Container),
-                    Fst    => Index_Type'First,
-                    Lst    => Last_Index (New_Item),
-                    Offset => Count_Type (Before - Index_Type'First)))
+                 M.Range_Shifted
+                   (Left   => Model (New_Item),
+                     Right  => Model (Container),
+                     Fst    => Index_Type'First,
+                     Lst    => Last_Index (New_Item),
+                     Offset => Count_Type (Before - Index_Type'First)))
 
          --  Elements located after Before in Container are shifted
 
@@ -380,7 +387,7 @@ is
      Pre    =>
        Length (Container) <= Capacity (Container) - Count
          and (Before in Index_Type'First .. Last_Index (Container)
-              or (Before /= No_Index
+               or (Before /= No_Index
                     and then Before - 1 = Last_Index (Container))),
      Post   =>
        Length (Container) = Length (Container)'Old + Count
@@ -396,11 +403,11 @@ is
          --  New_Item is inserted Count times at position Before
 
          and (if Count > 0 then
-                M.Constant_Range
-                  (Container => Model (Container),
-                    Fst       => Before,
-                    Lst       => Before + Index_Type'Base (Count - 1),
-                    Item      => New_Item))
+                 M.Constant_Range
+                   (Container => Model (Container),
+                     Fst       => Before,
+                     Lst       => Before + Index_Type'Base (Count - 1),
+                     Item      => New_Item))
 
          --  Elements located after Before in Container are shifted
 
@@ -411,10 +418,7 @@ is
                 Lst    => Last_Index (Container)'Old,
                 Offset => Count);
 
-   procedure Prepend
-     (Container : in out Vector;
-      New_Item  : Vector)
-   with
+   procedure Prepend (Container : in out Vector; New_Item : Vector) with
      Global => null,
      Pre    => Length (Container) <= Capacity (Container) - Length (New_Item),
      Post   =>
@@ -437,10 +441,7 @@ is
                 Lst    => Last_Index (Container)'Old,
                 Offset => Length (New_Item));
 
-   procedure Prepend
-     (Container : in out Vector;
-      New_Item  : Element_Type)
-   with
+   procedure Prepend (Container : in out Vector; New_Item : Element_Type) with
      Global => null,
      Pre    => Length (Container) < Capacity (Container),
      Post   =>
@@ -486,10 +487,7 @@ is
                 Lst    => Last_Index (Container)'Old,
                 Offset => Count);
 
-   procedure Append
-     (Container : in out Vector;
-      New_Item  : Vector)
-   with
+   procedure Append (Container : in out Vector; New_Item : Vector) with
      Global         => null,
      Pre            =>
        Length (Container) <= Capacity (Container) - Length (New_Item),
@@ -503,19 +501,16 @@ is
          --  Elements of New_Item are inserted at the end of Container
 
          and (if Length (New_Item) > 0 then
-                M.Range_Shifted
-                 (Left   => Model (New_Item),
-                   Right  => Model (Container),
-                   Fst    => Index_Type'First,
-                   Lst    => Last_Index (New_Item),
-                   Offset =>
-                     Count_Type
-                       (Last_Index (Container)'Old - Index_Type'First + 1)));
+                 M.Range_Shifted
+                   (Left   => Model (New_Item),
+                    Right  => Model (Container),
+                    Fst    => Index_Type'First,
+                    Lst    => Last_Index (New_Item),
+                    Offset =>
+                      Count_Type
+                        (Last_Index (Container)'Old - Index_Type'First + 1)));
 
-   procedure Append
-     (Container : in out Vector;
-      New_Item  : Element_Type)
-   with
+   procedure Append (Container : in out Vector; New_Item : Element_Type) with
      Global => null,
      Pre    => Length (Container) < Capacity (Container),
      Post   =>
@@ -547,17 +542,14 @@ is
          --  New_Item is inserted Count times at the end of Container
 
          and (if Count > 0 then
-                M.Constant_Range
-                  (Container => Model (Container),
-                    Fst       => Last_Index (Container)'Old + 1,
-                    Lst       =>
-                      Last_Index (Container)'Old + Index_Type'Base (Count),
-                    Item      => New_Item));
+                 M.Constant_Range
+                   (Container => Model (Container),
+                     Fst       => Last_Index (Container)'Old + 1,
+                     Lst       =>
+                       Last_Index (Container)'Old + Index_Type'Base (Count),
+                     Item      => New_Item));
 
-   procedure Delete
-     (Container : in out Vector;
-      Index     : Extended_Index)
-   with
+   procedure Delete (Container : in out Vector; Index : Extended_Index) with
      Global => null,
      Pre    => Index in First_Index (Container) .. Last_Index (Container),
      Post   =>
@@ -619,9 +611,7 @@ is
                    Lst    => Last_Index (Container),
                    Offset => Count));
 
-   procedure Delete_First
-     (Container : in out Vector)
-   with
+   procedure Delete_First (Container : in out Vector) with
      Global => null,
      Pre    => Length (Container) > 0,
      Post   =>
@@ -636,10 +626,7 @@ is
                 Lst    => Last_Index (Container),
                 Offset => 1);
 
-   procedure Delete_First
-     (Container : in out Vector;
-      Count     : Count_Type)
-   with
+   procedure Delete_First (Container : in out Vector; Count : Count_Type) with
      Global         => null,
      Contract_Cases =>
 
@@ -659,9 +646,7 @@ is
                    Lst    => Last_Index (Container),
                    Offset => Count));
 
-   procedure Delete_Last
-     (Container : in out Vector)
-   with
+   procedure Delete_Last (Container : in out Vector) with
      Global => null,
      Pre    => Length (Container) > 0,
      Post   =>
@@ -671,10 +656,7 @@ is
 
          and Model (Container) < Model (Container)'Old;
 
-   procedure Delete_Last
-     (Container : in out Vector;
-      Count     : Count_Type)
-   with
+   procedure Delete_Last (Container : in out Vector; Count : Count_Type) with
      Global         => null,
      Contract_Cases =>
 
@@ -693,10 +675,15 @@ is
      Global => null,
      Post   => M_Elements_Reversed (Model (Container)'Old, Model (Container));
 
-   procedure Swap (Container : in out Vector; I, J : Index_Type) with
+   procedure Swap
+     (Container : in out Vector;
+      I         : Index_Type;
+      J         : Index_Type)
+   with
      Global => null,
-     Pre    => I in First_Index (Container) .. Last_Index (Container)
-      and then J in First_Index (Container) .. Last_Index (Container),
+     Pre    =>
+       I in First_Index (Container) .. Last_Index (Container)
+         and then J in First_Index (Container) .. Last_Index (Container),
      Post   =>
        M_Elements_Swapped (Model (Container)'Old, Model (Container), I, J);
 
@@ -737,11 +724,11 @@ is
        --  returns No_Index.
 
        (Index > Last_Index (Container)
-        or else not M.Contains
-                     (Container => Model (Container),
-                      Fst       => Index,
-                      Lst       => Last_Index (Container),
-                      Item      => Item)
+         or else not M.Contains
+                       (Container => Model (Container),
+                        Fst       => Index,
+                        Lst       => Last_Index (Container),
+                        Item      => Item)
         =>
           Find_Index'Result = No_Index,
 
@@ -799,8 +786,10 @@ is
                       (Container => Model (Container),
                        Fst       => Reverse_Find_Index'Result + 1,
                        Lst       =>
-                         (if Index <= Last_Index (Container) then Index
-                          else Last_Index (Container)),
+                         (if Index <= Last_Index (Container) then
+                             Index
+                          else
+                             Last_Index (Container)),
                        Item      => Item));
 
    function Contains
@@ -809,10 +798,12 @@ is
    with
      Global => null,
      Post   =>
-       Contains'Result = M.Contains (Container => Model (Container),
-                                     Fst       => Index_Type'First,
-                                     Lst       => Last_Index (Container),
-                                     Item      => Item);
+       Contains'Result =
+         M.Contains
+           (Container => Model (Container),
+            Fst       => Index_Type'First,
+            Lst       => Last_Index (Container),
+            Item      => Item);
 
    function Has_Element
      (Container : Vector;
@@ -834,8 +825,8 @@ is
           M_Elements_Sorted'Result =
             (for all I in Index_Type'First .. M.Last (Container) =>
               (for all J in I .. M.Last (Container) =>
-                 Element (Container, I) = Element (Container, J)
-                   or Element (Container, I) < Element (Container, J)));
+                Element (Container, I) = Element (Container, J)
+                  or Element (Container, I) < Element (Container, J)));
       pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Sorted);
 
       function Is_Sorted (Container : Vector) return Boolean with
@@ -847,14 +838,16 @@ is
         Post   =>
           Length (Container) = Length (Container)'Old
             and M_Elements_Sorted (Model (Container))
-            and M_Elements_Included (Left  => Model (Container)'Old,
-                                     L_Lst => Last_Index (Container),
-                                     Right => Model (Container),
-                                     R_Lst => Last_Index (Container))
-            and M_Elements_Included (Left  => Model (Container),
-                                     L_Lst => Last_Index (Container),
-                                     Right => Model (Container)'Old,
-                                     R_Lst => Last_Index (Container));
+            and M_Elements_Included
+                  (Left  => Model (Container)'Old,
+                   L_Lst => Last_Index (Container),
+                   Right => Model (Container),
+                   R_Lst => Last_Index (Container))
+            and M_Elements_Included
+                  (Left  => Model (Container),
+                   L_Lst => Last_Index (Container),
+                   Right => Model (Container)'Old,
+                   R_Lst => Last_Index (Container));
 
       procedure Merge (Target : in out Vector; Source : in out Vector) with
       --  Target and Source should not be aliased
@@ -865,18 +858,22 @@ is
             and Length (Source) = 0
             and (if M_Elements_Sorted (Model (Target)'Old)
                    and M_Elements_Sorted (Model (Source)'Old)
-                 then M_Elements_Sorted (Model (Target)))
-            and M_Elements_Included (Left  => Model (Target)'Old,
-                                     L_Lst => Last_Index (Target)'Old,
-                                     Right => Model (Target),
-                                     R_Lst => Last_Index (Target))
-            and M_Elements_Included (Left  => Model (Source)'Old,
-                                     L_Lst => Last_Index (Source)'Old,
-                                     Right => Model (Target),
-                                     R_Lst => Last_Index (Target))
-            and M_Elements_In_Union (Model (Target),
-                                     Model (Source)'Old,
-                                     Model (Target)'Old);
+                 then
+                    M_Elements_Sorted (Model (Target)))
+            and M_Elements_Included
+                  (Left  => Model (Target)'Old,
+                   L_Lst => Last_Index (Target)'Old,
+                   Right => Model (Target),
+                   R_Lst => Last_Index (Target))
+            and M_Elements_Included
+                  (Left  => Model (Source)'Old,
+                   L_Lst => Last_Index (Source)'Old,
+                   Right => Model (Target),
+                   R_Lst => Last_Index (Target))
+            and M_Elements_In_Union
+                  (Model (Target),
+                   Model (Source)'Old,
+                   Model (Target)'Old);
    end Generic_Sorting;
 
 private
@@ -904,9 +901,11 @@ private
    type Elements_Array_Ptr is access all Elements_Array;
 
    type Vector (Capacity : Capacity_Range) is limited record
+
       --  In the bounded case, the elements are stored in Elements. In the
       --  unbounded case, the elements are initially stored in Elements, until
       --  we run out of room, then we switch to Elements_Ptr.
+
       Last         : Extended_Index := No_Index;
       Elements_Ptr : Elements_Array_Ptr := null;
       Elements     : aliased Elements_Array (1 .. Capacity);

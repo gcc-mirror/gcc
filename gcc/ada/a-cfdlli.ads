@@ -93,8 +93,8 @@ is
             (for all I in 1 .. M.Length (Container) =>
               (for some J in 1 .. M.Length (Left) =>
                 Element (Container, I) = Element (Left, J))
-              or (for some J in 1 .. M.Length (Right) =>
-                    Element (Container, I) = Element (Right, J)));
+                  or (for some J in 1 .. M.Length (Right) =>
+                       Element (Container, I) = Element (Right, J)));
       pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_In_Union);
 
       function M_Elements_Included
@@ -126,11 +126,11 @@ is
           M_Elements_Reversed'Result =
             (M.Length (Left) = M.Length (Right)
               and (for all I in 1 .. M.Length (Left) =>
-                     Element (Left, I) =
-                     Element (Right, M.Length (Left) - I + 1))
+                    Element (Left, I) =
+                      Element (Right, M.Length (Left) - I + 1))
               and (for all I in 1 .. M.Length (Left) =>
-                     Element (Right, I) =
-                     Element (Left, M.Length (Left) - I + 1)));
+                    Element (Right, I) =
+                      Element (Left, M.Length (Left) - I + 1)));
       pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Reversed);
 
       function M_Elements_Swapped
@@ -482,11 +482,11 @@ is
             --  Container contains Count times New_Item at the end
 
             and (if Count > 0 then
-                   M.Constant_Range
-                     (Container => Model (Container),
-                      Fst       => Length (Container)'Old + 1,
-                      Lst       => Length (Container),
-                      Item      => New_Item))
+                    M.Constant_Range
+                      (Container => Model (Container),
+                       Fst       => Length (Container)'Old + 1,
+                       Lst       => Length (Container),
+                       Item      => New_Item))
 
             --  Container contains Count times New_Item at the end
 
@@ -611,9 +611,9 @@ is
      Post           => Length (Container) = Length (Container)'Old + Count,
      Contract_Cases =>
        (Count = 0 =>
-          Position = Before
-            and Model (Container) = Model (Container)'Old
-            and Positions (Container) = Positions (Container)'Old,
+         Position = Before
+           and Model (Container) = Model (Container)'Old
+           and Positions (Container) = Positions (Container)'Old,
 
         others =>
 
@@ -772,11 +772,11 @@ is
          --  Container contains Count times New_Item at the end
 
          and (if Count > 0 then
-                M.Constant_Range
-                  (Container => Model (Container),
-                    Fst       => Length (Container)'Old + 1,
-                    Lst       => Length (Container),
-                    Item      => New_Item))
+                 M.Constant_Range
+                   (Container => Model (Container),
+                     Fst       => Length (Container)'Old + 1,
+                     Lst       => Length (Container),
+                     Item      => New_Item))
 
          --  Count cursors have been inserted at the end of Container
 
@@ -947,9 +947,9 @@ is
          --  Other cursors are still valid
 
          and P.Keys_Included_Except
-                (Left    => Positions (Container)'Old,
-                 Right   => Positions (Container)'Old,
-                 New_Key => Last (Container)'Old)
+               (Left    => Positions (Container)'Old,
+                Right   => Positions (Container)'Old,
+                New_Key => Last (Container)'Old)
 
          --  The positions of other cursors are preserved
 
@@ -992,7 +992,8 @@ is
      Pre    => Has_Element (Container, I) and then Has_Element (Container, J),
      Post   =>
        M_Elements_Swapped
-         (Model (Container)'Old, Model (Container),
+         (Model (Container)'Old,
+          Model (Container),
           X => P.Get (Positions (Container)'Old, I),
           Y => P.Get (Positions (Container)'Old, J))
 
@@ -1001,13 +1002,14 @@ is
    procedure Swap_Links
      (Container : in out List;
       I         : Cursor;
-      J        : Cursor)
+      J         : Cursor)
    with
      Global => null,
      Pre    => Has_Element (Container, I) and then Has_Element (Container, J),
      Post   =>
        M_Elements_Swapped
-         (Model (Container'Old), Model (Container),
+         (Model (Container'Old),
+          Model (Container),
           X => P.Get (Positions (Container)'Old, I),
           Y => P.Get (Positions (Container)'Old, J))
          and P_Positions_Swapped
@@ -1088,7 +1090,8 @@ is
             and M_Elements_Included
                   (Left   => Model (Target),
                    L_Fst  => P.Get (Positions (Target)'Old, Before),
-                   L_Lst  => P.Get (Positions (Target)'Old, Before) - 1 +
+                   L_Lst  =>
+                     P.Get (Positions (Target)'Old, Before) - 1 +
                        Length (Source)'Old,
                    Right  => Model (Source)'Old,
                    R_Lst  => Length (Source)'Old)
@@ -1179,9 +1182,10 @@ is
 
          --  The element located at Position in Source is moved to Target
 
-         and Element (Model (Target), P.Get (Positions (Target), Position)) =
-               Element (Model (Source)'Old,
-                        P.Get (Positions (Source)'Old, Position'Old))
+         and Element (Model (Target),
+                      P.Get (Positions (Target), Position)) =
+             Element (Model (Source)'Old,
+                      P.Get (Positions (Source)'Old, Position'Old))
 
          --  A new cursor has been inserted at position Position in Target
 
@@ -1227,9 +1231,10 @@ is
           --  The last element of Container is the one that was previously at
           --  Position.
 
-          and Element (Model (Container), Length (Container)) =
-                Element (Model (Container)'Old,
-                         P.Get (Positions (Container)'Old, Position))
+          and Element (Model (Container),
+                       Length (Container)) =
+              Element (Model (Container)'Old,
+                       P.Get (Positions (Container)'Old, Position))
 
           --  Cursors from Container continue designating the same elements
 
@@ -1285,10 +1290,12 @@ is
 
             --  The element previously at Position is now before Before
 
-            and Element (Model (Container),
-                         P.Get (Positions (Container)'Old, Before)) =
-                  Element (Model (Container)'Old,
-                           P.Get (Positions (Container)'Old, Position))
+            and Element
+                  (Model (Container),
+                   P.Get (Positions (Container)'Old, Before)) =
+                Element
+                  (Model (Container)'Old,
+                   P.Get (Positions (Container)'Old, Position))
 
             --  Cursors from Container continue designating the same elements
 
@@ -1422,8 +1429,9 @@ is
 
             --  The element designated by the result of Find is Item
 
-            and Element (Model (Container),
-                         P.Get (Positions (Container), Find'Result)) = Item
+            and Element
+                  (Model (Container),
+                   P.Get (Positions (Container), Find'Result)) = Item
 
             --  The result of Find is located after Position
 
@@ -1476,9 +1484,9 @@ is
 
             --  The element designated by the result of Find is Item
 
-            and Element (Model (Container),
-                         P.Get (Positions (Container),
-                                Reverse_Find'Result)) = Item
+            and Element
+                  (Model (Container),
+                   P.Get (Positions (Container), Reverse_Find'Result)) = Item
 
             --  The result of Find is located before Position
 
@@ -1544,14 +1552,16 @@ is
         Post   =>
           Length (Container) = Length (Container)'Old
             and M_Elements_Sorted (Model (Container))
-            and M_Elements_Included (Left  => Model (Container)'Old,
-                                     L_Lst => Length (Container),
-                                     Right => Model (Container),
-                                     R_Lst => Length (Container))
-            and M_Elements_Included (Left  => Model (Container),
-                                     L_Lst => Length (Container),
-                                     Right => Model (Container)'Old,
-                                     R_Lst => Length (Container));
+            and M_Elements_Included
+                  (Left  => Model (Container)'Old,
+                   L_Lst => Length (Container),
+                   Right => Model (Container),
+                   R_Lst => Length (Container))
+            and M_Elements_Included
+                  (Left  => Model (Container),
+                   L_Lst => Length (Container),
+                   Right => Model (Container)'Old,
+                   R_Lst => Length (Container));
 
       procedure Merge (Target : in out List; Source : in out List) with
       --  Target and Source should not be aliased
@@ -1562,18 +1572,22 @@ is
             and Length (Source) = 0
             and (if M_Elements_Sorted (Model (Target)'Old)
                    and M_Elements_Sorted (Model (Source)'Old)
-                 then M_Elements_Sorted (Model (Target)))
-            and M_Elements_Included (Left  => Model (Target)'Old,
-                                     L_Lst => Length (Target)'Old,
-                                     Right => Model (Target),
-                                     R_Lst => Length (Target))
-            and M_Elements_Included (Left  => Model (Source)'Old,
-                                     L_Lst => Length (Source)'Old,
-                                     Right => Model (Target),
-                                     R_Lst => Length (Target))
-            and M_Elements_In_Union (Model (Target),
-                                     Model (Source)'Old,
-                                     Model (Target)'Old);
+                 then
+                    M_Elements_Sorted (Model (Target)))
+            and M_Elements_Included
+                  (Left  => Model (Target)'Old,
+                   L_Lst => Length (Target)'Old,
+                   Right => Model (Target),
+                   R_Lst => Length (Target))
+            and M_Elements_Included
+                  (Left  => Model (Source)'Old,
+                   L_Lst => Length (Source)'Old,
+                   Right => Model (Target),
+                   R_Lst => Length (Target))
+            and M_Elements_In_Union
+                  (Model (Target),
+                   Model (Source)'Old,
+                   Model (Target)'Old);
    end Generic_Sorting;
 
 private

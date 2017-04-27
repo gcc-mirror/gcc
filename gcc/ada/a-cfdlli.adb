@@ -39,9 +39,7 @@ is
       New_Item  : Element_Type;
       New_Node  : out Count_Type);
 
-   procedure Free
-     (Container : in out List;
-      X         : Count_Type);
+   procedure Free (Container : in out List; X : Count_Type);
 
    procedure Insert_Internal
      (Container : in out List;
@@ -109,10 +107,7 @@ is
    -- Append --
    ------------
 
-   procedure Append
-     (Container : in out List;
-      New_Item  : Element_Type)
-   is
+   procedure Append (Container : in out List; New_Item : Element_Type) is
    begin
       Insert (Container, No_Element, New_Item, 1);
    end Append;
@@ -164,14 +159,14 @@ is
    begin
       if Container.Length = 0 then
          pragma Assert (Container.First = 0);
-         pragma Assert (Container.Last = 0);
+         pragma Assert (Container.Last  = 0);
          return;
       end if;
 
       pragma Assert (Container.First >= 1);
-      pragma Assert (Container.Last >= 1);
+      pragma Assert (Container.Last  >= 1);
       pragma Assert (N (Container.First).Prev = 0);
-      pragma Assert (N (Container.Last).Next = 0);
+      pragma Assert (N (Container.Last).Next  = 0);
 
       while Container.Length > 1 loop
          X := Container.First;
@@ -275,9 +270,9 @@ is
 
       pragma Assert (Vet (Container, Position), "bad cursor in Delete");
       pragma Assert (Container.First >= 1);
-      pragma Assert (Container.Last >= 1);
+      pragma Assert (Container.Last  >= 1);
       pragma Assert (N (Container.First).Prev = 0);
-      pragma Assert (N (Container.Last).Next = 0);
+      pragma Assert (N (Container.Last).Next  = 0);
 
       if Position.Node = Container.First then
          Delete_First (Container, Count);
@@ -430,9 +425,7 @@ is
          From := Container.First;
       end if;
 
-      if Position.Node /= 0 and then
-        not Has_Element (Container, Position)
-      then
+      if Position.Node /= 0 and then not Has_Element (Container, Position) then
          raise Constraint_Error with "Position cursor has no element";
       end if;
 
@@ -496,33 +489,17 @@ is
          Left      : M.Sequence;
          Right     : M.Sequence) return Boolean
       is
+         Elem : Element_Type;
+
       begin
-         for I in 1 .. M.Length (Container) loop
-            declare
-               Found : Boolean := False;
-               J     : Count_Type := 0;
+         for Index in 1 .. M.Length (Container) loop
+            Elem := Element (Container, Index);
 
-            begin
-               while not Found and J < M.Length (Left) loop
-                  J := J + 1;
-                  if Element (Container, I) = Element (Left, J) then
-                     Found := True;
-                  end if;
-               end loop;
-
-               J := 0;
-
-               while not Found and J < M.Length (Right) loop
-                  J := J + 1;
-                  if Element (Container, I) = Element (Right, J) then
-                     Found := True;
-                  end if;
-               end loop;
-
-               if not Found then
-                  return False;
-               end if;
-            end;
+            if not M.Contains (Left, 1, M.Length (Left), Elem)
+               and then not M.Contains (Right, 1, M.Length (Right), Elem)
+            then
+               return False;
+            end if;
          end loop;
 
          return True;
@@ -579,8 +556,7 @@ is
          end if;
 
          for I in 1 .. L loop
-            if Element (Left, I) /= Element (Right, L - I + 1)
-            then
+            if Element (Left, I) /= Element (Right, L - I + 1) then
                return False;
             end if;
          end loop;
@@ -638,7 +614,7 @@ is
       end Model;
 
       -----------------------
-      -- Mapping_preserved --
+      -- Mapping_Preserved --
       -----------------------
 
       function Mapping_Preserved
@@ -748,7 +724,8 @@ is
 
          for C of Right loop
             if not P.Has_Key (Left, C)
-              or else (C /= X and C /= Y
+              or else (C /= X
+                        and C /= Y
                         and P.Get (Left, C) /= P.Get (Right, C))
             then
                return False;
@@ -933,8 +910,7 @@ is
 
       begin
          if Target'Address = Source'Address then
-            raise Program_Error with
-              "Target and Source denote same container";
+            raise Program_Error with "Target and Source denote same container";
          end if;
 
          LI := First (Target);
@@ -1540,8 +1516,7 @@ is
 
    begin
       if Target'Address = Source'Address then
-         raise Program_Error with
-           "Target and Source denote same container";
+         raise Program_Error with "Target and Source denote same container";
       end if;
 
       if Before.Node /= 0 then
@@ -1549,7 +1524,7 @@ is
       end if;
 
       pragma Assert (SN (Source.First).Prev = 0);
-      pragma Assert (SN (Source.Last).Next = 0);
+      pragma Assert (SN (Source.Last).Next  = 0);
 
       if Target.Length > Count_Type'Base'Last - Source.Length then
          raise Constraint_Error with "new length exceeds maximum";
@@ -1576,8 +1551,7 @@ is
 
    begin
       if Target'Address = Source'Address then
-         raise Program_Error with
-           "Target and Source denote same container";
+         raise Program_Error with "Target and Source denote same container";
       end if;
 
       if Position.Node = 0 then
@@ -1820,15 +1794,11 @@ is
          return False;
       end if;
 
-      if N (Position.Node).Prev = 0
-        and then Position.Node /= L.First
-      then
+      if N (Position.Node).Prev = 0 and then Position.Node /= L.First then
          return False;
       end if;
 
-      if N (Position.Node).Next = 0
-        and then Position.Node /= L.Last
-      then
+      if N (Position.Node).Next = 0 and then Position.Node /= L.Last then
          return False;
       end if;
 

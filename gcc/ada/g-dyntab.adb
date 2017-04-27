@@ -280,7 +280,7 @@ package body GNAT.Dynamic_Tables is
 
             Old_Table : Old_Alloc_Ptr := To_Old_Alloc_Ptr (T.Table);
             New_Table : constant Alloc_Ptr :=
-              new Alloc_Type'(Old_Table (Alloc_Type'Range));
+                          new Alloc_Type'(Old_Table (Alloc_Type'Range));
          begin
             T.P.Last_Allocated := T.P.Last;
             Free (Old_Table);

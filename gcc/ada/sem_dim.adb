@@ -2154,9 +2154,9 @@ package body Sem_Dim is
 
          if Dim_Of_Expr /= Dim_Of_Etyp then
 
-            --  Numeric literal case. Issue a warning if the object type is not
-            --  dimensionless to indicate the literal is treated as if its
-            --  dimension matches the type dimension.
+            --  Numeric literal case. Issue a warning if the object type is
+            --  not dimensionless to indicate the literal is treated as if
+            --  its dimension matches the type dimension.
 
             if Nkind_In (Original_Node (Expr), N_Real_Literal,
                                                N_Integer_Literal)
@@ -2171,8 +2171,8 @@ package body Sem_Dim is
 
                Set_Dimensions (Id, Dim_Of_Expr);
 
-            --  Expression may have been constant-folded. If nominal type
-            --  has dimensions, verify that expression has same type.
+            --  Expression may have been constant-folded. If nominal type has
+            --  dimensions, verify that expression has same type.
 
             elsif Exists (Dim_Of_Etyp) and then Etype (Expr) = Etyp then
                null;
@@ -2184,8 +2184,8 @@ package body Sem_Dim is
             end if;
          end if;
 
-         --  Remove dimensions in expression after checking consistency
-         --  with given type.
+         --  Remove dimensions in expression after checking consistency with
+         --  given type.
 
          Remove_Dimensions (Expr);
       end if;
