@@ -1,3 +1,7 @@
+2017-04-27  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.c-torture/execute/alias-3.c: Skip on AIX.
+
 2017-04-27  Martin Liska  <mliska@suse.cz>
 
 	PR testsuite/79455
