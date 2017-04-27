@@ -2853,7 +2853,9 @@ package body Bindgen is
          --  used: System.OS_Interface should always be used by any tasking
          --  application.
 
-         Check_Package (With_GNARL, "system.os_interface%s");
+         if not Opt.No_Libgnarl then
+            Check_Package (With_GNARL, "system.os_interface%s");
+         end if;
 
          --  Ditto for the use of restricted tasking
 

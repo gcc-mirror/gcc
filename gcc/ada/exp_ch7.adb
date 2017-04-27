@@ -6935,7 +6935,6 @@ package body Exp_Ch7 is
 
          Counter        : Int := 0;
          Finalizer_Data : Finalization_Exception_Data;
-         Num_Comps      : Nat := 0;
 
          function Process_Component_List_For_Finalize
            (Comps : Node_Id) return List_Id;
@@ -6951,25 +6950,28 @@ package body Exp_Ch7 is
            (Comps : Node_Id) return List_Id
          is
             procedure Process_Component_For_Finalize
-              (Decl  : Node_Id;
-               Alts  : List_Id;
-               Decls : List_Id;
-               Stmts : List_Id);
+              (Decl      : Node_Id;
+               Alts      : List_Id;
+               Decls     : List_Id;
+               Stmts     : List_Id;
+               Num_Comps : in out Nat);
             --  Process the declaration of a single controlled component. If
             --  flag Is_Local is enabled, create the corresponding label and
             --  jump circuitry. Alts is the list of case alternatives, Decls
             --  is the top level declaration list where labels are declared
-            --  and Stmts is the list of finalization actions.
+            --  and Stmts is the list of finalization actions. Num_Comps
+            --  denotes the current number of components needing finalization.
 
             ------------------------------------
             -- Process_Component_For_Finalize --
             ------------------------------------
 
             procedure Process_Component_For_Finalize
-              (Decl  : Node_Id;
-               Alts  : List_Id;
-               Decls : List_Id;
-               Stmts : List_Id)
+              (Decl      : Node_Id;
+               Alts      : List_Id;
+               Decls     : List_Id;
+               Stmts     : List_Id;
+               Num_Comps : in out Nat)
             is
                Id       : constant Entity_Id := Defining_Identifier (Decl);
                Typ      : constant Entity_Id := Etype (Id);
@@ -7075,6 +7077,7 @@ package body Exp_Ch7 is
             Jump_Block : Node_Id;
             Label      : Node_Id;
             Label_Id   : Entity_Id;
+            Num_Comps  : Nat;
             Stmts      : List_Id;
             Var_Case   : Node_Id;
 
@@ -7185,7 +7188,8 @@ package body Exp_Ch7 is
                     and then Has_Access_Constraint (Decl_Id)
                     and then No (Expression (Decl))
                   then
-                     Process_Component_For_Finalize (Decl, Alts, Decls, Stmts);
+                     Process_Component_For_Finalize
+                       (Decl, Alts, Decls, Stmts, Num_Comps);
                   end if;
 
                   Prev_Non_Pragma (Decl);
@@ -7212,7 +7216,8 @@ package body Exp_Ch7 is
                   then
                      null;
                   else
-                     Process_Component_For_Finalize (Decl, Alts, Decls, Stmts);
+                     Process_Component_For_Finalize
+                       (Decl, Alts, Decls, Stmts, Num_Comps);
                   end if;
                end if;
 

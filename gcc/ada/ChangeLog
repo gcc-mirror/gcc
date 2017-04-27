@@ -1,3 +1,16 @@
+2017-04-27  Jerome Lambourg  <lambourg@adacore.com>
+
+	* bindusg.adb, bindgen.adb, gnatbind.adb, opt.ads: add -nognarl switch.
+
+2017-04-27  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch7.adb (Build_Finalize_Statements): Move Num_Comps to
+	Process_Component_List_For_Finalization as a local variable.
+	(Process_Component_For_Finalize): Add an extra parameter to avoid
+	global references.
+	(Process_Component_List_For_Finalization): Correct calls to
+	Process_Component_For_Finalize to take Num_Comps as a parameter.
+
 2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch8.adb (Find_Direct_Name): Account for the case where
