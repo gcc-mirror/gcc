@@ -1,5 +1,70 @@
 2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_elab.adb Add new type Visited_Element
+	and update the contents of table Elab_Visited.	Various code clean up.
+	(Check_Elab_Call): Determine whether a prior call to
+	the same subprogram was already examined within the same context.
+	(Check_Internal_Call_Continue): Register the subprogram being
+	called as examined within a particular context. Do not suppress
+	elaboration warnings.
+
+2017-04-27  Gary Dismukes  <dismukes@adacore.com>
+
+	* xoscons.adb, osint.ads: Minor reformatting.
+
+2017-04-27  Bob Duff  <duff@adacore.com>
+
+	* g-dyntab.ads, g-dyntab.adb: Misc cleanup. Rename
+	Table_Count_Type --> Table_Last_Type, because the name
+	was confusing (a "count" usually starts at zero).  Add
+	functionality supported or needed by other tables packages
+	(Move, Release_Threshold).
+	* g-table.ads, g-table.adb: This is now just a thin wrapper
+	around g-dyntab.ads/g-dyntab.adb.  Add functionality supported
+	or needed by other tables packages (Save, Restore).
+	* table.ads, table.adb: This is now just a thin wrapper around
+	* g-table.ads/g-table.adb.
+	* namet.h, scos.h, uintp.h: These files are reaching into the
+	private data of some instances of g-table, whose names changed,
+	so the above change requires some adjustment here. It now uses
+	public interfaces.
+
+2017-04-27  Bob Duff  <duff@adacore.com>
+
+	* namet.adb, namet.ads: Minor: remove unused procedures.
+
+2017-04-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Apply_Scalar_Range_Check): Initialize Ok variable too.
+	(Minimize_Eliminate_Overflows): Initialize Llo and Lhi.
+	Add pragma Warnings on Rtype variable in nested block.	*
+	* exp_ch3.adb (Build_Init_Statements): Initialize VAR_LOC.
+	* exp_ch4.adb (Expand_Concatenate): Initialize 3 variables.
+	(Size_In_Storage_Elements): Add pragma Warnings on Res variable.
+	* exp_ch7.adb (Build_Adjust_Statements): Initialize Bod_Stmts.
+	(Process_Component_List_For_Finalize): Initialize Counter_Id.
+	(Build_Finalize_Statements): Initialize Bod_Stmts.
+	* exp_disp.adb (Expand_Dispatching_Call): Initialize SCIL_Node.
+
+2017-04-27  Claire Dross  <dross@adacore.com>
+
+	* a-cfhama.adb, a-cfhamai.ads (=): Generic parameter removed to
+	allow the use of regular equality over elements in contracts.
+	(Formal_Model): Ghost package containing model functions that are
+	used in subprogram contracts.
+	(Current_To_Last): Removed, model
+	functions should be used instead.
+	(First_To_Previous): Removed, model functions should be used instead.
+	(Strict_Equal): Removed, model functions should be used instead.
+	(No_Overlap): Removed, model functions should be used instead.
+	(Equivalent_Keys): Functions over cursors are removed. They were
+	awkward with explicit container parameters.
+	* a-cofuma.adb, a-cofuma.ads (Lift_Equivalent_Keys): New lemma
+	(proof only) procedure to help GNATprove when equivalence over
+	keys is not equality.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_util.adb, a-cfdlli.adb, a-cfdlli.ads, exp_ch9.adb, g-dyntab.adb,
 	sem_dim.adb, a-cfinve.adb, a-cfinve.ads, a-cofove.adb, a-cofove.ads:
 	Minor reformatting and code cleanups.

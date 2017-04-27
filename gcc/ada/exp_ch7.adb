@@ -6722,7 +6722,7 @@ package body Exp_Ch7 is
 
          --  Local variables
 
-         Bod_Stmts       : List_Id;
+         Bod_Stmts       : List_Id := No_List;
          Finalizer_Decls : List_Id := No_List;
          Rec_Def         : Node_Id;
 
@@ -7068,7 +7068,7 @@ package body Exp_Ch7 is
             --  Local variables
 
             Alts       : List_Id;
-            Counter_Id : Entity_Id;
+            Counter_Id : Entity_Id := Empty;
             Decl       : Node_Id;
             Decl_Id    : Entity_Id;
             Decl_Typ   : Entity_Id;
@@ -7305,7 +7305,7 @@ package body Exp_Ch7 is
 
          --  Local variables
 
-         Bod_Stmts       : List_Id;
+         Bod_Stmts       : List_Id := No_List;
          Finalizer_Decls : List_Id := No_List;
          Rec_Def         : Node_Id;
 

@@ -36,6 +36,7 @@
 with Debug;    use Debug;
 with Opt;      use Opt;
 with Output;   use Output;
+with System;   use System;
 with Tree_IO;  use Tree_IO;
 with Widechar; use Widechar;
 
@@ -1093,15 +1094,6 @@ package body Namet is
       Name_Entries.Release;
    end Lock;
 
-   ------------------------
-   -- Name_Chars_Address --
-   ------------------------
-
-   function Name_Chars_Address return System.Address is
-   begin
-      return Name_Chars.Table (0)'Address;
-   end Name_Chars_Address;
-
    ----------------
    -- Name_Enter --
    ----------------
@@ -1138,15 +1130,6 @@ package body Namet is
       Append (Buf, S);
       return Name_Enter (Buf);
    end Name_Enter;
-
-   --------------------------
-   -- Name_Entries_Address --
-   --------------------------
-
-   function Name_Entries_Address return System.Address is
-   begin
-      return Name_Entries.Table (First_Name_Id)'Address;
-   end Name_Entries_Address;
 
    ------------------------
    -- Name_Entries_Count --

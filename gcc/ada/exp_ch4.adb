@@ -2700,7 +2700,7 @@ package body Exp_Ch4 is
       --  last operand is always retained, in case it provides the bounds for
       --  a null result.
 
-      Opnd : Node_Id;
+      Opnd : Node_Id := Empty;
       --  Current operand being processed in the loop through operands. After
       --  this loop is complete, always contains the last operand (which is not
       --  the same as Operands (NN), since null operands are skipped).
@@ -2742,13 +2742,13 @@ package body Exp_Ch4 is
       --  This is either an integer literal node, or an identifier reference to
       --  a constant entity initialized to the appropriate value.
 
-      Last_Opnd_Low_Bound : Node_Id;
+      Last_Opnd_Low_Bound : Node_Id := Empty;
       --  A tree node representing the low bound of the last operand. This
       --  need only be set if the result could be null. It is used for the
       --  special case of setting the right low bound for a null result.
       --  This is of type Ityp.
 
-      Last_Opnd_High_Bound : Node_Id;
+      Last_Opnd_High_Bound : Node_Id := Empty;
       --  A tree node representing the high bound of the last operand. This
       --  need only be set if the result could be null. It is used for the
       --  special case of setting the right high bound for a null result.
@@ -4036,6 +4036,7 @@ package body Exp_Ch4 is
          declare
             Len : Node_Id;
             Res : Node_Id;
+            pragma Warnings (Off, Res);
 
          begin
             for J in 1 .. Number_Dimensions (E) loop
