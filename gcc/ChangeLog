@@ -1,5 +1,12 @@
 2017-04-27  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/80533
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): When
+	stripping ARRAY_REFs from MEM_EXPR make sure we're not
+	keeping a reference to a trailing array.
+
+2017-04-27  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/80539
 	* tree-chrec.c (chrec_fold_plus_poly_poly): Deal with not
 	being in loop-closed SSA form conservatively.
