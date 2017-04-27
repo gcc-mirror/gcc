@@ -49,7 +49,7 @@ generic
    type Table_Component_Type is private;
    type Table_Index_Type     is range <>;
 
-   Table_Low_Bound   : Table_Index_Type;
+   Table_Low_Bound   : Table_Index_Type := Table_Index_Type'First;
    Table_Initial     : Positive := 8;
    Table_Increment   : Natural := 100;
    Table_Name        : String := ""; -- for debugging printouts
@@ -70,6 +70,7 @@ package GNAT.Table is
    subtype Valid_Table_Index_Type is Tab.Valid_Table_Index_Type;
    subtype Table_Last_Type is Tab.Table_Last_Type;
    subtype Table_Type is Tab.Table_Type;
+   function "=" (X, Y : Table_Type) return Boolean renames Tab."=";
    subtype Big_Table_Type is Tab.Big_Table_Type;
 
    subtype Table_Ptr is Tab.Table_Ptr;
@@ -81,6 +82,7 @@ package GNAT.Table is
    function Is_Empty return Boolean;
 
    procedure Init;
+   procedure Free;
 
    function First return Table_Index_Type;
    pragma Inline (First);
@@ -89,8 +91,6 @@ package GNAT.Table is
    pragma Inline (Last);
 
    procedure Release;
-
-   procedure Free;
 
    procedure Set_Last (New_Val : Table_Last_Type);
    pragma Inline (Set_Last);

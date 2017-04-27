@@ -1,5 +1,14 @@
 2017-04-27  Bob Duff  <duff@adacore.com>
 
+	* g-dyntab.ads, g-dyntab.adb: Default for Table_Low_Bound.
+	Rename Empty --> Empty_Table_Ptr, and don't duplicate code for it.
+	Free renames Init, since they do the same thing.
+	* g-table.ads: Default for Table_Low_Bound.
+	* table.ads: Default for Table_Low_Bound, Table_Initial, and
+	Table_Increment.
+
+2017-04-27  Bob Duff  <duff@adacore.com>
+
 	* g-dyntab.ads, g-dyntab.adb: Add assertions to subprograms that
 	can reallocate.
 	* atree.adb, elists.adb, fname-uf.adb, ghost.adb, inline.adb,
