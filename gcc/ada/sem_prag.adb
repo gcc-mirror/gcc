@@ -928,9 +928,7 @@ package body Sem_Prag is
 
                   --  Constants
 
-                  if Ekind_In (Item_Id, E_Constant,
-                                        E_Discriminant,
-                                        E_Loop_Parameter)
+                  if Ekind_In (Item_Id, E_Constant, E_Loop_Parameter)
                       or else
 
                     --  Current instances of concurrent types
@@ -2216,7 +2214,6 @@ package body Sem_Prag is
 
                elsif not Ekind_In (Item_Id, E_Abstract_State,
                                             E_Constant,
-                                            E_Discriminant,
                                             E_Loop_Parameter,
                                             E_Variable)
                then
@@ -2284,19 +2281,6 @@ package body Sem_Prag is
                   if Nam_In (Global_Mode, Name_In_Out, Name_Output) then
                      SPARK_Msg_NE
                        ("constant & cannot act as output", Item, Item_Id);
-                     return;
-                  end if;
-
-               --  Discriminant related checks
-
-               elsif Ekind (Item_Id) = E_Discriminant then
-
-                  --  A discriminant is a read-only item, therefore it cannot
-                  --  act as an output.
-
-                  if Nam_In (Global_Mode, Name_In_Out, Name_Output) then
-                     SPARK_Msg_NE
-                       ("discriminant & cannot act as output", Item, Item_Id);
                      return;
                   end if;
 

@@ -9931,6 +9931,8 @@ package body Sem_Ch3 is
       Set_Last_Entity       (Def_Id, Last_Entity    (T));
       Set_Has_Implicit_Dereference
                             (Def_Id, Has_Implicit_Dereference (T));
+      Set_Has_Pragma_Unreferenced_Objects
+                            (Def_Id, Has_Pragma_Unreferenced_Objects (T));
 
       --  If the subtype is the completion of a private declaration, there may
       --  have been representation clauses for the partial view, and they must
