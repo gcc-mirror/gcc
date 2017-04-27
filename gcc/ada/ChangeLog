@@ -1,3 +1,24 @@
+2017-04-27  Steve Baird  <baird@adacore.com>
+
+	* exp_util.adb (Build_Allocate_Deallocate_Proc):
+	Add "Suppress => All_Checks" to avoid generating unnecessary
+	checks.
+
+2017-04-27  Yannick Moy  <moy@adacore.com>
+
+	* debug.adb: Reserve debug flag 'm' for no inlining in GNATprove.
+	* sem_ch6.adb (Anayze_Subprogram_Body_Helper): Skip creation of
+	inlining body in GNATprove mode when switch -gnatdm used.
+	* sem_res.adb (Resolve_Call): Skip detection of lack of inlining
+	in GNATprove mode when switch -gnatdm used.
+
+2017-04-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause
+	[Attribute_Address]): Call Set_Address_Taken when ignoring rep
+	clauses, so that we keep an indication of the address clause
+	before removing it from the tree.
+
 2017-04-27  Yannick Moy  <moy@adacore.com>
 
 	* exp_util.ads, exp_util.adb (Evaluate_Name): Force evaluation

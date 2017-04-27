@@ -49,7 +49,7 @@ package body Debug is
    --  dj   Suppress "junk null check" for access parameter values
    --  dk   Generate GNATBUG message on abort, even if previous errors
    --  dl   Generate unit load trace messages
-   --  dm
+   --  dm   Prevent special frontend inlining in GNATprove mode
    --  dn   Generate messages for node/list allocation
    --  do   Print source from tree (original code only)
    --  dp   Generate messages for parser scope stack push/pops
@@ -280,6 +280,11 @@ package body Debug is
    --  dl   Generate unit load trace messages. A line of traceback output is
    --       generated each time a request is made to the library manager to
    --       load a new unit.
+
+   --  dm   Prevent special frontend inlining in GNATprove mode. In some cases,
+   --       some subprogram calls are inlined in GNATprove mode in order to
+   --       facilitate formal verification. This debug switch prevents that
+   --       inlining to happen.
 
    --  dn   Generate messages for node/list allocation. Each time a node or
    --       list header is allocated, a line of output is generated. Certain

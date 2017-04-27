@@ -4701,7 +4701,7 @@ package body Sem_Ch13 is
 
             --  We do not do anything here with address clauses, they will be
             --  removed by Freeze later on, but for now, it works better to
-            --  keep then in the tree.
+            --  keep them in the tree.
 
             when Attribute_Address =>
                null;
@@ -4860,8 +4860,12 @@ package body Sem_Ch13 is
             --  Even when ignoring rep clauses we need to indicate that the
             --  entity has an address clause and thus it is legal to declare
             --  it imported. Freeze will get rid of the address clause later.
+            --  Also call Set_Address_Taken to indicate that an address clause
+            --  was present, even if we are about to remove it.
 
             if Ignore_Rep_Clauses then
+               Set_Address_Taken (U_Ent);
+
                if Ekind_In (U_Ent, E_Variable, E_Constant) then
                   Record_Rep_Item (U_Ent, N);
                end if;
