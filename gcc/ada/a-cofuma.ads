@@ -88,7 +88,7 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
      Post   =>
        Has_Key (Container, Left) = Has_Key (Container, Right)
          and (if Has_Key (Container, Left) then
-                Get (Container, Left) = Get (Container, Right));
+                 Get (Container, Left) = Get (Container, Right));
 
    ------------------------
    -- Property Functions --
@@ -101,7 +101,7 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
      Post   =>
        "<="'Result =
          (for all Key of Left =>
-            Has_Key (Right, Key) and then Get (Right, Key) = Get (Left, Key));
+           Has_Key (Right, Key) and then Get (Right, Key) = Get (Left, Key));
 
    function "=" (Left : Map; Right : Map) return Boolean with
    --  Extensional equality over maps
@@ -110,9 +110,9 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
      Post   =>
        "="'Result =
          ((for all Key of Left =>
-             Has_Key (Right, Key)
-               and then Get (Right, Key) = Get (Left, Key))
-               and (for all Key of Right => Has_Key (Left, Key)));
+            Has_Key (Right, Key)
+              and then Get (Right, Key) = Get (Left, Key))
+              and (for all Key of Right => Has_Key (Left, Key)));
 
    pragma Warnings (Off, "unused variable ""Key""");
    function Is_Empty (Container : Map) return Boolean with

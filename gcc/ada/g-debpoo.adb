@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -401,7 +401,7 @@ package body GNAT.Debug_Pools is
    ---------------
 
    function Header_Of (Address : System.Address)
-      return Allocation_Header_Access
+     return Allocation_Header_Access
    is
       function Convert is new Ada.Unchecked_Conversion
         (System.Address, Allocation_Header_Access);
@@ -2293,8 +2293,12 @@ package body GNAT.Debug_Pools is
    begin
       File := fopen (File_Name & ASCII.NUL, "wb" & ASCII.NUL);
       fwrite ("GMEM DUMP" & ASCII.LF, 10, 1, File);
-      fwrite (Dummy_Time'Address, Duration'Max_Size_In_Storage_Elements, 1,
-              File);
+
+      fwrite
+        (Ptr    => Dummy_Time'Address,
+         Size   => Duration'Max_Size_In_Storage_Elements,
+         Nmemb  => 1,
+         Stream => File);
 
       --  List of not deallocated blocks (see Print_Info)
 
@@ -2303,9 +2307,9 @@ package body GNAT.Debug_Pools is
          Header := Header_Of (Current);
 
          Actual_Size := size_t (Header.Block_Size);
-         Tracebk := Header.Alloc_Traceback.Traceback;
 
          if Header.Alloc_Traceback /= null then
+            Tracebk   := Header.Alloc_Traceback.Traceback;
             Num_Calls := Tracebk'Length;
 
             --  (Code taken from memtrack.adb in GNAT's sources)
@@ -2316,12 +2320,24 @@ package body GNAT.Debug_Pools is
 
             fputc (Character'Pos ('A'), File);
             fwrite (Current'Address, Address_Size, 1, File);
-            fwrite (Actual_Size'Address, size_t'Max_Size_In_Storage_Elements,
-                    1, File);
-            fwrite (Dummy_Time'Address, Duration'Max_Size_In_Storage_Elements,
-                    1, File);
-            fwrite (Num_Calls'Address, Integer'Max_Size_In_Storage_Elements, 1,
-                    File);
+
+            fwrite
+              (Ptr    => Actual_Size'Address,
+               Size   => size_t'Max_Size_In_Storage_Elements,
+               Nmemb  => 1,
+               Stream => File);
+
+            fwrite
+              (Ptr    => Dummy_Time'Address,
+               Size   => Duration'Max_Size_In_Storage_Elements,
+               Nmemb  => 1,
+               Stream => File);
+
+            fwrite
+              (Ptr    => Num_Calls'Address,
+               Size   => Integer'Max_Size_In_Storage_Elements,
+               Nmemb  => 1,
+               Stream => File);
 
             for J in Tracebk'First .. Tracebk'First + Num_Calls - 1 loop
                declare
@@ -2330,7 +2346,6 @@ package body GNAT.Debug_Pools is
                   fwrite (Ptr'Address, Address_Size, 1, File);
                end;
             end loop;
-
          end if;
 
          Current := Header.Next;

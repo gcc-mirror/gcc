@@ -251,9 +251,7 @@ package body Exp_SPARK is
       --  specialized to the descendant type, hence build a separate DIC
       --  procedure for it as done during regular expansion for compilation.
 
-      if Has_DIC (E)
-        and then Is_Tagged_Type (E)
-      then
+      if Has_DIC (E) and then Is_Tagged_Type (E) then
          Build_DIC_Procedure_Body (E, For_Freeze => True);
       end if;
    end Expand_SPARK_Freeze_Type;

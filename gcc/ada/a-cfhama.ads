@@ -177,18 +177,16 @@ is
 
             --  It contains all the keys contained in Model
 
-            and
-              (for all Key of Model (Container) =>
-                (for some L of Keys'Result => Equivalent_Keys (L, Key)))
+            and (for all Key of Model (Container) =>
+                  (for some L of Keys'Result => Equivalent_Keys (L, Key)))
 
             --  It has no duplicate
 
-            and
-              (for all I in 1 .. Length (Container) =>
-                (for all J in 1 .. Length (Container) =>
-                  (if Equivalent_Keys
-                        (K.Get (Keys'Result, I), K.Get (Keys'Result, J))
-                   then I = J)));
+            and (for all I in 1 .. Length (Container) =>
+                  (for all J in 1 .. Length (Container) =>
+                    (if Equivalent_Keys
+                          (K.Get (Keys'Result, I), K.Get (Keys'Result, J))
+                     then I = J)));
       pragma Annotate (GNATprove, Iterable_For_Proof, "Model", Keys);
 
       function Positions (Container : Map) return P.Map with
@@ -242,6 +240,7 @@ is
          K : Key_Type) return Element_Type renames M.Get;
       --  To improve readability of contracts, we rename the function used to
       --  access an element in the model to Element.
+
    end Formal_Model;
    use Formal_Model;
 
@@ -278,9 +277,8 @@ is
 
          --  Actual keys are preserved
 
-         and
-           (for all Key of Keys (Source) =>
-              Formal_Hashed_Maps.Key (Target, Find (Target, Key)) = Key);
+         and (for all Key of Keys (Source) =>
+               Formal_Hashed_Maps.Key (Target, Find (Target, Key)) = Key);
 
    function Copy
      (Source   : Map;
@@ -296,8 +294,8 @@ is
                  Copy'Result.Capacity = Source.Capacity
               else
                  Copy'Result.Capacity = Capacity);
-   --  Copy returns a container stricty equal to Source. It must have
-   --  the same cursors associated with each element. Therefore:
+   --  Copy returns a container stricty equal to Source. It must have the same
+   --  cursors associated with each element. Therefore:
    --  - capacity=0 means use Source.Capacity as capacity of target
    --  - the modulus cannot be changed.
 
@@ -356,9 +354,8 @@ is
 
          --  Actual keys are preserved
 
-         and
-           (for all Key of Keys (Source)'Old =>
-              Formal_Hashed_Maps.Key (Target, Find (Target, Key)) = Key);
+         and (for all Key of Keys (Source)'Old =>
+               Formal_Hashed_Maps.Key (Target, Find (Target, Key)) = Key);
 
    procedure Insert
      (Container : in out Map;
@@ -477,9 +474,9 @@ is
 
             --  The key equivalent to Key in Container is replaced by Key
 
-            and K.Get (Keys (Container),
-                       P.Get (Positions (Container), Find (Container, Key))) =
-                Key
+            and K.Get
+                  (Keys (Container),
+                   P.Get (Positions (Container), Find (Container, Key))) = Key
             and K.Equal_Except
                   (Keys (Container)'Old,
                    Keys (Container),
@@ -533,12 +530,13 @@ is
 
          --  The key equivalent to Key in Container is replaced by Key
 
-         and K.Get (Keys (Container),
-                    P.Get (Positions (Container), Find (Container, Key))) = Key
+         and K.Get
+               (Keys (Container),
+                P.Get (Positions (Container), Find (Container, Key))) = Key
          and K.Equal_Except
-              (Keys (Container)'Old,
-               Keys (Container),
-               P.Get (Positions (Container), Find (Container, Key)))
+               (Keys (Container)'Old,
+                Keys (Container),
+                P.Get (Positions (Container), Find (Container, Key)))
 
          --  New_Item is now associated with the Key in Container
 

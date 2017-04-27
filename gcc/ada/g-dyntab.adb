@@ -284,18 +284,24 @@ package body GNAT.Dynamic_Tables is
       --  Last, but if Release_Threshold /= 0, then we need to take that into
       --  account.
 
+      ------------------------
+      -- New_Last_Allocated --
+      ------------------------
+
       function New_Last_Allocated return Table_Last_Type is
          subtype Table_Length_Type is Table_Index_Type'Base
            range 0 .. Table_Index_Type'Base'Last;
+
          Length : constant Table_Length_Type := T.P.Last - First + 1;
+
          Comp_Size_In_Bytes : constant Table_Length_Type :=
            Table_Type'Component_Size / System.Storage_Unit;
+
          Length_Threshold : constant Table_Length_Type :=
            Table_Length_Type (Release_Threshold) / Comp_Size_In_Bytes;
+
       begin
-         if Release_Threshold = 0
-           or else Length < Length_Threshold
-         then
+         if Release_Threshold = 0 or else Length < Length_Threshold then
             return T.P.Last;
          else
             declare
@@ -305,6 +311,8 @@ package body GNAT.Dynamic_Tables is
             end;
          end if;
       end New_Last_Allocated;
+
+      --  Local variables
 
       New_Last_Alloc : constant Table_Last_Type := New_Last_Allocated;
 
@@ -324,15 +332,15 @@ package body GNAT.Dynamic_Tables is
             function To_Old_Alloc_Ptr is
               new Ada.Unchecked_Conversion (Table_Ptr, Old_Alloc_Ptr);
 
-            subtype Alloc_Type is
-              Table_Type (First .. New_Last_Alloc);
+            subtype Alloc_Type is Table_Type (First .. New_Last_Alloc);
             type Alloc_Ptr is access all Alloc_Type;
 
             function To_Table_Ptr is
-               new Ada.Unchecked_Conversion (Alloc_Ptr, Table_Ptr);
+              new Ada.Unchecked_Conversion (Alloc_Ptr, Table_Ptr);
 
             Old_Table : Old_Alloc_Ptr := To_Old_Alloc_Ptr (T.Table);
             New_Table : constant Alloc_Ptr := new Alloc_Type;
+
          begin
             New_Table (Alloc_Type'Range) := Old_Table (Alloc_Type'Range);
             T.P.Last_Allocated := New_Last_Alloc;
@@ -353,6 +361,7 @@ package body GNAT.Dynamic_Tables is
    is
       pragma Assert (not T.Locked);
       Item_Copy : constant Table_Component_Type := Item;
+
    begin
       --  If Set_Last is going to reallocate the table, we make a copy of Item,
       --  in case the call was "Set_Item (T, X, T.Table (Y));", and Item is

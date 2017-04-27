@@ -1132,17 +1132,16 @@ package body Exp_Util is
                if not Is_Abstract_Subprogram (Subp)
                  and then Is_Abstract_Subprogram (Entity (N))
                then
-                  Error_Msg_Sloc := Sloc (Current_Scope);
-                  --  Error_Msg_Node_1 := Entity (N);
+                  Error_Msg_Sloc   := Sloc (Current_Scope);
                   Error_Msg_Node_2 := Subp;
                   if Comes_From_Source (Subp) then
                      Error_Msg_NE
-                       ("cannot call abstract subprogram& in inherited "
-                         & "condition for&#", Subp, Entity (N));
+                       ("cannot call abstract subprogram & in inherited "
+                        & "condition for&#", Subp, Entity (N));
                   else
                      Error_Msg_NE
-                       ("cannot call abstract subprogram& in inherited "
-                         & "condition for inherited&#", Subp, Entity (N));
+                       ("cannot call abstract subprogram & in inherited "
+                        & "condition for inherited&#", Subp, Entity (N));
                   end if;
 
                --  In SPARK mode, reject an inherited condition for an

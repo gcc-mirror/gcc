@@ -52,19 +52,22 @@ is
    pragma Annotate (CodePeer, Skip_Analysis);
 
    subtype Extended_Index is Index_Type'Base
-   range Index_Type'First - 1 ..
-     Index_Type'Min (Index_Type'Base'Last - 1, Index_Type'Last) + 1;
+     range Index_Type'First - 1 ..
+           Index_Type'Min (Index_Type'Base'Last - 1, Index_Type'Last) + 1;
 
    No_Index : constant Extended_Index := Extended_Index'First;
 
    Last_Count : constant Count_Type :=
-     (if Index_Type'Last < Index_Type'First then 0
+     (if Index_Type'Last < Index_Type'First then
+         0
       elsif Index_Type'Last < -1
         or else Index_Type'Pos (Index_Type'First) >
-          Index_Type'Pos (Index_Type'Last) - Count_Type'Last
-      then Index_Type'Pos (Index_Type'Last) -
-          Index_Type'Pos (Index_Type'First) + 1
-      else Count_Type'Last);
+                Index_Type'Pos (Index_Type'Last) - Count_Type'Last
+      then
+         Index_Type'Pos (Index_Type'Last) -
+           Index_Type'Pos (Index_Type'First) + 1
+      else
+         Count_Type'Last);
    --  Maximal capacity of any vector. It is the minimum of the size of the
    --  index range and the last possible Count_Type.
 
