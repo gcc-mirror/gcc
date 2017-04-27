@@ -123,14 +123,13 @@ class insn_info
 {
   rtx_insn * insn; // the insn
   unsigned myuse;  // bit set if registers are used in this statement
-  unsigned mydef;  // bit set if registers are set in this statement
   unsigned hard; // bit set if registers can't be renamed
   unsigned use;  // bit set if registers are used in program flow
-  unsigned def;  // bit set if registers are defined in program flow
+  unsigned def;  // bit set if registers are defined here
 
 public:
   insn_info (rtx_insn * i = 0) :
-      insn (i), myuse (0), mydef (0), hard (0), use (0), def (0)
+      insn (i), myuse (0), hard (0), use (0), def (0)
   {
   }
 
@@ -158,7 +157,6 @@ public:
   inline void
   mark_def (int regno)
   {
-    mydef |= 1 << regno;
     def |= 1 << regno;
   }
 
@@ -196,6 +194,12 @@ public:
   is_use (int regno)
   {
     return (use & (1 << regno)) != 0;
+  }
+
+  inline bool
+  is_myuse (int regno)
+  {
+    return (myuse & (1 << regno)) != 0;
   }
 
   inline bool
@@ -340,7 +344,23 @@ void
 insn_info::scan ()
 {
   rtx pattern = PATTERN (insn);
-  if (CALL_P(insn))
+  if (ANY_RETURN_P(pattern))
+    {
+      tree type = TYPE_SIZE(TREE_TYPE (DECL_RESULT (current_function_decl)));
+      int sz = type ? TREE_INT_CST_LOW(type) : 0;
+      // log ("return size %d\n", sz);
+      if (sz <= 64)
+	{
+	  mark_hard (0);
+	  mark_use (0);
+	  if (sz > 32)
+	    {
+	      mark_hard (1);
+	      mark_use (1);
+	    }
+	}
+    }
+  else if (CALL_P(insn))
     {
       /* add mregparm registers. */
       for (rtx link = CALL_INSN_FUNCTION_USAGE(insn); link; link = XEXP(link, 1))
@@ -385,11 +405,13 @@ insn_info::scan_rtx (rtx x)
   if (code == SET)
     {
       unsigned u = use;
+      unsigned mu = myuse;
       scan_rtx (SET_DEST(x));
       if (REG_P(SET_DEST(x)))
 	{
 	  def |= use;
 	  use = u;
+	  myuse = mu;
 	}
       scan_rtx (SET_SRC(x));
       int code = GET_CODE(SET_SRC(x));
@@ -518,13 +540,14 @@ append_reg_usage (FILE * f, rtx_insn * insn)
 
   insn_info & ii = infos[i->second];
 
-  fprintf (f, "\n\t\t\t\t\t\t| ");
+  if (f != stderr)
+    fprintf (f, "\n\t\t\t\t\t\t| ");
 
   for (int j = 0; j < 8; ++j)
     if (ii.is_use (j) || ii.is_def (j))
       {
 	fprintf (f, ii.is_hard (j) ? "!" : " ");
-	fprintf (f, ii.is_def (j) ? ii.is_use (j)  ? "*" : "+" : " ");
+	fprintf (f, ii.is_def (j) ? ii.is_use (j) ? "*" : "+" : " ");
 	fprintf (f, "d%d ", j);
       }
     else
@@ -534,14 +557,14 @@ append_reg_usage (FILE * f, rtx_insn * insn)
     if (ii.is_use (j) || ii.is_def (j))
       {
 	fprintf (f, ii.is_hard (j) ? "!" : " ");
-	fprintf (f, ii.is_def (j) ? ii.is_use (j)  ? "*" : "+" : " ");
+	fprintf (f, ii.is_def (j) ? ii.is_use (j) ? "*" : "+" : " ");
 	fprintf (f, "a%d ", j - 8);
       }
     else
       fprintf (f, "     ");
 
   if (ii.is_use (FIRST_PSEUDO_REGISTER))
-    fprintf (f, ii.is_def (FIRST_PSEUDO_REGISTER) ? "*cc " : "cc ");
+    fprintf (f, ii.is_def (FIRST_PSEUDO_REGISTER) ? "+cc " : " cc ");
 
 }
 
@@ -669,84 +692,24 @@ update_insn_infos (void)
 	    }
 
 	  rtx pattern = PATTERN (insn);
-
-	  if (CALL_P(insn))
-	    {
-	      insn_info use (insn);
-	      use.scan ();
-
-	      ii.merge (use);
-	      infos[pos] = ii;
-	      ii.updateWith (use);
-
-	      continue;
-	    }
-
-	  if (JUMP_P(insn))
-	    {
-	      insn_info use (insn);
-	      if (ANY_RETURN_P(pattern))
-		{
-		  tree type = TYPE_SIZE(TREE_TYPE (DECL_RESULT (current_function_decl)));
-		  int sz = type ? TREE_INT_CST_LOW(type) : 0;
-		  // log ("return size %d\n", sz);
-		  if (sz <= 64)
-		    {
-		      use.mark_hard (0);
-		      use.mark_use (0);
-		      if (sz > 32)
-			{
-			  use.mark_hard (1);
-			  use.mark_use (1);
-			}
-		    }
-		  ii.reset ();
-		}
-
-	      use.scan ();
-	      ii.merge (use);
-	      infos[pos] = ii;
-	      ii.updateWith (use);
-
-	      continue;
-	    }
-
-	  if (GET_CODE (pattern) == USE)
-	    {
-	      insn_info use (insn);
-	      use.scan ();
-	      use.make_clobber ();
-
-	      ii.merge (use);
-	      infos[pos] = ii;
-	      ii.updateWith (use);
-
-//	      rtx x = XEXP(pattern, 0);
-//	      if (REG_P(x))
-//		{
-//		  ii.mark_use (REGNO(x));
-//		  ii.mark_hard (REGNO(x));
-//		}
-//	      infos[pos] = ii;
-	      continue;
-	    }
-
-	  if (GET_CODE (pattern) == CLOBBER)
-	    {
-	      /* mark regs as use and def */
-	      insn_info use (insn);
-	      use.scan ();
-	      use.make_clobber ();
-	      ii.merge (use);
-	      infos[pos] = ii;
-	      ii.updateWith (use);
-	      continue;
-	    }
-
 	  insn_info use (insn);
 	  use.scan ();
 
-	  if (single_set (insn) == 0)
+	  if (CALL_P(insn))
+	    {
+	    }
+	  else if (JUMP_P(insn))
+	    {
+	      if (ANY_RETURN_P(pattern))
+		{
+		  ii.reset ();
+		}
+	    }
+	  else if (GET_CODE (pattern) == USE || GET_CODE (pattern) == CLOBBER)
+	    {
+	      use.make_clobber ();
+	    }
+	  else if (single_set (insn) == 0)
 	    use.make_hard ();
 	  else
 	  /* if not cc0 defined check for mod. */
@@ -792,13 +755,8 @@ is_reg_touched_between (unsigned regno, int from, int to)
 {
   for (int index = from + 1; index < to; ++index)
     {
-      rtx_insn * insn = insns[index];
-      insn_info ii (insn);
-      if (CALL_P(insn))
-	ii.scan ();
-      else
-	ii.scan_rtx (PATTERN (insn));
-      if (ii.is_use (regno) || ii.is_def (regno))
+      insn_info & ii = infos[index];
+      if (ii.is_myuse (regno) || ii.is_def (regno))
 	return true;
     }
   return false;
@@ -864,10 +822,6 @@ opt_reg_rename (void)
       if (index + 1 < insns.size ())
 	todo.push_back (index + 1);
 
-//      /* trigger jump checking */
-//      if (index > 0 && LABEL_P(insns[index - 1]))
-//	todo.push_back (std::make_pair(index - 1, 0));
-
       found.insert (index);
       /* a register was defined, follow all branches. */
       while (mask && todo.size ())
@@ -913,14 +867,10 @@ opt_reg_rename (void)
 
 	      /* marked as hard reg -> invalid rename */
 	      if (jj.get_use () & jj.get_hard () & rename_regbit)
-		mask = 0;
-
-//	  /* defined again -> invalid rename */
-//	  if ((jj._def & rename_regbit) && !(jj._use & rename_regbit))
-//	    mask = 0;
-
-	      if (!mask)
-		break;
+		{
+		  mask = 0;
+		  break;
+		}
 
 	      /* not used. and not a def */
 	      if (pos == runpos && (jj.get_def () & rename_regbit))
