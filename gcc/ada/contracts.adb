@@ -384,9 +384,23 @@ package body Contracts is
                             N_Generic_Subprogram_Declaration,
                             N_Subprogram_Declaration)
          then
-            Analyze_Entry_Or_Subprogram_Contract
-              (Subp_Id   => Defining_Entity (Decl),
-               Freeze_Id => Freeze_Id);
+            declare
+               Subp_Id : constant Entity_Id := Defining_Entity (Decl);
+
+            begin
+               Analyze_Entry_Or_Subprogram_Contract (Subp_Id, Freeze_Id);
+
+               --  If analysis of a classwide pre/postcondition indicates
+               --  that a class-wide clone is needed, analyze its declaration
+               --  now.  Its body is created when the body of the original
+               --  operation is analyzed (and rewritten).
+
+               if Is_Subprogram (Subp_Id)
+                 and then Present (Class_Wide_Clone (Subp_Id))
+               then
+                  Analyze (Unit_Declaration_Node (Class_Wide_Clone (Subp_Id)));
+               end if;
+            end;
 
          --  Entry or subprogram bodies
 

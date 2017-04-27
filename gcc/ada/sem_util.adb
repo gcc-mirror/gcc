@@ -1164,6 +1164,141 @@ package body Sem_Util is
       return Empty;
    end Build_Actual_Subtype_Of_Component;
 
+   ---------------------------------
+   -- Build_Class_Wide_Clone_Body --
+   ---------------------------------
+
+   procedure Build_Class_Wide_Clone_Body
+     (Spec_Id : Entity_Id;
+      Bod     : Node_Id)
+   is
+      Loc        : constant Source_Ptr := Sloc (Bod);
+      Clone_Id   : constant Entity_Id  := Class_Wide_Clone (Spec_Id);
+      Clone_Body : Node_Id;
+
+   begin
+      --  The declaration of the class-wide clone was created when the
+      --  corresponding class-wide condition was analyzed.
+
+      Clone_Body :=
+        Make_Subprogram_Body (Loc,
+          Specification              =>
+            Copy_Subprogram_Spec (Parent (Clone_Id)),
+          Declarations               => Declarations (Bod),
+          Handled_Statement_Sequence => Handled_Statement_Sequence (Bod));
+
+      --  The new operation is internal and overriding indicators do not apply
+      --  (the original primitive may have carried one).
+
+      Set_Must_Override (Specification (Clone_Body), False);
+      Insert_Before (Bod, Clone_Body);
+      Analyze (Clone_Body);
+   end Build_Class_Wide_Clone_Body;
+
+   ---------------------------------
+   -- Build_Class_Wide_Clone_Call --
+   ---------------------------------
+
+   function Build_Class_Wide_Clone_Call
+     (Loc     : Source_Ptr;
+      Decls   : List_Id;
+      Spec_Id : Entity_Id;
+      Spec    : Node_Id) return Node_Id
+   is
+      Clone_Id : constant Entity_Id := Class_Wide_Clone (Spec_Id);
+      Par_Type : constant Entity_Id := Find_Dispatching_Type (Spec_Id);
+
+      Actuals    : List_Id;
+      Call       : Node_Id;
+      Formal     : Entity_Id;
+      New_Body   : Node_Id;
+      New_F_Spec : Entity_Id;
+      New_Formal : Entity_Id;
+
+   begin
+      Actuals    := Empty_List;
+      Formal     := First_Formal (Spec_Id);
+      New_F_Spec := First (Parameter_Specifications (Spec));
+
+      --  Build parameter association for call to class-wide clone.
+
+      while Present (Formal) loop
+         New_Formal := Defining_Identifier (New_F_Spec);
+
+         --  If controlling argument and operation is inherited, add conversion
+         --  to parent type for the call.
+
+         if Etype (Formal) = Par_Type
+           and then not Is_Empty_List (Decls)
+         then
+            Append_To (Actuals,
+              Make_Type_Conversion (Loc,
+                New_Occurrence_Of (Par_Type, Loc),
+                New_Occurrence_Of (New_Formal, Loc)));
+
+         else
+            Append_To (Actuals, New_Occurrence_Of (New_Formal, Loc));
+         end if;
+
+         Next_Formal (Formal);
+         Next (New_F_Spec);
+      end loop;
+
+      if Ekind (Spec_Id) = E_Procedure then
+         Call :=
+           Make_Procedure_Call_Statement (Loc,
+             Name                   => New_Occurrence_Of (Clone_Id, Loc),
+             Parameter_Associations => Actuals);
+      else
+         Call :=
+           Make_Simple_Return_Statement (Loc,
+            Expression =>
+              Make_Function_Call (Loc,
+                Name                   => New_Occurrence_Of (Clone_Id, Loc),
+                Parameter_Associations => Actuals));
+      end if;
+
+      New_Body :=
+        Make_Subprogram_Body (Loc,
+          Specification              =>
+            Copy_Subprogram_Spec (Spec),
+          Declarations               => Decls,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => New_List (Call),
+              End_Label  => Make_Identifier (Loc, Chars (Spec_Id))));
+
+      return New_Body;
+   end Build_Class_Wide_Clone_Call;
+
+   ---------------------------------
+   -- Build_Class_Wide_Clone_Decl --
+   ---------------------------------
+
+   procedure Build_Class_Wide_Clone_Decl (Spec_Id : Entity_Id) is
+      Loc      : constant Source_Ptr := Sloc (Spec_Id);
+      Clone_Id : constant Entity_Id  :=
+                   Make_Defining_Identifier (Loc,
+                     New_External_Name (Chars (Spec_Id), Suffix => "CL"));
+
+      Decl : Node_Id;
+      Spec : Node_Id;
+
+   begin
+      Spec := Copy_Subprogram_Spec (Parent (Spec_Id));
+      Set_Must_Override      (Spec, False);
+      Set_Must_Not_Override  (Spec, False);
+      Set_Defining_Unit_Name (Spec, Clone_Id);
+
+      Decl := Make_Subprogram_Declaration (Loc, Spec);
+      Append (Decl, List_Containing (Unit_Declaration_Node (Spec_Id)));
+
+      --  Link clone to original subprogram, for use when building body and
+      --  wrapper call to inherited operation.
+
+      Set_Class_Wide_Clone (Spec_Id, Clone_Id);
+   end Build_Class_Wide_Clone_Decl;
+
    -----------------------------
    -- Build_Component_Subtype --
    -----------------------------
@@ -5244,6 +5379,14 @@ package body Sem_Util is
       --  alterations. Use New_Copy_Tree for this purpose.
 
       Result := New_Copy_Tree (Spec);
+
+      --  However, the spec of a null procedure carries the corresponding null
+      --  statement of the body (created by the parser), and this cannot be
+      --  shared with the new subprogram spec.
+
+      if Nkind (Result) = N_Procedure_Specification then
+         Set_Null_Statement (Result, Empty);
+      end if;
 
       --  Create a new entity for the defining unit name
 
