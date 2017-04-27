@@ -1,3 +1,9 @@
+2017-04-27  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/79455
+	* c-c++-common/tsan/race_on_mutex.c: Make the scanned pattern
+	more generic.
+
 2017-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/80534
