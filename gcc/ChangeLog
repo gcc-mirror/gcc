@@ -1,3 +1,13 @@
+2017-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80534
+	* tree.c (type_cache_hasher::equal): Only compare
+	TYPE_TYPELESS_STORAGE flag on non-aggregate element types.
+	(build_array_type_1): Only hash TYPE_TYPELESS_STORAGE flag on
+	non-aggregate element types.
+	* tree.h (TYPE_TYPELESS_STORAGE): Fix comment typo, add more details
+	about the flag on ARRAY_TYPEs in the comment, formatting fix.
+
 2017-04-27  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/80533
