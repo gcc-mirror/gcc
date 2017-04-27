@@ -630,17 +630,17 @@ package body Sem_Eval is
       --  to discrete and non-discrete types.
 
       elsif (Nkind (Choice) = N_Subtype_Indication
-               or else (Is_Entity_Name (Choice)
-                         and then Is_Type (Entity (Choice))))
+              or else (Is_Entity_Name (Choice)
+                        and then Is_Type (Entity (Choice))))
         and then Has_Predicates (Etype (Choice))
         and then Has_Static_Predicate (Etype (Choice))
       then
          if Is_Discrete_Type (Etype (Choice)) then
-            return Choices_Match
-              (Expr, Static_Discrete_Predicate (Etype (Choice)));
+            return
+              Choices_Match
+                (Expr, Static_Discrete_Predicate (Etype (Choice)));
 
-         elsif
-            Real_Or_String_Static_Predicate_Matches (Expr, Etype (Choice))
+         elsif Real_Or_String_Static_Predicate_Matches (Expr, Etype (Choice))
          then
             return Match;
 

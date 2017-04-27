@@ -93,8 +93,8 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
             K : constant Key_Type := Get (Left.Keys, I);
          begin
             if not Equivalent_Keys (K, New_Key)
-              and then Get (Right.Elements, Find (Right.Keys, K))
-                    /= Get (Left.Elements, I)
+              and then Get (Right.Elements, Find (Right.Keys, K)) /=
+                       Get (Left.Elements, I)
             then
                return False;
             end if;
@@ -106,7 +106,8 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
    function Elements_Equal_Except
      (Left  : Map;
       Right : Map;
-      X, Y  : Key_Type) return Boolean
+      X     : Key_Type;
+      Y     : Key_Type) return Boolean
    is
    begin
       for I in 1 .. Length (Left.Keys) loop
@@ -115,8 +116,8 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
          begin
             if not Equivalent_Keys (K, X)
               and then not Equivalent_Keys (K, Y)
-              and then Get (Right.Elements, Find (Right.Keys, K))
-                    /= Get (Left.Elements, I)
+              and then Get (Right.Elements, Find (Right.Keys, K)) /=
+                       Get (Left.Elements, I)
             then
                return False;
             end if;
@@ -167,6 +168,7 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
             end if;
          end;
       end loop;
+
       return True;
    end Keys_Included;
 
@@ -191,13 +193,15 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
             end if;
          end;
       end loop;
+
       return True;
    end Keys_Included_Except;
 
    function Keys_Included_Except
      (Left  : Map;
       Right : Map;
-      X, Y  : Key_Type) return Boolean
+      X     : Key_Type;
+      Y     : Key_Type) return Boolean
    is
    begin
       for I in 1 .. Length (Left.Keys) loop
@@ -212,6 +216,7 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
             end if;
          end;
       end loop;
+
       return True;
    end Keys_Included_Except;
 
@@ -229,8 +234,8 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
    ---------------
 
    function Same_Keys (Left : Map; Right : Map) return Boolean is
-      (Keys_Included (Left, Right)
-            and Keys_Included (Left => Right, Right => Left));
+     (Keys_Included (Left, Right)
+       and Keys_Included (Left => Right, Right => Left));
 
    ---------
    -- Set --
@@ -243,6 +248,6 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
    is
      (Keys     => Container.Keys,
       Elements =>
-         Set (Container.Elements, Find (Container.Keys, Key), New_Item));
+        Set (Container.Elements, Find (Container.Keys, Key), New_Item));
 
 end Ada.Containers.Functional_Maps;

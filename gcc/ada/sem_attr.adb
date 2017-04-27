@@ -6310,21 +6310,28 @@ package body Sem_Attr is
                end;
             end if;
 
-            --  Fold in representation aspects for the type, which appear in
-            --  the same source buffer.
+            if Is_First_Subtype (T) then
 
-            Rep := First_Rep_Item (T);
+               --  Fold in representation aspects for the type, which appear in
+               --  the same source buffer. If the representation aspects are in
+               --  a different source file, then skip them; they apply to some
+               --  other type, perhaps one we're derived from.
 
-            while Present (Rep) loop
-               if Comes_From_Source (Rep) then
-                  Sloc_Range (Rep, P_Min, P_Max);
-                  pragma Assert (SFI = Get_Source_File_Index (P_Min));
-                  pragma Assert (SFI = Get_Source_File_Index (P_Max));
-                  Process_One_Declaration;
-               end if;
+               Rep := First_Rep_Item (T);
 
-               Rep := Next_Rep_Item (Rep);
-            end loop;
+               while Present (Rep) loop
+                  if Comes_From_Source (Rep) then
+                     Sloc_Range (Rep, P_Min, P_Max);
+
+                     if SFI = Get_Source_File_Index (P_Min) then
+                        pragma Assert (SFI = Get_Source_File_Index (P_Max));
+                        Process_One_Declaration;
+                     end if;
+                  end if;
+
+                  Rep := Next_Rep_Item (Rep);
+               end loop;
+            end if;
          end Compute_Type_Key;
 
       --  Start of processing for Type_Key

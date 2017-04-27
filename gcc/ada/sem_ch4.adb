@@ -1463,6 +1463,25 @@ package body Sem_Ch4 is
          --  actuals.
 
          Check_Function_Writable_Actuals (N);
+
+         --  The return type of the function may be incomplete. This can be
+         --  the case if the type is a generic formal, or a limited view. It
+         --  can also happen when the function declaration appears before the
+         --  full view of the type (which is legal in Ada 2012) and the call
+         --  appears in a different unit, in which case the incomplete view
+         --  must be replaced with the full view to prevent subsequent type
+         --  errors.
+
+         if Is_Incomplete_Type (Etype (N))
+           and then Present (Full_View (Etype (N)))
+         then
+            if Is_Entity_Name (Nam) then
+               Set_Etype (Nam, Full_View (Etype (N)));
+               Set_Etype (Entity (Nam), Full_View (Etype (N)));
+            end if;
+
+            Set_Etype (N, Full_View (Etype (N)));
+         end if;
       end if;
    end Analyze_Call;
 

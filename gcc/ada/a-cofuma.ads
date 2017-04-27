@@ -36,6 +36,7 @@ generic
    type Key_Type (<>) is private;
    type Element_Type (<>)  is private;
    with function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
+
 package Ada.Containers.Functional_Maps with SPARK_Mode is
 
    type Map is private with
@@ -90,9 +91,9 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
      Post   =>
        "="'Result =
          ((for all Key of Left =>
-                   Has_Key (Right, Key)
-           and then Get (Right, Key) = Get (Left, Key))
-          and (for all Key of Right => Has_Key (Left, Key)));
+             Has_Key (Right, Key)
+               and then Get (Right, Key) = Get (Left, Key))
+               and (for all Key of Right => Has_Key (Left, Key)));
 
    pragma Warnings (Off, "unused variable ""Key""");
    function Is_Empty (Container : Map) return Boolean with
@@ -117,8 +118,8 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
      Global => null,
      Post   =>
        Same_Keys'Result =
-           (Keys_Included (Left, Right)
-            and Keys_Included (Left => Right, Right => Left));
+         (Keys_Included (Left, Right)
+           and Keys_Included (Left => Right, Right => Left));
    pragma Annotate (GNATprove, Inline_For_Proof, Same_Keys);
 
    function Keys_Included_Except
@@ -130,24 +131,27 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
    with
      Global => null,
      Post   =>
-         Keys_Included_Except'Result =
-           (for all Key of Left =>
-              (if not Equivalent_Keys (Key, New_Key)
-               then Has_Key (Right, Key)));
+       Keys_Included_Except'Result =
+         (for all Key of Left =>
+           (if not Equivalent_Keys (Key, New_Key) then
+               Has_Key (Right, Key)));
 
    function Keys_Included_Except
      (Left  : Map;
       Right : Map;
-      X, Y  : Key_Type) return Boolean
+      X     : Key_Type;
+      Y     : Key_Type) return Boolean
    --  Returns True if Left contains only keys of Right and possibly X and Y
 
    with
      Global => null,
      Post   =>
-         Keys_Included_Except'Result =
-           (for all Key of Left =>
-              (if not Equivalent_Keys (Key, X) and not Equivalent_Keys (Key, Y)
-               then Has_Key (Right, Key)));
+       Keys_Included_Except'Result =
+         (for all Key of Left =>
+           (if not Equivalent_Keys (Key, X)
+              and not Equivalent_Keys (Key, Y)
+            then
+               Has_Key (Right, Key)));
 
    function Elements_Equal_Except
      (Left    : Map;
@@ -162,13 +166,14 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
      Post   =>
        Elements_Equal_Except'Result =
          (for all Key of Left =>
-            (if not Equivalent_Keys (Key, New_Key)
-             then Get (Left, Key) = Get (Right, Key)));
+           (if not Equivalent_Keys (Key, New_Key) then
+               Get (Left, Key) = Get (Right, Key)));
 
    function Elements_Equal_Except
      (Left  : Map;
       Right : Map;
-      X, Y  : Key_Type) return Boolean
+      X     : Key_Type;
+      Y     : Key_Type) return Boolean
    --  Returns True if all the keys of Left are mapped to the same elements in
    --  Left and Right except X and Y.
 
@@ -178,8 +183,10 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
      Post   =>
        Elements_Equal_Except'Result =
          (for all Key of Left =>
-            (if not Equivalent_Keys (Key, X) and not Equivalent_Keys (Key, Y)
-             then Get (Left, Key) = Get (Right, Key)));
+           (if not Equivalent_Keys (Key, X)
+              and not Equivalent_Keys (Key, Y)
+            then
+               Get (Left, Key) = Get (Right, Key)));
 
    ----------------------------
    -- Construction Functions --
@@ -192,19 +199,19 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
      (Container : Map;
       New_Key   : Key_Type;
       New_Item  : Element_Type) return Map
-   --  Returns Container augmented with the mapping Key -> New_Item.
+   --  Returns Container augmented with the mapping Key -> New_Item
 
    with
      Global => null,
      Pre    =>
-         not Has_Key (Container, New_Key)
-       and Length (Container) < Count_Type'Last,
+       not Has_Key (Container, New_Key)
+         and Length (Container) < Count_Type'Last,
      Post   =>
        Length (Container) + 1 = Length (Add'Result)
-       and Has_Key (Add'Result, New_Key)
-       and Get (Add'Result, New_Key) = New_Item
-       and Container <= Add'Result
-       and Keys_Included_Except (Add'Result, Container, New_Key);
+         and Has_Key (Add'Result, New_Key)
+         and Get (Add'Result, New_Key) = New_Item
+         and Container <= Add'Result
+         and Keys_Included_Except (Add'Result, Container, New_Key);
 
    function Set
      (Container : Map;
@@ -218,9 +225,9 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
      Pre    => Has_Key (Container, Key),
      Post   =>
        Length (Container) = Length (Set'Result)
-       and Get (Set'Result, Key) = New_Item
-       and Same_Keys (Container, Set'Result)
-       and Elements_Equal_Except (Container, Set'Result, Key);
+         and Get (Set'Result, Key) = New_Item
+         and Same_Keys (Container, Set'Result)
+         and Elements_Equal_Except (Container, Set'Result, Key);
 
    ---------------------------
    --  Iteration Primitives --
@@ -281,11 +288,15 @@ private
    is
      (Count_Type (Key) in 1 .. Key_Containers.Length (Container.Keys));
 
-   function Iter_Next (Container : Map; Key : Private_Key) return Private_Key
+   function Iter_Next
+     (Container : Map;
+      Key       : Private_Key) return Private_Key
    is
      (if Key = Private_Key'Last then 0 else Key + 1);
 
-   function Iter_Element (Container : Map; Key : Private_Key) return Key_Type
+   function Iter_Element
+     (Container : Map;
+      Key       : Private_Key) return Key_Type
    is
      (Key_Containers.Get (Container.Keys, Count_Type (Key)));
 
