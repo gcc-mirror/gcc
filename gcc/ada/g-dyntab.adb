@@ -46,7 +46,7 @@ package body GNAT.Dynamic_Tables is
    --  This is called when we are about to set the value of Last to a value
    --  that is larger than Last_Allocated. This reallocates the table to the
    --  larger size, as indicated by New_Last. At the time this is called,
-   --  T.P.Last is still the old value.
+   --  Last (T) is still the old value, and this does not modify it.
 
    --------------
    -- Allocate --
@@ -57,7 +57,7 @@ package body GNAT.Dynamic_Tables is
       --  Note that Num can be negative
 
       pragma Assert (not T.Locked);
-      Set_Last (T, T.P.Last + Table_Index_Type'Base (Num));
+      Set_Last (T, Last (T) + Table_Index_Type'Base (Num));
    end Allocate;
 
    ------------
@@ -65,9 +65,17 @@ package body GNAT.Dynamic_Tables is
    ------------
 
    procedure Append (T : in out Instance; New_Val : Table_Component_Type) is
-   begin
       pragma Assert (not T.Locked);
-      Set_Item (T, T.P.Last + 1, New_Val);
+      New_Last : constant Table_Last_Type := Last (T) + 1;
+   begin
+      if New_Last <= T.P.Last_Allocated then
+         --  fast path
+         T.P.Last := New_Last;
+         T.Table (New_Last) := New_Val;
+
+      else
+         Set_Item (T, New_Last, New_Val);
+      end if;
    end Append;
 
    ----------------
@@ -185,7 +193,7 @@ package body GNAT.Dynamic_Tables is
 
       begin
          if T.Table /= Empty_Table_Ptr then
-            New_Table (First .. T.P.Last) := Old_Table (First .. T.P.Last);
+            New_Table (First .. Last (T)) := Old_Table (First .. Last (T));
             Free (Old_Table);
          end if;
 
@@ -238,10 +246,8 @@ package body GNAT.Dynamic_Tables is
    --------------
 
    function Is_Empty (T : Instance) return Boolean is
-      Result : constant Boolean := T.P.Last = Table_Low_Bound - 1;
    begin
-      pragma Assert (Result = (T.Table = Empty_Table_Ptr));
-      return Result;
+      return Last (T) = Table_Low_Bound - 1;
    end Is_Empty;
 
    ----------
@@ -292,7 +298,7 @@ package body GNAT.Dynamic_Tables is
          subtype Table_Length_Type is Table_Index_Type'Base
            range 0 .. Table_Index_Type'Base'Last;
 
-         Length : constant Table_Length_Type := T.P.Last - First + 1;
+         Length : constant Table_Length_Type := Last (T) - First + 1;
 
          Comp_Size_In_Bytes : constant Table_Length_Type :=
            Table_Type'Component_Size / System.Storage_Unit;
@@ -302,7 +308,7 @@ package body GNAT.Dynamic_Tables is
 
       begin
          if Release_Threshold = 0 or else Length < Length_Threshold then
-            return T.P.Last;
+            return Last (T);
          else
             declare
                Extra_Length : constant Table_Length_Type := Length / 1000;
@@ -320,7 +326,7 @@ package body GNAT.Dynamic_Tables is
 
    begin
       if New_Last_Alloc < T.P.Last_Allocated then
-         pragma Assert (T.P.Last < T.P.Last_Allocated);
+         pragma Assert (Last (T) < T.P.Last_Allocated);
          pragma Assert (T.Table /= Empty_Table_Ptr);
 
          declare
@@ -359,10 +365,9 @@ package body GNAT.Dynamic_Tables is
       Index : Valid_Table_Index_Type;
       Item  : Table_Component_Type)
    is
-      pragma Assert (not T.Locked);
-      Item_Copy : constant Table_Component_Type := Item;
-
    begin
+      pragma Assert (not T.Locked);
+
       --  If Set_Last is going to reallocate the table, we make a copy of Item,
       --  in case the call was "Set_Item (T, X, T.Table (Y));", and Item is
       --  passed by reference. Without the copy, we would deallocate the array
@@ -376,14 +381,13 @@ package body GNAT.Dynamic_Tables is
             T.Table (Index) := Item_Copy;
          end;
 
-         return;
-      end if;
+      else
+         if Index > Last (T) then
+            Set_Last (T, Index);
+         end if;
 
-      if Index > T.P.Last then
-         Set_Last (T, Index);
+         T.Table (Index) := Item;
       end if;
-
-      T.Table (Index) := Item_Copy;
    end Set_Item;
 
    --------------

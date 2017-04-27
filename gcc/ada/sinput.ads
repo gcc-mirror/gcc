@@ -936,7 +936,7 @@ private
    type Dope_Rec is record
       First, Last : Source_Ptr'Base;
    end record;
-   Dope_Rec_Size : constant := 2 * Source_Ptr'Size;
+   Dope_Rec_Size : constant := 2 * Source_Ptr'Base'Size;
    for Dope_Rec'Size use Dope_Rec_Size;
    for Dope_Rec'Alignment use Dope_Rec_Size / 8;
    type Dope_Ptr is access all Dope_Rec;
