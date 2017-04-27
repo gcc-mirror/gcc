@@ -1,3 +1,9 @@
+2017-04-27  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* g++.dg/cpp1z/direct-enum-init1.C: Adjust for more verbose enum
+	diagnostics.
+	* g++.dg/warn/pr12242.C: Likewise.
+
 2017-04-27  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.c-torture/execute/alias-3.c: Skip on AIX.
