@@ -8763,7 +8763,8 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 		  && !in_system_header_at (input_location)
 		  && !VOID_TYPE_P (type)
 		  && current_lang_name != lang_name_c)
-		warning (OPT_Wold_style_cast, "use of old-style cast");
+		warning (OPT_Wold_style_cast,
+			 "use of old-style cast to %qT", type);
 
 	      /* Only type conversions to integral or enumeration types
 		 can be used in constant-expressions.  */
