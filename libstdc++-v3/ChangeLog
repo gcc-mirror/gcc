@@ -1,3 +1,10 @@
+2017-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/pb_ds/detail/list_update_map_/iterators_fn_imps.hpp
+	(PB_DS_CLASS_C_DEC::end()): Remove redundant const in cast type.
+	* testsuite/util/testsuite_rng.h (twister_rand_gen::get_prob()):
+	Likewise.
+
 2017-04-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/23_containers/deque/allocator/move_assign-2.cc: Improve
