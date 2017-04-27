@@ -4195,6 +4195,14 @@ package body Sem_Ch3 is
          if No (E) and then Is_Null_Record_Type (T) then
             null;
 
+         --  Do not generate a predicate check if the initialization expression
+         --  is a type conversion because the conversion has been subjected to
+         --  the same check. This is a small optimization which avoid redundant
+         --  checks.
+
+         elsif Present (E) and then Nkind (E) = N_Type_Conversion then
+            null;
+
          else
             Insert_After (N,
               Make_Predicate_Check (T, New_Occurrence_Of (Id, Loc)));

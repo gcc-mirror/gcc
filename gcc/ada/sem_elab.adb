@@ -688,7 +688,7 @@ package body Sem_Elab is
       --  see whether an elaboration check is required.
 
       Is_DIC : Boolean;
-      --  Flag set when the subprogram being invoked the procedure generated
+      --  Flag set when the subprogram being invoked is the procedure generated
       --  for pragma Default_Initial_Condition.
 
       SPARK_Elab_Errors : Boolean;

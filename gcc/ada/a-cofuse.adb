@@ -38,101 +38,107 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
    -- "=" --
    ---------
 
-   function "=" (S1 : Set; S2 : Set) return Boolean is
-     (S1.Content <= S2.Content and S2.Content <= S1.Content);
+   function "=" (Left : Set; Right : Set) return Boolean is
+     (Left.Content <= Right.Content and Right.Content <= Left.Content);
 
    ----------
    -- "<=" --
    ----------
 
-   function "<=" (S1 : Set; S2 : Set) return Boolean is
-     (S1.Content <= S2.Content);
+   function "<=" (Left : Set; Right : Set) return Boolean is
+     (Left.Content <= Right.Content);
 
    ---------
    -- Add --
    ---------
 
-   function Add (S : Set; E : Element_Type) return Set is
-     (Content => Add (S.Content, Length (S.Content) + 1, E));
+   function Add (Container : Set; Item : Element_Type) return Set is
+     (Content =>
+         Add (Container.Content, Length (Container.Content) + 1, Item));
+
+   --------------
+   -- Contains --
+   --------------
+
+   function Contains (Container : Set; Item : Element_Type) return Boolean is
+     (Find (Container.Content, Item) > 0);
+
+   ---------------------
+   -- Included_Except --
+   ---------------------
+
+   function Included_Except
+     (Left  : Set;
+      Right : Set;
+      Item  : Element_Type) return Boolean
+   is
+     (for all E of Left =>
+         Equivalent_Elements (E, Item) or Contains (Right, E));
+
+   -----------------------
+   -- Included_In_Union --
+   -----------------------
+
+   function Included_In_Union
+     (Container : Set;
+      Left      : Set;
+      Right     : Set) return Boolean
+   is
+     (for all Item of Container =>
+         Contains (Left, Item) or Contains (Right, Item));
+
+   ---------------------------
+   -- Includes_Intersection --
+   ---------------------------
+
+   function Includes_Intersection
+     (Container : Set;
+      Left      : Set;
+      Right     : Set) return Boolean
+   is
+     (for all Item of Left =>
+        (if Contains (Right, Item) then Contains (Container, Item)));
 
    ------------------
    -- Intersection --
    ------------------
 
-   function Intersection (S1 : Set; S2 : Set) return Set is
-     (Content => Intersection (S1.Content, S2.Content));
-
-   ------------
-   -- Is_Add --
-   ------------
-
-   function Is_Add (S : Set; E : Element_Type; Result : Set) return Boolean
-   is
-     (Mem (Result, E)
-        and (for all F of Result => Mem (S, F) or F = E)
-        and (for all E of S => Mem (Result, E)));
+   function Intersection (Left : Set; Right : Set) return Set is
+     (Content => Intersection (Left.Content, Right.Content));
 
    --------------
    -- Is_Empty --
    --------------
 
-   function Is_Empty (S : Set) return Boolean is (Length (S.Content) = 0);
-
-   ---------------------
-   -- Is_Intersection --
-   ---------------------
-
-   function Is_Intersection
-     (S1     : Set;
-      S2     : Set;
-      Result : Set) return Boolean
-   is
-     ((for all E of Result =>
-         Mem (S1, E)
-           and Mem (S2, E))
-           and (for all E of S1 => (if Mem (S2, E) then Mem (Result, E))));
-
-   --------------
-   -- Is_Union --
-   --------------
-
-   function Is_Union (S1 : Set; S2 : Set; Result : Set) return Boolean is
-     ((for all E of Result => Mem (S1, E) or Mem (S2, E))
-         and (for all E of S1 => Mem (Result, E))
-         and (for all E of S2 => Mem (Result, E)));
+   function Is_Empty (Container : Set) return Boolean is
+     (Length (Container.Content) = 0);
 
    ------------
    -- Length --
    ------------
 
-   function Length (S : Set) return Count_Type is (Length (S.Content));
-
-   ---------
-   -- Mem --
-   ---------
-
-   function Mem (S : Set; E : Element_Type) return Boolean is
-     (Find (S.Content, E) > 0);
+   function Length (Container : Set) return Count_Type is
+     (Length (Container.Content));
 
    ------------------
    -- Num_Overlaps --
    ------------------
 
-   function Num_Overlaps (S1 : Set; S2 : Set) return Count_Type is
-     (Num_Overlaps (S1.Content, S2.Content));
+   function Num_Overlaps (Left : Set; Right : Set) return Count_Type is
+     (Num_Overlaps (Left.Content, Right.Content));
 
    ------------
    -- Remove --
    ------------
 
-   function Remove (S : Set; E : Element_Type) return Set is
-     (Content => Remove (S.Content, Find (S.Content, E)));
+   function Remove (Container : Set; Item : Element_Type) return Set is
+     (Content => Remove (Container.Content, Find (Container.Content, Item)));
 
    -----------
    -- Union --
    -----------
 
-   function Union (S1 : Set; S2 : Set) return Set is
-     (Content => Union (S1.Content, S2.Content));
+   function Union (Left : Set; Right : Set) return Set is
+     (Content => Union (Left.Content, Right.Content));
 
 end Ada.Containers.Functional_Sets;

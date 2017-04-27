@@ -497,72 +497,18 @@ is
       procedure Lift_Abstraction_Level (Container : List) is null;
 
       -------------------------
-      -- M_Elements_Contains --
-      -------------------------
-
-      function M_Elements_Contains
-        (S   : M.Sequence;
-         Fst : Positive_Count_Type;
-         Lst : Count_Type;
-         E   : Element_Type)
-         return Boolean
-      is
-      begin
-         for I in Fst .. Lst loop
-            if Element (S, I) = E then
-               return True;
-            end if;
-         end loop;
-         return False;
-      end M_Elements_Contains;
-
-      --------------------
-      -- M_Elements_Cst --
-      --------------------
-
-      function M_Elements_Cst
-        (S   : M.Sequence;
-         Fst : Positive_Count_Type;
-         Lst : Count_Type;
-         E   : Element_Type)
-         return Boolean
-      is
-      begin
-         for I in Fst .. Lst loop
-            if Element (S, I) /= E then
-               return False;
-            end if;
-         end loop;
-         return True;
-      end M_Elements_Cst;
-
-      ----------------------
-      -- M_Elements_Equal --
-      ----------------------
-
-      function M_Elements_Equal
-        (S1, S2   : M.Sequence;
-         Fst      : Positive_Count_Type;
-         Lst      : Count_Type)
-         return Boolean
-      is
-      begin
-         return M_Elements_Shifted (S1, S2, Fst, Lst, 0);
-      end M_Elements_Equal;
-
-      -------------------------
       -- M_Elements_Reversed --
       -------------------------
 
-      function M_Elements_Reversed (S1, S2 : M.Sequence) return Boolean is
-         L : constant Count_Type := M.Length (S1);
+      function M_Elements_Reversed (Left, Right : M.Sequence) return Boolean is
+         L : constant Count_Type := M.Length (Left);
       begin
-         if L /= M.Length (S2) then
+         if L /= M.Length (Right) then
             return False;
          end if;
 
          for I in 1 .. L loop
-            if Element (S1, I) /= Element (S2, L - I + 1)
+            if Element (Left, I) /= Element (Right, L - I + 1)
             then
                return False;
             end if;
@@ -571,36 +517,16 @@ is
          return True;
       end M_Elements_Reversed;
 
-      ------------------------
-      -- M_Elements_Shifted --
-      ------------------------
-
-      function M_Elements_Shifted
-        (S1, S2   : M.Sequence;
-         Fst      : Positive_Count_Type;
-         Lst      : Count_Type;
-         Offset   : Count_Type'Base := 1)
-         return Boolean
-      is
-      begin
-         for I in Fst .. Lst loop
-            if Element (S1, I) /= Element (S2, I + Offset) then
-               return False;
-            end if;
-         end loop;
-         return True;
-      end M_Elements_Shifted;
-
       -------------------------
       -- M_Elements_Shuffled --
       -------------------------
 
       function M_Elements_Shuffle
-        (S1, S2   : M.Sequence;
-         Fst      : Positive_Count_Type;
-         Lst      : Count_Type;
-         Offset   : Count_Type'Base)
-         return Boolean
+        (Left   : M.Sequence;
+         Right  : M.Sequence;
+         Fst    : Positive_Count_Type;
+         Lst    : Count_Type;
+         Offset : Count_Type'Base) return Boolean
       is
       begin
          for I in Fst .. Lst loop
@@ -609,7 +535,7 @@ is
                J     : Count_Type := Fst;
             begin
                while not Found and J <= Lst loop
-                  if Element (S1, I) = Element (S2, J + Offset) then
+                  if Element (Left, I) = Element (Right, J + Offset) then
                      Found := True;
                   end if;
                   J := J + 1;
@@ -628,21 +554,21 @@ is
       ------------------------
 
       function M_Elements_Swapped
-        (S1, S2 : M.Sequence;
-         X, Y   : Positive_Count_Type)
-      return Boolean
+        (Left  : M.Sequence;
+         Right : M.Sequence;
+         X, Y  : Positive_Count_Type) return Boolean
       is
       begin
-         if M.Length (S1) /= M.Length (S2)
-           or else Element (S1, X) /= Element (S2, Y)
-           or else Element (S1, Y) /= Element (S2, X)
+         if M.Length (Left) /= M.Length (Right)
+           or else Element (Left, X) /= Element (Right, Y)
+           or else Element (Left, Y) /= Element (Right, X)
          then
             return False;
          end if;
 
-         for I in 1 .. M.Length (S1) loop
+         for I in 1 .. M.Length (Left) loop
             if I /= X and then I /= Y
-              and then Element (S1, I) /= Element (S2, I)
+              and then Element (Left, I) /= Element (Right, I)
             then
                return False;
             end if;
@@ -673,22 +599,25 @@ is
       -----------------------
 
       function Mapping_Preserved
-        (S1, S2 : M.Sequence;
-         M1, M2 : P.Map) return Boolean is
-
+        (M_Left  : M.Sequence;
+         M_Right : M.Sequence;
+         P_Left  : P.Map;
+         P_Right : P.Map) return Boolean
+      is
       begin
-         for C of M1 loop
-            if not P.Mem (M2, C)
-              or else P.Get (M1, C) > M.Length (S1)
-              or else P.Get (M2, C) > M.Length (S2)
-              or else M.Get (S1, P.Get (M1, C)) /= M.Get (S2, P.Get (M2, C))
+         for C of P_Left loop
+            if not P.Has_Key (P_Right, C)
+              or else P.Get (P_Left, C) > M.Length (M_Left)
+              or else P.Get (P_Right, C) > M.Length (M_Right)
+              or else M.Get (M_Left, P.Get (P_Left, C))
+                   /= M.Get (M_Right, P.Get (P_Right, C))
             then
                return False;
             end if;
          end loop;
 
-         for C of M2 loop
-            if not P.Mem (M1, C) then
+         for C of P_Right loop
+            if not P.Has_Key (P_Left, C) then
                return False;
             end if;
          end loop;
@@ -708,7 +637,7 @@ is
       is
       begin
          for Cu of Small loop
-            if not P.Mem (Big, Cu) then
+            if not P.Has_Key (Big, Cu) then
                return False;
             end if;
          end loop;
@@ -718,18 +647,18 @@ is
                Pos : constant Positive_Count_Type := P.Get (Big, Cu);
             begin
                if Pos < Cut then
-                  if not P.Mem (Small, Cu) or else Pos /= P.Get (Small, Cu)
+                  if not P.Has_Key (Small, Cu) or else Pos /= P.Get (Small, Cu)
                   then
                      return False;
                   end if;
                elsif Pos >= Cut + Count then
-                  if not P.Mem (Small, Cu)
+                  if not P.Has_Key (Small, Cu)
                     or else Pos /= P.Get (Small, Cu) + Count
                   then
                      return False;
                   end if;
                else
-                  if P.Mem (Small, Cu) then
+                  if P.Has_Key (Small, Cu) then
                      return False;
                   end if;
                end if;
@@ -743,31 +672,33 @@ is
       -------------------------
 
       function P_Positions_Swapped
-        (M1, M2 : P.Map;
-         C1, C2 : Cursor) return Boolean
+        (Left  : P.Map;
+         Right : P.Map;
+         X, Y  : Cursor) return Boolean
       is
       begin
-         if not P.Mem (M1, C1) or not P.Mem (M1, C2)
-           or not P.Mem (M2, C1) or not P.Mem (M2, C2)
+         if not P.Has_Key (Left, X) or not P.Has_Key (Left, Y)
+           or not P.Has_Key (Right, X) or not P.Has_Key (Right, Y)
          then
             return False;
          end if;
 
-         if P.Get (M1, C1) /= P.Get (M2, C2)
-             or P.Get (M1, C2) /= P.Get (M2, C1)
+         if P.Get (Left, X) /= P.Get (Right, Y)
+             or P.Get (Left, Y) /= P.Get (Right, X)
          then
             return False;
          end if;
 
-         for C of M1 loop
-            if not P.Mem (M2, C) then
+         for C of Left loop
+            if not P.Has_Key (Right, C) then
                return False;
             end if;
          end loop;
 
-         for C of M2 loop
-            if not P.Mem (M1, C)
-              or else (C /= C1 and C /= C2 and P.Get (M1, C) /= P.Get (M2, C))
+         for C of Right loop
+            if not P.Has_Key (Left, C)
+              or else (C /= X and C /= Y
+                       and P.Get (Left, C) /= P.Get (Right, C))
             then
                return False;
             end if;
@@ -788,7 +719,7 @@ is
       is
       begin
          for Cu of Small loop
-            if not P.Mem (Big, Cu) then
+            if not P.Has_Key (Big, Cu) then
                return False;
             end if;
          end loop;
@@ -798,13 +729,13 @@ is
                Pos : constant Positive_Count_Type := P.Get (Big, Cu);
             begin
                if Pos < Cut then
-                  if not P.Mem (Small, Cu) or else Pos /= P.Get (Small, Cu)
+                  if not P.Has_Key (Small, Cu) or else Pos /= P.Get (Small, Cu)
                   then
                      return False;
                   end if;
                elsif Pos >= Cut + Count then
                   return False;
-               elsif P.Mem (Small, Cu) then
+               elsif P.Has_Key (Small, Cu) then
                   return False;
                end if;
             end;
@@ -907,18 +838,18 @@ is
       -- M_Elements_Sorted --
       -----------------------
 
-      function M_Elements_Sorted (S : M.Sequence) return Boolean is
+      function M_Elements_Sorted (Container : M.Sequence) return Boolean is
       begin
-         if M.Length (S) = 0 then
+         if M.Length (Container) = 0 then
             return True;
          end if;
 
          declare
-            E1 : Element_Type := Element (S, 1);
+            E1 : Element_Type := Element (Container, 1);
          begin
-            for I in 2 .. M.Length (S) loop
+            for I in 2 .. M.Length (Container) loop
                declare
-                  E2 : constant Element_Type := Element (S, I);
+                  E2 : constant Element_Type := Element (Container, I);
                begin
                   if E2 < E1 then
                      return False;

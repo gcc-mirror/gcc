@@ -54,7 +54,7 @@ package body Exp_SPARK is
    --  System.Storage_Elements.To_Address
 
    procedure Expand_SPARK_N_Object_Declaration (N : Node_Id);
-   --  Perform object declaration-specific expansion
+   --  Perform object-declaration-specific expansion
 
    procedure Expand_SPARK_N_Object_Renaming_Declaration (N : Node_Id);
    --  Perform name evaluation for a renamed object
@@ -86,7 +86,7 @@ package body Exp_SPARK is
             Qualify_Entity_Names (N);
 
          --  Replace occurrences of System'To_Address by calls to
-         --  System.Storage_Elements.To_Address
+         --  System.Storage_Elements.To_Address.
 
          when N_Attribute_Reference =>
             Expand_SPARK_N_Attribute_Reference (N);
