@@ -1,3 +1,15 @@
+2017-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/77728
+	* config/aarch64/aarch64.c (struct aarch64_fn_arg_alignment): Remove.
+	(aarch64_function_arg_alignment): Return unsigned int again, but still
+	ignore TYPE_FIELDS chain decls other than FIELD_DECLs.
+	(aarch64_layout_arg): Adjust aarch64_function_arg_alignment caller.
+	Don't emit -Wpsabi note.
+	(aarch64_function_arg_boundary): Likewise.
+	(aarch64_gimplify_va_arg_expr): Adjust aarch64_function_arg_alignment
+	caller.
+
 2017-04-26  Nathan Sidwell  <nathan@acm.org>
 
 	* tree.h (crc32_unsigned_n): Declare.

@@ -1,3 +1,8 @@
+2017-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/77728
+	* g++.dg/abi/pr77728-2.C: Don't expect -Wpsabi notes.
+
 2017-04-26  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* g++.dg/diagnostic/nested-name-1.C: New test.
