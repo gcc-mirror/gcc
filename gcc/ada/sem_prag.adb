@@ -3427,12 +3427,13 @@ package body Sem_Prag is
 
    procedure Analyze_Pragma (N : Node_Id) is
       Loc     : constant Source_Ptr := Sloc (N);
-      Prag_Id : Pragma_Id;
 
       Pname : Name_Id := Pragma_Name (N);
       --  Name of the source pragma, or name of the corresponding aspect for
       --  pragmas which originate in a source aspect. In the latter case, the
       --  name may be different from the pragma name.
+
+      Prag_Id : constant Pragma_Id := Get_Pragma_Id (Pname);
 
       Pragma_Exit : exception;
       --  This exception is used to exit pragma processing completely. It
@@ -10529,9 +10530,13 @@ package body Sem_Prag is
 
       Check_Restriction_No_Use_Of_Pragma (N);
 
-      --  Ignore pragma if Ignore_Pragma applies
+      --  Ignore pragma if Ignore_Pragma applies. Also ignore pragma
+      --  Default_Scalar_Storage_Order if the -gnatI switch was given.
 
-      if Should_Ignore_Pragma_Sem (N) then
+      if Should_Ignore_Pragma_Sem (N)
+        or else (Prag_Id = Pragma_Default_Scalar_Storage_Order
+                   and then Ignore_Rep_Clauses)
+      then
          return;
       end if;
 
@@ -10557,7 +10562,6 @@ package body Sem_Prag is
 
       --  Here to start processing for recognized pragma
 
-      Prag_Id := Get_Pragma_Id (Pname);
       Pname   := Original_Aspect_Pragma_Name (N);
 
       --  Capture setting of Opt.Uneval_Old

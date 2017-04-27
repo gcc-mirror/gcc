@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -272,10 +272,7 @@ package body Einfo is
 
    --    Validated_Object                Node36
 
-   --    Class_Wide_Preconds             List38
-
-   --    Class_Wide_Postconds            List39
-
+   --    Class_Wide_Clone                Node38
    --    SPARK_Pragma                    Node40
 
    --    Original_Protected_Subprogram   Node41
@@ -621,7 +618,7 @@ package body Einfo is
 
    --    Has_Private_Extension           Flag300
    --    Ignore_SPARK_Mode_Pragmas       Flag301
-   --    (unused)                        Flag302
+   --    Is_Class_Wide_Clone             Flag302
    --    (unused)                        Flag303
    --    (unused)                        Flag304
    --    (unused)                        Flag305
@@ -873,17 +870,11 @@ package body Einfo is
       return Flag31 (Id);
    end Checks_May_Be_Suppressed;
 
-   function Class_Wide_Postconds (Id : E) return S is
+   function Class_Wide_Clone (Id : E) return E is
    begin
       pragma Assert (Is_Subprogram (Id));
-      return List39 (Id);
-   end Class_Wide_Postconds;
-
-   function Class_Wide_Preconds (Id : E) return S is
-   begin
-      pragma Assert (Is_Subprogram (Id));
-      return List38 (Id);
-   end Class_Wide_Preconds;
+      return Node38 (Id);
+   end Class_Wide_Clone;
 
    function Class_Wide_Type (Id : E) return E is
    begin
@@ -2140,6 +2131,11 @@ package body Einfo is
    begin
       return Flag73 (Id);
    end Is_Child_Unit;
+
+   function Is_Class_Wide_Clone (Id : E) return B is
+   begin
+      return Flag302 (Id);
+   end Is_Class_Wide_Clone;
 
    function Is_Class_Wide_Equivalent_Type (Id : E) return B is
    begin
@@ -3958,17 +3954,11 @@ package body Einfo is
       Set_Flag31 (Id, V);
    end Set_Checks_May_Be_Suppressed;
 
-   procedure Set_Class_Wide_Preconds (Id : E; V : S) is
+   procedure Set_Class_Wide_Clone (Id : E; V : E) is
    begin
       pragma Assert (Is_Subprogram (Id));
-      Set_List38 (Id, V);
-   end Set_Class_Wide_Preconds;
-
-   procedure Set_Class_Wide_Postconds (Id : E; V : S) is
-   begin
-      pragma Assert (Is_Subprogram (Id));
-      Set_List39 (Id, V);
-   end Set_Class_Wide_Postconds;
+      Set_Node38 (Id, V);
+   end Set_Class_Wide_Clone;
 
    procedure Set_Class_Wide_Type (Id : E; V : E) is
    begin
@@ -5265,6 +5255,11 @@ package body Einfo is
    begin
       Set_Flag73 (Id, V);
    end Set_Is_Child_Unit;
+
+   procedure Set_Is_Class_Wide_Clone (Id : E; V : B := True) is
+   begin
+      Set_Flag302 (Id, V);
+   end Set_Is_Class_Wide_Clone;
 
    procedure Set_Is_Class_Wide_Equivalent_Type (Id : E; V : B := True) is
    begin
@@ -10982,11 +10977,8 @@ package body Einfo is
    procedure Write_Field38_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Function
-            | E_Procedure
-         =>
-            Write_Str ("Class_Wide_Preconditions");
-
+         when E_Function | E_Procedure =>
+            Write_Str ("class-wide clone");
          when others =>
             Write_Str ("Field38??");
       end case;
@@ -10999,11 +10991,6 @@ package body Einfo is
    procedure Write_Field39_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Function
-            | E_Procedure
-         =>
-            Write_Str ("Class_Wide_Postcondition");
-
          when others =>
             Write_Str ("Field39??");
       end case;

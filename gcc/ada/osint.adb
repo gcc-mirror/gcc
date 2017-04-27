@@ -1550,6 +1550,10 @@ package body Osint is
          begin
             Get_Current_Dir (Buffer'Address, Path_Len'Address);
 
+            if Path_Len = 0 then
+               raise Program_Error;
+            end if;
+
             if Buffer (Path_Len) /= Directory_Separator then
                Path_Len := Path_Len + 1;
                Buffer (Path_Len) := Directory_Separator;

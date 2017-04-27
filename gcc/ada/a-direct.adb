@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -527,6 +527,10 @@ package body Ada.Directories is
 
    begin
       Local_Get_Current_Dir (Buffer'Address, Path_Len'Address);
+
+      if Path_Len = 0 then
+         raise Use_Error with "current directory does not exist";
+      end if;
 
       --  We need to resolve links because of RM A.16(47), which requires
       --  that we not return alternative names for files.

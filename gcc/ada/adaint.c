@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -613,7 +613,16 @@ __gnat_get_current_dir (char *dir, int *length)
   WS2SC (dir, wdir, GNAT_MAX_PATH_LEN);
 
 #else
-   getcwd (dir, *length);
+   char* result = getcwd (dir, *length);
+   /* If the current directory does not exist, set length = 0
+      to indicate error. That can't happen on windows, where
+      you can't delete a directory if it is the current
+      directory of some process. */
+   if (!result)
+     {
+       *length = 0;
+       return;
+     }
 #endif
 
    *length = strlen (dir);

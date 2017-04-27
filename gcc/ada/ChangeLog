@@ -1,3 +1,65 @@
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem.adb (Analyze): Diagnose an illegal iterated component
+	association.
+	* sem_util.ads, sem_util.adb
+	(Diagnose_Iterated_Component_Association): New routine.
+
+2017-04-27  Bob Duff  <duff@adacore.com>
+
+	* adaint.c (__gnat_get_current_dir): Return 0 in length if
+	getcwd fails.
+	* a-direct.adb, g-dirope.adb, osint.adb, s-os_lib.adb: Raise
+	exception if getcwd failed.
+
+2017-04-27  Yannick Moy  <moy@adacore.com>
+
+	* exp_dbug.adb, exp_dbug.ads (Get_External_Name): Prefix ghost
+	entities with special prefix.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* debug.adb Change the documentation of switch -gnatd.s.
+	* exp_ch7.adb (Make_Transient_Block): Transient blocks do not need
+	to manage the secondary stack when an enclosing scope already
+	performs this functionality (aka relaxed management). Switch
+	-gnatd.s may be used to force strict management in which case
+	the block will manage the secondary stack unconditionally. Add
+	a guard to stop the traversal when encountering a package or a
+	subprogram scope.
+
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Refine further the handling of
+	limited views of return types in function calls. If the function
+	that returns a limited view appears in the current unit,
+	we do not replace its type by the non-limited view because
+	this transformation is performed int the back-end. However,
+	the type of the call itself must be the non-limited view, to
+	prevent spurious resolution errors.
+
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo,ads, einfo.adb (Class_Wide_Preconds, Class_Wide_Postconds):
+	Removed, proposed implementation using generics for class-wide
+	preconditions proved impractical.
+	(Class_Wide_Clone): New attribute of subprogram. Designates
+	subprogram created for primitive operations with class-wide
+	pre/postconditions that contain calls to other primitives. The
+	clone holds the body of the original primitive, but the
+	pre/postonditions do not apply to it. The original body is
+	rewritten as a wrapper for a call to the clone.
+	(Is_Class_Wide_Clone): New flag to identify a Class_Wide_Clone. If
+	the flag is set, no code for the corresponding pre/postconditions
+	is inserted into its body.
+
+2017-04-27  Bob Duff  <duff@adacore.com>
+
+	* exp_prag.adb, par-prag.adb, sem_ch13.adb: Ignore
+	Scalar_Storage_Order if -gnatI is given.
+	* sem_prag.adb (Analyze_Pragma): Ignore
+	Default_Scalar_Storage_Order if -gnatI is given.
+
 2017-04-27  Claire Dross  <dross@adacore.com>
 
 	* a-cofuba.ads (Add): Take as an additional input parameter

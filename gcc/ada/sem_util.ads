@@ -545,6 +545,10 @@ package Sem_Util is
    --  these names is supposed to be a selected component name, an expanded
    --  name, a defining program unit name or an identifier.
 
+   procedure Diagnose_Iterated_Component_Association (N : Node_Id);
+   --  Emit an error if iterated component association N is actually an illegal
+   --  quantified expression lacking a quantifier.
+
    function Dynamic_Accessibility_Level (Expr : Node_Id) return Node_Id;
    --  Expr should be an expression of an access type. Builds an integer
    --  literal except in cases involving anonymous access types where

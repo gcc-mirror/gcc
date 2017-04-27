@@ -292,9 +292,13 @@ begin
       return Pragma_Node;
    end if;
 
-   --  Ignore pragma previously flagged by Ignore_Pragma
+   --  Ignore pragma if Ignore_Pragma applies. Also ignore pragma
+   --  Default_Scalar_Storage_Order if the -gnatI switch was given.
 
-   if Should_Ignore_Pragma_Par (Prag_Name) then
+   if Should_Ignore_Pragma_Par (Prag_Name)
+     or else (Prag_Id = Pragma_Default_Scalar_Storage_Order
+                and then Ignore_Rep_Clauses)
+   then
       return Pragma_Node;
    end if;
 
