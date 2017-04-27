@@ -1116,9 +1116,15 @@ package body Exp_Util is
 
                --  If the entity is an overridden primitive and we are not in
                --  GNATprove mode, we must build a wrapper for the current
-               --  inherited operation.
+               --  inherited operation. If the reference is the prefix of an
+               --  attribute such as 'Result (or others ???) there is no need
+               --  for a wrapper: the condition is just  rewritten in terms of
+               --  the inherited subprogram.
 
-               if Is_Subprogram (New_E) and then not GNATprove_Mode then
+               if Is_Subprogram (New_E)
+                  and then Nkind (Parent (N)) /= N_Attribute_Reference
+                    and then not GNATprove_Mode
+               then
                   Needs_Wrapper := True;
                end if;
             end if;

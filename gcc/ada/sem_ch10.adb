@@ -648,9 +648,7 @@ package body Sem_Ch10 is
             Circularity : Boolean := True;
 
          begin
-            if Is_Predefined_File_Name
-                 (Unit_File_Name (Get_Source_Unit (Unit (N))))
-            then
+            if In_Predefined_Unit (N) then
                Circularity := False;
 
             else
@@ -919,13 +917,9 @@ package body Sem_Ch10 is
 
       --  Register predefined units in Rtsfind
 
-      declare
-         Unum : constant Unit_Number_Type := Get_Source_Unit (Sloc (N));
-      begin
-         if Is_Predefined_File_Name (Unit_File_Name (Unum)) then
-            Set_RTU_Loaded (Unit_Node);
-         end if;
-      end;
+      if In_Predefined_Unit (N) then
+         Set_RTU_Loaded (Unit_Node);
+      end if;
 
       --  Treat compilation unit pragmas that appear after the library unit
 
@@ -1230,7 +1224,7 @@ package body Sem_Ch10 is
 
                 --  No checks needed for predefined files
 
-                or else Is_Predefined_File_Name (Unit_File_Name (Unum))
+                or else Is_Predefined_Unit (Unum)
 
                 --  No checks required if no separate spec
 
@@ -2524,18 +2518,10 @@ package body Sem_Ch10 is
       --  himself, but that's a marginal case, and fixing it is hard ???
 
       if Restriction_Check_Required (No_Obsolescent_Features) then
-         declare
-            F : constant File_Name_Type :=
-                  Unit_File_Name (Get_Source_Unit (U));
-         begin
-            if Is_Predefined_File_Name (F, Renamings_Included => True)
-                 and then not
-               Is_Predefined_File_Name (F, Renamings_Included => False)
-            then
-               Check_Restriction (No_Obsolescent_Features, N);
-               Restriction_Violation := True;
-            end if;
-         end;
+         if In_Predefined_Renaming (U) then
+            Check_Restriction (No_Obsolescent_Features, N);
+            Restriction_Violation := True;
+         end if;
       end if;
 
       --  Check No_Implementation_Units violation
@@ -2566,7 +2552,7 @@ package body Sem_Ch10 is
          --  clauses into regular with clauses.
 
          if Sloc (U) /= No_Location then
-            if Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (U)))
+            if In_Predefined_Unit (U)
 
               --  In ASIS mode the rtsfind mechanism plays no role, and
               --  we need to maintain the original tree structure, so
@@ -2598,7 +2584,7 @@ package body Sem_Ch10 is
 
       Semantics (Library_Unit (N));
 
-      Intunit := Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit));
+      Intunit := Is_Internal_Unit (Current_Sem_Unit);
 
       if Sloc (U) /= No_Location then
 
@@ -3537,7 +3523,7 @@ package body Sem_Ch10 is
                   --  Exclude license check if withed unit is an internal unit.
                   --  This situation arises e.g. with the GPL version of GNAT.
 
-                  if Is_Internal_File_Name (Unit_File_Name (Withu)) then
+                  if Is_Internal_Unit (Withu) then
                      null;
 
                      --  Otherwise check various cases
@@ -5276,7 +5262,7 @@ package body Sem_Ch10 is
       --  skipped for dummy units (for missing packages).
 
       if Sloc (Uname) /= No_Location
-        and then (not Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit))
+        and then (not Is_Internal_Unit (Current_Sem_Unit)
                    or else Current_Sem_Unit = Main_Unit)
       then
          Check_Restricted_Unit

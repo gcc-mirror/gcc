@@ -500,26 +500,29 @@ procedure Gnat1drv is
          --  Detect that the runtime library support for floating-point numbers
          --  may not be compatible with SPARK analysis of IEEE-754 floats.
 
-         if Denorm_On_Target = False then
-            Write_Line
-              ("warning: Run-time library may be configured incorrectly");
-            Write_Line
-              ("warning: "
-               & "(SPARK analysis requires support for float subnormals)");
+         declare
+            procedure SPARK_Library_Warning (Kind : String);
+            --  Issue a warning in GNATprove mode if the run-time library does
+            --  not fully support IEEE-754 floating-point semantics.
 
-         elsif Machine_Rounds_On_Target = False then
-            Write_Line
-              ("warning: Run-time library may be configured incorrectly");
-            Write_Line
-              ("warning: "
-               & "(SPARK analysis requires support for float rounding)");
+            procedure SPARK_Library_Warning (Kind : String) is
+            begin
+               Write_Line
+                 ("warning: run-time library may be configured incorrectly");
+               Write_Line
+                 ("warning: (SPARK analysis requires support for " & Kind
+                  & ')');
+            end SPARK_Library_Warning;
 
-         elsif Signed_Zeros_On_Target = False then
-            Write_Line
-              ("warning: Run-time library may be configured incorrectly");
-            Write_Line
-              ("warning: (SPARK analysis requires support for signed zeros)");
-         end if;
+         begin
+            if Denorm_On_Target = False then
+               SPARK_Library_Warning ("float subnormals");
+            elsif Machine_Rounds_On_Target = False then
+               SPARK_Library_Warning ("float rounding");
+            elsif Signed_Zeros_On_Target = False then
+               SPARK_Library_Warning ("signed zeros");
+            end if;
+         end;
       end if;
 
       --  Set Configurable_Run_Time mode if system.ads flag set or if the

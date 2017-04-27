@@ -35,7 +35,9 @@ private with Ada.Containers.Functional_Base;
 generic
    type Key_Type (<>) is private;
    type Element_Type (<>)  is private;
-   with function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
+   with function Equivalent_Keys
+     (Left  : Key_Type;
+      Right : Key_Type) return Boolean is "=";
    Enable_Handling_Of_Equivalence : Boolean := True;
    --  This constant should only be set to False when no particular handling
    --  of equivalence over keys is needed, that is, Equivalent_Keys defines a
@@ -53,8 +55,8 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
    --  "For in" quantification over maps should not be used.
    --  "For of" quantification over maps iterates over keys.
    --  Note that, for proof, "for of" quantification is understood modulo
-   --  equivalence (quantification includes keys equivalent to keys of the
-   --  map).
+   --  equivalence (the range of quantification comprises all the keys that are
+   --  equivalent to any key of the map).
 
    -----------------------
    --  Basic operations --
@@ -89,8 +91,8 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
 
           Get'Result = W_Get (Container, Witness (Container, Key))
           and (for all K of Container =>
-                 (if Equivalent_Keys (K, Key) then
-                    Witness (Container, Key) = Witness (Container, K))));
+                 (Equivalent_Keys (K, Key) =
+                    (Witness (Container, Key) = Witness (Container, K)))));
 
    function Length (Container : Map) return Count_Type with
      Global => null;

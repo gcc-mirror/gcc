@@ -29,7 +29,6 @@ with Debug_A;   use Debug_A;
 with Elists;    use Elists;
 with Exp_SPARK; use Exp_SPARK;
 with Expander;  use Expander;
-with Fname;     use Fname;
 with Ghost;     use Ghost;
 with Lib;       use Lib;
 with Lib.Load;  use Lib.Load;
@@ -1425,8 +1424,8 @@ package body Sem is
       --  Sequential_IO) as this would prevent pragma Extend_System from being
       --  taken into account, for example when Text_IO is renaming DEC.Text_IO.
 
-      if Is_Predefined_File_Name
-           (Unit_File_Name (Current_Sem_Unit), Renamings_Included => False)
+      if Is_Predefined_Unit (Current_Sem_Unit)
+        and then not Is_Predefined_Renaming (Current_Sem_Unit)
       then
          GNAT_Mode := True;
       end if;
@@ -1474,7 +1473,7 @@ package body Sem is
 
       Save_Opt_Config_Switches (Save_Config_Switches);
       Set_Opt_Config_Switches
-        (Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit)),
+        (Is_Internal_Unit (Current_Sem_Unit),
          Is_Main_Unit_Or_Main_Unit_Spec);
 
       --  Save current non-partition-wide restrictions

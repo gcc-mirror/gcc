@@ -30,7 +30,6 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Util; use Exp_Util;
-with Fname;    use Fname;
 with Itypes;   use Itypes;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
@@ -3483,9 +3482,7 @@ package body Sem_Ch4 is
                  and then
                   (Etype (Actual) /= Universal_Integer
                     or else not Is_Descendant_Of_Address (Etype (Formal))
-                    or else
-                      Is_Predefined_File_Name
-                        (Unit_File_Name (Get_Source_Unit (N))))
+                    or else In_Predefined_Unit (N))
                then
                   Next_Actual (Actual);
                   Next_Formal (Formal);
@@ -7351,8 +7348,7 @@ package body Sem_Ch4 is
                --  variants of System, and it must be removed as well.
 
                elsif Ada_Version >= Ada_2005
-                 or else Is_Predefined_File_Name
-                           (Unit_File_Name (Get_Source_Unit (It.Nam)))
+                 or else In_Predefined_Unit (It.Nam)
                then
                   Remove_Interp (I);
                   exit;

@@ -13482,9 +13482,7 @@ package body Sem_Util is
                   begin
                      if Present (Init)
                        and then Comes_From_Source (Init)
-                       and then not
-                         Is_Predefined_File_Name
-                           (File_Name (Get_Source_File_Index (Sloc (Init))))
+                       and then not In_Predefined_Unit (Init)
                      then
                         return True;
 
@@ -13771,8 +13769,7 @@ package body Sem_Util is
          return
            Nam_In (Chars (Iter_Typ), Name_Forward_Iterator,
                                      Name_Reversible_Iterator)
-             and then Is_Predefined_File_Name
-                     (Unit_File_Name (Get_Source_Unit (Root_Type (Iter_Typ))));
+             and then In_Predefined_Unit (Root_Type (Iter_Typ));
       end Denotes_Iterator;
 
       --  Local variables
@@ -15069,8 +15066,7 @@ package body Sem_Util is
    begin
       if Is_Class_Wide_Type (Typ)
         and then Chars (Root_Type (Typ)) = Name_Reversible_Iterator
-        and then Is_Predefined_File_Name
-                   (Unit_File_Name (Get_Source_Unit (Root_Type (Typ))))
+        and then In_Predefined_Unit (Root_Type (Typ))
       then
          return True;
 
@@ -15084,9 +15080,7 @@ package body Sem_Util is
          while Present (Iface_Elmt) loop
             Iface := Node (Iface_Elmt);
             if Chars (Iface) = Name_Reversible_Iterator
-              and then
-                Is_Predefined_File_Name
-                  (Unit_File_Name (Get_Source_Unit (Iface)))
+              and then In_Predefined_Unit (Iface)
             then
                return True;
             end if;
@@ -15597,8 +15591,7 @@ package body Sem_Util is
                return
                  Chars (Par) = Name_Unchecked_Conversion
                    and then Is_Intrinsic_Subprogram (Par)
-                   and then Is_Predefined_File_Name
-                              (Unit_File_Name (Get_Source_Unit (Par)));
+                   and then In_Predefined_Unit (Par);
             else
                return
                  Present (Alias (Id))
@@ -20982,10 +20975,7 @@ package body Sem_Util is
       then
          return;
 
-      elsif In_Inlined_Body
-        and then Is_Predefined_File_Name
-           (Unit_File_Name (Get_Source_Unit (Sloc (T))))
-      then
+      elsif In_Inlined_Body and then In_Predefined_Unit (T) then
          Set_Needs_Debug_Info (T, False);
       end if;
 

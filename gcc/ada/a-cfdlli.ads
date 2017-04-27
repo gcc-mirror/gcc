@@ -1408,8 +1408,8 @@ is
        Has_Element (Container, Position) or else Position = No_Element,
      Contract_Cases =>
 
-       --  If Item is not is not contained in Container after Position, Find
-       --  returns No_Element.
+       --  If Item is not contained in Container after Position, Find returns
+       --  No_Element.
 
        (not M.Contains
               (Container => Model (Container),
@@ -1423,7 +1423,7 @@ is
         =>
           Find'Result = No_Element,
 
-        --  Otherwise, Find returns a valid cusror in Container
+        --  Otherwise, Find returns a valid cursor in Container
 
         others =>
           P.Has_Key (Positions (Container), Find'Result)
@@ -1463,8 +1463,8 @@ is
        Has_Element (Container, Position) or else Position = No_Element,
      Contract_Cases =>
 
-       --  If Item is not is not contained in Container before Position, Find
-       --  returns No_Element.
+       --  If Item is not contained in Container before Position, Find returns
+       --  No_Element.
 
        (not M.Contains
               (Container => Model (Container),
@@ -1478,7 +1478,7 @@ is
         =>
           Reverse_Find'Result = No_Element,
 
-        --  Otherwise, Find returns a valid cusror in Container
+        --  Otherwise, Find returns a valid cursor in Container
 
         others =>
           P.Has_Key (Positions (Container), Reverse_Find'Result)
@@ -1533,16 +1533,21 @@ is
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
 
    package Generic_Sorting with SPARK_Mode is
-      function M_Elements_Sorted (Container : M.Sequence) return Boolean with
-        Ghost,
-        Global => null,
-        Post   =>
-          M_Elements_Sorted'Result =
-            (for all I in 1 .. M.Length (Container) =>
-              (for all J in I .. M.Length (Container) =>
-                 Element (Container, I) = Element (Container, J)
-                   or Element (Container, I) < Element (Container, J)));
-      pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Sorted);
+
+      package Formal_Model with Ghost is
+         function M_Elements_Sorted (Container : M.Sequence) return Boolean
+         with
+           Global => null,
+           Post   =>
+             M_Elements_Sorted'Result =
+               (for all I in 1 .. M.Length (Container) =>
+                  (for all J in I .. M.Length (Container) =>
+                       Element (Container, I) = Element (Container, J)
+                         or Element (Container, I) < Element (Container, J)));
+         pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Sorted);
+
+      end Formal_Model;
+      use Formal_Model;
 
       function Is_Sorted (Container : List) return Boolean with
         Global => null,

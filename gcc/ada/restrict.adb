@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1763,7 +1763,7 @@ package body Restrict is
       --  Otherwise suppress message if internal file
 
       else
-         return Is_Internal_File_Name (Unit_File_Name (Get_Source_Unit (N)));
+         return In_Internal_Unit (N);
       end if;
    end Suppress_Restriction_Message;
 

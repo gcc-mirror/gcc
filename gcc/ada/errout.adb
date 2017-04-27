@@ -35,7 +35,6 @@ with Csets;    use Csets;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Erroutc;  use Erroutc;
-with Fname;    use Fname;
 with Gnatvsn;  use Gnatvsn;
 with Lib;      use Lib;
 with Opt;      use Opt;
@@ -2708,9 +2707,7 @@ package body Errout is
       --  Types in other language defined units are displayed as
       --  "package-name.type-name"
 
-      elsif
-        Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (Ent)))
-      then
+      elsif Is_Predefined_Unit (Get_Source_Unit (Ent)) then
          Get_Unqualified_Decoded_Name_String
            (Unit_Name (Get_Source_Unit (Ent)));
          Name_Len := Name_Len - 2;
@@ -2748,8 +2745,7 @@ package body Errout is
 
       if Sloc (Error_Msg_Node_1) > Standard_Location
         and then
-          not Is_Predefined_File_Name
-                (Unit_File_Name (Get_Source_Unit (Error_Msg_Node_1)))
+          not Is_Predefined_Unit (Get_Source_Unit (Error_Msg_Node_1))
       then
          Get_Name_String (Unit_File_Name (Get_Source_Unit (Error_Msg_Node_1)));
          Set_Msg_Str (" defined");

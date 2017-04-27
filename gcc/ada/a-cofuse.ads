@@ -36,7 +36,7 @@ generic
    type Element_Type (<>) is private;
    with function Equivalent_Elements
      (Left  : Element_Type;
-      Right : Element_Type) return Boolean;
+      Right : Element_Type) return Boolean is "=";
    Enable_Handling_Of_Equivalence : Boolean := True;
    --  This constant should only be set to False when no particular handling
    --  of equivalence over elements is needed, that is, Equivalent_Elements
@@ -45,7 +45,7 @@ generic
 package Ada.Containers.Functional_Sets with SPARK_Mode is
 
    type Set is private with
-     Default_Initial_Condition => Is_Empty (Set) and Length (Set) = 0,
+     Default_Initial_Condition => Is_Empty (Set),
      Iterable                  => (First       => Iter_First,
                                    Next        => Iter_Next,
                                    Has_Element => Iter_Has_Element,
@@ -54,8 +54,8 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
    --  "For in" quantification over sets should not be used.
    --  "For of" quantification over sets iterates over elements.
    --  Note that, for proof, "for of" quantification is understood modulo
-   --  equivalence (quantification includes elements equivalent to elements of
-   --  the map).
+   --  equivalence (the range of quantification comprises all the elements that
+   --  are equivalent to any element of the set).
 
    -----------------------
    --  Basic operations --
@@ -89,23 +89,23 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
    --  Set inclusion
 
      Global => null,
-     Post   => "<="'Result = (for all Item of Left => Contains (Right, Item));
+     Post   => "<="'Result = (for all Item of Left => Contains (Right, Item))
+       and (if "<="'Result then Length (Left) <= Length (Right));
 
    function "=" (Left : Set; Right : Set) return Boolean with
    --  Extensional equality over sets
 
      Global => null,
-     Post   =>
-       "="'Result =
-         (for all Item of Left => Contains (Right, Item))
-           and (for all Item of Right => Contains (Left, Item));
+     Post   => "="'Result = (Left <= Right and Right <= Left);
 
    pragma Warnings (Off, "unused variable ""Item""");
    function Is_Empty (Container : Set) return Boolean with
    --  A set is empty if it contains no element
 
      Global => null,
-     Post   => Is_Empty'Result = (for all Item of Container => False);
+     Post   =>
+       Is_Empty'Result = (for all Item of Container => False)
+         and Is_Empty'Result = (Length (Container) = 0);
    pragma Warnings (On, "unused variable ""Item""");
 
    function Included_Except
@@ -149,15 +149,45 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
          (for all Item of Container =>
            Contains (Left, Item) or Contains (Right, Item));
 
+   function Is_Singleton
+     (Container : Set;
+      New_Item  : Element_Type) return Boolean
+   with
+   --  Return True Container only contains New_Item
+
+     Global => null,
+     Post   =>
+       Is_Singleton'Result =
+         (for all Item of Container => Equivalent_Elements (Item, New_Item));
+
+   function Not_In_Both
+     (Container : Set;
+      Left      : Set;
+      Right     : Set) return Boolean
+   --  Return True if there are no elements in Container that are in Left and
+   --  Right.
+
+   with
+     Global => null,
+     Post   =>
+       Not_In_Both'Result =
+         (for all Item of Container =>
+            not Contains (Left, Item) or not Contains (Right, Item));
+
+   function No_Overlap (Left : Set; Right : Set) return Boolean with
+   --  Return True if there are no equivalent elements in Left and Right
+
+     Global => null,
+     Post   =>
+       No_Overlap'Result =
+         (for all Item of Left => not Contains (Right, Item));
+
    function Num_Overlaps (Left : Set; Right : Set) return Count_Type with
    --  Number of elements that are both in Left and Right
 
      Global => null,
      Post   =>
-       Num_Overlaps'Result <= Length (Left)
-         and Num_Overlaps'Result <= Length (Right)
-         and (if Num_Overlaps'Result = 0 then
-               (for all Item of Left => not Contains (Right, Item)));
+       Num_Overlaps'Result = Length (Intersection (Left, Right));
 
    ----------------------------
    -- Construction Functions --
@@ -195,8 +225,7 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
 
      Global => null,
      Post   =>
-       Length (Intersection'Result) = Num_Overlaps (Left, Right)
-         and Intersection'Result <= Left
+       Intersection'Result <= Left
          and Intersection'Result <= Right
          and Includes_Intersection (Intersection'Result, Left, Right);
 
@@ -250,9 +279,13 @@ private
 
    subtype Positive_Count_Type is Count_Type range 1 .. Count_Type'Last;
 
+   function "="
+     (Left  : Element_Type;
+      Right : Element_Type) return Boolean renames Equivalent_Elements;
+
    package Containers is new Ada.Containers.Functional_Base
-     (Element_Type        => Element_Type,
-      Index_Type          => Positive_Count_Type);
+     (Element_Type => Element_Type,
+      Index_Type   => Positive_Count_Type);
 
    type Set is record
       Content : Containers.Container;

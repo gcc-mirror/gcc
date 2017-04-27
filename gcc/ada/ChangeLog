@@ -1,3 +1,73 @@
+2017-04-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Warn_On_Questionable_Layout): Declare.
+	* warnsw.ads (Warn_On_Record_Holes): Move down.
+	(Warn_On_Questionable_Layout): New boolean variable.
+	(Warning_Record): Add Warn_On_Questionable_Layout field.
+	* warnsw.adb (All_Warnings): Set Warn_On_Questionable_Layout.
+	(Restore_Warnings): Likewise.
+	(Save_Warnings): Likewise.
+	(Set_Dot_Warning_Switch): Handle 'q' and 'Q' letters.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Adjust call to
+	components_to_record.
+	(gnu_field_to_gnat): New function.
+	(warn_on_field_placement): Likewise.
+	(components_to_record): Add GNAT_RECORD_TYPE and remove REORDER
+	parameters.  Rename local variables and adjust recursive call.
+	Rework final scan of the field list and implement warnings on the
+	problematic placement of specific sorts of fields.
+
+2017-04-27  Bob Duff  <duff@adacore.com>
+
+	* errout.adb, exp_aggr.adb, exp_attr.adb, exp_code.adb, fname.adb,
+	* fname.ads, freeze.adb, inline.adb, lib.adb, lib.ads, lib-list.adb,
+	* lib-load.adb, lib-writ.adb, par.adb, restrict.adb, rtsfind.adb,
+	* sem.adb, sem_cat.adb, sem_ch10.adb, sem_ch12.adb, sem_ch3.adb,
+	* sem_ch4.adb, sem_ch6.adb, sem_ch8.adb, sem_ch9.adb, sem_elab.adb,
+	* sem_intr.adb, sem_res.adb, sem_util.adb, sem_warn.adb, sprint.adb:
+	For efficiency, cache results of Is_Internal_File_Name and
+	Is_Predefined_File_Name in the Units table. This avoids a lot
+	of repeated text processing.
+
+2017-04-27  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb (Sort_Sections): remove useless test.
+
+2017-04-27  Claire Dross  <dross@adacore.com>
+
+	* a-cfhase.adb, a-cfhase.ads (=): Generic parameter removed to
+	allow the use of regular equality over elements in contracts.
+	(Formal_Model): Ghost package containing model functions that are
+	used in subprogram contracts.
+	(Current_To_Last): Removed, model functions should be used instead.
+	(First_To_Previous): Removed, model functions should be used instead.
+	(Strict_Equal): Removed, model functions should be used instead.
+	(No_Overlap): Removed, model functions should be used instead.
+	(Equivalent_Keys): Functions over cursors are removed. They were
+	awkward with explicit container parameters.
+	* a-cforse.adb, a-cforse.ads (=): Generic parameter removed to
+	allow the use of regular equality over elements in contracts.
+	(Formal_Model): Ghost package containing model functions that
+	are used in subprogram contracts.
+	(Current_To_Last): Removed, model functions should be used instead.
+	(First_To_Previous): Removed, model functions should be used instead.
+	(Strict_Equal): Removed, model functions should be used instead.
+	(No_Overlap): Removed, model functions should be used instead.
+
+2017-04-27  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb: Code cleanup.
+
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Replace_Entity): The prefix of a 'Result
+	attribute reference in a post- condition is the subprogram to
+	which the condition applies. If the condition is inherited
+	by a type extension, the prefix becomes a reference to the
+	inherited operation, but there is no need to create a wrapper
+	for this operation, because 'Result is expanded independently
+	when elaborating the postconditions.
+
 2017-04-27  Bob Duff  <duff@adacore.com>
 
 	* sinput.adb: Minor code cleanup.

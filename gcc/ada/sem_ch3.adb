@@ -38,7 +38,6 @@ with Exp_Disp;  use Exp_Disp;
 with Exp_Dist;  use Exp_Dist;
 with Exp_Tss;   use Exp_Tss;
 with Exp_Util;  use Exp_Util;
-with Fname;     use Fname;
 with Freeze;    use Freeze;
 with Ghost;     use Ghost;
 with Itypes;    use Itypes;
@@ -3266,7 +3265,7 @@ package body Sem_Ch3 is
 
       if Chars (Scope (Def_Id)) = Name_System
         and then Chars (Def_Id) = Name_Address
-        and then Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (N)))
+        and then In_Predefined_Unit (N)
       then
          Set_Is_Descendant_Of_Address (Def_Id);
          Set_Is_Descendant_Of_Address (Base_Type (Def_Id));

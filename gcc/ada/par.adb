@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1526,8 +1526,8 @@ begin
 
       for Ucount in Pos loop
          Set_Opt_Config_Switches
-           (Is_Internal_File_Name (File_Name (Current_Source_File)),
-            Current_Source_Unit = Main_Unit);
+           (Is_Internal_Unit (Current_Source_Unit),
+            Main_Unit => Current_Source_Unit = Main_Unit);
 
          --  Initialize scope table and other parser control variables
 

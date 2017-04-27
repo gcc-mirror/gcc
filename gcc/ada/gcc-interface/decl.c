@@ -217,8 +217,9 @@ static bool constructor_address_p (tree);
 static bool allocatable_size_p (tree, bool);
 static bool initial_value_needs_conversion (tree, tree);
 static int compare_field_bitpos (const PTR, const PTR);
-static bool components_to_record (tree, Node_Id, tree, int, bool, bool, bool,
-				  bool, bool, bool, bool, bool, tree, tree *);
+static bool components_to_record (Node_Id, Entity_Id, tree, tree, int, bool,
+				  bool, bool, bool, bool, bool, bool, tree,
+				  tree *);
 static Uint annotate_value (tree);
 static void annotate_rep (Entity_Id, tree);
 static tree build_position_list (tree, bool, tree, tree, unsigned int, tree);
@@ -3328,11 +3329,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      }
 
 	/* Add the fields into the record type and finish it up.  */
-	components_to_record (gnu_type, Component_List (record_definition),
-			      gnu_field_list, packed, definition, false,
-			      all_rep, is_unchecked_union,
-			      artificial_p, debug_info_p,
-			      false, OK_To_Reorder_Components (gnat_entity),
+	components_to_record (Component_List (record_definition), gnat_entity,
+			      gnu_field_list, gnu_type, packed, definition,
+			      false, all_rep, is_unchecked_union, artificial_p,
+			      debug_info_p, false,
 			      all_rep ? NULL_TREE : bitsize_zero_node, NULL);
 
 	/* Fill in locations of fields.  */
@@ -7463,6 +7463,71 @@ compare_field_bitpos (const PTR rt1, const PTR rt2)
   return ret ? ret : (int) (DECL_UID (field1) - DECL_UID (field2));
 }
 
+/* Reverse function from gnat_to_gnu_field: return the GNAT field present in
+   either GNAT_COMPONENT_LIST or the discriminants of GNAT_RECORD_TYPE, and
+   corresponding to the GNU tree GNU_FIELD.  */
+
+static Entity_Id
+gnu_field_to_gnat (tree gnu_field, Node_Id gnat_component_list,
+		   Entity_Id gnat_record_type)
+{
+  Entity_Id gnat_component_decl, gnat_field;
+
+  if (Present (Component_Items (gnat_component_list)))
+    for (gnat_component_decl
+	   = First_Non_Pragma (Component_Items (gnat_component_list));
+	 Present (gnat_component_decl);
+	 gnat_component_decl = Next_Non_Pragma (gnat_component_decl))
+      {
+	gnat_field = Defining_Entity (gnat_component_decl);
+	if (gnat_to_gnu_field_decl (gnat_field) == gnu_field)
+	  return gnat_field;
+      }
+
+  if (Has_Discriminants (gnat_record_type))
+    for (gnat_field = First_Stored_Discriminant (gnat_record_type);
+	 Present (gnat_field);
+	 gnat_field = Next_Stored_Discriminant (gnat_field))
+      if (gnat_to_gnu_field_decl (gnat_field) == gnu_field)
+	return gnat_field;
+
+  return Empty;
+}
+
+/* Issue a warning for the problematic placement of GNU_FIELD present in
+   either GNAT_COMPONENT_LIST or the discriminants of GNAT_RECORD_TYPE.
+   IN_VARIANT is true if GNAT_COMPONENT_LIST is the list of a variant.
+   DO_REORDER is true if fields of GNAT_RECORD_TYPE are being reordered.  */
+
+static void
+warn_on_field_placement (tree gnu_field, Node_Id gnat_component_list,
+			 Entity_Id gnat_record_type, bool in_variant,
+			 bool do_reorder)
+{
+  const char *msg1
+    = in_variant
+      ? "?variant layout may cause performance issues"
+      : "?record layout may cause performance issues";
+  const char *msg2
+    = field_has_self_size (gnu_field)
+      ? "?component & whose length depends on a discriminant"
+      : field_has_variable_size (gnu_field)
+	? "?component & whose length is not fixed"
+	: "?component & whose length is not multiple of a byte";
+  const char *msg3
+    = do_reorder
+      ? "?comes too early and was moved down"
+      : "?comes too early and ought to be moved down";
+  Entity_Id gnat_field
+    = gnu_field_to_gnat (gnu_field, gnat_component_list, gnat_record_type);
+
+  gcc_assert (Present (gnat_field));
+
+  post_error (msg1, gnat_field);
+  post_error_ne (msg2, gnat_field, gnat_field);
+  post_error (msg3, gnat_field);
+}
+
 /* Structure holding information for a given variant.  */
 typedef struct vinfo
 {
@@ -7483,14 +7548,15 @@ typedef struct vinfo
 
 } vinfo_t;
 
-/* Translate and chain the GNAT_COMPONENT_LIST to the GNU_FIELD_LIST, set the
-   result as the field list of GNU_RECORD_TYPE and finish it up.  Return true
-   if GNU_RECORD_TYPE has a rep clause which affects the layout (see below).
-   When called from gnat_to_gnu_entity during the processing of a record type
-   definition, the GCC node for the parent, if any, will be the single field
-   of GNU_RECORD_TYPE and the GCC nodes for the discriminants will be on the
-   GNU_FIELD_LIST.  The other calls to this function are recursive calls for
-   the component list of a variant and, in this case, GNU_FIELD_LIST is empty.
+/* Translate and chain GNAT_COMPONENT_LIST present in GNAT_RECORD_TYPE to
+   GNU_FIELD_LIST, set the result as the field list of GNU_RECORD_TYPE and
+   finish it up.  Return true if GNU_RECORD_TYPE has a rep clause that affects
+   the layout (see below).  When called from gnat_to_gnu_entity during the
+   processing of a record definition, the GCC node for the parent, if any,
+   will be the single field of GNU_RECORD_TYPE and the GCC nodes for the
+   discriminants will be on GNU_FIELD_LIST.  The other call to this function
+   is a recursive call for the component list of a variant and, in this case,
+   GNU_FIELD_LIST is empty.
 
    PACKED is 1 if this is for a packed record or -1 if this is for a record
    with Component_Alignment of Storage_Unit.
@@ -7514,8 +7580,6 @@ typedef struct vinfo
    MAYBE_UNUSED is true if this type may be unused in the end; this doesn't
    mean that its contents may be unused as well, only the container itself.
 
-   REORDER is true if we are permitted to reorder components of this type.
-
    FIRST_FREE_POS, if nonzero, is the first (lowest) free field position in
    the outer record type down to this variant level.  It is nonzero only if
    all the fields down to this level have a rep clause and ALL_REP is false.
@@ -7525,12 +7589,12 @@ typedef struct vinfo
    be done with such fields and the return value will be false.  */
 
 static bool
-components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
-		      tree gnu_field_list, int packed, bool definition,
-		      bool cancel_alignment, bool all_rep,
-		      bool unchecked_union, bool artificial,
-		      bool debug_info, bool maybe_unused, bool reorder,
-		      tree first_free_pos, tree *p_gnu_rep_list)
+components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
+		      tree gnu_field_list, tree gnu_record_type, int packed,
+		      bool definition, bool cancel_alignment, bool all_rep,
+		      bool unchecked_union, bool artificial, bool debug_info,
+		      bool maybe_unused, tree first_free_pos,
+		      tree *p_gnu_rep_list)
 {
   const bool needs_xv_encodings
     = debug_info && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL;
@@ -7539,24 +7603,21 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
   bool layout_with_rep = false;
   bool has_self_field = false;
   bool has_aliased_after_self_field = false;
-  Node_Id component_decl, variant_part;
+  Entity_Id gnat_component_decl, gnat_variant_part;
   tree gnu_field, gnu_next, gnu_last;
   tree gnu_variant_part = NULL_TREE;
   tree gnu_rep_list = NULL_TREE;
-  tree gnu_var_list = NULL_TREE;
-  tree gnu_self_list = NULL_TREE;
-  tree gnu_zero_list = NULL_TREE;
 
   /* For each component referenced in a component declaration create a GCC
      field and add it to the list, skipping pragmas in the GNAT list.  */
   gnu_last = tree_last (gnu_field_list);
   if (Present (Component_Items (gnat_component_list)))
-    for (component_decl
+    for (gnat_component_decl
 	   = First_Non_Pragma (Component_Items (gnat_component_list));
-	 Present (component_decl);
-	 component_decl = Next_Non_Pragma (component_decl))
+	 Present (gnat_component_decl);
+	 gnat_component_decl = Next_Non_Pragma (gnat_component_decl))
       {
-	Entity_Id gnat_field = Defining_Entity (component_decl);
+	Entity_Id gnat_field = Defining_Entity (gnat_component_decl);
 	Name_Id gnat_name = Chars (gnat_field);
 
 	/* If present, the _Parent field must have been created as the single
@@ -7603,7 +7664,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
       }
 
   /* At the end of the component list there may be a variant part.  */
-  variant_part = Variant_Part (gnat_component_list);
+  gnat_variant_part = Variant_Part (gnat_component_list);
 
   /* We create a QUAL_UNION_TYPE for the variant part since the variants are
      mutually exclusive and should go in the same memory.  To do this we need
@@ -7612,9 +7673,9 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
      lists for the variants and put them all into the QUAL_UNION_TYPE.
      If this is an Unchecked_Union, we make a UNION_TYPE instead or
      use GNU_RECORD_TYPE if there are no fields so far.  */
-  if (Present (variant_part))
+  if (Present (gnat_variant_part))
     {
-      Node_Id gnat_discr = Name (variant_part), variant;
+      Node_Id gnat_discr = Name (gnat_variant_part), variant;
       tree gnu_discr = gnat_to_gnu (gnat_discr);
       tree gnu_name = TYPE_IDENTIFIER (gnu_record_type);
       tree gnu_var_name
@@ -7676,7 +7737,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	 the container types and computing the associated properties.  However
 	 we cannot finish up the container types during this pass because we
 	 don't know where the variant part will be placed until the end.  */
-      for (variant = First_Non_Pragma (Variants (variant_part));
+      for (variant = First_Non_Pragma (Variants (gnat_variant_part));
 	   Present (variant);
 	   variant = Next_Non_Pragma (variant))
 	{
@@ -7712,12 +7773,11 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	  /* Add the fields into the record type for the variant.  Note that
 	     we aren't sure to really use it at this point, see below.  */
 	  has_rep
-	    = components_to_record (gnu_variant_type, Component_List (variant),
-				    NULL_TREE, packed, definition,
-				    !all_rep_and_size, all_rep,
-				    unchecked_union,
-				    true, needs_xv_encodings, true, reorder,
-				    this_first_free_pos,
+	    = components_to_record (Component_List (variant), gnat_record_type,
+				    NULL_TREE, gnu_variant_type, packed,
+				    definition, !all_rep_and_size, all_rep,
+				    unchecked_union, true, needs_xv_encodings,
+				    true, this_first_free_pos,
 				    all_rep || this_first_free_pos
 				    ? NULL : &gnu_rep_list);
 
@@ -7873,19 +7933,44 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	}
     }
 
-  /* Scan GNU_FIELD_LIST and see if any fields have rep clauses and, if we are
-     permitted to reorder components, self-referential sizes or variable sizes.
-     If they do, pull them out and put them onto the appropriate list.  We have
-     to do this in a separate pass since we want to handle the discriminants
-     but can't play with them until we've used them in debugging data above.
+  /* Scan GNU_FIELD_LIST and see if any fields have rep clauses.  If they do,
+     pull them out and put them onto the appropriate list.  We have to do it
+     in a separate pass since we want to handle the discriminants but can't
+     play with them until we've used them in debugging data above.
 
      Similarly, pull out the fields with zero size and no rep clause, as they
      would otherwise modify the layout and thus very likely run afoul of the
      Ada semantics, which are different from those of C here.
 
+     Finally, if there is an aliased field placed in the list after fields
+     with self-referential size, pull out the latter in the same way.
+
+     Optionally, if the reordering mechanism is enabled, pull out the fields
+     with self-referential size, variable size and fixed size not a multiple
+     of a byte, so that they don't cause the regular fields to be either at
+     self-referential/variable offset or misaligned.  Note, in the latter
+     case, that this can only happen in packed record types so the alignment
+     is effectively capped to the byte for the whole record.
+
+     Optionally, if the layout warning is enabled, keep track of the above 4
+     different kinds of fields and issue a warning if some of them would be
+     (or are being) reordered by the reordering mechanism.
+
      ??? If we reorder them, debugging information will be wrong but there is
      nothing that can be done about this at the moment.  */
-  gnu_last = NULL_TREE;
+  const bool do_reorder = OK_To_Reorder_Components (gnat_record_type);
+  const bool w_reorder
+    = Warn_On_Questionable_Layout
+      && (Convention (gnat_record_type) == Convention_Ada);
+  const bool in_variant = (p_gnu_rep_list != NULL);
+  tree gnu_zero_list = NULL_TREE;
+  tree gnu_self_list = NULL_TREE;
+  tree gnu_var_list = NULL_TREE;
+  tree gnu_bitp_list = NULL_TREE;
+  tree gnu_tmp_bitp_list = NULL_TREE;
+  unsigned int tmp_bitp_size = 0;
+  unsigned int last_reorder_field_type = -1;
+  unsigned int tmp_last_reorder_field_type = -1;
 
 #define MOVE_FROM_FIELD_LIST_TO(LIST)	\
   do {					\
@@ -7898,6 +7983,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
     (LIST) = gnu_field;			\
   } while (0)
 
+  gnu_last = NULL_TREE;
   for (gnu_field = gnu_field_list; gnu_field; gnu_field = gnu_next)
     {
       gnu_next = DECL_CHAIN (gnu_field);
@@ -7905,19 +7991,6 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
       if (DECL_FIELD_OFFSET (gnu_field))
 	{
 	  MOVE_FROM_FIELD_LIST_TO (gnu_rep_list);
-	  continue;
-	}
-
-      if ((reorder || has_aliased_after_self_field)
-	  && field_has_self_size (gnu_field))
-	{
-	  MOVE_FROM_FIELD_LIST_TO (gnu_self_list);
-	  continue;
-	}
-
-      if (reorder && field_has_variable_size (gnu_field))
-	{
-	  MOVE_FROM_FIELD_LIST_TO (gnu_var_list);
 	  continue;
 	}
 
@@ -7934,6 +8007,129 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	  continue;
 	}
 
+      if (has_aliased_after_self_field && field_has_self_size (gnu_field))
+	{
+	  MOVE_FROM_FIELD_LIST_TO (gnu_self_list);
+	  continue;
+	}
+
+      /* We don't need further processing in default mode.  */
+      if (!w_reorder && !do_reorder)
+	{
+	  gnu_last = gnu_field;
+	  continue;
+	}
+
+      if (field_has_self_size (gnu_field))
+	{
+	  if (w_reorder)
+	    {
+	      if (last_reorder_field_type < 4)
+		warn_on_field_placement (gnu_field, gnat_component_list,
+					 gnat_record_type, in_variant,
+					 do_reorder);
+	      else
+		last_reorder_field_type = 4;
+	    }
+
+	  if (do_reorder)
+	    {
+	      MOVE_FROM_FIELD_LIST_TO (gnu_self_list);
+	      continue;
+	    }
+	}
+
+      else if (field_has_variable_size (gnu_field))
+	{
+	  if (w_reorder)
+	    {
+	      if (last_reorder_field_type < 3)
+		warn_on_field_placement (gnu_field, gnat_component_list,
+					 gnat_record_type, in_variant,
+					 do_reorder);
+	      else
+		last_reorder_field_type = 3;
+	    }
+
+	  if (do_reorder)
+	    {
+	      MOVE_FROM_FIELD_LIST_TO (gnu_var_list);
+	      continue;
+	    }
+	}
+
+      else
+	{
+	  /* If the field has no size, then it cannot be bit-packed.  */
+	  const unsigned int bitp_size
+	    = DECL_SIZE (gnu_field)
+	      ? TREE_INT_CST_LOW (DECL_SIZE (gnu_field)) % BITS_PER_UNIT
+	      : 0;
+
+	  /* If the field is bit-packed, we move it to a temporary list that
+	     contains the contiguously preceding bit-packed fields, because
+	     we want to be able to put them back if the misalignment happens
+	     to cancel itself after several bit-packed fields.  */
+	  if (bitp_size != 0)
+	    {
+	      tmp_bitp_size = (tmp_bitp_size + bitp_size) % BITS_PER_UNIT;
+
+	      if (last_reorder_field_type != 2)
+		{
+		  tmp_last_reorder_field_type = last_reorder_field_type;
+		  last_reorder_field_type = 2;
+		}
+
+	      if (do_reorder)
+		{
+		  MOVE_FROM_FIELD_LIST_TO (gnu_tmp_bitp_list);
+		  continue;
+		}
+	    }
+
+	  /* No more bit-packed fields, move the existing ones to the end or
+	     put them back at their original location.  */
+	  else if (last_reorder_field_type == 2 || gnu_tmp_bitp_list)
+	    {
+	      last_reorder_field_type = 1;
+
+	      if (tmp_bitp_size != 0)
+		{
+		  if (w_reorder && tmp_last_reorder_field_type < 2)
+		    warn_on_field_placement (gnu_tmp_bitp_list
+					     ? gnu_tmp_bitp_list : gnu_last,
+					     gnat_component_list,
+					     gnat_record_type, in_variant,
+					     do_reorder);
+
+		  if (do_reorder)
+		    gnu_bitp_list = chainon (gnu_tmp_bitp_list, gnu_bitp_list);
+
+		  gnu_tmp_bitp_list = NULL_TREE;
+		  tmp_bitp_size = 0;
+		}
+	      else
+		{
+		  /* Rechain the temporary list in front of GNU_FIELD.  */
+		  tree gnu_bitp_field = gnu_field;
+		  while (gnu_tmp_bitp_list)
+		    {
+		      tree gnu_bitp_next = DECL_CHAIN (gnu_tmp_bitp_list);
+		      DECL_CHAIN (gnu_tmp_bitp_list) = gnu_bitp_field;
+		      if (gnu_last)
+			DECL_CHAIN (gnu_last) = gnu_tmp_bitp_list;
+		      else
+			gnu_field_list = gnu_tmp_bitp_list;
+		      gnu_bitp_field = gnu_tmp_bitp_list;
+		      gnu_tmp_bitp_list = gnu_bitp_next;
+		    }
+		}
+	    }
+
+	  else
+	    last_reorder_field_type = 1;
+	}
+
       gnu_last = gnu_field;
     }
 
@@ -7943,15 +8139,30 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 
   /* If permitted, we reorder the fields as follows:
 
-       1) all fixed length fields,
-       2) all fields whose length doesn't depend on discriminants,
-       3) all fields whose length depends on discriminants,
-       4) the variant part,
+      1) all (groups of) fields whose length is fixed and multiple of a byte,
+      2) the remaining fields whose length is fixed and not multiple of a byte,
+      3) the remaining fields whose length doesn't depend on discriminants,
+      4) all fields whose length depends on discriminants,
+      5) the variant part,
 
      within the record and within each variant recursively.  */
-  if (reorder)
-    gnu_field_list
-      = chainon (gnu_field_list, chainon (gnu_var_list, gnu_self_list));
+  if (w_reorder
+      && last_reorder_field_type == 2
+      && tmp_last_reorder_field_type < 2)
+    warn_on_field_placement (gnu_tmp_bitp_list
+			     ? gnu_tmp_bitp_list : gnu_field_list,
+			     gnat_component_list, gnat_record_type,
+			     in_variant, do_reorder);
+  if (do_reorder)
+    {
+      if (gnu_tmp_bitp_list)
+	gnu_bitp_list = chainon (gnu_tmp_bitp_list, gnu_bitp_list);
+
+      gnu_field_list
+	= chainon (gnu_field_list,
+		   chainon (gnu_bitp_list,
+			    chainon (gnu_var_list, gnu_self_list)));
+    }
 
   /* Otherwise, if there is an aliased field placed after a field whose length
      depends on discriminants, we put all the fields of the latter sort, last.

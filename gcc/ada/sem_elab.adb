@@ -32,7 +32,6 @@ with Errout;   use Errout;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Expander; use Expander;
-with Fname;    use Fname;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
 with Namet;    use Namet;
@@ -910,8 +909,7 @@ package body Sem_Elab is
 
       --  Check cases of internal units
 
-      Callee_Unit_Internal :=
-        Is_Internal_File_Name (Unit_File_Name (Get_Source_Unit (E_Scope)));
+      Callee_Unit_Internal := In_Internal_Unit (E_Scope);
 
       --  Do not give a warning if the with'ed unit is internal and this is
       --  the generic instantiation case (this saves a lot of hassle dealing
@@ -924,8 +922,7 @@ package body Sem_Elab is
       if C_Scope = Standard_Standard then
          Caller_Unit_Internal := False;
       else
-         Caller_Unit_Internal :=
-           Is_Internal_File_Name (Unit_File_Name (Get_Source_Unit (C_Scope)));
+         Caller_Unit_Internal := In_Internal_Unit (C_Scope);
       end if;
 
       --  Do not give a warning if the with'ed unit is internal and the caller

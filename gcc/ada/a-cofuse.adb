@@ -113,12 +113,42 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
    function Is_Empty (Container : Set) return Boolean is
      (Length (Container.Content) = 0);
 
+   ------------------
+   -- Is_Singleton --
+   ------------------
+
+   function Is_Singleton
+     (Container : Set;
+      New_Item  : Element_Type) return Boolean
+   is
+     (Length (Container.Content) = 1
+        and New_Item = Get (Container.Content, 1));
+
    ------------
    -- Length --
    ------------
 
    function Length (Container : Set) return Count_Type is
      (Length (Container.Content));
+
+   -----------------
+   -- Not_In_Both --
+   -----------------
+
+   function Not_In_Both
+     (Container : Set;
+      Left      : Set;
+      Right     : Set) return Boolean
+   is
+     (for all Item of Container =>
+       not Contains (Right, Item) or not Contains (Left, Item));
+
+   ----------------
+   -- No_Overlap --
+   ----------------
+
+   function No_Overlap (Left : Set; Right : Set) return Boolean is
+     (Num_Overlaps (Left.Content, Right.Content) = 0);
 
    ------------------
    -- Num_Overlaps --

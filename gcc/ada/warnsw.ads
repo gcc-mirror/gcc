@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,15 +42,20 @@ package Warnsw is
    --  Warn when tagged type public primitives are defined after its private
    --  extensions.
 
-   Warn_On_Record_Holes : Boolean := False;
-   --  Warn when explicit record component clauses leave uncovered holes (gaps)
-   --  in a record layout. Off by default, set by -gnatw.h (but not -gnatwa).
-
    Warn_On_Overridden_Size : Boolean := False;
    --  Warn when explicit record component clause or array component_size
    --  clause specifies a size that overrides a size for the type which was
    --  set with an explicit size clause. Off by default, modified by use of
    --  -gnatw.s/.S (but not -gnatwa).
+
+   Warn_On_Questionable_Layout : Boolean := False;
+   --  Warn when default layout of a record type is questionable for run-time
+   --  efficiency reasons and would be improved by reordering the components.
+   --  Off by default, modified by use of -gnatw.q/.Q (but not -gnatwa).
+
+   Warn_On_Record_Holes : Boolean := False;
+   --  Warn when explicit record component clauses leave uncovered holes (gaps)
+   --  in a record layout. Off by default, set by -gnatw.h (but not -gnatwa).
 
    Warn_On_Size_Alignment : Boolean := True;
    --  Warn when explicit Size and Alignment clauses are given for a type, and
@@ -104,6 +109,7 @@ package Warnsw is
       Warn_On_Overlap                     : Boolean;
       Warn_On_Overridden_Size             : Boolean;
       Warn_On_Parameter_Order             : Boolean;
+      Warn_On_Questionable_Layout         : Boolean;
       Warn_On_Questionable_Missing_Parens : Boolean;
       Warn_On_Record_Holes                : Boolean;
       Warn_On_Redundant_Constructs        : Boolean;

@@ -31,7 +31,6 @@ with Errout;   use Errout;
 with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
-with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Ghost;    use Ghost;
 with Impunit;  use Impunit;
@@ -3644,7 +3643,7 @@ package body Sem_Ch8 is
       --  except that packages whose file name starts a-n are OK (these are
       --  children of Ada.Numerics, which are never loaded by Rtsfind).
 
-      if Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
+      if Is_Predefined_Unit (Current_Sem_Unit)
         and then Get_Name_String
                    (Unit_File_Name (Current_Sem_Unit)) (1 .. 3) /= "a-n"
         and then Nkind (Unit (Cunit (Current_Sem_Unit))) =
@@ -4968,7 +4967,7 @@ package body Sem_Ch8 is
 
          --  Case of from internal file
 
-         if Is_Internal_File_Name (Fname) then
+         if In_Internal_Unit (E) then
 
             --  Private part entities in internal files are never considered
             --  to be known to the writer of normal application code.
@@ -5551,17 +5550,14 @@ package body Sem_Ch8 is
                Nvis_Messages;
                goto Done;
 
-            elsif Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
-            then
+            elsif Is_Predefined_Unit (Current_Sem_Unit) then
                --  A use-clause in the body of a system file creates conflict
                --  with some entity in a user scope, while rtsfind is active.
                --  Keep only the entity coming from another predefined unit.
 
                E2 := E;
                while Present (E2) loop
-                  if Is_Predefined_File_Name
-                       (Unit_File_Name (Get_Source_Unit (Sloc (E2))))
-                  then
+                  if In_Predefined_Unit (E2) then
                      E := E2;
                      goto Found;
                   end if;

@@ -717,7 +717,7 @@ is
      Global         => null,
      Contract_Cases =>
 
-       --  If Item is not is not contained in Container after Index, Find_Index
+       --  If Item is not contained in Container after Index, Find_Index
        --  returns No_Index.
 
        (Index > Last_Index (Container)
@@ -754,7 +754,7 @@ is
      Global         => null,
      Contract_Cases =>
 
-       --  If Item is not is not contained in Container before Index,
+       --  If Item is not contained in Container before Index,
        --  Reverse_Find_Index returns No_Index.
 
        (not M.Contains
@@ -815,16 +815,22 @@ is
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
    package Generic_Sorting with SPARK_Mode is
-      function M_Elements_Sorted (Container : M.Sequence) return Boolean with
-        Ghost,
-        Global => null,
-        Post   =>
-          M_Elements_Sorted'Result =
-            (for all I in Index_Type'First .. M.Last (Container) =>
-              (for all J in I .. M.Last (Container) =>
-                Element (Container, I) = Element (Container, J)
-                  or Element (Container, I) < Element (Container, J)));
-      pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Sorted);
+
+      package Formal_Model with Ghost is
+
+         function M_Elements_Sorted (Container : M.Sequence) return Boolean
+         with
+           Global => null,
+           Post   =>
+             M_Elements_Sorted'Result =
+               (for all I in Index_Type'First .. M.Last (Container) =>
+                  (for all J in I .. M.Last (Container) =>
+                       Element (Container, I) = Element (Container, J)
+                         or Element (Container, I) < Element (Container, J)));
+         pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Sorted);
+
+      end Formal_Model;
+      use Formal_Model;
 
       function Is_Sorted (Container : Vector) return Boolean with
         Global => null,
