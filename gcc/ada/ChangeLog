@@ -1,5 +1,40 @@
 2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_ch8.adb (Find_Direct_Name): Account for the case where
+	a use-visible entity is defined within a nested scope of an
+	instance when giving priority to entities which were visible in
+	the original generic.
+	* sem_util.ads, sem_util.adb (Nearest_Enclosing_Instance): New routine.
+
+2017-04-27  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c: Don't use unwind.h while compiling
+	for the frontend, but mimic host behavior.
+
+2017-04-27  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Build_Discriminated_Subtype):
+	Propagate Has_Pragma_Unreferenced_Objects to the built subtype.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Global_Item):
+	Do not consider discriminants because they are not "entire
+	objects". Remove the discriminant-related checks because they are
+	obsolete.
+	(Analyze_Input_Output): Do not consider discriminants
+	because they are not "entire objects".
+
+2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations): Do not
+	perform check if the current scope does not come from source,
+	as is the case for a rewritten task body, because check has
+	been performed already, and may not be doable because of changed
+	visibility.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* a-cofuse.adb, a-cfdlli.adb, a-cofuse.ads, a-cfdlli.ads, a-cofuve.adb,
 	a-cofuve.ads, a-cofuma.adb, a-cofuma.ads, sem_eval.adb, a-cofuba.adb:
 	Minor reformatting.

@@ -16750,6 +16750,26 @@ package body Sem_Util is
       Mark_Allocators (Root_Nod);
    end Mark_Coextensions;
 
+   --------------------------------
+   -- Nearest_Enclosing_Instance --
+   --------------------------------
+
+   function Nearest_Enclosing_Instance (E : Entity_Id) return Entity_Id is
+      Inst : Entity_Id;
+
+   begin
+      Inst := Scope (E);
+      while Present (Inst) and then Inst /= Standard_Standard loop
+         if Is_Generic_Instance (Inst) then
+            return Inst;
+         end if;
+
+         Inst := Scope (Inst);
+      end loop;
+
+      return Empty;
+   end Nearest_Enclosing_Instance;
+
    ----------------------
    -- Needs_One_Actual --
    ----------------------

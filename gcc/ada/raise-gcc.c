@@ -32,12 +32,20 @@
 /* Code related to the integration of the GCC mechanism for exception
    handling.  */
 
-#ifndef CERT
-#include "tconfig.h"
-#include "tsystem.h"
+#ifndef IN_RTS
+  /* For gnat1/gnatbind compilation: use host headers.  */
+# include "config.h"
+# include "system.h"
+  /* Don't use fancy_abort.  */
+# undef abort
 #else
-#define ATTRIBUTE_UNUSED __attribute__((unused))
-#define HAVE_GETIPINFO 1
+# ifndef CERT
+#  include "tconfig.h"
+#  include "tsystem.h"
+# else
+#  define ATTRIBUTE_UNUSED __attribute__((unused))
+#  define HAVE_GETIPINFO 1
+# endif
 #endif
 
 #include <stdarg.h>
@@ -71,7 +79,19 @@ typedef char bool;
    (SJLJ or DWARF). We need a consistently named interface to import from
    a-except, so wrappers are defined here.  */
 
-#include "unwind.h"
+#ifndef IN_RTS
+  /* For gnat1/gnatbind compilation: cannot use unwind.h, as it is for the
+     target. So mimic configure...
+     This is a hack ???, the real fix is to link gnat1/gnatbind with the
+     runtime of the build compiler.  */
+# ifdef EH_MECHANISM_arm
+#   include "config/arm/unwind-arm.h"
+# else
+#   include "unwind-generic.h"
+# endif
+#else
+# include "unwind.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -97,6 +117,11 @@ extern void __gnat_raise_abort (void) __attribute__ ((noreturn));
 #endif
 
 #include "unwind-pe.h"
+
+#ifdef __ARM_EABI_UNWINDER__
+/* for memcmp */
+#include <string.h>
+#endif
 
 /* The known and handled exception classes.  */
 
