@@ -1,3 +1,12 @@
+2017-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR demangler/80513
+	* cp-demangle.c (d_number): Check for overflow.
+	* cplus-dem.c (consume_count): Fix overflow check.
+	(gnu_special): Check for underscore after thunk delta.
+	* testsuite/demangle-expected: Add tests for overflows and invalid
+	characters in thunks.
+
 2017-04-21  Mark Wielaard  <mark@klomp.org>
 
 	* cp-demangle.c (MAX_RECURSION_COUNT): New constant.
