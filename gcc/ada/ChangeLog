@@ -1,5 +1,60 @@
 2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_prag.adb, a-cofuse.adb, a-cofuse.ads, einfo.adb, sem_prag.adb,
+	cstand.adb, par-prag.adb, a-cofuve.adb, a-cofuve.ads, a-cofuma.adb,
+	a-cofuma.ads, a-cofuba.adb, a-cofuba.ads: Minor reformatting.
+
+2017-04-27  Tristan Gingold  <gingold@adacore.com>
+
+	* s-excmac-gcc.ads, s-excmac-gcc.adb,
+	s-excmac-arm.ads, s-excmac-arm.adb (New_Occurrence): Rewrite it in
+	Ada95.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Establish_Transient_Scope): Rewrite
+	the loop which detects potential enclosing transient scopes. The
+	loop now terminates much earlier as transient scopes are bounded
+	by packages and subprograms.
+
+2017-04-27  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.adb, a-cfdlli.ads (=): Generic parameter removed to
+	allow the use of regular equality over elements in contracts.
+	(Cursor): Type is now public so that it can be used in
+	model functions.
+	(Formal_Model): Ghost package containing
+	model functions that are used in subprogram contracts.
+	(Current_To_Last): Removed, model functions should be used
+	instead.
+	(First_To_Previous): Removed, model functions should
+	be used instead.
+	(Strict_Equal): Removed, model functions
+	should be used instead.
+	(Append): Default parameter value
+	replaced by new wrapper to allow more precise contracts.
+	(Insert): Default parameter value replaced by new wrapper to
+	allow more precise contracts.
+	(Delete): Default parameter
+	value replaced by new wrapper to allow more precise contracts.
+	(Prepend): Default parameter value replaced by new wrapper to
+	allow more precise contracts.
+	(Delete_First): Default parameter
+	value replaced by new wrapper to allow more precise contracts.
+	(Delete_Last): Default parameter value replaced by new wrapper
+	to allow more precise contracts.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK): Perform specialized expansion
+	for object declarations.
+	(Expand_SPARK_N_Object_Declaration): New routine.
+	* sem_elab.adb (Check_A_Call): Include calls to the
+	Default_Initial_Condition procedure of a type under the SPARK
+	elaboration checks umbrella.
+
+2017-04-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem.adb (Analyze): Diagnose an illegal iterated component
 	association.
 	* sem_util.ads, sem_util.adb

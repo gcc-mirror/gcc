@@ -10977,8 +10977,11 @@ package body Einfo is
    procedure Write_Field38_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Function | E_Procedure =>
+         when E_Function
+            | E_Procedure
+         =>
             Write_Str ("class-wide clone");
+
          when others =>
             Write_Str ("Field38??");
       end case;

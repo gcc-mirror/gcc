@@ -39,6 +39,7 @@ generic
 
    type Element_Type (<>) is private;
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
+
 package Ada.Containers.Functional_Vectors with SPARK_Mode is
 
    pragma Assertion_Policy (Post => Ignore);
@@ -64,13 +65,15 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
 
    function Length (S : Sequence) return Count_Type with
      Global => null,
-     Post => (Index_Type'Pos (Index_Type'First) - 1) + Length'Result <=
-       Index_Type'Pos (Index_Type'Last);
+     Post   =>
+       (Index_Type'Pos (Index_Type'First) - 1) + Length'Result <=
+          Index_Type'Pos (Index_Type'Last);
 
    function Last (S : Sequence) return Extended_Index with
      Global => null,
-     Post => Last'Result =
-       Index_Type'Val ((Index_Type'Pos (Index_Type'First) - 1) + Length (S));
+     Post   =>
+       Last'Result =
+         Index_Type'Val ((Index_Type'Pos (Index_Type'First) - 1) + Length (S));
 
    function First return Extended_Index is (Index_Type'First);
 
@@ -81,42 +84,48 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
      Global => null,
      Pre    => N in Index_Type'First .. Last (S);
 
-   function "=" (S1, S2 : Sequence) return Boolean with
+   function "=" (S1 : Sequence; S2 : Sequence) return Boolean with
    --  Extensional equality over sequences
 
      Global => null,
-     Post   => "="'Result =
-       (Length (S1) = Length (S2)
-        and then (for all N in Index_Type'First .. Last (S1) =>
-            Get (S1, N) = Get (S2, N)));
+     Post   =>
+       "="'Result =
+         (Length (S1) = Length (S2)
+            and then (for all N in Index_Type'First .. Last (S1) =>
+                        Get (S1, N) = Get (S2, N)));
 
-   function "<" (S1, S2 : Sequence) return Boolean with
+   function "<" (S1 : Sequence; S2 : Sequence) return Boolean with
    --  S1 is a strict subsequence of S2
 
      Global => null,
-     Post   => "<"'Result =
-     (Length (S1) < Length (S2)
-      and then (for all N in Index_Type'First .. Last (S1) =>
-          Get (S1, N) = Get (S2, N)));
+     Post   =>
+       "<"'Result =
+         (Length (S1) < Length (S2)
+            and then (for all N in Index_Type'First .. Last (S1) =>
+                        Get (S1, N) = Get (S2, N)));
 
-   function "<=" (S1, S2 : Sequence) return Boolean with
+   function "<=" (S1 : Sequence; S2 : Sequence) return Boolean with
    --  S1 is a subsequence of S2
 
      Global => null,
-     Post   => "<="'Result =
-     (Length (S1) <= Length (S2)
-      and then (for all N in Index_Type'First .. Last (S1) =>
-          Get (S1, N) = Get (S2, N)));
+     Post   =>
+       "<="'Result =
+         (Length (S1) <= Length (S2)
+            and then (for all N in Index_Type'First .. Last (S1) =>
+                        Get (S1, N) = Get (S2, N)));
 
    function Is_Set
-     (S : Sequence; N : Index_Type; E : Element_Type; Result : Sequence)
-      return Boolean
+     (S      : Sequence;
+      N      : Index_Type;
+      E      : Element_Type;
+      Result : Sequence) return Boolean
    --  Returns True if Result is S, where the Nth element has been replaced by
    --  E.
 
    with
      Global => null,
-       Post   => Is_Set'Result =
+     Post   =>
+       Is_Set'Result =
          (N in Index_Type'First .. Last (S)
            and then Length (Result) = Length (S)
            and then Get (Result, N) = E
@@ -124,7 +133,9 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
                        (if M /= N then Get (Result, M) = Get (S, M))));
 
    function Set
-     (S : Sequence; N : Index_Type; E : Element_Type) return Sequence
+     (S : Sequence;
+      N : Index_Type;
+      E : Element_Type) return Sequence
    --  Returns S, where the Nth element has been replaced by E.
    --  Is_Set (S, N, E, Result) should be used instead of
    --  Result = Set (S, N, E) whenever possible both for execution and for
@@ -136,12 +147,15 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
      Post   => Is_Set (S, N, E, Set'Result);
 
    function Is_Add
-     (S : Sequence; E : Element_Type; Result : Sequence) return Boolean
+     (S      : Sequence;
+      E      : Element_Type;
+      Result : Sequence) return Boolean
    --  Returns True if Result is S appended with E
 
    with
      Global => null,
-     Post   => Is_Add'Result =
+     Post   =>
+       Is_Add'Result =
          (Length (Result) = Length (S) + 1
            and then Get (Result, Last (Result)) = E
            and then (for all M in Index_Type'First .. Last (S) =>
@@ -164,30 +178,42 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
    --  Returns S with E inserted at index I
 
      Global => null,
-     Pre    => Length (S) < Count_Type'Last and then Last (S) < Index_Type'Last
-     and then N <= Extended_Index'Succ (Last (S)),
-     Post   => Length (Insert'Result) = Length (S) + 1
-     and then Get (Insert'Result, N) = E
-     and then (for all M in Index_Type'First .. Extended_Index'Pred (N) =>
-                   Get (Insert'Result, M) = Get (S, M))
-     and then (for all M in Extended_Index'Succ (N) .. Last (Insert'Result) =>
-                   Get (Insert'Result, M) = Get (S, Extended_Index'Pred (M)))
-     and then (for all M in N .. Last (S) =>
-                   Get (Insert'Result, Extended_Index'Succ (M)) = Get (S, M));
+     Pre    =>
+       Length (S) < Count_Type'Last
+         and then Last (S) < Index_Type'Last
+         and then N <= Extended_Index'Succ (Last (S)),
+     Post   =>
+       Length (Insert'Result) = Length (S) + 1
+         and then Get (Insert'Result, N) = E
+         and then
+           (for all M in Index_Type'First .. Extended_Index'Pred (N) =>
+              Get (Insert'Result, M) = Get (S, M))
+         and then
+           (for all M in Extended_Index'Succ (N) ..  Last (Insert'Result) =>
+              Get (Insert'Result, M) = Get (S, Extended_Index'Pred (M)))
+         and then
+           (for all M in N .. Last (S) =>
+              Get (Insert'Result, Extended_Index'Succ (M)) = Get (S, M));
 
    function Remove (S : Sequence; N : Index_Type) return Sequence with
    --  Returns S without the element at index N
 
      Global => null,
-     Pre    => Length (S) < Count_Type'Last and Last (S) < Index_Type'Last
-     and N in Index_Type'First .. Last (S),
-     Post   => Length (Remove'Result) = Length (S) - 1
-     and then (for all M in Index_Type'First .. Extended_Index'Pred (N) =>
-                   Get (Remove'Result, M) = Get (S, M))
-     and then (for all M in N .. Last (Remove'Result) =>
-                   Get (Remove'Result, M) = Get (S, Extended_Index'Succ (M)))
-     and then (for all M in Extended_Index'Succ (N) .. Last (S) =>
-                   Get (Remove'Result, Extended_Index'Pred (M)) = Get (S, M));
+     Pre    =>
+       Length (S) < Count_Type'Last
+         and Last (S) < Index_Type'Last
+         and N in Index_Type'First .. Last (S),
+     Post   =>
+       Length (Remove'Result) = Length (S) - 1
+         and then
+           (for all M in Index_Type'First .. Extended_Index'Pred (N) =>
+              Get (Remove'Result, M) = Get (S, M))
+         and then
+           (for all M in N .. Last (Remove'Result) =>
+              Get (Remove'Result, M) = Get (S, Extended_Index'Succ (M)))
+         and then
+           (for all M in Extended_Index'Succ (N) .. Last (S) =>
+              Get (Remove'Result, Extended_Index'Pred (M)) = Get (S, M));
 
    ---------------------------
    --  Iteration Primitives --
@@ -195,6 +221,7 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
 
    function Iter_First (S : Sequence) return Extended_Index with
      Global => null;
+
    function Iter_Has_Element (S : Sequence; I : Extended_Index) return Boolean
    with
      Global => null,
@@ -218,18 +245,22 @@ private
       Content : Containers.Container;
    end record;
 
-   function Iter_First (S :
-                        Sequence) return Extended_Index
-   is (Index_Type'First);
-   function Iter_Next (S : Sequence; I : Extended_Index) return Extended_Index
+   function Iter_First (S : Sequence) return Extended_Index is
+     (Index_Type'First);
+
+   function Iter_Next
+     (S : Sequence;
+      I : Extended_Index) return Extended_Index
    is
      (if I = Extended_Index'Last then Extended_Index'First
       else Extended_Index'Succ (I));
 
-   function Iter_Has_Element (S : Sequence; I : Extended_Index) return Boolean
+   function Iter_Has_Element
+     (S : Sequence;
+      I : Extended_Index) return Boolean
    is
      (I in Index_Type'First ..
-        (Index_Type'Val
-           ((Index_Type'Pos (Index_Type'First) - 1) + Length (S))));
+       (Index_Type'Val
+         ((Index_Type'Pos (Index_Type'First) - 1) + Length (S))));
 
 end Ada.Containers.Functional_Vectors;

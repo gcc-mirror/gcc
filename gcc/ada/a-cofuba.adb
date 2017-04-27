@@ -35,11 +35,12 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
 
    function To_Count (Idx : Extended_Index) return Count_Type
    is (Count_Type
-         (Extended_Index'Pos (Idx)
-            - Extended_Index'Pos (Extended_Index'First)));
+        (Extended_Index'Pos (Idx) -
+         Extended_Index'Pos (Extended_Index'First)));
+
    function To_Index (Position : Count_Type) return Extended_Index
    is (Extended_Index'Val
-         (Position + Extended_Index'Pos (Extended_Index'First)));
+        (Position + Extended_Index'Pos (Extended_Index'First)));
    --  Conversion functions between Index_Type and Count_Type
 
    function Find (C : Container; E : access Element_Type) return Count_Type;
@@ -50,7 +51,7 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
    -- "=" --
    ---------
 
-   function "=" (C1, C2 : Container) return Boolean is
+   function "=" (C1 : Container; C2 : Container) return Boolean is
    begin
       if C1.Elements'Length /= C2.Elements'Length then
          return False;
@@ -61,6 +62,7 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
             return False;
          end if;
       end loop;
+
       return True;
    end "=";
 
@@ -68,13 +70,14 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
    -- "<=" --
    ----------
 
-   function "<=" (C1, C2 : Container) return Boolean is
+   function "<=" (C1 : Container; C2 : Container) return Boolean is
    begin
       for I in C1.Elements'Range loop
          if Find (C2, C1.Elements (I)) = 0 then
             return False;
          end if;
       end loop;
+
       return True;
    end "<=";
 
@@ -90,6 +93,7 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
       A : constant Element_Array_Access :=
             new Element_Array'(1 .. C.Elements'Last + 1 => <>);
       P : Count_Type := 0;
+
    begin
       for J in 1 .. C.Elements'Last + 1 loop
          if J /= To_Count (I) then
@@ -99,6 +103,7 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
             A (J) := new Element_Type'(E);
          end if;
       end loop;
+
       return Container'(Elements => A);
    end Add;
 
@@ -113,6 +118,7 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
             return I;
          end if;
       end loop;
+
       return 0;
    end Find;
 
@@ -130,10 +136,11 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
    -- Intersection --
    ------------------
 
-   function Intersection (C1, C2 : Container) return Container is
+   function Intersection (C1 : Container; C2 : Container) return Container is
       A : constant Element_Array_Access :=
             new Element_Array'(1 .. Num_Overlaps (C1, C2) => <>);
       P : Count_Type := 0;
+
    begin
       for I in C1.Elements'Range loop
          if Find (C2, C1.Elements (I)) > 0 then
@@ -141,6 +148,7 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
             A (P) := C1.Elements (I);
          end if;
       end loop;
+
       return Container'(Elements => A);
    end Intersection;
 
@@ -154,14 +162,16 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
    -- Num_Overlaps --
    ---------------------
 
-   function Num_Overlaps (C1, C2 : Container) return Count_Type is
+   function Num_Overlaps (C1 : Container; C2 : Container) return Count_Type is
       P : Count_Type := 0;
+
    begin
       for I in C1.Elements'Range loop
          if Find (C2, C1.Elements (I)) > 0 then
             P := P + 1;
          end if;
       end loop;
+
       return P;
    end Num_Overlaps;
 
@@ -173,6 +183,7 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
       A : constant Element_Array_Access :=
             new Element_Array'(1 .. C.Elements'Last - 1 => <>);
       P : Count_Type := 0;
+
    begin
       for J in C.Elements'Range loop
          if J /= To_Count (I) then
@@ -180,6 +191,7 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
             A (P) := C.Elements (J);
          end if;
       end loop;
+
       return Container'(Elements => A);
    end Remove;
 
@@ -187,11 +199,14 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
    -- Set --
    ---------
 
-   function Set (C : Container; I : Index_Type; E : Element_Type)
-                 return Container
+   function Set
+     (C : Container;
+      I : Index_Type;
+      E : Element_Type) return Container
    is
       Result : constant Container :=
                  Container'(Elements => new Element_Array'(C.Elements.all));
+
    begin
       Result.Elements (To_Count (I)) := new Element_Type'(E);
       return Result;
@@ -201,7 +216,7 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
    -- Union --
    -----------
 
-   function Union (C1, C2 : Container) return Container is
+   function Union (C1 : Container; C2 : Container) return Container is
       N : constant Count_Type := Num_Overlaps (C1, C2);
 
    begin
@@ -216,8 +231,10 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
       declare
          L : constant Count_Type := Length (C1) - N + Length (C2);
          A : constant Element_Array_Access :=
-           new Element_Array'(C1.Elements.all & (Length (C1) + 1 .. L => <>));
+               new Element_Array'
+                     (C1.Elements.all & (Length (C1) + 1 .. L => <>));
          P : Count_Type := Length (C1);
+
       begin
          for I in C2.Elements'Range loop
             if Find (C1, C2.Elements (I)) = 0 then
@@ -225,6 +242,7 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
                A (P) := C2.Elements (I);
             end if;
          end loop;
+
          return Container'(Elements => A);
       end;
    end Union;

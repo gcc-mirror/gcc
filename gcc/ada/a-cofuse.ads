@@ -35,6 +35,7 @@ private with Ada.Containers.Functional_Base;
 generic
    type Element_Type (<>) is private;
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
+
 package Ada.Containers.Functional_Sets with SPARK_Mode is
 
    pragma Assertion_Policy (Post => Ignore);
@@ -59,19 +60,20 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
    function Length (S : Set) return Count_Type with
      Global => null;
 
-   function "<=" (S1, S2 : Set) return Boolean with
+   function "<=" (S1 : Set; S2 : Set) return Boolean with
    --  Set inclusion
 
      Global => null,
      Post   => "<="'Result = (for all E of S1 => Mem (S2, E));
 
-   function "=" (S1, S2 : Set) return Boolean with
+   function "=" (S1 : Set; S2 : Set) return Boolean with
    --  Extensional equality over sets
 
      Global => null,
      Post   =>
-       "="'Result = ((for all E of S1 => Mem (S2, E))
-                     and (for all E of S2 => Mem (S1, E)));
+       "="'Result =
+         ((for all E of S1 => Mem (S2, E))
+             and (for all E of S2 => Mem (S1, E)));
 
    pragma Warnings (Off, "unused variable ""E""");
    function Is_Empty (S : Set) return Boolean with
@@ -86,10 +88,12 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
 
    with
      Global => null,
-     Post   => Is_Add'Result =
-       (Mem (Result, E) and not Mem (S, E)
-        and (for all F of Result => Mem (S, F) or F = E)
-        and (for all E of S => Mem (Result, E)));
+     Post   =>
+       Is_Add'Result =
+         (Mem (Result, E)
+            and not Mem (S, E)
+            and (for all F of Result => Mem (S, F) or F = E)
+            and (for all E of S => Mem (Result, E)));
 
    function Add (S : Set; E : Element_Type) return Set with
    --  Returns S augmented with E.
@@ -98,8 +102,9 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
 
      Global => null,
      Pre    => not Mem (S, E) and Length (S) < Count_Type'Last,
-     Post   => Length (Add'Result) = Length (S) + 1
-     and Is_Add (S, E, Add'Result);
+     Post   =>
+       Length (Add'Result) = Length (S) + 1
+         and Is_Add (S, E, Add'Result);
 
    function Remove (S : Set; E : Element_Type) return Set with
    --  Returns S without E.
@@ -108,59 +113,67 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
 
      Global => null,
      Pre    => Mem (S, E),
-     Post   => Length (Remove'Result) = Length (S) - 1
-     and Is_Add (Remove'Result, E, S);
+     Post   =>
+       Length (Remove'Result) = Length (S) - 1
+         and Is_Add (Remove'Result, E, S);
 
-   function Is_Intersection (S1, S2, Result : Set) return Boolean with
+   function Is_Intersection
+     (S1     : Set;
+      S2     : Set;
+      Result : Set) return Boolean
+   with
    --  Returns True if Result is the intersection of S1 and S2
 
      Global => null,
-     Post   => Is_Intersection'Result =
-       ((for all E of Result =>
-               Mem (S1, E) and Mem (S2, E))
-        and (for all E of S1 =>
-               (if Mem (S2, E) then Mem (Result, E))));
+     Post   =>
+       Is_Intersection'Result =
+         ((for all E of Result => Mem (S1, E) and Mem (S2, E))
+             and (for all E of S1 => (if Mem (S2, E) then Mem (Result, E))));
 
-   function Num_Overlaps (S1, S2 : Set) return Count_Type with
+   function Num_Overlaps (S1 : Set; S2 : Set) return Count_Type with
    --  Number of elements that are both in S1 and S2
 
      Global => null,
-     Post   => Num_Overlaps'Result <= Length (S1)
-     and Num_Overlaps'Result <= Length (S2)
-     and (if Num_Overlaps'Result = 0 then
-            (for all E of S1 => not Mem (S2, E)));
+     Post   =>
+       Num_Overlaps'Result <= Length (S1)
+         and Num_Overlaps'Result <= Length (S2)
+         and (if Num_Overlaps'Result = 0 then
+               (for all E of S1 => not Mem (S2, E)));
 
-   function Intersection (S1, S2 : Set) return Set with
+   function Intersection (S1 : Set; S2 : Set) return Set with
    --  Returns the intersection of S1 and S2.
    --  Intersection (S1, S2, Result) should be used instead of
    --  Result = Intersection (S1, S2) whenever possible both for execution and
    --  for proof.
 
      Global => null,
-     Post   => Length (Intersection'Result) = Num_Overlaps (S1, S2)
-     and Is_Intersection (S1, S2, Intersection'Result);
+     Post   =>
+       Length (Intersection'Result) = Num_Overlaps (S1, S2)
+         and Is_Intersection (S1, S2, Intersection'Result);
 
-   function Is_Union (S1, S2, Result : Set) return Boolean with
+   function Is_Union (S1 : Set; S2 : Set; Result : Set) return Boolean with
    --  Returns True if Result is the union of S1 and S2
 
      Global => null,
-     Post   => Is_Union'Result =
-       ((for all E of Result => Mem (S1, E) or Mem (S2, E))
-        and (for all E of S1 => Mem (Result, E))
-        and (for all E of S2 => Mem (Result, E)));
+     Post   =>
+       Is_Union'Result =
+         ((for all E of Result => Mem (S1, E) or Mem (S2, E))
+             and (for all E of S1 => Mem (Result, E))
+             and (for all E of S2 => Mem (Result, E)));
 
-   function Union (S1, S2 : Set) return Set with
+   function Union (S1 : Set; S2 : Set) return Set with
    --  Returns the union of S1 and S2.
    --  Is_Union (S1, S2, Result) should be used instead of
    --  Result = Union (S1, S2) whenever possible both for execution and for
    --  proof.
 
      Global => null,
-     Pre    => Length (S1) - Num_Overlaps (S1, S2) <=
-     Count_Type'Last - Length (S2),
-     Post   => Length (Union'Result) = Length (S1) - Num_Overlaps (S1, S2)
-     + Length (S2)
-     and Is_Union (S1, S2, Union'Result);
+     Pre    =>
+       Length (S1) - Num_Overlaps (S1, S2) <= Count_Type'Last - Length (S2),
+     Post   =>
+       Length (Union'Result) =
+         Length (S1) - Num_Overlaps (S1, S2) + Length (S2)
+           and Is_Union (S1, S2, Union'Result);
 
    ---------------------------
    --  Iteration Primitives --
@@ -170,11 +183,14 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
 
    function Iter_First (S : Set) return Private_Key with
      Global => null;
+
    function Iter_Has_Element (S : Set; K : Private_Key) return Boolean with
      Global => null;
+
    function Iter_Next (S : Set; K : Private_Key) return Private_Key with
      Global => null,
      Pre    => Iter_Has_Element (S, K);
+
    function Iter_Element (S : Set; K : Private_Key) return Element_Type with
      Global => null,
      Pre    => Iter_Has_Element (S, K);

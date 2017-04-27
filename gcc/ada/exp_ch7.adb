@@ -4043,22 +4043,42 @@ package body Exp_Ch7 is
    procedure Establish_Transient_Scope (N : Node_Id; Sec_Stack : Boolean) is
       Loc       : constant Source_Ptr := Sloc (N);
       Iter_Loop : Entity_Id;
+      Scop_Id   : Entity_Id;
+      Scop_Rec  : Scope_Stack_Entry;
       Wrap_Node : Node_Id;
 
    begin
-      --  Do not create a transient scope if we are already inside one
+      --  Do not create a new transient scope if there is an existing transient
+      --  scope on the stack.
 
-      for S in reverse Scope_Stack.First .. Scope_Stack.Last loop
-         if Scope_Stack.Table (S).Is_Transient then
+      for Index in reverse Scope_Stack.First .. Scope_Stack.Last loop
+         Scop_Rec := Scope_Stack.Table (Index);
+         Scop_Id  := Scop_Rec.Entity;
+
+         --  The current scope is transient. If the scope being established
+         --  needs to manage the secondary stack, then the existing scope
+         --  overtakes that function.
+
+         if Scop_Rec.Is_Transient then
             if Sec_Stack then
-               Set_Uses_Sec_Stack (Scope_Stack.Table (S).Entity);
+               Set_Uses_Sec_Stack (Scop_Id);
             end if;
 
             return;
 
-         --  If we encounter Standard there are no enclosing transient scopes
+         --  Prevent the search from going too far because transient blocks
+         --  are bounded by packages and subprogram scopes. Reaching Standard
+         --  should be impossible without hitting one of the other cases first
+         --  unless Standard was manually pushed.
 
-         elsif Scope_Stack.Table (S).Entity = Standard_Standard then
+         elsif Scop_Id = Standard_Standard
+           or else Ekind_In (Scop_Id, E_Entry,
+                                      E_Entry_Family,
+                                      E_Function,
+                                      E_Package,
+                                      E_Procedure,
+                                      E_Subprogram_Body)
+         then
             exit;
          end if;
       end loop;

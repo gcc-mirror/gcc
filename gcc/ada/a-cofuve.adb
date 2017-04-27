@@ -37,25 +37,25 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
    -- "=" --
    ---------
 
-   function "=" (S1, S2 : Sequence) return Boolean is
+   function "=" (S1 : Sequence; S2 : Sequence) return Boolean is
      (S1.Content = S2.Content);
 
    ---------
    -- "<" --
    ---------
 
-   function "<" (S1, S2 : Sequence) return Boolean is
+   function "<" (S1 : Sequence; S2 : Sequence) return Boolean is
      (Length (S1.Content) < Length (S2.Content)
-      and then (for all I in Index_Type'First .. Last (S1) =>
+       and then (for all I in Index_Type'First .. Last (S1) =>
                    Get (S1.Content, I) = Get (S2.Content, I)));
 
    ----------
    -- "<=" --
    ----------
 
-   function "<=" (S1, S2 : Sequence) return Boolean is
+   function "<=" (S1 : Sequence; S2 : Sequence) return Boolean is
      (Length (S1.Content) <= Length (S2.Content)
-      and then (for all I in Index_Type'First .. Last (S1) =>
+       and then (for all I in Index_Type'First .. Last (S1) =>
                    Get (S1.Content, I) = Get (S2.Content, I)));
 
    ---------
@@ -83,7 +83,8 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
    function Insert
      (S : Sequence;
       N : Index_Type;
-      E : Element_Type) return Sequence is
+      E : Element_Type) return Sequence
+   is
      (Content => Add (S.Content, N, E));
 
    ------------
@@ -91,24 +92,30 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
    ------------
 
    function Is_Add
-     (S : Sequence; E : Element_Type; Result : Sequence) return Boolean is
+     (S      : Sequence;
+      E      : Element_Type;
+      Result : Sequence) return Boolean
+   is
      (Length (Result) = Length (S) + 1
-      and then Get (Result, Index_Type'Val
-                    ((Index_Type'Pos (Index_Type'First) - 1) +
-                       Length (Result))) = E
+       and then Get (Result, Index_Type'Val
+                      ((Index_Type'Pos (Index_Type'First) - 1) +
+                          Length (Result))) = E
       and then
         (for all M in Index_Type'First ..
-             (Index_Type'Val
-                  ((Index_Type'Pos (Index_Type'First) - 1) + Length (S))) =>
-              Get (Result, M) = Get (S, M)));
+           (Index_Type'Val
+              ((Index_Type'Pos (Index_Type'First) - 1) + Length (S))) =>
+                  Get (Result, M) = Get (S, M)));
 
    ------------
    -- Is_Set --
    ------------
 
    function Is_Set
-     (S : Sequence; N : Index_Type; E : Element_Type; Result : Sequence)
-      return Boolean is
+     (S      : Sequence;
+      N      : Index_Type;
+      E      : Element_Type;
+      Result : Sequence) return Boolean
+   is
      (N in Index_Type'First ..
              (Index_Type'Val
                   ((Index_Type'Pos (Index_Type'First) - 1) + Length (S)))
@@ -145,7 +152,11 @@ package body Ada.Containers.Functional_Vectors with SPARK_Mode => Off is
    -- Set --
    ---------
 
-   function Set (S : Sequence; N : Index_Type; E : Element_Type)
-                 return Sequence is
+   function Set
+     (S : Sequence;
+      N : Index_Type;
+      E : Element_Type) return Sequence
+   is
      (Content => Set (S.Content, N, E));
+
 end Ada.Containers.Functional_Vectors;
