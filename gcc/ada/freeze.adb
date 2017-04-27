@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,6 +55,7 @@ with Sem_Ch6;   use Sem_Ch6;
 with Sem_Ch7;   use Sem_Ch7;
 with Sem_Ch8;   use Sem_Ch8;
 with Sem_Ch13;  use Sem_Ch13;
+with Sem_Disp;  use Sem_Disp;
 with Sem_Eval;  use Sem_Eval;
 with Sem_Mech;  use Sem_Mech;
 with Sem_Prag;  use Sem_Prag;
@@ -1383,8 +1384,12 @@ package body Freeze is
    begin
       Decl := Original_Node (Unit_Declaration_Node (Nam));
 
+      --  The subprogram body created for the expression function is not
+      --  itself a freeze point.
+
       if Scope (Nam) = Current_Scope
         and then Nkind (Decl) = N_Expression_Function
+        and then Nkind (N) /= N_Subprogram_Body
       then
          Check_Deferred (Expression (Decl));
       end if;
@@ -1395,17 +1400,22 @@ package body Freeze is
    --------------------------------
 
    procedure Check_Inherited_Conditions (R : Entity_Id) is
-      Prim_Ops : constant Elist_Id := Primitive_Operations (R);
-      A_Post   : Node_Id;
-      A_Pre    : Node_Id;
-      Op_Node  : Elmt_Id;
-      Par_Prim : Entity_Id;
-      Prim     : Entity_Id;
+      Prim_Ops      : constant Elist_Id := Primitive_Operations (R);
+      A_Post        : Node_Id;
+      A_Pre         : Node_Id;
+      Decls         : List_Id;
+      Needs_Wrapper : Boolean;
+      New_Prag      : Node_Id;
+      Op_Node       : Elmt_Id;
+      Par_Prim      : Entity_Id;
+      Par_Type      : Entity_Id;
+      Prim          : Entity_Id;
 
    begin
       Op_Node := First_Elmt (Prim_Ops);
       while Present (Op_Node) loop
-         Prim := Node (Op_Node);
+         Prim          := Node (Op_Node);
+         Needs_Wrapper := False;
 
          --  Map the overridden primitive to the overriding one. This takes
          --  care of all overridings and is done only once.
@@ -1442,13 +1452,14 @@ package body Freeze is
       --  require a wrapper to handle inherited conditions that call other
       --  primitives, so that LSP can be verified/enforced.
 
-      --  Wrapper construction TBD.
-
       Op_Node := First_Elmt (Prim_Ops);
       while Present (Op_Node) loop
-         Prim := Node (Op_Node);
+         Decls := Empty_List;
+         Prim  := Node (Op_Node);
+
          if not Comes_From_Source (Prim) and then Present (Alias (Prim)) then
             Par_Prim := Alias (Prim);
+            Par_Type := Find_Dispatching_Type (Par_Prim);
 
             --  Analyze the contract items of the parent operation, before
             --  they are rewritten when inherited.
@@ -1458,22 +1469,119 @@ package body Freeze is
             A_Pre := Get_Pragma (Par_Prim, Pragma_Precondition);
 
             if Present (A_Pre) and then Class_Present (A_Pre) then
+               New_Prag := New_Copy_Tree (A_Pre);
                Build_Class_Wide_Expression
-                 (Prag        => New_Copy_Tree (A_Pre),
-                  Subp        => Prim,
-                  Par_Subp    => Par_Prim,
-                  Adjust_Sloc => False);
+                 (Prag          => New_Prag,
+                  Subp          => Prim,
+                  Par_Subp      => Par_Prim,
+                  Adjust_Sloc   => False,
+                  Needs_Wrapper => Needs_Wrapper);
+
+               if Needs_Wrapper then
+                  Append (New_Prag, Decls);
+               end if;
             end if;
 
             A_Post := Get_Pragma (Par_Prim, Pragma_Postcondition);
 
             if Present (A_Post) and then Class_Present (A_Post) then
+               New_Prag := New_Copy_Tree (A_Pre);
                Build_Class_Wide_Expression
-                 (Prag        => New_Copy_Tree (A_Post),
-                  Subp        => Prim,
-                  Par_Subp    => Par_Prim,
-                  Adjust_Sloc => False);
+                 (Prag           => New_Prag,
+                  Subp           => Prim,
+                  Par_Subp       => Par_Prim,
+                  Adjust_Sloc    => False,
+                  Needs_Wrapper  => Needs_Wrapper);
+
+               if Needs_Wrapper then
+                  Append (New_Prag, Decls);
+               end if;
             end if;
+         end if;
+
+         if Needs_Wrapper and then not Is_Abstract_Subprogram (Par_Prim) then
+
+            --  We need to build a new primitive that overrides the inherited
+            --  one, and whose inherited expression has been updated above.
+            --  These expressions are the arguments of pragmas that are part
+            --  of the declarations of the wrapper. The wrapper holds a single
+            --  statement that is a call to the parent primitive, where the
+            --  controlling actuals are conversions to the corresponding type
+            --  in the parent primitive:
+
+            --    procedure New_Prim (F1 : T1.; ...) is
+            --       pragma Check (Precondition,  Expr);
+            --    begin
+            --       Par_Prim (Par_Type (F1) ..);
+            --    end;
+
+            --  If the primitive is a function the statement is a call
+
+            declare
+               Loc        : constant Source_Ptr := Sloc (R);
+               Actuals    : List_Id;
+               Call       : Node_Id;
+               Formal     : Entity_Id;
+               New_F_Spec : Node_Id;
+               New_Formal : Entity_Id;
+               New_Proc   : Node_Id;
+               New_Spec   : Node_Id;
+
+            begin
+               Actuals    := Empty_List;
+               New_Spec   := Build_Overriding_Spec (Par_Prim, R);
+               Formal     := First_Formal (Par_Prim);
+               New_F_Spec := First (Parameter_Specifications (New_Spec));
+
+               while Present (Formal) loop
+                  New_Formal := Defining_Identifier (New_F_Spec);
+
+                  --  If controlling argument, add conversion
+
+                  if Etype (Formal) = Par_Type then
+                     Append_To (Actuals,
+                       Make_Type_Conversion (Loc,
+                         New_Occurrence_Of (Par_Type, Loc),
+                         New_Occurrence_Of (New_Formal, Loc)));
+
+                  else
+                     Append_To (Actuals, New_Occurrence_Of (New_Formal, Loc));
+                  end if;
+
+                  Next_Formal (Formal);
+                  Next (New_F_Spec);
+               end loop;
+
+               if Ekind (Par_Prim) = E_Procedure then
+                  Call :=
+                    Make_Procedure_Call_Statement (Loc,
+                      Name                   =>
+                        New_Occurrence_Of (Par_Prim, Loc),
+                      Parameter_Associations => Actuals);
+               else
+                  Call :=
+                    Make_Simple_Return_Statement (Loc,
+                     Expression =>
+                       Make_Function_Call (Loc,
+                         Name                   =>
+                           New_Occurrence_Of (Par_Prim, Loc),
+                         Parameter_Associations => Actuals));
+               end if;
+
+               New_Proc :=
+                 Make_Subprogram_Body (Loc,
+                   Specification              => New_Spec,
+                   Declarations               => Decls,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements => New_List (Call),
+                       End_Label  => Make_Identifier (Loc, Chars (Prim))));
+
+               Insert_After (Parent (R), New_Proc);
+               Analyze (New_Proc);
+            end;
+
+            Needs_Wrapper := False;
          end if;
 
          Next_Elmt (Op_Node);
@@ -2000,6 +2108,7 @@ package body Freeze is
 
       Freeze_Nodes : constant List_Id :=
                        Freeze_Entity (T, N, Do_Freeze_Profile);
+      Pack         : constant Entity_Id := Scope (T);
 
    begin
       if Ekind (T) = E_Function then
@@ -2007,7 +2116,23 @@ package body Freeze is
       end if;
 
       if Is_Non_Empty_List (Freeze_Nodes) then
-         Insert_Actions (N, Freeze_Nodes);
+
+         --  If the entity is a type declared in an inner package, it may be
+         --  frozen by an outer declaration before the package itself is
+         --  frozen. Install the package scope to analyze the freeze nodes,
+         --  which may include generated subprograms such as predicate
+         --  functions, etc.
+
+         if Is_Type (T) and then From_Nested_Package (T) then
+            Push_Scope (Pack);
+            Install_Visible_Declarations (Pack);
+            Install_Private_Declarations (Pack);
+            Insert_Actions (N, Freeze_Nodes);
+            End_Package_Scope (Pack);
+
+         else
+            Insert_Actions (N, Freeze_Nodes);
+         end if;
       end if;
    end Freeze_Before;
 
@@ -3089,12 +3214,15 @@ package body Freeze is
 
          --  Similar processing is needed for aspects that may affect
          --  object layout, like Alignment, if there is an initialization
-         --  expression.
+         --  expression. We don't do this if there is a pragma Linker_Section,
+         --  because it would prevent the back end from statically initializing
+         --  the object; we don't want elaboration code in that case.
 
          if Has_Delayed_Aspects (E)
            and then Expander_Active
            and then Is_Array_Type (Etype (E))
            and then Present (Expression (Parent (E)))
+           and then No (Linker_Section_Pragma (E))
          then
             declare
                Decl : constant Node_Id := Parent (E);
@@ -3648,14 +3776,15 @@ package body Freeze is
          --  cannot modify the size of alignment of an aliased component.
 
          All_Elem_Components : Boolean := True;
-         --  Set False if we encounter a component of a composite type
+         --  True if all components are of a type whose underlying type is
+         --  elementary.
 
          All_Sized_Components : Boolean := True;
-         --  Set False if we encounter a component with unknown RM_Size
+         --  True if all components have a known RM_Size
 
          All_Storage_Unit_Components : Boolean := True;
-         --  Set False if we encounter a component of a composite type whose
-         --  RM_Size is not a multiple of the storage unit.
+         --  True if all components have an RM_Size that is a multiple of the
+         --  storage unit.
 
          Elem_Component_Total_Esize : Uint := Uint_0;
          --  Accumulates total Esize values of all elementary components. Used
@@ -3983,7 +4112,9 @@ package body Freeze is
                Sized_Component_Total_RM_Size :=
                  Sized_Component_Total_RM_Size + RM_Size (Etype (Comp));
 
-               if Is_Elementary_Type (Etype (Comp)) then
+               if Present (Underlying_Type (Etype (Comp)))
+                 and then Is_Elementary_Type (Underlying_Type (Etype (Comp)))
+               then
                   Elem_Component_Total_Esize :=
                     Elem_Component_Total_Esize + Esize (Etype (Comp));
                else
@@ -4508,23 +4639,17 @@ package body Freeze is
          --  they are not standard Ada legality rules.
 
          if SPARK_Mode = On then
+
+            --  A discriminated type cannot be effectively volatile
+            --  (SPARK RM 7.1.3(5)).
+
             if Is_Effectively_Volatile (Rec) then
-
-               --  A discriminated type cannot be effectively volatile
-               --  (SPARK RM C.6(4)).
-
                if Has_Discriminants (Rec) then
                   Error_Msg_N ("discriminated type & cannot be volatile", Rec);
-
-               --  A tagged type cannot be effectively volatile
-               --  (SPARK RM C.6(5)).
-
-               elsif Is_Tagged_Type (Rec) then
-                  Error_Msg_N ("tagged type & cannot be volatile", Rec);
                end if;
 
             --  A non-effectively volatile record type cannot contain
-            --  effectively volatile components (SPARK RM C.6(2)).
+            --  effectively volatile components (SPARK RM 7.1.3(6)).
 
             else
                Comp := First_Component (Rec);
@@ -4982,7 +5107,8 @@ package body Freeze is
 
       --  Local variables
 
-      Mode : Ghost_Mode_Type;
+      Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+      --  Save the Ghost mode to restore on exit
 
    --  Start of processing for Freeze_Entity
 
@@ -4991,7 +5117,7 @@ package body Freeze is
       --  now to ensure that any nodes generated during freezing are properly
       --  flagged as Ghost.
 
-      Set_Ghost_Mode (E, Mode);
+      Set_Ghost_Mode (E);
 
       --  We are going to test for various reasons why this entity need not be
       --  frozen here, but in the case of an Itype that's defined within a
@@ -6598,7 +6724,8 @@ package body Freeze is
       end if;
 
    <<Leave>>
-      Restore_Ghost_Mode (Mode);
+      Restore_Ghost_Mode (Saved_GM);
+
       return Result;
    end Freeze_Entity;
 

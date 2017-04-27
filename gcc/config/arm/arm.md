@@ -12009,7 +12009,7 @@
 
 (define_insn "<mrc>"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(unspec_volatile [(match_operand:SI 1 "immediate_operand" "n")
+	(unspec_volatile:SI [(match_operand:SI 1 "immediate_operand" "n")
 			  (match_operand:SI 2 "immediate_operand" "n")
 			  (match_operand:SI 3 "immediate_operand" "n")
 			  (match_operand:SI 4 "immediate_operand" "n")
@@ -12044,7 +12044,7 @@
 
 (define_insn "<mrrc>"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
-	(unspec_volatile [(match_operand:SI 1 "immediate_operand" "n")
+	(unspec_volatile:DI [(match_operand:SI 1 "immediate_operand" "n")
 			  (match_operand:SI 2 "immediate_operand" "n")
 			  (match_operand:SI 3 "immediate_operand" "n")] MRRCI))]
   "arm_coproc_builtin_available (VUNSPEC_<MRRC>)"

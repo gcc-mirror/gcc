@@ -1,3 +1,222 @@
+2017-04-25  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* parser.c (cp_parser_elaborated_type_specifier): Add fix-it to
+	diagnostic of invalid class/struct keyword after enum.
+
+2017-04-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.c (cp_parser_member_declaration): Add fix-it hint
+	for removing stray semicolons.
+
+2017-04-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* name-lookup.c (get_std_name_hint): New function.
+	(maybe_suggest_missing_header): New function.
+	(suggest_alternative_in_explicit_scope): Call
+	maybe_suggest_missing_header.
+
+2017-04-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/80177
+	* name-lookup.c (suggest_alternative_in_explicit_scope): Convert
+	candidate type of bm from tree to const char *.
+	(consider_binding_level): Likewise.
+	(lookup_name_fuzzy): Likewise, using this to merge the best
+	result from the preprocessor into bm, rather than immediately
+	returning, so that better matches from reserved words can "win".
+	Guard the rejection of keywords that don't start decl-specifiers
+	so it only happens for FUZZY_LOOKUP_TYPENAME.
+
+2017-04-24  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* decl.c (grokdeclarator): Use %qT instead of %<%T%> in diagnostics.
+	(start_enum): Likewise.
+	(build_enumerator): Likewise. Use %qE instead of plain %E.
+	* parser.c (cp_parser_mem_initializer_list): Use %qD instead of
+	%<%D%> in diagnostics.
+	(cp_parser_elaborated_type_specifier): Likewise.
+	* pt.c (make_pack_expansion): Use %qT and %qE instead of
+	%<%T%> and %<%E%> in diagnostics.
+	(tsubst_pack_expansion): Likewise.
+
+2017-04-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/80016
+	* parser.c (cp_parser_unary_expression):  Generate a location
+	range for alignof and sizeof expressions.
+
+2017-04-24  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* parser.c (cp_parser_cv_qualifier_seq_opt): Add fix-it info to
+	error message.
+	(cp_parser_virt_specifier_seq_opt): Likewise.
+	(set_and_check_decl_spec_loc): Likewise twice.
+
+2017-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80179 - ICE with initialized flexible array member.
+	* constexpr.c (verify_ctor_sanity): Handle flexible array members.
+
+2017-04-21  Richard Biener  <rguenther@suse.de>
+
+	* cp-tree.h (copy_decl): Annotate with CXX_MEM_STAT_INFO.
+	(copy_type): Likewise.
+	* lex.c (copy_decl): Pass down mem-stat info.
+	(copy_type): Likewise.
+
+2017-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/80473
+	* init.c (build_new_1): Suppress notes about over-aligned new when
+	the warning is suppressed.
+
+2017-04-20  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* parser.c (cp_parser_member_declaration): Add warning with fixit
+	information for extra semicolon after in-class function definition.
+
+2017-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/80423
+	* tree.c (build_cplus_array_type): Call build_array_type
+	with the intended TYPE_TYPELESS_STORAGE flag value, instead
+	of calling build_array_type and modifying later TYPE_TYPELESS_STORAGE
+	on the shared type.
+
+2017-04-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/80244 - ICE with attribute in template alias.
+	* tree.c (strip_typedefs): Handle UNDERLYING_TYPE.
+
+	PR c++/80241 - ICE with alignas pack expansion.
+	* error.c (dump_expr): Handle TREE_LIST.
+	* parser.c (cp_parser_std_attribute_list): Return error_mark if
+	make_pack_expansion returns an error.
+
+2017-04-17  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/80287
+	* class.c (fixup_may_alias): Fix all type variants.
+
+2017-04-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80415 - wrong error with default arg and array reference.
+	* tree.c (lvalue_kind): Return clk_class for an array prvalue.
+
+	* pt.c (tsubst_init): Set TARGET_EXPR_DIRECT_INIT_P.
+
+2017-04-15  Alexandre Oliva <aoliva@redhat.com>
+
+	* decl.c (name_unnamed_type): Split out of...
+	(grokdeclarator): ... this.
+	* decl.h (name_unnamed_type): Declare.
+
+2017-04-12  Richard Biener  <rguenther@suse.de>
+	Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/79671
+	* tree.c (build_cplus_array_type): Set TYPE_TYPELESS_STORAGE
+	for arrays of character or std::byte type.
+
+2017-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80294 - ICE with constexpr and inheritance.
+	* constexpr.c (reduced_constant_expression_p):
+	A null constructor element is non-constant.
+	(cxx_eval_indirect_ref): Don't VERIFY_CONSTANT before
+	returning an empty base.
+
+2017-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80370
+	* decl.c (cp_finish_decomp): If processing_template_decl on
+	non-dependent decl, only set TREE_TYPE on the v[i] decls, but don't
+	change their DECL_VALUE_EXPR nor cp_finish_decl them.  Instead make
+	sure DECL_VALUE_EXPR is the canonical NULL type ARRAY_REF for tsubst
+	processing.
+	* pt.c (value_dependent_expression_p) <case VAR_DECL>: For variables
+	with DECL_VALUE_EXPR, return true if DECL_VALUE_EXPR is type
+	dependent.
+
+2017-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80363
+	* error.c (dump_expr): Handle VEC_COND_EXPR like COND_EXPR.
+
+2017-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80176
+	* tree.c (lvalue_kind): For COMPONENT_REF with BASELINK second
+	operand, if it is a static member function, recurse on the
+	BASELINK.
+
+2017-04-10  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80348
+	* typeck.c (cp_build_binary_op): Use NULL_TREE instead of NULL.  Set
+	ORIG_TYPE earlier and not only when shortening.
+
+2017-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80356 - ICE with reference to function template argument.
+	PR c++/79294
+	* pt.c (convert_nontype_argument_function): Adjust type even with a
+	value-dependent argument.
+
+	PR c++/80267 - ICE with nested capture of reference
+	PR c++/60992
+	* pt.c (tsubst_copy): Handle lookup finding a capture proxy.
+
+2017-04-07  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80348
+	* typeck.c (cp_build_binary_op): Convert COP[01] to ORIG_TYPE.
+
+	PR c++/80095
+	* call.c (build_over_call): Don't check cxx_dialect.
+	* cp-gimplify.c (cp_gimplify_init_expr): Don't check cxx_dialect nor
+	whether SUB is a CONSTRUCTOR.
+	* init.c (build_new_1): Don't check cxx_dialect.
+	* tree.c (replace_placeholders): Add a function comment.  Return if
+	not in C++14, or if the object isn't a (member of a) class.
+	* typeck2.c (store_init_value): Don't check cxx_dialect nor whether
+	TYPE is CLASS_TYPE_P.
+
+2017-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80309
+	* pt.c (canonical_type_parameter): Use vec_safe_grow_cleared instead
+	of a loop doing vec_safe_push of NULL.  Formatting fixes.
+	(rewrite_template_parm): Copy TEMPLATE_PARM_PARAMETER_PACK from oldidx
+	to newidx before calling canonical_type_parameter on newtype.
+
+2017-04-04  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR c++/80296
+	* cxx-pretty-print.c (cxx_pretty_printer::expression): Add
+	UNARY_PLUS_EXPR case.
+
+2017-04-03  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (finish_template_type): Check CLASSTYPE_TEMPLATE_INFO.
+
+2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* class.c (update_vtable_entry_for_fn): Fix typo in comment.
+	* decl2.c (one_static_initialization_or_destruction): Likewise.
+	* name-lookup.c (store_bindings): Likewise.
+	* parser.c (make_call_declarator): Likewise.
+	* pt.c (check_explicit_specialization): Likewise.
+
+2017-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR sanitizer/79993 - ICE with VLA initialization from string
+	PR c++/69487 - wrong VLA initialization from string
+	* init.c (finish_length_check): Split out from build_vec_init.
+	(build_vec_init): Handle STRING_CST.
+	* typeck2.c (split_nonconstant_init): Handle STRING_CST.
+	(digest_init_r): Don't give a STRING_CST VLA type.
+
 2017-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79572

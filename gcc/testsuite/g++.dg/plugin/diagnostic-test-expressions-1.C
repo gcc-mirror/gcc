@@ -101,6 +101,72 @@ int test_postfix_incdec (int i)
 
 /* Unary operators.  ****************************************************/
 
+int test_sizeof (int i)
+{
+  __emit_expression_range (0, sizeof(int) + i); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, sizeof(int) + i);
+                               ~~~~~~~~~~~~^~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, i + sizeof(int)); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, i + sizeof(int));
+                               ~~^~~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, sizeof i + i); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, sizeof i + i);
+                               ~~~~~~~~~^~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, i + sizeof i); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, i + sizeof i);
+                               ~~^~~~~~~~~~
+   { dg-end-multiline-output "" } */
+}
+
+int test_alignof (int i)
+{
+  __emit_expression_range (0, alignof(int) + i); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, alignof(int) + i);
+                               ~~~~~~~~~~~~~^~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, i + alignof(int)); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, i + alignof(int));
+                               ~~^~~~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, __alignof__(int) + i); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, __alignof__(int) + i);
+                               ~~~~~~~~~~~~~~~~~^~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, i + __alignof__(int)); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, i + __alignof__(int));
+                               ~~^~~~~~~~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, __alignof__ i + i); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, __alignof__ i + i);
+                               ~~~~~~~~~~~~~~^~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0, i + __alignof__ i); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, i + __alignof__ i);
+                               ~~^~~~~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+}
+
 int test_prefix_incdec (int i)
 {
   __emit_expression_range (0, ++i ); /* { dg-warning "range" } */

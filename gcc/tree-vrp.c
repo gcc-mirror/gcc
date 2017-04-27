@@ -2461,7 +2461,20 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	  else if (min_op0)
 	    wmin = min_op0;
 	  else if (min_op1)
-	    wmin = minus_p ? wi::neg (min_op1) : min_op1;
+	    {
+	      if (minus_p)
+		{
+		  wmin = wi::neg (min_op1);
+
+		  /* Check for overflow.  */
+		  if (sgn == SIGNED && wi::neg_p (min_op1) && wi::neg_p (wmin))
+		    min_ovf = 1;
+		  else if (sgn == UNSIGNED && wi::ne_p (min_op1, 0))
+		    min_ovf = -1;
+		}
+	      else
+		wmin = min_op1;
+	    }
 	  else
 	    wmin = wi::shwi (0, prec);
 
@@ -2489,7 +2502,20 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	  else if (max_op0)
 	    wmax = max_op0;
 	  else if (max_op1)
-	    wmax = minus_p ? wi::neg (max_op1) : max_op1;
+	    {
+	      if (minus_p)
+		{
+		  wmax = wi::neg (max_op1);
+
+		  /* Check for overflow.  */
+		  if (sgn == SIGNED && wi::neg_p (max_op1) && wi::neg_p (wmax))
+		    max_ovf = 1;
+		  else if (sgn == UNSIGNED && wi::ne_p (max_op1, 0))
+		    max_ovf = -1;
+		}
+	      else
+		wmax = max_op1;
+	    }
 	  else
 	    wmax = wi::shwi (0, prec);
 
@@ -8756,20 +8782,32 @@ intersect_ranges (enum value_range_type *vr0type,
 	  /* Choose the right gap if the left one is empty.  */
 	  if (mineq)
 	    {
-	      if (TREE_CODE (vr1max) == INTEGER_CST)
-		*vr0min = int_const_binop (PLUS_EXPR, vr1max,
-					   build_int_cst (TREE_TYPE (vr1max), 1));
-	      else
+	      if (TREE_CODE (vr1max) != INTEGER_CST)
 		*vr0min = vr1max;
+	      else if (TYPE_PRECISION (TREE_TYPE (vr1max)) == 1
+		       && !TYPE_UNSIGNED (TREE_TYPE (vr1max)))
+		*vr0min
+		  = int_const_binop (MINUS_EXPR, vr1max,
+				     build_int_cst (TREE_TYPE (vr1max), -1));
+	      else
+		*vr0min
+		  = int_const_binop (PLUS_EXPR, vr1max,
+				     build_int_cst (TREE_TYPE (vr1max), 1));
 	    }
 	  /* Choose the left gap if the right one is empty.  */
 	  else if (maxeq)
 	    {
-	      if (TREE_CODE (vr1min) == INTEGER_CST)
-		*vr0max = int_const_binop (MINUS_EXPR, vr1min,
-					   build_int_cst (TREE_TYPE (vr1min), 1));
-	      else
+	      if (TREE_CODE (vr1min) != INTEGER_CST)
 		*vr0max = vr1min;
+	      else if (TYPE_PRECISION (TREE_TYPE (vr1min)) == 1
+		       && !TYPE_UNSIGNED (TREE_TYPE (vr1min)))
+		*vr0max
+		  = int_const_binop (PLUS_EXPR, vr1min,
+				     build_int_cst (TREE_TYPE (vr1min), -1));
+	      else
+		*vr0max
+		  = int_const_binop (MINUS_EXPR, vr1min,
+				     build_int_cst (TREE_TYPE (vr1min), 1));
 	    }
 	  /* Choose the anti-range if the range is effectively varying.  */
 	  else if (vrp_val_is_min (*vr0min)
@@ -8811,22 +8849,34 @@ intersect_ranges (enum value_range_type *vr0type,
 	  if (mineq)
 	    {
 	      *vr0type = VR_RANGE;
-	      if (TREE_CODE (*vr0max) == INTEGER_CST)
-		*vr0min = int_const_binop (PLUS_EXPR, *vr0max,
-					   build_int_cst (TREE_TYPE (*vr0max), 1));
-	      else
+	      if (TREE_CODE (*vr0max) != INTEGER_CST)
 		*vr0min = *vr0max;
+	      else if (TYPE_PRECISION (TREE_TYPE (*vr0max)) == 1
+		       && !TYPE_UNSIGNED (TREE_TYPE (*vr0max)))
+		*vr0min
+		  = int_const_binop (MINUS_EXPR, *vr0max,
+				     build_int_cst (TREE_TYPE (*vr0max), -1));
+	      else
+		*vr0min
+		  = int_const_binop (PLUS_EXPR, *vr0max,
+				     build_int_cst (TREE_TYPE (*vr0max), 1));
 	      *vr0max = vr1max;
 	    }
 	  /* Choose the left gap if the right is empty.  */
 	  else if (maxeq)
 	    {
 	      *vr0type = VR_RANGE;
-	      if (TREE_CODE (*vr0min) == INTEGER_CST)
-		*vr0max = int_const_binop (MINUS_EXPR, *vr0min,
-					   build_int_cst (TREE_TYPE (*vr0min), 1));
-	      else
+	      if (TREE_CODE (*vr0min) != INTEGER_CST)
 		*vr0max = *vr0min;
+	      else if (TYPE_PRECISION (TREE_TYPE (*vr0min)) == 1
+		       && !TYPE_UNSIGNED (TREE_TYPE (*vr0min)))
+		*vr0max
+		  = int_const_binop (PLUS_EXPR, *vr0min,
+				     build_int_cst (TREE_TYPE (*vr0min), -1));
+	      else
+		*vr0max
+		  = int_const_binop (MINUS_EXPR, *vr0min,
+				     build_int_cst (TREE_TYPE (*vr0min), 1));
 	      *vr0min = vr1min;
 	    }
 	  /* Choose the anti-range if the range is effectively varying.  */

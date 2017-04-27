@@ -2949,7 +2949,7 @@ check_explicit_specialization (tree declarator,
 
       /* Figure out what exactly is being specialized at this point.
 	 Note that for an explicit instantiation, even one for a
-	 member function, we cannot tell apriori whether the
+	 member function, we cannot tell a priori whether the
 	 instantiation is for a member template, or just a member
 	 function of a template class.  Even if a member template is
 	 being instantiated, the member template arguments may be
@@ -3682,7 +3682,7 @@ make_pack_expansion (tree arg)
 
       if (parameter_packs == NULL_TREE)
         {
-          error ("base initializer expansion %<%T%> contains no parameter packs", arg);
+          error ("base initializer expansion %qT contains no parameter packs", arg);
           delete ppd.visited;
           return error_mark_node;
         }
@@ -3746,9 +3746,9 @@ make_pack_expansion (tree arg)
   if (parameter_packs == NULL_TREE)
     {
       if (TYPE_P (arg))
-        error ("expansion pattern %<%T%> contains no argument packs", arg);
+        error ("expansion pattern %qT contains no argument packs", arg);
       else
-        error ("expansion pattern %<%E%> contains no argument packs", arg);
+        error ("expansion pattern %qE contains no argument packs", arg);
       return error_mark_node;
     }
   PACK_EXPANSION_PARAMETER_PACKS (result) = parameter_packs;
@@ -3977,10 +3977,10 @@ canonical_type_parameter (tree type)
   tree list;
   int idx = TEMPLATE_TYPE_IDX (type);
   if (!canonical_template_parms)
-    vec_alloc (canonical_template_parms, idx+1);
+    vec_alloc (canonical_template_parms, idx + 1);
 
-  while (canonical_template_parms->length () <= (unsigned)idx)
-    vec_safe_push (canonical_template_parms, NULL_TREE);
+  if (canonical_template_parms->length () <= (unsigned) idx)
+    vec_safe_grow_cleared (canonical_template_parms, idx + 1);
 
   list = (*canonical_template_parms)[idx];
   while (list && !comptypes (type, TREE_VALUE (list), COMPARE_STRUCTURAL))
@@ -3991,8 +3991,7 @@ canonical_type_parameter (tree type)
   else
     {
       (*canonical_template_parms)[idx]
-		= tree_cons (NULL_TREE, type,
-			     (*canonical_template_parms)[idx]);
+	= tree_cons (NULL_TREE, type, (*canonical_template_parms)[idx]);
       return type;
     }
 }
@@ -5962,7 +5961,7 @@ convert_nontype_argument_function (tree type, tree expr,
     return error_mark_node;
 
   if (value_dependent_expression_p (fn))
-    return fn;
+    goto accept;
 
   fn_no_ptr = strip_fnptr_conv (fn);
   if (TREE_CODE (fn_no_ptr) == ADDR_EXPR)
@@ -6011,6 +6010,7 @@ convert_nontype_argument_function (tree type, tree expr,
       return NULL_TREE;
     }
 
+ accept:
   if (TREE_CODE (type) == REFERENCE_TYPE)
     fn = build_address (fn);
   if (!same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (fn)))
@@ -11389,12 +11389,10 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	      if (!(complain & tf_error))
 		/* Fail quietly.  */;
               else if (TREE_CODE (t) == TYPE_PACK_EXPANSION)
-                error ("mismatched argument pack lengths while expanding "
-                       "%<%T%>",
+                error ("mismatched argument pack lengths while expanding %qT",
                        pattern);
               else
-                error ("mismatched argument pack lengths while expanding "
-                       "%<%E%>",
+                error ("mismatched argument pack lengths while expanding %qE",
                        pattern);
               return error_mark_node;
             }
@@ -14393,6 +14391,8 @@ tsubst_init (tree init, tree decl, tree args,
 			       complain);
       if (TREE_CODE (init) == AGGR_INIT_EXPR)
 	init = get_target_expr_sfinae (init, complain);
+      if (TREE_CODE (init) == TARGET_EXPR)
+	TARGET_EXPR_DIRECT_INIT_P (init) = true;
     }
 
   return init;
@@ -14547,7 +14547,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    {
 	      /* First try name lookup to find the instantiation.  */
 	      r = lookup_name (DECL_NAME (t));
-	      if (r)
+	      if (r && !is_capture_proxy (r))
 		{
 		  /* Make sure that the one we found is the one we want.  */
 		  tree ctx = DECL_CONTEXT (t);
@@ -23559,6 +23559,12 @@ value_dependent_expression_p (tree expression)
 	      || type_dependent_expression_p (DECL_INITIAL (expression))
 	      || value_dependent_expression_p (DECL_INITIAL (expression))))
 	return true;
+      if (DECL_HAS_VALUE_EXPR_P (expression))
+	{
+	  tree value_expr = DECL_VALUE_EXPR (expression);
+	  if (type_dependent_expression_p (value_expr))
+	    return true;
+	}
       return false;
 
     case DYNAMIC_CAST_EXPR:
@@ -24930,6 +24936,8 @@ rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
       newidx = TEMPLATE_TYPE_PARM_INDEX (newtype)
 	= build_template_parm_index (index, level, level,
 				     newdecl, newtype);
+      TEMPLATE_PARM_PARAMETER_PACK (newidx)
+	= TEMPLATE_PARM_PARAMETER_PACK (oldidx);
       TYPE_STUB_DECL (newtype) = TYPE_NAME (newtype) = newdecl;
       TYPE_CANONICAL (newtype) = canonical_type_parameter (newtype);
 
@@ -24977,11 +24985,11 @@ rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
       SET_DECL_TEMPLATE_PARM_P (newconst);
       newidx = build_template_parm_index (index, level, level,
 					  newconst, newtype);
+      TEMPLATE_PARM_PARAMETER_PACK (newidx)
+	= TEMPLATE_PARM_PARAMETER_PACK (oldidx);
       DECL_INITIAL (newdecl) = DECL_INITIAL (newconst) = newidx;
     }
 
-  TEMPLATE_PARM_PARAMETER_PACK (newidx)
-    = TEMPLATE_PARM_PARAMETER_PACK (oldidx);
   return newdecl;
 }
 

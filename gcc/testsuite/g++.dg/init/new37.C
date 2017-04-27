@@ -41,7 +41,7 @@ struct T1 {
 
 struct T2 {
   static const double n = 2; // { dg-error "23:'constexpr' needed" "" { target c++11 } }
-  // { dg-error "23:ISO C\\+\\+ forbids" "" { target c++98_only } 43 }
+  // { dg-error "23:ISO C\\+\\+ forbids" "" { target c++98_only } .-1 }
 };
 
 struct T3 {

@@ -5454,6 +5454,16 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      if (fsym && fsym->attr.allocatable
 		  && fsym->attr.intent == INTENT_OUT)
 		{
+		  if (fsym->ts.type == BT_DERIVED
+		      && fsym->ts.u.derived->attr.alloc_comp)
+		  {
+		    // deallocate the components first
+		    tmp = gfc_deallocate_alloc_comp (fsym->ts.u.derived,
+						     parmse.expr, e->rank);
+		    if (tmp != NULL_TREE)
+		      gfc_add_expr_to_block (&se->pre, tmp);
+		  }
+
 		  tmp = build_fold_indirect_ref_loc (input_location,
 						     parmse.expr);
 		  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))

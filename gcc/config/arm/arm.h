@@ -343,6 +343,12 @@ extern int arm_fpu_attr;
 #define ARM_DEFAULT_ABI ARM_ABI_APCS
 #endif
 
+/* AAPCS based ABIs use short enums by default.  */
+#ifndef ARM_DEFAULT_SHORT_ENUMS
+#define ARM_DEFAULT_SHORT_ENUMS \
+  (TARGET_AAPCS_BASED && arm_abi != ARM_ABI_AAPCS_LINUX)
+#endif
+
 /* Map each of the micro-architecture variants to their corresponding
    major architecture revision.  */
 

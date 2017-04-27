@@ -235,6 +235,10 @@ package body Ch4 is
 
       if Token = Tok_At_Sign then
          Scan_Reserved_Identifier (Force_Msg => False);
+
+         if Present (Current_Assign_Node) then
+            Set_Has_Target_Names (Current_Assign_Node);
+         end if;
       end if;
 
       Name_Node := Token_Node;
@@ -3198,6 +3202,20 @@ package body Ch4 is
 
          if Token = Tok_When then
             T_Comma;
+
+         --  A semicolon followed by "when" is probably meant to be a comma
+
+         elsif Token = Tok_Semicolon then
+            Save_Scan_State (Save_State);
+            Scan; -- past the semicolon
+
+            if Token /= Tok_When then
+               Restore_Scan_State (Save_State);
+               exit;
+            end if;
+
+            Error_Msg_SP -- CODEFIX
+              ("|"";"" should be "",""");
 
          --  If comma/WHEN, skip comma and we have another alternative
 

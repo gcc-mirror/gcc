@@ -38,9 +38,9 @@ package Gnatvsn is
    --  Static string identifying this version, that can be used as an argument
    --  to e.g. pragma Ident.
 
-   Library_Version : constant String := "7";
-   --  Library version. It needs to be updated whenever the major or
-   --  minor version number is changed.
+   Library_Version : constant String := "8";
+   --  Library version. It needs to be updated whenever the major version
+   --  number is changed.
    --
    --  Note: Makefile.in uses the library version string to construct the
    --  soname value.

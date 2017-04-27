@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2767,6 +2767,10 @@ package body Exp_Ch4 is
       --  Set True during generation of the assignments of operands into
       --  result once an operand known to be non-null has been seen.
 
+      function Library_Level_Target return Boolean;
+      --  Return True if the concatenation is within the expression of the
+      --  declaration of a library-level object.
+
       function Make_Artyp_Literal (Val : Nat) return Node_Id;
       --  This function makes an N_Integer_Literal node that is returned in
       --  analyzed form with the type set to Artyp. Importantly this literal
@@ -2781,6 +2785,30 @@ package body Exp_Ch4 is
 
       function To_Ityp (X : Node_Id) return Node_Id;
       --  The inverse function (uses Val in the case of enumeration types)
+
+      --------------------------
+      -- Library_Level_Target --
+      --------------------------
+
+      function Library_Level_Target return Boolean is
+         P : Node_Id := Parent (Cnode);
+
+      begin
+         while Present (P) loop
+            if Nkind (P) = N_Object_Declaration then
+               return Is_Library_Level_Entity (Defining_Identifier (P));
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (P) then
+               return False;
+            end if;
+
+            P := Parent (P);
+         end loop;
+
+         return False;
+      end Library_Level_Target;
 
       ------------------------
       -- Make_Artyp_Literal --
@@ -2841,16 +2869,6 @@ package body Exp_Ch4 is
       end To_Ityp;
 
       --  Local Declarations
-
-      Lib_Level_Target : constant Boolean :=
-        Nkind (Parent (Cnode)) = N_Object_Declaration
-          and then
-            Is_Library_Level_Entity (Defining_Identifier (Parent (Cnode)));
-
-      --  If the concatenation declares a library level entity, we call the
-      --  built-in concatenation routines to prevent code bloat, regardless
-      --  of optimization level. This is space-efficient, and prevent linking
-      --  problems when units are compiled with different optimizations.
 
       Opnd_Typ : Entity_Id;
       Ent      : Entity_Id;
@@ -3372,22 +3390,27 @@ package body Exp_Ch4 is
 
       --    There are nine or fewer retained (non-null) operands
 
-      --    The optimization level is -O0
+      --    The optimization level is -O0 or the debug flag gnatd.C is set,
+      --    and the debug flag gnatd.c is not set.
 
       --    The corresponding System.Concat_n.Str_Concat_n routine is
       --    available in the run time.
-
-      --    The debug flag gnatd.c is not set
 
       --  If all these conditions are met then we generate a call to the
       --  relevant concatenation routine. The purpose of this is to avoid
       --  undesirable code bloat at -O0.
 
+      --  If the concatenation is within the declaration of a library-level
+      --  object, we call the built-in concatenation routines to prevent code
+      --  bloat, regardless of the optimization level. This is space efficient
+      --  and prevents linking problems when units are compiled with different
+      --  optimization levels.
+
       if Atyp = Standard_String
         and then NN in 2 .. 9
-        and then (Lib_Level_Target
-          or else ((Optimization_Level = 0 or else Debug_Flag_Dot_CC)
-                     and then not Debug_Flag_Dot_C))
+        and then (((Optimization_Level = 0 or else Debug_Flag_Dot_CC)
+                     and then not Debug_Flag_Dot_C)
+                  or else Library_Level_Target)
       then
          declare
             RR : constant array (Nat range 2 .. 9) of RE_Id :=
@@ -4695,9 +4718,34 @@ package body Exp_Ch4 is
    ------------------------------
 
    procedure Expand_N_Case_Expression (N : Node_Id) is
-      Loc        : constant Source_Ptr := Sloc (N);
-      Par        : constant Node_Id    := Parent (N);
-      Typ        : constant Entity_Id  := Etype (N);
+
+      function Is_Copy_Type (Typ : Entity_Id) return Boolean;
+      --  Return True if we can copy objects of this type when expanding a case
+      --  expression.
+
+      ------------------
+      -- Is_Copy_Type --
+      ------------------
+
+      function Is_Copy_Type (Typ : Entity_Id) return Boolean is
+      begin
+         --  If Minimize_Expression_With_Actions is True, we can afford to copy
+         --  large objects, as long as they are constrained and not limited.
+
+         return
+           Is_Elementary_Type (Underlying_Type (Typ))
+             or else
+               (Minimize_Expression_With_Actions
+                 and then Is_Constrained (Underlying_Type (Typ))
+                 and then not Is_Limited_View (Underlying_Type (Typ)));
+      end Is_Copy_Type;
+
+      --  Local variables
+
+      Loc : constant Source_Ptr := Sloc (N);
+      Par : constant Node_Id    := Parent (N);
+      Typ : constant Entity_Id  := Etype (N);
+
       Acts       : List_Id;
       Alt        : Node_Id;
       Case_Stmt  : Node_Id;
@@ -4712,6 +4760,8 @@ package body Exp_Ch4 is
       Optimize_Return_Stmt : Boolean := False;
       --  Flag set when the case expression can be optimized in the context of
       --  a simple return statement.
+
+   --  Start of processing for Expand_N_Case_Expression
 
    begin
       --  Check for MINIMIZED/ELIMINATED overflow mode
@@ -4769,6 +4819,9 @@ package body Exp_Ch4 is
 
       --  This approach avoids extra copies of potentially large objects. It
       --  also allows handling of values of limited or unconstrained types.
+      --  Note that we do the copy also for constrained, nonlimited types
+      --  when minimizing expressions with actions (e.g. when generating C
+      --  code) since it allows us to do the optimization below in more cases.
 
       --  Small optimization: when the case expression appears in the context
       --  of a simple return statement, expand into
@@ -4794,13 +4847,13 @@ package body Exp_Ch4 is
       Set_From_Conditional_Expression (Case_Stmt);
       Acts := New_List;
 
-      --  Scalar case
+      --  Scalar/Copy case
 
-      if Is_Elementary_Type (Typ) then
+      if Is_Copy_Type (Typ) then
          Target_Typ := Typ;
 
          --  ??? Do not perform the optimization when the return statement is
-         --  within a predicate function as this causes supurious errors. Could
+         --  within a predicate function, as this causes spurious errors. Could
          --  this be a possible mismatch in handling this case somewhere else
          --  in semantic analysis?
 
@@ -4814,6 +4867,18 @@ package body Exp_Ch4 is
       --    type Ptr_Typ is access all Typ;
 
       else
+         if Generate_C_Code then
+
+            --  We cannot ensure that correct C code will be generated if
+            --  any temporary is created down the line (to e.g. handle
+            --  checks or capture values) since we might end up with
+            --  dangling references to local variables, so better be safe
+            --  and reject the construct.
+
+            Error_Msg_N
+              ("case expression too complex, use case statement instead", N);
+         end if;
+
          Target_Typ := Make_Temporary (Loc, 'P');
 
          Append_To (Acts,
@@ -4860,7 +4925,7 @@ package body Exp_Ch4 is
             --  Generate:
             --    AX'Unrestricted_Access
 
-            if not Is_Elementary_Type (Typ) then
+            if not Is_Copy_Type (Typ) then
                Alt_Expr :=
                  Make_Attribute_Reference (Alt_Loc,
                    Prefix         => Relocate_Node (Alt_Expr),
@@ -4924,7 +4989,7 @@ package body Exp_Ch4 is
       else
          Append_To (Acts, Case_Stmt);
 
-         if Is_Elementary_Type (Typ) then
+         if Is_Copy_Type (Typ) then
             Expr := New_Occurrence_Of (Target, Loc);
 
          else
@@ -5427,7 +5492,7 @@ package body Exp_Ch4 is
       end if;
 
       --  Fall through here for either the limited expansion, or the case of
-      --  inserting actions for non-limited types. In both these cases, we must
+      --  inserting actions for nonlimited types. In both these cases, we must
       --  move the SLOC of the parent If statement to the newly created one and
       --  change it to the SLOC of the expression which, after expansion, will
       --  correspond to what is being evaluated.
@@ -5836,7 +5901,7 @@ package body Exp_Ch4 is
                if Tagged_Type_Expansion then
                   Tagged_Membership (N, SCIL_Node, New_N);
                   Rewrite (N, New_N);
-                  Analyze_And_Resolve (N, Restyp);
+                  Analyze_And_Resolve (N, Restyp, Suppress => All_Checks);
 
                   --  Update decoration of relocated node referenced by the
                   --  SCIL node.
@@ -7593,20 +7658,12 @@ package body Exp_Ch4 is
    -----------------------
 
    procedure Expand_N_Op_Expon (N : Node_Id) is
-      Loc    : constant Source_Ptr := Sloc (N);
-      Typ    : constant Entity_Id  := Etype (N);
-      Rtyp   : constant Entity_Id  := Root_Type (Typ);
-      Base   : constant Node_Id    := Relocate_Node (Left_Opnd (N));
-      Bastyp : constant Node_Id    := Etype (Base);
-      Exp    : constant Node_Id    := Relocate_Node (Right_Opnd (N));
-      Exptyp : constant Entity_Id  := Etype (Exp);
-      Ovflo  : constant Boolean    := Do_Overflow_Check (N);
-      Expv   : Uint;
-      Temp   : Node_Id;
-      Rent   : RE_Id;
-      Ent    : Entity_Id;
-      Etyp   : Entity_Id;
-      Xnode  : Node_Id;
+      Loc   : constant Source_Ptr := Sloc (N);
+      Ovflo : constant Boolean    := Do_Overflow_Check (N);
+      Typ   : constant Entity_Id  := Etype (N);
+      Rtyp  : constant Entity_Id  := Root_Type (Typ);
+
+      Bastyp : Entity_Id;
 
       function Wrap_MA (Exp : Node_Id) return Node_Id;
       --  Given an expression Exp, if the root type is Float or Long_Float,
@@ -7621,6 +7678,7 @@ package body Exp_Ch4 is
 
       function Wrap_MA (Exp : Node_Id) return Node_Id is
          Loc : constant Source_Ptr := Sloc (Exp);
+
       begin
          if Rtyp = Standard_Float or else Rtyp = Standard_Long_Float then
             return
@@ -7633,7 +7691,19 @@ package body Exp_Ch4 is
          end if;
       end Wrap_MA;
 
-   --  Start of processing for Expand_N_Op
+      --  Local variables
+
+      Base   : Node_Id;
+      Ent    : Entity_Id;
+      Etyp   : Entity_Id;
+      Exp    : Node_Id;
+      Exptyp : Entity_Id;
+      Expv   : Uint;
+      Rent   : RE_Id;
+      Temp   : Node_Id;
+      Xnode  : Node_Id;
+
+   --  Start of processing for Expand_N_Op_Expon
 
    begin
       Binary_Op_Validity_Checks (N);
@@ -7643,6 +7713,15 @@ package body Exp_Ch4 is
       if CodePeer_Mode then
          return;
       end if;
+
+      --  Relocation of left and right operands must be done after performing
+      --  the validity checks since the generation of validation checks may
+      --  remove side effects.
+
+      Base   := Relocate_Node (Left_Opnd (N));
+      Bastyp := Etype (Base);
+      Exp    := Relocate_Node (Right_Opnd (N));
+      Exptyp := Etype (Exp);
 
       --  If either operand is of a private type, then we have the use of an
       --  intrinsic operator, and we get rid of the privateness, by using root
@@ -10742,13 +10821,28 @@ package body Exp_Ch4 is
 
       if Is_Access_Type (Target_Type) then
 
+         --  If this type conversion was internally generated by the front end
+         --  to displace the pointer to the object to reference an interface
+         --  type and the original node was an Unrestricted_Access attribute,
+         --  then skip applying accessibility checks (because, according to the
+         --  GNAT Reference Manual, this attribute is similar to 'Access except
+         --  that all accessibility and aliased view checks are omitted).
+
+         if not Comes_From_Source (N)
+           and then Is_Interface (Designated_Type (Target_Type))
+           and then Nkind (Original_Node (N)) = N_Attribute_Reference
+           and then Attribute_Name (Original_Node (N)) =
+                      Name_Unrestricted_Access
+         then
+            null;
+
          --  Apply an accessibility check when the conversion operand is an
          --  access parameter (or a renaming thereof), unless conversion was
          --  expanded from an Unchecked_ or Unrestricted_Access attribute.
          --  Note that other checks may still need to be applied below (such
          --  as tagged type checks).
 
-         if Is_Entity_Name (Operand)
+         elsif Is_Entity_Name (Operand)
            and then Has_Extra_Accessibility (Entity (Operand))
            and then Ekind (Etype (Operand)) = E_Anonymous_Access_Type
            and then (Nkind (Original_Node (N)) /= N_Attribute_Reference
@@ -10885,7 +10979,8 @@ package body Exp_Ch4 is
                Insert_Action (N,
                  Make_Raise_Constraint_Error (Loc,
                    Condition => Cond,
-                   Reason    => CE_Tag_Check_Failed));
+                   Reason    => CE_Tag_Check_Failed),
+                 Suppress => All_Checks);
             end Make_Tag_Check;
 
          --  Start of processing for Tagged_Conversion
@@ -13158,12 +13253,10 @@ package body Exp_Ch4 is
    ------------------------
 
    procedure Rewrite_Comparison (N : Node_Id) is
-      Warning_Generated : Boolean := False;
-      --  Set to True if first pass with Assume_Valid generates a warning in
-      --  which case we skip the second pass to avoid warning overloaded.
+      Typ : constant Entity_Id := Etype (N);
 
-      Result : Node_Id;
-      --  Set to Standard_True or Standard_False
+      False_Result : Boolean;
+      True_Result  : Boolean;
 
    begin
       if Nkind (N) = N_Type_Conversion then
@@ -13174,125 +13267,31 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  Now start looking at the comparison in detail. We potentially go
-      --  through this loop twice. The first time, Assume_Valid is set False
-      --  in the call to Compile_Time_Compare. If this call results in a
-      --  clear result of always True or Always False, that's decisive and
-      --  we are done. Otherwise we repeat the processing with Assume_Valid
-      --  set to True to generate additional warnings. We can skip that step
-      --  if Constant_Condition_Warnings is False.
+      --  Determine the potential outcome of the comparison assuming that the
+      --  operands are valid and emit a warning when the comparison evaluates
+      --  to True or False only in the presence of invalid values.
 
-      for AV in False .. True loop
-         declare
-            Typ : constant Entity_Id := Etype (N);
-            Op1 : constant Node_Id   := Left_Opnd (N);
-            Op2 : constant Node_Id   := Right_Opnd (N);
+      Warn_On_Constant_Valid_Condition (N);
 
-            Res : constant Compare_Result :=
-                    Compile_Time_Compare (Op1, Op2, Assume_Valid => AV);
-            --  Res indicates if compare outcome can be compile time determined
+      --  Determine the potential outcome of the comparison assuming that the
+      --  operands are not valid.
 
-            True_Result  : Boolean;
-            False_Result : Boolean;
+      Test_Comparison
+        (Op           => N,
+         Assume_Valid => False,
+         True_Result  => True_Result,
+         False_Result => False_Result);
 
-         begin
-            case N_Op_Compare (Nkind (N)) is
-               when N_Op_Eq =>
-                  True_Result  := Res = EQ;
-                  False_Result := Res = LT or else Res = GT or else Res = NE;
+      --  The outcome is a decisive False or True, rewrite the operator
 
-               when N_Op_Ge =>
-                  True_Result  := Res in Compare_GE;
-                  False_Result := Res = LT;
+      if False_Result or True_Result then
+         Rewrite (N,
+           Convert_To (Typ,
+             New_Occurrence_Of (Boolean_Literals (True_Result), Sloc (N))));
 
-                  if Res = LE
-                    and then Constant_Condition_Warnings
-                    and then Comes_From_Source (Original_Node (N))
-                    and then Nkind (Original_Node (N)) = N_Op_Ge
-                    and then not In_Instance
-                    and then Is_Integer_Type (Etype (Left_Opnd (N)))
-                    and then not Has_Warnings_Off (Etype (Left_Opnd (N)))
-                  then
-                     Error_Msg_N
-                       ("can never be greater than, could replace by "
-                        & """'=""?c?", N);
-                     Warning_Generated := True;
-                  end if;
-
-               when N_Op_Gt =>
-                  True_Result  := Res = GT;
-                  False_Result := Res in Compare_LE;
-
-               when N_Op_Lt =>
-                  True_Result  := Res = LT;
-                  False_Result := Res in Compare_GE;
-
-               when N_Op_Le =>
-                  True_Result  := Res in Compare_LE;
-                  False_Result := Res = GT;
-
-                  if Res = GE
-                    and then Constant_Condition_Warnings
-                    and then Comes_From_Source (Original_Node (N))
-                    and then Nkind (Original_Node (N)) = N_Op_Le
-                    and then not In_Instance
-                    and then Is_Integer_Type (Etype (Left_Opnd (N)))
-                    and then not Has_Warnings_Off (Etype (Left_Opnd (N)))
-                  then
-                     Error_Msg_N
-                       ("can never be less than, could replace by ""'=""?c?",
-                        N);
-                     Warning_Generated := True;
-                  end if;
-
-               when N_Op_Ne =>
-                  True_Result  := Res = NE or else Res = GT or else Res = LT;
-                  False_Result := Res = EQ;
-            end case;
-
-            --  If this is the first iteration, then we actually convert the
-            --  comparison into True or False, if the result is certain.
-
-            if AV = False then
-               if True_Result or False_Result then
-                  Result := Boolean_Literals (True_Result);
-                  Rewrite (N,
-                    Convert_To (Typ,
-                      New_Occurrence_Of (Result, Sloc (N))));
-                  Analyze_And_Resolve (N, Typ);
-                  Warn_On_Known_Condition (N);
-                  return;
-               end if;
-
-            --  If this is the second iteration (AV = True), and the original
-            --  node comes from source and we are not in an instance, then give
-            --  a warning if we know result would be True or False. Note: we
-            --  know Constant_Condition_Warnings is set if we get here.
-
-            elsif Comes_From_Source (Original_Node (N))
-              and then not In_Instance
-            then
-               if True_Result then
-                  Error_Msg_N
-                    ("condition can only be False if invalid values present??",
-                     N);
-               elsif False_Result then
-                  Error_Msg_N
-                    ("condition can only be True if invalid values present??",
-                     N);
-               end if;
-            end if;
-         end;
-
-         --  Skip second iteration if not warning on constant conditions or
-         --  if the first iteration already generated a warning of some kind or
-         --  if we are in any case assuming all values are valid (so that the
-         --  first iteration took care of the valid case).
-
-         exit when not Constant_Condition_Warnings;
-         exit when Warning_Generated;
-         exit when Assume_No_Invalid_Values;
-      end loop;
+         Analyze_And_Resolve (N, Typ);
+         Warn_On_Known_Condition (N);
+      end if;
    end Rewrite_Comparison;
 
    ----------------------------

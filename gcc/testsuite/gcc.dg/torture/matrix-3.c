@@ -11,7 +11,7 @@ int ***vel;
 void just_a_call (int *);
 
 /* The last dimension of VEL escapes because it was sent
-   as argumet to just_a_call(). (external function)
+   as argument to just_a_call(). (external function)
    Only the two external dimensions are flattened.
    Run with -c.  */
 

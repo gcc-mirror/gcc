@@ -26,13 +26,13 @@ void foo()
       goto bad2;		// { dg-message "from here" }
     }
   bad2:;			// { dg-error "jump" }
-                                // { dg-message "exits OpenMP" "" { target *-*-* } 28 }
+                                // { dg-message "exits OpenMP" "" { target *-*-* } .-1 }
 
   goto bad3;			// { dg-message "from here" }
   #pragma omp sections
     {
       bad3: ;			// { dg-error "jump" }
-                                // { dg-message "enters OpenMP" "" { target *-*-* } 34 }
+                                // { dg-message "enters OpenMP" "" { target *-*-* } .-1 }
     }
 
   #pragma omp sections

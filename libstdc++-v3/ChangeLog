@@ -1,3 +1,165 @@
+2017-04-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80506
+	* include/bits/random.tcc (gamma_distribution::operator()): Fix magic
+	number used in loop condition.
+
+	PR libstdc++/80504
+	* include/bits/refwrap.h (ref, cref): Qualify calls.
+	* testsuite/20_util/reference_wrapper/80504.cc: New test.
+
+	PR libstdc++/80493
+	* include/experimental/optional (optional::swap): Fix exception
+	specification.
+
+2017-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80316
+	* include/std/future (_State_baseV2::_Setter::operator()): Remove
+	_S_check calls that are done after the pointer to the shared state is
+	already dereferenced.
+	(_State_baseV2::_Setter<_Res, void>): Define specialization for void
+	as partial specialization so it can be defined within the definition
+	of _State_baseV2.
+	(_State_baseV2::__setter): Call _S_check.
+	(_State_baseV2::__setter(promise<void>*)): Add overload for use by
+	promise<void>::set_value and promise<void>::set_value_at_thread_exit.
+	(promise<T>, promise<T&>, promise<void>): Make _State a friend.
+	(_State_baseV2::_Setter<void, void>): Remove explicit specialization.
+	(promise<void>::set_value, promise<void>::set_value_at_thread_exit):
+	Use new __setter overload.
+	* testsuite/30_threads/promise/members/at_thread_exit2.cc: New test.
+	* testsuite/30_threads/promise/members/set_exception.cc: Test
+	promise<T&> and promise<void> specializations.
+	* testsuite/30_threads/promise/members/set_exception2.cc: Likewise.
+	Test for no_state error condition.
+	* testsuite/30_threads/promise/members/set_value2.cc: Likewise.
+
+	* include/backward/auto_ptr.h: Ignore deprecated warnings from use
+	of auto_ptr.
+	* include/bits/shared_ptr.h: Likewise.
+	* include/bits/shared_ptr_base.h: Likewise.
+	* include/bits/unique_ptr.h: Likewise.
+	* libstdc++-v3/testsuite/20_util/default_delete/48631_neg.cc: Adjust
+	dg-error lineno.
+	* libstdc++-v3/testsuite/20_util/default_delete/void_neg.cc: Likewise.
+	* libstdc++-v3/testsuite/20_util/unique_ptr/assign/48635_neg.cc:
+	Likewise.
+	* libstdc++-v3/testsuite/20_util/unique_ptr/cons/cv_qual_neg.cc:
+	Likewise.
+
+2017-04-20  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/68397 std::tr1::expint fails ... long double arguments.
+	* include/tr1/exp_integral.tcc: Increase iteration limits.
+	* testsuite/tr1/5_numerical_facilities/special_functions/15_expint/
+	pr68397.cc: New test.
+	* testsuite/special_functions/14_expint/pr68397.cc: New test.
+
+2017-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79862
+	* include/std/atomic [!_GLIBCXX_USE_C99_STDINT_TR1] (atomic_int8_t)
+	(atomic_uint8_t, atomic_int16_t, atomic_uint16_t, atomic_int32_t,
+	(atomic_uint32_t, atomic_int64_t, atomic_uint64_t)
+	(atomic_int_least8_t, atomic_uint_least8_t, atomic_int_least16_t)
+	(atomic_uint_least16_t, atomic_int_least32_t, atomic_uint_least32_t)
+	(atomic_int_least64_t, atomic_uint_least64_t, atomic_int_fast8_t)
+	(atomic_uint_fast8_t, atomic_int_fast16_t, atomic_uint_fast16_t)
+	(atomic_int_fast32_t, atomic_uint_fast32_t, atomic_int_fast64_t)
+	(atomic_uint_fast64_t, atomic_intmax_t, atomic_uintmax_t): Don't
+	define.
+
+2017-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Rephrase one of the references to the
+	Itanium C++ ABI.
+	* doc/xml/manual/test.xml: Document DejaGnu 1.5.3 requirement.
+	* doc/html/*: Regenerate.
+
+	* libsupc++/new: Update comment on #endif directive.
+
+	PR libstdc++/80448
+	* include/experimental/bits/fs_dir.h (directory_iterator)
+	(recursive_directory_iterator): Remove noexcept from defaulted
+	constructors.
+
+	PR libstdc++/80446
+	* include/std/type_traits (is_aggregate): Change __has_builtin checks.
+	* libsupc++/new (launder): Likewise.
+
+2017-04-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/functional (default_searcher, __boyer_moore_array_base)
+	(__is_std_equal_to, __boyer_moore_base_t, boyer_moore_searcher)
+	(boyer_moore_horspool_searcher): Remove redundant namespace
+	qualification.
+	(default_searcher::operator()): Construct return value early and
+	advance second member in-place.
+	(boyer_moore_horspool_searcher::operator()): Increment random access
+	iterator directly instead of using std::next.
+	(boyer_moore_searcher::operator()): Fix return value.
+	* testsuite/20_util/function_objects/searchers.cc: Check both parts
+	of return values.
+
+2017-04-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/faq.xml: Update reference link to C++ ABI for Itanium.
+	* doc/xml/manual/abi.xml. Ditto (thrice).
+
+2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Remove duplicate table entry.
+	* doc/html/*: Regenerate.
+
+	* testsuite/20_util/reference_wrapper/invoke.cc: Uncomment tests
+	that no longer fail.
+
+	* include/bits/ios_base.h: Correct comment.
+	* testsuite/util/testsuite_hooks.h: Likewise.
+
+	* doc/xml/manual/status_cxx2017.xml: Update C++17 status table.
+	* doc/xml/manual/appendix_contributing.xml (contrib.organization): Add
+	directories for debug, parallel and profile headers.
+	* doc/html/*: Regenerate.
+
+	* include/bits/char_traits.h (__gnu_cxx::char_traits): Add
+	_GLIBCXX14_CONSTEXPR on assign, compare, find, and length.
+	(std::char_traits<char>, std::char_traits<wchar_t>): Add
+	_GLIBCXX17_CONSTEXPR on assign.
+	(std::char_traits<char16_t>, std::char_traits<char32_t>): Add
+	_GLIBCXX17_CONSTEXPR on assign, compare, find, and length.
+	* testsuite/21_strings/char_traits/requirements/
+	constexpr_functions_c++17.cc: New test.
+
+2017-04-03  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/79141
+	* include/bits/stl_pair.h (__nonesuch_no_braces): New.
+	(operator=(typename conditional<
+	__and_<is_copy_assignable<_T1>,
+	is_copy_assignable<_T2>>::value,
+	const pair&, const __nonesuch&>::type)): Change __nonesuch
+	to __nonesuch_no_braces.
+	(operator=(typename conditional<
+	__not_<__and_<is_copy_assignable<_T1>,
+	is_copy_assignable<_T2>>>::value,
+	const pair&, const __nonesuch&>::type)): Likewise.
+	(operator=(typename conditional<
+	__and_<is_move_assignable<_T1>,
+	is_move_assignable<_T2>>::value,
+	pair&&, __nonesuch&&>::type)): Likewise.
+	* testsuite/20_util/pair/79141.cc: New.
+
+2017-04-03  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement std::is_aggregate.
+	* include/std/type_traits (is_aggregate, is_aggregate_v): New.
+	* testsuite/20_util/is_aggregate/requirements/explicit_instantiation.cc:
+	New.
+	* testsuite/20_util/is_aggregate/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_aggregate/value.cc: Likewise.
+
 2017-03-29  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Adjust optional's pretty printer for LWG 2900.

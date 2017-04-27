@@ -35,7 +35,7 @@ proc find-cxx-tests { dir suffix } {
     set tests [lsort [glob -nocomplain -directory $dir "*.$suffix" ]]
     foreach subdir [lsort [glob -nocomplain -type d -directory $dir *]] {
 	if { [glob -nocomplain -directory $subdir *.exp] eq "" } {
-	    lappend tests {*}[find-cxx-tests $subdir $suffix]
+	    eval lappend tests [find-cxx-tests $subdir $suffix]
 	}
     }
     return $tests

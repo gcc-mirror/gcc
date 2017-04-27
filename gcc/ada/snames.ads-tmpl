@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -275,14 +275,18 @@ package Snames is
    Name_EDF                            : constant Name_Id := N + $;
    Name_Reset_Standard_Files           : constant Name_Id := N + $;
    Name_Sequential_IO                  : constant Name_Id := N + $;
+   Name_Strings                        : constant Name_Id := N + $;
    Name_Streams                        : constant Name_Id := N + $;
    Name_Suspend_Until_True             : constant Name_Id := N + $;
    Name_Suspend_Until_True_And_Set_Deadline : constant Name_Id := N + $;
    Name_Synchronous_Barriers           : constant Name_Id := N + $;
    Name_Task_Identification            : constant Name_Id := N + $;
    Name_Text_Streams                   : constant Name_Id := N + $;
+   Name_Unbounded                      : constant Name_Id := N + $;
    Name_Unbounded_IO                   : constant Name_Id := N + $;
    Name_Wait_For_Release               : constant Name_Id := N + $;
+   Name_Wide_Unbounded                 : constant Name_Id := N + $;
+   Name_Wide_Wide_Unbounded            : constant Name_Id := N + $;
    Name_Yield                          : constant Name_Id := N + $;
 
    --  Names of implementations of the distributed systems annex
@@ -433,6 +437,7 @@ package Snames is
    Name_License                        : constant Name_Id := N + $; -- GNAT
    Name_Locking_Policy                 : constant Name_Id := N + $;
    Name_Loop_Optimize                  : constant Name_Id := N + $; -- GNAT
+   Name_No_Heap_Finalization           : constant Name_Id := N + $; -- GNAT
    Name_No_Run_Time                    : constant Name_Id := N + $; -- GNAT
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
    Name_No_Tagged_Streams              : constant Name_Id := N + $; -- GNAT
@@ -508,6 +513,7 @@ package Snames is
    --  correctly recognize and process CPU. CPU is a standard Ada 2012
    --  pragma.
 
+   Name_Deadline_Floor                 : constant Name_Id := N + $; -- GNAT
    Name_Debug                          : constant Name_Id := N + $; -- GNAT
    Name_Default_Initial_Condition      : constant Name_Id := N + $; -- GNAT
    Name_Depends                        : constant Name_Id := N + $; -- GNAT
@@ -743,6 +749,7 @@ package Snames is
    Name_General                        : constant Name_Id := N + $;
    Name_Gnat                           : constant Name_Id := N + $;
    Name_Gnat_Extended_Ravenscar        : constant Name_Id := N + $;
+   Name_Gnat_Ravenscar_EDF             : constant Name_Id := N + $;
    Name_Gnatprove                      : constant Name_Id := N + $;
    Name_GPL                            : constant Name_Id := N + $;
    Name_High_Order_First               : constant Name_Id := N + $;
@@ -1398,6 +1405,7 @@ package Snames is
    Name_Project_Path                       : constant Name_Id := N + $;
    Name_Project_Subdir                     : constant Name_Id := N + $;
    Name_Remote                             : constant Name_Id := N + $;
+   Name_Required_Artifacts                 : constant Name_Id := N + $;
    Name_Response_File_Format               : constant Name_Id := N + $;
    Name_Response_File_Switches             : constant Name_Id := N + $;
    Name_Root_Dir                           : constant Name_Id := N + $;
@@ -1797,6 +1805,7 @@ package Snames is
       Pragma_License,
       Pragma_Locking_Policy,
       Pragma_Loop_Optimize,
+      Pragma_No_Heap_Finalization,
       Pragma_No_Run_Time,
       Pragma_No_Strict_Aliasing,
       Pragma_No_Tagged_Streams,
@@ -1864,6 +1873,7 @@ package Snames is
       Pragma_CPP_Constructor,
       Pragma_CPP_Virtual,
       Pragma_CPP_Vtable,
+      Pragma_Deadline_Floor,
       Pragma_Debug,
       Pragma_Default_Initial_Condition,
       Pragma_Depends,

@@ -1,3 +1,7 @@
+2017-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* crontab: Enable snapshots from gcc-7-branch.
+
 2017-03-03  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gcc_release (snapshot_print): Replace md5 checksum by sha256.

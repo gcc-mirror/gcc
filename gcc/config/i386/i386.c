@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest-rtl.h"
 #include "print-rtl.h"
 #include "intl.h"
+#include "ifcvt.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -2808,11 +2809,23 @@ dimode_scalar_to_vector_candidate_p (rtx_insn *insn)
 
   switch (GET_CODE (src))
     {
+    case ASHIFTRT:
+      if (!TARGET_AVX512VL)
+	return false;
+      /* FALLTHRU */
+
     case ASHIFT:
     case LSHIFTRT:
-      /* FIXME: consider also variable shifts.  */
-      if (!CONST_INT_P (XEXP (src, 1))
-	  || !IN_RANGE (INTVAL (XEXP (src, 1)), 0, 63))
+      if (!REG_P (XEXP (src, 1))
+	  && (!SUBREG_P (XEXP (src, 1))
+	      || SUBREG_BYTE (XEXP (src, 1)) != 0
+	      || !REG_P (SUBREG_REG (XEXP (src, 1))))
+	  && (!CONST_INT_P (XEXP (src, 1))
+	      || !IN_RANGE (INTVAL (XEXP (src, 1)), 0, 63)))
+	return false;
+
+      if (GET_MODE (XEXP (src, 1)) != QImode
+	  && !CONST_INT_P (XEXP (src, 1)))
 	return false;
       break;
 
@@ -2823,6 +2836,10 @@ dimode_scalar_to_vector_candidate_p (rtx_insn *insn)
     case AND:
       if (!REG_P (XEXP (src, 1))
 	  && !MEM_P (XEXP (src, 1))
+	  && !CONST_INT_P (XEXP (src, 1)))
+	return false;
+
+      if (GET_MODE (XEXP (src, 1)) != DImode
 	  && !CONST_INT_P (XEXP (src, 1)))
 	return false;
       break;
@@ -2851,12 +2868,8 @@ dimode_scalar_to_vector_candidate_p (rtx_insn *insn)
 	  || !REG_P (XEXP (XEXP (src, 0), 0))))
       return false;
 
-  if ((GET_MODE (XEXP (src, 0)) != DImode
-       && !CONST_INT_P (XEXP (src, 0)))
-      || (GET_CODE (src) != NEG
-	  && GET_CODE (src) != NOT
-	  && GET_MODE (XEXP (src, 1)) != DImode
-	  && !CONST_INT_P (XEXP (src, 1))))
+  if (GET_MODE (XEXP (src, 0)) != DImode
+      && !CONST_INT_P (XEXP (src, 0)))
     return false;
 
   return true;
@@ -3404,14 +3417,20 @@ dimode_scalar_chain::compute_convert_gain ()
       else if (MEM_P (src) && REG_P (dst))
 	gain += 2 * ix86_cost->int_load[2] - ix86_cost->sse_load[1];
       else if (GET_CODE (src) == ASHIFT
+	       || GET_CODE (src) == ASHIFTRT
 	       || GET_CODE (src) == LSHIFTRT)
 	{
-	  gain += ix86_cost->add;
     	  if (CONST_INT_P (XEXP (src, 0)))
 	    gain -= vector_const_cost (XEXP (src, 0));
-	  if (CONST_INT_P (XEXP (src, 1))
-	      && INTVAL (XEXP (src, 1)) >= 32)
-	    gain -= COSTS_N_INSNS (1);
+	  if (CONST_INT_P (XEXP (src, 1)))
+	    {
+	      gain += ix86_cost->shift_const;
+	      if (INTVAL (XEXP (src, 1)) >= 32)
+		gain -= COSTS_N_INSNS (1);
+	    }
+	  else
+	    /* Additional gain for omitting two CMOVs.  */
+	    gain += ix86_cost->shift_var + COSTS_N_INSNS (2);
 	}
       else if (GET_CODE (src) == PLUS
 	       || GET_CODE (src) == MINUS
@@ -3527,15 +3546,60 @@ dimode_scalar_chain::make_vector_copies (unsigned regno)
 {
   rtx reg = regno_reg_rtx[regno];
   rtx vreg = gen_reg_rtx (DImode);
+  bool count_reg = false;
   df_ref ref;
 
   for (ref = DF_REG_DEF_CHAIN (regno); ref; ref = DF_REF_NEXT_REG (ref))
     if (!bitmap_bit_p (insns, DF_REF_INSN_UID (ref)))
       {
-	rtx_insn *insn = DF_REF_INSN (ref);
+	df_ref use;
+
+	/* Detect the count register of a shift instruction.  */
+	for (use = DF_REG_USE_CHAIN (regno); use; use = DF_REF_NEXT_REG (use))
+	  if (bitmap_bit_p (insns, DF_REF_INSN_UID (use)))
+	    {
+	      rtx_insn *insn = DF_REF_INSN (use);
+	      rtx def_set = single_set (insn);
+
+	      gcc_assert (def_set);
+
+	      rtx src = SET_SRC (def_set);
+
+	      if ((GET_CODE (src) == ASHIFT
+		   || GET_CODE (src) == ASHIFTRT
+		   || GET_CODE (src) == LSHIFTRT)
+		  && !CONST_INT_P (XEXP (src, 1))
+		  && reg_or_subregno (XEXP (src, 1)) == regno)
+		count_reg = true;
+	    }
 
 	start_sequence ();
-	if (TARGET_SSE4_1)
+	if (count_reg)
+	  {
+	    rtx qreg = gen_lowpart (QImode, reg);
+	    rtx tmp = gen_reg_rtx (SImode);
+
+	    if (TARGET_ZERO_EXTEND_WITH_AND
+		&& optimize_function_for_speed_p (cfun))
+	      {
+		emit_move_insn (tmp, const0_rtx);
+		emit_insn (gen_movstrictqi
+			   (gen_lowpart (QImode, tmp), qreg));
+	      }
+	    else
+	      emit_insn (gen_rtx_SET
+			 (tmp, gen_rtx_ZERO_EXTEND (SImode, qreg)));
+
+	    if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
+	      {
+		rtx slot = assign_386_stack_local (SImode, SLOT_STV_TEMP);
+		emit_move_insn (slot, tmp);
+		tmp = copy_rtx (slot);
+	      }
+
+	    emit_insn (gen_zero_extendsidi2 (vreg, tmp));
+	  }
+	else if (TARGET_SSE4_1)
 	  {
 	    emit_insn (gen_sse2_loadld (gen_rtx_SUBREG (V4SImode, vreg, 0),
 					CONST0_RTX (V4SImode),
@@ -3570,22 +3634,39 @@ dimode_scalar_chain::make_vector_copies (unsigned regno)
 	  }
 	rtx_insn *seq = get_insns ();
 	end_sequence ();
+	rtx_insn *insn = DF_REF_INSN (ref);
 	emit_conversion_insns (seq, insn);
 
 	if (dump_file)
 	  fprintf (dump_file,
 		   "  Copied r%d to a vector register r%d for insn %d\n",
-		   regno, REGNO (vreg), DF_REF_INSN_UID (ref));
+		   regno, REGNO (vreg), INSN_UID (insn));
       }
 
   for (ref = DF_REG_USE_CHAIN (regno); ref; ref = DF_REF_NEXT_REG (ref))
     if (bitmap_bit_p (insns, DF_REF_INSN_UID (ref)))
       {
-	replace_with_subreg_in_insn (DF_REF_INSN (ref), reg, vreg);
+	rtx_insn *insn = DF_REF_INSN (ref);
+	if (count_reg)
+	  {
+	    rtx def_set = single_set (insn);
+	    gcc_assert (def_set);
+
+	    rtx src = SET_SRC (def_set);
+
+	    if ((GET_CODE (src) == ASHIFT
+		 || GET_CODE (src) == ASHIFTRT
+		 || GET_CODE (src) == LSHIFTRT)
+		&& !CONST_INT_P (XEXP (src, 1))
+		&& reg_or_subregno (XEXP (src, 1)) == regno)
+	      XEXP (src, 1) = vreg;
+	  }
+	else
+	  replace_with_subreg_in_insn (insn, reg, vreg);
 
 	if (dump_file)
 	  fprintf (dump_file, "  Replaced r%d with r%d in insn %d\n",
-		   regno, REGNO (vreg), DF_REF_INSN_UID (ref));
+		   regno, REGNO (vreg), INSN_UID (insn));
       }
 }
 
@@ -3676,11 +3757,53 @@ dimode_scalar_chain::convert_reg (unsigned regno)
       {
 	if (bitmap_bit_p (conv, DF_REF_INSN_UID (ref)))
 	  {
-	    rtx def_set = single_set (DF_REF_INSN (ref));
-	    if (!MEM_P (SET_DEST (def_set))
-		|| !REG_P (SET_SRC (def_set)))
-	      replace_with_subreg_in_insn (DF_REF_INSN (ref), reg, reg);
-	    bitmap_clear_bit (conv, DF_REF_INSN_UID (ref));
+	    rtx_insn *insn = DF_REF_INSN (ref);
+
+	    rtx def_set = single_set (insn);
+	    gcc_assert (def_set);
+
+	    rtx src = SET_SRC (def_set);
+	    rtx dst = SET_DEST (def_set);
+
+	    if ((GET_CODE (src) == ASHIFT
+		 || GET_CODE (src) == ASHIFTRT
+		 || GET_CODE (src) == LSHIFTRT)
+		&& !CONST_INT_P (XEXP (src, 1))
+		&& reg_or_subregno (XEXP (src, 1)) == regno)
+	      {
+		rtx tmp2 = gen_reg_rtx (V2DImode);
+
+		start_sequence ();
+
+		if (TARGET_SSE4_1)
+		  emit_insn (gen_sse4_1_zero_extendv2qiv2di2
+			     (tmp2, gen_rtx_SUBREG (V16QImode, reg, 0)));
+		else
+		  {
+		    rtx vec_cst
+		      = gen_rtx_CONST_VECTOR (V2DImode,
+					      gen_rtvec (2, GEN_INT (0xff),
+							 const0_rtx));
+		    vec_cst
+		      = validize_mem (force_const_mem (V2DImode, vec_cst));
+
+		    emit_insn (gen_rtx_SET
+			       (tmp2,
+				gen_rtx_AND (V2DImode,
+					     gen_rtx_SUBREG (V2DImode, reg, 0),
+					     vec_cst)));
+		  }
+		rtx_insn *seq = get_insns ();
+		end_sequence ();
+
+		emit_insn_before (seq, insn);
+
+		XEXP (src, 1) = gen_rtx_SUBREG (DImode, tmp2, 0);
+	      }
+	    else if (!MEM_P (dst) || !REG_P (src))
+	      replace_with_subreg_in_insn (insn, reg, reg);
+
+	    bitmap_clear_bit (conv, INSN_UID (insn));
 	  }
       }
     /* Skip debug insns and uninitialized uses.  */
@@ -3788,6 +3911,7 @@ dimode_scalar_chain::convert_insn (rtx_insn *insn)
   switch (GET_CODE (src))
     {
     case ASHIFT:
+    case ASHIFTRT:
     case LSHIFTRT:
       convert_op (&XEXP (src, 0), insn);
       PUT_MODE (src, V2DImode);
@@ -6103,13 +6227,6 @@ ix86_option_override_internal (bool main_args_p,
 			 ix86_tune_cost->l2_cache_size,
 			 opts->x_param_values,
 			 opts_set->x_param_values);
-
-  /* Restrict number of if-converted SET insns to 1.  */
-  if (TARGET_ONE_IF_CONV_INSN)
-    maybe_set_param_value (PARAM_MAX_RTL_IF_CONVERSION_INSNS,
-			   1,
-			   opts->x_param_values,
-			   opts_set->x_param_values);
 
   /* Enable sw prefetching at -O3 for CPUS that prefetching is helpful.  */
   if (opts->x_flag_prefetch_loop_arrays < 0
@@ -16713,7 +16830,7 @@ get_dllimport_decl (tree decl, bool beimport)
   return to;
 }
 
-/* Expand SYMBOL into its corresponding far-addresse symbol.
+/* Expand SYMBOL into its corresponding far-address symbol.
    WANT_REG is true if we require the result be a register.  */
 
 static rtx
@@ -17656,12 +17773,16 @@ print_reg (rtx x, int code, FILE *file)
 
   regno = REGNO (x);
 
-  gcc_assert (regno != ARG_POINTER_REGNUM
-	      && regno != FRAME_POINTER_REGNUM
-	      && regno != FPSR_REG
-	      && regno != FPCR_REG);
-
-  if (regno == FLAGS_REG)
+  if (regno == ARG_POINTER_REGNUM
+      || regno == FRAME_POINTER_REGNUM
+      || regno == FPSR_REG
+      || regno == FPCR_REG)
+    {
+      output_operand_lossage
+	("invalid use of register '%s'", reg_names[regno]);
+      return;
+    }
+  else if (regno == FLAGS_REG)
     {
       output_operand_lossage ("invalid use of asm flag output");
       return;
@@ -34863,7 +34984,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       rtx op;
       machine_mode mode;
     } args[6];
-  bool last_arg_count = false;
+  bool second_arg_count = false;
   enum insn_code icode = d->icode;
   const struct insn_data_d *insn_p = &insn_data[icode];
   machine_mode tmode = insn_p->operand[0].mode;
@@ -35099,7 +35220,28 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V1DI_FTYPE_V1DI_V1DI_COUNT:
     case V1DI_FTYPE_V1DI_SI_COUNT:
       nargs = 2;
-      last_arg_count = true;
+      second_arg_count = true;
+      break;
+    case V16HI_FTYPE_V16HI_INT_V16HI_UHI_COUNT:
+    case V16HI_FTYPE_V16HI_V8HI_V16HI_UHI_COUNT:
+    case V16SI_FTYPE_V16SI_INT_V16SI_UHI_COUNT:
+    case V16SI_FTYPE_V16SI_V4SI_V16SI_UHI_COUNT:
+    case V2DI_FTYPE_V2DI_INT_V2DI_UQI_COUNT:
+    case V2DI_FTYPE_V2DI_V2DI_V2DI_UQI_COUNT:
+    case V32HI_FTYPE_V32HI_INT_V32HI_USI_COUNT:
+    case V32HI_FTYPE_V32HI_V8HI_V32HI_USI_COUNT:
+    case V4DI_FTYPE_V4DI_INT_V4DI_UQI_COUNT:
+    case V4DI_FTYPE_V4DI_V2DI_V4DI_UQI_COUNT:
+    case V4SI_FTYPE_V4SI_INT_V4SI_UQI_COUNT:
+    case V4SI_FTYPE_V4SI_V4SI_V4SI_UQI_COUNT:
+    case V8DI_FTYPE_V8DI_INT_V8DI_UQI_COUNT:
+    case V8DI_FTYPE_V8DI_V2DI_V8DI_UQI_COUNT:
+    case V8HI_FTYPE_V8HI_INT_V8HI_UQI_COUNT:
+    case V8HI_FTYPE_V8HI_V8HI_V8HI_UQI_COUNT:
+    case V8SI_FTYPE_V8SI_INT_V8SI_UQI_COUNT:
+    case V8SI_FTYPE_V8SI_V4SI_V8SI_UQI_COUNT:
+      nargs = 4;
+      second_arg_count = true;
       break;
     case UINT64_FTYPE_UINT64_UINT64:
     case UINT_FTYPE_UINT_UINT:
@@ -35578,14 +35720,21 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       machine_mode mode = insn_p->operand[i + 1].mode;
       bool match = insn_p->operand[i + 1].predicate (op, mode);
 
-      if (last_arg_count && (i + 1) == nargs)
+      if (second_arg_count && i == 1)
 	{
 	  /* SIMD shift insns take either an 8-bit immediate or
 	     register as count.  But builtin functions take int as
-	     count.  If count doesn't match, we put it in register.  */
+	     count.  If count doesn't match, we put it in register.
+	     The instructions are using 64-bit count, if op is just
+	     32-bit, zero-extend it, as negative shift counts
+	     are undefined behavior and zero-extension is more
+	     efficient.  */
 	  if (!match)
 	    {
-	      op = lowpart_subreg (SImode, op, GET_MODE (op));
+	      if (SCALAR_INT_MODE_P (GET_MODE (op)))
+		op = convert_modes (mode, GET_MODE (op), op, 1);
+	      else
+		op = lowpart_subreg (mode, op, GET_MODE (op));
 	      if (!insn_p->operand[i + 1].predicate (op, mode))
 		op = copy_to_reg (op);
 	    }
@@ -37751,98 +37900,82 @@ rdseed_step:
 
     case IX86_BUILTIN_KTESTC8:
       icode = CODE_FOR_ktestqi;
-      mode0 = QImode;
-      mode1 = CCCmode;
+      mode3 = CCCmode;
       goto kortest;
 
     case IX86_BUILTIN_KTESTZ8:
       icode = CODE_FOR_ktestqi;
-      mode0 = QImode;
-      mode1 = CCZmode;
+      mode3 = CCZmode;
       goto kortest;
 
     case IX86_BUILTIN_KTESTC16:
       icode = CODE_FOR_ktesthi;
-      mode0 = HImode;
-      mode1 = CCCmode;
+      mode3 = CCCmode;
       goto kortest;
 
     case IX86_BUILTIN_KTESTZ16:
       icode = CODE_FOR_ktesthi;
-      mode0 = HImode;
-      mode1 = CCZmode;
+      mode3 = CCZmode;
       goto kortest;
 
     case IX86_BUILTIN_KTESTC32:
       icode = CODE_FOR_ktestsi;
-      mode0 = SImode;
-      mode1 = CCCmode;
+      mode3 = CCCmode;
       goto kortest;
 
     case IX86_BUILTIN_KTESTZ32:
       icode = CODE_FOR_ktestsi;
-      mode0 = SImode;
-      mode1 = CCZmode;
+      mode3 = CCZmode;
       goto kortest;
 
     case IX86_BUILTIN_KTESTC64:
       icode = CODE_FOR_ktestdi;
-      mode0 = DImode;
-      mode1 = CCCmode;
+      mode3 = CCCmode;
       goto kortest;
 
     case IX86_BUILTIN_KTESTZ64:
       icode = CODE_FOR_ktestdi;
-      mode0 = DImode;
-      mode1 = CCZmode;
+      mode3 = CCZmode;
       goto kortest;
 
     case IX86_BUILTIN_KORTESTC8:
       icode = CODE_FOR_kortestqi;
-      mode0 = QImode;
-      mode1 = CCCmode;
+      mode3 = CCCmode;
       goto kortest;
 
     case IX86_BUILTIN_KORTESTZ8:
       icode = CODE_FOR_kortestqi;
-      mode0 = QImode;
-      mode1 = CCZmode;
+      mode3 = CCZmode;
       goto kortest;
 
     case IX86_BUILTIN_KORTESTC16:
       icode = CODE_FOR_kortesthi;
-      mode0 = HImode;
-      mode1 = CCCmode;
+      mode3 = CCCmode;
       goto kortest;
 
     case IX86_BUILTIN_KORTESTZ16:
       icode = CODE_FOR_kortesthi;
-      mode0 = HImode;
-      mode1 = CCZmode;
+      mode3 = CCZmode;
       goto kortest;
 
     case IX86_BUILTIN_KORTESTC32:
       icode = CODE_FOR_kortestsi;
-      mode0 = SImode;
-      mode1 = CCCmode;
+      mode3 = CCCmode;
       goto kortest;
 
     case IX86_BUILTIN_KORTESTZ32:
       icode = CODE_FOR_kortestsi;
-      mode0 = SImode;
-      mode1 = CCZmode;
+      mode3 = CCZmode;
       goto kortest;
 
     case IX86_BUILTIN_KORTESTC64:
       icode = CODE_FOR_kortestdi;
-      mode0 = DImode;
-      mode1 = CCCmode;
+      mode3 = CCCmode;
       goto kortest;
 
     case IX86_BUILTIN_KORTESTZ64:
       icode = CODE_FOR_kortestdi;
-      mode0 = DImode;
-      mode1 = CCZmode;
+      mode3 = CCZmode;
 
     kortest:
       arg0 = CALL_EXPR_ARG (exp, 0); /* Mask reg src1.  */
@@ -37850,19 +37983,32 @@ rdseed_step:
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
 
-      op0 = copy_to_reg (op0);
-      op0 = lowpart_subreg (mode0, op0, GET_MODE (op0));
-      op1 = copy_to_reg (op1);
-      op1 = lowpart_subreg (mode0, op1, GET_MODE (op1));
+      mode0 = insn_data[icode].operand[0].mode;
+      mode1 = insn_data[icode].operand[1].mode;
+
+      if (GET_MODE (op0) != VOIDmode)
+	op0 = force_reg (GET_MODE (op0), op0);
+
+      op0 = gen_lowpart (mode0, op0);
+
+      if (!insn_data[icode].operand[0].predicate (op0, mode0))
+	op0 = copy_to_mode_reg (mode0, op0);
+
+      if (GET_MODE (op1) != VOIDmode)
+	op1 = force_reg (GET_MODE (op1), op1);
+
+      op1 = gen_lowpart (mode1, op1);
+
+      if (!insn_data[icode].operand[1].predicate (op1, mode1))
+	op1 = copy_to_mode_reg (mode1, op1);
 
       target = gen_reg_rtx (QImode);
-      emit_insn (gen_rtx_SET (target, const0_rtx));
 
       /* Emit kortest.  */
       emit_insn (GEN_FCN (icode) (op0, op1));
       /* And use setcc to return result from flags.  */
       ix86_expand_setcc (target, EQ,
-			 gen_rtx_REG (mode1, FLAGS_REG), const0_rtx);
+			 gen_rtx_REG (mode3, FLAGS_REG), const0_rtx);
       return target;
 
     case IX86_BUILTIN_GATHERSIV2DF:
@@ -50622,6 +50768,41 @@ ix86_max_noce_ifcvt_seq_cost (edge e)
     return BRANCH_COST (true, predictable_p) * COSTS_N_INSNS (2);
 }
 
+/* Return true if SEQ is a good candidate as a replacement for the
+   if-convertible sequence described in IF_INFO.  */
+
+static bool
+ix86_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
+{
+  if (TARGET_ONE_IF_CONV_INSN && if_info->speed_p)
+    {
+      int cmov_cnt = 0;
+      /* Punt if SEQ contains more than one CMOV or FCMOV instruction.
+	 Maybe we should allow even more conditional moves as long as they
+	 are used far enough not to stall the CPU, or also consider
+	 IF_INFO->TEST_BB succ edge probabilities.  */
+      for (rtx_insn *insn = seq; insn; insn = NEXT_INSN (insn))
+	{
+	  rtx set = single_set (insn);
+	  if (!set)
+	    continue;
+	  if (GET_CODE (SET_SRC (set)) != IF_THEN_ELSE)
+	    continue;
+	  rtx src = SET_SRC (set);
+	  enum machine_mode mode = GET_MODE (src);
+	  if (GET_MODE_CLASS (mode) != MODE_INT
+	      && GET_MODE_CLASS (mode) != MODE_FLOAT)
+	    continue;
+	  if ((!REG_P (XEXP (src, 1)) && !MEM_P (XEXP (src, 1)))
+	      || (!REG_P (XEXP (src, 2)) && !MEM_P (XEXP (src, 2))))
+	    continue;
+	  /* insn is CMOV or FCMOV.  */
+	  if (++cmov_cnt > 1)
+	    return false;
+	}
+    }
+  return default_noce_conversion_profitable_p (seq, if_info);
+}
 
 /* Implement targetm.vectorize.init_cost.  */
 
@@ -52174,6 +52355,10 @@ ix86_run_selftests (void)
 
 #undef TARGET_MAX_NOCE_IFCVT_SEQ_COST
 #define TARGET_MAX_NOCE_IFCVT_SEQ_COST ix86_max_noce_ifcvt_seq_cost
+
+#undef TARGET_NOCE_CONVERSION_PROFITABLE_P
+#define TARGET_NOCE_CONVERSION_PROFITABLE_P ix86_noce_conversion_profitable_p
+
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS
 #define TARGET_RUN_TARGET_SELFTESTS selftest::ix86_run_selftests

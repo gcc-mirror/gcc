@@ -83,7 +83,7 @@ int main(void)
 
   // p 4 
 
-  // if the id-expr in a class member acess is a qualified-id, the
+  // if the id-expr in a class member access is a qualified-id, the
   // id-expression is looked up in both the context of the entire
   // postfix-expr and in the scope of the class of the object-expr. If
   // the name is found in both contexts, the id-expr shall refer to

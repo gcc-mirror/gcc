@@ -279,20 +279,22 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 	      ao_ref ref;
 	      ao_ref_init (&ref, rhs);
 
-	      /* Do not warn if it can be initialized outside this function.  */
+	      /* Do not warn if the base was marked so or this is a
+	         hard register var.  */
 	      tree base = ao_ref_base (&ref);
-	      if (!VAR_P (base)
-		  || DECL_HARD_REGISTER (base)
-		  || is_global_var (base)
+	      if ((VAR_P (base)
+		   && DECL_HARD_REGISTER (base))
 		  || TREE_NO_WARNING (base))
 		continue;
 
 	      /* Do not warn if the access is fully outside of the
 	         variable.  */
-	      if (ref.size != -1
+	      if (DECL_P (base)
+		  && ref.size != -1
 		  && ref.max_size == ref.size
 		  && (ref.offset + ref.size <= 0
 		      || (ref.offset >= 0
+			  && DECL_SIZE (base)
 			  && TREE_CODE (DECL_SIZE (base)) == INTEGER_CST
 			  && compare_tree_int (DECL_SIZE (base),
 					       ref.offset) <= 0)))
@@ -305,11 +307,12 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 		  && oracle_cnt > vdef_cnt * 2)
 		limit = 32;
 	      check_defs_data data;
+	      bool fentry_reached = false;
 	      data.found_may_defs = false;
 	      use = gimple_vuse (stmt);
 	      int res = walk_aliased_vdefs (&ref, use,
 					    check_defs, &data, NULL,
-					    NULL, limit);
+					    &fentry_reached, limit);
 	      if (res == -1)
 		{
 		  oracle_cnt += limit;
@@ -317,6 +320,16 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 		}
 	      oracle_cnt += res;
 	      if (data.found_may_defs)
+		continue;
+	      /* Do not warn if it can be initialized outside this function.
+	         If we did not reach function entry then we found killing
+		 clobbers on all paths to entry.  */
+	      if (fentry_reached
+		  /* ???  We'd like to use ref_may_alias_global_p but that
+		     excludes global readonly memory and thus we get bougs
+		     warnings from p = cond ? "a" : "b" for example.  */
+		  && (!VAR_P (base)
+		      || is_global_var (base)))
 		continue;
 
 	      /* We didn't find any may-defs so on all paths either

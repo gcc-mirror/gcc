@@ -1,3 +1,31 @@
+2017-04-19  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/80435
+	* Makefile.in: Install gcov.h.
+	* gcov.h: New file.
+	* libgcov.h: Use the header and make __gcov_flush publicly
+	visible.
+
+2017-04-18  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/78783
+	* libgcov-driver.c (gcov_get_filename): New function.
+
+2017-04-07  Jeff Law  <law@redhat.com>
+
+	* Makefile.in: Swap definition of LIBGCC_LINKS and inclusion of
+	target makefile fragment.
+	* config/sh/t-sh (unwind-dw2-Os-4-200.o): Depend on LIBGCC_LINKS.
+
+2017-04-07  Alan Modra  <amodra@gmail.com>
+
+	PR target/45053
+	* config/rs6000/t-crtstuff (CRTSTUFF_T_CFLAGS): Add -O2.
+
+2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/c6x/pr-support.c (__gnu_unwind_execute): Fix typo in comment.
+
 2017-03-27  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/ieee-754/divdf3.S (__divdf3): Use __ARCEM__.

@@ -285,7 +285,19 @@ It has subdirectories:
       Headers that define extensions to the standard library.  No
       standard header refers to any of them, in theory (there are some
       exceptions).
-      </listitem>
+    </listitem>
+    </varlistentry>
+
+    <varlistentry>
+    <term>
+      <filename class="directory">include/debug</filename>,
+      <filename class="directory">include/parallel</filename>, and
+      <filename class="directory">include/profile</filename>
+    </term>
+    <listitem>
+      Headers that implement the Debug Mode, Parallel Mode, and Profile Mode
+      extensions.
+    </listitem>
     </varlistentry>
     </variablelist>
   </listitem>

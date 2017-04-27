@@ -6,7 +6,7 @@ foo (void)
 {
 lab:
   return &&lab;
-/* { dg-warning "function returns address of label" "" { target c } 8 } */
+/* { dg-warning "function returns address of label" "" { target c } .-1 } */
 /* { dg-warning "address of label" "" { target c++ } 7 } */
 }
 
@@ -16,7 +16,7 @@ bar (void)
   __label__ lab;
 lab:
   return &&lab;
-/* { dg-warning "function returns address of label" "" { target c } 18 } */
+/* { dg-warning "function returns address of label" "" { target c } .-1 } */
 /* { dg-warning "address of label" "" { target c++ } 17 } */
 }
 
@@ -25,6 +25,6 @@ baz (void)
 {
   int i;
   return &i;
-/* { dg-warning "function returns address of local variable" "" { target c } 27 } */
+/* { dg-warning "function returns address of local variable" "" { target c } .-1 } */
 /* { dg-warning "address of local variable" "" { target c++ } 26 } */
 }

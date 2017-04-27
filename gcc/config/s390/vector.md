@@ -248,6 +248,25 @@
   operands[5] = operand_subword (operands[1], 0, 0, <MODE>mode);
 })
 
+; This is the vector equivalent to the TImode splitter in s390.md.  It
+; is required if both target GPRs occur in the source address operand.
+
+; For non-s_operands at least one of the target GPRs does not conflict
+; with the address operand and one of the splitters above will take
+; over.
+(define_split
+  [(set (match_operand:V_128 0 "register_operand" "")
+        (match_operand:V_128 1 "memory_operand" ""))]
+  "TARGET_ZARCH && reload_completed
+   && !VECTOR_REG_P (operands[0])
+   && !s_operand (operands[1], VOIDmode)"
+  [(set (match_dup 0) (match_dup 1))]
+{
+  rtx addr = operand_subword (operands[0], 1, 0, <MODE>mode);
+  addr = gen_lowpart (Pmode, addr);
+  s390_load_address (addr, XEXP (operands[1], 0));
+  operands[1] = replace_equiv_address (operands[1], addr);
+})
 
 ; Moves for smaller vector modes.
 

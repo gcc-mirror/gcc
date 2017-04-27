@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -154,10 +154,10 @@ package Sem_Util is
 
    function Available_Full_View_Of_Component (T : Entity_Id) return Boolean;
    --  If at the point of declaration an array type has a private or limited
-   --  component, several array operations are not avaiable on the type, and
+   --  component, several array operations are not available on the type, and
    --  the array type is flagged accordingly. If in the immediate scope of
    --  the array type the component becomes non-private or non-limited, these
-   --  operations become avaiable. This can happen if the scopes of both types
+   --  operations become available. This can happen if the scopes of both types
    --  are open, and the scope of the array is not outside the scope of the
    --  component.
 
@@ -226,6 +226,14 @@ package Sem_Util is
    --  Given a compilation unit node N, allocate an elaboration counter for
    --  the compilation unit, and install it in the Elaboration_Entity field
    --  of Spec_Id, the entity for the compilation unit.
+
+   function Build_Overriding_Spec
+     (Op  : Node_Id;
+      Typ : Entity_Id) return Node_Id;
+   --  Build a subprogram specification for the wrapper of an inherited
+   --  operation with a modified pre- or postcondition (See AI12-0113).
+   --  Op is the parent operation, and Typ is the descendant type that
+   --  inherits the operation.
 
    procedure Build_Explicit_Dereference
      (Expr : Node_Id;
@@ -811,6 +819,13 @@ package Sem_Util is
    --      - "task" when Id is a single task object, task type or task body
    --  All other non-matching words remain as is
 
+   function From_Nested_Package (T : Entity_Id) return Boolean;
+   --  A type declared in a nested package may be frozen by a declaration
+   --  appearing after the package but before the package is frozen. If the
+   --  type has aspects that generate subprograms, these may contain references
+   --  to entities local to the nested package. In that case the package must
+   --  be installed on the scope stack to prevent spurious visibility errors.
+
    procedure Gather_Components
      (Typ           : Entity_Id;
       Comp_List     : Node_Id;
@@ -914,6 +929,27 @@ package Sem_Util is
    --  (specifically, gnat2scil) to indicate that we want the full view if
    --  the index type turns out to be a partial view; this case should not
    --  arise during normal compilation of semantically correct programs.
+
+   procedure Get_Interfacing_Aspects
+     (Iface_Asp : Node_Id;
+      Conv_Asp  : out Node_Id;
+      EN_Asp    : out Node_Id;
+      Expo_Asp  : out Node_Id;
+      Imp_Asp   : out Node_Id;
+      LN_Asp    : out Node_Id;
+      Do_Checks : Boolean := False);
+   --  Given a single interfacing aspect Iface_Asp, retrieve other interfacing
+   --  aspects that apply to the same related entity. The aspects considered by
+   --  this routine are as follows:
+   --
+   --    Conv_Asp - aspect Convention
+   --    EN_Asp   - aspect External_Name
+   --    Expo_Asp - aspect Export
+   --    Imp_Asp  - aspect Import
+   --    LN_Asp   - aspect Link_Name
+   --
+   --  When flag Do_Checks is set, this routine will flag duplicate uses of
+   --  aspects.
 
    function Get_Enum_Lit_From_Pos
      (T   : Entity_Id;
@@ -1140,6 +1176,10 @@ package Sem_Util is
    --  null statement, possibly followed by an optional return. Used to
    --  optimize useless calls to assertion checks.
 
+      function Has_Non_Trivial_Precondition (P : Entity_Id) return Boolean;
+      --  True if subprogram has a class-wide precondition that is not
+      --  statically True.
+
    function Has_Null_Exclusion (N : Node_Id) return Boolean;
    --  Determine whether node N has a null exclusion
 
@@ -1290,6 +1330,9 @@ package Sem_Util is
    procedure Install_Generic_Formals (Subp_Id : Entity_Id);
    --  Install both the generic formal parameters and the formal parameters of
    --  generic subprogram Subp_Id into visibility.
+
+   procedure Install_SPARK_Mode (Mode : SPARK_Mode_Type; Prag : Node_Id);
+   --  Establish the SPARK_Mode and SPARK_Mode_Pragma currently in effect
 
    function Is_Actual_Out_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of out mode in a subprogram call
@@ -1757,6 +1800,10 @@ package Sem_Util is
    pragma Inline (Is_Universal_Numeric_Type);
    --  True if T is Universal_Integer or Universal_Real
 
+   function Is_Validation_Variable_Reference (N : Node_Id) return Boolean;
+   --  Determine whether N denotes a reference to a variable which captures the
+   --  value of an object for validation purposes.
+
    function Is_Variable_Size_Array (E : Entity_Id) return Boolean;
    --  Returns true if E has variable size components
 
@@ -1841,6 +1888,18 @@ package Sem_Util is
    --  If the entity is a variable or a constant, and size check code is
    --  present, this size check code is killed, since the object will not be
    --  allocated by the program.
+
+   function Known_Non_Null (N : Node_Id) return Boolean;
+   --  Given a node N for a subexpression of an access type, determines if
+   --  this subexpression yields a value that is known at compile time to
+   --  be non-null and returns True if so. Returns False otherwise. It is
+   --  an error to call this function if N is not of an access type.
+
+   function Known_Null (N : Node_Id) return Boolean;
+   --  Given a node N for a subexpression of an access type, determines if this
+   --  subexpression yields a value that is known at compile time to be null
+   --  and returns True if so. Returns False otherwise. It is an error to call
+   --  this function if N is not of an access type.
 
    function Known_To_Be_Assigned (N : Node_Id) return Boolean;
    --  The node N is an entity reference. This function determines whether the
@@ -1974,6 +2033,9 @@ package Sem_Util is
    --  actual previously returned by a call to First_Actual or Next_Actual.
    --  Note that the result produced is always an expression, not a parameter
    --  association node, even if named notation was used.
+
+   function No_Heap_Finalization (Typ : Entity_Id) return Boolean;
+   --  Determine whether type Typ is subject to pragma No_Heap_Finalization
 
    procedure Normalize_Actuals
      (N       : Node_Id;
@@ -2162,9 +2224,11 @@ package Sem_Util is
    procedure Reset_Analyzed_Flags (N : Node_Id);
    --  Reset the Analyzed flags in all nodes of the tree whose root is N
 
-   procedure Restore_SPARK_Mode (Mode : SPARK_Mode_Type);
-   --  Set the current SPARK_Mode to whatever Mode denotes. This routime must
-   --  be used in tandem with Save_SPARK_Mode_And_Set.
+   procedure Restore_SPARK_Mode
+     (Mode : SPARK_Mode_Type;
+      Prag : Node_Id);
+   --  Set the current SPARK_Mode to Mode and SPARK_Mode_Pragma to Prag. This
+   --  routine must be used in tandem with Set_SPARK_Mode.
 
    function Returns_Unconstrained_Type (Subp : Entity_Id) return Boolean;
    --  Return true if Subp is a function that returns an unconstrained type
@@ -2221,13 +2285,6 @@ package Sem_Util is
    --  or if they are the same object (in the sense of function Same_Object).
    --  A result of False does not necessarily mean they have different values,
    --  just that it is not possible to determine they have the same value.
-
-   procedure Save_SPARK_Mode_And_Set
-     (Context : Entity_Id;
-      Mode    : out SPARK_Mode_Type);
-   --  Save the current SPARK_Mode in effect in Mode. Establish the SPARK_Mode
-   --  (if any) of a package or a subprogram denoted by Context. This routine
-   --  must be used in tandem with Restore_SPARK_Mode.
 
    function Scalar_Part_Present (T : Entity_Id) return Boolean;
    --  Tests if type T can be determined at compile time to have at least one
@@ -2324,8 +2381,20 @@ package Sem_Util is
    --  value from T2 to T1. It does NOT copy the RM_Size field, which must be
    --  separately set if this is required to be copied also.
 
+   procedure Set_SPARK_Mode (Context : Entity_Id);
+   --  Establish the SPARK_Mode and SPARK_Mode_Pragma (if any) of a package or
+   --  a subprogram denoted by Context. This routine must be used in tandem
+   --  with Restore_SPARK_Mode.
+
    function Scope_Is_Transient return Boolean;
    --  True if the current scope is transient
+
+   function Should_Ignore_Pragma_Par (Prag_Name : Name_Id) return Boolean;
+   function Should_Ignore_Pragma_Sem (N : Node_Id) return Boolean;
+   --  True if we should ignore pragmas with the specified name. In particular,
+   --  this returns True if pragma Ignore_Pragma applies, and we are not in a
+   --  predefined unit. The _Par version should be called only from the parser;
+   --  the _Sem version should be called only during semantic analysis.
 
    function Static_Boolean (N : Node_Id) return Uint;
    --  This function analyzes the given expression node and then resolves it
@@ -2378,13 +2447,22 @@ package Sem_Util is
    function Unique_Defining_Entity (N : Node_Id) return Entity_Id;
    --  Return the entity which represents declaration N, so that different
    --  views of the same entity have the same unique defining entity:
-   --    * entry declaration and entry body
-   --    * package spec, package body, and package body stub
-   --    * protected type declaration, protected body, and protected body stub
    --    * private view and full view of a deferred constant
-   --    * private view and full view of a type
-   --    * subprogram declaration, subprogram, and subprogram body stub
-   --    * task type declaration, task body, and task body stub
+   --        --> full view
+   --    * entry spec and entry body
+   --        --> entry spec
+   --    * formal parameter on spec and body
+   --        --> formal parameter on spec
+   --    * package spec, body, and body stub
+   --        --> package spec
+   --    * protected type, protected body, and protected body stub
+   --        --> protected type (full view if private)
+   --    * subprogram spec, body, and body stub
+   --        --> subprogram spec
+   --    * task type, task body, and task body stub
+   --        --> task type (full view if private)
+   --    * private or incomplete view and full view of a type
+   --        --> full view
    --  In other cases, return the defining entity for N.
 
    function Unique_Entity (E : Entity_Id) return Entity_Id;

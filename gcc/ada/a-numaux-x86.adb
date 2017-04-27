@@ -49,8 +49,11 @@ package body Ada.Numerics.Aux is
    --  for values of Y in the open interval (-0.25, 0.25)
 
    procedure Reduce (X : in out Double; Q : out Natural);
-   --  Implements reduction of X by Pi/2. Q is the quadrant of the final
-   --  result in the range 0 .. 3. The absolute value of X is at most Pi.
+   --  Implement reduction of X by Pi/2. Q is the quadrant of the final
+   --  result in the range 0..3. The absolute value of X is at most Pi/4.
+   --  It is needed to avoid a loss of accuracy for sin near Pi and cos
+   --  near Pi/2 due to the use of an insufficiently precise value of Pi
+   --  in the range reduction.
 
    pragma Inline (Is_Nan);
    pragma Inline (Reduce);
@@ -117,7 +120,7 @@ package body Ada.Numerics.Aux is
    begin
       --  The IEEE NaN values are the only ones that do not equal themselves
 
-      return not (X = X);
+      return X /= X;
    end Is_Nan;
 
    ---------
@@ -154,32 +157,36 @@ package body Ada.Numerics.Aux is
       P5 : constant Double := Double'Leading_Part (Half_Pi - P1 - P2 - P3
                                                                  - P4, HM);
       P6 : constant Double := Double'Model (Half_Pi - P1 - P2 - P3 - P4 - P5);
-      K  : Double := X * Two_Over_Pi;
+      K  : Double;
+      R  : Integer;
+
    begin
-      --  For X < 2.0**32, all products below are computed exactly.
+      --  For X < 2.0**HM, all products below are computed exactly.
       --  Due to cancellation effects all subtractions are exact as well.
       --  As no double extended floating-point number has more than 75
       --  zeros after the binary point, the result will be the correctly
       --  rounded result of X - K * (Pi / 2.0).
 
+      K := X * Two_Over_Pi;
       while abs K >= 2.0**HM loop
          K := K * M - (K * M - K);
-         X := (((((X - K * P1) - K * P2) - K * P3)
-                     - K * P4) - K * P5) - K * P6;
+         X :=
+           (((((X - K * P1) - K * P2) - K * P3) - K * P4) - K * P5) - K * P6;
          K := X * Two_Over_Pi;
       end loop;
 
-      if K /= K then
+      --  If K is not a number (because X was not finite) raise exception
 
-         --  K is not a number, because X was not finite
-
+      if Is_Nan (K) then
          raise Constraint_Error;
       end if;
 
-      K := Double'Rounding (K);
-      Q := Integer (K) mod 4;
-      X := (((((X - K * P1) - K * P2) - K * P3)
-                  - K * P4) - K * P5) - K * P6;
+      --  Go through an integer temporary so as to use machine instructions
+
+      R := Integer (Double'Rounding (K));
+      Q := R mod 4;
+      K := Double (R);
+      X := (((((X - K * P1) - K * P2) - K * P3) - K * P4) - K * P5) - K * P6;
    end Reduce;
 
    ----------

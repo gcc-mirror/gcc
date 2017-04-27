@@ -744,14 +744,19 @@ package body Inline is
                Comp_Unit := Parent (Comp_Unit);
             end loop;
 
-            --  Load the body, unless it is the main unit, or is an instance
-            --  whose body has already been analyzed.
+            --  Load the body if it exists and contains inlineable entities,
+            --  unless it is the main unit, or is an instance whose body has
+            --  already been analyzed.
 
             if Present (Comp_Unit)
               and then Comp_Unit /= Cunit (Main_Unit)
               and then Body_Required (Comp_Unit)
-              and then (Nkind (Unit (Comp_Unit)) /= N_Package_Declaration
-                         or else No (Corresponding_Body (Unit (Comp_Unit))))
+              and then
+                (Nkind (Unit (Comp_Unit)) /= N_Package_Declaration
+                  or else
+                    (No (Corresponding_Body (Unit (Comp_Unit)))
+                      and then Body_Needed_For_Inlining
+                                 (Defining_Entity (Unit (Comp_Unit)))))
             then
                declare
                   Bname : constant Unit_Name_Type :=
@@ -807,7 +812,7 @@ package body Inline is
                               Next (Item);
                            end loop;
 
-                           --  If no suspicious with_clauses, analyze the body.
+                           --  If no suspicious with_clauses, analyze the body
 
                            if Is_Inlined (U_Id) then
                               Semantics (Body_Unit);

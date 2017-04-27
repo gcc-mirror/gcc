@@ -187,7 +187,13 @@ package body Exp_Ch8 is
          Make_Build_In_Place_Call_In_Anonymous_Context (Nam);
       end if;
 
-      --  Create renaming entry for debug information
+      --  Create renaming entry for debug information. Mark the entity as
+      --  needing debug info if it comes from sources because the current
+      --  setting in Freeze_Entity occurs too late. ???
+
+      if Comes_From_Source (Defining_Identifier (N)) then
+         Set_Debug_Info_Needed (Defining_Identifier (N));
+      end if;
 
       Decl := Debug_Renaming_Declaration (N);
 

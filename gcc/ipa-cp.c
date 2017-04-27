@@ -193,7 +193,7 @@ public:
 };
 
 /* Lattice describing potential values of a formal parameter of a function, or
-   a part of an aggreagate.  TOP is represented by a lattice with zero values
+   a part of an aggregate.  TOP is represented by a lattice with zero values
    and with contains_variable and bottom flags cleared.  BOTTOM is represented
    by a lattice with the bottom flag set.  In that case, values and
    contains_variable flag should be disregarded.  */
@@ -614,6 +614,12 @@ determine_versionability (struct cgraph_node *node,
      decloned constructors, inlining is always better anyway.  */
   else if (node->comdat_local_p ())
     reason = "comdat-local function";
+  else if (node->calls_comdat_local)
+    {
+      /* TODO: call is versionable if we make sure that all
+	 callers are inside of a comdat group.  */
+      reason = "calls comdat-local function";
+    }
 
   if (reason && dump_file && !node->alias && !node->thunk.thunk_p)
     fprintf (dump_file, "Function %s/%i is not versionable, reason: %s.\n",
@@ -2826,7 +2832,7 @@ estimate_local_effects (struct cgraph_node *node)
   vec<ipa_agg_jump_function> known_aggs;
   vec<ipa_agg_jump_function_p> known_aggs_ptrs;
   bool always_const;
-  int base_time = inline_summaries->get (node)->time;
+  int base_time = inline_summaries->get (node)->time.to_int ();
   int removable_params_cost;
 
   if (!count || !ipcp_versionable_function_p (node))
@@ -4014,7 +4020,7 @@ intersect_with_plats (struct ipcp_param_lattices *plats,
     }
 }
 
-/* Copy agggregate replacement values of NODE (which is an IPA-CP clone) to the
+/* Copy aggregate replacement values of NODE (which is an IPA-CP clone) to the
    vector result while subtracting OFFSET from the individual value offsets.  */
 
 static vec<ipa_agg_jf_item>
@@ -4276,7 +4282,7 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
   return res;
 }
 
-/* Turn KNOWN_AGGS into a list of aggreate replacement values.  */
+/* Turn KNOWN_AGGS into a list of aggregate replacement values.  */
 
 static struct ipa_agg_replacement_value *
 known_aggs_to_agg_replacement_list (vec<ipa_agg_jump_function> known_aggs)

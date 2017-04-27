@@ -1153,7 +1153,9 @@ package body Ada.Numerics.Generic_Complex_Arrays is
    -------------
 
    function Inverse (A : Complex_Matrix) return Complex_Matrix is
-     (Solve (A, Unit_Matrix (Length (A))));
+     (Solve (A, Unit_Matrix (Length (A),
+                             First_1 => A'First (2),
+                             First_2 => A'First (1))));
 
    -------------
    -- Modulus --

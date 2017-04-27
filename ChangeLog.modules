@@ -1,3 +1,12 @@
+2017-04-27  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk r247281.
+	gcc/
+	* tree.c (type_hash_default): Hash TYPE_TYPELESS_STORAGE.
+	gcc/objc/
+	* objc-gnu-runtime-abi-01.C (objc_add_static_instance): Use
+	pushdecl langhook.
+
 2017-04-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

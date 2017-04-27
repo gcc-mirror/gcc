@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,7 +78,7 @@ package SFN_Scan is
       SFN_Ptr  : Set_File_Name_Ptr;
       SFNP_Ptr : Set_File_Name_Pattern_Ptr);
    --  This is the procedure called to scan a gnat.adc file. The Source
-   --  parameter points to the full text of the file, with normal line end
+   --  parameter contains the full text of the file, with normal line end
    --  characters, in the format normally read by the compiler. The two
    --  parameters SFN_Ptr and SFNP_Ptr point to procedures that will be
    --  called to register Source_File_Name pragmas as they are found.
@@ -91,6 +91,6 @@ package SFN_Scan is
    --  that includes only pragmas and comments. It does not do a full
    --  syntax correctness scan by any means, but if it does find anything
    --  that it can tell is wrong it will immediately raise the exception
-   --  to indicate the approximate location of the error
+   --  to indicate the approximate location of the error.
 
 end SFN_Scan;

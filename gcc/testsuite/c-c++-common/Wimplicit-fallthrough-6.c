@@ -117,11 +117,11 @@ L1:
   switch (i)
     {
     case 1:
-      { /* { dg-warning "statement may fall through" "" { target c } 120 } */
+      { /* { dg-warning "statement may fall through" "" { target c } . } */
 	int j = 0;
 	bar (j);
 	if (j == 8)
-	  return; /* { dg-warning "statement may fall through" "" { target c++ } 124 } */
+	  return; /* { dg-warning "statement may fall through" "" { target c++ } . } */
       }
     case 2:
       bar (99);
@@ -145,13 +145,13 @@ L1:
   switch (i)
     {
     case 1:
-      { /* { dg-warning "statement may fall through" "" { target c } 148 } */
+      { /* { dg-warning "statement may fall through" "" { target c } . } */
 	int j = 0;
 	bar (j);
 	if (j == 8)
 	  bar (1);
 	else
-	  return; /* { dg-warning "statement may fall through" "" { target c++ } 154 } */
+	  return; /* { dg-warning "statement may fall through" "" { target c++ } . } */
       }
     case 2:
       bar (99);
@@ -175,13 +175,13 @@ L1:
   switch (i)
     {
     case 1:
-      { /* { dg-warning "statement may fall through" "" { target c } 178 } */
+      { /* { dg-warning "statement may fall through" "" { target c } . } */
 	int j = 0;
 	bar (j);
 	if (j == 8)
 	  bar (1);
 	else
-	  bar (2); /* { dg-warning "statement may fall through" "" { target c++ } 184 } */
+	  bar (2); /* { dg-warning "statement may fall through" "" { target c++ } . } */
       }
     case 2:
       bar (99);
@@ -279,9 +279,9 @@ L1:
   switch (i)
     {
     case 1:
-      { /* { dg-warning "statement may fall through" "" { target c } 282 } */
+      { /* { dg-warning "statement may fall through" "" { target c } . } */
 	int j = 9;
-	switch (j); /* { dg-warning "statement may fall through" "" { target c++ } 284 } */
+	switch (j); /* { dg-warning "statement may fall through" "" { target c++ } . } */
       }
     case 2:
       bar (99);

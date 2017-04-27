@@ -7,17 +7,17 @@
 
 #if defined(__DATE__)
 #error "__DATE__ is defined, but should not be (-U command line error)"
-/* { dg-bogus "__DATE__ is defined" "" { target *-*-* } 9 } */
+/* { dg-bogus "__DATE__ is defined" "" { target *-*-* } .-1 } */
 #endif
 
 #if __TIME__ != X
 #error "__TIME__ is not defined as expected (-D command line error)"
-/* { dg-bogus "__TIME__ is not defined" "" { target *-*-* } 14 } */
+/* { dg-bogus "__TIME__ is not defined" "" { target *-*-* } .-1 } */
 #endif
 
 #if !defined(__TIMESTAMP__)
 #error "__TIMESTAMP__ is not defined (built-in macro expectation error)"
-/* { dg-bogus "__TIMESTAMP__ is not defined" "" { target *-*-* } 19 } */
+/* { dg-bogus "__TIMESTAMP__ is not defined" "" { target *-*-* } .-1 } */
 #endif
 
 
@@ -57,7 +57,7 @@
 
 #if !defined(__FILE__) || !defined(__BASE_FILE__)
 #error "Expected built-in is not defined (built-in macro expectation error)"
-/* { dg-bogus "Expected built-in is not defined" "" { target *-*-* } 59 } */
+/* { dg-bogus "Expected built-in is not defined" "" { target *-*-* } .-1 } */
 #endif
 
 #define __FILE__ "X"         /* Define while already defined.  */
@@ -68,7 +68,7 @@
 
 #if !defined(__LINE__) || !defined(__INCLUDE_LEVEL__) || !defined(__COUNTER__)
 #error "Expected built-in is not defined (built-in macro expectation error)"
-/* { dg-bogus "Expected built-in is not defined" "" { target *-*-* } 70 } */
+/* { dg-bogus "Expected built-in is not defined" "" { target *-*-* } .-1 } */
 #endif
 
 #define __LINE__ 0           /* { dg-warning "\"__LINE__\" redef" } */

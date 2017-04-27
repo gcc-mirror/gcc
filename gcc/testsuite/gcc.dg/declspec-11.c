@@ -19,7 +19,7 @@ auto int x; /* { dg-error "file-scope declaration of 'x' specifies 'auto'" } */
 register int y; /* { dg-error "file-scope declaration of 'y' specifies 'register'" } */
 
 void h (void) { extern void x (void) {} } /* { dg-error "nested function 'x' declared 'extern'" } */
-/* { dg-error "ISO C forbids nested functions" "nested" { target *-*-* } 21 } */
+/* { dg-error "ISO C forbids nested functions" "nested" { target *-*-* } .-1 } */
 
 void
 g (void)
@@ -37,10 +37,10 @@ static void r; /* { dg-error "variable or field 'r' declared void" } */
 static const void r1; /* { dg-error "variable or field 'r1' declared void" } */
 
 register void f8 (void); /* { dg-error "invalid storage class for function 'f8'" } */
-/* { dg-error "file-scope declaration of 'f8' specifies 'register'" "register function" { target *-*-* } 39 } */
+/* { dg-error "file-scope declaration of 'f8' specifies 'register'" "register function" { target *-*-* } .-1 } */
 
 void i (void) { auto void y (void) {} } /* { dg-error "ISO C forbids nested functions" } */
-/* { dg-error "function definition declared 'auto'" "nested" { target *-*-* } 42 } */
+/* { dg-error "function definition declared 'auto'" "nested" { target *-*-* } .-1 } */
 
 inline int main (void) { return 0; } /* { dg-error "cannot inline function 'main'" } */
 

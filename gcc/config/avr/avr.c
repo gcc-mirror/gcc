@@ -20,10 +20,13 @@
 
 #include "config.h"
 #include "system.h"
+#include "intl.h"
 #include "coretypes.h"
 #include "backend.h"
 #include "target.h"
 #include "rtl.h"
+#include "tree.h"
+#include "cgraph.h"
 #include "c-family/c-common.h"
 #include "cfghooks.h"
 #include "df.h"
@@ -9797,28 +9800,28 @@ avr_pgm_check_var_decl (tree node)
 
     case VAR_DECL:
       if (as = avr_nonconst_pointer_addrspace (TREE_TYPE (node)), as)
-        reason = "variable";
+        reason = _("variable");
       break;
 
     case PARM_DECL:
       if (as = avr_nonconst_pointer_addrspace (TREE_TYPE (node)), as)
-        reason = "function parameter";
+        reason = _("function parameter");
       break;
 
     case FIELD_DECL:
       if (as = avr_nonconst_pointer_addrspace (TREE_TYPE (node)), as)
-        reason = "structure field";
+        reason = _("structure field");
       break;
 
     case FUNCTION_DECL:
       if (as = avr_nonconst_pointer_addrspace (TREE_TYPE (TREE_TYPE (node))),
           as)
-        reason = "return type of function";
+        reason = _("return type of function");
       break;
 
     case POINTER_TYPE:
       if (as = avr_nonconst_pointer_addrspace (node), as)
-        reason = "pointer";
+        reason = _("pointer");
       break;
     }
 
@@ -10126,9 +10129,14 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
       && !DECL_EXTERNAL (decl)
       && avr_progmem_p (decl, DECL_ATTRIBUTES (decl)))
     {
-      warning (OPT_Wuninitialized,
-               "uninitialized variable %q+D put into "
-               "program memory area", decl);
+      // Don't warn for (implicit) aliases like in PR80462.
+      tree asmname = DECL_ASSEMBLER_NAME (decl);
+      varpool_node *node = varpool_node::get_for_asmname (asmname);
+      bool alias_p = node && node->alias;
+
+      if (!alias_p)
+        warning (OPT_Wuninitialized, "uninitialized variable %q+D put into "
+                 "program memory area", decl);
     }
 
   default_encode_section_info (decl, rtl, new_decl_p);
@@ -13335,7 +13343,7 @@ typedef struct
   /* G^-1, the inverse of G (*, arg) */
   unsigned ginv;
 
-  /* The cost of appplying G (*, arg) */
+  /* The cost of applying G (*, arg) */
   int cost;
 
   /* The composition F o G^-1 (*, arg) for some function F */

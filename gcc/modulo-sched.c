@@ -805,7 +805,7 @@ schedule_reg_moves (partial_schedule_ptr ps)
   return true;
 }
 
-/* Emit the moves associatied with PS.  Apply the substitutions
+/* Emit the moves associated with PS.  Apply the substitutions
    associated with them.  */
 static void
 apply_reg_moves (partial_schedule_ptr ps)

@@ -172,6 +172,7 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
   /* In case we have a SAVE_EXPR in a conditional context, we need to
      make sure it gets evaluated before the condition.  */
   t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), unshare_expr (op0), t);
+  t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), unshare_expr (op1), t);
 
   enum sanitize_code recover_kind = SANITIZE_SHIFT_EXPONENT;
   tree else_t = void_node;

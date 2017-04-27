@@ -274,6 +274,7 @@ TCR(".cfi_return_column " S(REGNO_PC))
 /* Trampoline body block
    ---------------------  */
 
+#if !defined (__PPC64__)
 #define SIGTRAMP_BODY \
 CR("") \
 TCR("# Allocate frame and save the non-volatile") \
@@ -298,6 +299,38 @@ TCR("mtlr %r0")		\
 TCR("")			\
 TCR("addi %r1,%r1,16")	\
 TCR("blr")
+#else
+#define SIGTRAMP_BODY \
+CR("") \
+TCR("0:") \
+TCR("addis 2,12,.TOC.-0@ha") \
+TCR("addi 2,2,.TOC.-0@l") \
+TCR(".localentry	__gnat_sigtramp_common,.-__gnat_sigtramp_common") \
+TCR("# Allocate frame and save the non-volatile") \
+TCR("# registers we're going to modify") \
+TCR("mflr %r0")	\
+TCR("std %r0,16(%r1)")	\
+TCR("stdu %r1,-32(%r1)")  \
+TCR("std %r2,24(%r1)")	\
+TCR("std %r" S(CFA_REG) ",8(%r1)")	\
+TCR("")			\
+TCR("# Setup CFA_REG = context, which we'll retrieve as our CFA value") \
+TCR("mr %r" S(CFA_REG) ", %r7") \
+TCR("")			\
+TCR("# Call the real handler. The signo, siginfo and sigcontext") \
+TCR("# arguments are the same as those we received in r3, r4 and r5") \
+TCR("mr %r12,%r6") \
+TCR("mtctr %r6") \
+TCR("bctrl")	\
+TCR("")		\
+TCR("# Restore our callee-saved items, release our frame and return") \
+TCR("ld %r" S(CFA_REG) ",8(%r1)")	\
+TCR("ld %r2,24(%r1)")	\
+TCR("addi %r1,%r1,32")  \
+TCR("ld %r0,16(%r1)")	\
+TCR("mtlr %r0")		\
+TCR("blr")
+#endif
 
 #elif defined (__ARMEL__)
 

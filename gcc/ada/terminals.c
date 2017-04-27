@@ -90,6 +90,12 @@ __gnat_terminate_process (void *desc ATTRIBUTE_UNUSED)
 }
 
 int
+__gnat_terminate_pid (int pid ATTRIBUTE_UNUSED)
+{
+  return -1;
+}
+
+int
 __gnat_tty_fd (void* t ATTRIBUTE_UNUSED)
 {
   return -1;
@@ -962,6 +968,47 @@ __gnat_terminate_process (struct TTY_Process* p)
     return 0;
 }
 
+typedef struct {
+  DWORD dwProcessId;
+  HANDLE hwnd;
+} pid_struct;
+
+static BOOL CALLBACK
+find_process_handle (HWND hwnd, pid_struct * ps)
+{
+  DWORD thread_id;
+  DWORD process_id;
+
+  thread_id = GetWindowThreadProcessId (hwnd, &process_id);
+  if (process_id == ps->dwProcessId)
+    {
+      ps->hwnd = hwnd;
+      return FALSE;
+    }
+  /* keep looking */
+  return TRUE;
+}
+
+int
+__gnat_terminate_pid (int pid)
+{
+  pid_struct ps;
+
+  ps.dwProcessId = pid;
+  ps.hwnd = 0;
+  EnumWindows ((WNDENUMPROC) find_process_handle, (LPARAM) &ps);
+
+  if (ps.hwnd)
+    {
+      if (!TerminateProcess (ps.hwnd, 1))
+	return -1;
+      else
+	return 0;
+    }
+
+  return -1;
+}
+
 /* wait for process pid to terminate and return the process status. This
    implementation is different from the adaint.c one for Windows as it uses
    the Win32 API instead of the C one. */
@@ -1498,6 +1545,17 @@ __gnat_interrupt_pid (int pid)
 int __gnat_terminate_process (pty_desc *desc)
 {
   return kill (desc->child_pid, SIGKILL);
+}
+
+/* __gnat_terminate_pid - kill a process
+ *
+ * PARAMETERS
+ *   pid unix process id
+ */
+int
+__gnat_terminate_pid (int pid)
+{
+  return kill (pid, SIGKILL);
 }
 
 /* __gnat_tty_waitpid - wait for the child process to die

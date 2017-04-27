@@ -1,3 +1,9 @@
+2017-04-12  Richard Biener  <rguenther@suse.de>
+	Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/79671
+	* lto.c (compare_tree_sccs_1): Compare TYPE_TYPELESS_STORAGE.
+
 2017-02-14  Martin Liska  <mliska@suse.cz>
 
 	* lto.c (do_stream_out): Free LTO file filename string.

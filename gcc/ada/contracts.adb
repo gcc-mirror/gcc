@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2015-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2015-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -444,11 +444,18 @@ package body Contracts is
    -- Analyze_Entry_Or_Subprogram_Body_Contract --
    -----------------------------------------------
 
+   --  WARNING: This routine manages SPARK regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  SPARK mode.
+
    procedure Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id : Entity_Id) is
       Body_Decl : constant Node_Id   := Unit_Declaration_Node (Body_Id);
       Items     : constant Node_Id   := Contract (Body_Id);
       Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Body_Decl);
-      Mode      : SPARK_Mode_Type;
+
+      Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
+      Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      --  Save the SPARK_Mode-related data to restore on exit
 
    begin
       --  When a subprogram body declaration is illegal, its defining entity is
@@ -473,7 +480,7 @@ package body Contracts is
       --  context. To remedy this, restore the original SPARK_Mode of the
       --  related subprogram body.
 
-      Save_SPARK_Mode_And_Set (Body_Id, Mode);
+      Set_SPARK_Mode (Body_Id);
 
       --  Ensure that the contract cases or postconditions mention 'Result or
       --  define a post-state.
@@ -499,7 +506,7 @@ package body Contracts is
       --  Restore the SPARK_Mode of the enclosing context after all delayed
       --  pragmas have been analyzed.
 
-      Restore_SPARK_Mode (Mode);
+      Restore_SPARK_Mode (Saved_SM, Saved_SMP);
 
       --  Capture all global references in a generic subprogram body now that
       --  the contract has been analyzed.
@@ -523,12 +530,20 @@ package body Contracts is
    -- Analyze_Entry_Or_Subprogram_Contract --
    ------------------------------------------
 
+   --  WARNING: This routine manages SPARK regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  SPARK mode.
+
    procedure Analyze_Entry_Or_Subprogram_Contract
      (Subp_Id   : Entity_Id;
       Freeze_Id : Entity_Id := Empty)
    is
       Items     : constant Node_Id := Contract (Subp_Id);
       Subp_Decl : constant Node_Id := Unit_Declaration_Node (Subp_Id);
+
+      Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
+      Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      --  Save the SPARK_Mode-related data to restore on exit
 
       Skip_Assert_Exprs : constant Boolean :=
                             Ekind_In (Subp_Id, E_Entry, E_Entry_Family)
@@ -537,7 +552,6 @@ package body Contracts is
 
       Depends  : Node_Id := Empty;
       Global   : Node_Id := Empty;
-      Mode     : SPARK_Mode_Type;
       Prag     : Node_Id;
       Prag_Nam : Name_Id;
 
@@ -557,7 +571,7 @@ package body Contracts is
       --  context. To remedy this, restore the original SPARK_Mode of the
       --  related subprogram body.
 
-      Save_SPARK_Mode_And_Set (Subp_Id, Mode);
+      Set_SPARK_Mode (Subp_Id);
 
       --  All subprograms carry a contract, but for some it is not significant
       --  and should not be processed.
@@ -658,6 +672,7 @@ package body Contracts is
 
       if SPARK_Mode = On
         and then Ekind_In (Subp_Id, E_Function, E_Generic_Function)
+        and then Comes_From_Source (Subp_Id)
         and then not Is_Volatile_Function (Subp_Id)
       then
          Check_Nonvolatile_Function_Profile (Subp_Id);
@@ -666,7 +681,7 @@ package body Contracts is
       --  Restore the SPARK_Mode of the enclosing context after all delayed
       --  pragmas have been analyzed.
 
-      Restore_SPARK_Mode (Mode);
+      Restore_SPARK_Mode (Saved_SM, Saved_SMP);
 
       --  Capture all global references in a generic subprogram now that the
       --  contract has been analyzed.
@@ -682,21 +697,28 @@ package body Contracts is
    -- Analyze_Object_Contract --
    -----------------------------
 
+   --  WARNING: This routine manages SPARK regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  SPARK mode.
+
    procedure Analyze_Object_Contract
      (Obj_Id    : Entity_Id;
       Freeze_Id : Entity_Id := Empty)
    is
-      Obj_Typ      : constant Entity_Id := Etype (Obj_Id);
-      AR_Val       : Boolean := False;
-      AW_Val       : Boolean := False;
-      ER_Val       : Boolean := False;
-      EW_Val       : Boolean := False;
-      Items        : Node_Id;
-      Mode         : SPARK_Mode_Type;
-      Prag         : Node_Id;
-      Ref_Elmt     : Elmt_Id;
-      Restore_Mode : Boolean := False;
-      Seen         : Boolean := False;
+      Obj_Typ : constant Entity_Id := Etype (Obj_Id);
+
+      Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
+      Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      --  Save the SPARK_Mode-related data to restore on exit
+
+      AR_Val   : Boolean := False;
+      AW_Val   : Boolean := False;
+      ER_Val   : Boolean := False;
+      EW_Val   : Boolean := False;
+      Items    : Node_Id;
+      Prag     : Node_Id;
+      Ref_Elmt : Elmt_Id;
+      Seen     : Boolean := False;
 
    begin
       --  The loop parameter in an element iterator over a formal container
@@ -727,8 +749,7 @@ package body Contracts is
       if Is_Single_Concurrent_Object (Obj_Id)
         and then Present (SPARK_Pragma (Obj_Id))
       then
-         Restore_Mode := True;
-         Save_SPARK_Mode_And_Set (Obj_Id, Mode);
+         Set_SPARK_Mode (Obj_Id);
       end if;
 
       --  Constant-related checks
@@ -878,12 +899,6 @@ package body Contracts is
                then
                   Error_Msg_N
                     ("discriminated object & cannot be volatile", Obj_Id);
-
-               --  An object of a tagged type cannot be effectively volatile
-               --  (SPARK RM C.6(5)).
-
-               elsif Is_Tagged_Type (Obj_Typ) then
-                  Error_Msg_N ("tagged object & cannot be volatile", Obj_Id);
                end if;
 
             --  The object is not effectively volatile
@@ -934,14 +949,16 @@ package body Contracts is
       --  Restore the SPARK_Mode of the enclosing context after all delayed
       --  pragmas have been analyzed.
 
-      if Restore_Mode then
-         Restore_SPARK_Mode (Mode);
-      end if;
+      Restore_SPARK_Mode (Saved_SM, Saved_SMP);
    end Analyze_Object_Contract;
 
    -----------------------------------
    -- Analyze_Package_Body_Contract --
    -----------------------------------
+
+   --  WARNING: This routine manages SPARK regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  SPARK mode.
 
    procedure Analyze_Package_Body_Contract
      (Body_Id   : Entity_Id;
@@ -950,7 +967,11 @@ package body Contracts is
       Body_Decl : constant Node_Id   := Unit_Declaration_Node (Body_Id);
       Items     : constant Node_Id   := Contract (Body_Id);
       Spec_Id   : constant Entity_Id := Spec_Entity (Body_Id);
-      Mode      : SPARK_Mode_Type;
+
+      Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
+      Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      --  Save the SPARK_Mode-related data to restore on exit
+
       Ref_State : Node_Id;
 
    begin
@@ -969,7 +990,7 @@ package body Contracts is
       --  context. To remedy this, restore the original SPARK_Mode of the
       --  related package body.
 
-      Save_SPARK_Mode_And_Set (Body_Id, Mode);
+      Set_SPARK_Mode (Body_Id);
 
       Ref_State := Get_Pragma (Body_Id, Pragma_Refined_State);
 
@@ -983,7 +1004,7 @@ package body Contracts is
       --  Restore the SPARK_Mode of the enclosing context after all delayed
       --  pragmas have been analyzed.
 
-      Restore_SPARK_Mode (Mode);
+      Restore_SPARK_Mode (Saved_SM, Saved_SMP);
 
       --  Capture all global references in a generic package body now that the
       --  contract has been analyzed.
@@ -999,12 +1020,20 @@ package body Contracts is
    -- Analyze_Package_Contract --
    ------------------------------
 
+   --  WARNING: This routine manages SPARK regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  SPARK mode.
+
    procedure Analyze_Package_Contract (Pack_Id : Entity_Id) is
       Items     : constant Node_Id := Contract (Pack_Id);
       Pack_Decl : constant Node_Id := Unit_Declaration_Node (Pack_Id);
+
+      Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
+      Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      --  Save the SPARK_Mode-related data to restore on exit
+
       Init      : Node_Id := Empty;
       Init_Cond : Node_Id := Empty;
-      Mode      : SPARK_Mode_Type;
       Prag      : Node_Id;
       Prag_Nam  : Name_Id;
 
@@ -1024,7 +1053,7 @@ package body Contracts is
       --  context. To remedy this, restore the original SPARK_Mode of the
       --  related package.
 
-      Save_SPARK_Mode_And_Set (Pack_Id, Mode);
+      Set_SPARK_Mode (Pack_Id);
 
       if Present (Items) then
 
@@ -1071,7 +1100,7 @@ package body Contracts is
       --  Restore the SPARK_Mode of the enclosing context after all delayed
       --  pragmas have been analyzed.
 
-      Restore_SPARK_Mode (Mode);
+      Restore_SPARK_Mode (Saved_SM, Saved_SMP);
 
       --  Capture all global references in a generic package now that the
       --  contract has been analyzed.
@@ -1209,10 +1238,18 @@ package body Contracts is
    -- Analyze_Task_Contract --
    ---------------------------
 
+   --  WARNING: This routine manages SPARK regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  SPARK mode.
+
    procedure Analyze_Task_Contract (Task_Id : Entity_Id) is
       Items : constant Node_Id := Contract (Task_Id);
-      Mode  : SPARK_Mode_Type;
-      Prag  : Node_Id;
+
+      Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
+      Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      --  Save the SPARK_Mode-related data to restore on exit
+
+      Prag : Node_Id;
 
    begin
       --  Do not analyze a contract multiple times
@@ -1230,7 +1267,7 @@ package body Contracts is
       --  context. To remedy this, restore the original SPARK_Mode of the
       --  related task unit.
 
-      Save_SPARK_Mode_And_Set (Task_Id, Mode);
+      Set_SPARK_Mode (Task_Id);
 
       --  Analyze Global first, as Depends may mention items classified in the
       --  global categorization.
@@ -1253,7 +1290,7 @@ package body Contracts is
       --  Restore the SPARK_Mode of the enclosing context after all delayed
       --  pragmas have been analyzed.
 
-      Restore_SPARK_Mode (Mode);
+      Restore_SPARK_Mode (Saved_SM, Saved_SMP);
    end Analyze_Task_Contract;
 
    -------------------------------------------------
@@ -2025,12 +2062,33 @@ package body Contracts is
                   return False;
 
                --  Determine whether the subprogram is declared in the visible
-               --  declarations of the package containing the type.
+               --  declarations of the package containing the type, or in the
+               --  visible declaration of a child unit of that package.
 
                else
-                  return List_Containing (Subp_Decl) =
-                    Visible_Declarations
-                      (Specification (Unit_Declaration_Node (Scope (Typ))));
+                  declare
+                     Decls      : constant List_Id   :=
+                                    List_Containing (Subp_Decl);
+                     Subp_Scope : constant Entity_Id :=
+                                    Scope (Defining_Entity (Subp_Decl));
+                     Typ_Scope  : constant Entity_Id := Scope (Typ);
+
+                  begin
+                     return
+                       Decls = Visible_Declarations
+                           (Specification (Unit_Declaration_Node (Typ_Scope)))
+
+                         or else
+                           (Ekind (Subp_Scope) = E_Package
+                             and then Typ_Scope /= Subp_Scope
+                             and then Is_Child_Unit (Subp_Scope)
+                             and then
+                               Is_Ancestor_Package (Typ_Scope, Subp_Scope)
+                             and then
+                               Decls = Visible_Declarations
+                                 (Specification
+                                   (Unit_Declaration_Node (Subp_Scope))));
+                  end;
                end if;
             end Has_Public_Visibility_Of_Subprogram;
 

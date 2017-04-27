@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1650,8 +1650,8 @@ package body Exp_Attr is
             --  Perform a view conversion when either the argument or the
             --  formal parameter are of a private type.
 
-            if Is_Private_Type (Formal_Typ)
-              or else Is_Private_Type (Item_Typ)
+            if Is_Private_Type (Base_Type (Formal_Typ))
+              or else Is_Private_Type (Base_Type (Item_Typ))
             then
                Rewrite (Item,
                  Unchecked_Convert_To (Formal_Typ, Relocate_Node (Item)));
@@ -2114,10 +2114,9 @@ package body Exp_Attr is
                                      (Etype (Prefix (Ref_Object))));
                   begin
                      --  No implicit conversion required if designated types
-                     --  match, or if we have an unrestricted access.
+                     --  match.
 
                      if Obj_DDT /= Btyp_DDT
-                       and then Id /= Attribute_Unrestricted_Access
                        and then not (Is_Class_Wide_Type (Obj_DDT)
                                       and then Etype (Obj_DDT) = Btyp_DDT)
                      then
@@ -5516,12 +5515,17 @@ package body Exp_Attr is
 
                --  Ada 2005 (AI-216): Program_Error is raised when executing
                --  the default implementation of the Read attribute of an
-               --  Unchecked_Union type.
+               --  Unchecked_Union type. We replace the attribute with a
+               --  raise statement (rather than inserting it before) to handle
+               --  properly the case of an unchecked union that is a record
+               --  component.
 
                if Is_Unchecked_Union (Base_Type (U_Type)) then
-                  Insert_Action (N,
+                  Rewrite (N,
                     Make_Raise_Program_Error (Loc,
                       Reason => PE_Unchecked_Union_Restriction));
+                  Set_Etype (N, B_Type);
+                  return;
                end if;
 
                if Has_Discriminants (U_Type)
@@ -6488,32 +6492,48 @@ package body Exp_Attr is
          ---------------------
 
          function Make_Range_Test return Node_Id is
-            Temp : constant Node_Id := Duplicate_Subexpr (Pref);
+            Temp : Node_Id;
 
          begin
-            --  The value whose validity is being checked has been captured in
-            --  an object declaration. We certainly don't want this object to
-            --  appear valid because the declaration initializes it.
+            --  The prefix of attribute 'Valid should always denote an object
+            --  reference. The reference is either coming directly from source
+            --  or is produced by validity check expansion.
 
-            if Is_Entity_Name (Temp) then
-               Set_Is_Known_Valid (Entity (Temp), False);
+            --  If the prefix denotes a variable which captures the value of
+            --  an object for validation purposes, use the variable in the
+            --  range test. This ensures that no extra copies or extra reads
+            --  are produced as part of the test. Generate:
+
+            --    Temp : ... := Object;
+            --    if not Temp in ... then
+
+            if Is_Validation_Variable_Reference (Pref) then
+               Temp := New_Occurrence_Of (Entity (Pref), Loc);
+
+            --  Otherwise the prefix is either a source object or a constant
+            --  produced by validity check expansion. Generate:
+
+            --    Temp : constant ... := Pref;
+            --    if not Temp in ... then
+
+            else
+               Temp := Duplicate_Subexpr (Pref);
             end if;
 
             return
               Make_In (Loc,
-                Left_Opnd  =>
-                  Unchecked_Convert_To (Btyp, Temp),
+                Left_Opnd  => Unchecked_Convert_To (Btyp, Temp),
                 Right_Opnd =>
                   Make_Range (Loc,
-                    Low_Bound =>
+                    Low_Bound  =>
                       Unchecked_Convert_To (Btyp,
                         Make_Attribute_Reference (Loc,
-                          Prefix => New_Occurrence_Of (Ptyp, Loc),
+                          Prefix         => New_Occurrence_Of (Ptyp, Loc),
                           Attribute_Name => Name_First)),
                     High_Bound =>
                       Unchecked_Convert_To (Btyp,
                         Make_Attribute_Reference (Loc,
-                          Prefix => New_Occurrence_Of (Ptyp, Loc),
+                          Prefix         => New_Occurrence_Of (Ptyp, Loc),
                           Attribute_Name => Name_Last))));
          end Make_Range_Test;
 
@@ -7200,14 +7220,21 @@ package body Exp_Attr is
                --  Unchecked_Union type. However, if the 'Write reference is
                --  within the generated Output stream procedure, Write outputs
                --  the components, and the default values of the discriminant
-               --  are streamed by the Output procedure itself.
+               --  are streamed by the Output procedure itself. If there are
+               --  no default values this is also erroneous.
 
-               if Is_Unchecked_Union (Base_Type (U_Type))
-                 and not Is_TSS (Current_Scope, TSS_Stream_Output)
-               then
-                  Insert_Action (N,
-                    Make_Raise_Program_Error (Loc,
-                      Reason => PE_Unchecked_Union_Restriction));
+               if Is_Unchecked_Union (Base_Type (U_Type)) then
+                  if (not Is_TSS (Current_Scope, TSS_Stream_Output)
+                       and not Is_TSS (Current_Scope, TSS_Stream_Write))
+                    or else No (Discriminant_Default_Value
+                                 (First_Discriminant (U_Type)))
+                  then
+                     Rewrite (N,
+                       Make_Raise_Program_Error (Loc,
+                         Reason => PE_Unchecked_Union_Restriction));
+                     Set_Etype (N, U_Type);
+                     return;
+                  end if;
                end if;
 
                if Has_Discriminants (U_Type)

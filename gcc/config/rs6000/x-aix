@@ -1,6 +1,5 @@
-# genautomata requires more than 256MB of data
-build/genautomata : override LDFLAGS += -Wl,-bmaxdata:0x20000000
+# genautomata requires more than 1GB of data
+build/genautomata : override LDFLAGS += -Wl,-bmaxdata:0x40000000
 
-# jc1 requires more than 256MB of data
 $(COMPILERS) : override LDFLAGS += -Wl,-bmaxdata:0x40000000
 

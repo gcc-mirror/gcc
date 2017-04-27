@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -312,11 +312,6 @@ package body Errout is
       --  template in instantiation case, otherwise unchanged).
 
    begin
-      --  It is a fatal error to issue an error message when scanning from the
-      --  internal source buffer (see Sinput for further documentation)
-
-      pragma Assert (Sinput.Source /= Internal_Source_Ptr);
-
       --  Return if all errors are to be ignored
 
       if Errors_Must_Be_Ignored then
@@ -423,8 +418,13 @@ package body Errout is
 
       --  or
 
-      --     warning: in instantiation at
+      --     warning: in instantiation at ...
       --     warning: original warning message
+
+      --  or
+
+      --     info: in instantiation at ...
+      --     info: original info message
 
       --  All these messages are posted at the location of the top level
       --  instantiation. If there are nested instantiations, then the
@@ -440,8 +440,13 @@ package body Errout is
 
       --  or
 
-      --     warning: in inlined body at
+      --     warning: in inlined body at ...
       --     warning: original warning message
+
+      --  or
+
+      --     info: in inlined body at ...
+      --     info: original info message
 
       --  OK, here we have an instantiation error, and we need to generate the
       --  error on the instantiation, rather than on the template.
@@ -494,10 +499,16 @@ package body Errout is
                --  Case of inlined body
 
                if Inlined_Body (X) then
-                  if Is_Warning_Msg or Is_Style_Msg then
+                  if Is_Info_Msg then
+                     Error_Msg_Internal
+                       ("info: in inlined body #",
+                        Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+
+                  elsif Is_Warning_Msg or Is_Style_Msg then
                      Error_Msg_Internal
                        (Warn_Insertion & "in inlined body #",
                         Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+
                   else
                      Error_Msg_Internal
                        ("error in inlined body #",
@@ -507,10 +518,16 @@ package body Errout is
                --  Case of generic instantiation
 
                else
-                  if Is_Warning_Msg or else Is_Style_Msg then
+                  if Is_Info_Msg then
+                     Error_Msg_Internal
+                       ("info: in instantiation #",
+                        Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+
+                  elsif Is_Warning_Msg or else Is_Style_Msg then
                      Error_Msg_Internal
                        (Warn_Insertion & "in instantiation #",
                         Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+
                   else
                      Error_Msg_Internal
                        ("instantiation error #",
@@ -2105,7 +2122,7 @@ package body Errout is
 
       if Warning_Mode = Treat_As_Error then
          Total_Errors_Detected :=
-           Total_Errors_Detected + Warnings_Detected - Info_Messages;
+           Total_Errors_Detected + Warnings_Detected;
          Warnings_Detected := Info_Messages;
       end if;
    end Output_Messages;
@@ -2734,6 +2751,7 @@ package body Errout is
           not Is_Predefined_File_Name
                 (Unit_File_Name (Get_Source_Unit (Error_Msg_Node_1)))
       then
+         Get_Name_String (Unit_File_Name (Get_Source_Unit (Error_Msg_Node_1)));
          Set_Msg_Str (" defined");
          Set_Msg_Insertion_Line_Number (Sloc (Error_Msg_Node_1), Flag);
 

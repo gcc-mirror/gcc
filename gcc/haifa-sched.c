@@ -930,6 +930,9 @@ static bitmap saved_reg_live;
 /* Registers mentioned in the current region.  */
 static bitmap region_ref_regs;
 
+/* Temporary bitmap used for SCHED_PRESSURE_MODEL.  */
+static bitmap tmp_bitmap;
+
 /* Effective number of available registers of a given class (see comment
    in sched_pressure_start_bb).  */
 static int sched_class_regs_num[N_REG_CLASSES];
@@ -2135,10 +2138,11 @@ model_recompute (rtx_insn *insn)
      registers that will be born in the range [model_curr_point, POINT).  */
   num_uses = 0;
   num_pending_births = 0;
+  bitmap_clear (tmp_bitmap);
   for (use = INSN_REG_USE_LIST (insn); use != NULL; use = use->next_insn_use)
     {
       new_last = model_last_use_except (use);
-      if (new_last < point)
+      if (new_last < point && bitmap_set_bit (tmp_bitmap, use->regno))
 	{
 	  gcc_assert (num_uses < ARRAY_SIZE (uses));
 	  uses[num_uses].last_use = new_last;
@@ -7241,6 +7245,8 @@ alloc_global_sched_pressure_data (void)
 	  saved_reg_live = BITMAP_ALLOC (NULL);
 	  region_ref_regs = BITMAP_ALLOC (NULL);
 	}
+      if (sched_pressure == SCHED_PRESSURE_MODEL)
+	tmp_bitmap = BITMAP_ALLOC (NULL);
 
       /* Calculate number of CALL_SAVED_REGS and FIXED_REGS in register classes
 	 that we calculate register pressure for.  */
@@ -7274,6 +7280,8 @@ free_global_sched_pressure_data (void)
 	  BITMAP_FREE (region_ref_regs);
 	  BITMAP_FREE (saved_reg_live);
 	}
+      if (sched_pressure == SCHED_PRESSURE_MODEL)
+	BITMAP_FREE (tmp_bitmap);
       BITMAP_FREE (curr_reg_live);
       free (sched_regno_pressure_class);
     }

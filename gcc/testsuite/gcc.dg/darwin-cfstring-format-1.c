@@ -31,6 +31,6 @@ void foo (void)
   CFStringRef notchk = CFSTR ("here is an unchecked %d %s string");
   s1 (notchk, 5, 6, 7);
   printf("this one is checked %d %s", 3, 4, 5); /* { dg-warning "format .%s. expects argument of type .char .., but argument 3 has type .int." } */
-			/* { dg-warning "too many arguments for format" "" { target *-*-* } 33 } */
+			/* { dg-warning "too many arguments for format" "" { target *-*-* } .-1 } */
   printf(s5 (1, "and so is this %d %d %s", 3, 4, "hey", 6), 5, 6, 12);/* { dg-warning "format .%s. expects argument of type .char .., but argument 4 has type .int." } */
 }

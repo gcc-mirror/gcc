@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,10 @@ package Warnsw is
    --  Note: most of these flags are still in opt, but the plan is to move them
    --  here as time goes by. And in fact a really nice idea would be to put
    --  them all in a Warn_Record so that they would be easy to save/restore.
+
+   Warn_On_Late_Primitives : Boolean := False;
+   --  Warn when tagged type public primitives are defined after its private
+   --  extensions.
 
    Warn_On_Record_Holes : Boolean := False;
    --  Warn when explicit record component clauses leave uncovered holes (gaps)
@@ -91,6 +95,7 @@ package Warnsw is
       Warn_On_Dereference                 : Boolean;
       Warn_On_Export_Import               : Boolean;
       Warn_On_Hiding                      : Boolean;
+      Warn_On_Late_Primitives             : Boolean;
       Warn_On_Modified_Unread             : Boolean;
       Warn_On_No_Value_Assigned           : Boolean;
       Warn_On_Non_Local_Exception         : Boolean;

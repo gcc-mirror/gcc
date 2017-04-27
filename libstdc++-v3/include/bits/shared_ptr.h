@@ -266,8 +266,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: __shared_ptr<_Tp>(__r) { }
 
 #if _GLIBCXX_USE_DEPRECATED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       template<typename _Yp, typename = _Constructible<auto_ptr<_Yp>>>
 	shared_ptr(auto_ptr<_Yp>&& __r);
+#pragma GCC diagnostic pop
 #endif
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -304,6 +307,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
 #if _GLIBCXX_USE_DEPRECATED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       template<typename _Yp>
 	_Assignable<auto_ptr<_Yp>>
 	operator=(auto_ptr<_Yp>&& __r)
@@ -311,6 +316,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  this->__shared_ptr<_Tp>::operator=(std::move(__r));
 	  return *this;
 	}
+#pragma GCC diagnostic pop
 #endif
 
       shared_ptr&

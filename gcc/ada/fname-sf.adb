@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,9 +33,6 @@ with Types;    use Types;
 with Unchecked_Conversion;
 
 package body Fname.SF is
-
-   function To_Big_String_Ptr is new Unchecked_Conversion
-     (Source_Buffer_Ptr, Big_String_Ptr);
 
    ----------------------
    -- Local Procedures --
@@ -66,19 +63,19 @@ package body Fname.SF is
    procedure Read_Source_File_Name_Pragmas is
       Src : Source_Buffer_Ptr;
       Hi  : Source_Ptr;
-      BS  : Big_String_Ptr;
-      SP  : String_Ptr;
 
    begin
-      Name_Buffer (1 .. 8) := "gnat.adc";
-      Name_Len := 8;
-      Read_Source_File (Name_Enter, 0, Hi, Src);
+      Read_Source_File (Name_Enter ("gnat.adc"), 1, Hi, Src);
 
-      if Src /= null then
-         BS := To_Big_String_Ptr (Src);
-         SP := BS (1 .. Natural (Hi))'Unrestricted_Access;
+      if not Null_Source_Buffer_Ptr (Src) then
+         --  We need to strip off the trailing EOF that was added by
+         --  Read_Source_File, because there might be another EOF in
+         --  the file, and two in a row causes Scan_SFN_Pragmas to give
+         --  errors.
+
+         pragma Assert (Src (Hi) = EOF);
          Scan_SFN_Pragmas
-           (SP.all,
+           (String (Src (1 .. Hi - 1)),
             Set_File_Name'Access,
             Set_File_Name_Pattern'Access);
       end if;

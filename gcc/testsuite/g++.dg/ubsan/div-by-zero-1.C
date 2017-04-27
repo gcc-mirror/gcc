@@ -6,5 +6,5 @@ foo (int i)
 {
   switch (i)
   case 0 * (1 / 0): /* { dg-warning "division by zero" } */
-    ;  /* { dg-error "is not a constant.expression" "" { target *-*-* } 8 } */
+    ;  /* { dg-error "is not a constant.expression" "" { target *-*-* } .-1 } */
 }

@@ -1857,9 +1857,11 @@ scan_omp_task (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
   tree name, t;
   gomp_task *stmt = as_a <gomp_task *> (gsi_stmt (*gsi));
 
-  /* Ignore task directives with empty bodies.  */
+  /* Ignore task directives with empty bodies, unless they have depend
+     clause.  */
   if (optimize > 0
-      && empty_body_p (gimple_omp_body (stmt)))
+      && empty_body_p (gimple_omp_body (stmt))
+      && !omp_find_clause (gimple_omp_task_clauses (stmt), OMP_CLAUSE_DEPEND))
     {
       gsi_replace (gsi, gimple_build_nop (), false);
       return;
@@ -4768,11 +4770,10 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *stmt_list,
 		TREE_NO_WARNING (new_var) = 1;
 	    }
 
-	  if (simduid && DECL_HAS_VALUE_EXPR_P (new_var))
+	  if (!maybe_simt && simduid && DECL_HAS_VALUE_EXPR_P (new_var))
 	    {
 	      tree val = DECL_VALUE_EXPR (new_var);
-	      if (!maybe_simt
-		  && TREE_CODE (val) == ARRAY_REF
+	      if (TREE_CODE (val) == ARRAY_REF
 		  && VAR_P (TREE_OPERAND (val, 0))
 		  && lookup_attribute ("omp simd array",
 				       DECL_ATTRIBUTES (TREE_OPERAND (val,
@@ -4792,26 +4793,26 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *stmt_list,
 				    TREE_OPERAND (val, 0), lastlane,
 				    NULL_TREE, NULL_TREE);
 		}
-	      else if (maybe_simt
-		       && VAR_P (val)
-		       && lookup_attribute ("omp simt private",
-					    DECL_ATTRIBUTES (val)))
+	    }
+	  else if (maybe_simt)
+	    {
+	      tree val = (DECL_HAS_VALUE_EXPR_P (new_var)
+			  ? DECL_VALUE_EXPR (new_var)
+			  : new_var);
+	      if (simtlast == NULL)
 		{
-		  if (simtlast == NULL)
-		    {
-		      simtlast = create_tmp_var (unsigned_type_node);
-		      gcall *g = gimple_build_call_internal
-			(IFN_GOMP_SIMT_LAST_LANE, 1, simtcond);
-		      gimple_call_set_lhs (g, simtlast);
-		      gimple_seq_add_stmt (stmt_list, g);
-		    }
-		  x = build_call_expr_internal_loc
-		    (UNKNOWN_LOCATION, IFN_GOMP_SIMT_XCHG_IDX,
-		     TREE_TYPE (val), 2, val, simtlast);
-		  new_var = unshare_expr (new_var);
-		  gimplify_assign (new_var, x, stmt_list);
-		  new_var = unshare_expr (new_var);
+		  simtlast = create_tmp_var (unsigned_type_node);
+		  gcall *g = gimple_build_call_internal
+		    (IFN_GOMP_SIMT_LAST_LANE, 1, simtcond);
+		  gimple_call_set_lhs (g, simtlast);
+		  gimple_seq_add_stmt (stmt_list, g);
 		}
+	      x = build_call_expr_internal_loc
+		(UNKNOWN_LOCATION, IFN_GOMP_SIMT_XCHG_IDX,
+		 TREE_TYPE (val), 2, val, simtlast);
+	      new_var = unshare_expr (new_var);
+	      gimplify_assign (new_var, x, stmt_list);
+	      new_var = unshare_expr (new_var);
 	    }
 
 	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE

@@ -9,4 +9,4 @@
 typedef const struct __CFString *CFStringRef;
 
 const CFStringRef S = ((CFStringRef)__builtin___CFStringMakeConstantString("Testing"));
-/* { dg-error "built-in" "built-in function .* requires .* flag" { target *-*-* } 11 } */
+/* { dg-error "built-in" "built-in function .* requires .* flag" { target *-*-* } .-1 } */

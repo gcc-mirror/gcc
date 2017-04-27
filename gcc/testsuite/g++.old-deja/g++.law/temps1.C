@@ -17,4 +17,4 @@ struct cookie
 };
 
 cookie cat(&foo("apabepa"));// { dg-warning "deprecated conversion|forbids converting a string constant" "dep" }
-// { dg-warning "taking address of temporary" "add" { target *-*-* } 19 }
+// { dg-warning "taking address of temporary" "add" { target *-*-* } .-1 }

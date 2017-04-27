@@ -11,7 +11,7 @@ foo (int x)
   #pragma omp target teams
     {
       bad2: ;			// { dg-error "jump to label" }
-                                // { dg-message "enters OpenMP" "" { target *-*-* } 13 }
+                                // { dg-message "enters OpenMP" "" { target *-*-* } .-1 }
     }
 
   #pragma omp target teams
@@ -44,7 +44,7 @@ bar (int x)
   #pragma omp teams
     {
       bad2: ;			// { dg-error "jump to label" }
-                                // { dg-message "enters OpenMP" "" { target *-*-* } 46 }
+                                // { dg-message "enters OpenMP" "" { target *-*-* } .-1 }
     }
 
   #pragma omp target
@@ -61,7 +61,7 @@ bar (int x)
   #pragma omp target		// { dg-warning "statement will never be executed" }
   #pragma omp teams
     { case 0:; }		// { dg-error "jump" }
-                                // { dg-message "enters" "" { target *-*-* } 63 }
+                                // { dg-message "enters" "" { target *-*-* } .-1 }
   }
 }
 

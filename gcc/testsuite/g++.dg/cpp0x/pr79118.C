@@ -33,7 +33,7 @@ struct Two
   constexpr Two (int) : a() {} // { dg-error "b' must be initialized" }
   constexpr Two (unsigned) : b () {} // { dg-error "a' must be initialized" }
   constexpr Two (void *) {} // { dg-error "a' must be initialized" }
-   // { dg-error "b' must be initialized" "" { target *-*-* } 35 }
+   // { dg-error "b' must be initialized" "" { target *-*-* } .-1 }
 };
 
 Two e ();

@@ -32,7 +32,7 @@ int a6 = &a3 - &a4; /* { dg-error "10:initializer element is not" } */
 int a7[] = a7; /* { dg-error "12:invalid initializer" } */
 
 struct S s = { { 1 }, { 3 } }; /* { dg-error "23:extra brace group at end of initializer" } */
-/* { dg-warning "23:excess elements in struct initializer" "" { target *-*-* } 34 } */
+/* { dg-warning "23:excess elements in struct initializer" "" { target *-*-* } .-1 } */
 struct g g1 = { {0, { 1 } } }; /* { dg-error "21:initialization of flexible array member in a nested context" } */
 struct g g2 = { .f[0] = 1 }; /* { dg-error "20:array index in non-array initializer" } */
 

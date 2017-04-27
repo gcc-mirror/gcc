@@ -1550,7 +1550,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                  Hence, except for the immediate peeling amount, we also want
                  to try to add full vector size, while we don't exceed
                  vectorization factor.
-                 We do this automtically for cost model, since we calculate cost
+                 We do this automatically for cost model, since we calculate cost
                  for every peeling option.  */
               if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
 		{

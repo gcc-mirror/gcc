@@ -10,11 +10,11 @@ void
 foo (void)
 {
   (int) { 1 }; /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "compound literal" "scalar" { target *-*-* } 12 } */
+  /* { dg-error "compound literal" "scalar" { target *-*-* } .-1 } */
   (struct s) { 1, 2 }; /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "compound literal" "struct" { target *-*-* } 14 } */
+  /* { dg-error "compound literal" "struct" { target *-*-* } .-1 } */
   (union u) { 1 }; /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "compound literal" "union" { target *-*-* } 16 } */
+  /* { dg-error "compound literal" "union" { target *-*-* } .-1 } */
   (int [1]) { 1 }; /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "compound literal" "array" { target *-*-* } 18 } */
+  /* { dg-error "compound literal" "array" { target *-*-* } .-1 } */
 }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -106,34 +106,34 @@ package body Targparm is
 
    type Buffer_Ptr is access constant Source_Buffer;
    Targparm_Str : constant array (Targparm_Tags) of Buffer_Ptr :=
-     (AAM_Str'Access,
-      ACR_Str'Access,
-      ASD_Str'Access,
-      BDC_Str'Access,
-      BOC_Str'Access,
-      CLA_Str'Access,
-      CRT_Str'Access,
-      D32_Str'Access,
-      DEN_Str'Access,
-      EXS_Str'Access,
-      FEL_Str'Access,
-      FEX_Str'Access,
-      FFO_Str'Access,
-      MOV_Str'Access,
-      MRN_Str'Access,
-      PAS_Str'Access,
-      SAG_Str'Access,
-      SAP_Str'Access,
-      SCA_Str'Access,
-      SCC_Str'Access,
-      SCD_Str'Access,
-      SCL_Str'Access,
-      SCP_Str'Access,
-      SLS_Str'Access,
-      SNZ_Str'Access,
-      SSL_Str'Access,
-      UAM_Str'Access,
-      ZCX_Str'Access);
+     (AAM => AAM_Str'Access,
+      ACR => ACR_Str'Access,
+      ASD => ASD_Str'Access,
+      BDC => BDC_Str'Access,
+      BOC => BOC_Str'Access,
+      CLA => CLA_Str'Access,
+      CRT => CRT_Str'Access,
+      D32 => D32_Str'Access,
+      DEN => DEN_Str'Access,
+      EXS => EXS_Str'Access,
+      FEL => FEL_Str'Access,
+      FEX => FEX_Str'Access,
+      FFO => FFO_Str'Access,
+      MOV => MOV_Str'Access,
+      MRN => MRN_Str'Access,
+      PAS => PAS_Str'Access,
+      SAG => SAG_Str'Access,
+      SAP => SAP_Str'Access,
+      SCA => SCA_Str'Access,
+      SCC => SCC_Str'Access,
+      SCD => SCD_Str'Access,
+      SCL => SCL_Str'Access,
+      SCP => SCP_Str'Access,
+      SLS => SLS_Str'Access,
+      SNZ => SNZ_Str'Access,
+      SSL => SSL_Str'Access,
+      UAM => UAM_Str'Access,
+      ZCX => ZCX_Str'Access);
 
    -----------------------
    -- Local Subprograms --
@@ -146,7 +146,7 @@ package body Targparm is
    -- Get_Target_Parameters --
    ---------------------------
 
-   --  Version which reads in system.ads
+   --  Version that reads in system.ads
 
    procedure Get_Target_Parameters
      (Make_Id : Make_Id_Type := null;
@@ -169,7 +169,7 @@ package body Targparm is
 
       Read_Source_File (Name_Find, Lo => 0, Hi => Hi, Src => Text);
 
-      if Text = null then
+      if Null_Source_Buffer_Ptr (Text) then
          Write_Line ("fatal error, run-time library not installed correctly");
          Write_Line ("cannot locate file system.ads");
          raise Unrecoverable_Error;
@@ -200,6 +200,9 @@ package body Targparm is
       Set_NUA      : Set_NUA_Type := null;
       Set_NUP      : Set_NUP_Type := null)
    is
+      pragma Assert (System_Text'First = Source_First);
+      pragma Assert (System_Text'Last = Source_Last);
+
       P : Source_Ptr;
       --  Scans source buffer containing source of system.ads
 
@@ -219,6 +222,13 @@ package body Targparm is
       --  Scan a name starting at System_Text (P), and put Name in Name_Buffer,
       --  with Name_Len being length, folded to lower case. On return, P points
       --  just past the last character (which should be a right paren).
+
+      function Looking_At (S : Source_Buffer) return Boolean;
+      --  True if P points to the same text as S in System_Text
+
+      function Looking_At_Skip (S : Source_Buffer) return Boolean;
+      --  True if P points to the same text as S in System_Text,
+      --  and if True, moves P forward to skip S as a side effect.
 
       ------------------
       -- Collect_Name --
@@ -249,15 +259,39 @@ package body Targparm is
          end loop;
       end Collect_Name;
 
+      ----------------
+      -- Looking_At --
+      ----------------
+
+      function Looking_At (S : Source_Buffer) return Boolean is
+         Last : constant Source_Ptr := P + S'Length - 1;
+      begin
+         return Last <= System_Text'Last
+           and then System_Text (P .. Last) = S;
+      end Looking_At;
+
+      ---------------------
+      -- Looking_At_Skip --
+      ---------------------
+
+      function Looking_At_Skip (S : Source_Buffer) return Boolean is
+         Result : constant Boolean := Looking_At (S);
+      begin
+         if Result then
+            P := P + S'Length;
+         end if;
+
+         return Result;
+      end Looking_At_Skip;
+
    --  Start of processing for Get_Target_Parameters
 
    begin
       if Parameters_Obtained then
          return;
-      else
-         Parameters_Obtained := True;
       end if;
 
+      Parameters_Obtained := True;
       Opt.Address_Is_Private := False;
 
       --  Loop through source lines
@@ -271,60 +305,59 @@ package body Targparm is
       --  For a special exception, see processing for pragma Pure below
 
       P := Source_First;
-      Line_Loop : while System_Text (P .. P + 10) /= "end System;" loop
 
-         --  Skip comments quickly
+      while not Looking_At ("end System;") loop
+         --  Skip comments
 
-         if System_Text (P) = '-' then
+         if Looking_At ("-") then
             goto Line_Loop_Continue;
 
          --  Test for type Address is private
 
-         elsif System_Text (P .. P + 26) = "   type Address is private;" then
+         elsif Looking_At_Skip ("   type Address is private;") then
             Opt.Address_Is_Private := True;
-            P := P + 26;
             goto Line_Loop_Continue;
 
          --  Test for pragma Profile (Ravenscar);
 
-         elsif System_Text (P .. P + 26) =
-                 "pragma Profile (Ravenscar);"
-         then
+         elsif Looking_At_Skip ("pragma Profile (Ravenscar);") then
             Set_Profile_Restrictions (Ravenscar);
             Opt.Task_Dispatching_Policy := 'F';
             Opt.Locking_Policy          := 'C';
-            P := P + 27;
             goto Line_Loop_Continue;
 
          --  Test for pragma Profile (GNAT_Extended_Ravenscar);
 
-         elsif System_Text (P .. P + 40) =
-                 "pragma Profile (GNAT_Extended_Ravenscar);"
+         elsif Looking_At_Skip
+           ("pragma Profile (GNAT_Extended_Ravenscar);")
          then
             Set_Profile_Restrictions (GNAT_Extended_Ravenscar);
             Opt.Task_Dispatching_Policy := 'F';
             Opt.Locking_Policy          := 'C';
-            P := P + 27;
+            goto Line_Loop_Continue;
+
+         --  Test for pragma Profile (GNAT_Ravenscar_EDF);
+
+         elsif Looking_At_Skip ("pragma Profile (GNAT_Ravenscar_EDF);") then
+            Set_Profile_Restrictions (GNAT_Ravenscar_EDF);
+            Opt.Task_Dispatching_Policy := 'E';
+            Opt.Locking_Policy          := 'C';
             goto Line_Loop_Continue;
 
          --  Test for pragma Profile (Restricted);
 
-         elsif System_Text (P .. P + 27) =
-                 "pragma Profile (Restricted);"
-         then
+         elsif Looking_At_Skip ("pragma Profile (Restricted);") then
             Set_Profile_Restrictions (Restricted);
-            P := P + 28;
             goto Line_Loop_Continue;
 
          --  Test for pragma Restrictions
 
-         elsif System_Text (P .. P + 20) = "pragma Restrictions (" then
-            P := P + 21;
+         elsif Looking_At_Skip ("pragma Restrictions (") then
             PR_Start := P - 1;
 
             --  Boolean restrictions
 
-            Rloop : for K in All_Boolean_Restrictions loop
+            for K in All_Boolean_Restrictions loop
                declare
                   Rname : constant String := Restriction_Id'Image (K);
 
@@ -343,9 +376,8 @@ package body Targparm is
                   end if;
                end;
 
-            <<Rloop_Continue>>
-               null;
-            end loop Rloop;
+               <<Rloop_Continue>> null;
+            end loop;
 
             --  Restrictions taking integer parameter
 
@@ -412,15 +444,12 @@ package body Targparm is
                   end if;
                end;
 
-            <<Ploop_Continue>>
-               null;
+               <<Ploop_Continue>> null;
             end loop Ploop;
 
             --  No_Dependence case
 
-            if System_Text (P .. P + 16) = "No_Dependence => " then
-               P := P + 17;
-
+            if Looking_At_Skip ("No_Dependence => ") then
                --  Skip this processing (and simply ignore No_Dependence lines)
                --  if caller did not supply the three subprograms we need to
                --  process these lines.
@@ -470,10 +499,7 @@ package body Targparm is
 
             --  No_Specification_Of_Aspect case
 
-            elsif System_Text (P .. P + 29) = "No_Specification_Of_Aspect => "
-            then
-               P := P + 30;
-
+            elsif Looking_At_Skip ("No_Specification_Of_Aspect => ") then
                --  Skip this processing (and simply ignore the pragma), if
                --  caller did not supply the subprogram we need to process
                --  such lines.
@@ -502,9 +528,7 @@ package body Targparm is
 
             --  No_Use_Of_Attribute case
 
-            elsif System_Text (P .. P + 22) = "No_Use_Of_Attribute => " then
-               P := P + 23;
-
+            elsif Looking_At_Skip ("No_Use_Of_Attribute => ") then
                --  Skip this processing (and simply ignore No_Use_Of_Attribute
                --  lines) if caller did not supply the subprogram we need to
                --  process such lines.
@@ -533,9 +557,7 @@ package body Targparm is
 
             --  No_Use_Of_Pragma case
 
-            elsif System_Text (P .. P + 19) = "No_Use_Of_Pragma => " then
-               P := P + 20;
-
+            elsif Looking_At_Skip ("No_Use_Of_Pragma => ") then
                --  Skip this processing (and simply ignore No_Use_Of_Pragma
                --  lines) if caller did not supply the subprogram we need to
                --  process such lines.
@@ -586,89 +608,72 @@ package body Targparm is
 
          --  Test for pragma Detect_Blocking;
 
-         elsif System_Text (P .. P + 22) = "pragma Detect_Blocking;" then
-            P := P + 23;
+         elsif Looking_At_Skip ("pragma Detect_Blocking;") then
             Opt.Detect_Blocking := True;
             goto Line_Loop_Continue;
 
          --  Discard_Names
 
-         elsif System_Text (P .. P + 20) = "pragma Discard_Names;" then
-            P := P + 21;
+         elsif Looking_At_Skip ("pragma Discard_Names;") then
             Opt.Global_Discard_Names := True;
             goto Line_Loop_Continue;
 
          --  Locking Policy
 
-         elsif System_Text (P .. P + 22) = "pragma Locking_Policy (" then
-            P := P + 23;
+         elsif Looking_At_Skip ("pragma Locking_Policy (") then
             Opt.Locking_Policy := System_Text (P);
             Opt.Locking_Policy_Sloc := System_Location;
             goto Line_Loop_Continue;
 
          --  Normalize_Scalars
 
-         elsif System_Text (P .. P + 24) = "pragma Normalize_Scalars;" then
-            P := P + 25;
+         elsif Looking_At_Skip ("pragma Normalize_Scalars;") then
             Opt.Normalize_Scalars := True;
             Opt.Init_Or_Norm_Scalars := True;
             goto Line_Loop_Continue;
 
          --  Partition_Elaboration_Policy
 
-         elsif System_Text (P .. P + 36) =
-                 "pragma Partition_Elaboration_Policy ("
-         then
-            P := P + 37;
+         elsif Looking_At_Skip ("pragma Partition_Elaboration_Policy (") then
             Opt.Partition_Elaboration_Policy := System_Text (P);
             Opt.Partition_Elaboration_Policy_Sloc := System_Location;
             goto Line_Loop_Continue;
 
          --  Polling (On)
 
-         elsif System_Text (P .. P + 19) = "pragma Polling (On);" then
-            P := P + 20;
+         elsif Looking_At_Skip ("pragma Polling (On);") then
             Opt.Polling_Required := True;
             goto Line_Loop_Continue;
 
          --  Queuing Policy
 
-         elsif System_Text (P .. P + 22) = "pragma Queuing_Policy (" then
-            P := P + 23;
+         elsif Looking_At_Skip ("pragma Queuing_Policy (") then
             Opt.Queuing_Policy := System_Text (P);
             Opt.Queuing_Policy_Sloc := System_Location;
             goto Line_Loop_Continue;
 
          --  Suppress_Exception_Locations
 
-         elsif System_Text (P .. P + 35) =
-                                   "pragma Suppress_Exception_Locations;"
-         then
-            P := P + 36;
+         elsif Looking_At_Skip ("pragma Suppress_Exception_Locations;") then
             Opt.Exception_Locations_Suppressed := True;
             goto Line_Loop_Continue;
 
          --  Task_Dispatching Policy
 
-         elsif System_Text (P .. P + 31) =
-                                   "pragma Task_Dispatching_Policy ("
-         then
-            P := P + 32;
+         elsif Looking_At_Skip ("pragma Task_Dispatching_Policy (") then
             Opt.Task_Dispatching_Policy := System_Text (P);
             Opt.Task_Dispatching_Policy_Sloc := System_Location;
             goto Line_Loop_Continue;
 
          --  No other configuration pragmas are permitted
 
-         elsif System_Text (P .. P + 6) = "pragma " then
-
+         elsif Looking_At ("pragma ") then
             --  Special exception, we allow pragma Pure (System) appearing in
             --  column one. This is an obsolete usage which may show up in old
             --  tests with an obsolete version of system.ads, so we recognize
             --  and ignore it to make life easier in handling such tests.
 
-            if System_Text (P .. P + 20) = "pragma Pure (System);" then
-               P := P + 21;
+            if Looking_At_Skip ("pragma Pure (System);") then
                goto Line_Loop_Continue;
             end if;
 
@@ -688,11 +693,9 @@ package body Targparm is
 
          --  See if we have a Run_Time_Name
 
-         elsif System_Text (P .. P + 38) =
-                  "   Run_Time_Name : constant String := """
+         elsif Looking_At_Skip
+           ("   Run_Time_Name : constant String := """)
          then
-            P := P + 39;
-
             Name_Len := 0;
             while System_Text (P) in 'A' .. 'Z'
                     or else
@@ -728,11 +731,9 @@ package body Targparm is
 
          --  See if we have an Executable_Extension
 
-         elsif System_Text (P .. P + 45) =
-                  "   Executable_Extension : constant String := """
+         elsif Looking_At_Skip
+           ("   Executable_Extension : constant String := """)
          then
-            P := P + 46;
-
             Name_Len := 0;
             while System_Text (P) /= '"'
               and then System_Text (P) /= ASCII.LF
@@ -758,11 +759,7 @@ package body Targparm is
 
          else
             Config_Param_Loop : for K in Targparm_Tags loop
-               if System_Text (P + 3 .. P + 2 + Targparm_Str (K)'Length) =
-                                                      Targparm_Str (K).all
-               then
-                  P := P + 3 + Targparm_Str (K)'Length;
-
+               if Looking_At_Skip ("   " & Targparm_Str (K).all) then
                   if Targparm_Flags (K) then
                      Set_Standard_Error;
                      Write_Line
@@ -840,14 +837,18 @@ package body Targparm is
 
          <<Line_Loop_Continue>>
 
-         while System_Text (P) /= CR and then System_Text (P) /= LF loop
+         while P < Source_Last
+           and then System_Text (P) /= CR
+           and then System_Text (P) /= LF
+         loop
             P := P + 1;
-            exit when P >= Source_Last;
          end loop;
 
-         while System_Text (P) = CR or else System_Text (P) = LF loop
+         while P < Source_Last
+           and then (System_Text (P) = CR
+                       or else System_Text (P) = LF)
+         loop
             P := P + 1;
-            exit when P >= Source_Last;
          end loop;
 
          if P >= Source_Last then
@@ -857,7 +858,7 @@ package body Targparm is
             Set_Standard_Output;
             raise Unrecoverable_Error;
          end if;
-      end loop Line_Loop;
+      end loop;
 
       if Fatal then
          raise Unrecoverable_Error;

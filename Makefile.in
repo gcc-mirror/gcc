@@ -14069,7 +14069,7 @@ configure-mpc:
 	  $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ \
+	  --target=${target_alias} --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode \
 	  || exit 1
 @endif mpc
 
@@ -14105,7 +14105,7 @@ configure-stage1-mpc:
 	  --target=${target_alias} \
 	   \
 	  $(STAGE1_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@
+	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode
 @endif mpc-bootstrap
 
 .PHONY: configure-stage2-mpc maybe-configure-stage2-mpc
@@ -14139,7 +14139,7 @@ configure-stage2-mpc:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE2_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@
+	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode
 @endif mpc-bootstrap
 
 .PHONY: configure-stage3-mpc maybe-configure-stage3-mpc
@@ -14173,7 +14173,7 @@ configure-stage3-mpc:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE3_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@
+	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode
 @endif mpc-bootstrap
 
 .PHONY: configure-stage4-mpc maybe-configure-stage4-mpc
@@ -14207,7 +14207,7 @@ configure-stage4-mpc:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE4_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@
+	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode
 @endif mpc-bootstrap
 
 .PHONY: configure-stageprofile-mpc maybe-configure-stageprofile-mpc
@@ -14241,7 +14241,7 @@ configure-stageprofile-mpc:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@
+	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode
 @endif mpc-bootstrap
 
 .PHONY: configure-stagefeedback-mpc maybe-configure-stagefeedback-mpc
@@ -14275,7 +14275,7 @@ configure-stagefeedback-mpc:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@
+	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode
 @endif mpc-bootstrap
 
 .PHONY: configure-stageautoprofile-mpc maybe-configure-stageautoprofile-mpc
@@ -14309,7 +14309,7 @@ configure-stageautoprofile-mpc:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEautoprofile_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@
+	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode
 @endif mpc-bootstrap
 
 .PHONY: configure-stageautofeedback-mpc maybe-configure-stageautofeedback-mpc
@@ -14343,7 +14343,7 @@ configure-stageautofeedback-mpc:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEautofeedback_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@
+	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode
 @endif mpc-bootstrap
 
 

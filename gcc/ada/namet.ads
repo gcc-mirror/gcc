@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,7 @@
 ------------------------------------------------------------------------------
 
 with Alloc;
+with Hostparm; use Hostparm;
 with Table;
 with System;   use System;
 with Types;    use Types;
@@ -165,7 +166,7 @@ package Namet is
    --  which is used by most of the code via the renamings. New code ought
    --  to avoid the global.
 
-   Global_Name_Buffer : Bounded_String;
+   Global_Name_Buffer : Bounded_String (Max_Length => 4 * Max_Line_Length);
    Name_Buffer        : String renames Global_Name_Buffer.Chars;
    Name_Len           : Natural renames Global_Name_Buffer.Length;
 
@@ -347,6 +348,7 @@ package Namet is
 
    function Name_Enter
      (Buf : Bounded_String := Global_Name_Buffer) return Name_Id;
+   function Name_Enter (S : String) return Name_Id;
    --  Name_Enter is similar to Name_Find. The difference is that it does not
    --  search the table for an existing match, and also subsequent Name_Find
    --  calls using the same name will not locate the entry created by this

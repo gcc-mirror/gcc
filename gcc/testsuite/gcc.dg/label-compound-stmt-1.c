@@ -4,4 +4,4 @@
 /* { dg-options "" } */
 
 void f(void) { g: } /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "label|parse|syntax" "label at end of compound statement" { target *-*-* } 6 } */
+/* { dg-error "label|parse|syntax" "label at end of compound statement" { target *-*-* } .-1 } */

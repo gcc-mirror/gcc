@@ -23,6 +23,6 @@ int main (void)
 {
 A dummy;
 PrintArgs (dummy, dummy); // { dg-message "pass" } cannot pass non-POD
-// { dg-message "required" "inst" { target *-*-* } 25 }
+// { dg-message "required" "inst" { target *-*-* } .-1 }
 return 0;
 }

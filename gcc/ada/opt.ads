@@ -814,17 +814,17 @@ package Opt is
    --  default value appropriate to the system (in Osint.Initialize), and then
    --  reset if a command line switch is used to change the setting.
 
-   Ignore_Pragma_SPARK_Mode : Boolean := False;
-   --  GNAT
-   --  Set True to ignore the semantics and effects of pragma SPARK_Mode when
-   --  the pragma appears inside an instance whose enclosing context is subject
-   --  to SPARK_Mode "off".
-
    Ignore_Rep_Clauses : Boolean := False;
    --  GNAT
    --  Set True to ignore all representation clauses. Useful when compiling
    --  code from foreign compilers for checking or ASIS purposes. Can be
    --  set True by use of -gnatI.
+
+   Ignore_SPARK_Mode_Pragmas_In_Instance : Boolean := False;
+   --  GNAT
+   --  Set True to ignore the semantics and effects of pragma SPARK_Mode when
+   --  the pragma appears inside an instance whose enclosing context is subject
+   --  to SPARK_Mode "off". This property applies to nested instances.
 
    Ignore_Style_Checks_Pragmas : Boolean := False;
    --  GNAT
@@ -1021,9 +1021,12 @@ package Opt is
 
    Locking_Policy : Character := ' ';
    --  GNAT, GNATBIND
-   --  Set to ' ' for the default case (no locking policy specified). Reset to
-   --  first character (uppercase) of locking policy name if a valid pragma
-   --  Locking_Policy is encountered.
+
+   --  Set to ' ' for the default case (no locking policy specified). Otherwise
+   --  set based on the pragma Locking_Policy:
+   --     Ceiling_Locking: 'C'
+   --     Concurrent_Readers_Locking: 'R'
+   --     Inheritance_Locking: 'I'
 
    Locking_Policy_Sloc : Source_Ptr := No_Location;
    --  GNAT, GNATBIND
@@ -1114,6 +1117,11 @@ package Opt is
    --  Set to point to a No_Elaboration_Code_All pragma or aspect encountered
    --  in the spec of the extended main unit. Used to determine if we need to
    --  do special tests for violation of this aspect.
+
+   No_Heap_Finalization_Pragma : Node_Id := Empty;
+   --  GNAT
+   --  Set to point to a No_Heap_Finalization pragma defined in a configuration
+   --  file.
 
    No_Main_Subprogram : Boolean := False;
    --  GNATMAKE, GNATBIND

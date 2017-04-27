@@ -4211,6 +4211,21 @@ package body Sem_Res is
                end if;
             end if;
 
+            --  In -gnatd.q mode, forget that a given array is constant when
+            --  it is passed as an IN parameter to a foreign-convention
+            --  subprogram. This is in case the subprogram evilly modifies the
+            --  object. Of course, correct code would use IN OUT.
+
+            if Debug_Flag_Dot_Q
+              and then Ekind (F) = E_In_Parameter
+              and then Has_Foreign_Convention (Nam)
+              and then Is_Array_Type (F_Typ)
+              and then Nkind (A) in N_Has_Entity
+              and then Present (Entity (A))
+            then
+               Set_Is_True_Constant (Entity (A), False);
+            end if;
+
             --  Case of OUT or IN OUT parameter
 
             if Ekind (F) /= E_In_Parameter then
@@ -5352,6 +5367,16 @@ package body Sem_Res is
                Set_Analyzed (Op2, False);
                Resolve (Op2, T2);
             end;
+
+         --  A universal real conditional expression can appear in a fixed-type
+         --  context and must be resolved with that context to facilitate the
+         --  code generation to the backend.
+
+         elsif Nkind_In (N, N_Case_Expression, N_If_Expression)
+           and then Etype (N) = Universal_Real
+           and then Is_Fixed_Point_Type (B_Typ)
+         then
+            Resolve (N, B_Typ);
 
          else
             Resolve (N);
@@ -6888,11 +6913,16 @@ package body Sem_Res is
             N, Etype (L));
       end if;
 
-      --  Evaluate the relation (note we do this after the above check since
-      --  this Eval call may change N to True/False.
-
       Analyze_Dimension (N);
-      Eval_Relational_Op (N);
+
+      --  Evaluate the relation (note we do this after the above check since
+      --  this Eval call may change N to True/False. Skip this evaluation
+      --  inside assertions, in order to keep assertions as written by users
+      --  for tools that rely on these, e.g. GNATprove for loop invariants.
+
+      if In_Assertion_Expr = 0 then
+         Eval_Relational_Op (N);
+      end if;
    end Resolve_Comparison_Op;
 
    -----------------------------------------
@@ -10696,7 +10726,15 @@ package body Sem_Res is
          --  Mixed-mode operation involving a literal. Context must be a fixed
          --  type which is applied to the literal subsequently.
 
-         if Is_Fixed_Point_Type (Typ) then
+         --  Multiplication and division involving two fixed type operands must
+         --  yield a universal real because the result is computed in arbitrary
+         --  precision.
+
+         if Is_Fixed_Point_Type (Typ)
+           and then Nkind_In (Operand, N_Op_Divide, N_Op_Multiply)
+           and then Etype (Left_Opnd  (Operand)) = Any_Fixed
+           and then Etype (Right_Opnd (Operand)) = Any_Fixed
+         then
             Set_Etype (Operand, Universal_Real);
 
          elsif Is_Numeric_Type (Typ)
@@ -11038,15 +11076,19 @@ package body Sem_Res is
          end if;
       end if;
 
-      --  If at this stage we have a real to integer conversion, make sure
-      --  that the Do_Range_Check flag is set, because such conversions in
-      --  general need a range check. We only need this if expansion is off
-      --  or we are in GNATProve mode.
+      --  If at this stage we have a real to integer conversion, make sure that
+      --  the Do_Range_Check flag is set, because such conversions in general
+      --  need a range check. We only need this if expansion is off.
+      --  In GNATprove mode, we only do that when converting from fixed-point
+      --  (as floating-point to integer conversions are now handled in
+      --  GNATprove mode).
 
       if Nkind (N) = N_Type_Conversion
-        and then (GNATprove_Mode or not Expander_Active)
+        and then not Expander_Active
         and then Is_Integer_Type (Target_Typ)
-        and then Is_Real_Type (Operand_Typ)
+        and then (Is_Fixed_Point_Type (Operand_Typ)
+                   or else (not GNATprove_Mode
+                             and then Is_Floating_Point_Type (Operand_Typ)))
       then
          Set_Do_Range_Check (Operand);
       end if;
@@ -11510,11 +11552,11 @@ package body Sem_Res is
 
       Set_Etype (N, Slice_Subtype);
 
-      --  For packed slice subtypes, freeze immediately (except in the case of
-      --  being in a "spec expression" where we never freeze when we first see
-      --  the expression).
+      --  For bit-packed slice subtypes, freeze immediately (except in the case
+      --  of being in a "spec expression" where we never freeze when we first
+      --  see the expression).
 
-      if Is_Packed (Slice_Subtype) and not In_Spec_Expression then
+      if Is_Bit_Packed_Array (Slice_Subtype) and not In_Spec_Expression then
          Freeze_Itype (Slice_Subtype, N);
 
       --  For all other cases insert an itype reference in the slice's actions
@@ -11703,12 +11745,7 @@ package body Sem_Res is
    -----------------------------
 
    function Unique_Fixed_Point_Type (N : Node_Id) return Entity_Id is
-      T1   : Entity_Id := Empty;
-      T2   : Entity_Id;
-      Item : Node_Id;
-      Scop : Entity_Id;
-
-      procedure Fixed_Point_Error;
+      procedure Fixed_Point_Error (T1 : Entity_Id; T2 : Entity_Id);
       --  Give error messages for true ambiguity. Messages are posted on node
       --  N, and entities T1, T2 are the possible interpretations.
 
@@ -11716,12 +11753,20 @@ package body Sem_Res is
       -- Fixed_Point_Error --
       -----------------------
 
-      procedure Fixed_Point_Error is
+      procedure Fixed_Point_Error (T1 : Entity_Id; T2 : Entity_Id) is
       begin
          Error_Msg_N ("ambiguous universal_fixed_expression", N);
          Error_Msg_NE ("\\possible interpretation as}", N, T1);
          Error_Msg_NE ("\\possible interpretation as}", N, T2);
       end Fixed_Point_Error;
+
+      --  Local variables
+
+      ErrN : Node_Id;
+      Item : Node_Id;
+      Scop : Entity_Id;
+      T1   : Entity_Id;
+      T2   : Entity_Id;
 
    --  Start of processing for Unique_Fixed_Point_Type
 
@@ -11742,7 +11787,7 @@ package body Sem_Res is
               and then Scope (Base_Type (T2)) = Scop
             then
                if Present (T1) then
-                  Fixed_Point_Error;
+                  Fixed_Point_Error (T1, T2);
                   return Any_Type;
                else
                   T1 := T2;
@@ -11768,7 +11813,7 @@ package body Sem_Res is
                  and then (Is_Potentially_Use_Visible (T2) or else In_Use (T2))
                then
                   if Present (T1) then
-                     Fixed_Point_Error;
+                     Fixed_Point_Error (T1, T2);
                      return Any_Type;
                   else
                      T1 := T2;
@@ -11783,11 +11828,20 @@ package body Sem_Res is
       end loop;
 
       if Nkind (N) = N_Real_Literal then
-         Error_Msg_NE
-           ("??real literal interpreted as }!", N, T1);
+         Error_Msg_NE ("??real literal interpreted as }!", N, T1);
+
       else
+         --  When the context is a type conversion, issue the warning on the
+         --  expression of the conversion because it is the actual operation.
+
+         if Nkind_In (N, N_Type_Conversion, N_Unchecked_Type_Conversion) then
+            ErrN := Expression (N);
+         else
+            ErrN := N;
+         end if;
+
          Error_Msg_NE
-           ("??universal_fixed expression interpreted as }!", N, T1);
+           ("??universal_fixed expression interpreted as }!", ErrN, T1);
       end if;
 
       return T1;

@@ -456,7 +456,7 @@ build_tm_abort_call (location_t loc, bool is_outer)
 					     | (is_outer ? AR_OUTERABORT : 0)));
 }
 
-/* Map for aribtrary function replacement under TM, as created
+/* Map for arbitrary function replacement under TM, as created
    by the tm_wrap attribute.  */
 
 struct tm_wrapper_hasher : ggc_cache_ptr_hash<tree_map>

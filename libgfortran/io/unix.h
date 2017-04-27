@@ -48,55 +48,55 @@ struct stream
 
 /* Inline functions for doing file I/O given a stream.  */
 static inline ssize_t
-sread (stream * s, void * buf, ssize_t nbyte)
+sread (stream *s, void *buf, ssize_t nbyte)
 {
   return s->vptr->read (s, buf, nbyte);
 }
 
 static inline ssize_t
-swrite (stream * s, const void * buf, ssize_t nbyte)
+swrite (stream *s, const void *buf, ssize_t nbyte)
 {
   return s->vptr->write (s, buf, nbyte);
 }
 
 static inline gfc_offset
-sseek (stream * s, gfc_offset offset, int whence)
+sseek (stream *s, gfc_offset offset, int whence)
 {
   return s->vptr->seek (s, offset, whence);
 }
 
 static inline gfc_offset
-stell (stream * s)
+stell (stream *s)
 {
   return s->vptr->tell (s);
 }
 
 static inline gfc_offset
-ssize (stream * s)
+ssize (stream *s)
 {
   return s->vptr->size (s);
 }
 
 static inline int
-struncate (stream * s, gfc_offset length)
+struncate (stream *s, gfc_offset length)
 {
   return s->vptr->trunc (s, length);
 }
 
 static inline int
-sflush (stream * s)
+sflush (stream *s)
 {
   return s->vptr->flush (s);
 }
 
 static inline int
-sclose (stream * s)
+sclose (stream *s)
 {
   return s->vptr->close (s);
 }
 
 static inline int
-smarkeor (stream * s)
+smarkeor (stream *s)
 {
   return s->vptr->markeor (s);
 }
@@ -114,16 +114,16 @@ internal_proto(open_internal);
 extern stream *open_internal4 (char *, int, gfc_offset);
 internal_proto(open_internal4);
 
-extern char * mem_alloc_w (stream *, int *);
+extern char *mem_alloc_w (stream *, int *);
 internal_proto(mem_alloc_w);
 
-extern char * mem_alloc_r (stream *, int *);
+extern char *mem_alloc_r (stream *, int *);
 internal_proto(mem_alloc_r);
 
-extern gfc_char4_t * mem_alloc_w4 (stream *, int *);
+extern gfc_char4_t *mem_alloc_w4 (stream *, int *);
 internal_proto(mem_alloc_w4);
 
-extern char * mem_alloc_r4 (stream *, int *);
+extern char *mem_alloc_r4 (stream *, int *);
 internal_proto(mem_alloc_r4);
 
 extern stream *input_stream (void);

@@ -561,7 +561,7 @@
 	gcc_unreachable ();
      }
   }
-  [(set_attr "type" "neon_from_gp<q>, neon_ins<q>, neon_load1_1reg<q>")]
+  [(set_attr "type" "neon_from_gp<q>, neon_ins<q>, neon_load1_one_lane<q>")]
 )
 
 (define_insn "*aarch64_simd_vec_copy_lane<mode>"

@@ -706,7 +706,7 @@ derive_equivalences_from_bit_ior (tree name,
 
   if (TREE_CODE (name) == SSA_NAME)
     {
-      tree value = fold_convert (TREE_TYPE (name), integer_zero_node);
+      tree value = build_zero_cst (TREE_TYPE (name));
 
       /* This records the equivalence for the toplevel object.  */
       record_equality (name, value, const_and_copies);

@@ -1090,8 +1090,8 @@ package body Sem_Ch8 is
                     ("\function & will be called only once?R?", Nam,
                      Entity (Name (Nam)));
                   Error_Msg_N -- CODEFIX
-                    ("\suggest using an initialized constant "
-                     & "object instead?R?", Nam);
+                    ("\suggest using an initialized constant object "
+                     & "instead?R?", Nam);
                end if;
          end case;
       end if;
@@ -3191,6 +3191,20 @@ package body Sem_Ch8 is
               ("renamed entity cannot be subprogram that requires overriding "
                & "(RM 8.5.4 (5.1))", N);
          end if;
+
+         declare
+            Prev : constant Entity_Id := Overridden_Operation (New_S);
+         begin
+            if Present (Prev)
+              and then
+                (Has_Non_Trivial_Precondition (Prev)
+                  or else Has_Non_Trivial_Precondition (Old_S))
+            then
+               Error_Msg_NE
+                 ("conflicting inherited classwide preconditions in renaming "
+                  & "of& (RM 6.1.1 (17)", N, Old_S);
+            end if;
+         end;
       end if;
 
       if Old_S /= Any_Id then
@@ -3631,9 +3645,10 @@ package body Sem_Ch8 is
       --  children of Ada.Numerics, which are never loaded by Rtsfind).
 
       if Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
-        and then Name_Buffer (1 .. 3) /= "a-n"
-        and then
-          Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Declaration
+        and then Get_Name_String
+                   (Unit_File_Name (Current_Sem_Unit)) (1 .. 3) /= "a-n"
+        and then Nkind (Unit (Cunit (Current_Sem_Unit))) =
+                   N_Package_Declaration
       then
          Error_Msg_N ("use clause not allowed in predefined spec", N);
       end if;
@@ -3776,7 +3791,7 @@ package body Sem_Ch8 is
       end if;
 
       --  If the Used_Operations list is already initialized, the clause has
-      --  been analyzed previously, and it is begin reinstalled, for example
+      --  been analyzed previously, and it is being reinstalled, for example
       --  when the clause appears in a package spec and we are compiling the
       --  corresponding package body. In that case, make the entities on the
       --  existing list use_visible, and mark the corresponding types In_Use.
@@ -3803,8 +3818,8 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      --  Otherwise, create new list and attach to it the operations that
-      --  are made use-visible by the clause.
+      --  Otherwise, create new list and attach to it the operations that are
+      --  made use-visible by the clause.
 
       Set_Used_Operations (N, New_Elmt_List);
       Id := First (Subtype_Marks (N));
@@ -4605,13 +4620,13 @@ package body Sem_Ch8 is
                   --  use_type clause.
 
                   if Nkind (Id) = N_Defining_Operator_Symbol
-                       and then
-                         (Is_Primitive_Operator_In_Use (Id, First_Formal (Id))
-                           or else
-                             (Present (Next_Formal (First_Formal (Id)))
-                               and then
-                                 Is_Primitive_Operator_In_Use
-                                   (Id, Next_Formal (First_Formal (Id)))))
+                    and then
+                      (Is_Primitive_Operator_In_Use (Id, First_Formal (Id))
+                        or else
+                          (Present (Next_Formal (First_Formal (Id)))
+                            and then
+                              Is_Primitive_Operator_In_Use
+                                (Id, Next_Formal (First_Formal (Id)))))
                   then
                      null;
                   else
@@ -7344,10 +7359,14 @@ package body Sem_Ch8 is
                if Is_Concurrent_Type (T) then
                   if No (Corresponding_Record_Type (Entity (Prefix (N)))) then
 
-                     --  Previous error. Use current type, which at least
-                     --  provides some operations.
+                     --  Previous error. Create a class-wide type for the
+                     --  synchronized type itself, with minimal semantic
+                     --  attributes, to catch other errors in some ACATS tests.
 
-                     C := Entity (Prefix (N));
+                     pragma Assert (Serious_Errors_Detected > 0);
+                     Make_Class_Wide_Type (T);
+                     C := Class_Wide_Type (T);
+                     Set_First_Entity (C, First_Entity (T));
 
                   else
                      C := Class_Wide_Type
@@ -9192,14 +9211,25 @@ package body Sem_Ch8 is
 
       elsif From_Limited_With (T) and then From_Limited_With (Scope (T)) then
          Error_Msg_N
-           ("incomplete type from limited view "
-            & "cannot appear in use clause", Id);
+           ("incomplete type from limited view cannot appear in use clause",
+            Id);
+
+      --  If the use clause is redundant, Used_Operations will usually be
+      --  empty, but we need to set it to empty here in one case: If we are
+      --  instantiating a generic library unit, then we install the ancestors
+      --  of that unit in the scope stack, which involves reprocessing use
+      --  clauses in those ancestors. Such a use clause will typically have a
+      --  nonempty Used_Operations unless it was redundant in the generic unit,
+      --  even if it is redundant at the place of the instantiation.
+
+      elsif Redundant_Use (Id) then
+         Set_Used_Operations (Parent (Id), New_Elmt_List);
 
       --  If the subtype mark designates a subtype in a different package,
       --  we have to check that the parent type is visible, otherwise the
       --  use type clause is a noop. Not clear how to do that???
 
-      elsif not Redundant_Use (Id) then
+      else
          Set_In_Use (T);
 
          --  If T is tagged, primitive operators on class-wide operands

@@ -11,6 +11,6 @@ template <int dim> struct Y : X<dim> {
 // note: I is nested type in X, not Y!
 template <int dim>
 Y<dim>::I::I () {}		// { dg-error "dependent typedef" "typedef" }
-// { dg-error "no type|dependent type" "no type" { target *-*-* } 13 }
+// { dg-error "no type|dependent type" "no type" { target *-*-* } .-1 }
 
 template struct Y<1>;

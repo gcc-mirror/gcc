@@ -23,5 +23,5 @@ struct C : public B<U>
 
 template <class U>
 void C<U>::Func(A_Type) { // { dg-error "declared void" "void" } implicit typename
-// { dg-error "not declared" "decl" { target *-*-* } 25 }
+// { dg-error "not declared" "decl" { target *-*-* } .-1 }
 }

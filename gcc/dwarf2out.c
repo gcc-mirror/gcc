@@ -12464,19 +12464,28 @@ modified_type_die (tree type, int cv_quals, bool reverse,
      this type.  */
   qualified_type = get_qualified_type (type, cv_quals);
 
-  if (qualified_type == sizetype
-      && TYPE_NAME (qualified_type)
-      && TREE_CODE (TYPE_NAME (qualified_type)) == TYPE_DECL)
+  if (qualified_type == sizetype)
     {
-      tree t = TREE_TYPE (TYPE_NAME (qualified_type));
+      /* Try not to expose the internal sizetype type's name.  */
+      if (TYPE_NAME (qualified_type)
+	  && TREE_CODE (TYPE_NAME (qualified_type)) == TYPE_DECL)
+	{
+	  tree t = TREE_TYPE (TYPE_NAME (qualified_type));
 
-      gcc_checking_assert (TREE_CODE (t) == INTEGER_TYPE
-			   && TYPE_PRECISION (t)
-			   == TYPE_PRECISION (qualified_type)
-			   && TYPE_UNSIGNED (t)
-			   == TYPE_UNSIGNED (qualified_type));
-      qualified_type = t;
+	  gcc_checking_assert (TREE_CODE (t) == INTEGER_TYPE
+			       && (TYPE_PRECISION (t)
+				   == TYPE_PRECISION (qualified_type))
+			       && (TYPE_UNSIGNED (t)
+				   == TYPE_UNSIGNED (qualified_type)));
+	  qualified_type = t;
+	}
+      else if (qualified_type == sizetype
+	       && TREE_CODE (sizetype) == TREE_CODE (size_type_node)
+	       && TYPE_PRECISION (sizetype) == TYPE_PRECISION (size_type_node)
+	       && TYPE_UNSIGNED (sizetype) == TYPE_UNSIGNED (size_type_node))
+	qualified_type = size_type_node;
     }
+
 
   /* If we do, then we can just use its DIE, if it exists.  */
   if (qualified_type)
@@ -12681,7 +12690,9 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	     but try to canonicalize.  */
 	  tree main = TYPE_MAIN_VARIANT (type);
 	  for (tree t = main; t; t = TYPE_NEXT_VARIANT (t))
-	    if (check_base_type (t, main) && check_lang_type (t, type))
+	    if (TYPE_QUALS_NO_ADDR_SPACE (t) == 0
+		&& check_base_type (t, main)
+		&& check_lang_type (t, type))
 	      return lookup_type_die (t);
 	  return lookup_type_die (type);
 	}
@@ -24085,6 +24096,10 @@ gen_member_die (tree type, dw_die_ref context_die)
   for (member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
     {
       struct vlr_context vlr_ctx = { type, NULL_TREE };
+      bool static_inline_p
+	= (TREE_STATIC (member)
+	   && (lang_hooks.decls.decl_dwarf_attribute (member, DW_AT_inline)
+	       != -1));
 
       /* If we thought we were generating minimal debug info for TYPE
 	 and then changed our minds, some of the member declarations
@@ -24096,9 +24111,33 @@ gen_member_die (tree type, dw_die_ref context_die)
 	{
 	  /* Handle inline static data members, which only have in-class
 	     declarations.  */
+	  dw_die_ref ref = NULL; 
+	  if (child->die_tag == DW_TAG_variable
+	      && child->die_parent == comp_unit_die ())
+	    {
+	      ref = get_AT_ref (child, DW_AT_specification);
+	      /* For C++17 inline static data members followed by redundant
+		 out of class redeclaration, we might get here with
+		 child being the DIE created for the out of class
+		 redeclaration and with its DW_AT_specification being
+		 the DIE created for in-class definition.  We want to
+		 reparent the latter, and don't want to create another
+		 DIE with DW_AT_specification in that case, because
+		 we already have one.  */
+	      if (ref
+		  && static_inline_p
+		  && ref->die_tag == DW_TAG_variable
+		  && ref->die_parent == comp_unit_die ()
+		  && get_AT (ref, DW_AT_specification) == NULL)
+		{
+		  child = ref;
+		  ref = NULL;
+		  static_inline_p = false;
+		}
+	    }
 	  if (child->die_tag == DW_TAG_variable
 	      && child->die_parent == comp_unit_die ()
-	      && get_AT (child, DW_AT_specification) == NULL)
+	      && ref == NULL)
 	    {
 	      reparent_child (child, context_die);
 	      if (dwarf_version < 5)
@@ -24126,9 +24165,7 @@ gen_member_die (tree type, dw_die_ref context_die)
       /* For C++ inline static data members emit immediately a DW_TAG_variable
 	 DIE that will refer to that DW_TAG_member/DW_TAG_variable through
 	 DW_AT_specification.  */
-      if (TREE_STATIC (member)
-	  && (lang_hooks.decls.decl_dwarf_attribute (member, DW_AT_inline)
-	      != -1))
+      if (static_inline_p)
 	{
 	  int old_extern = DECL_EXTERNAL (member);
 	  DECL_EXTERNAL (member) = 0;
@@ -24545,13 +24582,13 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
 	 but try to canonicalize.  */
       tree main = TYPE_MAIN_VARIANT (type);
       for (tree t = main; t; t = TYPE_NEXT_VARIANT (t))
-	{
-	  if (check_base_type (t, main) && check_lang_type (t, type))
-	    {
-	      type = t;
-	      break;
-	    }
-	}
+	if (TYPE_QUALS_NO_ADDR_SPACE (t) == 0
+	    && check_base_type (t, main)
+	    && check_lang_type (t, type))
+	  {
+	    type = t;
+	    break;
+	  }
     }
   else if (TREE_CODE (type) != VECTOR_TYPE
 	   && TREE_CODE (type) != ARRAY_TYPE)
@@ -24863,7 +24900,12 @@ decls_for_scope (tree stmt, dw_die_ref context_die)
 	for (i = 0; i < BLOCK_NUM_NONLOCALIZED_VARS (stmt); i++)
 	  {
 	    decl = BLOCK_NONLOCALIZED_VAR (stmt, i);
-	    if (TREE_CODE (decl) == FUNCTION_DECL)
+	    if (decl == current_function_decl)
+	      /* Ignore declarations of the current function, while they
+		 are declarations, gen_subprogram_die would treat them
+		 as definitions again, because they are equal to
+		 current_function_decl and endlessly recurse.  */;
+	    else if (TREE_CODE (decl) == FUNCTION_DECL)
 	      process_scope_var (stmt, decl, NULL_TREE, context_die);
 	    else
 	      process_scope_var (stmt, NULL_TREE, decl, context_die);

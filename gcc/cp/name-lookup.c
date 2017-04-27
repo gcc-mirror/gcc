@@ -974,7 +974,8 @@ do_lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
 }
 
 static bool qualified_namespace_lookup (tree, name_lookup *);
-static void consider_binding_level (tree name, best_match <tree, tree> &bm,
+static void consider_binding_level (tree name,
+				    best_match <tree, const char *> &bm,
 				    cp_binding_level *lvl,
 				    bool look_within_fields,
 				    enum lookup_name_fuzzy_kind kind);
@@ -4717,6 +4718,113 @@ suggest_alternatives_for (location_t location, tree name,
   candidates.release ();
 }
 
+/* Subroutine of maybe_suggest_missing_header for handling unrecognized names
+   for some of the most common names within "std::".
+   Given non-NULL NAME, a name for lookup within "std::", return the header
+   name defining it within the C++ Standard Library (without '<' and '>'),
+   or NULL.  */
+
+static const char *
+get_std_name_hint (const char *name)
+{
+  struct std_name_hint
+  {
+    const char *name;
+    const char *header;
+  };
+  static const std_name_hint hints[] = {
+    /* <array>.  */
+    {"array", "array"}, // C++11
+    /* <deque>.  */
+    {"deque", "deque"},
+    /* <forward_list>.  */
+    {"forward_list", "forward_list"},  // C++11
+    /* <fstream>.  */
+    {"basic_filebuf", "fstream"},
+    {"basic_ifstream", "fstream"},
+    {"basic_ofstream", "fstream"},
+    {"basic_fstream", "fstream"},
+    /* <iostream>.  */
+    {"cin", "iostream"},
+    {"cout", "iostream"},
+    {"cerr", "iostream"},
+    {"clog", "iostream"},
+    {"wcin", "iostream"},
+    {"wcout", "iostream"},
+    {"wclog", "iostream"},
+    /* <list>.  */
+    {"list", "list"},
+    /* <map>.  */
+    {"map", "map"},
+    {"multimap", "map"},
+    /* <queue>.  */
+    {"queue", "queue"},
+    {"priority_queue", "queue"},
+    /* <ostream>.  */
+    {"ostream", "ostream"},
+    {"wostream", "ostream"},
+    {"ends", "ostream"},
+    {"flush", "ostream"},
+    {"endl", "ostream"},
+    /* <set>.  */
+    {"set", "set"},
+    {"multiset", "set"},
+    /* <sstream>.  */
+    {"basic_stringbuf", "sstream"},
+    {"basic_istringstream", "sstream"},
+    {"basic_ostringstream", "sstream"},
+    {"basic_stringstream", "sstream"},
+    /* <stack>.  */
+    {"stack", "stack"},
+    /* <string>.  */
+    {"string", "string"},
+    {"wstring", "string"},
+    {"u16string", "string"},
+    {"u32string", "string"},
+    /* <unordered_map>.  */
+    {"unordered_map", "unordered_map"}, // C++11
+    {"unordered_multimap", "unordered_map"}, // C++11
+    /* <unordered_set>.  */
+    {"unordered_set", "unordered_set"}, // C++11
+    {"unordered_multiset", "unordered_set"}, // C++11
+    /* <vector>.  */
+    {"vector", "vector"},
+  };
+  const size_t num_hints = sizeof (hints) / sizeof (hints[0]);
+  for (size_t i = 0; i < num_hints; i++)
+    {
+      if (0 == strcmp (name, hints[i].name))
+	return hints[i].header;
+    }
+  return NULL;
+}
+
+/* Subroutine of suggest_alternative_in_explicit_scope, for use when we have no
+   suggestions to offer.
+   If SCOPE is the "std" namespace, then suggest pertinent header
+   files for NAME.  */
+
+static void
+maybe_suggest_missing_header (location_t location, tree name, tree scope)
+{
+  if (scope == NULL_TREE)
+    return;
+  if (TREE_CODE (scope) != NAMESPACE_DECL)
+    return;
+  /* We only offer suggestions for the "std" namespace.  */
+  if (scope != std_node)
+    return;
+  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
+
+  const char *name_str = IDENTIFIER_POINTER (name);
+  const char *header_hint = get_std_name_hint (name_str);
+  if (header_hint)
+    inform (location,
+	    "%<std::%s%> is defined in header %<<%s>%>;"
+	    " did you forget to %<#include <%s>%>?",
+	    name_str, header_hint, header_hint);
+}
+
 /* Look for alternatives for NAME, an IDENTIFIER_NODE for which name
    lookup failed within the explicitly provided SCOPE.  Suggest the
    the best meaningful candidates (if any) as a fix-it hint.
@@ -4731,20 +4839,21 @@ suggest_alternative_in_explicit_scope (location_t location, tree name,
 
   cp_binding_level *level = NAMESPACE_LEVEL (scope);
 
-  best_match <tree, tree> bm (name);
+  best_match <tree, const char *> bm (name);
   consider_binding_level (name, bm, level, false, FUZZY_LOOKUP_NAME);
 
   /* See if we have a good suggesion for the user.  */
-  tree best_id = bm.get_best_meaningful_candidate ();
-  if (best_id)
+  const char *fuzzy_name = bm.get_best_meaningful_candidate ();
+  if (fuzzy_name)
     {
-      const char *fuzzy_name = IDENTIFIER_POINTER (best_id);
       gcc_rich_location richloc (location);
       richloc.add_fixit_replace (fuzzy_name);
       inform_at_rich_loc (&richloc, "suggested alternative: %qs",
 			  fuzzy_name);
       return true;
     }
+  else
+    maybe_suggest_missing_header (location, name, scope);
 
   return false;
 }
@@ -4824,7 +4933,7 @@ qualified_namespace_lookup (tree scope, name_lookup *lookup)
    Traverse binding level LVL, looking for good name matches for NAME
    (and BM).  */
 static void
-consider_binding_level (tree name, best_match <tree, tree> &bm,
+consider_binding_level (tree name, best_match <tree, const char *> &bm,
 			cp_binding_level *lvl, bool look_within_fields,
 			enum lookup_name_fuzzy_kind kind)
 {
@@ -4836,7 +4945,7 @@ consider_binding_level (tree name, best_match <tree, tree> &bm,
 	tree best_matching_field
 	  = lookup_member_fuzzy (type, name, want_type_p);
 	if (best_matching_field)
-	  bm.consider (best_matching_field);
+	  bm.consider (IDENTIFIER_POINTER (best_matching_field));
       }
 
   for (tree t = lvl->names; t; t = TREE_CHAIN (t))
@@ -4862,7 +4971,7 @@ consider_binding_level (tree name, best_match <tree, tree> &bm,
       if (tree name = DECL_NAME (d))
 	/* Ignore internal names with spaces in them.  */
 	if (!strchr (IDENTIFIER_POINTER (name), ' '))
-	  bm.consider (DECL_NAME (d));
+	  bm.consider (IDENTIFIER_POINTER (name));
     }
 }
 
@@ -4875,7 +4984,7 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
 {
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
 
-  best_match <tree, tree> bm (name);
+  best_match <tree, const char *> bm (name);
 
   cp_binding_level *lvl;
   for (lvl = scope_chain->class_bindings; lvl; lvl = lvl->level_chain)
@@ -4898,9 +5007,9 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
      the identifiers already checked.  */
   best_macro_match bmm (name, bm.get_best_distance (), parse_in);
   cpp_hashnode *best_macro = bmm.get_best_meaningful_candidate ();
-  /* If a macro is the closest so far to NAME, suggest it.  */
+  /* If a macro is the closest so far to NAME, consider it.  */
   if (best_macro)
-    return (const char *)best_macro->ident.str;
+    bm.consider ((const char *)best_macro->ident.str);
 
   /* Try the "starts_decl_specifier_p" keywords to detect
      "singed" vs "signed" typos.  */
@@ -4908,8 +5017,9 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
     {
       const c_common_resword *resword = &c_common_reswords[i];
 
-      if (!cp_keyword_starts_decl_specifier_p (resword->rid))
-	continue;
+      if (kind == FUZZY_LOOKUP_TYPENAME)
+	if (!cp_keyword_starts_decl_specifier_p (resword->rid))
+	  continue;
 
       tree resword_identifier = ridpointers [resword->rid];
       if (!resword_identifier)
@@ -4921,16 +5031,10 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
       if (!C_IS_RESERVED_WORD (resword_identifier))
 	continue;
 
-      bm.consider (resword_identifier);
+      bm.consider (IDENTIFIER_POINTER (resword_identifier));
     }
 
-  /* See if we have a good suggesion for the user.  */
-  tree best_id = bm.get_best_meaningful_candidate ();
-  if (best_id)
-    return IDENTIFIER_POINTER (best_id);
-
-  /* No meaningful suggestion available.  */
-  return NULL;
+  return bm.get_best_meaningful_candidate ();
 }
 
 /* Subroutine of outer_binding.
@@ -5734,7 +5838,7 @@ store_bindings (tree names, vec<cxx_saved_binding, va_gc> **old_bindings)
       vec_safe_reserve_exact (*old_bindings, bindings_need_stored.length ());
       for (i = 0; bindings_need_stored.iterate (i, &id); ++i)
 	{
-	  /* We can appearantly have duplicates in NAMES.  */
+	  /* We can apparently have duplicates in NAMES.  */
 	  if (store_binding_p (id))
 	    store_binding (id, old_bindings);
 	}

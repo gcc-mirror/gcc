@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,10 +70,9 @@ package Sem_Disp is
    --  full view because it is always this one which has to be called.
    --  What is Subp used for???
 
-   function Covers_Some_Interface (Prim : Entity_Id) return Boolean;
-   --  Returns true if Prim covers some interface primitive of its associated
-   --  tagged type. The tagged type of Prim must be frozen when this function
-   --  is invoked.
+   function Covered_Interface_Op (Prim : Entity_Id) return Entity_Id;
+   --  Returns the interface primitive that Prim covers, when its controlling
+   --  type has progenitors.
 
    function Find_Controlling_Arg (N : Node_Id) return Node_Id;
    --  Returns the actual controlling argument if N is dynamically tagged, and

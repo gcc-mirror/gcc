@@ -2970,3 +2970,27 @@ gcc_jit_rvalue_set_bool_require_tail_call (gcc_jit_rvalue *rvalue,
 
   call->set_require_tail_call (require_tail_call);
 }
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::type::get_aligned method, in
+   jit-recording.c.  */
+
+gcc_jit_type *
+gcc_jit_type_get_aligned (gcc_jit_type *type,
+			  size_t alignment_in_bytes)
+{
+  RETURN_NULL_IF_FAIL (type, NULL, NULL, "NULL type");
+
+  gcc::jit::recording::context *ctxt = type->m_ctxt;
+
+  JIT_LOG_FUNC (ctxt->get_logger ());
+
+  RETURN_NULL_IF_FAIL_PRINTF1
+    (pow2_or_zerop (alignment_in_bytes), ctxt, NULL,
+     "alignment not a power of two: %zi",
+     alignment_in_bytes);
+
+  return (gcc_jit_type *)type->get_aligned (alignment_in_bytes);
+}

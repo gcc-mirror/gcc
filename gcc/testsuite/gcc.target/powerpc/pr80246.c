@@ -1,5 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-linux* } } } */
-/* { dg-require-effective-target dfp } */
+/* { dg-require-effective-target hard_dfp } */
 /* { dg-options "-O2" } */
 /* { dg-final { scan-assembler-times "dxex "  1 } } */
 /* { dg-final { scan-assembler-times "dxexq " 1 } } */

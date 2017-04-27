@@ -1,3 +1,25 @@
+2017-04-21  Mark Wielaard  <mark@klomp.org>
+
+	* cp-demangle.c (MAX_RECURSION_COUNT): New constant.
+	(struct d_print_info): Add recursion field.
+	(d_print_init): Initialize recursion.
+	(d_print_comp): Check and update d_print_info recursion depth.
+
+2017-04-21  Mark Wielaard  <mark@klomp.org>
+
+	* cp-demangle.c (d_substitution): Return NULL if d_add_substitution
+	fails.
+
+2017-04-21  Mark Wielaard  <mark@klomp.org>
+
+	* cp-demangle.h (struct d_info): Remove did_subs field.
+	* cp-demangle.c (struct d_info_checkpoint): Likewise.
+	(d_template_param): Don't update did_subs.
+	(d_substitution): Likewise.
+	(d_checkpoint): Don't assign did_subs.
+	(d_backtrack): Likewise.
+	(cplus_demangle_init_info): Don't initialize did_subs.
+
 2017-03-27  Pedro Alves  <palves@redhat.com>
 
 	* cp-demint.c (cplus_demangle_fill_component): Handle

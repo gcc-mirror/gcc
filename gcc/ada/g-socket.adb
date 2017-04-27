@@ -2541,7 +2541,7 @@ package body GNAT.Sockets is
 
                --  Hostent_H_Addr (E, <index>) may return an address that is
                --  not correctly aligned for In_Addr, so we need to use
-               --  an intermediate copy operation on a type with an alignemnt
+               --  an intermediate copy operation on a type with an alignment
                --  of 1 to recover the value.
 
                subtype Addr_Buf_T is C.char_array (1 .. Addr'Size / 8);

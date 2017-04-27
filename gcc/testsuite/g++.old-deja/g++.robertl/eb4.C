@@ -31,7 +31,7 @@ public:
         };
 
 class some_derived::func(derived_func_args &a)  // { dg-error "does not name a type" "type" } illegal member syntax
-// { dg-error "expected" "exp" { target *-*-* } 33 }
+// { dg-error "expected" "exp" { target *-*-* } .-1 }
         {
         std::cout << a.i << ' ' << a.f << std::endl;
         }

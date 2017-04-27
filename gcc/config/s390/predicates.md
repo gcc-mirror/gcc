@@ -199,6 +199,11 @@
       (and (match_code "const_int")
 	   (match_test "INTVAL (op) <= 32767 && INTVAL (op) >= -32768"))))
 
+(define_predicate "reload_const_wide_int_operand"
+  (and (match_code "const_wide_int")
+       (match_test "legitimate_reload_constant_p (op)")))
+
+
 ;; operators --------------------------------------------------------------
 
 ;; Return nonzero if OP is a valid comparison operator

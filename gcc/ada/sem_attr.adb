@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -209,6 +209,15 @@ package body Sem_Attr is
    --  Rewrites node N with an occurrence of either Standard_False or
    --  Standard_True, depending on the value of the parameter B. The
    --  result is marked as a static expression.
+
+   function Statically_Denotes_Object (N : Node_Id) return Boolean;
+   --  Predicate used to check the legality of the prefix to 'Loop_Entry and
+   --  'Old, when the prefix is not an entity name. Current RM specfies that
+   --  the prefix must be a direct or expanded name, but it has been proposed
+   --  that the prefix be allowed to be a selected component that does not
+   --  depend on a discriminant, or an indexed component with static indices.
+   --  Current code for this predicate implements this more permissive
+   --  implementation.
 
    -----------------------
    -- Analyze_Attribute --
@@ -4308,7 +4317,7 @@ package body Sem_Attr is
       begin
          Attr := N;
 
-         --  Set the type of the attribute now to ensure the successfull
+         --  Set the type of the attribute now to ensure the successful
          --  continuation of analysis even if the attribute is misplaced.
 
          Set_Etype (Attr, P_Type);
@@ -4501,6 +4510,7 @@ package body Sem_Attr is
 
          if Is_Entity_Name (P)
            or else Nkind (Parent (P)) = N_Object_Renaming_Declaration
+           or else Statically_Denotes_Object (P)
          then
             null;
 
@@ -4999,7 +5009,9 @@ package body Sem_Attr is
             --  Ensure that the prefix of attribute 'Old is an entity when it
             --  is potentially unevaluated (6.1.1 (27/3)).
 
-            if Is_Potentially_Unevaluated (N) then
+            if Is_Potentially_Unevaluated (N)
+              and then not Statically_Denotes_Object (P)
+            then
                Uneval_Old_Msg;
 
             --  Detect a possible infinite recursion when the prefix denotes
@@ -6256,6 +6268,21 @@ package body Sem_Attr is
                return;
             end if;
 
+            --  If the type is declared in Standard, there is no source, so
+            --  just use its name.
+
+            if Scope (T) = Standard_Standard then
+               declare
+                  Name : constant String := Get_Name_String (Chars (T));
+               begin
+                  for J in Name'Range loop
+                     System.CRC32.Update (CRC, Name (J));
+                  end loop;
+               end;
+
+               return;
+            end if;
+
             Sloc_Range (Enclosing_Declaration (T), P_Min, P_Max);
             SFI    := Get_Source_File_Index (P_Min);
             Buffer := Source_Text (SFI);
@@ -6318,24 +6345,20 @@ package body Sem_Attr is
             Store_String_Char (Get_String_Char (Full_Name, Pos (J)));
          end loop;
 
-         --  For standard types return the name of the type, as there is no
-         --  explicit source declaration to use. Otherwise compute CRC and
-         --  convert it to string one character at a time, so as not to use
-         --  Image within the compiler.
+         --  Compute CRC and convert it to string one character at a time, so
+         --  as not to use Image within the compiler.
 
-         if Scope (Entity (P)) /= Standard_Standard then
-            Initialize (CRC);
-            Compute_Type_Key (Entity (P));
+         Initialize (CRC);
+         Compute_Type_Key (Entity (P));
 
-            if not Is_Frozen (Entity (P)) then
-               Error_Msg_N ("premature usage of Type_Key?", N);
-            end if;
-
-            while CRC > 0 loop
-               Store_String_Char (Character'Val (48 + (CRC rem 10)));
-               CRC := CRC / 10;
-            end loop;
+         if not Is_Frozen (Entity (P)) then
+            Error_Msg_N ("premature usage of Type_Key?", N);
          end if;
+
+         while CRC > 0 loop
+            Store_String_Char (Character'Val (48 + (CRC rem 10)));
+            CRC := CRC / 10;
+         end loop;
 
          Rewrite (N, Make_String_Literal (Loc, End_String));
          Analyze_And_Resolve (N, Standard_String);
@@ -10511,20 +10534,44 @@ package body Sem_Attr is
                --  also be accessibility checks on those, this is where the
                --  checks can eventually be centralized ???
 
-               if Ekind_In (Btyp, E_Access_Subprogram_Type,
-                                  E_Anonymous_Access_Subprogram_Type,
-                                  E_Access_Protected_Subprogram_Type,
-                                  E_Anonymous_Access_Protected_Subprogram_Type)
+               if Ekind_In (Btyp, E_Access_Protected_Subprogram_Type,
+                                  E_Access_Subprogram_Type,
+                                  E_Anonymous_Access_Protected_Subprogram_Type,
+                                  E_Anonymous_Access_Subprogram_Type)
                then
                   --  Deal with convention mismatch
 
                   if Convention (Designated_Type (Btyp)) /=
                      Convention (Entity (P))
                   then
-                     Error_Msg_FE
-                       ("subprogram & has wrong convention", P, Entity (P));
-                     Error_Msg_Sloc := Sloc (Btyp);
-                     Error_Msg_FE ("\does not match & declared#", P, Btyp);
+                     --  The rule in 6.3.1 (8) deserves a special error
+                     --  message.
+
+                     if Convention (Btyp) = Convention_Intrinsic
+                       and then Nkind (Parent (N)) = N_Procedure_Call_Statement
+                       and then Is_Entity_Name (Name (Parent (N)))
+                       and then Inside_A_Generic
+                     then
+                        declare
+                           Subp : constant Entity_Id :=
+                                    Entity (Name (Parent (N)));
+                        begin
+                           if Convention (Subp) = Convention_Intrinsic then
+                              Error_Msg_FE
+                                ("?subprogram and its formal access "
+                                 & "parameters have convention Intrinsic",
+                                 Parent (N), Subp);
+                              Error_Msg_N
+                                ("actual cannot be access attribute", N);
+                           end if;
+                        end;
+
+                     else
+                        Error_Msg_FE
+                          ("subprogram & has wrong convention", P, Entity (P));
+                        Error_Msg_Sloc := Sloc (Btyp);
+                        Error_Msg_FE ("\does not match & declared#", P, Btyp);
+                     end if;
 
                      if not Is_Itype (Btyp)
                        and then not Has_Convention_Pragma (Btyp)
@@ -11772,6 +11819,59 @@ package body Sem_Attr is
          Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
       end if;
    end Set_Boolean_Result;
+
+   -------------------------------
+   -- Statically_Denotes_Object --
+   -------------------------------
+
+   function Statically_Denotes_Object (N : Node_Id) return Boolean is
+      Indx : Node_Id;
+
+   begin
+      if Is_Entity_Name (N) then
+         return True;
+
+      elsif Nkind (N) = N_Selected_Component
+        and then Statically_Denotes_Object (Prefix (N))
+        and then Present (Entity (Selector_Name (N)))
+      then
+         declare
+            Sel_Id    : constant Entity_Id := Entity (Selector_Name (N));
+            Comp_Decl : constant Node_Id   := Parent (Sel_Id);
+
+         begin
+            if Depends_On_Discriminant (Sel_Id) then
+               return False;
+
+            elsif Nkind (Parent (Parent (Comp_Decl))) = N_Variant then
+               return False;
+
+            else
+               return True;
+            end if;
+         end;
+
+      elsif Nkind (N) = N_Indexed_Component
+        and then Statically_Denotes_Object (Prefix (N))
+        and then Is_Constrained (Etype (Prefix (N)))
+      then
+         Indx := First (Expressions (N));
+         while Present (Indx) loop
+            if not Compile_Time_Known_Value (Indx)
+              or else Do_Range_Check (Indx)
+            then
+               return False;
+            end if;
+
+            Next (Indx);
+         end loop;
+
+         return True;
+
+      else
+         return False;
+      end if;
+   end Statically_Denotes_Object;
 
    --------------------------------
    -- Stream_Attribute_Available --

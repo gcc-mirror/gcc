@@ -406,7 +406,7 @@ Put uninitialized constants in ROM (needs -membedded-data).
 
 mvirt
 Target Report Var(TARGET_VIRT)
-Use Virtualization Application Specific instructions.
+Use Virtualization (VZ) instructions.
 
 mxpa
 Target Report Var(TARGET_XPA)

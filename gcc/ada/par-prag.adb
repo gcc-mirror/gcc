@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -294,7 +294,7 @@ begin
 
    --  Ignore pragma previously flagged by Ignore_Pragma
 
-   if Get_Name_Table_Boolean3 (Prag_Name) then
+   if Should_Ignore_Pragma_Par (Prag_Name) then
       return Pragma_Node;
    end if;
 
@@ -1334,6 +1334,7 @@ begin
          | Pragma_Component_Alignment
          | Pragma_Controlled
          | Pragma_Convention
+         | Pragma_Deadline_Floor
          | Pragma_Debug_Policy
          | Pragma_Depends
          | Pragma_Detect_Blocking
@@ -1410,6 +1411,7 @@ begin
          | Pragma_Memory_Size
          | Pragma_No_Body
          | Pragma_No_Elaboration_Code_All
+         | Pragma_No_Heap_Finalization
          | Pragma_No_Inline
          | Pragma_No_Return
          | Pragma_No_Run_Time

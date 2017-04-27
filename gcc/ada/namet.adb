@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -116,6 +116,9 @@ package body Namet is
    procedure Append (Buf : in out Bounded_String; C : Character) is
    begin
       if Buf.Length >= Buf.Chars'Last then
+         Write_Str ("Name buffer overflow; Max_Length = ");
+         Write_Int (Int (Buf.Max_Length));
+         Write_Line ("");
          raise Program_Error;
       end if;
 
@@ -806,7 +809,7 @@ package body Namet is
    end Get_Name_String;
 
    function Get_Name_String (Id : Name_Id) return String is
-      Buf : Bounded_String;
+      Buf : Bounded_String (Max_Length => Natural (Length_Of_Name (Id)));
    begin
       Append (Buf, Id);
       return +Buf;
@@ -1017,7 +1020,7 @@ package body Namet is
    end Is_Internal_Name;
 
    function Is_Internal_Name (Id : Name_Id) return Boolean is
-      Buf : Bounded_String;
+      Buf : Bounded_String (Max_Length => Natural (Length_Of_Name (Id)));
    begin
       if Id in Error_Name_Or_No_Name then
          return False;
@@ -1129,6 +1132,13 @@ package body Namet is
       return Name_Entries.Last;
    end Name_Enter;
 
+   function Name_Enter (S : String) return Name_Id is
+      Buf : Bounded_String (Max_Length => S'Length);
+   begin
+      Append (Buf, S);
+      return Name_Enter (Buf);
+   end Name_Enter;
+
    --------------------------
    -- Name_Entries_Address --
    --------------------------
@@ -1237,7 +1247,7 @@ package body Namet is
    end Name_Find;
 
    function Name_Find (S : String) return Name_Id is
-      Buf : Bounded_String;
+      Buf : Bounded_String (Max_Length => S'Length);
    begin
       Append (Buf, S);
       return Name_Find (Buf);
@@ -1740,7 +1750,7 @@ package body Namet is
 
       else
          declare
-            Buf : Bounded_String;
+            Buf : Bounded_String (Max_Length => Natural (Length_Of_Name (Id)));
          begin
             Append (Buf, Id);
             Write_Str (Buf.Chars (1 .. Buf.Length));
@@ -1755,7 +1765,7 @@ package body Namet is
    ----------------
 
    procedure Write_Name (Id : Name_Id) is
-      Buf : Bounded_String;
+      Buf : Bounded_String (Max_Length => Natural (Length_Of_Name (Id)));
    begin
       if Id >= First_Name_Id then
          Append (Buf, Id);

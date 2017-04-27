@@ -286,6 +286,11 @@ procedure Gnat1drv is
 
          Debug_Generated_Code := False;
 
+         --  Ditto for -gnateG which interacts badly with handling of pragma
+         --  Annotate in gnat2scil.
+
+         Generate_Processed_File := False;
+
          --  Disable Exception_Extra_Info (-gnateE) which generates more
          --  complex trees with no added value, and may confuse CodePeer.
 

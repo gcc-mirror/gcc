@@ -471,6 +471,29 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
+      <entry> Adding more constexpr to <code>&lt;chrono&gt;</code> </entry>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0505r0.html">
+	P0505R0
+	</link>
+      </entry>
+      <entry align="center"> 7 </entry>
+      <entry><code> ??? </code></entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
+      <entry> Constexpr for <code>std::char_traits</code> </entry>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0426r1.html">
+	P0426R1
+	</link>
+      </entry>
+      <entry align="center"> 7 (partial) </entry>
+      <entry><code> ??? </code></entry>
+    </row>
+
+    <row>
       <entry> Integrating <code>std::string_view</code> and <code>std::string</code> </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0254r2.pdf">
@@ -535,7 +558,7 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 7 </entry>
-      <entry/>
+      <entry><code> ??? </code></entry>
     </row>
 
     <row>
@@ -718,14 +741,25 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>  </entry> byte type definition
+      <entry> byte type definition </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0298r3.pdf">
 	P0298R3
 	</link>
       </entry>
       <entry align="center"> 7 </entry>
+      <entry><code> ??? </code></entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Elementary string conversions </entry>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0067r5.html">
+	P0067R5
+	</link>
+      </entry>
+      <entry align="center"> No </entry>
       <entry><code> ??? </code></entry>
     </row>
 

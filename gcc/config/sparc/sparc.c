@@ -1911,9 +1911,8 @@ sparc_expand_move (machine_mode mode, rtx *operands)
 	  /* We are able to build any SF constant in integer registers
 	     with at most 2 instructions.  */
 	  && (mode == SFmode
-	      /* And any DF constant in integer registers.  */
-	      || (mode == DFmode
-		  && ! can_create_pseudo_p ())))
+	      /* And any DF constant in integer registers if needed.  */
+	      || (mode == DFmode && !can_create_pseudo_p ())))
 	return false;
 
       operands[1] = force_const_mem (mode, operands[1]);

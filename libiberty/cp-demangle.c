@@ -316,9 +316,11 @@ struct d_info_checkpoint
   const char *n;
   int next_comp;
   int next_sub;
-  int did_subs;
   int expansion;
 };
+
+/* Maximum number of times d_print_comp may be called recursively.  */
+#define MAX_RECURSION_COUNT 1024
 
 enum { D_PRINT_BUFFER_LENGTH = 256 };
 struct d_print_info
@@ -342,6 +344,9 @@ struct d_print_info
   struct d_print_mod *modifiers;
   /* Set to 1 if we saw a demangling error.  */
   int demangle_failure;
+  /* Number of times d_print_comp was recursively called.  Should not
+     be bigger than MAX_RECURSION_COUNT.  */
+  int recursion;
   /* Non-zero if we're printing a lambda argument.  A template
      parameter reference actually means 'auto'.  */
   int is_lambda_arg;
@@ -3075,8 +3080,6 @@ d_template_param (struct d_info *di)
   if (param < 0)
     return NULL;
 
-  ++di->did_subs;
-
   return d_make_template_param (di, param);
 }
 
@@ -3846,8 +3849,6 @@ d_substitution (struct d_info *di, int prefix)
       if (id >= (unsigned int) di->next_sub)
 	return NULL;
 
-      ++di->did_subs;
-
       return di->subs[id];
     }
   else
@@ -3896,7 +3897,8 @@ d_substitution (struct d_info *di, int prefix)
 		  /* If there are ABI tags on the abbreviation, it becomes
 		     a substitution candidate.  */
 		  dc = d_abi_tags (di, dc);
-		  d_add_substitution (di, dc);
+		  if (! d_add_substitution (di, dc))
+		    return NULL;
 		}
 	      return dc;
 	    }
@@ -3912,7 +3914,6 @@ d_checkpoint (struct d_info *di, struct d_info_checkpoint *checkpoint)
   checkpoint->n = di->n;
   checkpoint->next_comp = di->next_comp;
   checkpoint->next_sub = di->next_sub;
-  checkpoint->did_subs = di->did_subs;
   checkpoint->expansion = di->expansion;
 }
 
@@ -3922,7 +3923,6 @@ d_backtrack (struct d_info *di, struct d_info_checkpoint *checkpoint)
   di->n = checkpoint->n;
   di->next_comp = checkpoint->next_comp;
   di->next_sub = checkpoint->next_sub;
-  di->did_subs = checkpoint->did_subs;
   di->expansion = checkpoint->expansion;
 }
 
@@ -4157,6 +4157,7 @@ d_print_init (struct d_print_info *dpi, demangle_callbackref callback,
   dpi->opaque = opaque;
 
   dpi->demangle_failure = 0;
+  dpi->recursion = 0;
   dpi->is_lambda_arg = 0;
 
   dpi->component_stack = NULL;
@@ -5691,13 +5692,14 @@ d_print_comp (struct d_print_info *dpi, int options,
 	      struct demangle_component *dc)
 {
   struct d_component_stack self;
-  if (dc == NULL || dc->d_printing > 1)
+  if (dc == NULL || dc->d_printing > 1 || dpi->recursion > MAX_RECURSION_COUNT)
     {
       d_print_error (dpi);
       return;
     }
-  else
-    dc->d_printing++;
+
+  dc->d_printing++;
+  dpi->recursion++;
 
   self.dc = dc;
   self.parent = dpi->component_stack;
@@ -5707,6 +5709,7 @@ d_print_comp (struct d_print_info *dpi, int options,
 
   dpi->component_stack = self.parent;
   dc->d_printing--;
+  dpi->recursion--;
 }
 
 /* Print a Java dentifier.  For Java we try to handle encoded extended
@@ -6159,7 +6162,6 @@ cplus_demangle_init_info (const char *mangled, int options, size_t len,
      chars in the mangled string.  */
   di->num_subs = len;
   di->next_sub = 0;
-  di->did_subs = 0;
 
   di->last_name = NULL;
 

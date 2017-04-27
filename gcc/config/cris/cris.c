@@ -1597,7 +1597,7 @@ cris_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, reg_class_t rclass)
       && rclass != SRP_REGS
       && rclass != CC0_REGS
       && rclass != SPECIAL_REGS)
-    return GENERAL_REGS;
+    return GENNONACR_REGS;
 
   return rclass;
 }

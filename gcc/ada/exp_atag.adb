@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -178,7 +178,7 @@ package body Exp_Atag is
       --    Typ_TSD  : constant Type_Specific_Data_Ptr
       --                          := Build_TSD (Address!(Typ_Tag));
       --    Index    : constant Integer := Obj_TSD.Idepth - Typ_TSD.Idepth
-      --    Index > 0 and then Obj_TSD.Tags_Table (Index) = Typ'Tag
+      --    Index >= 0 and then Obj_TSD.Tags_Table (Index) = Typ'Tag
 
       Insert_Action (Related_Nod,
         Make_Object_Declaration (Loc,
@@ -197,19 +197,22 @@ package body Exp_Atag is
         Make_Object_Declaration (Loc,
           Defining_Identifier => Obj_TSD,
           Constant_Present    => True,
-          Object_Definition   => New_Occurrence_Of
-                                   (RTE (RE_Type_Specific_Data_Ptr), Loc),
-          Expression => Build_TSD (Loc, New_Occurrence_Of (Tag_Addr, Loc))));
+          Object_Definition   =>
+            New_Occurrence_Of (RTE (RE_Type_Specific_Data_Ptr), Loc),
+          Expression          =>
+            Build_TSD (Loc, New_Occurrence_Of (Tag_Addr, Loc))),
+        Suppress => All_Checks);
 
       Insert_Action (Related_Nod,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Typ_TSD,
           Constant_Present    => True,
-          Object_Definition   => New_Occurrence_Of
-                                   (RTE (RE_Type_Specific_Data_Ptr), Loc),
-          Expression => Build_TSD (Loc,
-                          Unchecked_Convert_To (RTE (RE_Address),
-                            Typ_Tag_Node))));
+          Object_Definition   =>
+            New_Occurrence_Of (RTE (RE_Type_Specific_Data_Ptr), Loc),
+          Expression          =>
+            Build_TSD (Loc,
+              Unchecked_Convert_To (RTE (RE_Address), Typ_Tag_Node))),
+        Suppress => All_Checks);
 
       Insert_Action (Related_Nod,
         Make_Object_Declaration (Loc,
@@ -230,7 +233,8 @@ package body Exp_Atag is
                    Prefix        => New_Occurrence_Of (Typ_TSD, Loc),
                    Selector_Name =>
                      New_Occurrence_Of
-                       (RTE_Record_Component (RE_Idepth), Loc)))));
+                       (RTE_Record_Component (RE_Idepth), Loc)))),
+        Suppress => All_Checks);
 
       New_Node :=
         Make_And_Then (Loc,
@@ -243,7 +247,7 @@ package body Exp_Atag is
             Make_Op_Eq (Loc,
               Left_Opnd =>
                 Make_Indexed_Component (Loc,
-                  Prefix =>
+                  Prefix      =>
                     Make_Selected_Component (Loc,
                       Prefix        => New_Occurrence_Of (Obj_TSD, Loc),
                       Selector_Name =>

@@ -400,7 +400,7 @@ package body Exp_Intr is
         Make_Implicit_If_Statement (N,
           Condition       => Make_Function_Call (Loc,
              Name                   =>
-               New_Occurrence_Of (RTE (RE_Type_Is_Abstract), Loc),
+               New_Occurrence_Of (RTE (RE_Is_Abstract), Loc),
              Parameter_Associations => New_List (New_Copy_Tree (Tag_Arg))),
 
           Then_Statements => New_List (
@@ -421,20 +421,22 @@ package body Exp_Intr is
       Result_Typ := Class_Wide_Type (Etype (Act_Constr));
 
       --  Check that the accessibility level of the tag is no deeper than that
-      --  of the constructor function.
+      --  of the constructor function (unless CodePeer_Mode)
 
-      Insert_Action (N,
-        Make_Implicit_If_Statement (N,
-          Condition       =>
-            Make_Op_Gt (Loc,
-              Left_Opnd  =>
-                Build_Get_Access_Level (Loc, New_Copy_Tree (Tag_Arg)),
-              Right_Opnd =>
-                Make_Integer_Literal (Loc, Scope_Depth (Act_Constr))),
+      if not CodePeer_Mode then
+         Insert_Action (N,
+           Make_Implicit_If_Statement (N,
+             Condition       =>
+               Make_Op_Gt (Loc,
+                 Left_Opnd  =>
+                   Build_Get_Access_Level (Loc, New_Copy_Tree (Tag_Arg)),
+                 Right_Opnd =>
+                   Make_Integer_Literal (Loc, Scope_Depth (Act_Constr))),
 
-          Then_Statements => New_List (
-            Make_Raise_Statement (Loc,
-              New_Occurrence_Of (RTE (RE_Tag_Error), Loc)))));
+             Then_Statements => New_List (
+               Make_Raise_Statement (Loc,
+                 New_Occurrence_Of (RTE (RE_Tag_Error), Loc)))));
+      end if;
 
       if Is_Interface (Etype (Act_Constr)) then
 
@@ -505,10 +507,11 @@ package body Exp_Intr is
 
       --  Do not generate a run-time check on the built object if tag
       --  checks are suppressed for the result type or tagged type expansion
-      --  is disabled.
+      --  is disabled or if CodePeer_Mode.
 
       if Tag_Checks_Suppressed (Etype (Result_Typ))
         or else not Tagged_Type_Expansion
+        or else CodePeer_Mode
       then
          null;
 

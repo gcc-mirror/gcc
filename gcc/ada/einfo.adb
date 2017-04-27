@@ -270,6 +270,8 @@ package body Einfo is
    --    Entry_Max_Queue_Lengths_Array   Node35
    --    Import_Pragma                   Node35
 
+   --    Validated_Object                Node36
+
    --    Class_Wide_Preconds             List38
 
    --    Class_Wide_Postconds            List39
@@ -615,11 +617,10 @@ package body Einfo is
    --    Has_Partial_Visible_Refinement  Flag296
    --    Is_Entry_Wrapper                Flag297
    --    Is_Underlying_Full_View         Flag298
+   --    Body_Needed_For_Inlining        Flag299
 
-   --    (unused)                        Flag299
-   --    (unused)                        Flag300
-
-   --    (unused)                        Flag301
+   --    Has_Private_Extension           Flag300
+   --    Ignore_SPARK_Mode_Pragmas       Flag301
    --    (unused)                        Flag302
    --    (unused)                        Flag303
    --    (unused)                        Flag304
@@ -828,6 +829,12 @@ package body Einfo is
       pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package));
       return Node19 (Id);
    end Body_Entity;
+
+   function Body_Needed_For_Inlining (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Package);
+      return Flag299 (Id);
+   end Body_Needed_For_Inlining;
 
    function Body_Needed_For_SAL (Id : E) return B is
    begin
@@ -1811,6 +1818,12 @@ package body Einfo is
       return Flag155 (Id);
    end Has_Private_Declaration;
 
+   function Has_Private_Extension (Id : E) return B is
+   begin
+      pragma Assert (Is_Tagged_Type (Id));
+      return Flag300 (Id);
+   end Has_Private_Extension;
+
    function Has_Protected (Id : E) return B is
    begin
       return Flag271 (Base_Type (Id));
@@ -1967,6 +1980,29 @@ package body Einfo is
    begin
       return Node4 (Id);
    end Homonym;
+
+   function Ignore_SPARK_Mode_Pragmas (Id : E) return B is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Protected_Body,   --  concurrent variants
+                       E_Protected_Type,
+                       E_Task_Body,
+                       E_Task_Type)
+          or else
+         Ekind_In (Id, E_Entry,            --  overloadable variants
+                       E_Entry_Family,
+                       E_Function,
+                       E_Generic_Function,
+                       E_Generic_Procedure,
+                       E_Operator,
+                       E_Procedure,
+                       E_Subprogram_Body)
+           or else
+         Ekind_In (Id, E_Generic_Package,  --  package variants
+                       E_Package,
+                       E_Package_Body));
+      return Flag301 (Id);
+   end Ignore_SPARK_Mode_Pragmas;
 
    function Import_Pragma (Id : E) return E is
    begin
@@ -3472,6 +3508,12 @@ package body Einfo is
       return Flag95 (Id);
    end Uses_Sec_Stack;
 
+   function Validated_Object (Id : E) return N is
+   begin
+      pragma Assert (Ekind (Id) = E_Variable);
+      return Node36 (Id);
+   end Validated_Object;
+
    function Warnings_Off (Id : E) return B is
    begin
       return Flag96 (Id);
@@ -3527,6 +3569,11 @@ package body Einfo is
    begin
       return Ekind (Id) in Aggregate_Kind;
    end Is_Aggregate_Type;
+
+   function Is_Anonymous_Access_Type            (Id : E) return B is
+   begin
+      return Ekind (Id) in Anonymous_Access_Kind;
+   end Is_Anonymous_Access_Type;
 
    function Is_Array_Type                       (Id : E) return B is
    begin
@@ -3860,6 +3907,12 @@ package body Einfo is
       pragma Assert (Ekind_In (Id, E_Package, E_Generic_Package));
       Set_Node19 (Id, V);
    end Set_Body_Entity;
+
+   procedure Set_Body_Needed_For_Inlining (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Package);
+      Set_Flag299 (Id, V);
+   end Set_Body_Needed_For_Inlining;
 
    procedure Set_Body_Needed_For_SAL (Id : E; V : B := True) is
    begin
@@ -4867,6 +4920,12 @@ package body Einfo is
       Set_Flag155 (Id, V);
    end Set_Has_Private_Declaration;
 
+   procedure Set_Has_Private_Extension (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Tagged_Type (Id));
+      Set_Flag300 (Id, V);
+   end Set_Has_Private_Extension;
+
    procedure Set_Has_Protected (Id : E; V : B := True) is
    begin
       Set_Flag271 (Id, V);
@@ -5036,6 +5095,29 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Package);
       Set_Elist24 (Id, V);
    end Set_Incomplete_Actuals;
+
+   procedure Set_Ignore_SPARK_Mode_Pragmas (Id : E; V : B := True) is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Protected_Body,   --  concurrent variants
+                       E_Protected_Type,
+                       E_Task_Body,
+                       E_Task_Type)
+          or else
+         Ekind_In (Id, E_Entry,            --  overloadable variants
+                       E_Entry_Family,
+                       E_Function,
+                       E_Generic_Function,
+                       E_Generic_Procedure,
+                       E_Operator,
+                       E_Procedure,
+                       E_Subprogram_Body)
+           or else
+         Ekind_In (Id, E_Generic_Package,  --  package variants
+                       E_Package,
+                       E_Package_Body));
+      Set_Flag301 (Id, V);
+   end Set_Ignore_SPARK_Mode_Pragmas;
 
    procedure Set_Import_Pragma (Id : E; V : E) is
    begin
@@ -6601,6 +6683,12 @@ package body Einfo is
    begin
       Set_Flag95 (Id, V);
    end Set_Uses_Sec_Stack;
+
+   procedure Set_Validated_Object (Id : E; V : N) is
+   begin
+      pragma Assert (Ekind (Id) = E_Variable);
+      Set_Node36 (Id, V);
+   end Set_Validated_Object;
 
    procedure Set_Warnings_Off (Id : E; V : B := True) is
    begin
@@ -9251,6 +9339,7 @@ package body Einfo is
       end if;
 
       W ("Address_Taken",                   Flag104 (Id));
+      W ("Body_Needed_For_Inlining",        Flag299 (Id));
       W ("Body_Needed_For_SAL",             Flag40  (Id));
       W ("C_Pass_By_Copy",                  Flag125 (Id));
       W ("Can_Never_Be_Null",               Flag38  (Id));
@@ -9332,6 +9421,7 @@ package body Einfo is
       W ("Has_Primitive_Operations",        Flag120 (Id));
       W ("Has_Private_Ancestor",            Flag151 (Id));
       W ("Has_Private_Declaration",         Flag155 (Id));
+      W ("Has_Private_Extension",           Flag300 (Id));
       W ("Has_Protected",                   Flag271 (Id));
       W ("Has_Qualified_Name",              Flag161 (Id));
       W ("Has_RACW",                        Flag214 (Id));
@@ -9358,6 +9448,7 @@ package body Einfo is
       W ("Has_Visible_Refinement",          Flag263 (Id));
       W ("Has_Volatile_Components",         Flag87  (Id));
       W ("Has_Xref_Entry",                  Flag182 (Id));
+      W ("Ignore_SPARK_Mode_Pragmas",       Flag301 (Id));
       W ("In_Package_Body",                 Flag48  (Id));
       W ("In_Private_Part",                 Flag45  (Id));
       W ("In_Use",                          Flag8   (Id));
@@ -10864,9 +10955,14 @@ package body Einfo is
    ------------------------
 
    procedure Write_Field36_Name (Id : Entity_Id) is
-      pragma Unreferenced (Id);
    begin
-      Write_Str ("Field36??");
+      case Ekind (Id) is
+         when E_Variable =>
+            Write_Str ("Validated_Object");
+
+         when others =>
+            Write_Str ("Field36??");
+      end case;
    end Write_Field36_Name;
 
    ------------------------

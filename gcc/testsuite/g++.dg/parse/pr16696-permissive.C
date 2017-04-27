@@ -12,6 +12,6 @@ int main () {
   x++; // { dg-warning "trying prefix operator" } 
 
   y++; // { dg-warning "trying prefix operator" } 
-  // { dg-error "no match" "" { target *-*-* } 14 }
+  // { dg-error "no match" "" { target *-*-* } .-1 }
 } 
 

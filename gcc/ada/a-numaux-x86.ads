@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                        (Machine Version for x86)                         --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Version for the x86, using 64-bit IEEE format with inline asm statements
+--  This version is for the x86 using the 80-bit x86 long double format with
+--  inline asm statements.
 
 package Ada.Numerics.Aux is
    pragma Pure;

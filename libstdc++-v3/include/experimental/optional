@@ -690,7 +690,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       swap(optional& __other)
       noexcept(is_nothrow_move_constructible<_Tp>()
-               && noexcept(swap(declval<_Tp&>(), declval<_Tp&>())))
+               && __is_nothrow_swappable<_Tp>::value)
       {
         using std::swap;
 

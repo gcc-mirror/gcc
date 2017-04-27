@@ -95,7 +95,7 @@ static rtx_insn *frame_insn (rtx);
 #define TARGET_SETUP_INCOMING_VARARGS epiphany_setup_incoming_varargs
 
 /* Using the simplistic varags handling forces us to do partial reg/stack
-   argument passing for types with larger size (> 4 bytes) than alignemnt.  */
+   argument passing for types with larger size (> 4 bytes) than alignment.  */
 #define TARGET_ARG_PARTIAL_BYTES epiphany_arg_partial_bytes
 
 #define TARGET_FUNCTION_OK_FOR_SIBCALL epiphany_function_ok_for_sibcall

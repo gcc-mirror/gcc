@@ -32,6 +32,6 @@ namespace E
 int bar()
 {
   return foo;			// { dg-error "was not declared" }
-  // { dg-message "maximum limit of 4 namespaces" "maximum limit" { target *-*-* } 34 }
-  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } 34 }
+  // { dg-message "maximum limit of 4 namespaces" "maximum limit" { target *-*-* } .-1 }
+  // { dg-message "suggested alternative" "suggested alternative" { target *-*-* } .-2 }
 }

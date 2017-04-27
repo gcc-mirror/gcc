@@ -237,6 +237,20 @@ value greater than 0.0, or else use the corresponding *-T*
 binder option.
 
 
+To make sure a program is running as root, you can put something like
+this in a library package body in your application:
+
+  .. code-block:: ada
+
+     function geteuid return Integer;
+     pragma Import (C, geteuid, "geteuid");
+     Ignore : constant Boolean :=
+       (if geteuid = 0 then True else raise Program_Error with "must be root");
+
+It gets the effective user id, and if it's not 0 (i.e. root), it raises
+Program_Error.
+
+
 .. index:: Solaris Sparc threads libraries
 
 .. _Solaris-Specific_Considerations:
@@ -2215,7 +2229,7 @@ This setting can be done with *gnatlink* using either of the following:
 
   This sets the stack reserve size to 0x1000000 bytes. Note that with
   *-Wl* option it is not possible to set the stack commit size
-  because the coma is a separator for this option.
+  because the comma is a separator for this option.
 
 
 .. _Setting_Heap_Size_from_gnatlink:
@@ -2244,7 +2258,7 @@ Under Windows systems, it is possible to specify the program heap size from
 
   This sets the heap reserve size to 0x1000000 bytes. Note that with
   *-Wl* option it is not possible to set the heap commit size
-  because the coma is a separator for this option.
+  because the comma is a separator for this option.
 
 
 .. _Win32_Specific_Addons:

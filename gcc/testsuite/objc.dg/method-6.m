@@ -31,9 +31,9 @@ void foo(void) {
        /* { dg-message "also found .\\+\\(Protocol \\*\\)port." "" { target *-*-* } 22 } */
 
   [receiver starboard];  /* { dg-warning "no .\\+starboard. method found" } */
-       /* { dg-warning "Messages without a matching method signature" "" { target *-*-* } 33 } */
-       /* { dg-warning "will be assumed to return .id. and accept" "" { target *-*-* } 33 } */
-       /* { dg-warning ".\.\.\.. as arguments" "" { target *-*-* } 33 } */
+       /* { dg-warning "Messages without a matching method signature" "" { target *-*-* } .-1 } */
+       /* { dg-warning "will be assumed to return .id. and accept" "" { target *-*-* } .-2 } */
+       /* { dg-warning ".\.\.\.. as arguments" "" { target *-*-* } .-3 } */
 
   [Class port];  /* { dg-error ".Class. is not an Objective\\-C class name or alias" } */
 }

@@ -1,6 +1,6 @@
 /* PR 79800 - wrong snprintf result range with precision in a narrow
    negative-positive range
-   { dg-do "run" }
+   { dg-do "run" { target c99_runtime } }
    { dg-options "-O2 -Wall" } */
 
 #define FMT "%.*a"

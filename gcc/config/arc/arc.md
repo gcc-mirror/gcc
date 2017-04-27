@@ -3458,15 +3458,16 @@
 ;; modifed cc user if second, but not first operand is a compact register.
 (define_insn "cmpsi_cc_insn_mixed"
   [(set (reg:CC CC_REG)
-	(compare:CC (match_operand:SI 0 "register_operand" "Rcq#q,  h, c, c,qRcq,c")
-		    (match_operand:SI 1 "nonmemory_operand"   "cO,Cm1,cI,cL, Cal,Cal")))]
+	(compare:CC (match_operand:SI 0 "register_operand" "Rcq#q,Rcqq,  h, c, c,qRcq,c")
+		    (match_operand:SI 1 "nonmemory_operand"   "cO,  hO,Cm1,cI,cL, Cal,Cal")))]
   ""
   "cmp%? %0,%B1%&"
   [(set_attr "type" "compare")
-   (set_attr "iscompact" "true,true,false,false,true_limm,false")
-   (set_attr "predicable" "no,no,no,yes,no,yes")
+   (set_attr "iscompact" "true,true,true,false,false,true_limm,false")
+   (set_attr "predicable" "no,no,no,no,yes,no,yes")
    (set_attr "cond" "set")
-   (set_attr "length" "*,*,4,4,*,8")])
+   (set_attr "length" "*,*,*,4,4,*,8")
+   (set_attr "cpu_facility" "av1,av2,*,*,*,*,*")])
 
 (define_insn "*cmpsi_cc_zn_insn"
   [(set (reg:CC_ZN CC_REG)
@@ -3542,14 +3543,15 @@
 
 (define_insn "*cmpsi_cc_c_insn"
   [(set (reg:CC_C CC_REG)
-	(compare:CC_C (match_operand:SI 0 "register_operand"  "Rcqq,  h, c,Rcqq,  c")
-		      (match_operand:SI 1 "nonmemory_operand"   "cO,Cm1,cI, Cal,Cal")))]
+	(compare:CC_C (match_operand:SI 0 "register_operand"  "Rcqq,Rcqq,  h, c,Rcqq,  c")
+		      (match_operand:SI 1 "nonmemory_operand"   "cO,  hO,Cm1,cI, Cal,Cal")))]
   ""
   "cmp%? %0,%S1%&"
   [(set_attr "type" "compare")
-   (set_attr "iscompact" "true,true,false,true_limm,false")
+   (set_attr "iscompact" "true,true,true,false,true_limm,false")
    (set_attr "cond" "set")
-   (set_attr "length" "*,*,4,*,8")])
+   (set_attr "length" "*,*,*,4,*,8")
+   (set_attr "cpu_facility" "av1,av2,*,*,*,*")])
 
 ;; Next come the scc insns.
 
@@ -4877,7 +4879,7 @@
 		 return \"br%d0%* %1, %B2, %^%l3\";
        /* FALLTHRU */
        case 6: case 10:
-       case 12:return \"cmp%? %1, %B2\\n\\tb%d0%* %^%l3%&;br%d0 out of range\";
+       case 12:return \"cmp%? %1, %B2\\n\\tb%d0%* %^%l3%& ;br%d0 out of range\";
        default: fprintf (stderr, \"unexpected length %d\\n\", get_attr_length (insn)); fflush (stderr); gcc_unreachable ();
      }
    "
@@ -4907,13 +4909,15 @@
 		    (minus (const_int 244)
 			   (symbol_ref "get_attr_delay_slot_length (insn)"))))
 	   (const_int 4)
-	   (match_operand:SI 1 "compact_register_operand" "")
+	   (and (match_operand:SI 1 "compact_register_operand" "")
+		(match_operand:SI 2 "compact_hreg_operand" ""))
 	   (const_int 6)]
 	  (const_int 8))]
 	 (cond [(and (ge (minus (match_dup 3) (pc)) (const_int -256))
 		     (le (minus (match_dup 3) (pc)) (const_int 244)))
 		(const_int 8)
-		(match_operand:SI 1 "compact_register_operand" "")
+		(and (match_operand:SI 1 "compact_register_operand" "")
+		     (match_operand:SI 2 "compact_hreg_operand" ""))
 		(const_int 10)]
 	       (const_int 12))))
    (set (attr "iscompact")
@@ -5070,7 +5074,7 @@
     {
       /* ??? Can do better for when a scratch register
 	 is known.  But that would require extra testing.  */
-      return "push_s r0\;add r0,pcl,%4-(.&-4)\;sr r0,[2]; LP_START\;add r0,pcl,.L__GCC__LP%1-(.&-4)\;sr r0,[3]; LP_END\;pop_s r0";
+      return "push_s r0\;add r0,pcl,%4@pcl\;sr r0,[2]; LP_START\;add r0,pcl,.L__GCC__LP%1@pcl\;sr r0,[3]; LP_END\;pop_s r0";
     }
   /* Check if the loop end is in range to be set by the lp instruction.  */
   size = INTVAL (operands[3]) < 2 ? 0 : 2048;

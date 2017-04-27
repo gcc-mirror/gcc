@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -599,6 +599,11 @@ package Lib is
    function In_Predefined_Unit (S : Source_Ptr) return Boolean;
    --  Same function as above but argument is a source pointer
 
+   function In_Internal_Unit (N : Node_Or_Entity_Id) return Boolean;
+   function In_Internal_Unit (S : Source_Ptr) return Boolean;
+   --  Same as In_Predefined_Unit, except units in the GNAT hierarchy are
+   --  included.
+
    function In_Same_Code_Unit (N1, N2 : Node_Or_Entity_Id) return Boolean;
    pragma Inline (In_Same_Code_Unit);
    --  Determines if the two nodes or entities N1 and N2 are in the same
@@ -806,7 +811,6 @@ private
       Filler            : Boolean;
       Loading           : Boolean;
       OA_Setting        : Character;
-      SPARK_Mode_Pragma : Node_Id;
    end record;
 
    --  The following representation clause ensures that the above record
@@ -836,10 +840,9 @@ private
       Filler            at 61 range 0 ..  7;
       OA_Setting        at 62 range 0 ..  7;
       Loading           at 63 range 0 ..  7;
-      SPARK_Mode_Pragma at 64 range 0 .. 31;
    end record;
 
-   for Unit_Record'Size use 68 * 8;
+   for Unit_Record'Size use 64 * 8;
    --  This ensures that we did not leave out any fields
 
    package Units is new Table.Table (

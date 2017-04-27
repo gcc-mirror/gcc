@@ -7,7 +7,7 @@ int foo ()
   int j;
 
   if (1 == i)
-    return j; /* { dg-bogus "uninitialized" "uninitialized" { xfail *-*-* } 10 } */
+    return j; /* { dg-bogus "uninitialized" "uninitialized" { xfail *-*-* } . } */
 
   return 0;
 }
@@ -18,7 +18,7 @@ int bar ()
   int j; 
 
   if (1 == i)
-    return j; /* { dg-warning "uninitialized" "uninitialized" { target *-*-* } 21 } */
+    return j; /* { dg-warning "uninitialized" "uninitialized" { target *-*-* } . } */
 
   return 0;
 }

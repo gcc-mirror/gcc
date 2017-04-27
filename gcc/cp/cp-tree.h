@@ -4886,7 +4886,7 @@ enum cp_lvalue_kind_flags {
   clk_none = 0,     /* Things that are not an lvalue.  */
   clk_ordinary = 1, /* An ordinary lvalue.  */
   clk_rvalueref = 2,/* An xvalue (rvalue formed using an rvalue reference) */
-  clk_class = 4,    /* A prvalue of class-type.  */
+  clk_class = 4,    /* A prvalue of class or array type.  */
   clk_bitfield = 8, /* An lvalue for a bit-field.  */
   clk_packed = 16   /* An lvalue for a packed field.  */
 };
@@ -6284,8 +6284,8 @@ extern tree build_lang_decl_loc			(location_t, enum tree_code, tree, tree);
 extern bool maybe_add_lang_decl_raw		(tree);
 extern bool maybe_add_lang_type_raw		(tree);
 extern void retrofit_lang_decl			(tree);
-extern tree copy_decl				(tree);
-extern tree copy_type				(tree);
+extern tree copy_decl				(tree CXX_MEM_STAT_INFO);
+extern tree copy_type				(tree CXX_MEM_STAT_INFO);
 extern tree cxx_make_type			(enum tree_code);
 extern tree make_class_type			(enum tree_code);
 extern bool cxx_init				(void);

@@ -1,3 +1,18 @@
+2017-04-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.c (c_parser_struct_or_union_specifier): Add fix-it
+	hint for removing extra semicolon.
+
+2017-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/80468
+	* c-decl.c (finish_declspecs) <case cts_int_n>: If int_n_idx is not
+	enabled, set specs->type to integer_type_node.
+
+2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* c-array-notation.c: Fix typo in comment.
+
 2017-03-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/79730

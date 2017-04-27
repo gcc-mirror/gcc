@@ -1,3 +1,39 @@
+2017-04-25  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-common.c (c_type_hasher, type_hash_table): Remove.
+	(c_common_get_alias_set): Remove unreachable code.
+	* c-opts.c (c_common_post_options): Make sure cc1 takes only one file.
+
+2017-04-20  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* c.opt (Wextra-semi): New C++ warning flag.
+
+2017-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/80423
+	* c-common.c (complete_array_type): Preserve TYPE_TYPELESS_STORAGE.
+
+2017-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79788
+	PR middle-end/80375
+	* c-common.c (c_common_type_for_mode): Don't handle
+	widest_*_literal_type_node here.
+	c_common_signed_or_unsigned_type): Likewise.
+	(c_common_nodes_and_builtins): Set widest_*_literal_type_node
+	to *intTI_type_node or *intDI_type_node depending on whether
+	TImode is supported by the target or not.
+
+2017-04-10  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/80350
+	* c-ubsan.c (ubsan_instrument_shift): Evaluate RHS before
+	doing an UBSAN check.
+
+2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* c-warn.c (do_warn_double_promotion): Fix typo in comment.
+
 2017-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79572

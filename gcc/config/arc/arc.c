@@ -77,13 +77,6 @@ static const char *arc_cpu_string = arc_cpu_name;
 		      ? 0 \
 		      : -(-GET_MODE_SIZE (MODE) | -4) >> 1)))
 
-#define LEGITIMATE_OFFSET_ADDRESS_P(MODE, X, INDEX, STRICT) \
-(GET_CODE (X) == PLUS			     \
-  && RTX_OK_FOR_BASE_P (XEXP (X, 0), (STRICT)) \
-  && ((INDEX && RTX_OK_FOR_INDEX_P (XEXP (X, 1), (STRICT)) \
-       && GET_MODE_SIZE ((MODE)) <= 4) \
-      || RTX_OK_FOR_OFFSET_P (MODE, XEXP (X, 1))))
-
 #define LEGITIMATE_SCALED_ADDRESS_P(MODE, X, STRICT) \
 (GET_CODE (X) == PLUS \
  && GET_CODE (XEXP (X, 0)) == MULT \
@@ -245,6 +238,39 @@ static bool arc_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 
 /* Globally visible information about currently selected cpu.  */
 const arc_cpu_t *arc_selected_cpu;
+
+/* Check for constructions like REG + OFFS, where OFFS can be a
+   register, an immediate or an long immediate. */
+
+static bool
+legitimate_offset_address_p (enum machine_mode mode, rtx x, bool index,
+			     bool strict)
+{
+  if (GET_CODE (x) != PLUS)
+    return false;
+
+  if (!RTX_OK_FOR_BASE_P (XEXP (x, 0), (strict)))
+    return false;
+
+  /* Check for: [Rx + small offset] or [Rx + Ry].  */
+  if (((index && RTX_OK_FOR_INDEX_P (XEXP (x, 1), (strict))
+	&& GET_MODE_SIZE ((mode)) <= 4)
+       || RTX_OK_FOR_OFFSET_P (mode, XEXP (x, 1))))
+    return true;
+
+  /* Check for [Rx + symbol].  */
+  if (!flag_pic
+      && (GET_CODE (XEXP (x, 1)) == SYMBOL_REF)
+      /* Avoid this type of address for double or larger modes.  */
+      && (GET_MODE_SIZE (mode) <= 4)
+      /* Avoid small data which ends in something like GP +
+	 symb@sda.  */
+      && (!SYMBOL_REF_SMALL_P (XEXP (x, 1))
+	  || TARGET_NO_SDATA_SET))
+    return true;
+
+  return false;
+}
 
 /* Implements target hook vector_mode_supported_p.  */
 
@@ -1543,6 +1569,11 @@ arc_conditional_register_usage (void)
       arc_regno_reg_class[42] = ALL_REGS;
       arc_regno_reg_class[43] = ALL_REGS;
 
+      fixed_regs[40] = 1;
+      fixed_regs[41] = 1;
+      fixed_regs[42] = 1;
+      fixed_regs[43] = 1;
+
       arc_hard_regno_mode_ok[40] = 0;
       arc_hard_regno_mode_ok[42] = 0;
 
@@ -1580,6 +1611,15 @@ arc_conditional_register_usage (void)
     SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], ACCH_REGNO);
     SET_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], ACCL_REGNO);
     SET_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], ACCH_REGNO);
+    SET_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], ACCL_REGNO);
+    SET_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], ACCH_REGNO);
+    SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], ACCL_REGNO);
+    SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], ACCH_REGNO);
+
+     /* Allow the compiler to freely use them.  */
+    fixed_regs[ACCL_REGNO] = 0;
+    fixed_regs[ACCH_REGNO] = 0;
+
     arc_hard_regno_mode_ok[ACC_REG_FIRST] = D_MODES;
   }
 }
@@ -5454,7 +5494,7 @@ arc_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 {
   if (RTX_OK_FOR_BASE_P (x, strict))
      return true;
-  if (LEGITIMATE_OFFSET_ADDRESS_P (mode, x, TARGET_INDEXED_LOADS, strict))
+  if (legitimate_offset_address_p (mode, x, TARGET_INDEXED_LOADS, strict))
      return true;
   if (LEGITIMATE_SCALED_ADDRESS_P (mode, x, strict))
     return true;
@@ -5495,7 +5535,7 @@ arc_legitimate_address_p (machine_mode mode, rtx x, bool strict)
   if ((GET_CODE (x) == PRE_MODIFY || GET_CODE (x) == POST_MODIFY)
       && GET_CODE (XEXP ((x), 1)) == PLUS
       && rtx_equal_p (XEXP ((x), 0), XEXP (XEXP (x, 1), 0))
-      && LEGITIMATE_OFFSET_ADDRESS_P (QImode, XEXP (x, 1),
+      && legitimate_offset_address_p (QImode, XEXP (x, 1),
 				      TARGET_AUTO_MODIFY_REG, strict))
     return true;
   return false;
@@ -5509,13 +5549,9 @@ arc_mode_dependent_address_p (const_rtx addr, addr_space_t)
 {
   /* SYMBOL_REF is not mode dependent: it is either a small data reference,
      which is valid for loads and stores, or a limm offset, which is valid for
-     loads.  */
-  /* Scaled indices are scaled by the access mode; likewise for scaled
-     offsets, which are needed for maximum offset stores.  */
+     loads.  Scaled indices are scaled by the access mode.  */
   if (GET_CODE (addr) == PLUS
-      && (GET_CODE (XEXP ((addr), 0)) == MULT
-	  || (CONST_INT_P (XEXP ((addr), 1))
-	      && !SMALL_INT (INTVAL (XEXP ((addr), 1))))))
+      && GET_CODE (XEXP ((addr), 0)) == MULT)
     return true;
   return false;
 }
@@ -6292,10 +6328,28 @@ arc_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   fnaddr = XEXP (DECL_RTL (function), 0);
 
   if (arc_is_longcall_p (fnaddr))
-    fputs ("\tj\t", file);
+    {
+      if (flag_pic)
+	{
+	  asm_fprintf (file, "\tld\t%s, [pcl, @",
+		       ARC_TEMP_SCRATCH_REG);
+	  assemble_name (file, XSTR (fnaddr, 0));
+	  fputs ("@gotpc]\n", file);
+	  asm_fprintf (file, "\tj\t[%s]", ARC_TEMP_SCRATCH_REG);
+	}
+      else
+	{
+	  fputs ("\tj\t@", file);
+	  assemble_name (file, XSTR (fnaddr, 0));
+	}
+    }
   else
-    fputs ("\tb\t", file);
-  assemble_name (file, XSTR (fnaddr, 0));
+    {
+      fputs ("\tb\t@", file);
+      assemble_name (file, XSTR (fnaddr, 0));
+      if (flag_pic)
+	fputs ("@plt\n", file);
+    }
   fputc ('\n', file);
 }
 
@@ -6573,8 +6627,6 @@ arc_reorg (void)
 	  rtx_insn *lp_simple = NULL;
 	  rtx_insn *next = NULL;
 	  rtx op0 = XEXP (XVECEXP (PATTERN (insn), 0, 1), 0);
-	  HOST_WIDE_INT loop_end_id
-	    = -INTVAL (XEXP (XVECEXP (PATTERN (insn), 0, 4), 0));
 	  int seen_label = 0;
 
 	  for (lp = prev;
@@ -6585,6 +6637,9 @@ arc_reorg (void)
 	  if (!lp || !NONJUMP_INSN_P (lp)
 	      || dead_or_set_regno_p (lp, LP_COUNT))
 	    {
+	      HOST_WIDE_INT loop_end_id
+		= INTVAL (XEXP (XVECEXP (PATTERN (insn), 0, 4), 0));
+
 	      for (prev = next = insn, lp = NULL ; prev || next;)
 		{
 		  if (prev)
@@ -7327,6 +7382,10 @@ arc_output_addsi (rtx *operands, bool cond_p, bool output_p)
   int short_p = (!cond_p && short_0 && satisfies_constraint_Rcq (operands[1]));
   int ret = 0;
 
+#define REG_H_P(OP) (REG_P (OP) && ((TARGET_V2 && REGNO (OP) <= 31	\
+				     && REGNO (OP) != 30)		\
+				    || !TARGET_V2))
+
 #define ADDSI_OUTPUT1(FORMAT) do {\
   if (output_p) \
     output_asm_insn (FORMAT, operands);\
@@ -7349,32 +7408,40 @@ arc_output_addsi (rtx *operands, bool cond_p, bool output_p)
 	 but add1 r0,sp,35 doesn't.  */
       && (!output_p || (get_attr_length (current_output_insn) & 2)))
     {
+      /* Generate add_s a,b,c; add_s b,b,u7; add_s c,b,u3; add_s b,b,h
+	 patterns.  */
       if (short_p
-	  && (REG_P (operands[2])
-	      ? (match || satisfies_constraint_Rcq (operands[2]))
-	      : (unsigned) intval <= (match ? 127 : 7)))
-	ADDSI_OUTPUT1 ("add%? %0,%1,%2");
-      if (short_0 && REG_P (operands[1]) && match2)
-	ADDSI_OUTPUT1 ("add%? %0,%2,%1");
+	  && ((REG_H_P (operands[2])
+	       && (match || satisfies_constraint_Rcq (operands[2])))
+	      || (CONST_INT_P (operands[2])
+		  && ((unsigned) intval <= (match ? 127 : 7)))))
+	ADDSI_OUTPUT1 ("add%? %0,%1,%2 ;1");
+
+      /* Generate add_s b,b,h patterns.  */
+      if (short_0 && match2 && REG_H_P (operands[1]))
+	ADDSI_OUTPUT1 ("add%? %0,%2,%1 ;2");
+
+      /* Generate add_s b,sp,u7; add_s sp,sp,u7 patterns.  */
       if ((short_0 || REGNO (operands[0]) == STACK_POINTER_REGNUM)
 	  && REGNO (operands[1]) == STACK_POINTER_REGNUM && !(intval & ~124))
-	ADDSI_OUTPUT1 ("add%? %0,%1,%2");
+	ADDSI_OUTPUT1 ("add%? %0,%1,%2 ;3");
 
       if ((short_p && (unsigned) neg_intval <= (match ? 31 : 7))
 	  || (REGNO (operands[0]) == STACK_POINTER_REGNUM
 	      && match && !(neg_intval & ~124)))
-	ADDSI_OUTPUT1 ("sub%? %0,%1,%n2");
+	ADDSI_OUTPUT1 ("sub%? %0,%1,%n2 ;4");
 
-      if (REG_P(operands[0]) && REG_P(operands[1])
-	  && (REGNO(operands[0]) <= 31) && (REGNO(operands[0]) == REGNO(operands[1]))
-	  && CONST_INT_P (operands[2]) && ( (intval>= -1) && (intval <= 6)))
-	ADDSI_OUTPUT1 ("add%? %0,%1,%2");
+      /* Generate add_s h,h,s3 patterns.  */
+      if (REG_H_P (operands[0]) && match && TARGET_V2
+	  && CONST_INT_P (operands[2]) && ((intval>= -1) && (intval <= 6)))
+	ADDSI_OUTPUT1 ("add%? %0,%1,%2 ;5");
 
-      if (TARGET_CODE_DENSITY && REG_P(operands[0]) && REG_P(operands[1])
-	  && ((REGNO(operands[0]) == 0) || (REGNO(operands[0]) == 1))
+      /* Generate add_s r0,b,u6; add_s r1,b,u6 patterns.  */
+      if (TARGET_CODE_DENSITY && REG_P (operands[0]) && REG_P (operands[1])
+	  && ((REGNO (operands[0]) == 0) || (REGNO (operands[0]) == 1))
 	  && satisfies_constraint_Rcq (operands[1])
 	  && satisfies_constraint_L (operands[2]))
-	ADDSI_OUTPUT1 ("add%? %0,%1,%2 ;3");
+	ADDSI_OUTPUT1 ("add%? %0,%1,%2 ;6");
     }
 
   /* Now try to emit a 32 bit insn without long immediate.  */
@@ -9340,17 +9407,6 @@ arc_text_label (rtx_insn *label)
        gcc.dg/torture/stackalign/comp-goto-1.c */
     return true;
   return false;
-}
-
-/* Return the size of the pretend args for DECL.  */
-
-int
-arc_decl_pretend_args (tree decl)
-{
-  /* struct function is in DECL_STRUCT_FUNCTION (decl), but no
-     pretend_args there...  See PR38391.  */
-  gcc_assert (decl == current_function_decl);
-  return crtl->args.pretend_args_size;
 }
 
 /* Without this, gcc.dg/tree-prof/bb-reorg.c fails to assemble

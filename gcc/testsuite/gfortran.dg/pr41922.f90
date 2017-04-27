@@ -1,4 +1,4 @@
-! { dg-do compile}
+! { dg-do compile }
 ! { dg-options -std=gnu }
       Subroutine RestoreR8Run()
       Implicit NONE

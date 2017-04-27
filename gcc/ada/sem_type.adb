@@ -1933,6 +1933,18 @@ package body Sem_Type is
             return No_Interp;
          end if;
 
+      --  Two access attribute types may have been created for an expression
+      --  with an implicit dereference, which is automatically overloaded.
+      --  If both access attribute types designate the same object type,
+      --  disambiguation if any will take place elsewhere, so keep any one of
+      --  the interpretations.
+
+      elsif Ekind (It1.Typ) = E_Access_Attribute_Type
+        and then Ekind (It2.Typ) = E_Access_Attribute_Type
+        and then Designated_Type (It1.Typ) = Designated_Type (It2.Typ)
+      then
+         return It1;
+
       --  If two user defined-subprograms are visible, it is a true ambiguity,
       --  unless one of them is an entry and the context is a conditional or
       --  timed entry call, or unless we are within an instance and this is

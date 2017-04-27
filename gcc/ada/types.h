@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -97,7 +97,7 @@ typedef struct { const char *Array; String_Template *Bounds; }
    inlined stuff IN the C header changes the dependencies.  Both sinfo.h
    and einfo.h now reference routines defined in tree.h.
 
-   Note: these types would more naturally be defined as unsigned  char, but
+   Note: these types would more naturally be defined as unsigned char, but
    once again, the annoying restriction on bit fields for some compilers
    bites us!  */
 

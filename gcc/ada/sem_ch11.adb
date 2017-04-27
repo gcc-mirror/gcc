@@ -165,8 +165,24 @@ package body Sem_Ch11 is
 
    begin
       Handler := First (L);
-      Check_Restriction (No_Exceptions, Handler);
-      Check_Restriction (No_Exception_Handlers, Handler);
+
+      --  Pragma Restriction_Warnings has more related semantics than pragma
+      --  Restrictions in that it flags exception handlers as violators. Note
+      --  that the compiler must still generate handlers for certain critical
+      --  scenarios such as finalization. As a result, these handlers should
+      --  not be subjected to the restriction check when in warnings mode.
+
+      if not Comes_From_Source (Handler)
+        and then (Restriction_Warnings (No_Exception_Handlers)
+                   or else Restriction_Warnings (No_Exception_Propagation)
+                   or else Restriction_Warnings (No_Exceptions))
+      then
+         null;
+
+      else
+         Check_Restriction (No_Exceptions, Handler);
+         Check_Restriction (No_Exception_Handlers, Handler);
+      end if;
 
       --  Kill current remembered values, since we don't know where we were
       --  when the exception was raised.

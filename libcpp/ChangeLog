@@ -1,3 +1,9 @@
+2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/line-map.h (LINEMAPS_MACRO_MAPS): Fix typo in comment.
+	* lex.c (search_line_fast): Likewise.
+	* pch.h (cpp_valid_state): Likewise.
+
 2017-03-21  Andreas Schwab  <schwab@suse.de>
 
 	* lex.c (search_line_fast) [__ARM_NEON && __ARM_64BIT_STATE]:

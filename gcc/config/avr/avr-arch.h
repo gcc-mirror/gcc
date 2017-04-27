@@ -169,7 +169,7 @@ typedef struct
   /* Architecture ID.  */
   enum avr_arch_id arch_id;
 
-  /* textinfo source to describe the archtiecture.  */
+  /* textinfo source to describe the architecture.  */
   const char *texinfo;
 } avr_arch_info_t;
 

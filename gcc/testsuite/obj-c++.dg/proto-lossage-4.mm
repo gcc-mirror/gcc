@@ -26,13 +26,13 @@ long foo(void) {
   receiver += [receiver anotherValue]; /* { dg-warning "invalid receiver type .long int." } */
 
   receiver += [(Obj *)receiver someValue]; /* { dg-warning ".Obj. may not respond to .\\-someValue." } */
-/* { dg-error "invalid conversion" "" { target *-*-* } 28 } */
+/* { dg-error "invalid conversion" "" { target *-*-* } .-1 } */
 
   receiver += [(Obj *)receiver anotherValue];
   receiver += [(Obj <Proto> *)receiver someValue];
   receiver += [(Obj <Proto> *)receiver anotherValue];
   receiver += [objrcvr someValue]; /* { dg-warning ".Obj. may not respond to .\\-someValue." } */
-/* { dg-error "invalid conversion" "" { target *-*-* } 34 } */
+/* { dg-error "invalid conversion" "" { target *-*-* } .-1 } */
 
   receiver += [objrcvr anotherValue];
   receiver += [(Obj <Proto> *)objrcvr someValue];
@@ -40,7 +40,7 @@ long foo(void) {
   receiver += [objrcvr2 someValue];
   receiver += [objrcvr2 anotherValue];
   receiver += [(Obj *)objrcvr2 someValue]; /* { dg-warning ".Obj. may not respond to .\\-someValue." } */
-/* { dg-error "invalid conversion" "" { target *-*-* } 42 } */
+/* { dg-error "invalid conversion" "" { target *-*-* } .-1 } */
 
   receiver += [(Obj *)objrcvr2 anotherValue];
 

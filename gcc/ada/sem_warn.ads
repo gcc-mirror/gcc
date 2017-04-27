@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -167,6 +167,11 @@ package Sem_Warn is
    --  warnings about improper low bound assumptions (we assume that if the
    --  code has a test that explicitly checks P'First, then it is not operating
    --  in blind assumption mode).
+
+   procedure Warn_On_Constant_Valid_Condition (Op : Node_Id);
+   --  Determine the outcome of evaluating conditional or relational operator
+   --  Op assuming that its scalar operands are valid. Emit a warning when the
+   --  result of the evaluation is True or False.
 
    procedure Warn_On_Known_Condition (C : Node_Id);
    --  C is a node for a boolean expression resulting from a relational

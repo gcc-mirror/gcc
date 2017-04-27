@@ -14,7 +14,7 @@ struct foo {
    -pedantic, even in bad1.  */
 int (*ok1)() = foo::bar;
 void (foo::*bad1)(int) = foo::bar; // { dg-error "assuming pointer" }
-// { dg-message "note" "note" { target *-*-* } 16 }
+// { dg-message "note" "note" { target *-*-* } .-1 }
 
 int (*ok2)() = &foo::bar; // ok
 void (*bad2)(int) = foo::bar; // { dg-error "no matches" }

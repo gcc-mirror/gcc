@@ -1,3 +1,7 @@
+2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libitm_i.h (sutrct gtm_thread): Fix typo in comment.
+
 2017-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/79046

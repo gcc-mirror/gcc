@@ -31,7 +31,7 @@ void
 f4 (void)
 {
   #pragma omp for linear (i:1) linear (j:2) collapse(2)	/* { dg-error "iteration variable .i. should not be linear" } */
-  for (i = 0; i < 32; i++)				/* { dg-error "iteration variable .j. should not be linear" "" { target *-*-* } 33 } */
+  for (i = 0; i < 32; i++)				/* { dg-error "iteration variable .j. should not be linear" "" { target *-*-* } .-1 } */
     for (j = 0; j < 32; j+=2)
       ;
 }
@@ -49,7 +49,7 @@ void
 f6 (void)
 {
   #pragma omp parallel for linear (i:1) collapse(2) linear (j:2)	/* { dg-error "iteration variable .i. should not be linear" } */
-  for (i = 0; i < 32; i++)						/* { dg-error "iteration variable .j. should not be linear" "" { target *-*-* } 51 } */
+  for (i = 0; i < 32; i++)						/* { dg-error "iteration variable .j. should not be linear" "" { target *-*-* } .-1 } */
     for (j = 0; j < 32; j+=2)
       ;
 }

@@ -4474,6 +4474,40 @@ find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
 	    process_all_all_constraints (lhsc, rhsc);
 	  }
 	return true;
+      /* Pure functions that return something not based on any object and
+         that use the memory pointed to by their arguments (but not
+	 transitively).  */
+      case BUILT_IN_STRCMP:
+      case BUILT_IN_STRNCMP:
+      case BUILT_IN_STRCASECMP:
+      case BUILT_IN_STRNCASECMP:
+      case BUILT_IN_MEMCMP:
+      case BUILT_IN_BCMP:
+      case BUILT_IN_STRSPN:
+      case BUILT_IN_STRCSPN:
+	{
+	  varinfo_t uses = get_call_use_vi (t);
+	  make_any_offset_constraints (uses);
+	  make_constraint_to (uses->id, gimple_call_arg (t, 0));
+	  make_constraint_to (uses->id, gimple_call_arg (t, 1));
+	  /* No constraints are necessary for the return value.  */
+	  return true;
+	}
+      case BUILT_IN_STRLEN:
+	{
+	  varinfo_t uses = get_call_use_vi (t);
+	  make_any_offset_constraints (uses);
+	  make_constraint_to (uses->id, gimple_call_arg (t, 0));
+	  /* No constraints are necessary for the return value.  */
+	  return true;
+	}
+      case BUILT_IN_OBJECT_SIZE:
+      case BUILT_IN_CONSTANT_P:
+	{
+	  /* No constraints are necessary for the return value or the
+	     arguments.  */
+	  return true;
+	}
       /* Trampolines are special - they set up passing the static
 	 frame.  */
       case BUILT_IN_INIT_TRAMPOLINE:
@@ -4944,14 +4978,14 @@ find_func_aliases (struct function *fn, gimple *origt)
 	    make_escape_constraint (build_fold_addr_expr (op));
 
 	  /* The asm may read global memory, so outputs may point to
-	     any global memory.  */
+	     any global or escaped memory.  */
 	  if (op)
 	    {
 	      auto_vec<ce_s, 2> lhsc;
 	      struct constraint_expr rhsc, *lhsp;
 	      unsigned j;
 	      get_constraint_for (op, &lhsc);
-	      rhsc.var = nonlocal_id;
+	      rhsc.var = escaped_id;
 	      rhsc.offset = 0;
 	      rhsc.type = SCALAR;
 	      FOR_EACH_VEC_ELT (lhsc, j, lhsp)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2007-2015, AdaCore                      --
+--                    Copyright (C) 2007-2016, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,56 @@ with Ada.Streams;
 with Interfaces.C;
 
 package GNAT.Serial_Communications is
+
+   --  Following is a simple example of using GNAT.Serial_Communications.
+   --
+   --  with Ada.Streams;
+   --  with GNAT.Serial_Communications;
+   --
+   --  procedure Serial is
+   --     use Ada.Streams;
+   --     use GNAT;
+   --
+   --     subtype Message is Stream_Element_Array (1 .. 20);
+   --
+   --     Data   : constant String (1 .. 20)  := "ABCDEFGHIJLKMNOPQRST";
+   --     Buffer : Message;
+   --
+   --     S_Port : constant Natural := 5;
+   --     --  Serial port number
+   --
+   --  begin
+   --     --  Convert message (String -> Stream_Element_Array)
+   --
+   --     for K in Data'Range loop
+   --        Buffer (Stream_Element_Offset (K)) := Character'Pos (Data (K));
+   --     end loop;
+   --
+   --     declare
+   --        Port_Name : constant Serial_Communications.Port_Name :=
+   --                      Serial_Communications.Name (Number => S_Port);
+   --        Port      : Serial_Communications.Serial_Port;
+   --
+   --     begin
+   --        Serial_Communications.Open
+   --          (Port => Port,
+   --           Name => Port_Name);
+   --
+   --        Serial_Communications.Set
+   --          (Port      => Port,
+   --           Rate      => Serial_Communications.B9600,
+   --           Bits      => Serial_Communications.CS8,
+   --           Stop_Bits => Serial_Communications.One,
+   --           Parity    => Serial_Communications.Even);
+   --
+   --        Serial_Communications.Write
+   --          (Port   => Port,
+   --           Buffer => Buffer);
+   --
+   --        Serial_Communications.Close
+   --          (Port => Port);
+   --     end;
+   --  end Serial;
 
    Serial_Error : exception;
    --  Raised when a communication problem occurs

@@ -51,9 +51,9 @@ int func1()
    int (*pf)() = f1;			/* { dg-warning "'INT1 f1\\(\\)' is deprecated: Please avoid f1" "" } */
 
    z = w + x + y + g1 + g2 + g3;	/* { dg-warning "'x' is deprecated: Please avoid x" "" } */
-					/* { dg-warning "'y' is deprecated: Please avoid y" "y" { target *-*-* } 53 } */
-					/* { dg-warning "'g2' is deprecated: Please avoid g2" "g2" { target *-*-* } 53 } */
-					/* { dg-warning "'g3' is deprecated: Please avoid g3" "g3" { target *-*-* } 53 } */
+					/* { dg-warning "'y' is deprecated: Please avoid y" "y" { target *-*-* } .-1 } */
+					/* { dg-warning "'g2' is deprecated: Please avoid g2" "g2" { target *-*-* } .-2 } */
+					/* { dg-warning "'g3' is deprecated: Please avoid g3" "g3" { target *-*-* } .-3 } */
    return f1(); 			/* { dg-warning "'INT1 f1\\(\\)' is deprecated: Please avoid f1" "f1" } */
 }
 
@@ -69,7 +69,7 @@ int func2(S1 *p)
   p->u1.field5 = g1 + p->field7;
   p->u2.field9;				/* { dg-warning "'S1::u2' is deprecated: Please avoid u2" "" } */
   return p->u1.field6 + p->field8;	/* { dg-warning "'S1::<unnamed union>::field6' is deprecated: Please avoid field6" "" } */
-					/* { dg-warning "'S1::field8' is deprecated: Please avoid field8" "field8" { target *-*-* } 71 } */
+					/* { dg-warning "'S1::field8' is deprecated: Please avoid field8" "field8" { target *-*-* } .-1 } */
 }
 
 struct SS1 {

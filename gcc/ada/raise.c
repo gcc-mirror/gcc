@@ -50,7 +50,7 @@ extern "C" {
 /*  Wrapper to builtin_longjmp.  This is for the compiler eh only, as the sjlj
     runtime library interfaces directly to the intrinsic.  We can't yet do
     this for the compiler itself, because this capability relies on changes
-    made in april 2008 and we need to preserve the possibility to bootstrap
+    made in April 2008 and we need to preserve the possibility to bootstrap
     with an older base version.  */
 
 #if defined (IN_GCC) && !defined (IN_RTS)

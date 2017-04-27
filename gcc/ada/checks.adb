@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -489,17 +489,18 @@ package body Checks is
       Static_Sloc  : Source_Ptr;
       Flag_Node    : Node_Id)
    is
+      Checks_On : constant Boolean :=
+                    not Index_Checks_Suppressed (Suppress_Typ)
+                      or else
+                    not Range_Checks_Suppressed (Suppress_Typ);
+
       Internal_Flag_Node   : constant Node_Id    := Flag_Node;
       Internal_Static_Sloc : constant Source_Ptr := Static_Sloc;
 
-      Checks_On : constant Boolean :=
-        (not Index_Checks_Suppressed (Suppress_Typ))
-         or else (not Range_Checks_Suppressed (Suppress_Typ));
-
    begin
-      --  For now we just return if Checks_On is false, however this should
-      --  be enhanced to check for an always True value in the condition
-      --  and to generate a compilation warning???
+      --  For now we just return if Checks_On is false, however this should be
+      --  enhanced to check for an always True value in the condition and to
+      --  generate a compilation warning???
 
       if not Checks_On then
          return;
@@ -2943,33 +2944,39 @@ package body Checks is
 
       --  The additional less-precise tests below catch these cases
 
+      --  In GNATprove_Mode, also deal with the case of a conversion from
+      --  floating-point to integer. It is only possible because analysis
+      --  in GNATprove rules out the possibility of a NaN or infinite value.
+
       --  Note: skip this if we are given a source_typ, since the point of
       --  supplying a Source_Typ is to stop us looking at the expression.
       --  We could sharpen this test to be out parameters only ???
 
       if Is_Discrete_Type (Target_Typ)
-        and then Is_Discrete_Type (Etype (Expr))
+        and then (Is_Discrete_Type (Etype (Expr))
+                   or else (GNATprove_Mode
+                             and then Is_Floating_Point_Type (Etype (Expr))))
         and then not Is_Unconstrained_Subscr_Ref
         and then No (Source_Typ)
       then
          declare
-            Tlo : constant Node_Id := Type_Low_Bound  (Target_Typ);
             Thi : constant Node_Id := Type_High_Bound (Target_Typ);
-            Lo  : Uint;
-            Hi  : Uint;
+            Tlo : constant Node_Id := Type_Low_Bound  (Target_Typ);
 
          begin
             if Compile_Time_Known_Value (Tlo)
               and then Compile_Time_Known_Value (Thi)
             then
                declare
-                  Lov : constant Uint := Expr_Value (Tlo);
                   Hiv : constant Uint := Expr_Value (Thi);
+                  Lov : constant Uint := Expr_Value (Tlo);
+                  Hi  : Uint;
+                  Lo  : Uint;
 
                begin
-                  --  If range is null, we for sure have a constraint error
-                  --  (we don't even need to look at the value involved,
-                  --  since all possible values will raise CE).
+                  --  If range is null, we for sure have a constraint error (we
+                  --  don't even need to look at the value involved, since all
+                  --  possible values will raise CE).
 
                   if Lov > Hiv then
 
@@ -2991,7 +2998,35 @@ package body Checks is
 
                   --  Otherwise determine range of value
 
-                  Determine_Range (Expr, OK, Lo, Hi, Assume_Valid => True);
+                  if Is_Discrete_Type (Etype (Expr)) then
+                     Determine_Range
+                       (Expr, OK, Lo, Hi, Assume_Valid => True);
+
+                  --  When converting a float to an integer type, determine the
+                  --  range in real first, and then convert the bounds using
+                  --  UR_To_Uint which correctly rounds away from zero when
+                  --  half way between two integers, as required by normal
+                  --  Ada 95 rounding semantics. It is only possible because
+                  --  analysis in GNATprove rules out the possibility of a NaN
+                  --  or infinite value.
+
+                  elsif GNATprove_Mode
+                    and then Is_Floating_Point_Type (Etype (Expr))
+                  then
+                     declare
+                        Hir : Ureal;
+                        Lor : Ureal;
+
+                     begin
+                        Determine_Range_R
+                          (Expr, OK, Lor, Hir, Assume_Valid => True);
+
+                        if OK then
+                           Lo := UR_To_Uint (Lor);
+                           Hi := UR_To_Uint (Hir);
+                        end if;
+                     end;
+                  end if;
 
                   if OK then
 
@@ -3082,14 +3117,16 @@ package body Checks is
       Source_Typ : Entity_Id;
       Do_Static  : Boolean)
    is
-      Cond     : Node_Id;
-      R_Result : Check_Result;
-      R_Cno    : Node_Id;
+      Checks_On : constant Boolean :=
+                    not Index_Checks_Suppressed (Target_Typ)
+                      or else
+                    not Length_Checks_Suppressed (Target_Typ);
 
-      Loc         : constant Source_Ptr := Sloc (Ck_Node);
-      Checks_On   : constant Boolean :=
-        (not Index_Checks_Suppressed (Target_Typ))
-          or else (not Length_Checks_Suppressed (Target_Typ));
+      Loc : constant Source_Ptr := Sloc (Ck_Node);
+
+      Cond     : Node_Id;
+      R_Cno    : Node_Id;
+      R_Result : Check_Result;
 
    begin
       --  Only apply checks when generating code
@@ -3194,11 +3231,12 @@ package body Checks is
       Source_Typ : Entity_Id;
       Do_Static  : Boolean)
    is
-      Loc       : constant Source_Ptr := Sloc (Ck_Node);
       Checks_On : constant Boolean :=
                     not Index_Checks_Suppressed (Target_Typ)
                       or else
                     not Range_Checks_Suppressed (Target_Typ);
+
+      Loc : constant Source_Ptr := Sloc (Ck_Node);
 
       Cond     : Node_Id;
       R_Cno    : Node_Id;
@@ -3449,7 +3487,9 @@ package body Checks is
             if not Range_Checks_Suppressed (Target_Type)
               and then not Range_Checks_Suppressed (Expr_Type)
             then
-               if Float_To_Int then
+               if Float_To_Int
+                 and then not GNATprove_Mode
+               then
                   Apply_Float_Conversion_Check (Expr, Target_Type);
                else
                   Apply_Scalar_Range_Check
@@ -4688,11 +4728,39 @@ package body Checks is
 
             end case;
 
-         --  For type conversion from one discrete type to another, we can
-         --  refine the range using the converted value.
-
          when N_Type_Conversion =>
-            Determine_Range (Expression (N), OK1, Lor, Hir, Assume_Valid);
+
+            --  For type conversion from one discrete type to another, we can
+            --  refine the range using the converted value.
+
+            if Is_Discrete_Type (Etype (Expression (N))) then
+               Determine_Range (Expression (N), OK1, Lor, Hir, Assume_Valid);
+
+            --  When converting a float to an integer type, determine the range
+            --  in real first, and then convert the bounds using UR_To_Uint
+            --  which correctly rounds away from zero when half way between two
+            --  integers, as required by normal Ada 95 rounding semantics. It
+            --  is only possible because analysis in GNATprove rules out the
+            --  possibility of a NaN or infinite value.
+
+            elsif GNATprove_Mode
+              and then Is_Floating_Point_Type (Etype (Expression (N)))
+            then
+               declare
+                  Lor_Real, Hir_Real : Ureal;
+               begin
+                  Determine_Range_R (Expression (N), OK1, Lor_Real, Hir_Real,
+                                     Assume_Valid);
+
+                  if OK1 then
+                     Lor := UR_To_Uint (Lor_Real);
+                     Hir := UR_To_Uint (Hir_Real);
+                  end if;
+               end;
+
+            else
+               OK1 := False;
+            end if;
 
          --  Nothing special to do for all other expression kinds
 
@@ -5048,6 +5116,7 @@ package body Checks is
                   M2 : constant Ureal := Round_Machine (Lo_Left * Hi_Right);
                   M3 : constant Ureal := Round_Machine (Hi_Left * Lo_Right);
                   M4 : constant Ureal := Round_Machine (Hi_Left * Hi_Right);
+
                begin
                   Lor := UR_Min (UR_Min (M1, M2), UR_Min (M3, M4));
                   Hir := UR_Max (UR_Max (M1, M2), UR_Max (M3, M4));
@@ -5119,11 +5188,35 @@ package body Checks is
                end if;
             end if;
 
-         --  For type conversion from one floating-point type to another, we
-         --  can refine the range using the converted value.
-
          when N_Type_Conversion =>
-            Determine_Range_R (Expression (N), OK1, Lor, Hir, Assume_Valid);
+
+            --  For type conversion from one floating-point type to another, we
+            --  can refine the range using the converted value.
+
+            if Is_Floating_Point_Type (Etype (Expression (N))) then
+               Determine_Range_R (Expression (N), OK1, Lor, Hir, Assume_Valid);
+
+            --  When converting an integer to a floating-point type, determine
+            --  the range in integer first, and then convert the bounds.
+
+            elsif Is_Discrete_Type (Etype (Expression (N))) then
+               declare
+                  Hir_Int : Uint;
+                  Lor_Int : Uint;
+
+               begin
+                  Determine_Range
+                    (Expression (N), OK1, Lor_Int, Hir_Int, Assume_Valid);
+
+                  if OK1 then
+                     Lor := Round_Machine (UR_From_Uint (Lor_Int));
+                     Hir := Round_Machine (UR_From_Uint (Hir_Int));
+                  end if;
+               end;
+
+            else
+               OK1 := False;
+            end if;
 
          --  Nothing special to do for all other expression kinds
 
@@ -7066,13 +7159,14 @@ package body Checks is
       Flag_Node    : Node_Id    := Empty;
       Do_Before    : Boolean    := False)
    is
+      Checks_On  : constant Boolean :=
+                     not Index_Checks_Suppressed (Suppress_Typ)
+                       or else
+                     not Range_Checks_Suppressed (Suppress_Typ);
+
+      Check_Node           : Node_Id;
       Internal_Flag_Node   : Node_Id    := Flag_Node;
       Internal_Static_Sloc : Source_Ptr := Static_Sloc;
-
-      Check_Node : Node_Id;
-      Checks_On  : constant Boolean :=
-        (not Index_Checks_Suppressed (Suppress_Typ))
-         or else (not Range_Checks_Suppressed (Suppress_Typ));
 
    begin
       --  For now we just return if Checks_On is false, however this should be
@@ -7148,26 +7242,30 @@ package body Checks is
         or else Expr_Known_Valid (Expr)
       then
          return;
-      end if;
 
       --  Do not insert checks within a predicate function. This will arise
       --  if the current unit and the predicate function are being compiled
       --  with validity checks enabled.
 
-      if Present (Predicate_Function (Typ))
+      elsif Present (Predicate_Function (Typ))
         and then Current_Scope = Predicate_Function (Typ)
       then
          return;
-      end if;
 
       --  If the expression is a packed component of a modular type of the
       --  right size, the data is always valid.
 
-      if Nkind (Expr) = N_Selected_Component
+      elsif Nkind (Expr) = N_Selected_Component
         and then Present (Component_Clause (Entity (Selector_Name (Expr))))
         and then Is_Modular_Integer_Type (Typ)
         and then Modulus (Typ) = 2 ** Esize (Entity (Selector_Name (Expr)))
       then
+         return;
+
+      --  Do not generate a validity check when inside a generic unit as this
+      --  is an expansion activity.
+
+      elsif Inside_A_Generic then
          return;
       end if;
 
@@ -7180,50 +7278,93 @@ package body Checks is
          Exp := Expression (Exp);
       end loop;
 
+      --  Do not generate a check for a variable which already validates the
+      --  value of an assignable object.
+
+      if Is_Validation_Variable_Reference (Exp) then
+         return;
+      end if;
+
       --  We are about to insert the validity check for Exp. We save and
       --  reset the Do_Range_Check flag over this validity check, and then
       --  put it back for the final original reference (Exp may be rewritten).
 
       declare
          DRC : constant Boolean := Do_Range_Check (Exp);
-         PV  : Node_Id;
-         CE  : Node_Id;
+
+         CE     : Node_Id;
+         Obj    : Node_Id;
+         PV     : Node_Id;
+         Var_Id : Entity_Id;
 
       begin
          Set_Do_Range_Check (Exp, False);
 
-         --  Force evaluation to avoid multiple reads for atomic/volatile
+         --  If the expression denotes an assignable object, capture its value
+         --  in a variable and replace the original expression by the variable.
+         --  This approach has several effects:
 
-         --  Note: we set Name_Req to False. We used to set it to True, with
-         --  the thinking that a name is required as the prefix of the 'Valid
-         --  call, but in fact the check that the prefix of an attribute is
-         --  a name is in the parser, and we just don't require it here.
-         --  Moreover, when we set Name_Req to True, that interfered with the
-         --  checking for Volatile, since we couldn't just capture the value.
+         --    1) The evaluation of the object results in only one read in the
+         --       case where the object is atomic or volatile.
 
-         if Is_Entity_Name (Exp)
-           and then Is_Volatile (Entity (Exp))
-         then
-            --  Same reasoning as above for setting Name_Req to False
+         --         Var ... := Object;  --  read
 
-            Force_Evaluation (Exp, Name_Req => False);
+         --    2) The captured value is the one verified by attribute 'Valid.
+         --       As a result the object is not evaluated again, which would
+         --       result in an unwanted read in the case where the object is
+         --       atomic or volatile.
+
+         --         if not Var'Valid then     --  OK, no read of Object
+
+         --         if not Object'Valid then  --  Wrong, extra read of Object
+
+         --    3) The captured value replaces the original object reference.
+         --       As a result the object is not evaluated again, in the same
+         --       vein as 2).
+
+         --         ... Var ...     --  OK, no read of Object
+
+         --         ... Object ...  --  Wrong, extra read of Object
+
+         --    4) The use of a variable to capture the value of the object
+         --       allows the propagation of any changes back to the original
+         --       object.
+
+         --         procedure Call (Val : in out ...);
+
+         --         Var : ... := Object;   --  read Object
+         --         if not Var'Valid then  --  validity check
+         --         Call (Var);            --  modify Var
+         --         Object := Var;         --  update Object
+
+         if Is_Variable (Exp) then
+            Obj    := New_Copy_Tree (Exp);
+            Var_Id := Make_Temporary (Loc, 'T', Exp);
+
+            Insert_Action (Exp,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Var_Id,
+                Object_Definition   => New_Occurrence_Of (Typ, Loc),
+                Expression          => Relocate_Node (Exp)));
+            Set_Validated_Object (Var_Id, Obj);
+
+            Rewrite (Exp, New_Occurrence_Of (Var_Id, Loc));
+            PV := New_Occurrence_Of (Var_Id, Loc);
+
+         --  Otherwise the expression does not denote a variable. Force its
+         --  evaluation by capturing its value in a constant. Generate:
+
+         --    Temp : constant ... := Exp;
+
+         else
+            Force_Evaluation
+              (Exp           => Exp,
+               Related_Id    => Related_Id,
+               Is_Low_Bound  => Is_Low_Bound,
+               Is_High_Bound => Is_High_Bound);
+
+            PV := New_Copy_Tree (Exp);
          end if;
-
-         --  Build the prefix for the 'Valid call. If the expression denotes
-         --  a name, use a renaming to alias it, otherwise use a constant to
-         --  capture the value of the expression.
-
-         --    Temp : ... renames Expr;      --  reference to a name
-         --    Temp : constant ... := Expr;  --  all other cases
-
-         PV :=
-           Duplicate_Subexpr_No_Checks
-             (Exp           => Exp,
-              Name_Req      => False,
-              Renaming_Req  => Is_Name_Reference (Exp),
-              Related_Id    => Related_Id,
-              Is_Low_Bound  => Is_Low_Bound,
-              Is_High_Bound => Is_High_Bound);
 
          --  A rather specialized test. If PV is an analyzed expression which
          --  is an indexed component of a packed array that has not been

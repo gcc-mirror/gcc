@@ -181,7 +181,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     typedef const directory_entry& reference;
     typedef input_iterator_tag     iterator_category;
 
-    directory_iterator() noexcept = default;
+    directory_iterator() = default;
 
     explicit
     directory_iterator(const path& __p)
@@ -262,7 +262,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     typedef const directory_entry& reference;
     typedef input_iterator_tag     iterator_category;
 
-    recursive_directory_iterator() noexcept = default;
+    recursive_directory_iterator() = default;
 
     explicit
     recursive_directory_iterator(const path& __p)
@@ -282,8 +282,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     recursive_directory_iterator(
         const recursive_directory_iterator&) = default;
 
-    recursive_directory_iterator(
-        recursive_directory_iterator&&) noexcept = default;
+    recursive_directory_iterator(recursive_directory_iterator&&) = default;
 
     ~recursive_directory_iterator();
 

@@ -1852,6 +1852,42 @@ prohibited_class_reg_set_mode_p (enum reg_class rclass,
 	  (temp, ira_prohibited_class_mode_regs[rclass][mode]));
 }
 
+
+/* Used to check validity info about small class input operands.  It
+   should be incremented at start of processing an insn
+   alternative.  */
+static unsigned int curr_small_class_check = 0;
+
+/* Update number of used inputs of class OP_CLASS for operand NOP.
+   Return true if we have more such class operands than the number of
+   available regs.  */
+static bool
+update_and_check_small_class_inputs (int nop, enum reg_class op_class)
+{
+  static unsigned int small_class_check[LIM_REG_CLASSES];
+  static int small_class_input_nums[LIM_REG_CLASSES];
+  
+  if (SMALL_REGISTER_CLASS_P (op_class)
+      /* We are interesting in classes became small because of fixing
+	 some hard regs, e.g. by an user through GCC options.  */
+      && hard_reg_set_intersect_p (reg_class_contents[op_class],
+				   ira_no_alloc_regs)
+      && (curr_static_id->operand[nop].type != OP_OUT
+	  || curr_static_id->operand[nop].early_clobber))
+    {
+      if (small_class_check[op_class] == curr_small_class_check)
+	small_class_input_nums[op_class]++;
+      else
+	{
+	  small_class_check[op_class] = curr_small_class_check;
+	  small_class_input_nums[op_class] = 1;
+	}
+      if (small_class_input_nums[op_class] > ira_class_hard_regs_num[op_class])
+	return true;
+    }
+  return false;
+}
+
 /* Major function to choose the current insn alternative and what
    operands should be reloaded and how.	 If ONLY_ALTERNATIVE is not
    negative we should consider only this alternative.  Return false if
@@ -1952,6 +1988,7 @@ process_alt_operands (int only_alternative)
       if (!TEST_BIT (preferred, nalt))
 	continue;
 
+      curr_small_class_check++;
       overall = losers = addr_losers = 0;
       static_reject = reject = reload_nregs = reload_sum = 0;
       for (nop = 0; nop < n_operands; nop++)
@@ -2685,6 +2722,23 @@ process_alt_operands (int only_alternative)
 		    }
 		}
 
+	      /* When we use an operand requiring memory in given
+		 alternative, the insn should write *and* read the
+		 value to/from memory it is costly in comparison with
+		 an insn alternative which does not use memory
+		 (e.g. register or immediate operand).  We exclude
+		 memory operand for such case as we can satisfy the
+		 memory constraints by reloading address.  */
+	      if (no_regs_p && offmemok && !MEM_P (op))
+		{
+		  if (lra_dump_file != NULL)
+		    fprintf
+		      (lra_dump_file,
+		       "            Using memory insn operand %d: reject+=3\n",
+		       nop);
+		  reject += 3;
+		}
+	      
 #ifdef SECONDARY_MEMORY_NEEDED
 	      /* If reload requires moving value through secondary
 		 memory, it will need one more insn at least.  */
@@ -2747,6 +2801,14 @@ process_alt_operands (int only_alternative)
               goto fail;
             }
 
+	  if (update_and_check_small_class_inputs (nop, this_alternative))
+	    {
+	      if (lra_dump_file != NULL)
+		fprintf (lra_dump_file,
+			 "            alt=%d, not enough small class regs -- refuse\n",
+			 nalt);
+	      goto fail;
+	    }
 	  curr_alt[nop] = this_alternative;
 	  COPY_HARD_REG_SET (curr_alt_set[nop], this_alternative_set);
 	  curr_alt_win[nop] = this_alternative_win;

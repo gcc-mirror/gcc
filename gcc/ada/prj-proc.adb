@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -185,7 +185,7 @@ package body Prj.Proc is
    --  encapsulated library dependencies.
    --
    --  If specified, On_New_Tree_Loaded is called after each aggregated project
-   --  has been processed succesfully.
+   --  has been processed successfully.
 
    function Get_Attribute_Index
      (Tree  : Project_Node_Tree_Ref;

@@ -2077,6 +2077,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case COND_EXPR:
+    case VEC_COND_EXPR:
       pp_cxx_left_paren (pp);
       dump_expr (pp, TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
       pp_string (pp, " ? ");
@@ -2816,6 +2817,10 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 
     case PLACEHOLDER_EXPR:
       pp_string (pp, M_("*this"));
+      break;
+
+    case TREE_LIST:
+      dump_expr_list (pp, t, flags);
       break;
 
       /*  This list is incomplete, but should suffice for now.

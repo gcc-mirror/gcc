@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,26 +70,26 @@ package body Sem_Elab is
       Ent  : Entity_Id;
    end record;
 
-   package Elab_Call is new Table.Table (
-     Table_Component_Type => Elab_Call_Entry,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 1,
-     Table_Initial        => 50,
-     Table_Increment      => 100,
-     Table_Name           => "Elab_Call");
+   package Elab_Call is new Table.Table
+     (Table_Component_Type => Elab_Call_Entry,
+      Table_Index_Type     => Int,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 50,
+      Table_Increment      => 100,
+      Table_Name           => "Elab_Call");
 
    --  This table is initialized at the start of each outer level call. It
    --  holds the entities for all subprograms that have been examined for this
    --  particular outer level call, and is used to prevent both infinite
    --  recursion, and useless reanalysis of bodies already seen
 
-   package Elab_Visited is new Table.Table (
-     Table_Component_Type => Entity_Id,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 1,
-     Table_Initial        => 200,
-     Table_Increment      => 100,
-     Table_Name           => "Elab_Visited");
+   package Elab_Visited is new Table.Table
+     (Table_Component_Type => Entity_Id,
+      Table_Index_Type     => Int,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 200,
+      Table_Increment      => 100,
+      Table_Name           => "Elab_Visited");
 
    --  This table stores calls to Check_Internal_Call that are delayed until
    --  all generics are instantiated and in particular until after all generic
@@ -112,23 +112,29 @@ package body Sem_Elab is
       --  The current scope of the call. This is restored when we complete the
       --  delayed call, so that we do this in the right scope.
 
-      From_SPARK_Code : Boolean;
-      --  Save indication of whether this call is under SPARK_Mode => On
+      Outer_Scope : Entity_Id;
+      --  Save scope of outer level call
 
       From_Elab_Code : Boolean;
       --  Save indication of whether this call is from elaboration code
 
-      Outer_Scope : Entity_Id;
-      --  Save scope of outer level call
+      In_Task_Activation : Boolean;
+      --  Save indication of whether this call is from a task body. Tasks are
+      --  activated at the "begin", which is after all local procedure bodies,
+      --  so calls to those procedures can't fail, even if they occur after the
+      --  task body.
+
+      From_SPARK_Code : Boolean;
+      --  Save indication of whether this call is under SPARK_Mode => On
    end record;
 
-   package Delay_Check is new Table.Table (
-     Table_Component_Type => Delay_Element,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 1,
-     Table_Initial        => 1000,
-     Table_Increment      => 100,
-     Table_Name           => "Delay_Check");
+   package Delay_Check is new Table.Table
+     (Table_Component_Type => Delay_Element,
+      Table_Index_Type     => Int,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 1000,
+      Table_Increment      => 100,
+      Table_Name           => "Delay_Check");
 
    C_Scope : Entity_Id;
    --  Top-level scope of current scope. Compute this only once at the outer
@@ -145,10 +151,12 @@ package body Sem_Elab is
    --  routines in other units if this flag is True.
 
    In_Task_Activation : Boolean := False;
-   --  This flag indicates whether we are performing elaboration checks on
-   --  task procedures, at the point of activation. If true, we do not trace
-   --  internal calls in these procedures, because all local bodies are known
-   --  to be elaborated.
+   --  This flag indicates whether we are performing elaboration checks on task
+   --  bodies, at the point of activation. If true, we do not raise
+   --  Program_Error for calls to local procedures, because all local bodies
+   --  are known to be elaborated. However, we still need to trace such calls,
+   --  because a local procedure could call a procedure in another package,
+   --  so we might need an implicit Elaborate_All.
 
    Delaying_Elab_Checks : Boolean := True;
    --  This is set True till the compilation is complete, including the
@@ -242,7 +250,7 @@ package body Sem_Elab is
       Orig_Ent    : Entity_Id);
    --  The processing for Check_Internal_Call is divided up into two phases,
    --  and this represents the second phase. The second phase is delayed if
-   --  Delaying_Elab_Calls is set to True. In this delayed case, the first
+   --  Delaying_Elab_Checks is set to True. In this delayed case, the first
    --  phase makes an entry in the Delay_Check table, which is processed when
    --  Check_Elab_Calls is called. N, E and Orig_Ent are as for the call to
    --  Check_Internal_Call. Outer_Scope is the outer level scope for the
@@ -629,7 +637,18 @@ package body Sem_Elab is
          return W_Scope;
       end Find_W_Scope;
 
-      --  Locals
+      --  Local variables
+
+      Inst_Case : constant Boolean := Nkind (N) in N_Generic_Instantiation;
+      --  Indicates if we have instantiation case
+
+      Loc : constant Source_Ptr := Sloc (N);
+
+      SPARK_Elab_Errors : constant Boolean :=
+                            SPARK_Mode = On
+                              and then Dynamic_Elaboration_Checks;
+      --  Flag set when an entity is called or a variable is read during SPARK
+      --  dynamic elaboration.
 
       Variable_Case : constant Boolean :=
                         Nkind (N) in N_Has_Entity
@@ -637,10 +656,17 @@ package body Sem_Elab is
                           and then Ekind (Entity (N)) = E_Variable;
       --  Indicates if we have variable reference case
 
-      Loc : constant Source_Ptr := Sloc (N);
-
-      Inst_Case : constant Boolean := Nkind (N) in N_Generic_Instantiation;
-      --  Indicates if we have instantiation case
+      W_Scope : constant Entity_Id := Find_W_Scope;
+      --  Top-level scope of directly called entity for subprogram. This
+      --  differs from E_Scope in the case where renamings or derivations
+      --  are involved, since it does not follow these links. W_Scope is
+      --  generally in a visible unit, and it is this scope that may require
+      --  an Elaborate_All. However, there are some cases (initialization
+      --  calls and calls involving object notation) where W_Scope might not
+      --  be in the context of the current unit, and there is an intermediate
+      --  package that is, in which case the Elaborate_All has to be placed
+      --  on this intermediate package. These special cases are handled in
+      --  Set_Elaboration_Constraint.
 
       Ent                  : Entity_Id;
       Callee_Unit_Internal : Boolean;
@@ -666,26 +692,6 @@ package body Sem_Elab is
       --  following renamings and derivations, so this scope can be in a
       --  non-visible unit. This is the scope that is to be investigated to
       --  see whether an elaboration check is required.
-
-      Is_DIC_Proc : Boolean := False;
-      --  Flag set when the call denotes the Default_Initial_Condition
-      --  procedure of a private type that wraps a nontrivial assertion
-      --  expression.
-
-      Issue_In_SPARK : Boolean;
-      --  Flag set when a source entity is called during elaboration in SPARK
-
-      W_Scope : constant Entity_Id := Find_W_Scope;
-      --  Top-level scope of directly called entity for subprogram. This
-      --  differs from E_Scope in the case where renamings or derivations
-      --  are involved, since it does not follow these links. W_Scope is
-      --  generally in a visible unit, and it is this scope that may require
-      --  an Elaborate_All. However, there are some cases (initialization
-      --  calls and calls involving object notation) where W_Scope might not
-      --  be in the context of the current unit, and there is an intermediate
-      --  package that is, in which case the Elaborate_All has to be placed
-      --  on this intermediate package. These special cases are handled in
-      --  Set_Elaboration_Constraint.
 
    --  Start of processing for Check_A_Call
 
@@ -1019,33 +1025,19 @@ package body Sem_Elab is
          return;
       end if;
 
-      Is_DIC_Proc := Is_Nontrivial_DIC_Procedure (Ent);
-
-      --  Elaboration issues in SPARK are reported only for source constructs
-      --  and for nontrivial Default_Initial_Condition procedures. The latter
-      --  must be checked because the default initialization of an object of a
-      --  private type triggers the evaluation of the Default_Initial_Condition
-      --  expression, which in turn may have side effects.
-
-      Issue_In_SPARK :=
-        SPARK_Mode = On
-          and then Dynamic_Elaboration_Checks
-          and then (Comes_From_Source (Ent) or Is_DIC_Proc);
-
       --  Now check if an Elaborate_All (or dynamic check) is needed
 
-      if not Suppress_Elaboration_Warnings (Ent)
+      if (Elab_Info_Messages or Elab_Warnings or SPARK_Elab_Errors)
+        and then Generate_Warnings
+        and then not Suppress_Elaboration_Warnings (Ent)
         and then not Elaboration_Checks_Suppressed (Ent)
         and then not Suppress_Elaboration_Warnings (E_Scope)
         and then not Elaboration_Checks_Suppressed (E_Scope)
-        and then ((Elab_Warnings or Elab_Info_Messages)
-                    or else SPARK_Mode = On)
-        and then Generate_Warnings
       then
          --  Instantiation case
 
          if Inst_Case then
-            if Issue_In_SPARK then
+            if Comes_From_Source (Ent) and then SPARK_Elab_Errors then
                Error_Msg_NE
                  ("instantiation of & during elaboration in SPARK", N, Ent);
             else
@@ -1063,9 +1055,11 @@ package body Sem_Elab is
 
          --  Variable reference in SPARK mode
 
-         elsif Variable_Case and Issue_In_SPARK then
-            Error_Msg_NE
-              ("reference to & during elaboration in SPARK", N, Ent);
+         elsif Variable_Case then
+            if Comes_From_Source (Ent) and then SPARK_Elab_Errors then
+               Error_Msg_NE
+                 ("reference to & during elaboration in SPARK", N, Ent);
+            end if;
 
          --  Subprogram call case
 
@@ -1079,14 +1073,14 @@ package body Sem_Elab is
                   "info: implicit call to & during elaboration?$?",
                   Ent);
 
-            elsif Issue_In_SPARK then
+            elsif SPARK_Elab_Errors then
 
                --  Emit a specialized error message when the elaboration of an
                --  object of a private type evaluates the expression of pragma
                --  Default_Initial_Condition. This prevents the internal name
                --  of the procedure from appearing in the error message.
 
-               if Is_DIC_Proc then
+               if Is_Nontrivial_DIC_Procedure (Ent) then
                   Error_Msg_N
                     ("call to Default_Initial_Condition during elaboration in "
                      & "SPARK", N);
@@ -1108,7 +1102,7 @@ package body Sem_Elab is
          --  Case of Elaborate_All not present and required, for SPARK this
          --  is an error, so give an error message.
 
-         if Issue_In_SPARK then
+         if SPARK_Elab_Errors then
             Error_Msg_NE -- CODEFIX
               ("\Elaborate_All pragma required for&", N, W_Scope);
 
@@ -1943,8 +1937,11 @@ package body Sem_Elab is
    -- Check_Elab_Calls --
    ----------------------
 
+   --  WARNING: This routine manages SPARK regions
+
    procedure Check_Elab_Calls is
-      Save_SPARK_Mode : SPARK_Mode_Type;
+      Saved_SM  : SPARK_Mode_Type;
+      Saved_SMP : Node_Id;
 
    begin
       --  If expansion is disabled, do not generate any checks, unless we
@@ -1970,22 +1967,24 @@ package body Sem_Elab is
          for J in Delay_Check.First .. Delay_Check.Last loop
             Push_Scope (Delay_Check.Table (J).Curscop);
             From_Elab_Code := Delay_Check.Table (J).From_Elab_Code;
+            In_Task_Activation := Delay_Check.Table (J).In_Task_Activation;
+
+            Saved_SM  := SPARK_Mode;
+            Saved_SMP := SPARK_Mode_Pragma;
 
             --  Set appropriate value of SPARK_Mode
-
-            Save_SPARK_Mode := SPARK_Mode;
 
             if Delay_Check.Table (J).From_SPARK_Code then
                SPARK_Mode := On;
             end if;
 
-            Check_Internal_Call_Continue (
-              N           => Delay_Check.Table (J).N,
-              E           => Delay_Check.Table (J).E,
-              Outer_Scope => Delay_Check.Table (J).Outer_Scope,
-              Orig_Ent    => Delay_Check.Table (J).Orig_Ent);
+            Check_Internal_Call_Continue
+              (N           => Delay_Check.Table (J).N,
+               E           => Delay_Check.Table (J).E,
+               Outer_Scope => Delay_Check.Table (J).Outer_Scope,
+               Orig_Ent    => Delay_Check.Table (J).Orig_Ent);
 
-            SPARK_Mode := Save_SPARK_Mode;
+            Restore_SPARK_Mode (Saved_SM, Saved_SMP);
             Pop_Scope;
          end loop;
 
@@ -2215,12 +2214,6 @@ package body Sem_Elab is
       elsif Is_Intrinsic_Subprogram (E) then
          return;
 
-      --  No need to trace local calls if checking task activation, because
-      --  other local bodies are elaborated already.
-
-      elsif In_Task_Activation then
-         return;
-
       --  Nothing to do if call is within a generic unit
 
       elsif Inside_A_Generic then
@@ -2238,14 +2231,15 @@ package body Sem_Elab is
       --  Delay this call if we are still delaying calls
 
       if Delaying_Elab_Checks then
-         Delay_Check.Append (
-           (N               => N,
-            E               => E,
-            Orig_Ent        => Orig_Ent,
-            Curscop         => Current_Scope,
-            Outer_Scope     => Outer_Scope,
-            From_Elab_Code  => From_Elab_Code,
-            From_SPARK_Code => SPARK_Mode = On));
+         Delay_Check.Append
+           ((N                  => N,
+             E                  => E,
+             Orig_Ent           => Orig_Ent,
+             Curscop            => Current_Scope,
+             Outer_Scope        => Outer_Scope,
+             From_Elab_Code     => From_Elab_Code,
+             In_Task_Activation => In_Task_Activation,
+             From_SPARK_Code    => SPARK_Mode = On));
          return;
 
       --  Otherwise, call phase 2 continuation right now
@@ -2534,7 +2528,10 @@ package body Sem_Elab is
             --  inserted.
 
          begin
-            if Inst_Case then
+            if In_Task_Activation then
+               Insert_Check := False;
+
+            elsif Inst_Case then
                Error_Msg_NE
                  ("cannot instantiate& before body seen<<", N, Orig_Ent);
 

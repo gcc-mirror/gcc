@@ -451,7 +451,8 @@ maybe_trim_memstar_call (ao_ref *ref, sbitmap live, gimple *stmt)
 static void
 maybe_trim_partially_dead_store (ao_ref *ref, sbitmap live, gimple *stmt)
 {
-  if (is_gimple_assign (stmt))
+  if (is_gimple_assign (stmt)
+      && TREE_CODE (gimple_assign_lhs (stmt)) != TARGET_MEM_REF)
     {
       switch (gimple_assign_rhs_code (stmt))
 	{

@@ -107,7 +107,7 @@ package body Debug is
    --  d.n  Print source file names
    --  d.o  Conservative elaboration order for indirect calls
    --  d.p  Use original Ada 95 semantics for Bit_Order (disable AI95-0133)
-   --  d.q
+   --  d.q  Suppress optimizations on imported 'in'
    --  d.r  Enable OK_To_Reorder_Components in non-variant records
    --  d.s
    --  d.t  Disable static allocation of library level dispatch tables
@@ -127,7 +127,7 @@ package body Debug is
    --  d.G  Ignore calls through generic formal parameters for elaboration
    --  d.H  GNSA mode for ASIS
    --  d.I  Do not ignore enum representation clauses in CodePeer mode
-   --  d.J
+   --  d.J  Relaxed rules for pragma No_Return
    --  d.K  Enable generation of contract-only procedures in CodePeer mode
    --  d.L  Depend on back end for limited types in if and case expressions
    --  d.M  Relaxed RM semantics
@@ -160,7 +160,7 @@ package body Debug is
    --  d.3  Output debugging information from Exp_Unst
    --  d.4  Do not delete generated C file in case of errors
    --  d.5  Do not generate imported subprogram definitions in C code
-   --  d.6  Do not avoid declaring unreferenced itypes in C code
+   --  d.6  Do not avoid declaring unreferenced types in C code
    --  d.7
    --  d.8
    --  d.9
@@ -562,6 +562,13 @@ package body Debug is
    --       interpretation of component clauses crossing byte boundaries when
    --       using the non-default bit order (i.e. ignore AI95-0133).
 
+   --  d.q  If an array variable or constant is not modified in Ada code, and
+   --       is passed to an 'in' parameter of a foreign-convention subprogram,
+   --       and that subprogram modifies the array, the Ada compiler normally
+   --       assumes that the array is not modified. This option suppresses such
+   --       optimizations. This option should not be used; the correct solution
+   --       is to declare the parameter 'in out'.
+
    --  d.r  Forces the flag OK_To_Reorder_Components to be set in all record
    --       base types that have no discriminants.
 
@@ -644,6 +651,11 @@ package body Debug is
    --       types in CodePeer is good for the majority of Ada code, but in some
    --       cases being able to change this default might be useful to remove
    --       some false positives.
+
+   --  d.J  Relaxed rules for pragma No_Return. A pragma No_Return is illegal
+   --       if it applies to a body. This switch disables the legality check
+   --       for that. If the procedure does in fact return normally, execution
+   --       is erroneous, and therefore unpredictable.
 
    --  d.K  Enable generation of contract-only procedures in CodePeer mode and
    --       report a warning on subprograms for which the contract-only body
@@ -781,9 +793,9 @@ package body Debug is
    --       This debug flag disables this generation when generating C code,
    --       assuming a proper #include will be used instead.
 
-   --  d.6  By default the C back-end avoids declaring itypes that are not
+   --  d.6  By default the C back-end avoids declaring types that are not
    --       referenced by the generated C code. This debug flag restores the
-   --       output of all the itypes.
+   --       output of all the types.
 
    ------------------------------------------
    -- Documentation for Binder Debug Flags --
@@ -821,8 +833,8 @@ package body Debug is
    --      prefer specs with no bodies to specs with bodies, and between two
    --      specs with bodies, prefers the one whose body is closer to being
    --      able to be elaborated. This is a clear improvement, but we provide
-   --      this debug flag in case of regressions. Note: -do is even older than
-   --      -dp.
+   --      this debug flag in case of regressions. Note: -gnatdo is even older
+   --      than -gnatdp.
 
    --  dp  Use old elaboration order preference. The new preference rules
    --      elaborate all units within a strongly connected component together,

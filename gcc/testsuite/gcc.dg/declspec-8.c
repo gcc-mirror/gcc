@@ -13,10 +13,10 @@
    6.9#2).  */
 
 static static struct s; /* { dg-error "duplicate 'static'" } */
-/* { dg-warning "useless storage class specifier in empty declaration" "static static" { target *-*-* } 15 } */
+/* { dg-warning "useless storage class specifier in empty declaration" "static static" { target *-*-* } .-1 } */
 
 static extern struct t; /* { dg-error "multiple storage classes in declaration specifiers" } */
-/* { dg-warning "useless storage class specifier in empty declaration" "static extern" { target *-*-* } 18 } */
+/* { dg-warning "useless storage class specifier in empty declaration" "static extern" { target *-*-* } .-1 } */
 
 inline union u; /* { dg-error "'inline' in empty declaration" } */
 

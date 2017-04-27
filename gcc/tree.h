@@ -2040,6 +2040,13 @@ extern machine_mode element_mode (const_tree t);
 #define TYPE_NONALIASED_COMPONENT(NODE) \
   (ARRAY_TYPE_CHECK (NODE)->type_common.transparent_aggr_flag)
 
+/* For an ARRAY_TYPE, a RECORD_TYPE, a UNION_TYPE or a QUAL_UNION_TYPE
+   whether the array is typeless storage or the type contains a member
+   with this flag set.  Such types are excempt from type-based alias
+   analysis.  */
+#define TYPE_TYPELESS_STORAGE(NODE) \
+  (TREE_CHECK4 (NODE, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE, ARRAY_TYPE)->type_common.typeless_storage)
+
 /* Indicated that objects of this type should be laid out in as
    compact a way as possible.  */
 #define TYPE_PACKED(NODE) (TYPE_CHECK (NODE)->base.u.bits.packed_flag)
@@ -4081,7 +4088,7 @@ extern tree build_truth_vector_type (unsigned, unsigned);
 extern tree build_same_sized_truth_vector_type (tree vectype);
 extern tree build_opaque_vector_type (tree innertype, int nunits);
 extern tree build_index_type (tree);
-extern tree build_array_type (tree, tree);
+extern tree build_array_type (tree, tree, bool = false);
 extern tree build_nonshared_array_type (tree, tree);
 extern tree build_array_type_nelts (tree, unsigned HOST_WIDE_INT);
 extern tree build_function_type (tree, tree);
@@ -4272,7 +4279,7 @@ extern tree get_qualified_type (tree, int);
 /* Like get_qualified_type, but creates the type if it does not
    exist.  This function never returns NULL_TREE.  */
 
-extern tree build_qualified_type (tree, int);
+extern tree build_qualified_type (tree, int CXX_MEM_STAT_INFO);
 
 /* Create a variant of type T with alignment ALIGN.  */
 
@@ -4290,8 +4297,8 @@ extern tree build_aligned_type (tree, unsigned int);
 
 /* Make a copy of a type node.  */
 
-extern tree build_distinct_type_copy (tree);
-extern tree build_variant_type_copy (tree);
+extern tree build_distinct_type_copy (tree CXX_MEM_STAT_INFO);
+extern tree build_variant_type_copy (tree CXX_MEM_STAT_INFO);
 
 /* Given a hashcode and a ..._TYPE node (for which the hashcode was made),
    return a canonicalized ..._TYPE node, so that duplicates are not made.
@@ -4698,12 +4705,12 @@ inlined_function_outer_scope_p (const_tree block)
 /* In tree.c */
 extern unsigned crc32_unsigned_n (unsigned, unsigned, unsigned);
 extern unsigned crc32_string (unsigned, const char *);
-static inline unsigned
+inline unsigned
 crc32_unsigned (unsigned chksum, unsigned value)
 {
   return crc32_unsigned_n (chksum, value, 4);
 }
-static inline unsigned
+inline unsigned
 crc32_byte (unsigned chksum, char byte)
 {
   return crc32_unsigned_n (chksum, byte, 1);

@@ -1335,6 +1335,7 @@ static void rs6000_print_isa_options (FILE *, int, const char *,
 				      HOST_WIDE_INT);
 static void rs6000_print_builtin_options (FILE *, int, const char *,
 					  HOST_WIDE_INT);
+static HOST_WIDE_INT rs6000_disable_incompatible_switches (void);
 
 static enum rs6000_reg_type register_to_reg_type (rtx, bool *);
 static bool rs6000_secondary_reload_move (enum rs6000_reg_type,
@@ -3902,6 +3903,7 @@ rs6000_option_override_internal (bool global_init_p)
   const char *implicit_cpu = OPTION_TARGET_CPU_DEFAULT;
 
   HOST_WIDE_INT set_masks;
+  HOST_WIDE_INT ignore_masks;
   int cpu_index;
   int tune_index;
   struct cl_target_option *main_target_opt
@@ -3967,7 +3969,8 @@ rs6000_option_override_internal (bool global_init_p)
 #endif
 #ifdef OS_MISSING_ALTIVEC
   if (OS_MISSING_ALTIVEC)
-    set_masks &= ~(OPTION_MASK_ALTIVEC | OPTION_MASK_VSX);
+    set_masks &= ~(OPTION_MASK_ALTIVEC | OPTION_MASK_VSX
+		   | OTHER_VSX_VECTOR_MASKS);
 #endif
 
   /* Don't override by the processor default if given explicitly.  */
@@ -4270,27 +4273,62 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
     rs6000_print_isa_options (stderr, 0, "before defaults", rs6000_isa_flags);
 
+  /* Handle explicit -mno-{altivec,vsx,power8-vector,power9-vector} and turn
+     off all of the options that depend on those flags.  */
+  ignore_masks = rs6000_disable_incompatible_switches ();
+
   /* For the newer switches (vsx, dfp, etc.) set some of the older options,
      unless the user explicitly used the -mno-<option> to disable the code.  */
   if (TARGET_P9_VECTOR || TARGET_MODULO || TARGET_P9_DFORM_SCALAR
-      || TARGET_P9_DFORM_VECTOR || TARGET_P9_DFORM_BOTH > 0 || TARGET_P9_MINMAX)
-    rs6000_isa_flags |= (ISA_3_0_MASKS_SERVER & ~rs6000_isa_flags_explicit);
+      || TARGET_P9_DFORM_VECTOR || TARGET_P9_DFORM_BOTH > 0)
+    rs6000_isa_flags |= (ISA_3_0_MASKS_SERVER & ~ignore_masks);
+  else if (TARGET_P9_MINMAX)
+    {
+      if (have_cpu)
+	{
+	  if (cpu_index == PROCESSOR_POWER9)
+	    {
+	      /* legacy behavior: allow -mcpu-power9 with certain
+		 capabilities explicitly disabled.  */
+	      rs6000_isa_flags |= (ISA_3_0_MASKS_SERVER & ~ignore_masks);
+	      /* However, reject this automatic fix if certain
+		 capabilities required for TARGET_P9_MINMAX support
+		 have been explicitly disabled.  */
+	      if (((OPTION_MASK_VSX | OPTION_MASK_UPPER_REGS_SF
+		    | OPTION_MASK_UPPER_REGS_DF) & rs6000_isa_flags)
+		  != (OPTION_MASK_VSX | OPTION_MASK_UPPER_REGS_SF
+		      | OPTION_MASK_UPPER_REGS_DF))
+		error ("-mpower9-minmax incompatible with explicitly disabled options");
+		}
+	  else
+	    error ("Power9 target option is incompatible with -mcpu=<xxx> for "
+		   "<xxx> less than power9");
+	}
+      else if ((ISA_3_0_MASKS_SERVER & rs6000_isa_flags_explicit)
+	       != (ISA_3_0_MASKS_SERVER & rs6000_isa_flags
+		   & rs6000_isa_flags_explicit))
+	/* Enforce that none of the ISA_3_0_MASKS_SERVER flags
+	   were explicitly cleared.  */
+	error ("-mpower9-minmax incompatible with explicitly disabled options");
+      else
+	rs6000_isa_flags |= ISA_3_0_MASKS_SERVER;
+    }
   else if (TARGET_P8_VECTOR || TARGET_DIRECT_MOVE || TARGET_CRYPTO)
-    rs6000_isa_flags |= (ISA_2_7_MASKS_SERVER & ~rs6000_isa_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_7_MASKS_SERVER & ~ignore_masks);
   else if (TARGET_VSX)
-    rs6000_isa_flags |= (ISA_2_6_MASKS_SERVER & ~rs6000_isa_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_6_MASKS_SERVER & ~ignore_masks);
   else if (TARGET_POPCNTD)
-    rs6000_isa_flags |= (ISA_2_6_MASKS_EMBEDDED & ~rs6000_isa_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_6_MASKS_EMBEDDED & ~ignore_masks);
   else if (TARGET_DFP)
-    rs6000_isa_flags |= (ISA_2_5_MASKS_SERVER & ~rs6000_isa_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_5_MASKS_SERVER & ~ignore_masks);
   else if (TARGET_CMPB)
-    rs6000_isa_flags |= (ISA_2_5_MASKS_EMBEDDED & ~rs6000_isa_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_5_MASKS_EMBEDDED & ~ignore_masks);
   else if (TARGET_FPRND)
-    rs6000_isa_flags |= (ISA_2_4_MASKS & ~rs6000_isa_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_4_MASKS & ~ignore_masks);
   else if (TARGET_POPCNTB)
-    rs6000_isa_flags |= (ISA_2_2_MASKS & ~rs6000_isa_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_2_MASKS & ~ignore_masks);
   else if (TARGET_ALTIVEC)
-    rs6000_isa_flags |= (OPTION_MASK_PPC_GFXOPT & ~rs6000_isa_flags_explicit);
+    rs6000_isa_flags |= (OPTION_MASK_PPC_GFXOPT & ~ignore_masks);
 
   if (TARGET_CRYPTO && !TARGET_ALTIVEC)
     {
@@ -7562,12 +7600,8 @@ rs6000_expand_vector_extract (rtx target, rtx vec, rtx elt)
 	  return;
 
 	case V4SFmode:
-	  if (TARGET_UPPER_REGS_SF)
-	    {
-	      emit_insn (gen_vsx_extract_v4sf_var (target, vec, elt));
-	      return;
-	    }
-	  break;
+	  emit_insn (gen_vsx_extract_v4sf_var (target, vec, elt));
+	  return;
 
 	case V4SImode:
 	  emit_insn (gen_vsx_extract_v4si_var (target, vec, elt));
@@ -14550,7 +14584,7 @@ rs6000_expand_unop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || INTVAL (op0) < -16)
 	{
 	  error ("argument 1 must be a 5-bit signed literal");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
 
@@ -14653,7 +14687,7 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || TREE_INT_CST_LOW (arg1) & ~0x1f)
 	{
 	  error ("argument 2 must be a 5-bit unsigned literal");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
   else if (icode == CODE_FOR_dfptstsfi_eq_dd
@@ -15579,13 +15613,18 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || TREE_INT_CST_LOW (arg2) & ~0xf)
 	{
 	  error ("argument 3 must be a 4-bit unsigned literal");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
   else if (icode == CODE_FOR_vsx_xxpermdi_v2df
            || icode == CODE_FOR_vsx_xxpermdi_v2di
            || icode == CODE_FOR_vsx_xxpermdi_v2df_be
            || icode == CODE_FOR_vsx_xxpermdi_v2di_be
+           || icode == CODE_FOR_vsx_xxpermdi_v1ti
+           || icode == CODE_FOR_vsx_xxpermdi_v4sf
+           || icode == CODE_FOR_vsx_xxpermdi_v4si
+           || icode == CODE_FOR_vsx_xxpermdi_v8hi
+           || icode == CODE_FOR_vsx_xxpermdi_v16qi
            || icode == CODE_FOR_vsx_xxsldwi_v16qi
            || icode == CODE_FOR_vsx_xxsldwi_v8hi
            || icode == CODE_FOR_vsx_xxsldwi_v4si
@@ -15599,7 +15638,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || TREE_INT_CST_LOW (arg2) & ~0x3)
 	{
 	  error ("argument 3 must be a 2-bit unsigned literal");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
   else if (icode == CODE_FOR_vsx_set_v2df
@@ -15619,7 +15658,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || TREE_INT_CST_LOW (arg2) & ~0x1)
 	{
 	  error ("argument 3 must be a 1-bit unsigned literal");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
   else if (icode == CODE_FOR_dfp_ddedpd_dd
@@ -15631,7 +15670,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || TREE_INT_CST_LOW (arg2) & ~0x3)
 	{
 	  error ("argument 1 must be 0 or 2");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
   else if (icode == CODE_FOR_dfp_denbcd_dd
@@ -15643,7 +15682,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || TREE_INT_CST_LOW (arg0) & ~0x1)
 	{
 	  error ("argument 1 must be a 1-bit unsigned literal");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
   else if (icode == CODE_FOR_dfp_dscli_dd
@@ -15657,7 +15696,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || TREE_INT_CST_LOW (arg1) & ~0x3f)
 	{
 	  error ("argument 2 must be a 6-bit unsigned literal");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
   else if (icode == CODE_FOR_crypto_vshasigmaw
@@ -15669,14 +15708,14 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
       if (TREE_CODE (arg1) != INTEGER_CST || wi::geu_p (arg1, 2))
 	{
 	  error ("argument 2 must be 0 or 1");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
 
       STRIP_NOPS (arg2);
-      if (TREE_CODE (arg2) != INTEGER_CST || wi::geu_p (arg1, 16))
+      if (TREE_CODE (arg2) != INTEGER_CST || wi::geu_p (arg2, 16))
 	{
 	  error ("argument 3 must be in the range 0..15");
-	  return const0_rtx;
+	  return CONST0_RTX (tmode);
 	}
     }
 
@@ -17257,6 +17296,22 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   gcc_unreachable ();
 }
 
+/* Create a builtin vector type with a name.  Taking care not to give
+   the canonical type a name.  */
+
+static tree
+rs6000_vector_type (const char *name, tree elt_type, unsigned num_elts)
+{
+  tree result = build_vector_type (elt_type, num_elts);
+
+  /* Copy so we don't give the canonical type a name.  */
+  result = build_variant_type_copy (result);
+
+  add_builtin_type (name, result);
+
+  return result;
+}
+
 static void
 rs6000_init_builtins (void)
 {
@@ -17273,18 +17328,29 @@ rs6000_init_builtins (void)
 
   V2SI_type_node = build_vector_type (intSI_type_node, 2);
   V2SF_type_node = build_vector_type (float_type_node, 2);
-  V2DI_type_node = build_vector_type (intDI_type_node, 2);
-  V2DF_type_node = build_vector_type (double_type_node, 2);
+  V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64 ? "__vector long"
+				       : "__vector long long",
+				       intDI_type_node, 2);
+  V2DF_type_node = rs6000_vector_type ("__vector double", double_type_node, 2);
   V4HI_type_node = build_vector_type (intHI_type_node, 4);
-  V4SI_type_node = build_vector_type (intSI_type_node, 4);
-  V4SF_type_node = build_vector_type (float_type_node, 4);
-  V8HI_type_node = build_vector_type (intHI_type_node, 8);
-  V16QI_type_node = build_vector_type (intQI_type_node, 16);
+  V4SI_type_node = rs6000_vector_type ("__vector signed int",
+				       intSI_type_node, 4);
+  V4SF_type_node = rs6000_vector_type ("__vector float", float_type_node, 4);
+  V8HI_type_node = rs6000_vector_type ("__vector signed short",
+				       intHI_type_node, 8);
+  V16QI_type_node = rs6000_vector_type ("__vector signed char",
+					intQI_type_node, 16);
 
-  unsigned_V16QI_type_node = build_vector_type (unsigned_intQI_type_node, 16);
-  unsigned_V8HI_type_node = build_vector_type (unsigned_intHI_type_node, 8);
-  unsigned_V4SI_type_node = build_vector_type (unsigned_intSI_type_node, 4);
-  unsigned_V2DI_type_node = build_vector_type (unsigned_intDI_type_node, 2);
+  unsigned_V16QI_type_node = rs6000_vector_type ("__vector unsigned char",
+					unsigned_intQI_type_node, 16);
+  unsigned_V8HI_type_node = rs6000_vector_type ("__vector unsigned short",
+				       unsigned_intHI_type_node, 8);
+  unsigned_V4SI_type_node = rs6000_vector_type ("__vector unsigned int",
+				       unsigned_intSI_type_node, 4);
+  unsigned_V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64
+				       ? "__vector unsigned long"
+				       : "__vector unsigned long long",
+				       unsigned_intDI_type_node, 2);
 
   opaque_V2SF_type_node = build_opaque_vector_type (float_type_node, 2);
   opaque_V2SI_type_node = build_opaque_vector_type (intSI_type_node, 2);
@@ -17299,8 +17365,11 @@ rs6000_init_builtins (void)
      must live in VSX registers.  */
   if (intTI_type_node)
     {
-      V1TI_type_node = build_vector_type (intTI_type_node, 1);
-      unsigned_V1TI_type_node = build_vector_type (unsigned_intTI_type_node, 1);
+      V1TI_type_node = rs6000_vector_type ("__vector __int128",
+					   intTI_type_node, 1);
+      unsigned_V1TI_type_node
+	= rs6000_vector_type ("__vector unsigned __int128",
+			      unsigned_intTI_type_node, 1);
     }
 
   /* The 'vector bool ...' types must be kept distinct from 'vector unsigned ...'
@@ -17432,83 +17501,18 @@ rs6000_init_builtins (void)
   tdecl = add_builtin_type ("__pixel", pixel_type_node);
   TYPE_NAME (pixel_type_node) = tdecl;
 
-  bool_V16QI_type_node = build_vector_type (bool_char_type_node, 16);
-  bool_V8HI_type_node = build_vector_type (bool_short_type_node, 8);
-  bool_V4SI_type_node = build_vector_type (bool_int_type_node, 4);
-  bool_V2DI_type_node = build_vector_type (bool_long_type_node, 2);
-  pixel_V8HI_type_node = build_vector_type (pixel_type_node, 8);
-
-  tdecl = add_builtin_type ("__vector unsigned char", unsigned_V16QI_type_node);
-  TYPE_NAME (unsigned_V16QI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector signed char", V16QI_type_node);
-  TYPE_NAME (V16QI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector __bool char", bool_V16QI_type_node);
-  TYPE_NAME (bool_V16QI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector unsigned short", unsigned_V8HI_type_node);
-  TYPE_NAME (unsigned_V8HI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector signed short", V8HI_type_node);
-  TYPE_NAME (V8HI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector __bool short", bool_V8HI_type_node);
-  TYPE_NAME (bool_V8HI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector unsigned int", unsigned_V4SI_type_node);
-  TYPE_NAME (unsigned_V4SI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector signed int", V4SI_type_node);
-  TYPE_NAME (V4SI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector __bool int", bool_V4SI_type_node);
-  TYPE_NAME (bool_V4SI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector float", V4SF_type_node);
-  TYPE_NAME (V4SF_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector __pixel", pixel_V8HI_type_node);
-  TYPE_NAME (pixel_V8HI_type_node) = tdecl;
-
-  tdecl = add_builtin_type ("__vector double", V2DF_type_node);
-  TYPE_NAME (V2DF_type_node) = tdecl;
-
-  if (TARGET_POWERPC64)
-    {
-      tdecl = add_builtin_type ("__vector long", V2DI_type_node);
-      TYPE_NAME (V2DI_type_node) = tdecl;
-
-      tdecl = add_builtin_type ("__vector unsigned long",
-				unsigned_V2DI_type_node);
-      TYPE_NAME (unsigned_V2DI_type_node) = tdecl;
-
-      tdecl = add_builtin_type ("__vector __bool long", bool_V2DI_type_node);
-      TYPE_NAME (bool_V2DI_type_node) = tdecl;
-    }
-  else
-    {
-      tdecl = add_builtin_type ("__vector long long", V2DI_type_node);
-      TYPE_NAME (V2DI_type_node) = tdecl;
-
-      tdecl = add_builtin_type ("__vector unsigned long long",
-				unsigned_V2DI_type_node);
-      TYPE_NAME (unsigned_V2DI_type_node) = tdecl;
-
-      tdecl = add_builtin_type ("__vector __bool long long",
-				bool_V2DI_type_node);
-      TYPE_NAME (bool_V2DI_type_node) = tdecl;
-    }
-
-  if (V1TI_type_node)
-    {
-      tdecl = add_builtin_type ("__vector __int128", V1TI_type_node);
-      TYPE_NAME (V1TI_type_node) = tdecl;
-
-      tdecl = add_builtin_type ("__vector unsigned __int128",
-				unsigned_V1TI_type_node);
-      TYPE_NAME (unsigned_V1TI_type_node) = tdecl;
-    }
+  bool_V16QI_type_node = rs6000_vector_type ("__vector __bool char",
+					     bool_char_type_node, 16);
+  bool_V8HI_type_node = rs6000_vector_type ("__vector __bool short",
+					    bool_short_type_node, 8);
+  bool_V4SI_type_node = rs6000_vector_type ("__vector __bool int",
+					    bool_int_type_node, 4);
+  bool_V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64
+					    ? "__vector __bool long"
+					    : "__vector __bool long long",
+					    bool_long_type_node, 2);
+  pixel_V8HI_type_node = rs6000_vector_type ("__vector __pixel",
+					     pixel_type_node, 8);
 
   /* Paired and SPE builtins are only available if you build a compiler with
      the appropriate options, so only create those builtins with the
@@ -19672,8 +19676,9 @@ expand_block_compare (rtx operands[])
   unsigned int load_mode_size = GET_MODE_SIZE (load_mode);
 
   /* We don't want to generate too much code.  */
-  if (ROUND_UP (bytes, load_mode_size) / load_mode_size
-      > (unsigned HOST_WIDE_INT) rs6000_block_compare_inline_limit)
+  unsigned HOST_WIDE_INT max_bytes =
+    load_mode_size * (unsigned HOST_WIDE_INT) rs6000_block_compare_inline_limit;
+  if (!IN_RANGE (bytes, 1, max_bytes))
     return false;
 
   bool generate_6432_conversion = false;
@@ -32862,7 +32867,7 @@ static int load_store_pendulum;
 static int divide_cnt;
 /* The following variable helps pair and alternate vector and vector load
    insns during scheduling.  */
-static int vec_load_pendulum;
+static int vec_pairing;
 
 
 /* Power4 load update and store update instructions are cracked into a
@@ -33821,7 +33826,7 @@ power9_sched_reorder2 (rtx_insn **ready, int lastpos)
   int pos;
   int i;
   rtx_insn *tmp;
-  enum attr_type type;
+  enum attr_type type, type2;
 
   type = get_attr_type (last_scheduled_insn);
 
@@ -33854,183 +33859,114 @@ power9_sched_reorder2 (rtx_insn **ready, int lastpos)
       /* Last insn was the 2nd divide or not a divide, reset the counter.  */
       divide_cnt = 0;
 
-      /* Power9 can execute 2 vector operations and 2 vector loads in a single
-	 cycle.  So try to pair up and alternate groups of vector and vector
-	 load instructions.
+      /* The best dispatch throughput for vector and vector load insns can be
+	 achieved by interleaving a vector and vector load such that they'll
+	 dispatch to the same superslice. If this pairing cannot be achieved
+	 then it is best to pair vector insns together and vector load insns
+	 together.
 
-	 To aid this formation, a counter is maintained to keep track of
-	 vec/vecload insns issued.  The value of vec_load_pendulum maintains
-	 the current state with the following values:
+	 To aid in this pairing, vec_pairing maintains the current state with
+	 the following values:
 
-	     0  : Initial state, no vec/vecload group has been started.
+	     0  : Initial state, no vecload/vector pairing has been started.
 
-	     -1 : 1 vector load has been issued and another has been found on
-		  the ready list and moved to the end.
-
-	     -2 : 2 vector loads have been issued and a vector operation has
-		  been found and moved to the end of the ready list.
-
-	     -3 : 2 vector loads and a vector insn have been issued and a
-		  vector operation has been found and moved to the end of the
-		  ready list.
-
-	     1  : 1 vector insn has been issued and another has been found and
-		  moved to the end of the ready list.
-
-	     2  : 2 vector insns have been issued and a vector load has been
-		  found and moved to the end of the ready list.
-
-	     3  : 2 vector insns and a vector load have been issued and another
-		  vector load has been found and moved to the end of the ready
+	     1  : A vecload or vector insn has been issued and a candidate for
+		  pairing has been found and moved to the end of the ready
 		  list.  */
       if (type == TYPE_VECLOAD)
 	{
 	  /* Issued a vecload.  */
-	  if (vec_load_pendulum == 0)
+	  if (vec_pairing == 0)
 	    {
-	      /* We issued a single vecload, look for another and move it to
-		 the end of the ready list so it will be scheduled next.
-		 Set pendulum if found.  */
+	      int vecload_pos = -1;
+	      /* We issued a single vecload, look for a vector insn to pair it
+		 with.  If one isn't found, try to pair another vecload.  */
 	      pos = lastpos;
 	      while (pos >= 0)
 		{
-		  if (recog_memoized (ready[pos]) >= 0
-		      && get_attr_type (ready[pos]) == TYPE_VECLOAD)
+		  if (recog_memoized (ready[pos]) >= 0)
 		    {
-		      tmp = ready[pos];
-		      for (i = pos; i < lastpos; i++)
-			ready[i] = ready[i + 1];
-		      ready[lastpos] = tmp;
-		      vec_load_pendulum = -1;
-		      return cached_can_issue_more;
+		      type2 = get_attr_type (ready[pos]);
+		      if (is_power9_pairable_vec_type (type2))
+			{
+			  /* Found a vector insn to pair with, move it to the
+			     end of the ready list so it is scheduled next.  */
+			  tmp = ready[pos];
+			  for (i = pos; i < lastpos; i++)
+			    ready[i] = ready[i + 1];
+			  ready[lastpos] = tmp;
+			  vec_pairing = 1;
+			  return cached_can_issue_more;
+			}
+		      else if (type2 == TYPE_VECLOAD && vecload_pos == -1)
+			/* Remember position of first vecload seen.  */
+			vecload_pos = pos;
 		    }
 		  pos--;
 		}
-	    }
-	  else if (vec_load_pendulum == -1)
-	    {
-	      /* This is the second vecload we've issued, search the ready
-	         list for a vector operation so we can try to schedule a
-	         pair of those next.  If found move to the end of the ready
-	         list so it is scheduled next and set the pendulum.  */
-	      pos = lastpos;
-	      while (pos >= 0)
+	      if (vecload_pos >= 0)
 		{
-		  if (recog_memoized (ready[pos]) >= 0
-		      && is_power9_pairable_vec_type (
-			   get_attr_type (ready[pos])))
-		    {
-		      tmp = ready[pos];
-		      for (i = pos; i < lastpos; i++)
-			ready[i] = ready[i + 1];
-		      ready[lastpos] = tmp;
-		      vec_load_pendulum = -2;
-		      return cached_can_issue_more;
-		    }
-		  pos--;
-		}
-	    }
-	  else if (vec_load_pendulum == 2)
-	    {
-	      /* Two vector ops have been issued and we've just issued a
-		 vecload, look for another vecload and move to end of ready
-		 list if found.  */
-	      pos = lastpos;
-	      while (pos >= 0)
-	        {
-		  if (recog_memoized (ready[pos]) >= 0
-		      && get_attr_type (ready[pos]) == TYPE_VECLOAD)
-		    {
-		      tmp = ready[pos];
-		      for (i = pos; i < lastpos; i++)
-			ready[i] = ready[i + 1];
-		      ready[lastpos] = tmp;
-		      /* Set pendulum so that next vecload will be seen as
-			 finishing a group, not start of one.  */
-		      vec_load_pendulum = 3;
-		      return cached_can_issue_more;
-		    }
-		  pos--;
+		  /* Didn't find a vector to pair with but did find a vecload,
+		     move it to the end of the ready list.  */
+		  tmp = ready[vecload_pos];
+		  for (i = vecload_pos; i < lastpos; i++)
+		    ready[i] = ready[i + 1];
+		  ready[lastpos] = tmp;
+		  vec_pairing = 1;
+		  return cached_can_issue_more;
 		}
 	    }
 	}
       else if (is_power9_pairable_vec_type (type))
 	{
 	  /* Issued a vector operation.  */
-	  if (vec_load_pendulum == 0)
-	    /* We issued a single vec op, look for another and move it
-	       to the end of the ready list so it will be scheduled next.
-	       Set pendulum if found.  */
+	  if (vec_pairing == 0)
 	    {
+	      int vec_pos = -1;
+	      /* We issued a single vector insn, look for a vecload to pair it
+		 with.  If one isn't found, try to pair another vector.  */
 	      pos = lastpos;
 	      while (pos >= 0)
 		{
-		  if (recog_memoized (ready[pos]) >= 0
-		      && is_power9_pairable_vec_type (
-			   get_attr_type (ready[pos])))
+		  if (recog_memoized (ready[pos]) >= 0)
 		    {
-		      tmp = ready[pos];
-		      for (i = pos; i < lastpos; i++)
-			ready[i] = ready[i + 1];
-		      ready[lastpos] = tmp;
-		      vec_load_pendulum = 1;
-		      return cached_can_issue_more;
+		      type2 = get_attr_type (ready[pos]);
+		      if (type2 == TYPE_VECLOAD)
+			{
+			  /* Found a vecload insn to pair with, move it to the
+			     end of the ready list so it is scheduled next.  */
+			  tmp = ready[pos];
+			  for (i = pos; i < lastpos; i++)
+			    ready[i] = ready[i + 1];
+			  ready[lastpos] = tmp;
+			  vec_pairing = 1;
+			  return cached_can_issue_more;
+			}
+		      else if (is_power9_pairable_vec_type (type2)
+			       && vec_pos == -1)
+			/* Remember position of first vector insn seen.  */
+			vec_pos = pos;
 		    }
 		  pos--;
 		}
-	    }
-	  else if (vec_load_pendulum == 1)
-	    {
-	      /* This is the second vec op we've issued, search the ready
-		 list for a vecload operation so we can try to schedule a
-		 pair of those next.  If found move to the end of the ready
-		 list so it is scheduled next and set the pendulum.  */
-	      pos = lastpos;
-	      while (pos >= 0)
+	      if (vec_pos >= 0)
 		{
-		  if (recog_memoized (ready[pos]) >= 0
-		      && get_attr_type (ready[pos]) == TYPE_VECLOAD)
-		    {
-		      tmp = ready[pos];
-		      for (i = pos; i < lastpos; i++)
-			ready[i] = ready[i + 1];
-		      ready[lastpos] = tmp;
-		      vec_load_pendulum = 2;
-		      return cached_can_issue_more;
-		    }
-		  pos--;
-		}
-	    }
-	  else if (vec_load_pendulum == -2)
-	    {
-	      /* Two vecload ops have been issued and we've just issued a
-		 vec op, look for another vec op and move to end of ready
-	  	 list if found.  */
-	      pos = lastpos;
-	      while (pos >= 0)
-		{
-		  if (recog_memoized (ready[pos]) >= 0
-		      && is_power9_pairable_vec_type (
-			   get_attr_type (ready[pos])))
-		    {
-		      tmp = ready[pos];
-		      for (i = pos; i < lastpos; i++)
-			ready[i] = ready[i + 1];
-		      ready[lastpos] = tmp;
-		      /* Set pendulum so that next vec op will be seen as
-			 finishing a group, not start of one.  */
-		      vec_load_pendulum = -3;
-		      return cached_can_issue_more;
-		    }
-		  pos--;
+		  /* Didn't find a vecload to pair with but did find a vector
+		     insn, move it to the end of the ready list.  */
+		  tmp = ready[vec_pos];
+		  for (i = vec_pos; i < lastpos; i++)
+		    ready[i] = ready[i + 1];
+		  ready[lastpos] = tmp;
+		  vec_pairing = 1;
+		  return cached_can_issue_more;
 		}
 	    }
 	}
 
-      /* We've either finished a vec/vecload group, couldn't find an insn to
-	 continue the current group, or the last insn had nothing to do with
-	 with a group.  In any case, reset the pendulum.  */
-      vec_load_pendulum = 0;
+      /* We've either finished a vec/vecload pair, couldn't find an insn to
+	 continue the current pair, or the last insn had nothing to do with
+	 with pairing.  In any case, reset the state.  */
+      vec_pairing = 0;
     }
 
   return cached_can_issue_more;
@@ -34946,7 +34882,7 @@ rs6000_sched_init (FILE *dump ATTRIBUTE_UNUSED,
   last_scheduled_insn = NULL;
   load_store_pendulum = 0;
   divide_cnt = 0;
-  vec_load_pendulum = 0;
+  vec_pairing = 0;
 }
 
 /* The following function is called at the end of scheduling BB.
@@ -34993,7 +34929,7 @@ struct rs6000_sched_context
   rtx_insn *last_scheduled_insn;
   int load_store_pendulum;
   int divide_cnt;
-  int vec_load_pendulum;
+  int vec_pairing;
 };
 
 typedef struct rs6000_sched_context rs6000_sched_context_def;
@@ -35019,7 +34955,7 @@ rs6000_init_sched_context (void *_sc, bool clean_p)
       sc->last_scheduled_insn = NULL;
       sc->load_store_pendulum = 0;
       sc->divide_cnt = 0;
-      sc->vec_load_pendulum = 0;
+      sc->vec_pairing = 0;
     }
   else
     {
@@ -35027,7 +34963,7 @@ rs6000_init_sched_context (void *_sc, bool clean_p)
       sc->last_scheduled_insn = last_scheduled_insn;
       sc->load_store_pendulum = load_store_pendulum;
       sc->divide_cnt = divide_cnt;
-      sc->vec_load_pendulum = vec_load_pendulum;
+      sc->vec_pairing = vec_pairing;
     }
 }
 
@@ -35043,7 +34979,7 @@ rs6000_set_sched_context (void *_sc)
   last_scheduled_insn = sc->last_scheduled_insn;
   load_store_pendulum = sc->load_store_pendulum;
   divide_cnt = sc->divide_cnt;
-  vec_load_pendulum = sc->vec_load_pendulum;
+  vec_pairing = sc->vec_pairing;
 }
 
 /* Free _SC.  */
@@ -39785,6 +39721,81 @@ rs6000_print_builtin_options (FILE *file, int indent, const char *string,
   rs6000_print_options_internal (file, indent, string, flags, "",
 				 &rs6000_builtin_mask_names[0],
 				 ARRAY_SIZE (rs6000_builtin_mask_names));
+}
+
+/* If the user used -mno-vsx, we need turn off all of the implicit ISA 2.06,
+   2.07, and 3.0 options that relate to the vector unit (-mdirect-move,
+   -mvsx-timode, -mupper-regs-df).
+
+   If the user used -mno-power8-vector, we need to turn off all of the implicit
+   ISA 2.07 and 3.0 options that relate to the vector unit.
+
+   If the user used -mno-power9-vector, we need to turn off all of the implicit
+   ISA 3.0 options that relate to the vector unit.
+
+   This function does not handle explicit options such as the user specifying
+   -mdirect-move.  These are handled in rs6000_option_override_internal, and
+   the appropriate error is given if needed.
+
+   We return a mask of all of the implicit options that should not be enabled
+   by default.  */
+
+static HOST_WIDE_INT
+rs6000_disable_incompatible_switches (void)
+{
+  HOST_WIDE_INT ignore_masks = rs6000_isa_flags_explicit;
+  size_t i, j;
+
+  static const struct {
+    const HOST_WIDE_INT no_flag;	/* flag explicitly turned off.  */
+    const HOST_WIDE_INT dep_flags;	/* flags that depend on this option.  */
+    const char *const name;		/* name of the switch.  */
+  } flags[] = {
+    { OPTION_MASK_P9_VECTOR,	OTHER_P9_VECTOR_MASKS,	"power9-vector"	},
+    { OPTION_MASK_P8_VECTOR,	OTHER_P8_VECTOR_MASKS,	"power8-vector"	},
+    { OPTION_MASK_VSX,		OTHER_VSX_VECTOR_MASKS,	"vsx"		},
+  };
+
+  for (i = 0; i < ARRAY_SIZE (flags); i++)
+    {
+      HOST_WIDE_INT no_flag = flags[i].no_flag;
+
+      if ((rs6000_isa_flags & no_flag) == 0
+	  && (rs6000_isa_flags_explicit & no_flag) != 0)
+	{
+	  HOST_WIDE_INT dep_flags = flags[i].dep_flags;
+	  HOST_WIDE_INT set_flags = (rs6000_isa_flags_explicit
+				     & rs6000_isa_flags
+				     & dep_flags);
+
+	  if (set_flags)
+	    {
+	      for (j = 0; j < ARRAY_SIZE (rs6000_opt_masks); j++)
+		if ((set_flags & rs6000_opt_masks[j].mask) != 0)
+		  {
+		    set_flags &= ~rs6000_opt_masks[j].mask;
+		    error ("-mno-%s turns off -m%s",
+			   flags[i].name,
+			   rs6000_opt_masks[j].name);
+		  }
+
+	      gcc_assert (!set_flags);
+	    }
+
+	  rs6000_isa_flags &= ~dep_flags;
+	  ignore_masks |= no_flag | dep_flags;
+	}
+    }
+
+  if (!TARGET_P9_VECTOR
+      && (rs6000_isa_flags_explicit & OPTION_MASK_P9_VECTOR) != 0
+      && TARGET_P9_DFORM_BOTH > 0)
+    {
+      error ("-mno-power9-vector turns off -mpower9-dform");
+      TARGET_P9_DFORM_BOTH = 0;
+    }
+
+  return ignore_masks;
 }
 
 

@@ -1,6 +1,6 @@
 /* PR target/78582. */
 /* { dg-options "-fprofile-generate" } */
-/* { dg-compile } */
+/* { dg-do compile } */
 
 #include <setjmp.h>
 

@@ -1,5 +1,5 @@
 /* PR middle-end/80020 - gcc confused about aligned_alloc argument order
-   { dg-compile }
+   { dg-do compile }
    { dg-options "-O2 -Wall -fdump-tree-optimized" } */
 
 void sink (void*);

@@ -67,6 +67,9 @@ typedef struct vn_phi_s
   hashval_t hashcode;
   vec<tree> phiargs;
   basic_block block;
+  /* Controlling condition lhs/rhs.  */
+  tree cclhs;
+  tree ccrhs;
   tree type;
   tree result;
 } *vn_phi_t;
@@ -209,7 +212,7 @@ enum vn_lookup_kind { VN_NOWALK, VN_WALK, VN_WALKREWRITE };
 extern vn_ssa_aux_t VN_INFO (tree);
 extern vn_ssa_aux_t VN_INFO_GET (tree);
 tree vn_get_expr_for (tree);
-bool run_scc_vn (vn_lookup_kind);
+void run_scc_vn (vn_lookup_kind);
 void free_scc_vn (void);
 void scc_vn_restore_ssa_info (void);
 tree vn_nary_op_lookup (tree, vn_nary_op_t *);

@@ -2,7 +2,7 @@
 /* PR 4713 */
 
 /* dg.exp doesn't read the header files for magic comments. */
-/* { dg-error "unterminated comment" "" { target *-*-* } 4 } */
+/* { dg-error "unterminated comment" "" { target *-*-* } .-1 } */
 /* { dg-error "unterminated comment" "header error" { target *-*-* } 8 } */
 
 #include "19940712-1.h"

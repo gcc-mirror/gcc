@@ -1,7 +1,7 @@
 /* PR tree-optimization/79691 - -Wformat-truncation suppressed by
    (and only by) -Og
 
-   { dg-compile }
+   { dg-do compile }
    { dg-options "-Og -Wall -fdump-tree-optimized" } */
 
 char d[2];

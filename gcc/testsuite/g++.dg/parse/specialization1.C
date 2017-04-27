@@ -4,4 +4,4 @@
 
 template <typename T> class A;
 template <typename T> class A<T>::B; // { dg-error "declaration" "err" }
-// { dg-warning "declaration" "warn" { target *-*-* } 6 }
+// { dg-warning "declaration" "warn" { target *-*-* } .-1 }

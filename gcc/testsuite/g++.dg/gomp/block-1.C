@@ -10,7 +10,7 @@ void foo()
   #pragma omp parallel
     {
       bad2: ;			// { dg-error "jump to label" }
-                                // { dg-message "enters OpenMP" "" { target *-*-* } 12 }
+                                // { dg-message "enters OpenMP" "" { target *-*-* } .-1 }
     }
 
   #pragma omp parallel

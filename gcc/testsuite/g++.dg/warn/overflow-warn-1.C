@@ -11,18 +11,18 @@ enum e {
   E1 = UINT_MAX + 1,
   /* Overflow in an unevaluated part of an expression is OK (example
      in the standard).  */
-  E2 = 2 || 1 / 0, /* { dg-bogus "warning: division by zero" "" { xfail *-*-* } 14 } */
+  E2 = 2 || 1 / 0, /* { dg-bogus "warning: division by zero" "" { xfail *-*-* } . } */
   E3 = 1 / 0, /* { dg-warning "division by zero" } */
-  /* { dg-error "enumerator value for 'E3' is not an integer constant|not a constant.expression" "enum error" { target *-*-* } 15 } */
+  /* { dg-error "enumerator value for 'E3' is not an integer constant|not a constant.expression" "enum error" { target *-*-* } .-1 } */
   /* But as in DR#031, the 1/0 in an evaluated subexpression means the
      whole expression violates the constraints.  */
   E4 = 0 * (1 / 0), /* { dg-warning "division by zero" } */
-  /* { dg-error "enumerator value for 'E4' is not an integer constant" "enum error" { target c++ } 19 } */
+  /* { dg-error "enumerator value for 'E4' is not an integer constant" "enum error" { target c++ } .-1 } */
   E5 = INT_MAX + 1, /* { dg-warning "integer overflow in expression" } */
-  /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } 21 } */
+  /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } .-1 } */
   /* Again, overflow in evaluated subexpression.  */
   E6 = 0 * (INT_MAX + 1), /* { dg-warning "integer overflow in expression" } */
-  /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } 24 } */
+  /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } .-1 } */
   /* A cast does not constitute overflow in conversion.  */
   E7 = (char) INT_MAX
 };
@@ -31,7 +31,7 @@ struct s {
   int a;
   int : 0 * (1 / 0); /* { dg-warning "division by zero" } */
   int : 0 * (INT_MAX + 1); /* { dg-warning "integer overflow in expression" } */
-  /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } 33 } */
+  /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } .-1 } */
 };
 
 void
@@ -52,9 +52,9 @@ void *n = 0;
    constants.  The third has the overflow in an unevaluated
    subexpression, so is a null pointer constant.  */
 void *p = 0 * (INT_MAX + 1); /* { dg-warning "integer overflow in expression" } */
-/* { dg-warning "invalid conversion from 'int' to 'void" "null" { target *-*-* } 54 } */
+/* { dg-warning "invalid conversion from 'int' to 'void" "null" { target *-*-* } .-1 } */
 void *q = 0 * (1 / 0); /* { dg-warning "division by zero" } */
-/* { dg-error "invalid conversion from 'int' to 'void*'" "null" { xfail *-*-* } 56 } */
+/* { dg-error "invalid conversion from 'int' to 'void*'" "null" { xfail *-*-* } .-1 } */
 void *r = (1 ? 0 : INT_MAX+1); /* { dg-bogus "integer overflow in expression" "" { xfail *-*-* } } */
 
 void
@@ -65,7 +65,7 @@ g (int i)
     case 0 * (1/0): /* { dg-warning "division by zero" } */
       ;
     case 1 + 0 * (INT_MAX + 1): /* { dg-warning "integer overflow in expression" } */
-      /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } 67 } */
+      /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } .-1 } */
       ;
     }
 }
