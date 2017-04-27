@@ -7925,33 +7925,40 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
   machine_mode mode = GET_MODE (dst);
 
   if (GET_MODE_INNER (mode) == HFmode)
-    return false;
+    {
+      gcc_assert (!recp);
+      return false;
+    }
 
-  machine_mode mmsk = mode_for_vector
-		        (int_mode_for_mode (GET_MODE_INNER (mode)),
-			 GET_MODE_NUNITS (mode));
-  bool use_approx_sqrt_p = (!recp
-			    && (flag_mlow_precision_sqrt
-			        || (aarch64_tune_params.approx_modes->sqrt
-				    & AARCH64_APPROX_MODE (mode))));
-  bool use_approx_rsqrt_p = (recp
-			     && (flag_mrecip_low_precision_sqrt
-				 || (aarch64_tune_params.approx_modes->recip_sqrt
-				     & AARCH64_APPROX_MODE (mode))));
+  machine_mode mmsk
+    = mode_for_vector (int_mode_for_mode (GET_MODE_INNER (mode)),
+		       GET_MODE_NUNITS (mode));
+  if (!recp)
+    {
+      if (!(flag_mlow_precision_sqrt
+	    || (aarch64_tune_params.approx_modes->sqrt
+		& AARCH64_APPROX_MODE (mode))))
+	return false;
 
-  if (!flag_finite_math_only
-      || flag_trapping_math
-      || !flag_unsafe_math_optimizations
-      || !(use_approx_sqrt_p || use_approx_rsqrt_p)
-      || optimize_function_for_size_p (cfun))
-    return false;
+      if (flag_finite_math_only
+	  || flag_trapping_math
+	  || !flag_unsafe_math_optimizations
+	  || optimize_function_for_size_p (cfun))
+	return false;
+    }
+  else
+    /* Caller assumes we cannot fail.  */
+    gcc_assert (use_rsqrt_p (mode));
+
 
   rtx xmsk = gen_reg_rtx (mmsk);
   if (!recp)
-    /* When calculating the approximate square root, compare the argument with
-       0.0 and create a mask.  */
-    emit_insn (gen_rtx_SET (xmsk, gen_rtx_NEG (mmsk, gen_rtx_EQ (mmsk, src,
-							  CONST0_RTX (mode)))));
+    /* When calculating the approximate square root, compare the
+       argument with 0.0 and create a mask.  */
+    emit_insn (gen_rtx_SET (xmsk,
+			    gen_rtx_NEG (mmsk,
+					 gen_rtx_EQ (mmsk, src,
+						     CONST0_RTX (mode)))));
 
   /* Estimate the approximate reciprocal square root.  */
   rtx xdst = gen_reg_rtx (mode);
