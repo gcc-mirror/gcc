@@ -1,5 +1,9 @@
 2017-04-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/80534
+	* g++.dg/other/pr80534-1.C: New test.
+	* g++.dg/other/pr80534-2.C: New test.
+
 	PR target/77728
 	* g++.dg/abi/pr77728-2.C: Don't expect -Wpsabi notes.
 
