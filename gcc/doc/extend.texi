@@ -10209,14 +10209,14 @@ assert (__builtin_object_size (q, 1) == sizeof (var.b));
 There are built-in functions added for many common string operation
 functions, e.g., for @code{memcpy} @code{__builtin___memcpy_chk}
 built-in is provided.  This built-in has an additional last argument,
-which is the number of bytes remaining in object the @var{dest}
+which is the number of bytes remaining in the object the @var{dest}
 argument points to or @code{(size_t) -1} if the size is not known.
 
 The built-in functions are optimized into the normal string functions
 like @code{memcpy} if the last argument is @code{(size_t) -1} or if
 it is known at compile time that the destination object will not
-be overflown.  If the compiler can determine at compile time the
-object will be always overflown, it issues a warning.
+be overflowed.  If the compiler can determine at compile time that the
+object will always be overflowed, it issues a warning.
 
 The intended use can be e.g.@:
 
