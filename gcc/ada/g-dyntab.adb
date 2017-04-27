@@ -42,6 +42,10 @@ package body GNAT.Dynamic_Tables is
    -- Local Subprograms --
    -----------------------
 
+   function Last_Allocated (T : Instance) return Table_Last_Type;
+   pragma Inline (Last_Allocated);
+   --  Return the index of the last allocated element
+
    procedure Grow (T : in out Instance; New_Last : Table_Last_Type);
    --  This is called when we are about to set the value of Last to a value
    --  that is larger than Last_Allocated. This reallocates the table to the
@@ -68,7 +72,7 @@ package body GNAT.Dynamic_Tables is
       pragma Assert (not T.Locked);
       New_Last : constant Table_Last_Type := Last (T) + 1;
    begin
-      if New_Last <= T.P.Last_Allocated then
+      if New_Last <= Last_Allocated (T) then
          --  fast path
          T.P.Last := New_Last;
          T.Table (New_Last) := New_Val;
@@ -115,7 +119,7 @@ package body GNAT.Dynamic_Tables is
    procedure For_Each (Table : Instance) is
       Quit : Boolean := False;
    begin
-      for Index in Table_Low_Bound .. Table.P.Last loop
+      for Index in First .. Last (Table) loop
          Action (Index, Table.Table (Index), Quit);
          exit when Quit;
       end loop;
@@ -135,12 +139,12 @@ package body GNAT.Dynamic_Tables is
       --  storage. Fortunately, GNAT doesn't do that.
 
       pragma Assert (not T.Locked);
-      pragma Assert (New_Last > T.P.Last_Allocated);
+      pragma Assert (New_Last > Last_Allocated (T));
 
       subtype Table_Length_Type is Table_Index_Type'Base
         range 0 .. Table_Index_Type'Base'Last;
 
-      Old_Last_Allocated   : constant Table_Last_Type  := T.P.Last_Allocated;
+      Old_Last_Allocated   : constant Table_Last_Type  := Last_Allocated (T);
       Old_Allocated_Length : constant Table_Length_Type :=
                                Old_Last_Allocated - First + 1;
 
@@ -200,7 +204,7 @@ package body GNAT.Dynamic_Tables is
          T.Table := To_Table_Ptr (New_Table);
       end;
 
-      pragma Assert (New_Last <= T.P.Last_Allocated);
+      pragma Assert (New_Last <= Last_Allocated (T));
       pragma Assert (T.Table /= null);
       pragma Assert (T.Table /= Empty_Table_Ptr);
    end Grow;
@@ -221,7 +225,7 @@ package body GNAT.Dynamic_Tables is
 
    procedure Init (T : in out Instance) is
       pragma Assert (not T.Locked);
-      subtype Alloc_Type is Table_Type (First .. T.P.Last_Allocated);
+      subtype Alloc_Type is Table_Type (First .. Last_Allocated (T));
       type Alloc_Ptr is access all Alloc_Type;
 
       procedure Free is new Ada.Unchecked_Deallocation (Alloc_Type, Alloc_Ptr);
@@ -247,7 +251,7 @@ package body GNAT.Dynamic_Tables is
 
    function Is_Empty (T : Instance) return Boolean is
    begin
-      return Last (T) = Table_Low_Bound - 1;
+      return Last (T) = First - 1;
    end Is_Empty;
 
    ----------
@@ -258,6 +262,15 @@ package body GNAT.Dynamic_Tables is
    begin
       return T.P.Last;
    end Last;
+
+   --------------------
+   -- Last_Allocated --
+   --------------------
+
+   function Last_Allocated (T : Instance) return Table_Last_Type is
+   begin
+      return T.P.Last_Allocated;
+   end Last_Allocated;
 
    ----------
    -- Move --
@@ -272,8 +285,8 @@ package body GNAT.Dynamic_Tables is
 
       From.Table            := Empty_Table_Ptr;
       From.Locked           := False;
-      From.P.Last_Allocated := Table_Low_Bound - 1;
-      From.P.Last           := Table_Low_Bound - 1;
+      From.P.Last_Allocated := First - 1;
+      From.P.Last           := First - 1;
       pragma Assert (Is_Empty (From));
    end Move;
 
@@ -283,7 +296,7 @@ package body GNAT.Dynamic_Tables is
 
    procedure Release (T : in out Instance) is
       pragma Assert (not T.Locked);
-      Old_Last_Allocated : constant Table_Last_Type := T.P.Last_Allocated;
+      Old_Last_Allocated : constant Table_Last_Type := Last_Allocated (T);
 
       function New_Last_Allocated return Table_Last_Type;
       --  Compute the new value of Last_Allocated. This is normally equal to
@@ -325,8 +338,8 @@ package body GNAT.Dynamic_Tables is
    --  Start of processing for Release
 
    begin
-      if New_Last_Alloc < T.P.Last_Allocated then
-         pragma Assert (Last (T) < T.P.Last_Allocated);
+      if New_Last_Alloc < Last_Allocated (T) then
+         pragma Assert (Last (T) < Last_Allocated (T));
          pragma Assert (T.Table /= Empty_Table_Ptr);
 
          declare
@@ -373,7 +386,7 @@ package body GNAT.Dynamic_Tables is
       --  passed by reference. Without the copy, we would deallocate the array
       --  containing Item, leaving a dangling pointer.
 
-      if Index > T.P.Last_Allocated then
+      if Index > Last_Allocated (T) then
          declare
             Item_Copy : constant Table_Component_Type := Item;
          begin
@@ -397,7 +410,7 @@ package body GNAT.Dynamic_Tables is
    procedure Set_Last (T : in out Instance; New_Val : Table_Last_Type) is
    begin
       pragma Assert (not T.Locked);
-      if New_Val > T.P.Last_Allocated then
+      if New_Val > Last_Allocated (T) then
          Grow (T, New_Val);
       end if;
 

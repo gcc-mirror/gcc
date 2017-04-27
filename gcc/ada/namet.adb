@@ -116,14 +116,15 @@ package body Namet is
 
    procedure Append (Buf : in out Bounded_String; C : Character) is
    begin
-      if Buf.Length >= Buf.Chars'Last then
+      Buf.Length := Buf.Length + 1;
+
+      if Buf.Length > Buf.Chars'Last then
          Write_Str ("Name buffer overflow; Max_Length = ");
          Write_Int (Int (Buf.Max_Length));
          Write_Line ("");
          raise Program_Error;
       end if;
 
-      Buf.Length := Buf.Length + 1;
       Buf.Chars (Buf.Length) := C;
    end Append;
 
@@ -137,10 +138,20 @@ package body Namet is
    end Append;
 
    procedure Append (Buf : in out Bounded_String; S : String) is
+      First : constant Natural := Buf.Length + 1;
    begin
-      for J in S'Range loop
-         Append (Buf, S (J));
-      end loop;
+      Buf.Length := Buf.Length + S'Length;
+
+      if Buf.Length > Buf.Chars'Last then
+         Write_Str ("Name buffer overflow; Max_Length = ");
+         Write_Int (Int (Buf.Max_Length));
+         Write_Line ("");
+         raise Program_Error;
+      end if;
+
+      Buf.Chars (First .. Buf.Length) := S;
+      --  A loop calling Append(Character) would be cleaner, but this slice
+      --  assignment is substantially faster.
    end Append;
 
    procedure Append (Buf : in out Bounded_String; Buf2 : Bounded_String) is
@@ -150,12 +161,12 @@ package body Namet is
 
    procedure Append (Buf : in out Bounded_String; Id : Name_Id) is
       pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
-      S : constant Int := Name_Entries.Table (Id).Name_Chars_Index;
-
+      Index : constant Int := Name_Entries.Table (Id).Name_Chars_Index;
+      Len : constant Short := Name_Entries.Table (Id).Name_Len;
+      Chars : Name_Chars.Table_Type renames
+        Name_Chars.Table (Index + 1 .. Index + Int (Len));
    begin
-      for J in 1 .. Natural (Name_Entries.Table (Id).Name_Len) loop
-         Append (Buf, Name_Chars.Table (S + Int (J)));
-      end loop;
+      Append (Buf, String (Chars));
    end Append;
 
    --------------------

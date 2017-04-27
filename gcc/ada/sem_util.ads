@@ -1326,9 +1326,6 @@ package Sem_Util is
    function In_Package_Body return Boolean;
    --  Returns True if current scope is within a package body
 
-   function In_Parameter_Specification (N : Node_Id) return Boolean;
-   --  Returns True if node N belongs to a parameter specification
-
    function In_Pragma_Expression (N : Node_Id; Nam : Name_Id) return Boolean;
    --  Returns true if the expression N occurs within a pragma with name Nam
 

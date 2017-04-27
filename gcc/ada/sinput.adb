@@ -882,7 +882,7 @@ package body Sinput is
    is
       --  A fat pointer is a pair consisting of data pointer and dope pointer,
       --  in that order. So we want to overwrite the second word.
-      Dope : Address;
+      Dope : System.Address;
       pragma Import (Ada, Dope);
       use System.Storage_Elements;
       for Dope'Address use Src + System.Address'Size / 8;
