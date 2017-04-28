@@ -1,5 +1,10 @@
 2017-04-28  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/53915
+	* gcov.c (format_gcov): Print 'NAN %' when top > bottom.
+
+2017-04-28  Martin Liska  <mliska@suse.cz>
+
 	PR gcov-profile/79891
 	* gcov.c (add_line_counts): Assign BBs to lines just if the BB
 	is marked by compiler as living on a line.
