@@ -1118,7 +1118,7 @@ package body Exp_Util is
                --  GNATprove mode, we must build a wrapper for the current
                --  inherited operation. If the reference is the prefix of an
                --  attribute such as 'Result (or others ???) there is no need
-               --  for a wrapper: the condition is just  rewritten in terms of
+               --  for a wrapper: the condition is just rewritten in terms of
                --  the inherited subprogram.
 
                if Is_Subprogram (New_E)

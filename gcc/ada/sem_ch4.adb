@@ -7373,7 +7373,7 @@ package body Sem_Ch4 is
                   if Nkind (Right_Opnd (N)) = N_Integer_Literal then
                      Remove_Address_Interpretations (Second_Op);
 
-                  elsif Nkind (Right_Opnd (N)) = N_Integer_Literal then
+                  elsif Nkind (Left_Opnd (N)) = N_Integer_Literal then
                      Remove_Address_Interpretations (First_Op);
                   end if;
                end if;
