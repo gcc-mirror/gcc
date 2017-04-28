@@ -1,3 +1,16 @@
+2017-04-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.c (perform_estimation_of_a_value): Turn time to sreal.
+	(estimate_local_effects): Likewise.
+	* ipa-inline.c (compute_inlined_call_time, want_inline_small_function_p,
+	edge_badness, inline_small_functions, dump_overall_stats): LIkewise.
+	* ipa-inline.h (edge_growth_cache_entry, estimate_time_after_inlining,
+	estimate_ipcp_clone_size_and_time, do_estimate_edge_time,
+	do_estimate_edge_time, estimate_edge_time): Likewise.
+	* ipa-inline-analysis.c (estimate_node_size_and_time,
+	estimate_ipcp_clone_size_and_time, do_estimate_edge_time): Likewise.
+	(estimate_time_after_inlining): Remove.
+	
 2017-04-28  Martin Liska  <mliska@suse.cz>
 
 	* doc/gcov.texi: Enhance documentation of gcov.

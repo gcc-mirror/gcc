@@ -3260,7 +3260,7 @@ estimate_node_size_and_time (struct cgraph_node *node,
 			     vec<tree> known_vals,
 			     vec<ipa_polymorphic_call_context> known_contexts,
 			     vec<ipa_agg_jump_function_p> known_aggs,
-			     int *ret_size, int *ret_min_size, int *ret_time,
+			     int *ret_size, int *ret_min_size, sreal *ret_time,
 			     inline_hints *ret_hints,
 			     vec<inline_param_summary>
 			     inline_param_summary)
@@ -3336,14 +3336,14 @@ estimate_node_size_and_time (struct cgraph_node *node,
 				known_vals, known_contexts, known_aggs);
   gcc_checking_assert (size >= 0);
   gcc_checking_assert (time >= 0);
-  time = RDIV (time, INLINE_TIME_SCALE);
+  time = time / INLINE_TIME_SCALE;
   size = RDIV (size, INLINE_SIZE_SCALE);
   min_size = RDIV (min_size, INLINE_SIZE_SCALE);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\n   size:%i time:%f\n", (int) size, time.to_double ());
   if (ret_time)
-    *ret_time = time.to_int ();
+    *ret_time = time;
   if (ret_size)
     *ret_size = size;
   if (ret_min_size)
@@ -3365,7 +3365,7 @@ estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
 				   vec<ipa_polymorphic_call_context>
 				   known_contexts,
 				   vec<ipa_agg_jump_function_p> known_aggs,
-				   int *ret_size, int *ret_time,
+				   int *ret_size, sreal *ret_time,
 				   inline_hints *hints)
 {
   clause_t clause;
@@ -3800,10 +3800,10 @@ simple_edge_hints (struct cgraph_edge *edge)
    When caching, also update the cache entry.  Compute both time and
    size, since we always need both metrics eventually.  */
 
-int
+sreal
 do_estimate_edge_time (struct cgraph_edge *edge)
 {
-  int time;
+  sreal time;
   int size;
   inline_hints hints;
   struct cgraph_node *callee;
@@ -3845,7 +3845,7 @@ do_estimate_edge_time (struct cgraph_edge *edge)
       inline_summaries->get (edge->callee)->min_size = min_size;
       if ((int) edge_growth_cache.length () <= edge->uid)
 	edge_growth_cache.safe_grow_cleared (symtab->edges_max_uid);
-      edge_growth_cache[edge->uid].time = time + (time >= 0);
+      edge_growth_cache[edge->uid].time = time;
 
       edge_growth_cache[edge->uid].size = size + (size >= 0);
       hints |= simple_edge_hints (edge);
@@ -3932,26 +3932,6 @@ do_estimate_edge_hints (struct cgraph_edge *edge)
   hints |= simple_edge_hints (edge);
   return hints;
 }
-
-
-/* Estimate self time of the function NODE after inlining EDGE.  */
-
-int
-estimate_time_after_inlining (struct cgraph_node *node,
-			      struct cgraph_edge *edge)
-{
-  struct inline_edge_summary *es = inline_edge_summary (edge);
-  if (!es->predicate || !false_predicate_p (es->predicate))
-    {
-      sreal time =
-	inline_summaries->get (node)->time + estimate_edge_time (edge);
-      if (time < 0)
-	time = 0;
-      return time.to_int ();
-    }
-  return inline_summaries->get (node)->time.to_int ();
-}
-
 
 /* Estimate the size of NODE after inlining EDGE which should be an
    edge to either NODE or a call inlined into NODE.  */

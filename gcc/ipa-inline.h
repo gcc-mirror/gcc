@@ -232,7 +232,8 @@ extern vec<inline_edge_summary_t> inline_edge_summary_vec;
 
 struct edge_growth_cache_entry
 {
-  int time, size;
+  sreal time;
+  int size;
   inline_hints hints;
 };
 
@@ -249,19 +250,18 @@ void inline_write_summary (void);
 void inline_free_summary (void);
 void inline_analyze_function (struct cgraph_node *node);
 void initialize_inline_failed (struct cgraph_edge *);
-int estimate_time_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 int estimate_size_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
 					vec<tree>,
 					vec<ipa_polymorphic_call_context>,
 					vec<ipa_agg_jump_function_p>,
-					int *, int *, inline_hints *);
+					int *, sreal *, inline_hints *);
 int estimate_growth (struct cgraph_node *);
 bool growth_likely_positive (struct cgraph_node *, int);
 void inline_merge_summary (struct cgraph_edge *edge);
 void inline_update_overall_summary (struct cgraph_node *node);
 int do_estimate_edge_size (struct cgraph_edge *edge);
-int do_estimate_edge_time (struct cgraph_edge *edge);
+sreal do_estimate_edge_time (struct cgraph_edge *edge);
 inline_hints do_estimate_edge_hints (struct cgraph_edge *edge);
 void initialize_growth_caches (void);
 void free_growth_caches (void);
@@ -314,14 +314,14 @@ estimate_edge_growth (struct cgraph_edge *edge)
 /* Return estimated callee runtime increase after inlining
    EDGE.  */
 
-static inline int
+static inline sreal
 estimate_edge_time (struct cgraph_edge *edge)
 {
-  int ret;
+  sreal ret;
   if ((int)edge_growth_cache.length () <= edge->uid
-      || !(ret =  edge_growth_cache[edge->uid].time))
+      || !edge_growth_cache[edge->uid].size)
     return do_estimate_edge_time (edge);
-  return ret - (ret > 0);
+  return edge_growth_cache[edge->uid].time;
 }
 
 
