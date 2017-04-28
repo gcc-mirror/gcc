@@ -1,6 +1,12 @@
 2017-04-28  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/80557
+	* gfortran.dg/gomp/appendix-a/a.24.1.f90: Replace absolute linenrs.
+	* gfortran.dg/gomp/appendix-a/a.31.3.f90: Same.
+
+2017-04-28  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80557
 	* obj-c++.dg/bitfield-1.mm: Replace absolute linenrs.
 	* obj-c++.dg/bitfield-4.mm: Same.
 	* obj-c++.dg/bitfield-5.mm: Same.

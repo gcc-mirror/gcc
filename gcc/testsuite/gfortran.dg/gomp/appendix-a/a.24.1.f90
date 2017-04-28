@@ -11,7 +11,7 @@
 !$OMP THREADPRIVATE(/BLOCKX/)
       INTEGER I, J
       i=1
-!$OMP PARALLEL DEFAULT(NONE) PRIVATE(A) SHARED(Z) PRIVATE(J)
+!$OMP PARALLEL DEFAULT(NONE) PRIVATE(A) SHARED(Z) PRIVATE(J) ! { dg-line omp_parallel }
       J = OMP_GET_NUM_THREADS();
                ! O.K. - J is listed in PRIVATE clause
       A = Z(J) ! O.K. - A is listed in PRIVATE clause
@@ -19,8 +19,8 @@
       X=1      ! O.K. - X is THREADPRIVATE
       Z(I) = Y ! Error - cannot reference I or Y here
 ! { dg-error "'i' not specified" "" { target *-*-* } .-1 } */
-! { dg-error "enclosing 'parallel'" "" { target *-*-* } 14 } */
-! { dg-error "'y' not specified" "" { target *-*-* } 20 }  */
+! { dg-error "enclosing 'parallel'" "" { target *-*-* } omp_parallel } */
+! { dg-error "'y' not specified" "" { target *-*-* } .-3 }  */
 !$OMP DO firstprivate(y)
       DO I = 1,10
         Z(I) = Y ! O.K. - I is the loop iteration variable
