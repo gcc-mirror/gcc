@@ -589,7 +589,7 @@ package body Ch4 is
                            --  Special handling for 'Image in Ada 2012, where
                            --  the attribute can be parameterless and its value
                            --  can be the prefix of a slice. Rewrite name as a
-                           --  a slice, Expr is its low bound.
+                           --  slice, Expr is its low bound.
 
                            if Token = Tok_Dot_Dot
                              and then Attr_Name = Name_Image

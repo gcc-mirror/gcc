@@ -11251,6 +11251,7 @@ package body Sem_Util is
       S := Current_Scope;
       while Present (S) and then S /= Standard_Standard loop
          if Is_Generic_Instance (S) then
+
             --  A child instance is always compiled in the context of a parent
             --  instance. Nevertheless, the actuals are not analyzed in an
             --  instance context. We detect this case by examining the current

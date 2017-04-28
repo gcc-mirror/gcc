@@ -1114,8 +1114,8 @@ package body Exp_Util is
             if Present (New_E) then
                Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
 
-               --  If the entity is an overridden primitive and we are not in
-               --  GNATprove mode, we must build a wrapper for the current
+               --  If the entity is an overridden primitive and we are not
+               --  in GNATprove mode, we must build a wrapper for the current
                --  inherited operation. If the reference is the prefix of an
                --  attribute such as 'Result (or others ???) there is no need
                --  for a wrapper: the condition is just rewritten in terms of
@@ -1123,7 +1123,7 @@ package body Exp_Util is
 
                if Is_Subprogram (New_E)
                   and then Nkind (Parent (N)) /= N_Attribute_Reference
-                    and then not GNATprove_Mode
+                  and then not GNATprove_Mode
                then
                   Needs_Wrapper := True;
                end if;

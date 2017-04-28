@@ -651,8 +651,8 @@ package body Exp_Disp is
       Controlling_Tag : Node_Id;
 
       procedure Build_Class_Wide_Check;
-      --  If the denoted subprogram has a class-wide precondition, generate
-      --  a check using that precondition before the dispatching call, because
+      --  If the denoted subprogram has a class-wide precondition, generate a
+      --  check using that precondition before the dispatching call, because
       --  this is the only class-wide precondition that applies to the call.
 
       function New_Value (From : Node_Id) return Node_Id;
@@ -665,11 +665,6 @@ package body Exp_Disp is
       ----------------------------
 
       procedure Build_Class_Wide_Check is
-         Prec    : Node_Id;
-         Cond    : Node_Id;
-         Msg     : Node_Id;
-         Str_Loc : constant String := Build_Location_String (Loc);
-
          function Replace_Formals (N : Node_Id) return Traverse_Result;
          --  Replace occurrences of the formals of the subprogram by the
          --  corresponding actuals in the call, given that this check is
@@ -697,6 +692,7 @@ package body Exp_Disp is
                         Rewrite (N, New_Copy_Tree (A));
                         exit;
                      end if;
+
                      Next_Formal (F);
                      Next_Actual (A);
                   end loop;
@@ -707,6 +703,17 @@ package body Exp_Disp is
          end Replace_Formals;
 
          procedure Update is new Traverse_Proc (Replace_Formals);
+
+         --  Local variables
+
+         Str_Loc : constant String := Build_Location_String (Loc);
+
+         Cond : Node_Id;
+         Msg  : Node_Id;
+         Prec : Node_Id;
+
+      --  Start of processing for Build_Class_Wide_Check
+
       begin
 
          --  Locate class-wide precondition, if any
@@ -727,11 +734,12 @@ package body Exp_Disp is
             end if;
 
             --  The expression for the precondition is analyzed within the
-            --  generated pragma. The message text is the last parameter
-            --  of the generated pragma, indicating source of precondition.
+            --  generated pragma. The message text is the last parameter of
+            --  the generated pragma, indicating source of precondition.
 
-            Cond := New_Copy_Tree
-              (Expression (First (Pragma_Argument_Associations (Prec))));
+            Cond :=
+              New_Copy_Tree
+                (Expression (First (Pragma_Argument_Associations (Prec))));
             Update (Cond);
 
             --  Build message indicating the failed precondition and the
@@ -745,14 +753,13 @@ package body Exp_Disp is
             Msg := Make_String_Literal (Loc, Name_Buffer (1 .. Name_Len));
 
             Insert_Action (Call_Node,
-               Make_If_Statement (Loc,
-                  Condition => Make_Op_Not (Loc, Cond),
-                  Then_Statements => New_List (
-                     Make_Procedure_Call_Statement (Loc,
-                       Name                   =>
-                         New_Occurrence_Of
-                           (RTE (RE_Raise_Assert_Failure), Loc),
-                       Parameter_Associations => New_List (Msg)))));
+              Make_If_Statement (Loc,
+                Condition       => Make_Op_Not (Loc, Cond),
+                Then_Statements => New_List (
+                  Make_Procedure_Call_Statement (Loc,
+                    Name                   =>
+                      New_Occurrence_Of (RTE (RE_Raise_Assert_Failure), Loc),
+                    Parameter_Associations => New_List (Msg)))));
          end if;
       end Build_Class_Wide_Check;
 
