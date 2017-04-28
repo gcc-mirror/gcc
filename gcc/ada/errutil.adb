@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1991-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -586,9 +586,12 @@ package body Errutil is
          end if;
       end if;
 
+      --  Even though info messages are a subclass of warnings, they must not
+      --  be treated as errors when -gnatwe is in effect.
+
       if Warning_Mode = Treat_As_Error then
          Total_Errors_Detected :=
-           Total_Errors_Detected + Warnings_Detected;
+           Total_Errors_Detected + Warnings_Detected - Info_Messages;
          Warnings_Detected := Info_Messages;
       end if;
 

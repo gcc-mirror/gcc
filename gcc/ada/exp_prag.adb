@@ -1000,7 +1000,7 @@ package body Exp_Prag is
       Flag          : Entity_Id;
       Flag_Decl     : Node_Id;
       If_Stmt       : Node_Id;
-      Msg_Str       : Entity_Id;
+      Msg_Str       : Entity_Id := Empty;
       Multiple_PCs  : Boolean;
       Old_Evals     : Node_Id   := Empty;
       Others_Decl   : Node_Id;

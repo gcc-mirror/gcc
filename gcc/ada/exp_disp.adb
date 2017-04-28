@@ -1546,8 +1546,8 @@ package body Exp_Disp is
       Formal     : Entity_Id;
       Formal_Typ : Entity_Id;
       Subp       : Entity_Id;
-      Formal_DDT : Entity_Id;
-      Actual_DDT : Entity_Id;
+      Formal_DDT : Entity_Id := Empty;  -- initialize to prevent warning
+      Actual_DDT : Entity_Id := Empty;  -- initialize to prevent warning
 
    begin
       --  This subprogram is called directly from the semantics, so we need a
@@ -1729,7 +1729,7 @@ package body Exp_Disp is
       Expr          : Node_Id;
       Formal        : Node_Id;
       Ftyp          : Entity_Id;
-      Iface_Formal  : Node_Id;
+      Iface_Formal  : Node_Id := Empty;  -- initialize to prevent warning
       New_Arg       : Node_Id;
       Offset_To_Top : Node_Id;
       Target_Formal : Entity_Id;
@@ -5274,7 +5274,7 @@ package body Exp_Disp is
             declare
                Prim_Elmt : Elmt_Id;
                Prim      : Entity_Id;
-               Size_Comp : Node_Id;
+               Size_Comp : Node_Id := Empty;
 
             begin
                Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
@@ -6377,7 +6377,7 @@ package body Exp_Disp is
       Loc         : constant Source_Ptr := Sloc (Typ);
 
       Conc_Typ  : Entity_Id;
-      Decls     : List_Id;
+      Decls     : List_Id := No_List;
       Prim      : Entity_Id;
       Prim_Als  : Entity_Id;
       Prim_Elmt : Elmt_Id;

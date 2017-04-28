@@ -2956,7 +2956,7 @@ package body Exp_Ch9 is
                              Ekind (Corresponding_Spec (N)) = E_Procedure;
             --  Indicates if N is a protected procedure body
 
-            Block_Decls   : List_Id;
+            Block_Decls   : List_Id := No_List;
             Try_Write     : Entity_Id;
             Desired_Comp  : Entity_Id;
             Decl          : Node_Id;
@@ -6117,6 +6117,7 @@ package body Exp_Ch9 is
       Cond_Id    : Entity_Id;
       Entry_Body : Node_Id;
       Func_Body  : Node_Id;
+      pragma Warnings (Off, Func_Body);
 
    --  Start of processing for Expand_Entry_Barrier
 
@@ -9985,6 +9986,7 @@ package body Exp_Ch9 is
          declare
             Elmt : Elmt_Id;
             Op   : Entity_Id;
+            pragma Warnings (Off, Op);
 
          begin
             Elmt := First_Elmt (Primitive_Operations (Etype (Conc_Typ)));

@@ -11870,6 +11870,12 @@ package body Sem_Res is
          E   : Node_Or_Entity_Id);
       --  If Report_Errs, then calls Errout.Error_Msg_NE with its arguments
 
+      function In_Instance_Code return Boolean;
+      --  Return True if expression is within an instance but is not in one of
+      --  the actuals of the instantiation. Type conversions within an instance
+      --  are not rechecked because type visbility may lead to spurious errors,
+      --  but conversions in an actual for a formal object must be checked.
+
       function Valid_Tagged_Conversion
         (Target_Type : Entity_Id;
          Opnd_Type   : Entity_Id) return Boolean;
@@ -11899,7 +11905,7 @@ package body Sem_Res is
             --  Valid_Conversion still ensures the proper compatibility of
             --  target and operand types.
 
-           and then not In_Instance
+           and then not In_Instance_Code
          then
             Conversion_Error_N (Msg, Operand);
          end if;
@@ -11932,6 +11938,43 @@ package body Sem_Res is
             Error_Msg_NE (Msg, N, E);
          end if;
       end Conversion_Error_NE;
+
+      ----------------------
+      -- In_Instance_Code --
+      ----------------------
+
+      function In_Instance_Code return Boolean is
+         Par : Node_Id;
+      begin
+         if not In_Instance then
+            return False;
+
+         else
+            Par := Parent (N);
+            while Present (Par) loop
+
+               --  The expression is part of an actual object if it appears
+               --  in the generated object declaration in the instance.
+
+               if Nkind (Par) = N_Object_Declaration
+                  and then Present (Corresponding_Generic_Association (Par))
+               then
+                  return False;
+               else
+                  exit when Nkind (Par)
+                      in N_Statement_Other_Than_Procedure_Call
+                    or else Nkind (Par) in N_Subprogram_Call
+                    or else Nkind (Par) in N_Declaration;
+               end if;
+
+               Par := Parent (Par);
+            end loop;
+
+            --  Otherwise the expression appears within the instantiated unit.
+
+            return True;
+         end if;
+      end In_Instance_Code;
 
       ----------------------------
       -- Valid_Array_Conversion --
@@ -12271,7 +12314,7 @@ package body Sem_Res is
          --  but in fact the test is required for source code as well, since
          --  this situation can arise in source code.
 
-         elsif In_Instance or else In_Inlined_Body then
+         elsif In_Instance_Code or else In_Inlined_Body then
             return True;
 
          --  Otherwise we need the conversion check

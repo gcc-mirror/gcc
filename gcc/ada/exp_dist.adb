@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1364,10 +1364,10 @@ package body Exp_Dist is
       RPC_Receiver                   : Entity_Id;
       RPC_Receiver_Statements        : List_Id;
       RPC_Receiver_Case_Alternatives : constant List_Id := New_List;
-      RPC_Receiver_Elsif_Parts       : List_Id;
-      RPC_Receiver_Request           : Entity_Id;
-      RPC_Receiver_Subp_Id           : Entity_Id;
-      RPC_Receiver_Subp_Index        : Entity_Id;
+      RPC_Receiver_Elsif_Parts       : List_Id          := No_List;
+      RPC_Receiver_Request           : Entity_Id        := Empty;
+      RPC_Receiver_Subp_Id           : Entity_Id        := Empty;
+      RPC_Receiver_Subp_Index        : Entity_Id        := Empty;
 
       Subp_Str : String_Id;
 
@@ -9434,7 +9434,7 @@ package body Exp_Dist is
             Stms   : List_Id;
 
             Expr_Formal : Entity_Id;
-            Cstr_Formal : Entity_Id;
+            Cstr_Formal : Entity_Id := Empty;  -- initialize to prevent warning
             Any         : Entity_Id;
             Result_TC   : Node_Id;
 

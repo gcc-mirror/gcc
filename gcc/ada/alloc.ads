@@ -100,7 +100,7 @@ package Alloc is
    Names_Initial                    : constant := 6_000;      -- Namet
    Names_Increment                  : constant := 100;
 
-   Nodes_Initial                    : constant := 5_000_000;  -- Atree
+   Nodes_Initial                    : constant := 50_000;     -- Atree
    Nodes_Increment                  : constant := 100;
    Nodes_Release_Threshold          : constant := 100_000;
 
