@@ -831,76 +831,53 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     uninitialized_default_construct(_ForwardIterator __first,
 				    _ForwardIterator __last)
-  {
-    __uninitialized_default_novalue(__first, __last);
-  }
+    {
+      __uninitialized_default_novalue(__first, __last);
+    }
 
   template <typename _ForwardIterator, typename _Size>
     inline _ForwardIterator
     uninitialized_default_construct_n(_ForwardIterator __first, _Size __count)
-  {
-    return __uninitialized_default_novalue_n(__first, __count);
-  }
+    {
+      return __uninitialized_default_novalue_n(__first, __count);
+    }
 
   template <typename _ForwardIterator>
     inline void
     uninitialized_value_construct(_ForwardIterator __first,
 				  _ForwardIterator __last)
-  {
-    return __uninitialized_default(__first, __last);
-  }
+    {
+      return __uninitialized_default(__first, __last);
+    }
 
   template <typename _ForwardIterator, typename _Size>
     inline _ForwardIterator
     uninitialized_value_construct_n(_ForwardIterator __first, _Size __count)
-  {
-    return __uninitialized_default_n(__first, __count);
-  }
+    {
+      return __uninitialized_default_n(__first, __count);
+    }
 
   template <typename _InputIterator, typename _ForwardIterator>
     inline _ForwardIterator
     uninitialized_move(_InputIterator __first, _InputIterator __last,
 		       _ForwardIterator __result)
-  {
-    return std::uninitialized_copy
-      (_GLIBCXX_MAKE_MOVE_ITERATOR(__first),
-       _GLIBCXX_MAKE_MOVE_ITERATOR(__last), __result);
-  }
+    {
+      return std::uninitialized_copy
+	(_GLIBCXX_MAKE_MOVE_ITERATOR(__first),
+	 _GLIBCXX_MAKE_MOVE_ITERATOR(__last), __result);
+    }
 
   template <typename _InputIterator, typename _Size, typename _ForwardIterator>
     inline pair<_InputIterator, _ForwardIterator>
     uninitialized_move_n(_InputIterator __first, _Size __count,
 			 _ForwardIterator __result)
-  {
-    auto __res = std::__uninitialized_copy_n_pair
-      (_GLIBCXX_MAKE_MOVE_ITERATOR(__first),
-       __count, __result);
-    return {__res.first.base(), __res.second};
-  }
-
-  template <typename _Tp>
-    inline void
-    destroy_at(_Tp* __location)
-  {
-    std::_Destroy(__location);
-  }
-
-  template <typename _ForwardIterator>
-    inline void
-    destroy(_ForwardIterator __first, _ForwardIterator __last)
-  {
-    std::_Destroy(__first, __last);
-  }
-
-  template <typename _ForwardIterator, typename _Size>
-    inline _ForwardIterator
-    destroy_n(_ForwardIterator __first, _Size __count)
-  {
-    return std::_Destroy_n(__first, __count);
-  }
-
+    {
+      auto __res = std::__uninitialized_copy_n_pair
+	(_GLIBCXX_MAKE_MOVE_ITERATOR(__first),
+	 __count, __result);
+      return {__res.first.base(), __res.second};
+    }
 #endif
-
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

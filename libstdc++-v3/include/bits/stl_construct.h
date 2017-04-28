@@ -128,6 +128,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type
                        _Value_type;
+#if __cplusplus >= 201103L
+      // A deleted destructor is trivial, this ensures we reject such types:
+      static_assert(is_destructible<_Value_type>::value,
+		    "value type is destructible");
+#endif
       std::_Destroy_aux<__has_trivial_destructor(_Value_type)>::
 	__destroy(__first, __last);
     }
@@ -151,10 +156,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _ForwardIterator, typename _Size>
         static _ForwardIterator
         __destroy_n(_ForwardIterator __first, _Size __count)
-      {
-	 std::advance(__first, __count);
-	 return __first;
-      }
+	{
+	  std::advance(__first, __count);
+	  return __first;
+	}
     };
 
   /**
@@ -168,6 +173,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type
                        _Value_type;
+#if __cplusplus >= 201103L
+      // A deleted destructor is trivial, this ensures we reject such types:
+      static_assert(is_destructible<_Value_type>::value,
+		    "value type is destructible");
+#endif
       return std::_Destroy_n_aux<__has_trivial_destructor(_Value_type)>::
 	__destroy_n(__first, __count);
     }
@@ -195,6 +205,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       _Destroy(__first, __last);
     }
+
+#if __cplusplus > 201402L
+  template <typename _Tp>
+    inline void
+    destroy_at(_Tp* __location)
+    {
+      std::_Destroy(__location);
+    }
+
+  template <typename _ForwardIterator>
+    inline void
+    destroy(_ForwardIterator __first, _ForwardIterator __last)
+    {
+      std::_Destroy(__first, __last);
+    }
+
+  template <typename _ForwardIterator, typename _Size>
+    inline _ForwardIterator
+    destroy_n(_ForwardIterator __first, _Size __count)
+    {
+      return std::_Destroy_n(__first, __count);
+    }
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
