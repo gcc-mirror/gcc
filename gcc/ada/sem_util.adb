@@ -12883,11 +12883,15 @@ package body Sem_Util is
             --  unconstrained aliased object, whereas in Ada 95 the designated
             --  object is guaranteed to be constrained. A worst-case assumption
             --  has to apply in Ada 2005 because we can't tell at compile
-            --  time whether the object is "constrained by its initial value"
-            --  (despite the fact that 3.10.2(26/2) and 8.5.1(5/2) are semantic
-            --  rules (these rules are acknowledged to need fixing).
+            --  time whether the object is "constrained by its initial value",
+            --  despite the fact that 3.10.2(26/2) and 8.5.1(5/2) are semantic
+            --  rules (these rules are acknowledged to need fixing). We don't
+            --  impose this more stringent checking for earlier Ada versions or
+            --  when Relaxed_RM_Semantics applies (the latter for CodePeer's
+            --  benefit, though it's unclear on why using -gnat95 would not be
+            --  sufficient???).
 
-            if Ada_Version < Ada_2005 then
+            if Ada_Version < Ada_2005 or else Relaxed_RM_Semantics then
                if Is_Access_Type (Prefix_Type)
                  or else Nkind (P) = N_Explicit_Dereference
                then

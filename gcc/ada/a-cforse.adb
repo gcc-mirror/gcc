@@ -251,7 +251,7 @@ is
             Node  => Target_Node);
       end Append_Element;
 
-      --  Start of processing for Assign
+   --  Start of processing for Assign
 
    begin
       if Target'Address = Source'Address then
