@@ -358,6 +358,13 @@ public:
   {
     return use;
   }
+
+  inline void
+  set_use(unsigned u)
+  {
+    use = u;
+  }
+
   inline unsigned
   get_def () const
   {
@@ -1288,7 +1295,7 @@ opt_reg_rename (void)
 		      insn_info & bb = infos[label_index + 1];
 		      if (bb.is_use (rename_regno))
 			{
-			  unsigned start = find_start (found, label_index - 1, rename_regno);
+			  unsigned start = find_start (found, label_index, rename_regno);
 			  todo.push_back (start);
 			}
 		      todo.push_back (label_index + 1);
@@ -2600,6 +2607,7 @@ opt_immediate (void)
 	  rtx lea = gen_rtx_SET(gen_raw_REG (SImode, regno), gen_rtx_CONST_INT (SImode, base));
 	  rtx_insn * insn = emit_insn_before (lea, ii.get_insn ());
 	  insn_info nn (insn);
+	  nn.set_use(ii.get_use());
 	  nn.scan();
 	  nn.fledder (lea);
 	  nn.mark_def (regno);
