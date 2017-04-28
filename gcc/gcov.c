@@ -238,14 +238,9 @@ typedef struct line_info
   bool has_block (block_t *needle);
 
   gcov_type count;	   /* execution count */
-  union
-  {
-    arc_t *branches;	   /* branches from blocks that end on this
-			      line. Used for branch-counts when not
-			      all-blocks mode.  */
-    block_t *blocks;       /* blocks which start on this line.  Used
-			      in all-blocks mode.  */
-  } u;
+  arc_t *branches;	   /* branches from blocks that end on this line.  */
+  block_t *blocks;	   /* blocks which start on this line.
+			      Used in all-blocks mode.  */
   unsigned exists : 1;
   unsigned unexceptional : 1;
 } line_t;
@@ -253,7 +248,7 @@ typedef struct line_info
 bool
 line_t::has_block (block_t *needle)
 {
-  for (block_t *n = u.blocks; n; n = n->chain)
+  for (block_t *n = blocks; n; n = n->chain)
     if (n == needle)
       return true;
 
@@ -608,7 +603,7 @@ get_cycles_count (line_t &linfo, bool handle_negative_cycles = true)
 
   loop_type result = NO_LOOP;
   gcov_type count = 0;
-  for (block_t *block = linfo.u.blocks; block; block = block->chain)
+  for (block_t *block = linfo.blocks; block; block = block->chain)
     {
       arc_vector_t path;
       block_vector_t blocked;
@@ -886,7 +881,7 @@ output_intermediate_file (FILE *gcov_file, source_t *src)
 	fprintf (gcov_file, "lcount:%u,%s\n", line_num,
 		 format_gcov (line->count, 0, -1));
       if (flag_branches)
-        for (arc = line->u.branches; arc; arc = arc->line_next)
+	for (arc = line->branches; arc; arc = arc->line_next)
           {
             if (!arc->is_unconditional && !arc->is_call_non_return)
               {
@@ -1279,7 +1274,7 @@ find_source (const char *file_name)
 
   /* Resort the name map.  */
   qsort (names, n_names, sizeof (*names), name_sort);
-  
+
  check_date:
   if (sources[idx].file_time > bbg_file_time)
     {
@@ -2239,13 +2234,11 @@ mangle_name (char const *base, char *ptr)
 static void
 add_line_counts (coverage_t *coverage, function_t *fn)
 {
-  unsigned ix;
-  line_t *line = NULL; /* This is propagated from one iteration to the
-			  next.  */
-
+  bool has_any_line = false;
   /* Scan each basic block.  */
-  for (ix = 0; ix != fn->blocks.size (); ix++)
+  for (unsigned ix = 0; ix != fn->blocks.size (); ix++)
     {
+      line_t *line = NULL;
       block_t *block = &fn->blocks[ix];
       if (block->count && ix && ix + 1 != fn->blocks.size ())
 	fn->blocks_executed++;
@@ -2272,33 +2265,31 @@ add_line_counts (coverage_t *coverage, function_t *fn)
 	}
       block->cycle.arc = NULL;
       block->cycle.ident = ~0U;
+      has_any_line = true;
 
       if (!ix || ix + 1 == fn->blocks.size ())
 	/* Entry or exit block */;
-      else if (flag_all_blocks)
+      else if (line != NULL)
 	{
-	  line_t *block_line = line;
+	  block->chain = line->blocks;
+	  line->blocks = block;
 
-	  if (!block_line)
-	    block_line = &sources[fn->src].lines[fn->line];
-
-	  block->chain = block_line->u.blocks;
-	  block_line->u.blocks = block;
-	}
-      else if (flag_branches)
-	{
-	  arc_t *arc;
-
-	  for (arc = block->succ; arc; arc = arc->succ_next)
+	  if (flag_branches)
 	    {
-	      arc->line_next = line->u.branches;
-	      line->u.branches = arc;
-	      if (coverage && !arc->is_unconditional)
-		add_branch_counts (coverage, arc);
+	      arc_t *arc;
+
+	      for (arc = block->succ; arc; arc = arc->succ_next)
+		{
+		  arc->line_next = line->branches;
+		  line->branches = arc;
+		  if (coverage && !arc->is_unconditional)
+		    add_branch_counts (coverage, arc);
+		}
 	    }
 	}
     }
-  if (!line)
+
+  if (!has_any_line)
     fnotice (stderr, "%s:no lines for '%s'\n", bbg_file_name, fn->name);
 }
 
@@ -2321,22 +2312,7 @@ accumulate_line_counts (source_t *src)
 
   for (ix = src->num_lines, line = src->lines; ix--; line++)
     {
-      if (!flag_all_blocks)
-	{
-	  arc_t *arc, *arc_p, *arc_n;
-
-	  /* Total and reverse the branch information.  */
-	  for (arc = line->u.branches, arc_p = NULL; arc;
-	       arc_p = arc, arc = arc_n)
-	    {
-	      arc_n = arc->line_next;
-	      arc->line_next = arc_p;
-
-	      add_branch_counts (&src->coverage, arc);
-	    }
-	  line->u.branches = arc_p;
-	}
-      else if (line->u.blocks)
+      if (line->blocks)
 	{
 	  /* The user expects the line count to be the number of times
 	     a line has been executed. Simply summing the block count
@@ -2348,17 +2324,17 @@ accumulate_line_counts (source_t *src)
 	  gcov_type count = 0;
 
 	  /* Reverse the block information.  */
-	  for (block = line->u.blocks, block_p = NULL; block;
+	  for (block = line->blocks, block_p = NULL; block;
 	       block_p = block, block = block_n)
 	    {
 	      block_n = block->chain;
 	      block->chain = block_p;
 	      block->cycle.ident = ix;
 	    }
-	  line->u.blocks = block_p;
+	  line->blocks = block_p;
 
 	  /* Sum the entry arcs.  */
-	  for (block = line->u.blocks; block; block = block->chain)
+	  for (block = line->blocks; block; block = block->chain)
 	    {
 	      arc_t *arc;
 
@@ -2368,7 +2344,7 @@ accumulate_line_counts (source_t *src)
 	    }
 
 	  /* Cycle detection.  */
-	  for (block = line->u.blocks; block; block = block->chain)
+	  for (block = line->blocks; block; block = block->chain)
 	    {
 	      for (arc_t *arc = block->pred; arc; arc = arc->pred_next)
 		if (!line->has_block (arc->src))
@@ -2554,7 +2530,7 @@ output_lines (FILE *gcov_file, const source_t *src)
 	  arc_t *arc;
 	  int ix, jx;
 
-	  for (ix = jx = 0, block = line->u.blocks; block;
+	  for (ix = jx = 0, block = line->blocks; block;
 	       block = block->chain)
 	    {
 	      if (!block->is_call_return)
@@ -2578,7 +2554,7 @@ output_lines (FILE *gcov_file, const source_t *src)
 	  int ix;
 	  arc_t *arc;
 
-	  for (ix = 0, arc = line->u.branches; arc; arc = arc->line_next)
+	  for (ix = 0, arc = line->branches; arc; arc = arc->line_next)
 	    ix += output_branch_count (gcov_file, ix, arc);
 	}
     }

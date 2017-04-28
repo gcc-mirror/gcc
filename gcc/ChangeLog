@@ -1,5 +1,18 @@
 2017-04-28  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/79891
+	* gcov.c (add_line_counts): Assign BBs to lines just if the BB
+	is marked by compiler as living on a line.
+	(get_cycles_count): Remove usage of the union.
+	(output_intermediate_file): Likewise.
+	(find_source): Fix GNU coding style.
+	(accumulate_line_counts): Remove old non-all block mode.
+	(output_lines): Remove usage of the union.
+	* profile.c (output_location): Include all BBs, even if
+	belonging to a same line (and file) as a previous BB.
+
+2017-04-28  Martin Liska  <mliska@suse.cz>
+
 	* gcov.c (process_args): Handle new argument 'w'.
 	(read_graph_file): Assign ID to BBs.
 	(output_branch_count): Display BB # if verbose flag is set.
