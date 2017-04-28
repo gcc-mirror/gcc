@@ -1,3 +1,23 @@
+2017-04-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Complete_Object_Operation): When rewriting the
+	controlling actual in a prefixed call, preserve the original node
+	information if the prefix itself has been rewritten, for ASIS use.
+
+2017-04-28  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Insert_Post_Call_Actions):
+	Code clean up. Insert the post-call actions after an enclosing
+	procedure call when N denotes a function call and appears as an
+	actual parameter in the procedure call.
+
+2017-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Check_Component_Storage_Order): If there is a clause
+	for the component, also reject the attribute if the component
+	doesn't end on a byte boundary and its scalar storage order is
+	different from that of the enclosing record type.
+
 2017-04-28  Javier Miranda  <miranda@adacore.com>
 
 	* atree.ads (Info_Messages): Removed.

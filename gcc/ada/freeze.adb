@@ -1175,7 +1175,7 @@ package body Freeze is
 
       Comp_Byte_Aligned : Boolean;
       pragma Warnings (Off, Comp_Byte_Aligned);
-      --  Set for the record case, True if Comp starts on a byte boundary
+      --  Set for the record case, True if Comp is aligned on byte boundaries
       --  (in which case it is allowed to have different storage order).
 
       Comp_SSO_Differs  : Boolean;
@@ -1195,12 +1195,14 @@ package body Freeze is
 
          else
             --  If a component clause is present, check if the component starts
-            --  on a storage element boundary. Otherwise conservatively assume
-            --  it does so only in the case where the record is not packed.
+            --  and ends on byte boundaries. Otherwise conservatively assume it
+            --  does so only in the case where the record is not packed.
 
             if Present (Component_Clause (Comp)) then
                Comp_Byte_Aligned :=
-                 Normalized_First_Bit (Comp) mod System_Storage_Unit = 0;
+                 (Normalized_First_Bit (Comp) mod System_Storage_Unit = 0)
+                   and then
+                 (Esize (Comp) mod System_Storage_Unit = 0);
             else
                Comp_Byte_Aligned := not Is_Packed (Encl_Type);
             end if;
