@@ -1,3 +1,12 @@
+2017-04-28  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/80523
+	* gimple-ssa-sprintf.c (target_to_host_charmap): New global variable.
+	(init_target_to_host_charmap, target_to_host, target_strtol10): New
+	functions.
+	(maybe_warn, format_directive, parse_directive): Use new functions.
+	(pass_sprintf_length::execute): Call init_target_to_host_charmap.	
+
 2017-04-28  Marc Glisse  <marc.glisse@inria.fr>
 
 	* match.pd (X+Z OP Y+Z, X-Z OP Y-Z, Z-X OP Z-Y): New transformations.

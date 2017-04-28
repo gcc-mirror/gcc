@@ -66,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "calls.h"
 #include "cfgloop.h"
 #include "intl.h"
+#include "langhooks.h"
 
 #include "builtins.h"
 #include "stor-layout.h"
@@ -271,6 +272,158 @@ static inline unsigned HOST_WIDE_INT
 target_size_max ()
 {
   return tree_to_uhwi (TYPE_MAX_VALUE (size_type_node));
+}
+
+/* A straightforward mapping from the execution character set to the host
+   character set indexed by execution character.  */
+
+static char target_to_host_charmap[256];
+
+/* Initialize a mapping from the execution character set to the host
+   character set.  */
+
+static bool
+init_target_to_host_charmap ()
+{
+  /* If the percent sign is non-zero the mapping has already been
+     initialized.  */
+  if (target_to_host_charmap['%'])
+    return true;
+
+  /* Initialize the target_percent character (done elsewhere).  */
+  if (!init_target_chars ())
+    return false;
+
+  /* The subset of the source character set used by printf conversion
+     specifications (strictly speaking, not all letters are used but
+     they are included here for the sake of simplicity).  The dollar
+     sign must be included even though it's not in the basic source
+     character set.  */
+  const char srcset[] = " 0123456789!\"#%&'()*+,-./:;<=>?[\\]^_{|}~$"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+  /* Set the mapping for all characters to some ordinary value (i,e.,
+     not none used in printf conversion specifications) and overwrite
+     those that are used by conversion specifications with their
+     corresponding values.  */
+  memset (target_to_host_charmap + 1, '?', sizeof target_to_host_charmap - 1);
+
+  /* Are the two sets of characters the same?  */
+  bool all_same_p = true;
+
+  for (const char *pc = srcset; *pc; ++pc)
+    {
+      /* Slice off the high end bits in case target characters are
+	 signed.  All values are expected to be non-nul, otherwise
+	 there's a problem.  */
+      if (unsigned char tc = lang_hooks.to_target_charset (*pc))
+	{
+	  target_to_host_charmap[tc] = *pc;
+	  if (tc != *pc)
+	    all_same_p = false;
+	}
+      else
+	return false;
+
+    }
+
+  /* Set the first element to a non-zero value if the mapping
+     is 1-to-1, otherwise leave it clear (NUL is assumed to be
+     the same in both character sets).  */
+  target_to_host_charmap[0] = all_same_p;
+
+  return true;
+}
+
+/* Return the host source character corresponding to the character
+   CH in the execution character set if one exists, or some innocuous
+   (non-special, non-nul) source character otherwise.  */
+
+static inline unsigned char
+target_to_host (unsigned char ch)
+{
+  return target_to_host_charmap[ch];
+}
+
+/* Convert an initial substring of the string TARGSTR consisting of
+   characters in the execution character set into a string in the
+   source character set on the host and store up to HOSTSZ characters
+   in the buffer pointed to by HOSTR.  Return HOSTR.  */
+
+static const char*
+target_to_host (char *hostr, size_t hostsz, const char *targstr)
+{
+  /* Make sure the buffer is reasonably big.  */
+  gcc_assert (hostsz > 4);
+
+  /* The interesting subset of source and execution characters are
+     the same so no conversion is necessary.  However, truncate
+     overlong strings just like the translated strings are.  */
+  if (target_to_host_charmap['\0'] == 1)
+    {
+      strncpy (hostr, targstr, hostsz - 4);
+      if (strlen (targstr) >= hostsz)
+	strcpy (hostr + hostsz - 4, "...");
+      return hostr;
+    }
+
+  /* Convert the initial substring of TARGSTR to the corresponding
+     characters in the host set, appending "..." if TARGSTR is too
+     long to fit.  Using the static buffer assumes the function is
+     not called in between sequence points (which it isn't).  */
+  for (char *ph = hostr; ; ++targstr)
+    {
+      *ph++ = target_to_host (*targstr);
+      if (!*targstr)
+	break;
+
+      if (size_t (ph - hostr) == hostsz - 4)
+	{
+	  *ph = '\0';
+	  strcat (ph, "...");
+	  break;
+	}
+    }
+
+  return hostr;
+}
+
+/* Convert the sequence of decimal digits in the execution character
+   starting at S to a long, just like strtol does.  Return the result
+   and set *END to one past the last converted character.  On range
+   error set ERANGE to the digit that caused it.  */
+
+static inline long
+target_strtol10 (const char **ps, const char **erange)
+{
+  unsigned HOST_WIDE_INT val = 0;
+  for ( ; ; ++*ps)
+    {
+      unsigned char c = target_to_host (**ps);
+      if (ISDIGIT (c))
+	{
+	  c -= '0';
+
+	  /* Check for overflow.  */
+	  if (val > (LONG_MAX - c) / 10LU)
+	    {
+	      val = LONG_MAX;
+	      *erange = *ps;
+
+	      /* Skip the remaining digits.  */
+	      do
+		c = target_to_host (*++*ps);
+	      while (ISDIGIT (c));
+	      break;
+	    }
+	  else
+	    val = val * 10 + c;
+	}
+      else
+	break;
+    }
+
+  return val;
 }
 
 /* Return the constant initial value of DECL if available or DECL
@@ -2284,12 +2437,16 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 		    || (res.max < HOST_WIDE_INT_MAX
 			&& avail_range.min < res.max)));
 
+  /* Buffer for the directive in the host character set (used when
+     the source character set is different).  */
+  char hostdir[32];
+
   if (avail_range.min == avail_range.max)
     {
       /* The size of the destination region is exact.  */
       unsigned HOST_WIDE_INT navail = avail_range.max;
 
-      if (*dir.beg != '%')
+      if (target_to_host (*dir.beg) != '%')
 	{
 	  /* For plain character directives (i.e., the format string itself)
 	     but not others, point the caret at the first character that's
@@ -2339,9 +2496,9 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 		  : G_("%<%.*s%> directive writing %wu bytes "
 		       "into a region of size %wu")));
 	  return fmtwarn (dirloc, pargrange, NULL,
-			  info.warnopt (), fmtstr,
-			  dir.len, dir.beg, res.min,
-			  navail);
+			  info.warnopt (), fmtstr, dir.len,
+			  target_to_host (hostdir, sizeof hostdir, dir.beg),
+			  res.min, navail);
 	}
 
       if (res.min == 0 && res.max < maxbytes)
@@ -2356,8 +2513,8 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 	       : G_("%<%.*s%> directive writing up to %wu bytes "
 		    "into a region of size %wu"));
 	  return fmtwarn (dirloc, pargrange, NULL,
-			  info.warnopt (), fmtstr,
-			  dir.len, dir.beg,
+			  info.warnopt (), fmtstr, dir.len,
+			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  res.max, navail);
 	}
 
@@ -2376,8 +2533,8 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 	       : G_("%<%.*s%> directive writing likely %wu or more bytes "
 		    "into a region of size %wu"));
 	  return fmtwarn (dirloc, pargrange, NULL,
-			  info.warnopt (), fmtstr,
-			  dir.len, dir.beg,
+			  info.warnopt (), fmtstr, dir.len,
+			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  res.likely, navail);
 	}
 
@@ -2393,10 +2550,9 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 	       : G_("%<%.*s%> directive writing between %wu and "
 		    "%wu bytes into a region of size %wu"));
 	  return fmtwarn (dirloc, pargrange, NULL,
-			  info.warnopt (), fmtstr,
-			  dir.len, dir.beg,
-			  res.min, res.max,
-			  navail);
+			  info.warnopt (), fmtstr, dir.len,
+			  target_to_host (hostdir, sizeof hostdir, dir.beg),
+			  res.min, res.max, navail);
 	}
 
       const char* fmtstr
@@ -2409,14 +2565,14 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 	   : G_("%<%.*s%> directive writing %wu or more bytes "
 		"into a region of size %wu"));
       return fmtwarn (dirloc, pargrange, NULL,
-		      info.warnopt (), fmtstr,
-		      dir.len, dir.beg,
+		      info.warnopt (), fmtstr, dir.len,
+		      target_to_host (hostdir, sizeof hostdir, dir.beg),
 		      res.min, navail);
     }
 
   /* The size of the destination region is a range.  */
 
-  if (*dir.beg != '%')
+  if (target_to_host (*dir.beg) != '%')
     {
       unsigned HOST_WIDE_INT navail = avail_range.max;
 
@@ -2468,9 +2624,9 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 		   "into a region of size between %wu and %wu")));
 
       return fmtwarn (dirloc, pargrange, NULL,
-		      info.warnopt (), fmtstr,
-		      dir.len, dir.beg, res.min,
-		      avail_range.min, avail_range.max);
+		      info.warnopt (), fmtstr, dir.len,
+		      target_to_host (hostdir, sizeof hostdir, dir.beg),
+		      res.min, avail_range.min, avail_range.max);
     }
 
   if (res.min == 0 && res.max < maxbytes)
@@ -2487,9 +2643,9 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 	   : G_("%<%.*s%> directive writing up to %wu bytes "
 		"into a region of size between %wu and %wu"));
       return fmtwarn (dirloc, pargrange, NULL,
-		      info.warnopt (), fmtstr,
-		      dir.len, dir.beg, res.max,
-		      avail_range.min, avail_range.max);
+		      info.warnopt (), fmtstr, dir.len,
+		      target_to_host (hostdir, sizeof hostdir, dir.beg),
+		      res.max, avail_range.min, avail_range.max);
     }
 
   if (res.min == 0 && maxbytes <= res.max)
@@ -2509,9 +2665,9 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 	   : G_("%<%.*s%> directive writing likely %wu or more bytes "
 		"into a region of size between %wu and %wu"));
       return fmtwarn (dirloc, pargrange, NULL,
-		      info.warnopt (), fmtstr,
-		      dir.len, dir.beg, res.likely,
-		      avail_range.min, avail_range.max);
+		      info.warnopt (), fmtstr, dir.len,
+		      target_to_host (hostdir, sizeof hostdir, dir.beg),
+		      res.likely, avail_range.min, avail_range.max);
     }
 
   if (res.max < maxbytes)
@@ -2528,10 +2684,9 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
 	   : G_("%<%.*s%> directive writing between %wu and "
 		"%wu bytes into a region of size between %wu and %wu"));
       return fmtwarn (dirloc, pargrange, NULL,
-		      info.warnopt (), fmtstr,
-		      dir.len, dir.beg,
-		      res.min, res.max,
-		      avail_range.min, avail_range.max);
+		      info.warnopt (), fmtstr, dir.len,
+		      target_to_host (hostdir, sizeof hostdir, dir.beg),
+		      res.min, res.max, avail_range.min, avail_range.max);
     }
 
   const char* fmtstr
@@ -2546,10 +2701,9 @@ maybe_warn (substring_loc &dirloc, source_range *pargrange,
        : G_("%<%.*s%> directive writing %wu or more bytes "
 	    "into a region of size between %wu and %wu"));
   return fmtwarn (dirloc, pargrange, NULL,
-		  info.warnopt (), fmtstr,
-		  dir.len, dir.beg,
-		  res.min,
-		  avail_range.min, avail_range.max);
+		  info.warnopt (), fmtstr, dir.len,
+		  target_to_host (hostdir, sizeof hostdir, dir.beg),
+		  res.min, avail_range.min, avail_range.max);
 }
 
 /* Compute the length of the output resulting from the directive DIR
@@ -2630,13 +2784,17 @@ format_directive (const pass_sprintf_length::call_info &info,
 	}
     }
 
+  /* Buffer for the directive in the host character set (used when
+     the source character set is different).  */
+  char hostdir[32];
+
   int dirlen = dir.len;
 
   if (fmtres.nullp)
     {
       fmtwarn (dirloc, pargrange, NULL, info.warnopt (),
 	       "%<%.*s%> directive argument is null",
-	       dirlen, dir.beg);
+	       dirlen, target_to_host (hostdir, sizeof hostdir, dir.beg));
 
       /* Don't bother processing the rest of the format string.  */
       res->warned = true;
@@ -2703,7 +2861,9 @@ format_directive (const pass_sprintf_length::call_info &info,
 			  info.warnopt (),
 			  "%<%.*s%> directive output of %wu bytes exceeds "
 			  "minimum required size of 4095",
-			  dirlen, dir.beg, fmtres.range.min);
+			  dirlen,
+			  target_to_host (hostdir, sizeof hostdir, dir.beg),
+			  fmtres.range.min);
       else
 	{
 	  const char *fmtstr
@@ -2714,8 +2874,8 @@ format_directive (const pass_sprintf_length::call_info &info,
 		    "bytes exceeds minimum required size of 4095"));
 
 	  warned = fmtwarn (dirloc, pargrange, NULL,
-			    info.warnopt (), fmtstr,
-			    dirlen, dir.beg,
+			    info.warnopt (), fmtstr, dirlen,
+			    target_to_host (hostdir, sizeof hostdir, dir.beg),
 			    fmtres.range.min, fmtres.range.max);
 	}
     }
@@ -2744,7 +2904,9 @@ format_directive (const pass_sprintf_length::call_info &info,
 	warned = fmtwarn (dirloc, pargrange, NULL, info.warnopt (),
 			  "%<%.*s%> directive output of %wu bytes causes "
 			  "result to exceed %<INT_MAX%>",
-			  dirlen, dir.beg, fmtres.range.min);
+			  dirlen,
+			  target_to_host (hostdir, sizeof hostdir, dir.beg),
+			  fmtres.range.min);
       else
 	{
 	  const char *fmtstr
@@ -2754,8 +2916,8 @@ format_directive (const pass_sprintf_length::call_info &info,
 	       : G_ ("%<%.*s%> directive output between %wu and %wu "
 		     "bytes may cause result to exceed %<INT_MAX%>"));
 	  warned = fmtwarn (dirloc, pargrange, NULL,
-			    info.warnopt (), fmtstr,
-			    dirlen, dir.beg,
+			    info.warnopt (), fmtstr, dirlen,
+			    target_to_host (hostdir, sizeof hostdir, dir.beg),
 			    fmtres.range.min, fmtres.range.max);
 	}
     }
@@ -2847,7 +3009,7 @@ parse_directive (pass_sprintf_length::call_info &info,
 		 directive &dir, format_result *res,
 		 const char *str, unsigned *argno)
 {
-  const char *pcnt = strchr (str, '%');
+  const char *pcnt = strchr (str, target_percent);
   dir.beg = str;
 
   if (size_t len = pcnt ? pcnt - str : *str ? strlen (str) : 1)
@@ -2873,13 +3035,24 @@ parse_directive (pass_sprintf_length::call_info &info,
   const char *pf = pcnt + 1;
 
     /* POSIX numbered argument index or zero when none.  */
-  unsigned dollar = 0;
+  HOST_WIDE_INT dollar = 0;
 
   /* With and precision.  -1 when not specified, HOST_WIDE_INT_MIN
      when given by a va_list argument, and a non-negative value
      when specified in the format string itself.  */
   HOST_WIDE_INT width = -1;
   HOST_WIDE_INT precision = -1;
+
+  /* Pointers to the beginning of the width and precision decimal
+     string (if any) within the directive.  */
+  const char *pwidth = 0;
+  const char *pprec = 0;
+
+  /* When the value of the decimal string that specifies width or
+     precision is out of range, points to the digit that causes
+     the value to exceed the limit.  */
+  const char *werange = NULL;
+  const char *perange = NULL;
 
   /* Width specified via the asterisk.  Need not be INTEGER_CST.
      For vararg functions set to void_node.  */
@@ -2889,17 +3062,16 @@ parse_directive (pass_sprintf_length::call_info &info,
      For vararg functions set to void_node.  */
   tree star_precision = NULL_TREE;
 
-  if (ISDIGIT (*pf))
+  if (ISDIGIT (target_to_host (*pf)))
     {
       /* This could be either a POSIX positional argument, the '0'
 	 flag, or a width, depending on what follows.  Store it as
 	 width and sort it out later after the next character has
 	 been seen.  */
-      char *end;
-      width = strtol (pf, &end, 10);
-      pf = end;
+      pwidth = pf;
+      width = target_strtol10 (&pf, &werange);
     }
-  else if ('*' == *pf)
+  else if (target_to_host (*pf) == '*')
     {
       /* Similarly to the block above, this could be either a POSIX
 	 positional argument or a width, depending on what follows.  */
@@ -2910,7 +3082,7 @@ parse_directive (pass_sprintf_length::call_info &info,
       ++pf;
     }
 
-  if (*pf == '$')
+  if (target_to_host (*pf) == '$')
     {
       /* Handle the POSIX dollar sign which references the 1-based
 	 positional argument number.  */
@@ -2925,7 +3097,7 @@ parse_directive (pass_sprintf_length::call_info &info,
       /* Bail when the numbered argument is out of range (it will
 	 have already been diagnosed by -Wformat).  */
       if (dollar == 0
-	  || dollar == info.argidx
+	  || dollar == (int)info.argidx
 	  || dollar > gimple_call_num_args (info.callstmt))
 	return false;
 
@@ -2959,14 +3131,14 @@ parse_directive (pass_sprintf_length::call_info &info,
 	 the next field is the optional flags followed by an optional
 	 width.  */
       for ( ; ; ) {
-	switch (*pf)
+	switch (target_to_host (*pf))
 	  {
 	  case ' ':
 	  case '0':
 	  case '+':
 	  case '-':
 	  case '#':
-	    dir.set_flag (*pf++);
+	    dir.set_flag (target_to_host (*pf++));
 	    break;
 
 	  default:
@@ -2975,13 +3147,13 @@ parse_directive (pass_sprintf_length::call_info &info,
       }
 
     start_width:
-      if (ISDIGIT (*pf))
+      if (ISDIGIT (target_to_host (*pf)))
 	{
-	  char *end;
-	  width = strtol (pf, &end, 10);
-	  pf = end;
+	  werange = 0;
+	  pwidth = pf;
+	  width = target_strtol10 (&pf, &werange);
 	}
-      else if ('*' == *pf)
+      else if (target_to_host (*pf) == '*')
 	{
 	  if (*argno < gimple_call_num_args (info.callstmt))
 	    star_width = gimple_call_arg (info.callstmt, (*argno)++);
@@ -2993,7 +3165,7 @@ parse_directive (pass_sprintf_length::call_info &info,
 	    }
 	  ++pf;
 	}
-      else if ('\'' == *pf)
+      else if (target_to_host (*pf) == '\'')
 	{
 	  /* The POSIX apostrophe indicating a numeric grouping
 	     in the current locale.  Even though it's possible to
@@ -3005,17 +3177,16 @@ parse_directive (pass_sprintf_length::call_info &info,
     }
 
  start_precision:
-  if ('.' == *pf)
+  if (target_to_host (*pf) == '.')
     {
       ++pf;
 
-      if (ISDIGIT (*pf))
+      if (ISDIGIT (target_to_host (*pf)))
 	{
-	  char *end;
-	  precision = strtol (pf, &end, 10);
-	  pf = end;
+	  pprec = pf;
+	  precision = target_strtol10 (&pf, &perange);
 	}
-      else if ('*' == *pf)
+      else if (target_to_host (*pf) == '*')
 	{
 	  if (*argno < gimple_call_num_args (info.callstmt))
 	    star_precision = gimple_call_arg (info.callstmt, (*argno)++);
@@ -3035,10 +3206,10 @@ parse_directive (pass_sprintf_length::call_info &info,
 	}
     }
 
-  switch (*pf)
+  switch (target_to_host (*pf))
     {
     case 'h':
-      if (pf[1] == 'h')
+      if (target_to_host (pf[1]) == 'h')
 	{
 	  ++pf;
 	  dir.modifier = FMT_LEN_hh;
@@ -3059,7 +3230,7 @@ parse_directive (pass_sprintf_length::call_info &info,
       break;
 
     case 'l':
-      if (pf[1] == 'l')
+      if (target_to_host (pf[1]) == 'l')
 	{
 	  ++pf;
 	  dir.modifier = FMT_LEN_ll;
@@ -3080,7 +3251,7 @@ parse_directive (pass_sprintf_length::call_info &info,
       break;
     }
 
-  switch (*pf)
+  switch (target_to_host (*pf))
     {
       /* Handle a sole '%' character the same as "%%" but since it's
 	 undefined prevent the result from being folded.  */
@@ -3141,7 +3312,14 @@ parse_directive (pass_sprintf_length::call_info &info,
       return 0;
     }
 
-  dir.specifier = *pf++;
+  dir.specifier = target_to_host (*pf++);
+
+  /* Store the length of the format directive.  */
+  dir.len = pf - pcnt;
+
+  /* Buffer for the directive in the host character set (used when
+     the source character set is different).  */
+  char hostdir[32];
 
   if (star_width)
     {
@@ -3156,7 +3334,25 @@ parse_directive (pass_sprintf_length::call_info &info,
 	}
     }
   else
-    dir.set_width (width);
+    {
+      if (width == LONG_MAX && werange)
+	{
+	  size_t begin = dir.beg - info.fmtstr + (pwidth - pcnt);
+	  size_t caret = begin + (werange - pcnt);
+	  size_t end = pf - info.fmtstr - 1;
+
+	  /* Create a location for the width part of the directive,
+	     pointing the caret at the first out-of-range digit.  */
+	  substring_loc dirloc (info.fmtloc, TREE_TYPE (info.format),
+				caret, begin, end);
+
+	  fmtwarn (dirloc, NULL, NULL,
+		   info.warnopt (), "%<%.*s%> directive width out of range",
+		   dir.len, target_to_host (hostdir, sizeof hostdir, dir.beg));
+	}
+
+      dir.set_width (width);
+    }
 
   if (star_precision)
     {
@@ -3171,7 +3367,26 @@ parse_directive (pass_sprintf_length::call_info &info,
 	}
     }
   else
-    dir.set_precision (precision);
+    {
+      if (precision == LONG_MAX && perange)
+	{
+	  size_t begin = dir.beg - info.fmtstr + (pprec - pcnt) - 1;
+	  size_t caret = dir.beg - info.fmtstr + (perange - pcnt) - 1;
+	  size_t end = pf - info.fmtstr - 2;
+
+	  /* Create a location for the precision part of the directive,
+	     including the leading period, pointing the caret at the first
+	     out-of-range digit .  */
+	  substring_loc dirloc (info.fmtloc, TREE_TYPE (info.format),
+				caret, begin, end);
+
+	  fmtwarn (dirloc, NULL, NULL,
+		   info.warnopt (), "%<%.*s%> directive precision out of range",
+		   dir.len, target_to_host (hostdir, sizeof hostdir, dir.beg));
+	}
+
+      dir.set_precision (precision);
+    }
 
   /* Extract the argument if the directive takes one and if it's
      available (e.g., the function doesn't take a va_list).  Treat
@@ -3180,9 +3395,6 @@ parse_directive (pass_sprintf_length::call_info &info,
   if (dir.specifier != '%'
       && *argno < gimple_call_num_args (info.callstmt))
     dir.arg = gimple_call_arg (info.callstmt, dollar ? dollar : (*argno)++);
-
-  /* Return the length of the format directive.  */
-  dir.len = pf - pcnt;
 
   if (dump_file)
     {
@@ -3708,6 +3920,8 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
 unsigned int
 pass_sprintf_length::execute (function *fun)
 {
+  init_target_to_host_charmap ();
+
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
