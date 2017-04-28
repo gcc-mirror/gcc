@@ -55,8 +55,10 @@ generic
 
    with function Hash (Element : Element_Type) return Hash_Type;
 
-   with function Equivalent_Elements (Left, Right : Element_Type)
-                                      return Boolean is "=";
+   with function Equivalent_Elements
+     (Left  : Element_Type;
+      Right : Element_Type) return Boolean is "=";
+
 package Ada.Containers.Formal_Hashed_Sets with
   SPARK_Mode
 is
@@ -122,8 +124,9 @@ is
         Global => null,
         Post =>
           (if Find'Result > 0 then
-             Find'Result <= E.Length (Container)
-               and Equivalent_Elements (Item, E.Get (Container, Find'Result)));
+              Find'Result <= E.Length (Container)
+                and Equivalent_Elements
+                      (Item, E.Get (Container, Find'Result)));
 
       function E_Elements_Included
         (Left  : E.Sequence;
@@ -135,9 +138,9 @@ is
         Post   =>
           E_Elements_Included'Result =
             (for all I in 1 .. E.Length (Left) =>
-               Find (Right, E.Get (Left, I)) > 0
-                 and then E.Get (Right, Find (Right, E.Get (Left, I))) =
-                     E.Get (Left, I));
+              Find (Right, E.Get (Left, I)) > 0
+                and then E.Get (Right, Find (Right, E.Get (Left, I))) =
+                         E.Get (Left, I));
       pragma Annotate (GNATprove, Inline_For_Proof, E_Elements_Included);
 
       function E_Elements_Included
@@ -152,9 +155,9 @@ is
           E_Elements_Included'Result =
             (for all I in 1 .. E.Length (Left) =>
               (if M.Contains (Model, E.Get (Left, I)) then
-                 Find (Right, E.Get (Left, I)) > 0
-                   and then E.Get (Right, Find (Right, E.Get (Left, I))) =
-                       E.Get (Left, I)));
+                  Find (Right, E.Get (Left, I)) > 0
+                    and then E.Get (Right, Find (Right, E.Get (Left, I))) =
+                             E.Get (Left, I)));
       pragma Annotate (GNATprove, Inline_For_Proof, E_Elements_Included);
 
       function E_Elements_Included
@@ -171,13 +174,14 @@ is
           E_Elements_Included'Result =
             (for all I in 1 .. E.Length (Container) =>
               (if M.Contains (Model, E.Get (Container, I)) then
-                 Find (Left, E.Get (Container, I)) > 0
-                   and then E.Get (Left, Find (Left, E.Get (Container, I))) =
-                       E.Get (Container, I)
+                  Find (Left, E.Get (Container, I)) > 0
+                    and then E.Get (Left, Find (Left, E.Get (Container, I))) =
+                             E.Get (Container, I)
                else
-                 Find (Right, E.Get (Container, I)) > 0
-                   and then E.Get (Right, Find (Right, E.Get (Container, I))) =
-                       E.Get (Container, I)));
+                  Find (Right, E.Get (Container, I)) > 0
+                    and then E.Get
+                               (Right, Find (Right, E.Get (Container, I))) =
+                             E.Get (Container, I)));
       pragma Annotate (GNATprove, Inline_For_Proof, E_Elements_Included);
 
       package P is new Ada.Containers.Functional_Maps
@@ -241,8 +245,8 @@ is
 
                and (for all C of P_Left =>
                      (if C /= Position then
-                        E.Get (E_Left, P.Get (P_Left, C)) =
-                        E.Get (E_Right, P.Get (P_Right, C)))));
+                         E.Get (E_Left, P.Get (P_Left, C)) =
+                         E.Get (E_Right, P.Get (P_Right, C)))));
 
       function Model (Container : Set) return M.Set with
       --  The high-level model of a set is a set of elements. Neither cursors
@@ -266,15 +270,16 @@ is
             --  It only contains keys contained in Model
 
             and (for all Item of Elements'Result =>
-                   M.Contains (Model (Container), Item))
+                  M.Contains (Model (Container), Item))
 
             --  It contains all the elements contained in Model
 
             and (for all Item of Model (Container) =>
                   (Find (Elements'Result, Item) > 0
-                     and then Equivalent_Elements
-                      (E.Get (Elements'Result, Find (Elements'Result, Item)),
-                       Item)))
+                    and then Equivalent_Elements
+                               (E.Get (Elements'Result,
+                                       Find (Elements'Result, Item)),
+                                Item)))
 
             --  It has no duplicate
 
@@ -311,7 +316,7 @@ is
             and then
               (for all J of Positions'Result =>
                 (if P.Get (Positions'Result, I) = P.Get (Positions'Result, J)
-                  then I = J)));
+                 then I = J)));
 
       procedure Lift_Abstraction_Level (Container : Set) with
         --  Lift_Abstraction_Level is a ghost procedure that does nothing but
@@ -343,13 +348,13 @@ is
    function "=" (Left, Right : Set) return Boolean with
      Global => null,
      Post   =>
-       "="'Result =
-         (Length (Left) = Length (Right)
-            and E_Elements_Included (Elements (Left), Elements (Right)))
+         "="'Result =
+           (Length (Left) = Length (Right)
+             and E_Elements_Included (Elements (Left), Elements (Right)))
        and
          "="'Result =
            (E_Elements_Included (Elements (Left), Elements (Right))
-              and E_Elements_Included (Elements (Right), Elements (Left)));
+             and E_Elements_Included (Elements (Right), Elements (Left)));
 
    function Equivalent_Sets (Left, Right : Set) return Boolean with
      Global => null,
@@ -378,12 +383,10 @@ is
 
          --  Actual elements are preserved
 
-         and
-           E_Elements_Included
-             (Elements (Container), Elements (Container)'Old)
-         and
-           E_Elements_Included
-             (Elements (Container)'Old, Elements (Container));
+         and E_Elements_Included
+              (Elements (Container), Elements (Container)'Old)
+         and E_Elements_Included
+              (Elements (Container)'Old, Elements (Container));
 
    function Is_Empty (Container : Set) return Boolean with
      Global => null,
@@ -402,10 +405,8 @@ is
 
          --  Actual elements are preserved
 
-         and
-           E_Elements_Included (Elements (Target), Elements (Source))
-         and
-           E_Elements_Included (Elements (Source), Elements (Target));
+         and E_Elements_Included (Elements (Target), Elements (Source))
+         and E_Elements_Included (Elements (Source), Elements (Target));
 
    function Copy
      (Source   : Set;
@@ -482,10 +483,8 @@ is
 
          --  Actual elements are preserved
 
-         and
-           E_Elements_Included (Elements (Target), Elements (Source)'Old)
-         and
-           E_Elements_Included (Elements (Source)'Old, Elements (Target));
+         and E_Elements_Included (Elements (Target), Elements (Source)'Old)
+         and E_Elements_Included (Elements (Source)'Old, Elements (Target));
 
    procedure Insert
      (Container : in out Set;
@@ -769,27 +768,25 @@ is
 
          --  Elements of Target come from either Source or Target
 
-         and
-           M.Included_In_Union
-             (Model (Target), Model (Source), Model (Target)'Old)
+         and M.Included_In_Union
+               (Model (Target), Model (Source), Model (Target)'Old)
 
          --  Actual value of elements come from either Left or Right
 
-         and
-           E_Elements_Included
-             (Elements (Target),
-              Model (Target)'Old,
-              Elements (Target)'Old,
-              Elements (Source))
-         and
-           E_Elements_Included
-             (Elements (Target)'Old, Model (Target)'Old, Elements (Target))
-         and
-           E_Elements_Included
-             (Elements (Source),
-              Model (Target)'Old,
-              Elements (Source),
-              Elements (Target))
+         and E_Elements_Included
+               (Elements (Target),
+                Model (Target)'Old,
+                Elements (Target)'Old,
+                Elements (Source))
+
+         and E_Elements_Included
+               (Elements (Target)'Old, Model (Target)'Old, Elements (Target))
+
+         and E_Elements_Included
+               (Elements (Source),
+                Model (Target)'Old,
+                Elements (Source),
+                Elements (Target))
 
          --  Mapping from cursors of Target to elements is preserved
 
@@ -820,21 +817,20 @@ is
 
          --  Actual value of elements come from either Left or Right
 
-         and
-           E_Elements_Included
-             (Elements (Union'Result),
-              Model (Left),
-              Elements (Left),
-              Elements (Right))
-         and
-           E_Elements_Included
-             (Elements (Left), Model (Left), Elements (Union'Result))
-         and
-           E_Elements_Included
-             (Elements (Right),
-              Model (Left),
-              Elements (Right),
-              Elements (Union'Result));
+         and E_Elements_Included
+               (Elements (Union'Result),
+                Model (Left),
+                Elements (Left),
+                Elements (Right))
+
+         and E_Elements_Included
+               (Elements (Left), Model (Left), Elements (Union'Result))
+
+         and E_Elements_Included
+               (Elements (Right),
+                Model (Left),
+                Elements (Right),
+                Elements (Union'Result));
 
    function "or" (Left, Right : Set) return Set renames Union;
 
@@ -854,16 +850,14 @@ is
 
          --  Elements both in Source and Target are in the intersection
 
-         and
-           M.Includes_Intersection
-             (Model (Target), Model (Source), Model (Target)'Old)
+         and M.Includes_Intersection
+               (Model (Target), Model (Source), Model (Target)'Old)
 
          --  Actual value of elements of Target is preserved
 
          and E_Elements_Included (Elements (Target), Elements (Target)'Old)
-         and
-           E_Elements_Included
-             (Elements (Target)'Old, Model (Source), Elements (Target))
+         and E_Elements_Included
+               (Elements (Target)'Old, Model (Source), Elements (Target))
 
          --  Mapping from cursors of Target to elements is preserved
 
@@ -886,18 +880,17 @@ is
 
          --  Elements both in Left and Right are in the result of Intersection
 
-         and
-           M.Includes_Intersection
-             (Model (Intersection'Result), Model (Left), Model (Right))
+         and M.Includes_Intersection
+               (Model (Intersection'Result), Model (Left), Model (Right))
 
          --  Actual value of elements come from Left
 
-         and
-           E_Elements_Included
-             (Elements (Intersection'Result), Elements (Left))
-         and
-           E_Elements_Included
-             (Elements (Left), Model (Right), Elements (Intersection'Result));
+         and E_Elements_Included
+               (Elements (Intersection'Result), Elements (Left))
+
+         and E_Elements_Included
+               (Elements (Left), Model (Right),
+                Elements (Intersection'Result));
 
    function "and" (Left, Right : Set) return Set renames Intersection;
 
@@ -917,16 +910,14 @@ is
 
          --  Elements in Target but not in Source are in the difference
 
-         and
-           M.Included_In_Union
-             (Model (Target)'Old, Model (Target), Model (Source))
+         and M.Included_In_Union
+               (Model (Target)'Old, Model (Target), Model (Source))
 
          --  Actual value of elements of Target is preserved
 
          and E_Elements_Included (Elements (Target), Elements (Target)'Old)
-         and
-           E_Elements_Included
-             (Elements (Target)'Old, Model (Target), Elements (Target))
+         and E_Elements_Included
+               (Elements (Target)'Old, Model (Target), Elements (Target))
 
          --  Mapping from cursors of Target to elements is preserved
 
@@ -952,19 +943,18 @@ is
 
          --  Elements in Left but not in Right are in the difference
 
-         and
-           M.Included_In_Union
-             (Model (Left), Model (Difference'Result), Model (Right))
+         and M.Included_In_Union
+               (Model (Left), Model (Difference'Result), Model (Right))
 
          --  Actual value of elements come from Left
 
-         and
-           E_Elements_Included (Elements (Difference'Result), Elements (Left))
-         and
-           E_Elements_Included
-             (Elements (Left),
-              Model (Difference'Result),
-              Elements (Difference'Result));
+         and E_Elements_Included
+               (Elements (Difference'Result), Elements (Left))
+
+         and E_Elements_Included
+               (Elements (Left),
+                Model (Difference'Result),
+                Elements (Difference'Result));
 
    function "-" (Left, Right : Set) return Set renames Difference;
 
@@ -984,30 +974,27 @@ is
 
          --  Elements in Target but not in Source are in the difference
 
-         and
-           M.Included_In_Union
-             (Model (Target)'Old, Model (Target), Model (Source))
+         and M.Included_In_Union
+               (Model (Target)'Old, Model (Target), Model (Source))
 
          --  Elements in Source but not in Target are in the difference
 
-         and
-           M.Included_In_Union
-             (Model (Source), Model (Target), Model (Target)'Old)
+         and M.Included_In_Union
+               (Model (Source), Model (Target), Model (Target)'Old)
 
          --  Actual value of elements come from either Left or Right
 
-         and
-           E_Elements_Included
-             (Elements (Target),
-              Model (Target)'Old,
-              Elements (Target)'Old,
-              Elements (Source))
-         and
-           E_Elements_Included
-             (Elements (Target)'Old, Model (Target), Elements (Target))
-         and
-           E_Elements_Included
-             (Elements (Source), Model (Target), Elements (Target));
+         and E_Elements_Included
+               (Elements (Target),
+                Model (Target)'Old,
+                Elements (Target)'Old,
+                Elements (Source))
+
+         and E_Elements_Included
+               (Elements (Target)'Old, Model (Target), Elements (Target))
+
+         and E_Elements_Included
+               (Elements (Source), Model (Target), Elements (Target));
 
    function Symmetric_Difference (Left, Right : Set) return Set with
      Global => null,
@@ -1019,40 +1006,42 @@ is
 
          --  Elements of the difference were not both in Left and Right
 
-         and
-           M.Not_In_Both
-             (Model (Symmetric_Difference'Result), Model (Left), Model (Right))
+         and M.Not_In_Both
+               (Model (Symmetric_Difference'Result),
+                Model (Left),
+                Model (Right))
 
          --  Elements in Left but not in Right are in the difference
 
-         and
-           M.Included_In_Union
-             (Model (Left), Model (Symmetric_Difference'Result), Model (Right))
+         and M.Included_In_Union
+               (Model (Left),
+                Model (Symmetric_Difference'Result),
+                Model (Right))
 
          --  Elements in Right but not in Left are in the difference
 
-         and
-           M.Included_In_Union
-             (Model (Right), Model (Symmetric_Difference'Result), Model (Left))
+         and M.Included_In_Union
+               (Model (Right),
+                Model (Symmetric_Difference'Result),
+                Model (Left))
 
          --  Actual value of elements come from either Left or Right
 
-         and
-           E_Elements_Included
-             (Elements (Symmetric_Difference'Result),
-              Model (Left),
-              Elements (Left),
-              Elements (Right))
-         and
-           E_Elements_Included
-             (Elements (Left),
-              Model (Symmetric_Difference'Result),
-              Elements (Symmetric_Difference'Result))
-         and
-           E_Elements_Included
-             (Elements (Right),
-              Model (Symmetric_Difference'Result),
-              Elements (Symmetric_Difference'Result));
+         and E_Elements_Included
+               (Elements (Symmetric_Difference'Result),
+                Model (Left),
+                Elements (Left),
+                Elements (Right))
+
+         and E_Elements_Included
+               (Elements (Left),
+                Model (Symmetric_Difference'Result),
+                Elements (Symmetric_Difference'Result))
+
+         and E_Elements_Included
+               (Elements (Right),
+                Model (Symmetric_Difference'Result),
+                Elements (Symmetric_Difference'Result));
 
    function "xor" (Left, Right : Set) return Set
      renames Symmetric_Difference;
@@ -1167,8 +1156,8 @@ is
              Post   =>
                M_Included_Except'Result =
                  (for all E of Left =>
-                    Contains (Right, E)
-                      or Equivalent_Keys (Generic_Keys.Key (E), Key));
+                   Contains (Right, E)
+                     or Equivalent_Keys (Generic_Keys.Key (E), Key));
 
       end Formal_Model;
       use Formal_Model;
@@ -1309,16 +1298,15 @@ is
 
                --  The key designated by the result of Find is Key
 
-               and
-                 Equivalent_Keys
-                   (Generic_Keys.Key (Container, Find'Result), Key));
+               and Equivalent_Keys
+                     (Generic_Keys.Key (Container, Find'Result), Key));
 
       function Contains (Container : Set; Key : Key_Type) return Boolean with
         Global => null,
         Post   =>
           Contains'Result =
             (for some E of Model (Container) =>
-                Equivalent_Keys (Key, Generic_Keys.Key (E)));
+              Equivalent_Keys (Key, Generic_Keys.Key (E)));
 
    end Generic_Keys;
 

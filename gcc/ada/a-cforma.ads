@@ -159,16 +159,16 @@ is
         Pre    => Position - 1 <= K.Length (Container),
         Post   =>
           K_Is_Find'Result =
+             ((if Position > 0 then
+                  K_Bigger_Than_Range (Container, 1, Position - 1, Key))
 
-            ((if Position > 0 then
-                K_Bigger_Than_Range (Container, 1, Position - 1, Key))
-
-             and (if Position < K.Length (Container) then
-                    K_Smaller_Than_Range
-                      (Container,
-                       Position + 1,
-                       K.Length (Container),
-                       Key)));
+            and
+              (if Position < K.Length (Container) then
+                  K_Smaller_Than_Range
+                    (Container,
+                     Position + 1,
+                     K.Length (Container),
+                     Key)));
       pragma Annotate (GNATprove, Inline_For_Proof, K_Is_Find);
 
       function Find (Container : K.Sequence; Key : Key_Type) return Count_Type
@@ -178,8 +178,8 @@ is
         Global => null,
         Post =>
           (if Find'Result > 0 then
-             Find'Result <= K.Length (Container)
-               and Equivalent_Keys (Key, K.Get (Container, Find'Result)));
+              Find'Result <= K.Length (Container)
+                and Equivalent_Keys (Key, K.Get (Container, Find'Result)));
 
       package P is new Ada.Containers.Functional_Maps
         (Key_Type                       => Cursor,
@@ -246,20 +246,21 @@ is
             --  It only contains keys contained in Model
 
             and (for all Key of Keys'Result =>
-                   M.Has_Key (Model (Container), Key))
+                  M.Has_Key (Model (Container), Key))
 
             --  It contains all the keys contained in Model
 
             and (for all Key of Model (Container) =>
                   (Find (Keys'Result, Key) > 0
-                     and then Equivalent_Keys
-                      (K.Get (Keys'Result, Find (Keys'Result, Key)), Key)))
+                    and then Equivalent_Keys
+                               (K.Get (Keys'Result, Find (Keys'Result, Key)),
+                                Key)))
 
             --  It is sorted in increasing order
 
             and (for all I in 1 .. Length (Container) =>
                   Find (Keys'Result, K.Get (Keys'Result, I)) = I
-                  and K_Is_Find (Keys'Result, K.Get (Keys'Result, I), I));
+                    and K_Is_Find (Keys'Result, K.Get (Keys'Result, I), I));
       pragma Annotate (GNATprove, Iterable_For_Proof, "Model", Keys);
 
       function Positions (Container : Map) return P.Map with
@@ -284,7 +285,7 @@ is
             and then
               (for all J of Positions'Result =>
                 (if P.Get (Positions'Result, I) = P.Get (Positions'Result, J)
-                  then I = J)));
+                 then I = J)));
 
       procedure Lift_Abstraction_Level (Container : Map) with
         --  Lift_Abstraction_Level is a ghost procedure that does nothing but
@@ -942,7 +943,7 @@ is
      Contract_Cases =>
        (Position = No_Element
           or else P.Get (Positions (Container), Position) = 1
-         =>
+        =>
           Position = No_Element,
 
         others =>
@@ -983,6 +984,7 @@ is
      Contract_Cases =>
        (Length (Container) = 0 or else Key < First_Key (Container) =>
           Floor'Result = No_Element,
+
         others =>
           Has_Element (Container, Floor'Result)
             and not (Key < K.Get (Keys (Container),
@@ -999,9 +1001,9 @@ is
           Ceiling'Result = No_Element,
         others =>
           Has_Element (Container, Ceiling'Result)
-            and
-              not (K.Get (Keys (Container),
-                          P.Get (Positions (Container), Ceiling'Result)) < Key)
+            and not (K.Get
+                       (Keys (Container),
+                        P.Get (Positions (Container), Ceiling'Result)) < Key)
             and K_Is_Find
                   (Keys (Container),
                    Key,

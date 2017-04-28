@@ -370,7 +370,9 @@ is
       -- Find --
       ----------
 
-      function Find (Container : K.Sequence; Key : Key_Type) return Count_Type
+      function Find
+        (Container : K.Sequence;
+         Key       : Key_Type) return Count_Type
       is
       begin
          for I in 1 .. K.Length (Container) loop
@@ -385,8 +387,9 @@ is
       -- K_Keys_Included --
       ---------------------
 
-      function K_Keys_Included (Left  : K.Sequence;
-                               Right : K.Sequence) return Boolean
+      function K_Keys_Included
+        (Left  : K.Sequence;
+         Right : K.Sequence) return Boolean
       is
       begin
          for I in 1 .. K.Length (Left) loop

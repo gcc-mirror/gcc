@@ -608,6 +608,7 @@ is
                return False;
             end if;
          end loop;
+
          return True;
       end E_Bigger_Than_Range;
 
@@ -700,6 +701,7 @@ is
                end if;
             end loop;
          end if;
+
          return True;
       end E_Is_Find;
 
@@ -719,6 +721,7 @@ is
                return False;
             end if;
          end loop;
+
          return True;
       end E_Smaller_Than_Range;
 
@@ -736,6 +739,7 @@ is
                return I;
             end if;
          end loop;
+
          return 0;
       end Find;
 

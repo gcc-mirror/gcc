@@ -38,16 +38,13 @@ with System; use type System.Address;
 package body Ada.Containers.Formal_Hashed_Sets with
   SPARK_Mode => Off
 is
-
    -----------------------
    -- Local Subprograms --
    -----------------------
 
    --  All need comments ???
 
-   procedure Difference
-     (Left, Right : Set;
-      Target      : in out Set);
+   procedure Difference (Left : Set; Right : Set; Target : in out Set);
 
    function Equivalent_Keys
      (Key  : Element_Type;
@@ -68,10 +65,10 @@ is
    pragma Inline (Hash_Node);
 
    procedure Insert
-     (Container       : in out Set;
-      New_Item : Element_Type;
-      Node     : out Count_Type;
-      Inserted : out Boolean);
+     (Container : in out Set;
+      New_Item  : Element_Type;
+      Node      : out Count_Type;
+      Inserted  : out Boolean);
 
    procedure Intersection
      (Left   : Set;
@@ -136,10 +133,13 @@ is
       begin
          Node  := First (Left).Node;
          while Node /= 0 loop
-            ENode := Find (Container => Right,
-                           Item      => Left.Nodes (Node).Element).Node;
-            if ENode = 0 or else
-              Right.Nodes (ENode).Element /= Left.Nodes (Node).Element
+            ENode :=
+              Find
+                (Container => Right,
+                 Item      => Left.Nodes (Node).Element).Node;
+
+            if ENode = 0
+              or else Right.Nodes (ENode).Element /= Left.Nodes (Node).Element
             then
                return False;
             end if;
@@ -148,9 +148,7 @@ is
          end loop;
 
          return True;
-
       end;
-
    end "=";
 
    ------------
@@ -228,11 +226,11 @@ is
       Capacity : Count_Type := 0) return Set
    is
       C      : constant Count_Type :=
-        Count_Type'Max (Capacity, Source.Capacity);
+                 Count_Type'Max (Capacity, Source.Capacity);
+      Cu     : Cursor;
       H      : Hash_Type;
       N      : Count_Type;
       Target : Set (C, Source.Modulus);
-      Cu     : Cursor;
 
    begin
       if 0 < Capacity and then Capacity < Source.Capacity then
@@ -276,10 +274,7 @@ is
    -- Delete --
    ------------
 
-   procedure Delete
-     (Container : in out Set;
-      Item      : Element_Type)
-   is
+   procedure Delete (Container : in out Set; Item : Element_Type) is
       X : Count_Type;
 
    begin
@@ -292,10 +287,7 @@ is
       Free (Container, X);
    end Delete;
 
-   procedure Delete
-     (Container : in out Set;
-      Position  : in out Cursor)
-   is
+   procedure Delete (Container : in out Set; Position : in out Cursor) is
    begin
       if not Has_Element (Container, Position) then
          raise Constraint_Error with "Position cursor has no element";
@@ -313,11 +305,11 @@ is
    -- Difference --
    ----------------
 
-   procedure Difference
-     (Target : in out Set;
-      Source : Set)
-   is
-      Tgt_Node, Src_Node, Src_Last, Src_Length : Count_Type;
+   procedure Difference (Target : in out Set; Source : Set) is
+      Src_Last   : Count_Type;
+      Src_Length : Count_Type;
+      Src_Node   : Count_Type;
+      Tgt_Node   : Count_Type;
 
       TN : Nodes_Type renames Target.Nodes;
       SN : Nodes_Type renames Source.Nodes;
@@ -369,10 +361,7 @@ is
       end loop;
    end Difference;
 
-   procedure Difference
-     (Left, Right : Set;
-      Target      : in out Set)
-   is
+   procedure Difference (Left : Set; Right : Set; Target : in out Set) is
       procedure Process (L_Node : Count_Type);
 
       procedure Iterate is
@@ -383,9 +372,10 @@ is
       -------------
 
       procedure Process (L_Node : Count_Type) is
+         B : Boolean;
          E : Element_Type renames Left.Nodes (L_Node).Element;
          X : Count_Type;
-         B : Boolean;
+
       begin
          if Find (Right, E).Node = 0 then
             Insert (Target, E, X, B);
@@ -399,7 +389,7 @@ is
       Iterate (Left);
    end Difference;
 
-   function Difference (Left, Right : Set) return Set is
+   function Difference (Left : Set; Right : Set) return Set is
       C : Count_Type;
       H : Hash_Type;
 
@@ -437,8 +427,8 @@ is
          raise Constraint_Error with "Position cursor equals No_Element";
       end if;
 
-      pragma Assert (Vet (Container, Position),
-                     "bad cursor in function Element");
+      pragma Assert
+        (Vet (Container, Position), "bad cursor in function Element");
 
       return Container.Nodes (Position.Node).Element;
    end Element;
@@ -466,7 +456,7 @@ is
          L_Node : Node_Type) return Boolean
       is
          R_Index : constant Hash_Type :=
-           Element_Keys.Index (R_HT, L_Node.Element);
+                     Element_Keys.Index (R_HT, L_Node.Element);
          R_Node  : Count_Type := R_HT.Buckets (R_Index);
          RN      : Nodes_Type renames R_HT.Nodes;
 
@@ -508,10 +498,7 @@ is
    -- Exclude --
    -------------
 
-   procedure Exclude
-     (Container : in out Set;
-      Item      : Element_Type)
-   is
+   procedure Exclude (Container : in out Set; Item : Element_Type) is
       X : Count_Type;
    begin
       Element_Keys.Delete_Key_Sans_Free (Container, Item, X);
@@ -771,10 +758,7 @@ is
    -- Free --
    ----------
 
-   procedure Free
-     (HT : in out Set;
-      X  : Count_Type)
-   is
+   procedure Free (HT : in out Set; X : Count_Type) is
    begin
       HT.Nodes (X).Has_Element := False;
       HT_Ops.Free (HT, X);
@@ -784,10 +768,7 @@ is
    -- Generic_Allocate --
    ----------------------
 
-   procedure Generic_Allocate
-     (HT   : in out Set;
-      Node : out Count_Type)
-   is
+   procedure Generic_Allocate (HT : in out Set; Node : out Count_Type) is
       procedure Allocate is new HT_Ops.Generic_Allocate (Set_Element);
    begin
       Allocate (HT, Node);
@@ -809,14 +790,13 @@ is
       -- Local Instantiations --
       --------------------------
 
-      package Key_Keys is
-        new Hash_Tables.Generic_Bounded_Keys
-          (HT_Types        => HT_Types,
-           Next            => Next,
-           Set_Next        => Set_Next,
-           Key_Type        => Key_Type,
-           Hash            => Hash,
-           Equivalent_Keys => Equivalent_Key_Node);
+      package Key_Keys is new Hash_Tables.Generic_Bounded_Keys
+        (HT_Types        => HT_Types,
+         Next            => Next,
+         Set_Next        => Set_Next,
+         Key_Type        => Key_Type,
+         Hash            => Hash,
+         Equivalent_Keys => Equivalent_Key_Node);
 
       --------------
       -- Contains --
@@ -834,10 +814,7 @@ is
       -- Delete --
       ------------
 
-      procedure Delete
-        (Container : in out Set;
-         Key       : Key_Type)
-      is
+      procedure Delete (Container : in out Set; Key : Key_Type) is
          X : Count_Type;
 
       begin
@@ -884,10 +861,7 @@ is
       -- Exclude --
       -------------
 
-      procedure Exclude
-        (Container : in out Set;
-         Key       : Key_Type)
-      is
+      procedure Exclude (Container : in out Set; Key : Key_Type) is
          X : Count_Type;
       begin
          Key_Keys.Delete_Key_Sans_Free (Container, Key, X);
@@ -930,6 +904,7 @@ is
                   return False;
                end if;
             end loop;
+
             return True;
          end M_Included_Except;
 
@@ -942,8 +917,7 @@ is
       function Key (Container : Set; Position : Cursor) return Key_Type is
       begin
          if not Has_Element (Container, Position) then
-            raise Constraint_Error with
-              "Position cursor has no element";
+            raise Constraint_Error with "Position cursor has no element";
          end if;
 
          pragma Assert
@@ -969,8 +943,7 @@ is
 
       begin
          if Node = 0 then
-            raise Constraint_Error with
-              "attempt to replace key not in set";
+            raise Constraint_Error with "attempt to replace key not in set";
          end if;
 
          Replace_Element (Container, Node, New_Item);
@@ -1006,12 +979,9 @@ is
    -- Include --
    -------------
 
-   procedure Include
-     (Container : in out Set;
-      New_Item  : Element_Type)
-   is
-      Position : Cursor;
+   procedure Include (Container : in out Set; New_Item : Element_Type) is
       Inserted : Boolean;
+      Position : Cursor;
 
    begin
       Insert (Container, New_Item, Position, Inserted);
@@ -1035,12 +1005,9 @@ is
       Insert (Container, New_Item, Position.Node, Inserted);
    end Insert;
 
-   procedure Insert
-     (Container : in out Set;
-      New_Item  : Element_Type)
-   is
-      Position : Cursor;
+   procedure Insert (Container : in out Set; New_Item : Element_Type) is
       Inserted : Boolean;
+      Position : Cursor;
 
    begin
       Insert (Container, New_Item, Position, Inserted);
@@ -1099,10 +1066,7 @@ is
    -- Intersection --
    ------------------
 
-   procedure Intersection
-     (Target : in out Set;
-      Source : Set)
-   is
+   procedure Intersection (Target : in out Set; Source : Set) is
       Tgt_Node : Count_Type;
       TN       : Nodes_Type renames Target.Nodes;
 
@@ -1133,11 +1097,7 @@ is
       end loop;
    end Intersection;
 
-   procedure Intersection
-     (Left   : Set;
-      Right  : Set;
-      Target : in out Set)
-   is
+   procedure Intersection (Left : Set; Right : Set; Target : in out Set) is
       procedure Process (L_Node : Count_Type);
 
       procedure Iterate is
@@ -1165,7 +1125,7 @@ is
       Iterate (Left);
    end Intersection;
 
-   function Intersection (Left, Right : Set) return Set is
+   function Intersection (Left : Set; Right : Set) return Set is
       C : Count_Type;
       H : Hash_Type;
 
@@ -1179,7 +1139,7 @@ is
 
       return S : Set (C, H) do
          if Length (Left) /= 0 and Length (Right) /= 0 then
-               Intersection (Left, Right, Target => S);
+            Intersection (Left, Right, Target => S);
          end if;
       end return;
    end Intersection;
@@ -1301,8 +1261,7 @@ is
       end if;
 
       if not Has_Element (Container, Position) then
-         raise Constraint_Error
-           with "Position has no element";
+         raise Constraint_Error with "Position has no element";
       end if;
 
       pragma Assert (Vet (Container, Position), "bad cursor in Next");
@@ -1353,16 +1312,12 @@ is
    -- Replace --
    -------------
 
-   procedure Replace
-     (Container : in out Set;
-      New_Item  : Element_Type)
-   is
+   procedure Replace (Container : in out Set; New_Item : Element_Type) is
       Node : constant Count_Type := Element_Keys.Find (Container, New_Item);
 
    begin
       if Node = 0 then
-         raise Constraint_Error with
-           "attempt to replace element not in set";
+         raise Constraint_Error with "attempt to replace element not in set";
       end if;
 
       Container.Nodes (Node).Element := New_Item;
@@ -1379,12 +1334,11 @@ is
    is
    begin
       if not Has_Element (Container, Position) then
-         raise Constraint_Error with
-           "Position cursor equals No_Element";
+         raise Constraint_Error with "Position cursor equals No_Element";
       end if;
 
-      pragma Assert (Vet (Container, Position),
-                     "bad cursor in Replace_Element");
+      pragma Assert
+        (Vet (Container, Position), "bad cursor in Replace_Element");
 
       Replace_Element (Container, Position.Node, New_Item);
    end Replace_Element;
@@ -1425,10 +1379,7 @@ is
    -- Symmetric_Difference --
    --------------------------
 
-   procedure Symmetric_Difference
-     (Target : in out Set;
-      Source : Set)
-   is
+   procedure Symmetric_Difference (Target : in out Set; Source : Set) is
       procedure Process (Source_Node : Count_Type);
       pragma Inline (Process);
 
@@ -1439,9 +1390,10 @@ is
       -------------
 
       procedure Process (Source_Node : Count_Type) is
+         B : Boolean;
          N : Node_Type renames Source.Nodes (Source_Node);
          X : Count_Type;
-         B : Boolean;
+
       begin
          if Is_In (Target, N) then
             Delete (Target, N.Element);
@@ -1467,7 +1419,7 @@ is
       Iterate (Source);
    end Symmetric_Difference;
 
-   function Symmetric_Difference (Left, Right : Set) return Set is
+   function Symmetric_Difference (Left : Set; Right : Set) return Set is
       C : Count_Type;
       H : Hash_Type;
 
@@ -1512,10 +1464,7 @@ is
    -- Union --
    -----------
 
-   procedure Union
-     (Target : in out Set;
-      Source : Set)
-   is
+   procedure Union (Target : in out Set; Source : Set) is
       procedure Process (Src_Node : Count_Type);
 
       procedure Iterate is
@@ -1536,7 +1485,7 @@ is
          Insert (Target, E, X, B);
       end Process;
 
-      --  Start of processing for Union
+   --  Start of processing for Union
 
    begin
       if Target'Address = Source'Address then
@@ -1546,7 +1495,7 @@ is
       Iterate (Source);
    end Union;
 
-   function Union (Left, Right : Set) return Set is
+   function Union (Left : Set; Right : Set) return Set is
       C : Count_Type;
       H : Hash_Type;
 

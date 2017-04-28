@@ -830,9 +830,9 @@ is
            Post   =>
              M_Elements_Sorted'Result =
                (for all I in Index_Type'First .. M.Last (Container) =>
-                  (for all J in I .. M.Last (Container) =>
-                       Element (Container, I) = Element (Container, J)
-                         or Element (Container, I) < Element (Container, J)));
+                 (for all J in I .. M.Last (Container) =>
+                   Element (Container, I) = Element (Container, J)
+                     or Element (Container, I) < Element (Container, J)));
          pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Sorted);
 
       end Formal_Model;

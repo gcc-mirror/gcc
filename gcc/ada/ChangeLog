@@ -1,5 +1,22 @@
 2017-04-28  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Use
+	New_Copy_Tree instead of Relocate_Node as any subsequent copies
+	of the relocated node will have mangled Parent pointers.
+	* sem_util.adb (Build_NCT_Hash_Tables): Reset both hash
+	tables used in conjunction with entity and itype replication.
+	(Visit_Entity): Rewrite the restriction on which entities
+	require duplication.  The restriction now includes all types.
+
+2017-04-28  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-cofuse.ads, a-cfdlli.ads, a-cfhase.adb, a-cfhase.ads, a-cfinve.adb,
+	a-cfinve.ads, a-cforma.adb, a-cforma.ads, a-cofuma.adb, a-cofuma.ads,
+	a-cfhama.adb, a-cfhama.ads, a-cforse.adb: Minor reformatting and code
+	cleanups.
+
+2017-04-28  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_util.adb, g-dyntab.adb, par-ch4.adb, sem_util.adb, sem_attr.adb,
 	gnat1drv.adb, exp_disp.adb, namet.adb, alloc.ads: Minor reformatting.
 

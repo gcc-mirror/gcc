@@ -518,7 +518,9 @@ is
       -- Find --
       ----------
 
-      function Find (Container : K.Sequence; Key : Key_Type) return Count_Type
+      function Find
+        (Container : K.Sequence;
+         Key       : Key_Type) return Count_Type
       is
       begin
          for I in 1 .. K.Length (Container) loop
@@ -634,9 +636,12 @@ is
          --  for their postconditions.
 
          while Position /= 0 loop
-            R := M.Add (Container => R,
-                        New_Key   => Container.Nodes (Position).Key,
-                        New_Item  => Container.Nodes (Position).Element);
+            R :=
+              M.Add
+                (Container => R,
+                 New_Key   => Container.Nodes (Position).Key,
+                 New_Item  => Container.Nodes (Position).Element);
+
             Position := Tree_Operations.Next (Container, Position);
          end loop;
 

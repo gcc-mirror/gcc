@@ -34,9 +34,11 @@ private with Ada.Containers.Functional_Base;
 
 generic
    type Element_Type (<>) is private;
+
    with function Equivalent_Elements
      (Left  : Element_Type;
       Right : Element_Type) return Boolean is "=";
+
    Enable_Handling_Of_Equivalence : Boolean := True;
    --  This constant should only be set to False when no particular handling
    --  of equivalence over elements is needed, that is, Equivalent_Elements
@@ -75,7 +77,7 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
           --  Contains returns the same result on all equivalent elements
 
           (if (for some E of Container => Equivalent_Elements (E, Item)) then
-             Contains'Result));
+              Contains'Result));
 
    function Length (Container : Set) return Count_Type with
      Global => null;
@@ -89,8 +91,7 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
    --  Set inclusion
 
      Global => null,
-     Post   => "<="'Result = (for all Item of Left => Contains (Right, Item))
-       and (if "<="'Result then Length (Left) <= Length (Right));
+     Post   => "<="'Result = (for all Item of Left => Contains (Right, Item));
 
    function "=" (Left : Set; Right : Set) return Boolean with
    --  Extensional equality over sets
@@ -187,7 +188,12 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
 
      Global => null,
      Post   =>
-       Num_Overlaps'Result = Length (Intersection (Left, Right));
+       Num_Overlaps'Result = Length (Intersection (Left, Right))
+         and (if Left <= Right then Num_Overlaps'Result = Length (Left)
+              else Num_Overlaps'Result < Length (Left))
+         and (if Right <= Left then Num_Overlaps'Result = Length (Right)
+              else Num_Overlaps'Result < Length (Right))
+         and (Num_Overlaps'Result = 0) = No_Overlap (Left, Right);
 
    ----------------------------
    -- Construction Functions --

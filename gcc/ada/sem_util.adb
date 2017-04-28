@@ -17003,7 +17003,7 @@ package body Sem_Util is
 
    package NCT_Itype_Assoc is new Simple_HTable (
      Header_Num => NCT_Header_Num,
-     Element    => Entity_Id,
+     Element    => Node_Or_Entity_Id,
      No_Element => Empty,
      Key        => Entity_Id,
      Hash       => New_Copy_Hash,
@@ -17114,37 +17114,45 @@ package body Sem_Util is
       ---------------------------
 
       procedure Build_NCT_Hash_Tables is
-         Elmt : Elmt_Id;
-         Ent  : Entity_Id;
+         Assoc : Entity_Id;
+         Elmt  : Elmt_Id;
+         Key   : Entity_Id;
+         Value : Entity_Id;
 
       begin
          if No (Map) then
             return;
          end if;
 
+         --  Clear both hash tables associated with entry replication since
+         --  multiple calls to New_Copy_Tree could cause multiple collisions
+         --  and produce long linked lists in individual buckets.
+
+         NCT_Assoc.Reset;
+         NCT_Itype_Assoc.Reset;
+
          Elmt := First_Elmt (Map);
          while Present (Elmt) loop
-            Ent := Node (Elmt);
 
-            --  Get new entity, and associate old and new
+            --  Extract a (key, value) pair from the map
 
+            Key := Node (Elmt);
             Next_Elmt (Elmt);
-            NCT_Assoc.Set (Ent, Node (Elmt));
+            Value := Node (Elmt);
 
-            if Is_Type (Ent) then
-               declare
-                  Anode : constant Entity_Id :=
-                            Associated_Node_For_Itype (Ent);
+            --  Add the pair in the association hash table
 
-               begin
-                  --  Enter the link between the associated node of the old
-                  --  Itype and the new Itype, for updating later when node
-                  --  is copied.
+            NCT_Assoc.Set (Key, Value);
 
-                  if Present (Anode) then
-                     NCT_Itype_Assoc.Set (Anode, Node (Elmt));
-                  end if;
-               end;
+            --  Add a link between the associated node of the old Itype and the
+            --  new Itype, for updating later when node is copied.
+
+            if Is_Type (Key) then
+               Assoc := Associated_Node_For_Itype (Key);
+
+               if Present (Assoc) then
+                  NCT_Itype_Assoc.Set (Assoc, Value);
+               end if;
             end if;
 
             Next_Elmt (Elmt);
@@ -17540,23 +17548,29 @@ package body Sem_Util is
          pragma Assert (not Is_Itype (Old_Entity));
          pragma Assert (Nkind (Old_Entity) in N_Entity);
 
-         --  Restrict entity creation to declarations of constants, variables
-         --  and subtypes. There is no need to duplicate entities declared in
-         --  inner scopes.
+         --  Do not duplicate an entity when it is declared within an inner
+         --  scope enclosed by an expression with actions.
 
-         if (not Ekind_In (Old_Entity, E_Constant, E_Variable)
-              and then Nkind (Parent (Old_Entity)) /= N_Subtype_Declaration)
-           or else EWA_Inner_Scope_Level > 0
-         then
+         if EWA_Inner_Scope_Level > 0 then
+            return;
+
+         --  Entity duplication is currently performed only for objects and
+         --  types. Relaxing this restriction leads to a performance penalty.
+
+         elsif Ekind_In (Old_Entity, E_Constant, E_Variable) then
+            null;
+
+         elsif Is_Type (Old_Entity) then
+            null;
+
+         else
             return;
          end if;
 
          New_E := New_Copy (Old_Entity);
 
-         --  The new entity has all the attributes of the old one, and we
-         --  just copy the contents of the entity. However, the back-end
-         --  needs different names for debugging purposes, so we create a
-         --  new internal name for it in all cases.
+         --  The new entity has all the attributes of the old one, however it
+         --  requires a new name for debugging purposes.
 
          Set_Chars (New_E, New_Internal_Name ('T'));
 
@@ -17830,8 +17844,8 @@ package body Sem_Util is
             while Present (New_E) loop
 
                --  Skip entities that were not created in the first phase
-               --  (that is, old entities specified by the caller in the
-               --  set of mappings to be applied to the tree).
+               --  (that is, old entities specified by the caller in the set of
+               --  mappings to be applied to the tree).
 
                if Is_Itype (New_E)
                  or else No (Map)

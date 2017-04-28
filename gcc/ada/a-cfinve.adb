@@ -705,12 +705,11 @@ is
          function "<" (Left : Holder; Right : Holder) return Boolean is
            (E (Left) < E (Right));
 
-         procedure Sort is
-           new Generic_Array_Sort
-                 (Index_Type   => Array_Index,
-                  Element_Type => Holder,
-                  Array_Type   => Elements_Array,
-                  "<"          => "<");
+         procedure Sort is new Generic_Array_Sort
+           (Index_Type   => Array_Index,
+            Element_Type => Holder,
+            Array_Type   => Elements_Array,
+            "<"          => "<");
 
          Len : constant Capacity_Range := Length (Container);
 
@@ -1065,8 +1064,9 @@ is
       then
          Reserve_Capacity
            (Container,
-            Capacity_Range'Max (Current_Capacity (Container) * Growth_Factor,
-                                Capacity_Range (New_Length)));
+            Capacity_Range'Max
+              (Current_Capacity (Container) * Growth_Factor,
+               Capacity_Range (New_Length)));
       end if;
 
       declare
@@ -1348,10 +1348,10 @@ is
       --  hence we also know that
       --    Index - Index_Type'First >= 0
 
-      --  The issue is that even though 0 is guaranteed to be a value in
-      --  the type Index_Type'Base, there's no guarantee that the difference
-      --  is a value in that type. To prevent overflow we use the wider
-      --  of Count_Type'Base and Index_Type'Base to perform intermediate
+      --  The issue is that even though 0 is guaranteed to be a value in the
+      --  type Index_Type'Base, there's no guarantee that the difference is a
+      --  value in that type. To prevent overflow we use the wider of
+      --  Count_Type'Base and Index_Type'Base to perform intermediate
       --  calculations.
 
       if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
@@ -1362,8 +1362,8 @@ is
                      Count_Type'Base (Index_Type'First);
       end if;
 
-      --  The array index subtype for all container element arrays
-      --  always starts with 1.
+      --  The array index subtype for all container element arrays always
+      --  starts with 1.
 
       return 1 + Offset;
    end To_Array_Index;
