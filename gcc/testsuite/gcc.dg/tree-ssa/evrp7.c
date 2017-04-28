@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdisable-tree-evrp -fdump-tree-vrp1-details" } */
+/* { dg-options "-O2 -fdump-tree-evrp-details" } */
 
 int test1(int i, int k)
 {
@@ -11,4 +11,4 @@ int test1(int i, int k)
   return 1;
 }
 
-/* { dg-final { scan-tree-dump "Removing dead stmt \[^\r\n\]* = j_.* == 10" "vrp1" } } */
+/* { dg-final { scan-tree-dump "Removing dead stmt \[^\r\n\]* = j_.* == 10" "evrp" } } */
