@@ -1,3 +1,14 @@
+2017-04-28  Martin Liska  <mliska@suse.cz>
+
+	* gcov-dump.c (tag_*): Add new argument to declarations.
+	(dump_gcov_file): Likewise.
+	(tag_blocks): Add and use new argument depth.
+	(tag_arcs): Likewise.
+	(tag_lines): Likewise.
+	(tag_counters): Likewise.
+	(tag_summary): Likewise.
+	(dump_working_sets): Use depth to do a proper indentation.
+
 2017-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/80531
