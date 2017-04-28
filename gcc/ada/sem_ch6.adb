@@ -3110,6 +3110,18 @@ package body Sem_Ch6 is
                      end if;
                   end;
                end if;
+
+            --  Freezing an access type does not freeze the designated
+            --  type, but freezing conversions between access to interfaces
+            --  requires that the interface types themselves be frozen, so
+            --  that dispatch table entities are properly created.
+            --  Unclear whether a more general rule is needed ???
+
+            elsif Nkind (Node) = N_Type_Conversion
+              and then Is_Access_Type (Etype (Node))
+              and then Is_Interface (Designated_Type (Etype (Node)))
+            then
+               Freeze_Before (N, Designated_Type (Etype (Node)));
             end if;
 
             return OK;

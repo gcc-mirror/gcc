@@ -2119,9 +2119,12 @@ package body Errout is
 
       Write_Max_Errors;
 
+      --  Even though info messages are a subclass of warnings, they must not
+      --  be treated as errors when -gnatwe is in effect.
+
       if Warning_Mode = Treat_As_Error then
          Total_Errors_Detected :=
-           Total_Errors_Detected + Warnings_Detected;
+           Total_Errors_Detected + Warnings_Detected - Info_Messages;
          Warnings_Detected := Info_Messages;
       end if;
    end Output_Messages;

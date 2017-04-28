@@ -1711,11 +1711,14 @@ package body Sem_Ch7 is
 
       Check_One_Tagged_Type_Or_Extension_At_Most;
 
-      --  If switch set, output information on why body required
+      --  Output relevant information as to why the package requires a body.
+      --  Do not consider generated packages as this exposes internal symbols
+      --  and leads to confusing messages.
 
       if List_Body_Required_Info
         and then In_Extended_Main_Source_Unit (Id)
         and then Unit_Requires_Body (Id)
+        and then Comes_From_Source (Id)
       then
          Unit_Requires_Body_Info (Id);
       end if;
@@ -3143,4 +3146,5 @@ package body Sem_Ch7 is
          Next_Entity (E);
       end loop;
    end Unit_Requires_Body_Info;
+
 end Sem_Ch7;

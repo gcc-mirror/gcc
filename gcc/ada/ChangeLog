@@ -1,3 +1,63 @@
+2017-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch9.adb (Build_Lock_Free_Unprotected_Subprogram_Body): Also
+	initialize Block_Decls variable.
+	(Expand_Entry_Barrier): Add pragma Warnings on Func_Body variable.
+	(Build_Dispatching_Requeue): Add pragma Warnings on Op variable.
+	* exp_disp.adb (Expand_Interface_Actuals): Initialize
+	Formal_DDT and Actual_DDT variables.
+	(Expand_Interface_Thunk): Initialize Iface_Formal.
+	(Make_DT): Initialize Size_Comp.
+	(Make_Select_Specific_Data_Table): Initialize Decls.
+	* exp_dist.adb (Add_RACW_Primitive_Declarations_And_Bodies):
+	Also initialize more RPC_Receiver_* variables.
+	(Build_To_Any_Function): Initialize Cstr_Formal.
+	* exp_prag.adb (Expand_Pragma_Contract_Cases): Initialize Msg_Str.
+
+2017-04-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Freeze_Type_Refs): For an interface conversion
+	node between access types, freeze the designated type as well,
+	so that dispatch table pointers are created in the proper scope,
+	and not in the constructed body of the expression function.
+
+2017-04-28  Bob Duff  <duff@adacore.com>
+
+	* alloc.ads (Nodes_Initial): Go back to previous value. The large
+	value makes large compilations faster, but small compilations slower.
+
+2017-04-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_util.adb: minor typos in Is_Child_Or_Sibling.
+
+2017-04-28  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* erroutc.adb (Compilation_Errors): Do not consider info messages
+	as suitable warnings when warnings must be treated as errors.
+	* sem_ch7.adb (Analyze_Package_Specification): Do not consider
+	internally-generated packages when outputting completion
+	information.
+	* errout.adb (Output_Messages): Do not consider info messages as
+	suitable warnings when warnings must be treated as errors.
+	* errutil.adb (Finalize): Do not consider info messages as
+	suitable warnings when warnings must be treated as errors.
+
+
+2017-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* warnsw.ads: Minor fix for incorrect wording in comment.
+
+2017-04-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (In_Instance_Code): New predicate in
+	Valid_Conversion, to determine whether a type conversion appears
+	as (or within) an actual for a formal object.  Type conversions
+	in instances are not rechecked in Valid_Conversion because
+	visibility changes between generic location andi instance may
+	lead to spurious errors, but conversions within an actual must be
+	fully checked, and they are not fully resolved when pre-analyzing
+	the actuals.
+
 2017-04-28  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Use

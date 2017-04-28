@@ -12353,7 +12353,7 @@ package body Sem_Util is
          return False;
 
       --  One of the packages is at a deeper level than the other. Note that
-      --  both may still come from differen hierarchies.
+      --  both may still come from different hierarchies.
 
       --        (root)           P_2
       --        /    \            :
@@ -12388,7 +12388,7 @@ package body Sem_Util is
 
       --      P_1
       --       :
-      --       X    became   P_1 P_2   or vica versa
+      --       X    became   P_1 P_2   or vice versa
       --       :
       --      P_2
 

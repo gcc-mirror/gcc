@@ -150,9 +150,9 @@ package Warnsw is
    procedure Set_GNAT_Mode_Warnings;
    --  This is called in -gnatg mode to set the warnings for gnat mode. It is
    --  also used to set the proper warning statuses for -gnatw.g. Note that
-   --  this set of warnings is disjoint from -gnatwa, it enables warnings that
-   --  are not included in -gnatwa, and it disables warnings that are included
-   --  in -gnatwa (such as Warn_On_Implementation_Units, which we clearly want
-   --  to be False for units built with -gnatg).
+   --  this set of warnings is neither a subset nor a superset of -gnatwa, it
+   --  enables warnings that are not included in -gnatwa and disables warnings
+   --  that are included in -gnatwa (such as Warn_On_Implementation_Units, that
+   --  we clearly want to be False for units built with -gnatg).
 
 end Warnsw;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -242,10 +242,11 @@ package body Erroutc is
 
    function Compilation_Errors return Boolean is
    begin
-      return Total_Errors_Detected /= 0
-        or else (Warnings_Detected /= 0
-                  and then Warning_Mode = Treat_As_Error)
-        or else Warnings_Treated_As_Errors /= 0;
+      return
+        Total_Errors_Detected /= 0
+          or else (Warnings_Detected - Info_Messages /= 0
+                    and then Warning_Mode = Treat_As_Error)
+          or else Warnings_Treated_As_Errors /= 0;
    end Compilation_Errors;
 
    ------------------
