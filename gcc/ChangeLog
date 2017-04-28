@@ -1,3 +1,9 @@
+2017-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/80531
+	* cgraph.h (symtab_node::debug_symtab): No longer inline.
+	* symtab.c (symtab_node::debug_symtab): Move definition here.
+
 2017-04-28  Richard Biener  <rguenther@suse.de>
 
 	* lto-streamer.h (LTO_major_version): Bump to 7.

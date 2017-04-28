@@ -924,6 +924,14 @@ symtab_node::dump_table (FILE *f)
     node->dump (f);
 }
 
+/* Dump symbol table to stderr.  */
+
+DEBUG_FUNCTION void
+symtab_node::debug_symtab (void)
+{
+  dump_table (stderr);
+}
+
 
 /* Return the cgraph node that has ASMNAME for its DECL_ASSEMBLER_NAME.
    Return NULL if there's no such node.  */
