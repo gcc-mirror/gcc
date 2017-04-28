@@ -1,3 +1,30 @@
+2017-04-28  Nathan Sidwell  <nathan@acm.org>
+
+	Module indices and separated import/export info
+	gcc/cp/
+	* cp-tree.h (GLOBAL_MODULE_INDEX, THIS_MODULE_INDEX,
+	IMPORTED_MODULE_BASE): New.
+	(import_module, export_module): Replace with ...
+	(import_export_module): ... this.
+	* module.c: #include bitmap.h.
+	(enum import_kind): Delete.
+	(struct module_state): New.
+	(modules, module_map, this_module): New.
+	(imported_modules): Delete.
+	(cpms_in::state): New member.  Update constructor.
+	(cpms_in::tag_import, cpms_out::tag_import): Take is_export arg.
+	(cpms_in::read_item): Assign module index.
+	(module_user, is_interface): Delete.
+	(dopen, dclose): Delete.  Move to call sites.
+	(read_module): Return module index.
+	(do_module_import): Reimplement.
+	(import_module, export_module): Replace with ...
+	(import_export_module): ... this.
+	(declare_module, write_module, finish_module): Adjust.
+	* parser.c (cp_parser_module_declaration): Adjust,
+	gcc/testsuite/
+	* g++.dg/modules/mod-decl-5_b.C: Adjust.
+
 2017-04-27  Nathan Sidwell  <nathan@acm.org>
 
 	Kill rt_import popping madness

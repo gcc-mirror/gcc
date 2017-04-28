@@ -12434,10 +12434,8 @@ cp_parser_module_declaration (cp_parser *parser, bool is_export)
 				    : is_export ? "module-export"
 				    : "module-declaration"))
     ;
-  else if (is_import)
-    import_module (token->location, name, attrs);
-  else if (is_export)
-    export_module (token->location, name, attrs);
+  else if (is_import || is_export)
+    import_export_module (token->location, name, attrs, is_export);
   else
     declare_module (token->location, name, attrs);
 }

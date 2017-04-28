@@ -1390,6 +1390,11 @@ check_constraint_info (tree t)
 
 /* Module defines.  */
 
+/* Indices for modules.  */
+#define GLOBAL_MODULE_INDEX 0
+#define THIS_MODULE_INDEX 1
+#define IMPORTED_MODULE_BASE 2
+
 /* Whether the namespace contains module-linkage objects.  */
 #define MODULE_NAMESPACE_P(NODE) \
   TREE_LANG_FLAG_1 (NAMESPACE_DECL_CHECK (NODE))
@@ -6329,8 +6334,7 @@ extern void push_module_namespace (bool);
 extern bool pop_module_namespace ();
 extern void declare_module (location_t, tree, tree);
 extern void finish_module ();
-extern void import_module (location_t, tree, tree);
-extern void export_module (location_t, tree, tree);
+extern void import_export_module (location_t, tree, tree, bool);
 
 /* In optimize.c */
 extern bool maybe_clone_body			(tree);
