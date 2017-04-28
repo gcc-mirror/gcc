@@ -304,7 +304,7 @@ C ObjC C++ ObjC++ Var(warn_alloca) Warning
 Warn on any use of alloca.
 
 Walloc-size-larger-than=
-C ObjC C++ ObjC++ Var(warn_alloc_size_limit) Warning Joined
+C ObjC C++ ObjC++ Var(warn_alloc_size_limit) Warning Joined LangEnabledBy(C ObjC C++ ObjC++,Wall)
 -Walloc-size-larger-than=<bytes> Warn for calls to allocation functions that
 attempt to allocate objects larger than the specified number of bytes.
 
@@ -716,7 +716,7 @@ Warn about buffer overflow in string manipulation functions like memcpy
 and strcpy.
 
 Wstringop-overflow=
-C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_stringop_overflow) Init(2) Warning
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_stringop_overflow) Init(2) Warning LangEnabledBy(C ObjC C++ ObjC++, Wall)
 Under the control of Object Size type, warn about buffer overflow in string
 manipulation functions like memcpy and strcpy.
 
