@@ -663,13 +663,12 @@ compute_uninlined_call_time (struct inline_summary *callee_info,
 
 inline sreal
 compute_inlined_call_time (struct cgraph_edge *edge,
-			   int edge_time)
+			   sreal time)
 {
   cgraph_node *caller = (edge->caller->global.inlined_to 
 			 ? edge->caller->global.inlined_to
 			 : edge->caller);
   sreal caller_time = inline_summaries->get (caller)->time;
-  sreal time = edge_time;
 
   if (edge->count && caller->count)
     time *= (sreal)edge->count / caller->count;
@@ -753,14 +752,6 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
       int growth = estimate_edge_growth (e);
       inline_hints hints = estimate_edge_hints (e);
       bool big_speedup = big_speedup_p (e);
-/*
-	fprintf (stderr, "%i %i %i\n",growth,hints,big_speedup);
-	dump_inline_summary (stderr, e->caller->global.inlined_to ? e->caller->global.inlined_to : e->caller);
-	dump_inline_summary (stderr, e->callee);
-  sreal time = compute_uninlined_call_time (inline_summaries->get (e->callee),
-					    e);
-  sreal inlined_time = compute_inlined_call_time (e, estimate_edge_time (e));
- fprintf (stderr, "%f %f\n", time.to_double (), inlined_time.to_double ());*/
 
       if (growth <= 0)
 	;
@@ -1019,7 +1010,8 @@ static sreal
 edge_badness (struct cgraph_edge *edge, bool dump)
 {
   sreal badness;
-  int growth, edge_time;
+  int growth;
+  sreal edge_time;
   struct cgraph_node *callee = edge->callee->ultimate_alias_target ();
   struct inline_summary *callee_info = inline_summaries->get (callee);
   inline_hints hints;
@@ -1033,7 +1025,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   gcc_checking_assert (edge_time >= 0);
   /* FIXME: -1 to care of rounding issues should go away once cache is migrated.
      to sreals.  */
-  gcc_checking_assert (edge_time - 1 <= callee_info->time);
+  gcc_checking_assert (edge_time <= callee_info->time);
   gcc_checking_assert (growth <= callee_info->size);
 
   if (dump)
@@ -1043,9 +1035,9 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	       edge->caller->order,
 	       xstrdup_for_dump (callee->name ()),
 	       edge->callee->order);
-      fprintf (dump_file, "      size growth %i, time %i ",
+      fprintf (dump_file, "      size growth %i, time %f ",
 	       growth,
-	       edge_time);
+	       edge_time.to_double ());
       dump_inline_hints (dump_file, hints);
       if (big_speedup_p (edge))
 	fprintf (dump_file, " big_speedup");
@@ -1883,7 +1875,7 @@ inline_small_functions (void)
       sreal cached_badness = edge_badness (edge, false);
  
       int old_size_est = estimate_edge_size (edge);
-      int old_time_est = estimate_edge_time (edge);
+      sreal old_time_est = estimate_edge_time (edge);
       int old_hints_est = estimate_edge_hints (edge);
 
       reset_edge_growth_cache (edge);
@@ -2250,20 +2242,20 @@ inline_to_all_callers (struct cgraph_node *node, void *data)
 static void
 dump_overall_stats (void)
 {
-  int64_t sum_weighted = 0, sum = 0;
+  sreal sum_weighted = 0, sum = 0;
   struct cgraph_node *node;
 
   FOR_EACH_DEFINED_FUNCTION (node)
     if (!node->global.inlined_to
 	&& !node->alias)
       {
-	int time = inline_summaries->get (node)->time.to_double ();
+	sreal time = inline_summaries->get (node)->time;
 	sum += time;
 	sum_weighted += time * node->count;
       }
   fprintf (dump_file, "Overall time estimate: "
-	   "%" PRId64" weighted by profile: "
-	   "%" PRId64"\n", sum, sum_weighted);
+	   "%f weighted by profile: "
+	   "%f\n", sum.to_double (), sum_weighted.to_double ());
 }
 
 /* Output some useful stats about inlining.  */
