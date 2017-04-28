@@ -1,5 +1,22 @@
 2017-04-28  Martin Liska  <mliska@suse.cz>
 
+	* gcov.c (struct block_location_info): New struct.
+	(process_file): Fill up the new structure.
+	(read_graph_file): Replace usage of encoding by the newly added
+	struct.
+	(add_line_counts): Likewise.
+	(accumulate_line_counts): Remove usage of the union.
+	(function_info::function_info): New function.
+	(function_info::~function_info): Likewise.
+	(process_file): Call delete instead of release_function.
+	(release_function): Release the function.
+	(release_structures): Call delete instead of release_function.
+	(solve_flow_graph): Replace usage of num_blocks.
+	(find_exception_blocks): Likewise.
+	(output_lines): Fix GNU coding style.
+
+2017-04-28  Martin Liska  <mliska@suse.cz>
+
 	PR driver/56469
 	* coverage.c (coverage_remove_note_file): New function.
 	* coverage.h: Declare the function.
