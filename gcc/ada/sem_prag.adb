@@ -12667,6 +12667,7 @@ package body Sem_Prag is
             Eloc  : Source_Ptr;
             Expr  : Node_Id;
             Str   : Node_Id;
+            pragma Warnings (Off, Str);
 
          begin
             --  Pragma Check is Ghost when it applies to a Ghost entity. Set

@@ -1174,6 +1174,7 @@ package body Freeze is
       Component_Aliased : Boolean;
 
       Comp_Byte_Aligned : Boolean;
+      pragma Warnings (Off, Comp_Byte_Aligned);
       --  Set for the record case, True if Comp starts on a byte boundary
       --  (in which case it is allowed to have different storage order).
 

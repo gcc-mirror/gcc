@@ -1,3 +1,35 @@
+2017-04-28  Javier Miranda  <miranda@adacore.com>
+
+	* atree.ads (Info_Messages): Removed.
+	(Warning_Info_Messages): New counter.
+	(Report_Info_Messages): New counter.
+	* err_vars.ads Update documentation.
+	* errout.adb (Delete_Warning_And_Continuations): Update
+	Info_Message occurrences.
+	(Error_Msg_Internal): Update Info_Message occurrences.
+	(Delete_Warning): Update Info_Message occurrences.
+	(Write_Error_Summary): Update Info_Message occurrences.
+	(Output_Messages): Update Info_Message occurrences.
+	(To_Be_Removed): Update Info_Message occurrences.
+	(Reset_Warnings): Update Info_Message occurrences.
+	* errutil.adb (Error_Msg): Update Info_Message occurrences.
+	(Finalize): Update Info_Message occurrences.
+	(Initialize): Update Info_Message occurrences.
+	* erroutc.adb (Delete_Msg): Update Info_Message occurrences.
+	(Compilation_Errors): Update Info_Message_Occurences.
+
+2017-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+        * exp_ch3.adb (Build_Init_Statements): Likewise on Nam.
+        * freeze.adb (Check_Component_Storage_Order): And on Comp_Byte_Aligned.
+        * sem_aggr.adb (Resolve_Record_Aggregate): Initialize Box_Node.
+        * sem_attr.adb (Loop_Entry): Initialize Encl_Loop.
+        * sem_ch12.adb (Build_Operator_Wrapper): Add pragma Warnings on Expr.
+        * sem_ch13.adb (Validate_Address_Clauses): Initialize Y_Alignment and
+        Y_Size.
+        * sem_eval.adb (Why_Not_Static): Initialize Typ.
+        * sem_prag.adb (Analyze_Pragma): Add pragma Warnings on Str.
+
 2017-04-28  Bob Duff  <duff@adacore.com>
 
 	* sem_util.ads, sem_util.adb (Might_Raise): New function

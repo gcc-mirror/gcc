@@ -13334,10 +13334,10 @@ package body Sem_Ch13 is
             Expr : Node_Id;
 
             X_Alignment : Uint;
-            Y_Alignment : Uint;
+            Y_Alignment : Uint := Uint_0;
 
             X_Size : Uint;
-            Y_Size : Uint;
+            Y_Size : Uint := Uint_0;
 
             X_Offs : Uint;
 

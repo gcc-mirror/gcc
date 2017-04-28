@@ -320,9 +320,15 @@ package Atree is
    --  compilation. Initialized for -gnatVa use, see comment above. This
    --  count includes the count of style and info messages.
 
-   Info_Messages : Nat := 0;
-   --  Number of info messages generated. Info messages are neved treated as
-   --  errors (whether from use of the pragma, or the compiler switch -gnatwe).
+   Warning_Info_Messages : Nat := 0;
+   --  Number of info messages generated as warnings. Info messages are never
+   --  treated as errors (whether from use of the pragma, or the compiler
+   --  switch -gnatwe).
+
+   Report_Info_Messages : Nat := 0;
+   --  Number of info messages generated as reports. Info messages are never
+   --  treated as errors (whether from use of the pragma, or the compiler
+   --  switch -gnatwe). Used under Spark_Mode to report proved checks.
 
    Check_Messages : Nat := 0;
    --  Number of check messages generated. Check messages are neither warnings

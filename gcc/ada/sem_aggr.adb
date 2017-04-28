@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3205,7 +3205,7 @@ package body Sem_Aggr is
       --
       --  This variable is updated as a side effect of function Get_Value.
 
-      Box_Node       : Node_Id;
+      Box_Node       : Node_Id := Empty;
       Is_Box_Present : Boolean := False;
       Others_Box     : Integer := 0;
       --  Ada 2005 (AI-287): Variables used in case of default initialization
