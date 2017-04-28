@@ -1,5 +1,12 @@
 2017-04-28  Martin Liska  <mliska@suse.cz>
 
+	PR driver/56469
+	* coverage.c (coverage_remove_note_file): New function.
+	* coverage.h: Declare the function.
+	* toplev.c (finalize): Clean if an error has been seen.
+
+2017-04-28  Martin Liska  <mliska@suse.cz>
+
 	PR gcov-profile/80031
 	* gcov-dump.c (tag_blocks): Just print number of basic blocks.
 	* gcov-io.h (GCOV_TAG_BLOCKS_NUM): Remove unused macro.
