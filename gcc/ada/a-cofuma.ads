@@ -35,9 +35,11 @@ private with Ada.Containers.Functional_Base;
 generic
    type Key_Type (<>) is private;
    type Element_Type (<>)  is private;
+
    with function Equivalent_Keys
      (Left  : Key_Type;
       Right : Key_Type) return Boolean is "=";
+
    Enable_Handling_Of_Equivalence : Boolean := True;
    --  This constant should only be set to False when no particular handling
    --  of equivalence over keys is needed, that is, Equivalent_Keys defines a
@@ -77,7 +79,7 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
           --  Has_Key returns the same result on all equivalent keys
 
           (if (for some K of Container => Equivalent_Keys (K, Key)) then
-             Has_Key'Result));
+              Has_Key'Result));
 
    function Get (Container : Map; Key : Key_Type) return Element_Type with
    --  Return the element associated with Key in Container
@@ -90,8 +92,8 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
           --  Get returns the same result on all equivalent keys
 
           Get'Result = W_Get (Container, Witness (Container, Key))
-          and (for all K of Container =>
-                 (Equivalent_Keys (K, Key) =
+            and (for all K of Container =>
+                  (Equivalent_Keys (K, Key) =
                     (Witness (Container, Key) = Witness (Container, K)))));
 
    function Length (Container : Map) return Count_Type with

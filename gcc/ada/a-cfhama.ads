@@ -126,8 +126,8 @@ is
         Global => null,
         Post =>
           (if Find'Result > 0 then
-             Find'Result <= K.Length (Container)
-               and Equivalent_Keys (Key, K.Get (Container, Find'Result)));
+              Find'Result <= K.Length (Container)
+                and Equivalent_Keys (Key, K.Get (Container, Find'Result)));
 
       function K_Keys_Included
         (Left  : K.Sequence;
@@ -139,9 +139,9 @@ is
         Post   =>
           K_Keys_Included'Result =
             (for all I in 1 .. K.Length (Left) =>
-               Find (Right, K.Get (Left, I)) > 0
-                 and then K.Get (Right, Find (Right, K.Get (Left, I))) =
-                     K.Get (Left, I));
+              Find (Right, K.Get (Left, I)) > 0
+                and then K.Get (Right, Find (Right, K.Get (Left, I))) =
+                         K.Get (Left, I));
 
       package P is new Ada.Containers.Functional_Maps
         (Key_Type                       => Cursor,
@@ -203,14 +203,15 @@ is
             --  It only contains keys contained in Model
 
             and (for all Key of Keys'Result =>
-                   M.Has_Key (Model (Container), Key))
+                  M.Has_Key (Model (Container), Key))
 
             --  It contains all the keys contained in Model
 
             and (for all Key of Model (Container) =>
                   (Find (Keys'Result, Key) > 0
-                     and then Equivalent_Keys
-                      (K.Get (Keys'Result, Find (Keys'Result, Key)), Key)))
+                    and then Equivalent_Keys
+                               (K.Get (Keys'Result, Find (Keys'Result, Key)),
+                                Key)))
 
             --  It has no duplicate
 
@@ -221,7 +222,8 @@ is
                   (for all J in 1 .. Length (Container) =>
                     (if Equivalent_Keys
                           (K.Get (Keys'Result, I), K.Get (Keys'Result, J))
-                     then I = J)));
+                     then
+                        I = J)));
       pragma Annotate (GNATprove, Iterable_For_Proof, "Model", Keys);
 
       function Positions (Container : Map) return P.Map with
@@ -246,7 +248,7 @@ is
             and then
               (for all J of Positions'Result =>
                 (if P.Get (Positions'Result, I) = P.Get (Positions'Result, J)
-                  then I = J)));
+                 then I = J)));
 
       procedure Lift_Abstraction_Level (Container : Map) with
         --  Lift_Abstraction_Level is a ghost procedure that does nothing but
@@ -547,9 +549,9 @@ is
 
             --  Key is inserted in Container
 
-            and K.Get (Keys (Container),
-                       P.Get (Positions (Container), Find (Container, Key))) =
-                Key
+            and K.Get
+                  (Keys (Container),
+                   P.Get (Positions (Container), Find (Container, Key))) = Key
 
             --  Mapping from cursors to keys is preserved
 

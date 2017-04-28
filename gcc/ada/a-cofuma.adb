@@ -152,8 +152,11 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
    -- Has_Witness --
    -----------------
 
-   function Has_Witness (Container : Map; Witness : Count_Type) return Boolean
-   is (Witness in 1 .. Length (Container.Keys));
+   function Has_Witness
+     (Container : Map;
+      Witness   : Count_Type) return Boolean
+   is
+     (Witness in 1 .. Length (Container.Keys));
 
    --------------
    -- Is_Empty --
@@ -265,7 +268,9 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
    -- W_Get --
    -----------
 
-   function W_Get (Container : Map; Witness : Count_Type) return Element_Type
+   function W_Get
+     (Container : Map;
+      Witness   : Count_Type) return Element_Type
    is
      (Get (Container.Elements, Witness));
 
