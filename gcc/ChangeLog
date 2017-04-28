@@ -1,3 +1,18 @@
+2017-04-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (assert_info): New struct.
+	(add_assert_info): New helper.
+	(register_edge_assert_for_2): Refactor to add asserts to a vector
+	of assert_info.
+	(register_edge_assert_for_1): Likewise.
+	(register_edge_assert_for): Likewise.
+	(finish_register_edge_assert_for): New helper actually registering
+	asserts where live on edge.
+	(find_conditional_asserts): Adjust.
+	(find_switch_asserts): Likewise.
+	(evrp_dom_walker::try_find_new_range): Generalize.
+	(evrp_dom_walker::before_dom_children): Use register_edge_assert_for.
+
 2017-04-27  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/80349
