@@ -1,5 +1,14 @@
 2017-04-28  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/80031
+	* gcov-dump.c (tag_blocks): Just print number of basic blocks.
+	* gcov-io.h (GCOV_TAG_BLOCKS_NUM): Remove unused macro.
+	* gcov.c (read_graph_file): Read just number of blocks.
+	* profile.c (branch_prob): Do not stream 0 flags per a basic
+	block.
+
+2017-04-28  Martin Liska  <mliska@suse.cz>
+
 	* gcov-dump.c (tag_*): Add new argument to declarations.
 	(dump_gcov_file): Likewise.
 	(tag_blocks): Add and use new argument depth.

@@ -1195,8 +1195,7 @@ branch_prob (void)
 
       /* Basic block flags */
       offset = gcov_write_tag (GCOV_TAG_BLOCKS);
-      for (i = 0; i != (unsigned) (n_basic_blocks_for_fn (cfun)); i++)
-	gcov_write_unsigned (0);
+      gcov_write_unsigned (n_basic_blocks_for_fn (cfun));
       gcov_write_length (offset);
 
       /* Arcs */

@@ -129,7 +129,6 @@ typedef struct block_info
 
   /* Block execution count.  */
   gcov_type count;
-  unsigned flags : 12;
   unsigned count_valid : 1;
   unsigned valid_chain : 1;
   unsigned invalid_chain : 1;
@@ -1374,12 +1373,8 @@ read_graph_file (void)
 		     bbg_file_name, fn->name);
 	  else
 	    {
-	      unsigned ix, num_blocks = GCOV_TAG_BLOCKS_NUM (length);
-	      fn->num_blocks = num_blocks;
-
+	      fn->num_blocks = gcov_read_unsigned ();
 	      fn->blocks = XCNEWVEC (block_t, fn->num_blocks);
-	      for (ix = 0; ix != num_blocks; ix++)
-		fn->blocks[ix].flags = gcov_read_unsigned ();
 	    }
 	}
       else if (fn && tag == GCOV_TAG_ARCS)
