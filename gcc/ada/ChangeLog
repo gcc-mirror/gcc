@@ -1,8 +1,8 @@
-2017-04-27  Gary Dismukes  <dismukes@adacore.com>
+2017-04-28  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_util.adb: Minor reformatting.
 
-2017-04-27  Ed Schonberg  <schonberg@adacore.com>
+2017-04-28  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb: Fix copy/pasto.
 
