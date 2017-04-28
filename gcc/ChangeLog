@@ -1,3 +1,12 @@
+2017-04-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* configure.ac (SYSTEM_HEADER_DIR, BUILD_SYSTEM_HEADER_DIR,
+	target_header_dir): Set correctly.
+	* configure: Regenerated.
+	* Makefile.in (BUILD_SYSTEM_HEADER_DIR): New make variabe.
+	(LIMITS_H_TEST, if_multiarch, stmp-fixinc): Use BUILD_SYSTEM_HEADER_DIR
+	instead of SYSTEM_HEADER_DIR.
+
 2017-04-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-cp.c (perform_estimation_of_a_value): Turn time to sreal.
