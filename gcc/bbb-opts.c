@@ -2615,6 +2615,7 @@ opt_immediate (void)
 	  while (i++ < j)
 	    infos[i].mark_use(regno);
 	  ++j;
+	  ++change_count;
 	}
 
       i = j;
