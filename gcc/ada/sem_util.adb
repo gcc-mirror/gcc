@@ -16869,6 +16869,63 @@ package body Sem_Util is
       Mark_Allocators (Root_Nod);
    end Mark_Coextensions;
 
+   -----------------
+   -- Might_Raise --
+   -----------------
+
+   function Might_Raise (N : Node_Id) return Boolean is
+      Result : Boolean := False;
+
+      function Process (N : Node_Id) return Traverse_Result;
+      --  Set Result to True if we find something that could raise an exception
+
+      -------------
+      -- Process --
+      -------------
+
+      function Process (N : Node_Id) return Traverse_Result is
+      begin
+         if Nkind_In (N, N_Procedure_Call_Statement,
+                         N_Function_Call,
+                         N_Raise_Statement,
+                         N_Raise_Constraint_Error,
+                         N_Raise_Program_Error,
+                         N_Raise_Storage_Error)
+         then
+            Result := True;
+            return Abandon;
+         else
+            return OK;
+         end if;
+      end Process;
+
+      procedure Set_Result is new Traverse_Proc (Process);
+
+   --  Start of processing for Might_Raise
+
+   begin
+      --  False if exceptions can't be propagated
+
+      if No_Exception_Handlers_Set then
+         return False;
+      end if;
+
+      --  If the checks handled by the back end are not disabled, we cannot
+      --  ensure that no exception will be raised.
+
+      if not Access_Checks_Suppressed (Empty)
+        or else not Discriminant_Checks_Suppressed (Empty)
+        or else not Range_Checks_Suppressed (Empty)
+        or else not Index_Checks_Suppressed (Empty)
+        or else Opt.Stack_Checking_Enabled
+      then
+         return True;
+      end if;
+
+      Set_Result (N);
+      return Result;
+   end Might_Raise;
+
    --------------------------------
    -- Nearest_Enclosing_Instance --
    --------------------------------

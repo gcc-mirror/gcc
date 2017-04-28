@@ -29959,7 +29959,17 @@ package body Sem_Prag is
          if Nkind (Stmt) = N_Pragma
            and then Pragma_On_Body_Or_Stub_OK (Get_Pragma_Id (Stmt))
          then
-            Relocate_Pragma (Stmt);
+
+            --  If a source pragma Warnings follows the body, it applies to
+            --  following statements and does not belong in the body.
+
+            if Get_Pragma_Id (Stmt) = Pragma_Warnings
+              and then Comes_From_Source (Stmt)
+            then
+               null;
+            else
+               Relocate_Pragma (Stmt);
+            end if;
 
          --  Skip internally generated code
 

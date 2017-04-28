@@ -1,3 +1,57 @@
+2017-04-28  Bob Duff  <duff@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Might_Raise): New function
+	that replaces Is_Exception_Safe, but has the opposite
+	sense. Is_Exception_Safe was missing various cases -- calls inside
+	a pragma Debug, calls inside an 'if' or assignment statement,
+	etc. Might_Raise now walks the entire subtree looking for things
+	that can raise.
+	* exp_ch9.adb (Is_Exception_Safe): Remove.
+	(Build_Protected_Subprogram_Body): Replace call to
+	Is_Exception_Safe with "not Might_Raise". Misc cleanup (use
+	constants where possible).
+	* exp_ch7.adb: Rename Is_Protected_Body -->
+	Is_Protected_Subp_Body. A protected_body is something different
+	in the grammar.
+
+2017-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Expand_Inlined_Call): Initialize Targ1 variable.
+	* par-ch3.adb (P_Component_Items): Initialize Decl_Node variable.
+	(P_Discrete_Choice_List): Initialize Expr_Node variable.
+	* par-ch9.adb (P_Task): Initialize Aspect_Sloc variable.
+	(P_Protected): Likewise.
+	* sem_case.adb (Check_Duplicates):
+	Add pragma Warnings on variable.
+	* sem_ch12.adb (Preanalyze_Actuals): Initialize Vis variable.
+	* sem_ch4.adb (List_Operand_Interps):  Add pragma Warnings on variable.
+	* sem_ch5.adb (Analyze_Assignment): Initialize Save_Full_Analysis.
+	(Analyze_Exit_Statement): Initialize Scope_Id variable.
+	(Analyze_Iterator_Specification): Initialize Bas variable.
+	* sem_ch9.adb (Allows_Lock_Free_Implementation): Initialize
+	Error_Count (Satisfies_Lock_Free_Requirements): Likewise.
+	(Analyze_Accept_Statement): Initialize Task_Nam.
+
+2017-04-28  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Install_Primitive_Elaboration_Check):
+	Do not generate an elaboration check if all checks have been
+	suppressed.
+
+2017-04-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications, case
+	Interrupt_Handler and Attach_Handler): Generate reference
+	to protected operation to prevent spurious warnings about
+	unreferenced entities. Previous scheme failed with style checks
+	enabled.
+
+2017-04-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Relocate_Pragmas_To_Body): A pragma Warnings
+	that follows an expression function must not be relocated to
+	the generated body, because it applies to the code that follows.
+
 2017-04-28  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_util.adb (Is_Dependent_Component_Of_Mutable_Object): Test

@@ -7795,15 +7795,21 @@ package body Checks is
       if ASIS_Mode or GNATprove_Mode then
          return;
 
-      --  Do not generate an elaboration check if such code is not desirable
+      --  Do not generate an elaboration check if all checks have been
+      --  suppressed.
 
-      elsif Restriction_Active (No_Elaboration_Code) then
+      elsif Suppress_Checks then
          return;
 
       --  Do not generate an elaboration check if the related subprogram is
       --  not subjected to accessibility checks.
 
       elsif Elaboration_Checks_Suppressed (Subp_Id) then
+         return;
+
+      --  Do not generate an elaboration check if such code is not desirable
+
+      elsif Restriction_Active (No_Elaboration_Code) then
          return;
 
       --  Do not consider subprograms which act as compilation units, because

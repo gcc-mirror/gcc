@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
-with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -420,9 +419,6 @@ package body Exp_Ch9 is
    --  with the protection entry index in the Protected_Body_Subprogram or
    --  the Task_Body_Procedure of Spec_Id. The returned entity denotes formal
    --  parameter _E.
-
-   function Is_Exception_Safe (Subprogram : Node_Id) return Boolean;
-   --  Tell whether a given subprogram cannot raise an exception
 
    function Is_Potentially_Large_Family
      (Base_Index : Entity_Id;
@@ -3889,30 +3885,28 @@ package body Exp_Ch9 is
       Pid       : Node_Id;
       N_Op_Spec : Node_Id) return Node_Id
    is
-      Loc         : constant Source_Ptr := Sloc (N);
-      Op_Spec     : Node_Id;
-      P_Op_Spec   : Node_Id;
-      Uactuals    : List_Id;
-      Pformal     : Node_Id;
-      Unprot_Call : Node_Id;
-      Sub_Body    : Node_Id;
+      Exc_Safe : constant Boolean := not Might_Raise (N);
+      --  True if N cannot raise an exception
+
+      Loc       : constant Source_Ptr := Sloc (N);
+      Op_Spec   : constant Node_Id := Specification (N);
+      P_Op_Spec : constant Node_Id :=
+                    Build_Protected_Sub_Specification (N, Pid, Protected_Mode);
+
+      Lock_Kind   : RE_Id;
       Lock_Name   : Node_Id;
       Lock_Stmt   : Node_Id;
+      Object_Parm : Node_Id;
+      Pformal     : Node_Id;
       R           : Node_Id;
       Return_Stmt : Node_Id := Empty;    -- init to avoid gcc 3 warning
       Pre_Stmts   : List_Id := No_List;  -- init to avoid gcc 3 warning
       Stmts       : List_Id;
-      Object_Parm : Node_Id;
-      Exc_Safe    : Boolean;
-      Lock_Kind   : RE_Id;
+      Sub_Body    : Node_Id;
+      Uactuals    : List_Id;
+      Unprot_Call : Node_Id;
 
    begin
-      Op_Spec := Specification (N);
-      Exc_Safe := Is_Exception_Safe (N);
-
-      P_Op_Spec :=
-        Build_Protected_Sub_Specification (N, Pid, Protected_Mode);
-
       --  Build a list of the formal parameters of the protected version of
       --  the subprogram to use as the actual parameters of the unprotected
       --  version.
@@ -13544,103 +13538,6 @@ package body Exp_Ch9 is
          end;
       end if;
    end Install_Private_Data_Declarations;
-
-   -----------------------
-   -- Is_Exception_Safe --
-   -----------------------
-
-   function Is_Exception_Safe (Subprogram : Node_Id) return Boolean is
-
-      function Has_Side_Effect (N : Node_Id) return Boolean;
-      --  Return True whenever encountering a subprogram call or raise
-      --  statement of any kind in the sequence of statements
-
-      ---------------------
-      -- Has_Side_Effect --
-      ---------------------
-
-      --  What is this doing buried two levels down in exp_ch9. It seems like a
-      --  generally useful function, and indeed there may be code duplication
-      --  going on here ???
-
-      function Has_Side_Effect (N : Node_Id) return Boolean is
-         Stmt : Node_Id;
-         Expr : Node_Id;
-
-         function Is_Call_Or_Raise (N : Node_Id) return Boolean;
-         --  Indicate whether N is a subprogram call or a raise statement
-
-         ----------------------
-         -- Is_Call_Or_Raise --
-         ----------------------
-
-         function Is_Call_Or_Raise (N : Node_Id) return Boolean is
-         begin
-            return Nkind_In (N, N_Procedure_Call_Statement,
-                                N_Function_Call,
-                                N_Raise_Statement,
-                                N_Raise_Constraint_Error,
-                                N_Raise_Program_Error,
-                                N_Raise_Storage_Error);
-         end Is_Call_Or_Raise;
-
-      --  Start of processing for Has_Side_Effect
-
-      begin
-         Stmt := N;
-         while Present (Stmt) loop
-            if Is_Call_Or_Raise (Stmt) then
-               return True;
-            end if;
-
-            --  An object declaration can also contain a function call or a
-            --  raise statement.
-
-            if Nkind (Stmt) = N_Object_Declaration then
-               Expr := Expression (Stmt);
-
-               if Present (Expr) and then Is_Call_Or_Raise (Expr) then
-                  return True;
-               end if;
-            end if;
-
-            Next (Stmt);
-         end loop;
-
-         return False;
-      end Has_Side_Effect;
-
-   --  Start of processing for Is_Exception_Safe
-
-   begin
-      --  When exceptions can't be propagated, the subprogram returns normally
-
-      if No_Exception_Handlers_Set then
-         return True;
-      end if;
-
-      --  If the checks handled by the back end are not disabled, we cannot
-      --  ensure that no exception will be raised.
-
-      if not Access_Checks_Suppressed (Empty)
-        or else not Discriminant_Checks_Suppressed (Empty)
-        or else not Range_Checks_Suppressed (Empty)
-        or else not Index_Checks_Suppressed (Empty)
-        or else Opt.Stack_Checking_Enabled
-      then
-         return False;
-      end if;
-
-      if Has_Side_Effect (First (Declarations (Subprogram)))
-        or else
-          Has_Side_Effect
-            (First (Statements (Handled_Statement_Sequence (Subprogram))))
-      then
-         return False;
-      else
-         return True;
-      end if;
-   end Is_Exception_Safe;
 
    ---------------------------------
    -- Is_Potentially_Large_Family --

@@ -2301,7 +2301,7 @@ package body Inline is
       --  this is the left-hand side of the assignment, else it is a temporary
       --  to which the return value is assigned prior to rewriting the call.
 
-      Targ1 : Node_Id;
+      Targ1 : Node_Id := Empty;
       --  A separate target used when the return type is unconstrained
 
       Temp     : Entity_Id;

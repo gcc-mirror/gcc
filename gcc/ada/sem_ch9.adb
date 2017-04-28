@@ -127,7 +127,7 @@ package body Sem_Ch9 is
      (N               : Node_Id;
       Lock_Free_Given : Boolean := False) return Boolean
    is
-      Errors_Count : Nat;
+      Errors_Count : Nat := 0;
       --  Errors_Count is a count of errors detected by the compiler so far
       --  when Lock_Free_Given is True.
 
@@ -257,7 +257,7 @@ package body Sem_Ch9 is
                Comp : Entity_Id := Empty;
                --  Track the current component which the body references
 
-               Errors_Count : Nat;
+               Errors_Count : Nat := 0;
                --  Errors_Count is a count of errors detected by the compiler
                --  so far when Lock_Free_Given is True.
 
@@ -772,7 +772,7 @@ package body Sem_Ch9 is
       Entry_Nam : Entity_Id;
       E         : Entity_Id;
       Kind      : Entity_Kind;
-      Task_Nam  : Entity_Id;
+      Task_Nam  : Entity_Id := Empty;  -- initialize to prevent warning
 
    begin
       Tasking_Used := True;

@@ -13620,7 +13620,7 @@ package body Sem_Ch12 is
       Cur : Entity_Id := Empty;
       --  Current homograph of the instance name
 
-      Vis : Boolean;
+      Vis : Boolean := False;
       --  Saved visibility status of the current homograph
 
    begin

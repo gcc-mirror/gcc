@@ -340,6 +340,7 @@ package body Sem_Ch4 is
 
       procedure List_Operand_Interps (Opnd : Node_Id) is
          Nam   : Node_Id;
+         pragma Warnings (Off, Nam);
          Err   : Node_Id := N;
 
       begin
