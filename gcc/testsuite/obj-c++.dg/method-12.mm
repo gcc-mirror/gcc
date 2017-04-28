@@ -7,12 +7,12 @@
 #include <objc/Protocol.h>
 
 @interface Base
-- (unsigned)port;
+- (unsigned)port; /* { dg-line Base_port } */
 @end
 
 @interface Derived: Base
 - (Object *)port;
-+ (Protocol *)port;
++ (Protocol *)port; /* { dg-line Derived_port_last } */
 - (id)starboard;
 @end
 
@@ -20,8 +20,8 @@ void foo(void) {
   Class receiver;
 
   [receiver port];  /* { dg-warning "multiple methods named .\\+port. found" } */
-       /* { dg-message "using .\\-\\(unsigned( int)?\\)port." "" { target *-*-* } 10 } */
-       /* { dg-message "also found .\\+\\(Protocol \\*\\)port." "" { target *-*-* } 15 } */
+       /* { dg-message "using .\\-\\(unsigned( int)?\\)port." "" { target *-*-* } Base_port } */
+       /* { dg-message "also found .\\+\\(Protocol \\*\\)port." "" { target *-*-* } Derived_port_last } */
 
   [receiver starboard];  /* { dg-warning "no .\\+starboard. method found" } */
        /* { dg-warning "Messages without a matching method signature" "" { target *-*-* } .-1 } */

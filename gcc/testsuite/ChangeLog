@@ -1,3 +1,42 @@
+2017-04-28  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/80557
+	* obj-c++.dg/bitfield-1.mm: Replace absolute linenrs.
+	* obj-c++.dg/bitfield-4.mm: Same.
+	* obj-c++.dg/bitfield-5.mm: Same.
+	* obj-c++.dg/exceptions-3.mm: Same.
+	* obj-c++.dg/exceptions-5.mm: Same.
+	* obj-c++.dg/method-1.mm: Same.
+	* obj-c++.dg/method-12.mm: Same.
+	* obj-c++.dg/method-13.mm: Same.
+	* obj-c++.dg/method-15.mm: Same.
+	* obj-c++.dg/method-16.mm: Same.
+	* obj-c++.dg/property/at-property-18.mm: Same.
+	* obj-c++.dg/property/at-property-25.mm: Same.
+	* obj-c++.dg/property/at-property-5.mm: Same.
+	* obj-c++.dg/property/dynamic-2.mm: Same.
+	* obj-c++.dg/property/property-neg-3.mm: Same.
+	* obj-c++.dg/protocol-inheritance-1.mm: Same.
+	* obj-c++.dg/protocol-inheritance-2.mm: Same.
+	* obj-c++.dg/syntax-error-1.mm: Same.
+	* obj-c++.dg/try-catch-13.mm: Same.
+	* objc.dg/bitfield-4.m: Same.
+	* objc.dg/class-1.m: Same.
+	* objc.dg/method-11.m: Same.
+	* objc.dg/method-6.m: Same.
+	* objc.dg/method-7.m: Same.
+	* objc.dg/method-9.m: Same.
+	* objc.dg/missing-proto-3.m: Same.
+	* objc.dg/naming-2.m: Same.
+	* objc.dg/property/at-property-16.m: Same.
+	* objc.dg/property/at-property-18.m: Same.
+	* objc.dg/property/at-property-25.m: Same.
+	* objc.dg/property/at-property-5.m: Same.
+	* objc.dg/property/dynamic-2.m: Same.
+	* objc.dg/property/property-neg-3.m: Same.
+	* objc.dg/protocol-inheritance-1.m: Same.
+	* objc.dg/protocol-inheritance-2.m: Same.
+
 2017-04-28  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/cmpexactdiv-2.c: Update for X-Z OP Y-Z.
