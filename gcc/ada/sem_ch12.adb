@@ -5652,6 +5652,7 @@ package body Sem_Ch12 is
 
       Decl    : Node_Id;
       Expr    : Node_Id;
+      pragma Warnings (Off, Expr);
       F1, F2  : Entity_Id;
       Func    : Entity_Id;
       Op_Name : Name_Id;

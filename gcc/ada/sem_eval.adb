@@ -6457,8 +6457,8 @@ package body Sem_Eval is
    --------------------
 
    procedure Why_Not_Static (Expr : Node_Id) is
-      N   : constant Node_Id   := Original_Node (Expr);
-      Typ : Entity_Id;
+      N   : constant Node_Id := Original_Node (Expr);
+      Typ : Entity_Id        := Empty;
       E   : Entity_Id;
       Alt : Node_Id;
       Exp : Node_Id;

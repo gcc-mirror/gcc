@@ -2875,6 +2875,7 @@ package body Exp_Ch3 is
                   declare
                      Exp   : Node_Id;
                      Nam   : Name_Id;
+                     pragma Warnings (Off, Nam);
                      Ritem : Node_Id;
 
                   begin

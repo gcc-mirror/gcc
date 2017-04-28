@@ -4322,7 +4322,7 @@ package body Sem_Attr is
 
          Context   : constant Node_Id := Parent (N);
          Attr      : Node_Id;
-         Encl_Loop : Node_Id;
+         Encl_Loop : Node_Id   := Empty;
          Encl_Prag : Node_Id   := Empty;
          Loop_Id   : Entity_Id := Empty;
          Scop      : Entity_Id;
