@@ -154,9 +154,6 @@ class insn_info
   int src_mem_regno;
   unsigned src_intval;
 
-  insn_info &
-  operator = (insn_info const &);
-
 public:
   insn_info (rtx_insn * i = 0, int p = 0) :
       insn (i), myuse (0), hard (0), use (0), def (0), proepi (p), stack (false), label (false), jump (false), call (
@@ -166,14 +163,14 @@ public:
   {
   }
 
-  inline void
-  plus_to_move (rtx_insn * newinsn)
-  {
-    insn = newinsn;
-    dst_plus = false;
-    dst_reg = true;
-    // usage flags did not change
-  }
+  int
+  get_index () const;
+
+  void
+  plus_to_move (rtx_insn * newinsn);
+
+  void
+  swap_adds(rtx_insn * newinsn, insn_info & ii);
 
   inline bool
   is_dst_reg () const
@@ -715,7 +712,69 @@ temp_reg_rename (std::vector<std::pair<rtx *, rtx> > & loc, rtx x, unsigned oldr
  */
 static std::vector<insn_info> infos;
 static std::vector<rtx_insn *> jumps;
-static std::map<rtx_insn *, unsigned> insn2index;
+static std::map<rtx_insn *, insn_info *> insn2index;
+
+static insn_info * info0;
+
+static void
+update_insn2index ()
+{
+  infos.reserve (infos.size () * 8 / 7 + 2);
+  insn2index.clear ();
+  /* needs a separate pass since the insn_infos require fixed addresses for ->get_index() */
+  for (unsigned i = 0; i < infos.size (); ++i)
+    {
+      insn_info & ii = infos[i];
+      insn2index.insert (std::make_pair (ii.get_insn (), &ii));
+    }
+  info0 = &infos[0];
+}
+
+int
+insn_info::get_index () const
+{
+  insn_info * ii = &infos[0];
+
+  if (ii == info0)
+    {
+      ptrdiff_t diff = ((char const *) this - (char const *) ii);
+      unsigned pos = diff / sizeof(insn_info);
+      if (pos < infos.size ())
+	return pos;
+    }
+
+  // realloc happened...
+  for (unsigned i = 0; i < infos.size (); ++i)
+    if (infos[i].get_insn () == this->insn)
+      return i;
+
+  // whoops!?
+  return 0;
+}
+
+void
+insn_info::plus_to_move (rtx_insn * newinsn)
+{
+  insn = newinsn;
+  src_plus = false;
+  src_reg = true;
+  insn2index.insert(std::make_pair(insn, this));
+  // usage flags did not change
+}
+
+void
+insn_info::swap_adds(rtx_insn * newinsn, insn_info & ii)
+{
+  insn = newinsn;
+
+  std::swap(*this, ii);
+
+  insn2index.insert(std::make_pair(insn, this));
+  insn2index.insert(std::make_pair(ii.insn, &ii));
+
+  // usage flags did not change
+}
+
 
 /*
  * Reset collected data.
@@ -759,7 +818,7 @@ append_reg_usage (FILE * f, rtx_insn * insn)
   if (i == insn2index.end ())
     return;
 
-  insn_info & ii = infos[i->second];
+  insn_info & ii = *i->second;
 
   if (f != stderr)
     fprintf (f, "\n\t\t\t\t\t\t| ");
@@ -867,9 +926,9 @@ update_insn_infos (void)
 		{
 		  if (JUMP_LABEL(*i) == insn)
 		    {
-		      std::map<rtx_insn *, unsigned>::iterator j = insn2index.find (*i);
+		      auto j = insn2index.find (*i);
 		      if (j != insn2index.end ())
-			todo.push_back (std::make_pair (j->second, ii));
+			todo.push_back (std::make_pair (j->second->get_index (), ii));
 		    }
 		}
 	      continue;
@@ -935,7 +994,6 @@ update_insns ()
       if (NONJUMP_INSN_P (insn) || LABEL_P(insn) || JUMP_P(insn) || CALL_P(insn))
 	{
 
-	  insn2index.insert (std::make_pair (insn, infos.size ()));
 	  infos.push_back (insn_info (insn, inproepilogue));
 	  insn_info & ii = infos[infos.size () - 1];
 
@@ -970,6 +1028,8 @@ update_insns ()
 	    inproepilogue = 2;
 	}
     }
+
+  update_insn2index ();
   update_insn_infos ();
 }
 
@@ -1088,11 +1148,11 @@ opt_reg_rename (void)
 		    {
 		      if (JUMP_LABEL(*i) == insn)
 			{
-			  std::map<rtx_insn *, unsigned>::iterator j = insn2index.find (*i);
+			  auto j = insn2index.find (*i);
 			  if (j == insn2index.end ())
 			    continue;
 
-			  unsigned start = j->second;
+			  unsigned start = j->second->get_index ();
 			  if (!infos[start].is_use (rename_regno))
 			    continue;
 
@@ -1131,7 +1191,7 @@ opt_reg_rename (void)
 	      /* follow jump and/or next insn. */
 	      if (JUMP_P(insn))
 		{
-		  std::map<rtx_insn *, unsigned>::iterator j = insn2index.find ((rtx_insn *) JUMP_LABEL(insn));
+		  auto j = insn2index.find ((rtx_insn *) JUMP_LABEL(insn));
 		  if (j == insn2index.end ())
 		    {
 		      /* whoops - label not found. */
@@ -1139,7 +1199,7 @@ opt_reg_rename (void)
 		      break;
 		    }
 
-		  unsigned label_index = j->second;
+		  unsigned label_index = j->second->get_index ();
 		  if (found.find (label_index) == found.end ())
 		    {
 		      /* if the rename_reg is used in the insn before.
@@ -1827,9 +1887,9 @@ opt_const_cmp_to_sub (void)
 	      if (!JUMP_P(patchme))
 		continue;
 
-	      std::map<rtx_insn *, unsigned>::iterator j = insn2index.find ((rtx_insn *) JUMP_LABEL(patchme));
+	      auto j = insn2index.find ((rtx_insn *) JUMP_LABEL(patchme));
 	      if (j != insn2index.end ())
-		todo.push_back (j->second);
+		todo.push_back (j->second->get_index ());
 
 	      rtx jmppattern = PATTERN (patchme);
 
@@ -1971,7 +2031,7 @@ opt_merge_add (void)
       rtx_insn * newins1 = make_insn_raw (PATTERN (insn1));
       add_insn_after (newins1, insn2, 0);
       SET_INSN_DELETED(insn1);
-//      ii1.swap_adds(newins1, ii2);
+      ii1.swap_adds(newins1, ii2);
 
       ++change_count;
     }
@@ -2491,7 +2551,7 @@ namespace
 	  done = 0, update_insns ();
 
 	if (do_merge_add && opt_merge_add ())
-	  done = 0, update_insns ();
+	  done = 0;
 
 	if (do_elim_dead_assign && opt_elim_dead_assign ())
 	  done = 0, update_insns ();
