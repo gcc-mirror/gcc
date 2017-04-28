@@ -17,5 +17,5 @@ void f (C) {}         // even though this would be well-formed
 
 int main ()
 {
-  f (aip);  // { dg-error "'A' is an inaccessible base of 'B'|conversion" "" }
+  f (aip);  // { dg-error "'A' is an inaccessible base of 'B'|conversion" }
 }

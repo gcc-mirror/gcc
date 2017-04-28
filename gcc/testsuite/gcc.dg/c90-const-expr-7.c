@@ -8,7 +8,7 @@
 
 int a = DBL_MAX; /* { dg-warning "overflow in implicit constant conversion" } */
 /* { dg-error "overflow in constant expression" "constant" { target *-*-* } .-1 } */
-int b = (int) DBL_MAX; /* { dg-error "overflow" "" } */
+int b = (int) DBL_MAX; /* { dg-error "overflow" } */
 unsigned int c = -1.0; /* { dg-warning "overflow in implicit constant conversion" } */
 /* { dg-error "overflow in constant expression" "constant" { target *-*-* } .-1 } */
 unsigned int d = (unsigned)-1.0; /* { dg-error "overflow" } */

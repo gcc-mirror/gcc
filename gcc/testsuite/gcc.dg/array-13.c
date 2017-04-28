@@ -15,7 +15,7 @@ struct g { int w; T0 x; };
 
 static struct f f = { 4, { 0, 1, 2, 3 } };
 static int junk1[] = { -1, -1, -1, -1 };
-static struct g g = { 4, { 0, 1, 2, 3 } }; /* { dg-warning "(excess elements)|(near initialization)" "" } */
+static struct g g = { 4, { 0, 1, 2, 3 } }; /* { dg-warning "(excess elements)|(near initialization)" } */
 static int junk2[] = { -1, -1, -1, -1 };
 
 int main()

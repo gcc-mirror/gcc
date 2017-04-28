@@ -15,4 +15,4 @@ struct A { int i; };
 
 static void f (int A::* pmi) { }
 
-int main () { f (null); } // { dg-error "cannot convert" "" }
+int main () { f (null); } // { dg-error "cannot convert" }

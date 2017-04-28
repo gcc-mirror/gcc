@@ -3,5 +3,5 @@
 module namelist_1
   public
   integer,private :: x
-  namelist /n/ x ! { dg-error "cannot be member of PUBLIC namelist" "" }
+  namelist /n/ x ! { dg-error "cannot be member of PUBLIC namelist" }
 end module

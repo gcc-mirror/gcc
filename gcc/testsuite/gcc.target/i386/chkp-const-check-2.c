@@ -4,5 +4,5 @@
 int test (int *p)
 {
   p = (int *)__builtin___bnd_set_ptr_bounds (p, sizeof (int));
-  return *(p + 1); /* { dg-warning "memory access check always fail" "" } */
+  return *(p + 1); /* { dg-warning "memory access check always fail" } */
 }

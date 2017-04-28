@@ -10,7 +10,7 @@ int aa (void)
   test(t);
 }
 static inline
-int bb (void) /* { dg-warning "large-stack-frame" "" } */
+int bb (void) /* { dg-warning "large-stack-frame" } */
 {
   char t[100];
   test(t);

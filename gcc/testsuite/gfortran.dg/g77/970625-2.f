@@ -52,22 +52,22 @@
       LOGICAL REAL
       REAL LOGICAL
       INTEGER INTEGER, STOP, RETURN, GO TO
-      ASSIGN 9 TO STOP     ! { dg-warning "ASSIGN" "" }
+      ASSIGN 9 TO STOP     ! { dg-warning "ASSIGN" }
       ASSIGN = 9 + LOGICAL
-      ASSIGN 7 TO RETURN   ! { dg-warning "ASSIGN" "" }
-      ASSIGN 9 TO GO TO    ! { dg-warning "ASSIGN" "" }
+      ASSIGN 7 TO RETURN   ! { dg-warning "ASSIGN" }
+      ASSIGN 9 TO GO TO    ! { dg-warning "ASSIGN" }
       GO TO = 5
       STOP = 8
-      IF (.NOT.REAL) GOTO STOP ! { dg-warning "Assigned GOTO" "" }
+      IF (.NOT.REAL) GOTO STOP ! { dg-warning "Assigned GOTO" }
       IF (LOGICAL.GT.INTEGER) THEN
          IF = LOGICAL +5
-         IF (LOGICAL.EQ.5) ASSIGN 5 TO IF ! { dg-warning "ASSIGN" "" }
+         IF (LOGICAL.EQ.5) ASSIGN 5 TO IF ! { dg-warning "ASSIGN" }
          INTEGER=IF
       ELSE
-         IF (ASSIGN.GT.STOP) ASSIGN 9 TO GOTO ! { dg-warning "ASSIGN" "" }
+         IF (ASSIGN.GT.STOP) ASSIGN 9 TO GOTO ! { dg-warning "ASSIGN" }
          ELSE = GO TO
          END IF = ELSE + GO TO
-         IF (.NOT.REAL.AND.GOTO.GT.ELSE) GOTO RETURN ! { dg-warning "Assigned GOTO" "" }
+         IF (.NOT.REAL.AND.GOTO.GT.ELSE) GOTO RETURN ! { dg-warning "Assigned GOTO" }
       END IF
     5 CONTINUE
     7 LOGICAL=LOGICAL+STOP

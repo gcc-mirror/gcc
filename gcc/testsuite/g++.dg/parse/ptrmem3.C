@@ -7,5 +7,5 @@
 
 template<typename> struct A
 {
-  int A<0>::* p; // { dg-error "(type/value mismatch)|(expected)" "" }
+  int A<0>::* p; // { dg-error "(type/value mismatch)|(expected)" }
 };

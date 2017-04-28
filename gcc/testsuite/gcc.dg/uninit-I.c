@@ -4,5 +4,5 @@
 int sys_msgctl (void)
 {
   struct { int mode; } setbuf;
-  return setbuf.mode;  /* { dg-warning "'setbuf\.mode' is used" "" } */
+  return setbuf.mode;  /* { dg-warning "'setbuf\.mode' is used" } */
 }
