@@ -140,6 +140,8 @@ typedef struct block_info
   gcov_type num_succ;
   gcov_type num_pred;
 
+  unsigned id;
+
   /* Block execution count.  */
   gcov_type count;
   unsigned count_valid : 1;
@@ -368,6 +370,10 @@ static int flag_long_names = 0;
    let's calculate md5sum of the path and append it to a file name.  */
 
 static int flag_hash_filenames = 0;
+
+/* Print verbose informations.  */
+
+static int flag_verbose = 0;
 
 /* Output count information for every basic block, not merely those
    that contain line number information.  */
@@ -700,6 +706,7 @@ print_usage (int error_p)
   fnotice (file, "  -s, --source-prefix DIR         Source prefix to elide\n");
   fnotice (file, "  -u, --unconditional-branches    Show unconditional branch counts too\n");
   fnotice (file, "  -v, --version                   Print version number, then exit\n");
+  fnotice (file, "  -w, --verbose                   Print verbose informations\n");
   fnotice (file, "  -x, --hash-filenames            Hash long pathnames\n");
   fnotice (file, "\nFor bug reporting instructions, please see:\n%s.\n",
 	   bug_report_url);
@@ -725,6 +732,7 @@ static const struct option options[] =
 {
   { "help",                 no_argument,       NULL, 'h' },
   { "version",              no_argument,       NULL, 'v' },
+  { "verbose",              no_argument,       NULL, 'w' },
   { "all-blocks",           no_argument,       NULL, 'a' },
   { "branch-probabilities", no_argument,       NULL, 'b' },
   { "branch-counts",        no_argument,       NULL, 'c' },
@@ -751,7 +759,7 @@ process_args (int argc, char **argv)
 {
   int opt;
 
-  const char *opts = "abcdfhilmno:prs:uvx";
+  const char *opts = "abcdfhilmno:prs:uvwx";
   while ((opt = getopt_long (argc, argv, opts, options, NULL)) != -1)
     {
       switch (opt)
@@ -805,6 +813,9 @@ process_args (int argc, char **argv)
           break;
 	case 'x':
 	  flag_hash_filenames = 1;
+	  break;
+	case 'w':
+	  flag_verbose = 1;
 	  break;
 	case 'v':
 	  print_version ();
@@ -1375,6 +1386,7 @@ read_graph_file (void)
       else if (fn && tag == GCOV_TAG_ARCS)
 	{
 	  unsigned src = gcov_read_unsigned ();
+	  fn->blocks[src].id = src;
 	  unsigned num_dests = GCOV_TAG_ARCS_NUM (length);
 	  block_t *src_blk = &fn->blocks[src];
 	  unsigned mark_catches = 0;
@@ -2399,12 +2411,17 @@ output_branch_count (FILE *gcov_file, int ix, const arc_t *arc)
   else if (!arc->is_unconditional)
     {
       if (arc->src->count)
-	fnotice (gcov_file, "branch %2d taken %s%s\n", ix,
+	fnotice (gcov_file, "branch %2d taken %s%s", ix,
 		 format_gcov (arc->count, arc->src->count, -flag_counts),
 		 arc->fall_through ? " (fallthrough)"
 		 : arc->is_throw ? " (throw)" : "");
       else
-	fnotice (gcov_file, "branch %2d never executed\n", ix);
+	fnotice (gcov_file, "branch %2d never executed", ix);
+
+      if (flag_verbose)
+	fnotice (gcov_file, " (BB %d)", arc->dst->id);
+
+      fnotice (gcov_file, "\n");
     }
   else if (flag_unconditional && !arc->dst->is_call_return)
     {
@@ -2541,11 +2558,16 @@ output_lines (FILE *gcov_file, const source_t *src)
 	       block = block->chain)
 	    {
 	      if (!block->is_call_return)
-		fprintf (gcov_file, "%9s:%5u-block %2d\n",
-			 !line->exists ? "-" : block->count
-			 ? format_gcov (block->count, 0, -1)
-			 : block->exceptional ? "%%%%%" : "$$$$$",
-			 line_num, ix++);
+		{
+		  fprintf (gcov_file, "%9s:%5u-block %2d",
+			   !line->exists ? "-" : block->count
+			   ? format_gcov (block->count, 0, -1)
+			   : block->exceptional ? "%%%%%" : "$$$$$",
+			   line_num, ix++);
+		  if (flag_verbose)
+		    fprintf (gcov_file, " (BB %u)", block->id);
+		  fprintf (gcov_file, "\n");
+		}
 	      if (flag_branches)
 		for (arc = block->succ; arc; arc = arc->succ_next)
 		  jx += output_branch_count (gcov_file, jx, arc);
