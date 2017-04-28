@@ -7316,6 +7316,8 @@ package body Exp_Ch6 is
    ------------------------------
 
    procedure Insert_Post_Call_Actions (N : Node_Id; Post_Call : List_Id) is
+      Context : constant Node_Id := Parent (N);
+
    begin
       if Is_Empty_List (Post_Call) then
          return;
@@ -7326,7 +7328,7 @@ package body Exp_Ch6 is
       --  call or indexing, i.e. an expression context as well.
 
       if not Is_List_Member (N)
-        or else Nkind_In (Parent (N), N_Function_Call, N_Indexed_Component)
+        or else Nkind_In (Context, N_Function_Call, N_Indexed_Component)
       then
          --  In Ada 2012 the call may be a function call in an expression
          --  (since OUT and IN OUT parameters are now allowed for such calls).
@@ -7402,22 +7404,26 @@ package body Exp_Ch6 is
          --  corresponding statement list.
 
          else
-            declare
-               P : Node_Id;
+            pragma Assert (Nkind_In (Context, N_Entry_Call_Alternative,
+                                              N_Triggering_Alternative));
 
-            begin
-               P := Parent (N);
-               pragma Assert (Nkind_In (P, N_Entry_Call_Alternative,
-                                           N_Triggering_Alternative));
-
-               if Is_Non_Empty_List (Statements (P)) then
-                  Insert_List_Before_And_Analyze
-                    (First (Statements (P)), Post_Call);
-               else
-                  Set_Statements (P, Post_Call);
-               end if;
-            end;
+            if Is_Non_Empty_List (Statements (Context)) then
+               Insert_List_Before_And_Analyze
+                 (First (Statements (Context)), Post_Call);
+            else
+               Set_Statements (Context, Post_Call);
+            end if;
          end if;
+
+      --  A procedure call is always part of a declarative or statement list,
+      --  however a function call may appear nested within a construct. Most
+      --  cases of function call nesting are handled in the special case above.
+      --  The only exception is when the function call acts as an actual in a
+      --  procedure call. In this case the function call is in a list, but the
+      --  post-call actions must be inserted after the procedure call.
+
+      elsif Nkind (Context) = N_Procedure_Call_Statement then
+         Insert_Actions_After (Context, Post_Call);
 
       --  Otherwise, normal case where N is in a statement sequence, just put
       --  the post-call stuff after the call statement.

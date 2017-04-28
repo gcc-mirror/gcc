@@ -8621,6 +8621,14 @@ package body Sem_Ch4 is
          Actuals : List_Id;
 
       begin
+         --  Obj may already have been rewritten if it involves an implicit
+         --  dereference (e.g. if it is an access to a limited view). Preserve
+         --  a link to the original node for ASIS use.
+
+         if not Comes_From_Source (Obj) then
+            Set_Original_Node (Dummy, Original_Node (Obj));
+         end if;
+
          --  Common case covering 1) Call to a procedure and 2) Call to a
          --  function that has some additional actuals.
 
