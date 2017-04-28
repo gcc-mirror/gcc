@@ -62,8 +62,8 @@ foo (int i, unsigned int u, double d, char *s, void *p, int *n,
   printf ("%llc", i); /* { dg-warning "length" "bad use of %ll" } */
   printf ("%lls", s); /* { dg-warning "length" "bad use of %ll" } */
   printf ("%llp", p); /* { dg-warning "length" "bad use of %ll" } */
-  printf ("%jd%ji%jo%ju%jx%jX", j, j, uj, uj, uj, uj); /* { dg-bogus "length" "bogus %j warning" { target *-*-* } } */
-  printf ("%jn", jn); /* { dg-bogus "length" "bogus %j warning" { target *-*-* } } */
+  printf ("%jd%ji%jo%ju%jx%jX", j, j, uj, uj, uj, uj); /* { dg-bogus "length" "bogus %j warning" } */
+  printf ("%jn", jn); /* { dg-bogus "length" "bogus %j warning" } */
   printf ("%jf", d); /* { dg-warning "length" "bad use of %j" } */
   printf ("%jF", d); /* { dg-warning "length" "bad use of %j" } */
   printf ("%je", d); /* { dg-warning "length" "bad use of %j" } */
