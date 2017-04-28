@@ -289,6 +289,10 @@ where the @var{source-file} component is the final filename part and
 the @var{md5} component is calculated from the full mangled name that
 would have been used otherwise.
 
+@item -w
+@itemx --verbose
+Print verbose informations related to basic blocks and arcs.
+
 @end table
 
 @command{gcov} should be run with the current directory the same as that

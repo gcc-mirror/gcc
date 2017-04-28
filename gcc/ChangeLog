@@ -1,5 +1,14 @@
 2017-04-28  Martin Liska  <mliska@suse.cz>
 
+	* gcov.c (process_args): Handle new argument 'w'.
+	(read_graph_file): Assign ID to BBs.
+	(output_branch_count): Display BB # if verbose flag is set.
+	(output_lines): Likewise for arcs.
+	(print_usage): Add '--verbose' option help.
+	* doc/gcov.texi: Document --verbose (-w) option.
+
+2017-04-28  Martin Liska  <mliska@suse.cz>
+
 	* gcov.c (struct block_location_info): New struct.
 	(process_file): Fill up the new structure.
 	(read_graph_file): Replace usage of encoding by the newly added
