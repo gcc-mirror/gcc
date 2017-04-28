@@ -1,3 +1,14 @@
+2017-04-28  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb (Is_Dependent_Component_Of_Mutable_Object): Test
+	Relaxed_RM_Semantics to avoid having CodePeer issue errors on
+	code that might violate the more stringent checking for 'Access
+	introduced in Ada 2005.
+
+2017-04-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-cforse.adb: minor style fix in comment.
+
 2017-04-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch9.adb (Build_Lock_Free_Unprotected_Subprogram_Body): Also
