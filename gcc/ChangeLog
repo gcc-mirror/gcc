@@ -1,5 +1,9 @@
 2017-04-28  Richard Biener  <rguenther@suse.de>
 
+	* lto-streamer.h (LTO_major_version): Bump to 7.
+
+2017-04-28  Richard Biener  <rguenther@suse.de>
+
 	* tree-vrp.c (assert_info): New struct.
 	(add_assert_info): New helper.
 	(register_edge_assert_for_2): Refactor to add asserts to a vector
