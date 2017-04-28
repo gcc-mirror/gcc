@@ -9,7 +9,7 @@
 - (void) testSpoon;
 @end
 
-extern void some_func (int *);
+extern void some_func (int *); /* { dg-line some_func_decl } */
 
 @implementation TestMyTests
 - (void) testSpoon {
@@ -22,7 +22,7 @@ extern void some_func (int *);
       typeof(q) k = 66;
       some_func (&j);
 /* { dg-error "invalid conversion" "" { target *-*-* } .-1 } */ 
-/* { dg-message "initializing argument" "" { target *-*-* } 12 } */
+/* { dg-message "initializing argument" "" { target *-*-* } some_func_decl } */
       some_func (&k);
     }
     @catch (id exc) {
@@ -39,7 +39,7 @@ extern void some_func (int *);
 /* { dg-error "invalid conversion" "" { target *-*-* } .-1 } */
 /* The following is disabled as it is already checked above and the testsuites seems 
    to count multiple different identical errors on the same line only once */
-/*  dg-message "initializing argument" "" { target *-*-* } 12  */
+/*  dg-message "initializing argument" "" { target *-*-* } some_func_decl  */
     }
     @catch (id exc) {
       @throw;
@@ -54,7 +54,7 @@ extern void some_func (int *);
 /* { dg-error "invalid conversion" "" { target *-*-* } .-1 } */
 /* The following is disabled as it is already checked above and the testsuites seems 
    to count multiple different identical errors on the same line only once */
-/*  dg-message "initializing argument" "" { target *-*-* } 12  */
+/*  dg-message "initializing argument" "" { target *-*-* } some_func_decl  */
       some_func (&k);
     }
     @catch (id exc) {

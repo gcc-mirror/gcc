@@ -19,8 +19,7 @@
   return self;
 }
 @end
-
-/* { dg-warning "incomplete implementation of class .MyClass." "" { target *-*-* } 21 } */
-/* { dg-warning "method definition for .\\-missingMethod1. not found" "" { target *-*-* } 21 } */
-/* { dg-warning "class .MyClass. does not fully implement the .DefinedProtocol. protocol" "" { target *-*-* } 21 } */
+/* { dg-warning "incomplete implementation of class .MyClass." "" { target *-*-* } .-1 } */
+/* { dg-warning "method definition for .\\-missingMethod1. not found" "" { target *-*-* } .-2 } */
+/* { dg-warning "class .MyClass. does not fully implement the .DefinedProtocol. protocol" "" { target *-*-* } .-3 } */
 
