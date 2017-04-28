@@ -3111,10 +3111,11 @@ package body Sem_Ch6 is
                   end;
                end if;
 
-            --  Freezing an access type does not freeze the designated
-            --  type, but freezing conversions between access to interfaces
-            --  requires that the interface types themselves be frozen, so
-            --  that dispatch table entities are properly created.
+            --  Freezing an access type does not freeze the designated type,
+            --  but freezing conversions between access to interfaces requires
+            --  that the interface types themselves be frozen, so that dispatch
+            --  table entities are properly created.
+
             --  Unclear whether a more general rule is needed ???
 
             elsif Nkind (Node) = N_Type_Conversion

@@ -11945,6 +11945,7 @@ package body Sem_Res is
 
       function In_Instance_Code return Boolean is
          Par : Node_Id;
+
       begin
          if not In_Instance then
             return False;
@@ -11953,24 +11954,25 @@ package body Sem_Res is
             Par := Parent (N);
             while Present (Par) loop
 
-               --  The expression is part of an actual object if it appears
-               --  in the generated object declaration in the instance.
+               --  The expression is part of an actual object if it appears in
+               --  the generated object declaration in the instance.
 
                if Nkind (Par) = N_Object_Declaration
-                  and then Present (Corresponding_Generic_Association (Par))
+                 and then Present (Corresponding_Generic_Association (Par))
                then
                   return False;
+
                else
-                  exit when Nkind (Par)
-                      in N_Statement_Other_Than_Procedure_Call
-                    or else Nkind (Par) in N_Subprogram_Call
-                    or else Nkind (Par) in N_Declaration;
+                  exit when
+                    Nkind (Par) in N_Statement_Other_Than_Procedure_Call
+                      or else Nkind (Par) in N_Subprogram_Call
+                      or else Nkind (Par) in N_Declaration;
                end if;
 
                Par := Parent (Par);
             end loop;
 
-            --  Otherwise the expression appears within the instantiated unit.
+            --  Otherwise the expression appears within the instantiated unit
 
             return True;
          end if;
