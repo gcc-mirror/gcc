@@ -415,10 +415,7 @@ public:
   static void dump_table (FILE *);
 
   /* Dump symbol table to stderr.  */
-  static inline DEBUG_FUNCTION void debug_symtab (void)
-  {
-    dump_table (stderr);
-  }
+  static void DEBUG_FUNCTION debug_symtab (void);
 
   /* Verify symbol table for internal consistency.  */
   static DEBUG_FUNCTION void verify_symtab_nodes (void);
