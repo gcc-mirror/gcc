@@ -188,6 +188,12 @@ public:
   }
 
   inline bool
+  is_src_mem () const
+  {
+    return src_mem;
+  }
+
+  inline bool
   has_dst_memreg () const
   {
     return dst_mem_reg >= 0;
@@ -2073,10 +2079,10 @@ opt_merge_add (void)
 	  continue;
 	}
 
-      if (ii0.is_dst_mem () || !ii0.is_dst_reg () || !ii0.is_src_plus () || !ii1.is_src_plus () || !ii2.is_src_plus ())
+      if (!ii0.is_dst_reg () || !ii0.is_src_plus () || !ii1.is_src_plus () || !ii2.is_src_plus ())
 	continue;
 
-      if (!ii0.is_src_const () || !ii1.is_src_reg () || !ii2.is_src_const ())
+      if (ii0.is_src_mem () || !ii0.is_src_const () || !ii1.is_src_reg () || ii2.is_src_mem () || !ii2.is_src_const ())
 	continue;
 
       if (ii0.get_dst_regno () != ii1.get_dst_regno () || ii1.get_src_regno () != ii2.get_dst_regno ())
