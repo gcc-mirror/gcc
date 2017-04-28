@@ -1,5 +1,12 @@
 2017-04-28  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (struct_lang_base): Add module_index.  Shrink selector.
+	(DECL_MODULE_INDEX, DECL_GLOBAL_MODULE_P, DECL_THIS_MODULE_P): New.
+	(EXPORTED_P): Rename to ..
+	(DECL_EXPORTED_P): ... here.
+	* modules.c: Adjust EXPORTED_P uses.
+
 	Module indices and separated import/export info
 	gcc/cp/
 	* cp-tree.h (GLOBAL_MODULE_INDEX, THIS_MODULE_INDEX,

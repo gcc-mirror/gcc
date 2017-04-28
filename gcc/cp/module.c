@@ -2005,7 +2005,7 @@ cpms_out::walk_namespace (FILE *d, tree ns, bool defns)
 	      {
 		tree fn = *iter;
 
-		if (mod_ns || MODULE_EXPORT_P (fn)
+		if (mod_ns || DECL_MODULE_EXPORT_P (fn)
 		    // FIXME: set MODULE_EXPORT_P properly.  Utter hack here
 		    || !DECL_EXTERN_C_P (fn))
 		  {
@@ -2020,7 +2020,7 @@ cpms_out::walk_namespace (FILE *d, tree ns, bool defns)
 	}
       else if (TREE_CODE (decl) == NAMESPACE_DECL)
 	walk_namespace (d, decl, defns);
-      else if (mod_ns || MODULE_EXPORT_P (decl)
+      else if (mod_ns || DECL_MODULE_EXPORT_P (decl)
 	       // FIXME: set MODULE_EXPORT_P properly.  Utter hack here
 	       || !DECL_EXTERN_C_P (decl))
 	switch (TREE_CODE (decl))

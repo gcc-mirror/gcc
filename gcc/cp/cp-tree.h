@@ -373,7 +373,8 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       CALL_EXPR_ORDERED_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       DECLTYPE_FOR_REF_CAPTURE (in DECLTYPE_TYPE)
       OVL_NESTED_P (in OVERLOAD)
-      MODULE_EXPORT_P (in FUNCTION_DECL, VAR_DECL, TYPE_DECL, TEMPLATE_DECL)
+      DCL_MODULE_EXPORT_P (in FUNCTION_DECL, VAR_DECL, TYPE_DECL,
+      				TEMPLATE_DECL)
    4: TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  CALL_EXPR, or FIELD_DECL).
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
@@ -1395,6 +1396,21 @@ check_constraint_info (tree t)
 #define THIS_MODULE_INDEX 1
 #define IMPORTED_MODULE_BASE 2
 
+/* The owning module of a DECL.  */
+
+#define DECL_MODULE_INDEX(N) \
+  (DECL_LANG_SPECIFIC (N)->u.base.module_index)
+
+#define DECL_GLOBAL_MODULE_P(N) \
+  (DECL_LANG_SPECIFIC (N)->u.base.module_index == GLOBAL_MODULE_INDEX)
+
+#define DECL_THIS_MODULE_P(N) \
+  (DECL_LANG_SPECIFIC (N)->u.base.module_index == THIS_MODULE_INDEX)
+
+/* Whether this is an exported DECL.  */
+#define DECL_MODULE_EXPORT_P(NODE) \
+  TREE_LANG_FLAG_3 (VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK (NODE))
+
 /* Whether the namespace contains module-linkage objects.  */
 #define MODULE_NAMESPACE_P(NODE) \
   TREE_LANG_FLAG_1 (NAMESPACE_DECL_CHECK (NODE))
@@ -1406,9 +1422,6 @@ check_constraint_info (tree t)
 #define CURRENT_MODULE_NAMESPACE_P(NODE) \
   (MODULE_NAMESPACE_P (NODE) && DECL_NAMESPACE_INLINE_P (NODE))
 
-/* Whether this is an exported DECL.  */
-#define MODULE_EXPORT_P(NODE) \
-  TREE_LANG_FLAG_3 (VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK (NODE))
 
 enum cp_tree_node_structure_enum {
   TS_CP_GENERIC,
@@ -2438,7 +2451,8 @@ struct GTY(()) lang_type {
    not make this struct larger than 32 bits; instead, make sel smaller.  */
 
 struct GTY(()) lang_decl_base {
-  unsigned selector : 16;   /* Larger than necessary for faster access.  */
+  unsigned selector : 2;
+  unsigned module_index : 14;		   /* Module index. */
   ENUM_BITFIELD(languages) language : 1;
   unsigned use_template : 2;
   unsigned not_really_extern : 1;	   /* var or fn */
