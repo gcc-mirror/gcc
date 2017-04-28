@@ -12,7 +12,7 @@ struct foo
 
   void bad ()
   {
-    this->*(bars[0].b) = 42; // { dg-bogus "read-only" "" }
+    this->*(bars[0].b) = 42; // { dg-bogus "read-only" }
   }
 };
 

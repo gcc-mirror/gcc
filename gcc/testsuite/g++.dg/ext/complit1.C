@@ -11,6 +11,6 @@ public:
 };
 
 Foo::Foo(int v0, int v1)
-  : val_((int[]) {v0, v1})  // { dg-error "" "" }
+  : val_((int[]) {v0, v1})  // { dg-error "" }
 {
 }

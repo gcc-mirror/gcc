@@ -7,9 +7,9 @@
 
 struct Wrapper {};
 
-void Foo(int const &); // { dg-message "in passing" "" }
+void Foo(int const &); // { dg-message "in passing" }
 
 void Baz ()
 {
-  Foo (Wrapper ()); // { dg-error "Wrapper" "" }
+  Foo (Wrapper ()); // { dg-error "Wrapper" }
 }

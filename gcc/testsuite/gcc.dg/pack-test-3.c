@@ -33,12 +33,12 @@ int ary2[sizeof (struct p2) == sizeof (p2_t1) ? 1 : -1];
 int ary3[sizeof (struct p1) == sizeof (struct p2) ? 1 : -1];
 
 /* not ok */
-typedef struct u1 __attribute__ ((packed)) u1_t1; /* { dg-warning "attribute ignored" "" }*/
-typedef struct u1 u1_t2 __attribute__ ((packed)); /* { dg-warning "attribute ignored" "" }*/
+typedef struct u1 __attribute__ ((packed)) u1_t1; /* { dg-warning "attribute ignored" }*/
+typedef struct u1 u1_t2 __attribute__ ((packed)); /* { dg-warning "attribute ignored" }*/
 
 typedef struct p3 {
    char  field1;
    short field2;
    int field3;
-} p3_t1 __attribute__ ((packed)); /* { dg-warning "attribute ignored" "" }*/
+} p3_t1 __attribute__ ((packed)); /* { dg-warning "attribute ignored" }*/
 

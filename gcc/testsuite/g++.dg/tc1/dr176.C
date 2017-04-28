@@ -6,7 +6,7 @@ namespace N1 {
   template <class T> struct Base {
     Base* p;
     Base<T*>* p2;
-    ::Base* p3;    // { dg-error "" "" }
+    ::Base* p3;    // { dg-error "" }
   };
 
   template <class T> struct Derived: public Base<T> {
@@ -22,7 +22,7 @@ namespace N1 {
 namespace N2 {
   template <class T> struct Base {};
   template <class T> struct Derived: public Base<T> {
-    typename Derived::template Base<double>* p1;  // { dg-bogus "" "" }
+    typename Derived::template Base<double>* p1;  // { dg-bogus "" }
   };
 
   template struct Derived<void>;

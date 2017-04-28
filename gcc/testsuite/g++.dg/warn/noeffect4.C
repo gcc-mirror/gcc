@@ -79,10 +79,10 @@ template<int I> void Foo (X &x)
   reinterpret_cast<int> (x.Foo ()); // { dg-error "invalid cast" }
   const_cast<X &> (x.Foo ());       // { dg-warning "not used" }
   
-  reinterpret_cast<int *> (&x);// { dg-warning "no effect" "" }
-  const_cast<X &> (x);         // { dg-warning "no effect" "" }
-  sizeof (x++);                // { dg-warning "no effect" "" }
-  __alignof__ (x++);           // { dg-warning "no effect" "" }
+  reinterpret_cast<int *> (&x);// { dg-warning "no effect" }
+  const_cast<X &> (x);         // { dg-warning "no effect" }
+  sizeof (x++);                // { dg-warning "no effect" }
+  __alignof__ (x++);           // { dg-warning "no effect" }
 }
 
 template void Foo<4> (X&);     // { dg-message "required" }

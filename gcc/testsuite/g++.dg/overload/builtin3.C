@@ -6,5 +6,5 @@ namespace std {
 }
 using std::fabs;
 
-double (*p) (double) = &fabs;  // { dg-bogus "is ambiguous" "" }
+double (*p) (double) = &fabs;  // { dg-bogus "is ambiguous" }
 

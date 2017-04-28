@@ -8,5 +8,5 @@
 
 void Foo (int)
 {
-  Foo(2 2); // { dg-error "expected" "" }
+  Foo(2 2); // { dg-error "expected" }
 }

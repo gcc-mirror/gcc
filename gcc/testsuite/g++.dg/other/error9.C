@@ -14,7 +14,7 @@ struct B
 
 struct C : public B, public A
 {
-  C ()  // { dg-warning "when initialized" "" }
-    : A(), B()  // { dg-warning "base .\[AB\]." "" }
+  C ()  // { dg-warning "when initialized" }
+    : A(), B()  // { dg-warning "base .\[AB\]." }
   { }
 };

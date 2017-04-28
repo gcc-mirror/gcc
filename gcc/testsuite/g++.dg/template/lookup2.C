@@ -9,10 +9,10 @@ struct B {};
 
 template <typename T> void Bar ()
 {
-  T::foo (); // { dg-error "is not a member of" "" }
+  T::foo (); // { dg-error "is not a member of" }
 }
 
 void Foo ()
 {
-  Bar<B> (); // { dg-message "required" "" }
+  Bar<B> (); // { dg-message "required" }
 }

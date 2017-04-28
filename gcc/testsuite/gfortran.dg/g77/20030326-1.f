@@ -6,5 +6,5 @@
 ! For gfortran, see PR 13490
 !
        integer c
-       c = -2147483648_4 / (-1) ! { dg-error "too big for its kind" "" }
+       c = -2147483648_4 / (-1) ! { dg-error "too big for its kind" }
        end

@@ -18,5 +18,5 @@ void tfoo(void)
     int alpha;  // { dg-error "" "" { xfail *-*-* } }
     int beta; 
   }; // { dg-bogus "" "misplaced position of the declaration" { xfail *-*-* } }
-  double alpha; // { dg-error "" "" }
+  double alpha; // { dg-error "" }
 }

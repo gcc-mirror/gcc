@@ -7,13 +7,13 @@
 
 int * f( int a)
 {
-	return &a;/* { dg-warning "address" "" } */
+	return &a;/* { dg-warning "address" } */
 }
 
 int * g()
 {
 	int b = 0;
-	return &b;/* { dg-warning "address" "" } */
+	return &b;/* { dg-warning "address" } */
 }
 
 struct ll
@@ -23,7 +23,7 @@ struct ll
 
 int *h(struct ll c)
 {
-  return &c.i;/* { dg-warning "address" "" } */
+  return &c.i;/* { dg-warning "address" } */
 }
 
 
@@ -31,11 +31,11 @@ struct ll d;
 
 int *i()
 {
-  return &d.i;/* { dg-bogus "address" "" } */
+  return &d.i;/* { dg-bogus "address" } */
 }
 
 
 int *j(struct ll *c)
 {
-  return &c->i; /* { dg-bogus "address" "" } */
+  return &c->i; /* { dg-bogus "address" } */
 }

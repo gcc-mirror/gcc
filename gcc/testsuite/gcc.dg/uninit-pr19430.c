@@ -29,7 +29,7 @@ void frob(int *pi);
 int main(void)
 {
   int i; 
-  printf("i = %d\n", i); /* { dg-warning "'i' is used uninitialized in this function" "" } */
+  printf("i = %d\n", i); /* { dg-warning "'i' is used uninitialized in this function" } */
   frob(&i);
 
   return 0;

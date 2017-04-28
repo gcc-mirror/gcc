@@ -5,12 +5,12 @@
 
 namespace foo {
   inline namespace foo_impl {
-    class T; // { dg-message "T" "" }
+    class T; // { dg-message "T" }
   }
 }
 namespace bar {
   inline namespace bar_impl {
-    class T; // { dg-message "T" "" }
+    class T; // { dg-message "T" }
   }
   using namespace foo;
 }
@@ -21,4 +21,4 @@ namespace baz {
 
 foo::T *t1;
 bar::T *t2;
-baz::T *t3; // { dg-error "(ambiguous|does not name a type)" "" }
+baz::T *t3; // { dg-error "(ambiguous|does not name a type)" }

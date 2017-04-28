@@ -21,12 +21,12 @@ C2<X>::operator C1<Y>()
 
 struct A
 {
-  operator int ();			// { dg-error "operator" "" }
-  operator float ();			// { dg-error "operator" "" }
-  operator float () const;		// { dg-error "operator" "" }
-  template <typename T> operator T * (); // { dg-error "candidates" "" }
+  operator int ();			// { dg-error "operator" }
+  operator float ();			// { dg-error "operator" }
+  operator float () const;		// { dg-error "operator" }
+  template <typename T> operator T * (); // { dg-error "candidates" }
 };
 
-A::operator short () { // { dg-error "prototype for" "" }
+A::operator short () { // { dg-error "prototype for" }
   return 0;
 }

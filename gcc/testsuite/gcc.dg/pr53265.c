@@ -50,9 +50,9 @@ fn4 (void)
   unsigned int *a[32], *o, i;
 
   bar (a);
-  for (i = 0; i <= sizeof (a) / sizeof (a[0]); i++)	/* { dg-message "note: within this loop" "" } */
+  for (i = 0; i <= sizeof (a) / sizeof (a[0]); i++)	/* { dg-message "note: within this loop" } */
     {
-      o = a[i];	/* { dg-warning "32 invokes undefined behavior" "" } */
+      o = a[i];	/* { dg-warning "32 invokes undefined behavior" } */
       bar (o);
     }
 }
@@ -86,7 +86,7 @@ fn7 (void)
 {
   int a[16], b, c;
   bar (a);
-  for (b = a[c = 0]; c < 16; b = a[++c])	/* { dg-warning "15 invokes undefined behavior" "" } */
+  for (b = a[c = 0]; c < 16; b = a[++c])	/* { dg-warning "15 invokes undefined behavior" } */
     baz (b);
 }
 
