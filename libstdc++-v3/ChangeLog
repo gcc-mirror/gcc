@@ -1,3 +1,8 @@
+2017-04-28  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/17_intro/headers/c++1998/stdc++_assert_neg.cc: Remove
+	superfluous '{ target *-*-* }' in dg-(error|warning|message|bogus).
+
 2017-04-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/ext/pb_ds/detail/list_update_map_/iterators_fn_imps.hpp
