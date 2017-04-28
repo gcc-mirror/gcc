@@ -159,7 +159,6 @@
 	* errutil.adb (Finalize): Do not consider info messages as
 	suitable warnings when warnings must be treated as errors.
 
-
 2017-04-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* warnsw.ads: Minor fix for incorrect wording in comment.
