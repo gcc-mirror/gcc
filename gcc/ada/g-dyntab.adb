@@ -71,9 +71,12 @@ package body GNAT.Dynamic_Tables is
    procedure Append (T : in out Instance; New_Val : Table_Component_Type) is
       pragma Assert (not T.Locked);
       New_Last : constant Table_Last_Type := Last (T) + 1;
+
    begin
       if New_Last <= Last_Allocated (T) then
-         --  fast path
+
+         --  Fast path
+
          T.P.Last := New_Last;
          T.Table (New_Last) := New_Val;
 
@@ -144,7 +147,7 @@ package body GNAT.Dynamic_Tables is
       subtype Table_Length_Type is Table_Index_Type'Base
         range 0 .. Table_Index_Type'Base'Last;
 
-      Old_Last_Allocated   : constant Table_Last_Type  := Last_Allocated (T);
+      Old_Last_Allocated   : constant Table_Last_Type := Last_Allocated (T);
       Old_Allocated_Length : constant Table_Length_Type :=
                                Old_Last_Allocated - First + 1;
 

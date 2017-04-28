@@ -161,10 +161,11 @@ package body Namet is
 
    procedure Append (Buf : in out Bounded_String; Id : Name_Id) is
       pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
-      Index : constant Int := Name_Entries.Table (Id).Name_Chars_Index;
-      Len : constant Short := Name_Entries.Table (Id).Name_Len;
+
+      Index : constant Int   := Name_Entries.Table (Id).Name_Chars_Index;
+      Len   : constant Short := Name_Entries.Table (Id).Name_Len;
       Chars : Name_Chars.Table_Type renames
-        Name_Chars.Table (Index + 1 .. Index + Int (Len));
+                Name_Chars.Table (Index + 1 .. Index + Int (Len));
    begin
       Append (Buf, String (Chars));
    end Append;
@@ -174,8 +175,8 @@ package body Namet is
    --------------------
 
    procedure Append_Decoded (Buf : in out Bounded_String; Id : Name_Id) is
-      C : Character;
-      P : Natural;
+      C    : Character;
+      P    : Natural;
       Temp : Bounded_String;
 
    begin

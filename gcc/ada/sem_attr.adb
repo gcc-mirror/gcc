@@ -4032,11 +4032,11 @@ package body Sem_Attr is
       when Attribute_Image =>
          Check_SPARK_05_Restriction_On_Attribute;
 
-         --  AI12-00124-1 : The ARG has adopted the GNAT semantics of 'Img
-         --  for scalar types, so that the prefix can be an object and not
-         --  a type, and there is no need for an argument. Given this vote
-         --  of confidence from the ARG, simplest is to transform this new
-         --  usage of 'Image into a reference to 'Img.
+         --  AI12-00124-1 : The ARG has adopted the GNAT semantics of 'Img for
+         --  scalar types, so that the prefix can be an object and not a type,
+         --  and there is no need for an argument. Given the vote of confidence
+         --  from the ARG, simplest is to transform this new usage of 'Image
+         --  into a reference to 'Img.
 
          if Ada_Version > Ada_2005
            and then Is_Object_Reference (P)
@@ -4048,19 +4048,20 @@ package body Sem_Attr is
                    Prefix         => Relocate_Node (P),
                    Attribute_Name => Name_Img));
 
-            --  If the attribute reference includes expressions, the
-            --  only possible interpretation is as an indexing of the
-            --  parameterless version of 'Image, so rewrite it accordingly.
+            --  If the attribute reference includes expressions, the only
+            --  possible interpretation is as an indexing of the parameterless
+            --  version of 'Image, so rewrite it accordingly.
 
             else
                Rewrite (N,
-                  Make_Indexed_Component (Loc,
-                     Prefix      =>
-                       Make_Attribute_Reference (Loc,
-                         Prefix         => Relocate_Node (P),
-                         Attribute_Name => Name_Img),
-                     Expressions => Expressions (N)));
+                 Make_Indexed_Component (Loc,
+                   Prefix      =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => Relocate_Node (P),
+                       Attribute_Name => Name_Img),
+                   Expressions => Expressions (N)));
             end if;
+
             Analyze (N);
             return;
 
