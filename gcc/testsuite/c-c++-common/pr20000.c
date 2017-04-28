@@ -24,7 +24,7 @@ int vg(void);
 int vg2(void); /* { dg-bogus ".noreturn. function returns non-void value" } */
 
 int vg(void) {
-  return 1; /* { dg-warning "function declared 'noreturn' has a 'return' statement" "has return" { target c } . } */
+  return 1; /* { dg-warning "function declared 'noreturn' has a 'return' statement" "has return" { target c } } */
 }           /* { dg-warning "'noreturn' function does return" "does return" { target c } .-1 } */
 
 int vg2(void) {

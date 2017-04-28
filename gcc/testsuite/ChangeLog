@@ -1,3 +1,35 @@
+2017-04-28  Tom de Vries  <tom@codesourcery.com>
+
+	* c-c++-common/Wimplicit-fallthrough-6.c: Remove superfluous ' . ' in
+	dg-(error|warning|message|bogus).
+	* c-c++-common/Wimplicit-fallthrough-7.c: Same.
+	* c-c++-common/cilk-plus/AN/pr61963.c: Same.
+	* c-c++-common/cilk-plus/CK/no_args_error.c: Same.
+	* c-c++-common/pr20000.c: Same.
+	* c-c++-common/pr49706.c: Same.
+	* g++.dg/ext/utf16-4.C: Same.
+	* g++.dg/parse/error2.C: Same.
+	* g++.dg/warn/Wtype-limits-Wextra.C: Same.
+	* g++.dg/warn/Wtype-limits.C: Same.
+	* g++.dg/warn/overflow-warn-1.C: Same.
+	* g++.dg/warn/overflow-warn-3.C: Same.
+	* gcc.dg/Wpointer-sign-Wall.c: Same.
+	* gcc.dg/Wpointer-sign-pedantic.c: Same.
+	* gcc.dg/Wtype-limits-Wextra.c: Same.
+	* gcc.dg/Wtype-limits.c: Same.
+	* gcc.dg/cpp/19990413-1.c: Same.
+	* gcc.dg/dg-test-1.c: Same.
+	* gcc.dg/empty-source-2.c: Same.
+	* gcc.dg/empty-source-3.c: Same.
+	* gcc.dg/label-decl-2.c: Same.
+	* gcc.dg/m-un-2.c: Same.
+	* gcc.dg/uninit-pr19430-O0.c: Same.
+	* gcc.dg/uninit-pr19430.c: Same.
+	* gcc.dg/uninit-pr20644-O0.c: Same.
+	* gcc.dg/utf16-4.c: Same.
+	* gfortran.dg/pr70006.f90: Same.
+	* obj-c++.dg/fsf-package-0.m: Same.
+
 2017-04-28  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/evrp7.c: New testcase.
