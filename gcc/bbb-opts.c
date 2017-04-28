@@ -122,21 +122,113 @@ log (char const * fmt, ...)
 class insn_info
 {
   rtx_insn * insn; // the insn
+
+  // usage flags
   unsigned myuse;  // bit set if registers are used in this statement
   unsigned hard; // bit set if registers can't be renamed
   unsigned use;  // bit set if registers are used in program flow
   unsigned def;  // bit set if registers are defined here
+
   int proepi; // 1 = in prologue, 2 = in epilogue, 0 = other
+
   bool stack; // part of stack frame insns
+
+  // stuff to analyze insns
+  bool label;
+  bool jump;
+  bool call;
+  bool compare;
+  bool dst_reg;
+  bool src_reg;
+  bool dst_mem;
+  bool src_mem;
+  bool dst_plus;
+  bool src_plus;
+  bool src_const;
+
+  int dst_regno;
+  int dst_mem_reg;
+  unsigned dst_mem_addr;
+
+  int src_regno;
+  int src_mem_regno;
+  unsigned src_intval;
 
   insn_info &
   operator = (insn_info const &);
 
 public:
   insn_info (rtx_insn * i = 0, int p = 0) :
-      insn (i), myuse (0), hard (0), use (0), def (0), proepi (p), stack (false)
+      insn (i), myuse (0), hard (0), use (0), def (0), proepi (p), stack (false), label (false), jump (false), call (
+	  false), compare (false), dst_reg (false), src_reg (false), dst_mem (false), src_mem (false), dst_plus (false), src_plus (
+	  false), src_const (false), dst_regno (-1), dst_mem_reg (-1), dst_mem_addr (0), src_regno (-1), src_mem_regno (
+	  -1), src_intval (0)
   {
   }
+
+  inline void
+  plus_to_move (rtx_insn * newinsn)
+  {
+    insn = newinsn;
+    dst_plus = false;
+    dst_reg = true;
+    // usage flags did not change
+  }
+
+  inline bool
+  is_dst_reg () const
+  {
+    return dst_reg;
+  }
+
+  inline bool
+  is_src_reg () const
+  {
+    return src_reg;
+  }
+
+  inline int
+  get_dst_regno () const
+  {
+    return dst_regno;
+  }
+
+  inline int
+  get_src_regno () const
+  {
+    return src_regno;
+  }
+
+  inline bool
+  is_src_plus () const
+  {
+    return src_plus;
+  }
+
+  inline bool
+  is_src_const () const
+  {
+    return src_const;
+  }
+
+  inline void
+  mark_jump ()
+  {
+    jump = true;
+  }
+  inline void
+  mark_call ()
+  {
+    call = true;
+  }
+  inline void
+  mark_label ()
+  {
+    label = true;
+  }
+
+  void
+  fledder (rtx set);
 
   /* update usage. */
   void
@@ -470,6 +562,101 @@ insn_info::scan_rtx (rtx x)
     }
 }
 
+/* read the set and grab infos */
+void
+insn_info::fledder (rtx set)
+{
+  rtx dst = SET_DEST(set);
+  rtx src = SET_SRC(set);
+
+  if (dst == cc0_rtx)
+    {
+      compare = true;
+      set = src;
+      dst = SET_DEST(set);
+      src = SET_SRC(set);
+    }
+
+  if (REG_P(dst))
+    {
+      dst_reg = true;
+      dst_regno = REGNO(dst);
+    }
+  else if (MEM_P(dst))
+    {
+      dst_mem = true;
+      rtx mem = XEXP(dst, 0);
+      if (REG_P(mem))
+	dst_mem_reg = REGNO(mem);
+      else if (GET_CODE(mem) == CONST_INT)
+	dst_mem_addr = INTVAL(mem);
+      else if (GET_CODE(mem) == PLUS)
+	{
+	  dst_plus = true;
+	  rtx reg = XEXP(mem, 0);
+	  rtx konst = XEXP(mem, 1);
+	  if (REG_P(reg) && GET_CODE(konst) == CONST_INT)
+	    {
+	      dst_mem_reg = REGNO(reg);
+	      dst_mem_addr = INTVAL(konst);
+	    }
+	}
+    }
+
+  if (REG_P(src))
+    {
+      src_reg = true;
+      src_regno = REGNO(src);
+    }
+  else if (MEM_P(src))
+    {
+      src_mem = true;
+      rtx mem = XEXP(src, 0);
+      if (REG_P(mem))
+	src_mem_regno = REGNO(mem);
+      else if (GET_CODE(mem) == CONST_INT)
+	src_intval = INTVAL(mem);
+      else if (GET_CODE(mem) == PLUS)
+	{
+	  src_plus = true;
+	  rtx reg = XEXP(mem, 0);
+	  rtx konst = XEXP(mem, 1);
+	  if (REG_P(reg) && GET_CODE(konst) == CONST_INT)
+	    {
+	      src_mem_regno = REGNO(reg);
+	      src_const = true;
+	      src_intval = INTVAL(konst);
+	    }
+	}
+    }
+  else if (GET_CODE(src) == CONST_INT)
+    {
+      src_const = true;
+      src_intval = INTVAL(src);
+    }
+  else if (GET_CODE(src) == PLUS)
+    {
+      src_plus = true;
+      rtx reg = XEXP(src, 0);
+      rtx konst = XEXP(src, 1);
+      if (REG_P(reg))
+	{
+	  if (GET_CODE(konst) == CONST_INT)
+	    {
+	      src_regno = REGNO(reg);
+	      src_const = true;
+	      src_intval = INTVAL(konst);
+	    }
+	  else if (REG_P(konst))
+	    {
+	      src_reg = true;
+	      src_regno = REGNO(konst);
+	    }
+	}
+    }
+
+}
+
 /* create a copy for a reg. Optional specify a new register number. */
 static rtx
 copy_reg (rtx reg, int newregno)
@@ -600,6 +787,9 @@ append_reg_usage (FILE * f, rtx_insn * insn)
   if (ii.is_use (FIRST_PSEUDO_REGISTER))
     fprintf (f, ii.is_def (FIRST_PSEUDO_REGISTER) ? "+cc " : " cc ");
 
+  if (f == stderr)
+    fprintf (f, "\n");
+
 }
 
 /*
@@ -631,43 +821,6 @@ dump_insns (char const * name, bool all)
 	  rtx_insn * p = i + 1 < infos.size () ? infos[i + 1].get_insn () : 0;
 	  for (rtx_insn * q = NEXT_INSN (insn); q && q != p; q = NEXT_INSN (q))
 	    debug_rtx (q);
-	}
-    }
-}
-
-/*
- * Create a filtered view of insns - keep only those to work with.
- */
-static void
-update_insns ()
-{
-  rtx_insn *insn, *next;
-  clear ();
-
-  char inproepilogue = 1;
-  /* create a vector with relevant insn. */
-  for (insn = get_insns (); insn; insn = next)
-    {
-      next = NEXT_INSN (insn);
-
-      if (NONJUMP_INSN_P (insn) || LABEL_P(insn) || JUMP_P(insn) || CALL_P(insn))
-	{
-	  if (JUMP_P(insn))
-	    jumps.push_back (insn);
-
-	  insn2index.insert (std::make_pair (insn, infos.size ()));
-	  infos.push_back (insn_info (insn, inproepilogue));
-
-	  if (JUMP_P(insn))
-	    inproepilogue = 0;
-	}
-
-      if (NOTE_P(insn))
-	{
-	  if (NOTE_KIND(insn) == NOTE_INSN_PROLOGUE_END)
-	    inproepilogue = 0;
-	  else if (NOTE_KIND(insn) == NOTE_INSN_EPILOGUE_BEG)
-	    inproepilogue = 2;
 	}
     }
 }
@@ -762,6 +915,62 @@ update_insn_infos (void)
 	}
       ++pass;
     }
+}
+
+/*
+ * Create a filtered view of insns - keep only those to work with.
+ */
+static void
+update_insns ()
+{
+  rtx_insn *insn, *next;
+  clear ();
+
+  char inproepilogue = 1;
+  /* create a vector with relevant insn. */
+  for (insn = get_insns (); insn; insn = next)
+    {
+      next = NEXT_INSN (insn);
+
+      if (NONJUMP_INSN_P (insn) || LABEL_P(insn) || JUMP_P(insn) || CALL_P(insn))
+	{
+
+	  insn2index.insert (std::make_pair (insn, infos.size ()));
+	  infos.push_back (insn_info (insn, inproepilogue));
+	  insn_info & ii = infos[infos.size () - 1];
+
+	  if (JUMP_P(insn))
+	    {
+	      jumps.push_back (insn);
+	      inproepilogue = 0;
+
+	      ii.mark_jump ();
+	    }
+	  else if (LABEL_P(insn))
+	    {
+	      ii.mark_label ();
+	    }
+	  else if (CALL_P(insn))
+	    {
+	      ii.mark_call ();
+	    }
+	  else
+	    {
+	      rtx set = single_set (insn);
+	      if (set)
+		ii.fledder (set);
+	    }
+	}
+
+      if (NOTE_P(insn))
+	{
+	  if (NOTE_KIND(insn) == NOTE_INSN_PROLOGUE_END)
+	    inproepilogue = 0;
+	  else if (NOTE_KIND(insn) == NOTE_INSN_EPILOGUE_BEG)
+	    inproepilogue = 2;
+	}
+    }
+  update_insn_infos ();
 }
 
 /* convert the lowest set bit into a register number. */
@@ -1714,57 +1923,57 @@ opt_merge_add (void)
   unsigned change_count = 0;
   for (unsigned index = 0; index + 2 < infos.size (); ++index)
     {
-      rtx_insn * ins1 = infos[index].get_insn ();
-      rtx_insn * ins2 = infos[index + 1].get_insn ();
-      rtx_insn * ins3 = infos[index + 2].get_insn ();
-      if (!NONJUMP_INSN_P(ins1) && !NONJUMP_INSN_P(ins2) && !NONJUMP_INSN_P(ins3))
+      insn_info & ii0 = infos[index];
+      insn_info & ii1 = infos[index + 1];
+      insn_info & ii2 = infos[index + 2];
+
+      if (!ii2.is_dst_reg ())
+	{
+	  index += 2;
+	  continue;
+	}
+
+      if (!ii1.is_dst_reg ())
+	{
+	  ++index;
+	  continue;
+	}
+
+      if (!ii0.is_dst_reg () || !ii0.is_src_plus () || !ii1.is_src_plus () || !ii2.is_src_plus ())
 	continue;
 
-      rtx set1 = single_set (ins1);
-      rtx set2 = single_set (ins2);
-      rtx set3 = single_set (ins3);
-      if (!set1 || !set2 || !set3)
+      if (!ii0.is_src_const () || !ii1.is_src_reg () || !ii2.is_src_const ())
 	continue;
 
-      rtx dst1 = SET_DEST(set1);
-      rtx dst2 = SET_DEST(set2);
-      rtx dst3 = SET_DEST(set3);
-      if (!REG_P(dst1) || !REG_P(dst2) || !REG_P(dst3))
+      if (ii0.get_dst_regno () != ii1.get_dst_regno () || ii1.get_src_regno () != ii2.get_dst_regno ())
 	continue;
+
+      rtx_insn * insn1 = ii1.get_insn ();
 
       CC_STATUS_INIT;
-      NOTICE_UPDATE_CC(PATTERN (ins2), ins2);
+      NOTICE_UPDATE_CC(PATTERN (insn1), insn1);
       if (cc_status.value1 || cc_status.value2)
 	continue;
 
-      rtx src1 = SET_SRC(set1);
-      rtx src2 = SET_SRC(set2);
-      rtx src3 = SET_SRC(set3);
-      if (GET_CODE(src1) != PLUS || GET_CODE(src2) != PLUS || GET_CODE(src3) != PLUS)
-	continue;
+      log ("%d: merge_add applied\n", index);
 
-      rtx l1 = XEXP(src1, 0);
-//      rtx l2 = XEXP(src2, 0);
-//      rtx l3 = XEXP(src3, 0);
+      rtx_insn * insn0 = ii0.get_insn ();
+      rtx set = PATTERN (insn0);
 
-      rtx r1 = XEXP(src1, 1);
-      rtx r2 = XEXP(src2, 1);
-      rtx r3 = XEXP(src3, 1);
-      if (!CONST_INT_P(r1) || !REG_P(r2) || !CONST_INT_P(r3))
-	continue;
+      // convert lea (-1,a0),a1 into move.l a0,a1
+      rtx_insn * newins0 = make_insn_raw (gen_rtx_SET(XEXP(set, 0), XEXP(XEXP(set, 1), 0)));
+      add_insn_after (newins0, insn0, 0);
+      SET_INSN_DELETED(insn0);
+      // update infos accordingly
+      ii0.plus_to_move (newins0);
 
-      if (REGNO(dst1) != REGNO(dst2) || REGNO(r2) != REGNO(dst3))
-	continue;
+      rtx_insn * insn2 = ii2.get_insn ();
+      rtx_insn * newins1 = make_insn_raw (PATTERN (insn1));
+      add_insn_after (newins1, insn2, 0);
+      SET_INSN_DELETED(insn1);
+//      ii1.swap_adds(newins1, ii2);
 
-      log ("merge_add applied\n");
-
-      rtx_insn * newins1 = make_insn_raw (gen_rtx_SET(dst1, l1));
-      add_insn_after (newins1, ins1, 0);
-      SET_INSN_DELETED(ins1);
-
-      rtx_insn * newins2 = make_insn_raw (PATTERN (ins2));
-      add_insn_after (newins2, ins3, 0);
-      SET_INSN_DELETED(ins2);
+      ++change_count;
     }
   return change_count;
 }
@@ -1946,7 +2155,6 @@ opt_shrink_stack_frame (void)
       ++pos;
     }
   /* gather usage stats without prologue/epilogue */
-  update_insn_infos ();
   insn_info ii;
   for (unsigned i = 0; i < infos.size (); ++i)
     {
@@ -2270,7 +2478,6 @@ namespace
       {
 	int done = 1;
 	update_insns ();
-	update_insn_infos ();
 	if (do_opt_strcpy && opt_strcpy ())
 	  done = 0, update_insns ();
 
@@ -2280,22 +2487,20 @@ namespace
 	if (do_propagate_moves && opt_propagate_moves ())
 	  done = 0, update_insns ();
 
-	update_insn_infos ();
 	if (do_const_cmp_to_sub && opt_const_cmp_to_sub ())
-	  done = 0, update_insns (), update_insn_infos ();
+	  done = 0, update_insns ();
 
 	if (do_merge_add && opt_merge_add ())
-	  done = 0, update_insns (), update_insn_infos ();
+	  done = 0, update_insns ();
 
 	if (do_elim_dead_assign && opt_elim_dead_assign ())
-	  done = 0, update_insns (), update_insn_infos ();
+	  done = 0, update_insns ();
 
 	if (do_bb_reg_rename)
 	  {
 	    while (opt_reg_rename ())
 	      {
 		update_insns ();
-		update_insn_infos ();
 		done = 0;
 	      }
 	  }
@@ -2308,7 +2513,6 @@ namespace
       {
 	opt_shrink_stack_frame ();
 	update_insns ();
-	update_insn_infos ();
       }
 
     if (strchr (string_bbb_opts, 'X') || strchr (string_bbb_opts, 'x'))
