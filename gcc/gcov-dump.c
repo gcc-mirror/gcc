@@ -318,27 +318,9 @@ tag_function (const char *filename ATTRIBUTE_UNUSED,
 static void
 tag_blocks (const char *filename ATTRIBUTE_UNUSED,
 	    unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED,
-	    unsigned depth)
+	    unsigned depth ATTRIBUTE_UNUSED)
 {
-  unsigned n_blocks = GCOV_TAG_BLOCKS_NUM (length);
-
-  printf (" %u blocks", n_blocks);
-
-  if (flag_dump_contents)
-    {
-      unsigned ix;
-
-      for (ix = 0; ix != n_blocks; ix++)
-	{
-	  if (!(ix & 7))
-	    {
-	      printf ("\n");
-	      print_prefix (filename, depth, gcov_position ());
-	      printf (VALUE_PADDING_PREFIX VALUE_PREFIX, ix);
-	    }
-	  printf ("%04x ", gcov_read_unsigned ());
-	}
-    }
+  printf (" %u blocks", gcov_read_unsigned ());
 }
 
 static void
