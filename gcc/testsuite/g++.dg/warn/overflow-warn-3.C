@@ -11,7 +11,7 @@ enum e {
   E1 = UINT_MAX + 1,
   /* Overflow in an unevaluated part of an expression is OK (example
      in the standard).  */
-  E2 = 2 || 1 / 0, /* { dg-bogus "warning: division by zero" "" { xfail *-*-* } . } */
+  E2 = 2 || 1 / 0, /* { dg-bogus "warning: division by zero" "" { xfail *-*-* } } */
   E3 = 1 / 0, /* { dg-warning "division by zero" } */
   /* { dg-error "enumerator value for 'E3' is not an integer constant|not a constant.expression" "enum error" { target *-*-* } .-1 } */
   /* But as in DR#031, the 1/0 in an evaluated subexpression means the
