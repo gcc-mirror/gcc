@@ -4176,37 +4176,37 @@ package body Exp_Ch7 is
    procedure Expand_Cleanup_Actions (N : Node_Id) is
       Scop : constant Entity_Id := Current_Scope;
 
-      Is_Asynchronous_Call : constant Boolean :=
-                               Nkind (N) = N_Block_Statement
-                                 and then Is_Asynchronous_Call_Block (N);
-      Is_Master            : constant Boolean :=
-                               Nkind (N) /= N_Entry_Body
-                                 and then Is_Task_Master (N);
-      Is_Protected_Body    : constant Boolean :=
-                               Nkind (N) = N_Subprogram_Body
-                                 and then Is_Protected_Subprogram_Body (N);
-      Is_Task_Allocation   : constant Boolean :=
-                               Nkind (N) = N_Block_Statement
-                                 and then Is_Task_Allocation_Block (N);
-      Is_Task_Body         : constant Boolean :=
-                               Nkind (Original_Node (N)) = N_Task_Body;
-      Needs_Sec_Stack_Mark : constant Boolean :=
-                               Uses_Sec_Stack (Scop)
-                                 and then
-                                   not Sec_Stack_Needed_For_Return (Scop);
-      Needs_Custom_Cleanup : constant Boolean :=
-                               Nkind (N) = N_Block_Statement
-                                 and then Present (Cleanup_Actions (N));
+      Is_Asynchronous_Call   : constant Boolean :=
+                                 Nkind (N) = N_Block_Statement
+                                   and then Is_Asynchronous_Call_Block (N);
+      Is_Master              : constant Boolean :=
+                                 Nkind (N) /= N_Entry_Body
+                                   and then Is_Task_Master (N);
+      Is_Protected_Subp_Body : constant Boolean :=
+                                 Nkind (N) = N_Subprogram_Body
+                                   and then Is_Protected_Subprogram_Body (N);
+      Is_Task_Allocation     : constant Boolean :=
+                                 Nkind (N) = N_Block_Statement
+                                   and then Is_Task_Allocation_Block (N);
+      Is_Task_Body           : constant Boolean :=
+                                 Nkind (Original_Node (N)) = N_Task_Body;
+      Needs_Sec_Stack_Mark   : constant Boolean :=
+                                 Uses_Sec_Stack (Scop)
+                                   and then
+                                     not Sec_Stack_Needed_For_Return (Scop);
+      Needs_Custom_Cleanup   : constant Boolean :=
+                                 Nkind (N) = N_Block_Statement
+                                   and then Present (Cleanup_Actions (N));
 
-      Actions_Required     : constant Boolean :=
-                               Requires_Cleanup_Actions (N, True)
-                                 or else Is_Asynchronous_Call
-                                 or else Is_Master
-                                 or else Is_Protected_Body
-                                 or else Is_Task_Allocation
-                                 or else Is_Task_Body
-                                 or else Needs_Sec_Stack_Mark
-                                 or else Needs_Custom_Cleanup;
+      Actions_Required       : constant Boolean :=
+                                 Requires_Cleanup_Actions (N, True)
+                                   or else Is_Asynchronous_Call
+                                   or else Is_Master
+                                   or else Is_Protected_Subp_Body
+                                   or else Is_Task_Allocation
+                                   or else Is_Task_Body
+                                   or else Needs_Sec_Stack_Mark
+                                   or else Needs_Custom_Cleanup;
 
       HSS : Node_Id := Handled_Statement_Sequence (N);
       Loc : Source_Ptr;

@@ -1968,15 +1968,12 @@ package body Sem_Ch13 is
             if A_Id = Aspect_Attach_Handler
               or else A_Id = Aspect_Interrupt_Handler
             then
-               --  Decorate the reference as comming from the sources and force
-               --  its reanalysis to generate the reference to E; required to
-               --  avoid reporting spurious warning on E as unreferenced entity
-               --  (because aspects are not fully analyzed).
 
-               Set_Comes_From_Source (Ent, Comes_From_Source (Id));
-               Set_Entity (Ent, Empty);
+               --  Treat the specification as a reference to the protected
+               --  operation, which might otherwise appear unreferenced and
+               --  generate spurious warnings.
 
-               Analyze (Ent);
+               Generate_Reference (E, Id);
             end if;
 
             --  Check for duplicate aspect. Note that the Comes_From_Source

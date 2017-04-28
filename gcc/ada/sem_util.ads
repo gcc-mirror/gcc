@@ -1984,6 +1984,11 @@ package Sem_Util is
    --  to guarantee this in all cases. Note that it is more possible to give
    --  correct answer if the tree is fully analyzed.
 
+   function Might_Raise (N : Node_Id) return Boolean;
+   --  True if evaluation of N might raise an exception. This is conservative;
+   --  if we're not sure, we return True. If N is a subprogram body, this is
+   --  about whether execution of that body can raise.
+
    function Nearest_Enclosing_Instance (E : Entity_Id) return Entity_Id;
    --  Return the entity of the nearest enclosing instance which encapsulates
    --  entity E. If no such instance exits, return Empty.
