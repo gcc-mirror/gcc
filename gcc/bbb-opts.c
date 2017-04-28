@@ -170,12 +170,57 @@ public:
   plus_to_move (rtx_insn * newinsn);
 
   void
-  swap_adds(rtx_insn * newinsn, insn_info & ii);
+  swap_adds (rtx_insn * newinsn, insn_info & ii);
+
+  void
+  immediate2base (unsigned regno, unsigned base);
 
   inline bool
   is_dst_reg () const
   {
     return dst_reg;
+  }
+
+  inline bool
+  is_dst_mem () const
+  {
+    return dst_mem;
+  }
+
+  inline bool
+  has_dst_memreg () const
+  {
+    return dst_mem_reg >= 0;
+  }
+
+  inline bool
+  has_dst_addr () const
+  {
+    return dst_mem_addr != 0;
+  }
+
+  inline bool
+  is_label () const
+  {
+    return label;
+  }
+
+  inline bool
+  is_jump () const
+  {
+    return jump;
+  }
+
+  inline bool
+  is_call () const
+  {
+    return call;
+  }
+
+  inline unsigned
+  get_dst_addr () const
+  {
+    return dst_mem_addr;
   }
 
   inline bool
@@ -447,7 +492,7 @@ public:
     if (def & hard)
       return 0;
 
-    if (!def || def > 0x1000)
+    if (!def || (def & ~(1 << FIRST_PSEUDO_REGISTER)) > 0x1000)
       return 0;
 
     unsigned mask = def - 1;
@@ -758,24 +803,53 @@ insn_info::plus_to_move (rtx_insn * newinsn)
   insn = newinsn;
   src_plus = false;
   src_reg = true;
-  insn2index.insert(std::make_pair(insn, this));
+  insn2index.insert (std::make_pair (insn, this));
   // usage flags did not change
 }
 
 void
-insn_info::swap_adds(rtx_insn * newinsn, insn_info & ii)
+insn_info::swap_adds (rtx_insn * newinsn, insn_info & ii)
 {
   insn = newinsn;
 
-  std::swap(*this, ii);
+  std::swap (*this, ii);
 
-  insn2index.insert(std::make_pair(insn, this));
-  insn2index.insert(std::make_pair(ii.insn, &ii));
+  insn2index.insert (std::make_pair (insn, this));
+  insn2index.insert (std::make_pair (ii.insn, &ii));
 
   // usage flags did not change
 }
 
+void
+insn_info::immediate2base (unsigned regno, unsigned base)
+{
+  rtx set = PATTERN (get_insn ());
+  rtx src = SET_SRC(set);
+  machine_mode mode = GET_MODE(SET_DEST(set));
 
+  unsigned addr = get_dst_addr ();
+  unsigned offset = addr - base;
+
+  rtx pattern;
+  if (base == addr)
+    pattern = gen_rtx_SET(gen_rtx_MEM (mode, gen_raw_REG (SImode, regno)), SET_SRC(set));
+  else
+    pattern = gen_rtx_SET(
+	gen_rtx_MEM (mode, gen_rtx_PLUS(SImode, gen_raw_REG (SImode, regno), gen_rtx_CONST_INT(SImode, offset))),
+	SET_SRC(set));
+
+  SET_INSN_DELETED(insn);
+  insn = emit_insn_after (pattern, insn);
+
+  mark_use (regno);
+
+  dst_mem_reg = regno;
+  dst_mem = true;
+  dst_mem_addr = offset;
+  dst_plus = offset != 0;
+
+  insn2index.insert (std::make_pair (insn, this));
+}
 /*
  * Reset collected data.
  */
@@ -1987,19 +2061,19 @@ opt_merge_add (void)
       insn_info & ii1 = infos[index + 1];
       insn_info & ii2 = infos[index + 2];
 
-      if (!ii2.is_dst_reg ())
+      if (!ii2.is_dst_reg () || ii2.is_dst_mem ())
 	{
 	  index += 2;
 	  continue;
 	}
 
-      if (!ii1.is_dst_reg ())
+      if (!ii1.is_dst_reg () || ii1.is_dst_mem ())
 	{
 	  ++index;
 	  continue;
 	}
 
-      if (!ii0.is_dst_reg () || !ii0.is_src_plus () || !ii1.is_src_plus () || !ii2.is_src_plus ())
+      if (ii0.is_dst_mem () || !ii0.is_dst_reg () || !ii0.is_src_plus () || !ii1.is_src_plus () || !ii2.is_src_plus ())
 	continue;
 
       if (!ii0.is_src_const () || !ii1.is_src_reg () || !ii2.is_src_const ())
@@ -2031,7 +2105,7 @@ opt_merge_add (void)
       rtx_insn * newins1 = make_insn_raw (PATTERN (insn1));
       add_insn_after (newins1, insn2, 0);
       SET_INSN_DELETED(insn1);
-      ii1.swap_adds(newins1, ii2);
+      ii1.swap_adds (newins1, ii2);
 
       ++change_count;
     }
@@ -2464,6 +2538,80 @@ opt_shrink_stack_frame (void)
   return 0;
 }
 
+static unsigned
+opt_immediate (void)
+{
+  unsigned change_count = 0;
+
+  for (unsigned i = 0; i < infos.size (); ++i)
+    {
+      insn_info & ii = infos[i];
+      if (!ii.is_dst_mem () || !ii.has_dst_addr () || ii.has_dst_memreg())
+	continue;
+
+      unsigned freemask = ~(ii.get_use () | ii.get_def ()) & 0x7f00;
+      if (!freemask)
+	continue;
+
+      std::vector<unsigned> found;
+      found.push_back (i);
+      unsigned base = ii.get_dst_addr ();
+      unsigned j = i + 1;
+      for (; j < infos.size (); ++j)
+	{
+	  insn_info & jj = infos[j];
+	  if (jj.is_label () || jj.is_jump () || jj.is_call ())
+	    break;
+
+	  freemask &= ~(jj.get_use () | jj.get_def ());
+	  if (!freemask)
+	    break;
+
+	  if (jj.is_dst_mem () && jj.has_dst_addr () && !jj.has_dst_memreg())
+	    {
+	      unsigned addr = jj.get_dst_addr ();
+	      if (addr < base)
+		base = addr;
+	      if (addr - base > 0x7ffc)
+		continue;
+
+	      found.push_back (j);
+	    }
+	}
+
+      if (freemask && found.size () > 2)
+	{
+	  unsigned regno = bit2regno (freemask);
+	  log ("modifying %d immediate using %s\n", found.size (), reg_names[regno]);
+
+	  for (auto k = found.begin (); k != found.end (); ++k)
+	    {
+	      insn_info & kk = infos[*k];
+	      kk.immediate2base (regno, base);
+	    }
+
+	  // load base into reg
+	  rtx lea = gen_rtx_SET(gen_raw_REG (SImode, regno), gen_rtx_CONST_INT (SImode, base));
+	  rtx_insn * insn = emit_insn_before (lea, ii.get_insn ());
+	  insn_info nn (insn);
+	  nn.scan();
+	  nn.fledder (lea);
+	  nn.mark_def (regno);
+	  infos.insert (infos.begin () + i, nn);
+	  while (i++ < j)
+	    infos[i].mark_use(regno);
+	  ++j;
+	}
+
+      i = j;
+    }
+
+  if (change_count)
+    update_insn2index ();
+
+  return change_count;
+}
+
 namespace
 {
 
@@ -2533,6 +2681,7 @@ namespace
     bool do_elim_dead_assign = strchr (string_bbb_opts, 'e') || strchr (string_bbb_opts, '+');
     bool do_bb_reg_rename = strchr (string_bbb_opts, 'r') || strchr (string_bbb_opts, '+');
     bool do_shrink_stack_frame = strchr (string_bbb_opts, 'f') || strchr (string_bbb_opts, '+');
+    bool do_immediate = strchr (string_bbb_opts, 'i') || strchr (string_bbb_opts, '+');
 
     for (;;)
       {
@@ -2554,6 +2703,9 @@ namespace
 	  done = 0;
 
 	if (do_elim_dead_assign && opt_elim_dead_assign ())
+	  done = 0, update_insns ();
+
+	if (do_immediate && opt_immediate ())
 	  done = 0, update_insns ();
 
 	if (do_bb_reg_rename)
