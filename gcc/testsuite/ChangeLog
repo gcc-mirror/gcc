@@ -1,3 +1,9 @@
+2017-04-28  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/79891
+	* gcc.misc-tests/gcov-17.c: New test.
+	* gcc.misc-tests/gcov-18.c: New test.
+
 2017-04-28  Tom de Vries  <tom@codesourcery.com>
 
 	* g++.dg/parse/error2.C: Remove superfluous '{ target *-*-* }' in
