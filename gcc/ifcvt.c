@@ -3440,7 +3440,14 @@ noce_process_if_block (struct noce_if_info *if_info)
     }
   else
     {
-      insn_b = prev_nonnote_nondebug_insn (if_info->cond_earliest);
+      insn_b = if_info->cond_earliest;
+      do
+	insn_b = prev_nonnote_nondebug_insn (insn_b);
+      while (insn_b
+	     && (BLOCK_FOR_INSN (insn_b)
+		 == BLOCK_FOR_INSN (if_info->cond_earliest))
+	     && !modified_in_p (x, insn_b));
+
       /* We're going to be moving the evaluation of B down from above
 	 COND_EARLIEST to JUMP.  Make sure the relevant data is still
 	 intact.  */

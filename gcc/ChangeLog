@@ -1,6 +1,12 @@
 2017-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/80491
+	* ifcvt.c (noce_process_if_block): When looking for x setter
+	with missing else_bb, don't check only the insn right before
+	cond_earliest, but look for the last insn that x is modified in
+	within the same bb.
+
+	PR rtl-optimization/80491
 	* alias.c (memory_modified_in_insn_p): Return true for CALL_INSNs.
 
 2017-04-29  Marc Glisse  <marc.glisse@inria.fr>
