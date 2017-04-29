@@ -1,3 +1,8 @@
+2017-04-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/libstdc++-prettyprinters/48362.cc: Replace a regexp-test
+	by a note-test.
+
 2017-04-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80553
