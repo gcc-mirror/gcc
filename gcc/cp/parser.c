@@ -23461,8 +23461,10 @@ cp_parser_member_declaration (cp_parser* parser)
 	      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
 		{
 		  cp_token *token = cp_lexer_previous_token (parser->lexer);
-		  error_at (token->location,
-			    "stray %<,%> at end of member declaration");
+		  gcc_rich_location richloc (token->location);
+		  richloc.add_fixit_remove ();
+		  error_at_rich_loc (&richloc, "stray %<,%> at end of "
+				     "member declaration");
 		}
 	    }
 	  /* If the next token isn't a `;', then we have a parse error.  */
@@ -23473,8 +23475,10 @@ cp_parser_member_declaration (cp_parser* parser)
 		 actual semicolon is missing.  Find the previous token
 		 and use that for our error position.  */
 	      cp_token *token = cp_lexer_previous_token (parser->lexer);
-	      error_at (token->location,
-			"expected %<;%> at end of member declaration");
+	      gcc_rich_location richloc (token->location);
+	      richloc.add_fixit_insert_after (";");
+	      error_at_rich_loc (&richloc, "expected %<;%> at end of "
+				 "member declaration");
 
 	      /* Assume that the user meant to provide a semicolon.  If
 		 we were to cp_parser_skip_to_end_of_statement, we might
