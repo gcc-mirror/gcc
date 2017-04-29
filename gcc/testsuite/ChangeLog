@@ -1,3 +1,8 @@
+2017-04-29  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/79697
+	* gcc.dg/tree-ssa/pr79697.c: New test.
+
 2017-04-29  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/tree-prof/pr66295.c: Require effective target avx512f.

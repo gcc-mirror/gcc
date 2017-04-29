@@ -1,3 +1,13 @@
+2017-04-29  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/79697
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Check if callee
+	is BUILT_IN_STRDUP, BUILT_IN_STRNDUP, BUILT_IN_REALLOC.
+	(propagate_necessity): Check if def_callee is BUILT_IN_STRDUP or
+	BUILT_IN_STRNDUP.
+	* gimple-fold.c (gimple_fold_builtin_realloc): New function.
+	(gimple_fold_builtin): Call gimple_fold_builtin_realloc.
+
 2017-04-28  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/80523

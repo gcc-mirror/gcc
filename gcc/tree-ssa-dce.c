@@ -233,6 +233,8 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 	    case BUILT_IN_CALLOC:
 	    case BUILT_IN_ALLOCA:
 	    case BUILT_IN_ALLOCA_WITH_ALIGN:
+	    case BUILT_IN_STRDUP:
+	    case BUILT_IN_STRNDUP:
 	      return;
 
 	    default:;
@@ -780,7 +782,9 @@ propagate_necessity (bool aggressive)
 		  && DECL_BUILT_IN_CLASS (def_callee) == BUILT_IN_NORMAL
 		  && (DECL_FUNCTION_CODE (def_callee) == BUILT_IN_ALIGNED_ALLOC
 		      || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_MALLOC
-		      || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_CALLOC))
+		      || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_CALLOC
+		      || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_STRDUP
+		      || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_STRNDUP))
 		{
 		  gimple *bounds_def_stmt;
 		  tree bounds;
