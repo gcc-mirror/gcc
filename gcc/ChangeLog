@@ -1,3 +1,8 @@
+2017-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/80491
+	* alias.c (memory_modified_in_insn_p): Return true for CALL_INSNs.
+
 2017-04-29  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/80487

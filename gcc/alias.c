@@ -3221,6 +3221,10 @@ memory_modified_in_insn_p (const_rtx mem, const_rtx insn)
 {
   if (!INSN_P (insn))
     return false;
+  /* Conservatively assume all non-readonly MEMs might be modified in
+     calls.  */
+  if (CALL_P (insn))
+    return true;
   memory_modified = false;
   note_stores (PATTERN (insn), memory_modified_1, CONST_CAST_RTX(mem));
   return memory_modified;
