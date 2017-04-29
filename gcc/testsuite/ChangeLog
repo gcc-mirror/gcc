@@ -1,3 +1,7 @@
+2017-04-29  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tree-prof/pr66295.c: Require effective target avx512f.
+
 2017-04-28  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/80523
