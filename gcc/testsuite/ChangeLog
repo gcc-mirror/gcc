@@ -1,3 +1,8 @@
+2017-04-29  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/80487
+	* gcc.dg/tree-ssa/strncpy-1.c: New file.
+
 2017-04-29  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/79697

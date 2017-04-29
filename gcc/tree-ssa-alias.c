@@ -2538,6 +2538,8 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 	  case BUILT_IN_MEMPCPY_CHK:
 	  case BUILT_IN_MEMMOVE_CHK:
 	  case BUILT_IN_MEMSET_CHK:
+	  case BUILT_IN_STRNCPY:
+	  case BUILT_IN_STPNCPY:
 	    {
 	      /* For a must-alias check we need to be able to constrain
 		 the access properly.  */

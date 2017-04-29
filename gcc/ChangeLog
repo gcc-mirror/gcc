@@ -1,3 +1,8 @@
+2017-04-29  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/80487
+	* tree-ssa-alias.c (stmt_kills_ref_p): Handle stpncpy and strncpy.
+
 2017-04-29  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/79697
