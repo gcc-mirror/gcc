@@ -1,5 +1,6 @@
 /* { dg-require-ifunc "" } */
 /* { dg-skip-if "" { ! { i?86-*-* x86_64-*-* } } } */
+/* { dg-require-effective-target avx512f } */
 /* { dg-options "-O2" } */
 
 static double bar (double *__restrict, double *__restrict, int)
