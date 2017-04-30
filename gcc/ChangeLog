@@ -1,3 +1,37 @@
+2017-04-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/79224
+	* ipa-inline-analysis.c (dump_predicate): Add optional parameter NL.
+	(account_size_time): Use two predicates - exec_pred and
+	nonconst_pred_ptr.
+	(evaluate_conditions_for_known_args): Compute both clause and
+	nonspec_clause.
+	(evaluate_properties_for_edge): Evaulate both clause and nonspec_clause.
+	(inline_summary_t::duplicate): Update.
+	(estimate_function_body_sizes): Caluculate exec and nonconst predicates
+	separately.
+	(compute_inline_parameters): Likewise.
+	(estimate_edge_size_and_time): Update caluclation of time.
+	(estimate_node_size_and_time): Compute both time and nonspecialized
+	time.
+	(estimate_ipcp_clone_size_and_time): Update.
+	(inline_merge_summary): Update.
+	(do_estimate_edge_time): Update.
+	(do_estimate_edge_size): Update.
+	(do_estimate_edge_hints): Update.
+	(inline_read_section, inline_write_summary): Stream both new predicates.
+	* ipa-inline.c (compute_uninlined_call_time): Take uninlined_call_time
+	as argument.
+	(compute_inlined_call_time): Cleanup.
+	(big_speedup_p): Update.
+	(edge_badness): Update.
+	* ipa-inline.h (INLINE_TIME_SCALE): Remove.
+	(size_time_entry): Replace predicate by exec_predicate and
+	nonconst_predicate.
+	(edge_growth_cache_entry): Cache both time nad nonspecialized time.
+	(estimate_edge_time): Return also nonspec_time.
+	(reset_edge_growth_cache): Update.
+
 2017-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/80491
