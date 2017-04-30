@@ -639,10 +639,9 @@ want_early_inline_function_p (struct cgraph_edge *e)
    does not happen.  */
 
 inline sreal
-compute_uninlined_call_time (struct inline_summary *callee_info,
-			     struct cgraph_edge *edge)
+compute_uninlined_call_time (struct cgraph_edge *edge,
+			     sreal uninlined_call_time)
 {
-  sreal uninlined_call_time = (sreal)callee_info->time;
   cgraph_node *caller = (edge->caller->global.inlined_to 
 			 ? edge->caller->global.inlined_to
 			 : edge->caller);
@@ -677,12 +676,10 @@ compute_inlined_call_time (struct cgraph_edge *edge,
   else
     time = time >> 11;
 
-  /* This calculation should match one in ipa-inline-analysis.
-     FIXME: Once ipa-inline-analysis is converted to sreal this can be
-     simplified.  */
-  time -= (sreal) ((gcov_type) edge->frequency
-		   * inline_edge_summary (edge)->call_stmt_time
-	           * (INLINE_TIME_SCALE / CGRAPH_FREQ_BASE)) / INLINE_TIME_SCALE;
+  /* This calculation should match one in ipa-inline-analysis.c
+     (estimate_edge_size_and_time).  */
+  time -= (sreal) edge->frequency
+	   * inline_edge_summary (edge)->call_stmt_time / CGRAPH_FREQ_BASE;
   time += caller_time;
   if (time <= 0)
     time = ((sreal) 1) >> 8;
@@ -696,12 +693,13 @@ compute_inlined_call_time (struct cgraph_edge *edge,
 static bool
 big_speedup_p (struct cgraph_edge *e)
 {
-  sreal time = compute_uninlined_call_time (inline_summaries->get (e->callee),
-					    e);
-  sreal inlined_time = compute_inlined_call_time (e, estimate_edge_time (e));
+  sreal unspec_time;
+  sreal spec_time = estimate_edge_time (e, &unspec_time);
+  sreal time = compute_uninlined_call_time (e, unspec_time);
+  sreal inlined_time = compute_inlined_call_time (e, spec_time);
 
   if (time - inlined_time
-      > (sreal) time * PARAM_VALUE (PARAM_INLINE_MIN_SPEEDUP)
+      > (sreal) (time * PARAM_VALUE (PARAM_INLINE_MIN_SPEEDUP))
 	 * percent_rec)
     return true;
   return false;
@@ -1011,7 +1009,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 {
   sreal badness;
   int growth;
-  sreal edge_time;
+  sreal edge_time, unspec_edge_time;
   struct cgraph_node *callee = edge->callee->ultimate_alias_target ();
   struct inline_summary *callee_info = inline_summaries->get (callee);
   inline_hints hints;
@@ -1020,12 +1018,11 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 			 : edge->caller);
 
   growth = estimate_edge_growth (edge);
-  edge_time = estimate_edge_time (edge);
+  edge_time = estimate_edge_time (edge, &unspec_edge_time);
   hints = estimate_edge_hints (edge);
   gcc_checking_assert (edge_time >= 0);
-  /* FIXME: -1 to care of rounding issues should go away once cache is migrated.
-     to sreals.  */
-  gcc_checking_assert (edge_time <= callee_info->time);
+  /* Check that inlined time is better, but tolerate some roundoff issues.  */
+  gcc_checking_assert ((edge_time - callee_info->time).to_int () <= 0);
   gcc_checking_assert (growth <= callee_info->size);
 
   if (dump)
@@ -1035,9 +1032,10 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	       edge->caller->order,
 	       xstrdup_for_dump (callee->name ()),
 	       edge->callee->order);
-      fprintf (dump_file, "      size growth %i, time %f ",
+      fprintf (dump_file, "      size growth %i, time %f unspec %f ",
 	       growth,
-	       edge_time.to_double ());
+	       edge_time.to_double (),
+	       unspec_edge_time.to_double ());
       dump_inline_hints (dump_file, hints);
       if (big_speedup_p (edge))
 	fprintf (dump_file, " big_speedup");
@@ -1076,7 +1074,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
       sreal numerator, denominator;
       int overall_growth;
 
-      numerator = (compute_uninlined_call_time (callee_info, edge)
+      numerator = (compute_uninlined_call_time (edge, unspec_edge_time)
 		   - compute_inlined_call_time (edge, edge_time));
       if (numerator == 0)
 	numerator = ((sreal) 1 >> 8);
@@ -1162,13 +1160,14 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	  fprintf (dump_file,
 		   "      %f: guessed profile. frequency %f, count %" PRId64
 		   " caller count %" PRId64
-		   " time w/o inlining %f, time w/ inlining %f"
+		   " time w/o inlining %f, time with inlining %f"
 		   " overall growth %i (current) %i (original)"
 		   " %i (compensated)\n",
 		   badness.to_double (),
 		  (double)edge->frequency / CGRAPH_FREQ_BASE,
 		   edge->count, caller->count,
-		   compute_uninlined_call_time (callee_info, edge).to_double (),
+		   compute_uninlined_call_time (edge,
+						unspec_edge_time).to_double (),
 		   compute_inlined_call_time (edge, edge_time).to_double (),
 		   estimate_growth (callee),
 		   callee_info->growth, overall_growth);
@@ -2056,8 +2055,9 @@ inline_small_functions (void)
       if (dump_file)
 	{
 	  fprintf (dump_file,
-		   " Inlined into %s which now has time %f and size %i, "
+		   " Inlined %s into %s which now has time %f and size %i, "
 		   "net change of %+i.\n",
+		   edge->callee->name (),
 		   edge->caller->name (),
 		   inline_summaries->get (edge->caller)->time.to_double (),
 		   inline_summaries->get (edge->caller)->size,

@@ -103,13 +103,16 @@ struct GTY(()) predicate
    context.  We keep simple array of record, every containing of predicate
    and time/size to account.
 
-   We keep values scaled up, so fractional sizes and times can be
-   accounted.  */
+   We keep values scaled up, so fractional sizes can be accounted.  */
 #define INLINE_SIZE_SCALE 2
-#define INLINE_TIME_SCALE (CGRAPH_FREQ_BASE * 2)
 struct GTY(()) size_time_entry
 {
-  struct predicate predicate;
+  /* Predicate for code to be executed.  */
+  struct predicate exec_predicate;
+  /* Predicate for value to be constant and optimized out in a specialized copy.
+     When deciding on specialization this makes it possible to see how much
+     the executed code paths will simplify.  */
+  struct predicate nonconst_predicate;
   int size;
   sreal GTY((skip)) time;
 };
@@ -230,9 +233,11 @@ struct inline_edge_summary
 typedef struct inline_edge_summary inline_edge_summary_t;
 extern vec<inline_edge_summary_t> inline_edge_summary_vec;
 
+/* Data we cache about callgraph edges during inlining to avoid expensive
+   re-computations during the greedy algorithm.  */
 struct edge_growth_cache_entry
 {
-  sreal time;
+  sreal time, nonspec_time;
   int size;
   inline_hints hints;
 };
@@ -315,12 +320,14 @@ estimate_edge_growth (struct cgraph_edge *edge)
    EDGE.  */
 
 static inline sreal
-estimate_edge_time (struct cgraph_edge *edge)
+estimate_edge_time (struct cgraph_edge *edge, sreal *nonspec_time = NULL)
 {
   sreal ret;
   if ((int)edge_growth_cache.length () <= edge->uid
       || !edge_growth_cache[edge->uid].size)
     return do_estimate_edge_time (edge);
+  if (nonspec_time)
+    *nonspec_time = edge_growth_cache[edge->uid].nonspec_time;
   return edge_growth_cache[edge->uid].time;
 }
 
@@ -345,7 +352,7 @@ reset_edge_growth_cache (struct cgraph_edge *edge)
 {
   if ((int)edge_growth_cache.length () > edge->uid)
     {
-      struct edge_growth_cache_entry zero = {0, 0, 0};
+      struct edge_growth_cache_entry zero = {0, 0, 0, 0};
       edge_growth_cache[edge->uid] = zero;
     }
 }
