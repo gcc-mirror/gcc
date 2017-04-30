@@ -204,7 +204,6 @@ extern bool default_profile_before_prologue (void);
 extern reg_class_t default_preferred_reload_class (rtx, reg_class_t);
 extern reg_class_t default_preferred_output_reload_class (rtx, reg_class_t);
 extern reg_class_t default_preferred_rename_class (reg_class_t rclass);
-extern reg_class_t default_preferred_rename_class2 (reg_class_t rclass, int regno);
 extern bool default_class_likely_spilled_p (reg_class_t);
 extern unsigned char default_class_max_nregs (reg_class_t, machine_mode);
 

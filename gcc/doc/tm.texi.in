@@ -2281,8 +2281,6 @@ only if neither labeling works.
 
 @hook TARGET_PREFERRED_RENAME_CLASS
 
-@hook TARGET_PREFERRED_RENAME_CLASS2
-
 @hook TARGET_PREFERRED_RELOAD_CLASS
 
 @defmac PREFERRED_RELOAD_CLASS (@var{x}, @var{class})
