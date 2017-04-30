@@ -2165,7 +2165,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
   /* Ignore deleted insns.  These can occur when we split insns (due to a
      template of "#") while not optimizing.  */
-  if (insn->deleted () || GET_CODE(insn) == VALUE || GET_CODE(insn) == CONST_FIXED || GET_CODE(insn) == DEBUG_IMPLICIT_PTR)
+  if (insn->deleted ())
     return NEXT_INSN (insn);
 
   switch (GET_CODE (insn))
@@ -4430,16 +4430,11 @@ leaf_renumber_regs_insn (rtx in_rtx)
 }
 #endif
 
-
-extern void dump_insns(char const *);
-
 /* Turn the RTL into assembly.  */
 static unsigned int
 rest_of_handle_final (void)
 {
   const char *fnname = get_fnname_from_decl (current_function_decl);
-
-//  dump_insns("final");
 
   assemble_start_function (current_function_decl, fnname);
   final_start_function (get_insns (), asm_out_file, optimize);

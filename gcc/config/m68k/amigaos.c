@@ -839,13 +839,3 @@ read_only_operand (rtx operand)
     return SYMBOL_REF_FLAG (operand) || CONSTANT_POOL_ADDRESS_P(operand);
   return 1;
 }
-
-reg_class_t
-amiga_preferred_rename_class2 (reg_class_t rclass ATTRIBUTE_UNUSED, int regno)
-{
-  if (regno == 0)
-    return D0_REGS;
-  if (regno == 8)
-    return A0_REGS;
-  return regno_reg_class[regno];
-}

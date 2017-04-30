@@ -42,6 +42,7 @@
 								<option id="gnu.cpp.compiler.option.preprocessor.def.807277038" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="IN_GCC=1"/>
 									<listOptionValue builtIn="false" value="HAVE_cc0=1"/>
+									<listOptionValue builtIn="false" value="__ECLIPSE__=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.cygwin.780175803" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input.cygwin"/>
 							</tool>
@@ -56,12 +57,13 @@
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1982594045" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="IN_GCC=1"/>
 									<listOptionValue builtIn="false" value="HAVE_cc0=1"/>
+									<listOptionValue builtIn="false" value="__ECLIPSE__=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin.2078467313" superClass="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.cygwin.base.344641511" name="Cygwin C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.cygwin.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.cygwin.base.968200320" name="Cygwin C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.cygwin.base">
-								<option id="gnu.cpp.link.option.libs.260033787" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs"/>
+								<option id="gnu.cpp.link.option.libs.260033787" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1537937183" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -103,6 +105,7 @@
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.652362073" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="IN_GCC=1"/>
 									<listOptionValue builtIn="false" value="HAVE_cc0=1"/>
+									<listOptionValue builtIn="false" value="__ECLIPSE__=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1150724656" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -115,6 +118,7 @@
 								<option id="gnu.cpp.compiler.option.preprocessor.def.625117841" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="IN_GCC=1"/>
 									<listOptionValue builtIn="false" value="HAVE_cc0=1"/>
+									<listOptionValue builtIn="false" value="__ECLIPSE__=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1133865092" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

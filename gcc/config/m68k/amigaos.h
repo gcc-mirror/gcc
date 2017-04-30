@@ -486,7 +486,3 @@ amigaos_rtx_costs (rtx, machine_mode, int, int, int *, bool);
     && GET_CODE(XEXP(XEXP(XEXP(x, 0), 1), 0)) == UNSPEC \
     )
 
-#undef TARGET_PREFERRED_RENAME_CLASS2
-#define TARGET_PREFERRED_RENAME_CLASS2 amiga_preferred_rename_class2
-reg_class_t
-amiga_preferred_rename_class2(reg_class_t, int);
