@@ -929,6 +929,14 @@ demangle.test(char() delegate shared inout)
 _D8demangle4testFDONgxFZaZv
 demangle.test(char() delegate shared inout const)
 #
+--format=dlang
+_D8demangle004testFaZv
+demangle.test(char)
+#
+--format=dlang
+_D8demangle000000004testFaZv
+demangle.test(char)
+#
 # Unittests
 #
 --format=dlang
