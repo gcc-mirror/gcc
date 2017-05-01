@@ -2644,13 +2644,8 @@ combine_pending_stack_adjustment_and_call (int unadjusted_args_size,
   adjustment = pending_stack_adjust;
   /* Push enough additional bytes that the stack will be aligned
      after the arguments are pushed.  */
-  if (preferred_unit_stack_boundary > 1)
-    {
-      if (unadjusted_alignment > 0)
-	adjustment -= preferred_unit_stack_boundary - unadjusted_alignment;
-      else
-	adjustment += unadjusted_alignment;
-    }
+  if (preferred_unit_stack_boundary > 1 && unadjusted_alignment)
+    adjustment -= preferred_unit_stack_boundary - unadjusted_alignment;
 
   /* Now, sets ARGS_SIZE->CONSTANT so that we pop the right number of
      bytes after the call.  The right number is the entire
