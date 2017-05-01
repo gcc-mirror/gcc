@@ -1,5 +1,9 @@
 2017-05-01  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (components_to_record): Add missing guard.
+
+2017-05-01  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (components_to_record): Add more comments.
 	Put back pending fields onto the regular list if the misalignment
 	happens to cancel itself.
