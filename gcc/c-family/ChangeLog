@@ -1,3 +1,16 @@
+2017-05-01  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
+
+        PR c++/80038
+	* c-common.h (cilk_gimplify_call_params_in_spawned_fn): Remove
+	prototype.
+	(cilk_install_body_pedigree_operations): Likewise.
+	* cilk.c (cilk_set_spawn_marker): Mark functions that should be
+	detatched.
+	(cilk_gimplify_call_params_in_spawned_fn): Remove.
+	(cilk_install_body_pedigree_operations): Likewise.
+	(gimplify_cilk_spawn): Add EXPR_STMT and CLEANUP_POINT_EXPR
+	unwrapping.
+
 2017-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/80534

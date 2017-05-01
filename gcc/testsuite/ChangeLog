@@ -1,3 +1,8 @@
+2017-05-01  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
+
+	PR c++/80038
+	* g++.dg/cilk-plus/CK/pr80038.cc: New test.
+
 2017-05-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/Wmissing-braces-fixits.c: Update expected output to

@@ -3071,6 +3071,19 @@ maybe_fold_stmt (gimple_stmt_iterator *gsi)
   return fold_stmt (gsi);
 }
 
+/* Add a gimple call to __builtin_cilk_detach to GIMPLE sequence PRE_P,
+   with the pointer to the proper cilk frame.  */
+static void
+gimplify_cilk_detach (gimple_seq *pre_p)
+{
+  tree frame = cfun->cilk_frame_decl;
+  tree ptrf = build1 (ADDR_EXPR, cilk_frame_ptr_type_decl,
+		      frame);
+  gcall *detach = gimple_build_call (cilk_detach_fndecl, 1,
+				     ptrf);
+  gimplify_seq_add_stmt(pre_p, detach);
+}
+
 /* Gimplify the CALL_EXPR node *EXPR_P into the GIMPLE sequence PRE_P.
    WANT_VALUE is true if the result of the call is desired.  */
 
@@ -3107,6 +3120,9 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 			EXPR_LOCATION (*expr_p));
 	  vargs.quick_push (CALL_EXPR_ARG (*expr_p, i));
 	}
+
+      if (EXPR_CILK_SPAWN (*expr_p))
+        gimplify_cilk_detach (pre_p);
       gimple *call = gimple_build_call_internal_vec (ifn, vargs);
       gimplify_seq_add_stmt (pre_p, call);
       return GS_ALL_DONE;
@@ -3338,6 +3354,8 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
       call = gimple_build_call_from_tree (*expr_p);
       gimple_call_set_fntype (call, TREE_TYPE (fnptrtype));
       notice_special_calls (call);
+      if (EXPR_CILK_SPAWN (*expr_p))
+        gimplify_cilk_detach (pre_p);
       gimplify_seq_add_stmt (pre_p, call);
       gsi = gsi_last (*pre_p);
       maybe_fold_stmt (&gsi);
@@ -5620,6 +5638,9 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	   SSA name w/o a definition.  We may have uses in the GIMPLE IL.
 	   ???  This doesn't make it a default-def.  */
 	SSA_NAME_DEF_STMT (*to_p) = gimple_build_nop ();
+
+      if (EXPR_CILK_SPAWN (*from_p))
+        gimplify_cilk_detach (pre_p);
       assign = call_stmt;
     }
   else

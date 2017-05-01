@@ -1,3 +1,8 @@
+2017-05-01  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
+
+        PR c++/80038
+	* lto-lang.c (lto_init): Set in_lto_p earlier.
+
 2017-04-12  Richard Biener  <rguenther@suse.de>
 	Bernd Edlinger  <bernd.edlinger@hotmail.de>
 

@@ -280,10 +280,7 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 		 && cilk_detect_spawn_and_unwrap (expr_p));
 
       if (!seen_error ())
-	{
-	  cilk_gimplify_call_params_in_spawned_fn (expr_p, pre_p);
-	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
-	}
+        return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
       return GS_ERROR;
 
     case MODIFY_EXPR:
@@ -295,10 +292,7 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 	     original expression (MODIFY/INIT/CALL_EXPR) is processes as
 	     it is supposed to be.  */
 	  && !seen_error ())
-	{
-	  cilk_gimplify_call_params_in_spawned_fn (expr_p, pre_p);
-	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
-	}
+        return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
 
     default:;
     }

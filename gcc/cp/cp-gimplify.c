@@ -88,25 +88,6 @@ finish_bc_block (tree *block, enum bc_t bc, tree label)
   DECL_CHAIN (label) = NULL_TREE;
 }
 
-/* This function is a wrapper for cilk_gimplify_call_params_in_spawned_fn.
-   *EXPR_P can be a CALL_EXPR, INIT_EXPR, MODIFY_EXPR, AGGR_INIT_EXPR or
-   TARGET_EXPR.  *PRE_P and *POST_P are gimple sequences from the caller
-   of gimplify_cilk_spawn.  */
-
-static void
-cilk_cp_gimplify_call_params_in_spawned_fn (tree *expr_p, gimple_seq *pre_p,
-					    gimple_seq *post_p)
-{
-  int ii = 0;
-
-  cilk_gimplify_call_params_in_spawned_fn (expr_p, pre_p);
-  if (TREE_CODE (*expr_p) == AGGR_INIT_EXPR)
-    for (ii = 0; ii < aggr_init_expr_nargs (*expr_p); ii++)
-      gimplify_expr (&AGGR_INIT_EXPR_ARG (*expr_p, ii), pre_p, post_p,
-		     is_gimple_reg, fb_rvalue);
-}
-
-
 /* Get the LABEL_EXPR to represent a break or continue statement
    in the current block scope.  BC indicates which.  */
 
@@ -647,11 +628,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       if (fn_contains_cilk_spawn_p (cfun))
 	{
 	  if (cilk_cp_detect_spawn_and_unwrap (expr_p))
-	    {
-	      cilk_cp_gimplify_call_params_in_spawned_fn (expr_p,
-							  pre_p, post_p);
-	      return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
-	    }
+	    return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
 	  if (seen_error () && contains_cilk_spawn_stmt (*expr_p))
 	    return GS_ERROR;
 	}
@@ -666,10 +643,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	if (fn_contains_cilk_spawn_p (cfun)
 	    && cilk_cp_detect_spawn_and_unwrap (expr_p)
 	    && !seen_error ())
-	  {
-	    cilk_cp_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);
-	    return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
-	  }
+	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
 	/* If the back end isn't clever enough to know that the lhs and rhs
 	   types are the same, add an explicit conversion.  */
 	tree op0 = TREE_OPERAND (*expr_p, 0);
@@ -787,20 +761,14 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 		 && cilk_cp_detect_spawn_and_unwrap (expr_p));
 
       if (!seen_error ())
-	{
-	  cilk_cp_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);
-	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
-	}
+        return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
       return GS_ERROR;
 
     case CALL_EXPR:
       if (fn_contains_cilk_spawn_p (cfun)
 	  && cilk_cp_detect_spawn_and_unwrap (expr_p)
 	  && !seen_error ())
-	{
-	  cilk_cp_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);
-	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
-	}
+        return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
       ret = GS_OK;
       if (!CALL_EXPR_FN (*expr_p))
 	/* Internal function call.  */;

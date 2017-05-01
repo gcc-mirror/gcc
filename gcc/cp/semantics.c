@@ -4103,6 +4103,8 @@ simplify_aggr_init_expr (tree *tp)
     = CALL_EXPR_OPERATOR_SYNTAX (aggr_init_expr);
   CALL_EXPR_ORDERED_ARGS (call_expr) = CALL_EXPR_ORDERED_ARGS (aggr_init_expr);
   CALL_EXPR_REVERSE_ARGS (call_expr) = CALL_EXPR_REVERSE_ARGS (aggr_init_expr);
+  /* Preserve CILK_SPAWN flag.  */
+  EXPR_CILK_SPAWN (call_expr) = EXPR_CILK_SPAWN (aggr_init_expr);
 
   if (style == ctor)
     {
