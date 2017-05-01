@@ -854,8 +854,8 @@ _D8demangle16__T4testVAyaa0_Zv
 demangle.test!("")
 #
 --format=dlang
-_D8demangle30__T4testVAyaa7_20090a0d0c0b00Zv
-demangle.test!(" \t\n\r\f\v\x00")
+_D8demangle32__T4testVAyaa8_20090a0d0c0b00ffZv
+demangle.test!(" \t\n\r\f\v\x00\xff")
 #
 --format=dlang
 _D8demangle22__T4testVAiA4i1i2i3i4Zv
@@ -1076,8 +1076,16 @@ _D15__T4testVfe0p1Zv
 _D15__T4testVfe0p1Zv
 #
 --format=dlang
+_D15__T4testVAyaa1_
+_D15__T4testVAyaa1_
+#
+--format=dlang
 _D16__T4testVAyaa0aZv
 _D16__T4testVAyaa0aZv
+#
+--format=dlang
+_D18__T4testVAyaa1_0GZv
+_D18__T4testVAyaa1_0GZv
 #
 --format=dlang
 _D18__T4testVAyaa1_YYZv
@@ -1238,6 +1246,14 @@ demangle.fn!('a', '\x09', '\x00', '\u0101', '\U00010001').fn()
 --format=dlang
 _D8demangle32__T2fnTS3symVS3valS1a4_6e756c6cZ3fun13__T8positionZ13__T8confusesZ8demangleFDFxaZvZv
 demangle.fn!(sym, val("null")).fun.position!().confuses!().demangle(void(const(char)) delegate)
+#
+--format=dlang
+_D8demangle39__T2fnVAyaa12_d0bfd180d0b8d0bcd0b5d180Z2fnFZv
+demangle.fn!("\xd0\xbf\xd1\x80\xd0\xb8\xd0\xbc\xd0\xb5\xd1\x80").fn()
+#
+--format=dlang
+_D8demangle26__T2fnVAyaa6_e4b896e7958cZ2fnFZv
+demangle.fn!("\xe4\xb8\x96\xe7\x95\x8c").fn()
 #
 --format=dlang
 _D2gc11gctemplates56__T8mkBitmapTS3std5range13__T4iotaTiTiZ4iotaFiiZ6ResultZ8mkBitmapFNbNiNfPmmZv
