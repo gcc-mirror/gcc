@@ -769,14 +769,9 @@ dlang_identifier (string *decl, const char *mangled,
       mangled = endptr;
 
       /* May be a template instance.  */
-      if (len >= 5 && strncmp (mangled, "__T", 3) == 0)
-	{
-	  /* Template symbol.  */
-	  if (ISDIGIT (mangled[3]) && mangled[3] != '0')
-	    return dlang_parse_template (decl, mangled, len);
-
-	  return NULL;
-	}
+      if (len >= 5 && mangled[0] == '_' && mangled[1] == '_'
+	  && (mangled[2] == 'T' || mangled[2] == 'U'))
+	return dlang_parse_template (decl, mangled, len);
 
       switch (len)
 	{
@@ -1541,11 +1536,14 @@ dlang_parse_template (string *decl, const char *mangled, long len)
 
 	TemplateInstanceName:
 	    Number __T LName TemplateArgs Z
+	    Number __U LName TemplateArgs Z
 		   ^
      The start pointer should be at the above location, and LEN should be
      the value of the decoded number.
    */
-  if (strncmp (mangled, "__T", 3) != 0)
+
+  /* Template symbol.  */
+  if (!ISDIGIT (mangled[3]) || mangled[3] == '0')
     return NULL;
 
   mangled += 3;
