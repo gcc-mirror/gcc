@@ -330,6 +330,10 @@ _D8demangle4testFNkaZv
 demangle.test(return char)
 #
 --format=dlang
+_D8demangle4testFNlaZv
+demangle.test(char)
+#
+--format=dlang
 _D8demangle4testFaXv
 demangle.test(char...)
 #
@@ -478,6 +482,26 @@ _D8demangle4testFNjNkDFNjZaZv
 demangle.test(return char() return delegate)
 #
 --format=dlang
+_D8demangle4testFNlDFZaZv
+demangle.test(char() delegate)
+#
+--format=dlang
+_D8demangle4testFMDFZaZv
+demangle.test(scope char() delegate)
+#
+--format=dlang
+_D8demangle4testFDFNlZaZv
+demangle.test(char() scope delegate)
+#
+--format=dlang
+_D8demangle4testFMDFNlZaZv
+demangle.test(scope char() scope delegate)
+#
+--format=dlang
+_D8demangle4testFNlMDFNlZaZv
+demangle.test(scope char() scope delegate)
+#
+--format=dlang
 _D8demangle4testFPFNaZaZv
 demangle.test(char() pure function)
 #
@@ -532,6 +556,26 @@ demangle.test(char() return function)
 --format=dlang
 _D8demangle4testFNjNkPFNjZaZv
 demangle.test(return char() return function)
+#
+--format=dlang
+_D8demangle4testFNlPFZaZv
+demangle.test(char() function)
+#
+--format=dlang
+_D8demangle4testFMPFZaZv
+demangle.test(scope char() function)
+#
+--format=dlang
+_D8demangle4testFPFNlZaZv
+demangle.test(char() scope function)
+#
+--format=dlang
+_D8demangle4testFMPFNlZaZv
+demangle.test(scope char() scope function)
+#
+--format=dlang
+_D8demangle4testFNlMPFNlZaZv
+demangle.test(scope char() scope function)
 #
 --format=dlang
 _D8demangle4test6__initZ
