@@ -1243,6 +1243,10 @@ dlang_value (string *decl, const char *mangled, const char *name, char type)
       if (*mangled < '0' || *mangled > '9')
 	return NULL;
       /* Fall through */
+
+      /* There really should always be an `i' before encoded numbers, but there
+	 wasn't in early versions of D2, so this case range must remain for
+	 backwards compatibility.  */
     case '0': case '1': case '2': case '3': case '4':
     case '5': case '6': case '7': case '8': case '9':
       mangled = dlang_parse_integer (decl, mangled, type);
