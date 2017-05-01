@@ -1809,6 +1809,15 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    }
 	}
 
+      if (VAR_OR_FUNCTION_DECL_P (olddecl)
+	  && DECL_MODULE_EXPORT_P (newdecl)
+	  && !DECL_MODULE_EXPORT_P (olddecl))
+	{
+	  error ("conflicting exporting declaration of %q#D", newdecl);
+	  inform (DECL_SOURCE_LOCATION (olddecl),
+		  "previous non-exporting declaration");
+	}
+
       if (DECL_LANG_SPECIFIC (olddecl) && DECL_USE_TEMPLATE (olddecl))
 	;
       else if (TREE_CODE (olddecl) == FUNCTION_DECL)
@@ -8601,6 +8610,8 @@ grokfndecl (tree ctype,
       DECL_STATIC_FUNCTION_P (decl) = 1;
       DECL_CONTEXT (decl) = ctype;
     }
+
+  decl_set_module (decl);
 
   if (deletedp)
     DECL_DELETED_FN (decl) = 1;

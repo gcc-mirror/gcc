@@ -25,7 +25,7 @@
 # naming files '*_[a-z].C'
 
 # { dg-module-if "[!]module-name" } # an interface file is (not) expected
-# { dg-module-do [link|run] "linkoptions" } # link [and run]
+# { dg-module-do [link|run] [xfail] } # link [and run]
 
 load_lib g++-dg.exp
 load_lib mpx-dg.exp
@@ -109,7 +109,7 @@ proc module_if_it { src ifs } {
 # link and maybe run a set of object files
 # dg-module-do WHAT OPTIONS WHEN
 proc dg-module-do { args } {
-    if { [llength $args] > 4 } {
+    if { [llength $args] > 3 } {
 	error "[lindex $args 0]: too many arguments"
 	return
     }
@@ -129,8 +129,8 @@ proc module_do_it { do_what testcase asm_list } {
     }
 
     set xfail {}
-    if { [llength $do_what] > 3 } {
-	switch [dg-process-target [lindex $do_what 3]] {
+    if { [llength $do_what] > 2 } {
+	switch [dg-process-target [lindex $do_what 2]] {
 	    "S" { }
 	    "N" { return 1 }
 	    "F" { set xfail {setup_xfail "*-*-*"} }

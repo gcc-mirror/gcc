@@ -33,13 +33,16 @@ struct GTY(()) module_state
   bitmap imports;	/* Transitive modules we're importing.  */
   bitmap exports;	/* Subset of that, that we're exporting.  */
   tree name;		/* Name of the module.  */
+  vec<tree, va_gc> *name_parts;  /* Split parts of name.  */
   int direct_import;	/* Direct import/rexport of main module.  */
+  /* Don't need to record the module's index, yet.  */
 
  public:
   module_state ();
 
  public:
   void set_index (unsigned index);
+  void set_name (tree name);
   void do_import (unsigned index, bool is_export);
 
  public:
@@ -58,7 +61,7 @@ static GTY(()) hash_map<lang_identifier *, unsigned> *module_map;
 
 module_state::module_state ()
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    name (NULL_TREE), direct_import (0)
+    name (NULL_TREE), name_parts (NULL), direct_import (0)
 {
 }
 
@@ -69,6 +72,49 @@ module_state::set_index (unsigned index)
 {
   bitmap_set_bit (imports, index);
   bitmap_set_bit (exports, index);
+}
+
+/* Set NAME and PARTS fields from incoming NAME.  The name must have
+   already been checked for well-formedness.  */
+
+void
+module_state::set_name (tree name_)
+{
+  name = name_;
+  size_t len = IDENTIFIER_LENGTH (name);
+  const char *ptr = IDENTIFIER_POINTER (name);
+  const char *dot;
+
+  do
+    {
+      dot = (const char *)memchr (ptr, '.', len);
+      size_t l = dot ? dot - ptr : len;
+      vec_safe_reserve (name_parts,
+			vec_safe_length (name_parts) + 1,
+			!name_parts && !dot);
+      name_parts->quick_push (get_identifier_with_length (ptr, l));
+      if (dot)
+	l++;
+      ptr += l;
+      len -= l;
+    }
+  while (dot);
+}
+
+/* Return the IDENTIFIER_NODE naming module IX.  */
+
+tree
+module_name (unsigned ix)
+{
+  return (*modules)[ix]->name;
+}
+
+/* Return the vector of IDENTIFIER_NODES naming module IX.  */
+
+vec<tree, va_gc> *
+module_name_parts (unsigned ix)
+{
+  return (*modules)[ix]->name_parts;
 }
 
 /* We've just imported INDEX.  Update our import/export bitmaps.  TOP
@@ -2049,8 +2095,7 @@ cpms_out::walk_namespace (FILE *d, tree ns, bool defns)
 #define MOD_SYM_DOT '_'
 #endif
 
-static GTY(()) tree global_name; /* Name for global module namespace.  */
-static GTY(()) tree module_name; /* Name for this module namespaces. */
+static GTY(()) tree module_nm; /* Name for this module namespaces. */
 static location_t module_loc;	 /* Location of the module decl.  */
 static GTY(()) tree proclaimer;
 static int export_depth; /* -1 for singleton export.  */
@@ -2155,7 +2200,7 @@ cpms_in::finish_namespace (FILE *d, tree ns)
   set_scope (DECL_CONTEXT (ns));
   bool inline_p = DECL_NAMESPACE_INLINE_P (ns);
   bool module_p = MODULE_NAMESPACE_P (ns);
-  if (module_p && (state != this_module || DECL_NAME (ns) != module_name))
+  if (module_p && (state != this_module || DECL_NAME (ns) != module_nm))
     inline_p = false;
   if (push_namespace (DECL_NAME (ns), inline_p))
     {
@@ -2181,8 +2226,8 @@ void
 push_module_namespace (bool do_it)
 {
   gcc_assert (TREE_CODE (current_scope ()) == NAMESPACE_DECL
-	      && (!do_it || module_name));
-  if (do_it && push_namespace (module_name, true))
+	      && (!do_it || module_nm));
+  if (do_it && push_namespace (module_nm, true))
     MODULE_NAMESPACE_P (current_namespace) = true;
 }
 
@@ -2231,6 +2276,17 @@ int
 module_exporting_level ()
 {
   return export_depth;
+}
+
+/* Set the module EXPORT and INDEX fields on DECL.  */
+
+void
+decl_set_module (tree decl)
+{
+  if (export_depth)
+    DECL_MODULE_EXPORT_P (decl) = true;
+  if (this_module && this_module->name)
+    DECL_MODULE_INDEX (decl) = THIS_MODULE_INDEX;
 }
 
 /* Return true iff we're in the purview of a named module.  */
@@ -2318,7 +2374,8 @@ read_module (FILE *stream, const char *fname, module_state *state, FILE *d)
   return ok;
 }
 
-/* Import the module NAME into the current TU. */
+/* Import the module NAME into the current TU.  This includes the
+   main module's interface and as implementation.  */
 
 unsigned
 do_module_import (location_t loc, tree name, int main_p, FILE *d)
@@ -2360,7 +2417,7 @@ do_module_import (location_t loc, tree name, int main_p, FILE *d)
 
   module_state *state
     = main_p ? this_module : new (ggc_alloc<module_state> ()) module_state ();
-  state->name = name;
+  state->set_name (name);
 
   unsigned index = GLOBAL_MODULE_INDEX;
   if (main_p < 0)
@@ -2429,7 +2486,7 @@ declare_module (location_t loc, tree name, tree attrs)
 
   module_loc = loc;
   char *sym = module_to_ext (name, MOD_SYM_PFX, NULL, MOD_SYM_DOT);
-  module_name = get_identifier (sym);
+  module_nm = get_identifier (sym);
   free (sym);
 
   unsigned index = do_module_import (loc, name, inter ? -1 : +1);
@@ -2507,7 +2564,6 @@ finish_module ()
     }
 
   /* GC can clean up the detritus.  */
-  modules = NULL;
   module_map = NULL;
   this_module = NULL;
 }

@@ -1,3 +1,24 @@
+2017-05-01  Nathan Sidwell  <nathan@acm.org>
+
+	Proper mangle for module.  Still have namespace hack though.
+	gcc/cp/
+	* cp-tree.h (DECL_GLOBAL_MODULE_P, DECL_THIS_MODULE_P): Protect
+	DECL_LANG_SPECIFIC.
+	(decl_set_module, module_name, module_name_parts): New.
+	* decl.c (duplicate_decls): Check moduleness.
+	(grokfndecl): Set moduleness.
+	* mangle.c (maybe_write_module): New.
+	(write_name): Call it.
+	* module.c (module_state::set_name): New.
+	(decl_set_module, module_name, module_name_parts): New.
+	gcc/testsuite/
+	* g+.dg/modules.exp (dg-module-do, module_do_it): Adjust.
+	* g++.dg/modules/mod-impl-1_a.C: Adjust & XFAIL.
+	* g++.dg/modules/mod-impl-1_c.C: Likewise.
+	* g++.dg/modules/mod-sym-1.C: Likewise.
+	* g++.dg/modules/mod-sym-2.C: Likewise.
+	* g++.dg/modules/mod-sym-3.C: Likewise.
+
 2017-04-28  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

@@ -850,6 +850,46 @@ write_encoding (const tree decl)
     }
 }
 
+/* If the outermost non-namespace context (including DECL itself) is a
+   non-exported module decl, mangle the module information.
+
+   <module-name> ::= W <unqualified-name>+ E
+
+   FIXME: Module mangling is not fully baked.  How moduleness sticks
+   to regular back-references is tricky.  Namespaces cannot have
+   moduleness, but classes can.  However, both are mangled the same,
+   so the demangler doesn't have a clue. 
+   FIXME: Augment with back references.
+*/
+
+static void
+maybe_write_module (tree decl)
+{
+  tree probe = decl;
+  do
+    {
+      decl = probe;
+      probe = CP_DECL_CONTEXT (decl);
+      if (TYPE_P (probe))
+	probe = TYPE_NAME (probe);
+    }
+  while (TREE_CODE (probe) != NAMESPACE_DECL);
+
+  if (DECL_MODULE_EXPORT_P (decl) || DECL_GLOBAL_MODULE_P (decl))
+    return;
+
+  write_char ('W');
+
+  /* Mangle the module.  */
+  vec<tree, va_gc> *parts = module_name_parts (DECL_MODULE_INDEX (decl));
+
+  // FIXME: back-references?
+  for (unsigned ix = 0; ix < parts->length (); ix++)
+    write_source_name ((*parts)[ix]);
+
+  write_char ('E');
+}
+
 /* Lambdas can have a bit more context for mangling, specifically VAR_DECL
    or PARM_DECL context, which doesn't belong in DECL_CONTEXT.  */
 
@@ -902,6 +942,8 @@ write_name (tree decl, const int ignore_local_scope)
 	 TYPE_DECL for the main variant.  */
       decl = TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (decl)));
     }
+
+  maybe_write_module (decl);
 
   context = decl_mangling_context (decl);
 

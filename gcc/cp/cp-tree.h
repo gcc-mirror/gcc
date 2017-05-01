@@ -1402,10 +1402,12 @@ check_constraint_info (tree t)
   (DECL_LANG_SPECIFIC (N)->u.base.module_index)
 
 #define DECL_GLOBAL_MODULE_P(N) \
-  (DECL_LANG_SPECIFIC (N)->u.base.module_index == GLOBAL_MODULE_INDEX)
+  (!DECL_LANG_SPECIFIC (N)						\
+   || DECL_LANG_SPECIFIC (N)->u.base.module_index == GLOBAL_MODULE_INDEX)
 
 #define DECL_THIS_MODULE_P(N) \
-  (DECL_LANG_SPECIFIC (N)->u.base.module_index == THIS_MODULE_INDEX)
+  (DECL_LANG_SPECIFIC (N) \
+   && DECL_LANG_SPECIFIC (N)->u.base.module_index == THIS_MODULE_INDEX)
 
 /* Whether this is an exported DECL.  */
 #define DECL_MODULE_EXPORT_P(NODE) \
@@ -6342,6 +6344,7 @@ extern tree implicitly_declare_fn               (special_function_kind, tree,
 extern bool module_purview_p ();
 extern bool module_interface_p ();
 extern int module_exporting_level ();
+extern void decl_set_module (tree);
 extern int push_module_export (bool, tree = NULL);
 extern void pop_module_export (int);
 extern void push_module_namespace (bool);
@@ -6349,6 +6352,8 @@ extern bool pop_module_namespace ();
 extern void declare_module (location_t, tree, tree);
 extern void finish_module ();
 extern void import_export_module (location_t, tree, tree, bool);
+extern tree module_name (unsigned);
+extern vec<tree, va_gc> *module_name_parts (unsigned);
 
 /* In optimize.c */
 extern bool maybe_clone_body			(tree);
