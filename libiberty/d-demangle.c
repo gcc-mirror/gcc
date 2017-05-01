@@ -1362,6 +1362,10 @@ dlang_parse_symbol (string *decl, const char *mangled,
       if (n++)
 	string_append (decl, ".");
 
+      /* Skip over anonymous symbols.  */
+      while (*mangled == '0')
+	mangled++;
+
       mangled = dlang_identifier (decl, mangled, kind);
 
       if (mangled && dlang_call_convention_p (mangled))
