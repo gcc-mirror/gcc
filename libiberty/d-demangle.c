@@ -26,9 +26,7 @@ You should have received a copy of the GNU Library General Public
 License along with libiberty; see the file COPYING.LIB.
 If not, see <http://www.gnu.org/licenses/>.  */
 
-/* This file exports one function; dlang_demangle.
-
-   This file imports strtol for decoding mangled literals.  */
+/* This file exports one function; dlang_demangle.  */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -42,8 +40,6 @@ If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#else
-extern long strtol (const char *nptr, char **endptr, int base);
 #endif
 
 #include <demangle.h>
@@ -196,6 +192,36 @@ static const char *dlang_parse_tuple (string *, const char *);
 
 static const char *dlang_parse_template (string *, const char *, long);
 
+
+/* Extract the number from MANGLED, and assign the result to RET.
+   Return the remaining string on success or NULL on failure.  */
+static const char *
+dlang_number (const char *mangled, long *ret)
+{
+  /* Return NULL if trying to extract something that isn't a digit.  */
+  if (mangled == NULL || !ISDIGIT (*mangled))
+    return NULL;
+
+  (*ret) = 0;
+
+  while (ISDIGIT (*mangled))
+    {
+      (*ret) *= 10;
+
+      /* If an overflow occured when multiplying by ten, the result
+	 will not be a multiple of ten.  */
+      if ((*ret % 10) != 0)
+	return NULL;
+
+      (*ret) += mangled[0] - '0';
+      mangled++;
+    }
+
+  if (*mangled == '\0' || *ret < 0)
+    return NULL;
+
+  return mangled;
+}
 
 /* Demangle the calling convention from MANGLED and append it to DECL.
    Return the remaining string on success or NULL on failure.  */
@@ -709,15 +735,10 @@ static const char *
 dlang_identifier (string *decl, const char *mangled,
 		  enum dlang_symbol_kinds kind)
 {
-  char *endptr;
   long len;
+  const char *endptr = dlang_number (mangled, &len);
 
-  if (mangled == NULL || *mangled == '\0')
-    return NULL;
-
-  len = strtol (mangled, &endptr, 10);
-
-  if (endptr == NULL || len <= 0)
+  if (endptr == NULL || len == 0)
     return NULL;
 
   /* In template parameter symbols, the first character of the mangled
@@ -726,7 +747,7 @@ dlang_identifier (string *decl, const char *mangled,
   if (kind == dlang_template_param)
     {
       long psize = len;
-      char *pend;
+      const char *pend;
       int saved = string_length (decl);
 
       /* Work backwards until a match is found.  */
@@ -871,10 +892,10 @@ dlang_parse_integer (string *decl, const char *mangled, char type)
       char value[10];
       int pos = 10;
       int width = 0;
-      char *endptr;
-      long val = strtol (mangled, &endptr, 10);
+      long val;
 
-      if (endptr == NULL || val < 0)
+      mangled = dlang_number (mangled, &val);
+      if (mangled == NULL)
 	return NULL;
 
       string_append (decl, "'");
@@ -923,25 +944,26 @@ dlang_parse_integer (string *decl, const char *mangled, char type)
 	  string_appendn (decl, &(value[pos]), 10 - pos);
 	}
       string_append (decl, "'");
-      mangled = endptr;
     }
   else if (type == 'b')
     {
       /* Parse boolean value.  */
-      char *endptr;
-      long val = strtol (mangled, &endptr, 10);
+      long val;
 
-      if (endptr == NULL || val < 0)
+      mangled = dlang_number (mangled, &val);
+      if (mangled == NULL)
 	return NULL;
 
       string_append (decl, val ? "true" : "false");
-      mangled = endptr;
     }
   else
     {
       /* Parse integer value.  */
       const char *numptr = mangled;
       size_t num = 0;
+
+      if (! ISDIGIT (*mangled))
+	return NULL;
 
       while (ISDIGIT (*mangled))
 	{
@@ -1070,17 +1092,11 @@ static const char *
 dlang_parse_string (string *decl, const char *mangled)
 {
   char type = *mangled;
-  char *endptr;
   long len;
 
   mangled++;
-  len = strtol (mangled, &endptr, 10);
-
-  if (endptr == NULL || len < 0)
-    return NULL;
-
-  mangled = endptr;
-  if (*mangled != '_')
+  mangled = dlang_number (mangled, &len);
+  if (mangled == NULL || *mangled != '_')
     return NULL;
 
   mangled++;
@@ -1143,13 +1159,12 @@ dlang_parse_string (string *decl, const char *mangled)
 static const char *
 dlang_parse_arrayliteral (string *decl, const char *mangled)
 {
-  char *endptr;
-  long elements = strtol (mangled, &endptr, 10);
+  long elements;
 
-  if (endptr == NULL || elements < 0)
+  mangled = dlang_number (mangled, &elements);
+  if (mangled == NULL)
     return NULL;
 
-  mangled = endptr;
   string_append (decl, "[");
   while (elements--)
     {
@@ -1167,13 +1182,12 @@ dlang_parse_arrayliteral (string *decl, const char *mangled)
 static const char *
 dlang_parse_assocarray (string *decl, const char *mangled)
 {
-  char *endptr;
-  long elements = strtol (mangled, &endptr, 10);
+  long elements;
 
-  if (endptr == NULL || elements < 0)
+  mangled = dlang_number (mangled, &elements);
+  if (mangled == NULL)
     return NULL;
 
-  mangled = endptr;
   string_append (decl, "[");
   while (elements--)
     {
@@ -1194,13 +1208,12 @@ dlang_parse_assocarray (string *decl, const char *mangled)
 static const char *
 dlang_parse_structlit (string *decl, const char *mangled, const char *name)
 {
-  char *endptr;
-  long args = strtol (mangled, &endptr, 10);
+  long args;
 
-  if (endptr == NULL || args < 0)
+  mangled = dlang_number (mangled, &args);
+  if (mangled == NULL)
     return NULL;
 
-  mangled = endptr;
   if (name != NULL)
     string_append (decl, name);
 
@@ -1241,8 +1254,6 @@ dlang_value (string *decl, const char *mangled, const char *name, char type)
 
     case 'i':
       mangled++;
-      if (*mangled < '0' || *mangled > '9')
-	return NULL;
       /* Fall through */
 
       /* There really should always be an `i' before encoded numbers, but there
@@ -1469,13 +1480,12 @@ dlang_parse_qualified (string *decl, const char *mangled,
 static const char *
 dlang_parse_tuple (string *decl, const char *mangled)
 {
-  char *endptr;
-  long elements = strtol (mangled, &endptr, 10);
+  long elements;
 
-  if (endptr == NULL || elements < 0)
+  mangled = dlang_number (mangled, &elements);
+  if (mangled == NULL)
     return NULL;
 
-  mangled = endptr;
   string_append (decl, "Tuple!(");
 
   while (elements--)
