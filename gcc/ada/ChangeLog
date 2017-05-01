@@ -1,3 +1,9 @@
+2017-05-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (components_to_record): Add more comments.
+	Put back pending fields onto the regular list if the misalignment
+	happens to cancel itself.
+
 2017-04-28  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Complete_Object_Operation): When rewriting the
