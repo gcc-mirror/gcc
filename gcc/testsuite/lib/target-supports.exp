@@ -8296,6 +8296,20 @@ proc check_effective_target_store_merge { } {
     return 0
 }
 
+# Return 1 if we're able to assemble rdrand
+
+proc check_effective_target_rdrand { } {
+    return [check_no_compiler_messages_nocache rdrand object {
+	unsigned int
+	__foo(void)
+	{
+	    unsigned int val;
+	    __builtin_ia32_rdrand32_step(&val);
+	    return val;
+	}
+    } "-mrdrnd" ]
+}
+
 # Return 1 if the target supports coprocessor instructions: cdp, ldc, stc, mcr and
 # mrc.
 proc check_effective_target_arm_coproc1_ok_nocache { } {

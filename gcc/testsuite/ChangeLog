@@ -1,3 +1,9 @@
+2017-05-01  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/65941
+	* lib/target-supports.exp (check_effective_target_rdrand): New proc.
+	* g++.dg/other/pr59492.C: Require effective target rdrand.
+
 2017-04-29  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* g++.dg/diagnostic/member-decl-1.C: New test.
