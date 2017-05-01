@@ -1,3 +1,12 @@
+2017-05-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/79430
+	* rtlanal.c (reg_set_p): If reg is a stack_pointer_rtx, also
+	check for stack push/pop autoinc.
+	* config/i386/i386.c (ix86_agi_dependent): Return false
+	if the only reason why modified_in_p returned true is that
+	addr is SP based and set_insn is a push or pop.
+
 2017-04-29  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/79224
