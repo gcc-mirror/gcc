@@ -3886,15 +3886,29 @@ substitute_in_expr (tree exp, tree f, tree r)
 
 	  new_tree = NULL_TREE;
 
-	  /* If we are trying to replace F with a constant, inline back
+	  /* If we are trying to replace F with a constant or with another
+	     instance of one of the arguments of the call, inline back
 	     functions which do nothing else than computing a value from
 	     the arguments they are passed.  This makes it possible to
 	     fold partially or entirely the replacement expression.  */
-	  if (CONSTANT_CLASS_P (r) && code == CALL_EXPR)
+	  if (code == CALL_EXPR)
 	    {
-	      tree t = maybe_inline_call_in_expr (exp);
-	      if (t)
-		return SUBSTITUTE_IN_EXPR (t, f, r);
+	      bool maybe_inline = false;
+	      if (CONSTANT_CLASS_P (r))
+		maybe_inline = true;
+	      else
+		for (i = 3; i < TREE_OPERAND_LENGTH (exp); i++)
+		  if (operand_equal_p (TREE_OPERAND (exp, i), r, 0))
+		    {
+		      maybe_inline = true;
+		      break;
+		    }
+	      if (maybe_inline)
+		{
+		  tree t = maybe_inline_call_in_expr (exp);
+		  if (t)
+		    return SUBSTITUTE_IN_EXPR (t, f, r);
+		}
 	    }
 
 	  for (i = 1; i < TREE_OPERAND_LENGTH (exp); i++)
