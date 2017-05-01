@@ -22,6 +22,14 @@ _D8demangle4testPFLAiYi
 demangle.test
 #
 --format=dlang
+_D8demangle4testFZv
+demangle.test()
+#
+--format=dlang
+_D8demangle4testMFZ2fnMFZv
+demangle.test().fn()
+#
+--format=dlang
 _D8demangle4testFaZv
 demangle.test(char)
 #
@@ -1106,6 +1114,10 @@ demangle.fn(inout(int))
 --format=dlang
 _D8demangle29__T2fnVa97Va9Va0Vu257Vw65537Z2fnFZv
 demangle.fn!('a', '\x09', '\x00', '\u0101', '\U00010001').fn()
+#
+--format=dlang
+_D8demangle32__T2fnTS3symVS3valS1a4_6e756c6cZ3fun13__T8positionZ13__T8confusesZ8demangleFDFxaZvZv
+demangle.fn!(sym, val("null")).fun.position!().confuses!().demangle(void(const(char)) delegate)
 #
 --format=dlang
 _D2gc11gctemplates56__T8mkBitmapTS3std5range13__T4iotaTiTiZ4iotaFiiZ6ResultZ8mkBitmapFNbNiNfPmmZv
