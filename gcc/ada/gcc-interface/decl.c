@@ -8150,13 +8150,20 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
       5) the variant part,
 
      within the record and within each variant recursively.  */
-  if (w_reorder
-      && last_reorder_field_type == 2
-      && tmp_last_reorder_field_type < 2)
-    warn_on_field_placement (gnu_tmp_bitp_list
-			     ? gnu_tmp_bitp_list : gnu_field_list,
-			     gnat_component_list, gnat_record_type,
-			     in_variant, do_reorder);
+
+  if (w_reorder)
+    {
+      /* If we have pending bit-packed fields, warn if they would be moved
+	 to after regular fields.  */
+      if (last_reorder_field_type == 2
+	  && tmp_bitp_size != 0
+	  && tmp_last_reorder_field_type < 2)
+	warn_on_field_placement (gnu_tmp_bitp_list
+				 ? gnu_tmp_bitp_list : gnu_field_list,
+				 gnat_component_list, gnat_record_type,
+				 in_variant, do_reorder);
+    }
+
   if (do_reorder)
     {
       /* If we have pending bit-packed fields on the temporary list, we put
