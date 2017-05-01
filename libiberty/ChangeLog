@@ -1,3 +1,8 @@
+2017-05-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_attributes): Handle scope attributes.
+	* testsuite/d-demangle-expected: Add tests.
+
 2017-04-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR demangler/80513

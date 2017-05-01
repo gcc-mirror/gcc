@@ -327,6 +327,10 @@ dlang_attributes (string *decl, const char *mangled)
 	  mangled++;
 	  string_append (decl, "return ");
 	  continue;
+	case 'l': /* scope */
+	  mangled++;
+	  string_append (decl, "scope ");
+	  continue;
 
 	default: /* unknown attribute */
 	  return NULL;
