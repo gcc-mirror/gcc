@@ -1,5 +1,17 @@
 2017-05-01  Nathan Sidwell  <nathan@acm.org>
 
+	Import timestamp & crc
+	gcc/cp
+	* module.c (module_state): Add crc & stamp.
+	(enum import_kind): New.
+	(cpms_out::header, cpms_in::header): Check timestamps.
+	(time2str, timestamp_mismatch): New.
+	(cpms_out::tag_import, cpms_in::tag_import): Xfer indirect imports
+	too.
+	(read_module, do_module_import): Check timestamp & crc.
+	gcc/testsuite/
+	* g++.dg/modules/mod-stamp-1_[abcd].C: New.
+
 	Proper mangle for module.  Still have namespace hack though.
 	gcc/cp/
 	* cp-tree.h (DECL_GLOBAL_MODULE_P, DECL_THIS_MODULE_P): Protect

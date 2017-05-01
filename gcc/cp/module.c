@@ -36,6 +36,8 @@ struct GTY(()) module_state
   vec<tree, va_gc> *name_parts;  /* Split parts of name.  */
   int direct_import;	/* Direct import/rexport of main module.  */
   /* Don't need to record the module's index, yet.  */
+  unsigned crc;		/* CRC we saw reading it in. */
+  unsigned HOST_WIDE_INT stamp;	/* Timestamp we saw reading it in.  */
 
  public:
   module_state ();
@@ -61,7 +63,8 @@ static GTY(()) hash_map<lang_identifier *, unsigned> *module_map;
 
 module_state::module_state ()
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    name (NULL_TREE), name_parts (NULL), direct_import (0)
+    name (NULL_TREE), name_parts (NULL), direct_import (0),
+    crc (0), stamp (0)
 {
 }
 
@@ -117,9 +120,9 @@ module_name_parts (unsigned ix)
   return (*modules)[ix]->name_parts;
 }
 
-/* We've just imported INDEX.  Update our import/export bitmaps.  TOP
-   is true, if we're the main module.  IS_EXPORT is true if we're
-   reexporting the module.  */
+/* We've just directly imported INDEX.  Update our import/export
+   bitmaps.  TOP is true, if we're the main module.  IS_EXPORT is true
+   if we're reexporting the module.  */
 
 void
 module_state::do_import (unsigned index, bool is_export)
@@ -133,7 +136,17 @@ module_state::do_import (unsigned index, bool is_export)
     bitmap_ior_into (exports, other->exports);
 }
 
-static unsigned do_module_import (location_t, tree, int, FILE * = NULL);
+enum import_kind 
+{
+  ik_indirect,
+  ik_direct,
+  ik_interface,
+  ik_implementation
+};
+
+static unsigned do_module_import (location_t, tree, import_kind,
+				  unsigned HOST_WIDE_INT stamp,
+				  unsigned crc, FILE * = NULL);
 
 /* Byte serializer base.  */
 class cpm_serial
@@ -293,6 +306,10 @@ public:
 
 public:
   bool checkpoint ();
+  unsigned get_crc () const
+  {
+    return crc;
+  }
 
 public:
   bool b ();
@@ -648,11 +665,18 @@ cpm_reader::buf (size_t len)
   crc_buffer (buf, len);
   return buf;
 }
-  
+
+/* Strings:
+   u:length
+   checkpoint
+   buf:bytes
+*/
+
 void
 cpm_writer::str (const char *string, size_t len)
 {
   s (len);
+  checkpoint ();
   buf (string, len + 1);
 }
 
@@ -660,6 +684,10 @@ const char *
 cpm_reader::str (size_t *len_p)
 {
   size_t len = s ();
+
+  /* We're about to trust some user data.  */
+  if (!checkpoint ())
+    len = 0;
   *len_p = len;
   const char *str = buf (len + 1);
   if (str[len])
@@ -729,9 +757,9 @@ public:
     /* Module-specific records.  */
     rt_eof,  /* End Of File.  duh! */
     rt_conf, /* Config info (baked in stuff like target-triplet) */
+    rt_stamp, /* Date stamp etc.  */
     rt_flags, /* Flags that affect AST generation, such as fshort-enum.  */
-    rt_import, /* A nested import. */
-    rt_export, /* A reexported import.  */
+    rt_import, /* An import. */
     rt_binding, /* A name-binding.  */
     rt_trees, /* Global trees.  */
     rt_tree_base = 0x100,      /* Tree codes.  */
@@ -819,7 +847,7 @@ public:
   void header (FILE *, tree);
   void tag_eof ();
   void tag_conf (FILE *);
-  void tag_import (FILE *, tree, bool reexported_p);
+  void tag_import (FILE *, unsigned ix, const module_state *);
   void tag_trees (FILE *);
   int done ()
   {
@@ -862,16 +890,17 @@ class cpms_in : public cpm_stream
 
   tree scope;
   unsigned index; /* Module index.  */
+  unsigned HOST_WIDE_INT stamp;  /* Expected time stamp.  */
 
 public:
-  cpms_in (FILE *, const char *, module_state *);
+  cpms_in (FILE *, const char *, module_state *, unsigned HOST_WIDE_INT stamp);
   ~cpms_in ();
 
 public:
-  bool header (FILE *, tree);
+  bool header (FILE *);
   int tag_eof (FILE *);
   bool tag_conf (FILE *);
-  bool tag_import (FILE *, bool reexporting);
+  bool tag_import (FILE *);
   bool tag_binding (FILE *);
   bool tag_trees (FILE *);
   int read_item (FILE *);
@@ -906,8 +935,9 @@ public:
 };
 
 cpms_in::cpms_in (FILE *s, const char *n,
-		  module_state *state_)
-  :r (s, n), state (state_), scope (NULL_TREE), index (GLOBAL_MODULE_INDEX)
+		  module_state *state_, unsigned HOST_WIDE_INT stmp)
+  :r (s, n), state (state_), scope (NULL_TREE), index (GLOBAL_MODULE_INDEX),
+   stamp (stmp)
 {
 }
 
@@ -917,6 +947,13 @@ cpms_in::~cpms_in ()
     pop_inner_scope (global_namespace, scope);
 }
 
+/* File header
+   buf:ident
+   u:version
+   wu:timestamp
+   str:module
+*/
+
 void
 cpms_out::header (FILE *d, tree name)
 {
@@ -925,14 +962,56 @@ cpms_out::header (FILE *d, tree name)
 
   int v = version ();
   gcc_assert (v < 0); /* Not ready for prime-time.  */
-  if (d)
-    fprintf (d, "Writing \"%s\" %d:%04d\n", id, v2d (v), v2t (v));
   w.i (v);
+
+  /* Although -1 is a legitimate time, it's not going to be a very
+     common problem.  */
+  time_t now = time (NULL);
+  if ((time_t)-1 == now)
+    now = 0;
+  w.wu ((unsigned HOST_WIDE_INT)now);
+
+  if (d)
+    fprintf (d, "Writing \"%s\" version=%d:%04d stamp=%lu\n",
+	     id, v2d (v), v2t (v), (unsigned long)now);
+
   w.str (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
 }
+
+static const char *
+time2str (unsigned HOST_WIDE_INT t)
+{
+  const char *str = "<unknown>";
+  if (t)
+    {
+      time_t e_time = (time_t)t;
+      struct tm *l_time = localtime (&e_time);
+      char buf[24];
+      sprintf (buf, "%04d/%02d/%02d %02d:%02d:%02d",
+	       l_time->tm_year + 1900, l_time->tm_mon + 1, l_time->tm_mday,
+	       l_time->tm_hour, l_time->tm_min, l_time->tm_sec);
+      str = xstrdup (buf);
+    }
+  return str;
+}
+
+/* Diagnose mismatched timestamps.  */
+
+static void
+timestamp_mismatch (tree name, unsigned HOST_WIDE_INT expected,
+		    unsigned HOST_WIDE_INT actual)
+{
+  const char *e_str = time2str (expected);
+  const char *a_str = time2str (actual);
   
+  error ("module %qE time stamp expected %qs, discovered %qs",
+	 name, e_str, a_str);
+
+  /* We leak memory, but we're dying.  */
+}
+
 bool
-cpms_in::header (FILE *d, tree name)
+cpms_in::header (FILE *d)
 {
   const char *id = ident ();
   const char *i = r.buf (strlen (id));
@@ -942,6 +1021,7 @@ cpms_in::header (FILE *d, tree name)
       return false;
     }
 
+  /* Check version.  */
   int ver = version ();
   int v = r.i ();
   int ver_date = v2d (ver);
@@ -958,7 +1038,7 @@ cpms_in::header (FILE *d, tree name)
       else
 	{
 	  /* Times differ, give it a go.  */
-	  warning (0, "%qs is version %d, but timestamp is %d, not %d",
+	  warning (0, "%qs is version %d, but build time is %d, not %d",
 		   r.name, v_date, v_time, ver_time);
 	  have_a_go = true;
 	}
@@ -972,12 +1052,21 @@ cpms_in::header (FILE *d, tree name)
     fprintf (d, "Expecting %d:%04d found %d:%04d\n", ver_date, ver_time,
 	     v_date, v_time);
 
+  /* Check timestamp.  */
+  state->stamp = r.wu ();
+  if (stamp && stamp != state->stamp)
+    {
+      timestamp_mismatch (state->name, stamp, state->stamp);
+      return false;
+    }
+
+  /* Check module name.  */
   size_t l;
   const char *n = r.str (&l);
-  if (l != IDENTIFIER_LENGTH (name)
-      || memcmp (n, IDENTIFIER_POINTER (name), l))
+  if (l != IDENTIFIER_LENGTH (state->name)
+      || memcmp (n, IDENTIFIER_POINTER (state->name), l))
     {
-      error ("%qs is module %qs, expected module %qE", r.name, n, name);
+      error ("%qs is module %qs, expected module %qE", r.name, n, state->name);
       return false;
     }
 
@@ -998,6 +1087,8 @@ cpms_in::tag_eof (FILE *d)
     fprintf (d, "Read eof\n");
   if (!r.checkpoint ())
     return false;
+  /* Record the crc.  */
+  state->crc = r.get_crc ();
   return -1; /* Denote EOF.  */
 }
 
@@ -1167,28 +1258,38 @@ cpms_in::read_tree_ary (FILE *d, unsigned ary_num, const gtp *ary_p)
   return true;
 }
 
-/* Item import | export
+/* Item import
+   u:index
+   u:direct
+   u:crc
+   wu:stamp
    str:module_name  */
 
 void
-cpms_out::tag_import (FILE *d, tree name, bool is_export)
+cpms_out::tag_import (FILE *d, unsigned ix, const module_state *state)
 {
   if (d)
-    fprintf (d, "Writing %s '%s'\n", is_export ? "export module" : "import",
-	     IDENTIFIER_POINTER (name));
-  w.u (is_export ? rt_export : rt_import);
-  w.str (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
+    fprintf (d, "Writing import '%s' (%d, %x)\n",
+	     IDENTIFIER_POINTER (state->name),
+	     state->direct_import, state->crc);
+  w.u (rt_import);
+  w.u (ix);
+  w.u (state->direct_import);
+  w.u (state->crc);
+  w.wu (state->stamp);
+  w.str (IDENTIFIER_POINTER (state->name), IDENTIFIER_LENGTH (state->name));
   w.checkpoint ();
 }
 
 bool
-cpms_in::tag_import (FILE *d, bool is_export)
+cpms_in::tag_import (FILE *d)
 {
+  unsigned ix = r.u ();
+  unsigned direct = r.u ();
+  unsigned crc = r.u ();
+  unsigned HOST_WIDE_INT stamp = r.wu ();
   size_t l;
   const char *mod = r.str (&l);
-
-  if (!r.checkpoint ())
-    return false;
 
   /* Validate name.  Dotted sequence of identifiers.  */
   size_t dot = 0;
@@ -1217,11 +1318,16 @@ cpms_in::tag_import (FILE *d, bool is_export)
 
   tree imp = get_identifier_with_length (mod, l);
 
+  if (!r.checkpoint ())
+    return false;
+
   if (d)
     fprintf (d, "Begin nested import '%s'\n", IDENTIFIER_POINTER (imp));
-  int index = do_module_import (UNKNOWN_LOCATION, imp, 0, d);
-  if (index != GLOBAL_MODULE_INDEX)
-    state->do_import (index, is_export);
+  int index = do_module_import (UNKNOWN_LOCATION, imp,
+				direct ? ik_direct : ik_indirect,
+				stamp, crc, d);
+  if (index != GLOBAL_MODULE_INDEX && direct)
+    state->do_import (index, direct == 2);
 
   if (d)
     fprintf (d, "Completed nested import '%s' #%u %s\n",
@@ -1239,9 +1345,8 @@ cpms_in::read_item (FILE *d)
     {
     case rt_conf:
       return tag_conf (d);
-    case rt_export:
     case rt_import:
-      return tag_import (d, rt == rt_export);
+      return tag_import (d);
 
     default:
       break;
@@ -2338,9 +2443,10 @@ module_to_filename (tree id)
    index, or 0 */
 
 static unsigned
-read_module (FILE *stream, const char *fname, module_state *state, FILE *d)
+read_module (FILE *stream, const char *fname, module_state *state,
+	     unsigned HOST_WIDE_INT stamp, FILE *d)
 {
-  cpms_in in (stream, fname, state);
+  cpms_in in (stream, fname, state, stamp);
   bool owning_dump = !d;
 
   if (owning_dump)
@@ -2349,7 +2455,7 @@ read_module (FILE *stream, const char *fname, module_state *state, FILE *d)
   if (d)
     fprintf (d, "Importing '%s'\n", IDENTIFIER_POINTER (state->name));
 
-  int ok = in.header (d, state->name);
+  int ok = in.header (d);
   if (ok)
     do
       ok = in.read_item (d);
@@ -2358,7 +2464,7 @@ read_module (FILE *stream, const char *fname, module_state *state, FILE *d)
   if (int e = in.done ())
     {
       error ("failed to read module %qE (%qs): %s", state->name, fname,
-	     e >= 0 ? xstrerror (errno) : "Bad file data");
+	     e >= 0 ? xstrerror (e) : "Bad file data");
       ok = false;
     }
 
@@ -2378,7 +2484,8 @@ read_module (FILE *stream, const char *fname, module_state *state, FILE *d)
    main module's interface and as implementation.  */
 
 unsigned
-do_module_import (location_t loc, tree name, int main_p, FILE *d)
+do_module_import (location_t loc, tree name, import_kind kind,
+		  unsigned HOST_WIDE_INT stamp, unsigned crc, FILE *d)
 {
   if (!module_map)
     {
@@ -2391,10 +2498,10 @@ do_module_import (location_t loc, tree name, int main_p, FILE *d)
 
   bool existed;
   unsigned *val = &module_map->get_or_insert (name, &existed);
+  unsigned index = GLOBAL_MODULE_INDEX;
+  module_state *state = NULL;
 
-  if (!existed)
-    *val = ~0U;
-  else
+  if (existed)
     switch (*val)
       {
       case ~0U:
@@ -2407,47 +2514,65 @@ do_module_import (location_t loc, tree name, int main_p, FILE *d)
 	error_at (loc, "already declared as module %qE", name);
 	return GLOBAL_MODULE_INDEX;
       default:
-	if (main_p)
+	if (kind >= ik_interface)
 	  {
 	    error_at (loc, "module %qE already imported", name);
 	    return GLOBAL_MODULE_INDEX;
 	  }
-	return *val;
+	index = *val;
+	state = (*modules)[index];
+	if (stamp && stamp != state->stamp)
+	  {
+	    timestamp_mismatch (name, stamp, state->stamp);
+	    index = GLOBAL_MODULE_INDEX;
+	  }
       }
-
-  module_state *state
-    = main_p ? this_module : new (ggc_alloc<module_state> ()) module_state ();
-  state->set_name (name);
-
-  unsigned index = GLOBAL_MODULE_INDEX;
-  if (main_p < 0)
-    {
-      /* This is the interface.  */
-      state->set_index (THIS_MODULE_INDEX);
-      index = THIS_MODULE_INDEX;
-    }
   else
     {
-      // FIXME:Path search along the -I path
-      // FIXME: Think about make dependency generation
-      char *fname = module_to_filename (name);
-      FILE *stream = fopen (fname, "rb");
+      if (kind == ik_indirect)
+	warning_at (0, loc, "indirect import %qE not present", name);
+      *val = ~0U;
 
-      if (!stream)
-	error_at (loc, "cannot find module %qE (%qs): %m", name, fname);
+      state = (kind >= ik_interface ? this_module
+	       : new (ggc_alloc<module_state> ()) module_state ());
+      state->set_name (name);
+
+      if (kind == ik_interface)
+	{
+	  /* This is the interface.  */
+	  state->set_index (THIS_MODULE_INDEX);
+	  index = THIS_MODULE_INDEX;
+	}
       else
 	{
-	  tree ctx = current_scope ();
-	  index = read_module (stream, fname, state, d);
-	  gcc_assert (ctx == current_scope ());
-	  fclose (stream);
-	  gcc_assert (!(*modules)[index] && *val == ~0U);
+	  // FIXME:Path search along the -I path
+	  // FIXME: Think about make dependency generation
+	  char *fname = module_to_filename (name);
+	  FILE *stream = fopen (fname, "rb");
+
+	  if (!stream)
+	    error_at (loc, "cannot find module %qE (%qs): %m", name, fname);
+	  else
+	    {
+	      push_to_top_level ();
+	      index = read_module (stream, fname, state, stamp, d);
+	      gcc_assert (global_namespace == current_scope ());
+	      pop_from_top_level ();
+	      fclose (stream);
+	      gcc_assert (!(*modules)[index] && *val == ~0U);
+	    }
+	  free (fname);
 	}
-      free (fname);
+      if (index != GLOBAL_MODULE_INDEX)
+	(*modules)[index] = state;
     }
-  
-  if (index != GLOBAL_MODULE_INDEX)
-    (*modules)[index] = state;
+
+  if (index != GLOBAL_MODULE_INDEX && stamp && crc != state->crc)
+    {
+      error ("module %qE crc mismatch", name);
+      index = GLOBAL_MODULE_INDEX;
+    }
+
   *val = index;
   return index;
 }
@@ -2457,7 +2582,7 @@ do_module_import (location_t loc, tree name, int main_p, FILE *d)
 void
 import_export_module (location_t loc, tree name, tree, bool is_export)
 {
-  unsigned index = do_module_import (loc, name, 0);
+  unsigned index = do_module_import (loc, name, ik_direct, 0, 0);
   if (index != GLOBAL_MODULE_INDEX)
     this_module->do_import (index, is_export);
 }
@@ -2489,7 +2614,8 @@ declare_module (location_t loc, tree name, tree attrs)
   module_nm = get_identifier (sym);
   free (sym);
 
-  unsigned index = do_module_import (loc, name, inter ? -1 : +1);
+  unsigned index = do_module_import
+    (loc, name, inter ? ik_interface : ik_implementation, 0, 0);
   if (index != GLOBAL_MODULE_INDEX)
     {
       gcc_assert (index == THIS_MODULE_INDEX);
@@ -2513,11 +2639,11 @@ write_module (FILE *stream, const char *fname, tree name)
   out.tag_conf (d);
   // FIXME:Write 'important' flags etc
 
-  /* Write the direct imports.  */
+  /* Write the direct imports.  Write in reverse order, so that when
+     checking an indirect import we should have already read it.  */
   for (unsigned ix = modules->length (); --ix > THIS_MODULE_INDEX;)
     if (module_state *state = (*modules)[ix])
-      if (state->direct_import)
-	out.tag_import (d, state->name, state->direct_import == 2);
+      out.tag_import (d, ix, state);
 
   out.tag_trees (d);
 
