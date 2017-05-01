@@ -114,18 +114,15 @@ void test_characters ()
 
 void test_width_and_precision_out_of_range (char *d)
 {
-#if __LONG_MAX__ == 2147483647
-#  define   MAX_P1_STR "2147483648"
-#elif __LONG_MAX__ == 9223372036854775807
-#  define MAX_P1_STR "9223372036854775808"
-#endif
-
-  T ("%" MAX_P1_STR "i", 0);    /* { dg-warning "width out of range" } */
-  /* { dg-warning "result to exceed .INT_MAX. " "" { target *-*-* } .-1 } */
-  T ("%." MAX_P1_STR "i", 0);   /* { dg-warning "precision out of range" } */
+  /* The range here happens to be a property of the compiler, not
+     one of the target.  */
+  T ("%9223372036854775808i", 0);    /* { dg-warning "width out of range" } */
+  /* { dg-warning "result to exceed .INT_MAX." "" { target *-*-* } .-1 } */
+  T ("%.9223372036854775808i", 0);   /* { dg-warning "precision out of range" } */
+  /* { dg-warning "causes result to exceed .INT_MAX." "" { target *-*-* } .-1 } */
 
   /* The following is diagnosed by -Wformat (disabled here).  */
-  /* T ("%" MAX_P1_STR "$i", 0); */
+  /* T ("%9223372036854775808$i", 0); */
 }
 
 /* Verify that an excessively long directive is truncated and the truncation

@@ -1390,6 +1390,7 @@ format_integer (const directive &dir, tree arg)
 	    res.range.max = tree_digits (arg, base, dir.prec[1],
 					 maybesign, maybebase);
 	  res.range.likely = res.range.min;
+	  res.knownrange = true;
 	}
 
       res.range.unlikely = res.range.max;
