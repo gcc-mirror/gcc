@@ -6945,7 +6945,9 @@ decl_debug_args_insert (tree from)
 /* Hashing of types so that we don't make duplicates.
    The entry point is `type_hash_canon'.  */
 
-// FIME:
+/* Generate the default hash code for TYPE.  This is designed for
+   speed, rather than completeness.  */
+
 hashval_t
 type_hash_default (tree type)
 {
@@ -6979,8 +6981,11 @@ type_hash_default (tree type)
       {
 	if (TYPE_DOMAIN (type))
 	  hstate.add_object (TYPE_HASH (TYPE_DOMAIN (type)));
-	unsigned typeless = TYPE_TYPELESS_STORAGE (type);
-	hstate.add_object (typeless);
+	if (!AGGREGATE_TYPE_P (TREE_TYPE (type)))
+	  {
+	    unsigned typeless = TYPE_TYPELESS_STORAGE (type);
+	    hstate.add_object (typeless);
+	  }
       }
       break;
 

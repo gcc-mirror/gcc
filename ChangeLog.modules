@@ -1,5 +1,8 @@
 2017-05-01  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* tree.c (type_hash_default): Adjust ARRAY_TYPE hash.
+
 	Import timestamp & crc
 	gcc/cp
 	* module.c (module_state): Add crc & stamp.
