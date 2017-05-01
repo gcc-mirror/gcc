@@ -223,6 +223,34 @@ dlang_number (const char *mangled, long *ret)
   return mangled;
 }
 
+/* Extract the hex-digit from MANGLED, and assign the result to RET.
+   Return the remaining string on success or NULL on failure.  */
+static const char *
+dlang_hexdigit (const char *mangled, char *ret)
+{
+  char c;
+
+  /* Return NULL if trying to extract something that isn't a hexdigit.  */
+  if (mangled == NULL || !ISXDIGIT (mangled[0]) || !ISXDIGIT (mangled[1]))
+    return NULL;
+
+  c = mangled[0];
+  if (!ISDIGIT (c))
+    (*ret) = (c - (ISUPPER (c) ? 'A' : 'a') + 10);
+  else
+    (*ret) = (c - '0');
+
+  c = mangled[1];
+  if (!ISDIGIT (c))
+    (*ret) = (*ret << 4) | (c - (ISUPPER (c) ? 'A' : 'a') + 10);
+  else
+    (*ret) = (*ret << 4) | (c - '0');
+
+  mangled += 2;
+
+  return mangled;
+}
+
 /* Demangle the calling convention from MANGLED and append it to DECL.
    Return the remaining string on success or NULL on failure.  */
 static const char *
@@ -1070,22 +1098,6 @@ dlang_parse_real (string *decl, const char *mangled)
   return mangled;
 }
 
-/* Convert VAL from an ascii hexdigit to value.  */
-static char
-ascii2hex (char val)
-{
-  if (val >= 'a' && val <= 'f')
-    return (val - 'a' + 10);
-
-  if (val >= 'A' && val <= 'F')
-    return (val - 'A' + 10);
-
-  if (val >= '0' && val <= '9')
-    return (val - '0');
-
-  return 0;
-}
-
 /* Extract the string value from MANGLED and append it to DECL.
    Return the remaining string on success or NULL on failure.  */
 static const char *
@@ -1103,48 +1115,45 @@ dlang_parse_string (string *decl, const char *mangled)
   string_append (decl, "\"");
   while (len--)
     {
-      if (ISXDIGIT (mangled[0]) && ISXDIGIT (mangled[1]))
-	{
-	  char a = ascii2hex (mangled[0]);
-	  char b = ascii2hex (mangled[1]);
-	  char val = (a << 4) | b;
+      char val;
+      const char *endptr = dlang_hexdigit (mangled, &val);
 
-	  /* Sanitize white and non-printable characters.  */
-	  switch (val)
-	    {
-	    case ' ':
-	      string_append (decl, " ");
-	      break;
-	    case '\t':
-	      string_append (decl, "\\t");
-	      break;
-	    case '\n':
-	      string_append (decl, "\\n");
-	      break;
-	    case '\r':
-	      string_append (decl, "\\r");
-	      break;
-	    case '\f':
-	      string_append (decl, "\\f");
-	      break;
-	    case '\v':
-	      string_append (decl, "\\v");
-	      break;
-
-	    default:
-	      if (ISPRINT (val))
-		string_appendn (decl, &val, 1);
-	      else
-		{
-		  string_append (decl, "\\x");
-		  string_appendn (decl, mangled, 2);
-		}
-	    }
-	}
-      else
+      if (endptr == NULL)
 	return NULL;
 
-      mangled += 2;
+      /* Sanitize white and non-printable characters.  */
+      switch (val)
+	{
+	case ' ':
+	  string_append (decl, " ");
+	  break;
+	case '\t':
+	  string_append (decl, "\\t");
+	  break;
+	case '\n':
+	  string_append (decl, "\\n");
+	  break;
+	case '\r':
+	  string_append (decl, "\\r");
+	  break;
+	case '\f':
+	  string_append (decl, "\\f");
+	  break;
+	case '\v':
+	  string_append (decl, "\\v");
+	  break;
+
+	default:
+	  if (ISPRINT (val))
+	    string_appendn (decl, &val, 1);
+	  else
+	    {
+	      string_append (decl, "\\x");
+	      string_appendn (decl, mangled, 2);
+	    }
+	}
+
+      mangled = endptr;
     }
   string_append (decl, "\"");
 

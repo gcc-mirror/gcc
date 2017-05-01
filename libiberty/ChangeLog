@@ -1,5 +1,12 @@
 2017-05-02  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* d-demangle.c (dlang_hexdigit): New function.
+	(ascii2hex): Remove function.
+	(dlang_parse_string): Update to call dlang_hexdigit.
+	* testsuite/d-demangle-expected: Add tests.
+
+2017-05-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	* d-demangle.c (strtol): Remove declaration.
 	Updated all callers to use dlang_number.
 	(dlang_number): New function.
