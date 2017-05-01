@@ -7956,6 +7956,10 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
      different kinds of fields and issue a warning if some of them would be
      (or are being) reordered by the reordering mechanism.
 
+     Finally, pull out the fields whose size is not a multiple of a byte, so
+     that they don't cause the regular fields to be misaligned.  As this can
+     only happen in packed record types, the alignment is capped to the byte.
+
      ??? If we reorder them, debugging information will be wrong but there is
      nothing that can be done about this at the moment.  */
   const bool do_reorder = OK_To_Reorder_Components (gnat_record_type);
@@ -8155,8 +8159,15 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 			     in_variant, do_reorder);
   if (do_reorder)
     {
+      /* If we have pending bit-packed fields on the temporary list, we put
+	 them either on the bit-packed list or back on the regular list.  */
       if (gnu_tmp_bitp_list)
-	gnu_bitp_list = chainon (gnu_tmp_bitp_list, gnu_bitp_list);
+	{
+	  if (tmp_bitp_size != 0)
+	    gnu_bitp_list = chainon (gnu_tmp_bitp_list, gnu_bitp_list);
+	  else
+	    gnu_field_list = chainon (gnu_tmp_bitp_list, gnu_field_list);
+	}
 
       gnu_field_list
 	= chainon (gnu_field_list,
