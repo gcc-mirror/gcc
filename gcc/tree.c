@@ -6946,7 +6946,7 @@ decl_debug_args_insert (tree from)
    The entry point is `type_hash_canon'.  */
 
 /* Generate the default hash code for TYPE.  This is designed for
-   speed, rather than completeness.  */
+   speed, rather than maximum entropy.  */
 
 hashval_t
 type_hash_default (tree type)
