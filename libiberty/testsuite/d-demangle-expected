@@ -650,6 +650,10 @@ _D8demangle9__T4testZv
 demangle.test!()
 #
 --format=dlang
+_D8demangle9__U4testZv
+demangle.test!()
+#
+--format=dlang
 _D8demangle11__T4testTaZv
 demangle.test!(char)
 #
