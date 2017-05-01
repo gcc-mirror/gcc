@@ -1,3 +1,10 @@
+2017-05-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/68491
+	* config/i386/cpuid.h (__get_cpuid): Always return 0 when
+	__get_cpuid_max returns 0.
+	(__get_cpuid_count): Ditto.
+
 2017-05-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (substitute_in_expr) <tcc_vl_exp>: Also inline a call if the
@@ -79,7 +86,7 @@
 	(init_target_to_host_charmap, target_to_host, target_strtol10): New
 	functions.
 	(maybe_warn, format_directive, parse_directive): Use new functions.
-	(pass_sprintf_length::execute): Call init_target_to_host_charmap.	
+	(pass_sprintf_length::execute): Call init_target_to_host_charmap.
 
 2017-04-28  Marc Glisse  <marc.glisse@inria.fr>
 
@@ -106,7 +113,7 @@
 	* ipa-inline-analysis.c (estimate_node_size_and_time,
 	estimate_ipcp_clone_size_and_time, do_estimate_edge_time): Likewise.
 	(estimate_time_after_inlining): Remove.
-	
+
 2017-04-28  Martin Liska  <mliska@suse.cz>
 
 	* doc/gcov.texi: Enhance documentation of gcov.
