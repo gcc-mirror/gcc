@@ -29243,7 +29243,26 @@ ix86_agi_dependent (rtx_insn *set_insn, rtx_insn *use_insn)
     if (MEM_P (recog_data.operand[i]))
       {
 	rtx addr = XEXP (recog_data.operand[i], 0);
-	return modified_in_p (addr, set_insn) != 0;
+	if (modified_in_p (addr, set_insn) != 0)
+	  {
+	    /* No AGI stall if SET_INSN is a push or pop and USE_INSN
+	       has SP based memory (unless index reg is modified in a pop).  */
+	    rtx set = single_set (set_insn);
+	    if (set
+		&& (push_operand (SET_DEST (set), GET_MODE (SET_DEST (set)))
+		    || pop_operand (SET_SRC (set), GET_MODE (SET_SRC (set)))))
+	      {
+		struct ix86_address parts;
+		if (ix86_decompose_address (addr, &parts)
+		    && parts.base == stack_pointer_rtx
+		    && (parts.index == NULL_RTX
+			|| MEM_P (SET_DEST (set))
+			|| !modified_in_p (parts.index, set_insn)))
+		  return false;
+	      }
+	    return true;
+	  }
+	return false;
       }
   return false;
 }
