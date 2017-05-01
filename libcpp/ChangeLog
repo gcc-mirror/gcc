@@ -1,3 +1,35 @@
+2017-05-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (source_range::intersects_line_p): Delete.
+	(rich_location::add_fixit): Delete.
+	(rich_location::maybe_add_fixit): New method.
+	(class fixit_hint): Reimplement in terms of...
+	(class fixit_replace): ...this.
+	(class fixit_insert): Delete.
+	* line-map.c (linemap_position_for_loc_and_offset): Drop overzealous
+	linemap_assert_fails.
+	(source_range::intersects_line_p): Rename to...
+	(fixit_hint::affects_line_p): New function.
+	(rich_location::add_fixit_insert_before): Reimplement in terms of
+	maybe_add_fixit, moving validation there.
+	(rich_location::add_fixit_insert_after): Likewise.
+	(column_before_p): Delete.
+	(rich_location::add_fixit_replace): Reimplement in terms of
+	maybe_add_fixit, moving validation there.  Convert closed input range
+	to half-open range.
+	(rich_location::add_fixit): Delete.
+	(rich_location::maybe_add_fixit): New function.
+	(fixit_insert::fixit_insert): Delete.
+	(fixit_insert::~fixit_insert): Delete.
+	(fixit_insert::affects_line_p): Delete.
+	(fixit_insert::maybe_append_replace): Delete.
+	(fixit_replace::fixit_replace): Rename to...
+	(fixit_hint::fixit_hint): ...this, rewriting as necessary.
+	(fixit_replace::~fixit_replace): Delete.
+	(fixit_replace::affects_line_p): Delete.
+	(fixit_replace::maybe_append_replace): Rename to...
+	(fixit_hint::maybe_append): ...this, rewriting as necessary.
+
 2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/line-map.h (LINEMAPS_MACRO_MAPS): Fix typo in comment.

@@ -941,32 +941,10 @@ layout::get_expanded_location (const line_span *line_span) const
 bool
 layout::validate_fixit_hint_p (const fixit_hint *hint)
 {
-  switch (hint->get_kind ())
-    {
-    case fixit_hint::INSERT:
-      {
-	const fixit_insert *insert = static_cast <const fixit_insert *> (hint);
-	location_t loc = insert->get_location ();
-	if (LOCATION_FILE (loc) != m_exploc.file)
-	  return false;
-      }
-      break;
-
-    case fixit_hint::REPLACE:
-      {
-	const fixit_replace *replace
-	  = static_cast <const fixit_replace *> (hint);
-	source_range src_range = replace->get_range ();
-	if (LOCATION_FILE (src_range.m_start) != m_exploc.file)
-	  return false;
-	if (LOCATION_FILE (src_range.m_finish) != m_exploc.file)
-	  return false;
-      }
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
+  if (LOCATION_FILE (hint->get_start_loc ()) != m_exploc.file)
+    return false;
+  if (LOCATION_FILE (hint->get_next_loc ()) != m_exploc.file)
+    return false;
 
   return true;
 }
@@ -979,30 +957,8 @@ static line_span
 get_line_span_for_fixit_hint (const fixit_hint *hint)
 {
   gcc_assert (hint);
-  switch (hint->get_kind ())
-    {
-    case fixit_hint::INSERT:
-      {
-	const fixit_insert *insert = static_cast <const fixit_insert *> (hint);
-	location_t loc = insert->get_location ();
-	int line = LOCATION_LINE (loc);
-	return line_span (line, line);
-      }
-      break;
-
-    case fixit_hint::REPLACE:
-      {
-	const fixit_replace *replace
-	  = static_cast <const fixit_replace *> (hint);
-	source_range src_range = replace->get_range ();
-	return line_span (LOCATION_LINE (src_range.m_start),
-			  LOCATION_LINE (src_range.m_finish));
-      }
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
+  return line_span (LOCATION_LINE (hint->get_start_loc ()),
+		    LOCATION_LINE (hint->get_next_loc ()));
 }
 
 /* We want to print the pertinent source code at a diagnostic.  The
@@ -1264,62 +1220,47 @@ layout::print_any_fixits (int row)
       if (hint->affects_line_p (m_exploc.file, row))
 	{
 	  /* For now we assume each fixit hint can only touch one line.  */
-	  switch (hint->get_kind ())
+	  if (hint->insertion_p ())
 	    {
-	    case fixit_hint::INSERT:
-	      {
-		const fixit_insert *insert
-		  = static_cast <const fixit_insert *> (hint);
-		/* This assumes the insertion just affects one line.  */
-		int start_column
-		  = LOCATION_COLUMN (insert->get_location ());
-		move_to_column (&column, start_column);
-		m_colorizer.set_fixit_insert ();
-		pp_string (m_pp, insert->get_string ());
-		m_colorizer.set_normal_text ();
-		column += insert->get_length ();
-	      }
-	      break;
+	      /* This assumes the insertion just affects one line.  */
+	      int start_column = LOCATION_COLUMN (hint->get_start_loc ());
+	      move_to_column (&column, start_column);
+	      m_colorizer.set_fixit_insert ();
+	      pp_string (m_pp, hint->get_string ());
+	      m_colorizer.set_normal_text ();
+	      column += hint->get_length ();
+	    }
+	  else
+	    {
+	      int line = LOCATION_LINE (hint->get_start_loc ());
+	      int start_column = LOCATION_COLUMN (hint->get_start_loc ());
+	      int finish_column = LOCATION_COLUMN (hint->get_next_loc ()) - 1;
 
-	    case fixit_hint::REPLACE:
-	      {
-		const fixit_replace *replace
-		  = static_cast <const fixit_replace *> (hint);
-		source_range src_range = replace->get_range ();
-		int line = LOCATION_LINE (src_range.m_start);
-		int start_column = LOCATION_COLUMN (src_range.m_start);
-		int finish_column = LOCATION_COLUMN (src_range.m_finish);
-
-		/* If the range of the replacement wasn't printed in the
-		   annotation line, then print an extra underline to
-		   indicate exactly what is being replaced.
-		   Always show it for removals.  */
-		if (!annotation_line_showed_range_p (line, start_column,
-						     finish_column)
-		    || replace->get_length () == 0)
-		  {
-		    move_to_column (&column, start_column);
-		    m_colorizer.set_fixit_delete ();
-		    for (; column <= finish_column; column++)
-		      pp_character (m_pp, '-');
-		    m_colorizer.set_normal_text ();
-		  }
-		/* Print the replacement text.  REPLACE also covers
-		   removals, so only do this extra work (potentially starting
-		   a new line) if we have actual replacement text.  */
-		if (replace->get_length () > 0)
-		  {
-		    move_to_column (&column, start_column);
-		    m_colorizer.set_fixit_insert ();
-		    pp_string (m_pp, replace->get_string ());
-		    m_colorizer.set_normal_text ();
-		    column += replace->get_length ();
-		  }
-	      }
-	      break;
-
-	    default:
-	      gcc_unreachable ();
+	      /* If the range of the replacement wasn't printed in the
+		 annotation line, then print an extra underline to
+		 indicate exactly what is being replaced.
+		 Always show it for removals.  */
+	      if (!annotation_line_showed_range_p (line, start_column,
+						   finish_column)
+		  || hint->get_length () == 0)
+		{
+		  move_to_column (&column, start_column);
+		  m_colorizer.set_fixit_delete ();
+		  for (; column <= finish_column; column++)
+		    pp_character (m_pp, '-');
+		  m_colorizer.set_normal_text ();
+		}
+	      /* Print the replacement text.  REPLACE also covers
+		 removals, so only do this extra work (potentially starting
+		 a new line) if we have actual replacement text.  */
+	      if (hint->get_length () > 0)
+		{
+		  move_to_column (&column, start_column);
+		  m_colorizer.set_fixit_insert ();
+		  pp_string (m_pp, hint->get_string ());
+		  m_colorizer.set_normal_text ();
+		  column += hint->get_length ();
+		}
 	    }
 	}
     }
@@ -1852,41 +1793,45 @@ test_one_liner_fixit_validation_adhoc_locations ()
   }
 }
 
-/* Ensure that we can add an arbitrary number of fix-it hints to a
-   rich_location.  */
+/* Test of consolidating insertions at the same location.  */
 
 static void
-test_one_liner_many_fixits ()
+test_one_liner_many_fixits_1 ()
 {
   test_diagnostic_context dc;
   location_t equals = linemap_position_for_column (line_table, 5);
   rich_location richloc (line_table, equals);
   for (int i = 0; i < 19; i++)
     richloc.add_fixit_insert_before ("a");
+  ASSERT_EQ (1, richloc.get_num_fixit_hints ());
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  ASSERT_STREQ ("\n"
+		" foo = bar.field;\n"
+		"     ^\n"
+		"     aaaaaaaaaaaaaaaaaaa\n",
+		pp_formatted_text (dc.printer));
+}
+
+/* Ensure that we can add an arbitrary number of fix-it hints to a
+   rich_location, even if they are not consolidated.  */
+
+static void
+test_one_liner_many_fixits_2 ()
+{
+  test_diagnostic_context dc;
+  location_t equals = linemap_position_for_column (line_table, 5);
+  rich_location richloc (line_table, equals);
+  for (int i = 0; i < 19; i++)
+    {
+      location_t loc = linemap_position_for_column (line_table, i * 2);
+      richloc.add_fixit_insert_before (loc, "a");
+    }
   ASSERT_EQ (19, richloc.get_num_fixit_hints ());
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ ("\n"
 		" foo = bar.field;\n"
 		"     ^\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n"
-		"     a\n",
+		"a a a a a a a a a a a a a a a a a a a\n",
 		pp_formatted_text (dc.printer));
 }
 
@@ -1924,7 +1869,8 @@ test_diagnostic_show_locus_one_liner (const line_table_case &case_)
   test_one_liner_fixit_replace_non_equal_range ();
   test_one_liner_fixit_replace_equal_secondary_range ();
   test_one_liner_fixit_validation_adhoc_locations ();
-  test_one_liner_many_fixits ();
+  test_one_liner_many_fixits_1 ();
+  test_one_liner_many_fixits_2 ();
 }
 
 /* Verify that we print fixits even if they only affect lines
@@ -2027,6 +1973,7 @@ test_fixit_consolidation (const line_table_case &case_)
   const location_t c16 = linemap_position_for_column (line_table, 16);
   const location_t c17 = linemap_position_for_column (line_table, 17);
   const location_t c20 = linemap_position_for_column (line_table, 20);
+  const location_t c21 = linemap_position_for_column (line_table, 21);
   const location_t caret = c10;
 
   /* Insert + insert. */
@@ -2105,11 +2052,9 @@ test_fixit_consolidation (const line_table_case &case_)
 	/* They should have been merged into a single "replace".  */
 	ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 	const fixit_hint *hint = richloc.get_fixit_hint (0);
-	ASSERT_EQ (fixit_hint::REPLACE, hint->get_kind ());
-	const fixit_replace *replace = (const fixit_replace *)hint;
-	ASSERT_STREQ ("foobar", replace->get_string ());
-	ASSERT_EQ (c10, replace->get_range ().m_start);
-	ASSERT_EQ (c20, replace->get_range ().m_finish);
+	ASSERT_STREQ ("foobar", hint->get_string ());
+	ASSERT_EQ (c10, hint->get_start_loc ());
+	ASSERT_EQ (c21, hint->get_next_loc ());
       }
   }
 
@@ -2129,11 +2074,9 @@ test_fixit_consolidation (const line_table_case &case_)
 	   range extended to cover that of the removal.  */
 	ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 	const fixit_hint *hint = richloc.get_fixit_hint (0);
-	ASSERT_EQ (fixit_hint::REPLACE, hint->get_kind ());
-	const fixit_replace *replace = (const fixit_replace *)hint;
-	ASSERT_STREQ ("foo", replace->get_string ());
-	ASSERT_EQ (c10, replace->get_range ().m_start);
-	ASSERT_EQ (c20, replace->get_range ().m_finish);
+	ASSERT_STREQ ("foo", hint->get_string ());
+	ASSERT_EQ (c10, hint->get_start_loc ());
+	ASSERT_EQ (c21, hint->get_next_loc ());
       }
   }
 
@@ -2151,11 +2094,9 @@ test_fixit_consolidation (const line_table_case &case_)
 	/* They should have been merged into a single "replace-with-empty".  */
 	ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 	const fixit_hint *hint = richloc.get_fixit_hint (0);
-	ASSERT_EQ (fixit_hint::REPLACE, hint->get_kind ());
-	const fixit_replace *replace = (const fixit_replace *)hint;
-	ASSERT_STREQ ("", replace->get_string ());
-	ASSERT_EQ (c10, replace->get_range ().m_start);
-	ASSERT_EQ (c20, replace->get_range ().m_finish);
+	ASSERT_STREQ ("", hint->get_string ());
+	ASSERT_EQ (c10, hint->get_start_loc ());
+	ASSERT_EQ (c21, hint->get_next_loc ());
       }
   }
 }

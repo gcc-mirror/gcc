@@ -757,43 +757,13 @@ print_parseable_fixits (pretty_printer *pp, rich_location *richloc)
       expanded_location start_exploc = expand_location (start_loc);
       pp_string (pp, "fix-it:");
       print_escaped_string (pp, start_exploc.file);
-      source_location end_loc;
-
       /* For compatibility with clang, print as a half-open range.  */
-      if (hint->maybe_get_end_loc (&end_loc))
-	{
-	  expanded_location end_exploc = expand_location (end_loc);
-	  pp_printf (pp, ":{%i:%i-%i:%i}:",
-		     start_exploc.line, start_exploc.column,
-		     end_exploc.line, end_exploc.column + 1);
-	}
-      else
-	{
-	  pp_printf (pp, ":{%i:%i-%i:%i}:",
-		     start_exploc.line, start_exploc.column,
-		     start_exploc.line, start_exploc.column);
-	}
-      switch (hint->get_kind ())
-	{
-	  case fixit_hint::INSERT:
-	    {
-	      const fixit_insert *insert
-		= static_cast <const fixit_insert *> (hint);
-	      print_escaped_string (pp, insert->get_string ());
-	    }
-	    break;
-
-	  case fixit_hint::REPLACE:
-	    {
-	      const fixit_replace *replace
-		= static_cast <const fixit_replace *> (hint);
-	      print_escaped_string (pp, replace->get_string ());
-	    }
-	    break;
-
-	  default:
-	    gcc_unreachable ();
-	}
+      source_location next_loc = hint->get_next_loc ();
+      expanded_location next_exploc = expand_location (next_loc);
+      pp_printf (pp, ":{%i:%i-%i:%i}:",
+		 start_exploc.line, start_exploc.column,
+		 next_exploc.line, next_exploc.column);
+      print_escaped_string (pp, hint->get_string ());
       pp_newline (pp);
     }
 }

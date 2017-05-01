@@ -1,3 +1,42 @@
+2017-05-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (layout::get_expanded_location): Rewrite
+	to use new fixit_hint representation, using the "replace" logic.
+	(get_line_span_for_fixit_hint): Likewise.
+	(layout::print_any_fixits): Likewise.
+	(selftest::test_one_liner_many_fixits): Rename to...
+	(selftest::test_one_liner_many_fixits_1): ...this, and update
+	comment and expected output to reflect that the multiple fix-it
+	hints are now consolidated into one insertion.
+	(selftest::test_one_liner_many_fixits_2): New test.
+	(selftest::test_diagnostic_show_locus_one_liner): Update for
+	above.
+	(selftest::test_fixit_consolidation): Update for fix-it API
+	change.
+	* diagnostic.c (print_parseable_fixits): Likewise.
+	* edit-context.c (edited_line::m_line_events): Convert from
+	auto_vec <line_event *> to auto_vec <line_event>.
+	(class line_event): Convert from abstract base class to a concrete
+	class, taking over the role of replace_event.
+	(class insert_event): Delete.
+	(class replace_event): Rename to class line_event.  Convert to
+	half-open range.
+	(edit_context::add_fixits): Reimplement.
+	(edit_context::apply_insert): Delete.
+	(edit_context::apply_replace): Rename to...
+	(edit_context::apply_fixit): ...this.  Convert to half-open range.
+	(edited_file::apply_insert): Delete.
+	(edited_file::apply_replace): Rename to...
+	(edited_file::apply_fixit): ...this.
+	(edited_line::~edited_line): Drop deletion of events.
+	(edited_line::apply_insert): Delete.
+	(edited_line::apply_replace): Rename to...
+	(edited_line::apply_fixit): ...this.  Convert to half-open range.
+	Update for change to type of m_line_events.
+	* edit-context.h (edit_context::apply_insert): Delete.
+	(edit_context::apply_replace): Rename to...
+	(edit_context::apply_fixit): ...this.
+
 2017-05-01  Martin Sebor  <msebor@redhat.com>
 
 	* gimple-ssa-sprintf.c (format_integer): Set knownrange when it's
