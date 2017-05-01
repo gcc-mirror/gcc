@@ -1,3 +1,17 @@
+2017-05-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_parse_symbol): Remove function.
+	(dlang_parse_qualified): New function.
+	(dlang_parse_mangle): New function.
+	(dlang_type): Update to call dlang_parse_qualified.
+	(dlang_identifier): Update to call either dlang_parse_qualified or
+	dlang_parse_mangle.
+	(dlang_type_modifier_p): Remove function.
+	(dlang_call_convention_p): Don't allow type modifiers in mangle.
+	(dlang_template_args): Update to call dlang_identifier.
+	(dlang_demangle): Update to call dlang_parse_mangle.
+	* testsuite/d-demangle-expected: Add tests.
+
 2017-05-01  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-demangle.c (dlang_value): Add comment explaining why cases for
