@@ -45,8 +45,6 @@ class edit_context;
 class edited_file;
 class edited_line;
 class line_event;
-  class insert_event;
-  class replace_event;
 
 /* A struct to hold the params of a print_diff call.  */
 
@@ -71,11 +69,10 @@ class edited_file
   const char *get_filename () const { return m_filename; }
   char *get_content ();
 
-  bool apply_insert (int line, int column, const char *str, int len);
-  bool apply_replace (int line, int start_column,
-		      int finish_column,
-		      const char *replacement_str,
-		      int replacement_len);
+  bool apply_fixit (int line, int start_column,
+		    int next_column,
+		    const char *replacement_str,
+		    int replacement_len);
   int get_effective_column (int line, int column);
 
   static int call_print_diff (const char *, edited_file *file,
@@ -119,11 +116,10 @@ class edited_line
   int get_len () const { return m_len; }
 
   int get_effective_column (int orig_column) const;
-  bool apply_insert (int column, const char *str, int len);
-  bool apply_replace (int start_column,
-		      int finish_column,
-		      const char *replacement_str,
-		      int replacement_len);
+  bool apply_fixit (int start_column,
+		    int next_column,
+		    const char *replacement_str,
+		    int replacement_len);
 
  private:
   void ensure_capacity (int len);
@@ -134,55 +130,23 @@ class edited_line
   char *m_content;
   int m_len;
   int m_alloc_sz;
-  auto_vec <line_event *> m_line_events;
+  auto_vec <line_event> m_line_events;
 };
 
-/* Abstract base class for representing events that have occurred
-   on one line of one file.  */
+/* Class for representing edit events that have occurred on one line of
+   one file: the replacement of some text betweeen some columns
+   on the line.
+
+   Subsequent events will need their columns adjusting if they're
+   are on this line and their column is >= the start point.  */
 
 class line_event
 {
  public:
-  virtual ~line_event () {}
-  virtual int get_effective_column (int orig_column) const = 0;
-};
+  line_event (int start, int next, int len) : m_start (start),
+    m_next (next), m_delta (len - (next - start)) {}
 
-/* Concrete subclass of line_event: an insertion of some text
-   at some column on the line.
-
-   Subsequent events will need their columns adjusting if they're
-   are on this line and their column is >= the insertion point.  */
-
-class insert_event : public line_event
-{
- public:
-  insert_event (int column, int len) : m_column (column), m_len (len) {}
-  int get_effective_column (int orig_column) const FINAL OVERRIDE
-  {
-    if (orig_column >= m_column)
-      return orig_column + m_len;
-    else
-      return orig_column;
-  }
-
- private:
-  int m_column;
-  int m_len;
-};
-
-/* Concrete subclass of line_event: the replacement of some text
-   betweeen some columns on the line.
-
-   Subsequent events will need their columns adjusting if they're
-   are on this line and their column is >= the finish point.  */
-
-class replace_event : public line_event
-{
- public:
-  replace_event (int start, int finish, int len) : m_start (start),
-    m_finish (finish), m_delta (len - (finish + 1 - start)) {}
-
-  int get_effective_column (int orig_column) const FINAL OVERRIDE
+  int get_effective_column (int orig_column) const
   {
     if (orig_column >= m_start)
       return orig_column += m_delta;
@@ -192,7 +156,7 @@ class replace_event : public line_event
 
  private:
   int m_start;
-  int m_finish;
+  int m_next;
   int m_delta;
 };
 
@@ -221,27 +185,8 @@ edit_context::add_fixits (rich_location *richloc)
   for (unsigned i = 0; i < richloc->get_num_fixit_hints (); i++)
     {
       const fixit_hint *hint = richloc->get_fixit_hint (i);
-      switch (hint->get_kind ())
-	{
-	case fixit_hint::INSERT:
-	  if (!apply_insert ((const fixit_insert *)hint))
-	    {
-	      /* Failure.  */
-	      m_valid = false;
-	      return;
-	    }
-	  break;
-	case fixit_hint::REPLACE:
-	  if (!apply_replace ((const fixit_replace *)hint))
-	    {
-	      /* Failure.  */
-	      m_valid = false;
-	      return;
-	    }
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
+      if (!apply_fixit (hint))
+	m_valid = false;
     }
 }
 
@@ -302,45 +247,25 @@ edit_context::print_diff (pretty_printer *pp, bool show_filenames)
    applied, or false otherwise.  */
 
 bool
-edit_context::apply_insert (const fixit_insert *insert)
+edit_context::apply_fixit (const fixit_hint *hint)
 {
-  expanded_location exploc = expand_location (insert->get_location ());
-
-  if (exploc.column == 0)
+  expanded_location start = expand_location (hint->get_start_loc ());
+  expanded_location next_loc = expand_location (hint->get_next_loc ());
+  if (start.file != next_loc.file)
     return false;
-
-  edited_file &file = get_or_insert_file (exploc.file);
-  if (!m_valid)
-    return false;
-  return file.apply_insert (exploc.line, exploc.column, insert->get_string (),
-			    insert->get_length ());
-}
-
-/* Attempt to apply the given fixit.  Return true if it can be
-   applied, or false otherwise.  */
-
-bool
-edit_context::apply_replace (const fixit_replace *replace)
-{
-  source_range range = replace->get_range ();
-
-  expanded_location start = expand_location (range.m_start);
-  expanded_location finish = expand_location (range.m_finish);
-  if (start.file != finish.file)
-    return false;
-  if (start.line != finish.line)
+  if (start.line != next_loc.line)
     return false;
   if (start.column == 0)
     return false;
-  if (finish.column == 0)
+  if (next_loc.column == 0)
     return false;
 
   edited_file &file = get_or_insert_file (start.file);
   if (!m_valid)
     return false;
-  return file.apply_replace (start.line, start.column, finish.column,
-			     replace->get_string (),
-			     replace->get_length ());
+  return file.apply_fixit (start.line, start.column, next_loc.column,
+			   hint->get_string (),
+			   hint->get_length ());
 }
 
 /* Locate the edited_file * for FILENAME, if any
@@ -409,37 +334,21 @@ edited_file::get_content ()
   return xstrdup (pp_formatted_text (&pp));
 }
 
-/* Attempt to insert the string INSERT_STR with length INSERT_LEN
-   at LINE and COLUMN, updating the in-memory copy of the line, and
-   the record of edits to the line.  */
-
-bool
-edited_file::apply_insert (int line, int column,
-			   const char *insert_str,
-			   int insert_len)
-{
-  edited_line *el = get_or_insert_line (line);
-  if (!el)
-    return false;
-  return el->apply_insert (column, insert_str, insert_len);
-}
-
-/* Attempt to replace columns START_COLUMN through FINISH_COLUMN of LINE
-   with the string REPLACEMENT_STR of length REPLACEMENT_LEN,
+/* Attempt to replace columns START_COLUMN up to but not including NEXT_COLUMN
+   of LINE with the string REPLACEMENT_STR of length REPLACEMENT_LEN,
    updating the in-memory copy of the line, and the record of edits to
    the line.  */
 
 bool
-edited_file::apply_replace (int line, int start_column,
-			    int finish_column,
-			    const char *replacement_str,
-			    int replacement_len)
+edited_file::apply_fixit (int line, int start_column, int next_column,
+			  const char *replacement_str,
+			  int replacement_len)
 {
   edited_line *el = get_or_insert_line (line);
   if (!el)
     return false;
-  return el->apply_replace (start_column, finish_column, replacement_str,
-			    replacement_len);
+  return el->apply_fixit (start_column, next_column, replacement_str,
+			  replacement_len);
 }
 
 /* Given line LINE, map from COLUMN in the input file to its current
@@ -698,11 +607,6 @@ edited_line::edited_line (const char *filename, int line_num)
 edited_line::~edited_line ()
 {
   free (m_content);
-
-  int i;
-  line_event *event;
-  FOR_EACH_VEC_ELT (m_line_events, i, event)
-    delete event;
 }
 
 /* A callback for deleting edited_line *, for use as a
@@ -727,85 +631,41 @@ edited_line::get_effective_column (int orig_column) const
   return orig_column;
 }
 
-/* Attempt to insert the string INSERT_STR with length INSERT_LEN at COLUMN
-   of this line, updating the in-memory copy of the line, and the record
-   of edits to it.
+/* Attempt to replace columns START_COLUMN up to but not including
+   NEXT_COLUMN of the line with the string REPLACEMENT_STR of
+   length REPLACEMENT_LEN, updating the in-memory copy of the line,
+   and the record of edits to the line.
    Return true if successful; false if an error occurred.  */
 
 bool
-edited_line::apply_insert (int column, const char *insert_str,
-			   int insert_len)
-{
-  column = get_effective_column (column);
-
-  int start_offset = column - 1;
-  gcc_assert (start_offset >= 0);
-  if (start_offset > m_len)
-    return false;
-
-  /* Ensure buffer is big enough.  */
-  size_t new_len = m_len + insert_len;
-  ensure_capacity (new_len);
-
-  char *suffix = m_content + start_offset;
-  gcc_assert (suffix <= m_content + m_len);
-  size_t len_suffix = (m_content + m_len) - suffix;
-
-  /* Move successor content into position.  They overlap, so use memmove.  */
-  memmove (m_content + start_offset + insert_len,
-	   suffix, len_suffix);
-
-  /* Replace target content.  They don't overlap, so use memcpy.  */
-  memcpy (m_content + start_offset,
-	  insert_str,
-	  insert_len);
-
-  m_len = new_len;
-
-  ensure_terminated ();
-
-  /* Record the insertion, so that future changes to the line can have
-     their column information adjusted accordingly.  */
-  m_line_events.safe_push (new insert_event (column, insert_len));
-
-  return true;
-}
-
-/* Attempt to replace columns START_COLUMN through FINISH_COLUMN of the line
-   with the string REPLACEMENT_STR of length REPLACEMENT_LEN,
-   updating the in-memory copy of the line, and the record of edits to
-   the line.
-   Return true if successful; false if an error occurred.  */
-
-bool
-edited_line::apply_replace (int start_column,
-			    int finish_column,
-			    const char *replacement_str,
-			    int replacement_len)
+edited_line::apply_fixit (int start_column,
+			  int next_column,
+			  const char *replacement_str,
+			  int replacement_len)
 {
   start_column = get_effective_column (start_column);
-  finish_column = get_effective_column (finish_column);
+  next_column = get_effective_column (next_column);
 
   int start_offset = start_column - 1;
-  int end_offset = finish_column - 1;
+  int next_offset = next_column - 1;
 
   gcc_assert (start_offset >= 0);
-  gcc_assert (end_offset >= 0);
+  gcc_assert (next_offset >= 0);
 
-  if (start_column > finish_column)
+  if (start_column > next_column)
     return false;
-  if (start_offset >= m_len)
+  if (start_offset >= (m_len + 1))
     return false;
-  if (end_offset >= m_len)
+  if (next_offset >= (m_len + 1))
     return false;
 
-  size_t victim_len = end_offset - start_offset + 1;
+  size_t victim_len = next_offset - start_offset;
 
   /* Ensure buffer is big enough.  */
   size_t new_len = m_len + replacement_len - victim_len;
   ensure_capacity (new_len);
 
-  char *suffix = m_content + end_offset + 1;
+  char *suffix = m_content + next_offset;
   gcc_assert (suffix <= m_content + m_len);
   size_t len_suffix = (m_content + m_len) - suffix;
 
@@ -824,8 +684,8 @@ edited_line::apply_replace (int start_column,
 
   /* Record the replacement, so that future changes to the line can have
      their column information adjusted accordingly.  */
-  m_line_events.safe_push (new replace_event (start_column, finish_column,
-					      replacement_len));
+  m_line_events.safe_push (line_event (start_column, next_column,
+				       replacement_len));
   return true;
 }
 

@@ -305,9 +305,6 @@ struct GTY(()) source_range
     result.m_finish = finish;
     return result;
   }
-
-  /* Is there any part of this range on the given line?  */
-  bool intersects_line_p (const char *file, int line) const;
 };
 
 /* Memory allocation function typedef.  Works like xrealloc.  */
@@ -1416,8 +1413,6 @@ semi_embedded_vec<T, NUM_EMBEDDED>::truncate (int len)
 }
 
 class fixit_hint;
-  class fixit_insert;
-  class fixit_replace;
 
 /* A "rich" source code location, for use when printing diagnostics.
    A rich_location has one or more carets&ranges, where the carets
@@ -1667,7 +1662,9 @@ class rich_location
 private:
   bool reject_impossible_fixit (source_location where);
   void stop_supporting_fixits ();
-  void add_fixit (fixit_hint *hint);
+  void maybe_add_fixit (source_location start,
+			source_location next_loc,
+			const char *new_content);
 
 public:
   static const int STATICALLY_ALLOCATED_RANGES = 3;
@@ -1687,72 +1684,41 @@ protected:
   bool m_seen_impossible_fixit;
 };
 
+/* A fix-it hint: a suggested insertion, replacement, or deletion of text.
+   We handle these three types of edit with one class, by representing
+   them as replacement of a half-open range:
+       [start, next_loc)
+   Insertions have start == next_loc: "replace" the empty string at the
+   start location with the new string.
+   Deletions are replacement with the empty string.  */
+
 class fixit_hint
 {
-public:
-  enum kind {INSERT, REPLACE};
-
-  virtual ~fixit_hint () {}
-
-  virtual enum kind get_kind () const = 0;
-  virtual bool affects_line_p (const char *file, int line) const = 0;
-  virtual source_location get_start_loc () const = 0;
-  virtual bool maybe_get_end_loc (source_location *out) const = 0;
-  /* Vfunc for consolidating successor fixits.  */
-  virtual bool maybe_append_replace (line_maps *set,
-				     source_range src_range,
-				     const char *new_content) = 0;
-};
-
-class fixit_insert : public fixit_hint
-{
  public:
-  fixit_insert (source_location where,
-		const char *new_content);
-  ~fixit_insert ();
-  enum kind get_kind () const { return INSERT; }
-  bool affects_line_p (const char *file, int line) const;
-  source_location get_start_loc () const { return m_where; }
-  bool maybe_get_end_loc (source_location *) const { return false; }
-  bool maybe_append_replace (line_maps *set,
-			     source_range src_range,
-			     const char *new_content);
+  fixit_hint (source_location start,
+	      source_location next_loc,
+	      const char *new_content);
+  ~fixit_hint () { free (m_bytes); }
 
-  source_location get_location () const { return m_where; }
+  bool affects_line_p (const char *file, int line) const;
+  source_location get_start_loc () const { return m_start; }
+  source_location get_next_loc () const { return m_next_loc; }
+  bool maybe_append (source_location start,
+		     source_location next_loc,
+		     const char *new_content);
+
   const char *get_string () const { return m_bytes; }
   size_t get_length () const { return m_len; }
 
- private:
-  source_location m_where;
-  char *m_bytes;
-  size_t m_len;
-};
-
-class fixit_replace : public fixit_hint
-{
- public:
-  fixit_replace (source_range src_range,
-                 const char *new_content);
-  ~fixit_replace ();
-
-  enum kind get_kind () const { return REPLACE; }
-  bool affects_line_p (const char *file, int line) const;
-  source_location get_start_loc () const { return m_src_range.m_start; }
-  bool maybe_get_end_loc (source_location *out) const
-  {
-    *out = m_src_range.m_finish;
-    return true;
-  }
-  bool maybe_append_replace (line_maps *set,
-			     source_range src_range,
-			     const char *new_content);
-
-  source_range get_range () const { return m_src_range; }
-  const char *get_string () const { return m_bytes; }
-  size_t get_length () const { return m_len; }
+  bool insertion_p () const { return m_start == m_next_loc; }
 
  private:
-  source_range m_src_range;
+  /* We don't use source_range here since, unlike most places,
+     this is a half-open/half-closed range:
+       [start, next_loc)
+     so that we can support insertion via start == next_loc.  */
+  source_location m_start;
+  source_location m_next_loc;
   char *m_bytes;
   size_t m_len;
 };
