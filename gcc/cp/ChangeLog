@@ -1,3 +1,13 @@
+2017-05-01  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
+
+        PR c++/80038
+	* cp-cilkplus.c (cilk_install_body_with_frame_cleanup): Don't
+	add pedigree operation and detach call here.
+	* cp-gimplify.c (cp_gimplify_expr): Remove the calls to
+	cilk_cp_gimplify_call_params_in_spawned_fn.
+	(cilk_cp_gimplify_call_params_in_spawned_fn): Remove function.
+	* semantics.c (simplify_aggr_init_expr): Copy EXPR_CILK_SPAWN.
+
 2017-04-29  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* parser.c (cp_parser_member_declaration): Add fix-it hints for

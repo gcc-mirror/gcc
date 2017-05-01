@@ -365,10 +365,59 @@ expand_builtin_cilk_detach (tree exp)
   tree worker = cilk_dot (fptr, CILK_TI_FRAME_WORKER, 0);
   tree tail = cilk_arrow (worker, CILK_TI_WORKER_TAIL, 1);
 
+  tree faddr = build1 (ADDR_EXPR, cilk_frame_ptr_type_decl, fptr);
+  tree enter_frame = build_call_expr (cilk_enter_fast_fndecl, 1, faddr);
+  expand_expr (enter_frame, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  tree pedigree = cilk_dot (fptr, CILK_TI_FRAME_PEDIGREE, 0);
+  tree pedigree_rank = cilk_dot (pedigree, CILK_TI_PEDIGREE_RANK, 0);
+  tree parent_pedigree = cilk_dot (pedigree, CILK_TI_PEDIGREE_PARENT, 0);
+  tree pedigree_parent = cilk_arrow (parent, CILK_TI_FRAME_PEDIGREE, 0);
+  tree pedigree_parent_rank = cilk_dot (pedigree_parent,
+					CILK_TI_PEDIGREE_RANK, 0);
+  tree pedigree_parent_parent = cilk_dot (pedigree_parent,
+				     CILK_TI_PEDIGREE_PARENT, 0);
+  tree worker_pedigree = cilk_arrow (worker, CILK_TI_WORKER_PEDIGREE, 1);
+  tree w_pedigree_rank = cilk_dot (worker_pedigree, CILK_TI_PEDIGREE_RANK, 0);
+  tree w_pedigree_parent = cilk_dot (worker_pedigree,
+				     CILK_TI_PEDIGREE_PARENT, 0);
+
   rtx wreg = expand_expr (worker, NULL_RTX, Pmode, EXPAND_NORMAL);
   if (GET_CODE (wreg) != REG)
     wreg = copy_to_reg (wreg);
   rtx preg = expand_expr (parent, NULL_RTX, Pmode, EXPAND_NORMAL);
+
+  /* sf.pedigree.rank = worker->pedigree.rank.  */
+  tree exp1 = build2 (MODIFY_EXPR, void_type_node, pedigree_rank,
+		     w_pedigree_rank);
+  expand_expr (exp1, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  /* sf.pedigree.parent = worker->pedigree.parent.  */
+  exp1 = build2 (MODIFY_EXPR, void_type_node, parent_pedigree,
+		 w_pedigree_parent);
+  expand_expr (exp1, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  /* sf.call_parent->pedigree.rank = worker->pedigree.rank.  */
+  exp1 = build2 (MODIFY_EXPR, void_type_node, pedigree_parent_rank,
+		 w_pedigree_rank);
+  expand_expr (exp1, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  /* sf.call_parent->pedigree.parent = worker->pedigree.parent.  */
+  exp1 = build2 (MODIFY_EXPR, void_type_node, pedigree_parent_parent,
+		 w_pedigree_parent);
+  expand_expr (exp1, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  /* sf->worker.pedigree.rank = 0.  */
+  exp1 = build2 (MODIFY_EXPR, void_type_node, w_pedigree_rank,
+		 build_zero_cst (uint64_type_node));
+  expand_expr (exp1, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  /* sf->pedigree.parent = &sf->pedigree.  */
+  exp1 = build2 (MODIFY_EXPR, void_type_node, w_pedigree_parent,
+		 build1 (ADDR_EXPR,
+			 build_pointer_type (cilk_pedigree_type_decl),
+			 pedigree));
+  expand_expr (exp1, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   /* TMP <- WORKER.TAIL
     *TMP <- PARENT

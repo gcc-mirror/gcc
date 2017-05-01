@@ -1194,6 +1194,10 @@ struct GTY(()) tree_base {
        SSA_NAME_OCCURS_IN_ABNORMAL_PHI in
            SSA_NAME
 
+       EXPR_CILK_SPAWN in
+           CALL_EXPR
+           AGGR_INIT_EXPR
+
    used_flag:
 
        TREE_USED in

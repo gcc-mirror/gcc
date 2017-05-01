@@ -14215,14 +14215,8 @@ cilk_install_body_with_frame_cleanup (tree fndecl, tree body, void *w)
   add_local_decl (cfun, frame);
   
   DECL_SAVED_TREE (fndecl) = list;
-  tree frame_ptr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (frame)), 
-			   frame);
-  tree body_list = cilk_install_body_pedigree_operations (frame_ptr);
-  gcc_assert (TREE_CODE (body_list) == STATEMENT_LIST);
-  
-  tree detach_expr = build_call_expr (cilk_detach_fndecl, 1, frame_ptr); 
-  append_to_statement_list (detach_expr, &body_list);
 
+  tree body_list = alloc_stmt_list ();
   cilk_outline (fndecl, &body, (struct wrapper_data *) w);
   body = fold_build_cleanup_point_expr (void_type_node, body);
 
