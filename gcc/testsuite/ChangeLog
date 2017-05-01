@@ -1,3 +1,8 @@
+2017-05-01  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/79715
+	* gcc.dg/pr79715.c: New test.
+
 2017-05-01  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/65941
