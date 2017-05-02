@@ -420,7 +420,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsplit-paths @gol
 -fsplit-wide-types  -fssa-backprop  -fssa-phiopt @gol
 -fstdarg-opt  -fstore-merging  -fstrict-aliasing @gol
--fstrict-overflow  -fthread-jumps  -ftracer  -ftree-bit-ccp @gol
+-fthread-jumps  -ftracer  -ftree-bit-ccp @gol
 -ftree-builtin-call-dce  -ftree-ccp  -ftree-ch @gol
 -ftree-coalesce-vars  -ftree-copy-prop  -ftree-dce  -ftree-dominator-opts @gol
 -ftree-dse  -ftree-forwprop  -ftree-fre  -fcode-hoisting @gol
@@ -4937,7 +4937,7 @@ Does not warn about incomplete types.
 @itemx -Wstrict-overflow=@var{n}
 @opindex Wstrict-overflow
 @opindex Wno-strict-overflow
-This option is only active when @option{-fstrict-overflow} is active.
+This option is only active when signed overflow is undefined.
 It warns about cases where the compiler optimizes based on the
 assumption that signed overflow does not occur.  Note that it does not
 warn about all cases where the code might overflow: it only warns
@@ -4957,7 +4957,7 @@ executed at all.
 @table @gcctabopt
 @item -Wstrict-overflow=1
 Warn about cases that are both questionable and easy to avoid.  For
-example,  with @option{-fstrict-overflow}, the compiler simplifies
+example the compiler simplifies
 @code{x + 1 > x} to @code{1}.  This level of
 @option{-Wstrict-overflow} is enabled by @option{-Wall}; higher levels
 are not, and must be explicitly requested.
@@ -4965,7 +4965,7 @@ are not, and must be explicitly requested.
 @item -Wstrict-overflow=2
 Also warn about other cases where a comparison is simplified to a
 constant.  For example: @code{abs (x) >= 0}.  This can only be
-simplified when @option{-fstrict-overflow} is in effect, because
+simplified when signed integer overflow is undefined, because
 @code{abs (INT_MIN)} overflows to @code{INT_MIN}, which is less than
 zero.  @option{-Wstrict-overflow} (with no level) is the same as
 @option{-Wstrict-overflow=2}.
@@ -7113,7 +7113,7 @@ also turns on the following optimization flags:
 -fsched-interblock  -fsched-spec @gol
 -fschedule-insns  -fschedule-insns2 @gol
 -fstore-merging @gol
--fstrict-aliasing -fstrict-overflow @gol
+-fstrict-aliasing @gol
 -ftree-builtin-call-dce @gol
 -ftree-switch-conversion -ftree-tail-merge @gol
 -fcode-hoisting @gol
@@ -8647,41 +8647,6 @@ int f() @{
 @end smallexample
 
 The @option{-fstrict-aliasing} option is enabled at levels
-@option{-O2}, @option{-O3}, @option{-Os}.
-
-@item -fstrict-overflow
-@opindex fstrict-overflow
-Allow the compiler to assume strict signed overflow rules, depending
-on the language being compiled.  For C (and C++) this means that
-overflow when doing arithmetic with signed numbers is undefined, which
-means that the compiler may assume that it does not happen.  This
-permits various optimizations.  For example, the compiler assumes
-that an expression like @code{i + 10 > i} is always true for
-signed @code{i}.  This assumption is only valid if signed overflow is
-undefined, as the expression is false if @code{i + 10} overflows when
-using twos complement arithmetic.  When this option is in effect any
-attempt to determine whether an operation on signed numbers 
-overflows must be written carefully to not actually involve overflow.
-
-This option also allows the compiler to assume strict pointer
-semantics: given a pointer to an object, if adding an offset to that
-pointer does not produce a pointer to the same object, the addition is
-undefined.  This permits the compiler to conclude that @code{p + u >
-p} is always true for a pointer @code{p} and unsigned integer
-@code{u}.  This assumption is only valid because pointer wraparound is
-undefined, as the expression is false if @code{p + u} overflows using
-twos complement arithmetic.
-
-See also the @option{-fwrapv} option.  Using @option{-fwrapv} means
-that integer signed overflow is fully defined: it wraps.  When
-@option{-fwrapv} is used, there is no difference between
-@option{-fstrict-overflow} and @option{-fno-strict-overflow} for
-integers.  With @option{-fwrapv} certain types of overflow are
-permitted.  For example, if the compiler gets an overflow when doing
-arithmetic on constants, the overflowed value can still be used with
-@option{-fwrapv}, but not otherwise.
-
-The @option{-fstrict-overflow} option is enabled at levels
 @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -falign-functions

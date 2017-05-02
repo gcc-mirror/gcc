@@ -846,7 +846,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    caller decide whether a warning is appropriate or not.  */
 #define TYPE_OVERFLOW_UNDEFINED(TYPE)				\
   (!ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag	\
-   && !flag_wrapv && !flag_trapv && flag_strict_overflow)
+   && !flag_wrapv && !flag_trapv)
 
 /* True if overflow for the given integral type should issue a
    trap.  */
@@ -860,7 +860,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    && (flag_sanitize & SANITIZE_SI_OVERFLOW))
 
 /* True if pointer types have undefined overflow.  */
-#define POINTER_TYPE_OVERFLOW_UNDEFINED (flag_strict_overflow)
+#define POINTER_TYPE_OVERFLOW_UNDEFINED (!flag_wrapv)
 
 /* Nonzero in a VAR_DECL or STRING_CST means assembler code has been written.
    Nonzero in a FUNCTION_DECL means that the function has been compiled.

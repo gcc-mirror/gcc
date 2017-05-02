@@ -1,5 +1,11 @@
 2017-05-02  Richard Biener  <rguenther@suse.de>
 
+	* c-c++-common/Wlogical-op-1.c: Add -fwrapv to restore previous
+	behavior.
+	* gcc.target/i386/pr46253.c: Make i unsigned to avoid warning.
+
+2017-05-02  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/80591
 	* gcc.dg/torture/pr80591.c: New testcase.
 

@@ -5316,7 +5316,7 @@ simplify_const_relational_operation (enum rtx_code code,
 	  /* Optimize abs(x) < 0.0.  */
 	  if (!HONOR_SNANS (mode)
 	      && (!INTEGRAL_MODE_P (mode)
-		  || (!flag_wrapv && !flag_trapv && flag_strict_overflow)))
+		  || (!flag_wrapv && !flag_trapv)))
 	    {
 	      if (INTEGRAL_MODE_P (mode)
 		  && (issue_strict_overflow_warning
@@ -5332,7 +5332,7 @@ simplify_const_relational_operation (enum rtx_code code,
 	  /* Optimize abs(x) >= 0.0.  */
 	  if (!HONOR_NANS (mode)
 	      && (!INTEGRAL_MODE_P (mode)
-		  || (!flag_wrapv && !flag_trapv && flag_strict_overflow)))
+		  || (!flag_wrapv && !flag_trapv)))
 	    {
 	      if (INTEGRAL_MODE_P (mode)
 	          && (issue_strict_overflow_warning
