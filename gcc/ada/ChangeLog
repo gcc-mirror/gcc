@@ -1,3 +1,16 @@
+2017-05-02  Bob Duff  <duff@adacore.com>
+
+	* s-taprop-linux.adb (Prio_To_Linux_Prio): New function to correctly
+	compute the linux priority from the Ada priority. Call this everywhere
+	required. In particular, the previous version was not doing this
+	computation when setting the ceiling priority in various places. It
+	was just converting to C.int, which results in a ceiling that is off
+	by 1.
+
+2017-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb: Comment predicate inheritance.
+
 2017-05-02  Tristan Gingold  <gingold@adacore.com>
 
 	* s-trasym.ads: Add comment.

@@ -3133,7 +3133,11 @@ package body Sem_Ch3 is
 
             when N_Derived_Type_Definition =>
                Derived_Type_Declaration (T, N, T /= Def_Id);
-               if Ekind (T) /= E_Void and then Has_Predicates (T) then -- ????
+
+               --  Inherit predicates from parent, and protect against
+               --  illegal derivations.
+
+               if Is_Type (T) and then Has_Predicates (T) then
                   Set_Has_Predicates (Def_Id);
                end if;
 
