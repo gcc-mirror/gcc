@@ -1,3 +1,54 @@
+2017-05-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c
+	(layout::should_print_annotation_line_p): Make private.
+	(layout::print_annotation_line): Make private.
+	(layout::annotation_line_showed_range_p): Make private.
+	(layout::show_ruler): Make private.
+	(layout::print_source_line): Make private.  Pass in line and
+	line_width, rather than calling location_get_source_line.  Drop
+	returned value.
+	(layout::print_leading_fixits): New method.
+	(layout::print_any_fixits): Rename to...
+	(layout::print_trailing_fixits): ...this, and make private.
+	Don't print newline fixits.
+	(diagnostic_show_locus): Move logic for printing one row into...
+	(layout::print_line): ...this new function.  Move the
+	location_get_source_line call and error-handling from
+	print_source_line to here.  Call print_leading_fixits, and rename
+	print_any_fixits to print_trailing_fixits.
+	(selftest::test_fixit_insert_containing_newline): Update now that
+	newlines are partially supported.
+	(selftest::test_fixit_insert_containing_newline_2): New test.
+	(selftest::test_fixit_replace_containing_newline): Update comments.
+	(selftest::diagnostic_show_locus_c_tests): Call the new test.
+	* edit-context.c (class added_line): New class.
+	(class edited_line): Describe newline handling in comment.
+	(edited_line::actually_edited_p): New method.
+	(edited_line::print_content): Delete redundant decl.
+	(edited_line::m_predecessors): New field.
+	(edited_file::print_content): Call edited_line::print_content.
+	(edited_file::print_diff): Update to support newlines.
+	(edited_file::print_diff_hunk): Likewise.
+	(edited_file::print_run_of_changed_lines): New function.
+	(edited_file::print_diff_line): Convert to...
+	(print_diff_line): ...this.
+	(edited_file::get_effective_line_count): New function.
+	(edited_line::edited_line): Initialize new field m_predecessors.
+	(edited_line::~edited_line): Clean up m_predecessors.
+	(edited_line::apply_fixit): Handle newlines.
+	(edited_line::get_effective_line_count): New function.
+	(edited_line::print_content): New function.
+	(edited_line::print_diff_lines): New function.
+	(selftest::test_applying_fixits_insert_containing_newline): New
+	test.
+	(selftest::test_applying_fixits_replace_containing_newline): New
+	test.
+	(selftest::insert_line): New function.
+	(selftest::test_applying_fixits_multiple_lines): Add example of
+	inserting a line.
+	(selftest::edit_context_c_tests): Call the new tests.
+
 2017-05-02  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (get_scaled_computation_cost_at): Delete

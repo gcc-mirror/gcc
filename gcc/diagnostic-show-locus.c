@@ -203,16 +203,20 @@ class layout
 
   expanded_location get_expanded_location (const line_span *) const;
 
-  bool print_source_line (int row, line_bounds *lbounds_out);
-  bool should_print_annotation_line_p (int row) const;
-  void print_annotation_line (int row, const line_bounds lbounds);
-  bool annotation_line_showed_range_p (int line, int start_column,
-				       int finish_column) const;
-  void print_any_fixits (int row);
-
-  void show_ruler (int max_column) const;
+  void print_line (int row);
 
  private:
+  void print_leading_fixits (int row);
+  void print_source_line (int row, const char *line, int line_width,
+			  line_bounds *lbounds_out);
+  bool should_print_annotation_line_p (int row) const;
+  void print_annotation_line (int row, const line_bounds lbounds);
+  void print_trailing_fixits (int row);
+
+  bool annotation_line_showed_range_p (int line, int start_column,
+				       int finish_column) const;
+  void show_ruler (int max_column) const;
+
   bool validate_fixit_hint_p (const fixit_hint *hint);
 
   void calculate_line_spans ();
@@ -1055,21 +1059,15 @@ layout::calculate_line_spans ()
     }
 }
 
-/* Attempt to print line ROW of source code, potentially colorized at any
-   ranges.
-   Return true if the line was printed, populating *LBOUNDS_OUT.
-   Return false if the source line could not be read, leaving *LBOUNDS_OUT
-   untouched.  */
+/* Print line ROW of source code, potentially colorized at any ranges, and
+   populate *LBOUNDS_OUT.
+   LINE is the source line (not necessarily 0-terminated) and LINE_WIDTH
+   is its width.  */
 
-bool
-layout::print_source_line (int row, line_bounds *lbounds_out)
+void
+layout::print_source_line (int row, const char *line, int line_width,
+			   line_bounds *lbounds_out)
 {
-  int line_width;
-  const char *line = location_get_source_line (m_exploc.file, row,
-					       &line_width);
-  if (!line)
-    return false;
-
   m_colorizer.set_normal_text ();
 
   /* We will stop printing the source line at any trailing
@@ -1124,7 +1122,6 @@ layout::print_source_line (int row, line_bounds *lbounds_out)
 
   lbounds_out->m_first_non_ws = first_non_ws;
   lbounds_out->m_last_non_ws = last_non_ws;
-  return true;
 }
 
 /* Determine if we should print an annotation line for ROW.
@@ -1186,7 +1183,46 @@ layout::print_annotation_line (int row, const line_bounds lbounds)
   print_newline ();
 }
 
-/* Subroutine of layout::print_any_fixits.
+/* If there are any fixit hints inserting new lines before source line ROW,
+   print them.
+
+   They are printed on lines of their own, before the source line
+   itself, with a leading '+'.  */
+
+void
+layout::print_leading_fixits (int row)
+{
+  for (unsigned int i = 0; i < m_fixit_hints.length (); i++)
+    {
+      const fixit_hint *hint = m_fixit_hints[i];
+
+      if (!hint->ends_with_newline_p ())
+	/* Not a newline fixit; print it in print_trailing_fixits.  */
+	continue;
+
+      gcc_assert (hint->insertion_p ());
+
+      if (hint->affects_line_p (m_exploc.file, row))
+	{
+	  /* Printing the '+' with normal colorization
+	     and the inserted line with "insert" colorization
+	     helps them stand out from each other, and from
+	     the surrounding text.  */
+	  m_colorizer.set_normal_text ();
+	  pp_character (m_pp, '+');
+	  m_colorizer.set_fixit_insert ();
+	  /* Print all but the trailing newline of the fix-it hint.
+	     We have to print the newline separately to avoid
+	     getting additional pp prefixes printed.  */
+	  for (size_t i = 0; i < hint->get_length () - 1; i++)
+	    pp_character (m_pp, hint->get_string ()[i]);
+	  m_colorizer.set_normal_text ();
+	  pp_newline (m_pp);
+	}
+    }
+}
+
+/* Subroutine of layout::print_trailing_fixits.
 
    Determine if the annotation line printed for LINE contained
    the exact range from START_COLUMN to FINISH_COLUMN.  */
@@ -1208,15 +1244,21 @@ layout::annotation_line_showed_range_p (int line, int start_column,
 
 /* If there are any fixit hints on source line ROW, print them.
    They are printed in order, attempting to combine them onto lines, but
-   starting new lines if necessary.  */
+   starting new lines if necessary.
+   Fix-it hints that insert new lines are handled separately,
+   in layout::print_leading_fixits.  */
 
 void
-layout::print_any_fixits (int row)
+layout::print_trailing_fixits (int row)
 {
   int column = 0;
   for (unsigned int i = 0; i < m_fixit_hints.length (); i++)
     {
       const fixit_hint *hint = m_fixit_hints[i];
+
+      if (hint->ends_with_newline_p ())
+	continue;
+
       if (hint->affects_line_p (m_exploc.file, row))
 	{
 	  /* For now we assume each fixit hint can only touch one line.  */
@@ -1416,6 +1458,27 @@ layout::show_ruler (int max_column) const
   pp_newline (m_pp);
 }
 
+/* Print leading fix-its (for new lines inserted before the source line)
+   then the source line, followed by an annotation line
+   consisting of any caret/underlines, then any fixits.
+   If the source line can't be read, print nothing.  */
+void
+layout::print_line (int row)
+{
+  int line_width;
+  const char *line = location_get_source_line (m_exploc.file, row,
+					       &line_width);
+  if (!line)
+    return;
+
+  line_bounds lbounds;
+  print_leading_fixits (row);
+  print_source_line (row, line, line_width, &lbounds);
+  if (should_print_annotation_line_p (row))
+    print_annotation_line (row, lbounds);
+  print_trailing_fixits (row);
+}
+
 } /* End of anonymous namespace.  */
 
 /* Print the physical source code corresponding to the location of
@@ -1460,18 +1523,7 @@ diagnostic_show_locus (diagnostic_context * context,
 	}
       int last_line = line_span->get_last_line ();
       for (int row = line_span->get_first_line (); row <= last_line; row++)
-	{
-	  /* Print the source line, followed by an annotation line
-	     consisting of any caret/underlines, then any fixits.
-	     If the source line can't be read, print nothing.  */
-	  line_bounds lbounds;
-	  if (layout.print_source_line (row, &lbounds))
-	    {
-	      if (layout.should_print_annotation_line_p (row))
-		layout.print_annotation_line (row, lbounds);
-	      layout.print_any_fixits (row);
-	    }
-	}
+	layout.print_line (row);
     }
 
   pp_set_prefix (context->printer, saved_prefix);
@@ -2101,8 +2153,7 @@ test_fixit_consolidation (const line_table_case &case_)
   }
 }
 
-/* Insertion fix-it hint: adding a "break;" on a line by itself.
-   This will fail, as newlines aren't yet supported.  */
+/* Insertion fix-it hint: adding a "break;" on a line by itself.  */
 
 static void
 test_fixit_insert_containing_newline (const line_table_case &case_)
@@ -2119,32 +2170,97 @@ test_fixit_insert_containing_newline (const line_table_case &case_)
   line_table_test ltt (case_);
   linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 3);
 
-  /* Add a "break;" on a line by itself before line 3 i.e. before
-     column 1 of line 3. */
   location_t case_start = linemap_position_for_column (line_table, 5);
   location_t case_finish = linemap_position_for_column (line_table, 13);
   location_t case_loc = make_location (case_start, case_start, case_finish);
-  rich_location richloc (line_table, case_loc);
   location_t line_start = linemap_position_for_column (line_table, 1);
-  richloc.add_fixit_insert_before (line_start, "      break;\n");
-
-  /* Newlines are not yet supported within fix-it hints, so
-     the fix-it should not be displayed.  */
-  ASSERT_TRUE (richloc.seen_impossible_fixit_p ());
 
   if (case_finish > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  /* Add a "break;" on a line by itself before line 3 i.e. before
+     column 1 of line 3. */
+  {
+    rich_location richloc (line_table, case_loc);
+    richloc.add_fixit_insert_before (line_start, "      break;\n");
+    test_diagnostic_context dc;
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "+      break;\n"
+		  "     case 'b':\n"
+		  "     ^~~~~~~~~\n",
+		  pp_formatted_text (dc.printer));
+  }
+
+  /* Verify that attempts to add text with a newline fail when the
+     insertion point is *not* at the start of a line.  */
+  {
+    rich_location richloc (line_table, case_loc);
+    richloc.add_fixit_insert_before (case_start, "break;\n");
+    ASSERT_TRUE (richloc.seen_impossible_fixit_p ());
+    test_diagnostic_context dc;
+    diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+    ASSERT_STREQ ("\n"
+		  "     case 'b':\n"
+		  "     ^~~~~~~~~\n",
+		  pp_formatted_text (dc.printer));
+  }
+}
+
+/* Insertion fix-it hint: adding a "#include <stdio.h>\n" to the top
+   of the file, where the fix-it is printed in a different line-span
+   to the primary range of the diagnostic.  */
+
+static void
+test_fixit_insert_containing_newline_2 (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.
+     .........................0000000001111111.
+     .........................1234567890123456.  */
+  const char *old_content = ("test (int ch)\n"  /* line 1. */
+			     "{\n"              /* line 2. */
+			     " putchar (ch);\n" /* line 3. */
+			     "}\n");            /* line 4. */
+
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", old_content);
+  line_table_test ltt (case_);
+
+  const line_map_ordinary *ord_map = linemap_check_ordinary
+    (linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 0));
+  linemap_line_start (line_table, 1, 100);
+
+  /* The primary range is the "putchar" token.  */
+  location_t putchar_start
+    = linemap_position_for_line_and_column (line_table, ord_map, 3, 2);
+  location_t putchar_finish
+    = linemap_position_for_line_and_column (line_table, ord_map, 3, 8);
+  location_t putchar_loc
+    = make_location (putchar_start, putchar_start, putchar_finish);
+  rich_location richloc (line_table, putchar_loc);
+
+  /* Add a "#include <stdio.h>" on a line by itself at the top of the file.  */
+  location_t file_start
+     = linemap_position_for_line_and_column (line_table, ord_map,  1, 1);
+  richloc.add_fixit_insert_before (file_start, "#include <stdio.h>\n");
+
+  if (putchar_finish > LINE_MAP_MAX_LOCATION_WITH_COLS)
     return;
 
   test_diagnostic_context dc;
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ ("\n"
-		"     case 'b':\n"
-		"     ^~~~~~~~~\n",
+		"FILENAME:1:1:\n"
+		"+#include <stdio.h>\n"
+		" test (int ch)\n"
+		"FILENAME:3:2:\n"
+		"  putchar (ch);\n"
+		"  ^~~~~~~\n",
 		pp_formatted_text (dc.printer));
 }
 
 /* Replacement fix-it hint containing a newline.
-   This will fail, as newlines aren't yet supported.  */
+   This will fail, as newlines are only supported when inserting at the
+   beginning of a line.  */
 
 static void
 test_fixit_replace_containing_newline (const line_table_case &case_)
@@ -2167,7 +2283,7 @@ test_fixit_replace_containing_newline (const line_table_case &case_)
   source_range range = source_range::from_locations (start, finish);
   richloc.add_fixit_replace (range, "\n =");
 
-  /* Newlines are not yet supported within fix-it hints, so
+  /* Arbitrary newlines are not yet supported within fix-it hints, so
      the fix-it should not be displayed.  */
   ASSERT_TRUE (richloc.seen_impossible_fixit_p ());
 
@@ -2199,6 +2315,7 @@ diagnostic_show_locus_c_tests ()
   for_each_line_table_case (test_diagnostic_show_locus_fixit_lines);
   for_each_line_table_case (test_fixit_consolidation);
   for_each_line_table_case (test_fixit_insert_containing_newline);
+  for_each_line_table_case (test_fixit_insert_containing_newline_2);
   for_each_line_table_case (test_fixit_replace_containing_newline);
 }
 

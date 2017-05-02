@@ -2325,16 +2325,44 @@ rich_location::maybe_add_fixit (source_location start,
   if (reject_impossible_fixit (next_loc))
     return;
 
-  /* We do not yet support newlines within fix-it hints.  */
-  if (strchr (new_content, '\n'))
+  const char *newline = strchr (new_content, '\n');
+  if (newline)
     {
-      stop_supporting_fixits ();
-      return;
+      /* For now, we can only support insertion of whole lines
+	 i.e. starts at start of line, and the newline is at the end of
+	 the insertion point.  */
+
+      /* It must be an insertion, not a replacement/deletion.  */
+      if (start != next_loc)
+	{
+	  stop_supporting_fixits ();
+	  return;
+	}
+
+      /* The insertion must be at the start of a line.  */
+      expanded_location exploc_start
+	= linemap_client_expand_location_to_spelling_point (start);
+      if (exploc_start.column != 1)
+	{
+	  stop_supporting_fixits ();
+	  return;
+	}
+
+      /* The newline must be at end of NEW_CONTENT.
+	 We could eventually split up fix-its at newlines if we wanted
+	 to allow more generality (e.g. to allow adding multiple lines
+	 with one add_fixit call.  */
+      if (newline[1] != '\0')
+	{
+	  stop_supporting_fixits ();
+	  return;
+	}
     }
 
-  /* Consolidate neighboring fixits.  */
+  /* Consolidate neighboring fixits.
+     Don't consolidate into newline-insertion fixits.  */
   fixit_hint *prev = get_last_fixit_hint ();
-  if (prev)
+  if (prev && !prev->ends_with_newline_p ())
     if (prev->maybe_append (start, next_loc, new_content))
       return;
 
@@ -2397,4 +2425,14 @@ fixit_hint::maybe_append (source_location start,
   m_len += extra_len;
   m_bytes[m_len] = '\0';
   return true;
+}
+
+/* Return true iff this hint's content ends with a newline.  */
+
+bool
+fixit_hint::ends_with_newline_p () const
+{
+  if (m_len == 0)
+    return false;
+  return m_bytes[m_len - 1] == '\n';
 }

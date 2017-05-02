@@ -86,23 +86,52 @@ class edited_file
  private:
   bool print_content (pretty_printer *pp);
   void print_diff (pretty_printer *pp, bool show_filenames);
-  void print_diff_hunk (pretty_printer *pp, int start_of_hunk,
-			int end_of_hunk);
-  void print_diff_line (pretty_printer *pp, char prefix_char,
-			const char *line, int line_size);
+  int print_diff_hunk (pretty_printer *pp, int old_start_of_hunk,
+		       int old_end_of_hunk, int new_start_of_hunk);
   edited_line *get_line (int line);
   edited_line *get_or_insert_line (int line);
   int get_num_lines (bool *missing_trailing_newline);
+
+  int get_effective_line_count (int old_start_of_hunk,
+				int old_end_of_hunk);
+
+  void print_run_of_changed_lines (pretty_printer *pp,
+				   int start_of_run,
+				   int end_of_run);
 
   const char *m_filename;
   typed_splay_tree<int, edited_line *> m_edited_lines;
   int m_num_lines;
 };
 
+/* A line added before an edited_line.  */
+
+class added_line
+{
+ public:
+  added_line (const char *content, int len)
+  : m_content (xstrndup (content, len)), m_len (len) {}
+  ~added_line () { free (m_content); }
+
+  const char *get_content () const { return m_content; }
+  int get_len () const { return m_len; }
+
+ private:
+  char *m_content;
+  int m_len;
+};
+
 /* The state of one edited line within an edited_file.
    As well as the current content of the line, it contains a record of
    the changes, so that further changes can be applied in the correct
-   place.  */
+   place.
+
+   When handling fix-it hints containing newlines, new lines are added
+   as added_line predecessors to an edited_line.  Hence it's possible
+   for an "edited_line" to not actually have been changed, but to merely
+   be a placeholder for the lines added before it.  This can be tested
+   for with actuall_edited_p, and has a slight effect on how diff hunks
+   are generated.  */
 
 class edited_line
 {
@@ -121,16 +150,25 @@ class edited_line
 		    const char *replacement_str,
 		    int replacement_len);
 
+  int get_effective_line_count () const;
+
+  /* Has the content of this line actually changed, or are we merely
+     recording predecessor added_lines?  */
+  bool actually_edited_p () const { return m_line_events.length () > 0; }
+
+  void print_content (pretty_printer *pp) const;
+  void print_diff_lines (pretty_printer *pp) const;
+
  private:
   void ensure_capacity (int len);
   void ensure_terminated ();
-  void print_content (pretty_printer *pp) const;
 
   int m_line_num;
   char *m_content;
   int m_len;
   int m_alloc_sz;
   auto_vec <line_event> m_line_events;
+  auto_vec <added_line *> m_predecessors;
 };
 
 /* Class for representing edit events that have occurred on one line of
@@ -159,6 +197,12 @@ class line_event
   int m_next;
   int m_delta;
 };
+
+/* Forward decls.  */
+
+static void
+print_diff_line (pretty_printer *pp, char prefix_char,
+		 const char *line, int line_size);
 
 /* Implementation of class edit_context.  */
 
@@ -375,7 +419,7 @@ edited_file::print_content (pretty_printer *pp)
     {
       edited_line *el = get_line (line_num);
       if (el)
-	pp_string (pp, el->get_content ());
+	el->print_content (pp);
       else
 	{
 	  int len;
@@ -417,6 +461,10 @@ edited_file::print_diff (pretty_printer *pp, bool show_filenames)
 
   const int context_lines = 3;
 
+  /* Track new line numbers minus old line numbers.  */
+
+  int line_delta = 0;
+
   while (el)
     {
       int start_of_hunk = el->get_line_num ();
@@ -432,39 +480,53 @@ edited_file::print_diff (pretty_printer *pp, bool show_filenames)
 	    = m_edited_lines.successor (el->get_line_num ());
 	  if (!next_el)
 	    break;
-	  if (el->get_line_num () + context_lines
+
+	  int end_of_printed_hunk = el->get_line_num () + context_lines;
+	  if (!el->actually_edited_p ())
+	    end_of_printed_hunk--;
+
+	  if (end_of_printed_hunk
 	      >= next_el->get_line_num () - context_lines)
 	    el = next_el;
 	  else
 	    break;
 	}
+
       int end_of_hunk = el->get_line_num ();
       end_of_hunk += context_lines;
+      if (!el->actually_edited_p ())
+	end_of_hunk--;
       if (end_of_hunk > line_count)
 	end_of_hunk = line_count;
 
-      print_diff_hunk (pp, start_of_hunk, end_of_hunk);
-
+      int new_start_of_hunk = start_of_hunk + line_delta;
+      line_delta += print_diff_hunk (pp, start_of_hunk, end_of_hunk,
+				     new_start_of_hunk);
       el = m_edited_lines.successor (el->get_line_num ());
     }
 }
 
 /* Print one hunk within a unified diff to PP, covering the
-   given range of lines.  */
+   given range of lines.  OLD_START_OF_HUNK and OLD_END_OF_HUNK are
+   line numbers in the unedited version of the file.
+   NEW_START_OF_HUNK is a line number in the edited version of the file.
+   Return the change in the line count within the hunk.  */
 
-void
-edited_file::print_diff_hunk (pretty_printer *pp, int start_of_hunk,
-			      int end_of_hunk)
+int
+edited_file::print_diff_hunk (pretty_printer *pp, int old_start_of_hunk,
+			      int old_end_of_hunk, int new_start_of_hunk)
 {
-  int num_lines = end_of_hunk - start_of_hunk + 1;
+  int old_num_lines = old_end_of_hunk - old_start_of_hunk + 1;
+  int new_num_lines
+    = get_effective_line_count (old_start_of_hunk, old_end_of_hunk);
 
   pp_string (pp, colorize_start (pp_show_color (pp), "diff-hunk"));
-  pp_printf (pp, "@@ -%i,%i +%i,%i @@\n", start_of_hunk, num_lines,
-	     start_of_hunk, num_lines);
+  pp_printf (pp, "@@ -%i,%i +%i,%i @@\n", old_start_of_hunk, old_num_lines,
+	     new_start_of_hunk, new_num_lines);
   pp_string (pp, colorize_stop (pp_show_color (pp)));
 
-  int line_num = start_of_hunk;
-  while (line_num <= end_of_hunk)
+  int line_num = old_start_of_hunk;
+  while (line_num <= old_end_of_hunk)
     {
       edited_line *el = get_line (line_num);
       if (el)
@@ -475,34 +537,8 @@ edited_file::print_diff_hunk (pretty_printer *pp, int start_of_hunk,
 	  while (get_line (line_num))
 	    line_num++;
 	  const int last_changed_line_in_run = line_num - 1;
-
-	  /* Show old version of lines.  */
-	  pp_string (pp, colorize_start (pp_show_color (pp),
-					 "diff-delete"));
-	  for (line_num = first_changed_line_in_run;
-	       line_num <= last_changed_line_in_run;
-	       line_num++)
-	    {
-	      int line_len;
-	      const char *old_line
-		= location_get_source_line (m_filename, line_num, &line_len);
-	      print_diff_line (pp, '-', old_line, line_len);
-	    }
-	  pp_string (pp, colorize_stop (pp_show_color (pp)));
-
-	  /* Show new version of lines.  */
-	  pp_string (pp, colorize_start (pp_show_color (pp),
-					 "diff-insert"));
-	  for (line_num = first_changed_line_in_run;
-	       line_num <= last_changed_line_in_run;
-	       line_num++)
-	    {
-	      edited_line *el_in_run = get_line (line_num);
-	      gcc_assert (el_in_run);
-	      print_diff_line (pp, '+', el_in_run->get_content (),
-			       el_in_run->get_len ());
-	    }
-	  pp_string (pp, colorize_stop (pp_show_color (pp)));
+	  print_run_of_changed_lines (pp, first_changed_line_in_run,
+				      last_changed_line_in_run);
 	}
       else
 	{
@@ -514,20 +550,85 @@ edited_file::print_diff_hunk (pretty_printer *pp, int start_of_hunk,
 	  line_num++;
 	}
     }
+
+  return new_num_lines - old_num_lines;
+}
+
+/* Subroutine of edited_file::print_diff_hunk: given a run of lines
+   from START_OF_RUN to END_OF_RUN that all have edited_line instances,
+   print the diff to PP.  */
+
+void
+edited_file::print_run_of_changed_lines (pretty_printer *pp,
+					 int start_of_run,
+					 int end_of_run)
+{
+  /* Show old version of lines.  */
+  pp_string (pp, colorize_start (pp_show_color (pp),
+				 "diff-delete"));
+  for (int line_num = start_of_run;
+       line_num <= end_of_run;
+       line_num++)
+    {
+      edited_line *el_in_run = get_line (line_num);
+      gcc_assert (el_in_run);
+      if (el_in_run->actually_edited_p ())
+	{
+	  int line_len;
+	  const char *old_line
+	    = location_get_source_line (m_filename, line_num, &line_len);
+	  print_diff_line (pp, '-', old_line, line_len);
+	}
+    }
+  pp_string (pp, colorize_stop (pp_show_color (pp)));
+
+  /* Show new version of lines.  */
+  pp_string (pp, colorize_start (pp_show_color (pp),
+				 "diff-insert"));
+  for (int line_num = start_of_run;
+       line_num <= end_of_run;
+       line_num++)
+    {
+      edited_line *el_in_run = get_line (line_num);
+      gcc_assert (el_in_run);
+      el_in_run->print_diff_lines (pp);
+    }
+  pp_string (pp, colorize_stop (pp_show_color (pp)));
 }
 
 /* Print one line within a diff, starting with PREFIX_CHAR,
    followed by the LINE of content, of length LEN.  LINE is
    not necessarily 0-terminated.  Print a trailing newline.  */
 
-void
-edited_file::print_diff_line (pretty_printer *pp, char prefix_char,
-			      const char *line, int len)
+static void
+print_diff_line (pretty_printer *pp, char prefix_char,
+		 const char *line, int len)
 {
   pp_character (pp, prefix_char);
   for (int i = 0; i < len; i++)
     pp_character (pp, line[i]);
   pp_character (pp, '\n');
+}
+
+/* Determine the number of lines that will be present after
+   editing for the range of lines from OLD_START_OF_HUNK to
+   OLD_END_OF_HUNK inclusive.  */
+
+int
+edited_file::get_effective_line_count (int old_start_of_hunk,
+				       int old_end_of_hunk)
+{
+  int line_count = 0;
+  for (int old_line_num = old_start_of_hunk; old_line_num <= old_end_of_hunk;
+       old_line_num++)
+    {
+      edited_line *el = get_line (old_line_num);
+      if (el)
+	line_count += el->get_effective_line_count ();
+      else
+	line_count++;
+    }
+  return line_count;
 }
 
 /* Get the state of LINE within the file, or NULL if it is untouched.  */
@@ -591,7 +692,8 @@ edited_file::get_num_lines (bool *missing_trailing_newline)
 edited_line::edited_line (const char *filename, int line_num)
 : m_line_num (line_num),
   m_content (NULL), m_len (0), m_alloc_sz (0),
-  m_line_events ()
+  m_line_events (),
+  m_predecessors ()
 {
   const char *line = location_get_source_line (filename, line_num,
 					       &m_len);
@@ -606,7 +708,12 @@ edited_line::edited_line (const char *filename, int line_num)
 
 edited_line::~edited_line ()
 {
+  unsigned i;
+  added_line *pred;
+
   free (m_content);
+  FOR_EACH_VEC_ELT (m_predecessors, i, pred)
+    delete pred;
 }
 
 /* A callback for deleting edited_line *, for use as a
@@ -643,6 +750,17 @@ edited_line::apply_fixit (int start_column,
 			  const char *replacement_str,
 			  int replacement_len)
 {
+  /* Handle newlines.  They will only ever be at the end of the
+     replacement text, thanks to the filtering in rich_location.  */
+  if (replacement_len > 1)
+    if (replacement_str[replacement_len - 1] == '\n')
+      {
+	/* Stash in m_predecessors, stripping off newline.  */
+	m_predecessors.safe_push (new added_line (replacement_str,
+						  replacement_len - 1));
+	return true;
+      }
+
   start_column = get_effective_column (start_column);
   next_column = get_effective_column (next_column);
 
@@ -687,6 +805,57 @@ edited_line::apply_fixit (int start_column,
   m_line_events.safe_push (line_event (start_column, next_column,
 				       replacement_len));
   return true;
+}
+
+/* Determine the number of lines that will be present after
+   editing for this line.  Typically this is just 1, but
+   if newlines have been added before this line, they will
+   also be counted.  */
+
+int
+edited_line::get_effective_line_count () const
+{
+  return m_predecessors.length () + 1;
+}
+
+/* Subroutine of edited_file::print_content.
+   Print this line and any new lines added before it, to PP.  */
+
+void
+edited_line::print_content (pretty_printer *pp) const
+{
+  unsigned i;
+  added_line *pred;
+  FOR_EACH_VEC_ELT (m_predecessors, i, pred)
+    {
+      pp_string (pp, pred->get_content ());
+      pp_newline (pp);
+    }
+  pp_string (pp, m_content);
+}
+
+/* Subroutine of edited_file::print_run_of_changed_lines for
+   printing diff hunks to PP.
+   Print the '+' line for this line, and any newlines added
+   before it.
+   Note that if this edited_line was actually edited, the '-'
+   line has already been printed.  If it wasn't, then we merely
+   have a placeholder edited_line for adding newlines to, and
+   we need to print a ' ' line for the edited_line as we haven't
+   printed it yet.  */
+
+void
+edited_line::print_diff_lines (pretty_printer *pp) const
+{
+  unsigned i;
+  added_line *pred;
+  FOR_EACH_VEC_ELT (m_predecessors, i, pred)
+    print_diff_line (pp, '+', pred->get_content (),
+		     pred->get_len ());
+  if (actually_edited_p ())
+    print_diff_line (pp, '+', m_content, m_len);
+  else
+    print_diff_line (pp, ' ', m_content, m_len);
 }
 
 /* Ensure that the buffer for m_content is at least large enough to hold
@@ -967,6 +1136,57 @@ test_applying_fixits_insert_after_failure (const line_table_case &case_)
   ASSERT_EQ (NULL, edit.generate_diff (false));
 }
 
+/* Test applying an "insert" fixit that adds a newline.  */
+
+static void
+test_applying_fixits_insert_containing_newline (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.
+     .........................0000000001111111.
+     .........................1234567890123456.  */
+  const char *old_content = ("    case 'a':\n" /* line 1. */
+			     "      x = a;\n"  /* line 2. */
+			     "    case 'b':\n" /* line 3. */
+			     "      x = b;\n");/* line 4. */
+
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", old_content);
+  const char *filename = tmp.get_filename ();
+  line_table_test ltt (case_);
+  linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 3);
+
+  /* Add a "break;" on a line by itself before line 3 i.e. before
+     column 1 of line 3. */
+  location_t case_start = linemap_position_for_column (line_table, 5);
+  location_t case_finish = linemap_position_for_column (line_table, 13);
+  location_t case_loc = make_location (case_start, case_start, case_finish);
+  rich_location richloc (line_table, case_loc);
+  location_t line_start = linemap_position_for_column (line_table, 1);
+  richloc.add_fixit_insert_before (line_start, "      break;\n");
+
+  if (case_finish > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  edit_context edit;
+  edit.add_fixits (&richloc);
+  auto_free <char *> new_content = edit.get_content (filename);
+  ASSERT_STREQ (("    case 'a':\n"
+		 "      x = a;\n"
+		 "      break;\n"
+		 "    case 'b':\n"
+		 "      x = b;\n"),
+		new_content);
+
+  /* Verify diff.  */
+  auto_free <char *> diff = edit.generate_diff (false);
+  ASSERT_STREQ (("@@ -1,4 +1,5 @@\n"
+		 "     case 'a':\n"
+		 "       x = a;\n"
+		 "+      break;\n"
+		 "     case 'b':\n"
+		 "       x = b;\n"),
+		diff);
+}
+
 /* Test applying a "replace" fixit that grows the affected line.  */
 
 static void
@@ -1055,6 +1275,44 @@ test_applying_fixits_shrinking_replace (const line_table_case &case_)
 		    "+foo = bar.field;\n"
 		    " /* after */\n", diff);
     }
+}
+
+/* Replacement fix-it hint containing a newline.  */
+
+static void
+test_applying_fixits_replace_containing_newline (const line_table_case &case_)
+{
+  /* Create a tempfile and write some text to it.
+    .........................0000000001111.
+    .........................1234567890123.  */
+  const char *old_content = "foo = bar ();\n";
+
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", old_content);
+  const char *filename = tmp.get_filename ();
+  line_table_test ltt (case_);
+  linemap_add (line_table, LC_ENTER, false, filename, 1);
+
+  /* Replace the " = " with "\n  = ", as if we were reformatting an
+     overly long line.  */
+  location_t start = linemap_position_for_column (line_table, 4);
+  location_t finish = linemap_position_for_column (line_table, 6);
+  location_t loc = linemap_position_for_column (line_table, 13);
+  rich_location richloc (line_table, loc);
+  source_range range = source_range::from_locations (start, finish);
+  richloc.add_fixit_replace (range, "\n  = ");
+
+  /* Newlines are only supported within fix-it hints that
+     are at the start of lines (for entirely new lines), hence
+     this fix-it should not be displayed.  */
+  ASSERT_TRUE (richloc.seen_impossible_fixit_p ());
+
+  if (finish > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
+
+  edit_context edit;
+  edit.add_fixits (&richloc);
+  auto_free <char *> new_content = edit.get_content (filename);
+  //ASSERT_STREQ ("foo\n  = bar ();\n", new_content);
 }
 
 /* Test applying a "remove" fixit.  */
@@ -1204,6 +1462,32 @@ change_line (edit_context &edit, int line_num)
   return loc;
 }
 
+/* Subroutine of test_applying_fixits_multiple_lines.
+   Add the text "INSERTED\n" in front of the given line.  */
+
+static location_t
+insert_line (edit_context &edit, int line_num)
+{
+  const line_map_ordinary *ord_map
+    = LINEMAPS_LAST_ORDINARY_MAP (line_table);
+  const int column = 1;
+  location_t loc =
+    linemap_position_for_line_and_column (line_table, ord_map,
+					  line_num, column);
+
+  expanded_location exploc = expand_location (loc);
+  if (loc <= LINE_MAP_MAX_LOCATION_WITH_COLS)
+    {
+      ASSERT_EQ (line_num, exploc.line);
+      ASSERT_EQ (column, exploc.column);
+    }
+
+  rich_location insert (line_table, loc);
+  insert.add_fixit_insert_before ("INSERTED\n");
+  edit.add_fixits (&insert);
+  return loc;
+}
+
 /* Test of editing multiple lines within a long file,
    to ensure that diffs are generated as expected.  */
 
@@ -1229,6 +1513,7 @@ test_applying_fixits_multiple_lines (const line_table_case &case_)
   change_line (edit, 2);
   change_line (edit, 3);
   change_line (edit, 4);
+  insert_line (edit, 5);
 
   /* A run of nearby lines, within the contextual limit.  */
   change_line (edit, 150);
@@ -1240,7 +1525,7 @@ test_applying_fixits_multiple_lines (const line_table_case &case_)
 
   /* Verify diff.  */
   auto_free <char *> diff = edit.generate_diff (false);
-  ASSERT_STREQ ("@@ -1,7 +1,7 @@\n"
+  ASSERT_STREQ ("@@ -1,7 +1,8 @@\n"
 		" line 1\n"
 		"-line 2\n"
 		"-line 3\n"
@@ -1248,10 +1533,11 @@ test_applying_fixits_multiple_lines (const line_table_case &case_)
 		"+CHANGED: line 2\n"
 		"+CHANGED: line 3\n"
 		"+CHANGED: line 4\n"
+		"+INSERTED\n"
 		" line 5\n"
 		" line 6\n"
 		" line 7\n"
-		"@@ -147,10 +147,10 @@\n"
+		"@@ -147,10 +148,10 @@\n"
 		" line 147\n"
 		" line 148\n"
 		" line 149\n"
@@ -1510,8 +1796,10 @@ edit_context_c_tests ()
   for_each_line_table_case (test_applying_fixits_insert_after);
   for_each_line_table_case (test_applying_fixits_insert_after_at_line_end);
   for_each_line_table_case (test_applying_fixits_insert_after_failure);
+  for_each_line_table_case (test_applying_fixits_insert_containing_newline);
   for_each_line_table_case (test_applying_fixits_growing_replace);
   for_each_line_table_case (test_applying_fixits_shrinking_replace);
+  for_each_line_table_case (test_applying_fixits_replace_containing_newline);
   for_each_line_table_case (test_applying_fixits_remove);
   for_each_line_table_case (test_applying_fixits_multiple);
   for_each_line_table_case (test_applying_fixits_multiple_lines);

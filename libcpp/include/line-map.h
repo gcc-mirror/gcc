@@ -1551,7 +1551,11 @@ class fixit_hint;
 
    Attempts to add a fix-it hint within a macro expansion will fail.
 
-   We do not yet support newlines in fix-it text; attempts to do so will fail.
+   There is only limited support for newline characters in fix-it hints:
+   only hints with newlines which insert an entire new line are permitted,
+   inserting at the start of a line, and finishing with a newline
+   (with no interior newline characters).  Other attempts to add
+   fix-it hints containing newline characters will fail.
 
    The rich_location API handles these failures gracefully, so that
    diagnostics can attempt to add fix-it hints without each needing
@@ -1690,7 +1694,13 @@ protected:
        [start, next_loc)
    Insertions have start == next_loc: "replace" the empty string at the
    start location with the new string.
-   Deletions are replacement with the empty string.  */
+   Deletions are replacement with the empty string.
+
+   There is only limited support for newline characters in fix-it hints
+   as noted above in the comment for class rich_location.
+   A fixit_hint instance can have at most one newline character; if
+   present, the newline character must be the final character of
+   the content (preventing e.g. fix-its that split a pre-existing line).  */
 
 class fixit_hint
 {
@@ -1711,6 +1721,8 @@ class fixit_hint
   size_t get_length () const { return m_len; }
 
   bool insertion_p () const { return m_start == m_next_loc; }
+
+  bool ends_with_newline_p () const;
 
  private:
   /* We don't use source_range here since, unlike most places,
