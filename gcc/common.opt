@@ -2492,7 +2492,7 @@ flow and turn the statement with erroneous or undefined behavior into a trap.
 
 fisolate-erroneous-paths-attribute
 Common Report Var(flag_isolate_erroneous_paths_attribute) Optimization
-Detect paths that trigger erroneous or undefined behavior due a null value
+Detect paths that trigger erroneous or undefined behavior due to a null value
 being used in a way forbidden by a returns_nonnull or nonnull
 attribute.  Isolate those paths from the main control flow and turn the
 statement with erroneous or undefined behavior into a trap.
