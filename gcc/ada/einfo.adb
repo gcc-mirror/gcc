@@ -185,6 +185,7 @@ package body Einfo is
    --    Scalar_Range                    Node20
 
    --    Accept_Address                  Elist21
+   --    Corresponding_Record_Component  Node21
    --    Default_Expr_Function           Node21
    --    Discriminant_Constraint         Elist21
    --    Interface_Name                  Node21
@@ -949,6 +950,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Subprogram_Body);
       return Node18 (Id);
    end Corresponding_Protected_Entry;
+
+   function Corresponding_Record_Component (Id : E) return E is
+   begin
+      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      return Node21 (Id);
+   end Corresponding_Record_Component;
 
    function Corresponding_Record_Type (Id : E) return E is
    begin
@@ -4082,6 +4089,12 @@ package body Einfo is
       pragma Assert (Ekind_In (Id, E_Void, E_Subprogram_Body));
       Set_Node18 (Id, V);
    end Set_Corresponding_Protected_Entry;
+
+   procedure Set_Corresponding_Record_Component (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Component, E_Discriminant));
+      Set_Node21 (Id, V);
+   end Set_Corresponding_Record_Component;
 
    procedure Set_Corresponding_Record_Type (Id : E; V : E) is
    begin
@@ -10401,6 +10414,11 @@ package body Einfo is
       case Ekind (Id) is
          when Entry_Kind =>
             Write_Str ("Accept_Address");
+
+         when E_Component
+            | E_Discriminant
+         =>
+            Write_Str ("Corresponding_Record_Component");
 
          when E_In_Parameter =>
             Write_Str ("Default_Expr_Function");

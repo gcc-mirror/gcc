@@ -18147,6 +18147,7 @@ package body Sem_Ch3 is
 
          if not Is_Tagged then
             Set_Original_Record_Component (New_C, New_C);
+            Set_Corresponding_Record_Component (New_C, Old_C);
          end if;
 
          --  Set the proper type of an access discriminant
@@ -18245,6 +18246,7 @@ package body Sem_Ch3 is
                  and then Original_Record_Component (Corr_Discrim) = Old_C
                then
                   Set_Original_Record_Component (Discrim, New_C);
+                  Set_Corresponding_Record_Component (Discrim, Empty);
                end if;
 
                Next_Discriminant (Discrim);
