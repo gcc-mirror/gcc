@@ -1,3 +1,8 @@
+2017-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80549
+	* gcc.dg/torture/pr80549.c: New testcase.
+
 2017-05-02  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.dg/pr78138.c: Use __SIZE_TYPE__ instead of
