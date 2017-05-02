@@ -3097,6 +3097,17 @@ package body Errout is
             --  '[' (will be/would have been raised at run time)
 
             when '[' =>
+
+               --  Switch the message from a warning to an error if the flag
+               --  -gnatwE is specified to treat run-time exception warnings
+               --  as errors.
+
+               if Is_Warning_Msg
+                 and then Warning_Mode = Treat_Run_Time_As_Error
+               then
+                  Is_Warning_Msg := False;
+               end if;
+
                if Is_Warning_Msg then
                   Set_Msg_Str ("will be raised at run time");
                else

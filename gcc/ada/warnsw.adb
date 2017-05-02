@@ -532,6 +532,9 @@ package body Warnsw is
          when 'e' =>
             Warning_Mode                        := Treat_As_Error;
 
+         when 'E' =>
+            Warning_Mode                        := Treat_Run_Time_As_Error;
+
          when 'f' =>
             Check_Unreferenced_Formals          := True;
 

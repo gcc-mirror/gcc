@@ -6712,6 +6712,11 @@ package body Sem_Res is
       Alt := First (Alternatives (N));
       while Present (Alt) loop
          Alt_Expr := Expression (Alt);
+
+         if Error_Posted (Alt_Expr) then
+            return;
+         end if;
+
          Resolve (Alt_Expr, Typ);
          Alt_Typ := Etype (Alt_Expr);
 
@@ -8252,11 +8257,13 @@ package body Sem_Res is
       if No (Condition) then
          return;
       end if;
+
       Then_Expr := Next (Condition);
 
       if No (Then_Expr) then
          return;
       end if;
+
       Else_Expr := Next (Then_Expr);
 
       Resolve (Condition, Any_Boolean);
@@ -8268,9 +8275,7 @@ package body Sem_Res is
       --  a constraint check. The same is done for the else part below, again
       --  comparing subtypes rather than base types.
 
-      if Is_Scalar_Type (Then_Typ)
-        and then Then_Typ /= Typ
-      then
+      if Is_Scalar_Type (Then_Typ) and then Then_Typ /= Typ then
          Rewrite (Then_Expr, Convert_To (Typ, Then_Expr));
          Analyze_And_Resolve (Then_Expr, Typ);
       end if;
