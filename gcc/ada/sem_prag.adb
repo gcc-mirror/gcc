@@ -13422,6 +13422,7 @@ package body Sem_Prag is
          when Pragma_Contract_Cases => Contract_Cases : declare
             Spec_Id   : Entity_Id;
             Subp_Decl : Node_Id;
+            Subp_Spec : Node_Id;
 
          begin
             GNAT_Pragma;
@@ -13462,7 +13463,19 @@ package body Sem_Prag is
             --  Subprogram
 
             elsif Nkind (Subp_Decl) = N_Subprogram_Declaration then
-               null;
+               Subp_Spec := Specification (Subp_Decl);
+
+               --  Pragma Contract_Cases is forbidden on null procedures, as
+               --  this may lead to potential ambiguities in behavior when
+               --  interface null procedures are involved.
+
+               if Nkind (Subp_Spec) = N_Procedure_Specification
+                 and then Null_Present (Subp_Spec)
+               then
+                  Error_Msg_N (Fix_Error
+                    ("pragma % cannot apply to null procedure"), N);
+                  return;
+               end if;
 
             else
                Pragma_Misplaced;

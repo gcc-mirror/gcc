@@ -1,3 +1,26 @@
+2017-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Find_Equality_Types, Try_One_Interp): The same relaxed
+	visibility rules for equality operators that apply within an
+	instantiation apply within an inlined body.
+	* sem_type.adb (Add_One_Interp): ditto.
+
+2017-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Forbid pragma Contract_Cases on null
+	procedures.
+
+2017-05-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* snames.ads-tmpl
+	(Name_Assume, Name_Attribute_Definition, Name_Loop_Optimize,
+	Name_No_Tagged_Streams): Move to regular pragmas.  Add
+	placeholders for Default_Scalar_Storage_Order, Dispatching_Domain,
+	and Secondary_Stack_Size.
+	(Pragma_Id): Move Pragma_Assume,
+	Pragma_Attribute_Definition, Pragma_Loop_Optimize and
+	Pragma_No_Tagged_Streams to second part.
+
 2017-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_attr.adb: Minor reformatting.
