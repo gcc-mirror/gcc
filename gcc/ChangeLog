@@ -1,3 +1,8 @@
+2017-05-01  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (xop_vpermil2<mode>3): Do not allow operand
+	swapping, add (x,x,m,x,n) alternative.
+
 2017-05-01  Nathan Sidwell  <nathan@acm.org>
 
 	* calls.c (combine_pending_stack_adjustment_and_call): Remove
