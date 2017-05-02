@@ -921,7 +921,7 @@ package Checks is
    --  Ada 2005 (AI-231): Check bad usages of the null-exclusion issue
    --
    --  When a value for Comp is supplied (as in the case of an uninitialized
-   --  null-excluding component within a composite object), a reported error
+   --  null-excluding component within a composite object), a reported warning
    --  will indicate the offending component instead of the object itself.
 
    procedure Remove_Checks (Expr : Node_Id);
