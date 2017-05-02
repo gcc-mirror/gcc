@@ -26,6 +26,7 @@
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
+with Exp_Ch4;
 with Exp_Ch5;  use Exp_Ch5;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
@@ -61,6 +62,9 @@ package body Exp_SPARK is
 
    procedure Expand_SPARK_N_Object_Renaming_Declaration (N : Node_Id);
    --  Perform name evaluation for a renamed object
+
+   procedure Expand_SPARK_Op_Ne (N : Node_Id);
+   --  Rewrite operator /= based on operator = when defined explicitly
 
    ------------------
    -- Expand_SPARK --
@@ -124,6 +128,9 @@ package body Exp_SPARK is
 
          when N_Object_Renaming_Declaration =>
             Expand_SPARK_N_Object_Renaming_Declaration (N);
+
+         when N_Op_Ne =>
+            Expand_SPARK_Op_Ne (N);
 
          when N_Freeze_Entity =>
             if Is_Type (Entity (N)) then
@@ -290,6 +297,26 @@ package body Exp_SPARK is
 
       Evaluate_Name (Name (N));
    end Expand_SPARK_N_Object_Renaming_Declaration;
+
+   ------------------------
+   -- Expand_SPARK_Op_Ne --
+   ------------------------
+
+   procedure Expand_SPARK_Op_Ne (N : Node_Id) is
+      Typ : constant Entity_Id := Etype (Left_Opnd (N));
+
+   begin
+      --  Case of elementary type with standard operator
+
+      if Is_Elementary_Type (Typ)
+        and then Sloc (Entity (N)) = Standard_Location
+      then
+         null;
+
+      else
+         Exp_Ch4.Expand_N_Op_Ne (N);
+      end if;
+   end Expand_SPARK_Op_Ne;
 
    -------------------------------------
    -- Expand_SPARK_Potential_Renaming --

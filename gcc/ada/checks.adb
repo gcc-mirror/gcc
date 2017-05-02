@@ -1355,8 +1355,13 @@ package body Checks is
 
             Apply_Range_Check (N, Typ);
 
+         --  Do not install a discriminant check for a constrained subtype
+         --  created for an unconstrained nominal type because the subtype
+         --  has the correct constraints by construction.
+
          elsif Has_Discriminants (Base_Type (Desig_Typ))
-            and then Is_Constrained (Desig_Typ)
+           and then Is_Constrained (Desig_Typ)
+           and then not Is_Constr_Subt_For_U_Nominal (Desig_Typ)
          then
             Apply_Discriminant_Check (N, Typ);
          end if;

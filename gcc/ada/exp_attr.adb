@@ -83,6 +83,9 @@ package body Exp_Attr is
    --  value returned is the entity of the constructed function body. We do not
    --  bother to generate a separate spec for this subprogram.
 
+   function Build_Disp_Get_Task_Id_Call (Actual : Node_Id) return Node_Id;
+   --  Build a call to Disp_Get_Task_Id, passing Actual as actual parameter
+
    function Build_Record_VS_Func
      (R_Type : Entity_Id;
       Nod    : Node_Id) return Entity_Id;
@@ -353,6 +356,23 @@ package body Exp_Attr is
       Set_Is_Pure (Func_Id);
       return Func_Id;
    end Build_Array_VS_Func;
+
+   ---------------------------------
+   -- Build_Disp_Get_Task_Id_Call --
+   ---------------------------------
+
+   function Build_Disp_Get_Task_Id_Call (Actual : Node_Id) return Node_Id is
+      Typ  : constant Entity_Id := Etype (Actual);
+      Id : constant Node_Id :=
+        New_Occurrence_Of
+          (Find_Prim_Op (Typ, Name_uDisp_Get_Task_Id), Sloc (Actual));
+      Result : constant Node_Id :=
+        Make_Function_Call (Sloc (Actual),
+          Name => Id,
+          Parameter_Associations => New_List (Actual));
+   begin
+      return Result;
+   end Build_Disp_Get_Task_Id_Call;
 
    --------------------------
    -- Build_Record_VS_Func --
@@ -2469,6 +2489,7 @@ package body Exp_Attr is
       --  Transforms 'Callable attribute into a call to the Callable function
 
       when Attribute_Callable =>
+
          --  We have an object of a task interface class-wide type as a prefix
          --  to Callable. Generate:
          --    callable (Task_Id (Pref._disp_get_task_id));
@@ -2478,29 +2499,18 @@ package body Exp_Attr is
            and then Is_Interface (Ptyp)
            and then Is_Task_Interface (Ptyp)
          then
-            declare
-               Id : constant Node_Id :=
-                 New_Occurrence_Of
-                   (Find_Prim_Op (Ptyp, Name_uDisp_Get_Task_Id), Loc);
-               Call : constant Node_Id :=
-                 Make_Function_Call (Loc,
-                   Name => Id,
-                   Parameter_Associations => New_List (Pref));
-            begin
-               Rewrite (N,
-                 Make_Function_Call (Loc,
-                   Name =>
-                     New_Occurrence_Of (RTE (RE_Callable), Loc),
-                   Parameter_Associations => New_List (
-                     Make_Unchecked_Type_Conversion (Loc,
-                       Subtype_Mark =>
-                         New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
-                       Expression => Call))));
-            end;
+            Rewrite (N,
+              Make_Function_Call (Loc,
+                Name =>
+                  New_Occurrence_Of (RTE (RE_Callable), Loc),
+                Parameter_Associations => New_List (
+                  Make_Unchecked_Type_Conversion (Loc,
+                    Subtype_Mark =>
+                      New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
+                    Expression => Build_Disp_Get_Task_Id_Call (Pref)))));
 
          else
-            Rewrite (N,
-              Build_Call_With_Task (Pref, RTE (RE_Callable)));
+            Rewrite (N, Build_Call_With_Task (Pref, RTE (RE_Callable)));
          end if;
 
          Analyze_And_Resolve (N, Standard_Boolean);
@@ -3581,17 +3591,9 @@ package body Exp_Attr is
               and then Is_Interface (Ptyp)
               and then Is_Task_Interface (Ptyp)
             then
-               declare
-                  Id : constant Node_Id :=
-                    New_Occurrence_Of
-                      (Find_Prim_Op (Ptyp, Name_uDisp_Get_Task_Id), Loc);
-                  Call : constant Node_Id :=
-                    Make_Function_Call (Loc,
-                      Name => Id,
-                      Parameter_Associations => New_List (Pref));
-               begin
-                  Rewrite (N, Unchecked_Convert_To (Id_Kind, Call));
-               end;
+               Rewrite
+                 (N, Unchecked_Convert_To
+                       (Id_Kind, Build_Disp_Get_Task_Id_Call (Pref)));
 
             else
                Rewrite (N,
@@ -6278,25 +6280,15 @@ package body Exp_Attr is
            and then Is_Interface (Ptyp)
            and then Is_Task_Interface (Ptyp)
          then
-            declare
-               Id : constant Node_Id :=
-                 New_Occurrence_Of
-                   (Find_Prim_Op (Ptyp, Name_uDisp_Get_Task_Id), Loc);
-               Call : constant Node_Id :=
-                 Make_Function_Call (Loc,
-                   Name => Id,
-                   Parameter_Associations => New_List (Pref));
-            begin
-               Rewrite (N,
-                 Make_Function_Call (Loc,
-                   Name =>
-                     New_Occurrence_Of (RTE (RE_Terminated), Loc),
-                   Parameter_Associations => New_List (
-                     Make_Unchecked_Type_Conversion (Loc,
-                       Subtype_Mark =>
-                         New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
-                       Expression => Call))));
-            end;
+            Rewrite (N,
+              Make_Function_Call (Loc,
+                Name =>
+                  New_Occurrence_Of (RTE (RE_Terminated), Loc),
+                Parameter_Associations => New_List (
+                  Make_Unchecked_Type_Conversion (Loc,
+                    Subtype_Mark =>
+                      New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
+                    Expression => Build_Disp_Get_Task_Id_Call (Pref)))));
 
          elsif Restricted_Profile then
             Rewrite (N,

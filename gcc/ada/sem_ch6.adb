@@ -5996,9 +5996,11 @@ package body Sem_Ch6 is
                   & "(RM-2005 6.5(5.5/2))?y?", Expr);
             end if;
 
-         --  Ada 95 mode, compatibility warnings disabled
+         --  Ada 95 mode, and compatibility warnings disabled
 
          else
+            pragma Assert (Ada_Version <= Ada_95);
+            pragma Assert (not (Warn_On_Ada_2005_Compatibility or GNAT_Mode));
             return; --  skip continuation messages below
          end if;
 
