@@ -1191,7 +1191,7 @@ package body Errout is
 
          if Errors.Table (Cur_Msg).Warn then
             Warning_Info_Messages := Warning_Info_Messages + 1;
-            Warnings_Detected := Warnings_Detected + 1;
+            Warnings_Detected     := Warnings_Detected + 1;
          else
             Report_Info_Messages := Report_Info_Messages + 1;
          end if;
