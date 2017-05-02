@@ -1,5 +1,15 @@
 2017-05-02  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (get_computation_at): Reorder parameters.
+	(get_computation): Delete.
+	(get_computation_cost): Implement like get_computation_cost_at.
+	Use get_computation_at.
+	(get_computation_cost_at): Delete.
+	(rewrite_use_nonlinear_expr): Use get_computation_at.
+	(rewrite_use_compare, remove_unused_ivs): Ditto.
+
+2017-05-02  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-ivopts.c (rewrite_use_address): Simple refactor.
 
 2017-05-02  Bin Cheng  <bin.cheng@arm.com>
