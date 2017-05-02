@@ -592,11 +592,9 @@ package Exp_Util is
    function Find_Prim_Op
      (T    : Entity_Id;
       Name : TSS_Name_Type) return Entity_Id;
-   --  Find the first primitive operation of type T whose name has the form
-   --  indicated by the name parameter (i.e. is a type support subprogram
-   --  with the indicated suffix). This function allows use of a primitive
-   --  operation which is not directly visible. If T is a class wide type,
-   --  then the reference is to an operation of the corresponding root type.
+   --  Same as Find_Prim_Op above, except we're searching for an op that has
+   --  the form indicated by Name (i.e. is a type support subprogram with the
+   --  indicated suffix).
 
    function Find_Optional_Prim_Op
      (T : Entity_Id; Name : Name_Id) return Entity_Id;
