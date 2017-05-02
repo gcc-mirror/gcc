@@ -1,3 +1,13 @@
+2017-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb: Minor reformatting.
+
+2017-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): Improve error
+	detection for illegal references to private components or
+	operations of a protected type in the body of the type.
+
 2017-05-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* opt.ads: Add missing GNAT markers in comments.

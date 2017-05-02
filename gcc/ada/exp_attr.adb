@@ -362,16 +362,18 @@ package body Exp_Attr is
    ---------------------------------
 
    function Build_Disp_Get_Task_Id_Call (Actual : Node_Id) return Node_Id is
-      Typ  : constant Entity_Id := Etype (Actual);
-      Id : constant Node_Id :=
-        New_Occurrence_Of
-          (Find_Prim_Op (Typ, Name_uDisp_Get_Task_Id), Sloc (Actual));
-      Result : constant Node_Id :=
-        Make_Function_Call (Sloc (Actual),
-          Name => Id,
-          Parameter_Associations => New_List (Actual));
+      Loc  : constant Source_Ptr := Sloc (Actual);
+      Typ  : constant Entity_Id  := Etype (Actual);
+      Subp : constant Entity_Id  := Find_Prim_Op (Typ, Name_uDisp_Get_Task_Id);
+
    begin
-      return Result;
+      --  Generate:
+      --    _Disp_Get_Task_Id (Actual)
+
+      return
+        Make_Function_Call (Loc,
+          Name                   => New_Occurrence_Of (Subp, Loc),
+          Parameter_Associations => New_List (Actual));
    end Build_Disp_Get_Task_Id_Call;
 
    --------------------------
@@ -2501,13 +2503,13 @@ package body Exp_Attr is
          then
             Rewrite (N,
               Make_Function_Call (Loc,
-                Name =>
+                Name                   =>
                   New_Occurrence_Of (RTE (RE_Callable), Loc),
                 Parameter_Associations => New_List (
                   Make_Unchecked_Type_Conversion (Loc,
                     Subtype_Mark =>
                       New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
-                    Expression => Build_Disp_Get_Task_Id_Call (Pref)))));
+                    Expression   => Build_Disp_Get_Task_Id_Call (Pref)))));
 
          else
             Rewrite (N, Build_Call_With_Task (Pref, RTE (RE_Callable)));
@@ -3591,9 +3593,9 @@ package body Exp_Attr is
               and then Is_Interface (Ptyp)
               and then Is_Task_Interface (Ptyp)
             then
-               Rewrite
-                 (N, Unchecked_Convert_To
-                       (Id_Kind, Build_Disp_Get_Task_Id_Call (Pref)));
+               Rewrite (N,
+                 Unchecked_Convert_To
+                   (Id_Kind, Build_Disp_Get_Task_Id_Call (Pref)));
 
             else
                Rewrite (N,
@@ -6282,13 +6284,13 @@ package body Exp_Attr is
          then
             Rewrite (N,
               Make_Function_Call (Loc,
-                Name =>
+                Name                   =>
                   New_Occurrence_Of (RTE (RE_Terminated), Loc),
                 Parameter_Associations => New_List (
                   Make_Unchecked_Type_Conversion (Loc,
                     Subtype_Mark =>
                       New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
-                    Expression => Build_Disp_Get_Task_Id_Call (Pref)))));
+                    Expression   => Build_Disp_Get_Task_Id_Call (Pref)))));
 
          elsif Restricted_Profile then
             Rewrite (N,
