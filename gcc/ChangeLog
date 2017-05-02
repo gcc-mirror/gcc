@@ -1,5 +1,14 @@
 2017-05-02  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (struct iv_ca): Rename n_regs to n_invs.
+	(ivopts_global_cost_for_size): Rename parameter and update uses.
+	(iv_ca_recount_cost): Update uses.
+	(iv_ca_set_remove_invs, iv_ca_set_no_cp): Record invariants and
+	candidates seperately in n_invs and n_cands.
+	(iv_ca_set_add_invs, iv_ca_set_cp, iv_ca_new): Ditto.
+
+2017-05-02  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-ivopts.c (struct walk_tree_data): New.
 	(find_inv_vars_cb): New.
 	(find_depends): Renamed to ...
