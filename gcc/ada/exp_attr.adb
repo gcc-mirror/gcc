@@ -1028,7 +1028,7 @@ package body Exp_Attr is
       Loc       : Source_Ptr;
       Loop_Id   : Entity_Id;
       Loop_Stmt : Node_Id;
-      Result    : Node_Id;
+      Result    : Node_Id := Empty;
       Scheme    : Node_Id;
       Temp_Decl : Node_Id;
       Temp_Id   : Entity_Id;
@@ -1092,8 +1092,6 @@ package body Exp_Attr is
 
             Decls := Declarations (Parent (Parent (Loop_Stmt)));
          end if;
-
-         Result := Empty;
 
       --  Transform the loop into a conditional block
 
@@ -2480,20 +2478,25 @@ package body Exp_Attr is
            and then Is_Interface (Ptyp)
            and then Is_Task_Interface (Ptyp)
          then
-            Rewrite (N,
-              Make_Function_Call (Loc,
-                Name                   =>
-                  New_Occurrence_Of (RTE (RE_Callable), Loc),
-                Parameter_Associations => New_List (
-                  Make_Unchecked_Type_Conversion (Loc,
-                    Subtype_Mark =>
-                      New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
-                    Expression   =>
-                      Make_Selected_Component (Loc,
-                        Prefix        =>
-                          New_Copy_Tree (Pref),
-                        Selector_Name =>
-                          Make_Identifier (Loc, Name_uDisp_Get_Task_Id))))));
+            declare
+               Id : constant Node_Id :=
+                 New_Occurrence_Of
+                   (Find_Prim_Op (Ptyp, Name_uDisp_Get_Task_Id), Loc);
+               Call : constant Node_Id :=
+                 Make_Function_Call (Loc,
+                   Name => Id,
+                   Parameter_Associations => New_List (Pref));
+            begin
+               Rewrite (N,
+                 Make_Function_Call (Loc,
+                   Name =>
+                     New_Occurrence_Of (RTE (RE_Callable), Loc),
+                   Parameter_Associations => New_List (
+                     Make_Unchecked_Type_Conversion (Loc,
+                       Subtype_Mark =>
+                         New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
+                       Expression => Call))));
+            end;
 
          else
             Rewrite (N,
@@ -3578,13 +3581,17 @@ package body Exp_Attr is
               and then Is_Interface (Ptyp)
               and then Is_Task_Interface (Ptyp)
             then
-               Rewrite (N,
-                 Unchecked_Convert_To (Id_Kind,
-                   Make_Selected_Component (Loc,
-                     Prefix =>
-                       New_Copy_Tree (Pref),
-                     Selector_Name =>
-                       Make_Identifier (Loc, Name_uDisp_Get_Task_Id))));
+               declare
+                  Id : constant Node_Id :=
+                    New_Occurrence_Of
+                      (Find_Prim_Op (Ptyp, Name_uDisp_Get_Task_Id), Loc);
+                  Call : constant Node_Id :=
+                    Make_Function_Call (Loc,
+                      Name => Id,
+                      Parameter_Associations => New_List (Pref));
+               begin
+                  Rewrite (N, Unchecked_Convert_To (Id_Kind, Call));
+               end;
 
             else
                Rewrite (N,
@@ -6264,27 +6271,32 @@ package body Exp_Attr is
 
          --  The prefix of Terminated is of a task interface class-wide type.
          --  Generate:
-         --    terminated (Task_Id (Pref._disp_get_task_id));
+         --    terminated (Task_Id (_disp_get_task_id (Pref)));
 
          if Ada_Version >= Ada_2005
            and then Ekind (Ptyp) = E_Class_Wide_Type
            and then Is_Interface (Ptyp)
            and then Is_Task_Interface (Ptyp)
          then
-            Rewrite (N,
-              Make_Function_Call (Loc,
-                Name =>
-                  New_Occurrence_Of (RTE (RE_Terminated), Loc),
-                Parameter_Associations => New_List (
-                  Make_Unchecked_Type_Conversion (Loc,
-                    Subtype_Mark =>
-                      New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
-                    Expression =>
-                      Make_Selected_Component (Loc,
-                        Prefix =>
-                          New_Copy_Tree (Pref),
-                        Selector_Name =>
-                          Make_Identifier (Loc, Name_uDisp_Get_Task_Id))))));
+            declare
+               Id : constant Node_Id :=
+                 New_Occurrence_Of
+                   (Find_Prim_Op (Ptyp, Name_uDisp_Get_Task_Id), Loc);
+               Call : constant Node_Id :=
+                 Make_Function_Call (Loc,
+                   Name => Id,
+                   Parameter_Associations => New_List (Pref));
+            begin
+               Rewrite (N,
+                 Make_Function_Call (Loc,
+                   Name =>
+                     New_Occurrence_Of (RTE (RE_Terminated), Loc),
+                   Parameter_Associations => New_List (
+                     Make_Unchecked_Type_Conversion (Loc,
+                       Subtype_Mark =>
+                         New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
+                       Expression => Call))));
+            end;
 
          elsif Restricted_Profile then
             Rewrite (N,

@@ -8763,18 +8763,20 @@ package body Sem_Ch6 is
          if Present (Entity (E1)) then
             return Entity (E1) = Entity (E2)
 
-              --  One may be a discriminant that has been replaced by
-              --  the corresponding discriminal.
+              --  One may be a discriminant that has been replaced by the
+              --  corresponding discriminal.
 
-              or else (Chars (Entity (E1)) = Chars (Entity (E2))
-                        and then Ekind (Entity (E1)) = E_Discriminant
-                        and then Ekind (Entity (E2)) = E_In_Parameter)
+              or else
+                (Chars (Entity (E1)) = Chars (Entity (E2))
+                  and then Ekind (Entity (E1)) = E_Discriminant
+                  and then Ekind (Entity (E2)) = E_In_Parameter)
 
              --  The discriminant of a protected type is transformed into
              --  a local constant and then into a parameter of a protected
              --  operation.
 
-             or else (Ekind (Entity (E1)) = E_Constant
+             or else
+               (Ekind (Entity (E1)) = E_Constant
                  and then Ekind (Entity (E2)) = E_In_Parameter
                  and then Present (Discriminal_Link (Entity (E1)))
                  and then Discriminal_Link (Entity (E1)) =
@@ -8784,9 +8786,10 @@ package body Sem_Ch6 is
              --  match if they have the same identifier, even though they
              --  are different entities.
 
-              or else (Chars (Entity (E1)) = Chars (Entity (E2))
-                       and then Ekind (Entity (E1)) = E_Loop_Parameter
-                       and then Ekind (Entity (E2)) = E_Loop_Parameter);
+              or else
+                (Chars (Entity (E1)) = Chars (Entity (E2))
+                  and then Ekind (Entity (E1)) = E_Loop_Parameter
+                  and then Ekind (Entity (E2)) = E_Loop_Parameter);
 
          elsif Nkind (E1) = N_Expanded_Name
            and then Nkind (E2) = N_Expanded_Name

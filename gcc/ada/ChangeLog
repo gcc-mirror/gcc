@@ -1,3 +1,15 @@
+2017-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb, sem_ch3.adb, sem_ch6.adb: Minor reformatting.
+
+2017-05-02  Bob Duff  <duff@adacore.com>
+
+	* exp_attr.adb (Callable, Identity, Terminated): Use Find_Prim_Op
+	to find primitive ops, instead of using an Identifier that will
+	later be looked up. This is necessary because these ops are not
+	necessarily visible at all places where we need to call them.
+	* exp_util.ads: Minor comment fix.
+
 2017-05-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Fully_Conformant_Expressions): Two entity

@@ -3583,17 +3583,17 @@ package body Sem_Ch3 is
       T     : Entity_Id;
 
       E : Node_Id := Expression (N);
-      --  E is set to Expression (N) throughout this routine. When
-      --  Expression (N) is modified, E is changed accordingly.
+      --  E is set to Expression (N) throughout this routine. When Expression
+      --  (N) is modified, E is changed accordingly.
 
       Prev_Entity : Entity_Id := Empty;
 
       procedure Check_For_Null_Excluding_Components
         (Obj_Typ  : Entity_Id;
          Obj_Decl : Node_Id);
-      --  Recursively verify that each null-excluding component of an object
-      --  declaration's type has explicit initialization, and generate
-      --  compile-time warnings for each one that does not.
+      --  Verify that each null-excluding component of object declaration
+      --  Obj_Decl carrying type Obj_Typ has explicit initialization. Emit
+      --  a compile-time warning if this is not the case.
 
       function Count_Tasks (T : Entity_Id) return Uint;
       --  This function is called when a non-generic library level object of a
@@ -3622,12 +3622,12 @@ package body Sem_Ch3 is
         (Obj_Typ  : Entity_Id;
          Obj_Decl : Node_Id)
       is
-
          procedure Check_Component
            (Comp_Typ  : Entity_Id;
             Comp_Decl : Node_Id := Empty);
-         --  Perform compile-time null-exclusion checks on a given component
-         --  and all of its subcomponents, if any.
+         --  Apply a compile-time null-exclusion check on a component denoted
+         --  by its declaration Comp_Decl and type Comp_Typ, and all of its
+         --  subcomponents (if any).
 
          ---------------------
          -- Check_Component --
@@ -3641,15 +3641,14 @@ package body Sem_Ch3 is
             T    : Entity_Id;
 
          begin
-            --  Return without further checking if the component has explicit
-            --  initialization or does not come from source.
+            --  Do not consider internally-generated components or those that
+            --  are already initialized.
 
-            if Present (Comp_Decl) then
-               if not Comes_From_Source (Comp_Decl)
-                 or else Present (Expression (Comp_Decl))
-               then
-                  return;
-               end if;
+            if Present (Comp_Decl)
+              and then (not Comes_From_Source (Comp_Decl)
+                         or else Present (Expression (Comp_Decl)))
+            then
+               return;
             end if;
 
             if Is_Incomplete_Or_Private_Type (Comp_Typ)
@@ -3667,9 +3666,10 @@ package body Sem_Ch3 is
             then
                Null_Exclusion_Static_Checks (Obj_Decl, Comp_Decl);
 
-            --  Check array type components
+            --  Check array components
 
             elsif Is_Array_Type (T) then
+
                --  There is no suitable component when the object is of an
                --  array type. However, a namable component may appear at some
                --  point during the recursive inspection, but not at the top
@@ -3681,12 +3681,10 @@ package body Sem_Ch3 is
                   Check_Component (Component_Type (T), Comp_Decl);
                end if;
 
-            --  If T allows named components, then iterate through them,
-            --  recursively verifying all subcomponents.
+            --  Verify all components of type T
 
-            --  NOTE: Due to the complexities involved with checking components
-            --  of nontrivial types with discriminants (variant records and
-            --  the like), no static checking is performed on them. ???
+            --  Note: No checks are performed on types with discriminants due
+            --  to complexities involving variants. ???
 
             elsif (Is_Concurrent_Type (T)
                     or else Is_Incomplete_Or_Private_Type (T)
@@ -3910,12 +3908,12 @@ package body Sem_Ch3 is
       --  out some static checks.
 
       if Ada_Version >= Ada_2005 then
+
          --  In case of aggregates we must also take care of the correct
          --  initialization of nested aggregates bug this is done at the
          --  point of the analysis of the aggregate (see sem_aggr.adb) ???
 
          if Can_Never_Be_Null (T) then
-
             if Present (Expression (N))
               and then Nkind (Expression (N)) = N_Aggregate
             then

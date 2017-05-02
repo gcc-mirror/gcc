@@ -4124,7 +4124,7 @@ package body Checks is
 
          if Present (Comp) then
 
-            --  Specialize the error message to indicate that we are dealing
+            --  Specialize the warning message to indicate that we are dealing
             --  with an uninitialized composite object that has a defaulted
             --  null-excluding component.
 
@@ -4133,9 +4133,11 @@ package body Checks is
 
             Apply_Compile_Time_Constraint_Error
               (N      => Expression (N),
-               Msg    => "(Ada 2005) null-excluding component % of object % " &
-                           "must be initialized??",
+               Msg    =>
+                 "(Ada 2005) null-excluding component % of object % must be "
+                 & "initialized??",
                Reason => CE_Null_Not_Allowed);
+
          else
             Apply_Compile_Time_Constraint_Error
               (N      => Expression (N),
