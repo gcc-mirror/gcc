@@ -1,5 +1,19 @@
 2017-05-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (assoc_to_constructor): Make sure
+	Corresponding_Discriminant is only called on discriminants.
+	Skip the saving of the result only for them.
+	(gnat_to_gnu) <N_Selected_Component>: Likewise.
+	<N_Unchecked_Type_Conversion>: Translate the result type first.
+	(gigi): Set TREE_NOTHROW on Begin_Handler.
+	(stmt_list_cannot_raise_p): New predicate.
+	(Exception_Handler_to_gnu_gcc): Emit a simple final call instead of
+	a cleanup if the statements of the handler cannot raise.
+	(process_freeze_entity): Use Is_Record_Type.
+	(process_type): Likewise.
+
+2017-05-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* einfo.ads (Corresponding_Record_Component): New alias
 	for Node21 used for E_Component and E_Discriminant.
 	* einfo.adb (Corresponding_Record_Component): New function.
