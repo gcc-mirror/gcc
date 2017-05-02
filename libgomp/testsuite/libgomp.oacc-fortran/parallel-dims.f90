@@ -3,6 +3,7 @@
 
 ! { dg-additional-sources parallel-dims-aux.c }
 ! { dg-do run }
+  ! { dg-skip-if TODO { *-*-* } }
 ! { dg-prune-output "command-line option '-fintrinsic-modules-path=.*' is valid for Fortran but not for C" }
 
 ! { dg-additional-options "-fopt-info-note-omp" }

@@ -44,6 +44,7 @@ void acc_routine (void)
     #pragma acc loop reduction(+:sum)
     for (i = 0; i < 10; i++)
       #pragma acc loop reduction(+:sum)
+      // { dg-warning "insufficient partitioning available to parallelize loop" "" { target *-*-* } .-1 }
       for (j = 0; j < 10; j++)
         #pragma acc loop reduction(+:sum)
         for (k = 0; k < 10; k++)
@@ -53,12 +54,14 @@ void acc_routine (void)
     for (i = 0; i < 10; i++)
       {
         #pragma acc loop reduction(+:sum)
+	// { dg-warning "insufficient partitioning available to parallelize loop" "" { target *-*-* } .-1 }
         for (j = 0; j < 10; j++)
           #pragma acc loop reduction(+:sum)
           for (k = 0; k < 10; k++)
             sum = 1;
 
         #pragma acc loop reduction(-:diff)
+	// { dg-warning "insufficient partitioning available to parallelize loop" "" { target *-*-* } .-1 }
         for (j = 0; j < 10; j++)
           #pragma acc loop reduction(-:diff)
           for (k = 0; k < 10; k++)

@@ -6667,6 +6667,14 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  field_ok = ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP);
 	  goto check_dup_generic;
 	case OMP_CLAUSE_REDUCTION:
+	  if (ort == C_ORT_ACC && oacc_get_fn_attrib (current_function_decl)
+	      && omp_find_clause (clauses, OMP_CLAUSE_GANG))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"gang reduction on an orphan loop");
+	      remove = true;
+	      break;
+	    }
 	  if (reduction_seen == 0)
 	    reduction_seen = OMP_CLAUSE_REDUCTION_INSCAN (c) ? -1 : 1;
 	  else if (reduction_seen != -2
