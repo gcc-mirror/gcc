@@ -7361,9 +7361,6 @@ rewrite_use_address (struct ivopts_data *data,
 		     struct iv_use *use, struct iv_cand *cand)
 {
   aff_tree aff;
-  gimple_stmt_iterator bsi = gsi_for_stmt (use->stmt);
-  tree base_hint = NULL_TREE;
-  tree ref, iv;
   bool ok;
 
   adjust_iv_update_pos (cand, use);
@@ -7382,17 +7379,18 @@ rewrite_use_address (struct ivopts_data *data,
      based on an object, the base of the reference is in some subexpression
      of the use -- but these will use pointer types, so they are recognized
      by the create_mem_ref heuristics anyway.  */
-  if (cand->iv->base_object)
-    base_hint = var_at_stmt (data->current_loop, cand, use->stmt);
-
-  iv = var_at_stmt (data->current_loop, cand, use->stmt);
+  tree iv = var_at_stmt (data->current_loop, cand, use->stmt);
+  tree base_hint = (cand->iv->base_object) ? iv : NULL_TREE;
+  gimple_stmt_iterator bsi = gsi_for_stmt (use->stmt);
   tree type = TREE_TYPE (*use->op_p);
   unsigned int align = get_object_alignment (*use->op_p);
   if (align != TYPE_ALIGN (type))
     type = build_aligned_type (type, align);
-  ref = create_mem_ref (&bsi, type, &aff,
-			reference_alias_ptr_type (*use->op_p),
-			iv, base_hint, data->speed);
+
+  tree ref = create_mem_ref (&bsi, type, &aff,
+			     reference_alias_ptr_type (*use->op_p),
+			     iv, base_hint, data->speed);
+
   copy_ref_info (ref, *use->op_p);
   *use->op_p = ref;
 }

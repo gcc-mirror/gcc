@@ -1,5 +1,9 @@
 2017-05-02  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (rewrite_use_address): Simple refactor.
+
+2017-05-02  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-ivopts.c (struct iv_ca): Rename n_regs to n_invs.
 	(ivopts_global_cost_for_size): Rename parameter and update uses.
 	(iv_ca_recount_cost): Update uses.
