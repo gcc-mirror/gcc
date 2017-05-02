@@ -1,3 +1,10 @@
+2017-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80549
+	* tree-cfgcleanup.c (mfb_keep_latches): New helper.
+	(cleanup_tree_cfg_noloop): Create forwarders to known loop
+	headers if they do not have a preheader.
+
 2017-05-02  Martin Liska  <mliska@suse.cz>
 
 	PR other/80589
