@@ -435,10 +435,11 @@ static char *mangle_name (const char *, char *);
 static void release_structures (void);
 extern int main (int, char **);
 
-function_info::function_info ()
+function_info::function_info (): name (NULL), demangled_name (NULL),
+  ident (0), lineno_checksum (0), cfg_checksum (0), has_catch (0),
+  blocks (), blocks_executed (0), counts (NULL), num_counts (0),
+  line (0), src (0), next_file_fn (NULL), next (NULL)
 {
-  /* The type is POD, so that we can use memset.  */
-  memset (this, 0, sizeof (*this));
 }
 
 function_info::~function_info ()
