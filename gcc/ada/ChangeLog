@@ -1,3 +1,9 @@
+2017-05-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Private_Type): If the parent type
+	has discriminants, do not override the Stored_Constraint list of
+	the full view of the derived type with that of the derived type.
+
 2017-05-02  Bob Duff  <duff@adacore.com>
 
 	* sem_attr.adb (Attribute_Enum_Rep): Disallow T'Enum_Rep.
