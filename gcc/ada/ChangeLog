@@ -1,3 +1,7 @@
+2017-05-02  Tristan Gingold  <gingold@adacore.com>
+
+	* s-trasym.ads, s-trasym.adb (Enable_Cache): New.
+
 2017-05-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Find_Equality_Types, Try_One_Interp): The same relaxed
