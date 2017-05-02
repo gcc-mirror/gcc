@@ -1,3 +1,14 @@
+2017-05-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (class rich_location): Update description of
+	newline handling.
+	(class fixit_hint): Likewise.
+	(fixit_hint::ends_with_newline_p): New decl.
+	* line-map.c (rich_location::maybe_add_fixit): Support newlines
+	in fix-it hints that are insertions of single lines at the start
+	of a line.  Don't consolidate into such fix-it hints.
+	(fixit_hint::ends_with_newline_p): New method.
+
 2017-05-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (source_range::intersects_line_p): Delete.

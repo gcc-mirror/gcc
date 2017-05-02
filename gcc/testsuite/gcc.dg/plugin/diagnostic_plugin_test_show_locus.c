@@ -268,6 +268,18 @@ test_show_locus (function *fun)
       warning_at_rich_loc (&richloc, 0, "example of insertion hints");
     }
 
+  if (0 == strcmp (fnname, "test_fixit_insert_newline"))
+    {
+      const int line = fnstart_line + 6;
+      location_t line_start = get_loc (line, 0);
+      location_t case_start = get_loc (line, 4);
+      location_t case_finish = get_loc (line, 11);
+      location_t case_loc = make_location (case_start, case_start, case_finish);
+      rich_location richloc (line_table, case_loc);
+      richloc.add_fixit_insert_before (line_start, "      break;\n");
+      warning_at_rich_loc (&richloc, 0, "example of newline insertion hint");
+    }
+
   if (0 == strcmp (fnname, "test_fixit_remove"))
     {
       const int line = fnstart_line + 2;

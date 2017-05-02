@@ -39,3 +39,19 @@ void test_fixit_replace (void)
 /* { dg-regexp "fix-it:.*\\{38:3-38:21\\}:.*" } */
 #endif
 }
+
+/* Unit test for rendering of fix-it hints that add new lines.  */
+
+void test_fixit_insert_newline (void)
+{
+#if 0
+  switch (op)
+    {
+    case 'a':
+      x = a;
+    case 'b': /* { dg-warning "newline insertion" } */
+      x = b;
+    }
+/* { dg-regexp "fix-it:.*\\{52:1-52:1\\}:.*\\n" } */
+#endif
+}
