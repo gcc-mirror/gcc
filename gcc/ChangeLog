@@ -1,3 +1,12 @@
+2017-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80591
+	Revert
+	2017-04-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (find_func_aliases): Properly handle
+	asm inputs.
+
 2017-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/80531

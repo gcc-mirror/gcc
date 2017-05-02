@@ -4944,14 +4944,14 @@ find_func_aliases (struct function *fn, gimple *origt)
 	    make_escape_constraint (build_fold_addr_expr (op));
 
 	  /* The asm may read global memory, so outputs may point to
-	     any global or escaped memory.  */
+	     any global memory.  */
 	  if (op)
 	    {
 	      auto_vec<ce_s, 2> lhsc;
 	      struct constraint_expr rhsc, *lhsp;
 	      unsigned j;
 	      get_constraint_for (op, &lhsc);
-	      rhsc.var = escaped_id;
+	      rhsc.var = nonlocal_id;
 	      rhsc.offset = 0;
 	      rhsc.type = SCALAR;
 	      FOR_EACH_VEC_ELT (lhsc, j, lhsp)
