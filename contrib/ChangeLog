@@ -1,3 +1,7 @@
+2017-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 7.
+
 2017-04-11  Damian Rouson  <damian@sourceryinstitute.org>
 
         * download_prerequisites (md5_check): New function emulates Linux
