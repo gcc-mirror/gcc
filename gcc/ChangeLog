@@ -1,5 +1,20 @@
 2017-05-02  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/alpha/alpha.md (*add<mode>3_ieee): Merge to add<mode>3
+	using enabled attribute.
+	(*sub<mode>3_ieee): Merge to sub<mode>3 using enabled attribute.
+	(*mul<mode>3_ieee): Merge to mul<mode>3 using enabled attribute.
+	(*div<mode>3_ieee): Merge to div<mode>3 using enabled attribute.
+	(*sqrt<mode>2_ieee): Merge to sqrt<mode>2 using enabled attribute.
+	(*fix_truncdfdi_ieee): Merge to *fix_truncdfdi2 using enabled attribute.
+	(*fix_truncsfdi_ieee): Merge to *fix_truncsfdi2 using enabled attribute.
+	(*floatdisf_ieee): Merge to floatdisf2 using enabled attribute.
+	(*floatdidf_ieee): Merge to floatdidf2 using enabled attribute.
+	(*truncdfsf2_ieee): Merge to truncdfsf2 using enabled attribute.
+	(*cmpdf_ieee): Merge to *cmpdf_internal using enabled attribute.
+
+2017-05-02  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.c (ix86_code_end): Use {FIRST,LAST}_INT_REG.
 
 2017-05-02  Richard Biener  <rguenther@suse.de>
