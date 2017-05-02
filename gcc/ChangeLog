@@ -1,3 +1,20 @@
+2017-05-02  Martin Liska  <mliska@suse.cz>
+
+	PR lto/79489.
+	* lto-streamer-in.c (lto_read_tree_1): Remove
+	LTO_STREAMER_DEBUG.
+	* lto-streamer.c (struct tree_hash_entry): Likewise.
+	(struct tree_entry_hasher): Likewise.
+	(tree_entry_hasher::hash): Likewise.
+	(tree_entry_hasher::equal): Likewise.
+	(lto_streamer_init): Likewise.
+	(lto_orig_address_map): Likewise.
+	(lto_orig_address_get): Likewise.
+	(lto_orig_address_remove): Likewise.
+	* lto-streamer.h: Likewise.
+	* tree-streamer-in.c (streamer_alloc_tree): Likewise.
+	* tree-streamer-out.c (streamer_write_tree_header): Likewise.
+
 2017-05-02  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* config/i386/avx512fintrin.h (_mm_mask_add_round_sd)
