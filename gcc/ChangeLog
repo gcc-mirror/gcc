@@ -1,5 +1,11 @@
 2017-05-02  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (get_scaled_computation_cost_at): Delete
+	parameter cand.  Update dump information.
+	(get_computation_cost): Update uses.
+
+2017-05-02  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-ivopts.c (get_computation_aff_1): New.
 	(get_computation_aff): Reorder parameters.  Use get_computation_aff_1.
 	(get_computation_at, rewrite_use_address): Update use of
