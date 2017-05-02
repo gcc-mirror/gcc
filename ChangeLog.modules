@@ -1,5 +1,8 @@
 2017-05-02  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/doc/
+	* invoke.texi (-fdump-front-end): Document.
+
 	Read/write direct namespace bindings part 2.
 	gcc/cp/
 	* module.c (cpms_out::tag_binding): Write the tag.
