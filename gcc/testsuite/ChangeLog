@@ -1,3 +1,7 @@
+2017-04-27  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/lsr-div1.c: New testcase.
+
 2017-05-02  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* gcc.target/i386/avx512f-vaddsd-1.c (_mm_mask_add_sd)
