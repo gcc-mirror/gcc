@@ -2938,6 +2938,16 @@ package body Exp_Ch6 is
               and then Is_Aliased_View (Prev_Orig)
             then
                Prev_Orig := Prev;
+
+            --  If the actual is a formal of an enclosing subprogram it is
+            --  the right entity, even if it is a rewriting. This happens
+            --  when the call is within an inherited condition or predicate.
+
+            elsif Is_Entity_Name (Actual)
+              and then Is_Formal (Entity (Actual))
+              and then In_Open_Scopes (Scope (Entity (Actual)))
+            then
+               Prev_Orig := Prev;
             end if;
 
             --  Ada 2005 (AI-251): Thunks must propagate the extra actuals of

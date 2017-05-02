@@ -1,5 +1,49 @@
 2017-05-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* einfo.ads (Corresponding_Record_Component): New alias
+	for Node21 used for E_Component and E_Discriminant.
+	* einfo.adb (Corresponding_Record_Component): New function.
+	(Set_Corresponding_Record_Component): New procedure.
+	(Write_Field21_Name): Handle Corresponding_Record_Component.
+	* sem_ch3.adb (Inherit_Component): Set
+	Corresponding_Record_Component for every component in
+	the untagged case.  Clear it afterwards for non-girder
+	discriminants.
+	* gcc-interface/decl.c (gnat_to_gnu_entity)
+	<E_Record_Type>: For a derived untagged type with discriminants
+	and constraints, apply the constraints to the layout of the
+	parent type to deduce the layout.
+	(field_is_aliased): Delete.
+	(components_to_record): Test DECL_ALIASED_P directly.
+	(annotate_rep): Check that fields are present except for
+	an extension.
+	(create_field_decl_from): Add DEBUG_INFO_P
+	parameter and pass it in recursive and other calls.  Add guard
+	for the manual CSE on the size.
+	(is_stored_discriminant): New predicate.
+	(copy_and_substitute_in_layout): Consider only
+	stored discriminants and check that original fields are present
+	in the old type.  Deal with derived types.  Adjust call to
+	create_variant_part_from.
+
+2017-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): When locating the
+	accessibility entity created for an access parameter, handle
+	properly a reference to a formal of an enclosing subprogram. if
+	the reference appears in an inherited class-wide condition, it
+	is the rewriting of the reference in the ancestor expression,
+	but the accessibility entity must be that of the current formal.
+
+2017-05-02  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_Non_Binary_Modular_Op): New subprogram.
+	(Expand_N_Op_Add, Expand_N_Op_Divide, Expand_N_Op_Minus,
+	Expand_N_Op_Multiply, Expand_N_Op_Or, Expand_N_Op_Subtract):
+	Call Expand_Non_Binary_Modular_Op.
+
+2017-05-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* sem_ch3.adb (Build_Derived_Private_Type): If the parent type
 	has discriminants, do not override the Stored_Constraint list of
 	the full view of the derived type with that of the derived type.

@@ -128,6 +128,11 @@ package body Exp_Ch4 is
    --  Common expansion processing for Boolean operators (And, Or, Xor) for the
    --  case of array type arguments.
 
+   procedure Expand_Non_Binary_Modular_Op (N : Node_Id);
+   --  Generating C code convert non-binary modular arithmetic operations into
+   --  code that relies on the frontend expansion of operator Mod. No expansion
+   --  is performed if N is not a non-binary modular operand.
+
    procedure Expand_Short_Circuit_Operator (N : Node_Id);
    --  Common expansion processing for short-circuit boolean operators
 
@@ -3957,6 +3962,217 @@ package body Exp_Ch4 is
       end if;
    end Expand_Membership_Minimize_Eliminate_Overflow;
 
+   ----------------------------------
+   -- Expand_Non_Binary_Modular_Op --
+   ----------------------------------
+
+   procedure Expand_Non_Binary_Modular_Op (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+      Typ : constant Entity_Id  := Etype (N);
+
+      procedure Expand_Modular_Addition;
+      --  Expand the modular addition handling the special case of adding a
+      --  constant.
+
+      procedure Expand_Modular_Op;
+      --  Compute the general rule: (lhs OP rhs) mod Modulus
+
+      procedure Expand_Modular_Subtraction;
+      --  Expand the modular addition handling the special case of subtracting
+      --  a constant.
+
+      -----------------------------
+      -- Expand_Modular_Addition --
+      -----------------------------
+
+      procedure Expand_Modular_Addition is
+      begin
+         --  If this is not the addition of a constant then compute it using
+         --  the general rule: (lhs + rhs) mod Modulus
+
+         if Nkind (Right_Opnd (N)) /= N_Integer_Literal then
+            Expand_Modular_Op;
+
+         --  If this is an addition of a constant, convert it to a subtraction
+         --  plus a conditional expression since we can compute it faster than
+         --  computing the modulus.
+
+         --      modMinusRhs = Modulus - rhs
+         --      if lhs < modMinusRhs then lhs + rhs
+         --                           else lhs - modMinusRhs
+
+         else
+            declare
+               Mod_Minus_Right : constant Uint :=
+                                   Modulus (Typ) - Intval (Right_Opnd (N));
+
+               Exprs     : constant List_Id := New_List;
+               Cond_Expr : constant Node_Id := New_Op_Node (N_Op_Lt, Loc);
+               Then_Expr : constant Node_Id := New_Op_Node (N_Op_Add, Loc);
+               Else_Expr : constant Node_Id := New_Op_Node (N_Op_Subtract,
+                                                            Loc);
+            begin
+               Set_Left_Opnd (Cond_Expr,
+                 New_Copy_Tree (Left_Opnd (N)));
+               Set_Right_Opnd (Cond_Expr,
+                 Make_Integer_Literal (Loc, Mod_Minus_Right));
+               Append_To (Exprs, Cond_Expr);
+
+               Set_Left_Opnd (Then_Expr,
+                 Unchecked_Convert_To (Standard_Unsigned,
+                   New_Copy_Tree (Left_Opnd (N))));
+               Set_Right_Opnd (Then_Expr,
+                 Make_Integer_Literal (Loc, Intval (Right_Opnd (N))));
+               Append_To (Exprs, Then_Expr);
+
+               Set_Left_Opnd (Else_Expr,
+                 Unchecked_Convert_To (Standard_Unsigned,
+                   New_Copy_Tree (Left_Opnd (N))));
+               Set_Right_Opnd (Else_Expr,
+                 Make_Integer_Literal (Loc, Mod_Minus_Right));
+               Append_To (Exprs, Else_Expr);
+
+               Rewrite (N,
+                 Unchecked_Convert_To (Typ,
+                   Make_If_Expression (Loc, Expressions => Exprs)));
+            end;
+         end if;
+      end Expand_Modular_Addition;
+
+      -----------------------
+      -- Expand_Modular_Op --
+      -----------------------
+
+      procedure Expand_Modular_Op is
+         Op_Expr  : constant Node_Id := New_Op_Node (Nkind (N), Loc);
+         Mod_Expr : constant Node_Id := New_Op_Node (N_Op_Mod, Loc);
+
+      begin
+         --  Convert non-binary modular type operands into integer or integer
+         --  values. Thus we avoid never-ending loops expanding them, and we
+         --  also ensure that the backend never receives non-binary modular
+         --  type expressions.
+
+         if Nkind_In (Nkind (N), N_Op_And, N_Op_Or) then
+            Set_Left_Opnd (Op_Expr,
+              Unchecked_Convert_To (Standard_Unsigned,
+                New_Copy_Tree (Left_Opnd (N))));
+            Set_Right_Opnd (Op_Expr,
+              Unchecked_Convert_To (Standard_Unsigned,
+                New_Copy_Tree (Right_Opnd (N))));
+            Set_Left_Opnd (Mod_Expr,
+              Unchecked_Convert_To (Standard_Integer, Op_Expr));
+         else
+            Set_Left_Opnd (Op_Expr,
+              Unchecked_Convert_To (Standard_Integer,
+                New_Copy_Tree (Left_Opnd (N))));
+            Set_Right_Opnd (Op_Expr,
+              Unchecked_Convert_To (Standard_Integer,
+                New_Copy_Tree (Right_Opnd (N))));
+            Set_Left_Opnd (Mod_Expr, Op_Expr);
+         end if;
+
+         Set_Right_Opnd (Mod_Expr,
+           Make_Integer_Literal (Loc, Modulus (Typ)));
+
+         Rewrite (N,
+           Unchecked_Convert_To (Typ, Mod_Expr));
+      end Expand_Modular_Op;
+
+      --------------------------------
+      -- Expand_Modular_Subtraction --
+      --------------------------------
+
+      procedure Expand_Modular_Subtraction is
+      begin
+         --  If this is not the addition of a constant then compute it using
+         --  the general rule: (lhs + rhs) mod Modulus
+
+         if Nkind (Right_Opnd (N)) /= N_Integer_Literal then
+            Expand_Modular_Op;
+
+         --  If this is an addition of a constant, convert it to a subtraction
+         --  plus a conditional expression since we can compute it faster than
+         --  computing the modulus.
+
+         --      modMinusRhs = Modulus - rhs
+         --      if lhs < rhs then lhs + modMinusRhs
+         --                   else lhs - rhs
+
+         else
+            declare
+               Mod_Minus_Right : constant Uint :=
+                                   Modulus (Typ) - Intval (Right_Opnd (N));
+
+               Exprs     : constant List_Id := New_List;
+               Cond_Expr : constant Node_Id := New_Op_Node (N_Op_Lt, Loc);
+               Then_Expr : constant Node_Id := New_Op_Node (N_Op_Add, Loc);
+               Else_Expr : constant Node_Id := New_Op_Node (N_Op_Subtract,
+                                                            Loc);
+            begin
+               Set_Left_Opnd (Cond_Expr,
+                 New_Copy_Tree (Left_Opnd (N)));
+               Set_Right_Opnd (Cond_Expr,
+                 Make_Integer_Literal (Loc, Intval (Right_Opnd (N))));
+               Append_To (Exprs, Cond_Expr);
+
+               Set_Left_Opnd (Then_Expr,
+                 Unchecked_Convert_To (Standard_Unsigned,
+                   New_Copy_Tree (Left_Opnd (N))));
+               Set_Right_Opnd (Then_Expr,
+                 Make_Integer_Literal (Loc, Mod_Minus_Right));
+               Append_To (Exprs, Then_Expr);
+
+               Set_Left_Opnd (Else_Expr,
+                 Unchecked_Convert_To (Standard_Unsigned,
+                   New_Copy_Tree (Left_Opnd (N))));
+               Set_Right_Opnd (Else_Expr,
+                 Unchecked_Convert_To (Standard_Unsigned,
+                   New_Copy_Tree (Right_Opnd (N))));
+               Append_To (Exprs, Else_Expr);
+
+               Rewrite (N,
+                 Unchecked_Convert_To (Typ,
+                   Make_If_Expression (Loc, Expressions => Exprs)));
+            end;
+         end if;
+      end Expand_Modular_Subtraction;
+
+   --  Start of processing for Expand_Non_Binary_Modular_Op
+
+   begin
+      --  No action needed if we are not generating C code for a non-binary
+      --  modular operand.
+
+      if not Modify_Tree_For_C
+        or else not Non_Binary_Modulus (Typ)
+      then
+         return;
+      end if;
+
+      case Nkind (N) is
+         when N_Op_Add =>
+            Expand_Modular_Addition;
+
+         when N_Op_Subtract =>
+            Expand_Modular_Subtraction;
+
+         when N_Op_Minus =>
+            --  Expand -expr into (0 - expr)
+
+            Rewrite (N,
+              Make_Op_Subtract (Loc,
+                Left_Opnd  => Make_Integer_Literal (Loc, 0),
+                Right_Opnd => Right_Opnd (N)));
+            Analyze_And_Resolve (N, Typ);
+
+         when others =>
+            Expand_Modular_Op;
+      end case;
+
+      Analyze_And_Resolve (N, Typ);
+   end Expand_Non_Binary_Modular_Op;
+
    ------------------------
    -- Expand_N_Allocator --
    ------------------------
@@ -6639,6 +6855,13 @@ package body Exp_Ch4 is
       --  Overflow checks for floating-point if -gnateF mode active
 
       Check_Float_Op_Overflow (N);
+
+      --  Generating C code convert non-binary modular additions into code that
+      --  relies on the frontend expansion of operator Mod.
+
+      if Modify_Tree_For_C then
+         Expand_Non_Binary_Modular_Op (N);
+      end if;
    end Expand_N_Op_Add;
 
    ---------------------
@@ -6662,7 +6885,13 @@ package body Exp_Ch4 is
 
       elsif Is_Intrinsic_Subprogram (Entity (N)) then
          Expand_Intrinsic_Call (N, Entity (N));
+      end if;
 
+      --  Generating C code convert non-binary modular operators into code that
+      --  relies on the frontend expansion of operator Mod.
+
+      if Modify_Tree_For_C then
+         Expand_Non_Binary_Modular_Op (N);
       end if;
    end Expand_N_Op_And;
 
@@ -6904,6 +7133,13 @@ package body Exp_Ch4 is
       --  Overflow checks for floating-point if -gnateF mode active
 
       Check_Float_Op_Overflow (N);
+
+      --  Generating C code convert non-binary modular divisions into code that
+      --  relies on the frontend expansion of operator Mod.
+
+      if Modify_Tree_For_C then
+         Expand_Non_Binary_Modular_Op (N);
+      end if;
    end Expand_N_Op_Divide;
 
    --------------------
@@ -8406,6 +8642,13 @@ package body Exp_Ch4 is
 
          Analyze_And_Resolve (N, Typ);
       end if;
+
+      --  Generating C code convert non-binary modular minus into code that
+      --  relies on the frontend expansion of operator Mod.
+
+      if Modify_Tree_For_C then
+         Expand_Non_Binary_Modular_Op (N);
+      end if;
    end Expand_N_Op_Minus;
 
    ---------------------
@@ -8882,6 +9125,13 @@ package body Exp_Ch4 is
       --  Overflow checks for floating-point if -gnateF mode active
 
       Check_Float_Op_Overflow (N);
+
+      --  Generating C code convert non-binary modular multiplications into
+      --  code that relies on the frontend expansion of operator Mod.
+
+      if Modify_Tree_For_C then
+         Expand_Non_Binary_Modular_Op (N);
+      end if;
    end Expand_N_Op_Multiply;
 
    --------------------
@@ -9191,7 +9441,13 @@ package body Exp_Ch4 is
 
       elsif Is_Intrinsic_Subprogram (Entity (N)) then
          Expand_Intrinsic_Call (N, Entity (N));
+      end if;
 
+      --  Generating C code convert non-binary modular operators into code that
+      --  relies on the frontend expansion of operator Mod.
+
+      if Modify_Tree_For_C then
+         Expand_Non_Binary_Modular_Op (N);
       end if;
    end Expand_N_Op_Or;
 
@@ -9625,6 +9881,13 @@ package body Exp_Ch4 is
       --  Overflow checks for floating-point if -gnateF mode active
 
       Check_Float_Op_Overflow (N);
+
+      --  Generating C code convert non-binary modular subtractions into code
+      --  that relies on the frontend expansion of operator Mod.
+
+      if Modify_Tree_For_C then
+         Expand_Non_Binary_Modular_Op (N);
+      end if;
    end Expand_N_Op_Subtract;
 
    ---------------------
