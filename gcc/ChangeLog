@@ -1,5 +1,14 @@
 2017-05-02  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (struct walk_tree_data): New.
+	(find_inv_vars_cb): New.
+	(find_depends): Renamed to ...
+	(find_inv_vars): ... this.
+	(add_candidate_1, force_var_cost): Call find_inv_vars.
+	(split_address_cost, determine_group_iv_cost_cond): Ditto.
+
+2017-05-02  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-ivopts.c (struct cost_pair): Rename depends_on to
 	inv_vars.  Add inv_exprs.
 	(struct iv_cand): Rename depends_on to inv_vars.
