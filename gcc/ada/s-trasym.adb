@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2015, AdaCore                     --
+--                     Copyright (C) 1999-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -82,5 +82,14 @@ package body System.Traceback.Symbolic is
    begin
       return Symbolic_Traceback (Ada.Exceptions.Traceback.Tracebacks (E));
    end Symbolic_Traceback;
+
+   ------------------
+   -- Enable_Cache --
+   ------------------
+
+   procedure Enable_Cache (Include_Modules : Boolean := False) is
+   begin
+      null;
+   end Enable_Cache;
 
 end System.Traceback.Symbolic;
