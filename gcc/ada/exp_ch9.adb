@@ -8725,12 +8725,6 @@ package body Exp_Ch9 is
       --  to the internal body, for possible inlining later on. The source
       --  operation is invisible to the back-end and is never actually called.
 
-      function Discriminated_Size (Comp : Entity_Id) return Boolean;
-      --  If a component size is not static then a warning will be emitted
-      --  in Ravenscar or other restricted contexts. When a component is non-
-      --  static because of a discriminant constraint we can specialize the
-      --  warning by mentioning discriminants explicitly.
-
       procedure Expand_Entry_Declaration (Decl : Node_Id);
       --  Create the entry barrier and the procedure body for entry declaration
       --  Decl. All generated subprograms are added to Entry_Bodies_Array.
@@ -8757,63 +8751,6 @@ package body Exp_Ch9 is
             Set_Is_Inlined (Subp, False);
          end if;
       end Check_Inlining;
-
-      ------------------------
-      -- Discriminated_Size --
-      ------------------------
-
-      function Discriminated_Size (Comp : Entity_Id) return Boolean is
-         Typ   : constant Entity_Id := Etype (Comp);
-         Index : Node_Id;
-
-         function Non_Static_Bound (Bound : Node_Id) return Boolean;
-         --  Check whether the bound of an index is non-static and does denote
-         --  a discriminant, in which case any protected object of the type
-         --  will have a non-static size.
-
-         ----------------------
-         -- Non_Static_Bound --
-         ----------------------
-
-         function Non_Static_Bound (Bound : Node_Id) return Boolean is
-         begin
-            if Is_OK_Static_Expression (Bound) then
-               return False;
-
-            elsif Is_Entity_Name (Bound)
-              and then Present (Discriminal_Link (Entity (Bound)))
-            then
-               return False;
-
-            else
-               return True;
-            end if;
-         end Non_Static_Bound;
-
-      --  Start of processing for Discriminated_Size
-
-      begin
-         if not Is_Array_Type (Typ) then
-            return False;
-         end if;
-
-         if Ekind (Typ) = E_Array_Subtype then
-            Index := First_Index (Typ);
-            while Present (Index) loop
-               if Non_Static_Bound (Low_Bound (Index))
-                 or else Non_Static_Bound (High_Bound (Index))
-               then
-                  return False;
-               end if;
-
-               Next_Index (Index);
-            end loop;
-
-            return True;
-         end if;
-
-         return False;
-      end Discriminated_Size;
 
       ---------------------------
       -- Static_Component_Size --

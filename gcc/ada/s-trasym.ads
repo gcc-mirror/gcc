@@ -86,6 +86,9 @@ package System.Traceback.Symbolic is
    --  Read symbolic information from binary files and cache them in memory.
    --  This will speed up the above functions but will require more memory.
    --  If Include_Modules is true, shared modules (or DLL) will also be cached.
-   --  This procedure may do nothing if not supported.
+   --  This procedure may do nothing if not supported. The profile of this
+   --  subprogram may change in the future (new parameters can be added with
+   --  default value), but backward compatibility for direct calls is
+   --  supported.
 
 end System.Traceback.Symbolic;

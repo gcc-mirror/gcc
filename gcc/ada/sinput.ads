@@ -494,7 +494,7 @@ package Sinput is
    --  NEL code. Now such programs can of course be compiled in UTF-8 mode,
    --  but in practice they also compile fine in standard 8-bit mode without
    --  specifying a character encoding. Since this is common practice, it would
-   --  be a signficant upwards incompatibility to recognize NEL in 8-bit mode.
+   --  be a significant upwards incompatibility to recognize NEL in 8-bit mode.
 
    -----------------
    -- Subprograms --

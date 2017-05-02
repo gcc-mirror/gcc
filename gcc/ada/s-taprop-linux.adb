@@ -174,6 +174,14 @@ package body System.Task_Primitives.Operations is
    pragma Import (C,
      GNAT_pthread_condattr_setup, "__gnat_pthread_condattr_setup");
 
+   type RTS_Lock_Ptr is not null access all RTS_Lock;
+
+   function Init_Mutex
+     (L : RTS_Lock_Ptr; Prio : Any_Priority)
+     return Interfaces.C.int;
+   --  Initialize the mutex L. If the locking policy is Ceiling_Locking, then
+   --  set the ceiling to Prio.
+
    -------------------
    -- Abort_Handler --
    -------------------
@@ -260,6 +268,54 @@ package body System.Task_Primitives.Operations is
 
    function Self return Task_Id renames Specific.Self;
 
+   ----------------
+   -- Init_Mutex --
+   ----------------
+
+   function Init_Mutex
+     (L : RTS_Lock_Ptr; Prio : Any_Priority)
+     return Interfaces.C.int
+   is
+      Mutex_Attr : aliased pthread_mutexattr_t;
+      Result : Interfaces.C.int;
+   begin
+      Result := pthread_mutexattr_init (Mutex_Attr'Access);
+      pragma Assert (Result = 0 or else Result = ENOMEM);
+
+      if Result = ENOMEM then
+         return ENOMEM;
+      end if;
+
+      if Locking_Policy = 'C' then
+         if Superuser then
+            Result := pthread_mutexattr_setprotocol
+              (Mutex_Attr'Access, PTHREAD_PRIO_PROTECT);
+            pragma Assert (Result = 0);
+
+            Result := pthread_mutexattr_setprioceiling
+              (Mutex_Attr'Access, Interfaces.C.int (Prio));
+            pragma Assert (Result = 0);
+         end if;
+
+      elsif Locking_Policy = 'I' then
+         Result := pthread_mutexattr_setprotocol
+           (Mutex_Attr'Access, PTHREAD_PRIO_INHERIT);
+         pragma Assert (Result = 0);
+      end if;
+
+      Result := pthread_mutex_init (L, Mutex_Attr'Access);
+      pragma Assert (Result = 0 or else Result = ENOMEM);
+
+      if Result = ENOMEM then
+         Result := pthread_mutexattr_destroy (Mutex_Attr'Access);
+         return ENOMEM;
+      end if;
+
+      Result := pthread_mutexattr_destroy (Mutex_Attr'Access);
+      pragma Assert (Result = 0);
+      return 0;
+   end Init_Mutex;
+
    ---------------------
    -- Initialize_Lock --
    ---------------------
@@ -301,46 +357,9 @@ package body System.Task_Primitives.Operations is
          end;
 
       else
-         declare
-            Attributes : aliased pthread_mutexattr_t;
-            Result : Interfaces.C.int;
-
-         begin
-            Result := pthread_mutexattr_init (Attributes'Access);
-            pragma Assert (Result = 0 or else Result = ENOMEM);
-
-            if Result = ENOMEM then
-               raise Storage_Error;
-            end if;
-
-            if Locking_Policy = 'C' then
-               if Superuser then
-                  Result := pthread_mutexattr_setprotocol
-                    (Attributes'Access, PTHREAD_PRIO_PROTECT);
-                  pragma Assert (Result = 0);
-
-                  Result := pthread_mutexattr_setprioceiling
-                     (Attributes'Access, Interfaces.C.int (Prio));
-                  pragma Assert (Result = 0);
-               end if;
-
-            elsif Locking_Policy = 'I' then
-               Result := pthread_mutexattr_setprotocol
-                 (Attributes'Access, PTHREAD_PRIO_INHERIT);
-               pragma Assert (Result = 0);
-            end if;
-
-            Result := pthread_mutex_init (L.WO'Access, Attributes'Access);
-            pragma Assert (Result = 0 or else Result = ENOMEM);
-
-            if Result = ENOMEM then
-               Result := pthread_mutexattr_destroy (Attributes'Access);
-               raise Storage_Error with "Failed to allocate a lock";
-            end if;
-
-            Result := pthread_mutexattr_destroy (Attributes'Access);
-            pragma Assert (Result = 0);
-         end;
+         if Init_Mutex (L.WO'Access, Prio) = ENOMEM then
+            raise Storage_Error with "Failed to allocate a lock";
+         end if;
       end if;
    end Initialize_Lock;
 
@@ -348,45 +367,10 @@ package body System.Task_Primitives.Operations is
      (L : not null access RTS_Lock; Level : Lock_Level)
    is
       pragma Unreferenced (Level);
-
-      Attributes : aliased pthread_mutexattr_t;
-      Result     : Interfaces.C.int;
-
    begin
-      Result := pthread_mutexattr_init (Attributes'Access);
-      pragma Assert (Result = 0 or else Result = ENOMEM);
-
-      if Result = ENOMEM then
-         raise Storage_Error;
+      if Init_Mutex (L.all'Access, Any_Priority'Last) = ENOMEM then
+         raise Storage_Error with "Failed to allocate a lock";
       end if;
-
-      if Locking_Policy = 'C' then
-         if Superuser then
-            Result := pthread_mutexattr_setprotocol
-              (Attributes'Access, PTHREAD_PRIO_PROTECT);
-            pragma Assert (Result = 0);
-
-            Result := pthread_mutexattr_setprioceiling
-              (Attributes'Access, Interfaces.C.int (System.Any_Priority'Last));
-            pragma Assert (Result = 0);
-         end if;
-
-      elsif Locking_Policy = 'I' then
-         Result := pthread_mutexattr_setprotocol
-           (Attributes'Access, PTHREAD_PRIO_INHERIT);
-         pragma Assert (Result = 0);
-      end if;
-
-      Result := pthread_mutex_init (L, Attributes'Access);
-      pragma Assert (Result = 0 or else Result = ENOMEM);
-
-      if Result = ENOMEM then
-         Result := pthread_mutexattr_destroy (Attributes'Access);
-         raise Storage_Error;
-      end if;
-
-      Result := pthread_mutexattr_destroy (Attributes'Access);
-      pragma Assert (Result = 0);
    end Initialize_Lock;
 
    -------------------
@@ -919,7 +903,6 @@ package body System.Task_Primitives.Operations is
    --------------------
 
    procedure Initialize_TCB (Self_ID : Task_Id; Succeeded : out Boolean) is
-      Mutex_Attr : aliased pthread_mutexattr_t;
       Result    : Interfaces.C.int;
       Cond_Attr : aliased pthread_condattr_t;
 
@@ -933,47 +916,12 @@ package body System.Task_Primitives.Operations is
       Self_ID.Common.LL.Thread := Null_Thread_Id;
 
       if not Single_Lock then
-         Result := pthread_mutexattr_init (Mutex_Attr'Access);
-         pragma Assert (Result = 0 or else Result = ENOMEM);
-
-         if Result = 0 then
-            if Locking_Policy = 'C' then
-               if Superuser then
-                  Result :=
-                    pthread_mutexattr_setprotocol
-                      (Mutex_Attr'Access,
-                       PTHREAD_PRIO_PROTECT);
-                  pragma Assert (Result = 0);
-
-                  Result :=
-                    pthread_mutexattr_setprioceiling
-                      (Mutex_Attr'Access,
-                       Interfaces.C.int (System.Any_Priority'Last));
-                  pragma Assert (Result = 0);
-               end if;
-
-            elsif Locking_Policy = 'I' then
-               Result :=
-                 pthread_mutexattr_setprotocol
-                   (Mutex_Attr'Access,
-                    PTHREAD_PRIO_INHERIT);
-               pragma Assert (Result = 0);
-            end if;
-
-            Result :=
-              pthread_mutex_init
-                (Self_ID.Common.LL.L'Access,
-                 Mutex_Attr'Access);
-            pragma Assert (Result = 0 or else Result = ENOMEM);
-         end if;
-
-         if Result /= 0 then
+         if Init_Mutex
+           (Self_ID.Common.LL.L'Access, System.Any_Priority'Last) /= 0
+         then
             Succeeded := False;
             return;
          end if;
-
-         Result := pthread_mutexattr_destroy (Mutex_Attr'Access);
-         pragma Assert (Result = 0);
       end if;
 
       Result := pthread_condattr_init (Cond_Attr'Access);
@@ -1015,7 +963,7 @@ package body System.Task_Primitives.Operations is
       Priority   : System.Any_Priority;
       Succeeded  : out Boolean)
    is
-      Attributes          : aliased pthread_attr_t;
+      Thread_Attr         : aliased pthread_attr_t;
       Adjusted_Stack_Size : Interfaces.C.size_t;
       Result              : Interfaces.C.int;
 
@@ -1039,7 +987,7 @@ package body System.Task_Primitives.Operations is
       Adjusted_Stack_Size :=
          Interfaces.C.size_t (Stack_Size + Alternate_Stack_Size);
 
-      Result := pthread_attr_init (Attributes'Access);
+      Result := pthread_attr_init (Thread_Attr'Access);
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
       if Result /= 0 then
@@ -1048,12 +996,12 @@ package body System.Task_Primitives.Operations is
       end if;
 
       Result :=
-        pthread_attr_setstacksize (Attributes'Access, Adjusted_Stack_Size);
+        pthread_attr_setstacksize (Thread_Attr'Access, Adjusted_Stack_Size);
       pragma Assert (Result = 0);
 
       Result :=
         pthread_attr_setdetachstate
-          (Attributes'Access, PTHREAD_CREATE_DETACHED);
+          (Thread_Attr'Access, PTHREAD_CREATE_DETACHED);
       pragma Assert (Result = 0);
 
       --  Set the required attributes for the creation of the thread
@@ -1083,7 +1031,7 @@ package body System.Task_Primitives.Operations is
             System.OS_Interface.CPU_SET
               (int (T.Common.Base_CPU), Size, CPU_Set);
             Result :=
-              pthread_attr_setaffinity_np (Attributes'Access, Size, CPU_Set);
+              pthread_attr_setaffinity_np (Thread_Attr'Access, Size, CPU_Set);
             pragma Assert (Result = 0);
 
             CPU_FREE (CPU_Set);
@@ -1094,7 +1042,7 @@ package body System.Task_Primitives.Operations is
       elsif T.Common.Task_Info /= null then
          Result :=
            pthread_attr_setaffinity_np
-             (Attributes'Access,
+             (Thread_Attr'Access,
               CPU_SETSIZE / 8,
               T.Common.Task_Info.CPU_Affinity'Access);
          pragma Assert (Result = 0);
@@ -1131,7 +1079,7 @@ package body System.Task_Primitives.Operations is
             end loop;
 
             Result :=
-              pthread_attr_setaffinity_np (Attributes'Access, Size, CPU_Set);
+              pthread_attr_setaffinity_np (Thread_Attr'Access, Size, CPU_Set);
             pragma Assert (Result = 0);
 
             CPU_FREE (CPU_Set);
@@ -1151,7 +1099,7 @@ package body System.Task_Primitives.Operations is
 
       Result := pthread_create
         (T.Common.LL.Thread'Unrestricted_Access,
-         Attributes'Access,
+         Thread_Attr'Access,
          Thread_Body_Access (Wrapper),
          To_Address (T));
 
@@ -1160,14 +1108,14 @@ package body System.Task_Primitives.Operations is
 
       if Result /= 0 then
          Succeeded := False;
-         Result := pthread_attr_destroy (Attributes'Access);
+         Result := pthread_attr_destroy (Thread_Attr'Access);
          pragma Assert (Result = 0);
          return;
       end if;
 
       Succeeded := True;
 
-      Result := pthread_attr_destroy (Attributes'Access);
+      Result := pthread_attr_destroy (Thread_Attr'Access);
       pragma Assert (Result = 0);
 
       Set_Priority (T, Priority);

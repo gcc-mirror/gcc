@@ -4930,7 +4930,8 @@ package body Sem_Ch4 is
                if Comp = First_Private_Entity (Type_To_Use) then
                   if Etype (Sel) /= Any_Type then
 
-                     --  We have a candiate.
+                     --  We have a candiate
+
                      exit;
 
                   else
@@ -4993,8 +4994,8 @@ package body Sem_Ch4 is
          then
             if Present (Hidden_Comp) then
                Error_Msg_NE
-                 ("invalid reference to private component of object "
-                  & "of type &", N, Type_To_Use);
+                 ("invalid reference to private component of object of type "
+                  & "&", N, Type_To_Use);
 
             else
                Error_Msg_NE
@@ -6476,13 +6477,14 @@ package body Sem_Ch4 is
             --  Either the types are compatible, or one operand is universal
             --  (numeric or null).
 
-           or else ((In_Instance or else In_Inlined_Body)
-                     and then
-                       (First_Subtype (T1) = First_Subtype (Etype (R))
-                         or else Nkind (R) = N_Null
-                         or else
-                           (Is_Numeric_Type (T1)
-                             and then Is_Universal_Numeric_Type (Etype (R)))))
+           or else
+             ((In_Instance or else In_Inlined_Body)
+                and then
+                  (First_Subtype (T1) = First_Subtype (Etype (R))
+                    or else Nkind (R) = N_Null
+                    or else
+                      (Is_Numeric_Type (T1)
+                        and then Is_Universal_Numeric_Type (Etype (R)))))
 
            --  In Ada 2005, the equality on anonymous access types is declared
            --  in Standard, and is always visible.

@@ -1,5 +1,28 @@
 2017-05-02  Tristan Gingold  <gingold@adacore.com>
 
+	* s-trasym.ads: Add comment.
+
+2017-05-02  Bob Duff  <duff@adacore.com>
+
+	* sem_elab.adb, sem_elab.ads: Minor comment fixes.
+	* sem_ch4.adb: Minor reformatting.
+	* s-taprop-linux.adb, s-taspri-posix.ads: Code refactoring.
+	* s-taspri-posix-noaltstack.ads: Minor refactoring.
+	* sinput.ads: Minor typo fix.
+
+2017-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Discriminated_Size): Moved to sem_util.
+	* sem_util.ads, sem_util.adb (Discriminated_Size): Predicate moved
+	here from exp_ch9, to recognize objects whose creation requires
+	dynamic allocation, so that the proper warning can be emitted
+	when restriction No_Implicit_Heap_Allocation is in effect.
+	* sem_ch3.adb (Analyze_Object_Declaration): Use Discriminated_Size
+	to emit proper warning when an object that requires dynamic
+	allocation is declared.
+
+2017-05-02  Tristan Gingold  <gingold@adacore.com>
+
 	* s-trasym.ads, s-trasym.adb (Enable_Cache): New.
 
 2017-05-02  Ed Schonberg  <schonberg@adacore.com>
