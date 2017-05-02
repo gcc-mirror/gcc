@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2011, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2017, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -532,8 +532,6 @@ package body System.Tasking.Entry_Calls is
    is
       Self_Id  : constant Task_Id := Entry_Call.Self;
       Timedout : Boolean := False;
-
-      use type Ada.Exceptions.Exception_Id;
 
    begin
       --  This procedure waits for the entry call to be served, with a timeout.

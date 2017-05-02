@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2016, AdaCore                     --
+--                     Copyright (C) 2001-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2633,8 +2633,6 @@ package body GNAT.Sockets is
    ----------------------
 
    function To_Service_Entry (E : Servent_Access) return Service_Entry_Type is
-      use type C.size_t;
-
       Aliases_Count : Natural;
 
    begin

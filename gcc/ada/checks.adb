@@ -4037,7 +4037,10 @@ package body Checks is
    -- Null_Exclusion_Static_Checks --
    ----------------------------------
 
-   procedure Null_Exclusion_Static_Checks (N : Node_Id) is
+   procedure Null_Exclusion_Static_Checks
+     (N    : Node_Id;
+      Comp : Node_Id := Empty)
+   is
       Error_Node : Node_Id;
       Expr       : Node_Id;
       Has_Null   : constant Boolean := Has_Null_Exclusion (N);
@@ -4119,11 +4122,27 @@ package body Checks is
          Set_Expression (N, Make_Null (Sloc (N)));
          Set_Etype (Expression (N), Etype (Defining_Identifier (N)));
 
-         Apply_Compile_Time_Constraint_Error
-           (N      => Expression (N),
-            Msg    =>
-              "(Ada 2005) null-excluding objects must be initialized??",
-            Reason => CE_Null_Not_Allowed);
+         if Present (Comp) then
+
+            --  Specialize the error message to indicate that we are dealing
+            --  with an uninitialized composite object that has a defaulted
+            --  null-excluding component.
+
+            Error_Msg_Name_1 := Chars (Defining_Identifier (Comp));
+            Error_Msg_Name_2 := Chars (Defining_Identifier (N));
+
+            Apply_Compile_Time_Constraint_Error
+              (N      => Expression (N),
+               Msg    => "(Ada 2005) null-excluding component % of object % " &
+                           "must be initialized??",
+               Reason => CE_Null_Not_Allowed);
+         else
+            Apply_Compile_Time_Constraint_Error
+              (N      => Expression (N),
+               Msg    =>
+                 "(Ada 2005) null-excluding objects must be initialized??",
+               Reason => CE_Null_Not_Allowed);
+         end if;
       end if;
 
       --  Check that a null-excluding component, formal or object is not being

@@ -915,8 +915,14 @@ package Checks is
    --  Chars (Related_Id)_FIRST/_LAST. For suggested use of these parameters
    --  see the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
 
-   procedure Null_Exclusion_Static_Checks (N : Node_Id);
+   procedure Null_Exclusion_Static_Checks
+     (N    : Node_Id;
+      Comp : Node_Id := Empty);
    --  Ada 2005 (AI-231): Check bad usages of the null-exclusion issue
+   --
+   --  When a value for Comp is supplied (as in the case of an uninitialized
+   --  null-excluding component within a composite object), a reported error
+   --  will indicate the offending component instead of the object itself.
 
    procedure Remove_Checks (Expr : Node_Id);
    --  Remove all checks from Expr except those that are only executed
