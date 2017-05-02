@@ -4043,8 +4043,9 @@ package body Checks is
    ----------------------------------
 
    procedure Null_Exclusion_Static_Checks
-     (N    : Node_Id;
-      Comp : Node_Id := Empty)
+     (N          : Node_Id;
+      Comp       : Node_Id := Empty;
+      Array_Comp : Boolean := False)
    is
       Error_Node : Node_Id;
       Expr       : Node_Id;
@@ -4120,13 +4121,6 @@ package body Checks is
         and then not Constant_Present (N)
         and then not No_Initialization (N)
       then
-         --  Add an expression that assigns null. This node is needed by
-         --  Apply_Compile_Time_Constraint_Error, which will replace this with
-         --  a Constraint_Error node.
-
-         Set_Expression (N, Make_Null (Sloc (N)));
-         Set_Etype (Expression (N), Etype (Defining_Identifier (N)));
-
          if Present (Comp) then
 
             --  Specialize the warning message to indicate that we are dealing
@@ -4136,14 +4130,36 @@ package body Checks is
             Error_Msg_Name_1 := Chars (Defining_Identifier (Comp));
             Error_Msg_Name_2 := Chars (Defining_Identifier (N));
 
-            Apply_Compile_Time_Constraint_Error
-              (N      => Expression (N),
-               Msg    =>
-                 "(Ada 2005) null-excluding component % of object % must be "
-                 & "initialized??",
-               Reason => CE_Null_Not_Allowed);
+            Discard_Node
+              (Compile_Time_Constraint_Error
+                 (N      => N,
+                  Msg    =>
+                    "(Ada 2005) null-excluding component % of object % must "
+                    & "be initialized??",
+                  Ent => Defining_Identifier (Comp)));
+
+         --  This is a case of an array with null-excluding components, so
+         --  indicate that in the warning.
+
+         elsif Array_Comp then
+            Discard_Node
+              (Compile_Time_Constraint_Error
+                 (N      => N,
+                  Msg    =>
+                    "(Ada 2005) null-excluding array components must "
+                    & "be initialized??",
+                  Ent => Defining_Identifier (N)));
+
+         --  Normal case of object of a null-excluding access type
 
          else
+            --  Add an expression that assigns null. This node is needed by
+            --  Apply_Compile_Time_Constraint_Error, which will replace this
+            --  with a Constraint_Error node.
+
+            Set_Expression (N, Make_Null (Sloc (N)));
+            Set_Etype (Expression (N), Etype (Defining_Identifier (N)));
+
             Apply_Compile_Time_Constraint_Error
               (N      => Expression (N),
                Msg    =>

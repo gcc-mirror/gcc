@@ -916,13 +916,17 @@ package Checks is
    --  see the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
 
    procedure Null_Exclusion_Static_Checks
-     (N    : Node_Id;
-      Comp : Node_Id := Empty);
-   --  Ada 2005 (AI-231): Check bad usages of the null-exclusion issue
+     (N          : Node_Id;
+      Comp       : Node_Id := Empty;
+      Array_Comp : Boolean := False);
+   --  Ada 2005 (AI-231): Test for and warn on null-excluding objects or
+   --  components that will raise an exception due to initialization by null.
    --
    --  When a value for Comp is supplied (as in the case of an uninitialized
    --  null-excluding component within a composite object), a reported warning
    --  will indicate the offending component instead of the object itself.
+   --  Array_Comp being True indicates an array object with null-excluding
+   --  components, and any reported warning will indicate that.
 
    procedure Remove_Checks (Expr : Node_Id);
    --  Remove all checks from Expr except those that are only executed
