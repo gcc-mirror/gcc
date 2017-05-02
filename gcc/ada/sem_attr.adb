@@ -6173,7 +6173,7 @@ package body Sem_Attr is
             elsif Val < 0 then
                Set_Etype (E1, Universal_Integer);
 
-            --  Otherwise set type to Unsigned_64 to accomodate max values
+            --  Otherwise set type to Unsigned_64 to accommodate max values
 
             else
                Set_Etype (E1, Standard_Unsigned_64);
@@ -10056,7 +10056,7 @@ package body Sem_Attr is
 
                      --  If range is null, result is zero, that has already
                      --  been dealt with, so what we need is the power of ten
-                     --  that accomodates the Pos of the largest value, which
+                     --  that accommodates the Pos of the largest value, which
                      --  is the high bound of the range + one for the space.
 
                      W := 1;

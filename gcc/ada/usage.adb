@@ -488,7 +488,7 @@ begin
    Write_Line ("        e    treat all warnings (but not info) as errors");
    Write_Line ("        .e   turn on every optional info/warning " &
                                                   "(no exceptions)");
-   Write_Line ("        E    treat all run time warnings as errors");
+   Write_Line ("        E    treat all run-time warnings as errors");
    Write_Line ("        f+   turn on warnings for unreferenced formal");
    Write_Line ("        F*   turn off warnings for unreferenced formal");
    Write_Line ("        .f   turn on warnings for suspicious Subp'Access");

@@ -319,10 +319,7 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
 
    with
      Global => null,
-     Pre    =>
-       Length (Container) < Count_Type'Last
-         and Last (Container) < Index_Type'Last
-         and Position in Index_Type'First .. Last (Container),
+     Pre    => Position in Index_Type'First .. Last (Container),
      Post   =>
        Length (Remove'Result) = Length (Container) - 1
          and then Range_Equal

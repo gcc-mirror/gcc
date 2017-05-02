@@ -6145,7 +6145,7 @@ package body Sem_Ch10 is
       Last_Public_Shadow := Last_Shadow;
 
       --  Ada 2005 (AI-262): Build the limited view of the private declarations
-      --  to accomodate limited private with clauses.
+      --  to accommodate limited private with clauses.
 
       Process_Declarations_And_States
         (Pack  => Pack,
