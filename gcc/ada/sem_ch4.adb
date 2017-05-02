@@ -4311,6 +4311,7 @@ package body Sem_Ch4 is
       Act_Decl      : Node_Id;
       Comp          : Entity_Id;
       Has_Candidate : Boolean := False;
+      Hidden_Comp   : Entity_Id;
       In_Scope      : Boolean;
       Is_Private_Op : Boolean;
       Parent_N      : Node_Id;
@@ -4850,6 +4851,7 @@ package body Sem_Ch4 is
          --  can only be a direct name or an expanded name.
 
          Set_Etype (Sel, Any_Type);
+         Hidden_Comp := Empty;
          In_Scope := In_Open_Scopes (Prefix_Type);
          Is_Private_Op := False;
 
@@ -4900,6 +4902,10 @@ package body Sem_Ch4 is
                   Has_Candidate := True;
 
                else
+                  if Ekind (Comp) = E_Component then
+                     Hidden_Comp := Comp;
+                  end if;
+
                   goto Next_Comp;
                end if;
 
@@ -4921,6 +4927,20 @@ package body Sem_Ch4 is
             end if;
 
             <<Next_Comp>>
+               if Comp = First_Private_Entity (Type_To_Use) then
+                  if Etype (Sel) /= Any_Type then
+
+                     --  We have a candiate.
+                     exit;
+
+                  else
+                     --  Indicate that subsequent operations are private,
+                     --  for better error reporting.
+
+                     Is_Private_Op := True;
+                  end if;
+               end if;
+
                Next_Entity (Comp);
                exit when not In_Scope
                  and then
@@ -4968,11 +4988,20 @@ package body Sem_Ch4 is
 
          elsif In_Scope
            and then Is_Object_Reference (Original_Node (Prefix (N)))
+           and then Comes_From_Source (N)
            and then Is_Private_Op
          then
-            Error_Msg_NE
-              ("invalid reference to private operation of some object of "
-               & "type &", N, Type_To_Use);
+            if Present (Hidden_Comp) then
+               Error_Msg_NE
+                 ("invalid reference to private component of object "
+                  & "of type &", N, Type_To_Use);
+
+            else
+               Error_Msg_NE
+                 ("invalid reference to private operation of some object of "
+                  & "type &", N, Type_To_Use);
+            end if;
+
             Set_Entity (Sel, Any_Id);
             Set_Etype  (Sel, Any_Type);
             return;
