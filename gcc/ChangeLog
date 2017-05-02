@@ -1,3 +1,20 @@
+2017-05-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/78687
+	* tree-sra.c (access): New field parent.
+	(process_subtree_disqualification): New function.
+	(disqualify_candidate): Call it.
+	(build_accesses_from_assign): Reset write flag if creating an
+	assighnment link.
+	(build_access_subtree): Fill in parent field and also prpagate
+	down grp_write flag.
+	(create_artificial_child_access): New parameter set_grp_write, set
+	grp_write to its value.
+	(propagate_subaccesses_across_link): Also propagate grp_write flag
+	values.
+	(propagate_all_subaccesses): Push the closest parent back to work
+	queue if add_access_to_work_queue returned true.
+
 2017-05-02  Richard Biener  <rguenther@suse.de>
 
 	* common.opt (fstrict-overflow): Alias negative to fwrapv.
