@@ -4047,45 +4047,45 @@ package body Checks is
       Comp       : Node_Id := Empty;
       Array_Comp : Boolean := False)
    is
-      Error_Node : Node_Id;
-      Expr       : Node_Id;
-      Has_Null   : constant Boolean := Has_Null_Exclusion (N);
-      K          : constant Node_Kind := Nkind (N);
-      Typ        : Entity_Id;
+      Has_Null  : constant Boolean   := Has_Null_Exclusion (N);
+      Kind      : constant Node_Kind := Nkind (N);
+      Error_Nod : Node_Id;
+      Expr      : Node_Id;
+      Typ       : Entity_Id;
 
    begin
       pragma Assert
-        (Nkind_In (K, N_Component_Declaration,
-                      N_Discriminant_Specification,
-                      N_Function_Specification,
-                      N_Object_Declaration,
-                      N_Parameter_Specification));
+        (Nkind_In (Kind, N_Component_Declaration,
+                         N_Discriminant_Specification,
+                         N_Function_Specification,
+                         N_Object_Declaration,
+                         N_Parameter_Specification));
 
-      if K = N_Function_Specification then
+      if Kind = N_Function_Specification then
          Typ := Etype (Defining_Entity (N));
       else
          Typ := Etype (Defining_Identifier (N));
       end if;
 
-      case K is
+      case Kind is
          when N_Component_Declaration =>
             if Present (Access_Definition (Component_Definition (N))) then
-               Error_Node := Component_Definition (N);
+               Error_Nod := Component_Definition (N);
             else
-               Error_Node := Subtype_Indication (Component_Definition (N));
+               Error_Nod := Subtype_Indication (Component_Definition (N));
             end if;
 
          when N_Discriminant_Specification =>
-            Error_Node    := Discriminant_Type (N);
+            Error_Nod := Discriminant_Type (N);
 
          when N_Function_Specification =>
-            Error_Node    := Result_Definition (N);
+            Error_Nod := Result_Definition (N);
 
          when N_Object_Declaration =>
-            Error_Node    := Object_Definition (N);
+            Error_Nod := Object_Definition (N);
 
          when N_Parameter_Specification =>
-            Error_Node    := Parameter_Type (N);
+            Error_Nod := Parameter_Type (N);
 
          when others =>
             raise Program_Error;
@@ -4098,17 +4098,15 @@ package body Checks is
 
          if not Is_Access_Type (Typ) then
             Error_Msg_N
-              ("`NOT NULL` allowed only for an access type", Error_Node);
+              ("`NOT NULL` allowed only for an access type", Error_Nod);
 
          --  Enforce legality rule RM 3.10(14/1): A null exclusion can only
          --  be applied to a [sub]type that does not exclude null already.
 
-         elsif Can_Never_Be_Null (Typ)
-           and then Comes_From_Source (Typ)
-         then
+         elsif Can_Never_Be_Null (Typ) and then Comes_From_Source (Typ) then
             Error_Msg_NE
               ("`NOT NULL` not allowed (& already excludes null)",
-               Error_Node, Typ);
+               Error_Nod, Typ);
          end if;
       end if;
 
@@ -4116,7 +4114,7 @@ package body Checks is
       --  deferred constants, for which the expression will appear in the full
       --  declaration.
 
-      if K = N_Object_Declaration
+      if Kind = N_Object_Declaration
         and then No (Expression (N))
         and then not Constant_Present (N)
         and then not No_Initialization (N)
@@ -4172,11 +4170,11 @@ package body Checks is
       --  assigned a null value. Otherwise generate a warning message and
       --  replace Expression (N) by an N_Constraint_Error node.
 
-      if K /= N_Function_Specification then
+      if Kind /= N_Function_Specification then
          Expr := Expression (N);
 
          if Present (Expr) and then Known_Null (Expr) then
-            case K is
+            case Kind is
                when N_Component_Declaration
                   | N_Discriminant_Specification
                =>

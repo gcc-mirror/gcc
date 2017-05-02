@@ -3134,8 +3134,8 @@ package body Sem_Ch3 is
             when N_Derived_Type_Definition =>
                Derived_Type_Declaration (T, N, T /= Def_Id);
 
-               --  Inherit predicates from parent, and protect against
-               --  illegal derivations.
+               --  Inherit predicates from parent, and protect against illegal
+               --  derivations.
 
                if Is_Type (T) and then Has_Predicates (T) then
                   Set_Has_Predicates (Def_Id);
@@ -3626,12 +3626,17 @@ package body Sem_Ch3 is
 
       --  Any other relevant delayed aspects on object declarations ???
 
+      --------------------------
+      -- Check_Dynamic_Object --
+      --------------------------
+
       procedure Check_Dynamic_Object (Typ : Entity_Id) is
          Comp     : Entity_Id;
          Obj_Type : Entity_Id;
 
       begin
          Obj_Type := Typ;
+
          if Is_Private_Type (Obj_Type)
             and then Present (Full_View (Obj_Type))
          then
@@ -3656,12 +3661,14 @@ package body Sem_Ch3 is
                elsif not Discriminated_Size (Comp)
                  and then Comes_From_Source (Comp)
                then
-                  Error_Msg_NE ("component& of non-static size will violate "
-                    & "restriction No_Implicit_Heap_Allocation?", N, Comp);
+                  Error_Msg_NE
+                    ("component& of non-static size will violate restriction "
+                     & "No_Implicit_Heap_Allocation?", N, Comp);
 
                elsif Is_Record_Type (Etype (Comp)) then
                   Check_Dynamic_Object (Etype (Comp));
                end if;
+
                Next_Component (Comp);
             end loop;
          end if;
@@ -3720,10 +3727,16 @@ package body Sem_Ch3 is
               and then Can_Never_Be_Null (T)
             then
                if Comp_Decl = Obj_Decl then
-                  Null_Exclusion_Static_Checks (Obj_Decl, Empty, Array_Comp);
+                  Null_Exclusion_Static_Checks
+                    (N          => Obj_Decl,
+                     Comp       => Empty,
+                     Array_Comp => Array_Comp);
+
                else
                   Null_Exclusion_Static_Checks
-                    (Obj_Decl, Comp_Decl, Array_Comp);
+                    (N          => Obj_Decl,
+                     Comp       => Comp_Decl,
+                     Array_Comp => Array_Comp);
                end if;
 
             --  Check array components
