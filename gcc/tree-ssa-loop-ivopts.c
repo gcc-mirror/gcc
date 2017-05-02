@@ -4810,12 +4810,11 @@ get_loop_invariant_expr (struct ivopts_data *data, tree ubase,
 }
 
 /* Scale (multiply) the computed COST (except scratch part that should be
-   hoisted out a loop) by header->frequency / AT->frequency,
-   which makes expected cost more accurate.  */
+   hoisted out a loop) by header->frequency / AT->frequency, which makes
+   expected cost more accurate.  */
 
 static comp_cost
-get_scaled_computation_cost_at (ivopts_data *data, gimple *at, iv_cand *cand,
-				comp_cost cost)
+get_scaled_computation_cost_at (ivopts_data *data, gimple *at, comp_cost cost)
 {
    int loop_freq = data->current_loop->header->frequency;
    int bb_freq = gimple_bb (at)->frequency;
@@ -4826,9 +4825,9 @@ get_scaled_computation_cost_at (ivopts_data *data, gimple *at, iv_cand *cand,
 	 = cost.scratch + (cost.cost - cost.scratch) * bb_freq / loop_freq;
 
        if (dump_file && (dump_flags & TDF_DETAILS))
-	 fprintf (dump_file, "Scaling iv_use based on cand %d "
+	 fprintf (dump_file, "Scaling cost based on bb prob "
 		  "by %2.2f: %d (scratch: %d) -> %d (%d/%d)\n",
-		  cand->id, 1.0f * bb_freq / loop_freq, cost.cost,
+		  1.0f * bb_freq / loop_freq, cost.cost,
 		  cost.scratch, scaled_cost, bb_freq, loop_freq);
 
        cost.cost = scaled_cost;
@@ -5024,7 +5023,7 @@ get_computation_cost (struct ivopts_data *data, struct iv_use *use,
 				mem_mode,
 				TYPE_ADDR_SPACE (TREE_TYPE (utype)),
 				speed, stmt_is_after_inc, can_autoinc);
-      return get_scaled_computation_cost_at (data, at, cand, cost);
+      return get_scaled_computation_cost_at (data, at, cost);
     }
 
   /* Otherwise estimate the costs for computing the expression.  */
@@ -5032,7 +5031,7 @@ get_computation_cost (struct ivopts_data *data, struct iv_use *use,
     {
       if (ratio != 1)
 	cost += mult_by_coeff_cost (ratio, TYPE_MODE (ctype), speed);
-      return get_scaled_computation_cost_at (data, at, cand, cost);
+      return get_scaled_computation_cost_at (data, at, cost);
     }
 
   /* Symbol + offset should be compile-time computable so consider that they
@@ -5052,7 +5051,7 @@ get_computation_cost (struct ivopts_data *data, struct iv_use *use,
   if (aratio != 1)
     cost += mult_by_coeff_cost (aratio, TYPE_MODE (ctype), speed);
 
-  return get_scaled_computation_cost_at (data, at, cand, cost);
+  return get_scaled_computation_cost_at (data, at, cost);
 
 fallback:
   if (can_autoinc)
@@ -5069,7 +5068,7 @@ fallback:
 
   cost = comp_cost (computation_cost (comp, speed), 0);
 
-  return get_scaled_computation_cost_at (data, at, cand, cost);
+  return get_scaled_computation_cost_at (data, at, cost);
 }
 
 /* Determines cost of computing the use in GROUP with CAND in a generic
