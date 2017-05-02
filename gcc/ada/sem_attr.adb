@@ -3763,13 +3763,23 @@ package body Sem_Attr is
       --------------
 
       when Attribute_Enum_Rep =>
+         --  T'Enum_Rep (X) case
+
          if Present (E1) then
             Check_E1;
             Check_Discrete_Type;
             Resolve (E1, P_Base_Type);
 
-         elsif not Is_Discrete_Type (Etype (P)) then
-            Error_Attr_P ("prefix of % attribute must be of discrete type");
+         --  X'Enum_Rep case.  X must be an object or enumeration literal, and
+         --  it must be of a discrete type.
+
+         elsif not ((Is_Object_Reference (P)
+                       or else (Is_Entity_Name (P)
+                                  and then Ekind (Entity (P)) =
+                                             E_Enumeration_Literal))
+                    and then Is_Discrete_Type (Etype (P)))
+         then
+            Error_Attr_P ("prefix of % attribute must be discrete object");
          end if;
 
          Set_Etype (N, Universal_Integer);

@@ -8028,7 +8028,7 @@ package body Sem_Ch3 is
    --  3. DISCRIMINANTS IN DERIVED UNTAGGED RECORD TYPES
 
    --  We have spoken about stored discriminants in point 1 (introduction)
-   --  above. There are two sort of stored discriminants: implicit and
+   --  above. There are two sorts of stored discriminants: implicit and
    --  explicit. As long as the derived type inherits the same discriminants as
    --  the root record type, stored discriminants are the same as regular
    --  discriminants, and are said to be implicit. However, if any discriminant
@@ -8047,7 +8047,7 @@ package body Sem_Ch3 is
    --           type T4 (Y : Int) is new T3 (Y, 99);
 
    --  The following table summarizes the discriminants and stored
-   --  discriminants in R and T1 through T4.
+   --  discriminants in R and T1 through T4:
 
    --   Type      Discrim     Stored Discrim  Comment
    --    R      (D1, D2, D3)   (D1, D2, D3)   Girder discrims implicit in R
@@ -8058,7 +8058,7 @@ package body Sem_Ch3 is
 
    --  Field Corresponding_Discriminant (abbreviated CD below) allows us to
    --  find the corresponding discriminant in the parent type, while
-   --  Original_Record_Component (abbreviated ORC below), the actual physical
+   --  Original_Record_Component (abbreviated ORC below) the actual physical
    --  component that is renamed. Finally the field Is_Completely_Hidden
    --  (abbreviated ICH below) is set for all explicit stored discriminants
    --  (see einfo.ads for more info). For the above example this gives:
@@ -8085,10 +8085,10 @@ package body Sem_Ch3 is
    --                 D2 in T3   empty    itself    yes
    --                 D3 in T3   empty    itself    yes
 
-   --                 Y  in T4  X1 in T3  D3 in T3   no
-   --                 D1 in T3   empty    itself    yes
-   --                 D2 in T3   empty    itself    yes
-   --                 D3 in T3   empty    itself    yes
+   --                 Y  in T4  X1 in T3  D3 in T4   no
+   --                 D1 in T4   empty    itself    yes
+   --                 D2 in T4   empty    itself    yes
+   --                 D3 in T4   empty    itself    yes
 
    --  4. DISCRIMINANTS IN DERIVED TAGGED RECORD TYPES
 

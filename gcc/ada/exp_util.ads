@@ -1177,7 +1177,9 @@ package Exp_Util is
    function Within_Internal_Subprogram return Boolean;
    --  Indicates that some expansion is taking place within the body of a
    --  predefined primitive operation. Some expansion activity (e.g. predicate
-   --  checks) is disabled in such.
+   --  checks) is disabled in such. Because we want to detect invalid uses
+   --  of function calls within predicates (which lead to infinite recursion)
+   --  predicate functions themselves are not considered internal here.
 
 private
    pragma Inline (Duplicate_Subexpr);
