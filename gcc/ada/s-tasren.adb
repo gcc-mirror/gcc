@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1992-2014, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2017, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -546,8 +546,6 @@ package body System.Tasking.Rendezvous is
         (Target : Ada.Exceptions.Exception_Occurrence_Access;
          Source : Ada.Exceptions.Exception_Occurrence);
       pragma Import (C, Transfer_Occurrence, "__gnat_transfer_occurrence");
-
-      use type STPE.Protection_Entries_Access;
 
    begin
       --  The deferral level is critical here, since we want to raise an

@@ -3588,6 +3588,13 @@ package body Sem_Ch3 is
 
       Prev_Entity : Entity_Id := Empty;
 
+      procedure Check_For_Null_Excluding_Components
+        (Obj_Typ  : Entity_Id;
+         Obj_Decl : Node_Id);
+      --  Recursively verify that each null-excluding component of an object
+      --  declaration's type has explicit initialization, and generate
+      --  compile-time warnings for each one that does not.
+
       function Count_Tasks (T : Entity_Id) return Uint;
       --  This function is called when a non-generic library level object of a
       --  task type is declared. Its function is to count the static number of
@@ -3606,6 +3613,100 @@ package body Sem_Ch3 is
       --  before the analysis of the object declaration is complete.
 
       --  Any other relevant delayed aspects on object declarations ???
+
+      -----------------------------------------
+      -- Check_For_Null_Excluding_Components --
+      -----------------------------------------
+
+      procedure Check_For_Null_Excluding_Components
+        (Obj_Typ  : Entity_Id;
+         Obj_Decl : Node_Id)
+      is
+
+         procedure Check_Component
+           (Comp_Typ  : Entity_Id;
+            Comp_Decl : Node_Id := Empty);
+         --  Perform compile-time null-exclusion checks on a given component
+         --  and all of its subcomponents, if any.
+
+         ---------------------
+         -- Check_Component --
+         ---------------------
+
+         procedure Check_Component
+           (Comp_Typ  : Entity_Id;
+            Comp_Decl : Node_Id := Empty)
+         is
+            Comp : Entity_Id;
+            T    : Entity_Id;
+
+         begin
+            --  Return without further checking if the component has explicit
+            --  initialization or does not come from source.
+
+            if Present (Comp_Decl) then
+               if not Comes_From_Source (Comp_Decl)
+                 or else Present (Expression (Comp_Decl))
+               then
+                  return;
+               end if;
+            end if;
+
+            if Is_Incomplete_Or_Private_Type (Comp_Typ)
+              and then Present (Full_View (Comp_Typ))
+            then
+               T := Full_View (Comp_Typ);
+            else
+               T := Comp_Typ;
+            end if;
+
+            --  Verify a component of a null-excluding access type
+
+            if Is_Access_Type (T)
+              and then Can_Never_Be_Null (T)
+            then
+               Null_Exclusion_Static_Checks (Obj_Decl, Comp_Decl);
+
+            --  Check array type components
+
+            elsif Is_Array_Type (T) then
+               --  There is no suitable component when the object is of an
+               --  array type. However, a namable component may appear at some
+               --  point during the recursive inspection, but not at the top
+               --  level.
+
+               if Comp_Decl = Obj_Decl then
+                  Check_Component (Component_Type (T));
+               else
+                  Check_Component (Component_Type (T), Comp_Decl);
+               end if;
+
+            --  If T allows named components, then iterate through them,
+            --  recursively verifying all subcomponents.
+
+            --  NOTE: Due to the complexities involved with checking components
+            --  of nontrivial types with discriminants (variant records and
+            --  the like), no static checking is performed on them. ???
+
+            elsif (Is_Concurrent_Type (T)
+                    or else Is_Incomplete_Or_Private_Type (T)
+                    or else Is_Record_Type (T))
+               and then not Has_Discriminants (T)
+            then
+               Comp := First_Component (T);
+               while Present (Comp) loop
+                  Check_Component (Etype (Comp), Parent (Comp));
+
+                  Comp := Next_Component (Comp);
+               end loop;
+            end if;
+         end Check_Component;
+
+      --  Start processing for Check_For_Null_Excluding_Components
+
+      begin
+         Check_Component (Obj_Typ, Obj_Decl);
+      end Check_For_Null_Excluding_Components;
 
       -----------------
       -- Count_Tasks --
@@ -3808,25 +3909,34 @@ package body Sem_Ch3 is
       --  Ada 2005 (AI-231): Propagate the null-excluding attribute and carry
       --  out some static checks.
 
-      if Ada_Version >= Ada_2005 and then Can_Never_Be_Null (T) then
-
+      if Ada_Version >= Ada_2005 then
          --  In case of aggregates we must also take care of the correct
          --  initialization of nested aggregates bug this is done at the
          --  point of the analysis of the aggregate (see sem_aggr.adb) ???
 
-         if Present (Expression (N))
-           and then Nkind (Expression (N)) = N_Aggregate
-         then
-            null;
+         if Can_Never_Be_Null (T) then
+
+            if Present (Expression (N))
+              and then Nkind (Expression (N)) = N_Aggregate
+            then
+               null;
+
+            else
+               declare
+                  Save_Typ : constant Entity_Id := Etype (Id);
+               begin
+                  Set_Etype (Id, T); --  Temp. decoration for static checks
+                  Null_Exclusion_Static_Checks (N);
+                  Set_Etype (Id, Save_Typ);
+               end;
+            end if;
+
+         --  We might be dealing with an object of a composite type containing
+         --  null-excluding components without an aggregate, so we must verify
+         --  that such components have default initialization.
 
          else
-            declare
-               Save_Typ : constant Entity_Id := Etype (Id);
-            begin
-               Set_Etype (Id, T); --  Temp. decoration for static checks
-               Null_Exclusion_Static_Checks (N);
-               Set_Etype (Id, Save_Typ);
-            end;
+            Check_For_Null_Excluding_Components (T, N);
          end if;
       end if;
 

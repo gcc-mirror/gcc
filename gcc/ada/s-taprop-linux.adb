@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2016, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2017, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1524,8 +1524,6 @@ package body System.Task_Primitives.Operations is
       --    'r'   Interrupt_State pragma set state to Runtime
       --    's'   Interrupt_State pragma set state to System (use "default"
       --           system handler)
-
-      use type System.Multiprocessors.CPU_Range;
 
    begin
       Environment_Task_Id := Environment_Task;

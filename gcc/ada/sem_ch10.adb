@@ -2288,10 +2288,10 @@ package body Sem_Ch10 is
          Pop_Scope;
       end Remove_Scope;
 
-      Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
-      Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
+      Saved_SM  : SPARK_Mode_Type := SPARK_Mode;
+      Saved_SMP : Node_Id         := SPARK_Mode_Pragma;
       --  Save the SPARK mode-related data to restore on exit. Removing
-      --  eclosing scopes and contexts to provide a clean environment for the
+      --  enclosing scopes and contexts to provide a clean environment for the
       --  context of the subunit will eliminate any previously set SPARK_Mode.
 
    --  Start of processing for Analyze_Subunit
@@ -2351,6 +2351,15 @@ package body Sem_Ch10 is
 
          Analyze_Subunit_Context;
 
+         --  Take into account the effect of any SPARK_Mode configuration
+         --  pragma, which takes precedence over a different value of
+         --  SPARK_Mode inherited from the context of the stub.
+
+         if SPARK_Mode /= None then
+            Saved_SM  := SPARK_Mode;
+            Saved_SMP := SPARK_Mode_Pragma;
+         end if;
+
          Re_Install_Parents (Lib_Unit, Par_Unit);
          Set_Is_Immediately_Visible (Par_Unit);
 
@@ -2392,7 +2401,8 @@ package body Sem_Ch10 is
       Generate_Parent_References (Unit (N), Par_Unit);
 
       --  Reinstall the SPARK_Mode which was in effect prior to any scope and
-      --  context manipulations.
+      --  context manipulations, taking into account a possible SPARK_Mode
+      --  configuration pragma if present.
 
       Install_SPARK_Mode (Saved_SM, Saved_SMP);
 

@@ -1,3 +1,37 @@
+2017-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Fully_Conformant_Expressions): Two entity
+	references are fully conformant if they are both expansions
+	of the discriminant of a protected type, within one of the
+	protected operations. One occurrence may be expanded into a
+	constant declaration while the other is an input parameter to
+	the corresponding generated subprogram.
+
+2017-05-02  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch3.adb (Check_For_Null_Excluding_Components): Created for
+	recursivly searching composite-types for null-excluding access
+	types and verifying them.
+	(Analyze_Object_Declaration): Add a
+	call to Check_Null_Excluding_Components for static verification
+	of non-initialized objects.
+	* checks.adb, checks.ads (Null_Exclusion_Static_Checks): Added
+	a parameter for a composite-type's component and an extra case
+	for printing component information.
+
+2017-05-02  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch10.adb (Analyze_Subunit): Take
+	configuration pragma into account when restoring appropriate
+	pragma for analysis of subunit.
+
+2017-05-02  Justin Squirek  <squirek@adacore.com>
+
+	* s-tasren.adb, s-tasini.adb, s-taprop-linux.adb,
+	s-mudido-affinity.adb,, a-exetim-posix.adb, a-direio.adb,
+	g-socket.adb, s-taenca.adb, s-fileio.adb: Remove unused use-type
+	clauses from the runtime.
+
 2017-05-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* freeze.adb (Check_Component_Storage_Order): Do not treat bit-packed

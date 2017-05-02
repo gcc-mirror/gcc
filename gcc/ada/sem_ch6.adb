@@ -8770,6 +8770,16 @@ package body Sem_Ch6 is
                         and then Ekind (Entity (E1)) = E_Discriminant
                         and then Ekind (Entity (E2)) = E_In_Parameter)
 
+             --  The discriminant of a protected type is transformed into
+             --  a local constant and then into a parameter of a protected
+             --  operation.
+
+             or else (Ekind (Entity (E1)) = E_Constant
+                 and then Ekind (Entity (E2)) = E_In_Parameter
+                 and then Present (Discriminal_Link (Entity (E1)))
+                 and then Discriminal_Link (Entity (E1)) =
+                          Discriminal_Link (Entity (E2)))
+
              --  AI12-050: The loop variables of quantified expressions
              --  match if they have the same identifier, even though they
              --  are different entities.
