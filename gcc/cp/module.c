@@ -849,6 +849,7 @@ public:
   void tag_conf (FILE *);
   void tag_import (FILE *, unsigned ix, const module_state *);
   void tag_trees (FILE *);
+  void tag_binding (FILE *, tree ns, tree name, tree ovl);
   int done ()
   {
     return w.done ();
@@ -861,10 +862,11 @@ private:
   void write_core_bools (FILE *, tree);
   void write_core_vals (FILE *, tree);
   void write_decl_lang_bools (FILE *, tree);
+  tree write_context_binding (FILE *, tree, tree);
 
 public:
   void write_tree (FILE *, tree);
-  void walk_namespace (FILE *d, tree ns, bool defns);
+  tree write_bindings (FILE *d, tree ctx, tree ns);
 };
 
 cpms_out::cpms_out (FILE *s, const char *n)
@@ -1336,6 +1338,37 @@ cpms_in::tag_import (FILE *d)
   return index != GLOBAL_MODULE_INDEX;
 }
 
+/* NAME is bound to OVL in namespace NS.  Write out the binding.
+   NS must have already have a binding somewhere.
+
+   tree:ns 
+   tree:name
+   tree:ovl
+*/
+
+void
+cpms_out::tag_binding (FILE *d, tree ns, tree name, tree ovl)
+{
+  write_tree (d, ns);
+  write_tree (d, name);
+  write_tree (d, ovl);
+}
+
+bool
+cpms_in::tag_binding (FILE *d)
+{
+  tree name, ns, ovl;
+  if (!read_tree (d, &ns)
+      || !read_tree (d, &name)
+      || !read_tree (d, &ovl))
+    return false;
+
+  if (d)
+    fprintf (d, "Reading binding for %s in %s\n",
+	     IDENTIFIER_POINTER (name), IDENTIFIER_POINTER (DECL_NAME (ns)));
+  return push_module_binding (ns, GLOBAL_MODULE_INDEX, name, ovl);
+}
+
 int
 cpms_in::read_item (FILE *d)
 {
@@ -1359,9 +1392,13 @@ cpms_in::read_item (FILE *d)
       else
 	{
 	  index = modules->length ();
-	  /* <homersimpson>Stupid deduction rules.  */
-	  vec_safe_reserve (modules, 1);
-	  modules->quick_push (NULL);
+	  if (index == MODULE_INDEX_LIMIT)
+	    {
+	      sorry ("too many modules loaded (limit is %u)", index);
+	      r.bad (-1);
+	      return -1;
+	    }
+	  vec_safe_push (modules, (module_state *)NULL);
 	  state->set_index (index);
 	}
       if (d)
@@ -2119,11 +2156,27 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
   return t != NULL_TREE;
 }
 
-void
-cpms_out::walk_namespace (FILE *d, tree ns, bool defns)
-{
-  gcc_assert (!defns); // FIXME: todo
+/* Write the namespace bindings from CTX->NS.  */
 
+tree
+cpms_out::write_context_binding (FILE *d, tree ctx, tree ns)
+{
+  if (ctx != ns)
+    {
+      ctx = write_context_binding (d, ctx, CP_DECL_CONTEXT (ns));
+      tag_binding (d, ctx, DECL_NAME (ns), ns);
+      ctx = ns;
+    }
+  return ctx;
+}
+
+/* Walk the bindings of NS, writing out the bindings for the global
+   module and the main module.  CTX is the closest namespace who's
+   binding has been written out.  */
+
+tree
+cpms_out::write_bindings (FILE *d, tree ctx, tree ns)
+{
   bool mod_ns = CURRENT_MODULE_NAMESPACE_P (ns);
 
   /* Don't walk into other module's namespaces.  */
@@ -2132,7 +2185,7 @@ cpms_out::walk_namespace (FILE *d, tree ns, bool defns)
       if (d)
 	fprintf (d, "Skipping namespace '%s'\n",
 		 IDENTIFIER_POINTER (DECL_NAME (ns)));
-      return;
+      return ctx;
     }
 
   if (d)
@@ -2146,6 +2199,11 @@ cpms_out::walk_namespace (FILE *d, tree ns, bool defns)
     {
       std::pair<tree, tree> binding (*iter);
 
+      tree name = binding.first;
+      tree ovl = binding.second;
+
+      ctx = write_context_binding (d, ctx, ns);
+      
       tree type; // FIXME stop ignoring me
       tree decl = decapsulate_binding (binding.second, &type);
 
@@ -2165,12 +2223,14 @@ cpms_out::walk_namespace (FILE *d, tree ns, bool defns)
 		    // FIXME:Add templates later
 		    gcc_assert (TREE_CODE (fn) == FUNCTION_DECL);
 
-		    write_tree (d, fn);
+		    // FIXME Hack alert, just one fn
+		    tag_binding (d, ctx, name, fn);
+		    break;
 		  }
 	      }
 	}
       else if (TREE_CODE (decl) == NAMESPACE_DECL)
-	walk_namespace (d, decl, defns);
+	ctx = write_bindings (d, ctx, decl);
       else if (mod_ns || DECL_MODULE_EXPORT_P (decl)
 	       // FIXME: set MODULE_EXPORT_P properly.  Utter hack here
 	       || !DECL_EXTERN_C_P (decl))
@@ -2183,6 +2243,15 @@ cpms_out::walk_namespace (FILE *d, tree ns, bool defns)
 	    gcc_unreachable (); // FIXME: implement more
 	  }
     }
+
+  /* Limit returned context to parent of NS.  */
+  if (ns != global_namespace)
+    while (SCOPE_DEPTH (ctx) >= SCOPE_DEPTH (ns))
+      ctx = CP_DECL_CONTEXT (ctx);
+  else
+    ctx = global_namespace;
+
+  return ctx;
 }
 
 /* Mangling for module files.  */
@@ -2648,7 +2717,7 @@ write_module (FILE *stream, const char *fname, tree name)
   out.tag_trees (d);
 
   /* Write decls.  */
-  out.walk_namespace (d, global_namespace, false);
+  out.write_bindings (d, global_namespace, global_namespace);
 
   // FIXME:Write defns.  Probably fine just to do it during the first
   // namespace walk.

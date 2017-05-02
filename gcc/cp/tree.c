@@ -2151,7 +2151,8 @@ ovl_copy (tree ovl)
 
 /* Add FN to the (potentially NULL) overload set OVL.  VIA_USING is
    true, if FN is via a using declaration.  We also pay attention to
-   DECL_HIDDEN.  Overloads are ordered as hidden, using, regular.  */
+   DECL_HIDDEN.  Overloads are ordered as hidden, using, regular,
+   exported.  */
 
 tree
 ovl_insert (tree maybe_ovl, tree fn, bool using_p)

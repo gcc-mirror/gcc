@@ -1,3 +1,19 @@
+2017-05-02  Nathan Sidwell  <nathan@acm.org>
+
+	Read/write direct namespace bindings
+	gcc/cp/
+	* cp-tree.def (module_vector): New tree type.
+	* cp-tree.h (module_cluster, tree_module_vec): New tree.
+	(enum cp_tree_node_structure_enum): Add TS_CP_MODULE_VECTOR.
+	(lang_tree_node): Add tree_module_vec.
+	* decl.c (cp_tree_node_structure): Detect MODULE_VECTOR.
+	* module.c (cpms_out::tag_binding, cpms_in::tag_binding): New.
+	(cpms_out::write_context_binding): New.
+	(cpms_out::walk_namespace): Replace with ...
+	(cpms_out::write_bindings): ... this.
+	* name-lookup.h (push_module_binding): Declare.
+	* name-lookup.c (push_module_binding): New.
+
 2017-05-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/

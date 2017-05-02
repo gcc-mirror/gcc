@@ -205,6 +205,7 @@ public:
   tree value; /* A (possibly ambiguous) set of things found.  */
   tree type; /* A type that has been found.  */
   int flags;
+  unsigned from;  /* Module we're looking from.  */
   unsigned cookie;
 
 protected:
@@ -2390,6 +2391,20 @@ pushdecl (tree x, bool is_friend)
   x = do_pushdecl (x, is_friend);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return x;
+}
+
+bool
+push_module_binding (tree ns, unsigned module, tree name, tree ovl)
+{
+  tree *slot = find_or_create_namespace_slot (ns, name);
+  tree old = MAYBE_STAT_DECL (*slot);
+
+  // FIXME: for now
+  gcc_assert (TREE_CODE (ovl) == NAMESPACE_DECL
+	      || TREE_CODE (ovl) == FUNCTION_DECL);
+  if (old != ovl)
+    old = update_binding (NAMESPACE_LEVEL (ns), NULL, slot, old, ovl, false);
+  return old != error_mark_node;
 }
 
 /* Enter DECL into the symbol table, if that's appropriate.  Returns

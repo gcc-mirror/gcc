@@ -237,6 +237,10 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 		    TREE_CODE (*iter) == OVERLOAD ? "inner" : "function",
 		    *iter, indent+4);
       break;
+    case MODULE_VECTOR:
+      gcc_unreachable ();
+      // FIXME: implement
+      break;
     case TEMPLATE_PARM_INDEX:
       print_node (file, "decl", TEMPLATE_PARM_DECL (node), indent+4);
       indent_to (file, indent + 3);

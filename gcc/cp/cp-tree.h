@@ -802,6 +802,30 @@ class ovl2_iterator : public ovl_iterator
   }
 };
 
+#define MODULES_PER_BINDING_CLUSTER 4
+
+/* Bindings for modules are held in a sparse array.  Slots 0 & 1 are
+   aways present (global and this modules).  Remaining slots are
+   allocated as needed.  By construction of the importing mechanism we
+   only ever need to append to the array.  Rather than have straight
+   index/slot tuples, we bunch them up for greater packing.  */
+
+struct GTY(()) module_cluster {
+  unsigned short indices[MODULES_PER_BINDING_CLUSTER];
+  tree slots[MODULES_PER_BINDING_CLUSTER];
+};
+
+#define MODULE_LENGTH(NODE) (MODULE_VECTOR_CHECK (NODE)->base.u.length)
+#define MODULE_CLUSTER(NODE,IX) \
+  (((tree_module_vec *)MODULE_VECTOR_CHECK (NODE))->vec[IX])
+#define MODULE_CLUSTERS(NODE) \
+  (((tree_module_vec *)MODULE_VECTOR_CHECK (NODE))->vec)
+
+struct GTY(()) tree_module_vec {
+  struct tree_base base;
+  module_cluster GTY((length ("%h.base.u.length"))) vec[1];
+};
+
 struct GTY(()) tree_template_decl {
   struct tree_decl_common common;
   tree arguments;
@@ -1395,6 +1419,7 @@ check_constraint_info (tree t)
 #define GLOBAL_MODULE_INDEX 0
 #define THIS_MODULE_INDEX 1
 #define IMPORTED_MODULE_BASE 2
+#define MODULE_INDEX_LIMIT 16384
 
 /* The owning module of a DECL.  */
 
@@ -1432,6 +1457,7 @@ enum cp_tree_node_structure_enum {
   TS_CP_PTRMEM,
   TS_CP_BINDING,
   TS_CP_OVERLOAD,
+  TS_CP_MODULE_VECTOR,
   TS_CP_BASELINK,
   TS_CP_TEMPLATE_DECL,
   TS_CP_WRAPPER,
@@ -1455,6 +1481,7 @@ union GTY((desc ("cp_tree_node_structure (&%h)"),
   struct template_parm_index GTY ((tag ("TS_CP_TPI"))) tpi;
   struct ptrmem_cst GTY ((tag ("TS_CP_PTRMEM"))) ptrmem;
   struct tree_overload GTY ((tag ("TS_CP_OVERLOAD"))) overload;
+  struct tree_module_vec GTY ((tag ("TS_CP_MODULE_VECTOR"))) module_vec;
   struct tree_baselink GTY ((tag ("TS_CP_BASELINK"))) baselink;
   struct tree_template_decl GTY ((tag ("TS_CP_TEMPLATE_DECL"))) template_decl;
   struct tree_default_arg GTY ((tag ("TS_CP_DEFAULT_ARG"))) default_arg;
