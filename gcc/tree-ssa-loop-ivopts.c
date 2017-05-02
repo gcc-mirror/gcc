@@ -612,8 +612,9 @@ struct iv_ca
   /* The number of candidates in the set.  */
   unsigned n_cands;
 
-  /* Total number of registers needed.  */
-  unsigned n_regs;
+  /* The number of invariants needed, including both invariant variants and
+     invariant expressions.  */
+  unsigned n_invs;
 
   /* Total cost of expressing uses.  */
   comp_cost cand_use_cost;
@@ -5989,15 +5990,17 @@ determine_iv_costs (struct ivopts_data *data)
     fprintf (dump_file, "\n");
 }
 
-/* Calculates cost for having SIZE induction variables.  */
+/* Calculates cost for having N_REGS registers.  This number includes
+   induction variables, invariant variables and invariant expressions.  */
 
 static unsigned
-ivopts_global_cost_for_size (struct ivopts_data *data, unsigned size)
+ivopts_global_cost_for_size (struct ivopts_data *data, unsigned n_regs)
 {
-  /* We add size to the cost, so that we prefer eliminating ivs
-     if possible.  */
-  return size + estimate_reg_pressure_cost (size, data->regs_used, data->speed,
-					    data->body_includes_call);
+  unsigned cost = estimate_reg_pressure_cost (n_regs,
+					      data->regs_used, data->speed,
+					      data->body_includes_call);
+  /* Add n_regs to the cost, so that we prefer eliminating ivs if possible.  */
+  return n_regs + cost;
 }
 
 /* For each size of the induction variable set determine the penalty.  */
@@ -6100,9 +6103,7 @@ iv_ca_recount_cost (struct ivopts_data *data, struct iv_ca *ivs)
   comp_cost cost = ivs->cand_use_cost;
 
   cost += ivs->cand_cost;
-
-  cost += ivopts_global_cost_for_size (data, ivs->n_regs);
-
+  cost += ivopts_global_cost_for_size (data, ivs->n_invs + ivs->n_cands);
   ivs->cost = cost;
 }
 
@@ -6123,7 +6124,7 @@ iv_ca_set_remove_invs (struct iv_ca *ivs, bitmap invs, unsigned *n_inv_uses)
     {
       n_inv_uses[iid]--;
       if (n_inv_uses[iid] == 0)
-	ivs->n_regs--;
+	ivs->n_invs--;
     }
 }
 
@@ -6148,10 +6149,8 @@ iv_ca_set_no_cp (struct ivopts_data *data, struct iv_ca *ivs,
   if (ivs->n_cand_uses[cid] == 0)
     {
       bitmap_clear_bit (ivs->cands, cid);
-      ivs->n_regs--;
       ivs->n_cands--;
       ivs->cand_cost -= cp->cand->cost;
-
       iv_ca_set_remove_invs (ivs, cp->cand->inv_vars, ivs->n_inv_var_uses);
     }
 
@@ -6178,7 +6177,7 @@ iv_ca_set_add_invs (struct iv_ca *ivs, bitmap invs, unsigned *n_inv_uses)
     {
       n_inv_uses[iid]++;
       if (n_inv_uses[iid] == 1)
-	ivs->n_regs++;
+	ivs->n_invs++;
     }
 }
 
@@ -6206,10 +6205,8 @@ iv_ca_set_cp (struct ivopts_data *data, struct iv_ca *ivs,
       if (ivs->n_cand_uses[cid] == 1)
 	{
 	  bitmap_set_bit (ivs->cands, cid);
-	  ivs->n_regs++;
 	  ivs->n_cands++;
 	  ivs->cand_cost += cp->cand->cost;
-
 	  iv_ca_set_add_invs (ivs, cp->cand->inv_vars, ivs->n_inv_var_uses);
 	}
 
@@ -6421,7 +6418,7 @@ iv_ca_new (struct ivopts_data *data)
   nw->n_cand_uses = XCNEWVEC (unsigned, data->vcands.length ());
   nw->cands = BITMAP_ALLOC (NULL);
   nw->n_cands = 0;
-  nw->n_regs = 0;
+  nw->n_invs = 0;
   nw->cand_use_cost = no_cost;
   nw->cand_cost = 0;
   nw->n_inv_var_uses = XCNEWVEC (unsigned, data->max_inv_var_id + 1);
