@@ -1,3 +1,9 @@
+2017-05-02  Martin Liska  <mliska@suse.cz>
+
+	PR other/80589
+	* common.opt: Fix typo.
+	* doc/invoke.texi: Likewise.
+
 2017-05-01  Jan Beulich  <jbeulich@suse.com>
 
 	* config/i386/sse.md (xop_vpermil2<mode>3): Do not allow operand
