@@ -1,3 +1,8 @@
+2017-05-02  Nathan Sidwell  <nathan@acm.org>
+
+	* ggc-page.c (move_ptes_to_front): Replace unsigned >0 with i--
+	check.  Fix formatting.
+
 2017-05-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline-analysis.c (estimate_node_size_and_time): Allow roundoff
