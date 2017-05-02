@@ -1,3 +1,8 @@
+2017-05-02  Hugo Beauzée-Luyssen <hugo@beauzee.fr>
+
+	PR libstdc++/69506
+	* config/os/mingw32-w64/os_defines.h (_GLIBCXX_USE_WEAK_REF): Define.
+
 2017-04-29  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/libstdc++-prettyprinters/48362.cc: Replace a regexp-test
