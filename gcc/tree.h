@@ -897,8 +897,8 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* If this is true, we should insert a __cilk_detach call just before
    this function call.  */
 #define EXPR_CILK_SPAWN(NODE) \
-  (tree_check2 (NODE, __FILE__, __LINE__, __FUNCTION__, \
-                CALL_EXPR, AGGR_INIT_EXPR)->base.u.bits.unsigned_flag)
+  (TREE_CHECK2 (NODE, CALL_EXPR, \
+                AGGR_INIT_EXPR)->base.u.bits.unsigned_flag)
 
 /* In a RESULT_DECL, PARM_DECL and VAR_DECL, means that it is
    passed by invisible reference (and the TREE_TYPE is a pointer to the true

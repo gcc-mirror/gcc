@@ -1,14 +1,20 @@
+2017-05-02  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
+
+	* tree.h (EXPR_CILK_SPAWN): Use macro TREE_CHECK2 instead of
+	function tree_check2.
+
+
 2017-05-02  Martin Liska  <mliska@suse.cz>
 
 	* doc/gcov.texi: Add missing preposition.
 	* gcov.c (function_info::function_info): Properly fill up
 	all member variables.
 
-2017-04-26  Tamar Christina  <tamar.christina@arm.com>
+2017-05-02  Tamar Christina  <tamar.christina@arm.com>
 
 	* expr.c (expand_expr_real_2): Re-cost if previous costs are the same.
 
-2017-04-27  Tamar Christina  <tamar.christina@arm.com>
+2017-05-02  Tamar Christina  <tamar.christina@arm.com>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Add LSHIFTRT case.
 
