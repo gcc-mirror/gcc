@@ -3489,7 +3489,7 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
 	 parameter pack (14.6.3), or the type-specifier-seq of a type-id that
 	 is a pack expansion, the invented template parameter is a template
 	 parameter pack.  */
-      if (ppd->type_pack_expansion_p && is_auto_or_concept (t))
+      if (ppd->type_pack_expansion_p && is_auto (t))
 	TEMPLATE_TYPE_PARAMETER_PACK (t) = true;
       if (TEMPLATE_TYPE_PARAMETER_PACK (t))
         parameter_pack_p = true;
@@ -24806,7 +24806,7 @@ static int
 extract_autos_r (tree t, void *data)
 {
   hash_table<auto_hash> &hash = *(hash_table<auto_hash>*)data;
-  if (is_auto_or_concept (t))
+  if (is_auto (t))
     {
       /* All the autos were built with index 0; fix that up now.  */
       tree *p = hash.find_slot (t, INSERT);
@@ -25530,7 +25530,7 @@ is_auto (const_tree type)
 int
 is_auto_r (tree tp, void */*data*/)
 {
-  return is_auto_or_concept (tp);
+  return is_auto (tp);
 }
 
 /* Returns the TEMPLATE_TYPE_PARM in TYPE representing `auto' iff TYPE contains
@@ -25555,26 +25555,6 @@ type_uses_auto (tree type)
   else
     return find_type_usage (type, is_auto);
 }
-
-/* Returns true iff TYPE is a TEMPLATE_TYPE_PARM representing 'auto',
-   'decltype(auto)' or a concept.  */
-
-bool
-is_auto_or_concept (const_tree type)
-{
-  return is_auto (type); // or concept
-}
-
-/* Returns the TEMPLATE_TYPE_PARM in TYPE representing a generic type (`auto' or
-   a concept identifier) iff TYPE contains a use of a generic type.  Returns
-   NULL_TREE otherwise.  */
-
-tree
-type_uses_auto_or_concept (tree type)
-{
-  return find_type_usage (type, is_auto_or_concept);
-}
-
 
 /* For a given template T, return the vector of typedefs referenced
    in T for which access check is needed at T instantiation time.

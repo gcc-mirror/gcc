@@ -1,3 +1,11 @@
+2017-05-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (is_auto_or_concept): Remove.
+	(type_uses_auto_or_concept): Remove, unused.
+	(find_parameter_packs_r, extract_autos_r, is_auto_r): Adjust.
+	* parser.c (tree_type_is_auto_or_concept): Remove, unused.
+	* cp-tree.h (is_auto_or_concept): Remove.
+
 2017-05-01  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
 
         PR c++/80038
