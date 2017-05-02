@@ -1,5 +1,34 @@
 2017-05-02  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (struct cost_pair): Rename depends_on to
+	inv_vars.  Add inv_exprs.
+	(struct iv_cand): Rename depends_on to inv_vars.
+	(struct ivopts_data): Rename max_inv_id/n_invariant_uses to
+	max_inv_var_id/n_inv_var_uses.  Move max_inv_expr_id around.
+	Refactor field used_inv_exprs from has_map to array n_inv_expr_uses.
+	(dump_cand): Dump inv_vars.
+	(tree_ssa_iv_optimize_init): Support inv_vars and inv_exprs.
+	(record_invariant, find_depends, add_candidate_1): Ditto.
+	(set_group_iv_cost, force_var_cost): Ditto.
+	(split_address_cost, ptr_difference_cost, difference_cost): Ditto.
+	(get_computation_cost_at, get_computation_cost): Ditto.
+	(determine_group_iv_cost_generic): Ditto.
+	(determine_group_iv_cost_address): Ditto.
+	(determine_group_iv_cost_cond, autoinc_possible_for_pair): Ditto.
+	(determine_group_iv_costs): Ditto.
+	(iv_ca_recount_cost): Update call to ivopts_global_cost_for_size.
+	(iv_ca_set_remove_invariants): Renamed to ...
+	(iv_ca_set_remove_invs): ... this.  Support inv_vars and inv_exprs.
+	(iv_ca_set_no_cp): Use iv_ca_set_remove_invs.
+	(iv_ca_set_add_invariants):  Renamed to ...
+	(iv_ca_set_add_invs): ... this.  Support inv_vars and inv_exprs.
+	(iv_ca_set_cp): Use iv_ca_set_add_invs.
+	(iv_ca_has_deps): Support inv_vars and inv_exprs.
+	(iv_ca_new, iv_ca_free, iv_ca_dump, free_loop_data): Ditto.
+	(create_new_ivs): Remove useless dump.
+
+2017-05-02  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Remove pseudo
 	iv_cand code.
 	(determine_group_iv_cost_cond, determine_iv_cost): Ditto.
