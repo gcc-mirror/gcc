@@ -6476,7 +6476,7 @@ package body Sem_Ch4 is
             --  Either the types are compatible, or one operand is universal
             --  (numeric or null).
 
-           or else (In_Instance
+           or else ((In_Instance or else In_Inlined_Body)
                      and then
                        (First_Subtype (T1) = First_Subtype (Etype (R))
                          or else Nkind (R) = N_Null

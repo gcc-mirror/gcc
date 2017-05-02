@@ -374,7 +374,7 @@ package body Sem_Type is
                      and then not Is_Hidden (Vis_Type))
            or else Nkind (N) = N_Expanded_Name
            or else (Nkind (N) in N_Op and then E = Entity (N))
-           or else In_Instance
+           or else (In_Instance or else In_Inlined_Body)
            or else Ekind (Vis_Type) = E_Anonymous_Access_Type
          then
             null;
