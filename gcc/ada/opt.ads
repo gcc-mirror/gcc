@@ -1147,10 +1147,6 @@ package Opt is
    --  GNATMAKE, GNATBIND, GNATFIND, GNATXREF
    --  Set to True if no default library search dirs added to search list.
 
-   No_Libgnarl : Boolean := False;
-   --  GNATBIND
-   --  Set to True if libgnarl is not available in the runtime.
-
    No_Strict_Aliasing : Boolean := False;
    --  GNAT
    --  Set True if pragma No_Strict_Aliasing with no parameters encountered.

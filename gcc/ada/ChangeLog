@@ -1,3 +1,40 @@
+2017-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Initialization_Call): Generate a null
+	statement if the initialization call is a null procedure, as
+	can happen with a controlled type with no explicit Initialize
+	procedure, or an array of such.
+	* exp_ch7.adb (Process_Object_Declaration): For a type with
+	controlled components that has a trivial Initialize procedure,
+	insert declaration for finalization counter after object
+	declaration itself.
+	(Make_Deep_Array_Body, Build_Initialize_statements): Do not create
+	finalization block and attendant declarations if component has
+	a trivial Initialize procedure.
+	(Make_Init_Call): Do not generate a call if controlled type has
+	a trivial Initialize procedure.
+
+2017-05-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g-forstr.ads (Data): Move Format component last.
+	* g-forstr.adb ("+"): Adjust for above change.
+	* g-rewdat.ads (Buffer): Move Buffer, Current, Pattern and Value last.
+	* g-sechas.ads (Context): Move Key last.
+	* g-socket.ads (Service_Entry_Type): Move Aliases last.
+	* s-fileio.adb (Temp_File_Record): Move Name last.
+	* s-regexp.adb (Regexp_Value): Move Case_Sensitive last.
+	* xr_tabls.ads (Project_File): Move Src_Dir and Obj_Dir last.
+
+2017-05-02  Jerome Lambourg  <lambourg@adacore.com>
+
+	* bindusg.adb, bindgen.adb, gnatbind.adb, opt.ads: Remove the -nognarl
+	switch introduced recently. finally not needed.
+
+2017-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Null_Procedure): Set the
+	Corresponding_Body link for a null procedure declaration.
+
 2017-05-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* atree.h (Flag290): Add missing terminating parenthesis.

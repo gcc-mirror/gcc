@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2016, AdaCore                     --
+--                     Copyright (C) 2001-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1268,9 +1268,9 @@ private
 
    type Service_Entry_Type (Aliases_Length : Natural) is record
       Official : Name_Type;
-      Aliases  : Name_Array (1 .. Aliases_Length);
       Port     : Port_Type;
       Protocol : Name_Type;
+      Aliases  : Name_Array (1 .. Aliases_Length);
    end record;
 
    type Request_Flag_Type is mod 2 ** 8;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2014-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -130,8 +130,8 @@ package body GNAT.Formatted_String is
    begin
       return Formatted_String'
         (Finalization.Controlled with
-           D => new Data'(Format'Length, 1, Format, 1,
-             Null_Unbounded_String, 0, 0, (0, 0)));
+           D => new Data'(Format'Length, 1, 1,
+             Null_Unbounded_String, 0, 0, (0, 0), Format));
    end "+";
 
    ---------
