@@ -1,3 +1,28 @@
+2017-05-02  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm_mask_add_round_sd)
+	(_mm_maskz_add_round_sd, _mm_mask_add_round_ss)
+	(mm_maskz_add_round_ss, _mm_mask_sub_round_sd)
+	(mm_maskz_sub_round_sd, _mm_mask_sub_round_ss)
+	(mm_maskz_sub_round_ss, _mm_mask_add_sd)
+	(mm_maskz_add_sd, _mm_mask_add_ss, _mm_maskz_add_ss)
+	(mm_mask_sub_sd, _mm_maskz_sub_sd, _mm_mask_sub_ss)
+	(mm_maskz_sub_ss): New intrinsics.
+	* config/i386/i386-builtin-types.def (V2DF_FTYPE_V2DF_V2DF_V2DF_UQI_INT)
+	(V4SF_FTYPE_V4SF_V4SF_V4SF_UQI_INT): New function type aliases.
+	* config/i386/i386-builtin.def (__builtin_ia32_addsd_mask_round)
+	(__builtin_ia32_addss_mask_round, __builtin_ia32_subsd_mask_round)
+	(__builtin_ia32_subss_mask_round): New builtins.
+	* config/i386/i386.c (V2DF_FTYPE_V2DF_V2DF_V2DF_UQI_INT)
+	(V4SF_FTYPE_V4SF_V4SF_V4SF_UQI_INT): Handle new types.
+	* config/i386/sse.md (<sse>_vm<plusminus_insn><mode>3<round_name>):
+	Renamed to ...
+	(<sse>_vm<plusminus_insn><mode>3<mask_name><round_name>): ... this.
+	(v<plusminus_mnemonic><ssescalarmodesuffix>\t{<round_op3>%2, %1, %0|%0, %1, %<iptr>2<round_op3>}):
+	Changed to ...
+	(v<plusminus_mnemonic><ssescalarmodesuffix>\t{<round_mask_op3>%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %<iptr>2<round_mask_op3>}):
+	... this.
+
 2017-05-02  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/78687
