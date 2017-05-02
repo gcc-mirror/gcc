@@ -3711,29 +3711,26 @@ determine_common_wider_type (tree *a, tree *b)
 }
 
 /* Determines the expression by that USE is expressed from induction variable
-   CAND at statement AT in LOOP.  The expression is stored in a decomposed
-   form into AFF.  Returns false if USE cannot be expressed using CAND.  */
+   CAND at statement AT in LOOP.  The expression is stored in two parts in a
+   decomposed form.  The invariant part is stored in AFF_INV; while variant
+   part in AFF_VAR.  Store ratio of CAND.step over USE.step in PRAT if it's
+   non-null.  Returns false if USE cannot be expressed using CAND.  */
 
 static bool
-get_computation_aff (struct loop *loop,
-		     struct iv_use *use, struct iv_cand *cand, gimple *at,
-		     struct aff_tree *aff)
+get_computation_aff_1 (struct loop *loop, gimple *at, struct iv_use *use,
+		       struct iv_cand *cand, struct aff_tree *aff_inv,
+		       struct aff_tree *aff_var, widest_int *prat = NULL)
 {
-  tree ubase = use->iv->base;
-  tree ustep = use->iv->step;
-  tree cbase = cand->iv->base;
-  tree cstep = cand->iv->step, cstep_common;
+  tree ubase = use->iv->base, ustep = use->iv->step;
+  tree cbase = cand->iv->base, cstep = cand->iv->step;
+  tree common_type, uutype, var, cstep_common;
   tree utype = TREE_TYPE (ubase), ctype = TREE_TYPE (cbase);
-  tree common_type, var;
-  tree uutype;
-  aff_tree cbase_aff, var_aff;
+  aff_tree aff_cbase;
   widest_int rat;
 
+  /* We must have a precision to express the values of use.  */
   if (TYPE_PRECISION (utype) > TYPE_PRECISION (ctype))
-    {
-      /* We do not have a precision to express the values of use.  */
-      return false;
-    }
+    return false;
 
   var = var_at_stmt (loop, cand, at);
   uutype = unsigned_type_for (utype);
@@ -3763,8 +3760,8 @@ get_computation_aff (struct loop *loop,
 	      cstep = inner_step;
 	    }
 	}
-      cstep = fold_convert (uutype, cstep);
       cbase = fold_convert (uutype, cbase);
+      cstep = fold_convert (uutype, cstep);
       var = fold_convert (uutype, var);
     }
 
@@ -3783,6 +3780,9 @@ get_computation_aff (struct loop *loop,
   else if (!constant_multiple_of (ustep, cstep, &rat))
     return false;
 
+  if (prat)
+    *prat = rat;
+
   /* In case both UBASE and CBASE are shortened to UUTYPE from some common
      type, we achieve better folding by computing their difference in this
      wider type, and cast the result to UUTYPE.  We do not need to worry about
@@ -3791,9 +3791,9 @@ get_computation_aff (struct loop *loop,
   common_type = determine_common_wider_type (&ubase, &cbase);
 
   /* use = ubase - ratio * cbase + ratio * var.  */
-  tree_to_aff_combination (ubase, common_type, aff);
-  tree_to_aff_combination (cbase, common_type, &cbase_aff);
-  tree_to_aff_combination (var, uutype, &var_aff);
+  tree_to_aff_combination (ubase, common_type, aff_inv);
+  tree_to_aff_combination (cbase, common_type, &aff_cbase);
+  tree_to_aff_combination (var, uutype, aff_var);
 
   /* We need to shift the value if we are after the increment.  */
   if (stmt_after_increment (loop, cand, at))
@@ -3806,17 +3806,32 @@ get_computation_aff (struct loop *loop,
 	cstep_common = cstep;
 
       tree_to_aff_combination (cstep_common, common_type, &cstep_aff);
-      aff_combination_add (&cbase_aff, &cstep_aff);
+      aff_combination_add (&aff_cbase, &cstep_aff);
     }
 
-  aff_combination_scale (&cbase_aff, -rat);
-  aff_combination_add (aff, &cbase_aff);
+  aff_combination_scale (&aff_cbase, -rat);
+  aff_combination_add (aff_inv, &aff_cbase);
   if (common_type != uutype)
-    aff_combination_convert (aff, uutype);
+    aff_combination_convert (aff_inv, uutype);
 
-  aff_combination_scale (&var_aff, rat);
-  aff_combination_add (aff, &var_aff);
+  aff_combination_scale (aff_var, rat);
+  return true;
+}
 
+/* Determines the expression by that USE is expressed from induction variable
+   CAND at statement AT in LOOP.  The expression is stored in a decomposed
+   form into AFF.  Returns false if USE cannot be expressed using CAND.  */
+
+static bool
+get_computation_aff (struct loop *loop, gimple *at, struct iv_use *use,
+		     struct iv_cand *cand, struct aff_tree *aff)
+{
+  aff_tree aff_var;
+
+  if (!get_computation_aff_1 (loop, at, use, cand, aff, &aff_var))
+    return false;
+
+  aff_combination_add (aff, &aff_var);
   return true;
 }
 
@@ -3852,7 +3867,7 @@ get_computation_at (struct loop *loop, gimple *at,
   aff_tree aff;
   tree type = get_use_type (use);
 
-  if (!get_computation_aff (loop, use, cand, at, &aff))
+  if (!get_computation_aff (loop, at, use, cand, &aff))
     return NULL_TREE;
   unshare_aff_combination (&aff);
   return fold_convert (type, aff_combination_to_tree (&aff));
@@ -7336,7 +7351,7 @@ rewrite_use_address (struct ivopts_data *data,
   bool ok;
 
   adjust_iv_update_pos (cand, use);
-  ok = get_computation_aff (data->current_loop, use, cand, use->stmt, &aff);
+  ok = get_computation_aff (data->current_loop, use->stmt, use, cand, &aff);
   gcc_assert (ok);
   unshare_aff_combination (&aff);
 
