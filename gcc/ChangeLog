@@ -1,3 +1,7 @@
+2017-04-27  Tamar Christina  <tamar.christina@arm.com>
+
+	* simplify-rtx.c (simplify_binary_operation_1): Add LSHIFTRT case.
+
 2017-05-02  Martin Liska  <mliska@suse.cz>
 
 	PR lto/77954.
