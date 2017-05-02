@@ -12100,7 +12100,7 @@ ix86_code_end (void)
   rtx xops[2];
   int regno;
 
-  for (regno = AX_REG; regno <= SP_REG; regno++)
+  for (regno = FIRST_INT_REG; regno <= LAST_INT_REG; regno++)
     {
       char name[32];
       tree decl;

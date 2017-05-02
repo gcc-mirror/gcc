@@ -1,3 +1,7 @@
+2017-05-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_code_end): Use {FIRST,LAST}_INT_REG.
+
 2017-05-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80591
