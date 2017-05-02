@@ -1,3 +1,15 @@
+2017-05-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Check_Component_Storage_Order): Do not treat bit-packed
+	array components specially.
+
+2017-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Premature_Usage): If the premature usage of
+	an entity is as the expression in its own object decaration,
+	rewrite the reference as Any_Id to prevent cascaded errors or
+	compiler loops when such an entity is used in an address clause.
+
 2017-05-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (components_to_record): Add missing guard.

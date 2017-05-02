@@ -8562,6 +8562,14 @@ package body Sem_Ch8 is
       else
          Error_Msg_N
            ("object& cannot be used before end of its declaration!", N);
+
+         --  If the premature reference appears as the expression in its own
+         --  declaration, rewrite it to prevent compiler loops in subsequent
+         --  uses of this mangled declaration in address clauses.
+
+         if Nkind (Parent (N)) = N_Object_Declaration then
+            Set_Entity (N, Any_Id);
+         end if;
       end if;
    end Premature_Usage;
 

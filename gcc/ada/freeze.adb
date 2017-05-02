@@ -1267,18 +1267,10 @@ package body Freeze is
 
             --  Component SSO differs from enclosing composite:
 
-            --  Reject if component is a bit-packed array, as it is represented
-            --  as a scalar internally.
-
-            if Is_Bit_Packed_Array (Comp_Base) then
-               Error_Msg_N
-                 ("type of packed component must have same scalar storage "
-                  & "order as enclosing composite", Err_Node);
-
             --  Reject if composite is a bit-packed array, as it is rewritten
             --  into an array of scalars.
 
-            elsif Is_Bit_Packed_Array (Encl_Base) then
+            if Is_Bit_Packed_Array (Encl_Base) then
                Error_Msg_N
                  ("type of packed array must have same scalar storage order "
                   & "as component", Err_Node);
