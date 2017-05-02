@@ -7732,6 +7732,22 @@ package body Sem_Prag is
             --  given entity, not its homonyms.
 
             if From_Aspect_Specification (N) then
+               if C = Convention_Intrinsic
+                 and then Nkind (Ent) = N_Defining_Operator_Symbol
+               then
+                  if Is_Fixed_Point_Type (Etype (Ent))
+                    or else Is_Fixed_Point_Type (Etype (First_Entity (Ent)))
+                    or else Is_Fixed_Point_Type (Etype (Last_Entity (Ent)))
+                  then
+                     Error_Msg_N
+                       ("no intrinsic operator available for this fixed-point "
+                        & "operation", N);
+                     Error_Msg_N
+                       ("\use expression functions with the desired "
+                        & "conversions made explicit", N);
+                  end if;
+               end if;
+
                return;
             end if;
 

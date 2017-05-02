@@ -1,3 +1,42 @@
+2017-05-02  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch4.adb (Analyze_Case_Expression): Add check for valid
+	alternative expression.
+	* sem_res.adb (Resolve_Case_Expression): Ditto.
+
+2017-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_disp.adb (Set_All_DT_Position, In_Predef_Prim_DT):
+	Refine predicate for the case where the primitive operation
+	is a renaming of equality.  An overriding operation that is
+	a user-defined renaming of predefined equality inherits its
+	slot from the overridden operation. Otherwise it is treated
+	as a predefined op and occupies the same predefined slot as
+	equality. A call to it is transformed into a call to its alias,
+	which is the predefined equality. A dispatching call thus uses
+	the proper slot if operation is further inherited and called
+	with class-wide arguments.
+
+2017-05-02  Justin Squirek  <squirek@adacore.com>
+
+	* errout.adb (Set_Msg_Text): Add a case to switch the message
+	type when the character '[' is detected signifying a warning
+	about a run-time exception.
+	* opt.ads Add a new Warning_Mode value for new switch
+	* switch-b.adb (Scan_Binder_Switches): Add case for the binder
+	to handle new warning mode
+	* usage.adb (Usage): Add usage entry for -gnatwE
+	* warnsw.adb (Set_Warning_Switch): Add case for the new switch
+
+2017-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Process_Conversion): Reject an intrinsic operator
+	declaration that operates on some fixed point type.
+
+2017-05-02  Justin Squirek  <squirek@adacore.com>
+
+	* a-crbtgo.adb, s-taasde.adb: Remove unused use-type clauses.
+
 2017-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch6.adb (Analyze_Null_Procedure): Revert previous change.

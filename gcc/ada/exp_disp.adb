@@ -7430,8 +7430,6 @@ package body Exp_Disp is
       ------------------------
 
       function In_Predef_Prims_DT (Prim : Entity_Id) return Boolean is
-         E : Entity_Id;
-
       begin
          --  Predefined primitives
 
@@ -7446,20 +7444,19 @@ package body Exp_Disp is
             if Chars (Ultimate_Alias (Prim)) /= Name_Op_Eq then
                return True;
 
-            --  User-defined renamings of predefined equality have their own
-            --  slot in the primary dispatch table
+            --  An overriding operation that is a user-defined renaming of
+            --  predefined equality inherits its slot from the overridden
+            --  operation. Otherwise it is treated as a predefined op and
+            --  occupies the same predefined slot as equality. A call to it is
+            --  transformed into a call to its alias, which is the predefined
+            --  equality op. A dispatching call thus uses the proper slot if
+            --  operation is further inherited and called with class-wide
+            --  arguments.
 
             else
-               E := Prim;
-               while Present (Alias (E)) loop
-                  if Comes_From_Source (E) then
-                     return False;
-                  end if;
-
-                  E := Alias (E);
-               end loop;
-
-               return not Comes_From_Source (E);
+               return
+                 not Comes_From_Source (Prim)
+                   or else No (Overridden_Operation (Prim));
             end if;
 
          --  User-defined primitives

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2014, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2017, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -202,9 +202,6 @@ package body System.Tasking.Async_Delays is
    is
       Self_Id : constant Task_Id  := STPO.Self;
       Q       : Delay_Block_Access;
-
-      use type ST.Task_Id;
-      --  for visibility of operator "="
 
    begin
       pragma Debug (Debug.Trace (Self_Id, "Async_Delay", 'P'));

@@ -1548,6 +1548,10 @@ package body Sem_Ch4 is
 
       Alt := First (Alternatives (N));
       while Present (Alt) loop
+         if Error_Posted (Expression (Alt)) then
+            return;
+         end if;
+
          Analyze (Expression (Alt));
 
          if No (FirstX) and then Etype (Expression (Alt)) /= Any_Type then
@@ -2120,8 +2124,8 @@ package body Sem_Ch4 is
 
          New_N :=
            Make_Function_Call (Loc,
-           Name => Make_Explicit_Dereference (Loc, P),
-           Parameter_Associations => New_List);
+             Name                   => Make_Explicit_Dereference (Loc, P),
+             Parameter_Associations => New_List);
 
          --  If the prefix is overloaded, remove operations that have formals,
          --  we know that this is a parameterless call.
@@ -2226,12 +2230,14 @@ package body Sem_Ch4 is
          Check_Error_Detected;
          return;
       end if;
+
       Then_Expr := Next (Condition);
 
       if No (Then_Expr) then
          Check_Error_Detected;
          return;
       end if;
+
       Else_Expr := Next (Then_Expr);
 
       if Comes_From_Source (N) then
