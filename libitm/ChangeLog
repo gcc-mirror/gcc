@@ -1,3 +1,7 @@
+2017-05-02  Release Manager
+
+	* GCC 7.1.0 released.
+
 2017-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libitm_i.h (sutrct gtm_thread): Fix typo in comment.

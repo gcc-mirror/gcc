@@ -1,3 +1,7 @@
+2017-05-02  Release Manager
+
+	* GCC 7.1.0 released.
+
 2017-04-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* ansidecl.h (ATTRIBUTE_PACKED): Fix typo in comment.

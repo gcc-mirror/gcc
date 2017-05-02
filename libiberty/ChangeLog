@@ -1,3 +1,7 @@
+2017-05-02  Release Manager
+
+	* GCC 7.1.0 released.
+
 2017-03-27  Pedro Alves  <palves@redhat.com>
 
 	* cp-demint.c (cplus_demangle_fill_component): Handle

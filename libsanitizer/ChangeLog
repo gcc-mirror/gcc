@@ -1,3 +1,7 @@
+2017-05-02  Release Manager
+
+	* GCC 7.1.0 released.
+
 2017-04-06  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/80166
