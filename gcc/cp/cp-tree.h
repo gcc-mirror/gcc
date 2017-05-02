@@ -1524,6 +1524,9 @@ struct GTY(()) saved_scope {
   tree x_current_class_ptr;
   tree x_current_class_ref;
 
+  /* Current module index. */
+  unsigned this_module;
+
   int x_processing_template_decl;
   int x_processing_specialization;
   BOOL_BITFIELD x_processing_explicit_instantiation : 1;
@@ -1552,6 +1555,10 @@ struct GTY(()) saved_scope {
 
 extern GTY(()) struct saved_scope *scope_chain;
 
+/* The current module index.  */
+
+#define current_module scope_chain->this_module
+  
 /* The current open namespace.  */
 
 #define current_namespace scope_chain->old_namespace

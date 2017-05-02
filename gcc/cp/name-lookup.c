@@ -6023,6 +6023,8 @@ do_push_to_top_level (void)
   FOR_EACH_VEC_SAFE_ELT (s->old_bindings, i, sb)
     IDENTIFIER_MARKED (sb->identifier) = 0;
 
+  s->this_module = GLOBAL_MODULE_INDEX;
+
   s->prev = scope_chain;
   s->bindings = b;
   s->need_pop_function_context = need_pop;

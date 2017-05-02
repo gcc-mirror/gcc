@@ -849,7 +849,7 @@ public:
   void tag_conf (FILE *);
   void tag_import (FILE *, unsigned ix, const module_state *);
   void tag_trees (FILE *);
-  void tag_binding (FILE *, tree ns, tree name, tree ovl);
+  void tag_binding (FILE *, tree ns, unsigned, tree name, tree ovl);
   int done ()
   {
     return w.done ();
@@ -889,9 +889,12 @@ class cpms_in : public cpm_stream
   typedef unbounded_int_hashmap_traits<unsigned,tree> traits;
   hash_map<unsigned,tree,traits> map; /* ids to trees  */
 
-  tree scope;
   unsigned index; /* Module index.  */
   unsigned HOST_WIDE_INT stamp;  /* Expected time stamp.  */
+
+  /* Remapping from incoming module indices to current TU. */
+  unsigned remap_num;
+  unsigned *remap_vec;
 
 public:
   cpms_in (FILE *, const char *, module_state *, unsigned HOST_WIDE_INT stamp);
@@ -920,6 +923,7 @@ private:
   tree finish_type (FILE *, tree);
 
 private:
+  bool alloc_remap_vec (unsigned limit);
   tree start (tree_code);
   tree finish (FILE *, tree);
   location_t read_loc ();
@@ -928,24 +932,20 @@ private:
   bool read_core_vals (FILE *, tree);
   bool read_decl_lang_bools (FILE *, tree);
 
-private:
-  void set_scope (tree);
-
 public:
   bool read_tree (FILE *, tree *, unsigned = 0);
 };
 
 cpms_in::cpms_in (FILE *s, const char *n,
 		  module_state *state_, unsigned HOST_WIDE_INT stmp)
-  :r (s, n), state (state_), scope (NULL_TREE), index (GLOBAL_MODULE_INDEX),
-   stamp (stmp)
+  :r (s, n), state (state_), index (GLOBAL_MODULE_INDEX),
+   stamp (stmp), remap_num (0), remap_vec (NULL)
 {
 }
 
 cpms_in::~cpms_in ()
 {
-  if (scope)
-    pop_inner_scope (global_namespace, scope);
+  free (remap_vec);
 }
 
 /* File header
@@ -1045,7 +1045,7 @@ cpms_in::header (FILE *d)
 	}
       if (!have_a_go)
 	{
-	  r.bad (-1);
+	  r.bad ();
 	  return false;
 	}
     }
@@ -1149,7 +1149,6 @@ const cpm_stream::gtp cpm_stream::global_tree_arys[] =
   {
     {global_trees, TI_MAX},
     {cp_global_trees, CPTI_MAX},
-    {&global_namespace, 1},
     {NULL, 0}
   };
 
@@ -1283,6 +1282,21 @@ cpms_out::tag_import (FILE *d, unsigned ix, const module_state *state)
 }
 
 bool
+cpms_in::alloc_remap_vec (unsigned limit)
+{
+  if (!remap_num && limit < MODULE_INDEX_LIMIT)
+    {
+      if (limit < THIS_MODULE_INDEX)
+	limit = THIS_MODULE_INDEX;
+
+      remap_num = limit + 1;
+      remap_vec = XNEWVEC (unsigned, remap_num);
+      memset (remap_vec, 0, sizeof (unsigned) * remap_num);
+    }
+  return limit < remap_num;
+}
+
+bool
 cpms_in::tag_import (FILE *d)
 {
   unsigned ix = r.u ();
@@ -1310,61 +1324,83 @@ cpms_in::tag_import (FILE *d)
       return false;
     }
 
+  tree imp = get_identifier_with_length (mod, l);
+  if (!r.checkpoint ())
+    return false;
+
   /* Not designed to import after having assigned our number. */
   if (index)
     {
       error ("misordered import %qs", mod);
       return false;
     }
-
-  tree imp = get_identifier_with_length (mod, l);
-
-  if (!r.checkpoint ())
-    return false;
+  if (!alloc_remap_vec (ix))
+    {
+      error ("import %u is out of range", ix);
+      return false;
+    }
 
   if (d)
     fprintf (d, "Begin nested import '%s'\n", IDENTIFIER_POINTER (imp));
-  int index = do_module_import (UNKNOWN_LOCATION, imp,
-				direct ? ik_direct : ik_indirect,
-				stamp, crc, d);
-  if (index != GLOBAL_MODULE_INDEX && direct)
-    state->do_import (index, direct == 2);
+  int imp_ix = do_module_import (UNKNOWN_LOCATION, imp,
+				 direct ? ik_direct : ik_indirect,
+				 stamp, crc, d);
+  if (imp_ix != GLOBAL_MODULE_INDEX)
+    {
+      remap_vec[ix] = imp_ix;
+      if (direct)
+	state->do_import (imp_ix, direct == 2);
+    }
 
   if (d)
     fprintf (d, "Completed nested import '%s' #%u %s\n",
 	     IDENTIFIER_POINTER (imp), index,
-	     index != GLOBAL_MODULE_INDEX ? "ok" : "failed");
-  return index != GLOBAL_MODULE_INDEX;
+	     imp_ix != GLOBAL_MODULE_INDEX ? "ok" : "failed");
+  return imp_ix != GLOBAL_MODULE_INDEX;
 }
 
 /* NAME is bound to OVL in namespace NS.  Write out the binding.
    NS must have already have a binding somewhere.
 
-   tree:ns 
+   tree:ns
+   u:module
    tree:name
    tree:ovl
 */
 
 void
-cpms_out::tag_binding (FILE *d, tree ns, tree name, tree ovl)
+cpms_out::tag_binding (FILE *d, tree ns, unsigned ix, tree name, tree ovl)
 {
   if (d)
     fprintf (d, "Writing bindings for %s\n", IDENTIFIER_POINTER (name));
 
   w.u (rt_binding);
   write_tree (d, ns);
+  w.u (ix);
   write_tree (d, name);
   write_tree (d, ovl);
+  w.checkpoint ();
 }
 
 bool
 cpms_in::tag_binding (FILE *d)
 {
   tree name, ns, ovl;
-  if (!read_tree (d, &ns)
-      || !read_tree (d, &name)
+  unsigned ix;
+  if (!read_tree (d, &ns))
+    return false;
+  ix = r.u ();
+  if (!read_tree (d, &name)
       || !read_tree (d, &ovl))
     return false;
+  if (!r.checkpoint ())
+    return false;
+
+  if (ix > THIS_MODULE_INDEX)
+    {
+      error ("unexpected binding for module %u", ix);
+      return false;
+    }
 
   if (d)
     fprintf (d, "Reading binding for %s in %s\n",
@@ -1401,12 +1437,15 @@ cpms_in::read_item (FILE *d)
 	  if (index == MODULE_INDEX_LIMIT)
 	    {
 	      sorry ("too many modules loaded (limit is %u)", index);
-	      r.bad (-1);
+	      r.bad ();
 	      return -1;
 	    }
 	  vec_safe_push (modules, state);
 	  state->set_index (index);
 	}
+      alloc_remap_vec (THIS_MODULE_INDEX);
+      remap_vec[THIS_MODULE_INDEX] = index;
+
       if (d)
 	fprintf (d, "Assigning module index %u\n", index);
     }
@@ -1421,9 +1460,11 @@ cpms_in::read_item (FILE *d)
       return tag_trees (d);
 
     default:
-      break;
+      error ("unknown key %qd", rt);
+      r.bad ();
+      return false;
     }
-
+#if 0
   tree t;
   if (!read_tree (d, &t, rt))
     {
@@ -1434,6 +1475,7 @@ cpms_in::read_item (FILE *d)
     }
   // FIXME: read body
   return true;
+#endif
 }
 
 /* Read & write locations.  */
@@ -1449,21 +1491,6 @@ cpms_in::read_loc ()
 {
   // FIXME:Do something^-1
   return UNKNOWN_LOCATION;
-}
-
-void
-cpms_in::set_scope (tree ctx)
-{
-  if (ctx != scope)
-    {
-      if (scope)
-	pop_inner_scope (global_namespace, scope);
-      else
-	gcc_assert (current_scope () == global_namespace);
-      scope = ctx;
-      tree pop = push_inner_scope (ctx);
-      gcc_assert (pop == global_namespace);
-    }
 }
 
 /* Start tree write.  Write information to allocate the receiving
@@ -2215,7 +2242,7 @@ cpms_out::write_bindings (FILE *d, tree ns)
 		    gcc_assert (TREE_CODE (fn) == FUNCTION_DECL);
 
 		    // FIXME Hack alert, just one fn
-		    tag_binding (d, ns, name, fn);
+		    tag_binding (d, ns, THIS_MODULE_INDEX, name, fn);
 		    break;
 		  }
 	      }
@@ -2326,7 +2353,7 @@ cpms_in::finish_function (FILE *d, tree fn)
   // FIXME: look in other imports for this decl.  If this is me, then
   // do nothing (we'll insert it below.)
   return fn;
-  
+#if 0  
   // FIXME: want to look exactly in scope,  no using decls etc.
   tree cur = lookup_qualified_name (DECL_CONTEXT (fn), DECL_NAME (fn),
 				    false, false, false);
@@ -2338,7 +2365,6 @@ cpms_in::finish_function (FILE *d, tree fn)
       gcc_unreachable (); // FIXME: deal with overloads & duplicates
     }
 
-  set_scope (DECL_CONTEXT (fn));
   fn = pushdecl (fn);
   if (fn == error_mark_node)
     return fn; // FIXME:why?
@@ -2348,6 +2374,7 @@ cpms_in::finish_function (FILE *d, tree fn)
   if (d)
     fprintf (d, "Inserting function decl %s (%p)\n",
 	     IDENTIFIER_POINTER (DECL_NAME (fn)), (void *)fn);
+#endif
   return fn;
 }
 
@@ -2359,12 +2386,11 @@ cpms_in::finish_namespace (FILE *d, tree ns)
   tree res = NULL_TREE;
 
   /* We will not have frobbed the namespace yet.  */
-  set_scope (DECL_CONTEXT (ns));
   bool inline_p = DECL_NAMESPACE_INLINE_P (ns);
   bool module_p = MODULE_NAMESPACE_P (ns);
   if (module_p && (state != this_module || DECL_NAME (ns) != module_nm))
     DECL_NAMESPACE_INLINE_P (ns) = false;
-  res = push_module_namespace (CP_DECL_CONTEXT (ns), GLOBAL_MODULE_INDEX, ns);
+  res = push_module_namespace (CP_DECL_CONTEXT (ns), index, ns);
   if (!res)
     error ("failed to insert namespace %E", ns);
   else if (res == ns)
@@ -2582,10 +2608,15 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	    index = GLOBAL_MODULE_INDEX;
 	  }
       }
+  else if (kind == ik_indirect)
+    {
+      /* The ordering of the import table implies that indirect
+	 imports should have already been loaded.  */
+      error ("indirect import %qE not present", name);
+      index = GLOBAL_MODULE_INDEX;
+    }
   else
     {
-      if (kind == ik_indirect)
-	warning_at (0, loc, "indirect import %qE not present", name);
       *val = ~0U;
 
       if (kind >= ik_interface)
@@ -2611,10 +2642,8 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	    error_at (loc, "cannot find module %qE (%qs): %m", name, fname);
 	  else
 	    {
-	      push_to_top_level ();
-	      index = read_module (stream, fname, state, stamp, d);
 	      gcc_assert (global_namespace == current_scope ());
-	      pop_from_top_level ();
+	      index = read_module (stream, fname, state, stamp, d);
 	      fclose (stream);
 	      gcc_assert (*val == ~0U);
 	    }
@@ -2637,9 +2666,13 @@ do_module_import (location_t loc, tree name, import_kind kind,
 void
 import_export_module (location_t loc, tree name, tree, bool is_export)
 {
+  push_to_top_level (); // FIXME only when namespae hack
+  gcc_assert (global_namespace == current_scope ());
   unsigned index = do_module_import (loc, name, ik_direct, 0, 0);
   if (index != GLOBAL_MODULE_INDEX)
     this_module->do_import (index, is_export);
+  gcc_assert (global_namespace == current_scope ());
+  pop_from_top_level ();
 }
 
 /* Declare the name of the current module to be NAME. ATTRS is used to
@@ -2655,6 +2688,7 @@ declare_module (location_t loc, tree name, tree attrs)
       return;
     }
 
+  gcc_assert (global_namespace == current_scope ());
   /* Look for 'interface' attribute.  There's no point caching the
      identifier, because module declaration occurs at most once.  */
   bool inter = lookup_attribute ("interface", attrs) != NULL_TREE;
@@ -2675,6 +2709,7 @@ declare_module (location_t loc, tree name, tree attrs)
     {
       gcc_assert (index == THIS_MODULE_INDEX);
 
+      current_module = index;
       this_module->direct_import = inter;
       if (inter) // FIXME:we should do in both cases (or neither)
 	push_module_namespace (true);

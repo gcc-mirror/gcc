@@ -1,5 +1,13 @@
 2017-05-02  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (saved_scope): Add this_module.
+	(current_module): New.
+	* module.c (cpms_in): Add remapping vector.  Remove scope.
+	(cpms_in::tag_import): Update remapping vector.
+	(cpms_out::tag_binding, cpms_in::tag_binding): Write/read module no.
+	* name-lookup.c (do_push_to_top_level): Set current_module.
+
 	gcc/doc/
 	* invoke.texi (-fdump-front-end): Document.
 
