@@ -516,6 +516,8 @@ gigi (Node_Id gnat_root,
     = create_subprog_decl (get_identifier ("__gnat_begin_handler"), NULL_TREE,
 			   ftype, NULL_TREE,
 			   is_disabled, true, true, true, false, NULL, Empty);
+  /* __gnat_begin_handler is a dummy procedure.  */
+  TREE_NOTHROW (begin_handler_decl) = 1;
 
   end_handler_decl
     = create_subprog_decl (get_identifier ("__gnat_end_handler"), NULL_TREE,
@@ -5256,6 +5258,36 @@ Exception_Handler_to_gnu_fe_sjlj (Node_Id gnat_node)
   return build3 (COND_EXPR, void_type_node, gnu_choice, gnu_body, NULL_TREE);
 }
 
+/* Return true if no statement in GNAT_LIST can alter the control flow.  */
+
+static bool
+stmt_list_cannot_alter_control_flow_p (List_Id gnat_list)
+{
+  if (No (gnat_list))
+    return true;
+
+  /* This is very conservative, we reject everything except for simple
+     assignments between identifiers or literals.  */
+  for (Node_Id gnat_node = First (gnat_list);
+       Present (gnat_node);
+       gnat_node = Next (gnat_node))
+    {
+      if (Nkind (gnat_node) != N_Assignment_Statement)
+	return false;
+
+      if (Nkind (Name (gnat_node)) != N_Identifier)
+	return false;
+
+      Node_Kind nkind = Nkind (Expression (gnat_node));
+      if (nkind != N_Identifier
+	  && nkind != N_Integer_Literal
+	  && nkind != N_Real_Literal)
+	return false;
+    }
+
+  return true;
+}
+
 /* Subroutine of gnat_to_gnu to translate gnat_node, an N_Exception_Handler,
    to a GCC tree, which is returned.  This is the variant for GCC exception
    schemes.  */
@@ -5264,16 +5296,15 @@ static tree
 Exception_Handler_to_gnu_gcc (Node_Id gnat_node)
 {
   tree gnu_etypes_list = NULL_TREE;
-  tree gnu_current_exc_ptr, prev_gnu_incoming_exc_ptr;
-  Node_Id gnat_temp;
 
   /* We build a TREE_LIST of nodes representing what exception types this
      handler can catch, with special cases for others and all others cases.
 
      Each exception type is actually identified by a pointer to the exception
      id, or to a dummy object for "others" and "all others".  */
-  for (gnat_temp = First (Exception_Choices (gnat_node));
-       gnat_temp; gnat_temp = Next (gnat_temp))
+  for (Node_Id gnat_temp = First (Exception_Choices (gnat_node));
+       gnat_temp;
+       gnat_temp = Next (gnat_temp))
     {
       tree gnu_expr, gnu_etype;
 
@@ -5329,10 +5360,10 @@ Exception_Handler_to_gnu_gcc (Node_Id gnat_node)
      We use a local variable to retrieve the incoming value at handler entry
      time, and reuse it to feed the end_handler hook's argument at exit.  */
 
-  gnu_current_exc_ptr
+  tree gnu_current_exc_ptr
     = build_call_expr (builtin_decl_explicit (BUILT_IN_EH_POINTER),
 		       1, integer_zero_node);
-  prev_gnu_incoming_exc_ptr = gnu_incoming_exc_ptr;
+  tree prev_gnu_incoming_exc_ptr = gnu_incoming_exc_ptr;
   gnu_incoming_exc_ptr
     = create_var_decl (get_identifier ("EXPTR"), NULL_TREE,
 		       ptr_type_node, gnu_current_exc_ptr,
@@ -5355,11 +5386,16 @@ Exception_Handler_to_gnu_gcc (Node_Id gnat_node)
 		 gnu_incoming_exc_ptr));
     }
 
+  add_stmt_list (Statements (gnat_node));
+
   /* We don't have an End_Label at hand to set the location of the cleanup
      actions, so we use that of the exception handler itself instead.  */
-  add_cleanup (build_call_n_expr (end_handler_decl, 1, gnu_incoming_exc_ptr),
-	       gnat_node);
-  add_stmt_list (Statements (gnat_node));
+  tree stmt = build_call_n_expr (end_handler_decl, 1, gnu_incoming_exc_ptr);
+  if (stmt_list_cannot_alter_control_flow_p (Statements (gnat_node)))
+    add_stmt_with_node (stmt, gnat_node);
+  else
+    add_cleanup (stmt, gnat_node);
+
   gnat_poplevel ();
 
   gnu_incoming_exc_ptr = prev_gnu_incoming_exc_ptr;
@@ -6370,16 +6406,22 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	gnu_prefix = maybe_implicit_deref (gnu_prefix);
 
-	/* For discriminant references in tagged types always substitute the
-	   corresponding discriminant as the actual selected component.  */
-	if (Is_Tagged_Type (Underlying_Type (Etype (gnat_prefix))))
-	  while (Present (Corresponding_Discriminant (gnat_field)))
-	    gnat_field = Corresponding_Discriminant (gnat_field);
+	/* gnat_to_gnu_entity does not save the GNU tree made for renamed
+	   discriminants so avoid making recursive calls on each reference
+	   to them by following the appropriate link directly here.  */
+	if (Ekind (gnat_field) == E_Discriminant)
+	  {
+	    /* For discriminant references in tagged types always substitute
+	       the corresponding discriminant as the actual component.  */
+	    if (Is_Tagged_Type (Underlying_Type (Etype (gnat_prefix))))
+	      while (Present (Corresponding_Discriminant (gnat_field)))
+		gnat_field = Corresponding_Discriminant (gnat_field);
 
-	/* For discriminant references of untagged types always substitute the
-	   corresponding stored discriminant.  */
-	else if (Present (Corresponding_Discriminant (gnat_field)))
-	  gnat_field = Original_Record_Component (gnat_field);
+	    /* For discriminant references in untagged types always substitute
+	       the corresponding stored discriminant.  */
+	    else if (Present (Corresponding_Discriminant (gnat_field)))
+	      gnat_field = Original_Record_Component (gnat_field);
+	  }
 
 	/* Handle extracting the real or imaginary part of a complex.
 	   The real part is the first field and the imaginary the last.  */
@@ -6515,6 +6557,7 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Unchecked_Type_Conversion:
+      gnu_result_type = get_unpadded_type (Etype (gnat_node));
       gnu_expr = maybe_character_value (gnat_to_gnu (Expression (gnat_node)));
 
       /* Skip further processing if the conversion is deemed a no-op.  */
@@ -6524,8 +6567,6 @@ gnat_to_gnu (Node_Id gnat_node)
 	  gnu_result_type = TREE_TYPE (gnu_result);
 	  break;
 	}
-
-      gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
       /* If the result is a pointer type, see if we are improperly
 	 converting to a stricter alignment.  */
@@ -8666,7 +8707,7 @@ process_freeze_entity (Node_Id gnat_node)
 	   && TYPE_IS_DUMMY_P (TREE_TYPE (gnu_old))))
     {
       gcc_assert (Is_Concurrent_Type (gnat_entity)
-		  || (IN (kind, Record_Kind)
+		  || (Is_Record_Type (gnat_entity)
 		      && Is_Concurrent_Record_Type (gnat_entity)));
       return;
     }
@@ -9600,7 +9641,7 @@ process_type (Entity_Id gnat_entity)
   /* If this is a record type corresponding to a task or protected type
      that is a completion of an incomplete type, perform a similar update
      on the type.  ??? Including protected types here is a guess.  */
-  if (IN (Ekind (gnat_entity), Record_Kind)
+  if (Is_Record_Type (gnat_entity)
       && Is_Concurrent_Record_Type (gnat_entity)
       && present_gnu_tree (Corresponding_Concurrent_Type (gnat_entity)))
     {
@@ -9641,15 +9682,16 @@ assoc_to_constructor (Entity_Id gnat_entity, Node_Id gnat_assoc, tree gnu_type)
 	 in every record component association.  */
       gcc_assert (No (Next (gnat_field)));
 
-      /* Ignore fields that have Corresponding_Discriminants since we'll
-	 be setting that field in the parent.  */
-      if (Present (Corresponding_Discriminant (Entity (gnat_field)))
+      /* Ignore discriminants that have Corresponding_Discriminants in tagged
+	 types since we'll be setting those fields in the parent subtype.  */
+      if (Ekind (Entity (gnat_field)) == E_Discriminant
+	  && Present (Corresponding_Discriminant (Entity (gnat_field)))
 	  && Is_Tagged_Type (Scope (Entity (gnat_field))))
 	continue;
 
       /* Also ignore discriminants of Unchecked_Unions.  */
-      if (Is_Unchecked_Union (gnat_entity)
-	  && Ekind (Entity (gnat_field)) == E_Discriminant)
+      if (Ekind (Entity (gnat_field)) == E_Discriminant
+	  && Is_Unchecked_Union (gnat_entity))
 	continue;
 
       /* Before assigning a value in an aggregate make sure range checks
