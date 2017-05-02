@@ -1,3 +1,7 @@
+2017-04-26  Tamar Christina  <tamar.christina@arm.com>
+
+	* expr.c (expand_expr_real_2): Re-cost if previous costs are the same.
+
 2017-04-27  Tamar Christina  <tamar.christina@arm.com>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Add LSHIFTRT case.

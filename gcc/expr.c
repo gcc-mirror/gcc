@@ -8838,6 +8838,15 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	   end_sequence ();
 	   unsigned uns_cost = seq_cost (uns_insns, speed_p);
 	   unsigned sgn_cost = seq_cost (sgn_insns, speed_p);
+
+	   /* If costs are the same then use as tie breaker the other
+	      other factor.  */
+	   if (uns_cost == sgn_cost)
+	     {
+		uns_cost = seq_cost (uns_insns, !speed_p);
+		sgn_cost = seq_cost (sgn_insns, !speed_p);
+	     }
+
 	   if (uns_cost < sgn_cost || (uns_cost == sgn_cost && unsignedp))
 	     {
 	       emit_insn (uns_insns);
