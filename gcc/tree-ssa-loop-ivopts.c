@@ -2896,28 +2896,51 @@ generic_type_for (tree type)
   return unsigned_type_for (type);
 }
 
-/* Records invariants in *EXPR_P.  Callback for walk_tree.  DATA contains
-   the bitmap to that we should store it.  */
+/* Private data for walk_tree.  */
 
-static struct ivopts_data *fd_ivopts_data;
-static tree
-find_depends (tree *expr_p, int *ws ATTRIBUTE_UNUSED, void *data)
+struct walk_tree_data
 {
-  bitmap *inv_vars = (bitmap *) data;
+  bitmap *inv_vars;
+  struct ivopts_data *idata;
+};
+
+/* Callback function for walk_tree, it records invariants and symbol
+   reference in *EXPR_P.  DATA is the structure storing result info.  */
+
+static tree
+find_inv_vars_cb (tree *expr_p, int *ws ATTRIBUTE_UNUSED, void *data)
+{
+  struct walk_tree_data *wdata = (struct walk_tree_data*) data;
   struct version_info *info;
 
   if (TREE_CODE (*expr_p) != SSA_NAME)
     return NULL_TREE;
-  info = name_info (fd_ivopts_data, *expr_p);
 
+  info = name_info (wdata->idata, *expr_p);
   if (!info->inv_id || info->has_nonlin_use)
     return NULL_TREE;
 
-  if (!*inv_vars)
-    *inv_vars = BITMAP_ALLOC (NULL);
-  bitmap_set_bit (*inv_vars, info->inv_id);
+  if (!*wdata->inv_vars)
+    *wdata->inv_vars = BITMAP_ALLOC (NULL);
+  bitmap_set_bit (*wdata->inv_vars, info->inv_id);
 
   return NULL_TREE;
+}
+
+/* Records invariants in *EXPR_P.  INV_VARS is the bitmap to that we should
+   store it.  */
+
+static inline void
+find_inv_vars (struct ivopts_data *data, tree *expr_p, bitmap *inv_vars)
+{
+  struct walk_tree_data wdata;
+
+  if (!inv_vars)
+    return;
+
+  wdata.idata = data;
+  wdata.inv_vars = inv_vars;
+  walk_tree (expr_p, find_inv_vars_cb, &wdata, NULL);
 }
 
 /* Adds a candidate BASE + STEP * i.  Important field is set to IMPORTANT and
@@ -2996,10 +3019,7 @@ add_candidate_1 (struct ivopts_data *data,
       data->vcands.safe_push (cand);
 
       if (TREE_CODE (step) != INTEGER_CST)
-	{
-	  fd_ivopts_data = data;
-	  walk_tree (&step, find_depends, &cand->inv_vars, NULL);
-	}
+	find_inv_vars (data, &step, &cand->inv_vars);
 
       if (pos == IP_AFTER_USE || pos == IP_BEFORE_USE)
 	cand->ainc_use = use;
@@ -4486,15 +4506,12 @@ force_expr_to_var_cost (tree expr, bool speed)
    invariants the computation depends on.  */
 
 static comp_cost
-force_var_cost (struct ivopts_data *data,
-		tree expr, bitmap *inv_vars)
+force_var_cost (struct ivopts_data *data, tree expr, bitmap *inv_vars)
 {
-  if (inv_vars)
-    {
-      fd_ivopts_data = data;
-      walk_tree (&expr, find_depends, inv_vars, NULL);
-    }
+  if (!expr)
+    return no_cost;
 
+  find_inv_vars (data, &expr, inv_vars);
   return force_expr_to_var_cost (expr, data->speed);
 }
 
@@ -4525,10 +4542,7 @@ split_address_cost (struct ivopts_data *data,
     {
       *symbol_present = false;
       *var_present = true;
-      fd_ivopts_data = data;
-      if (inv_vars)
-	walk_tree (&addr, find_depends, inv_vars, NULL);
-
+      find_inv_vars (data, &addr, inv_vars);
       return comp_cost (target_spill_cost[data->speed], 0);
     }
 
@@ -5624,8 +5638,8 @@ determine_group_iv_cost_cond (struct ivopts_data *data,
   express_cost = get_computation_cost (data, use, cand, false,
 				       &inv_vars_express, NULL,
 				       &inv_expr_express);
-  fd_ivopts_data = data;
-  walk_tree (&cmp_iv->base, find_depends, &inv_vars_express, NULL);
+  if (cmp_iv != NULL)
+    find_inv_vars (data, &cmp_iv->base, &inv_vars_express);
 
   /* Count the cost of the original bound as well.  */
   bound_cost = force_var_cost (data, *bound_cst, NULL);
