@@ -6317,13 +6317,10 @@ package body Sem_Util is
    ------------------------
 
    function Discriminated_Size (Comp : Entity_Id) return Boolean is
-      Typ   : constant Entity_Id := Etype (Comp);
-      Index : Node_Id;
-
       function Non_Static_Bound (Bound : Node_Id) return Boolean;
       --  Check whether the bound of an index is non-static and does denote
-      --  a discriminant, in which case any object of the type (protected
-      --  or otherwise) will have a non-static size.
+      --  a discriminant, in which case any object of the type (protected or
+      --  otherwise) will have a non-static size.
 
       ----------------------
       -- Non_Static_Bound --
@@ -6341,8 +6338,8 @@ package body Sem_Util is
 
          elsif Is_Entity_Name (Bound)
            and then
-              (Ekind (Entity (Bound)) = E_Discriminant
-                or else Present (Discriminal_Link (Entity (Bound))))
+             (Ekind (Entity (Bound)) = E_Discriminant
+               or else Present (Discriminal_Link (Entity (Bound))))
          then
             return False;
 
@@ -6350,6 +6347,11 @@ package body Sem_Util is
             return True;
          end if;
       end Non_Static_Bound;
+
+      --  Local variables
+
+      Typ   : constant Entity_Id := Etype (Comp);
+      Index : Node_Id;
 
    --  Start of processing for Discriminated_Size
 
