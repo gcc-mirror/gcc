@@ -1,8 +1,11 @@
+2017-05-02  Bin Cheng  <bin.cheng@arm.com>
+
+	* rtlanal.c (rtx_cost): Handle TRUNCATE between tieable modes.
+
 2017-05-02  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
 
 	* tree.h (EXPR_CILK_SPAWN): Use macro TREE_CHECK2 instead of
 	function tree_check2.
-
 
 2017-05-02  Martin Liska  <mliska@suse.cz>
 
