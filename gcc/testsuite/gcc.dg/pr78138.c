@@ -5,7 +5,9 @@
 
 char d [5];
 
-void* memcpy (void*, const void*, unsigned long);
+__extension__ typedef __SIZE_TYPE__ size_t;
+
+void* memcpy (void*, const void*, size_t);
 extern char* strcpy (char*, const char*);
 
 void f (int i, int j)
