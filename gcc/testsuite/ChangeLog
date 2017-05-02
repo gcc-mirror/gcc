@@ -1,3 +1,7 @@
+2017-05-02  Bin Cheng  <bin.cheng@arm.com>
+
+	* g++.dg/tree-ssa/ivopts-3.C: Adjust test string.
+
 2017-04-27  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.dg/lsr-div1.c: New testcase.
