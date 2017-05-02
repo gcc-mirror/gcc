@@ -1,5 +1,12 @@
 2017-05-02  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Remove pseudo
+	iv_cand code.
+	(determine_group_iv_cost_cond, determine_iv_cost): Ditto.
+	(iv_ca_set_no_cp, create_new_iv): Ditto.
+
+2017-05-02  Bin Cheng  <bin.cheng@arm.com>
+
 	* rtlanal.c (rtx_cost): Handle TRUNCATE between tieable modes.
 
 2017-05-02  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>

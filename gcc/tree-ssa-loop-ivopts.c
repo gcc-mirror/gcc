@@ -4845,10 +4845,6 @@ get_computation_cost_at (struct ivopts_data *data,
   if (depends_on)
     *depends_on = NULL;
 
-  /* Only consider real candidates.  */
-  if (!cand->iv)
-    return infinite_cost;
-
   cbase = cand->iv->base;
   cstep = cand->iv->step;
   ctype = TREE_TYPE (cbase);
@@ -5568,8 +5564,6 @@ determine_group_iv_cost_cond (struct ivopts_data *data,
   enum tree_code comp = ERROR_MARK;
   struct iv_use *use = group->vuses[0];
 
-  gcc_assert (cand->iv);
-
   /* Try iv elimination.  */
   if (may_eliminate_iv (data, use, cand, &bound, &comp))
     {
@@ -5898,11 +5892,7 @@ determine_iv_cost (struct ivopts_data *data, struct iv_cand *cand)
   unsigned cost, cost_step;
   tree base;
 
-  if (!cand->iv)
-    {
-      cand->cost = 0;
-      return;
-    }
+  gcc_assert (cand->iv != NULL);
 
   /* There are two costs associated with the candidate -- its increment
      and its initialization.  The second is almost negligible for any loop
@@ -6123,9 +6113,7 @@ iv_ca_set_no_cp (struct ivopts_data *data, struct iv_ca *ivs,
   if (ivs->n_cand_uses[cid] == 0)
     {
       bitmap_clear_bit (ivs->cands, cid);
-      /* Do not count the pseudocandidates.  */
-      if (cp->cand->iv)
-	ivs->n_regs--;
+      ivs->n_regs--;
       ivs->n_cands--;
       ivs->cand_cost -= cp->cand->cost;
 
@@ -6189,9 +6177,7 @@ iv_ca_set_cp (struct ivopts_data *data, struct iv_ca *ivs,
       if (ivs->n_cand_uses[cid] == 1)
 	{
 	  bitmap_set_bit (ivs->cands, cid);
-	  /* Do not count the pseudocandidates.  */
-	  if (cp->cand->iv)
-	    ivs->n_regs++;
+	  ivs->n_regs++;
 	  ivs->n_cands++;
 	  ivs->cand_cost += cp->cand->cost;
 
@@ -7076,8 +7062,7 @@ create_new_iv (struct ivopts_data *data, struct iv_cand *cand)
   struct iv_group *group;
   bool after = false;
 
-  if (!cand->iv)
-    return;
+  gcc_assert (cand->iv != NULL);
 
   switch (cand->pos)
     {
