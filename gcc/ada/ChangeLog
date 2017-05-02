@@ -1,3 +1,39 @@
+2017-05-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* opt.ads: Add missing GNAT markers in comments.
+	* opt.adb (Set_Opt_Config_Switches): Do not override earlier
+	settings of Optimize_Alignment at the end.
+
+2017-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Apply_Constraint_Check): Do not apply
+	a discriminant check when the associated type is a constrained
+	subtype created for an unconstrained nominal type.
+	* exp_attr.adb: Minor reformatting.
+
+2017-05-02  Bob Duff  <duff@adacore.com>
+
+	* sem_ch3.adb (OK_For_Limited_Init_In_05): Handle correctly
+	the N_Raise_Expression case.
+	* sem_ch6.adb (Check_Limited_Return): Minor: clarify comment,
+	and add assertions.
+
+2017-05-02  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Ne): Do not bump parenthese level and
+	optimize length comparison in GNATprove mode.
+	* exp_spark.adb (Expand_SPARK_Op_Ne): New function to rewrite
+	operator /= into negation of operator = when needed.
+	(Expand_SPARK): Call new
+	function to expand operator /=.
+
+2017-05-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_fixd.adb (Expand_Divide_Fixed_By_Fixed_Giving_Fixed):
+	Simplify the expression for a fixed-fixed division to remove
+	divisions by constants whenever possible, as an optimization
+	for restricted targets.
+
 2017-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* checks.adb, sem_ch3.adb, sem_ch6.adb: Minor reformatting.

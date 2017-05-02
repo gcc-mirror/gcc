@@ -1194,10 +1194,12 @@ package Opt is
    --  type with the semantics that each value does more than the previous one.
 
    Optimize_Alignment : Character := 'O';
+   --  GNAT
    --  Setting of Optimize_Alignment, set to T/S/O for time/space/off. Can
    --  be modified by use of pragma Optimize_Alignment.
 
    Optimize_Alignment_Local : Boolean := False;
+   --  GNAT
    --  Set True if Optimize_Alignment mode is set by a local configuration
    --  pragma that overrides the gnat.adc (or other configuration file) default
    --  so that the unit is not dependent on the default setting. Also always
@@ -1213,10 +1215,12 @@ package Opt is
 
    Optimization_Level : Int;
    pragma Import (C, Optimization_Level, "optimize");
+   --  GNAT
    --  Constant reflecting the optimization level (0,1,2,3 for -O0,-O1,-O2,-O3)
 
    Optimize_Size : Int;
    pragma Import (C, Optimize_Size, "optimize_size");
+   --  GNAT
    --  Constant reflecting setting of -Os (optimize for size). Set to nonzero
    --  in -Os mode and set to zero otherwise.
 

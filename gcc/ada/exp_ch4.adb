@@ -8926,6 +8926,9 @@ package body Exp_Ch4 is
       --  the same visibility as in the generic unit. This avoids duplicating
       --  or factoring the complex code for record/array equality tests etc.
 
+      --  This case is also used for the minimal expansion performed in
+      --  GNATprove mode.
+
       else
          declare
             Loc : constant Source_Ptr := Sloc (N);
@@ -8941,7 +8944,14 @@ package body Exp_Ch4 is
                   Make_Op_Eq (Loc,
                     Left_Opnd =>  Left_Opnd (N),
                     Right_Opnd => Right_Opnd (N)));
-            Set_Paren_Count (Right_Opnd (Neg), 1);
+
+            --  The level of parentheses is useless in GNATprove mode, and
+            --  bumping its level here leads to wrong columns being used in
+            --  check messages, hence skip it in this mode.
+
+            if not GNATprove_Mode then
+               Set_Paren_Count (Right_Opnd (Neg), 1);
+            end if;
 
             if Scope (Ne) /= Standard_Standard then
                Set_Entity (Right_Opnd (Neg), Corresponding_Equality (Ne));
@@ -8958,7 +8968,12 @@ package body Exp_Ch4 is
          end;
       end if;
 
-      Optimize_Length_Comparison (N);
+      --  No need for optimization in GNATprove mode, where we would rather see
+      --  the original source expression.
+
+      if not GNATprove_Mode then
+         Optimize_Length_Comparison (N);
+      end if;
    end Expand_N_Op_Ne;
 
    ---------------------

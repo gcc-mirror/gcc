@@ -19316,6 +19316,11 @@ package body Sem_Ch3 is
          when N_Attribute_Reference =>
             return Attribute_Name (Original_Node (Exp)) = Name_Input;
 
+         --  "return raise ..." is OK
+
+         when N_Raise_Expression =>
+            return True;
+
          --  For a case expression, all dependent expressions must be legal
 
          when N_Case_Expression =>
