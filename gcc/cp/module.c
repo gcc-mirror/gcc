@@ -862,11 +862,10 @@ private:
   void write_core_bools (FILE *, tree);
   void write_core_vals (FILE *, tree);
   void write_decl_lang_bools (FILE *, tree);
-  tree write_context_binding (FILE *, tree, tree);
 
 public:
   void write_tree (FILE *, tree);
-  tree write_bindings (FILE *d, tree ctx, tree ns);
+  void write_bindings (FILE *d, tree ns);
 };
 
 cpms_out::cpms_out (FILE *s, const char *n)
@@ -1349,6 +1348,10 @@ cpms_in::tag_import (FILE *d)
 void
 cpms_out::tag_binding (FILE *d, tree ns, tree name, tree ovl)
 {
+  if (d)
+    fprintf (d, "Writing bindings for %s\n", IDENTIFIER_POINTER (name));
+
+  w.u (rt_binding);
   write_tree (d, ns);
   write_tree (d, name);
   write_tree (d, ovl);
@@ -1388,7 +1391,10 @@ cpms_in::read_item (FILE *d)
   if (index == GLOBAL_MODULE_INDEX)
     {
       if (state == this_module)
-	index = THIS_MODULE_INDEX;
+	{
+	  index = THIS_MODULE_INDEX;
+	  (*modules)[index] = state;
+	}
       else
 	{
 	  index = modules->length ();
@@ -1398,7 +1404,7 @@ cpms_in::read_item (FILE *d)
 	      r.bad (-1);
 	      return -1;
 	    }
-	  vec_safe_push (modules, (module_state *)NULL);
+	  vec_safe_push (modules, state);
 	  state->set_index (index);
 	}
       if (d)
@@ -1409,6 +1415,8 @@ cpms_in::read_item (FILE *d)
     {
     case rt_eof:
       return tag_eof (d);
+    case rt_binding:
+      return tag_binding (d);
     case rt_trees:
       return tag_trees (d);
 
@@ -2156,26 +2164,11 @@ cpms_in::read_tree (FILE *d, tree *tp, unsigned tag)
   return t != NULL_TREE;
 }
 
-/* Write the namespace bindings from CTX->NS.  */
-
-tree
-cpms_out::write_context_binding (FILE *d, tree ctx, tree ns)
-{
-  if (ctx != ns)
-    {
-      ctx = write_context_binding (d, ctx, CP_DECL_CONTEXT (ns));
-      tag_binding (d, ctx, DECL_NAME (ns), ns);
-      ctx = ns;
-    }
-  return ctx;
-}
-
 /* Walk the bindings of NS, writing out the bindings for the global
-   module and the main module.  CTX is the closest namespace who's
-   binding has been written out.  */
+   module and the main module.  */
 
-tree
-cpms_out::write_bindings (FILE *d, tree ctx, tree ns)
+void
+cpms_out::write_bindings (FILE *d, tree ns)
 {
   bool mod_ns = CURRENT_MODULE_NAMESPACE_P (ns);
 
@@ -2185,7 +2178,7 @@ cpms_out::write_bindings (FILE *d, tree ctx, tree ns)
       if (d)
 	fprintf (d, "Skipping namespace '%s'\n",
 		 IDENTIFIER_POINTER (DECL_NAME (ns)));
-      return ctx;
+      return;
     }
 
   if (d)
@@ -2202,8 +2195,6 @@ cpms_out::write_bindings (FILE *d, tree ctx, tree ns)
       tree name = binding.first;
       tree ovl = binding.second;
 
-      ctx = write_context_binding (d, ctx, ns);
-      
       tree type; // FIXME stop ignoring me
       tree decl = decapsulate_binding (binding.second, &type);
 
@@ -2224,13 +2215,13 @@ cpms_out::write_bindings (FILE *d, tree ctx, tree ns)
 		    gcc_assert (TREE_CODE (fn) == FUNCTION_DECL);
 
 		    // FIXME Hack alert, just one fn
-		    tag_binding (d, ctx, name, fn);
+		    tag_binding (d, ns, name, fn);
 		    break;
 		  }
 	      }
 	}
       else if (TREE_CODE (decl) == NAMESPACE_DECL)
-	ctx = write_bindings (d, ctx, decl);
+	write_bindings (d, decl);
       else if (mod_ns || DECL_MODULE_EXPORT_P (decl)
 	       // FIXME: set MODULE_EXPORT_P properly.  Utter hack here
 	       || !DECL_EXTERN_C_P (decl))
@@ -2243,15 +2234,9 @@ cpms_out::write_bindings (FILE *d, tree ctx, tree ns)
 	    gcc_unreachable (); // FIXME: implement more
 	  }
     }
-
-  /* Limit returned context to parent of NS.  */
-  if (ns != global_namespace)
-    while (SCOPE_DEPTH (ctx) >= SCOPE_DEPTH (ns))
-      ctx = CP_DECL_CONTEXT (ctx);
-  else
-    ctx = global_namespace;
-
-  return ctx;
+  if (d)
+    fprintf (d, "Walked namespace '%s'\n",
+	     IDENTIFIER_POINTER (DECL_NAME (ns)));
 }
 
 /* Mangling for module files.  */
@@ -2338,6 +2323,10 @@ cpms_in::finish_type (FILE *d, tree type)
 tree
 cpms_in::finish_function (FILE *d, tree fn)
 {
+  // FIXME: look in other imports for this decl.  If this is me, then
+  // do nothing (we'll insert it below.)
+  return fn;
+  
   // FIXME: want to look exactly in scope,  no using decls etc.
   tree cur = lookup_qualified_name (DECL_CONTEXT (fn), DECL_NAME (fn),
 				    false, false, false);
@@ -2362,8 +2351,7 @@ cpms_in::finish_function (FILE *d, tree fn)
   return fn;
 }
 
-/* NS has just been read in.  Find the actual namespace we should be
-   using.  */
+/* NS has just been read in.  Insert or find the namespace.  */
 
 tree
 cpms_in::finish_namespace (FILE *d, tree ns)
@@ -2375,21 +2363,19 @@ cpms_in::finish_namespace (FILE *d, tree ns)
   bool inline_p = DECL_NAMESPACE_INLINE_P (ns);
   bool module_p = MODULE_NAMESPACE_P (ns);
   if (module_p && (state != this_module || DECL_NAME (ns) != module_nm))
-    inline_p = false;
-  if (push_namespace (DECL_NAME (ns), inline_p))
+    DECL_NAMESPACE_INLINE_P (ns) = false;
+  res = push_module_namespace (CP_DECL_CONTEXT (ns), GLOBAL_MODULE_INDEX, ns);
+  if (!res)
+    error ("failed to insert namespace %E", ns);
+  else if (res == ns)
     {
-      res = current_namespace;
-
-      if (module_p)
-	MODULE_NAMESPACE_P (res) = true;
       if (d)
 	fprintf (d, "Creating%s namespace %s (%p)\n",
 		 inline_p ? " inline" : "",
 		 IDENTIFIER_POINTER (DECL_NAME (ns)), (void *)res);
-      /* Pop out of the namespace so our scope cache is correct.  */
-      pop_namespace ();
     }
-  free_node (ns);
+  else
+    free_node (ns);
 
   return res;
 }
@@ -2602,16 +2588,18 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	warning_at (0, loc, "indirect import %qE not present", name);
       *val = ~0U;
 
-      state = (kind >= ik_interface ? this_module
-	       : new (ggc_alloc<module_state> ()) module_state ());
-      state->set_name (name);
-
-      if (kind == ik_interface)
+      if (kind >= ik_interface)
 	{
-	  /* This is the interface.  */
+	  state = this_module;
 	  state->set_index (THIS_MODULE_INDEX);
-	  index = THIS_MODULE_INDEX;
+	  (*modules)[THIS_MODULE_INDEX] = state;
 	}
+      else
+	state = new (ggc_alloc<module_state> ()) module_state ();
+
+      state->set_name (name);
+      if (kind == ik_interface)
+	index = THIS_MODULE_INDEX;
       else
 	{
 	  // FIXME:Path search along the -I path
@@ -2628,12 +2616,10 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	      gcc_assert (global_namespace == current_scope ());
 	      pop_from_top_level ();
 	      fclose (stream);
-	      gcc_assert (!(*modules)[index] && *val == ~0U);
+	      gcc_assert (*val == ~0U);
 	    }
 	  free (fname);
 	}
-      if (index != GLOBAL_MODULE_INDEX)
-	(*modules)[index] = state;
     }
 
   if (index != GLOBAL_MODULE_INDEX && stamp && crc != state->crc)
@@ -2717,7 +2703,7 @@ write_module (FILE *stream, const char *fname, tree name)
   out.tag_trees (d);
 
   /* Write decls.  */
-  out.write_bindings (d, global_namespace, global_namespace);
+  out.write_bindings (d, global_namespace);
 
   // FIXME:Write defns.  Probably fine just to do it during the first
   // namespace walk.

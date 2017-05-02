@@ -2393,6 +2393,41 @@ pushdecl (tree x, bool is_friend)
   return x;
 }
 
+
+/* NS is a newly read in NAMESPACE_DECL, residing in CTX.  Find or
+   insert it into CTX's binding table.  Return the matched or new
+   namespace, or NULL on error.  */
+
+tree
+push_module_namespace (tree ctx, unsigned module, tree ns)
+{
+  gcc_assert (DECL_CONTEXT (ns) == ctx
+	      && TREE_CODE (ns) == NAMESPACE_DECL
+	      && !DECL_NAMESPACE_ALIAS (ns));
+
+  tree *slot = find_or_create_namespace_slot (ctx, DECL_NAME (ns));
+  tree old = MAYBE_STAT_DECL (*slot);
+
+  if (!old)
+    {
+      SCOPE_DEPTH (ns) = SCOPE_DEPTH (ctx) + 1;
+      if (ctx == global_namespace)
+	DECL_CONTEXT (ns) = DECL_CONTEXT (global_namespace);
+      old = update_binding (NAMESPACE_LEVEL (ctx), NULL, slot, old, ns, false);
+      if (old == ns)
+	{
+	  if (DECL_NAMESPACE_INLINE_P (old))
+	    vec_safe_push (DECL_NAMESPACE_INLINEES (ctx), old);
+	  begin_scope (sk_namespace, old);
+	}
+      else
+	old = NULL_TREE;
+    }
+  else if (TREE_CODE (old) != NAMESPACE_DECL)
+    old = NULL_TREE;
+  return old;
+}
+
 bool
 push_module_binding (tree ns, unsigned module, tree name, tree ovl)
 {
@@ -2400,8 +2435,7 @@ push_module_binding (tree ns, unsigned module, tree name, tree ovl)
   tree old = MAYBE_STAT_DECL (*slot);
 
   // FIXME: for now
-  gcc_assert (TREE_CODE (ovl) == NAMESPACE_DECL
-	      || TREE_CODE (ovl) == FUNCTION_DECL);
+  gcc_assert (TREE_CODE (ovl) == FUNCTION_DECL);
   if (old != ovl)
     old = update_binding (NAMESPACE_LEVEL (ns), NULL, slot, old, ovl, false);
   return old != error_mark_node;
