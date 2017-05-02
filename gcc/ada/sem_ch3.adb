@@ -7797,9 +7797,6 @@ package body Sem_Ch3 is
                Set_Last_Entity (Der_Base, Last_Discr);
                Set_First_Entity (Derived_Type, First_Entity (Der_Base));
                Set_Last_Entity  (Derived_Type, Last_Entity  (Der_Base));
-
-               Set_Stored_Constraint
-                 (Full_Der, Stored_Constraint (Derived_Type));
             end;
          end if;
 
