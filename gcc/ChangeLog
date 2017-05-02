@@ -1,6 +1,6 @@
 2017-05-02  Martin Liska  <mliska@suse.cz>
 
-	PR lto/79489.
+	PR lto/77954.
 	* lto-streamer-in.c (lto_read_tree_1): Remove
 	LTO_STREAMER_DEBUG.
 	* lto-streamer.c (struct tree_hash_entry): Likewise.
