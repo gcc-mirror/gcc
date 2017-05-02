@@ -7117,15 +7117,13 @@ package body Einfo is
       end if;
 
       loop
-         if Nkind (P) /= N_Selected_Component
-           and then Nkind (P) /= N_Expanded_Name
-           and then
-             not (Nkind (P) = N_Defining_Program_Unit_Name
-                   and then Is_Child_Unit (Id))
+         if Nkind_In (P, N_Selected_Component, N_Expanded_Name)
+           or else (Nkind (P) = N_Defining_Program_Unit_Name
+                    and then Is_Child_Unit (Id))
          then
-            return P;
-         else
             P := Parent (P);
+         else
+            return P;
          end if;
       end loop;
    end Declaration_Node;

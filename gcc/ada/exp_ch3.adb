@@ -7554,8 +7554,19 @@ package body Exp_Ch3 is
 
       --  Non-interface types
 
+      --  Do not generate invariant procedure within other assertion
+      --  subprograms, which may involve local declarations of local
+      --  subtypes to which these checks don't apply.
+
       elsif Has_Invariants (Def_Id) then
-         Build_Invariant_Procedure_Body (Def_Id);
+         if Within_Internal_Subprogram
+          or else (Ekind (Current_Scope) = E_Function
+                    and then Is_Predicate_Function (Current_Scope))
+         then
+            null;
+         else
+            Build_Invariant_Procedure_Body (Def_Id);
+         end if;
       end if;
 
       Restore_Ghost_Mode (Saved_GM);

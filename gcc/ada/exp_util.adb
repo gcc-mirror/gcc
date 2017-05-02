@@ -7491,8 +7491,10 @@ package body Exp_Util is
       Aux : constant Node_Id := Aux_Decls_Node (Cunit (Main_Unit));
 
    begin
-      Push_Scope (Cunit_Entity (Main_Unit));
-      --  ??? should this be Current_Sem_Unit instead of Main_Unit?
+      Push_Scope (Cunit_Entity (Current_Sem_Unit));
+      --  And not Main_Unit as previously. If the main unit is a body,
+      --  the scope needed to analyze the actions is the entity of the
+      --  corresponding declaration.
 
       if No (Actions (Aux)) then
          Set_Actions (Aux, New_List (N));
