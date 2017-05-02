@@ -404,14 +404,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       /* There are some options that change IL semantics which means
          we cannot inline in these cases for correctness reason.
 	 Not even for always_inline declared functions.  */
-      /* Strictly speaking only when the callee contains signed integer
-         math where overflow is undefined.  */
-     else if ((check_maybe_up (flag_strict_overflow)
-	       /* this flag is set by optimize.  Allow inlining across
-		  optimize boundary.  */
-	       && (!opt_for_fn (caller->decl, optimize)
-		   == !opt_for_fn (callee->decl, optimize) || !always_inline))
-	      || check_match (flag_wrapv)
+     else if (check_match (flag_wrapv)
 	      || check_match (flag_trapv)
 	      /* When caller or callee does FP math, be sure FP codegen flags
 		 compatible.  */

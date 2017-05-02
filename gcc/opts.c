@@ -496,7 +496,6 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_2_PLUS, OPT_fschedule_insns2, NULL, 1 },
 #endif
     { OPT_LEVELS_2_PLUS, OPT_fstrict_aliasing, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fstrict_overflow, NULL, 1 },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_freorder_blocks_algorithm_, NULL,
       REORDER_BLOCKS_ALGORITHM_STC },
     { OPT_LEVELS_2_PLUS, OPT_freorder_functions, NULL, 1 },
@@ -984,10 +983,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   /* Aggressive compiler optimizations may cause false negatives.  */
   if (opts->x_flag_sanitize & ~(SANITIZE_LEAK | SANITIZE_UNREACHABLE))
-    {
-      opts->x_flag_aggressive_loop_optimizations = 0;
-      opts->x_flag_strict_overflow = 0;
-    }
+    opts->x_flag_aggressive_loop_optimizations = 0;
 
   /* Enable -fsanitize-address-use-after-scope if address sanitizer is
      enabled.  */

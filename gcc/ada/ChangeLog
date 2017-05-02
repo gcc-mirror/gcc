@@ -1,3 +1,8 @@
+2017-05-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc-interface/misc.c (gnat_post_options): Do not set
+	-fstrict-overflow.
+
 2017-05-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (assoc_to_constructor): Make sure

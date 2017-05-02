@@ -2342,8 +2342,8 @@ Common Report Var(flag_strict_aliasing) Optimization
 Assume strict aliasing rules apply.
 
 fstrict-overflow
-Common Report Var(flag_strict_overflow) Optimization
-Treat signed overflow as undefined.
+Common NegativeAlias Alias(fwrapv)
+Treat signed overflow as undefined.  Negated as -fwrapv.
 
 fsync-libcalls
 Common Report Var(flag_sync_libcalls) Init(1)

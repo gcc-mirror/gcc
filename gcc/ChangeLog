@@ -1,3 +1,19 @@
+2017-05-02  Richard Biener  <rguenther@suse.de>
+
+	* common.opt (fstrict-overflow): Alias negative to fwrapv.
+	* doc/invoke.texi (fstrict-overflow): Remove all traces of
+	-fstrict-overflow documentation.
+	* tree.h (TYPE_OVERFLOW_UNDEFINED): Do not test flag_strict_overflow.
+	(POINTER_TYPE_OVERFLOW_UNDEFINED): Test !flag_wrapv instead of
+	flag_strict_overflow.
+	* ipa-inline.c (can_inline_edge_p): Do not test flag_strict_overflow.
+	* lto-opts.c (lto_write_options): Do not stream it.
+	* lto-wrapper.c (merge_and_complain): Do not handle it.
+	* opts.c (default_options_table): Do not set -fstrict-overflow.
+	(finish_options): Likewise do not clear it when sanitizing.
+	* simplify-rtx.c (simplify_const_relational_operation): Do not
+	test flag_strict_overflow.
+
 2017-05-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (*add<mode>3_ieee): Merge to add<mode>3
