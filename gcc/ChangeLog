@@ -1,3 +1,8 @@
+2017-05-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c (estimate_node_size_and_time): Allow roundoff
+	errors when comparing specialized and unspecialized times.
+
 2017-05-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c
@@ -353,6 +358,11 @@
 	* config/i386/i386.c (ix86_agi_dependent): Return false
 	if the only reason why modified_in_p returned true is that
 	addr is SP based and set_insn is a push or pop.
+
+2017-04-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (compute_inlined_call_time): Remove now unnecesary
+	overflow check.
 
 2017-04-29  Jan Hubicka  <hubicka@ucw.cz>
 

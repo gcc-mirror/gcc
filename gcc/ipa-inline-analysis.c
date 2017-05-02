@@ -3422,7 +3422,15 @@ estimate_node_size_and_time (struct cgraph_node *node,
   min_size = (*info->entry)[0].size;
   gcc_checking_assert (size >= 0);
   gcc_checking_assert (time >= 0);
-  gcc_checking_assert (nonspecialized_time >= time);
+  /* nonspecialized_time should be always bigger than specialized time.
+     Roundoff issues however may get into the way.  */
+  gcc_checking_assert ((nonspecialized_time - time) >= -1);
+
+  /* Roundoff issues may make specialized time bigger than nonspecialized
+     time.  We do not really want that to happen because some heurstics
+     may get confused by seeing negative speedups.  */
+  if (time > nonspecialized_time)
+    time = nonspecialized_time;
 
   if (info->loop_iterations
       && !evaluate_predicate (info->loop_iterations, possible_truths))
