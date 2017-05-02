@@ -8241,12 +8241,24 @@ package body Sem_Res is
 
    procedure Resolve_If_Expression (N : Node_Id; Typ : Entity_Id) is
       Condition : constant Node_Id := First (Expressions (N));
-      Then_Expr : constant Node_Id := Next (Condition);
-      Else_Expr : Node_Id          := Next (Then_Expr);
+      Then_Expr : Node_Id;
+      Else_Expr : Node_Id;
       Else_Typ  : Entity_Id;
       Then_Typ  : Entity_Id;
 
    begin
+      --  Defend against malformed expressions
+
+      if No (Condition) then
+         return;
+      end if;
+      Then_Expr := Next (Condition);
+
+      if No (Then_Expr) then
+         return;
+      end if;
+      Else_Expr := Next (Then_Expr);
+
       Resolve (Condition, Any_Boolean);
       Resolve (Then_Expr, Typ);
       Then_Typ := Etype (Then_Expr);
@@ -8311,7 +8323,10 @@ package body Sem_Res is
       end if;
 
       Set_Etype (N, Typ);
-      Eval_If_Expression (N);
+
+      if not Error_Posted (N) then
+         Eval_If_Expression (N);
+      end if;
    end Resolve_If_Expression;
 
    -------------------------------

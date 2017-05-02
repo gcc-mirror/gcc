@@ -1,3 +1,16 @@
+2017-05-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Null_Procedure): Revert previous change.
+
+2017-05-02  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch4.adb (Analyze_Case_Expression): Add check for valid
+	expression (Analyze_If_Expression): Add check for valid condition
+	* sem_eval.adb (Eval_Case_Expression): Add check for error posted
+	on case-expression
+	* sem_res.adb (Resolve_If_Expression): Add check for valid
+	condition and then-expression.
+
 2017-05-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch3.adb (Build_Initialization_Call): Generate a null
