@@ -3103,7 +3103,7 @@ package body Errout is
                --  as errors.
 
                if Is_Warning_Msg
-                 and then Warning_Mode = Treat_Run_Time_As_Error
+                 and then Warning_Mode = Treat_Run_Time_Warnings_As_Errors
                then
                   Is_Warning_Msg := False;
                end if;

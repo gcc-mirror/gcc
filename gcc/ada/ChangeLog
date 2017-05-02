@@ -1,3 +1,22 @@
+2017-05-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_case.adb: Remove extra spaces in parameter declarations.
+
+2017-05-02  Justin Squirek  <squirek@adacore.com>
+
+	* usage.adb: Replace space with hyphen ("run time" -> "run-time")
+	in usage line for new -gnatwE switch.
+
+2017-05-02  Claire Dross  <dross@adacore.com>
+
+	* a-cofuve.ads (Remove): Remove unnecessary
+	conditions in precondition.
+
+2017-05-02  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* a-stream.ads, exp_imgv.adb, sem_ch10.adb,
+	sem_attr.adb, s-finmas.ads, osint.adb: Minor typo fix.
+
 2017-05-02  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch4.adb (Analyze_Case_Expression): Add check for valid

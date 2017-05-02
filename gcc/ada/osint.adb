@@ -2312,7 +2312,7 @@ package body Osint is
 
       --  Read the file. Note that the loop is probably not necessary since the
       --  whole file is read at once but the loop is harmless and that way we
-      --  are sure to accomodate systems where this is not the case.
+      --  are sure to accommodate systems where this is not the case.
 
       Curr := 1;
       Actual_Len := Len;

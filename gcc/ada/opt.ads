@@ -1861,17 +1861,17 @@ package Opt is
    --  Modified by use of -gnatw.w/.W.
 
    type Warning_Mode_Type is
-     (Suppress, Normal, Treat_As_Error, Treat_Run_Time_As_Error);
+     (Suppress, Normal, Treat_As_Error, Treat_Run_Time_Warnings_As_Errors);
    Warning_Mode : Warning_Mode_Type := Normal;
    --  GNAT, GNATBIND
    --  Controls treatment of warning messages. If set to Suppress, warning
    --  messages are not generated at all. In Normal mode, they are generated
    --  but do not count as errors. In Treat_As_Error mode, warning messages are
-   --  generated and are treated as errors. In Treat_Run_Time_As_Error, warning
-   --  messages regarding errors raised at run time are treated as errors. Note
-   --  that Warning_Mode = Suppress causes pragma Warnings to be ignored
-   --  (except for legality checks), unless we are in GNATprove_Mode, which
-   --  requires pragma Warnings to be stored for the formal verification
+   --  generated and treated as errors. In Treat_Run_Time_Warnings_As_Errors,
+   --  warning messages regarding errors raised at run time are treated as
+   --  errors. Note that Warning_Mode = Suppress causes pragma Warnings to be
+   --  ignored (except for legality checks), unless we are in GNATprove_Mode,
+   --  which requires pragma Warnings to be stored for the formal verification
    --  backend.
 
    Warnings_As_Errors_Count : Natural;
