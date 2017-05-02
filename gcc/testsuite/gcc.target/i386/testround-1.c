@@ -20,9 +20,17 @@ void
 test_round (void)
 {
   m128d = _mm_add_round_sd (m128d, m128d, 7); /* { dg-error "incorrect rounding operand" } */
+  m128d = _mm_mask_add_round_sd (m128d, mmask8, m128d, m128d, 7); /* { dg-error "incorrect rounding operand" } */
+  m128d = _mm_maskz_add_round_sd (mmask8, m128d, m128d, 7); /* { dg-error "incorrect rounding operand" } */
   m128 = _mm_add_round_ss (m128, m128, 7); /* { dg-error "incorrect rounding operand" } */
+  m128 = _mm_mask_add_round_ss (m128, mmask8, m128, m128, 7); /* { dg-error "incorrect rounding operand" } */
+  m128 = _mm_maskz_add_round_ss (mmask8, m128, m128, 7); /* { dg-error "incorrect rounding operand" } */
   m128d = _mm_sub_round_sd (m128d, m128d, 7); /* { dg-error "incorrect rounding operand" } */
+  m128d = _mm_mask_sub_round_sd (m128d, mmask8, m128d, m128d, 7); /* { dg-error "incorrect rounding operand" } */
+  m128d = _mm_maskz_sub_round_sd (mmask8, m128d, m128d, 7); /* { dg-error "incorrect rounding operand" } */
   m128 = _mm_sub_round_ss (m128, m128, 7); /* { dg-error "incorrect rounding operand" } */
+  m128 = _mm_mask_sub_round_ss (m128, mmask8, m128, m128, 7); /* { dg-error "incorrect rounding operand" } */
+  m128 = _mm_maskz_sub_round_ss (mmask8, m128, m128, 7); /* { dg-error "incorrect rounding operand" } */
 
   m512d = _mm512_sqrt_round_pd (m512d, 7); /* { dg-error "incorrect rounding operand" } */
   m512d = _mm512_mask_sqrt_round_pd (m512d, mmask8, m512d, 7); /* { dg-error "incorrect rounding operand" } */
@@ -263,9 +271,17 @@ void
 test_round_sae (void)
 {
   m128d = _mm_add_round_sd (m128d, m128d, 5); /* { dg-error "incorrect rounding operand" } */
+  m128d = _mm_mask_add_round_sd (m128d, mmask8, m128d, m128d, 5); /* { dg-error "incorrect rounding operand" } */
+  m128d = _mm_maskz_add_round_sd (mmask8, m128d, m128d, 5); /* { dg-error "incorrect rounding operand" } */
   m128 = _mm_add_round_ss (m128, m128, 5); /* { dg-error "incorrect rounding operand" } */
+  m128 = _mm_mask_add_round_ss (m128, mmask8, m128, m128, 5); /* { dg-error "incorrect rounding operand" } */
+  m128 = _mm_maskz_add_round_ss (mmask8, m128, m128, 5); /* { dg-error "incorrect rounding operand" } */
   m128d = _mm_sub_round_sd (m128d, m128d, 5); /* { dg-error "incorrect rounding operand" } */
+  m128d = _mm_mask_sub_round_sd (m128d, mmask8, m128d, m128d, 5); /* { dg-error "incorrect rounding operand" } */
+  m128d = _mm_maskz_sub_round_sd (mmask8, m128d, m128d, 5); /* { dg-error "incorrect rounding operand" } */
   m128 = _mm_sub_round_ss (m128, m128, 5); /* { dg-error "incorrect rounding operand" } */
+  m128 = _mm_mask_sub_round_ss (m128, mmask8, m128, m128, 5); /* { dg-error "incorrect rounding operand" } */
+  m128 = _mm_maskz_sub_round_ss (mmask8, m128, m128, 5); /* { dg-error "incorrect rounding operand" } */
 
   m512d = _mm512_sqrt_round_pd (m512d, 5); /* { dg-error "incorrect rounding operand" } */
   m512d = _mm512_mask_sqrt_round_pd (m512d, mmask8, m512d, 5); /* { dg-error "incorrect rounding operand" } */
