@@ -2945,6 +2945,14 @@ package body Exp_Ch7 is
             Find_Last_Init (Count_Ins, Body_Ins);
          end if;
 
+         --  If the Initialize function is null or trivial, the call will have
+         --  been replaced with a null statement, in which case place counter
+         --  declaration after object declaration itself.
+
+         if No (Count_Ins) then
+            Count_Ins := Decl;
+         end if;
+
          Insert_After (Count_Ins, Inc_Decl);
          Analyze (Inc_Decl);
 
@@ -6144,7 +6152,12 @@ package body Exp_Ch7 is
 
          Init_Call := Build_Initialization_Call;
 
-         if Present (Init_Call) then
+         --  Only create finalization block if there is a non-trivial
+         --  call to initialization.
+
+         if Present (Init_Call)
+           and then Nkind (Init_Call) /= N_Null_Statement
+         then
             Init_Loop :=
               Make_Block_Statement (Loc,
                 Handled_Statement_Sequence =>
@@ -6350,6 +6363,15 @@ package body Exp_Ch7 is
 
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts)));
+
+      --  If there are no calls to component initialization, indicate that
+      --  the procedure is trivial, so prevent calls to it.
+
+      if Is_Empty_List (Stmts)
+        or else Nkind (First (Stmts)) = N_Null_Statement
+      then
+         Set_Is_Trivial_Subprogram (Proc_Id);
+      end if;
 
       return Proc_Id;
    end Make_Deep_Proc;
@@ -8178,6 +8200,18 @@ package body Exp_Ch7 is
       else
          Proc := Find_Prim_Op (Utyp, Name_Of (Initialize_Case));
          Check_Visibly_Controlled (Initialize_Case, Typ, Proc, Ref);
+      end if;
+
+      --  If initialization procedure for an array of controlled objects is
+      --  trivial, do not generate a useless call to it.
+
+      if (Is_Array_Type (Utyp) and then Is_Trivial_Subprogram (Proc))
+        or else
+          (not Comes_From_Source (Proc)
+            and then Present (Alias (Proc))
+            and then Is_Trivial_Subprogram (Alias (Proc)))
+      then
+         return Make_Null_Statement (Loc);
       end if;
 
       --  The object reference may need another conversion depending on the

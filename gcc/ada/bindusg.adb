@@ -178,11 +178,6 @@ package body Bindusg is
       Write_Line
         ("  -n        No Ada main program (foreign main routine)");
 
-      --  Line for -nognarl
-
-      Write_Line
-        ("  -nognarl  Don't use libgnarl when writing linker instructions");
-
       --  Line for -nostdinc
 
       Write_Line

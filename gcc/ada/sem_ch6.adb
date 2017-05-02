@@ -1450,6 +1450,12 @@ package body Sem_Ch6 is
 
          Is_Completion := False;
 
+         --  Link the body to the null procedure spec
+
+         if Nkind (N) = N_Subprogram_Declaration then
+            Set_Corresponding_Body (N, Defining_Entity (Null_Body));
+         end if;
+
          --  Null procedures are always inlined, but generic formal subprograms
          --  which appear as such in the internal instance of formal packages,
          --  need no completion and are not marked Inline.
@@ -1457,7 +1463,6 @@ package body Sem_Ch6 is
          if Expander_Active
            and then Nkind (N) /= N_Formal_Concrete_Subprogram_Declaration
          then
-            Set_Corresponding_Body (N, Defining_Entity (Null_Body));
             Set_Body_To_Inline (N, Null_Body);
             Set_Is_Inlined (Designator);
          end if;

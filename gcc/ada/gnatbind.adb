@@ -447,9 +447,6 @@ procedure Gnatbind is
          elsif Argv (2 .. Argv'Last) = "nostdinc" then
             Opt.No_Stdinc := True;
 
-         elsif Argv (2 .. Argv'Last) = "nognarl" then
-            Opt.No_Libgnarl := True;
-
          --  -static
 
          elsif Argv (2 .. Argv'Last) = "static" then

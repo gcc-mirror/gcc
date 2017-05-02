@@ -63,8 +63,8 @@ package body System.File_IO is
 
    type Temp_File_Record is record
       File : AFCB_Ptr;
-      Name : String (1 .. max_path_len + 1);
       Next : aliased Temp_File_Record_Ptr;
+      Name : String (1 .. max_path_len + 1);
    end record;
    --  One of these is allocated for each temporary file created
 
