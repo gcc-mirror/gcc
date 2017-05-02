@@ -130,10 +130,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 7.1-b20170427\n"
+"Project-Id-Version: gcc 7.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2017-04-24 20:38+0000\n"
-"PO-Revision-Date: 2017-04-29 21:11+0200\n"
+"POT-Creation-Date: 2017-05-01 22:24+0000\n"
+"PO-Revision-Date: 2017-05-02 18:16+0200\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -2923,42 +2923,42 @@ msgstr "modificateur de longueur dans le format de strfmon"
 msgid "<command-line>"
 msgstr "<ligne-de-commande>"
 
-#: config/aarch64/aarch64.c:4926 config/arm/arm.c:21795 config/arm/arm.c:21808
-#: config/arm/arm.c:21833 config/nios2/nios2.c:2653
+#: config/aarch64/aarch64.c:4927 config/arm/arm.c:21832 config/arm/arm.c:21845
+#: config/arm/arm.c:21870 config/nios2/nios2.c:2653
 #, c-format
 msgid "Unsupported operand for code '%c'"
 msgstr "Opérande non supporté pour le code « %c »"
 
-#: config/aarch64/aarch64.c:4938 config/aarch64/aarch64.c:4954
-#: config/aarch64/aarch64.c:4967 config/aarch64/aarch64.c:4979
-#: config/aarch64/aarch64.c:4990 config/aarch64/aarch64.c:5013
-#: config/aarch64/aarch64.c:5066 config/aarch64/aarch64.c:5269
+#: config/aarch64/aarch64.c:4939 config/aarch64/aarch64.c:4955
+#: config/aarch64/aarch64.c:4968 config/aarch64/aarch64.c:4980
+#: config/aarch64/aarch64.c:4991 config/aarch64/aarch64.c:5014
+#: config/aarch64/aarch64.c:5067 config/aarch64/aarch64.c:5270
 #, c-format
 msgid "invalid operand for '%%%c'"
 msgstr "opérande invalide pour « %%%c »"
 
-#: config/aarch64/aarch64.c:5033 config/aarch64/aarch64.c:5046
-#: config/aarch64/aarch64.c:5056
+#: config/aarch64/aarch64.c:5034 config/aarch64/aarch64.c:5047
+#: config/aarch64/aarch64.c:5057
 #, c-format
 msgid "incompatible floating point / vector register operand for '%%%c'"
 msgstr "opérande en virgule flottante ou registre vecteur incompatible pour « %%%c »"
 
-#: config/aarch64/aarch64.c:5102 config/arm/arm.c:22340
+#: config/aarch64/aarch64.c:5103 config/arm/arm.c:22377
 #, c-format
 msgid "missing operand"
 msgstr "opérande manquant"
 
-#: config/aarch64/aarch64.c:5164
+#: config/aarch64/aarch64.c:5165
 #, c-format
 msgid "invalid constant"
 msgstr "constante invalide"
 
-#: config/aarch64/aarch64.c:5167
+#: config/aarch64/aarch64.c:5168
 #, c-format
 msgid "invalid operand"
 msgstr "opérande invalide"
 
-#: config/aarch64/aarch64.c:5280
+#: config/aarch64/aarch64.c:5281
 #, c-format
 msgid "invalid operand prefix '%%%c'"
 msgstr "préfixe d'opérande invalide « %%%c »"
@@ -3116,29 +3116,29 @@ msgstr "opérande invalide pour le code de sortie"
 msgid "invalid UNSPEC as operand: %d"
 msgstr "UNSPEC invalide comme opérande : %d"
 
-#: config/arm/arm.c:18804 config/arm/arm.c:18829 config/arm/arm.c:18839
-#: config/arm/arm.c:18848 config/arm/arm.c:18857
+#: config/arm/arm.c:18841 config/arm/arm.c:18866 config/arm/arm.c:18876
+#: config/arm/arm.c:18885 config/arm/arm.c:18894
 #, c-format
 msgid "invalid shift operand"
 msgstr "opérande shift invalide"
 
-#: config/arm/arm.c:21671 config/arm/arm.c:21689
+#: config/arm/arm.c:21708 config/arm/arm.c:21726
 #, c-format
 msgid "predicated Thumb instruction"
 msgstr "instruction Thumb établie"
 
-#: config/arm/arm.c:21677
+#: config/arm/arm.c:21714
 #, c-format
 msgid "predicated instruction in conditional sequence"
 msgstr "instruction établie dans la séquence conditionnelle"
 
-#: config/arm/arm.c:21910 config/arm/arm.c:21932 config/arm/arm.c:21942
-#: config/arm/arm.c:21952 config/arm/arm.c:21962 config/arm/arm.c:22001
-#: config/arm/arm.c:22019 config/arm/arm.c:22044 config/arm/arm.c:22059
-#: config/arm/arm.c:22086 config/arm/arm.c:22093 config/arm/arm.c:22111
-#: config/arm/arm.c:22118 config/arm/arm.c:22126 config/arm/arm.c:22147
-#: config/arm/arm.c:22154 config/arm/arm.c:22287 config/arm/arm.c:22294
-#: config/arm/arm.c:22321 config/arm/arm.c:22328 config/bfin/bfin.c:1437
+#: config/arm/arm.c:21947 config/arm/arm.c:21969 config/arm/arm.c:21979
+#: config/arm/arm.c:21989 config/arm/arm.c:21999 config/arm/arm.c:22038
+#: config/arm/arm.c:22056 config/arm/arm.c:22081 config/arm/arm.c:22096
+#: config/arm/arm.c:22123 config/arm/arm.c:22130 config/arm/arm.c:22148
+#: config/arm/arm.c:22155 config/arm/arm.c:22163 config/arm/arm.c:22184
+#: config/arm/arm.c:22191 config/arm/arm.c:22324 config/arm/arm.c:22331
+#: config/arm/arm.c:22358 config/arm/arm.c:22365 config/bfin/bfin.c:1437
 #: config/bfin/bfin.c:1444 config/bfin/bfin.c:1451 config/bfin/bfin.c:1458
 #: config/bfin/bfin.c:1467 config/bfin/bfin.c:1474 config/bfin/bfin.c:1481
 #: config/bfin/bfin.c:1488
@@ -3146,13 +3146,13 @@ msgstr "instruction établie dans la séquence conditionnelle"
 msgid "invalid operand for code '%c'"
 msgstr "opérande invalide pour « %c »"
 
-#: config/arm/arm.c:22014
+#: config/arm/arm.c:22051
 #, c-format
 msgid "instruction never executed"
 msgstr "instruction jamais exécutée"
 
 #. Former Maverick support, removed after GCC-4.7.
-#: config/arm/arm.c:22035
+#: config/arm/arm.c:22072
 #, c-format
 msgid "obsolete Maverick format code '%c'"
 msgstr "code de format Maverick « %c » obsolète"
@@ -3960,98 +3960,98 @@ msgstr "emit_fusion_p9_store, mauvais reg #2"
 msgid "emit_fusion_p9_store not MEM"
 msgstr "emit_fusion_p9_store pas MEM"
 
-#: config/s390/s390.c:7314
+#: config/s390/s390.c:7482
 #, c-format
 msgid "symbolic memory references are only supported on z10 or later"
 msgstr "les références mémoire symboliques sont uniquement supportées sur z10 ou ultérieur"
 
-#: config/s390/s390.c:7325
+#: config/s390/s390.c:7493
 #, c-format
 msgid "cannot decompose address"
 msgstr "adresse indécomposable"
 
-#: config/s390/s390.c:7394
+#: config/s390/s390.c:7562
 #, c-format
 msgid "invalid comparison operator for 'E' output modifier"
 msgstr "opérateur de comparaison invalide pour le modificateur de sortie « E »"
 
-#: config/s390/s390.c:7417
+#: config/s390/s390.c:7585
 #, c-format
 msgid "invalid reference for 'J' output modifier"
 msgstr "référence invalide pour le modificateur de sortie « J »"
 
-#: config/s390/s390.c:7435
+#: config/s390/s390.c:7603
 #, c-format
 msgid "invalid address for 'O' output modifier"
 msgstr "adresse invalide pour le modificateur de sortie « O »"
 
-#: config/s390/s390.c:7457
+#: config/s390/s390.c:7625
 #, c-format
 msgid "invalid address for 'R' output modifier"
 msgstr "adresse invalide pour le modificateur de sortie « R »"
 
-#: config/s390/s390.c:7475
+#: config/s390/s390.c:7643
 #, c-format
 msgid "memory reference expected for 'S' output modifier"
 msgstr "référence mémoire attendue pour le modificateur de sortie « S »"
 
-#: config/s390/s390.c:7485
+#: config/s390/s390.c:7653
 #, c-format
 msgid "invalid address for 'S' output modifier"
 msgstr "adresse invalide pour le modificateur de sortie « S »"
 
-#: config/s390/s390.c:7506
+#: config/s390/s390.c:7674
 #, c-format
 msgid "register or memory expression expected for 'N' output modifier"
 msgstr "registre ou expression mémoire attendue pour le modificateur de sortie « N »"
 
-#: config/s390/s390.c:7517
+#: config/s390/s390.c:7685
 #, c-format
 msgid "register or memory expression expected for 'M' output modifier"
 msgstr "registre ou expression mémoire attendue pour le modificateur de sortie « M »"
 
-#: config/s390/s390.c:7603 config/s390/s390.c:7624
+#: config/s390/s390.c:7771 config/s390/s390.c:7792
 #, c-format
 msgid "invalid constant for output modifier '%c'"
 msgstr "constante invalide pour le modificateur de sortie « %c »"
 
-#: config/s390/s390.c:7621
+#: config/s390/s390.c:7789
 #, c-format
 msgid "invalid constant - try using an output modifier"
 msgstr "constante invalide - essayez un modificateur de sortie"
 
-#: config/s390/s390.c:7658
+#: config/s390/s390.c:7826
 #, c-format
 msgid "invalid constant vector for output modifier '%c'"
 msgstr "vecteur constant invalide pour le modificateur de sortie « %c »"
 
-#: config/s390/s390.c:7665
+#: config/s390/s390.c:7833
 #, c-format
 msgid "invalid expression - try using an output modifier"
 msgstr "expression invalide - essayez un modificateur de sortie"
 
-#: config/s390/s390.c:7668
+#: config/s390/s390.c:7836
 #, c-format
 msgid "invalid expression for output modifier '%c'"
 msgstr "expression invalide pour le modificateur de sortie « %c »"
 
-#: config/s390/s390.c:11535
+#: config/s390/s390.c:11703
 msgid "vector argument passed to unprototyped function"
 msgstr "vecteur passé en argument à une fonction sans prototype"
 
-#: config/s390/s390.c:15354
+#: config/s390/s390.c:15522
 msgid "types differ in signedness"
 msgstr "les types diffèrent sur le type signé/non-signé"
 
-#: config/s390/s390.c:15364
+#: config/s390/s390.c:15532
 msgid "binary operator does not support two vector bool operands"
 msgstr "l'opérateur binaire ne supporte pas deux opérandes booléens vectoriels"
 
-#: config/s390/s390.c:15367
+#: config/s390/s390.c:15535
 msgid "binary operator does not support vector bool operand"
 msgstr "l'opérateur binaire ne supporte pas l'opérande booléen vectoriel"
 
-#: config/s390/s390.c:15375
+#: config/s390/s390.c:15543
 msgid "binary operator does not support mixing vector bool with floating point vector operands"
 msgstr "l'opérateur binaire ne supporte pas le mélange d'un booléen vectoriel avec un vecteur en virgule flottante"
 
@@ -17412,7 +17412,7 @@ msgstr "suppose qu'un débordement signé n'a pas lieu lorsque la constante dans
 msgid "assuming signed overflow does not occur when combining constants around a comparison"
 msgstr "suppose qu'un débordement signé n'a pas lieu lorsque des constantes sont combinées autour d'une comparaison"
 
-#: fold-const.c:12046
+#: fold-const.c:12048
 #, gcc-internal-format
 msgid "fold check: original tree changed by fold"
 msgstr "vérification fold: arbre originale modifié par fold"
@@ -17950,8 +17950,8 @@ msgstr "déréférencement d'un pointeur potentiellement null"
 msgid "null pointer dereference"
 msgstr "déréférencement d'un pointeur null"
 
-#: gimple-ssa-isolate-paths.c:413 gimple-ssa-isolate-paths.c:531 tree.c:12872
-#: tree.c:12909 c/c-typeck.c:2906 c/c-typeck.c:2990 c/c-typeck.c:9913
+#: gimple-ssa-isolate-paths.c:413 gimple-ssa-isolate-paths.c:531 tree.c:12880
+#: tree.c:12917 c/c-typeck.c:2906 c/c-typeck.c:2990 c/c-typeck.c:9913
 #: c/c-typeck.c:9930 c/gimple-parser.c:1556 c/gimple-parser.c:1564
 #: cp/call.c:6454 cp/call.c:7933 cp/constexpr.c:777 cp/constexpr.c:2174
 #: cp/cvt.c:992 cp/cvt.c:1019 cp/decl.c:7224 cp/decl2.c:5072 cp/pt.c:7993
@@ -17965,297 +17965,297 @@ msgstr "déclaré ici"
 msgid "nonnull argument %qD compared to NULL"
 msgstr "argument non null %qD comparé à NULL"
 
-#: gimple-ssa-sprintf.c:2307 gimple-ssa-sprintf.c:2435
+#: gimple-ssa-sprintf.c:2308 gimple-ssa-sprintf.c:2436
 #, gcc-internal-format
 msgid "%qE output may be truncated before the last format character"
 msgstr "la sortie de %qE peut être tronquée avant le dernier caractère de format"
 
-#: gimple-ssa-sprintf.c:2309 gimple-ssa-sprintf.c:2437
+#: gimple-ssa-sprintf.c:2310 gimple-ssa-sprintf.c:2438
 #, gcc-internal-format
 msgid "%qE output truncated before the last format character"
 msgstr "la sortie de %qE peut être tronquée avant le dernier caractère de format"
 
-#: gimple-ssa-sprintf.c:2311 gimple-ssa-sprintf.c:2439
+#: gimple-ssa-sprintf.c:2312 gimple-ssa-sprintf.c:2440
 #, gcc-internal-format
 msgid "%qE may write a terminating nul past the end of the destination"
 msgstr "%qE peut écrire un zéro terminal au delà de la fin de la destination"
 
-#: gimple-ssa-sprintf.c:2313 gimple-ssa-sprintf.c:2441
+#: gimple-ssa-sprintf.c:2314 gimple-ssa-sprintf.c:2442
 #, gcc-internal-format
 msgid "%qE writing a terminating nul past the end of the destination"
 msgstr "%qE écrit un zéro terminal au delà de la fin de la destination"
 
-#: gimple-ssa-sprintf.c:2326
+#: gimple-ssa-sprintf.c:2327
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu byte into a region of size %wu"
 msgstr "la sortie de la directive %<%.*s%> peut être tronquée en écrivant %wu octet dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2328
+#: gimple-ssa-sprintf.c:2329
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu byte into a region of size %wu"
 msgstr "la sortie de la directive %<%.*s%> a été tronquée en écrivant %wu octet dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2330
+#: gimple-ssa-sprintf.c:2331
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu byte into a region of size %wu"
 msgstr "la directive %<%.*s%> écrit %wu octet dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2334
+#: gimple-ssa-sprintf.c:2335
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu bytes into a region of size %wu"
 msgstr "la sortie de la directive %<%.*s%> peut être tronquée en écrivant %wu octets dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2336
+#: gimple-ssa-sprintf.c:2337
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu bytes into a region of size %wu"
 msgstr "la sortie de la directive %<%.*s%> a été tronquée en écrivant %wu octets dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2338
+#: gimple-ssa-sprintf.c:2339
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu bytes into a region of size %wu"
 msgstr "la directive %<%.*s%> écrit %wu octets dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2351
+#: gimple-ssa-sprintf.c:2352
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing up to %wu bytes into a region of size %wu"
 msgstr "la sortie de la directive %<%.*s%> peut être tronquée en écrivant jusqu'à %wu octets dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2353
+#: gimple-ssa-sprintf.c:2354
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing up to %wu bytes into a region of size %wu"
 msgstr "la sortie de la directive %<%.*s%> a été tronquée en écrivant jusqu'à %wu octets dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2355
+#: gimple-ssa-sprintf.c:2356
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing up to %wu bytes into a region of size %wu"
 msgstr "la directive %<%.*s%> écrit jusqu'à %wu octets dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2371
+#: gimple-ssa-sprintf.c:2372
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing likely %wu or more bytes into a region of size %wu"
 msgstr "la sortie de la directive %<%.*s%> peut être tronquée en écrivant probablement %wu octets ou plus dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2373
+#: gimple-ssa-sprintf.c:2374
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing likely %wu or more bytes into a region of size %wu"
 msgstr "la sortie de la directive %<%.*s%> a été tronquée en écrivant probablement %wu octets ou plus dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2375
+#: gimple-ssa-sprintf.c:2376
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing likely %wu or more bytes into a region of size %wu"
 msgstr "la directive %<%.*s%> écrit probablement %wu octets ou plus dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2388
+#: gimple-ssa-sprintf.c:2389
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing between %wu and %wu bytes into a region of size %wu"
 msgstr "la sortie de la directive %<%.*s%> peut être tronquée en écrivant entre %wu et %wu octets dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2390
+#: gimple-ssa-sprintf.c:2391
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing between %wu and %wu bytes into a region of size %wu"
 msgstr "la sortie de la directive %<%.*s%> a été tronquée en écrivant entre %wu et %wu octets dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2392
+#: gimple-ssa-sprintf.c:2393
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing between %wu and %wu bytes into a region of size %wu"
 msgstr "la directive %<%.*s%> écrit entre %wu et %wu octets dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2404
+#: gimple-ssa-sprintf.c:2405
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu or more bytes into a region of size %wu"
 msgstr "la sortie de la directive %<%.*s%> peut être tronquée en écrivant %wu octets ou plus dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2406
+#: gimple-ssa-sprintf.c:2407
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu or more bytes into a region of size %wu"
 msgstr "la sortie de la directive %<%.*s%> a été tronquée en écrivant %wu ou plus d'octets dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2408
+#: gimple-ssa-sprintf.c:2409
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu or more bytes into a region of size %wu"
 msgstr "la directive %<%.*s%> écrit %wu ou plus d'octets dans une région dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2454
+#: gimple-ssa-sprintf.c:2455
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu byte into a region of size between %wu and %wu"
 msgstr "la sortie de la directive %<%.*s%> peut être tronquée en écrivant %wu octet dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2456
+#: gimple-ssa-sprintf.c:2457
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu byte into a region of size between %wu and %wu"
 msgstr "la sortie de la directive %<%.*s%> a été tronquée en écrivant %wu octet dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2458
+#: gimple-ssa-sprintf.c:2459
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu byte into a region of size between %wu and %wu"
 msgstr "la directive %<%.*s%> écrit %wu octet dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2462
+#: gimple-ssa-sprintf.c:2463
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu bytes into a region of size between %wu and %wu"
 msgstr "la sortie de la directive %<%.*s%> peut être tronquée en écrivant %wu octets dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2464
+#: gimple-ssa-sprintf.c:2465
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu bytes into a region of size between %wu and %wu"
 msgstr "la sortie de la directive %<%.*s%> a été tronquée en écrivant %wu octets dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2466
+#: gimple-ssa-sprintf.c:2467
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu bytes into a region of size between %wu and %wu"
 msgstr "la directive %<%.*s%> écrit %wu octets dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2480
+#: gimple-ssa-sprintf.c:2481
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing up to %wu bytes into a region of size between %wu and %wu"
 msgstr "la sortie de la directive %<%.*s%> peut être tronquée en écrivant jusqu'à %wu octets dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2483
+#: gimple-ssa-sprintf.c:2484
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing up to %wu bytes into a region of size between %wu and %wu"
 msgstr "la sortie de la directive %<%.*s%> a été tronquée en écrivant jusqu'à %wu octets dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2486
+#: gimple-ssa-sprintf.c:2487
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing up to %wu bytes into a region of size between %wu and %wu"
 msgstr "la directive %<%.*s%> écrit jusqu'à %wu octets dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2502
+#: gimple-ssa-sprintf.c:2503
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing likely %wu or more bytes into a region of size between %wu and %wu"
 msgstr "la sortie de la directive %<%.*s%> peut être tronquée en écrivant probablement %wu octets ou plus dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2505
+#: gimple-ssa-sprintf.c:2506
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing likely %wu or more bytes into a region of size between %wu and %wu"
 msgstr "la sortie de la directive %<%.*s%> a été tronquée en écrivant probablement %wu octets ou plus dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2508
+#: gimple-ssa-sprintf.c:2509
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing likely %wu or more bytes into a region of size between %wu and %wu"
 msgstr "la directive %<%.*s%> écrit probablement %wu octets ou plus dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2521
+#: gimple-ssa-sprintf.c:2522
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing between %wu and %wu bytes into a region of size between %wu and %wu"
 msgstr "la sortie de la directive %<%.*s%> peut être tronquée en écrivant entre %wu et %wu octets dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2524
+#: gimple-ssa-sprintf.c:2525
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing between %wu and %wu bytes into a region of size between %wu and %wu"
 msgstr "la sortie de la directive %<%.*s%> a été tronquée en écrivant entre %wu et %wu octets dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2527
+#: gimple-ssa-sprintf.c:2528
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing between %wu and %wu bytes into a region of size between %wu and %wu"
 msgstr "la directive %<%.*s%> écrit entre %wu et %wu octets dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2539
+#: gimple-ssa-sprintf.c:2540
 #, gcc-internal-format
 msgid "%<%.*s%> directive output may be truncated writing %wu or more bytes into a region of size between %wu and %wu"
 msgstr "la sortie de la directive %<%.*s%> peut être tronquée en écrivant %wu octets ou plus dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2542
+#: gimple-ssa-sprintf.c:2543
 #, gcc-internal-format
 msgid "%<%.*s%> directive output truncated writing %wu or more bytes into a region of size between %wu and %wu"
 msgstr "la sortie de la directive %<%.*s%> a été tronquée en écrivant %wu octets ou plus dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2545
+#: gimple-ssa-sprintf.c:2546
 #, gcc-internal-format
 msgid "%<%.*s%> directive writing %wu or more bytes into a region of size between %wu and %wu"
 msgstr "la directive %<%.*s%> écrit %wu octets ou plus dans une région dont la taille est comprise entre %wu et %wu"
 
-#: gimple-ssa-sprintf.c:2710
+#: gimple-ssa-sprintf.c:2711
 #, gcc-internal-format
 msgid "%<%.*s%> directive output between %wu and %wu bytes may exceed minimum required size of 4095"
 msgstr "la sortie de la directive %<%.*s%> qui contient entre %wu et %wu octets peut dépasser la taille minimum requise de 4095"
 
-#: gimple-ssa-sprintf.c:2712
+#: gimple-ssa-sprintf.c:2713
 #, gcc-internal-format
 msgid "%<%.*s%> directive output between %wu and %wu bytes exceeds minimum required size of 4095"
 msgstr "la sortie de la directive %<%.*s%> qui contient entre %wu et %wu octets dépasse la taille minimum requise de 4095"
 
-#: gimple-ssa-sprintf.c:2751
+#: gimple-ssa-sprintf.c:2752
 #, gcc-internal-format
 msgid "%<%.*s%> directive output between %wu and %wu bytes causes result to exceed %<INT_MAX%>"
 msgstr "la sortie de la directive %<%.*s%> qui contient entre %wu et %wu octets fait déborder le résultat au delà de %<INT_MAX%>"
 
-#: gimple-ssa-sprintf.c:2753
+#: gimple-ssa-sprintf.c:2754
 #, gcc-internal-format
 msgid "%<%.*s%> directive output between %wu and %wu bytes may cause result to exceed %<INT_MAX%>"
 msgstr "la sortie de la directive %<%.*s%> qui contient entre %wu et %wu octets peut faire déborder le résultat au delà de %<INT_MAX%>"
 
-#: gimple-ssa-sprintf.c:2767
+#: gimple-ssa-sprintf.c:2768
 #, gcc-internal-format
 msgid "assuming directive output of %wu byte"
 msgstr "on suppose que la sortie de la directive occupe %wu octet"
 
-#: gimple-ssa-sprintf.c:2768
+#: gimple-ssa-sprintf.c:2769
 #, gcc-internal-format
 msgid "assuming directive output of %wu bytes"
 msgstr "on suppose que la sortie de la directive occupe %wu octets"
 
-#: gimple-ssa-sprintf.c:2775
+#: gimple-ssa-sprintf.c:2776
 #, gcc-internal-format
 msgid "directive argument %qE"
 msgstr "argument de directive %qE"
 
-#: gimple-ssa-sprintf.c:2777
+#: gimple-ssa-sprintf.c:2778
 #, gcc-internal-format
 msgid "directive argument in the range [%E, %E]"
 msgstr "argument de directive dans la plage [%E, %E]"
 
-#: gimple-ssa-sprintf.c:2781
+#: gimple-ssa-sprintf.c:2782
 #, gcc-internal-format
 msgid "using the range [%E, %E] for directive argument"
 msgstr "utilise la plage [%E, %E] pour l'argument de la directive"
 
-#: gimple-ssa-sprintf.c:2801
+#: gimple-ssa-sprintf.c:2802
 #, gcc-internal-format
 msgid "%qE output %wu byte into a destination of size %wu"
 msgstr "%qE écrit %wu octet dans une destination dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2802
+#: gimple-ssa-sprintf.c:2803
 #, gcc-internal-format
 msgid "%qE output %wu bytes into a destination of size %wu"
 msgstr "%qE écrit %wu octets dans une destination dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2806
+#: gimple-ssa-sprintf.c:2807
 #, gcc-internal-format
 msgid "%qE output between %wu and %wu bytes into a destination of size %wu"
 msgstr "%qE écrit entre %wu et %wu octets dans une destination dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2811
+#: gimple-ssa-sprintf.c:2812
 #, gcc-internal-format
 msgid "%qE output %wu or more bytes (assuming %wu) into a destination of size %wu"
 msgstr "%qE écrit %wu octets ou plus (%wu supposé) dans une destination dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:2816
+#: gimple-ssa-sprintf.c:2817
 #, gcc-internal-format
 msgid "%qE output %wu or more bytes into a destination of size %wu"
 msgstr "%qE écrit %wu octets ou plus dans une destination dont la taille est %wu"
 
-#: gimple-ssa-sprintf.c:3588
+#: gimple-ssa-sprintf.c:3591
 #, gcc-internal-format
 msgid "specified bound %wu exceeds maximum object size %wu"
 msgstr "la limite spécifiée %wu excède la taille maximale de l'objet (%wu)"
 
-#: gimple-ssa-sprintf.c:3594
+#: gimple-ssa-sprintf.c:3597
 #, gcc-internal-format
 msgid "specified bound %wu exceeds %<INT_MAX %>"
 msgstr "la limite spécifiée %wu excède %<INT_MAX%>"
 
-#: gimple-ssa-sprintf.c:3647
+#: gimple-ssa-sprintf.c:3650
 #, gcc-internal-format
 msgid "null destination pointer"
 msgstr "pointeur de destination null"
 
-#: gimple-ssa-sprintf.c:3664
+#: gimple-ssa-sprintf.c:3667
 #, gcc-internal-format
 msgid "specified bound %wu exceeds the size %wu of the destination object"
 msgstr "la limite spécifiée %wu dépasse la taille %wu de l'objet de destination"
 
-#: gimple-ssa-sprintf.c:3676
+#: gimple-ssa-sprintf.c:3679
 #, gcc-internal-format
 msgid "null format string"
 msgstr "chaîne de format nulle"
@@ -20433,157 +20433,157 @@ msgstr "la chaîne de format est définie ici"
 msgid "%D renamed after being referenced in assembly"
 msgstr "%D renommé après avoir été référencé dans l'assembleur"
 
-#: symtab.c:970
+#: symtab.c:978
 #, gcc-internal-format
 msgid "function symbol is not function"
 msgstr "le symbole de la fonction n'est pas une fonction"
 
-#: symtab.c:978
+#: symtab.c:986
 #, gcc-internal-format
 msgid "variable symbol is not variable"
 msgstr "le symbole de la variable n'est pas une variable"
 
-#: symtab.c:984
+#: symtab.c:992
 #, gcc-internal-format
 msgid "node has unknown type"
 msgstr "le nœud a un type inconnu"
 
-#: symtab.c:993
+#: symtab.c:1001
 #, gcc-internal-format
 msgid "node not found node->decl->decl_with_vis.symtab_node"
 msgstr "nœud pas trouvé node->decl->decl_with_vis.symtab_node"
 
-#: symtab.c:1001
+#: symtab.c:1009
 #, gcc-internal-format
 msgid "node differs from node->decl->decl_with_vis.symtab_node"
 msgstr "le nœud diffère de node->decl->decl_with_vis.symtab_node"
 
-#: symtab.c:1010
+#: symtab.c:1018
 #, gcc-internal-format
 msgid "assembler name hash list corrupted"
 msgstr "la liste de hachage des noms assembleur est corrompue"
 
-#: symtab.c:1023
+#: symtab.c:1031
 #, gcc-internal-format
 msgid "node not found in symtab assembler name hash"
 msgstr "le nœud n'a pas été trouvé dans le hachage des noms assembleur symtab"
 
-#: symtab.c:1030
+#: symtab.c:1038
 #, gcc-internal-format
 msgid "double linked list of assembler names corrupted"
 msgstr "la liste doublement liée des noms assembleur est corrompue"
 
-#: symtab.c:1035
+#: symtab.c:1043
 #, gcc-internal-format
 msgid "node has body_removed but is definition"
 msgstr "le nœud a body_removed mais il est une définition"
 
-#: symtab.c:1040
+#: symtab.c:1048
 #, gcc-internal-format
 msgid "node is analyzed but it is not a definition"
 msgstr "le nœud est analysé mais il n'est pas une définition"
 
-#: symtab.c:1045
+#: symtab.c:1053
 #, gcc-internal-format
 msgid "node is alias but not implicit alias"
 msgstr "le nœud est un alias mais pas un alias implicite"
 
-#: symtab.c:1050
+#: symtab.c:1058
 #, gcc-internal-format
 msgid "node is alias but not definition"
 msgstr "le nœud est un alias mais pas une définition"
 
-#: symtab.c:1055
+#: symtab.c:1063
 #, gcc-internal-format
 msgid "node is weakref but not an transparent_alias"
 msgstr "le nœud est une référence faible (weakref) mais pas un transparent_alias"
 
-#: symtab.c:1060
+#: symtab.c:1068
 #, gcc-internal-format
 msgid "node is transparent_alias but not an alias"
 msgstr "le nœud est un transparent_alias mais pas un alias"
 
-#: symtab.c:1069
+#: symtab.c:1077
 #, gcc-internal-format
 msgid "node is in same_comdat_group list but has no comdat_group"
 msgstr "le nœud est dans la liste same_comdat_group mais il n'a aucun comdat_group"
 
-#: symtab.c:1074
+#: symtab.c:1082
 #, gcc-internal-format
 msgid "same_comdat_group list across different groups"
 msgstr "liste same_comdat_group au travers de groupes différents"
 
-#: symtab.c:1079
+#: symtab.c:1087
 #, gcc-internal-format
 msgid "mixing different types of symbol in same comdat groups is not supported"
 msgstr "le mélange de types de symboles différents dans les mêmes groupes comdat n'est pas supporté"
 
-#: symtab.c:1084
+#: symtab.c:1092
 #, gcc-internal-format
 msgid "node is alone in a comdat group"
 msgstr "le nœud est seul dans un groupe comdat"
 
-#: symtab.c:1091
+#: symtab.c:1099
 #, gcc-internal-format
 msgid "same_comdat_group is not a circular list"
 msgstr "same_comdat_group n'est pas une liste circulaire"
 
-#: symtab.c:1106
+#: symtab.c:1114
 #, gcc-internal-format, gfc-internal-format
 msgid "comdat-local symbol referred to by %s outside its comdat"
 msgstr "un symbole comdat local est référencé par %s hors de son comdat"
 
-#: symtab.c:1116
+#: symtab.c:1124
 #, gcc-internal-format
 msgid "implicit_section flag is set but section isn't"
 msgstr "le fanion implicit_section est défini mais la section ne l'est pas"
 
-#: symtab.c:1123
+#: symtab.c:1131
 #, gcc-internal-format
 msgid "Both section and comdat group is set"
 msgstr "La section et le groupe comdat sont tous les deux définis"
 
-#: symtab.c:1135
+#: symtab.c:1143
 #, gcc-internal-format
 msgid "Alias and target's section differs"
 msgstr "Les sections de l'alias et de la cible diffèrent"
 
-#: symtab.c:1142
+#: symtab.c:1150
 #, gcc-internal-format
 msgid "Alias and target's comdat groups differs"
 msgstr "Les groupes comdat de l'alias et de la cible diffèrent"
 
-#: symtab.c:1157
+#: symtab.c:1165
 #, gcc-internal-format
 msgid "Transparent alias and target's assembler names differs"
 msgstr "Les noms assembleurs de l'alias transparent et de la cible diffèrent"
 
-#: symtab.c:1165
+#: symtab.c:1173
 #, gcc-internal-format
 msgid "Chained transparent aliases"
 msgstr "Alias transparents enchaînés"
 
-#: symtab.c:1188 symtab.c:1225
+#: symtab.c:1196 symtab.c:1233
 #, gcc-internal-format
 msgid "symtab_node::verify failed"
 msgstr "symtab_node::verify a échoué"
 
-#: symtab.c:1221
+#: symtab.c:1229
 #, gcc-internal-format
 msgid "Two symbols with same comdat_group are not linked by the same_comdat_group list."
 msgstr "Deux symboles avec le même comdat_group ne sont pas liés par la liste same_comdat_group."
 
-#: symtab.c:1630
+#: symtab.c:1638
 #, gcc-internal-format
 msgid "function %q+D part of alias cycle"
 msgstr "la fonction %q+D fait partie du cycle des alias"
 
-#: symtab.c:1632
+#: symtab.c:1640
 #, gcc-internal-format
 msgid "variable %q+D part of alias cycle"
 msgstr "la variable %q+D fait partie du cycle des alias"
 
-#: symtab.c:1660
+#: symtab.c:1668
 #, gcc-internal-format
 msgid "section of alias %q+D must match section of its target"
 msgstr "la section de l'alias %q+D doit correspondre à la section de sa cible"
@@ -22245,8 +22245,8 @@ msgstr "%q+D redéclaré sans l'attribut dllimport: le dllimport précédent est
 #: c-family/c-attribs.c:2898 c-family/c-attribs.c:2937
 #: c-family/c-attribs.c:3019 c-family/c-attribs.c:3062
 #: c-family/c-attribs.c:3078 c-family/c-attribs.c:3172
-#: c-family/c-common.c:5631 config/darwin.c:2062 config/arm/arm.c:6704
-#: config/arm/arm.c:6732 config/arm/arm.c:6749 config/avr/avr.c:9460
+#: c-family/c-common.c:5631 config/darwin.c:2062 config/arm/arm.c:6741
+#: config/arm/arm.c:6769 config/arm/arm.c:6786 config/avr/avr.c:9460
 #: config/h8300/h8300.c:5480 config/h8300/h8300.c:5504 config/i386/i386.c:7715
 #: config/i386/i386.c:41425 config/ia64/ia64.c:762
 #: config/rs6000/rs6000.c:35369 config/spu/spu.c:3741
@@ -22282,92 +22282,92 @@ msgstr "classe de liaison externe requise pour le symbole %q+D en raison de l'at
 msgid "%qE implies default visibility, but %qD has already been declared with a different visibility"
 msgstr "%qE implique la visibilité par défaut mais %qD a déjà été déclaré avec une visibilité différente"
 
-#: tree.c:8366
+#: tree.c:8373
 #, gcc-internal-format
 msgid "arrays of functions are not meaningful"
 msgstr "les tableaux de fonctions ne sont pas pertinents"
 
-#: tree.c:8537
+#: tree.c:8545
 #, gcc-internal-format
 msgid "function return type cannot be function"
 msgstr "le type retourné par une fonction ne peut être une fonction"
 
-#: tree.c:9831 tree.c:9916 tree.c:9977
+#: tree.c:9839 tree.c:9924 tree.c:9985
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: %s, have %s in %s, at %s:%d"
 msgstr "vérification de l'arbre: %s, obtenu %s dans %s, à %s:%d"
 
-#: tree.c:9868
+#: tree.c:9876
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: expected none of %s, have %s in %s, at %s:%d"
 msgstr "vérification de l'arbre: n'attendait aucun parmi %s, obtenu %s dans %s, à %s:%d"
 
-#: tree.c:9881
+#: tree.c:9889
 #, gcc-internal-format
 msgid "tree check: expected class %qs, have %qs (%s) in %s, at %s:%d"
 msgstr "vérification de l'arbre: attendait la classe %qs, obtenu %qs (%s) dans %s, à %s:%d"
 
-#: tree.c:9930
+#: tree.c:9938
 #, gcc-internal-format
 msgid "tree check: did not expect class %qs, have %qs (%s) in %s, at %s:%d"
 msgstr "vérification de l'arbre: on n'attendait pas la classe %qs, obtenu %qs (%s) dans %s, à %s:%d"
 
-#: tree.c:9943
+#: tree.c:9951
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: expected omp_clause %s, have %s in %s, at %s:%d"
 msgstr "vérification de l'arbre: attendait omp_clause %s, obtenu %s dans %s, à %s:%d"
 
-#: tree.c:10003
+#: tree.c:10011
 #, gcc-internal-format
 msgid "tree check: expected tree that contains %qs structure, have %qs in %s, at %s:%d"
 msgstr "vérification de l'arbre: attendait un arbre contenant la structure %qs, obtenu %qs dans %s, à %s:%d"
 
-#: tree.c:10017
+#: tree.c:10025
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed elt %d of tree_int_cst with %d elts in %s, at %s:%d"
 msgstr "vérification de l'arbre: accès à elt %d de tree_int_cst avec %d elts dans %s, à %s:%d"
 
-#: tree.c:10029
+#: tree.c:10037
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
 msgstr "vérification de l'arbre: accès à elt %d de tree_vec avec %d elts dans %s, à %s:%d"
 
-#: tree.c:10042
+#: tree.c:10050
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed operand %d of %s with %d operands in %s, at %s:%d"
 msgstr "vérification de l'arbre: opérande accédé %d de %s avec %d opérandes dans %s, à %s:%d"
 
-#: tree.c:10055
+#: tree.c:10063
 #, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed operand %d of omp_clause %s with %d operands in %s, at %s:%d"
 msgstr "vérification de l'arbre: opérande accédé %d de omp_clause %s avec %d opérandes dans %s, à %s:%d"
 
-#: tree.c:12867
+#: tree.c:12875
 #, gcc-internal-format
 msgid "%qD is deprecated: %s"
 msgstr "%qD est obsolète: %s"
 
-#: tree.c:12870
+#: tree.c:12878
 #, gcc-internal-format
 msgid "%qD is deprecated"
 msgstr "%qD est obsolète"
 
-#: tree.c:12894 tree.c:12916
+#: tree.c:12902 tree.c:12924
 #, gcc-internal-format
 msgid "%qE is deprecated: %s"
 msgstr "%qE est obsolète: %s"
 
-#: tree.c:12897 tree.c:12919
+#: tree.c:12905 tree.c:12927
 #, gcc-internal-format
 msgid "%qE is deprecated"
 msgstr "%qE est obsolète"
 
-#: tree.c:12903 tree.c:12924
+#: tree.c:12911 tree.c:12932
 #, gcc-internal-format, gfc-internal-format
 msgid "type is deprecated: %s"
 msgstr "le type est obsolète: %s"
 
-#: tree.c:12906 tree.c:12927
+#: tree.c:12914 tree.c:12935
 #, gcc-internal-format
 msgid "type is deprecated"
 msgstr "le type est obsolète"
@@ -22394,262 +22394,262 @@ msgstr "le type est obsolète"
 #. main variant only.
 #.
 #. Convenience macro for matching individual fields.
-#: tree.c:13354
+#: tree.c:13362
 #, gcc-internal-format
 msgid "type variant differs by "
 msgstr "la variante du type diffère sur "
 
-#: tree.c:13395
+#: tree.c:13403
 #, gcc-internal-format
 msgid "type variant has different TYPE_SIZE_UNIT"
 msgstr "la variante du type a un TYPE_SIZE_UNIT différent"
 
-#: tree.c:13397
+#: tree.c:13405
 #, gcc-internal-format
 msgid "type variant's TYPE_SIZE_UNIT"
 msgstr "TYPE_SIZE_UNIT de la variante du type"
 
-#: tree.c:13399
+#: tree.c:13407
 #, gcc-internal-format
 msgid "type's TYPE_SIZE_UNIT"
 msgstr "TYPE_SIZE_UNIT du type"
 
-#: tree.c:13419
+#: tree.c:13427
 #, gcc-internal-format
 msgid "type variant with TYPE_ALIAS_SET_KNOWN_P"
 msgstr "variante du type avec TYPE_ALIAS_SET_KNOWN_P"
 
-#: tree.c:13432
+#: tree.c:13440
 #, gcc-internal-format
 msgid "type variant has different TYPE_VFIELD"
 msgstr "la variante du type a un TYPE_VFIELD différent"
 
-#: tree.c:13449
+#: tree.c:13457
 #, gcc-internal-format
 msgid "type variant has TYPE_METHODS"
 msgstr "la variante du type a TYPE_METHODS"
 
-#: tree.c:13474
+#: tree.c:13482
 #, gcc-internal-format
 msgid "type variant has different TYPE_BINFO"
 msgstr "la variante du type a un TYPE_BINFO différent"
 
-#: tree.c:13476
+#: tree.c:13484
 #, gcc-internal-format
 msgid "type variant's TYPE_BINFO"
 msgstr "TYPE_BINFO de la variante du type"
 
-#: tree.c:13478
+#: tree.c:13486
 #, gcc-internal-format
 msgid "type's TYPE_BINFO"
 msgstr "TYPE_BINFO du type"
 
-#: tree.c:13516
+#: tree.c:13524
 #, gcc-internal-format
 msgid "type variant has different TYPE_FIELDS"
 msgstr "la variante du type a un TYPE_FIELDS différent"
 
-#: tree.c:13518
+#: tree.c:13526
 #, gcc-internal-format
 msgid "first mismatch is field"
 msgstr "le premier désaccord est le champ"
 
-#: tree.c:13520
+#: tree.c:13528
 #, gcc-internal-format
 msgid "and field"
 msgstr "et le champ"
 
-#: tree.c:13537
+#: tree.c:13545
 #, gcc-internal-format
 msgid "type variant has different TREE_TYPE"
 msgstr "la variante du type a un TREE_TYPE différent"
 
-#: tree.c:13539 tree.c:13550
+#: tree.c:13547 tree.c:13558
 #, gcc-internal-format
 msgid "type variant's TREE_TYPE"
 msgstr "TREE_TYPE de la variante du type"
 
-#: tree.c:13541 tree.c:13552
+#: tree.c:13549 tree.c:13560
 #, gcc-internal-format
 msgid "type's TREE_TYPE"
 msgstr "TREE_TYPE du type"
 
-#: tree.c:13548
+#: tree.c:13556
 #, gcc-internal-format
 msgid "type is not compatible with its variant"
 msgstr "le type n'est pas compatible avec sa variante"
 
-#: tree.c:13851
+#: tree.c:13859
 #, gcc-internal-format
 msgid "Main variant is not defined"
 msgstr "La variante principale n'est pas définie"
 
-#: tree.c:13856
+#: tree.c:13864
 #, gcc-internal-format
 msgid "TYPE_MAIN_VARIANT has different TYPE_MAIN_VARIANT"
 msgstr "TYPE_MAIN_VARIANT a un TYPE_MAIN_VARIANT différent"
 
-#: tree.c:13868
+#: tree.c:13876
 #, gcc-internal-format
 msgid "TYPE_CANONICAL has different TYPE_CANONICAL"
 msgstr "TYPE_CANONICAL a un TYPE_CANONICAL différent"
 
-#: tree.c:13886
+#: tree.c:13894
 #, gcc-internal-format
 msgid "TYPE_CANONICAL is not compatible"
 msgstr "TYPE_CANONICAL n'est pas compatible"
 
-#: tree.c:13894
+#: tree.c:13902
 #, gcc-internal-format
 msgid "TYPE_MODE of TYPE_CANONICAL is not compatible"
 msgstr "le TYPE_MODE de TYPE_CANONICAL n'est pas compatible"
 
-#: tree.c:13902
+#: tree.c:13910
 #, gcc-internal-format
 msgid "TYPE_CANONICAL of main variant is not main variant"
 msgstr "le TYPE_CANONICAL de la variante principale n'est pas la variante principale"
 
-#: tree.c:13918
+#: tree.c:13926
 #, gcc-internal-format
 msgid "TYPE_VFIELD is not FIELD_DECL nor TREE_LIST"
 msgstr "TYPE_VFIELD n'est pas FIELD_DECL ni TREE_LIST"
 
-#: tree.c:13928
+#: tree.c:13936
 #, gcc-internal-format
 msgid "TYPE_NEXT_PTR_TO is not POINTER_TYPE"
 msgstr "TYPE_NEXT_PTR_TO n'est pas POINTER_TYPE"
 
-#: tree.c:13938
+#: tree.c:13946
 #, gcc-internal-format
 msgid "TYPE_NEXT_REF_TO is not REFERENCE_TYPE"
 msgstr "TYPE_NEXT_REF_TO n'est pas REFERENCE_TYPE"
 
-#: tree.c:13956
+#: tree.c:13964
 #, gcc-internal-format
 msgid "TYPE_MINVAL non-NULL"
 msgstr "TYPE_MINVAL non nul"
 
-#: tree.c:13968
+#: tree.c:13976
 #, gcc-internal-format
 msgid "TYPE_METHODS is not FUNCTION_DECL, TEMPLATE_DECL nor error_mark_node"
 msgstr "TYPE_METHODS n'est pas FUNCTION_DECL, TEMPLATE_DECL ni error_mark_node"
 
-#: tree.c:13979
+#: tree.c:13987
 #, gcc-internal-format
 msgid "TYPE_METHOD_BASETYPE is not record nor union"
 msgstr "TYPE_METHOD_BASETYPE n'est pas un enregistrement ni une union"
 
-#: tree.c:13990
+#: tree.c:13998
 #, gcc-internal-format
 msgid "TYPE_OFFSET_BASETYPE is not record nor union"
 msgstr "TYPE_OFFSET_BASETYPE n'est pas un enregistrement ni une union"
 
-#: tree.c:14008
+#: tree.c:14016
 #, gcc-internal-format
 msgid "TYPE_ARRAY_MAX_SIZE not INTEGER_CST"
 msgstr "TYPE_ARRAY_MAX_SIZE pas INTEGER_CST"
 
-#: tree.c:14015
+#: tree.c:14023
 #, gcc-internal-format
 msgid "TYPE_MAXVAL non-NULL"
 msgstr "TYPE_MAXVAL non NULL"
 
-#: tree.c:14027
+#: tree.c:14035
 #, gcc-internal-format
 msgid "TYPE_BINFO is not TREE_BINFO"
 msgstr "TYPE_BINFO n'est pas TREE_BINFO"
 
-#: tree.c:14035
+#: tree.c:14043
 #, gcc-internal-format
 msgid "TYPE_BINFO type is not TYPE_MAIN_VARIANT"
 msgstr "le type TYPE_BINFO n'est pas TYPE_MAIN_VARIANT"
 
-#: tree.c:14042
+#: tree.c:14050
 #, gcc-internal-format
 msgid "TYPE_LANG_SLOT_1 (binfo) field is non-NULL"
 msgstr "le champ TYPE_LANG_SLOT_1 (binfo) est non NULL"
 
-#: tree.c:14058
+#: tree.c:14066
 #, gcc-internal-format
 msgid "Enum value is not CONST_DECL or INTEGER_CST"
 msgstr "La valeur de l'enum n'est pas CONST_DECL ou INTEGER_CST"
 
-#: tree.c:14066
+#: tree.c:14074
 #, gcc-internal-format
 msgid "Enum value type is not INTEGER_TYPE nor convertible to the enum"
 msgstr "Le type de la valeur de l'enum n'est pas INTEGER_TYPE et n'est pas convertible en l'enum"
 
-#: tree.c:14073
+#: tree.c:14081
 #, gcc-internal-format
 msgid "Enum value name is not IDENTIFIER_NODE"
 msgstr "Le nom de la valeur de l'enum n'est pas IDENTIFIER_NODE"
 
-#: tree.c:14083
+#: tree.c:14091
 #, gcc-internal-format
 msgid "Array TYPE_DOMAIN is not integer type"
 msgstr "le TYPE_DOMAIN du tableau n'est pas d'un type entier"
 
-#: tree.c:14092
+#: tree.c:14100
 #, gcc-internal-format
 msgid "TYPE_FIELDS defined in incomplete type"
 msgstr "TYPE_FIELDS défini dans un type incomplet"
 
-#: tree.c:14112
+#: tree.c:14120
 #, gcc-internal-format
 msgid "Wrong tree in TYPE_FIELDS list"
 msgstr "Arbre erroné dans la liste TYPE_FIELDS"
 
-#: tree.c:14127
+#: tree.c:14135
 #, gcc-internal-format
 msgid "TYPE_CACHED_VALUES_P is %i while TYPE_CACHED_VALUES is %p"
 msgstr "TYPE_CACHED_VALUES_P est %i tandis que TYPE_CACHED_VALUES est %p"
 
-#: tree.c:14133
+#: tree.c:14141
 #, gcc-internal-format
 msgid "TYPE_CACHED_VALUES is not TREE_VEC"
 msgstr "TYPE_CACHED_VALUES n'est pas TREE_VEC"
 
-#: tree.c:14146
+#: tree.c:14154
 #, gcc-internal-format
 msgid "wrong TYPE_CACHED_VALUES entry"
 msgstr "mauvaise entrée TYPE_CACHED_VALUES"
 
-#: tree.c:14159
+#: tree.c:14167
 #, gcc-internal-format
 msgid "TREE_PURPOSE is non-NULL in TYPE_ARG_TYPES list"
 msgstr "TREE_PURPOSE n'est pas NULL dans la liste TYPE_ARG_TYPES"
 
-#: tree.c:14165
+#: tree.c:14173
 #, gcc-internal-format
 msgid "Wrong entry in TYPE_ARG_TYPES list"
 msgstr "Entrée erronée dans la liste TYPE_ARG_TYPES"
 
-#: tree.c:14172
+#: tree.c:14180
 #, gcc-internal-format
 msgid "TYPE_VALUES_RAW field is non-NULL"
 msgstr "le champ TYPE_VALUES_RAW n'est pas NULL"
 
-#: tree.c:14184
+#: tree.c:14192
 #, gcc-internal-format
 msgid "TYPE_CACHED_VALUES_P is set while it should not"
 msgstr "TYPE_CACHED_VALUES_P est défini alors qu'il ne le devrait pas"
 
-#: tree.c:14190
+#: tree.c:14198
 #, gcc-internal-format
 msgid "TYPE_STRING_FLAG is set on wrong type code"
 msgstr "TYPE_STRING_FLAG est défini sur le mauvais code de type"
 
-#: tree.c:14202
+#: tree.c:14210
 #, gcc-internal-format
 msgid "TYPE_STRING_FLAG is set on type that does not look like char nor array of chars"
 msgstr "TYPE_STRING_FLAG est défini sur un type qui ne ressemble pas à un « char » ou un tableau de « char »"
 
-#: tree.c:14214
+#: tree.c:14222
 #, gcc-internal-format
 msgid "TYPE_METHOD_BASETYPE is not main variant"
 msgstr "TYPE_METHOD_BASETYPE n'est pas la variante principale"
 
-#: tree.c:14221
+#: tree.c:14229
 #, gcc-internal-format
 msgid "verify_type failed"
 msgstr "verify_type a échoué"
@@ -23650,13 +23650,13 @@ msgstr "l'attribut %<fallthrough%> est spécifié plusieurs fois"
 msgid "%<fallthrough%> attribute specified with a parameter"
 msgstr "l'attribut %<fallthrough%> est spécifié avec un paramètre"
 
-#: c-family/c-common.c:5762 c-family/c-common.c:6573 c-family/c-common.c:6644
+#: c-family/c-common.c:5762 c-family/c-common.c:6574 c-family/c-common.c:6645
 #: c/c-typeck.c:3557
 #, gcc-internal-format
 msgid "too few arguments to function %qE"
 msgstr "trop peu d'arguments pour la fonction %qE"
 
-#: c-family/c-common.c:5767 c-family/c-common.c:6670 c/c-typeck.c:3286
+#: c-family/c-common.c:5767 c-family/c-common.c:6671 c/c-typeck.c:3286
 #, gcc-internal-format
 msgid "too many arguments to function %qE"
 msgstr "trop d'arguments pour la fonction %qE"
@@ -23741,72 +23741,72 @@ msgstr "tentative de prendre l'adresse du membre %qD qui est un champ de bits d'
 msgid "index %E denotes an offset greater than size of %qT"
 msgstr "l'index %E désigne un offset plus grand que la taille de %qT"
 
-#: c-family/c-common.c:6515 cp/init.c:2952 cp/init.c:2971
+#: c-family/c-common.c:6516 cp/init.c:2952 cp/init.c:2971
 #, gcc-internal-format
 msgid "size of array is too large"
 msgstr "la taille du tableau est trop grande"
 
-#: c-family/c-common.c:6603
+#: c-family/c-common.c:6604
 #, gcc-internal-format
 msgid "operand type %qT is incompatible with argument %d of %qE"
 msgstr "le type %qT de l'opérande est incompatible avec l'argument %d de %qE"
 
-#: c-family/c-common.c:6737
+#: c-family/c-common.c:6738
 #, gcc-internal-format
 msgid "incorrect number of arguments to function %qE"
 msgstr "nombre d'arguments incorrect pour la fonction %qE"
 
-#: c-family/c-common.c:6752
+#: c-family/c-common.c:6753
 #, gcc-internal-format
 msgid "argument 1 of %qE must be a non-void pointer type"
 msgstr "l'argument 1 de %qE doit être un type pointeur non void"
 
-#: c-family/c-common.c:6761
+#: c-family/c-common.c:6762
 #, gcc-internal-format
 msgid "argument 1 of %qE must be a pointer to a constant size type"
 msgstr "l'argument 1 de %qE doit être un pointeur vers un type ayant une taille constante"
 
-#: c-family/c-common.c:6772
+#: c-family/c-common.c:6773
 #, gcc-internal-format
 msgid "argument 1 of %qE must be a pointer to a nonzero size object"
 msgstr "l'argument 1 de %qE doit être un pointeur vers un objet de taille non nulle"
 
-#: c-family/c-common.c:6787
+#: c-family/c-common.c:6788
 #, gcc-internal-format
 msgid "argument %d of %qE must be a pointer type"
 msgstr "l'argument %d de %qE doit être un type pointeur"
 
-#: c-family/c-common.c:6795
+#: c-family/c-common.c:6796
 #, gcc-internal-format
 msgid "argument %d of %qE must be a pointer to a constant size type"
 msgstr "l'argument %d de %qE doit être un pointeur vers un type ayant une taille constante"
 
-#: c-family/c-common.c:6801
+#: c-family/c-common.c:6802
 #, gcc-internal-format
 msgid "argument %d of %qE must not be a pointer to a function"
 msgstr "l'argument %d de %qE doit être un pointeur vers une fonction"
 
-#: c-family/c-common.c:6809
+#: c-family/c-common.c:6810
 #, gcc-internal-format
 msgid "size mismatch in argument %d of %qE"
 msgstr "désaccord de taille dans l'argument %d de %qE"
 
-#: c-family/c-common.c:6825
+#: c-family/c-common.c:6826
 #, gcc-internal-format
 msgid "invalid memory model argument %d of %qE"
 msgstr "modèle mémoire invalide pour l'argument %d de %qE"
 
-#: c-family/c-common.c:6832
+#: c-family/c-common.c:6833
 #, gcc-internal-format
 msgid "non-integer memory model argument %d of %qE"
 msgstr "modèle mémoire non entier pour l'argument %d de %qE"
 
-#: c-family/c-common.c:7753
+#: c-family/c-common.c:7754
 #, gcc-internal-format
 msgid "index value is out of bound"
 msgstr "la valeur de l'index est hors limites"
 
-#: c-family/c-common.c:7794 c-family/c-common.c:7842 c-family/c-common.c:7857
+#: c-family/c-common.c:7795 c-family/c-common.c:7843 c-family/c-common.c:7858
 #: cp/call.c:4836 cp/call.c:4843
 #, gcc-internal-format
 msgid "conversion of scalar %qT to vector %qT involves truncation"
@@ -23814,22 +23814,22 @@ msgstr "la conversion du scalaire %qT vers le vecteur %qT implique une troncatur
 
 #. Reject arguments that are built-in functions with
 #. no library fallback.
-#: c-family/c-common.c:7943
+#: c-family/c-common.c:7944
 #, gcc-internal-format
 msgid "built-in function %qE must be directly called"
 msgstr "la fonction interne %qE doit être appelée directement"
 
-#: c-family/c-common.c:7965 c/c-decl.c:6124
+#: c-family/c-common.c:7966 c/c-decl.c:6124
 #, gcc-internal-format
 msgid "size of array %qE is too large"
 msgstr "la taille du tableau %qE est trop grande"
 
-#: c-family/c-common.c:7967 c/c-decl.c:6127
+#: c-family/c-common.c:7968 c/c-decl.c:6127
 #, gcc-internal-format
 msgid "size of unnamed array is too large"
 msgstr "la taille du tableau sans nom est trop grande"
 
-#: c-family/c-common.c:7997
+#: c-family/c-common.c:7998
 #, gcc-internal-format
 msgid "environment variable SOURCE_DATE_EPOCH must expand to a non-negative integer less than or equal to %wd"
 msgstr "la variable d'environnement SOURCE_DATE_EPOCH doit fournir un entier non négatif plus petit que ou égal à %wd"
@@ -25590,7 +25590,7 @@ msgstr "%qs n'est pas une option valide pour le préprocesseur"
 msgid "too many input files"
 msgstr "trop de fichiers d'entrée"
 
-#: common/config/aarch64/aarch64-common.c:313 config/aarch64/aarch64.c:8751
+#: common/config/aarch64/aarch64-common.c:313 config/aarch64/aarch64.c:8759
 #, gcc-internal-format
 msgid "unknown value %qs for -mcpu"
 msgstr "valeur %qs inconnue pour -mcpu"
@@ -26048,179 +26048,179 @@ msgstr "%qs est incompatible avec %s %s"
 msgid "%qs feature modifier is incompatible with %s %s"
 msgstr "le modificateur de fonctionnalité %qs est incompatible avec %s %s"
 
-#: config/aarch64/aarch64.c:8374
+#: config/aarch64/aarch64.c:8382
 #, gcc-internal-format, gfc-internal-format
 msgid "unknown flag passed in -moverride=%s (%s)"
 msgstr "fanion inconnu passé à -moverride=%s (%s)"
 
-#: config/aarch64/aarch64.c:8418
+#: config/aarch64/aarch64.c:8426
 #, gcc-internal-format, gfc-internal-format
 msgid "%s string ill-formed\n"
 msgstr "chaîne %s mal formée\n"
 
-#: config/aarch64/aarch64.c:8475
+#: config/aarch64/aarch64.c:8483
 #, gcc-internal-format, gfc-internal-format
 msgid "tuning string missing in option (%s)"
 msgstr "chaîne d'ajustement manquante dans l'option (%s)"
 
-#: config/aarch64/aarch64.c:8493
+#: config/aarch64/aarch64.c:8501
 #, gcc-internal-format, gfc-internal-format
 msgid "unknown tuning option (%s)"
 msgstr "option d'ajustement inconnue (%s)"
 
-#: config/aarch64/aarch64.c:8707
+#: config/aarch64/aarch64.c:8715
 #, gcc-internal-format
 msgid "valid arguments are: %s; did you mean %qs?"
 msgstr "les arguments valides sont: %s; vouliez-vous utiliser %qs ?"
 
-#: config/aarch64/aarch64.c:8748
+#: config/aarch64/aarch64.c:8756
 #, gcc-internal-format
 msgid "missing cpu name in %<-mcpu=%s%>"
 msgstr "nom de processeur manquant dans %<-mcpu=%s%>"
 
-#: config/aarch64/aarch64.c:8755
+#: config/aarch64/aarch64.c:8763
 #, gcc-internal-format
 msgid "invalid feature modifier in %<-mcpu=%s%>"
 msgstr "modificateur de fonctionnalité invalide dans %<-mcpu=%s%>"
 
-#: config/aarch64/aarch64.c:8782
+#: config/aarch64/aarch64.c:8790
 #, gcc-internal-format
 msgid "missing arch name in %<-march=%s%>"
 msgstr "nom d'architecture manquant dans %<-march=%s%>"
 
-#: config/aarch64/aarch64.c:8785
+#: config/aarch64/aarch64.c:8793
 #, gcc-internal-format
 msgid "unknown value %qs for -march"
 msgstr "valeur %qs inconnue pour -march"
 
-#: config/aarch64/aarch64.c:8789
+#: config/aarch64/aarch64.c:8797
 #, gcc-internal-format
 msgid "invalid feature modifier in %<-march=%s%>"
 msgstr "modificateur de fonctionnalité invalide dans %<-march=%s%>"
 
-#: config/aarch64/aarch64.c:8815
+#: config/aarch64/aarch64.c:8823
 #, gcc-internal-format
 msgid "missing cpu name in %<-mtune=%s%>"
 msgstr "nom de processeur manquant dans %<-mtune=%s%>"
 
-#: config/aarch64/aarch64.c:8818
+#: config/aarch64/aarch64.c:8826
 #, gcc-internal-format
 msgid "unknown value %qs for -mtune"
 msgstr "valeur %qs inconnue pour -mtune"
 
-#: config/aarch64/aarch64.c:8921 config/arm/arm.c:3093
+#: config/aarch64/aarch64.c:8929 config/arm/arm.c:3094
 #, gcc-internal-format, gfc-internal-format
 msgid "switch -mcpu=%s conflicts with -march=%s switch"
 msgstr "l'option -mcpu=%s est en conflit avec l'option -march=%s"
 
-#: config/aarch64/aarch64.c:8956
+#: config/aarch64/aarch64.c:8964
 #, gcc-internal-format
 msgid "Assembler does not support -mabi=ilp32"
 msgstr "L'assembleur ne supporte pas -mabi=ilp32"
 
-#: config/aarch64/aarch64.c:8960
+#: config/aarch64/aarch64.c:8968
 #, gcc-internal-format
 msgid "Return address signing is only supported for -mabi=lp64"
 msgstr "La signature de l'adresse de retour n'est supportée qu'avec -mabi=lp64"
 
-#: config/aarch64/aarch64.c:9022
+#: config/aarch64/aarch64.c:9030
 #, gcc-internal-format
 msgid "code model %qs with -f%s"
 msgstr "modèle de code %qs avec -f%s"
 
-#: config/aarch64/aarch64.c:9187
+#: config/aarch64/aarch64.c:9195
 #, gcc-internal-format, gfc-internal-format
 msgid "missing architecture name in 'arch' target %s"
 msgstr "nom d'architecture manquant dans la cible « arch » %s"
 
-#: config/aarch64/aarch64.c:9190
+#: config/aarch64/aarch64.c:9198
 #, gcc-internal-format
 msgid "unknown value %qs for 'arch' target %s"
 msgstr "valeur %qs inconnue pour la cible « arch » %s"
 
-#: config/aarch64/aarch64.c:9194
+#: config/aarch64/aarch64.c:9202
 #, gcc-internal-format
 msgid "invalid feature modifier %qs for 'arch' target %s"
 msgstr "modificateur de fonctionnalité %qs invalide pour la cible « arch » %s"
 
-#: config/aarch64/aarch64.c:9228
+#: config/aarch64/aarch64.c:9236
 #, gcc-internal-format, gfc-internal-format
 msgid "missing cpu name in 'cpu' target %s"
 msgstr "nom de processeur manquant dans la cible « cpu » %s"
 
-#: config/aarch64/aarch64.c:9231
+#: config/aarch64/aarch64.c:9239
 #, gcc-internal-format
 msgid "unknown value %qs for 'cpu' target %s"
 msgstr "valeur %qs inconnue pour la cible « cpu » %s"
 
-#: config/aarch64/aarch64.c:9235
+#: config/aarch64/aarch64.c:9243
 #, gcc-internal-format
 msgid "invalid feature modifier %qs for 'cpu' target %s"
 msgstr "modificateur de fonctionnalité %qs invalide pour la cible « cpu » %s"
 
-#: config/aarch64/aarch64.c:9266
+#: config/aarch64/aarch64.c:9274
 #, gcc-internal-format
 msgid "unknown value %qs for 'tune' target %s"
 msgstr "valeur %qs inconnue pour la cible « tune » %s"
 
-#: config/aarch64/aarch64.c:9307
+#: config/aarch64/aarch64.c:9315
 #, gcc-internal-format
 msgid "missing feature modifier in target %s %qs"
 msgstr "modificateur de fonctionnalité manquant dans la cible %s %qs"
 
-#: config/aarch64/aarch64.c:9312
+#: config/aarch64/aarch64.c:9320
 #, gcc-internal-format
 msgid "invalid feature modifier in target %s %qs"
 msgstr "modificateur de fonctionnalité invalide dans la cible %s %qs"
 
-#: config/aarch64/aarch64.c:9364
+#: config/aarch64/aarch64.c:9372
 #, gcc-internal-format, gfc-internal-format
 msgid "malformed target %s"
 msgstr "cible %s mal formée"
 
-#: config/aarch64/aarch64.c:9412
+#: config/aarch64/aarch64.c:9420
 #, gcc-internal-format
 msgid "target %s %qs does not accept an argument"
 msgstr "la cible %s %qs n'accepte pas d'argument"
 
-#: config/aarch64/aarch64.c:9421
+#: config/aarch64/aarch64.c:9429
 #, gcc-internal-format
 msgid "target %s %qs does not allow a negated form"
 msgstr "la cible %s %qs n'autorise pas de forme négative"
 
-#: config/aarch64/aarch64.c:9476
+#: config/aarch64/aarch64.c:9484
 #, gcc-internal-format, gfc-internal-format
 msgid "target %s %s=%s is not valid"
 msgstr "la cible %s %s=%s n'est pas valable"
 
-#: config/aarch64/aarch64.c:9536 config/arm/arm.c:30367
+#: config/aarch64/aarch64.c:9544 config/arm/arm.c:30411
 #: config/i386/i386.c:6772 config/rs6000/rs6000.c:39283
-#: config/s390/s390.c:14849
+#: config/s390/s390.c:15017
 #, gcc-internal-format
 msgid "attribute %<target%> argument not a string"
 msgstr "l'argument %<target%> de l'attribut n'est pas une chaîne"
 
-#: config/aarch64/aarch64.c:9546
+#: config/aarch64/aarch64.c:9554
 #, gcc-internal-format, gfc-internal-format
 msgid "malformed target %s value"
 msgstr "la valeur cible de %s est mal composée"
 
-#: config/aarch64/aarch64.c:9563
+#: config/aarch64/aarch64.c:9571
 #, gcc-internal-format
 msgid "target %s %qs is invalid"
 msgstr "la cible %2$qs pour %1$s est invalide"
 
-#: config/aarch64/aarch64.c:9572
+#: config/aarch64/aarch64.c:9580
 #, gcc-internal-format
 msgid "malformed target %s list %qs"
 msgstr "la liste %2$qs de la cible %1$s est mal composée"
 
-#: config/aarch64/aarch64.c:11420
+#: config/aarch64/aarch64.c:11428
 #, gcc-internal-format
 msgid "%Klane %wd out of range %wd - %wd"
 msgstr "%Kl'avenue %wd est hors des limites %wd - %wd"
 
-#: config/aarch64/aarch64.c:11422
+#: config/aarch64/aarch64.c:11430
 #, gcc-internal-format
 msgid "lane %wd out of range %wd - %wd"
 msgstr "avenue %wd hors des limites %wd - %wd"
@@ -26627,189 +26627,195 @@ msgstr "le décompte ne devrait pas être inférieur à 0. Veuillez vérifier l'
 msgid "the count should be no less than 0.  please check the intrinsic _mm_sra_si64 in code."
 msgstr "le décompte ne devrait pas être inférieur à 0. Veuillez vérifier l'intrinsèque _mm_sra_si64 dans le code"
 
-#: config/arm/arm.c:2799
+#: config/arm/arm.c:2800
 #, gcc-internal-format
 msgid "iWMMXt and NEON are incompatible"
 msgstr "iWMMXt et NEON sont incompatibles"
 
-#: config/arm/arm.c:2805
+#: config/arm/arm.c:2806
 #, gcc-internal-format
 msgid "target CPU does not support ARM mode"
 msgstr "le processeur cible ne supporte pas ARM"
 
-#: config/arm/arm.c:2809
+#: config/arm/arm.c:2810
 #, gcc-internal-format
 msgid "enabling backtrace support is only meaningful when compiling for the Thumb"
 msgstr "activer le support de la trace de débogage n'a de sens qu'en compilant pour le Thumb"
 
-#: config/arm/arm.c:2812
+#: config/arm/arm.c:2813
 #, gcc-internal-format
 msgid "enabling callee interworking support is only meaningful when compiling for the Thumb"
 msgstr "activer le support pour l'interopérabilité de l'appelé n'a de sens qu'en compilant pour le Thumb"
 
-#: config/arm/arm.c:2820
+#: config/arm/arm.c:2821
 #, gcc-internal-format
 msgid "-g with -mno-apcs-frame may not give sensible debugging"
 msgstr "-g avec -mno-apcs-frame peut ne pas donner un débogage pertinent"
 
-#: config/arm/arm.c:2824
+#: config/arm/arm.c:2825
 #, gcc-internal-format
 msgid "iWMMXt unsupported under Thumb mode"
 msgstr "iWMMXt non supporté en mode Thumb"
 
-#: config/arm/arm.c:2827
+#: config/arm/arm.c:2828
 #, gcc-internal-format
 msgid "can not use -mtp=cp15 with 16-bit Thumb"
 msgstr "-mtp=cp15 ne peut pas être utilisé avec un Thumb 16 bits"
 
-#: config/arm/arm.c:2831
+#: config/arm/arm.c:2832
 #, gcc-internal-format
 msgid "RTP PIC is incompatible with Thumb"
 msgstr "RTP PIC est incompatible avec Thumb"
 
-#: config/arm/arm.c:2839
+#: config/arm/arm.c:2840
 #, gcc-internal-format
 msgid "-mslow-flash-data only supports non-pic code on armv7-m targets"
 msgstr "-mslow-flash-data ne supporte que du code non pic sur les cibles armv7-m"
 
-#: config/arm/arm.c:2844
+#: config/arm/arm.c:2845
 #, gcc-internal-format
 msgid "-mpure-code only supports non-pic code on armv7-m targets"
 msgstr "-mpure-code ne supporte que du code non pic sur les cibles armv7-m"
 
-#: config/arm/arm.c:2947
+#: config/arm/arm.c:2948
 #, gcc-internal-format
 msgid "target CPU does not support THUMB instructions"
 msgstr "le processeur cible ne supporte pas les instructions THUMB"
 
-#: config/arm/arm.c:2992
+#: config/arm/arm.c:2993
 #, gcc-internal-format
 msgid "target CPU does not support unaligned accesses"
 msgstr "le processeur cible ne supporte pas les accès non alignés"
 
 #. To support this we need to be able to parse FPU feature options
 #. from the architecture string.
-#: config/arm/arm.c:3246
+#: config/arm/arm.c:3247
 #, gcc-internal-format
 msgid "-mfpu=auto not currently supported without an explicit CPU."
 msgstr "-mfpu=auto n'est actuellement pas supporté sans un processeur explicite."
 
-#: config/arm/arm.c:3321
+#: config/arm/arm.c:3322
 #, gcc-internal-format
 msgid "target CPU does not support interworking"
 msgstr "le processeur cible ne supporte pas l'interopérabilité"
 
-#: config/arm/arm.c:3327
+#: config/arm/arm.c:3328
 #, gcc-internal-format
 msgid "-mapcs-stack-check incompatible with -mno-apcs-frame"
 msgstr "-mapcs-stack-check incompatible avec -mno-apcs-frame"
 
-#: config/arm/arm.c:3335
+#: config/arm/arm.c:3336
 #, gcc-internal-format
 msgid "-fpic and -mapcs-reent are incompatible"
 msgstr "-fpic et -mapcs-reent sont incompatibles"
 
-#: config/arm/arm.c:3338
+#: config/arm/arm.c:3339
 #, gcc-internal-format
 msgid "APCS reentrant code not supported.  Ignored"
 msgstr "Le code réentrant APCS n'est pas supporté.  Ignoré"
 
-#: config/arm/arm.c:3372
+#: config/arm/arm.c:3373
 #, gcc-internal-format
 msgid "selected fp16 options are incompatible"
 msgstr "les options fp16 sélectionnées sont incompatibles"
 
-#: config/arm/arm.c:3403
+#: config/arm/arm.c:3404
 #, gcc-internal-format
 msgid "iwmmxt requires an AAPCS compatible ABI for proper operation"
 msgstr "iwmmxt exige une ABI compatible AAPCS pour fonctionner correctement"
 
-#: config/arm/arm.c:3406
+#: config/arm/arm.c:3407
 #, gcc-internal-format
 msgid "iwmmxt abi requires an iwmmxt capable cpu"
 msgstr "l'abi iwmmxt requiert un processeur avec iwmmxt"
 
-#: config/arm/arm.c:3417
+#: config/arm/arm.c:3418
 #, gcc-internal-format
 msgid "AAPCS does not support -mcaller-super-interworking"
 msgstr "AAPCS ne supporte pas -mcaller-super-interworking"
 
-#: config/arm/arm.c:3420
+#: config/arm/arm.c:3421
 #, gcc-internal-format
 msgid "AAPCS does not support -mcallee-super-interworking"
 msgstr "AAPCS ne supporte pas -mcallee-super-interworking"
 
-#: config/arm/arm.c:3425
+#: config/arm/arm.c:3426
 #, gcc-internal-format
 msgid "__fp16 and no ldrh"
 msgstr "__fp16 et pas de ldrh"
 
-#: config/arm/arm.c:3436
+#: config/arm/arm.c:3437
 #, gcc-internal-format
 msgid "-mfloat-abi=hard: selected processor lacks an FPU"
 msgstr "-mfloat-abi=hard: le processeur sélectionné n'a pas de FPU"
 
-#: config/arm/arm.c:3444
+#: config/arm/arm.c:3445
 #, gcc-internal-format
 msgid "-mfloat-abi=hard and VFP"
 msgstr "-mfloat-abi=hard et VFP"
 
-#: config/arm/arm.c:3480
+#: config/arm/arm.c:3481
 #, gcc-internal-format
 msgid "structure size boundary can only be set to 8, 32 or 64"
 msgstr "la frontière de la taille de la structure peut seulement être 8, 32 ou 64"
 
-#: config/arm/arm.c:3482
+#: config/arm/arm.c:3483
 #, gcc-internal-format
 msgid "structure size boundary can only be set to 8 or 32"
 msgstr "la frontière de la taille de la structure peut seulement être 8 ou 32"
 
-#: config/arm/arm.c:3507
+#: config/arm/arm.c:3508
 #, gcc-internal-format
 msgid "RTP PIC is incompatible with -msingle-pic-base"
 msgstr "RTP PIC est incompatible avec -msingle-pic-base"
 
-#: config/arm/arm.c:3519
+#: config/arm/arm.c:3520
 #, gcc-internal-format
 msgid "-mpic-register= is useless without -fpic"
 msgstr "-mpic-register= est inutile sans -fpic"
 
-#: config/arm/arm.c:3528
+#: config/arm/arm.c:3529
 #, gcc-internal-format, gfc-internal-format
 msgid "unable to use '%s' for PIC register"
 msgstr "incapable d'utiliser « %s » pour un registre PIC"
 
-#: config/arm/arm.c:3547
+#: config/arm/arm.c:3548
 #, gcc-internal-format
 msgid "-freorder-blocks-and-partition not supported on this architecture"
 msgstr "-freorder-blocks-and-partition n'est pas supporté sur cette architecture"
 
-#: config/arm/arm.c:3638
+#: config/arm/arm.c:3639
 #, gcc-internal-format
 msgid "target CPU does not support ARMv8-M Security Extensions"
 msgstr "le processeur cible ne supporte pas les extensions de sécurité ARMv8-M"
 
-#: config/arm/arm.c:5706
+#: config/arm/arm.c:5707
 #, gcc-internal-format
 msgid "non-AAPCS derived PCS variant"
 msgstr "variante PCS qui n'est pas dérivée de AAPCS"
 
-#: config/arm/arm.c:5708
+#: config/arm/arm.c:5709
 #, gcc-internal-format
 msgid "variadic functions must use the base AAPCS variant"
 msgstr "les fonctions variadiques doivent utiliser la variante du AAPCS de base"
 
-#: config/arm/arm.c:5727
+#: config/arm/arm.c:5728
 #, gcc-internal-format
 msgid "PCS variant"
 msgstr "variante PCS"
 
-#: config/arm/arm.c:5922
+#: config/arm/arm.c:5923
 #, gcc-internal-format
 msgid "Thumb-1 hard-float VFP ABI"
 msgstr "ABI VFP en virgule flottante matérielle du Thumb-1"
 
-#: config/arm/arm.c:6672 config/arm/arm.c:6690 config/arm/arm.c:6865
+#: config/arm/arm.c:6362 config/arm/arm.c:6565 config/arm/arm.c:6593
+#: config/arm/arm.c:26560
+#, gcc-internal-format
+msgid "parameter passing for argument of type %qT changed in GCC 7.1"
+msgstr "le passage de paramètre pour l'argument de type %qT a changé dans GCC 7.1"
+
+#: config/arm/arm.c:6709 config/arm/arm.c:6727 config/arm/arm.c:6902
 #: config/avr/avr.c:9480 config/avr/avr.c:9496 config/bfin/bfin.c:4673
 #: config/bfin/bfin.c:4734 config/bfin/bfin.c:4763
 #: config/epiphany/epiphany.c:475 config/h8300/h8300.c:5456
@@ -26825,72 +26831,72 @@ msgstr "ABI VFP en virgule flottante matérielle du Thumb-1"
 msgid "%qE attribute only applies to functions"
 msgstr "l'attribut %qE s'applique uniquement aux fonctions"
 
-#: config/arm/arm.c:6814
+#: config/arm/arm.c:6851
 #, gcc-internal-format
 msgid "%qE attribute not available to functions with arguments passed on the stack"
 msgstr "l'attribut %qE n'est pas disponible pour les fonctions avec des arguments passés sur la pile"
 
-#: config/arm/arm.c:6826
+#: config/arm/arm.c:6863
 #, gcc-internal-format
 msgid "%qE attribute not available to functions with variable number of arguments"
 msgstr "l'attribut %qE n'est pas disponible pour les fonctions avec un nombre variable d'arguments"
 
-#: config/arm/arm.c:6835
+#: config/arm/arm.c:6872
 #, gcc-internal-format
 msgid "%qE attribute not available to functions that return value on the stack"
 msgstr "l'attribut %qE n'est pas disponible pour les fonctions qui retournent une valeur sur la pile"
 
-#: config/arm/arm.c:6857 config/arm/arm.c:6909
+#: config/arm/arm.c:6894 config/arm/arm.c:6946
 #, gcc-internal-format
 msgid "%qE attribute ignored without -mcmse option."
 msgstr "l'attribut %qE est ignoré sans l'option -mcmse."
 
-#: config/arm/arm.c:6876
+#: config/arm/arm.c:6913
 #, gcc-internal-format
 msgid "%qE attribute has no effect on functions with static linkage"
 msgstr "l'attribut %qE n'a pas d'effet sur les fonctions statiques"
 
-#: config/arm/arm.c:6925
+#: config/arm/arm.c:6962
 #, gcc-internal-format
 msgid "%qE attribute only applies to base type of a function pointer"
 msgstr "l'attribut %qE ne s'applique qu'au type de base d'un pointeur vers une fonction"
 
-#: config/arm/arm.c:12208
+#: config/arm/arm.c:12245
 #, gcc-internal-format
 msgid "%K%s %wd out of range %wd - %wd"
 msgstr "%K%s %wd hors des limites %wd - %wd"
 
-#: config/arm/arm.c:12211
+#: config/arm/arm.c:12248
 #, gcc-internal-format
 msgid "%s %wd out of range %wd - %wd"
 msgstr "%s %wd hors des limites %wd - %wd"
 
-#: config/arm/arm.c:23458
+#: config/arm/arm.c:23495
 #, gcc-internal-format
 msgid "unable to compute real location of stacked parameter"
 msgstr "incapable de calculer la position réelle des paramètres sur la pile"
 
-#: config/arm/arm.c:24111
+#: config/arm/arm.c:24148
 #, gcc-internal-format
 msgid "Unexpected thumb1 far jump"
 msgstr "Saut lointain thumb1 inattendu"
 
-#: config/arm/arm.c:24375
+#: config/arm/arm.c:24412
 #, gcc-internal-format
 msgid "no low registers available for popping high registers"
 msgstr "pas de registre bas disponible pour dépiler les registres hauts"
 
-#: config/arm/arm.c:24624
+#: config/arm/arm.c:24661
 #, gcc-internal-format
 msgid "interrupt Service Routines cannot be coded in Thumb mode"
 msgstr "les routines du service d'interruption ne peuvent pas être codées en mode Thumb"
 
-#: config/arm/arm.c:24853
+#: config/arm/arm.c:24890
 #, gcc-internal-format
 msgid "-fstack-check=specific for Thumb-1"
 msgstr "-fstack-check=specific pour Thumb-1"
 
-#: config/arm/arm.c:30391
+#: config/arm/arm.c:30435
 #, gcc-internal-format, gfc-internal-format
 msgid "invalid fpu for attribute(target(\"%s\"))"
 msgstr "fpu invalide pour attribute(target(\"%s\"))"
@@ -26898,13 +26904,13 @@ msgstr "fpu invalide pour attribute(target(\"%s\"))"
 #. This doesn't really make sense until we support
 #. general dynamic selection of the architecture and all
 #. sub-features.
-#: config/arm/arm.c:30399
+#: config/arm/arm.c:30443
 #, gcc-internal-format
 msgid "auto fpu selection not currently permitted here"
 msgstr "la sélection automatique du fpu n'est actuellement pas permise ici"
 
-#: config/arm/arm.c:30406 config/i386/i386.c:6838 config/i386/i386.c:6885
-#: config/s390/s390.c:14915 config/s390/s390.c:14965 config/s390/s390.c:14982
+#: config/arm/arm.c:30450 config/i386/i386.c:6838 config/i386/i386.c:6885
+#: config/s390/s390.c:15083 config/s390/s390.c:15133 config/s390/s390.c:15150
 #, gcc-internal-format, gfc-internal-format
 msgid "attribute(target(\"%s\")) is unknown"
 msgstr "attribute(target(\"%s\")) est inconnu"
@@ -29521,7 +29527,7 @@ msgstr "vec_mul accepte uniquement 2 arguments"
 msgid "vec_cmpne only accepts 2 arguments"
 msgstr "vec_cmpne accepte uniquement 2 arguments"
 
-#: config/rs6000/rs6000-c.c:5711
+#: config/rs6000/rs6000-c.c:5710
 #, gcc-internal-format
 msgid "vec_adde only accepts 3 arguments"
 msgstr "vec_adde accepte uniquement 3 arguments"
@@ -29531,42 +29537,42 @@ msgstr "vec_adde accepte uniquement 3 arguments"
 msgid "vec_addec only accepts 3 arguments"
 msgstr "vec_addec accepte uniquement 3 arguments"
 
-#: config/rs6000/rs6000-c.c:5861
+#: config/rs6000/rs6000-c.c:5862
 #, gcc-internal-format, gfc-internal-format
 msgid "%s only accepts %d arguments"
 msgstr "%s accepte uniquement %d arguments"
 
-#: config/rs6000/rs6000-c.c:5866
+#: config/rs6000/rs6000-c.c:5867
 #, gcc-internal-format, gfc-internal-format
 msgid "%s only accepts 1 argument"
 msgstr "%s accepte uniquement 1 argument"
 
-#: config/rs6000/rs6000-c.c:5871
+#: config/rs6000/rs6000-c.c:5872
 #, gcc-internal-format, gfc-internal-format
 msgid "%s only accepts 2 arguments"
 msgstr "%s accepte uniquement 2 arguments"
 
-#: config/rs6000/rs6000-c.c:5937
+#: config/rs6000/rs6000-c.c:5938
 #, gcc-internal-format
 msgid "vec_extract only accepts 2 arguments"
 msgstr "vec_extract accepte uniquement 2 arguments"
 
-#: config/rs6000/rs6000-c.c:6106
+#: config/rs6000/rs6000-c.c:6107
 #, gcc-internal-format
 msgid "vec_insert only accepts 3 arguments"
 msgstr "vec_insert accepte uniquement 3 arguments"
 
-#: config/rs6000/rs6000-c.c:6380
+#: config/rs6000/rs6000-c.c:6381
 #, gcc-internal-format
 msgid "passing arg %d of %qE discards qualifiers from pointer target type"
 msgstr "le passage de l'argument %d de %qE abandonne les qualificatifs du type cible du pointeur"
 
-#: config/rs6000/rs6000-c.c:6434
+#: config/rs6000/rs6000-c.c:6435
 #, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s not supported in this compiler configuration"
 msgstr "La fonction interne %s n'est pas supportée dans cette configuration du compilateur"
 
-#: config/rs6000/rs6000-c.c:6442
+#: config/rs6000/rs6000-c.c:6443
 #, gcc-internal-format, gfc-internal-format
 msgid "invalid parameter combination for AltiVec intrinsic %s"
 msgstr "combinaison invalide de paramètres pour l'intrinsèque Altivec %s"
@@ -30618,114 +30624,114 @@ msgstr "argument %d invalide pour la fonction interne %qF"
 msgid "requested %qE attribute is not a comma separated pair of non-negative integer constants or too large (max. %d)"
 msgstr "l'attribut %qE demandé n'est pas une paire de constantes entières non négatives séparées par une virgule ou est trop grand (max. %d)"
 
-#: config/s390/s390.c:9812
+#: config/s390/s390.c:9980
 #, gcc-internal-format
 msgid "total size of local variables exceeds architecture limit"
 msgstr "la taille totale des variables locales excède la limite de l'architecture"
 
-#: config/s390/s390.c:10926
+#: config/s390/s390.c:11094
 #, gcc-internal-format
 msgid "frame size of function %qs is %wd bytes exceeding user provided stack limit of %d bytes.  An unconditional trap is added."
 msgstr "la taille de la trame de la fonction %qs est de %wd octets. Elle dépasse la limite de %d octets de la pile fournie par l'utilisateur. Un déroutement inconditionnel est ajouté."
 
-#: config/s390/s390.c:10942
+#: config/s390/s390.c:11110
 #, gcc-internal-format
 msgid "frame size of function %qs is %wd bytes which is more than half the stack size. The dynamic check would not be reliable. No check emitted for this function."
 msgstr "la taille de la trame de la fonction %qs est de %wd octets. C'est plus que la moitié de la taille de la pile. Le contrôle dynamique ne serait pas fiable. Aucun contrôle n'est généré pour cette fonction."
 
-#: config/s390/s390.c:10970
+#: config/s390/s390.c:11138
 #, gcc-internal-format
 msgid "frame size of %qs is %wd bytes"
 msgstr "la taille de la trame de %qs est de %wd octets"
 
-#: config/s390/s390.c:10974
+#: config/s390/s390.c:11142
 #, gcc-internal-format
 msgid "%qs uses dynamic stack allocation"
 msgstr "%qs utilise l'allocation de pile dynamique"
 
-#: config/s390/s390.c:11352
+#: config/s390/s390.c:11520
 #, gcc-internal-format
 msgid "CPUs older than z900 are not supported for -fsplit-stack"
 msgstr "les processeurs plus vieux que le z900 ne sont pas supportés par -fsplit-stack"
 
-#: config/s390/s390.c:14498
+#: config/s390/s390.c:14666
 #, gcc-internal-format, gfc-internal-format
 msgid "%sarch=%s%s is deprecated and will be removed in future releases; use at least %sarch=z900%s"
 msgstr "%sarch=%s%s est déprécié et sera supprimé dans les versions futures; utilisez au moins %sarch=z900%s"
 
-#: config/s390/s390.c:14510
+#: config/s390/s390.c:14678
 #, gcc-internal-format, gfc-internal-format
 msgid "%stune=%s%s is deprecated and will be removed in future releases; use at least %stune=z900%s"
 msgstr "%stune=%s%s est déprécié et sera supprimé dans les versions futures; utilisez au moins %stune=z900%s"
 
-#: config/s390/s390.c:14522
+#: config/s390/s390.c:14690
 #, gcc-internal-format, gfc-internal-format
 msgid "z/Architecture mode not supported on %s"
 msgstr "z/Le mode d'architecture n'est pas supporté sur %s"
 
-#: config/s390/s390.c:14525
+#: config/s390/s390.c:14693
 #, gcc-internal-format
 msgid "64-bit ABI not supported in ESA/390 mode"
 msgstr "l'ABI 64 bits n'est pas supportée en mode ESA/390"
 
-#: config/s390/s390.c:14542
+#: config/s390/s390.c:14710
 #, gcc-internal-format, gfc-internal-format
 msgid "hardware vector support not available on %s"
 msgstr "le support des vecteurs matériels n'est pas disponible sur %s"
 
-#: config/s390/s390.c:14545
+#: config/s390/s390.c:14713
 #, gcc-internal-format
 msgid "hardware vector support not available with -msoft-float"
 msgstr "le support des vecteurs matériels n'est pas disponible avec -msoft-float"
 
-#: config/s390/s390.c:14573
+#: config/s390/s390.c:14741
 #, gcc-internal-format, gfc-internal-format
 msgid "hardware decimal floating point instructions not available on %s"
 msgstr "les instructions décimales en virgule flottante matérielles ne sont pas disponibles sur %s"
 
-#: config/s390/s390.c:14577
+#: config/s390/s390.c:14745
 #, gcc-internal-format
 msgid "hardware decimal floating point instructions not available in ESA/390 mode"
 msgstr "les instructions décimales en virgule flottante matérielles ne sont pas disponibles en mode ESA/390"
 
-#: config/s390/s390.c:14589
+#: config/s390/s390.c:14757
 #, gcc-internal-format
 msgid "-mhard-dfp can%'t be used in conjunction with -msoft-float"
 msgstr "-mhard-dfp ne peut être utilisé en conjonction avec -msoft-float"
 
-#: config/s390/s390.c:14597
+#: config/s390/s390.c:14765
 #, gcc-internal-format
 msgid "-mbackchain -mpacked-stack -mhard-float are not supported in combination"
 msgstr "-mbackchain -mpacked-stack -mhard-float ne sont pas supportés en combinaison"
 
-#: config/s390/s390.c:14603
+#: config/s390/s390.c:14771
 #, gcc-internal-format
 msgid "stack size must be greater than the stack guard value"
 msgstr "la taille de la pile doit être plus grande que la valeur de la protection de la pile"
 
-#: config/s390/s390.c:14605
+#: config/s390/s390.c:14773
 #, gcc-internal-format
 msgid "stack size must not be greater than 64k"
 msgstr "la taille de la pile ne peut pas être plus grande que 64k"
 
-#: config/s390/s390.c:14608
+#: config/s390/s390.c:14776
 #, gcc-internal-format
 msgid "-mstack-guard implies use of -mstack-size"
 msgstr "-mstack-guard implique l'utilisation de -mstack-size"
 
 #. argument is not a plain number
-#: config/s390/s390.c:14706
+#: config/s390/s390.c:14874
 #, gcc-internal-format
 msgid "arguments to %qs should be non-negative integers"
 msgstr "les arguments de %qs doivent être des entiers non négatifs"
 
-#: config/s390/s390.c:14713
+#: config/s390/s390.c:14881
 #, gcc-internal-format
 msgid "argument to %qs is too large (max. %d)"
 msgstr "l'argument de %qs est trop grand (max. %d)"
 
 #. Value is not allowed for the target attribute.
-#: config/s390/s390.c:14921
+#: config/s390/s390.c:15089
 #, gcc-internal-format
 msgid "value %qs is not supported by attribute %<target%>"
 msgstr "la valeur %qs n'est pas supportée par l'attribut %<target%>"
