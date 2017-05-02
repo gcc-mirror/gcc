@@ -1,3 +1,30 @@
+2017-05-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* atree.h (Flag290): Add missing terminating parenthesis.
+	* einfo.adb (Is_Class_Wide_Clone): Use Flag290.
+	(Set_Is_Class_Wide_Clone): Likewise.
+	* einfo.ads (Is_Class_Wide_Clone): Likewise.
+
+2017-05-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.ads (Null_Exclusion_Static_Checks): Add Boolean
+	parameter Array_Comp to indicate the case of an array object
+	with null-excluding components.
+	* checks.adb (Null_Exclusion_Static_Checks):
+	Call Compile_Time_Constraint_Error instead of
+	Apply_Compile_Time_Constraint_Error in the component case. Also
+	call that when Array_Comp is True, with an appropriate warning for
+	the array component case. Only create an explicit initialization
+	by null in the case of an object of a null-excluding access type
+	(and no longer do that in the component case).
+	* sem_ch3.adb (Check_Component): Add a Boolean parameter
+	Array_Comp defaulted to False.	Pass Empty for the Comp
+	actual when calling Null_Exclusion_Static_Checks in the case
+	where Comp_Decl matches Object_Decl, because we don't have a
+	component in that case. In the case of an object or component
+	of an array type, pass True for Array_Comp on the recursive call
+	to Check_Component.
+
 2017-05-02  Bob Duff  <duff@adacore.com>
 
 	* s-taprop-linux.adb (Prio_To_Linux_Prio): New function to correctly

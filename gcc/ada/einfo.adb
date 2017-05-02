@@ -603,8 +603,7 @@ package body Einfo is
    --    Rewritten_For_C                 Flag287
    --    Predicates_Ignored              Flag288
    --    Has_Timing_Event                Flag289
-
-   --    (unused)                        Flag290  --  ??? flag breaks einfo.h
+   --    Is_Class_Wide_Clone             Flag290
 
    --    Has_Inherited_Invariants        Flag291
    --    Is_Partial_Invariant_Procedure  Flag292
@@ -615,10 +614,10 @@ package body Einfo is
    --    Is_Entry_Wrapper                Flag297
    --    Is_Underlying_Full_View         Flag298
    --    Body_Needed_For_Inlining        Flag299
-
    --    Has_Private_Extension           Flag300
+
    --    Ignore_SPARK_Mode_Pragmas       Flag301
-   --    Is_Class_Wide_Clone             Flag302
+   --    (unused)                        Flag302
    --    (unused)                        Flag303
    --    (unused)                        Flag304
    --    (unused)                        Flag305
@@ -2134,7 +2133,7 @@ package body Einfo is
 
    function Is_Class_Wide_Clone (Id : E) return B is
    begin
-      return Flag302 (Id);
+      return Flag290 (Id);
    end Is_Class_Wide_Clone;
 
    function Is_Class_Wide_Equivalent_Type (Id : E) return B is
@@ -5258,7 +5257,7 @@ package body Einfo is
 
    procedure Set_Is_Class_Wide_Clone (Id : E; V : B := True) is
    begin
-      Set_Flag302 (Id, V);
+      Set_Flag290 (Id, V);
    end Set_Is_Class_Wide_Clone;
 
    procedure Set_Is_Class_Wide_Equivalent_Type (Id : E; V : B := True) is

@@ -2356,7 +2356,7 @@ package Einfo is
 --       Defined in all entities. Set only for defining entities of program
 --       units that are child units (but False for subunits).
 
---    Is_Class_Wide_Clone (Flag302)
+--    Is_Class_Wide_Clone (Flag290)
 --       Defined on subprogram entities. Set for subprograms built in order
 --       to implement properly the inheritance of class-wide pre- or post-
 --       conditions when the condition contains calls to other primitives

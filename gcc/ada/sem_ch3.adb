@@ -3648,7 +3648,9 @@ package body Sem_Ch3 is
          then
             Comp := First_Component (Obj_Type);
             while Present (Comp) loop
-               if Known_Static_Esize (Etype (Comp)) then
+               if Known_Static_Esize (Etype (Comp))
+                 or else Size_Known_At_Compile_Time (Etype (Comp))
+               then
                   null;
 
                elsif not Discriminated_Size (Comp)
@@ -3674,8 +3676,9 @@ package body Sem_Ch3 is
          Obj_Decl : Node_Id)
       is
          procedure Check_Component
-           (Comp_Typ  : Entity_Id;
-            Comp_Decl : Node_Id := Empty);
+           (Comp_Typ   : Entity_Id;
+            Comp_Decl  : Node_Id := Empty;
+            Array_Comp : Boolean := False);
          --  Apply a compile-time null-exclusion check on a component denoted
          --  by its declaration Comp_Decl and type Comp_Typ, and all of its
          --  subcomponents (if any).
@@ -3686,7 +3689,8 @@ package body Sem_Ch3 is
 
          procedure Check_Component
            (Comp_Typ  : Entity_Id;
-            Comp_Decl : Node_Id := Empty)
+            Comp_Decl : Node_Id := Empty;
+            Array_Comp : Boolean := False)
          is
             Comp : Entity_Id;
             T    : Entity_Id;
@@ -3715,7 +3719,12 @@ package body Sem_Ch3 is
             if Is_Access_Type (T)
               and then Can_Never_Be_Null (T)
             then
-               Null_Exclusion_Static_Checks (Obj_Decl, Comp_Decl);
+               if Comp_Decl = Obj_Decl then
+                  Null_Exclusion_Static_Checks (Obj_Decl, Empty, Array_Comp);
+               else
+                  Null_Exclusion_Static_Checks
+                    (Obj_Decl, Comp_Decl, Array_Comp);
+               end if;
 
             --  Check array components
 
@@ -3724,10 +3733,10 @@ package body Sem_Ch3 is
                --  There is no suitable component when the object is of an
                --  array type. However, a namable component may appear at some
                --  point during the recursive inspection, but not at the top
-               --  level.
+               --  level. At the top level just indicate array component case.
 
                if Comp_Decl = Obj_Decl then
-                  Check_Component (Component_Type (T));
+                  Check_Component (Component_Type (T), Array_Comp => True);
                else
                   Check_Component (Component_Type (T), Comp_Decl);
                end if;
