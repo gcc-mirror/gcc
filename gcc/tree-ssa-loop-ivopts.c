@@ -3846,8 +3846,8 @@ get_use_type (struct iv_use *use)
    CAND at statement AT in LOOP.  The computation is unshared.  */
 
 static tree
-get_computation_at (struct loop *loop,
-		    struct iv_use *use, struct iv_cand *cand, gimple *at)
+get_computation_at (struct loop *loop, gimple *at,
+		    struct iv_use *use, struct iv_cand *cand)
 {
   aff_tree aff;
   tree type = get_use_type (use);
@@ -3856,15 +3856,6 @@ get_computation_at (struct loop *loop,
     return NULL_TREE;
   unshare_aff_combination (&aff);
   return fold_convert (type, aff_combination_to_tree (&aff));
-}
-
-/* Determines the expression by that USE is expressed from induction variable
-   CAND in LOOP.  The computation is unshared.  */
-
-static tree
-get_computation (struct loop *loop, struct iv_use *use, struct iv_cand *cand)
-{
-  return get_computation_at (loop, use, cand, use->stmt);
 }
 
 /* Adjust the cost COST for being in loop setup rather than loop body.
@@ -4834,18 +4825,17 @@ get_scaled_computation_cost_at (ivopts_data *data, gimple *at, iv_cand *cand,
 /* Determines the cost of the computation by that USE is expressed
    from induction variable CAND.  If ADDRESS_P is true, we just need
    to create an address from it, otherwise we want to get it into
-   register.  A set of invariants we depend on is stored in
-   INV_VARS.  AT is the statement at that the value is computed.
+   register.  A set of invariants we depend on is stored in INV_VARS.
    If CAN_AUTOINC is nonnull, use it to record whether autoinc
-   addressing is likely.  */
+   addressing is likely.  If INV_EXPR is nonnull, record invariant
+   expr entry in it.  */
 
 static comp_cost
-get_computation_cost_at (struct ivopts_data *data,
-			 struct iv_use *use, struct iv_cand *cand,
-			 bool address_p, bitmap *inv_vars, gimple *at,
-			 bool *can_autoinc,
-			 iv_inv_expr_ent **inv_expr)
+get_computation_cost (struct ivopts_data *data, struct iv_use *use,
+		      struct iv_cand *cand, bool address_p, bitmap *inv_vars,
+		      bool *can_autoinc, iv_inv_expr_ent **inv_expr)
 {
+  gimple *at = use->stmt;
   tree ubase = use->iv->base, ustep = use->iv->step;
   tree cbase, cstep;
   tree utype = TREE_TYPE (ubase), ctype;
@@ -5054,7 +5044,7 @@ fallback:
     *can_autoinc = false;
 
   /* Just get the expression, expand it and measure the cost.  */
-  tree comp = get_computation_at (data->current_loop, use, cand, at);
+  tree comp = get_computation_at (data->current_loop, at, use, cand);
 
   if (!comp)
     return infinite_cost;
@@ -5065,24 +5055,6 @@ fallback:
   cost = comp_cost (computation_cost (comp, speed), 0);
 
   return get_scaled_computation_cost_at (data, at, cand, cost);
-}
-
-/* Determines the cost of the computation by that USE is expressed
-   from induction variable CAND.  If ADDRESS_P is true, we just need
-   to create an address from it, otherwise we want to get it into
-   register.  A set of invariants we depend on is stored in
-   INV_VARS.  If CAN_AUTOINC is nonnull, use it to record whether
-   autoinc addressing is likely.  */
-
-static comp_cost
-get_computation_cost (struct ivopts_data *data,
-		      struct iv_use *use, struct iv_cand *cand,
-		      bool address_p, bitmap *inv_vars,
-		      bool *can_autoinc, iv_inv_expr_ent **inv_expr)
-{
-  return get_computation_cost_at (data,
-				  use, cand, address_p, inv_vars, use->stmt,
-				  can_autoinc, inv_expr);
 }
 
 /* Determines cost of computing the use in GROUP with CAND in a generic
@@ -7213,7 +7185,7 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 	}
     }
 
-  comp = get_computation (data->current_loop, use, cand);
+  comp = get_computation_at (data->current_loop, use->stmt, use, cand);
   gcc_assert (comp != NULL_TREE);
 
   switch (gimple_code (use->stmt))
@@ -7438,7 +7410,7 @@ rewrite_use_compare (struct ivopts_data *data,
 
   /* The induction variable elimination failed; just express the original
      giv.  */
-  comp = get_computation (data->current_loop, use, cand);
+  comp = get_computation_at (data->current_loop, use->stmt, use, cand);
   gcc_assert (comp != NULL_TREE);
 
   ok = extract_cond_operands (data, use->stmt, &var_p, NULL, NULL, NULL);
@@ -7579,8 +7551,8 @@ remove_unused_ivs (struct ivopts_data *data)
 		continue;
 
 	      tree comp = get_computation_at (data->current_loop,
-					      &dummy_use, best_cand,
-					      SSA_NAME_DEF_STMT (def));
+					      SSA_NAME_DEF_STMT (def),
+					      &dummy_use, best_cand);
 	      if (!comp)
 		continue;
 
