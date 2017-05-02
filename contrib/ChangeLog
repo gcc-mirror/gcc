@@ -1,3 +1,7 @@
+2017-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 7.
+
 2017-04-26  Tom de Vries  <tom@codesourcery.com>
 
 	* gen_autofdo_event.py: Fix comment.
