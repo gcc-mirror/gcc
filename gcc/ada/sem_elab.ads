@@ -174,7 +174,7 @@ package Sem_Elab is
    --  not be generated (see detailed description in body).
 
    procedure Check_Task_Activation (N : Node_Id);
-   --  Tt the point at which tasks are activated in a package body, check
+   --  At the point at which tasks are activated in a package body, check
    --  that the bodies of the tasks are elaborated.
 
 end Sem_Elab;

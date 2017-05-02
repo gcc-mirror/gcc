@@ -3133,6 +3133,9 @@ package body Sem_Ch3 is
 
             when N_Derived_Type_Definition =>
                Derived_Type_Declaration (T, N, T /= Def_Id);
+               if Ekind (T) /= E_Void and then Has_Predicates (T) then -- ????
+                  Set_Has_Predicates (Def_Id);
+               end if;
 
             when N_Enumeration_Type_Definition =>
                Enumeration_Type_Declaration (T, Def);
@@ -3588,6 +3591,11 @@ package body Sem_Ch3 is
 
       Prev_Entity : Entity_Id := Empty;
 
+      procedure Check_Dynamic_Object (Typ : Entity_Id);
+      --  A library-level object with non-static discriminant constraints may
+      --  require dynamic allocation. The declaration is illegal if the
+      --  profile includes the restriction No_Implicit_Heap_Allocations.
+
       procedure Check_For_Null_Excluding_Components
         (Obj_Typ  : Entity_Id;
          Obj_Decl : Node_Id);
@@ -3613,6 +3621,45 @@ package body Sem_Ch3 is
       --  before the analysis of the object declaration is complete.
 
       --  Any other relevant delayed aspects on object declarations ???
+
+      procedure Check_Dynamic_Object (Typ : Entity_Id) is
+         Comp     : Entity_Id;
+         Obj_Type : Entity_Id;
+
+      begin
+         Obj_Type := Typ;
+         if Is_Private_Type (Obj_Type)
+            and then Present (Full_View (Obj_Type))
+         then
+            Obj_Type := Full_View (Obj_Type);
+         end if;
+
+         if Known_Static_Esize (Obj_Type) then
+            return;
+         end if;
+
+         if Restriction_Active (No_Implicit_Heap_Allocations)
+           and then Expander_Active
+           and then Has_Discriminants (Obj_Type)
+         then
+            Comp := First_Component (Obj_Type);
+            while Present (Comp) loop
+               if Known_Static_Esize (Etype (Comp)) then
+                  null;
+
+               elsif not Discriminated_Size (Comp)
+                 and then Comes_From_Source (Comp)
+               then
+                  Error_Msg_NE ("component& of non-static size will violate "
+                    & "restriction No_Implicit_Heap_Allocation?", N, Comp);
+
+               elsif Is_Record_Type (Etype (Comp)) then
+                  Check_Dynamic_Object (Etype (Comp));
+               end if;
+               Next_Component (Comp);
+            end loop;
+         end if;
+      end Check_Dynamic_Object;
 
       -----------------------------------------
       -- Check_For_Null_Excluding_Components --
@@ -4066,6 +4113,10 @@ package body Sem_Ch3 is
          Check_SPARK_05_Restriction
            ("subtype mark of constrained type expected",
             Object_Definition (N));
+      end if;
+
+      if Is_Library_Level_Entity (Id) then
+         Check_Dynamic_Object (T);
       end if;
 
       --  There are no aliased objects in SPARK
@@ -15458,6 +15509,10 @@ package body Sem_Ch3 is
         and then Has_Non_Trivial_Precondition (Parent_Subp)
         and then Present (Interfaces (Derived_Type))
       then
+
+         --  Add useful attributes of subprogram before the freeze point,
+         --  in case freezing is delayed or there are previous errors.
+
          Set_Is_Dispatching_Operation (New_Subp);
 
          declare

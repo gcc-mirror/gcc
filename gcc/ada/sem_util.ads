@@ -601,6 +601,14 @@ package Sem_Util is
    --  accessibility levels are tracked at runtime (access parameters and Ada
    --  2012 stand-alone objects).
 
+   function Discriminated_Size (Comp : Entity_Id) return Boolean;
+   --  If a component size is not static then a warning will be emitted
+   --  in Ravenscar or other restricted contexts. When a component is non-
+   --  static because of a discriminant constraint we can specialize the
+   --  warning by mentioning discriminants explicitly. This was created for
+   --  private components of protected objects, but is generally useful when
+   --  retriction (No_Implicit_Heap_Allocation) is active.
+
    function Effective_Extra_Accessibility (Id : Entity_Id) return Entity_Id;
    --  Same as Einfo.Extra_Accessibility except thtat object renames
    --  are looked through.

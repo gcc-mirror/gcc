@@ -6312,6 +6312,70 @@ package body Sem_Util is
       return Make_Level_Literal (Type_Access_Level (Etype (Expr)));
    end Dynamic_Accessibility_Level;
 
+   ------------------------
+   -- Discriminated_Size --
+   ------------------------
+
+   function Discriminated_Size (Comp : Entity_Id) return Boolean is
+      Typ   : constant Entity_Id := Etype (Comp);
+      Index : Node_Id;
+
+      function Non_Static_Bound (Bound : Node_Id) return Boolean;
+      --  Check whether the bound of an index is non-static and does denote
+      --  a discriminant, in which case any object of the type (protected
+      --  or otherwise) will have a non-static size.
+
+      ----------------------
+      -- Non_Static_Bound --
+      ----------------------
+
+      function Non_Static_Bound (Bound : Node_Id) return Boolean is
+      begin
+         if Is_OK_Static_Expression (Bound) then
+            return False;
+
+         --  If the bound is given by a discriminant it is non-static
+         --  (A static constraint replaces the reference with the value).
+         --  In an protected object the discriminant has been replaced by
+         --  the corresponding discriminal within the protected operation.
+
+         elsif Is_Entity_Name (Bound)
+           and then
+              (Ekind (Entity (Bound)) = E_Discriminant
+                or else Present (Discriminal_Link (Entity (Bound))))
+         then
+            return False;
+
+         else
+            return True;
+         end if;
+      end Non_Static_Bound;
+
+   --  Start of processing for Discriminated_Size
+
+   begin
+      if not Is_Array_Type (Typ) then
+         return False;
+      end if;
+
+      if Ekind (Typ) = E_Array_Subtype then
+         Index := First_Index (Typ);
+         while Present (Index) loop
+            if Non_Static_Bound (Low_Bound (Index))
+              or else Non_Static_Bound (High_Bound (Index))
+            then
+               return False;
+            end if;
+
+            Next_Index (Index);
+         end loop;
+
+         return True;
+      end if;
+
+      return False;
+   end Discriminated_Size;
+
    -----------------------------------
    -- Effective_Extra_Accessibility --
    -----------------------------------

@@ -1073,7 +1073,7 @@ package body Sem_Elab is
 
          --  Indirect call case, info message only in static elaboration
          --  case, because the attribute reference itself cannot raise an
-         --  exception. Note that SPARK does not  permit indirect calls.
+         --  exception. Note that SPARK does not permit indirect calls.
 
          elsif Access_Case then
             Elab_Warning ("", "info: access to & during elaboration?$?", Ent);
