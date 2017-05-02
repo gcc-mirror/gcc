@@ -1,3 +1,7 @@
+2017-05-02  Release Manager
+
+	* GCC 7.1.0 released.
+
 2017-01-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* dummy-frontend.c (jit_langhook_type_for_size): Delete.

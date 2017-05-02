@@ -1,3 +1,7 @@
+2017-05-02  Release Manager
+
+	* GCC 7.1.0 released.
+
 2017-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* mpxrt/mpxrt-utils.h (__mpxrt_stop): New prototype.
