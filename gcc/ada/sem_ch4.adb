@@ -1560,6 +1560,10 @@ package body Sem_Ch4 is
       --  Get our initial type from the first expression for which we got some
       --  useful type information from the expression.
 
+      if No (FirstX) then
+         return;
+      end if;
+
       if not Is_Overloaded (FirstX) then
          Set_Etype (N, Etype (FirstX));
 
@@ -2212,22 +2216,27 @@ package body Sem_Ch4 is
 
    procedure Analyze_If_Expression (N : Node_Id) is
       Condition : constant Node_Id := First (Expressions (N));
-      Then_Expr : constant Node_Id := Next (Condition);
+      Then_Expr : Node_Id;
       Else_Expr : Node_Id;
 
    begin
       --  Defend against error of missing expressions from previous error
 
+      if No (Condition) then
+         Check_Error_Detected;
+         return;
+      end if;
+      Then_Expr := Next (Condition);
+
       if No (Then_Expr) then
          Check_Error_Detected;
          return;
       end if;
+      Else_Expr := Next (Then_Expr);
 
       if Comes_From_Source (N) then
          Check_SPARK_05_Restriction ("if expression is not allowed", N);
       end if;
-
-      Else_Expr := Next (Then_Expr);
 
       if Comes_From_Source (N) then
          Check_Compiler_Unit ("if expression", N);

@@ -2158,7 +2158,9 @@ package body Sem_Eval is
    begin
       Set_Is_Static_Expression (N, False);
 
-      if not Is_Static_Expression (Expression (N)) then
+      if Error_Posted (Expression (N))
+        or else not Is_Static_Expression (Expression (N))
+      then
          Check_Non_Static_Context (Expression (N));
          return;
       end if;
