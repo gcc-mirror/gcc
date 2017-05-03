@@ -1,3 +1,8 @@
+2007-05-03  Jeff Law  <law@redhat.com>
+
+	* config-list.mk (am33_2.0-linux): Remove from list of targets
+	to build.
+
 2017-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gennews (files): Add files for GCC 7.
