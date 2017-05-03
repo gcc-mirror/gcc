@@ -1,3 +1,9 @@
+2017-05-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR bootstrap/80609
+	* ipa-inline.h (inline_summary): Add ctor.
+	(create_ggc): Do not use ggc_cleared_alloc.
+
 2017-05-03  Jeff Downs  <heydowns@somuchpressure.net>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
