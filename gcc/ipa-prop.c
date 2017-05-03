@@ -5285,17 +5285,6 @@ ipa_prop_read_jump_functions (void)
     }
 }
 
-/* After merging units, we can get mismatch in argument counts.
-   Also decl merging might've rendered parameter lists obsolete.
-   Also compute called_with_variable_arg info.  */
-
-void
-ipa_update_after_lto_read (void)
-{
-  ipa_check_create_node_params ();
-  ipa_check_create_edge_args ();
-}
-
 void
 write_ipcp_transformation_info (output_block *ob, cgraph_node *node)
 {
