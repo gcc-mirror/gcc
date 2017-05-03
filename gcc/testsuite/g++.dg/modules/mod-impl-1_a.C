@@ -1,5 +1,4 @@
-// { dg-module-do "run"  { xfail *-*-* } }
-// FIXME: set decl module on import
+// { dg-module-do "run" }
 
 module baz [[interface]];
 // { dg-module-if "baz" }

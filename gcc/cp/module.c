@@ -1429,6 +1429,10 @@ cpms_in::tag_binding (FILE *d)
       return false;
     }
 
+  // FIXME:just set the index on the single thing
+  if (ix)
+    DECL_MODULE_INDEX (ovl) = index;
+
   if (d)
     fprintf (d, "Reading binding for %s in %s\n",
 	     IDENTIFIER_POINTER (name), IDENTIFIER_POINTER (DECL_NAME (ns)));

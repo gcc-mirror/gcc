@@ -1,5 +1,11 @@
 2017-05-03  Nathan Sidwell  <nathan@acm.org>
 
+	Modules via index, working again!
+	gcc/cp/
+	* module.c (cpms_in::tag_binding): Set module index.
+	gcc/testsuite/
+	* g++.dg/modules/mod-impl-1_a.C: Remove xfail.
+
 	Namespace partitions.
 	gcc/cp/
 	* cp-tree.h (MODULE_NAMESPACE_P, GLOBAL_MODULE_NAMESPACE_P,
