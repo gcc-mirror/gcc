@@ -2598,7 +2598,8 @@ opt_shrink_stack_frame (void)
 		{
 		  rtx x = gen_rtx_CONST_INT (SImode, ii.get_src_intval () - 4);
 		  rtx p = gen_rtx_PLUS(SImode, a7, x);
-		  rtx pattern = gen_rtx_SET(copy_reg (ii.get_dst_reg (), -1), gen_rtx_MEM (SImode, p));
+		  rtx pattern = gen_rtx_SET(copy_reg (ii.get_dst_reg (), -1),
+					    gen_rtx_MEM (GET_MODE(ii.get_dst_reg ()), p));
 		  set_insn_deleted (ii.get_insn ());
 		  rtx_insn * newinsn = emit_insn_after (pattern, ii.get_insn ());
 		  ii.plus_to_move (newinsn);
