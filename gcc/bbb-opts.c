@@ -81,6 +81,7 @@ bool be_verbose;
 #define STACK_POINTER_REGNUM 15
 #define NOTICE_UPDATE_CC(a,b)
 #define Pmode SImode
+#define PIC_REG 12
 #endif
 extern struct lang_hooks lang_hooks;
 
@@ -151,8 +152,10 @@ class insn_info
 
   rtx dst_reg;
   rtx dst_mem_reg;
+  rtx dst_symbol;
   rtx src_reg;
   rtx src_mem_reg;
+  rtx src_symbol;
   unsigned dst_mem_addr;
 
   unsigned src_intval;
@@ -161,7 +164,8 @@ public:
   insn_info (rtx_insn * i = 0, int p = 0) :
       insn (i), myuse (0), hard (0), use (0), def (0), proepi (p), stack (false), label (false), jump (false), call (
 	  false), compare (false), dst_mem (false), src_mem (false), dst_plus (false), src_plus (false), src_const (
-	  false), dst_reg (0), dst_mem_reg (0), src_reg (0), src_mem_reg (0), dst_mem_addr (0), src_intval (0)
+	  false), dst_reg (0), dst_mem_reg (0), dst_symbol (0), src_reg (0), src_mem_reg (0), src_symbol (0), dst_mem_addr (
+	  0), src_intval (0)
   {
   }
 
@@ -199,6 +203,12 @@ public:
   has_dst_memreg () const
   {
     return dst_mem_reg;
+  }
+
+  inline rtx
+  get_dst_symbol () const
+  {
+    return dst_symbol;
   }
 
   inline bool
@@ -687,6 +697,8 @@ insn_info::fledder (rtx set)
 	dst_mem_reg = mem;
       else if (GET_CODE(mem) == CONST_INT)
 	dst_mem_addr = INTVAL(mem);
+      else if (GET_CODE(mem) == SYMBOL_REF)
+	dst_symbol = mem;
       else if (GET_CODE(mem) == PLUS)
 	{
 	  dst_plus = true;
@@ -696,6 +708,20 @@ insn_info::fledder (rtx set)
 	    {
 	      dst_mem_reg = reg;
 	      dst_mem_addr = INTVAL(konst);
+	    }
+	}
+      else if (GET_CODE(mem) == CONST)
+	{
+	  mem = XEXP(mem, 0);
+	  if (GET_CODE(mem) == PLUS)
+	    {
+	      rtx sym = XEXP(mem, 0);
+	      if (GET_CODE(sym) == SYMBOL_REF)
+		{
+		  dst_plus = true;
+		  dst_symbol = sym;
+		  dst_mem_addr = INTVAL(XEXP(mem, 1));
+		}
 	    }
 	}
     }
@@ -712,6 +738,8 @@ insn_info::fledder (rtx set)
 	src_mem_reg = mem;
       else if (GET_CODE(mem) == CONST_INT)
 	src_intval = INTVAL(mem);
+      else if (GET_CODE(mem) == SYMBOL_REF)
+	src_symbol = mem;
       else if (GET_CODE(mem) == PLUS)
 	{
 	  src_plus = true;
@@ -722,6 +750,20 @@ insn_info::fledder (rtx set)
 	      src_mem_reg = reg;
 	      src_const = true;
 	      src_intval = INTVAL(konst);
+	    }
+	}
+      else if (GET_CODE(mem) == CONST)
+	{
+	  mem = XEXP(mem, 0);
+	  if (GET_CODE(mem) == PLUS)
+	    {
+	      rtx sym = XEXP(mem, 0);
+	      if (GET_CODE(sym) == SYMBOL_REF)
+		{
+		  src_plus = true;
+		  src_symbol = sym;
+		  src_intval = INTVAL(XEXP(mem, 1));
+		}
 	    }
 	}
     }
@@ -749,7 +791,6 @@ insn_info::fledder (rtx set)
 	    }
 	}
     }
-
 }
 
 /* create a copy for a reg. Optional specify a new register number. */
@@ -813,6 +854,7 @@ static std::vector<rtx_insn *> jumps;
 static std::map<rtx_insn *, insn_info *> insn2index;
 
 static insn_info * info0;
+static unsigned usable_regs;
 
 static void
 update_insn2index ()
@@ -1107,6 +1149,27 @@ update_insn_infos (void)
 	}
       ++pass;
     }
+
+  /* fill the mask of general used regs. */
+  insn_info zz;
+  for (int i = 0; i < infos.size (); ++i)
+    {
+      insn_info & ii = infos[i];
+      if (ii.in_proepi () != 1)
+	break;
+
+      zz.or_use (ii);
+    }
+
+  /* always allow a0/a1, d0/d1. */
+  usable_regs = zz.get_use () | 0x303;
+  if (flag_pic)
+    usable_regs &= ~(1 << PIC_REG);
+
+  if (infos.size () && infos[0].is_use (FRAME_POINTER_REGNUM))
+    usable_regs &= ~(1 << FRAME_POINTER_REGNUM);
+
+  usable_regs &= ~(1 << STACK_POINTER_REGNUM);
 }
 
 /*
@@ -2627,9 +2690,11 @@ opt_absolute (void)
       if (!ii.is_dst_mem () || !ii.has_dst_addr () || ii.has_dst_memreg ())
 	continue;
 
-      unsigned freemask = ~(ii.get_use () | ii.get_def ()) & 0x7f00;
+      unsigned freemask = ~(ii.get_use () | ii.get_def ()) & 0x7f00 & usable_regs;
       if (!freemask)
 	continue;
+
+      rtx with_symbol = ii.get_dst_symbol ();
 
       std::vector<unsigned> found;
       found.push_back (i);
@@ -2645,13 +2710,11 @@ opt_absolute (void)
 	  if (!freemask)
 	    break;
 
-	  if (jj.is_dst_mem () && jj.has_dst_addr () && !jj.has_dst_memreg ())
+	  if (jj.is_dst_mem () && jj.has_dst_addr () && !jj.has_dst_memreg () && jj.get_dst_symbol () == with_symbol)
 	    {
 	      unsigned addr = jj.get_dst_addr ();
 	      if (addr < base)
 		base = addr;
-	      if (addr - base > 0x7ffc)
-		continue;
 
 	      found.push_back (j);
 	    }
@@ -2659,8 +2722,23 @@ opt_absolute (void)
 
       if (freemask && found.size () > 2)
 	{
+	  /* check again. */
+	  for (auto k = found.begin (); k != found.end ();)
+	    {
+	      insn_info & kk = infos[*k];
+	      if (kk.get_dst_addr () - base > 0x7ffc)
+		found.erase (k);
+	      else
+		++k;
+	    }
+	}
+      if (freemask && found.size () > 2)
+	{
 	  unsigned regno = bit2regno (freemask);
-	  log ("modifying %d immediate using %s\n", found.size (), reg_names[regno]);
+	  if (with_symbol)
+	    log ("modifying %d symbol addresses using %s\n", found.size (), reg_names[regno]);
+	  else
+	    log ("modifying %d absolute addresses using %s\n", found.size (), reg_names[regno]);
 
 	  for (auto k = found.begin (); k != found.end (); ++k)
 	    {
@@ -2669,7 +2747,19 @@ opt_absolute (void)
 	    }
 
 	  // load base into reg
-	  rtx lea = gen_rtx_SET(gen_raw_REG (SImode, regno), gen_rtx_CONST_INT (SImode, base));
+	  rtx lea;
+
+	  if (with_symbol)
+	    {
+	      if (base)
+		lea = gen_rtx_SET(
+		    gen_raw_REG (SImode, regno),
+		    gen_rtx_CONST(SImode, gen_rtx_PLUS(SImode, with_symbol, gen_rtx_CONST_INT (SImode, base))));
+	      else
+		lea = gen_rtx_SET(gen_raw_REG (SImode, regno), with_symbol);
+	    }
+	  else
+	    lea = gen_rtx_SET(gen_raw_REG (SImode, regno), gen_rtx_CONST_INT (SImode, base));
 	  rtx_insn * insn = emit_insn_before (lea, ii.get_insn ());
 	  insn_info nn (insn);
 	  nn.set_use (ii.get_use ());
