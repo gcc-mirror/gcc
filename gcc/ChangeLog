@@ -1,3 +1,13 @@
+2017-05-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2017-05-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/68491
+	* config/i386/cpuid.h (__get_cpuid): Always return 0 when
+	__get_cpuid_max returns 0.
+	(__get_cpuid_count): Ditto.
+
 2017-04-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline
