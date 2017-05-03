@@ -1,3 +1,9 @@
+2017-05-03  Bin Cheng  <bin.cheng@arm.com>
+
+	Revert r247509
+	2017-05-02  Bin Cheng  <bin.cheng@arm.com>
+	* rtlanal.c (rtx_cost): Handle TRUNCATE between tieable modes.
+
 2017-05-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-data-ref.h (SUB_CONFLICTS_IN_A): Wrap SUB argument in brackets.
