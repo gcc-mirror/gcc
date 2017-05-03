@@ -1,3 +1,16 @@
+2017-05-03  Nathan Sidwell  <nathan@acm.org>
+
+	Canonicalize canonical type hashing
+	* tree.h (type_hash_canon_hash): Declare.
+	* tree.c (type_hash_list, attribute_hash_list): Move into
+	type_hash_canon_hash.
+	(build_type_attribute_qual_variant): Break out hash code calc into
+	type_hash_canon_hash.
+	(type_hash_canon_hash): New.  Generic type hash computation.
+	(build_range_type_1, build_array_type_1, build_function_type,
+	build_method_type_directly, build_offset_type, build_complex_type,
+	make_vector_type): Call it.
+
 2017-05-03  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
@@ -711,7 +724,7 @@
 	(crc32_unsigned_n): ... this.
 	(crc32_unsigned, crc32_byte): Remove.
 	(crc32_string): Remove unnecessary braces.
-
+ 
 2017-04-25  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-cp.c (estimate_local_effects): Convert sreal to int.

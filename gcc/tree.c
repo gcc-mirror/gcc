@@ -248,8 +248,6 @@ static void set_type_quals (tree, int);
 static void print_type_hash_statistics (void);
 static void print_debug_expr_statistics (void);
 static void print_value_expr_statistics (void);
-static void type_hash_list (const_tree, inchash::hash &);
-static void attribute_hash_list (const_tree, inchash::hash &);
 
 tree global_trees[TI_MAX];
 tree integer_types[itk_none];
@@ -4828,11 +4826,7 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 {
   if (! attribute_list_equal (TYPE_ATTRIBUTES (ttype), attribute))
     {
-      inchash::hash hstate;
       tree ntype;
-      int i;
-      tree t;
-      enum tree_code code = TREE_CODE (ttype);
 
       /* Building a distinct copy of a tagged type is inappropriate; it
 	 causes breakage in code that expects there to be a one-to-one
@@ -4856,37 +4850,8 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 
       TYPE_ATTRIBUTES (ntype) = attribute;
 
-      hstate.add_int (code);
-      if (TREE_TYPE (ntype))
-	hstate.add_object (TYPE_HASH (TREE_TYPE (ntype)));
-      attribute_hash_list (attribute, hstate);
-
-      switch (TREE_CODE (ntype))
-	{
-	case FUNCTION_TYPE:
-	  type_hash_list (TYPE_ARG_TYPES (ntype), hstate);
-	  break;
-	case ARRAY_TYPE:
-	  if (TYPE_DOMAIN (ntype))
-	    hstate.add_object (TYPE_HASH (TYPE_DOMAIN (ntype)));
-	  break;
-	case INTEGER_TYPE:
-	  t = TYPE_MAX_VALUE (ntype);
-	  for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
-	    hstate.add_object (TREE_INT_CST_ELT (t, i));
-	  break;
-	case REAL_TYPE:
-	case FIXED_POINT_TYPE:
-	  {
-	    unsigned int precision = TYPE_PRECISION (ntype);
-	    hstate.add_object (precision);
-	  }
-	  break;
-	default:
-	  break;
-	}
-
-      ntype = type_hash_canon (hstate.end(), ntype);
+      hashval_t hash = type_hash_canon_hash (ntype);
+      ntype = type_hash_canon (hash, ntype);
 
       /* If the target-dependent attributes make NTYPE different from
 	 its canonical type, we will need to use structural equality
@@ -6994,18 +6959,80 @@ decl_debug_args_insert (tree from)
 /* Hashing of types so that we don't make duplicates.
    The entry point is `type_hash_canon'.  */
 
-/* Compute a hash code for a list of types (chain of TREE_LIST nodes
-   with types in the TREE_VALUE slots), by adding the hash codes
-   of the individual types.  */
+/* Generate the default hash code for TYPE.  This is designed for
+   speed, rather than maximum entropy.  */
 
-static void
-type_hash_list (const_tree list, inchash::hash &hstate)
+hashval_t
+type_hash_canon_hash (tree type)
 {
-  const_tree tail;
+  inchash::hash hstate;
 
-  for (tail = list; tail; tail = TREE_CHAIN (tail))
-    if (TREE_VALUE (tail) != error_mark_node)
-      hstate.add_object (TYPE_HASH (TREE_VALUE (tail)));
+  hstate.add_int (TREE_CODE (type));
+
+  if (TREE_TYPE (type))
+    hstate.add_object (TYPE_HASH (TREE_TYPE (type)));
+
+  for (tree t = TYPE_ATTRIBUTES (type); t; t = TREE_CHAIN (t))
+    /* Just the identifier is adequate to distinguish.  */
+    hstate.add_object (IDENTIFIER_HASH_VALUE (get_attribute_name (t)));
+
+  switch (TREE_CODE (type))
+    {
+    case METHOD_TYPE:
+      hstate.add_object (TYPE_HASH (TYPE_METHOD_BASETYPE (type)));
+      /* FALLTHROUGH. */
+    case FUNCTION_TYPE:
+      for (tree t = TYPE_ARG_TYPES (type); t; t = TREE_CHAIN (t))
+	if (TREE_VALUE (t) != error_mark_node)
+	  hstate.add_object (TYPE_HASH (TREE_VALUE (t)));
+      break;
+
+    case OFFSET_TYPE:
+      hstate.add_object (TYPE_HASH (TYPE_OFFSET_BASETYPE (type)));
+      break;
+
+    case ARRAY_TYPE:
+      {
+	if (TYPE_DOMAIN (type))
+	  hstate.add_object (TYPE_HASH (TYPE_DOMAIN (type)));
+	if (!AGGREGATE_TYPE_P (TREE_TYPE (type)))
+	  {
+	    unsigned typeless = TYPE_TYPELESS_STORAGE (type);
+	    hstate.add_object (typeless);
+	  }
+      }
+      break;
+
+    case INTEGER_TYPE:
+      {
+	tree t = TYPE_MAX_VALUE (type);
+	if (!t)
+	  t = TYPE_MIN_VALUE (type);
+	for (int i = 0; i < TREE_INT_CST_NUNITS (t); i++)
+	  hstate.add_object (TREE_INT_CST_ELT (t, i));
+	break;
+      }
+      
+    case REAL_TYPE:
+    case FIXED_POINT_TYPE:
+      {
+	unsigned prec = TYPE_PRECISION (type);
+	hstate.add_object (prec);
+	break;
+      }
+
+    case VECTOR_TYPE:
+      {
+	unsigned nunits = TYPE_VECTOR_SUBPARTS (type);
+	hstate.add_object (nunits);
+	break;
+      }
+
+    default:
+      break;
+    }
+
+  return hstate.end ();
 }
 
 /* These are the Hashtable callback functions.  */
@@ -7184,20 +7211,6 @@ print_type_hash_statistics (void)
 	   (long) type_hash_table->size (),
 	   (long) type_hash_table->elements (),
 	   type_hash_table->collisions ());
-}
-
-/* Compute a hash code for a list of attributes (chain of TREE_LIST nodes
-   with names in the TREE_PURPOSE slots and args in the TREE_VALUE slots),
-   by adding the hash codes of the individual attributes.  */
-
-static void
-attribute_hash_list (const_tree list, inchash::hash &hstate)
-{
-  const_tree tail;
-
-  for (tail = list; tail; tail = TREE_CHAIN (tail))
-    /* ??? Do we want to add in TREE_VALUE too? */
-    hstate.add_object (IDENTIFIER_HASH_VALUE (get_attribute_name (tail)));
 }
 
 /* Given two lists of attributes, return true if list l2 is
@@ -8264,7 +8277,6 @@ static tree
 build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
 {
   tree itype = make_node (INTEGER_TYPE);
-  inchash::hash hstate;
 
   TREE_TYPE (itype) = type;
 
@@ -8292,10 +8304,8 @@ build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
       return itype;
     }
 
-  inchash::add_expr (TYPE_MIN_VALUE (itype), hstate);
-  inchash::add_expr (TYPE_MAX_VALUE (itype), hstate);
-  hstate.merge_hash (TYPE_HASH (type));
-  itype = type_hash_canon (hstate.end (), itype);
+  hashval_t hash = type_hash_canon_hash (itype);
+  itype = type_hash_canon (hash, itype);
 
   return itype;
 }
@@ -8403,13 +8413,8 @@ build_array_type_1 (tree elt_type, tree index_type, bool typeless_storage,
 
   if (shared)
     {
-      inchash::hash hstate;
-      hstate.add_object (TYPE_HASH (elt_type));
-      if (index_type)
-	hstate.add_object (TYPE_HASH (index_type));
-      if (!AGGREGATE_TYPE_P (elt_type))
-	hstate.add_flag (TYPE_TYPELESS_STORAGE (t));
-      t = type_hash_canon (hstate.end (), t);
+      hashval_t hash = type_hash_canon_hash (t);
+      t = type_hash_canon (hash, t);
     }
 
   if (TYPE_CANONICAL (t) == t)
@@ -8566,9 +8571,8 @@ build_function_type (tree value_type, tree arg_types)
   TYPE_ARG_TYPES (t) = arg_types;
 
   /* If we already have such a type, use the old one.  */
-  hstate.add_object (TYPE_HASH (value_type));
-  type_hash_list (arg_types, hstate);
-  t = type_hash_canon (hstate.end (), t);
+  hashval_t hash = type_hash_canon_hash (t);
+  t = type_hash_canon (hash, t);
 
   /* Set up the canonical type. */
   any_structural_p   = TYPE_STRUCTURAL_EQUALITY_P (value_type);
@@ -8705,7 +8709,6 @@ build_method_type_directly (tree basetype,
 {
   tree t;
   tree ptype;
-  inchash::hash hstate;
   bool any_structural_p, any_noncanonical_p;
   tree canon_argtypes;
 
@@ -8722,10 +8725,8 @@ build_method_type_directly (tree basetype,
   TYPE_ARG_TYPES (t) = argtypes;
 
   /* If we already have such a type, use the old one.  */
-  hstate.add_object (TYPE_HASH (basetype));
-  hstate.add_object (TYPE_HASH (rettype));
-  type_hash_list (argtypes, hstate);
-  t = type_hash_canon (hstate.end (), t);
+  hashval_t hash = type_hash_canon_hash (t);
+  t = type_hash_canon (hash, t);
 
   /* Set up the canonical type. */
   any_structural_p
@@ -8773,7 +8774,6 @@ tree
 build_offset_type (tree basetype, tree type)
 {
   tree t;
-  inchash::hash hstate;
 
   /* Make a node of the sort we want.  */
   t = make_node (OFFSET_TYPE);
@@ -8782,9 +8782,8 @@ build_offset_type (tree basetype, tree type)
   TREE_TYPE (t) = type;
 
   /* If we already have such a type, use the old one.  */
-  hstate.add_object (TYPE_HASH (basetype));
-  hstate.add_object (TYPE_HASH (type));
-  t = type_hash_canon (hstate.end (), t);
+  hashval_t hash = type_hash_canon_hash (t);
+  t = type_hash_canon (hash, t);
 
   if (!COMPLETE_TYPE_P (t))
     layout_type (t);
@@ -8815,7 +8814,6 @@ tree
 build_complex_type (tree component_type, bool named)
 {
   tree t;
-  inchash::hash hstate;
 
   gcc_assert (INTEGRAL_TYPE_P (component_type)
 	      || SCALAR_FLOAT_TYPE_P (component_type)
@@ -8827,8 +8825,8 @@ build_complex_type (tree component_type, bool named)
   TREE_TYPE (t) = TYPE_MAIN_VARIANT (component_type);
 
   /* If we already have such a type, use the old one.  */
-  hstate.add_object (TYPE_HASH (component_type));
-  t = type_hash_canon (hstate.end (), t);
+  hashval_t hash = type_hash_canon_hash (t);
+  t = type_hash_canon (hash, t);
 
   if (!COMPLETE_TYPE_P (t))
     layout_type (t);
@@ -10083,7 +10081,6 @@ static tree
 make_vector_type (tree innertype, int nunits, machine_mode mode)
 {
   tree t;
-  inchash::hash hstate;
   tree mv_innertype = TYPE_MAIN_VARIANT (innertype);
 
   t = make_node (VECTOR_TYPE);
@@ -10101,11 +10098,8 @@ make_vector_type (tree innertype, int nunits, machine_mode mode)
 
   layout_type (t);
 
-  hstate.add_wide_int (VECTOR_TYPE);
-  hstate.add_wide_int (nunits);
-  hstate.add_wide_int (mode);
-  hstate.add_object (TYPE_HASH (TREE_TYPE (t)));
-  t = type_hash_canon (hstate.end (), t);
+  hashval_t hash = type_hash_canon_hash (t);
+  t = type_hash_canon (hash, t);
 
   /* We have built a main variant, based on the main variant of the
      inner type. Use it to build the variant we return.  */
