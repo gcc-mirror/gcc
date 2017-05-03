@@ -26239,7 +26239,7 @@ Substitute the variable part of a matched option.  See below.
 Note that each comma in the substituted string is replaced by
 a single space.
 
-@item %<@code{S}
+@item %<S
 Remove all occurrences of @code{-S} from the command line.  Note---this
 command is position dependent.  @samp{%} commands in the spec string
 before this one see @code{-S}, @samp{%} commands in the spec string
@@ -26337,7 +26337,7 @@ It is used to separate compiler options from assembler options
 in the @option{--target-help} output.
 @end table
 
-@item %@{@code{S}@}
+@item %@{S@}
 Substitutes the @code{-S} switch, if that switch is given to GCC@.
 If that switch is not specified, this substitutes nothing.  Note that
 the leading dash is omitted when specifying this option, and it is
@@ -26345,11 +26345,11 @@ automatically inserted if the substitution is performed.  Thus the spec
 string @samp{%@{foo@}} matches the command-line option @option{-foo}
 and outputs the command-line option @option{-foo}.
 
-@item %W@{@code{S}@}
+@item %W@{S@}
 Like %@{@code{S}@} but mark last argument supplied within as a file to be
 deleted on failure.
 
-@item %@{@code{S}*@}
+@item %@{S*@}
 Substitutes all the switches specified to GCC whose names start
 with @code{-S}, but which also take an argument.  This is used for
 switches like @option{-o}, @option{-D}, @option{-I}, etc.
@@ -26357,19 +26357,19 @@ GCC considers @option{-o foo} as being
 one switch whose name starts with @samp{o}.  %@{o*@} substitutes this
 text, including the space.  Thus two arguments are generated.
 
-@item %@{@code{S}*&@code{T}*@}
+@item %@{S*&T*@}
 Like %@{@code{S}*@}, but preserve order of @code{S} and @code{T} options
 (the order of @code{S} and @code{T} in the spec is not significant).
 There can be any number of ampersand-separated variables; for each the
 wild card is optional.  Useful for CPP as @samp{%@{D*&U*&A*@}}.
 
-@item %@{@code{S}:@code{X}@}
+@item %@{S:X@}
 Substitutes @code{X}, if the @option{-S} switch is given to GCC@.
 
-@item %@{!@code{S}:@code{X}@}
+@item %@{!S:X@}
 Substitutes @code{X}, if the @option{-S} switch is @emph{not} given to GCC@.
 
-@item %@{@code{S}*:@code{X}@}
+@item %@{S*:X@}
 Substitutes @code{X} if one or more switches whose names start with
 @code{-S} are specified to GCC@.  Normally @code{X} is substituted only
 once, no matter how many such switches appeared.  However, if @code{%*}
@@ -26394,19 +26394,19 @@ when matching an option like @option{-mcu=newchip} produces:
 --script=newchip/memory.ld
 @end smallexample
 
-@item %@{.@code{S}:@code{X}@}
+@item %@{.S:X@}
 Substitutes @code{X}, if processing a file with suffix @code{S}.
 
-@item %@{!.@code{S}:@code{X}@}
+@item %@{!.S:X@}
 Substitutes @code{X}, if @emph{not} processing a file with suffix @code{S}.
 
-@item %@{,@code{S}:@code{X}@}
+@item %@{,S:X@}
 Substitutes @code{X}, if processing a file for language @code{S}.
 
-@item %@{!,@code{S}:@code{X}@}
+@item %@{!,S:X@}
 Substitutes @code{X}, if not processing a file for language @code{S}.
 
-@item %@{@code{S}|@code{P}:@code{X}@}
+@item %@{S|P:X@}
 Substitutes @code{X} if either @code{-S} or @code{-P} is given to
 GCC@.  This may be combined with @samp{!}, @samp{.}, @samp{,}, and
 @code{*} sequences as well, although they have a stronger binding than
@@ -26441,7 +26441,14 @@ be as many clauses as you need.  This may be combined with @code{.},
 
 @end table
 
-The conditional text @code{X} in a %@{@code{S}:@code{X}@} or similar
+The switch matching text @code{S} in a @samp{%@{S@}}, @samp{%@{S:X@}}
+or similar construct can use a backslash to ignore the special meaning
+of the character following it, thus allowing literal matching of a
+character that is otherwise specially treated.  For example,
+@samp{%@{std=iso9899\:1999:X@}} substitutes @code{X} if the
+@option{-std=iso9899:1999} option is given.
+
+The conditional text @code{X} in a @samp{%@{S:X@}} or similar
 construct may contain other nested @samp{%} constructs or spaces, or
 even newlines.  They are processed as usual, as described above.
 Trailing white space in @code{X} is ignored.  White space may also
