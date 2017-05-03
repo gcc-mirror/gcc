@@ -2294,6 +2294,8 @@ specify how much alignment (in bytes) is provided by that function,
 but few users will need to override the default of
 @code{alignof(std::max_align_t)}.
 
+This flag is enabled by default for @option{-std=c++1z}.
+
 @item -fcheck-new
 @opindex fcheck-new
 Check that the pointer returned by @code{operator new} is non-null
