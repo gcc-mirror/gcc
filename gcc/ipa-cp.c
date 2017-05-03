@@ -3246,10 +3246,6 @@ ipcp_propagate_stage (struct ipa_topo_info *topo)
   if (dump_file)
     fprintf (dump_file, "\n Propagating constants:\n\n");
 
-  if (in_lto_p)
-    ipa_update_after_lto_read ();
-
-
   FOR_EACH_DEFINED_FUNCTION (node)
   {
     struct ipa_node_params *info = IPA_NODE_REF (node);

@@ -2376,9 +2376,6 @@ ipa_inline (void)
 
   order = XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
 
-  if (in_lto_p && optimize)
-    ipa_update_after_lto_read ();
-
   if (dump_file)
     dump_inline_summaries (dump_file);
 

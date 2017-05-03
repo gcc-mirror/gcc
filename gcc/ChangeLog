@@ -1,5 +1,13 @@
 2017-05-03  Martin Jambor  <mjambor@suse.cz>
 
+	* ipa-prop.c (ipa_update_after_lto_read): Removed.
+	* ipa-prop.h (ipa_update_after_lto_read): Remove declaration.
+	* ipa-cp.c (ipcp_propagate_stage): Do not call
+	ipa_update_after_lto_read.
+	* ipa-inline.c (ipa_inline): Likewise.
+
+2017-05-03  Martin Jambor  <mjambor@suse.cz>
+
 	* ipa-prop.h (ipa_edge_args): Make a class.  Mark with for_user GTY
 	tag.  Added a default constructor and a destructor.
 	(ipa_edge_args_sum_t): New class;
