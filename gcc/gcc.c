@@ -584,6 +584,12 @@ or with constant text in a single argument.
 
  %(Spec) processes a specification defined in a specs file as *Spec:
 
+The switch matching text S in a %{S}, %{S:X}, or similar construct can use
+a backslash to ignore the special meaning of the character following it,
+thus allowing literal matching of a character that is otherwise specially
+treated.  For example, %{std=iso9899\:1999:X} substitutes X if the
+-std=iso9899:1999 option is given.
+
 The conditional text X in a %{S:X} or similar construct may contain
 other nested % constructs or spaces, or even newlines.  They are
 processed as usual, as described above.  Trailing white space in X is
@@ -6237,6 +6243,8 @@ handle_braces (const char *p)
 {
   const char *atom, *end_atom;
   const char *d_atom = NULL, *d_end_atom = NULL;
+  char *esc_buf = NULL, *d_esc_buf = NULL;
+  int esc;
   const char *orig = p;
 
   bool a_is_suffix;
@@ -6287,10 +6295,41 @@ handle_braces (const char *p)
 	    p++, a_is_spectype = true;
 
 	  atom = p;
+	  esc = 0;
 	  while (ISIDNUM (*p) || *p == '-' || *p == '+' || *p == '='
-		 || *p == ',' || *p == '.' || *p == '@')
-	    p++;
+		 || *p == ',' || *p == '.' || *p == '@' || *p == '\\')
+	    {
+	      if (*p == '\\')
+		{
+		  p++;
+		  if (!*p)
+		    fatal_error (input_location,
+				 "braced spec %qs ends in escape", orig);
+		  esc++;
+		}
+	      p++;
+	    }
 	  end_atom = p;
+
+	  if (esc)
+	    {
+	      const char *ap;
+	      char *ep;
+
+	      if (esc_buf && esc_buf != d_esc_buf)
+		free (esc_buf);
+	      esc_buf = NULL;
+	      ep = esc_buf = (char *) xmalloc (end_atom - atom - esc + 1);
+	      for (ap = atom; ap != end_atom; ap++, ep++)
+		{
+		  if (*ap == '\\')
+		    ap++;
+		  *ep = *ap;
+		}
+	      *ep = '\0';
+	      atom = esc_buf;
+	      end_atom = ep;
+	    }
 
 	  if (*p == '*')
 	    p++, a_is_starred = 1;
@@ -6358,6 +6397,7 @@ handle_braces (const char *p)
 		      disj_matched = true;
 		      d_atom = atom;
 		      d_end_atom = end_atom;
+		      d_esc_buf = esc_buf;
 		    }
 		}
 	    }
@@ -6369,7 +6409,7 @@ handle_braces (const char *p)
 	      p = process_brace_body (p + 1, d_atom, d_end_atom, disj_starred,
 				      disj_matched && !n_way_matched);
 	      if (p == 0)
-		return 0;
+		goto done;
 
 	      /* If we have an N-way choice, reset state for the next
 		 disjunction.  */
@@ -6389,6 +6429,12 @@ handle_braces (const char *p)
 	}
     }
   while (*p++ != '}');
+
+ done:
+  if (d_esc_buf && d_esc_buf != esc_buf)
+    free (d_esc_buf);
+  if (esc_buf)
+    free (esc_buf);
 
   return p;
 

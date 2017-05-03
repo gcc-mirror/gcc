@@ -1,3 +1,11 @@
+2017-05-03  Jeff Downs  <heydowns@somuchpressure.net>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.c (handle_braces): Support escaping in switch matching
+	text.
+	* doc/invoke.texi (Spec Files): Document it.
+	Remove superfluous @code markup in items.
+
 2017-05-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c (struct column_range): New struct.
