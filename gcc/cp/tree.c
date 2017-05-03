@@ -2093,6 +2093,18 @@ build_ref_qualified_type (tree type, cp_ref_qualifier rqual)
   return t;
 }
 
+tree
+make_module_vec (unsigned clusters MEM_STAT_DECL)
+{
+  size_t length = (clusters * sizeof (module_cluster)
+		   + sizeof (tree_module_vec) - sizeof (module_cluster));
+  tree vec = ggc_alloc_cleared_tree_node_stat (length PASS_MEM_STAT);
+  TREE_SET_CODE (vec, MODULE_VECTOR);
+  MODULE_VECTOR_NUM_CLUSTERS (vec) = clusters;
+
+  return vec;
+}
+
 /* Cache of free ovl nodes.  Uses OVL_FUNCTION for chaining.  */
 static GTY((deletable)) tree ovl_cache;
 

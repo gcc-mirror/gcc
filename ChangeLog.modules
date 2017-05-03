@@ -1,3 +1,24 @@
+2017-05-03  Nathan Sidwell  <nathan@acm.org>
+
+	Namespace partitions.
+	gcc/cp/
+	* cp-tree.h (MODULES_PER_BINDING_CLUSTER): Delete.
+	(MODULE_VECTOR_NUM_CLUSTERS, MODULE_VECTOR_CLUSTER_BASE,
+	MODULE_VECTOR_CLUSTER_LAST, MODULE_VECTOR_CLUSTER): New.
+	(make_module_vec): Declare.
+	* module.c (cpms_out::write_bindings): Look into MODULE_VECTOR.
+	* name-lookup.c (modue_binding_slot): New.
+	(name_lookup::merge_binding, name_lookup::process_binding): New.
+	(name_lookup::search_qualified): Add usings parm.
+	(name_lookup::search_namespace_only): Look into MODULE_VECTOR.
+	(do_pushdecl): Create module slot.
+	(find_namespace_partition): New, from ...
+	(push_module_namespace): ... here.  Call it.
+	(push_module_binding): Create module slot.
+	(push_namespace): Adjust.
+	* ptree.c (cxx_print_xnode): Print MODULE_VECTOR.
+	* tree.c (make_module_vec): New.
+
 2017-05-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
@@ -20,8 +41,8 @@
 	(cpms_in::finish_function): Don't push function here.
 	(cpms_in::finish_namespace): Adjust.
 	(do_module_import): Adjust.
-	* name-lookup.h (write_module_namespace): Declare.
-	* name-lookup.c (write_module_namespace): New.
+	* name-lookup.h (push_module_namespace): Declare.
+	* name-lookup.c (push_module_namespace): New.
 
 	Read/write direct namespace bindings part 1.
 	gcc/cp/

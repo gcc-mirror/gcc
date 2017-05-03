@@ -238,8 +238,25 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 		    *iter, indent+4);
       break;
     case MODULE_VECTOR:
-      gcc_unreachable ();
-      // FIXME: implement
+      {
+	unsigned len = MODULE_VECTOR_NUM_CLUSTERS (node);
+	fprintf (file, "clusters %u", len);
+	for (unsigned ix = 0; ix != len; ix++)
+	  {
+	    module_cluster *cluster = &MODULE_VECTOR_CLUSTER (node, ix);
+	    char pfx[16];
+	    for (unsigned jx = 0; jx != 2; jx++)
+	      if (cluster->spans[jx])
+		{
+		  if (cluster->spans[jx] > 1)
+		    sprintf (pfx, "elts %u-%u",
+			     cluster->bases[jx], cluster->spans[jx]);
+		  else
+		    sprintf (pfx, "elt %u", cluster->bases[jx]);
+		  print_node (file, pfx, cluster->slots[jx], indent + 4);
+		}
+	  }
+      }
       break;
     case TEMPLATE_PARM_INDEX:
       print_node (file, "decl", TEMPLATE_PARM_DECL (node), indent+4);

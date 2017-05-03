@@ -802,8 +802,6 @@ class ovl2_iterator : public ovl_iterator
   }
 };
 
-#define MODULES_PER_BINDING_CLUSTER 4
-
 /* Bindings for modules are held in a sparse array.  Slots 0 & 1 are
    aways present (global and this modules).  Remaining slots are
    allocated as needed.  By construction of the importing mechanism we
@@ -811,15 +809,19 @@ class ovl2_iterator : public ovl_iterator
    index/slot tuples, we bunch them up for greater packing.  */
 
 struct GTY(()) module_cluster {
-  unsigned short indices[MODULES_PER_BINDING_CLUSTER];
-  tree slots[MODULES_PER_BINDING_CLUSTER];
+  unsigned short bases[2];
+  unsigned short spans[2]; /* Used for namespace binding compression. */
+  tree slots[2];
 };
 
-#define MODULE_LENGTH(NODE) (MODULE_VECTOR_CHECK (NODE)->base.u.length)
-#define MODULE_CLUSTER(NODE,IX) \
-  (((tree_module_vec *)MODULE_VECTOR_CHECK (NODE))->vec[IX])
-#define MODULE_CLUSTERS(NODE) \
+#define MODULE_VECTOR_NUM_CLUSTERS(NODE) \
+  (MODULE_VECTOR_CHECK (NODE)->base.u.length)
+#define MODULE_VECTOR_CLUSTER_BASE(NODE) \
   (((tree_module_vec *)MODULE_VECTOR_CHECK (NODE))->vec)
+#define MODULE_VECTOR_CLUSTER_LAST(NODE) \
+  (&MODULE_VECTOR_CLUSTER (NODE, MODULE_VECTOR_NUM_CLUSTERS (NODE) - 1))
+#define MODULE_VECTOR_CLUSTER(NODE,IX) \
+  (((tree_module_vec *)MODULE_VECTOR_CHECK (NODE))->vec[IX])
 
 struct GTY(()) tree_module_vec {
   struct tree_base base;
@@ -6857,7 +6859,7 @@ extern tree finish_builtin_launder		(location_t, tree,
 /* in tree.c */
 extern int cp_tree_operand_length		(const_tree);
 extern int cp_tree_code_length			(enum tree_code);
-void cp_free_lang_data 				(tree t);
+extern void cp_free_lang_data 			(tree t);
 extern tree force_target_expr			(tree, tree, tsubst_flags_t);
 extern tree build_target_expr_with_type		(tree, tree, tsubst_flags_t);
 extern void lang_check_failed			(const char *, int,
@@ -6878,7 +6880,8 @@ extern bool type_has_nontrivial_default_init	(const_tree);
 extern bool type_has_nontrivial_copy_init	(const_tree);
 extern bool class_tmpl_impl_spec_p		(const_tree);
 extern int zero_init_p				(const_tree);
-extern bool check_abi_tag_redeclaration		(const_tree, const_tree, const_tree);
+extern bool check_abi_tag_redeclaration		(const_tree, const_tree,
+						 const_tree);
 extern bool check_abi_tag_args			(tree, tree);
 extern tree strip_typedefs			(tree, bool * = NULL);
 extern tree strip_typedefs_expr			(tree, bool * = NULL);
@@ -6914,6 +6917,7 @@ extern tree hash_tree_cons			(tree, tree, tree);
 extern tree hash_tree_chain			(tree, tree);
 extern tree build_qualified_name		(tree, tree, tree, bool);
 extern tree build_ref_qualified_type		(tree, cp_ref_qualifier);
+extern tree make_module_vec			(unsigned clusters);
 inline tree
 ovl_first (tree node)
 {

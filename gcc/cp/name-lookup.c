@@ -55,6 +55,89 @@ create_local_binding (cp_binding_level *level, tree name)
   return binding;
 }
 
+/* *SLOT is a namespace binding slot.  Create or extend the the
+   *MODULE_VECTOR to allow a binding in module IX.
+   IX must either be the global or this module, or after any existing
+   module binding.  */
+
+static tree *
+module_binding_slot (tree *slot, unsigned ix, int create)
+{
+  bool not_vec = !*slot || TREE_CODE (*slot) != MODULE_VECTOR;
+
+  if (not_vec)
+    {
+      if (ix == GLOBAL_MODULE_INDEX)
+	/* The global module can just use slot directly.  */
+	return slot;
+      if (!create)
+	return NULL;
+    }
+
+  module_cluster *cluster;
+  unsigned clusters = 0;
+  if (!not_vec)
+    {
+      clusters = MODULE_VECTOR_NUM_CLUSTERS (*slot);
+      cluster = &MODULE_VECTOR_CLUSTER (*slot, clusters - 1);
+    }
+
+  /* Figure out if we need to extend the module vector itself.  */
+  unsigned incr = 0;
+  if (ix < IMPORTED_MODULE_BASE)
+    incr = not_vec; /* Only if it's not already a vector.  */
+  else if (clusters < 2)
+    incr = 2 - clusters; /* Make sure we have glob/this slots too.  */
+  else if (create < 0)
+    {
+      /* If we're binding a namespace, see if we can extend the span
+	 of the final element.  */
+      incr = cluster->spans[1] != 0;
+      if (cluster->bases[incr] + cluster->spans[incr] == ix)
+	{
+	  cluster->spans[incr]++;
+	  return &cluster->slots[incr];
+	}
+      /* Otherwise we need to extend, if that was the last slot of the
+	 cluster.  */
+    }
+  else if (cluster->spans[1])
+    incr = 1; /* No spare slot in the final cluster.  */
+
+  if (incr)
+    {
+      tree new_vec = make_module_vec (clusters + incr);
+      cluster = MODULE_VECTOR_CLUSTER_BASE (new_vec);
+      if (clusters)
+	memcpy (cluster, MODULE_VECTOR_CLUSTER_BASE (*slot),
+		clusters * sizeof (module_cluster));
+      else
+	{
+	  /* Initialize the reserved slots.  */
+	  cluster->slots[GLOBAL_MODULE_INDEX] = *slot;
+	  cluster->bases[GLOBAL_MODULE_INDEX] = GLOBAL_MODULE_INDEX;
+	  cluster->bases[THIS_MODULE_INDEX] = THIS_MODULE_INDEX;
+	  cluster->spans[GLOBAL_MODULE_INDEX] = 1;
+	  cluster->spans[THIS_MODULE_INDEX] = 1;
+	}
+      *slot = new_vec;
+      clusters += incr;
+      cluster += clusters - 1;
+    }
+
+  unsigned off = ix;
+  if (ix >= IMPORTED_MODULE_BASE)
+    {
+      off = cluster->spans[0] != 0;
+
+      gcc_assert (!off || cluster->bases[0] + cluster->spans[0] <= ix);
+
+      cluster->bases[off] = ix;
+      cluster->spans[off] = 1;
+    }
+  return &cluster->slots[off];
+}
+
 /* Create an overload suitable for recording an artificial TYPE_DECL
    and another decl.  We use this machanism to implement the struct
    stat hack within a namespace.  It'd be nice to use it everywhere,
@@ -260,6 +343,8 @@ private:
   static void restore_state (unsigned);
 
 private:
+  static tree merge_binding (tree, tree);
+  bool process_binding (tree binding);
   /* Look in only namespace.  */
   bool search_namespace_only (tree scope);
   /* Look in namespace and its (recursive) inlines. Ignore using
@@ -282,8 +367,8 @@ private:
   }
 
 public:
-  /* Search namespace + inlines + usings as qualified lookup.  */
-  bool search_qualified (tree scope);
+  /* Search namespace + inlines + maybe usings as qualified lookup.  */
+  bool search_qualified (tree scope, bool usings = true);
   /* Search namespace + inlines + usings as unqualified lookup.  */
   bool search_unqualified (tree scope, cp_binding_level *);
 };
@@ -350,18 +435,88 @@ name_lookup::mark_seen (tree scope)
   scopes.safe_push (scope);
 }
 
-static tree
-build_ambiguous (tree current, tree addition)
-{
-  if (TREE_CODE (current) != TREE_LIST)
-    {
-      current = build_tree_list (NULL_TREE, current);
-      TREE_TYPE (current) = error_mark_node;
-    }
-  current = tree_cons (NULL_TREE, addition, current);
-  TREE_TYPE (current) = error_mark_node;
+/* NEW_VAL is being added to the current lookup CUR.  */
 
-  return current;
+tree
+name_lookup::merge_binding (tree cur, tree new_val)
+{
+  if (!cur)
+    cur = new_val;
+  else if (!new_val)
+    ;
+  else if (cur == new_val)
+    ;
+  else if ((TREE_CODE (cur) == TYPE_DECL
+	    && TREE_CODE (new_val) == TYPE_DECL
+	    && same_type_p (TREE_TYPE (cur), TREE_TYPE (new_val))))
+    ;
+  else if (OVL_P (cur) && OVL_P (new_val))
+    cur = lookup_add (cur, new_val);
+  else
+    {
+      if (TREE_CODE (cur) != TREE_LIST)
+	{
+	  cur = build_tree_list (NULL_TREE, cur);
+	  TREE_TYPE (cur) = error_mark_node;
+	}
+      cur = tree_cons (NULL_TREE, new_val, cur);
+      TREE_TYPE (cur) = error_mark_node;
+    }
+
+  return cur;
+}
+
+bool
+name_lookup::process_binding (tree binding)
+{
+  tree new_val = MAYBE_STAT_DECL (binding);
+  tree new_type = MAYBE_STAT_TYPE (binding);
+
+  /* Did we really see a type? */
+  if (LOOKUP_NAMESPACES_ONLY (flags)
+      || (!(flags & LOOKUP_HIDDEN)
+	  && new_type && DECL_HIDDEN_P (new_type)))
+    new_type = NULL_TREE;
+
+  if (new_val && !(flags & LOOKUP_HIDDEN))
+    new_val = ovl_skip_hidden (new_val);
+
+  /* Do we really see a value? */
+  if (new_val)
+    switch (TREE_CODE (new_val))
+      {
+      case TEMPLATE_DECL:
+	/* If we expect types or namespaces, and not templates,
+	   or this is not a template class.  */
+	if ((LOOKUP_QUALIFIERS_ONLY (flags)
+	     && !DECL_TYPE_TEMPLATE_P (new_val)))
+	  new_val = NULL_TREE;
+	break;
+      case TYPE_DECL:
+	if (LOOKUP_NAMESPACES_ONLY (flags)
+	    || (new_type && (flags & LOOKUP_PREFER_TYPES)))
+	  new_val = NULL_TREE;
+	break;
+      case NAMESPACE_DECL:
+	if (LOOKUP_TYPES_ONLY (flags))
+	  new_val = NULL_TREE;
+	break;
+      default:
+	if (LOOKUP_QUALIFIERS_ONLY (flags))
+	  new_val = NULL_TREE;
+      }
+
+  if (!new_val)
+    {
+      new_val = new_type;
+      new_type = NULL_TREE;
+    }
+
+  /* Now merge.  */
+  value = merge_binding (value, new_val);
+  type = merge_binding (type, new_type);
+
+  return new_val != NULL_TREE;
 }
 
 /* Look in exactly namespace SCOPE.  */
@@ -373,78 +528,22 @@ name_lookup::search_namespace_only (tree scope)
 
   if (tree *binding = find_namespace_slot (scope, name))
     {
-      tree new_val = MAYBE_STAT_DECL (*binding);
-      tree new_type = MAYBE_STAT_TYPE (*binding);
-
-      /* Did we really see a type? */
-      if (LOOKUP_NAMESPACES_ONLY (flags)
-	  || (!(flags & LOOKUP_HIDDEN)
-	      && new_type && DECL_HIDDEN_P (new_type)))
-	new_type = NULL_TREE;
-
-      if (new_val && !(flags & LOOKUP_HIDDEN))
-	new_val = ovl_skip_hidden (new_val);
-
-      /* Do we really see a value? */
-      if (new_val)
-	switch (TREE_CODE (new_val))
-	  {
-	  case TEMPLATE_DECL:
-	    /* If we expect types or namespaces, and not templates,
-	       or this is not a template class.  */
-	    if ((LOOKUP_QUALIFIERS_ONLY (flags)
-		 && !DECL_TYPE_TEMPLATE_P (new_val)))
-	      new_val = NULL_TREE;
-	    break;
-	  case TYPE_DECL:
-	    if (LOOKUP_NAMESPACES_ONLY (flags)
-		|| (new_type && (flags & LOOKUP_PREFER_TYPES)))
-	      new_val = NULL_TREE;
-	    break;
-	  case NAMESPACE_DECL:
-	    if (LOOKUP_TYPES_ONLY (flags))
-	      new_val = NULL_TREE;
-	    break;
-	  default:
-	    if (LOOKUP_QUALIFIERS_ONLY (flags))
-	      new_val = NULL_TREE;
-	  }
-
-      if (!new_val)
+      tree val = *binding;
+      if (TREE_CODE (val) != MODULE_VECTOR)
+	/* Only a global module binding, visible from anywhere.  */
+	found |= process_binding (val);
+      else
 	{
-	  new_val = new_type;
-	  new_type = NULL_TREE;
+	  // FIXME:grab & test the import bitmap
+	  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (val);
+	  for (unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val); ix--; cluster++)
+	    {
+	      if (cluster->spans[0])
+		found |= process_binding (cluster->slots[0]);
+	      if (cluster->spans[1])
+		found |= process_binding (cluster->slots[1]);
+	    }
 	}
-
-      /* Now merge.  */
-      if (!value)
-	value = new_val;
-      else if (!new_val)
-	;
-      else if (new_val == value)
-	;
-      else if ((TREE_CODE (value) == TYPE_DECL
-		&& TREE_CODE (new_val) == TYPE_DECL
-		&& same_type_p (TREE_TYPE (value), TREE_TYPE (new_val))))
-	;
-      else if (OVL_P (value) && OVL_P (new_val))
-	value = lookup_add (value, new_val);
-      else
-	value = build_ambiguous (value, new_val);
-
-      if (!type)
-	type = new_type;
-      else if (!new_type)
-	;
-      else if (new_type == type)
-	;
-      else if (same_type_p (TREE_TYPE (type), TREE_TYPE (new_type)))
-	;
-      else
-	type = build_ambiguous (type, new_type);
-
-      if (new_val)
-	found = true;
     }
 
   return found;
@@ -502,14 +601,15 @@ name_lookup::search_usings (tree scope)
 
 /* Qualified namespace lookup in SCOPE.
    1) Look in SCOPE (+inlines).  If found, we're done.
-   2) Otherwise recurse for every using directive of SCOPE (+inlines).
+   2) Otherwise, if USINGS is true,
+      recurse for every using directive of SCOPE (+inlines).
 
    Trickiness is (a) loops and (b) multiple paths to same namespace.
    In both cases we want to not repeat any lookups, and know whether
    to stop the caller's step #2.  Do this via the FOUND_P marker.  */
 
 bool
-name_lookup::search_qualified (tree scope)
+name_lookup::search_qualified (tree scope, bool usings)
 {
   bool found = false;
 
@@ -518,7 +618,7 @@ name_lookup::search_qualified (tree scope)
   else 
     {
       found = search_namespace (scope);
-      if (!found)
+      if (!found && usings)
 	found = search_usings (scope);
     }
 
@@ -2236,6 +2336,7 @@ do_pushdecl (tree decl, bool is_friend)
       cxx_binding *binding = NULL; /* Local scope binding.  */
       tree ns = NULL_TREE; /* Searched namespace.  */
       tree *slot = NULL; /* Binding slot in namespace.  */
+      tree *mslot = NULL; /* Current module slot in namespace.  */
       tree old = NULL_TREE;
 
       if (level->kind == sk_namespace)
@@ -2252,7 +2353,12 @@ do_pushdecl (tree decl, bool is_friend)
 	  else
 	    slot = find_namespace_slot (ns, name);
 	  if (slot)
-	    old = MAYBE_STAT_DECL (*slot);
+	    {
+	      gcc_assert (current_module <= IMPORTED_MODULE_BASE);
+	      mslot = module_binding_slot (slot, current_module,
+					   ns == current_namespace);
+	      old = MAYBE_STAT_DECL (*mslot);
+	    }
 	}
       else
 	{
@@ -2342,9 +2448,10 @@ do_pushdecl (tree decl, bool is_friend)
 	{
 	  ns = current_namespace;
 	  slot = find_or_create_namespace_slot (ns, name);
+	  mslot = module_binding_slot (slot, current_module, true);
 	}
 
-      old = update_binding (level, binding, slot, old, decl, is_friend);
+      old = update_binding (level, binding, mslot, old, decl, is_friend);
 
       if (old != decl)
 	/* An existing decl matched, use it.  */
@@ -2393,6 +2500,40 @@ pushdecl (tree x, bool is_friend)
   return x;
 }
 
+/* SLOT_VAL is the value of a binding.  Look in the module partitions
+   to see if there's a namespace already.  We don't have to consider
+   the STAT_HACK, because a namepace and an elaborated type cannot
+   reside in the same binding.  */
+
+static tree
+find_namespace_partition (tree slot_val)
+{
+  if (TREE_CODE (slot_val) == MODULE_VECTOR)
+    {
+      module_cluster *cluster
+	= &MODULE_VECTOR_CLUSTER (slot_val,
+				  MODULE_VECTOR_NUM_CLUSTERS (slot_val));
+      do
+	{
+	  cluster--;
+	  if (tree second = cluster->slots[1])
+	    if (TREE_CODE (second) == NAMESPACE_DECL
+		&& !DECL_NAMESPACE_ALIAS (second))
+	      return second;
+
+	  if (tree first = cluster->slots[0])
+	    if (TREE_CODE (first) == NAMESPACE_DECL
+		&& !DECL_NAMESPACE_ALIAS (first))
+	      return first;
+	}
+      while (cluster != MODULE_VECTOR_CLUSTER_BASE (slot_val));
+    }
+  else if (TREE_CODE (slot_val) == NAMESPACE_DECL
+	   && !DECL_NAMESPACE_ALIAS (slot_val))
+    return slot_val;
+
+  return NULL_TREE;
+}
 
 /* NS is a newly read in NAMESPACE_DECL, residing in CTX.  Find or
    insert it into CTX's binding table.  Return the matched or new
@@ -2406,14 +2547,38 @@ push_module_namespace (tree ctx, unsigned module, tree ns)
 	      && !DECL_NAMESPACE_ALIAS (ns));
 
   tree *slot = find_or_create_namespace_slot (ctx, DECL_NAME (ns));
-  tree old = MAYBE_STAT_DECL (*slot);
+  tree *mslot = module_binding_slot (slot, module, -1);
+  tree old = NULL_TREE;
 
-  if (!old)
+  if (!*mslot)
+    old = find_namespace_partition (*slot);
+  else if (TREE_CODE (*mslot) == NAMESPACE_DECL
+	   && !DECL_NAMESPACE_ALIAS (*mslot))
+    old = *mslot;
+
+  if (old)
     {
+      *mslot = old;
+      if (DECL_NAMESPACE_INLINE_P (old)
+	  != DECL_NAMESPACE_INLINE_P (ns))
+	old = NULL_TREE;
+    }
+  else
+    {
+      /* Creating a new namespace.  */
       SCOPE_DEPTH (ns) = SCOPE_DEPTH (ctx) + 1;
       if (ctx == global_namespace)
 	DECL_CONTEXT (ns) = DECL_CONTEXT (global_namespace);
-      old = update_binding (NAMESPACE_LEVEL (ctx), NULL, slot, old, ns, false);
+      old = update_binding (NAMESPACE_LEVEL (ctx), NULL,
+			    mslot, old, ns, false);
+      // FIXME: push into global module too, for now
+      if (module != GLOBAL_MODULE_INDEX)
+	{
+	  tree *gslot = module_binding_slot (slot, GLOBAL_MODULE_INDEX, true);
+	  if (!*gslot)
+	    *gslot = old;
+	  gcc_assert (*gslot == old);
+	}
       if (old == ns)
 	{
 	  if (DECL_NAMESPACE_INLINE_P (old))
@@ -2423,21 +2588,26 @@ push_module_namespace (tree ctx, unsigned module, tree ns)
       else
 	old = NULL_TREE;
     }
-  else if (TREE_CODE (old) != NAMESPACE_DECL)
-    old = NULL_TREE;
+
   return old;
 }
+
+/* NAME is being bound within namespace NS and MODULE to OVL.
+   Unless MODULE is GLOBAL_MODULE_INDEX, there should be no existing
+   binding.  */
 
 bool
 push_module_binding (tree ns, unsigned module, tree name, tree ovl)
 {
+  gcc_assert (TREE_CODE (ovl) != NAMESPACE_DECL);
   tree *slot = find_or_create_namespace_slot (ns, name);
-  tree old = MAYBE_STAT_DECL (*slot);
+  tree *mslot = module_binding_slot (slot, module, -1);
+  tree old = MAYBE_STAT_DECL (*mslot);
 
   // FIXME: for now
   gcc_assert (TREE_CODE (ovl) == FUNCTION_DECL);
   if (old != ovl)
-    old = update_binding (NAMESPACE_LEVEL (ns), NULL, slot, old, ovl, false);
+    old = update_binding (NAMESPACE_LEVEL (ns), NULL, mslot, old, ovl, false);
   return old != error_mark_node;
 }
 
@@ -6163,57 +6333,69 @@ push_namespace (tree name, bool make_inline)
   if (!name)
     name = anon_identifier;
 
-  tree ns = find_namespace_value (current_namespace, name);
-  /* Check whether this is an extended namespace definition.  */
-  if (ns && TREE_CODE (ns) == NAMESPACE_DECL)
-    {
-      if (tree dna = DECL_NAMESPACE_ALIAS (ns))
-	{
-	  /* We do some error recovery for, eg, the redeclaration of M
-	     here:
+  tree ns = NULL_TREE;
+  {
+    name_lookup lookup (name, 0);
+    if (!lookup.search_qualified (current_namespace, /*usings=*/false))
+      ;
+    else if (TREE_CODE (lookup.value) == NAMESPACE_DECL)
+      {
+	ns = lookup.value;
+	// FIXME: DR about finding a member of an inline namespace
+	gcc_assert (CP_DECL_CONTEXT (ns) == current_namespace);
+	if (tree dna = DECL_NAMESPACE_ALIAS (ns))
+	  {
+	    /* We do some error recovery for, eg, the redeclaration of
+	       M here:
 
-	     namespace N {}
-	     namespace M = N;
-	     namespace M {}
-
-	     However, in nasty cases like:
-
-	     namespace N
-	     {
+	       namespace N {}
 	       namespace M = N;
 	       namespace M {}
-	     }
 
-	     we just error out below, in duplicate_decls.  */
-	  if (NAMESPACE_LEVEL (dna)->level_chain == current_binding_level)
-	    {
-	      error ("namespace alias %qD not allowed here, "
-		     "assuming %qD", ns, dna);
-	      ns = dna;
-	    }
-	  else
-	    ns = NULL_TREE;
-	}
-    }
-  else
-    ns = NULL_TREE;
+	       However, in nasty cases like:
 
-  if (ns)
-    resume_scope (NAMESPACE_LEVEL (ns));
-  else
+	       namespace N
+	       {
+	         namespace M = N;
+	         namespace M {}
+	       }
+
+	       we just error out below, in duplicate_decls.  */
+	    if (NAMESPACE_LEVEL (dna)->level_chain == current_binding_level)
+	      {
+		error ("namespace alias %qD not allowed here, "
+		       "assuming %qD", ns, dna);
+		ns = dna;
+	      }
+	    else
+	      ns = NULL_TREE;
+	  }
+      }
+  }
+
+  bool new_ns = false;
+  if (!ns)
     {
-      /* Make a new namespace, binding the name to it.  */
-      ns = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
-      SCOPE_DEPTH (ns) = SCOPE_DEPTH (current_namespace) + 1;
-      if (!SCOPE_DEPTH (ns))
-	/* We only allow depth 255. */
-	sorry ("cannot nest more than %d namespaces",
-	       SCOPE_DEPTH (current_namespace));
-      DECL_CONTEXT (ns) = FROB_CONTEXT (current_namespace);
+      /* Before making a new namespace, see if we already have one in
+	 the existing partitions of the current namespace.  */
+      if (tree *slot = find_namespace_slot (current_namespace, name))
+	ns = find_namespace_partition (*slot);
 
+      if (!ns)
+	{
+	  ns = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
+	  SCOPE_DEPTH (ns) = SCOPE_DEPTH (current_namespace) + 1;
+	  if (!SCOPE_DEPTH (ns))
+	    /* We only allow depth 255. */
+	    sorry ("cannot nest more than %d namespaces",
+		   SCOPE_DEPTH (current_namespace));
+	  DECL_CONTEXT (ns) = FROB_CONTEXT (current_namespace);
+	  new_ns = true;
+	}
+      // FIXME anonmous namespace
       if (pushdecl (ns) == error_mark_node)
 	ns = NULL_TREE;
-      else
+      else if (new_ns)
 	{
 	  if (name == anon_identifier)
 	    {
@@ -6232,13 +6414,17 @@ push_namespace (tree name, bool make_inline)
 	      DECL_NAMESPACE_INLINE_P (ns) = true;
 	      vec_safe_push (DECL_NAMESPACE_INLINEES (current_namespace), ns);
 	    }
-
-	  begin_scope (sk_namespace, ns);
 	}
     }
 
   if (ns)
-    current_namespace = ns;
+    {
+      if (new_ns)
+	begin_scope (sk_namespace, ns);
+      else
+	resume_scope (NAMESPACE_LEVEL (ns));
+      current_namespace = ns;
+    }
 
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ns != NULL_TREE;

@@ -1405,7 +1405,7 @@ cpms_in::tag_binding (FILE *d)
   if (d)
     fprintf (d, "Reading binding for %s in %s\n",
 	     IDENTIFIER_POINTER (name), IDENTIFIER_POINTER (DECL_NAME (ns)));
-  return push_module_binding (ns, GLOBAL_MODULE_INDEX, name, ovl);
+  return push_module_binding (ns, ix ? index : GLOBAL_MODULE_INDEX, name, ovl);
 }
 
 int
@@ -2222,8 +2222,16 @@ cpms_out::write_bindings (FILE *d, tree ns)
       tree name = binding.first;
       tree ovl = binding.second;
 
+      // FIXME, write global and this module bindings
+      if (TREE_CODE (ovl) == MODULE_VECTOR)
+	ovl = MODULE_VECTOR_CLUSTER (ovl, 0).slots[THIS_MODULE_INDEX];
+      else
+	ovl = NULL_TREE;
+      if (!ovl)
+	continue;
+
       tree type; // FIXME stop ignoring me
-      tree decl = decapsulate_binding (binding.second, &type);
+      tree decl = decapsulate_binding (ovl, &type);
 
       if (OVL_P (decl))
 	{
@@ -2232,9 +2240,7 @@ cpms_out::write_bindings (FILE *d, tree ns)
 	      {
 		tree fn = *iter;
 
-		if (mod_ns || DECL_MODULE_EXPORT_P (fn)
-		    // FIXME: set MODULE_EXPORT_P properly.  Utter hack here
-		    || !DECL_EXTERN_C_P (fn))
+		if (DECL_MODULE_INDEX (fn) == THIS_MODULE_INDEX)
 		  {
 		    gcc_assert (CP_DECL_CONTEXT (fn) == ns);
 
