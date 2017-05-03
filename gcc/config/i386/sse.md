@@ -17105,12 +17105,12 @@
    (set_attr "mode" "TI")])
 
 (define_insn "xop_vpermil2<mode>3"
-  [(set (match_operand:VF_128_256 0 "register_operand" "=x")
+  [(set (match_operand:VF_128_256 0 "register_operand" "=x,x")
 	(unspec:VF_128_256
-	  [(match_operand:VF_128_256 1 "register_operand" "x")
-	   (match_operand:VF_128_256 2 "nonimmediate_operand" "%x")
-	   (match_operand:<sseintvecmode> 3 "nonimmediate_operand" "xm")
-	   (match_operand:SI 4 "const_0_to_3_operand" "n")]
+	  [(match_operand:VF_128_256 1 "register_operand" "x,x")
+	   (match_operand:VF_128_256 2 "nonimmediate_operand" "x,m")
+	   (match_operand:<sseintvecmode> 3 "nonimmediate_operand" "xm,x")
+	   (match_operand:SI 4 "const_0_to_3_operand" "n,n")]
 	  UNSPEC_VPERMIL2))]
   "TARGET_XOP"
   "vpermil2<ssemodesuffix>\t{%4, %3, %2, %1, %0|%0, %1, %2, %3, %4}"
