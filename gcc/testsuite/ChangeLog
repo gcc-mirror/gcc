@@ -1,3 +1,7 @@
+2017-05-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/costmodel/x86_64/costmodel-alignpeel.c: New testcase.
+
 2017-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/79472
