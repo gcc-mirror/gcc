@@ -1,3 +1,10 @@
+2017-05-03  Richard Biener  <rguenther@suse.de>
+
+	Revert
+	PR tree-optimization/80492
+	* tree-ssa-alias.c (decl_refs_may_alias_p): Handle
+	compare_base_decls returning dont-know properly.
+
 2017-05-03  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/iterators.md (CCSI): New mode iterator.
