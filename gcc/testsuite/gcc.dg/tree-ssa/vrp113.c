@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1 -fno-tree-switch-conversion" } */
+/* { dg-options "-O2 -fdump-tree-vrp1" } */
 
 int f(int a) {
     switch (a & 1) {
@@ -14,4 +14,4 @@ int f(int a) {
     }
 }
 
-/* { dg-final { scan-tree-dump "return 3;" "vrp1" } } */
+/* { dg-final { scan-tree-dump "return 3;" "vrp1" { xfail *-*-* } } } */

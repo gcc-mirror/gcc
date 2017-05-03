@@ -1,3 +1,32 @@
+2017-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/79472
+	* tree-switch-conversion.c (struct switch_conv_info): Add
+	contiguous_range and default_case_nonstandard fields.
+	(collect_switch_conv_info): Compute contiguous_range and
+	default_case_nonstandard fields, don't clear final_bb if
+	contiguous_range and only the default case doesn't have the required
+	structure.
+	(check_all_empty_except_final): Set default_case_nonstandard instead
+	of failing if contiguous_range and the default case doesn't have empty
+	block.
+	(check_final_bb): Add SWTCH argument, don't fail if contiguous_range
+	and only the default case doesn't have the required constants.  Skip
+	virtual phis.
+	(gather_default_values): Skip virtual phis.  Allow non-NULL CASE_LOW
+	if default_case_nonstandard.
+	(build_constructors): Build constant 1 just once.  Assert that default
+	values aren't inserted in between cases if contiguous_range.  Skip
+	virtual phis.
+	(build_arrays): Skip virtual phis.
+	(prune_bbs): Add DEFAULT_BB argument, don't remove that bb.
+	(fix_phi_nodes): Don't add e2f phi arg if default_case_nonstandard.
+	Handle virtual phis.
+	(gen_inbound_check): Handle default_case_nonstandard case.
+	(process_switch): Adjust check_final_bb caller.  Call
+	gather_default_values with the first non-default case instead of
+	default case if default_case_nonstandard.
+
 2017-05-02  Nathan Sidwell  <nathan@acm.org>
 
 	* ggc-page.c (move_ptes_to_front): Replace unsigned >0 with i--
