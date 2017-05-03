@@ -1225,7 +1225,7 @@ Enum(diagnostic_color_rule) String(auto) Value(DIAGNOSTICS_COLOR_AUTO)
 
 fdiagnostics-parseable-fixits
 Common Var(flag_diagnostics_parseable_fixits)
-Print fixit hints in machine-readable form.
+Print fix-it hints in machine-readable form.
 
 fdiagnostics-generate-patch
 Common Var(flag_diagnostics_generate_patch)
