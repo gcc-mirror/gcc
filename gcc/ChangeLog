@@ -1,5 +1,36 @@
 2017-05-03  Martin Jambor  <mjambor@suse.cz>
 
+	* ipa-prop.h (ipa_edge_args): Make a class.  Mark with for_user GTY
+	tag.  Added a default constructor and a destructor.
+	(ipa_edge_args_sum_t): New class;
+	(ipa_edge_args_sum): Declare.
+	(ipa_edge_args_vector): Remove declaration.
+	(IPA_EDGE_REF): Use ipa_edge_args_sum.
+	(ipa_free_edge_args_substructures): Remove declaration.
+	(ipa_check_create_edge_args): Use ipa_edge_args_sum.
+	(ipa_edge_args_info_available_for_edge_p): Likewise.
+	* ipa-prop.c (ipa_edge_args_vector): Removed.
+	(edge_removal_hook_holder): Likewise.
+	(edge_duplication_hook_holder): Likewise.
+	(ipa_edge_args_sum): New variable.
+	(ipa_propagate_indirect_call_infos): Test ipa_edge_args_sum instead of
+	ipa_edge_args_vector.
+	(ipa_free_edge_args_substructures): Likewise.
+	(ipa_free_all_edge_args): Free ipa_edge_args_sum instead of
+	ipa_edge_args_vector.
+	(ipa_edge_removal_hook): Turned into method
+	ipa_edge_args_sum_t::remove.
+	(ipa_edge_duplication_hook): Turned into method
+	ipa_edge_args_sum_t::duplicate.
+	(ipa_register_cgraph_hooks): Create ipa_edge_args_sum instead of
+	registering edge hooks.
+	(ipa_unregister_cgraph_hooks): Do not unregister edge hooks.
+	* ipa-inline-analysis.c (estimate_function_body_sizes): Test
+	ipa_edge_args_sum instead of ipa_edge_args_vector.
+	* ipa-profile.c (ipa_profile): Likewise.
+
+2017-05-03  Martin Jambor  <mjambor@suse.cz>
+
 	* symbol-summary.h (function_summary): New method exists.
 	(function_summary::symtab_removal): Deallocate through release.
 	(call_summary): New class.
