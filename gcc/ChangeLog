@@ -1,3 +1,14 @@
+2017-05-03  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/78496
+	* tree-vrp.c (simplify_cond_using_ranges_1): Renamed
+	from simplify_cond_using_ranges.  Split off code to walk
+	backwards through casts into ...
+	(simplify_cond_using_ranges_2): New function.
+	(simplify_stmt_using_ranges): Call simplify_cond_using_ranges_1.
+	(execute_vrp): After identifying jump threads, call
+	simplify_cond_using_ranges_2.
+
 2017-05-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR bootstrap/80609

@@ -1,3 +1,8 @@
+2017-05-03  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/78496
+	* gcc.dg/tree-ssa/ssa-thread-15.c: New test.
+
 2017-05-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/lto/pr79671_0.C (foo): Fix asm constraints.
