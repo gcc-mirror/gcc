@@ -9977,7 +9977,7 @@ range_fits_type_p (value_range *vr, unsigned dest_precision, signop dest_sgn)
    the original conditional.  */
 
 static bool
-simplify_cond_using_ranges (gcond *stmt)
+simplify_cond_using_ranges_1 (gcond *stmt)
 {
   tree op0 = gimple_cond_lhs (stmt);
   tree op1 = gimple_cond_rhs (stmt);
@@ -10080,6 +10080,22 @@ simplify_cond_using_ranges (gcond *stmt)
 	    }
 	}
     }
+  return false;
+}
+
+/* STMT is a conditional at the end of a basic block.
+
+   If the conditional is of the form SSA_NAME op constant and the SSA_NAME
+   was set via a type conversion, try to replace the SSA_NAME with the RHS
+   of the type conversion.  Doing so makes the conversion dead which helps
+   subsequent passes.  */
+
+static void
+simplify_cond_using_ranges_2 (gcond *stmt)
+{
+  tree op0 = gimple_cond_lhs (stmt);
+  tree op1 = gimple_cond_rhs (stmt);
+  enum tree_code cond_code = gimple_cond_code (stmt);
 
   /* If we have a comparison of an SSA_NAME (OP0) against a constant,
      see if OP0 was set by a type conversion where the source of
@@ -10097,7 +10113,7 @@ simplify_cond_using_ranges (gcond *stmt)
 
       if (!is_gimple_assign (def_stmt)
 	  || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
-	return false;
+	return;
 
       innerop = gimple_assign_rhs1 (def_stmt);
 
@@ -10142,12 +10158,16 @@ simplify_cond_using_ranges (gcond *stmt)
 	      tree newconst = fold_convert (TREE_TYPE (innerop), op1);
 	      gimple_cond_set_lhs (stmt, innerop);
 	      gimple_cond_set_rhs (stmt, newconst);
-	      return true;
+	      update_stmt (stmt);
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Folded into: ");
+		  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+		  fprintf (dump_file, "\n");
+		}
 	    }
 	}
     }
-
-  return false;
 }
 
 /* Simplify a switch statement using the value range of the switch
@@ -10746,7 +10766,7 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	}
     }
   else if (gimple_code (stmt) == GIMPLE_COND)
-    return simplify_cond_using_ranges (as_a <gcond *> (stmt));
+    return simplify_cond_using_ranges_1 (as_a <gcond *> (stmt));
   else if (gimple_code (stmt) == GIMPLE_SWITCH)
     return simplify_switch_using_ranges (as_a <gswitch *> (stmt));
   else if (is_gimple_call (stmt)
@@ -11758,6 +11778,21 @@ execute_vrp (bool warn_array_bounds_p)
   /* We must identify jump threading opportunities before we release
      the datastructures built by VRP.  */
   identify_jump_threads ();
+
+  /* A comparison of an SSA_NAME against a constant where the SSA_NAME
+     was set by a type conversion can often be rewritten to use the
+     RHS of the type conversion.
+
+     However, doing so inhibits jump threading through the comparison.
+     So that transformation is not performed until after jump threading
+     is complete.  */
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      gimple *last = last_stmt (bb);
+      if (last && gimple_code (last) == GIMPLE_COND)
+	simplify_cond_using_ranges_2 (as_a <gcond *> (last));
+    }
 
   vrp_free_lattice ();
 
