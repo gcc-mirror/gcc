@@ -1,5 +1,22 @@
 2017-05-03  Tom de Vries  <tom@codesourcery.com>
 
+	PR testsuite/80557
+	* c-c++-common/Wshift-negative-value-1.c: Replace absolute line numbers.
+	* c-c++-common/Wshift-negative-value-2.c: Same.
+	* c-c++-common/Wshift-negative-value-3.c: Same.
+	* c-c++-common/Wshift-negative-value-4.c: Same.
+	* c-c++-common/cilk-plus/AN/pr57541.c: Same.
+	* c-c++-common/cpp/pr60400.c: Same.
+	* c-c++-common/fmax-errors.c: Same.
+	* c-c++-common/goacc/data-2.c: Same.
+	* c-c++-common/goacc/host_data-2.c: Same.
+	* c-c++-common/gomp/simd4.c: Same.
+	* c-c++-common/pr28656.c: Same.
+	* c-c++-common/pr43395.c: Same.
+	* c-c++-common/torture/pr57945.c: Same.
+
+2017-05-03  Tom de Vries  <tom@codesourcery.com>
+
 	* c-c++-common/goacc/data-default-1.c: Add quotes to numerical comment
 	arg of dg directive.
 	* c-c++-common/goacc/routine-3.c: Same.

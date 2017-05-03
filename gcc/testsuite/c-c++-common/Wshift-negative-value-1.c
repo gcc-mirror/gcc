@@ -7,6 +7,7 @@ enum E {
   A = 0 << 1,
   B = 1 << 1,
   C = -1 << 1, /* { dg-warning "left shift of negative value|not an integer constant" } */
+  /* { dg-error "left operand of shift expression" "shift" { target c++ } .-1 } */
   D = 0 >> 1,
   E = 1 >> 1,
   F = -1 >> 1
@@ -47,5 +48,3 @@ right (int x)
   r += -1U >> x;
   return r;
 }
-
-/* { dg-error "left operand of shift expression" "shift" { target c++ } 9 } */
