@@ -1,3 +1,7 @@
+2017-05-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/lto/pr79671_0.C (foo): Fix asm constraints.
+
 2017-05-03  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/costmodel/x86_64/costmodel-alignpeel.c: New testcase.
@@ -5,7 +9,8 @@
 2017-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/79472
-	* gcc.dg/tree-ssa/vrp40.c: Add -fno-tree-switch-conversion to dg-options.
+	* gcc.dg/tree-ssa/vrp40.c: Add -fno-tree-switch-conversion
+	to dg-options.
 	* gcc.dg/tree-ssa/vrp113.c: New test.
 	* gcc.dg/tree-ssa/cswtch-3.c: New test.
 	* gcc.dg/tree-ssa/cswtch-4.c: New test.
