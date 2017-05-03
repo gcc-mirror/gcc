@@ -1,3 +1,14 @@
+2017-05-03  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/iterators.md (CCSI): New mode iterator.
+	(arch): New mode attribute.
+	* config/arm/sync.md (atomic_compare_and_swap<mode>_1): Rename into ...
+	(atomic_compare_and_swap<CCSI:arch><NARROW:mode>_1): This and ...
+	(atomic_compare_and_swap<CCSI:arch><SIDI:mode>_1): This.  Use CCSI
+	code iterator for success result mode.
+	* config/arm/arm.c (arm_expand_compare_and_swap): Adapt code to use
+	the corresponding new insn generators.
+
 2017-05-03  Bin Cheng  <bin.cheng@arm.com>
 
 	Revert r247509
