@@ -1,3 +1,16 @@
+2017-05-03  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80492
+	* gcc.dg/pr80492.c: New testcase.
+
+	2017-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80539
+	* gcc.dg/torture/pr80539.c: New testcase.
+
 2017-05-03  Jakub Jelinek <jakub@redhat.com>
 
 	Backported from mainline
