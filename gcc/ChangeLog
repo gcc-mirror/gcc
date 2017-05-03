@@ -1,5 +1,12 @@
 2017-05-03  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	When all DRs have unknown misaligned do not always peel
+	when there is a store but apply the same costing model as if
+	there were only loads.
+
+2017-05-03  Richard Biener  <rguenther@suse.de>
+
 	Revert
 	PR tree-optimization/80492
 	* tree-ssa-alias.c (decl_refs_may_alias_p): Handle
